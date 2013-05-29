@@ -25,13 +25,13 @@
 #include <core/Core.h>
 #include <core/object/OvitoObject.h>
 #include <core/gui/undo/UndoManager.h>
-#include <core/reference/RefMaker.h>
+#include <core/reference/PropertyFieldDescriptor.h>
+#include <core/reference/ReferenceEvent.h>
 
 namespace Ovito {
 
 class RefTarget;					// defined in RefTarget.h
-class ParameterUnit;				// defined in ParameterUnit.h
-class PropertyFieldDescriptor;		// defined in PropertyFieldDescriptor.h
+class RefMaker;						// defined in RefMaker.h
 
 /******************************************************************************
 * RefMaker derived classes use this helper class to store their properties.
@@ -67,19 +67,17 @@ public:
 
 protected:
 
-	/// Sends the REFTARGET_CHANGED message or another to the dependents of the field owner.
-	void sendChangeNotification(int messageType = REFTARGET_CHANGED);
+	/// Generates a notification event to inform the dependents of the field's owner that it has changed.
+	void generateTargetChangedEvent(ReferenceEvent::Type eventType = ReferenceEvent::TargetChanged);
 
-	/// Calls the RefMaker::onPropertyFieldValueChanged() method on the field owner.
-	void notifyPropertyFieldValueChanged() {
-		owner()->onPropertyFieldValueChanged(*descriptor());
-	}
+	void generatePropertyChangedEvent() const;
 
 private:
 
 	/// The reference maker this object is a member of.
 	/// This will be initialized after a call to init().
 	RefMaker* _owner;
+
 	/// The descriptor of this property field.
 	PropertyFieldDescriptor* _descriptor;
 };
@@ -124,19 +122,19 @@ public:
 	inline PropertyField& operator=(const property_type& newValue) {
 		if(_value == newValue) return *this;
 		if(UndoManager::instance().isRecording() && descriptor()->automaticUndo())
-			UndoManager::instance().addOperation(new PropertyChangeOperation(*this));
+			UndoManager::instance().push(new PropertyChangeOperation(*this));
 		_value = newValue;
-		notifyPropertyFieldValueChanged();
-		sendChangeNotification();
+		generatePropertyChangedEvent();
+		generateTargetChangedEvent();
 		if(additionalChangeMessage != 0)
-			sendChangeNotification(additionalChangeMessage);
+			generateTargetChangedEvent((ReferenceEvent::Type)additionalChangeMessage);
 		return *this;
 	}
 
 	/// Changes the value of the property. Handles undo and sends a notification message.
 	inline PropertyField& operator=(const QVariant& newValue) {
 		OVITO_ASSERT_MSG(newValue.canConvert<qvariant_type>(), "PropertyField assignment", "The assigned QVariant value cannot be converted to the data type of the property field.");
-		return ((*this) = (property_type)qVariantValue<qvariant_type>(newValue));
+		return ((*this) = (property_type)newValue.value<qvariant_type>());
 	}
 
 	/// Returns the internal value stored in this property field.
@@ -154,29 +152,29 @@ public:
 private:
 
 	/// This undo class records a change to the property value.
-	class PropertyChangeOperation : public UndoableOperation {
+	class PropertyChangeOperation : public QUndoCommand {
 	public:
-		PropertyChangeOperation(PropertyField& _field) : field(_field), object(_field.owner()) {
+		PropertyChangeOperation(PropertyField& field) : _field(field), _object(field.owner()) {
 			// Make a copy of the current property value.
-			oldValue = _field;
+			_oldValue = field;
 		}
 		/// Restores the old property value.
-		virtual void undo() {
+		virtual void undo() override {
 			// Swap old value and current property value.
-			property_type temp = field;
-			field = oldValue;
-			oldValue = temp;
+			property_type temp = _field;
+			_field = _oldValue;
+			_oldValue = temp;
 		}
 		/// Re-apply the change, assuming that it has been undone.
-		virtual void redo() { undo(); }
+		virtual void redo() override { PropertyChangeOperation::undo(); }
 
 	private:
 		/// The object whose property has been changed.
-		PluginClass::SmartPtr object;
+		OORef<OvitoObject> _object;
 		/// The property field that has been changed.
-		PropertyField& field;
+		PropertyField& _field;
 		/// The old value of the property.
-		property_type oldValue;
+		property_type _oldValue;
 	};
 
 	/// The internal property value.
@@ -196,21 +194,21 @@ public:
 	/// Destructor that resets the reference before the object dies.
 	~SingleReferenceFieldBase() {
 		// The internal intrusive pointer must be cleared first before the reference count
-		// to the target go to zero to prevent infinite recursion.
-		intrusive_ptr<RefTarget> null_ptr;
-		pointer.swap(null_ptr);
+		// to the target goes to zero to prevent infinite recursion.
+		OORef<RefTarget> a_null_ptr;
+		_pointer.swap(a_null_ptr);
 	}
 
 	/// Returns the RefTarget pointer.
 	inline operator RefTarget*() const {
 		OVITO_ASSERT_MSG(owner() != NULL, "ReferenceField pointer operator", "The ReferenceField object has not been initialized yet.");
-		return pointer.get();
+		return _pointer.get();
 	}
 
 protected:
 
 	/// The actual pointer to the reference target.
-	OORef<RefTarget> pointer;
+	OORef<RefTarget> _pointer;
 	/// Replaces the reference target.
 	void setValue(RefTarget* newTarget);
 
@@ -231,7 +229,7 @@ public:
 	ReferenceField() : SingleReferenceFieldBase() {}
 
 	/// Read access to the RefTarget derived pointer.
-	operator RefTargetType*() const { return (RefTargetType*)pointer.get(); }
+	operator RefTargetType*() const { return (RefTargetType*)_pointer.get(); }
 
 	/// Write access to the RefTarget pointer. Changes the value of the reference field.
 	/// The old reference target will be released and the new reference target
@@ -239,8 +237,8 @@ public:
 	/// This operator automatically handles undo so the value change can be undone.
 	RefTargetType* operator=(RefTargetType* newPointer) {
 		setValue(newPointer);
-		OVITO_ASSERT(pointer.get() == newPointer);
-		return (RefTargetType*)pointer.get();
+		OVITO_ASSERT(_pointer.get() == newPointer);
+		return (RefTargetType*)_pointer.get();
 	}
 
 	/// Write access to the RefTarget pointer. Changes the value of the reference field.
@@ -249,26 +247,26 @@ public:
 	/// This operator automatically handles undo so the value change can be undone.
 	RefTargetType* operator=(const OORef<RefTargetType>& newPointer) {
 		setValue(newPointer.get());
-		OVITO_ASSERT(pointer == newPointer);
-		return (RefTargetType*)pointer.get();
+		OVITO_ASSERT(_pointer == newPointer);
+		return (RefTargetType*)_pointer.get();
 	}
 
 	/// Overloaded arrow operator; implements pointer semantics.
 	/// Just use this operator as you would with a normal C++ pointer.
 	RefTargetType* operator->() const {
-		OVITO_ASSERT_MSG(pointer, "ReferenceField operator->", QString("Tried to make a call to a NULL pointer. Reference field '%1' of class %2").arg(QString(descriptor()->identifier()), descriptor()->definingClass()->name()).toLocal8Bit().constData());
-		return (RefTargetType*)pointer.get();
+		OVITO_ASSERT_MSG(_pointer, "ReferenceField operator->", QString("Tried to make a call to a NULL pointer. Reference field '%1' of class %2").arg(QString(descriptor()->identifier()), descriptor()->definingClass()->name()).toLocal8Bit().constData());
+		return (RefTargetType*)_pointer.get();
 	}
 
 	/// Dereference operator; implements pointer semantics.
 	/// Just use this operator as you would with a normal C++ pointer.
 	RefTargetType& operator*() const {
-		OVITO_ASSERT_MSG(pointer, "ReferenceField operator*", QString("Tried to dereference a NULL pointer. Reference field '%1' of class %2").arg(QString(descriptor()->identifier()), descriptor()->definingClass()->name()).toLocal8Bit().constData());
-		return *(RefTargetType*)pointer.get();
+		OVITO_ASSERT_MSG(_pointer, "ReferenceField operator*", QString("Tried to dereference a NULL pointer. Reference field '%1' of class %2").arg(QString(descriptor()->identifier()), descriptor()->definingClass()->name()).toLocal8Bit().constData());
+		return *(RefTargetType*)_pointer.get();
 	}
 
 	/// Returns true if the internal is non-NULL.
-	operator bool() const { return pointer != NULL; }
+	operator bool() const { return _pointer; }
 };
 
 

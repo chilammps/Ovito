@@ -32,6 +32,7 @@
 ******************************************************************************/
 #include <iostream>
 #include <cmath>
+#include <cstdint>
 #include <type_traits>
 #include <stack>
 #include <vector>

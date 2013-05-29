@@ -178,6 +178,7 @@ private:
 	OVITO_OBJECT
 
 	template<class T> friend class OORef;	// Give OORef smart pointer access to the inernal reference count.
+	friend class VectorReferenceFieldBase;
 };
 
 /// \brief Dynamic casting function for OvitoObject derived classes.
@@ -234,7 +235,7 @@ inline OORef<T> dynamic_object_cast(const OORef<U>& obj) {
 /// Performs a runtime check of the object type in debug build.
 template<class T, class U>
 inline OORef<T> static_object_cast(const OORef<U>& obj) {
-	OVITO_ASSERT_MSG(!obj || obj->getOOType()->isDerivedFrom(T::OOType), "static_object_cast", "Runtime type check failed. The source object is not an instance of the target class.");
+	OVITO_ASSERT_MSG(!obj || obj->getOOType().isDerivedFrom(T::OOType), "static_object_cast", "Runtime type check failed. The source object is not an instance of the target class.");
 	return static_pointer_cast<T>(obj);
 }
 

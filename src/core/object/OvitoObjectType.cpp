@@ -28,11 +28,7 @@
 #include <core/plugins/PluginManager.h>
 #include <core/io/ObjectSaveStream.h>
 #include <core/io/ObjectLoadStream.h>
-
-#if 0
 #include <core/reference/PropertyFieldDescriptor.h>
-#include <core/reference/RefTarget.h>
-#endif
 
 namespace Ovito {
 
@@ -68,7 +64,7 @@ OvitoObjectType::OvitoObjectType(const QString& name, const OvitoObjectType* sup
 * Creates an object of the appropriate kind.
 * Throws an exception if the containing plugin failed to load.
 ******************************************************************************/
-OORef<OvitoObject> OvitoObjectType::createInstance()
+OORef<OvitoObject> OvitoObjectType::createInstance() const
 {
 	OVITO_CHECK_POINTER(plugin());
 
@@ -129,10 +125,8 @@ OvitoObjectType* OvitoObjectType::deserializeRTTI(ObjectLoadStream& stream)
 ******************************************************************************/
 const PropertyFieldDescriptor* OvitoObjectType::findPropertyField(const char* identifier) const
 {
-#if 0
 	for(const PropertyFieldDescriptor* field = firstPropertyField(); field; field = field->next())
 		if(qstrcmp(field->identifier(), identifier) == 0) return field;
-#endif
 	return NULL;
 }
 

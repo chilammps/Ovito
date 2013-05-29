@@ -37,8 +37,12 @@ SET(OVITO_SOURCE_FILES
 	core/reference/CloneHelper.cpp
 	core/reference/PropertyFieldDescriptor.cpp
 	core/reference/PropertyField.cpp
+	core/reference/RefMaker.cpp
+	core/reference/RefTarget.cpp
 	core/io/ObjectSaveStream.cpp
 	core/io/ObjectLoadStream.cpp
+	core/animation/AnimManager.cpp
+	core/animation/AnimationSettings.cpp
 	core/gui/app/Application.cpp
 	core/gui/mainwin/MainWindow.cpp
 	core/gui/mainwin/AnimationTimeSlider.cpp

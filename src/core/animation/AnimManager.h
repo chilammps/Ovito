@@ -28,15 +28,11 @@
 #define __OVITO_ANIM_MANAGER_H
 
 #include <core/Core.h>
-#if 0
 #include "AnimationSettings.h"
-#endif
 #include "TimeInterval.h"
 
 namespace Ovito {
 	
-class SpinnerWidget;		// defined in SpinnerWidget.h 
-
 /**
  * \brief Manages the global animation settings.
  */
@@ -106,7 +102,10 @@ public:
 	/// \brief Gets the animation interval.
 	/// \return The time interval of the animation.
 	const TimeInterval& animationInterval() const { 
-		if(!_settings) return nullInterval; 
+		if(!_settings) {
+			static const TimeInterval nullInterval;
+			return nullInterval;
+		}
 		return _settings->animationInterval(); 
 	}
 
@@ -191,11 +190,6 @@ public:
 	/// \return The parsed time value.
 	/// \throw Exception when a parsing error occurs.
 	TimePoint stringToTime(const QString& stringValue);
-	
-	/// \brief Creates a spinner widget that lets the user control the current animation time.
-	/// \return A spinner control that can be inserted into a window. When the user changes the value of the
-	///         spinner control than the current animation time of the scene will be changed accordingly.
-	SpinnerWidget* createCurrentTimeSpinner();
 
 public Q_SLOTS:
 

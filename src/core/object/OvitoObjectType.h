@@ -77,16 +77,16 @@ public:
 	/// \return \c true if this class is a kind of (inherits from) the given class;
 	///         \c false otherwise.
 	/// \note This method returns \c true if the given class \a other is the class itself.
-	bool isDerivedFrom(const OvitoObjectType* other) const {
+	bool isDerivedFrom(const OvitoObjectType& other) const {
 		for(const OvitoObjectType* c = this; c != NULL; c = c->superClass())
-			if(c == other) return true;
+			if(c == &other) return true;
 		return false;
 	}
 
 	/// \brief Creates an instance of the OvitoObject-derived class.
 	/// \return The new instance of the class. The pointer can safely be cast to the appropriate C++ class type.
 	/// \throw Exception if a plugin failed to load or the instantiation failed for some other reason.
-	OORef<OvitoObject> createInstance();
+	OORef<OvitoObject> createInstance() const;
 
 	/// \brief Returns the first element of the linked list of reference fields defined for this class if it is a RefMaker derived class.
 	const PropertyFieldDescriptor* firstPropertyField() const { return _firstPropertyField; }
@@ -97,6 +97,12 @@ public:
 	/// Note that this method will NOT return reference fields that have been defined in
 	/// super-classes.
 	const PropertyFieldDescriptor* findPropertyField(const char* identifier) const;
+
+	/// Compares two types.
+	bool operator==(const OvitoObjectType& other) const { return (this == &other); }
+
+	/// Compares two types.
+	bool operator!=(const OvitoObjectType& other) const { return (this != &other); }
 
 	/// \brief Writes a type descriptor to the stream.
 	/// \note This method is for internal use only.
@@ -115,7 +121,7 @@ protected:
 	/// \brief Creates an instance of the class described by this meta object.
 	/// \return The new instance of the class. The pointer can safely be cast to the C++ class type.
 	/// \throw Exception if the instance could not be created.
-	virtual OORef<OvitoObject> createInstanceImpl() = 0;
+	virtual OORef<OvitoObject> createInstanceImpl() const = 0;
 
 protected:
 

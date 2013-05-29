@@ -22,6 +22,7 @@
 #include <core/Core.h>
 #include <core/io/ObjectSaveStream.h>
 #include <core/object/OvitoObject.h>
+#include <core/reference/PropertyFieldDescriptor.h>
 
 namespace Ovito {
 
@@ -66,11 +67,11 @@ void ObjectSaveStream::close()
 	endChunk();
 
 	// Save RTTI.
-	map<OvitoObjectType*, quint32> classes;
+	map<const OvitoObjectType*, quint32> classes;
 	qint64 beginOfRTTI = filePosition();
 	beginChunk(0x200);
 	Q_FOREACH(OvitoObject* obj, _objects) {
-		OvitoObjectType* descriptor = obj->getOOType();
+		const OvitoObjectType* descriptor = &obj->getOOType();
 		if(classes.find(descriptor) == classes.end()) {
 			classes.insert(make_pair(descriptor, (quint32)classes.size()));
 			// Write the runtime type information to the stream.
@@ -78,20 +79,18 @@ void ObjectSaveStream::close()
 			// Write the property fields to the stream.
 			beginChunk(0x202);
 			for(const OvitoObjectType* clazz = descriptor; clazz; clazz = clazz->superClass()) {
-#if 0
 				for(const PropertyFieldDescriptor* field = clazz->firstPropertyField(); field; field = field->next()) {
 					beginChunk(0x00000001);
 					*this << QByteArray(field->identifier());
 					OVITO_ASSERT(field->definingClass() == clazz);
-					PluginClassDescriptor::saveRTTI(*this, field->definingClass());
+					OvitoObjectType::serializeRTTI(*this, field->definingClass());
 					this->writeEnum(field->flags());
 					*this << field->isReferenceField();
 					if(field->isReferenceField()) {
-						PluginClassDescriptor::saveRTTI(*this, field->targetClass());
+						OvitoObjectType::serializeRTTI(*this, field->targetClass());
 					}
 					endChunk();
 				}
-#endif
 			}
 			// Write list terminator.
 			beginChunk(0x00000000);
@@ -107,7 +106,7 @@ void ObjectSaveStream::close()
 	beginChunk(0x300);
 	auto offsetIterator = objectOffsets.constBegin();
 	Q_FOREACH(OvitoObject* obj, _objects) {
-		*this << classes[obj->getOOType()];
+		*this << classes[&obj->getOOType()];
 		*this << *offsetIterator++;
 	}
 	endChunk();

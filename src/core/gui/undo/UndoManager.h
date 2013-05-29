@@ -31,26 +31,29 @@
 
 namespace Ovito {
 
-#if 0
 /**
  * \brief This class records a change to a Qt property to a QObject derived class.
  * 
- * This predefined subclass of UndoableOperation can be readily used to record
+ * This QUndoCommand class can be used to record
  * a change to a Qt property of an object. The property must defined through the
  * standard Qt mechanism using the \c Q_PROPERTY macro.
  */
-class SimplePropertyChangeOperation : public UndoableOperation
+class SimplePropertyChangeOperation : public QUndoCommand
 {
 public:
+
 	/// \brief Constructor.
 	/// \param obj The object whose property is being changed.
 	/// \param propName The identifier of the property that is changed. This is the identifier
 	///                 name given to the property in the \c Q_PROPERTY macro.  
 	/// \note This class does not make a copy of the property name parameter.
 	///       So the caller should only pass constant string literals to this constructor.
-	SimplePropertyChangeOperation(PluginClass* obj, const char* propName) : 
-		object(obj), propertyName(propName) 
+	SimplePropertyChangeOperation(OvitoObject* obj, const char* propName, const QString& text = QString()) :
+		QUndoCommand(text), object(obj), propertyName(propName)
 	{
+		if(text.isEmpty())
+			setText(QString("Change %1").arg(propertyName));
+
 		// Make a copy of the current property value.
 		oldValue = object->property(propertyName);
 		OVITO_ASSERT_MSG(oldValue.isValid(), "SimplePropertyChangeOperation", "The object does not have a property with the given name.");  
@@ -60,7 +63,7 @@ public:
 	virtual QString displayName() const;
 
 	/// \brief Restores the old property value.
-	virtual void undo() {
+	virtual void undo() override {
 		// Swap old value and current property value.
 		QVariant temp = object->property(propertyName);
 		object->setProperty(propertyName, oldValue);
@@ -68,12 +71,12 @@ public:
 	}
 
 	/// \brief Re-apply the change, assuming that it has been undone. 
-	virtual void redo() { undo(); }
+	virtual void redo() override { undo(); }
 	
 private:
 
 	/// The object whose property has been changed.
-	PluginClass::SmartPtr object;
+	OORef<OvitoObject> object;
 	
 	/// The name of the property that has been changed.
 	const char* propertyName;
@@ -81,7 +84,6 @@ private:
 	/// The old value of the property.
 	QVariant oldValue;
 };
-#endif
 
 /**
  * \brief Stores and manages the undo stack.

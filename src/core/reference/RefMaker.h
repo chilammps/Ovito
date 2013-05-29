@@ -55,7 +55,7 @@ public:
 /**
  * \brief Base class for all objects that hold references to other objects (reference targets).
  */
-class RefMaker : public QObject
+class RefMaker : public OvitoObject
 {
 	Q_OBJECT
 
@@ -66,18 +66,93 @@ protected:
 	/// the \c INIT_PROPERTY_FIELD macro.
 	RefMaker() : OvitoObject() {}
 
-	///////////////////////////// Reference field event handlers ///////////////////////////////////
+	/////////////////////////////// Reference field events ///////////////////////////////////
 
-	/// \brief Handles a notification message from a RefTarget referenced by this RefMaker.
-	/// \param source Specifies the RefTarget referenced by this RefMaker that delivered the message.
-	/// \param msg The notification message.
-	/// \return If \c true then the message is passed on to all dependents of this object.
+	/// \brief Is called when a RefTarget referenced by this RefMaker or the RefMaker itself has generated an event.
+	/// \param source A direct reference target of this RefMaker specifying the source of the message.
+	///               Note that this may not be the sender or generator of the notification
+	///               event. The sender is returned by ReferenceEvent::sender().
+	/// \param event The notification event received by this RefMaker.
+	/// \return \c true if the event should be recursively passed on to dependents of this object;
+	///         \c false if the event should not be sent to other dependents.
 	///
-	/// Normaly you don't have to call or override this methods.
-	/// Override onRefTargetMessage() to process notification messages sent by referenced objects.
+	/// \note When this method is overridden in sub-classes then the base implementation of this method
+	///       should always be called to allow the base class to handle message from its specific
+	///       reference targets.
 	///
-	/// \sa onRefTargetMessage()
-	virtual bool processTargetNotification(RefTarget* source, RefTargetMessage* msg);
+	/// The default implementation of this method does nothing and returns \c true if the event is
+	/// a ReferenceEvent::TargetChanged event.
+	///
+	/// \sa RefTarget::notifyDependents()
+	virtual bool referenceEvent(RefTarget* source, ReferenceEvent* event) {
+		return event->type() == ReferenceEvent::TargetChanged;
+	}
+
+	/// \brief Is called when the value of a reference field of this RefMaker changes.
+	/// \param field Specifies the reference field of this RefMaker that has been changed.
+	///              This is always a single reference ReferenceField.
+	/// \param oldTarget The old target that was referenced by the ReferenceField. This can be \c NULL.
+	/// \param newTarget The new target that is now referenced by the ReferenceField. This can be \c NULL.
+	///
+	/// This method can by overridden by derived classes that want to be informed when
+	/// any of their reference fields are changed.
+	///
+	/// \note When this method is overridden in sub-classes then the base implementation of this method
+	///       should always be called from the new implementation to allow the base classes to handle
+	///       messages for their specific reference fields.
+	virtual void referenceReplaced(const PropertyFieldDescriptor& field, RefTarget* oldTarget, RefTarget* newTarget) {}
+
+	/// \brief Is called when a RefTarget has been added to a VectorReferenceField of this RefMaker.
+	/// \param field Specifies the reference field of this RefMaker to which a new entry has been added.
+	///              This is always a VectorReferenceField.
+	/// \param newTarget The new target added to the list of referenced objects.
+	/// \param listIndex The index into the VectorReferenceField at which the new entry has been inserted.
+	///
+	/// This method can by overridden by derived classes that want to be informed when
+	/// a reference has been added to one of its vector reference fields.
+	///
+	/// \note When this method is overridden in sub-classes then the base implementation of this method
+	///       should always be called from the new implementation to allow the base classes to handle
+	///       messages for their specific reference fields.
+	///
+	/// \sa VectorReferenceField::push_back()
+	/// \sa referenceRemoved()
+	virtual void referenceInserted(const PropertyFieldDescriptor& field, RefTarget* newTarget, int listIndex) {}
+
+	/// \brief Is called when a RefTarget has been removed from a VectorReferenceField of this RefMaker.
+	/// \param field Specifies the reference field of this RefMaker from which an entry has been removed.
+	///              This is always a VectorReferenceField.
+	/// \param oldTarget The old target that was reference before it has been removed from the vector reference field.
+	/// \param listIndex The index into the VectorReferenceField at which the old entry was stored.
+	///
+	/// This method can by overridden by derived classes that want to be informed when
+	/// a reference has been removed from one of its vector reference fields.
+	///
+	/// \note When this method is overridden in sub-classes then the base implementation of this method
+	///       should always be called from the new implementation to allow the base classes to handle
+	///       messages for their specific reference fields.
+	///
+	/// \sa VectorReferenceField::remove()
+	/// \sa referenceInserted()
+	virtual void referenceRemoved(const PropertyFieldDescriptor& field, RefTarget* oldTarget, int listIndex) {}
+
+	/// \brief Processes a notification event from a RefTarget referenced by this RefMaker.
+	/// \param source Specifies the RefTarget referenced by this RefMaker that delivered the event.
+	/// \param event The notification event.
+	/// \return If \c true then the event is passed on to the dependents of this object.
+	virtual bool handleReferenceEvent(RefTarget* source, ReferenceEvent* event);
+
+	/// \brief Is called when the value of a non-animatable property field of this RefMaker has changed.
+	/// \param field Specifies the property field of this RefMaker that has changed.
+	///              This is always a non-animatable PropertyField.
+	///
+	/// This method can by overridden by derived classes that want to be informed when
+	/// any of their property fields change.
+	///
+	/// \note When this method is overridden in sub-classes then the base implementation of this method
+	///       should always be called from the new implementation to allow the base classes to handle
+	///       messages for their specific property fields.
+	virtual void propertyChanged(const PropertyFieldDescriptor& field) {}
 
 	/// \brief Stops observing a RefTarget object.
 	/// \param target All references hold by the RefMaker to the this target are cleared.
@@ -101,7 +176,7 @@ protected:
 	/// \note This is the same method as above but using a smart pointer for the parameter \a newTarget.
 	/// \undoable
 	template<class T>
-	void replaceReferencesTo(RefTarget* oldTarget, const intrusive_ptr<T>& newTarget) {
+	void replaceReferencesTo(RefTarget* oldTarget, const OORef<T>& newTarget) {
 		replaceReferencesTo(oldTarget, newTarget.get());
 	}
 
@@ -230,5 +305,7 @@ private:
 };
 
 };
+
+#include "NativePropertyFieldDescriptor.h"
 
 #endif // __OVITO_REFMAKER_H

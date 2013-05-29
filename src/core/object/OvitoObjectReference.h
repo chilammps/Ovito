@@ -79,6 +79,11 @@ public:
     	return *this;
     }
 
+    OORef& operator=(const OORef& rhs) {
+    	this_type(rhs).swap(*this);
+    	return *this;
+    }
+
     OORef& operator=(OORef&& rhs) Q_DECL_NOTHROW {
     	this_type(static_cast<OORef&&>(rhs)).swap(*this);
     	return *this;

@@ -24,7 +24,48 @@
 
 namespace Ovito {
 
+IMPLEMENT_OVITO_OBJECT(ParameterUnit, OvitoObject);
+IMPLEMENT_OVITO_OBJECT(FloatParameterUnit, ParameterUnit);
+IMPLEMENT_OVITO_OBJECT(IntegerParameterUnit, ParameterUnit);
+IMPLEMENT_OVITO_OBJECT(WorldParameterUnit, FloatParameterUnit);
+IMPLEMENT_OVITO_OBJECT(AngleParameterUnit, FloatParameterUnit);
+IMPLEMENT_OVITO_OBJECT(PercentParameterUnit, FloatParameterUnit);
+IMPLEMENT_OVITO_OBJECT(TimeParameterUnit, IntegerParameterUnit);
+
 /// The singleton instance of the class.
 QScopedPointer<UnitsManager> UnitsManager::_instance;
+
+/******************************************************************************
+* Constructor.
+******************************************************************************/
+UnitsManager::UnitsManager()
+{
+	/// Create standard unit objects.
+	_units[&FloatParameterUnit::OOType] = _floatIdentityUnit = new FloatParameterUnit();
+	_units[&IntegerParameterUnit::OOType] = _integerIdentityUnit = new IntegerParameterUnit();
+	_units[&TimeParameterUnit::OOType] = _timeUnit = new TimeParameterUnit();
+	_units[&PercentParameterUnit::OOType] = _percentUnit = new PercentParameterUnit();
+	_units[&AngleParameterUnit::OOType] = _angleUnit = new AngleParameterUnit();
+	_units[&WorldParameterUnit::OOType] = _worldUnit = new WorldParameterUnit();
+}
+
+/******************************************************************************
+* Returns the global instance of the given parameter unit service.
+******************************************************************************/
+ParameterUnit* UnitsManager::getUnit(const OvitoObjectType& parameterUnitClass)
+{
+	OVITO_CHECK_POINTER(&parameterUnitClass);
+	OVITO_ASSERT_MSG(parameterUnitClass.isDerivedFrom(ParameterUnit::OOType), "UnitsManager::getUnit()", "A ParameterUnit derived must be specified.");
+
+	auto iter = _units.find(&parameterUnitClass);
+	if(iter != _units.end())
+		return iter->second.get();
+
+	// Create an instance of this class.
+	OORef<ParameterUnit> unit = static_object_cast<ParameterUnit>(parameterUnitClass.createInstance());
+	_units.insert(std::make_pair(&parameterUnitClass, unit));
+
+	return unit.get();
+}
 
 };

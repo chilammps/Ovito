@@ -39,9 +39,10 @@ namespace Ovito {
  * another unit presented to the user and vice versa. One example for
  * a ParameterUnit is the AngleUnit class which converts between radians and degrees.
  */
-class ParameterUnit : public QObject
+class ParameterUnit : public OvitoObject
 {
 	Q_OBJECT
+	OVITO_OBJECT
 
 protected:
 	
@@ -101,6 +102,7 @@ Q_SIGNALS:
 class FloatParameterUnit : public ParameterUnit
 {
 	Q_OBJECT
+	OVITO_OBJECT
 
 public:
 	
@@ -175,6 +177,7 @@ public:
 class IntegerParameterUnit : public ParameterUnit
 {
 	Q_OBJECT
+	OVITO_OBJECT
 
 public:
 	
@@ -227,6 +230,7 @@ public:
 class WorldParameterUnit : public FloatParameterUnit
 {
 	Q_OBJECT
+	OVITO_OBJECT
 
 public:
 
@@ -240,6 +244,7 @@ public:
 class AngleParameterUnit : public FloatParameterUnit
 {
 	Q_OBJECT
+	OVITO_OBJECT
 
 public:
 	
@@ -269,6 +274,7 @@ public:
 class PercentParameterUnit : public FloatParameterUnit
 {
 	Q_OBJECT
+	OVITO_OBJECT
 
 public:
 	
@@ -297,16 +303,17 @@ public:
  */
 class TimeParameterUnit : public IntegerParameterUnit
 {
+	Q_OBJECT
+	OVITO_OBJECT
+
 public:
 	
 	/// \brief Default constructor.
 	TimeParameterUnit() : IntegerParameterUnit() {
-#if 0
 		// If the animation speed changes or the time format has been changed then
 		// this parameter unit will send a signal to the UI controls.
-		connect(&AnimManager::instance(), SIGNAL(speedChanged(int)), this, SIGNAL(formatChanged()));
-		connect(&AnimManager::instance(), SIGNAL(timeFormatChanged()), this, SIGNAL(formatChanged()));
-#endif
+		connect(&AnimManager::instance(), SIGNAL(speedChanged(int)), SIGNAL(formatChanged()));
+		connect(&AnimManager::instance(), SIGNAL(timeFormatChanged()), SIGNAL(formatChanged()));
 	}
 
 	/// \brief Converts the given string to a time value.
@@ -316,11 +323,7 @@ public:
 	/// \throw Exception when the value could not be parsed.
 	/// \sa formatValue()
 	virtual FloatType parseString(const QString& valueString) override {
-#if 0
-		return (FloatType)AnimManager::instance().stringToTime(valueString);
-#else
-		return 0;
-#endif
+		return AnimManager::instance().stringToTime(valueString);
 	}
 		
 	/// \brief Converts a time value to a string.
@@ -328,11 +331,7 @@ public:
 	/// \return The string representation of the value. This can be converted back using parseString().
 	/// \sa parseString()
 	virtual QString formatValue(FloatType value) override {
-#if 0
-		return AnimManager::instance().timeToString((TimeTicks)value);
-#else
-		return QString("NOT IMPLEMENTED");
-#endif
+		return AnimManager::instance().timeToString((TimePoint)value);
 	}
 
 	/// \brief Returns the step size used by spinner widgets for this parameter unit type.
@@ -340,11 +339,7 @@ public:
 	/// \param upDirection Specifies whether the spinner is dragged in the positive or the negative direction.
 	/// \return The numeric step size used by SpinnerWidget for this parameter type. This is in TimeTicks units.
 	virtual FloatType stepSize(FloatType currentValue, bool upDirection) override {
-#if 0
 		return AnimManager::instance().ticksPerFrame();
-#else
-		return 0;
-#endif
 	}
 };
 
@@ -366,50 +361,59 @@ public:
 		return *_instance.data();
 	}
 
+	/// \brief Returns the instance of a parameter unit service.
+	/// \param parameterUnitClass Specifies the unit type. This must a ParameterUnit derived class.
+	/// \return The global instance of the requested class. The UnitsManager will always return
+	///         the same instance of a ParameterUnit class.
+	ParameterUnit* getUnit(const OvitoObjectType& parameterUnitClass);
+
 	/// \brief Returns the special identity parameter unit that does no unit conversion at all and that
 	///        formats values as floating-point.
-	FloatParameterUnit* floatIdentityUnit() { return &_floatIdentityUnit; }
+	FloatParameterUnit* floatIdentityUnit() { return _floatIdentityUnit; }
 
 	/// \brief Returns the special identity parameter unit that does no unit conversion at all and that
 	///        formats values as integer.
-	IntegerParameterUnit* integerIdentityUnit() { return &_integerIdentityUnit; }
+	IntegerParameterUnit* integerIdentityUnit() { return _integerIdentityUnit; }
 
 	/// \brief Returns the instance of a parameter unit service for time values.
-	TimeParameterUnit* timeUnit() { return &_timeUnit; }
+	TimeParameterUnit* timeUnit() { return _timeUnit; }
 
 	/// \brief Returns the instance of a parameter unit service for percentage values.
-	PercentParameterUnit* percentUnit() { return &_percentUnit; }
+	PercentParameterUnit* percentUnit() { return _percentUnit; }
 
 	/// \brief Returns the instance of a parameter unit service for angles.
-	AngleParameterUnit* angleUnit() { return &_angleUnit; }
+	AngleParameterUnit* angleUnit() { return _angleUnit; }
 
 	/// \brief Returns the instance of a parameter unit service for world space distances.
-	WorldParameterUnit* worldUnit() { return &_worldUnit; }
+	WorldParameterUnit* worldUnit() { return _worldUnit; }
 
 private:
 
+	/// The list of unit types.
+	std::map<const OvitoObjectType*, OORef<ParameterUnit>> _units;
+
 	/// The special float identity unit.
-	FloatParameterUnit _floatIdentityUnit;
+	FloatParameterUnit* _floatIdentityUnit;
 
 	/// The special integer identity unit.
-	IntegerParameterUnit _integerIdentityUnit;
+	IntegerParameterUnit* _integerIdentityUnit;
 
 	/// A parameter unit service for time values.
-	TimeParameterUnit _timeUnit;
+	TimeParameterUnit* _timeUnit;
 
 	/// A parameter unit service for percentage values.
-	PercentParameterUnit _percentUnit;
+	PercentParameterUnit* _percentUnit;
 
 	/// A parameter unit service for angles.
-	AngleParameterUnit _angleUnit;
+	AngleParameterUnit* _angleUnit;
 
 	/// A parameter unit service for world space distances.
-	WorldParameterUnit _worldUnit;
+	WorldParameterUnit* _worldUnit;
 
 private:
     
 	/// This is a singleton class. No public instances allowed.
-	UnitsManager() {}
+	UnitsManager();
 
 	/// The singleton instance of this class.
 	static QScopedPointer<UnitsManager> _instance;

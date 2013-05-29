@@ -22,9 +22,7 @@
 #include <core/Core.h>
 #include "NativeOvitoObjectType.h"
 #include "OvitoObject.h"
-#if 0
 #include <core/reference/PropertyFieldDescriptor.h>
-#endif
 #include <core/gui/undo/UndoManager.h>
 #include <core/plugins/Plugin.h>
 
@@ -36,7 +34,7 @@ NativeOvitoObjectType* NativeOvitoObjectType::_firstInfo = NULL;
 * Creates an object of the appropriate kind.
 * Throws an exception if the containing plugin failed to load.
 ******************************************************************************/
-OORef<OvitoObject> NativeOvitoObjectType::createInstanceImpl()
+OORef<OvitoObject> NativeOvitoObjectType::createInstanceImpl() const
 {
 	UndoSuspender noUndo;
 
@@ -52,10 +50,8 @@ OORef<OvitoObject> NativeOvitoObjectType::createInstanceImpl()
 ******************************************************************************/
 const PropertyFieldDescriptor* NativeOvitoObjectType::findNativePropertyField(const char* identifier) const
 {
-#if 0
 	for(const PropertyFieldDescriptor* field = firstNativePropertyField(); field; field = field->next())
 		if(qstrcmp(field->identifier(), identifier) == 0) return field;
-#endif
 	return NULL;
 }
 

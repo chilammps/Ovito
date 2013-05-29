@@ -28,6 +28,8 @@
 #define __OVITO_CLONE_HELPER_H
 
 #include <core/Core.h>
+#include <core/object/OvitoObjectReference.h>
+#include "PropertyField.h"
 #include "RefTarget.h"
 
 namespace Ovito {
@@ -74,7 +76,7 @@ public:
 	template<class T>
 	OORef<T> cloneObject(T* obj, bool deepCopy) {
 		OORef<RefTarget> p(cloneObjectImpl(obj, deepCopy));
-		OVITO_ASSERT_MSG(!p || p->getOOType()->isDerivedFrom(T::OOType), "CloneHelper::cloneObject", ("The clone method of class " + obj->pluginClassDescriptor()->name() + " did not return an assignable instance of the class " + T::OOType.name() + ".").toLocal8Bit().constData());
+		OVITO_ASSERT_MSG(!p || p->getOOType().isDerivedFrom(T::OOType), "CloneHelper::cloneObject", ("The clone method of class " + obj->getOOType().name() + " did not return an assignable instance of the class " + T::OOType.name() + ".").toLocal8Bit().constData());
 		return static_object_cast<T>(p);
 	}
 

@@ -131,9 +131,8 @@ Plugin* PluginManager::loadPluginManifest(const QString& file)
 /******************************************************************************
 * Returns all installed plugin classes derived from the given type.
 ******************************************************************************/
-QVector<OvitoObjectType*> PluginManager::listClasses(const OvitoObjectType* superClass, bool skipAbstract)
+QVector<OvitoObjectType*> PluginManager::listClasses(const OvitoObjectType& superClass, bool skipAbstract)
 {
-	OVITO_CHECK_POINTER(superClass);
 	QVector<OvitoObjectType*> result;
 
 	for(Plugin* plugin : plugins()) {

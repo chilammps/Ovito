@@ -66,9 +66,9 @@ public:
 	template<class T>
 	OORef<T> loadObject() {
 		OORef<OvitoObject> ptr(loadObject());
-		OVITO_ASSERT(!ptr || ptr->getOOType()->isDerivedFrom(T::OOType));
-		if(ptr && !ptr->getOOType()->isDerivedFrom(T::OOType))
-			throw Exception(tr("Class hierarchy mismatch in file. The object class '%1' is not derived from class '%2' as expected.").arg(ptr->getOOType()->name()).arg(T::OOType.name()));
+		OVITO_ASSERT(!ptr || ptr->getOOType().isDerivedFrom(T::OOType));
+		if(ptr && !ptr->getOOType().isDerivedFrom(T::OOType))
+			throw Exception(tr("Class hierarchy mismatch in file. The object class '%1' is not derived from class '%2' as expected.").arg(ptr->getOOType().name()).arg(T::OOType.name()));
 		return static_object_cast<T>(ptr);
 	}
 

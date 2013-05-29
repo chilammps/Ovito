@@ -88,7 +88,7 @@ protected:
 	/// \brief Creates an instance of the class described by this descriptor.
 	/// \return The new instance of the class. The pointer can safely be cast to the appropriate C++ class type.
 	/// \throw Exception if the instance could not be created.
-	virtual OORef<OvitoObject> createInstanceImpl() override;
+	virtual OORef<OvitoObject> createInstanceImpl() const override;
 
 private:
 
@@ -108,6 +108,7 @@ private:
 	static NativeOvitoObjectType* _firstInfo;
 
 	friend class NativePlugin;
+	friend class PropertyFieldDescriptor;
 };
 
 ///////////////////////////////////// Macros //////////////////////////////////////////
@@ -116,15 +117,15 @@ private:
 #define OVITO_OBJECT													\
 	public:																\
 		static const Ovito::NativeOvitoObjectType OOType;				\
-		virtual Ovito::OvitoObjectType* getOOType() const;
+		virtual const Ovito::OvitoObjectType& getOOType() const { return OOType; }
 
 /// This macro must be included in the .cpp file for a OvitoObject-derived class.
 #define IMPLEMENT_OVITO_OBJECT(name, basename)							\
-	const Ovito::NativeOvitoObjectType name::OOType(##name, &basename::OOType, &name::staticMetaObject, false);
+	const Ovito::NativeOvitoObjectType name::OOType(#name, &basename::OOType, &name::staticMetaObject, false);
 
 /// This macro must be included in the .cpp file for a OvitoObject-derived class.
-#define IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(name, basename)							\
-	const Ovito::NativeOvitoObjectType name::OOType(##name, &basename::OOType, &name::staticMetaObject, true);
+#define IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(name, basename)				\
+	const Ovito::NativeOvitoObjectType name::OOType(#name, &basename::OOType, &name::staticMetaObject, true);
 
 };
 

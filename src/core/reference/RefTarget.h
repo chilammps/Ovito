@@ -99,7 +99,7 @@ protected:
 	/// \brief The virtual destructor.
 	virtual ~RefTarget();
 
-	/////////////////////// Overridable reference field event handlers ///////////////////////////////////
+	//////////////////////////// Reference event handling ////////////////////////////////
 
 	/// \brief Is called when the value of a reference field of this RefMaker changes.
 	/// \param field Specifies the reference field of this RefMaker that has been changed.
@@ -114,11 +114,10 @@ protected:
 	///       should always be called from the new implementation to allow the base classes to handle
 	///       messages for their specific reference fields.
 	///
-	/// The RefTarget implementation of this virtual method generates a REFERENCE_FIELD_CHANGED notification message
-	///
-	/// \sa ReferenceFieldMessage
-	virtual void onRefTargetReplaced(const PropertyFieldDescriptor& field, RefTarget* oldTarget, RefTarget* newTarget) {
-		notifyDependents(ReferenceFieldMessage(this, REFERENCE_FIELD_CHANGED, field, oldTarget, newTarget));
+	/// The RefTarget implementation of this virtual method generates a ReferenceEvent::ReferenceChanged notification event
+	virtual void referenceReplaced(const PropertyFieldDescriptor& field, RefTarget* oldTarget, RefTarget* newTarget) override {
+		ReferenceFieldEvent event(ReferenceEvent::ReferenceChanged, this, field, oldTarget, newTarget);
+		notifyDependents(event);
 	}
 
 	/// \brief Is called when a RefTarget has been added to a VectorReferenceField of this RefMaker.
@@ -134,11 +133,10 @@ protected:
 	///       should always be called from the new implementation to allow the base classes to handle
 	///       messages for their specific reference fields.
 	///
-	/// The RefTarget implementation of this virtual method generates a REFERENCE_FIELD_ADDED notification message
-	///
-	/// \sa ReferenceFieldMessage
-	virtual void onRefTargetInserted(const PropertyFieldDescriptor& field, RefTarget* newTarget, int listIndex) {
-		notifyDependents(ReferenceFieldMessage(this, REFERENCE_FIELD_ADDED, field, NULL, newTarget, listIndex));
+	/// The RefTarget implementation of this virtual method generates a ReferenceEvent::ReferenceAdded notification event
+	virtual void referenceInserted(const PropertyFieldDescriptor& field, RefTarget* newTarget, int listIndex) override {
+		ReferenceFieldEvent event(ReferenceEvent::ReferenceAdded, this, field, NULL, newTarget, listIndex);
+		notifyDependents(event);
 	}
 
 	/// \brief Is called when a RefTarget has been removed from a VectorReferenceField of this RefMaker.
@@ -154,18 +152,17 @@ protected:
 	///       should always be called from the new implementation to allow the base classes to handle
 	///       messages for their specific reference fields.
 	///
-	/// The RefTarget implementation of this virtual method generates a REFERENCE_FIELD_REMOVED notification message
-	///
-	/// \sa ReferenceFieldMessage
-	virtual void onRefTargetRemoved(const PropertyFieldDescriptor& field, RefTarget* oldTarget, int listIndex) {
-		notifyDependents(ReferenceFieldMessage(this, REFERENCE_FIELD_REMOVED, field, oldTarget, NULL, listIndex));
+	/// The RefTarget implementation of this virtual method generates a ReferenceEvent::ReferenceRemoved notification event
+	virtual void referenceRemoved(const PropertyFieldDescriptor& field, RefTarget* oldTarget, int listIndex) override {
+		ReferenceFieldEvent event(ReferenceEvent::ReferenceRemoved, this, field, oldTarget, NULL, listIndex);
+		notifyDependents(event);
 	}
 
-	/// \brief Handles a notification message from a RefTarget referenced by this RefMaker.
-	/// \param source Specifies the RefTarget referenced by this RefMaker that delivered the message.
-	/// \param msg The notification message.
+	/// \brief Handles a notification event from a RefTarget referenced by this object.
+	/// \param source Specifies the RefTarget that delivered the event.
+	/// \param event The notification event.
 	/// \return If \c true then the message is passed on to all dependents of this object.
-	virtual bool processTargetNotification(RefTarget* source, RefTargetMessage* msg);
+	virtual bool handleReferenceEvent(RefTarget* source, ReferenceEvent* event) override;
 
 	//////////////////////////////// Object cloning //////////////////////////////////////
 
@@ -191,20 +188,17 @@ protected:
 
 public:
 
-	//////////////////////////////// Notification messages ////////////////////////////////////
+	//////////////////////////////// Notification events ////////////////////////////////////
 
-	/// \brief Notifies all registered dependents that this RefTarget has changes in some way.
-	/// \param msg The notification message to be sent to all dependents of this RefTarget.
-	///
-	/// \sa RefMaker::onRefTargetMessage()
-	void notifyDependents(const RefTargetMessage& msg);
+	/// \brief Sends an event to all dependents of this RefTarget.
+	/// \param event The notification event to be sent to all dependents of this RefTarget.
+	void notifyDependents(ReferenceEvent& event);
 
-	/// \brief Sends a default RefTargetMessage with the given type.
-	/// \param messageType The message type identifier passed to the RefTargetMessage constructor.
-	///
-	/// \sa RefMaker::onRefTargetMessage()
-	void notifyDependents(int messageType) {
-		notifyDependents(RefTargetMessage(this, messageType));
+	/// \brief Sends an event to all dependents of this RefTarget.
+	/// \param eventType The event type passed to the ReferenceEvent constructor.
+	void notifyDependents(ReferenceEvent::Type eventType) {
+		ReferenceEvent event(eventType, this);
+		notifyDependents(event);
 	}
 
 	////////////////////////////////// Dependency graph ///////////////////////////////////////
@@ -226,7 +220,7 @@ public:
 	/// \brief Deletes this object.
 	///
 	/// This function is automatically called on a reference target when it has no more dependents.
-	/// First sends a REFTARGET_DELETED notification message.
+	/// First generates a ReferenceEvent::TargetDeleted notification event.
 	virtual void autoDeleteObject() override;
 
 	/////////////////////////////// Editor interface /////////////////////////////

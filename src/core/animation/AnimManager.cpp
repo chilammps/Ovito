@@ -21,7 +21,6 @@
 
 #include <core/Core.h>
 #include <core/animation/AnimManager.h>
-#include "AnimationTimeSpinner.h"
 
 namespace Ovito {
 
@@ -31,10 +30,12 @@ QScopedPointer<AnimManager> AnimManager::_instance;
 /******************************************************************************
 * Initializes the animation manager.
 ******************************************************************************/
-AnimManager::AnimManager() : _animSuspendCount(0), nullInterval(0,0),  _animationMode(false)
+AnimManager::AnimManager() : _animSuspendCount(0),  _animationMode(false)
 {
+#if 0
 	// Reset the animation manager when a new scene has been loaded.
 	connect(&DATASET_MANAGER, SIGNAL(dataSetReset(DataSet*)), this, SLOT(reset()));
+#endif
 }
 
 /******************************************************************************
@@ -45,17 +46,19 @@ void AnimManager::reset()
 	setAnimationMode(false);
 	
 	if(_settings) {
-		disconnect(_settings.get(), SIGNAL(timeChanged(TimeTicks)), this, SIGNAL(timeChanged(TimeTicks)));
+		disconnect(_settings.get(), SIGNAL(timeChanged(TimePoint)), this, SIGNAL(timeChanged(TimePoint)));
 		disconnect(_settings.get(), SIGNAL(intervalChanged(TimeInterval)), this, SIGNAL(intervalChanged(TimeInterval)));
 		disconnect(_settings.get(), SIGNAL(speedChanged(int)), this, SIGNAL(speedChanged(int)));
 	}
-	
+
+#if 0
 	_settings = DATASET_MANAGER.currentSet()->animationSettings();
+#endif
 
 	if(_settings) {
-		connect(_settings.get(), SIGNAL(timeChanged(TimeTicks)), this, SIGNAL(timeChanged(TimeTicks)));
-		connect(_settings.get(), SIGNAL(intervalChanged(TimeInterval)), this, SIGNAL(intervalChanged(TimeInterval)));
-		connect(_settings.get(), SIGNAL(speedChanged(int)), this, SIGNAL(speedChanged(int)));
+		connect(_settings.get(), SIGNAL(timeChanged(TimePoint)), SIGNAL(timeChanged(TimePoint)));
+		connect(_settings.get(), SIGNAL(intervalChanged(TimeInterval)), SIGNAL(intervalChanged(TimeInterval)));
+		connect(_settings.get(), SIGNAL(speedChanged(int)), SIGNAL(speedChanged(int)));
 
 		speedChanged(_settings->ticksPerFrame());
 		intervalChanged(_settings->animationInterval());
@@ -66,7 +69,7 @@ void AnimManager::reset()
 /******************************************************************************
 * Converts a time value to its string representation.
 ******************************************************************************/
-QString AnimManager::timeToString(TimeTicks time)
+QString AnimManager::timeToString(TimePoint time)
 {
 	return QString::number(timeToFrame(time));
 }
@@ -75,22 +78,14 @@ QString AnimManager::timeToString(TimeTicks time)
 * Converts a string to a time value.
 * Throws an exception when a parsing error occurs.
 ******************************************************************************/
-TimeTicks AnimManager::stringToTime(const QString& stringValue)
+TimePoint AnimManager::stringToTime(const QString& stringValue)
 {
-	TimeTicks value;
+	TimePoint value;
 	bool ok;
-	value = (TimeTicks)stringValue.toInt(&ok);
+	value = (TimePoint)stringValue.toInt(&ok);
 	if(!ok)
 		throw Exception(tr("Invalid frame number: %1").arg(stringValue));
 	return frameToTime(value);
-}
-
-/******************************************************************************
-* Creates a spinner widget that lets the user control the current animation time.
-******************************************************************************/
-SpinnerWidget* AnimManager::createCurrentTimeSpinner()
-{	
-	return new AnimationTimeSpinner();	
 }
 
 /******************************************************************************
@@ -98,11 +93,11 @@ SpinnerWidget* AnimManager::createCurrentTimeSpinner()
 ******************************************************************************/
 void AnimManager::setAnimationMode(bool on)
 {
-	if(_animationMode == on) return;
+	if(_animationMode == on)
+		return;
 	
 	_animationMode = on;
 	animationModeChanged(_animationMode);
 }
-
 
 };

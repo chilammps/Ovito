@@ -54,7 +54,7 @@ public:
 	/// 
 	/// The state of the scene at this time is shown in the viewports.
 	/// \sa setTime()
-	TimeTicks time() const { return _time; }
+	TimePoint time() const { return _time; }
 
 	/// \brief Sets the current animation time.
 	/// \param time The new animation time.
@@ -62,7 +62,7 @@ public:
 	/// The state of the scene at the given time will be shown in the viewports.
 	/// \undoable
 	/// \sa time()
-	void setTime(TimeTicks time);
+	void setTime(TimePoint time) { _time = time; }
 
 	/// \brief Gets the animation interval.
 	/// \return The time interval of the animation.
@@ -73,7 +73,7 @@ public:
 	/// \param interval The new animation interval for the scene.
 	/// \undoable
 	/// \sa animationInterval()
-	void setAnimationInterval(const TimeInterval& interval);
+	void setAnimationInterval(const TimeInterval& interval) { _animationInterval = interval; }
 	
 	/// \brief Returns the number of frames per second.
 	/// \return The number of frames per second.
@@ -105,12 +105,12 @@ public:
 
 	/// \brief Sets the number of time ticks per frame.
 	/// \param ticksPerFrame The number of time tick units per animation frame.
-	///                      Thsi must be a positive value.
+	///                      This must be a positive value.
 	/// \undoable
 	/// 
 	/// This setting controls the playback speed of the animation.
 	/// \sa ticksPerFrame()
-	void setTicksPerFrame(int ticksPerFrame);
+	void setTicksPerFrame(int ticksPerFrame) { _ticksPerFrame = ticksPerFrame; }
 
 	/// \brief Returns the playback speed factor that is used for animation playback in the viewports.
 	/// \return The playback speed factor. A value greater than 1 means that the animation is played at a speed higher
@@ -123,50 +123,51 @@ public:
 	///               than realtime. A value smaller than -1 that the animation is played at a speed lower than realtime.
 	/// \undoable
 	/// \sa playbackSpeed()
-	void setPlaybackSpeed(int factor);
-	
-Q_SIGNALS:
-
-	/// This signal is emmited by this object when its current animation time has changed.
-	void timeChanged(TimeTicks newTime);
-	
-	/// This signal is emmited by this object when its animation interval has changed.
-	void intervalChanged(TimeInterval newAnimationInterval);
-	
-	/// This signal is emmited by this object when its animation speed has changed.
-	void speedChanged(int ticksPerFrame);
+	void setPlaybackSpeed(int factor) { _playbackSpeed = factor; }
 	
 protected:
 
-	/// Saves the class' contents to the given stream. 
-	virtual void saveToStream(ObjectSaveStream& stream);
-	
-	/// Loads the class' contents from the given stream. 
-	virtual void loadFromStream(ObjectLoadStream& stream);
+	/// \brief Is called when the value of a non-animatable property field of this RefMaker has changed.
+	virtual void propertyChanged(const PropertyFieldDescriptor& field) override;
 
-	/// Creates a copy of this object. 
-	virtual RefTarget::SmartPtr clone(bool deepCopy, CloneHelper& cloneHelper);
+Q_SIGNALS:
+
+	/// This signal is emitted by this object when its current animation time has changed.
+	void timeChanged(TimePoint newTime);
+	
+	/// This signal is emitted by this object when its animation interval has changed.
+	void intervalChanged(TimeInterval newAnimationInterval);
+	
+	/// This signal is emitted by this object when its animation speed has changed.
+	void speedChanged(int ticksPerFrame);
 	
 private:
 
 	/// The current animation time.
-    TimePoint _time;
+    PropertyField<TimePoint> _time;
 
 	/// The start and end times of the animation.
-	TimeInterval _animationInterval;
+    PropertyField<TimeInterval> _animationInterval;
 
 	/// The number of time ticks per frame.
 	/// This controls the animation speed.
-	int _ticksPerFrame;
+    PropertyField<int> _ticksPerFrame;
 	
 	/// The playback speed factor that is used for animation playback in the viewport.
 	/// A value greater than 1 means that the animation is played at a speed higher
 	/// than realtime.
 	/// A value smaller than -1 that the animation is played at a speed lower than realtime.	
-	int _playbackSpeed;
+    PropertyField<int> _playbackSpeed;
+
+private:
 
 	Q_OBJECT
-	DECLARE_SERIALIZABLE_PLUGIN_CLASS(AnimationSettings)
+	OVITO_OBJECT
+
+	DECLARE_PROPERTY_FIELD(_time);
+	DECLARE_PROPERTY_FIELD(_animationInterval);
+	DECLARE_PROPERTY_FIELD(_ticksPerFrame);
+	DECLARE_PROPERTY_FIELD(_playbackSpeed);
 };
 
 };

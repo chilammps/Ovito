@@ -68,7 +68,7 @@ public:
 	/// \param superClass Specifies the base class from which all returned classes should be derived.
 	/// \param skipAbstract If \c true only non-abstract classes are returned.
 	/// \return A list that contains all requested classes.
-	QVector<OvitoObjectType*> listClasses(const OvitoObjectType* superClass, bool skipAbstract = true);
+	QVector<OvitoObjectType*> listClasses(const OvitoObjectType& superClass, bool skipAbstract = true);
 
 	/// \brief Registers a new plugin with the manager.
 	/// \param plugin The plugin to be registered.

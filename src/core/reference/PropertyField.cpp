@@ -25,19 +25,24 @@
 #include <core/reference/RefTarget.h>
 #include <core/plugins/Plugin.h>
 #include <core/gui/undo/UndoManager.h>
-#include <core/data/units/ParameterUnit.h>
 
 namespace Ovito {
 
 /******************************************************************************
-* Sends the REFTARGET_CHANGED message to the dependents of the field owner.
+* Generates a notification event to inform the dependents of the field's owner
+* that it has changed.
 ******************************************************************************/
-void PropertyFieldBase::sendChangeNotification(int messageType)
+void PropertyFieldBase::generateTargetChangedEvent(ReferenceEvent::Type messageType)
 {
-	// Send auto change message.
+	// Send change message.
 	RefTarget* thisTarget = dynamic_object_cast<RefTarget>(owner());
-	if(thisTarget && descriptor()->sendChangeMessageEnabled())
+	if(thisTarget && descriptor()->shouldGenerateChangeEvent())
 		thisTarget->notifyDependents(messageType);
+}
+
+void PropertyFieldBase::generatePropertyChangedEvent() const
+{
+	owner()->propertyChanged(*descriptor());
 }
 
 /******************************************************************************
@@ -62,78 +67,75 @@ VectorReferenceFieldBase::~VectorReferenceFieldBase()
 ******************************************************************************/
 void SingleReferenceFieldBase::setValue(RefTarget* newTarget)
 {
-	if(pointer == newTarget) return;	// Nothing has changed.
+	if(_pointer == newTarget) return;	// Nothing has changed.
 
     // Check object type
-	if(newTarget && !newTarget->getOOType()->isDerivedFrom(descriptor()->targetClass())) {
+	if(newTarget && !newTarget->getOOType().isDerivedFrom(*descriptor()->targetClass())) {
 		OVITO_ASSERT_MSG(false, "SingleReferenceFieldBase::SetValue", "Tried to create a reference to an incompatible object for this reference field.");
-		throw Exception(QString("Cannot set a reference field of type %1 to an incompatible object of type %2.").arg(descriptor()->targetClass()->name(), newTarget->getOOType()->name()));
+		throw Exception(QString("Cannot set a reference field of type %1 to an incompatible object of type %2.").arg(descriptor()->targetClass()->name(), newTarget->getOOType().name()));
 	}
 
-	class SetReferenceOperation : public UndoableOperation
+	class SetReferenceOperation : public QUndoCommand
 	{
 	private:
-	    intrusive_ptr<RefTarget> inactiveTarget;
+	    OORef<RefTarget> inactiveTarget;
 		SingleReferenceFieldBase& reffield;
 	public:
     	SetReferenceOperation(RefTarget* _oldTarget, SingleReferenceFieldBase& _reffield)
 			: inactiveTarget(_oldTarget), reffield(_reffield) {}
 
-		virtual void undo() { SwapReferences(); }
-		virtual void redo() { SwapReferences(); }
-		virtual QString displayName() const { return "Set reference"; }
+		virtual void undo() override { swapReferences(); }
+		virtual void redo() override { swapReferences(); }
 
 		/// Replaces the target stored in a reference field.
-		void SwapReferences() {
-			CHECK_POINTER(&reffield);
-			CHECK_OBJECT_POINTER(reffield.owner());
+		void swapReferences() {
+			OVITO_CHECK_POINTER(&reffield);
+			OVITO_CHECK_OBJECT_POINTER(reffield.owner());
 			OVITO_ASSERT(!reffield.descriptor()->isVector());
 
 			RefMaker* refmaker = reffield.owner();
 
 			// Check for cyclic references.
 			if(inactiveTarget && refmaker->isReferencedBy(inactiveTarget.get())) {
-				OVITO_ASSERT(!UNDO_MANAGER.isUndoingOrRedoing());
+				OVITO_ASSERT(!UndoManager::instance().isUndoingOrRedoing());
 				throw CyclicReferenceError();
 			}
 
-			reffield.pointer.swap(inactiveTarget);
+			reffield._pointer.swap(inactiveTarget);
 
 			// Remove the RefMaker from the old target's list of dependents if it has no
 			// more references to it.
 			if(inactiveTarget) {
-				//MsgLogger() << "Removing reference from" << refmaker->pluginClassDescriptor()->name() << "to" << inactiveTarget->pluginClassDescriptor()->name() << endl;
-				OVITO_ASSERT(inactiveTarget->getDependents().contains(refmaker));
+				OVITO_ASSERT(inactiveTarget->dependents().contains(refmaker));
 				if(!refmaker->hasReferenceTo(inactiveTarget.get())) {
-					inactiveTarget->dependentsList().remove(refmaker);
+					inactiveTarget->dependents().remove(refmaker);
 				}
 			}
 
 			// Add the RefMaker to the list of dependents of the new target.
-			if(reffield.pointer) {
-				//MsgLogger() << "Creating reference from" << refmaker->pluginClassDescriptor()->name() << "to" << reffield.pointer->pluginClassDescriptor()->name() << endl;
-				if(reffield.pointer->dependentsList().contains(refmaker) == false)
-					reffield.pointer->dependentsList().push_back(refmaker);
+			if(reffield._pointer) {
+				if(reffield._pointer->dependents().contains(refmaker) == false)
+					reffield._pointer->dependents().push_back(refmaker);
 			}
 
 			// Inform derived classes.
-			refmaker->onRefTargetReplaced(*reffield.descriptor(), inactiveTarget.get(), reffield.pointer.get());
+			refmaker->referenceReplaced(*reffield.descriptor(), inactiveTarget.get(), reffield._pointer.get());
 
 			// Send auto change message.
-			reffield.sendChangeNotification();
+			reffield.generateTargetChangedEvent();
 		}
 	};
 
 	if(UndoManager::instance().isRecording() && descriptor()->automaticUndo()) {
 		SetReferenceOperation* op = new SetReferenceOperation(newTarget, *this);
-		UndoManager::instance().addOperation(op);
+		UndoManager::instance().push(op);
 		op->swapReferences();
 	}
 	else {
 		UndoSuspender noUndo;
-		SetReferenceOperation(newTarget, *this).SwapReferences();
+		SetReferenceOperation(newTarget, *this).swapReferences();
 	}
-	OVITO_ASSERT(pointer.get() == newTarget);
+	OVITO_ASSERT(_pointer.get() == newTarget);
 }
 
 /******************************************************************************
@@ -143,40 +145,35 @@ void SingleReferenceFieldBase::setValue(RefTarget* newTarget)
 int VectorReferenceFieldBase::insertInternal(RefTarget* newTarget, int index)
 {
     // Check object type
-	if(newTarget && !newTarget->pluginClassDescriptor()->isKindOf(descriptor()->targetClass())) {
-		OVITO_ASSERT_MSG(false, "VectorReferenceFieldBase::Insert", "Cannot add incompatible object to this vector reference field.");
-		throw Exception(QString("Cannot add an object to a reference field of type %1 that has the incompatible type %2.").arg(descriptor()->targetClass()->name(), newTarget->pluginClassDescriptor()->name()));
+	if(newTarget && !newTarget->getOOType().isDerivedFrom(*descriptor()->targetClass())) {
+		OVITO_ASSERT_MSG(false, "VectorReferenceFieldBase::insert", "Cannot add incompatible object to this vector reference field.");
+		throw Exception(QString("Cannot add an object to a reference field of type %1 that has the incompatible type %2.").arg(descriptor()->targetClass()->name(), newTarget->getOOType().name()));
 	}
 
-	class InsertReferenceOperation : public UndoableOperation
+	class InsertReferenceOperation : public QUndoCommand
 	{
 	private:
-	    intrusive_ptr<RefTarget> target;
+	    OORef<RefTarget> target;
 		VectorReferenceFieldBase& reffield;
 		int index;
 	public:
     	InsertReferenceOperation(RefTarget* _target, VectorReferenceFieldBase& _reffield, int _index)
 			: target(_target), reffield(_reffield), index(_index) {}
 
-		virtual void undo() {
-			RemoveReference();
-		}
-		virtual void redo() {
-			AddReference();
-		}
-		virtual QString displayName() const { return "Insert reference"; }
+		virtual void undo() override { removeReference(); }
+		virtual void redo() override { addReference(); }
 
 		/// Adds the target to the list reference field.
-		int AddReference() {
-			CHECK_POINTER(&reffield);
-			CHECK_OBJECT_POINTER(reffield.owner());
+		int addReference() {
+			OVITO_CHECK_POINTER(&reffield);
+			OVITO_CHECK_OBJECT_POINTER(reffield.owner());
 			OVITO_ASSERT(reffield.descriptor()->isVector());
 
 			RefMaker* refmaker = reffield.owner();
 
 			// Check for cyclic references.
 			if(target && refmaker->isReferencedBy(target.get())) {
-				OVITO_ASSERT(!UNDO_MANAGER.isUndoingOrRedoing());
+				OVITO_ASSERT(!UndoManager::instance().isUndoingOrRedoing());
 				throw CyclicReferenceError();
 			}
 
@@ -190,29 +187,28 @@ int VectorReferenceFieldBase::insertInternal(RefTarget* newTarget, int index)
 				reffield.pointers.insert(index, target.get());
 			}
 			if(target) {
-				intrusive_ptr_add_ref(target.get());
-				//MsgLogger() << "Creating reference from" << refmaker->pluginClassDescriptor()->name() << "to" << target->pluginClassDescriptor()->name() << endl;
+				target.get()->incrementReferenceCount();
 			}
 
 			// Add the RefMaker to the list of dependents of the new target.
-			if(target && target->getDependents().contains(refmaker) == false)
-				target->dependentsList().push_back(refmaker);
+			if(target && target->dependents().contains(refmaker) == false)
+				target->dependents().push_back(refmaker);
 
 			// Inform derived classes.
-			refmaker->onRefTargetInserted(*reffield.descriptor(), target.get(), index);
+			refmaker->referenceInserted(*reffield.descriptor(), target.get(), index);
 
 			// Send auto change message.
-			reffield.sendChangeNotification();
+			reffield.generateTargetChangedEvent();
 
 			target = NULL;
 			return index;
 		}
 
 		/// Removes the target from the list reference field.
-		void RemoveReference() {
+		void removeReference() {
 			OVITO_ASSERT(!target);
-			CHECK_POINTER(&reffield);
-			CHECK_OBJECT_POINTER(reffield.owner());
+			OVITO_CHECK_POINTER(&reffield);
+			OVITO_CHECK_OBJECT_POINTER(reffield.owner());
 			OVITO_ASSERT(reffield.descriptor()->isVector());
 			RefMaker* refmaker = reffield.owner();
 
@@ -224,34 +220,32 @@ int VectorReferenceFieldBase::insertInternal(RefTarget* newTarget, int index)
 
 			// Release old reference target if there are no more references to it.
 			if(target) {
-				//MsgLogger() << "Removing reference from" << refmaker->pluginClassDescriptor()->name() << "to" << target->pluginClassDescriptor()->name() << endl;
-
-				intrusive_ptr_release(target.get());
+				target.get()->decrementReferenceCount();
 
 				// Remove the refmaker from the old target's list of dependents.
-				CHECK_OBJECT_POINTER(target.get());
-				OVITO_ASSERT(target->getDependents().contains(refmaker));
+				OVITO_CHECK_OBJECT_POINTER(target.get());
+				OVITO_ASSERT(target->dependents().contains(refmaker));
 				if(!refmaker->hasReferenceTo(target.get())) {
-					target->dependentsList().remove(refmaker);
+					target->dependents().remove(refmaker);
 				}
 			}
 
 			// Inform derived classes.
-			refmaker->onRefTargetRemoved(*reffield.descriptor(), target.get(), index);
+			refmaker->referenceRemoved(*reffield.descriptor(), target.get(), index);
 
 			// Send auto change message.
-			reffield.sendChangeNotification();
+			reffield.generateTargetChangedEvent();
 		}
 	};
 
-	if(UNDO_MANAGER.isRecording() && descriptor()->automaticUndo()) {
+	if(UndoManager::instance().isRecording() && descriptor()->automaticUndo()) {
 		InsertReferenceOperation* op = new InsertReferenceOperation(newTarget, *this, index);
-		UNDO_MANAGER.addOperation(op);
-		return op->AddReference();
+		UndoManager::instance().push(op);
+		return op->addReference();
 	}
 	else {
 		UndoSuspender noUndo;
-		return InsertReferenceOperation(newTarget, *this, index).AddReference();
+		return InsertReferenceOperation(newTarget, *this, index).addReference();
 	}
 }
 
@@ -260,35 +254,30 @@ void VectorReferenceFieldBase::remove(int i)
 {
 	OVITO_ASSERT(i >=0 && i < size());
 
-	class RemoveReferenceOperation : public UndoableOperation
+	class RemoveReferenceOperation : public QUndoCommand
 	{
 	private:
-	    intrusive_ptr<RefTarget> target;
+	    OORef<RefTarget> target;
 		VectorReferenceFieldBase& reffield;
 		int index;
 	public:
     	RemoveReferenceOperation(VectorReferenceFieldBase& _reffield, int _index)
 			: reffield(_reffield), index(_index) {}
 
-		virtual void undo() {
-			AddReference();
-		}
-		virtual void redo() {
-			RemoveReference();
-		}
-		virtual QString displayName() const { return "Remove reference"; }
+		virtual void undo() override { addReference(); }
+		virtual void redo() override { removeReference(); }
 
 		/// Adds the target to the list reference field.
-		int AddReference() {
-			CHECK_POINTER(&reffield);
-			CHECK_OBJECT_POINTER(reffield.owner());
+		int addReference() {
+			OVITO_CHECK_POINTER(&reffield);
+			OVITO_CHECK_OBJECT_POINTER(reffield.owner());
 			OVITO_ASSERT(reffield.descriptor()->isVector());
 
 			RefMaker* refmaker = reffield.owner();
 
 			// Check for cyclic references.
 			if(target && refmaker->isReferencedBy(target.get())) {
-				OVITO_ASSERT(!UNDO_MANAGER.isUndoingOrRedoing());
+				OVITO_ASSERT(!UndoManager::instance().isUndoingOrRedoing());
 				throw CyclicReferenceError();
 			}
 
@@ -302,29 +291,28 @@ void VectorReferenceFieldBase::remove(int i)
 				reffield.pointers.insert(index, target.get());
 			}
 			if(target) {
-				intrusive_ptr_add_ref(target.get());
-				//MsgLogger() << "Creating reference from" << refmaker->pluginClassDescriptor()->name() << "to" << target->pluginClassDescriptor()->name() << endl;
+				target.get()->incrementReferenceCount();
 			}
 
 			// Add the RefMaker to the list of dependents of the new target.
-			if(target && target->getDependents().contains(refmaker) == false)
-				target->dependentsList().push_back(refmaker);
+			if(target && target->dependents().contains(refmaker) == false)
+				target->dependents().push_back(refmaker);
 
 			// Inform derived classes.
-			refmaker->onRefTargetInserted(*reffield.descriptor(), target.get(), index);
+			refmaker->referenceInserted(*reffield.descriptor(), target.get(), index);
 
 			// Send auto change message.
-			reffield.sendChangeNotification();
+			reffield.generateTargetChangedEvent();
 
 			target = NULL;
 			return index;
 		}
 
 		/// Removes the target from the list reference field.
-		void RemoveReference() {
+		void removeReference() {
 			OVITO_ASSERT(!target);
-			CHECK_POINTER(&reffield);
-			CHECK_OBJECT_POINTER(reffield.owner());
+			OVITO_CHECK_POINTER(&reffield);
+			OVITO_CHECK_OBJECT_POINTER(reffield.owner());
 			OVITO_ASSERT(reffield.descriptor()->isVector());
 			RefMaker* refmaker = reffield.owner();
 
@@ -336,34 +324,32 @@ void VectorReferenceFieldBase::remove(int i)
 
 			// Release old reference target if there are no more references to it.
 			if(target) {
-				//MsgLogger() << "Removing reference from" << refmaker->pluginClassDescriptor()->name() << "to" << target->pluginClassDescriptor()->name() << endl;
-
-				intrusive_ptr_release(target.get());
+				target.get()->decrementReferenceCount();
 
 				// Remove the refmaker from the old target's list of dependents.
-				CHECK_OBJECT_POINTER(target.get());
-				OVITO_ASSERT(target->getDependents().contains(refmaker));
+				OVITO_CHECK_OBJECT_POINTER(target.get());
+				OVITO_ASSERT(target->dependents().contains(refmaker));
 				if(!refmaker->hasReferenceTo(target.get())) {
-					target->dependentsList().remove(refmaker);
+					target->dependents().remove(refmaker);
 				}
 			}
 
 			// Inform derived classes.
-			refmaker->onRefTargetRemoved(*reffield.descriptor(), target.get(), index);
+			refmaker->referenceRemoved(*reffield.descriptor(), target.get(), index);
 
 			// Send auto change message.
-			reffield.sendChangeNotification();
+			reffield.generateTargetChangedEvent();
 		}
 	};
 
-	if(UNDO_MANAGER.isRecording() && descriptor()->automaticUndo()) {
+	if(UndoManager::instance().isRecording() && descriptor()->automaticUndo()) {
 		RemoveReferenceOperation* op = new RemoveReferenceOperation(*this, i);
-		UNDO_MANAGER.addOperation(op);
-		op->RemoveReference();
+		UndoManager::instance().push(op);
+		op->removeReference();
 	}
 	else {
 		UndoSuspender noUndo;
-		RemoveReferenceOperation(*this, i).RemoveReference();
+		RemoveReferenceOperation(*this, i).removeReference();
 	}
 }
 
@@ -373,31 +359,6 @@ void VectorReferenceFieldBase::clear()
 {
 	while(!pointers.empty())
 		remove(pointers.size() - 1);
-}
-
-/******************************************************************************
-* Return the human readable and localized name of the parameter field.
-* This information is parsed from the plugin manifest file.
-******************************************************************************/
-QString PropertyFieldDescriptor::displayName() const
-{
-	if(_displayName.isEmpty())
-		return identifier();
-	else
-		return _displayName;
-}
-
-/******************************************************************************
-* If this reference field contains a reference to a controller than
-* this method returns the unit that is associated with the controller.
-* This method is used by the NumericalParameterUI class.
-******************************************************************************/
-ParameterUnit* PropertyFieldDescriptor::parameterUnit() const
-{
-	if(_parameterUnitClassDescriptor != NULL) {
-		return UNITS_MANAGER.getUnit(_parameterUnitClassDescriptor);
-	}
-	return NULL;
 }
 
 };

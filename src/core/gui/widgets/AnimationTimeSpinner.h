@@ -30,14 +30,13 @@
 #include <core/Core.h>
 #include <core/gui/widgets/SpinnerWidget.h>
 #include <core/animation/AnimManager.h>
-#include <core/utilities/units/ParameterUnit.h>
+#include <core/utilities/units/UnitsManager.h>
 
 namespace Ovito {
 
 /**
  * \brief A spinner control for changing the current animation time.
  * 
- * An instance of this class is returned by AnimManager::createCurrentTimeSpinner().
  * It displays the current animation time given by AnimManager::time() and changes
  * it when the user enters a new time value.
  */
@@ -49,16 +48,16 @@ public:
 	
 	/// Constructs the spinner control.
 	AnimationTimeSpinner(QWidget* parent = 0) : SpinnerWidget(parent) {
-		setUnit(UNITS_MANAGER.getUnit(PLUGINCLASSINFO(TimeParameterUnit)));
-		connect(&ANIM_MANAGER, SIGNAL(timeChanged(TimeTicks)), this, SLOT(onTimeChanged(TimeTicks)));
-		connect(&ANIM_MANAGER, SIGNAL(intervalChanged(TimeInterval)), this, SLOT(onIntervalChanged(TimeInterval)));
-		connect(this, SIGNAL(spinnerValueChanged()), this, SLOT(onSpinnerValueChanged()));	
+		setUnit(UnitsManager::instance().timeUnit());
+		connect(&AnimManager::instance(), SIGNAL(timeChanged(TimePoint)), SLOT(onTimeChanged(TimePoint)));
+		connect(&AnimManager::instance(), SIGNAL(intervalChanged(TimeInterval)), SLOT(onIntervalChanged(TimeInterval)));
+		connect(this, SIGNAL(spinnerValueChanged()), SLOT(onSpinnerValueChanged()));
 	}
 
 protected Q_SLOTS:
 
 	/// This is called by the AnimManager when the current animation time has changed.
-	void onTimeChanged(TimeTicks newTime) {
+	void onTimeChanged(TimePoint newTime) {
 		// Set the value of the spinner to the new animation time.
 		setIntValue(newTime);
 	}

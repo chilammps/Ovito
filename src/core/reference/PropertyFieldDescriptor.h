@@ -27,8 +27,11 @@
 
 namespace Ovito {
 
+class RefMaker;						// defined in RefMaker.h
 class RefTarget;					// defined in RefTarget.h
 class ParameterUnit;				// defined in ParameterUnit.h
+class SingleReferenceFieldBase;		// defined in PropertyField.h
+class VectorReferenceFieldBase;		// defined in PropertyField.h
 
 /// Bit-flags that control the behavior of a property field.
 enum PropertyFieldFlag
@@ -62,42 +65,62 @@ class PropertyFieldDescriptor
 public:
 
 	/// Constructor	for a property field that stores a non-animatable property.
-	PropertyFieldDescriptor(const char* identifier, PropertyFieldFlags flags,
+	PropertyFieldDescriptor(const NativeOvitoObjectType* definingClass, const char* identifier, PropertyFieldFlags flags,
 			QVariant (*_propertyStorageReadFunc)(RefMaker*), void (*_propertyStorageWriteFunc)(RefMaker*, const QVariant&),
 			void (*_propertyStorageSaveFunc)(RefMaker*, SaveStream&), void (*_propertyStorageLoadFunc)(RefMaker*, LoadStream&))
-		: _definingClassDescriptor(NULL), _targetClassDescriptor(NULL), _identifier(identifier), _flags(flags), singleStorageAccessFunc(NULL), vectorStorageAccessFunc(NULL),
+		: _definingClassDescriptor(definingClass), _targetClassDescriptor(NULL), _identifier(identifier), _flags(flags), singleStorageAccessFunc(NULL), vectorStorageAccessFunc(NULL),
 			propertyStorageReadFunc(_propertyStorageReadFunc), propertyStorageWriteFunc(_propertyStorageWriteFunc),
 			propertyStorageSaveFunc(_propertyStorageSaveFunc), propertyStorageLoadFunc(_propertyStorageLoadFunc) {
 		OVITO_ASSERT(_identifier != NULL);
 		OVITO_ASSERT(!_flags.testFlag(PROPERTY_FIELD_VECTOR));
+		OVITO_ASSERT(definingClass != NULL);
+		// Make sure that there is no other reference field with the same identifier in the defining class.
+		OVITO_ASSERT_MSG(definingClass->findNativePropertyField(identifier) == NULL, "NativePropertyFieldDescriptor", "Property field identifier is not unique.");
+		// Insert into linked list of reference fields stored in the defining class' descriptor.
+		this->_next = definingClass->_firstNativePropertyField;
+		const_cast<NativeOvitoObjectType*>(definingClass)->_firstNativePropertyField = this;
 	}
 
 	/// Constructor	for a property field that stores a single reference to a RefTarget.
-	PropertyFieldDescriptor(const char* identifier, PropertyFieldFlags flags, SingleReferenceFieldBase& (*_storageAccessFunc)(RefMaker*))
-		: _definingClassDescriptor(NULL), _targetClassDescriptor(NULL), _identifier(identifier), _flags(flags), singleStorageAccessFunc(_storageAccessFunc), vectorStorageAccessFunc(NULL),
+	PropertyFieldDescriptor(const NativeOvitoObjectType* definingClass, const OvitoObjectType* targetClass, const char* identifier, PropertyFieldFlags flags, SingleReferenceFieldBase& (*_storageAccessFunc)(RefMaker*))
+		: _definingClassDescriptor(definingClass), _targetClassDescriptor(targetClass), _identifier(identifier), _flags(flags), singleStorageAccessFunc(_storageAccessFunc), vectorStorageAccessFunc(NULL),
 			propertyStorageReadFunc(NULL), propertyStorageWriteFunc(NULL), propertyStorageSaveFunc(NULL), propertyStorageLoadFunc(NULL) {
 		OVITO_ASSERT(_identifier != NULL);
 		OVITO_ASSERT(singleStorageAccessFunc != NULL);
 		OVITO_ASSERT(!_flags.testFlag(PROPERTY_FIELD_VECTOR));
+		OVITO_ASSERT(definingClass != NULL);
+		OVITO_ASSERT(targetClass != NULL);
+		// Make sure that there is no other reference field with the same identifier in the defining class.
+		OVITO_ASSERT_MSG(definingClass->findNativePropertyField(identifier) == NULL, "NativePropertyFieldDescriptor", "Property field identifier is not unique.");
+		// Insert into linked list of reference fields stored in the defining class' descriptor.
+		this->_next = definingClass->_firstNativePropertyField;
+		const_cast<NativeOvitoObjectType*>(definingClass)->_firstNativePropertyField = this;
 	}
 
 	/// Constructor	for a property field that stores a vector of references to RefTarget objects.
-	PropertyFieldDescriptor(const char* identifier, PropertyFieldFlags flags, VectorReferenceFieldBase& (*_storageAccessFunc)(RefMaker*))
-		: _definingClassDescriptor(NULL), _targetClassDescriptor(NULL), _identifier(identifier), _flags(flags), singleStorageAccessFunc(NULL), vectorStorageAccessFunc(_storageAccessFunc),
+	PropertyFieldDescriptor(const NativeOvitoObjectType* definingClass, const OvitoObjectType* targetClass, const char* identifier, PropertyFieldFlags flags, VectorReferenceFieldBase& (*_storageAccessFunc)(RefMaker*))
+		: _definingClassDescriptor(definingClass), _targetClassDescriptor(targetClass), _identifier(identifier), _flags(flags), singleStorageAccessFunc(NULL), vectorStorageAccessFunc(_storageAccessFunc),
 			propertyStorageReadFunc(NULL), propertyStorageWriteFunc(NULL), propertyStorageSaveFunc(NULL), propertyStorageLoadFunc(NULL) {
 		OVITO_ASSERT(_identifier != NULL);
 		OVITO_ASSERT(vectorStorageAccessFunc != NULL);
 		OVITO_ASSERT(_flags.testFlag(PROPERTY_FIELD_VECTOR));
+		OVITO_ASSERT(definingClass != NULL);
+		OVITO_ASSERT(targetClass != NULL);
+		// Make sure that there is no other reference field with the same identifier in the defining class.
+		OVITO_ASSERT_MSG(definingClass->findNativePropertyField(identifier) == NULL, "NativePropertyFieldDescriptor", "Property field identifier is not unique.");
+		// Insert into linked list of reference fields stored in the defining class' descriptor.
+		this->_next = definingClass->_firstNativePropertyField;
+		const_cast<NativeOvitoObjectType*>(definingClass)->_firstNativePropertyField = this;
 	}
 
 	/// Returns the unique identifier of the reference field.
 	const char* identifier() const { return _identifier; }
 
 	/// Returns the RefMaker derived class that owns the reference.
-	OvitoObjectType* definingClass() const { return _definingClassDescriptor; }
+	const OvitoObjectType* definingClass() const { return _definingClassDescriptor; }
 
 	/// Returns the base type of the objects stored in this property field if it is a reference field; otherwise returns NULL.
-	OvitoObjectType* targetClass() const { return _targetClassDescriptor; }
+	const OvitoObjectType* targetClass() const { return _targetClassDescriptor; }
 
 	/// Returns whether this is a reference field that stores a pointer to a RefTarget derived class.
 	bool isReferenceField() const { return _targetClassDescriptor != NULL; }
@@ -109,8 +132,8 @@ public:
 	/// This is the default.
 	bool automaticUndo() const { return !_flags.testFlag(PROPERTY_FIELD_NO_UNDO); }
 
-	/// Returns true if a REFTARGET_CHANGED message is sent, each time the property value changes.
-	bool sendChangeMessageEnabled() const { return !_flags.testFlag(PROPERTY_FIELD_NO_CHANGE_MESSAGE); }
+	/// Returns true if a TargetChanged event should be generated each time the property's value changes.
+	bool shouldGenerateChangeEvent() const { return !_flags.testFlag(PROPERTY_FIELD_NO_CHANGE_MESSAGE); }
 
     /// Returns the human readable and localized name of the property field.
 	/// It will be used as label text in the user interface.
@@ -130,6 +153,9 @@ public:
 	/// Compares two property fields.
 	bool operator==(const PropertyFieldDescriptor& other) const { return (this == &other); }
 
+	/// Compares two property fields.
+	bool operator!=(const PropertyFieldDescriptor& other) const { return (this != &other); }
+
 protected:
 
 	/// The unique identifier of the reference field. This must be unique within
@@ -137,10 +163,10 @@ protected:
 	const char* _identifier;
 
 	/// The base type of the objects stored in this field if this is a reference field.
-	OvitoObjectType* _targetClassDescriptor;
+	const OvitoObjectType* _targetClassDescriptor;
 
 	/// The RefMaker derived class that owns the property.
-	OvitoObjectType* _definingClassDescriptor;
+	const OvitoObjectType* _definingClassDescriptor;
 
 	/// The next property field in the linked list (of the RefMaker derived class defining this property field).
 	PropertyFieldDescriptor* _next;
@@ -178,7 +204,7 @@ protected:
 
 	/// The ParameterUnit derived class that describes the units of the parameter
 	/// if this property field stores numerical controller object.
-	OvitoObjectType* _parameterUnitClassDescriptor;
+	const OvitoObjectType* _parameterUnitClassDescriptor;
 
 	friend class RefMaker;
 	friend class RefTarget;

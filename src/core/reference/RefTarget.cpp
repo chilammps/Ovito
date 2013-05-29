@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include <core/reference/RefTarget.h>
 #include <core/reference/CloneHelper.h>
-#include <core/undo/UndoManager.h>
+#include <core/gui/undo/UndoManager.h>
 #if 0
 #include <core/gui/properties/PropertiesEditor.h>
 #include <core/gui/ApplicationManager.h>
@@ -34,7 +34,7 @@
 namespace Ovito {
 
 // Gives the class run-time type information.
-IMPLEMENT_OVITO_OBJECT(RefTarget, RefMaker);
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(RefTarget, RefMaker);
 
 /******************************************************************************
 * The virtual destructor.
@@ -52,10 +52,30 @@ RefTarget::~RefTarget()
 void RefTarget::autoDeleteObject()
 {
 	// This will remove all references to this target object.
-	notifyDependents(REFTARGET_DELETED);
+	notifyDependents(ReferenceEvent::TargetDeleted);
 
 	// This will remove all reference held by the object itself.
 	RefMaker::autoDeleteObject();
+}
+
+/******************************************************************************
+* Notifies all registered dependents by sending out a message.
+******************************************************************************/
+void RefTarget::notifyDependents(ReferenceEvent& event)
+{
+	OVITO_CHECK_OBJECT_POINTER(this);
+	OVITO_ASSERT_MSG(event.sender() == this, "RefTarget::notifyDependents()", "The notifying object is not the sender given in the event object.");
+
+	// Be careful here: The list of dependents can change at any time while broadcasting
+	// the message.
+	for(int i = dependents().size() - 1; i >= 0; --i) {
+		if(i >= dependents().size()) continue;
+		OVITO_CHECK_OBJECT_POINTER(this);
+		OVITO_CHECK_OBJECT_POINTER(dependents()[i]);
+		dependents()[i]->handleReferenceEvent(this, &event);
+	}
+
+	OVITO_ASSERT_MSG(event.type() != ReferenceEvent::TargetDeleted || dependents().empty(), "RefTarget deletion", "RefTarget has generated a TargetDeleted event but it still has dependents.");
 }
 
 /******************************************************************************
@@ -63,45 +83,25 @@ void RefTarget::autoDeleteObject()
 * This implementation calls the onRefTargetMessage method
 * and passes the message on to dependents of this RefTarget.
 ******************************************************************************/
-bool RefTarget::processTargetNotification(RefTarget* source, RefTargetMessage* msg)
+bool RefTarget::handleReferenceEvent(RefTarget* source, ReferenceEvent* event)
 {
 	OVITO_CHECK_OBJECT_POINTER(this);
 
 	// Let this object process the message.
-	if(!RefMaker::processTargetNotification(source, msg))
+	if(!RefMaker::handleReferenceEvent(source, event))
 		return false;
 
 	// Pass message on to dependents of this RefTarget.
-	// Be careful here: The list of dependents can change at any time while processing
-	// the message.
-	for(int i = getDependents().size() - 1; i >=0 ; --i) {
-		OVITO_ASSERT(i < getDependents().size());
-		CHECK_OBJECT_POINTER(getDependents()[i]);
-		getDependents()[i]->processTargetNotification(this, msg);
-		CHECK_OBJECT_POINTER(this);
+	for(int i = dependents().size() - 1; i >=0 ; --i) {
+		OVITO_ASSERT(i < dependents().size());
+		OVITO_CHECK_OBJECT_POINTER(dependents()[i]);
+		dependents()[i]->handleReferenceEvent(this, event);
+		OVITO_CHECK_OBJECT_POINTER(this);
 	}
 
 	return true;
 }
 
-/******************************************************************************
-* Notifies all registered dependents by sending out a message.
-******************************************************************************/
-void RefTarget::notifyDependents(const RefTargetMessage& msg)
-{
-	OVITO_CHECK_OBJECT_POINTER(this);
-	OVITO_ASSERT_MSG(msg.sender() == this, "RefTarget::notifyDependents()", "The notifying object is not the sender given in the message object.");
-
-	// Be careful here: The list of dependents can change at any time while broadcasting
-	// the message.
-	for(int i = getDependents().size() - 1; i >= 0; --i) {
-		if(i >= getDependents().size()) continue;
-		CHECK_OBJECT_POINTER(getDependents()[i]);
-		getDependents()[i]->processTargetNotification(this, const_cast<RefTargetMessage*>(&msg));
-	}
-
-	OVITO_ASSERT_MSG(msg.type() != REFTARGET_DELETED || getDependents().empty(), "RefTarget deletion", "RefTarget has sent REFTARGET_DELETED message but it still has some dependents.");
-}
 
 /******************************************************************************
 * Checks if this object is directly or indirectly referenced by the given RefMaker.
@@ -118,7 +118,7 @@ bool RefTarget::isReferencedBy(const RefMaker* obj) const
 
 /******************************************************************************
 * Creates a copy of this RefTarget object.
-* If deepCopy ist true, then all objects referenced by this RefTarget should be copied too.
+* If deepCopy is true, then all objects referenced by this RefTarget should be copied too.
 * This copying should be done via the passed CloneHelper instance.
 * Classes that override this method MUST call the base class' version of this method
 * to create an instance. The base implementation of RefTarget::clone() will create an
@@ -127,19 +127,19 @@ bool RefTarget::isReferencedBy(const RefMaker* obj) const
 OORef<RefTarget> RefTarget::clone(bool deepCopy, CloneHelper& cloneHelper)
 {
 	// Create a new instance of the object's class.
-	OORef<RefTarget> clone = static_object_cast<RefTarget>(getOOType()->createInstance());
-	if(!clone || !clone->getOOType()->isDerivedFrom(getOOType()))
-		throw Exception(tr("Failed to create clone instance of class %1.").arg(getOOType()->name()));
+	OORef<RefTarget> clone = static_object_cast<RefTarget>(getOOType().createInstance());
+	if(!clone || !clone->getOOType().isDerivedFrom(getOOType()))
+		throw Exception(tr("Failed to create clone instance of class %1.").arg(getOOType().name()));
 
 	// Clone properties and referenced objects.
-	for(OvitoObjectType* clazz = getOOType(); clazz; clazz = clazz->superClass()) {
+	for(const OvitoObjectType* clazz = &getOOType(); clazz; clazz = clazz->superClass()) {
 		for(const PropertyFieldDescriptor* field = clazz->firstPropertyField(); field; field = field->next()) {
 			if(field->isReferenceField()) {
 				if(field->isVector() == false) {
 					OVITO_ASSERT(field->singleStorageAccessFunc != NULL);
 					const SingleReferenceFieldBase& sourceField = field->singleStorageAccessFunc(this);
 					// Clone reference target.
-					RefTarget::SmartPtr clonedReference;
+					OORef<RefTarget> clonedReference;
 					if(field->flags().testFlag(PROPERTY_FIELD_NEVER_CLONE_TARGET))
 						clonedReference = (RefTarget*)sourceField;
 					else if(field->flags().testFlag(PROPERTY_FIELD_ALWAYS_CLONE))
@@ -157,7 +157,7 @@ OORef<RefTarget> RefTarget::clone(bool deepCopy, CloneHelper& cloneHelper)
 					const VectorReferenceFieldBase& sourceField = field->vectorStorageAccessFunc(this);
 					VectorReferenceFieldBase& destField = field->vectorStorageAccessFunc(clone.get());
 					for(int i=0; i<sourceField.size(); i++) {
-						RefTarget::SmartPtr clonedReference;
+						OORef<RefTarget> clonedReference;
 						// Clone reference target.
 						if(field->flags().testFlag(PROPERTY_FIELD_NEVER_CLONE_TARGET))
 							clonedReference = (RefTarget*)sourceField[i];

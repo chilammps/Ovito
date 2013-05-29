@@ -28,6 +28,8 @@
 #define __OVITO_TIME_INTERVAL_H
 
 #include <core/Core.h>
+#include <base/io/SaveStream.h>
+#include <base/io/LoadStream.h>
 
 namespace Ovito {
 
@@ -46,20 +48,20 @@ typedef int TimePoint;
 #define TICKS_PER_SECOND		4800
 
 /// Returns a special time point that represents an infinite negative value on the time axis.
-constexpr inline TimePoint TimeNegativeInfinity() { return std::numeric_limits<TimePoint>::min(); }
+constexpr inline TimePoint TimeNegativeInfinity() { return INT_MIN; }
 
 /// Returns a special time point that represents an infinite positive value on the time axis.
-constexpr inline TimePoint TimePositiveInfinity() { return std::numeric_limits<TimePoint>::max(); }
+constexpr inline TimePoint TimePositiveInfinity() { return INT_MAX; }
 
 /// \brief This is a function to convert internal time units to real seconds.
 /// \param time The time in internal time units.
 /// \return The same time in seconds.
-inline FloatType timeToSeconds(TimePoint time) { return (FloatType)time / (FloatType)TICKS_PER_SECOND; }
+constexpr inline FloatType timeToSeconds(TimePoint time) { return (FloatType)time / (FloatType)TICKS_PER_SECOND; }
 
 // \brief This is a function to convert seconds to internal time units.
 /// \param timeInSeconds The time in seconds.
 /// \return The same time in internal time units.
-inline TimePoint secondsToTime(FloatType timeInSeconds) { return (TimePoint)ceil(timeInSeconds * (FloatType)TICKS_PER_SECOND + (FloatType)0.5); }
+inline TimePoint secondsToTime(FloatType timeInSeconds) { return (TimePoint)std::ceil(timeInSeconds * (FloatType)TICKS_PER_SECOND + (FloatType)0.5); }
 
 /**
  * \brief Represents an interval in time.
@@ -81,18 +83,14 @@ public:
 	/// \brief Initializes the interval to an instant time.
 	/// \param time The time where the interval starts and ends.
 	constexpr TimeInterval(const TimePoint& time) : _start(time), _end(time) {}
-	
-	/// \brief Copy constructor.
-	/// \param other Another time interval whose start and end times should be copied.
-	TimeInterval(const TimeInterval& other) : _start(other.start()), _end(other.end()) {}
 
 	/// \brief Returns the start time of the interval.
 	/// \return The beginning of the time interval.
-	TimePoint start() const { return _start; }
+	constexpr TimePoint start() const { return _start; }
 	
 	/// \brief Returns the end time of the interval.
 	/// \return The time at which the interval end.
-	TimePoint end() const { return _end; }
+	constexpr TimePoint end() const { return _end; }
 
 	/// \brief Sets the start time of the interval.
 	/// \param start The new start time.
@@ -107,17 +105,17 @@ public:
 	///         end time is negative infinity (TimeNegativeInfinity);
 	///         \c false otherwise.
 	/// \sa setEmpty()
-	bool isEmpty() const { return (end() == TimeNegativeInfinity() || start() > end()); }
+	constexpr bool isEmpty() const { return (end() == TimeNegativeInfinity() || start() > end()); }
 	
 	/// \brief Returns whether this is the infinite time interval.
 	/// \return \c true if the start time is negative infinity and the end time of the interval is positive infinity.
 	/// \sa setInfinite()
-	bool isInfinite() const { return (end() == TimePositiveInfinity() && start() == TimeNegativeInfinity()); }
+	constexpr bool isInfinite() const { return (end() == TimePositiveInfinity() && start() == TimeNegativeInfinity()); }
 
 	/// \brief Returns the duration of the time interval.
 	/// \return The difference between the end and the start time.
 	/// \sa setDuration()
-	TimePoint duration() const { return end() - start(); }
+	constexpr TimePoint duration() const { return end() - start(); }
 	
 	/// \brief Sets the duration of the time interval.
 	/// \param duration The new duration of the interval.
@@ -171,7 +169,7 @@ public:
 	/// \brief Returns whether a time lies between start and end time of this interval.
 	/// \param time The time to check.
 	/// \return \c true if \a time is equal or larger than start() and smaller or equal than end().
-	bool contains(TimePoint time) const {
+	constexpr bool contains(TimePoint time) const {
 		return (start() <= time && time <= end()); 
 	}
 
@@ -201,13 +199,28 @@ public:
 private:
 
 	TimePoint _start, _end;
+
+	friend LoadStream& operator>>(LoadStream& stream, TimeInterval& iv);
 };
 
-/// The infinite time interval that contains all time values.
-#define TimeForever TimeInterval(TimeNegativeInfinity, TimePositiveInfinity)
+/// \brief Writes a time interval to a binary output stream.
+/// \param stream The output stream.
+/// \param iv The time interval to write to the output stream \a stream.
+/// \return The output stream \a stream.
+inline SaveStream& operator<<(SaveStream& stream, const TimeInterval& iv)
+{
+	return stream << iv.start() << iv.end();
+}
 
-/// The empty time interval.
-#define TimeNever TimeInterval(TimeNegativeInfinity)
+/// \brief Reads a time interval from a binary input stream.
+/// \param stream The input stream.
+/// \param iv Reference to a variable where the parsed data will be stored.
+/// \return The input stream \a stream.
+inline LoadStream& operator>>(LoadStream& stream, TimeInterval& iv)
+{
+	stream >> iv._start >> iv._end;
+	return stream;
+}
 
 };
 

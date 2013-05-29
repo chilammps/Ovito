@@ -25,6 +25,8 @@
 
 namespace Ovito {
 
+using namespace std;
+
 /******************************************************************************
 * The constructor of the AnimationTimeSlider class.
 ******************************************************************************/
@@ -36,10 +38,10 @@ AnimationTimeSlider::AnimationTimeSlider(QWidget* parent) :
 	setAutoFillBackground(true);
 
 	// Repaint slider if the current animation settings have changed.
-	connect(&AnimManager::instance(), SIGNAL(timeChanged(TimeTicks)), SLOT(repaint()));
+	connect(&AnimManager::instance(), SIGNAL(timeChanged(TimePoint)), SLOT(repaint()));
 	connect(&AnimManager::instance(), SIGNAL(timeFormatChanged()), SLOT(update()));
 	connect(&AnimManager::instance(), SIGNAL(intervalChanged(TimeInterval)), SLOT(update()));
-	connect(&AnimManager::instance(), SIGNAL(animationModeChanged(bool)), SLOT(onAnimationModeChanged(bool)));
+	connect(&AnimManager::instance(), SIGNAL(animationModeChanged(bool)), SLOT(update()));
 }
 
 /******************************************************************************
@@ -49,21 +51,19 @@ void AnimationTimeSlider::paintEvent(QPaintEvent* event)
 {
 	QFrame::paintEvent(event);
 
-#if 0
 	// Show slider only if there is more than one animation frame.
-	if(ANIM_MANAGER.animationInterval().duration() != 0 || APPLICATION_MANAGER.experimentalMode()) {
+	if(AnimManager::instance().animationInterval().duration() != 0) {
 		QStylePainter painter(this);
 		QStyleOptionButton btnOption;
 		btnOption.initFrom(this);
 		btnOption.rect = thumbRectangle();
-		btnOption.text = ANIM_MANAGER.timeToString(ANIM_MANAGER.time());
-		if(ANIM_MANAGER.animationInterval().start() == 0)
-			btnOption.text += " / " + ANIM_MANAGER.timeToString(ANIM_MANAGER.animationInterval().end());
-		btnOption.state = ((dragPos >= 0) ? QStyle::State_Sunken : QStyle::State_Raised) | QStyle::State_Enabled;
+		btnOption.text = AnimManager::instance().timeToString(AnimManager::instance().time());
+		if(AnimManager::instance().animationInterval().start() == 0)
+			btnOption.text += " / " + AnimManager::instance().timeToString(AnimManager::instance().animationInterval().end());
+		btnOption.state = ((_dragPos >= 0) ? QStyle::State_Sunken : QStyle::State_Raised) | QStyle::State_Enabled;
 		painter.drawPrimitive(QStyle::PE_PanelButtonCommand, btnOption);
 		painter.drawControl(QStyle::CE_PushButtonLabel, btnOption);
 	}
-#endif
 }
 
 /******************************************************************************
@@ -120,22 +120,22 @@ void AnimationTimeSlider::mouseMoveEvent(QMouseEvent* event)
 
 	int newPos = event->x() - _dragPos;
 
-#if 0
 	int thumbSize = min(clientRect.width() / 3, 70);
-	TimeInterval interval = ANIM_MANAGER.animationInterval();
-	TimeTicks newTime = (TimeTicks)((qint64)newPos * (qint64)(interval.duration() + 1) / (qint64)(clientRect.width() - thumbSize));
+	TimeInterval interval = AnimManager::instance().animationInterval();
+	TimePoint newTime = (TimePoint)((qint64)newPos * (qint64)(interval.duration() + 1) / (qint64)(clientRect.width() - thumbSize));
 
 	// limit new time
 	newTime = max(newTime, interval.start());
 	newTime = min(newTime, interval.end());
 
 	// Snap to frames
-	newTime = ANIM_MANAGER.frameToTime(ANIM_MANAGER.timeToFrame(newTime));
-	if(newTime == ANIM_MANAGER.time()) return;
+	newTime = AnimManager::instance().frameToTime(AnimManager::instance().timeToFrame(newTime));
+	if(newTime == AnimManager::instance().time()) return;
 
 	// Set new time
-	ANIM_MANAGER.setTime(newTime);
+	AnimManager::instance().setTime(newTime);
 
+#if 0
 	// Update viewports.
 	VIEWPORT_MANAGER.processViewportUpdates();
 #endif
@@ -151,13 +151,14 @@ QRect AnimationTimeSlider::thumbRectangle()
 #if 0
 	if(DATASET_MANAGER.currentSet() == NULL)
 		return QRect(0,0,0,0);
+#endif
 
 	QRect clientRect = rect();
 	clientRect.adjust(frameWidth(), frameWidth(), -frameWidth(), -frameWidth());
 
 	// Position slider
-	TimeInterval interval = ANIM_MANAGER.animationInterval();
-	TimeTicks value = ANIM_MANAGER.time();
+	TimeInterval interval = AnimManager::instance().animationInterval();
+	TimePoint value = AnimManager::instance().time();
 	if(value < interval.start()) value = interval.start();
 	if(value > interval.end()) value = interval.end();
 
@@ -165,7 +166,6 @@ QRect AnimationTimeSlider::thumbRectangle()
 	FloatType percentage = (FloatType)(value - interval.start()) / (FloatType)(interval.duration() + 1);
 	int thumbPos = (int)((clientRect.width() - thumbSize) * percentage);
 	return QRect(thumbPos + clientRect.x(), clientRect.y(), thumbSize, clientRect.height());
-#endif
 }
 
 };

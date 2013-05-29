@@ -21,9 +21,7 @@
 
 #include <core/Core.h>
 #include <core/io/ObjectLoadStream.h>
-#if 0
 #include <core/reference/PropertyFieldDescriptor.h>
-#endif
 #include <core/plugins/Plugin.h>
 #include <core/object/OvitoObject.h>
 #include <core/object/OvitoObjectReference.h>
@@ -75,11 +73,10 @@ ObjectLoadStream::ObjectLoadStream(QDataStream& source) : LoadStream(source), _c
 			if(chunkId != 0x00000001)
 				throw Exception(tr("File format cannot be read."));
 
-#if 0
 			PropertyFieldEntry propFieldEntry;
 			*this >> propFieldEntry.identifier;
 			propFieldEntry.definingClass = OvitoObjectType::deserializeRTTI(*this);
-			if(classEntry.descriptor->isDerivedFrom(propFieldEntry.definingClass) == false)
+			if(classEntry.descriptor->isDerivedFrom(*propFieldEntry.definingClass) == false)
 				throw Exception(tr("The class hierarchy stored in the file differs from the class hierarchy of the program."));
 			this->readEnum(propFieldEntry.flags);
 			*this >> propFieldEntry.isReferenceField;
@@ -94,12 +91,11 @@ ObjectLoadStream::ObjectLoadStream(QDataStream& source) : LoadStream(source), _c
 			if(propFieldEntry.field) {
 				if(propFieldEntry.field->isReferenceField() != propFieldEntry.isReferenceField ||
 						propFieldEntry.field->isVector() != ((propFieldEntry.flags & PROPERTY_FIELD_VECTOR) != 0) ||
-						(propFieldEntry.isReferenceField && propFieldEntry.targetClass->isKindOf(propFieldEntry.field->targetClass()) == false))
+						(propFieldEntry.isReferenceField && propFieldEntry.targetClass->isDerivedFrom(*propFieldEntry.field->targetClass()) == false))
 					throw Exception(tr("File format error: The type of the property field '%1' in class %2 has changed.").arg(propFieldEntry.identifier, propFieldEntry.definingClass->name()));
 			}
 
 			classEntry.propertyFields.push_back(propFieldEntry);
-#endif
 		}
 		closeChunk();
 	}
@@ -171,7 +167,7 @@ void ObjectLoadStream::close()
 				}
 			}
 			catch(Exception& ex) {
-				throw ex.appendDetailMessage(tr("Object of class type %1 failed to load.").arg(_currentObject->object->getOOType()->name()));
+				throw ex.appendDetailMessage(tr("Object of class type %1 failed to load.").arg(_currentObject->object->getOOType().name()));
 			}
 		}
 
