@@ -58,7 +58,7 @@ public:
 	QStatusBar* statusBar() const { return _statusBar; }
 
 	/// Returns the recommended size for this window.
-	virtual QSize sizeHint() const override { return QSize(1024,768); }
+	virtual QSize sizeHint() const Q_DECL_OVERRIDE { return QSize(1024,768); }
 	
 	/// \brief Loads the layout of the docked widgets from the settings store.
 	void restoreLayout();
@@ -91,10 +91,10 @@ private:
 protected:
 
 	/// Is called when the user closes the window.
-	virtual void closeEvent(QCloseEvent* event) override;
+	virtual void closeEvent(QCloseEvent* event) Q_DECL_OVERRIDE;
 	
 	/// Is called when the window receives an event.
-	virtual bool event(QEvent *event) override;
+	virtual bool event(QEvent *event) Q_DECL_OVERRIDE;
 
 	/// Give the Application class access to the main window's private constructor.
 	friend class Application;

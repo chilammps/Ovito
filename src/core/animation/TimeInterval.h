@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // 
-//  Copyright (2008) Alexander Stukowski
+//  Copyright (2013) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -21,70 +21,48 @@
 
 /** 
  * \file TimeInterval.h 
- * \brief Contains definition of the Core::TimeInterval structure. 
+ * \brief Contains definition of the Ovito::TimeInterval structure.
  */
  
 #ifndef __OVITO_TIME_INTERVAL_H
 #define __OVITO_TIME_INTERVAL_H
 
 #include <core/Core.h>
-#include <base/io/SaveStream.h>
-#include <base/io/LoadStream.h>
 
-namespace Core {
+namespace Ovito {
 
 /** 
- * \fn typedef TimeTicks
+ * \fn typedef TimePoint
  * 
- * This is the data type used for time values.
+ * This is the data type used for animation time values.
  * One time tick unit is 1/4800 of a second in real time.
  * 
  * Please note that this is an integer data type. Internal times are measured
- * in discrete steps of 1/4800 or a second to avoid rounding errors. There is no finer resolution.
+ * in discrete steps of 1/4800 of a second to avoid rounding errors. There is no finer resolution.
  */
-typedef int TimeTicks;
+typedef int TimePoint;
 
 /// This is the number of ticks per second.
 #define TICKS_PER_SECOND		4800
 
-/// Special time tick value that specifies an infinite negative value on the time axis.
-#define TimeNegativeInfinity (numeric_limits<TimeTicks>::min())
+/// Returns a special time point that represents an infinite negative value on the time axis.
+constexpr inline TimePoint TimeNegativeInfinity() { return std::numeric_limits<TimePoint>::min(); }
 
-/// Special time tick value that specifies an infinite value on the time axis.
-#define TimePositiveInfinity (numeric_limits<TimeTicks>::max())
+/// Returns a special time point that represents an infinite positive value on the time axis.
+constexpr inline TimePoint TimePositiveInfinity() { return std::numeric_limits<TimePoint>::max(); }
 
-/// The infinite time interval that contains all time values.
-#define TimeForever TimeInterval(TimeNegativeInfinity, TimePositiveInfinity)
-
-/// The empty time interval.
-#define TimeNever TimeInterval(TimeNegativeInfinity)
-
-/// \brief This is a function to convert time tick units to real seconds.
-/// \param time The time in time ticks units.
+/// \brief This is a function to convert internal time units to real seconds.
+/// \param time The time in internal time units.
 /// \return The same time in seconds.
-inline FloatType timeToSeconds(TimeTicks time) { return (FloatType)time / (FloatType)TICKS_PER_SECOND; }
+inline FloatType timeToSeconds(TimePoint time) { return (FloatType)time / (FloatType)TICKS_PER_SECOND; }
 
-// \brief This is a function to convert seconds to time ticks units.
+// \brief This is a function to convert seconds to internal time units.
 /// \param timeInSeconds The time in seconds.
-/// \return The same time in time ticks units.
-inline TimeTicks secondsToTime(FloatType timeInSeconds) { return (TimeTicks)ceil(timeInSeconds * (FloatType)TICKS_PER_SECOND + (FloatType)0.5); }
-
-/// \brief This converts a time ticks value to a frame number.
-/// \param time The time.
-/// \param ticksPerFrame Number of ticks per animation frame. 
-/// \return The frame number.
-inline int timeToFrame(TimeTicks time, int ticksPerFrame) { return time / ticksPerFrame; }
-
-/// \brief This converts a frame number to a time ticks value.
-/// \param frame The frame number. 
-/// \param ticksPerFrame Number of ticks per animation frame.
-/// \return The time (beginning of frame)
-inline TimeTicks frameToTime(int frame, int ticksPerFrame) { return frame * ticksPerFrame; }
+/// \return The same time in internal time units.
+inline TimePoint secondsToTime(FloatType timeInSeconds) { return (TimePoint)ceil(timeInSeconds * (FloatType)TICKS_PER_SECOND + (FloatType)0.5); }
 
 /**
  * \brief Represents an interval in time.
- * 
- * \author Alexander Stukowski
  */
 class TimeInterval
 {
@@ -93,16 +71,16 @@ public:
 	/// \brief Creates an empty time interval.
 	/// 
 	/// Both start time and end time are initialized to negative infinity. 
-	TimeInterval() : _start(TimeNegativeInfinity), _end(TimeNegativeInfinity) {}
+	constexpr TimeInterval() : _start(TimeNegativeInfinity()), _end(TimeNegativeInfinity()) {}
 	
 	/// \brief Initializes the interval with start and end values.
 	/// \param start The start time of the time interval.
 	/// \param end The end time (including) of the time interval.
-	TimeInterval(const TimeTicks& start, const TimeTicks& end) : _start(start), _end(end) {}
+	constexpr TimeInterval(const TimePoint& start, const TimePoint& end) : _start(start), _end(end) {}
 	
 	/// \brief Initializes the interval to an instant time.
 	/// \param time The time where the interval starts and ends.
-	TimeInterval(const TimeTicks& time) : _start(time), _end(time) {}
+	constexpr TimeInterval(const TimePoint& time) : _start(time), _end(time) {}
 	
 	/// \brief Copy constructor.
 	/// \param other Another time interval whose start and end times should be copied.
@@ -110,36 +88,36 @@ public:
 
 	/// \brief Returns the start time of the interval.
 	/// \return The beginning of the time interval.
-	TimeTicks start() const { return _start; }
+	TimePoint start() const { return _start; }
 	
 	/// \brief Returns the end time of the interval.
 	/// \return The time at which the interval end.
-	TimeTicks end() const { return _end; }
+	TimePoint end() const { return _end; }
 
 	/// \brief Sets the start time of the interval.
 	/// \param start The new start time.
-	void setStart(const TimeTicks& start) { _start = start; }
+	void setStart(const TimePoint& start) { _start = start; }
 	
 	/// \brief Sets the end time of the interval.
 	/// \param end The new end time.
-	void setEnd(const TimeTicks& end) { _end = end; }
+	void setEnd(const TimePoint& end) { _end = end; }
 
 	/// \brief Checks if this is an empty time interval.
 	/// \return \c true if the start time of the interval is behind the end time or if the
 	///         end time is negative infinity (TimeNegativeInfinity);
 	///         \c false otherwise.
 	/// \sa setEmpty()
-	bool isEmpty() const { return (end() == TimeNegativeInfinity || start() > end()); }
+	bool isEmpty() const { return (end() == TimeNegativeInfinity() || start() > end()); }
 	
 	/// \brief Returns whether this is the infinite time interval.
 	/// \return \c true if the start time is negative infinity and the end time of the interval is positive infinity.
 	/// \sa setInfinite()
-	bool isInfinite() const { return (end() == TimePositiveInfinity && start() == TimeNegativeInfinity); }
+	bool isInfinite() const { return (end() == TimePositiveInfinity() && start() == TimeNegativeInfinity()); }
 
 	/// \brief Returns the duration of the time interval.
 	/// \return The difference between the end and the start time.
 	/// \sa setDuration()
-	TimeTicks duration() const { return end() - start(); }
+	TimePoint duration() const { return end() - start(); }
 	
 	/// \brief Sets the duration of the time interval.
 	/// \param duration The new duration of the interval.
@@ -148,25 +126,25 @@ public:
 	/// start() + duration().
 	///
 	/// \sa duration()
-	void setDuration(TimeTicks duration) { setEnd(start() + duration); }
+	void setDuration(TimePoint duration) { setEnd(start() + duration); }
 
 	/// \brief Sets this interval's start time to negative infinity and it's end time to positive infinity.
 	/// \sa isInfinite()
 	void setInfinite() {
-		setStart(TimeNegativeInfinity); 
-		setEnd(TimePositiveInfinity); 
+		setStart(TimeNegativeInfinity());
+		setEnd(TimePositiveInfinity());
 	}
 	
 	/// \brief Sets this interval's start and end time to negative infinity.
 	/// \sa isEmpty()
 	void setEmpty() { 
-		setStart(TimeNegativeInfinity); 
-		setEnd(TimeNegativeInfinity);
+		setStart(TimeNegativeInfinity());
+		setEnd(TimeNegativeInfinity());
 	}
 	
 	/// \brief Sets this interval's start and end time to the instant time given.
 	/// \param time This value is assigned to both, the start and the end time of the interval.
-	void setInstant(TimeTicks time) { 
+	void setInstant(TimePoint time) {
 		setStart(time); 
 		setEnd(time);
 	}
@@ -193,7 +171,7 @@ public:
 	/// \brief Returns whether a time lies between start and end time of this interval.
 	/// \param time The time to check.
 	/// \return \c true if \a time is equal or larger than start() and smaller or equal than end().
-	bool contains(TimeTicks time) const { 
+	bool contains(TimePoint time) const {
 		return (start() <= time && time <= end()); 
 	}
 
@@ -208,40 +186,32 @@ public:
 			setEmpty();
 		}
 		else if(!other.isInfinite()) {
-			setStart(max(start(), other.start()));			
-			setEnd(min(end(), other.end()));
+			setStart(std::max(start(), other.start()));
+			setEnd(std::min(end(), other.end()));
 			OVITO_ASSERT(start() <= end());
 		}
 	}
 
+	/// Return the infinite time interval that contains all time values.
+	static constexpr TimeInterval forever() { return TimeInterval(TimeNegativeInfinity(), TimePositiveInfinity()); }
+
+	/// Return the empty time interval that contains no time values.
+	static constexpr TimeInterval empty() { return TimeInterval(TimeNegativeInfinity()); }
+
 private:
-	TimeTicks _start, _end;
-	
-	friend LoadStream& operator>>(LoadStream& stream, TimeInterval& iv);
+
+	TimePoint _start, _end;
 };
 
-/// \brief Writes a time interval to a binary output stream.
-/// \param stream The output stream.
-/// \param iv The time interval to write to the output stream \a stream.
-/// \return The output stream \a stream.
-inline SaveStream& operator<<(SaveStream& stream, const TimeInterval& iv)
-{
-	return stream << iv.start() << iv.end();
-}
+/// The infinite time interval that contains all time values.
+#define TimeForever TimeInterval(TimeNegativeInfinity, TimePositiveInfinity)
 
-/// \brief Reads a time interval from a binary input stream.
-/// \param stream The input stream.
-/// \param iv Reference to a variable where the parsed data will be stored.
-/// \return The input stream \a stream.
-inline LoadStream& operator>>(LoadStream& stream, TimeInterval& iv)
-{
-	stream >> iv._start >> iv._end;
-	return stream;
-}
+/// The empty time interval.
+#define TimeNever TimeInterval(TimeNegativeInfinity)
 
 };
 
-Q_DECLARE_METATYPE(Core::TimeInterval)
-Q_DECLARE_TYPEINFO(Core::TimeInterval, Q_MOVABLE_TYPE);
+Q_DECLARE_METATYPE(Ovito::TimeInterval)
+Q_DECLARE_TYPEINFO(Ovito::TimeInterval, Q_MOVABLE_TYPE);
 
 #endif // __OVITO_TIME_INTERVAL_H

@@ -19,17 +19,12 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef __OVITO_CORE_H
-#define __OVITO_CORE_H
+#include <core/Core.h>
+#include "OvitoObject.h"
+#include "OvitoObjectType.h"
 
-/******************************************************************************
-* The Base module is required by the Core module.
-******************************************************************************/
-#include <base/Base.h>
+namespace Ovito {
 
-/******************************************************************************
-* Include some basic headers.
-******************************************************************************/
-#include <core/object/OvitoObject.h>
+const NativeOvitoObjectType OvitoObject::OOType("OvitoObject", nullptr, &OvitoObject::staticMetaObject, true);
 
-#endif // __OVITO_CORE_H
+};

@@ -26,6 +26,19 @@ ENDIF(WIN32)
 
 SET(OVITO_SOURCE_FILES 
 	base/utilities/Exception.cpp
+	base/io/SaveStream.cpp
+	base/io/LoadStream.cpp
+	core/object/OvitoObject.cpp
+	core/object/OvitoObjectType.cpp
+	core/object/NativeOvitoObjectType.cpp
+	core/plugins/Plugin.cpp
+	core/plugins/NativePlugin.cpp
+	core/plugins/PluginManager.cpp
+	core/reference/CloneHelper.cpp
+	core/reference/PropertyFieldDescriptor.cpp
+	core/reference/PropertyField.cpp
+	core/io/ObjectSaveStream.cpp
+	core/io/ObjectLoadStream.cpp
 	core/gui/app/Application.cpp
 	core/gui/mainwin/MainWindow.cpp
 	core/gui/mainwin/AnimationTimeSlider.cpp
@@ -46,8 +59,11 @@ SET(EXECUTABLE_OUTPUT_PATH ${OVITO_BINARY_DIRECTORY})
 # Builds the main executable of the application
 ADD_EXECUTABLE(${PROJECT_NAME} WIN32 MACOSX_BUNDLE ${OVITO_SOURCE_FILES} ${OVITO_RESOURCE_FILES} ${WINDOWS_RESOURCES})
 
+# Set name of executable.
+SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "ovito")
+
 # Link Qt5.
-QT5_USE_MODULES(${PROJECT_NAME} Widgets)
+QT5_USE_MODULES(${PROJECT_NAME} Widgets Xml)
 
 # This executable will be part of the installation package.
 INSTALL(TARGETS ${PROJECT_NAME} DESTINATION "${OVITO_RELATIVE_BINARY_DIRECTORY}")

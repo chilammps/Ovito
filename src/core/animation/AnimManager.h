@@ -31,12 +31,12 @@
 #if 0
 #include "AnimationSettings.h"
 #endif
+#include "TimeInterval.h"
 
 namespace Ovito {
 	
 class SpinnerWidget;		// defined in SpinnerWidget.h 
 
-#if 0
 /**
  * \brief Manages the global animation settings.
  */
@@ -53,10 +53,10 @@ public:
 		return *_instance.data();
 	}
 
-	/// \brief Returns whether animation is active and animation keys should be automatically generated. 
+	/// \brief Returns whether animation recording is active and animation keys should be automatically generated.
 	/// \return \c true if animating is currently turned on and not suspended; \c false otherwise.
 	/// 
-	/// When animating is turned on, controllers should automatically set keys when their values is changed.
+	/// When animating is turned on, controllers should automatically set keys when their value is changed.
 	bool isAnimating() const { return _animationMode && _animSuspendCount == 0; }
 	
 	/// \brief Returns whether animation mode has been activated.
@@ -85,11 +85,11 @@ public:
 		_animSuspendCount--; 
 	}
 
-	/// \brief Gets the current animation time.
+	/// \brief Returns the current animation time.
 	/// \return The current time.
 	/// 
 	/// The state of the scene at this time is shown in the viewports.
-	TimeTicks time() const { 
+	TimePoint time() const {
 		if(!_settings) return 0; 
 		return _settings->time(); 
 	}
@@ -99,7 +99,7 @@ public:
 	///
 	/// The state of the scene at the given time will be shown in the viewports.
 	/// \undoable
-	void setTime(TimeTicks time) { 
+	void setTime(TimePoint time) {
 		if(_settings) _settings->setTime(time); 
 	}
 
@@ -173,24 +173,24 @@ public:
 	
 	/// \brief Converts an animation frame number to a time value.
 	/// \param frame A frame number starting at 0.
-	/// \return The animation frame at which the animation frame begins.
-	TimeTicks frameToTime(int frame) const { return Core::frameToTime(frame, ticksPerFrame()); }
+	/// \return The animation time at which the animation frame begins.
+	TimePoint frameToTime(int frame) const { return frame * ticksPerFrame(); }
 	
 	/// \brief Converts a time value to an animation frame number.
 	/// \param time A time in ticks units.
 	/// \return The animation frame that corresponds to the given time.
-	int timeToFrame(TimeTicks time) const { return Core::timeToFrame(time, ticksPerFrame()); }
+	int timeToFrame(TimePoint time) const { return time / ticksPerFrame(); }
 
 	/// \brief Converts a time value to its string representation.
 	/// \param time Some time value.
 	/// \return A human-readable representation of the time value.
-	QString timeToString(TimeTicks time);
+	QString timeToString(TimePoint time);
 
 	/// \brief Converts a string to a time value.
 	/// \param stringValue The  human-readable representation of a time value.
 	/// \return The parsed time value.
 	/// \throw Exception when a parsing error occurs.
-	TimeTicks stringToTime(const QString& stringValue);
+	TimePoint stringToTime(const QString& stringValue);
 	
 	/// \brief Creates a spinner widget that lets the user control the current animation time.
 	/// \return A spinner control that can be inserted into a window. When the user changes the value of the
@@ -214,7 +214,7 @@ public Q_SLOTS:
 Q_SIGNALS:
 
 	/// This signal is emitted by the AnimManager when the current animation time has changed.
-	void timeChanged(TimeTicks newTime);
+	void timeChanged(TimePoint newTime);
 
 	/// This signal is emitted by the AnimManager when the animation interval has changed.
 	void intervalChanged(TimeInterval newAnimationInterval);
@@ -234,12 +234,9 @@ private:
 	int _animSuspendCount;
 
 	/// Points to the animation settings of the current DataSet.
-	AnimationSettings::SmartPtr _settings;
+	OORef<AnimationSettings> _settings;
 	
-	/// This is just a dummy object.
-	TimeInterval _nullInterval;
-	
-	/// Indicates whether animation mode is active.
+	/// Indicates whether animation recording mode is active.
 	bool _animationMode;
 
 private:
@@ -266,9 +263,6 @@ struct AnimationSuspender {
 	AnimationSuspender() { AnimManager::instance().suspendAnim(); }
 	~AnimationSuspender() { AnimManager::instance().resumeAnim(); }
 };
-
-#endif
-
 
 };
 

@@ -21,7 +21,7 @@
 
 /** 
  * \file AnimationSettings.h 
- * \brief Contains the definition of the Core::AnimationSettings class. 
+ * \brief Contains the definition of the Ovito::AnimationSettings class.
  */
  
 #ifndef __OVITO_ANIMATION_SETTINGS_H
@@ -31,7 +31,7 @@
 #include <core/reference/RefTarget.h>
 #include "TimeInterval.h"
 
-namespace Core {
+namespace Ovito {
 
 /**
  * \brief This class stores the animation settings for a scene.
@@ -41,18 +41,13 @@ namespace Core {
  * 
  * To access the animation settings of the current scene you can also use
  * the methods of AnimManager.
- * 
- * \author Alexander Stukowski
- * \sa AnimManager
  */
-class CORE_DLLEXPORT AnimationSettings : public RefTarget
+class AnimationSettings : public RefTarget
 {
 public:
 
 	/// \brief Default constructor that initializes the object with default values.
-	/// \param isLoading Indicates whether the object is being loaded from a file. 
-	///                  This parameter is only used by the object serialization system.
-	AnimationSettings(bool isLoading = false);
+	AnimationSettings();
 
 	/// \brief Gets the current animation time.
 	/// \return The current time.
@@ -154,8 +149,8 @@ protected:
 	
 private:
 
-	/// The current animation working time.
-    TimeTicks _time;
+	/// The current animation time.
+    TimePoint _time;
 
 	/// The start and end times of the animation.
 	TimeInterval _animationInterval;
@@ -173,7 +168,6 @@ private:
 	Q_OBJECT
 	DECLARE_SERIALIZABLE_PLUGIN_CLASS(AnimationSettings)
 };
-
 
 };
 

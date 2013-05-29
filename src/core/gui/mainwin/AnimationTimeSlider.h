@@ -39,22 +39,22 @@ public:
 protected:
 
 	/// Handles paint events.
-	virtual void paintEvent(QPaintEvent* event) override;
+	virtual void paintEvent(QPaintEvent* event) Q_DECL_OVERRIDE;
 	
 	/// Handles mouse down events.
-	virtual void mousePressEvent(QMouseEvent* event) override;
+	virtual void mousePressEvent(QMouseEvent* event) Q_DECL_OVERRIDE;
 
 	/// Handles mouse up events.
-	virtual void mouseReleaseEvent(QMouseEvent* event) override;
+	virtual void mouseReleaseEvent(QMouseEvent* event) Q_DECL_OVERRIDE;
 
 	/// Handles mouse move events.
-	virtual void mouseMoveEvent(QMouseEvent* event) override;
+	virtual void mouseMoveEvent(QMouseEvent* event) Q_DECL_OVERRIDE;
 	
 	/// Returns the recommended size of the widget.
-	virtual QSize sizeHint() const override;
+	virtual QSize sizeHint() const Q_DECL_OVERRIDE;
 
 	/// Returns the minimum size of the widget.
-	virtual QSize minimumSizeHint() const override { return sizeHint(); }
+	virtual QSize minimumSizeHint() const Q_DECL_OVERRIDE { return sizeHint(); }
 	
 private:
 

@@ -19,61 +19,47 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file Base.h
- * \brief This header file includes the standard system headers used by the basic classes.
- */
+#include <core/Core.h>
+#include <core/plugins/NativePlugin.h>
+#if 0
+#include <core/reference/NativePropertyFieldDescriptor.h>
+#endif
 
-#ifndef __OVITO_BASE_H
-#define __OVITO_BASE_H
-
-/******************************************************************************
-* Standard Template Library (STL)
-******************************************************************************/
-#include <iostream>
-#include <cmath>
-#include <type_traits>
-#include <stack>
-#include <vector>
-#include <map>
-#include <utility>
+namespace Ovito {
 
 /******************************************************************************
-* QT Library
+* Constructor for the NativePlugin class.
 ******************************************************************************/
-#include <QApplication>
-#include <QException>
-#include <QStringList>
-#include <QIcon>
-#include <QMessageBox>
-#include <QMainWindow>
-#include <QSettings>
-#include <QToolBar>
-#include <QStatusBar>
-#include <QStatusTipEvent>
-#include <QMenuBar>
-#include <QMenu>
-#include <QUndoStack>
-#include <QDesktopServices>
-#include <QUrl>
-#include <QFrame>
-#include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QStyleOptionMenuItem>
-#include <QDockWidget>
-#include <QLineEdit>
-#include <QPointer>
-#include <QStyle>
-#include <QStylePainter>
-#include <QDesktopWidget>
-#include <QDomDocument>
-#include <QFileInfo>
-#include <QResource>
-#include <QDir>
+NativePlugin::NativePlugin(const QString& manifestFile) :
+	Plugin(manifestFile), _infoBefore(NULL), _infoAfter(NULL)
+{
+}
 
-// Defines the number type used for numerical computations.
-#include "utilities/Debugging.h"
-#include "utilities/FloatType.h"
-#include "utilities/Exception.h"
 
-#endif // __OVITO_BASE_H
+/******************************************************************************
+* Parses a custom top-level element from the manifest that is specific to the plugin type.
+******************************************************************************/
+bool NativePlugin::parseToplevelManifestElement(const QDomElement& element)
+{
+	return true;
+}
+
+/******************************************************************************
+* Loads a native plugin's library.
+******************************************************************************/
+void NativePlugin::loadPluginImpl()
+{
+	_infoBefore = nullptr;
+	_infoAfter = NativeOvitoObjectType::_firstInfo;
+
+#if 0
+	// Resolve the property field descriptor classes.
+	Q_FOREACH(PluginClassDescriptor* descriptor, classes()) {
+		for(const PropertyFieldDescriptor* field = descriptor->firstPropertyField(); field; field = field->next()) {
+			((NativePropertyFieldDescriptor*)field)->resolveClassReferences();
+		}
+	}
+#endif
+}
+
+};

@@ -19,61 +19,45 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file Base.h
- * \brief This header file includes the standard system headers used by the basic classes.
- */
+#include <core/Core.h>
+#include "NativeOvitoObjectType.h"
+#include "OvitoObject.h"
+#if 0
+#include <core/reference/PropertyFieldDescriptor.h>
+#endif
+#include <core/gui/undo/UndoManager.h>
+#include <core/plugins/Plugin.h>
 
-#ifndef __OVITO_BASE_H
-#define __OVITO_BASE_H
+namespace Ovito {
 
-/******************************************************************************
-* Standard Template Library (STL)
-******************************************************************************/
-#include <iostream>
-#include <cmath>
-#include <type_traits>
-#include <stack>
-#include <vector>
-#include <map>
-#include <utility>
+NativeOvitoObjectType* NativeOvitoObjectType::_firstInfo = NULL;
 
 /******************************************************************************
-* QT Library
+* Creates an object of the appropriate kind.
+* Throws an exception if the containing plugin failed to load.
 ******************************************************************************/
-#include <QApplication>
-#include <QException>
-#include <QStringList>
-#include <QIcon>
-#include <QMessageBox>
-#include <QMainWindow>
-#include <QSettings>
-#include <QToolBar>
-#include <QStatusBar>
-#include <QStatusTipEvent>
-#include <QMenuBar>
-#include <QMenu>
-#include <QUndoStack>
-#include <QDesktopServices>
-#include <QUrl>
-#include <QFrame>
-#include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QStyleOptionMenuItem>
-#include <QDockWidget>
-#include <QLineEdit>
-#include <QPointer>
-#include <QStyle>
-#include <QStylePainter>
-#include <QDesktopWidget>
-#include <QDomDocument>
-#include <QFileInfo>
-#include <QResource>
-#include <QDir>
+OORef<OvitoObject> NativeOvitoObjectType::createInstanceImpl()
+{
+	UndoSuspender noUndo;
 
-// Defines the number type used for numerical computations.
-#include "utilities/Debugging.h"
-#include "utilities/FloatType.h"
-#include "utilities/Exception.h"
+	OvitoObject* obj = qobject_cast<OvitoObject*>(_qtClassInfo->newInstance());
+	if(!obj)
+		throw Exception(Plugin::tr("Cannot instantiate abstract class '%1'.").arg(name()));
 
-#endif // __OVITO_BASE_H
+	return obj;
+}
+
+/******************************************************************************
+* Searches for a property field defined in this class.
+******************************************************************************/
+const PropertyFieldDescriptor* NativeOvitoObjectType::findNativePropertyField(const char* identifier) const
+{
+#if 0
+	for(const PropertyFieldDescriptor* field = firstNativePropertyField(); field; field = field->next())
+		if(qstrcmp(field->identifier(), identifier) == 0) return field;
+#endif
+	return NULL;
+}
+
+
+};

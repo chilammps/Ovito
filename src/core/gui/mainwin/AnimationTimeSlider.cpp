@@ -20,6 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
+#include <core/animation/AnimManager.h>
 #include "AnimationTimeSlider.h"
 
 namespace Ovito {
@@ -35,10 +36,10 @@ AnimationTimeSlider::AnimationTimeSlider(QWidget* parent) :
 	setAutoFillBackground(true);
 
 	// Repaint slider if the current animation settings have changed.
-	//connect(&ANIM_MANAGER, SIGNAL(timeChanged(TimeTicks)), this, SLOT(repaint()));
-	//connect(&ANIM_MANAGER, SIGNAL(timeFormatChanged()), this, SLOT(update()));
-	//connect(&ANIM_MANAGER, SIGNAL(intervalChanged(TimeInterval)), this, SLOT(update()));
-	//connect(&ANIM_MANAGER, SIGNAL(animationModeChanged(bool)), this, SLOT(onAnimationModeChanged(bool)));
+	connect(&AnimManager::instance(), SIGNAL(timeChanged(TimeTicks)), SLOT(repaint()));
+	connect(&AnimManager::instance(), SIGNAL(timeFormatChanged()), SLOT(update()));
+	connect(&AnimManager::instance(), SIGNAL(intervalChanged(TimeInterval)), SLOT(update()));
+	connect(&AnimManager::instance(), SIGNAL(animationModeChanged(bool)), SLOT(onAnimationModeChanged(bool)));
 }
 
 /******************************************************************************
