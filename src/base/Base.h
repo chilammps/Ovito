@@ -35,6 +35,7 @@
 #include <cstdint>
 #include <type_traits>
 #include <stack>
+#include <array>
 #include <vector>
 #include <map>
 #include <utility>

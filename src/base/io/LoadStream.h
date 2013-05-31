@@ -27,7 +27,7 @@
 #ifndef __OVITO_LOADSTREAM_H
 #define __OVITO_LOADSTREAM_H
 
-#include <base/Base.h>  
+#include <base/Base.h>
 
 namespace Ovito {
 
