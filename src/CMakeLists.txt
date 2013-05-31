@@ -51,6 +51,7 @@ SET(OVITO_SOURCE_FILES
 	core/gui/undo/UndoManager.cpp
 	core/gui/widgets/SpinnerWidget.cpp
 	core/utilities/units/UnitsManager.cpp
+	core/viewport/ViewportSettings.cpp
 	main/Main.cpp
 )
 

@@ -26,6 +26,8 @@
 * The Base module is required by the Core module.
 ******************************************************************************/
 #include <base/Base.h>
+#include <base/linalg/LinAlg.h>
+#include <base/utilities/Color.h>
 
 /******************************************************************************
 * Include some basic headers.
