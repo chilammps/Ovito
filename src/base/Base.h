@@ -72,6 +72,8 @@
 #include <QFileInfo>
 #include <QResource>
 #include <QDir>
+#include <QFileDialog>
+#include <QtDebug>
 
 // Defines the number type used for numerical computations.
 #include "utilities/Debugging.h"

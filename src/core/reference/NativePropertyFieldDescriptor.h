@@ -76,83 +76,83 @@ public:
 
 /***************** Macros to define reference fields in RefMaker-derived classes. ********************/
 
-#define DECLARE_REFERENCE_FIELD(storageFieldName)		\
-	public: 											\
-		static Ovito::SingleReferenceFieldBase& __access_reffield_##storageFieldName(RefMaker* obj);	\
-		static Ovito::NativePropertyFieldDescriptor __propFieldInstance##storageFieldName;					\
+#define PROPERTY_FIELD(RefMakerClassPlusStorageFieldName) \
+		RefMakerClassPlusStorageFieldName##__propFieldInstance
+
+#define DECLARE_REFERENCE_FIELD(storageFieldName)																	\
+	public: 																										\
+		static Ovito::SingleReferenceFieldBase& storageFieldName##__access_reffield(RefMaker* obj);					\
+		static Ovito::NativePropertyFieldDescriptor storageFieldName##__propFieldInstance;							\
 	private:
 
-#define DEFINE_FLAGS_REFERENCE_FIELD(RefMakerClass, TargetClass, UniqueFieldIdentifier, Flags, storageFieldName)	\
-	Ovito::SingleReferenceFieldBase& RefMakerClass::__access_reffield_##storageFieldName(RefMaker* obj) {			\
-		return static_cast<RefMakerClass*>(obj)->storageFieldName;											\
-	}																										\
-	Ovito::NativePropertyFieldDescriptor RefMakerClass::__propFieldInstance##storageFieldName(							\
-		&RefMakerClass::OOType, &TargetClass::OOType, 								\
-		UniqueFieldIdentifier, Flags, RefMakerClass::__access_reffield_##storageFieldName 					\
+#define DEFINE_FLAGS_REFERENCE_FIELD(RefMakerClass, storageFieldName, UniqueFieldIdentifier, TargetClass, Flags)	\
+	Ovito::SingleReferenceFieldBase& RefMakerClass::storageFieldName##__access_reffield(RefMaker* obj) {			\
+		return static_cast<RefMakerClass*>(obj)->storageFieldName;													\
+	}																												\
+	Ovito::NativePropertyFieldDescriptor RefMakerClass::storageFieldName##__propFieldInstance(						\
+		&RefMakerClass::OOType, &TargetClass::OOType, 																\
+		UniqueFieldIdentifier, Flags, RefMakerClass::storageFieldName##__access_reffield		 					\
 	);
 
-#define DEFINE_REFERENCE_FIELD(RefMakerClass, TargetClass, UniqueFieldIdentifier, storageFieldName)	\
-	DEFINE_FLAGS_REFERENCE_FIELD(RefMakerClass, TargetClass, UniqueFieldIdentifier, PROPERTY_FIELD_NO_FLAGS, storageFieldName)
+#define DEFINE_REFERENCE_FIELD(RefMakerClass, storageFieldName, UniqueFieldIdentifier, TargetClass)	\
+	DEFINE_FLAGS_REFERENCE_FIELD(RefMakerClass, storageFieldName, UniqueFieldIdentifier, TargetClass, PROPERTY_FIELD_NO_FLAGS)
 
 #define DECLARE_VECTOR_REFERENCE_FIELD(storageFieldName)\
 	public: 											\
-		static Ovito::VectorReferenceFieldBase& __access_reffield_##storageFieldName(RefMaker* obj);	\
-		static Ovito::NativePropertyFieldDescriptor __propFieldInstance##storageFieldName;					\
+		static Ovito::VectorReferenceFieldBase& storageFieldName##__access_reffield(RefMaker* obj);					\
+		static Ovito::NativePropertyFieldDescriptor storageFieldName##__propFieldInstance;							\
 	private:
 
-#define DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(RefMakerClass, TargetClass, UniqueFieldIdentifier, Flags, storageFieldName)	\
-	Ovito::VectorReferenceFieldBase& RefMakerClass::__access_reffield_##storageFieldName(RefMaker* obj) {			\
+#define DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(RefMakerClass, storageFieldName, UniqueFieldIdentifier, TargetClass, Flags)	\
+	Ovito::VectorReferenceFieldBase& RefMakerClass::storageFieldName##__access_reffield(RefMaker* obj) {			\
+		return static_cast<RefMakerClass*>(obj)->storageFieldName;													\
+	}																												\
+	Ovito::NativePropertyFieldDescriptor RefMakerClass::storageFieldName##__propFieldInstance(						\
+		&RefMakerClass::OOType, &TargetClass::OOType, 																\
+		UniqueFieldIdentifier, Flags | PROPERTY_FIELD_VECTOR, RefMakerClass::storageFieldName##__access_reffield 	\
+	);
+
+#define DEFINE_VECTOR_REFERENCE_FIELD(RefMakerClass, storageFieldName, UniqueFieldIdentifier, TargetClass)	\
+	DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(RefMakerClass, storageFieldName, UniqueFieldIdentifier, TargetClass, PROPERTY_FIELD_VECTOR)
+
+#define INIT_PROPERTY_FIELD(RefMakerClassPlusStorageFieldName)														\
+	RefMakerClassPlusStorageFieldName.init(this, &PROPERTY_FIELD(RefMakerClassPlusStorageFieldName));
+
+#define SET_PROPERTY_FIELD_UNITS(RefMakerClass, storageFieldName, ParameterUnitClass)								\
+	static Ovito::NativePropertyFieldDescriptor::PropertyFieldUnitsSetter __unitsSetter##RefMakerClass##storageFieldName(RefMakerClass::storageFieldName##__propFieldInstance, &ParameterUnitClass::OOType);
+
+#define SET_PROPERTY_FIELD_LABEL(RefMakerClass, storageFieldName, labelText)										\
+	static Ovito::NativePropertyFieldDescriptor::PropertyFieldDisplayNameSetter __displayNameSetter##RefMakerClass##storageFieldName(RefMakerClass::storageFieldName##__propFieldInstance, labelText);
+
+#define DECLARE_PROPERTY_FIELD(storageFieldName)																	\
+	public: 																										\
+		static QVariant __read_propfield_##storageFieldName(Ovito::RefMaker* obj);									\
+		static void __write_propfield_##storageFieldName(Ovito::RefMaker* obj, const QVariant& newValue);			\
+		static void __save_propfield_##storageFieldName(Ovito::RefMaker* obj, Ovito::SaveStream& stream);			\
+		static void __load_propfield_##storageFieldName(Ovito::RefMaker* obj, Ovito::LoadStream& stream);			\
+		static Ovito::NativePropertyFieldDescriptor storageFieldName##__propFieldInstance;							\
+	private:
+
+#define DEFINE_FLAGS_PROPERTY_FIELD(RefMakerClass, storageFieldName, UniqueFieldIdentifier, Flags)			\
+	QVariant RefMakerClass::__read_propfield_##storageFieldName(RefMaker* obj) {							\
 		return static_cast<RefMakerClass*>(obj)->storageFieldName;											\
 	}																										\
-	Ovito::NativePropertyFieldDescriptor RefMakerClass::__propFieldInstance##storageFieldName(							\
-		&RefMakerClass::OOType, &TargetClass::OOType, 										\
-		UniqueFieldIdentifier, Flags | PROPERTY_FIELD_VECTOR, RefMakerClass::__access_reffield_##storageFieldName 	\
-	);
-
-#define DEFINE_VECTOR_REFERENCE_FIELD(RefMakerClass, TargetClass, UniqueFieldIdentifier, storageFieldName)	\
-	DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(RefMakerClass, TargetClass, UniqueFieldIdentifier, PROPERTY_FIELD_VECTOR, storageFieldName)
-
-#define PROPERTY_FIELD_DESCRIPTOR(RefMakerClass, storageFieldName) \
-	RefMakerClass::__propFieldInstance##storageFieldName
-
-#define INIT_PROPERTY_FIELD(RefMakerClass, storageFieldName)		\
-	storageFieldName.init(this, &PROPERTY_FIELD_DESCRIPTOR(RefMakerClass, storageFieldName));
-
-#define SET_PROPERTY_FIELD_UNITS(RefMakerClass, storageFieldName, ParameterUnitClass)		\
-	static Ovito::NativePropertyFieldDescriptor::PropertyFieldUnitsSetter __unitsSetter##RefMakerClass##storageFieldName(PROPERTY_FIELD_DESCRIPTOR(RefMakerClass, storageFieldName), &ParameterUnitClass::OOType);
-
-#define SET_PROPERTY_FIELD_LABEL(RefMakerClass, storageFieldName, labelText)		\
-	static Ovito::NativePropertyFieldDescriptor::PropertyFieldDisplayNameSetter __displayNameSetter##RefMakerClass##storageFieldName(PROPERTY_FIELD_DESCRIPTOR(RefMakerClass, storageFieldName), labelText);
-
-#define DECLARE_PROPERTY_FIELD(storageFieldName)		\
-	public: 											\
-		static QVariant __read_propfield_##storageFieldName(Ovito::RefMaker* obj);					\
-		static void __write_propfield_##storageFieldName(Ovito::RefMaker* obj, const QVariant& newValue);	\
-		static void __save_propfield_##storageFieldName(Ovito::RefMaker* obj, Ovito::SaveStream& stream);	\
-		static void __load_propfield_##storageFieldName(Ovito::RefMaker* obj, Ovito::LoadStream& stream);	\
-		static Ovito::NativePropertyFieldDescriptor __propFieldInstance##storageFieldName;					\
-	private:
-
-#define DEFINE_FLAGS_PROPERTY_FIELD(RefMakerClass, storageFieldName, UniqueFieldIdentifier, Flags)	\
-	QVariant RefMakerClass::__read_propfield_##storageFieldName(RefMaker* obj) {			\
-		return static_cast<RefMakerClass*>(obj)->storageFieldName;	\
-	}																										\
-	void RefMakerClass::__write_propfield_##storageFieldName(RefMaker* obj, const QVariant& newValue) {			\
-		static_cast<RefMakerClass*>(obj)->storageFieldName = newValue;	\
+	void RefMakerClass::__write_propfield_##storageFieldName(RefMaker* obj, const QVariant& newValue) {		\
+		static_cast<RefMakerClass*>(obj)->storageFieldName = newValue;										\
 	}																										\
 	void RefMakerClass::__save_propfield_##storageFieldName(RefMaker* obj, SaveStream& stream) {			\
-		static_cast<RefMakerClass*>(obj)->storageFieldName.saveToStream(stream);	\
+		static_cast<RefMakerClass*>(obj)->storageFieldName.saveToStream(stream);							\
 	}																										\
 	void RefMakerClass::__load_propfield_##storageFieldName(RefMaker* obj, LoadStream& stream) {			\
-		static_cast<RefMakerClass*>(obj)->storageFieldName.loadFromStream(stream);	\
+		static_cast<RefMakerClass*>(obj)->storageFieldName.loadFromStream(stream);							\
 	}																										\
-	Ovito::NativePropertyFieldDescriptor RefMakerClass::__propFieldInstance##storageFieldName(							\
-		&RefMakerClass::OOType, 									 								\
+	Ovito::NativePropertyFieldDescriptor RefMakerClass::storageFieldName##__propFieldInstance(				\
+		&RefMakerClass::OOType, 									 										\
 		UniqueFieldIdentifier, Flags, __read_propfield_##storageFieldName, 	__write_propfield_##storageFieldName,	\
-		__save_propfield_##storageFieldName, __load_propfield_##storageFieldName \
+		__save_propfield_##storageFieldName, __load_propfield_##storageFieldName 							\
 	);
 
-#define DEFINE_PROPERTY_FIELD(RefMakerClass, storageFieldName, UniqueFieldIdentifier)	\
+#define DEFINE_PROPERTY_FIELD(RefMakerClass, storageFieldName, UniqueFieldIdentifier)						\
 	DEFINE_FLAGS_PROPERTY_FIELD(RefMakerClass, storageFieldName, UniqueFieldIdentifier, PROPERTY_FIELD_NO_FLAGS)
 
 };

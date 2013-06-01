@@ -118,6 +118,9 @@ protected:
 	/// \throw Exception on loading error.
 	virtual void loadPluginImpl() = 0;
 
+	/// \brief Adds a class to the list of plugin classes.
+	void registerClass(OvitoObjectType* clazz) { _classes.push_back(clazz); }
+
 private:
 
 	/// \brief Parse the XML document containing the manifest.
@@ -170,7 +173,6 @@ private:
 	bool _isManifestParsed;
 
 	friend class PluginManager;
-	friend class PluginClassDescriptor;
 };
 
 };

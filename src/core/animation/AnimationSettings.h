@@ -47,7 +47,7 @@ class AnimationSettings : public RefTarget
 public:
 
 	/// \brief Default constructor that initializes the object with default values.
-	AnimationSettings();
+	Q_INVOKABLE AnimationSettings();
 
 	/// \brief Gets the current animation time.
 	/// \return The current time.

@@ -35,6 +35,7 @@ QScopedPointer<ActionManager> ActionManager::_instance;
 ActionManager::ActionManager()
 {
 	createAction(ACTION_QUIT, tr("Exit"), ":/core/actions/file/file_quit.png", tr("Quit the application."), QKeySequence::Quit);
+	createAction(ACTION_FILE_NEW, tr("New Scene"), ":/core/actions/file/file_new.png", tr("Resets the scene."), QKeySequence::New);
 	createAction(ACTION_FILE_OPEN, tr("Open Scene"), ":/core/actions/file/file_open.png", tr("Open a saved scene from a file."), QKeySequence::Open);
 	createAction(ACTION_FILE_SAVE, tr("Save Scene"), ":/core/actions/file/file_save.png", tr("Save the current scene to a file."), QKeySequence::Save);
 	createAction(ACTION_FILE_SAVEAS, tr("Save Scene As"), ":/core/actions/file/file_save_as.png", tr("Save the current scene to a new file."), QKeySequence::SaveAs);

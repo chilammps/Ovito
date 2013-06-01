@@ -75,10 +75,10 @@ public:
 		OVITO_ASSERT(!_flags.testFlag(PROPERTY_FIELD_VECTOR));
 		OVITO_ASSERT(definingClass != NULL);
 		// Make sure that there is no other reference field with the same identifier in the defining class.
-		OVITO_ASSERT_MSG(definingClass->findNativePropertyField(identifier) == NULL, "NativePropertyFieldDescriptor", "Property field identifier is not unique.");
+		OVITO_ASSERT_MSG(definingClass->findPropertyField(identifier) == NULL, "PropertyFieldDescriptor", "Property field identifier is not unique.");
 		// Insert into linked list of reference fields stored in the defining class' descriptor.
-		this->_next = definingClass->_firstNativePropertyField;
-		const_cast<NativeOvitoObjectType*>(definingClass)->_firstNativePropertyField = this;
+		this->_next = definingClass->_firstPropertyField;
+		const_cast<NativeOvitoObjectType*>(definingClass)->_firstPropertyField = this;
 	}
 
 	/// Constructor	for a property field that stores a single reference to a RefTarget.
@@ -91,10 +91,10 @@ public:
 		OVITO_ASSERT(definingClass != NULL);
 		OVITO_ASSERT(targetClass != NULL);
 		// Make sure that there is no other reference field with the same identifier in the defining class.
-		OVITO_ASSERT_MSG(definingClass->findNativePropertyField(identifier) == NULL, "NativePropertyFieldDescriptor", "Property field identifier is not unique.");
+		OVITO_ASSERT_MSG(definingClass->findPropertyField(identifier) == NULL, "PropertyFieldDescriptor", "Property field identifier is not unique.");
 		// Insert into linked list of reference fields stored in the defining class' descriptor.
-		this->_next = definingClass->_firstNativePropertyField;
-		const_cast<NativeOvitoObjectType*>(definingClass)->_firstNativePropertyField = this;
+		this->_next = definingClass->_firstPropertyField;
+		const_cast<NativeOvitoObjectType*>(definingClass)->_firstPropertyField = this;
 	}
 
 	/// Constructor	for a property field that stores a vector of references to RefTarget objects.
@@ -107,10 +107,10 @@ public:
 		OVITO_ASSERT(definingClass != NULL);
 		OVITO_ASSERT(targetClass != NULL);
 		// Make sure that there is no other reference field with the same identifier in the defining class.
-		OVITO_ASSERT_MSG(definingClass->findNativePropertyField(identifier) == NULL, "NativePropertyFieldDescriptor", "Property field identifier is not unique.");
+		OVITO_ASSERT_MSG(definingClass->findPropertyField(identifier) == NULL, "PropertyFieldDescriptor", "Property field identifier is not unique.");
 		// Insert into linked list of reference fields stored in the defining class' descriptor.
-		this->_next = definingClass->_firstNativePropertyField;
-		const_cast<NativeOvitoObjectType*>(definingClass)->_firstNativePropertyField = this;
+		this->_next = definingClass->_firstPropertyField;
+		const_cast<NativeOvitoObjectType*>(definingClass)->_firstPropertyField = this;
 	}
 
 	/// Returns the unique identifier of the reference field.
@@ -140,7 +140,7 @@ public:
 	QString displayName() const;
 
 	/// Returns the next property field in the linked list (of the RefMaker derived class defining this property field).
-	PropertyFieldDescriptor* next() const { return _next; }
+	const PropertyFieldDescriptor* next() const { return _next; }
 
 	/// If this reference field contains a reference to a controller than
 	/// this method returns the unit that is associated with the controller.
@@ -169,7 +169,7 @@ protected:
 	const OvitoObjectType* _definingClassDescriptor;
 
 	/// The next property field in the linked list (of the RefMaker derived class defining this property field).
-	PropertyFieldDescriptor* _next;
+	const PropertyFieldDescriptor* _next;
 
 	/// The flags that control the behavior of the property field.
 	PropertyFieldFlags _flags;

@@ -161,6 +161,10 @@ private Q_SLOTS:
 	void on_Quit_triggered();
 	void on_HelpAbout_triggered();
 	void on_HelpShowOnlineHelp_triggered();
+	void on_FileNew_triggered();
+	void on_FileOpen_triggered();
+	void on_FileSave_triggered();
+	void on_FileSaveAs_triggered();
 
 private:
 

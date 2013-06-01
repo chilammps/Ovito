@@ -32,28 +32,16 @@
 
 namespace Ovito {
 
-/// The descriptor object for the root class of Ovito's object system.
-/// This class is named "OvitoObject".
-const OvitoObjectType& OvitoObjectType::_rootClass = OvitoObject::OOType;
-
 /******************************************************************************
 * Constructor of the object.
 ******************************************************************************/
 OvitoObjectType::OvitoObjectType(const QString& name, const OvitoObjectType* superClass, bool isAbstract, bool isSerializable) :
 	_name(name), _plugin(nullptr), _isAbstract(isAbstract), _superClass(superClass),
-	_isSerializable(isSerializable), _firstChild(NULL), _firstPropertyField(NULL)
+	_isSerializable(isSerializable), _firstPropertyField(NULL)
 {
 	OVITO_ASSERT(superClass != NULL || name == "OvitoObject");
 
-	// Insert this object type into the global list of classes.
-	_next = _rootClass._next;
-	const_cast<OvitoObjectType&>(_rootClass)._next = this;
-
 	if(superClass) {
-		// Insert into linked list of base class.
-		_nextSibling = superClass->_firstChild;
-		const_cast<OvitoObjectType*>(superClass)->_firstChild = this;
-
 		// Inherit serializable attribute.
 		if(!superClass->isSerializable())
 			_isSerializable = false;
@@ -66,15 +54,16 @@ OvitoObjectType::OvitoObjectType(const QString& name, const OvitoObjectType* sup
 ******************************************************************************/
 OORef<OvitoObject> OvitoObjectType::createInstance() const
 {
-	OVITO_CHECK_POINTER(plugin());
-
-	if(!plugin()->isLoaded()) {
-		// Load plugin first.
-		try {
-			plugin()->loadPlugin();
-		}
-		catch(Exception& ex) {
-			throw ex.prependGeneralMessage(Plugin::tr("Could not create instance of class %1. Failed to load plugin '%2'").arg(name()).arg(plugin()->pluginId()));
+	if(plugin()) {
+		OVITO_CHECK_POINTER(plugin());
+		if(!plugin()->isLoaded()) {
+			// Load plugin first.
+			try {
+				plugin()->loadPlugin();
+			}
+			catch(Exception& ex) {
+				throw ex.prependGeneralMessage(Plugin::tr("Could not create instance of class %1. Failed to load plugin '%2'").arg(name()).arg(plugin()->pluginId()));
+			}
 		}
 	}
 	if(isAbstract())

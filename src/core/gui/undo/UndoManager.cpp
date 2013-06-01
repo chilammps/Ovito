@@ -31,7 +31,7 @@ QScopedPointer<UndoManager> UndoManager::_instance;
 /******************************************************************************
 * Initializes the undo manager.
 ******************************************************************************/
-UndoManager::UndoManager() : _suspendCount(0), _isUndoing(false), _isRedoing(false)
+UndoManager::UndoManager() : _isRecording(false), _suspendCount(0), _isUndoing(false), _isRedoing(false)
 {
 }
 
@@ -41,13 +41,9 @@ UndoManager::UndoManager() : _suspendCount(0), _isUndoing(false), _isRedoing(fal
 ******************************************************************************/
 void UndoManager::push(QUndoCommand* operation)
 {
+	OVITO_ASSERT_MSG(isRecording(), "UndoManager::push", "Undo recording is not active.");
 	OVITO_ASSERT_MSG(isUndoingOrRedoing() == false, "UndoManager::addOperation()", "Cannot record an operation while undoing or redoing another operation.");
-	if(_suspendCount > 0) {
-		delete operation;
-	}
-	else {
-		QUndoStack::push(operation);
-	}
+	QUndoStack::push(operation);
 }
 
 /******************************************************************************
@@ -68,7 +64,7 @@ void UndoManager::undo()
 }
 
 /******************************************************************************
-* Redoes the last undone operation in the undo stack.
+* Re-does the last undone operation in the undo stack.
 ******************************************************************************/
 void UndoManager::redo()
 {
@@ -83,15 +79,5 @@ void UndoManager::redo()
 	catch(...) {}
 	_isRedoing = false;
 }
-
-#if 0
-/******************************************************************************
-* Provides a localized, human readable description of this operation. 
-******************************************************************************/
-QString SimplePropertyChangeOperation::displayName() const 
-{ 
-	return UndoManager::tr("Change %1").arg(propertyName); 
-}
-#endif
 
 };

@@ -22,6 +22,7 @@
 #include <core/Core.h>
 #include <core/gui/actions/ActionManager.h>
 #include <core/gui/mainwin/MainWindow.h>
+#include <core/dataset/DataSetManager.h>
 
 namespace Ovito {
 
@@ -69,6 +70,63 @@ void ActionManager::on_HelpShowOnlineHelp_triggered()
 	if(!QDesktopServices::openUrl(QUrl(fullURL))) {
 		Exception(tr("Could not launch web browser to display online manual. The requested URL is %1").arg(fullURL)).showError();
 	}
+}
+
+/******************************************************************************
+* Handles ACTION_FILE_NEW command.
+******************************************************************************/
+void ActionManager::on_FileNew_triggered()
+{
+	if(DataSetManager::instance().askForSaveChanges()) {
+		OORef<DataSet> newSet(new DataSet());
+		DataSetManager::instance().setCurrentSet(newSet);
+	}
+}
+
+/******************************************************************************
+* Handles ACTION_FILE_OPEN command.
+******************************************************************************/
+void ActionManager::on_FileOpen_triggered()
+{
+	if(!DataSetManager::instance().askForSaveChanges())
+		return;
+
+	QSettings settings;
+	settings.beginGroup("file/scene");
+
+	// Go the last directory used.
+	QString defaultPath;
+	OORef<DataSet> dataSet = DataSetManager::instance().currentSet();
+	if(dataSet == NULL || dataSet->filePath().isEmpty())
+		defaultPath = settings.value("last_directory").toString();
+	else
+		defaultPath = dataSet->filePath();
+
+	QString filename = QFileDialog::getOpenFileName(&MainWindow::instance(), tr("Load Scene"),
+			defaultPath, tr("Scene Files (*.ovito);;All Files (*)"));
+    if(filename.isEmpty())
+		return;
+
+	// Remember directory for the next time...
+	settings.setValue("last_directory", QFileInfo(filename).absolutePath());
+
+	DataSetManager::instance().fileLoad(filename);
+}
+
+/******************************************************************************
+* Handles ACTION_FILE_SAVE command.
+******************************************************************************/
+void ActionManager::on_FileSave_triggered()
+{
+	DataSetManager::instance().fileSave();
+}
+
+/******************************************************************************
+* Handles ACTION_FILE_SAVEAS command.
+******************************************************************************/
+void ActionManager::on_FileSaveAs_triggered()
+{
+	DataSetManager::instance().fileSaveAs();
 }
 
 };

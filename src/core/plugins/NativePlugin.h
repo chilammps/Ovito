@@ -34,8 +34,6 @@ namespace Ovito {
 
 /**
  * \brief A plugin that is implemented as a native shared library.
- *
- * \author Alexander Stukowski
  */
 class NativePlugin : public Plugin
 {
@@ -57,14 +55,6 @@ protected:
 	/// \brief Loads the plugin's dynamic link library.
 	/// \throw Exception on error.
 	virtual void loadPluginImpl();
-
-private:
-
-	/// A pointer into the linked list of plugin classes.
-	NativeOvitoObjectType* _infoBefore;
-
-	/// A pointer into the linked list of plugin classes.
-	NativeOvitoObjectType* _infoAfter;
 
 	friend class PluginManager;
 };

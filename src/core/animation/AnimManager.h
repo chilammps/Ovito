@@ -43,7 +43,7 @@ class AnimManager : public QObject
 public:
 
 	/// \brief Returns the one and only instance of this class.
-	/// \return The predefined instance of the ActionManager singleton class.
+	/// \return The predefined instance of the AnimManager singleton class.
 	inline static AnimManager& instance() {
 		if(!_instance) _instance.reset(new AnimManager());
 		return *_instance.data();

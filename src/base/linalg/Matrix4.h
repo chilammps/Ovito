@@ -93,11 +93,11 @@ public:
 
 	/// \brief Initializes the matrix to the null matrix.
 	/// All matrix elements are set to zero by this constructor.
-	explicit constexpr Matrix_4(Zero) : _m{Vector_4<T>::Zero(), Vector_4<T>::Zero(), Vector_4<T>::Zero(), Vector_4<T>::Zero()} {}
+	constexpr Matrix_4(Zero) : _m{Vector_4<T>::Zero(), Vector_4<T>::Zero(), Vector_4<T>::Zero(), Vector_4<T>::Zero()} {}
 
 	/// \brief Initializes the matrix to the identity matrix.
 	/// All diagonal elements are set to one and all off-diagonal elements are set to zero.
-	explicit constexpr Matrix_4(Identity) : _m{
+	constexpr Matrix_4(Identity) : _m{
 		Vector_4<T>(T(1),T(0),T(0),T(0)),
 		Vector_4<T>(T(0),T(1),T(0),T(0)),
 		Vector_4<T>(T(0),T(0),T(1),T(0)),

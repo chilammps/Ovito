@@ -68,29 +68,35 @@ public:
 	constexpr Matrix_34(T m11, T m12, T m13,
 					    T m21, T m22, T m23,
 					    T m31, T m32, T m33) :
-		_m{{m11,m21,m31},{m12,m22,m32},{m13,m23,m33},Vector_3<T>::Zero()} {}
+		_m{Vector_3<T>(m11,m21,m31),
+			Vector_3<T>(m12,m22,m32),
+			Vector_3<T>(m13,m23,m33),
+			Vector_3<T>::Zero()} {}
 
 	/// \brief Constructor that initializes all elements of the matrix to the given values.
 	/// \note Values are given in row-major order, i.e. row by row.
 	constexpr Matrix_34(T m11, T m12, T m13, T m14,
 					    T m21, T m22, T m23, T m24,
 					    T m31, T m32, T m33, T m34) :
-		_m{{m11,m21,m31},{m12,m22,m32},{m13,m23,m33},{m14,m24,m34}} {}
+		_m{Vector_3<T>(m11,m21,m31),
+			Vector_3<T>(m12,m22,m32),
+			Vector_3<T>(m13,m23,m33),
+			Vector_3<T>(m14,m24,m34)} {}
 
 	/// \brief Constructor that initializes the matrix from four column vectors.
 	constexpr Matrix_34(const Vector_3<T>& c1, const Vector_3<T>& c2, const Vector_3<T>& c3, const Vector_3<T>& c4) : _m{c1, c2, c3, c4} {}
 
 	/// \brief Initializes the matrix to the null matrix.
 	/// All matrix elements are set to zero by this constructor.
-	explicit constexpr Matrix_34(Zero) : _m{Vector_3<T>::Zero(), Vector_3<T>::Zero(), Vector_3<T>::Zero(), Vector_3<T>::Zero()} {}
+	constexpr Matrix_34(Zero) : _m{Vector_3<T>::Zero(), Vector_3<T>::Zero(), Vector_3<T>::Zero(), Vector_3<T>::Zero()} {}
 
 	/// \brief Initializes the matrix to the identity matrix.
 	/// All diagonal elements are set to one and all off-diagonal elements are set to zero.
-	explicit constexpr Matrix_34(Identity) : _m{
-		{T(1),T(0),T(0)},
-		{T(0),T(1),T(0)},
-		{T(0),T(0),T(1)},
-		{T(0),T(0),T(0)}} {}
+	constexpr Matrix_34(Identity) : _m{
+		Vector_3<T>(T(1),T(0),T(0)),
+		Vector_3<T>(T(0),T(1),T(0)),
+		Vector_3<T>(T(0),T(0),T(1)),
+		Vector_3<T>(T(0),T(0),T(0))} {}
 
 	/// \brief Initializes the 3x4 matrix from a 3x3 matrix.
 	/// The translation component of the affine transformation is set to the null vector.
@@ -171,7 +177,37 @@ public:
 		return setIdentity();
 	}
 
+	/// \brief Returns a pointer to the first element of the matrix.
+	/// \return A pointer to 12 matrix elements in column-major order.
+	/// \sa constData()
+	T* data() {
+        OVITO_STATIC_ASSERT(sizeof(_m) == sizeof(T) * col_count() * row_count());
+		return reinterpret_cast<T*>(&_m);
+	}
+
+	/// \brief Returns a pointer to the first element of the matrix.
+	/// \return A pointer to 12 matrix elements in column-major order.
+	/// \sa data()
+	const T* constData() const {
+        OVITO_STATIC_ASSERT(sizeof(_m) == sizeof(T) * col_count() * row_count());
+		return reinterpret_cast<const T*>(&_m);
+	}
+
 	////////////////////////////////// Comparison ///////////////////////////////////
+
+	/// \brief Compares two matrices for exact equality.
+	/// \return true if all elements are equal; false otherwise.
+	constexpr bool operator==(const Matrix_34& b) const {
+		return (b._m[0] == _m[0]) && (b._m[1] == _m[1]) && (b._m[2] == _m[2]) && (b._m[3] == _m[3]);
+	}
+
+	/// \brief Compares two matrices for inequality.
+	/// \return true if not all elements are equal; false if all are equal.
+	constexpr bool operator!=(const Matrix_34& b) const {
+		return (b._m[0] != _m[0]) || (b._m[1] != _m[1]) || (b._m[2] != _m[2]) || (b._m[3] != _m[3]);
+	}
+
+	////////////////////////////////// Computations ///////////////////////////////////
 
 	/// \brief Computes the determinant of the matrix.
 	constexpr inline T determinant() const {
@@ -205,21 +241,7 @@ public:
 		return inv;
 	}
 
-	/// \brief Returns a pointer to the first element of the matrix.
-	/// \return A pointer to 12 matrix elements in column-major order.
-	/// \sa constData() 
-	T* data() {
-        OVITO_STATIC_ASSERT(sizeof(_m) == sizeof(T) * col_count() * row_count());
-		return reinterpret_cast<T*>(&_m);
-	}
-
-	/// \brief Returns a pointer to the first element of the matrix.
-	/// \return A pointer to 12 matrix elements in column-major order.
-	/// \sa data() 
-	const T* constData() const {
-        OVITO_STATIC_ASSERT(sizeof(_m) == sizeof(T) * col_count() * row_count());
-		return reinterpret_cast<const T*>(&_m);
-	}
+	////////////////////////////////// Generation ///////////////////////////////////
 	
 	/// \brief Generates a matrix describing a rotation around the X axis.
 	/// \param angle The rotation angle in radians.
@@ -333,7 +355,7 @@ inline Matrix_34<T> Matrix_34<T>::rotation(const RotationT<T>& rot)
 	OVITO_ASSERT_MSG(std::abs(a.squaredLength() - T(1)) <= T(FLOATTYPE_EPSILON), "AffineTransformation::rotation", "Rotation axis vector must be normalized.");
 
 	// Make sure the result is a pure rotation matrix.
-#ifdef _DEBUG
+#ifdef OVITO_DEBUG
 	Matrix_34<T> tm(	t * a.x() * a.x() + c,       t * a.x() * a.y() - s * a.z(), t * a.x() * a.z() + s * a.y(), 0.0,
 						t * a.x() * a.y() + s * a.z(), t * a.y() * a.y() + c,       t * a.y() * a.z() - s * a.x(), 0.0,
 						t * a.x() * a.z() - s * a.y(), t * a.y() * a.z() + s * a.x(), t * a.z() * a.z() + c      , 0.0);
@@ -349,7 +371,7 @@ inline Matrix_34<T> Matrix_34<T>::rotation(const RotationT<T>& rot)
 template<typename T>
 inline Matrix_34<T> Matrix_34<T>::rotation(const QuaternionT<T>& q)
 {
-#ifdef _DEBUG
+#ifdef OVITO_DEBUG
 	if(std::abs(q.dot(q) - T(1)) > T(FLOATTYPE_EPSILON))
 		OVITO_ASSERT_MSG(false, "AffineTransformation::rotation(const Quaternion&)", "Quaternion must be normalized.");
 
@@ -488,7 +510,7 @@ template<typename T>
 inline SaveStream& operator<<(SaveStream& stream, const Matrix_34<T>& m)
 {
 	for(typename Matrix_34<T>::size_type col = 0; col < m.col_count(); col++)
-		stream << m.col(col);
+		stream << m.column(col);
 	return stream;
 }
 
@@ -497,7 +519,7 @@ template<typename T>
 inline LoadStream& operator>>(LoadStream& stream, Matrix_34<T>& m)
 {
 	for(typename Matrix_34<T>::size_type col = 0; col < m.col_count(); col++)
-		stream >> m.col(col);
+		stream >> m.column(col);
 	return stream;
 }
 

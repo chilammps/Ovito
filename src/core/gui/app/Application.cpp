@@ -22,6 +22,9 @@
 #include <core/Core.h>
 #include <core/gui/app/Application.h>
 #include <core/gui/mainwin/MainWindow.h>
+#include <core/dataset/DataSetManager.h>
+#include <core/viewport/ViewportManager.h>
+#include <core/plugins/PluginManager.h>
 
 namespace Ovito {
 
@@ -80,6 +83,9 @@ bool Application::initialize()
 				.arg(OVITO_VERSION_MINOR)
 				.arg(OVITO_VERSION_REVISION));
 
+		// Initialize PluginManager and load plugins.
+		PluginManager::instance();
+
 		// Create the main application window.
 		if(guiMode()) {
 
@@ -95,12 +101,29 @@ bool Application::initialize()
 			// Create the main window.
 			MainWindow* mainWin = new MainWindow(tr("Ovito (Open Visualization Tool)"));
 
-			// Show the main window.
-			mainWin->showMaximized();
-			mainWin->restoreLayout();
-
 			// Quit application when main window is closed.
 			connect(mainWin, SIGNAL(destroyed(QObject*)), this, SLOT(quit()));
+		}
+
+		if(!_startupSceneFile.isEmpty()) {
+			// Load scene file specified on the command line.
+			QFileInfo startupFile(_startupSceneFile);
+			if(!DataSetManager::instance().fileLoad(startupFile.absoluteFilePath()))
+				DataSetManager::instance().fileReset();
+		}
+		else {
+			// Create an empty data set.
+			DataSetManager::instance().fileReset();
+		}
+
+		// Enable the viewports now. Viewport updates are suspended by default.
+		ViewportManager::instance().resumeViewportUpdates();
+
+		// Create the main application window.
+		if(guiMode()) {
+			// Show the main window.
+			MainWindow::instance().showMaximized();
+			MainWindow::instance().restoreLayout();
 		}
 	}
 	catch(const Exception& ex) {

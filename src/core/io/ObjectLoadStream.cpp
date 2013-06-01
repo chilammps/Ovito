@@ -162,7 +162,7 @@ void ObjectLoadStream::close()
 				}
 				catch(...) {
 					// Clean up.
-					OVITO_CHECK_OBJECT_POINTER(currentObject->object);
+					OVITO_CHECK_OBJECT_POINTER(_currentObject->object);
 					throw;
 				}
 			}

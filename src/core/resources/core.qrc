@@ -2,6 +2,8 @@
 
 <qresource prefix="/core">
 
+	<file>Core.manifest.xml</file>
+
 	<file>mainwin/window_icon.png</file>
 	<file>mainwin/window_icon_16.png</file>
 	<file>mainwin/window_icon_32.png</file>

@@ -36,9 +36,9 @@ namespace Ovito {
 class ObjectSaveStream;		// defined in ObjectSaveStream.h
 class ObjectLoadStream;		// defined in ObjectLoadStream.h
 
-#ifdef _DEBUG
+#ifdef OVITO_DEBUG
 	/// Checks whether a pointer to an OvitoObject is valid.
-	#define OVITO_CHECK_OBJECT_POINTER(object) { OVITO_CHECK_POINTER(boost::get_pointer(object)); OVITO_ASSERT_MSG((object)->__isObjectAlive(), "OVITO_CHECK_OBJECT_POINTER", "OvitoObject pointer is invalid. Object has been deleted."); }
+	#define OVITO_CHECK_OBJECT_POINTER(object) { OVITO_CHECK_POINTER(object); OVITO_ASSERT_MSG((object)->__isObjectAlive(), "OVITO_CHECK_OBJECT_POINTER", "OvitoObject pointer is invalid. Object has been deleted."); }
 #else
 	/// Do nothing for release builds.
 	#define OVITO_CHECK_OBJECT_POINTER(object)
@@ -65,7 +65,7 @@ public:
 
 	/// \brief The default constructor. Sets the reference count to zero.
 	OvitoObject() : _referenceCount(0) {
-#ifdef _DEBUG
+#ifdef OVITO_DEBUG
 		_magicAliveCode = 0x87ABCDEF;
 #endif
 	}
@@ -74,7 +74,7 @@ public:
 	///
 	/// The default implementation does nothing.
 	virtual ~OvitoObject() {
-#ifdef _DEBUG
+#ifdef OVITO_DEBUG
 		OVITO_CHECK_OBJECT_POINTER(this);
 		_magicAliveCode = 0xFEDCBA87;
 #endif
@@ -135,7 +135,7 @@ public:
 	/// \return The reference count for this object.
 	size_t objectReferenceCount() const { return _referenceCount; }
 
-#ifdef _DEBUG
+#ifdef OVITO_DEBUG
 	/// \brief Returns whether this object has not been deleted yet.
 	bool __isObjectAlive() const { return _magicAliveCode == 0x87ABCDEF; }
 #endif
@@ -165,7 +165,7 @@ private:
 			autoDeleteObject();
 	}
 
-#ifdef _DEBUG
+#ifdef OVITO_DEBUG
 	/// This field is initialized with a special value in the constructor to indicate that
 	/// the object is alive and has not been deleted. When the object is deleted, the
 	/// destructor sets the field to another value indicate that the object is no longer alive.
@@ -205,7 +205,7 @@ inline const T* dynamic_object_cast(const U* obj) {
 /// Performs a runtime check of the object type in debug build.
 template<class T, class U>
 inline T* static_object_cast(U* obj) {
-	OVITO_ASSERT_MSG(!obj || obj->getOOType()->isKindOf(T::OOType), "static_object_cast", "Runtime type check failed. The source object is not an instance of the target class.");
+	OVITO_ASSERT_MSG(!obj || obj->getOOType().isDerivedFrom(T::OOType), "static_object_cast", "Runtime type check failed. The source object is not an instance of the target class.");
 	return static_cast<T*>(obj);
 }
 
@@ -215,7 +215,7 @@ inline T* static_object_cast(U* obj) {
 /// Performs a runtime check of the object type in debug build.
 template<class T, class U>
 inline const T* static_object_cast(const U* obj) {
-	OVITO_ASSERT_MSG(!obj || obj->getOOType()->isDerivedFrom(T::OOType), "static_object_cast", "Runtime type check failed. The source object is not an instance of the target class.");
+	OVITO_ASSERT_MSG(!obj || obj->getOOType().isDerivedFrom(T::OOType), "static_object_cast", "Runtime type check failed. The source object is not an instance of the target class.");
 	return static_cast<const T*>(obj);
 }
 

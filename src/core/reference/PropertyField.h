@@ -123,11 +123,8 @@ public:
 		if(_value == newValue) return *this;
 		if(UndoManager::instance().isRecording() && descriptor()->automaticUndo())
 			UndoManager::instance().push(new PropertyChangeOperation(*this));
-		_value = newValue;
-		generatePropertyChangedEvent();
-		generateTargetChangedEvent();
-		if(additionalChangeMessage != 0)
-			generateTargetChangedEvent((ReferenceEvent::Type)additionalChangeMessage);
+		else
+			setPropertyValue(newValue);
 		return *this;
 	}
 
@@ -151,6 +148,16 @@ public:
 
 private:
 
+	/// Internal helper function that changes the stored value and
+	/// generates notification events.
+	void setPropertyValue(const property_type& newValue) {
+		_value = newValue;
+		generatePropertyChangedEvent();
+		generateTargetChangedEvent();
+		if(additionalChangeMessage != 0)
+			generateTargetChangedEvent((ReferenceEvent::Type)additionalChangeMessage);
+	}
+
 	/// This undo class records a change to the property value.
 	class PropertyChangeOperation : public QUndoCommand {
 	public:
@@ -162,7 +169,7 @@ private:
 		virtual void undo() override {
 			// Swap old value and current property value.
 			property_type temp = _field;
-			_field = _oldValue;
+			_field.setPropertyValue(_oldValue);
 			_oldValue = temp;
 		}
 		/// Re-apply the change, assuming that it has been undone.
@@ -193,10 +200,11 @@ public:
 
 	/// Destructor that resets the reference before the object dies.
 	~SingleReferenceFieldBase() {
+		OVITO_ASSERT(UndoManager::instance().isRecording() == false);
 		// The internal intrusive pointer must be cleared first before the reference count
 		// to the target goes to zero to prevent infinite recursion.
 		OORef<RefTarget> a_null_ptr;
-		_pointer.swap(a_null_ptr);
+		swapReference(a_null_ptr, false);
 	}
 
 	/// Returns the RefTarget pointer.
@@ -207,13 +215,32 @@ public:
 
 protected:
 
-	/// The actual pointer to the reference target.
-	OORef<RefTarget> _pointer;
 	/// Replaces the reference target.
 	void setValue(RefTarget* newTarget);
 
+	/// Replaces the target stored in the reference field.
+	void swapReference(OORef<RefTarget>& inactiveTarget, bool generateNotificationEvents = true);
+
+	/// The actual pointer to the reference target.
+	OORef<RefTarget> _pointer;
+
 	friend class RefMaker;
 	friend class RefTarget;
+
+protected:
+
+	class SetReferenceOperation : public QUndoCommand
+	{
+	private:
+		OORef<RefTarget> inactiveTarget;
+		SingleReferenceFieldBase& reffield;
+	public:
+		SetReferenceOperation(RefTarget* _oldTarget, SingleReferenceFieldBase& _reffield)
+			: inactiveTarget(_oldTarget), reffield(_reffield) {}
+
+		virtual void undo() override { reffield.swapReference(inactiveTarget); }
+		virtual void redo() override { reffield.swapReference(inactiveTarget); }
+	};
 };
 
 /******************************************************************************
@@ -321,7 +348,7 @@ public:
 	void remove(int i);
 
 	/// Returns the stored references as a QVector.
-	const QVector<RefTarget*>& targets() const { return (const QVector<RefTarget*>&)*this; }
+	const QVector<RefTarget*>& targets() const { return pointers; }
 
 protected:
 
@@ -330,6 +357,58 @@ protected:
 
 	/// Adds a reference target to the internal list.
 	int insertInternal(RefTarget* newTarget, int index = -1);
+
+	/// Removes a target from the list reference field.
+	OORef<RefTarget> removeReference(int index, bool generateNotificationEvents = true);
+
+	/// Adds the target to the list reference field.
+	int addReference(const OORef<RefTarget>& target, int index);
+
+protected:
+
+	class InsertReferenceOperation : public QUndoCommand
+	{
+	private:
+	    OORef<RefTarget> target;
+		VectorReferenceFieldBase& reffield;
+		int index;
+	public:
+    	InsertReferenceOperation(RefTarget* _target, VectorReferenceFieldBase& _reffield, int _index)
+			: target(_target), reffield(_reffield), index(_index) {}
+
+		virtual void undo() override {
+			OVITO_ASSERT(!target);
+			reffield.removeReference(index);
+		}
+
+		virtual void redo() override {
+			index = reffield.addReference(target, index);
+			target = NULL;
+		}
+
+		int getInsertionIndex() const { return index; }
+	};
+
+	class RemoveReferenceOperation : public QUndoCommand
+	{
+	private:
+	    OORef<RefTarget> target;
+		VectorReferenceFieldBase& reffield;
+		int index;
+	public:
+    	RemoveReferenceOperation(VectorReferenceFieldBase& _reffield, int _index)
+			: reffield(_reffield), index(_index) {}
+
+		virtual void undo() override {
+			index = reffield.addReference(target, index);
+			target = NULL;
+		}
+
+		virtual void redo() override {
+			OVITO_ASSERT(!target);
+			reffield.removeReference(index);
+		}
+	};
 
 	friend class RefMaker;
 	friend class RefTarget;
@@ -358,7 +437,7 @@ public:
 	VectorReferenceField() : VectorReferenceFieldBase() {}
 
 	/// Returns the stored references as a QVector.
-	operator const RefTargetVector&() const { return *reinterpret_cast<const RefTargetVector*>(&pointers); }
+	operator const RefTargetVector&() const { return targets(); }
 
 	/// Returns the reference target at index position i.
 	RefTargetType* operator[](int i) const { return static_object_cast<RefTargetType>(pointers[i]); }
@@ -388,10 +467,10 @@ public:
 	void set(int i, const OORef<RefTargetType>& object) { remove(i); insert(i, object); }
 
 	/// Returns an STL-style iterator pointing to the first item in the vector.
-	const_iterator begin() const { return ((const RefTargetVector&)*this).begin(); }
+	const_iterator begin() const { return targets().begin(); }
 
 	/// Returns an STL-style iterator pointing to the imaginary item after the last item in the vector.
-	const_iterator end() const { return ((const RefTargetVector&)*this).end(); }
+	const_iterator end() const { return targets().end(); }
 
 	/// Returns an STL-style iterator pointing to the first item in the vector.
 	const_iterator constBegin() const { return begin(); }
@@ -400,10 +479,10 @@ public:
 	const_iterator constEnd() const { return end(); }
 
 	/// Returns the first reference stored in this vector reference field.
-	RefTargetType* front() const { return (RefTargetType*)pointers.front(); }
+	RefTargetType* front() const { return static_object_cast<RefTargetType>(pointers.front()); }
 
 	/// Returns the last reference stored in this vector reference field.
-	RefTargetType* back() const { return (RefTargetType*)pointers.back(); }
+	RefTargetType* back() const { return static_object_cast<RefTargetType>(pointers.back()); }
 
 	/// Finds the first object stored in this vector reference field that is of the given type.
 	/// or can be cast to the given type. Returns NULL if no such object is in the list.
@@ -425,7 +504,7 @@ public:
 	}
 
 	/// Returns the stored references as a QVector.
-	const RefTargetVector& targets() const { return (const RefTargetVector&)*this; }
+	const RefTargetVector& targets() const { return reinterpret_cast<const RefTargetVector&>(pointers); }
 };
 
 };	// End of namespace

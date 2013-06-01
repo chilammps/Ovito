@@ -104,13 +104,29 @@ public:
 		return *_instance.data();
 	}
 
+	/// \brief Begins composition of a macro command with the given text description.
+	void beginMacro(const QString& text) {
+		OVITO_ASSERT_MSG(!_isRecording, "UndoManager::beginMacro", "Undo recording is already active. endMacro() needs to be called first.");
+		OVITO_ASSERT_MSG(_suspendCount == 0, "UndoManager::beginMacro", "Undo recording is suspended. Cannot start a new macro at this time.");
+		QUndoStack::beginMacro(text);
+		setActive(true);
+	}
+
+	/// \brief Ends composition of a macro command.
+	void endMacro() {
+		OVITO_ASSERT_MSG(_isRecording, "UndoManager::endMacro", "Undo recording is not active. beginMacro() needs to be called first.");
+		OVITO_ASSERT_MSG(_suspendCount == 0, "UndoManager::endMacro", "Undo recording was suspended since the call to beginMacro().");
+		QUndoStack::endMacro();
+		setActive(false);
+	}
+
 	/// \brief Returns whether the manager is currently recording undoable operations.
 	/// \return \c true if the UndoManager currently records any changes made to the scene on its stack.
 	///         \c false if changes to the scene are ignored by the UndoManager.
 	///
 	/// The recording state can be controlled via the suspend() and resume() methods.
 	/// Or it can be temporarily suspended using the UndoSuspender helper class.
-	bool isRecording() const { return _suspendCount == 0; }
+	bool isRecording() const { return _suspendCount == 0 && _isRecording; }
 
 	/// \brief Records a single operation.
 	/// \param operation An instance of a QUndoCommand derived class that encapsulates
@@ -156,10 +172,13 @@ public:
 	
 public Q_SLOTS:
 
+	/// \brief Resets the undo stack.
+	void reset() { OVITO_ASSERT(!_isRecording); clear(); }
+
 	/// \brief Undoes the last operation in the undo stack.
 	void undo();
 
-	/// \brief Redoes the last undone operation in the undo stack.
+	/// \brief Re-does the last undone operation in the undo stack.
 	void redo();
 
 private:
@@ -167,6 +186,9 @@ private:
 	/// A call to suspend() increases this value by one.
 	/// A call to resume() decreases it.
 	int _suspendCount;
+
+	/// Indicates that the undo manager is currently recording operations.
+	bool _isRecording;
 
 	/// Indicates if we are currently undoing an operation.
 	bool _isUndoing;

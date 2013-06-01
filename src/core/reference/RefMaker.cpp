@@ -304,8 +304,6 @@ void RefMaker::loadFromStream(ObjectLoadStream& stream)
 					OVITO_ASSERT(fieldEntry.field->isVector() == ((fieldEntry.field->flags() & PROPERTY_FIELD_VECTOR) != 0));
 					OVITO_ASSERT(fieldEntry.targetClass->isDerivedFrom(*fieldEntry.field->targetClass()));
 					if(fieldEntry.field->isVector() == false) {
-						OVITO_ASSERT_MSG(!getReferenceField(*fieldEntry.field), "RefMaker::loadFromStream",
-							"Object constructor should initialize all reference fields to NULL when called with isLoading=true.");
 						OORef<RefTarget> target = stream.loadObject<RefTarget>();
 						if(target && !target->getOOType().isDerivedFrom(*fieldEntry.targetClass)) {
 							throw Exception(tr("Incompatible object stored in reference field %1 of class %2. Expected class %3 but found class %4 in file.")
@@ -316,7 +314,7 @@ void RefMaker::loadFromStream(ObjectLoadStream& stream)
 					else {
 						// Get storage address of member variable.
 						VectorReferenceFieldBase& refField = fieldEntry.field->vectorStorageAccessFunc(this);
-						OVITO_ASSERT_MSG(refField.empty(), "RefMaker::loadFromStream", "Vector reference fields must be left empty in the constructor of the RefMaker derived class with parameter isLoading==true.");
+						refField.clear();
 
 						// Load each target object and store it in the list reference field.
 						qint32 numEntries;
@@ -352,7 +350,7 @@ void RefMaker::loadFromStream(ObjectLoadStream& stream)
 		else {
 			// Read the primitive value of the property field from the stream.
 			OVITO_ASSERT(fieldEntry.targetClass == NULL);
-			if(stream.formatVersion() >= 11) stream.expectChunk(0x00000004);
+			stream.expectChunk(0x00000004);
 			if(fieldEntry.field) {
 				OVITO_ASSERT(fieldEntry.field->propertyStorageLoadFunc != NULL);
 				fieldEntry.field->propertyStorageLoadFunc(this, stream);
@@ -360,10 +358,8 @@ void RefMaker::loadFromStream(ObjectLoadStream& stream)
 			else {
 				// The property field no longer exists.
 				// Ignore chunk contents.
-				if(stream.formatVersion() < 11)
-					throw Exception(tr("File format error: Did not find property field '%1' in class %2.").arg(fieldEntry.identifier, fieldEntry.definingClass->name()));
 			}
-			if(stream.formatVersion() >= 11) stream.closeChunk();
+			stream.closeChunk();
 		}
 	}
 }

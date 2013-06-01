@@ -107,7 +107,7 @@ class FloatParameterUnit : public ParameterUnit
 public:
 	
 	/// \brief Default constructor.
-	FloatParameterUnit() : ParameterUnit() {}
+	Q_INVOKABLE FloatParameterUnit() : ParameterUnit() {}
 
 	/// \brief Converts a value from native units to the units presented to the user.
 	/// \param nativeValue The value in internal units to be converted.
@@ -182,7 +182,7 @@ class IntegerParameterUnit : public ParameterUnit
 public:
 	
 	/// \brief Default constructor.
-	IntegerParameterUnit() : ParameterUnit() {}
+	Q_INVOKABLE IntegerParameterUnit() : ParameterUnit() {}
 
 	/// \brief Converts a value from native units to the units presented to the user.
 	/// \param nativeValue The value in internal units to be converted.
@@ -235,7 +235,7 @@ class WorldParameterUnit : public FloatParameterUnit
 public:
 
 	/// \brief Default constructor.
-	WorldParameterUnit() : FloatParameterUnit() {}
+	Q_INVOKABLE WorldParameterUnit() : FloatParameterUnit() {}
 };
 
 /**
@@ -249,7 +249,7 @@ class AngleParameterUnit : public FloatParameterUnit
 public:
 	
 	/// \brief Default constructor.
-	AngleParameterUnit() : FloatParameterUnit() {}
+	Q_INVOKABLE AngleParameterUnit() : FloatParameterUnit() {}
 
 	/// \brief Converts a value from native units to the units presented to the user.
 	/// \param nativeValue The value in internal units to be converted.
@@ -279,7 +279,7 @@ class PercentParameterUnit : public FloatParameterUnit
 public:
 	
 	/// \brief Default constructor.
-	PercentParameterUnit() : FloatParameterUnit() {}
+	Q_INVOKABLE PercentParameterUnit() : FloatParameterUnit() {}
 
 	/// \brief Converts a value from native units to the units presented to the user.
 	/// \param nativeValue The value in internal units to be converted.
@@ -309,7 +309,7 @@ class TimeParameterUnit : public IntegerParameterUnit
 public:
 	
 	/// \brief Default constructor.
-	TimeParameterUnit() : IntegerParameterUnit() {
+	Q_INVOKABLE TimeParameterUnit() : IntegerParameterUnit() {
 		// If the animation speed changes or the time format has been changed then
 		// this parameter unit will send a signal to the UI controls.
 		connect(&AnimManager::instance(), SIGNAL(speedChanged(int)), SIGNAL(formatChanged()));

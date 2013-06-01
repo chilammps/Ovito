@@ -48,9 +48,10 @@ public:
 	/// \brief Constructs the plugin class descriptor object.
 	/// \note This is an internal constructor that is not for public use.
 	NativeOvitoObjectType(const char* name, const NativeOvitoObjectType* superClass, const QMetaObject* qtClassInfo, bool isSerializable)
-		: OvitoObjectType(name, superClass, qtClassInfo->constructorCount() >= 1, isSerializable), _qtClassInfo(qtClassInfo), _next(_firstInfo), _pureClassName(nullptr),
-		_firstNativePropertyField(nullptr)
+		: OvitoObjectType(name, superClass, (qtClassInfo->constructorCount() == 0), isSerializable), _qtClassInfo(qtClassInfo), _pureClassName(nullptr)
 	{
+		// Insert into linked list of all object types.
+		_next = _firstInfo;
 		_firstInfo = this;
 	}
 
@@ -71,18 +72,6 @@ public:
 		return _pureClassName;
 	}
 
-	/// \brief Returns the first element of the linked list of property fields defined for this class if it is a RefMaker derived class.
-	/// \note This is an internal method not meant for public use.
-	const PropertyFieldDescriptor* firstNativePropertyField() const { return _firstNativePropertyField; }
-
-	/// If this is the descriptor of a RefMaker-derived class then this method will return
-	/// the property field with the given identifier that has been defined in the RefMaker-derived
-	/// class.
-	/// \return If no such field is defined by that class then NULL is returned.
-	/// \note This method will not return property fields that have been defined in super-classes.
-	/// \note This is an internal method not meant for public use.
-	const PropertyFieldDescriptor* findNativePropertyField(const char* identifier) const;
-
 protected:
 
 	/// \brief Creates an instance of the class described by this descriptor.
@@ -98,13 +87,10 @@ private:
 	/// The name of the class.
 	const char* _pureClassName;
 
-	/// The linked list of property fields if this is a RefMaker-derived class.
-	PropertyFieldDescriptor* _firstNativePropertyField;
-
-	/// All instances of this class are connected in a linked list.
+	/// All native object types are stored in a linked list.
 	NativeOvitoObjectType* _next;
 
-	/// The first element of the linked list.
+	/// The head of the linked list of all native object types.
 	static NativeOvitoObjectType* _firstInfo;
 
 	friend class NativePlugin;

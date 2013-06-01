@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// 
+//
 //  Copyright (2013) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
@@ -20,41 +20,47 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include "AnimationSettings.h"
+#include <core/viewport/Viewport.h>
+#include <core/viewport/ViewportManager.h>
+#include <core/viewport/ViewportConfiguration.h>
 
 namespace Ovito {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(AnimationSettings, RefTarget);
-DEFINE_PROPERTY_FIELD(AnimationSettings, _time, "Time");
-DEFINE_PROPERTY_FIELD(AnimationSettings, _animationInterval, "AnimationInterval");
-DEFINE_PROPERTY_FIELD(AnimationSettings, _ticksPerFrame, "TicksPerFrame");
-DEFINE_PROPERTY_FIELD(AnimationSettings, _playbackSpeed, "PlaybackSpeed");
+IMPLEMENT_OVITO_OBJECT(Viewport, RefMaker);
+DEFINE_FLAGS_REFERENCE_FIELD(Viewport, _settings, "Settings", ViewportConfiguration, PROPERTY_FIELD_NO_UNDO)
 
 /******************************************************************************
-* Default constructor. Assigns default values.
+* Constructor.
 ******************************************************************************/
-AnimationSettings::AnimationSettings() :
-		_ticksPerFrame(TICKS_PER_SECOND/25), _playbackSpeed(1),
-		_animationInterval(0, 0), _time(0)
+Viewport::Viewport() :
+		_widget(NULL),
+		_mouseOverCaption(false)
 {
-	INIT_PROPERTY_FIELD(AnimationSettings::_time);
-	INIT_PROPERTY_FIELD(AnimationSettings::_animationInterval);
-	INIT_PROPERTY_FIELD(AnimationSettings::_ticksPerFrame);
-	INIT_PROPERTY_FIELD(AnimationSettings::_playbackSpeed);
+	INIT_PROPERTY_FIELD(Viewport::_settings);
+
+	// Create internal settings object.
+	_settings = new ViewportConfiguration(this);
 }
 
 /******************************************************************************
-* Is called when the value of a non-animatable property field of this RefMaker has changed.
+* Destructor.
 ******************************************************************************/
-void AnimationSettings::propertyChanged(const PropertyFieldDescriptor& field)
+Viewport::~Viewport()
 {
-	if(field == PROPERTY_FIELD(AnimationSettings::_time))
-		timeChanged(time());
-	else if(field == PROPERTY_FIELD(AnimationSettings::_animationInterval))
-		intervalChanged(animationInterval());
-	else if(field == PROPERTY_FIELD(AnimationSettings::_ticksPerFrame))
-		speedChanged(ticksPerFrame());
 }
 
+/******************************************************************************
+* Displays the context menu for this viewport.
+******************************************************************************/
+void Viewport::showViewportMenu(const QPoint& pos)
+{
+#if 0
+	/// The context menu of the viewport.
+	ViewportMenu contextMenu(this);
+
+	/// Show menu.
+	contextMenu.exec(mapToGlobal(pos));
+#endif
+}
 
 };

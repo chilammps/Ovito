@@ -21,9 +21,7 @@
 
 #include <core/Core.h>
 #include <core/plugins/NativePlugin.h>
-#if 0
-#include <core/reference/NativePropertyFieldDescriptor.h>
-#endif
+#include <core/object/NativeOvitoObjectType.h>
 
 namespace Ovito {
 
@@ -31,10 +29,9 @@ namespace Ovito {
 * Constructor for the NativePlugin class.
 ******************************************************************************/
 NativePlugin::NativePlugin(const QString& manifestFile) :
-	Plugin(manifestFile), _infoBefore(NULL), _infoAfter(NULL)
+	Plugin(manifestFile)
 {
 }
-
 
 /******************************************************************************
 * Parses a custom top-level element from the manifest that is specific to the plugin type.
@@ -49,17 +46,12 @@ bool NativePlugin::parseToplevelManifestElement(const QDomElement& element)
 ******************************************************************************/
 void NativePlugin::loadPluginImpl()
 {
-	_infoBefore = nullptr;
-	_infoAfter = NativeOvitoObjectType::_firstInfo;
-
-#if 0
-	// Resolve the property field descriptor classes.
-	Q_FOREACH(PluginClassDescriptor* descriptor, classes()) {
-		for(const PropertyFieldDescriptor* field = descriptor->firstPropertyField(); field; field = field->next()) {
-			((NativePropertyFieldDescriptor*)field)->resolveClassReferences();
-		}
+	// Connect all newly loaded class descriptors with this plugin.
+	for(NativeOvitoObjectType* clazz = NativeOvitoObjectType::_firstInfo; clazz != NULL; clazz = clazz->_next) {
+		OVITO_ASSERT(clazz->plugin() == NULL);
+		clazz->_plugin = this;
+		registerClass(clazz);
 	}
-#endif
 }
 
 };

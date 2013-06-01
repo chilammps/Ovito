@@ -134,15 +134,6 @@ protected:
 	/// The base class descriptor (or NULL if this is the descriptor for the root OvitoObject class).
 	const OvitoObjectType* _superClass;
 
-	/// The next class descriptor that has the same super class as this one.
-	OvitoObjectType* _nextSibling;
-
-	/// The first derived class.
-	OvitoObjectType* _firstChild;
-
-	/// The next descriptor in the global linked list of all classes.
-	OvitoObjectType* _next;
-
 	/// Indicates whether the class is abstract.
 	bool _isAbstract;
 
@@ -151,9 +142,6 @@ protected:
 
 	/// The linked list of property fields if the class is derived from RefMaker.
 	const PropertyFieldDescriptor* _firstPropertyField;
-
-	/// The descriptor of the root class of all Ovito classes: OvitoObject.
-	static const OvitoObjectType& _rootClass;
 };
 
 };

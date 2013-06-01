@@ -28,7 +28,8 @@
 
 namespace Ovito {
 
-NativeOvitoObjectType* NativeOvitoObjectType::_firstInfo = NULL;
+/// Head of linked list.
+NativeOvitoObjectType* NativeOvitoObjectType::_firstInfo = nullptr;
 
 /******************************************************************************
 * Creates an object of the appropriate kind.
@@ -40,20 +41,9 @@ OORef<OvitoObject> NativeOvitoObjectType::createInstanceImpl() const
 
 	OvitoObject* obj = qobject_cast<OvitoObject*>(_qtClassInfo->newInstance());
 	if(!obj)
-		throw Exception(Plugin::tr("Cannot instantiate abstract class '%1'.").arg(name()));
+		throw Exception(Plugin::tr("Failed to instantiate class '%1'.").arg(name()));
 
 	return obj;
 }
-
-/******************************************************************************
-* Searches for a property field defined in this class.
-******************************************************************************/
-const PropertyFieldDescriptor* NativeOvitoObjectType::findNativePropertyField(const char* identifier) const
-{
-	for(const PropertyFieldDescriptor* field = firstNativePropertyField(); field; field = field->next())
-		if(qstrcmp(field->identifier(), identifier) == 0) return field;
-	return NULL;
-}
-
 
 };

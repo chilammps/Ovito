@@ -43,6 +43,8 @@ SET(OVITO_SOURCE_FILES
 	core/io/ObjectLoadStream.cpp
 	core/animation/AnimManager.cpp
 	core/animation/AnimationSettings.cpp
+	core/dataset/DataSet.cpp
+	core/dataset/DataSetManager.cpp
 	core/gui/app/Application.cpp
 	core/gui/mainwin/MainWindow.cpp
 	core/gui/mainwin/AnimationTimeSlider.cpp
@@ -51,7 +53,10 @@ SET(OVITO_SOURCE_FILES
 	core/gui/undo/UndoManager.cpp
 	core/gui/widgets/SpinnerWidget.cpp
 	core/utilities/units/UnitsManager.cpp
+	core/viewport/Viewport.cpp
+	core/viewport/ViewportConfiguration.cpp
 	core/viewport/ViewportSettings.cpp
+	core/viewport/ViewportManager.cpp
 	main/Main.cpp
 )
 

@@ -75,7 +75,15 @@ void RefTarget::notifyDependents(ReferenceEvent& event)
 		dependents()[i]->handleReferenceEvent(this, &event);
 	}
 
-	OVITO_ASSERT_MSG(event.type() != ReferenceEvent::TargetDeleted || dependents().empty(), "RefTarget deletion", "RefTarget has generated a TargetDeleted event but it still has dependents.");
+#ifdef OVITO_DEBUG
+	if(event.type() == ReferenceEvent::TargetDeleted && !dependents().empty()) {
+		qDebug() << "Object being deleted:" << this;
+		for(int i = 0; i < dependents().size(); i++) {
+			qDebug() << "  Dependent" << i << ":" << dependents()[i];
+		}
+		OVITO_ASSERT_MSG(false, "RefTarget deletion", "RefTarget has generated a TargetDeleted event but it still has dependents.");
+	}
+#endif
 }
 
 /******************************************************************************

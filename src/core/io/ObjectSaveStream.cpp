@@ -75,7 +75,9 @@ void ObjectSaveStream::close()
 		if(classes.find(descriptor) == classes.end()) {
 			classes.insert(make_pair(descriptor, (quint32)classes.size()));
 			// Write the runtime type information to the stream.
+			beginChunk(0x201);
 			OvitoObjectType::serializeRTTI(*this, descriptor);
+			endChunk();
 			// Write the property fields to the stream.
 			beginChunk(0x202);
 			for(const OvitoObjectType* clazz = descriptor; clazz; clazz = clazz->superClass()) {

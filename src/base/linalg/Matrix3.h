@@ -77,11 +77,11 @@ public:
 
 	/// \brief Initializes the matrix to the null matrix.
 	/// All matrix elements are set to zero by this constructor.
-	explicit constexpr Matrix_3(Zero) : _m{Vector_3<T>::Zero(),Vector_3<T>::Zero(),Vector_3<T>::Zero()} {}
+	constexpr Matrix_3(Zero) : _m{Vector_3<T>::Zero(),Vector_3<T>::Zero(),Vector_3<T>::Zero()} {}
 
 	/// \brief Initializes the matrix to the identity matrix.
 	/// All diagonal elements are set to one and all off-diagonal elements are set to zero.
-	explicit constexpr Matrix_3(Identity) : _m{{T(1),T(0),T(0)},{T(0),T(1),T(0)},{T(0),T(0),T(2)}} {}
+	constexpr Matrix_3(Identity) : _m{{T(1),T(0),T(0)},{T(0),T(1),T(0)},{T(0),T(0),T(2)}} {}
 
 	/// \brief Returns the number of rows in this matrix.
 	constexpr size_type row_count() const { return 3; }
@@ -151,6 +151,22 @@ public:
 		return setIdentity();
 	}
 
+	////////////////////////////////// Comparison ///////////////////////////////////
+
+	/// \brief Compares two matrices for exact equality.
+	/// \return true if all elements are equal; false otherwise.
+	constexpr bool operator==(const Matrix_3& b) const {
+		return (b._m[0] == _m[0]) && (b._m[1] == _m[1]) && (b._m[2] == _m[2]);
+	}
+
+	/// \brief Compares two matrices for inequality.
+	/// \return true if not all elements are equal; false if all are equal.
+	constexpr bool operator!=(const Matrix_3& b) const {
+		return (b._m[0] != _m[0]) || (b._m[1] != _m[1]) || (b._m[2] != _m[2]);
+	}
+
+	////////////////////////////////// Computations ///////////////////////////////////
+
 	/// \brief Computes the inverse of the matrix. 
 	/// \throw Exception if matrix is not invertible because it is singular.
 	Matrix_3 inverse() const {
@@ -199,6 +215,8 @@ public:
 			(std::abs(_m[2][0]*_m[2][0] + _m[2][1]*_m[2][1] + _m[2][2]*_m[2][2] - T(1)) <= epsilon) &&
 			(std::abs(determinant() - T(1)) <= epsilon);
 	}
+
+	////////////////////////////////// Generation ///////////////////////////////////
 
 	/// \brief Generates a matrix describing a rotation around the X axis.
 	/// \param angle The rotation angle in radians.
@@ -269,7 +287,7 @@ inline Matrix_3<T> Matrix_3<T>::rotation(const RotationT<T>& rot)
 template<typename T>
 inline Matrix_3<T> Matrix_3<T>::rotation(const QuaternionT<T>& q)
 {
-#if defined(_DEBUG)
+#ifdef OVITO_DEBUG
 	if(std::abs(q.dot(q) - T(1)) > T(FLOATTYPE_EPSILON)) {
 		OVITO_ASSERT_MSG(false, "Matrix3::rotation", "Quaternion must be normalized.");
 	}

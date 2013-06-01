@@ -68,7 +68,7 @@ protected:
 
 	/////////////////////////////// Reference field events ///////////////////////////////////
 
-	/// \brief Is called when a RefTarget referenced by this RefMaker or the RefMaker itself has generated an event.
+	/// \brief Is called when a RefTarget referenced by this object has generated an event.
 	/// \param source A direct reference target of this RefMaker specifying the source of the message.
 	///               Note that this may not be the sender or generator of the notification
 	///               event. The sender is returned by ReferenceEvent::sender().
@@ -142,7 +142,7 @@ protected:
 	/// \return If \c true then the event is passed on to the dependents of this object.
 	virtual bool handleReferenceEvent(RefTarget* source, ReferenceEvent* event);
 
-	/// \brief Is called when the value of a non-animatable property field of this RefMaker has changed.
+	/// \brief Is called when the value of a property of this object has changed.
 	/// \param field Specifies the property field of this RefMaker that has changed.
 	///              This is always a non-animatable PropertyField.
 	///
