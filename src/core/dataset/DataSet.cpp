@@ -36,7 +36,7 @@
 namespace Ovito {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(DataSet, RefTarget);
-DEFINE_FLAGS_REFERENCE_FIELD(DataSet, _viewportConfig, "ViewportConfiguration", ViewportConfigurationSet, PROPERTY_FIELD_NO_CHANGE_MESSAGE|PROPERTY_FIELD_ALWAYS_DEEP_COPY)
+DEFINE_FLAGS_REFERENCE_FIELD(DataSet, _viewportConfig, "ViewportConfiguration", ViewportConfiguration, PROPERTY_FIELD_NO_CHANGE_MESSAGE|PROPERTY_FIELD_ALWAYS_DEEP_COPY)
 DEFINE_FLAGS_REFERENCE_FIELD(DataSet, _animSettings, "AnimationSettings", AnimationSettings, PROPERTY_FIELD_NO_CHANGE_MESSAGE|PROPERTY_FIELD_ALWAYS_DEEP_COPY)
 #if 0
 DEFINE_FLAGS_REFERENCE_FIELD(DataSet, _sceneRoot, "SceneRoot", SceneRoot, PROPERTY_FIELD_NO_CHANGE_MESSAGE|PROPERTY_FIELD_ALWAYS_DEEP_COPY)
@@ -65,7 +65,7 @@ DataSet::DataSet() : _hasBeenChanged(false)
 #endif
 
 	// Create a new viewport configuration by copying the default template.
-	_viewportConfig = CloneHelper().cloneObject(ViewportManager::instance().defaultConfiguration(), true);
+	_viewportConfig = CloneHelper().cloneObject(ViewportConfiguration::defaultConfiguration(), true);
 
 	_animSettings = new AnimationSettings();
 #if 0
@@ -92,19 +92,5 @@ bool DataSet::referenceEvent(RefTarget* source, ReferenceEvent* event)
 	}
 	return RefTarget::referenceEvent(source, event);
 }
-
-/******************************************************************************
-* ISaves the class' contents to the given stream.
-******************************************************************************/
-void DataSet::saveToStream(ObjectSaveStream& stream)
-{
-	// Acquire current viewport configuration.
-	if(DataSetManager::instance().currentSet() == this)
-		viewportConfig()->saveConfiguration();
-
-	// Write everything into the file stream.
-	RefTarget::saveToStream(stream);
-}
-
 
 };

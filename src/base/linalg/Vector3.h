@@ -247,7 +247,7 @@ constexpr Vector_3<T> operator/(const Vector_3<T>& a, T s) {
 
 /// \brief Writes the vector to a text output stream.
 template<typename T>
-inline std::ostream& operator<<(std::ostream &os, const Vector_3<T> &v) {
+inline std::ostream& operator<<(std::ostream& os, const Vector_3<T>& v) {
 	return os << v.x() << ' ' << v.y()  << ' ' << v.z();
 }
 

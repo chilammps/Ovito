@@ -34,6 +34,7 @@ QScopedPointer<PluginManager> PluginManager::_instance;
 ******************************************************************************/
 PluginManager::PluginManager() : _corePlugin(NULL)
 {
+	OVITO_ASSERT_MSG(!_instance, "PluginManager constructor", "Multiple instances of this singleton class have been created.");
 	registerPlugins();
 }
 

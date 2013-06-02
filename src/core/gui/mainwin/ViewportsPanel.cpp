@@ -22,25 +22,22 @@
 #include <core/Core.h>
 #include "ViewportsPanel.h"
 #include <core/viewport/ViewportManager.h>
-#include <core/viewport/input/ViewportInputHandler.h>
-#include <core/viewport/input/ViewportInputManager.h>
-#include <core/data/DataSetManager.h>
-#include <core/scene/animation/AnimManager.h>
-#include <core/actions/ActionManager.h>
-#include <core/rendering/RenderSettings.h>
+#include <core/viewport/ViewportSettings.h>
+#include <core/dataset/DataSetManager.h>
+#include <core/animation/AnimManager.h>
 
 namespace Ovito {
 
 /******************************************************************************
 * The constructor of the viewports panel class.
 ******************************************************************************/
-ViewportsPanel::ViewportPanel(QWidget* parent) : QWidget(parent)
+ViewportsPanel::ViewportsPanel(QWidget* parent) : QWidget(parent)
 {
 	// The mouse cursor must updated each time when a new input mode becomes active.
-	connect(&VIEWPORT_INPUT_MANAGER, SIGNAL(inputModeChanged(ViewportInputHandler*, ViewportInputHandler*)), this, SLOT(updateViewportCursor()));
+	//connect(&ViewportInputManager::instance(), SIGNAL(inputModeChanged(ViewportInputHandler*, ViewportInputHandler*)), this, SLOT(updateViewportCursor()));
 
 	// Repaint the viewport borders if the animation mode has been activated.
-	connect(&ANIM_MANAGER, SIGNAL(animationModeChanged(bool)), SLOT(update()));
+	connect(&AnimManager::instance(), SIGNAL(animationModeChanged(bool)), SLOT(update()));
 
 	// Repaint the viewport borders if another viewport has been activated.
 	connect(&ViewportManager::instance(), SIGNAL(activeViewportChanged(Viewport*)), SLOT(update()));
@@ -49,39 +46,27 @@ ViewportsPanel::ViewportPanel(QWidget* parent) : QWidget(parent)
 	connect(&ViewportManager::instance(), SIGNAL(maximizedViewportChanged(Viewport*)), SLOT(layoutViewports()));
 
 	// Active the new viewport layout as soon as a new scene file is loaded.
-	connect(&DATASET_MANAGER, SIGNAL(dataSetReset(DataSet*)), this, SLOT(reset(DataSet*)));
+	connect(&DataSetManager::instance(), SIGNAL(dataSetReset(DataSet*)), this, SLOT(onDataSetReset(DataSet*)));
 }
 
 /******************************************************************************
-* Creates a new viewport.
+* This is called when a new dataset has been loaded.
 ******************************************************************************/
-Viewport* ViewportsPanel::createViewport()
+void ViewportsPanel::onDataSetReset(DataSet* newDataSet)
 {
-	Viewport* vp = new Viewport(this);
-	_viewports.push_back(vp);
-	return vp;
-}
-
-/******************************************************************************
-* Removes and destroys a viewport.
-******************************************************************************/
-void ViewportsPanel::removeViewport(Viewport* vp)
-{
-	CHECK_POINTER(vp);
-	OVITO_ASSERT(_viewports.contains(vp));
-	_viewports.remove(_viewports.indexOf(vp));
-	delete vp;
-}
-
-/******************************************************************************
-* Resets the viewport panel to the state saved in the current data set.
-******************************************************************************/
-void ViewportsPanel::reset(DataSet* newDataSet)
-{
-	if(newDataSet) {
-		newDataSet->viewportConfig()->restoreConfiguration();
-		layoutViewports();
+	// Delete all existing viewport widgets first.
+	for(QWidget* widget : findChildren<QWidget*>()) {
+		delete widget;
 	}
+
+	// Create widgets for new viewports.
+	const QVector<Viewport*>& viewports = ViewportManager::instance().viewports();
+	for(Viewport* vp : viewports) {
+		vp->createWidget(this);
+	}
+
+	// Layout viewport widgets.
+	layoutViewports();
 }
 
 /******************************************************************************
@@ -90,12 +75,14 @@ void ViewportsPanel::reset(DataSet* newDataSet)
 ******************************************************************************/
 void ViewportsPanel::updateViewportCursor()
 {
+#if 0
 	ViewportInputHandler* handler = VIEWPORT_INPUT_MANAGER.currentHandler();
 	if(handler && handler->temporaryNavigationMode()) handler = handler->temporaryNavigationMode();
 	if(!handler)
 		unsetCursor();
 	else
 		setCursor(handler->getCursor());
+#endif
 }
 
 /******************************************************************************
@@ -105,19 +92,21 @@ void ViewportsPanel::paintEvent(QPaintEvent* event)
 {
 	// Render border around active viewport.
 	Viewport* vp = ViewportManager::instance().activeViewport();
-	if(!vp || vp->isHidden()) return;
+	if(!vp) return;
+	QWidget* vpWidget = vp->widget();
+	if(vpWidget->isHidden()) return;
 
 	QPainter painter(this);
 
 	// Choose a color for the viewport border.
-	ColorA borderColor;
-	if(ANIM_MANAGER.animationMode())
-		borderColor = Viewport::viewportColor(Viewport::COLOR_ANIMATION_MODE);
+	Color borderColor;
+	if(AnimManager::instance().animationMode())
+		borderColor = Viewport::viewportColor(ViewportSettings::COLOR_ANIMATION_MODE);
 	else
-		borderColor = Viewport::viewportColor(Viewport::COLOR_ACTIVE_VIEWPORT_BORDER);
+		borderColor = Viewport::viewportColor(ViewportSettings::COLOR_ACTIVE_VIEWPORT_BORDER);
 
-	painter.setPen(borderColor);
-	QRect rect = vp->geometry();
+	painter.setPen((QColor)borderColor);
+	QRect rect = vpWidget->geometry();
 	rect.adjust(-1, -1, 0, 0);
 	painter.drawRect(rect);
 	rect.adjust(-1, -1, 1, 1);
@@ -131,7 +120,6 @@ void ViewportsPanel::paintEvent(QPaintEvent* event)
 void ViewportsPanel::resizeEvent(QResizeEvent* event)
 {
 	layoutViewports();
-	ViewportManager::instance().updateViewports();
 }
 
 /******************************************************************************
@@ -140,10 +128,18 @@ void ViewportsPanel::resizeEvent(QResizeEvent* event)
 ******************************************************************************/
 void ViewportsPanel::layoutViewports()
 {
+	const QVector<Viewport*>& viewports = ViewportManager::instance().viewports();
+	Viewport* maximizedViewport = ViewportManager::instance().maximizedViewport();
+	OVITO_ASSERT(viewports.size() == findChildren<QWidget*>().size());
+
 	// Count the number of visible window.
 	int nvisible = 0;
-	for(Viewport* viewport : viewports()) {
-		if(!viewport->isHidden()) nvisible++;
+	for(Viewport* viewport : viewports) {
+		if(!viewport->widget()) continue;
+		if(maximizedViewport == NULL || maximizedViewport == viewport)
+			nvisible++;
+		else
+			viewport->widget()->setVisible(false);
 	}
 	if(nvisible == 0) return;
 
@@ -157,8 +153,9 @@ void ViewportsPanel::layoutViewports()
 	// Position items.
 	int count = 0;
 	bool needsRepaint = false;
-	Q_FOREACH(Viewport* viewport, viewports()) {
-		if(viewport->isHidden()) continue;
+	for(Viewport* viewport : viewports) {
+		QWidget* vpWidget = viewport->widget();
+		if(vpWidget->isHidden()) continue;
 
 		int x = count%columns;
 		int y = count/columns;
@@ -168,29 +165,18 @@ void ViewportsPanel::layoutViewports()
 		rect.setHeight((clientRect.height() * (y+1) / rows) - rect.y());
 		rect.adjust(2,2,-2,-2);
 
-		if(viewport->settings()->renderFrameShown()) {
-			// Setup a viewport rectangle that has the same
-			// aspect ratio as the rendering image.
-			RenderSettings* renderSettings = DATASET_MANAGER.currentSet()->renderSettings();
-			if(renderSettings && rect.width() > 0) {
-				FloatType renderAspectRatio = renderSettings->outputImageAspectRatio();
-				FloatType windowAspectRatio = (FloatType)rect.height() / (FloatType)rect.width();
-				if(renderAspectRatio < windowAspectRatio) {
-					int frameHeight = max((int)(rect.width() * renderAspectRatio), 1);
-					rect = QRect(rect.x(), rect.y() + (rect.height() - frameHeight) / 2, rect.width(), frameHeight);
-				}
-				else {
-					int frameWidth = max((int)(rect.height() / renderAspectRatio), 1);
-					rect = QRect(rect.x() + (rect.width() - frameWidth) / 2, rect.y(), frameWidth, rect.height());
-				}
-			}
-		}
-
-		if(viewport->geometry() != rect) {
-			viewport->setGeometry(rect);
+		if(vpWidget->geometry() != rect) {
+			vpWidget->setGeometry(rect);
 			needsRepaint = true;
 		}
 		count++;
+	}
+
+	for(Viewport* viewport : viewports) {
+		if(!viewport->widget()) continue;
+		if(maximizedViewport == NULL || maximizedViewport == viewport) {
+			viewport->widget()->setVisible(true);
+		}
 	}
 
 	if(needsRepaint)

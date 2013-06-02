@@ -85,6 +85,10 @@ bool Application::initialize()
 
 		// Initialize PluginManager and load plugins.
 		PluginManager::instance();
+		// Initialize DataSetManager.
+		DataSetManager::instance();
+		// Initialize ViewportManager.
+		ViewportManager::instance();
 
 		// Create the main application window.
 		if(guiMode()) {
@@ -116,15 +120,16 @@ bool Application::initialize()
 			DataSetManager::instance().fileReset();
 		}
 
-		// Enable the viewports now. Viewport updates are suspended by default.
-		ViewportManager::instance().resumeViewportUpdates();
-
 		// Create the main application window.
 		if(guiMode()) {
 			// Show the main window.
-			MainWindow::instance().showMaximized();
+			//MainWindow::instance().showMaximized();
+			MainWindow::instance().show();
 			MainWindow::instance().restoreLayout();
 		}
+
+		// Enable the viewports now. Viewport updates are suspended by default.
+		ViewportManager::instance().resumeViewportUpdates();
 	}
 	catch(const Exception& ex) {
 		ex.showError();

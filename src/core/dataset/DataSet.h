@@ -32,7 +32,7 @@
 
 namespace Ovito {
 
-class ViewportConfigurationSet;	// defined in ViewportConfiguration.h
+class ViewportConfiguration;	// defined in ViewportConfiguration.h
 class AnimationSettings;		// defined in AnimationSettings.h
 class SelectionSet;				// defined in SelectionSet.h
 class RenderSettings;			// defined in RenderSettings.h
@@ -54,9 +54,7 @@ public:
 	/// \return The internal object that contains the configuration of the viewports. This object is saved
 	///         to the scene file and is used to restore the original viewport configuration
 	///         when the scene file is loaded.
-	/// \note Changing the viewport configuration object does not have any effect because
-	///       It is automatically regenerated just before the dataset is saved to a file.
-	ViewportConfigurationSet* viewportConfig() const { return _viewportConfig; }
+	ViewportConfiguration* viewportConfig() const { return _viewportConfig; }
 
 	/// \brief Returns the animation settings.
 	/// \return The internal object that stores the animation settings for the scene.
@@ -112,16 +110,13 @@ public:
 
 protected:
 
-	/// Saves the class' contents to the given stream.
-	virtual void saveToStream(ObjectSaveStream& stream) override;
-
 	/// Is called when a RefTarget referenced by this object has generated an event.
 	virtual bool referenceEvent(RefTarget* source, ReferenceEvent* event) override;
 
 private:
 
 	/// The configuration of the viewports.
-	ReferenceField<ViewportConfigurationSet> _viewportConfig;
+	ReferenceField<ViewportConfiguration> _viewportConfig;
 
 	/// Animation settings.
 	ReferenceField<AnimationSettings> _animSettings;

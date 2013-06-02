@@ -22,36 +22,49 @@
 #include <core/Core.h>
 #include <core/viewport/ViewportManager.h>
 #include <core/viewport/Viewport.h>
+#include <core/dataset/DataSetManager.h>
 
 namespace Ovito {
 
 /// The singleton instance of the class.
 QScopedPointer<ViewportManager> ViewportManager::_instance;
 
+IMPLEMENT_OVITO_OBJECT(ViewportManager, RefMaker)
+DEFINE_FLAGS_REFERENCE_FIELD(ViewportManager, _viewportConfig, "ViewportConfiguration", ViewportConfiguration, PROPERTY_FIELD_NO_CHANGE_MESSAGE|PROPERTY_FIELD_NO_UNDO|PROPERTY_FIELD_NEVER_CLONE_TARGET)
+
 /******************************************************************************
 * Initializes the viewport manager.
 ******************************************************************************/
 ViewportManager::ViewportManager() :
-	_activeViewport(NULL), _maximizedViewport(NULL),
 	_viewportSuspendCount(1), _viewportsNeedUpdate(false)
 {
+	OVITO_ASSERT_MSG(!_instance, "ViewportManager constructor", "Multiple instances of this singleton class have been created.");
+	INIT_PROPERTY_FIELD(ViewportManager::_viewportConfig);
+
+	// Listen for changes of the data set.
+	connect(&DataSetManager::instance(), SIGNAL(dataSetReset(DataSet*)), this, SLOT(onDataSetReset(DataSet*)));
 }
 
 /******************************************************************************
-* Sets the active viewport.
+* This is called when a new dataset has been loaded.
 ******************************************************************************/
-void ViewportManager::setActiveViewport(Viewport* vp)
+void ViewportManager::onDataSetReset(DataSet* newDataSet)
 {
-	if(vp == _activeViewport) return;
-	_activeViewport = vp;
+	if(_viewportConfig) {
+		disconnect(_viewportConfig, SIGNAL(activeViewportChanged(Viewport*)), this, SIGNAL(activeViewportChanged(Viewport*)));
+		disconnect(_viewportConfig, SIGNAL(maximizedViewportChanged(Viewport*)), this, SIGNAL(maximizedViewportChanged(Viewport*)));
+	}
 
-	// Generate signal.
-	activeViewportChanged(vp);
+	// Listen for changes of the current viewport configuration.
+	_viewportConfig = newDataSet ? newDataSet->viewportConfig() : NULL;
 
-	// Redraw viewports.
-	updateViewports();
+	if(newDataSet) {
+		connect(_viewportConfig, SIGNAL(activeViewportChanged(Viewport*)), this, SIGNAL(activeViewportChanged(Viewport*)));
+		connect(_viewportConfig, SIGNAL(maximizedViewportChanged(Viewport*)), this, SIGNAL(maximizedViewportChanged(Viewport*)));
+	}
 }
 
+#if 0
 /******************************************************************************
 * Sets the maximized viewport.
 ******************************************************************************/
@@ -77,6 +90,7 @@ void ViewportManager::setMaximizedViewport(Viewport* vp)
 	// Redraw viewports.
 	updateViewports();
 }
+#endif
 
 /******************************************************************************
 * This flags all viewports for redrawing.
@@ -136,38 +150,6 @@ void ViewportManager::resumeViewportUpdates()
 	_viewportSuspendCount--;
 	if(_viewportSuspendCount == 0 && _viewportsNeedUpdate)
 		updateViewports();
-}
-
-/******************************************************************************
-* This gets a viewport configuration that should be
-* used as template for new scene files.
-******************************************************************************/
-OORef<ViewportConfigurationSet> ViewportManager::defaultConfiguration()
-{
-	// Make sure the default configuration is initialized.
-	if(!_defaultConfig) {
-		_defaultConfig = new ViewportConfigurationSet();
-
-		OORef<ViewportConfiguration> topView = new ViewportConfiguration();
-		topView->setViewType(ViewportConfiguration::VIEW_TOP);
-		_defaultConfig->addViewport(topView);
-
-		OORef<ViewportConfiguration> frontView = new ViewportConfiguration();
-		frontView->setViewType(ViewportConfiguration::VIEW_FRONT);
-		_defaultConfig->addViewport(frontView);
-
-		OORef<ViewportConfiguration> leftView = new ViewportConfiguration();
-		leftView->setViewType(ViewportConfiguration::VIEW_LEFT);
-		_defaultConfig->addViewport(leftView);
-
-		OORef<ViewportConfiguration> perspectiveView = new ViewportConfiguration();
-		perspectiveView->setViewType(ViewportConfiguration::VIEW_PERSPECTIVE);
-		_defaultConfig->addViewport(perspectiveView);
-
-		_defaultConfig->setActiveViewport(0);
-		_defaultConfig->setMaximizedViewport(-1);
-	}
-	return _defaultConfig;
 }
 
 };

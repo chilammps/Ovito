@@ -63,7 +63,7 @@ void ViewportSettings::setSettings(const ViewportSettings& settings)
 ******************************************************************************/
 ViewportSettings::ViewportSettings()
 {
-	_rotationAxisType = ROTATION_Z_AXIS;
+	_upDirection = Z_AXIS;
 	restoreDefaultViewportColors();
 }
 
@@ -111,12 +111,12 @@ void ViewportSettings::setViewportColor(ViewportColor which, const Color& clr)
 /******************************************************************************
 * Returns the rotation axis to be used with orbit mode.
 ******************************************************************************/
-Vector3 ViewportSettings::rotationAxis() const
+Vector3 ViewportSettings::upVector() const
 {
-	switch(_rotationAxisType) {
-	case ROTATION_X_AXIS: return Vector3(1,0,0);
-	case ROTATION_Y_AXIS: return Vector3(0,1,0);
-	case ROTATION_Z_AXIS: return Vector3(0,0,1);
+	switch(_upDirection) {
+	case X_AXIS: return Vector3(1,0,0);
+	case Y_AXIS: return Vector3(0,1,0);
+	case Z_AXIS: return Vector3(0,0,1);
 	default: return Vector3(0,0,1);
 	}
 }
@@ -126,7 +126,7 @@ Vector3 ViewportSettings::rotationAxis() const
 ******************************************************************************/
 void ViewportSettings::load(QSettings& store)
 {
-	_rotationAxisType = (RotationAxisType)store.value("RotationAxisType", qVariantFromValue((int)_rotationAxisType)).toInt();
+	_upDirection = (UpDirection)store.value("UpDirection", qVariantFromValue((int)_upDirection)).toInt();
 	int arraySize = store.beginReadArray("colors");
 	for(int i = 0; i < NUMBER_OF_COLORS && i < arraySize; i++) {
 		store.setArrayIndex(i);
@@ -142,7 +142,7 @@ void ViewportSettings::load(QSettings& store)
 ******************************************************************************/
 void ViewportSettings::save(QSettings& store) const
 {
-	store.setValue("RotationAxisType", (int)_rotationAxisType);
+	store.setValue("UpDirection", (int)_upDirection);
 	store.beginWriteArray("colors");
 	for(int i = 0; i < NUMBER_OF_COLORS; i++) {
 		store.setArrayIndex(i);

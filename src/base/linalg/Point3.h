@@ -206,7 +206,7 @@ constexpr Point_3<T> operator/(const Point_3<T>& a, T s) {
 
 /// \brief Writes the point to a text output stream.
 template<typename T>
-inline std::ostream& operator<<(std::ostream &os, const Point_3<T> &v) {
+inline std::ostream& operator<<(std::ostream& os, const Point_3<T>& v) {
 	return os << v.x() << ' ' << v.y()  << ' ' << v.z();
 }
 

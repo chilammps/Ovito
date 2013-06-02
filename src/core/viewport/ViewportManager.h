@@ -33,13 +33,13 @@
 
 namespace Ovito {
 
+class DataSet;			// defined in DataSet.h
+
 /**
  * \brief Manages the viewports.
  */
-class ViewportManager : public QObject
+class ViewportManager : public RefMaker
 {
-	Q_OBJECT
-
 public:
 
 	/// \brief Returns the one and only instance of this class.
@@ -49,27 +49,28 @@ public:
 		return *_instance.data();
 	}
 
+	/// \brief Returns the current viewport configuration.
+	ViewportConfiguration* viewportConfig() const { return _viewportConfig; }
+
 	/// \brief Returns the active viewport.
 	/// \return The active Viewport or \c NULL if no viewport is currently active.
-	/// \sa setActiveViewport()
-	Viewport* activeViewport() { return _activeViewport; }
+	Viewport* activeViewport() { return viewportConfig()->activeViewport(); }
 
 	/// \brief Sets the active viewport.
 	/// \param vp The viewport to be made active.
 	/// \note Calling this method will redraw all viewports.
-	/// \sa activeViewport()
-	void setActiveViewport(Viewport* vp);
+	void setActiveViewport(Viewport* vp) { viewportConfig()->setActiveViewport(vp); }
 
 	/// \brief Returns the maximized viewport.
 	/// \return The maximized viewport or \c NULL if no one is currently maximized.
 	/// \sa setMaximizedViewport()
-	Viewport* maximizedViewport() { return _maximizedViewport; }
+	Viewport* maximizedViewport() { return viewportConfig()->maximizedViewport(); }
 
 	/// \brief Maximizes a viewport.
 	/// \param vp The viewport to be maximized or \c NULL to restore the currently maximized viewport to
 	///           its original state.
 	/// \sa maximizedViewport()
-	void setMaximizedViewport(Viewport* vp);
+	void setMaximizedViewport(Viewport* vp) { viewportConfig()->setMaximizedViewport(vp); }
 
 	/// \brief This will flag all viewports for redrawing.
 	///
@@ -117,23 +118,13 @@ public:
 	///        is currently being updated.
 	/// \return \c true if there is currently a rendering operation going on.
 	///
-	/// No new windows or dialogs should be shown during this phase
+	/// No windows or dialogs should be opened during this phase
 	/// to prevent an infinite update loop.
-	///
-	/// \sa Window3DContainer::isRendering()
 	bool isRendering() const;
 
 	/// \brief Returns all viewports of the main viewport panel.
 	/// \return The list of viewports.
-	const QVector<Viewport*>& viewports() const { return _viewports; }
-
-	/// \brief Returns the default ViewportConfiguration used for new scene files.
-	/// \return Pointer to the default viewport configuration stored by the ViewportManager.
-	/// \note You may change the returned ViewportConfiguration object to modify the
-	///       default configuration used for new scene files.
-	/// \note Instead of using the returned object in a scene file you should make a copy of it first
-	///       and leave the original object intact.
-	OORef<ViewportConfigurationSet> defaultConfiguration();
+	const QVector<Viewport*>& viewports() const { return viewportConfig()->viewports(); }
 
 Q_SIGNALS:
 
@@ -143,13 +134,12 @@ Q_SIGNALS:
 	/// This signal is emitted when a viewport has been maximized.
 	void maximizedViewportChanged(Viewport* maximizedViewport);
 
+private Q_SLOTS:
+
+	/// This is called when a new dataset has been loaded.
+	void onDataSetReset(DataSet* newDataSet);
+
 private:
-
-	/// The active viewport.
-	Viewport* _activeViewport;
-
-	/// The maximized viewport if there is one.
-	Viewport* _maximizedViewport;
 
 	/// This counter is for suspending the viewport updates.
 	int _viewportSuspendCount;
@@ -157,11 +147,8 @@ private:
 	/// Indicates that the viewports have been invalidated while updates were suspended.
 	bool _viewportsNeedUpdate;
 
-	/// This holds the default configuration of viewports to use.
-	OORef<ViewportConfigurationSet> _defaultConfig;
-
-	/// The list of all viewports.
-	QVector<Viewport*> _viewports;
+	/// The current configuration of the viewports.
+	ReferenceField<ViewportConfiguration> _viewportConfig;
 
 private:
 
@@ -171,6 +158,11 @@ private:
 
 	/// The singleton instance of this class.
 	static QScopedPointer<ViewportManager> _instance;
+
+	Q_OBJECT
+	OVITO_OBJECT
+
+	DECLARE_REFERENCE_FIELD(_viewportConfig)
 };
 
 /**

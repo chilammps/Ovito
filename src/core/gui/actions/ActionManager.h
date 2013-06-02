@@ -54,61 +54,61 @@ namespace Ovito {
 #define ACTION_EDIT_REDO		"EditRedo"
 
 /// This action maximizes the active viewport.
-#define ACTION_VIEWPORT_MAXIMIZE					"App.Viewport.Maximize"
+#define ACTION_VIEWPORT_MAXIMIZE					"ViewportMaximize"
 /// This action activates the viewport zoom mode.
-#define ACTION_VIEWPORT_ZOOM						"App.Viewport.Zoom"
+#define ACTION_VIEWPORT_ZOOM						"ViewportZoom"
 /// This action activates the viewport pan mode.
-#define ACTION_VIEWPORT_PAN							"App.Viewport.Pan"
+#define ACTION_VIEWPORT_PAN							"ViewportPan"
 /// This action activates the viewport orbit mode.
-#define ACTION_VIEWPORT_ORBIT						"App.Viewport.Orbit"
+#define ACTION_VIEWPORT_ORBIT						"ViewportOrbit"
 /// This action activates the field of view viewport mode.
-#define ACTION_VIEWPORT_FOV							"App.Viewport.FOV"
+#define ACTION_VIEWPORT_FOV							"ViewportFOV"
 /// This action activates the 'pick center of rotation' input mode.
-#define ACTION_VIEWPORT_PICK_ORBIT_CENTER			"App.Viewport.Orbit.PickCenter"
+#define ACTION_VIEWPORT_PICK_ORBIT_CENTER			"ViewportOrbitPickCenter"
 /// This zooms the current viewport to the scene extents
-#define ACTION_VIEWPORT_ZOOM_SCENE_EXTENTS			"App.Viewport.Zoom.SceneExtents"
+#define ACTION_VIEWPORT_ZOOM_SCENE_EXTENTS			"ViewportZoomSceneExtents"
 /// This zooms the current viewport to the selection extents
-#define ACTION_VIEWPORT_ZOOM_SELECTION_EXTENTS		"App.Viewport.Zoom.SelectionExtents"
+#define ACTION_VIEWPORT_ZOOM_SELECTION_EXTENTS		"ViewportZoomSelectionExtents"
 /// This zooms all viewports to the scene extents
-#define ACTION_VIEWPORT_ZOOM_SCENE_EXTENTS_ALL		"App.Viewport.SceneExtents.All"
+#define ACTION_VIEWPORT_ZOOM_SCENE_EXTENTS_ALL		"ViewportSceneExtentsAll"
 /// This zooms all viewports to the selection extents
-#define ACTION_VIEWPORT_ZOOM_SELECTION_EXTENTS_ALL	"App.Viewport.SelectionExtents.All"
+#define ACTION_VIEWPORT_ZOOM_SELECTION_EXTENTS_ALL	"ViewportSelectionExtentsAll"
 
 /// This action deletes the currently selected modifier from the modifier stack.
-#define ACTION_MODIFIER_DELETE				"App.Modifier.Delete"
+#define ACTION_MODIFIER_DELETE				"ModifierDelete"
 /// This action moves the currently selected modifer up one entry in the modifier stack.
-#define ACTION_MODIFIER_MOVE_UP				"App.Modifier.MoveUp"
+#define ACTION_MODIFIER_MOVE_UP				"ModifierMoveUp"
 /// This action moves the currently selected modifer up down entry in the modifier stack.
-#define ACTION_MODIFIER_MOVE_DOWN			"App.Modifier.MoveDown"
+#define ACTION_MODIFIER_MOVE_DOWN			"ModifierMoveDown"
 /// This action toggles the enabled/disable state of the currently selected modifier.
-#define ACTION_MODIFIER_TOGGLE_STATE		"App.Modifier.ToggleEnabledState"
+#define ACTION_MODIFIER_TOGGLE_STATE		"ModifierToggleEnabledState"
 
 /// This action jumps to the start of the animation
-#define ACTION_GOTO_START_OF_ANIMATION		"App.Animation.Goto.Start"
+#define ACTION_GOTO_START_OF_ANIMATION		"AnimationGotoStart"
 /// This action jumps to the end of the animation
-#define ACTION_GOTO_END_OF_ANIMATION		"App.Animation.Goto.End"
+#define ACTION_GOTO_END_OF_ANIMATION		"AnimationGotoEnd"
 /// This action jumps to previous frame in the animation
-#define ACTION_GOTO_PREVIOUS_FRAME			"App.Animation.Goto.PreviousFrame"
+#define ACTION_GOTO_PREVIOUS_FRAME			"AnimationGotoPreviousFrame"
 /// This action jumps to next frame in the animation
-#define ACTION_GOTO_NEXT_FRAME				"App.Animation.Goto.NextFrame"
+#define ACTION_GOTO_NEXT_FRAME				"AnimationGotoNextFrame"
 /// This action toggles animation playback
-#define ACTION_TOGGLE_ANIMATION_PLAYBACK	"App.Animation.TogglePlayback"
+#define ACTION_TOGGLE_ANIMATION_PLAYBACK	"AnimationTogglePlayback"
 /// This action starts the animation playback
-#define ACTION_START_ANIMATION_PLAYBACK		"App.Animation.StartPlayback"
+#define ACTION_START_ANIMATION_PLAYBACK		"AnimationStartPlayback"
 /// This action starts the animation playback
-#define ACTION_STOP_ANIMATION_PLAYBACK		"App.Animation.StopPlayback"
+#define ACTION_STOP_ANIMATION_PLAYBACK		"AnimationStopPlayback"
 /// This action shows the animation settings dialog
-#define ACTION_ANIMATION_SETTINGS			"App.Animation.Settings"
+#define ACTION_ANIMATION_SETTINGS			"AnimationSettings"
 
 /// This action starts rendering of the current view.
-#define ACTION_RENDER_ACTIVE_VIEWPORT		"App.Render.ActiveViewport"
+#define ACTION_RENDER_ACTIVE_VIEWPORT		"RenderActiveViewport"
 /// This action shows a dialog box that lets the user select the renderer plugin.
-#define ACTION_SELECT_RENDERER_DIALOG		"App.Render.SelectRenderer"
+#define ACTION_SELECT_RENDERER_DIALOG		"RenderSelectRenderer"
 /// This action displays the frame buffer windows showing the last rendered image.
-#define ACTION_SHOW_FRAME_BUFFER			"App.Render.ShowFrameBuffer"
+#define ACTION_SHOW_FRAME_BUFFER			"RenderShowFrameBuffer"
 
 /// This actions open the application's "Settings" dialog.
-#define ACTION_SETTINGS_DIALOG				"App.Settings"
+#define ACTION_SETTINGS_DIALOG				"Settings"
 
 /**
  * \brief Manages the application's actions.
@@ -165,6 +165,8 @@ private Q_SLOTS:
 	void on_FileOpen_triggered();
 	void on_FileSave_triggered();
 	void on_FileSaveAs_triggered();
+	void on_ViewportMaximize_triggered();
+	void on_Settings_triggered();
 
 private:
 

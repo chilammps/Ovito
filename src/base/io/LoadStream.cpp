@@ -44,7 +44,7 @@ LoadStream::LoadStream(QDataStream& source) : _is(source), _isOpen(false)
 	quint32 magic1, magic2;
 	*this >> magic1 >> magic2;
 	*this >> _fileFormat;
-	*this >> _numFPBits;
+	*this >> _fpPrecision;
 	
 	_isOpen = false;
 
@@ -56,6 +56,7 @@ LoadStream::LoadStream(QDataStream& source) : _is(source), _isOpen(false)
 		throw Exception(tr("Unsupported file format version: %1. This file has been written with a newer program version. Please upgrade to the newest program version.").arg(_fileFormat));
 
 	_is.setVersion(QDataStream::Qt_5_1);
+	_is.setFloatingPointPrecision(_fpPrecision == 4 ? QDataStream::SinglePrecision : QDataStream::DoublePrecision);
 	_isOpen = true;
 
 	// Read application name.

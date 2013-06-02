@@ -61,14 +61,13 @@ public:
 	};
 	Q_ENUMS(ViewportColor)
 
-	/// Possible settings for the viewport rotation axis, which defines
-	/// the up direction for the orbit input mode.
-	enum RotationAxisType {
-		ROTATION_X_AXIS, //< Rotate around X axis
-		ROTATION_Y_AXIS, //< Rotate around Y axis
-		ROTATION_Z_AXIS, //< Rotate around Z axis (the default)
+	/// Specifies the "up" direction in the viewports.
+	enum UpDirection {
+		X_AXIS, //< Rotate around X axis
+		Y_AXIS, //< Rotate around Y axis
+		Z_AXIS, //< Rotate around Z axis (the default)
 	};
-	Q_ENUMS(RotationAxisType)
+	Q_ENUMS(UpDirection)
 
 public:
 
@@ -89,13 +88,13 @@ public:
 	void restoreDefaultViewportColors();
 
 	/// Returns the rotation axis to be used with orbit mode.
-	Vector3 rotationAxis() const;
+	Vector3 upVector() const;
 
 	/// Returns the selected rotation axis type.
-	RotationAxisType rotationAxisType() const { return _rotationAxisType; }
+	UpDirection upDirection() const { return _upDirection; }
 
-	/// Sets the rotation axis type.
-	void setRotationAxisType(RotationAxisType t) { _rotationAxisType = t; }
+	/// Sets the "up" direction.
+	void setUpDirection(UpDirection t) { _upDirection = t; }
 
 	/// Loads the settings from the given settings store.
 	void load(QSettings& store);
@@ -115,7 +114,7 @@ private:
 	Color _viewportColors[NUMBER_OF_COLORS];
 
 	/// The selected rotation axis type for orbit mode.
-	RotationAxisType _rotationAxisType;
+	UpDirection _upDirection;
 
 	/// The current settings record.
 	static ViewportSettings _currentSettings;
@@ -127,9 +126,9 @@ private:
 };
 
 Q_DECLARE_METATYPE(Ovito::ViewportSettings::ViewportColor)
-Q_DECLARE_METATYPE(Ovito::ViewportSettings::RotationAxisType)
+Q_DECLARE_METATYPE(Ovito::ViewportSettings::UpDirection)
 Q_DECLARE_TYPEINFO(Ovito::ViewportSettings::ViewportColor, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::ViewportSettings::RotationAxisType, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::ViewportSettings::UpDirection, Q_PRIMITIVE_TYPE);
 
 
 #endif	// __OVITO_VIEWPORT_SETTINGS_H

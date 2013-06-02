@@ -33,12 +33,15 @@ SET(CMAKE_AUTOMOC ON)
 # As moc files are generated in the binary dir, tell CMake to always look for includes there:
 SET(CMAKE_INCLUDE_CURRENT_DIR ON)
   
-# Find and setup Qt5 for this project
+# Find and setup Qt5 library.
 FIND_PACKAGE(Qt5Widgets REQUIRED)
 FIND_PACKAGE(Qt5Xml REQUIRED)
 
 # Use the Q_SIGNALS and Q_SLOTS macros to avoid name conflicts.
 ADD_DEFINITIONS(-DQT_NO_KEYWORDS)
+
+# Find OpenGL library.
+FIND_PACKAGE(OpenGL REQUIRED)
 
 # Define the OVITO_DEBUG macro in debug builds.
 IF(CMAKE_BUILD_TYPE STREQUAL "Debug")

@@ -22,6 +22,7 @@
 #include <core/Core.h>
 #include "MainWindow.h"
 #include "AnimationTimeSlider.h"
+#include "ViewportsPanel.h"
 #include <core/gui/actions/ActionManager.h>
 
 namespace Ovito {
@@ -51,8 +52,8 @@ MainWindow::MainWindow(const QString& title) :
 	setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
 	setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
 
-	QWidget* viewportPanel = new QWidget(this);
-	setCentralWidget(viewportPanel);
+	ViewportsPanel* viewportsPanel = new ViewportsPanel(this);
+	setCentralWidget(viewportsPanel);
 
 	// Create the animation panel below the viewports.
 	QWidget* animationPanel = new QWidget();
@@ -81,6 +82,36 @@ MainWindow::MainWindow(const QString& title) :
 	animationPanelDockWidget->setWidget(animationPanel);
 	animationPanelDockWidget->setTitleBarWidget(new QWidget());
 	addDockWidget(Qt::BottomDockWidgetArea, animationPanelDockWidget);
+
+   // Create the viewport control toolbar.
+	QToolBar* viewportControlBar1 = new QToolBar();
+	//viewportControlBar1->addAction(ActionManager::instance().getAction(ACTION_VIEWPORT_ZOOM));
+	//viewportControlBar1->addAction(ActionManager::instance().getAction(ACTION_VIEWPORT_PAN));
+	//viewportControlBar1->addAction(ActionManager::instance().getAction(ACTION_VIEWPORT_ORBIT));
+	//viewportControlBar1->addAction(ActionManager::instance().getAction(ACTION_VIEWPORT_PICK_ORBIT_CENTER));
+	viewportControlBar1->setStyleSheet("QToolBar { padding: 0px; margin: 0px; border: 0px none black; } QToolButton { padding: 0px; margin: 0px }");
+	QToolBar* viewportControlBar2 = new QToolBar();
+	//viewportControlBar2->addAction(ActionManager::instance().getAction(ACTION_VIEWPORT_ZOOM_SCENE_EXTENTS));
+	//viewportControlBar2->addAction(ActionManager::instance().getAction(ACTION_VIEWPORT_ZOOM_SELECTION_EXTENTS));
+	//viewportControlBar2->addAction(ActionManager::instance().getAction(ACTION_VIEWPORT_FOV));
+	viewportControlBar2->addAction(ActionManager::instance().getAction(ACTION_VIEWPORT_MAXIMIZE));
+	viewportControlBar2->setStyleSheet("QToolBar { padding: 0px; margin: 0px; border: 0px none black; } QToolButton { padding: 0px; margin: 0px }");
+	QWidget* viewportControlPanel = new QWidget();
+	QVBoxLayout* viewportControlPanelLayout = new QVBoxLayout(viewportControlPanel);
+	viewportControlPanelLayout->setSpacing(0);
+	viewportControlPanelLayout->setContentsMargins(0, 1, 0, 0);
+	viewportControlPanelLayout->addWidget(viewportControlBar1);
+	viewportControlPanelLayout->addWidget(viewportControlBar2);
+	viewportControlPanelLayout->addStretch(1);
+	viewportControlPanel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
+
+	QDockWidget* viewportControlDockWidget = new QDockWidget(tr("Viewport Control"), this);
+	viewportControlDockWidget->setObjectName("ViewportControlPanel");
+	viewportControlDockWidget->setAllowedAreas(Qt::AllDockWidgetAreas);
+	viewportControlDockWidget->setFeatures(QDockWidget::DockWidgetClosable);
+	viewportControlDockWidget->setWidget(viewportControlPanel);
+	viewportControlDockWidget->setTitleBarWidget(new QWidget());
+	addDockWidget(Qt::BottomDockWidgetArea, viewportControlDockWidget);
 }
 
 /******************************************************************************
@@ -130,7 +161,7 @@ void MainWindow::createMainMenu()
 
 	// Build the options menu.
 	QMenu* optionsMenu = menuBar->addMenu(tr("&Options"));
-//	_optionsMenu->addAction(ACTION_MANAGER.findActionProxy(ACTION_SETTINGS_DIALOG));
+	optionsMenu->addAction(ActionManager::instance().getAction(ACTION_SETTINGS_DIALOG));
 
 	// Build the help menu.
 	QMenu* helpMenu = menuBar->addMenu(tr("&Help"));

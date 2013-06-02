@@ -22,6 +22,7 @@
 #include <core/Core.h>
 #include <core/gui/actions/ActionManager.h>
 #include <core/gui/mainwin/MainWindow.h>
+#include <core/gui/dialogs/ApplicationSettingsDialog.h>
 #include <core/dataset/DataSetManager.h>
 
 namespace Ovito {
@@ -127,6 +128,17 @@ void ActionManager::on_FileSave_triggered()
 void ActionManager::on_FileSaveAs_triggered()
 {
 	DataSetManager::instance().fileSaveAs();
+}
+
+/******************************************************************************
+* Handles ACTION_SETTINGS_DIALOG command.
+******************************************************************************/
+void ActionManager::on_Settings_triggered()
+{
+	if(Application::instance().guiMode()) {
+		ApplicationSettingsDialog dlg(&MainWindow::instance());
+		dlg.exec();
+	}
 }
 
 };

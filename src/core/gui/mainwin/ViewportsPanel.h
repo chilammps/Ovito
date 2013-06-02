@@ -23,13 +23,11 @@
 #define __OVITO_VIEWPORTS_PANEL_H
 
 #include <core/Core.h>
-#include <core/reference/RefTargetListener.h>
-#include "Viewport.h"
-#include "input/ViewportInputManager.h"
 
 namespace Ovito {
 
 class DataSet;		// defined in DataSet.h
+class Viewport;		// defined in Viewport.h
 
 /**
  * \brief The container for the viewports in the application's main window.
@@ -41,19 +39,7 @@ class ViewportsPanel : public QWidget
 public:
 
 	/// \brief Constructs the viewport panel.
-	ViewportPanel(QWidget* parent);
-
-	/// \brief Returns the list of viewports in the panel.
-	/// \return A list of viewports.
-	const QVector<Viewport*>& viewports() const { return _viewports; }
-
-	/// \brief Creates a new viewport in the panel.
-	/// \return The new viewport instance.
-	Viewport* createViewport();
-
-	/// \brief Removes and destroys a viewport.
-	/// \param vp The viewport to be removed.
-	void removeViewport(Viewport* vp);
+	ViewportsPanel(QWidget* parent);
 
 public Q_SLOTS:
 
@@ -73,16 +59,11 @@ protected:
 	/// Handles size event for the window.
 	virtual void resizeEvent(QResizeEvent* event) override;
 
-private:
-
-	/// The list of viewports.
-	QVector<Viewport*> _viewports;
-
 private Q_SLOTS:
 
-	/// Updates the viewport panel to reflect the viewport configuration saved in the current DataSet.
-	/// This method is called each time a new DataSet has become active.
-	void reset(DataSet* newDataSet);
+	/// This is called when a new dataset has been loaded.
+	void onDataSetReset(DataSet* newDataSet);
+
 };
 
 

@@ -241,7 +241,7 @@ void RefMaker::saveToStream(ObjectSaveStream& stream)
 	// Iterate over all property fields in the class hierarchy.
 	for(const OvitoObjectType* clazz = &getOOType(); clazz; clazz = clazz->superClass()) {
 		for(const PropertyFieldDescriptor* field = clazz->firstPropertyField(); field; field = field->next()) {
-			
+
 			if(field->isReferenceField()) {
 				// Write the object pointed to by the reference field to the stream.
 				

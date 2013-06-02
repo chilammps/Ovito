@@ -65,7 +65,7 @@ public:
 
 	/// \brief Conversion from a Qt color object.
 	/// \param c The Qt color to convert to a floating-point representation.
-	constexpr explicit ColorT(const QColor& c) : std::array<T, 3>({c.redF(), c.greenF(), c.blueF()}) {}
+	constexpr explicit ColorT(const QColor& c) : std::array<T, 3>({T(c.redF()), T(c.greenF()), T(c.blueF())}) {}
 
 	/// \brief Sets all components to zero.
 	void setBlack() { r() = g() = b() = 0; }

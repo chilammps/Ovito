@@ -32,6 +32,7 @@ QScopedPointer<AnimManager> AnimManager::_instance;
 ******************************************************************************/
 AnimManager::AnimManager() : _animSuspendCount(0),  _animationMode(false)
 {
+	OVITO_ASSERT_MSG(!_instance, "AnimManager constructor", "Multiple instances of this singleton class have been created.");
 #if 0
 	// Reset the animation manager when a new scene has been loaded.
 	connect(&DATASET_MANAGER, SIGNAL(dataSetReset(DataSet*)), this, SLOT(reset()));

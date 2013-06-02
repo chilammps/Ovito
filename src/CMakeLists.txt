@@ -48,12 +48,18 @@ SET(OVITO_SOURCE_FILES
 	core/gui/app/Application.cpp
 	core/gui/mainwin/MainWindow.cpp
 	core/gui/mainwin/AnimationTimeSlider.cpp
+	core/gui/mainwin/ViewportsPanel.cpp
+	core/gui/dialogs/ApplicationSettingsDialog.cpp
+	core/gui/dialogs/ViewportSettingsPage.cpp
 	core/gui/actions/ActionManager.cpp
 	core/gui/actions/FileActions.cpp
+	core/gui/actions/ViewportActions.cpp
 	core/gui/undo/UndoManager.cpp
 	core/gui/widgets/SpinnerWidget.cpp
+	core/gui/widgets/ColorPickerWidget.cpp
 	core/utilities/units/UnitsManager.cpp
 	core/viewport/Viewport.cpp
+	core/viewport/ViewportWindow.cpp
 	core/viewport/ViewportConfiguration.cpp
 	core/viewport/ViewportSettings.cpp
 	core/viewport/ViewportManager.cpp
@@ -68,6 +74,9 @@ SET(EXECUTABLE_OUTPUT_PATH ${OVITO_BINARY_DIRECTORY})
 
 # Builds the main executable of the application
 ADD_EXECUTABLE(${PROJECT_NAME} WIN32 MACOSX_BUNDLE ${OVITO_SOURCE_FILES} ${OVITO_RESOURCE_FILES} ${WINDOWS_RESOURCES})
+
+# Link to OpenGL library.
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${OPENGL_gl_LIBRARY})
 
 # Set name of executable.
 SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "ovito")

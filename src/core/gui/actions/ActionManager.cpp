@@ -34,6 +34,8 @@ QScopedPointer<ActionManager> ActionManager::_instance;
 ******************************************************************************/
 ActionManager::ActionManager()
 {
+	OVITO_ASSERT_MSG(!_instance, "ActionManager constructor", "Multiple instances of this singleton class have been created.");
+
 	createAction(ACTION_QUIT, tr("Exit"), ":/core/actions/file/file_quit.png", tr("Quit the application."), QKeySequence::Quit);
 	createAction(ACTION_FILE_NEW, tr("New Scene"), ":/core/actions/file/file_new.png", tr("Resets the scene."), QKeySequence::New);
 	createAction(ACTION_FILE_OPEN, tr("Open Scene"), ":/core/actions/file/file_open.png", tr("Open a saved scene from a file."), QKeySequence::Open);
@@ -44,11 +46,17 @@ ActionManager::ActionManager()
 	createAction(ACTION_HELP_ABOUT, tr("About"), NULL, tr("Show information about the application."));
 	createAction(ACTION_HELP_SHOW_ONLINE_HELP, tr("Manual"), NULL, tr("Open the online manual."));
 
+	createAction(ACTION_SETTINGS_DIALOG, tr("&Settings..."));
+
+	createAction(ACTION_VIEWPORT_MAXIMIZE, tr("Maximize Active Viewport"), ":/core/actions/viewport/maximize_viewport.png", tr("Enlarge/reduce the active viewport."));
+
+	// Create Edit->Undo action.
 	QAction* undoAction = UndoManager::instance().createUndoAction(this);
 	undoAction->setObjectName(ACTION_EDIT_UNDO);
 	if(Application::instance().guiMode()) undoAction->setIcon(QIcon(QString(":/core/actions/edit/edit_undo.png")));
 	addAction(undoAction);
 
+	// Create Edit->Redo action.
 	QAction* redoAction = UndoManager::instance().createRedoAction(this);
 	redoAction->setObjectName(ACTION_EDIT_REDO);
 	if(Application::instance().guiMode()) redoAction->setIcon(QIcon(QString(":/core/actions/edit/edit_redo.png")));

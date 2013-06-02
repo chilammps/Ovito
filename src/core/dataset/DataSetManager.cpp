@@ -45,6 +45,7 @@ QScopedPointer<DataSetManager> DataSetManager::_instance;
 ******************************************************************************/
 DataSetManager::DataSetManager()
 {
+	OVITO_ASSERT_MSG(!_instance, "DataSetManager constructor", "Multiple instances of this singleton class have been created.");
 	INIT_PROPERTY_FIELD(DataSetManager::_currentSet);
 #if 0
 	INIT_PROPERTY_FIELD(DataSetManager::_selectionSetProxy);

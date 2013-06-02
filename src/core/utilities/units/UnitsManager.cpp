@@ -40,7 +40,9 @@ QScopedPointer<UnitsManager> UnitsManager::_instance;
 ******************************************************************************/
 UnitsManager::UnitsManager()
 {
-	/// Create standard unit objects.
+	OVITO_ASSERT_MSG(!_instance, "UnitsManager constructor", "Multiple instances of this singleton class have been created.");
+
+	// Create standard unit objects.
 	_units[&FloatParameterUnit::OOType] = _floatIdentityUnit = new FloatParameterUnit();
 	_units[&IntegerParameterUnit::OOType] = _integerIdentityUnit = new IntegerParameterUnit();
 	_units[&TimeParameterUnit::OOType] = _timeUnit = new TimeParameterUnit();

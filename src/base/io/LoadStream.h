@@ -161,7 +161,7 @@ public:
 	/// \brief Returns the floating-point precision used in the input file.
 	/// \return The number of bytes used to represent one floating-point value. This is either
 	///         4 for single precision (32 bit) or 8 for double precision (64 bit).
-	quint32 floatingPointPrecision() const { return _numFPBits; }
+	quint32 floatingPointPrecision() const { return _fpPrecision; }
 
 	/// \brief Returns the file format version of the current file.
 	quint32 formatVersion() const { return _fileFormat; }
@@ -177,8 +177,8 @@ protected:
 	/// The version of the file format.
 	quint32 _fileFormat;
 	
-	/// The floating-point precision.
-	quint32 _numFPBits;
+	/// The floating-point precision (4 or 8 bytes).
+	quint32 _fpPrecision;
 
 	/// The name of the application that wrote the current file.
 	QString _applicationName;
@@ -267,7 +267,7 @@ inline LoadStream& operator>>(LoadStream& stream, std::array<T, N>& a)
 /// \return The source stream.
 ///
 /// The floating-point value will be read from the stream using the
-/// lcal machine precision, independent of the
+/// local machine precision, independent of the
 /// precision used for writing the value to the file.
 inline LoadStream& operator>>(LoadStream& stream, FloatType& v)
 {

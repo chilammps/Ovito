@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-//
+// 
 //  Copyright (2013) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
@@ -19,51 +19,21 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file Base.h
- * \brief This header file includes the standard system headers used by the basic classes.
- */
+#include <core/Core.h>
+#include <core/gui/actions/ActionManager.h>
+#include <core/viewport/ViewportManager.h>
 
-#ifndef __OVITO_BASE_H
-#define __OVITO_BASE_H
+namespace Ovito {
 
 /******************************************************************************
-* Standard Template Library (STL)
+* Handles ACTION_VIEWPORT_MAXIMIZE command.
 ******************************************************************************/
-#include <iostream>
-#include <cmath>
-#include <cstdint>
-#include <type_traits>
-#include <stack>
-#include <array>
-#include <vector>
-#include <map>
-#include <utility>
+void ActionManager::on_ViewportMaximize_triggered()
+{
+	if(ViewportManager::instance().maximizedViewport())
+		ViewportManager::instance().setMaximizedViewport(NULL);
+	else if(ViewportManager::instance().activeViewport())
+		ViewportManager::instance().setMaximizedViewport(ViewportManager::instance().activeViewport());
+}
 
-/******************************************************************************
-* QT Library
-******************************************************************************/
-#include <QApplication>
-#include <QException>
-#include <QStringList>
-#include <QSettings>
-#include <QMenuBar>
-#include <QMenu>
-#include <QUndoStack>
-#include <QUrl>
-#include <QPointer>
-#include <QFileInfo>
-#include <QResource>
-#include <QDir>
-#include <QtWidgets>
-#include <QtDebug>
-#include <QtXml>
-#include <QtGui>
-#include <qopengl.h>
-
-// Defines the number type used for numerical computations.
-#include "utilities/Debugging.h"
-#include "utilities/FloatType.h"
-#include "utilities/Exception.h"
-
-#endif // __OVITO_BASE_H
+};
