@@ -49,6 +49,7 @@ ActionManager::ActionManager()
 	createAction(ACTION_SETTINGS_DIALOG, tr("&Settings..."));
 
 	createAction(ACTION_VIEWPORT_MAXIMIZE, tr("Maximize Active Viewport"), ":/core/actions/viewport/maximize_viewport.png", tr("Enlarge/reduce the active viewport."));
+	createAction(ACTION_VIEWPORT_ZOOM_SCENE_EXTENTS, tr("Zoom Scene Extents"), ":/core/actions/viewport/zoom_scene_extents.png", tr("Zoom to show all."));
 
 	// Create Edit->Undo action.
 	QAction* undoAction = UndoManager::instance().createUndoAction(this);

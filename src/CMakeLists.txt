@@ -54,6 +54,7 @@ SET(OVITO_SOURCE_FILES
 	core/gui/actions/ActionManager.cpp
 	core/gui/actions/FileActions.cpp
 	core/gui/actions/ViewportActions.cpp
+	core/gui/actions/ViewportModeAction.cpp
 	core/gui/undo/UndoManager.cpp
 	core/gui/widgets/SpinnerWidget.cpp
 	core/gui/widgets/ColorPickerWidget.cpp

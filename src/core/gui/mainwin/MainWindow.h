@@ -77,6 +77,9 @@ private:
 	/// Creates the main toolbar.
 	void createMainToolbar();
 
+	/// Creates a dock panel.
+	void createDockPanel(const QString& caption, const QString& objectName, Qt::DockWidgetArea dockArea, Qt::DockWidgetAreas allowedAreas, QWidget* contents);
+
 private:
 
 	/// The upper main toolbar.

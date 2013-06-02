@@ -75,14 +75,6 @@ MainWindow::MainWindow(const QString& title) :
 	setStatusBar(_statusBar);
 	animationPanelLayout->addWidget(_statusBar);
 
-	QDockWidget* animationPanelDockWidget = new QDockWidget(tr("Animation Panel"), this);
-	animationPanelDockWidget->setObjectName("AnimationPanel");
-	animationPanelDockWidget->setAllowedAreas(Qt::DockWidgetAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea));
-	animationPanelDockWidget->setFeatures(QDockWidget::DockWidgetClosable);
-	animationPanelDockWidget->setWidget(animationPanel);
-	animationPanelDockWidget->setTitleBarWidget(new QWidget());
-	addDockWidget(Qt::BottomDockWidgetArea, animationPanelDockWidget);
-
    // Create the viewport control toolbar.
 	QToolBar* viewportControlBar1 = new QToolBar();
 	//viewportControlBar1->addAction(ActionManager::instance().getAction(ACTION_VIEWPORT_ZOOM));
@@ -91,7 +83,7 @@ MainWindow::MainWindow(const QString& title) :
 	//viewportControlBar1->addAction(ActionManager::instance().getAction(ACTION_VIEWPORT_PICK_ORBIT_CENTER));
 	viewportControlBar1->setStyleSheet("QToolBar { padding: 0px; margin: 0px; border: 0px none black; } QToolButton { padding: 0px; margin: 0px }");
 	QToolBar* viewportControlBar2 = new QToolBar();
-	//viewportControlBar2->addAction(ActionManager::instance().getAction(ACTION_VIEWPORT_ZOOM_SCENE_EXTENTS));
+	viewportControlBar2->addAction(ActionManager::instance().getAction(ACTION_VIEWPORT_ZOOM_SCENE_EXTENTS));
 	//viewportControlBar2->addAction(ActionManager::instance().getAction(ACTION_VIEWPORT_ZOOM_SELECTION_EXTENTS));
 	//viewportControlBar2->addAction(ActionManager::instance().getAction(ACTION_VIEWPORT_FOV));
 	viewportControlBar2->addAction(ActionManager::instance().getAction(ACTION_VIEWPORT_MAXIMIZE));
@@ -105,13 +97,22 @@ MainWindow::MainWindow(const QString& title) :
 	viewportControlPanelLayout->addStretch(1);
 	viewportControlPanel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
 
-	QDockWidget* viewportControlDockWidget = new QDockWidget(tr("Viewport Control"), this);
-	viewportControlDockWidget->setObjectName("ViewportControlPanel");
-	viewportControlDockWidget->setAllowedAreas(Qt::AllDockWidgetAreas);
-	viewportControlDockWidget->setFeatures(QDockWidget::DockWidgetClosable);
-	viewportControlDockWidget->setWidget(viewportControlPanel);
-	viewportControlDockWidget->setTitleBarWidget(new QWidget());
-	addDockWidget(Qt::BottomDockWidgetArea, viewportControlDockWidget);
+	createDockPanel(tr("Animation Panel"), "AnimationPanel", Qt::BottomDockWidgetArea, Qt::BottomDockWidgetArea, animationPanel);
+	createDockPanel(tr("Viewport Control"), "ViewportControlPanel", Qt::BottomDockWidgetArea, Qt::BottomDockWidgetArea, viewportControlPanel);
+}
+
+/******************************************************************************
+* Creates a dock panel.
+******************************************************************************/
+void MainWindow::createDockPanel(const QString& caption, const QString& objectName, Qt::DockWidgetArea dockArea, Qt::DockWidgetAreas allowedAreas, QWidget* contents)
+{
+	QDockWidget* dockWidget = new QDockWidget(caption, this);
+	dockWidget->setObjectName(objectName);
+	dockWidget->setAllowedAreas(allowedAreas);
+	dockWidget->setFeatures(QDockWidget::DockWidgetClosable);
+	dockWidget->setWidget(contents);
+	dockWidget->setTitleBarWidget(new QWidget());
+	addDockWidget(dockArea, dockWidget);
 }
 
 /******************************************************************************
