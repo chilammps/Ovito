@@ -21,6 +21,7 @@
 
 #include <core/Core.h>
 #include <core/animation/AnimManager.h>
+#include <core/viewport/ViewportManager.h>
 #include "AnimationTimeSlider.h"
 
 namespace Ovito {
@@ -135,10 +136,8 @@ void AnimationTimeSlider::mouseMoveEvent(QMouseEvent* event)
 	// Set new time
 	AnimManager::instance().setTime(newTime);
 
-#if 0
-	// Update viewports.
-	VIEWPORT_MANAGER.processViewportUpdates();
-#endif
+	// Force immediate viewport update.
+	ViewportManager::instance().processViewportUpdates();
 }
 
 /******************************************************************************

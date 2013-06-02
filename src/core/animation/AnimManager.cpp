@@ -21,6 +21,7 @@
 
 #include <core/Core.h>
 #include <core/animation/AnimManager.h>
+#include <core/dataset/DataSetManager.h>
 
 namespace Ovito {
 
@@ -33,10 +34,9 @@ QScopedPointer<AnimManager> AnimManager::_instance;
 AnimManager::AnimManager() : _animSuspendCount(0),  _animationMode(false)
 {
 	OVITO_ASSERT_MSG(!_instance, "AnimManager constructor", "Multiple instances of this singleton class have been created.");
-#if 0
+
 	// Reset the animation manager when a new scene has been loaded.
-	connect(&DATASET_MANAGER, SIGNAL(dataSetReset(DataSet*)), this, SLOT(reset()));
-#endif
+	connect(&DataSetManager::instance(), SIGNAL(dataSetReset(DataSet*)), this, SLOT(reset()));
 }
 
 /******************************************************************************
@@ -52,9 +52,7 @@ void AnimManager::reset()
 		disconnect(_settings.get(), SIGNAL(speedChanged(int)), this, SIGNAL(speedChanged(int)));
 	}
 
-#if 0
-	_settings = DATASET_MANAGER.currentSet()->animationSettings();
-#endif
+	_settings = DataSetManager::instance().currentSet()->animationSettings();
 
 	if(_settings) {
 		connect(_settings.get(), SIGNAL(timeChanged(TimePoint)), SIGNAL(timeChanged(TimePoint)));

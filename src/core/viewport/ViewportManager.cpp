@@ -64,34 +64,6 @@ void ViewportManager::onDataSetReset(DataSet* newDataSet)
 	}
 }
 
-#if 0
-/******************************************************************************
-* Sets the maximized viewport.
-******************************************************************************/
-void ViewportManager::setMaximizedViewport(Viewport* vp)
-{
-	if(vp == _maximizedViewport) return;
-	_maximizedViewport = vp;
-
-	// Adjust visibility of viewports.
-    for(Viewport* viewport : viewports()) {
-		if(_maximizedViewport == NULL || viewport == _maximizedViewport)
-			viewport->widget()->show();
-		else
-			viewport->widget()->hide();
-	}
-
-	// Make it the active viewport.
-	if(vp) setActiveViewport(vp);
-
-	// Generate signal.
-	maximizedViewportChanged(vp);
-
-	// Redraw viewports.
-	updateViewports();
-}
-#endif
-
 /******************************************************************************
 * This flags all viewports for redrawing.
 ******************************************************************************/

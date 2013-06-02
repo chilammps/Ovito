@@ -90,6 +90,10 @@ public:
 	/// Returns the rotation axis to be used with orbit mode.
 	Vector3 upVector() const;
 
+	/// Returns a matrix that transforms the default coordinate system (with Z being the "up" direction)
+	/// to the orientation given by the current "up" vector.
+	Matrix3 coordinateSystemOrientation() const;
+
 	/// Returns the selected rotation axis type.
 	UpDirection upDirection() const { return _upDirection; }
 

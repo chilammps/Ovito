@@ -33,9 +33,6 @@ namespace Ovito {
 ******************************************************************************/
 ViewportsPanel::ViewportsPanel(QWidget* parent) : QWidget(parent)
 {
-	// The mouse cursor must updated each time when a new input mode becomes active.
-	//connect(&ViewportInputManager::instance(), SIGNAL(inputModeChanged(ViewportInputHandler*, ViewportInputHandler*)), this, SLOT(updateViewportCursor()));
-
 	// Repaint the viewport borders if the animation mode has been activated.
 	connect(&AnimManager::instance(), SIGNAL(animationModeChanged(bool)), SLOT(update()));
 
@@ -67,22 +64,6 @@ void ViewportsPanel::onDataSetReset(DataSet* newDataSet)
 
 	// Layout viewport widgets.
 	layoutViewports();
-}
-
-/******************************************************************************
-* Updates the cursor for each viewport.
-* The cursor is taken from the active viewport input handler.
-******************************************************************************/
-void ViewportsPanel::updateViewportCursor()
-{
-#if 0
-	ViewportInputHandler* handler = VIEWPORT_INPUT_MANAGER.currentHandler();
-	if(handler && handler->temporaryNavigationMode()) handler = handler->temporaryNavigationMode();
-	if(!handler)
-		unsetCursor();
-	else
-		setCursor(handler->getCursor());
-#endif
 }
 
 /******************************************************************************
@@ -136,8 +117,10 @@ void ViewportsPanel::layoutViewports()
 	int nvisible = 0;
 	for(Viewport* viewport : viewports) {
 		if(!viewport->widget()) continue;
-		if(maximizedViewport == NULL || maximizedViewport == viewport)
+		if(maximizedViewport == NULL || maximizedViewport == viewport) {
 			nvisible++;
+			viewport->widget()->setVisible(true);
+		}
 		else
 			viewport->widget()->setVisible(false);
 	}
@@ -170,13 +153,6 @@ void ViewportsPanel::layoutViewports()
 			needsRepaint = true;
 		}
 		count++;
-	}
-
-	for(Viewport* viewport : viewports) {
-		if(!viewport->widget()) continue;
-		if(maximizedViewport == NULL || maximizedViewport == viewport) {
-			viewport->widget()->setVisible(true);
-		}
 	}
 
 	if(needsRepaint)

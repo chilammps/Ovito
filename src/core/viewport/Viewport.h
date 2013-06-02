@@ -91,8 +91,11 @@ public:
 	/// Returns the widget that contains the viewport's rendering window.
 	QWidget* widget() { return _widget; }
 
+	/// Renders the contents of the viewport into the surface associated with the given context.
+	void render(QOpenGLContext* context, QOpenGLPaintDevice* paintDevice);
+
 	/// Indicates whether the rendering of the viewport contents is currently in progress.
-	bool isRendering() const { return false; }
+	bool isRendering() const { return _isRendering; }
 
 	/// \brief Displays the context menu for the viewport.
 	/// \param pos The position in where the context menu should be displayed.
@@ -164,10 +167,23 @@ public:
 	const AffineTransformation& viewMatrix() const { return _viewMatrix; }
 
 	/// \brief Returns the camera (view) to world transformation without the projection part.
-	AffineTransformation inverseViewMatrix() const { return viewMatrix().inverse(); }
+	const AffineTransformation& inverseViewMatrix() const { return _inverseViewMatrix; }
 
-	/// \brief Sets the view matrix of the viewport.
-	void setViewMatrix(const AffineTransformation& tm) { _viewMatrix = tm; }
+	/// \brief Returns the position of the viewport's camera in space.
+	/// \note This is only used when viewNode() == NULL.
+	const Point3& cameraPosition() const { return _cameraPosition; }
+
+	/// \brief Sets the position of the viewport's camera in space.
+	/// \note This only has effect when viewNode() == NULL.
+	void setCameraPosition(const Point3& p) { _cameraPosition = p; }
+
+	/// \brief Returns the viewing direction of the viewport's camera.
+	/// \note This is only used when viewNode() == NULL.
+	const Vector3& cameraDirection() const { return _cameraDirection; }
+
+	/// \brief Sets the viewing direction of the viewport's camera.
+	/// \note This only has effect when viewNode() == NULL.
+	void setCameraDirection(const Vector3& d) { _cameraDirection = d; }
 
 	/// \brief Returns whether the render frame is shown in the viewport.
 	bool renderFrameShown() const { return _showRenderFrame; }
@@ -218,6 +234,22 @@ public:
 		return ViewportSettings::getSettings().viewportColor(which);
 	}
 
+	/// \brief Renders a text string into the GL context.
+	void renderText(const QString& str, const QPointF& pos, const QColor& color, QOpenGLPaintDevice* paintDevice, const QFont& font = QFont());
+
+	/// Sets whether mouse grab should be enabled or not for this viewport window.
+	/// If the return value is true, the viewport window receives all mouse events until
+	/// setMouseGrabEnabled(false) is called; other windows get no mouse events at all.
+	bool setMouseGrabEnabled(bool grab);
+
+	/// Sets the cursor shape for this viewport window.
+	/// The mouse cursor will assume this shape when it is over this viewport window,
+	/// unless an override cursor is set.
+	void setCursor(const QCursor& cursor);
+
+	/// Restores the default arrow cursor for this viewport window.
+	void unsetCursor();
+
 protected:
 
 	/// Is called when the value of a property field of this object has changed.
@@ -233,6 +265,9 @@ protected:
 
 	/// Updates the title text of the viewport based on the current view type.
 	void updateViewportTitle();
+
+	/// Renders the viewport caption text.
+	void renderViewportTitle(QOpenGLContext* context, QOpenGLPaintDevice* paintDevice);
 
 private:
 
@@ -251,8 +286,11 @@ private:
 	/// The zoom or field of view.
 	PropertyField<FloatType> _fieldOfView;
 
-	/// World to camera (view) transformation without projection.
-	PropertyField<AffineTransformation> _viewMatrix;
+	/// The position of the camera in world space.
+	PropertyField<Point3> _cameraPosition;
+
+	/// The viewing direction of the camera in world space.
+	PropertyField<Vector3> _cameraDirection;
 
 	/// Indicates whether the rendering frame is shown.
 	PropertyField<bool> _showRenderFrame;
@@ -277,12 +315,21 @@ private:
 	/// The internal OpenGL rendering window.
 	QPointer<ViewportWindow> _viewportWindow;
 
+	/// Indicates that rendering of this viewport is in progress.
+	bool _isRendering;
+
 	/// The zone in the upper left corner of the viewport where
 	/// the context menu can be activated by the user.
 	QRect _contextMenuArea;
 
 	/// Flag that indicates that the mouse cursor is currently hovering over the viewport's caption.
 	bool _mouseOverCaption;
+
+	/// World to camera (view) transformation matrix without projection.
+	AffineTransformation _viewMatrix;
+
+	/// Camera to world transformation matrix without projection.
+	AffineTransformation _inverseViewMatrix;
 
 private:
 
@@ -297,7 +344,8 @@ private:
 	DECLARE_PROPERTY_FIELD(_showGrid);
 	DECLARE_PROPERTY_FIELD(_gridMatrix);
 	DECLARE_PROPERTY_FIELD(_fieldOfView);
-	DECLARE_PROPERTY_FIELD(_viewMatrix);
+	DECLARE_PROPERTY_FIELD(_cameraPosition);
+	DECLARE_PROPERTY_FIELD(_cameraDirection);
 	DECLARE_PROPERTY_FIELD(_showRenderFrame);
 	DECLARE_PROPERTY_FIELD(_orbitCenter);
 	DECLARE_PROPERTY_FIELD(_useOrbitCenter);

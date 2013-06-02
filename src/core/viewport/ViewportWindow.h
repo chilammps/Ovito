@@ -40,7 +40,7 @@ class ViewportWindow : public QWindow
 {
 public:
 
-	ViewportWindow(Viewport* owner) : _viewport(owner), _updatePending(false), _context(nullptr) {
+	ViewportWindow(Viewport* owner) : _viewport(owner), _updatePending(false), _context(nullptr), _paintDevice(nullptr) {
 		// Indicate that the window is to be used for OpenGL rendering.
 		setSurfaceType(QWindow::OpenGLSurface);
 	}
@@ -59,7 +59,22 @@ protected:
 	/// Handles the resize events.
 	virtual void resizeEvent(QResizeEvent* event) override;
 
-	/// \brief This internal method receives events to the viewport window.
+	/// Handles double click events.
+	virtual void mouseDoubleClickEvent(QMouseEvent* event) override;
+
+	/// Handles mouse press events.
+	virtual void mousePressEvent(QMouseEvent* event) override;
+
+	/// Handles mouse release events.
+	virtual void mouseReleaseEvent(QMouseEvent* event) override;
+
+	/// Handles mouse move events.
+	virtual void mouseMoveEvent(QMouseEvent* event) override;
+
+	/// Handles mouse wheel events.
+	virtual void wheelEvent(QWheelEvent* event) override;
+
+	/// This internal method receives events to the viewport window.
 	virtual bool event(QEvent* event) override;
 
 private:
@@ -72,6 +87,9 @@ private:
 
 	/// The OpenGL context used for rendering.
 	QOpenGLContext* _context;
+
+	/// The OpenGL paint device used in conjunction with QPainter.
+	QScopedPointer<QOpenGLPaintDevice> _paintDevice;
 
 private:
 

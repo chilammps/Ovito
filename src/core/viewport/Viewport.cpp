@@ -41,7 +41,8 @@ DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _shadingMode, "ShadingMode", PROPERTY_FIEL
 DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _showGrid, "ShowGrid", PROPERTY_FIELD_NO_UNDO)
 DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _gridMatrix, "GridMatrix", PROPERTY_FIELD_NO_UNDO)
 DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _fieldOfView, "FieldOfView", PROPERTY_FIELD_NO_UNDO)
-DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _viewMatrix, "ViewMatrix", PROPERTY_FIELD_NO_UNDO)
+DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _cameraPosition, "CameraPosition", PROPERTY_FIELD_NO_UNDO)
+DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _cameraDirection, "CameraDirection", PROPERTY_FIELD_NO_UNDO)
 DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _showRenderFrame, "ShowRenderFrame", PROPERTY_FIELD_NO_UNDO)
 DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _orbitCenter, "OrbitCenter", PROPERTY_FIELD_NO_UNDO)
 DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _useOrbitCenter, "UseOrbitCenter", PROPERTY_FIELD_NO_UNDO)
@@ -53,9 +54,10 @@ DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _viewportTitle, "Title", PROPERTY_FIELD_NO
 Viewport::Viewport() :
 		_widget(nullptr), _viewportWindow(nullptr),
 		_viewType(VIEW_NONE), _shadingMode(SHADING_WIREFRAME), _showGrid(false),
-		_fieldOfView(100), _viewMatrix(AffineTransformation::Identity()), _showRenderFrame(false),
-		_orbitCenter(Point3::Origin()), _useOrbitCenter(false),
-		_mouseOverCaption(false)
+		_fieldOfView(100), _viewMatrix(AffineTransformation::Identity()), _inverseViewMatrix(AffineTransformation::Identity()),
+		_showRenderFrame(false), _orbitCenter(Point3::Origin()), _useOrbitCenter(false),
+		_mouseOverCaption(false), _isRendering(false),
+		_cameraPosition(Point3::Origin()), _cameraDirection(0,0,-1)
 {
 #if 0
 	INIT_PROPERTY_FIELD(Viewport::_viewNode);
@@ -65,7 +67,8 @@ Viewport::Viewport() :
 	INIT_PROPERTY_FIELD(Viewport::_showGrid);
 	INIT_PROPERTY_FIELD(Viewport::_gridMatrix);
 	INIT_PROPERTY_FIELD(Viewport::_fieldOfView);
-	INIT_PROPERTY_FIELD(Viewport::_viewMatrix);
+	INIT_PROPERTY_FIELD(Viewport::_cameraPosition);
+	INIT_PROPERTY_FIELD(Viewport::_cameraDirection);
 	INIT_PROPERTY_FIELD(Viewport::_showRenderFrame);
 	INIT_PROPERTY_FIELD(Viewport::_orbitCenter);
 	INIT_PROPERTY_FIELD(Viewport::_useOrbitCenter);
@@ -78,20 +81,9 @@ Viewport::Viewport() :
 Viewport::~Viewport()
 {
 	delete _widget;
-}
 
-/******************************************************************************
-* Returns the widget that contains the viewport's rendering window.
-******************************************************************************/
-QWidget* Viewport::createWidget(QWidget* parent)
-{
-	OVITO_ASSERT(_widget == NULL && _viewportWindow == NULL);
-	if(!_widget) {
-		_viewportWindow = new ViewportWindow(this);
-		_widget = QWidget::createWindowContainer(_viewportWindow, parent);
-		_widget->setAttribute(Qt::WA_DeleteOnClose);
-	}
-	return _widget;
+	OVITO_ASSERT(!_widget);
+	OVITO_ASSERT(!_viewportWindow);
 }
 
 /******************************************************************************
@@ -121,47 +113,47 @@ void Viewport::setViewType(ViewType type)
 	setViewNode(NULL);
 #endif
 
-	// Setup default view matrix.
+	// Setup default view.
 	switch(type) {
 		case VIEW_TOP:
-			setViewMatrix(AffineTransformation::Identity());
-			setGridMatrix(AffineTransformation::Identity());
+			setCameraPosition(Point3::Origin());
+			setCameraDirection(-ViewportSettings::getSettings().coordinateSystemOrientation().column(2));
 			break;
 		case VIEW_BOTTOM:
-			setViewMatrix(AffineTransformation(-1,0,0,0,  0,1,0,0,  0,0,-1,0));
-			setGridMatrix(inverseViewMatrix());
+			setCameraPosition(Point3::Origin());
+			setCameraDirection(ViewportSettings::getSettings().coordinateSystemOrientation().column(2));
 			break;
 		case VIEW_LEFT:
-			setViewMatrix(AffineTransformation(0,-1,0,0,  0,0,1,0,  -1,0,0,0));
-			setGridMatrix(inverseViewMatrix());
+			setCameraPosition(Point3::Origin());
+			setCameraDirection(ViewportSettings::getSettings().coordinateSystemOrientation().column(0));
 			break;
 		case VIEW_RIGHT:
-			setViewMatrix(AffineTransformation(0,1,0,0,  0,0,1,0,  1,0,0,0));
-			setGridMatrix(inverseViewMatrix());
+			setCameraPosition(Point3::Origin());
+			setCameraDirection(-ViewportSettings::getSettings().coordinateSystemOrientation().column(0));
 			break;
 		case VIEW_FRONT:
-			setViewMatrix(AffineTransformation(1,0,0,0,  0,0,1,0,  0,-1,0,0));
-			setGridMatrix(inverseViewMatrix());
+			setCameraPosition(Point3::Origin());
+			setCameraDirection(ViewportSettings::getSettings().coordinateSystemOrientation().column(1));
 			break;
 		case VIEW_BACK:
-			setViewMatrix(AffineTransformation(-1,0,0,0,  0,0,1,0,  0,1,0,0));
-			setGridMatrix(inverseViewMatrix());
+			setCameraPosition(Point3::Origin());
+			setCameraDirection(-ViewportSettings::getSettings().coordinateSystemOrientation().column(1));
 			break;
 		case VIEW_ORTHO:
+			setCameraPosition(Point3::Origin());
 			if(viewType() == VIEW_NONE)
-				setViewMatrix(AffineTransformation::Identity());
-			setGridMatrix(AffineTransformation::Identity());
+				setCameraDirection(-ViewportSettings::getSettings().coordinateSystemOrientation().column(2));
 			break;
 		case VIEW_PERSPECTIVE:
 			if(viewType() >= VIEW_TOP && viewType() <= VIEW_ORTHO) {
-				setViewMatrix(AffineTransformation::translation(Vector3(0,0,-fieldOfView())) * viewMatrix());
+				setCameraPosition(cameraPosition() - (cameraDirection().normalized() * fieldOfView()));
 			}
-			else if(viewType() != VIEW_PERSPECTIVE)
-				setViewMatrix(AffineTransformation::translation(Vector3(0,0,-50)));
-			setGridMatrix(AffineTransformation::Identity());
+			else if(viewType() != VIEW_PERSPECTIVE) {
+				setCameraPosition(ViewportSettings::getSettings().coordinateSystemOrientation() * Point3(0,0,-50));
+				setCameraDirection(ViewportSettings::getSettings().coordinateSystemOrientation() * Vector3(0,0,1));
+			}
 			break;
 		case VIEW_SCENENODE:
-			setGridMatrix(AffineTransformation::Identity());
 			break;
 		case VIEW_NONE:
 			break;
@@ -345,6 +337,20 @@ void Viewport::updateViewportTitle()
 }
 
 /******************************************************************************
+* Returns the widget that contains the viewport's rendering window.
+******************************************************************************/
+QWidget* Viewport::createWidget(QWidget* parent)
+{
+	OVITO_ASSERT(_widget == NULL && _viewportWindow == NULL);
+	if(!_widget) {
+		_viewportWindow = new ViewportWindow(this);
+		_widget = QWidget::createWindowContainer(_viewportWindow, parent);
+		_widget->setAttribute(Qt::WA_DeleteOnClose);
+	}
+	return _widget;
+}
+
+/******************************************************************************
 * Puts an update request event for this viewport on the event loop.
 ******************************************************************************/
 void Viewport::updateViewport()
@@ -360,6 +366,116 @@ void Viewport::redrawViewport()
 {
 	if(_viewportWindow)
 		_viewportWindow->renderNow();
+}
+
+/******************************************************************************
+* Renders the contents of the viewport.
+******************************************************************************/
+void Viewport::render(QOpenGLContext* context, QOpenGLPaintDevice* paintDevice)
+{
+	_isRendering = true;
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+	renderViewportTitle(context, paintDevice);
+	_isRendering = false;
+}
+
+/******************************************************************************
+* Renders the viewport caption text.
+******************************************************************************/
+void Viewport::renderViewportTitle(QOpenGLContext* context, QOpenGLPaintDevice* paintDevice)
+{
+	Color captionColor = viewportColor(_mouseOverCaption ? ViewportSettings::COLOR_ACTIVE_VIEWPORT_CAPTION : ViewportSettings::COLOR_VIEWPORT_CAPTION);
+	QFont font;
+	QFontMetricsF metrics(font);
+	QPointF pos(2, metrics.ascent() + 2);
+	_contextMenuArea = QRect(0, 0, std::max(metrics.width(viewportTitle()), 30.0) + 2, metrics.height() + 2);
+	renderText(viewportTitle(), pos, (QColor)captionColor, paintDevice);
+}
+
+/******************************************************************************
+* Renders a text string into the GL context.
+******************************************************************************/
+void Viewport::renderText(const QString& str, const QPointF& pos, const QColor& color, QOpenGLPaintDevice* paintDevice, const QFont& font)
+{
+	OVITO_CHECK_POINTER(paintDevice);
+
+	if(str.isEmpty())
+		return;
+
+	GLint view[4];
+	bool use_scissor_testing = glIsEnabled(GL_SCISSOR_TEST);
+	if(!use_scissor_testing)
+		glGetIntegerv(GL_VIEWPORT, &view[0]);
+	int width = paintDevice->width();
+	int height = paintDevice->height();
+
+	glPushClientAttrib(GL_CLIENT_ALL_ATTRIB_BITS);
+	glPushAttrib(GL_ALL_ATTRIB_BITS);
+	glMatrixMode(GL_TEXTURE);
+	glPushMatrix();
+	glLoadIdentity();
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+
+	glShadeModel(GL_FLAT);
+	glDisable(GL_CULL_FACE);
+	glDisable(GL_LIGHTING);
+	glDisable(GL_STENCIL_TEST);
+	glDisable(GL_DEPTH_TEST);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+
+	{
+		QPainter painter(paintDevice);
+		QPen old_pen = painter.pen();
+		QFont old_font = painter.font();
+		painter.setPen(color);
+		painter.setFont(font);
+		painter.drawText(pos, str);
+		painter.setPen(old_pen);
+		painter.setFont(old_font);
+	}
+
+    glMatrixMode(GL_TEXTURE);
+    glPopMatrix();
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glMatrixMode(GL_MODELVIEW);
+    glPopMatrix();
+    glPopAttrib();
+    glPopClientAttrib();
+}
+
+/******************************************************************************
+* Sets whether mouse grab should be enabled or not for this viewport window.
+******************************************************************************/
+bool Viewport::setMouseGrabEnabled(bool grab)
+{
+	if(_viewportWindow)
+		return _viewportWindow->setMouseGrabEnabled(grab);
+	else
+		return false;
+}
+
+/******************************************************************************
+* Sets the cursor shape for this viewport window.
+******************************************************************************/
+void Viewport::setCursor(const QCursor& cursor)
+{
+	if(_viewportWindow)
+		_viewportWindow->setCursor(cursor);
+}
+
+/******************************************************************************
+* Restores the default arrow cursor for this viewport window.
+******************************************************************************/
+void Viewport::unsetCursor()
+{
+	if(_viewportWindow)
+		_viewportWindow->unsetCursor();
 }
 
 };

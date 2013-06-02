@@ -46,11 +46,6 @@ public Q_SLOTS:
 	/// \brief Performs the layout of the viewports in the panel.
 	void layoutViewports();
 
-	/// \brief Updates the cursor for each viewport.
-	///
-	/// This method is called when the active ViewportInputHandler has changed.
-	void updateViewportCursor();
-
 protected:
 
 	/// \brief Renders the borders around the viewports.

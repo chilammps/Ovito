@@ -180,6 +180,12 @@ constexpr Point_3<T> operator+(const Vector_3<T>& a, const Point_3<T>& b) {
 	return b + a;
 }
 
+/// \brief Computes the difference of a point and a vector.
+template<typename T>
+constexpr Point_3<T> operator-(const Point_3<T>& a, const Vector_3<T>& b) {
+	return { a.x() - b.x(), a.y() - b.y(), a.z() - b.z() };
+}
+
 /// \brief Computes the difference vector of two points.
 template<typename T>
 constexpr Vector_3<T> operator-(const Point_3<T>& a, const Point_3<T>& b) {

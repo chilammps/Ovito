@@ -23,6 +23,7 @@
 #include <core/viewport/ViewportWindow.h>
 #include <core/viewport/Viewport.h>
 #include <core/viewport/ViewportManager.h>
+#include <core/viewport/input/ViewportInputManager.h>
 
 namespace Ovito {
 
@@ -74,6 +75,57 @@ void ViewportWindow::resizeEvent(QResizeEvent*)
 }
 
 /******************************************************************************
+* Handles double click events.
+******************************************************************************/
+void ViewportWindow::mouseDoubleClickEvent(QMouseEvent* event)
+{
+	ViewportInputHandler* handler = ViewportInputManager::instance().currentHandler();
+	if(handler)
+		handler->mouseDoubleClickEvent(_viewport, event);
+}
+
+/******************************************************************************
+* Handles mouse press events.
+******************************************************************************/
+void ViewportWindow::mousePressEvent(QMouseEvent* event)
+{
+	ViewportInputHandler* handler = ViewportInputManager::instance().currentHandler();
+	if(handler)
+		handler->mousePressEvent(_viewport, event);
+}
+
+/******************************************************************************
+* Handles mouse release events.
+******************************************************************************/
+void ViewportWindow::mouseReleaseEvent(QMouseEvent* event)
+{
+	ViewportInputHandler* handler = ViewportInputManager::instance().currentHandler();
+	if(handler)
+		handler->mouseReleaseEvent(_viewport, event);
+}
+
+/******************************************************************************
+* Handles mouse move events.
+******************************************************************************/
+void ViewportWindow::mouseMoveEvent(QMouseEvent* event)
+{
+	ViewportInputHandler* handler = ViewportInputManager::instance().currentHandler();
+	if(handler)
+		handler->mouseMoveEvent(_viewport, event);
+}
+
+/******************************************************************************
+* Handles mouse wheel events.
+******************************************************************************/
+void ViewportWindow::wheelEvent(QWheelEvent* event)
+{
+	ViewportInputHandler* handler = ViewportInputManager::instance().currentHandler();
+	if(handler)
+		handler->wheelEvent(_viewport, event);
+}
+
+
+/******************************************************************************
 * Immediately redraws the contents of this window.
 ******************************************************************************/
 void ViewportWindow::renderNow()
@@ -94,10 +146,16 @@ void ViewportWindow::renderNow()
 			throw Exception(tr("Failed to create OpenGL context."));
 	}
 
-	_context->makeCurrent(this);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-	_context->swapBuffers(this);
-	_context->doneCurrent();
+	if(_context->isValid()) {
+		_context->makeCurrent(this);
+
+		if(!_paintDevice)
+			_paintDevice.reset(new QOpenGLPaintDevice());
+		_paintDevice->setSize(size());
+		_viewport->render(_context, _paintDevice.data());
+		_context->swapBuffers(this);
+		_context->doneCurrent();
+	}
 }
 
 };

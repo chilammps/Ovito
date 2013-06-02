@@ -63,6 +63,8 @@ SET(OVITO_SOURCE_FILES
 	core/viewport/ViewportConfiguration.cpp
 	core/viewport/ViewportSettings.cpp
 	core/viewport/ViewportManager.cpp
+	core/viewport/input/ViewportInputManager.cpp
+	core/viewport/input/ViewportInputHandler.cpp
 	main/Main.cpp
 )
 

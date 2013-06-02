@@ -122,6 +122,22 @@ Vector3 ViewportSettings::upVector() const
 }
 
 /******************************************************************************
+* Returns a matrix that transforms the default coordinate system
+* (with Z being the "up" direction) to the orientation given by the
+* current "up" vector.
+******************************************************************************/
+Matrix3 ViewportSettings::coordinateSystemOrientation() const
+{
+	switch(_upDirection) {
+	case X_AXIS: return Matrix3(Vector3(0,1,0), Vector3(0,0,1), Vector3(1,0,0));
+	case Y_AXIS: return Matrix3(Vector3(-1,0,0), Vector3(0,0,1), Vector3(0,1,0));
+	case Z_AXIS:
+	default:
+		return Matrix3::Identity();
+	}
+}
+
+/******************************************************************************
 * Loads the settings from the given settings store.
 ******************************************************************************/
 void ViewportSettings::load(QSettings& store)

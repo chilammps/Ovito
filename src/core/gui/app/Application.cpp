@@ -23,7 +23,9 @@
 #include <core/gui/app/Application.h>
 #include <core/gui/mainwin/MainWindow.h>
 #include <core/dataset/DataSetManager.h>
+#include <core/animation/AnimManager.h>
 #include <core/viewport/ViewportManager.h>
+#include <core/viewport/input/ViewportInputManager.h>
 #include <core/plugins/PluginManager.h>
 
 namespace Ovito {
@@ -87,8 +89,12 @@ bool Application::initialize()
 		PluginManager::instance();
 		// Initialize DataSetManager.
 		DataSetManager::instance();
+		// Initialize AnimManager.
+		AnimManager::instance();
 		// Initialize ViewportManager.
 		ViewportManager::instance();
+		// Initialize ViewportInputManager.
+		ViewportInputManager::instance();
 
 		// Create the main application window.
 		if(guiMode()) {

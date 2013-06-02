@@ -70,7 +70,7 @@ public:
 	constexpr Matrix_3(T m11, T m12, T m13,
 					   T m21, T m22, T m23,
 					   T m31, T m32, T m33) :
-		_m{{m11,m21,m31},{m12,m22,m32},{m13,m23,m33}} {}
+		_m{Vector_3<T>(m11,m21,m31),Vector_3<T>(m12,m22,m32),Vector_3<T>(m13,m23,m33)} {}
 
 	/// \brief Constructor that initializes the matrix from three column vectors.
 	constexpr Matrix_3(const Vector_3<T>& c1, const Vector_3<T>& c2, const Vector_3<T>& c3) : _m{c1, c2, c3} {}
@@ -81,7 +81,10 @@ public:
 
 	/// \brief Initializes the matrix to the identity matrix.
 	/// All diagonal elements are set to one and all off-diagonal elements are set to zero.
-	constexpr Matrix_3(Identity) : _m{{T(1),T(0),T(0)},{T(0),T(1),T(0)},{T(0),T(0),T(2)}} {}
+	constexpr Matrix_3(Identity) : _m{
+				Vector_3<T>(T(1),T(0),T(0)),
+				Vector_3<T>(T(0),T(1),T(0)),
+				Vector_3<T>(T(0),T(0),T(2))} {}
 
 	/// \brief Returns the number of rows in this matrix.
 	constexpr size_type row_count() const { return 3; }
@@ -140,9 +143,9 @@ public:
 
 	/// \brief Sets the matrix to the identity matrix.
 	Matrix_3& setIdentity(Identity) {
-		_m[0][0] = T(1); _m[0][1] = T(0); _m[0][2] = T(0);
-		_m[1][0] = T(0); _m[1][1] = T(1); _m[1][2] = T(0);
-		_m[2][0] = T(0); _m[2][1] = T(0); _m[2][2] = T(1);
+		_m[0] = Vector_3<T>(1,0,0);
+		_m[1] = Vector_3<T>(0,1,0);
+		_m[2] = Vector_3<T>(0,0,1);
 		return *this;
 	}
 
