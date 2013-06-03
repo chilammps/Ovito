@@ -68,6 +68,9 @@ public:
 	/// \brief Initializes the vector to the null vector. All components are set to zero.
 	constexpr Vector_3(Zero) : std::array<T, 3>{{T(0), T(0), T(0)}} {}
 
+	/// \brief Initializes the vector from an array.
+	constexpr explicit Vector_3(const std::array<T, 3>& a) : std::array<T, 3>(a) {}
+
 	/// \brief Casts the vector to a vector with another data type.
 	template<typename U>
 	constexpr explicit operator Vector_3<U>() const { return Vector_3<U>(static_cast<U>(x()), static_cast<U>(y()), static_cast<U>(z())); }
@@ -182,6 +185,13 @@ public:
 		*this /= length();
 	}
 
+	/// \brief Rescales the vector to the given length.
+	/// \note If this is the null vector then an assertion message is generated in debug builds. In release builds the behavior is undefined.
+	inline void resize(T len) const {
+		OVITO_ASSERT_MSG(*this != Zero(), "Vector3::resize", "Cannot resize a vector with zero length.");
+		*this *= (len / length());
+	}
+
 	/// \brief Returns a normalized copy of this vector.
 	/// \note If this is the null vector then an assertion message is generated in debug builds. In release builds the behavior is undefined.
 	inline Vector_3 normalized() const {
@@ -194,6 +204,13 @@ public:
 		T l = length();
 		if(l > epsilon)
 			*this /= l;
+	}
+
+	/// \brief Returns a copy of this vector with the given length.
+	/// \note If this is the null vector then an assertion message is generated in debug builds. In release builds the behavior is undefined.
+	inline Vector_3 resized(T len) const {
+		OVITO_ASSERT_MSG(*this != Zero(), "Vector3::resized", "Cannot resize a vector with zero length.");
+		return *this * (len / length());
 	}
 
 	///////////////////////////////// Utilities ////////////////////////////////
@@ -248,7 +265,14 @@ constexpr Vector_3<T> operator/(const Vector_3<T>& a, T s) {
 /// \brief Writes the vector to a text output stream.
 template<typename T>
 inline std::ostream& operator<<(std::ostream& os, const Vector_3<T>& v) {
-	return os << v.x() << ' ' << v.y()  << ' ' << v.z();
+	return os << "(" << v.x() << ", " << v.y()  << ", " << v.z() << ")";
+}
+
+/// \brief Writes the vector to the Qt debug stream.
+template<typename T>
+inline QDebug operator<<(QDebug dbg, const Vector_3<T>& v) {
+    dbg.nospace() << "(" << v.x() << ", " << v.y() << ", " << v.z() << ")";
+    return dbg.space();
 }
 
 /// \brief Writes a vector to a binary output stream.
@@ -267,13 +291,16 @@ inline LoadStream& operator>>(LoadStream& stream, Vector_3<T>& v) {
  * \fn typedef Vector3
  * \brief Template class instance of the Vector_3 class used for floating-point vectors.
  */
-typedef Vector_3<FloatType>	Vector3;
+typedef Vector_3<FloatType>		Vector3;
 
 /**
  * \fn typedef Vector3I
  * \brief Template class instance of the Vector_3 class used for integer vectors.
  */
 typedef Vector_3<int>			Vector3I;
+
+inline void glVertex(const Vector_3<GLdouble>& v) { glVertex3dv(v.data()); }
+inline void glVertex(const Vector_3<GLfloat>& v) { glVertex3fv(v.data()); }
 
 };	// End of namespace
 

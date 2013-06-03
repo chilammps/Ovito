@@ -61,6 +61,9 @@ public:
 	/// \brief Initializes the point to the origin. All coordinates are set to zero.
 	constexpr Point_2(Origin) : std::array<T, 2>{{T(0), T(0)}} {}
 
+	/// \brief Initializes the point from an array.
+	constexpr explicit Point_2(const std::array<T, 2>& a) : std::array<T, 2>(a) {}
+
 	/// \brief Casts the point to a point with another data type.
 	template<typename U>
 	constexpr explicit operator Point_2<U>() const { return Point_2<U>(static_cast<U>(x()), static_cast<U>(y())); }
@@ -195,8 +198,15 @@ constexpr Point_2<T> operator/(const Point_2<T>& a, T s) {
 
 /// \brief Writes the point to a text output stream.
 template<typename T>
-inline std::ostream& operator<<(std::ostream &os, const Point_2<T> &v) {
-	return os << v.x() << ' ' << v.y();
+inline std::ostream& operator<<(std::ostream& os, const Point_2<T>& v) {
+	return os << "(" << v.x() << ", " << v.y() << ")";
+}
+
+/// \brief Writes the point to the Qt debug stream.
+template<typename T>
+inline QDebug operator<<(QDebug dbg, const Point_2<T>& v) {
+    dbg.nospace() << "(" << v.x() << ", " << v.y() << ")";
+    return dbg.space();
 }
 
 /// \brief Writes a point to a binary output stream.
@@ -222,6 +232,10 @@ typedef Point_2<FloatType>		Point2;
  * \brief Template class instance of the Point_2 class used for integer points.
  */
 typedef Point_2<int>			Point2I;
+
+// Type-specific OpenGL functions:
+inline void glVertex(const Point_2<GLdouble>& v) { glVertex2dv(v.data()); }
+inline void glVertex(const Point_2<GLfloat>& v) { glVertex2fv(v.data()); }
 
 };	// End of namespace
 

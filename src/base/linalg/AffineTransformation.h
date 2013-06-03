@@ -84,11 +84,16 @@ public:
 			Vector_3<T>(m14,m24,m34)} {}
 
 	/// \brief Constructor that initializes the matrix from four column vectors.
-	constexpr Matrix_34(const Vector_3<T>& c1, const Vector_3<T>& c2, const Vector_3<T>& c3, const Vector_3<T>& c4) : _m{c1, c2, c3, c4} {}
+	constexpr Matrix_34(const Vector_3<T>& c1, const Vector_3<T>& c2, const Vector_3<T>& c3, const Vector_3<T>& c4) :
+			_m{c1, c2, c3, c4} {}
 
 	/// \brief Initializes the matrix to the null matrix.
 	/// All matrix elements are set to zero by this constructor.
-	constexpr Matrix_34(Zero) : _m{Vector_3<T>::Zero(), Vector_3<T>::Zero(), Vector_3<T>::Zero(), Vector_3<T>::Zero()} {}
+	constexpr Matrix_34(Zero) : _m{
+		typename Vector_3<T>::Zero(),
+		typename Vector_3<T>::Zero(),
+		typename Vector_3<T>::Zero(),
+		typename Vector_3<T>::Zero()} {}
 
 	/// \brief Initializes the matrix to the identity matrix.
 	/// All diagonal elements are set to one and all off-diagonal elements are set to zero.
@@ -103,10 +108,10 @@ public:
 	explicit constexpr Matrix_34(const Matrix_3<T>& tm) : _m{tm.column(0), tm.column(1), tm.column(2), Vector_3<T>::Zero()} {}
 
 	/// \brief Returns the number of rows in this matrix.
-	constexpr size_type row_count() const { return 3; }
+	static constexpr size_type row_count() { return 3; }
 
 	/// \brief Returns the columns of rows in this matrix.
-	constexpr size_type col_count() const { return 4; }
+	static constexpr size_type col_count() { return 4; }
 
 	/// \brief Returns the value of a matrix element.
 	/// \param row The row of the element to return.
@@ -306,21 +311,31 @@ public:
 	///                 around the viewing axis.
 	/// \return The transformation from world space to view space.
 	static Matrix_34 lookAt(const Point_3<T>& camera, const Point_3<T>& target, const Vector_3<T>& upVector) {
-		auto zaxis = (camera - target).normalized();
+		return lookAlong(camera, target - camera, upVector);
+	}
+
+	/// \brief Generates a look-along-matrix.
+	/// \param camera The position of the camera in space.
+	/// \param direction The viewing direction.
+	/// \param upVector A vector pointing to the upward direction (the sky) that defines the rotation of the camera
+	///                 around the viewing axis.
+	/// \return The transformation from world space to view space.
+	static Matrix_34 lookAlong(const Point_3<T>& camera, const Vector_3<T>& direction, const Vector_3<T>& upVector) {
+		auto zaxis = -direction.normalized();
 		auto xaxis = upVector.cross(zaxis);
-		if(xaxis == Vector_3<T>::Zero()) {
+		if(xaxis == typename Vector_3<T>::Zero()) {
 			xaxis = Vector_3<T>(0,1,0).cross(zaxis);
-			if(xaxis == Vector_3<T>::Zero()) {
+			if(xaxis == typename Vector_3<T>::Zero()) {
 				xaxis = Vector_3<T>(0,0,1).cross(zaxis);
-				OVITO_ASSERT(xaxis != Vector_3<T>::Zero());
+				OVITO_ASSERT(xaxis != typename Vector_3<T>::Zero());
 			}
 		}
 		xaxis.normalize();
 		auto yaxis = zaxis.cross(xaxis);
 
-		return { xaxis.x(), xaxis.y(), xaxis.z(), -xaxis.dot(camera - Point_3<T>::Origin()),
-				 yaxis.x(), yaxis.y(), yaxis.z(), -yaxis.dot(camera - Point_3<T>::Origin()),
-				 zaxis.x(), zaxis.y(), zaxis.z(), -zaxis.dot(camera - Point_3<T>::Origin()) };
+		return { xaxis.x(), xaxis.y(), xaxis.z(), -xaxis.dot(camera - typename Point_3<T>::Origin()),
+				 yaxis.x(), yaxis.y(), yaxis.z(), -yaxis.dot(camera - typename Point_3<T>::Origin()),
+				 zaxis.x(), zaxis.y(), zaxis.z(), -zaxis.dot(camera - typename Point_3<T>::Origin()) };
 	}
 	
 	///////////////////////////////// Information ////////////////////////////////

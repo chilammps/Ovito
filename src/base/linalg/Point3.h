@@ -61,6 +61,9 @@ public:
 	/// \brief Initializes the point to the origin. All coordinates are set to zero.
 	constexpr Point_3(Origin) : std::array<T, 3>{{T(0), T(0), T(0)}} {}
 
+	/// \brief Initializes the point from an array.
+	constexpr explicit Point_3(const std::array<T, 3>& a) : std::array<T, 3>(a) {}
+
 	/// \brief Casts the point to a point with another data type.
 	template<typename U>
 	constexpr explicit operator Point_3<U>() const { return Point_3<U>(static_cast<U>(x()), static_cast<U>(y()), static_cast<U>(z())); }
@@ -91,8 +94,8 @@ public:
 	Point_3& operator=(Origin) { z() = y() = x() = T(0); return *this; }
 
 	/// \brief Converts a point to a vector.
-	const Vector_3<T>& operator-(Origin) const {
-		return reinterpret_cast<const Vector_3<T>&>(*this);
+	Vector_3<T> operator-(Origin) const {
+		return Vector_3<T>(*this);
 	}
 
 	//////////////////////////// Component access //////////////////////////
@@ -174,6 +177,12 @@ constexpr Point_3<T> operator+(const Point_3<T>& a, const Vector_3<T>& b) {
 	return { a.x() + b.x(), a.y() + b.y(), a.z() + b.z() };
 }
 
+/// \brief Converts a vector to a point.
+template<typename T>
+constexpr Point_3<T> operator+(typename Point_3<T>::Origin, const Vector_3<T>& b) {
+	return Point_3<T>(b);
+}
+
 /// \brief Computes the sum of a vector and a point.
 template<typename T>
 constexpr Point_3<T> operator+(const Vector_3<T>& a, const Point_3<T>& b) {
@@ -213,7 +222,14 @@ constexpr Point_3<T> operator/(const Point_3<T>& a, T s) {
 /// \brief Writes the point to a text output stream.
 template<typename T>
 inline std::ostream& operator<<(std::ostream& os, const Point_3<T>& v) {
-	return os << v.x() << ' ' << v.y()  << ' ' << v.z();
+	return os << "(" << v.x() << ", " << v.y()  << ", " << v.z() << ")";
+}
+
+/// \brief Writes the point to the Qt debug stream.
+template<typename T>
+inline QDebug operator<<(QDebug dbg, const Point_3<T>& v) {
+    dbg.nospace() << "(" << v.x() << ", " << v.y() << ", " << v.z() << ")";
+    return dbg.space();
 }
 
 /// \brief Writes a point to a binary output stream.
@@ -239,6 +255,9 @@ typedef Point_3<FloatType>		Point3;
  * \brief Template class instance of the Point_3 class used for integer points.
  */
 typedef Point_3<int>			Point3I;
+
+inline void glVertex(const Point_3<GLdouble>& v) { glVertex3dv(v.data()); }
+inline void glVertex(const Point_3<GLfloat>& v) { glVertex3fv(v.data()); }
 
 };	// End of namespace
 

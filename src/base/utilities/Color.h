@@ -420,6 +420,12 @@ typedef ColorT<FloatType>	Color;
  */
 typedef ColorAT<FloatType>	ColorA;
 
+// Type-specific OpenGL functions:
+inline void glColor3(const ColorT<GLdouble>& c) { glColor3dv(c.data()); }
+inline void glColor3(const ColorT<GLfloat>& c) { glColor3fv(c.data()); }
+inline void glColor4(const ColorAT<GLdouble>& c) { glColor4dv(c.data()); }
+inline void glColor4(const ColorAT<GLfloat>& c) { glColor4fv(c.data()); }
+
 };	// End of namespace
 
 Q_DECLARE_METATYPE(Ovito::Color)

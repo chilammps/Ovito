@@ -30,6 +30,7 @@
 #include <base/Base.h>
 #include <base/io/SaveStream.h>
 #include <base/io/LoadStream.h>
+#include "Vector3.h"
 
 namespace Ovito {
 
@@ -59,6 +60,12 @@ public:
 
 	/// \brief Initializes the vector to the null vector. All components are set to zero.
 	constexpr Vector_4(Zero) : std::array<T, 4>{{T(0), T(0), T(0), T(0)}} {}
+
+	/// \brief Initializes the vector from an array.
+	constexpr explicit Vector_4(const std::array<T, 4>& a) : std::array<T, 4>(a) {}
+
+	/// \brief Initializes the 4-vector from a 3-vector.
+	constexpr explicit Vector_4(const Vector_3<T>& v, T w) : std::array<T, 4>{{v.x(), v.y(), v.z(), w}} {}
 
     /////////////////////////////// Unary operators //////////////////////////////
 
@@ -234,8 +241,15 @@ constexpr Vector_4<T> operator/(const Vector_4<T>& a, T s) {
 
 /// \brief Writes the vector to a text output stream.
 template<typename T>
-inline std::ostream& operator<<(std::ostream &os, const Vector_4<T> &v) {
-	return os << v.x() << ' ' << v.y()  << ' ' << v.z()  << ' ' << v.w();
+inline std::ostream& operator<<(std::ostream& os, const Vector_4<T>& v) {
+	return os << "(" << v.x() << ", " << v.y()  << ", " << v.z() << ", " << v.w() << ")";
+}
+
+/// \brief Writes the vector to the Qt debug stream.
+template<typename T>
+inline QDebug operator<<(QDebug dbg, const Vector_4<T>& v) {
+    dbg.nospace() << "(" << v.x() << ", " << v.y() << ", " << v.z() << ", " << v.w() << ")";
+    return dbg.space();
 }
 
 /// \brief Writes a vector to a binary output stream.
@@ -261,6 +275,9 @@ typedef Vector_4<FloatType>		Vector4;
  * \brief Template class instance of the Vector_4 class used for integer vectors.
  */
 typedef Vector_4<int>			Vector4I;
+
+inline void glVertex(const Vector_4<GLdouble>& v) { glVertex4dv(v.data()); }
+inline void glVertex(const Vector_4<GLfloat>& v) { glVertex4fv(v.data()); }
 
 };	// End of namespace
 

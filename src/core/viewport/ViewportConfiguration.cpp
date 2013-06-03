@@ -57,6 +57,8 @@ OORef<ViewportConfiguration> ViewportConfiguration::defaultConfiguration()
 
 		OORef<Viewport> perspectiveView = new Viewport();
 		perspectiveView->setViewType(Viewport::VIEW_PERSPECTIVE);
+		perspectiveView->setCameraPosition({70, -100, 80});
+		perspectiveView->setCameraDirection({-70, 100, -80});
 		defaultConfig->addViewport(perspectiveView);
 
 		defaultConfig->setActiveViewport(topView.get());

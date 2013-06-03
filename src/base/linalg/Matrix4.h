@@ -69,7 +69,8 @@ public:
 	constexpr Matrix_4(T m11, T m12, T m13,
 					   T m21, T m22, T m23,
 					   T m31, T m32, T m33) :
-		_m{{m11,m21,m31,T(0)},{m12,m22,m32,T(0)},{m13,m23,m33,T(0)},Vector_4<T>::Zero()} {}
+		_m{{m11,m21,m31,T(0)},{m12,m22,m32,T(0)},{m13,m23,m33,T(0)},
+			typename Vector_4<T>::Zero()} {}
 
 	/// \brief Constructor that initializes 12 elements of the matrix to the given values. All other elements are set to zero.
 	/// \note Values are given in row-major order, i.e. row by row.
@@ -81,6 +82,17 @@ public:
 		Vector_4<T>(m13,m23,m33,T(0)),
 		Vector_4<T>(m14,m24,m34,T(0))} {}
 
+	/// \brief Constructor that initializes 16 elements of the matrix to the given values.
+	/// \note Values are given in row-major order, i.e. row by row.
+	constexpr Matrix_4(T m11, T m12, T m13, T m14,
+						T m21, T m22, T m23, T m24,
+						T m31, T m32, T m33, T m34,
+						T m41, T m42, T m43, T m44) : _m{
+		Vector_4<T>(m11,m21,m31,m41),
+		Vector_4<T>(m12,m22,m32,m42),
+		Vector_4<T>(m13,m23,m33,m43),
+		Vector_4<T>(m14,m24,m34,m44)} {}
+
 	/// \brief Constructor that initializes the matrix from four column vectors.
 	constexpr Matrix_4(const Vector_4<T>& c1, const Vector_4<T>& c2, const Vector_4<T>& c3, const Vector_4<T>& c4) : _m{c1, c2, c3, c4} {}
 
@@ -91,9 +103,20 @@ public:
 		Vector_4<T>(tm(0,2),tm(1,2),tm(2,2),T(0)),
 		Vector_4<T>(tm(0,3),tm(1,3),tm(2,3),T(1))} {}
 
+	/// \brief Initializes the 4x4 matrix from 4 column vectors.
+	constexpr Matrix_4(const Vector_3<T>& c1, const Vector_3<T>& c2, const Vector_3<T>& c3, const Vector_3<T>& c4) : _m{
+		Vector_4<T>(c1[0],c1[1],c1[2],T(0)),
+		Vector_4<T>(c2[0],c2[1],c2[2],T(0)),
+		Vector_4<T>(c3[0],c3[1],c3[2],T(0)),
+		Vector_4<T>(c4[0],c4[1],c4[2],T(1))} {}
+
 	/// \brief Initializes the matrix to the null matrix.
 	/// All matrix elements are set to zero by this constructor.
-	constexpr Matrix_4(Zero) : _m{Vector_4<T>::Zero(), Vector_4<T>::Zero(), Vector_4<T>::Zero(), Vector_4<T>::Zero()} {}
+	constexpr Matrix_4(Zero) : _m{
+		typename Vector_4<T>::Zero(),
+		typename Vector_4<T>::Zero(),
+		typename Vector_4<T>::Zero(),
+		typename Vector_4<T>::Zero()} {}
 
 	/// \brief Initializes the matrix to the identity matrix.
 	/// All diagonal elements are set to one and all off-diagonal elements are set to zero.
@@ -104,10 +127,10 @@ public:
 		Vector_4<T>(T(0),T(0),T(0),T(1))} {}
 
 	/// \brief Returns the number of rows in this matrix.
-	constexpr size_type row_count() const { return 4; }
+	static constexpr size_type row_count() { return 4; }
 
 	/// \brief Returns the columns of rows in this matrix.
-	constexpr size_type col_count() const { return 4; }
+	static constexpr size_type col_count() { return 4; }
 
 	/// \brief Returns the value of a matrix element.
 	/// \param row The row of the element to return.
@@ -242,6 +265,36 @@ public:
 		return reinterpret_cast<const T*>(&_m);
 	}
 
+	///////////////////////////// Generation //////////////////////////////////
+
+	/// \brief Generates a translation matrix.
+	static Matrix_4<T> translation(const Vector_3<T>& t) {
+		return { T(1), T(0), T(0), t.x(),
+				 T(0), T(1), T(0), t.y(),
+				 T(0), T(0), T(1), t.z(),
+				 T(0), T(0), T(0), T(1) };
+	}
+
+	/// \brief Generates a perspective projection matrix.
+	static Matrix_4<T> perspective(T fovy, T aspect, T znear, T zfar) {
+		T f = tan(fovy * 0.5);
+		OVITO_ASSERT(f != 0.0);
+		OVITO_ASSERT(zfar > znear);
+		return { 1.0/(aspect*f), 0.0, 0.0, 0.0,
+				 0.0, 1.0/f, 0.0, 0.0,
+				 0.0, 0.0, -(zfar+znear)/(zfar-znear), -(2.0*zfar*znear)/(zfar-znear),
+				 0.0, 0.0, -1.0, 0.0 };
+	}
+
+	/// \brief Generates an orthogonal projection matrix.
+	static Matrix_4<T> ortho(T left, T right, T bottom, T top, T znear, T zfar) {
+		OVITO_ASSERT(znear < zfar);
+		return { 2.0/(right-left), 0.0,  0.0, -(right+left)/(right-left),
+				 0.0, 2.0/(top-bottom), 0.0, -(top+bottom)/(top-bottom),
+				 0.0, 0.0, -2.0/(zfar-znear), -(zfar+znear)/(zfar-znear),
+				 0.0, 0.0, 0.0, 1.0 };
+	}
+
 private:
 
 	// Computes the determinant of a 2x2 matrix. This is for internal use only.
@@ -350,6 +403,10 @@ inline LoadStream& operator>>(LoadStream& stream, Matrix_4<T>& m)
  * \brief Template class instance of the Matrix_4 class.
  */
 typedef Matrix_4<FloatType>		Matrix4;
+
+// Type-specific OpenGL functions:
+inline void glLoadMatrix(const Matrix_4<GLdouble>& tm) { glLoadMatrixd(tm.constData()); }
+inline void glLoadMatrix(const Matrix_4<GLfloat>& tm) { glLoadMatrixf(tm.constData()); }
 
 };	// End of namespace
 

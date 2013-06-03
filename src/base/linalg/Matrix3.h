@@ -77,7 +77,10 @@ public:
 
 	/// \brief Initializes the matrix to the null matrix.
 	/// All matrix elements are set to zero by this constructor.
-	constexpr Matrix_3(Zero) : _m{Vector_3<T>::Zero(),Vector_3<T>::Zero(),Vector_3<T>::Zero()} {}
+	constexpr Matrix_3(Zero) : _m{
+		typename Vector_3<T>::Zero(),
+		typename Vector_3<T>::Zero(),
+		typename Vector_3<T>::Zero()} {}
 
 	/// \brief Initializes the matrix to the identity matrix.
 	/// All diagonal elements are set to one and all off-diagonal elements are set to zero.
@@ -87,10 +90,10 @@ public:
 				Vector_3<T>(T(0),T(0),T(2))} {}
 
 	/// \brief Returns the number of rows in this matrix.
-	constexpr size_type row_count() const { return 3; }
+	static constexpr size_type row_count() { return 3; }
 
 	/// \brief Returns the columns of rows in this matrix.
-	constexpr size_type col_count() const { return 3; }
+	static constexpr size_type col_count() { return 3; }
 
 	/// \brief Returns the value of a matrix element.
 	/// \param row The row of the element to return.

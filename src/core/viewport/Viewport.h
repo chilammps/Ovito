@@ -29,11 +29,47 @@
 
 #include <core/Core.h>
 #include <core/reference/RefTarget.h>
+#include <core/animation/TimeInterval.h>
 #include "ViewportSettings.h"
 
 namespace Ovito {
 
 class ViewportWindow;
+
+/******************************************************************************
+* This data structure describes a projection parameters used to render
+* the 3D contents in a viewport.
+******************************************************************************/
+struct ViewProjectionParameters
+{
+	/// The aspect ratio (height/width) of the viewport.
+	FloatType aspectRatio;
+
+	/// Indicates whether this is a orthogonal or perspective projection.
+	bool isPerspective;
+
+	/// The distance of the front clipping plane in world units.
+	FloatType znear;
+
+	/// The distance of the back clipping plane in world units.
+	FloatType zfar;
+
+	/// When using an orthogonal projection this is the vertical field of view in world units.
+	/// When using a perspective projection this is the vertical field of view angle in radians.
+	FloatType fieldOfView;
+
+	/// The world to view space transformation matrix.
+	AffineTransformation viewMatrix;
+
+	/// The view space to world space transformation matrix.
+	AffineTransformation inverseViewMatrix;
+
+	/// The view space to screen space projection matrix.
+	Matrix4 projectionMatrix;
+
+	/// The screen space to view space transformation matrix.
+	Matrix4 inverseProjectionMatrix;
+};
 
 /**
  * \brief A viewport window that displays the current scene.
@@ -95,20 +131,19 @@ public:
 	void render(QOpenGLContext* context, QOpenGLPaintDevice* paintDevice);
 
 	/// Indicates whether the rendering of the viewport contents is currently in progress.
-	bool isRendering() const { return _isRendering; }
+	bool isRendering() const { return _glcontext != NULL; }
 
 	/// \brief Displays the context menu for the viewport.
 	/// \param pos The position in where the context menu should be displayed.
 	void showViewportMenu(const QPoint& pos = QPoint(0,0));
 
-#if 0
-	/// \brief Returns a description the viewport's view at the given animation time.
-	/// \param time The animation time for which the view description is requested.
+	/// \brief Computes the projection matrix and other parameters.
+	/// \param time The animation time for which the view is requested.
 	/// \param aspectRatio Specifies the desired aspect ratio (height/width) of the output image.
-	/// \param sceneBoundingBox The bounding box of the scene in world coordinates. This is used to calculate the near and far z-clipping planes.
-	/// \return This structure can be used by a PluginRenderer to render the scene as it is currently displayed in the viewport.
-	CameraViewDescription getViewDescription(TimeTicks time, FloatType aspectRatio, const Box3& sceneBoundingBox = Box3());
-#endif
+	/// \param sceneBoundingBox The bounding box of the scene in world coordinates. This must be provided by the caller and
+	///                         is used to calculate the near and far z-clipping planes.
+	/// \return The returned structure describes the projection used to render the contents of the viewport.
+	ViewProjectionParameters projectionParameters(TimePoint time, FloatType aspectRatio, const Box3& sceneBoundingBox);
 
 	/// \brief Returns the view type of the viewport.
 	/// \return The type of view used in the viewport.
@@ -162,12 +197,6 @@ public:
 		else if(fov < -1e12f) fov = -1e12f;
 		_fieldOfView = fov;
 	}
-
-	/// \brief Returns the world to camera (view) transformation without projection.
-	const AffineTransformation& viewMatrix() const { return _viewMatrix; }
-
-	/// \brief Returns the camera (view) to world transformation without the projection part.
-	const AffineTransformation& inverseViewMatrix() const { return _inverseViewMatrix; }
 
 	/// \brief Returns the position of the viewport's camera in space.
 	/// \note This is only used when viewNode() == NULL.
@@ -235,7 +264,7 @@ public:
 	}
 
 	/// \brief Renders a text string into the GL context.
-	void renderText(const QString& str, const QPointF& pos, const QColor& color, QOpenGLPaintDevice* paintDevice, const QFont& font = QFont());
+	void renderText(const QString& str, const QPointF& pos, const QColor& color, const QFont& font = QFont());
 
 	/// Sets whether mouse grab should be enabled or not for this viewport window.
 	/// If the return value is true, the viewport window receives all mouse events until
@@ -266,8 +295,18 @@ protected:
 	/// Updates the title text of the viewport based on the current view type.
 	void updateViewportTitle();
 
+	/// Helper method that saves the current OpenGL rendering attributes on the stack and switches to flat shading.
+	void begin2DPainting();
+
+	/// Helper method that restores the OpenGL rendering attributes saved by begin2DPainting().
+	void end2DPainting();
+
 	/// Renders the viewport caption text.
-	void renderViewportTitle(QOpenGLContext* context, QOpenGLPaintDevice* paintDevice);
+	void renderViewportTitle();
+
+	/// Render the axis tripod symbol in the corner of the viewport that indicates
+	/// the coordinate system orientation.
+	void renderOrientationIndicator();
 
 private:
 
@@ -315,9 +354,6 @@ private:
 	/// The internal OpenGL rendering window.
 	QPointer<ViewportWindow> _viewportWindow;
 
-	/// Indicates that rendering of this viewport is in progress.
-	bool _isRendering;
-
 	/// The zone in the upper left corner of the viewport where
 	/// the context menu can be activated by the user.
 	QRect _contextMenuArea;
@@ -325,11 +361,14 @@ private:
 	/// Flag that indicates that the mouse cursor is currently hovering over the viewport's caption.
 	bool _mouseOverCaption;
 
-	/// World to camera (view) transformation matrix without projection.
-	AffineTransformation _viewMatrix;
+	/// The current OpenGL context. This is only valid during the rendering phase.
+	QOpenGLContext* _glcontext;
 
-	/// Camera to world transformation matrix without projection.
-	AffineTransformation _inverseViewMatrix;
+	/// The current OpenGL paint device. This is only valid during the rendering phase.
+	QOpenGLPaintDevice* _paintDevice;
+
+	/// Describes the current 3D projection used to render the contents of the viewport.
+	ViewProjectionParameters _projParams;
 
 private:
 

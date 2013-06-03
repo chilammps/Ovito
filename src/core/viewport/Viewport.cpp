@@ -22,6 +22,7 @@
 #include <core/Core.h>
 #include <core/viewport/Viewport.h>
 #include <core/viewport/ViewportWindow.h>
+#include <core/animation/AnimManager.h>
 
 /// The default field of view in world units used for orthogonal view types when the scene is empty.
 #define DEFAULT_ORTHOGONAL_FIELD_OF_VIEW		200.0
@@ -54,9 +55,9 @@ DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _viewportTitle, "Title", PROPERTY_FIELD_NO
 Viewport::Viewport() :
 		_widget(nullptr), _viewportWindow(nullptr),
 		_viewType(VIEW_NONE), _shadingMode(SHADING_WIREFRAME), _showGrid(false),
-		_fieldOfView(100), _viewMatrix(AffineTransformation::Identity()), _inverseViewMatrix(AffineTransformation::Identity()),
+		_fieldOfView(100),
 		_showRenderFrame(false), _orbitCenter(Point3::Origin()), _useOrbitCenter(false),
-		_mouseOverCaption(false), _isRendering(false),
+		_mouseOverCaption(false), _glcontext(nullptr), _paintDevice(nullptr),
 		_cameraPosition(Point3::Origin()), _cameraDirection(0,0,-1)
 {
 #if 0
@@ -172,22 +173,18 @@ void Viewport::setViewType(ViewType type)
 	_viewType = type;
 }
 
-#if 0
-
 /******************************************************************************
-* Returns a description the viewport's view at the given animation time.
+* Computes the projection matrix and other parameters.
 ******************************************************************************/
-CameraViewDescription Viewport::getViewDescription(TimeTicks time, FloatType aspectRatio, const Box3& bb)
+ViewProjectionParameters Viewport::projectionParameters(TimePoint time, FloatType aspectRatio, const Box3& sceneBoundingBox)
 {
-	Box3 sceneBoundingBox = bb;
-	if(sceneBoundingBox.isEmpty())
-		sceneBoundingBox = DATASET_MANAGER.currentSet()->sceneRoot()->worldBoundingBox(time);
+	OVITO_ASSERT(aspectRatio > FLOATTYPE_EPSILON);
 
-	CameraViewDescription d;
-	d.validityInterval = TimeForever;
-	d.aspectRatio = aspectRatio;
+	ViewProjectionParameters params;
+	params.aspectRatio = aspectRatio;
 
 	// Get transformation from view scene node.
+#if 0
 	if(viewType() == VIEW_SCENENODE && viewNode()) {
 		PipelineFlowState state = viewNode()->evalPipeline(time);
 		AbstractCameraObject* camera = dynamic_object_cast<AbstractCameraObject>(state.result());
@@ -202,58 +199,47 @@ CameraViewDescription Viewport::getViewDescription(TimeTicks time, FloatType asp
 			camera->getCameraDescription(time, d);
 		}
 	}
-	else if(viewType() == VIEW_PERSPECTIVE) {
-        // Get camera position.
-		//Point3 camera = ORIGIN + inverseViewMatrix().getTranslation();
-		// Enlarge bounding box to include camera.
-		//Box3 bb = sceneBoundingBox;
-		//bb.addPoint(camera);
+	else
+#endif
 
-		//d.zfar = Length(bb.size());
-		//d.zfar = max(d.zfar, (FloatType)1e-5);
-		//d.znear = d.zfar * 1e-5;
+	params.viewMatrix = AffineTransformation::lookAlong(cameraPosition(), cameraDirection(), ViewportSettings::getSettings().upVector());
+	params.fieldOfView = fieldOfView();
 
-		Box3 bb = sceneBoundingBox.transformed(viewMatrix());
-		if(bb.minc.Z < -1e-5) {
-			d.zfar = -bb.minc.Z;
-			d.znear = max(-bb.maxc.Z, -bb.minc.Z * (FloatType)1e-5);
+	// Transform scene bounding box to camera space.
+	Box3 bb = sceneBoundingBox.transformed(params.viewMatrix);
+
+	if(viewType() == VIEW_PERSPECTIVE) {
+		params.isPerspective = true;
+
+		if(bb.minc.z() < -FLOATTYPE_EPSILON) {
+			params.zfar = -bb.minc.z();
+			params.znear = std::max(-bb.maxc.z(), -bb.minc.z() * 1e-6f);
 		}
 		else {
-			d.zfar = 1000.0f;
-			d.znear = 0.1f;
+			params.zfar = sceneBoundingBox.size().length();
+			params.znear = params.zfar * 1e-6f;
 		}
-
-		d.fieldOfView = fieldOfView();
-		d.viewMatrix = viewMatrix();
-		d.inverseViewMatrix = inverseViewMatrix();
-		d.isPerspective = true;
-		d.projectionMatrix = Matrix4::perspective(d.fieldOfView, 1.0/d.aspectRatio, d.znear, d.zfar);
-		d.inverseProjectionMatrix = d.projectionMatrix.inverse();
+		params.projectionMatrix = Matrix4::perspective(params.fieldOfView, 1.0 / params.aspectRatio, params.znear, params.zfar);
 	}
 	else {
-		// Transform scene to camera space.
-		Box3 bb = sceneBoundingBox.transformed(viewMatrix());
+		params.isPerspective = false;
+
 		if(!bb.isEmpty()) {
-			d.znear = -bb.maxc.Z;
-			d.zfar  = max(-bb.minc.Z, d.znear + 1.0f);
+			params.znear = -bb.maxc.z();
+			params.zfar  = std::max(-bb.minc.z(), params.znear + 1.0f);
 		}
 		else {
-			d.znear = 1;
-			d.zfar = 100;
+			params.znear = 1;
+			params.zfar = 100;
 		}
-		d.viewMatrix = viewMatrix();
-		d.inverseViewMatrix = inverseViewMatrix();
-		d.isPerspective = false;
-		d.fieldOfView = fieldOfView();
-		d.projectionMatrix = Matrix4::ortho(-d.fieldOfView, d.fieldOfView,
-							-d.fieldOfView*d.aspectRatio, d.fieldOfView*d.aspectRatio,
-							d.znear, d.zfar);
-		d.inverseProjectionMatrix = d.projectionMatrix.inverse();
+		params.projectionMatrix = Matrix4::ortho(-params.fieldOfView, params.fieldOfView,
+							-params.fieldOfView * params.aspectRatio, params.fieldOfView * params.aspectRatio,
+							params.znear, params.zfar);
 	}
-	return d;
+	params.inverseViewMatrix = params.viewMatrix.inverse();
+	params.inverseProjectionMatrix = params.projectionMatrix.inverse();
+	return params;
 }
-
-#endif
 
 /******************************************************************************
 * Is called when a RefTarget referenced by this object has generated an event.
@@ -373,43 +359,46 @@ void Viewport::redrawViewport()
 ******************************************************************************/
 void Viewport::render(QOpenGLContext* context, QOpenGLPaintDevice* paintDevice)
 {
-	_isRendering = true;
+	OVITO_ASSERT_MSG(_glcontext == NULL, "Viewport::render", "Viewport is already rendering.");
+	_glcontext = context;
+	_paintDevice = paintDevice;
+
+	glViewport(0, 0, _paintDevice->width(), _paintDevice->height());
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-	renderViewportTitle(context, paintDevice);
-	_isRendering = false;
+	// Setup projection.
+	FloatType aspectRatio = (FloatType)_paintDevice->height() / _paintDevice->width();
+	_projParams = projectionParameters(AnimManager::instance().time(), aspectRatio, Box3(Point3::Origin(), 10));
+
+	// Render orientation tripod.
+	renderOrientationIndicator();
+
+	// Render viewport caption.
+	renderViewportTitle();
+
+	_glcontext = NULL;
+	_paintDevice = NULL;
 }
 
 /******************************************************************************
 * Renders the viewport caption text.
 ******************************************************************************/
-void Viewport::renderViewportTitle(QOpenGLContext* context, QOpenGLPaintDevice* paintDevice)
+void Viewport::renderViewportTitle()
 {
 	Color captionColor = viewportColor(_mouseOverCaption ? ViewportSettings::COLOR_ACTIVE_VIEWPORT_CAPTION : ViewportSettings::COLOR_VIEWPORT_CAPTION);
 	QFont font;
 	QFontMetricsF metrics(font);
 	QPointF pos(2, metrics.ascent() + 2);
 	_contextMenuArea = QRect(0, 0, std::max(metrics.width(viewportTitle()), 30.0) + 2, metrics.height() + 2);
-	renderText(viewportTitle(), pos, (QColor)captionColor, paintDevice);
+	renderText(viewportTitle(), pos, (QColor)captionColor, font);
 }
 
 /******************************************************************************
-* Renders a text string into the GL context.
+* Helper method that saves the current OpenGL rendering attributes on the
+* stack and switches to flat shading.
 ******************************************************************************/
-void Viewport::renderText(const QString& str, const QPointF& pos, const QColor& color, QOpenGLPaintDevice* paintDevice, const QFont& font)
+void Viewport::begin2DPainting()
 {
-	OVITO_CHECK_POINTER(paintDevice);
-
-	if(str.isEmpty())
-		return;
-
-	GLint view[4];
-	bool use_scissor_testing = glIsEnabled(GL_SCISSOR_TEST);
-	if(!use_scissor_testing)
-		glGetIntegerv(GL_VIEWPORT, &view[0]);
-	int width = paintDevice->width();
-	int height = paintDevice->height();
-
 	glPushClientAttrib(GL_CLIENT_ALL_ATTRIB_BITS);
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
 	glMatrixMode(GL_TEXTURE);
@@ -427,18 +416,14 @@ void Viewport::renderText(const QString& str, const QPointF& pos, const QColor& 
 	glDisable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+}
 
-	{
-		QPainter painter(paintDevice);
-		QPen old_pen = painter.pen();
-		QFont old_font = painter.font();
-		painter.setPen(color);
-		painter.setFont(font);
-		painter.drawText(pos, str);
-		painter.setPen(old_pen);
-		painter.setFont(old_font);
-	}
-
+/******************************************************************************
+* Helper method that restores the OpenGL rendering attributes saved
+* by begin2DPainting().
+******************************************************************************/
+void Viewport::end2DPainting()
+{
     glMatrixMode(GL_TEXTURE);
     glPopMatrix();
     glMatrixMode(GL_PROJECTION);
@@ -447,6 +432,30 @@ void Viewport::renderText(const QString& str, const QPointF& pos, const QColor& 
     glPopMatrix();
     glPopAttrib();
     glPopClientAttrib();
+}
+
+/******************************************************************************
+* Renders a text string into the GL context.
+******************************************************************************/
+void Viewport::renderText(const QString& str, const QPointF& pos, const QColor& color, const QFont& font)
+{
+	OVITO_ASSERT_MSG(_paintDevice != NULL, "Viewport::renderText", "Viewport is not rendering.");
+
+	if(str.isEmpty())
+		return;
+
+	begin2DPainting();
+	{
+		QPainter painter(_paintDevice);
+		QPen old_pen = painter.pen();
+		QFont old_font = painter.font();
+		painter.setPen(color);
+		painter.setFont(font);
+		painter.drawText(pos, str);
+		painter.setPen(old_pen);
+		painter.setFont(old_font);
+	}
+	end2DPainting();
 }
 
 /******************************************************************************
@@ -477,5 +486,60 @@ void Viewport::unsetCursor()
 	if(_viewportWindow)
 		_viewportWindow->unsetCursor();
 }
+
+/******************************************************************************
+* Render the axis tripod symbol in the corner of the viewport that indicates
+* the coordinate system orientation.
+******************************************************************************/
+void Viewport::renderOrientationIndicator()
+{
+	const FloatType tripodSize = 60.0f;			// pixels
+	const FloatType tripodArrowSize = 0.17f; 	// percentage of the above value.
+
+	// Save current rendering attributes.
+	begin2DPainting();
+
+	// Setup projection matrix.
+	FloatType xscale = _paintDevice->width() / tripodSize;
+	FloatType yscale = _paintDevice->height() / tripodSize;
+	Matrix4 projTM = Matrix4::translation(Vector3(-1.0 + 1.3f/xscale, -1.0 + 1.3f/yscale, 0))
+					* Matrix4::ortho(-xscale, xscale, -yscale, yscale, -2, 2);
+	glMatrixMode(GL_PROJECTION);
+	glLoadMatrix(projTM);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
+	// Render lines of the tripod.
+	glBegin(GL_LINES);
+
+	// Render arrows.
+	static const Color colors[3] = { Color(1, 0, 0), Color(0, 1, 0), Color(0.2, 0.2, 1) };
+	for(int axis = 0; axis < 3; axis++) {
+		glColor3(colors[axis]);
+		Vector3 dir = _projParams.viewMatrix.column(axis).normalized();
+		glVertex3(0, 0, 0);
+		glVertex(dir);
+		glVertex(dir);
+		glVertex(dir + tripodArrowSize * Vector3(dir.y() - dir.x(), -dir.x() - dir.y(), dir.z()));
+		glVertex(dir);
+		glVertex(dir + tripodArrowSize * Vector3(-dir.y() - dir.x(), dir.x() - dir.y(), dir.z()));
+	}
+	glEnd();
+
+	// Render x,y,z labels.
+	static const QString labels[3] = { "x", "y", "z" };
+	for(int axis = 0; axis < 3; axis++) {
+		Point3 p = Point3::Origin() + _projParams.viewMatrix.column(axis).resized(1.2f);
+		Point3 screenPoint = projTM * p;
+		QPointF pos(( screenPoint.x() + 1.0) * _paintDevice->width()  / 2,
+					(-screenPoint.y() + 1.0) * _paintDevice->height() / 2);
+		pos += QPointF(-4, 3);
+		renderText(labels[axis], pos, QColor(colors[axis]));
+	}
+
+	// Restore old rendering attributes.
+	end2DPainting();
+}
+
 
 };
