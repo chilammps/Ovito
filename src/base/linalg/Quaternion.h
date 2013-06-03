@@ -60,11 +60,11 @@ public:
 	/// \param _y The second quaternion component.
 	/// \param _z The third quaternion component.
 	/// \param _w The fourth quaternion component.
-	constexpr QuaternionT(T x, T y, T z, T w) : std::array<T, 4>({x,y,z,w}) {}
+	constexpr QuaternionT(T x, T y, T z, T w) : std::array<T, 4>{{x,y,z,w}} {}
 
 	/// \brief Constructs an identity quaternion.
 	/// The new quaternion represents the null transformation, i.e. no rotation at all.
-	explicit constexpr QuaternionT(Identity) : std::array<T, 4>({ T(0), T(0), T(0), T(1) }) {}
+	explicit constexpr QuaternionT(Identity) : std::array<T, 4>{{ T(0), T(0), T(0), T(1) }} {}
 
 	/// \brief Initializes the quaternion from rotational part of a transformation matrix.
 	/// \param tm A rotation matrix.

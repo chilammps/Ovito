@@ -53,13 +53,13 @@ public:
 	Point_2() {}
 
 	/// \brief Constructs a point with all coordinates set to the given value.
-	constexpr explicit Point_2(T val) : std::array<T, 2>({val,val}) {}
+	constexpr explicit Point_2(T val) : std::array<T, 2>{{val,val}} {}
 
 	/// \brief Initializes the coordinates of the point with the given component values.
-	constexpr Point_2(T x, T y, T z) : std::array<T, 2>({x, y}) {}
+	constexpr Point_2(T x, T y, T z) : std::array<T, 2>{{x, y}} {}
 
 	/// \brief Initializes the point to the origin. All coordinates are set to zero.
-	constexpr Point_2(Origin) : std::array<T, 2>({T(0), T(0)}) {}
+	constexpr Point_2(Origin) : std::array<T, 2>{{T(0), T(0)}} {}
 
 	/// \brief Casts the point to a point with another data type.
 	template<typename U>

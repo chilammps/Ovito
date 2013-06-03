@@ -36,9 +36,9 @@
 namespace Ovito {
 
 /**
- * \brief A bounding box in 3d space.
+ * \brief A bounding box in 3D space.
  *
- * This class stores an axis-aligned box in 3d.
+ * This class stores an axis-aligned box in 3D space.
  * It is defined by minimum and maximum coordinates in X, Y and Z direction.
  * 
  * There are two predefined instances of this template class: 
@@ -84,7 +84,7 @@ public:
 
 	/// \brief Checks whether this is an empty box.
 	///
-	/// The box is considered empty when one of the maximum corner coodinates is less
+	/// The box is considered empty when one of the maximum corner coordinates is less
 	/// then the minimum corner coordinate.
 	/// \return true if this box is empty; false otherwise.
 	constexpr bool isEmpty() const {
@@ -179,7 +179,7 @@ public:
 			(b.minc.z() >= minc.z() && b.maxc.z() <= maxc.z());
 	}
 
-	/// \brief Checks wehther the intersection of two boxes is not empty.
+	/// \brief Checks whether the intersection of two boxes is not empty.
 	/// \return true if the given box is not completely outside of this box.
 	bool intersects(const Box_3<T>& b) const {
 		if(maxc.x() <= b.minc.x() || minc.x() >= b.maxc.x()) return false;

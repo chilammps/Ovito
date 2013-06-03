@@ -52,13 +52,13 @@ public:
 	Vector_4() {}
 
 	/// \brief Constructs a vector with all four components set to the given value.
-	constexpr explicit Vector_4(T val) : std::array<T, 4>({val,val,val,val}) {}
+	constexpr explicit Vector_4(T val) : std::array<T, 4>{{val,val,val,val}} {}
 
 	/// \brief Initializes the components of the vector with the given component values.
-	constexpr Vector_4(T x, T y, T z, T w) : std::array<T, 4>({x, y, z, w}) {}
+	constexpr Vector_4(T x, T y, T z, T w) : std::array<T, 4>{{x, y, z, w}} {}
 
 	/// \brief Initializes the vector to the null vector. All components are set to zero.
-	constexpr Vector_4(Zero) : std::array<T, 4>({T(0), T(0), T(0), T(0)}) {}
+	constexpr Vector_4(Zero) : std::array<T, 4>{{T(0), T(0), T(0), T(0)}} {}
 
     /////////////////////////////// Unary operators //////////////////////////////
 

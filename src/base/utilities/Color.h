@@ -56,7 +56,7 @@ public:
 	/// \param red The red value of the RGB color in the range 0 to 1.
 	/// \param green The green value of the RGB color in the range 0 to 1.
 	/// \param blue The blue value of the RGB color in the range 0 to 1.
-	constexpr ColorT(T red, T green, T blue) : std::array<T, 3>({red, green, blue}) {}
+	constexpr ColorT(T red, T green, T blue) : std::array<T, 3>{{red, green, blue}} {}
 	
 	/// \brief Converts a vector to a color structure.
 	/// \param v The input vector. Its X, Y and Z components are taken as red, green and blue components 
@@ -65,7 +65,7 @@ public:
 
 	/// \brief Conversion from a Qt color object.
 	/// \param c The Qt color to convert to a floating-point representation.
-	constexpr explicit ColorT(const QColor& c) : std::array<T, 3>({T(c.redF()), T(c.greenF()), T(c.blueF())}) {}
+	constexpr explicit ColorT(const QColor& c) : std::array<T, 3>{{T(c.redF()), T(c.greenF()), T(c.blueF())}} {}
 
 	/// \brief Sets all components to zero.
 	void setBlack() { r() = g() = b() = 0; }
@@ -261,7 +261,7 @@ public:
 	/// \param red The red value of the RGB color in the range 0 to 1.
 	/// \param green The green value of the RGB color in the range 0 to 1.
 	/// \param blue The blue value of the RGB color in the range 0 to 1.
-	constexpr ColorAT(T red, T green, T blue, T alpha = 1) : std::array<T, 4>({red, green, blue, alpha}) {}
+	constexpr ColorAT(T red, T green, T blue, T alpha = 1) : std::array<T, 4>{{red, green, blue, alpha}} {}
 
 	/// \brief Converts a vector to a color structure.
 	/// \param v The input vector. Its X, Y and Z components are taken as red, green and blue components
@@ -270,7 +270,7 @@ public:
 
 	/// \brief Conversion from a Qt color object.
 	/// \param c The Qt color to convert to a floating-point representation.
-	constexpr explicit ColorAT(const QColor& c) : std::array<T, 4>({c.redF(), c.greenF(), c.blueF(), 1}) {}
+	constexpr explicit ColorAT(const QColor& c) : std::array<T, 4>{{c.redF(), c.greenF(), c.blueF(), 1}} {}
 
 	/// \brief Sets all components to zero.
 	void setBlack() { r() = g() = b() = 0; a() = 1; }

@@ -52,14 +52,14 @@ public:
 	Vector_2() {}
 
 	/// \brief Constructs a vector with all components set to the given value.
-	constexpr explicit Vector_2(T val) : std::array<T, 2>({val,val}) {}
+	constexpr explicit Vector_2(T val) : std::array<T, 2>{{val,val}} {}
 
 	/// \brief Initializes the components of the vector with the given component values.
-	constexpr Vector_2(T x, T y, T z) : std::array<T, 2>({x, y}) {}
+	constexpr Vector_2(T x, T y, T z) : std::array<T, 2>{{x, y}} {}
 
 
 	/// \brief Initializes the vector to the null vector. All components are set to zero.
-	constexpr Vector_2(Zero) : std::array<T, 2>({T(0), T(0)}) {}
+	constexpr Vector_2(Zero) : std::array<T, 2>{{T(0), T(0)}} {}
 
 	/// \brief Casts the vector to a vector with another data type.
 	template<typename U>

@@ -60,13 +60,13 @@ public:
 	Vector_3() {}
 
 	/// \brief Constructs a vector with all three components set to the given value.
-	constexpr explicit Vector_3(T val) : std::array<T, 3>({val,val,val}) {}
+	constexpr explicit Vector_3(T val) : std::array<T, 3>{{val,val,val}} {}
 
 	/// \brief Initializes the components of the vector with the given component values.
-	constexpr Vector_3(T x, T y, T z) : std::array<T, 3>({x, y, z}) {}
+	constexpr Vector_3(T x, T y, T z) : std::array<T, 3>{{x, y, z}} {}
 
 	/// \brief Initializes the vector to the null vector. All components are set to zero.
-	constexpr Vector_3(Zero) : std::array<T, 3>({T(0), T(0), T(0)}) {}
+	constexpr Vector_3(Zero) : std::array<T, 3>{{T(0), T(0), T(0)}} {}
 
 	/// \brief Casts the vector to a vector with another data type.
 	template<typename U>

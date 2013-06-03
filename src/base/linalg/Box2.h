@@ -34,13 +34,10 @@
 namespace Ovito {
 
 /**
- * \brief A bounding box in 2d space.
+ * \brief A bounding box in 2D space.
  *
- * This class stores an axis-aligned box in 2d.
+ * This class stores an axis-aligned box in 2D space.
  * It is defined by minimum and maximum coordinates in X and Y direction.
- *
- * \author Alexander Stukowski
- * \sa Box_3
  */
 template<typename T>
 class Box_2
@@ -201,12 +198,12 @@ public:
 		minc.y() = std::min(minc.y(), b.minc.y()); maxc.y() = std::max(maxc.y(), b.maxc.y());
 	}
 
-	/// \brief Enlarges the box to include the given x coordindate.
+	/// \brief Enlarges the box to include the given x coordinate.
     void includeX(T x) {
         minc.x() = std::min(minc.x(), x); maxc.x() = std::max(maxc.x(), x);
 	}
 
-	/// \brief Enlarges the box to include the given y coordindate.
+	/// \brief Enlarges the box to include the given y coordinate.
     void includeY(T y) {
         minc.y() = std::min(minc.y(), y); maxc.y() = std::max(maxc.y(), y);
 	}
