@@ -33,9 +33,7 @@ namespace Ovito {
 
 IMPLEMENT_OVITO_OBJECT(DataSetManager, RefMaker)
 DEFINE_FLAGS_REFERENCE_FIELD(DataSetManager, _currentSet, "CurrentSet", DataSet, PROPERTY_FIELD_NO_UNDO)
-#if 0
 DEFINE_FLAGS_REFERENCE_FIELD(DataSetManager, _selectionSetProxy, "SelectionSetProxy", CurrentSelectionProxy, PROPERTY_FIELD_NO_UNDO)
-#endif
 
 /// The singleton instance of the class.
 QScopedPointer<DataSetManager> DataSetManager::_instance;
@@ -47,13 +45,13 @@ DataSetManager::DataSetManager()
 {
 	OVITO_ASSERT_MSG(!_instance, "DataSetManager constructor", "Multiple instances of this singleton class have been created.");
 	INIT_PROPERTY_FIELD(DataSetManager::_currentSet);
-#if 0
 	INIT_PROPERTY_FIELD(DataSetManager::_selectionSetProxy);
+
+	// Create internal selection proxy object.
 	_selectionSetProxy = new CurrentSelectionProxy();
-#endif
 
 	// Reset the undo stack when a new scene has been loaded.
-	connect(this, SIGNAL(dataSetReset(DataSet*)), &UndoManager::instance(), SLOT(reset()));
+	connect(this, SIGNAL(dataSetReset(DataSet*)), &UndoManager::instance(), SLOT(clear()));
 }
 
 /******************************************************************************
@@ -64,10 +62,8 @@ void DataSetManager::setCurrentSet(const OORef<DataSet>& set)
 	OVITO_ASSERT_MSG(!UndoManager::instance().isRecording(), "DataSetManager::setCurrentSet", "The replacement of the current dataset cannot be undone.");
 	_currentSet = set;
 
-#if 0
 	// Reset selection set
-	_selectionSetProxy->setCurrentSelectionSet(set ? set->selection() : NULL);
-#endif
+	_selectionSetProxy->setCurrentSelectionSet(set ? set->selection() : nullptr);
 
 	// Do not record any operations while resetting the application.
 	UndoSuspender noUndo;
@@ -121,8 +117,7 @@ bool DataSetManager::fileSave()
 		return false;
 	}
 
-	// Clear dirty flag of data set.
-	currentSet()->setDirty(false);
+	UndoManager::instance().setClean();
 
 	return true;
 }
@@ -181,7 +176,7 @@ bool DataSetManager::fileSaveAs(const QString& filename)
 ******************************************************************************/
 bool DataSetManager::askForSaveChanges()
 {
-	if(!currentSet() || !currentSet()->hasBeenChanged() || Application::instance().consoleMode())
+	if(!currentSet() || UndoManager::instance().isClean() || Application::instance().consoleMode())
 		return true;
 
 	QMessageBox::StandardButton result = QMessageBox::question(&MainWindow::instance(), tr("Save changes"),

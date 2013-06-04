@@ -29,6 +29,7 @@
 
 #include <core/Core.h>
 #include <core/reference/RefTarget.h>
+#include <core/scene/SceneRoot.h>
 
 namespace Ovito {
 
@@ -61,42 +62,25 @@ public:
 	/// \sa AnimManager
 	AnimationSettings* animationSettings() const { return _animSettings; }
 
-#if 0
 	/// \brief Returns this dataset's root scene node.
 	/// \return The root node of the scene tree.
-	/// \sa setSceneRoot()
 	SceneRoot* sceneRoot() const { return _sceneRoot; }
 
 	/// \brief Sets the dataset's root scene node.
 	/// \param newScene The new scene tree. It will completely replace the old
 	///                 scene object tree.
 	/// \undoable
-	/// \sa sceneRoot()
-	void setSceneRoot(const SceneRoot::SmartPtr& newScene) { _sceneRoot = newScene; }
+	void setSceneRoot(const OORef<SceneRoot>& newScene) { _sceneRoot = newScene; }
 
 	/// \brief Returns the selection set.
 	/// \return The internal selection set used to store the set of selected scene nodes.
 	SelectionSet* selection() const { return _selection; }
 
+#if 0
 	/// \brief Returns the general rendering settings for this scene.
 	/// \return The internal object that stores the rendering settings.
 	RenderSettings* renderSettings() const { return _renderSettings; }
 #endif
-
-	/// \brief Returns the state of the dirty flag that indicates whether the dataset has
-	///        been changed and needs to be saved to disk.
-	/// \return \c true if this dataset has been changed since the last save point.
-	///
-	/// The dirty flag will automatically be set when some subobject of the DataSet
-	/// is being changed.
-	///
-	/// \sa setDirty()
-	bool hasBeenChanged() const { return _hasBeenChanged; }
-
-	/// \brief Marks the dataset as dirty or resets the dirty flag.
-	/// \param dirty Speicifies whether the dirty flag should be set or reset.
-	/// \sa hasBeenChanged()
-	void setDirty(bool dirty = true) { _hasBeenChanged = dirty; }
 
 	/// \brief Returns the path where this dataset is stored on disk.
 	/// \return The location where the dataset is stored or will be stored on disk.
@@ -121,19 +105,16 @@ private:
 	/// Animation settings.
 	ReferenceField<AnimationSettings> _animSettings;
 
-#if 0
 	/// Scene node tree.
 	ReferenceField<SceneRoot> _sceneRoot;
 
 	/// The current node selection set.
 	ReferenceField<SelectionSet> _selection;
 
+#if 0
 	/// The settings used when rendering the scene.
 	ReferenceField<RenderSettings> _renderSettings;
 #endif
-
-	/// The dirty flag.
-	bool _hasBeenChanged;
 
 	/// The file where this DataSet is stored.
 	QString _filePath;
@@ -143,9 +124,9 @@ private:
 
 	DECLARE_REFERENCE_FIELD(_viewportConfig)
 	DECLARE_REFERENCE_FIELD(_animSettings)
-#if 0
 	DECLARE_REFERENCE_FIELD(_sceneRoot)
 	DECLARE_REFERENCE_FIELD(_selection)
+#if 0
 	DECLARE_REFERENCE_FIELD(_renderSettings)
 #endif
 };

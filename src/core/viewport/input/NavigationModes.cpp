@@ -51,19 +51,19 @@ void NavigationMode::deactivated()
 ******************************************************************************/
 void NavigationMode::mousePressEvent(Viewport* vp, QMouseEvent* event)
 {
-	if(event->button() == Qt::RightButton) {
+	if(event->button() == Qt::RightButton && ViewportInputManager::instance().currentHandler() == this) {
 		ViewportInputHandler::mousePressEvent(vp, event);
+		return;
 	}
-	else {
-		vp->setMouseGrabEnabled(true);
-		_viewport = vp;
-		_startPoint = event->pos();
-		_oldCameraPosition = vp->cameraPosition();
-		_oldCameraDirection = vp->cameraDirection();
-		_oldFieldOfView = vp->fieldOfView();
-		_oldViewMatrix = vp->viewMatrix();
-		_oldInverseViewMatrix = vp->inverseViewMatrix();
-	}
+
+	vp->setMouseGrabEnabled(true);
+	_viewport = vp;
+	_startPoint = event->pos();
+	_oldCameraPosition = vp->cameraPosition();
+	_oldCameraDirection = vp->cameraDirection();
+	_oldFieldOfView = vp->fieldOfView();
+	_oldViewMatrix = vp->viewMatrix();
+	_oldInverseViewMatrix = vp->inverseViewMatrix();
 }
 
 /******************************************************************************

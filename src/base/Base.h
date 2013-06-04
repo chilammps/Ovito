@@ -39,6 +39,8 @@
 #include <vector>
 #include <map>
 #include <utility>
+#include <random>
+
 
 /******************************************************************************
 * QT Library
@@ -49,7 +51,6 @@
 #include <QSettings>
 #include <QMenuBar>
 #include <QMenu>
-#include <QUndoStack>
 #include <QUrl>
 #include <QPointer>
 #include <QFileInfo>

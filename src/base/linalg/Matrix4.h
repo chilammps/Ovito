@@ -168,6 +168,16 @@ public:
 		return { _m[0][row], _m[1][row], _m[2][row], _m[3][row] };
 	}
 
+	/// \brief Replaces a row of the matrix.
+	/// \param row The row to replace.
+	/// \param v The new row vector.
+	void setRow(size_type row, const Vector_4<T>& v) {
+		_m[0][row] = v[0];
+		_m[1][row] = v[1];
+		_m[2][row] = v[2];
+		_m[3][row] = v[3];
+	}
+
 	/// \brief Sets all components of the matrix to zero.
 	Matrix_4& setZero() {
 		for(size_type i = 0; i < col_count(); i++)
@@ -181,7 +191,7 @@ public:
 	}
 
 	/// \brief Sets the matrix to the identity matrix.
-	Matrix_4& setIdentity(Identity) {
+	Matrix_4& setIdentity() {
 		_m[0][0] = T(1); _m[0][1] = T(0); _m[0][2] = T(0); _m[0][3] = T(0);
 		_m[1][0] = T(0); _m[1][1] = T(1); _m[1][2] = T(0); _m[1][3] = T(0);
 		_m[2][0] = T(0); _m[2][1] = T(0); _m[2][2] = T(1); _m[2][3] = T(0);

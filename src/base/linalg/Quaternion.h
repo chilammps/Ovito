@@ -72,6 +72,16 @@ public:
 	/// It is assumed that \a tm is a pure rotation matrix.
 	explicit QuaternionT(const Matrix_34<T>& tm);
 
+	/// \brief Sets the quaternion to the identity quaternion.
+	QuaternionT& setIdentity() {
+		z() = y() = x() = T(0);
+		w() = T(1);
+		return *this;
+	}
+
+	/// \brief Sets the quaternion to the identity quaternion.
+	QuaternionT& operator=(Identity) { return setIdentity(); }
+
     ///////////////////////////// Component access ///////////////////////////////
 
 	/// \brief Returns the value of the X component of this quaternion.
@@ -124,16 +134,30 @@ public:
 
 	///////////////////////////////// Computations ////////////////////////////////
 
+	/// \brief Multiplies each component of the quaternion with a scalar value and stores the result in this quaternion.
+	/// \param s The scalar value to multiply this quaternion with.
+	/// \return A reference to \c this quaternion, which has been changed.
+	QuaternionT& operator*=(T s) { x() *= s; y() *= s; z() *= s; w() *= s; return *this; }
+
+	/// \brief Divides each component of the quaternion by a scalar value and stores the result in this quaternion.
+	/// \param s The scalar value.
+	/// \return A reference to \c this quaternion, which has been changed.
+	QuaternionT& operator/=(T s) { x() /= s; y() /= s; z() /= s; w() /= s; return *this; }
+
 	/// \brief Computes the scalar product of two quaternions.
 	constexpr T dot(const QuaternionT& b) const { return x()*b.y() + y()*b.y() + z()*b.z() + w()*b.w(); }
 
 	/// \brief Normalizes this quaternion to unit length.
-	inline void normalize() { *this /= sqrt(dot(*this)); }
+	inline void normalize() {
+		T c = sqrt(dot(*this));
+		OVITO_ASSERT_MSG(c > 0, "Quaternion::normalize", "Cannot normalize the null quaternion.");
+		x() /= c; y() /= c; z() /= c; w() /= c;
+	}
 
 	/// \brief Returns a Normalized version of this quaternion.
 	inline QuaternionT normalized() const {
-		OVITO_ASSERT_MSG(dot(*this) > 0, "Quaternion::normalized", "Cannot normalize the null quaternion.");
 		T c = sqrt(dot(*this));
+		OVITO_ASSERT_MSG(c > 0, "Quaternion::normalized", "Cannot normalize the null quaternion.");
 		return { x() / c, y() / c, z() / c, w() / c };
 	}
 

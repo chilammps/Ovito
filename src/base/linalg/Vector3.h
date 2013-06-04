@@ -104,7 +104,10 @@ public:
 	Vector_3& operator/=(T s) { x() /= s; y() /= s; z() /= s; return *this; }
 
 	/// \brief Sets all components of the vector to zero.
-	Vector_3& operator=(Zero) { z() = y() = x() = T(0); return *this; }
+	Vector_3& operator=(Zero) { return setZero(); }
+
+	/// \brief Sets all components of the vector to zero.
+	Vector_3& setZero() { z() = y() = x() = T(0); return *this; }
 
 	//////////////////////////// Component access //////////////////////////
 
@@ -160,7 +163,7 @@ public:
 		return std::abs(x()) <= tolerance && std::abs(y()) <= tolerance && std::abs(z()) <= tolerance;
 	}
 
-	///////////////////////////////// Computations////////////////////////////////
+	///////////////////////////////// Computations ////////////////////////////////
 
 	/// \brief Computes the scalar product of two vectors.
 	constexpr T dot(const Vector_3& b) const { return x()*b.x() + y()*b.y() + z()*b.z(); }

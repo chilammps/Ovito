@@ -26,6 +26,7 @@ ENDIF(WIN32)
 
 SET(OVITO_SOURCE_FILES 
 	base/utilities/Exception.cpp
+	base/linalg/AffineDecomposition.cpp
 	base/io/SaveStream.cpp
 	base/io/LoadStream.cpp
 	core/object/OvitoObject.cpp
@@ -43,8 +44,18 @@ SET(OVITO_SOURCE_FILES
 	core/io/ObjectLoadStream.cpp
 	core/animation/AnimManager.cpp
 	core/animation/AnimationSettings.cpp
+	core/animation/controller/Controller.cpp
+	core/animation/controller/StandardConstControllers.cpp
+	core/animation/controller/StandardLinearControllers.cpp
+	core/animation/controller/LookAtController.cpp
+	core/animation/controller/TransformationController.cpp
 	core/dataset/DataSet.cpp
 	core/dataset/DataSetManager.cpp
+	core/dataset/CurrentSelectionProxy.cpp
+	core/scene/SceneNode.cpp
+	core/scene/GroupNode.cpp
+	core/scene/SceneRoot.cpp
+	core/scene/SelectionSet.cpp
 	core/gui/app/Application.cpp
 	core/gui/mainwin/MainWindow.cpp
 	core/gui/mainwin/AnimationTimeSlider.cpp

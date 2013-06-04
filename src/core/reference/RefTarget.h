@@ -240,15 +240,15 @@ public:
 	///        application's main window.
 	/// \return \c true if there is an editor open in the main command panel for this RefTarget; \c false otherwise.
 	bool isBeingEdited() const;
+#endif
 
 	/// \brief Returns the title of this object.
 	/// \return A string that is used as label or title for this object in the user interface.
 	///
-	/// The default implementation returns PluginClassDescriptor::schematicTitle() for
+	/// The default implementation returns OvitoObjectType::objectTitle() for
 	/// using the class of this object instance. Sub-classes can override this method to
 	/// return a title that depends on the internal state of the object for instance.
-	virtual QString schematicTitle();
-#endif
+	virtual QString objectTitle();
 
 private:
 

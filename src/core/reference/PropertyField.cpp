@@ -122,6 +122,7 @@ void SingleReferenceFieldBase::setValue(RefTarget* newTarget)
 	if(UndoManager::instance().isRecording() && descriptor()->automaticUndo()) {
 		SetReferenceOperation* op = new SetReferenceOperation(newTarget, *this);
 		UndoManager::instance().push(op);
+		op->redo();
 		OVITO_ASSERT(_pointer.get() == newTarget);
 	}
 	else {
@@ -230,6 +231,7 @@ int VectorReferenceFieldBase::insertInternal(RefTarget* newTarget, int index)
 	if(UndoManager::instance().isRecording() && descriptor()->automaticUndo()) {
 		InsertReferenceOperation* op = new InsertReferenceOperation(newTarget, *this, index);
 		UndoManager::instance().push(op);
+		op->redo();
 		return op->getInsertionIndex();
 	}
 	else {
@@ -251,6 +253,7 @@ void VectorReferenceFieldBase::remove(int i)
 	if(UndoManager::instance().isRecording() && descriptor()->automaticUndo()) {
 		RemoveReferenceOperation* op = new RemoveReferenceOperation(*this, i);
 		UndoManager::instance().push(op);
+		op->redo();
 	}
 	else {
 		UndoSuspender noUndo;

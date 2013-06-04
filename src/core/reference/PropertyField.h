@@ -70,6 +70,7 @@ protected:
 	/// Generates a notification event to inform the dependents of the field's owner that it has changed.
 	void generateTargetChangedEvent(ReferenceEvent::Type eventType = ReferenceEvent::TargetChanged);
 
+	/// Generates a notification event to inform the dependents of the field's owner that it has changed.
 	void generatePropertyChangedEvent() const;
 
 private:
@@ -123,8 +124,7 @@ public:
 		if(_value == newValue) return *this;
 		if(UndoManager::instance().isRecording() && descriptor()->automaticUndo())
 			UndoManager::instance().push(new PropertyChangeOperation(*this));
-		else
-			setPropertyValue(newValue);
+		setPropertyValue(newValue);
 		return *this;
 	}
 
@@ -159,7 +159,7 @@ private:
 	}
 
 	/// This undo class records a change to the property value.
-	class PropertyChangeOperation : public QUndoCommand {
+	class PropertyChangeOperation : public UndoableOperation {
 	public:
 		PropertyChangeOperation(PropertyField& field) : _field(field), _object(field.owner()) {
 			// Make a copy of the current property value.
@@ -229,7 +229,7 @@ protected:
 
 protected:
 
-	class SetReferenceOperation : public QUndoCommand
+	class SetReferenceOperation : public UndoableOperation
 	{
 	private:
 		OORef<RefTarget> inactiveTarget;
@@ -366,7 +366,7 @@ protected:
 
 protected:
 
-	class InsertReferenceOperation : public QUndoCommand
+	class InsertReferenceOperation : public UndoableOperation
 	{
 	private:
 	    OORef<RefTarget> target;
@@ -389,7 +389,7 @@ protected:
 		int getInsertionIndex() const { return index; }
 	};
 
-	class RemoveReferenceOperation : public QUndoCommand
+	class RemoveReferenceOperation : public UndoableOperation
 	{
 	private:
 	    OORef<RefTarget> target;

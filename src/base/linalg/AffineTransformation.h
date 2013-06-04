@@ -105,7 +105,7 @@ public:
 
 	/// \brief Initializes the 3x4 matrix from a 3x3 matrix.
 	/// The translation component of the affine transformation is set to the null vector.
-	explicit constexpr Matrix_34(const Matrix_3<T>& tm) : _m{tm.column(0), tm.column(1), tm.column(2), Vector_3<T>::Zero()} {}
+	explicit constexpr Matrix_34(const Matrix_3<T>& tm) : _m{tm.column(0), tm.column(1), tm.column(2), typename Vector_3<T>::Zero()} {}
 
 	/// \brief Returns the number of rows in this matrix.
 	static constexpr size_type row_count() { return 3; }
@@ -169,7 +169,7 @@ public:
 	}
 
 	/// \brief Sets the matrix to the identity matrix.
-	Matrix_34& setIdentity(Identity) {
+	Matrix_34& setIdentity() {
 		_m[0][0] = T(1); _m[0][1] = T(0); _m[0][2] = T(0);
 		_m[1][0] = T(0); _m[1][1] = T(1); _m[1][2] = T(0);
 		_m[2][0] = T(0); _m[2][1] = T(0); _m[2][2] = T(1);
@@ -359,86 +359,6 @@ public:
 	}
 };
 
-/// Generates a pure rotation matrix around the given axis.
-template<typename T>
-inline Matrix_34<T> Matrix_34<T>::rotation(const RotationT<T>& rot)
-{
-	T c = cos(rot.angle());
-	T s = sin(rot.angle());
-	T t = 1.0 - c;
-    const auto& a = rot.axis();
-	OVITO_ASSERT_MSG(std::abs(a.squaredLength() - T(1)) <= T(FLOATTYPE_EPSILON), "AffineTransformation::rotation", "Rotation axis vector must be normalized.");
-
-	// Make sure the result is a pure rotation matrix.
-#ifdef OVITO_DEBUG
-	Matrix_34<T> tm(	t * a.x() * a.x() + c,       t * a.x() * a.y() - s * a.z(), t * a.x() * a.z() + s * a.y(), 0.0,
-						t * a.x() * a.y() + s * a.z(), t * a.y() * a.y() + c,       t * a.y() * a.z() - s * a.x(), 0.0,
-						t * a.x() * a.z() - s * a.y(), t * a.y() * a.z() + s * a.x(), t * a.z() * a.z() + c      , 0.0);
-    OVITO_ASSERT_MSG(tm.isRotationMatrix(), "AffineTransformation::rotation(const Rotation&)" , "Result is not a pure rotation matrix.");
-#endif
-
-	return Matrix_34<T>(	t * a.x() * a.x() + c,       t * a.x() * a.y() - s * a.z(), t * a.x() * a.z() + s * a.y(), 0.0,
-					t * a.x() * a.y() + s * a.z(), t * a.y() * a.y() + c,       t * a.y() * a.z() - s * a.x(), 0.0,
-					t * a.x() * a.z() - s * a.y(), t * a.y() * a.z() + s * a.x(), t * a.z() * a.z() + c      , 0.0);
-}
-
-/// Generates a pure rotation matrix from a quaternion.
-template<typename T>
-inline Matrix_34<T> Matrix_34<T>::rotation(const QuaternionT<T>& q)
-{
-#ifdef OVITO_DEBUG
-	if(std::abs(q.dot(q) - T(1)) > T(FLOATTYPE_EPSILON))
-		OVITO_ASSERT_MSG(false, "AffineTransformation::rotation(const Quaternion&)", "Quaternion must be normalized.");
-
-	// Make sure the result is a pure rotation matrix.
-	Matrix_34<T> tm(1.0 - 2.0*(q.y()*q.y() + q.z()*q.z()),       2.0*(q.x()*q.y() - q.w()*q.z()),       2.0*(q.x()*q.z() + q.w()*q.y()), 0.0,
-	        2.0*(q.x()*q.y() + q.w()*q.z()), 1.0 - 2.0*(q.x()*q.x() + q.z()*q.z()),       2.0*(q.y()*q.z() - q.w()*q.x()), 0.0,
-            2.0*(q.x()*q.z() - q.w()*q.y()),       2.0*(q.y()*q.z() + q.w()*q.x()), 1.0 - 2.0*(q.x()*q.x() + q.y()*q.y()), 0.0);
-    OVITO_ASSERT_MSG(tm.isRotationMatrix(), "AffineTransformation::rotation(const Quaternion&)" , "Result is not a pure rotation matrix.");
-#endif
-	return Matrix_34<T>(1.0 - 2.0*(q.y()*q.y() + q.z()*q.z()),       2.0*(q.x()*q.y() - q.w()*q.z()),       2.0*(q.x()*q.z() + q.w()*q.y()), 0.0,
-				        2.0*(q.x()*q.y() + q.w()*q.z()), 1.0 - 2.0*(q.x()*q.x() + q.z()*q.z()),       2.0*(q.y()*q.z() - q.w()*q.x()), 0.0,
-			            2.0*(q.x()*q.z() - q.w()*q.y()),       2.0*(q.y()*q.z() + q.w()*q.x()), 1.0 - 2.0*(q.x()*q.x() + q.y()*q.y()), 0.0);
-}
-
-/// Generates a pure translation matrix.
-template<typename T>
-inline Matrix_34<T> Matrix_34<T>::translation(const Vector_3<T>& t)
-{
-	return Matrix_34<T>(1.0, 0.0, 0.0, t.x(),
-				  0.0, 1.0, 0.0, t.y(),
-				  0.0, 0.0, 1.0, t.z());
-}
-
-/// Generates a pure diagonal scaling matrix.
-template<typename T>
-inline Matrix_34<T> Matrix_34<T>::scaling(T s)
-{
-	return Matrix_34<T>(  s, 0.0, 0.0, 0.0,
-				  	  	  0.0,   s, 0.0, 0.0,
-				  	  	  0.0, 0.0,   s, 0.0);
-}
-
-/// Generates a pure scaling matrix.
-template<typename T>
-inline Matrix_34<T> Matrix_34<T>::scaling(const ScalingT<T>& scaling)
-{
-	Matrix_3<T> U = Matrix_3<T>::rotation(scaling.Q);
-	Matrix_3<T> K = Matrix_3<T>(scaling.S.x(), 0.0, 0.0,
-								0.0, scaling.S.y(), 0.0,
-								0.0, 0.0, scaling.S.z());
-	return (U * K * U.transposed());
-}
-
-/// Generates a matrix with pure shearing transformation normal to the z-axis in the x- and y-direction.
-template<typename T>
-inline Matrix_34<T> Matrix_34<T>::shear(T gammaX, T gammaY)
-{
-	return AffineTransformation(1.0, 0.0, gammaX, 0.0,
-				  0.0, 1.0, gammaY, 0.0,
-				  0.0, 0.0, 1.0, 0.0);
-}
-
 /// Multiplies a 3x4 matrix with a Vector3 (which is automatically extended to a 4-vector with the last
 /// element being 0).
 template<typename T>
@@ -510,6 +430,86 @@ inline Matrix_34<T> operator*(const Matrix_34<T>& a, const Matrix_3<T>& b)
 		res(i,3) = a(i,3);
 	}
 	return res;
+}
+
+/// Generates a pure rotation matrix around the given axis.
+template<typename T>
+inline Matrix_34<T> Matrix_34<T>::rotation(const RotationT<T>& rot)
+{
+	T c = cos(rot.angle());
+	T s = sin(rot.angle());
+	T t = 1.0 - c;
+    const auto& a = rot.axis();
+	OVITO_ASSERT_MSG(std::abs(a.squaredLength() - T(1)) <= T(FLOATTYPE_EPSILON), "AffineTransformation::rotation", "Rotation axis vector must be normalized.");
+
+	// Make sure the result is a pure rotation matrix.
+#ifdef OVITO_DEBUG
+	Matrix_34<T> tm(	t * a.x() * a.x() + c,       t * a.x() * a.y() - s * a.z(), t * a.x() * a.z() + s * a.y(), 0.0,
+						t * a.x() * a.y() + s * a.z(), t * a.y() * a.y() + c,       t * a.y() * a.z() - s * a.x(), 0.0,
+						t * a.x() * a.z() - s * a.y(), t * a.y() * a.z() + s * a.x(), t * a.z() * a.z() + c      , 0.0);
+    OVITO_ASSERT_MSG(tm.isRotationMatrix(), "AffineTransformation::rotation(const Rotation&)" , "Result is not a pure rotation matrix.");
+#endif
+
+	return Matrix_34<T>(	t * a.x() * a.x() + c,       t * a.x() * a.y() - s * a.z(), t * a.x() * a.z() + s * a.y(), 0.0,
+					t * a.x() * a.y() + s * a.z(), t * a.y() * a.y() + c,       t * a.y() * a.z() - s * a.x(), 0.0,
+					t * a.x() * a.z() - s * a.y(), t * a.y() * a.z() + s * a.x(), t * a.z() * a.z() + c      , 0.0);
+}
+
+/// Generates a pure rotation matrix from a quaternion.
+template<typename T>
+inline Matrix_34<T> Matrix_34<T>::rotation(const QuaternionT<T>& q)
+{
+#ifdef OVITO_DEBUG
+	if(std::abs(q.dot(q) - T(1)) > T(FLOATTYPE_EPSILON))
+		OVITO_ASSERT_MSG(false, "AffineTransformation::rotation(const Quaternion&)", "Quaternion must be normalized.");
+
+	// Make sure the result is a pure rotation matrix.
+	Matrix_34<T> tm(1.0 - 2.0*(q.y()*q.y() + q.z()*q.z()),       2.0*(q.x()*q.y() - q.w()*q.z()),       2.0*(q.x()*q.z() + q.w()*q.y()), 0.0,
+	        2.0*(q.x()*q.y() + q.w()*q.z()), 1.0 - 2.0*(q.x()*q.x() + q.z()*q.z()),       2.0*(q.y()*q.z() - q.w()*q.x()), 0.0,
+            2.0*(q.x()*q.z() - q.w()*q.y()),       2.0*(q.y()*q.z() + q.w()*q.x()), 1.0 - 2.0*(q.x()*q.x() + q.y()*q.y()), 0.0);
+    OVITO_ASSERT_MSG(tm.isRotationMatrix(), "AffineTransformation::rotation(const Quaternion&)" , "Result is not a pure rotation matrix.");
+#endif
+	return Matrix_34<T>(1.0 - 2.0*(q.y()*q.y() + q.z()*q.z()),       2.0*(q.x()*q.y() - q.w()*q.z()),       2.0*(q.x()*q.z() + q.w()*q.y()), 0.0,
+				        2.0*(q.x()*q.y() + q.w()*q.z()), 1.0 - 2.0*(q.x()*q.x() + q.z()*q.z()),       2.0*(q.y()*q.z() - q.w()*q.x()), 0.0,
+			            2.0*(q.x()*q.z() - q.w()*q.y()),       2.0*(q.y()*q.z() + q.w()*q.x()), 1.0 - 2.0*(q.x()*q.x() + q.y()*q.y()), 0.0);
+}
+
+/// Generates a pure translation matrix.
+template<typename T>
+inline Matrix_34<T> Matrix_34<T>::translation(const Vector_3<T>& t)
+{
+	return Matrix_34<T>(1.0, 0.0, 0.0, t.x(),
+				  0.0, 1.0, 0.0, t.y(),
+				  0.0, 0.0, 1.0, t.z());
+}
+
+/// Generates a pure diagonal scaling matrix.
+template<typename T>
+inline Matrix_34<T> Matrix_34<T>::scaling(T s)
+{
+	return Matrix_34<T>(  s, 0.0, 0.0, 0.0,
+				  	  	  0.0,   s, 0.0, 0.0,
+				  	  	  0.0, 0.0,   s, 0.0);
+}
+
+/// Generates a pure scaling matrix.
+template<typename T>
+inline Matrix_34<T> Matrix_34<T>::scaling(const ScalingT<T>& scaling)
+{
+	Matrix_3<T> U = Matrix_3<T>::rotation(scaling.Q);
+	Matrix_3<T> K = Matrix_3<T>(scaling.S.x(), 0.0, 0.0,
+								0.0, scaling.S.y(), 0.0,
+								0.0, 0.0, scaling.S.z());
+	return Matrix_34<T>(U * K * U.transposed());
+}
+
+/// Generates a matrix with pure shearing transformation normal to the z-axis in the x- and y-direction.
+template<typename T>
+inline Matrix_34<T> Matrix_34<T>::shear(T gammaX, T gammaY)
+{
+	return AffineTransformation(1.0, 0.0, gammaX, 0.0,
+				  0.0, 1.0, gammaY, 0.0,
+				  0.0, 0.0, 1.0, 0.0);
 }
 
 /// Writes the matrix to an output stream.

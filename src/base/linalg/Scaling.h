@@ -67,15 +67,15 @@ public:
 
 	/// \brief Initializes the object to the identity.
 	/// The Scaling structure is initialized with the scaling factors (1,1,1), i.e. no scaling at all.
-	constexpr explicit ScalingT(Identity) : S(T(1)), Q(QuaternionT<T>::Identity) {}
+	constexpr explicit ScalingT(Identity) : S(T(1)), Q(typename QuaternionT<T>::Identity()) {}
 
 	/////////////////////////////// Unary operators //////////////////////////////
 
 	/// \brief Returns the inverse of this scaling.
 	/// \return The inverse scaling that exactly compensates this scaling.
 	ScalingT inverse() const {
-		OVITO_ASSERT_MSG(S != Vector_3<T>::Zero(), "Scaling::inverse()", "Cannot invert a singular scaling value.");
-		return { Vector_3<T>(1 / S.x(), 1 / S.y(), 1 / S.z()), Q.inverse().normalized() };
+		OVITO_ASSERT_MSG(S != typename Vector_3<T>::Zero(), "Scaling::inverse()", "Cannot invert a singular scaling value.");
+		return { Vector_3<T>(T(1) / S.x(), T(1) / S.y(), T(1) / S.z()), Q.inverse().normalized() };
 	}
 
 	/////////////////////////////// Binary operators /////////////////////////////
@@ -85,13 +85,13 @@ public:
 	/// \return A scaling structure that is equal to first applying scaling \a s2 and then \c this scaling.
 	ScalingT operator*(const ScalingT& s2) const {
 		if(Q == s2.Q) {
-			return Scaling(Vector3(S.x() * s2.S.x(), S.y() * s2.S.y(), S.z() * s2.S.z()), Q);
+			return ScalingT(Vector_3<T>(S.x() * s2.S.x(), S.y() * s2.S.y(), S.z() * s2.S.z()), Q);
 		}
 		else {
 			//AffineDecomposition decomp(AffineTransformation::scaling(*this) * AffineTransformation::scaling(s2));
 			//return decomp.scaling;
 			OVITO_ASSERT_MSG(false, "Scaling product", "Product of two Scaling values is not implemented yet.");
-			return Identity();
+			return ScalingT(Identity());
 		}
 	}
 
@@ -101,9 +101,19 @@ public:
 	ScalingT& operator+=(const ScalingT& s2) { *this = s2 * (*this); return *this; }
 
 	/// \brief Adds the inverse of another scaling to this scaling.
-	/// \param s2 The scaling to substract from this scaling.
+	/// \param s2 The scaling to subtract from this scaling.
 	/// \return This resulting scaling which is equal to \c (*this)*s2.inverse().
 	ScalingT& operator-=(const ScalingT& s2) { *this = *this * s2.inverse(); return *this; }
+
+	/// \brief Sets the scaling to the identity scaling.
+	ScalingT& setIdentity() {
+		S = Vector_3<T>(T(1));
+		Q.setIdentity();
+		return *this;
+	}
+
+	/// \brief Sets the scaling to the identity scaling.
+	ScalingT& operator=(Identity) { return setIdentity(); }
 
 	////////////////////////////////// Comparison ////////////////////////////////
 

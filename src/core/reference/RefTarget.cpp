@@ -190,6 +190,14 @@ OORef<RefTarget> RefTarget::clone(bool deepCopy, CloneHelper& cloneHelper)
 	return clone;
 }
 
+/******************************************************************************
+* Returns the title of this object.
+******************************************************************************/
+QString RefTarget::objectTitle()
+{
+	return getOOType().name();
+}
+
 #if 0
 /******************************************************************************
 * Creates a PropertiesEditor for this object.
@@ -212,7 +220,7 @@ PropertiesEditor::SmartPtr RefTarget::createPropertiesEditor()
 		while(clazz != NULL);
 	}
 	catch(Exception& ex) {
-		ex.prependGeneralMessage(tr("Could no create editor component for the %1 object.").arg(schematicTitle()));
+		ex.prependGeneralMessage(tr("Could no create editor component for the %1 object.").arg(objectTitle()));
 		ex.showError();
 	}
 	return NULL;

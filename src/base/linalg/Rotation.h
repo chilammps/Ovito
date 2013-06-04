@@ -85,9 +85,9 @@ public:
     	_axis.x() = (tm(2,1) - tm(1,2));
     	_axis.y() = (tm(0,2) - tm(2,0));
     	_axis.z() = (tm(1,0) - tm(0,1));
-    	if(_axis == Vector_3<T>::Zero()) {
-    		_axis.z = T(1);
+    	if(_axis == typename Vector_3<T>::Zero()) {
     		_angle = T(0);
+    		_axis = Vector_3<T>(0, 0, 1);
     	}
     	else {
     		T trace = (tm(0,0) + tm(1,1) + tm(2,2) - T(1));
@@ -100,21 +100,21 @@ public:
 	/// \brief Initializes the object from a quaternion.
 	/// \param q The input rotation.
 	///
-	/// The calcluated rotation angle will be in the range [0, 2*pi].
+	/// The calculated rotation angle will be in the range [0, 2*pi].
 	explicit RotationT(const QuaternionT<T>& q) {
 		T scaleSquared = q.dot(q);
 		if(scaleSquared <= T(FLOATTYPE_EPSILON)) {
-			_angle = 0;
+			_angle = T(0);
 			_axis = Vector_3<T>(0, 0, 1);
 		}
 		else {
 			if(q.w() < -1)
 				_angle = T(2 * M_PI);
 			else if(q.w() > 1)
-				_angle = 0;
+				_angle = T(0);
 			else
-				_angle = 2 * acos(q.w());
-			_axis = Vector_3<T>(q.x(), q.y(), q.z()) / sqrt(scaleSquared);
+				_angle = T(2 * acos(q.w()));
+			_axis = Vector_3<T>(q.x(), q.y(), q.z()) / (T)sqrt(scaleSquared);
 			OVITO_ASSERT(std::abs(_axis.squaredLength() - T(1)) <= T(FLOATTYPE_EPSILON));
 		}
 	}
@@ -182,6 +182,16 @@ public:
 	/// \return This resulting rotation which is equal to \c (*this)*r2.inverse().
 	RotationT& operator-=(const RotationT& r2) { *this = (*this) * r2.inverse(); return *this; }
 
+	/// \brief Sets the rotation to the identity rotation.
+	RotationT& setIdentity() {
+		_axis = Vector_3<T>(T(0),T(0),T(1));
+		_angle = T(0);
+		return *this;
+	}
+
+	/// \brief Sets the rotation to the identity rotation.
+	RotationT& operator=(Identity) { return setIdentity(); }
+
 	////////////////////////////////// Comparison ////////////////////////////////
 
 	/// \brief Returns whether two rotations are the same.
@@ -242,7 +252,7 @@ public:
     	else {
     		int iExtraSpins = (int)(fDiff/T(2*M_PI));
 
-    		if(rot1.axis().equals(_rot2().axis)) {
+    		if(rot1.axis().equals(_rot2.axis())) {
     			return (Quaternion)RotationT(rot1.axis(), (1 - t) * rot1.angle() + t * _rot2.angle());
     		}
     		else if(rot1.angle() != 0.0)

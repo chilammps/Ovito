@@ -82,7 +82,7 @@ void ViewportInputHandler::mousePressEvent(Viewport* vp, QMouseEvent* event)
 			if(handlerType() != EXCLUSIVE)
 				ViewportInputManager::instance().removeInputHandler(this);
 			else {
-				activateTemporaryNavigationMode(ZoomMode::instance());
+				activateTemporaryNavigationMode(PanMode::instance());
 				temporaryNavigationMode()->mousePressEvent(vp, event);
 			}
 		}

@@ -145,7 +145,7 @@ public:
 	}
 
 	/// \brief Sets the matrix to the identity matrix.
-	Matrix_3& setIdentity(Identity) {
+	Matrix_3& setIdentity() {
 		_m[0] = Vector_3<T>(1,0,0);
 		_m[1] = Vector_3<T>(0,1,0);
 		_m[2] = Vector_3<T>(0,0,1);
