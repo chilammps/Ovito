@@ -25,6 +25,7 @@
 #include <core/gui/app/Application.h>
 #include <core/gui/undo/UndoManager.h>
 #include <core/viewport/input/NavigationModes.h>
+#include <core/animation/AnimManager.h>
 
 namespace Ovito {
 
@@ -57,6 +58,22 @@ ActionManager::ActionManager()
 	createViewportModeAction(ACTION_VIEWPORT_ORBIT, OrbitMode::instance(), tr("Orbit"), ":/core/actions/viewport/mode_orbit.png", tr("Activate orbit mode to rotate the camera around the scene."));
 	createViewportModeAction(ACTION_VIEWPORT_FOV, FOVMode::instance(), tr("Field Of View"), ":/core/actions/viewport/mode_fov.png", tr("Activate field of view mode to change the perspective projection."));
 	//createViewportModeAction(ACTION_VIEWPORT_PICK_ORBIT_CENTER, PickOrbitCenterMode::instance(), tr("Set Orbit Center"), ":/core/viewport/mode_set_orbit_center.png", tr("Set the center of rotation for orbit mode."));
+
+	createCommandAction(ACTION_GOTO_START_OF_ANIMATION, tr("Goto Start of Animation"), ":/core/actions/animation/goto_animation_start.png", QString(), Qt::Key_Home);
+	createCommandAction(ACTION_GOTO_END_OF_ANIMATION, tr("Goto End of Animation"), ":/core/actions/animation/goto_animation_end.png", QString(), Qt::Key_End);
+	createCommandAction(ACTION_GOTO_PREVIOUS_FRAME, tr("Goto Previous Frame"), ":/core/actions/animation/goto_previous_frame.png", QString(), Qt::Key_Minus);
+	createCommandAction(ACTION_GOTO_NEXT_FRAME, tr("Goto Next Frame"), ":/core/actions/animation/goto_next_frame.png", QString(), Qt::Key_Plus);
+	createCommandAction(ACTION_START_ANIMATION_PLAYBACK, tr("Start Animation Playback"), ":/core/actions/animation/play_animation.png");
+	createCommandAction(ACTION_STOP_ANIMATION_PLAYBACK, tr("Stop Animation Playback"), ":/core/actions/animation/stop_animation.png");
+	createCommandAction(ACTION_ANIMATION_SETTINGS, tr("Animation Settings"), ":/core/actions/animation/animation_settings.png");
+	createViewportModeAction(ACTION_TOGGLE_ANIMATION_PLAYBACK, createAnimationPlaybackViewportMode(), tr("Play Animation"), ":/core/actions/animation/play_animation.png");
+
+	// Create action that toggles animation mode.
+	QAction* animModeAction = createCommandAction(ACTION_ANIMATION_MODE_TOGGLE, tr("Animation Mode"), ":/core/actions/animation/animation_mode.png");
+	animModeAction->setCheckable(true);
+	animModeAction->setChecked(AnimManager::instance().animationMode());
+	connect(animModeAction, SIGNAL(toggled(bool)), &AnimManager::instance(), SLOT(setAnimationMode(bool)));
+	connect(&AnimManager::instance(), SIGNAL(animationModeChanged(bool)), animModeAction, SLOT(setChecked(bool)));
 
 	// Create Edit->Undo action.
 	QAction* undoAction = UndoManager::instance().createUndoAction(this);

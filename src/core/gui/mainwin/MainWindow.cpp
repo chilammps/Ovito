@@ -24,6 +24,7 @@
 #include "AnimationTimeSlider.h"
 #include "ViewportsPanel.h"
 #include <core/gui/actions/ActionManager.h>
+#include <core/gui/widgets/AnimationTimeSpinner.h>
 
 namespace Ovito {
 
@@ -75,7 +76,42 @@ MainWindow::MainWindow(const QString& title) :
 	setStatusBar(_statusBar);
 	animationPanelLayout->addWidget(_statusBar);
 
-   // Create the viewport control toolbar.
+	// Create the animation control toolbar.
+	QToolBar* animationControlBar1 = new QToolBar();
+	animationControlBar1->addAction(ActionManager::instance().getAction(ACTION_GOTO_START_OF_ANIMATION));
+	animationControlBar1->addSeparator();
+	animationControlBar1->addAction(ActionManager::instance().getAction(ACTION_GOTO_PREVIOUS_FRAME));
+	animationControlBar1->addAction(ActionManager::instance().getAction(ACTION_TOGGLE_ANIMATION_PLAYBACK));
+	animationControlBar1->addAction(ActionManager::instance().getAction(ACTION_GOTO_NEXT_FRAME));
+	animationControlBar1->addSeparator();
+	animationControlBar1->addAction(ActionManager::instance().getAction(ACTION_GOTO_END_OF_ANIMATION));
+	animationControlBar1->setStyleSheet("QToolBar { padding: 0px; margin: 0px; border: 0px none black; } QToolButton { padding: 0px; margin: 0px }");
+	QToolBar* animationControlBar2 = new QToolBar();
+	animationControlBar2->addAction(ActionManager::instance().getAction(ACTION_ANIMATION_MODE_TOGGLE));
+	class TimeEditBox : public QLineEdit {
+	public:
+		virtual QSize sizeHint() const { return minimumSizeHint(); }
+	};
+	QLineEdit* timeEditBox = new TimeEditBox();
+	timeEditBox->setToolTip(tr("Current Animation Time"));
+	AnimationTimeSpinner* currentTimeSpinner = new AnimationTimeSpinner();
+	currentTimeSpinner->setTextBox(timeEditBox);
+	animationControlBar2->addWidget(timeEditBox);
+	animationControlBar2->addWidget(currentTimeSpinner);
+	animationControlBar2->addAction(ActionManager::instance().getAction(ACTION_ANIMATION_SETTINGS));
+	animationControlBar2->addWidget(new QWidget());
+	animationControlBar2->setStyleSheet("QToolBar { padding: 0px; margin: 0px; border: 0px none black; } QToolButton { padding: 0px; margin: 0px }");
+
+	QWidget* animationControlPanel = new QWidget();
+	QVBoxLayout* animationControlPanelLayout = new QVBoxLayout(animationControlPanel);
+	animationControlPanelLayout->setSpacing(0);
+	animationControlPanelLayout->setContentsMargins(0, 1, 0, 0);
+	animationControlPanelLayout->addWidget(animationControlBar1);
+	animationControlPanelLayout->addWidget(animationControlBar2);
+	animationControlPanelLayout->addStretch(1);
+	animationControlPanel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
+
+	// Create the viewport control toolbar.
 	QToolBar* viewportControlBar1 = new QToolBar();
 	viewportControlBar1->addAction(ActionManager::instance().getAction(ACTION_VIEWPORT_ZOOM));
 	viewportControlBar1->addAction(ActionManager::instance().getAction(ACTION_VIEWPORT_PAN));
@@ -98,6 +134,7 @@ MainWindow::MainWindow(const QString& title) :
 	viewportControlPanel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
 
 	createDockPanel(tr("Animation Panel"), "AnimationPanel", Qt::BottomDockWidgetArea, Qt::BottomDockWidgetArea, animationPanel);
+	createDockPanel(tr("Animation Control Panel"), "AnimationControlPanel", Qt::BottomDockWidgetArea, Qt::BottomDockWidgetArea, animationControlPanel);
 	createDockPanel(tr("Viewport Control"), "ViewportControlPanel", Qt::BottomDockWidgetArea, Qt::BottomDockWidgetArea, viewportControlPanel);
 }
 
@@ -123,8 +160,8 @@ void MainWindow::restoreLayout()
 	QSettings settings;
 	settings.beginGroup("app/mainwindow");
 	QVariant state = settings.value("state");
-	if(state.canConvert<QByteArray>())
-		restoreState(state.toByteArray());
+	//if(state.canConvert<QByteArray>())
+	//	restoreState(state.toByteArray());
 }
 
 /******************************************************************************

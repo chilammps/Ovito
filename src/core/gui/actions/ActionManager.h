@@ -101,6 +101,8 @@ class ViewportInputHandler;		// defined in ViewportInputHandler.h
 #define ACTION_STOP_ANIMATION_PLAYBACK		"AnimationStopPlayback"
 /// This action shows the animation settings dialog
 #define ACTION_ANIMATION_SETTINGS			"AnimationSettings"
+/// This action activates/deactivates the animation mode
+#define ACTION_ANIMATION_MODE_TOGGLE		"AnimationToggleRecording"
 
 /// This action starts rendering of the current view.
 #define ACTION_RENDER_ACTIVE_VIEWPORT		"RenderActiveViewport"
@@ -177,8 +179,17 @@ private Q_SLOTS:
 	void on_FileSaveAs_triggered();
 	void on_ViewportMaximize_triggered();
 	void on_Settings_triggered();
+	void on_AnimationGotoStart_triggered();
+	void on_AnimationGotoEnd_triggered();
+	void on_AnimationGotoPreviousFrame_triggered();
+	void on_AnimationGotoNextFrame_triggered();
+	void on_AnimationStartPlayback_triggered();
+	void on_AnimationStopPlayback_triggered();
+	void on_AnimationSettings_triggered();
 
 private:
+
+	OORef<ViewportInputHandler> createAnimationPlaybackViewportMode();
 
 	/// Constructor.
 	ActionManager();
