@@ -380,6 +380,14 @@ inline std::ostream& operator<<(std::ostream &os, const Matrix_4<T>& m) {
 	return os;
 }
 
+/// \brief Writes the matrix to the Qt debug stream.
+template<typename T>
+inline QDebug operator<<(QDebug dbg, const Matrix_4<T>& m) {
+	for(typename Matrix_4<T>::size_type row = 0; row < m.row_count(); row++)
+		dbg.nospace() << m(row,0) << " " << m(row,1) << " " << m(row,2) << " " << m(row,3) << "\n";
+    return dbg.space();
+}
+
 /// \brief Writes a matrix to a binary output stream.
 template<typename T>
 inline SaveStream& operator<<(SaveStream& stream, const Matrix_4<T>& m)

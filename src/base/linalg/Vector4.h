@@ -161,7 +161,7 @@ public:
 	///////////////////////////////// Computations ////////////////////////////////
 
 	/// \brief Computes the scalar product of two vectors.
-	constexpr T dot(const Vector_4& b) const { return x()*b.y() + y()*b.y() + z()*b.z() + w()*b.w(); }
+	constexpr T dot(const Vector_4& b) const { return x()*b.x() + y()*b.y() + z()*b.z() + w()*b.w(); }
 
 	/// \brief Computes the squared length of the vector.
 	constexpr T squaredLength() const { return x()*x() + y()*y() + z()*z() + w()*w(); }

@@ -155,6 +155,10 @@ public:
 	///       using setViewNode().
 	void setViewType(ViewType type);
 
+	/// \brief Returns true if the viewport is using a perspective project;
+	///        returns false if it is using an orthogonal projection.
+	bool isPerspectiveProjection() const;
+
 	/// \brief Returns the current shading mode used for scene rendering.
 	/// \return The current shading mode.
 	ShadingMode shadingMode() const { return _shadingMode; }
@@ -214,6 +218,18 @@ public:
 	/// \note This only has effect when viewNode() == NULL.
 	void setCameraDirection(const Vector3& d) { _cameraDirection = d; }
 
+	/// \brief Returns the current world to camera transformation matrix.
+	const AffineTransformation& viewMatrix() const { return _projParams.viewMatrix; }
+
+	/// \brief Returns the inverse of current camera to world matrix.
+	const AffineTransformation& inverseViewMatrix() const { return _projParams.inverseViewMatrix; }
+
+	/// \brief Returns the current projection transformation matrix.
+	const Matrix4& projectionMatrix() const { return _projParams.projectionMatrix; }
+
+	/// \brief Returns the inverse of the current projection matrix.
+	const Matrix4& inverseProjectionMatrix() const { return _projParams.inverseProjectionMatrix; }
+
 	/// \brief Returns whether the render frame is shown in the viewport.
 	bool renderFrameShown() const { return _showRenderFrame; }
 
@@ -264,7 +280,7 @@ public:
 	}
 
 	/// \brief Renders a text string into the GL context.
-	void renderText(const QString& str, const QPointF& pos, const QColor& color, const QFont& font = QFont());
+	void renderText(const QString& str, const QPointF& pos, const QColor& color);
 
 	/// Sets whether mouse grab should be enabled or not for this viewport window.
 	/// If the return value is true, the viewport window receives all mouse events until
@@ -278,6 +294,9 @@ public:
 
 	/// Restores the default arrow cursor for this viewport window.
 	void unsetCursor();
+
+	/// Returns the current size of the viewport window.
+	QSize size() const { return _widget ? _widget->size() : QSize(); }
 
 protected:
 

@@ -25,6 +25,7 @@
 #include <core/viewport/ViewportManager.h>
 #include <core/viewport/input/ViewportInputManager.h>
 #include <core/viewport/input/ViewportInputHandler.h>
+#include <core/viewport/input/NavigationModes.h>
 
 namespace Ovito {
 
@@ -76,18 +77,23 @@ void ViewportInputHandler::activateTemporaryNavigationMode(ViewportInputHandler*
 void ViewportInputHandler::mousePressEvent(Viewport* vp, QMouseEvent* event)
 {
 	ViewportManager::instance().setActiveViewport(vp);
-	if(event->button() == Qt::RightButton) {
-		if(handlerType() != EXCLUSIVE)
-			ViewportInputManager::instance().removeInputHandler(this);
-	}
-	else if(event->button() == Qt::MidButton && ViewportInputManager::instance().currentHandler() == this) {
-#if 0
-		if(event->modifiers().testFlag(Qt::ShiftModifier) == false) 
-			activateTemporaryNavigationMode(PanMode::instance());
-		else
+	if(ViewportInputManager::instance().currentHandler() == this) {
+		if(event->button() == Qt::RightButton) {
+			if(handlerType() != EXCLUSIVE)
+				ViewportInputManager::instance().removeInputHandler(this);
+			else {
+				activateTemporaryNavigationMode(ZoomMode::instance());
+				temporaryNavigationMode()->mousePressEvent(vp, event);
+			}
+		}
+		else if(event->button() == Qt::LeftButton) {
 			activateTemporaryNavigationMode(OrbitMode::instance());
-		temporaryNavigationMode()->onMouseDown(vp, event);
-#endif
+			temporaryNavigationMode()->mousePressEvent(vp, event);
+		}
+		else if(event->button() == Qt::MidButton) {
+			activateTemporaryNavigationMode(PanMode::instance());
+			temporaryNavigationMode()->mousePressEvent(vp, event);
+		}
 	}
 }
 
@@ -119,9 +125,7 @@ void ViewportInputHandler::mouseMoveEvent(Viewport* vp, QMouseEvent* event)
 ******************************************************************************/
 void ViewportInputHandler::wheelEvent(Viewport* vp, QWheelEvent* event)
 {
-#if 0
-	ZoomMode::instance()->Zoom(vp, (FloatType)event->delta());
-#endif
+	ZoomMode::instance()->zoom(vp, (FloatType)event->delta());
 }
 
 };

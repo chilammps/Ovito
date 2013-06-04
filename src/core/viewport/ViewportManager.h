@@ -126,6 +126,9 @@ public:
 	/// \return The list of viewports.
 	const QVector<Viewport*>& viewports() const { return viewportConfig()->viewports(); }
 
+	/// Returns the font to be used for rendering text in the viewports.
+	const QFont& viewportFont() const { return _viewportFont; }
+
 Q_SIGNALS:
 
 	/// This signal is emitted when another viewport became active.
@@ -149,6 +152,9 @@ private:
 
 	/// The current configuration of the viewports.
 	ReferenceField<ViewportConfiguration> _viewportConfig;
+
+	/// The font used for rendering text in the viewports.
+	QFont _viewportFont;
 
 private:
 

@@ -36,7 +36,8 @@ DEFINE_FLAGS_REFERENCE_FIELD(ViewportManager, _viewportConfig, "ViewportConfigur
 * Initializes the viewport manager.
 ******************************************************************************/
 ViewportManager::ViewportManager() :
-	_viewportSuspendCount(1), _viewportsNeedUpdate(false)
+	_viewportSuspendCount(1), _viewportsNeedUpdate(false),
+	_viewportFont("Helvetica", 11)
 {
 	OVITO_ASSERT_MSG(!_instance, "ViewportManager constructor", "Multiple instances of this singleton class have been created.");
 	INIT_PROPERTY_FIELD(ViewportManager::_viewportConfig);

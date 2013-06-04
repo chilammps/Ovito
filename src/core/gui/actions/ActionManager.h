@@ -26,6 +26,8 @@
 
 namespace Ovito {
 
+class ViewportInputHandler;		// defined in ViewportInputHandler.h
+
 //////////////////////// Action identifiers ///////////////////////////
 
 /// This action closes the main window and exits the application.
@@ -149,8 +151,16 @@ public:
 	/// \param action The action to be registered. The ActionManager will take ownership of the object.
 	void addAction(QAction* action);
 
+	/// \brief Creates and registers a new command action with the ActionManager.
+	QAction* createCommandAction(const QString& id,
+						const QString& title,
+						const char* iconPath = NULL,
+						const QString& statusTip = QString(),
+						const QKeySequence& shortcut = QKeySequence());
+
 	/// \brief Creates and registers a new action with the ActionManager.
-	QAction* createAction(const QString& id,
+	QAction* createViewportModeAction(const QString& id,
+						const OORef<ViewportInputHandler>& inputHandler,
 						const QString& title,
 						const char* iconPath = NULL,
 						const QString& statusTip = QString(),

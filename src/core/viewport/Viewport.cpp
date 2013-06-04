@@ -22,6 +22,7 @@
 #include <core/Core.h>
 #include <core/viewport/Viewport.h>
 #include <core/viewport/ViewportWindow.h>
+#include <core/viewport/ViewportManager.h>
 #include <core/animation/AnimManager.h>
 
 /// The default field of view in world units used for orthogonal view types when the scene is empty.
@@ -171,6 +172,15 @@ void Viewport::setViewType(ViewType type)
 	}
 
 	_viewType = type;
+}
+
+/******************************************************************************
+* Returns true if the viewport is using a perspective project;
+* returns false if it is using an orthogonal projection.
+******************************************************************************/
+bool Viewport::isPerspectiveProjection() const
+{
+	return (viewType() == VIEW_PERSPECTIVE);
 }
 
 /******************************************************************************
@@ -368,7 +378,53 @@ void Viewport::render(QOpenGLContext* context, QOpenGLPaintDevice* paintDevice)
 
 	// Setup projection.
 	FloatType aspectRatio = (FloatType)_paintDevice->height() / _paintDevice->width();
-	_projParams = projectionParameters(AnimManager::instance().time(), aspectRatio, Box3(Point3::Origin(), 10));
+	_projParams = projectionParameters(AnimManager::instance().time(), aspectRatio, Box3(Point3::Origin(), 100));
+	glMatrixMode(GL_MODELVIEW);
+	glLoadMatrix(Matrix4(_projParams.viewMatrix));
+	glMatrixMode(GL_PROJECTION);
+	glLoadMatrix(_projParams.projectionMatrix);
+
+	// Render lines of the tripod.
+	glBegin(GL_LINES);
+	static const Color colors[3] = { Color(1, 0, 0), Color(0, 1, 0), Color(0.2, 0.2, 1) };
+	for(int axis = 0; axis < 3; axis++) {
+		glColor3(colors[axis]);
+		Point3 dir = Point3::Origin();
+		dir[axis] = 80;
+		glVertex3(0, 0, 0);
+		glVertex(dir);
+	}
+	glEnd();
+
+	glColor3f(1,1,1);
+	glBegin(GL_LINES);
+	glVertex3f(-50,-50,-50);
+	glVertex3f( 50,-50,-50);
+	glVertex3f( 50,-50,-50);
+	glVertex3f( 50, 50,-50);
+	glVertex3f( 50, 50,-50);
+	glVertex3f(-50, 50,-50);
+	glVertex3f(-50, 50,-50);
+	glVertex3f(-50,-50,-50);
+
+	glVertex3f(-50,-50, -50);
+	glVertex3f(-50,-50, 50);
+	glVertex3f( 50,-50, -50);
+	glVertex3f( 50,-50, 50);
+	glVertex3f( 50, 50, -50);
+	glVertex3f( 50, 50, 50);
+	glVertex3f(-50, 50, -50);
+	glVertex3f(-50, 50, 50);
+
+	glVertex3f(-50,-50, 50);
+	glVertex3f( 50,-50, 50);
+	glVertex3f( 50,-50, 50);
+	glVertex3f( 50, 50, 50);
+	glVertex3f( 50, 50, 50);
+	glVertex3f(-50, 50, 50);
+	glVertex3f(-50, 50, 50);
+	glVertex3f(-50,-50, 50);
+	glEnd();
 
 	// Render orientation tripod.
 	renderOrientationIndicator();
@@ -386,11 +442,10 @@ void Viewport::render(QOpenGLContext* context, QOpenGLPaintDevice* paintDevice)
 void Viewport::renderViewportTitle()
 {
 	Color captionColor = viewportColor(_mouseOverCaption ? ViewportSettings::COLOR_ACTIVE_VIEWPORT_CAPTION : ViewportSettings::COLOR_VIEWPORT_CAPTION);
-	QFont font;
-	QFontMetricsF metrics(font);
+	QFontMetricsF metrics(ViewportManager::instance().viewportFont());
 	QPointF pos(2, metrics.ascent() + 2);
 	_contextMenuArea = QRect(0, 0, std::max(metrics.width(viewportTitle()), 30.0) + 2, metrics.height() + 2);
-	renderText(viewportTitle(), pos, (QColor)captionColor, font);
+	renderText(viewportTitle(), pos, (QColor)captionColor);
 }
 
 /******************************************************************************
@@ -437,7 +492,7 @@ void Viewport::end2DPainting()
 /******************************************************************************
 * Renders a text string into the GL context.
 ******************************************************************************/
-void Viewport::renderText(const QString& str, const QPointF& pos, const QColor& color, const QFont& font)
+void Viewport::renderText(const QString& str, const QPointF& pos, const QColor& color)
 {
 	OVITO_ASSERT_MSG(_paintDevice != NULL, "Viewport::renderText", "Viewport is not rendering.");
 
@@ -447,13 +502,9 @@ void Viewport::renderText(const QString& str, const QPointF& pos, const QColor& 
 	begin2DPainting();
 	{
 		QPainter painter(_paintDevice);
-		QPen old_pen = painter.pen();
-		QFont old_font = painter.font();
 		painter.setPen(color);
-		painter.setFont(font);
+		painter.setFont(ViewportManager::instance().viewportFont());
 		painter.drawText(pos, str);
-		painter.setPen(old_pen);
-		painter.setFont(old_font);
 	}
 	end2DPainting();
 }

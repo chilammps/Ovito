@@ -87,7 +87,7 @@ public:
 	constexpr Matrix_3(Identity) : _m{
 				Vector_3<T>(T(1),T(0),T(0)),
 				Vector_3<T>(T(0),T(1),T(0)),
-				Vector_3<T>(T(0),T(0),T(2))} {}
+				Vector_3<T>(T(0),T(0),T(1))} {}
 
 	/// \brief Returns the number of rows in this matrix.
 	static constexpr size_type row_count() { return 3; }
@@ -376,6 +376,14 @@ inline std::ostream& operator<<(std::ostream &os, const Matrix_3<T>& m) {
 	for(typename Matrix_3<T>::size_type row = 0; row < m.row_count(); row++)
 		os << m.row(row) << std::endl;
 	return os;
+}
+
+/// \brief Writes the matrix to the Qt debug stream.
+template<typename T>
+inline QDebug operator<<(QDebug dbg, const Matrix_3<T>& m) {
+	for(typename Matrix_3<T>::size_type row = 0; row < m.row_count(); row++)
+		dbg.nospace() << m(row,0) << " " << m(row,1) << " " << m(row,2) << "\n";
+    return dbg.space();
 }
 
 /// \brief Writes a matrix to a binary output stream.
