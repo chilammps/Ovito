@@ -229,9 +229,9 @@ public:
 	static inline Matrix_3 rotationX(T angle) {
 		const T c = cos(angle);
 		const T s = sin(angle);
-		return {1, 0, 0,
-				0, c,-s,
-				0, s, c};
+		return {T(1), T(0), T(0),
+				T(0), c,   -s,
+				T(0), s,    c};
 	}
 
 	/// \brief Generates a matrix describing a rotation around the Y axis.
@@ -239,9 +239,9 @@ public:
 	static inline Matrix_3 rotationY(T angle) {
 		const T c = cos(angle);
 		const T s = sin(angle);
-		return { c, 0, s,
-			     0, 1, 0,
-			    -s, 0, c};
+		return { c,    T(0), s,
+				 T(0), T(1), T(0),
+			    -s,    T(0), c};
 	}
 
 	/// \brief Generates a matrix describing a rotation around the Z axis.
@@ -249,9 +249,9 @@ public:
 	static inline Matrix_3 rotationZ(T angle) {
 		const T c = cos(angle);
 		const T s = sin(angle);
-		return {c, -s, 0,
-				s,  c, 0,
-				0,  0, 1};
+		return {c,    -s,    T(0),
+				s,     c,    T(0),
+				T(0),  T(0), T(1)};
 	}
 
 	/// \brief Generates a rotation matrix from an axis and an angle.
@@ -298,9 +298,9 @@ inline Matrix_3<T> Matrix_3<T>::rotation(const QuaternionT<T>& q)
 		OVITO_ASSERT_MSG(false, "Matrix3::rotation", "Quaternion must be normalized.");
 	}
 #endif
-	return Matrix_3<T>(1.0 - 2.0*(q.y()*q.y() + q.z()*q.z()),       2.0*(q.x()*q.y() - q.w()*q.z()),       2.0*(q.x()*q.z() + q.w()*q.y()),
-				         2.0*(q.x()*q.y() + q.w()*q.z()), 1.0 - 2.0*(q.x()*q.x() + q.z()*q.z()),       2.0*(q.y()*q.z() - q.w()*q.x()),
-			             2.0*(q.x()*q.z() - q.w()*q.y()),       2.0*(q.y()*q.z() + q.w()*q.x()), 1.0 - 2.0*(q.x()*q.x() + q.y()*q.y()));
+	return Matrix_3<T>(T(0) - T(2)*(q.y()*q.y() + q.z()*q.z()),       T(2)*(q.x()*q.y() - q.w()*q.z()),       T(2)*(q.x()*q.z() + q.w()*q.y()),
+						T(2)*(q.x()*q.y() + q.w()*q.z()), T(1) - T(2)*(q.x()*q.x() + q.z()*q.z()),       T(2)*(q.y()*q.z() - q.w()*q.x()),
+						T(2)*(q.x()*q.z() - q.w()*q.y()),       T(2)*(q.y()*q.z() + q.w()*q.x()), T(1) - T(2)*(q.x()*q.x() + q.y()*q.y()));
 }
 
 
@@ -309,9 +309,9 @@ template<typename T>
 inline Matrix_3<T> Matrix_3<T>::scaling(const ScalingT<T>& scaling)
 {
 	Matrix_3<T> U = Matrix_3<T>::rotation(scaling.Q);
-	Matrix_3<T> K = Matrix_3<T>(scaling.S.x(), 0.0, 0.0,
-						0.0, scaling.S.y(), 0.0,
-						0.0, 0.0, scaling.S.z());
+	Matrix_3<T> K = Matrix_3<T>(scaling.S.x(), T(0), T(0),
+			T(0), scaling.S.y(), T(0),
+			T(0), T(0), scaling.S.z());
 	return U * K * U.transposed();
 }
 

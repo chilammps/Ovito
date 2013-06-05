@@ -242,8 +242,8 @@ ViewProjectionParameters Viewport::projectionParameters(TimePoint time, FloatTyp
 			params.znear = 1;
 			params.zfar = 100;
 		}
-		params.projectionMatrix = Matrix4::ortho(-params.fieldOfView, params.fieldOfView,
-							-params.fieldOfView * params.aspectRatio, params.fieldOfView * params.aspectRatio,
+		params.projectionMatrix = Matrix4::ortho(-params.fieldOfView / params.aspectRatio, params.fieldOfView / params.aspectRatio,
+							-params.fieldOfView, params.fieldOfView,
 							params.znear, params.zfar);
 	}
 	params.inverseViewMatrix = params.viewMatrix.inverse();
@@ -365,6 +365,16 @@ void Viewport::redrawViewport()
 }
 
 /******************************************************************************
+* If an update request is pending for this viewport, immediately processes it
+* and redraw the viewport.
+******************************************************************************/
+void Viewport::processUpdateRequest()
+{
+	if(_viewportWindow)
+		_viewportWindow->processUpdateRequest();
+}
+
+/******************************************************************************
 * Renders the contents of the viewport.
 ******************************************************************************/
 void Viewport::render(QOpenGLContext* context, QOpenGLPaintDevice* paintDevice)
@@ -373,11 +383,12 @@ void Viewport::render(QOpenGLContext* context, QOpenGLPaintDevice* paintDevice)
 	_glcontext = context;
 	_paintDevice = paintDevice;
 
-	glViewport(0, 0, _paintDevice->width(), _paintDevice->height());
+	QSize vpSize = size();
+	glViewport(0, 0, vpSize.width(), vpSize.height());
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 	// Setup projection.
-	FloatType aspectRatio = (FloatType)_paintDevice->height() / _paintDevice->width();
+	FloatType aspectRatio = (FloatType)vpSize.height() / vpSize.width();
 	_projParams = projectionParameters(AnimManager::instance().time(), aspectRatio, Box3(Point3::Origin(), 100));
 	glMatrixMode(GL_MODELVIEW);
 	glLoadMatrix(Matrix4(_projParams.viewMatrix));

@@ -28,15 +28,27 @@
 namespace Ovito {
 
 /******************************************************************************
+* Constructor.
+******************************************************************************/
+ViewportWindow::ViewportWindow(Viewport* owner) :
+		_viewport(owner), _updateRequested(false), _updatePending(false),
+		_context(nullptr), _paintDevice(nullptr)
+{
+	// Indicate that the window is to be used for OpenGL rendering.
+	setSurfaceType(QWindow::OpenGLSurface);
+}
+
+/******************************************************************************
 * Puts an update request event for this viewport on the event loop.
 ******************************************************************************/
 void ViewportWindow::renderLater()
 {
+	_updateRequested = true;
 	// If not already done so, put an update request event on the event loop,
 	// which leads to renderNow() being called once the event gets processed.
 	if(!_updatePending) {
 		_updatePending = true;
-		QCoreApplication::postEvent(this, new QEvent(QEvent::UpdateRequest));
+		QCoreApplication::postEvent(this, new QEvent(QEvent::UpdateLater));
 	}
 }
 
@@ -46,12 +58,22 @@ void ViewportWindow::renderLater()
 bool ViewportWindow::event(QEvent* event)
 {
 	// Handle update request events creates by renderLater().
-	if(event->type() == QEvent::UpdateRequest) {
-		if(_updatePending)
-			renderNow();
+	if(event->type() == QEvent::UpdateLater) {
+		_updatePending = false;
+		processUpdateRequest();
 		return true;
 	}
 	return QWindow::event(event);
+}
+
+/******************************************************************************
+* If an update request is pending for this viewport window, immediately
+* processes it and redraw the window contents.
+******************************************************************************/
+void ViewportWindow::processUpdateRequest()
+{
+	if(_updateRequested)
+		renderNow();
 }
 
 /******************************************************************************
@@ -136,26 +158,48 @@ void ViewportWindow::renderNow()
 	if(ViewportManager::instance().isSuspended())
 		return;
 
-	_updatePending = false;
+	_updateRequested = false;
 
 	// Create OpenGL context on first redraw.
 	if(!_context) {
 		_context = new QOpenGLContext(this);
+
+		// Look for other existing viewport windows that we can share the OpenGL context with.
+		QOpenGLContext* shareContext = NULL;
+		for(Viewport* vp : ViewportManager::instance().viewports()) {
+			if(vp != _viewport && vp->_viewportWindow) {
+				shareContext = vp->_viewportWindow->_context;
+				if(shareContext) break;
+			}
+		}
+		_context->setShareContext(shareContext);
 		_context->setFormat(requestedFormat());
 		if(!_context->create())
 			throw Exception(tr("Failed to create OpenGL context."));
+		if(shareContext && _context->shareContext() != shareContext)
+			qWarning() << "Viewport cannot share OpenGL context with other viewports.";
+
+		if(!shareContext) {
+			QSurfaceFormat format = _context->format();
+			qDebug() << "OpenGL depth buffer size:" << format.depthBufferSize();
+			qDebug() << "OpenGL stencil buffer size:" << format.stencilBufferSize();
+			(qDebug() << "OpenGL version:").nospace() << format.majorVersion() << "." << format.minorVersion();
+			qDebug() << "OpenGL has alpha:" << format.hasAlpha();
+			qDebug() << "OpenGL samples:" << format.samples();
+			qDebug() << "OpenGL swap behavior:" << format.swapBehavior();
+		}
 	}
 
-	if(_context->isValid()) {
-		_context->makeCurrent(this);
-
-		if(!_paintDevice)
-			_paintDevice.reset(new QOpenGLPaintDevice());
-		_paintDevice->setSize(size());
-		_viewport->render(_context, _paintDevice.data());
-		_context->swapBuffers(this);
-		_context->doneCurrent();
+	if(!_context->makeCurrent(this)) {
+		qWarning() << "Failed to make OpenGL context current.";
+		return;
 	}
+
+	if(!_paintDevice)
+		_paintDevice.reset(new QOpenGLPaintDevice());
+	_paintDevice->setSize(size());
+	_viewport->render(_context, _paintDevice.data());
+	_context->swapBuffers(this);
 }
 
 };

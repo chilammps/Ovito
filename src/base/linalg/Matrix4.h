@@ -287,22 +287,22 @@ public:
 
 	/// \brief Generates a perspective projection matrix.
 	static Matrix_4<T> perspective(T fovy, T aspect, T znear, T zfar) {
-		T f = tan(fovy * 0.5);
-		OVITO_ASSERT(f != 0.0);
+		T f = tan(fovy * T(0.5));
+		OVITO_ASSERT(f != T(0));
 		OVITO_ASSERT(zfar > znear);
-		return { 1.0/(aspect*f), 0.0, 0.0, 0.0,
-				 0.0, 1.0/f, 0.0, 0.0,
-				 0.0, 0.0, -(zfar+znear)/(zfar-znear), -(2.0*zfar*znear)/(zfar-znear),
-				 0.0, 0.0, -1.0, 0.0 };
+		return { T(1)/(aspect*f), T(0), T(0), T(0),
+				 T(0), T(1)/f, T(0), T(0),
+				 T(0), T(0), -(zfar+znear)/(zfar-znear), -(T(2)*zfar*znear)/(zfar-znear),
+				 T(0), T(0), T(-1), T(0) };
 	}
 
 	/// \brief Generates an orthogonal projection matrix.
 	static Matrix_4<T> ortho(T left, T right, T bottom, T top, T znear, T zfar) {
 		OVITO_ASSERT(znear < zfar);
-		return { 2.0/(right-left), 0.0,  0.0, -(right+left)/(right-left),
-				 0.0, 2.0/(top-bottom), 0.0, -(top+bottom)/(top-bottom),
-				 0.0, 0.0, -2.0/(zfar-znear), -(zfar+znear)/(zfar-znear),
-				 0.0, 0.0, 0.0, 1.0 };
+		return { T(2)/(right-left), T(0),  T(0), -(right+left)/(right-left),
+				 T(0), T(2)/(top-bottom), T(0), -(top+bottom)/(top-bottom),
+				 T(0), T(0), T(-2)/(zfar-znear), -(zfar+znear)/(zfar-znear),
+				 T(0), T(0), T(0), T(1) };
 	}
 
 private:

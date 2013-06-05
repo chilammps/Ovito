@@ -94,10 +94,8 @@ void ViewportManager::processViewportUpdates()
 	if(isSuspended())
 		return;
 
-#if 0
-	if(Application::instance().guiMode())
-		Window3D::processWindowUpdates();
-#endif
+	for(Viewport* vp : viewports())
+		vp->processUpdateRequest();
 }
 
 /******************************************************************************

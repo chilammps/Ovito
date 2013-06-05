@@ -253,9 +253,9 @@ public:
 	static inline Matrix_34 rotationX(T angle) {
 		const T c = cos(angle);
 		const T s = sin(angle);
-		return {1, 0, 0, 0,
-				0, c,-s, 0,
-				0, s, c, 0};
+		return {T(1), T(0), T(0), T(0),
+				T(0),    c,   -s, T(0),
+				T(0),    s,    c, T(0)};
 	}
 
 	/// \brief Generates a matrix describing a rotation around the Y axis.
@@ -263,9 +263,9 @@ public:
 	static inline Matrix_34 rotationY(T angle) {
 		const T c = cos(angle);
 		const T s = sin(angle);
-		return { c, 0, s, 0,
-				 0, 1, 0, 0,
-				-s, 0, c, 0};
+		return {   c, T(0),    s, T(0),
+				T(0), T(1), T(0), T(0),
+				  -s, T(0),    c, T(0)};
 	}
 
 	/// \brief Generates a matrix describing a rotation around the Z axis.
@@ -273,9 +273,9 @@ public:
 	static inline Matrix_34 rotationZ(T angle) {
 		const T c = cos(angle);
 		const T s = sin(angle);
-		return {c, -s, 0, 0,
-				s,  c, 0, 0,
-				0,  0, 1, 0};
+		return {   c,   -s, T(0), T(0),
+				   s,    c, T(0), T(0),
+				T(0), T(0), T(1), T(0)};
 	}
 
 	/// Generates a pure rotation matrix around the given axis.
@@ -464,32 +464,32 @@ inline Matrix_34<T> Matrix_34<T>::rotation(const QuaternionT<T>& q)
 		OVITO_ASSERT_MSG(false, "AffineTransformation::rotation(const Quaternion&)", "Quaternion must be normalized.");
 
 	// Make sure the result is a pure rotation matrix.
-	Matrix_34<T> tm(1.0 - 2.0*(q.y()*q.y() + q.z()*q.z()),       2.0*(q.x()*q.y() - q.w()*q.z()),       2.0*(q.x()*q.z() + q.w()*q.y()), 0.0,
-	        2.0*(q.x()*q.y() + q.w()*q.z()), 1.0 - 2.0*(q.x()*q.x() + q.z()*q.z()),       2.0*(q.y()*q.z() - q.w()*q.x()), 0.0,
-            2.0*(q.x()*q.z() - q.w()*q.y()),       2.0*(q.y()*q.z() + q.w()*q.x()), 1.0 - 2.0*(q.x()*q.x() + q.y()*q.y()), 0.0);
+	Matrix_34<T> tm(T(1) - T(2)*(q.y()*q.y() + q.z()*q.z()),       T(2)*(q.x()*q.y() - q.w()*q.z()),       T(2)*(q.x()*q.z() + q.w()*q.y()), T(0),
+			T(2)*(q.x()*q.y() + q.w()*q.z()), T(1) - T(2)*(q.x()*q.x() + q.z()*q.z()),       T(2)*(q.y()*q.z() - q.w()*q.x()), T(0),
+			T(2)*(q.x()*q.z() - q.w()*q.y()),       T(2)*(q.y()*q.z() + q.w()*q.x()), T(1) - T(2)*(q.x()*q.x() + q.y()*q.y()), T(0));
     OVITO_ASSERT_MSG(tm.isRotationMatrix(), "AffineTransformation::rotation(const Quaternion&)" , "Result is not a pure rotation matrix.");
 #endif
-	return Matrix_34<T>(1.0 - 2.0*(q.y()*q.y() + q.z()*q.z()),       2.0*(q.x()*q.y() - q.w()*q.z()),       2.0*(q.x()*q.z() + q.w()*q.y()), 0.0,
-				        2.0*(q.x()*q.y() + q.w()*q.z()), 1.0 - 2.0*(q.x()*q.x() + q.z()*q.z()),       2.0*(q.y()*q.z() - q.w()*q.x()), 0.0,
-			            2.0*(q.x()*q.z() - q.w()*q.y()),       2.0*(q.y()*q.z() + q.w()*q.x()), 1.0 - 2.0*(q.x()*q.x() + q.y()*q.y()), 0.0);
+	return Matrix_34<T>(T(1) - T(2)*(q.y()*q.y() + q.z()*q.z()),       T(2)*(q.x()*q.y() - q.w()*q.z()),       T(2)*(q.x()*q.z() + q.w()*q.y()), T(0),
+						T(2)*(q.x()*q.y() + q.w()*q.z()), T(1) - T(2)*(q.x()*q.x() + q.z()*q.z()),       T(2)*(q.y()*q.z() - q.w()*q.x()), T(0),
+						T(2)*(q.x()*q.z() - q.w()*q.y()),       T(2)*(q.y()*q.z() + q.w()*q.x()), T(1) - T(2)*(q.x()*q.x() + q.y()*q.y()), T(0));
 }
 
 /// Generates a pure translation matrix.
 template<typename T>
 inline Matrix_34<T> Matrix_34<T>::translation(const Vector_3<T>& t)
 {
-	return Matrix_34<T>(1.0, 0.0, 0.0, t.x(),
-				  0.0, 1.0, 0.0, t.y(),
-				  0.0, 0.0, 1.0, t.z());
+	return Matrix_34<T>(T(1), T(0), T(0), t.x(),
+						T(0), T(1), T(0), t.y(),
+						T(0), T(0), T(1), t.z());
 }
 
 /// Generates a pure diagonal scaling matrix.
 template<typename T>
 inline Matrix_34<T> Matrix_34<T>::scaling(T s)
 {
-	return Matrix_34<T>(  s, 0.0, 0.0, 0.0,
-				  	  	  0.0,   s, 0.0, 0.0,
-				  	  	  0.0, 0.0,   s, 0.0);
+	return Matrix_34<T>(   s, T(0), T(0), T(0),
+						T(0),    s, T(0), T(0),
+						T(0), T(0),    s, T(0));
 }
 
 /// Generates a pure scaling matrix.
@@ -497,9 +497,9 @@ template<typename T>
 inline Matrix_34<T> Matrix_34<T>::scaling(const ScalingT<T>& scaling)
 {
 	Matrix_3<T> U = Matrix_3<T>::rotation(scaling.Q);
-	Matrix_3<T> K = Matrix_3<T>(scaling.S.x(), 0.0, 0.0,
-								0.0, scaling.S.y(), 0.0,
-								0.0, 0.0, scaling.S.z());
+	Matrix_3<T> K = Matrix_3<T>(scaling.S.x(), T(0), T(0),
+								T(0), scaling.S.y(), T(0),
+								T(0), T(0), scaling.S.z());
 	return Matrix_34<T>(U * K * U.transposed());
 }
 
@@ -507,9 +507,9 @@ inline Matrix_34<T> Matrix_34<T>::scaling(const ScalingT<T>& scaling)
 template<typename T>
 inline Matrix_34<T> Matrix_34<T>::shear(T gammaX, T gammaY)
 {
-	return AffineTransformation(1.0, 0.0, gammaX, 0.0,
-				  0.0, 1.0, gammaY, 0.0,
-				  0.0, 0.0, 1.0, 0.0);
+	return AffineTransformation(T(1), T(0), gammaX, T(0),
+								T(0), T(1), gammaY, T(0),
+								T(0), T(0), T(1), T(0));
 }
 
 /// Writes the matrix to an output stream.

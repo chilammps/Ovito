@@ -83,7 +83,7 @@ bool DataSet::referenceEvent(RefTarget* source, ReferenceEvent* event)
 {
 	if(event->type() == ReferenceEvent::TargetChanged) {
 		// Update all viewports when something has changed in the current data set.
-		if(this == DataSetManager::instance().currentSet()) {
+		if(this == DataSetManager::instance().currentSet() && source != viewportConfig()) {
 			ViewportManager::instance().updateViewports();
 		}
 	}

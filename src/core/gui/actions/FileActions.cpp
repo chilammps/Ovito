@@ -47,8 +47,8 @@ void ActionManager::on_HelpAbout_triggered()
 			"%1\n\n"
 			"Visualization and analysis software for atomistic simulation data.\n\n"
 			"Copyright 2013, Alexander Stukowski\n"
-			"This program comes with ABSOLUTELY NO WARRANTY.\n"
-			"This is free software, and you are welcome to redistribute\n"
+			"This program comes with ABSOLUTELY NO WARRANTY. "
+			"This is free software, and you are welcome to redistribute "
 			"it under certain conditions. See the source for copying conditions.\n\n"
 			"http://www.ovito.org/").arg(QCoreApplication::applicationVersion());
 

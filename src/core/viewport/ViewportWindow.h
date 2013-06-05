@@ -40,16 +40,21 @@ class ViewportWindow : public QWindow
 {
 public:
 
-	ViewportWindow(Viewport* owner) : _viewport(owner), _updatePending(false), _context(nullptr), _paintDevice(nullptr) {
-		// Indicate that the window is to be used for OpenGL rendering.
-		setSurfaceType(QWindow::OpenGLSurface);
-	}
+	/// Constructor.
+	ViewportWindow(Viewport* owner);
 
     /// \brief Puts an update request event for this window on the event loop.
 	void renderLater();
 
 	/// \brief Immediately redraws the contents of this window.
 	void renderNow();
+
+	/// If an update request is pending for this viewport window, immediately
+	/// processes it and redraw the window contents.
+	void processUpdateRequest();
+
+	/// Returns the window's OpenGL context used for rendering.
+	QOpenGLContext* glcontext() const { return _context; }
 
 protected:
 
@@ -81,6 +86,9 @@ private:
 
 	/// The owning viewport of this window.
 	Viewport* _viewport;
+
+	/// A flag that indicates that an update has been requested.
+	bool _updateRequested;
 
 	/// A flag that indicates that an update request event has been put on the event queue.
 	bool _updatePending;

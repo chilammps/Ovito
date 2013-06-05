@@ -36,7 +36,6 @@ namespace Ovito {
 void NavigationMode::deactivated()
 {
 	if(_viewport) {
-		_viewport->setMouseGrabEnabled(false);
 		// Restore old settings.
 		_viewport->setCameraPosition(_oldCameraPosition);
 		_viewport->setCameraDirection(_oldCameraDirection);
@@ -56,7 +55,7 @@ void NavigationMode::mousePressEvent(Viewport* vp, QMouseEvent* event)
 		return;
 	}
 
-	vp->setMouseGrabEnabled(true);
+	ViewportManager::instance().setActiveViewport(vp);
 	_viewport = vp;
 	_startPoint = event->pos();
 	_oldCameraPosition = vp->cameraPosition();
@@ -72,7 +71,6 @@ void NavigationMode::mousePressEvent(Viewport* vp, QMouseEvent* event)
 void NavigationMode::mouseReleaseEvent(Viewport* vp, QMouseEvent* event)
 {
 	if(_viewport) {
-		_viewport->setMouseGrabEnabled(false);
 		_viewport = NULL;
 	}
 }
@@ -83,9 +81,16 @@ void NavigationMode::mouseReleaseEvent(Viewport* vp, QMouseEvent* event)
 void NavigationMode::mouseMoveEvent(Viewport* vp, QMouseEvent* event)
 {
 	if(_viewport == vp) {
-		modifyView(vp, event->pos() - _startPoint);
-		vp->updateViewport();
-		ViewportManager::instance().processViewportUpdates();
+#if 1
+		// Take the current mouse cursor position to make the navigation mode
+		// look more responsive. The cursor position recorded when the mouse event was
+		// generates may be too old.
+		QPoint pos = vp->widget()->mapFromGlobal(QCursor::pos());
+#else
+		QPoint pos = event->pos();
+#endif
+		modifyView(vp, pos - _startPoint);
+		vp->redrawViewport();
 	}
 }
 
@@ -101,7 +106,7 @@ void PanMode::modifyView(Viewport* vp, const QPoint& delta)
 	if(vp->isPerspectiveProjection())
 		scaling = 50.0 / vp->size().height();
 	else
-		scaling = _oldFieldOfView / vp->size().height();
+		scaling = 2.0 * _oldFieldOfView / vp->size().height();
 	FloatType deltaX = -scaling * delta.x();
 	FloatType deltaY =  scaling * delta.y();
 	Vector3 displacement = _oldInverseViewMatrix * Vector3(deltaX, deltaY, 0);
@@ -121,7 +126,7 @@ void ZoomMode::modifyView(Viewport* vp, const QPoint& delta)
 		vp->setCameraPosition(_oldCameraPosition + _oldCameraDirection.resized(amount));
 	}
 	else {
-		FloatType scaling = (FloatType)exp(0.006 * delta.y());
+		FloatType scaling = (FloatType)exp(0.003 * delta.y());
 		vp->setFieldOfView(_oldFieldOfView * scaling);
 	}
 }

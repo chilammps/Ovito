@@ -91,7 +91,7 @@ public:
 		VIEW_PERSPECTIVE,
 		VIEW_SCENENODE,
 	};
-	Q_ENUMS(ViewType)
+	Q_ENUMS(ViewType);
 
 	/// The shading modes for viewports.
 	enum ShadingMode {
@@ -99,7 +99,7 @@ public:
 		SHADING_SHADED,
 		SHADING_SHADED_WITH_EDGES,
 	};
-	Q_ENUMS(ShadingMode)
+	Q_ENUMS(ShadingMode);
 
 public:
 
@@ -120,6 +120,9 @@ public:
 
 	/// \brief Immediately redraws the contents of this viewport.
 	void redrawViewport();
+
+	/// \brief If an update request is pending for this viewport, immediately processes it and redraw the viewport.
+	void processUpdateRequest();
 
 	/// Creates the widget that contains the viewport's rendering window.
 	QWidget* createWidget(QWidget* parent);
@@ -186,14 +189,14 @@ public:
 	void setGridMatrix(const AffineTransformation& tm) { _gridMatrix = tm; }
 
 	/// \brief Returns the field of view value of the viewport.
-	/// \return Horizontal camera angle in radians if the viewport uses a perspective projection or
-	///         the field of view in the horizontal direction in world units if the viewport
+	/// \return Vertical camera angle in radians if the viewport uses a perspective projection or
+	///         the field of view in the vertical direction in world units if the viewport
 	///         uses an orthogonal projection.
 	FloatType fieldOfView() const { return _fieldOfView; }
 
 	/// \brief Sets the zoom of the viewport.
-	/// \param fov Horizontal camera angle in radians if the viewport uses a perspective projection or
-	///            the field of view in the horizontal direction in world units if the viewport
+	/// \param fov Vertical camera angle in radians if the viewport uses a perspective projection or
+	///            the field of view in the vertical direction in world units if the viewport
 	///            uses an orthogonal projection.
 	void setFieldOfView(FloatType fov) {
 		// Clamp FOV to reasonable interval.
@@ -408,6 +411,8 @@ private:
 	DECLARE_PROPERTY_FIELD(_orbitCenter);
 	DECLARE_PROPERTY_FIELD(_useOrbitCenter);
 	DECLARE_PROPERTY_FIELD(_viewportTitle);
+
+	friend class ViewportWindow;
 };
 
 };
