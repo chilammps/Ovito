@@ -26,41 +26,6 @@
 namespace Ovito {
 
 /******************************************************************************
-* Default Constructor.
-******************************************************************************/
-PipelineFlowState::PipelineFlowState() : _stateValidity(TimeNever)
-{
-}
-
-/******************************************************************************
-* Constructor.
-******************************************************************************/
-PipelineFlowState::PipelineFlowState(SceneObject* sceneObject, const TimeInterval& validityInterval) 
-	: RefMaker(), _stateValidity(validityInterval)
-{
-	INIT_PROPERTY_FIELD(PipelineFlowState, _sceneObject);
-	setResult(sceneObject);
-}
-
-/******************************************************************************
-* Copy constructor.
-******************************************************************************/
-PipelineFlowState::PipelineFlowState(const PipelineFlowState& right)
-	: RefMaker()
-{
-	INIT_PROPERTY_FIELD(PipelineFlowState, _sceneObject);
-	*this = right;
-}
-
-/******************************************************************************
-* Sets the result object of the pipeline evaluation.
-******************************************************************************/
-void PipelineFlowState::setResult(SceneObject* newResult)
-{
-	_sceneObject = newResult;
-}
-
-/******************************************************************************
 * Makes a (shallow) copy of the flow state.
 ******************************************************************************/
 PipelineFlowState& PipelineFlowState::operator=(const PipelineFlowState& right)

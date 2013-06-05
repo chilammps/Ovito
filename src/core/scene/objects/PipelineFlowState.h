@@ -43,36 +43,34 @@ class PipelineFlowState
 public:
 
 	/// \brief Default constructor that creates an empty state object.
-	PipelineFlowState();
+	PipelineFlowState() : _stateValidity(TimeInterval::empty()) {}
 
 	/// \brief Constructor that creates an state object and initializes it with a SceneObject.
 	/// \param sceneObject The object represents the current state of a geometry pipeline evaluation.
 	/// \param validityInterval Specifies the time interval during which the returned object is valid.
 	///                         For times outside this interval the geometry pipeline has to be re-evaluated.
-	PipelineFlowState(SceneObject* sceneObject, const TimeInterval& validityInterval);
+	PipelineFlowState(SceneObject* sceneObject, const TimeInterval& validityInterval) : _sceneObject(sceneObject), _stateValidity(validityInterval) {}
 
 	/// \brief Copy constructor that creates a shallow copy of a state object.
 	/// \param right The state object to be copied.
 	/// \note This copy constructor does not copy the scene object contained in \a right but only the reference to it.  
-	PipelineFlowState(const PipelineFlowState& right);
+	PipelineFlowState(const PipelineFlowState& right) : _sceneObject(right.result()), _stateValidity(right.stateValidity()) {}
 	
 	/// \brief Returns the result object from the pipeline evaluation.
 	/// \return The scene object that flows down the geometry pipeline.
-	///         This can be \c NULL in some cases.
-	/// \sa setResult()
-	SceneObject* result() const { return _sceneObject; }
+	///         This may be \c NULL in some cases.
+	SceneObject* result() const { return _sceneObject.get(); }
 
 	/// \brief Sets the result object of the pipeline evaluation.
 	/// \param newResult The new pipeline evaluation result.
 	///
 	/// This method replaces the scene object with a new one.
-	/// \sa result() 
-	void setResult(SceneObject* newResult);
+	void setResult(SceneObject* newResult) { _sceneObject = newResult; }
 
 	/// \brief Sets the result object of the pipeline evaluation.
 	/// 
 	/// Same function as above but accepts a smart pointer instead of a raw pointer.
-	void setResult(const intrusive_ptr<SceneObject>& newResult) { setResult(newResult.get()); }
+	void setResult(const OORef<SceneObject>& newResult) { setResult(newResult.get()); }
 
 	/// \brief Gets the validity interval for this pipeline state.
 	/// \return The time interval during which the returned object is valid.

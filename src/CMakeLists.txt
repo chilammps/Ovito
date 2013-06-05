@@ -57,6 +57,8 @@ SET(OVITO_SOURCE_FILES
 	core/scene/ObjectNode.cpp
 	core/scene/SceneRoot.cpp
 	core/scene/SelectionSet.cpp
+	core/scene/objects/PipelineFlowState.cpp
+	core/scene/objects/SceneObject.cpp
 	core/gui/app/Application.cpp
 	core/gui/mainwin/MainWindow.cpp
 	core/gui/mainwin/AnimationTimeSlider.cpp

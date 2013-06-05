@@ -65,7 +65,7 @@ public:
 	///
 	/// Same method as above but takes a smart pointer instead of a raw pointer.
 	/// \undoable
-	void setSceneObject(const SceneObject::SmartPtr& obj) { setSceneObject(obj.get()); }
+	void setSceneObject(const OORef<SceneObject>& obj) { setSceneObject(obj.get()); }
 
 	/// \brief Gets this node's local object transformation matrix.
 	/// \return The transformation matrix that transforms from object space to local node space.

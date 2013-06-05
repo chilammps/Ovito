@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // 
-//  Copyright (2008) Alexander Stukowski
+//  Copyright (2013) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -21,18 +21,12 @@
 
 #include <core/Core.h>
 #include <core/scene/objects/SceneObject.h>
-#include <core/scene/objects/AbstractCameraObject.h>
-#include <core/viewport/Viewport.h>
 
-namespace Core {
+namespace Ovito {
 
-IMPLEMENT_ABSTRACT_PLUGIN_CLASS(SceneObject, RefTarget)
+IMPLEMENT_OVITO_OBJECT(SceneObject, RefTarget)
+
 #if 0
-DEFINE_VECTOR_REFERENCE_FIELD(SceneObject, AttachedObjectRenderer, "AttachedRenderers", _attachedRenderers)
-SET_PROPERTY_FIELD_LABEL(SceneObject, _attachedRenderers, "Attached Renderers")
-#endif
-IMPLEMENT_ABSTRACT_PLUGIN_CLASS(AbstractCameraObject, SceneObject)
-
 /******************************************************************************
 * Performs a hit test on the object.
 * Returns the distance of the hit from the viewer, or HIT_TEST_NONE if no hit
@@ -45,6 +39,6 @@ FloatType SceneObject::hitTest(TimeTicks time, Viewport* vp, ObjectNode* context
 	vp->setPickingRegion(NULL); 
 	return vp->closestHit();
 }
-
+#endif
 
 };
