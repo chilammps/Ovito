@@ -54,6 +54,7 @@ SET(OVITO_SOURCE_FILES
 	core/dataset/CurrentSelectionProxy.cpp
 	core/scene/SceneNode.cpp
 	core/scene/GroupNode.cpp
+	core/scene/ObjectNode.cpp
 	core/scene/SceneRoot.cpp
 	core/scene/SelectionSet.cpp
 	core/gui/app/Application.cpp

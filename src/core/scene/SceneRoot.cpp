@@ -34,6 +34,7 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(SceneRoot, SceneNode)
 SceneRoot::SceneRoot()
 {
 	setName("Scene Root");
+
 	// Root node does not need a tm controller.
 	setTransformationController(nullptr);
 }

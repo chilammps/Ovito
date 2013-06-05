@@ -46,6 +46,8 @@ QScopedPointer<ControllerManager> ControllerManager::_instance;
 ******************************************************************************/
 ControllerManager::ControllerManager()
 {
+	OVITO_ASSERT_MSG(!_instance, "ControllerManager constructor", "Multiple instances of this singleton class have been created.");
+
 	_defaultMap[&FloatController::OOType] = &LinearFloatController::OOType;
 	_defaultMap[&IntegerController::OOType] = &ConstIntegerController::OOType;
 	_defaultMap[&BooleanController::OOType] = &ConstBooleanController::OOType;
@@ -61,7 +63,7 @@ OORef<Controller> ControllerManager::createDefaultController(const OvitoObjectTy
 {
 	auto iter = _defaultMap.find(&controllerBaseClass);
 	if(iter == _defaultMap.end()) {
-		OVITO_ASSERT_MSG(false, "ControllerManager::createDefaultController", "Unknown controller base class was specified.");
+		OVITO_ASSERT_MSG(false, "ControllerManager::createDefaultController", "Unknown controller base class.");
 		return nullptr;
 	}
 	OVITO_ASSERT_MSG(iter->second != NULL, "ControllerManager::createDefaultController", "No default controller implementation available.");

@@ -22,6 +22,7 @@
 #include <core/Core.h>
 #include <core/animation/controller/TransformationController.h>
 #include <core/utilities/units/UnitsManager.h>
+#include <core/animation/TimeInterval.h>
 #include <base/linalg/AffineDecomposition.h>
 
 namespace Ovito {
@@ -93,7 +94,7 @@ void PRSTransformationController::changeParent(TimePoint time, const AffineTrans
 ******************************************************************************/
 TimeInterval PRSTransformationController::validityInterval(TimePoint time)
 {
-	TimeInterval iv(TimeInterval::forever());
+	TimeInterval iv = TimeInterval::forever();
 	iv.intersect(positionController()->validityInterval(time));
 	iv.intersect(rotationController()->validityInterval(time));
 	iv.intersect(scalingController()->validityInterval(time));

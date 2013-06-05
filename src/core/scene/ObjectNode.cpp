@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2008) Alexander Stukowski
+//  Copyright (2013) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -22,110 +22,88 @@
 #include <core/Core.h>
 #include <core/scene/ObjectNode.h>
 #include <core/scene/objects/SceneObject.h>
-#include <core/scene/objects/ModifiedObject.h>
-#include <core/scene/objects/Modifier.h>
 #include <core/viewport/Viewport.h>
-#include <core/undo/UndoManager.h>
+#include <core/gui/undo/UndoManager.h>
 
-namespace Core {
+namespace Ovito {
 
-IMPLEMENT_SERIALIZABLE_PLUGIN_CLASS(ObjectNode, SceneNode)
-DEFINE_REFERENCE_FIELD(ObjectNode, SceneObject, "SceneObject", _sceneObject)
-DEFINE_FLAGS_REFERENCE_FIELD(ObjectNode, Material, "Material", PROPERTY_FIELD_NEVER_CLONE_TARGET, _material)
-DEFINE_PROPERTY_FIELD(ObjectNode, "ObjectTransform", _objectTransform)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(ObjectNode, SceneNode)
+DEFINE_REFERENCE_FIELD(ObjectNode, _sceneObject, "SceneObject", SceneObject)
+DEFINE_PROPERTY_FIELD(ObjectNode, _objectTransform, "ObjectTransform")
 SET_PROPERTY_FIELD_LABEL(ObjectNode, _sceneObject, "Object")
-SET_PROPERTY_FIELD_LABEL(ObjectNode, _material, "Material")
 SET_PROPERTY_FIELD_LABEL(ObjectNode, _objectTransform, "Object transformation")
 
 /******************************************************************************
-* Default constructor.
+* Constructor.
 ******************************************************************************/
-ObjectNode::ObjectNode(bool isLoading) : SceneNode(isLoading), _objectTransform(IDENTITY)
+ObjectNode::ObjectNode(SceneObject* object) : _objectTransform(AffineTransformation::Identity())
 {
-	INIT_PROPERTY_FIELD(ObjectNode, _sceneObject);
-	INIT_PROPERTY_FIELD(ObjectNode, _material);
-	INIT_PROPERTY_FIELD(ObjectNode, _objectTransform);
-}
-
-/******************************************************************************
-* Object constructor.
-******************************************************************************/
-ObjectNode::ObjectNode(SceneObject* object) : SceneNode(), _objectTransform(IDENTITY)
-{
-	INIT_PROPERTY_FIELD(ObjectNode, _sceneObject);
-	INIT_PROPERTY_FIELD(ObjectNode, _material);
-	INIT_PROPERTY_FIELD(ObjectNode, _objectTransform);
+	INIT_PROPERTY_FIELD(ObjectNode::_sceneObject);
+	INIT_PROPERTY_FIELD(ObjectNode::_objectTransform);
 	setSceneObject(object);
 }
 
 /******************************************************************************
 * Evaluates the geometry pipeline of this scene node at the given time.
 ******************************************************************************/
-const PipelineFlowState& ObjectNode::evalPipeline(TimeTicks time)
+const PipelineFlowState& ObjectNode::evalPipeline(TimePoint time)
 {
 	// Do not record any object creation operation during pipeline evaluation.
 	UndoSuspender noUndo;
 
 	// Check if the cache is filled.
-	if(pipelineCache.result() == NULL || !pipelineCache.stateValidity().contains(time)) {
+	if(_pipelineCache.result() == NULL || !_pipelineCache.stateValidity().contains(time)) {
 		if(sceneObject()) {
 			// Evaluate object and save result in local cache.
-			pipelineCache = sceneObject()->evalObject(time);
+			_pipelineCache = sceneObject()->evalObject(time);
 		}
 		else {
-			// Clear cache if this node is emty.
-			pipelineCache = PipelineFlowState();
+			// Clear cache if this node is empty.
+			_pipelineCache = PipelineFlowState();
 		}
 	}
-	return pipelineCache;
+	return _pipelineCache;
 }
 
 /******************************************************************************
 * This method is called when a referenced object has changed.
 ******************************************************************************/
-bool ObjectNode::onRefTargetMessage(RefTarget* source, RefTargetMessage* msg)
+bool ObjectNode::referenceEvent(RefTarget* source, ReferenceEvent* event)
 {
-	if(msg->type() == REFTARGET_CHANGED && source == sceneObject()) {
+	if(event->type() == ReferenceEvent::TargetChanged && source == sceneObject()) {
 		// Object has changed -> rebuild pipeline cache.
 		invalidatePipelineCache();
 	}
-	else if(msg->type() == REFTARGET_DELETED && source == sceneObject()) {
+	else if(event->type() == ReferenceEvent::TargetDeleted && source == sceneObject()) {
 		// Object has been deleted -> delete node too.
-		if(!UNDO_MANAGER.isUndoingOrRedoing())
+		if(!UndoManager::instance().isUndoingOrRedoing())
 			deleteNode();
 	}
-	return SceneNode::onRefTargetMessage(source, msg);
+	return SceneNode::referenceEvent(source, event);
 }
 
 /******************************************************************************
 * Gets called when the scene object of the node has been replaced.
 ******************************************************************************/
-void ObjectNode::onRefTargetReplaced(const PropertyFieldDescriptor& field, RefTarget* oldTarget, RefTarget* newTarget)
+void ObjectNode::referenceReplaced(const PropertyFieldDescriptor& field, RefTarget* oldTarget, RefTarget* newTarget)
 {
-	if(field == PROPERTY_FIELD_DESCRIPTOR(ObjectNode, _sceneObject))
+	if(field == PROPERTY_FIELD(ObjectNode::_sceneObject))
 		invalidatePipelineCache();
 
-	SceneNode::onRefTargetReplaced(field, oldTarget, newTarget);
+	SceneNode::referenceReplaced(field, oldTarget, newTarget);
 }
 
 /******************************************************************************
 * Returns the bounding box of the object node in local coordinates.
 * The ObjectTransform is already applied to the returned box.
 ******************************************************************************/
-Box3 ObjectNode::localBoundingBox(TimeTicks time)
+Box3 ObjectNode::localBoundingBox(TimePoint time)
 {
 	const PipelineFlowState& state = evalPipeline(time);
 	if(state.result() == NULL) return Box3();
 
 	// Compute bounding box of scene object.
 	Box3 bb = state.result()->boundingBox(time, this);
-
-#if 0
-	// Add bounding box computed by attached renderers of scene object.
-	TimeInterval iv;
-	Q_FOREACH(AttachedObjectRenderer* objRenderer, state.result()->attachedRenderers())
-		bb.addBox(objRenderer->boundingBox(time, state.result(), this, iv));
-#endif
 
 	// Apply internal object transformation.
 	return bb.transformed(objectTransform());
@@ -137,7 +115,8 @@ Box3 ObjectNode::localBoundingBox(TimeTicks time)
 void ObjectNode::saveToStream(ObjectSaveStream& stream)
 {
 	SceneNode::saveToStream(stream);
-	stream.beginChunk(0x00000001);
+	stream.beginChunk(0x01);
+	// For future use...
 	stream.endChunk();
 }
 
@@ -147,10 +126,12 @@ void ObjectNode::saveToStream(ObjectSaveStream& stream)
 void ObjectNode::loadFromStream(ObjectLoadStream& stream)
 {
 	SceneNode::loadFromStream(stream);
-	stream.expectChunk(0x00000001);
+	stream.expectChunk(0x01);
+	// For future use...
 	stream.closeChunk();
 }
 
+#if 0
 /******************************************************************************
 * Performs a hit test on this node.
 * Returns distance of the
@@ -172,7 +153,9 @@ FloatType ObjectNode::hitTest(TimeTicks time, Viewport* vp, const PickRegion& pi
 	// Hit test object.
 	return flowState.result()->hitTest(time, vp, this, pickRegion);
 }
+#endif
 
+#if 0
 /******************************************************************************
 * Applies the given modifier to the object node.
 * The modifier is put on top of the modifier stack.
@@ -192,5 +175,6 @@ void ObjectNode::applyModifier(Modifier* modifier)
 	}
 	modObj->insertModifier(modifier, modObj->modifierApplications().size());
 }
+#endif
 
 };

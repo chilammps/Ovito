@@ -362,7 +362,6 @@ public:
 	/// \brief Advances the iterator to the next scene node.
 	/// \return The next scene node or \c NULL if the end of the iteration has been reached.
 	/// \note This may only be called as long as the end of the iteration has not been reached, i.e. finished() returns \c false.
-	/// \sa current()
 	SceneNode* next() {
 		OVITO_ASSERT(!finished());
 		OVITO_ASSERT_MSG(_nodeStack.back().second < _nodeStack.back().first->childCount(), "SceneNodesIterator::next", "Node tree has been modified in the meantime.");

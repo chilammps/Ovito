@@ -65,7 +65,7 @@ public:
 	/// \param time The time at which the bounding box should be computed.
 	/// \return An world axis-aligned box that contains the bounding boxes of all child nodes.
 	virtual Box3 localBoundingBox(TimePoint time) override;
-	
+
 private:
 
 	/// Searches recursively for the scene node with the given display name.

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2008) Alexander Stukowski
+//  Copyright (2013) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -21,50 +21,33 @@
 
 /**
  * \file SceneObject.h
- * \brief Contains the definition of the Core::SceneObject class.
+ * \brief Contains the definition of the Ovito::SceneObject class.
  */
 
-#ifndef __OVITO_SCENEOBJECT_H
-#define __OVITO_SCENEOBJECT_H
+#ifndef __OVITO_SCENE_OBJECT_H
+#define __OVITO_SCENE_OBJECT_H
 
 #include <core/Core.h>
 #include <core/reference/RefTarget.h>
-#include <core/scene/animation/TimeInterval.h>
-#include <core/viewport/PickRegion.h>
+#include <core/animation/TimeInterval.h>
 #include "PipelineFlowState.h"
-#include "AttachedObjectRenderer.h"
 
-namespace Core {
+namespace Ovito {
 
 class ObjectNode;				// defined in ObjectNode.h
 class Viewport;					// defined in Viewport.h
-class Window3D;					// defined in Window3D.h
-struct CameraViewDescription;	// defined in Viewport.h
 
 /**
  * \brief Abstract base class for all objects in the scene.
- *
- * SceneObjects can be either procedural objects or modifier objects.
- * A single SceneObject can be shared by multiple ObjectNode objects.
- *
- * \author Alexander Stukowski
- * \sa ObjectNode
- */
-class CORE_DLLEXPORT SceneObject : public RefTarget
-{
-	Q_OBJECT
-	DECLARE_ABSTRACT_PLUGIN_CLASS(SceneObject)
 
+ * A single SceneObject can be shared by multiple ObjectNode objects.
+ */
+class SceneObject : public RefTarget
+{
 protected:
 
 	/// \brief Default constructor.
-	/// \param isLoading Indicates whether the object is being loaded from a file.
-	///                  This parameter is only used by the object serialization system.
-	SceneObject(bool isLoading) : RefTarget(isLoading) {
-#if 0
-		INIT_PROPERTY_FIELD(SceneObject, _attachedRenderers);
-#endif
-	}
+	SceneObject() {}
 
 public:
 
@@ -260,16 +243,10 @@ public:
 
 private:
 
-#if 0
-	/// List of renderer objects attached to this SceneObject.
-	/// They will be invoked when the SceneObject is being rendered.
-	VectorReferenceField<AttachedObjectRenderer> _attachedRenderers;
-
-	DECLARE_VECTOR_REFERENCE_FIELD(_attachedRenderers)
-#endif
+	Q_OBJECT
+	OVITO_OBJECT
 };
-
 
 };
 
-#endif // __OVITO_SCENEOBJECT_H
+#endif // __OVITO_SCENE_OBJECT_H

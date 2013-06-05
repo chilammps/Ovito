@@ -83,7 +83,7 @@ TimePoint AnimManager::stringToTime(const QString& stringValue)
 	bool ok;
 	value = (TimePoint)stringValue.toInt(&ok);
 	if(!ok)
-		throw Exception(tr("Invalid frame number: %1").arg(stringValue));
+		throw Exception(tr("Invalid frame number format: %1").arg(stringValue));
 	return frameToTime(value);
 }
 
