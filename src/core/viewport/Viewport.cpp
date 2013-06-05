@@ -396,6 +396,7 @@ void Viewport::render(QOpenGLContext* context, QOpenGLPaintDevice* paintDevice)
 	glLoadMatrix(_projParams.projectionMatrix);
 
 	// Render lines of the tripod.
+	glEnable(GL_DEPTH_TEST);
 	glBegin(GL_LINES);
 	static const Color colors[3] = { Color(1, 0, 0), Color(0, 1, 0), Color(0.2, 0.2, 1) };
 	for(int axis = 0; axis < 3; axis++) {

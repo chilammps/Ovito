@@ -120,7 +120,7 @@ ObjectLoadStream::ObjectLoadStream(QDataStream& source) : LoadStream(source), _c
 /******************************************************************************
 * Loads an object with runtime type information from the stream.
 * The method returns a pointer to the object but this object will be
-* in an unintialized state until it is loaded at a later time.
+* in an uninitialized state until it is loaded at a later time.
 ******************************************************************************/
 OORef<OvitoObject> ObjectLoadStream::loadObject()
 {
@@ -158,11 +158,23 @@ void ObjectLoadStream::close()
 			// Load class contents.
 			try {
 				try {
+					// Make the object being loaded a child of this stream object.
+					// This is to let the OvitoObject::isBeingLoaded() function detect that
+					// the object is being loaded from this stream.
+					OVITO_ASSERT(_currentObject->object->parent() == nullptr);
+					_currentObject->object->setParent(this);
+					OVITO_ASSERT(_currentObject->object->isBeingLoaded());
+
+					// Let the object load its data fields.
 					_currentObject->object->loadFromStream(*this);
+
+					OVITO_ASSERT(_currentObject->object->parent() == this);
+					_currentObject->object->setParent(nullptr);
 				}
 				catch(...) {
 					// Clean up.
 					OVITO_CHECK_OBJECT_POINTER(_currentObject->object);
+					_currentObject->object->setParent(nullptr);
 					throw;
 				}
 			}

@@ -47,47 +47,31 @@ class RefTarget : public RefMaker
 public:
 
 	/// \brief This light-weight array class holds the list of dependents of a RefTarget.
-	/// \sa RefTarget::getDependents()
-	class DependentsList : private QVarLengthArray<RefMaker*, 4> {
+	class DependentsList : public QVarLengthArray<RefMaker*, 4> {
 	private:
 		typedef QVarLengthArray<RefMaker*, 4> BaseClass;
 	public:
-		typedef RefMaker** const_iterator;
-		/// Default constructor.
-		DependentsList() : QVarLengthArray<RefMaker*, 4>() {}
-		/// Returns the number of dependents.
-		inline int size() const { return BaseClass::size(); }
-		/// Returns whether there are no dependents.
-		inline bool empty() const { return BaseClass::isEmpty(); }
-		/// Returns a dependent.
-		inline RefMaker* operator[](int index) const { OVITO_ASSERT(index < size()); return BaseClass::operator[](index); }
 		/// Checks whether an object is in the list.
 		inline bool contains(RefMaker* o) const {
-			const const_iterator enditer = end();
-			for(const_iterator iter = begin(); iter != enditer; ++iter)
-				if(*iter == o) return true;
+			for(auto iter : *this)
+				if(iter == o) return true;
 			return false;
 		}
-		/// Returns an iterator to the first element.
-		inline const_iterator begin() const { return const_cast<const_iterator>(BaseClass::data()); }
-		/// Returns an iterator to the last element.
-		inline const_iterator end() const { return begin() + size(); }
 		/// Adds a dependent to the list.
-		inline void push_back(RefMaker* o) { OVITO_ASSERT(!contains(o)); BaseClass::append(o); }
+		inline void push_back(RefMaker* o) {
+			OVITO_ASSERT(!contains(o));
+			BaseClass::append(o);
+		}
 		/// Removes a dependent from the list.
 		inline void remove(RefMaker* o) {
-			RefMaker** iter = BaseClass::data();
-			RefMaker* const* enditer = iter + size();
-			OVITO_ASSERT(iter != enditer);
-			// Find object's index.
-			for(; *iter != o; ++iter) OVITO_ASSERT(iter != enditer);
-			// Shift following elements by one.
-			for(RefMaker** iter2 = iter+1; iter2 != enditer; ) {
-				*iter = *iter2;
-				iter = iter2++;
+			for(auto iter = begin(); ; ++iter) {
+				OVITO_ASSERT(iter != end());
+				if(*iter == o) {
+					erase(iter);
+					return;
+				}
 			}
-			// Reduce array size by one.
-			BaseClass::resize(size()-1);
+			OVITO_ASSERT(false);
 		}
 	};
 

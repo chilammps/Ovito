@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2008) Alexander Stukowski
+//  Copyright (2013) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -21,7 +21,7 @@
 
 /**
  * \file EvaluationStatus.h
- * \brief Contains the definition of the Core::EvaluationStatus class.
+ * \brief Contains the definition of the Ovito::EvaluationStatus class.
  */
 
 #ifndef __OVITO_EVALUATION_STATUS_H
@@ -29,7 +29,7 @@
 
 #include <core/Core.h>
 
-namespace Core {
+namespace Ovito {
 
 /**
  * \brief Contains status information about the evaluation of a Modifier or something similar.

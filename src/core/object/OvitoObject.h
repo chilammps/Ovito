@@ -131,6 +131,9 @@ public:
 	/// \sa loadFromStream()
 	virtual void loadFromStreamComplete() {}
 
+	/// Returns true if this object is currently being loaded from an ObjectLoadStream.
+	bool isBeingLoaded() const;
+
 	/// \brief Returns the current value of the object's reference counter.
 	/// \return The reference count for this object.
 	size_t objectReferenceCount() const { return _referenceCount; }

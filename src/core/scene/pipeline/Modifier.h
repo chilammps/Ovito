@@ -29,7 +29,7 @@
 
 #include <core/Core.h>
 #include <core/reference/RefTarget.h>
-#include <core/reference/EvaluationStatus.h>
+#include "EvaluationStatus.h"
 #include "PipelineFlowState.h"
 
 namespace Ovito {
@@ -80,7 +80,7 @@ public:
 	/// This allows the modifier to clear its internal caches that rely on the last state of the input object.
 	///
 	/// The default implementation does nothing.
-	virtual void onInputChanged(ModifierApplication* modApp) {}
+	virtual void inputChanged(ModifierApplication* modApp) {}
 
 #if 0
 	/// \brief Makes the modifier render itself into the viewport.
@@ -95,20 +95,6 @@ public:
 	/// The default implementation does nothing.
 	virtual void renderModifier(TimePoint time, ObjectNode* contextNode, ModifierApplication* modApp, Viewport* vp) {}
 #endif
-
-	/// \brief Returns whether this modifier is currently enabled.
-	/// \return \c true if the modifier is currently enabled, i.e. applied.
-	///         \c false if the modifier is disabled and skipped in the geometry pipeline.
-	bool isModifierEnabled() const { return _isModifierEnabled; }
-
-	/// \brief Enables or disables this modifier.
-	/// \param enabled Controls the state of the modifier.
-	///
-	/// A disabled modifier is skipped in the geometry pipeline and is not applied to the
-	/// input object.
-	///
-	/// \undoable
-	void setModifierEnabled(bool enabled) { _isModifierEnabled = enabled; }
 
 	/// \brief Returns the list of applications of this modifier in pipelines.
 	/// \return The list of ModifierApplication objects that describe the particular applications of this Modifier.
@@ -128,7 +114,7 @@ public:
 	///
 	/// \note This method might return empty result objects in some cases when the modifier stack
 	///       cannot be evaluated because of an invalid modifier.
-	QMap<ModifierApplication*, PipelineFlowState> getModifierInputs(TimeTicks time) const;
+	QMap<ModifierApplication*, PipelineFlowState> getModifierInputs(TimePoint time) const;
 
 	/// \brief Returns the input object of the modifier assuming that it has been applied only in a single geometry pipeline.
 	/// \return The object that comes out of the geometry pipeline when it is evaluated up the application of this modifier.
@@ -141,23 +127,14 @@ public:
 	PipelineFlowState getModifierInput() const;
 
 	/// \brief This virtual method is called by the system when the modifier has been inserted into a PipelineObject.
-	/// \param pipeline The ModifiedObject into which the modifier has been inserted.
+	/// \param pipeline The PipelineObject into which the modifier has been inserted.
 	/// \param modApp The ModifiedApplication object that has been created for the modifier.
 	virtual void initializeModifier(PipelineObject* pipeline, ModifierApplication* modApp) {}
 
-public:
-
-	Q_PROPERTY(bool isModifierEnabled READ isModifierEnabled WRITE setModifierEnabled)
-
 private:
-
-	/// Flag that indicates whether the modifier is enabled.
-	PropertyField<bool, bool, MODIFIER_ENABLED> _isModifierEnabled;
 
 	Q_OBJECT
 	OVITO_OBJECT
-
-	DECLARE_PROPERTY_FIELD(_isModifierEnabled);
 };
 
 

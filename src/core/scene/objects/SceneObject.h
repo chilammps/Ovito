@@ -30,7 +30,7 @@
 #include <core/Core.h>
 #include <core/reference/RefTarget.h>
 #include <core/animation/TimeInterval.h>
-#include "PipelineFlowState.h"
+#include <core/scene/pipeline/PipelineFlowState.h>
 
 namespace Ovito {
 

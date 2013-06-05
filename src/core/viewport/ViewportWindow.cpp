@@ -36,6 +36,11 @@ ViewportWindow::ViewportWindow(Viewport* owner) :
 {
 	// Indicate that the window is to be used for OpenGL rendering.
 	setSurfaceType(QWindow::OpenGLSurface);
+
+	// Indicate that we want a depth buffer.
+	QSurfaceFormat format;
+	format.setDepthBufferSize(24);
+	setFormat(format);
 }
 
 /******************************************************************************

@@ -20,21 +20,24 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include <core/scene/objects/ModifierApplication.h>
-#include <core/scene/objects/PipelineObject.h>
+#include <core/scene/pipeline/ModifierApplication.h>
+#include <core/scene/pipeline/PipelineObject.h>
 
 namespace Ovito {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(ModifierApplication, RefTarget)
 DEFINE_REFERENCE_FIELD(ModifierApplication, _modifier, "Modifier", Modifier)
+DEFINE_PROPERTY_FIELD(ModifierApplication, _isEnabled, "IsEnabled")
 SET_PROPERTY_FIELD_LABEL(ModifierApplication, _modifier, "Modifier")
+SET_PROPERTY_FIELD_LABEL(ModifierApplication, _isEnabled, "Enabled")
 
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-ModifierApplication::ModifierApplication(Modifier* mod)
+ModifierApplication::ModifierApplication(Modifier* mod) : _isEnabled(true)
 {
 	INIT_PROPERTY_FIELD(ModifierApplication::_modifier);
+	INIT_PROPERTY_FIELD(ModifierApplication::_isEnabled);
 	_modifier = mod;
 }
 
@@ -58,7 +61,7 @@ void ModifierApplication::setStatus(const EvaluationStatus& status)
 {
 	if(status == _evalStatus) return;
 	_evalStatus = status;
-	notifyDependents(REFTARGET_STATUS_CHANGED);
+	//notifyDependents(ReferenceEvent::StatusChanged);
 }
 
 };

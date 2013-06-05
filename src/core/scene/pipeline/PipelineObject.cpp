@@ -20,7 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include <core/scene/objects/PipelineObject.h>
+#include <core/scene/pipeline/PipelineObject.h>
 #include <core/gui/undo/UndoManager.h>
 
 namespace Ovito {
@@ -29,7 +29,7 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(PipelineObject, SceneObject)
 DEFINE_REFERENCE_FIELD(PipelineObject, _inputObject, "InputObject", SceneObject)
 DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(PipelineObject, _modApps, "ModifierApplications", ModifierApplication, PROPERTY_FIELD_ALWAYS_CLONE)
 SET_PROPERTY_FIELD_LABEL(PipelineObject, _inputObject, "Input")
-SET_PROPERTY_FIELD_LABEL(PipelineObject, apps, "Modifier Applications")
+SET_PROPERTY_FIELD_LABEL(PipelineObject, _modApps, "Modifier Applications")
 
 /******************************************************************************
 * Default constructor.
@@ -98,7 +98,8 @@ PipelineFlowState PipelineObject::evalObject(TimePoint time, ModifierApplication
 	}
 	else {
 		// Evaluate the geometry pipeline of the input object.
-		if(!inputObject()) return PipelineFlowState();
+		if(!inputObject())
+			return PipelineFlowState();	// No input object -> Cannot evaluate pipeline.
 		state = inputObject()->evalObject(time);
 	}
 
@@ -110,15 +111,16 @@ PipelineFlowState PipelineObject::evalObject(TimePoint time, ModifierApplication
 	for(stackIndex = fromHereIndex; stackIndex < upToHereIndex; stackIndex++) {
     	ModifierApplication* app = modifierApplications()[stackIndex];
     	OVITO_CHECK_OBJECT_POINTER(app);
-		Modifier* mod = app->modifier();
-		OVITO_CHECK_OBJECT_POINTER(mod);
 
 		// Skip disabled modifiers.
-		if(!mod->isModifierEnabled()) {
+		if(app->isEnabled() == false) {
 	    	// Reset evaluation status.
 	    	app->setStatus(EvaluationStatus());
 			continue;
 		}
+
+		Modifier* mod = app->modifier();
+		OVITO_CHECK_OBJECT_POINTER(mod);
 
 		// Put evaluation result into cache if the next modifier is changing frequently (because it is being edited).
 		if(mod->modifierValidity(time).isEmpty()) {
@@ -151,7 +153,7 @@ ModifierApplication* PipelineObject::insertModifier(Modifier* modifier, int atIn
 {
 	OVITO_CHECK_OBJECT_POINTER(modifier);
 
-	// Create a mod app.
+	// Create a modifier application object.
 	OORef<ModifierApplication> modApp(new ModifierApplication(modifier));
 	insertModifierApplication(modApp.get(), atIndex);
 	return modApp.get();
@@ -164,7 +166,7 @@ void PipelineObject::insertModifierApplication(ModifierApplication* modApp, int 
 {
 	OVITO_ASSERT(atIndex >= 0);
 	OVITO_CHECK_OBJECT_POINTER(modApp);
-	atIndex = min(atIndex, apps.size());
+	atIndex = std::min(atIndex, modifierApplications().size());
 	_modApps.insert(atIndex, modApp);
 
 	if(modApp->modifier()) {
@@ -178,9 +180,9 @@ void PipelineObject::insertModifierApplication(ModifierApplication* modApp, int 
 void PipelineObject::removeModifier(ModifierApplication* app)
 {
 	OVITO_CHECK_OBJECT_POINTER(app);
-	OVITO_ASSERT(app->modifiedObject() == this);
+	OVITO_ASSERT(app->pipelineObject() == this);
 
-	int index = apps.indexOf(app);
+	int index = _modApps.indexOf(app);
 	OVITO_ASSERT(index >= 0);
 
 	_modApps.remove(index);
@@ -195,22 +197,22 @@ bool PipelineObject::referenceEvent(RefTarget* source, ReferenceEvent* event)
 		if(event->type() == ReferenceEvent::TargetChanged) {
 			// If the input object has changed then the whole modifier stack needs
 			// to be informed of this.
-			notifyModifiersInputChanged(modifierApplications().size());
+			notifyModifiersInputChanged(-1);
 		}
 	}
 	else {
-		if(event->type() == ReferenceEvent::TargetChanged || event->type() == ReferenceEvent::ModifierEnabled) {
+		if(event->type() == ReferenceEvent::TargetChanged || event->type() == ReferenceEvent::TargetEnabledOrDisabled) {
 			// If one of the modifiers has changed then all other modifiers
 			// following it in the stack need to be informed.
-			int index = modifierApplications().indexOf(source);
+			int index = _modApps.indexOf(source);
 			if(index != -1) {
 				notifyModifiersInputChanged(index);
-				if(event->type() == ReferenceEvent::ModifierEnabled)
+				if(event->type() == ReferenceEvent::TargetEnabledOrDisabled)
 					notifyDependents(ReferenceEvent::TargetChanged);
 			}
 		}
 	}
-	return SceneObject::referenceEvent(source, msg);
+	return SceneObject::referenceEvent(source, event);
 }
 
 /******************************************************************************
@@ -221,7 +223,7 @@ void PipelineObject::referenceReplaced(const PropertyFieldDescriptor& field, Ref
 	// If the input object has been replaced then the whole modifier stack needs
 	// to be informed.
 	if(field == PROPERTY_FIELD(PipelineObject::_inputObject)) {
-		notifyModifiersInputChanged(modifierApplications().size());
+		notifyModifiersInputChanged(-1);
 	}
 	SceneObject::referenceReplaced(field, oldTarget, newTarget);
 }
@@ -247,7 +249,7 @@ void PipelineObject::referenceRemoved(const PropertyFieldDescriptor& field, RefT
 	// If a new modifier has been removed from the stack then all
 	// modifiers following it in the stack need to be informed.
 	if(field == PROPERTY_FIELD(PipelineObject::_modApps)) {
-		notifyModifiersInputChanged(listIndex);
+		notifyModifiersInputChanged(listIndex - 1);
 	}
 	SceneObject::referenceRemoved(field, oldTarget, listIndex);
 }
@@ -257,11 +259,13 @@ void PipelineObject::referenceRemoved(const PropertyFieldDescriptor& field, RefT
 ******************************************************************************/
 void PipelineObject::notifyModifiersInputChanged(int changedIndex)
 {
-	if(getPluginClassFlag(FLAG_OBJ_BEING_LOADED))
-		return;	// Do not send messages when the modifiers are being loaded.
+	if(isBeingLoaded())
+		return;	// Do not send notification messages while modifiers are being loaded.
 
-	// Invalidate the internal cache if it is affected by the changed modifier.
-	if(changedIndex < pipelineCacheIndex || changedIndex == apps.size())
+	OVITO_ASSERT(changedIndex >= -1 && changedIndex < modifierApplications().size());
+
+	// Invalidate the internal cache if it contains a state behind the changed modifier.
+	if(changedIndex < _pipelineCacheIndex)
 		invalidatePipelineCache();
 
 	// Call the onInputChanged() method for all affected modifiers.
@@ -269,7 +273,7 @@ void PipelineObject::notifyModifiersInputChanged(int changedIndex)
 		ModifierApplication* app = modifierApplications()[changedIndex];
 		if(app && app->modifier()) {
 			OVITO_CHECK_OBJECT_POINTER(app->modifier());
-			app->modifier()->onInputChanged(app);
+			app->modifier()->inputChanged(app);
 		}
 	}
 }

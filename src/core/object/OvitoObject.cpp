@@ -20,11 +20,20 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
+#include <core/io/ObjectLoadStream.h>
 #include "OvitoObject.h"
 #include "OvitoObjectType.h"
 
 namespace Ovito {
 
 const NativeOvitoObjectType OvitoObject::OOType("OvitoObject", nullptr, &OvitoObject::staticMetaObject, true);
+
+/******************************************************************************
+* Returns true if this object is currently being loaded from an ObjectLoadStream.
+******************************************************************************/
+bool OvitoObject::isBeingLoaded() const
+{
+	return (qobject_cast<ObjectLoadStream*>(parent()) != nullptr);
+}
 
 };

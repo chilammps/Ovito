@@ -20,23 +20,20 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include <core/scene/objects/Modifier.h>
-#include <core/scene/objects/ModifierApplication.h>
-#include <core/scene/objects/PipelineObject.h>
+#include <core/scene/pipeline/Modifier.h>
+#include <core/scene/pipeline/ModifierApplication.h>
+#include <core/scene/pipeline/PipelineObject.h>
 #include <core/animation/AnimManager.h>
 
 namespace Ovito {
 
 IMPLEMENT_OVITO_OBJECT(Modifier, RefTarget)
-DEFINE_PROPERTY_FIELD(Modifier, _isModifierEnabled, "IsModifierEnabled")
-SET_PROPERTY_FIELD_LABEL(Modifier, _isModifierEnabled, "Enabled")
 
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-Modifier::Modifier() : _isModifierEnabled(true)
+Modifier::Modifier()
 {
-	INIT_PROPERTY_FIELD(Modifier::_isModifierEnabled);
 }
 
 /******************************************************************************
@@ -45,7 +42,7 @@ Modifier::Modifier() : _isModifierEnabled(true)
 QVector<ModifierApplication*> Modifier::modifierApplications() const
 {
 	QVector<ModifierApplication*> apps;
-	Q_FOREACH(RefMaker* dependent, getDependents()) {
+	Q_FOREACH(RefMaker* dependent, dependents()) {
         ModifierApplication* modApp = dynamic_object_cast<ModifierApplication>(dependent);
 		if(modApp != NULL && modApp->modifier() == this) 
 			apps.push_back(modApp);
@@ -59,16 +56,16 @@ QVector<ModifierApplication*> Modifier::modifierApplications() const
 * Note: This method might return empty result objects in some cases when the modifier stack
 * cannot be evaluated because of an invalid modifier.
 ******************************************************************************/
-QMap<ModifierApplication*, PipelineFlowState> Modifier::getModifierInputs(TimeTicks time) const
+QMap<ModifierApplication*, PipelineFlowState> Modifier::getModifierInputs(TimePoint time) const
 {	
 	UndoSuspender noUndo;
 		
 	QMap<ModifierApplication*, PipelineFlowState> result;	
 	Q_FOREACH(ModifierApplication* app, modifierApplications()) {
-		ModifiedObject* modObj = app->modifiedObject();
-		if(!modObj) continue;
+		PipelineObject* pipelineObj = app->pipelineObject();
+		if(!pipelineObj) continue;
 		
-		result[app] = modObj->evalObject(time, app, false);
+		result[app] = pipelineObj->evalObject(time, app, false);
 	}
 
 	return result;
@@ -84,9 +81,9 @@ PipelineFlowState Modifier::getModifierInput() const
 	UndoSuspender noUndo;
 		
 	Q_FOREACH(ModifierApplication* app, modifierApplications()) {
-		ModifiedObject* modObj = app->modifiedObject();
-		if(!modObj) continue;		
-		return modObj->evalObject(ANIM_MANAGER.time(), app, false);
+		PipelineObject* pipelineObj = app->pipelineObject();
+		if(!pipelineObj) continue;
+		return pipelineObj->evalObject(AnimManager::instance().time(), app, false);
 	}
 
 	return PipelineFlowState();

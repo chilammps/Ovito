@@ -20,7 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include <core/scene/objects/PipelineFlowState.h>
+#include <core/scene/pipeline/PipelineFlowState.h>
 #include <core/scene/objects/SceneObject.h>
 
 namespace Ovito {

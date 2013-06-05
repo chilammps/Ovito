@@ -30,11 +30,10 @@
 #include <core/Core.h>
 #include "SceneNode.h"
 #include "objects/SceneObject.h"
-#if 0
-#include "objects/Modifier.h"
-#endif
 
 namespace Ovito {
+
+class Modifier;			// defined in Modifier.h
 
 /**
  * \brief A node in the scene tree that represents an object.
@@ -100,7 +99,6 @@ public:
 	virtual FloatType hitTest(TimePoint time, Viewport* vp, const PickRegion& pickRegion) override;
 #endif
 
-#if 0
 	/// \brief Applies a modifier to the object node.
 	/// \param mod The modifier to be applied.
 	///
@@ -113,8 +111,7 @@ public:
 	///
 	/// Same method as above but takes a smart pointer instead of a raw pointer.
 	/// \undoable
-	void applyModifier(const Modifier::SmartPtr& mod) {  applyModifier(mod.get()); }
-#endif
+	void applyModifier(const OORef<Modifier>& mod) {  applyModifier(mod.get()); }
 
 public:
 

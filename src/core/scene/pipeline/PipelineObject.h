@@ -28,7 +28,7 @@
 #define __OVITO_PIPELINE_OBJECT_H
 
 #include <core/Core.h>
-#include "SceneObject.h"
+#include <core/scene/objects/SceneObject.h>
 #include "ModifierApplication.h"
 
 namespace Ovito {
