@@ -37,7 +37,7 @@ namespace Ovito {
 ******************************************************************************/
 OvitoObjectType::OvitoObjectType(const QString& name, const OvitoObjectType* superClass, bool isAbstract, bool isSerializable) :
 	_name(name), _plugin(nullptr), _isAbstract(isAbstract), _superClass(superClass),
-	_isSerializable(isSerializable), _firstPropertyField(NULL)
+	_isSerializable(isSerializable), _firstPropertyField(NULL), _editorClass(NULL)
 {
 	OVITO_ASSERT(superClass != NULL || name == "OvitoObject");
 
@@ -99,11 +99,12 @@ OvitoObjectType* OvitoObjectType::deserializeRTTI(ObjectLoadStream& stream)
 
 	// Lookup class descriptor.
 	Plugin* plugin = PluginManager::instance().plugin(pluginId);
-	if(plugin == NULL)
+	if(!plugin)
 		throw Exception(Plugin::tr("A required plugin is not installed: %1").arg(pluginId));
 	OVITO_CHECK_POINTER(plugin);
+
 	OvitoObjectType* type = plugin->findClass(className);
-	if(type == NULL)
+	if(!type)
 		throw Exception(Plugin::tr("Required class %1 not found in plugin %2.").arg(className, pluginId));
 
 	return type;
@@ -116,7 +117,8 @@ const PropertyFieldDescriptor* OvitoObjectType::findPropertyField(const char* id
 {
 	for(const PropertyFieldDescriptor* field = firstPropertyField(); field; field = field->next())
 		if(qstrcmp(field->identifier(), identifier) == 0) return field;
-	return NULL;
+
+	return nullptr;
 }
 
 };

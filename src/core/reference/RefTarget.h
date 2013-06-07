@@ -176,11 +176,11 @@ public:
 
 	/// \brief Sends an event to all dependents of this RefTarget.
 	/// \param event The notification event to be sent to all dependents of this RefTarget.
-	void notifyDependents(ReferenceEvent& event);
+	virtual void notifyDependents(ReferenceEvent& event);
 
 	/// \brief Sends an event to all dependents of this RefTarget.
 	/// \param eventType The event type passed to the ReferenceEvent constructor.
-	void notifyDependents(ReferenceEvent::Type eventType) {
+	inline void notifyDependents(ReferenceEvent::Type eventType) {
 		ReferenceEvent event(eventType, this);
 		notifyDependents(event);
 	}
@@ -209,22 +209,18 @@ public:
 
 	/////////////////////////////// Editor interface /////////////////////////////
 
-#if 0
 	/// \brief Creates a PropertiesEditor for this object.
 	/// \return The new editor component that allows the user to edit the properties of this RefTarget object.
 	///         It will be automatically destroyed by the system when the editor is closed.
 	///         Returns NULL if no editor component exists for this RefTarget.
 	///
 	/// This method should be implemented by derived classes that want to provide a graphical user interface
-	/// that allows the user to edit the object properties. It is not necessary to override this method if the
-	/// properties editor class for this RefTarget class is already specified in the plugin" manifest.
-	virtual intrusive_ptr<PropertiesEditor> createPropertiesEditor();
+	/// to let the user edit the object's properties.
+	virtual OORef<PropertiesEditor> createPropertiesEditor();
 
-	/// \brief Returns whether this object is currently being edited in the main command panel of the
-	///        application's main window.
-	/// \return \c true if there is an editor open in the main command panel for this RefTarget; \c false otherwise.
+	/// \brief Determines whether this object is currently being edited in an PropertiesEditor.
+	/// \return \c true if there is an active editor for this RefTarget; \c false otherwise.
 	bool isBeingEdited() const;
-#endif
 
 	/// \brief Returns the title of this object.
 	/// \return A string that is used as label or title for this object in the user interface.

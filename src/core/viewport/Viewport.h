@@ -30,6 +30,7 @@
 #include <core/Core.h>
 #include <core/reference/RefTarget.h>
 #include <core/animation/TimeInterval.h>
+#include <core/scene/ObjectNode.h>
 #include "ViewportSettings.h"
 
 namespace Ovito {
@@ -240,17 +241,15 @@ public:
 	/// \param show Specifies whether the render frame is shown or not.
 	void setRenderFrameShown(bool show) { _showRenderFrame = show; }
 
-#if 0
 	/// \brief Gets the scene node used as camera for the viewport.
 	/// \return The scene node or \c NULL if no scene node has been set.
 	ObjectNode* viewNode() const { return _viewNode; }
 
 	/// \brief Sets the scene node used as camera for the viewport.
 	/// \param node The scene node to be used as view point. The scene node must be a camera object and the
-	///             viewport type must have been set to ViewportType::VIEW_SCENENODE using setViewType()
-	///             to enable camera mode for this viewport.
+	///             viewport type must have been set to ViewType::VIEW_SCENENODE using setViewType()
+	///             to enable the camera tracking mode for this viewport.
 	void setViewNode(ObjectNode* node) { _viewNode = node; }
-#endif
 
 	/// \brief Returns whether a explicitly set center point is used by the orbit navigation mode.
 	/// \return \c true if a center point is set.
@@ -356,10 +355,8 @@ private:
 	/// Indicates whether the rendering frame is shown.
 	PropertyField<bool> _showRenderFrame;
 
-#if 0
 	/// The scene node (camera) that has been selected as the view node.
 	ReferenceField<ObjectNode> _viewNode;
-#endif
 
 	/// The center point in world space used for the orbit navigation mode.
 	PropertyField<Point3> _orbitCenter;
@@ -397,9 +394,7 @@ private:
 	Q_OBJECT
 	OVITO_OBJECT
 
-#if 0
 	DECLARE_REFERENCE_FIELD(_viewNode);
-#endif
 	DECLARE_PROPERTY_FIELD(_viewType);
 	DECLARE_PROPERTY_FIELD(_shadingMode);
 	DECLARE_PROPERTY_FIELD(_showGrid);
@@ -413,6 +408,7 @@ private:
 	DECLARE_PROPERTY_FIELD(_viewportTitle);
 
 	friend class ViewportWindow;
+	friend class ViewportSceneRenderer;
 };
 
 };

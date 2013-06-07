@@ -99,17 +99,6 @@ public:
 
 	/////////////////////////////////////// from SceneObject /////////////////////////////////////////
 
-	/// Asks the object for its validity interval at the given time.
-	virtual TimeInterval objectValidity(TimePoint time) override;
-
-#if 0
-	/// Render the object into the viewport.
-	virtual void renderObject(TimePoint time, ObjectNode* contextNode, Viewport* vp);
-#endif
-
-	/// Returns the bounding box of the object in local object coordinates.
-	virtual Box3 boundingBox(TimePoint time, ObjectNode* contextNode) override;
-
 	/// Asks the object for the result of the geometry pipeline at the given time.
 	virtual PipelineFlowState evalObject(TimePoint time) override {
 		return evalObject(time, nullptr, true);
@@ -126,9 +115,6 @@ protected:
 	/// This method is called when a reference target changes.
 	virtual bool referenceEvent(RefTarget* source, ReferenceEvent* event) override;
 
-	/// Is called when the value of a reference field of this RefMaker changes.
-	virtual void referenceReplaced(const PropertyFieldDescriptor& field, RefTarget* oldTarget, RefTarget* newTarget) override;
-
 	/// Is called when a reference target has been added to a list reference field of this RefMaker.
 	virtual void referenceInserted(const PropertyFieldDescriptor& field, RefTarget* newTarget, int listIndex) override;
 
@@ -138,12 +124,13 @@ protected:
 private:
 
 	/// Notifies all modifiers from the given index on that their input has changed.
-	void notifyModifiersInputChanged(int changedIndex);
+	void modifierChanged(int changedIndex);
 
 	/// This method invalidates the internal geometry pipeline cache of the PipelineObject.
 	void invalidatePipelineCache() {
-		_pipelineCache = PipelineFlowState();
-		_pipelineCacheIndex = -1;
+		_lastInputState.clear();
+		_cachedModifiedState.clear();
+		_cacheIndex = -1;
 	}
 
 private:
@@ -155,12 +142,15 @@ private:
 	/// The modifiers are applied to the input object in the reverse order of this list.
 	VectorReferenceField<ModifierApplication> _modApps;
 
-	/// The cached result from the geometry pipeline evaluation.
-	PipelineFlowState _pipelineCache;
+	/// The state of the input object from the last evaluation of the pipeline.
+	PipelineFlowState _lastInputState;
 
-	/// The pipeline stage that is in the cache.
-	/// If the pipeline cache is empty then this is -1.
-	int _pipelineCacheIndex;
+	/// The cached result from the last geometry pipeline evaluation.
+	PipelineFlowState _cachedModifiedState;
+
+	/// The pipeline stage that is saved in the cache.
+	/// If the pipeline cache is empty, then this is -1.
+	int _cacheIndex;
 
 	Q_OBJECT
 	OVITO_OBJECT

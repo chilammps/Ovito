@@ -24,6 +24,8 @@
 #include <core/viewport/ViewportWindow.h>
 #include <core/viewport/ViewportManager.h>
 #include <core/animation/AnimManager.h>
+#include <core/rendering/viewport/ViewportSceneRenderer.h>
+#include <core/dataset/DataSetManager.h>
 
 /// The default field of view in world units used for orthogonal view types when the scene is empty.
 #define DEFAULT_ORTHOGONAL_FIELD_OF_VIEW		200.0
@@ -31,13 +33,10 @@
 /// The default field of view in radians used for perspective view types when the scene is empty.
 #define DEFAULT_PERSPECTIVE_FIELD_OF_VIEW		(FLOATTYPE_PI/4.0)
 
-
 namespace Ovito {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Viewport, RefTarget);
-#if 0
 DEFINE_FLAGS_REFERENCE_FIELD(Viewport, _viewNode, "ViewNode", ObjectNode, PROPERTY_FIELD_NO_UNDO|PROPERTY_FIELD_NEVER_CLONE_TARGET)
-#endif
 DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _viewType, "ViewType", PROPERTY_FIELD_NO_UNDO)
 DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _shadingMode, "ShadingMode", PROPERTY_FIELD_NO_UNDO)
 DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _showGrid, "ShowGrid", PROPERTY_FIELD_NO_UNDO)
@@ -61,9 +60,7 @@ Viewport::Viewport() :
 		_mouseOverCaption(false), _glcontext(nullptr), _paintDevice(nullptr),
 		_cameraPosition(Point3::Origin()), _cameraDirection(0,0,-1)
 {
-#if 0
 	INIT_PROPERTY_FIELD(Viewport::_viewNode);
-#endif
 	INIT_PROPERTY_FIELD(Viewport::_viewType);
 	INIT_PROPERTY_FIELD(Viewport::_shadingMode);
 	INIT_PROPERTY_FIELD(Viewport::_showGrid);
@@ -110,10 +107,8 @@ void Viewport::setViewType(ViewType type)
 	if(type == viewType())
 		return;
 
-#if 0
 	// Reset camera node.
-	setViewNode(NULL);
-#endif
+	setViewNode(nullptr);
 
 	// Setup default view.
 	switch(type) {
@@ -277,19 +272,16 @@ bool Viewport::referenceEvent(RefTarget* source, ReferenceEvent* event)
 ******************************************************************************/
 void Viewport::referenceReplaced(const PropertyFieldDescriptor& field, RefTarget* oldTarget, RefTarget* newTarget)
 {
-#if 0
 	if(field == PROPERTY_FIELD(Viewport::_viewNode)) {
 		// Switch to perspective mode when camera node has been deleted.
-		if(viewType() == VIEW_SCENENODE && newTarget == NULL) {
+		if(viewType() == VIEW_SCENENODE && newTarget == nullptr) {
 			setViewType(VIEW_PERSPECTIVE);
 		}
 		else {
 			// Update viewport when the camera has been replaced by another scene node.
 			updateViewportTitle();
-			updateViewport();
 		}
 	}
-#endif
 	RefTarget::referenceReplaced(field, oldTarget, newTarget);
 }
 
@@ -321,11 +313,9 @@ void Viewport::updateViewportTitle()
 		case VIEW_ORTHO: _viewportTitle = tr("Ortho"); break;
 		case VIEW_PERSPECTIVE: _viewportTitle = tr("Perspective"); break;
 		case VIEW_SCENENODE:
-#if 0
 			if(viewNode() != NULL)
 				_viewportTitle = viewNode()->name();
 			else
-#endif
 				_viewportTitle = tr("No view node");
 		break;
 		default: OVITO_ASSERT(false); _viewportTitle = QString(); // unknown viewport type
@@ -407,7 +397,7 @@ void Viewport::render(QOpenGLContext* context, QOpenGLPaintDevice* paintDevice)
 		glVertex(dir);
 	}
 	glEnd();
-
+#if 0
 	glColor3f(1,1,1);
 	glBegin(GL_LINES);
 	glVertex3f(-50,-50,-50);
@@ -437,6 +427,15 @@ void Viewport::render(QOpenGLContext* context, QOpenGLPaintDevice* paintDevice)
 	glVertex3f(-50, 50, 50);
 	glVertex3f(-50,-50, 50);
 	glEnd();
+#endif
+	// Set up the viewport renderer.
+	ViewportManager::instance().renderer()->setTime(AnimManager::instance().time());
+	ViewportManager::instance().renderer()->setProjParams(_projParams);
+	ViewportManager::instance().renderer()->setViewport(this);
+	ViewportManager::instance().renderer()->setDataset(DataSetManager::instance().currentSet());
+
+	// Call the viewport renderer to render the scene objects.
+	ViewportManager::instance().renderer()->renderFrame();
 
 	// Render orientation tripod.
 	renderOrientationIndicator();
@@ -603,6 +602,5 @@ void Viewport::renderOrientationIndicator()
 	// Restore old rendering attributes.
 	end2DPainting();
 }
-
 
 };

@@ -49,28 +49,21 @@ public:
 	/// \param sceneObject The object represents the current state of a geometry pipeline evaluation.
 	/// \param validityInterval Specifies the time interval during which the returned object is valid.
 	///                         For times outside this interval the geometry pipeline has to be re-evaluated.
-	PipelineFlowState(SceneObject* sceneObject, const TimeInterval& validityInterval) : _sceneObject(sceneObject), _stateValidity(validityInterval) {}
+	PipelineFlowState(SceneObject* sceneObject, const TimeInterval& validityInterval) : _stateValidity(validityInterval) {
+		addObject(sceneObject);
+	}
 
-	/// \brief Copy constructor that creates a shallow copy of a state object.
-	/// \param right The state object to be copied.
-	/// \note This copy constructor does not copy the scene object contained in \a right but only the reference to it.  
-	PipelineFlowState(const PipelineFlowState& right) : _sceneObject(right.result()), _stateValidity(right.stateValidity()) {}
-	
-	/// \brief Returns the result object from the pipeline evaluation.
-	/// \return The scene object that flows down the geometry pipeline.
-	///         This may be \c NULL in some cases.
-	SceneObject* result() const { return _sceneObject.get(); }
+	/// \brief Discards the contents of this state object.
+	void clear() {
+		_objects.clear();
+		_stateValidity.setEmpty();
+	}
 
-	/// \brief Sets the result object of the pipeline evaluation.
-	/// \param newResult The new pipeline evaluation result.
-	///
-	/// This method replaces the scene object with a new one.
-	void setResult(SceneObject* newResult) { _sceneObject = newResult; }
+	/// \brief Adds an additional scene object to this state.
+	void addObject(SceneObject* obj);
 
-	/// \brief Sets the result object of the pipeline evaluation.
-	/// 
-	/// Same function as above but accepts a smart pointer instead of a raw pointer.
-	void setResult(const OORef<SceneObject>& newResult) { setResult(newResult.get()); }
+	/// \brief Returns the list of scene objects stored in this flow state.
+	const std::map< OORef<SceneObject>, unsigned int >& objects() const { return _objects; }
 
 	/// \brief Gets the validity interval for this pipeline state.
 	/// \return The time interval during which the returned object is valid.
@@ -87,16 +80,19 @@ public:
 	/// \sa setStateValidity()
 	void intersectStateValidity(const TimeInterval& intersectionInterval) { _stateValidity.intersect(intersectionInterval); }
 
-	/// \brief Makes a (shallow) copy of the flow state.
-	/// \param right The state object to be copied.
-	/// \note This copy operator does not copy the scene object contained in \a right but only the reference to it.
-	PipelineFlowState& operator=(const PipelineFlowState& right);
+	/// \brief Returns true if this state object has no valid contents.
+	bool isEmpty() const { return _objects.empty(); }
+
+	/// \brief Updates the stored revision number for a scene object.
+	void setRevisionNumber(SceneObject* obj, unsigned int revNumber);
 
 private:
 
-	/// Contains the object that flows up the geometry pipeline
-	/// and is modified by modifiers.
-	OORef<SceneObject> _sceneObject;
+	/// Contains the objects that flow up the geometry pipeline
+	/// and are modified by modifiers. Each object is associated
+	/// with a revision number, which is used to detect changes
+	/// between different flow states.
+	std::map< OORef<SceneObject>, unsigned int > _objects;
 
 	/// Contains the validity interval for this pipeline flow state.
 	TimeInterval _stateValidity;

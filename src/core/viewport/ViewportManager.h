@@ -33,7 +33,8 @@
 
 namespace Ovito {
 
-class DataSet;			// defined in DataSet.h
+class DataSet;					// defined in DataSet.h
+class ViewportSceneRenderer;	// defined in ViewportSceneRenderer.h
 
 /**
  * \brief Manages the viewports.
@@ -48,6 +49,9 @@ public:
 		if(!_instance) _instance.reset(new ViewportManager());
 		return *_instance.data();
 	}
+
+	/// Destructor.
+	~ViewportManager();
 
 	/// \brief Returns the current viewport configuration.
 	ViewportConfiguration* viewportConfig() const { return _viewportConfig; }
@@ -129,6 +133,9 @@ public:
 	/// Returns the font to be used for rendering text in the viewports.
 	const QFont& viewportFont() const { return _viewportFont; }
 
+	/// Returns the renderer that takes care of rendering the scene in the viewports.
+	ViewportSceneRenderer* renderer() const { return _renderer.get(); }
+
 Q_SIGNALS:
 
 	/// This signal is emitted when another viewport became active.
@@ -155,6 +162,9 @@ private:
 
 	/// The font used for rendering text in the viewports.
 	QFont _viewportFont;
+
+	/// The renderer that takes care of rendering the scene in the viewports.
+	OORef<ViewportSceneRenderer> _renderer;
 
 private:
 

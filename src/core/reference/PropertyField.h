@@ -94,27 +94,9 @@ public:
 	typedef property_data_type property_type;
 	typedef qvariant_data_type qvariant_type;
 
-	/// Default constructor that does not initialize the property value.
-	PropertyField() : PropertyFieldBase() {}
-
-	/// Constructor that assigns an initial value to the property.
-	PropertyField(const property_type& value) : PropertyFieldBase(), _value(value) {}
-
-	/// Constructor that calls the internal value constructor with one parameter.
-	template<typename K1>
-	PropertyField(K1 param1) : PropertyFieldBase(), _value(param1) {}
-
-	/// Constructor that calls the internal value constructor with two parameters.
-	template<typename K1, typename K2>
-	PropertyField(K1 param1, K2 param2) : PropertyFieldBase(), _value(param1, param2) {}
-
-	/// Constructor that calls the internal value constructor with three parameters.
-	template<typename K1, typename K2, typename K3>
-	PropertyField(K1 param1, K2 param2, K3 param3) : PropertyFieldBase(), _value(param1, param2, param3) {}
-
-	/// Constructor that calls the internal value constructor with four parameters.
-	template<typename K1, typename K2, typename K3, typename K4>
-	PropertyField(K1 param1, K2 param2, K3 param3, K4 param4) : PropertyFieldBase(), _value(param1, param2, param3, param4) {}
+	/// Forwarding constructor.
+	template<class... Args>
+	PropertyField(Args&&... args) : PropertyFieldBase(), _value(std::forward<Args>(args)...) {}
 
 	/// Cast the property field to the property value.
 	inline operator const property_type&() const { return _value; }

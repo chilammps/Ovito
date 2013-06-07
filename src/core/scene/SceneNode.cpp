@@ -81,7 +81,7 @@ const AffineTransformation& SceneNode::getWorldTransform(TimePoint time, TimeInt
 		if(parentNode() && !parentNode()->isRootNode()) {
 			_worldTransform = _worldTransform * parentNode()->getWorldTransform(time, _worldTransformValidity);
 		}
-		// apply own tm
+		// Apply own tm.
 		if(transformationController())
 			transformationController()->applyValue(time, _worldTransform, _worldTransformValidity);
 	}

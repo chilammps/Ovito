@@ -23,6 +23,7 @@
 #include <core/viewport/ViewportManager.h>
 #include <core/viewport/Viewport.h>
 #include <core/dataset/DataSetManager.h>
+#include <core/rendering/viewport/ViewportSceneRenderer.h>
 
 namespace Ovito {
 
@@ -42,8 +43,18 @@ ViewportManager::ViewportManager() :
 	OVITO_ASSERT_MSG(!_instance, "ViewportManager constructor", "Multiple instances of this singleton class have been created.");
 	INIT_PROPERTY_FIELD(ViewportManager::_viewportConfig);
 
+	// Create renderer.
+	_renderer = new ViewportSceneRenderer();
+
 	// Listen for changes of the data set.
 	connect(&DataSetManager::instance(), SIGNAL(dataSetReset(DataSet*)), this, SLOT(onDataSetReset(DataSet*)));
+}
+
+/******************************************************************************
+* Destructor of the viewport manager.
+******************************************************************************/
+ViewportManager::~ViewportManager()
+{
 }
 
 /******************************************************************************

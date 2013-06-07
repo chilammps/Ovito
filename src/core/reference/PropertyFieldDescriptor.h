@@ -42,10 +42,9 @@ enum PropertyFieldFlag
 	PROPERTY_FIELD_VECTOR				= (1<<1),
 	/// With this flag set no undo records are created when the property value is changed.
 	PROPERTY_FIELD_NO_UNDO				= (1<<2),
-	/// Controls whether a REFTARGET_CHANGED message should
-	/// be sent, when the property value changes.
+	/// Controls whether or not a ReferenceField::TargetChanged event should
+	/// be generated each time the property value changes.
 	PROPERTY_FIELD_NO_CHANGE_MESSAGE	= (1<<3),
-
 	/// The target of the reference field is never cloned when the owning RefMaker is cloned.
 	PROPERTY_FIELD_NEVER_CLONE_TARGET	= (1<<4),
 	/// The target of the reference field is shallow/deep copied depending on the mode when the owning RefMaker is cloned.

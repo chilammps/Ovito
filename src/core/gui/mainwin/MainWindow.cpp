@@ -23,6 +23,7 @@
 #include "MainWindow.h"
 #include "AnimationTimeSlider.h"
 #include "ViewportsPanel.h"
+#include "cmdpanel/CommandPanel.h"
 #include <core/gui/actions/ActionManager.h>
 #include <core/gui/widgets/AnimationTimeSpinner.h>
 
@@ -133,9 +134,16 @@ MainWindow::MainWindow(const QString& title) :
 	viewportControlPanelLayout->addStretch(1);
 	viewportControlPanel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
 
+	// Create the command panel.
+	_commandPanel = new CommandPanel();
+
 	createDockPanel(tr("Animation Panel"), "AnimationPanel", Qt::BottomDockWidgetArea, Qt::BottomDockWidgetArea, animationPanel);
 	createDockPanel(tr("Animation Control Panel"), "AnimationControlPanel", Qt::BottomDockWidgetArea, Qt::BottomDockWidgetArea, animationControlPanel);
 	createDockPanel(tr("Viewport Control"), "ViewportControlPanel", Qt::BottomDockWidgetArea, Qt::BottomDockWidgetArea, viewportControlPanel);
+	createDockPanel(tr("Command Panel"), "CommandPanel", Qt::RightDockWidgetArea, Qt::DockWidgetAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea), _commandPanel);
+
+	// Create the frame buffer window.
+	//_frameBufferWindow = new FrameBufferWindow(this);
 }
 
 /******************************************************************************

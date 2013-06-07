@@ -33,6 +33,9 @@
 #include <core/rendering/RenderSettings.h>
 #endif
 
+#include <viz/data/SimulationCell.h>
+#include <core/scene/ObjectNode.h>
+
 namespace Ovito {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(DataSet, RefTarget);
@@ -73,6 +76,11 @@ DataSet::DataSet()
 #if 0
 	_renderSettings = new RenderSettings();
 #endif
+
+	ObjectNode* node = new ObjectNode();
+	_sceneRoot->addChild(node);
+	Viz::SimulationCell* simCell = new Viz::SimulationCell(Box3(Point3::Origin(), 30));
+	node->setSceneObject(simCell);
 }
 
 

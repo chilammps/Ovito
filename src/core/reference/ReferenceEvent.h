@@ -78,7 +78,7 @@ public:
 	/// \brief Constructs the message.
 	/// \param type Identifies the type of the notification message.
 	/// \param sender The object that generated the event.
-	ReferenceEvent(Type type, RefTarget* sender) : _type(type), _sender(sender) {}
+	explicit ReferenceEvent(Type type, RefTarget* sender) : _type(type), _sender(sender) {}
 
 	/// \brief Returns the type of the event.
 	Type type() const { return _type; }

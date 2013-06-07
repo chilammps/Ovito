@@ -178,6 +178,13 @@ inline std::ostream& operator<<(std::ostream &os, const ScalingT<T>& s) {
 	return os << '[' << s.S << "], " << s.Q;
 }
 
+/// \brief Writes the scaling to the Qt debug stream.
+template<typename T>
+inline QDebug operator<<(QDebug dbg, const ScalingT<T>& s) {
+    dbg.nospace() << "[" << s.S << "]";
+    return dbg.space();
+}
+
 /// \brief Writes a Scaling to a binary output stream.
 /// \param stream The output stream.
 /// \param s The scaling to write to the output stream \a stream.

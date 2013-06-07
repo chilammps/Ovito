@@ -32,6 +32,9 @@
 
 namespace Ovito {
 
+class CommandPanel;		// defined in CommandPanel.h
+class FrameBufferWindow;// defined in FrameBufferWindow.h
+
 /**
  * \brief The main window of the application.
  * 
@@ -87,6 +90,12 @@ private:
 	
 	/// The internal status bar widget.
 	QStatusBar* _statusBar;
+
+	/// The frame buffer window showing the rendered image.
+	QPointer<FrameBufferWindow> _frameBufferWindow;
+
+	/// The command panel.
+	CommandPanel* _commandPanel;
 	
 	/// The global instance of this class.
 	static MainWindow* _instance;

@@ -62,10 +62,12 @@ SET(OVITO_SOURCE_FILES
 	core/scene/pipeline/PipelineObject.cpp
 	core/scene/pipeline/Modifier.cpp
 	core/scene/pipeline/ModifierApplication.cpp
+	core/scene/display/DisplayObject.cpp
 	core/gui/app/Application.cpp
 	core/gui/mainwin/MainWindow.cpp
 	core/gui/mainwin/AnimationTimeSlider.cpp
 	core/gui/mainwin/ViewportsPanel.cpp
+	core/gui/mainwin/cmdpanel/CommandPanel.cpp
 	core/gui/dialogs/ApplicationSettingsDialog.cpp
 	core/gui/dialogs/ViewportSettingsPage.cpp
 	core/gui/actions/ActionManager.cpp
@@ -74,10 +76,33 @@ SET(OVITO_SOURCE_FILES
 	core/gui/actions/AnimationActions.cpp
 	core/gui/actions/ViewportModeAction.cpp
 	core/gui/undo/UndoManager.cpp
+	core/gui/widgets/RolloutContainer.cpp
 	core/gui/widgets/SpinnerWidget.cpp
 	core/gui/widgets/ColorPickerWidget.cpp
 	core/gui/widgets/AnimationTimeSpinner.cpp
+	core/gui/properties/PropertiesEditor.cpp
+	core/gui/properties/PropertiesPanel.cpp
+	core/gui/properties/ParameterUI.cpp
+	core/gui/properties/NumericalParameterUI.cpp
+	core/gui/properties/AffineTransformationParameterUI.cpp
+	core/gui/properties/BooleanActionParameterUI.cpp
+	core/gui/properties/BooleanGroupBoxParameterUI.cpp
+	core/gui/properties/BooleanParameterUI.cpp
+	core/gui/properties/BooleanRadioButtonParameterUI.cpp
+	core/gui/properties/ColorParameterUI.cpp
+	core/gui/properties/FilenameParameterUI.cpp
+	core/gui/properties/FloatParameterUI.cpp
+	core/gui/properties/IntegerParameterUI.cpp
+	core/gui/properties/IntegerRadioButtonParameterUI.cpp
+	core/gui/properties/RefTargetListParameterUI.cpp
+	core/gui/properties/StringParameterUI.cpp
+	core/gui/properties/SubObjectParameterUI.cpp
+	core/gui/properties/VariantComboBoxParameterUI.cpp
+	core/gui/properties/Vector3ParameterUI.cpp
 	core/utilities/units/UnitsManager.cpp
+	core/rendering/SceneRenderer.cpp
+	core/rendering/viewport/ViewportSceneRenderer.cpp
+	core/rendering/viewport/ViewportLineGeometryBuffer.cpp
 	core/viewport/Viewport.cpp
 	core/viewport/ViewportWindow.cpp
 	core/viewport/ViewportConfiguration.cpp
@@ -86,6 +111,8 @@ SET(OVITO_SOURCE_FILES
 	core/viewport/input/ViewportInputManager.cpp
 	core/viewport/input/ViewportInputHandler.cpp
 	core/viewport/input/NavigationModes.cpp
+	viz/data/SimulationCell.cpp
+	viz/data/SimulationCellDisplay.cpp
 	main/Main.cpp
 )
 

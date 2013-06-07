@@ -26,13 +26,27 @@
 namespace Ovito {
 
 /******************************************************************************
-* Makes a (shallow) copy of the flow state.
+* Adds an additional scene object to this state.
 ******************************************************************************/
-PipelineFlowState& PipelineFlowState::operator=(const PipelineFlowState& right)
+void PipelineFlowState::addObject(SceneObject* obj)
 {
-	setResult(right.result());
-	setStateValidity(right.stateValidity());
-	return *this;
+	OVITO_CHECK_OBJECT_POINTER(obj);
+	OVITO_ASSERT_MSG(_objects.find(obj) == _objects.end(), "PipelineFlowState::addObject", "Cannot add the same scene object more than once.");
+	_objects.emplace(obj, obj->revisionNumber());
+}
+
+/******************************************************************************
+* Updates the stored revision number for a scene object.
+******************************************************************************/
+void PipelineFlowState::setRevisionNumber(SceneObject* obj, unsigned int revNumber)
+{
+	for(auto& entry : _objects) {
+		if(entry.first == obj) {
+			entry.second = revNumber;
+			return;
+		}
+	}
+	OVITO_ASSERT_MSG(false, "PipelineFlowState::setRevisionNumber", "Scene object not found.");
 }
 
 };

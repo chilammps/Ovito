@@ -98,6 +98,10 @@ public:
 	/// super-classes.
 	const PropertyFieldDescriptor* findPropertyField(const char* identifier) const;
 
+	/// If this is a RefTarget derived classes, this specifies the type of editor to use
+	/// when editing objects of this class.
+	const OvitoObjectType* editorClass() const { return _editorClass; }
+
 	/// Compares two types.
 	bool operator==(const OvitoObjectType& other) const { return (this == &other); }
 
@@ -112,6 +116,16 @@ public:
 	/// \throw Exception if the class is not defined or the required plugin is not installed.
 	/// \note This method is for internal use only.
 	static OvitoObjectType* deserializeRTTI(ObjectLoadStream& stream);
+
+	/// Internal helper class that is used to specify the editor class for a RefTarget derived class.
+	/// Do not use this class directly, but use the SET_OVITO_OBJECT_EDITOR macro instead.
+	struct EditorClassSetter {
+		EditorClassSetter(OvitoObjectType& type, const OvitoObjectType* editorClass) {
+			OVITO_ASSERT(editorClass != nullptr);
+			OVITO_ASSERT(type._editorClass == nullptr);
+			type._editorClass = editorClass;
+		}
+	};
 
 protected:
 
@@ -142,7 +156,15 @@ protected:
 
 	/// The linked list of property fields if the class is derived from RefMaker.
 	const PropertyFieldDescriptor* _firstPropertyField;
+
+	/// For RefTarget derived classes, this specifies the PropertiesEditor derived
+	/// class to use.
+	const OvitoObjectType* _editorClass;
 };
+
+/// This macro is used to assign a PropertiesEditor-derived class to a RefTarget-derived class.
+#define SET_OVITO_OBJECT_EDITOR(RefTargetClass, PropertiesEditorClass)								\
+	static Ovito::OvitoObjectTye::EditorClassSetter __editorSetter##RefTargetClass(RefTargetClass::OOType, &PropertiesEditorClass::OOType);
 
 };
 

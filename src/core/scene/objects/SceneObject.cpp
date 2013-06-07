@@ -21,24 +21,32 @@
 
 #include <core/Core.h>
 #include <core/scene/objects/SceneObject.h>
+#include <core/scene/display/DisplayObject.h>
 
 namespace Ovito {
 
-IMPLEMENT_OVITO_OBJECT(SceneObject, RefTarget)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(SceneObject, RefTarget)
+DEFINE_FLAGS_REFERENCE_FIELD(SceneObject, _displayObject, "DisplayObject", DisplayObject, PROPERTY_FIELD_NO_CHANGE_MESSAGE)
+SET_PROPERTY_FIELD_LABEL(SceneObject, _displayObject, "Display")
 
-#if 0
 /******************************************************************************
-* Performs a hit test on the object.
-* Returns the distance of the hit from the viewer, or HIT_TEST_NONE if no hit
-* was found.
+* Constructor.
 ******************************************************************************/
-FloatType SceneObject::hitTest(TimeTicks time, Viewport* vp, ObjectNode* contextNode, const PickRegion& pickRegion)
+SceneObject::SceneObject() : _revisionNumber(0)
 {
-	vp->setPickingRegion(&pickRegion);
-	renderObject(time, contextNode, vp);
-	vp->setPickingRegion(NULL); 
-	return vp->closestHit();
+	INIT_PROPERTY_FIELD(SceneObject::_displayObject);
 }
-#endif
+
+/******************************************************************************
+* Sends an event to all dependents of this RefTarget.
+******************************************************************************/
+void SceneObject::notifyDependents(ReferenceEvent& event)
+{
+	// Increment revision counter if the object changed.
+	if(event.type() == ReferenceEvent::TargetChanged)
+		_revisionNumber++;
+
+	RefTarget::notifyDependents(event);
+}
 
 };

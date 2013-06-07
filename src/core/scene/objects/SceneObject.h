@@ -31,23 +31,21 @@
 #include <core/reference/RefTarget.h>
 #include <core/animation/TimeInterval.h>
 #include <core/scene/pipeline/PipelineFlowState.h>
+#include <core/scene/display/DisplayObject.h>
 
 namespace Ovito {
-
-class ObjectNode;				// defined in ObjectNode.h
-class Viewport;					// defined in Viewport.h
 
 /**
  * \brief Abstract base class for all objects in the scene.
 
- * A single SceneObject can be shared by multiple ObjectNode objects.
+ * A single SceneObject can be referenced by multiple ObjectNode instances.
  */
 class SceneObject : public RefTarget
 {
 protected:
 
 	/// \brief Default constructor.
-	SceneObject() {}
+	SceneObject();
 
 public:
 
@@ -57,54 +55,9 @@ public:
 	///
 	/// When computing the validity interval of the object, an implementation of this method
 	/// should take validity intervals of all sub-objects and sub-controller into account.
-	virtual TimeInterval objectValidity(TimePoint time) = 0;
-
-#if 0
-	/// \brief Makes the object render itself into a viewport.
-	/// \param time The animation time at which to render the object
-	/// \param contextNode The node context used to render the object.
-	/// \param vp The viewport to render in.
 	///
-	/// The viewport transformation is already set up when this method is called by the
-	/// system. The object has to be rendered in the local object coordinate system.
-	virtual void renderObject(TimeTicks time, ObjectNode* contextNode, Viewport* vp) = 0;
-#endif
-
-	/// \brief Asks the object whether it should appear in a rendered output image.
-	/// \return \c true if the object is renderable.
-	///         \c false otherwise.
-	///
-	/// The default implementation returns \c false.
-	virtual bool isRenderable() { return false; }
-
-	/// \brief Computes the bounding box of the object.
-	/// \param time The animation time for which the bounding box should be computed.
-	/// \param contextNode The scene node to which this scene object belongs to.
-	/// \return The bounding box of the object in local object coordinates.
-	virtual Box3 boundingBox(TimePoint time, ObjectNode* contextNode) = 0;
-
-#if 0
-	/// \brief Performs a hit test on this object.
-	/// \param time The animation at which hit testing should be done.
-	/// \param vp The viewport in which hit testing should be performed.
-	/// \param contextNode The scene nodes to which this scene object belongs to.
-	/// \param pickRegion The picking region to be used for hit testing.
-	/// \return The distance of the hit from the viewer or HIT_TEST_NONE if no hit was found.
-	///
-	/// The default implementation of this method uses the standard picking methods of the Window3D class.
-	/// It enables picking mode for the Window3D, renders the SceneObject using renderObject(), and lets the
-	/// Window3D decide whether the object was picked.
-	///
-	/// \sa Window3D::setPickingRegion()
-	/// \sa intersectRay()
-	virtual FloatType hitTest(TimeTicks time, Viewport* vp, ObjectNode* contextNode, const PickRegion& pickRegion);
-#endif
-
-	/// \brief Indicates whether this object should be surrounded by a selection marker in the viewports when it is selected.
-	/// \return \c true to let the system render a selection marker around the object when it is selected.
-	///
-	/// The default implementation returns \c true.
-	virtual bool showSelectionMarker() { return true; }
+	/// The default implementation return TimeInterval::forever().
+	virtual TimeInterval objectValidity(TimePoint time) { return TimeInterval::forever(); }
 
 	/// \brief This asks the object whether it supports the conversion to another object type.
 	/// \param objectClass The destination type. This must be a SceneObject derived class.
@@ -158,6 +111,14 @@ public:
 		return PipelineFlowState(this, objectValidity(time));
 	}
 
+	/// \brief Returns the attached display object that is responsible for rendering this
+	///        scene object.
+	DisplayObject* displayObject() const { return _displayObject; }
+
+	/// \brief Attaches a display object to this scene object that will be responsible for rendering the
+	///        scene object.
+	void setDisplayObject(DisplayObject* displayObj) { _displayObject = displayObj; }
+
 	/// \brief Returns the number of input objects that are referenced by this scene object.
 	/// \return The number of input objects that this object relies on.
 	///
@@ -172,10 +133,33 @@ public:
 		return nullptr;
 	}
 
+	/// \brief Returns the current value of the revision counter of this scene object.
+	/// This counter is increment every time the object changes.
+	unsigned int revisionNumber() const { return _revisionNumber; }
+
+	/// \brief Sends an event to all dependents of this RefTarget.
+	/// \param event The notification event to be sent to all dependents of this RefTarget.
+	virtual void notifyDependents(ReferenceEvent& event) override;
+
+	/// \brief Sends an event to all dependents of this RefTarget.
+	/// \param eventType The event type passed to the ReferenceEvent constructor.
+	inline void notifyDependents(ReferenceEvent::Type eventType) {
+		RefTarget::notifyDependents(eventType);
+	}
+
 private:
+
+	/// The revision counter of this scene object.
+	/// The counter is increment every time the object changes.
+	unsigned int _revisionNumber;
+
+	/// The attached display object that is responsible for rendering this scene object.
+	ReferenceField<DisplayObject> _displayObject;
 
 	Q_OBJECT
 	OVITO_OBJECT
+
+	DECLARE_REFERENCE_FIELD(_displayObject);
 };
 
 };

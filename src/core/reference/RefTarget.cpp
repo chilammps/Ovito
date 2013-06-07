@@ -23,13 +23,7 @@
 #include <core/reference/RefTarget.h>
 #include <core/reference/CloneHelper.h>
 #include <core/gui/undo/UndoManager.h>
-#if 0
 #include <core/gui/properties/PropertiesEditor.h>
-#include <core/gui/ApplicationManager.h>
-#include <core/gui/mainwnd/MainFrame.h>
-#include <core/gui/panels/CommandPanel.h>
-#include <core/plugins/Plugin.h>
-#endif
 
 namespace Ovito {
 
@@ -198,43 +192,39 @@ QString RefTarget::objectTitle()
 	return getOOType().name();
 }
 
-#if 0
 /******************************************************************************
 * Creates a PropertiesEditor for this object.
 ******************************************************************************/
-PropertiesEditor::SmartPtr RefTarget::createPropertiesEditor()
+OORef<PropertiesEditor> RefTarget::createPropertiesEditor()
 {
 	try {
-		// Look in the meta data of this RefTarget derived class and its super classes for the right editor class.
-		PluginClassDescriptor* clazz = pluginClassDescriptor();
-		do {
-			QDomElement propertiesEditorElement = clazz->getMetaData("Properties-Editor");
-			if(propertiesEditorElement.isElement()) {
-				PluginClassDescriptor* editorClass = clazz->plugin()->getRequiredClass(propertiesEditorElement);
-				if(!editorClass->isKindOf(PLUGINCLASSINFO(PropertiesEditor)))
-					throw Exception(tr("The class %1 specified in the manifest of class %2 is not derived from the PropertiesEditor base class.").arg(editorClass->name(), clazz->name()));
+		// Look in the meta data of this RefTarget derived class and its super classes for the editor class.
+		for(const OvitoObjectType* clazz = &getOOType(); clazz != nullptr; clazz = clazz->superClass()) {
+			const OvitoObjectType* editorClass = clazz->editorClass();
+			if(editorClass) {
+				if(!editorClass->isDerivedFrom(PropertiesEditor::OOType))
+					throw Exception(tr("The editor class %1 assigned to the RefTarget-derived class %2 is not derived from PropertiesEditor.").arg(editorClass->name(), clazz->name()));
 				return dynamic_object_cast<PropertiesEditor>(editorClass->createInstance());
 			}
-			clazz = clazz->baseClass();
 		}
-		while(clazz != NULL);
 	}
 	catch(Exception& ex) {
 		ex.prependGeneralMessage(tr("Could no create editor component for the %1 object.").arg(objectTitle()));
 		ex.showError();
 	}
-	return NULL;
+	return nullptr;
 }
 
 /******************************************************************************
-* Returns whether this object is currently being edited in the main command
-* panel of the application's main window.
+* Determines whether this object is currently being edited in a PropertiesEditor.
 ******************************************************************************/
 bool RefTarget::isBeingEdited() const
 {
-	if(!APPLICATION_MANAGER.guiMode()) return false;
-	return MAIN_FRAME->commandPanel()->editObject() == this;
+	for(RefMaker* m : dependents()) {
+		if(m->getOOType().isDerivedFrom(PropertiesEditor::OOType))
+			return true;
+	}
+	return false;
 }
-#endif
 
 };

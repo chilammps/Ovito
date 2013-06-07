@@ -22,6 +22,7 @@
 #include <core/Core.h>
 #include <core/scene/ObjectNode.h>
 #include <core/scene/objects/SceneObject.h>
+#include <core/scene/pipeline/PipelineObject.h>
 #include <core/viewport/Viewport.h>
 #include <core/gui/undo/UndoManager.h>
 
@@ -29,17 +30,16 @@ namespace Ovito {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(ObjectNode, SceneNode)
 DEFINE_REFERENCE_FIELD(ObjectNode, _sceneObject, "SceneObject", SceneObject)
-DEFINE_PROPERTY_FIELD(ObjectNode, _objectTransform, "ObjectTransform")
+DEFINE_VECTOR_REFERENCE_FIELD(ObjectNode, _displayObjects, "DisplayObjects", DisplayObject)
 SET_PROPERTY_FIELD_LABEL(ObjectNode, _sceneObject, "Object")
-SET_PROPERTY_FIELD_LABEL(ObjectNode, _objectTransform, "Object transformation")
 
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-ObjectNode::ObjectNode(SceneObject* object) : _objectTransform(AffineTransformation::Identity())
+ObjectNode::ObjectNode(SceneObject* object)
 {
 	INIT_PROPERTY_FIELD(ObjectNode::_sceneObject);
-	INIT_PROPERTY_FIELD(ObjectNode::_objectTransform);
+	INIT_PROPERTY_FIELD(ObjectNode::_displayObjects);
 	setSceneObject(object);
 }
 
@@ -48,21 +48,67 @@ ObjectNode::ObjectNode(SceneObject* object) : _objectTransform(AffineTransformat
 ******************************************************************************/
 const PipelineFlowState& ObjectNode::evalPipeline(TimePoint time)
 {
-	// Do not record any object creation operation during pipeline evaluation.
-	UndoSuspender noUndo;
-
-	// Check if the cache is filled.
-	if(_pipelineCache.result() == NULL || !_pipelineCache.stateValidity().contains(time)) {
+	// Check if the cache needs to be updated.
+	if(_pipelineCache.isEmpty() || _pipelineCache.stateValidity().contains(time) == false) {
 		if(sceneObject()) {
+
+			// Do not record any object creation operations while evaluating the pipeline.
+			UndoSuspender noUndo;
+
 			// Evaluate object and save result in local cache.
 			_pipelineCache = sceneObject()->evalObject(time);
+
+			// Update list of display objects.
+
+			// First unlink those display objects from this node which are no longer needed.
+			for(int i = displayObjects().size() - 1; i >= 0; i--) {
+				DisplayObject* displayObj = displayObjects()[i];
+				// Check if display object is being used by any of the scene objects.
+				bool isAlive = false;
+				for(const auto& entry : _pipelineCache.objects()) {
+					SceneObject* sceneObj = entry.first.get();
+					if(sceneObj->displayObject() == displayObj) {
+						isAlive = true;
+						break;
+					}
+				}
+				// Kill display object if no longer needed.
+				if(!isAlive)
+					_displayObjects.remove(i);
+			}
+
+			// Now add new display objects to this node.
+			for(const auto& entry : _pipelineCache.objects()) {
+				SceneObject* sceneObj = entry.first.get();
+				DisplayObject* displayObj = sceneObj->displayObject();
+				if(displayObj && displayObjects().contains(displayObj) == false)
+					_displayObjects.push_back(displayObj);
+			}
 		}
 		else {
 			// Clear cache if this node is empty.
-			_pipelineCache = PipelineFlowState();
+			_pipelineCache.clear();
+			// Discard display objects as well.
+			_displayObjects.clear();
 		}
 	}
 	return _pipelineCache;
+}
+
+/******************************************************************************
+* Renders the node's scene objects.
+******************************************************************************/
+void ObjectNode::render(TimePoint time, SceneRenderer* renderer)
+{
+	const PipelineFlowState& state = evalPipeline(time);
+	for(const auto& obj : state.objects()) {
+		SceneObject* sceneObj = obj.first.get();
+		DisplayObject* displayObj = sceneObj->displayObject();
+		if(displayObj) {
+			OVITO_ASSERT(displayObj->canDisplay(sceneObj));
+			displayObj->render(time, sceneObj, state, renderer, this);
+		}
+	}
 }
 
 /******************************************************************************
@@ -71,7 +117,6 @@ const PipelineFlowState& ObjectNode::evalPipeline(TimePoint time)
 bool ObjectNode::referenceEvent(RefTarget* source, ReferenceEvent* event)
 {
 	if(event->type() == ReferenceEvent::TargetChanged && source == sceneObject()) {
-		// Object has changed -> rebuild pipeline cache.
 		invalidatePipelineCache();
 	}
 	else if(event->type() == ReferenceEvent::TargetDeleted && source == sceneObject()) {
@@ -95,18 +140,21 @@ void ObjectNode::referenceReplaced(const PropertyFieldDescriptor& field, RefTarg
 
 /******************************************************************************
 * Returns the bounding box of the object node in local coordinates.
-* The ObjectTransform is already applied to the returned box.
 ******************************************************************************/
 Box3 ObjectNode::localBoundingBox(TimePoint time)
 {
+	Box3 bb;
 	const PipelineFlowState& state = evalPipeline(time);
-	if(state.result() == NULL) return Box3();
 
-	// Compute bounding box of scene object.
-	Box3 bb = state.result()->boundingBox(time, this);
+	// Compute bounding boxes of scene objects.
+	for(const auto& obj : state.objects()) {
+		SceneObject* sceneObj = obj.first.get();
+		DisplayObject* displayObj = sceneObj->displayObject();
+		if(displayObj)
+			bb.addBox(displayObj->boundingBox(time, sceneObj, this, state));
+	}
 
-	// Apply internal object transformation.
-	return bb.transformed(objectTransform());
+	return bb;
 }
 
 /******************************************************************************
@@ -155,26 +203,24 @@ FloatType ObjectNode::hitTest(TimeTicks time, Viewport* vp, const PickRegion& pi
 }
 #endif
 
-#if 0
 /******************************************************************************
 * Applies the given modifier to the object node.
 * The modifier is put on top of the modifier stack.
 ******************************************************************************/
 void ObjectNode::applyModifier(Modifier* modifier)
 {
-	CHECK_OBJECT_POINTER(sceneObject());
+	OVITO_CHECK_OBJECT_POINTER(sceneObject());
 	if(sceneObject() == NULL)
 		throw Exception("Cannot apply modifier to an empty object node.");
 
-	ModifiedObject* modObj = dynamic_object_cast<ModifiedObject>(sceneObject());
-	if(modObj == NULL) {
-		ModifiedObject::SmartPtr mo = new ModifiedObject();
-		mo->setInputObject(sceneObject());
-		setSceneObject(mo);
-		modObj = mo.get();
+	PipelineObject* pipelineObj = dynamic_object_cast<PipelineObject>(sceneObject());
+	if(pipelineObj == NULL) {
+		OORef<PipelineObject> p = new PipelineObject();
+		p->setInputObject(sceneObject());
+		setSceneObject(p);
+		pipelineObj = p.get();
 	}
-	modObj->insertModifier(modifier, modObj->modifierApplications().size());
+	pipelineObj->insertModifier(modifier, pipelineObj->modifierApplications().size());
 }
-#endif
 
 };

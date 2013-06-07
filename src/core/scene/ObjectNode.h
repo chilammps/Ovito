@@ -30,6 +30,7 @@
 #include <core/Core.h>
 #include "SceneNode.h"
 #include "objects/SceneObject.h"
+#include "display/DisplayObject.h"
 
 namespace Ovito {
 
@@ -66,29 +67,25 @@ public:
 	/// \undoable
 	void setSceneObject(const OORef<SceneObject>& obj) { setSceneObject(obj.get()); }
 
-	/// \brief Gets this node's local object transformation matrix.
-	/// \return The transformation matrix that transforms from object space to local node space.
-	///
-	/// This object transform is applied to the SceneObject after it has been transformed by the
-	/// node's transformation matrix.
-	const AffineTransformation& objectTransform() const { return _objectTransform; }
-
-	/// \brief Sets this node's local object transformation matrix.
-	/// \param tm The new object transformation matrix.
-	/// \undoable
-	void setObjectTransform(const AffineTransformation& tm) { _objectTransform = tm; }
-
 	/// \brief Evaluates the geometry pipeline of this object node at the given animation time.
 	/// \param time The animation time at which the geometry pipeline of the node should be evaluated.
 	/// \return The result of the evaluation.
 	const PipelineFlowState& evalPipeline(TimePoint time);
 
+	/// \brief Returns the list of display objects that are responsible for displaying
+	///        the node's scene object in the viewports.
+	const QVector<DisplayObject*>& displayObjects() const { return _displayObjects; }
+
 	/// \brief Returns the bounding box of the node's object in local coordinates.
 	/// \param time The time at which the bounding box should be computed.
 	/// \return An axis-aligned box in the node's local coordinate system that contains
 	///         the whole node geometry.
-	/// \note The objectTransform() is already applied to the returned box.
 	virtual Box3 localBoundingBox(TimePoint time) override;
+
+	/// \brief Renders the node's scene objects.
+	/// \param time Specifies the animation frame to render.
+	/// \param renderer The renderer that should be called by this method to display geometry.
+	void render(TimePoint time, SceneRenderer* renderer);
 
 #if 0
 	/// \brief Performs a hit test on this node.
@@ -109,13 +106,12 @@ public:
 	/// \brief Applies a modifier to the object node.
 	/// \param mod The modifier to be applied.
 	///
-	/// Same method as above but takes a smart pointer instead of a raw pointer.
+	/// Same method as above, but this one accepts a smart pointer.
 	/// \undoable
 	void applyModifier(const OORef<Modifier>& mod) {  applyModifier(mod.get()); }
 
 public:
 
-	Q_PROPERTY(AffineTransformation objectTransform READ objectTransform WRITE setObjectTransform)
 	Q_PROPERTY(SceneObject* sceneObject READ sceneObject WRITE setSceneObject)
 
 protected:
@@ -137,21 +133,22 @@ private:
 	/// The object of this node.
 	ReferenceField<SceneObject> _sceneObject;
 
-	/// This node's local object transformation.
-	PropertyField<AffineTransformation> _objectTransform;
-
-	/// The cached result from the geometry pipeline evaluation.
+	/// The cached result from the last geometry pipeline evaluation.
 	PipelineFlowState _pipelineCache;
+
+	/// The list of display objects that are responsible for displaying
+	/// the node's scene object in the viewports.
+	VectorReferenceField<DisplayObject> _displayObjects;
 
 	/// This method invalidates the geometry pipeline cache of the object node.
 	/// It will automatically be rebuilt on the next call to evalPipeline().
-	void invalidatePipelineCache() { _pipelineCache = PipelineFlowState(); }
+	void invalidatePipelineCache() { _pipelineCache.clear(); }
 
 	Q_OBJECT
 	OVITO_OBJECT
 
 	DECLARE_REFERENCE_FIELD(_sceneObject);
-	DECLARE_PROPERTY_FIELD(_objectTransform);
+	DECLARE_VECTOR_REFERENCE_FIELD(_displayObjects);
 };
 
 
