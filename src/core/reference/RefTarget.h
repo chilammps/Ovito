@@ -230,6 +230,34 @@ public:
 	/// return a title that depends on the internal state of the object for instance.
 	virtual QString objectTitle();
 
+	/// \brief Returns the number of sub-objects that should be displayed in the modifier stack.
+	/// \return The number of sub-objects.
+	///
+	/// The default implementation returns 0.
+	///
+	/// The RefTarget must generate a ReferenceEvent::SubobjectListChanged event whenever
+	/// its list of sub-object changes.
+	///
+	/// \sa editableSubObject()
+	virtual int editableSubObjectCount() { return 0; }
+
+	/// \brief Returns a sub-object that should be listed in the modifier stack.
+	/// \param index The index into the virtual list of sub-objects. Must be non-negative and smaller
+	///              than the value returned by editableSubObjectCount().
+	/// \return The requested sub-object.
+	///
+	/// The RefTarget must send a ReferenceEvent::SubobjectListChanged event whenever
+	/// its list of sub-object changes.
+	///
+	/// \sa editableSubObjectCount()
+	virtual RefTarget* editableSubObject(int index) { OVITO_ASSERT(false); return nullptr; }
+
+	/// \brief Returns whether this object, when returned as an editable sub-object by another object,
+	///        should be displayed in the modification stack.
+	///
+	/// The default implementation returns true.
+	virtual bool isSubObjectEditable() const { return true; }
+
 private:
 
 	/// \brief Returns a modifiable list of RefMaker objects that depend on this RefTarget.

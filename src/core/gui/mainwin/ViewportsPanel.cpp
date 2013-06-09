@@ -75,7 +75,7 @@ void ViewportsPanel::paintEvent(QPaintEvent* event)
 	Viewport* vp = ViewportManager::instance().activeViewport();
 	if(!vp) return;
 	QWidget* vpWidget = vp->widget();
-	if(vpWidget->isHidden()) return;
+	if(!vpWidget || vpWidget->isHidden()) return;
 
 	QPainter painter(this);
 

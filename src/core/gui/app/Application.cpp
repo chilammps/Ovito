@@ -22,11 +22,15 @@
 #include <core/Core.h>
 #include <core/gui/app/Application.h>
 #include <core/gui/mainwin/MainWindow.h>
+#include <core/gui/undo/UndoManager.h>
+#include <core/gui/actions/ActionManager.h>
 #include <core/dataset/DataSetManager.h>
 #include <core/animation/AnimManager.h>
+#include <core/animation/controller/Controller.h>
 #include <core/viewport/ViewportManager.h>
 #include <core/viewport/input/ViewportInputManager.h>
 #include <core/plugins/PluginManager.h>
+#include <core/utilities/units/UnitsManager.h>
 
 namespace Ovito {
 
@@ -79,22 +83,23 @@ bool Application::initialize()
 
 		// Set the application name provided by the active branding class.
 		setApplicationName(tr("Ovito"));
+		setApplicationDisplayName(tr("Ovito - The Open Visualization Tool"));
 		setOrganizationName(tr("Alexander Stukowski"));
 		setApplicationVersion(tr("Version %1.%2.%3")
 				.arg(OVITO_VERSION_MAJOR)
 				.arg(OVITO_VERSION_MINOR)
 				.arg(OVITO_VERSION_REVISION));
 
-		// Initialize PluginManager and load plugins.
-		PluginManager::instance();
-		// Initialize DataSetManager.
-		DataSetManager::instance();
-		// Initialize AnimManager.
-		AnimManager::instance();
-		// Initialize ViewportManager.
-		ViewportManager::instance();
-		// Initialize ViewportInputManager.
-		ViewportInputManager::instance();
+		// Initialize global manager objects in the right order.
+		UndoManager::initialize();
+		PluginManager::initialize();
+		ControllerManager::initialize();
+		DataSetManager::initialize();
+		ViewportManager::initialize();
+		ViewportInputManager::initialize();
+		AnimManager::initialize();
+		UnitsManager::initialize();
+		ActionManager::initialize();
 
 		// Create the main application window.
 		if(guiMode()) {
@@ -166,6 +171,16 @@ int Application::runApplication()
 ******************************************************************************/
 void Application::shutdown()
 {
+	// Shutdown global manager objects in reverse order they were initialized.
+	ActionManager::shutdown();
+	UnitsManager::shutdown();
+	AnimManager::shutdown();
+	ViewportInputManager::shutdown();
+	ViewportManager::shutdown();
+	DataSetManager::shutdown();
+	ControllerManager::shutdown();
+	PluginManager::shutdown();
+	UndoManager::shutdown();
 }
 
 /******************************************************************************

@@ -31,44 +31,6 @@ DEFINE_FLAGS_REFERENCE_FIELD(ViewportConfiguration, _activeViewport, "ActiveView
 DEFINE_FLAGS_REFERENCE_FIELD(ViewportConfiguration, _maximizedViewport, "MaximizedViewport", Viewport, PROPERTY_FIELD_NO_UNDO)
 
 /******************************************************************************
-* This gets a viewport configuration that should be
-* used as template for new scene files.
-******************************************************************************/
-OORef<ViewportConfiguration> ViewportConfiguration::defaultConfiguration()
-{
-	/// This holds the default configuration of viewports to use.
-	static OORef<ViewportConfiguration> defaultConfig;
-
-	// Make sure the default configuration is initialized.
-	if(!defaultConfig) {
-		defaultConfig = new ViewportConfiguration();
-
-		OORef<Viewport> topView = new Viewport();
-		topView->setViewType(Viewport::VIEW_TOP);
-		defaultConfig->addViewport(topView);
-
-		OORef<Viewport> frontView = new Viewport();
-		frontView->setViewType(Viewport::VIEW_FRONT);
-		defaultConfig->addViewport(frontView);
-
-		OORef<Viewport> leftView = new Viewport();
-		leftView->setViewType(Viewport::VIEW_LEFT);
-		defaultConfig->addViewport(leftView);
-
-		OORef<Viewport> perspectiveView = new Viewport();
-		perspectiveView->setViewType(Viewport::VIEW_PERSPECTIVE);
-		perspectiveView->setCameraPosition({90, -120, 100});
-		perspectiveView->setCameraDirection({-90, 120, -100});
-		defaultConfig->addViewport(perspectiveView);
-
-		defaultConfig->setActiveViewport(topView.get());
-		defaultConfig->setMaximizedViewport(NULL);
-	}
-
-	return defaultConfig;
-}
-
-/******************************************************************************
 * Is called when the value of a reference field of this RefMaker changes.
 ******************************************************************************/
 void ViewportConfiguration::referenceReplaced(const PropertyFieldDescriptor& field, RefTarget* oldTarget, RefTarget* newTarget)

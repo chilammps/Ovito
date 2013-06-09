@@ -76,11 +76,9 @@ public:
 	/// \return The internal selection set used to store the set of selected scene nodes.
 	SelectionSet* selection() const { return _selection; }
 
-#if 0
 	/// \brief Returns the general rendering settings for this scene.
 	/// \return The internal object that stores the rendering settings.
 	RenderSettings* renderSettings() const { return _renderSettings; }
-#endif
 
 	/// \brief Returns the path where this dataset is stored on disk.
 	/// \return The location where the dataset is stored or will be stored on disk.
@@ -111,10 +109,8 @@ private:
 	/// The current node selection set.
 	ReferenceField<SelectionSet> _selection;
 
-#if 0
 	/// The settings used when rendering the scene.
 	ReferenceField<RenderSettings> _renderSettings;
-#endif
 
 	/// The file where this DataSet is stored.
 	QString _filePath;
@@ -122,13 +118,11 @@ private:
 	Q_OBJECT
 	OVITO_OBJECT
 
-	DECLARE_REFERENCE_FIELD(_viewportConfig)
-	DECLARE_REFERENCE_FIELD(_animSettings)
-	DECLARE_REFERENCE_FIELD(_sceneRoot)
-	DECLARE_REFERENCE_FIELD(_selection)
-#if 0
-	DECLARE_REFERENCE_FIELD(_renderSettings)
-#endif
+	DECLARE_REFERENCE_FIELD(_viewportConfig);
+	DECLARE_REFERENCE_FIELD(_animSettings);
+	DECLARE_REFERENCE_FIELD(_sceneRoot);
+	DECLARE_REFERENCE_FIELD(_selection);
+	DECLARE_REFERENCE_FIELD(_renderSettings);
 };
 
 };

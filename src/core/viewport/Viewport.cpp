@@ -26,6 +26,8 @@
 #include <core/animation/AnimManager.h>
 #include <core/rendering/viewport/ViewportSceneRenderer.h>
 #include <core/dataset/DataSetManager.h>
+#include <core/scene/objects/AbstractCameraObject.h>
+#include "ViewportMenu.h"
 
 /// The default field of view in world units used for orthogonal view types when the scene is empty.
 #define DEFAULT_ORTHOGONAL_FIELD_OF_VIEW		200.0
@@ -57,7 +59,7 @@ Viewport::Viewport() :
 		_viewType(VIEW_NONE), _shadingMode(SHADING_WIREFRAME), _showGrid(false),
 		_fieldOfView(100),
 		_showRenderFrame(false), _orbitCenter(Point3::Origin()), _useOrbitCenter(false),
-		_mouseOverCaption(false), _glcontext(nullptr), _paintDevice(nullptr),
+		_glcontext(nullptr), _paintDevice(nullptr),
 		_cameraPosition(Point3::Origin()), _cameraDirection(0,0,-1)
 {
 	INIT_PROPERTY_FIELD(Viewport::_viewNode);
@@ -90,13 +92,11 @@ Viewport::~Viewport()
 ******************************************************************************/
 void Viewport::showViewportMenu(const QPoint& pos)
 {
-#if 0
-	/// The context menu of the viewport.
+	// Create the context menu for the viewport.
 	ViewportMenu contextMenu(this);
 
-	/// Show menu.
-	contextMenu.exec(mapToGlobal(pos));
-#endif
+	// Show menu.
+	contextMenu.show(pos);
 }
 
 /******************************************************************************
@@ -187,62 +187,64 @@ ViewProjectionParameters Viewport::projectionParameters(TimePoint time, FloatTyp
 
 	ViewProjectionParameters params;
 	params.aspectRatio = aspectRatio;
+	params.validityInterval.setInfinite();
 
 	// Get transformation from view scene node.
-#if 0
 	if(viewType() == VIEW_SCENENODE && viewNode()) {
 		PipelineFlowState state = viewNode()->evalPipeline(time);
-		AbstractCameraObject* camera = dynamic_object_cast<AbstractCameraObject>(state.result());
+		AbstractCameraObject* camera = state.findObject<AbstractCameraObject>();
 		if(camera) {
 			// Get camera transformation.
-			d.inverseViewMatrix = viewNode()->getWorldTransform(time, d.validityInterval);
-			d.viewMatrix = d.inverseViewMatrix.inverse();
+			params.inverseViewMatrix = viewNode()->getWorldTransform(time, params.validityInterval);
+			params.viewMatrix = params.inverseViewMatrix.inverse();
+
 			// Calculate znear and zfar clipping plane distances.
-			Box3 bb = sceneBoundingBox.transformed(d.viewMatrix);
-			d.zfar = -bb.minc.Z;
-			d.znear = max(-bb.maxc.Z, -bb.minc.Z * (FloatType)1e-5);
-			camera->getCameraDescription(time, d);
-		}
-	}
-	else
-#endif
-
-	params.viewMatrix = AffineTransformation::lookAlong(cameraPosition(), cameraDirection(), ViewportSettings::getSettings().upVector());
-	params.fieldOfView = fieldOfView();
-
-	// Transform scene bounding box to camera space.
-	Box3 bb = sceneBoundingBox.transformed(params.viewMatrix);
-
-	if(viewType() == VIEW_PERSPECTIVE) {
-		params.isPerspective = true;
-
-		if(bb.minc.z() < -FLOATTYPE_EPSILON) {
+			Box3 bb = sceneBoundingBox.transformed(params.viewMatrix);
 			params.zfar = -bb.minc.z();
 			params.znear = std::max(-bb.maxc.z(), -bb.minc.z() * 1e-6f);
+
+			// Get remaining parameters from camera object.
+			camera->projectionParameters(time, params);
 		}
-		else {
-			params.zfar = sceneBoundingBox.size().length();
-			params.znear = params.zfar * 1e-6f;
-		}
-		params.projectionMatrix = Matrix4::perspective(params.fieldOfView, 1.0 / params.aspectRatio, params.znear, params.zfar);
 	}
 	else {
-		params.isPerspective = false;
+		params.viewMatrix = AffineTransformation::lookAlong(cameraPosition(), cameraDirection(), ViewportSettings::getSettings().upVector());
+		params.fieldOfView = fieldOfView();
 
-		if(!bb.isEmpty()) {
-			params.znear = -bb.maxc.z();
-			params.zfar  = std::max(-bb.minc.z(), params.znear + 1.0f);
+		// Transform scene bounding box to camera space.
+		Box3 bb = sceneBoundingBox.transformed(params.viewMatrix);
+
+		if(viewType() == VIEW_PERSPECTIVE) {
+			params.isPerspective = true;
+
+			if(bb.minc.z() < -FLOATTYPE_EPSILON) {
+				params.zfar = -bb.minc.z();
+				params.znear = std::max(-bb.maxc.z(), -bb.minc.z() * 1e-6f);
+			}
+			else {
+				params.zfar = sceneBoundingBox.size().length();
+				params.znear = params.zfar * 1e-6f;
+			}
+			params.projectionMatrix = Matrix4::perspective(params.fieldOfView, 1.0 / params.aspectRatio, params.znear, params.zfar);
 		}
 		else {
-			params.znear = 1;
-			params.zfar = 100;
+			params.isPerspective = false;
+
+			if(!bb.isEmpty()) {
+				params.znear = -bb.maxc.z();
+				params.zfar  = std::max(-bb.minc.z(), params.znear + 1.0f);
+			}
+			else {
+				params.znear = 1;
+				params.zfar = 100;
+			}
+			params.projectionMatrix = Matrix4::ortho(-params.fieldOfView / params.aspectRatio, params.fieldOfView / params.aspectRatio,
+								-params.fieldOfView, params.fieldOfView,
+								params.znear, params.zfar);
 		}
-		params.projectionMatrix = Matrix4::ortho(-params.fieldOfView / params.aspectRatio, params.fieldOfView / params.aspectRatio,
-							-params.fieldOfView, params.fieldOfView,
-							params.znear, params.zfar);
+		params.inverseViewMatrix = params.viewMatrix.inverse();
+		params.inverseProjectionMatrix = params.projectionMatrix.inverse();
 	}
-	params.inverseViewMatrix = params.viewMatrix.inverse();
-	params.inverseProjectionMatrix = params.projectionMatrix.inverse();
 	return params;
 }
 
@@ -375,6 +377,8 @@ void Viewport::render(QOpenGLContext* context, QOpenGLPaintDevice* paintDevice)
 
 	QSize vpSize = size();
 	glViewport(0, 0, vpSize.width(), vpSize.height());
+	Color backgroundColor = viewportColor(ViewportSettings::COLOR_VIEWPORT_BKG);
+	glClearColor(backgroundColor.r(), backgroundColor.g(), backgroundColor.b(), 1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 	// Setup projection.
@@ -452,7 +456,7 @@ void Viewport::render(QOpenGLContext* context, QOpenGLPaintDevice* paintDevice)
 ******************************************************************************/
 void Viewport::renderViewportTitle()
 {
-	Color captionColor = viewportColor(_mouseOverCaption ? ViewportSettings::COLOR_ACTIVE_VIEWPORT_CAPTION : ViewportSettings::COLOR_VIEWPORT_CAPTION);
+	Color captionColor = viewportColor(ViewportSettings::COLOR_VIEWPORT_CAPTION);
 	QFontMetricsF metrics(ViewportManager::instance().viewportFont());
 	QPointF pos(2, metrics.ascent() + 2);
 	_contextMenuArea = QRect(0, 0, std::max(metrics.width(viewportTitle()), 30.0) + 2, metrics.height() + 2);

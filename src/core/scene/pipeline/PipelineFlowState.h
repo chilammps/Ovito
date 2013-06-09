@@ -63,7 +63,18 @@ public:
 	void addObject(SceneObject* obj);
 
 	/// \brief Returns the list of scene objects stored in this flow state.
-	const std::map< OORef<SceneObject>, unsigned int >& objects() const { return _objects; }
+	const std::map<OORef<SceneObject>, unsigned int>& objects() const { return _objects; }
+
+	/// \brief Finds a scene object of the given type in the list of
+	///        results stored in this flow state.
+	template<class ObjectType>
+	ObjectType* findObject() const {
+		for(const auto& entry : _objects) {
+			ObjectType* obj = dynamic_object_cast<ObjectType>(entry.first.get());
+			if(obj) return obj;
+		}
+		return nullptr;
+	}
 
 	/// \brief Gets the validity interval for this pipeline state.
 	/// \return The time interval during which the returned object is valid.
@@ -92,7 +103,7 @@ private:
 	/// and are modified by modifiers. Each object is associated
 	/// with a revision number, which is used to detect changes
 	/// between different flow states.
-	std::map< OORef<SceneObject>, unsigned int > _objects;
+	std::map<OORef<SceneObject>, unsigned int> _objects;
 
 	/// Contains the validity interval for this pipeline flow state.
 	TimeInterval _stateValidity;

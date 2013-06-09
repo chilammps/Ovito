@@ -24,8 +24,8 @@
 #include <core/reference/RefTarget.h>
 #include <core/gui/undo/UndoManager.h>
 #include <core/plugins/Plugin.h>
-#include <core/io/ObjectSaveStream.h>
-#include <core/io/ObjectLoadStream.h>
+#include <core/utilities/io/ObjectSaveStream.h>
+#include <core/utilities/io/ObjectLoadStream.h>
 
 namespace Ovito {
 

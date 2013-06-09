@@ -117,8 +117,10 @@ public:
 	/// \note This method is for internal use only.
 	static OvitoObjectType* deserializeRTTI(ObjectLoadStream& stream);
 
-	/// Internal helper class that is used to specify the editor class for a RefTarget derived class.
-	/// Do not use this class directly, but use the SET_OVITO_OBJECT_EDITOR macro instead.
+public:
+
+	/// Internal helper class that is used to assign an editor class to a RefTarget derived class.
+	/// Do not use this directly; use the SET_OVITO_OBJECT_EDITOR macro instead.
 	struct EditorClassSetter {
 		EditorClassSetter(OvitoObjectType& type, const OvitoObjectType* editorClass) {
 			OVITO_ASSERT(editorClass != nullptr);
@@ -164,7 +166,7 @@ protected:
 
 /// This macro is used to assign a PropertiesEditor-derived class to a RefTarget-derived class.
 #define SET_OVITO_OBJECT_EDITOR(RefTargetClass, PropertiesEditorClass)								\
-	static Ovito::OvitoObjectTye::EditorClassSetter __editorSetter##RefTargetClass(RefTargetClass::OOType, &PropertiesEditorClass::OOType);
+	static Ovito::OvitoObjectType::EditorClassSetter __editorSetter##RefTargetClass(const_cast<Ovito::NativeOvitoObjectType&>(RefTargetClass::OOType), &PropertiesEditorClass::OOType);
 
 };
 

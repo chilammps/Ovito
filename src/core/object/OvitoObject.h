@@ -244,7 +244,7 @@ inline OORef<T> static_object_cast(const OORef<U>& obj) {
 
 };	// End of namespace Ovito
 
-#include <core/io/ObjectSaveStream.h>
-#include <core/io/ObjectLoadStream.h>
+#include <core/utilities/io/ObjectSaveStream.h>
+#include <core/utilities/io/ObjectLoadStream.h>
 
 #endif // __OVITO_OBJECT_H

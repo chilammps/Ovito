@@ -27,7 +27,7 @@
 namespace Ovito {
 
 /// The singleton instance of this class.
-QScopedPointer<PluginManager> PluginManager::_instance;
+PluginManager* PluginManager::_instance = nullptr;
 
 /******************************************************************************
 * Initializes the plugin manager.

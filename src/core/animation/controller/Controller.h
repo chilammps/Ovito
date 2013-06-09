@@ -434,8 +434,8 @@ public:
 	/// \brief Returns the one and only instance of this class.
 	/// \return The predefined instance of the ControllerManager singleton class.
 	inline static ControllerManager& instance() {
-		if(!_instance) _instance.reset(new ControllerManager());
-		return *_instance.data();
+		OVITO_ASSERT_MSG(_instance != nullptr, "ControllerManager::instance", "Singleton object is not initialized yet.");
+		return *_instance;
 	}
 
 	/// \brief Creates a new instance of the default implementation for the given base Controller type.
@@ -462,8 +462,16 @@ private:
 	/// This is a singleton class; no public instances are allowed.
 	ControllerManager();
 
+	/// Create the singleton instance of this class.
+	static void initialize() { _instance = new ControllerManager(); }
+
+	/// Deletes the singleton instance of this class.
+	static void shutdown() { delete _instance; _instance = nullptr; }
+
 	/// The singleton instance of this class.
-	static QScopedPointer<ControllerManager> _instance;
+	static ControllerManager* _instance;
+
+	friend class Application;
 };
 
 };

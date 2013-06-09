@@ -116,6 +116,13 @@ void ViewportWindow::mouseDoubleClickEvent(QMouseEvent* event)
 ******************************************************************************/
 void ViewportWindow::mousePressEvent(QMouseEvent* event)
 {
+	// Intercept mouse clicks on the viewport caption.
+	if(_viewport->_contextMenuArea.contains(event->pos())) {
+		ViewportManager::instance().setActiveViewport(_viewport);
+		_viewport->showViewportMenu(event->pos());
+		return;
+	}
+
 	ViewportInputHandler* handler = ViewportInputManager::instance().currentHandler();
 	if(handler)
 		handler->mousePressEvent(_viewport, event);
@@ -184,6 +191,7 @@ void ViewportWindow::renderNow()
 		if(shareContext && _context->shareContext() != shareContext)
 			qWarning() << "Viewport cannot share OpenGL context with other viewports.";
 
+#if 0
 		if(!shareContext) {
 			QSurfaceFormat format = _context->format();
 			qDebug() << "OpenGL depth buffer size:" << format.depthBufferSize();
@@ -193,6 +201,7 @@ void ViewportWindow::renderNow()
 			qDebug() << "OpenGL samples:" << format.samples();
 			qDebug() << "OpenGL swap behavior:" << format.swapBehavior();
 		}
+#endif
 	}
 
 	if(!_context->makeCurrent(this)) {

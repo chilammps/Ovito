@@ -26,7 +26,7 @@
 namespace Ovito {
 
 /// The singleton instance of the class.
-QScopedPointer<UndoManager> UndoManager::_instance;
+UndoManager* UndoManager::_instance = nullptr;
 
 /******************************************************************************
 * Initializes the undo manager.
@@ -44,7 +44,7 @@ void UndoManager::push(UndoableOperation* operation)
 {
 	OVITO_CHECK_POINTER(operation);
 	OVITO_ASSERT_MSG(isUndoingOrRedoing() == false, "UndoManager::push()", "Cannot record an operation while undoing or redoing another operation.");
-	OVITO_ASSERT_MSG(isRecording() == false, "UndoManager::push()", "Not in recording state.");
+	OVITO_ASSERT_MSG(isRecording(), "UndoManager::push()", "Not in recording state.");
 	if(_suspendCount > 0 || _compoundStack.empty()) {
 		delete operation;
 		return;
@@ -174,6 +174,7 @@ void UndoManager::setDirty()
 ******************************************************************************/
 void UndoManager::undo()
 {
+	OVITO_ASSERT(isRecording() == false);
 	OVITO_ASSERT_MSG(_compoundStack.empty(), "UndoManager::undo()", "Cannot undo last operation while a compound operation is open.");
 	if(canUndo() == false) return;
 
@@ -190,7 +191,6 @@ void UndoManager::undo()
 	}
 	_isUndoing = false;
 	_index--;
-	OVITO_ASSERT(index() >= 0);
 	indexChanged(index());
 	cleanChanged(isClean());
 	canUndoChanged(canUndo());
@@ -204,6 +204,7 @@ void UndoManager::undo()
 ******************************************************************************/
 void UndoManager::redo()
 {
+	OVITO_ASSERT(isRecording() == false);
 	OVITO_ASSERT_MSG(_compoundStack.empty(), "UndoManager::redo()", "Cannot redo operation while a compound operation is open.");
 	if(canRedo() == false) return;
 

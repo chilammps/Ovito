@@ -28,10 +28,14 @@
 #include <core/scene/pipeline/Modifier.h>
 #include <core/scene/display/DisplayObject.h>
 #include "ViewportSceneRenderer.h"
+#include "ViewportSceneRendererEditor.h"
 
 namespace Ovito {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(ViewportSceneRenderer, SceneRenderer);
+SET_OVITO_OBJECT_EDITOR(ViewportSceneRenderer, ViewportSceneRendererEditor)
+DEFINE_PROPERTY_FIELD(ViewportSceneRenderer, _antialiasingLevel, "AntialiasingLevel")
+SET_PROPERTY_FIELD_LABEL(ViewportSceneRenderer, _antialiasingLevel, "Antialiasing level")
 
 /******************************************************************************
 * Renders the current animation frame.

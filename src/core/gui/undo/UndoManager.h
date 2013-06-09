@@ -210,8 +210,8 @@ public:
 	/// \brief Returns the one and only instance of this class.
 	/// \return The predefined instance of the ActionManager singleton class.
 	inline static UndoManager& instance() {
-		if(!_instance) _instance.reset(new UndoManager());
-		return *_instance.data();
+		OVITO_ASSERT_MSG(_instance != nullptr, "UndoManager::instance", "Singleton object is not initialized yet.");
+		return *_instance;
 	}
 
 	/// \brief Begins composition of a macro command with the given text description.
@@ -415,8 +415,16 @@ private:
 	/// This is a singleton class; no public instances are allowed.
 	UndoManager();
 
+	/// Create the singleton instance of this class.
+	static void initialize() { _instance = new UndoManager(); }
+
+	/// Deletes the singleton instance of this class.
+	static void shutdown() { delete _instance; _instance = nullptr; }
+
 	/// The singleton instance of this class.
-	static QScopedPointer<UndoManager> _instance;
+	static UndoManager* _instance;
+
+	friend class Application;
 };
 
 /**

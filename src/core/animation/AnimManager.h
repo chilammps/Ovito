@@ -45,8 +45,8 @@ public:
 	/// \brief Returns the one and only instance of this class.
 	/// \return The predefined instance of the AnimManager singleton class.
 	inline static AnimManager& instance() {
-		if(!_instance) _instance.reset(new AnimManager());
-		return *_instance.data();
+		OVITO_ASSERT_MSG(_instance != nullptr, "AnimManager::instance", "Singleton object is not initialized yet.");
+		return *_instance;
 	}
 
 	/// \brief Returns whether animation recording is active and animation keys should be automatically generated.
@@ -239,8 +239,16 @@ private:
 	/// This is a singleton class; no public instances are allowed.
 	AnimManager();
 
+	/// Create the singleton instance of this class.
+	static void initialize() { _instance = new AnimManager(); }
+
+	/// Deletes the singleton instance of this class.
+	static void shutdown() { delete _instance; _instance = nullptr; }
+
 	/// The singleton instance of this class.
-	static QScopedPointer<AnimManager> _instance;
+	static AnimManager* _instance;
+
+	friend class Application;
 };
 
 /**

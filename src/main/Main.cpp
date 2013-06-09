@@ -24,6 +24,8 @@
 
 int main(int argc, char** argv)
 {
+	Q_INIT_RESOURCE(core);
+
 	// Initialize the application.
 	Ovito::Application app(argc, argv);
 	if(!app.initialize())

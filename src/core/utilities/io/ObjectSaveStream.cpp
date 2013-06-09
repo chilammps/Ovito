@@ -20,7 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include <core/io/ObjectSaveStream.h>
+#include <core/utilities/io/ObjectSaveStream.h>
 #include <core/object/OvitoObject.h>
 #include <core/reference/PropertyFieldDescriptor.h>
 

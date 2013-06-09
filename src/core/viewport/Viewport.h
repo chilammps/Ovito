@@ -70,6 +70,9 @@ struct ViewProjectionParameters
 
 	/// The screen space to view space transformation matrix.
 	Matrix4 inverseProjectionMatrix;
+
+	/// Specifies the time interval during which the stored parameters stay constant.
+	TimeInterval validityInterval;
 };
 
 /**
@@ -377,9 +380,6 @@ private:
 	/// the context menu can be activated by the user.
 	QRect _contextMenuArea;
 
-	/// Flag that indicates that the mouse cursor is currently hovering over the viewport's caption.
-	bool _mouseOverCaption;
-
 	/// The current OpenGL context. This is only valid during the rendering phase.
 	QOpenGLContext* _glcontext;
 
@@ -408,6 +408,7 @@ private:
 	DECLARE_PROPERTY_FIELD(_viewportTitle);
 
 	friend class ViewportWindow;
+	friend class ViewportMenu;
 	friend class ViewportSceneRenderer;
 };
 

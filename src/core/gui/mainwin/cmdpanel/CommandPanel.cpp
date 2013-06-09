@@ -21,7 +21,9 @@
 
 #include <core/Core.h>
 #include "CommandPanel.h"
-//#include "render/RenderCommandPage.h"
+#include "RenderCommandPage.h"
+#include "ModifyCommandPage.h"
+#include "UtilityCommandPage.h"
 
 namespace Ovito {
 
@@ -37,14 +39,14 @@ CommandPanel::CommandPanel(QWidget* parent) : QWidget(parent), lastPage(0)
 	tabWidget = new QTabWidget(this);
 	layout->addWidget(tabWidget, 1);
 
-	// Create the pages.
+	// Create the tabs.
 	tabWidget->setDocumentMode(true);
-	//tabWidget->addTab(_modifyPage = new ModifyCommandPage(), QIcon(":/core/command_panel/tab_modify.png"), QString());
-	//tabWidget->addTab(_renderPage = new RenderCommandPage(), QIcon(":/core/command_panel/tab_render.png"), QString());
-	//tabWidget->addTab(_utilityPage = new UtilityCommandPage(), QIcon(":/core/command_panel/tab_utilities.png"), QString());
-	//tabWidget->setTabToolTip(0, tr("Modify"));
-	//tabWidget->setTabToolTip(1, tr("Render"));
-	//tabWidget->setTabToolTip(2, tr("Utilities"));
+	tabWidget->addTab(_modifyPage = new ModifyCommandPage(), QIcon(":/core/mainwin/command_panel/tab_modify.png"), QString());
+	tabWidget->addTab(_renderPage = new RenderCommandPage(), QIcon(":/core/mainwin/command_panel/tab_render.png"), QString());
+	tabWidget->addTab(_utilityPage = new UtilityCommandPage(), QIcon(":/core/mainwin/command_panel/tab_utilities.png"), QString());
+	tabWidget->setTabToolTip(0, tr("Modify"));
+	tabWidget->setTabToolTip(1, tr("Render"));
+	tabWidget->setTabToolTip(2, tr("Utilities"));
 	connect(tabWidget, SIGNAL(currentChanged(int)), this, SLOT(onTabSwitched()));
 
 	setLayout(layout);
@@ -73,10 +75,8 @@ void CommandPanel::reset()
 ******************************************************************************/
 void CommandPanel::setCurrentPage(Page page)
 {
-#if 0
 	OVITO_ASSERT(page < tabWidget->count());
 	tabWidget->setCurrentIndex((int)page);
-#endif
 }
 
 /******************************************************************************
@@ -107,21 +107,4 @@ void CommandPanel::onSelectionChangeComplete(SelectionSet* newSelection)
 	if(page != NULL)
 		page->onSelectionChangeComplete(newSelection);
 }
-
-#if 0
-
-/******************************************************************************
-* Returns the object that is currently being edited in the command panel.
-* Return NULL if no object is selected.
-******************************************************************************/
-RefTarget* CommandPanel::editObject() const
-{
-	ModifyCommandPage* modifyPage = qobject_cast<ModifyCommandPage*>(tabWidget->currentWidget());
-	if(modifyPage)
-		return modifyPage->editObject();
-	return NULL;
-}
-
-#endif
-
 };

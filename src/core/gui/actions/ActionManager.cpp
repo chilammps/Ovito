@@ -30,7 +30,7 @@
 namespace Ovito {
 
 /// The singleton instance of the class.
-QScopedPointer<ActionManager> ActionManager::_instance;
+ActionManager* ActionManager::_instance = nullptr;
 
 /******************************************************************************
 * Initializes the ActionManager.
@@ -50,6 +50,8 @@ ActionManager::ActionManager()
 	createCommandAction(ACTION_HELP_SHOW_ONLINE_HELP, tr("Manual"), NULL, tr("Open the online manual."));
 
 	createCommandAction(ACTION_SETTINGS_DIALOG, tr("&Settings..."));
+
+	createCommandAction(ACTION_RENDER_ACTIVE_VIEWPORT, tr("Render Active Viewport"), ":/core/actions/rendering/render_active_viewport.png");
 
 	createCommandAction(ACTION_VIEWPORT_MAXIMIZE, tr("Maximize Active Viewport"), ":/core/actions/viewport/maximize_viewport.png", tr("Enlarge/reduce the active viewport."));
 	createCommandAction(ACTION_VIEWPORT_ZOOM_SCENE_EXTENTS, tr("Zoom Scene Extents"), ":/core/actions/viewport/zoom_scene_extents.png", tr("Zoom to show all."));

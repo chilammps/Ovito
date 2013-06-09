@@ -39,7 +39,7 @@ IMPLEMENT_OVITO_OBJECT(ScalingController, Controller)
 ///////////////////////////// SINGLETON CLASS METHODS ///////////////////////////////
 
 /// The singleton instance of the class.
-QScopedPointer<ControllerManager> ControllerManager::_instance;
+ControllerManager* ControllerManager::_instance = nullptr;
 
 /******************************************************************************
 * Initializes the controller manager.

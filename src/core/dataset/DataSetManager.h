@@ -28,6 +28,7 @@
 #define __OVITO_DATASET_MANAGER_H
 
 #include <core/Core.h>
+#include <core/viewport/ViewportConfiguration.h>
 #include "DataSet.h"
 #include "CurrentSelectionProxy.h"
 
@@ -45,8 +46,8 @@ public:
 	/// \brief Returns the one and only instance of this class.
 	/// \return The predefined instance of the DataSetManager singleton class.
 	inline static DataSetManager& instance() {
-		if(!_instance) _instance.reset(new DataSetManager());
-		return *_instance.data();
+		OVITO_ASSERT_MSG(_instance != nullptr, "DataSetManager::instance", "Singleton object is not initialized yet.");
+		return *_instance;
 	}
 
 	/// \brief Returns the current dataset being edited by the user.
@@ -54,8 +55,8 @@ public:
 	DataSet* currentSet() const { return _currentSet; }
 	
 	/// \brief Sets the current dataset being edited by the user.
-	/// \param set The new dataset that should be dhown in the main window.
-	/// \note This operation cannot be undone. Make sure that the UndoManager is not recordings operations.
+	/// \param set The new dataset that should be shown in the main window.
+	/// \note This operation cannot be undone. Make sure that the UndoManager is not recording operations.
 	void setCurrentSet(const OORef<DataSet>& set);
 
 	/// \brief Returns the current selection set. 
@@ -73,12 +74,12 @@ public Q_SLOTS:
 	/// \brief Save the current scene. 
 	/// \return \c true, if the scene has been saved; \c false if the operation has been canceled by the user.
 	/// 
-	/// If the current scene has not been assigned a file path than thhis method
+	/// If the current scene has not been assigned a file path than this method
 	/// shows a file dialog to let the user select a destination path for the scene file.
 	/// \sa fileSaveAs()
 	bool fileSave();
 
-	/// \brief Lets the user select a enw destination filename for the current scene and then saves the scene. 
+	/// \brief Lets the user select a new destination filename for the current scene and then saves the scene.
 	/// \param filename If \a filename is an empty string that this method asks the user for a filename. Otherwise
 	///                 The provided filename will be used.
 	/// \return \c true, if the scene has been saved; \c false if the operation has been canceled by the user.
@@ -97,6 +98,14 @@ public Q_SLOTS:
 	/// \return \c true if the file has been successfully loaded; \c false if an error has occurred
 	///         or the operation has been canceled by the user.
 	bool fileLoad(const QString& filename);
+
+	/// \brief Returns the default ViewportConfiguration used for new scene files.
+	/// \return Pointer to the default viewport configuration stored by the DataSetManager.
+	/// \note You may change the returned ViewportConfiguration object to modify the
+	///       default configuration used for new scene files.
+	/// \note Instead of using the returned object in a scene file you should make a copy of it first
+	///       and leave the original object untouched.
+	OORef<ViewportConfiguration> defaultViewportConfiguration();
 
 Q_SIGNALS:
 
@@ -129,6 +138,9 @@ private:
 	/// This proxy object is used to make the current node selection always available.
 	ReferenceField<CurrentSelectionProxy> _selectionSetProxy;
 	
+	/// This holds the default configuration of viewports to use.
+	OORef<ViewportConfiguration> _defaultViewportConfig;
+
 	/// Emits a selectionChanged signal.
 	void emitSelectionChanged(SelectionSet* newSelection) { selectionChanged(newSelection); }
 
@@ -140,8 +152,8 @@ private:
 	Q_OBJECT
 	OVITO_OBJECT
 
-	DECLARE_REFERENCE_FIELD(_currentSet)
-	DECLARE_REFERENCE_FIELD(_selectionSetProxy)
+	DECLARE_REFERENCE_FIELD(_currentSet);
+	DECLARE_REFERENCE_FIELD(_selectionSetProxy);
 
 	friend class CurrentSelectionProxy;
 
@@ -151,8 +163,16 @@ private:
 	/// This is a singleton class; no public instances are allowed.
 	DataSetManager();
 
+	/// Create the singleton instance of this class.
+	static void initialize() { _instance = new DataSetManager(); }
+
+	/// Deletes the singleton instance of this class.
+	static void shutdown() { delete _instance; _instance = nullptr; }
+
 	/// The singleton instance of this class.
-	static QScopedPointer<DataSetManager> _instance;
+	static DataSetManager* _instance;
+
+	friend class Application;
 };
 
 };

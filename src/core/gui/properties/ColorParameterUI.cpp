@@ -43,7 +43,7 @@ ColorParameterUI::ColorParameterUI(QObject* parentEditor, const PropertyFieldDes
 
 	if(isReferenceFieldUI()) {
 		// Update the displayed color when the animation time has changed.
-		connect(&AnimManager::instance(), SIGNAL(timeChanged(TimeTicks)), this, SLOT(updateUI()));
+		connect(&AnimManager::instance(), SIGNAL(timeChanged(TimePoint)), this, SLOT(updateUI()));
 	}
 }
 

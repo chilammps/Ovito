@@ -357,8 +357,8 @@ public:
 	/// \brief Returns the one and only instance of this class.
 	/// \return The predefined instance of the UnitsManager singleton class.
 	inline static UnitsManager& instance() {
-		if(!_instance) _instance.reset(new UnitsManager());
-		return *_instance.data();
+		OVITO_ASSERT_MSG(_instance != nullptr, "UnitsManager::instance", "Singleton object is not initialized yet.");
+		return *_instance;
 	}
 
 	/// \brief Returns the instance of a parameter unit service.
@@ -415,8 +415,16 @@ private:
 	/// This is a singleton class. No public instances allowed.
 	UnitsManager();
 
+	/// Create the singleton instance of this class.
+	static void initialize() { _instance = new UnitsManager(); }
+
+	/// Deletes the singleton instance of this class.
+	static void shutdown() { delete _instance; _instance = nullptr; }
+
 	/// The singleton instance of this class.
-	static QScopedPointer<UnitsManager> _instance;
+	static UnitsManager* _instance;
+
+	friend class Application;
 };
 
 

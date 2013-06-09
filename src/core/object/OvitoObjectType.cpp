@@ -26,8 +26,8 @@
 
 #include <core/plugins/Plugin.h>
 #include <core/plugins/PluginManager.h>
-#include <core/io/ObjectSaveStream.h>
-#include <core/io/ObjectLoadStream.h>
+#include <core/utilities/io/ObjectSaveStream.h>
+#include <core/utilities/io/ObjectLoadStream.h>
 #include <core/reference/PropertyFieldDescriptor.h>
 
 namespace Ovito {

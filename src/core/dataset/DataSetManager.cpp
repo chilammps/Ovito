@@ -26,8 +26,8 @@
 #include <core/gui/app/Application.h>
 #include <core/gui/mainwin/MainWindow.h>
 #include <core/animation/AnimManager.h>
-#include <core/io/ObjectSaveStream.h>
-#include <core/io/ObjectLoadStream.h>
+#include <core/utilities/io/ObjectSaveStream.h>
+#include <core/utilities/io/ObjectLoadStream.h>
 
 namespace Ovito {
 
@@ -36,7 +36,7 @@ DEFINE_FLAGS_REFERENCE_FIELD(DataSetManager, _currentSet, "CurrentSet", DataSet,
 DEFINE_FLAGS_REFERENCE_FIELD(DataSetManager, _selectionSetProxy, "SelectionSetProxy", CurrentSelectionProxy, PROPERTY_FIELD_NO_UNDO)
 
 /// The singleton instance of the class.
-QScopedPointer<DataSetManager> DataSetManager::_instance;
+DataSetManager* DataSetManager::_instance = nullptr;
 
 /******************************************************************************
 * Initializes the dataset manager.
@@ -73,6 +73,40 @@ void DataSetManager::setCurrentSet(const OORef<DataSet>& set)
 
 	// Update viewports to show the new scene.
 	ViewportManager::instance().updateViewports();
+}
+
+/******************************************************************************
+* Returns a viewport configuration that should be used as template for new scene files.
+******************************************************************************/
+OORef<ViewportConfiguration> DataSetManager::defaultViewportConfiguration()
+{
+	// Make sure the default configuration is initialized.
+	if(!_defaultViewportConfig) {
+		_defaultViewportConfig = new ViewportConfiguration();
+
+		OORef<Viewport> topView = new Viewport();
+		topView->setViewType(Viewport::VIEW_TOP);
+		_defaultViewportConfig->addViewport(topView);
+
+		OORef<Viewport> frontView = new Viewport();
+		frontView->setViewType(Viewport::VIEW_FRONT);
+		_defaultViewportConfig->addViewport(frontView);
+
+		OORef<Viewport> leftView = new Viewport();
+		leftView->setViewType(Viewport::VIEW_LEFT);
+		_defaultViewportConfig->addViewport(leftView);
+
+		OORef<Viewport> perspectiveView = new Viewport();
+		perspectiveView->setViewType(Viewport::VIEW_PERSPECTIVE);
+		perspectiveView->setCameraPosition({90, -120, 100});
+		perspectiveView->setCameraDirection({-90, 120, -100});
+		_defaultViewportConfig->addViewport(perspectiveView);
+
+		_defaultViewportConfig->setActiveViewport(topView.get());
+		_defaultViewportConfig->setMaximizedViewport(NULL);
+	}
+
+	return _defaultViewportConfig;
 }
 
 /******************************************************************************

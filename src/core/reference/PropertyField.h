@@ -176,6 +176,7 @@ private:
 class SingleReferenceFieldBase : public PropertyFieldBase
 {
 public:
+
 	/// Default constructor that initializes the internal pointer to NULL.
 	/// One has to call init() once to fully setup this reference field.
 	SingleReferenceFieldBase() : PropertyFieldBase() {}
@@ -234,6 +235,7 @@ template<typename RefTargetType>
 class ReferenceField : public SingleReferenceFieldBase
 {
 public:
+
 	/// Constructor that initializes the internal pointer to NULL.
 	ReferenceField() : SingleReferenceFieldBase() {}
 

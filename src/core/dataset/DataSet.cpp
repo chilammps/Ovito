@@ -29,9 +29,7 @@
 #include <core/animation/AnimationSettings.h>
 #include <core/scene/SceneRoot.h>
 #include <core/scene/SelectionSet.h>
-#if 0
 #include <core/rendering/RenderSettings.h>
-#endif
 
 #include <viz/data/SimulationCell.h>
 #include <core/scene/ObjectNode.h>
@@ -43,16 +41,12 @@ DEFINE_FLAGS_REFERENCE_FIELD(DataSet, _viewportConfig, "ViewportConfiguration", 
 DEFINE_FLAGS_REFERENCE_FIELD(DataSet, _animSettings, "AnimationSettings", AnimationSettings, PROPERTY_FIELD_NO_CHANGE_MESSAGE|PROPERTY_FIELD_ALWAYS_DEEP_COPY)
 DEFINE_FLAGS_REFERENCE_FIELD(DataSet, _sceneRoot, "SceneRoot", SceneRoot, PROPERTY_FIELD_NO_CHANGE_MESSAGE|PROPERTY_FIELD_ALWAYS_DEEP_COPY)
 DEFINE_FLAGS_REFERENCE_FIELD(DataSet, _selection, "CurrentSelection", SelectionSet, PROPERTY_FIELD_NO_CHANGE_MESSAGE|PROPERTY_FIELD_ALWAYS_DEEP_COPY)
-#if 0
 DEFINE_FLAGS_REFERENCE_FIELD(DataSet, _renderSettings, "RenderSettings", RenderSettings, PROPERTY_FIELD_NO_CHANGE_MESSAGE|PROPERTY_FIELD_ALWAYS_DEEP_COPY)
-#endif
 SET_PROPERTY_FIELD_LABEL(DataSet, _viewportConfig, "Viewport Configuration")
 SET_PROPERTY_FIELD_LABEL(DataSet, _animSettings, "Animation Settings")
 SET_PROPERTY_FIELD_LABEL(DataSet, _sceneRoot, "Scene")
 SET_PROPERTY_FIELD_LABEL(DataSet, _selection, "Selection")
-#if 0
 SET_PROPERTY_FIELD_LABEL(DataSet, _renderSettings, "Render Settings")
-#endif
 
 /******************************************************************************
 * Constructor.
@@ -63,26 +57,21 @@ DataSet::DataSet()
 	INIT_PROPERTY_FIELD(DataSet::_animSettings);
 	INIT_PROPERTY_FIELD(DataSet::_sceneRoot);
 	INIT_PROPERTY_FIELD(DataSet::_selection);
-#if 0
 	INIT_PROPERTY_FIELD(DataSet::_renderSettings);
-#endif
 
 	// Create a new viewport configuration by copying the default template.
-	_viewportConfig = CloneHelper().cloneObject(ViewportConfiguration::defaultConfiguration(), true);
+	_viewportConfig = CloneHelper().cloneObject(DataSetManager::instance().defaultViewportConfiguration(), true);
 
 	_animSettings = new AnimationSettings();
 	_sceneRoot = new SceneRoot();
 	_selection = new SelectionSet();
-#if 0
 	_renderSettings = new RenderSettings();
-#endif
 
 	ObjectNode* node = new ObjectNode();
 	_sceneRoot->addChild(node);
 	Viz::SimulationCell* simCell = new Viz::SimulationCell(Box3(Point3::Origin(), 30));
 	node->setSceneObject(simCell);
 }
-
 
 /******************************************************************************
 * Is called when a RefTarget referenced by this object has generated an event.

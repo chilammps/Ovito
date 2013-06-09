@@ -52,8 +52,8 @@ public:
 	/// \brief Returns the one and only instance of this class.
 	/// \return The predefined instance of the ViewportInputManager singleton class.
 	inline static ViewportInputManager& instance() {
-		if(!_instance) _instance.reset(new ViewportInputManager());
-		return *_instance.data();
+		OVITO_ASSERT_MSG(_instance != nullptr, "ViewportInputManager::instance", "Singleton object is not initialized yet.");
+		return *_instance;
 	}
 
 	/// \brief Returns the currently active ViewportInputHandler that handles the mouse events in viewports.
@@ -100,8 +100,16 @@ private:
 	/// This is a singleton class; no public instances are allowed.
 	ViewportInputManager();
 
+	/// Create the singleton instance of this class.
+	static void initialize() { _instance = new ViewportInputManager(); }
+
+	/// Deletes the singleton instance of this class.
+	static void shutdown() { delete _instance; _instance = nullptr; }
+
 	/// The singleton instance of this class.
-	static QScopedPointer<ViewportInputManager> _instance;
+	static ViewportInputManager* _instance;
+
+	friend class Application;
 };
 
 };

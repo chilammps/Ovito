@@ -29,14 +29,15 @@ namespace Ovito {
 class RolloutContainer;		// defined below
 
 /******************************************************************************
-* Specifies how a new rollout is inserted into the container.
+* This data structure is used to specify how and where a new rollout is
+* inserted into RolloutContainer.
 ******************************************************************************/
 class RolloutInsertionParameters
 {
 public:
-	RolloutInsertionParameters() : collapsed(false), animateOpening(false), afterThisRollout(NULL), beforeThisRollout(NULL), intoThisContainer(NULL) {}
-	RolloutInsertionParameters(bool _collapsed) : collapsed(_collapsed), animateOpening(false), afterThisRollout(NULL), beforeThisRollout(NULL), intoThisContainer(NULL) {}
-	RolloutInsertionParameters(QWidget* _afterThisRollout, bool _collapsed = false) : collapsed(_collapsed), animateOpening(false), afterThisRollout(_afterThisRollout), beforeThisRollout(NULL), intoThisContainer(NULL) {}
+	RolloutInsertionParameters() : collapsed(false), animateFirstOpening(false), afterThisRollout(NULL), beforeThisRollout(NULL), intoThisContainer(NULL) {}
+	RolloutInsertionParameters(bool _collapsed) : collapsed(_collapsed), animateFirstOpening(false), afterThisRollout(NULL), beforeThisRollout(NULL), intoThisContainer(NULL) {}
+	RolloutInsertionParameters(QWidget* _afterThisRollout, bool _collapsed = false) : collapsed(_collapsed), animateFirstOpening(false), afterThisRollout(_afterThisRollout), beforeThisRollout(NULL), intoThisContainer(NULL) {}
 
 	RolloutInsertionParameters after(QWidget* afterThisRollout) const { 
 		RolloutInsertionParameters p(collapsed);
@@ -55,7 +56,7 @@ public:
 	}
 	RolloutInsertionParameters animate() const {
 		RolloutInsertionParameters p(*this);
-		p.animateOpening = true;
+		p.animateFirstOpening = true;
 		return p;
 	}
 	RolloutInsertionParameters insertInto(QWidget* intoThisContainer) const {
@@ -67,51 +68,80 @@ public:
 public:
 	
 	bool collapsed;
-	bool animateOpening;
+	bool animateFirstOpening;
 	QPointer<QWidget> afterThisRollout;
 	QPointer<QWidget> beforeThisRollout;
 	QPointer<QWidget> intoThisContainer;
 };
 
 /******************************************************************************
-* A minimizable rollout window that encapsulates a control in 
-* the RolloutContainer component.
+* A rollout widget in a RolloutContainer.
+* This is part of the implementation of the RolloutContainer and
+* should not be used outside of a RolloutContainer.
 ******************************************************************************/
 class Rollout : public QWidget
 {
-	friend class RolloutContainer;
-
 	Q_OBJECT
-
-private:
-	
-	/// Constructor.
-	Rollout(QWidget* parent, QWidget* content, const QString& title, const RolloutInsertionParameters& params);
-	
-	QPushButton* _titleButton;
-	QPointer<QWidget> _content;
-
-protected Q_SLOTS:
-	
-	void onCollapseButton();
-	void onContentDestroyed();
 
 public:
 
-	/// Returns true if this rollout is currently collapsed.
-	bool isCollapsed() const;
+	/// Constructor.
+	Rollout(QWidget* parent, QWidget* content, const QString& title, const RolloutInsertionParameters& params);
 
-	/// Callapses this rollout.
-	void setCollapsed(bool collapsed);
+	/// Returns true if this rollout is currently in the collapsed state.
+	bool isCollapsed() const { return visiblePercentage() != 100; }
 
 	/// Returns the child widget that is contained in the rollout.
 	QWidget* content() const { return _content; }
+
+	/// Returns how much of rollout contents is visible.
+	int visiblePercentage() const { return _visiblePercentage; }
+
+	/// Sets how much of rollout contents is visible.
+	void setVisiblePercentage(int p) {
+		_visiblePercentage = p;
+		updateGeometry();
+	}
 	
+	/// Computes the recommended size for the widget.
+	virtual QSize sizeHint() const override;
+
+	Q_PROPERTY(int visiblePercentage READ visiblePercentage WRITE setVisiblePercentage);
+
+public Q_SLOTS:
+
+	/// Opens the rollout if it is collapsed; or collapses it if it is open.
+	void toggleCollapsed() { setCollapsed(!isCollapsed()); }
+
+	/// Collapses or opens the rollout.
+	void setCollapsed(bool collapsed) {
+		_collapseAnimation.stop();
+		_collapseAnimation.setStartValue(_visiblePercentage);
+		_collapseAnimation.setEndValue(collapsed ? 0 : 100);
+		_collapseAnimation.start();
+	}
+
 protected:
 
-	/// Paints the border around the rollout.
-	virtual void paintEvent(QPaintEvent* event);
+	/// Handles the resize events of the rollout widget.
+	virtual void resizeEvent(QResizeEvent* event) override;
+
+	/// Paints the border around the contents widget.
+	virtual void paintEvent(QPaintEvent* event) override;
 	
+private:
+
+	/// The button that allows to collapse the rollout.
+	QPushButton* _titleButton;
+
+	/// The widget that is inside the rollout.
+	QPointer<QWidget> _content;
+
+	/// Internal property that controls how much of rollout contents is visible.
+	int _visiblePercentage;
+
+	/// The object that animates the collapse/opening of the rollout.
+	QPropertyAnimation _collapseAnimation;
 };
 
 /******************************************************************************
@@ -120,7 +150,9 @@ protected:
 class RolloutContainer : public QScrollArea
 {
 	Q_OBJECT
+
 public:
+
 	/// Constructs the rollout container.
 	RolloutContainer(QWidget* parent = 0);
 

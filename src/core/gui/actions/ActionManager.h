@@ -126,8 +126,8 @@ public:
 	/// \brief Returns the one and only instance of this class.
 	/// \return The predefined instance of the ActionManager singleton class.
 	inline static ActionManager& instance() {
-		if(!_instance) _instance.reset(new ActionManager());
-		return *_instance.data();
+		OVITO_ASSERT_MSG(_instance != nullptr, "ActionManager::instance", "Singleton object is not initialized yet.");
+		return *_instance;
 	}
 
 	/// \brief Returns the action with the given ID or NULL.
@@ -194,8 +194,16 @@ private:
 	/// Constructor.
 	ActionManager();
 
+	/// Create the singleton instance of this class.
+	static void initialize() { _instance = new ActionManager(); }
+
+	/// Deletes the singleton instance of this class.
+	static void shutdown() { delete _instance; _instance = nullptr; }
+
 	/// The singleton instance of this class.
-	static QScopedPointer<ActionManager> _instance;
+	static ActionManager* _instance;
+
+	friend class Application;
 };
 
 };

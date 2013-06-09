@@ -44,7 +44,9 @@ class ViewportSceneRenderer : public SceneRenderer
 public:
 
 	/// Default constructor.
-	Q_INVOKABLE ViewportSceneRenderer() : _glcontext(nullptr) {}
+	Q_INVOKABLE ViewportSceneRenderer() : _glcontext(nullptr), _antialiasingLevel(2) {
+		INIT_PROPERTY_FIELD(ViewportSceneRenderer::_antialiasingLevel)
+	}
 
 	/// Renders the current animation frame.
 	virtual void renderFrame() override;
@@ -63,6 +65,16 @@ public:
 	/// Translates an OpenGL error code to a human-readable message string.
 	static const char* openglErrorString(GLenum errorCode);
 
+	/// Returns the number of sub-pixels to render.
+	int antialiasingLevel() const { return _antialiasingLevel; }
+
+	/// Sets the number of sub-pixels to render.
+	void setAntialiasingLevel(int newLevel) { _antialiasingLevel = newLevel; }
+
+public:
+
+	Q_PROPERTY(int antialiasingLevel READ antialiasingLevel WRITE setAntialiasingLevel)
+
 protected:
 
 	/// \brief Renders a single node.
@@ -76,8 +88,13 @@ private:
 	/// The OpenGL context this renderer uses.
 	QOpenGLContext* _glcontext;
 
+	/// Controls the number of sub-pixels to render.
+	PropertyField<int> _antialiasingLevel;
+
 	Q_OBJECT
 	OVITO_OBJECT
+
+	DECLARE_PROPERTY_FIELD(_antialiasingLevel);
 };
 
 // OpenGL function call debugging macro

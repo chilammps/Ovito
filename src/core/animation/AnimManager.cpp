@@ -26,7 +26,7 @@
 namespace Ovito {
 
 /// The singleton instance of the class.
-QScopedPointer<AnimManager> AnimManager::_instance;
+AnimManager* AnimManager::_instance = nullptr;
 
 /******************************************************************************
 * Initializes the animation manager.

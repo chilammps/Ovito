@@ -77,14 +77,6 @@ public:
 		_maximizedViewport = vp;
 	}
 
-	/// \brief Returns the default ViewportConfiguration used for new scene files.
-	/// \return Pointer to the default viewport configuration stored by the ViewportManager.
-	/// \note You may change the returned ViewportConfiguration object to modify the
-	///       default configuration used for new scene files.
-	/// \note Instead of using the returned object in a scene file you should make a copy of it first
-	///       and leave the original object intact.
-	static OORef<ViewportConfiguration> defaultConfiguration();
-
 protected:
 
 	/// Is called when the value of a reference field of this RefMaker changes.

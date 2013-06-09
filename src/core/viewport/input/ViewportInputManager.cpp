@@ -28,7 +28,7 @@
 namespace Ovito {
 
 /// The singleton instance of the class.
-QScopedPointer<ViewportInputManager> ViewportInputManager::_instance;
+ViewportInputManager* ViewportInputManager::_instance = nullptr;
 
 /******************************************************************************
 * Initializes the viewport input manager.

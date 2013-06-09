@@ -33,7 +33,7 @@ IMPLEMENT_OVITO_OBJECT(PercentParameterUnit, FloatParameterUnit);
 IMPLEMENT_OVITO_OBJECT(TimeParameterUnit, IntegerParameterUnit);
 
 /// The singleton instance of the class.
-QScopedPointer<UnitsManager> UnitsManager::_instance;
+UnitsManager* UnitsManager::_instance = nullptr;
 
 /******************************************************************************
 * Constructor.

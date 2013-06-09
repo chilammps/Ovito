@@ -46,8 +46,8 @@ public:
 	/// \brief Returns the one and only instance of this class.
 	/// \return The predefined instance of the ViewportManager singleton class.
 	inline static ViewportManager& instance() {
-		if(!_instance) _instance.reset(new ViewportManager());
-		return *_instance.data();
+		OVITO_ASSERT_MSG(_instance != nullptr, "ViewportManager::instance", "Singleton object is not initialized yet.");
+		return *_instance;
 	}
 
 	/// Destructor.
@@ -172,8 +172,16 @@ private:
 	/// This is a singleton class; no public instances are allowed.
 	ViewportManager();
 
+	/// Create the singleton instance of this class.
+	static void initialize() { _instance = new ViewportManager(); }
+
+	/// Deletes the singleton instance of this class.
+	static void shutdown() { delete _instance; _instance = nullptr; }
+
 	/// The singleton instance of this class.
-	static QScopedPointer<ViewportManager> _instance;
+	static ViewportManager* _instance;
+
+	friend class Application;
 
 	Q_OBJECT
 	OVITO_OBJECT

@@ -28,7 +28,7 @@
 namespace Ovito {
 
 /// The singleton instance of the class.
-QScopedPointer<ViewportManager> ViewportManager::_instance;
+ViewportManager* ViewportManager::_instance = nullptr;
 
 IMPLEMENT_OVITO_OBJECT(ViewportManager, RefMaker)
 DEFINE_FLAGS_REFERENCE_FIELD(ViewportManager, _viewportConfig, "ViewportConfiguration", ViewportConfiguration, PROPERTY_FIELD_NO_CHANGE_MESSAGE|PROPERTY_FIELD_NO_UNDO|PROPERTY_FIELD_NEVER_CLONE_TARGET)
@@ -38,7 +38,7 @@ DEFINE_FLAGS_REFERENCE_FIELD(ViewportManager, _viewportConfig, "ViewportConfigur
 ******************************************************************************/
 ViewportManager::ViewportManager() :
 	_viewportSuspendCount(1), _viewportsNeedUpdate(false),
-	_viewportFont("Helvetica", 11)
+	_viewportFont("Helvetica")
 {
 	OVITO_ASSERT_MSG(!_instance, "ViewportManager constructor", "Multiple instances of this singleton class have been created.");
 	INIT_PROPERTY_FIELD(ViewportManager::_viewportConfig);

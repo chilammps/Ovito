@@ -27,8 +27,6 @@
 #include <core/gui/undo/UndoManager.h>
 #include <core/dataset/DataSetManager.h>
 #include <core/animation/TimeInterval.h>
-#include <core/io/ObjectLoadStream.h>
-#include <core/io/ObjectSaveStream.h>
 #include <core/reference/CloneHelper.h>
 #include <core/scene/GroupNode.h>
 #include <core/scene/SelectionSet.h>

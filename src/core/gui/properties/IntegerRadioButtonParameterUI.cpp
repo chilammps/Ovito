@@ -51,7 +51,7 @@ IntegerRadioButtonParameterUI::IntegerRadioButtonParameterUI(QObject* parentEdit
 
 	if(isReferenceFieldUI()) {
 		// Update the displayed value when the animation time has changed.
-		connect(&AnimManager::instance(), SIGNAL(timeChanged(TimeTicks)), this, SLOT(updateUI()));
+		connect(&AnimManager::instance(), SIGNAL(timeChanged(TimePoint)), this, SLOT(updateUI()));
 	}
 }
 

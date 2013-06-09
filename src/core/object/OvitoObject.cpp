@@ -20,7 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include <core/io/ObjectLoadStream.h>
+#include <core/utilities/io/ObjectLoadStream.h>
 #include "OvitoObject.h"
 #include "OvitoObjectType.h"
 

@@ -26,6 +26,7 @@
 #include "cmdpanel/CommandPanel.h"
 #include <core/gui/actions/ActionManager.h>
 #include <core/gui/widgets/AnimationTimeSpinner.h>
+#include <core/viewport/ViewportManager.h>
 
 namespace Ovito {
 
@@ -44,15 +45,15 @@ MainWindow::MainWindow(const QString& title) :
 	setWindowTitle(title);
 	setAttribute(Qt::WA_DeleteOnClose);
 
+	// Setup the layout of docking widgets.
+	setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
+	setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
+
 	// Create the main menu
 	createMainMenu();
 
 	// Create the main toolbar.
 	createMainToolbar();
-
-	// Setup the layout of docking widgets.
-	setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
-	setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
 
 	ViewportsPanel* viewportsPanel = new ViewportsPanel(this);
 	setCentralWidget(viewportsPanel);
@@ -257,16 +258,15 @@ bool MainWindow::event(QEvent* event)
 ******************************************************************************/
 void MainWindow::closeEvent(QCloseEvent* event)
 {
-#if 0
 	// Save changes.
-	if(!DATASET_MANAGER.askForSaveChanges()) {
+	if(!DataSetManager::instance().askForSaveChanges()) {
 		event->ignore();
 		return;
 	}
 
 	// Close current scene file.
-	DATASET_MANAGER.setCurrentSet(new DataSet());
-#endif
+	ViewportManager::instance().suspendViewportUpdates();
+	DataSetManager::instance().setCurrentSet(new DataSet());
 
 	// Save window layout.
 	saveLayout();

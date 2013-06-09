@@ -44,8 +44,8 @@ public:
 	/// \brief Returns the one and only instance of this class.
 	/// \return The predefined instance of the PluginManager singleton class.
 	inline static PluginManager& instance() {
-		if(!_instance) _instance.reset(new PluginManager());
-		return *_instance.data();
+		OVITO_ASSERT_MSG(_instance != nullptr, "PluginManager::instance", "Singleton object is not initialized yet.");
+		return *_instance;
 	}
 
 	/// \brief Returns the plugin with a given identifier.
@@ -102,9 +102,16 @@ private:
 	/// This is a singleton class; no public instances are allowed.
 	PluginManager();
 
-	/// The singleton instance of this class.
-	static QScopedPointer<PluginManager> _instance;
+	/// Create the singleton instance of this class.
+	static void initialize() { _instance = new PluginManager(); }
 
+	/// Deletes the singleton instance of this class.
+	static void shutdown() { delete _instance; _instance = nullptr; }
+
+	/// The singleton instance of this class.
+	static PluginManager* _instance;
+
+	friend class Application;
 	friend class Plugin;
 };
 

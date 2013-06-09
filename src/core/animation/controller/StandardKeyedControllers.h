@@ -32,8 +32,8 @@
 #include "Controller.h"
 #include <core/gui/undo/UndoManager.h>
 #include <core/animation/AnimManager.h>
-#include <core/io/ObjectLoadStream.h>
-#include <core/io/ObjectSaveStream.h>
+#include <core/utilities/io/ObjectLoadStream.h>
+#include <core/utilities/io/ObjectSaveStream.h>
 
 namespace Ovito {
 
