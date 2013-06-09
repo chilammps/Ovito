@@ -177,6 +177,8 @@ private Q_SLOTS:
 	void on_FileOpen_triggered();
 	void on_FileSave_triggered();
 	void on_FileSaveAs_triggered();
+	void on_FileImport_triggered();
+	void on_FileExport_triggered();
 	void on_ViewportMaximize_triggered();
 	void on_Settings_triggered();
 	void on_AnimationGotoStart_triggered();

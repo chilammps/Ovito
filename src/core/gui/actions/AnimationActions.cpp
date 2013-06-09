@@ -96,7 +96,7 @@ OORef<ViewportInputHandler> ActionManager::createAnimationPlaybackViewportMode()
 }
 
 /******************************************************************************
-* Handles ACTION_GOTO_START_OF_ANIMATION command.
+* Handles the ACTION_GOTO_START_OF_ANIMATION command.
 ******************************************************************************/
 void ActionManager::on_AnimationGotoStart_triggered()
 {
@@ -104,7 +104,7 @@ void ActionManager::on_AnimationGotoStart_triggered()
 }
 
 /******************************************************************************
-* Handles ACTION_GOTO_END_OF_ANIMATION command.
+* Handles the ACTION_GOTO_END_OF_ANIMATION command.
 ******************************************************************************/
 void ActionManager::on_AnimationGotoEnd_triggered()
 {
@@ -112,7 +112,7 @@ void ActionManager::on_AnimationGotoEnd_triggered()
 }
 
 /******************************************************************************
-* Handles ACTION_GOTO_PREVIOUS_FRAME command.
+* Handles the ACTION_GOTO_PREVIOUS_FRAME command.
 ******************************************************************************/
 void ActionManager::on_AnimationGotoPreviousFrame_triggered()
 {
@@ -125,7 +125,7 @@ void ActionManager::on_AnimationGotoPreviousFrame_triggered()
 }
 
 /******************************************************************************
-* Handles ACTION_GOTO_NEXT_FRAME command.
+* Handles the ACTION_GOTO_NEXT_FRAME command.
 ******************************************************************************/
 void ActionManager::on_AnimationGotoNextFrame_triggered()
 {
@@ -138,7 +138,7 @@ void ActionManager::on_AnimationGotoNextFrame_triggered()
 }
 
 /******************************************************************************
-* Handles ACTION_START_ANIMATION_PLAYBACK command.
+* Handles the ACTION_START_ANIMATION_PLAYBACK command.
 ******************************************************************************/
 void ActionManager::on_AnimationStartPlayback_triggered()
 {
@@ -146,7 +146,7 @@ void ActionManager::on_AnimationStartPlayback_triggered()
 }
 
 /******************************************************************************
-* Handles ACTION_STOP_ANIMATION_PLAYBACK command.
+* Handles the ACTION_STOP_ANIMATION_PLAYBACK command.
 ******************************************************************************/
 void ActionManager::on_AnimationStopPlayback_triggered()
 {
@@ -154,7 +154,7 @@ void ActionManager::on_AnimationStopPlayback_triggered()
 }
 
 /******************************************************************************
-* Handles ACTION_ANIMATION_SETTINGS command.
+* Handles the ACTION_ANIMATION_SETTINGS command.
 ******************************************************************************/
 void ActionManager::on_AnimationSettings_triggered()
 {

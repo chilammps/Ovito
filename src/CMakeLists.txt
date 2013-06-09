@@ -19,7 +19,7 @@
 #
 ###############################################################################
 
-ADD_SUBDIRECTORY(ssh)
+#ADD_SUBDIRECTORY(ssh)
 ADD_SUBDIRECTORY(base)
 ADD_SUBDIRECTORY(core)
 ADD_SUBDIRECTORY(viz)

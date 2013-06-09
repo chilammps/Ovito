@@ -138,7 +138,7 @@ PipelineFlowState PipelineObject::evalObject(TimePoint time, ModifierApplication
 		// Skip disabled modifiers.
 		if(app->isEnabled() == false) {
 	    	// Reset evaluation status.
-	    	app->setStatus(EvaluationStatus());
+	    	app->setStatus(ObjectStatus());
 			continue;
 		}
 
@@ -156,7 +156,7 @@ PipelineFlowState PipelineObject::evalObject(TimePoint time, ModifierApplication
 			app->setStatus(mod->modifyObject(time, app, flowState));
 		}
 		else {
-			app->setStatus(EvaluationStatus(EvaluationStatus::EVALUATION_ERROR, tr("Modifier did not receive any input object.")));
+			app->setStatus(ObjectStatus(ObjectStatus::Error, tr("Modifier has no input.")));
 		}
 	}
 

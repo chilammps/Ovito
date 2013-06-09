@@ -26,7 +26,7 @@
 namespace Ovito {
 
 /******************************************************************************
-* Handles ACTION_VIEWPORT_MAXIMIZE command.
+* Handles the ACTION_VIEWPORT_MAXIMIZE command.
 ******************************************************************************/
 void ActionManager::on_ViewportMaximize_triggered()
 {

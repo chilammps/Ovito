@@ -25,6 +25,7 @@
 #include <core/gui/undo/UndoManager.h>
 #include <core/gui/actions/ActionManager.h>
 #include <core/dataset/DataSetManager.h>
+#include <core/dataset/importexport/ImportExportManager.h>
 #include <core/animation/AnimManager.h>
 #include <core/animation/controller/Controller.h>
 #include <core/viewport/ViewportManager.h>
@@ -100,6 +101,7 @@ bool Application::initialize()
 		AnimManager::initialize();
 		UnitsManager::initialize();
 		ActionManager::initialize();
+		ImportExportManager::initialize();
 
 		// Create the main application window.
 		if(guiMode()) {
@@ -172,6 +174,7 @@ int Application::runApplication()
 void Application::shutdown()
 {
 	// Shutdown global manager objects in reverse order they were initialized.
+	ImportExportManager::shutdown();
 	ActionManager::shutdown();
 	UnitsManager::shutdown();
 	AnimManager::shutdown();

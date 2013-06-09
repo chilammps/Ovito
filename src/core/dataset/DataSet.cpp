@@ -87,4 +87,14 @@ bool DataSet::referenceEvent(RefTarget* source, ReferenceEvent* event)
 	return RefTarget::referenceEvent(source, event);
 }
 
+/******************************************************************************
+* Deletes all nodes from the scene.
+******************************************************************************/
+void DataSet::clearScene()
+{
+	Q_FOREACH(SceneNode* node, sceneRoot()->children()) {
+		node->deleteNode();
+	}
+}
+
 };

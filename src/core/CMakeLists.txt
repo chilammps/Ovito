@@ -42,6 +42,8 @@ SET(OVITO_CORE_SOURCE_FILES
 	dataset/DataSet.cpp
 	dataset/DataSetManager.cpp
 	dataset/CurrentSelectionProxy.cpp
+	dataset/importexport/ImportExportManager.cpp
+	dataset/importexport/LinkedFileImporter.cpp
 	scene/SceneNode.cpp
 	scene/GroupNode.cpp
 	scene/ObjectNode.cpp
@@ -65,6 +67,9 @@ SET(OVITO_CORE_SOURCE_FILES
 	gui/mainwin/cmdpanel/UtilityApplet.cpp
 	gui/dialogs/ApplicationSettingsDialog.cpp
 	gui/dialogs/ViewportSettingsPage.cpp
+	gui/dialogs/HistoryFileDialog.cpp
+	gui/dialogs/ImportFileDialog.cpp
+	gui/dialogs/SaveImageFileDialog.cpp
 	gui/actions/ActionManager.cpp
 	gui/actions/FileActions.cpp
 	gui/actions/ViewportActions.cpp
@@ -121,7 +126,7 @@ QT5_ADD_RESOURCES(OVITO_CORE_RESOURCE_FILES resources/core.qrc)
 # Build library
 ADD_LIBRARY(Core ${OVITO_CORE_SOURCE_FILES} ${OVITO_CORE_RESOURCE_FILES})
 
-TARGET_LINK_LIBRARIES(Core Base QSsh)
+TARGET_LINK_LIBRARIES(Core Base)
 
 # Link to OpenGL library.
 TARGET_LINK_LIBRARIES(Core ${OPENGL_gl_LIBRARY})

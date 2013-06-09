@@ -44,7 +44,7 @@ public:
 
 	/// \brief Constructs an application object for a given Modifier instance.
 	/// \param modifier The modifier that is going to be applied in a geometry pipeline.
-	Q_INVOKABLE ModifierApplication(Modifier* modifier = NULL);
+	Q_INVOKABLE ModifierApplication(Modifier* modifier = nullptr);
 
 	/// \brief Returns the modifier instance that is applied in a particular geometry pipeline.
 	/// \return The modifier instance.
@@ -69,11 +69,11 @@ public:
 	void setEnabled(bool enabled) { _isEnabled = enabled; }
 
 	/// \brief Return the status returned by the modifier during its last evaluation.
-	const EvaluationStatus& status() const { return _evalStatus; }
+	const ObjectStatus& status() const { return _evalStatus; }
 
 	/// \brief Stores the status of this modifier application.
 	/// \note This is an internal function.
-	void setStatus(const EvaluationStatus& status);
+	void setStatus(const ObjectStatus& status);
 
 public:
 
@@ -85,7 +85,7 @@ private:
 	ReferenceField<Modifier> _modifier;
 
 	/// The status returned by the modifier during its last evaluation.
-	EvaluationStatus _evalStatus;
+	ObjectStatus _evalStatus;
 
 	/// Flag that indicates whether the modifier application is enabled.
 	PropertyField<bool, bool, ReferenceEvent::TargetEnabledOrDisabled> _isEnabled;

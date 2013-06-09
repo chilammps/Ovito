@@ -89,7 +89,7 @@ bool ModifierStackEntry::referenceEvent(RefTarget* source, ReferenceEvent* event
 		stack->listModel()->refreshStackEntry(this);
 	}
 	/// Update an entry if the evaluation status of the modifier has changed.
-	else if(event->type() == ReferenceEvent::TargetStatusChanged) {
+	else if(event->type() == ReferenceEvent::StatusChanged) {
 		stack->listModel()->refreshStackEntry(this);
 	}
 	/// If the list of sub-objects changes for one of the entries, we need
@@ -548,20 +548,20 @@ QVariant ModifierStackModel::data(const QModelIndex& index, int role) const
 			}
 			else {
 #endif
-				EvaluationStatus status;
+				ObjectStatus status;
 				Q_FOREACH(ModifierApplication* modApp, entry->modifierApplications()) {
 					status = modApp->status();
-					if(status.type() == EvaluationStatus::EVALUATION_ERROR) break;
+					if(status.type() == ObjectStatus::Error) break;
 				}
-				if(status.type() == EvaluationStatus::EVALUATION_SUCCESS) {
-					if(status.shortMessage().isEmpty())
+				if(status.type() == ObjectStatus::Success) {
+					if(status.shortText().isEmpty())
 						return qVariantFromValue(modifierEnabledIcon);
 					else
 						return qVariantFromValue(modifierStatusInfoIcon);
 				}
-				else if(status.type() == EvaluationStatus::EVALUATION_WARNING)
+				else if(status.type() == ObjectStatus::Warning)
 					return qVariantFromValue(modifierStatusWarningIcon);
-				else if(status.type() == EvaluationStatus::EVALUATION_ERROR)
+				else if(status.type() == ObjectStatus::Error)
 					return qVariantFromValue(modifierStatusErrorIcon);
 				else
 					return qVariantFromValue(modifierEnabledIcon);
@@ -571,13 +571,13 @@ QVariant ModifierStackModel::data(const QModelIndex& index, int role) const
 	else if(role == Qt::ToolTipRole) {
 		Modifier* modifier = dynamic_object_cast<Modifier>(entry->commonObject());
 		if(modifier/* && modifier->isModifierEnabled()*/) {
-			EvaluationStatus status;
+			ObjectStatus status;
 			Q_FOREACH(ModifierApplication* modApp, entry->modifierApplications()) {
 				status = modApp->status();
-				if(status.type() == EvaluationStatus::EVALUATION_ERROR) break;
+				if(status.type() == ObjectStatus::Error) break;
 			}
-			if(status.shortMessage().isEmpty() == false)
-				return qVariantFromValue(status.shortMessage());
+			if(status.shortText().isEmpty() == false)
+				return qVariantFromValue(status.shortText());
 		}
 	}
 

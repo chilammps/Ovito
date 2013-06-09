@@ -23,12 +23,14 @@
 #include <core/gui/actions/ActionManager.h>
 #include <core/gui/mainwin/MainWindow.h>
 #include <core/gui/dialogs/ApplicationSettingsDialog.h>
+#include <core/gui/dialogs/ImportFileDialog.h>
 #include <core/dataset/DataSetManager.h>
+#include <core/dataset/importexport/ImportExportManager.h>
 
 namespace Ovito {
 
 /******************************************************************************
-* Handles ACTION_QUIT command.
+* Handles the ACTION_QUIT command.
 ******************************************************************************/
 void ActionManager::on_Quit_triggered()
 {
@@ -37,7 +39,7 @@ void ActionManager::on_Quit_triggered()
 }
 
 /******************************************************************************
-* Handles ACTION_HELP_ABOUT command.
+* Handles the ACTION_HELP_ABOUT command.
 ******************************************************************************/
 void ActionManager::on_HelpAbout_triggered()
 {
@@ -56,7 +58,7 @@ void ActionManager::on_HelpAbout_triggered()
 }
 
 /******************************************************************************
-* Handles ACTION_HELP_SHOW_ONLINE_HELP command.
+* Handles the ACTION_HELP_SHOW_ONLINE_HELP command.
 ******************************************************************************/
 void ActionManager::on_HelpShowOnlineHelp_triggered()
 {
@@ -74,7 +76,7 @@ void ActionManager::on_HelpShowOnlineHelp_triggered()
 }
 
 /******************************************************************************
-* Handles ACTION_FILE_NEW command.
+* Handles the ACTION_FILE_NEW command.
 ******************************************************************************/
 void ActionManager::on_FileNew_triggered()
 {
@@ -85,7 +87,7 @@ void ActionManager::on_FileNew_triggered()
 }
 
 /******************************************************************************
-* Handles ACTION_FILE_OPEN command.
+* Handles the ACTION_FILE_OPEN command.
 ******************************************************************************/
 void ActionManager::on_FileOpen_triggered()
 {
@@ -115,7 +117,7 @@ void ActionManager::on_FileOpen_triggered()
 }
 
 /******************************************************************************
-* Handles ACTION_FILE_SAVE command.
+* Handles the ACTION_FILE_SAVE command.
 ******************************************************************************/
 void ActionManager::on_FileSave_triggered()
 {
@@ -123,7 +125,7 @@ void ActionManager::on_FileSave_triggered()
 }
 
 /******************************************************************************
-* Handles ACTION_FILE_SAVEAS command.
+* Handles the ACTION_FILE_SAVEAS command.
 ******************************************************************************/
 void ActionManager::on_FileSaveAs_triggered()
 {
@@ -131,7 +133,7 @@ void ActionManager::on_FileSaveAs_triggered()
 }
 
 /******************************************************************************
-* Handles ACTION_SETTINGS_DIALOG command.
+* Handles the ACTION_SETTINGS_DIALOG command.
 ******************************************************************************/
 void ActionManager::on_Settings_triggered()
 {
@@ -139,6 +141,103 @@ void ActionManager::on_Settings_triggered()
 		ApplicationSettingsDialog dlg(&MainWindow::instance());
 		dlg.exec();
 	}
+}
+
+/******************************************************************************
+* Handles the ACTION_FILE_IMPORT command.
+******************************************************************************/
+void ActionManager::on_FileImport_triggered()
+{
+	// Import selected file.
+	try {
+		// Let the user select a file.
+		ImportFileDialog dialog(&MainWindow::instance(), tr("Import Data"));
+		if(!dialog.exec())
+			return;
+		OORef<FileImporter> importer = dialog.createFileImporter();
+		if(!importer) return;
+
+		// Ask use if current scene should be saved before it is replaced by the imported data.
+		if(!DataSetManager::instance().askForSaveChanges())
+			return;
+
+		QString importFile = dialog.fileToImport();
+		UndoManager::instance().beginCompoundOperation(tr("Import %1").arg(QFileInfo(importFile).baseName()));
+		try {
+			importer->importFile(QUrl::fromLocalFile(importFile), DataSetManager::instance().currentSet());
+			UndoManager::instance().endCompoundOperation();
+		}
+		catch(...) {
+			UndoManager::instance().currentCompoundOperation()->clear();
+			UndoManager::instance().endCompoundOperation();
+			throw;
+		}
+	}
+	catch(const Exception& ex) {
+		ex.showError();
+	}
+}
+
+/******************************************************************************
+* Handles the ACTION_FILE_EXPORT command.
+******************************************************************************/
+void ActionManager::on_FileExport_triggered()
+{
+#if 0
+	// Build filter string.
+	QStringList filterStrings;
+	Q_FOREACH(const ImportExportDescriptor& descr, IMPORTEXPORT_MANAGER.exporters()) {
+		filterStrings << QString("%1 (%2)").arg(descr.fileFilterDescription(), descr.fileFilter());
+	}
+	if(filterStrings.isEmpty()) {
+		Exception(tr("This function is disabled. There are no export plugins installed.")).showError();
+		return;
+	}
+
+	QSettings settings;
+	settings.beginGroup("file/export");
+
+	// Let the user select a destination file.
+	HistoryFileDialog dialog("export", MAIN_FRAME, tr("Export Data"));
+	dialog.setFilters(filterStrings);
+	dialog.setAcceptMode(QFileDialog::AcceptSave);
+	dialog.setFileMode(QFileDialog::AnyFile);
+	dialog.setConfirmOverwrite(true);
+
+	// Go the last directory used.
+	QString lastExportDirectory = settings.value("last_export_dir").toString();
+	if(!lastExportDirectory.isEmpty())
+		dialog.setDirectory(lastExportDirectory);
+	// Select the last export filter being used ...
+	QString lastExportFilter = settings.value("last_export_filter").toString();
+	if(!lastExportFilter.isEmpty())
+		dialog.selectFilter(lastExportFilter);
+
+	if(!dialog.exec())
+		return;
+
+	QStringList files = dialog.selectedFiles();
+	if(files.isEmpty())
+		return;
+	QString exportFile = files.front();
+
+	// Remember directory for the next time...
+	settings.setValue("last_export_dir", dialog.directory().absolutePath());
+	// Remember export filter for the next time...
+	settings.setValue("last_export_filter", dialog.selectedFilter());
+
+	// Export to selected file.
+	try {
+		int exportFilterIndex = filterStrings.indexOf(dialog.selectedFilter());
+		OVITO_ASSERT(exportFilterIndex >= 0 && exportFilterIndex < filterStrings.size());
+		ImporterExporter::SmartPtr exporter = IMPORTEXPORT_MANAGER.exporters()[exportFilterIndex].createService();
+
+		exporter->exportToFile(exportFile, DATASET_MANAGER.currentSet());
+	}
+	catch(const Exception& ex) {
+		ex.showError();
+	}
+#endif
 }
 
 };

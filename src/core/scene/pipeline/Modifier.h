@@ -29,7 +29,7 @@
 
 #include <core/Core.h>
 #include <core/reference/RefTarget.h>
-#include "EvaluationStatus.h"
+#include <core/utilities/ObjectStatus.h>
 #include "PipelineFlowState.h"
 
 namespace Ovito {
@@ -63,7 +63,7 @@ public:
 	///               modifier in the geometry pipeline.
 	/// \param[in,out] state The object flowing down the geometry pipeline. It contains the input object
 	///                      when the method is called and is filled with the resulting object by the method.
-	virtual EvaluationStatus modifyObject(TimePoint time, ModifierApplication* modApp, PipelineFlowState& state) = 0;
+	virtual ObjectStatus modifyObject(TimePoint time, ModifierApplication* modApp, PipelineFlowState& state) = 0;
 
 	/// \brief Asks the modifier for its validity interval at the given time.
 	/// \param time The animation at which the validity interval should be computed.

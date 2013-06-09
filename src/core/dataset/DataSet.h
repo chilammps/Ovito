@@ -90,6 +90,10 @@ public:
 	/// \sa fielPath()
 	void setFilePath(const QString& path) { _filePath = path; }
 
+	/// \brief Deletes all nodes from the scene.
+	/// \undoable
+	void clearScene();
+
 protected:
 
 	/// Is called when a RefTarget referenced by this object has generated an event.

@@ -27,9 +27,7 @@
 #include <core/gui/properties/BooleanParameterUI.h>
 #include <core/gui/properties/IntegerRadioButtonParameterUI.h>
 #include <core/gui/properties/BooleanGroupBoxParameterUI.h>
-#if 0
 #include <core/gui/dialogs/SaveImageFileDialog.h>
-#endif
 #include <core/gui/actions/ActionManager.h>
 #include <core/rendering/RenderSettings.h>
 #include <core/rendering/RenderSettingsEditor.h>
@@ -216,15 +214,13 @@ void RenderSettingsEditor::onChooseImageFilename()
 	if(!settings) return;
 
 	try {
-#if 0
 		SaveImageFileDialog fileDialog(container(), tr("Output image file"), settings->imageInfo());
 		if(fileDialog.exec()) {
-			UNDO_MANAGER.beginCompoundOperation(tr("Change output file"));
+			UndoManager::instance().beginCompoundOperation(tr("Change output file"));
 			settings->setImageInfo(fileDialog.imageInfo());
 			settings->setSaveToFile(true);
-			UNDO_MANAGER.endCompoundOperation();
+			UndoManager::instance().endCompoundOperation();
 		}
-#endif
 	}
 	catch(const Exception& ex) {
 		ex.showError();
