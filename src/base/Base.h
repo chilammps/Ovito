@@ -41,7 +41,8 @@
 #include <map>
 #include <utility>
 #include <random>
-
+#include <future>
+#include <memory>
 
 /******************************************************************************
 * QT Library

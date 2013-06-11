@@ -22,6 +22,7 @@
 SET(OVITO_VIZ_SOURCE_FILES 
 	data/SimulationCell.cpp
 	data/SimulationCellDisplay.cpp
+	importer/lammps/LAMMPSTextDumpImporter.cpp
 )
 
 # Build library

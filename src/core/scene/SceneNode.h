@@ -39,6 +39,7 @@ namespace Ovito {
 class Viewport;				// defined in Viewport.h
 class LookAtController;		// defined in LookAtController.h
 class GroupNode;			// defined in GroupNode.h
+class DataSet;				// defined in DataSet.h
 class SceneNode;			// defined below
 
 /**
@@ -110,6 +111,9 @@ public:
 	/// \brief Returns the parent node of this node in the scene tree graph.
 	/// \return This node's parent node or \c NULL if this is the root node.
 	SceneNode* parentNode() const { return _parentNode; }
+
+	/// \brief Returns the data set that owns this scene node (may be NULL).
+	DataSet* dataSet() const;
 
 	/// \brief Deletes this node from the scene.
 	///

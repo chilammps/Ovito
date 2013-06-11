@@ -55,7 +55,7 @@ IF(APPLE)
 ENDIF()
 
 # This is the base directory for all included header files.
-INCLUDE_DIRECTORIES("${ovito_SOURCE_DIR}/src")
+INCLUDE_DIRECTORIES("${OVITO_SOURCE_BASE_DIR}/src")
 
 IF(UNIX)
 	IF(APPLE)

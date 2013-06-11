@@ -32,6 +32,7 @@
 #include <core/viewport/input/ViewportInputManager.h>
 #include <core/plugins/PluginManager.h>
 #include <core/utilities/units/UnitsManager.h>
+#include <core/utilities/io/FileManager.h>
 
 namespace Ovito {
 
@@ -95,6 +96,7 @@ bool Application::initialize()
 		UndoManager::initialize();
 		PluginManager::initialize();
 		ControllerManager::initialize();
+		FileManager::initialize();
 		DataSetManager::initialize();
 		ViewportManager::initialize();
 		ViewportInputManager::initialize();
@@ -181,6 +183,7 @@ void Application::shutdown()
 	ViewportInputManager::shutdown();
 	ViewportManager::shutdown();
 	DataSetManager::shutdown();
+	FileManager::shutdown();
 	ControllerManager::shutdown();
 	PluginManager::shutdown();
 	UndoManager::shutdown();

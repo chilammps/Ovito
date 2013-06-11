@@ -20,37 +20,29 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include <core/scene/objects/SceneObject.h>
-#include <core/scene/objects/AbstractCameraObject.h>
-#include <core/scene/display/DisplayObject.h>
-#include "moc_AbstractCameraObject.cpp"
+#include "FileManager.h"
 
 namespace Ovito {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(SceneObject, RefTarget)
-DEFINE_FLAGS_REFERENCE_FIELD(SceneObject, _displayObject, "DisplayObject", DisplayObject, PROPERTY_FIELD_NO_CHANGE_MESSAGE)
-SET_PROPERTY_FIELD_LABEL(SceneObject, _displayObject, "Display")
-
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(AbstractCameraObject, SceneObject)
+/// The singleton instance of the class.
+FileManager* FileManager::_instance = nullptr;
 
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-SceneObject::SceneObject() : _revisionNumber(0)
+FileManager::FileManager()
 {
-	INIT_PROPERTY_FIELD(SceneObject::_displayObject);
+	OVITO_ASSERT_MSG(!_instance, "FileManager constructor", "Multiple instances of this singleton class have been created.");
 }
 
 /******************************************************************************
-* Sends an event to all dependents of this RefTarget.
+* Makes a file available on this computer.
 ******************************************************************************/
-void SceneObject::notifyDependents(ReferenceEvent& event)
+QFuture<QString> FileManager::fetchUrl(const QUrl& url)
 {
-	// Automatically increment revision counter each time the object changes.
-	if(event.type() == ReferenceEvent::TargetChanged)
-		_revisionNumber++;
-
-	RefTarget::notifyDependents(event);
+	QFutureInterface<QString> futureInterface(QFutureInterface<QString>::State(QFutureInterface<QString>::Started | QFutureInterface<QString>::Finished));
+	return futureInterface.future();
 }
+
 
 };

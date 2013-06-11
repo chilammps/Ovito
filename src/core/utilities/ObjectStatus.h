@@ -41,7 +41,8 @@ public:
 	enum StatusType {
 		Success,
 		Warning,
-		Error
+		Error,
+		Pending
 	};
 
 	/// Default constructor that creates a status object with status StatusType::Success and an empty text.

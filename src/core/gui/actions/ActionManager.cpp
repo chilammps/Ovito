@@ -40,12 +40,12 @@ ActionManager::ActionManager()
 	OVITO_ASSERT_MSG(!_instance, "ActionManager constructor", "Multiple instances of this singleton class have been created.");
 
 	createCommandAction(ACTION_QUIT, tr("Exit"), ":/core/actions/file/file_quit.png", tr("Quit the application."), QKeySequence::Quit);
-	createCommandAction(ACTION_FILE_NEW, tr("New Scene"), ":/core/actions/file/file_new.png", tr("Resets the scene."), QKeySequence::New);
-	createCommandAction(ACTION_FILE_OPEN, tr("Load Scene"), ":/core/actions/file/file_open.png", tr("Load a saved scene from a file."), QKeySequence::Open);
-	createCommandAction(ACTION_FILE_SAVE, tr("Save Scene"), ":/core/actions/file/file_save.png", tr("Save the current scene to a file."), QKeySequence::Save);
-	createCommandAction(ACTION_FILE_SAVEAS, tr("Save Scene As"), ":/core/actions/file/file_save_as.png", tr("Save the current scene to a new file."), QKeySequence::SaveAs);
-	createCommandAction(ACTION_FILE_IMPORT, tr("Import Simulation"), ":/core/actions/file/file_import.png", tr("Import simulation data into the current scene."));
-	createCommandAction(ACTION_FILE_EXPORT, tr("Export Simulation"), ":/core/actions/file/file_export.png", tr("Export data to a file."), Qt::CTRL + Qt::Key_E);
+	createCommandAction(ACTION_FILE_NEW, tr("Reset State"), ":/core/actions/file/file_new.png", tr("Resets the program to its initial state."), QKeySequence::New);
+	createCommandAction(ACTION_FILE_OPEN, tr("Load State"), ":/core/actions/file/file_open.png", tr("Load a saved state from a file."), QKeySequence::Open);
+	createCommandAction(ACTION_FILE_SAVE, tr("Save State"), ":/core/actions/file/file_save.png", tr("Save the current program state to a file."), QKeySequence::Save);
+	createCommandAction(ACTION_FILE_SAVEAS, tr("Save State As"), ":/core/actions/file/file_save_as.png", tr("Save the current program state to a new file."), QKeySequence::SaveAs);
+	createCommandAction(ACTION_FILE_IMPORT, tr("Open File"), ":/core/actions/file/file_import.png", tr("Import data from a file."), Qt::CTRL + Qt::Key_I);
+	createCommandAction(ACTION_FILE_EXPORT, tr("Export File"), ":/core/actions/file/file_export.png", tr("Export data to a file."), Qt::CTRL + Qt::Key_E);
 	createCommandAction(ACTION_HELP_ABOUT, tr("About"), NULL, tr("Show information about the application."));
 	createCommandAction(ACTION_HELP_SHOW_ONLINE_HELP, tr("Manual"), NULL, tr("Open the online manual."));
 
@@ -55,6 +55,7 @@ ActionManager::ActionManager()
 
 	createCommandAction(ACTION_VIEWPORT_MAXIMIZE, tr("Maximize Active Viewport"), ":/core/actions/viewport/maximize_viewport.png", tr("Enlarge/reduce the active viewport."));
 	createCommandAction(ACTION_VIEWPORT_ZOOM_SCENE_EXTENTS, tr("Zoom Scene Extents"), ":/core/actions/viewport/zoom_scene_extents.png", tr("Zoom to show all."));
+	createCommandAction(ACTION_VIEWPORT_ZOOM_SELECTION_EXTENTS_ALL, tr("Zoom Selection Extents"), ":/core/actions/viewport/zoom_scene_selection_extents.png", tr("Zoom to show all selected objects."));
 	createViewportModeAction(ACTION_VIEWPORT_ZOOM, ZoomMode::instance(), tr("Zoom"), ":/core/actions/viewport/mode_zoom.png", tr("Activate zoom mode."));
 	createViewportModeAction(ACTION_VIEWPORT_PAN, PanMode::instance(), tr("Pan"), ":/core/actions/viewport/mode_pan.png", tr("Activate pan mode to shift the region visible in the viewports."));
 	createViewportModeAction(ACTION_VIEWPORT_ORBIT, OrbitMode::instance(), tr("Orbit"), ":/core/actions/viewport/mode_orbit.png", tr("Activate orbit mode to rotate the camera around the scene."));

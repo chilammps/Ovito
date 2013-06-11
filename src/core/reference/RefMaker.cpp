@@ -40,7 +40,9 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(RefMaker, OvitoObject);
 void RefMaker::autoDeleteObject()
 {
 	clearAllReferences();
-	OvitoObject::autoDeleteObject();
+
+	if(UndoManager::instance().isRecording() == false)
+		OvitoObject::autoDeleteObject();
 }
 
 /******************************************************************************

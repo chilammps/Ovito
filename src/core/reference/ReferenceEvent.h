@@ -94,6 +94,12 @@ public:
 	/// \return The sender of this notification message.
 	RefTarget* sender() const { return _sender; }
 
+	/// \brief Returns a flag that indicates whether this type of event should be propagated
+	///        by a receiver to its respective dependents.
+	bool shouldPropagate() const {
+		return type() == ReferenceEvent::TargetChanged;
+	}
+
 private:
 
 	/// The type of event.

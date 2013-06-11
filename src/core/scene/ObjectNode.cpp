@@ -56,7 +56,7 @@ const PipelineFlowState& ObjectNode::evalPipeline(TimePoint time)
 			UndoSuspender noUndo;
 
 			// Evaluate object and save result in local cache.
-			_pipelineCache = sceneObject()->evalObject(time);
+			_pipelineCache = sceneObject()->evaluate(time);
 
 			// Update list of display objects.
 
@@ -86,8 +86,10 @@ const PipelineFlowState& ObjectNode::evalPipeline(TimePoint time)
 			}
 		}
 		else {
+#if 0
 			// Clear cache if this node is empty.
-			_pipelineCache.clear();
+			invalidatePipelineCache();
+#endif
 			// Discard display objects as well.
 			_displayObjects.clear();
 		}
@@ -116,10 +118,13 @@ void ObjectNode::render(TimePoint time, SceneRenderer* renderer)
 ******************************************************************************/
 bool ObjectNode::referenceEvent(RefTarget* source, ReferenceEvent* event)
 {
+#if 0
 	if(event->type() == ReferenceEvent::TargetChanged && source == sceneObject()) {
 		invalidatePipelineCache();
 	}
-	else if(event->type() == ReferenceEvent::TargetDeleted && source == sceneObject()) {
+	else
+#endif
+		if(event->type() == ReferenceEvent::TargetDeleted && source == sceneObject()) {
 		// Object has been deleted -> delete node too.
 		if(!UndoManager::instance().isUndoingOrRedoing())
 			deleteNode();
@@ -132,8 +137,10 @@ bool ObjectNode::referenceEvent(RefTarget* source, ReferenceEvent* event)
 ******************************************************************************/
 void ObjectNode::referenceReplaced(const PropertyFieldDescriptor& field, RefTarget* oldTarget, RefTarget* newTarget)
 {
+#if 0
 	if(field == PROPERTY_FIELD(ObjectNode::_sceneObject))
 		invalidatePipelineCache();
+#endif
 
 	SceneNode::referenceReplaced(field, oldTarget, newTarget);
 }

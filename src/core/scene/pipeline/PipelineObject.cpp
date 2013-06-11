@@ -34,10 +34,14 @@ SET_PROPERTY_FIELD_LABEL(PipelineObject, _modApps, "Modifier Applications")
 /******************************************************************************
 * Default constructor.
 ******************************************************************************/
-PipelineObject::PipelineObject() : _cacheIndex(-1)
+PipelineObject::PipelineObject()
 {
 	INIT_PROPERTY_FIELD(PipelineObject::_inputObject);
 	INIT_PROPERTY_FIELD(PipelineObject::_modApps);
+
+#if 0
+	_cacheIndex = -1;
+#endif
 }
 
 /******************************************************************************
@@ -55,6 +59,7 @@ PipelineFlowState PipelineObject::evalObject(TimePoint time, ModifierApplication
 	if(!inputObject())
 		return PipelineFlowState();	// Cannot evaluate pipeline if there is no input.
 
+#if	0
 	// Determine the index up to which the stack should be evaluated.
 	int upToHereIndex = modifierApplications().size();
 	if(upToHere != NULL) {
@@ -64,7 +69,7 @@ PipelineFlowState PipelineObject::evalObject(TimePoint time, ModifierApplication
 	}
 
 	// Evaluate the input object.
-	PipelineFlowState inputState = inputObject()->evalObject(time);
+	PipelineFlowState inputState = inputObject()->evaluate(time);
 
 	// The index from which on the stack should be evaluated.
 	int fromHereIndex = 0;
@@ -167,6 +172,7 @@ PipelineFlowState PipelineObject::evalObject(TimePoint time, ModifierApplication
 	}
 
 	return flowState;
+#endif
 }
 
 /******************************************************************************
@@ -266,9 +272,11 @@ void PipelineObject::modifierChanged(int changedIndex)
 
 	OVITO_ASSERT(changedIndex >= -1 && changedIndex < modifierApplications().size());
 
+#if 0
 	// Invalidate the internal cache if it contains a state behind the changed modifier.
 	if(changedIndex < _cacheIndex)
 		invalidatePipelineCache();
+#endif
 }
 
 };

@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// 
+//
 //  Copyright (2013) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
@@ -20,37 +20,36 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include <core/scene/objects/SceneObject.h>
-#include <core/scene/objects/AbstractCameraObject.h>
-#include <core/scene/display/DisplayObject.h>
-#include "moc_AbstractCameraObject.cpp"
+#include <core/utilities/io/FileManager.h>
+#include <core/utilities/BackgroundOperation.h>
+#include <viz/data/SimulationCell.h>
+#include "LAMMPSTextDumpImporter.h"
 
-namespace Ovito {
+namespace Viz {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(SceneObject, RefTarget)
-DEFINE_FLAGS_REFERENCE_FIELD(SceneObject, _displayObject, "DisplayObject", DisplayObject, PROPERTY_FIELD_NO_CHANGE_MESSAGE)
-SET_PROPERTY_FIELD_LABEL(SceneObject, _displayObject, "Display")
-
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(AbstractCameraObject, SceneObject)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(LAMMPSTextDumpImporter, LinkedFileImporter)
 
 /******************************************************************************
-* Constructor.
+* Reads the data from the input file(s).
 ******************************************************************************/
-SceneObject::SceneObject() : _revisionNumber(0)
+void LAMMPSTextDumpImporter::loadImplementation(QFutureInterface<OORef<SceneObject>>& futureInterface, FrameSourceInformation frame, bool suppressDialogs)
 {
-	INIT_PROPERTY_FIELD(SceneObject::_displayObject);
-}
+	// Fetch file.
+	QFuture<QString> fetchFileFuture = FileManager::instance().fetchUrl(frame.sourceFile);
+	if(!waitForSlaveFuture(futureInterface, fetchFileFuture))
+		return;
 
-/******************************************************************************
-* Sends an event to all dependents of this RefTarget.
-******************************************************************************/
-void SceneObject::notifyDependents(ReferenceEvent& event)
-{
-	// Automatically increment revision counter each time the object changes.
-	if(event.type() == ReferenceEvent::TargetChanged)
-		_revisionNumber++;
+	// Open file.
+	QString filename = fetchFileFuture.result();
+	QFile file(filename);
+	if(!file.open(QIODevice::ReadOnly | QIODevice::Text))
+		throw Exception(tr("Failed to open file %1 for reading: %2").arg(filename).arg(file.errorString()));
 
-	RefTarget::notifyDependents(event);
+	// Create simulation cell.
+	OORef<SimulationCell> cell(new SimulationCell());
+
+	// Return results.
+	futureInterface.reportResult(cell);
 }
 
 };

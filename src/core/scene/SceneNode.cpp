@@ -26,6 +26,7 @@
 #include <core/animation/controller/LookAtController.h>
 #include <core/gui/undo/UndoManager.h>
 #include <core/dataset/DataSetManager.h>
+#include <core/dataset/DataSet.h>
 #include <core/animation/TimeInterval.h>
 #include <core/reference/CloneHelper.h>
 #include <core/scene/GroupNode.h>
@@ -407,5 +408,26 @@ OORef<RefTarget> SceneNode::clone(bool deepCopy, CloneHelper& cloneHelper)
 
 	return clone;
 }
+
+/******************************************************************************
+* Returns the data set that owns this scene node (may be NULL).
+******************************************************************************/
+DataSet* SceneNode::dataSet() const
+{
+	// Traverse hierarchy up to scene root node.
+	const SceneNode* rootNode = this;
+	while(rootNode->parentNode())
+		rootNode = rootNode->parentNode();
+
+	// Find data set that references the root node.
+	for(RefMaker* refmaker : rootNode->dependents()) {
+		DataSet* dataset = dynamic_object_cast<DataSet>(refmaker);
+		if(dataset && dataset->sceneRoot() == rootNode)
+			return dataset;
+	}
+
+	return nullptr;
+}
+
 
 };

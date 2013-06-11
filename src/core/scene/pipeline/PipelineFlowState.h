@@ -30,6 +30,7 @@
 #include <core/Core.h>
 #include <core/animation/TimeInterval.h>
 #include <core/reference/RefMaker.h>
+#include <core/utilities/ObjectStatus.h>
 
 namespace Ovito {
 
@@ -45,7 +46,7 @@ public:
 	/// \brief Default constructor that creates an empty state object.
 	PipelineFlowState() : _stateValidity(TimeInterval::empty()) {}
 
-	/// \brief Constructor that creates an state object and initializes it with a SceneObject.
+	/// \brief Constructor that creates a state object and initializes it with a SceneObject.
 	/// \param sceneObject The object represents the current state of a geometry pipeline evaluation.
 	/// \param validityInterval Specifies the time interval during which the returned object is valid.
 	///                         For times outside this interval the geometry pipeline has to be re-evaluated.
@@ -53,11 +54,28 @@ public:
 		addObject(sceneObject);
 	}
 
+	/// \brief Constructor that creates a state object with the given status.
+	/// \param status A status object that describes the outcome of the pipeline evaluation.
+	PipelineFlowState(const ObjectStatus& status) : _status(status), _stateValidity(TimeInterval::empty()) {}
+
+	/// \brief Constructor that creates a state object and initializes it with a list of SceneObjects.
+	/// \param status A status object that describes the outcome of the pipeline evaluation.
+	/// \param sceneObjects The objects that represents the current state of a geometry pipeline evaluation.
+	/// \param validityInterval Specifies the time interval during which the returned objects are valid.
+	PipelineFlowState(const ObjectStatus& status, const QVector<SceneObject*>& sceneObjects, const TimeInterval& validityInterval) :
+		_status(status), _stateValidity(validityInterval)
+	{
+		for(const auto& obj : sceneObjects)
+			addObject(obj);
+	}
+
+#if 0
 	/// \brief Discards the contents of this state object.
 	void clear() {
 		_objects.clear();
 		_stateValidity.setEmpty();
 	}
+#endif
 
 	/// \brief Adds an additional scene object to this state.
 	void addObject(SceneObject* obj);
@@ -97,16 +115,21 @@ public:
 	/// \brief Updates the stored revision number for a scene object.
 	void setRevisionNumber(SceneObject* obj, unsigned int revNumber);
 
+	/// Returns the status of the pipeline evaluation.
+	const ObjectStatus& status() const { return _status; }
+
 private:
 
 	/// Contains the objects that flow up the geometry pipeline
 	/// and are modified by modifiers. Each object is associated
-	/// with a revision number, which is used to detect changes
-	/// between different flow states.
+	/// with a revision number, which is used to detect changes to an object.
 	std::map<OORef<SceneObject>, unsigned int> _objects;
 
 	/// Contains the validity interval for this pipeline flow state.
 	TimeInterval _stateValidity;
+
+	/// The status structure.
+	ObjectStatus _status;
 };
 
 };

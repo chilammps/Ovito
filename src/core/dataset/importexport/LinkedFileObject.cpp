@@ -20,57 +20,84 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include <core/undo/UndoManager.h>
-#include <core/scene/animation/AnimManager.h>
-#include <core/data/ObjectLoadStream.h>
-#include <core/data/ObjectSaveStream.h>
+#include <core/gui/undo/UndoManager.h>
+#include <core/animation/AnimManager.h>
+#include <core/utilities/io/ObjectLoadStream.h>
+#include <core/utilities/io/ObjectSaveStream.h>
 #include <core/viewport/Viewport.h>
 #include <core/viewport/ViewportManager.h>
 #include <core/scene/ObjectNode.h>
-#include <core/gui/ApplicationManager.h>
-#include <core/gui/properties/FilenamePropertyUI.h>
-#include <core/gui/properties/BooleanActionPropertyUI.h>
 #include <core/gui/dialogs/ImportFileDialog.h>
-#include <core/data/importexport/ImportExportManager.h>
-#include "AtomsImportObject.h"
+#include <core/dataset/importexport/ImportExportManager.h>
+#include "LinkedFileObject.h"
 
-namespace AtomViz {
+namespace Ovito {
 
-IMPLEMENT_SERIALIZABLE_PLUGIN_CLASS(AtomsImportObject, SceneObject)
-DEFINE_FLAGS_REFERENCE_FIELD(AtomsImportObject, AtomsObject, "Atoms", PROPERTY_FIELD_ALWAYS_DEEP_COPY, _atoms)
-DEFINE_FLAGS_REFERENCE_FIELD(AtomsImportObject, AtomsFileParser, "File Parser", PROPERTY_FIELD_ALWAYS_DEEP_COPY, _parser)
-DEFINE_PROPERTY_FIELD(AtomsImportObject, "FramesPerSnapshot", _framesPerSnapshot)
-DEFINE_PROPERTY_FIELD(AtomsImportObject, "AdjustAnimationInterval", _adjustAnimationInterval)
-SET_PROPERTY_FIELD_LABEL(AtomsImportObject, _atoms, "Atoms")
-SET_PROPERTY_FIELD_LABEL(AtomsImportObject, _parser, "Parser")
-SET_PROPERTY_FIELD_LABEL(AtomsImportObject, _framesPerSnapshot, "Animation frames per simulation snapshot")
-SET_PROPERTY_FIELD_LABEL(AtomsImportObject, _adjustAnimationInterval, "Adjust animation interval")
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(LinkedFileObject, SceneObject)
+DEFINE_FLAGS_REFERENCE_FIELD(LinkedFileObject, _importer, "Importer", LinkedFileImporter, PROPERTY_FIELD_ALWAYS_DEEP_COPY)
+DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(LinkedFileObject, _sceneObjects, "SceneObjects", SceneObject, PROPERTY_FIELD_ALWAYS_DEEP_COPY)
+DEFINE_PROPERTY_FIELD(LinkedFileObject, _adjustAnimationInterval, "AdjustAnimationInterval")
+SET_PROPERTY_FIELD_LABEL(LinkedFileObject, _importer, "File Importer")
+SET_PROPERTY_FIELD_LABEL(LinkedFileObject, _sceneObjects, "Objects")
+SET_PROPERTY_FIELD_LABEL(LinkedFileObject, _adjustAnimationInterval, "Adjust animation interval")
 
 /******************************************************************************
 * Constructs the object.
 ******************************************************************************/
-AtomsImportObject::AtomsImportObject(bool isLoading)
-	: SceneObject(isLoading), _loadedMovieFrame(0), _framesPerSnapshot(1), _adjustAnimationInterval(true)
+LinkedFileObject::LinkedFileObject() : _adjustAnimationInterval(true), _loadedFrame(-1), _frameBeingLoaded(-1)
 {
-	INIT_PROPERTY_FIELD(AtomsImportObject, _atoms);
-	INIT_PROPERTY_FIELD(AtomsImportObject, _parser);
-	INIT_PROPERTY_FIELD(AtomsImportObject, _framesPerSnapshot);
-	INIT_PROPERTY_FIELD(AtomsImportObject, _adjustAnimationInterval);
-	if(!isLoading) {
-
-		// Create the AtomsObject where the imported data will be stored.
-		_atoms = new AtomsObject();
-		_atoms->setSerializeAtoms(false);
-
-		// Assume periodic boundary conditions by default.
-		_atoms->simulationCell()->setPeriodicity(true, true, true);
-	}
+	INIT_PROPERTY_FIELD(LinkedFileObject::_importer);
+	INIT_PROPERTY_FIELD(LinkedFileObject::_sceneObjects);
+	INIT_PROPERTY_FIELD(LinkedFileObject::_adjustAnimationInterval);
 }
 
 /******************************************************************************
 * Asks the object for the result of the geometry pipeline at the given time.
 ******************************************************************************/
-PipelineFlowState AtomsImportObject::evalObject(TimeTicks time)
+PipelineFlowState LinkedFileObject::evaluateNow(TimePoint time)
+{
+	int frame = AnimManager::instance().timeToFrame(time);
+	if(_loadedFrame == frame)
+		return PipelineFlowState(status(), _sceneObjects.targets(), TimeInterval(time));
+	else
+		return PipelineFlowState(ObjectStatus::Pending);
+}
+
+/******************************************************************************
+* Requests the results of a full evaluation of the geometry pipeline at the given time.
+******************************************************************************/
+QFuture<PipelineFlowState> LinkedFileObject::evaluateLater(TimePoint time)
+{
+	int frame = AnimManager::instance().timeToFrame(time);
+	if(_loadedFrame == frame) {
+		return makeFuture(PipelineFlowState(status(), _sceneObjects.targets(), TimeInterval(time)));
+	}
+
+	if(_frameBeingLoaded != frame) {
+		abortOperation(_evaluationOperation);
+		OVITO_ASSERT(_frameBeingLoaded == -1);
+		_frameBeingLoaded = frame;
+		_evaluationOperation = QFutureInterface<PipelineFlowState>(QFutureInterface<PipelineFlowState>::Started);
+		_loadOperationWatcher.setFuture(importer()->load(frame));
+	}
+	return _evaluationOperation.future();
+}
+
+/******************************************************************************
+* Call the importer object to load the given frame.
+******************************************************************************/
+void LinkedFileObject::evaluateImplementation(QFutureInterface<PipelineFlowState>& futureInterface, int frameIndex)
+{
+
+}
+
+
+
+#if 0
+/******************************************************************************
+* Asks the object for the result of the geometry pipeline at the given time.
+******************************************************************************/
+PipelineFlowState LinkedFileObject::evalObject(TimePoint time)
 {
 	TimeInterval interval = TimeForever;
 	if(!atomsObject() || !parser() || parser()->numberOfMovieFrames() <= 0) return PipelineFlowState(NULL, interval);
@@ -123,74 +150,94 @@ void AtomsImportObject::setParser(AtomsFileParser* parser)
 {
 	this->_parser = parser;
 }
+#endif
 
 /******************************************************************************
 * This will reload the current movie frame.
 * Note: Throws an exception on error.
 * Returns false when the operation has been canceled by the user.
 ******************************************************************************/
-bool AtomsImportObject::reloadInputFile()
+bool LinkedFileObject::refreshFromSource(int frame, bool suppressDialogs)
 {
+#if 0
 	try {
-		if(!parser() || !atomsObject())
-			throw tr("No parser has been specified.");
+		// Validate data source.
+		if(!importer())
+			throw tr("No importer has been specified.");
+		if(importer()->numberOfFrames() <= 0)
+			throw Exception(tr("Data source does not contain any data."));
 
-		// Do not create any animation keys.
-		AnimationSuspender animSuspender;
-		// Do not record this operation.
-		UndoSuspender undoSuspender;
+		AnimationSuspender animSuspender;	// Do not create any animation keys.
+		UndoSuspender undoSuspender;		// Do not record this operation.
 
+		// Adjust requested frame number to the interval provided by the parser.
+		if(frame < 0) frame = 0;
+		if(frame >= importer()->numberOfFrames()) frame = importer()->numberOfFrames() - 1;
+		_loadedFrame = frame;
 
-		if(parser()->numberOfMovieFrames() <= 0)
-			throw Exception(tr("Atomic input file does not contain any atoms."));
-		if(_loadedMovieFrame < 0) _loadedMovieFrame = 0;
-		else if(_loadedMovieFrame >= parser()->numberOfMovieFrames()) _loadedMovieFrame = parser()->numberOfMovieFrames() - 1;
+		// Now let the importer load the data.
+		setStatus(importer()->load(this, frame, suppressDialogs));
 
-		// Now load the atoms.
-		setStatus(parser()->loadAtomsFile(atomsObject(), _loadedMovieFrame));
 		// Check if operation has been canceled by the user.
-		if(status().type() == EvaluationStatus::EVALUATION_ERROR)
-			throw tr("Loading operation canceled by the user.");
-
-		// Adjust the animation interval.
-		if(_adjustAnimationInterval) {
-			if(parser()->numberOfMovieFrames() > 1) {
-				TimeInterval interval(0, ANIM_MANAGER.frameToTime((parser()->numberOfMovieFrames()-1) * framesPerSnapshot()));
-				ANIM_MANAGER.setAnimationInterval(interval);
-			}
-			else {
-				ANIM_MANAGER.setAnimationInterval(TimeInterval(ANIM_MANAGER.frameToTime(0)));
-				ANIM_MANAGER.setTime(ANIM_MANAGER.frameToTime(0));
-			}
+		if(status().type() == ObjectStatus::Error) {
+			setStatus(ObjectStatus(ObjectStatus::Error, tr("Loading process has been canceled by the user.")));
+			return false;
 		}
+
+		// Adjust animation interval of current data set.
+		adjustAnimationInterval();
 
 		return true;
 	}
-	catch(const QString& msg) {
-		setStatus(EvaluationStatus(EvaluationStatus::EVALUATION_ERROR, msg));
-		return false;
-	}
 	catch(const Exception& ex) {
-		// Transfer exception message to evaluation status.
-		QString msg = ex.message();
-		for(int i=1; i<ex.messages().size(); i++) {
-			msg += "\n";
-			msg += ex.messages()[i];
-		}
-		setStatus(EvaluationStatus(EvaluationStatus::EVALUATION_ERROR, msg));
-		throw ex;
+		// Convert exception message to evaluation status.
+		setStatus(ObjectStatus(ObjectStatus::Error, ex.messages().join('\n')));
+		// Pass exception on to caller.
+		throw;
 	}
+#endif
+	return true;
 }
 
 /******************************************************************************
-* Stores the parser status and sends a notification message.
+* Saves the status returned by the parser object and generates a
+* ReferenceEvent::StatusChanged event.
 ******************************************************************************/
-void AtomsImportObject::setStatus(const EvaluationStatus& status)
+void LinkedFileObject::setStatus(const ObjectStatus& status)
 {
-	if(status == _loadStatus) return;
-	_loadStatus = status;
-	notifyDependents(REFTARGET_STATUS_CHANGED);
+	if(status == _importStatus) return;
+	_importStatus = status;
+	notifyDependents(ReferenceEvent::StatusChanged);
 }
+
+/******************************************************************************
+* Adjusts the animation interval of the current data set to the number of
+* frames reported by the file parser.
+******************************************************************************/
+void LinkedFileObject::adjustAnimationInterval()
+{
+	if(!_adjustAnimationInterval || !importer())
+		return;
+
+	QSet<RefMaker*> datasets = findDependents(DataSet::OOType);
+	if(datasets.empty())
+		return;
+
+	DataSet* dataset = static_object_cast<DataSet>(*datasets.cbegin());
+	AnimationSettings* animSettings = dataset->animationSettings();
+
+	if(importer()->numberOfFrames() > 1) {
+		TimeInterval interval(0, (importer()->numberOfFrames()-1) * animSettings->ticksPerFrame());
+		animSettings->setAnimationInterval(interval);
+	}
+	else {
+		animSettings->setAnimationInterval(0);
+		animSettings->setTime(0);
+	}
+}
+
+
+#if 0
 
 /******************************************************************************
 * Asks the object for its validity interval at the given time.
@@ -355,243 +402,6 @@ void AtomsImportObject::showSelectionDialog(QWidget* parent)
 		ex.showError();
 	}
 }
-
-
-IMPLEMENT_PLUGIN_CLASS(AtomsImportObjectEditor, PropertiesEditor)
-
-/******************************************************************************
-* Sets up the UI of the editor.
-******************************************************************************/
-void AtomsImportObjectEditor::createUI(const RolloutInsertionParameters& rolloutParams)
-{
-	// Create a rollout.
-	QWidget* rollout = createRollout(tr("Data source"), rolloutParams, "atomviz.objects.import_atoms_object", "atomviz.objects.import_atoms_object.html");
-
-    // Create the rollout contents.
-	QVBoxLayout* layout = new QVBoxLayout(rollout);
-	layout->setContentsMargins(4,4,4,4);
-	layout->setSpacing(0);
-
-	QToolBar* toolbar = new QToolBar(rollout);
-	toolbar->setStyleSheet("QToolBar { padding: 0px; margin: 0px; border: 0px none black; }");
-	layout->addWidget(toolbar);
-
-	FilenamePropertyUI* inputFilePUI = new FilenamePropertyUI(this, "inputFile", SLOT(showSelectionDialog(QWidget*)));
-
-	toolbar->addAction(QIcon(":/atomviz/icons/import_newfile.png"), tr("Change input file"), inputFilePUI, SLOT(showSelectionDialog()));
-	toolbar->addAction(QIcon(":/atomviz/icons/import_reload.png"), tr("Reload input file"), this, SLOT(onReload()));
-	parserSettingsAction = toolbar->addAction(QIcon(":/atomviz/icons/import_settings.png"), tr("Settings"), this, SLOT(onParserSettings()));
-
-	QAction* storeAtomsWithSceneAction = toolbar->addAction(QIcon(":/atomviz/icons/store_with_scene.png"), tr("Store imported data with scene"));
-	new BooleanActionPropertyUI(this, "storeAtomsWithScene", storeAtomsWithSceneAction);
-
-	animationSettingsAction = toolbar->addAction(QIcon(":/atomviz/icons/animation_settings.png"), tr("Animation settings"), this, SLOT(onAnimationSettings()));
-	animationSettingsAction->setVisible(APPLICATION_MANAGER.experimentalMode());
-
-	layout->addWidget(new QLabel(tr("<b>File:</b>"), rollout));
-	filenameLabel = new ElidedTextLabel(rollout);
-	filenameLabel->setIndent(10);
-	filenameLabel->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard | Qt::LinksAccessibleByMouse | Qt::LinksAccessibleByKeyboard);
-	layout->addWidget(filenameLabel);
-
-	layout->addWidget(new QLabel(tr("<b>Directory:</b>"), rollout));
-	filepathLabel = new ElidedTextLabel(rollout);
-	filepathLabel->setIndent(10);
-	filepathLabel->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard | Qt::LinksAccessibleByMouse | Qt::LinksAccessibleByKeyboard);
-	layout->addWidget(filepathLabel);
-
-	layout->addWidget(new QLabel(tr("<b>Info:</b>"), rollout));
-
-	QGridLayout* layout2 = new QGridLayout();
-	layout2->setContentsMargins(0,0,0,0);
-	layout2->setColumnStretch(1, 1);
-	_statusIconLabel = new QLabel(rollout);
-	_statusIconLabel->setAlignment(Qt::AlignTop);
-	layout2->addWidget(_statusIconLabel, 0, 0, Qt::AlignTop);
-
-	_statusTextLabel = new QLabel(rollout);
-	_statusTextLabel->setAlignment(Qt::AlignTop);
-	_statusTextLabel->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard | Qt::LinksAccessibleByMouse | Qt::LinksAccessibleByKeyboard);
-	_statusTextLabel->setWordWrap(true);
-	layout2->addWidget(_statusTextLabel, 0, 1);
-
-	statusWarningIcon.load(":/atomviz/icons/modifier_status_warning.png");
-	statusErrorIcon.load(":/atomviz/icons/modifier_status_error.png");
-
-	layout->addLayout(layout2);
-}
-
-/******************************************************************************
-* Is called when the editor gets associated with an object.
-******************************************************************************/
-void AtomsImportObjectEditor::setEditObject(RefTarget* newObject)
-{
-	PropertiesEditor::setEditObject(newObject);
-
-	// Enable/disable button for the settings dialog depending on whether such a dialog box
-	// is provided by the selected parser.
-
-	AtomsImportObject* obj = static_object_cast<AtomsImportObject>(newObject);
-	if(obj && obj->parser() && obj->parser()->hasSettingsDialog())
-		parserSettingsAction->setEnabled(true);
-	else
-		parserSettingsAction->setEnabled(false);
-
-	updateInformationLabel();
-}
-
-/******************************************************************************
-* Is called when the user presses the Reload button.
-******************************************************************************/
-void AtomsImportObjectEditor::onReload()
-{
-	AtomsImportObject* obj = static_object_cast<AtomsImportObject>(editObject());
-	CHECK_OBJECT_POINTER(obj);
-	try {
-		ViewportSuspender noVPUpdate;
-		obj->reloadInputFile();
-	}
-	catch(const Exception& ex) {
-		ex.showError();
-	}
-}
-
-/******************************************************************************
-* Is called when the user presses the Parser Settings button.
-******************************************************************************/
-void AtomsImportObjectEditor::onParserSettings()
-{
-	AtomsImportObject* obj = static_object_cast<AtomsImportObject>(editObject());
-	CHECK_OBJECT_POINTER(obj);
-
-	try {
-		if(obj->parser() == NULL)
-			throw Exception(tr("There is no parser object available."));
-
-		// Show settings dialog.
-		if(!obj->parser()->showSettingsDialog(container()))
-			return;
-
-		ViewportSuspender noVPUpdate;
-		obj->reloadInputFile();
-	}
-	catch(const Exception& ex) {
-		ex.showError();
-	}
-}
-
-/******************************************************************************
-* Updates the contents of the status label.
-******************************************************************************/
-void AtomsImportObjectEditor::updateInformationLabel()
-{
-	AtomsImportObject* obj = static_object_cast<AtomsImportObject>(editObject());
-	if(!obj) return;
-
-	QFileInfo fileInfo(obj->sourceFile());
-
-	filenameLabel->setText(fileInfo.fileName());
-	filepathLabel->setText(fileInfo.absolutePath());
-
-	_statusTextLabel->setText(obj->status().longMessage());
-	if(obj->status().type() == EvaluationStatus::EVALUATION_WARNING)
-		_statusIconLabel->setPixmap(statusWarningIcon);
-	else if(obj->status().type() == EvaluationStatus::EVALUATION_ERROR)
-		_statusIconLabel->setPixmap(statusErrorIcon);
-	else
-		_statusIconLabel->clear();
-
-	animationSettingsAction->setEnabled(obj->parser() && obj->parser()->numberOfMovieFrames() > 1);
-}
-
-/******************************************************************************
-* This method is called when a reference target changes.
-******************************************************************************/
-bool AtomsImportObjectEditor::onRefTargetMessage(RefTarget* source, RefTargetMessage* msg)
-{
-	if(source == editObject() && (msg->type() == REFTARGET_STATUS_CHANGED || msg->type() == SCHEMATIC_TITLE_CHANGED)) {
-		updateInformationLabel();
-	}
-	return PropertiesEditor::onRefTargetMessage(source, msg);
-}
-
-/******************************************************************************
-* Is called when the user presses the Animation Settings button.
-******************************************************************************/
-void AtomsImportObjectEditor::onAnimationSettings()
-{
-	AtomsImportObject* obj = static_object_cast<AtomsImportObject>(editObject());
-	CHECK_OBJECT_POINTER(obj);
-
-	AtomsImportObjectAnimationSettingsDialog dialog(obj, container());
-	dialog.exec();
-}
-
-/******************************************************************************
-* Dialog box constructor.
-******************************************************************************/
-AtomsImportObjectAnimationSettingsDialog::AtomsImportObjectAnimationSettingsDialog(AtomsImportObject* importObject, QWidget* parent)
-	: QDialog(parent)
-{
-	setWindowTitle(tr("Animation settings"));
-	this->importObject = importObject;
-
-	QVBoxLayout* layout1 = new QVBoxLayout(this);
-
-	// Time steps group
-	QGroupBox* playbackGroupBox = new QGroupBox(tr("Playback speed"), this);
-	layout1->addWidget(playbackGroupBox);
-
-	QGridLayout* contentLayout = new QGridLayout(playbackGroupBox);
-	contentLayout->setSpacing(0);
-	contentLayout->setColumnStretch(1, 1);
-	contentLayout->addWidget(new QLabel(tr("Animation frames per snapshot:"), this), 0, 0);
-	QLineEdit* framePerSnapshotBox = new QLineEdit(this);
-	contentLayout->addWidget(framePerSnapshotBox, 0, 1);
-	framePerSnapshotSpinner = new SpinnerWidget(this);
-	framePerSnapshotSpinner->setTextBox(framePerSnapshotBox);
-	framePerSnapshotSpinner->setMinValue(1);
-	framePerSnapshotSpinner->setIntValue(importObject->framesPerSnapshot());
-	framePerSnapshotSpinner->setUnit(UNITS_MANAGER.integerIdentity());
-	contentLayout->addWidget(framePerSnapshotSpinner, 0, 2);
-
-	adjustAnimationIntervalBox = new QCheckBox(tr("Adjust animation interval"), this);
-	adjustAnimationIntervalBox->setChecked(true);
-	layout1->addWidget(adjustAnimationIntervalBox);
-
-	// Ok and Cancel buttons
-	QDialogButtonBox* buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, this);
-	connect(buttonBox, SIGNAL(accepted()), this, SLOT(onOk()));
-	connect(buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
-	layout1->addWidget(buttonBox);
-}
-
-/******************************************************************************
-* This is called when the user has pressed the OK button.
-******************************************************************************/
-void AtomsImportObjectAnimationSettingsDialog::onOk()
-{
-	UNDO_MANAGER.beginCompoundOperation(tr("Change animation settings"));
-	try {
-		// Write settings back to the import object.
-		importObject->setFramesPerSnapshot(framePerSnapshotSpinner->intValue());
-
-		if(adjustAnimationIntervalBox->isChecked()) {
-			// Adjust the animation interval.
-			if(importObject->parser() && importObject->parser()->numberOfMovieFrames() > 1) {
-				TimeInterval interval(0, ANIM_MANAGER.frameToTime((importObject->parser()->numberOfMovieFrames()-1) * importObject->framesPerSnapshot()));
-				ANIM_MANAGER.setAnimationInterval(interval);
-			}
-		}
-
-		// Close dialog box.
-		accept();
-	}
-	catch(const Exception& ex) {
-		ex.showError();
-		UNDO_MANAGER.currentCompoundOperation()->clear();
-	}
-	UNDO_MANAGER.endCompoundOperation();
-}
+#endif
 
 };

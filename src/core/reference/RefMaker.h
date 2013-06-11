@@ -80,12 +80,12 @@ protected:
 	///       should always be called to allow the base class to handle message from its specific
 	///       reference targets.
 	///
-	/// The default implementation of this method does nothing and returns \c true if the event is
-	/// a ReferenceEvent::TargetChanged event.
+	/// The default implementation of this method does nothing and returns \c true if the event's
+	/// shouldPropagate() method returns true.
 	///
 	/// \sa RefTarget::notifyDependents()
 	virtual bool referenceEvent(RefTarget* source, ReferenceEvent* event) {
-		return event->type() == ReferenceEvent::TargetChanged;
+		return event->shouldPropagate();
 	}
 
 	/// \brief Is called when the value of a reference field of this RefMaker changes.

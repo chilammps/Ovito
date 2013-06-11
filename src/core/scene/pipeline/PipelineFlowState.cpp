@@ -32,7 +32,7 @@ void PipelineFlowState::addObject(SceneObject* obj)
 {
 	OVITO_CHECK_OBJECT_POINTER(obj);
 	OVITO_ASSERT_MSG(_objects.find(obj) == _objects.end(), "PipelineFlowState::addObject", "Cannot add the same scene object more than once.");
-	_objects.emplace(obj, obj->revisionNumber());
+	_objects.insert(std::make_pair(obj, obj->revisionNumber()));
 }
 
 /******************************************************************************

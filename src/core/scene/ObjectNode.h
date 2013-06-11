@@ -140,9 +140,11 @@ private:
 	/// the node's scene object in the viewports.
 	VectorReferenceField<DisplayObject> _displayObjects;
 
+#if 0
 	/// This method invalidates the geometry pipeline cache of the object node.
 	/// It will automatically be rebuilt on the next call to evalPipeline().
 	void invalidatePipelineCache() { _pipelineCache.clear(); }
+#endif
 
 	Q_OBJECT
 	OVITO_OBJECT

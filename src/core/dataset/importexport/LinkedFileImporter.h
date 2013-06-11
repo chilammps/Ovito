@@ -25,8 +25,11 @@
 #include <core/Core.h>
 #include <core/dataset/importexport/FileImporter.h>
 #include <core/utilities/ObjectStatus.h>
+#include <core/utilities/BackgroundOperation.h>
 
 namespace Ovito {
+
+class LinkedFileObject;		// defined in LinkedFileObject.h
 
 /**
  * \brief Base class for file parsers that can reload a file that has been imported into the scene.
@@ -52,15 +55,13 @@ public:
 		QDateTime lastModificationTime;
 	};
 
-protected:
+public:
 
 	/// \brief Constructs a new instance of this class.
 	LinkedFileImporter() {
 		INIT_PROPERTY_FIELD(LinkedFileImporter::_sourceUrl);
 		INIT_PROPERTY_FIELD(LinkedFileImporter::_loadedUrl);
 	}
-
-public:
 
 	///////////////////////////// from FileImporter /////////////////////////////
 
@@ -82,14 +83,9 @@ public:
 
 	//////////////////////////// Specific methods ////////////////////////////////
 
-	/// \brief Changes the source location for the imported data.
+	/// \brief Sets the source location for importing data.
 	/// \param sourceUrl The new source location.
-	/// \throws Exception if the new input file is invalid.
-	/// \return \a true on success; or \a false when the operation has been aborted by the user.
-	virtual bool setSourceUrl(const QUrl& sourceUrl) {
-		_sourceUrl = sourceUrl;
-		return true;
-	}
+	void setSourceUrl(const QUrl& sourceUrl) { _sourceUrl = sourceUrl; }
 
 	/// \brief Returns the source location of the import data.
 	const QUrl& sourceUrl() const { return _sourceUrl; }
@@ -114,35 +110,13 @@ public:
 	/// The default implementation returns \c false.
 	virtual bool hasSettingsDialog() { return false; }
 
-#if 0
-	/// \brief Reads an atomic data set from the input file.
-	/// \param destination Destination for the atomic data. The parser should store all atoms in the data channels of this AtomsObject.
+	/// \brief Reads the data from the input file(s).
 	/// \param movieFrame If the input file contains more than one movie frame then this parameter specifies
-	///                   the index of the movie frame to load (starting at 0). It must be less then the number of available frames
-	///                   reported by numberOfMovieFrames().
+	///                   the index of the animation frame to load (starting at 0). It must be less then the number of available frames
+	///                   reported by numberOfFrames().
 	/// \param suppressDialogs Specifies whether any dialogs or message boxes shown by the parser should be suppressed during loading.
-	///                        This parameter will is set to true in non-GUI mode or when the parser is invoked from a script to not
-	///                        interrupt the parsing process.
-	/// \return A status object with EvaluationStatus::EVALUATION_ERROR when the operation has been canceled by the user.
-	/// \throws Exception on error.
-	///
-	/// Before the atoms file can be loaded the method setInputFile() and prepareInputFile() must have been called at least
-	/// once.
-	///
-	/// \sa numberOfMovieFrames()
-	virtual ObjectStatus loadAtomsFile(AtomsObject* destination, int movieFrame = 0, bool suppressDialogs = false) = 0;
-
-	/// \brief Returns the number of movie frames in the input file.
-	/// \return The number of movie frames stored in the input file or 0 if the input filename has not been set.
-	///
-	/// This method should be overridden by sub-classes if they support multi-frame atoms files. The
-	/// default implementation of this method returns 1.
-	///
-	/// \note prepareInputFile() must be called before the number of movie frames can be queried.
-	///
-	/// \sa loadAtomsFile()
-	virtual int numberOfMovieFrames() { return inputFile().isEmpty() ? 0 : 1; }
-#endif
+	/// \return A QFuture that will give access to the loaded scene objects.
+	virtual QFuture<OORef<SceneObject>> load(int frame = 0, bool suppressDialogs = false);
 
 	/// \brief Scans the input source (which can be a directory or a single file) to discover all animation frames.
 	/// \param suppressDialogs Specifies whether any dialogs or message boxes should be suppressed during this operation.
@@ -153,7 +127,7 @@ public:
 	///
 	/// The default implementation of this method checks if the source URL contains a wild-card pattern.
 	/// If yes, it scans the directory to find all matching files.
-	virtual bool discoverFrames(bool suppressDialogs = false);
+	virtual bool registerFrames(bool suppressDialogs = false);
 
 	/// \brief Clears the list of animation frames.
 	void resetFrames() { _frames.clear(); }
@@ -161,10 +135,20 @@ public:
 	/// \brief Records the storage location of an animation frame in the input file(s).
 	void registerFrame(const FrameSourceInformation& frame) { _frames.push_back(frame); }
 
+	/// \brief Returns the number of animation frames in the input file.
+	/// \return The number of frames stored in the input file or 0 if the input filename has not been set.
+	/// \note registerFrames() must be called first before the number of movie frames can be queried.
+	virtual int numberOfFrames() { return sourceUrl().isEmpty() ? 0 : _frames.size(); }
+
 public:
 
 	Q_PROPERTY(QUrl sourceUrl READ sourceUrl WRITE setSourceUrl)
 	Q_PROPERTY(QUrl loadedUrl READ loadedUrl)
+
+protected:
+
+	/// \brief Reads the data from the input file(s).
+	virtual void loadImplementation(QFutureInterface<OORef<SceneObject>>& futureInterface, FrameSourceInformation frame, bool suppressDialogs) = 0;
 
 private:
 
@@ -176,6 +160,9 @@ private:
 
 	/// Stores the list of animation frames in the input file(s).
 	QVector<FrameSourceInformation> _frames;
+
+	/// The background operation that loads a file.
+	QFuture<OORef<SceneObject>> _loadOperation;
 
 private:
 

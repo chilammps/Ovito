@@ -38,20 +38,48 @@ class LinkedFileObject : public SceneObject
 public:
 
 	/// \brief Constructs a new instance of this class.
-	LinkedFileObject();
+	Q_INVOKABLE LinkedFileObject();
 
 	/// \brief Changes the parser associated with this object.
 	/// \note After the replacing the parser with this method,
 	///       reload() should be called to let the new parser reload the input file.
-	virtual void setImporter(LinkedFileImporter* importer);
+	virtual void setImporter(LinkedFileImporter* importer) { _importer = importer; }
 
 	/// \brief Returns the parser that loads the input file.
 	LinkedFileImporter* importer() const { return _importer; }
 
 	/// \brief This reloads the input data from the external file.
+	/// \param frame The animation frame to load from the external file.
+	/// \param suppressDialogs Specifies whether any dialogs or message boxes should be suppressed during loading.
 	/// \return \a false when the operation has been canceled by the user; \a true on success.
 	/// \throws Exception on error.
-	virtual bool refreshFromSource();
+	virtual bool refreshFromSource(int frame = 0, bool suppressDialogs = false);
+
+	/// \brief Returns the status returned by the file parser on its last invocation.
+	const ObjectStatus& status() const { return _importStatus; }
+
+	/// \brief Returns whether the scene's animation interval is being adjusted to the number of frames reported by the file parser.
+	bool adjustAnimationInterval() const { return _adjustAnimationInterval; }
+
+	/// \brief Controls whether the scene's animation interval should be adjusted to the number of frames reported by the file parser.
+	void setAdjustAnimationInterval(bool enabled) { _adjustAnimationInterval = enabled; }
+
+	/// Asks the object for the result of the geometry pipeline at the given time.
+	virtual PipelineFlowState evaluateNow(TimePoint time) override;
+
+	/// Requests the results of a full evaluation of the geometry pipeline at the given time.
+	virtual QFuture<PipelineFlowState> evaluateLater(TimePoint time) override;
+
+#if 0
+	/// \brief Returns whether the loaded scene objects should be saved in a scene file.
+	/// \return \c true if a copy of the external data is stored in the scene file; \c false if the data resides only in the linked file.
+	bool storeDataWithScene() const { return atomsObject() ? atomsObject()->serializeAtoms() : false; }
+
+	/// \brief Controls whether the imported data is saved along with the scene.
+	/// \param on \c true if data should be stored in the scene file; \c false if the data resides only in the external file.
+	/// \undoable
+	void setStoreDataWithScene(bool on) { if(atomsObject()) atomsObject()->setSerializeAtoms(on); }
+#endif
 
 #if 0
 	/// \brief Returns the movie frame that is currently loaded.
@@ -70,19 +98,6 @@ public:
 	/// \sa AtomsFileParser::sourceFile()
 	QString sourceFile() const { return parser() ? parser()->sourceFile() : QString(); }
 
-
-	/// \brief Return the status returned by the parser during its last call.
-	const EvaluationStatus& status() const { return _loadStatus; }
-
-	/// \brief Returns whether atomic coordinates are saved along with the scene.
-	/// \return \c true if data is stored in the scene file; \c false if the data resides in an external file.
-	bool storeAtomsWithScene() const { return atomsObject() ? atomsObject()->serializeAtoms() : false; }
-
-	/// \brief Returns whether atomic coordinates are saved along with the scene.
-	/// \param on \c true if data should be stored in the scene file; \c false if the data resides in an external file.
-	/// \undoable
-	void setStoreAtomsWithScene(bool on) { if(atomsObject()) atomsObject()->setSerializeAtoms(on); }
-
 	/// \brief Returns the number of animation frames per simulation snapshot.
 	/// \return The number of animation frames per simulation snapshot. This is always equal or greater than 1.
 	int framesPerSnapshot() const { return max((int)_framesPerSnapshot, 1); }
@@ -90,12 +105,6 @@ public:
 	/// \brief Sets the number of animation frames per simulation snapshot to control the playback speed.
 	/// \param fps The number of animation frames per simulation snapshot. This must be equal or greater than 1.
 	void setFramesPerSnapshot(int fps) { _framesPerSnapshot = fps; }
-
-	/// Returns whether the scene's animation interval is being adjusted to the number of frames stored in the input file.
-	bool adjustAnimationInterval() const { return _adjustAnimationInterval; }
-
-	/// Sets whether the scene's animation interval should be adjusted to the number of frames stored in the input file.
-	void setAdjustAnimationInterval(bool enabled) { _adjustAnimationInterval = enabled; }
 
 	// From SceneObject:
 
@@ -120,7 +129,6 @@ public:
 	/// Returns a sub-object that should be listed in the modifier stack.
 	virtual RefTarget* editableSubObject(int index);
 
-
 public Q_SLOTS:
 
 	/// \brief Displays the file selection dialog and lets the user select a new input file.
@@ -131,13 +139,22 @@ public:
 	Q_PROPERTY(QString inputFile READ inputFile)
 	Q_PROPERTY(bool storeAtomsWithScene READ storeAtomsWithScene WRITE setStoreAtomsWithScene)
 
+#endif
+
 protected:
 
-	/// \brief Stores the parser status and sends a notification message.
-	void setStatus(const EvaluationStatus& status);
+	/// \brief Saves the status returned by the parser object and generates a ReferenceEvent::StatusChanged event.
+	void setStatus(const ObjectStatus& status);
 
+	/// \brief Adjusts the animation interval of the current data set to the number of frames reported by the file parser.
+	void adjustAnimationInterval();
+
+	/// \brief Call the importer object to load the given frame.
+	void evaluateImplementation(QFutureInterface<PipelineFlowState>& futureInterface, int frameIndex);
+
+#if 0
 	/// \brief Saves the class' contents to the given stream.
-	/// \sa RefTarget::saveToStream()
+	/// \sa RefTarget::saveToStream()Atoms
 	virtual void saveToStream(ObjectSaveStream& stream);
 
 	/// \brief Loads the class' contents from the given stream.
@@ -155,9 +172,9 @@ protected:
 	/// sends a notification message.
 	virtual bool onRefTargetMessage(RefTarget* source, RefTargetMessage* msg);
 
-private:
-
 #endif
+
+private:
 
 	/// The associated importer object that is responsible for parsing the input file.
 	ReferenceField<LinkedFileImporter> _importer;
@@ -165,15 +182,29 @@ private:
 	/// Stores the imported scene objects.
 	VectorReferenceField<SceneObject> _sceneObjects;
 
-#if 0
+	/// Controls whether the scene's animation interval is adjusted to the number of frames found in the input file.
+	PropertyField<bool> _adjustAnimationInterval;
+
 	/// The status returned by the parser during its last call.
-	EvaluationStatus _loadStatus;
+	ObjectStatus _importStatus;
+
+	/// The index of the animation frame loaded last from the input file.
+	int _loadedFrame;
+
+	/// The index of the animation frame currently being loaded.
+	int _frameBeingLoaded;
+
+	/// The background operation created by evaluateLater().
+	QFutureInterface<PipelineFlowState> _evaluationOperation;
+
+	/// Watches the loading operation of the importer.
+	QFutureWatcher<OORef<SceneObject>> _loadOperationWatcher;
+
+#if 0
 
 	/// Controls the playback speed of simulation snapshots.
 	PropertyField<int> _framesPerSnapshot;
 
-	/// Controls whether the scene's animation interval is adjusted to the number of frames stored in the input file.
-	PropertyField<bool> _adjustAnimationInterval;
 #endif
 
 private:
@@ -184,7 +215,7 @@ private:
 	DECLARE_REFERENCE_FIELD(_importer)
 	DECLARE_VECTOR_REFERENCE_FIELD(_sceneObjects)
 	//DECLARE_PROPERTY_FIELD(_framesPerSnapshot)
-	//DECLARE_PROPERTY_FIELD(_adjustAnimationInterval)
+	DECLARE_PROPERTY_FIELD(_adjustAnimationInterval)
 };
 
 };

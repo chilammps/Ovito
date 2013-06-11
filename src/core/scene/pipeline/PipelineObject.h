@@ -100,7 +100,7 @@ public:
 	/////////////////////////////////////// from SceneObject /////////////////////////////////////////
 
 	/// Asks the object for the result of the geometry pipeline at the given time.
-	virtual PipelineFlowState evalObject(TimePoint time) override {
+	virtual PipelineFlowState evaluate(TimePoint time) override {
 		return evalObject(time, nullptr, true);
 	}
 
@@ -126,12 +126,14 @@ private:
 	/// Notifies all modifiers from the given index on that their input has changed.
 	void modifierChanged(int changedIndex);
 
+#if 0
 	/// This method invalidates the internal geometry pipeline cache of the PipelineObject.
 	void invalidatePipelineCache() {
 		_lastInputState.clear();
 		_cachedModifiedState.clear();
 		_cacheIndex = -1;
 	}
+#endif
 
 private:
 
@@ -142,6 +144,7 @@ private:
 	/// The modifiers are applied to the input object in the reverse order of this list.
 	VectorReferenceField<ModifierApplication> _modApps;
 
+#if 0
 	/// The state of the input object from the last evaluation of the pipeline.
 	PipelineFlowState _lastInputState;
 
@@ -151,6 +154,7 @@ private:
 	/// The pipeline stage that is saved in the cache.
 	/// If the pipeline cache is empty, then this is -1.
 	int _cacheIndex;
+#endif
 
 	Q_OBJECT
 	OVITO_OBJECT

@@ -44,6 +44,7 @@ SET(OVITO_CORE_SOURCE_FILES
 	dataset/CurrentSelectionProxy.cpp
 	dataset/importexport/ImportExportManager.cpp
 	dataset/importexport/LinkedFileImporter.cpp
+	dataset/importexport/LinkedFileObject.cpp
 	scene/SceneNode.cpp
 	scene/GroupNode.cpp
 	scene/ObjectNode.cpp
@@ -102,6 +103,7 @@ SET(OVITO_CORE_SOURCE_FILES
 	utilities/units/UnitsManager.cpp
 	utilities/io/ObjectSaveStream.cpp
 	utilities/io/ObjectLoadStream.cpp
+	utilities/io/FileManager.cpp
 	rendering/SceneRenderer.cpp
 	rendering/viewport/ViewportSceneRenderer.cpp
 	rendering/viewport/ViewportSceneRendererEditor.cpp

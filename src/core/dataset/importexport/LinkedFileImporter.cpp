@@ -32,7 +32,7 @@
 
 namespace Ovito {
 
-IMPLEMENT_OVITO_OBJECT(LinkedFileImporter, FileImporter)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(LinkedFileImporter, FileImporter)
 DEFINE_PROPERTY_FIELD(LinkedFileImporter, _sourceUrl, "SourceUrl")
 DEFINE_PROPERTY_FIELD(LinkedFileImporter, _loadedUrl, "LoadedUrl")
 SET_PROPERTY_FIELD_LABEL(LinkedFileImporter, _sourceUrl, "Source location")
@@ -46,13 +46,15 @@ SET_PROPERTY_FIELD_LABEL(LinkedFileImporter, _loadedUrl, "Loaded file")
 ******************************************************************************/
 bool LinkedFileImporter::importFile(const QUrl& sourceUrl, DataSet* dataset, bool suppressDialogs)
 {
+	// Do not create any animation keys during import.
+	AnimationSuspender animSuspender;
+
 	OORef<LinkedFileObject> obj;
 	{
-		UndoSuspender noUndo;		// Do not create undo records for this part.
+		UndoSuspender noUndo;		// Do not create undo records for this part of the operation.
 
 		// Set the input location.
-		if(!setSourceUrl(sourceUrl))
-			return false;
+		setSourceUrl(sourceUrl);
 
 		// Show settings dialog.
 		if(!suppressDialogs && hasSettingsDialog()) {
@@ -60,28 +62,21 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl, DataSet* dataset, boo
 				return false;
 		}
 
+		// Scan the input source for animation frames.
+		if(!registerFrames(suppressDialogs))
+			return false;
+
 		// Create the object that will feed the imported data into the scene.
 		obj = new LinkedFileObject();
 
 		// Makes this importer part of the scene object.
 		obj->setImporter(this);
-
-		// Scan the input source for animation frames.
-		if(!discoverFrames(suppressDialogs))
-			return false;
-
-		// Load data.
-		if(!obj->refreshFromSource())
-			return false;
 	}
 
 	// Make the import processes reversible.
 	UndoManager::instance().beginCompoundOperation(tr("Import file"));
 
 	try {
-
-		// Do not create any animation keys during import.
-		AnimationSuspender animSuspender;
 
 		// Clear scene first if requested by the caller.
 		if(shouldReplaceScene())
@@ -142,7 +137,7 @@ QString LinkedFileImporter::objectTitle()
 * This implementation of this method checks if the source URL contains a wild-card pattern.
 * If yes, it scans the directory to find all matching files.
 ******************************************************************************/
-bool LinkedFileImporter::discoverFrames(bool suppressDialogs)
+bool LinkedFileImporter::registerFrames(bool suppressDialogs)
 {
 	resetFrames();
 
@@ -189,12 +184,26 @@ bool LinkedFileImporter::discoverFrames(bool suppressDialogs)
 
 		// Generate final list of frames.
 		for(const auto& iter : sortedFilenames) {
-			QString filename = dir.absoluteFilePath(iter.value())
+			QString filename = dir.absoluteFilePath(iter);
 			registerFrame({ QUrl::fromLocalFile(filename), 0, 0, QFileInfo(filename).lastModified() });
 		}
 	}
+	else {
+		// It's not a file URL.
+		// Register only a single frame.
+		registerFrame({ sourceUrl(), 0, 0, QDateTime() });
+	}
 
 	return true;
+}
+
+/******************************************************************************
+* Reads the data from the input file(s).
+******************************************************************************/
+QFuture<OORef<SceneObject>> LinkedFileImporter::load(int frameIndex, bool suppressDialogs)
+{
+	OVITO_ASSERT(frameIndex >= 0 && frameIndex < _frames.size());
+	return run(&LinkedFileImporter::loadImplementation, this, _frames[frameIndex], suppressDialogs);
 }
 
 
