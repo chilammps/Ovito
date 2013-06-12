@@ -32,11 +32,11 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(LAMMPSTextDumpImporter, LinkedFileImporter)
 /******************************************************************************
 * Reads the data from the input file(s).
 ******************************************************************************/
-void LAMMPSTextDumpImporter::loadImplementation(QFutureInterface<OORef<SceneObject>>& futureInterface, FrameSourceInformation frame, bool suppressDialogs)
+void LAMMPSTextDumpImporter::loadImplementation(FutureInterface<OORef<SceneObject>>& futureInterface, FrameSourceInformation frame, bool suppressDialogs)
 {
 	// Fetch file.
-	QFuture<QString> fetchFileFuture = FileManager::instance().fetchUrl(frame.sourceFile);
-	if(!waitForSlaveFuture(futureInterface, fetchFileFuture))
+	Future<QString> fetchFileFuture = FileManager::instance().fetchUrl(frame.sourceFile);
+	if(!futureInterface.waitForSubTask(fetchFileFuture))
 		return;
 
 	// Open file.
@@ -49,7 +49,7 @@ void LAMMPSTextDumpImporter::loadImplementation(QFutureInterface<OORef<SceneObje
 	OORef<SimulationCell> cell(new SimulationCell());
 
 	// Return results.
-	futureInterface.reportResult(cell);
+	futureInterface.setResult(cell);
 }
 
 };

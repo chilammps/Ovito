@@ -66,29 +66,31 @@ PipelineFlowState LinkedFileObject::evaluateNow(TimePoint time)
 /******************************************************************************
 * Requests the results of a full evaluation of the geometry pipeline at the given time.
 ******************************************************************************/
-QFuture<PipelineFlowState> LinkedFileObject::evaluateLater(TimePoint time)
+Future<PipelineFlowState> LinkedFileObject::evaluateLater(TimePoint time)
 {
 	int frame = AnimManager::instance().timeToFrame(time);
 	if(_loadedFrame == frame) {
-		return makeFuture(PipelineFlowState(status(), _sceneObjects.targets(), TimeInterval(time)));
+		return Future<PipelineFlowState>(PipelineFlowState(status(), _sceneObjects.targets(), TimeInterval(time)));
 	}
 
 	if(_frameBeingLoaded != frame) {
-		abortOperation(_evaluationOperation);
+		_evaluationOperation.abort();
 		OVITO_ASSERT(_frameBeingLoaded == -1);
+		OVITO_CHECK_OBJECT_POINTER(importer());
 		_frameBeingLoaded = frame;
-		_evaluationOperation = QFutureInterface<PipelineFlowState>(QFutureInterface<PipelineFlowState>::Started);
-		_loadOperationWatcher.setFuture(importer()->load(frame));
+		//importer()->load(frame)
+		//_evaluationOperation = FutureInterface<PipelineFlowState>(QFutureInterface<PipelineFlowState>::Started);
+		//_loadOperationWatcher.setFuture(importer()->load(frame));
 	}
-	return _evaluationOperation.future();
+	return _evaluationOperation;
 }
 
 /******************************************************************************
 * Call the importer object to load the given frame.
 ******************************************************************************/
-void LinkedFileObject::evaluateImplementation(QFutureInterface<PipelineFlowState>& futureInterface, int frameIndex)
+PipelineFlowState LinkedFileObject::evaluateImplementation(FutureInterface<PipelineFlowState>& futureInterface, int frameIndex)
 {
-
+	return PipelineFlowState();
 }
 
 

@@ -200,10 +200,10 @@ bool LinkedFileImporter::registerFrames(bool suppressDialogs)
 /******************************************************************************
 * Reads the data from the input file(s).
 ******************************************************************************/
-QFuture<OORef<SceneObject>> LinkedFileImporter::load(int frameIndex, bool suppressDialogs)
+Future<OORef<SceneObject>> LinkedFileImporter::load(int frameIndex, bool suppressDialogs)
 {
 	OVITO_ASSERT(frameIndex >= 0 && frameIndex < _frames.size());
-	return run(&LinkedFileImporter::loadImplementation, this, _frames[frameIndex], suppressDialogs);
+	return runInBackground<OORef<SceneObject>>(std::bind(&LinkedFileImporter::loadImplementation, this, std::placeholders::_1, _frames[frameIndex], suppressDialogs));
 }
 
 

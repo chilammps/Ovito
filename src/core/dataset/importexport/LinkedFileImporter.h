@@ -115,8 +115,8 @@ public:
 	///                   the index of the animation frame to load (starting at 0). It must be less then the number of available frames
 	///                   reported by numberOfFrames().
 	/// \param suppressDialogs Specifies whether any dialogs or message boxes shown by the parser should be suppressed during loading.
-	/// \return A QFuture that will give access to the loaded scene objects.
-	virtual QFuture<OORef<SceneObject>> load(int frame = 0, bool suppressDialogs = false);
+	/// \return A future that will give access to the loaded scene objects.
+	virtual Future<OORef<SceneObject>> load(int frame = 0, bool suppressDialogs = false);
 
 	/// \brief Scans the input source (which can be a directory or a single file) to discover all animation frames.
 	/// \param suppressDialogs Specifies whether any dialogs or message boxes should be suppressed during this operation.
@@ -148,7 +148,7 @@ public:
 protected:
 
 	/// \brief Reads the data from the input file(s).
-	virtual void loadImplementation(QFutureInterface<OORef<SceneObject>>& futureInterface, FrameSourceInformation frame, bool suppressDialogs) = 0;
+	virtual void loadImplementation(FutureInterface<OORef<SceneObject>>& futureInterface, FrameSourceInformation frame, bool suppressDialogs) = 0;
 
 private:
 
@@ -160,9 +160,6 @@ private:
 
 	/// Stores the list of animation frames in the input file(s).
 	QVector<FrameSourceInformation> _frames;
-
-	/// The background operation that loads a file.
-	QFuture<OORef<SceneObject>> _loadOperation;
 
 private:
 

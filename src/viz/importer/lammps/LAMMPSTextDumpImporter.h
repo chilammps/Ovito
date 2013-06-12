@@ -50,7 +50,7 @@ public:
 protected:
 
 	/// \brief Reads the data from the input file(s).
-	virtual void loadImplementation(QFutureInterface<OORef<SceneObject>>& futureInterface, FrameSourceInformation frame, bool suppressDialogs) override;
+	virtual void loadImplementation(FutureInterface<OORef<SceneObject>>& futureInterface, FrameSourceInformation frame, bool suppressDialogs) override;
 
 private:
 

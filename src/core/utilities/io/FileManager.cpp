@@ -38,10 +38,10 @@ FileManager::FileManager()
 /******************************************************************************
 * Makes a file available on this computer.
 ******************************************************************************/
-QFuture<QString> FileManager::fetchUrl(const QUrl& url)
+Future<QString> FileManager::fetchUrl(const QUrl& url)
 {
-	QFutureInterface<QString> futureInterface(QFutureInterface<QString>::State(QFutureInterface<QString>::Started | QFutureInterface<QString>::Finished));
-	return futureInterface.future();
+	OVITO_ASSERT(url.isLocalFile());
+	return Future<QString>(url.toLocalFile());
 }
 
 

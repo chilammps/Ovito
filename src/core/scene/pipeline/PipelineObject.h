@@ -99,10 +99,12 @@ public:
 
 	/////////////////////////////////////// from SceneObject /////////////////////////////////////////
 
+#if 0
 	/// Asks the object for the result of the geometry pipeline at the given time.
 	virtual PipelineFlowState evaluate(TimePoint time) override {
 		return evalObject(time, nullptr, true);
 	}
+#endif
 
 	/// Returns the number of input objects that are referenced by this scene object.
 	virtual int inputObjectCount() override { return 1; }

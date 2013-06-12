@@ -26,43 +26,169 @@
 
 namespace Ovito {
 
-class TaskBase : public QRunnable
+template<typename R> class Future;
+template<typename R, typename Function> class Task;
+
+class FutureWatcher : public QObject
 {
 public:
 
-	class FutureInterfaceBase {
+	FutureWatcher() {}
+
+	template<typename R>
+	void setFuture(const Future<R>& future);
+
+protected:
+
+	class FutureCallOutEvent : public QEvent
+	{
 	public:
-		bool isCanceled() const { return _isCanceled; }
-	private:
-		FutureInterfaceBase() : _isCanceled(false) {}
-		void cancel() { _isCanceled = true; }
-		volatile bool _isCanceled;
+	    enum CallOutType {
+	        Canceled,
+	        ResultReady,
+	    };
+
+	    FutureCallOutEvent(CallOutType callOutType) : QEvent(QEvent::User), _callOutType(callOutType) {}
+
+	    CallOutType _callOutType;
 	};
 
-public:
-
-	TaskBase() : _p(std::make_shared<FutureInterface>()) {}
-
-	virtual void run() override {
-		try {
-			_p->_promise.set_value(_function(*_p.get()));
-		}
-		catch(...) {
-			_p->_promise.set_exception(std::current_exception());
-		}
+	void emitCanceled() {
+		QCoreApplication::postEvent(this, new FutureCallOutEvent(FutureCallOutEvent::Canceled));
+	}
+	void emitResultReady() {
+		QCoreApplication::postEvent(this, new FutureCallOutEvent(FutureCallOutEvent::ResultReady));
 	}
 
-	Future future() const { return Future(_p); }
+	virtual void customEvent(QEvent* event) override {
+		if(event->type() == QEvent::User) {
+			if(static_cast<FutureCallOutEvent*>(event)->_callOutType == FutureCallOutEvent::Canceled)
+				Q_EMIT canceled();
+			else if(static_cast<FutureCallOutEvent*>(event)->_callOutType == FutureCallOutEvent::ResultReady)
+				Q_EMIT resultReady();
+		}
+		QObject::customEvent(event);
+	}
 
-	void abort() {
-		Future future(_p);
-		future.cancel();
-		future.waitForFinished();
+Q_SIGNALS:
+
+	void canceled();
+	void resultReady();
+
+private:
+
+	friend class FutureInterfaceBase;
+};
+
+class FutureInterfaceBase
+{
+public:
+	bool isCanceled() const { return _isCanceled; }
+protected:
+
+	FutureInterfaceBase() : _isCanceled(false), _hasResultBeenSet(false), _subTask(nullptr) {}
+
+	void cancel() {
+		_isCanceled = true;
+	}
+
+	void emitCanceled() {
+		QMutexLocker locker(&_mutex);
+		if(!_signalObject.isNull())
+			_signalObject->emitCanceled();
+	}
+	void emitResultReady() {
+		QMutexLocker locker(&_mutex);
+		if(!_signalObject.isNull())
+			_signalObject->emitResultReady();
+	}
+
+	volatile bool _isCanceled;
+	bool _hasResultBeenSet;
+	volatile FutureInterfaceBase* _subTask;
+	QList<FutureWatcher*> _watchers;
+	QMutex _mutex;
+};
+
+template<typename R>
+class FutureInterface : public FutureInterfaceBase
+{
+public:
+
+	FutureInterface() : _future(_promise.get_future()) {}
+
+	template<typename RS>
+	bool waitForSubTask(Future<RS>& subFuture) {
+		this->_subTask = subFuture._p.get();
+		if(this->isCanceled()) subFuture.cancel();
+		subFuture.waitForFinished();
+		this->_subTask = nullptr;
+		if(subFuture.isCanceled()) {
+			this->cancel();
+			return false;
+		}
+		return true;
+	}
+
+	void setResult(const R& value) {
+		OVITO_ASSERT(_hasResultBeenSet == false);
+		_hasResultBeenSet = true;
+		_promise.set_value(value);
+	}
+
+	void setResult(R&& value) {
+		OVITO_ASSERT(_hasResultBeenSet == false);
+		_hasResultBeenSet = true;
+		_promise.set_value(std::move(value));
+	}
+
+	void setResult(R& value) {
+		OVITO_ASSERT(_hasResultBeenSet == false);
+		_hasResultBeenSet = true;
+		_promise.set_value(value);
 	}
 
 private:
-	Function _function;
-	std::shared_ptr<FutureInterface> _p;
+
+	std::promise<R> _promise;
+	std::future<R> _future;
+
+	template<typename R2, typename Function> friend class Task;
+	template<typename R2> friend class Future;
+};
+
+template<typename R>
+class Future {
+public:
+	typedef FutureInterface<R> Interface;
+
+	Future() {}
+	Future(const R& result) : _p(std::make_shared<Interface>()) { _p->_promise.set_value(result); }
+	Future(R&& result) : _p(std::make_shared<Interface>()) { _p->_promise.set_value(std::move(result)); }
+	bool isCanceled() const { OVITO_ASSERT(isValid()); return _p->isCanceled(); }
+	void cancel() { OVITO_ASSERT(isValid()); _p->cancel(); }
+	R result() const {
+		OVITO_ASSERT(isValid());
+		OVITO_ASSERT(!isCanceled());
+		OVITO_ASSERT(_p->_future.valid());
+		return _p->_future.get();
+	}
+	void waitForFinished() const {
+		OVITO_ASSERT(isValid());
+		OVITO_ASSERT(_p->_future.valid());
+		_p->_future.wait();
+	}
+	void abort() {
+		cancel();
+		waitForFinished();
+	}
+	bool isValid() const { return (bool)_p; }
+private:
+	Future(const std::shared_ptr<Interface>& p) : _p(p) {}
+	std::shared_ptr<Interface> _p;
+
+	template<typename R2, typename Function> friend class Task;
+	template<typename R2> friend class FutureInterface;
 };
 
 
@@ -71,83 +197,49 @@ class Task : public QRunnable
 {
 public:
 
-	class FutureInterface {
-	public:
-		bool isCanceled() const { return _isCanceled; }
-		template<typename RS, typename Function>
-		bool waitForSubTask(Task<RS>::Future& subFuture) {
-			subFuture.waitForFinished();
-			return isCanceled();
-		}
-	private:
-		FutureInterface() : _isCanceled(false), _future(_promise.get_future()) {}
-		void cancel() { _isCanceled = true; }
-		std::promise<R> _promise;
-		std::future<R> _future;
-		volatile bool _isCanceled;
-	};
-
-	class Future {
-	public:
-		Future(const R& result) : _p(std::make_shared<FutureInterface>()) { _p->_promise.set_value(result); }
-		Future(R&& result) : _p(std::make_shared<FutureInterface>()) { _p->_promise.set_value(std::move(result)); }
-		bool isCanceled() const { return _p->isCanceled(); }
-		void cancel() { _p->cancel(); }
-		const R& result() const {
-			OVITO_ASSERT(!_p->_isCanceled);
-			OVITO_ASSERT(_p->_future.valid());
-			return _p->_future.get();
-		}
-		void waitForFinished() const {
-			OVITO_ASSERT(_p->_future.valid());
-			_p->_future.wait();
-		}
-	private:
-		Future(const std::shared_ptr<FutureInterface>& p) : _p(p) {}
-		std::shared_ptr<FutureInterface> _p;
-	};
-
-public:
-
-	Task() : _p(std::make_shared<FutureInterface>()) {}
+	Task(Function fn) : _p(std::make_shared<FutureInterface<R>>()), _function(fn) {}
 
 	virtual void run() override {
 		try {
-			_p->_promise.set_value(_function(*_p.get()));
+			_function(*_p.get());
 		}
 		catch(...) {
 			_p->_promise.set_exception(std::current_exception());
+			_p->emitResultReady();
+			return;
+		}
+
+		if(!_p->_hasResultBeenSet) {
+			OVITO_ASSERT_MSG(_p->isCanceled(), "Task::run", "Promise has not been satisfied by the worker function.");
+			_p->_promise.set_value(R());
+			_p->emitCanceled();
+		}
+		else {
+			if(_p->isCanceled())
+				_p->emitCanceled();
+			else
+				_p->emitResultReady();
 		}
 	}
 
-	Future future() const { return Future(_p); }
+	Future<R> future() const { return Future<R>(_p); }
 
 	void abort() {
-		Future future(_p);
-		future.cancel();
-		future.waitForFinished();
+		Future<R>(_p).abort();
 	}
 
 private:
 	Function _function;
-	std::shared_ptr<FutureInterface> _p;
+	std::shared_ptr<FutureInterface<R>> _p;
 };
 
-template<typename TM, typename TS>
-bool waitForSlaveFuture(Task<TM>::FutureInterface& masterInterface, Task<TS>::Future& slaveFuture)
+template<typename R, typename Function>
+Future<R> runInBackground(Function f)
 {
-	{
-		QFutureWatcher<TM> watcher;
-		watcher.moveToThread(QApplication::instance()->thread());
-		QObject::connect(&watcher, &QFutureWatcher<TM>::canceled, [&slaveFuture]() { slaveFuture.cancel(); } );
-		watcher.setFuture(masterInterface.future());
-		slaveFuture.waitForFinished();
-	}
-	if(slaveFuture.isCanceled()) {
-		masterInterface.cancel();
-		return false;
-	}
-	return true;
+	Task<R,Function>* task = new Task<R,Function>(f);
+	Future<R> future = task->future();
+	QThreadPool::globalInstance()->start(task);
+	return future;
 }
 
 };

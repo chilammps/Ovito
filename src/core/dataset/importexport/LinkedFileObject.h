@@ -68,7 +68,7 @@ public:
 	virtual PipelineFlowState evaluateNow(TimePoint time) override;
 
 	/// Requests the results of a full evaluation of the geometry pipeline at the given time.
-	virtual QFuture<PipelineFlowState> evaluateLater(TimePoint time) override;
+	virtual Future<PipelineFlowState> evaluateLater(TimePoint time) override;
 
 #if 0
 	/// \brief Returns whether the loaded scene objects should be saved in a scene file.
@@ -150,7 +150,7 @@ protected:
 	void adjustAnimationInterval();
 
 	/// \brief Call the importer object to load the given frame.
-	void evaluateImplementation(QFutureInterface<PipelineFlowState>& futureInterface, int frameIndex);
+	PipelineFlowState evaluateImplementation(FutureInterface<PipelineFlowState>& futureInterface, int frameIndex);
 
 #if 0
 	/// \brief Saves the class' contents to the given stream.
@@ -195,10 +195,7 @@ private:
 	int _frameBeingLoaded;
 
 	/// The background operation created by evaluateLater().
-	QFutureInterface<PipelineFlowState> _evaluationOperation;
-
-	/// Watches the loading operation of the importer.
-	QFutureWatcher<OORef<SceneObject>> _loadOperationWatcher;
+	Future<PipelineFlowState> _evaluationOperation;
 
 #if 0
 

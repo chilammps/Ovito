@@ -56,7 +56,7 @@ const PipelineFlowState& ObjectNode::evalPipeline(TimePoint time)
 			UndoSuspender noUndo;
 
 			// Evaluate object and save result in local cache.
-			_pipelineCache = sceneObject()->evaluate(time);
+			_pipelineCache = sceneObject()->evaluateNow(time);
 
 			// Update list of display objects.
 

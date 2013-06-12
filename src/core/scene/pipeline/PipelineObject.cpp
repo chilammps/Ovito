@@ -173,6 +173,8 @@ PipelineFlowState PipelineObject::evalObject(TimePoint time, ModifierApplication
 
 	return flowState;
 #endif
+
+	return PipelineFlowState();
 }
 
 /******************************************************************************

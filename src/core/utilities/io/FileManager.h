@@ -28,6 +28,7 @@
 #define __OVITO_FILE_MANAGER_H
 
 #include <core/Core.h>
+#include <core/utilities/BackgroundOperation.h>
 
 namespace Ovito {
 
@@ -49,7 +50,7 @@ public:
 
 	/// \brief makes a file available on this computer.
 	/// \return A QFuture that will provide the local file name of the downloaded file.
-	QFuture<QString> fetchUrl(const QUrl& url);
+	Future<QString> fetchUrl(const QUrl& url);
 
 private:
     
