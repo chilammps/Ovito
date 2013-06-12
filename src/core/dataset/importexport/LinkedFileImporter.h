@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include <core/dataset/importexport/FileImporter.h>
 #include <core/utilities/ObjectStatus.h>
-#include <core/utilities/BackgroundOperation.h>
+#include <core/utilities/concurrent/Future.h>
 
 namespace Ovito {
 

@@ -21,7 +21,7 @@
 
 #include <core/Core.h>
 #include <core/utilities/io/FileManager.h>
-#include <core/utilities/BackgroundOperation.h>
+#include <core/utilities/concurrent/Future.h>
 #include <viz/data/SimulationCell.h>
 #include "LAMMPSTextDumpImporter.h"
 

@@ -28,7 +28,7 @@
 #define __OVITO_FILE_MANAGER_H
 
 #include <core/Core.h>
-#include <core/utilities/BackgroundOperation.h>
+#include <core/utilities/concurrent/Future.h>
 
 namespace Ovito {
 

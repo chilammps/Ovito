@@ -32,7 +32,7 @@
 #include <core/animation/TimeInterval.h>
 #include <core/scene/pipeline/PipelineFlowState.h>
 #include <core/scene/display/DisplayObject.h>
-#include <core/utilities/BackgroundOperation.h>
+#include <core/utilities/concurrent/Future.h>
 
 namespace Ovito {
 

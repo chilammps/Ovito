@@ -27,6 +27,7 @@
 #include <core/dataset/DataSetManager.h>
 #include <core/gui/actions/ActionManager.h>
 #include <core/gui/mainwin/MainWindow.h>
+#include <core/utilities/concurrent/Task.h>
 #include "LinkedFileImporter.h"
 #include "LinkedFileObject.h"
 
