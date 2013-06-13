@@ -56,14 +56,14 @@ const PipelineFlowState& ObjectNode::evalPipeline(TimePoint time)
 			UndoSuspender noUndo;
 
 			// Evaluate object and save result in local cache.
-			_pipelineCache = sceneObject()->evaluateNow(time);
+			_pipelineCache = sceneObject()->evaluate(time);
 
 			// Update list of display objects.
 
 			// First unlink those display objects from this node which are no longer needed.
 			for(int i = displayObjects().size() - 1; i >= 0; i--) {
 				DisplayObject* displayObj = displayObjects()[i];
-				// Check if display object is being used by any of the scene objects.
+				// Check if display object is being used by any of the scene objects that came out of the pipeline.
 				bool isAlive = false;
 				for(const auto& entry : _pipelineCache.objects()) {
 					SceneObject* sceneObj = entry.first.get();
@@ -72,7 +72,7 @@ const PipelineFlowState& ObjectNode::evalPipeline(TimePoint time)
 						break;
 					}
 				}
-				// Kill display object if no longer needed.
+				// Discard display object if no longer needed.
 				if(!isAlive)
 					_displayObjects.remove(i);
 			}

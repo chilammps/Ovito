@@ -27,15 +27,23 @@
 namespace Ovito {
 
 template<typename R> class Future;
+class FutureInterfaceBase;
 
 class FutureWatcher : public QObject
 {
 public:
 
-	FutureWatcher() {}
+	FutureWatcher() : _finished(false) {}
+	virtual ~FutureWatcher() {
+		setFutureInterface(nullptr, false);
+	}
 
-	//template<typename R>
-	//void setFuture(const Future<R>& future);
+	template<typename R>
+	void setFuture(const Future<R>& future);
+
+	void unsetFuture() {
+		setFutureInterface(nullptr, true);
+	}
 
 protected:
 
@@ -52,17 +60,13 @@ protected:
 	    CallOutEvent(CallOutType callOutType) : QEvent((QEvent::Type)callOutType) {}
 	};
 
-#if 0
-	virtual void customEvent(QEvent* event) override {
-		if(event->type() == QEvent::User) {
-			if(static_cast<FutureCallOutEvent*>(event)->_callOutType == FutureCallOutEvent::Canceled)
-				Q_EMIT canceled();
-			else if(static_cast<FutureCallOutEvent*>(event)->_callOutType == FutureCallOutEvent::ResultReady)
-				Q_EMIT resultReady();
-		}
-		QObject::customEvent(event);
-	}
-#endif
+    void postCallOutEvent(CallOutEvent::CallOutType type) {
+    	QCoreApplication::postEvent(this, new CallOutEvent(type));
+    }
+
+	virtual void customEvent(QEvent* event) override;
+
+	void setFutureInterface(const std::shared_ptr<FutureInterfaceBase>& futureInterface, bool pendingAssignment);
 
 Q_SIGNALS:
 
@@ -72,6 +76,9 @@ Q_SIGNALS:
 	void resultReady();
 
 private:
+
+	std::shared_ptr<FutureInterfaceBase> _futureInterface;
+    bool _finished;
 
 	friend class FutureInterfaceBase;
 	Q_OBJECT

@@ -32,7 +32,7 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(LAMMPSTextDumpImporter, LinkedFileImporter)
 /******************************************************************************
 * Reads the data from the input file(s).
 ******************************************************************************/
-void LAMMPSTextDumpImporter::loadImplementation(FutureInterface<OORef<SceneObject>>& futureInterface, FrameSourceInformation frame, bool suppressDialogs)
+void LAMMPSTextDumpImporter::loadImplementation(FutureInterface<ImportedDataPtr>& futureInterface, FrameSourceInformation frame, bool suppressDialogs)
 {
 	// Fetch file.
 	Future<QString> fetchFileFuture = FileManager::instance().fetchUrl(frame.sourceFile);
@@ -45,11 +45,21 @@ void LAMMPSTextDumpImporter::loadImplementation(FutureInterface<OORef<SceneObjec
 	if(!file.open(QIODevice::ReadOnly | QIODevice::Text))
 		throw Exception(tr("Failed to open file %1 for reading: %2").arg(filename).arg(file.errorString()));
 
-	// Create simulation cell.
-	OORef<SimulationCell> cell(new SimulationCell());
+	// Parse file.
+	std::shared_ptr<ImportedAtoms> result(std::make_shared<ImportedAtoms>());
 
 	// Return results.
-	futureInterface.setResult(cell);
+	futureInterface.setResult(result);
 }
+
+/******************************************************************************
+* Lets the data container insert the data it holds into the scene by creating
+* appropriate scene objects.
+******************************************************************************/
+void LAMMPSTextDumpImporter::ImportedAtoms::insertIntoScene(LinkedFileObject* destination)
+{
+
+}
+
 
 };

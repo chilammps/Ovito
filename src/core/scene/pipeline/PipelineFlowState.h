@@ -54,10 +54,6 @@ public:
 		addObject(sceneObject);
 	}
 
-	/// \brief Constructor that creates a state object with the given status.
-	/// \param status A status object that describes the outcome of the pipeline evaluation.
-	PipelineFlowState(const ObjectStatus& status) : _status(status), _stateValidity(TimeInterval::empty()) {}
-
 	/// \brief Constructor that creates a state object and initializes it with a list of SceneObjects.
 	/// \param status A status object that describes the outcome of the pipeline evaluation.
 	/// \param sceneObjects The objects that represents the current state of a geometry pipeline evaluation.

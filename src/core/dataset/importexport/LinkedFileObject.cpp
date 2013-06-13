@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2008) Alexander Stukowski
+//  Copyright (2013) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -24,6 +24,7 @@
 #include <core/animation/AnimManager.h>
 #include <core/utilities/io/ObjectLoadStream.h>
 #include <core/utilities/io/ObjectSaveStream.h>
+#include <core/utilities/concurrent/Task.h>
 #include <core/viewport/Viewport.h>
 #include <core/viewport/ViewportManager.h>
 #include <core/scene/ObjectNode.h>
@@ -49,51 +50,78 @@ LinkedFileObject::LinkedFileObject() : _adjustAnimationInterval(true), _loadedFr
 	INIT_PROPERTY_FIELD(LinkedFileObject::_importer);
 	INIT_PROPERTY_FIELD(LinkedFileObject::_sceneObjects);
 	INIT_PROPERTY_FIELD(LinkedFileObject::_adjustAnimationInterval);
+
+	connect(&_loadFrameOperationWatcher, &FutureWatcher::finished, this, &LinkedFileObject::loadOperationFinished);
 }
 
 /******************************************************************************
 * Asks the object for the result of the geometry pipeline at the given time.
 ******************************************************************************/
-PipelineFlowState LinkedFileObject::evaluateNow(TimePoint time)
+PipelineFlowState LinkedFileObject::evaluate(TimePoint time)
 {
 	int frame = AnimManager::instance().timeToFrame(time);
-	if(_loadedFrame == frame)
-		return PipelineFlowState(status(), _sceneObjects.targets(), TimeInterval(time));
-	else
-		return PipelineFlowState(ObjectStatus::Pending);
-}
-
-/******************************************************************************
-* Requests the results of a full evaluation of the geometry pipeline at the given time.
-******************************************************************************/
-Future<PipelineFlowState> LinkedFileObject::evaluateLater(TimePoint time)
-{
-	int frame = AnimManager::instance().timeToFrame(time);
-	if(_loadedFrame == frame) {
-		return Future<PipelineFlowState>(PipelineFlowState(status(), _sceneObjects.targets(), TimeInterval(time)));
+	if(_frameBeingLoaded != -1) {
+		if(_frameBeingLoaded == frame) {
+			// The requested frame is already being loaded at the moment. Indicate to the caller that the result is pending.
+			return PipelineFlowState(ObjectStatus::Pending, _sceneObjects.targets(), TimeInterval(time));
+		}
+		else {
+			// Another frame than the requested one is already being loaded. Cancel loading operation now.
+			_loadFrameOperation.cancel();
+			// This will suppress any pending notification events.
+			_loadFrameOperationWatcher.unsetFuture();
+			_frameBeingLoaded = -1;
+			// Inform previous caller that the existing loading operation has been canceled.
+			notifyDependents(ReferenceEvent::PendingOperationFailed);
+		}
 	}
-
-	if(_frameBeingLoaded != frame) {
-		_evaluationOperation.abort();
-		OVITO_ASSERT(_frameBeingLoaded == -1);
+	if(_loadedFrame == frame) {
+		// The requested frame has already been loaded and is available immediately.
+		return PipelineFlowState(status(), _sceneObjects.targets(), TimeInterval(time));
+	}
+	else {
+		// The requested frame needs to be loaded first. Start background loading task.
 		OVITO_CHECK_OBJECT_POINTER(importer());
 		_frameBeingLoaded = frame;
-		//importer()->load(frame)
-		//_evaluationOperation = FutureInterface<PipelineFlowState>(QFutureInterface<PipelineFlowState>::Started);
-		//_loadOperationWatcher.setFuture(importer()->load(frame));
+		_loadFrameOperation = importer()->load(frame);
+		_loadFrameOperationWatcher.setFuture(_loadFrameOperation);
+		// Indicate to the caller that the result is pending.
+		return PipelineFlowState(ObjectStatus::Pending, _sceneObjects.targets(), TimeInterval(time));
 	}
-	return _evaluationOperation;
 }
 
 /******************************************************************************
-* Call the importer object to load the given frame.
+* This is called when the background loading operation has finished.
 ******************************************************************************/
-PipelineFlowState LinkedFileObject::evaluateImplementation(FutureInterface<PipelineFlowState>& futureInterface, int frameIndex)
+void LinkedFileObject::loadOperationFinished()
 {
-	return PipelineFlowState();
+	OVITO_ASSERT(_frameBeingLoaded != -1);
+	ReferenceEvent::Type notificationType = ReferenceEvent::PendingOperationFailed;
+	bool wasCanceled = _loadFrameOperation.isCanceled();
+	_loadedFrame = _frameBeingLoaded;
+
+	// Reset everything.
+	_loadFrameOperation = Future<LinkedFileImporter::ImportedDataPtr>();
+	_loadFrameOperationWatcher.unsetFuture();
+	_frameBeingLoaded = -1;
+
+	if(!wasCanceled) {
+		try {
+			LinkedFileImporter::ImportedDataPtr importedData = _loadFrameOperation.result();
+			if(importedData)
+				importedData->insertIntoScene(this);
+
+			// Notify dependents that the loading operation has succeeded and the new data is available.
+			notificationType = ReferenceEvent::PendingOperationSucceeded;
+		}
+		catch(const Exception& ex) {
+			ex.showError();
+		}
+	}
+
+	// Notify dependents that the evaluation request was satisfied or not satisfied.
+	notifyDependents(notificationType);
 }
-
-
 
 #if 0
 /******************************************************************************
@@ -154,6 +182,7 @@ void AtomsImportObject::setParser(AtomsFileParser* parser)
 }
 #endif
 
+#if 0
 /******************************************************************************
 * This will reload the current movie frame.
 * Note: Throws an exception on error.
@@ -161,7 +190,6 @@ void AtomsImportObject::setParser(AtomsFileParser* parser)
 ******************************************************************************/
 bool LinkedFileObject::refreshFromSource(int frame, bool suppressDialogs)
 {
-#if 0
 	try {
 		// Validate data source.
 		if(!importer())
@@ -197,9 +225,9 @@ bool LinkedFileObject::refreshFromSource(int frame, bool suppressDialogs)
 		// Pass exception on to caller.
 		throw;
 	}
-#endif
 	return true;
 }
+#endif
 
 /******************************************************************************
 * Saves the status returned by the parser object and generates a

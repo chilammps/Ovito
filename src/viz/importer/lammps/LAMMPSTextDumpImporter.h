@@ -50,7 +50,13 @@ public:
 protected:
 
 	/// \brief Reads the data from the input file(s).
-	virtual void loadImplementation(FutureInterface<OORef<SceneObject>>& futureInterface, FrameSourceInformation frame, bool suppressDialogs) override;
+	virtual void loadImplementation(FutureInterface<ImportedDataPtr>& futureInterface, FrameSourceInformation frame, bool suppressDialogs) override;
+
+	class ImportedAtoms : public ImportedData {
+		/// Lets the data container insert the data it holds into the scene by creating
+		/// appropriate scene objects.
+		virtual void insertIntoScene(LinkedFileObject* destination) override;
+	};
 
 private:
 

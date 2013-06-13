@@ -43,15 +43,15 @@ public:
 		ResultSet  = (1<<4)
 	};
 
+protected:
+
+	FutureInterfaceBase(State initialState = NoState) : _subTask(nullptr), _state(initialState), _runnable(nullptr) {}
+
 	bool isRunning() const { return (_state & Running); }
 	bool isCanceled() const { return (_state & Canceled); }
 	bool isStarted() const { return (_state & Started); }
 	bool isFinished() const { return (_state & Finished); }
 	bool isResultSet() const { return (_state & ResultSet); }
-
-protected:
-
-	FutureInterfaceBase(State initialState = NoState) : _subTask(nullptr), _state(initialState) {}
 
 	void cancel() {
 		QMutexLocker locker(&_mutex);
@@ -89,15 +89,16 @@ protected:
     		return;
 
     	_exceptionStore = std::current_exception();
-    	_state = State(_state | Canceled);
+    	_state = State(_state | ResultSet);
     	_waitCondition.wakeAll();
-    	sendCallOut(FutureWatcher::CallOutEvent::Canceled);
+    	sendCallOut(FutureWatcher::CallOutEvent::ResultReady);
     }
 
     void reportResultReady() {
     	if(isCanceled() || isFinished())
     		return;
 
+    	_state = State(_state | ResultSet);
         _waitCondition.wakeAll();
         sendCallOut(FutureWatcher::CallOutEvent::ResultReady);
     }
@@ -122,13 +123,12 @@ protected:
 
 		// To avoid deadlocks and reduce the number of threads used, try to
 		// run the runnable in the current thread.
-		QThreadPool::globalInstance()->d_func()->stealRunnable(d->runnable);
+		QThreadPool::globalInstance()->d_func()->stealRunnable(_runnable);
 
 		lock.relock();
 		if(!isRunning())
 			return;
 #endif
-
 		while(isRunning() && isResultSet() == false)
 			_waitCondition.wait(&_mutex);
 
@@ -144,7 +144,6 @@ protected:
 #if 0
             QThreadPool::globalInstance()->d_func()->stealRunnable(d->runnable);
 #endif
-
             lock.relock();
             while(isRunning())
                 _waitCondition.wait(&_mutex);
@@ -153,7 +152,35 @@ protected:
         throwPossibleException();
     }
 
-    void sendCallOut(FutureWatcher::CallOutEvent::CallOutType type) {}
+    void sendCallOut(FutureWatcher::CallOutEvent::CallOutType type) {
+    	if(_watchers.isEmpty())
+    		return;
+    	Q_FOREACH(FutureWatcher* watcher, _watchers)
+    		watcher->postCallOutEvent(type);
+    }
+
+    void registerWatcher(FutureWatcher* watcher) {
+    	 QMutexLocker locker(&_mutex);
+
+		if(isStarted())
+			watcher->postCallOutEvent(FutureWatcher::CallOutEvent::Started);
+
+		if(isResultSet())
+			watcher->postCallOutEvent(FutureWatcher::CallOutEvent::ResultReady);
+
+		if(isCanceled())
+			watcher->postCallOutEvent(FutureWatcher::CallOutEvent::Canceled);
+
+		if(isFinished())
+			watcher->postCallOutEvent(FutureWatcher::CallOutEvent::Finished);
+
+		_watchers.push_back(watcher);
+    }
+
+    void unregisterWatcher(FutureWatcher* watcher) {
+    	QMutexLocker locker(&_mutex);
+    	_watchers.removeOne(watcher);
+    }
 
 	FutureInterfaceBase* _subTask;
 	QList<FutureWatcher*> _watchers;
@@ -161,6 +188,9 @@ protected:
 	State _state;
 	QWaitCondition _waitCondition;
 	std::exception_ptr _exceptionStore;
+	QRunnable* _runnable;
+
+	friend class FutureWatcher;
 };
 
 template<typename R>

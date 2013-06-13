@@ -48,12 +48,14 @@ public:
 	/// \brief Returns the parser that loads the input file.
 	LinkedFileImporter* importer() const { return _importer; }
 
+#if 0
 	/// \brief This reloads the input data from the external file.
 	/// \param frame The animation frame to load from the external file.
 	/// \param suppressDialogs Specifies whether any dialogs or message boxes should be suppressed during loading.
 	/// \return \a false when the operation has been canceled by the user; \a true on success.
 	/// \throws Exception on error.
 	virtual bool refreshFromSource(int frame = 0, bool suppressDialogs = false);
+#endif
 
 	/// \brief Returns the status returned by the file parser on its last invocation.
 	const ObjectStatus& status() const { return _importStatus; }
@@ -64,11 +66,8 @@ public:
 	/// \brief Controls whether the scene's animation interval should be adjusted to the number of frames reported by the file parser.
 	void setAdjustAnimationInterval(bool enabled) { _adjustAnimationInterval = enabled; }
 
-	/// Asks the object for the result of the geometry pipeline at the given time.
-	virtual PipelineFlowState evaluateNow(TimePoint time) override;
-
-	/// Requests the results of a full evaluation of the geometry pipeline at the given time.
-	virtual Future<PipelineFlowState> evaluateLater(TimePoint time) override;
+	/// \brief Asks the object for the result of the geometry pipeline at the given time.
+	virtual PipelineFlowState evaluate(TimePoint time) override;
 
 #if 0
 	/// \brief Returns whether the loaded scene objects should be saved in a scene file.
@@ -141,6 +140,11 @@ public:
 
 #endif
 
+protected Q_SLOTS:
+
+	/// \brief This is called when the background loading operation has finished.
+	void loadOperationFinished();
+
 protected:
 
 	/// \brief Saves the status returned by the parser object and generates a ReferenceEvent::StatusChanged event.
@@ -148,9 +152,6 @@ protected:
 
 	/// \brief Adjusts the animation interval of the current data set to the number of frames reported by the file parser.
 	void adjustAnimationInterval();
-
-	/// \brief Call the importer object to load the given frame.
-	PipelineFlowState evaluateImplementation(FutureInterface<PipelineFlowState>& futureInterface, int frameIndex);
 
 #if 0
 	/// \brief Saves the class' contents to the given stream.
@@ -194,8 +195,11 @@ private:
 	/// The index of the animation frame currently being loaded.
 	int _frameBeingLoaded;
 
-	/// The background operation created by evaluateLater().
-	Future<PipelineFlowState> _evaluationOperation;
+	/// The background file loading task started by evaluate().
+	Future<LinkedFileImporter::ImportedDataPtr> _loadFrameOperation;
+
+	/// The watcher object that is used to monitor the background operation.
+	FutureWatcher _loadFrameOperationWatcher;
 
 #if 0
 
@@ -209,10 +213,10 @@ private:
 	Q_OBJECT
 	OVITO_OBJECT
 
-	DECLARE_REFERENCE_FIELD(_importer)
-	DECLARE_VECTOR_REFERENCE_FIELD(_sceneObjects)
-	//DECLARE_PROPERTY_FIELD(_framesPerSnapshot)
-	DECLARE_PROPERTY_FIELD(_adjustAnimationInterval)
+	DECLARE_REFERENCE_FIELD(_importer);
+	DECLARE_VECTOR_REFERENCE_FIELD(_sceneObjects);
+	//DECLARE_PROPERTY_FIELD(_framesPerSnapshot);
+	DECLARE_PROPERTY_FIELD(_adjustAnimationInterval);
 };
 
 };

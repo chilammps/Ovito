@@ -64,7 +64,14 @@ private:
 
 	template<typename R2, typename Function> friend class Task;
 	template<typename R2> friend class FutureInterface;
+	friend class FutureWatcher;
 };
+
+template<typename R>
+void FutureWatcher::setFuture(const Future<R>& future)
+{
+	setFutureInterface(future._interface, true);
+}
 
 };
 

@@ -40,22 +40,17 @@ public:
 			_function(*_p.get());
 		}
 		catch(...) {
-			_p->_promise.set_exception(std::current_exception());
-			_p->emitResultReady();
-			return;
+			_p->reportException();
 		}
+		_p->reportFinished();
+	}
 
-		if(!_p->_hasResultBeenSet) {
-			OVITO_ASSERT_MSG(_p->isCanceled(), "Task::run", "Promise has not been satisfied by the worker function.");
-			_p->_promise.set_value(R());
-			_p->emitCanceled();
-		}
-		else {
-			if(_p->isCanceled())
-				_p->emitCanceled();
-			else
-				_p->emitResultReady();
-		}
+	Future<R> start() {
+		_p->_runnable = this;
+		_p->reportStarted();
+		std::shared_ptr<FutureInterface<R>> p2(_p);
+		QThreadPool::globalInstance()->start(this);
+		return Future<R>(p2);
 	}
 
 	Future<R> future() const { return Future<R>(_p); }
@@ -72,10 +67,7 @@ private:
 template<typename R, typename Function>
 Future<R> runInBackground(Function f)
 {
-	Task<R,Function>* task = new Task<R,Function>(f);
-	Future<R> future = task->future();
-	QThreadPool::globalInstance()->start(task);
-	return future;
+	return (new Task<R,Function>(f))->start();
 }
 
 };

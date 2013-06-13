@@ -104,6 +104,7 @@ SET(OVITO_CORE_SOURCE_FILES
 	utilities/io/ObjectSaveStream.cpp
 	utilities/io/ObjectLoadStream.cpp
 	utilities/io/FileManager.cpp
+	utilities/concurrent/Future.cpp
 	rendering/SceneRenderer.cpp
 	rendering/viewport/ViewportSceneRenderer.cpp
 	rendering/viewport/ViewportSceneRendererEditor.cpp

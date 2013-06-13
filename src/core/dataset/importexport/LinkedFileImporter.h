@@ -55,6 +55,18 @@ public:
 		QDateTime lastModificationTime;
 	};
 
+	class ImportedData {
+	public:
+		/// Base destructor of virtual class.
+		virtual ~ImportedData() {}
+
+		/// Lets the data container insert the data it holds into the scene by creating
+		/// appropriate scene objects.
+		virtual void insertIntoScene(LinkedFileObject* destination) = 0;
+	};
+
+	typedef std::shared_ptr<ImportedData> ImportedDataPtr;
+
 public:
 
 	/// \brief Constructs a new instance of this class.
@@ -111,12 +123,12 @@ public:
 	virtual bool hasSettingsDialog() { return false; }
 
 	/// \brief Reads the data from the input file(s).
-	/// \param movieFrame If the input file contains more than one movie frame then this parameter specifies
-	///                   the index of the animation frame to load (starting at 0). It must be less then the number of available frames
-	///                   reported by numberOfFrames().
+	/// \param frame If the input file contains more than one animation frame then this parameter specifies
+	///              the index of the frame to load (starting at 0). It must be less then the number of available frames
+	///              reported by numberOfFrames().
 	/// \param suppressDialogs Specifies whether any dialogs or message boxes shown by the parser should be suppressed during loading.
-	/// \return A future that will give access to the loaded scene objects.
-	virtual Future<OORef<SceneObject>> load(int frame = 0, bool suppressDialogs = false);
+	/// \return A future that will give access to the loaded data.
+	virtual Future<ImportedDataPtr> load(int frame = 0, bool suppressDialogs = false);
 
 	/// \brief Scans the input source (which can be a directory or a single file) to discover all animation frames.
 	/// \param suppressDialogs Specifies whether any dialogs or message boxes should be suppressed during this operation.
@@ -148,7 +160,7 @@ public:
 protected:
 
 	/// \brief Reads the data from the input file(s).
-	virtual void loadImplementation(FutureInterface<OORef<SceneObject>>& futureInterface, FrameSourceInformation frame, bool suppressDialogs) = 0;
+	virtual void loadImplementation(FutureInterface<ImportedDataPtr>& futureInterface, FrameSourceInformation frame, bool suppressDialogs) = 0;
 
 private:
 
