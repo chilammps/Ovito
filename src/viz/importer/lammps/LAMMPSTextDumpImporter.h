@@ -23,7 +23,7 @@
 #define __OVITO_LAMMPS_TEXT_DUMP_IMPORTER_H
 
 #include <core/Core.h>
-#include <core/dataset/importexport/LinkedFileImporter.h>
+#include "../AtomsImporter.h"
 
 namespace Viz {
 
@@ -32,7 +32,7 @@ using namespace Ovito;
 /**
  * \brief File parser for text-based LAMMPS dump simulation files.
  */
-class LAMMPSTextDumpImporter : public LinkedFileImporter
+class LAMMPSTextDumpImporter : public AtomsImporter
 {
 public:
 
@@ -49,14 +49,8 @@ public:
 
 protected:
 
-	/// \brief Reads the data from the input file(s).
-	virtual void loadImplementation(FutureInterface<ImportedDataPtr>& futureInterface, FrameSourceInformation frame, bool suppressDialogs) override;
-
-	class ImportedAtoms : public ImportedData {
-		/// Lets the data container insert the data it holds into the scene by creating
-		/// appropriate scene objects.
-		virtual void insertIntoScene(LinkedFileObject* destination) override;
-	};
+	/// \brief Parses the given input file and stores the data in the given container object.
+	virtual void parseFile(FutureInterface<ImportedDataPtr>& futureInterface, AtomsData& container, QIODevice& file) override;
 
 private:
 

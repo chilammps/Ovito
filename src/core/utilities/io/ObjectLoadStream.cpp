@@ -56,7 +56,7 @@ ObjectLoadStream::ObjectLoadStream(QDataStream& source) : LoadStream(source), _c
 		expectChunk(0x201);
 		classEntry.descriptor = OvitoObjectType::deserializeRTTI(*this);
 		if(classEntry.descriptor->isSerializable() == false)
-			throw Exception(tr("Failed to load non-serializable class %1.").arg(classEntry.descriptor->name()));
+			throw Exception(tr("Failed to load class %1 because it is marked as non-serializable.").arg(classEntry.descriptor->name()));
 		closeChunk();
 
 		// Load the plugin containing the class now.

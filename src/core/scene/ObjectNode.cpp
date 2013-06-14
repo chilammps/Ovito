@@ -49,7 +49,7 @@ ObjectNode::ObjectNode(SceneObject* object)
 const PipelineFlowState& ObjectNode::evalPipeline(TimePoint time)
 {
 	// Check if the cache needs to be updated.
-	if(_pipelineCache.isEmpty() || _pipelineCache.stateValidity().contains(time) == false) {
+	if(_pipelineCache.stateValidity().contains(time) == false) {
 		if(sceneObject()) {
 
 			// Do not record any object creation operations while evaluating the pipeline.
@@ -86,15 +86,21 @@ const PipelineFlowState& ObjectNode::evalPipeline(TimePoint time)
 			}
 		}
 		else {
-#if 0
 			// Clear cache if this node is empty.
 			invalidatePipelineCache();
-#endif
 			// Discard display objects as well.
 			_displayObjects.clear();
 		}
 	}
 	return _pipelineCache;
+}
+
+/******************************************************************************
+* This method invalidates the geometry pipeline cache of the object node.
+******************************************************************************/
+void ObjectNode::invalidatePipelineCache()
+{
+	_pipelineCache.clear();
 }
 
 /******************************************************************************
@@ -118,12 +124,10 @@ void ObjectNode::render(TimePoint time, SceneRenderer* renderer)
 ******************************************************************************/
 bool ObjectNode::referenceEvent(RefTarget* source, ReferenceEvent* event)
 {
-#if 0
 	if(event->type() == ReferenceEvent::TargetChanged && source == sceneObject()) {
 		invalidatePipelineCache();
 	}
 	else
-#endif
 		if(event->type() == ReferenceEvent::TargetDeleted && source == sceneObject()) {
 		// Object has been deleted -> delete node too.
 		if(!UndoManager::instance().isUndoingOrRedoing())
@@ -137,10 +141,8 @@ bool ObjectNode::referenceEvent(RefTarget* source, ReferenceEvent* event)
 ******************************************************************************/
 void ObjectNode::referenceReplaced(const PropertyFieldDescriptor& field, RefTarget* oldTarget, RefTarget* newTarget)
 {
-#if 0
 	if(field == PROPERTY_FIELD(ObjectNode::_sceneObject))
 		invalidatePipelineCache();
-#endif
 
 	SceneNode::referenceReplaced(field, oldTarget, newTarget);
 }

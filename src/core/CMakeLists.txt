@@ -45,6 +45,7 @@ SET(OVITO_CORE_SOURCE_FILES
 	dataset/importexport/ImportExportManager.cpp
 	dataset/importexport/LinkedFileImporter.cpp
 	dataset/importexport/LinkedFileObject.cpp
+	dataset/importexport/LinkedFileObjectEditor.cpp
 	scene/SceneNode.cpp
 	scene/GroupNode.cpp
 	scene/ObjectNode.cpp
@@ -81,6 +82,7 @@ SET(OVITO_CORE_SOURCE_FILES
 	gui/widgets/SpinnerWidget.cpp
 	gui/widgets/ColorPickerWidget.cpp
 	gui/widgets/AnimationTimeSpinner.cpp
+	gui/widgets/ElidedTextLabel.cpp
 	gui/properties/PropertiesEditor.cpp
 	gui/properties/PropertiesPanel.cpp
 	gui/properties/ParameterUI.cpp
@@ -104,7 +106,10 @@ SET(OVITO_CORE_SOURCE_FILES
 	utilities/io/ObjectSaveStream.cpp
 	utilities/io/ObjectLoadStream.cpp
 	utilities/io/FileManager.cpp
+	utilities/io/gzstream/gzstream.cpp
+	utilities/io/gzdevice/qtiocompressor.cpp
 	utilities/concurrent/Future.cpp
+	utilities/concurrent/ProgressManager.cpp
 	rendering/SceneRenderer.cpp
 	rendering/viewport/ViewportSceneRenderer.cpp
 	rendering/viewport/ViewportSceneRendererEditor.cpp
@@ -126,6 +131,10 @@ SET(OVITO_CORE_SOURCE_FILES
 # Compile resource files.
 QT5_ADD_RESOURCES(OVITO_CORE_RESOURCE_FILES resources/core.qrc)
 
+# Find the ZLib library.
+FIND_PACKAGE(ZLIB REQUIRED)
+INCLUDE_DIRECTORIES(${ZLIB_INCLUDE_DIRS})
+
 # Build library
 ADD_LIBRARY(Core ${OVITO_CORE_SOURCE_FILES} ${OVITO_CORE_RESOURCE_FILES})
 
@@ -133,6 +142,9 @@ TARGET_LINK_LIBRARIES(Core Base)
 
 # Link to OpenGL library.
 TARGET_LINK_LIBRARIES(Core ${OPENGL_gl_LIBRARY})
+
+# Link to ZLib library.
+TARGET_LINK_LIBRARIES(Core ${ZLIB_LIBRARIES})
 
 # Link Qt5.
 QT5_USE_MODULES(Core Widgets Xml Network)

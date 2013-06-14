@@ -43,12 +43,25 @@ public:
 		ResultSet  = (1<<4)
 	};
 
+	virtual ~FutureInterfaceBase() {}
+
+	bool isCanceled() const { return (_state & Canceled); }
+
+    int progressMaximum() const { return _progressMaximum; }
+    void setProgressRange(int maximum);
+    bool isProgressUpdateNeeded();
+    void setProgressValue(int progressValue);
+    int progressValue() const { return _progressValue; }
+    void setProgressText(const QString& progressText);
+    QString progressText() const { return _progressText; }
+
 protected:
 
-	FutureInterfaceBase(State initialState = NoState) : _subTask(nullptr), _state(initialState), _runnable(nullptr) {}
+	FutureInterfaceBase(State initialState = NoState) : _subTask(nullptr), _state(initialState), _runnable(nullptr), _progressValue(0), _progressMaximum(0) {
+		_progressTime.invalidate();
+	}
 
 	bool isRunning() const { return (_state & Running); }
-	bool isCanceled() const { return (_state & Canceled); }
 	bool isStarted() const { return (_state & Started); }
 	bool isFinished() const { return (_state & Finished); }
 	bool isResultSet() const { return (_state & ResultSet); }
@@ -153,10 +166,18 @@ protected:
     }
 
     void sendCallOut(FutureWatcher::CallOutEvent::CallOutType type) {
-    	if(_watchers.isEmpty())
-    		return;
     	Q_FOREACH(FutureWatcher* watcher, _watchers)
     		watcher->postCallOutEvent(type);
+    }
+
+    void sendCallOut(FutureWatcher::CallOutEvent::CallOutType type, int value) {
+    	Q_FOREACH(FutureWatcher* watcher, _watchers)
+    		watcher->postCallOutEvent(type, value);
+    }
+
+    void sendCallOut(FutureWatcher::CallOutEvent::CallOutType type, const QString& text) {
+    	Q_FOREACH(FutureWatcher* watcher, _watchers)
+    		watcher->postCallOutEvent(type, text);
     }
 
     void registerWatcher(FutureWatcher* watcher) {
@@ -189,6 +210,10 @@ protected:
 	QWaitCondition _waitCondition;
 	std::exception_ptr _exceptionStore;
 	QRunnable* _runnable;
+    int _progressValue;
+    int _progressMaximum;
+    QString _progressText;
+    QElapsedTimer _progressTime;
 
 	friend class FutureWatcher;
 };

@@ -69,8 +69,8 @@ public:
 	///         \c false otherwise.
 	/// \note A class is only serializable if all its base classes are also serializable.
 	bool isSerializable() const {
-		OVITO_ASSERT_MSG(superClass() == NULL || !(_isSerializable && !superClass()->isSerializable()), "OvitoObjectType::isSerializable", "Class derived from a non-serializable class has to be non-serializable too.");
-		return _isSerializable;
+		OVITO_ASSERT_MSG(superClass() == nullptr || !(_isSerializable && !superClass()->isSerializable()), "OvitoObjectType::isSerializable", "Class derived from a non-serializable class has to be non-serializable too.");
+		return _isSerializable && (superClass() == nullptr || superClass()->isSerializable());
 	}
 
 	/// \brief Returns whether this class is directly or indirectly derived from some other class.

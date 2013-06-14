@@ -53,4 +53,18 @@ void SceneObject::notifyDependents(ReferenceEvent& event)
 	RefTarget::notifyDependents(event);
 }
 
+/******************************************************************************
+* Handles reference events sent by reference targets of this object.
+******************************************************************************/
+bool SceneObject::referenceEvent(RefTarget* source, ReferenceEvent* event)
+{
+	// Intercept messages from the display object since they don't represent a change of
+	// the scene object.
+	if(source == displayObject()) {
+		return false;
+	}
+	return RefTarget::referenceEvent(source, event);
+}
+
+
 };

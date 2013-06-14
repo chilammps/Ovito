@@ -40,12 +40,6 @@ OvitoObjectType::OvitoObjectType(const QString& name, const OvitoObjectType* sup
 	_isSerializable(isSerializable), _firstPropertyField(NULL), _editorClass(NULL)
 {
 	OVITO_ASSERT(superClass != NULL || name == "OvitoObject");
-
-	if(superClass) {
-		// Inherit serializable attribute.
-		if(!superClass->isSerializable())
-			_isSerializable = false;
-	}
 }
 
 /******************************************************************************

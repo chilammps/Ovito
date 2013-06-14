@@ -43,7 +43,8 @@ SET_PROPERTY_FIELD_UNITS(SimulationCellDisplay, _simulationCellLineWidth, WorldP
 SimulationCellDisplay::SimulationCellDisplay() :
 	_renderSimulationCell(true),
 	_simulationCellLineWidth(0.5),
-	_simulationCellColor(0, 0, 0)
+	_simulationCellColor(0, 0, 0),
+	_lastObjectRevision(0)
 {
 	INIT_PROPERTY_FIELD(SimulationCellDisplay::_renderSimulationCell);
 	INIT_PROPERTY_FIELD(SimulationCellDisplay::_simulationCellLineWidth);
@@ -67,11 +68,13 @@ Box3 SimulationCellDisplay::boundingBox(TimePoint time, SceneObject* sceneObject
 void SimulationCellDisplay::render(TimePoint time, SceneObject* sceneObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode)
 {
 	if(!renderSimulationCell())
-		return;		// Do nothing is rendering has been disabled by the user.
+		return;		// Do nothing if rendering has been disabled by the user.
 
 	SimulationCell* cell = static_object_cast<SimulationCell>(sceneObject);
 
-	if(!_lineGeometry || !_lineGeometry->isValid(renderer)) {
+	if(!_lineGeometry || !_lineGeometry->isValid(renderer) || _lastObject != cell || _lastObjectRevision != cell->revisionNumber()) {
+		_lastObject = cell;
+		_lastObjectRevision = cell->revisionNumber();
 		_lineGeometry = renderer->createLineGeometryBuffer();
 		_lineGeometry->beginCreate(24);
 		Point3 corners[8];

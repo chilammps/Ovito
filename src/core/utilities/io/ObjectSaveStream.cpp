@@ -29,6 +29,19 @@ namespace Ovito {
 using namespace std;
 
 /******************************************************************************
+* The destructor closes the stream.
+******************************************************************************/
+ObjectSaveStream::~ObjectSaveStream()
+{
+	try {
+		close();
+	}
+	catch(const Exception& ex) {
+		ex.showError();
+	}
+}
+
+/******************************************************************************
 * Saves an object with runtime type information to the stream.
 ******************************************************************************/
 void ObjectSaveStream::saveObject(OvitoObject* object)
@@ -54,71 +67,78 @@ void ObjectSaveStream::close()
 	if(!isOpen())
 		return;
 
-	QVector<qint64> objectOffsets;
+	try {
+		QVector<qint64> objectOffsets;
 
-	// Save all objects.
-	beginChunk(0x100);
-	for(int i = 0; i < _objects.size(); i++) {
-		OvitoObject* obj = _objects[i];
-		OVITO_CHECK_OBJECT_POINTER(obj);
-		objectOffsets.push_back(filePosition());
-		obj->saveToStream(*this);
-	}
-	endChunk();
-
-	// Save RTTI.
-	map<const OvitoObjectType*, quint32> classes;
-	qint64 beginOfRTTI = filePosition();
-	beginChunk(0x200);
-	Q_FOREACH(OvitoObject* obj, _objects) {
-		const OvitoObjectType* descriptor = &obj->getOOType();
-		if(classes.find(descriptor) == classes.end()) {
-			classes.insert(make_pair(descriptor, (quint32)classes.size()));
-			// Write the runtime type information to the stream.
-			beginChunk(0x201);
-			OvitoObjectType::serializeRTTI(*this, descriptor);
-			endChunk();
-			// Write the property fields to the stream.
-			beginChunk(0x202);
-			for(const OvitoObjectType* clazz = descriptor; clazz; clazz = clazz->superClass()) {
-				for(const PropertyFieldDescriptor* field = clazz->firstPropertyField(); field; field = field->next()) {
-					beginChunk(0x00000001);
-					*this << QByteArray(field->identifier());
-					OVITO_ASSERT(field->definingClass() == clazz);
-					OvitoObjectType::serializeRTTI(*this, field->definingClass());
-					this->writeEnum(field->flags());
-					*this << field->isReferenceField();
-					if(field->isReferenceField()) {
-						OvitoObjectType::serializeRTTI(*this, field->targetClass());
-					}
-					endChunk();
-				}
-			}
-			// Write list terminator.
-			beginChunk(0x00000000);
-			endChunk();
-
-			endChunk();
+		// Save all objects.
+		beginChunk(0x100);
+		for(int i = 0; i < _objects.size(); i++) {
+			OvitoObject* obj = _objects[i];
+			OVITO_CHECK_OBJECT_POINTER(obj);
+			objectOffsets.push_back(filePosition());
+			obj->saveToStream(*this);
 		}
+		endChunk();
+
+		// Save RTTI.
+		map<const OvitoObjectType*, quint32> classes;
+		qint64 beginOfRTTI = filePosition();
+		beginChunk(0x200);
+		Q_FOREACH(OvitoObject* obj, _objects) {
+			const OvitoObjectType* descriptor = &obj->getOOType();
+			if(classes.find(descriptor) == classes.end()) {
+				classes.insert(make_pair(descriptor, (quint32)classes.size()));
+				// Write the runtime type information to the stream.
+				if(descriptor->isSerializable() == false)
+					throw Exception(tr("Failed to save class %1 because it is marked as non-serializable.").arg(descriptor->name()));
+				beginChunk(0x201);
+				OvitoObjectType::serializeRTTI(*this, descriptor);
+				endChunk();
+				// Write the property fields to the stream.
+				beginChunk(0x202);
+				for(const OvitoObjectType* clazz = descriptor; clazz; clazz = clazz->superClass()) {
+					for(const PropertyFieldDescriptor* field = clazz->firstPropertyField(); field; field = field->next()) {
+						beginChunk(0x01);
+						*this << QByteArray::fromRawData(field->identifier(), qstrlen(field->identifier()));
+						OVITO_ASSERT(field->definingClass() == clazz);
+						OvitoObjectType::serializeRTTI(*this, field->definingClass());
+						this->writeEnum(field->flags());
+						*this << field->isReferenceField();
+						if(field->isReferenceField()) {
+							OvitoObjectType::serializeRTTI(*this, field->targetClass());
+						}
+						endChunk();
+					}
+				}
+				// Write list terminator.
+				beginChunk(0x00000000);
+				endChunk();
+
+				endChunk();
+			}
+		}
+		endChunk();
+
+		// Save object table.
+		qint64 beginOfObjTable = filePosition();
+		beginChunk(0x300);
+		auto offsetIterator = objectOffsets.constBegin();
+		Q_FOREACH(OvitoObject* obj, _objects) {
+			*this << classes[&obj->getOOType()];
+			*this << *offsetIterator++;
+		}
+		endChunk();
+
+		// Write index.
+		*this << beginOfRTTI;
+		*this << (quint32)classes.size();
+		*this << beginOfObjTable;
+		*this << (quint32)_objects.size();
 	}
-	endChunk();
-
-	// Save object table.
-	qint64 beginOfObjTable = filePosition();
-	beginChunk(0x300);
-	auto offsetIterator = objectOffsets.constBegin();
-	Q_FOREACH(OvitoObject* obj, _objects) {
-		*this << classes[&obj->getOOType()];
-		*this << *offsetIterator++;
+	catch(...) {
+		SaveStream::close();
+		throw;
 	}
-	endChunk();
-
-	// Write index.
-	*this << beginOfRTTI;
-	*this << (quint32)classes.size();
-	*this << beginOfObjTable;
-	*this << (quint32)_objects.size();
-
 	SaveStream::close();
 }
 

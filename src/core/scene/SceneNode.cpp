@@ -34,7 +34,7 @@
 
 namespace Ovito {
 
-IMPLEMENT_OVITO_OBJECT(SceneNode, RefTarget)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(SceneNode, RefTarget)
 DEFINE_FLAGS_REFERENCE_FIELD(SceneNode, _transformation, "Transform", TransformationController, PROPERTY_FIELD_ALWAYS_DEEP_COPY);
 DEFINE_FLAGS_REFERENCE_FIELD(SceneNode, _targetNode, "TargetNode", SceneNode, PROPERTY_FIELD_ALWAYS_CLONE);
 DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(SceneNode, _children, "Children", SceneNode, PROPERTY_FIELD_ALWAYS_CLONE);

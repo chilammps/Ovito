@@ -25,6 +25,7 @@
 #include <core/viewport/ViewportManager.h>
 #include <core/animation/AnimManager.h>
 #include <core/rendering/viewport/ViewportSceneRenderer.h>
+#include <core/rendering/RenderSettings.h>
 #include <core/dataset/DataSetManager.h>
 #include <core/scene/objects/AbstractCameraObject.h>
 #include "ViewportMenu.h"
@@ -253,19 +254,17 @@ ViewProjectionParameters Viewport::projectionParameters(TimePoint time, FloatTyp
 ******************************************************************************/
 bool Viewport::referenceEvent(RefTarget* source, ReferenceEvent* event)
 {
-#if 0
-	if(source == _viewNode && event->type() == ReferenceEvent::TargetChanged) {
+	if(source == viewNode() && event->type() == ReferenceEvent::TargetChanged) {
 		// Update viewport when camera node has moved.
 		updateViewport();
 		return false;
 	}
-	else if(source == _viewNode && event->type() == ReferenceEvent::TitleChanged) {
+	else if(source == viewNode() && event->type() == ReferenceEvent::TitleChanged) {
 		// Update viewport title when camera node has been renamed.
 		updateViewportTitle();
 		updateViewport();
 		return false;
 	}
-#endif
 	return RefTarget::referenceEvent(source, event);
 }
 
@@ -401,37 +400,7 @@ void Viewport::render(QOpenGLContext* context, QOpenGLPaintDevice* paintDevice)
 		glVertex(dir);
 	}
 	glEnd();
-#if 0
-	glColor3f(1,1,1);
-	glBegin(GL_LINES);
-	glVertex3f(-50,-50,-50);
-	glVertex3f( 50,-50,-50);
-	glVertex3f( 50,-50,-50);
-	glVertex3f( 50, 50,-50);
-	glVertex3f( 50, 50,-50);
-	glVertex3f(-50, 50,-50);
-	glVertex3f(-50, 50,-50);
-	glVertex3f(-50,-50,-50);
 
-	glVertex3f(-50,-50, -50);
-	glVertex3f(-50,-50, 50);
-	glVertex3f( 50,-50, -50);
-	glVertex3f( 50,-50, 50);
-	glVertex3f( 50, 50, -50);
-	glVertex3f( 50, 50, 50);
-	glVertex3f(-50, 50, -50);
-	glVertex3f(-50, 50, 50);
-
-	glVertex3f(-50,-50, 50);
-	glVertex3f( 50,-50, 50);
-	glVertex3f( 50,-50, 50);
-	glVertex3f( 50, 50, 50);
-	glVertex3f( 50, 50, 50);
-	glVertex3f(-50, 50, 50);
-	glVertex3f(-50, 50, 50);
-	glVertex3f(-50,-50, 50);
-	glEnd();
-#endif
 	// Set up the viewport renderer.
 	ViewportManager::instance().renderer()->setTime(AnimManager::instance().time());
 	ViewportManager::instance().renderer()->setProjParams(_projParams);
@@ -440,6 +409,9 @@ void Viewport::render(QOpenGLContext* context, QOpenGLPaintDevice* paintDevice)
 
 	// Call the viewport renderer to render the scene objects.
 	ViewportManager::instance().renderer()->renderFrame();
+
+	// Render render frame.
+	renderRenderFrame();
 
 	// Render orientation tripod.
 	renderOrientationIndicator();
@@ -602,6 +574,73 @@ void Viewport::renderOrientationIndicator()
 		pos += QPointF(-4, 3);
 		renderText(labels[axis], pos, QColor(colors[axis]));
 	}
+
+	// Restore old rendering attributes.
+	end2DPainting();
+}
+
+/******************************************************************************
+* Renders the frame on top of the scene that indicates the visible rendering area.
+******************************************************************************/
+void Viewport::renderRenderFrame()
+{
+	if(!renderFrameShown())
+		return;
+
+	QSize vpSize = size();
+	RenderSettings* renderSettings = DataSetManager::instance().currentSet()->renderSettings();
+	if(!renderSettings || vpSize.width() == 0 || vpSize.height() == 0)
+		return;
+
+	// Save current rendering attributes.
+	begin2DPainting();
+
+	// Set identity projection matrices.
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
+	// Compute a rectangle that has the same aspect ratio as the rendered image.
+	FloatType renderAspectRatio = renderSettings->outputImageAspectRatio();
+	FloatType windowAspectRatio = (FloatType)vpSize.height() / (FloatType)vpSize.width();
+	FloatType frameWidth, frameHeight;
+	if(renderAspectRatio < windowAspectRatio) {
+		frameWidth = 0.9;
+		frameHeight = frameWidth / windowAspectRatio * renderAspectRatio;
+	}
+	else {
+		frameHeight = 0.9;
+		frameWidth = frameHeight / renderAspectRatio * windowAspectRatio;
+	}
+
+	glColor4f(1, 1, 1, 0.5f);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	// Render rectangle borders
+	glBegin(GL_QUADS);
+
+	glVertex3(-1, -1, 0);
+	glVertex3(-frameWidth, -1, 0);
+	glVertex3(-frameWidth, +1, 0);
+	glVertex3(-1, +1, 0);
+
+	glVertex3(+1, +1, 0);
+	glVertex3(+frameWidth, +1, 0);
+	glVertex3(+frameWidth, -1, 0);
+	glVertex3(+1, -1, 0);
+
+	glVertex3(-frameWidth, -1, 0);
+	glVertex3(-frameWidth, -frameHeight, 0);
+	glVertex3(+frameWidth, -frameHeight, 0);
+	glVertex3(+frameWidth, -1, 0);
+
+	glVertex3(+frameWidth, +1, 0);
+	glVertex3(+frameWidth, +frameHeight, 0);
+	glVertex3(-frameWidth, +frameHeight, 0);
+	glVertex3(-frameWidth, +1, 0);
+
+	glEnd();
 
 	// Restore old rendering attributes.
 	end2DPainting();

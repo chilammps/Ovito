@@ -29,6 +29,8 @@
 
 #include <core/Core.h>
 #include <core/scene/objects/SceneObject.h>
+#include <core/gui/properties/PropertiesEditor.h>
+#include <core/gui/properties/FloatParameterUI.h>
 
 namespace Viz {
 
@@ -96,6 +98,19 @@ public:
 		};
 	}
 
+	/// \brief Changes the cell's shape.
+	/// \param shape Specifies the new shape matrix for the simulation cell.
+	///              The first three matrix columns contain the three edge vectors.
+	///              The fourth matrix column specifies the translation of the cell's origin.
+	///
+	/// \undoable
+	void setCellMatrix(const AffineTransformation& shape) {
+		_cellVector1 = shape.column(0);
+		_cellVector2 = shape.column(1);
+		_cellVector3 = shape.column(2);
+		_cellOrigin = Point3::Origin() + shape.column(3);
+	}
+
 	/// Returns inverse of the simulation cell matrix.
 	/// This matrix maps the simulation cell to the unit cube ([0,1]^3).
 	AffineTransformation reciprocalCellMatrix() const {
@@ -153,6 +168,50 @@ private:
 	DECLARE_PROPERTY_FIELD(_pbcX);
 	DECLARE_PROPERTY_FIELD(_pbcY);
 	DECLARE_PROPERTY_FIELD(_pbcZ);
+};
+
+/**
+ * \brief A properties editor for the SimulationCell class.
+ */
+class SimulationCellEditor : public PropertiesEditor
+{
+public:
+
+	/// Default constructor.
+	Q_INVOKABLE SimulationCellEditor() {}
+
+protected:
+
+	/// Creates the user interface controls for the editor.
+	virtual void createUI(const RolloutInsertionParameters& rolloutParams);
+
+protected Q_SLOTS:
+
+	/// Is called when a spinner's value has changed.
+	void onSizeSpinnerValueChanged(int dim);
+
+	/// Is called when the user begins dragging a spinner interactively.
+	void onSizeSpinnerDragStart(int dim);
+
+	/// Is called when the user stops dragging a spinner interactively.
+	void onSizeSpinnerDragStop(int dim);
+
+	/// Is called when the user aborts dragging a spinner interactively.
+	void onSizeSpinnerDragAbort(int dim);
+
+	/// After the simulation cell size has changed, updates the UI controls.
+	void updateSimulationBoxSize();
+
+private:
+
+	/// After the user has changed a spinner's value, this method changes the
+	/// simulation cell geometry.
+	void changeSimulationBoxSize(int dim);
+
+	SpinnerWidget* simCellSizeSpinners[3];
+
+	Q_OBJECT
+	OVITO_OBJECT
 };
 
 };	// End of namespace

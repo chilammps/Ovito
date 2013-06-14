@@ -40,6 +40,23 @@ QT5_USE_MODULES(${PROJECT_NAME} Widgets Xml)
 # This executable will be part of the installation package.
 INSTALL(TARGETS ${PROJECT_NAME} DESTINATION "${OVITO_RELATIVE_BINARY_DIRECTORY}")
 
+# This macro adds a static library target to an executable target and makes sure that
+# the library is linked completely into the executable without removal of unreferenced
+# objects.
+MACRO(LINK_WHOLE_LIBRARY _targetName _libraryTarget)
+	GET_TARGET_PROPERTY(EXE_LINKER_OPTIONS ${_targetName} LINK_FLAGS)
+	IF(NOT EXE_LINKER_OPTIONS)
+		SET(EXE_LINKER_OPTIONS "")
+	ENDIF(NOT EXE_LINKER_OPTIONS)	
+	GET_TARGET_PROPERTY(TARGET_LOCATION ${_libraryTarget} LOCATION)
+	SET(EXE_LINKER_OPTIONS "${EXE_LINKER_OPTIONS} -Wl,-whole-archive ${TARGET_LOCATION} -Wl,-no-whole-archive ")
+	SET_TARGET_PROPERTIES(${_targetName} PROPERTIES LINK_FLAGS ${EXE_LINKER_OPTIONS})
+	TARGET_LINK_LIBRARIES(${_targetName} ${_libraryTarget})
+ENDMACRO(LINK_WHOLE_LIBRARY)
+
+LINK_WHOLE_LIBRARY(${PROJECT_NAME} Core)
+LINK_WHOLE_LIBRARY(${PROJECT_NAME} Viz)
+
 IF(APPLE)
 	# Install the Info.plist file.
 	CONFIGURE_FILE("resources/Info.plist" "${OVITO_BINARY_DIRECTORY}/${MACOSX_BUNDLE_NAME}.app/Contents/Info.plist")

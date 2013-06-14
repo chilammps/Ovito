@@ -28,6 +28,7 @@
 #include <core/gui/actions/ActionManager.h>
 #include <core/gui/mainwin/MainWindow.h>
 #include <core/utilities/concurrent/Task.h>
+#include <core/utilities/concurrent/ProgressManager.h>
 #include "LinkedFileImporter.h"
 #include "LinkedFileObject.h"
 
@@ -201,10 +202,12 @@ bool LinkedFileImporter::registerFrames(bool suppressDialogs)
 /******************************************************************************
 * Reads the data from the input file(s).
 ******************************************************************************/
-Future<LinkedFileImporter::ImportedDataPtr> LinkedFileImporter::load(int frameIndex, bool suppressDialogs)
+Future<LinkedFileImporter::ImportedDataPtr> LinkedFileImporter::load(int frameIndex)
 {
 	OVITO_ASSERT(frameIndex >= 0 && frameIndex < _frames.size());
-	return runInBackground<ImportedDataPtr>(std::bind(&LinkedFileImporter::loadImplementation, this, std::placeholders::_1, _frames[frameIndex], suppressDialogs));
+	Future<LinkedFileImporter::ImportedDataPtr> future = runInBackground<ImportedDataPtr>(std::bind(&LinkedFileImporter::loadImplementation, this, std::placeholders::_1, _frames[frameIndex]));
+	ProgressManager::instance().addTask(future);
+	return future;
 }
 
 

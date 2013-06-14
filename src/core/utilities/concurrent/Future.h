@@ -33,9 +33,15 @@ public:
 	typedef FutureInterface<R> Interface;
 
 	Future() {}
-	Future(const R& result) : _interface(std::make_shared<Interface>()) { interface()->setResult(result); }
-	Future(R&& result) : _interface(std::make_shared<Interface>()) { interface()->setResult(std::move(result)); }
+	explicit Future(const R& result) : _interface(std::make_shared<Interface>()) {
+		interface()->reportStarted();
+		interface()->setResult(result);
+		interface()->reportFinished();
+	}
+
 	bool isCanceled() const { return interface()->isCanceled(); }
+	bool isFinished() const { return interface()->isFinished(); }
+
 	void cancel() { interface()->cancel(); }
 	const R& result() const {
 		interface()->waitForResult();
@@ -49,8 +55,13 @@ public:
 		waitForFinished();
 	}
 	bool isValid() const { return (bool)_interface; }
+
+    int progressValue() const { return interface()->progressValue(); }
+    int progressMaximum() const { return interface()->progressMaximum(); }
+    QString progressText() const { return interface()->progressText(); }
+
 private:
-	Future(const std::shared_ptr<Interface>& p) : _interface(p) {}
+	explicit Future(const std::shared_ptr<Interface>& p) : _interface(p) {}
 
 	std::shared_ptr<Interface>& interface() {
 		OVITO_ASSERT(isValid());
@@ -65,12 +76,13 @@ private:
 	template<typename R2, typename Function> friend class Task;
 	template<typename R2> friend class FutureInterface;
 	friend class FutureWatcher;
+	friend class ProgressManager;
 };
 
 template<typename R>
 void FutureWatcher::setFuture(const Future<R>& future)
 {
-	setFutureInterface(future._interface, true);
+	setFutureInterface(future._interface);
 }
 
 };

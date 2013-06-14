@@ -150,6 +150,11 @@ public:
 		RefTarget::notifyDependents(eventType);
 	}
 
+protected:
+
+	/// Handles reference events sent by reference targets of this object.
+	virtual bool referenceEvent(RefTarget* source, ReferenceEvent* event) override;
+
 private:
 
 	/// The revision counter of this scene object.

@@ -50,8 +50,7 @@ public:
 	ObjectSaveStream(QDataStream& destination) : SaveStream(destination) {}
 
 	/// \brief The destructor closes the stream.
-	/// \sa close()
-	virtual ~ObjectSaveStream() { close(); }
+	virtual ~ObjectSaveStream();
 
 	/// \brief Closes the stream.
 	/// \note The underlying data stream is not closed by this method.

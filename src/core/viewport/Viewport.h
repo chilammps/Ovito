@@ -332,6 +332,9 @@ protected:
 	/// the coordinate system orientation.
 	void renderOrientationIndicator();
 
+	/// Renders the frame on top of the scene that indicates the visible rendering area.
+	void renderRenderFrame();
+
 private:
 
 	/// The type of the viewport (top, left, perspective, etc.)

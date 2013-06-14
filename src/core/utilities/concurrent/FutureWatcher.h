@@ -33,7 +33,8 @@ class FutureWatcher : public QObject
 {
 public:
 
-	FutureWatcher() : _finished(false) {}
+	FutureWatcher(QObject* parent = nullptr) : QObject(parent), _finished(false) {}
+
 	virtual ~FutureWatcher() {
 		setFutureInterface(nullptr, false);
 	}
@@ -41,9 +42,19 @@ public:
 	template<typename R>
 	void setFuture(const Future<R>& future);
 
+	void setFutureInterface(const std::shared_ptr<FutureInterfaceBase>& futureInterface) {
+		setFutureInterface(futureInterface, true);
+	}
+
 	void unsetFuture() {
 		setFutureInterface(nullptr, true);
 	}
+
+	bool isCanceled() const;
+	bool isFinished() const;
+    int progressMaximum() const;
+    int progressValue() const;
+    QString progressText() const;
 
 protected:
 
@@ -55,13 +66,29 @@ protected:
 	    	Finished,
 	        Canceled,
 	        ResultReady,
+	        ProgressValue,
+	        ProgressRange,
+	        ProgressText,
 	    };
 
 	    CallOutEvent(CallOutType callOutType) : QEvent((QEvent::Type)callOutType) {}
+	    CallOutEvent(CallOutType callOutType, int value) : QEvent((QEvent::Type)callOutType), _value(value) {}
+	    CallOutEvent(CallOutType callOutType, const QString& text) : QEvent((QEvent::Type)callOutType), _text(text) {}
+
+	    int _value;
+	    QString _text;
 	};
 
     void postCallOutEvent(CallOutEvent::CallOutType type) {
     	QCoreApplication::postEvent(this, new CallOutEvent(type));
+    }
+
+    void postCallOutEvent(CallOutEvent::CallOutType type, int value) {
+    	QCoreApplication::postEvent(this, new CallOutEvent(type, value));
+    }
+
+    void postCallOutEvent(CallOutEvent::CallOutType type, const QString& text) {
+    	QCoreApplication::postEvent(this, new CallOutEvent(type, text));
     }
 
 	virtual void customEvent(QEvent* event) override;
@@ -74,6 +101,13 @@ Q_SIGNALS:
 	void finished();
 	void started();
 	void resultReady();
+	void progressRangeChanged(int maximum);
+	void progressValueChanged(int progressValue);
+	void progressTextChanged(const QString& progressText);
+
+public Q_SLOTS:
+
+	void cancel();
 
 private:
 

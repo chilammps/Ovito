@@ -21,6 +21,9 @@
 	<file>actions/file/file_save_as.png</file>
 	<file>actions/file/file_import.png</file>
 	<file>actions/file/file_export.png</file>
+	<file>actions/file/import_object_changefile.png</file>
+	<file>actions/file/import_object_reload.png</file>
+	<file>actions/file/import_object_settings.png</file>
 
 	<file>actions/viewport/maximize_viewport.png</file>
 	<file>actions/viewport/mode_orbit.png</file>
@@ -49,6 +52,10 @@
 	<file>mainwin/command_panel/tab_modify.png</file>
 	<file>mainwin/command_panel/tab_render.png</file>
 	<file>mainwin/command_panel/tab_utilities.png</file>
+	<file>mainwin/status/status_error.png</file>
+	<file>mainwin/status/status_info.png</file>
+	<file>mainwin/status/status_warning.png</file>
+	
 	<file>actions/modify/modifier_enabled.png</file>
 	<file>actions/modify/modifier_disabled.png</file>
 	<file>actions/modify/modifier_enabled_large.png</file>

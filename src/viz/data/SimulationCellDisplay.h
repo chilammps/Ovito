@@ -109,6 +109,12 @@ protected:
 	/// The buffered line geometry used to render the simulation cell.
 	OORef<LineGeometryBuffer> _lineGeometry;
 
+	/// The input object that served as the basis for the cached display geometry.
+	OORef<SimulationCell> _lastObject;
+
+	/// The revision number of the object that served as the basis for the cached display geometry.
+	unsigned int _lastObjectRevision;
+
 private:
 
 	Q_OBJECT

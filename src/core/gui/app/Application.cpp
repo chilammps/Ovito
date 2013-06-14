@@ -33,6 +33,7 @@
 #include <core/plugins/PluginManager.h>
 #include <core/utilities/units/UnitsManager.h>
 #include <core/utilities/io/FileManager.h>
+#include <core/utilities/concurrent/ProgressManager.h>
 
 namespace Ovito {
 
@@ -104,6 +105,7 @@ bool Application::initialize()
 		UnitsManager::initialize();
 		ActionManager::initialize();
 		ImportExportManager::initialize();
+		ProgressManager::initialize();
 
 		// Create the main application window.
 		if(guiMode()) {
@@ -176,6 +178,7 @@ int Application::runApplication()
 void Application::shutdown()
 {
 	// Shutdown global manager objects in reverse order they were initialized.
+	ProgressManager::shutdown();
 	ImportExportManager::shutdown();
 	ActionManager::shutdown();
 	UnitsManager::shutdown();

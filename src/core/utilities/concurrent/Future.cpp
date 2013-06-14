@@ -27,6 +27,53 @@
 
 namespace Ovito {
 
+enum {
+    MaxProgressEmitsPerSecond = 10
+};
+
+void FutureInterfaceBase::setProgressRange(int maximum)
+{
+    QMutexLocker locker(&_mutex);
+    _progressMaximum = maximum;
+    sendCallOut(FutureWatcher::CallOutEvent::ProgressRange, maximum);
+}
+
+void FutureInterfaceBase::setProgressValue(int value)
+{
+    QMutexLocker locker(&_mutex);
+
+    if(value == _progressValue)
+    	return;
+
+    if(isCanceled() || isFinished())
+        return;
+
+    _progressValue = value;
+    if(_progressTime.isValid() && _progressValue != _progressMaximum)
+    	if(_progressTime.elapsed() < (1000 / MaxProgressEmitsPerSecond))
+            return;
+
+    _progressTime.start();
+    sendCallOut(FutureWatcher::CallOutEvent::ProgressValue, value);
+}
+
+void FutureInterfaceBase::setProgressText(const QString& progressText)
+{
+    QMutexLocker locker(&_mutex);
+
+    if(isCanceled() || isFinished())
+        return;
+
+    _progressText = progressText;
+    sendCallOut(FutureWatcher::CallOutEvent::ProgressText, progressText);
+}
+
+bool FutureInterfaceBase::isProgressUpdateNeeded()
+{
+    QMutexLocker locker(&_mutex);
+    return !_progressTime.isValid() || (_progressTime.elapsed() > (1000 / MaxProgressEmitsPerSecond));
+}
+
 void FutureWatcher::setFutureInterface(const std::shared_ptr<FutureInterfaceBase>& futureInterface, bool pendingAssignment)
 {
 	if(futureInterface == _futureInterface)
@@ -60,8 +107,51 @@ void FutureWatcher::customEvent(QEvent* event)
 				Q_EMIT resultReady();
 			}
 		}
+		else if(event->type() == (QEvent::Type)CallOutEvent::ProgressValue) {
+			if(!_futureInterface->isCanceled())
+				Q_EMIT progressValueChanged(static_cast<CallOutEvent*>(event)->_value);
+		}
+		else if(event->type() == (QEvent::Type)CallOutEvent::ProgressText) {
+			if(!_futureInterface->isCanceled())
+				Q_EMIT progressTextChanged(static_cast<CallOutEvent*>(event)->_text);
+		}
+		else if(event->type() == (QEvent::Type)CallOutEvent::ProgressRange) {
+			Q_EMIT progressRangeChanged(static_cast<CallOutEvent*>(event)->_value);
+		}
 	}
 	QObject::customEvent(event);
 }
+
+void FutureWatcher::cancel()
+{
+	if(_futureInterface)
+		_futureInterface->cancel();
+}
+
+bool FutureWatcher::isCanceled() const
+{
+	return _futureInterface->isCanceled();
+}
+
+bool FutureWatcher::isFinished() const
+{
+	return _finished;
+}
+
+int FutureWatcher::progressMaximum() const
+{
+	return _futureInterface->progressMaximum();
+}
+
+int FutureWatcher::progressValue() const
+{
+	return _futureInterface->progressValue();
+}
+
+QString FutureWatcher::progressText() const
+{
+	return _futureInterface->progressText();
+}
+
 
 };

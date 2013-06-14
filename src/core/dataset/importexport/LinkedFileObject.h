@@ -69,6 +69,12 @@ public:
 	/// \brief Asks the object for the result of the geometry pipeline at the given time.
 	virtual PipelineFlowState evaluate(TimePoint time) override;
 
+	/// \brief Returns the list of imported scene objects.
+	const QVector<SceneObject*> sceneObjects() const { return _sceneObjects; }
+
+	/// \brief Inserts a new object into the list of scene objects held by this container object.
+	void addSceneObject(SceneObject* obj) { if(!_sceneObjects.contains(obj)) _sceneObjects.push_back(obj); }
+
 #if 0
 	/// \brief Returns whether the loaded scene objects should be saved in a scene file.
 	/// \return \c true if a copy of the external data is stored in the scene file; \c false if the data resides only in the linked file.
@@ -79,6 +85,15 @@ public:
 	/// \undoable
 	void setStoreDataWithScene(bool on) { if(atomsObject()) atomsObject()->setSerializeAtoms(on); }
 #endif
+
+	/// Returns the title of this object.
+	virtual QString objectTitle() override;
+
+	/// Returns the number of sub-objects that should be displayed in the modifier stack.
+	virtual int editableSubObjectCount() override;
+
+	/// Returns a sub-object that should be listed in the modifier stack.
+	virtual RefTarget* editableSubObject(int index) override;
 
 #if 0
 	/// \brief Returns the movie frame that is currently loaded.
@@ -114,19 +129,7 @@ public:
 	/// Returns the bounding box of the object in local object coordinates.
 	virtual Box3 boundingBox(TimeTicks time, ObjectNode* contextNode) { return Box3(); }
 
-	/// Asks the object for the result of the geometry pipeline at the given time.
-	virtual PipelineFlowState evalObject(TimeTicks time);
-
 	// From RefTarget:
-
-	/// Returns the title of this object.
-	virtual QString schematicTitle();
-
-	/// Returns the number of sub-objects that should be displayed in the modifier stack.
-	virtual int editableSubObjectCount();
-
-	/// Returns a sub-object that should be listed in the modifier stack.
-	virtual RefTarget* editableSubObject(int index);
 
 public Q_SLOTS:
 
@@ -152,6 +155,12 @@ protected:
 
 	/// \brief Adjusts the animation interval of the current data set to the number of frames reported by the file parser.
 	void adjustAnimationInterval();
+
+	/// Is called when a RefTarget has been added to a VectorReferenceField of this RefMaker.
+	virtual void referenceInserted(const PropertyFieldDescriptor& field, RefTarget* newTarget, int listIndex) override;
+
+	/// Is called when a RefTarget has been added to a VectorReferenceField of this RefMaker.
+	virtual void referenceRemoved(const PropertyFieldDescriptor& field, RefTarget* newTarget, int listIndex) override;
 
 #if 0
 	/// \brief Saves the class' contents to the given stream.

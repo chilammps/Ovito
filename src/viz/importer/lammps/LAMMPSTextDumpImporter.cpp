@@ -22,44 +22,19 @@
 #include <core/Core.h>
 #include <core/utilities/io/FileManager.h>
 #include <core/utilities/concurrent/Future.h>
-#include <viz/data/SimulationCell.h>
 #include "LAMMPSTextDumpImporter.h"
 
 namespace Viz {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(LAMMPSTextDumpImporter, LinkedFileImporter)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(LAMMPSTextDumpImporter, AtomsImporter)
 
 /******************************************************************************
-* Reads the data from the input file(s).
+* Parses the given input file and stores the data in the given container object.
 ******************************************************************************/
-void LAMMPSTextDumpImporter::loadImplementation(FutureInterface<ImportedDataPtr>& futureInterface, FrameSourceInformation frame, bool suppressDialogs)
+void LAMMPSTextDumpImporter::parseFile(FutureInterface<ImportedDataPtr>& futureInterface, AtomsData& container, QIODevice& file)
 {
-	// Fetch file.
-	Future<QString> fetchFileFuture = FileManager::instance().fetchUrl(frame.sourceFile);
-	if(!futureInterface.waitForSubTask(fetchFileFuture))
-		return;
-
-	// Open file.
-	QString filename = fetchFileFuture.result();
-	QFile file(filename);
-	if(!file.open(QIODevice::ReadOnly | QIODevice::Text))
-		throw Exception(tr("Failed to open file %1 for reading: %2").arg(filename).arg(file.errorString()));
-
-	// Parse file.
-	std::shared_ptr<ImportedAtoms> result(std::make_shared<ImportedAtoms>());
-
-	// Return results.
-	futureInterface.setResult(result);
+	container.setSimulationCell(AffineTransformation(
+			Vector3(200,0,0), Vector3(0,100,0), Vector3(0,0,1000), Vector3(-100,-50,-50)));
 }
-
-/******************************************************************************
-* Lets the data container insert the data it holds into the scene by creating
-* appropriate scene objects.
-******************************************************************************/
-void LAMMPSTextDumpImporter::ImportedAtoms::insertIntoScene(LinkedFileObject* destination)
-{
-
-}
-
 
 };

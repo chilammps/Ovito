@@ -249,7 +249,7 @@ void RefMaker::saveToStream(ObjectSaveStream& stream)
 				
 				if(field->targetClass()->isSerializable()) {
 					// Write reference target object to stream.
-					stream.beginChunk(0x00000002);
+					stream.beginChunk(0x02);
 					try {
 						if(field->isVector() == false) {
 							stream.saveObject(getReferenceField(*field));
@@ -267,14 +267,14 @@ void RefMaker::saveToStream(ObjectSaveStream& stream)
 				}
 				else {
 					// Write special chunk for non-serializable objects.
-					stream.beginChunk(0x00000003);
+					stream.beginChunk(0x03);
 				}
 				stream.endChunk();
 			}
 			else {
 				// Write the primitive value stored in the property field to the stream.
 				OVITO_ASSERT(field->propertyStorageSaveFunc != NULL);
-				stream.beginChunk(0x00000004);
+				stream.beginChunk(0x04);
 				field->propertyStorageSaveFunc(this, stream);
 				stream.endChunk();
 			}
@@ -352,7 +352,7 @@ void RefMaker::loadFromStream(ObjectLoadStream& stream)
 		else {
 			// Read the primitive value of the property field from the stream.
 			OVITO_ASSERT(fieldEntry.targetClass == NULL);
-			stream.expectChunk(0x00000004);
+			stream.expectChunk(0x04);
 			if(fieldEntry.field) {
 				OVITO_ASSERT(fieldEntry.field->propertyStorageLoadFunc != NULL);
 				fieldEntry.field->propertyStorageLoadFunc(this, stream);

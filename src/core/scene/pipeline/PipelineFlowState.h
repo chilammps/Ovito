@@ -65,13 +65,12 @@ public:
 			addObject(obj);
 	}
 
-#if 0
 	/// \brief Discards the contents of this state object.
 	void clear() {
 		_objects.clear();
 		_stateValidity.setEmpty();
+		_status = ObjectStatus();
 	}
-#endif
 
 	/// \brief Adds an additional scene object to this state.
 	void addObject(SceneObject* obj);
