@@ -72,7 +72,6 @@ public:
 	/// \brief Constructs a new instance of this class.
 	LinkedFileImporter() {
 		INIT_PROPERTY_FIELD(LinkedFileImporter::_sourceUrl);
-		INIT_PROPERTY_FIELD(LinkedFileImporter::_loadedUrl);
 	}
 
 	///////////////////////////// from FileImporter /////////////////////////////
@@ -102,9 +101,6 @@ public:
 	/// \brief Returns the source location of the import data.
 	const QUrl& sourceUrl() const { return _sourceUrl; }
 
-	/// \brief Returns the path to the file that has been loaded last.
-	const QUrl& loadedUrl() const { return _loadedUrl; }
-
 	/// \brief Opens the settings dialog for this importer.
 	/// \param parent The parent window for the dialog box.
 	/// \return \c true if the dialog has been approved by the user; \c false when the user has canceled the operation.
@@ -123,38 +119,19 @@ public:
 	virtual bool hasSettingsDialog() { return false; }
 
 	/// \brief Reads the data from the input file(s).
-	/// \param frame If the input file contains more than one animation frame then this parameter specifies
-	///              the index of the frame to load (starting at 0). It must be less then the number of available frames
-	///              reported by numberOfFrames().
+	/// \param frame The record that specifies the frame to load.s
 	/// \return A future that will give access to the loaded data.
-	virtual Future<ImportedDataPtr> load(int frame = 0);
+	virtual Future<ImportedDataPtr> load(FrameSourceInformation frame);
 
 	/// \brief Scans the input source (which can be a directory or a single file) to discover all animation frames.
-	/// \param suppressDialogs Specifies whether any dialogs or message boxes should be suppressed during this operation.
-	///                        This parameter is set to true in non-GUI mode or when the parser is invoked from a script to not
-	///                        interrupt the process.
-	/// \throws Exception when an error occurred.
-	/// \return \a false when the operation has been canceled by the user; \a true on success.
 	///
 	/// The default implementation of this method checks if the source URL contains a wild-card pattern.
 	/// If yes, it scans the directory to find all matching files.
-	virtual bool registerFrames(bool suppressDialogs = false);
-
-	/// \brief Clears the list of animation frames.
-	void resetFrames() { _frames.clear(); }
-
-	/// \brief Records the storage location of an animation frame in the input file(s).
-	void registerFrame(const FrameSourceInformation& frame) { _frames.push_back(frame); }
-
-	/// \brief Returns the number of animation frames in the input file.
-	/// \return The number of frames stored in the input file or 0 if the input filename has not been set.
-	/// \note registerFrames() must be called first before the number of movie frames can be queried.
-	virtual int numberOfFrames() { return sourceUrl().isEmpty() ? 0 : _frames.size(); }
+	virtual Future<QVector<FrameSourceInformation>> findFrames();
 
 public:
 
 	Q_PROPERTY(QUrl sourceUrl READ sourceUrl WRITE setSourceUrl)
-	Q_PROPERTY(QUrl loadedUrl READ loadedUrl)
 
 protected:
 
@@ -165,12 +142,6 @@ private:
 
 	/// The source file (may be a wild-card pattern).
 	PropertyField<QUrl> _sourceUrl;
-
-	/// The path of the currently loaded file.
-	PropertyField<QUrl, QUrl, ReferenceEvent::TitleChanged> _loadedUrl;
-
-	/// Stores the list of animation frames in the input file(s).
-	QVector<FrameSourceInformation> _frames;
 
 private:
 

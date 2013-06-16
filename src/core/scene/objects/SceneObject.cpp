@@ -27,11 +27,11 @@
 
 namespace Ovito {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(SceneObject, RefTarget)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, SceneObject, RefTarget)
 DEFINE_FLAGS_REFERENCE_FIELD(SceneObject, _displayObject, "DisplayObject", DisplayObject, PROPERTY_FIELD_NO_CHANGE_MESSAGE)
 SET_PROPERTY_FIELD_LABEL(SceneObject, _displayObject, "Display")
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(AbstractCameraObject, SceneObject)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, AbstractCameraObject, SceneObject)
 
 /******************************************************************************
 * Constructor.

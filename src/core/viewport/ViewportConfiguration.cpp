@@ -25,7 +25,7 @@
 
 namespace Ovito {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(ViewportConfiguration, RefTarget);
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, ViewportConfiguration, RefTarget);
 DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(ViewportConfiguration, _viewports, "Viewports", Viewport, PROPERTY_FIELD_NO_UNDO|PROPERTY_FIELD_ALWAYS_CLONE)
 DEFINE_FLAGS_REFERENCE_FIELD(ViewportConfiguration, _activeViewport, "ActiveViewport", Viewport, PROPERTY_FIELD_NO_UNDO)
 DEFINE_FLAGS_REFERENCE_FIELD(ViewportConfiguration, _maximizedViewport, "MaximizedViewport", Viewport, PROPERTY_FIELD_NO_UNDO)

@@ -25,7 +25,7 @@
 
 namespace Ovito {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(GroupNode, SceneNode)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, GroupNode, SceneNode)
 DEFINE_PROPERTY_FIELD(GroupNode, _isGroupOpen, "IsGroupOpen")
 SET_PROPERTY_FIELD_LABEL(GroupNode, _isGroupOpen, "Open group")
 

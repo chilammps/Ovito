@@ -29,21 +29,21 @@
 
 namespace Viz {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(AtomsImporter, LinkedFileImporter)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Viz, AtomsImporter, LinkedFileImporter)
 
 /******************************************************************************
 * Reads the data from the input file(s).
 ******************************************************************************/
 void AtomsImporter::loadImplementation(FutureInterface<ImportedDataPtr>& futureInterface, FrameSourceInformation frame)
 {
+	futureInterface.setProgressText(tr("Loading file %1").arg(frame.sourceFile.toString()));
+
 	// Fetch file.
 	Future<QString> fetchFileFuture;
 	fetchFileFuture = FileManager::instance().fetchUrl(frame.sourceFile);
 	ProgressManager::instance().addTask(fetchFileFuture);
 	if(!futureInterface.waitForSubTask(fetchFileFuture))
 		return;
-
-	QThread::sleep(5);
 
 	// Open file.
 	QString filename = fetchFileFuture.result();

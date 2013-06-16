@@ -105,7 +105,6 @@ bool Application::initialize()
 		UnitsManager::initialize();
 		ActionManager::initialize();
 		ImportExportManager::initialize();
-		ProgressManager::initialize();
 
 		// Create the main application window.
 		if(guiMode()) {
@@ -126,6 +125,9 @@ bool Application::initialize()
 			connect(mainWin, SIGNAL(destroyed(QObject*)), this, SLOT(quit()));
 		}
 
+		// Initialize progress manager, who will insert some widgets into the main window.
+		ProgressManager::initialize();
+
 		if(!_startupSceneFile.isEmpty()) {
 			// Load scene file specified on the command line.
 			QFileInfo startupFile(_startupSceneFile);
@@ -140,8 +142,7 @@ bool Application::initialize()
 		// Create the main application window.
 		if(guiMode()) {
 			// Show the main window.
-			//MainWindow::instance().showMaximized();
-			MainWindow::instance().show();
+			MainWindow::instance().showMaximized();
 			MainWindow::instance().restoreLayout();
 		}
 

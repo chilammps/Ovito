@@ -28,7 +28,7 @@
 
 namespace Ovito {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(ObjectNode, SceneNode)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, ObjectNode, SceneNode)
 DEFINE_REFERENCE_FIELD(ObjectNode, _sceneObject, "SceneObject", SceneObject)
 DEFINE_VECTOR_REFERENCE_FIELD(ObjectNode, _displayObjects, "DisplayObjects", DisplayObject)
 SET_PROPERTY_FIELD_LABEL(ObjectNode, _sceneObject, "Object")
@@ -60,10 +60,10 @@ const PipelineFlowState& ObjectNode::evalPipeline(TimePoint time)
 
 			// Update list of display objects.
 
-			// First unlink those display objects from this node which are no longer needed.
+			// First unlink those display objects from the node which are no longer needed.
 			for(int i = displayObjects().size() - 1; i >= 0; i--) {
 				DisplayObject* displayObj = displayObjects()[i];
-				// Check if display object is being used by any of the scene objects that came out of the pipeline.
+				// Check if display object is still being used by any of the scene objects that came out of the pipeline.
 				bool isAlive = false;
 				for(const auto& entry : _pipelineCache.objects()) {
 					SceneObject* sceneObj = entry.first.get();
@@ -124,14 +124,17 @@ void ObjectNode::render(TimePoint time, SceneRenderer* renderer)
 ******************************************************************************/
 bool ObjectNode::referenceEvent(RefTarget* source, ReferenceEvent* event)
 {
-	if(event->type() == ReferenceEvent::TargetChanged && source == sceneObject()) {
-		invalidatePipelineCache();
-	}
-	else
-		if(event->type() == ReferenceEvent::TargetDeleted && source == sceneObject()) {
-		// Object has been deleted -> delete node too.
-		if(!UndoManager::instance().isUndoingOrRedoing())
-			deleteNode();
+	if(source == sceneObject()) {
+		if(event->type() == ReferenceEvent::TargetChanged ||
+				event->type() == ReferenceEvent::PendingOperationSucceeded ||
+				event->type() == ReferenceEvent::PendingOperationFailed) {
+			invalidatePipelineCache();
+		}
+		else if(event->type() == ReferenceEvent::TargetDeleted) {
+			// Object has been deleted -> delete node too.
+			if(!UndoManager::instance().isUndoingOrRedoing())
+				deleteNode();
+		}
 	}
 	return SceneNode::referenceEvent(source, event);
 }

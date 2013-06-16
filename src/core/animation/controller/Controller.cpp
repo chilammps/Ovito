@@ -27,14 +27,14 @@
 
 namespace Ovito {
 
-IMPLEMENT_OVITO_OBJECT(Controller, RefTarget)
-IMPLEMENT_OVITO_OBJECT(FloatController, Controller)
-IMPLEMENT_OVITO_OBJECT(IntegerController, Controller)
-IMPLEMENT_OVITO_OBJECT(BooleanController, Controller)
-IMPLEMENT_OVITO_OBJECT(VectorController, Controller)
-IMPLEMENT_OVITO_OBJECT(PositionController, Controller)
-IMPLEMENT_OVITO_OBJECT(RotationController, Controller)
-IMPLEMENT_OVITO_OBJECT(ScalingController, Controller)
+IMPLEMENT_OVITO_OBJECT(Core, Controller, RefTarget)
+IMPLEMENT_OVITO_OBJECT(Core, FloatController, Controller)
+IMPLEMENT_OVITO_OBJECT(Core, IntegerController, Controller)
+IMPLEMENT_OVITO_OBJECT(Core, BooleanController, Controller)
+IMPLEMENT_OVITO_OBJECT(Core, VectorController, Controller)
+IMPLEMENT_OVITO_OBJECT(Core, PositionController, Controller)
+IMPLEMENT_OVITO_OBJECT(Core, RotationController, Controller)
+IMPLEMENT_OVITO_OBJECT(Core, ScalingController, Controller)
 
 ///////////////////////////// SINGLETON CLASS METHODS ///////////////////////////////
 

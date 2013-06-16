@@ -28,7 +28,7 @@
 
 namespace Viz {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(SimulationCellDisplay, DisplayObject)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Viz, SimulationCellDisplay, DisplayObject)
 DEFINE_PROPERTY_FIELD(SimulationCellDisplay, _renderSimulationCell, "RenderSimulationCell")
 DEFINE_PROPERTY_FIELD(SimulationCellDisplay, _simulationCellLineWidth, "SimulationCellLineWidth")
 DEFINE_PROPERTY_FIELD(SimulationCellDisplay, _simulationCellColor, "SimulationCellRenderingColor")

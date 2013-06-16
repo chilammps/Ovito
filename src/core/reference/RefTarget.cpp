@@ -28,7 +28,7 @@
 namespace Ovito {
 
 // Gives the class run-time type information.
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(RefTarget, RefMaker);
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, RefTarget, RefMaker);
 
 /******************************************************************************
 * The virtual destructor.

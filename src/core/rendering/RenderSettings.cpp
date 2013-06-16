@@ -28,7 +28,7 @@
 
 namespace Ovito {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(RenderSettings, RefTarget)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, RenderSettings, RefTarget)
 SET_OVITO_OBJECT_EDITOR(RenderSettings, RenderSettingsEditor)
 DEFINE_REFERENCE_FIELD(RenderSettings, _renderer, "Renderer", SceneRenderer)
 DEFINE_REFERENCE_FIELD(RenderSettings, _backgroundColor, "BackgroundColor", VectorController)

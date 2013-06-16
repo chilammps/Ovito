@@ -100,7 +100,7 @@ public:
 	/// \brief Computes the center of the box.
 	/// \return The center of the box.
 	constexpr Point_3<T> center() const {
-		return (minc + maxc) / 2;
+		return Point_3<T>((minc.x() + maxc.x()) / 2, (minc.y() + maxc.y()) / 2, (minc.z() + maxc.z()) / 2);
 	}
 
 	/// \brief Computes the size of the box.
@@ -141,7 +141,7 @@ public:
 			default:				
 				OVITO_ASSERT_MSG(false, "Box3::operator[]", "Corner index out of range.");
                 throw std::invalid_argument("Corner index out of range.");
-				return Point_3<T>::Origin();
+				return typename Point_3<T>::Origin();
 		}
 	}
 
@@ -278,6 +278,13 @@ inline Box_3<T> operator*(const Matrix_34<T>& tm, const Box_3<T>& box) {
 template<typename T>
 inline std::ostream& operator<<(std::ostream &os, const Box_3<T> &b) {
 	return os << '[' << b.minc << "] - [" << b.maxc << ']';
+}
+
+/// \brief Writes the box to the Qt debug stream.
+template<typename T>
+inline QDebug operator<<(QDebug dbg, const Box_3<T>& b) {
+    dbg.nospace() << "[" << b.minc << "] - [" << b.maxc << "]";
+    return dbg.space();
 }
 
 /// \brief Writes a box to a binary output stream.

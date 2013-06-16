@@ -31,7 +31,7 @@
 
 namespace Ovito {
 
-IMPLEMENT_OVITO_OBJECT(DataSetManager, RefMaker)
+IMPLEMENT_OVITO_OBJECT(Core, DataSetManager, RefMaker)
 DEFINE_FLAGS_REFERENCE_FIELD(DataSetManager, _currentSet, "CurrentSet", DataSet, PROPERTY_FIELD_NO_UNDO)
 DEFINE_FLAGS_REFERENCE_FIELD(DataSetManager, _selectionSetProxy, "SelectionSetProxy", CurrentSelectionProxy, PROPERTY_FIELD_NO_UNDO)
 
@@ -267,5 +267,87 @@ bool DataSetManager::fileLoad(const QString& filename)
 	}
 	return true;
 }
+
+/******************************************************************************
+* Checks all scene nodes if their geometry pipeline is fully evaluated at the
+* given animation time.
+******************************************************************************/
+bool DataSetManager::isSceneReady(TimePoint time) const
+{
+	OVITO_ASSERT_MSG(QThread::currentThread() == QApplication::instance()->thread(), "DataSetManager::isSceneReady", "This function may only be called from the GUI thread.");
+	OVITO_CHECK_OBJECT_POINTER(currentSet());
+	OVITO_CHECK_OBJECT_POINTER(currentSet()->sceneRoot());
+
+	bool isReady = true;
+
+	// Iterate over all object nodes and request an evaluation of their geometry pipeline.
+	currentSet()->sceneRoot()->visitChildren([time, &isReady](SceneNode* node) {
+		if(!node->isObjectNode()) return;
+		ObjectNode* objNode = static_object_cast<ObjectNode>(node);
+		PipelineFlowState state = objNode->evalPipeline(time);
+		if(state.status().type() == ObjectStatus::Pending)
+			isReady = false;
+	});
+
+	return isReady;
+}
+
+/******************************************************************************
+* Calls the given slot as soon as the geometry pipelines of all scene nodes has been
+* completely evaluated.
+******************************************************************************/
+void DataSetManager::runWhenSceneIsReady(std::function<void ()> fn)
+{
+	OVITO_ASSERT_MSG(QThread::currentThread() == QApplication::instance()->thread(), "DataSetManager::runWhenSceneIsReady", "This function may only be called from the GUI thread.");
+	OVITO_CHECK_OBJECT_POINTER(currentSet());
+	OVITO_CHECK_OBJECT_POINTER(currentSet()->sceneRoot());
+
+	TimePoint time = currentSet()->animationSettings()->time();
+	bool isReady = true;
+
+	// Iterate over all object nodes and request an evaluation of their geometry pipeline.
+	currentSet()->sceneRoot()->visitChildren([time, &isReady](SceneNode* node) {
+		if(!node->isObjectNode()) return;
+		ObjectNode* objNode = static_object_cast<ObjectNode>(node);
+		PipelineFlowState state = objNode->evalPipeline(time);
+		if(state.status().type() == ObjectStatus::Pending)
+			isReady = false;
+	});
+
+	if(isReady)
+		fn();
+	else
+		_sceneReadyListeners.push_back(fn);
+}
+
+/******************************************************************************
+* Checks if the scene is ready and calls all registered listeners.
+******************************************************************************/
+void DataSetManager::notifySceneReadyListeners()
+{
+	if(isSceneReady(currentSet()->animationSettings()->time())) {
+		for(const auto& listener : _sceneReadyListeners) {
+			listener();
+		}
+		_sceneReadyListeners.clear();
+	}
+}
+
+/******************************************************************************
+* Is called when a target referenced by this object generated an event.
+******************************************************************************/
+bool DataSetManager::referenceEvent(RefTarget* source, ReferenceEvent* event)
+{
+	OVITO_ASSERT_MSG(QThread::currentThread() == QApplication::instance()->thread(), "DataSetManager::referenceEvent", "Reference events may only be processed by the GUI thread.");
+
+	if(source == currentSet()) {
+		if(event->type() == ReferenceEvent::PendingOperationSucceeded || event->type() == ReferenceEvent::PendingOperationFailed) {
+			notifySceneReadyListeners();
+		}
+	}
+	return RefMaker::referenceEvent(source, event);
+}
+
+
 
 };

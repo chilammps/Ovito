@@ -65,6 +65,13 @@ public:
 	///       a new DataSet becomes active.
 	SelectionSet* currentSelection() const { return _selectionSetProxy; }
 
+	/// \brief Checks all scene nodes if their geometry pipeline is fully evaluated at the given animation time.
+	bool isSceneReady(TimePoint time) const;
+
+	/// \brief Calls the given slot as soon as the geometry pipelines of all scene nodes has been
+	///        completely evaluated.
+	void runWhenSceneIsReady(std::function<void ()> fn);
+
 public Q_SLOTS:
 	
 	/// \brief Replaces the current data set with a new one and resets the 
@@ -130,6 +137,22 @@ Q_SIGNALS:
 	///       events but only a single selectionChangeComplete() event.
 	void selectionChangeComplete(SelectionSet* newSelection);
 
+protected:
+
+	/// Is called when a target referenced by this object generated an event.
+	bool referenceEvent(RefTarget* source, ReferenceEvent* event) override;
+
+private:
+
+	/// Emits a selectionChanged signal.
+	void emitSelectionChanged(SelectionSet* newSelection) { Q_EMIT selectionChanged(newSelection); }
+
+	/// Emits a selectionChangeComplete signal.
+	void emitSelectionChangeComplete(SelectionSet* newSelection) { Q_EMIT selectionChangeComplete(newSelection); }
+
+	/// Checks if the scene is ready and calls all registered listeners.
+	void notifySceneReadyListeners();
+
 private:
 
 	/// The current data set being edited by the user.
@@ -141,11 +164,8 @@ private:
 	/// This holds the default configuration of viewports to use.
 	OORef<ViewportConfiguration> _defaultViewportConfig;
 
-	/// Emits a selectionChanged signal.
-	void emitSelectionChanged(SelectionSet* newSelection) { selectionChanged(newSelection); }
-
-	/// Emits a selectionChangeComplete signal.
-	void emitSelectionChangeComplete(SelectionSet* newSelection) { selectionChangeComplete(newSelection); }
+	/// List of listener objects that want to get notified when the scene is ready.
+	QVector<std::function<void ()>> _sceneReadyListeners;
 
 private:
 

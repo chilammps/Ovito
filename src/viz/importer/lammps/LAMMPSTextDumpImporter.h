@@ -37,7 +37,9 @@ class LAMMPSTextDumpImporter : public AtomsImporter
 public:
 
 	/// \brief Constructs a new instance of this class.
-	Q_INVOKABLE LAMMPSTextDumpImporter() {}
+	Q_INVOKABLE LAMMPSTextDumpImporter() : _isMultiTimestepFile(false) {
+		INIT_PROPERTY_FIELD(LAMMPSTextDumpImporter::_isMultiTimestepFile);
+	}
 
 	/// \brief Returns the file filter that specifies the files that can be imported by this service.
 	/// \return A wild-card pattern that specifies the file types that can be handled by this import class.
@@ -47,6 +49,18 @@ public:
 	/// \return A string that describes the file format.
 	virtual QString fileFilterDescription() override { return tr("LAMMPS Text Dump Files"); }
 
+	/// \brief Returns true if the input file contains multiple timesteps.
+	bool isMultiTimestepFile() const { return _isMultiTimestepFile; }
+
+	/// \brief Tells the importer that the input file contains multiple timesteps.
+	void setMultiTimestepFile(bool enable) { _isMultiTimestepFile = enable; }
+
+	/// \brief Opens the settings dialog for this importer.
+	virtual bool showSettingsDialog(QWidget* parent) override;
+
+	/// \brief Returns whether this importer has a settings dialog box to let the user configure the import settings.
+	virtual bool hasSettingsDialog() override { return true; }
+
 protected:
 
 	/// \brief Parses the given input file and stores the data in the given container object.
@@ -54,8 +68,13 @@ protected:
 
 private:
 
+	/// Indicates that the input file contains multiple timesteps.
+	PropertyField<bool> _isMultiTimestepFile;
+
 	Q_OBJECT
 	OVITO_OBJECT
+
+	DECLARE_PROPERTY_FIELD(_isMultiTimestepFile);
 };
 
 };

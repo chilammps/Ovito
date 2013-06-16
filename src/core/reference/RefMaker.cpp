@@ -30,7 +30,7 @@
 namespace Ovito {
 
 // Gives the class run-time type information.
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(RefMaker, OvitoObject);
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, RefMaker, OvitoObject);
 
 /******************************************************************************
 * Deletes this object. 

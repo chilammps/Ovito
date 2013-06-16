@@ -22,6 +22,7 @@
 #include <core/Core.h>
 #include <core/animation/AnimManager.h>
 #include <core/viewport/ViewportManager.h>
+#include <core/dataset/DataSetManager.h>
 #include "AnimationTimeSlider.h"
 
 namespace Ovito {
@@ -145,12 +146,8 @@ void AnimationTimeSlider::mouseMoveEvent(QMouseEvent* event)
 ******************************************************************************/
 QRect AnimationTimeSlider::thumbRectangle()
 {
-	return QRect(0,0,0,0);
-
-#if 0
-	if(DATASET_MANAGER.currentSet() == NULL)
+	if(DataSetManager::instance().currentSet() == nullptr)
 		return QRect(0,0,0,0);
-#endif
 
 	QRect clientRect = rect();
 	clientRect.adjust(frameWidth(), frameWidth(), -frameWidth(), -frameWidth());

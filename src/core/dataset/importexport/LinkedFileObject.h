@@ -60,11 +60,20 @@ public:
 	/// \brief Returns the status returned by the file parser on its last invocation.
 	const ObjectStatus& status() const { return _importStatus; }
 
+	/// \brief Scans the input source for animation frames and updates the internal list of frames.
+	bool updateFrames();
+
+	/// \brief Returns the number of animation frames that can be loaded from the data source.
+	int numberOfFrames() const { return _frames.size(); }
+
 	/// \brief Returns whether the scene's animation interval is being adjusted to the number of frames reported by the file parser.
-	bool adjustAnimationInterval() const { return _adjustAnimationInterval; }
+	bool adjustAnimationIntervalEnabled() const { return _adjustAnimationIntervalEnabled; }
 
 	/// \brief Controls whether the scene's animation interval should be adjusted to the number of frames reported by the file parser.
-	void setAdjustAnimationInterval(bool enabled) { _adjustAnimationInterval = enabled; }
+	void setAdjustAnimationIntervalEnabled(bool enabled) { _adjustAnimationIntervalEnabled = enabled; }
+
+	/// \brief Adjusts the animation interval of the current data set to the number of frames in the data source.
+	void adjustAnimationInterval();
 
 	/// \brief Asks the object for the result of the geometry pipeline at the given time.
 	virtual PipelineFlowState evaluate(TimePoint time) override;
@@ -153,9 +162,6 @@ protected:
 	/// \brief Saves the status returned by the parser object and generates a ReferenceEvent::StatusChanged event.
 	void setStatus(const ObjectStatus& status);
 
-	/// \brief Adjusts the animation interval of the current data set to the number of frames reported by the file parser.
-	void adjustAnimationInterval();
-
 	/// Is called when a RefTarget has been added to a VectorReferenceField of this RefMaker.
 	virtual void referenceInserted(const PropertyFieldDescriptor& field, RefTarget* newTarget, int listIndex) override;
 
@@ -193,7 +199,10 @@ private:
 	VectorReferenceField<SceneObject> _sceneObjects;
 
 	/// Controls whether the scene's animation interval is adjusted to the number of frames found in the input file.
-	PropertyField<bool> _adjustAnimationInterval;
+	PropertyField<bool> _adjustAnimationIntervalEnabled;
+
+	/// Stores the list of animation frames in the input file(s).
+	QVector<LinkedFileImporter::FrameSourceInformation> _frames;
 
 	/// The status returned by the parser during its last call.
 	ObjectStatus _importStatus;
@@ -210,6 +219,7 @@ private:
 	/// The watcher object that is used to monitor the background operation.
 	FutureWatcher _loadFrameOperationWatcher;
 
+
 #if 0
 
 	/// Controls the playback speed of simulation snapshots.
@@ -225,7 +235,7 @@ private:
 	DECLARE_REFERENCE_FIELD(_importer);
 	DECLARE_VECTOR_REFERENCE_FIELD(_sceneObjects);
 	//DECLARE_PROPERTY_FIELD(_framesPerSnapshot);
-	DECLARE_PROPERTY_FIELD(_adjustAnimationInterval);
+	DECLARE_PROPERTY_FIELD(_adjustAnimationIntervalEnabled);
 };
 
 };

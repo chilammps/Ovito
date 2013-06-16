@@ -36,6 +36,8 @@ public:
 	Task(Function fn) : _p(std::make_shared<FutureInterface<R>>()), _function(fn) {}
 
 	virtual void run() override {
+		if(!_p->reportStarted())
+			return;
 		try {
 			_function(*_p.get());
 		}
@@ -47,7 +49,6 @@ public:
 
 	Future<R> start() {
 		_p->_runnable = this;
-		_p->reportStarted();
 		std::shared_ptr<FutureInterface<R>> p2(_p);
 		QThreadPool::globalInstance()->start(this);
 		return Future<R>(p2);

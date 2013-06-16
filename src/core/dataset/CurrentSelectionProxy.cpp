@@ -25,7 +25,7 @@
 
 namespace Ovito {
 
-IMPLEMENT_OVITO_OBJECT(CurrentSelectionProxy, SelectionSet)
+IMPLEMENT_OVITO_OBJECT(Core, CurrentSelectionProxy, SelectionSet)
 DEFINE_FLAGS_REFERENCE_FIELD(CurrentSelectionProxy, _selectionSet, "SelectionSet", SelectionSet, PROPERTY_FIELD_NO_UNDO)
 
 /******************************************************************************

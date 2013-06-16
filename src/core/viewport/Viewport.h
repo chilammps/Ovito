@@ -273,6 +273,15 @@ public:
 	/// The center point is only used if it is activated with a call to setUseOrbitCenter().
 	void setOrbitCenter(const Point3& center) { _orbitCenter = center; }
 
+	/// \brief Zooms to the extents of the scene.
+	void zoomToSceneExtents();
+
+	/// \brief Zooms to the extents of the currently selected nodes.
+	void zoomToSelectionExtents();
+
+	/// \brief Zooms to the extents of the given bounding box.
+	void zoomToBox(const Box3& box);
+
 	/// \brief Returns the caption of the viewport.
 	/// \return The title of the viewport.
 	const QString& viewportTitle() const { return _viewportTitle; }
@@ -391,6 +400,9 @@ private:
 
 	/// Describes the current 3D projection used to render the contents of the viewport.
 	ViewProjectionParameters _projParams;
+
+	/// Counts how often this viewport has been rendered.
+	int _renderDebugCounter;
 
 private:
 

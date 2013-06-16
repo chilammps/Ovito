@@ -26,9 +26,9 @@
 
 namespace Ovito {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(ConstFloatController, FloatController)
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(ConstIntegerController, IntegerController)
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(ConstVectorController, VectorController)
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(ConstBooleanController, BooleanController)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, ConstFloatController, FloatController)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, ConstIntegerController, IntegerController)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, ConstVectorController, VectorController)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, ConstBooleanController, BooleanController)
 
 };

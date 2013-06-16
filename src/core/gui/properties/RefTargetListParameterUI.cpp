@@ -25,7 +25,7 @@
 namespace Ovito {
 
 // Gives the class run-time type information.
-IMPLEMENT_OVITO_OBJECT(RefTargetListParameterUI, ParameterUI)
+IMPLEMENT_OVITO_OBJECT(Core, RefTargetListParameterUI, ParameterUI)
 DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(RefTargetListParameterUI, _targets, "Targets", RefTarget, PROPERTY_FIELD_NO_UNDO | PROPERTY_FIELD_NO_CHANGE_MESSAGE)
 
 /******************************************************************************

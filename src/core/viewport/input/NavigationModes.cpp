@@ -25,6 +25,7 @@
 #include <core/viewport/input/ViewportInputManager.h>
 #include <core/viewport/input/NavigationModes.h>
 #include <core/viewport/ViewportSettings.h>
+#include <core/dataset/DataSetManager.h>
 #include <core/animation/AnimManager.h>
 
 namespace Ovito {
@@ -122,7 +123,7 @@ void PanMode::modifyView(Viewport* vp, const QPoint& delta)
 void ZoomMode::modifyView(Viewport* vp, const QPoint& delta)
 {
 	if(vp->isPerspectiveProjection()) {
-		FloatType amount =  -0.5 * delta.y();
+		FloatType amount =  -5.0 * sceneSizeFactor() * delta.y();
 		vp->setCameraPosition(_oldCameraPosition + _oldCameraDirection.resized(amount));
 	}
 	else {
@@ -132,12 +133,25 @@ void ZoomMode::modifyView(Viewport* vp, const QPoint& delta)
 }
 
 /******************************************************************************
+* Computes a scaling factor that depends on the total size of the scene which is used to
+* control the zoom sensitivity in perspective mode.
+******************************************************************************/
+FloatType ZoomMode::sceneSizeFactor()
+{
+	Box3 sceneBoundingBox = DataSetManager::instance().currentSet()->sceneRoot()->worldBoundingBox(AnimManager::instance().time());
+	if(!sceneBoundingBox.isEmpty())
+		return sceneBoundingBox.size().length() * 5e-4;
+	else
+		return 0.1;
+}
+
+/******************************************************************************
 * Zooms the viewport in or out.
 ******************************************************************************/
 void ZoomMode::zoom(Viewport* vp, FloatType steps)
 {
 	if(vp->isPerspectiveProjection()) {
-		vp->setCameraPosition(vp->cameraPosition() + vp->cameraDirection().resized(0.1 * steps));
+		vp->setCameraPosition(vp->cameraPosition() + vp->cameraDirection().resized(sceneSizeFactor() * steps));
 	}
 	else {
 		vp->setFieldOfView(vp->fieldOfView() * exp(-steps * 0.001));

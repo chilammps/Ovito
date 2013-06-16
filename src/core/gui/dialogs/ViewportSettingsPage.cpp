@@ -25,7 +25,7 @@
 
 namespace Ovito {
 
-IMPLEMENT_OVITO_OBJECT(ViewportSettingsPage, ApplicationSettingsPage)
+IMPLEMENT_OVITO_OBJECT(Core, ViewportSettingsPage, ApplicationSettingsPage)
 
 /******************************************************************************
 * Creates the widget that contains the plugin specific setting controls.

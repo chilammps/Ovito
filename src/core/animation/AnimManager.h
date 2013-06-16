@@ -205,6 +205,11 @@ public Q_SLOTS:
 	/// This turns animation mode off.
 	void reset();
 
+private Q_SLOTS:
+
+	/// \brief Is called when the current animation time has changed.
+	void onTimeChanged(TimePoint newTime);
+
 Q_SIGNALS:
 
 	/// This signal is emitted by the AnimManager when the current animation time has changed.

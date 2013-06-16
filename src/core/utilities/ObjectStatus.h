@@ -59,7 +59,7 @@ public:
 	const QString& shortText() const { return _shortText; }
 
 	/// Returns a more verbose text string describing the status.
-	const QString& longText() const { return _longText; }
+	const QString& longText() const { return _longText.isEmpty() ? _shortText : _longText; }
 
 	/// Tests two status objects for equality.
 	bool operator==(const ObjectStatus& other) const {

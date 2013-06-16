@@ -24,13 +24,13 @@
 
 namespace Ovito {
 
-IMPLEMENT_OVITO_OBJECT(ParameterUnit, OvitoObject);
-IMPLEMENT_OVITO_OBJECT(FloatParameterUnit, ParameterUnit);
-IMPLEMENT_OVITO_OBJECT(IntegerParameterUnit, ParameterUnit);
-IMPLEMENT_OVITO_OBJECT(WorldParameterUnit, FloatParameterUnit);
-IMPLEMENT_OVITO_OBJECT(AngleParameterUnit, FloatParameterUnit);
-IMPLEMENT_OVITO_OBJECT(PercentParameterUnit, FloatParameterUnit);
-IMPLEMENT_OVITO_OBJECT(TimeParameterUnit, IntegerParameterUnit);
+IMPLEMENT_OVITO_OBJECT(Core, ParameterUnit, OvitoObject);
+IMPLEMENT_OVITO_OBJECT(Core, FloatParameterUnit, ParameterUnit);
+IMPLEMENT_OVITO_OBJECT(Core, IntegerParameterUnit, ParameterUnit);
+IMPLEMENT_OVITO_OBJECT(Core, WorldParameterUnit, FloatParameterUnit);
+IMPLEMENT_OVITO_OBJECT(Core, AngleParameterUnit, FloatParameterUnit);
+IMPLEMENT_OVITO_OBJECT(Core, PercentParameterUnit, FloatParameterUnit);
+IMPLEMENT_OVITO_OBJECT(Core, TimeParameterUnit, IntegerParameterUnit);
 
 /// The singleton instance of the class.
 UnitsManager* UnitsManager::_instance = nullptr;

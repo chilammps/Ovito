@@ -34,11 +34,9 @@
 
 namespace Ovito {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(LinkedFileImporter, FileImporter)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LinkedFileImporter, FileImporter)
 DEFINE_PROPERTY_FIELD(LinkedFileImporter, _sourceUrl, "SourceUrl")
-DEFINE_PROPERTY_FIELD(LinkedFileImporter, _loadedUrl, "LoadedUrl")
 SET_PROPERTY_FIELD_LABEL(LinkedFileImporter, _sourceUrl, "Source location")
-SET_PROPERTY_FIELD_LABEL(LinkedFileImporter, _loadedUrl, "Loaded file")
 
 /******************************************************************************
 * Imports the given file into the scene.
@@ -64,15 +62,15 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl, DataSet* dataset, boo
 				return false;
 		}
 
-		// Scan the input source for animation frames.
-		if(!registerFrames(suppressDialogs))
-			return false;
-
 		// Create the object that will feed the imported data into the scene.
 		obj = new LinkedFileObject();
 
 		// Makes this importer part of the scene object.
 		obj->setImporter(this);
+
+		// Scan the input source for animation frames.
+		if(!obj->updateFrames())
+			return false;
 	}
 
 	// Make the import processes reversible.
@@ -101,6 +99,9 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl, DataSet* dataset, boo
 		// Select new node.
 		dataset->selection()->clear();
 		dataset->selection()->add(node);
+
+		// Adjust the animation length number to match the number of frames in the input data source.
+		obj->adjustAnimationInterval();
 
 		UndoManager::instance().endCompoundOperation();
 	}
@@ -139,10 +140,9 @@ QString LinkedFileImporter::objectTitle()
 * This implementation of this method checks if the source URL contains a wild-card pattern.
 * If yes, it scans the directory to find all matching files.
 ******************************************************************************/
-bool LinkedFileImporter::registerFrames(bool suppressDialogs)
+Future<QVector<LinkedFileImporter::FrameSourceInformation>> LinkedFileImporter::findFrames()
 {
-	resetFrames();
-
+	QVector<FrameSourceInformation> frames;
 	if(sourceUrl().isLocalFile()) {
 
 		// Check if filename is a wild-card pattern.
@@ -151,64 +151,61 @@ bool LinkedFileImporter::registerFrames(bool suppressDialogs)
 		if(pattern.contains('*') == false && pattern.contains('?') == false) {
 			// It's not a wild-card pattern.
 			// Register only a single frame.
-			registerFrame({ sourceUrl(), 0, 0, fileInfo.lastModified() });
-			return true;
+			frames.push_back({ sourceUrl(), 0, 0, fileInfo.lastModified() });
 		}
+		else{
 
-		// Scan the directory for matching files.
-		QDir dir = fileInfo.dir();
-		QStringList entries = dir.entryList(QStringList(pattern), QDir::Files|QDir::NoDotAndDotDot, QDir::Name);
-		if(entries.empty())
-			throw Exception(tr("No files found in directory '%1' that match the given wild-card pattern: %2").arg(dir.path()).arg(pattern));
+			// Scan the directory for matching files.
+			QDir dir = fileInfo.dir();
+			QStringList entries = dir.entryList(QStringList(pattern), QDir::Files|QDir::NoDotAndDotDot, QDir::Name);
 
-		// Now the file names have to be sorted.
-		// This is a little bit tricky since a file called "abc9.xyz" must come before
-		// a file named "abc10.xyz" which is not the default lexicographical ordering.
-		QMap<QString, QString> sortedFilenames;
-		Q_FOREACH(QString oldName, entries) {
-			// Generate a new name from the original filename that yields the correct ordering.
-			QString newName;
-			QString number;
-			for(int index = 0; index < oldName.length(); index++) {
-				QChar c = oldName[index];
-				if(!c.isDigit()) {
-					if(!number.isEmpty()) {
-						newName.append(number.rightJustified(10, '0'));
-						number.clear();
+			// Now the file names have to be sorted.
+			// This is a little bit tricky since a file called "abc9.xyz" must come before
+			// a file named "abc10.xyz" which is not the default lexicographical ordering.
+			QMap<QString, QString> sortedFilenames;
+			Q_FOREACH(QString oldName, entries) {
+				// Generate a new name from the original filename that yields the correct ordering.
+				QString newName;
+				QString number;
+				for(int index = 0; index < oldName.length(); index++) {
+					QChar c = oldName[index];
+					if(!c.isDigit()) {
+						if(!number.isEmpty()) {
+							newName.append(number.rightJustified(10, '0'));
+							number.clear();
+						}
+						newName.append(c);
 					}
-					newName.append(c);
+					else number.append(c);
 				}
-				else number.append(c);
+				if(!number.isEmpty()) newName.append(number.rightJustified(10, '0'));
+				sortedFilenames[newName] = oldName;
 			}
-			if(!number.isEmpty()) newName.append(number.rightJustified(10, '0'));
-			sortedFilenames[newName] = oldName;
-		}
 
-		// Generate final list of frames.
-		for(const auto& iter : sortedFilenames) {
-			QString filename = dir.absoluteFilePath(iter);
-			registerFrame({ QUrl::fromLocalFile(filename), 0, 0, QFileInfo(filename).lastModified() });
+			// Generate final list of frames.
+			for(const auto& iter : sortedFilenames) {
+				QString filename = dir.absoluteFilePath(iter);
+				frames.push_back({ QUrl::fromLocalFile(filename), 0, 0, QFileInfo(filename).lastModified() });
+			}
 		}
 	}
 	else {
 		// It's not a file URL.
 		// Register only a single frame.
-		registerFrame({ sourceUrl(), 0, 0, QDateTime() });
+		frames.push_back({ sourceUrl(), 0, 0, QDateTime() });
 	}
 
-	return true;
+	return Future<QVector<FrameSourceInformation>>(frames);
 }
 
 /******************************************************************************
 * Reads the data from the input file(s).
 ******************************************************************************/
-Future<LinkedFileImporter::ImportedDataPtr> LinkedFileImporter::load(int frameIndex)
+Future<LinkedFileImporter::ImportedDataPtr> LinkedFileImporter::load(LinkedFileImporter::FrameSourceInformation frame)
 {
-	OVITO_ASSERT(frameIndex >= 0 && frameIndex < _frames.size());
-	Future<LinkedFileImporter::ImportedDataPtr> future = runInBackground<ImportedDataPtr>(std::bind(&LinkedFileImporter::loadImplementation, this, std::placeholders::_1, _frames[frameIndex]));
+	Future<LinkedFileImporter::ImportedDataPtr> future = runInBackground<ImportedDataPtr>(std::bind(&LinkedFileImporter::loadImplementation, this, std::placeholders::_1, frame));
 	ProgressManager::instance().addTask(future);
 	return future;
 }
-
 
 };

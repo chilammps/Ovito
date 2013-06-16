@@ -38,7 +38,7 @@
 
 namespace Ovito {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Viewport, RefTarget);
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, Viewport, RefTarget);
 DEFINE_FLAGS_REFERENCE_FIELD(Viewport, _viewNode, "ViewNode", ObjectNode, PROPERTY_FIELD_NO_UNDO|PROPERTY_FIELD_NEVER_CLONE_TARGET)
 DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _viewType, "ViewType", PROPERTY_FIELD_NO_UNDO)
 DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _shadingMode, "ShadingMode", PROPERTY_FIELD_NO_UNDO)
@@ -61,7 +61,8 @@ Viewport::Viewport() :
 		_fieldOfView(100),
 		_showRenderFrame(false), _orbitCenter(Point3::Origin()), _useOrbitCenter(false),
 		_glcontext(nullptr), _paintDevice(nullptr),
-		_cameraPosition(Point3::Origin()), _cameraDirection(0,0,-1)
+		_cameraPosition(Point3::Origin()), _cameraDirection(0,0,-1),
+		_renderDebugCounter(0)
 {
 	INIT_PROPERTY_FIELD(Viewport::_viewNode);
 	INIT_PROPERTY_FIELD(Viewport::_viewType);
@@ -202,7 +203,7 @@ ViewProjectionParameters Viewport::projectionParameters(TimePoint time, FloatTyp
 			// Calculate znear and zfar clipping plane distances.
 			Box3 bb = sceneBoundingBox.transformed(params.viewMatrix);
 			params.zfar = -bb.minc.z();
-			params.znear = std::max(-bb.maxc.z(), -bb.minc.z() * 1e-6f);
+			params.znear = std::max(-bb.maxc.z(), params.zfar * 1e-5f);
 
 			// Get remaining parameters from camera object.
 			camera->projectionParameters(time, params);
@@ -213,18 +214,18 @@ ViewProjectionParameters Viewport::projectionParameters(TimePoint time, FloatTyp
 		params.fieldOfView = fieldOfView();
 
 		// Transform scene bounding box to camera space.
-		Box3 bb = sceneBoundingBox.transformed(params.viewMatrix);
+		Box3 bb = sceneBoundingBox.transformed(params.viewMatrix).centerScale(1.01);
 
 		if(viewType() == VIEW_PERSPECTIVE) {
 			params.isPerspective = true;
 
 			if(bb.minc.z() < -FLOATTYPE_EPSILON) {
 				params.zfar = -bb.minc.z();
-				params.znear = std::max(-bb.maxc.z(), -bb.minc.z() * 1e-6f);
+				params.znear = std::max(-bb.maxc.z(), params.zfar * 1e-5f);
 			}
 			else {
 				params.zfar = sceneBoundingBox.size().length();
-				params.znear = params.zfar * 1e-6f;
+				params.znear = params.zfar * 1e-5f;
 			}
 			params.projectionMatrix = Matrix4::perspective(params.fieldOfView, 1.0 / params.aspectRatio, params.znear, params.zfar);
 		}
@@ -248,6 +249,68 @@ ViewProjectionParameters Viewport::projectionParameters(TimePoint time, FloatTyp
 	}
 	return params;
 }
+
+/******************************************************************************
+* Zooms to the extents of the scene.
+******************************************************************************/
+void Viewport::zoomToSceneExtents()
+{
+	Box3 sceneBoundingBox = DataSetManager::instance().currentSet()->sceneRoot()->worldBoundingBox(AnimManager::instance().time());
+	zoomToBox(sceneBoundingBox);
+}
+
+/******************************************************************************
+* Zooms to the extents of the currently selected nodes.
+******************************************************************************/
+void Viewport::zoomToSelectionExtents()
+{
+	Box3 selectionBoundingBox;
+	for(SceneNode* node : DataSetManager::instance().currentSelection()->nodes()) {
+		selectionBoundingBox.addBox(node->worldBoundingBox(AnimManager::instance().time()));
+	}
+	if(selectionBoundingBox.isEmpty() == false)
+		zoomToBox(selectionBoundingBox);
+	else
+		zoomToSceneExtents();
+}
+
+/******************************************************************************
+* Zooms to the extents of the given bounding box.
+******************************************************************************/
+void Viewport::zoomToBox(const Box3& box)
+{
+	if(box.isEmpty())
+		return;
+
+	if(viewType() == VIEW_SCENENODE)
+		return;	// Cannot reposition the view node.
+
+	if(isPerspectiveProjection()) {
+		FloatType dist = box.size().length() * 0.5 / tan(fieldOfView() * 0.5);
+		setCameraPosition(box.center() - cameraDirection().resized(dist));
+	}
+	else {
+		AffineTransformation viewMat = viewMatrix();
+
+		FloatType minX =  FLOATTYPE_MAX, minY =  FLOATTYPE_MAX;
+		FloatType maxX = -FLOATTYPE_MAX, maxY = -FLOATTYPE_MAX;
+		for(int i = 0; i < 8; i++) {
+			Point3 trans = viewMat * box[i];
+			if(trans.x() < minX) minX = trans.x();
+			if(trans.x() > maxX) maxX = trans.x();
+			if(trans.y() < minY) minY = trans.y();
+			if(trans.y() > maxY) maxY = trans.y();
+		}
+		FloatType w = std::max(maxX - minX, FloatType(1e-5));
+		FloatType h = std::max(maxY - minY, FloatType(1e-5));
+		if(_projParams.aspectRatio > h/w)
+			setFieldOfView(w * _projParams.aspectRatio * 0.55);
+		else
+			setFieldOfView(h * 0.55);
+		setCameraPosition(box.center());
+	}
+}
+
 
 /******************************************************************************
 * Is called when a RefTarget referenced by this object has generated an event.
@@ -380,9 +443,14 @@ void Viewport::render(QOpenGLContext* context, QOpenGLPaintDevice* paintDevice)
 	glClearColor(backgroundColor.r(), backgroundColor.g(), backgroundColor.b(), 1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
+	// Request scene bounding box.
+	Box3 boundingBox = DataSetManager::instance().currentSet()->sceneRoot()->worldBoundingBox(AnimManager::instance().time());
+	if(boundingBox.isEmpty())
+		boundingBox = Box3(Point3::Origin(), 100);
+
 	// Setup projection.
 	FloatType aspectRatio = (FloatType)vpSize.height() / vpSize.width();
-	_projParams = projectionParameters(AnimManager::instance().time(), aspectRatio, Box3(Point3::Origin(), 100));
+	_projParams = projectionParameters(AnimManager::instance().time(), aspectRatio, boundingBox);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadMatrix(Matrix4(_projParams.viewMatrix));
 	glMatrixMode(GL_PROJECTION);
@@ -432,7 +500,11 @@ void Viewport::renderViewportTitle()
 	QFontMetricsF metrics(ViewportManager::instance().viewportFont());
 	QPointF pos(2, metrics.ascent() + 2);
 	_contextMenuArea = QRect(0, 0, std::max(metrics.width(viewportTitle()), 30.0) + 2, metrics.height() + 2);
+#ifndef OVITO_DEBUG
 	renderText(viewportTitle(), pos, (QColor)captionColor);
+#else
+	renderText(QString("%1 [%2]").arg(viewportTitle()).arg(++_renderDebugCounter), pos, (QColor)captionColor);
+#endif
 }
 
 /******************************************************************************

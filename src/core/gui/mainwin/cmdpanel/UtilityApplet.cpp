@@ -24,6 +24,6 @@
 
 namespace Ovito {
 
-IMPLEMENT_OVITO_OBJECT(UtilityApplet, RefMaker)
+IMPLEMENT_OVITO_OBJECT(Core, UtilityApplet, RefMaker)
 
 };

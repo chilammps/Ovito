@@ -27,7 +27,7 @@
 
 namespace Ovito {
 
-IMPLEMENT_OVITO_OBJECT(Modifier, RefTarget)
+IMPLEMENT_OVITO_OBJECT(Core, Modifier, RefTarget)
 
 /******************************************************************************
 * Constructor.

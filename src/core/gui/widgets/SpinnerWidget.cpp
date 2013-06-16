@@ -212,7 +212,7 @@ void SpinnerWidget::mousePressEvent(QMouseEvent* event)
 {
 	OVITO_CHECK_POINTER(unit());
 	
-	if(event->button() == Qt::LeftButton) {
+	if(event->button() == Qt::LeftButton && !_upperBtnPressed && !_lowerBtnPressed) {
 		// Backup current value.
 		_oldValue = floatValue();
 
@@ -226,6 +226,7 @@ void SpinnerWidget::mousePressEvent(QMouseEvent* event)
 		_currentStepSize = unit()->stepSize(floatValue(), _upperBtnPressed);
 		if(textBox()) textBox()->setFocus(Qt::OtherFocusReason);
 		
+		grabMouse();
 		repaint();
 	}
 	else if(event->button() == Qt::RightButton) {
@@ -240,6 +241,7 @@ void SpinnerWidget::mousePressEvent(QMouseEvent* event)
 		_upperBtnPressed = false;
 		_lowerBtnPressed = false;
 
+		releaseMouse();
 		update();
 	}	
 }
@@ -264,6 +266,7 @@ void SpinnerWidget::mouseReleaseEvent(QMouseEvent* event)
 		// Repaint spinner.
 		update();
 	}
+	releaseMouse();
 }
 
 /******************************************************************************
@@ -312,9 +315,6 @@ void SpinnerWidget::mouseMoveEvent(QMouseEvent* event)
 
 				if(newVal != floatValue()) {
 					setFloatValue(newVal, true);
-	            
-					// Repaint viewports on interactive adjusting.
-					//VIEWPORT_MANAGER.processViewportUpdates();
 				}
 			}
 		}

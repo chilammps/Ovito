@@ -54,8 +54,10 @@ ActionManager::ActionManager()
 	createCommandAction(ACTION_RENDER_ACTIVE_VIEWPORT, tr("Render Active Viewport"), ":/core/actions/rendering/render_active_viewport.png");
 
 	createCommandAction(ACTION_VIEWPORT_MAXIMIZE, tr("Maximize Active Viewport"), ":/core/actions/viewport/maximize_viewport.png", tr("Enlarge/reduce the active viewport."));
-	createCommandAction(ACTION_VIEWPORT_ZOOM_SCENE_EXTENTS, tr("Zoom Scene Extents"), ":/core/actions/viewport/zoom_scene_extents.png", tr("Zoom to show all."));
-	createCommandAction(ACTION_VIEWPORT_ZOOM_SELECTION_EXTENTS_ALL, tr("Zoom Selection Extents"), ":/core/actions/viewport/zoom_scene_selection_extents.png", tr("Zoom to show all selected objects."));
+	createCommandAction(ACTION_VIEWPORT_ZOOM_SCENE_EXTENTS, tr("Zoom Scene Extents"), ":/core/actions/viewport/zoom_scene_extents.png", tr("Zoom to show everything."));
+	createCommandAction(ACTION_VIEWPORT_ZOOM_SCENE_EXTENTS_ALL, tr("Zoom Scene Extents All"), ":/core/actions/viewport/zoom_scene_extents.png", tr("Zoom all viewports to show everything."));
+	createCommandAction(ACTION_VIEWPORT_ZOOM_SELECTION_EXTENTS, tr("Zoom Selection Extents"), ":/core/actions/viewport/zoom_scene_selection_extents.png", tr("Zoom to show all selected objects."));
+	createCommandAction(ACTION_VIEWPORT_ZOOM_SELECTION_EXTENTS_ALL, tr("Zoom Selection Extents All"), ":/core/actions/viewport/zoom_scene_selection_extents.png", tr("Zoom all viewports to show all selected objects."));
 	createViewportModeAction(ACTION_VIEWPORT_ZOOM, ZoomMode::instance(), tr("Zoom"), ":/core/actions/viewport/mode_zoom.png", tr("Activate zoom mode."));
 	createViewportModeAction(ACTION_VIEWPORT_PAN, PanMode::instance(), tr("Pan"), ":/core/actions/viewport/mode_pan.png", tr("Activate pan mode to shift the region visible in the viewports."));
 	createViewportModeAction(ACTION_VIEWPORT_ORBIT, OrbitMode::instance(), tr("Orbit"), ":/core/actions/viewport/mode_orbit.png", tr("Activate orbit mode to rotate the camera around the scene."));
@@ -131,7 +133,7 @@ QAction* ActionManager::createCommandAction(const QString& id, const QString& ti
 }
 
 /******************************************************************************
-* Creates and registers a new vewiport mode action with the ActionManager.
+* Creates and registers a new viewport mode action with the ActionManager.
 ******************************************************************************/
 QAction* ActionManager::createViewportModeAction(const QString& id, const OORef<ViewportInputHandler>& inputHandler, const QString& title, const char* iconPath, const QString& statusTip, const QKeySequence& shortcut)
 {

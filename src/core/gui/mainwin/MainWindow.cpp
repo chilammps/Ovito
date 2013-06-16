@@ -62,21 +62,20 @@ MainWindow::MainWindow(const QString& title) :
 	QWidget* animationPanel = new QWidget();
 	QVBoxLayout* animationPanelLayout = new QVBoxLayout(animationPanel);
 	animationPanelLayout->setSpacing(0);
-	animationPanelLayout->setContentsMargins(0, 2, 0, 0);
+	animationPanelLayout->setContentsMargins(0, 0, 0, 0);
 	animationPanel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 
 	// Create animation time slider
 	AnimationTimeSlider* timeSlider = new AnimationTimeSlider();
 	timeSlider->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 	animationPanelLayout->addWidget(timeSlider);
-	animationPanelLayout->addStretch(1);
 
 	// Create status bar.
 	_statusBar = new QStatusBar(animationPanel);
 	_statusBar->setSizeGripEnabled(false);
 	_statusBar->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
 	setStatusBar(_statusBar);
-	animationPanelLayout->addWidget(_statusBar);
+	animationPanelLayout->addWidget(_statusBar, 1);
 
 	// Create the animation control toolbar.
 	QToolBar* animationControlBar1 = new QToolBar();

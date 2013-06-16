@@ -199,6 +199,21 @@ public:
 	///         notification messages from it.
 	const DependentsList& dependents() const { return _dependents; }
 
+	/// \brief Recursively visits all dependents that directly or indirectly reference this target object
+	///        and invokes the given function for every dependent encountered.
+	///
+	/// \note The visitor function may be called multiple times for a dependent if that dependent
+	///       has multiple references that in turn reference this target.
+	template<class Function>
+	void visitDependents(Function fn) const {
+		for(RefMaker* dependent : dependents()) {
+			fn(dependent);
+			RefTarget* target = dynamic_object_cast<RefTarget>(dependent);
+			if(target)
+				target->visitDependents(fn);
+		}
+	}
+
 	/// \brief Generates a list of dependents that directly or indirectly reference this target object.
 	/// \param type Lists only dependents that are of the given type.
 	/// \return A list of all dependents that match to the given type.
@@ -267,17 +282,6 @@ private:
 
 	/// \brief Returns a modifiable list of RefMaker objects that depend on this RefTarget.
 	DependentsList& dependents() { return _dependents; }
-
-	/// \brief Recursively visit all dependents that directly or indirectly reference this target object.
-	template<class Function>
-	void visitDependents(Function fn) const {
-		for(RefMaker* dependent : dependents()) {
-			fn(dependent);
-			RefTarget* target = dynamic_object_cast<RefTarget>(dependent);
-			if(target)
-				target->visitDependents(fn);
-		}
-	}
 
 private:
 

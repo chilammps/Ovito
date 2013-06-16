@@ -27,7 +27,7 @@
 namespace Ovito {
 
 // Gives the class run-time type information.
-IMPLEMENT_OVITO_OBJECT(BooleanParameterUI, PropertyParameterUI)
+IMPLEMENT_OVITO_OBJECT(Core, BooleanParameterUI, PropertyParameterUI)
 
 /******************************************************************************
 * Constructor for a Qt property.

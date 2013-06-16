@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-//
+// 
 //  Copyright (2013) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
@@ -19,18 +19,39 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+#ifndef __OVITO_LAMMPS_DUMP_IMPORTER_SETTINGS_DIALOG_H
+#define __OVITO_LAMMPS_DUMP_IMPORTER_SETTINGS_DIALOG_H
+
 #include <core/Core.h>
-#include <core/animation/controller/StandardControllers.h>
-#include <core/animation/controller/StandardLinearControllers.h>
-#include <core/animation/controller/Controller.h>
+#include "LAMMPSTextDumpImporter.h"
 
-namespace Ovito {
+namespace Viz {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LinearFloatController, FloatController)
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LinearIntegerController, IntegerController)
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LinearVectorController, VectorController)
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LinearPositionController, PositionController)
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LinearRotationController, RotationController)
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LinearScalingController, ScalingController)
+/******************************************************************************
+* This dialog box lets the user adjust the settings of the LAMMPS dump importer.
+******************************************************************************/
+class LAMMPSDumpImporterSettingsDialog : public QDialog
+{
+	Q_OBJECT
+	
+public:
+
+	/// Constructor.
+	LAMMPSDumpImporterSettingsDialog(LAMMPSTextDumpImporter* importer, QWidget* parent = 0);
+
+protected Q_SLOTS:
+
+	/// This is called when the user has pressed the OK button.
+	void onOk();
+
+protected:
+
+	/// The parser whose settings are being edited.
+	OORef<LAMMPSTextDumpImporter> importer;
+	QLineEdit* sourceTextbox;
+	QCheckBox* multiTimestepCheckbox;
+};
 
 };
+
+#endif // __OVITO_LAMMPS_DUMP_IMPORTER_SETTINGS_DIALOG_H

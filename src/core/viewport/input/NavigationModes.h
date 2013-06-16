@@ -133,6 +133,10 @@ protected:
 	/// Gets the mouse cursor of this viewport mode.
 	virtual QCursor getCursor() override { return QCursor(QPixmap(":/core/cursor/viewport/cursor_zoom.png")); }
 
+	/// Computes a scaling factor that depends on the total size of the scene which is used to
+	/// control the zoom sensitivity in perspective mode.
+	static FloatType sceneSizeFactor();
+
 public:
 
 	/// Zooms the viewport in or out.

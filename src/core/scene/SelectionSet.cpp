@@ -24,7 +24,7 @@
 
 namespace Ovito {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(SelectionSet, RefTarget)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, SelectionSet, RefTarget)
 DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(SelectionSet, _selection, "SelectedNodes", SceneNode, PROPERTY_FIELD_NEVER_CLONE_TARGET)
 SET_PROPERTY_FIELD_LABEL(SelectionSet, _selection, "Nodes")
 
@@ -122,9 +122,9 @@ bool SelectionSet::referenceEvent(RefTarget* source, ReferenceEvent* event)
         	NodeInSelectionSetChangedEvent e(this, sourceNode, event);
         	notifyDependents(e);
         }
-		return false;
 	}
-	return RefTarget::referenceEvent(source, event);
+	// Do not propagate events from selected nodes.
+	return false;
 }
 
 /******************************************************************************

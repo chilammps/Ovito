@@ -34,7 +34,7 @@
 
 namespace Ovito {
 
-IMPLEMENT_OVITO_OBJECT(RenderSettingsEditor, PropertiesEditor)
+IMPLEMENT_OVITO_OBJECT(Core, RenderSettingsEditor, PropertiesEditor)
 
 // Predefined output image dimensions.
 static const int imageSizePresets[][2] = {

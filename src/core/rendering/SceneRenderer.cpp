@@ -27,8 +27,8 @@
 
 namespace Ovito {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(SceneRenderer, RefTarget);
-IMPLEMENT_OVITO_OBJECT(LineGeometryBuffer, OvitoObject);
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, SceneRenderer, RefTarget);
+IMPLEMENT_OVITO_OBJECT(Core, LineGeometryBuffer, OvitoObject);
 
 /******************************************************************************
 * Constructor.

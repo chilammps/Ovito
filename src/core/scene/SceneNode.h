@@ -170,6 +170,16 @@ public:
 	/// \sa childCount(), childNode(), addChild(), removeChild()
 	const QVector<SceneNode*>& children() const { return _children; }
 
+	/// \brief Recursively visits all nodes below this parent node
+	///        and invokes the given function for every node encountered.
+	template<class Function>
+	void visitChildren(Function fn) const {
+		for(SceneNode* child : children()) {
+			fn(child);
+			child->visitChildren(fn);
+		}
+	}
+
 	/// \brief Binds this scene node to a target node and creates a LookAtController
 	///        that lets this scene node look at the target.
 	/// \param targetNode The target to look at or \c NULL to unbind the node from its old target.

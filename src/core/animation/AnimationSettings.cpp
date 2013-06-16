@@ -24,7 +24,7 @@
 
 namespace Ovito {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(AnimationSettings, RefTarget);
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, AnimationSettings, RefTarget);
 DEFINE_PROPERTY_FIELD(AnimationSettings, _time, "Time");
 DEFINE_PROPERTY_FIELD(AnimationSettings, _animationInterval, "AnimationInterval");
 DEFINE_PROPERTY_FIELD(AnimationSettings, _ticksPerFrame, "TicksPerFrame");
@@ -49,11 +49,11 @@ AnimationSettings::AnimationSettings() :
 void AnimationSettings::propertyChanged(const PropertyFieldDescriptor& field)
 {
 	if(field == PROPERTY_FIELD(AnimationSettings::_time))
-		timeChanged(time());
+		Q_EMIT timeChanged(time());
 	else if(field == PROPERTY_FIELD(AnimationSettings::_animationInterval))
-		intervalChanged(animationInterval());
+		Q_EMIT intervalChanged(animationInterval());
 	else if(field == PROPERTY_FIELD(AnimationSettings::_ticksPerFrame))
-		speedChanged(ticksPerFrame());
+		Q_EMIT speedChanged(ticksPerFrame());
 }
 
 

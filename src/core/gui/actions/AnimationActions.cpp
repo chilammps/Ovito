@@ -25,6 +25,7 @@
 #include <core/viewport/input/ViewportInputHandler.h>
 #include <core/viewport/input/ViewportInputManager.h>
 #include <core/viewport/input/NavigationModes.h>
+#include <core/dataset/DataSetManager.h>
 
 namespace Ovito {
 
@@ -38,7 +39,7 @@ class AnimationPlaybackViewportMode : public ViewportInputHandler
 public:
 
 	/// Constructor.
-	AnimationPlaybackViewportMode() {}
+	AnimationPlaybackViewportMode() : _isTimerScheduled(false) {}
 
 	/// Returns the activation behavior of this input handler.
 	virtual InputHandlerType handlerType() override { return ViewportInputHandler::TEMPORARY; }
@@ -56,34 +57,48 @@ protected:
 
 	/// This is called by the system after the input handler has become active.
 	virtual void activated() override {
-		int timerSpeed = 1000;
-		if(AnimManager::instance().playbackSpeed() > 1) timerSpeed /= AnimManager::instance().playbackSpeed();
-		else if(AnimManager::instance().playbackSpeed() < -1) timerSpeed *= -AnimManager::instance().playbackSpeed();
-		QTimer::singleShot(timerSpeed / AnimManager::instance().framesPerSecond(), this, SLOT(onTimer()));
+		scheduleNextFrame();
 	}
 
 protected Q_SLOTS:
 
+	/// Start a timer that will fire an event when the next animation frame should be shown.
+	void scheduleNextFrame() {
+		if(ViewportInputManager::instance().currentHandler() == this && !_isTimerScheduled) {
+			int timerSpeed = 1000;
+			if(AnimManager::instance().playbackSpeed() > 1) timerSpeed /= AnimManager::instance().playbackSpeed();
+			else if(AnimManager::instance().playbackSpeed() < -1) timerSpeed *= -AnimManager::instance().playbackSpeed();
+			_isTimerScheduled = true;
+			QTimer::singleShot(timerSpeed / AnimManager::instance().framesPerSecond(), this, SLOT(onTimer()));
+		}
+	}
+
 	/// Is periodically called by the timer.
 	void onTimer() {
+		_isTimerScheduled = false;
+
+		// Check if the animation playback mode has been deactivated in the meantime.
 		if(ViewportInputManager::instance().currentHandler() != this)
 			return;
 
 		// Add one frame to current time
-		TimePoint newTime = AnimManager::instance().frameToTime(AnimManager::instance().timeToFrame(AnimManager::instance().time()) + 1);
-		// Loop
+		int newFrame = AnimManager::instance().timeToFrame(AnimManager::instance().time()) + 1;
+		TimePoint newTime = AnimManager::instance().frameToTime(newFrame);
+
+		// Loop back to first frame if end has been reached.
 		if(newTime > AnimManager::instance().animationInterval().end())
 			newTime = AnimManager::instance().animationInterval().start();
+
 		// Set new time
 		AnimManager::instance().setTime(newTime);
 
-		if(ViewportInputManager::instance().currentHandler() == this) {
-			int timerSpeed = 1000;
-			if(AnimManager::instance().playbackSpeed() > 1) timerSpeed /= AnimManager::instance().playbackSpeed();
-			else if(AnimManager::instance().playbackSpeed() < -1) timerSpeed *= -AnimManager::instance().playbackSpeed();
-			QTimer::singleShot(timerSpeed / AnimManager::instance().framesPerSecond(), this, SLOT(onTimer()));
-		}
+		// Wait until the scene is ready. Then jump to the next frame.
+		DataSetManager::instance().runWhenSceneIsReady(std::bind(&AnimationPlaybackViewportMode::scheduleNextFrame, this));
 	}
+
+private:
+
+	bool _isTimerScheduled;
 };
 
 // This is required by Automoc.

@@ -32,7 +32,7 @@ PluginManager* PluginManager::_instance = nullptr;
 /******************************************************************************
 * Initializes the plugin manager.
 ******************************************************************************/
-PluginManager::PluginManager() : _corePlugin(NULL)
+PluginManager::PluginManager() : _corePlugin(nullptr)
 {
 	OVITO_ASSERT_MSG(!_instance, "PluginManager constructor", "Multiple instances of this singleton class have been created.");
 	registerPlugins();
@@ -88,6 +88,27 @@ void PluginManager::registerPlugins()
 	// Register the built-in classes of the core.
 	_corePlugin = loadPluginManifest(":/core/Core.manifest.xml");
 
+	// Scan the plugins directory for installed plugins.
+	QDir pluginDir = QDir(QCoreApplication::applicationDirPath() + "/plugins");
+	if(!pluginDir.exists())
+		throw Exception(QString("Failed to scan the plugin directory: %1").arg(pluginDir.path()));
+
+	// List all manifest files.
+	pluginDir.setNameFilters(QStringList("*.manifest.xml"));
+	pluginDir.setFilter(QDir::Files);
+	QStringList files = pluginDir.entryList();
+
+	// Load each manifest file in the plugins directory.
+	for(const QString& file : files) {
+		try {
+			loadPluginManifest(pluginDir.absoluteFilePath(file));
+		}
+		catch(Exception& ex) {
+			ex.prependGeneralMessage(tr("Failed to load plugin manifest:\n\n%1").arg(file));
+			ex.showError();
+		}
+	}
+
 	// Parse the manifest of each plugin.
 	for(Plugin* plugin : plugins()) {
 		try {
@@ -107,8 +128,13 @@ void PluginManager::registerPlugins()
 		}
 	}
 
-	// Load the core plugin by default.
+	// Load the core plugin.
 	corePlugin()->loadPlugin();
+
+	// Load all other plugins too.
+	for(Plugin* plugin : plugins()) {
+		plugin->loadPlugin();
+	}
 }
 
 /******************************************************************************

@@ -72,9 +72,9 @@ class ViewportInputHandler;		// defined in ViewportInputHandler.h
 /// This zooms the current viewport to the selection extents
 #define ACTION_VIEWPORT_ZOOM_SELECTION_EXTENTS		"ViewportZoomSelectionExtents"
 /// This zooms all viewports to the scene extents
-#define ACTION_VIEWPORT_ZOOM_SCENE_EXTENTS_ALL		"ViewportSceneExtentsAll"
+#define ACTION_VIEWPORT_ZOOM_SCENE_EXTENTS_ALL		"ViewportZoomSceneExtentsAll"
 /// This zooms all viewports to the selection extents
-#define ACTION_VIEWPORT_ZOOM_SELECTION_EXTENTS_ALL	"ViewportSelectionExtentsAll"
+#define ACTION_VIEWPORT_ZOOM_SELECTION_EXTENTS_ALL	"ViewportZoomSelectionExtentsAll"
 
 /// This action deletes the currently selected modifier from the modifier stack.
 #define ACTION_MODIFIER_DELETE				"ModifierDelete"
@@ -180,6 +180,10 @@ private Q_SLOTS:
 	void on_FileImport_triggered();
 	void on_FileExport_triggered();
 	void on_ViewportMaximize_triggered();
+	void on_ViewportZoomSceneExtents_triggered();
+	void on_ViewportZoomSelectionExtents_triggered();
+	void on_ViewportZoomSceneExtentsAll_triggered();
+	void on_ViewportZoomSelectionExtentsAll_triggered();
 	void on_Settings_triggered();
 	void on_AnimationGotoStart_triggered();
 	void on_AnimationGotoEnd_triggered();

@@ -33,8 +33,10 @@ public:
 	typedef FutureInterface<R> Interface;
 
 	Future() {}
-	explicit Future(const R& result) : _interface(std::make_shared<Interface>()) {
+	explicit Future(const R& result, const QString& text = QString()) : _interface(std::make_shared<Interface>()) {
 		interface()->reportStarted();
+		if(text.isEmpty() == false)
+			interface()->setProgressText(text);
 		interface()->setResult(result);
 		interface()->reportFinished();
 	}

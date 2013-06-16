@@ -25,7 +25,7 @@
 
 namespace Ovito {
 
-IMPLEMENT_OVITO_OBJECT(ViewportLineGeometryBuffer, LineGeometryBuffer);
+IMPLEMENT_OVITO_OBJECT(Core, ViewportLineGeometryBuffer, LineGeometryBuffer);
 
 /******************************************************************************
 * Allocates a geometry buffer with the given number of vertices.

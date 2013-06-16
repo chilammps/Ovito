@@ -25,7 +25,7 @@
 
 namespace Ovito {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(DisplayObject, RefTarget)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, DisplayObject, RefTarget)
 
 /******************************************************************************
 * Constructor.

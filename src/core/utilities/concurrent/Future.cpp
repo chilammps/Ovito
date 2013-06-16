@@ -31,6 +31,179 @@ enum {
     MaxProgressEmitsPerSecond = 10
 };
 
+void FutureInterfaceBase::cancel()
+{
+	//qDebug() << "BEG FutureInterfaceBase::cancel() this=" << this << "thread=" << QThread::currentThread() << "text=" << progressText();
+	QMutexLocker locker(&_mutex);
+	if(isCanceled()) {
+	//	qDebug() << "ALREADY CANCELED FutureInterfaceBase::cancel() this=" << this << "thread=" << QThread::currentThread() << "text=" << progressText();
+		return;
+	}
+
+	if(_subTask) {
+	//	qDebug() << "Canceling subtask";
+		_subTask->cancel();
+	}
+
+	_state = State(_state | Canceled);
+	_waitCondition.wakeAll();
+	sendCallOut(FutureWatcher::CallOutEvent::Canceled);
+	//qDebug() << "END FutureInterfaceBase::cancel() this=" << this << "thread=" << QThread::currentThread() << "text=" << progressText();
+}
+
+bool FutureInterfaceBase::reportStarted()
+{
+	//qDebug() << "BEG FutureInterfaceBase::reportStarted() this=" << this << "thread=" << QThread::currentThread() << "text=" << progressText();
+	//qDebug() << "THREAD COUNT=" << QThreadPool::globalInstance()->activeThreadCount();
+    QMutexLocker locker(&_mutex);
+    bool isAlreadyStarted = isStarted();
+    OVITO_ASSERT(!isFinished() || isRunning());
+    if(isAlreadyStarted)
+        return false;
+    _state = State(Started | Running);
+    sendCallOut(FutureWatcher::CallOutEvent::Started);
+	//qDebug() << "END FutureInterfaceBase::reportStarted() this=" << this << "thread=" << QThread::currentThread() << "text=" << progressText();
+	return true;
+}
+
+void FutureInterfaceBase::reportFinished()
+{
+	//qDebug() << "BEG FutureInterfaceBase::reportFinished() this=" << this << "thread=" << QThread::currentThread() << "text=" << progressText();
+    QMutexLocker locker(&_mutex);
+    OVITO_ASSERT(isStarted());
+    if(!isFinished()) {
+        _state = State((_state & ~Running) | Finished);
+        _waitCondition.wakeAll();
+        sendCallOut(FutureWatcher::CallOutEvent::Finished);
+    }
+	//qDebug() << "END FutureInterfaceBase::reportFinished() this=" << this << "thread=" << QThread::currentThread() << "text=" << progressText();
+}
+
+void FutureInterfaceBase::reportException()
+{
+	//qDebug() << "EXCEPTION FutureInterfaceBase::reportException() this=" << this << "thread=" << QThread::currentThread() << "text=" << progressText();
+	QMutexLocker locker(&_mutex);
+	if(isCanceled() || isFinished())
+		return;
+
+	_exceptionStore = std::current_exception();
+	_state = State(_state | ResultSet);
+	_waitCondition.wakeAll();
+	sendCallOut(FutureWatcher::CallOutEvent::ResultReady);
+}
+
+void FutureInterfaceBase::reportResultReady()
+{
+	if(isCanceled() || isFinished())
+		return;
+
+	_state = State(_state | ResultSet);
+    _waitCondition.wakeAll();
+    sendCallOut(FutureWatcher::CallOutEvent::ResultReady);
+}
+
+void FutureInterfaceBase::tryToRunImmediately()
+{
+	if(_runnable)
+		_runnable->run();
+}
+
+void FutureInterfaceBase::waitForResult()
+{
+	//qDebug() << "WAIT FOR RESULT FutureInterfaceBase::waitForResult() this=" << this << "thread=" << QThread::currentThread() << "text=" << progressText();
+	throwPossibleException();
+
+	QMutexLocker lock(&_mutex);
+	if(!isRunning())
+		return;
+
+	lock.unlock();
+
+	// To avoid deadlocks and reduce the number of threads used, try to
+	// run the runnable in the current thread.
+	tryToRunImmediately();
+
+	lock.relock();
+	if(!isRunning())
+		return;
+
+	while(isRunning() && isResultSet() == false)
+		_waitCondition.wait(&_mutex);
+
+	throwPossibleException();
+}
+
+void FutureInterfaceBase::waitForFinished()
+{
+	//qDebug() << "BEG FutureInterfaceBase::waitForFinished() this=" << this << "thread=" << QThread::currentThread() << "text=" << progressText();
+
+	QMutexLocker lock(&_mutex);
+    const bool alreadyFinished = !isRunning();
+    lock.unlock();
+
+    if(!alreadyFinished) {
+    	tryToRunImmediately();
+        lock.relock();
+        while(isRunning())
+            _waitCondition.wait(&_mutex);
+    }
+
+    throwPossibleException();
+
+	//qDebug() << "END FutureInterfaceBase::waitForFinished() this=" << this << "thread=" << QThread::currentThread() << "text=" << progressText();
+}
+
+void FutureInterfaceBase::registerWatcher(FutureWatcher* watcher)
+{
+	QMutexLocker locker(&_mutex);
+
+	if(isStarted())
+		watcher->postCallOutEvent(FutureWatcher::CallOutEvent::Started, this);
+
+	if(isResultSet())
+		watcher->postCallOutEvent(FutureWatcher::CallOutEvent::ResultReady, this);
+
+	if(isCanceled())
+		watcher->postCallOutEvent(FutureWatcher::CallOutEvent::Canceled, this);
+
+	if(isFinished())
+		watcher->postCallOutEvent(FutureWatcher::CallOutEvent::Finished, this);
+
+	_watchers.push_back(watcher);
+}
+
+void FutureInterfaceBase::unregisterWatcher(FutureWatcher* watcher)
+{
+	QMutexLocker locker(&_mutex);
+	_watchers.removeOne(watcher);
+}
+
+bool FutureInterfaceBase::waitForSubTask(FutureInterfaceBase* subTask)
+{
+	//qDebug() << "BEG FutureInterfaceBase::waitForSubTask() this=" << this << "thread=" << QThread::currentThread() << "text=" << progressText() << "subtask=" << subTask;
+	QMutexLocker locker(&_mutex);
+	this->_subTask = subTask;
+	if(this->isCanceled()) subTask->cancel();
+	locker.unlock();
+	try {
+		subTask->waitForFinished();
+	}
+	catch(...) {
+		locker.relock();
+		this->_subTask = nullptr;
+		throw;
+	}
+	locker.relock();
+	this->_subTask = nullptr;
+	if(subTask->isCanceled()) {
+		this->cancel();
+		//qDebug() << "END FutureInterfaceBase::waitForSubTask() this=" << this << "thread=" << QThread::currentThread() << "text=" << progressText() << "subtask=" << subTask;
+		return false;
+	}
+	//qDebug() << "END FutureInterfaceBase::waitForSubTask() this=" << this << "thread=" << QThread::currentThread() << "text=" << progressText() << "subtask=" << subTask;
+	return true;
+}
+
 void FutureInterfaceBase::setProgressRange(int maximum)
 {
     QMutexLocker locker(&_mutex);
@@ -94,6 +267,7 @@ void FutureWatcher::setFutureInterface(const std::shared_ptr<FutureInterfaceBase
 void FutureWatcher::customEvent(QEvent* event)
 {
 	if(_futureInterface) {
+    	OVITO_ASSERT(static_cast<CallOutEvent*>(event)->_source == _futureInterface.get());
 		if(event->type() == (QEvent::Type)CallOutEvent::Started)
 			Q_EMIT started();
 		else if(event->type() == (QEvent::Type)CallOutEvent::Finished) {
@@ -151,6 +325,12 @@ int FutureWatcher::progressValue() const
 QString FutureWatcher::progressText() const
 {
 	return _futureInterface->progressText();
+}
+
+void FutureWatcher::waitForFinished() const
+{
+	if(_futureInterface)
+		_futureInterface->waitForFinished();
 }
 
 

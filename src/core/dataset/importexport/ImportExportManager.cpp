@@ -26,7 +26,7 @@
 
 namespace Ovito {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(FileImporter, RefTarget)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, FileImporter, RefTarget)
 
 /// The singleton instance of the class.
 ImportExportManager* ImportExportManager::_instance = nullptr;

@@ -39,6 +39,16 @@ class NativePlugin : public Plugin
 {
 	Q_OBJECT
 
+public:
+
+	/// \brief Returns the file path of the plugin's dynamic library.
+	/// \return The full path to the link library that contains the plugin's code.
+	const QString& libraryFilename() const { return _libraryFilename; }
+
+	/// \brief Returns the plugin library after it has been loaded.
+	/// \return The runtime library or \c NULL if the plugin has not been loaded.
+	QLibrary* library() const { return _library; }
+
 protected:
 
 	/// \brief Constructor that loads the given manifest file.
@@ -50,11 +60,19 @@ protected:
 	/// \return \c true if the element was processed by the method; \c false if the element was not known
 	///         to the implementation of the method.
 	/// \throw Exception on error.
-	virtual bool parseToplevelManifestElement(const QDomElement& element);
+	virtual bool parseToplevelManifestElement(const QDomElement& element) override;
 
 	/// \brief Loads the plugin's dynamic link library.
 	/// \throw Exception on error.
-	virtual void loadPluginImpl();
+	virtual void loadPluginImpl() override;
+
+private:
+
+	/// The file path of the dynamic library.
+	QString _libraryFilename;
+
+	/// The plugin library after it has been loaded.
+	QLibrary* _library;
 
 	friend class PluginManager;
 };

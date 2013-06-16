@@ -30,7 +30,7 @@ namespace Ovito {
 /// The singleton instance of the class.
 ViewportManager* ViewportManager::_instance = nullptr;
 
-IMPLEMENT_OVITO_OBJECT(ViewportManager, RefMaker)
+IMPLEMENT_OVITO_OBJECT(Core, ViewportManager, RefMaker)
 DEFINE_FLAGS_REFERENCE_FIELD(ViewportManager, _viewportConfig, "ViewportConfiguration", ViewportConfiguration, PROPERTY_FIELD_NO_CHANGE_MESSAGE|PROPERTY_FIELD_NO_UNDO|PROPERTY_FIELD_NEVER_CLONE_TARGET)
 
 /******************************************************************************

@@ -44,7 +44,9 @@ class ProgressManager : public QObject
 public:
 
 	/// Destructor.
-	~ProgressManager() { OVITO_ASSERT(_taskStack.isEmpty()); }
+	~ProgressManager() {
+		cancelAllAndWait();
+	}
 
 	/// \brief Returns the one and only instance of this class.
 	/// \return The predefined instance of the ProgressManager singleton class.
@@ -63,15 +65,32 @@ public:
 		QMetaObject::invokeMethod(this, "addTaskInternal", Q_ARG(FutureInterfacePointer, future.interface()));
 	}
 
+	/// \brief Waits for the given task to finish and displays a modal progress dialog
+	///        to show the task's progress.
+	/// \return False if the task has been canceled by the user.
+	///
+	/// This function must be called from the GUI thread.
+	template<typename R>
+	bool waitForTask(const Future<R>& future) {
+		return waitForTask(future.interface());
+	}
+
 private:
 
 	/// \brief Registers a future with the progress manager.
 	Q_INVOKABLE void addTaskInternal(FutureInterfacePointer futureInterface);
 
+	/// \brief Waits for the given task to finish and displays a modal progress dialog
+	///        to show the task's progress.
+	bool waitForTask(const FutureInterfacePointer& futureInterface);
+
 public Q_SLOTS:
 
-	/// \brief Cancels all running background tasks and waits for them to finish.
+	/// \brief Cancels all running background tasks.
 	void cancelAll();
+
+	/// \brief Cancels all running background tasks and waits for them to finish.
+	void cancelAllAndWait();
 
 private Q_SLOTS:
 

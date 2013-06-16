@@ -66,55 +66,15 @@ protected:
 	bool isFinished() const { return (_state & Finished); }
 	bool isResultSet() const { return (_state & ResultSet); }
 
-	void cancel() {
-		QMutexLocker locker(&_mutex);
-		if(isCanceled())
-			return;
+	void cancel();
 
-		if(_subTask)
-			_subTask->cancel();
+    bool reportStarted();
 
-		_state = State(_state | Canceled);
-		_waitCondition.wakeAll();
-		sendCallOut(FutureWatcher::CallOutEvent::Canceled);
-	}
+    void reportFinished();
 
-    void reportStarted() {
-        QMutexLocker locker(&_mutex);
-        if(isStarted() || isCanceled() || isFinished())
-            return;
-        _state = State(Started | Running);
-        sendCallOut(FutureWatcher::CallOutEvent::Started);
-    }
+    void reportException();
 
-    void reportFinished() {
-        QMutexLocker locker(&_mutex);
-        if(!isFinished()) {
-            _state = State((_state & ~Running) | Finished);
-            _waitCondition.wakeAll();
-            sendCallOut(FutureWatcher::CallOutEvent::Finished);
-        }
-    }
-
-    void reportException() {
-    	QMutexLocker locker(&_mutex);
-    	if(isCanceled() || isFinished())
-    		return;
-
-    	_exceptionStore = std::current_exception();
-    	_state = State(_state | ResultSet);
-    	_waitCondition.wakeAll();
-    	sendCallOut(FutureWatcher::CallOutEvent::ResultReady);
-    }
-
-    void reportResultReady() {
-    	if(isCanceled() || isFinished())
-    		return;
-
-    	_state = State(_state | ResultSet);
-        _waitCondition.wakeAll();
-        sendCallOut(FutureWatcher::CallOutEvent::ResultReady);
-    }
+    void reportResultReady();
 
     void reportCanceled() {
     	cancel();
@@ -125,83 +85,31 @@ protected:
     		std::rethrow_exception(_exceptionStore);
     }
 
-    void waitForResult() {
-    	throwPossibleException();
+    void waitForResult();
 
-    	QMutexLocker lock(&_mutex);
-		if(!isRunning())
-			return;
-#if 0
-		lock.unlock();
-
-		// To avoid deadlocks and reduce the number of threads used, try to
-		// run the runnable in the current thread.
-		QThreadPool::globalInstance()->d_func()->stealRunnable(_runnable);
-
-		lock.relock();
-		if(!isRunning())
-			return;
-#endif
-		while(isRunning() && isResultSet() == false)
-			_waitCondition.wait(&_mutex);
-
-		throwPossibleException();
-    }
-
-    void waitForFinished() {
-        QMutexLocker lock(&_mutex);
-        const bool alreadyFinished = !isRunning();
-        lock.unlock();
-
-        if(!alreadyFinished) {
-#if 0
-            QThreadPool::globalInstance()->d_func()->stealRunnable(d->runnable);
-#endif
-            lock.relock();
-            while(isRunning())
-                _waitCondition.wait(&_mutex);
-        }
-
-        throwPossibleException();
-    }
+    void waitForFinished();
 
     void sendCallOut(FutureWatcher::CallOutEvent::CallOutType type) {
     	Q_FOREACH(FutureWatcher* watcher, _watchers)
-    		watcher->postCallOutEvent(type);
+    		watcher->postCallOutEvent(type, this);
     }
 
     void sendCallOut(FutureWatcher::CallOutEvent::CallOutType type, int value) {
     	Q_FOREACH(FutureWatcher* watcher, _watchers)
-    		watcher->postCallOutEvent(type, value);
+    		watcher->postCallOutEvent(type, value, this);
     }
 
     void sendCallOut(FutureWatcher::CallOutEvent::CallOutType type, const QString& text) {
     	Q_FOREACH(FutureWatcher* watcher, _watchers)
-    		watcher->postCallOutEvent(type, text);
+    		watcher->postCallOutEvent(type, text, this);
     }
 
-    void registerWatcher(FutureWatcher* watcher) {
-    	 QMutexLocker locker(&_mutex);
+    void registerWatcher(FutureWatcher* watcher);
+    void unregisterWatcher(FutureWatcher* watcher);
 
-		if(isStarted())
-			watcher->postCallOutEvent(FutureWatcher::CallOutEvent::Started);
+	bool waitForSubTask(FutureInterfaceBase* subTask);
 
-		if(isResultSet())
-			watcher->postCallOutEvent(FutureWatcher::CallOutEvent::ResultReady);
-
-		if(isCanceled())
-			watcher->postCallOutEvent(FutureWatcher::CallOutEvent::Canceled);
-
-		if(isFinished())
-			watcher->postCallOutEvent(FutureWatcher::CallOutEvent::Finished);
-
-		_watchers.push_back(watcher);
-    }
-
-    void unregisterWatcher(FutureWatcher* watcher) {
-    	QMutexLocker locker(&_mutex);
-    	_watchers.removeOne(watcher);
-    }
+	void tryToRunImmediately();
 
 	FutureInterfaceBase* _subTask;
 	QList<FutureWatcher*> _watchers;
@@ -216,6 +124,7 @@ protected:
     QElapsedTimer _progressTime;
 
 	friend class FutureWatcher;
+	friend class ProgressManager;
 };
 
 template<typename R>
@@ -227,25 +136,7 @@ public:
 
 	template<typename RS>
 	bool waitForSubTask(Future<RS>& subFuture) {
-		QMutexLocker locker(&_mutex);
-		this->_subTask = subFuture.interface().get();
-		if(this->isCanceled()) subFuture.cancel();
-		locker.unlock();
-		try {
-			subFuture.waitForFinished();
-		}
-		catch(...) {
-			locker.relock();
-			this->_subTask = nullptr;
-			throw;
-		}
-		locker.relock();
-		this->_subTask = nullptr;
-		if(subFuture.isCanceled()) {
-			this->cancel();
-			return false;
-		}
-		return true;
+		return FutureInterfaceBase::waitForSubTask(subFuture.interface().get());
 	}
 
 	void setResult(const R& value) {

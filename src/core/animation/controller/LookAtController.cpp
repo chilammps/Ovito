@@ -26,7 +26,7 @@
 
 namespace Ovito {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(LookAtController, RotationController)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LookAtController, RotationController)
 DEFINE_REFERENCE_FIELD(LookAtController, _rollCtrl, "Roll", FloatController)
 DEFINE_FLAGS_REFERENCE_FIELD(LookAtController, _targetNode, "Target", SceneNode, PROPERTY_FIELD_NEVER_CLONE_TARGET)
 SET_PROPERTY_FIELD_LABEL(LookAtController, _rollCtrl, "Roll")

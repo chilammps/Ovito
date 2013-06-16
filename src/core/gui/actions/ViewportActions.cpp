@@ -31,9 +31,45 @@ namespace Ovito {
 void ActionManager::on_ViewportMaximize_triggered()
 {
 	if(ViewportManager::instance().maximizedViewport())
-		ViewportManager::instance().setMaximizedViewport(NULL);
+		ViewportManager::instance().setMaximizedViewport(nullptr);
 	else if(ViewportManager::instance().activeViewport())
 		ViewportManager::instance().setMaximizedViewport(ViewportManager::instance().activeViewport());
+}
+
+/******************************************************************************
+* Handles the ACTION_VIEWPORT_ZOOM_SCENE_EXTENTS command.
+******************************************************************************/
+void ActionManager::on_ViewportZoomSceneExtents_triggered()
+{
+	if(ViewportManager::instance().activeViewport())
+		ViewportManager::instance().activeViewport()->zoomToSceneExtents();
+}
+
+/******************************************************************************
+* Handles the ACTION_VIEWPORT_ZOOM_SCENE_EXTENTS_ALL command.
+******************************************************************************/
+void ActionManager::on_ViewportZoomSceneExtentsAll_triggered()
+{
+	for(Viewport* viewport : ViewportManager::instance().viewports())
+		viewport->zoomToSceneExtents();
+}
+
+/******************************************************************************
+* Handles the ACTION_VIEWPORT_ZOOM_SELECTION_EXTENTS command.
+******************************************************************************/
+void ActionManager::on_ViewportZoomSelectionExtents_triggered()
+{
+	if(ViewportManager::instance().activeViewport())
+		ViewportManager::instance().activeViewport()->zoomToSelectionExtents();
+}
+
+/******************************************************************************
+* Handles the ACTION_VIEWPORT_ZOOM_SELECTION_EXTENTS_ALL command.
+******************************************************************************/
+void ActionManager::on_ViewportZoomSelectionExtentsAll_triggered()
+{
+	for(Viewport* viewport : ViewportManager::instance().viewports())
+		viewport->zoomToSelectionExtents();
 }
 
 };

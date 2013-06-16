@@ -29,7 +29,7 @@
 
 namespace Ovito {
 
-IMPLEMENT_OVITO_OBJECT(ViewportInputHandler, OvitoObject)
+IMPLEMENT_OVITO_OBJECT(Core, ViewportInputHandler, OvitoObject)
 
 /******************************************************************************
 * Updates the cursor in the viewport.

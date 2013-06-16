@@ -30,7 +30,7 @@
 
 namespace Viz {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(SimulationCell, SceneObject)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Viz, SimulationCell, SceneObject)
 SET_OVITO_OBJECT_EDITOR(SimulationCell, SimulationCellEditor)
 DEFINE_PROPERTY_FIELD(SimulationCell, _cellVector1, "CellVector1")
 DEFINE_PROPERTY_FIELD(SimulationCell, _cellVector2, "CellVector2")
@@ -67,7 +67,7 @@ void SimulationCell::init()
 	setDisplayObject(new SimulationCellDisplay());
 }
 
-IMPLEMENT_OVITO_OBJECT(SimulationCellEditor, PropertiesEditor)
+IMPLEMENT_OVITO_OBJECT(Viz, SimulationCellEditor, PropertiesEditor)
 
 /******************************************************************************
 * Sets up the UI widgets of the editor.

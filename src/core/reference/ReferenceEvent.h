@@ -106,7 +106,9 @@ public:
 	/// \brief Returns a flag that indicates whether this type of event should be propagated
 	///        by a receiver to its respective dependents.
 	bool shouldPropagate() const {
-		return type() == ReferenceEvent::TargetChanged;
+		return type() == ReferenceEvent::TargetChanged ||
+			   type() == ReferenceEvent::PendingOperationSucceeded ||
+			   type() == ReferenceEvent::PendingOperationFailed;
 	}
 
 private:

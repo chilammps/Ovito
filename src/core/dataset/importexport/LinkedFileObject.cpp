@@ -25,6 +25,7 @@
 #include <core/utilities/io/ObjectLoadStream.h>
 #include <core/utilities/io/ObjectSaveStream.h>
 #include <core/utilities/concurrent/Task.h>
+#include <core/utilities/concurrent/ProgressManager.h>
 #include <core/viewport/Viewport.h>
 #include <core/viewport/ViewportManager.h>
 #include <core/scene/ObjectNode.h>
@@ -35,25 +36,42 @@
 
 namespace Ovito {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(LinkedFileObject, SceneObject)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LinkedFileObject, SceneObject)
 SET_OVITO_OBJECT_EDITOR(LinkedFileObject, LinkedFileObjectEditor)
 DEFINE_FLAGS_REFERENCE_FIELD(LinkedFileObject, _importer, "Importer", LinkedFileImporter, PROPERTY_FIELD_ALWAYS_DEEP_COPY)
 DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(LinkedFileObject, _sceneObjects, "SceneObjects", SceneObject, PROPERTY_FIELD_ALWAYS_DEEP_COPY)
-DEFINE_PROPERTY_FIELD(LinkedFileObject, _adjustAnimationInterval, "AdjustAnimationInterval")
+DEFINE_PROPERTY_FIELD(LinkedFileObject, _adjustAnimationIntervalEnabled, "AdjustAnimationIntervalEnabled")
 SET_PROPERTY_FIELD_LABEL(LinkedFileObject, _importer, "File Importer")
 SET_PROPERTY_FIELD_LABEL(LinkedFileObject, _sceneObjects, "Objects")
-SET_PROPERTY_FIELD_LABEL(LinkedFileObject, _adjustAnimationInterval, "Adjust animation interval")
+SET_PROPERTY_FIELD_LABEL(LinkedFileObject, _adjustAnimationIntervalEnabled, "Adjust animation interval")
 
 /******************************************************************************
 * Constructs the object.
 ******************************************************************************/
-LinkedFileObject::LinkedFileObject() : _adjustAnimationInterval(true), _loadedFrame(-1), _frameBeingLoaded(-1)
+LinkedFileObject::LinkedFileObject() : _adjustAnimationIntervalEnabled(true), _loadedFrame(-1), _frameBeingLoaded(-1)
 {
 	INIT_PROPERTY_FIELD(LinkedFileObject::_importer);
 	INIT_PROPERTY_FIELD(LinkedFileObject::_sceneObjects);
-	INIT_PROPERTY_FIELD(LinkedFileObject::_adjustAnimationInterval);
+	INIT_PROPERTY_FIELD(LinkedFileObject::_adjustAnimationIntervalEnabled);
 
 	connect(&_loadFrameOperationWatcher, &FutureWatcher::finished, this, &LinkedFileObject::loadOperationFinished);
+}
+
+/******************************************************************************
+* Scans the input source for animation frames and updates the internal list of frames.
+******************************************************************************/
+bool LinkedFileObject::updateFrames()
+{
+	if(!importer())
+		return false;
+
+	Future<QVector<LinkedFileImporter::FrameSourceInformation>> framesFuture = importer()->findFrames();
+	if(!ProgressManager::instance().waitForTask(framesFuture))
+		return false;
+
+	_frames = framesFuture.result();
+
+	return true;
 }
 
 /******************************************************************************
@@ -62,40 +80,49 @@ LinkedFileObject::LinkedFileObject() : _adjustAnimationInterval(true), _loadedFr
 PipelineFlowState LinkedFileObject::evaluate(TimePoint time)
 {
 	int frame = AnimManager::instance().timeToFrame(time);
+	bool oldTaskCanceled = false;
 	if(_frameBeingLoaded != -1) {
 		if(_frameBeingLoaded == frame) {
-			qDebug() << "Evaluate at frame" << frame << "already being loaded (content=" << _sceneObjects.targets().size() << ")";
 			// The requested frame is already being loaded at the moment. Indicate to the caller that the result is pending.
 			return PipelineFlowState(ObjectStatus::Pending, _sceneObjects.targets(), TimeInterval(time));
 		}
 		else {
-			qDebug() << "Evaluate at frame" << frame << "already loading other frame (content=" << _sceneObjects.targets().size() << ")";
 			// Another frame than the requested one is already being loaded. Cancel loading operation now.
-			_loadFrameOperation.cancel();
+			try {
+				_loadFrameOperation.cancel();
+				_loadFrameOperation.waitForFinished();
+			} catch(...) {}
 			// This will suppress any pending notification events.
 			_loadFrameOperationWatcher.unsetFuture();
 			_frameBeingLoaded = -1;
 			// Inform previous caller that the existing loading operation has been canceled.
-			notifyDependents(ReferenceEvent::PendingOperationFailed);
+			oldTaskCanceled = true;
 		}
 	}
 	if(_loadedFrame == frame) {
-		qDebug() << "Evaluate at frame" << frame << "data available (content=" << _sceneObjects.targets().size() << ")";
+		if(oldTaskCanceled)
+			notifyDependents(ReferenceEvent::PendingOperationFailed);
+
 		// The requested frame has already been loaded and is available immediately.
 		return PipelineFlowState(status(), _sceneObjects.targets(), TimeInterval(time));
 	}
 	else {
-		qDebug() << "Evaluate at frame" << frame << "have to load now (content=" << _sceneObjects.targets().size() << ") numframes=" << importer()->numberOfFrames();
 		// The requested frame needs to be loaded first. Start background loading task.
 		OVITO_CHECK_OBJECT_POINTER(importer());
-		if(frame < 0 || frame >= importer()->numberOfFrames()) {
+		if(frame < 0 || frame >= numberOfFrames()) {
+			if(oldTaskCanceled) {
+				notifyDependents(ReferenceEvent::PendingOperationFailed);
+			}
 			return PipelineFlowState(ObjectStatus(ObjectStatus::Error,
 					tr("The requested animation frame %1 is out of range for source location %2").arg(frame).arg(importer()->sourceUrl().toString())),
 					_sceneObjects.targets(), TimeInterval(time));
 		}
 		_frameBeingLoaded = frame;
-		_loadFrameOperation = importer()->load(frame);
+		_loadFrameOperation = importer()->load(_frames[frame]);
 		_loadFrameOperationWatcher.setFuture(_loadFrameOperation);
+		if(oldTaskCanceled) {
+			notifyDependents(ReferenceEvent::PendingOperationFailed);
+		}
 		// Indicate to the caller that the result is pending.
 		return PipelineFlowState(ObjectStatus::Pending, _sceneObjects.targets(), TimeInterval(time));
 	}
@@ -111,24 +138,35 @@ void LinkedFileObject::loadOperationFinished()
 	bool wasCanceled = _loadFrameOperation.isCanceled();
 	_loadedFrame = _frameBeingLoaded;
 	_frameBeingLoaded = -1;
+	ObjectStatus newStatus = status();
 
 	if(!wasCanceled) {
 		try {
+			// Adopt the data loaded by the importer.
 			LinkedFileImporter::ImportedDataPtr importedData = _loadFrameOperation.result();
 			if(importedData)
 				importedData->insertIntoScene(this);
+
+			newStatus = ObjectStatus(ObjectStatus::Success);
 
 			// Notify dependents that the loading operation has succeeded and the new data is available.
 			notificationType = ReferenceEvent::PendingOperationSucceeded;
 		}
 		catch(const Exception& ex) {
+			newStatus = ObjectStatus(ObjectStatus::Error, ex.message());
 			ex.showError();
 		}
+	}
+	else {
+		newStatus = ObjectStatus(ObjectStatus::Error, tr("Load operation has been canceled by the user."));
 	}
 
 	// Reset everything.
 	_loadFrameOperation = Future<LinkedFileImporter::ImportedDataPtr>();
 	_loadFrameOperationWatcher.unsetFuture();
+
+	// Set the new object status.
+	setStatus(newStatus);
 
 	// Notify dependents that the evaluation request was satisfied or not satisfied.
 	notifyDependents(notificationType);
@@ -257,7 +295,7 @@ void LinkedFileObject::setStatus(const ObjectStatus& status)
 ******************************************************************************/
 void LinkedFileObject::adjustAnimationInterval()
 {
-	if(!_adjustAnimationInterval || !importer())
+	if(!_adjustAnimationIntervalEnabled)
 		return;
 
 	QSet<RefMaker*> datasets = findDependents(DataSet::OOType);
@@ -267,8 +305,8 @@ void LinkedFileObject::adjustAnimationInterval()
 	DataSet* dataset = static_object_cast<DataSet>(*datasets.cbegin());
 	AnimationSettings* animSettings = dataset->animationSettings();
 
-	if(importer()->numberOfFrames() > 1) {
-		TimeInterval interval(0, (importer()->numberOfFrames()-1) * animSettings->ticksPerFrame());
+	if(numberOfFrames() > 1) {
+		TimeInterval interval(0, (numberOfFrames()-1) * animSettings->ticksPerFrame());
 		animSettings->setAnimationInterval(interval);
 	}
 	else {

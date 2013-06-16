@@ -22,6 +22,7 @@
 #include <core/Core.h>
 #include <core/animation/AnimManager.h>
 #include <core/dataset/DataSetManager.h>
+#include <core/viewport/ViewportManager.h>
 
 namespace Ovito {
 
@@ -37,6 +38,9 @@ AnimManager::AnimManager() : _animSuspendCount(0),  _animationMode(false)
 
 	// Reset the animation manager when a new scene has been loaded.
 	connect(&DataSetManager::instance(), SIGNAL(dataSetReset(DataSet*)), this, SLOT(reset()));
+
+	// Call our own listener when the current animation time changes.
+	connect(this, SIGNAL(timeChanged(TimePoint)), this, SLOT(onTimeChanged(TimePoint)));
 }
 
 /******************************************************************************
@@ -59,10 +63,20 @@ void AnimManager::reset()
 		connect(_settings.get(), SIGNAL(intervalChanged(TimeInterval)), SIGNAL(intervalChanged(TimeInterval)));
 		connect(_settings.get(), SIGNAL(speedChanged(int)), SIGNAL(speedChanged(int)));
 
-		speedChanged(_settings->ticksPerFrame());
-		intervalChanged(_settings->animationInterval());
-		timeChanged(_settings->time());
+		Q_EMIT speedChanged(_settings->ticksPerFrame());
+		Q_EMIT intervalChanged(_settings->animationInterval());
+		Q_EMIT timeChanged(_settings->time());
 	}
+}
+
+/******************************************************************************
+* Is called when the current animation time has changed.
+******************************************************************************/
+void AnimManager::onTimeChanged(TimePoint newTime)
+{
+	// Wait until scene is ready, then repaint viewports.
+	DataSetManager::instance().runWhenSceneIsReady(
+			std::bind(&ViewportManager::updateViewports, &ViewportManager::instance()));
 }
 
 /******************************************************************************

@@ -148,3 +148,15 @@ TARGET_LINK_LIBRARIES(Core ${ZLIB_LIBRARIES})
 
 # Link Qt5.
 QT5_USE_MODULES(Core Widgets Xml Network)
+
+# This is required to avoid error by install_name_tool on MacOS.
+IF(APPLE)
+	SET_TARGET_PROPERTIES(Core PROPERTIES LINK_FLAGS "-headerpad_max_install_names")
+ENDIF(APPLE)
+
+# This library is part of the installation package.
+IF(APPLE OR WIN32)
+	INSTALL(TARGETS Core 
+		RUNTIME DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}"
+		LIBRARY DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}")
+ENDIF()

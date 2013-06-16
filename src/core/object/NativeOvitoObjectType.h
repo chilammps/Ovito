@@ -47,8 +47,8 @@ public:
 
 	/// \brief Constructs the plugin class descriptor object.
 	/// \note This is an internal constructor that is not for public use.
-	NativeOvitoObjectType(const char* name, const NativeOvitoObjectType* superClass, const QMetaObject* qtClassInfo, bool isSerializable)
-		: OvitoObjectType(name, superClass, (qtClassInfo->constructorCount() == 0), isSerializable), _qtClassInfo(qtClassInfo), _pureClassName(nullptr)
+	NativeOvitoObjectType(const char* name, const char* pluginId, const NativeOvitoObjectType* superClass, const QMetaObject* qtClassInfo, bool isSerializable)
+		: OvitoObjectType(name, superClass, (qtClassInfo->constructorCount() == 0), isSerializable), _pluginId(pluginId), _qtClassInfo(qtClassInfo), _pureClassName(nullptr)
 	{
 		// Insert into linked list of all object types.
 		_next = _firstInfo;
@@ -72,6 +72,9 @@ public:
 		return _pureClassName;
 	}
 
+	/// \brief Returns the identifier of the plugin this class belongs to.
+	const char* pluginId() const { return _pluginId; }
+
 protected:
 
 	/// \brief Creates an instance of the class described by this descriptor.
@@ -86,6 +89,9 @@ private:
 
 	/// The name of the class.
 	const char* _pureClassName;
+
+	/// The identifier of the plugin this class belongs to.
+	const char* _pluginId;
 
 	/// All native object types are stored in a linked list.
 	NativeOvitoObjectType* _next;
@@ -106,12 +112,12 @@ private:
 		virtual const Ovito::OvitoObjectType& getOOType() const { return OOType; }
 
 /// This macro must be included in the .cpp file for a OvitoObject-derived class.
-#define IMPLEMENT_OVITO_OBJECT(name, basename)							\
-	const Ovito::NativeOvitoObjectType name::OOType(#name, &basename::OOType, &name::staticMetaObject, false);
+#define IMPLEMENT_OVITO_OBJECT(plugin, name, basename)							\
+	const Ovito::NativeOvitoObjectType name::OOType(#name, #plugin, &basename::OOType, &name::staticMetaObject, false);
 
 /// This macro must be included in the .cpp file for a OvitoObject-derived class.
-#define IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(name, basename)				\
-	const Ovito::NativeOvitoObjectType name::OOType(#name, &basename::OOType, &name::staticMetaObject, true);
+#define IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(plugin, name, basename)				\
+	const Ovito::NativeOvitoObjectType name::OOType(#name, #plugin, &basename::OOType, &name::staticMetaObject, true);
 
 };
 

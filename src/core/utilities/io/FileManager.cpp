@@ -41,7 +41,7 @@ FileManager::FileManager()
 Future<QString> FileManager::fetchUrl(const QUrl& url)
 {
 	OVITO_ASSERT(url.isLocalFile());
-	return Future<QString>(url.toLocalFile());
+	return Future<QString>(url.toLocalFile(), tr("Loading URL %1").arg(url.toString()));
 }
 
 

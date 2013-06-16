@@ -26,7 +26,7 @@
 
 namespace Ovito {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(SceneRoot, SceneNode)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, SceneRoot, SceneNode)
 
 /******************************************************************************
 * Default constructor.

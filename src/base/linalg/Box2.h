@@ -96,7 +96,7 @@ public:
 			default:
 				OVITO_ASSERT_MSG(false, "Box2::operator[]", "Corner index out of range.");
 				throw std::invalid_argument("Corner index out of range.");
-				return Point_2<T>::Origin();
+				return typename Point_2<T>::Origin();
 		}
 	}
 
@@ -228,6 +228,19 @@ template<typename T>
 inline LoadStream& operator>>(LoadStream& stream, Box_2<T>& b)
 {
 	return stream >> b.minc >> b.maxc;
+}
+
+/// \brief Writes the box to the Qt debug stream.
+template<typename T>
+inline QDebug operator<<(QDebug dbg, const Box_2<T>& b) {
+    dbg.nospace() << "[" << b.minc << "] - [" << b.maxc << "]";
+    return dbg.space();
+}
+
+/// \brief Prints the box to a text output stream.
+template<typename T>
+inline std::ostream& operator<<(std::ostream &os, const Box_2<T> &b) {
+	return os << '[' << b.minc << "] - [" << b.maxc << ']';
 }
 
 /**

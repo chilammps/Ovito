@@ -26,7 +26,7 @@
 
 namespace Ovito {
 
-IMPLEMENT_OVITO_OBJECT(LinkedFileObjectEditor, PropertiesEditor)
+IMPLEMENT_OVITO_OBJECT(Core, LinkedFileObjectEditor, PropertiesEditor)
 
 /******************************************************************************
 * Sets up the UI of the editor.
@@ -149,6 +149,13 @@ void LinkedFileObjectEditor::onParserSettings()
 		if(!obj->importer()->showSettingsDialog(container()))
 			return;
 
+		// Scan the input source for animation frames.
+		if(!obj->updateFrames())
+			return;
+
+		// Adjust the animation length number to match the number of frames in the input data source.
+		obj->adjustAnimationInterval();
+
 #if 0
 		ViewportSuspender noVPUpdate;
 		obj->reloadInputFile();
@@ -167,20 +174,18 @@ void LinkedFileObjectEditor::updateInformationLabel()
 	LinkedFileObject* obj = static_object_cast<LinkedFileObject>(editObject());
 	if(!obj) return;
 
-#if 0
-	QFileInfo fileInfo(obj->sourceFile());
+	//QFileInfo fileInfo(obj->sourceFile());
 
-	filenameLabel->setText(fileInfo.fileName());
-	filepathLabel->setText(fileInfo.absolutePath());
+	//filenameLabel->setText(fileInfo.fileName());
+	//filepathLabel->setText(fileInfo.absolutePath());
 
-	_statusTextLabel->setText(obj->status().longMessage());
-	if(obj->status().type() == EvaluationStatus::EVALUATION_WARNING)
-		_statusIconLabel->setPixmap(statusWarningIcon);
-	else if(obj->status().type() == EvaluationStatus::EVALUATION_ERROR)
-		_statusIconLabel->setPixmap(statusErrorIcon);
+	_statusTextLabel->setText(obj->status().longText());
+	if(obj->status().type() == ObjectStatus::Warning)
+		_statusIconLabel->setPixmap(_statusWarningIcon);
+	else if(obj->status().type() == ObjectStatus::Error)
+		_statusIconLabel->setPixmap(_statusErrorIcon);
 	else
 		_statusIconLabel->clear();
-#endif
 }
 
 /******************************************************************************

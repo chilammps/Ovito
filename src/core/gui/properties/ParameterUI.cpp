@@ -26,8 +26,8 @@
 namespace Ovito {
 
 // Gives the class run-time type information.
-IMPLEMENT_OVITO_OBJECT(ParameterUI, RefMaker)
-IMPLEMENT_OVITO_OBJECT(PropertyParameterUI, ParameterUI)
+IMPLEMENT_OVITO_OBJECT(Core, ParameterUI, RefMaker)
+IMPLEMENT_OVITO_OBJECT(Core, PropertyParameterUI, ParameterUI)
 DEFINE_FLAGS_REFERENCE_FIELD(ParameterUI, _editObject, "EditObject", RefTarget, PROPERTY_FIELD_NO_UNDO | PROPERTY_FIELD_NO_CHANGE_MESSAGE)
 DEFINE_FLAGS_REFERENCE_FIELD(PropertyParameterUI, _parameterObject, "ParameterObject", RefTarget, PROPERTY_FIELD_NO_UNDO | PROPERTY_FIELD_NO_CHANGE_MESSAGE)
 

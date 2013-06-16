@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// 
+//
 //  Copyright (2013) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
@@ -20,39 +20,37 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include <core/plugins/PluginManager.h>
-#include "ApplicationSettingsDialog.h"
+#include "LAMMPSDumpImporterSettingsDialog.h"
 
-namespace Ovito {
-	
-IMPLEMENT_OVITO_OBJECT(Core, ApplicationSettingsPage, OvitoObject)
+namespace Viz {
 
 /******************************************************************************
-* The constructor of the settings dialog class.
+* Constructor.
 ******************************************************************************/
-ApplicationSettingsDialog::ApplicationSettingsDialog(QWidget* parent) : QDialog(parent)
+LAMMPSDumpImporterSettingsDialog::LAMMPSDumpImporterSettingsDialog(LAMMPSTextDumpImporter* importer, QWidget* parent)
+	: QDialog(parent)
 {
-	setWindowTitle(tr("Application Settings")); 
-	
+	setWindowTitle(tr("LAMMPS Dump File Import Settings"));
+	this->importer = importer;
+
 	QVBoxLayout* layout1 = new QVBoxLayout(this);
-	
-	// Create dialog contents.
-	_tabWidget = new QTabWidget(this);
-	layout1->addWidget(_tabWidget);
 
-	// Create an iterator that retrieves all ApplicationSettingsPage derived classes.
-	Q_FOREACH(OvitoObjectType* clazz, PluginManager::instance().listClasses(ApplicationSettingsPage::OOType)) {
-		try {
-			OORef<ApplicationSettingsPage> page = static_object_cast<ApplicationSettingsPage>(clazz->createInstance());
-			_pages.push_back(page);
-			page->insertSettingsDialogPage(this, _tabWidget);
-		}
-		catch(const Exception& ex) {
-			ex.showError();
-		}	
-	}
+	// Time steps group
+	QGroupBox* sourceGroupBox = new QGroupBox(tr("Data source location"), this);
+	layout1->addWidget(sourceGroupBox);
 
-	// Ok and Cancel buttons
+	QVBoxLayout* layout2 = new QVBoxLayout(sourceGroupBox);
+
+	sourceTextbox = new QLineEdit(importer->sourceUrl().toString(), sourceGroupBox);
+	layout2->addWidget(sourceTextbox);
+
+	multiTimestepCheckbox = new QCheckBox(tr("File contains multiple timesteps"), sourceGroupBox);
+	multiTimestepCheckbox->setChecked(importer->isMultiTimestepFile());
+	layout2->addWidget(multiTimestepCheckbox);
+
+	layout1->addStretch(1);
+
+	// Ok and cancel buttons
 	QDialogButtonBox* buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, this);
 	connect(buttonBox, SIGNAL(accepted()), this, SLOT(onOk()));
 	connect(buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
@@ -60,19 +58,19 @@ ApplicationSettingsDialog::ApplicationSettingsDialog(QWidget* parent) : QDialog(
 }
 
 /******************************************************************************
-* This is called when the user has pressed the OK button of the settings dialog.
-* Validates and saves all settings made by the user and closes the dialog box.
+* This is called when the user has pressed the OK button.
 ******************************************************************************/
-void ApplicationSettingsDialog::onOk()
+void LAMMPSDumpImporterSettingsDialog::onOk()
 {
 	try {
-		// Let all pages save their settings.
-		for(const OORef<ApplicationSettingsPage>& page : _pages) {
-			if(!page->saveValues(this, _tabWidget)) {
-				return;
-			}
-		}
-		
+		QUrl url = QUrl::fromUserInput(sourceTextbox->text());
+		if(!url.isValid())
+			throw Exception(tr("Source URL is not valid."));
+
+		// Write settings back to the parser.
+		importer->setMultiTimestepFile(multiTimestepCheckbox->isChecked());
+		importer->setSourceUrl(url);
+
 		// Close dialog box.
 		accept();
 	}
@@ -82,4 +80,4 @@ void ApplicationSettingsDialog::onOk()
 	}
 }
 
-};
+};	// End of namespace

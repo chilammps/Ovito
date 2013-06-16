@@ -24,7 +24,7 @@
 
 namespace Ovito {
 
-IMPLEMENT_OVITO_OBJECT(RefTargetListener, RefMaker)
+IMPLEMENT_OVITO_OBJECT(Core, RefTargetListener, RefMaker)
 DEFINE_FLAGS_REFERENCE_FIELD(RefTargetListener, _target, "Target", RefTarget, PROPERTY_FIELD_NEVER_CLONE_TARGET|PROPERTY_FIELD_NO_UNDO|PROPERTY_FIELD_NO_CHANGE_MESSAGE)
 
 /******************************************************************************

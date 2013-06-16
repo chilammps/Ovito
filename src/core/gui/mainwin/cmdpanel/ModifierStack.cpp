@@ -33,7 +33,7 @@
 
 namespace Ovito {
 
-IMPLEMENT_OVITO_OBJECT(ModifierStackEntry, RefTarget)
+IMPLEMENT_OVITO_OBJECT(Core, ModifierStackEntry, RefTarget)
 DEFINE_FLAGS_REFERENCE_FIELD(ModifierStackEntry, object, "Object", RefTarget, PROPERTY_FIELD_NO_UNDO)
 DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(ModifierStackEntry, modApps, "ModifierApplications", ModifierApplication, PROPERTY_FIELD_NO_UNDO)
 
@@ -51,7 +51,7 @@ ModifierStackEntry::ModifierStackEntry(ModifierStack* _stack, RefTarget* commonO
 }
 
 
-IMPLEMENT_OVITO_OBJECT(ModifierStack, RefMaker)
+IMPLEMENT_OVITO_OBJECT(Core, ModifierStack, RefMaker)
 DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(ModifierStack, stackEntries, "StackEntries", ModifierStackEntry, PROPERTY_FIELD_NO_UNDO)
 DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(ModifierStack, selectedNodes, "SelectedNodes", ObjectNode, PROPERTY_FIELD_NO_UNDO)
 

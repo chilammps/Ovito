@@ -20,7 +20,27 @@
 ###############################################################################
 
 #ADD_SUBDIRECTORY(ssh)
+
+################# Core libraries  ####################
+
+# Place all compiled libraries into OVITO's library directory.
+SET(LIBRARY_OUTPUT_PATH "${OVITO_LIBRARY_DIRECTORY}")
+
 ADD_SUBDIRECTORY(base)
 ADD_SUBDIRECTORY(core)
+
+################# Plugins ####################
+
+# Place all plugins libraries into the plugin directory.
+FILE(MAKE_DIRECTORY ${OVITO_PLUGINS_DIRECTORY})
+INSTALL(DIRECTORY DESTINATION ${OVITO_RELATIVE_PLUGINS_DIRECTORY})
+SET(LIBRARY_OUTPUT_PATH "${OVITO_PLUGINS_DIRECTORY}")
+
 ADD_SUBDIRECTORY(viz)
+
+################# Main executable ####################
+
+# Place the executable into the "bin" output directory.
+SET(EXECUTABLE_OUTPUT_PATH ${OVITO_BINARY_DIRECTORY})
+
 ADD_SUBDIRECTORY(main)

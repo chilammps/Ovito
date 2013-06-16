@@ -28,7 +28,7 @@
 namespace Ovito {
 
 // Gives the class run-time type information.
-IMPLEMENT_OVITO_OBJECT(IntegerRadioButtonParameterUI, PropertyParameterUI)
+IMPLEMENT_OVITO_OBJECT(Core, IntegerRadioButtonParameterUI, PropertyParameterUI)
 
 /******************************************************************************
 * The constructor.

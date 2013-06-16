@@ -22,6 +22,7 @@
 #include <core/Core.h>
 #include <core/utilities/concurrent/ProgressManager.h>
 #include <core/gui/mainwin/MainWindow.h>
+#include <core/gui/app/Application.h>
 
 namespace Ovito {
 
@@ -36,25 +37,28 @@ ProgressManager::ProgressManager()
 	OVITO_ASSERT_MSG(!_instance, "ProgressManager constructor", "Multiple instances of this singleton class have been created.");
 	qRegisterMetaType<FutureInterfacePointer>("FutureInterfacePointer");
 
-	// Create progress display widget.
-	_progressTextDisplay = new QLabel();
-	_progressWidget = new QWidget();
-	QHBoxLayout* progressWidgetLayout = new QHBoxLayout(_progressWidget);
-	progressWidgetLayout->setContentsMargins(QMargins());
-	progressWidgetLayout->setSpacing(0);
-	_progressBar = new QProgressBar(_progressWidget);
-	_cancelTaskButton = new QPushButton(tr("Cancel"), _progressWidget);
-	progressWidgetLayout->addWidget(_progressBar);
-	progressWidgetLayout->addWidget(_cancelTaskButton);
-	_progressWidget->setMaximumWidth(_progressWidget->minimumSizeHint().width());
-	_widgetCleanupHandler.add(_progressWidget);
-	_widgetCleanupHandler.add(_progressTextDisplay);
+	if(Application::instance().guiMode()) {
+		// Create progress display widget.
+		_progressTextDisplay = new QLabel();
+		_progressWidget = new QWidget();
+		QHBoxLayout* progressWidgetLayout = new QHBoxLayout(_progressWidget);
+		progressWidgetLayout->setContentsMargins(QMargins());
+		progressWidgetLayout->setSpacing(0);
+		_progressBar = new QProgressBar(_progressWidget);
+		_cancelTaskButton = new QPushButton(tr("Cancel"), _progressWidget);
+		progressWidgetLayout->addWidget(_progressBar);
+		progressWidgetLayout->addWidget(_cancelTaskButton);
+		_progressWidget->setMaximumWidth(_progressWidget->minimumSizeHint().width());
+		_widgetCleanupHandler.add(_progressWidget);
+		_widgetCleanupHandler.add(_progressTextDisplay);
+	}
 	_indicatorVisible = false;
 
 	connect(&_taskStartedSignalMapper, SIGNAL(mapped(QObject*)), this, SLOT(taskStarted(QObject*)));
 	connect(&_taskFinishedSignalMapper, SIGNAL(mapped(QObject*)), this, SLOT(taskFinished(QObject*)));
 	connect(&_taskProgressValueChangedSignalMapper, SIGNAL(mapped(QObject*)), this, SLOT(taskProgressValueChanged(QObject*)));
 	connect(&_taskProgressTextChangedSignalMapper, SIGNAL(mapped(QObject*)), this, SLOT(taskProgressTextChanged(QObject*)));
+	connect(_cancelTaskButton, SIGNAL(clicked(bool)), this, SLOT(cancelAll()));
 }
 
 /******************************************************************************
@@ -85,8 +89,8 @@ void ProgressManager::taskStarted(QObject* object)
 	FutureWatcher* watcher = static_cast<FutureWatcher*>(object);
 
 	// Show progress indicator only if the task doesn't finish within 300 milliseconds.
-	if(_taskStack.isEmpty())
-		QTimer::singleShot(300, this, SLOT(showIndicator()));
+	if(_taskStack.isEmpty() && Application::instance().guiMode())
+		QTimer::singleShot(200, this, SLOT(showIndicator()));
 
 	_taskStack.push(watcher);
 }
@@ -162,10 +166,38 @@ void ProgressManager::updateIndicator()
 }
 
 /******************************************************************************
-* Cancels all running background tasks and waits for them to finish.
+* Cancels all running background tasks.
 ******************************************************************************/
 void ProgressManager::cancelAll()
 {
+	for(FutureWatcher* watcher : _taskStack)
+		watcher->cancel();
+}
+
+/******************************************************************************
+* Cancels all running background tasks and waits for them to finish.
+******************************************************************************/
+void ProgressManager::cancelAllAndWait()
+{
+	cancelAll();
+	for(FutureWatcher* watcher : _taskStack) {
+		try {
+			watcher->waitForFinished();
+		}
+		catch(...) {}
+	}
+}
+
+/******************************************************************************
+* Waits for the given task to finish and displays a modal progress dialog
+* to show the task's progress.
+******************************************************************************/
+bool ProgressManager::waitForTask(const FutureInterfacePointer& futureInterface)
+{
+	OVITO_ASSERT_MSG(QThread::currentThread() == QApplication::instance()->thread(), "ProgressManager::waitForTask", "Function can only be called from the GUI thread.");
+
+	futureInterface->waitForFinished();
+	return !futureInterface->isCanceled();
 }
 
 };

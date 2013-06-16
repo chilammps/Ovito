@@ -24,12 +24,14 @@ SET(OVITO_VIZ_SOURCE_FILES
 	data/SimulationCellDisplay.cpp
 	importer/AtomsImporter.cpp
 	importer/lammps/LAMMPSTextDumpImporter.cpp
+	importer/lammps/LAMMPSDumpImporterSettingsDialog.cpp
 )
 
-# Build library
-ADD_LIBRARY(Viz ${OVITO_VIZ_SOURCE_FILES})
-
-TARGET_LINK_LIBRARIES(Viz Base Core)
+# Generate plugin module.
+OVITO_PLUGIN(Viz
+	SOURCES ${OVITO_VIZ_SOURCE_FILES}
+	RESOURCE viz.rcc resources/viz.qrc
+)
 
 # Link Qt5.
 QT5_USE_MODULES(Viz Widgets Xml)

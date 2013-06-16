@@ -25,7 +25,7 @@
 
 namespace Ovito {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(ModifierApplication, RefTarget)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, ModifierApplication, RefTarget)
 DEFINE_REFERENCE_FIELD(ModifierApplication, _modifier, "Modifier", Modifier)
 DEFINE_PROPERTY_FIELD(ModifierApplication, _isEnabled, "IsEnabled")
 SET_PROPERTY_FIELD_LABEL(ModifierApplication, _modifier, "Modifier")

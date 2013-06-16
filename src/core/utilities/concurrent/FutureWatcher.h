@@ -52,9 +52,11 @@ public:
 
 	bool isCanceled() const;
 	bool isFinished() const;
-    int progressMaximum() const;
-    int progressValue() const;
-    QString progressText() const;
+	int progressMaximum() const;
+	int progressValue() const;
+	QString progressText() const;
+
+	void waitForFinished() const;
 
 protected:
 
@@ -71,24 +73,28 @@ protected:
 	        ProgressText,
 	    };
 
-	    CallOutEvent(CallOutType callOutType) : QEvent((QEvent::Type)callOutType) {}
-	    CallOutEvent(CallOutType callOutType, int value) : QEvent((QEvent::Type)callOutType), _value(value) {}
-	    CallOutEvent(CallOutType callOutType, const QString& text) : QEvent((QEvent::Type)callOutType), _text(text) {}
+	    CallOutEvent(CallOutType callOutType, FutureInterfaceBase* source) : QEvent((QEvent::Type)callOutType), _source(source) {}
+	    CallOutEvent(CallOutType callOutType, int value, FutureInterfaceBase* source) : QEvent((QEvent::Type)callOutType), _value(value), _source(source) {}
+	    CallOutEvent(CallOutType callOutType, const QString& text, FutureInterfaceBase* source) : QEvent((QEvent::Type)callOutType), _text(text), _source(source) {}
 
 	    int _value;
 	    QString _text;
+	    FutureInterfaceBase* _source;
 	};
 
-    void postCallOutEvent(CallOutEvent::CallOutType type) {
-    	QCoreApplication::postEvent(this, new CallOutEvent(type));
+    void postCallOutEvent(CallOutEvent::CallOutType type, FutureInterfaceBase* source) {
+    	OVITO_ASSERT(source == _futureInterface.get());
+    	QCoreApplication::postEvent(this, new CallOutEvent(type, _futureInterface.get()));
     }
 
-    void postCallOutEvent(CallOutEvent::CallOutType type, int value) {
-    	QCoreApplication::postEvent(this, new CallOutEvent(type, value));
+    void postCallOutEvent(CallOutEvent::CallOutType type, int value, FutureInterfaceBase* source) {
+    	OVITO_ASSERT(source == _futureInterface.get());
+    	QCoreApplication::postEvent(this, new CallOutEvent(type, value, _futureInterface.get()));
     }
 
-    void postCallOutEvent(CallOutEvent::CallOutType type, const QString& text) {
-    	QCoreApplication::postEvent(this, new CallOutEvent(type, text));
+    void postCallOutEvent(CallOutEvent::CallOutType type, const QString& text, FutureInterfaceBase* source) {
+    	OVITO_ASSERT(source == _futureInterface.get());
+    	QCoreApplication::postEvent(this, new CallOutEvent(type, text, _futureInterface.get()));
     }
 
 	virtual void customEvent(QEvent* event) override;
