@@ -82,6 +82,7 @@ SET(OVITO_CORE_SOURCE_FILES
 	gui/widgets/SpinnerWidget.cpp
 	gui/widgets/ColorPickerWidget.cpp
 	gui/widgets/AnimationTimeSpinner.cpp
+	gui/widgets/AnimationFramesToolButton.cpp
 	gui/widgets/ElidedTextLabel.cpp
 	gui/properties/PropertiesEditor.cpp
 	gui/properties/PropertiesPanel.cpp

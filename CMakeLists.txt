@@ -59,9 +59,11 @@ ENDIF()
 # This is the base directory for all included header files.
 INCLUDE_DIRECTORIES("${OVITO_SOURCE_BASE_DIR}/src")
 
+# Static or shared (and extensible) version of Ovito?
+OPTION(OVITO_MONOLITHIC_BUILD "Create one big executable that contains all plugins and third-party libraries." "OFF")
+
 IF(UNIX)
 	IF(APPLE)
-		SET(OVITO_MONOLITHIC_BUILD "OFF")
 		SET(MACOSX_BUNDLE_NAME "Ovito") 
 		SET(MACOSX_BUNDLE_BUNDLE_NAME "${MACOSX_BUNDLE_NAME}") 
 		
@@ -74,7 +76,6 @@ IF(UNIX)
 		# The directory where the compiled plugins go to.
 		SET(OVITO_RELATIVE_PLUGINS_DIRECTORY "${OVITO_RELATIVE_LIBRARY_DIRECTORY}/plugins")	
 	ELSE(APPLE)
-		SET(OVITO_MONOLITHIC_BUILD "ON")
 		# The directory where the main executable goes to.
 		SET(OVITO_RELATIVE_BINARY_DIRECTORY "bin")
 		# The directory where the main libraries go to.
@@ -85,7 +86,6 @@ IF(UNIX)
 		SET(OVITO_RELATIVE_PLUGINS_DIRECTORY "${OVITO_RELATIVE_LIBRARY_DIRECTORY}/plugins")
 	ENDIF(APPLE)
 ELSE(UNIX)
-	SET(OVITO_MONOLITHIC_BUILD "OFF")
 	# The directory where the main executable goes to.
 	SET(OVITO_RELATIVE_BINARY_DIRECTORY ".")
 	# The directory where the main libraries go to.

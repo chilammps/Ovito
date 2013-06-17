@@ -166,15 +166,13 @@ protected:
 	/// Is called when a RefTarget has been added to a VectorReferenceField of this RefMaker.
 	virtual void referenceRemoved(const PropertyFieldDescriptor& field, RefTarget* newTarget, int listIndex) override;
 
-#if 0
 	/// \brief Saves the class' contents to the given stream.
-	/// \sa RefTarget::saveToStream()Atoms
-	virtual void saveToStream(ObjectSaveStream& stream);
+	virtual void saveToStream(ObjectSaveStream& stream) override;
 
 	/// \brief Loads the class' contents from the given stream.
-	/// \sa RefTarget::loadFromStream()
-	virtual void loadFromStream(ObjectLoadStream& stream);
+	virtual void loadFromStream(ObjectLoadStream& stream) override;
 
+#if 0
 	/// \brief This method is called once for this object after it has been loaded from the input stream
 	virtual void loadFromStreamComplete();
 

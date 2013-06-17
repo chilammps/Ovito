@@ -38,6 +38,7 @@ AnimationTimeSlider::AnimationTimeSlider(QWidget* parent) :
 	setFrameShape(QFrame::Panel);
 	setFrameShadow(QFrame::Sunken);
 	setAutoFillBackground(true);
+	setMouseTracking(true);
 
 	// Repaint slider if the current animation settings have changed.
 	connect(&AnimManager::instance(), SIGNAL(timeChanged(TimePoint)), SLOT(repaint()));
@@ -56,6 +57,37 @@ void AnimationTimeSlider::paintEvent(QPaintEvent* event)
 	// Show slider only if there is more than one animation frame.
 	if(AnimManager::instance().animationInterval().duration() != 0) {
 		QStylePainter painter(this);
+
+		int numFrames = (int)((AnimManager::instance().animationInterval().duration()+1) / AnimManager::instance().ticksPerFrame());
+		QRect clientRect = frameRect();
+		clientRect.adjust(frameWidth(), frameWidth(), -frameWidth(), -frameWidth());
+		int thumbWidth = this->thumbWidth();
+		int clientWidth = clientRect.width() - thumbWidth;
+		int firstFrame = AnimManager::instance().timeToFrame(AnimManager::instance().animationInterval().start());
+		int lastFrame = AnimManager::instance().timeToFrame(AnimManager::instance().animationInterval().end());
+		int labelWidth = painter.fontMetrics().boundingRect(QString::number(lastFrame)).width();
+		int nticks = std::min(clientWidth / (labelWidth + 20), numFrames);
+		int ticksevery = numFrames / nticks;
+		if(ticksevery <= 1) ticksevery = ticksevery;
+		else if(ticksevery <= 5) ticksevery = 5;
+		else if(ticksevery <= 10) ticksevery = 10;
+		else if(ticksevery <= 20) ticksevery = 20;
+		else if(ticksevery <= 50) ticksevery = 50;
+		else if(ticksevery <= 100) ticksevery = 100;
+		else if(ticksevery <= 500) ticksevery = 500;
+		int labelypos = clientRect.y() + (clientRect.height() + painter.fontMetrics().height())/2 - painter.fontMetrics().descent();
+		if(ticksevery > 0) {
+			painter.setPen(QPen(QColor(200,200,255)));
+			for(int frame = firstFrame; frame <= lastFrame; frame += ticksevery) {
+				TimePoint time = AnimManager::instance().frameToTime(frame);
+				FloatType percentage = (FloatType)(time - AnimManager::instance().animationInterval().start()) / (FloatType)(AnimManager::instance().animationInterval().duration() + 1);
+				int pos = clientRect.x() + (int)(percentage * clientWidth) + thumbWidth / 2;
+				QString labelText = QString::number(frame);
+				QRect labelRect = painter.fontMetrics().boundingRect(labelText);
+				painter.drawText(pos - labelRect.width()/2, labelypos, labelText);
+			}
+		}
+
 		QStyleOptionButton btnOption;
 		btnOption.initFrom(this);
 		btnOption.rect = thumbRectangle();
@@ -116,29 +148,56 @@ void AnimationTimeSlider::mouseReleaseEvent(QMouseEvent* event)
 ******************************************************************************/
 void AnimationTimeSlider::mouseMoveEvent(QMouseEvent* event)
 {
-	if(_dragPos < 0) return;
-	QRect clientRect = rect();
-	clientRect.adjust(frameWidth(), frameWidth(), -frameWidth(), -frameWidth());
+	int newPos;
+	int thumbSize = thumbWidth();
 
-	int newPos = event->x() - _dragPos;
+	if(_dragPos < 0)
+		newPos = event->x() - thumbSize / 2;
+	else
+		newPos = event->x() - _dragPos;
 
-	int thumbSize = min(clientRect.width() / 3, 70);
+	int rectWidth = frameRect().width() - 2*frameWidth();
 	TimeInterval interval = AnimManager::instance().animationInterval();
-	TimePoint newTime = (TimePoint)((qint64)newPos * (qint64)(interval.duration() + 1) / (qint64)(clientRect.width() - thumbSize));
+	TimePoint newTime = (TimePoint)((qint64)newPos * (qint64)(interval.duration() + 1) / (qint64)(rectWidth - thumbSize));
 
-	// limit new time
-	newTime = max(newTime, interval.start());
-	newTime = min(newTime, interval.end());
+	// Clamp new time to animation interval.
+	newTime = std::max(newTime, interval.start());
+	newTime = std::min(newTime, interval.end());
 
 	// Snap to frames
-	newTime = AnimManager::instance().frameToTime(AnimManager::instance().timeToFrame(newTime));
-	if(newTime == AnimManager::instance().time()) return;
+	int newFrame = AnimManager::instance().timeToFrame(newTime + AnimManager::instance().ticksPerFrame()/2);
+	if(_dragPos >= 0) {
 
-	// Set new time
-	AnimManager::instance().setTime(newTime);
+		TimePoint newTime = AnimManager::instance().frameToTime(newFrame);
+		if(newTime == AnimManager::instance().time()) return;
 
-	// Force immediate viewport update.
-	ViewportManager::instance().processViewportUpdates();
+		// Set new time
+		AnimManager::instance().setTime(newTime);
+
+		// Force immediate viewport update.
+		ViewportManager::instance().processViewportUpdates();
+	}
+	else {
+		if(thumbRectangle().contains(event->pos()) == false) {
+			QString frameName = DataSetManager::instance().currentSet()->animationSettings()->namedFrames()[newFrame];
+			FloatType percentage = (FloatType)(AnimManager::instance().frameToTime(newFrame) - AnimManager::instance().animationInterval().start()) / (FloatType)(AnimManager::instance().animationInterval().duration() + 1);
+			QRect clientRect = frameRect();
+			clientRect.adjust(frameWidth(), frameWidth(), -frameWidth(), -frameWidth());
+			int clientWidth = clientRect.width() - thumbWidth();
+			QPoint pos(clientRect.x() + (int)(percentage * clientWidth) + thumbWidth() / 2, clientRect.height() / 2);
+			QToolTip::showText(mapToGlobal(pos), QString("%1 - %2").arg(newFrame).arg(frameName), this);
+		}
+		else QToolTip::hideText();
+	}
+}
+
+/******************************************************************************
+* Computes the width of the thumb.
+******************************************************************************/
+int AnimationTimeSlider::thumbWidth() const
+{
+	int clientWidth = frameRect().width() - 2*frameWidth();
+	return std::min(clientWidth / 2, 90);
 }
 
 /******************************************************************************
@@ -149,17 +208,13 @@ QRect AnimationTimeSlider::thumbRectangle()
 	if(DataSetManager::instance().currentSet() == nullptr)
 		return QRect(0,0,0,0);
 
-	QRect clientRect = rect();
-	clientRect.adjust(frameWidth(), frameWidth(), -frameWidth(), -frameWidth());
-
-	// Position slider
 	TimeInterval interval = AnimManager::instance().animationInterval();
-	TimePoint value = AnimManager::instance().time();
-	if(value < interval.start()) value = interval.start();
-	if(value > interval.end()) value = interval.end();
-
-	int thumbSize = min(clientRect.width() / 3, 90);
+	TimePoint value = std::min(std::max(AnimManager::instance().time(), interval.start()), interval.end());
 	FloatType percentage = (FloatType)(value - interval.start()) / (FloatType)(interval.duration() + 1);
+
+	QRect clientRect = frameRect();
+	clientRect.adjust(frameWidth(), frameWidth(), -frameWidth(), -frameWidth());
+	int thumbSize = thumbWidth();
 	int thumbPos = (int)((clientRect.width() - thumbSize) * percentage);
 	return QRect(thumbPos + clientRect.x(), clientRect.y(), thumbSize, clientRect.height());
 }

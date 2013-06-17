@@ -46,8 +46,8 @@ void LinkedFileObjectEditor::createUI(const RolloutInsertionParameters& rolloutP
 	layout->addWidget(toolbar);
 
 	toolbar->addAction(QIcon(":/core/actions/file/import_object_changefile.png"), tr("Change input file"), this, SLOT(onChangeInputFile()));
-	toolbar->addAction(QIcon(":/core/actions/file/import_object_reload.png"), tr("Reload input file"), this, SLOT(onReloadFrame()));
-	toolbar->addAction(QIcon(":/core/actions/file/import_object_reload.png"), tr("Refresh frame sequence"), this, SLOT(onReloadAnimation()));
+	toolbar->addAction(QIcon(":/core/actions/file/import_object_reload.png"), tr("Reload current input file"), this, SLOT(onReloadFrame()));
+	toolbar->addAction(QIcon(":/core/actions/file/import_object_refresh_animation.png"), tr("Reload animation frames"), this, SLOT(onReloadAnimation()));
 	_parserSettingsAction = toolbar->addAction(QIcon(":/core/actions/file/import_object_settings.png"), tr("Settings"), this, SLOT(onParserSettings()));
 
 #if 0

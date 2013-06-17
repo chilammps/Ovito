@@ -23,6 +23,7 @@
 	<file>actions/file/file_export.png</file>
 	<file>actions/file/import_object_changefile.png</file>
 	<file>actions/file/import_object_reload.png</file>
+	<file>actions/file/import_object_refresh_animation.png</file>
 	<file>actions/file/import_object_settings.png</file>
 
 	<file>actions/viewport/maximize_viewport.png</file>
@@ -42,6 +43,7 @@
 	<file>actions/animation/play_animation.png</file>
 	<file>actions/animation/stop_animation.png</file>
 	<file>actions/animation/animation_mode.png</file>
+	<file>actions/animation/named_frames.png</file>
 	
 	<file>cursor/viewport/cursor_orbit.png</file>
 	<file>cursor/viewport/cursor_pan.png</file>

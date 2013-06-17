@@ -34,32 +34,35 @@ class AnimationTimeSlider : public QFrame
 public:
 
 	/// Constructor.
-	AnimationTimeSlider(QWidget* parentWindow = NULL);
+	AnimationTimeSlider(QWidget* parentWindow = nullptr);
 
 protected:
 
 	/// Handles paint events.
-	virtual void paintEvent(QPaintEvent* event) Q_DECL_OVERRIDE;
+	virtual void paintEvent(QPaintEvent* event) override;
 	
 	/// Handles mouse down events.
-	virtual void mousePressEvent(QMouseEvent* event) Q_DECL_OVERRIDE;
+	virtual void mousePressEvent(QMouseEvent* event) override;
 
 	/// Handles mouse up events.
-	virtual void mouseReleaseEvent(QMouseEvent* event) Q_DECL_OVERRIDE;
+	virtual void mouseReleaseEvent(QMouseEvent* event) override;
 
 	/// Handles mouse move events.
-	virtual void mouseMoveEvent(QMouseEvent* event) Q_DECL_OVERRIDE;
+	virtual void mouseMoveEvent(QMouseEvent* event) override;
 	
 	/// Returns the recommended size of the widget.
-	virtual QSize sizeHint() const Q_DECL_OVERRIDE;
+	virtual QSize sizeHint() const override;
 
 	/// Returns the minimum size of the widget.
-	virtual QSize minimumSizeHint() const Q_DECL_OVERRIDE { return sizeHint(); }
+	virtual QSize minimumSizeHint() const override { return sizeHint(); }
 	
 private:
 
-	/// Computes the position of the slider thumb.
+	/// Computes the current position of the slider thumb.
 	QRect thumbRectangle();
+
+	/// Computes the width of the thumb.
+	int thumbWidth() const;
 	
 	/// The dragging start position.
 	int _dragPos;

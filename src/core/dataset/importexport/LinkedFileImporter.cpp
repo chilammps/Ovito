@@ -111,8 +111,11 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl, DataSet* dataset, boo
 	}
 
 	// Adjust viewports to show the newly imported object.
-	if(dataset == DataSetManager::instance().currentSet())
-		ActionManager::instance().getAction(ACTION_VIEWPORT_ZOOM_SELECTION_EXTENTS_ALL)->trigger();
+	if(dataset == DataSetManager::instance().currentSet()) {
+		DataSetManager::instance().runWhenSceneIsReady([]() {
+			ActionManager::instance().getAction(ACTION_VIEWPORT_ZOOM_SELECTION_EXTENTS_ALL)->trigger();
+		});
+	}
 
 	return true;
 }

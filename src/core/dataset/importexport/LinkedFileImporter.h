@@ -152,6 +152,24 @@ private:
 	DECLARE_PROPERTY_FIELD(_loadedUrl);
 };
 
+/// \brief Writes an animation frame information record to a binary output stream.
+inline SaveStream& operator<<(SaveStream& stream, const LinkedFileImporter::FrameSourceInformation& frame)
+{
+	stream.beginChunk(0x01);
+	stream << frame.sourceFile << frame.byteOffset << frame.lineNumber << frame.lastModificationTime;
+	stream.endChunk();
+	return stream;
+}
+
+/// \brief Reads a box from a binary input stream.
+inline LoadStream& operator>>(LoadStream& stream, LinkedFileImporter::FrameSourceInformation& frame)
+{
+	stream.expectChunk(0x01);
+	stream >> frame.sourceFile >> frame.byteOffset >> frame.lineNumber >> frame.lastModificationTime;
+	stream.closeChunk();
+	return stream;
+}
+
 };
 
 #endif // __OVITO_LINKED_FILE_IMPORTER_H

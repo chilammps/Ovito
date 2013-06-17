@@ -89,7 +89,13 @@ void PluginManager::registerPlugins()
 	_corePlugin = loadPluginManifest(":/core/Core.manifest.xml");
 
 	// Scan the plugins directory for installed plugins.
-	QDir pluginDir = QDir(QCoreApplication::applicationDirPath() + "/plugins");
+	QDir prefixDir(QCoreApplication::applicationDirPath());
+#if defined(Q_WS_WIN) || defined(Q_WS_MAC)
+	QDir pluginDir = QDir(prefixDir.absolutePath() + "/plugins");
+#else
+	prefixDir.cdUp();
+	QDir pluginDir = QDir(prefixDir.absolutePath() + "/lib/ovito/plugins");
+#endif
 	if(!pluginDir.exists())
 		throw Exception(QString("Failed to scan the plugin directory: %1").arg(pluginDir.path()));
 

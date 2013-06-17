@@ -21,7 +21,7 @@
 
 /** 
  * \file AnimationTimeSpinner.h 
- * \brief Contains the definition of the Core::AnimationTimeSpinner class. 
+ * \brief Contains the definition of the Ovito::AnimationTimeSpinner class.
  */
 
 #ifndef __OVITO_ANIMATION_TIME_SPINNER_H

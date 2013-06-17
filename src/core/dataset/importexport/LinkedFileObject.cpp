@@ -71,17 +71,6 @@ bool LinkedFileObject::updateFrames()
 
 	_frames = framesFuture.result();
 
-	QSet<RefMaker*> datasets = findDependents(DataSet::OOType);
-	if(!datasets.empty()) {
-		DataSet* dataset = static_object_cast<DataSet>(*datasets.cbegin());
-		AnimationSettings* animSettings = dataset->animationSettings();
-		animSettings->clearNamedFrames();
-		for(int frameIndex = 0; frameIndex < _frames.size(); frameIndex++) {
-			QString frameName = _frames[frameIndex].sourceFile.toString();
-			animSettings->assignFrameName(frameIndex, frameName);
-		}
-	}
-
 	return true;
 }
 
@@ -124,9 +113,8 @@ PipelineFlowState LinkedFileObject::evaluate(TimePoint time)
 			if(oldTaskCanceled) {
 				notifyDependents(ReferenceEvent::PendingOperationFailed);
 			}
-			return PipelineFlowState(ObjectStatus(ObjectStatus::Error,
-					tr("The requested animation frame %1 is out of range for source location %2").arg(frame).arg(importer()->sourceUrl().toString())),
-					_sceneObjects.targets(), TimeInterval(time));
+			setStatus(ObjectStatus(ObjectStatus::Error, tr("The requested animation frame %1 is out of range for source location %2").arg(frame).arg(importer()->sourceUrl().toString())));
+			return PipelineFlowState(status(), _sceneObjects.targets(), TimeInterval(time));
 		}
 		_frameBeingLoaded = frame;
 		_loadFrameOperation = importer()->load(_frames[frame]);
@@ -284,6 +272,20 @@ void LinkedFileObject::adjustAnimationInterval()
 	DataSet* dataset = static_object_cast<DataSet>(*datasets.cbegin());
 	AnimationSettings* animSettings = dataset->animationSettings();
 
+	animSettings->clearNamedFrames();
+	for(int frameIndex = 0; frameIndex < _frames.size(); frameIndex++) {
+		QString filename;
+		if(_frames[frameIndex].sourceFile.isLocalFile()) {
+			QFileInfo fileInfo(_frames[frameIndex].sourceFile.toLocalFile());
+			filename = fileInfo.fileName();
+		}
+		else {
+			QFileInfo fileInfo(_frames[frameIndex].sourceFile.fragment());
+			filename = fileInfo.fileName();
+		}
+		animSettings->assignFrameName(frameIndex, filename);
+	}
+
 	if(numberOfFrames() > 1) {
 		TimeInterval interval(0, (numberOfFrames()-1) * animSettings->ticksPerFrame());
 		animSettings->setAnimationInterval(interval);
@@ -305,29 +307,31 @@ TimeInterval AtomsImportObject::objectValidity(TimeTicks time)
 	return TimeForever;
 }
 
+#endif
+
 /******************************************************************************
 * Saves the class' contents to the given stream.
 ******************************************************************************/
-void AtomsImportObject::saveToStream(ObjectSaveStream& stream)
+void LinkedFileObject::saveToStream(ObjectSaveStream& stream)
 {
 	SceneObject::saveToStream(stream);
-	stream.beginChunk(0x68725A1);
-	stream << (quint32)_loadedMovieFrame;
+	stream.beginChunk(0x01);
+	stream << _frames;
 	stream.endChunk();
 }
 
 /******************************************************************************
 * Loads the class' contents from the given stream.
 ******************************************************************************/
-void AtomsImportObject::loadFromStream(ObjectLoadStream& stream)
+void LinkedFileObject::loadFromStream(ObjectLoadStream& stream)
 {
 	SceneObject::loadFromStream(stream);
-	stream.expectChunk(0x68725A1);
-	quint32 loadedFrame;
-	stream >> loadedFrame;
-	this->_loadedMovieFrame = loadedFrame;
+	stream.expectChunk(0x01);
+	stream >> _frames;
 	stream.closeChunk();
 }
+
+#if 0
 
 /******************************************************************************
 * This method is called once for this object after it has been loaded from the input stream
