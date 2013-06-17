@@ -54,8 +54,11 @@ protected:
 
 protected Q_SLOTS:
 
-	/// Is called when the user presses the Reload button.
-	void onReload();
+	/// Is called when the user presses the Reload frame button.
+	void onReloadFrame();
+
+	/// Is called when the user presses the Reload animation button.
+	void onReloadAnimation();
 
 	/// Is called when the user presses the Select File button.
 	void onChangeInputFile();

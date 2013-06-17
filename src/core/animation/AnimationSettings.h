@@ -125,10 +125,28 @@ public:
 	/// \sa playbackSpeed()
 	void setPlaybackSpeed(int factor) { _playbackSpeed = factor; }
 	
+    /// \brief Returns the list of names assigned to animation frames.
+    const QMap<int,QString>& namedFrames() const { return _namedFrames; }
+
+    /// \brief Clears all names assigned to animation frames.
+    void clearNamedFrames() { _namedFrames.clear(); }
+
+    /// \brief Assigns a name to an animation frame.
+    void assignFrameName(int frameIndex, const QString& name) { _namedFrames[frameIndex] = name; }
+
 protected:
 
 	/// \brief Is called when the value of a non-animatable property field of this RefMaker has changed.
 	virtual void propertyChanged(const PropertyFieldDescriptor& field) override;
+
+	/// \brief Saves the class' contents to an output stream.
+	virtual void saveToStream(ObjectSaveStream& stream) override;
+
+	/// \brief Loads the class' contents from an input stream.
+	virtual void loadFromStream(ObjectLoadStream& stream) override;
+
+	/// \brief Creates a copy of this object.
+	virtual OORef<RefTarget> clone(bool deepCopy, CloneHelper& cloneHelper) override;
 
 Q_SIGNALS:
 
@@ -158,6 +176,9 @@ private:
 	/// than realtime.
 	/// A value smaller than -1 that the animation is played at a speed lower than realtime.	
     PropertyField<int> _playbackSpeed;
+
+    /// List of names assigned to animation frames.
+    QMap<int,QString> _namedFrames;
 
 private:
 

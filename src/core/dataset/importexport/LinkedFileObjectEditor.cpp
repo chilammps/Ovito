@@ -46,7 +46,8 @@ void LinkedFileObjectEditor::createUI(const RolloutInsertionParameters& rolloutP
 	layout->addWidget(toolbar);
 
 	toolbar->addAction(QIcon(":/core/actions/file/import_object_changefile.png"), tr("Change input file"), this, SLOT(onChangeInputFile()));
-	toolbar->addAction(QIcon(":/core/actions/file/import_object_reload.png"), tr("Reload input file"), this, SLOT(onReload()));
+	toolbar->addAction(QIcon(":/core/actions/file/import_object_reload.png"), tr("Reload input file"), this, SLOT(onReloadFrame()));
+	toolbar->addAction(QIcon(":/core/actions/file/import_object_reload.png"), tr("Refresh frame sequence"), this, SLOT(onReloadAnimation()));
 	_parserSettingsAction = toolbar->addAction(QIcon(":/core/actions/file/import_object_settings.png"), tr("Settings"), this, SLOT(onParserSettings()));
 
 #if 0
@@ -107,17 +108,27 @@ void LinkedFileObjectEditor::setEditObject(RefTarget* newObject)
 }
 
 /******************************************************************************
-* Is called when the user presses the Reload button.
+* Is called when the user presses the Reload frame button.
 ******************************************************************************/
-void LinkedFileObjectEditor::onReload()
+void LinkedFileObjectEditor::onReloadFrame()
+{
+	LinkedFileObject* obj = static_object_cast<LinkedFileObject>(editObject());
+	OVITO_CHECK_OBJECT_POINTER(obj);
+	obj->refreshFromSource(obj->loadedFrame());
+}
+
+/******************************************************************************
+* Is called when the user presses the Reload animation button.
+******************************************************************************/
+void LinkedFileObjectEditor::onReloadAnimation()
 {
 	LinkedFileObject* obj = static_object_cast<LinkedFileObject>(editObject());
 	OVITO_CHECK_OBJECT_POINTER(obj);
 	try {
-#if 0
-		ViewportSuspender noVPUpdate;
-		obj->reloadInputFile();
-#endif
+		if(obj->updateFrames()) {
+			// Adjust the animation length number to match the number of frames in the input data source.
+			obj->adjustAnimationInterval();
+		}
 	}
 	catch(const Exception& ex) {
 		ex.showError();

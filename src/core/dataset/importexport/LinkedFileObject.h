@@ -48,14 +48,9 @@ public:
 	/// \brief Returns the parser that loads the input file.
 	LinkedFileImporter* importer() const { return _importer; }
 
-#if 0
 	/// \brief This reloads the input data from the external file.
-	/// \param frame The animation frame to load from the external file.
-	/// \param suppressDialogs Specifies whether any dialogs or message boxes should be suppressed during loading.
-	/// \return \a false when the operation has been canceled by the user; \a true on success.
-	/// \throws Exception on error.
-	virtual bool refreshFromSource(int frame = 0, bool suppressDialogs = false);
-#endif
+	/// \param frame The animation frame to reload from the external file.
+	void refreshFromSource(int frame);
 
 	/// \brief Returns the status returned by the file parser on its last invocation.
 	const ObjectStatus& status() const { return _importStatus; }
@@ -65,6 +60,9 @@ public:
 
 	/// \brief Returns the number of animation frames that can be loaded from the data source.
 	int numberOfFrames() const { return _frames.size(); }
+
+	/// Returns the index of the animation frame loaded last from the input file.
+	int loadedFrame() const { return _loadedFrame; }
 
 	/// \brief Returns whether the scene's animation interval is being adjusted to the number of frames reported by the file parser.
 	bool adjustAnimationIntervalEnabled() const { return _adjustAnimationIntervalEnabled; }

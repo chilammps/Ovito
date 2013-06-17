@@ -56,5 +56,40 @@ void AnimationSettings::propertyChanged(const PropertyFieldDescriptor& field)
 		Q_EMIT speedChanged(ticksPerFrame());
 }
 
+/******************************************************************************
+* Saves the class' contents to an output stream.
+******************************************************************************/
+void AnimationSettings::saveToStream(ObjectSaveStream& stream)
+{
+	RefTarget::saveToStream(stream);
+	stream.beginChunk(0x01);
+	stream << _namedFrames;
+	stream.endChunk();
+}
+
+/******************************************************************************
+* Loads the class' contents from an input stream.
+******************************************************************************/
+void AnimationSettings::loadFromStream(ObjectLoadStream& stream)
+{
+	RefTarget::loadFromStream(stream);
+	stream.expectChunk(0x01);
+	stream >> _namedFrames;
+	stream.closeChunk();
+}
+
+/******************************************************************************
+* Creates a copy of this object.
+******************************************************************************/
+OORef<RefTarget> AnimationSettings::clone(bool deepCopy, CloneHelper& cloneHelper)
+{
+	// Let the base class create an instance of this class.
+	OORef<AnimationSettings> clone = static_object_cast<AnimationSettings>(RefTarget::clone(deepCopy, cloneHelper));
+
+	// Copy internal data.
+	clone->_namedFrames = this->_namedFrames;
+
+	return clone;
+}
 
 };

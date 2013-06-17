@@ -71,6 +71,17 @@ bool LinkedFileObject::updateFrames()
 
 	_frames = framesFuture.result();
 
+	QSet<RefMaker*> datasets = findDependents(DataSet::OOType);
+	if(!datasets.empty()) {
+		DataSet* dataset = static_object_cast<DataSet>(*datasets.cbegin());
+		AnimationSettings* animSettings = dataset->animationSettings();
+		animSettings->clearNamedFrames();
+		for(int frameIndex = 0; frameIndex < _frames.size(); frameIndex++) {
+			QString frameName = _frames[frameIndex].sourceFile.toString();
+			animSettings->assignFrameName(frameIndex, frameName);
+		}
+	}
+
 	return true;
 }
 
@@ -152,8 +163,9 @@ void LinkedFileObject::loadOperationFinished()
 			// Notify dependents that the loading operation has succeeded and the new data is available.
 			notificationType = ReferenceEvent::PendingOperationSucceeded;
 		}
-		catch(const Exception& ex) {
-			newStatus = ObjectStatus(ObjectStatus::Error, ex.message());
+		catch(Exception& ex) {
+			// Transfer exception message to evaluation status.
+			newStatus = ObjectStatus(ObjectStatus::Error, ex.messages().join(QChar('\n')));
 			ex.showError();
 		}
 	}
@@ -231,52 +243,19 @@ void AtomsImportObject::setParser(AtomsFileParser* parser)
 }
 #endif
 
-#if 0
 /******************************************************************************
-* This will reload the current movie frame.
-* Note: Throws an exception on error.
-* Returns false when the operation has been canceled by the user.
+* This will reload an animation frame.
 ******************************************************************************/
-bool LinkedFileObject::refreshFromSource(int frame, bool suppressDialogs)
+void LinkedFileObject::refreshFromSource(int frame)
 {
-	try {
-		// Validate data source.
-		if(!importer())
-			throw tr("No importer has been specified.");
-		if(importer()->numberOfFrames() <= 0)
-			throw Exception(tr("Data source does not contain any data."));
+	if(!importer())
+		return;
 
-		AnimationSuspender animSuspender;	// Do not create any animation keys.
-		UndoSuspender undoSuspender;		// Do not record this operation.
-
-		// Adjust requested frame number to the interval provided by the parser.
-		if(frame < 0) frame = 0;
-		if(frame >= importer()->numberOfFrames()) frame = importer()->numberOfFrames() - 1;
-		_loadedFrame = frame;
-
-		// Now let the importer load the data.
-		setStatus(importer()->load(this, frame, suppressDialogs));
-
-		// Check if operation has been canceled by the user.
-		if(status().type() == ObjectStatus::Error) {
-			setStatus(ObjectStatus(ObjectStatus::Error, tr("Loading process has been canceled by the user.")));
-			return false;
-		}
-
-		// Adjust animation interval of current data set.
-		adjustAnimationInterval();
-
-		return true;
+	if(frame == loadedFrame() || frame == -1) {
+		_loadedFrame = -1;
+		notifyDependents(ReferenceEvent::TargetChanged);
 	}
-	catch(const Exception& ex) {
-		// Convert exception message to evaluation status.
-		setStatus(ObjectStatus(ObjectStatus::Error, ex.messages().join('\n')));
-		// Pass exception on to caller.
-		throw;
-	}
-	return true;
 }
-#endif
 
 /******************************************************************************
 * Saves the status returned by the parser object and generates a
