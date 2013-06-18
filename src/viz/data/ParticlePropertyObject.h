@@ -29,7 +29,7 @@
 
 #include <core/Core.h>
 #include <core/scene/objects/SceneObject.h>
-#include "ParticlePropertyStorage.h"
+#include "ParticleProperty.h"
 
 namespace Viz {
 
@@ -68,275 +68,226 @@ public:
 
 	/// \brief Gets the property's name.
 	/// \return The name of property, which is shown to the user.
-	const QString& name() const { return _name; }
+	const QString& name() const { return _storage->name(); }
 
 	/// \brief Sets the property's name.
 	/// \param name The new name string.
 	/// \undoable
-	void setName(const QString& name) { _name = name; }
+	void setName(const QString& name);
 
 	/// \brief Returns the number of particles for which this object stores the properties.
 	/// \return The total number of data elements in this channel divided by the
 	///         number of elements per particle.
-	size_t size() const { return _numParticles; }
+	size_t size() const { return _storage->size(); }
 
 	/// \brief Resizes the property storage.
 	/// \param newSize The new number of particles.
-	void setSize(size_t newSize);
+	void resize(size_t newSize) { _storage->resize(newSize); }
 
 	/// \brief Returns the type of this property.
-	ParticleProperty::Type type() const { return _type; }
+	ParticleProperty::Type type() const { return _storage->type(); }
 
 	/// \brief Returns the data type of the property.
 	/// \return The identifier of the data type used for the elements stored in
 	///         this property storage according to the Qt meta type system.
-	int dataType() const { return _dataType; }
-
-	/// \brief Returns the number of bytes per value.
-	/// \return Number of bytes used to store a single value of the data type
-	///         specified by type().
-	size_t dataTypeSize() const { return _dataTypeSize; }
-
-	/// \brief Returns the number of bytes used per particle.
-	/// \return The size of the property' data type multiplied by the component count.
-	size_t perParticleSize() const { return _perParticleSize; }
+	int dataType() const { return _storage->dataType(); }
 
 	/// \brief Returns the number of array elements per particle.
 	/// \return The number of data values stored per particle in this storage object.
-	size_t componentCount() const { return _componentCount; }
-
-	/// \brief Changes the number of components per particle.
-	/// \param count The new number of data values stored per particle in this storage object.
-	/// \note Calling this function will destroy all data stored in the property storage.
-	void setComponentCount(size_t count);
+	size_t componentCount() const { return _storage->componentCount(); }
 
 	/// \brief Returns the human-readable names for the components stored per atom.
 	/// \return The names of the vector components if this channel contains more than one value per atom.
 	///         If this is only a single valued channel then an empty list is returned by this method because
 	///         then no naming is necessary.
-	const QStringList& componentNames() const { return _componentNames; }
+	const QStringList& componentNames() const { return _storage->componentNames(); }
 
 	/// \brief Returns a read-only pointer to the raw elements stored in this property object.
-	const char* constData() const {
-		return _data.constData();
+	const void* constData() const {
+		return _storage->constData();
 	}
 
 	/// \brief Returns a read-only pointer to the first integer element stored in this object..
 	/// \note This method may only be used if this property is of data type integer.
 	const int* constDataInt() const {
-		OVITO_ASSERT(type() == qMetaTypeId<int>());
-		return reinterpret_cast<const int*>(_data.constData());
+		return _storage->constDataInt();
 	}
 
 	/// \brief Returns a read-only pointer to the first float element in the property storage.
 	/// \note This method may only be used if this property is of data type float.
 	const FloatType* constDataFloat() const {
-		OVITO_ASSERT(type() == qMetaTypeId<FloatType>());
-		return reinterpret_cast<const FloatType*>(_data.constData());
+		return _storage->constDataFloat();
 	}
 
 	/// \brief Returns a read-only pointer to the first vector element in the property storage.
 	/// \note This method may only be used if this property is of data type Vector3 or a FloatType channel with 3 components.
 	const Vector3* constDataVector3() const {
-		OVITO_ASSERT(type() == qMetaTypeId<Vector3>() || (type() == qMetaTypeId<FloatType>() && componentCount() == 3));
-		return reinterpret_cast<const Vector3*>(_data.constData());
+		return _storage->constDataVector3();
 	}
 
 	/// \brief Returns a read-only pointer to the first point element in the property storage.
 	/// \note This method may only be used if this property is of data type Point3 or a FloatType channel with 3 components.
 	const Point3* constDataPoint3() const {
-		OVITO_ASSERT(type() == qMetaTypeId<Point3>() || (type() == qMetaTypeId<FloatType>() && componentCount() == 3));
-		return reinterpret_cast<const Point3*>(_data.constData());
+		return _storage->constDataPoint3();
 	}
 
 	/// \brief Returns a read-only pointer to the first tensor element in the property storage.
 	/// \note This method may only be used if this property is of data type Tensor2 or a FloatType channel with 9 components.
 	const Tensor2* constDataTensor2() const {
-		OVITO_ASSERT(type() == qMetaTypeId<Tensor2>() || (type() == qMetaTypeId<FloatType>() && componentCount() == 9));
-		return reinterpret_cast<const Tensor2*>(_data.constData());
+		return _storage->constDataTensor2();
 	}
 
 	/// \brief Returns a read-only pointer to the first symmetric tensor element in the property storage.
 	/// \note This method may only be used if this property is of data type SymmetricTensor2 or a FloatType channel with 6 components.
 	const SymmetricTensor2* constDataSymmetricTensor2() const {
-		OVITO_ASSERT(type() == qMetaTypeId<SymmetricTensor2>() || (type() == qMetaTypeId<FloatType>() && componentCount() == 6));
-		return reinterpret_cast<const SymmetricTensor2*>(_data.constData());
+		return _storage->constDataSymmetricTensor2();
 	}
 
 	/// \brief Returns a read-only pointer to the first quaternion element in the property storage.
 	/// \note This method may only be used if this property is of data type Quaternion or a FloatType channel with 4 components.
 	const Quaternion* constDataQuaternion() const {
-		OVITO_ASSERT(type() == qMetaTypeId<Quaternion>() || (type() == qMetaTypeId<FloatType>() && componentCount() == 4));
-		return reinterpret_cast<const Quaternion*>(_data.constData());
+		return _storage->constDataQuaternion();
 	}
 
 	/// Returns a read-write pointer to the raw elements in the property storage.
-	char* data() {
-		return _data.data();
+	void* data() {
+		return _storage->data();
 	}
 
 	/// \brief Returns a read-write pointer to the first integer element stored in this object..
 	/// \note This method may only be used if this property is of data type integer.
 	int* dataInt() {
-		OVITO_ASSERT(type() == qMetaTypeId<int>());
-		return reinterpret_cast<int*>(_data.data());
+		return _storage->dataInt();
 	}
 
 	/// \brief Returns a read-only pointer to the first float element in the property storage.
 	/// \note This method may only be used if this property is of data type float.
 	FloatType* dataFloat() {
-		OVITO_ASSERT(type() == qMetaTypeId<FloatType>());
-		return reinterpret_cast<FloatType*>(_data.data());
+		return _storage->dataFloat();
 	}
 
 	/// \brief Returns a read-write pointer to the first vector element in the property storage.
 	/// \note This method may only be used if this property is of data type Vector3 or a FloatType channel with 3 components.
 	Vector3* dataVector3() {
-		OVITO_ASSERT(type() == qMetaTypeId<Vector3>() || (type() == qMetaTypeId<FloatType>() && componentCount() == 3));
-		return reinterpret_cast<Vector3*>(_data.data());
+		return _storage->dataVector3();
 	}
 
 	/// \brief Returns a read-write pointer to the first point element in the property storage.
 	/// \note This method may only be used if this property is of data type Point3 or a FloatType channel with 3 components.
 	Point3* dataPoint3() {
-		OVITO_ASSERT(type() == qMetaTypeId<Point3>() || (type() == qMetaTypeId<FloatType>() && componentCount() == 3));
-		return reinterpret_cast<Point3*>(_data.data());
+		return _storage->dataPoint3();
 	}
 
 	/// \brief Returns a read-write pointer to the first tensor element in the property storage.
 	/// \note This method may only be used if this property is of data type Tensor2 or a FloatType channel with 9 components.
 	Tensor2* dataTensor2() {
-		OVITO_ASSERT(type() == qMetaTypeId<Tensor2>() || (type() == qMetaTypeId<FloatType>() && componentCount() == 9));
-		return reinterpret_cast<Tensor2*>(_data.data());
+		return _storage->dataTensor2();
 	}
 
 	/// \brief Returns a read-write pointer to the first symmetric tensor element in the property storage.
 	/// \note This method may only be used if this property is of data type SymmetricTensor2 or a FloatType channel with 6 components.
 	SymmetricTensor2* dataSymmetricTensor2() {
-		OVITO_ASSERT(type() == qMetaTypeId<SymmetricTensor2>() || (type() == qMetaTypeId<FloatType>() && componentCount() == 6));
-		return reinterpret_cast<SymmetricTensor2*>(_data.data());
+		return _storage->dataSymmetricTensor2();
 	}
 
 	/// \brief Returns a read-write pointer to the first quaternion element in the property storage.
 	/// \note This method may only be used if this property is of data type Quaternion or a FloatType channel with 4 components.
 	Quaternion* dataQuaternion() {
-		OVITO_ASSERT(type() == qMetaTypeId<Quaternion>() || (type() == qMetaTypeId<FloatType>() && componentCount() == 4));
-		return reinterpret_cast<Quaternion*>(_data.data());
+		return _storage->dataQuaternion();
 	}
 
 	/// \brief Returns an integer element at the given index (if this is an integer property).
 	int getInt(size_t particleIndex) const {
-		OVITO_ASSERT(particleIndex < size() && componentCount() == 1);
-		return constDataInt()[particleIndex];
+		return _storage->getInt(particleIndex);
 	}
 
 	/// Returns a float element at the given index (if this is a float property).
 	FloatType getFloat(size_t particleIndex) const {
-		OVITO_ASSERT(particleIndex < size() && componentCount() == 1);
-		return constDataFloat()[particleIndex];
+		return _storage->getFloat(particleIndex);
 	}
 
 	/// Returns an integer element at the given index (if this is an integer property).
 	int getIntComponent(size_t particleIndex, size_t componentIndex) const {
-		OVITO_ASSERT(particleIndex < size() && componentIndex < componentCount());
-		return constDataInt()[particleIndex*componentCount() + componentIndex];
+		return _storage->getIntComponent(particleIndex, componentIndex);
 	}
 
 	/// Returns a float element at the given index (if this is a float property).
 	FloatType getFloatComponent(size_t particleIndex, size_t componentIndex) const {
-		OVITO_ASSERT(particleIndex < size() && componentIndex < componentCount());
-		return constDataFloat()[particleIndex*componentCount() + componentIndex];
+		return _storage->getFloatComponent(particleIndex, componentIndex);
 	}
 
 	/// Returns a Vector3 element at the given index (if this is a vector property).
 	const Vector3& getVector3(size_t particleIndex) const {
-		OVITO_ASSERT(particleIndex < size());
-		return constDataVector3()[particleIndex];
+		return _storage->getVector3(particleIndex);
 	}
 
 	/// Returns a Point3 element at the given index (if this is a point property).
 	const Point3& getPoint3(size_t particleIndex) const {
-		OVITO_ASSERT(particleIndex < size());
-		return constDataPoint3()[particleIndex];
+		return _storage->getPoint3(particleIndex);
 	}
 
 	/// Returns a Tensor2 element stored for the given particle.
 	const Tensor2& getTensor2(size_t particleIndex) const {
-		OVITO_ASSERT(particleIndex < size());
-		return constDataTensor2()[particleIndex];
+		return _storage->getTensor2(particleIndex);
 	}
 
 	/// Returns a SymmetricTensor2 element stored for the given particle.
 	const SymmetricTensor2& getSymmetricTensor2(size_t particleIndex) const {
-		OVITO_ASSERT(particleIndex < size());
-		return constDataSymmetricTensor2()[particleIndex];
+		return _storage->getSymmetricTensor2(particleIndex);
 	}
 
 	/// Returns a Quaternion element stored for the given particle.
 	const Quaternion& getQuaternion(size_t particleIndex) const {
-		OVITO_ASSERT(particleIndex < size());
-		return constDataQuaternion()[particleIndex];
+		return _storage->getQuaternion(particleIndex);
 	}
 
 	/// Sets the value of an integer element at the given index (if this is an integer property).
 	void setInt(size_t particleIndex, int newValue) {
-		OVITO_ASSERT(particleIndex < size());
-		dataInt()[particleIndex] = newValue;
+		_storage->setInt(particleIndex, newValue);
 	}
 
 	/// Sets the value of a float element at the given index (if this is a float property).
 	void setFloat(size_t particleIndex, FloatType newValue) {
-		OVITO_ASSERT(particleIndex < size());
-		dataFloat()[particleIndex] = newValue;
+		_storage->setFloat(particleIndex, newValue);
 	}
 
 	/// Sets the value of an integer element at the given index (if this is an integer property).
 	void setIntComponent(size_t particleIndex, size_t componentIndex, int newValue) {
-		OVITO_ASSERT(particleIndex < size() && componentIndex < componentCount());
-		dataInt()[particleIndex*componentCount() + componentIndex] = newValue;
+		_storage->setIntComponent(particleIndex, componentIndex, newValue);
 	}
 
 	/// Sets the value of a float element at the given index (if this is a float property).
 	void setFloatComponent(size_t particleIndex, size_t componentIndex, FloatType newValue) {
-		OVITO_ASSERT(particleIndex < size() && componentIndex < componentCount());
-		dataFloat()[particleIndex*componentCount() + componentIndex] = newValue;
+		_storage->setFloatComponent(particleIndex, componentIndex, newValue);
 	}
 
 	/// Sets the value of a Vector3 element at the given index (if this is a vector property).
 	void setVector3(size_t particleIndex, const Vector3& newValue) {
-		OVITO_ASSERT(particleIndex < size());
-		dataVector3()[particleIndex] = newValue;
+		_storage->setVector3(particleIndex, newValue);
 	}
 
 	/// Sets the value of a Point3 element at the given index (if this is a point property).
 	void setPoint3(size_t particleIndex, const Point3& newValue) {
-		OVITO_ASSERT(particleIndex < size());
-		dataPoint3()[particleIndex] = newValue;
+		_storage->setPoint3(particleIndex, newValue);
 	}
 
 	/// Sets the value of a Tensor2 element for the given particle.
 	void setTensor2(size_t particleIndex, const Tensor2& newValue) {
-		OVITO_ASSERT(particleIndex < size());
-		dataTensor2()[particleIndex] = newValue;
+		_storage->setTensor2(particleIndex, newValue);
 	}
 
 	/// Sets the value of a SymmetricTensor2 element for the given particle.
 	void setSymmetricTensor2(size_t particleIndex, const SymmetricTensor2& newValue) {
-		OVITO_ASSERT(particleIndex < size());
-		dataSymmetricTensor2()[particleIndex] = newValue;
+		_storage->setSymmetricTensor2(particleIndex, newValue);
 	}
 
 	/// Sets the value of a Quaternion element for the given particle.
 	void setQuaternion(size_t particleIndex, const Quaternion& newValue) {
-		OVITO_ASSERT(particleIndex < size());
-		dataQuaternion()[particleIndex] = newValue;
+		_storage->setQuaternion(particleIndex, newValue);
 	}
 
 	/// \brief Sets the object title of this property object.
-	void setObjectTitle(const QString& title) {
-		_objectTitle = title;
-		notifyDependents(ReferenceEvent::TitleChanged);
-	}
+	void setObjectTitle(const QString& title) { _objectTitle = title; }
 
 	//////////////////////////////// from RefTarget //////////////////////////////
 
@@ -355,9 +306,8 @@ public:
 public:
 
 	Q_PROPERTY(QString name READ name WRITE setName)
-	Q_PROPERTY(size_t size READ size)
-	Q_PROPERTY(Identifier id READ id)
-	Q_PROPERTY(int type READ type)
+	Q_PROPERTY(size_t size READ size WRITE resize)
+	Q_PROPERTY(int dataType READ dataType)
 
 protected:
 
@@ -370,25 +320,17 @@ protected:
 	/// Creates a copy of this object.
 	virtual OORef<RefTarget> clone(bool deepCopy, CloneHelper& cloneHelper) override;
 
-	/// Copies the contents from the given source into this storage.
-	/// Particles for which the bit in the given mask is set are skipped.
-	virtual void filterCopy(const ParticleProperty& source, const std::vector<bool>& mask);
-
-	/// The name of this property.
-	PropertyField<QString, QString, ReferenceEvent::TitleChanged> _name;
-
 	/// The title of this property.
 	PropertyField<QString, QString, ReferenceEvent::TitleChanged> _objectTitle;
 
 	/// The internal storage object that holds the elements.
-	std::shared_ptr<ParticlePropertyStorage> _storage;
+	QSharedDataPointer<ParticleProperty> _storage;
 
 private:
 
 	Q_OBJECT
 	OVITO_OBJECT
 
-	DECLARE_PROPERTY_FIELD(_name);
 	DECLARE_PROPERTY_FIELD(_objectTitle);
 };
 
@@ -403,25 +345,27 @@ class ParticlePropertyReference
 public:
 
 	/// \brief Default constructor.
-	ParticlePropertyReference() : _id(ParticleProperty::UserProperty) {}
+	ParticlePropertyReference() : _type(ParticleProperty::UserProperty) {}
 	/// \brief Constructor for references to standard property.
-	ParticlePropertyReference(ParticleProperty::Identifier id) : _id(id), _name(ParticleProperty::standardPropertyName(id)) {}
+	ParticlePropertyReference(ParticleProperty::Type type) : _type(type), _name(ParticleProperty::standardPropertyName(type)) {}
 	/// \brief Constructor for references to a property.
-	ParticlePropertyReference(ParticleProperty::Identifier id, const QString& name) : _id(id), _name(name) {}
+	ParticlePropertyReference(ParticleProperty::Type type, const QString& name) : _type(type), _name(name) {}
 	/// \brief Constructor for references to user-defined properties.
-	ParticlePropertyReference(const QString& name) : _id(ParticleProperty::UserProperty), _name(name) {}
+	ParticlePropertyReference(const QString& name) : _type(ParticleProperty::UserProperty), _name(name) {}
 	/// \brief Constructor for references to an existing property instance.
-	ParticlePropertyReference(ParticleProperty* property) : _id(property->id()), _name(property->name()) {}
+	ParticlePropertyReference(ParticleProperty* property) : _type(property->type()), _name(property->name()) {}
+	/// \brief Constructor for references to an existing property instance.
+	ParticlePropertyReference(ParticlePropertyObject* property) : _type(property->type()), _name(property->name()) {}
 
-	/// \brief Gets the identifier of the referenced property.
-	/// \return The property identifier.
-	ParticleProperty::Identifier id() const { return _id; }
+	/// \brief Gets the type identifier of the referenced property.
+	/// \return The property type.
+	ParticleProperty::Type type() const { return _type; }
 
-	/// \brief Sets the referenced channel.
-	void setId(ParticleProperty::Identifier id) {
-		_id = id;
-		if(id != ParticleProperty::UserProperty)
-			_name = ParticleProperty::standardPropertyName(id);
+	/// \brief Sets the type of referenced property.
+	void setType(ParticleProperty::Type type) {
+		_type = type;
+		if(type != ParticleProperty::UserProperty)
+			_name = ParticleProperty::standardPropertyName(type);
 	}
 
 	/// \brief Gets the human-readable name of the referenced property.
@@ -430,18 +374,18 @@ public:
 
 	/// \brief Compares two references for equality.
 	bool operator==(const ParticlePropertyReference& other) const {
-		if(id() != other.id()) return false;
-		if(id() != ParticleProperty::UserProperty) return true;
+		if(type() != other.type()) return false;
+		if(type() != ParticleProperty::UserProperty) return true;
 		return name() == other.name();
 	}
 
 	/// \brief Returns whether this reference object does not point to a ParticleProperty.
-	bool isNull() const { return id() == ParticleProperty::UserProperty && name().isEmpty(); }
+	bool isNull() const { return type() == ParticleProperty::UserProperty && name().isEmpty(); }
 
 private:
 
-	/// The identifier of the property.
-	ParticleProperty::Identifier _id;
+	/// The type identifier of the property.
+	ParticleProperty::Type _type;
 
 	/// The human-readable name of the property.
 	/// It is only used for user-defined properties.
@@ -451,7 +395,7 @@ private:
 /// Writes a ParticlePropertyReference to an output stream.
 inline SaveStream& operator<<(SaveStream& stream, const ParticlePropertyReference& r)
 {
-	stream.writeEnum(r.id());
+	stream.writeEnum(r.type());
 	stream << r.name();
 	return stream;
 }
@@ -459,12 +403,12 @@ inline SaveStream& operator<<(SaveStream& stream, const ParticlePropertyReferenc
 /// Reads a ParticlePropertyReference from an input stream.
 inline LoadStream& operator>>(LoadStream& stream, ParticlePropertyReference& r)
 {
-	ParticleProperty::Identifier id;
+	ParticleProperty::Type type;
 	QString name;
-	stream.readEnum(id);
+	stream.readEnum(type);
 	stream >> name;
-	if(id != ParticleProperty::UserProperty)
-		r = ParticlePropertyReference(id);
+	if(type != ParticleProperty::UserProperty)
+		r = ParticlePropertyReference(type);
 	else
 		r = ParticlePropertyReference(name);
 	return stream;

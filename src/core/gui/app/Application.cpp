@@ -86,7 +86,6 @@ bool Application::initialize()
 
 		// Set the application name provided by the active branding class.
 		setApplicationName(tr("Ovito"));
-		setApplicationDisplayName(tr("Ovito - The Open Visualization Tool"));
 		setOrganizationName(tr("Alexander Stukowski"));
 		setApplicationVersion(tr("Version %1.%2.%3")
 				.arg(OVITO_VERSION_MAJOR)

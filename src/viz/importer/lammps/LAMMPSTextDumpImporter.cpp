@@ -52,11 +52,10 @@ void LAMMPSTextDumpImporter::parseFile(FutureInterface<ImportedDataPtr>& futureI
 	container.setSimulationCell(AffineTransformation(
 			Vector3(200,0,0), Vector3(0,100,0), Vector3(0,0,1000), Vector3(-100,-50,-50)));
 
-	for(int i = 0; i < 100 && !futureInterface.isCanceled(); i++) {
+	for(int i = 0; i <= 100 && !futureInterface.isCanceled(); i++) {
 		futureInterface.setProgressValue(i);
 		QThread::msleep(20);
 	}
-
 }
 
 };

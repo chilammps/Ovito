@@ -36,7 +36,7 @@ using namespace Ovito;
 /**
  * \brief Memory storage for a per-particle property.
  */
-class ParticleProperty
+class ParticleProperty : public QSharedData
 {
 public:
 
@@ -66,7 +66,7 @@ public:
 		PeriodicImageProperty = -21,
 		TransparencyProperty = -22,
 	};
-	Q_ENUMS(Type)
+	Q_ENUMS(Type);
 
 public:
 
@@ -92,6 +92,9 @@ public:
 	///                     the size of a data type at runtime.
 	/// \param componentCount The number of components per particle of type \a dataType.
 	ParticleProperty(int dataType, size_t dataTypeSize, size_t componentCount);
+
+	/// \brief Copy constructor.
+	ParticleProperty(const ParticleProperty& other);
 
 	/// \brief Gets the property's name.
 	/// \return The name of property.
@@ -142,7 +145,7 @@ public:
 	const QStringList& componentNames() const { return _componentNames; }
 
 	/// \brief Returns a read-only pointer to the raw elements stored in this property object.
-	const char* constData() const {
+	const void* constData() const {
 		return _data.get();
 	}
 
@@ -196,7 +199,7 @@ public:
 	}
 
 	/// Returns a read-write pointer to the raw elements in the property storage.
-	char* data() {
+	void* data() {
 		return _data.get();
 	}
 
@@ -357,6 +360,10 @@ public:
 		dataQuaternion()[particleIndex] = newValue;
 	}
 
+	/// Copies the contents from the given source into this storage.
+	/// Particles for which the bit in the given mask is set are skipped.
+	void filterCopy(const ParticleProperty& source, const std::vector<bool>& mask);
+
 public:
 
 	/// \brief Returns the default name used by the given type of standard property.
@@ -385,6 +392,9 @@ protected:
 	/// The type of this property.
 	Type _type;
 
+	/// The name of the property.
+	QString _name;
+
 	/// The data type of the property (a Qt metadata type identifier).
 	int _dataType;
 
@@ -405,7 +415,7 @@ protected:
 	QStringList _componentNames;
 
 	/// The internal data array that holds the elements.
-	std::unique_ptr<char[]> _data;
+	std::unique_ptr<uint8_t[]> _data;
 
 	friend SaveStream& operator<<(SaveStream& stream, const ParticleProperty& s);
 	friend LoadStream& operator>>(LoadStream& stream, ParticleProperty& s);
