@@ -362,12 +362,12 @@ protected:
 
 		virtual void undo() override {
 			OVITO_ASSERT(!target);
-			reffield.removeReference(index);
+			target = reffield.removeReference(index);
 		}
 
 		virtual void redo() override {
 			index = reffield.addReference(target, index);
-			target = NULL;
+			target = nullptr;
 		}
 
 		int getInsertionIndex() const { return index; }
@@ -385,12 +385,12 @@ protected:
 
 		virtual void undo() override {
 			index = reffield.addReference(target, index);
-			target = NULL;
+			target = nullptr;
 		}
 
 		virtual void redo() override {
 			OVITO_ASSERT(!target);
-			reffield.removeReference(index);
+			target = reffield.removeReference(index);
 		}
 	};
 

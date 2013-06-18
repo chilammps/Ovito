@@ -129,6 +129,20 @@ public:
 	/// Returns the cell origin.
 	const Point3& origin() const { return _cellOrigin; }
 
+	/// \brief Enables or disables periodic boundary conditions in the three spatial directions.
+	void setPBCFlags(const std::array<bool,3>& flags) {
+		_pbcX = flags[0]; _pbcY = flags[1]; _pbcZ = flags[2];
+	}
+
+	/// \brief Returns whether periodic boundary conditions are enabled in the X direction.
+	bool pbcX() const { return _pbcX; }
+
+	/// \brief Returns whether periodic boundary conditions are enabled in the X direction.
+	bool pbcY() const { return _pbcY; }
+
+	/// \brief Returns whether periodic boundary conditions are enabled in the X direction.
+	bool pbcZ() const { return _pbcZ; }
+
 	/// \brief Computes the axis-aligned bounding box of the simulation cell.
 	/// \return An axis-aligned box that completely covers the simulation cell.
 	Box3 boundingBox() const {

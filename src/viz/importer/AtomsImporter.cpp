@@ -70,8 +70,16 @@ void AtomsImporter::loadImplementation(FutureInterface<ImportedDataPtr>& futureI
 ******************************************************************************/
 void AtomsImporter::AtomsData::insertIntoScene(LinkedFileObject* destination)
 {
-	OORef<SimulationCell> cell = new SimulationCell(Box3(Point3::Origin(), 50));
-	destination->addSceneObject(cell.get());
+	// Adopt simulation cell.
+	OORef<SimulationCell> cell = destination->findSceneObject<SimulationCell>();
+	if(!cell) {
+		cell = new SimulationCell(simulationCell(), pbcFlags()[0], pbcFlags()[1], pbcFlags()[2]);
+		destination->addSceneObject(cell.get());
+	}
+	else {
+		cell->setCellMatrix(simulationCell());
+		cell->setPBCFlags(pbcFlags());
+	}
 }
 
 };

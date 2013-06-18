@@ -90,7 +90,7 @@ void PluginManager::registerPlugins()
 
 	// Scan the plugins directory for installed plugins.
 	QDir prefixDir(QCoreApplication::applicationDirPath());
-#if defined(Q_WS_WIN) || defined(Q_WS_MAC)
+#if defined(Q_OS_WIN) || defined(Q_OS_MAC)
 	QDir pluginDir = QDir(prefixDir.absolutePath() + "/plugins");
 #else
 	prefixDir.cdUp();

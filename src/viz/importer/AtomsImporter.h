@@ -53,6 +53,9 @@ protected:
 		/// Sets the simulation cell matrix.
 		void setSimulationCell(const AffineTransformation& cellMatrix) { _simulationCell = cellMatrix; }
 
+		/// Returns the PBC flags.
+		const std::array<bool,3>& pbcFlags() const { return _pbcFlags; }
+
 	private:
 
 		/// The geometry of the cell.

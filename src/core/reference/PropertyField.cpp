@@ -163,12 +163,20 @@ OORef<RefTarget> VectorReferenceFieldBase::removeReference(int index, bool gener
 
 	if(generateNotificationEvents) {
 
-		// Inform derived classes.
-		refmaker->referenceRemoved(*descriptor(), target.get(), index);
+		try {
 
-		// Send auto change message.
-		generateTargetChangedEvent();
+			// Inform derived classes.
+			refmaker->referenceRemoved(*descriptor(), target.get(), index);
 
+			// Send auto change message.
+			generateTargetChangedEvent();
+
+		}
+		catch(...) {
+			if(!UndoManager::instance().isUndoingOrRedoing())
+				throw;
+			qDebug() << "Caught exception in VectorReferenceFieldBase::removeReference(). RefMaker is" << owner() << ". RefTarget is" << target;
+		}
 	}
 
 	return target;
@@ -207,11 +215,18 @@ int VectorReferenceFieldBase::addReference(const OORef<RefTarget>& target, int i
 	if(target && target->dependents().contains(refmaker) == false)
 		target->dependents().push_back(refmaker);
 
-	// Inform derived classes.
-	refmaker->referenceInserted(*descriptor(), target.get(), index);
+	try {
+		// Inform derived classes.
+		refmaker->referenceInserted(*descriptor(), target.get(), index);
 
-	// Send auto change message.
-	generateTargetChangedEvent();
+		// Send auto change message.
+		generateTargetChangedEvent();
+	}
+	catch(...) {
+		if(!UndoManager::instance().isUndoingOrRedoing())
+			throw;
+		qDebug() << "Caught exception in VectorReferenceFieldBase::addReference(). RefMaker is" << refmaker << ". RefTarget is" << target.get();
+	}
 
 	return index;
 }

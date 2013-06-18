@@ -82,6 +82,16 @@ public:
 	/// \brief Inserts a new object into the list of scene objects held by this container object.
 	void addSceneObject(SceneObject* obj) { if(!_sceneObjects.contains(obj)) _sceneObjects.push_back(obj); }
 
+	/// \brief Looks for an object of the given type in the list of scene objects and returns it.
+	template<class T>
+	T* findSceneObject() const {
+		for(SceneObject* obj : sceneObjects()) {
+			T* castObj = dynamic_object_cast<T>(obj);
+			if(castObj) return castObj;
+		}
+		return nullptr;
+	}
+
 #if 0
 	/// \brief Returns whether the loaded scene objects should be saved in a scene file.
 	/// \return \c true if a copy of the external data is stored in the scene file; \c false if the data resides only in the linked file.
