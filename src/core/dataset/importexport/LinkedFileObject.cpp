@@ -122,6 +122,7 @@ PipelineFlowState LinkedFileObject::evaluate(TimePoint time)
 		if(oldTaskCanceled) {
 			notifyDependents(ReferenceEvent::PendingOperationFailed);
 		}
+		setStatus(ObjectStatus::Pending);
 		// Indicate to the caller that the result is pending.
 		return PipelineFlowState(ObjectStatus::Pending, _sceneObjects.targets(), TimeInterval(time));
 	}

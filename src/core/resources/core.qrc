@@ -57,6 +57,7 @@
 	<file>mainwin/status/status_error.png</file>
 	<file>mainwin/status/status_info.png</file>
 	<file>mainwin/status/status_warning.png</file>
+	<file>mainwin/status/status_pending.gif</file>
 	
 	<file>actions/modify/modifier_enabled.png</file>
 	<file>actions/modify/modifier_disabled.png</file>

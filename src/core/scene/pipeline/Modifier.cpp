@@ -28,12 +28,15 @@
 namespace Ovito {
 
 IMPLEMENT_OVITO_OBJECT(Core, Modifier, RefTarget)
+DEFINE_PROPERTY_FIELD(Modifier, _isEnabled, "IsEnabled")
+SET_PROPERTY_FIELD_LABEL(Modifier, _isEnabled, "Enabled")
 
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-Modifier::Modifier()
+Modifier::Modifier() : _isEnabled(true)
 {
+	INIT_PROPERTY_FIELD(Modifier::_isEnabled);
 }
 
 /******************************************************************************

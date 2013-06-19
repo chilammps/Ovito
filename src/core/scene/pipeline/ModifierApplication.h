@@ -54,30 +54,12 @@ public:
 	/// \return The PipelineObject this application is part of.
 	PipelineObject* pipelineObject() const;
 
-	/// \brief Returns whether this modifier application is currently enabled.
-	/// \return \c true if it is currently enabled, i.e. applied.
-	///         \c false if it is disabled and skipped in the geometry pipeline.
-	bool isEnabled() const { return _isEnabled; }
-
-	/// \brief Enables or disables this modifier application.
-	/// \param enabled Controls the state of the modifier.
-	///
-	/// A disabled modifier application is skipped in the geometry pipeline
-	/// and its modifier is not applied to the input object.
-	///
-	/// \undoable
-	void setEnabled(bool enabled) { _isEnabled = enabled; }
-
 	/// \brief Return the status returned by the modifier during its last evaluation.
 	const ObjectStatus& status() const { return _evalStatus; }
 
 	/// \brief Stores the status of this modifier application.
 	/// \note This is an internal function.
 	void setStatus(const ObjectStatus& status);
-
-public:
-
-	Q_PROPERTY(bool isEnabled READ isEnabled WRITE setEnabled)
 
 private:
 
@@ -87,14 +69,10 @@ private:
 	/// The status returned by the modifier during its last evaluation.
 	ObjectStatus _evalStatus;
 
-	/// Flag that indicates whether the modifier application is enabled.
-	PropertyField<bool, bool, ReferenceEvent::TargetEnabledOrDisabled> _isEnabled;
-
 	Q_OBJECT
 	OVITO_OBJECT
 
 	DECLARE_REFERENCE_FIELD(_modifier);
-	DECLARE_PROPERTY_FIELD(_isEnabled);
 };
 
 

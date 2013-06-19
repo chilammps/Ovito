@@ -129,10 +129,33 @@ public:
 	/// \param modApp The ModifiedApplication object that has been created for the modifier.
 	virtual void initializeModifier(PipelineObject* pipeline, ModifierApplication* modApp) {}
 
+	/// \brief Returns whether this modifier is currently enabled.
+	/// \return \c true if it is currently enabled, i.e. applied.
+	///         \c false if it is disabled and skipped in the geometry pipeline.
+	bool isEnabled() const { return _isEnabled; }
+
+	/// \brief Enables or disables this modifier.
+	/// \param enabled Controls the state of the modifier.
+	///
+	/// A disabled modifier is skipped in the geometry pipeline
+	/// and is not applied to the input object.
+	///
+	/// \undoable
+	void setEnabled(bool enabled) { _isEnabled = enabled; }
+
+public:
+
+	Q_PROPERTY(bool isEnabled READ isEnabled WRITE setEnabled)
+
 private:
+
+	/// Flag that indicates whether the modifier is enabled.
+	PropertyField<bool, bool, ReferenceEvent::TargetEnabledOrDisabled> _isEnabled;
 
 	Q_OBJECT
 	OVITO_OBJECT
+
+	DECLARE_PROPERTY_FIELD(_isEnabled);
 };
 
 

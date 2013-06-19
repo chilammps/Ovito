@@ -34,42 +34,22 @@
 namespace Ovito {
 
 IMPLEMENT_OVITO_OBJECT(Core, ModifierStackEntry, RefTarget)
-DEFINE_FLAGS_REFERENCE_FIELD(ModifierStackEntry, object, "Object", RefTarget, PROPERTY_FIELD_NO_UNDO)
-DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(ModifierStackEntry, modApps, "ModifierApplications", ModifierApplication, PROPERTY_FIELD_NO_UNDO)
+DEFINE_FLAGS_REFERENCE_FIELD(ModifierStackEntry, _object, "Object", RefTarget, PROPERTY_FIELD_NO_UNDO)
+DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(ModifierStackEntry, _modApps, "ModifierApplications", ModifierApplication, PROPERTY_FIELD_NO_UNDO)
 
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-ModifierStackEntry::ModifierStackEntry(ModifierStack* _stack, RefTarget* commonObject, bool isSubObject) :
-	stack(_stack),
+ModifierStackEntry::ModifierStackEntry(ModifierStack* stack, RefTarget* commonObject, bool isSubObject) :
+	_stack(stack),
 	_isSubObject(isSubObject)
 {
-	INIT_PROPERTY_FIELD(ModifierStackEntry::object);
-	INIT_PROPERTY_FIELD(ModifierStackEntry::modApps);
+	INIT_PROPERTY_FIELD(ModifierStackEntry::_object);
+	INIT_PROPERTY_FIELD(ModifierStackEntry::_modApps);
 
-	this->object = commonObject;
+	this->_object = commonObject;
 }
 
-
-IMPLEMENT_OVITO_OBJECT(Core, ModifierStack, RefMaker)
-DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(ModifierStack, stackEntries, "StackEntries", ModifierStackEntry, PROPERTY_FIELD_NO_UNDO)
-DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(ModifierStack, selectedNodes, "SelectedNodes", ObjectNode, PROPERTY_FIELD_NO_UNDO)
-
-/******************************************************************************
-* Initializes the object.
-******************************************************************************/
-ModifierStack::ModifierStack(ModifyCommandPage* modifyPage)
-	: page(modifyPage), nextObjectToSelect(NULL), needStackUpdate(false)
-{
-	INIT_PROPERTY_FIELD(ModifierStack::stackEntries);
-	INIT_PROPERTY_FIELD(ModifierStack::selectedNodes);
-
-	loadModifierCategories();
-
-	_listModel = new ModifierStackModel(this);
-	setParent(modifyPage);
-	connect(this, SIGNAL(internalStackUpdate()), this, SLOT(onInternalStackUpdate()), Qt::QueuedConnection);
-}
 
 /******************************************************************************
 * This method is called when an object referenced by the modifier
@@ -82,23 +62,43 @@ bool ModifierStackEntry::referenceEvent(RefTarget* source, ReferenceEvent* event
 	if((event->type() == ReferenceEvent::ReferenceAdded || event->type() == ReferenceEvent::ReferenceRemoved || event->type() == ReferenceEvent::ReferenceChanged)
 		&& source == commonObject() && dynamic_object_cast<PipelineObject>(commonObject()))
 	{
-		stack->invalidate();
+		_stack->invalidate();
 	}
 	/// Update a modifier entry if the modifier has been enabled or disabled.
 	else if(event->type() == ReferenceEvent::TargetEnabledOrDisabled && source == commonObject() && event->sender() == commonObject()) {
-		stack->listModel()->refreshStackEntry(this);
+		_stack->listModel()->refreshStackEntry(this);
 	}
 	/// Update an entry if the evaluation status of the modifier has changed.
 	else if(event->type() == ReferenceEvent::StatusChanged) {
-		stack->listModel()->refreshStackEntry(this);
+		_stack->listModel()->refreshStackEntry(this);
 	}
 	/// If the list of sub-objects changes for one of the entries, we need
 	/// to update everything.
 	else if(event->type() == ReferenceEvent::SubobjectListChanged && source == commonObject() && event->sender() == commonObject()) {
-		stack->invalidate();
+		_stack->invalidate();
 	}
 
 	return RefTarget::referenceEvent(source, event);
+}
+
+IMPLEMENT_OVITO_OBJECT(Core, ModifierStack, RefMaker)
+DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(ModifierStack, stackEntries, "StackEntries", ModifierStackEntry, PROPERTY_FIELD_NO_UNDO)
+DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(ModifierStack, selectedNodes, "SelectedNodes", ObjectNode, PROPERTY_FIELD_NO_UNDO)
+
+/******************************************************************************
+* Initializes the object.
+******************************************************************************/
+ModifierStack::ModifierStack(ModifyCommandPage* modifyPage)
+	: page(modifyPage), nextObjectToSelect(nullptr), needStackUpdate(false)
+{
+	INIT_PROPERTY_FIELD(ModifierStack::stackEntries);
+	INIT_PROPERTY_FIELD(ModifierStack::selectedNodes);
+
+	loadModifierCategories();
+
+	_listModel = new ModifierStackModel(this);
+	setParent(modifyPage);
+	connect(this, SIGNAL(internalStackUpdate()), this, SLOT(onInternalStackUpdate()), Qt::QueuedConnection);
 }
 
 /******************************************************************************
@@ -145,10 +145,10 @@ void ModifierStack::collectObjectNodes(const QVector<SceneNode*>& in)
 ******************************************************************************/
 SceneObject* ModifierStack::commonObject()
 {
-	SceneObject* obj = NULL;
+	SceneObject* obj = nullptr;
 	Q_FOREACH(ObjectNode* objNode, selectedNodes.targets()) {
-		if(obj == NULL) obj = objNode->sceneObject();
-		else if(obj != objNode->sceneObject()) return NULL;	// The scene nodes are not compatible.
+		if(obj == nullptr) obj = objNode->sceneObject();
+		else if(obj != objNode->sceneObject()) return nullptr;	// The scene nodes are not compatible.
 	}
 	return obj;
 }
@@ -296,22 +296,6 @@ void ModifierStack::refreshModifierStack()
 }
 
 /******************************************************************************
-*  Updates the display of a single modifier stack entry.
-******************************************************************************/
-void ModifierStackModel::refreshStackEntry(ModifierStackEntry* entry)
-{
-	OVITO_CHECK_OBJECT_POINTER(entry);
-	int i = entries.indexOf(entry);
-	if(i != -1) {
-		dataChanged(index(i), index(i));
-
-		// Also update available actions if the changing entry is currently selected.
-		if(stack()->selectedEntry() == entry)
-			stack()->updateAvailableActions(entry);
-	}
-}
-
-/******************************************************************************
 * Shows the properties of the selected item in the modifier stack box in the
 * properties panel of the page.
 ******************************************************************************/
@@ -418,13 +402,13 @@ void ModifierStack::updateAvailableActions(ModifierStackEntry* currentEntry)
 	QAction* moveModifierUpAction = ActionManager::instance().getAction(ACTION_MODIFIER_MOVE_UP);
 	QAction* moveModifierDownAction = ActionManager::instance().getAction(ACTION_MODIFIER_MOVE_DOWN);
 	QAction* toggleModifierStateAction = ActionManager::instance().getAction(ACTION_MODIFIER_TOGGLE_STATE);
-	Modifier* modifier = currentEntry ? dynamic_object_cast<Modifier>(currentEntry->commonObject()) : NULL;
-	if(modifier != NULL) {
+	Modifier* modifier = currentEntry ? dynamic_object_cast<Modifier>(currentEntry->commonObject()) : nullptr;
+	if(modifier) {
 		deleteModifierAction->setEnabled(true);
 		if(currentEntry->modifierApplications().size() == 1) {
 			ModifierApplication* modApp = currentEntry->modifierApplications()[0];
 			PipelineObject* modObj = modApp->pipelineObject();
-			if(modObj != NULL) {
+			if(modObj) {
 				OVITO_ASSERT(modObj->modifierApplications().contains(modApp));
 				moveModifierUpAction->setEnabled(modApp != modObj->modifierApplications().back());
 				moveModifierDownAction->setEnabled(modApp != modObj->modifierApplications().front());
@@ -436,7 +420,7 @@ void ModifierStack::updateAvailableActions(ModifierStackEntry* currentEntry)
 		}
 		if(modifier) {
 			toggleModifierStateAction->setEnabled(true);
-			//toggleModifierStateAction->setChecked(modifier->isModifierEnabled() == false);
+			toggleModifierStateAction->setChecked(modifier->isEnabled() == false);
 		}
 		else {
 			toggleModifierStateAction->setChecked(false);
@@ -463,7 +447,7 @@ void ModifierStack::applyModifier(Modifier* modifier)
 	// On the next stack update the new modifier should be selected.
 	nextObjectToSelect = modifier;
 
-	if(selEntry != NULL) {
+	if(selEntry) {
 		if(dynamic_object_cast<Modifier>(selEntry->commonObject())) {
 			Q_FOREACH(ModifierApplication* modApp, selEntry->modifierApplications()) {
 				PipelineObject* modObj = modApp->pipelineObject();
@@ -514,13 +498,45 @@ bool ModifierStack::referenceEvent(RefTarget* source, ReferenceEvent* event)
 }
 
 /******************************************************************************
+*  Updates the display of a single modifier stack entry.
+******************************************************************************/
+void ModifierStackModel::refreshStackEntry(ModifierStackEntry* entry)
+{
+	OVITO_CHECK_OBJECT_POINTER(entry);
+	int i = _entries.indexOf(entry);
+	if(i != -1) {
+		dataChanged(index(i), index(i));
+
+		// Also update available actions if the changed entry is selected.
+		if(stack()->selectedEntry() == entry)
+			stack()->updateAvailableActions(entry);
+	}
+}
+
+/******************************************************************************
+* Is called by the system when the animated status icon changed.
+******************************************************************************/
+void ModifierStackModel::iconFrameChanged()
+{
+	bool stopMovie = true;
+	for(int i = 0; i < _entries.size(); i++) {
+		if(getEntryStatus(_entries[i]) == Pending) {
+			dataChanged(index(i), index(i), { Qt::DecorationRole });
+			stopMovie = false;
+		}
+	}
+	if(stopMovie)
+		_statusPendingIcon.stop();
+}
+
+/******************************************************************************
 * Returns the data for the QListView widget.
 ******************************************************************************/
 QVariant ModifierStackModel::data(const QModelIndex& index, int role) const
 {
-	OVITO_ASSERT(index.row() >= 0 && index.row() < (int)entries.size());
+	OVITO_ASSERT(index.row() >= 0 && index.row() < _entries.size());
 
-	ModifierStackEntry* entry = entries[index.row()];
+	ModifierStackEntry* entry = _entries[index.row()];
 	OVITO_CHECK_OBJECT_POINTER(entry);
 
 	if(role == Qt::DisplayRole) {
@@ -540,58 +556,86 @@ QVariant ModifierStackModel::data(const QModelIndex& index, int role) const
 		return qVariantFromValue((void*)entry);
 	}
 	else if(role == Qt::DecorationRole) {
-		Modifier* modifier = dynamic_object_cast<Modifier>(entry->commonObject());
-		if(modifier) {
-#if 0
-			if(!modifier->isModifierEnabled()) {
-				return qVariantFromValue(modifierDisabledIcon);
-			}
-			else {
-#endif
-				ObjectStatus status;
-				Q_FOREACH(ModifierApplication* modApp, entry->modifierApplications()) {
-					status = modApp->status();
-					if(status.type() == ObjectStatus::Error) break;
-				}
-				if(status.type() == ObjectStatus::Success) {
-					if(status.shortText().isEmpty())
-						return qVariantFromValue(modifierEnabledIcon);
-					else
-						return qVariantFromValue(modifierStatusInfoIcon);
-				}
-				else if(status.type() == ObjectStatus::Warning)
-					return qVariantFromValue(modifierStatusWarningIcon);
-				else if(status.type() == ObjectStatus::Error)
-					return qVariantFromValue(modifierStatusErrorIcon);
-				else
-					return qVariantFromValue(modifierEnabledIcon);
-			//}
-		}
-		else {
-			SceneObject* sceneObject = dynamic_object_cast<SceneObject>(entry->commonObject());
-			if(sceneObject) {
-				ObjectStatus status = sceneObject->status();
-				if(status.type() == ObjectStatus::Warning)
-					return qVariantFromValue(modifierStatusWarningIcon);
-				else if(status.type() == ObjectStatus::Error)
-					return qVariantFromValue(modifierStatusErrorIcon);
-			}
+		switch(getEntryStatus(entry)) {
+		case Enabled: return qVariantFromValue(_modifierEnabledIcon);
+		case Disabled: return qVariantFromValue(_modifierDisabledIcon);
+		case Info: return qVariantFromValue(_statusInfoIcon);
+		case Warning: return qVariantFromValue(_statusWarningIcon);
+		case Error: return qVariantFromValue(_statusErrorIcon);
+		case Pending:
+			const_cast<QMovie&>(_statusPendingIcon).start();
+			return qVariantFromValue(_statusPendingIcon.currentImage());
 		}
 	}
 	else if(role == Qt::ToolTipRole) {
-		Modifier* modifier = dynamic_object_cast<Modifier>(entry->commonObject());
-		if(modifier/* && modifier->isModifierEnabled()*/) {
+		return getEntryToolTip(entry);
+	}
+
+	return QVariant();
+}
+
+/******************************************************************************
+* Returns the status for a given entry of the modifier stack.
+******************************************************************************/
+ModifierStackModel::EntryStatus ModifierStackModel::getEntryStatus(ModifierStackEntry* entry) const
+{
+	Modifier* modifier = dynamic_object_cast<Modifier>(entry->commonObject());
+	if(modifier) {
+		if(!modifier->isEnabled()) {
+			return Disabled;
+		}
+		else {
 			ObjectStatus status;
 			Q_FOREACH(ModifierApplication* modApp, entry->modifierApplications()) {
 				status = modApp->status();
 				if(status.type() == ObjectStatus::Error) break;
 			}
-			if(status.shortText().isEmpty() == false)
-				return qVariantFromValue(status.shortText());
+			if(status.type() == ObjectStatus::Success) {
+				if(status.shortText().isEmpty())
+					return Enabled;
+				else
+					return Info;
+			}
+			else if(status.type() == ObjectStatus::Warning)
+				return Warning;
+			else if(status.type() == ObjectStatus::Error)
+				return Error;
+			else
+				return Enabled;
 		}
 	}
+	else {
+		SceneObject* sceneObject = dynamic_object_cast<SceneObject>(entry->commonObject());
+		if(sceneObject) {
+			ObjectStatus status = sceneObject->status();
+			if(status.type() == ObjectStatus::Warning)
+				return Warning;
+			else if(status.type() == ObjectStatus::Error)
+				return Error;
+			else if(status.type() == ObjectStatus::Pending)
+				return Pending;
+		}
+	}
+	return None;
+}
 
+/******************************************************************************
+* Returns the tooltip text for a given entry of the modifier stack.
+******************************************************************************/
+QVariant ModifierStackModel::getEntryToolTip(ModifierStackEntry* entry) const
+{
+	Modifier* modifier = dynamic_object_cast<Modifier>(entry->commonObject());
+	if(modifier && modifier->isEnabled()) {
+		ObjectStatus status;
+		Q_FOREACH(ModifierApplication* modApp, entry->modifierApplications()) {
+			status = modApp->status();
+			if(status.type() == ObjectStatus::Error) break;
+		}
+		if(status.shortText().isEmpty() == false)
+			return qVariantFromValue(status.shortText());
+	}
 	return QVariant();
 }
+
 
 };

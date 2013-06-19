@@ -41,22 +41,22 @@ class ModifierStackEntry : public RefTarget
 public:
 
 	/// Constructor.
-	ModifierStackEntry(ModifierStack* _stack, RefTarget* commonObject, bool isSubObject = false);
+	ModifierStackEntry(ModifierStack* stack, RefTarget* commonObject, bool isSubObject = false);
 
 	/// Records a mod application if this is a entry for a modifier.
 	void addModifierApplication(ModifierApplication* modApp) {
 		OVITO_CHECK_OBJECT_POINTER(modApp);
-		OVITO_ASSERT(dynamic_object_cast<Modifier>((RefTarget*)object));
-		OVITO_ASSERT(modApps.contains(modApp) == false);
-		modApps.push_back(modApp);
+		OVITO_ASSERT(dynamic_object_cast<Modifier>(commonObject()));
+		OVITO_ASSERT(_modApps.contains(modApp) == false);
+		_modApps.push_back(modApp);
 	}
 
 	/// Returns the modification object of this entry.
 	/// This can be either a SceneObject or a Modifier.
-	RefTarget* commonObject() const { return object; }
+	RefTarget* commonObject() const { return _object; }
 
 	/// Returns the list of modifier applications if this is a modifier entry.
-	const QVector<ModifierApplication*>& modifierApplications() const { return modApps; }
+	const QVector<ModifierApplication*>& modifierApplications() const { return _modApps; }
 
 	/// Returns true if this is a sub-object entry.
 	bool isSubObject() const { return _isSubObject; }
@@ -72,13 +72,13 @@ protected:
 private:
 
 	/// The page that shows the modification stack.
-	ModifierStack* stack;
+	ModifierStack* _stack;
 
 	/// The object displayed in the list box (either a SceneObject or a Modifier).
-	ReferenceField<RefTarget> object;
+	ReferenceField<RefTarget> _object;
 
 	/// The list of application if this is a modifier entry.
-	VectorReferenceField<ModifierApplication> modApps;
+	VectorReferenceField<ModifierApplication> _modApps;
 
 	/// Indicates that this is a sub-object entry.
 	bool _isSubObject;
@@ -86,8 +86,8 @@ private:
 	Q_OBJECT
 	OVITO_OBJECT
 
-	DECLARE_REFERENCE_FIELD(object);
-	DECLARE_VECTOR_REFERENCE_FIELD(modApps);
+	DECLARE_REFERENCE_FIELD(_object);
+	DECLARE_VECTOR_REFERENCE_FIELD(_modApps);
 };
 
 /******************************************************************************
@@ -99,25 +99,40 @@ class ModifierStackModel : public QAbstractListModel
 
 public:
 
+	enum EntryStatus {
+		None,
+		Enabled,
+		Disabled,
+		Info,
+		Warning,
+		Error,
+		Pending
+	};
+
+public:
+
 	/// Constructor.
 	ModifierStackModel(QObject* parent) : QAbstractListModel(parent),
-		modifierStatusInfoIcon(":/core/mainwin/status/status_info.png"),
-		modifierStatusWarningIcon(":/core/mainwin/status/status_warning.png"),
-		modifierStatusErrorIcon(":/core/mainwin/status/status_error.png"),
-		modifierEnabledIcon(":/core/command_panel/modifier_enabled.png"),
-		modifierDisabledIcon(":/core/command_panel/modifier_disabled.png") {}
+		_statusInfoIcon(":/core/mainwin/status/status_info.png"),
+		_statusWarningIcon(":/core/mainwin/status/status_warning.png"),
+		_statusErrorIcon(":/core/mainwin/status/status_error.png"),
+		_statusPendingIcon(":/core/mainwin/status/status_pending.gif"),
+		_modifierEnabledIcon(":/core/command_panel/modifier_enabled.png"),
+		_modifierDisabledIcon(":/core/command_panel/modifier_disabled.png") {
+		connect(&_statusPendingIcon, SIGNAL(frameChanged(int)), this, SLOT(iconFrameChanged()));
+	}
 
 	/// Returns the number of list rows.
-	virtual int rowCount(const QModelIndex& parent = QModelIndex()) const { return entries.size(); }
+	virtual int rowCount(const QModelIndex& parent = QModelIndex()) const override { return _entries.size(); }
 
 	/// Returns the data associated with a list entry.
-	virtual QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
+	virtual QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
 	/// Discards all modifier stack entries and resets the list.
 	void clear() {
-		if(entries.empty()) return;
-		beginRemoveRows(QModelIndex(), 0, entries.size()-1);
-		entries.clear();
+		if(_entries.empty()) return;
+		beginRemoveRows(QModelIndex(), 0, _entries.size()-1);
+		_entries.clear();
 		endRemoveRows();
 	}
 
@@ -126,23 +141,36 @@ public:
 		clear();
 		if(newEntries.empty()) return;
 		beginInsertRows(QModelIndex(), 0, newEntries.size()-1);
-		entries = newEntries;
+		_entries = newEntries;
 		endInsertRows();
 	}
 
 	/// Updates the display of a single modifier stack entry.
 	void refreshStackEntry(ModifierStackEntry* entry);
 
-	ModifierStack* stack() { return (ModifierStack*)QObject::parent(); }
+	/// Returns the modifier stack that owns this list model.
+	ModifierStack* stack() { return reinterpret_cast<ModifierStack*>(QObject::parent()); }
+
+private Q_SLOTS:
+
+	/// Is called by the system when the animated status icon changed.
+	void iconFrameChanged();
 
 private:
 
-	QVector<ModifierStackEntry*> entries;
-	QIcon modifierEnabledIcon;
-	QIcon modifierDisabledIcon;
-	QIcon modifierStatusInfoIcon;
-	QIcon modifierStatusWarningIcon;
-	QIcon modifierStatusErrorIcon;
+	/// Returns the status for a given entry of the modifier stack.
+	EntryStatus getEntryStatus(ModifierStackEntry* entry) const;
+
+	/// Returns the tooltip text for a given entry of the modifier stack.
+	QVariant getEntryToolTip(ModifierStackEntry* entry) const;
+
+	QVector<ModifierStackEntry*> _entries;
+	QIcon _modifierEnabledIcon;
+	QIcon _modifierDisabledIcon;
+	QIcon _statusInfoIcon;
+	QIcon _statusWarningIcon;
+	QIcon _statusErrorIcon;
+	QMovie _statusPendingIcon;
 };
 
 /******************************************************************************
