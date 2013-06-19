@@ -101,9 +101,9 @@ public:
 
 	/// Constructor.
 	ModifierStackModel(QObject* parent) : QAbstractListModel(parent),
-		modifierStatusInfoIcon(":/core/command_panel/modifier_status_info.png"),
-		modifierStatusWarningIcon(":/core/command_panel/modifier_status_warning.png"),
-		modifierStatusErrorIcon(":/core/command_panel/modifier_status_error.png"),
+		modifierStatusInfoIcon(":/core/mainwin/status/status_info.png"),
+		modifierStatusWarningIcon(":/core/mainwin/status/status_warning.png"),
+		modifierStatusErrorIcon(":/core/mainwin/status/status_error.png"),
 		modifierEnabledIcon(":/core/command_panel/modifier_enabled.png"),
 		modifierDisabledIcon(":/core/command_panel/modifier_disabled.png") {}
 

@@ -114,6 +114,14 @@ public:
 		return PipelineFlowState(this, objectValidity(time));
 	}
 
+	/// \brief Returns the a structure that describes the current status of the object.
+	///
+	/// The default implementation of this method returns an empty status object
+	/// that indicates success (ObjectStatus::StatusType::Success).
+	///
+	/// An object should generate a ReferenceEvent::StatusChanged event when its status has changed.
+	virtual ObjectStatus status() const { return ObjectStatus(); }
+
 	/// \brief Returns the attached display object that is responsible for rendering this
 	///        scene object.
 	DisplayObject* displayObject() const { return _displayObject; }

@@ -177,7 +177,7 @@ void AnimationTimeSlider::mouseMoveEvent(QMouseEvent* event)
 		// Force immediate viewport update.
 		ViewportManager::instance().processViewportUpdates();
 	}
-	else {
+	else if(interval.duration() > 0) {
 		if(thumbRectangle().contains(event->pos()) == false) {
 			QString frameName = DataSetManager::instance().currentSet()->animationSettings()->namedFrames()[newFrame];
 			FloatType percentage = (FloatType)(AnimManager::instance().frameToTime(newFrame) - AnimManager::instance().animationInterval().start()) / (FloatType)(AnimManager::instance().animationInterval().duration() + 1);

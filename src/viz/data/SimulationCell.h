@@ -149,6 +149,9 @@ public:
 		return Box3(Point3(0), Point3(1)).transformed(cellMatrix());
 	}
 
+	/// \brief Returns the title of this object.
+	virtual QString objectTitle() override { return tr("Simulation cell"); }
+
 protected:
 
 	/// Creates the storage for the internal parameters.

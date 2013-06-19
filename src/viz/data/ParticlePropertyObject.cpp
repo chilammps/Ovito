@@ -25,8 +25,6 @@
 namespace Viz {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Viz, ParticlePropertyObject, SceneObject)
-DEFINE_PROPERTY_FIELD(ParticlePropertyObject, _objectTitle, "ObjectTitle")
-SET_PROPERTY_FIELD_LABEL(ParticlePropertyObject, _objectTitle, "Object title")
 
 /******************************************************************************
 * Default constructor.
@@ -34,7 +32,6 @@ SET_PROPERTY_FIELD_LABEL(ParticlePropertyObject, _objectTitle, "Object title")
 ParticlePropertyObject::ParticlePropertyObject()
 	: _storage(new ParticleProperty())
 {
-	INIT_PROPERTY_FIELD(ParticlePropertyObject::_objectTitle);
 }
 
 /******************************************************************************
@@ -43,7 +40,6 @@ ParticlePropertyObject::ParticlePropertyObject()
 ParticlePropertyObject::ParticlePropertyObject(int dataType, size_t dataTypeSize, size_t componentCount)
 	: _storage(new ParticleProperty(dataType, dataTypeSize, componentCount))
 {
-	INIT_PROPERTY_FIELD(ParticlePropertyObject::_objectTitle);
 }
 
 /******************************************************************************
@@ -52,7 +48,25 @@ ParticlePropertyObject::ParticlePropertyObject(int dataType, size_t dataTypeSize
 ParticlePropertyObject::ParticlePropertyObject(ParticleProperty::Type which, size_t componentCount)
 	: _storage(new ParticleProperty(which, componentCount))
 {
-	INIT_PROPERTY_FIELD(ParticlePropertyObject::_objectTitle);
+}
+
+/******************************************************************************
+* Constructor that creates a property object from an existing property storage.
+******************************************************************************/
+ParticlePropertyObject::ParticlePropertyObject(ParticleProperty* storage)
+	: _storage(storage)
+{
+	OVITO_CHECK_POINTER(storage);
+}
+
+/******************************************************************************
+* Replaces the internal storage object with the given one.
+******************************************************************************/
+void ParticlePropertyObject::replaceStorage(ParticleProperty* storage)
+{
+	OVITO_CHECK_POINTER(storage);
+	_storage = storage;
+	notifyDependents(ReferenceEvent::TargetChanged);
 }
 
 /******************************************************************************

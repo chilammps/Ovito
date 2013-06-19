@@ -66,6 +66,9 @@ public:
 	/// constructor.
 	ParticlePropertyObject(ParticleProperty::Type which, size_t componentCount = 0);
 
+	/// \brief Constructor that creates a property object from an existing property storage.
+	ParticlePropertyObject(ParticleProperty* storage);
+
 	/// \brief Gets the property's name.
 	/// \return The name of property, which is shown to the user.
 	const QString& name() const { return _storage->name(); }
@@ -74,6 +77,9 @@ public:
 	/// \param name The new name string.
 	/// \undoable
 	void setName(const QString& name);
+
+	/// \brief Replaces the internal storage object with the given one.
+	void replaceStorage(ParticleProperty* storage);
 
 	/// \brief Returns the number of particles for which this object stores the properties.
 	/// \return The total number of data elements in this channel divided by the
@@ -286,21 +292,18 @@ public:
 		_storage->setQuaternion(particleIndex, newValue);
 	}
 
-	/// \brief Sets the object title of this property object.
-	void setObjectTitle(const QString& title) { _objectTitle = title; }
-
 	//////////////////////////////// from RefTarget //////////////////////////////
 
 	/// \brief Returns whether this object, when returned as an editable sub-object by another object,
 	///        should be displayed in the modification stack.
 	///
-	/// Default data channels cannot be edited and are hidden in the modifier stack.
+	/// This implementation returns false because standard particle properties cannot be edited and
+	/// are hidden in the modifier stack.
 	virtual bool isSubObjectEditable() const override { return false; }
 
 	/// \brief Returns the title of this object.
 	virtual QString objectTitle() override {
-		if(_objectTitle.value().isEmpty() == false) return _objectTitle;
-		else return RefTarget::objectTitle();
+		return name();
 	}
 
 public:
@@ -320,9 +323,6 @@ protected:
 	/// Creates a copy of this object.
 	virtual OORef<RefTarget> clone(bool deepCopy, CloneHelper& cloneHelper) override;
 
-	/// The title of this property.
-	PropertyField<QString, QString, ReferenceEvent::TitleChanged> _objectTitle;
-
 	/// The internal storage object that holds the elements.
 	QSharedDataPointer<ParticleProperty> _storage;
 
@@ -330,8 +330,6 @@ private:
 
 	Q_OBJECT
 	OVITO_OBJECT
-
-	DECLARE_PROPERTY_FIELD(_objectTitle);
 };
 
 /**

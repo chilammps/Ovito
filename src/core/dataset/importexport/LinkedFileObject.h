@@ -53,7 +53,7 @@ public:
 	void refreshFromSource(int frame);
 
 	/// \brief Returns the status returned by the file parser on its last invocation.
-	const ObjectStatus& status() const { return _importStatus; }
+	virtual ObjectStatus status() const override { return _importStatus; }
 
 	/// \brief Scans the input source for animation frames and updates the internal list of frames.
 	bool updateFrames();
@@ -90,6 +90,14 @@ public:
 			if(castObj) return castObj;
 		}
 		return nullptr;
+	}
+
+	/// \brief Removes all scene objects owned by this LinkedFileObject that are not
+	///        listed in the given set of active objects.
+	void removeInactiveObjects(const QSet<SceneObject*>& activeObjects) {
+		for(int index = _sceneObjects.size() - 1; index >= 0; index--)
+			if(!activeObjects.contains(_sceneObjects[index]))
+				_sceneObjects.remove(index);
 	}
 
 #if 0

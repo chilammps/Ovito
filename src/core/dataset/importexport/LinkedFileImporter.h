@@ -57,7 +57,8 @@ public:
 
 	class ImportedData {
 	public:
-		/// Base destructor of virtual class.
+
+		/// Destructor of virtual class.
 		virtual ~ImportedData() {}
 
 		/// Lets the data container insert the data it holds into the scene by creating

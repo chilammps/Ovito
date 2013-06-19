@@ -24,6 +24,7 @@
 
 #include <core/Core.h>
 #include <core/dataset/importexport/LinkedFileImporter.h>
+#include <viz/data/ParticleProperty.h>
 
 namespace Viz {
 
@@ -56,6 +57,12 @@ protected:
 		/// Returns the PBC flags.
 		const std::array<bool,3>& pbcFlags() const { return _pbcFlags; }
 
+		/// Returns the list of particle properties.
+		const std::vector<QExplicitlySharedDataPointer<ParticleProperty>>& particleProperties() const { return _properties; }
+
+		/// Adds a new particle property.
+		void addParticleProperty(const QExplicitlySharedDataPointer<ParticleProperty>& property) { _properties.push_back(property); }
+
 	private:
 
 		/// The geometry of the cell.
@@ -63,6 +70,9 @@ protected:
 
 		/// PBC flags.
 		std::array<bool,3> _pbcFlags = {{ true, true, true }};
+
+		/// Atomic properties.
+		std::vector<QExplicitlySharedDataPointer<ParticleProperty>> _properties;
 	};
 
 public:

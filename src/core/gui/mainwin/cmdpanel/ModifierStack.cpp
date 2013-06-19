@@ -567,6 +567,16 @@ QVariant ModifierStackModel::data(const QModelIndex& index, int role) const
 					return qVariantFromValue(modifierEnabledIcon);
 			//}
 		}
+		else {
+			SceneObject* sceneObject = dynamic_object_cast<SceneObject>(entry->commonObject());
+			if(sceneObject) {
+				ObjectStatus status = sceneObject->status();
+				if(status.type() == ObjectStatus::Warning)
+					return qVariantFromValue(modifierStatusWarningIcon);
+				else if(status.type() == ObjectStatus::Error)
+					return qVariantFromValue(modifierStatusErrorIcon);
+			}
+		}
 	}
 	else if(role == Qt::ToolTipRole) {
 		Modifier* modifier = dynamic_object_cast<Modifier>(entry->commonObject());

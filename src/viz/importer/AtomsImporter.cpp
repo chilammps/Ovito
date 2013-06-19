@@ -25,6 +25,8 @@
 #include <core/utilities/concurrent/ProgressManager.h>
 #include <core/dataset/importexport/LinkedFileObject.h>
 #include <viz/data/SimulationCell.h>
+#include <viz/data/ParticleProperty.h>
+#include <viz/data/ParticlePropertyObject.h>
 #include "AtomsImporter.h"
 
 namespace Viz {
@@ -70,6 +72,8 @@ void AtomsImporter::loadImplementation(FutureInterface<ImportedDataPtr>& futureI
 ******************************************************************************/
 void AtomsImporter::AtomsData::insertIntoScene(LinkedFileObject* destination)
 {
+	QSet<SceneObject*> activeObjects;
+
 	// Adopt simulation cell.
 	OORef<SimulationCell> cell = destination->findSceneObject<SimulationCell>();
 	if(!cell) {
@@ -80,6 +84,28 @@ void AtomsImporter::AtomsData::insertIntoScene(LinkedFileObject* destination)
 		cell->setCellMatrix(simulationCell());
 		cell->setPBCFlags(pbcFlags());
 	}
+	activeObjects.insert(cell.get());
+
+	// Adopt particle properties.
+	for(const auto& property : particleProperties()) {
+		OORef<ParticlePropertyObject> propertyObj;
+		for(const auto& sceneObj : destination->sceneObjects()) {
+			ParticlePropertyObject* po = dynamic_object_cast<ParticlePropertyObject>(sceneObj);
+			if(po != nullptr && po->type() == property->type() && po->name() == property->name()) {
+				propertyObj = po;
+				break;
+			}
+		}
+		if(propertyObj)
+			propertyObj->replaceStorage(property.data());
+		else {
+			propertyObj = new ParticlePropertyObject(property.data());
+			destination->addSceneObject(propertyObj.get());
+		}
+		activeObjects.insert(propertyObj.get());
+	}
+
+	destination->removeInactiveObjects(activeObjects);
 }
 
 };

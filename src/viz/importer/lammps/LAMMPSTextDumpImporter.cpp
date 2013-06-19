@@ -56,6 +56,18 @@ void LAMMPSTextDumpImporter::parseFile(FutureInterface<ImportedDataPtr>& futureI
 		futureInterface.setProgressValue(i);
 		QThread::msleep(20);
 	}
+
+	size_t numAtoms = 10;
+
+	QExplicitlySharedDataPointer<ParticleProperty> posProperty(new ParticleProperty(ParticleProperty::PositionProperty));
+	posProperty->resize(numAtoms);
+	std::default_random_engine rng;
+	std::uniform_real_distribution<FloatType> unitDistribution;
+	for(size_t i = 0; i < numAtoms; i++) {
+		Point3 pos(unitDistribution(rng), unitDistribution(rng), unitDistribution(rng));
+		posProperty->setPoint3(i, container.simulationCell() * pos);
+	}
+	container.addParticleProperty(posProperty);
 }
 
 };
