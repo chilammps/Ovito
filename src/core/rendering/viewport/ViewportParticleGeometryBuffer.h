@@ -42,15 +42,15 @@ class ViewportParticleGeometryBuffer : public ParticleGeometryBuffer
 protected:
 
 	/// Constructor.
-	ViewportParticleGeometryBuffer(ViewportSceneRenderer* renderer) :
-		_renderer(renderer),
-		_contextGroup(QOpenGLContextGroup::currentContextGroup()),
-		_particleCount(0) {}
+	ViewportParticleGeometryBuffer(ViewportSceneRenderer* renderer);
 
 public:
 
+	/// Destructor.
+	virtual ~ViewportParticleGeometryBuffer();
+
 	/// \brief Allocates a geometry buffer with the given number of particles.
-	virtual void initialize(int particleCount) override;
+	virtual void setSize(int particleCount) override;
 
 	/// \brief Returns the number of particles stored in the buffer.
 	virtual int particleCount() const override { return _particleCount; }
@@ -98,6 +98,19 @@ private:
 
 	/// The number of particles stored in the buffers.
 	int _particleCount;
+
+	/// List of textures used for OpenGL rendering of particles.
+	enum BillboardTexture {
+		FRAGMENT_SHADER_TEXTURE,	// Texture used by the fragment shader
+		DIFFUSE_TEXTURE,			// Texture used for fixed-function point sprite rendering (contains the diffuse component used during the first rendering pass)
+		SPECULAR_TEXTURE,			// Texture used for fixed-function point sprite rendering (contains the specular component used during the second rendering pass)
+		FLAT_TEXTURE,				// Texture used for rendering flat-shaded particles.
+
+		NUM_TEXTURES				// Counts the number of textures.
+	};
+
+	/// Identifiers of the OpenGL textures that are used for billboard rendering of particles.
+	GLuint _textures[NUM_TEXTURES];
 
 	Q_OBJECT
 	OVITO_OBJECT

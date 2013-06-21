@@ -28,18 +28,13 @@ namespace Ovito {
 IMPLEMENT_OVITO_OBJECT(Core, ViewportParticleGeometryBuffer, ParticleGeometryBuffer);
 
 /******************************************************************************
-* Allocates a particle buffer with the given number of particles.
+* Constructor.
 ******************************************************************************/
-void ViewportParticleGeometryBuffer::initialize(int particleCount)
+ViewportParticleGeometryBuffer::ViewportParticleGeometryBuffer(ViewportSceneRenderer* renderer) :
+	_renderer(renderer),
+	_contextGroup(QOpenGLContextGroup::currentContextGroup()),
+	_particleCount(-1)
 {
-	OVITO_ASSERT(!_glPositionsBuffer.isCreated());
-	OVITO_ASSERT(!_glRadiiBuffer.isCreated());
-	OVITO_ASSERT(!_glColorsBuffer.isCreated());
-	OVITO_ASSERT(_particleCount == 0);
-	OVITO_ASSERT(particleCount >= 0);
-	OVITO_ASSERT(particleCount < std::numeric_limits<int>::max() / sizeof(Point3));
-	OVITO_ASSERT(QOpenGLContextGroup::currentContextGroup() == _contextGroup);
-
 	if(!_glPositionsBuffer.create())
 		throw Exception(tr("Failed to create OpenGL vertex buffer."));
 	_glPositionsBuffer.setUsagePattern(QOpenGLBuffer::StaticDraw);
@@ -51,6 +46,19 @@ void ViewportParticleGeometryBuffer::initialize(int particleCount)
 	if(!_glColorsBuffer.create())
 		throw Exception(tr("Failed to create OpenGL vertex buffer."));
 	_glColorsBuffer.setUsagePattern(QOpenGLBuffer::DynamicDraw);
+}
+
+/******************************************************************************
+* Allocates a particle buffer with the given number of particles.
+******************************************************************************/
+void ViewportParticleGeometryBuffer::setSize(int particleCount)
+{
+	OVITO_ASSERT(_glPositionsBuffer.isCreated());
+	OVITO_ASSERT(_glRadiiBuffer.isCreated());
+	OVITO_ASSERT(_glColorsBuffer.isCreated());
+	OVITO_ASSERT(particleCount >= 0);
+	OVITO_ASSERT(particleCount < std::numeric_limits<int>::max() / sizeof(Point3));
+	OVITO_ASSERT(QOpenGLContextGroup::currentContextGroup() == _contextGroup);
 
 	_particleCount = particleCount;
 }
@@ -62,6 +70,7 @@ void ViewportParticleGeometryBuffer::setParticlePositions(const Point3* coordina
 {
 	OVITO_ASSERT(QOpenGLContextGroup::currentContextGroup() == _contextGroup);
 	OVITO_ASSERT(_glPositionsBuffer.isCreated());
+	OVITO_ASSERT(_particleCount >= 0);
 
 	if(!_glPositionsBuffer.bind())
 		throw Exception(tr("Failed to bind OpenGL vertex buffer."));
@@ -76,6 +85,7 @@ void ViewportParticleGeometryBuffer::setParticleRadii(const FloatType* radii)
 {
 	OVITO_ASSERT(QOpenGLContextGroup::currentContextGroup() == _contextGroup);
 	OVITO_ASSERT(_glRadiiBuffer.isCreated());
+	OVITO_ASSERT(_particleCount >= 0);
 
 	if(!_glRadiiBuffer.bind())
 		throw Exception(tr("Failed to bind OpenGL vertex buffer."));
@@ -90,6 +100,7 @@ void ViewportParticleGeometryBuffer::setParticleRadius(FloatType radius)
 {
 	OVITO_ASSERT(QOpenGLContextGroup::currentContextGroup() == _contextGroup);
 	OVITO_ASSERT(_glRadiiBuffer.isCreated());
+	OVITO_ASSERT(_particleCount >= 0);
 
 	if(!_glRadiiBuffer.bind())
 		throw Exception(tr("Failed to bind OpenGL vertex buffer."));
@@ -109,6 +120,7 @@ void ViewportParticleGeometryBuffer::setParticleColors(const Color* colors)
 {
 	OVITO_ASSERT(QOpenGLContextGroup::currentContextGroup() == _contextGroup);
 	OVITO_ASSERT(_glColorsBuffer.isCreated());
+	OVITO_ASSERT(_particleCount >= 0);
 
 	if(!_glColorsBuffer.bind())
 		throw Exception(tr("Failed to bind OpenGL vertex buffer."));
@@ -123,6 +135,7 @@ void ViewportParticleGeometryBuffer::setParticleColor(const Color color)
 {
 	OVITO_ASSERT(QOpenGLContextGroup::currentContextGroup() == _contextGroup);
 	OVITO_ASSERT(_glColorsBuffer.isCreated());
+	OVITO_ASSERT(_particleCount >= 0);
 
 	if(!_glColorsBuffer.bind())
 		throw Exception(tr("Failed to bind OpenGL vertex buffer."));
@@ -142,7 +155,9 @@ bool ViewportParticleGeometryBuffer::isValid(SceneRenderer* renderer)
 {
 	ViewportSceneRenderer* vpRenderer = qobject_cast<ViewportSceneRenderer*>(renderer);
 	if(!vpRenderer) return false;
-	return _glPositionsBuffer.isCreated() && (_contextGroup == vpRenderer->glcontext()->shareGroup());
+	return _glPositionsBuffer.isCreated()
+			&& _particleCount >= 0
+			&& (_contextGroup == vpRenderer->glcontext()->shareGroup());
 }
 
 /******************************************************************************
@@ -155,6 +170,7 @@ void ViewportParticleGeometryBuffer::render()
 	OVITO_STATIC_ASSERT(sizeof(Color) == 12);
 	OVITO_STATIC_ASSERT(sizeof(Point3) == 12);
 	OVITO_ASSERT(_contextGroup == QOpenGLContextGroup::currentContextGroup());
+	OVITO_ASSERT(_particleCount >= 0);
 
 	// Use point sprites.
 	OVITO_CHECK_OPENGL(glEnable(GL_POINT_SPRITE));
@@ -164,17 +180,17 @@ void ViewportParticleGeometryBuffer::render()
 	float param = renderer()->projParams().projectionMatrix(1,1) * renderer()->viewport()->size().height();
 	if(renderer()->projParams().isPerspective) {
 		float quadratic[] = { 0, 0, 100.0f / (param * param) };
-		glPointParameterfv(GL_POINT_DISTANCE_ATTENUATION, quadratic);
+		renderer()->glfuncs()->glPointParameterfv(GL_POINT_DISTANCE_ATTENUATION, quadratic);
 		OVITO_CHECK_OPENGL(glPointSize(10.0));
 	}
 	else {
 		float constant[] = { 1, 0, 0 };
-		glPointParameterfv(GL_POINT_DISTANCE_ATTENUATION, constant);
+		renderer()->glfuncs()->glPointParameterfv(GL_POINT_DISTANCE_ATTENUATION, constant);
 		OVITO_CHECK_OPENGL(glPointSize(param));
 	}
 	// No fading of small points.
-	OVITO_CHECK_OPENGL(glPointParameterf(GL_POINT_FADE_THRESHOLD_SIZE, 0.0f));
-	OVITO_CHECK_OPENGL(glPointParameterf(GL_POINT_SIZE_MIN, 0.01f));
+	OVITO_CHECK_OPENGL(renderer()->glfuncs()->glPointParameterf(GL_POINT_FADE_THRESHOLD_SIZE, 0.0f));
+	OVITO_CHECK_OPENGL(renderer()->glfuncs()->glPointParameterf(GL_POINT_SIZE_MIN, 0.01f));
 
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_COLOR_ARRAY);

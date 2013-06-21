@@ -98,27 +98,30 @@ void ParticleDisplay::render(TimePoint time, SceneObject* sceneObject, const Pip
 	int particleCount = positionProperty ? positionProperty->size() : 0;
 
 	// Do we have to re-create the geometry buffer from scratch?
-	bool recreateBuffer = !_particleBuffer
-			|| !_particleBuffer->isValid(renderer)
-			|| _particleBuffer->particleCount() != particleCount;
+	bool recreateBuffer = !_particleBuffer || !_particleBuffer->isValid(renderer);
+
+	// Do we have to resize the geometry buffer?
+	bool resizeBuffer = (_particleBuffer->particleCount() != particleCount) || recreateBuffer;
 
 	// Do we have to update the particle positions in the geometry buffer?
 	bool updatePositions = _positionsCacheHelper.updateState(positionProperty, positionProperty ? positionProperty->revisionNumber() : 0)
-			|| recreateBuffer;
+			|| resizeBuffer;
 
 	// Do we have to update the particle radii in the geometry buffer?
 	bool updateRadii = _radiiCacheHelper.updateState(radiusProperty, radiusProperty ? radiusProperty->revisionNumber() : 0, defaultParticleRadius())
-			|| recreateBuffer;
+			|| resizeBuffer;
 
 	// Do we have to update the particle colors in the geometry buffer?
 	bool updateColors = _colorsCacheHelper.updateState(colorProperty, colorProperty ? colorProperty->revisionNumber() : 0)
-			|| recreateBuffer;
+			|| resizeBuffer;
 
 	// Re-create the geometry buffer if necessary.
-	if(recreateBuffer) {
+	if(recreateBuffer)
 		_particleBuffer = renderer->createParticleGeometryBuffer();
-		_particleBuffer->initialize(particleCount);
-	}
+
+	// Re-size the geometry buffer if necessary.
+	if(recreateBuffer)
+		_particleBuffer->setSize(particleCount);
 
 	// Update buffers.
 

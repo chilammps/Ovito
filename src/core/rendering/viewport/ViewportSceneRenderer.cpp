@@ -44,6 +44,13 @@ void ViewportSceneRenderer::renderFrame()
 {
 	OVITO_CHECK_OBJECT_POINTER(viewport());
 	_glcontext = viewport()->_glcontext;
+
+	// Obtain a functions object that allows to call OpenGL 2.0 function in a platform-independent way.
+	_glFunctions20 = _glcontext->versionFunctions<QOpenGLFunctions_2_0>();
+	if(!_glFunctions20 || !_glFunctions20->initializeOpenGLFunctions()) {
+		throw Exception(tr("The OpenGL implementation does not support OpenGL 2.0."));
+	}
+
 	glMatrixMode(GL_MODELVIEW);
 
 	renderScene();

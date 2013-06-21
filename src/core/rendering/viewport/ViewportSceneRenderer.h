@@ -32,6 +32,8 @@
 #include "ViewportLineGeometryBuffer.h"
 #include "ViewportParticleGeometryBuffer.h"
 
+#include <QOpenGLFunctions_2_0>
+
 namespace Ovito {
 
 class PipelineObject;		// defined in PipelineObject.h
@@ -68,6 +70,9 @@ public:
 	/// Returns the OpenGL context this renderer uses.
 	QOpenGLContext* glcontext() const { return _glcontext; }
 
+	/// Returns a pointer to the OpenGL functions object.
+	QOpenGLFunctions_2_0* glfuncs() const { return _glFunctions20; }
+
 	/// Translates an OpenGL error code to a human-readable message string.
 	static const char* openglErrorString(GLenum errorCode);
 
@@ -93,6 +98,9 @@ private:
 
 	/// The OpenGL context this renderer uses.
 	QOpenGLContext* _glcontext;
+
+	/// The OpenGL functions object.
+	QOpenGLFunctions_2_0* _glFunctions20;
 
 	/// Controls the number of sub-pixels to render.
 	PropertyField<int> _antialiasingLevel;
