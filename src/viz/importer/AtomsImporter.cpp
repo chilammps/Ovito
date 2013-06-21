@@ -27,6 +27,7 @@
 #include <viz/data/SimulationCell.h>
 #include <viz/data/ParticleProperty.h>
 #include <viz/data/ParticlePropertyObject.h>
+#include <viz/data/ParticleDisplay.h>
 #include "AtomsImporter.h"
 
 namespace Viz {
@@ -100,6 +101,8 @@ void AtomsImporter::AtomsData::insertIntoScene(LinkedFileObject* destination)
 			propertyObj->replaceStorage(property.data());
 		else {
 			propertyObj = new ParticlePropertyObject(property.data());
+			if(propertyObj->type() == ParticleProperty::PositionProperty)
+				propertyObj->setDisplayObject(new ParticleDisplay());
 			destination->addSceneObject(propertyObj.get());
 		}
 		activeObjects.insert(propertyObj.get());

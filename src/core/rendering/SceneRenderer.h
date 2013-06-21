@@ -32,6 +32,7 @@
 #include <core/reference/RefTarget.h>
 #include <core/viewport/Viewport.h>
 #include "LineGeometryBuffer.h"
+#include "ParticleGeometryBuffer.h"
 
 namespace Ovito {
 
@@ -78,6 +79,9 @@ public:
 
 	/// Requests a new line geometry buffer from the renderer.
 	virtual OORef<LineGeometryBuffer> createLineGeometryBuffer() = 0;
+
+	/// Requests a new particle geometry buffer from the renderer.
+	virtual OORef<ParticleGeometryBuffer> createParticleGeometryBuffer() = 0;
 
 protected:
 

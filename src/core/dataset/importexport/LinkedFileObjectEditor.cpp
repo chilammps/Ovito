@@ -48,7 +48,7 @@ void LinkedFileObjectEditor::createUI(const RolloutInsertionParameters& rolloutP
 	toolbar->addAction(QIcon(":/core/actions/file/import_object_changefile.png"), tr("Change input file"), this, SLOT(onChangeInputFile()));
 	toolbar->addAction(QIcon(":/core/actions/file/import_object_reload.png"), tr("Reload current input file"), this, SLOT(onReloadFrame()));
 	toolbar->addAction(QIcon(":/core/actions/file/import_object_refresh_animation.png"), tr("Reload animation frames"), this, SLOT(onReloadAnimation()));
-	_parserSettingsAction = toolbar->addAction(QIcon(":/core/actions/file/import_object_settings.png"), tr("Settings"), this, SLOT(onParserSettings()));
+	_parserSettingsAction = toolbar->addAction(QIcon(":/core/actions/file/import_object_settings.png"), tr("Import settings"), this, SLOT(onParserSettings()));
 
 #if 0
 	QAction* storeAtomsWithSceneAction = toolbar->addAction(QIcon(":/atomviz/icons/store_with_scene.png"), tr("Store imported data with scene"));

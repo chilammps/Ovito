@@ -51,11 +51,6 @@ protected:
 
 public:
 
-	/// \brief Asks the display object if it can display the given scene object.
-	///
-	/// Implementations of this method should check the object type.
-	virtual bool canDisplay(SceneObject* obj) = 0;
-
 	/// \brief Lets the display object render a scene object.
 	///
 	/// \param time The animation time at which to render the object
@@ -87,6 +82,26 @@ private:
 
 	Q_OBJECT
 	OVITO_OBJECT
+};
+
+/**
+ * This template class can be used by DisplayObject-derived classes to keep track of cached data
+ * that depends on the input SceneObject.
+ */
+template<class... Types>
+class SceneObjectCacheHelper
+{
+public:
+
+	bool updateState(const Types&... args) {
+		bool hasChanged = (_oldState != std::tuple<Types...>(args...));
+		_oldState = std::tuple<Types...>(args...);
+		return hasChanged;
+	}
+
+private:
+
+	std::tuple<Types...> _oldState;
 };
 
 };

@@ -48,11 +48,6 @@ public:
 	/// \brief Default constructor.
 	Q_INVOKABLE SimulationCellDisplay();
 
-	/// \brief Asks the display object if it can display the given scene object.
-	virtual bool canDisplay(SceneObject* obj) override {
-		return (dynamic_object_cast<SimulationCell>(obj) != nullptr);
-	}
-
 	/// \brief Lets the display object render a scene object.
 	virtual void render(TimePoint time, SceneObject* sceneObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode) override;
 
@@ -109,11 +104,9 @@ protected:
 	/// The buffered line geometry used to render the simulation cell.
 	OORef<LineGeometryBuffer> _lineGeometry;
 
-	/// The input object that served as the basis for the cached display geometry.
-	OORef<SimulationCell> _lastObject;
-
-	/// The revision number of the object that served as the basis for the cached display geometry.
-	unsigned int _lastObjectRevision;
+	/// This helper structure is used to detect any changes in the input simulation cell
+	/// that require updating the display geometry buffer.
+	SceneObjectCacheHelper<OORef<SimulationCell>, unsigned int> _geometryCacheHelper;
 
 private:
 

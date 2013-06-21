@@ -565,6 +565,7 @@ QVariant ModifierStackModel::data(const QModelIndex& index, int role) const
 		case Pending:
 			const_cast<QMovie&>(_statusPendingIcon).start();
 			return qVariantFromValue(_statusPendingIcon.currentImage());
+		case None: return QVariant();
 		}
 	}
 	else if(role == Qt::ToolTipRole) {

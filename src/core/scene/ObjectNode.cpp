@@ -113,7 +113,6 @@ void ObjectNode::render(TimePoint time, SceneRenderer* renderer)
 		SceneObject* sceneObj = obj.first.get();
 		DisplayObject* displayObj = sceneObj->displayObject();
 		if(displayObj) {
-			OVITO_ASSERT(displayObj->canDisplay(sceneObj));
 			displayObj->render(time, sceneObj, state, renderer, this);
 		}
 	}

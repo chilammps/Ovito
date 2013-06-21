@@ -30,6 +30,7 @@
 #include <core/rendering/SceneRenderer.h>
 #include <base/utilities/Color.h>
 #include "ViewportLineGeometryBuffer.h"
+#include "ViewportParticleGeometryBuffer.h"
 
 namespace Ovito {
 
@@ -57,6 +58,11 @@ public:
 	/// Requests a new line geometry buffer from the renderer.
 	virtual OORef<LineGeometryBuffer> createLineGeometryBuffer() override {
 		return new ViewportLineGeometryBuffer(this);
+	}
+
+	/// Requests a new particle geometry buffer from the renderer.
+	virtual OORef<ParticleGeometryBuffer> createParticleGeometryBuffer() override {
+		return new ViewportParticleGeometryBuffer(this);
 	}
 
 	/// Returns the OpenGL context this renderer uses.

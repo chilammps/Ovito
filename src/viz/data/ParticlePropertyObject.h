@@ -137,6 +137,12 @@ public:
 		return _storage->constDataPoint3();
 	}
 
+	/// \brief Returns a read-only pointer to the first point element in the property storage.
+	/// \note This method may only be used if this property is of data type Color or a FloatType channel with 3 components.
+	const Color* constDataColor() const {
+		return _storage->constDataColor();
+	}
+
 	/// \brief Returns a read-only pointer to the first tensor element in the property storage.
 	/// \note This method may only be used if this property is of data type Tensor2 or a FloatType channel with 9 components.
 	const Tensor2* constDataTensor2() const {
@@ -182,6 +188,12 @@ public:
 	/// \note This method may only be used if this property is of data type Point3 or a FloatType channel with 3 components.
 	Point3* dataPoint3() {
 		return _storage->dataPoint3();
+	}
+
+	/// \brief Returns a read-write pointer to the first point element in the property storage.
+	/// \note This method may only be used if this property is of data type Color or a FloatType channel with 3 components.
+	Color* dataColor() {
+		return _storage->dataColor();
 	}
 
 	/// \brief Returns a read-write pointer to the first tensor element in the property storage.
@@ -232,6 +244,11 @@ public:
 		return _storage->getPoint3(particleIndex);
 	}
 
+	/// Returns a Color element at the given index (if this is a point property).
+	const Color& getColor(size_t particleIndex) const {
+		return _storage->getColor(particleIndex);
+	}
+
 	/// Returns a Tensor2 element stored for the given particle.
 	const Tensor2& getTensor2(size_t particleIndex) const {
 		return _storage->getTensor2(particleIndex);
@@ -275,6 +292,11 @@ public:
 	/// Sets the value of a Point3 element at the given index (if this is a point property).
 	void setPoint3(size_t particleIndex, const Point3& newValue) {
 		_storage->setPoint3(particleIndex, newValue);
+	}
+
+	/// Sets the value of a Color element at the given index (if this is a point property).
+	void setColor(size_t particleIndex, const Color& newValue) {
+		_storage->setColor(particleIndex, newValue);
 	}
 
 	/// Sets the value of a Tensor2 element for the given particle.

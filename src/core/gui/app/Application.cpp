@@ -141,7 +141,8 @@ bool Application::initialize()
 		// Create the main application window.
 		if(guiMode()) {
 			// Show the main window.
-			MainWindow::instance().showMaximized();
+			//MainWindow::instance().showMaximized();
+			MainWindow::instance().show();
 			MainWindow::instance().restoreLayout();
 		}
 

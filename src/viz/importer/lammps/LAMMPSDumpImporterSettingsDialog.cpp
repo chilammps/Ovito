@@ -42,6 +42,7 @@ LAMMPSDumpImporterSettingsDialog::LAMMPSDumpImporterSettingsDialog(LAMMPSTextDum
 	QVBoxLayout* layout2 = new QVBoxLayout(sourceGroupBox);
 
 	sourceTextbox = new QLineEdit(importer->sourceUrl().toString(), sourceGroupBox);
+	sourceTextbox->setMinimumWidth(600);
 	layout2->addWidget(sourceTextbox);
 
 	multiTimestepCheckbox = new QCheckBox(tr("File contains multiple timesteps"), sourceGroupBox);

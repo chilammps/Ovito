@@ -43,8 +43,7 @@ SET_PROPERTY_FIELD_UNITS(SimulationCellDisplay, _simulationCellLineWidth, WorldP
 SimulationCellDisplay::SimulationCellDisplay() :
 	_renderSimulationCell(true),
 	_simulationCellLineWidth(0.5),
-	_simulationCellColor(0, 0, 0),
-	_lastObjectRevision(0)
+	_simulationCellColor(0, 0, 0)
 {
 	INIT_PROPERTY_FIELD(SimulationCellDisplay::_renderSimulationCell);
 	INIT_PROPERTY_FIELD(SimulationCellDisplay::_simulationCellLineWidth);
@@ -56,7 +55,7 @@ SimulationCellDisplay::SimulationCellDisplay() :
 ******************************************************************************/
 Box3 SimulationCellDisplay::boundingBox(TimePoint time, SceneObject* sceneObject, ObjectNode* contextNode, const PipelineFlowState& flowState)
 {
-	SimulationCell* cellObject = static_object_cast<SimulationCell>(sceneObject);
+	SimulationCell* cellObject = dynamic_object_cast<SimulationCell>(sceneObject);
 	OVITO_CHECK_OBJECT_POINTER(cellObject);
 
 	return cellObject->boundingBox().padBox(simulationCellLineWidth());
@@ -70,11 +69,12 @@ void SimulationCellDisplay::render(TimePoint time, SceneObject* sceneObject, con
 	if(!renderSimulationCell())
 		return;		// Do nothing if rendering has been disabled by the user.
 
-	SimulationCell* cell = static_object_cast<SimulationCell>(sceneObject);
+	SimulationCell* cell = dynamic_object_cast<SimulationCell>(sceneObject);
+	OVITO_CHECK_OBJECT_POINTER(cell);
 
-	if(!_lineGeometry || !_lineGeometry->isValid(renderer) || _lastObject != cell || _lastObjectRevision != cell->revisionNumber()) {
-		_lastObject = cell;
-		_lastObjectRevision = cell->revisionNumber();
+	if(_geometryCacheHelper.updateState(cell, cell ? cell->revisionNumber() : 0)
+			|| !_lineGeometry
+			|| !_lineGeometry->isValid(renderer)) {
 		_lineGeometry = renderer->createLineGeometryBuffer();
 		_lineGeometry->beginCreate(24);
 		Point3 corners[8];

@@ -177,6 +177,13 @@ public:
 		return reinterpret_cast<const Point3*>(constData());
 	}
 
+	/// \brief Returns a read-only pointer to the first point element in the property storage.
+	/// \note This method may only be used if this property is of data type Color or a FloatType channel with 3 components.
+	const Color* constDataColor() const {
+		OVITO_ASSERT(dataType() == qMetaTypeId<Color>() || (dataType() == qMetaTypeId<FloatType>() && componentCount() == 3));
+		return reinterpret_cast<const Color*>(constData());
+	}
+
 	/// \brief Returns a read-only pointer to the first tensor element in the property storage.
 	/// \note This method may only be used if this property is of data type Tensor2 or a FloatType channel with 9 components.
 	const Tensor2* constDataTensor2() const {
@@ -229,6 +236,13 @@ public:
 	Point3* dataPoint3() {
 		OVITO_ASSERT(dataType() == qMetaTypeId<Point3>() || (dataType() == qMetaTypeId<FloatType>() && componentCount() == 3));
 		return reinterpret_cast<Point3*>(data());
+	}
+
+	/// \brief Returns a read-write pointer to the first point element in the property storage.
+	/// \note This method may only be used if this property is of data type Color or a FloatType channel with 3 components.
+	Color* dataColor() {
+		OVITO_ASSERT(dataType() == qMetaTypeId<Color>() || (dataType() == qMetaTypeId<FloatType>() && componentCount() == 3));
+		return reinterpret_cast<Color*>(data());
 	}
 
 	/// \brief Returns a read-write pointer to the first tensor element in the property storage.
@@ -288,6 +302,12 @@ public:
 		return constDataPoint3()[particleIndex];
 	}
 
+	/// Returns a Color element at the given index (if this is a color property).
+	const Color& getColor(size_t particleIndex) const {
+		OVITO_ASSERT(particleIndex < size());
+		return constDataColor()[particleIndex];
+	}
+
 	/// Returns a Tensor2 element stored for the given particle.
 	const Tensor2& getTensor2(size_t particleIndex) const {
 		OVITO_ASSERT(particleIndex < size());
@@ -340,6 +360,12 @@ public:
 	void setPoint3(size_t particleIndex, const Point3& newValue) {
 		OVITO_ASSERT(particleIndex < size());
 		dataPoint3()[particleIndex] = newValue;
+	}
+
+	/// Sets the value of a Color element at the given index (if this is a color property).
+	void setColor(size_t particleIndex, const Color& newValue) {
+		OVITO_ASSERT(particleIndex < size());
+		dataColor()[particleIndex] = newValue;
 	}
 
 	/// Sets the value of a Tensor2 element for the given particle.

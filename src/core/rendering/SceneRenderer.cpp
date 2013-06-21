@@ -24,11 +24,13 @@
 #include <core/scene/SceneNode.h>
 #include <core/dataset/DataSet.h>
 #include "moc_LineGeometryBuffer.cpp"
+#include "moc_ParticleGeometryBuffer.cpp"
 
 namespace Ovito {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, SceneRenderer, RefTarget);
 IMPLEMENT_OVITO_OBJECT(Core, LineGeometryBuffer, OvitoObject);
+IMPLEMENT_OVITO_OBJECT(Core, ParticleGeometryBuffer, OvitoObject);
 
 /******************************************************************************
 * Constructor.

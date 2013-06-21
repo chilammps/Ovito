@@ -34,6 +34,7 @@ void ViewportLineGeometryBuffer::beginCreate(int vertexCount)
 {
 	OVITO_ASSERT(!_glbuffer.isCreated() && !_vertexBuffer);
 	OVITO_ASSERT(vertexCount >= 0);
+	OVITO_ASSERT(QOpenGLContextGroup::currentContextGroup() == _contextGroup);
 
 	if(!_glbuffer.create())
 		throw Exception(tr("Failed to create OpenGL vertex buffer."));
@@ -57,6 +58,7 @@ void ViewportLineGeometryBuffer::beginCreate(int vertexCount)
 void ViewportLineGeometryBuffer::endCreate()
 {
 	OVITO_ASSERT(_vertexBuffer != nullptr);
+	OVITO_ASSERT(QOpenGLContextGroup::currentContextGroup() == _contextGroup);
 
 	if(!_glbuffer.unmap())
 		throw Exception(tr("Failed to unmap OpenGL vertex buffer from memory."));
