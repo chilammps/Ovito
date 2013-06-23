@@ -94,7 +94,7 @@ private:
 	QOpenGLBuffer _glColorsBuffer;
 
 	/// The GL context group under which the GL vertex buffers have been created.
-	QOpenGLContextGroup* _contextGroup;
+	QPointer<QOpenGLContextGroup> _contextGroup;
 
 	/// The number of particles stored in the buffers.
 	int _particleCount;

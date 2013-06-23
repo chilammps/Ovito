@@ -41,9 +41,6 @@ class ParticleGeometryBuffer : public OvitoObject
 {
 public:
 
-	/// \brief Virtual destructor.
-	virtual ~ParticleGeometryBuffer
-
 	/// \brief Allocates a geometry buffer with the given number of particles.
 	virtual void setSize(int particleCount) = 0;
 

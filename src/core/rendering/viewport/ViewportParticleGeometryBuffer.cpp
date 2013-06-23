@@ -35,6 +35,8 @@ ViewportParticleGeometryBuffer::ViewportParticleGeometryBuffer(ViewportSceneRend
 	_contextGroup(QOpenGLContextGroup::currentContextGroup()),
 	_particleCount(-1)
 {
+	OVITO_ASSERT(renderer->glcontext()->shareGroup() == _contextGroup);
+
 	if(!_glPositionsBuffer.create())
 		throw Exception(tr("Failed to create OpenGL vertex buffer."));
 	_glPositionsBuffer.setUsagePattern(QOpenGLBuffer::StaticDraw);
@@ -46,6 +48,20 @@ ViewportParticleGeometryBuffer::ViewportParticleGeometryBuffer(ViewportSceneRend
 	if(!_glColorsBuffer.create())
 		throw Exception(tr("Failed to create OpenGL vertex buffer."));
 	_glColorsBuffer.setUsagePattern(QOpenGLBuffer::DynamicDraw);
+}
+
+/******************************************************************************
+* Destructor.
+******************************************************************************/
+ViewportParticleGeometryBuffer::~ViewportParticleGeometryBuffer()
+{
+	if(!_contextGroup.isNull()) {
+		// Release textures.
+		QList<QOpenGLContext*>	contexts = _contextGroup->shares();
+		if(!contexts.isEmpty()) {
+			contexts.front()->makeCurrent();dg
+		}
+	}
 }
 
 /******************************************************************************
