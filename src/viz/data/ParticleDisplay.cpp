@@ -101,7 +101,7 @@ void ParticleDisplay::render(TimePoint time, SceneObject* sceneObject, const Pip
 	bool recreateBuffer = !_particleBuffer || !_particleBuffer->isValid(renderer);
 
 	// Do we have to resize the geometry buffer?
-	bool resizeBuffer = (_particleBuffer->particleCount() != particleCount) || recreateBuffer;
+	bool resizeBuffer = recreateBuffer || (_particleBuffer->particleCount() != particleCount);
 
 	// Do we have to update the particle positions in the geometry buffer?
 	bool updatePositions = _positionsCacheHelper.updateState(positionProperty, positionProperty ? positionProperty->revisionNumber() : 0)

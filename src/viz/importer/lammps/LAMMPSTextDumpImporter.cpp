@@ -57,7 +57,7 @@ void LAMMPSTextDumpImporter::parseFile(FutureInterface<ImportedDataPtr>& futureI
 		QThread::msleep(10);
 	}
 
-	size_t numAtoms = 20;
+	size_t numAtoms = 200;
 
 	QExplicitlySharedDataPointer<ParticleProperty> posProperty(new ParticleProperty(ParticleProperty::PositionProperty));
 	posProperty->resize(numAtoms);

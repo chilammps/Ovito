@@ -111,6 +111,7 @@ SET(OVITO_CORE_SOURCE_FILES
 	utilities/io/gzdevice/qtiocompressor.cpp
 	utilities/concurrent/Future.cpp
 	utilities/concurrent/ProgressManager.cpp
+	utilities/opengl/SharedOpenGLResource.cpp
 	rendering/SceneRenderer.cpp
 	rendering/viewport/ViewportSceneRenderer.cpp
 	rendering/viewport/ViewportSceneRendererEditor.cpp

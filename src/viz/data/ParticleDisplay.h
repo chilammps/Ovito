@@ -77,15 +77,15 @@ protected:
 
 	/// This helper structure is used to detect any changes in the particle positions
 	/// that require updating the particle position buffer.
-	SceneObjectCacheHelper<OORef<ParticlePropertyObject>, unsigned int> _positionsCacheHelper;
+	SceneObjectCacheHelper<QPointer<ParticlePropertyObject>, unsigned int> _positionsCacheHelper;
 
 	/// This helper structure is used to detect any changes in the particle radii
 	/// that require updating the particle radius buffer.
-	SceneObjectCacheHelper<OORef<ParticlePropertyObject>, unsigned int, FloatType> _radiiCacheHelper;
+	SceneObjectCacheHelper<QPointer<ParticlePropertyObject>, unsigned int, FloatType> _radiiCacheHelper;
 
 	/// This helper structure is used to detect any changes in the particle colors
 	/// that require updating the particle color buffer.
-	SceneObjectCacheHelper<OORef<ParticlePropertyObject>, unsigned int> _colorsCacheHelper;
+	SceneObjectCacheHelper<QPointer<ParticlePropertyObject>, unsigned int> _colorsCacheHelper;
 
 	/// The bounding box that includes all particles.
 	Box3 _cachedBoundingBox;
@@ -93,8 +93,8 @@ protected:
 	/// This helper structure is used to detect changes in the input objects
 	/// that require rebuilding the bounding box.
 	SceneObjectCacheHelper<
-		OORef<ParticlePropertyObject>, unsigned int,	// Position property + revision number
-		OORef<ParticlePropertyObject>, unsigned int,	// Radius property + revision number
+		QPointer<ParticlePropertyObject>, unsigned int,	// Position property + revision number
+		QPointer<ParticlePropertyObject>, unsigned int,	// Radius property + revision number
 		FloatType> 										// Default particle radius
 		_boundingBoxCacheHelper;
 

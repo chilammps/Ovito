@@ -41,6 +41,22 @@ class ParticleGeometryBuffer : public OvitoObject
 {
 public:
 
+	enum ShadingMode {
+		NormalShading,
+		FlatShading,
+	};
+
+	enum RenderingQuality {
+		LowQuality,
+		MediumQuality,
+		HighQuality
+	};
+
+public:
+
+	/// Constructor.
+	ParticleGeometryBuffer() : _shadingMode(NormalShading), _renderingQuality(MediumQuality) {}
+
 	/// \brief Allocates a geometry buffer with the given number of particles.
 	virtual void setSize(int particleCount) = 0;
 
@@ -68,7 +84,25 @@ public:
 	/// \brief Renders the geometry.
 	virtual void render() = 0;
 
+	/// \brief Returns the shading mode for particles.
+	ShadingMode shadingMode() const { return _shadingMode; }
+
+	/// \brief Changes the shading mode for particles.
+	void setShadingMode(ShadingMode mode) { _shadingMode = mode; }
+
+	/// \brief Returns the rendering quality of particles.
+	RenderingQuality renderingQuality() const { return _renderingQuality; }
+
+	/// \brief Changes the rendering quality of particles.
+	void setRenderingQuality(RenderingQuality level) { _renderingQuality = level; }
+
 private:
+
+	/// Controls the shading of particles.
+	ShadingMode _shadingMode;
+
+	/// Controls the rendering quality of particles.
+	RenderingQuality _renderingQuality;
 
 	Q_OBJECT
 	OVITO_OBJECT

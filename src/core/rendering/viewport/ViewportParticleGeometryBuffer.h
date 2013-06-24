@@ -29,6 +29,7 @@
 
 #include <core/Core.h>
 #include <core/rendering/ParticleGeometryBuffer.h>
+#include <core/utilities/opengl/SharedOpenGLResource.h>
 
 namespace Ovito {
 
@@ -37,7 +38,7 @@ class ViewportSceneRenderer;
 /**
  * \brief Buffer object that stores a set of particles to be rendered in the viewports.
  */
-class ViewportParticleGeometryBuffer : public ParticleGeometryBuffer
+class ViewportParticleGeometryBuffer : public ParticleGeometryBuffer, private SharedOpenGLResource
 {
 protected:
 
@@ -79,6 +80,31 @@ public:
 	/// \brief Returns the renderer that created this buffer object.
 	ViewportSceneRenderer* renderer() const { return _renderer; }
 
+protected:
+
+    /// This method that takes care of freeing the shared OpenGL resources owned by this class.
+    virtual void freeOpenGLResources() override;
+
+	/// List of textures used for OpenGL rendering of particles.
+	enum BillboardTexture {
+		FRAGMENT_SHADER_TEXTURE,	// Texture used by the fragment shader
+		DIFFUSE_TEXTURE,			// Texture used for fixed-function point sprite rendering (contains the diffuse component used during the first rendering pass)
+		SPECULAR_TEXTURE,			// Texture used for fixed-function point sprite rendering (contains the specular component used during the second rendering pass)
+		FLAT_TEXTURE,				// Texture used for rendering flat-shaded particles.
+
+		NUM_TEXTURES				// Counts the number of textures.
+	};
+
+	/// Creates the textures used for billboard rendering of particles.
+	void initializeBillboardTextures();
+
+	/// Activates a texture for billboard rendering of particles.
+	void activateBillboardTexture(BillboardTexture which);
+
+	/// Loads and compiles an OpenGL shader program.
+	QOpenGLShaderProgram* loadShaderProgram(const QString& id, const QString& vertexShaderFile, const QString& fragmentShaderFile);
+
+
 private:
 
 	/// The renderer that created this buffer object.
@@ -99,18 +125,13 @@ private:
 	/// The number of particles stored in the buffers.
 	int _particleCount;
 
-	/// List of textures used for OpenGL rendering of particles.
-	enum BillboardTexture {
-		FRAGMENT_SHADER_TEXTURE,	// Texture used by the fragment shader
-		DIFFUSE_TEXTURE,			// Texture used for fixed-function point sprite rendering (contains the diffuse component used during the first rendering pass)
-		SPECULAR_TEXTURE,			// Texture used for fixed-function point sprite rendering (contains the specular component used during the second rendering pass)
-		FLAT_TEXTURE,				// Texture used for rendering flat-shaded particles.
-
-		NUM_TEXTURES				// Counts the number of textures.
-	};
-
 	/// Identifiers of the OpenGL textures that are used for billboard rendering of particles.
 	GLuint _textures[NUM_TEXTURES];
+
+	/// The OpenGL shader programs that are used to render the particles.
+	QOpenGLShaderProgram* _flatImposterShader;
+	QOpenGLShaderProgram* _shadedImposterShader;
+	QOpenGLShaderProgram* _raytracedSphereShader;
 
 	Q_OBJECT
 	OVITO_OBJECT

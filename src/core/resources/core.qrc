@@ -73,7 +73,13 @@
 	<file>actions/rendering/render_active_viewport.png</file>
 
 	<file>framebuffer/save_picture.png</file>	
-	<file>framebuffer/copy_picture_to_clipboard.png</file>	
+	<file>framebuffer/copy_picture_to_clipboard.png</file>
+	
+	<file>glsl/particle_flat.fragment.glsl</file>	
+	<file>glsl/particle_raytraced_sphere.fragment.glsl</file>
+	<file>glsl/particle_raytraced_sphere.vertex.glsl</file>
+	<file>glsl/particle_sprite_sphere.fragment.glsl</file>
+	<file>glsl/particle_sprite_sphere.vertex.glsl</file>
 	
 </qresource>
 

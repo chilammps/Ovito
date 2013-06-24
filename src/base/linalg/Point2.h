@@ -56,7 +56,7 @@ public:
 	constexpr explicit Point_2(T val) : std::array<T, 2>{{val,val}} {}
 
 	/// \brief Initializes the coordinates of the point with the given component values.
-	constexpr Point_2(T x, T y, T z) : std::array<T, 2>{{x, y}} {}
+	constexpr Point_2(T x, T y) : std::array<T, 2>{{x, y}} {}
 
 	/// \brief Initializes the point to the origin. All coordinates are set to zero.
 	constexpr Point_2(Origin) : std::array<T, 2>{{T(0), T(0)}} {}

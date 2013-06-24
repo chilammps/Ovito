@@ -377,7 +377,7 @@ void Viewport::updateViewportTitle()
 		case VIEW_ORTHO: _viewportTitle = tr("Ortho"); break;
 		case VIEW_PERSPECTIVE: _viewportTitle = tr("Perspective"); break;
 		case VIEW_SCENENODE:
-			if(viewNode() != NULL)
+			if(viewNode() != nullptr)
 				_viewportTitle = viewNode()->name();
 			else
 				_viewportTitle = tr("No view node");
@@ -391,7 +391,7 @@ void Viewport::updateViewportTitle()
 ******************************************************************************/
 QWidget* Viewport::createWidget(QWidget* parent)
 {
-	OVITO_ASSERT(_widget == NULL && _viewportWindow == NULL);
+	OVITO_ASSERT(_widget == nullptr && _viewportWindow == nullptr);
 	if(!_widget) {
 		_viewportWindow = new ViewportWindow(this);
 		_widget = QWidget::createWindowContainer(_viewportWindow, parent);
@@ -455,19 +455,7 @@ void Viewport::render(QOpenGLContext* context, QOpenGLPaintDevice* paintDevice)
 	glLoadMatrix(Matrix4(_projParams.viewMatrix));
 	glMatrixMode(GL_PROJECTION);
 	glLoadMatrix(_projParams.projectionMatrix);
-
-	// Render lines of the tripod.
 	glEnable(GL_DEPTH_TEST);
-	glBegin(GL_LINES);
-	static const Color colors[3] = { Color(1, 0, 0), Color(0, 1, 0), Color(0.2, 0.2, 1) };
-	for(int axis = 0; axis < 3; axis++) {
-		glColor3(colors[axis]);
-		Point3 dir = Point3::Origin();
-		dir[axis] = 80;
-		glVertex3(0, 0, 0);
-		glVertex(dir);
-	}
-	glEnd();
 
 	// Set up the viewport renderer.
 	ViewportManager::instance().renderer()->setTime(AnimManager::instance().time());
@@ -487,8 +475,8 @@ void Viewport::render(QOpenGLContext* context, QOpenGLPaintDevice* paintDevice)
 	// Render viewport caption.
 	renderViewportTitle();
 
-	_glcontext = NULL;
-	_paintDevice = NULL;
+	_glcontext = nullptr;
+	_paintDevice = nullptr;
 }
 
 /******************************************************************************

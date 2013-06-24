@@ -39,6 +39,25 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, RefMaker, OvitoObject);
 ******************************************************************************/
 void RefMaker::autoDeleteObject()
 {
+#if 0
+	qDebug() << "auto deleting " << this << " isrecording=" << UndoManager::instance().isRecording();
+	for(const OvitoObjectType* clazz = &getOOType(); clazz; clazz = clazz->superClass()) {
+		for(const PropertyFieldDescriptor* field = clazz->firstPropertyField(); field; field = field->next()) {
+			if(field->isReferenceField()) {
+				if(field->isVector() == false) {
+					qDebug() << " " << field->displayName() << "=" << getReferenceField(*field);
+				}
+				else {
+					qDebug() << " " << field->displayName() << ":";
+					const QVector<RefTarget*>& list = getVectorReferenceField(*field);
+					Q_FOREACH(RefTarget* target, list)
+						qDebug() << "    " << target;
+				}
+			}
+		}
+	}
+#endif
+
 	clearAllReferences();
 
 	if(UndoManager::instance().isRecording() == false)

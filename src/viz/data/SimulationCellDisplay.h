@@ -106,7 +106,7 @@ protected:
 
 	/// This helper structure is used to detect any changes in the input simulation cell
 	/// that require updating the display geometry buffer.
-	SceneObjectCacheHelper<OORef<SimulationCell>, unsigned int> _geometryCacheHelper;
+	SceneObjectCacheHelper<QPointer<SimulationCell>, unsigned int> _geometryCacheHelper;
 
 private:
 
