@@ -1,3 +1,5 @@
+#version 150
+
 ///////////////////////////////////////////////////////////////////////////////
 // 
 //  Copyright (2013) Alexander Stukowski
@@ -20,23 +22,16 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 // Inputs from calling program
-attribute vec3 particle_pos;		// The position of the sphere in model coordinates.
-attribute float particle_radius;	// The radius of the sphere in model coordinates.
+attribute float particle_radius;
 
-// Outputs to fragment shader
-varying vec3 particle_view_pos;			// Transformed sphere position in view coordinates.
-varying float particle_radius_squared;	// The squared radius.
+// Output to geometry shader.
+varying float particle_radius_in;
 
 void main()
 {
-	// Forward base color to fragment shader.
-	gl_FrontColor = gl_Color;
+	// Transform particle center to eye coordinates.
+	gl_Position = gl_ModelViewMatrix * gl_Vertex;
 	
-	// Pass (squared) radius to fragment shader.
-	particle_radius_squared = particle_radius * particle_radius;
-	// Store center in view coordinates.
-	particle_view_pos = vec3(gl_ModelViewMatrix * vec4(particle_pos, 1.0));
-
-	// Transform and project vertex position.
-	gl_Position = ftransform();
+	// Pass particle properties to later stages of the pipeline.
+	particle_radius_in = particle_radius;
 }

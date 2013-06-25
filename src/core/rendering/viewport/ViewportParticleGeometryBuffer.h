@@ -102,8 +102,13 @@ protected:
 	void activateBillboardTexture(BillboardTexture which);
 
 	/// Loads and compiles an OpenGL shader program.
-	QOpenGLShaderProgram* loadShaderProgram(const QString& id, const QString& vertexShaderFile, const QString& fragmentShaderFile);
+	QOpenGLShaderProgram* loadShaderProgram(const QString& id, const QString& vertexShaderFile, const QString& fragmentShaderFile, const QString& geometryShaderFile = QString());
 
+	/// Renders the particles using OpenGL point sprites.
+	void renderPointSprites();
+
+	/// Renders the particles using raytracing implemented in an OpenGL fragment shader.
+	void renderRaytracedSpheres();
 
 private:
 
@@ -130,7 +135,8 @@ private:
 
 	/// The OpenGL shader programs that are used to render the particles.
 	QOpenGLShaderProgram* _flatImposterShader;
-	QOpenGLShaderProgram* _shadedImposterShader;
+	QOpenGLShaderProgram* _shadedImposterShaderWithoutDepth;
+	QOpenGLShaderProgram* _shadedImposterShaderWithDepth;
 	QOpenGLShaderProgram* _raytracedSphereShader;
 
 	Q_OBJECT

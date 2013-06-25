@@ -19,13 +19,31 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/***********************************************************************
- * This OpenGL fragment shader render a flat atom without shading.
- ***********************************************************************/
+// Inputs from calling program:
+uniform float basePointSize;
 
-void main() 
+// The particle radius:
+attribute float particle_radius;
+
+// Output to fragment shader:
+varying float depth_radius;		// The particle's radius.
+varying float ze0;				// The particle's Z coordinate in eye coordinates.
+
+void main()
 {
-	vec2 shifted_coords = gl_TexCoord[0].xy - vec2(0.5, 0.5);
-	if(dot(shifted_coords, shifted_coords) >= 0.25) discard;
-	gl_FragColor = gl_Color;
+	// Forward color to fragment shader.
+	gl_FrontColor = gl_Color;
+
+	// Forward particle radius to fragment shader.
+	depth_radius = particle_radius;
+
+	// Transform and project particle position.
+	vec4 position = gl_ModelViewMatrix * gl_Vertex;
+	gl_Position = gl_ProjectionMatrix * position;
+
+	// Compute sprite size.		
+	gl_PointSize = basePointSize * particle_radius / (position.z * gl_ProjectionMatrix[2][3] + gl_ProjectionMatrix[3][3]);
+	
+	// Pass particle position in eye coordinates to fragment shader.
+	ze0 = position.z;
 }

@@ -27,7 +27,8 @@
 uniform sampler2D tex;			// The imposter texture.
 
 // Input from vertex shader:
-varying float depthScale;
+varying float depth_radius;		// The particle radius.
+varying float ze0;				// The particle's Z coordinate in eye coordinates.
 
 void main() 
 {
@@ -38,9 +39,11 @@ void main()
 	
 	// Specular highlights are stored in the alpha channel of the texture. 
 	// Modulate diffuse color with brightness value stored in the texture.
-	
 	gl_FragColor = vec4(texValue.rgb * gl_Color.rgb + texValue.a, 1);
 
 	// Vary the depth value across the imposter to obtain proper intersections between particles.	
-	gl_FragDepth = gl_FragCoord.z - sqrt(1 - 2*rsq)*depthScale;
+	float dz = sqrt(1.0 - 4.0 * rsq) * depth_radius;
+	float ze = ze0 + dz;
+	float zn = (gl_ProjectionMatrix[2][2] * ze + gl_ProjectionMatrix[3][2]) / (gl_ProjectionMatrix[2][3] * ze + gl_ProjectionMatrix[3][3]);
+	gl_FragDepth = 0.5 * (zn * gl_DepthRange.diff + (gl_DepthRange.far + gl_DepthRange.near));
 }

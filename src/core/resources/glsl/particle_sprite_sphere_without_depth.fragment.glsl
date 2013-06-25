@@ -20,12 +20,19 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /***********************************************************************
- * This OpenGL fragment shader render a flat atom without shading.
+ * This OpenGL fragment shader renders a shaded particle 
+ * on a textured imposter.
  ***********************************************************************/
+
+uniform sampler2D tex;			// The imposter texture.
 
 void main() 
 {
 	vec2 shifted_coords = gl_TexCoord[0].xy - vec2(0.5, 0.5);
 	if(dot(shifted_coords, shifted_coords) >= 0.25) discard;
-	gl_FragColor = gl_Color;
+	vec4 texValue = texture2D(tex, gl_TexCoord[0].xy);
+	
+	// Specular highlights are stored in the alpha channel of the texture. 
+	// Modulate diffuse color with brightness value stored in the texture.
+	gl_FragColor = vec4(texValue.rgb * gl_Color.rgb + texValue.a, 1);
 }

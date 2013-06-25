@@ -40,6 +40,9 @@ ViewportWindow::ViewportWindow(Viewport* owner) :
 	// Indicate that we want a depth buffer.
 	QSurfaceFormat format;
 	format.setDepthBufferSize(24);
+	format.setMajorVersion(3);
+	format.setMinorVersion(3);
+	format.setProfile(QSurfaceFormat::CompatibilityProfile);
 	setFormat(format);
 }
 
@@ -191,12 +194,13 @@ void ViewportWindow::renderNow()
 		if(shareContext && _context->shareContext() != shareContext)
 			qWarning() << "Viewport cannot share OpenGL context with other viewports.";
 
-#if 0
+#if 1
 		if(!shareContext) {
 			QSurfaceFormat format = _context->format();
 			qDebug() << "OpenGL depth buffer size:" << format.depthBufferSize();
 			qDebug() << "OpenGL stencil buffer size:" << format.stencilBufferSize();
 			(qDebug() << "OpenGL version:").nospace() << format.majorVersion() << "." << format.minorVersion();
+			qDebug() << "OpenGL profile:" << (format.profile() == QSurfaceFormat::CoreProfile ? "core" : (format.profile() == QSurfaceFormat::CompatibilityProfile ? "compatibility" : "none"));
 			qDebug() << "OpenGL has alpha:" << format.hasAlpha();
 			qDebug() << "OpenGL samples:" << format.samples();
 			qDebug() << "OpenGL swap behavior:" << format.swapBehavior();

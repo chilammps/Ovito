@@ -55,7 +55,7 @@ public:
 public:
 
 	/// Constructor.
-	ParticleGeometryBuffer() : _shadingMode(NormalShading), _renderingQuality(MediumQuality) {}
+	ParticleGeometryBuffer() : _shadingMode(NormalShading), _renderingQuality(HighQuality) {}
 
 	/// \brief Allocates a geometry buffer with the given number of particles.
 	virtual void setSize(int particleCount) = 0;

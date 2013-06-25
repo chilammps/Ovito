@@ -20,34 +20,20 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 // Inputs from calling program:
-uniform bool isPerspective;		// Specifies the projection mode.
 uniform float basePointSize;
 
 // The particle radius:
 attribute float particle_radius;
-
-// Output to fragment shader:
-varying float depthScale;
 
 void main()
 {
 	// Forward color to fragment shader.
 	gl_FrontColor = gl_Color;
 
-	// Transform and project vertex position.
-	gl_Position = ftransform();
-	
-	if(isPerspective) {
-		// Calculate point distance from camera.
-		vec4 position = gl_ModelViewMatrix * gl_Vertex;	
-		float eyeZ = abs(position.z);
-		// Calculate point size.
-		gl_PointSize = basePointSize * particle_radius / eyeZ;
-	}
-	else {
-		gl_PointSize = basePointSize * particle_radius;
-		vec4 projected_intersection = gl_ProjectionMatrix * vec4(view_intersection_pnt, 1.0);
-		gl_FragDepth = (projected_intersection.z / projected_intersection.w + 1.0) * 0.5;
-		depthScale = 
-	}
+	// Transform and project particle position.
+	vec4 position = gl_ModelViewMatrix * gl_Vertex;
+	gl_Position = gl_ProjectionMatrix * position;
+
+	// Compute sprite size.		
+	gl_PointSize = basePointSize * particle_radius / (position.z * gl_ProjectionMatrix[2][3] + gl_ProjectionMatrix[3][3]);
 }

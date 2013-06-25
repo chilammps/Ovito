@@ -37,7 +37,10 @@ ViewportParticleGeometryBuffer::ViewportParticleGeometryBuffer(ViewportSceneRend
 	_renderer(renderer),
 	_contextGroup(QOpenGLContextGroup::currentContextGroup()),
 	_particleCount(-1),
-	_flatImposterShader(nullptr), _shadedImposterShader(nullptr), _raytracedSphereShader(nullptr)
+	_flatImposterShader(nullptr),
+	_shadedImposterShaderWithoutDepth(nullptr),
+	_shadedImposterShaderWithDepth(nullptr),
+	_raytracedSphereShader(nullptr)
 {
 	OVITO_ASSERT(renderer->glcontext()->shareGroup() == _contextGroup);
 
@@ -58,14 +61,16 @@ ViewportParticleGeometryBuffer::ViewportParticleGeometryBuffer(ViewportSceneRend
 	// Initialize OpenGL shaders.
 	if(QOpenGLShaderProgram::hasOpenGLShaderPrograms() && QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Vertex) && QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Fragment)) {
 		try {
-			_flatImposterShader = loadShaderProgram("particle_flat_sphere", ":/core/glsl/particle_sprite_sphere.vertex.glsl", ":/core/glsl/particle_flat.fragment.glsl");
-			_shadedImposterShader = loadShaderProgram("particle_textured_sprite_sphere", ":/core/glsl/particle_sprite_sphere.vertex.glsl", ":/core/glsl/particle_sprite_sphere.fragment.glsl");
-			_raytracedSphereShader = loadShaderProgram("particle_raytraced_sphere", ":/core/glsl/particle_raytraced_sphere.vertex.glsl", ":/core/glsl/particle_raytraced_sphere.fragment.glsl");
+			_flatImposterShader = loadShaderProgram("particle_flat_sphere", ":/core/glsl/particle_sprite_sphere_without_depth.vertex.glsl", ":/core/glsl/particle_flat.fragment.glsl");
+			_shadedImposterShaderWithoutDepth = loadShaderProgram("particle_textured_sprite_sphere_without_depth", ":/core/glsl/particle_sprite_sphere_without_depth.vertex.glsl", ":/core/glsl/particle_sprite_sphere_without_depth.fragment.glsl");
+			_shadedImposterShaderWithDepth = loadShaderProgram("particle_textured_sprite_sphere_with_depth", ":/core/glsl/particle_sprite_sphere_with_depth.vertex.glsl", ":/core/glsl/particle_sprite_sphere_with_depth.fragment.glsl");
+			_raytracedSphereShader = loadShaderProgram("particle_raytraced_sphere", ":/core/glsl/particle_raytraced_sphere.vertex.glsl", ":/core/glsl/particle_raytraced_sphere.fragment.glsl", ":/core/glsl/particle_raytraced_sphere.geometry.glsl");
 		}
 		catch(const Exception& ex) {
 			ex.logError();
 			_flatImposterShader = nullptr;
-			_shadedImposterShader = nullptr;
+			_shadedImposterShaderWithoutDepth = nullptr;
+			_shadedImposterShaderWithDepth = nullptr;
 			_raytracedSphereShader = nullptr;
 		}
 	}
@@ -197,9 +202,6 @@ bool ViewportParticleGeometryBuffer::isValid(SceneRenderer* renderer)
 void ViewportParticleGeometryBuffer::render()
 {
 	OVITO_ASSERT(_glPositionsBuffer.isCreated());
-	OVITO_STATIC_ASSERT(sizeof(FloatType) == 4);
-	OVITO_STATIC_ASSERT(sizeof(Color) == 12);
-	OVITO_STATIC_ASSERT(sizeof(Point3) == 12);
 	OVITO_ASSERT(_contextGroup == QOpenGLContextGroup::currentContextGroup());
 	OVITO_ASSERT(_particleCount >= 0);
 
@@ -211,13 +213,34 @@ void ViewportParticleGeometryBuffer::render()
 	glEnable(GL_ALPHA_TEST);
 	glEnable(GL_DEPTH_TEST);
 
+	if(renderingQuality() < HighQuality || shadingMode() == FlatShading || _raytracedSphereShader == nullptr)
+		renderPointSprites();
+	else
+		renderRaytracedSpheres();
+
+	// Cleanup
+	glDisable(GL_ALPHA_TEST);
+	glDisable(GL_TEXTURE_2D);
+	glDisable(GL_BLEND);
+	glPopAttrib();
+}
+
+/******************************************************************************
+* Renders the particles using OpenGL point sprites.
+******************************************************************************/
+void ViewportParticleGeometryBuffer::renderPointSprites()
+{
+	OVITO_STATIC_ASSERT(sizeof(FloatType) == 4);
+	OVITO_STATIC_ASSERT(sizeof(Color) == 12);
+	OVITO_STATIC_ASSERT(sizeof(Point3) == 12);
+
 	// Use point sprites.
 	OVITO_CHECK_OPENGL(glEnable(GL_POINT_SPRITE));
 
 	// Load billboard texture.
 	if(shadingMode() == FlatShading)
 		activateBillboardTexture(FLAT_TEXTURE);
-	else if(_shadedImposterShader)
+	else if(_shadedImposterShaderWithDepth && _shadedImposterShaderWithoutDepth)
 		activateBillboardTexture(FRAGMENT_SHADER_TEXTURE);
 	else
 		activateBillboardTexture(FLAT_TEXTURE);
@@ -243,11 +266,12 @@ void ViewportParticleGeometryBuffer::render()
 	glTexEnvi(GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE);
 
 	// Activate OpenGL shader program.
-	QOpenGLShaderProgram* shader = (shadingMode() == FlatShading) ? _flatImposterShader : _shadedImposterShader;
+	QOpenGLShaderProgram* shader =
+			(shadingMode() == FlatShading) ? _flatImposterShader :
+			(renderingQuality() == LowQuality ? _shadedImposterShaderWithoutDepth : _shadedImposterShaderWithDepth);
 	if(shader && shader->bind()) {
 		// Let the vertex shader compute the point size.
 		glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
-		shader->setUniformValue("isPerspective", renderer()->projParams().isPerspective);
 		shader->setUniformValue("basePointSize", (float)param);
 
 		// Pass particle radii to vertex shader.
@@ -303,10 +327,51 @@ void ViewportParticleGeometryBuffer::render()
 
 	// Cleanup
 	glDisable(GL_POINT_SPRITE);
-	glDisable(GL_ALPHA_TEST);
+}
+
+/******************************************************************************
+* Renders the particles using raytracing implemented in an OpenGL fragment shader.
+******************************************************************************/
+void ViewportParticleGeometryBuffer::renderRaytracedSpheres()
+{
 	glDisable(GL_TEXTURE_2D);
-	glDisable(GL_BLEND);
-	glPopAttrib();
+
+	OVITO_CHECK_POINTER(_raytracedSphereShader);
+	QOpenGLShaderProgram* shader = _raytracedSphereShader;
+
+	shader->bind();
+
+	//GLint viewportCoords[4];
+	//glGetIntegerv(GL_VIEWPORT, viewportCoords);
+	//shader->setUniformValue("viewport_origin", (float)viewportCoords[0], (float)viewportCoords[1]);
+	//shader->setUniformValue("inverse_viewport_size", 2.0f / (float)viewportCoords[2], 2.0f / (float)viewportCoords[3]);
+
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_COLOR_ARRAY);
+
+	if(!_glPositionsBuffer.bind())
+		throw Exception(tr("Failed to bind OpenGL vertex buffer."));
+	OVITO_CHECK_OPENGL(glVertexPointer(3, GL_FLOAT, sizeof(Point3), NULL));
+	_glPositionsBuffer.release();
+
+	if(!_glColorsBuffer.bind())
+		throw Exception(tr("Failed to bind OpenGL vertex buffer."));
+	OVITO_CHECK_OPENGL(glColorPointer(3, GL_FLOAT, sizeof(Color), NULL));
+	_glColorsBuffer.release();
+
+	// Pass particle radii to vertex and geometry shader.
+	if(!_glRadiiBuffer.bind())
+		throw Exception(tr("Failed to bind OpenGL vertex buffer."));
+	shader->setAttributeBuffer("particle_radius", GL_FLOAT, 0, 1);
+	shader->enableAttributeArray("particle_radius");
+	_glRadiiBuffer.release();
+
+	OVITO_CHECK_OPENGL(glDrawArrays(GL_POINTS, 0, _particleCount));
+
+	glDisableClientState(GL_COLOR_ARRAY);
+	glDisableClientState(GL_VERTEX_ARRAY);
+	shader->disableAttributeArray("particle_radius");
+	shader->release();
 }
 
 /******************************************************************************
@@ -419,7 +484,7 @@ void ViewportParticleGeometryBuffer::activateBillboardTexture(BillboardTexture w
 /******************************************************************************
 * Loads an OpenGL shader program.
 ******************************************************************************/
-QOpenGLShaderProgram* ViewportParticleGeometryBuffer::loadShaderProgram(const QString& id, const QString& vertexShaderFile, const QString& fragmentShaderFile)
+QOpenGLShaderProgram* ViewportParticleGeometryBuffer::loadShaderProgram(const QString& id, const QString& vertexShaderFile, const QString& fragmentShaderFile, const QString& geometryShaderFile)
 {
 	// The OpenGL shaders are only created once per OpenGL context group.
 	QOpenGLShaderProgram* program = _contextGroup->findChild<QOpenGLShaderProgram*>(id);
@@ -440,6 +505,15 @@ QOpenGLShaderProgram* ViewportParticleGeometryBuffer::loadShaderProgram(const QS
 		qDebug() << program->log();
 		delete program;
 		throw Exception(QString("The fragment shader source file %1 failed to compile. See log for details.").arg(fragmentShaderFile));
+	}
+
+	if(!geometryShaderFile.isEmpty()) {
+		if(!program->addShaderFromSourceFile(QOpenGLShader::Geometry, geometryShaderFile)) {
+			qDebug() << "OpenGL shader log:";
+			qDebug() << program->log();
+			delete program;
+			throw Exception(QString("The geometry shader source file %1 failed to compile. See log for details.").arg(geometryShaderFile));
+		}
 	}
 
 	if(!program->link()) {
