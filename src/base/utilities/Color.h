@@ -272,6 +272,10 @@ public:
 	/// \param c The Qt color to convert to a floating-point representation.
 	constexpr explicit ColorAT(const QColor& c) : std::array<T, 4>{{c.redF(), c.greenF(), c.blueF(), 1}} {}
 
+	/// \brief Converts a RGB color to an RGBA color.
+	/// \param c The RGB color.
+	constexpr explicit ColorAT(const ColorT<T>& c) : std::array<T, 4>{{c.r(), c.g(), c.b(), T(1)}} {}
+
 	/// \brief Sets all components to zero.
 	void setBlack() { r() = g() = b() = 0; a() = 1; }
 
@@ -281,6 +285,15 @@ public:
 	/// \brief Converts this color to a vector with three components.
 	/// \return A vector.
 	explicit constexpr operator const Vector_4<T>&() const { return reinterpret_cast<const Vector_4<T>&>(*this); }
+
+	/// \brief Converts this color to a Qt color object.
+	/// \return A Qt color object. All color components are clamped to the [0,1] range before the conversion.
+	explicit operator QColor() const {
+		return QColor::fromRgbF(
+				qMin(qMax(r(), T(0)), T(1)),
+				qMin(qMax(g(), T(0)), T(1)),
+				qMin(qMax(b(), T(0)), T(1)));
+	}
 
 	//////////////////////////// Component access //////////////////////////
 

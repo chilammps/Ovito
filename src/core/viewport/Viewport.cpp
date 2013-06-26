@@ -456,6 +456,7 @@ void Viewport::render(QOpenGLContext* context, QOpenGLPaintDevice* paintDevice)
 		ViewportManager::instance().renderer()->setProjParams(_projParams);
 		ViewportManager::instance().renderer()->setViewport(this);
 		ViewportManager::instance().renderer()->setDataset(DataSetManager::instance().currentSet());
+		ViewportManager::instance().renderer()->beginRender();
 
 		// Call the viewport renderer to render the scene objects.
 		ViewportManager::instance().renderer()->renderFrame();
@@ -463,13 +464,17 @@ void Viewport::render(QOpenGLContext* context, QOpenGLPaintDevice* paintDevice)
 		// Render render frame.
 		renderRenderFrame();
 
-#if 0
 		// Render orientation tripod.
 		renderOrientationIndicator();
 
+#if 1
 		// Render viewport caption.
 		renderViewportTitle();
 #endif
+
+		// Stop rendering.
+		ViewportManager::instance().renderer()->endRender();
+
 		_glcontext = nullptr;
 		_paintDevice = nullptr;
 	}
@@ -504,23 +509,13 @@ void Viewport::renderViewportTitle()
 ******************************************************************************/
 void Viewport::begin2DPainting()
 {
-	glPushClientAttrib(GL_CLIENT_ALL_ATTRIB_BITS);
-	glPushAttrib(GL_ALL_ATTRIB_BITS);
-	glMatrixMode(GL_TEXTURE);
-	glPushMatrix();
-	glLoadIdentity();
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
+	OVITO_CHECK_OPENGL(glPushClientAttrib(GL_CLIENT_ALL_ATTRIB_BITS));
+	OVITO_CHECK_OPENGL(glPushAttrib(GL_ALL_ATTRIB_BITS));
 
-	glShadeModel(GL_FLAT);
-	glDisable(GL_CULL_FACE);
-	glDisable(GL_LIGHTING);
-	glDisable(GL_STENCIL_TEST);
-	glDisable(GL_DEPTH_TEST);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+	OVITO_CHECK_OPENGL(glDisable(GL_CULL_FACE));
+	OVITO_CHECK_OPENGL(glDisable(GL_DEPTH_TEST));
+	OVITO_CHECK_OPENGL(glEnable(GL_BLEND));
+	OVITO_CHECK_OPENGL(glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA));
 }
 
 /******************************************************************************
@@ -529,14 +524,8 @@ void Viewport::begin2DPainting()
 ******************************************************************************/
 void Viewport::end2DPainting()
 {
-    glMatrixMode(GL_TEXTURE);
-    glPopMatrix();
-    glMatrixMode(GL_PROJECTION);
-    glPopMatrix();
-    glMatrixMode(GL_MODELVIEW);
-    glPopMatrix();
-    glPopAttrib();
-    glPopClientAttrib();
+	OVITO_CHECK_OPENGL(glPopAttrib());
+	OVITO_CHECK_OPENGL(glPopClientAttrib());
 }
 
 /******************************************************************************
@@ -597,45 +586,55 @@ void Viewport::renderOrientationIndicator()
 	const FloatType tripodSize = 60.0f;			// pixels
 	const FloatType tripodArrowSize = 0.17f; 	// percentage of the above value.
 
-	// Save current rendering attributes.
+	// Save current rendering attributes and turn off depth-testing.
 	begin2DPainting();
 
 	// Setup projection matrix.
-	FloatType xscale = _paintDevice->width() / tripodSize;
-	FloatType yscale = _paintDevice->height() / tripodSize;
-	Matrix4 projTM = Matrix4::translation(Vector3(-1.0 + 1.3f/xscale, -1.0 + 1.3f/yscale, 0))
-					* Matrix4::ortho(-xscale, xscale, -yscale, yscale, -2, 2);
-	glMatrixMode(GL_PROJECTION);
-	glLoadMatrix(projTM);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
+	ViewProjectionParameters projParams = _projParams;
+	FloatType xscale = size().width() / tripodSize;
+	FloatType yscale = size().height() / tripodSize;
+	projParams.projectionMatrix = Matrix4::translation(Vector3(-1.0 + 1.3f/xscale, -1.0 + 1.3f/yscale, 0))
+									* Matrix4::ortho(-xscale, xscale, -yscale, yscale, -2, 2);
+	projParams.inverseProjectionMatrix = projParams.projectionMatrix.inverse();
+	projParams.viewMatrix.setIdentity();
+	projParams.inverseViewMatrix.setIdentity();
+	ViewportManager::instance().renderer()->setProjParams(projParams);
+	ViewportManager::instance().renderer()->setWorldTransform(AffineTransformation::Identity());
 
-	// Render lines of the tripod.
-	glBegin(GL_LINES);
+	// Create line buffer.
+	static const Color axisColors[3] = { Color(1, 0, 0), Color(0, 1, 0), Color(0.2, 0.2, 1) };
+	if(!_orientationTripodGeometry || !_orientationTripodGeometry->isValid(ViewportManager::instance().renderer())) {
+		_orientationTripodGeometry = ViewportManager::instance().renderer()->createLineGeometryBuffer();
+		_orientationTripodGeometry->setSize(18);
+		ColorA vertexColors[18];
+		for(int i = 0; i < 18; i++)
+			vertexColors[i] = ColorA(axisColors[i / 6]);
+		_orientationTripodGeometry->setVertexColors(vertexColors);
+	}
 
 	// Render arrows.
-	static const Color colors[3] = { Color(1, 0, 0), Color(0, 1, 0), Color(0.2, 0.2, 1) };
-	for(int axis = 0; axis < 3; axis++) {
-		glColor3(colors[axis]);
+	Point3 vertices[18];
+	for(int axis = 0, index = 0; axis < 3; axis++) {
 		Vector3 dir = _projParams.viewMatrix.column(axis).normalized();
-		glVertex3(0, 0, 0);
-		glVertex(dir);
-		glVertex(dir);
-		glVertex(dir + tripodArrowSize * Vector3(dir.y() - dir.x(), -dir.x() - dir.y(), dir.z()));
-		glVertex(dir);
-		glVertex(dir + tripodArrowSize * Vector3(-dir.y() - dir.x(), dir.x() - dir.y(), dir.z()));
+		vertices[index++] = Point3::Origin();
+		vertices[index++] = Point3::Origin() + dir;
+		vertices[index++] = Point3::Origin() + dir;
+		vertices[index++] = Point3::Origin() + (dir + tripodArrowSize * Vector3(dir.y() - dir.x(), -dir.x() - dir.y(), dir.z()));
+		vertices[index++] = Point3::Origin() + dir;
+		vertices[index++] = Point3::Origin() + (dir + tripodArrowSize * Vector3(-dir.y() - dir.x(), dir.x() - dir.y(), dir.z()));
 	}
-	glEnd();
+	_orientationTripodGeometry->setVertexPositions(vertices);
+	_orientationTripodGeometry->render();
 
 	// Render x,y,z labels.
 	static const QString labels[3] = { "x", "y", "z" };
 	for(int axis = 0; axis < 3; axis++) {
 		Point3 p = Point3::Origin() + _projParams.viewMatrix.column(axis).resized(1.2f);
-		Point3 screenPoint = projTM * p;
-		QPointF pos(( screenPoint.x() + 1.0) * _paintDevice->width()  / 2,
-					(-screenPoint.y() + 1.0) * _paintDevice->height() / 2);
+		Point3 screenPoint = projParams.projectionMatrix * p;
+		QPointF pos(( screenPoint.x() + 1.0) * size().width()  / 2,
+					(-screenPoint.y() + 1.0) * size().height() / 2);
 		pos += QPointF(-4, 3);
-		renderText(labels[axis], pos, QColor(colors[axis]));
+		renderText(labels[axis], pos, QColor(axisColors[axis]));
 	}
 
 	// Restore old rendering attributes.

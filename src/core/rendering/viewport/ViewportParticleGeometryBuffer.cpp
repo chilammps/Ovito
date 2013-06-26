@@ -59,7 +59,10 @@ ViewportParticleGeometryBuffer::ViewportParticleGeometryBuffer(ViewportSceneRend
 	_flatImposterShader = renderer->loadShaderProgram("particle_flat_sphere", ":/core/glsl/particle_sprite_sphere_without_depth.vertex.glsl", ":/core/glsl/particle_flat.fragment.glsl");
 	_shadedImposterShaderWithoutDepth = renderer->loadShaderProgram("particle_textured_sprite_sphere_without_depth", ":/core/glsl/particle_sprite_sphere_without_depth.vertex.glsl", ":/core/glsl/particle_sprite_sphere_without_depth.fragment.glsl");
 	_shadedImposterShaderWithDepth = renderer->loadShaderProgram("particle_textured_sprite_sphere_with_depth", ":/core/glsl/particle_sprite_sphere_with_depth.vertex.glsl", ":/core/glsl/particle_sprite_sphere_with_depth.fragment.glsl");
-	_raytracedSphereShader = renderer->loadShaderProgram("particle_raytraced_sphere", ":/core/glsl/particle_raytraced_sphere.vertex.glsl", ":/core/glsl/particle_raytraced_sphere.fragment.glsl", ":/core/glsl/particle_raytraced_sphere.geometry.glsl");
+	if(QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Geometry))
+		_raytracedSphereShader = renderer->loadShaderProgram("particle_raytraced_sphere", ":/core/glsl/particle_raytraced_sphere.vertex.glsl", ":/core/glsl/particle_raytraced_sphere.fragment.glsl", ":/core/glsl/particle_raytraced_sphere.geometry.glsl");
+	else
+		_raytracedSphereShader = nullptr;
 }
 
 /******************************************************************************
@@ -219,19 +222,25 @@ void ViewportParticleGeometryBuffer::renderPointSprites()
 	// This is how our point sprite's size will be modified by its
 	// distance from the viewer
 	float param = renderer()->projParams().projectionMatrix(1,1) * renderer()->viewport()->size().height();
+	float distanceAttenuation[] = { 0, 0, 0 };
 	if(renderer()->projParams().isPerspective) {
-		float quadratic[] = { 0, 0, 100.0f / (param * param) };
-		glPointParameterfv(GL_POINT_DISTANCE_ATTENUATION, quadratic);
+		distanceAttenuation[2] = 100.0f / (param * param);
 		OVITO_CHECK_OPENGL(glPointSize(10.0));
 	}
 	else {
-		float constant[] = { 1, 0, 0 };
-		glPointParameterfv(GL_POINT_DISTANCE_ATTENUATION, constant);
+		distanceAttenuation[0] = 1;
 		OVITO_CHECK_OPENGL(glPointSize(param));
 	}
-	// No fading of small points.
-	OVITO_CHECK_OPENGL(glPointParameterf(GL_POINT_FADE_THRESHOLD_SIZE, 0.0f));
-	OVITO_CHECK_OPENGL(glPointParameterf(GL_POINT_SIZE_MIN, 0.01f));
+	if(renderer()->glfuncs30()) {
+		OVITO_CHECK_OPENGL(renderer()->glfuncs30()->glPointParameterfv(GL_POINT_DISTANCE_ATTENUATION, distanceAttenuation));
+		OVITO_CHECK_OPENGL(renderer()->glfuncs30()->glPointParameterf(GL_POINT_FADE_THRESHOLD_SIZE, 0.0f));
+		OVITO_CHECK_OPENGL(renderer()->glfuncs30()->glPointParameterf(GL_POINT_SIZE_MIN, 0.01f));
+	}
+	else if(renderer()->glfuncs32()) {
+		OVITO_CHECK_OPENGL(renderer()->glfuncs32()->glPointParameterfv(GL_POINT_DISTANCE_ATTENUATION, distanceAttenuation));
+		OVITO_CHECK_OPENGL(renderer()->glfuncs32()->glPointParameterf(GL_POINT_FADE_THRESHOLD_SIZE, 0.0f));
+		OVITO_CHECK_OPENGL(renderer()->glfuncs32()->glPointParameterf(GL_POINT_SIZE_MIN, 0.01f));
+	}
 
 	// Activate OpenGL shader program.
 	QOpenGLShaderProgram* shader =

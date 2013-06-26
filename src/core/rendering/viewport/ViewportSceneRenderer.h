@@ -55,6 +55,12 @@ public:
 	/// Renders the current animation frame.
 	virtual void renderFrame() override;
 
+	/// This method is called just before renderFrame() is called.
+	virtual void beginRender() override;
+
+	/// This method is called after renderFrame() has been called.
+	virtual void endRender() override;
+
 	/// Changes the current local to world transformation matrix.
 	virtual void setWorldTransform(const AffineTransformation& tm) override;
 
@@ -76,6 +82,12 @@ public:
 
 	/// Returns a pointer to the OpenGL functions object.
 	QOpenGLFunctions* glfuncs() const { return _glFunctions; }
+
+	/// Returns a pointer to the OpenGL 3.0 functions object.
+	QOpenGLFunctions_3_0* glfuncs30() const { return _glFunctions30; }
+
+	/// Returns a pointer to the OpenGL 3.2 core profile functions object.
+	QOpenGLFunctions_3_2_Core* glfuncs32() const { return _glFunctions32; }
 
 	/// Returns the surface format of the current OpenGL context.
 	const QSurfaceFormat& glformat() const { return _glformat; }
@@ -114,6 +126,15 @@ private:
 
 	/// The OpenGL functions object.
 	QOpenGLFunctions* _glFunctions;
+
+	/// The OpenGL 3.0 functions object.
+	QOpenGLFunctions_3_0* _glFunctions30;
+
+	/// The OpenGL 3.2 core profile functions object.
+	QOpenGLFunctions_3_2_Core* _glFunctions32;
+
+	/// The OpenGL vertex array object that is required by OpenGL 3.2 core profile.
+	QOpenGLVertexArrayObject _vertexArrayObject;
 
 	/// The OpenGL surface format.
 	QSurfaceFormat _glformat;

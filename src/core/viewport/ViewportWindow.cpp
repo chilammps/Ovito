@@ -193,7 +193,26 @@ void ViewportWindow::renderNow()
 		if(shareContext && _context->shareContext() != shareContext)
 			qWarning() << "Viewport cannot share OpenGL context with other viewports.";
 
-#if 1
+		if(_context->format().majorVersion() < 3) {
+			_context->makeCurrent(this);
+			Exception ex(tr(
+					"The OpenGL implementation available on this system does not support OpenGL version 3.0 or newer.\n\n"
+					"Ovito requires modern graphics hardware to accelerate interactive 3d rendering. You current system configuration is not compatible with Ovito and the application will quit.\n\n"
+					"To avoid this error message, please install the newest graphics driver, or upgrade your graphics card.\n\n"
+					"The currently installed OpenGL graphics driver reports the following information:\n\n"
+					"OpenGL Vendor: %1\n"
+					"OpenGL Renderer: %2\n"
+					"OpenGL Version: %3")
+					.arg(QString((const char*)glGetString(GL_VENDOR)))
+					.arg(QString((const char*)glGetString(GL_RENDERER)))
+					.arg(QString((const char*)glGetString(GL_VERSION)))
+					);
+			ViewportManager::instance().suspendViewportUpdates();
+			QCoreApplication::removePostedEvents(nullptr, 0);
+			ex.showError();
+			QCoreApplication::instance()->quit();
+		}
+
 		if(!shareContext) {
 			_context->makeCurrent(this);
 			QSurfaceFormat format = _context->format();
@@ -208,11 +227,7 @@ void ViewportWindow::renderNow()
 			qDebug() << "OpenGL renderer: " << QString((const char*)glGetString(GL_RENDERER));
 			qDebug() << "OpenGL version string: " << QString((const char*)glGetString(GL_VERSION));
 			qDebug() << "OpenGL shading language: " << QString((const char*)glGetString(GL_SHADING_LANGUAGE_VERSION));
-			//qDebug() << "OpenGL extensions:";
-			//for(QString extension : _context->extensions())
-			//	qDebug() << extension;
 		}
-#endif
 	}
 
 	if(!_context->makeCurrent(this)) {

@@ -38,52 +38,62 @@ DEFINE_PROPERTY_FIELD(ViewportSceneRenderer, _antialiasingLevel, "AntialiasingLe
 SET_PROPERTY_FIELD_LABEL(ViewportSceneRenderer, _antialiasingLevel, "Antialiasing level")
 
 /******************************************************************************
-* Renders the current animation frame.
+* This method is called just before renderFrame() is called.
 ******************************************************************************/
-void ViewportSceneRenderer::renderFrame()
+void ViewportSceneRenderer::beginRender()
 {
 	OVITO_CHECK_OBJECT_POINTER(viewport());
 	_glcontext = viewport()->_glcontext;
 	OVITO_ASSERT(_glcontext == QOpenGLContext::currentContext());
 
-#if 0
-	// Obtain a functions object that allows to call OpenGL 3.2 core functions in a platform-independent way.
-	QOpenGLFunctions_3_2_Core* coreFunc = _glcontext->versionFunctions<QOpenGLFunctions_3_2_Core>();
-	if(!coreFunc || !coreFunc->initializeOpenGLFunctions()) {
-		throw Exception(tr("The OpenGL implementation does not support OpenGL 3.2."));
-	}
-	else qDebug() << "Core 3.2 supprted";
+	// Obtain a functions object that allows to call OpenGL 2.0 functions in a platform-independent way.
+	_glFunctions = _glcontext->functions();
 
 	// Obtain a functions object that allows to call OpenGL 3.0 functions in a platform-independent way.
-	_glFunctions = _glcontext->versionFunctions<QOpenGLFunctions_3_0>();
-	if(!_glFunctions || !_glFunctions->initializeOpenGLFunctions()) {
-		throw Exception(tr("The OpenGL implementation does not support OpenGL 3.0."));
-	}
-#endif
-	_glFunctions = _glcontext->functions();
+	_glFunctions30 = _glcontext->versionFunctions<QOpenGLFunctions_3_0>();
+	if(!_glFunctions30 || !_glFunctions30->initializeOpenGLFunctions())
+		_glFunctions30 = nullptr;
+
+	// Obtain a functions object that allows to call OpenGL 3.2 core functions in a platform-independent way.
+	_glFunctions32 = _glcontext->versionFunctions<QOpenGLFunctions_3_2_Core>();
+	if(!_glFunctions32 || !_glFunctions32->initializeOpenGLFunctions())
+		_glFunctions32 = nullptr;
+
+	OVITO_ASSERT(_glFunctions30 || _glFunctions32);
 
 	// Obtain surface format.
 	_glformat = _glcontext->format();
 
+	// Set up a vertex array object. This is only required when using OpenGL 3.2 Core Profile.
+	if(glformat().majorVersion() >= 3 && glformat().minorVersion() >= 2) {
+		if(!_vertexArrayObject.isCreated())
+			_vertexArrayObject.create();
+		_vertexArrayObject.bind();
+	}
+}
+
+/******************************************************************************
+* This method is called after renderFrame() has been called.
+******************************************************************************/
+void ViewportSceneRenderer::endRender()
+{
+	if(_vertexArrayObject.isCreated())
+		_vertexArrayObject.release();
+	_glcontext = nullptr;
+}
+
+/******************************************************************************
+* Renders the current animation frame.
+******************************************************************************/
+void ViewportSceneRenderer::renderFrame()
+{
 	// Clear background.
 	Color backgroundColor = Viewport::viewportColor(ViewportSettings::COLOR_VIEWPORT_BKG);
 	glClearColor(backgroundColor.r(), backgroundColor.g(), backgroundColor.b(), 1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
 
-	// Set up a vertex array object. This is only required when using OpenGL 3.2 Core Profile.
-	QOpenGLVertexArrayObject vao;
-	if(glformat().majorVersion() >= 3 && glformat().minorVersion() >= 2) {
-		vao.create();
-		vao.bind();
-	}
-
 	renderScene();
-
-	if(vao.isCreated())
-		vao.release();
-
-	_glcontext = nullptr;
 }
 
 /******************************************************************************

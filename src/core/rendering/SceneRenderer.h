@@ -71,8 +71,14 @@ public:
 	/// Specifies the viewport whose contents are currently being rendered.
 	void setViewport(Viewport* vp) { _viewport = vp; }
 
+	/// This method is called just before renderFrame() is called.
+	virtual void beginRender() = 0;
+
 	/// Renders the current animation frame.
 	virtual void renderFrame() = 0;
+
+	/// This method is called after renderFrame() has been called.
+	virtual void endRender() = 0;
 
 	/// Changes the current local to world transformation matrix.
 	virtual void setWorldTransform(const AffineTransformation& tm) = 0;

@@ -54,7 +54,7 @@ void LAMMPSTextDumpImporter::parseFile(FutureInterface<ImportedDataPtr>& futureI
 
 	for(int i = 0; i <= 100 && !futureInterface.isCanceled(); i++) {
 		futureInterface.setProgressValue(i);
-		QThread::msleep(10);
+//		QThread::msleep(10);
 	}
 
 	size_t numAtoms = 200;
