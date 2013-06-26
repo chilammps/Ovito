@@ -1,4 +1,5 @@
-#version 150
+#version 120
+#extension GL_EXT_geometry_shader4 : enable
 
 ///////////////////////////////////////////////////////////////////////////////
 // 
@@ -21,17 +22,18 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-layout(points) in;
-layout(triangle_strip, max_vertices=24) out;
+//layout(points) in;
+//layout(triangle_strip, max_vertices=24) out;
 
 // Inputs from vertex shader
-in float particle_radius_in[];
+//varying in float particle_radius_in[1];
 
 // Outputs to fragment shader
-#flat out vec3 particle_color;
-#flat out float particle_radius;
-#flat out vec4 eye_position;
+//varying out vec3 particle_color;
+//varying out float particle_radius;
+//varying out vec4 eye_position;
 
+/*
 const vec4 cubeVerts[8] = vec4[8](
     vec4(-1 , -1, -1, 0),  //LB   0
      vec4(-1, 1, -1, 0), //L T   1
@@ -53,19 +55,18 @@ const int  cubeIndices[24]  = int [24]
       1,0,5,4, //left
       3,1,7,5
     );
+    */
     
 void main()
 {
-	vec4 eye_position = gl_in[0].gl_Position; 
-	#particle_color = particle_color_in[0];
-	float particle_radius = particle_radius_in[0];
+	//vec4 eye_position = gl_in[0].gl_Position; 
+	//particle_color = particle_color_in[0];
+	//float particle_radius = particle_radius_in[0];
 
-	for(int face = 0; face < 6; face++) {
-		for(int corner = 0; corner < 4; corner++) {
-			gl_Position = eye_position + cubeVerts[cubeIndices[face*4 + corner]] * particle_radius;
-			gl_Position = gl_ProjectionMatrix * gl_Position;
-			EmitVertex();
-		}
-		EndPrimitive();
-	} 
+	//gl_Position = gl_ProjectionMatrix * (eye_position + vec3(1,1,1) * particle_radius);
+        for (int i=0;i<gl_VerticesIn;++i) {
+                gl_FrontColor = gl_FrontColorIn[i];
+                gl_Position = gl_PositionIn[i];
+                EmitVertex();
+        }
 }

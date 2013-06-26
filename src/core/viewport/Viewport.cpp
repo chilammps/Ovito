@@ -437,46 +437,55 @@ void Viewport::render(QOpenGLContext* context, QOpenGLPaintDevice* paintDevice)
 	_glcontext = context;
 	_paintDevice = paintDevice;
 
-	QSize vpSize = size();
-	glViewport(0, 0, vpSize.width(), vpSize.height());
-	Color backgroundColor = viewportColor(ViewportSettings::COLOR_VIEWPORT_BKG);
-	glClearColor(backgroundColor.r(), backgroundColor.g(), backgroundColor.b(), 1);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	try {
 
-	// Request scene bounding box.
-	Box3 boundingBox = DataSetManager::instance().currentSet()->sceneRoot()->worldBoundingBox(AnimManager::instance().time());
-	if(boundingBox.isEmpty())
-		boundingBox = Box3(Point3::Origin(), 100);
+		QSize vpSize = size();
+		glViewport(0, 0, vpSize.width(), vpSize.height());
 
-	// Setup projection.
-	FloatType aspectRatio = (FloatType)vpSize.height() / vpSize.width();
-	_projParams = projectionParameters(AnimManager::instance().time(), aspectRatio, boundingBox);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadMatrix(Matrix4(_projParams.viewMatrix));
-	glMatrixMode(GL_PROJECTION);
-	glLoadMatrix(_projParams.projectionMatrix);
-	glEnable(GL_DEPTH_TEST);
+		// Request scene bounding box.
+		Box3 boundingBox = DataSetManager::instance().currentSet()->sceneRoot()->worldBoundingBox(AnimManager::instance().time());
+		if(boundingBox.isEmpty())
+			boundingBox = Box3(Point3::Origin(), 100);
 
-	// Set up the viewport renderer.
-	ViewportManager::instance().renderer()->setTime(AnimManager::instance().time());
-	ViewportManager::instance().renderer()->setProjParams(_projParams);
-	ViewportManager::instance().renderer()->setViewport(this);
-	ViewportManager::instance().renderer()->setDataset(DataSetManager::instance().currentSet());
+		// Setup projection.
+		FloatType aspectRatio = (FloatType)vpSize.height() / vpSize.width();
+		_projParams = projectionParameters(AnimManager::instance().time(), aspectRatio, boundingBox);
 
-	// Call the viewport renderer to render the scene objects.
-	ViewportManager::instance().renderer()->renderFrame();
+		// Set up the viewport renderer.
+		ViewportManager::instance().renderer()->setTime(AnimManager::instance().time());
+		ViewportManager::instance().renderer()->setProjParams(_projParams);
+		ViewportManager::instance().renderer()->setViewport(this);
+		ViewportManager::instance().renderer()->setDataset(DataSetManager::instance().currentSet());
 
-	// Render render frame.
-	renderRenderFrame();
+		// Clear background.
+		Color backgroundColor = viewportColor(ViewportSettings::COLOR_VIEWPORT_BKG);
+		glClearColor(backgroundColor.r(), backgroundColor.g(), backgroundColor.b(), 1);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glEnable(GL_DEPTH_TEST);
 
-	// Render orientation tripod.
-	renderOrientationIndicator();
+		// Call the viewport renderer to render the scene objects.
+		ViewportManager::instance().renderer()->renderFrame();
 
-	// Render viewport caption.
-	renderViewportTitle();
+		// Render render frame.
+		renderRenderFrame();
 
-	_glcontext = nullptr;
-	_paintDevice = nullptr;
+#if 0
+		// Render orientation tripod.
+		renderOrientationIndicator();
+
+		// Render viewport caption.
+		renderViewportTitle();
+#endif
+		_glcontext = nullptr;
+		_paintDevice = nullptr;
+	}
+	catch(Exception& ex) {
+		ex.prependGeneralMessage(tr("An unexpected error occurred while rendering the viewport contents. The program will quit."));
+		ViewportManager::instance().suspendViewportUpdates();
+		QCoreApplication::removePostedEvents(nullptr, 0);
+		ex.showError();
+		QCoreApplication::instance()->quit();
+	}
 }
 
 /******************************************************************************

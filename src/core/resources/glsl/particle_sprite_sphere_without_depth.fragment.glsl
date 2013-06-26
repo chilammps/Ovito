@@ -1,3 +1,5 @@
+#version 150
+
 ///////////////////////////////////////////////////////////////////////////////
 // 
 //  Copyright (2013) Alexander Stukowski
@@ -26,13 +28,17 @@
 
 uniform sampler2D tex;			// The imposter texture.
 
+flat in vec4 particle_color_out;
+
+out vec4 FragColor;
+
 void main() 
 {
-	vec2 shifted_coords = gl_TexCoord[0].xy - vec2(0.5, 0.5);
+	vec2 shifted_coords = gl_PointCoord - vec2(0.5, 0.5);
 	if(dot(shifted_coords, shifted_coords) >= 0.25) discard;
-	vec4 texValue = texture2D(tex, gl_TexCoord[0].xy);
+	vec4 texValue = texture(tex, gl_PointCoord);
 	
-	// Specular highlights are stored in the alpha channel of the texture. 
-	// Modulate diffuse color with brightness value stored in the texture.
-	gl_FragColor = vec4(texValue.rgb * gl_Color.rgb + texValue.a, 1);
+	// Specular highlights are stored in the green channel of the texture. 
+	// Modulate diffuse color with brightness value stored in the red channel of the texture.
+	FragColor = vec4(texValue.r * particle_color_out.rgb + texValue.g, particle_color_out.a);
 }

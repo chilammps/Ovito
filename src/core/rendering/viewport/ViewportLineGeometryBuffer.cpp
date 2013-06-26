@@ -28,42 +28,89 @@ namespace Ovito {
 IMPLEMENT_OVITO_OBJECT(Core, ViewportLineGeometryBuffer, LineGeometryBuffer);
 
 /******************************************************************************
-* Allocates a geometry buffer with the given number of vertices.
+* Constructor.
 ******************************************************************************/
-void ViewportLineGeometryBuffer::beginCreate(int vertexCount)
+ViewportLineGeometryBuffer::ViewportLineGeometryBuffer(ViewportSceneRenderer* renderer) :
+	_renderer(renderer),
+	_contextGroup(QOpenGLContextGroup::currentContextGroup()),
+	_vertexCount(-1)
 {
-	OVITO_ASSERT(!_glbuffer.isCreated() && !_vertexBuffer);
-	OVITO_ASSERT(vertexCount >= 0);
-	OVITO_ASSERT(QOpenGLContextGroup::currentContextGroup() == _contextGroup);
+	OVITO_ASSERT(renderer->glcontext()->shareGroup() == _contextGroup);
 
-	if(!_glbuffer.create())
+	if(!_glPositionsBuffer.create())
 		throw Exception(tr("Failed to create OpenGL vertex buffer."));
+	_glPositionsBuffer.setUsagePattern(QOpenGLBuffer::StaticDraw);
 
-	if(!_glbuffer.bind())
-		throw Exception(tr("Failed to bind OpenGL vertex buffer."));
+	if(!_glColorsBuffer.create())
+		throw Exception(tr("Failed to create OpenGL vertex buffer."));
+	_glColorsBuffer.setUsagePattern(QOpenGLBuffer::StaticDraw);
 
-	_glbuffer.setUsagePattern(QOpenGLBuffer::StaticDraw);
-	_glbuffer.allocate(vertexCount * sizeof(Vertex));
+	// Initialize OpenGL shader.
+	_shader = renderer->loadShaderProgram("line", ":/core/glsl/line.vertex.glsl", ":/core/glsl/line.fragment.glsl");
+}
 
-	_vertexBuffer = static_cast<Vertex*>(_glbuffer.map(QOpenGLBuffer::WriteOnly));
-	if(!_vertexBuffer)
-		throw Exception(tr("Failed to map OpenGL vertex buffer to memory."));
+/******************************************************************************
+* Allocates a vertex buffer with the given number of vertices.
+******************************************************************************/
+void ViewportLineGeometryBuffer::setSize(int vertexCount)
+{
+	OVITO_ASSERT(_glPositionsBuffer.isCreated());
+	OVITO_ASSERT(_glColorsBuffer.isCreated());
+	OVITO_ASSERT(vertexCount >= 0);
+	OVITO_ASSERT(vertexCount < std::numeric_limits<int>::max() / sizeof(ColorA));
+	OVITO_ASSERT(QOpenGLContextGroup::currentContextGroup() == _contextGroup);
 
 	_vertexCount = vertexCount;
 }
 
 /******************************************************************************
-* This finalizes the buffer after it has has been filled with data.
+* Sets the coordinates of the vertices.
 ******************************************************************************/
-void ViewportLineGeometryBuffer::endCreate()
+void ViewportLineGeometryBuffer::setVertexPositions(const Point3* coordinates)
 {
-	OVITO_ASSERT(_vertexBuffer != nullptr);
 	OVITO_ASSERT(QOpenGLContextGroup::currentContextGroup() == _contextGroup);
+	OVITO_ASSERT(_glPositionsBuffer.isCreated());
+	OVITO_ASSERT(_vertexCount >= 0);
 
-	if(!_glbuffer.unmap())
-		throw Exception(tr("Failed to unmap OpenGL vertex buffer from memory."));
+	if(!_glPositionsBuffer.bind())
+		throw Exception(tr("Failed to bind OpenGL vertex buffer."));
+	_glPositionsBuffer.allocate(coordinates, _vertexCount * sizeof(Point3));
+	_glPositionsBuffer.release();
+}
 
-	_glbuffer.release();
+/******************************************************************************
+* Sets the colors of the vertices.
+******************************************************************************/
+void ViewportLineGeometryBuffer::setVertexColors(const ColorA* colors)
+{
+	OVITO_ASSERT(QOpenGLContextGroup::currentContextGroup() == _contextGroup);
+	OVITO_ASSERT(_glColorsBuffer.isCreated());
+	OVITO_ASSERT(_vertexCount >= 0);
+
+	if(!_glColorsBuffer.bind())
+		throw Exception(tr("Failed to bind OpenGL vertex buffer."));
+	_glColorsBuffer.allocate(colors, _vertexCount * sizeof(ColorA));
+	_glColorsBuffer.release();
+}
+
+/******************************************************************************
+* Sets the color of all vertices to the given value.
+******************************************************************************/
+void ViewportLineGeometryBuffer::setVertexColor(const ColorA color)
+{
+	OVITO_ASSERT(QOpenGLContextGroup::currentContextGroup() == _contextGroup);
+	OVITO_ASSERT(_glColorsBuffer.isCreated());
+	OVITO_ASSERT(_vertexCount >= 0);
+
+	if(!_glColorsBuffer.bind())
+		throw Exception(tr("Failed to bind OpenGL vertex buffer."));
+	_glColorsBuffer.allocate(_vertexCount * sizeof(ColorA));
+	ColorA* bufferData = static_cast<ColorA*>(_glColorsBuffer.map(QOpenGLBuffer::WriteOnly));
+	if(!bufferData)
+		throw Exception(tr("Failed to map OpenGL vertex buffer to memory."));
+	std::fill(bufferData, bufferData + _vertexCount, color);
+	_glColorsBuffer.unmap();
+	_glColorsBuffer.release();
 }
 
 /******************************************************************************
@@ -73,7 +120,9 @@ bool ViewportLineGeometryBuffer::isValid(SceneRenderer* renderer)
 {
 	ViewportSceneRenderer* vpRenderer = qobject_cast<ViewportSceneRenderer*>(renderer);
 	if(!vpRenderer) return false;
-	return _glbuffer.isCreated() && (_contextGroup == vpRenderer->glcontext()->shareGroup());
+	return _glPositionsBuffer.isCreated()
+			&& _vertexCount >= 0
+			&& (_contextGroup == vpRenderer->glcontext()->shareGroup());
 }
 
 /******************************************************************************
@@ -81,22 +130,39 @@ bool ViewportLineGeometryBuffer::isValid(SceneRenderer* renderer)
 ******************************************************************************/
 void ViewportLineGeometryBuffer::render()
 {
-	OVITO_ASSERT(_glbuffer.isCreated());
-	OVITO_STATIC_ASSERT(sizeof(FloatType) == 4);
+	OVITO_ASSERT(_glPositionsBuffer.isCreated());
+	OVITO_ASSERT(_glColorsBuffer.isCreated());
 	OVITO_ASSERT(_contextGroup == QOpenGLContextGroup::currentContextGroup());
+	OVITO_ASSERT(_vertexCount >= 0);
+	OVITO_STATIC_ASSERT(sizeof(FloatType) == 4);
 
-	if(!_glbuffer.bind())
-		throw Exception(tr("Failed to bind OpenGL vertex buffer."));
+	if(_vertexCount <= 0)
+		return;
 
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_COLOR_ARRAY);
-	OVITO_CHECK_OPENGL(glVertexPointer(3, GL_FLOAT, sizeof(Vertex), (const char*)offsetof(Vertex, position)));
-	OVITO_CHECK_OPENGL(glColorPointer(4, GL_FLOAT, sizeof(Vertex), (const char*)offsetof(Vertex, color)));
-	OVITO_CHECK_OPENGL(glDrawArrays(GL_LINES, 0, _vertexCount));
-	glDisableClientState(GL_COLOR_ARRAY);
-	glDisableClientState(GL_VERTEX_ARRAY);
+	if(!_shader->bind())
+		throw Exception(tr("Failed to bind OpenGL shader."));
 
-	_glbuffer.release();
+	QOpenGLVertexArrayObject vao;
+	vao.create();
+	vao.bind();
+
+	_shader->setUniformValue("modelview_projection_matrix",
+			(QMatrix4x4)(renderer()->projParams().projectionMatrix * renderer()->modelViewTM()));
+
+	_glPositionsBuffer.bind();
+	_shader->setAttributeBuffer("vertex_pos", GL_FLOAT, 0, 3);
+	_shader->enableAttributeArray("vertex_pos");
+	_glPositionsBuffer.release();
+
+	_glColorsBuffer.bind();
+	_shader->setAttributeBuffer("vertex_color", GL_FLOAT, 0, 4);
+	_shader->enableAttributeArray("vertex_color");
+	_glColorsBuffer.release();
+
+	OVITO_CHECK_OPENGL(renderer()->glfuncs()->glDrawArrays(GL_LINES, 0, _vertexCount));
+
+	vao.release();
+	_shader->release();
 }
 
 };

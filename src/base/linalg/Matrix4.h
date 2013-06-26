@@ -275,6 +275,16 @@ public:
 		return reinterpret_cast<const T*>(&_m);
 	}
 
+	/// \brief Converts this matrix to a Qt 4x4 matrix object.
+	operator QMatrix4x4() const {
+		return QMatrix4x4(
+				(*this)(0,0), (*this)(0,1), (*this)(0,2), (*this)(0,3),
+				(*this)(1,0), (*this)(1,1), (*this)(1,2), (*this)(1,3),
+				(*this)(2,0), (*this)(2,1), (*this)(2,2), (*this)(2,3),
+				(*this)(3,0), (*this)(3,1), (*this)(3,2), (*this)(3,3));
+	}
+
+
 	///////////////////////////// Generation //////////////////////////////////
 
 	/// \brief Generates a translation matrix.
@@ -364,6 +374,20 @@ inline Matrix_4<T> operator*(const Matrix_4<T>& a, const Matrix_4<T>& b)
 		for(typename Matrix_4<T>::size_type j = 0; j < 4; j++) {
 			res(i,j) = a(i,0)*b(0,j) + a(i,1)*b(1,j) + a(i,2)*b(2,j) + a(i,3)*b(3,j);
 		}
+	}
+	return res;
+}
+
+/// Computes the product of a 4x4 matrix with a 3x4 Matrix.
+template<typename T>
+inline Matrix_4<T> operator*(const Matrix_4<T>& a, const Matrix_34<T>& b)
+{
+	Matrix_4<T> res;
+	for(typename Matrix_4<T>::size_type i = 0; i < 4; i++) {
+		for(typename Matrix_4<T>::size_type j = 0; j < 3; j++) {
+			res(i,j) = a(i,0)*b(0,j) + a(i,1)*b(1,j) + a(i,2)*b(2,j);
+		}
+		res(i,3) = a(i,0)*b(0,3) + a(i,1)*b(1,3) + a(i,2)*b(2,3) + a(i,3);
 	}
 	return res;
 }

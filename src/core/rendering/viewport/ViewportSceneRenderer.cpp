@@ -45,13 +45,11 @@ void ViewportSceneRenderer::renderFrame()
 	OVITO_CHECK_OBJECT_POINTER(viewport());
 	_glcontext = viewport()->_glcontext;
 
-	// Obtain a functions object that allows to call OpenGL 2.0 function in a platform-independent way.
-	_glFunctions20 = _glcontext->versionFunctions<QOpenGLFunctions_2_0>();
-	if(!_glFunctions20 || !_glFunctions20->initializeOpenGLFunctions()) {
-		throw Exception(tr("The OpenGL implementation does not support OpenGL 2.0."));
+	// Obtain a functions object that allows to call OpenGL 3.2 functions in a platform-independent way.
+	_glFunctions = _glcontext->versionFunctions<QOpenGLFunctions_3_2_Core>();
+	if(!_glFunctions || !_glFunctions->initializeOpenGLFunctions()) {
+		throw Exception(tr("The OpenGL implementation does not support OpenGL 3.2 Core Profile."));
 	}
-
-	glMatrixMode(GL_MODELVIEW);
 
 	renderScene();
 
@@ -63,8 +61,7 @@ void ViewportSceneRenderer::renderFrame()
 ******************************************************************************/
 void ViewportSceneRenderer::setWorldTransform(const AffineTransformation& tm)
 {
-	Matrix4 localToViewTM(projParams().viewMatrix * tm);
-	glLoadMatrix(localToViewTM);
+	_modelViewTM = projParams().viewMatrix * tm;
 }
 
 /******************************************************************************
@@ -153,5 +150,59 @@ void ViewportSceneRenderer::renderPipelineObject(PipelineObject* pipelineObj, Ob
 		renderModifiedObject(dynamic_object_cast<ModifiedObject>(modObj->inputObject(i)), objNode);
 #endif
 }
+
+/******************************************************************************
+* Loads an OpenGL shader program.
+******************************************************************************/
+QOpenGLShaderProgram* ViewportSceneRenderer::loadShaderProgram(const QString& id, const QString& vertexShaderFile, const QString& fragmentShaderFile, const QString& geometryShaderFile)
+{
+	QOpenGLContextGroup* contextGroup = glcontext()->shareGroup();
+	OVITO_ASSERT(contextGroup == QOpenGLContextGroup::currentContextGroup());
+
+	OVITO_ASSERT(QOpenGLShaderProgram::hasOpenGLShaderPrograms());
+	OVITO_ASSERT(QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Vertex));
+	OVITO_ASSERT(QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Fragment));
+
+	// The OpenGL shaders are only created once per OpenGL context group.
+	QOpenGLShaderProgram* program = contextGroup->findChild<QOpenGLShaderProgram*>(id);
+	if(program)
+		return program;
+
+	program = new QOpenGLShaderProgram(contextGroup);
+	program->setObjectName(id);
+	if(!program->addShaderFromSourceFile(QOpenGLShader::Vertex, vertexShaderFile)) {
+		qDebug() << "OpenGL shader log:";
+		qDebug() << program->log();
+		delete program;
+		throw Exception(QString("The vertex shader source file %1 failed to compile. See log for details.").arg(vertexShaderFile));
+	}
+
+	if(!program->addShaderFromSourceFile(QOpenGLShader::Fragment, fragmentShaderFile)) {
+		qDebug() << "OpenGL shader log:";
+		qDebug() << program->log();
+		delete program;
+		throw Exception(QString("The fragment shader source file %1 failed to compile. See log for details.").arg(fragmentShaderFile));
+	}
+
+	if(!geometryShaderFile.isEmpty()) {
+		if(!program->addShaderFromSourceFile(QOpenGLShader::Geometry, geometryShaderFile)) {
+			qDebug() << "OpenGL shader log:";
+			qDebug() << program->log();
+			delete program;
+			throw Exception(QString("The geometry shader source file %1 failed to compile. See log for details.").arg(geometryShaderFile));
+		}
+	}
+
+	if(!program->link()) {
+		qDebug() << "OpenGL shader log:";
+		qDebug() << program->log();
+		delete program;
+		throw Exception(QString("The OpenGL shader program %1 failed to link. See log for details.").arg(id));
+	}
+
+	OVITO_ASSERT(contextGroup->findChild<QOpenGLShaderProgram*>(id) == program);
+	return program;
+}
+
 
 };

@@ -41,8 +41,8 @@ ViewportWindow::ViewportWindow(Viewport* owner) :
 	QSurfaceFormat format;
 	format.setDepthBufferSize(24);
 	format.setMajorVersion(3);
-	format.setMinorVersion(3);
-	format.setProfile(QSurfaceFormat::CompatibilityProfile);
+	format.setMinorVersion(2);
+	format.setProfile(QSurfaceFormat::CoreProfile);
 	setFormat(format);
 }
 
@@ -161,7 +161,6 @@ void ViewportWindow::wheelEvent(QWheelEvent* event)
 		handler->wheelEvent(_viewport, event);
 }
 
-
 /******************************************************************************
 * Immediately redraws the contents of this window.
 ******************************************************************************/
@@ -196,6 +195,7 @@ void ViewportWindow::renderNow()
 
 #if 1
 		if(!shareContext) {
+			_context->makeCurrent(this);
 			QSurfaceFormat format = _context->format();
 			qDebug() << "OpenGL depth buffer size:" << format.depthBufferSize();
 			qDebug() << "OpenGL stencil buffer size:" << format.stencilBufferSize();
@@ -204,6 +204,13 @@ void ViewportWindow::renderNow()
 			qDebug() << "OpenGL has alpha:" << format.hasAlpha();
 			qDebug() << "OpenGL samples:" << format.samples();
 			qDebug() << "OpenGL swap behavior:" << format.swapBehavior();
+			qDebug() << "OpenGL vendor: " << QString((const char*)glGetString(GL_VENDOR));
+			qDebug() << "OpenGL renderer: " << QString((const char*)glGetString(GL_RENDERER));
+			qDebug() << "OpenGL version string: " << QString((const char*)glGetString(GL_VERSION));
+			qDebug() << "OpenGL shading language: " << QString((const char*)glGetString(GL_SHADING_LANGUAGE_VERSION));
+			//qDebug() << "OpenGL extensions:";
+			//for(QString extension : _context->extensions())
+			//	qDebug() << extension;
 		}
 #endif
 	}

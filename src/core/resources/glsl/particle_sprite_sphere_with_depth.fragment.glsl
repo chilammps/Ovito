@@ -1,3 +1,5 @@
+#version 150 
+
 ///////////////////////////////////////////////////////////////////////////////
 // 
 //  Copyright (2013) Alexander Stukowski
@@ -24,26 +26,31 @@
  * on a textured imposter.
  ***********************************************************************/
 
+// Input from calling program:
+uniform mat4 projection_matrix;
 uniform sampler2D tex;			// The imposter texture.
 
 // Input from vertex shader:
-varying float depth_radius;		// The particle radius.
-varying float ze0;				// The particle's Z coordinate in eye coordinates.
+flat in vec4 particle_color_out;
+flat in float depth_radius;		// The particle radius.
+flat in float ze0;				// The particle's Z coordinate in eye coordinates.
+
+out vec4 FragColor;
 
 void main() 
 {
-	vec2 shifted_coords = gl_TexCoord[0].xy - vec2(0.5, 0.5);
+	vec2 shifted_coords = gl_PointCoord - vec2(0.5, 0.5);
 	float rsq = dot(shifted_coords, shifted_coords);
 	if(rsq >= 0.25) discard;
-	vec4 texValue = texture2D(tex, gl_TexCoord[0].xy);
+	vec4 texValue = texture(tex, gl_PointCoord);
 	
-	// Specular highlights are stored in the alpha channel of the texture. 
-	// Modulate diffuse color with brightness value stored in the texture.
-	gl_FragColor = vec4(texValue.rgb * gl_Color.rgb + texValue.a, 1);
+	// Specular highlights are stored in the green channel of the texture. 
+	// Modulate diffuse color with brightness value stored in the red channel of the texture.
+	FragColor = vec4(texValue.r * particle_color_out.rgb + texValue.g, particle_color_out.a);
 
 	// Vary the depth value across the imposter to obtain proper intersections between particles.	
 	float dz = sqrt(1.0 - 4.0 * rsq) * depth_radius;
 	float ze = ze0 + dz;
-	float zn = (gl_ProjectionMatrix[2][2] * ze + gl_ProjectionMatrix[3][2]) / (gl_ProjectionMatrix[2][3] * ze + gl_ProjectionMatrix[3][3]);
+	float zn = (projection_matrix[2][2] * ze + projection_matrix[3][2]) / (projection_matrix[2][3] * ze + projection_matrix[3][3]);
 	gl_FragDepth = 0.5 * (zn * gl_DepthRange.diff + (gl_DepthRange.far + gl_DepthRange.near));
 }

@@ -1,3 +1,5 @@
+#version 150 
+
 ///////////////////////////////////////////////////////////////////////////////
 // 
 //  Copyright (2013) Alexander Stukowski
@@ -19,11 +21,15 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/***********************************************************************
- * This OpenGL fragment shader renders a spherical atom using 
- * the raytracing method. 
- ***********************************************************************/
-void main() 
+uniform mat4 modelview_projection_matrix;
+
+in vec3 vertex_pos;
+in vec4 vertex_color;
+
+out vec4 vertex_color_out;
+
+void main()
 {
-	gl_FragColor = gl_Color;
+	vertex_color_out = vertex_color;
+	gl_Position = modelview_projection_matrix * vec4(vertex_pos, 1.0);
 }

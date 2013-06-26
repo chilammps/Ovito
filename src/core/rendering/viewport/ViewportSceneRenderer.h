@@ -32,7 +32,7 @@
 #include "ViewportLineGeometryBuffer.h"
 #include "ViewportParticleGeometryBuffer.h"
 
-#include <QOpenGLFunctions_2_0>
+#include <QOpenGLFunctions_3_2_Core>
 
 namespace Ovito {
 
@@ -47,7 +47,7 @@ class ViewportSceneRenderer : public SceneRenderer
 public:
 
 	/// Default constructor.
-	Q_INVOKABLE ViewportSceneRenderer() : _glcontext(nullptr), _antialiasingLevel(2) {
+	Q_INVOKABLE ViewportSceneRenderer() : _glcontext(nullptr), _antialiasingLevel(2), _modelViewTM(AffineTransformation::Identity()) {
 		INIT_PROPERTY_FIELD(ViewportSceneRenderer::_antialiasingLevel)
 	}
 
@@ -56,6 +56,9 @@ public:
 
 	/// Changes the current local to world transformation matrix.
 	virtual void setWorldTransform(const AffineTransformation& tm) override;
+
+	/// Returns the current model-to-view transformation matrix.
+	const AffineTransformation& modelViewTM() const { return _modelViewTM; }
 
 	/// Requests a new line geometry buffer from the renderer.
 	virtual OORef<LineGeometryBuffer> createLineGeometryBuffer() override {
@@ -71,7 +74,7 @@ public:
 	QOpenGLContext* glcontext() const { return _glcontext; }
 
 	/// Returns a pointer to the OpenGL functions object.
-	QOpenGLFunctions_2_0* glfuncs() const { return _glFunctions20; }
+	QOpenGLFunctions_3_2_Core* glfuncs() const { return _glFunctions; }
 
 	/// Translates an OpenGL error code to a human-readable message string.
 	static const char* openglErrorString(GLenum errorCode);
@@ -81,6 +84,9 @@ public:
 
 	/// Sets the number of sub-pixels to render.
 	void setAntialiasingLevel(int newLevel) { _antialiasingLevel = newLevel; }
+
+	/// Loads and compiles an OpenGL shader program.
+	QOpenGLShaderProgram* loadShaderProgram(const QString& id, const QString& vertexShaderFile, const QString& fragmentShaderFile, const QString& geometryShaderFile = QString());
 
 public:
 
@@ -100,10 +106,13 @@ private:
 	QOpenGLContext* _glcontext;
 
 	/// The OpenGL functions object.
-	QOpenGLFunctions_2_0* _glFunctions20;
+	QOpenGLFunctions_3_2_Core* _glFunctions;
 
 	/// Controls the number of sub-pixels to render.
 	PropertyField<int> _antialiasingLevel;
+
+	/// The current model-to-view transformation matrix.
+	AffineTransformation _modelViewTM;
 
 	Q_OBJECT
 	OVITO_OBJECT

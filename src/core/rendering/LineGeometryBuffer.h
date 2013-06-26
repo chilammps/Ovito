@@ -41,25 +41,20 @@ class LineGeometryBuffer : public OvitoObject
 {
 public:
 
-	/// A structure that stores the data of a single vertex.
-	struct Vertex {
-		/// The XYZ coordinates of the vertex.
-		Point3 position;
-		/// The color of the vertex.
-		ColorA color;
-	};
-
-public:
-
 	/// \brief Allocates a geometry buffer with the given number of vertices.
-	/// \param vertexCount The number of vertices. Must be an even number.
-	virtual void beginCreate(int vertexCount) = 0;
+	virtual void setSize(int particleCount) = 0;
 
-	/// \brief Returns a pointer to the internal vertex array allocated by beginCreate().
-	virtual Vertex* vertexBuffer() = 0;
+	/// \brief Returns the number of vertices stored in the buffer.
+	virtual int vertexCount() const = 0;
 
-	/// \brief This finalizes the buffer after it has has been filled with data.
-	virtual void endCreate() = 0;
+	/// \brief Sets the coordinates of the vertices.
+	virtual void setVertexPositions(const Point3* coordinates) = 0;
+
+	/// \brief Sets the colors of the vertices.
+	virtual void setVertexColors(const ColorA* colors) = 0;
+
+	/// \brief Sets the color of all vertices to the given value.
+	virtual void setVertexColor(const ColorA color) = 0;
 
 	/// \brief Returns true if the geometry buffer is filled and can be rendered with the given renderer.
 	virtual bool isValid(SceneRenderer* renderer) = 0;

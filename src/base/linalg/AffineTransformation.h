@@ -357,6 +357,15 @@ public:
 			(std::abs(_m[2][0]*_m[2][0] + _m[2][1]*_m[2][1] + _m[2][2]*_m[2][2] - T(1)) <= epsilon) &&
 			(std::abs(determinant() - T(1)) <= epsilon);
 	}
+
+	/// \brief Converts this matrix to a Qt 4x4 matrix object.
+	operator QMatrix4x4() const {
+		return QMatrix4x4(
+				(*this)(0,0), (*this)(0,1), (*this)(0,2), (*this)(0,3),
+				(*this)(1,0), (*this)(1,1), (*this)(1,2), (*this)(1,3),
+				(*this)(2,0), (*this)(2,1), (*this)(2,2), (*this)(2,3),
+				0, 0, 0, 1);
+	}
 };
 
 /// Multiplies a 3x4 matrix with a Vector3 (which is automatically extended to a 4-vector with the last

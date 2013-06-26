@@ -85,24 +85,11 @@ protected:
     /// This method that takes care of freeing the shared OpenGL resources owned by this class.
     virtual void freeOpenGLResources() override;
 
-	/// List of textures used for OpenGL rendering of particles.
-	enum BillboardTexture {
-		FRAGMENT_SHADER_TEXTURE,	// Texture used by the fragment shader
-		DIFFUSE_TEXTURE,			// Texture used for fixed-function point sprite rendering (contains the diffuse component used during the first rendering pass)
-		SPECULAR_TEXTURE,			// Texture used for fixed-function point sprite rendering (contains the specular component used during the second rendering pass)
-		FLAT_TEXTURE,				// Texture used for rendering flat-shaded particles.
-
-		NUM_TEXTURES				// Counts the number of textures.
-	};
-
-	/// Creates the textures used for billboard rendering of particles.
-	void initializeBillboardTextures();
+	/// Creates the texture used for billboard rendering of particles.
+	void initializeBillboardTexture();
 
 	/// Activates a texture for billboard rendering of particles.
-	void activateBillboardTexture(BillboardTexture which);
-
-	/// Loads and compiles an OpenGL shader program.
-	QOpenGLShaderProgram* loadShaderProgram(const QString& id, const QString& vertexShaderFile, const QString& fragmentShaderFile, const QString& geometryShaderFile = QString());
+	void activateBillboardTexture();
 
 	/// Renders the particles using OpenGL point sprites.
 	void renderPointSprites();
@@ -130,8 +117,8 @@ private:
 	/// The number of particles stored in the buffers.
 	int _particleCount;
 
-	/// Identifiers of the OpenGL textures that are used for billboard rendering of particles.
-	GLuint _textures[NUM_TEXTURES];
+	/// Resource identifier of the OpenGL texture that is used for billboard rendering of particles.
+	GLuint _billboardTexture;
 
 	/// The OpenGL shader programs that are used to render the particles.
 	QOpenGLShaderProgram* _flatImposterShader;

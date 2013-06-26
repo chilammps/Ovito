@@ -76,7 +76,7 @@ void SimulationCellDisplay::render(TimePoint time, SceneObject* sceneObject, con
 			|| !_lineGeometry
 			|| !_lineGeometry->isValid(renderer)) {
 		_lineGeometry = renderer->createLineGeometryBuffer();
-		_lineGeometry->beginCreate(24);
+		_lineGeometry->setSize(24);
 		Point3 corners[8];
 		corners[0] = cell->origin();
 		corners[1] = corners[0] + cell->edgeVector1();
@@ -86,23 +86,21 @@ void SimulationCellDisplay::render(TimePoint time, SceneObject* sceneObject, con
 		corners[5] = corners[1] + cell->edgeVector3();
 		corners[6] = corners[2] + cell->edgeVector3();
 		corners[7] = corners[3] + cell->edgeVector3();
-		LineGeometryBuffer::Vertex* vertices = _lineGeometry->vertexBuffer();
-		vertices[0].position = corners[0]; vertices[1].position = corners[1];
-		vertices[2].position = corners[1]; vertices[3].position = corners[2];
-		vertices[4].position = corners[2]; vertices[5].position = corners[3];
-		vertices[6].position = corners[3]; vertices[7].position = corners[0];
-		vertices[8].position = corners[4]; vertices[9].position = corners[5];
-		vertices[10].position = corners[5]; vertices[11].position = corners[6];
-		vertices[12].position = corners[6]; vertices[13].position = corners[7];
-		vertices[14].position = corners[7]; vertices[15].position = corners[4];
-		vertices[16].position = corners[0]; vertices[17].position = corners[4];
-		vertices[18].position = corners[1]; vertices[19].position = corners[5];
-		vertices[20].position = corners[2]; vertices[21].position = corners[6];
-		vertices[22].position = corners[3]; vertices[23].position = corners[7];
-		for(int i = 0; i < 24; i++) {
-			vertices[i].color = ColorA(1,1,1,1);
-		}
-		_lineGeometry->endCreate();
+		Point3 vertices[24] = {
+			corners[0], corners[1],
+			corners[1], corners[2],
+			corners[2], corners[3],
+			corners[3], corners[0],
+			corners[4], corners[5],
+			corners[5], corners[6],
+			corners[6], corners[7],
+			corners[7], corners[4],
+			corners[0], corners[4],
+			corners[1], corners[5],
+			corners[2], corners[6],
+			corners[3], corners[7]};
+		_lineGeometry->setVertexPositions(vertices);
+		_lineGeometry->setVertexColor(ColorA(1,1,1));
 	}
 	_lineGeometry->render();
 }

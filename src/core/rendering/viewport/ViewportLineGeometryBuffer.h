@@ -42,20 +42,24 @@ class ViewportLineGeometryBuffer : public LineGeometryBuffer
 protected:
 
 	/// Constructor.
-	ViewportLineGeometryBuffer(ViewportSceneRenderer* renderer) :
-		_contextGroup(QOpenGLContextGroup::currentContextGroup()), _vertexBuffer(nullptr), _vertexCount(0) {}
+	ViewportLineGeometryBuffer(ViewportSceneRenderer* renderer);
 
 public:
 
 	/// \brief Allocates a geometry buffer with the given number of vertices.
-	/// \param vertexCount The number of vertices. Must be an even number.
-	virtual void beginCreate(int vertexCount) override;
+	virtual void setSize(int particleCount) override;
 
-	/// \brief Returns a pointer to the internal vertex array allocated by beginCreate().
-	virtual Vertex* vertexBuffer() override { return _vertexBuffer; }
+	/// \brief Returns the number of vertices stored in the buffer.
+	virtual int vertexCount() const override { return _vertexCount; }
 
-	/// \brief This finalizes the buffer after it has has been filled with data.
-	virtual void endCreate() override;
+	/// \brief Sets the coordinates of the vertices.
+	virtual void setVertexPositions(const Point3* coordinates) override;
+
+	/// \brief Sets the colors of the vertices.
+	virtual void setVertexColors(const ColorA* colors) override;
+
+	/// \brief Sets the color of all vertices to the given value.
+	virtual void setVertexColor(const ColorA color) override;
 
 	/// \brief Returns true if the geometry buffer is filled and can be rendered with the given renderer.
 	virtual bool isValid(SceneRenderer* renderer) override;
@@ -63,19 +67,28 @@ public:
 	/// \brief Renders the geometry.
 	virtual void render() override;
 
+	/// \brief Returns the renderer that created this buffer object.
+	ViewportSceneRenderer* renderer() const { return _renderer; }
+
 private:
 
-	/// The internal OpenGL vertex buffer.
-	QOpenGLBuffer _glbuffer;
+	/// The renderer that created this buffer object.
+	ViewportSceneRenderer* _renderer;
+
+	/// The internal OpenGL vertex buffer that stores the vertex positions.
+	QOpenGLBuffer _glPositionsBuffer;
+
+	/// The internal OpenGL vertex buffer that stores the vertex colors.
+	QOpenGLBuffer _glColorsBuffer;
 
 	/// The GL context group under which the GL vertex buffer has been created.
 	QOpenGLContextGroup* _contextGroup;
 
+	/// The OpenGL shader program used to render the lines.
+	QOpenGLShaderProgram* _shader;
+
 	/// The number of vertices stored in the buffer.
 	int _vertexCount;
-
-	/// Pointer to the memory-mapped vertex buffer.
-	Vertex* _vertexBuffer;
 
 	Q_OBJECT
 	OVITO_OBJECT

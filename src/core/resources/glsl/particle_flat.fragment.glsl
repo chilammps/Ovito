@@ -1,3 +1,5 @@
+#version 150
+
 ///////////////////////////////////////////////////////////////////////////////
 // 
 //  Copyright (2013) Alexander Stukowski
@@ -20,12 +22,16 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /***********************************************************************
- * This OpenGL fragment shader render a flat atom without shading.
+ * This OpenGL fragment shader renders a flat atom without shading.
  ***********************************************************************/
+
+flat in vec4 particle_color_out;
+
+out vec4 FragColor;
 
 void main() 
 {
-	vec2 shifted_coords = gl_TexCoord[0].xy - vec2(0.5, 0.5);
+	vec2 shifted_coords = gl_PointCoord - vec2(0.5, 0.5);
 	if(dot(shifted_coords, shifted_coords) >= 0.25) discard;
-	gl_FragColor = gl_Color;
+	FragColor = particle_color_out;
 }

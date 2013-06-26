@@ -83,6 +83,8 @@
 	<file>glsl/particle_sprite_sphere_with_depth.vertex.glsl</file>
 	<file>glsl/particle_sprite_sphere_without_depth.fragment.glsl</file>
 	<file>glsl/particle_sprite_sphere_without_depth.vertex.glsl</file>
+	<file>glsl/line.vertex.glsl</file>
+	<file>glsl/line.fragment.glsl</file>
 	
 </qresource>
 
