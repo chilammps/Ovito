@@ -59,7 +59,7 @@ ViewportParticleGeometryBuffer::ViewportParticleGeometryBuffer(ViewportSceneRend
 	_flatImposterShader = renderer->loadShaderProgram("particle_flat_sphere", ":/core/glsl/particle_sprite_sphere_without_depth.vertex.glsl", ":/core/glsl/particle_flat.fragment.glsl");
 	_shadedImposterShaderWithoutDepth = renderer->loadShaderProgram("particle_textured_sprite_sphere_without_depth", ":/core/glsl/particle_sprite_sphere_without_depth.vertex.glsl", ":/core/glsl/particle_sprite_sphere_without_depth.fragment.glsl");
 	_shadedImposterShaderWithDepth = renderer->loadShaderProgram("particle_textured_sprite_sphere_with_depth", ":/core/glsl/particle_sprite_sphere_with_depth.vertex.glsl", ":/core/glsl/particle_sprite_sphere_with_depth.fragment.glsl");
-	//_raytracedSphereShader = loadShaderProgram("particle_raytraced_sphere", ":/core/glsl/particle_raytraced_sphere.vertex.glsl", ":/core/glsl/particle_raytraced_sphere.fragment.glsl", ":/core/glsl/particle_raytraced_sphere.geometry.glsl");
+	_raytracedSphereShader = renderer->loadShaderProgram("particle_raytraced_sphere", ":/core/glsl/particle_raytraced_sphere.vertex.glsl", ":/core/glsl/particle_raytraced_sphere.fragment.glsl", ":/core/glsl/particle_raytraced_sphere.geometry.glsl");
 }
 
 /******************************************************************************
@@ -190,6 +190,9 @@ void ViewportParticleGeometryBuffer::render()
 	OVITO_ASSERT(_glPositionsBuffer.isCreated());
 	OVITO_ASSERT(_contextGroup == QOpenGLContextGroup::currentContextGroup());
 	OVITO_ASSERT(_particleCount >= 0);
+	OVITO_STATIC_ASSERT(sizeof(FloatType) == 4);
+	OVITO_STATIC_ASSERT(sizeof(Color) == 12);
+	OVITO_STATIC_ASSERT(sizeof(Point3) == 12);
 
 	if(_particleCount <= 0)
 		return;
@@ -205,10 +208,6 @@ void ViewportParticleGeometryBuffer::render()
 ******************************************************************************/
 void ViewportParticleGeometryBuffer::renderPointSprites()
 {
-	OVITO_STATIC_ASSERT(sizeof(FloatType) == 4);
-	OVITO_STATIC_ASSERT(sizeof(Color) == 12);
-	OVITO_STATIC_ASSERT(sizeof(Point3) == 12);
-
 	// Load billboard texture.
 	if(shadingMode() != FlatShading)
 		activateBillboardTexture();
@@ -222,17 +221,17 @@ void ViewportParticleGeometryBuffer::renderPointSprites()
 	float param = renderer()->projParams().projectionMatrix(1,1) * renderer()->viewport()->size().height();
 	if(renderer()->projParams().isPerspective) {
 		float quadratic[] = { 0, 0, 100.0f / (param * param) };
-		renderer()->glfuncs()->glPointParameterfv(GL_POINT_DISTANCE_ATTENUATION, quadratic);
+		glPointParameterfv(GL_POINT_DISTANCE_ATTENUATION, quadratic);
 		OVITO_CHECK_OPENGL(glPointSize(10.0));
 	}
 	else {
 		float constant[] = { 1, 0, 0 };
-		renderer()->glfuncs()->glPointParameterfv(GL_POINT_DISTANCE_ATTENUATION, constant);
+		glPointParameterfv(GL_POINT_DISTANCE_ATTENUATION, constant);
 		OVITO_CHECK_OPENGL(glPointSize(param));
 	}
 	// No fading of small points.
-	OVITO_CHECK_OPENGL(renderer()->glfuncs()->glPointParameterf(GL_POINT_FADE_THRESHOLD_SIZE, 0.0f));
-	OVITO_CHECK_OPENGL(renderer()->glfuncs()->glPointParameterf(GL_POINT_SIZE_MIN, 0.01f));
+	OVITO_CHECK_OPENGL(glPointParameterf(GL_POINT_FADE_THRESHOLD_SIZE, 0.0f));
+	OVITO_CHECK_OPENGL(glPointParameterf(GL_POINT_SIZE_MIN, 0.01f));
 
 	// Activate OpenGL shader program.
 	QOpenGLShaderProgram* shader =
@@ -280,32 +279,34 @@ void ViewportParticleGeometryBuffer::renderPointSprites()
 ******************************************************************************/
 void ViewportParticleGeometryBuffer::renderRaytracedSpheres()
 {
-	glDisable(GL_TEXTURE_2D);
-
 	OVITO_CHECK_POINTER(_raytracedSphereShader);
 	QOpenGLShaderProgram* shader = _raytracedSphereShader;
 
-	shader->bind();
+	if(!shader->bind())
+		throw Exception(tr("Failed to bind OpenGL shader program."));
 
-	//GLint viewportCoords[4];
-	//glGetIntegerv(GL_VIEWPORT, viewportCoords);
-	//shader->setUniformValue("viewport_origin", (float)viewportCoords[0], (float)viewportCoords[1]);
-	//shader->setUniformValue("inverse_viewport_size", 2.0f / (float)viewportCoords[2], 2.0f / (float)viewportCoords[3]);
+	shader->setUniformValue("projection_matrix", (QMatrix4x4)renderer()->projParams().projectionMatrix);
+	shader->setUniformValue("inverse_projection_matrix", (QMatrix4x4)renderer()->projParams().inverseProjectionMatrix);
+	shader->setUniformValue("modelview_matrix", (QMatrix4x4)renderer()->modelViewTM());
+	shader->setUniformValue("is_perspective", renderer()->projParams().isPerspective);
 
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_COLOR_ARRAY);
+	GLint viewportCoords[4];
+	glGetIntegerv(GL_VIEWPORT, viewportCoords);
+	shader->setUniformValue("viewport_origin", (float)viewportCoords[0], (float)viewportCoords[1]);
+	shader->setUniformValue("inverse_viewport_size", 2.0f / (float)viewportCoords[2], 2.0f / (float)viewportCoords[3]);
 
 	if(!_glPositionsBuffer.bind())
 		throw Exception(tr("Failed to bind OpenGL vertex buffer."));
-	OVITO_CHECK_OPENGL(glVertexPointer(3, GL_FLOAT, sizeof(Point3), NULL));
+	shader->setAttributeBuffer("particle_pos", GL_FLOAT, 0, 3);
+	shader->enableAttributeArray("particle_pos");
 	_glPositionsBuffer.release();
 
 	if(!_glColorsBuffer.bind())
 		throw Exception(tr("Failed to bind OpenGL vertex buffer."));
-	OVITO_CHECK_OPENGL(glColorPointer(3, GL_FLOAT, sizeof(Color), NULL));
+	shader->setAttributeBuffer("particle_color", GL_FLOAT, 0, 3);
+	shader->enableAttributeArray("particle_color");
 	_glColorsBuffer.release();
 
-	// Pass particle radii to vertex and geometry shader.
 	if(!_glRadiiBuffer.bind())
 		throw Exception(tr("Failed to bind OpenGL vertex buffer."));
 	shader->setAttributeBuffer("particle_radius", GL_FLOAT, 0, 1);
@@ -314,8 +315,8 @@ void ViewportParticleGeometryBuffer::renderRaytracedSpheres()
 
 	OVITO_CHECK_OPENGL(glDrawArrays(GL_POINTS, 0, _particleCount));
 
-	glDisableClientState(GL_COLOR_ARRAY);
-	glDisableClientState(GL_VERTEX_ARRAY);
+	shader->disableAttributeArray("particle_pos");
+	shader->disableAttributeArray("particle_color");
 	shader->disableAttributeArray("particle_radius");
 	shader->release();
 }
@@ -363,16 +364,16 @@ void ViewportParticleGeometryBuffer::initializeBillboardTexture()
 	}
 
 	// Create OpenGL texture.
-	renderer()->glfuncs()->glGenTextures(1, &_billboardTexture);
+	glGenTextures(1, &_billboardTexture);
 
 	// Make sure texture gets deleted again when this object is destroyed.
 	attachOpenGLResources();
 
 	// Transfer pixel data to OpenGL texture.
-	OVITO_CHECK_OPENGL(renderer()->glfuncs()->glBindTexture(GL_TEXTURE_2D, _billboardTexture));
+	OVITO_CHECK_OPENGL(glBindTexture(GL_TEXTURE_2D, _billboardTexture));
 	for(int mipmapLevel = 0; mipmapLevel < BILLBOARD_TEXTURE_LEVELS; mipmapLevel++) {
 		int resolution = (1 << (BILLBOARD_TEXTURE_LEVELS - mipmapLevel - 1));
-		OVITO_CHECK_OPENGL(renderer()->glfuncs()->glTexImage2D(GL_TEXTURE_2D, mipmapLevel, GL_RG,
+		OVITO_CHECK_OPENGL(glTexImage2D(GL_TEXTURE_2D, mipmapLevel, GL_RG,
 				resolution, resolution, 0, GL_RG, GL_UNSIGNED_BYTE, textureImages[mipmapLevel].data()));
 	}
 }

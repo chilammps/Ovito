@@ -33,6 +33,7 @@
 #include "ViewportParticleGeometryBuffer.h"
 
 #include <QOpenGLFunctions_3_0>
+#include <QOpenGLFunctions_3_2_Core>
 
 namespace Ovito {
 
@@ -74,7 +75,7 @@ public:
 	QOpenGLContext* glcontext() const { return _glcontext; }
 
 	/// Returns a pointer to the OpenGL functions object.
-	QOpenGLFunctions_3_0* glfuncs() const { return _glFunctions; }
+	QOpenGLFunctions* glfuncs() const { return _glFunctions; }
 
 	/// Returns the surface format of the current OpenGL context.
 	const QSurfaceFormat& glformat() const { return _glformat; }
@@ -103,13 +104,16 @@ protected:
 	/// \brief Renders the selected modifiers.
 	void renderPipelineObject(PipelineObject* pipelineObj, ObjectNode* objNode);
 
+	/// \brief Loads and compiles a GLSL shader and adds it to the given program object.
+	void loadShader(QOpenGLShaderProgram* program, QOpenGLShader::ShaderType shaderType, const QString& filename);
+
 private:
 
 	/// The OpenGL context this renderer uses.
 	QOpenGLContext* _glcontext;
 
 	/// The OpenGL functions object.
-	QOpenGLFunctions_3_0* _glFunctions;
+	QOpenGLFunctions* _glFunctions;
 
 	/// The OpenGL surface format.
 	QSurfaceFormat _glformat;

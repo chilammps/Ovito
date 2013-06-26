@@ -219,6 +219,12 @@ public:
 	/// \brief Computes the inverse of the matrix. 
 	/// \throw Exception if matrix is not invertible because it is singular.
 	Matrix_4 inverse() const {
+
+		T det = determinant();
+		OVITO_ASSERT_MSG(det != T(0), "Matrix4::inverse()", "Singular matrix cannot be inverted: Determinant is zero.");
+		if(det == T(0))
+			throw Exception("Matrix4 cannot be inverted: Determinant is zero.");
+
 		// Assign to individual variable names to aid
 		// selecting correct values.
 		const T a1 = _m[0][0]; const T b1 = _m[0][1];
@@ -230,33 +236,26 @@ public:
 		const T a4 = _m[3][0]; const T b4 = _m[3][1];
 		const T c4 = _m[3][2]; const T d4 = _m[3][3];
 
-	    Matrix_4 mat(
-				det3x3( b2, b3, b4, c2, c3, c4, d2, d3, d4),
-			  - det3x3( a2, a3, a4, c2, c3, c4, d2, d3, d4),
-				det3x3( a2, a3, a4, b2, b3, b4, d2, d3, d4),
-			  - det3x3( a2, a3, a4, b2, b3, b4, c2, c3, c4),
+	    return Matrix_4(
+				det3x3( b2, b3, b4, c2, c3, c4, d2, d3, d4) / det,
+			  - det3x3( a2, a3, a4, c2, c3, c4, d2, d3, d4) / det,
+				det3x3( a2, a3, a4, b2, b3, b4, d2, d3, d4) / det,
+			  - det3x3( a2, a3, a4, b2, b3, b4, c2, c3, c4) / det,
 
-			  - det3x3( b1, b3, b4, c1, c3, c4, d1, d3, d4),
-				det3x3( a1, a3, a4, c1, c3, c4, d1, d3, d4),
-			  - det3x3( a1, a3, a4, b1, b3, b4, d1, d3, d4),
-				det3x3( a1, a3, a4, b1, b3, b4, c1, c3, c4),
+			  - det3x3( b1, b3, b4, c1, c3, c4, d1, d3, d4) / det,
+				det3x3( a1, a3, a4, c1, c3, c4, d1, d3, d4) / det,
+			  - det3x3( a1, a3, a4, b1, b3, b4, d1, d3, d4) / det,
+				det3x3( a1, a3, a4, b1, b3, b4, c1, c3, c4) / det,
 
-				det3x3( b1, b2, b4, c1, c2, c4, d1, d2, d4),
-			  - det3x3( a1, a2, a4, c1, c2, c4, d1, d2, d4),
-				det3x3( a1, a2, a4, b1, b2, b4, d1, d2, d4),
-			  - det3x3( a1, a2, a4, b1, b2, b4, c1, c2, c4),
+				det3x3( b1, b2, b4, c1, c2, c4, d1, d2, d4) / det,
+			  - det3x3( a1, a2, a4, c1, c2, c4, d1, d2, d4) / det,
+				det3x3( a1, a2, a4, b1, b2, b4, d1, d2, d4) / det,
+			  - det3x3( a1, a2, a4, b1, b2, b4, c1, c2, c4) / det,
 
-			  - det3x3( b1, b2, b3, c1, c2, c3, d1, d2, d3),
-				det3x3( a1, a2, a3, c1, c2, c3, d1, d2, d3),
-			  - det3x3( a1, a2, a3, b1, b2, b3, d1, d2, d3),
-				det3x3( a1, a2, a3, b1, b2, b3, c1, c2, c3));
-
-		T det = determinant();
-		if(det == T(0)) throw Exception("Matrix4 cannot be inverted: Determinant is zero.");
-		T invdet = T(1) / det;
-	    for(size_type i = 0; i < 4; i++)
-			mat._m[i] *= invdet;
-		return mat;
+			  - det3x3( b1, b2, b3, c1, c2, c3, d1, d2, d3) / det,
+				det3x3( a1, a2, a3, c1, c2, c3, d1, d2, d3) / det,
+			  - det3x3( a1, a2, a3, b1, b2, b3, d1, d2, d3) / det,
+				det3x3( a1, a2, a3, b1, b2, b3, c1, c2, c3) / det);
 	}
 
 	/// \brief Returns a pointer to the first element of the matrix.

@@ -46,19 +46,30 @@ void ViewportSceneRenderer::renderFrame()
 	_glcontext = viewport()->_glcontext;
 	OVITO_ASSERT(_glcontext == QOpenGLContext::currentContext());
 
+#if 0
+	// Obtain a functions object that allows to call OpenGL 3.2 core functions in a platform-independent way.
+	QOpenGLFunctions_3_2_Core* coreFunc = _glcontext->versionFunctions<QOpenGLFunctions_3_2_Core>();
+	if(!coreFunc || !coreFunc->initializeOpenGLFunctions()) {
+		throw Exception(tr("The OpenGL implementation does not support OpenGL 3.2."));
+	}
+	else qDebug() << "Core 3.2 supprted";
+
 	// Obtain a functions object that allows to call OpenGL 3.0 functions in a platform-independent way.
 	_glFunctions = _glcontext->versionFunctions<QOpenGLFunctions_3_0>();
 	if(!_glFunctions || !_glFunctions->initializeOpenGLFunctions()) {
 		throw Exception(tr("The OpenGL implementation does not support OpenGL 3.0."));
 	}
+#endif
+	_glFunctions = _glcontext->functions();
+
 	// Obtain surface format.
 	_glformat = _glcontext->format();
 
 	// Clear background.
 	Color backgroundColor = Viewport::viewportColor(ViewportSettings::COLOR_VIEWPORT_BKG);
-	glfuncs()->glClearColor(backgroundColor.r(), backgroundColor.g(), backgroundColor.b(), 1);
-	glfuncs()->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glfuncs()->glEnable(GL_DEPTH_TEST);
+	glClearColor(backgroundColor.r(), backgroundColor.g(), backgroundColor.b(), 1);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glEnable(GL_DEPTH_TEST);
 
 	// Set up a vertex array object. This is only required when using OpenGL 3.2 Core Profile.
 	QOpenGLVertexArrayObject vao;
@@ -183,44 +194,58 @@ QOpenGLShaderProgram* ViewportSceneRenderer::loadShaderProgram(const QString& id
 	OVITO_ASSERT(QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Fragment));
 
 	// The OpenGL shaders are only created once per OpenGL context group.
-	QOpenGLShaderProgram* program = contextGroup->findChild<QOpenGLShaderProgram*>(id);
+	QScopedPointer<QOpenGLShaderProgram> program(contextGroup->findChild<QOpenGLShaderProgram*>(id));
 	if(program)
-		return program;
+		return program.take();
 
-	program = new QOpenGLShaderProgram(contextGroup);
+	program.reset(new QOpenGLShaderProgram(contextGroup));
 	program->setObjectName(id);
-	if(!program->addShaderFromSourceFile(QOpenGLShader::Vertex, vertexShaderFile)) {
-		qDebug() << "OpenGL shader log:";
-		qDebug() << program->log();
-		delete program;
-		throw Exception(QString("The vertex shader source file %1 failed to compile. See log for details.").arg(vertexShaderFile));
-	}
 
-	if(!program->addShaderFromSourceFile(QOpenGLShader::Fragment, fragmentShaderFile)) {
-		qDebug() << "OpenGL shader log:";
-		qDebug() << program->log();
-		delete program;
-		throw Exception(QString("The fragment shader source file %1 failed to compile. See log for details.").arg(fragmentShaderFile));
-	}
+	// Load and compile vertex shader source.
+	loadShader(program.data(), QOpenGLShader::Vertex, vertexShaderFile);
 
+	// Load and compile fragment shader source.
+	loadShader(program.data(), QOpenGLShader::Fragment, fragmentShaderFile);
+
+	// Load and compile geometry shader source.
 	if(!geometryShaderFile.isEmpty()) {
-		if(!program->addShaderFromSourceFile(QOpenGLShader::Geometry, geometryShaderFile)) {
-			qDebug() << "OpenGL shader log:";
-			qDebug() << program->log();
-			delete program;
-			throw Exception(QString("The geometry shader source file %1 failed to compile. See log for details.").arg(geometryShaderFile));
-		}
+		loadShader(program.data(), QOpenGLShader::Geometry, geometryShaderFile);
 	}
 
 	if(!program->link()) {
 		qDebug() << "OpenGL shader log:";
 		qDebug() << program->log();
-		delete program;
 		throw Exception(QString("The OpenGL shader program %1 failed to link. See log for details.").arg(id));
 	}
 
-	OVITO_ASSERT(contextGroup->findChild<QOpenGLShaderProgram*>(id) == program);
-	return program;
+	OVITO_ASSERT(contextGroup->findChild<QOpenGLShaderProgram*>(id) == program.data());
+	return program.take();
+}
+
+/******************************************************************************
+* Loads and compiles a GLSL shader and adds it to the given program object.
+******************************************************************************/
+void ViewportSceneRenderer::loadShader(QOpenGLShaderProgram* program, QOpenGLShader::ShaderType shaderType, const QString& filename)
+{
+	// Load shader source.
+	QFile shaderSourceFile(filename);
+	if(!shaderSourceFile.open(QFile::ReadOnly))
+		throw Exception(QString("Unable to open shader source file %1.").arg(filename));
+    QByteArray shaderSource = shaderSourceFile.readAll();
+
+    // Insert GLSL version string at the top.
+	// Pick GLSL language version based on current OpenGL version.
+	if(glformat().profile() == QSurfaceFormat::CoreProfile)
+		shaderSource.prepend("#version 150\n");
+	else
+		shaderSource.prepend("#version 130\n");
+
+	// Load and compile vertex shader source.
+    if(!program->addShaderFromSourceCode(shaderType, shaderSource)) {
+		qDebug() << "OpenGL shader log:";
+		qDebug() << program->log();
+		throw Exception(QString("The shader source file %1 failed to compile. See log for details.").arg(filename));
+	}
 }
 
 

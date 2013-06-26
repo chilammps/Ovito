@@ -155,7 +155,7 @@ void ViewportLineGeometryBuffer::render()
 	_shader->enableAttributeArray("vertex_color");
 	_glColorsBuffer.release();
 
-	OVITO_CHECK_OPENGL(renderer()->glfuncs()->glDrawArrays(GL_LINES, 0, _vertexCount));
+	OVITO_CHECK_OPENGL(glDrawArrays(GL_LINES, 0, _vertexCount));
 
 	_shader->release();
 }

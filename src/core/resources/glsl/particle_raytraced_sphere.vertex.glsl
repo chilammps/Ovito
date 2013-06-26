@@ -1,5 +1,3 @@
-#version 130 
-
 ///////////////////////////////////////////////////////////////////////////////
 // 
 //  Copyright (2013) Alexander Stukowski
@@ -23,7 +21,6 @@
 
 // Inputs from calling program:
 uniform mat4 modelview_matrix;
-uniform mat4 projection_matrix;
 
 // The particle data:
 in vec3 particle_pos;
@@ -31,14 +28,15 @@ in vec3 particle_color;
 in float particle_radius;
 
 // Output to geometry shader.
-out vec3 particle_color;
+out vec4 particle_color_in;
 out float particle_radius_in;
 
 void main()
 {
-	// Transform particle center to eye coordinates.
-	gl_Position = gl_ModelViewMatrix * gl_Vertex;
-	
-	// Pass particle properties to later stages of the pipeline.
+	// Forward color and radius to geometry shader.
+	particle_color_in = vec4(particle_color, 1);
 	particle_radius_in = particle_radius;
+
+	// Transform particle center to eye coordinates.
+	gl_Position = modelview_matrix * vec4(particle_pos, 1);
 }
