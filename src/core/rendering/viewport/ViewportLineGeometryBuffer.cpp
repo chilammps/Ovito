@@ -142,10 +142,6 @@ void ViewportLineGeometryBuffer::render()
 	if(!_shader->bind())
 		throw Exception(tr("Failed to bind OpenGL shader."));
 
-	QOpenGLVertexArrayObject vao;
-	vao.create();
-	vao.bind();
-
 	_shader->setUniformValue("modelview_projection_matrix",
 			(QMatrix4x4)(renderer()->projParams().projectionMatrix * renderer()->modelViewTM()));
 
@@ -161,7 +157,6 @@ void ViewportLineGeometryBuffer::render()
 
 	OVITO_CHECK_OPENGL(renderer()->glfuncs()->glDrawArrays(GL_LINES, 0, _vertexCount));
 
-	vao.release();
 	_shader->release();
 }
 

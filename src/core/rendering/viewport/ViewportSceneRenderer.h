@@ -32,7 +32,7 @@
 #include "ViewportLineGeometryBuffer.h"
 #include "ViewportParticleGeometryBuffer.h"
 
-#include <QOpenGLFunctions_3_2_Core>
+#include <QOpenGLFunctions_3_0>
 
 namespace Ovito {
 
@@ -74,7 +74,10 @@ public:
 	QOpenGLContext* glcontext() const { return _glcontext; }
 
 	/// Returns a pointer to the OpenGL functions object.
-	QOpenGLFunctions_3_2_Core* glfuncs() const { return _glFunctions; }
+	QOpenGLFunctions_3_0* glfuncs() const { return _glFunctions; }
+
+	/// Returns the surface format of the current OpenGL context.
+	const QSurfaceFormat& glformat() const { return _glformat; }
 
 	/// Translates an OpenGL error code to a human-readable message string.
 	static const char* openglErrorString(GLenum errorCode);
@@ -106,7 +109,10 @@ private:
 	QOpenGLContext* _glcontext;
 
 	/// The OpenGL functions object.
-	QOpenGLFunctions_3_2_Core* _glFunctions;
+	QOpenGLFunctions_3_0* _glFunctions;
+
+	/// The OpenGL surface format.
+	QSurfaceFormat _glformat;
 
 	/// Controls the number of sub-pixels to render.
 	PropertyField<int> _antialiasingLevel;

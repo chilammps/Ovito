@@ -213,6 +213,10 @@ void ViewportParticleGeometryBuffer::renderPointSprites()
 	if(shadingMode() != FlatShading)
 		activateBillboardTexture();
 
+	// Enable point sprites iwhen Using OpenGL 3.0/3.1. For new versions, they are already enabled by default.
+	if(renderer()->glformat().profile() != QSurfaceFormat::CoreProfile)
+		OVITO_CHECK_OPENGL(glEnable(GL_POINT_SPRITE));
+
 	// This is how our point sprite's size will be modified by its
 	// distance from the viewer
 	float param = renderer()->projParams().projectionMatrix(1,1) * renderer()->viewport()->size().height();
@@ -238,23 +242,11 @@ void ViewportParticleGeometryBuffer::renderPointSprites()
 	if(!shader->bind())
 		throw Exception(tr("Failed to bind OpenGL shader program."));
 
-	QOpenGLVertexArrayObject vao;
-	vao.create();
-	vao.bind();
-
 	// Let the vertex shader compute the point size.
-	OVITO_CHECK_OPENGL();
 	OVITO_CHECK_OPENGL(glEnable(GL_VERTEX_PROGRAM_POINT_SIZE));
-	shader->setUniformValue("basePointSize", (float)param);
+	shader->setUniformValue("basePointSize", param);
 	shader->setUniformValue("projection_matrix", (QMatrix4x4)renderer()->projParams().projectionMatrix);
 	shader->setUniformValue("modelview_matrix", (QMatrix4x4)renderer()->modelViewTM());
-
-	// Pass particle radii to vertex shader.
-	if(!_glRadiiBuffer.bind())
-		throw Exception(tr("Failed to bind OpenGL vertex buffer."));
-	shader->setAttributeBuffer("particle_radius", GL_FLOAT, 0, 1);
-	shader->enableAttributeArray("particle_radius");
-	_glRadiiBuffer.release();
 
 	if(!_glPositionsBuffer.bind())
 		throw Exception(tr("Failed to bind OpenGL vertex buffer."));
@@ -268,15 +260,19 @@ void ViewportParticleGeometryBuffer::renderPointSprites()
 	shader->enableAttributeArray("particle_color");
 	_glColorsBuffer.release();
 
+	if(!_glRadiiBuffer.bind())
+		throw Exception(tr("Failed to bind OpenGL vertex buffer."));
+	shader->setAttributeBuffer("particle_radius", GL_FLOAT, 0, 1);
+	shader->enableAttributeArray("particle_radius");
+	_glRadiiBuffer.release();
+
 	OVITO_CHECK_OPENGL(glDrawArrays(GL_POINTS, 0, _particleCount));
 
 	shader->disableAttributeArray("particle_pos");
 	shader->disableAttributeArray("particle_color");
 	shader->disableAttributeArray("particle_radius");
 	shader->release();
-	OVITO_CHECK_OPENGL();
 	OVITO_CHECK_OPENGL(glDisable(GL_VERTEX_PROGRAM_POINT_SIZE));
-	vao.release();
 }
 
 /******************************************************************************
@@ -407,7 +403,5 @@ void ViewportParticleGeometryBuffer::activateBillboardTexture()
 	OVITO_ASSERT(BILLBOARD_TEXTURE_LEVELS >= 3);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LOD, BILLBOARD_TEXTURE_LEVELS - 3);
 }
-
-
 
 };

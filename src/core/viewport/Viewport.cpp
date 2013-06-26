@@ -457,12 +457,6 @@ void Viewport::render(QOpenGLContext* context, QOpenGLPaintDevice* paintDevice)
 		ViewportManager::instance().renderer()->setViewport(this);
 		ViewportManager::instance().renderer()->setDataset(DataSetManager::instance().currentSet());
 
-		// Clear background.
-		Color backgroundColor = viewportColor(ViewportSettings::COLOR_VIEWPORT_BKG);
-		glClearColor(backgroundColor.r(), backgroundColor.g(), backgroundColor.b(), 1);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glEnable(GL_DEPTH_TEST);
-
 		// Call the viewport renderer to render the scene objects.
 		ViewportManager::instance().renderer()->renderFrame();
 

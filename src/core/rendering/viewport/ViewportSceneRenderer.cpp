@@ -44,14 +44,33 @@ void ViewportSceneRenderer::renderFrame()
 {
 	OVITO_CHECK_OBJECT_POINTER(viewport());
 	_glcontext = viewport()->_glcontext;
+	OVITO_ASSERT(_glcontext == QOpenGLContext::currentContext());
 
-	// Obtain a functions object that allows to call OpenGL 3.2 functions in a platform-independent way.
-	_glFunctions = _glcontext->versionFunctions<QOpenGLFunctions_3_2_Core>();
+	// Obtain a functions object that allows to call OpenGL 3.0 functions in a platform-independent way.
+	_glFunctions = _glcontext->versionFunctions<QOpenGLFunctions_3_0>();
 	if(!_glFunctions || !_glFunctions->initializeOpenGLFunctions()) {
-		throw Exception(tr("The OpenGL implementation does not support OpenGL 3.2 Core Profile."));
+		throw Exception(tr("The OpenGL implementation does not support OpenGL 3.0."));
+	}
+	// Obtain surface format.
+	_glformat = _glcontext->format();
+
+	// Clear background.
+	Color backgroundColor = Viewport::viewportColor(ViewportSettings::COLOR_VIEWPORT_BKG);
+	glfuncs()->glClearColor(backgroundColor.r(), backgroundColor.g(), backgroundColor.b(), 1);
+	glfuncs()->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glfuncs()->glEnable(GL_DEPTH_TEST);
+
+	// Set up a vertex array object. This is only required when using OpenGL 3.2 Core Profile.
+	QOpenGLVertexArrayObject vao;
+	if(glformat().majorVersion() >= 3 && glformat().minorVersion() >= 2) {
+		vao.create();
+		vao.bind();
 	}
 
 	renderScene();
+
+	if(vao.isCreated())
+		vao.release();
 
 	_glcontext = nullptr;
 }

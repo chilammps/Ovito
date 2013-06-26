@@ -1,3 +1,5 @@
+#version 130 
+
 ///////////////////////////////////////////////////////////////////////////////
 // 
 //  Copyright (2013) Alexander Stukowski
@@ -19,11 +21,18 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-// Inputs from calling program
-attribute float particle_radius;
+// Inputs from calling program:
+uniform mat4 modelview_matrix;
+uniform mat4 projection_matrix;
+
+// The particle data:
+in vec3 particle_pos;
+in vec3 particle_color;
+in float particle_radius;
 
 // Output to geometry shader.
-varying float particle_radius_in;
+out vec3 particle_color;
+out float particle_radius_in;
 
 void main()
 {
