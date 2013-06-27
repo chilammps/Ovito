@@ -96,9 +96,6 @@ private:
 	/// The OpenGL context used for rendering.
 	QOpenGLContext* _context;
 
-	/// The OpenGL paint device used in conjunction with QPainter.
-	QScopedPointer<QOpenGLPaintDevice> _paintDevice;
-
 private:
 
 	Q_OBJECT

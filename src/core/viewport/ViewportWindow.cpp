@@ -32,7 +32,7 @@ namespace Ovito {
 ******************************************************************************/
 ViewportWindow::ViewportWindow(Viewport* owner) :
 		_viewport(owner), _updateRequested(false), _updatePending(false),
-		_context(nullptr), _paintDevice(nullptr)
+		_context(nullptr)
 {
 	// Indicate that the window is to be used for OpenGL rendering.
 	setSurfaceType(QWindow::OpenGLSurface);
@@ -235,10 +235,7 @@ void ViewportWindow::renderNow()
 		return;
 	}
 
-	if(!_paintDevice)
-		_paintDevice.reset(new QOpenGLPaintDevice());
-	_paintDevice->setSize(size());
-	_viewport->render(_context, _paintDevice.data());
+	_viewport->render(_context);
 	_context->swapBuffers(this);
 }
 

@@ -136,10 +136,10 @@ public:
 	QWidget* widget() { return _widget; }
 
 	/// Renders the contents of the viewport into the surface associated with the given context.
-	void render(QOpenGLContext* context, QOpenGLPaintDevice* paintDevice);
+	void render(QOpenGLContext* context);
 
 	/// Indicates whether the rendering of the viewport contents is currently in progress.
-	bool isRendering() const { return _glcontext != NULL; }
+	bool isRendering() const { return _glcontext != nullptr; }
 
 	/// \brief Displays the context menu for the viewport.
 	/// \param pos The position in where the context menu should be displayed.
@@ -396,9 +396,6 @@ private:
 
 	/// The current OpenGL context. This is only valid during the rendering phase.
 	QOpenGLContext* _glcontext;
-
-	/// The current OpenGL paint device. This is only valid during the rendering phase.
-	QOpenGLPaintDevice* _paintDevice;
 
 	/// Describes the current 3D projection used to render the contents of the viewport.
 	ViewProjectionParameters _projParams;

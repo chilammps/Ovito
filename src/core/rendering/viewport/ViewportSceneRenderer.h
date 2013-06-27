@@ -134,7 +134,7 @@ private:
 	QOpenGLFunctions_3_2_Core* _glFunctions32;
 
 	/// The OpenGL vertex array object that is required by OpenGL 3.2 core profile.
-	QOpenGLVertexArrayObject _vertexArrayObject;
+	QScopedPointer<QOpenGLVertexArrayObject> _vertexArrayObject;
 
 	/// The OpenGL surface format.
 	QSurfaceFormat _glformat;

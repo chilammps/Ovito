@@ -66,9 +66,9 @@ void ViewportSceneRenderer::beginRender()
 
 	// Set up a vertex array object. This is only required when using OpenGL 3.2 Core Profile.
 	if(glformat().majorVersion() >= 3 && glformat().minorVersion() >= 2) {
-		if(!_vertexArrayObject.isCreated())
-			_vertexArrayObject.create();
-		_vertexArrayObject.bind();
+		_vertexArrayObject.reset(new QOpenGLVertexArrayObject());
+		_vertexArrayObject->create();
+		_vertexArrayObject->bind();
 	}
 }
 
@@ -77,8 +77,7 @@ void ViewportSceneRenderer::beginRender()
 ******************************************************************************/
 void ViewportSceneRenderer::endRender()
 {
-	if(_vertexArrayObject.isCreated())
-		_vertexArrayObject.release();
+	_vertexArrayObject.reset();
 	_glcontext = nullptr;
 }
 

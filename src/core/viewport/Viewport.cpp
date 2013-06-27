@@ -60,7 +60,7 @@ Viewport::Viewport() :
 		_viewType(VIEW_NONE), _shadingMode(SHADING_WIREFRAME), _showGrid(false),
 		_fieldOfView(100),
 		_showRenderFrame(false), _orbitCenter(Point3::Origin()), _useOrbitCenter(false),
-		_glcontext(nullptr), _paintDevice(nullptr),
+		_glcontext(nullptr),
 		_cameraPosition(Point3::Origin()), _cameraDirection(0,0,-1),
 		_renderDebugCounter(0)
 {
@@ -431,11 +431,10 @@ void Viewport::processUpdateRequest()
 /******************************************************************************
 * Renders the contents of the viewport.
 ******************************************************************************/
-void Viewport::render(QOpenGLContext* context, QOpenGLPaintDevice* paintDevice)
+void Viewport::render(QOpenGLContext* context)
 {
 	OVITO_ASSERT_MSG(_glcontext == NULL, "Viewport::render", "Viewport is already rendering.");
 	_glcontext = context;
-	_paintDevice = paintDevice;
 
 	try {
 
@@ -467,16 +466,13 @@ void Viewport::render(QOpenGLContext* context, QOpenGLPaintDevice* paintDevice)
 		// Render orientation tripod.
 		renderOrientationIndicator();
 
-#if 1
 		// Render viewport caption.
 		renderViewportTitle();
-#endif
 
 		// Stop rendering.
 		ViewportManager::instance().renderer()->endRender();
 
 		_glcontext = nullptr;
-		_paintDevice = nullptr;
 	}
 	catch(Exception& ex) {
 		ex.prependGeneralMessage(tr("An unexpected error occurred while rendering the viewport contents. The program will quit."));
@@ -509,9 +505,6 @@ void Viewport::renderViewportTitle()
 ******************************************************************************/
 void Viewport::begin2DPainting()
 {
-	OVITO_CHECK_OPENGL(glPushClientAttrib(GL_CLIENT_ALL_ATTRIB_BITS));
-	OVITO_CHECK_OPENGL(glPushAttrib(GL_ALL_ATTRIB_BITS));
-
 	OVITO_CHECK_OPENGL(glDisable(GL_CULL_FACE));
 	OVITO_CHECK_OPENGL(glDisable(GL_DEPTH_TEST));
 	OVITO_CHECK_OPENGL(glEnable(GL_BLEND));
@@ -524,8 +517,9 @@ void Viewport::begin2DPainting()
 ******************************************************************************/
 void Viewport::end2DPainting()
 {
-	OVITO_CHECK_OPENGL(glPopAttrib());
-	OVITO_CHECK_OPENGL(glPopClientAttrib());
+	OVITO_CHECK_OPENGL(glEnable(GL_CULL_FACE));
+	OVITO_CHECK_OPENGL(glEnable(GL_DEPTH_TEST));
+	OVITO_CHECK_OPENGL(glDisable(GL_BLEND));
 }
 
 /******************************************************************************
@@ -533,18 +527,18 @@ void Viewport::end2DPainting()
 ******************************************************************************/
 void Viewport::renderText(const QString& str, const QPointF& pos, const QColor& color)
 {
-	OVITO_ASSERT_MSG(_paintDevice != NULL, "Viewport::renderText", "Viewport is not rendering.");
+	OVITO_ASSERT_MSG(isRendering(), "Viewport::renderText", "Viewport is not rendering.");
 
 	if(str.isEmpty())
 		return;
 
 	begin2DPainting();
-	{
+#if 0
 		QPainter painter(_paintDevice);
 		painter.setPen(color);
 		painter.setFont(ViewportManager::instance().viewportFont());
 		painter.drawText(pos, str);
-	}
+#endif
 	end2DPainting();
 }
 
