@@ -99,6 +99,7 @@ void OpenGLContextManager::aboutToDestroyContext()
 
 	QOpenGLContext* ctx = qobject_cast<QOpenGLContext*>(sender());
 	OVITO_CHECK_POINTER(ctx);
+
 	int index = 0;
 	while(index < _contexts.size()) {
 		OpenGLContextInfo* info = _contexts[index];

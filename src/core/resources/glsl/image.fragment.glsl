@@ -19,7 +19,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-uniform vec4 text_color;
 uniform sampler2D tex;
 
 in vec2 tex_coords;
@@ -28,5 +27,5 @@ out vec4 FragColor;
 
 void main() 
 {
-	FragColor = vec4(text_color.rgb, texture(tex, tex_coords).r * text_color.a);
+	FragColor = texture(tex, tex_coords);
 }

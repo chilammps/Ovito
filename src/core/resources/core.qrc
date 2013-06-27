@@ -87,6 +87,8 @@
 	<file>glsl/line.fragment.glsl</file>
 	<file>glsl/text.vertex.glsl</file>
 	<file>glsl/text.fragment.glsl</file>
+	<file>glsl/image.vertex.glsl</file>
+	<file>glsl/image.fragment.glsl</file>
 	
 </qresource>
 

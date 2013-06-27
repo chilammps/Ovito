@@ -20,15 +20,15 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
- * \file ViewportTextGeometryBuffer.h
- * \brief Contains the definition of the Ovito::ViewportTextGeometryBuffer class.
+ * \file ViewportImageGeometryBuffer.h
+ * \brief Contains the definition of the Ovito::ViewportImageGeometryBuffer class.
  */
 
-#ifndef __OVITO_VIEWPORT_TEXT_GEOMETRY_BUFFER_H
-#define __OVITO_VIEWPORT_TEXT_GEOMETRY_BUFFER_H
+#ifndef __OVITO_VIEWPORT_IMAGE_GEOMETRY_BUFFER_H
+#define __OVITO_VIEWPORT_IMAGE_GEOMETRY_BUFFER_H
 
 #include <core/Core.h>
-#include <core/rendering/TextGeometryBuffer.h>
+#include <core/rendering/ImageGeometryBuffer.h>
 #include <core/utilities/opengl/SharedOpenGLResource.h>
 
 namespace Ovito {
@@ -36,37 +36,32 @@ namespace Ovito {
 class ViewportSceneRenderer;
 
 /**
- * \brief Buffer object that stores a text string to be rendered in the viewports.
+ * \brief Buffer object that stores an image to be rendered in the viewports.
  */
-class ViewportTextGeometryBuffer : public TextGeometryBuffer, private SharedOpenGLResource
+class ViewportImageGeometryBuffer : public ImageGeometryBuffer, private SharedOpenGLResource
 {
 public:
 
 	/// Constructor.
-	ViewportTextGeometryBuffer(ViewportSceneRenderer* renderer);
+	ViewportImageGeometryBuffer(ViewportSceneRenderer* renderer);
 
 	/// Destructor.
-	virtual ~ViewportTextGeometryBuffer();
+	virtual ~ViewportImageGeometryBuffer();
 
-	/// \brief Sets the text to be rendered.
-	virtual void setText(const QString& text) override {
-		if(text != this->text())
-			_needTextureUpdate = true;
-		TextGeometryBuffer::setText(text);
-	}
-
-	/// Sets the text font.
-	virtual void setFont(const QFont& font) override {
-		if(font != this->font())
-			_needTextureUpdate = true;
-		TextGeometryBuffer::setFont(font);
+	/// \brief Sets the image to be rendered.
+	virtual void setImage(const QImage& image) override {
+		_needTextureUpdate = true;
+		ImageGeometryBuffer::setImage(image);
 	}
 
 	/// \brief Returns true if the geometry buffer is filled and can be rendered with the given renderer.
 	virtual bool isValid(SceneRenderer* renderer) override;
 
-	/// \brief Renders the text.
-	virtual void render(const Point2& pos) override;
+	/// \brief Renders the image in a rectangle given in pixel coordinates.
+	virtual void renderWindow(const Point2& pos, const Vector2& size) override;
+
+	/// \brief Renders the image in a rectangle given in viewport coordinates.
+	virtual void renderViewport(const Point2& pos, const Vector2& size) override;
 
 	/// \brief Returns the renderer that created this buffer object.
 	ViewportSceneRenderer* renderer() const { return _renderer; }
@@ -84,16 +79,11 @@ private:
 	/// The GL context group under which the GL vertex buffer has been created.
 	QOpenGLContextGroup* _contextGroup;
 
-	/// The OpenGL shader program used to render the text.
+	/// The OpenGL shader program used to render the image.
 	QOpenGLShaderProgram* _shader;
 
-	/// Resource identifier of the OpenGL texture that is used for rendering the text image.
+	/// Resource identifier of the OpenGL texture that is used for rendering the image.
 	GLuint _texture;
-
-	/// The texture image.
-	QImage _textureImage;
-
-	QPoint _textOffset;
 
 	/// Indicates that the texture needs to be updated.
 	bool _needTextureUpdate;
@@ -104,4 +94,4 @@ private:
 
 };
 
-#endif // __OVITO_VIEWPORT_TEXT_GEOMETRY_BUFFER_H
+#endif // __OVITO_VIEWPORT_IMAGE_GEOMETRY_BUFFER_H

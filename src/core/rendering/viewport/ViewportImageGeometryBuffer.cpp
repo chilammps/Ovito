@@ -20,29 +20,28 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include "ViewportTextGeometryBuffer.h"
+#include "ViewportImageGeometryBuffer.h"
 #include "ViewportSceneRenderer.h"
 
 #include <QGLWidget>
 
 namespace Ovito {
 
-IMPLEMENT_OVITO_OBJECT(Core, ViewportTextGeometryBuffer, TextGeometryBuffer);
+IMPLEMENT_OVITO_OBJECT(Core, ViewportImageGeometryBuffer, ImageGeometryBuffer);
 
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-ViewportTextGeometryBuffer::ViewportTextGeometryBuffer(ViewportSceneRenderer* renderer) :
+ViewportImageGeometryBuffer::ViewportImageGeometryBuffer(ViewportSceneRenderer* renderer) :
 	_renderer(renderer),
 	_contextGroup(QOpenGLContextGroup::currentContextGroup()),
 	_texture(0),
-	_needTextureUpdate(true),
-	_textureImage(1, 1, QImage::Format_RGB32)
+	_needTextureUpdate(true)
 {
 	OVITO_ASSERT(renderer->glcontext()->shareGroup() == _contextGroup);
 
 	// Initialize OpenGL shader.
-	_shader = renderer->loadShaderProgram("text", ":/core/glsl/text.vertex.glsl", ":/core/glsl/text.fragment.glsl");
+	_shader = renderer->loadShaderProgram("image", ":/core/glsl/image.vertex.glsl", ":/core/glsl/image.fragment.glsl");
 
 	// Create OpenGL texture.
 	glGenTextures(1, &_texture);
@@ -54,7 +53,7 @@ ViewportTextGeometryBuffer::ViewportTextGeometryBuffer(ViewportSceneRenderer* re
 /******************************************************************************
 * Destructor.
 ******************************************************************************/
-ViewportTextGeometryBuffer::~ViewportTextGeometryBuffer()
+ViewportImageGeometryBuffer::~ViewportImageGeometryBuffer()
 {
 	destroyOpenGLResources();
 }
@@ -63,7 +62,7 @@ ViewportTextGeometryBuffer::~ViewportTextGeometryBuffer()
 * This method that takes care of freeing the shared OpenGL resources owned
 * by this class.
 ******************************************************************************/
-void ViewportTextGeometryBuffer::freeOpenGLResources()
+void ViewportImageGeometryBuffer::freeOpenGLResources()
 {
 	OVITO_CHECK_OPENGL(glDeleteTextures(1, &_texture));
 	_texture = 0;
@@ -72,7 +71,7 @@ void ViewportTextGeometryBuffer::freeOpenGLResources()
 /******************************************************************************
 * Returns true if the buffer is filled and can be rendered with the given renderer.
 ******************************************************************************/
-bool ViewportTextGeometryBuffer::isValid(SceneRenderer* renderer)
+bool ViewportImageGeometryBuffer::isValid(SceneRenderer* renderer)
 {
 	ViewportSceneRenderer* vpRenderer = qobject_cast<ViewportSceneRenderer*>(renderer);
 	if(!vpRenderer) return false;
@@ -80,14 +79,27 @@ bool ViewportTextGeometryBuffer::isValid(SceneRenderer* renderer)
 }
 
 /******************************************************************************
-* Renders the geometry.
+* Renders the image in a rectangle given in window coordinates.
 ******************************************************************************/
-void ViewportTextGeometryBuffer::render(const Point2& pos)
+void ViewportImageGeometryBuffer::renderWindow(const Point2& pos, const Vector2& size)
+{
+	GLint vc[4];
+	glGetIntegerv(GL_VIEWPORT, vc);
+
+	// Transform rectangle to normalized device coordinates.
+	renderViewport(Point2(pos.x() / vc[2] * 2 - 1, 1 - (pos.y() + size.y()) / vc[3] * 2),
+		Vector2(size.x() / vc[2] * 2, size.y() / vc[3] * 2));
+}
+
+/******************************************************************************
+* Renders the image in a rectangle given in viewport coordinates.
+******************************************************************************/
+void ViewportImageGeometryBuffer::renderViewport(const Point2& pos, const Vector2& size)
 {
 	OVITO_ASSERT(_contextGroup == QOpenGLContextGroup::currentContextGroup());
 	OVITO_ASSERT(_texture != 0);
 
-	if(text().isEmpty())
+	if(image().isNull())
 		return;
 
 	// Prepare texture.
@@ -102,40 +114,17 @@ void ViewportTextGeometryBuffer::render(const Point2& pos)
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LOD, 0);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
 
-		// Measure text size.
-		QRect rect;
-		{
-			QPainter painter(&_textureImage);
-			painter.setFont(font());
-			rect = painter.fontMetrics().boundingRect(text());
-		}
-
-		// Generate texture image.
-		_textureImage = QImage(rect.width(), rect.height(), QImage::Format_RGB32);
-		_textureImage.fill(0);
-		{
-			QPainter painter(&_textureImage);
-			painter.setFont(font());
-			painter.setPen(Qt::white);
-			painter.drawText(-rect.left(), -rect.top(), text());
-		}
-		_textOffset = rect.topLeft();
-
 		// Upload texture data.
-		QImage textureImage = QGLWidget::convertToGLFormat(_textureImage);
+		QImage textureImage = QGLWidget::convertToGLFormat(image());
 		OVITO_CHECK_OPENGL(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureImage.width(), textureImage.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, textureImage.constBits()));
 	}
 
 	// Transform rectangle to normalized device coordinates.
-	QRectF rect2(_textOffset, _textureImage.size());
-	rect2.translate(pos.x(), pos.y());
-	GLint vc[4];
-	glGetIntegerv(GL_VIEWPORT, vc);
 	QVector2D corners[4] = {
-			QVector2D(rect2.left() / vc[2] * 2 - 1, 1 - rect2.bottom() / vc[3] * 2),
-			QVector2D(rect2.right() / vc[2] * 2 - 1, 1 - rect2.bottom() / vc[3] * 2),
-			QVector2D(rect2.left() / vc[2] * 2 - 1, 1 - rect2.top() / vc[3] * 2),
-			QVector2D(rect2.right() / vc[2] * 2 - 1, 1 - rect2.top() / vc[3] * 2)
+			QVector2D(pos.x(), pos.y()),
+			QVector2D(pos.x() + size.x(), pos.y()),
+			QVector2D(pos.x(), pos.y() + size.y()),
+			QVector2D(pos.x() + size.x(), pos.y() + size.y())
 	};
 
 	bool wasDepthTestEnabled = glIsEnabled(GL_DEPTH_TEST);
@@ -147,7 +136,6 @@ void ViewportTextGeometryBuffer::render(const Point2& pos)
 	if(!_shader->bind())
 		throw Exception(tr("Failed to bind OpenGL shader."));
 
-	_shader->setUniformValue("text_color", color().r(), color().g(), color().b(), color().a());
 	_shader->setUniformValueArray("corners", corners, 4);
 
 	OVITO_CHECK_OPENGL(glDrawArrays(GL_TRIANGLE_STRIP, 0, 4));

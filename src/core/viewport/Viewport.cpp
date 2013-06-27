@@ -200,53 +200,47 @@ ViewProjectionParameters Viewport::projectionParameters(TimePoint time, FloatTyp
 			params.inverseViewMatrix = viewNode()->getWorldTransform(time, params.validityInterval);
 			params.viewMatrix = params.inverseViewMatrix.inverse();
 
-			// Calculate znear and zfar clipping plane distances.
-			Box3 bb = sceneBoundingBox.transformed(params.viewMatrix);
-			params.zfar = -bb.minc.z();
-			params.znear = std::max(-bb.maxc.z(), params.zfar * 1e-5f);
-
 			// Get remaining parameters from camera object.
 			camera->projectionParameters(time, params);
 		}
 	}
 	else {
 		params.viewMatrix = AffineTransformation::lookAlong(cameraPosition(), cameraDirection(), ViewportSettings::getSettings().upVector());
+		params.inverseViewMatrix = params.viewMatrix.inverse();
 		params.fieldOfView = fieldOfView();
+		params.isPerspective = (viewType() == VIEW_PERSPECTIVE);
+	}
 
-		// Transform scene bounding box to camera space.
-		Box3 bb = sceneBoundingBox.transformed(params.viewMatrix).centerScale(1.01);
+	// Transform scene bounding box to camera space.
+	Box3 bb = sceneBoundingBox.transformed(params.viewMatrix).centerScale(1.01);
 
-		if(viewType() == VIEW_PERSPECTIVE) {
-			params.isPerspective = true;
-
-			if(bb.minc.z() < -FLOATTYPE_EPSILON) {
-				params.zfar = -bb.minc.z();
-				params.znear = std::max(-bb.maxc.z(), params.zfar * 1e-5f);
-			}
-			else {
-				params.zfar = sceneBoundingBox.size().length();
-				params.znear = params.zfar * 1e-5f;
-			}
-			params.projectionMatrix = Matrix4::perspective(params.fieldOfView, 1.0 / params.aspectRatio, params.znear, params.zfar);
+	// Compute projection matrix.
+	if(params.isPerspective) {
+		if(bb.minc.z() < -FLOATTYPE_EPSILON) {
+			params.zfar = -bb.minc.z();
+			params.znear = std::max(-bb.maxc.z(), params.zfar * 1e-5f);
 		}
 		else {
-			params.isPerspective = false;
-
-			if(!bb.isEmpty()) {
-				params.znear = -bb.maxc.z();
-				params.zfar  = std::max(-bb.minc.z(), params.znear + 1.0f);
-			}
-			else {
-				params.znear = 1;
-				params.zfar = 100;
-			}
-			params.projectionMatrix = Matrix4::ortho(-params.fieldOfView / params.aspectRatio, params.fieldOfView / params.aspectRatio,
-								-params.fieldOfView, params.fieldOfView,
-								params.znear, params.zfar);
+			params.zfar = sceneBoundingBox.size().length();
+			params.znear = params.zfar * 1e-5f;
 		}
-		params.inverseViewMatrix = params.viewMatrix.inverse();
-		params.inverseProjectionMatrix = params.projectionMatrix.inverse();
+		params.projectionMatrix = Matrix4::perspective(params.fieldOfView, 1.0 / params.aspectRatio, params.znear, params.zfar);
 	}
+	else {
+		if(!bb.isEmpty()) {
+			params.znear = -bb.maxc.z();
+			params.zfar  = std::max(-bb.minc.z(), params.znear + 1.0f);
+		}
+		else {
+			params.znear = 1;
+			params.zfar = 100;
+		}
+		params.projectionMatrix = Matrix4::ortho(-params.fieldOfView / params.aspectRatio, params.fieldOfView / params.aspectRatio,
+							-params.fieldOfView, params.fieldOfView,
+							params.znear, params.zfar);
+	}
+	params.inverseProjectionMatrix = params.projectionMatrix.inverse();
+
 	return params;
 }
 
@@ -310,7 +304,6 @@ void Viewport::zoomToBox(const Box3& box)
 		setCameraPosition(box.center());
 	}
 }
-
 
 /******************************************************************************
 * Is called when a RefTarget referenced by this object has generated an event.
@@ -450,6 +443,10 @@ void Viewport::render(QOpenGLContext* context)
 		FloatType aspectRatio = (FloatType)vpSize.height() / vpSize.width();
 		_projParams = projectionParameters(AnimManager::instance().time(), aspectRatio, boundingBox);
 
+		// Adjust projection if render frame is shown.
+		if(renderFrameShown())
+			adjustProjectionForRenderFrame(_projParams);
+
 		// Set up the viewport renderer.
 		ViewportManager::instance().renderer()->setTime(AnimManager::instance().time());
 		ViewportManager::instance().renderer()->setProjParams(_projParams);
@@ -508,29 +505,6 @@ void Viewport::renderViewportTitle()
 }
 
 /******************************************************************************
-* Helper method that saves the current OpenGL rendering attributes on the
-* stack and switches to flat shading.
-******************************************************************************/
-void Viewport::begin2DPainting()
-{
-	OVITO_CHECK_OPENGL(glDisable(GL_CULL_FACE));
-	OVITO_CHECK_OPENGL(glDisable(GL_DEPTH_TEST));
-	OVITO_CHECK_OPENGL(glEnable(GL_BLEND));
-	OVITO_CHECK_OPENGL(glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA));
-}
-
-/******************************************************************************
-* Helper method that restores the OpenGL rendering attributes saved
-* by begin2DPainting().
-******************************************************************************/
-void Viewport::end2DPainting()
-{
-	OVITO_CHECK_OPENGL(glEnable(GL_CULL_FACE));
-	OVITO_CHECK_OPENGL(glEnable(GL_DEPTH_TEST));
-	OVITO_CHECK_OPENGL(glDisable(GL_BLEND));
-}
-
-/******************************************************************************
 * Sets whether mouse grab should be enabled or not for this viewport window.
 ******************************************************************************/
 bool Viewport::setMouseGrabEnabled(bool grab)
@@ -569,8 +543,8 @@ void Viewport::renderOrientationIndicator()
 	const FloatType tripodArrowSize = 0.17f; 	// percentage of the above value.
 	SceneRenderer* renderer = ViewportManager::instance().renderer();
 
-	// Save current rendering attributes and turn off depth-testing.
-	begin2DPainting();
+	// Turn off depth-testing.
+	OVITO_CHECK_OPENGL(glDisable(GL_DEPTH_TEST));
 
 	// Setup projection matrix.
 	ViewProjectionParameters projParams = _projParams;
@@ -614,7 +588,7 @@ void Viewport::renderOrientationIndicator()
 	// Render x,y,z labels.
 	for(int axis = 0; axis < 3; axis++) {
 
-		/// Create a rendering buffer that is responsible for rendering the text label.
+		// Create a rendering buffer that is responsible for rendering the text label.
 		if(!_orientationTripodLabels[axis] || !_orientationTripodLabels[axis]->isValid(renderer)) {
 			_orientationTripodLabels[axis] = renderer->createTextGeometryBuffer();
 			_orientationTripodLabels[axis]->setFont(ViewportManager::instance().viewportFont());
@@ -631,7 +605,40 @@ void Viewport::renderOrientationIndicator()
 	}
 
 	// Restore old rendering attributes.
-	end2DPainting();
+	OVITO_CHECK_OPENGL(glEnable(GL_DEPTH_TEST));
+}
+
+/******************************************************************************
+* Modifies the projection such that the render frame painted over the 3d scene exactly
+* matches the true visible area.
+******************************************************************************/
+void Viewport::adjustProjectionForRenderFrame(ViewProjectionParameters& params)
+{
+	QSize vpSize = size();
+	RenderSettings* renderSettings = DataSetManager::instance().currentSet()->renderSettings();
+	if(!renderSettings || vpSize.width() == 0 || vpSize.height() == 0)
+		return;
+
+	FloatType renderAspectRatio = renderSettings->outputImageAspectRatio();
+	FloatType windowAspectRatio = (FloatType)vpSize.height() / (FloatType)vpSize.width();
+
+	if(_projParams.isPerspective) {
+		if(renderAspectRatio < windowAspectRatio)
+			params.fieldOfView = atan(tan(params.fieldOfView*0.5) / (0.9 / windowAspectRatio * renderAspectRatio))*2.0;
+		else
+			params.fieldOfView = atan(tan(params.fieldOfView*0.5) / 0.9)*2.0;
+		params.projectionMatrix = Matrix4::perspective(params.fieldOfView, 1.0 / params.aspectRatio, params.znear, params.zfar);
+	}
+	else {
+		if(renderAspectRatio < windowAspectRatio)
+			params.fieldOfView /= 0.9 / windowAspectRatio * renderAspectRatio;
+		else
+			params.fieldOfView /= 0.9;
+		params.projectionMatrix = Matrix4::ortho(-params.fieldOfView / params.aspectRatio, params.fieldOfView / params.aspectRatio,
+							-params.fieldOfView, params.fieldOfView,
+							params.znear, params.zfar);
+	}
+	params.inverseProjectionMatrix = params.projectionMatrix.inverse();
 }
 
 /******************************************************************************
@@ -647,14 +654,14 @@ void Viewport::renderRenderFrame()
 	if(!renderSettings || vpSize.width() == 0 || vpSize.height() == 0)
 		return;
 
-	// Save current rendering attributes.
-	begin2DPainting();
-
-	// Set identity projection matrices.
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
+	// Create a rendering buffer that is responsible for rendering the frame.
+	SceneRenderer* renderer = ViewportManager::instance().renderer();
+	if(!_renderFrameOverlay || !_renderFrameOverlay->isValid(renderer)) {
+		_renderFrameOverlay = renderer->createImageGeometryBuffer();
+		QImage image(1, 1, QImage::Format_ARGB32_Premultiplied);
+		image.fill(0xA0FFFFFF);
+		_renderFrameOverlay->setImage(image);
+	}
 
 	// Compute a rectangle that has the same aspect ratio as the rendered image.
 	FloatType renderAspectRatio = renderSettings->outputImageAspectRatio();
@@ -669,36 +676,11 @@ void Viewport::renderRenderFrame()
 		frameWidth = frameHeight / renderAspectRatio * windowAspectRatio;
 	}
 
-	glColor4f(1, 1, 1, 0.5f);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
 	// Render rectangle borders
-	glBegin(GL_QUADS);
-
-	glVertex3(-1, -1, 0);
-	glVertex3(-frameWidth, -1, 0);
-	glVertex3(-frameWidth, +1, 0);
-	glVertex3(-1, +1, 0);
-
-	glVertex3(+1, +1, 0);
-	glVertex3(+frameWidth, +1, 0);
-	glVertex3(+frameWidth, -1, 0);
-	glVertex3(+1, -1, 0);
-
-	glVertex3(-frameWidth, -1, 0);
-	glVertex3(-frameWidth, -frameHeight, 0);
-	glVertex3(+frameWidth, -frameHeight, 0);
-	glVertex3(+frameWidth, -1, 0);
-
-	glVertex3(+frameWidth, +1, 0);
-	glVertex3(+frameWidth, +frameHeight, 0);
-	glVertex3(-frameWidth, +frameHeight, 0);
-	glVertex3(-frameWidth, +1, 0);
-
-	glEnd();
-
-	// Restore old rendering attributes.
-	end2DPainting();
+	_renderFrameOverlay->renderViewport(Point2(-1,-1), Vector2(1.0 - frameWidth, 2));
+	_renderFrameOverlay->renderViewport(Point2(frameWidth,-1), Vector2(1.0 - frameWidth, 2));
+	_renderFrameOverlay->renderViewport(Point2(-frameWidth,-1), Vector2(2*frameWidth, 1.0 - frameHeight));
+	_renderFrameOverlay->renderViewport(Point2(-frameWidth,frameHeight), Vector2(2*frameWidth, 1.0 - frameHeight));
 }
 
 };

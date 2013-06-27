@@ -32,6 +32,7 @@
 #include <core/animation/TimeInterval.h>
 #include <core/scene/ObjectNode.h>
 #include <core/rendering/TextGeometryBuffer.h>
+#include <core/rendering/ImageGeometryBuffer.h>
 #include "ViewportSettings.h"
 
 namespace Ovito {
@@ -326,12 +327,6 @@ protected:
 	/// Updates the title text of the viewport based on the current view type.
 	void updateViewportTitle();
 
-	/// Helper method that saves the current OpenGL rendering attributes on the stack and switches to flat shading.
-	void begin2DPainting();
-
-	/// Helper method that restores the OpenGL rendering attributes saved by begin2DPainting().
-	void end2DPainting();
-
 	/// Renders the viewport caption text.
 	void renderViewportTitle();
 
@@ -341,6 +336,10 @@ protected:
 
 	/// Renders the frame on top of the scene that indicates the visible rendering area.
 	void renderRenderFrame();
+
+	/// Modifies the projection such that the render frame painted over the 3d scene exactly
+	/// matches the true visible area.
+	void adjustProjectionForRenderFrame(ViewProjectionParameters& params);
 
 private:
 
@@ -407,6 +406,9 @@ private:
 
 	/// The rendering buffer used to render the viewport's orientation indicator labels.
 	OORef<TextGeometryBuffer> _orientationTripodLabels[3];
+
+	/// This is used to render the render frame around the viewport.
+	OORef<ImageGeometryBuffer> _renderFrameOverlay;
 
 private:
 

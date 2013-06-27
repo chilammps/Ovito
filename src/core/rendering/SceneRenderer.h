@@ -34,6 +34,7 @@
 #include "LineGeometryBuffer.h"
 #include "ParticleGeometryBuffer.h"
 #include "TextGeometryBuffer.h"
+#include "ImageGeometryBuffer.h"
 
 namespace Ovito {
 
@@ -92,6 +93,9 @@ public:
 
 	/// Requests a new text geometry buffer from the renderer.
 	virtual OORef<TextGeometryBuffer> createTextGeometryBuffer() = 0;
+
+	/// Requests a new image geometry buffer from the renderer.
+	virtual OORef<ImageGeometryBuffer> createImageGeometryBuffer() = 0;
 
 protected:
 
