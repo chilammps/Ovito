@@ -31,6 +31,7 @@
 #include <base/utilities/Color.h>
 #include "ViewportLineGeometryBuffer.h"
 #include "ViewportParticleGeometryBuffer.h"
+#include "ViewportTextGeometryBuffer.h"
 
 #include <QOpenGLFunctions_3_0>
 #include <QOpenGLFunctions_3_2_Core>
@@ -75,6 +76,11 @@ public:
 	/// Requests a new particle geometry buffer from the renderer.
 	virtual OORef<ParticleGeometryBuffer> createParticleGeometryBuffer() override {
 		return new ViewportParticleGeometryBuffer(this);
+	}
+
+	/// Requests a new text geometry buffer from the renderer.
+	virtual OORef<TextGeometryBuffer> createTextGeometryBuffer() override {
+		return new ViewportTextGeometryBuffer(this);
 	}
 
 	/// Returns the OpenGL context this renderer uses.

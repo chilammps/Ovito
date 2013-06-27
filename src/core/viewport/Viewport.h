@@ -31,6 +31,7 @@
 #include <core/reference/RefTarget.h>
 #include <core/animation/TimeInterval.h>
 #include <core/scene/ObjectNode.h>
+#include <core/rendering/TextGeometryBuffer.h>
 #include "ViewportSettings.h"
 
 namespace Ovito {
@@ -294,11 +295,6 @@ public:
 		return ViewportSettings::getSettings().viewportColor(which);
 	}
 
-	/// \brief Renders a text string into the GL context.
-	void renderText(const QString& str, const QPointF& pos, const QColor& color);
-
-	/// Sets whether mouse grab should be enabled or not for this viewport window.	/// The buffered line geometry used to render the simulation cell.
-	OORef<LineGeometryBuffer> _lineGeometry;
 	/// If the return value is true, the viewport window receives all mouse events until
 	/// setMouseGrabEnabled(false) is called; other windows get no mouse events at all.
 	bool setMouseGrabEnabled(bool grab);
@@ -394,6 +390,9 @@ private:
 	/// the context menu can be activated by the user.
 	QRect _contextMenuArea;
 
+	/// The rendering buffer maintained to render the viewport's caption text.
+	OORef<TextGeometryBuffer> _captionBuffer;
+
 	/// The current OpenGL context. This is only valid during the rendering phase.
 	QOpenGLContext* _glcontext;
 
@@ -405,6 +404,9 @@ private:
 
 	/// The geometry buffer used to render the viewport's orientation indicator.
 	OORef<LineGeometryBuffer> _orientationTripodGeometry;
+
+	/// The rendering buffer used to render the viewport's orientation indicator labels.
+	OORef<TextGeometryBuffer> _orientationTripodLabels[3];
 
 private:
 

@@ -117,6 +117,7 @@ SET(OVITO_CORE_SOURCE_FILES
 	rendering/viewport/ViewportSceneRendererEditor.cpp
 	rendering/viewport/ViewportLineGeometryBuffer.cpp
 	rendering/viewport/ViewportParticleGeometryBuffer.cpp
+	rendering/viewport/ViewportTextGeometryBuffer.cpp
 	rendering/RenderSettings.cpp
 	rendering/RenderSettingsEditor.cpp
 	rendering/FrameBuffer.cpp
@@ -150,7 +151,7 @@ TARGET_LINK_LIBRARIES(Core ${OPENGL_gl_LIBRARY})
 TARGET_LINK_LIBRARIES(Core ${ZLIB_LIBRARIES})
 
 # Link Qt5.
-QT5_USE_MODULES(Core Widgets Xml Network)
+QT5_USE_MODULES(Core Widgets Xml Network OpenGL)
 
 # This is required to avoid error by install_name_tool on MacOS.
 IF(APPLE)

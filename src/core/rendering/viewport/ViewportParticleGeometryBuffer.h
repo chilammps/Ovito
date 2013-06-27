@@ -40,12 +40,10 @@ class ViewportSceneRenderer;
  */
 class ViewportParticleGeometryBuffer : public ParticleGeometryBuffer, private SharedOpenGLResource
 {
-protected:
+public:
 
 	/// Constructor.
 	ViewportParticleGeometryBuffer(ViewportSceneRenderer* renderer);
-
-public:
 
 	/// Destructor.
 	virtual ~ViewportParticleGeometryBuffer();
@@ -128,8 +126,6 @@ private:
 
 	Q_OBJECT
 	OVITO_OBJECT
-
-	friend class ViewportSceneRenderer;
 };
 
 };

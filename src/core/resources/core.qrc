@@ -85,6 +85,8 @@
 	<file>glsl/particle_sprite_sphere_without_depth.vertex.glsl</file>
 	<file>glsl/line.vertex.glsl</file>
 	<file>glsl/line.fragment.glsl</file>
+	<file>glsl/text.vertex.glsl</file>
+	<file>glsl/text.fragment.glsl</file>
 	
 </qresource>
 

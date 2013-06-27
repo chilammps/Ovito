@@ -20,73 +20,78 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
- * \file ViewportLineGeometryBuffer.h
- * \brief Contains the definition of the Ovito::ViewportLineGeometryBuffer class.
+ * \file ViewportTextGeometryBuffer.h
+ * \brief Contains the definition of the Ovito::ViewportTextGeometryBuffer class.
  */
 
-#ifndef __OVITO_VIEWPORT_LINE_GEOMETRY_BUFFER_H
-#define __OVITO_VIEWPORT_LINE_GEOMETRY_BUFFER_H
+#ifndef __OVITO_VIEWPORT_TEXT_GEOMETRY_BUFFER_H
+#define __OVITO_VIEWPORT_TEXT_GEOMETRY_BUFFER_H
 
 #include <core/Core.h>
-#include <core/rendering/LineGeometryBuffer.h>
+#include <core/rendering/TextGeometryBuffer.h>
+#include <core/utilities/opengl/SharedOpenGLResource.h>
 
 namespace Ovito {
 
 class ViewportSceneRenderer;
 
 /**
- * \brief Buffer object that stores line geometry to be rendered in the viewports.
+ * \brief Buffer object that stores a text string to be rendered in the viewports.
  */
-class ViewportLineGeometryBuffer : public LineGeometryBuffer
+class ViewportTextGeometryBuffer : public TextGeometryBuffer, private SharedOpenGLResource
 {
 public:
 
 	/// Constructor.
-	ViewportLineGeometryBuffer(ViewportSceneRenderer* renderer);
+	ViewportTextGeometryBuffer(ViewportSceneRenderer* renderer);
 
-	/// \brief Allocates a geometry buffer with the given number of vertices.
-	virtual void setSize(int particleCount) override;
+	/// Destructor.
+	virtual ~ViewportTextGeometryBuffer();
 
-	/// \brief Returns the number of vertices stored in the buffer.
-	virtual int vertexCount() const override { return _vertexCount; }
+	/// \brief Sets the text to be rendered.
+	virtual void setText(const QString& text) override {
+		if(text != this->text())
+			_needTextureUpdate = true;
+		TextGeometryBuffer::setText(text);
+	}
 
-	/// \brief Sets the coordinates of the vertices.
-	virtual void setVertexPositions(const Point3* coordinates) override;
-
-	/// \brief Sets the colors of the vertices.
-	virtual void setVertexColors(const ColorA* colors) override;
-
-	/// \brief Sets the color of all vertices to the given value.
-	virtual void setVertexColor(const ColorA color) override;
+	/// Sets the text font.
+	virtual void setFont(const QFont& font) override {
+		if(font != this->font())
+			_needTextureUpdate = true;
+		TextGeometryBuffer::setFont(font);
+	}
 
 	/// \brief Returns true if the geometry buffer is filled and can be rendered with the given renderer.
 	virtual bool isValid(SceneRenderer* renderer) override;
 
-	/// \brief Renders the geometry.
-	virtual void render() override;
+	/// \brief Renders the text.
+	virtual void render(const Point2& pos) override;
 
 	/// \brief Returns the renderer that created this buffer object.
 	ViewportSceneRenderer* renderer() const { return _renderer; }
+
+protected:
+
+    /// This method that takes care of freeing the shared OpenGL resources owned by this class.
+    virtual void freeOpenGLResources() override;
 
 private:
 
 	/// The renderer that created this buffer object.
 	ViewportSceneRenderer* _renderer;
 
-	/// The internal OpenGL vertex buffer that stores the vertex positions.
-	QOpenGLBuffer _glPositionsBuffer;
-
-	/// The internal OpenGL vertex buffer that stores the vertex colors.
-	QOpenGLBuffer _glColorsBuffer;
-
 	/// The GL context group under which the GL vertex buffer has been created.
 	QOpenGLContextGroup* _contextGroup;
 
-	/// The OpenGL shader program used to render the lines.
+	/// The OpenGL shader program used to render the text.
 	QOpenGLShaderProgram* _shader;
 
-	/// The number of vertices stored in the buffer.
-	int _vertexCount;
+	/// Resource identifier of the OpenGL texture that is used for rendering the text image.
+	GLuint _texture;
+
+	/// Indicates that the texture needs to be updated.
+	bool _needTextureUpdate;
 
 	Q_OBJECT
 	OVITO_OBJECT
@@ -94,4 +99,4 @@ private:
 
 };
 
-#endif // __OVITO_VIEWPORT_LINE_GEOMETRY_BUFFER_H
+#endif // __OVITO_VIEWPORT_TEXT_GEOMETRY_BUFFER_H

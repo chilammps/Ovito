@@ -29,7 +29,12 @@ class OpenGLContextInfo
 public:
 
 	/// Constructor that creates a wrapper object for the given OpenGL context.
-	OpenGLContextInfo(QOpenGLContext* ctx, QSurface* surface) : _context(ctx), _surface(surface), _resources(nullptr) {}
+	OpenGLContextInfo(QOpenGLContext* ctx, QSurface* surface) : _context(ctx), _resources(nullptr) {
+		if(surface->surfaceClass() == QSurface::Window)
+			_windowSurface = static_cast<QWindow*>(surface);
+		else if(surface->surfaceClass() == QSurface::Offscreen)
+			_offscreenSurface = static_cast<QOffscreenSurface*>(surface);
+	}
 
 	/// Destructor.
 	~OpenGLContextInfo() {
@@ -42,8 +47,11 @@ public:
 	/// The OpenGL context wrapped by this object.
     QOpenGLContext* _context;
 
-    /// The surface needed to make the OpenGL context current.
-    QSurface* _surface;
+    /// The window surface needed to make the OpenGL context current.
+    QPointer<QWindow> _windowSurface;
+
+    /// The offscreen surface needed to make the OpenGL context current.
+    QPointer<QOffscreenSurface> _offscreenSurface;
 
     /// Linked list of resources associated with the OpenGL context.
     SharedOpenGLResource* _resources;
@@ -98,7 +106,7 @@ void OpenGLContextManager::aboutToDestroyContext()
 		    QList<QOpenGLContext*> shares = ctx->shareGroup()->shares();
 			if(shares.size() >= 2) {
 				// Transfer ownership to another context in the same sharing
-				// group.  This may result in multiple QGLContextInfo objects
+				// group.  This may result in multiple OpenGLContextInfo objects
 				// for the same context, which is ok.
 				info->_context = ((ctx == shares.at(0)) ? shares.at(1) : shares.at(0));
 			} else {
@@ -143,21 +151,24 @@ void SharedOpenGLResource::destroyOpenGLResources()
 	else _contextInfo->_resources = _next;
 
 	QOpenGLContext* ownerContext = _contextInfo->_context;
-	QSurface* ownerSurface = _contextInfo->_surface;
+	QSurface* ownerSurface = _contextInfo->_windowSurface.data();
+	if(!ownerSurface) ownerSurface = _contextInfo->_offscreenSurface.data();
     _contextInfo = nullptr;
     _next = _prev = nullptr;
 
     // Switch back to the owning context temporarily and delete the id.
 	QOpenGLContext* currentContext = QOpenGLContext::currentContext();
-	if(currentContext != ownerContext && !QOpenGLContext::areSharing(ownerContext, currentContext)) {
-		QSurface* currentSurface = currentContext ? currentContext->surface() : nullptr;
-		OVITO_ASSERT_MSG(ownerSurface != nullptr, "SharedOpenGLResource::destroyOpenGLResources()", "The QSurface associated with the OpenGL context has already been deleted.");
-		ownerContext->makeCurrent(ownerSurface);
-		freeOpenGLResources();
-		if(currentContext)
-			currentContext->makeCurrent(currentSurface);
-		else
-			ownerContext->doneCurrent();
+
+	if(currentContext != ownerContext && (!currentContext || !QOpenGLContext::areSharing(ownerContext, currentContext))) {
+		if(ownerSurface != nullptr) {
+			QSurface* currentSurface = currentContext ? currentContext->surface() : nullptr;
+			ownerContext->makeCurrent(ownerSurface);
+			freeOpenGLResources();
+			if(currentContext)
+				currentContext->makeCurrent(currentSurface);
+			else
+				ownerContext->doneCurrent();
+		}
 	}
 	else freeOpenGLResources();
 }

@@ -488,15 +488,23 @@ void Viewport::render(QOpenGLContext* context)
 ******************************************************************************/
 void Viewport::renderViewportTitle()
 {
-	Color captionColor = viewportColor(ViewportSettings::COLOR_VIEWPORT_CAPTION);
-	QFontMetricsF metrics(ViewportManager::instance().viewportFont());
-	QPointF pos(2, metrics.ascent() + 2);
-	_contextMenuArea = QRect(0, 0, std::max(metrics.width(viewportTitle()), 30.0) + 2, metrics.height() + 2);
+	/// Create a rendering buffer that is responsible for rendering the viewport's caption text.
+	SceneRenderer* renderer = ViewportManager::instance().renderer();
+	if(!_captionBuffer || !_captionBuffer->isValid(renderer)) {
+		_captionBuffer = renderer->createTextGeometryBuffer();
+		_captionBuffer->setFont(ViewportManager::instance().viewportFont());
+	}
+
 #ifndef OVITO_DEBUG
-	renderText(viewportTitle(), pos, (QColor)captionColor);
+	_captionBuffer->setText(viewportTitle());
 #else
-	renderText(QString("%1 [%2]").arg(viewportTitle()).arg(++_renderDebugCounter), pos, (QColor)captionColor);
+	_captionBuffer->setText(QString("%1 [%2]").arg(viewportTitle()).arg(++_renderDebugCounter));
 #endif
+	_captionBuffer->setColor(ColorA(viewportColor(ViewportSettings::COLOR_VIEWPORT_CAPTION)));
+
+	QFontMetricsF metrics(_captionBuffer->font());
+	_contextMenuArea = QRect(0, 0, std::max(metrics.width(_captionBuffer->text()), 30.0) + 2, metrics.height() + 2);
+	_captionBuffer->render(Point2(2, metrics.ascent() + 2));
 }
 
 /******************************************************************************
@@ -520,26 +528,6 @@ void Viewport::end2DPainting()
 	OVITO_CHECK_OPENGL(glEnable(GL_CULL_FACE));
 	OVITO_CHECK_OPENGL(glEnable(GL_DEPTH_TEST));
 	OVITO_CHECK_OPENGL(glDisable(GL_BLEND));
-}
-
-/******************************************************************************
-* Renders a text string into the GL context.
-******************************************************************************/
-void Viewport::renderText(const QString& str, const QPointF& pos, const QColor& color)
-{
-	OVITO_ASSERT_MSG(isRendering(), "Viewport::renderText", "Viewport is not rendering.");
-
-	if(str.isEmpty())
-		return;
-
-	begin2DPainting();
-#if 0
-		QPainter painter(_paintDevice);
-		painter.setPen(color);
-		painter.setFont(ViewportManager::instance().viewportFont());
-		painter.drawText(pos, str);
-#endif
-	end2DPainting();
 }
 
 /******************************************************************************
@@ -579,6 +567,7 @@ void Viewport::renderOrientationIndicator()
 {
 	const FloatType tripodSize = 60.0f;			// pixels
 	const FloatType tripodArrowSize = 0.17f; 	// percentage of the above value.
+	SceneRenderer* renderer = ViewportManager::instance().renderer();
 
 	// Save current rendering attributes and turn off depth-testing.
 	begin2DPainting();
@@ -592,17 +581,19 @@ void Viewport::renderOrientationIndicator()
 	projParams.inverseProjectionMatrix = projParams.projectionMatrix.inverse();
 	projParams.viewMatrix.setIdentity();
 	projParams.inverseViewMatrix.setIdentity();
-	ViewportManager::instance().renderer()->setProjParams(projParams);
-	ViewportManager::instance().renderer()->setWorldTransform(AffineTransformation::Identity());
+	renderer->setProjParams(projParams);
+	renderer->setWorldTransform(AffineTransformation::Identity());
+
+	static const ColorA axisColors[3] = { ColorA(1, 0, 0), ColorA(0, 1, 0), ColorA(0.2, 0.2, 1) };
+	static const QString labels[3] = { "x", "y", "z" };
 
 	// Create line buffer.
-	static const Color axisColors[3] = { Color(1, 0, 0), Color(0, 1, 0), Color(0.2, 0.2, 1) };
-	if(!_orientationTripodGeometry || !_orientationTripodGeometry->isValid(ViewportManager::instance().renderer())) {
-		_orientationTripodGeometry = ViewportManager::instance().renderer()->createLineGeometryBuffer();
+	if(!_orientationTripodGeometry || !_orientationTripodGeometry->isValid(renderer)) {
+		_orientationTripodGeometry = renderer->createLineGeometryBuffer();
 		_orientationTripodGeometry->setSize(18);
 		ColorA vertexColors[18];
 		for(int i = 0; i < 18; i++)
-			vertexColors[i] = ColorA(axisColors[i / 6]);
+			vertexColors[i] = axisColors[i / 6];
 		_orientationTripodGeometry->setVertexColors(vertexColors);
 	}
 
@@ -621,14 +612,22 @@ void Viewport::renderOrientationIndicator()
 	_orientationTripodGeometry->render();
 
 	// Render x,y,z labels.
-	static const QString labels[3] = { "x", "y", "z" };
 	for(int axis = 0; axis < 3; axis++) {
+
+		/// Create a rendering buffer that is responsible for rendering the text label.
+		if(!_orientationTripodLabels[axis] || !_orientationTripodLabels[axis]->isValid(renderer)) {
+			_orientationTripodLabels[axis] = renderer->createTextGeometryBuffer();
+			_orientationTripodLabels[axis]->setFont(ViewportManager::instance().viewportFont());
+			_orientationTripodLabels[axis]->setColor(axisColors[axis]);
+			_orientationTripodLabels[axis]->setText(labels[axis]);
+		}
+
 		Point3 p = Point3::Origin() + _projParams.viewMatrix.column(axis).resized(1.2f);
 		Point3 screenPoint = projParams.projectionMatrix * p;
-		QPointF pos(( screenPoint.x() + 1.0) * size().width()  / 2,
+		Point2 pos(( screenPoint.x() + 1.0) * size().width()  / 2,
 					(-screenPoint.y() + 1.0) * size().height() / 2);
-		pos += QPointF(-4, 3);
-		renderText(labels[axis], pos, QColor(axisColors[axis]));
+		pos += Vector2(-4, 3);
+		_orientationTripodLabels[axis]->render(pos);
 	}
 
 	// Restore old rendering attributes.
