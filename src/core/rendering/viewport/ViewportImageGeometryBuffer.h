@@ -82,6 +82,9 @@ private:
 	/// The OpenGL shader program used to render the image.
 	QOpenGLShaderProgram* _shader;
 
+	/// The OpenGL vertex buffer that stores the vertex positions.
+	QOpenGLBuffer _vertexBuffer;
+
 	/// Resource identifier of the OpenGL texture that is used for rendering the image.
 	GLuint _texture;
 

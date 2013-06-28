@@ -36,6 +36,9 @@
 /// The default field of view in radians used for perspective view types when the scene is empty.
 #define DEFAULT_PERSPECTIVE_FIELD_OF_VIEW		(FLOATTYPE_PI/4.0)
 
+/// Controls the margin size between the overlay render frame and the viewport border.
+#define VIEWPORT_RENDER_FRAME_SIZE				0.95
+
 namespace Ovito {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, Viewport, RefTarget);
@@ -624,16 +627,16 @@ void Viewport::adjustProjectionForRenderFrame(ViewProjectionParameters& params)
 
 	if(_projParams.isPerspective) {
 		if(renderAspectRatio < windowAspectRatio)
-			params.fieldOfView = atan(tan(params.fieldOfView*0.5) / (0.9 / windowAspectRatio * renderAspectRatio))*2.0;
+			params.fieldOfView = atan(tan(params.fieldOfView*0.5) / (VIEWPORT_RENDER_FRAME_SIZE / windowAspectRatio * renderAspectRatio))*2.0;
 		else
-			params.fieldOfView = atan(tan(params.fieldOfView*0.5) / 0.9)*2.0;
+			params.fieldOfView = atan(tan(params.fieldOfView*0.5) / VIEWPORT_RENDER_FRAME_SIZE)*2.0;
 		params.projectionMatrix = Matrix4::perspective(params.fieldOfView, 1.0 / params.aspectRatio, params.znear, params.zfar);
 	}
 	else {
 		if(renderAspectRatio < windowAspectRatio)
-			params.fieldOfView /= 0.9 / windowAspectRatio * renderAspectRatio;
+			params.fieldOfView /= VIEWPORT_RENDER_FRAME_SIZE / windowAspectRatio * renderAspectRatio;
 		else
-			params.fieldOfView /= 0.9;
+			params.fieldOfView /= VIEWPORT_RENDER_FRAME_SIZE;
 		params.projectionMatrix = Matrix4::ortho(-params.fieldOfView / params.aspectRatio, params.fieldOfView / params.aspectRatio,
 							-params.fieldOfView, params.fieldOfView,
 							params.znear, params.zfar);
@@ -668,11 +671,11 @@ void Viewport::renderRenderFrame()
 	FloatType windowAspectRatio = (FloatType)vpSize.height() / (FloatType)vpSize.width();
 	FloatType frameWidth, frameHeight;
 	if(renderAspectRatio < windowAspectRatio) {
-		frameWidth = 0.9;
+		frameWidth = VIEWPORT_RENDER_FRAME_SIZE;
 		frameHeight = frameWidth / windowAspectRatio * renderAspectRatio;
 	}
 	else {
-		frameHeight = 0.9;
+		frameHeight = VIEWPORT_RENDER_FRAME_SIZE;
 		frameWidth = frameHeight / renderAspectRatio * windowAspectRatio;
 	}
 

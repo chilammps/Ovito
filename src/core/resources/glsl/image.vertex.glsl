@@ -19,7 +19,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-uniform vec2 corners[4];
+in vec2 vertex_pos;
 
 const vec2 uvcoords[4] = vec2[4]( 
 	vec2(0,0),
@@ -32,6 +32,6 @@ out vec2 tex_coords;
 
 void main()
 {
-	gl_Position = vec4(corners[gl_VertexID], 0, 1.0);
-	tex_coords = uvcoords[gl_VertexID];
+	gl_Position = vec4(vertex_pos, 0, 1);
+	tex_coords = uvcoords[gl_VertexID % 4];
 }

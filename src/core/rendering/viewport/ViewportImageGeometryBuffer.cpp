@@ -43,6 +43,15 @@ ViewportImageGeometryBuffer::ViewportImageGeometryBuffer(ViewportSceneRenderer* 
 	// Initialize OpenGL shader.
 	_shader = renderer->loadShaderProgram("image", ":/core/glsl/image.vertex.glsl", ":/core/glsl/image.fragment.glsl");
 
+	// Create vertex buffer
+	if(!_vertexBuffer.create())
+		throw Exception(tr("Failed to create OpenGL vertex buffer."));
+	_vertexBuffer.setUsagePattern(QOpenGLBuffer::DynamicDraw);
+	if(!_vertexBuffer.bind())
+			throw Exception(tr("Failed to bind OpenGL vertex buffer."));
+	_vertexBuffer.allocate(4 * sizeof(Point2));
+	_vertexBuffer.release();
+
 	// Create OpenGL texture.
 	glGenTextures(1, &_texture);
 
@@ -75,7 +84,7 @@ bool ViewportImageGeometryBuffer::isValid(SceneRenderer* renderer)
 {
 	ViewportSceneRenderer* vpRenderer = qobject_cast<ViewportSceneRenderer*>(renderer);
 	if(!vpRenderer) return false;
-	return (_contextGroup == vpRenderer->glcontext()->shareGroup()) && (_texture != 0);
+	return (_contextGroup == vpRenderer->glcontext()->shareGroup()) && (_texture != 0) && _vertexBuffer.isCreated();
 }
 
 /******************************************************************************
@@ -98,6 +107,7 @@ void ViewportImageGeometryBuffer::renderViewport(const Point2& pos, const Vector
 {
 	OVITO_ASSERT(_contextGroup == QOpenGLContextGroup::currentContextGroup());
 	OVITO_ASSERT(_texture != 0);
+	OVITO_STATIC_ASSERT(sizeof(FloatType) == sizeof(float) && sizeof(Point2) == sizeof(float)*2);
 
 	if(image().isNull())
 		return;
@@ -120,11 +130,11 @@ void ViewportImageGeometryBuffer::renderViewport(const Point2& pos, const Vector
 	}
 
 	// Transform rectangle to normalized device coordinates.
-	QVector2D corners[4] = {
-			QVector2D(pos.x(), pos.y()),
-			QVector2D(pos.x() + size.x(), pos.y()),
-			QVector2D(pos.x(), pos.y() + size.y()),
-			QVector2D(pos.x() + size.x(), pos.y() + size.y())
+	Point2 corners[4] = {
+			Point2(pos.x(), pos.y()),
+			Point2(pos.x() + size.x(), pos.y()),
+			Point2(pos.x(), pos.y() + size.y()),
+			Point2(pos.x() + size.x(), pos.y() + size.y())
 	};
 
 	bool wasDepthTestEnabled = glIsEnabled(GL_DEPTH_TEST);
@@ -136,10 +146,16 @@ void ViewportImageGeometryBuffer::renderViewport(const Point2& pos, const Vector
 	if(!_shader->bind())
 		throw Exception(tr("Failed to bind OpenGL shader."));
 
-	_shader->setUniformValueArray("corners", corners, 4);
+	if(!_vertexBuffer.bind())
+			throw Exception(tr("Failed to bind OpenGL vertex buffer."));
+
+	_vertexBuffer.write(0, corners, 4 * sizeof(Point2));
+	_shader->setAttributeBuffer("vertex_pos", GL_FLOAT, 0, 2);
+	_shader->enableAttributeArray("vertex_pos");
 
 	OVITO_CHECK_OPENGL(glDrawArrays(GL_TRIANGLE_STRIP, 0, 4));
 
+	_vertexBuffer.release();
 	_shader->release();
 
 	// Restore old state.

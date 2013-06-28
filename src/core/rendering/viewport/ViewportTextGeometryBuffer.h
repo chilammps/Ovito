@@ -87,12 +87,16 @@ private:
 	/// The OpenGL shader program used to render the text.
 	QOpenGLShaderProgram* _shader;
 
+	/// The OpenGL vertex buffer that stores the vertex positions.
+	QOpenGLBuffer _vertexBuffer;
+
 	/// Resource identifier of the OpenGL texture that is used for rendering the text image.
 	GLuint _texture;
 
 	/// The texture image.
 	QImage _textureImage;
 
+	/// The position of the text inside the texture images.
 	QPoint _textOffset;
 
 	/// Indicates that the texture needs to be updated.

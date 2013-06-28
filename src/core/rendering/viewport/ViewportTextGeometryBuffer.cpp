@@ -44,6 +44,15 @@ ViewportTextGeometryBuffer::ViewportTextGeometryBuffer(ViewportSceneRenderer* re
 	// Initialize OpenGL shader.
 	_shader = renderer->loadShaderProgram("text", ":/core/glsl/text.vertex.glsl", ":/core/glsl/text.fragment.glsl");
 
+	// Create vertex buffer
+	if(!_vertexBuffer.create())
+		throw Exception(tr("Failed to create OpenGL vertex buffer."));
+	_vertexBuffer.setUsagePattern(QOpenGLBuffer::DynamicDraw);
+	if(!_vertexBuffer.bind())
+			throw Exception(tr("Failed to bind OpenGL vertex buffer."));
+	_vertexBuffer.allocate(4 * sizeof(Point2));
+	_vertexBuffer.release();
+
 	// Create OpenGL texture.
 	glGenTextures(1, &_texture);
 
@@ -76,7 +85,7 @@ bool ViewportTextGeometryBuffer::isValid(SceneRenderer* renderer)
 {
 	ViewportSceneRenderer* vpRenderer = qobject_cast<ViewportSceneRenderer*>(renderer);
 	if(!vpRenderer) return false;
-	return (_contextGroup == vpRenderer->glcontext()->shareGroup()) && (_texture != 0);
+	return (_contextGroup == vpRenderer->glcontext()->shareGroup()) && (_texture != 0) && _vertexBuffer.isCreated();
 }
 
 /******************************************************************************
@@ -86,6 +95,7 @@ void ViewportTextGeometryBuffer::render(const Point2& pos)
 {
 	OVITO_ASSERT(_contextGroup == QOpenGLContextGroup::currentContextGroup());
 	OVITO_ASSERT(_texture != 0);
+	OVITO_STATIC_ASSERT(sizeof(FloatType) == sizeof(float) && sizeof(Point2) == sizeof(float)*2);
 
 	if(text().isEmpty())
 		return;
@@ -131,11 +141,11 @@ void ViewportTextGeometryBuffer::render(const Point2& pos)
 	rect2.translate(pos.x(), pos.y());
 	GLint vc[4];
 	glGetIntegerv(GL_VIEWPORT, vc);
-	QVector2D corners[4] = {
-			QVector2D(rect2.left() / vc[2] * 2 - 1, 1 - rect2.bottom() / vc[3] * 2),
-			QVector2D(rect2.right() / vc[2] * 2 - 1, 1 - rect2.bottom() / vc[3] * 2),
-			QVector2D(rect2.left() / vc[2] * 2 - 1, 1 - rect2.top() / vc[3] * 2),
-			QVector2D(rect2.right() / vc[2] * 2 - 1, 1 - rect2.top() / vc[3] * 2)
+	Point2 corners[4] = {
+			Point2(rect2.left() / vc[2] * 2 - 1, 1 - rect2.bottom() / vc[3] * 2),
+			Point2(rect2.right() / vc[2] * 2 - 1, 1 - rect2.bottom() / vc[3] * 2),
+			Point2(rect2.left() / vc[2] * 2 - 1, 1 - rect2.top() / vc[3] * 2),
+			Point2(rect2.right() / vc[2] * 2 - 1, 1 - rect2.top() / vc[3] * 2)
 	};
 
 	bool wasDepthTestEnabled = glIsEnabled(GL_DEPTH_TEST);
@@ -147,11 +157,18 @@ void ViewportTextGeometryBuffer::render(const Point2& pos)
 	if(!_shader->bind())
 		throw Exception(tr("Failed to bind OpenGL shader."));
 
+	if(!_vertexBuffer.bind())
+		throw Exception(tr("Failed to bind OpenGL vertex buffer."));
+
+	_vertexBuffer.write(0, corners, 4 * sizeof(Point2));
+	_shader->setAttributeBuffer("vertex_pos", GL_FLOAT, 0, 2);
+	_shader->enableAttributeArray("vertex_pos");
+
 	_shader->setUniformValue("text_color", color().r(), color().g(), color().b(), color().a());
-	_shader->setUniformValueArray("corners", corners, 4);
 
 	OVITO_CHECK_OPENGL(glDrawArrays(GL_TRIANGLE_STRIP, 0, 4));
 
+	_vertexBuffer.release();
 	_shader->release();
 
 	// Restore old state.
