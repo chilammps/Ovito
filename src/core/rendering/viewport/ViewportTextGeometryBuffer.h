@@ -66,10 +66,7 @@ public:
 	virtual bool isValid(SceneRenderer* renderer) override;
 
 	/// \brief Renders the text.
-	virtual void render(const Point2& pos) override;
-
-	/// \brief Returns the renderer that created this buffer object.
-	ViewportSceneRenderer* renderer() const { return _renderer; }
+	virtual void render(SceneRenderer* renderer, const Point2& pos) override;
 
 protected:
 
@@ -77,9 +74,6 @@ protected:
     virtual void freeOpenGLResources() override;
 
 private:
-
-	/// The renderer that created this buffer object.
-	ViewportSceneRenderer* _renderer;
 
 	/// The GL context group under which the GL vertex buffer has been created.
 	QOpenGLContextGroup* _contextGroup;

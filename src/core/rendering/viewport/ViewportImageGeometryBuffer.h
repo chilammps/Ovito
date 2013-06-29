@@ -58,13 +58,10 @@ public:
 	virtual bool isValid(SceneRenderer* renderer) override;
 
 	/// \brief Renders the image in a rectangle given in pixel coordinates.
-	virtual void renderWindow(const Point2& pos, const Vector2& size) override;
+	virtual void renderWindow(SceneRenderer* renderer, const Point2& pos, const Vector2& size) override;
 
 	/// \brief Renders the image in a rectangle given in viewport coordinates.
-	virtual void renderViewport(const Point2& pos, const Vector2& size) override;
-
-	/// \brief Returns the renderer that created this buffer object.
-	ViewportSceneRenderer* renderer() const { return _renderer; }
+	virtual void renderViewport(SceneRenderer* renderer, const Point2& pos, const Vector2& size) override;
 
 protected:
 
@@ -72,9 +69,6 @@ protected:
     virtual void freeOpenGLResources() override;
 
 private:
-
-	/// The renderer that created this buffer object.
-	ViewportSceneRenderer* _renderer;
 
 	/// The GL context group under which the GL vertex buffer has been created.
 	QOpenGLContextGroup* _contextGroup;

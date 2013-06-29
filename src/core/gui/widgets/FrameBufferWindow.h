@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2008) Alexander Stukowski
+//  Copyright (2013) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -19,30 +19,30 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef __FRAME_BUFFER_WINDOW_H
-#define __FRAME_BUFFER_WINDOW_H
+#ifndef __OVITO_FRAME_BUFFER_WINDOW_H
+#define __OVITO_FRAME_BUFFER_WINDOW_H
 
 #include <core/Core.h>
-#include "FrameBuffer.h"
+#include <core/rendering/FrameBuffer.h>
 #include "FrameBufferWidget.h"
 
-namespace Core {
+namespace Ovito {
 
 /******************************************************************************
 * This window displays the contents of a FrameBuffer.
 ******************************************************************************/
-class CORE_DLLEXPORT FrameBufferWindow : public QMainWindow
+class FrameBufferWindow : public QMainWindow
 {
 public:
 
 	/// Constructor.
-	FrameBufferWindow(QWidget* parent = NULL);
+	FrameBufferWindow(QWidget* parent = nullptr);
 
 	/// Return the FrameBuffer that is currently shown in the widget (can be NULL).
-	const boost::shared_ptr<FrameBuffer>& frameBuffer() const { return frameBufferWidget->frameBuffer(); }
+	const QSharedPointer<FrameBuffer>& frameBuffer() const { return frameBufferWidget->frameBuffer(); }
 
 	/// Sets the FrameBuffer that is currently shown in the widget.
-	void setFrameBuffer(const boost::shared_ptr<FrameBuffer>& frameBuffer) { frameBufferWidget->setFrameBuffer(frameBuffer); }
+	void setFrameBuffer(const QSharedPointer<FrameBuffer>& frameBuffer) { frameBufferWidget->setFrameBuffer(frameBuffer); }
 
 	/// Repaints the contents of the frame buffer.
 	void updateFrame() { frameBufferWidget->viewport()->update(); }
@@ -62,9 +62,10 @@ private:
 	FrameBufferWidget* frameBufferWidget;
 
 private:
+
 	Q_OBJECT
 };
 
 };
 
-#endif // __FRAME_BUFFER_WINDOW_H
+#endif // __OVITO_FRAME_BUFFER_WINDOW_H

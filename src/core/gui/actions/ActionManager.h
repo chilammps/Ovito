@@ -23,10 +23,15 @@
 #define __OVITO_ACTION_MANAGER_H
 
 #include <core/Core.h>
+#include <core/animation/TimeInterval.h>
 
 namespace Ovito {
 
+class Viewport;					// defined in Viewport.h
 class ViewportInputHandler;		// defined in ViewportInputHandler.h
+class SceneRenderer;			// defined in SceneRenderer.h
+class RenderSettings;			// defined in RenderSettings.h
+class FrameBuffer;				// defined in FrameBuffer.h
 
 //////////////////////// Action identifiers ///////////////////////////
 
@@ -107,9 +112,9 @@ class ViewportInputHandler;		// defined in ViewportInputHandler.h
 /// This action starts rendering of the current view.
 #define ACTION_RENDER_ACTIVE_VIEWPORT		"RenderActiveViewport"
 /// This action shows a dialog box that lets the user select the renderer plugin.
-#define ACTION_SELECT_RENDERER_DIALOG		"RenderSelectRenderer"
+#define ACTION_SELECT_RENDERER_DIALOG		"SelectRenderer"
 /// This action displays the frame buffer windows showing the last rendered image.
-#define ACTION_SHOW_FRAME_BUFFER			"RenderShowFrameBuffer"
+#define ACTION_SHOW_FRAME_BUFFER			"ShowFrameBuffer"
 
 /// This actions open the application's "Settings" dialog.
 #define ACTION_SETTINGS_DIALOG				"Settings"
@@ -192,10 +197,14 @@ private Q_SLOTS:
 	void on_AnimationStartPlayback_triggered();
 	void on_AnimationStopPlayback_triggered();
 	void on_AnimationSettings_triggered();
+	void on_RenderActiveViewport_triggered();
 
 private:
 
 	OORef<ViewportInputHandler> createAnimationPlaybackViewportMode();
+
+	/// Renders a single frame and saves the output file.
+	bool renderFrame(TimePoint renderTime, int frameNumber, RenderSettings* settings, SceneRenderer* renderer, Viewport* viewport, FrameBuffer* frameBuffer, QProgressDialog& progressDialog);
 
 	/// Constructor.
 	ActionManager();

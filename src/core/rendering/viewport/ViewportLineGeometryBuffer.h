@@ -63,15 +63,9 @@ public:
 	virtual bool isValid(SceneRenderer* renderer) override;
 
 	/// \brief Renders the geometry.
-	virtual void render() override;
-
-	/// \brief Returns the renderer that created this buffer object.
-	ViewportSceneRenderer* renderer() const { return _renderer; }
+	virtual void render(SceneRenderer* renderer) override;
 
 private:
-
-	/// The renderer that created this buffer object.
-	ViewportSceneRenderer* _renderer;
 
 	/// The internal OpenGL vertex buffer that stores the vertex positions.
 	QOpenGLBuffer _glPositionsBuffer;

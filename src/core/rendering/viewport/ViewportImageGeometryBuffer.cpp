@@ -33,7 +33,6 @@ IMPLEMENT_OVITO_OBJECT(Core, ViewportImageGeometryBuffer, ImageGeometryBuffer);
 * Constructor.
 ******************************************************************************/
 ViewportImageGeometryBuffer::ViewportImageGeometryBuffer(ViewportSceneRenderer* renderer) :
-	_renderer(renderer),
 	_contextGroup(QOpenGLContextGroup::currentContextGroup()),
 	_texture(0),
 	_needTextureUpdate(true)
@@ -90,31 +89,32 @@ bool ViewportImageGeometryBuffer::isValid(SceneRenderer* renderer)
 /******************************************************************************
 * Renders the image in a rectangle given in window coordinates.
 ******************************************************************************/
-void ViewportImageGeometryBuffer::renderWindow(const Point2& pos, const Vector2& size)
+void ViewportImageGeometryBuffer::renderWindow(SceneRenderer* renderer, const Point2& pos, const Vector2& size)
 {
 	GLint vc[4];
 	glGetIntegerv(GL_VIEWPORT, vc);
 
 	// Transform rectangle to normalized device coordinates.
-	renderViewport(Point2(pos.x() / vc[2] * 2 - 1, 1 - (pos.y() + size.y()) / vc[3] * 2),
+	renderViewport(renderer, Point2(pos.x() / vc[2] * 2 - 1, 1 - (pos.y() + size.y()) / vc[3] * 2),
 		Vector2(size.x() / vc[2] * 2, size.y() / vc[3] * 2));
 }
 
 /******************************************************************************
 * Renders the image in a rectangle given in viewport coordinates.
 ******************************************************************************/
-void ViewportImageGeometryBuffer::renderViewport(const Point2& pos, const Vector2& size)
+void ViewportImageGeometryBuffer::renderViewport(SceneRenderer* renderer, const Point2& pos, const Vector2& size)
 {
 	OVITO_ASSERT(_contextGroup == QOpenGLContextGroup::currentContextGroup());
 	OVITO_ASSERT(_texture != 0);
 	OVITO_STATIC_ASSERT(sizeof(FloatType) == sizeof(float) && sizeof(Point2) == sizeof(float)*2);
+	ViewportSceneRenderer* vpRenderer = dynamic_object_cast<ViewportSceneRenderer>(renderer);
 
-	if(image().isNull())
+	if(image().isNull() || !vpRenderer)
 		return;
 
 	// Prepare texture.
 	OVITO_CHECK_OPENGL(glBindTexture(GL_TEXTURE_2D, _texture));
-	renderer()->glfuncs()->glActiveTexture(GL_TEXTURE0);
+	vpRenderer->glfuncs()->glActiveTexture(GL_TEXTURE0);
 
 	if(_needTextureUpdate) {
 		_needTextureUpdate = false;

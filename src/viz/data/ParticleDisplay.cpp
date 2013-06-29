@@ -148,7 +148,7 @@ void ParticleDisplay::render(TimePoint time, SceneObject* sceneObject, const Pip
 			_particleBuffer->setParticleColor(Color(1,1,1));
 	}
 
-	_particleBuffer->render();
+	_particleBuffer->render(renderer);
 }
 
 };

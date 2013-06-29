@@ -102,7 +102,7 @@ void SimulationCellDisplay::render(TimePoint time, SceneObject* sceneObject, con
 		_lineGeometry->setVertexPositions(vertices);
 		_lineGeometry->setVertexColor(ColorA(1,1,1));
 	}
-	_lineGeometry->render();
+	_lineGeometry->render(renderer);
 }
 
 };

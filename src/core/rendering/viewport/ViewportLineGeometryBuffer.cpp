@@ -31,7 +31,6 @@ IMPLEMENT_OVITO_OBJECT(Core, ViewportLineGeometryBuffer, LineGeometryBuffer);
 * Constructor.
 ******************************************************************************/
 ViewportLineGeometryBuffer::ViewportLineGeometryBuffer(ViewportSceneRenderer* renderer) :
-	_renderer(renderer),
 	_contextGroup(QOpenGLContextGroup::currentContextGroup()),
 	_vertexCount(-1)
 {
@@ -128,22 +127,23 @@ bool ViewportLineGeometryBuffer::isValid(SceneRenderer* renderer)
 /******************************************************************************
 * Renders the geometry.
 ******************************************************************************/
-void ViewportLineGeometryBuffer::render()
+void ViewportLineGeometryBuffer::render(SceneRenderer* renderer)
 {
 	OVITO_ASSERT(_glPositionsBuffer.isCreated());
 	OVITO_ASSERT(_glColorsBuffer.isCreated());
 	OVITO_ASSERT(_contextGroup == QOpenGLContextGroup::currentContextGroup());
 	OVITO_ASSERT(_vertexCount >= 0);
 	OVITO_STATIC_ASSERT(sizeof(FloatType) == 4);
+	ViewportSceneRenderer* vpRenderer = dynamic_object_cast<ViewportSceneRenderer>(renderer);
 
-	if(_vertexCount <= 0)
+	if(_vertexCount <= 0 || !vpRenderer)
 		return;
 
 	if(!_shader->bind())
 		throw Exception(tr("Failed to bind OpenGL shader."));
 
 	_shader->setUniformValue("modelview_projection_matrix",
-			(QMatrix4x4)(renderer()->projParams().projectionMatrix * renderer()->modelViewTM()));
+			(QMatrix4x4)(vpRenderer->projParams().projectionMatrix * vpRenderer->modelViewTM()));
 
 	_glPositionsBuffer.bind();
 	_shader->setAttributeBuffer("vertex_pos", GL_FLOAT, 0, 3);

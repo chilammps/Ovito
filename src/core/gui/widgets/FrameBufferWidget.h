@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // 
-//  Copyright (2008) Alexander Stukowski
+//  Copyright (2013) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -19,55 +19,54 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef __FRAME_BUFFER_WIDGET_H
-#define __FRAME_BUFFER_WIDGET_H
+#ifndef __OVITO_FRAME_BUFFER_WIDGET_H
+#define __OVITO_FRAME_BUFFER_WIDGET_H
 
 #include <core/Core.h>
-#include "FrameBuffer.h"
+#include <core/rendering/FrameBuffer.h>
 
-namespace Core {
+namespace Ovito {
 
 /******************************************************************************
 * This widget displays the contents of a FrameBuffer.
 ******************************************************************************/
-class CORE_DLLEXPORT FrameBufferWidget : public QAbstractScrollArea
+class FrameBufferWidget : public QAbstractScrollArea
 {
 public:
+
 	/// Constructor.
-	FrameBufferWidget(QWidget* parent = NULL) : QAbstractScrollArea(parent) {}
+	FrameBufferWidget(QWidget* parent = nullptr) : QAbstractScrollArea(parent) {}
 
 	/// Return the FrameBuffer that is currently shown in the widget (can be NULL).
-	const boost::shared_ptr<FrameBuffer>& frameBuffer() const { return _frameBuffer; }
+	const QSharedPointer<FrameBuffer>& frameBuffer() const { return _frameBuffer; }
 	
 	/// Sets the FrameBuffer that is currently shown in the widget.
-	void setFrameBuffer(const boost::shared_ptr<FrameBuffer>& frameBuffer);
+	void setFrameBuffer(const QSharedPointer<FrameBuffer>& frameBuffer);
 	
 	/// Returns the preferred size of the widget.
-	virtual QSize sizeHint() const;
+	virtual QSize sizeHint() const override;
 
-	/// Returns the maximum size of the widget.
-	virtual QSize maximumSize() const { return sizeHint(); }
-	
 protected:
 
 	/// This is called by the system to paint the viewport area.
-	virtual void paintEvent(QPaintEvent* event);
+	virtual void paintEvent(QPaintEvent* event) override;
 	
 	/// Receive resize events for the viewport widget.
-	void resizeEvent(QResizeEvent* event);
+	void resizeEvent(QResizeEvent* event) override;
 
 private:
 
 	/// The FrameBuffer that is shown in the widget. 
-	boost::shared_ptr<FrameBuffer> _frameBuffer;
+	QSharedPointer<FrameBuffer> _frameBuffer;
 	
-	/// Updates the ranges of the scrollbars after the size of the framebuffer or the widget have changed.
+	/// Updates the ranges of the scroll bars after the size of the frame buffer or the widget have changed.
 	void updateScrollBars();
 
 private:
+
 	Q_OBJECT
 };
 
 };
 
-#endif // __FRAME_BUFFER_WIDGET_H
+#endif // __OVITO_FRAME_BUFFER_WIDGET_H

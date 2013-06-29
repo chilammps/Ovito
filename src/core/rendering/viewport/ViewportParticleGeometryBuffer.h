@@ -73,10 +73,10 @@ public:
 	virtual bool isValid(SceneRenderer* renderer) override;
 
 	/// \brief Renders the geometry.
-	virtual void render() override;
+	virtual void render(SceneRenderer* renderer) override;
 
 	/// \brief Returns the renderer that created this buffer object.
-	ViewportSceneRenderer* renderer() const { return _renderer; }
+	//ViewportSceneRenderer* renderer() const { return _renderer; }
 
 protected:
 
@@ -84,21 +84,21 @@ protected:
     virtual void freeOpenGLResources() override;
 
 	/// Creates the texture used for billboard rendering of particles.
-	void initializeBillboardTexture();
+	void initializeBillboardTexture(ViewportSceneRenderer* renderer);
 
 	/// Activates a texture for billboard rendering of particles.
 	void activateBillboardTexture();
 
 	/// Renders the particles using OpenGL point sprites.
-	void renderPointSprites();
+	void renderPointSprites(ViewportSceneRenderer* renderer);
 
 	/// Renders the particles using raytracing implemented in an OpenGL fragment shader.
-	void renderRaytracedSpheres();
+	void renderRaytracedSpheres(ViewportSceneRenderer* renderer);
 
 private:
 
 	/// The renderer that created this buffer object.
-	ViewportSceneRenderer* _renderer;
+	//ViewportSceneRenderer* _renderer;
 
 	/// The internal OpenGL vertex buffer that stores the particle positions.
 	QOpenGLBuffer _glPositionsBuffer;

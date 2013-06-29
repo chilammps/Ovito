@@ -32,8 +32,8 @@
 
 namespace Ovito {
 
-class CommandPanel;		// defined in CommandPanel.h
-class FrameBufferWindow;// defined in FrameBufferWindow.h
+class CommandPanel;			// defined in CommandPanel.h
+class FrameBufferWindow;	// defined in FrameBufferWindow.h
 
 /**
  * \brief The main window of the application.
@@ -60,8 +60,11 @@ public:
 	/// Returns the status bar of the main window.
 	QStatusBar* statusBar() const { return _statusBar; }
 
+	/// Returns the frame buffer window showing the rendered image.
+	FrameBufferWindow* frameBufferWindow() const { return _frameBufferWindow; }
+
 	/// Returns the recommended size for this window.
-	virtual QSize sizeHint() const Q_DECL_OVERRIDE { return QSize(1024,768); }
+	virtual QSize sizeHint() const override { return QSize(1024,768); }
 	
 	/// \brief Loads the layout of the docked widgets from the settings store.
 	void restoreLayout();
@@ -92,7 +95,7 @@ private:
 	QStatusBar* _statusBar;
 
 	/// The frame buffer window showing the rendered image.
-	QPointer<FrameBufferWindow> _frameBufferWindow;
+	FrameBufferWindow* _frameBufferWindow;
 
 	/// The command panel.
 	CommandPanel* _commandPanel;
@@ -103,10 +106,10 @@ private:
 protected:
 
 	/// Is called when the user closes the window.
-	virtual void closeEvent(QCloseEvent* event) Q_DECL_OVERRIDE;
+	virtual void closeEvent(QCloseEvent* event) override;
 	
 	/// Is called when the window receives an event.
-	virtual bool event(QEvent *event) Q_DECL_OVERRIDE;
+	virtual bool event(QEvent *event) override;
 
 	/// Give the Application class access to the main window's private constructor.
 	friend class Application;

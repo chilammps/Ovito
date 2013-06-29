@@ -83,6 +83,7 @@ private:
 class LinearVectorController : public StandardKeyedController<VectorController, Vector3, Vector3, Vector3::Zero, LinearKeyInterpolator<Vector3> > {
 public:
 	Q_INVOKABLE LinearVectorController() {}
+
 private:
 	Q_OBJECT
 	OVITO_OBJECT

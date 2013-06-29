@@ -239,7 +239,8 @@ protected:
 		stream.expectChunk(0x01);
 		quint32 nkeys;
 		stream >> nkeys;
-		for(; nkeys != 0; nkeys--) {
+		_keys.clear();
+		for(quint32 i = 0; i < nkeys; i++) {
 			TimePoint time;
 			stream >> time;
 			stream >> _keys[time];

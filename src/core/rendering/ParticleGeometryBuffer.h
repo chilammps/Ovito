@@ -55,7 +55,7 @@ public:
 public:
 
 	/// Constructor.
-	ParticleGeometryBuffer() : _shadingMode(NormalShading), _renderingQuality(HighQuality) {}
+	ParticleGeometryBuffer() : _shadingMode(NormalShading), _renderingQuality(MediumQuality) {}
 
 	/// \brief Allocates a geometry buffer with the given number of particles.
 	virtual void setSize(int particleCount) = 0;
@@ -82,7 +82,7 @@ public:
 	virtual bool isValid(SceneRenderer* renderer) = 0;
 
 	/// \brief Renders the geometry.
-	virtual void render() = 0;
+	virtual void render(SceneRenderer* renderer) = 0;
 
 	/// \brief Returns the shading mode for particles.
 	ShadingMode shadingMode() const { return _shadingMode; }

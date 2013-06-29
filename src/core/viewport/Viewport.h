@@ -33,12 +33,11 @@
 #include <core/scene/ObjectNode.h>
 #include <core/rendering/TextGeometryBuffer.h>
 #include <core/rendering/ImageGeometryBuffer.h>
+#include <core/rendering/LineGeometryBuffer.h>
 #include "ViewportSettings.h"
+#include "ViewportWindow.h"
 
 namespace Ovito {
-
-class ViewportWindow;
-class LineGeometryBuffer;
 
 /******************************************************************************
 * This data structure describes a projection parameters used to render
@@ -141,7 +140,7 @@ public:
 	void render(QOpenGLContext* context);
 
 	/// Indicates whether the rendering of the viewport contents is currently in progress.
-	bool isRendering() const { return _glcontext != nullptr; }
+	bool isRendering() const { return _isRendering; }
 
 	/// \brief Displays the context menu for the viewport.
 	/// \param pos The position in where the context menu should be displayed.
@@ -311,6 +310,9 @@ public:
 	/// Returns the current size of the viewport window.
 	QSize size() const { return _widget ? _widget->size() : QSize(); }
 
+	/// Returns a pointer to the internal OpenGL rendering window.
+	ViewportWindow* viewportWindow() const { return _viewportWindow.data(); }
+
 protected:
 
 	/// Is called when the value of a property field of this object has changed.
@@ -392,8 +394,8 @@ private:
 	/// The rendering buffer maintained to render the viewport's caption text.
 	OORef<TextGeometryBuffer> _captionBuffer;
 
-	/// The current OpenGL context. This is only valid during the rendering phase.
-	QOpenGLContext* _glcontext;
+	/// This flag is true during the rendering phase.
+	bool _isRendering;
 
 	/// Describes the current 3D projection used to render the contents of the viewport.
 	ViewProjectionParameters _projParams;
@@ -430,7 +432,6 @@ private:
 
 	friend class ViewportWindow;
 	friend class ViewportMenu;
-	friend class ViewportSceneRenderer;
 };
 
 };

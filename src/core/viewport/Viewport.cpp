@@ -63,7 +63,7 @@ Viewport::Viewport() :
 		_viewType(VIEW_NONE), _shadingMode(SHADING_WIREFRAME), _showGrid(false),
 		_fieldOfView(100),
 		_showRenderFrame(false), _orbitCenter(Point3::Origin()), _useOrbitCenter(false),
-		_glcontext(nullptr),
+		_isRendering(false),
 		_cameraPosition(Point3::Origin()), _cameraDirection(0,0,-1),
 		_renderDebugCounter(0)
 {
@@ -429,10 +429,10 @@ void Viewport::processUpdateRequest()
 ******************************************************************************/
 void Viewport::render(QOpenGLContext* context)
 {
-	OVITO_ASSERT_MSG(_glcontext == NULL, "Viewport::render", "Viewport is already rendering.");
-	_glcontext = context;
+	OVITO_ASSERT_MSG(!isRendering(), "Viewport::render", "Viewport is already rendering.");
 
 	try {
+		_isRendering = true;
 
 		QSize vpSize = size();
 		glViewport(0, 0, vpSize.width(), vpSize.height());
@@ -451,14 +451,11 @@ void Viewport::render(QOpenGLContext* context)
 			adjustProjectionForRenderFrame(_projParams);
 
 		// Set up the viewport renderer.
-		ViewportManager::instance().renderer()->setTime(AnimManager::instance().time());
-		ViewportManager::instance().renderer()->setProjParams(_projParams);
-		ViewportManager::instance().renderer()->setViewport(this);
-		ViewportManager::instance().renderer()->setDataset(DataSetManager::instance().currentSet());
-		ViewportManager::instance().renderer()->beginRender();
+		ViewportManager::instance().renderer()->startRender(DataSetManager::instance().currentSet(), DataSetManager::instance().currentSet()->renderSettings());
+		ViewportManager::instance().renderer()->beginFrame(AnimManager::instance().time(), _projParams, this);
 
 		// Call the viewport renderer to render the scene objects.
-		ViewportManager::instance().renderer()->renderFrame();
+		ViewportManager::instance().renderer()->renderFrame(nullptr, nullptr);
 
 		// Render render frame.
 		renderRenderFrame();
@@ -470,9 +467,10 @@ void Viewport::render(QOpenGLContext* context)
 		renderViewportTitle();
 
 		// Stop rendering.
+		ViewportManager::instance().renderer()->endFrame();
 		ViewportManager::instance().renderer()->endRender();
 
-		_glcontext = nullptr;
+		_isRendering = false;
 	}
 	catch(Exception& ex) {
 		ex.prependGeneralMessage(tr("An unexpected error occurred while rendering the viewport contents. The program will quit."));
@@ -504,7 +502,7 @@ void Viewport::renderViewportTitle()
 
 	QFontMetricsF metrics(_captionBuffer->font());
 	_contextMenuArea = QRect(0, 0, std::max(metrics.width(_captionBuffer->text()), 30.0) + 2, metrics.height() + 2);
-	_captionBuffer->render(Point2(2, metrics.ascent() + 2));
+	_captionBuffer->render(renderer, Point2(2, metrics.ascent() + 2));
 }
 
 /******************************************************************************
@@ -586,7 +584,7 @@ void Viewport::renderOrientationIndicator()
 		vertices[index++] = Point3::Origin() + (dir + tripodArrowSize * Vector3(-dir.y() - dir.x(), dir.x() - dir.y(), dir.z()));
 	}
 	_orientationTripodGeometry->setVertexPositions(vertices);
-	_orientationTripodGeometry->render();
+	_orientationTripodGeometry->render(renderer);
 
 	// Render x,y,z labels.
 	for(int axis = 0; axis < 3; axis++) {
@@ -604,7 +602,7 @@ void Viewport::renderOrientationIndicator()
 		Point2 pos(( screenPoint.x() + 1.0) * size().width()  / 2,
 					(-screenPoint.y() + 1.0) * size().height() / 2);
 		pos += Vector2(-4, 3);
-		_orientationTripodLabels[axis]->render(pos);
+		_orientationTripodLabels[axis]->render(renderer, pos);
 	}
 
 	// Restore old rendering attributes.
@@ -680,10 +678,10 @@ void Viewport::renderRenderFrame()
 	}
 
 	// Render rectangle borders
-	_renderFrameOverlay->renderViewport(Point2(-1,-1), Vector2(1.0 - frameWidth, 2));
-	_renderFrameOverlay->renderViewport(Point2(frameWidth,-1), Vector2(1.0 - frameWidth, 2));
-	_renderFrameOverlay->renderViewport(Point2(-frameWidth,-1), Vector2(2*frameWidth, 1.0 - frameHeight));
-	_renderFrameOverlay->renderViewport(Point2(-frameWidth,frameHeight), Vector2(2*frameWidth, 1.0 - frameHeight));
+	_renderFrameOverlay->renderViewport(renderer, Point2(-1,-1), Vector2(1.0 - frameWidth, 2));
+	_renderFrameOverlay->renderViewport(renderer, Point2(frameWidth,-1), Vector2(1.0 - frameWidth, 2));
+	_renderFrameOverlay->renderViewport(renderer, Point2(-frameWidth,-1), Vector2(2*frameWidth, 1.0 - frameHeight));
+	_renderFrameOverlay->renderViewport(renderer, Point2(-frameWidth,frameHeight), Vector2(2*frameWidth, 1.0 - frameHeight));
 }
 
 };

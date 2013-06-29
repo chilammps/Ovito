@@ -28,23 +28,21 @@
 #include <core/scene/pipeline/Modifier.h>
 #include <core/scene/display/DisplayObject.h>
 #include "ViewportSceneRenderer.h"
-#include "ViewportSceneRendererEditor.h"
 
 namespace Ovito {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, ViewportSceneRenderer, SceneRenderer);
-SET_OVITO_OBJECT_EDITOR(ViewportSceneRenderer, ViewportSceneRendererEditor)
-DEFINE_PROPERTY_FIELD(ViewportSceneRenderer, _antialiasingLevel, "AntialiasingLevel")
-SET_PROPERTY_FIELD_LABEL(ViewportSceneRenderer, _antialiasingLevel, "Antialiasing level")
 
 /******************************************************************************
 * This method is called just before renderFrame() is called.
 ******************************************************************************/
-void ViewportSceneRenderer::beginRender()
+void ViewportSceneRenderer::beginFrame(TimePoint time, const ViewProjectionParameters& params, Viewport* vp)
 {
-	OVITO_CHECK_OBJECT_POINTER(viewport());
-	_glcontext = viewport()->_glcontext;
-	OVITO_ASSERT(_glcontext == QOpenGLContext::currentContext());
+	SceneRenderer::beginFrame(time, params, vp);
+
+	_glcontext = QOpenGLContext::currentContext();
+	if(!_glcontext)
+		throw Exception(tr("Cannot render scene: There is no active OpenGL context"));
 
 	// Obtain a functions object that allows to call OpenGL 2.0 functions in a platform-independent way.
 	_glFunctions = _glcontext->functions();
@@ -70,29 +68,35 @@ void ViewportSceneRenderer::beginRender()
 		_vertexArrayObject->create();
 		_vertexArrayObject->bind();
 	}
+
+	// Set viewport background color.
+	Color backgroundColor = Viewport::viewportColor(ViewportSettings::COLOR_VIEWPORT_BKG);
+	glClearColor(backgroundColor.r(), backgroundColor.g(), backgroundColor.b(), 1);
 }
 
 /******************************************************************************
 * This method is called after renderFrame() has been called.
 ******************************************************************************/
-void ViewportSceneRenderer::endRender()
+void ViewportSceneRenderer::endFrame()
 {
 	_vertexArrayObject.reset();
 	_glcontext = nullptr;
+
+	SceneRenderer::endFrame();
 }
 
 /******************************************************************************
 * Renders the current animation frame.
 ******************************************************************************/
-void ViewportSceneRenderer::renderFrame()
+bool ViewportSceneRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialog* progress)
 {
 	// Clear background.
-	Color backgroundColor = Viewport::viewportColor(ViewportSettings::COLOR_VIEWPORT_BKG);
-	glClearColor(backgroundColor.r(), backgroundColor.g(), backgroundColor.b(), 1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
 
 	renderScene();
+
+	return true;
 }
 
 /******************************************************************************

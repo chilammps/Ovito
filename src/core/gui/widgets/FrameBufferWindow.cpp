@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2008) Alexander Stukowski
+//  Copyright (2013) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -20,24 +20,22 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include <core/rendering/FrameBufferWindow.h>
 #include <core/gui/dialogs/SaveImageFileDialog.h>
+#include "FrameBufferWindow.h"
 
-namespace Core {
+namespace Ovito {
 
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
 FrameBufferWindow::FrameBufferWindow(QWidget* parent) : QMainWindow(parent, (Qt::WindowFlags)(Qt::Tool | Qt::CustomizeWindowHint | Qt::WindowMaximizeButtonHint | Qt::WindowCloseButtonHint))
 {
-	//setAttribute(Qt::WA_DeleteOnClose);
-
 	frameBufferWidget = new FrameBufferWidget(this);
 	setCentralWidget(frameBufferWidget);
 
 	QToolBar* toolBar = addToolBar(tr("Frame Buffer"));
-	toolBar->addAction(QIcon(":/core/rendering/save_picture.png"), tr("Save to file"), this, SLOT(saveImage()));
-	toolBar->addAction(QIcon(":/core/rendering/copy_picture_to_clipboard.png"), tr("Copy to clipboard"), this, SLOT(copyImageToClipboard()));
+	toolBar->addAction(QIcon(":/core/framebuffer/save_picture.png"), tr("Save to file"), this, SLOT(saveImage()));
+	toolBar->addAction(QIcon(":/core/framebuffer/copy_picture_to_clipboard.png"), tr("Copy to clipboard"), this, SLOT(copyImageToClipboard()));
 }
 
 /******************************************************************************
@@ -46,7 +44,7 @@ FrameBufferWindow::FrameBufferWindow(QWidget* parent) : QMainWindow(parent, (Qt:
 ******************************************************************************/
 void FrameBufferWindow::saveImage()
 {
-	if(frameBuffer() == NULL) return;
+	if(frameBuffer() == nullptr) return;
 
 	SaveImageFileDialog fileDialog(this, tr("Save image"));
 	if(fileDialog.exec()) {
@@ -63,7 +61,7 @@ void FrameBufferWindow::saveImage()
 ******************************************************************************/
 void FrameBufferWindow::copyImageToClipboard()
 {
-	if(frameBuffer() == NULL) return;
+	if(frameBuffer() == nullptr) return;
 
 	QClipboard *clipboard = QApplication::clipboard();
 	clipboard->setImage(frameBuffer()->image());

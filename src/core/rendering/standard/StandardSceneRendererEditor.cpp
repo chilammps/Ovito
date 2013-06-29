@@ -21,17 +21,17 @@
 
 #include <core/Core.h>
 #include <core/gui/properties/IntegerParameterUI.h>
-#include "ViewportSceneRenderer.h"
-#include "ViewportSceneRendererEditor.h"
+#include "StandardSceneRenderer.h"
+#include "StandardSceneRendererEditor.h"
 
 namespace Ovito {
 
-IMPLEMENT_OVITO_OBJECT(Core, ViewportSceneRendererEditor, PropertiesEditor)
+IMPLEMENT_OVITO_OBJECT(Core, StandardSceneRendererEditor, PropertiesEditor)
 
 /******************************************************************************
 * Constructor that creates the UI controls for the editor.
 ******************************************************************************/
-void ViewportSceneRendererEditor::createUI(const RolloutInsertionParameters& rolloutParams)
+void StandardSceneRendererEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
 	// Create the rollout.
 	QWidget* rollout = createRollout(tr("OpenGL renderer settings"), rolloutParams);
@@ -44,7 +44,7 @@ void ViewportSceneRendererEditor::createUI(const RolloutInsertionParameters& rol
 	layout->setColumnStretch(1, 1);
 	
 	// Antialiasing level	
-	IntegerParameterUI* antialiasingLevelUI = new IntegerParameterUI(this, PROPERTY_FIELD(ViewportSceneRenderer::_antialiasingLevel));
+	IntegerParameterUI* antialiasingLevelUI = new IntegerParameterUI(this, PROPERTY_FIELD(StandardSceneRenderer::_antialiasingLevel));
 	layout->addWidget(antialiasingLevelUI->label(), 0, 0);
 	layout->addLayout(antialiasingLevelUI->createFieldLayout(), 0, 1);
 	antialiasingLevelUI->setMinValue(1);

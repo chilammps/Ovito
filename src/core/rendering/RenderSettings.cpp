@@ -23,7 +23,7 @@
 #include <core/rendering/RenderSettings.h>
 #include <core/rendering/RenderSettingsEditor.h>
 #include <core/rendering/SceneRenderer.h>
-#include <core/rendering/viewport/ViewportSceneRenderer.h>
+#include <core/rendering/standard/StandardSceneRenderer.h>
 #include <core/viewport/Viewport.h>
 
 namespace Ovito {
@@ -83,7 +83,7 @@ RenderSettings::RenderSettings() :
 	setBackgroundColor(Color(1,1,1));
 
 	// Create an instance of the default renderer class.
-	setRendererClass(&ViewportSceneRenderer::OOType);
+	setRendererClass(&StandardSceneRenderer::OOType);
 }
 
 /******************************************************************************

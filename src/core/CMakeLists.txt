@@ -76,6 +76,7 @@ SET(OVITO_CORE_SOURCE_FILES
 	gui/actions/FileActions.cpp
 	gui/actions/ViewportActions.cpp
 	gui/actions/AnimationActions.cpp
+	gui/actions/RenderActions.cpp
 	gui/actions/ViewportModeAction.cpp
 	gui/undo/UndoManager.cpp
 	gui/widgets/RolloutContainer.cpp
@@ -84,6 +85,8 @@ SET(OVITO_CORE_SOURCE_FILES
 	gui/widgets/AnimationTimeSpinner.cpp
 	gui/widgets/AnimationFramesToolButton.cpp
 	gui/widgets/ElidedTextLabel.cpp
+	gui/widgets/FrameBufferWidget.cpp
+	gui/widgets/FrameBufferWindow.cpp
 	gui/properties/PropertiesEditor.cpp
 	gui/properties/PropertiesPanel.cpp
 	gui/properties/ParameterUI.cpp
@@ -114,11 +117,12 @@ SET(OVITO_CORE_SOURCE_FILES
 	utilities/opengl/SharedOpenGLResource.cpp
 	rendering/SceneRenderer.cpp
 	rendering/viewport/ViewportSceneRenderer.cpp
-	rendering/viewport/ViewportSceneRendererEditor.cpp
 	rendering/viewport/ViewportLineGeometryBuffer.cpp
 	rendering/viewport/ViewportParticleGeometryBuffer.cpp
 	rendering/viewport/ViewportTextGeometryBuffer.cpp
 	rendering/viewport/ViewportImageGeometryBuffer.cpp
+	rendering/standard/StandardSceneRenderer.cpp
+	rendering/standard/StandardSceneRendererEditor.cpp
 	rendering/RenderSettings.cpp
 	rendering/RenderSettingsEditor.cpp
 	rendering/FrameBuffer.cpp

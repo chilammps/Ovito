@@ -60,7 +60,7 @@ public:
 	virtual bool isValid(SceneRenderer* renderer) = 0;
 
 	/// \brief Renders the geometry.
-	virtual void render() = 0;
+	virtual void render(SceneRenderer* renderer) = 0;
 
 private:
 

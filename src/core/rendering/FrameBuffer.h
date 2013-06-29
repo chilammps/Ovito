@@ -32,22 +32,9 @@ namespace Ovito {
 class ImageInfo
 {
 public:
+
 	/// Default constructor.
 	ImageInfo() : _imageWidth(0), _imageHeight(0) {}
-
-	/// Copy constructor.
-	ImageInfo(const ImageInfo& other) 
-		: _imageWidth(other._imageWidth), _imageHeight(other._imageHeight),
-		  _filename(other._filename), _format(other._format) {}
-		  
-	/// Assignment operator.
-	ImageInfo& operator=(const ImageInfo& other) {
-		this->_imageWidth = other._imageWidth;
-		this->_imageHeight = other._imageHeight;
-		this->_filename = other._filename;
-		this->_format = other._format;
-		return *this; 
-	}
 
 	/// Comparison operator.
 	bool operator==(const ImageInfo& other) const {
@@ -60,21 +47,25 @@ public:
 	
 	/// Returns the width of the image in pixels.
 	int imageWidth() const { return _imageWidth; }
+
 	/// Sets the width of the image in pixels.
 	void setImageWidth(int width) { OVITO_ASSERT(width >= 0); _imageWidth = width; }
 	
 	/// Returns the height of the image in pixels.
 	int imageHeight() const { return _imageHeight; }
+
 	/// Sets the height of the image to be rendered in pixels.
 	void setImageHeight(int height) { OVITO_ASSERT(height >= 0); _imageHeight = height; }
 
 	/// Returns the filename of the image on disk.
 	const QString& filename() const { return _filename; }
+
 	/// Sets the filename of the image on disk.
 	void setFilename(const QString& filename) { _filename = filename; }
 
 	/// Returns the format of the image on disk.
 	const QByteArray& format() const { return _format; }
+
 	/// Sets the format of the image on disk.
 	void setFormat(const QByteArray& format) { _format = format; }
 	
@@ -82,6 +73,7 @@ private:
 
 	/// The width of the image in pixels.
 	int _imageWidth;
+
 	/// The height of the image in pixels.
 	int _imageHeight;
 	
@@ -108,20 +100,23 @@ class FrameBuffer : public QObject
 public:
 
 	/// Constructor.
-	FrameBuffer(QObject* owner = NULL) : QObject(owner) {}
+	FrameBuffer(QObject* parent = nullptr) : QObject(parent) {}
+
 	/// Constructor.
-	FrameBuffer(int width, int height, QObject* owner = NULL) : QObject(owner), _image(width, height, QImage::Format_ARGB32) {
+	FrameBuffer(int width, int height, QObject* parent = nullptr) : QObject(parent), _image(width, height, QImage::Format_ARGB32) {
 		_info.setImageWidth(width);
 		_info.setImageHeight(height);
 	}
 
 	/// Returns the internal QImage that is used to store the pixel data.
 	QImage& image() { return _image; }
+
 	/// Returns the internal QImage that is used to store the pixel data.
 	const QImage& image() const { return _image; }
 
 	/// Returns the width of the image.
 	int width() const { return info().imageWidth(); }
+
 	/// Returns the height of the image.
 	int height() const { return info().imageHeight(); }
 	

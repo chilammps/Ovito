@@ -50,18 +50,16 @@ class ViewportSceneRenderer : public SceneRenderer
 public:
 
 	/// Default constructor.
-	Q_INVOKABLE ViewportSceneRenderer() : _glcontext(nullptr), _antialiasingLevel(2), _modelViewTM(AffineTransformation::Identity()) {
-		INIT_PROPERTY_FIELD(ViewportSceneRenderer::_antialiasingLevel)
-	}
+	ViewportSceneRenderer() : _glcontext(nullptr), _modelViewTM(AffineTransformation::Identity()) {}
 
 	/// Renders the current animation frame.
-	virtual void renderFrame() override;
+	virtual bool renderFrame(FrameBuffer* frameBuffer, QProgressDialog* progress) override;
 
 	/// This method is called just before renderFrame() is called.
-	virtual void beginRender() override;
+	virtual void beginFrame(TimePoint time, const ViewProjectionParameters& params, Viewport* vp) override;
 
 	/// This method is called after renderFrame() has been called.
-	virtual void endRender() override;
+	virtual void endFrame() override;
 
 	/// Changes the current local to world transformation matrix.
 	virtual void setWorldTransform(const AffineTransformation& tm) override;
@@ -107,18 +105,8 @@ public:
 	/// Translates an OpenGL error code to a human-readable message string.
 	static const char* openglErrorString(GLenum errorCode);
 
-	/// Returns the number of sub-pixels to render.
-	int antialiasingLevel() const { return _antialiasingLevel; }
-
-	/// Sets the number of sub-pixels to render.
-	void setAntialiasingLevel(int newLevel) { _antialiasingLevel = newLevel; }
-
 	/// Loads and compiles an OpenGL shader program.
 	QOpenGLShaderProgram* loadShaderProgram(const QString& id, const QString& vertexShaderFile, const QString& fragmentShaderFile, const QString& geometryShaderFile = QString());
-
-public:
-
-	Q_PROPERTY(int antialiasingLevel READ antialiasingLevel WRITE setAntialiasingLevel)
 
 protected:
 
@@ -151,16 +139,11 @@ private:
 	/// The OpenGL surface format.
 	QSurfaceFormat _glformat;
 
-	/// Controls the number of sub-pixels to render.
-	PropertyField<int> _antialiasingLevel;
-
 	/// The current model-to-view transformation matrix.
 	AffineTransformation _modelViewTM;
 
 	Q_OBJECT
 	OVITO_OBJECT
-
-	DECLARE_PROPERTY_FIELD(_antialiasingLevel);
 };
 
 // OpenGL function call debugging macro

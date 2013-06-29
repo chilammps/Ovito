@@ -51,10 +51,10 @@ public:
 	virtual bool isValid(SceneRenderer* renderer) = 0;
 
 	/// \brief Renders the image in a rectangle given in pixel coordinates.
-	virtual void renderWindow(const Point2& pos, const Vector2& size) = 0;
+	virtual void renderWindow(SceneRenderer* renderer, const Point2& pos, const Vector2& size) = 0;
 
 	/// \brief Renders the image in a rectangle given in viewport coordinates.
-	virtual void renderViewport(const Point2& pos, const Vector2& size) = 0;
+	virtual void renderViewport(SceneRenderer* renderer, const Point2& pos, const Vector2& size) = 0;
 
 private:
 

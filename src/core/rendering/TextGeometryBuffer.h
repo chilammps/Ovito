@@ -66,7 +66,7 @@ public:
 	virtual bool isValid(SceneRenderer* renderer) = 0;
 
 	/// \brief Renders the text string at the given 2D location.
-	virtual void render(const Point2& pos) = 0;
+	virtual void render(SceneRenderer* renderer, const Point2& pos) = 0;
 
 private:
 

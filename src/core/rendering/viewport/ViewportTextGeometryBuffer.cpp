@@ -33,7 +33,6 @@ IMPLEMENT_OVITO_OBJECT(Core, ViewportTextGeometryBuffer, TextGeometryBuffer);
 * Constructor.
 ******************************************************************************/
 ViewportTextGeometryBuffer::ViewportTextGeometryBuffer(ViewportSceneRenderer* renderer) :
-	_renderer(renderer),
 	_contextGroup(QOpenGLContextGroup::currentContextGroup()),
 	_texture(0),
 	_needTextureUpdate(true),
@@ -91,18 +90,19 @@ bool ViewportTextGeometryBuffer::isValid(SceneRenderer* renderer)
 /******************************************************************************
 * Renders the geometry.
 ******************************************************************************/
-void ViewportTextGeometryBuffer::render(const Point2& pos)
+void ViewportTextGeometryBuffer::render(SceneRenderer* renderer, const Point2& pos)
 {
 	OVITO_ASSERT(_contextGroup == QOpenGLContextGroup::currentContextGroup());
 	OVITO_ASSERT(_texture != 0);
 	OVITO_STATIC_ASSERT(sizeof(FloatType) == sizeof(float) && sizeof(Point2) == sizeof(float)*2);
+	ViewportSceneRenderer* vpRenderer = dynamic_object_cast<ViewportSceneRenderer>(renderer);
 
-	if(text().isEmpty())
+	if(text().isEmpty() || !vpRenderer)
 		return;
 
 	// Prepare texture.
 	OVITO_CHECK_OPENGL(glBindTexture(GL_TEXTURE_2D, _texture));
-	renderer()->glfuncs()->glActiveTexture(GL_TEXTURE0);
+	vpRenderer->glfuncs()->glActiveTexture(GL_TEXTURE0);
 
 	if(_needTextureUpdate) {
 		_needTextureUpdate = false;

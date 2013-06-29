@@ -179,10 +179,10 @@ void ViewportWindow::renderNow()
 		_context = new QOpenGLContext(this);
 
 		// Look for other existing viewport windows that we can share the OpenGL context with.
-		QOpenGLContext* shareContext = NULL;
+		QOpenGLContext* shareContext = nullptr;
 		for(Viewport* vp : ViewportManager::instance().viewports()) {
 			if(vp != _viewport && vp->_viewportWindow) {
-				shareContext = vp->_viewportWindow->_context;
+				shareContext = vp->_viewportWindow->glcontext();
 				if(shareContext) break;
 			}
 		}
@@ -237,6 +237,7 @@ void ViewportWindow::renderNow()
 
 	_viewport->render(_context);
 	_context->swapBuffers(this);
+	_context->doneCurrent();
 }
 
 };

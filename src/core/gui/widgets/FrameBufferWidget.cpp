@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // 
-//  Copyright (2008) Alexander Stukowski
+//  Copyright (2013) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -20,14 +20,14 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include <core/rendering/FrameBufferWidget.h>
+#include "FrameBufferWidget.h"
 
-namespace Core {
+namespace Ovito {
 
 /******************************************************************************
 * Sets the FrameBuffer that is currently shown in the widget.
 ******************************************************************************/
-void FrameBufferWidget::setFrameBuffer(const boost::shared_ptr<FrameBuffer>& newFrameBuffer)
+void FrameBufferWidget::setFrameBuffer(const QSharedPointer<FrameBuffer>& newFrameBuffer)
 {
 	if(newFrameBuffer == frameBuffer()) return;	// Nothing has changed.
 	
@@ -56,8 +56,8 @@ void FrameBufferWidget::resizeEvent(QResizeEvent* event)
 }
 
 /******************************************************************************
-* Updates the ranges of the scrollbars after the size of the 
-* framebuffer or the widget have changed.
+* Updates the ranges of the scroll bars after the size of the
+* frame buffer or the widget have changed.
 ******************************************************************************/
 void FrameBufferWidget::updateScrollBars()
 {

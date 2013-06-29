@@ -45,14 +45,11 @@ SaveStream& operator<<(SaveStream& stream, const ImageInfo& i)
 ******************************************************************************/
 LoadStream& operator>>(LoadStream& stream, ImageInfo& i)
 {
-	int fileVersion = stream.expectChunkRange(0, IMAGE_FORMAT_FILE_FORMAT_VERSION);
+	stream.expectChunk(IMAGE_FORMAT_FILE_FORMAT_VERSION);
 	stream >> i._imageWidth;
 	stream >> i._imageHeight;
 	stream >> i._filename;
-	if(fileVersion >= 1) {
-		stream >> i._format;
-	}
-	else i._format = QFileInfo(i._filename).suffix().toUpper().toLocal8Bit();
+	stream >> i._format;
 	stream.closeChunk();
 	return stream;
 }

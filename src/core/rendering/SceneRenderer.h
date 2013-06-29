@@ -40,6 +40,8 @@ namespace Ovito {
 
 class DataSet;			// defined in DataSet.h
 class SceneNode;		// defined in SceneNode.h
+class RenderSettings;	// defined in RenderSettings.h
+class FrameBuffer;		// defined in FrameBuffer.h
 
 /**
  * \brief This is the base class for scene renderers.
@@ -51,36 +53,47 @@ public:
 	/// Returns the data set that is being rendered.
 	DataSet* dataset() const { return _dataset; }
 
-	/// Sets the data set that is being rendered.
-	void setDataset(DataSet* dataset) { _dataset = dataset; }
+	/// Returns the general rendering settings.
+	RenderSettings* renderSettings() const { return _settings; }
+
+	/// Prepares the renderer for rendering and sets the data set that is being rendered.
+	virtual bool startRender(DataSet* dataset, RenderSettings* settings) {
+		_dataset = dataset;
+		_settings = settings;
+		return true;
+	}
+
+	/// Is called after rendering has finished.
+	virtual void endRender() { _dataset = nullptr; _settings = nullptr; }
 
 	/// Returns the view projection parameters.
 	const ViewProjectionParameters& projParams() const { return _projParams; }
 
-	/// Sets the view projection parameters.
+	/// Changes the view projection parameters.
 	void setProjParams(const ViewProjectionParameters& params) { _projParams = params; }
 
 	/// Returns the animation time being rendered.
 	TimePoint time() const { return _time; }
 
-	/// Sets the animation time being rendered.
-	void setTime(TimePoint time) { _time = time; }
-
 	/// Returns the viewport whose contents are currently being rendered.
 	/// This may be NULL.
 	Viewport* viewport() const { return _viewport; }
 
-	/// Specifies the viewport whose contents are currently being rendered.
-	void setViewport(Viewport* vp) { _viewport = vp; }
-
 	/// This method is called just before renderFrame() is called.
-	virtual void beginRender() = 0;
+	/// Sets the view projection parameters, the animation frame to render.
+	/// and the viewport whose being rendered.
+	virtual void beginFrame(TimePoint time, const ViewProjectionParameters& params, Viewport* vp) {
+		_time = time;
+		setProjParams(params);
+		_viewport = vp;
+	}
 
 	/// Renders the current animation frame.
-	virtual void renderFrame() = 0;
+	/// Returns false if the operation has been canceled by the user.
+	virtual bool renderFrame(FrameBuffer* frameBuffer, QProgressDialog* progress) = 0;
 
 	/// This method is called after renderFrame() has been called.
-	virtual void endRender() = 0;
+	virtual void endFrame() {}
 
 	/// Changes the current local to world transformation matrix.
 	virtual void setWorldTransform(const AffineTransformation& tm) = 0;
@@ -112,6 +125,9 @@ private:
 
 	/// The data set that is being rendered.
 	DataSet* _dataset;
+
+	/// The general render settings.
+	RenderSettings* _settings;
 
 	/// The viewport whose contents are currently being rendered.
 	Viewport* _viewport;

@@ -19,8 +19,8 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef __OVITO_VIEWPORT_SCENE_RENDERER_EDITOR_H
-#define __OVITO_VIEWPORT_SCENE_RENDERER_EDITOR_H
+#ifndef __OVITO_STANDARD_SCENE_RENDERER_EDITOR_H
+#define __OVITO_STANDARD_SCENE_RENDERER_EDITOR_H
 
 #include <core/Core.h>
 #include <core/gui/properties/PropertiesEditor.h>
@@ -31,14 +31,14 @@ namespace Ovito {
 class ViewportSceneRenderer;		// defined in ViewportSceneRenderer.h
 
 /******************************************************************************
-* The editor component for the PreviewRenderer class.
+* The editor component for the StandardSceneRenderer class.
 ******************************************************************************/
-class ViewportSceneRendererEditor : public PropertiesEditor
+class StandardSceneRendererEditor : public PropertiesEditor
 {
 public:
 
 	/// Default constructor.
-	Q_INVOKABLE ViewportSceneRendererEditor() {}
+	Q_INVOKABLE StandardSceneRendererEditor() {}
 
 protected:
 	
@@ -53,4 +53,4 @@ private:
 
 };
 
-#endif // __OVITO_VIEWPORT_SCENE_RENDERER_EDITOR_H
+#endif // __OVITO_STANDARD_SCENE_RENDERER_EDITOR_H
