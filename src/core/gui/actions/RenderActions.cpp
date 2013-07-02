@@ -55,6 +55,10 @@ void ActionManager::on_RenderActiveViewport_triggered()
 		// Show progress dialog.
 		//QProgressDialog progressDialog(tr("Rendering ..."), MainWindow::instance());
 		QProgressDialog progressDialog(&MainWindow::instance());
+		progressDialog.setWindowModality(Qt::WindowModal);
+		progressDialog.setAutoClose(false);
+		progressDialog.setAutoReset(false);
+		progressDialog.setMinimumDuration(0);
 
 		// Allocate the frame buffer.
 		QSharedPointer<FrameBuffer> frameBuffer(new FrameBuffer(settings->outputImageWidth(), settings->outputImageHeight()));
@@ -97,13 +101,11 @@ void ActionManager::on_RenderActiveViewport_triggered()
 					numberOfFrames = (numberOfFrames + settings->everyNthFrame()-1) / settings->everyNthFrame();
 					if(numberOfFrames < 1)
 						throw Exception(tr("Invalid rendering range: Frame %1 to %2").arg(settings->customRangeStart()).arg(settings->customRangeEnd()));
-					//progress.setMaximum(numberOfFrames);
+					progressDialog.setMaximum(numberOfFrames);
 
 					// Render frames, one by one.
 					for(int frameIndex = 0; frameIndex < numberOfFrames; frameIndex++) {
-						//if(progress.isCanceled()) break;
-						//progress.setLabelText(tr("Rendering frame %1").arg(AnimManager::instance().timeToFrame(renderTime)));
-						//progress.setValue(frameIndex);
+						progressDialog.setValue(frameIndex);
 
 						int frameNumber = firstFrameNumber + frameIndex * settings->everyNthFrame() + settings->fileNumberBase();
 						if(renderFrame(renderTime, frameNumber, settings, renderer, viewport, frameBuffer.data(), progressDialog)) {
@@ -118,6 +120,9 @@ void ActionManager::on_RenderActiveViewport_triggered()
 								display->updateFrame();
 							}
 						}
+
+						if(progressDialog.wasCanceled())
+							break;
 
 						// Goto next animation frame.
 						renderTime += AnimManager::instance().ticksPerFrame() * settings->everyNthFrame();
@@ -162,6 +167,22 @@ bool ActionManager::renderFrame(TimePoint renderTime, int frameNumber, RenderSet
 		}
 	}
 
+	// Jump to animation time.
+	AnimManager::instance().setTime(renderTime);
+
+	// Wait until the scene is ready.
+	bool sceneIsReady = false;
+	DataSetManager::instance().runWhenSceneIsReady( [&sceneIsReady]() { sceneIsReady = true; } );
+	if(!sceneIsReady) {
+		progressDialog.setLabelText(tr("Rendering frame %1. Preparing scene...").arg(frameNumber));
+		while(!sceneIsReady) {
+			if(progressDialog.wasCanceled())
+				return false;
+			QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents, 200);
+		}
+	}
+	progressDialog.setLabelText(tr("Rendering frame %1.").arg(frameNumber));
+
 	// Request scene bounding box.
 	Box3 boundingBox = DataSetManager::instance().currentSet()->sceneRoot()->worldBoundingBox(renderTime);
 	if(boundingBox.isEmpty())
@@ -173,8 +194,9 @@ bool ActionManager::renderFrame(TimePoint renderTime, int frameNumber, RenderSet
 	// Render one frame.
 	frameBuffer->clear();
 	renderer->beginFrame(renderTime, projParams, viewport);
-	if(!renderer->renderFrame(frameBuffer, &progressDialog)) {
+	if(!renderer->renderFrame(frameBuffer, &progressDialog) || progressDialog.wasCanceled()) {
 		progressDialog.cancel();
+		renderer->endFrame();
 		return false;
 	}
 	renderer->endFrame();
@@ -185,7 +207,7 @@ bool ActionManager::renderFrame(TimePoint renderTime, int frameNumber, RenderSet
 			throw Exception(tr("Failed to save rendered image to image file '%1'.").arg(imageFilename));
 	}
 
-	return true;
+	return !progressDialog.wasCanceled();
 }
 
 };

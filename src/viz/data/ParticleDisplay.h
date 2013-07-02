@@ -52,6 +52,9 @@ public:
 	/// \brief Computes the bounding box of the object.
 	virtual Box3 boundingBox(TimePoint time, SceneObject* sceneObject, ObjectNode* contextNode, const PipelineFlowState& flowState) override;
 
+	/// \brief Returns the title of this object.
+	virtual QString objectTitle() override { return tr("Particle display"); }
+
 	/// \brief Returns the default display radius of atomic particles.
 	FloatType defaultParticleRadius() const { return _defaultParticleRadius; }
 

@@ -64,7 +64,8 @@ SET(OVITO_CORE_SOURCE_FILES
 	gui/mainwin/cmdpanel/CommandPanel.cpp
 	gui/mainwin/cmdpanel/RenderCommandPage.cpp
 	gui/mainwin/cmdpanel/ModifyCommandPage.cpp
-	gui/mainwin/cmdpanel/ModifierStack.cpp
+	gui/mainwin/cmdpanel/ModificationListModel.cpp
+	gui/mainwin/cmdpanel/ModificationListItem.cpp
 	gui/mainwin/cmdpanel/UtilityCommandPage.cpp
 	gui/mainwin/cmdpanel/UtilityApplet.cpp
 	gui/dialogs/ApplicationSettingsDialog.cpp

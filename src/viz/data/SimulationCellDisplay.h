@@ -51,6 +51,9 @@ public:
 	/// \brief Lets the display object render a scene object.
 	virtual void render(TimePoint time, SceneObject* sceneObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode) override;
 
+	/// \brief Returns the title of this object.
+	virtual QString objectTitle() override { return tr("Simulation cell display"); }
+
 	/// \brief Returns the line width used to render the simulation cell box.
 	/// \return The line with in world units or zero if the simulation box is not rendered.
 	FloatType simulationCellLineWidth() const { return _simulationCellLineWidth; }

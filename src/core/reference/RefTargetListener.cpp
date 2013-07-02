@@ -25,32 +25,9 @@
 namespace Ovito {
 
 IMPLEMENT_OVITO_OBJECT(Core, RefTargetListener, RefMaker)
+IMPLEMENT_OVITO_OBJECT(Core, VectorRefTargetListener, RefMaker)
 DEFINE_FLAGS_REFERENCE_FIELD(RefTargetListener, _target, "Target", RefTarget, PROPERTY_FIELD_NEVER_CLONE_TARGET|PROPERTY_FIELD_NO_UNDO|PROPERTY_FIELD_NO_CHANGE_MESSAGE)
-
-/******************************************************************************
-* Constructor.
-******************************************************************************/
-RefTargetListener::RefTargetListener()
-{
-	INIT_PROPERTY_FIELD(RefTargetListener::_target);
-}
-
-/******************************************************************************
-* Destructor.
-******************************************************************************/
-RefTargetListener::~RefTargetListener()
-{
-	clearAllReferences();
-}
-
-
-/******************************************************************************
-* Deletes this object when it is no longer needed.
-******************************************************************************/
-void RefTargetListener::autoDeleteObject()
-{
-	OVITO_ASSERT_MSG(false, "RefTargetListener::autoDeleteObject()", "Invalid use of this class. A RefTargetListener should not be used with smart pointers.");
-}
+DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(VectorRefTargetListener, _targets, "Targets", RefTarget, PROPERTY_FIELD_NEVER_CLONE_TARGET|PROPERTY_FIELD_NO_UNDO|PROPERTY_FIELD_NO_CHANGE_MESSAGE)
 
 /******************************************************************************
 * Is called when the RefTarget referenced by this listener has sent a message.
@@ -58,8 +35,19 @@ void RefTargetListener::autoDeleteObject()
 bool RefTargetListener::referenceEvent(RefTarget* source, ReferenceEvent* event)
 {
 	// Emit Qt signal.
-	notificationEvent(event);
+	Q_EMIT notificationEvent(event);
 	
+	return RefMaker::referenceEvent(source, event);
+}
+
+/******************************************************************************
+* Is called when the RefTarget referenced by this listener has sent a message.
+******************************************************************************/
+bool VectorRefTargetListener::referenceEvent(RefTarget* source, ReferenceEvent* event)
+{
+	// Emit Qt signal.
+	Q_EMIT notificationEvent(source, event);
+
 	return RefMaker::referenceEvent(source, event);
 }
 

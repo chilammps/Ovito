@@ -1,0 +1,287 @@
+///////////////////////////////////////////////////////////////////////////////
+//
+//  Copyright (2013) Alexander Stukowski
+//
+//  This file is part of OVITO (Open Visualization Tool).
+//
+//  OVITO is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation; either version 2 of the License, or
+//  (at your option) any later version.
+//
+//  OVITO is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+///////////////////////////////////////////////////////////////////////////////
+
+#include <core/Core.h>
+#include <core/scene/objects/SceneObject.h>
+#include <core/scene/pipeline/PipelineObject.h>
+#include <core/scene/pipeline/Modifier.h>
+#include <core/scene/ObjectNode.h>
+#include <core/viewport/ViewportManager.h>
+#include <core/gui/actions/ActionManager.h>
+#include "ModificationListModel.h"
+#include "ModifyCommandPage.h"
+
+namespace Ovito {
+
+/******************************************************************************
+* Populates the model with the given list items.
+******************************************************************************/
+void ModificationListModel::setItems(const QVector<OORef<ModificationListItem>>& newItems)
+{
+	beginResetModel();
+	_items = newItems;
+	for(const auto& item : _items) {
+		connect(item.get(), SIGNAL(itemChanged(ModificationListItem*)), this, SLOT(refreshItem(ModificationListItem*)));
+		connect(item.get(), SIGNAL(subitemsChanged(ModificationListItem*)), this, SLOT(requestUpdate()));
+	}
+	endResetModel();
+}
+
+/******************************************************************************
+* Returns the currently selected item in the modification list.
+******************************************************************************/
+ModificationListItem* ModificationListModel::selectedItem() const
+{
+	QModelIndexList selection = _selectionModel->selectedRows();
+	if(selection.empty())
+		return nullptr;
+	else
+		return item(selection.front().row());
+}
+
+/******************************************************************************
+* Completely rebuilds the modifier list.
+******************************************************************************/
+void ModificationListModel::refreshList()
+{
+	_needListUpdate = false;
+	UndoSuspender noUndo;
+
+	// Determine the currently selected object and
+	// select it again after the list has been rebuilt (and it is still there).
+	// If _currentObject is already non-NULL then the caller
+	// has specified an object to be selected.
+	if(_nextToSelectObject == nullptr) {
+		ModificationListItem* item = selectedItem();
+		if(item)
+			_nextToSelectObject = item->object();
+	}
+
+	// Collect all selected ObjectNodes.
+	// Also check if all selected object nodes reference the same scene object.
+	_selectedNodes.clear();
+    SceneObject* cmnObject = nullptr;
+	for(SceneNode* node : DataSetManager::instance().currentSelection()->nodes()) {
+		if(node->isObjectNode()) {
+			ObjectNode* objNode = static_object_cast<ObjectNode>(node);
+			_selectedNodes.push_back(objNode);
+
+			if(cmnObject == nullptr) cmnObject = objNode->sceneObject();
+			else if(cmnObject != objNode->sceneObject()) {
+				cmnObject = nullptr;
+				break;	// The scene nodes are not compatible.
+			}
+		}
+	}
+
+	QVector<OORef<ModificationListItem>> items;
+	if(cmnObject) {
+
+		// Create list items for display objects.
+		for(RefTarget* objNode : _selectedNodes.targets()) {
+			for(DisplayObject* displayObj : static_object_cast<ObjectNode>(objNode)->displayObjects())
+				items.push_back(new ModificationListItem(displayObj));
+		}
+
+		// Walk up the pipeline.
+		do {
+			OVITO_CHECK_OBJECT_POINTER(cmnObject);
+
+			// Create entries for the modifier applications if this is a PipelineObject.
+			PipelineObject* modObj = dynamic_object_cast<PipelineObject>(cmnObject);
+			if(modObj) {
+				for(int i = modObj->modifierApplications().size(); i--; ) {
+					ModifierApplication* app = modObj->modifierApplications()[i];
+					ModificationListItem* item = new ModificationListItem(app->modifier());
+					item->setModifierApplications({1, app});
+					items.push_back(item);
+				}
+			}
+
+			// Create an entry for the scene object.
+            items.push_back(new ModificationListItem(cmnObject));
+
+            // Create list items for the object's editable sub-objects.
+            for(int i = 0; i < cmnObject->editableSubObjectCount(); i++) {
+            	RefTarget* subobject = cmnObject->editableSubObject(i);
+            	if(subobject != NULL && subobject->isSubObjectEditable()) {
+            		items.push_back(new ModificationListItem(subobject, true));
+            	}
+            }
+
+			// In case the current object has multiple input slots, determine if they all point to the same input object.
+			SceneObject* nextObj = nullptr;
+			for(int i = 0; i < cmnObject->inputObjectCount(); i++) {
+				if(!nextObj)
+					nextObj = cmnObject->inputObject(i);
+				else if(nextObj != cmnObject->inputObject(i)) {
+					nextObj = nullptr;  // The input objects do not match.
+					break;
+				}
+			}
+			cmnObject = nextObj;
+		}
+		while(cmnObject != nullptr);
+	}
+
+	// Don't show PipelineObject if it is empty and on top of the stack.
+	if(!items.isEmpty() && dynamic_object_cast<PipelineObject>(items.front()->object())) {
+		items.pop_front();
+	}
+
+	int selIndex = 0;
+	for(int index = 0; index < items.size(); index++) {
+		if(_nextToSelectObject == items[index]->object()) {
+			selIndex = index;
+			break;
+		}
+	}
+	setItems(items);
+	_nextToSelectObject = nullptr;
+
+	// Select the right item in the list box.
+	if(!items.empty())
+		_selectionModel->select(index(selIndex), QItemSelectionModel::SelectCurrent | QItemSelectionModel::Clear);
+}
+
+/******************************************************************************
+* Handles notification events generated by the selected object nodes.
+******************************************************************************/
+void ModificationListModel::onNodeEvent(RefTarget* source, ReferenceEvent* event)
+{
+	// Update the entire modification list if the ObjectNode has been assigned a new
+	// scene object, or if the list of display objects has changed.
+	if(event->type() == ReferenceEvent::ReferenceChanged || event->type() == ReferenceEvent::ReferenceAdded || event->type() == ReferenceEvent::ReferenceRemoved) {
+		requestUpdate();
+	}
+}
+
+/******************************************************************************
+* Updates the appearance of a single list item.
+******************************************************************************/
+void ModificationListModel::refreshItem(ModificationListItem* item)
+{
+	OVITO_CHECK_OBJECT_POINTER(item);
+	int i = _items.indexOf(item);
+	if(i != -1) {
+		Q_EMIT dataChanged(index(i), index(i));
+
+		// Also update available actions if the changed item is currently selected.
+		if(selectedItem() == item)
+			Q_EMIT selectedItemChanged();
+	}
+}
+
+/******************************************************************************
+* Inserts the given modifier into the modification pipeline of the
+* selected scene nodes.
+******************************************************************************/
+void ModificationListModel::applyModifier(Modifier* modifier)
+{
+	// Get the selected stack entry. The new modifier is inserted just behind it.
+	ModificationListItem* currentItem = selectedItem();
+
+	// On the next list update, the new modifier should be selected.
+	_nextToSelectObject = modifier;
+
+	if(currentItem) {
+		if(dynamic_object_cast<Modifier>(currentItem->object())) {
+			for(ModifierApplication* modApp : currentItem->modifierApplications()) {
+				PipelineObject* pipelineObj = modApp->pipelineObject();
+				OVITO_CHECK_OBJECT_POINTER(pipelineObj);
+				pipelineObj->insertModifier(modifier, pipelineObj->modifierApplications().indexOf(modApp) + 1);
+			}
+			return;
+		}
+		else if(dynamic_object_cast<PipelineObject>(currentItem->object())) {
+			PipelineObject* pipelineObj = static_object_cast<PipelineObject>(currentItem->object());
+			OVITO_CHECK_OBJECT_POINTER(pipelineObj);
+			pipelineObj->insertModifier(modifier, 0);
+			return;
+		}
+	}
+
+	// Apply modifier to each selected node.
+	for(RefTarget* objNode : _selectedNodes.targets()) {
+		static_object_cast<ObjectNode>(objNode)->applyModifier(modifier);
+	}
+}
+
+/******************************************************************************
+* Is called by the system when the animated status icon changed.
+******************************************************************************/
+void ModificationListModel::iconAnimationFrameChanged()
+{
+	bool stopMovie = true;
+	for(int i = 0; i < _items.size(); i++) {
+		if(_items[i]->status() == ModificationListItem::Pending) {
+			dataChanged(index(i), index(i), { Qt::DecorationRole });
+			stopMovie = false;
+		}
+	}
+	if(stopMovie)
+		_statusPendingIcon.stop();
+}
+
+/******************************************************************************
+* Returns the data for the QListView widget.
+******************************************************************************/
+QVariant ModificationListModel::data(const QModelIndex& index, int role) const
+{
+	OVITO_ASSERT(index.row() >= 0 && index.row() < _items.size());
+
+	ModificationListItem* item = this->item(index.row());
+
+	if(role == Qt::DisplayRole) {
+		QString title;
+		RefTarget* object = item->object();
+		if(dynamic_object_cast<PipelineObject>(object)) {
+			title = "---------------------";
+		}
+		else {
+			if(item->isSubObject())
+				title = "   " + object->objectTitle();
+			else
+				title = object->objectTitle();
+		}
+		return title;
+	}
+	else if(role == Qt::DecorationRole) {
+		switch(item->status()) {
+		case ModificationListItem::Enabled: return qVariantFromValue(_modifierEnabledIcon);
+		case ModificationListItem::Disabled: return qVariantFromValue(_modifierDisabledIcon);
+		case ModificationListItem::Info: return qVariantFromValue(_statusInfoIcon);
+		case ModificationListItem::Warning: return qVariantFromValue(_statusWarningIcon);
+		case ModificationListItem::Error: return qVariantFromValue(_statusErrorIcon);
+		case ModificationListItem::Pending:
+			const_cast<QMovie&>(_statusPendingIcon).start();
+			return qVariantFromValue(_statusPendingIcon.currentImage());
+		case ModificationListItem::None: return QVariant();
+		}
+	}
+	else if(role == Qt::ToolTipRole) {
+		return item->toolTip();
+	}
+
+	return QVariant();
+}
+
+};

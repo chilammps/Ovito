@@ -67,7 +67,7 @@ protected Q_SLOTS:
 			}
 		}
 		if(animSettings->namedFrames().isEmpty()) {
-			QAction* action = menu.addAction(tr("No animation frames"));
+			QAction* action = menu.addAction(tr("No animation frames loaded"));
 			action->setEnabled(false);
 		}
 

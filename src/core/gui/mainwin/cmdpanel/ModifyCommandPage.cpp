@@ -28,7 +28,7 @@
 #include <core/gui/undo/UndoManager.h>
 #include <core/gui/actions/ActionManager.h>
 #include "ModifyCommandPage.h"
-#include "ModifierStack.h"
+#include "ModificationListModel.h"
 
 namespace Ovito {
 
@@ -39,16 +39,14 @@ ModifyCommandPage::ModifyCommandPage()
 {
 	scanInstalledModifierClasses();
 
-	stack = new ModifierStack(this);
-
 	QVBoxLayout* layout = new QVBoxLayout(this);
 	layout->setContentsMargins(2,2,2,2);
 	layout->setSpacing(0);
 
-	modifierSelector = new QComboBox();
+	_modifierSelector = new QComboBox();
 	layout->addSpacing(4);
-    layout->addWidget(modifierSelector);
-    connect(modifierSelector, SIGNAL(activated(int)), this, SLOT(onModifierAdd(int)));
+    layout->addWidget(_modifierSelector);
+    connect(_modifierSelector, SIGNAL(activated(int)), this, SLOT(onModifierAdd(int)));
 
 	class ModifierStackListView : public QListView {
 	public:
@@ -63,14 +61,16 @@ ModifyCommandPage::ModifyCommandPage()
 	splitter->addWidget(upperContainer);
 	QHBoxLayout* subLayout = new QHBoxLayout(upperContainer);
 	subLayout->setContentsMargins(0,0,0,0);
-	subLayout->setSpacing(0);
+	subLayout->setSpacing(2);
 
-	stackBox = new ModifierStackListView(upperContainer);
-	stackBox->setModel(stack->listModel());
-	connect(stackBox->selectionModel(), SIGNAL(selectionChanged(const QItemSelection&, const QItemSelection&)), this, SLOT(onModifierStackSelectionChanged()));
-	connect(stackBox, SIGNAL(doubleClicked(const QModelIndex&)), this, SLOT(onModifierStackDoubleClicked(const QModelIndex&)));
+	_modificationListModel = new ModificationListModel(this);
+	_modificationListWidget = new ModifierStackListView(upperContainer);
+	_modificationListWidget->setModel(_modificationListModel);
+	_modificationListWidget->setSelectionModel(_modificationListModel->selectionModel());
+	connect(_modificationListModel, SIGNAL(selectedItemChanged()), this, SLOT(onSelectedItemChanged()));
+	connect(_modificationListWidget, SIGNAL(doubleClicked(const QModelIndex&)), this, SLOT(onModifierStackDoubleClicked(const QModelIndex&)));
 	layout->addSpacing(4);
-	subLayout->addWidget(stackBox);
+	subLayout->addWidget(_modificationListWidget);
 
 	QToolBar* editToolbar = new QToolBar(this);
 	editToolbar->setOrientation(Qt::Vertical);
@@ -106,12 +106,12 @@ ModifyCommandPage::ModifyCommandPage()
 	layout->addSpacing(4);
 
 	// Create the properties panel.
-	propertiesPanel = new PropertiesPanel(NULL);
-	propertiesPanel->setFrameStyle(QFrame::NoFrame | QFrame::Plain);
-	splitter->addWidget(propertiesPanel);
+	_propertiesPanel = new PropertiesPanel(nullptr);
+	_propertiesPanel->setFrameStyle(QFrame::NoFrame | QFrame::Plain);
+	splitter->addWidget(_propertiesPanel);
 	splitter->setStretchFactor(1,1);
 
-	connect(&selectionSetListener, SIGNAL(notificationEvent(ReferenceEvent*)), this, SLOT(onSelectionSetEvent(ReferenceEvent*)));
+	connect(&_selectionSetListener, SIGNAL(notificationEvent(ReferenceEvent*)), this, SLOT(onSelectionSetEvent(ReferenceEvent*)));
 }
 
 /******************************************************************************
@@ -121,7 +121,7 @@ void ModifyCommandPage::scanInstalledModifierClasses()
 {
 	// Create an iterator that retrieves all available modifiers.
 	Q_FOREACH(const OvitoObjectType* clazz, PluginManager::instance().listClasses(Modifier::OOType)) {
-		modifierClasses.push_back(clazz);
+		_modifierClasses.push_back(clazz);
 	}
 }
 
@@ -139,6 +139,7 @@ void ModifyCommandPage::reset()
 void ModifyCommandPage::onEnter()
 {
 	CommandPanelPage::onEnter();
+
 	// Update everything.
 	onSelectionChangeComplete(DataSetManager::instance().currentSelection());
 }
@@ -149,9 +150,8 @@ void ModifyCommandPage::onEnter()
 void ModifyCommandPage::onLeave()
 {
 	CommandPanelPage::onLeave();
-	stack->clearStack();
-	stack->validate();
-	selectionSetListener.setTarget(NULL);
+	_modificationListModel->clear();
+	_selectionSetListener.setTarget(nullptr);
 }
 
 /******************************************************************************
@@ -159,9 +159,10 @@ void ModifyCommandPage::onLeave()
 ******************************************************************************/
 void ModifyCommandPage::onSelectionChangeComplete(SelectionSet* newSelection)
 {
-	selectionSetListener.setTarget(newSelection);
-	stack->validate();
-	stack->refreshModifierStack();
+	// Make sure we get informed about any future changes of the selection set.
+	_selectionSetListener.setTarget(newSelection);
+
+	_modificationListModel->refreshList();
 }
 
 /******************************************************************************
@@ -173,11 +174,61 @@ void ModifyCommandPage::onSelectionSetEvent(ReferenceEvent* event)
 }
 
 /******************************************************************************
-* Is called when the user has selected another item in the modifier stack list box.
+* Is called when a new modification list item has been selected, or if the currently
+* selected item has changed.
 ******************************************************************************/
-void ModifyCommandPage::onModifierStackSelectionChanged()
+void ModifyCommandPage::onSelectedItemChanged()
 {
-	stack->updatePropertiesPanel();
+	ModificationListItem* currentItem = _modificationListModel->selectedItem();
+	RefTarget* object = currentItem ? currentItem->object() : nullptr;
+
+	_propertiesPanel->setEditObject(object);
+	//updateAvailableModifiers(currentItem);
+	updateActions(currentItem);
+}
+
+/******************************************************************************
+* Updates the state of the actions that can be invoked on the currently selected item.
+******************************************************************************/
+void ModifyCommandPage::updateActions(ModificationListItem* currentItem)
+{
+	QAction* deleteModifierAction = ActionManager::instance().getAction(ACTION_MODIFIER_DELETE);
+	QAction* moveModifierUpAction = ActionManager::instance().getAction(ACTION_MODIFIER_MOVE_UP);
+	QAction* moveModifierDownAction = ActionManager::instance().getAction(ACTION_MODIFIER_MOVE_DOWN);
+	QAction* toggleModifierStateAction = ActionManager::instance().getAction(ACTION_MODIFIER_TOGGLE_STATE);
+
+	Modifier* modifier = currentItem ? dynamic_object_cast<Modifier>(currentItem->object()) : nullptr;
+	if(modifier) {
+		deleteModifierAction->setEnabled(true);
+		if(currentItem->modifierApplications().size() == 1) {
+			ModifierApplication* modApp = currentItem->modifierApplications()[0];
+			PipelineObject* pipelineObj = modApp->pipelineObject();
+			if(pipelineObj) {
+				OVITO_ASSERT(pipelineObj->modifierApplications().contains(modApp));
+				moveModifierUpAction->setEnabled(modApp != pipelineObj->modifierApplications().back());
+				moveModifierDownAction->setEnabled(modApp != pipelineObj->modifierApplications().front());
+			}
+		}
+		else {
+			moveModifierUpAction->setEnabled(false);
+			moveModifierDownAction->setEnabled(false);
+		}
+		if(modifier) {
+			toggleModifierStateAction->setEnabled(true);
+			toggleModifierStateAction->setChecked(modifier->isEnabled() == false);
+		}
+		else {
+			toggleModifierStateAction->setChecked(false);
+			toggleModifierStateAction->setEnabled(false);
+		}
+	}
+	else {
+		deleteModifierAction->setEnabled(false);
+		moveModifierUpAction->setEnabled(false);
+		moveModifierDownAction->setEnabled(false);
+		toggleModifierStateAction->setChecked(false);
+		toggleModifierStateAction->setEnabled(false);
+	}
 }
 
 /******************************************************************************
@@ -185,8 +236,8 @@ void ModifyCommandPage::onModifierStackSelectionChanged()
 ******************************************************************************/
 void ModifyCommandPage::onModifierAdd(int index)
 {
-	if(index >= 0 && stack->isValid()) {
-		OvitoObjectType* descriptor = (OvitoObjectType*)modifierSelector->itemData(index).value<void*>();
+	if(index >= 0 && _modificationListModel->isUpToDate()) {
+		OvitoObjectType* descriptor = (OvitoObjectType*)_modifierSelector->itemData(index).value<void*>();
 		if(descriptor) {
 			UndoManager::instance().beginCompoundOperation(tr("Apply modifier"));
 			try {
@@ -194,16 +245,16 @@ void ModifyCommandPage::onModifierAdd(int index)
 				OORef<Modifier> modifier = static_object_cast<Modifier>(descriptor->createInstance());
 				OVITO_CHECK_OBJECT_POINTER(modifier);
 				// .. and apply it.
-				stack->applyModifier(modifier.get());
+				_modificationListModel->applyModifier(modifier.get());
 			}
 			catch(const Exception& ex) {
 				ex.showError();
 				UndoManager::instance().currentCompoundOperation()->clear();
 			}
 			UndoManager::instance().endCompoundOperation();
-			stack->invalidate();
+			_modificationListModel->requestUpdate();
 		}
-		modifierSelector->setCurrentIndex(0);
+		_modifierSelector->setCurrentIndex(0);
 	}
 }
 
@@ -212,19 +263,17 @@ void ModifyCommandPage::onModifierAdd(int index)
 ******************************************************************************/
 void ModifyCommandPage::onDeleteModifier()
 {
-	// Get the selected modifier from the modifier stack box.
-	QModelIndexList selection = stackBox->selectionModel()->selectedRows();
-	if(selection.empty()) return;
-	ModifierStackEntry* selEntry = (ModifierStackEntry*)selection.front().data(Qt::UserRole).value<void*>();
-	OVITO_CHECK_OBJECT_POINTER(selEntry);
+	// Get the currently selected modifier.
+	ModificationListItem* selectedItem = _modificationListModel->selectedItem();
+	if(!selectedItem) return;
 
-	Modifier* modifier = dynamic_object_cast<Modifier>(selEntry->commonObject());
+	Modifier* modifier = dynamic_object_cast<Modifier>(selectedItem->object());
 	if(!modifier) return;
 
 	UndoManager::instance().beginCompoundOperation(tr("Delete modifier"));
 	try {
 		// Remove each ModifierApplication from the ModifiedObject it belongs to.
-		Q_FOREACH(ModifierApplication* modApp, selEntry->modifierApplications()) {
+		Q_FOREACH(ModifierApplication* modApp, selectedItem->modifierApplications()) {
 			OVITO_ASSERT(modApp->modifier() == modifier);
 			modApp->pipelineObject()->removeModifier(modApp);
 		}
@@ -234,7 +283,6 @@ void ModifyCommandPage::onDeleteModifier()
 		UndoManager::instance().currentCompoundOperation()->clear();
 	}
 	UndoManager::instance().endCompoundOperation();
-	stack->invalidate();
 }
 
 /******************************************************************************
@@ -242,17 +290,15 @@ void ModifyCommandPage::onDeleteModifier()
 ******************************************************************************/
 void ModifyCommandPage::onModifierStackDoubleClicked(const QModelIndex& index)
 {
-	ModifierStackEntry* entry = (ModifierStackEntry*)index.data(Qt::UserRole).value<void*>();
-	OVITO_CHECK_OBJECT_POINTER(entry);
+	ModificationListItem* item = _modificationListModel->item(index.row());
+	OVITO_CHECK_OBJECT_POINTER(item);
 
-	Modifier* modifier = dynamic_object_cast<Modifier>(entry->commonObject());
+	Modifier* modifier = dynamic_object_cast<Modifier>(item->object());
 	if(modifier) {
 		// Toggle enabled state of modifier.
 		UndoManager::instance().beginCompoundOperation(tr("Toggle modifier state"));
 		try {
-#if 0
-			modifier->setModifierEnabled(!modifier->isModifierEnabled());
-#endif
+			modifier->setEnabled(!modifier->isEnabled());
 		}
 		catch(const Exception& ex) {
 			ex.showError();
@@ -263,89 +309,90 @@ void ModifyCommandPage::onModifierStackDoubleClicked(const QModelIndex& index)
 }
 
 /******************************************************************************
-* Handles the ACTION_MODIFIER_MOVE_UP command, which moves the selected modifier up one entry in the stack.
+* Handles the ACTION_MODIFIER_MOVE_UP command, which moves the selected
+* modifier up one position in the stack.
 ******************************************************************************/
 void ModifyCommandPage::onModifierMoveUp()
 {
-	// Get the selected modifier from the modifier stack box.
-	QModelIndexList selection = stackBox->selectionModel()->selectedRows();
-	if(selection.empty()) return;
+	// Get the currently selected modifier.
+	ModificationListItem* selectedItem = _modificationListModel->selectedItem();
+	if(!selectedItem) return;
 
-	ModifierStackEntry* selectedEntry = (ModifierStackEntry*)selection.front().data(Qt::UserRole).value<void*>();
-	OVITO_CHECK_OBJECT_POINTER(selectedEntry);
+	if(selectedItem->modifierApplications().size() != 1)
+		return;
 
-	if(selectedEntry->modifierApplications().size() != 1) return;
+	OORef<ModifierApplication> modApp = selectedItem->modifierApplications()[0];
+	OORef<PipelineObject> pipelineObj = modApp->pipelineObject();
+	if(!pipelineObj) return;
 
-	OORef<ModifierApplication> modApp = selectedEntry->modifierApplications()[0];
-	OORef<PipelineObject> modObj = modApp->pipelineObject();
-	if(modObj == NULL) return;
-
-	OVITO_ASSERT(modObj->modifierApplications().contains(modApp.get()));
-	if(modApp == modObj->modifierApplications().back()) return;
+	OVITO_ASSERT(pipelineObj->modifierApplications().contains(modApp.get()));
+	if(modApp == pipelineObj->modifierApplications().back())
+		return;
 
 	UndoManager::instance().beginCompoundOperation(tr("Move modifier up"));
 	try {
 		// Determine old position in stack.
-		int index = modObj->modifierApplications().indexOf(modApp.get());
+		int index = pipelineObj->modifierApplications().indexOf(modApp.get());
 		// Remove ModifierApplication from the ModifiedObject.
-		modObj->removeModifier(modApp.get());
+		pipelineObj->removeModifier(modApp.get());
 		// Re-insert ModifierApplication into the ModifiedObject.
-		modObj->insertModifierApplication(modApp.get(), index+1);
+		pipelineObj->insertModifierApplication(modApp.get(), index+1);
 	}
 	catch(const Exception& ex) {
 		ex.showError();
 		UndoManager::instance().currentCompoundOperation()->clear();
 	}
 	UndoManager::instance().endCompoundOperation();
-	stack->invalidate();
 }
 
 /******************************************************************************
-* Handles the ACTION_MODIFIER_MOVE_DOWN command, which moves the selected modifier down one entry in the stack.
+* Handles the ACTION_MODIFIER_MOVE_DOWN command, which moves the selected
+* modifier down one position in the stack.
 ******************************************************************************/
 void ModifyCommandPage::onModifierMoveDown()
 {
-	// Get the selected modifier from the modifier stack box.
-	QModelIndexList selection = stackBox->selectionModel()->selectedRows();
-	if(selection.empty()) return;
+	// Get the currently selected modifier.
+	ModificationListItem* selectedItem = _modificationListModel->selectedItem();
+	if(!selectedItem) return;
 
-	ModifierStackEntry* selectedEntry = (ModifierStackEntry*)selection.front().data(Qt::UserRole).value<void*>();
-	OVITO_CHECK_OBJECT_POINTER(selectedEntry);
+	if(selectedItem->modifierApplications().size() != 1)
+		return;
 
-	if(selectedEntry->modifierApplications().size() != 1) return;
+	OORef<ModifierApplication> modApp = selectedItem->modifierApplications()[0];
+	OORef<PipelineObject> pipelineObj = modApp->pipelineObject();
+	if(!pipelineObj)
+		return;
 
-	OORef<ModifierApplication> modApp = selectedEntry->modifierApplications()[0];
-	OORef<PipelineObject> modObj = modApp->pipelineObject();
-	if(modObj == NULL) return;
-
-	OVITO_ASSERT(modObj->modifierApplications().contains(modApp.get()));
-	if(modApp == modObj->modifierApplications().front()) return;
+	OVITO_ASSERT(pipelineObj->modifierApplications().contains(modApp.get()));
+	if(modApp == pipelineObj->modifierApplications().front())
+		return;
 
 	UndoManager::instance().beginCompoundOperation(tr("Move modifier down"));
 	try {
 		// Determine old position in stack.
-		int index = modObj->modifierApplications().indexOf(modApp.get());
+		int index = pipelineObj->modifierApplications().indexOf(modApp.get());
 		// Remove ModifierApplication from the ModifiedObject.
-		modObj->removeModifier(modApp.get());
+		pipelineObj->removeModifier(modApp.get());
 		// Re-insert ModifierApplication into the ModifiedObject.
-		modObj->insertModifierApplication(modApp.get(), index-1);
+		pipelineObj->insertModifierApplication(modApp.get(), index-1);
 	}
 	catch(const Exception& ex) {
 		ex.showError();
 		UndoManager::instance().currentCompoundOperation()->clear();
 	}
 	UndoManager::instance().endCompoundOperation();
-	stack->invalidate();
 }
 
 /******************************************************************************
-* Handles the ACTION_MODIFIER_TOGGLE_STATE command, which toggles the enabled/disable state of the selected modifier.
+* Handles the ACTION_MODIFIER_TOGGLE_STATE command, which toggles the
+* enabled/disable state of the selected modifier.
 ******************************************************************************/
 void ModifyCommandPage::onModifierToggleState(bool newState)
 {
 	// Get the selected modifier from the modifier stack box.
-	QModelIndexList selection = stackBox->selectionModel()->selectedRows();
-	if(selection.empty()) return;
+	QModelIndexList selection = _modificationListWidget->selectionModel()->selectedRows();
+	if(selection.empty())
+		return;
 
 	onModifierStackDoubleClicked(selection.front());
 }

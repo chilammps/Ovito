@@ -487,6 +487,14 @@ public:
 		return *this;
 	}
 
+	/// Assigns the given list of targets to this vector reference field.
+	VectorReferenceField& operator=(const RefTargetVector& other) {
+		clear();
+		for(const_iterator o = other.begin(); o != other.end(); ++o)
+			push_back(*o);
+		return *this;
+	}
+
 	/// Returns the stored references as a QVector.
 	const RefTargetVector& targets() const { return reinterpret_cast<const RefTargetVector&>(pointers); }
 };

@@ -89,7 +89,7 @@ protected Q_SLOTS:
 		if(newTime > AnimManager::instance().animationInterval().end())
 			newTime = AnimManager::instance().animationInterval().start();
 
-		// Set new time
+		// Set new time.
 		AnimManager::instance().setTime(newTime);
 
 		// Wait until the scene is ready. Then jump to the next frame.
