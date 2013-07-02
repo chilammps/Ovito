@@ -34,19 +34,18 @@ namespace Ovito {
 
 class SceneObject;			// defined in SceneObject.h
 class Modifier;				// defined in Modifier.h
-class ModifyCommandPage;	// defined in ModifyCommandPage.h
 
 /*
  * This Qt model class is used to populate the QListView widget.
  */
-class ModificationListModel : public QAbstractListModel
+class ModificationListModel : public QAbstractItemModel
 {
 	Q_OBJECT
 
 public:
 
 	/// Constructor.
-	ModificationListModel(QObject* parent) : QAbstractListModel(parent),
+	ModificationListModel(QObject* parent) : QAbstractItemModel(parent),
 		_nextToSelectObject(nullptr), _needListUpdate(false),
 		_statusInfoIcon(":/core/mainwin/status/status_info.png"),
 		_statusWarningIcon(":/core/mainwin/status/status_warning.png"),
@@ -58,6 +57,12 @@ public:
 		_selectionModel = new QItemSelectionModel(this);
 		connect(_selectionModel, SIGNAL(selectionChanged(const QItemSelection&, const QItemSelection&)), this, SIGNAL(selectedItemChanged()));
 		connect(&_selectedNodes, SIGNAL(notificationEvent(RefTarget*, ReferenceEvent*)), this, SIGNAL(onNodeEvent(RefTarget*, ReferenceEvent*)));
+	}
+
+	QModelIndex TreeModel::index(int row, int column, const QModelIndex &parent) const override {
+		if(!hasIndex(row, column, parent))
+			return QModelIndex();
+		if(!parent.isValid())
 	}
 
 	/// Returns the number of list items.
