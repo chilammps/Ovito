@@ -26,6 +26,7 @@ SET(OVITO_VIZ_SOURCE_FILES
 	data/ParticleProperty.cpp
 	data/ParticleDisplay.cpp
 	importer/AtomsImporter.cpp
+	importer/InputColumnMapping.cpp
 	importer/lammps/LAMMPSTextDumpImporter.cpp
 	importer/lammps/LAMMPSDumpImporterSettingsDialog.cpp
 )

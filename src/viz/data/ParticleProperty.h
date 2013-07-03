@@ -56,7 +56,7 @@ public:
 		ClusterProperty = -11,
 		CoordinationProperty = -12,
 		StructureTypeProperty = -13,
-		IndexProperty = -14,
+		IdentifierProperty = -14,
 		StressTensorProperty = -15,
 		StrainTensorProperty = -16,
 		DeformationGradientProperty = -17,

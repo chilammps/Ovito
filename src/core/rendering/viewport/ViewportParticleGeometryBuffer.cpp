@@ -217,7 +217,7 @@ void ViewportParticleGeometryBuffer::renderPointSprites(ViewportSceneRenderer* r
 	if(shadingMode() != FlatShading)
 		activateBillboardTexture();
 
-	// Enable point sprites iwhen Using OpenGL 3.0/3.1. For new versions, they are already enabled by default.
+	// Enable point sprites when Using OpenGL 3.0/3.1. For later versions, they are already enabled by default.
 	if(renderer->glformat().profile() != QSurfaceFormat::CoreProfile)
 		OVITO_CHECK_OPENGL(glEnable(GL_POINT_SPRITE));
 
@@ -245,6 +245,9 @@ void ViewportParticleGeometryBuffer::renderPointSprites(ViewportSceneRenderer* r
 		OVITO_CHECK_OPENGL(renderer->glfuncs32()->glPointParameterf(GL_POINT_FADE_THRESHOLD_SIZE, 0.0f));
 		OVITO_CHECK_OPENGL(renderer->glfuncs32()->glPointParameterf(GL_POINT_SIZE_MIN, 0.01f));
 	}
+	else {
+		OVITO_ASSERT(false);
+	}
 
 	// Activate OpenGL shader program.
 	QOpenGLShaderProgram* shader =
@@ -254,8 +257,6 @@ void ViewportParticleGeometryBuffer::renderPointSprites(ViewportSceneRenderer* r
 	if(!shader->bind())
 		throw Exception(tr("Failed to bind OpenGL shader program."));
 
-	// Let the vertex shader compute the point size.
-	OVITO_CHECK_OPENGL(glEnable(GL_VERTEX_PROGRAM_POINT_SIZE));
 	shader->setUniformValue("basePointSize", param);
 	shader->setUniformValue("projection_matrix", (QMatrix4x4)renderer->projParams().projectionMatrix);
 	shader->setUniformValue("modelview_matrix", (QMatrix4x4)renderer->modelViewTM());
@@ -278,13 +279,16 @@ void ViewportParticleGeometryBuffer::renderPointSprites(ViewportSceneRenderer* r
 	shader->enableAttributeArray("particle_radius");
 	_glRadiiBuffer.release();
 
+	// Let the vertex shader compute the point size.
+	OVITO_CHECK_OPENGL(glEnable(GL_VERTEX_PROGRAM_POINT_SIZE));
+
 	OVITO_CHECK_OPENGL(glDrawArrays(GL_POINTS, 0, _particleCount));
 
+	OVITO_CHECK_OPENGL(glDisable(GL_VERTEX_PROGRAM_POINT_SIZE));
 	shader->disableAttributeArray("particle_pos");
 	shader->disableAttributeArray("particle_color");
 	shader->disableAttributeArray("particle_radius");
 	shader->release();
-	OVITO_CHECK_OPENGL(glDisable(GL_VERTEX_PROGRAM_POINT_SIZE));
 }
 
 /******************************************************************************

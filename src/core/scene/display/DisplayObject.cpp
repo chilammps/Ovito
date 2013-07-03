@@ -26,12 +26,15 @@
 namespace Ovito {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, DisplayObject, RefTarget)
+DEFINE_PROPERTY_FIELD(DisplayObject, _isEnabled, "IsEnabled")
+SET_PROPERTY_FIELD_LABEL(DisplayObject, _isEnabled, "Enabled")
 
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-DisplayObject::DisplayObject()
+DisplayObject::DisplayObject() : _isEnabled(true)
 {
+	INIT_PROPERTY_FIELD(DisplayObject::_isEnabled);
 }
 
 };

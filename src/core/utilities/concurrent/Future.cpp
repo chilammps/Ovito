@@ -28,7 +28,7 @@
 namespace Ovito {
 
 enum {
-    MaxProgressEmitsPerSecond = 10
+    MaxProgressEmitsPerSecond = 20
 };
 
 void FutureInterfaceBase::cancel()

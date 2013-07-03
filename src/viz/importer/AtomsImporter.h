@@ -48,7 +48,7 @@ using namespace Ovito;
  */
 class AtomsImporter : public LinkedFileImporter
 {
-protected:
+public:
 
 	/**
 	 * Data structure that holds the data read by the parseFile() function.
@@ -71,13 +71,19 @@ protected:
 		const std::array<bool,3>& pbcFlags() const { return _pbcFlags; }
 
 		/// Sets the PBC flags.
-		vois setPbcFlags(const std::array<bool,3>& flags) { _pbcFlags = flags; }
+		void setPbcFlags(const std::array<bool,3>& flags) { _pbcFlags = flags; }
+
+		/// Sets the PBC flags.
+		void setPbcFlags(bool pbcX, bool pbcY, bool pbcZ) { _pbcFlags[0] = pbcX; _pbcFlags[1] = pbcY; _pbcFlags[2] = pbcZ; }
 
 		/// Returns the list of particle properties.
 		const std::vector<QExplicitlySharedDataPointer<ParticleProperty>>& particleProperties() const { return _properties; }
 
 		/// Adds a new particle property.
 		void addParticleProperty(const QExplicitlySharedDataPointer<ParticleProperty>& property) { _properties.push_back(property); }
+
+		/// Removes a particle property from the list.
+		void removeParticleProperty(int index) { _properties.erase(_properties.begin() + index); }
 
 	private:
 

@@ -39,7 +39,7 @@ public:
 
 	/// Constructor that opens the input stream.
 	CompressedTextParserStream(QIODevice& input) :
-		_device(input), _lineNumber(0), /*_byteOffset(0),*/ _uncompressor(&input)
+		_device(input), _lineNumber(0), /*_byteOffset(0),*/ _uncompressor(&input, 6, 0x100000)
 	{
 		// Try to find out what the filename is.
 		QFileDevice* fileDevice = qobject_cast<QFileDevice*>(&input);

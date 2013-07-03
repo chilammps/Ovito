@@ -56,7 +56,7 @@ bool ModificationListItem::referenceEvent(RefTarget* source, ReferenceEvent* eve
 	{
 		Q_EMIT subitemsChanged(this);
 	}
-	/// Update a modifier entry if the modifier has been enabled or disabled.
+	/// Update item if an object has been enabled or disabled.
 	else if(event->type() == ReferenceEvent::TargetEnabledOrDisabled && source == object() && event->sender() == object()) {
 		Q_EMIT itemChanged(this);
 	}

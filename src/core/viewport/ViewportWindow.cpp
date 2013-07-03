@@ -213,7 +213,9 @@ void ViewportWindow::renderNow()
 			QCoreApplication::instance()->quit();
 		}
 
-		if(!shareContext) {
+		static bool firstTime = true;
+		if(!shareContext && firstTime) {
+			firstTime = false;
 			_context->makeCurrent(this);
 			QSurfaceFormat format = _context->format();
 			qDebug() << "OpenGL depth buffer size:" << format.depthBufferSize();

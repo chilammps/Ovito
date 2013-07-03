@@ -75,9 +75,6 @@ public:
 	/// \brief Renders the geometry.
 	virtual void render(SceneRenderer* renderer) override;
 
-	/// \brief Returns the renderer that created this buffer object.
-	//ViewportSceneRenderer* renderer() const { return _renderer; }
-
 protected:
 
     /// This method that takes care of freeing the shared OpenGL resources owned by this class.
@@ -96,9 +93,6 @@ protected:
 	void renderRaytracedSpheres(ViewportSceneRenderer* renderer);
 
 private:
-
-	/// The renderer that created this buffer object.
-	//ViewportSceneRenderer* _renderer;
 
 	/// The internal OpenGL vertex buffer that stores the particle positions.
 	QOpenGLBuffer _glPositionsBuffer;
@@ -119,10 +113,10 @@ private:
 	GLuint _billboardTexture;
 
 	/// The OpenGL shader programs that are used to render the particles.
-	QOpenGLShaderProgram* _flatImposterShader;
-	QOpenGLShaderProgram* _shadedImposterShaderWithoutDepth;
-	QOpenGLShaderProgram* _shadedImposterShaderWithDepth;
-	QOpenGLShaderProgram* _raytracedSphereShader;
+	QPointer<QOpenGLShaderProgram> _flatImposterShader;
+	QPointer<QOpenGLShaderProgram> _shadedImposterShaderWithoutDepth;
+	QPointer<QOpenGLShaderProgram> _shadedImposterShaderWithDepth;
+	QPointer<QOpenGLShaderProgram> _raytracedSphereShader;
 
 	Q_OBJECT
 	OVITO_OBJECT

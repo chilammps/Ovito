@@ -62,7 +62,7 @@ ParticleProperty::ParticleProperty(Type type, size_t componentCount)
 	case SelectionProperty:
 	case ClusterProperty:
 	case CoordinationProperty:
-	case IndexProperty:
+	case IdentifierProperty:
 		_dataType = qMetaTypeId<int>();
 		_dataTypeSize = sizeof(int);
 		_componentCount = 1;
@@ -317,7 +317,7 @@ QString ParticleProperty::standardPropertyName(Type which)
 	case TotalEnergyProperty: return ParticlePropertyObject::tr("Total Energy");
 	case RadiusProperty: return ParticlePropertyObject::tr("Radius");
 	case StructureTypeProperty: return ParticlePropertyObject::tr("Structure Type");
-	case IndexProperty: return ParticlePropertyObject::tr("Atom Index");
+	case IdentifierProperty: return ParticlePropertyObject::tr("Particle Index");
 	case StressTensorProperty: return ParticlePropertyObject::tr("Stress Tensor");
 	case StrainTensorProperty: return ParticlePropertyObject::tr("Strain Tensor");
 	case DeformationGradientProperty: return ParticlePropertyObject::tr("Deformation Gradient");
@@ -343,7 +343,7 @@ int ParticleProperty::standardPropertyDataType(Type which)
 	case SelectionProperty:
 	case ClusterProperty:
 	case CoordinationProperty:
-	case IndexProperty:
+	case IdentifierProperty:
 	case PeriodicImageProperty:
 		return qMetaTypeId<int>();
 	case PositionProperty:
@@ -388,7 +388,7 @@ QMap<QString, ParticleProperty::Type> ParticleProperty::standardPropertyList()
 		table.insert(standardPropertyName(TotalEnergyProperty), TotalEnergyProperty);
 		table.insert(standardPropertyName(RadiusProperty), RadiusProperty);
 		table.insert(standardPropertyName(StructureTypeProperty), StructureTypeProperty);
-		table.insert(standardPropertyName(IndexProperty), IndexProperty);
+		table.insert(standardPropertyName(IdentifierProperty), IdentifierProperty);
 		table.insert(standardPropertyName(StressTensorProperty), StressTensorProperty);
 		table.insert(standardPropertyName(StrainTensorProperty), StrainTensorProperty);
 		table.insert(standardPropertyName(DeformationGradientProperty), DeformationGradientProperty);
@@ -412,7 +412,7 @@ size_t ParticleProperty::standardPropertyComponentCount(Type which)
 	case SelectionProperty:
 	case ClusterProperty:
 	case CoordinationProperty:
-	case IndexProperty:
+	case IdentifierProperty:
 	case PotentialEnergyProperty:
 	case KineticEnergyProperty:
 	case TotalEnergyProperty:
@@ -458,7 +458,7 @@ QStringList ParticleProperty::standardPropertyComponentNames(Type which, size_t 
 	case SelectionProperty:
 	case ClusterProperty:
 	case CoordinationProperty:
-	case IndexProperty:
+	case IdentifierProperty:
 	case PotentialEnergyProperty:
 	case KineticEnergyProperty:
 	case TotalEnergyProperty:

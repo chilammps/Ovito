@@ -48,7 +48,6 @@ ModificationListModel::ModificationListModel(QObject* parent) : QAbstractListMod
 	_selectionModel = new QItemSelectionModel(this);
 	connect(_selectionModel, SIGNAL(selectionChanged(const QItemSelection&, const QItemSelection&)), this, SIGNAL(selectedItemChanged()));
 	connect(&_selectedNodes, SIGNAL(notificationEvent(RefTarget*, ReferenceEvent*)), this, SLOT(onNodeEvent(RefTarget*, ReferenceEvent*)));
-	_sectionHeaderFont.setItalic(true);
 	if(_sectionHeaderFont.pixelSize() < 0)
 		_sectionHeaderFont.setPointSize(_sectionHeaderFont.pointSize() * 4 / 5);
 	else
@@ -125,7 +124,7 @@ void ModificationListModel::refreshList()
 				items.push_back(new ModificationListItem(displayObj));
 		}
 		if(!items.empty())
-			items.push_front(new ModificationListItem(nullptr, false, tr("Display properties")));
+			items.push_front(new ModificationListItem(nullptr, false, tr("Display")));
 
 		// Walk up the pipeline.
 		do {
@@ -308,7 +307,7 @@ QVariant ModificationListModel::data(const QModelIndex& index, int role) const
 	else if(role == Qt::CheckStateRole) {
 		DisplayObject* displayObj = dynamic_object_cast<DisplayObject>(item->object());
 		if(displayObj)
-			return Qt::Checked;
+			return displayObj->isEnabled() ? Qt::Checked : Qt::Unchecked;
 		Modifier* modifier = dynamic_object_cast<Modifier>(item->object());
 		if(modifier)
 			return modifier->isEnabled() ? Qt::Checked : Qt::Unchecked;
@@ -335,6 +334,43 @@ QVariant ModificationListModel::data(const QModelIndex& index, int role) const
 	}
 
 	return QVariant();
+}
+
+/******************************************************************************
+* Changes the data associated with a list entry.
+******************************************************************************/
+bool ModificationListModel::setData(const QModelIndex& index, const QVariant& value, int role)
+{
+	if(role == Qt::CheckStateRole) {
+		ModificationListItem* item = this->item(index.row());
+		DisplayObject* displayObj = dynamic_object_cast<DisplayObject>(item->object());
+		if(displayObj) {
+			UndoManager::instance().beginCompoundOperation(tr("Enable/disable display"));
+			try {
+				displayObj->setEnabled(value == Qt::Checked);
+			}
+			catch(const Exception& ex) {
+				ex.showError();
+				UndoManager::instance().currentCompoundOperation()->clear();
+			}
+			UndoManager::instance().endCompoundOperation();
+		}
+		else {
+			Modifier* modifier = dynamic_object_cast<Modifier>(item->object());
+			if(modifier) {
+				UndoManager::instance().beginCompoundOperation(tr("Enable/disable modifier"));
+				try {
+					modifier->setEnabled(value == Qt::Checked);
+				}
+				catch(const Exception& ex) {
+					ex.showError();
+					UndoManager::instance().currentCompoundOperation()->clear();
+				}
+				UndoManager::instance().endCompoundOperation();
+			}
+		}
+	}
+	return QAbstractListModel::setData(index, value, role);
 }
 
 /******************************************************************************

@@ -61,12 +61,14 @@ bool StandardSceneRenderer::startRender(DataSet* dataset, RenderSettings* settin
 		}
 	}
 	_offscreenContext.reset(new QOpenGLContext());
+#ifndef Q_OS_LINUX	// Do not use resource sharing on Linux, because of segmentation fault in Gallium driver.
 	_offscreenContext->setShareContext(shareContext);
+#endif
 	_offscreenContext->setFormat(format);
 	if(!_offscreenContext->create())
 		throw Exception(tr("Failed to create OpenGL context."));
 	if(shareContext && _offscreenContext->shareContext() != shareContext)
-		qWarning() << "Offscreen OpenGL context cannot share with viewport contexts.";
+		qWarning() << "Offscreen OpenGL context cannot share resources with viewport contexts.";
 
 	// Create offscreen buffer.
 	_offscreenSurface.setFormat(_offscreenContext->format());
@@ -93,6 +95,23 @@ bool StandardSceneRenderer::startRender(DataSet* dataset, RenderSettings* settin
 				.arg(QString((const char*)glGetString(GL_VERSION)))
 				);
 	}
+
+#if 0
+	{
+	QSurfaceFormat format = _offscreenContext->format();
+	qDebug() << "OpenGL depth buffer size:" << format.depthBufferSize();
+	qDebug() << "OpenGL stencil buffer size:" << format.stencilBufferSize();
+	(qDebug() << "OpenGL version:").nospace() << format.majorVersion() << "." << format.minorVersion();
+	qDebug() << "OpenGL profile:" << (format.profile() == QSurfaceFormat::CoreProfile ? "core" : (format.profile() == QSurfaceFormat::CompatibilityProfile ? "compatibility" : "none"));
+	qDebug() << "OpenGL has alpha:" << format.hasAlpha();
+	qDebug() << "OpenGL samples:" << format.samples();
+	qDebug() << "OpenGL swap behavior:" << format.swapBehavior();
+	qDebug() << "OpenGL vendor: " << QString((const char*)glGetString(GL_VENDOR));
+	qDebug() << "OpenGL renderer: " << QString((const char*)glGetString(GL_RENDERER));
+	qDebug() << "OpenGL version string: " << QString((const char*)glGetString(GL_VERSION));
+	qDebug() << "OpenGL shading language: " << QString((const char*)glGetString(GL_SHADING_LANGUAGE_VERSION));
+	}
+#endif
 
 	// Create OpenGL framebuffer.
 	QOpenGLFramebufferObjectFormat framebufferFormat;

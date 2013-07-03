@@ -53,6 +53,9 @@ public:
 	/// Returns the data associated with a list entry.
 	virtual QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
+	/// Changes the data associated with a list entry.
+	virtual bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole) override;
+
 	/// Returns the flags for an item.
 	virtual Qt::ItemFlags flags(const QModelIndex& index) const override;
 

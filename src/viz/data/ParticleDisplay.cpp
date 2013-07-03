@@ -125,7 +125,7 @@ void ParticleDisplay::render(TimePoint time, SceneObject* sceneObject, const Pip
 		_particleBuffer = renderer->createParticleGeometryBuffer();
 
 	// Re-size the geometry buffer if necessary.
-	if(recreateBuffer)
+	if(resizeBuffer)
 		_particleBuffer->setSize(particleCount);
 
 	// Update buffers.
@@ -162,7 +162,7 @@ void ParticleDisplay::render(TimePoint time, SceneObject* sceneObject, const Pip
 void ParticleDisplayEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
 	// Create a rollout.
-	QWidget* rollout = createRollout(tr("AParticle display"), rolloutParams);
+	QWidget* rollout = createRollout(tr("Particle display"), rolloutParams);
 
     // Create the rollout contents.
 	QGridLayout* layout = new QGridLayout(rollout);
@@ -173,9 +173,6 @@ void ParticleDisplayEditor::createUI(const RolloutInsertionParameters& rolloutPa
 	layout->setColumnStretch(1, 1);
 
 #if 0
-	BooleanPropertyUI* showAtomsUI = new BooleanPropertyUI(this, "isVisible", tr("Show atoms"));
-	layout->addWidget(showAtomsUI->checkBox(), 0, 0, 1, 3);
-
 	BooleanPropertyUI* highQualityDisplayUI = new BooleanPropertyUI(this, PROPERTY_FIELD_DESCRIPTOR(PositionDataChannel, _useHighQualityRenderingInViewports));
 	layout->addWidget(highQualityDisplayUI->checkBox(), 1, 0, 1, 3);
 
@@ -185,8 +182,8 @@ void ParticleDisplayEditor::createUI(const RolloutInsertionParameters& rolloutPa
 
 	// Default radius parameter.
 	FloatParameterUI* radiusUI = new FloatParameterUI(this, PROPERTY_FIELD(ParticleDisplay::_defaultParticleRadius));
-	layout->addWidget(radiusUI->label(), 3, 0);
-	layout->addLayout(radiusUI->createFieldLayout(), 3, 1);
+	layout->addWidget(radiusUI->label(), 2, 0);
+	layout->addLayout(radiusUI->createFieldLayout(), 2, 1);
 	radiusUI->setMinValue(0);
 }
 

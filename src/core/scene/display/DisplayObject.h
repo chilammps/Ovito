@@ -77,11 +77,26 @@ public:
 	/// The default implementation returns \c true.
 	virtual bool showSelectionMarker() { return true; }
 
+	/// \brief Returns whether this display object is currently enabled.
+	bool isEnabled() const { return _isEnabled; }
+
+	/// \brief Enables or disables this display object.
+	/// \undoable
+	void setEnabled(bool enabled) { _isEnabled = enabled; }
+
+public:
+
+	Q_PROPERTY(bool isEnabled READ isEnabled WRITE setEnabled)
+
 private:
 
+	/// Flag that indicates whether the modifier is enabled.
+	PropertyField<bool, bool, ReferenceEvent::TargetEnabledOrDisabled> _isEnabled;
 
 	Q_OBJECT
 	OVITO_OBJECT
+
+	DECLARE_PROPERTY_FIELD(_isEnabled);
 };
 
 /**

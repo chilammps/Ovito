@@ -24,6 +24,7 @@
 #include <core/utilities/concurrent/Future.h>
 #include "LAMMPSTextDumpImporter.h"
 #include "LAMMPSDumpImporterSettingsDialog.h"
+#include <viz/importer/InputColumnMapping.h>
 
 namespace Viz {
 
@@ -64,8 +65,11 @@ void LAMMPSTextDumpImporter::parseFile(FutureInterface<ImportedDataPtr>& futureI
 {
 	futureInterface.setProgressText(tr("Loading LAMMPS dump file..."));
 
+	// Regular expression for whitespace characters.
+	QRegularExpression ws_re(QStringLiteral("\\s+"));
+
 	int timestep;
-	unsigned int numAtoms = 0;
+	size_t numParticles = 0;
 
 	while(!stream.eof()) {
 
@@ -80,19 +84,20 @@ void LAMMPSTextDumpImporter::parseFile(FutureInterface<ImportedDataPtr>& futureI
 			}
 			else if(stream.line().startsWith("ITEM: NUMBER OF ATOMS")) {
 				// Parse number of atoms.
-				if(sscanf(stream.readLine().constData(), "%u", &numAtoms) != 1 || numAtoms > 1e9)
+				unsigned int u;
+				if(sscanf(stream.readLine().constData(), "%u", &u) != 1 || u > 1e9)
 					throw Exception(tr("LAMMPS dump file parsing error. Invalid number of atoms in line %1:\n%2").arg(stream.lineNumber()).arg(stream.lineString()));
 
-				futureInterface.setProgressRange(numAtoms);
+				numParticles = u;
+				futureInterface.setProgressRange(u);
 				break;
 			}
 			else if(stream.line().startsWith("ITEM: BOX BOUNDS xy xz yz")) {
+
 				// Parse optional boundary condition flags.
-				std::istringstream ss(std::string(stream.line()).substr(qstrlen("ITEM: BOX BOUNDS xy xz yz")));
-				std::string pbcx, pbcy, pbcz;
-				ss >> pbcx >> pbcy >> pbcz;
-				if(pbcx.length() == 2 && pbcy.length() == 2 && pbcz.length() == 2)
-					container.setPbcFlags(pbcx == "pp", pbcy == "pp", pbcz == "pp");
+				QStringList tokens = stream.lineString().mid(qstrlen("ITEM: BOX BOUNDS xy xz yz")).split(ws_re, QString::SkipEmptyParts);
+				if(tokens.size() >= 3)
+					container.setPbcFlags(tokens[0] == "pp", tokens[1] == "pp", tokens[2] == "pp");
 
 				// Parse triclinic simulation box.
 				FloatType tiltFactors[3];
@@ -112,90 +117,85 @@ void LAMMPSTextDumpImporter::parseFile(FutureInterface<ImportedDataPtr>& futureI
 						Vector3(simBox.sizeX(), 0, 0),
 						Vector3(tiltFactors[0], simBox.sizeY(), 0),
 						Vector3(tiltFactors[1], tiltFactors[2], simBox.sizeZ()),
-						simBox.minc));
+						simBox.minc - Point3::Origin()));
 				break;
 			}
 			else if(stream.line().startsWith("ITEM: BOX BOUNDS")) {
 				// Parse optional boundary condition flags.
-				istringstream ss(stream.line().substr(qstrlen("ITEM: BOX BOUNDS")));
-				string pbcx, pbcy, pbcz;
-				ss >> pbcx >> pbcy >> pbcz;
-				if(pbcx.length() == 2 && pbcy.length() == 2 && pbcz.length() == 2)
-					destination->simulationCell()->setPeriodicity(pbcx == "pp", pbcy == "pp", pbcz == "pp");
+				QStringList tokens = stream.lineString().mid(qstrlen("ITEM: BOX BOUNDS xy xz yz")).split(ws_re, QString::SkipEmptyParts);
+				if(tokens.size() >= 3)
+					container.setPbcFlags(tokens[0] == "pp", tokens[1] == "pp", tokens[2] == "pp");
 
 				// Parse orthogonal simulation box size.
-				for(size_t k=0; k<3; k++) {
-					if(sscanf(stream.readline().c_str(), FLOAT_SCANF_STRING_2, &simBox.minc[k], &simBox.maxc[k]) != 2)
-						throw Exception(tr("Invalid box size in line %1 of dump file: %2").arg(stream.lineNumber()).arg(stream.line().c_str()));
+				Box3 simBox;
+				for(int k = 0; k < 3; k++) {
+					if(sscanf(stream.readLine().constData(), FLOAT_SCANF_STRING_2, &simBox.minc[k], &simBox.maxc[k]) != 2)
+						throw Exception(tr("Invalid box size in line %1 of dump file: %2").arg(stream.lineNumber()).arg(stream.lineString()));
 				}
-				destination->simulationCell()->setBoxShape(simBox);
+
+				container.setSimulationCell(AffineTransformation(
+						Vector3(simBox.sizeX(), 0, 0),
+						Vector3(0, simBox.sizeY(), 0),
+						Vector3(0, 0, simBox.sizeZ()),
+						simBox.minc - Point3::Origin()));
 				break;
 			}
 			else if(stream.line().startsWith("ITEM: ATOMS")) {
-				// Parse atom coordinates.
-				destination->setAtomsCount(numAtoms);
 
-				// Prepare the mapping between input file columns and data channels.
-				DataRecordParserHelper recordParser(&columnMapping(), destination);
+				// Read the column names list.
+				QStringList tokens = stream.lineString().split(ws_re, QString::SkipEmptyParts);
+				OVITO_ASSERT(tokens[0] == "ITEM:" && tokens[1] == "ATOMS");
+				QStringList columnNames = tokens.mid(2);
 
-				// Parse one atom per line.
-				for(int i = 0; i < numAtoms; i++) {
-
-					// Update progress indicator.
-					if((i % 4096) == 0) {
-						progress.setValue(i);
-						if(progress.isCanceled()) return EvaluationStatus(EvaluationStatus::EVALUATION_ERROR);
-					}
-
-					stream.readline();
-					try {
-						recordParser.storeAtom(i, (char*)stream.line().c_str());
-					}
-					catch(Exception& ex) {
-						throw ex.prependGeneralMessage(tr("Parsing error in line %1 of LAMMPS dump file.").arg(stream.lineNumber()));
-					}
+				// Set up column-to-property mapping.
+				InputColumnMapping columnMapping;
+				for(int i = 0; i < columnNames.size(); i++) {
+					QString name = columnNames[i].toLower();
+					if(name == "x" || name == "xu" || name == "xs" || name == "coordinates") columnMapping.mapStandardColumn(i, ParticleProperty::PositionProperty, 0, name);
+					else if(name == "y" || name == "yu" || name == "ys") columnMapping.mapStandardColumn(i, ParticleProperty::PositionProperty, 1, name);
+					else if(name == "z" || name == "zu" || name == "zs") columnMapping.mapStandardColumn(i, ParticleProperty::PositionProperty, 2, name);
+					else if(name == "vx" || name == "velocities") columnMapping.mapStandardColumn(i, ParticleProperty::VelocityProperty, 0, name);
+					else if(name == "vy") columnMapping.mapStandardColumn(i, ParticleProperty::VelocityProperty, 1, name);
+					else if(name == "vz") columnMapping.mapStandardColumn(i, ParticleProperty::VelocityProperty, 2, name);
+					else if(name == "id") columnMapping.mapStandardColumn(i, ParticleProperty::IdentifierProperty, 0, name);
+					else if(name == "type" || name == "atom_types") columnMapping.mapStandardColumn(i, ParticleProperty::ParticleTypeProperty, 0, name);
+					else if(name == "mass") columnMapping.mapStandardColumn(i, ParticleProperty::MassProperty, 0, name);
+					else if(name == "ix") columnMapping.mapStandardColumn(i, ParticleProperty::PeriodicImageProperty, 0, name);
+					else if(name == "iy") columnMapping.mapStandardColumn(i, ParticleProperty::PeriodicImageProperty, 1, name);
+					else if(name == "iz") columnMapping.mapStandardColumn(i, ParticleProperty::PeriodicImageProperty, 2, name);
+					else if(name == "fx" || name == "forces") columnMapping.mapStandardColumn(i, ParticleProperty::ForceProperty, 0, name);
+					else if(name == "fy") columnMapping.mapStandardColumn(i, ParticleProperty::ForceProperty, 1, name);
+					else if(name == "fz") columnMapping.mapStandardColumn(i, ParticleProperty::ForceProperty, 2, name);
+					else if(name == "c_cna" || name == "pattern") columnMapping.mapStandardColumn(i, ParticleProperty::StructureTypeProperty, 0, name);
+					else if(name == "c_epot") columnMapping.mapStandardColumn(i, ParticleProperty::PotentialEnergyProperty, 0, name);
+					else if(name == "c_kpot") columnMapping.mapStandardColumn(i, ParticleProperty::KineticEnergyProperty, 0, name);
+					else if(name == "c_stress[1]") columnMapping.mapStandardColumn(i, ParticleProperty::StressTensorProperty, 0, name);
+					else if(name == "c_stress[2]") columnMapping.mapStandardColumn(i, ParticleProperty::StressTensorProperty, 1, name);
+					else if(name == "c_stress[3]") columnMapping.mapStandardColumn(i, ParticleProperty::StressTensorProperty, 2, name);
+					else if(name == "c_stress[4]") columnMapping.mapStandardColumn(i, ParticleProperty::StressTensorProperty, 3, name);
+					else if(name == "c_stress[5]") columnMapping.mapStandardColumn(i, ParticleProperty::StressTensorProperty, 4, name);
+					else if(name == "c_stress[6]") columnMapping.mapStandardColumn(i, ParticleProperty::StressTensorProperty, 5, name);
+					else if(name == "selection") columnMapping.mapStandardColumn(i, ParticleProperty::SelectionProperty, 0, name);
 				}
 
-				if(recordParser.coordinatesOutOfRange()) {
-					MsgLogger() << "WARNING: At least some of the atomic coordinates are out of the valid range." << endl;
-					if(APPLICATION_MANAGER.guiMode() && QMessageBox::warning(NULL, tr("Warning"), tr("At least some of the atomic coordinates are out of the valid range. Do you want to ignore this and still load the dataset?"),
-							QMessageBox::Ignore | QMessageBox::Cancel, QMessageBox::Cancel) == QMessageBox::Cancel)
-					return EvaluationStatus(EvaluationStatus::EVALUATION_ERROR);
-				}
-
-				DataChannel* posChannel = destination->getStandardDataChannel(DataChannel::PositionChannel);
-				if(posChannel && posChannel->size() > 1) {
-
-					// Rescale atoms if they are stored in reduced coordinates.
-
-					// Check if the input pos column is named "xs", "ys", or "zs".
-					bool areReducedCoordinates = false;
-					for(int i = 0; i < columnMapping().columnCount(); i++) {
-						if(columnMapping().getChannelId(i) == DataChannel::PositionChannel && columnMapping().getColumnName(i) == "xs") {
-							areReducedCoordinates = true;
-							break;
+				// Parse data columns.
+				InputColumnReader columnParser(columnMapping, container, numParticles);
+				try {
+					for(size_t i = 0; i < numParticles; i++) {
+						if((i % 4096) == 0) {
+							if(futureInterface.isCanceled())
+								return;	// Abort!
+							futureInterface.setProgressValue((int)i);
 						}
-					}
-					// Alternatively, check if all atom coordinates are in the [0:1] internal.
-					// Add some extra margin here, because atoms may have moved outside the simulation box slightly.
-					if(!areReducedCoordinates) {
-						const Box3& boundingBox = recordParser.boundingBox();
-						if(Box3(Point3(-0.1f), Point3(1.1f)).containsBox(boundingBox))
-							areReducedCoordinates = true;
-					}
-
-					if(areReducedCoordinates) {
-						VerboseLogger() << "Rescaling reduced coordinates in interval [0,1] to box size." << endl;
-						AffineTransformation simCell = destination->simulationCell()->cellMatrix();
-						Point3* p = posChannel->dataPoint3();
-						for(size_t i = posChannel->size(); i != 0; --i, ++p)
-							*p = simCell * (*p);
+						stream.readLine();
+						columnParser.readParticle(i, const_cast<QByteArray&>(stream.line()).data());
 					}
 				}
-				destination->invalidate();
+				catch(Exception& ex) {
+					throw ex.prependGeneralMessage(tr("Parsing error in line %1 of LAMMPS dump file.").arg(stream.lineNumber()));
+				}
 
-				QString statusMessage = tr("%1 atoms at timestep %2").arg(numAtoms).arg(timeStep);
-				return EvaluationStatus(EvaluationStatus::EVALUATION_SUCCESS, statusMessage);
+				return;	// Done!
 			}
 			else {
 				throw Exception(tr("LAMMPS dump file parsing error. Line %1 is invalid:\n%2").arg(stream.lineNumber()).arg(stream.lineString()));
@@ -203,24 +203,6 @@ void LAMMPSTextDumpImporter::parseFile(FutureInterface<ImportedDataPtr>& futureI
 		}
 		while(!stream.eof());
 	}
-
-	for(int i = 0; i <= 100 && !futureInterface.isCanceled(); i++) {
-		futureInterface.setProgressValue(i);
-		QThread::msleep(10);
-	}
-
-	container.setSimulationCell(AffineTransformation(
-			Vector3(20,0,0), Vector3(0,10,0), Vector3(0,0,10), Vector3(-10,-5,-5)));
-
-	QExplicitlySharedDataPointer<ParticleProperty> posProperty(new ParticleProperty(ParticleProperty::PositionProperty));
-	posProperty->resize(numAtoms);
-	static std::default_random_engine rng;
-	std::uniform_real_distribution<FloatType> unitDistribution;
-	for(size_t i = 0; i < numAtoms; i++) {
-		Point3 pos(unitDistribution(rng), unitDistribution(rng), unitDistribution(rng));
-		posProperty->setPoint3(i, container.simulationCell() * pos);
-	}
-	container.addParticleProperty(posProperty);
 }
 
 };

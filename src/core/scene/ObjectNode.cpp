@@ -112,7 +112,7 @@ void ObjectNode::render(TimePoint time, SceneRenderer* renderer)
 	for(const auto& obj : state.objects()) {
 		SceneObject* sceneObj = obj.first.get();
 		DisplayObject* displayObj = sceneObj->displayObject();
-		if(displayObj) {
+		if(displayObj && displayObj->isEnabled()) {
 			displayObj->render(time, sceneObj, state, renderer, this);
 		}
 	}
