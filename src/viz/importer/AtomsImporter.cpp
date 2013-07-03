@@ -29,6 +29,7 @@
 #include <viz/data/ParticlePropertyObject.h>
 #include <viz/data/ParticleDisplay.h>
 #include "AtomsImporter.h"
+#include "moc_CompressedTextParserStream.cpp"
 
 namespace Viz {
 
@@ -49,18 +50,16 @@ void AtomsImporter::loadImplementation(FutureInterface<ImportedDataPtr>& futureI
 		return;
 
 	// Open file.
-	QString filename = fetchFileFuture.result();
-	QFile file(filename);
-	if(!file.open(QIODevice::ReadOnly | QIODevice::Text))
-		throw Exception(tr("Failed to open file %1 for reading: %2").arg(filename).arg(file.errorString()));
+	QFile file(fetchFileFuture.result());
+	CompressedTextParserStream stream(file);
 
 	// Jump to requested file byte offset.
-	if(frame.byteOffset != 0 && file.seek(frame.byteOffset) == false)
-		throw Exception(tr("Failed to seek to byte offset %1 of file %2: %3").arg(frame.byteOffset).arg(filename).arg(file.errorString()));
+	if(frame.byteOffset != 0)
+		stream.seek(frame.byteOffset);
 
 	// Parse file.
 	std::shared_ptr<AtomsData> result(std::make_shared<AtomsData>());
-	parseFile(futureInterface, *result, file);
+	parseFile(futureInterface, *result, stream);
 
 	// Return results.
 	if(!futureInterface.isCanceled())

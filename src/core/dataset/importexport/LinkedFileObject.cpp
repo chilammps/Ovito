@@ -392,7 +392,7 @@ bool AtomsImportObject::onRefTargetMessage(RefTarget* source, RefTargetMessage* 
 QString LinkedFileObject::objectTitle()
 {
 	if(!importer()) return SceneObject::objectTitle();
-	return tr("Data source - %1").arg(importer()->objectTitle());
+	return importer()->objectTitle();
 }
 
 /******************************************************************************

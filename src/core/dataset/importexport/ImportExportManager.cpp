@@ -55,13 +55,15 @@ ImportExportManager::ImportExportManager()
 /******************************************************************************
 * Tries to detect the format of the given file.
 ******************************************************************************/
-OORef<FileImporter> ImportExportManager::autodetectFileFormat(const QString& file)
+OORef<FileImporter> ImportExportManager::autodetectFileFormat(const QString& filename)
 {
 	for(const FileImporterDescription& importerType : fileImporters()) {
 		try {
 			OORef<FileImporter> importer = importerType.createService();
-			if(importer && importer->checkFileFormat(file))
+			QFile file(filename);
+			if(importer && importer->checkFileFormat(file)) {
 				return importer;
+			}
 		}
 		catch(const Exception& ex) {
 			ex.showError();

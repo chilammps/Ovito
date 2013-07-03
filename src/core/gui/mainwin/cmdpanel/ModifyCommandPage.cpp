@@ -48,9 +48,9 @@ ModifyCommandPage::ModifyCommandPage()
     layout->addWidget(_modifierSelector);
     connect(_modifierSelector, SIGNAL(activated(int)), this, SLOT(onModifierAdd(int)));
 
-	class ModifierStackListView : public QTreeView {
+	class ModifierStackListView : public QListView {
 	public:
-		ModifierStackListView(QWidget* parent) : QTreeView(parent) {}
+		ModifierStackListView(QWidget* parent) : QListView(parent) {}
 		virtual QSize sizeHint() const { return QSize(256, 130); }
 	};
 

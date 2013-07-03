@@ -32,6 +32,30 @@
 namespace Ovito {
 
 /******************************************************************************
+* Constructor.
+******************************************************************************/
+ModificationListModel::ModificationListModel(QObject* parent) : QAbstractListModel(parent),
+	_nextToSelectObject(nullptr), _needListUpdate(false),
+	_statusInfoIcon(":/core/mainwin/status/status_info.png"),
+	_statusWarningIcon(":/core/mainwin/status/status_warning.png"),
+	_statusErrorIcon(":/core/mainwin/status/status_error.png"),
+	_statusPendingIcon(":/core/mainwin/status/status_pending.gif"),
+	_modifierEnabledIcon(":/core/command_panel/modifier_enabled.png"),
+	_modifierDisabledIcon(":/core/command_panel/modifier_disabled.png"),
+	_sectionHeaderFont(QGuiApplication::font())
+{
+	connect(&_statusPendingIcon, SIGNAL(frameChanged(int)), this, SLOT(iconAnimationFrameChanged()));
+	_selectionModel = new QItemSelectionModel(this);
+	connect(_selectionModel, SIGNAL(selectionChanged(const QItemSelection&, const QItemSelection&)), this, SIGNAL(selectedItemChanged()));
+	connect(&_selectedNodes, SIGNAL(notificationEvent(RefTarget*, ReferenceEvent*)), this, SLOT(onNodeEvent(RefTarget*, ReferenceEvent*)));
+	_sectionHeaderFont.setItalic(true);
+	if(_sectionHeaderFont.pixelSize() < 0)
+		_sectionHeaderFont.setPointSize(_sectionHeaderFont.pointSize() * 4 / 5);
+	else
+		_sectionHeaderFont.setPixelSize(_sectionHeaderFont.pixelSize() * 4 / 5);
+}
+
+/******************************************************************************
 * Populates the model with the given list items.
 ******************************************************************************/
 void ModificationListModel::setItems(const QVector<OORef<ModificationListItem>>& newItems)
@@ -100,6 +124,8 @@ void ModificationListModel::refreshList()
 			for(DisplayObject* displayObj : static_object_cast<ObjectNode>(objNode)->displayObjects())
 				items.push_back(new ModificationListItem(displayObj));
 		}
+		if(!items.empty())
+			items.push_front(new ModificationListItem(nullptr, false, tr("Display properties")));
 
 		// Walk up the pipeline.
 		do {
@@ -108,6 +134,9 @@ void ModificationListModel::refreshList()
 			// Create entries for the modifier applications if this is a PipelineObject.
 			PipelineObject* modObj = dynamic_object_cast<PipelineObject>(cmnObject);
 			if(modObj) {
+
+				items.push_back(new ModificationListItem(nullptr, false, tr("Modifiers")));
+
 				for(int i = modObj->modifierApplications().size(); i--; ) {
 					ModifierApplication* app = modObj->modifierApplications()[i];
 					ModificationListItem* item = new ModificationListItem(app->modifier());
@@ -115,17 +144,23 @@ void ModificationListModel::refreshList()
 					items.push_back(item);
 				}
 			}
+			else {
 
-			// Create an entry for the scene object.
-            items.push_back(new ModificationListItem(cmnObject));
+				items.push_back(new ModificationListItem(nullptr, false, tr("Input")));
 
-            // Create list items for the object's editable sub-objects.
-            for(int i = 0; i < cmnObject->editableSubObjectCount(); i++) {
-            	RefTarget* subobject = cmnObject->editableSubObject(i);
-            	if(subobject != NULL && subobject->isSubObjectEditable()) {
-            		items.push_back(new ModificationListItem(subobject, true));
-            	}
-            }
+				// Create an entry for the scene object.
+				items.push_back(new ModificationListItem(cmnObject));
+				if(_nextToSelectObject == nullptr)
+					_nextToSelectObject = cmnObject;
+
+				// Create list items for the object's editable sub-objects.
+				for(int i = 0; i < cmnObject->editableSubObjectCount(); i++) {
+					RefTarget* subobject = cmnObject->editableSubObject(i);
+					if(subobject != NULL && subobject->isSubObjectEditable()) {
+						items.push_back(new ModificationListItem(subobject, true));
+					}
+				}
+			}
 
 			// In case the current object has multiple input slots, determine if they all point to the same input object.
 			SceneObject* nextObj = nullptr;
@@ -140,11 +175,6 @@ void ModificationListModel::refreshList()
 			cmnObject = nextObj;
 		}
 		while(cmnObject != nullptr);
-	}
-
-	// Don't show PipelineObject if it is empty and on top of the stack.
-	if(!items.isEmpty() && dynamic_object_cast<PipelineObject>(items.front()->object())) {
-		items.pop_front();
 	}
 
 	int selIndex = 0;
@@ -251,18 +281,13 @@ QVariant ModificationListModel::data(const QModelIndex& index, int role) const
 	ModificationListItem* item = this->item(index.row());
 
 	if(role == Qt::DisplayRole) {
-		QString title;
-		RefTarget* object = item->object();
-		if(dynamic_object_cast<PipelineObject>(object)) {
-			title = "---------------------";
-		}
-		else {
+		if(item->object()) {
 			if(item->isSubObject())
-				title = "   " + object->objectTitle();
+				return "   " + item->object()->objectTitle();
 			else
-				title = object->objectTitle();
+				return item->object()->objectTitle();
 		}
-		return title;
+		else return item->title();
 	}
 	else if(role == Qt::DecorationRole) {
 		switch(item->status()) {
@@ -280,8 +305,54 @@ QVariant ModificationListModel::data(const QModelIndex& index, int role) const
 	else if(role == Qt::ToolTipRole) {
 		return item->toolTip();
 	}
+	else if(role == Qt::CheckStateRole) {
+		DisplayObject* displayObj = dynamic_object_cast<DisplayObject>(item->object());
+		if(displayObj)
+			return Qt::Checked;
+		Modifier* modifier = dynamic_object_cast<Modifier>(item->object());
+		if(modifier)
+			return modifier->isEnabled() ? Qt::Checked : Qt::Unchecked;
+	}
+	else if(role == Qt::TextAlignmentRole) {
+		if(item->object() == nullptr) {
+			return Qt::AlignCenter;
+		}
+	}
+	else if(role == Qt::BackgroundRole) {
+		if(item->object() == nullptr) {
+			return QBrush(Qt::lightGray, Qt::Dense4Pattern);
+		}
+	}
+	else if(role == Qt::ForegroundRole) {
+		if(item->object() == nullptr) {
+			return QBrush(Qt::blue);
+		}
+	}
+	else if(role == Qt::FontRole) {
+		if(item->object() == nullptr) {
+			return _sectionHeaderFont;
+		}
+	}
 
 	return QVariant();
+}
+
+/******************************************************************************
+* Returns the flags for an item.
+******************************************************************************/
+Qt::ItemFlags ModificationListModel::flags(const QModelIndex& index) const
+{
+	OVITO_ASSERT(index.row() >= 0 && index.row() < _items.size());
+	ModificationListItem* item = this->item(index.row());
+	if(item->object() == nullptr) {
+		return Qt::NoItemFlags;
+	}
+	else {
+		if(dynamic_object_cast<DisplayObject>(item->object()) || dynamic_object_cast<Modifier>(item->object())) {
+			return QAbstractListModel::flags(index) | Qt::ItemIsUserCheckable;
+		}
+	}
+	return QAbstractListModel::flags(index);
 }
 
 };

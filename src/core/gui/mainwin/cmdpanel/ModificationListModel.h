@@ -38,38 +38,23 @@ class Modifier;				// defined in Modifier.h
 /*
  * This Qt model class is used to populate the QListView widget.
  */
-class ModificationListModel : public QAbstractItemModel
+class ModificationListModel : public QAbstractListModel
 {
 	Q_OBJECT
 
 public:
 
 	/// Constructor.
-	ModificationListModel(QObject* parent) : QAbstractItemModel(parent),
-		_nextToSelectObject(nullptr), _needListUpdate(false),
-		_statusInfoIcon(":/core/mainwin/status/status_info.png"),
-		_statusWarningIcon(":/core/mainwin/status/status_warning.png"),
-		_statusErrorIcon(":/core/mainwin/status/status_error.png"),
-		_statusPendingIcon(":/core/mainwin/status/status_pending.gif"),
-		_modifierEnabledIcon(":/core/command_panel/modifier_enabled.png"),
-		_modifierDisabledIcon(":/core/command_panel/modifier_disabled.png") {
-		connect(&_statusPendingIcon, SIGNAL(frameChanged(int)), this, SLOT(iconAnimationFrameChanged()));
-		_selectionModel = new QItemSelectionModel(this);
-		connect(_selectionModel, SIGNAL(selectionChanged(const QItemSelection&, const QItemSelection&)), this, SIGNAL(selectedItemChanged()));
-		connect(&_selectedNodes, SIGNAL(notificationEvent(RefTarget*, ReferenceEvent*)), this, SIGNAL(onNodeEvent(RefTarget*, ReferenceEvent*)));
-	}
-
-	QModelIndex TreeModel::index(int row, int column, const QModelIndex &parent) const override {
-		if(!hasIndex(row, column, parent))
-			return QModelIndex();
-		if(!parent.isValid())
-	}
+	ModificationListModel(QObject* parent);
 
 	/// Returns the number of list items.
 	virtual int rowCount(const QModelIndex& parent = QModelIndex()) const override { return _items.size(); }
 
 	/// Returns the data associated with a list entry.
 	virtual QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+
+	/// Returns the flags for an item.
+	virtual Qt::ItemFlags flags(const QModelIndex& index) const override;
 
 	/// Discards all list items.
 	void clear() {
@@ -156,6 +141,9 @@ private:
 	QIcon _statusWarningIcon;
 	QIcon _statusErrorIcon;
 	QMovie _statusPendingIcon;
+
+	/// The font used for section headers.
+	QFont _sectionHeaderFont;
 };
 
 };

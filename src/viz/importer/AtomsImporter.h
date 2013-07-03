@@ -25,10 +25,23 @@
 #include <core/Core.h>
 #include <core/dataset/importexport/LinkedFileImporter.h>
 #include <viz/data/ParticleProperty.h>
+#include "CompressedTextParserStream.h"
 
 namespace Viz {
 
 using namespace Ovito;
+
+// These are format strings used with the sscanf() parsing function
+// when parsing floating point numbers.
+#ifdef FLOATTYPE_FLOAT
+	#define FLOAT_SCANF_STRING_1   "%g"
+	#define FLOAT_SCANF_STRING_2   "%g %g"
+	#define FLOAT_SCANF_STRING_3   "%g %g %g"
+#else
+	#define FLOAT_SCANF_STRING_1   "%lg"
+	#define FLOAT_SCANF_STRING_2   "%lg %lg"
+	#define FLOAT_SCANF_STRING_3   "%lg %lg %lg"
+#endif
 
 /**
  * \brief Base class for file parsers that read atom-position datasets.
@@ -56,6 +69,9 @@ protected:
 
 		/// Returns the PBC flags.
 		const std::array<bool,3>& pbcFlags() const { return _pbcFlags; }
+
+		/// Sets the PBC flags.
+		vois setPbcFlags(const std::array<bool,3>& flags) { _pbcFlags = flags; }
 
 		/// Returns the list of particle properties.
 		const std::vector<QExplicitlySharedDataPointer<ParticleProperty>>& particleProperties() const { return _properties; }
@@ -86,7 +102,7 @@ protected:
 	virtual void loadImplementation(FutureInterface<ImportedDataPtr>& futureInterface, FrameSourceInformation frame) override;
 
 	/// \brief Parses the given input file and stores the data in the given container object.
-	virtual void parseFile(FutureInterface<ImportedDataPtr>& futureInterface, AtomsData& container, QIODevice& file) = 0;
+	virtual void parseFile(FutureInterface<ImportedDataPtr>& futureInterface, AtomsData& container, CompressedTextParserStream& stream) = 0;
 
 private:
 

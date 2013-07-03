@@ -22,15 +22,20 @@
 #include <core/Core.h>
 #include <core/utilities/units/UnitsManager.h>
 #include <core/rendering/SceneRenderer.h>
+#include <core/gui/properties/FloatParameterUI.h>
+#include <core/gui/properties/BooleanParameterUI.h>
 
 #include "ParticleDisplay.h"
 
 namespace Viz {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Viz, ParticleDisplay, DisplayObject)
+SET_OVITO_OBJECT_EDITOR(ParticleDisplay, ParticleDisplayEditor)
 DEFINE_PROPERTY_FIELD(ParticleDisplay, _defaultParticleRadius, "DefaultParticleRadius")
 SET_PROPERTY_FIELD_LABEL(ParticleDisplay, _defaultParticleRadius, "Particle radius")
 SET_PROPERTY_FIELD_UNITS(ParticleDisplay, _defaultParticleRadius, WorldParameterUnit)
+
+IMPLEMENT_OVITO_OBJECT(Viz, ParticleDisplayEditor, PropertiesEditor)
 
 /******************************************************************************
 * Constructor.
@@ -149,6 +154,40 @@ void ParticleDisplay::render(TimePoint time, SceneObject* sceneObject, const Pip
 	}
 
 	_particleBuffer->render(renderer);
+}
+
+/******************************************************************************
+* Sets up the UI widgets of the editor.
+******************************************************************************/
+void ParticleDisplayEditor::createUI(const RolloutInsertionParameters& rolloutParams)
+{
+	// Create a rollout.
+	QWidget* rollout = createRollout(tr("AParticle display"), rolloutParams);
+
+    // Create the rollout contents.
+	QGridLayout* layout = new QGridLayout(rollout);
+	layout->setContentsMargins(4,4,4,4);
+#ifndef Q_WS_MAC
+	layout->setSpacing(0);
+#endif
+	layout->setColumnStretch(1, 1);
+
+#if 0
+	BooleanPropertyUI* showAtomsUI = new BooleanPropertyUI(this, "isVisible", tr("Show atoms"));
+	layout->addWidget(showAtomsUI->checkBox(), 0, 0, 1, 3);
+
+	BooleanPropertyUI* highQualityDisplayUI = new BooleanPropertyUI(this, PROPERTY_FIELD_DESCRIPTOR(PositionDataChannel, _useHighQualityRenderingInViewports));
+	layout->addWidget(highQualityDisplayUI->checkBox(), 1, 0, 1, 3);
+
+	BooleanPropertyUI* flatAtomDisplayUI = new BooleanPropertyUI(this, PROPERTY_FIELD_DESCRIPTOR(PositionDataChannel, _flatAtomRendering));
+	layout->addWidget(flatAtomDisplayUI->checkBox(), 2, 0, 1, 3);
+#endif
+
+	// Default radius parameter.
+	FloatParameterUI* radiusUI = new FloatParameterUI(this, PROPERTY_FIELD(ParticleDisplay::_defaultParticleRadius));
+	layout->addWidget(radiusUI->label(), 3, 0);
+	layout->addLayout(radiusUI->createFieldLayout(), 3, 1);
+	radiusUI->setMinValue(0);
 }
 
 };

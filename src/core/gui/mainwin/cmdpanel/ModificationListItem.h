@@ -51,7 +51,7 @@ public:
 public:
 
 	/// Constructor.
-	ModificationListItem(RefTarget* object, bool isSubObject = false);
+	ModificationListItem(RefTarget* object, bool isSubObject = false, const QString& title = QString());
 
 	/// Returns the object represented by this list item.
 	RefTarget* object() const { return _object; }
@@ -73,6 +73,9 @@ public:
 
 	/// Returns the tooltip text for the list item.
 	QVariant toolTip() const;
+
+	/// Returns the title text if this is a section header item.
+	const QString title() const { return _title; }
 
 Q_SIGNALS:
 
@@ -97,6 +100,9 @@ private:
 
 	/// Indicates that this is a sub-object entry.
 	bool _isSubObject;
+
+	/// Title text if this is a section header item.
+	QString _title;
 
 	Q_OBJECT
 	OVITO_OBJECT

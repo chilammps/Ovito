@@ -49,6 +49,9 @@ public:
 	/// \return A string that describes the file format.
 	virtual QString fileFilterDescription() override { return tr("LAMMPS Text Dump Files"); }
 
+	/// \brief Checks if the given file has format that can be read by this importer.
+	virtual bool checkFileFormat(QIODevice& input) override;
+
 	/// \brief Returns true if the input file contains multiple timesteps.
 	bool isMultiTimestepFile() const { return _isMultiTimestepFile; }
 
@@ -64,7 +67,7 @@ public:
 protected:
 
 	/// \brief Parses the given input file and stores the data in the given container object.
-	virtual void parseFile(FutureInterface<ImportedDataPtr>& futureInterface, AtomsData& container, QIODevice& file) override;
+	virtual void parseFile(FutureInterface<ImportedDataPtr>& futureInterface, AtomsData& container, CompressedTextParserStream& stream) override;
 
 private:
 

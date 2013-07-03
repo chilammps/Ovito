@@ -34,8 +34,8 @@ DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(ModificationListItem, _modApps, "ModifierApp
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-ModificationListItem::ModificationListItem(RefTarget* object, bool isSubObject) :
-	_isSubObject(isSubObject)
+ModificationListItem::ModificationListItem(RefTarget* object, bool isSubObject, const QString& title) :
+	_isSubObject(isSubObject), _title(title)
 {
 	INIT_PROPERTY_FIELD(ModificationListItem::_object);
 	INIT_PROPERTY_FIELD(ModificationListItem::_modApps);

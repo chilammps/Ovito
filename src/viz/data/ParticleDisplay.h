@@ -30,6 +30,7 @@
 #include <core/Core.h>
 #include <core/scene/display/DisplayObject.h>
 #include <core/rendering/ParticleGeometryBuffer.h>
+#include <core/gui/properties/PropertiesEditor.h>
 #include "ParticlePropertyObject.h"
 
 namespace Viz {
@@ -53,7 +54,7 @@ public:
 	virtual Box3 boundingBox(TimePoint time, SceneObject* sceneObject, ObjectNode* contextNode, const PipelineFlowState& flowState) override;
 
 	/// \brief Returns the title of this object.
-	virtual QString objectTitle() override { return tr("Particle display"); }
+	virtual QString objectTitle() override { return tr("Particles"); }
 
 	/// \brief Returns the default display radius of atomic particles.
 	FloatType defaultParticleRadius() const { return _defaultParticleRadius; }
@@ -107,6 +108,25 @@ private:
 	OVITO_OBJECT
 
 	DECLARE_PROPERTY_FIELD(_defaultParticleRadius);
+};
+
+/**
+ * \brief A properties editor for the ParticleDisplay class.
+ */
+class ParticleDisplayEditor : public PropertiesEditor
+{
+public:
+
+	/// Constructor.
+	Q_INVOKABLE ParticleDisplayEditor() {}
+
+protected:
+
+	/// Creates the user interface controls for the editor.
+	virtual void createUI(const RolloutInsertionParameters& rolloutParams);
+
+	Q_OBJECT
+	OVITO_OBJECT
 };
 
 };	// End of namespace
