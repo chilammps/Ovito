@@ -72,6 +72,10 @@ ParticleProperty::ParticleProperty(Type type, size_t componentCount)
 	case DisplacementProperty:
 	case VelocityProperty:
 	case ForceProperty:
+	case DipoleOrientationProperty:
+	case AngularVelocityProperty:
+	case AngularMomentumProperty:
+	case TorqueProperty:
 		_dataType = qMetaTypeId<FloatType>();
 		_dataTypeSize = sizeof(FloatType);
 		_componentCount = 3;
@@ -82,7 +86,10 @@ ParticleProperty::ParticleProperty(Type type, size_t componentCount)
 	case TotalEnergyProperty:
 	case RadiusProperty:
 	case MassProperty:
+	case ChargeProperty:
 	case TransparencyProperty:
+	case SpinProperty:
+	case DipoleMagnitudeProperty:
 		_dataType = qMetaTypeId<FloatType>();
 		_dataTypeSize = sizeof(FloatType);
 		_componentCount = 1;
@@ -324,8 +331,15 @@ QString ParticleProperty::standardPropertyName(Type which)
 	case OrientationProperty: return ParticlePropertyObject::tr("Orientation");
 	case ForceProperty: return ParticlePropertyObject::tr("Force");
 	case MassProperty: return ParticlePropertyObject::tr("Mass");
+	case ChargeProperty: return ParticlePropertyObject::tr("Charge");
 	case PeriodicImageProperty: return ParticlePropertyObject::tr("Periodic Image");
 	case TransparencyProperty: return ParticlePropertyObject::tr("Transparency");
+	case DipoleOrientationProperty: return ParticlePropertyObject::tr("Dipole Orientation");
+	case DipoleMagnitudeProperty: return ParticlePropertyObject::tr("Dipole Magnitude");
+	case AngularVelocityProperty: return ParticlePropertyObject::tr("Angular Velocity");
+	case AngularMomentumProperty: return ParticlePropertyObject::tr("Angular Momentum");
+	case TorqueProperty: return ParticlePropertyObject::tr("Torque");
+	case SpinProperty: return ParticlePropertyObject::tr("Spin");
 	default:
 		OVITO_ASSERT_MSG(false, "ParticleProperty::standardChannelName", "Invalid standard particle property type");
 		throw Exception(ParticlePropertyObject::tr("This is not a valid standard particle property type: %1").arg(which));
@@ -360,7 +374,14 @@ int ParticleProperty::standardPropertyDataType(Type which)
 	case OrientationProperty:
 	case ForceProperty:
 	case MassProperty:
+	case ChargeProperty:
 	case TransparencyProperty:
+	case DipoleMagnitudeProperty:
+	case SpinProperty:
+	case DipoleOrientationProperty:
+	case AngularVelocityProperty:
+	case AngularMomentumProperty:
+	case TorqueProperty:
 		return qMetaTypeId<FloatType>();
 	default:
 		OVITO_ASSERT_MSG(false, "ParticleProperty::standardPropertyDataType", "Invalid standard particle property type");
@@ -395,8 +416,15 @@ QMap<QString, ParticleProperty::Type> ParticleProperty::standardPropertyList()
 		table.insert(standardPropertyName(OrientationProperty), OrientationProperty);
 		table.insert(standardPropertyName(ForceProperty), ForceProperty);
 		table.insert(standardPropertyName(MassProperty), MassProperty);
+		table.insert(standardPropertyName(ChargeProperty), ChargeProperty);
 		table.insert(standardPropertyName(PeriodicImageProperty), PeriodicImageProperty);
 		table.insert(standardPropertyName(TransparencyProperty), TransparencyProperty);
+		table.insert(standardPropertyName(DipoleOrientationProperty), DipoleOrientationProperty);
+		table.insert(standardPropertyName(DipoleMagnitudeProperty), DipoleMagnitudeProperty);
+		table.insert(standardPropertyName(AngularVelocityProperty), AngularVelocityProperty);
+		table.insert(standardPropertyName(AngularMomentumProperty), AngularMomentumProperty);
+		table.insert(standardPropertyName(TorqueProperty), TorqueProperty);
+		table.insert(standardPropertyName(SpinProperty), SpinProperty);
 	}
 	return table;
 }
@@ -418,7 +446,10 @@ size_t ParticleProperty::standardPropertyComponentCount(Type which)
 	case TotalEnergyProperty:
 	case RadiusProperty:
 	case MassProperty:
+	case ChargeProperty:
 	case TransparencyProperty:
+	case DipoleMagnitudeProperty:
+	case SpinProperty:
 		return 1;
 	case PositionProperty:
 	case ColorProperty:
@@ -426,6 +457,10 @@ size_t ParticleProperty::standardPropertyComponentCount(Type which)
 	case VelocityProperty:
 	case ForceProperty:
 	case PeriodicImageProperty:
+	case DipoleOrientationProperty:
+	case AngularVelocityProperty:
+	case AngularMomentumProperty:
+	case TorqueProperty:
 		return 3;
 	case StressTensorProperty:
 	case StrainTensorProperty:
@@ -464,13 +499,20 @@ QStringList ParticleProperty::standardPropertyComponentNames(Type which, size_t 
 	case TotalEnergyProperty:
 	case RadiusProperty:
 	case MassProperty:
+	case ChargeProperty:
 	case TransparencyProperty:
+	case DipoleMagnitudeProperty:
+	case SpinProperty:
 		return emptyList;
 	case PositionProperty:
 	case DisplacementProperty:
 	case VelocityProperty:
 	case ForceProperty:
 	case PeriodicImageProperty:
+	case DipoleOrientationProperty:
+	case AngularVelocityProperty:
+	case AngularMomentumProperty:
+	case TorqueProperty:
 		return xyzList;
 	case ColorProperty:
 		return rgbList;

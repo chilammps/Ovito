@@ -23,7 +23,7 @@
 #define __OVITO_LAMMPS_TEXT_DUMP_IMPORTER_H
 
 #include <core/Core.h>
-#include "../AtomsImporter.h"
+#include "../ParticleImporter.h"
 
 namespace Viz {
 
@@ -32,7 +32,7 @@ using namespace Ovito;
 /**
  * \brief File parser for text-based LAMMPS dump simulation files.
  */
-class LAMMPSTextDumpImporter : public AtomsImporter
+class LAMMPSTextDumpImporter : public ParticleImporter
 {
 public:
 
@@ -64,10 +64,13 @@ public:
 	/// \brief Returns whether this importer has a settings dialog box to let the user configure the import settings.
 	virtual bool hasSettingsDialog() override { return true; }
 
+	/// Returns the title of this object.
+	virtual QString objectTitle() override { return tr("LAMMPS Dump"); }
+
 protected:
 
 	/// \brief Parses the given input file and stores the data in the given container object.
-	virtual void parseFile(FutureInterface<ImportedDataPtr>& futureInterface, AtomsData& container, CompressedTextParserStream& stream) override;
+	virtual void parseFile(FutureInterface<ImportedDataPtr>& futureInterface, ParticleImportData& container, CompressedTextParserStream& stream) override;
 
 private:
 

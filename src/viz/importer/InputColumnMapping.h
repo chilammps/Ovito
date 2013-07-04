@@ -24,7 +24,7 @@
 
 #include <core/Core.h>
 #include <viz/data/ParticleProperty.h>
-#include <viz/importer/AtomsImporter.h>
+#include <viz/importer/ParticleImporter.h>
 
 namespace Viz {
 
@@ -140,7 +140,7 @@ public:
 	///
 	/// This constructor creates all necessary data channels in the destination object as defined
  	/// by the column to channel mapping.
-	InputColumnReader(const InputColumnMapping& mapping, AtomsImporter::AtomsData& destination, size_t particleCount);
+	InputColumnReader(const InputColumnMapping& mapping, ParticleImportData& destination, size_t particleCount);
 
 	/// \brief Parses the string tokens from one line of the input file and stores the values
 	///        in the property objects.
@@ -164,7 +164,7 @@ private:
 	InputColumnMapping _mapping;
 
 	/// The data container.
-	AtomsImporter::AtomsData _destination;
+	ParticleImportData& _destination;
 
 	/// Stores the destination particle properties.
 	QVector<ParticleProperty*> _properties;

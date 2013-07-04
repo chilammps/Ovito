@@ -40,7 +40,9 @@ FileManager::FileManager()
 ******************************************************************************/
 Future<QString> FileManager::fetchUrl(const QUrl& url)
 {
-	OVITO_ASSERT(url.isLocalFile());
+	if(!url.isLocalFile())
+		throw Exception(tr("URL scheme not supported. Can load only local files."));
+
 	return Future<QString>(url.toLocalFile(), tr("Loading URL %1").arg(url.toString()));
 }
 

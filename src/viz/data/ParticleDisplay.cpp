@@ -26,13 +26,14 @@
 #include <core/gui/properties/BooleanParameterUI.h>
 
 #include "ParticleDisplay.h"
+#include "ParticleTypeProperty.h"
 
 namespace Viz {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Viz, ParticleDisplay, DisplayObject)
 SET_OVITO_OBJECT_EDITOR(ParticleDisplay, ParticleDisplayEditor)
 DEFINE_PROPERTY_FIELD(ParticleDisplay, _defaultParticleRadius, "DefaultParticleRadius")
-SET_PROPERTY_FIELD_LABEL(ParticleDisplay, _defaultParticleRadius, "Particle radius")
+SET_PROPERTY_FIELD_LABEL(ParticleDisplay, _defaultParticleRadius, "Default particle radius")
 SET_PROPERTY_FIELD_UNITS(ParticleDisplay, _defaultParticleRadius, WorldParameterUnit)
 
 IMPLEMENT_OVITO_OBJECT(Viz, ParticleDisplayEditor, PropertiesEditor)
@@ -65,10 +66,13 @@ Box3 ParticleDisplay::boundingBox(TimePoint time, SceneObject* sceneObject, Obje
 {
 	ParticlePropertyObject* positionProperty = dynamic_object_cast<ParticlePropertyObject>(sceneObject);
 	ParticlePropertyObject* radiusProperty = findStandardProperty(ParticleProperty::RadiusProperty, flowState);
+	ParticleTypeProperty* typeProperty = dynamic_object_cast<ParticleTypeProperty>(findStandardProperty(ParticleProperty::ParticleTypeProperty, flowState));
+
 	// Detect if the input data has changed since the last time we computed the bounding box.
 	if(_boundingBoxCacheHelper.updateState(
 			positionProperty, positionProperty ? positionProperty->revisionNumber() : 0,
 			radiusProperty, radiusProperty ? radiusProperty->revisionNumber() : 0,
+			typeProperty, typeProperty ? typeProperty->revisionNumber() : 0,
 			defaultParticleRadius()) || _cachedBoundingBox.isEmpty()) {
 		// Recompute bounding box.
 		_cachedBoundingBox.setEmpty();
@@ -82,6 +86,10 @@ Box3 ParticleDisplay::boundingBox(TimePoint time, SceneObject* sceneObject, Obje
 		FloatType maxAtomRadius = defaultParticleRadius();
 		if(radiusProperty && radiusProperty->size() > 0) {
 			maxAtomRadius = *std::max_element(radiusProperty->constDataFloat(), radiusProperty->constDataFloat() + radiusProperty->size());
+		}
+		else if(typeProperty) {
+			for(const auto& it : typeProperty->radiusMap())
+				maxAtomRadius = std::max(maxAtomRadius, it.second);
 		}
 		// Enlarge the bounding box by the largest particle radius.
 		_cachedBoundingBox = _cachedBoundingBox.padBox(std::max(maxAtomRadius, FloatType(0)));
@@ -98,6 +106,7 @@ void ParticleDisplay::render(TimePoint time, SceneObject* sceneObject, const Pip
 	ParticlePropertyObject* positionProperty = dynamic_object_cast<ParticlePropertyObject>(sceneObject);
 	ParticlePropertyObject* radiusProperty = findStandardProperty(ParticleProperty::RadiusProperty, flowState);
 	ParticlePropertyObject* colorProperty = findStandardProperty(ParticleProperty::ColorProperty, flowState);
+	ParticleTypeProperty* typeProperty = dynamic_object_cast<ParticleTypeProperty>(findStandardProperty(ParticleProperty::ParticleTypeProperty, flowState));
 
 	// Get number of particles.
 	int particleCount = positionProperty ? positionProperty->size() : 0;
@@ -113,11 +122,16 @@ void ParticleDisplay::render(TimePoint time, SceneObject* sceneObject, const Pip
 			|| resizeBuffer;
 
 	// Do we have to update the particle radii in the geometry buffer?
-	bool updateRadii = _radiiCacheHelper.updateState(radiusProperty, radiusProperty ? radiusProperty->revisionNumber() : 0, defaultParticleRadius())
+	bool updateRadii = _radiiCacheHelper.updateState(
+			radiusProperty, radiusProperty ? radiusProperty->revisionNumber() : 0,
+			typeProperty, typeProperty ? typeProperty->revisionNumber() : 0,
+			defaultParticleRadius())
 			|| resizeBuffer;
 
 	// Do we have to update the particle colors in the geometry buffer?
-	bool updateColors = _colorsCacheHelper.updateState(colorProperty, colorProperty ? colorProperty->revisionNumber() : 0)
+	bool updateColors = _colorsCacheHelper.updateState(
+			colorProperty, colorProperty ? colorProperty->revisionNumber() : 0,
+			typeProperty, typeProperty ? typeProperty->revisionNumber() : 0)
 			|| resizeBuffer;
 
 	// Re-create the geometry buffer if necessary.
@@ -128,29 +142,74 @@ void ParticleDisplay::render(TimePoint time, SceneObject* sceneObject, const Pip
 	if(resizeBuffer)
 		_particleBuffer->setSize(particleCount);
 
-	// Update buffers.
-
+	// Update position buffer.
 	if(updatePositions && positionProperty) {
 		OVITO_ASSERT(positionProperty->size() == particleCount);
 		_particleBuffer->setParticlePositions(positionProperty->constDataPoint3());
 	}
 
+	// Update radius buffer.
 	if(updateRadii) {
 		if(radiusProperty) {
+			// Take particle radii directly from the radius property.
 			OVITO_ASSERT(radiusProperty->size() == particleCount);
 			_particleBuffer->setParticleRadii(radiusProperty->constDataFloat());
 		}
-		else
+		else if(typeProperty) {
+			// Assign radii based on particle types.
+			OVITO_ASSERT(typeProperty->size() == particleCount);
+			// Allocate memory buffer.
+			std::vector<FloatType> particleRadii(particleCount, defaultParticleRadius());
+			// Build a lookup map for particle type colors.
+			const std::map<int,FloatType> radiusMap = typeProperty->radiusMap();
+			// Skip the following loop if all per-type radii are zero. In this case, simply use the default radius for all particles.
+			if(std::any_of(radiusMap.cbegin(), radiusMap.cend(), [](const std::pair<int,FloatType>& it) { return it.second != 0; })) {
+				// Fill radius array.
+				const int* t = typeProperty->constDataInt();
+				for(auto c = particleRadii.begin(); c != particleRadii.end(); ++c, ++t) {
+					auto it = radiusMap.find(*t);
+					// Set particle radius only if the type's radius is non-zero.
+					if(it != radiusMap.end() && it->second != 0)
+						*c = it->second;
+				}
+			}
+			_particleBuffer->setParticleRadii(particleRadii.data());
+		}
+		else {
+			// Assign a constant radius to all particles.
 			_particleBuffer->setParticleRadius(defaultParticleRadius());
+		}
 	}
 
+	// Update color buffer.
 	if(updateColors) {
 		if(colorProperty) {
+			// Take particle colors directly from the color property.
 			OVITO_ASSERT(colorProperty->size() == particleCount);
 			_particleBuffer->setParticleColors(colorProperty->constDataColor());
 		}
-		else
+		else if(typeProperty) {
+			// Assign colors based on particle types.
+			OVITO_ASSERT(typeProperty->size() == particleCount);
+			// Allocate memory buffer.
+			std::vector<Color> particleColors(particleCount);
+			// Build a lookup map for particle type colors.
+			const std::map<int,Color> colorMap = typeProperty->colorMap();
+			// Fill color array.
+			const int* t = typeProperty->constDataInt();
+			for(auto c = particleColors.begin(); c != particleColors.end(); ++c, ++t) {
+				auto it = colorMap.find(*t);
+				if(it != colorMap.end())
+					*c = it->second;
+				else
+					c->setWhite();
+			}
+			_particleBuffer->setParticleColors(particleColors.data());
+		}
+		else {
+			// Assign a constant color to all particles.
 			_particleBuffer->setParticleColor(Color(1,1,1));
+		}
 	}
 
 	_particleBuffer->render(renderer);

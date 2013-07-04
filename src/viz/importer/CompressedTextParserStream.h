@@ -62,6 +62,9 @@ public:
 		}
 	}
 
+	/// Returns the name of the input file (if known).
+	const QString& filename() const { return _filename; }
+
 	/// Reads in the next line.
 	const QByteArray& readLine(qint64 maxSize = 0) {
 		_lineNumber++;

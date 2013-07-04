@@ -208,7 +208,10 @@ void LinkedFileObjectEditor::updateInformationLabel()
 	//filenameLabel->setText(fileInfo.fileName());
 	//filepathLabel->setText(fileInfo.absolutePath());
 
-	_sourceTextbox->setText(obj->sourceUrl().toString());
+	if(obj->sourceUrl().isLocalFile())
+		_sourceTextbox->setText(obj->sourceUrl().toLocalFile());
+	else
+		_sourceTextbox->setText(obj->sourceUrl().toString());
 	_sourceTextbox->setEnabled(true);
 
 	_statusTextLabel->setText(obj->status().longText());

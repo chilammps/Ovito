@@ -290,16 +290,18 @@ QVariant ModificationListModel::data(const QModelIndex& index, int role) const
 		else return item->title();
 	}
 	else if(role == Qt::DecorationRole) {
-		switch(item->status()) {
-		case ModificationListItem::Enabled: return qVariantFromValue(_modifierEnabledIcon);
-		case ModificationListItem::Disabled: return qVariantFromValue(_modifierDisabledIcon);
-		case ModificationListItem::Info: return qVariantFromValue(_statusInfoIcon);
-		case ModificationListItem::Warning: return qVariantFromValue(_statusWarningIcon);
-		case ModificationListItem::Error: return qVariantFromValue(_statusErrorIcon);
-		case ModificationListItem::Pending:
-			const_cast<QMovie&>(_statusPendingIcon).start();
-			return qVariantFromValue(_statusPendingIcon.currentImage());
-		case ModificationListItem::None: return qVariantFromValue(_statusNoneIcon);
+		if(item->object()) {
+			switch(item->status()) {
+			case ModificationListItem::Enabled: return qVariantFromValue(_modifierEnabledIcon);
+			case ModificationListItem::Disabled: return qVariantFromValue(_modifierDisabledIcon);
+			case ModificationListItem::Info: return qVariantFromValue(_statusInfoIcon);
+			case ModificationListItem::Warning: return qVariantFromValue(_statusWarningIcon);
+			case ModificationListItem::Error: return qVariantFromValue(_statusErrorIcon);
+			case ModificationListItem::Pending:
+				const_cast<QMovie&>(_statusPendingIcon).start();
+				return qVariantFromValue(_statusPendingIcon.currentImage());
+			case ModificationListItem::None: return qVariantFromValue(_statusNoneIcon);
+			}
 		}
 	}
 	else if(role == Qt::ToolTipRole) {

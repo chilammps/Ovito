@@ -112,6 +112,7 @@ ModifyCommandPage::ModifyCommandPage()
 	splitter->setStretchFactor(1,1);
 
 	connect(&_selectionSetListener, SIGNAL(notificationEvent(ReferenceEvent*)), this, SLOT(onSelectionSetEvent(ReferenceEvent*)));
+	updateActions(nullptr);
 }
 
 /******************************************************************************
@@ -141,6 +142,7 @@ void ModifyCommandPage::onEnter()
 	CommandPanelPage::onEnter();
 
 	// Update everything.
+	updateActions(nullptr);
 	onSelectionChangeComplete(DataSetManager::instance().currentSelection());
 }
 

@@ -85,11 +85,18 @@ protected:
 
 	/// This helper structure is used to detect any changes in the particle radii
 	/// that require updating the particle radius buffer.
-	SceneObjectCacheHelper<QPointer<ParticlePropertyObject>, unsigned int, FloatType> _radiiCacheHelper;
+	SceneObjectCacheHelper<
+		QPointer<ParticlePropertyObject>, unsigned int,		// Radius property + revision number
+		QPointer<ParticlePropertyObject>, unsigned int,		// Type property + revision number
+		FloatType											// Default radius
+		> _radiiCacheHelper;
 
 	/// This helper structure is used to detect any changes in the particle colors
 	/// that require updating the particle color buffer.
-	SceneObjectCacheHelper<QPointer<ParticlePropertyObject>, unsigned int> _colorsCacheHelper;
+	SceneObjectCacheHelper<
+		QPointer<ParticlePropertyObject>, unsigned int,		// Color property + revision number
+		QPointer<ParticlePropertyObject>, unsigned int		// Type property + revision number
+		> _colorsCacheHelper;
 
 	/// The bounding box that includes all particles.
 	Box3 _cachedBoundingBox;
@@ -99,6 +106,7 @@ protected:
 	SceneObjectCacheHelper<
 		QPointer<ParticlePropertyObject>, unsigned int,	// Position property + revision number
 		QPointer<ParticlePropertyObject>, unsigned int,	// Radius property + revision number
+		QPointer<ParticlePropertyObject>, unsigned int,	// Type property + revision number
 		FloatType> 										// Default particle radius
 		_boundingBoxCacheHelper;
 

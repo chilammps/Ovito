@@ -131,7 +131,7 @@ void InputColumnMapping::loadFromStream(LoadStream& stream)
 /******************************************************************************
  * Initializes the object.
  *****************************************************************************/
-InputColumnReader::InputColumnReader(const InputColumnMapping& mapping, AtomsImporter::AtomsData& destination, size_t particleCount)
+InputColumnReader::InputColumnReader(const InputColumnMapping& mapping, ParticleImportData& destination, size_t particleCount)
 	: _mapping(mapping), _destination(destination),
 	  _intMetaTypeId(qMetaTypeId<int>()), _floatMetaTypeId(qMetaTypeId<FloatType>())
 {
@@ -249,12 +249,29 @@ void InputColumnReader::readParticle(size_t particleIndex, int ntokens, const ch
 
 		if(property->dataType() == _floatMetaTypeId) {
 			double f = strtod(*token, &endptr);
-			if(*endptr) throw Exception(tr("Invalid floating-point value in column %1 (%2): \"%3\"").arg(columnIndex+1).arg(property->name()).arg(*token));
+			if(*endptr)
+				throw Exception(tr("Invalid floating-point value in column %1 (%2): \"%3\"").arg(columnIndex+1).arg(property->name()).arg(*token));
 			property->setFloatComponent(particleIndex, _mapping.vectorComponent(columnIndex), (FloatType)f);
 		}
 		else if(property->dataType() == _intMetaTypeId) {
 			d = strtol(*token, &endptr, 10);
-			if(*endptr) throw Exception(tr("Invalid integer value in column %1 (%2): \"%3\"").arg(columnIndex+1).arg(property->name()).arg(*token));
+			if(property->type() != ParticleProperty::ParticleTypeProperty) {
+				if(*endptr)
+					throw Exception(tr("Invalid integer value in column %1 (%2): \"%3\"").arg(columnIndex+1).arg(property->name()).arg(*token));
+			}
+			else {
+				// Automatically register a new particle type if a new type identifier is encountered.
+				if(!*endptr) {
+					_destination.addParticleType(d);
+				}
+				else {
+					d = _destination.particleTypeFromName(*token);
+					if(d == -1) {
+						d = _destination.particleTypes().size() + 1;
+						_destination.addParticleType(d, *token);
+					}
+				}
+			}
 			property->setIntComponent(particleIndex, _mapping.vectorComponent(columnIndex), d);
 		}
 	}

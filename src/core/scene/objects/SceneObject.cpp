@@ -63,6 +63,11 @@ bool SceneObject::referenceEvent(RefTarget* source, ReferenceEvent* event)
 	if(source == displayObject()) {
 		return false;
 	}
+
+	// Automatically increment revision counter each time a sub-object of this object changes.
+	if(event->type() == ReferenceEvent::TargetChanged)
+		_revisionNumber++;
+
 	return RefTarget::referenceEvent(source, event);
 }
 

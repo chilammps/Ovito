@@ -429,14 +429,16 @@ bool AtomsImportObject::onRefTargetMessage(RefTarget* source, RefTargetMessage* 
 ******************************************************************************/
 QString LinkedFileObject::objectTitle()
 {
+	QString filename;
 	if(!sourceUrl().isEmpty()) {
 		if(sourceUrl().isLocalFile()) {
-			QString filename = QFileInfo(sourceUrl().toLocalFile()).fileName();
-			if(!filename.isEmpty())
-				return filename;
+			filename = QFileInfo(sourceUrl().toLocalFile()).fileName();
 		}
-		else return sourceUrl().toString();
+		if(filename.isEmpty())
+			filename = sourceUrl().toString();
 	}
+	if(importer())
+		return QString("%1: %2").arg(importer()->objectTitle()).arg(filename);
 	return SceneObject::objectTitle();
 }
 

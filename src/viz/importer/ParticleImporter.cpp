@@ -24,21 +24,17 @@
 #include <core/utilities/concurrent/Future.h>
 #include <core/utilities/concurrent/ProgressManager.h>
 #include <core/dataset/importexport/LinkedFileObject.h>
-#include <viz/data/SimulationCell.h>
-#include <viz/data/ParticleProperty.h>
-#include <viz/data/ParticlePropertyObject.h>
-#include <viz/data/ParticleDisplay.h>
-#include "AtomsImporter.h"
+#include "ParticleImporter.h"
 #include "moc_CompressedTextParserStream.cpp"
 
 namespace Viz {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Viz, AtomsImporter, LinkedFileImporter)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Viz, ParticleImporter, LinkedFileImporter)
 
 /******************************************************************************
 * Reads the data from the input file(s).
 ******************************************************************************/
-void AtomsImporter::loadImplementation(FutureInterface<ImportedDataPtr>& futureInterface, FrameSourceInformation frame)
+void ParticleImporter::loadImplementation(FutureInterface<ImportedDataPtr>& futureInterface, FrameSourceInformation frame)
 {
 	futureInterface.setProgressText(tr("Loading file %1").arg(frame.sourceFile.toString()));
 
@@ -58,56 +54,12 @@ void AtomsImporter::loadImplementation(FutureInterface<ImportedDataPtr>& futureI
 		stream.seek(frame.byteOffset);
 
 	// Parse file.
-	std::shared_ptr<AtomsData> result(std::make_shared<AtomsData>());
+	std::shared_ptr<ParticleImportData> result(std::make_shared<ParticleImportData>());
 	parseFile(futureInterface, *result, stream);
 
 	// Return results.
 	if(!futureInterface.isCanceled())
 		futureInterface.setResult(result);
-}
-
-/******************************************************************************
-* Lets the data container insert the data it holds into the scene by creating
-* appropriate scene objects.
-******************************************************************************/
-void AtomsImporter::AtomsData::insertIntoScene(LinkedFileObject* destination)
-{
-	QSet<SceneObject*> activeObjects;
-
-	// Adopt simulation cell.
-	OORef<SimulationCell> cell = destination->findSceneObject<SimulationCell>();
-	if(!cell) {
-		cell = new SimulationCell(simulationCell(), pbcFlags()[0], pbcFlags()[1], pbcFlags()[2]);
-		destination->addSceneObject(cell.get());
-	}
-	else {
-		cell->setCellMatrix(simulationCell());
-		cell->setPBCFlags(pbcFlags());
-	}
-	activeObjects.insert(cell.get());
-
-	// Adopt particle properties.
-	for(const auto& property : particleProperties()) {
-		OORef<ParticlePropertyObject> propertyObj;
-		for(const auto& sceneObj : destination->sceneObjects()) {
-			ParticlePropertyObject* po = dynamic_object_cast<ParticlePropertyObject>(sceneObj);
-			if(po != nullptr && po->type() == property->type() && po->name() == property->name()) {
-				propertyObj = po;
-				break;
-			}
-		}
-		if(propertyObj)
-			propertyObj->replaceStorage(property.data());
-		else {
-			propertyObj = new ParticlePropertyObject(property.data());
-			if(propertyObj->type() == ParticleProperty::PositionProperty)
-				propertyObj->setDisplayObject(new ParticleDisplay());
-			destination->addSceneObject(propertyObj.get());
-		}
-		activeObjects.insert(propertyObj.get());
-	}
-
-	destination->removeInactiveObjects(activeObjects);
 }
 
 };
