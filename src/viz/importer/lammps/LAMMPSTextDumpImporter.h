@@ -59,7 +59,7 @@ public:
 	void setMultiTimestepFile(bool enable) { _isMultiTimestepFile = enable; }
 
 	/// \brief Opens the settings dialog for this importer.
-	virtual bool showSettingsDialog(QWidget* parent) override;
+	virtual bool showSettingsDialog(QWidget* parent, LinkedFileObject* object) override;
 
 	/// \brief Returns whether this importer has a settings dialog box to let the user configure the import settings.
 	virtual bool hasSettingsDialog() override { return true; }

@@ -75,26 +75,31 @@ void FloatParameterUI::updatePropertyValue()
 void FloatParameterUI::updateUI()
 {
 	if(editObject() && spinner() && !spinner()->isDragging()) {
-		if(isReferenceFieldUI()) {
-			FloatController* ctrl = dynamic_object_cast<FloatController>(parameterObject());
-			if(ctrl != NULL && spinner() && !spinner()->isDragging()) {
-				spinner()->setFloatValue(ctrl->currentValue());
-			}
-		}
-		else {
-			QVariant val(0.0);
-			if(isQtPropertyUI()) {
-				val = editObject()->property(propertyName());
-				OVITO_ASSERT_MSG(val.isValid() && val.canConvert(QVariant::Double), "FloatParameterUI::updateUI()", QString("The object class %1 does not define a property with the name %2 that can be cast to float type.").arg(editObject()->metaObject()->className(), QString(propertyName())).toLocal8Bit().constData());
-				if(!val.isValid() || !val.canConvert(QVariant::Double)) {
-					throw Exception(tr("The object class %1 does not define a property with the name %2 that can be cast to float type.").arg(editObject()->metaObject()->className(), QString(propertyName())));
+		try {
+			if(isReferenceFieldUI()) {
+				FloatController* ctrl = dynamic_object_cast<FloatController>(parameterObject());
+				if(ctrl != NULL && spinner() && !spinner()->isDragging()) {
+					spinner()->setFloatValue(ctrl->currentValue());
 				}
 			}
-			else if(isPropertyFieldUI()) {
-				val = editObject()->getPropertyFieldValue(*propertyField());
-				OVITO_ASSERT(val.isValid());
+			else {
+				QVariant val(0.0);
+				if(isQtPropertyUI()) {
+					val = editObject()->property(propertyName());
+					OVITO_ASSERT_MSG(val.isValid() && val.canConvert(QVariant::Double), "FloatParameterUI::updateUI()", QString("The object class %1 does not define a property with the name %2 that can be cast to float type.").arg(editObject()->metaObject()->className(), QString(propertyName())).toLocal8Bit().constData());
+					if(!val.isValid() || !val.canConvert(QVariant::Double)) {
+						throw Exception(tr("The object class %1 does not define a property with the name %2 that can be cast to float type.").arg(editObject()->metaObject()->className(), QString(propertyName())));
+					}
+				}
+				else if(isPropertyFieldUI()) {
+					val = editObject()->getPropertyFieldValue(*propertyField());
+					OVITO_ASSERT(val.isValid());
+				}
+				spinner()->setFloatValue(val.value<FloatType>());
 			}
-			spinner()->setFloatValue(val.value<FloatType>());
+		}
+		catch(const Exception& ex) {
+			ex.showError();
 		}
 	}
 }

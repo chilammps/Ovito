@@ -143,6 +143,7 @@ private:
 	QIcon _statusInfoIcon;
 	QIcon _statusWarningIcon;
 	QIcon _statusErrorIcon;
+	QIcon _statusNoneIcon;
 	QMovie _statusPendingIcon;
 
 	/// The font used for section headers.

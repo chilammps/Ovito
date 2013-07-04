@@ -48,9 +48,17 @@ public:
 	/// \brief Returns the parser that loads the input file.
 	LinkedFileImporter* importer() const { return _importer; }
 
+	/// \brief Sets the source location for importing data.
+	/// \param sourceUrl The new source location.
+	/// \return false if the operation has been canceled by the user.
+	bool setSourceUrl(const QUrl& sourceUrl);
+
+	/// \brief Returns the source location of the data.
+	const QUrl& sourceUrl() const { return _sourceUrl; }
+
 	/// \brief This reloads the input data from the external file.
 	/// \param frame The animation frame to reload from the external file.
-	void refreshFromSource(int frame);
+	void refreshFromSource(int frame = -1);
 
 	/// \brief Returns the status returned by the file parser on its last invocation.
 	virtual ObjectStatus status() const override { return _importStatus; }
@@ -168,6 +176,10 @@ public:
 
 #endif
 
+public:
+
+	Q_PROPERTY(QUrl sourceUrl READ sourceUrl WRITE setSourceUrl)
+
 protected Q_SLOTS:
 
 	/// \brief This is called when the background loading operation has finished.
@@ -215,6 +227,9 @@ private:
 	/// Controls whether the scene's animation interval is adjusted to the number of frames found in the input file.
 	PropertyField<bool> _adjustAnimationIntervalEnabled;
 
+	/// The source file (may be a wild-card pattern).
+	PropertyField<QUrl, QUrl, ReferenceEvent::TitleChanged> _sourceUrl;
+
 	/// Stores the list of animation frames in the input file(s).
 	QVector<LinkedFileImporter::FrameSourceInformation> _frames;
 
@@ -233,7 +248,6 @@ private:
 	/// The watcher object that is used to monitor the background operation.
 	FutureWatcher _loadFrameOperationWatcher;
 
-
 #if 0
 
 	/// Controls the playback speed of simulation snapshots.
@@ -250,6 +264,7 @@ private:
 	DECLARE_VECTOR_REFERENCE_FIELD(_sceneObjects);
 	//DECLARE_PROPERTY_FIELD(_framesPerSnapshot);
 	DECLARE_PROPERTY_FIELD(_adjustAnimationIntervalEnabled);
+	DECLARE_PROPERTY_FIELD(_sourceUrl);
 };
 
 };

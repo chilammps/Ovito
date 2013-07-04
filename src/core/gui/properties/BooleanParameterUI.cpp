@@ -139,21 +139,25 @@ void BooleanParameterUI::updatePropertyValue()
 	if(checkBox() && editObject()) {
 		
 		UndoManager::instance().beginCompoundOperation(tr("Change parameter"));
-
-		if(isReferenceFieldUI()) {
-			BooleanController* ctrl = dynamic_object_cast<BooleanController>(parameterObject());
-			if(ctrl) {
-				ctrl->setCurrentValue(checkBox()->isChecked());
-				updateUI();
+		try {
+			if(isReferenceFieldUI()) {
+				BooleanController* ctrl = dynamic_object_cast<BooleanController>(parameterObject());
+				if(ctrl) {
+					ctrl->setCurrentValue(checkBox()->isChecked());
+					updateUI();
+				}
+			}
+			else if(isQtPropertyUI()) {
+				if(!editObject()->setProperty(propertyName(), checkBox()->isChecked())) {
+					OVITO_ASSERT_MSG(false, "BooleanParameterUI::updatePropertyValue()", QString("The value of property %1 of object class %2 could not be set.").arg(QString(propertyName()), editObject()->metaObject()->className()).toLocal8Bit().constData());
+				}
+			}
+			else if(isPropertyFieldUI()) {
+				editObject()->setPropertyFieldValue(*propertyField(), checkBox()->isChecked());
 			}
 		}
-		else if(isQtPropertyUI()) {
-			if(!editObject()->setProperty(propertyName(), checkBox()->isChecked())) {
-				OVITO_ASSERT_MSG(false, "BooleanParameterUI::updatePropertyValue()", QString("The value of property %1 of object class %2 could not be set.").arg(QString(propertyName()), editObject()->metaObject()->className()).toLocal8Bit().constData());
-			}
-		}
-		else if(isPropertyFieldUI()) {
-			editObject()->setPropertyFieldValue(*propertyField(), checkBox()->isChecked());						
+		catch(const Exception& ex) {
+			ex.showError();
 		}
 		
 		UndoManager::instance().endCompoundOperation();

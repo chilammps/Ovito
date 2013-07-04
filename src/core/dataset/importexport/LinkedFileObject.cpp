@@ -41,9 +41,11 @@ SET_OVITO_OBJECT_EDITOR(LinkedFileObject, LinkedFileObjectEditor)
 DEFINE_FLAGS_REFERENCE_FIELD(LinkedFileObject, _importer, "Importer", LinkedFileImporter, PROPERTY_FIELD_ALWAYS_DEEP_COPY)
 DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(LinkedFileObject, _sceneObjects, "SceneObjects", SceneObject, PROPERTY_FIELD_ALWAYS_DEEP_COPY)
 DEFINE_PROPERTY_FIELD(LinkedFileObject, _adjustAnimationIntervalEnabled, "AdjustAnimationIntervalEnabled")
+DEFINE_PROPERTY_FIELD(LinkedFileObject, _sourceUrl, "SourceUrl")
 SET_PROPERTY_FIELD_LABEL(LinkedFileObject, _importer, "File Importer")
 SET_PROPERTY_FIELD_LABEL(LinkedFileObject, _sceneObjects, "Objects")
 SET_PROPERTY_FIELD_LABEL(LinkedFileObject, _adjustAnimationIntervalEnabled, "Adjust animation interval")
+SET_PROPERTY_FIELD_LABEL(LinkedFileObject, _sourceUrl, "Source location")
 
 /******************************************************************************
 * Constructs the object.
@@ -53,8 +55,30 @@ LinkedFileObject::LinkedFileObject() : _adjustAnimationIntervalEnabled(true), _l
 	INIT_PROPERTY_FIELD(LinkedFileObject::_importer);
 	INIT_PROPERTY_FIELD(LinkedFileObject::_sceneObjects);
 	INIT_PROPERTY_FIELD(LinkedFileObject::_adjustAnimationIntervalEnabled);
+	INIT_PROPERTY_FIELD(LinkedFileObject::_sourceUrl);
 
 	connect(&_loadFrameOperationWatcher, &FutureWatcher::finished, this, &LinkedFileObject::loadOperationFinished);
+}
+
+/******************************************************************************
+* Sets the source location for importing data.
+******************************************************************************/
+bool LinkedFileObject::setSourceUrl(const QUrl& url)
+{
+	if(sourceUrl() == url)
+		return true;
+
+	// Let the parser inspect the file to import.
+	if(importer() && !importer()->acceptNewSource(url))
+		return false;
+
+	// Make this change undoable.
+	if(UndoManager::instance().isRecording())
+		UndoManager::instance().push(new SimplePropertyChangeOperation(this, "sourceUrl"));
+
+	_sourceUrl = url;
+
+	return true;
 }
 
 /******************************************************************************
@@ -65,11 +89,20 @@ bool LinkedFileObject::updateFrames()
 	if(!importer())
 		return false;
 
-	Future<QVector<LinkedFileImporter::FrameSourceInformation>> framesFuture = importer()->findFrames();
+	Future<QVector<LinkedFileImporter::FrameSourceInformation>> framesFuture = importer()->findFrames(sourceUrl());
 	if(!ProgressManager::instance().waitForTask(framesFuture))
 		return false;
 
-	_frames = framesFuture.result();
+	QVector<LinkedFileImporter::FrameSourceInformation> newFrames = framesFuture.result();
+
+	// Reload current frame if file has changed.
+	if(_loadedFrame >= 0) {
+		if(_loadedFrame >= newFrames.size() || _loadedFrame >= _frames.size() || newFrames[_loadedFrame] != _frames[_loadedFrame])
+			_loadedFrame = -1;
+	}
+
+	_frames = newFrames;
+	notifyDependents(ReferenceEvent::TargetChanged);
 
 	return true;
 }
@@ -113,7 +146,10 @@ PipelineFlowState LinkedFileObject::evaluate(TimePoint time)
 			if(oldTaskCanceled) {
 				notifyDependents(ReferenceEvent::PendingOperationFailed);
 			}
-			setStatus(ObjectStatus(ObjectStatus::Error, tr("The requested animation frame %1 is out of range for source location %2").arg(frame).arg(importer()->sourceUrl().toString())));
+			if(numberOfFrames() > 0)
+				setStatus(ObjectStatus(ObjectStatus::Error, tr("The requested animation frame (%1) is out of range.").arg(frame)));
+			else
+				setStatus(ObjectStatus(ObjectStatus::Error, tr("The source location is empty.")));
 			return PipelineFlowState(status(), _sceneObjects.targets(), TimeInterval(time));
 		}
 		_frameBeingLoaded = frame;
@@ -290,6 +326,8 @@ void LinkedFileObject::adjustAnimationInterval()
 	if(numberOfFrames() > 1) {
 		TimeInterval interval(0, (numberOfFrames()-1) * animSettings->ticksPerFrame());
 		animSettings->setAnimationInterval(interval);
+		if(animSettings->time() > interval.end())
+			animSettings->setTime(interval.end());
 	}
 	else {
 		animSettings->setAnimationInterval(0);
@@ -391,8 +429,15 @@ bool AtomsImportObject::onRefTargetMessage(RefTarget* source, RefTargetMessage* 
 ******************************************************************************/
 QString LinkedFileObject::objectTitle()
 {
-	if(!importer()) return SceneObject::objectTitle();
-	return importer()->objectTitle();
+	if(!sourceUrl().isEmpty()) {
+		if(sourceUrl().isLocalFile()) {
+			QString filename = QFileInfo(sourceUrl().toLocalFile()).fileName();
+			if(!filename.isEmpty())
+				return filename;
+		}
+		else return sourceUrl().toString();
+	}
+	return SceneObject::objectTitle();
 }
 
 /******************************************************************************

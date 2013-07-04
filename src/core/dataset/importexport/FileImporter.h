@@ -56,12 +56,10 @@ public:
 	/// \brief Imports a file into the scene.
 	/// \param sourceUrl The location of the file to import.
 	/// \param scene The scene into which the file contents should be imported.
-	/// \param suppressDialogs Controls the suppression of any dialog boxes. This is used when
-	///                        the function is invoked from a script.
 	/// \return \c true if the file has been successfully imported.
 	//	        \c false if the import has been aborted by the user.
 	/// \throw Exception when the import has failed.
-	virtual bool importFile(const QUrl& sourceUrl, DataSet* scene, bool suppressDialogs = false)  = 0;
+	virtual bool importFile(const QUrl& sourceUrl, DataSet* scene)  = 0;
 
 	/// \brief Checks if the given file has format that can be read by this importer.
 	/// \param input The I/O device that contains the file data to check.

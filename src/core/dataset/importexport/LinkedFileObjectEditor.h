@@ -69,14 +69,17 @@ protected Q_SLOTS:
 	/// Updates the contents of the status label.
 	void updateInformationLabel();
 
+	/// This is called when the user has changed the source URL.
+	void onSourceUrlEntered();
+
 private:
 
 	QAction* _parserSettingsAction;
 
 	ElidedTextLabel* _filenameLabel;
-	ElidedTextLabel* _filepathLabel;
 	QLabel* _statusTextLabel;
 	QLabel* _statusIconLabel;
+	QLineEdit* _sourceTextbox;
 
 	QPixmap _statusWarningIcon;
 	QPixmap _statusErrorIcon;

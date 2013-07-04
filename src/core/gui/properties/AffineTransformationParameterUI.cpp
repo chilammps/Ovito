@@ -54,25 +54,30 @@ AffineTransformationParameterUI::AffineTransformationParameterUI(QObject* parent
 void AffineTransformationParameterUI::updatePropertyValue()
 {
 	if(editObject() && spinner()) {
-		if(isQtPropertyUI()) {
-			QVariant currentValue = editObject()->property(propertyName());
-			if(currentValue.canConvert<AffineTransformation>()) {
-				AffineTransformation val = currentValue.value<AffineTransformation>();
-				val(row, column) = spinner()->floatValue();
-				currentValue.setValue(val);
+		try {
+			if(isQtPropertyUI()) {
+				QVariant currentValue = editObject()->property(propertyName());
+				if(currentValue.canConvert<AffineTransformation>()) {
+					AffineTransformation val = currentValue.value<AffineTransformation>();
+					val(row, column) = spinner()->floatValue();
+					currentValue.setValue(val);
+				}
+				if(!editObject()->setProperty(propertyName(), currentValue)) {
+					OVITO_ASSERT_MSG(false, "AffineTransformationParameterUI::updatePropertyValue()", QString("The value of property %1 of object class %2 could not be set.").arg(QString(propertyName()), editObject()->metaObject()->className()).toLocal8Bit().constData());
+				}
 			}
-			if(!editObject()->setProperty(propertyName(), currentValue)) {
-				OVITO_ASSERT_MSG(false, "AffineTransformationParameterUI::updatePropertyValue()", QString("The value of property %1 of object class %2 could not be set.").arg(QString(propertyName()), editObject()->metaObject()->className()).toLocal8Bit().constData());
+			else if(isPropertyFieldUI()) {
+				QVariant currentValue = editObject()->getPropertyFieldValue(*propertyField());
+				if(currentValue.canConvert<AffineTransformation>()) {
+					AffineTransformation val = currentValue.value<AffineTransformation>();
+					val(row, column) = spinner()->floatValue();
+					currentValue.setValue(val);
+				}
+				editObject()->setPropertyFieldValue(*propertyField(), currentValue);
 			}
 		}
-		else if(isPropertyFieldUI()) {
-			QVariant currentValue = editObject()->getPropertyFieldValue(*propertyField());
-			if(currentValue.canConvert<AffineTransformation>()) {
-				AffineTransformation val = currentValue.value<AffineTransformation>();
-				val(row, column) = spinner()->floatValue();
-				currentValue.setValue(val);
-			}
-			editObject()->setPropertyFieldValue(*propertyField(), currentValue);						
+		catch(const Exception& ex) {
+			ex.showError();
 		}
 	}
 }

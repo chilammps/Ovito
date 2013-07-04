@@ -35,8 +35,6 @@
 namespace Ovito {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LinkedFileImporter, FileImporter)
-DEFINE_PROPERTY_FIELD(LinkedFileImporter, _sourceUrl, "SourceUrl")
-SET_PROPERTY_FIELD_LABEL(LinkedFileImporter, _sourceUrl, "Source location")
 
 /******************************************************************************
 * Imports the given file into the scene.
@@ -44,7 +42,7 @@ SET_PROPERTY_FIELD_LABEL(LinkedFileImporter, _sourceUrl, "Source location")
 * Return false if the import has been aborted by the user.
 * Throws an exception when the import has failed.
 ******************************************************************************/
-bool LinkedFileImporter::importFile(const QUrl& sourceUrl, DataSet* dataset, bool suppressDialogs)
+bool LinkedFileImporter::importFile(const QUrl& sourceUrl, DataSet* dataset)
 {
 	// Do not create any animation keys during import.
 	AnimationSuspender animSuspender;
@@ -53,20 +51,15 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl, DataSet* dataset, boo
 	{
 		UndoSuspender noUndo;		// Do not create undo records for this part of the operation.
 
-		// Set the input location.
-		setSourceUrl(sourceUrl);
-
-		// Show settings dialog.
-		if(!suppressDialogs && hasSettingsDialog()) {
-			if(!showSettingsDialog(&MainWindow::instance()))
-				return false;
-		}
-
 		// Create the object that will feed the imported data into the scene.
 		obj = new LinkedFileObject();
 
 		// Makes this importer part of the scene object.
 		obj->setImporter(this);
+
+		// Set the input location.
+		if(!obj->setSourceUrl(sourceUrl))
+			return false;
 
 		// Scan the input source for animation frames.
 		if(!obj->updateFrames())
@@ -121,40 +114,24 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl, DataSet* dataset, boo
 }
 
 /******************************************************************************
-* Returns the title of the parser object.
-******************************************************************************/
-QString LinkedFileImporter::objectTitle()
-{
-	if(!sourceUrl().isEmpty()) {
-		if(sourceUrl().isLocalFile()) {
-			QString filename = QFileInfo(sourceUrl().toLocalFile()).fileName();
-			if(!filename.isEmpty())
-				return filename;
-		}
-		else return sourceUrl().toString();
-	}
-	return FileImporter::objectTitle();
-}
-
-/******************************************************************************
 * Scans the input source (which can be a directory or a single file) to
 * discover all animation frames.
 *
 * This implementation of this method checks if the source URL contains a wild-card pattern.
 * If yes, it scans the directory to find all matching files.
 ******************************************************************************/
-Future<QVector<LinkedFileImporter::FrameSourceInformation>> LinkedFileImporter::findFrames()
+Future<QVector<LinkedFileImporter::FrameSourceInformation>> LinkedFileImporter::findFrames(const QUrl& sourceUrl)
 {
 	QVector<FrameSourceInformation> frames;
-	if(sourceUrl().isLocalFile()) {
+	if(sourceUrl.isLocalFile()) {
 
 		// Check if filename is a wild-card pattern.
-		QFileInfo fileInfo(sourceUrl().toLocalFile());
+		QFileInfo fileInfo(sourceUrl.toLocalFile());
 		QString pattern = fileInfo.fileName();
 		if(pattern.contains('*') == false && pattern.contains('?') == false) {
 			// It's not a wild-card pattern.
 			// Register only a single frame.
-			frames.push_back({ sourceUrl(), 0, 0, fileInfo.lastModified() });
+			frames.push_back({ sourceUrl, 0, 0, fileInfo.lastModified() });
 		}
 		else{
 
@@ -195,7 +172,7 @@ Future<QVector<LinkedFileImporter::FrameSourceInformation>> LinkedFileImporter::
 	else {
 		// It's not a file URL.
 		// Register only a single frame.
-		frames.push_back({ sourceUrl(), 0, 0, QDateTime() });
+		frames.push_back({ sourceUrl, 0, 0, QDateTime() });
 	}
 
 	return Future<QVector<FrameSourceInformation>>(frames);

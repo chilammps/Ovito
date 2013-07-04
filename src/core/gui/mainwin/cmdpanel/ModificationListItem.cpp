@@ -61,7 +61,7 @@ bool ModificationListItem::referenceEvent(RefTarget* source, ReferenceEvent* eve
 		Q_EMIT itemChanged(this);
 	}
 	/// Update an entry if the evaluation status of the modifier has changed.
-	else if(event->type() == ReferenceEvent::StatusChanged) {
+	else if(event->type() == ReferenceEvent::StatusChanged || event->type() == ReferenceEvent::TitleChanged) {
 		Q_EMIT itemChanged(this);
 	}
 	/// If the list of sub-objects changes for one of the entries, we need

@@ -98,14 +98,19 @@ void VariantComboBoxParameterUI::updatePropertyValue()
 		
 		UndoManager::instance().beginCompoundOperation(tr("Change parameter"));
 		 
-		QVariant newValue;
-		if(comboBox()->isEditable())
-			newValue = comboBox()->currentText();
-		else
-			newValue = comboBox()->itemData(comboBox()->currentIndex());
-			
-		if(!editObject()->setProperty(propertyName(), newValue)) {
-			OVITO_ASSERT_MSG(false, "VariantComboBoxParameterUI::updatePropertyValue()", QString("The value of property %1 of object class %2 could not be set.").arg(QString(propertyName()), editObject()->metaObject()->className()).toLocal8Bit().constData());
+		try {
+			QVariant newValue;
+			if(comboBox()->isEditable())
+				newValue = comboBox()->currentText();
+			else
+				newValue = comboBox()->itemData(comboBox()->currentIndex());
+
+			if(!editObject()->setProperty(propertyName(), newValue)) {
+				OVITO_ASSERT_MSG(false, "VariantComboBoxParameterUI::updatePropertyValue()", QString("The value of property %1 of object class %2 could not be set.").arg(QString(propertyName()), editObject()->metaObject()->className()).toLocal8Bit().constData());
+			}
+		}
+		catch(const Exception& ex) {
+			ex.showError();
 		}
 		
 		UndoManager::instance().endCompoundOperation();

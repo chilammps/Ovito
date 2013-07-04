@@ -39,6 +39,7 @@ ModificationListModel::ModificationListModel(QObject* parent) : QAbstractListMod
 	_statusInfoIcon(":/core/mainwin/status/status_info.png"),
 	_statusWarningIcon(":/core/mainwin/status/status_warning.png"),
 	_statusErrorIcon(":/core/mainwin/status/status_error.png"),
+	_statusNoneIcon(":/core/mainwin/status/status_none.png"),
 	_statusPendingIcon(":/core/mainwin/status/status_pending.gif"),
 	_modifierEnabledIcon(":/core/command_panel/modifier_enabled.png"),
 	_modifierDisabledIcon(":/core/command_panel/modifier_disabled.png"),
@@ -298,7 +299,7 @@ QVariant ModificationListModel::data(const QModelIndex& index, int role) const
 		case ModificationListItem::Pending:
 			const_cast<QMovie&>(_statusPendingIcon).start();
 			return qVariantFromValue(_statusPendingIcon.currentImage());
-		case ModificationListItem::None: return QVariant();
+		case ModificationListItem::None: return qVariantFromValue(_statusNoneIcon);
 		}
 	}
 	else if(role == Qt::ToolTipRole) {

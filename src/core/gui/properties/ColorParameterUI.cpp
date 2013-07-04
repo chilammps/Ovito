@@ -123,15 +123,20 @@ void ColorParameterUI::onColorPickerChanged()
 	if(colorPicker() && editObject()) {
 		ViewportSuspender noVPUpdate;
 		UndoManager::instance().beginCompoundOperation(tr("Change color"));
-		if(isReferenceFieldUI()) {
-			VectorController* ctrl = dynamic_object_cast<VectorController>(parameterObject());
-			if(ctrl)
-				ctrl->setCurrentValue((Vector3)colorPicker()->color());
+		try {
+			if(isReferenceFieldUI()) {
+				VectorController* ctrl = dynamic_object_cast<VectorController>(parameterObject());
+				if(ctrl)
+					ctrl->setCurrentValue((Vector3)colorPicker()->color());
+			}
+			else if(isPropertyFieldUI()) {
+				QVariant newValue;
+				newValue.setValue(colorPicker()->color());
+				editObject()->setPropertyFieldValue(*propertyField(), newValue);
+			}
 		}
-		else if(isPropertyFieldUI()) {
-			QVariant newValue;
-			newValue.setValue(colorPicker()->color());
-			editObject()->setPropertyFieldValue(*propertyField(), newValue);
+		catch(const Exception& ex) {
+			ex.showError();
 		}
 		UndoManager::instance().endCompoundOperation();
 	}

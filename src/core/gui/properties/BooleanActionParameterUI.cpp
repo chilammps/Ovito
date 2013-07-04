@@ -107,16 +107,19 @@ void BooleanActionParameterUI::updatePropertyValue()
 	if(action() && editObject()) {
 		
 		UndoManager::instance().beginCompoundOperation(tr("Change parameter"));
-		 
-		if(isQtPropertyUI()) {
-			if(!editObject()->setProperty(propertyName(), action()->isChecked())) {
-				OVITO_ASSERT_MSG(false, "BooleanActionParameterUI::updatePropertyValue()", QString("The value of property %1 of object class %2 could not be set.").arg(QString(propertyName()), editObject()->metaObject()->className()).toLocal8Bit().constData());
+		try {
+			if(isQtPropertyUI()) {
+				if(!editObject()->setProperty(propertyName(), action()->isChecked())) {
+					OVITO_ASSERT_MSG(false, "BooleanActionParameterUI::updatePropertyValue()", QString("The value of property %1 of object class %2 could not be set.").arg(QString(propertyName()), editObject()->metaObject()->className()).toLocal8Bit().constData());
+				}
+			}
+			else if(isPropertyFieldUI()) {
+				editObject()->setPropertyFieldValue(*propertyField(), action()->isChecked());
 			}
 		}
-		else if(isPropertyFieldUI()) {
-			editObject()->setPropertyFieldValue(*propertyField(), action()->isChecked());
+		catch(const Exception& ex) {
+			ex.showError();
 		}
-		
 		UndoManager::instance().endCompoundOperation();
 	}
 }

@@ -35,19 +35,9 @@ LAMMPSDumpImporterSettingsDialog::LAMMPSDumpImporterSettingsDialog(LAMMPSTextDum
 
 	QVBoxLayout* layout1 = new QVBoxLayout(this);
 
-	// Time steps group
-	QGroupBox* sourceGroupBox = new QGroupBox(tr("Data source location"), this);
-	layout1->addWidget(sourceGroupBox);
-
-	QVBoxLayout* layout2 = new QVBoxLayout(sourceGroupBox);
-
-	sourceTextbox = new QLineEdit(importer->sourceUrl().toString(), sourceGroupBox);
-	sourceTextbox->setMinimumWidth(600);
-	layout2->addWidget(sourceTextbox);
-
-	multiTimestepCheckbox = new QCheckBox(tr("File contains multiple timesteps"), sourceGroupBox);
+	multiTimestepCheckbox = new QCheckBox(tr("File contains multiple timesteps"), this);
 	multiTimestepCheckbox->setChecked(importer->isMultiTimestepFile());
-	layout2->addWidget(multiTimestepCheckbox);
+	layout1->addWidget(multiTimestepCheckbox);
 
 	layout1->addStretch(1);
 
@@ -64,13 +54,8 @@ LAMMPSDumpImporterSettingsDialog::LAMMPSDumpImporterSettingsDialog(LAMMPSTextDum
 void LAMMPSDumpImporterSettingsDialog::onOk()
 {
 	try {
-		QUrl url = QUrl::fromUserInput(sourceTextbox->text());
-		if(!url.isValid())
-			throw Exception(tr("Source URL is not valid."));
-
 		// Write settings back to the parser.
 		importer->setMultiTimestepFile(multiTimestepCheckbox->isChecked());
-		importer->setSourceUrl(url);
 
 		// Close dialog box.
 		accept();

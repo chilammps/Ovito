@@ -22,6 +22,7 @@
 #include <core/Core.h>
 #include <core/utilities/io/FileManager.h>
 #include <core/utilities/concurrent/Future.h>
+#include <core/dataset/importexport/LinkedFileObject.h>
 #include "LAMMPSTextDumpImporter.h"
 #include "LAMMPSDumpImporterSettingsDialog.h"
 #include <viz/importer/InputColumnMapping.h>
@@ -34,11 +35,19 @@ DEFINE_PROPERTY_FIELD(LAMMPSTextDumpImporter, _isMultiTimestepFile, "IsMultiTime
 /******************************************************************************
 * Opens the settings dialog for this importer.
 ******************************************************************************/
-bool LAMMPSTextDumpImporter::showSettingsDialog(QWidget* parent)
+bool LAMMPSTextDumpImporter::showSettingsDialog(QWidget* parent, LinkedFileObject* object)
 {
 	LAMMPSDumpImporterSettingsDialog dialog(this, parent);
 	if(dialog.exec() != QDialog::Accepted)
 		return false;
+
+	// Scan the input source for animation frames.
+	if(!object->updateFrames())
+		return false;
+
+	// Adjust the animation length number to match the number of frames in the input data source.
+	object->adjustAnimationInterval();
+
 	return true;
 }
 
@@ -203,6 +212,8 @@ void LAMMPSTextDumpImporter::parseFile(FutureInterface<ImportedDataPtr>& futureI
 		}
 		while(!stream.eof());
 	}
+
+	throw Exception(tr("LAMMPS dump file parsing error. Unexpected end of file at line %1.").arg(stream.lineNumber()));
 }
 
 };

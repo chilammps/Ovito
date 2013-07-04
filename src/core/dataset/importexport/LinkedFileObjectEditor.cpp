@@ -55,17 +55,16 @@ void LinkedFileObjectEditor::createUI(const RolloutInsertionParameters& rolloutP
 	new BooleanActionParameterUI(this, "storeAtomsWithScene", storeAtomsWithSceneAction);
 #endif
 
-	layout->addWidget(new QLabel(tr("<b>File:</b>"), rollout));
+	layout->addWidget(new QLabel(tr("<b>Source location:</b>"), rollout));
+	_sourceTextbox = new QLineEdit();
+	connect(_sourceTextbox, SIGNAL(editingFinished()), this, SLOT(onSourceUrlEntered()));
+	layout->addWidget(_sourceTextbox);
+
+	layout->addWidget(new QLabel(tr("<b>Loaded file:</b>"), rollout));
 	_filenameLabel = new ElidedTextLabel(rollout);
 	_filenameLabel->setIndent(10);
 	_filenameLabel->setTextInteractionFlags(Qt::TextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard | Qt::LinksAccessibleByMouse | Qt::LinksAccessibleByKeyboard));
 	layout->addWidget(_filenameLabel);
-
-	layout->addWidget(new QLabel(tr("<b>Directory:</b>"), rollout));
-	_filepathLabel = new ElidedTextLabel(rollout);
-	_filepathLabel->setIndent(10);
-	_filepathLabel->setTextInteractionFlags(Qt::TextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard | Qt::LinksAccessibleByMouse | Qt::LinksAccessibleByKeyboard));
-	layout->addWidget(_filepathLabel);
 
 	layout->addWidget(new QLabel(tr("<b>Info:</b>"), rollout));
 
@@ -145,6 +144,34 @@ void LinkedFileObjectEditor::onChangeInputFile()
 }
 
 /******************************************************************************
+* This is called when the user has changed the source URL.
+******************************************************************************/
+void LinkedFileObjectEditor::onSourceUrlEntered()
+{
+	LinkedFileObject* obj = static_object_cast<LinkedFileObject>(editObject());
+	OVITO_CHECK_OBJECT_POINTER(obj);
+
+	UndoManager::instance().beginCompoundOperation(tr("Change source URL"));
+	try {
+		QUrl url = QUrl::fromUserInput(_sourceTextbox->text());
+		if(!url.isValid())
+			throw Exception(tr("URL is not valid."));
+
+		if(obj->setSourceUrl(url)) {
+			if(obj->updateFrames()) {
+				obj->adjustAnimationInterval();
+			}
+		}
+	}
+	catch(const Exception& ex) {
+		ex.showError();
+		UndoManager::instance().currentCompoundOperation()->clear();
+		updateInformationLabel();
+	}
+	UndoManager::instance().endCompoundOperation();
+}
+
+/******************************************************************************
 * Is called when the user presses the Parser Settings button.
 ******************************************************************************/
 void LinkedFileObjectEditor::onParserSettings()
@@ -157,20 +184,7 @@ void LinkedFileObjectEditor::onParserSettings()
 			throw Exception(tr("There is no parser available."));
 
 		// Show settings dialog.
-		if(!obj->importer()->showSettingsDialog(container()))
-			return;
-
-		// Scan the input source for animation frames.
-		if(!obj->updateFrames())
-			return;
-
-		// Adjust the animation length number to match the number of frames in the input data source.
-		obj->adjustAnimationInterval();
-
-#if 0
-		ViewportSuspender noVPUpdate;
-		obj->reloadInputFile();
-#endif
+		obj->importer()->showSettingsDialog(container(), obj);
 	}
 	catch(const Exception& ex) {
 		ex.showError();
@@ -183,12 +197,19 @@ void LinkedFileObjectEditor::onParserSettings()
 void LinkedFileObjectEditor::updateInformationLabel()
 {
 	LinkedFileObject* obj = static_object_cast<LinkedFileObject>(editObject());
-	if(!obj) return;
+	if(!obj) {
+		_sourceTextbox->setText(QString());
+		_sourceTextbox->setEnabled(false);
+		return;
+	}
 
 	//QFileInfo fileInfo(obj->sourceFile());
 
 	//filenameLabel->setText(fileInfo.fileName());
 	//filepathLabel->setText(fileInfo.absolutePath());
+
+	_sourceTextbox->setText(obj->sourceUrl().toString());
+	_sourceTextbox->setEnabled(true);
 
 	_statusTextLabel->setText(obj->status().longText());
 	if(obj->status().type() == ObjectStatus::Warning)
@@ -204,8 +225,10 @@ void LinkedFileObjectEditor::updateInformationLabel()
 ******************************************************************************/
 bool LinkedFileObjectEditor::referenceEvent(RefTarget* source, ReferenceEvent* event)
 {
-	if(source == editObject() && (event->type() == ReferenceEvent::StatusChanged || event->type() == ReferenceEvent::TitleChanged)) {
-		updateInformationLabel();
+	if(source == editObject()) {
+		if(event->type() == ReferenceEvent::StatusChanged || event->type() == ReferenceEvent::TitleChanged) {
+			updateInformationLabel();
+		}
 	}
 	return PropertiesEditor::referenceEvent(source, event);
 }

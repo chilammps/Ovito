@@ -133,17 +133,21 @@ void BooleanRadioButtonParameterUI::updatePropertyValue()
 	if(buttonGroup() && editObject()) {
 		
 		UndoManager::instance().beginCompoundOperation(tr("Change parameter"));
-		 
-		int id = buttonGroup()->checkedId();
-		if(id != -1) {
-			if(propertyName()) {
-				if(!editObject()->setProperty(propertyName(), (bool)id)) {
-					OVITO_ASSERT_MSG(false, "BooleanRadioButtonParameterUI::updatePropertyValue()", QString("The value of property %1 of object class %2 could not be set.").arg(QString(propertyName()), editObject()->metaObject()->className()).toLocal8Bit().constData());
+		try {
+			int id = buttonGroup()->checkedId();
+			if(id != -1) {
+				if(propertyName()) {
+					if(!editObject()->setProperty(propertyName(), (bool)id)) {
+						OVITO_ASSERT_MSG(false, "BooleanRadioButtonParameterUI::updatePropertyValue()", QString("The value of property %1 of object class %2 could not be set.").arg(QString(propertyName()), editObject()->metaObject()->className()).toLocal8Bit().constData());
+					}
+				}
+				else if(propertyField()) {
+					editObject()->setPropertyFieldValue(*propertyField(), (bool)id);
 				}
 			}
-			else if(propertyField()) {
-				editObject()->setPropertyFieldValue(*propertyField(), (bool)id);						
-			}
+		}
+		catch(const Exception& ex) {
+			ex.showError();
 		}
 		
 		UndoManager::instance().endCompoundOperation();

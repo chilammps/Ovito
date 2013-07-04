@@ -75,27 +75,32 @@ void IntegerParameterUI::updatePropertyValue()
 void IntegerParameterUI::updateUI()
 {
 	if(editObject() && spinner() && !spinner()->isDragging()) {
-		if(isReferenceFieldUI()) {
-			IntegerController* ctrl = dynamic_object_cast<IntegerController>(parameterObject());
-			if(ctrl != NULL) {
-				TimeInterval interval;
-				spinner()->setIntValue(ctrl->currentValue());
-			}
-		}
-		else {
-			QVariant val(0);
-			if(isQtPropertyUI()) {
-				val = editObject()->property(propertyName());
-				OVITO_ASSERT_MSG(val.isValid() && val.canConvert(QVariant::Int), "IntegerParameterUI::updateUI()", QString("The object class %1 does not define a property with the name %2 that can be cast to integer type.").arg(editObject()->metaObject()->className(), QString(propertyName())).toLocal8Bit().constData());
-				if(!val.isValid() || !val.canConvert(QVariant::Int)) {
-					throw Exception(tr("The object class %1 does not define a property with the name %2 that can be cast to integer type.").arg(editObject()->metaObject()->className(), QString(propertyName())));
+		try {
+			if(isReferenceFieldUI()) {
+				IntegerController* ctrl = dynamic_object_cast<IntegerController>(parameterObject());
+				if(ctrl != NULL) {
+					TimeInterval interval;
+					spinner()->setIntValue(ctrl->currentValue());
 				}
 			}
-			else if(isPropertyFieldUI()) {
-				val = editObject()->getPropertyFieldValue(*propertyField());
-				OVITO_ASSERT(val.isValid());
+			else {
+				QVariant val(0);
+				if(isQtPropertyUI()) {
+					val = editObject()->property(propertyName());
+					OVITO_ASSERT_MSG(val.isValid() && val.canConvert(QVariant::Int), "IntegerParameterUI::updateUI()", QString("The object class %1 does not define a property with the name %2 that can be cast to integer type.").arg(editObject()->metaObject()->className(), QString(propertyName())).toLocal8Bit().constData());
+					if(!val.isValid() || !val.canConvert(QVariant::Int)) {
+						throw Exception(tr("The object class %1 does not define a property with the name %2 that can be cast to integer type.").arg(editObject()->metaObject()->className(), QString(propertyName())));
+					}
+				}
+				else if(isPropertyFieldUI()) {
+					val = editObject()->getPropertyFieldValue(*propertyField());
+					OVITO_ASSERT(val.isValid());
+				}
+				spinner()->setIntValue(val.toInt());
 			}
-			spinner()->setIntValue(val.toInt());
+		}
+		catch(const Exception& ex) {
+			ex.showError();
 		}
 	}
 }

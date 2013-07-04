@@ -142,21 +142,25 @@ void BooleanGroupBoxParameterUI::updatePropertyValue()
 	if(groupBox() && editObject()) {
 
 		UndoManager::instance().beginCompoundOperation(tr("Change parameter"));
-
-		if(isReferenceFieldUI()) {
-			BooleanController* ctrl = dynamic_object_cast<BooleanController>(parameterObject());
-			if(ctrl) {
-				ctrl->setCurrentValue(groupBox()->isChecked());
-				updateUI();
+		try {
+			if(isReferenceFieldUI()) {
+				BooleanController* ctrl = dynamic_object_cast<BooleanController>(parameterObject());
+				if(ctrl) {
+					ctrl->setCurrentValue(groupBox()->isChecked());
+					updateUI();
+				}
+			}
+			else if(isQtPropertyUI()) {
+				if(!editObject()->setProperty(propertyName(), groupBox()->isChecked())) {
+					OVITO_ASSERT_MSG(false, "BooleanGroupBoxParameterUI::updatePropertyValue()", QString("The value of property %1 of object class %2 could not be set.").arg(QString(propertyName()), editObject()->metaObject()->className()).toLocal8Bit().constData());
+				}
+			}
+			else if(isPropertyFieldUI()) {
+				editObject()->setPropertyFieldValue(*propertyField(), groupBox()->isChecked());
 			}
 		}
-		else if(isQtPropertyUI()) {
-			if(!editObject()->setProperty(propertyName(), groupBox()->isChecked())) {
-				OVITO_ASSERT_MSG(false, "BooleanGroupBoxParameterUI::updatePropertyValue()", QString("The value of property %1 of object class %2 could not be set.").arg(QString(propertyName()), editObject()->metaObject()->className()).toLocal8Bit().constData());
-			}
-		}
-		else if(isPropertyFieldUI()) {
-			editObject()->setPropertyFieldValue(*propertyField(), groupBox()->isChecked());
+		catch(const Exception& ex) {
+			ex.showError();
 		}
 
 		UndoManager::instance().endCompoundOperation();
