@@ -129,4 +129,6 @@ private:
 
 };
 
+#include <core/scene/objects/SceneObject.h>
+
 #endif // __OVITO_PIPELINE_FLOW_STATE_H

@@ -65,9 +65,6 @@ public:
 
 private:
 
-	/// Finds all modifier classes provided by the installed plugins.
-	void scanInstalledModifierClasses();
-
 	/// Updates the state of the actions that can be invoked on the currently selected item.
 	void updateActions(ModificationListItem* currentItem);
 
@@ -115,9 +112,6 @@ private:
 
 	/// This panel shows the properties of the selected modifier stack entry
 	PropertiesPanel* _propertiesPanel;
-
-	/// The list of installed modifier plugin classes.
-	QVector<const OvitoObjectType*> _modifierClasses;
 };
 
 };

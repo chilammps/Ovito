@@ -58,11 +58,16 @@ ModificationListModel::ModificationListModel(QObject* parent) : QAbstractListMod
 /******************************************************************************
 * Populates the model with the given list items.
 ******************************************************************************/
-void ModificationListModel::setItems(const QVector<OORef<ModificationListItem>>& newItems)
+void ModificationListModel::setItems(const QVector<OORef<ModificationListItem>>& newItems, const QVector<OORef<ModificationListItem>>& newHiddenItems)
 {
 	beginResetModel();
 	_items = newItems;
+	_hiddenItems = newHiddenItems;
 	for(const auto& item : _items) {
+		connect(item.get(), SIGNAL(itemChanged(ModificationListItem*)), this, SLOT(refreshItem(ModificationListItem*)));
+		connect(item.get(), SIGNAL(subitemsChanged(ModificationListItem*)), this, SLOT(requestUpdate()));
+	}
+	for(const auto& item : _hiddenItems) {
 		connect(item.get(), SIGNAL(itemChanged(ModificationListItem*)), this, SLOT(refreshItem(ModificationListItem*)));
 		connect(item.get(), SIGNAL(subitemsChanged(ModificationListItem*)), this, SLOT(requestUpdate()));
 	}
@@ -117,6 +122,7 @@ void ModificationListModel::refreshList()
 	}
 
 	QVector<OORef<ModificationListItem>> items;
+	QVector<OORef<ModificationListItem>> hiddenItems;
 	if(cmnObject) {
 
 		// Create list items for display objects.
@@ -135,7 +141,10 @@ void ModificationListModel::refreshList()
 			PipelineObject* modObj = dynamic_object_cast<PipelineObject>(cmnObject);
 			if(modObj) {
 
-				items.push_back(new ModificationListItem(nullptr, false, tr("Modifiers")));
+				if(!modObj->modifierApplications().empty())
+					items.push_back(new ModificationListItem(nullptr, false, tr("Modifiers")));
+
+				hiddenItems.push_back(new ModificationListItem(modObj));
 
 				for(int i = modObj->modifierApplications().size(); i--; ) {
 					ModifierApplication* app = modObj->modifierApplications()[i];
@@ -184,7 +193,7 @@ void ModificationListModel::refreshList()
 			break;
 		}
 	}
-	setItems(items);
+	setItems(items, hiddenItems);
 	_nextToSelectObject = nullptr;
 
 	// Select the right item in the list box.

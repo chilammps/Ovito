@@ -131,7 +131,7 @@ public:
 protected:
 
 	/// Creates the user interface controls for the editor.
-	virtual void createUI(const RolloutInsertionParameters& rolloutParams);
+	virtual void createUI(const RolloutInsertionParameters& rolloutParams) override;
 
 	Q_OBJECT
 	OVITO_OBJECT

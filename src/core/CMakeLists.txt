@@ -66,6 +66,7 @@ SET(OVITO_CORE_SOURCE_FILES
 	gui/mainwin/cmdpanel/ModifyCommandPage.cpp
 	gui/mainwin/cmdpanel/ModificationListModel.cpp
 	gui/mainwin/cmdpanel/ModificationListItem.cpp
+	gui/mainwin/cmdpanel/ModifierListModel.cpp
 	gui/mainwin/cmdpanel/UtilityCommandPage.cpp
 	gui/mainwin/cmdpanel/UtilityApplet.cpp
 	gui/dialogs/ApplicationSettingsDialog.cpp
@@ -147,7 +148,6 @@ INCLUDE_DIRECTORIES(${ZLIB_INCLUDE_DIRS})
 
 # Build library
 ADD_LIBRARY(Core ${OVITO_CORE_SOURCE_FILES} ${OVITO_CORE_RESOURCE_FILES})
-
 TARGET_LINK_LIBRARIES(Core Base)
 
 # Link to OpenGL library.

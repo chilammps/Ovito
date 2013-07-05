@@ -53,6 +53,11 @@ public:
 		// Insert into linked list of all object types.
 		_next = _firstInfo;
 		_firstInfo = this;
+
+		// Fetch display name assigned to the Qt object class.
+		int infoIndex = qtClassInfo->indexOfClassInfo("DisplayName");
+		if(infoIndex != -1)
+			setDisplayName(QString::fromLocal8Bit(qtClassInfo->classInfo(infoIndex).value()));
 	}
 
 	/// \brief Returns the name of this class.
@@ -74,6 +79,9 @@ public:
 
 	/// \brief Returns the identifier of the plugin this class belongs to.
 	const char* pluginId() const { return _pluginId; }
+
+	/// Returns the Qt runtime-type information associated with this object type.
+	virtual const QMetaObject* qtMetaObject() const override { return _qtClassInfo; }
 
 protected:
 

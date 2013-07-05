@@ -82,7 +82,7 @@ public:
 	}
 
 	/// Populates the model with the given list items.
-	void setItems(const QVector<OORef<ModificationListItem>>& newItems);
+	void setItems(const QVector<OORef<ModificationListItem>>& newItems, const QVector<OORef<ModificationListItem>>& newHiddenItems);
 
 	/// Returns true if the list model is currently in a valid state.
 	bool isUpToDate() const { return !_needListUpdate; }
@@ -122,8 +122,11 @@ private Q_SLOTS:
 
 private:
 
-	/// List of items in the model.
+	/// List of visible items in the model.
 	QVector<OORef<ModificationListItem>> _items;
+
+	/// List of hidden items in the model.
+	QVector<OORef<ModificationListItem>> _hiddenItems;
 
 	/// Holds references to the currently selected ObjectNode instances.
 	VectorRefTargetListener _selectedNodes;

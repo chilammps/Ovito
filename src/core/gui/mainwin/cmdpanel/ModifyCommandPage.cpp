@@ -20,7 +20,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include <core/plugins/PluginManager.h>
 #include <core/scene/objects/SceneObject.h>
 #include <core/scene/pipeline/PipelineObject.h>
 #include <core/scene/pipeline/Modifier.h>
@@ -29,6 +28,7 @@
 #include <core/gui/actions/ActionManager.h>
 #include "ModifyCommandPage.h"
 #include "ModificationListModel.h"
+#include "ModifierListModel.h"
 
 namespace Ovito {
 
@@ -37,8 +37,6 @@ namespace Ovito {
 ******************************************************************************/
 ModifyCommandPage::ModifyCommandPage()
 {
-	scanInstalledModifierClasses();
-
 	QVBoxLayout* layout = new QVBoxLayout(this);
 	layout->setContentsMargins(2,2,2,2);
 	layout->setSpacing(0);
@@ -71,6 +69,8 @@ ModifyCommandPage::ModifyCommandPage()
 	connect(_modificationListWidget, SIGNAL(doubleClicked(const QModelIndex&)), this, SLOT(onModifierStackDoubleClicked(const QModelIndex&)));
 	layout->addSpacing(4);
 	subLayout->addWidget(_modificationListWidget);
+
+	_modifierSelector->setModel(new ModifierListModel(this, _modificationListModel, _modifierSelector));
 
 	QToolBar* editToolbar = new QToolBar(this);
 	editToolbar->setOrientation(Qt::Vertical);
@@ -113,17 +113,6 @@ ModifyCommandPage::ModifyCommandPage()
 
 	connect(&_selectionSetListener, SIGNAL(notificationEvent(ReferenceEvent*)), this, SLOT(onSelectionSetEvent(ReferenceEvent*)));
 	updateActions(nullptr);
-}
-
-/******************************************************************************
-* Finds all modifier classes provided by the installed plugins.
-******************************************************************************/
-void ModifyCommandPage::scanInstalledModifierClasses()
-{
-	// Create an iterator that retrieves all available modifiers.
-	Q_FOREACH(const OvitoObjectType* clazz, PluginManager::instance().listClasses(Modifier::OOType)) {
-		_modifierClasses.push_back(clazz);
-	}
 }
 
 /******************************************************************************
@@ -185,7 +174,6 @@ void ModifyCommandPage::onSelectedItemChanged()
 	RefTarget* object = currentItem ? currentItem->object() : nullptr;
 
 	_propertiesPanel->setEditObject(object);
-	//updateAvailableModifiers(currentItem);
 	updateActions(currentItem);
 }
 
@@ -239,7 +227,7 @@ void ModifyCommandPage::updateActions(ModificationListItem* currentItem)
 void ModifyCommandPage::onModifierAdd(int index)
 {
 	if(index >= 0 && _modificationListModel->isUpToDate()) {
-		OvitoObjectType* descriptor = (OvitoObjectType*)_modifierSelector->itemData(index).value<void*>();
+		const OvitoObjectType* descriptor = static_cast<const OvitoObjectType*>(_modifierSelector->itemData(index).value<void*>());
 		if(descriptor) {
 			UndoManager::instance().beginCompoundOperation(tr("Apply modifier"));
 			try {
@@ -277,6 +265,7 @@ void ModifyCommandPage::onDeleteModifier()
 		// Remove each ModifierApplication from the ModifiedObject it belongs to.
 		Q_FOREACH(ModifierApplication* modApp, selectedItem->modifierApplications()) {
 			OVITO_ASSERT(modApp->modifier() == modifier);
+			OVITO_CHECK_OBJECT_POINTER(modApp->pipelineObject());
 			modApp->pipelineObject()->removeModifier(modApp);
 		}
 	}

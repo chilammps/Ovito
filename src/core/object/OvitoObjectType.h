@@ -50,6 +50,13 @@ public:
 	/// \return The name of the class (without namespace qualifier).
 	const QString& name() const { return _name; }
 
+	/// \brief Returns the human-readable display name of this plugin class.
+	/// \return The human-readable name of this object type that should be shown in the user interface.
+	const QString& displayName() const { return _displayName; }
+
+	/// \brief Changes the the human-readable display name of this plugin class.
+	void setDisplayName(const QString& name) { _displayName = name; }
+
 	/// \brief Returns the descriptor of the super class.
 	/// \return The descriptor of the base class or \c NULL if this is the descriptor of the root OvitoObject class.
 	const OvitoObjectType* superClass() const { return _superClass; }
@@ -108,6 +115,10 @@ public:
 	/// Compares two types.
 	bool operator!=(const OvitoObjectType& other) const { return (this != &other); }
 
+	/// Returns the Qt runtime-type information associated with this object type.
+	/// This may be NULL if this is not a native object type.
+	virtual const QMetaObject* qtMetaObject() const { return nullptr; }
+
 	/// \brief Writes a type descriptor to the stream.
 	/// \note This method is for internal use only.
 	static void serializeRTTI(ObjectSaveStream& stream, const OvitoObjectType* type);
@@ -143,6 +154,9 @@ protected:
 
 	/// The class name.
 	QString _name;
+
+	/// The human-readable display name of this plugin class.
+	QString _displayName;
 
 	/// The plugin that defined the class.
 	Plugin*	_plugin;

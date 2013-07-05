@@ -36,7 +36,7 @@ namespace Ovito {
 * Constructor of the object.
 ******************************************************************************/
 OvitoObjectType::OvitoObjectType(const QString& name, const OvitoObjectType* superClass, bool isAbstract, bool isSerializable) :
-	_name(name), _plugin(nullptr), _isAbstract(isAbstract), _superClass(superClass),
+	_name(name), _displayName(name), _plugin(nullptr), _isAbstract(isAbstract), _superClass(superClass),
 	_isSerializable(isSerializable), _firstPropertyField(NULL), _editorClass(nullptr)
 {
 	OVITO_ASSERT(superClass != NULL || name == "OvitoObject");

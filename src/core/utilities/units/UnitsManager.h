@@ -115,7 +115,7 @@ public:
 	///
 	/// This implementation just returns the unmodified input value.
 	/// \sa userToNative()
-	virtual FloatType nativeToUser(FloatType nativeValue) Q_DECL_OVERRIDE { return nativeValue; }
+	virtual FloatType nativeToUser(FloatType nativeValue) override { return nativeValue; }
 	
 	/// \brief Converts a value from user units to the native units used internally.
 	/// \param userValue The value to be converted back to internal units.
@@ -123,7 +123,7 @@ public:
 	///
 	/// This default implementation just returns the unmodified input value.
 	/// \sa nativeToUser()
-	virtual FloatType userToNative(FloatType userValue) Q_DECL_OVERRIDE { return userValue; }
+	virtual FloatType userToNative(FloatType userValue) override { return userValue; }
 
 	/// \brief Converts the given string to a value.
 	/// \param valueString This is a string representation of a value as it might have
@@ -131,12 +131,12 @@ public:
 	/// \return The parsed value in user units.
 	/// \throw Exception when the value could not be parsed.
 	/// \sa formatValue()
-	virtual FloatType parseString(const QString& valueString) Q_DECL_OVERRIDE {
+	virtual FloatType parseString(const QString& valueString) override {
 		double value;
 		bool ok;
 		value = valueString.toDouble(&ok);		
 		if(!ok)
-			throw Exception(tr("Invalid floating point value: %1").arg(valueString));
+			throw Exception(tr("Invalid floating-point value: %1").arg(valueString));
 		return (FloatType)value;
 	}
 		
@@ -144,7 +144,7 @@ public:
 	/// \param value The value to be converted. This is in user units.
 	/// \return The string representation of the value. This can be converted back using parseString().
 	/// \sa parseString()
-	virtual QString formatValue(FloatType value) Q_DECL_OVERRIDE {
+	virtual QString formatValue(FloatType value) override {
 		return QString::number(value);
 	}
 
@@ -152,19 +152,16 @@ public:
 	/// \param currentValue The current value of the spinner in native units. This can be used to make the step size value dependent.
 	/// \param upDirection Specifies whether the spinner is dragged in the positive or the negative direction.
 	/// \return The numeric step size used by SpinnerWidget for this parameter type. This is in native units.
-	virtual FloatType stepSize(FloatType currentValue, bool upDirection) Q_DECL_OVERRIDE {
+	virtual FloatType stepSize(FloatType currentValue, bool upDirection) override {
 		int exponent;
 		currentValue = nativeToUser(currentValue);
 		if(currentValue != 0) {
-			if(upDirection ^ (currentValue < 0.0))
-				exponent = (int)floor(log10(abs(currentValue))-1.0);
-			else
-				exponent = (int)floor(log10(abs(currentValue))-1.0001);
+			exponent = (int)std::floor(std::log10(std::abs(currentValue))-1.0);
 			if(exponent < -5) exponent = -5;
 			else if(exponent > 5) exponent = 5;
 		}
 		else exponent = 0;
-		return userToNative(pow(10.0, exponent));
+		return userToNative(std::pow(FloatType(10), exponent));
 	}
 };
 
@@ -190,7 +187,7 @@ public:
 	///
 	/// This implementation just returns the unmodified input value.
 	/// \sa userToNative()
-	virtual FloatType nativeToUser(FloatType nativeValue) Q_DECL_OVERRIDE { return nativeValue; }
+	virtual FloatType nativeToUser(FloatType nativeValue) override { return nativeValue; }
 	
 	/// \brief Converts a value from user units to the native units used internally.
 	/// \param userValue The value to be converted back to internal units.
@@ -198,7 +195,7 @@ public:
 	///
 	/// This default implementation just returns the unmodified input value.
 	/// \sa nativeToUser()
-	virtual FloatType userToNative(FloatType userValue) Q_DECL_OVERRIDE { return userValue; }
+	virtual FloatType userToNative(FloatType userValue) override { return userValue; }
 
 	/// \brief Converts the given string to a value.
 	/// \param valueString This is a string representation of a value as it might have
@@ -206,7 +203,7 @@ public:
 	/// \return The parsed value in user units.
 	/// \throw Exception when the value could not be parsed.
 	/// \sa formatValue()
-	virtual FloatType parseString(const QString& valueString) Q_DECL_OVERRIDE {
+	virtual FloatType parseString(const QString& valueString) override {
 		int value;
 		bool ok;
 		value = valueString.toInt(&ok);		
@@ -219,7 +216,7 @@ public:
 	/// \param value The value to be converted. This is in user units.
 	/// \return The string representation of the value. This can be converted back using parseString().
 	/// \sa parseString()
-	virtual QString formatValue(FloatType value) Q_DECL_OVERRIDE {
+	virtual QString formatValue(FloatType value) override {
 		return QString::number((int)value);
 	}
 };
@@ -257,7 +254,7 @@ public:
 	///
 	/// This implementation converts from radians to degrees.
 	/// \sa userToNative()
-	virtual FloatType nativeToUser(FloatType nativeValue) Q_DECL_OVERRIDE { return nativeValue * (180.0 / FLOATTYPE_PI); }
+	virtual FloatType nativeToUser(FloatType nativeValue) override { return nativeValue * (FloatType(180) / FLOATTYPE_PI); }
 	
 	/// \brief Converts a value from user units to the native units used internally.
 	/// \param userValue The value to be converted back to internal units.
@@ -265,7 +262,7 @@ public:
 	///
 	/// This default implementation converts from degrees to radians.
 	/// \sa nativeToUser()
-	virtual FloatType userToNative(FloatType userValue) Q_DECL_OVERRIDE { return userValue * (FLOATTYPE_PI / 180.0); }
+	virtual FloatType userToNative(FloatType userValue) override { return userValue * (FLOATTYPE_PI / FloatType(180)); }
 };
 
 /**
@@ -287,7 +284,7 @@ public:
 	///
 	/// This implementation converts from the [0,1] range to the [0,100] percent range.
 	/// \sa userToNative()
-	virtual FloatType nativeToUser(FloatType nativeValue) Q_DECL_OVERRIDE { return nativeValue * 100.0; }
+	virtual FloatType nativeToUser(FloatType nativeValue) override { return nativeValue * FloatType(100); }
 	
 	/// \brief Converts a value from user units to the native units used internally.
 	/// \param userValue The value to be converted back to internal units.
@@ -295,7 +292,7 @@ public:
 	///
 	/// This default implementation converts from the [0,100] percent range to the [0,1] range.
 	/// \sa nativeToUser()
-	virtual FloatType userToNative(FloatType userValue) Q_DECL_OVERRIDE { return userValue / 100.0; }
+	virtual FloatType userToNative(FloatType userValue) override { return userValue / FloatType(100); }
 };
 
 /**

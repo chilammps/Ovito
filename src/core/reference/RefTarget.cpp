@@ -203,7 +203,7 @@ QSet<RefMaker*> RefTarget::findDependents(const OvitoObjectType& type) const
 ******************************************************************************/
 QString RefTarget::objectTitle()
 {
-	return getOOType().name();
+	return getOOType().displayName();
 }
 
 /******************************************************************************

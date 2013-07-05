@@ -221,11 +221,11 @@ FloatType ObjectNode::hitTest(TimeTicks time, Viewport* vp, const PickRegion& pi
 void ObjectNode::applyModifier(Modifier* modifier)
 {
 	OVITO_CHECK_OBJECT_POINTER(sceneObject());
-	if(sceneObject() == NULL)
+	if(!sceneObject())
 		throw Exception("Cannot apply modifier to an empty object node.");
 
 	PipelineObject* pipelineObj = dynamic_object_cast<PipelineObject>(sceneObject());
-	if(pipelineObj == NULL) {
+	if(!pipelineObj) {
 		OORef<PipelineObject> p = new PipelineObject();
 		p->setInputObject(sceneObject());
 		setSceneObject(p);
