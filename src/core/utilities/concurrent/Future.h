@@ -77,6 +77,7 @@ private:
 
 	template<typename R2, typename Function> friend class Task;
 	template<typename R2> friend class FutureInterface;
+	friend class FutureInterfaceBase;
 	friend class FutureWatcher;
 	friend class ProgressManager;
 };

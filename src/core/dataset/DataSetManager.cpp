@@ -60,13 +60,14 @@ DataSetManager::DataSetManager()
 void DataSetManager::setCurrentSet(const OORef<DataSet>& set)
 {
 	OVITO_ASSERT_MSG(!UndoManager::instance().isRecording(), "DataSetManager::setCurrentSet", "The replacement of the current dataset cannot be undone.");
+
+	// Do not record any operations while resetting the application.
+	UndoSuspender noUndo;
+
 	_currentSet = set;
 
 	// Reset selection set
 	_selectionSetProxy->setCurrentSelectionSet(set ? set->selection() : nullptr);
-
-	// Do not record any operations while resetting the application.
-	UndoSuspender noUndo;
 
 	// Inform listeners.
 	dataSetReset(currentSet());

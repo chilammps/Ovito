@@ -31,6 +31,8 @@
 #include <core/scene/ObjectNode.h>
 #include <core/gui/dialogs/ImportFileDialog.h>
 #include <core/dataset/importexport/ImportExportManager.h>
+#include <core/dataset/DataSetManager.h>
+#include <core/gui/actions/ActionManager.h>
 #include "LinkedFileObject.h"
 #include "LinkedFileObjectEditor.h"
 
@@ -212,65 +214,6 @@ void LinkedFileObject::loadOperationFinished()
 	notifyDependents(notificationType);
 }
 
-#if 0
-/******************************************************************************
-* Asks the object for the result of the geometry pipeline at the given time.
-******************************************************************************/
-PipelineFlowState LinkedFileObject::evalObject(TimePoint time)
-{
-	TimeInterval interval = TimeForever;
-	if(!atomsObject() || !parser() || parser()->numberOfMovieFrames() <= 0) return PipelineFlowState(NULL, interval);
-
-	int frame = ANIM_MANAGER.timeToFrame(time);
-	int snapshot = frame / framesPerSnapshot();
-
-	if(snapshot < 0) snapshot = 0;
-	else if(snapshot >= parser()->numberOfMovieFrames()) snapshot = parser()->numberOfMovieFrames() - 1;
-	frame = snapshot * framesPerSnapshot();
-
-	if(snapshot != _loadedMovieFrame) {
-		try {
-			// Do not record this operation.
-			UndoSuspender undoSuspender;
-			// Do not create any animation keys.
-			AnimationSuspender animSuspender;
-
-			// Call the format specific parser.
-			_loadedMovieFrame = snapshot;
-			setStatus(parser()->loadAtomsFile(atomsObject(), snapshot, true));
-		}
-		catch(Exception& ex) {
-			// Transfer exception message to evaluation status.
-			QString msg = ex.message();
-			for(int i=1; i<ex.messages().size(); i++) {
-				msg += "\n";
-				msg += ex.messages()[i];
-			}
-			setStatus(EvaluationStatus(EvaluationStatus::EVALUATION_ERROR, msg));
-
-			ex.prependGeneralMessage(tr("Failed to load snapshot %1 of sequence.").arg(snapshot));
-			ex.logError();
-		}
-	}
-
-	// Calculate the validity interval of the current simulation snapshot.
-	interval.intersect(atomsObject()->objectValidity(time));
-
-	if(snapshot > 0) interval.setStart(max(interval.start(), ANIM_MANAGER.frameToTime(frame)));
-	if(snapshot < parser()->numberOfMovieFrames() - 1) interval.setEnd(min(interval.end(), ANIM_MANAGER.frameToTime(frame+1)-1));
-
-	return PipelineFlowState(atomsObject(), interval);
-}
-
-/******************************************************************************
-* Sets the parser used by this object.
-******************************************************************************/
-void AtomsImportObject::setParser(AtomsFileParser* parser)
-{
-	this->_parser = parser;
-}
-#endif
-
 /******************************************************************************
 * This will reload an animation frame.
 ******************************************************************************/
@@ -314,16 +257,8 @@ void LinkedFileObject::adjustAnimationInterval()
 
 	animSettings->clearNamedFrames();
 	for(int frameIndex = 0; frameIndex < _frames.size(); frameIndex++) {
-		QString filename;
-		if(_frames[frameIndex].sourceFile.isLocalFile()) {
-			QFileInfo fileInfo(_frames[frameIndex].sourceFile.toLocalFile());
-			filename = fileInfo.fileName();
-		}
-		else {
-			QFileInfo fileInfo(_frames[frameIndex].sourceFile.fragment());
-			filename = fileInfo.fileName();
-		}
-		animSettings->assignFrameName(frameIndex, filename);
+		if(!_frames[frameIndex].label.isEmpty())
+			animSettings->assignFrameName(frameIndex, _frames[frameIndex].label);
 	}
 
 	if(numberOfFrames() > 1) {
@@ -337,18 +272,6 @@ void LinkedFileObject::adjustAnimationInterval()
 		animSettings->setTime(0);
 	}
 }
-
-#if 0
-
-/******************************************************************************
-* Asks the object for its validity interval at the given time.
-******************************************************************************/
-TimeInterval AtomsImportObject::objectValidity(TimeTicks time)
-{
-	return TimeForever;
-}
-
-#endif
 
 /******************************************************************************
 * Saves the class' contents to the given stream.
@@ -376,60 +299,6 @@ void LinkedFileObject::loadFromStream(ObjectLoadStream& stream)
 	stream >> _loadedFrame;
 	stream.closeChunk();
 }
-
-#if 0
-
-/******************************************************************************
-* This method is called once for this object after it has been loaded from the input stream
-******************************************************************************/
-void AtomsImportObject::loadFromStreamComplete()
-{
-	SceneObject::loadFromStreamComplete();
-
-	CHECK_POINTER(atomsObject());
-	if(!storeAtomsWithScene() && atomsObject() && parser()) {
-		// Load atomic data from external file.
-		try {
-			reloadInputFile();
-		}
-		catch(Exception& ex) {
-			ex.prependGeneralMessage(tr("Failed to restore atom data from external file. Sorry, your atoms are gone. Non-existing external data file: %1").arg(inputFile()));
-			ex.showError();
-		}
-	}
-}
-
-/******************************************************************************
-* Creates a copy of this object.
-******************************************************************************/
-RefTarget::SmartPtr AtomsImportObject::clone(bool deepCopy, CloneHelper& cloneHelper)
-{
-	// Let the base class create an instance of this class.
-	AtomsImportObject::SmartPtr clone = static_object_cast<AtomsImportObject>(SceneObject::clone(deepCopy, cloneHelper));
-
-	// Copy internal data.
-	clone->_loadedMovieFrame = this->_loadedMovieFrame;
-
-	return clone;
-}
-
-/******************************************************************************
-* From RefMaker.
-* This method is called when an object referenced by this object
-* sends a notification message.
-******************************************************************************/
-bool AtomsImportObject::onRefTargetMessage(RefTarget* source, RefTargetMessage* msg)
-{
-	// Generate SUBOBJECT_LIST_CHANGED message if a data channel is added or removed from our AtomsObject
-	// since we replicate its list of sub-objects.
-	if((msg->type() == REFERENCE_FIELD_ADDED || msg->type() == REFERENCE_FIELD_REMOVED || msg->type() == REFERENCE_FIELD_CHANGED) &&
-			msg->sender() == atomsObject()) {
-		notifyDependents(SUBOBJECT_LIST_CHANGED);
-	}
-	return SceneObject::onRefTargetMessage(source, msg);
-}
-
-#endif
 
 /******************************************************************************
 * Returns the title of this object.
@@ -487,56 +356,75 @@ void LinkedFileObject::referenceRemoved(const PropertyFieldDescriptor& field, Re
 	SceneObject::referenceRemoved(field, newTarget, listIndex);
 }
 
-
-#if 0
-
 /******************************************************************************
 * Displays the file selection dialog and lets the user select a new input file.
 ******************************************************************************/
-void AtomsImportObject::showSelectionDialog(QWidget* parent)
+void LinkedFileObject::showFileSelectionDialog(QWidget* parent)
 {
 	try {
-		ImporterExporter::SmartPtr importer;
-		QString importFile;
+		OORef<FileImporter> fileimporter;
+		QUrl newSourceUrl;
 
 		// Put code in a block: Need to release dialog before loading new input file.
 		{
 			// Let the user select a file.
-			ImportFileDialog dialog(parent, tr("Import"));
+			ImportFileDialog dialog(parent, tr("Pick input file"));
 			if(!dialog.exec())
 				return;
 
-			// Create a parser object based on the selected filename filter.
-			importFile = dialog.fileToImport();
-			importer = dialog.createParser();
-			if(!importer) return;
+			// Create a file parser based on the selected filename filter.
+			newSourceUrl = QUrl::fromLocalFile(dialog.fileToImport());
+			fileimporter = dialog.createFileImporter();
+			if(!fileimporter)
+				return;
 		}
-		AtomsFileParser::SmartPtr newParser = dynamic_object_cast<AtomsFileParser>(importer);
-		if(!newParser)
-			throw Exception(tr("You did not select a file that contains an atomistic dataset."));
-
-		// Try to re-use the existing parser.
-		if(parser() && parser()->pluginClassDescriptor() == newParser->pluginClassDescriptor())
-			newParser = parser();
-		CHECK_OBJECT_POINTER(newParser.get());
+		OORef<LinkedFileImporter> newImporter = dynamic_object_cast<LinkedFileImporter>(fileimporter);
+		if(!newImporter)
+			throw Exception(tr("You did not select a compatible file."));
 
 		ViewportSuspender noVPUpdate;
 
-		// Scan the input file.
-		if(!newParser->setInputFile(importFile))
-			return;
+		// Make the import processes reversible.
+		UndoManager::instance().beginCompoundOperation(tr("Pick new input file"));
 
-		// Show settings dialog.
-		if(!newParser->showSettingsDialog(parent))
-			return;
+		try {
+			// Re-use the existing importer if possible.
+			OORef<LinkedFileImporter> oldImporter = importer();
+			if(!oldImporter || oldImporter->getOOType() != newImporter->getOOType())
+				setImporter(newImporter.get());
 
-		setParser(newParser.get());
-		reloadInputFile();
+			// Set the input location.
+			if(setSourceUrl(newSourceUrl)) {
+				// Scan the input source for animation frames.
+				if(updateFrames()) {
+					// Adjust the animation length number to match the number of frames in the input data source.
+					adjustAnimationInterval();
+					UndoManager::instance().endCompoundOperation();
+
+					// Adjust viewports to show the new object.
+					DataSetManager::instance().runWhenSceneIsReady([]() {
+						ActionManager::instance().getAction(ACTION_VIEWPORT_ZOOM_SELECTION_EXTENTS_ALL)->trigger();
+					});
+
+					return;
+				}
+			}
+
+			// Revert to old state.
+			UndoManager::instance().currentCompoundOperation()->clear();
+		}
+		catch(...) {
+			UndoManager::instance().currentCompoundOperation()->clear();
+			UndoManager::instance().endCompoundOperation();
+			throw;
+		}
+		UndoManager::instance().endCompoundOperation();
+		adjustAnimationInterval();
 	}
 	catch(const Exception& ex) {
 		ex.showError();
+		adjustAnimationInterval();
 	}
 }
-#endif
 
 };

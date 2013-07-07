@@ -136,22 +136,6 @@ public:
 	virtual RefTarget* editableSubObject(int index) override;
 
 #if 0
-	/// \brief Returns the movie frame that is currently loaded.
-	///
-	/// Usually this is the animation frame that was requested from evalObject() the last time.
-	/// The atomic configuration for the currently loaded movie frame can be accessed via atomsObject().
-	int loadedMovieFrame() const { return _loadedMovieFrame; }
-
-	/// \brief Returns the path to the input file.
-	/// \return The path to the input file. This is the same as AtomsFileParser::inputFile() returns.
-	/// \sa AtomsFileParser::inputFile()
-	QString inputFile() const { return parser() ? parser()->inputFile() : QString(); }
-
-	/// \brief Returns the name of the current source file.
-	/// \return The name/path of the file from which the current snapshot was loaded. This is the same as AtomsFileParser::sourceFile() returns.
-	/// \sa AtomsFileParser::sourceFile()
-	QString sourceFile() const { return parser() ? parser()->sourceFile() : QString(); }
-
 	/// \brief Returns the number of animation frames per simulation snapshot.
 	/// \return The number of animation frames per simulation snapshot. This is always equal or greater than 1.
 	int framesPerSnapshot() const { return max((int)_framesPerSnapshot, 1); }
@@ -169,14 +153,12 @@ public:
 	/// Returns the bounding box of the object in local object coordinates.
 	virtual Box3 boundingBox(TimeTicks time, ObjectNode* contextNode) { return Box3(); }
 
-	// From RefTarget:
+#endif
 
 public Q_SLOTS:
 
 	/// \brief Displays the file selection dialog and lets the user select a new input file.
-	void showSelectionDialog(QWidget* parent = NULL);
-
-#endif
+	void showFileSelectionDialog(QWidget* parent = nullptr);
 
 public:
 
@@ -204,20 +186,6 @@ protected:
 
 	/// \brief Loads the class' contents from the given stream.
 	virtual void loadFromStream(ObjectLoadStream& stream) override;
-
-#if 0
-	/// \brief This method is called once for this object after it has been loaded from the input stream
-	virtual void loadFromStreamComplete();
-
-	/// \brief Creates a copy of this object.
-	/// \sa RefTarget::clone()
-	virtual RefTarget::SmartPtr clone(bool deepCopy, CloneHelper& cloneHelper);
-
-	/// This method is called when an object referenced by this object
-	/// sends a notification message.
-	virtual bool onRefTargetMessage(RefTarget* source, RefTargetMessage* msg);
-
-#endif
 
 private:
 

@@ -37,9 +37,7 @@ class LAMMPSTextDumpImporter : public ParticleImporter
 public:
 
 	/// \brief Constructs a new instance of this class.
-	Q_INVOKABLE LAMMPSTextDumpImporter() : _isMultiTimestepFile(false) {
-		INIT_PROPERTY_FIELD(LAMMPSTextDumpImporter::_isMultiTimestepFile);
-	}
+	Q_INVOKABLE LAMMPSTextDumpImporter() {}
 
 	/// \brief Returns the file filter that specifies the files that can be imported by this service.
 	/// \return A wild-card pattern that specifies the file types that can be handled by this import class.
@@ -51,12 +49,6 @@ public:
 
 	/// \brief Checks if the given file has format that can be read by this importer.
 	virtual bool checkFileFormat(QIODevice& input) override;
-
-	/// \brief Returns true if the input file contains multiple timesteps.
-	bool isMultiTimestepFile() const { return _isMultiTimestepFile; }
-
-	/// \brief Tells the importer that the input file contains multiple timesteps.
-	void setMultiTimestepFile(bool enable) { _isMultiTimestepFile = enable; }
 
 	/// \brief Opens the settings dialog for this importer.
 	virtual bool showSettingsDialog(QWidget* parent, LinkedFileObject* object) override;
@@ -70,17 +62,15 @@ public:
 protected:
 
 	/// \brief Parses the given input file and stores the data in the given container object.
-	virtual void parseFile(FutureInterface<ImportedDataPtr>& futureInterface, ParticleImportData& container, CompressedTextParserStream& stream) override;
+	virtual void parseFile(FutureInterfaceBase& futureInterface, ParticleImportData& container, CompressedTextParserStream& stream) override;
+
+	/// \brief Scans the given input file to find all contained simulation frames.
+	virtual void scanFileForTimesteps(FutureInterfaceBase& futureInterface, QVector<LinkedFileImporter::FrameSourceInformation>& frames, const QUrl& sourceUrl, CompressedTextParserStream& stream) override;
 
 private:
 
-	/// Indicates that the input file contains multiple timesteps.
-	PropertyField<bool> _isMultiTimestepFile;
-
 	Q_OBJECT
 	OVITO_OBJECT
-
-	DECLARE_PROPERTY_FIELD(_isMultiTimestepFile);
 };
 
 };

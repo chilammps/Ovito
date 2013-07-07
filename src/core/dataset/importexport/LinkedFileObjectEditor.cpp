@@ -34,7 +34,7 @@ IMPLEMENT_OVITO_OBJECT(Core, LinkedFileObjectEditor, PropertiesEditor)
 void LinkedFileObjectEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
 	// Create a rollout.
-	QWidget* rollout = createRollout(tr("Data source"), rolloutParams);
+	QWidget* rollout = createRollout(tr("External file"), rolloutParams);
 
 	// Create the rollout contents.
 	QVBoxLayout* layout = new QVBoxLayout(rollout);
@@ -45,7 +45,9 @@ void LinkedFileObjectEditor::createUI(const RolloutInsertionParameters& rolloutP
 	toolbar->setStyleSheet("QToolBar { padding: 0px; margin: 0px; border: 0px none black; }");
 	layout->addWidget(toolbar);
 
-	toolbar->addAction(QIcon(":/core/actions/file/import_object_changefile.png"), tr("Change input file"), this, SLOT(onChangeInputFile()));
+	FilenameParameterUI* inputFilePUI = new FilenameParameterUI(this, "sourceUrl", SLOT(showFileSelectionDialog(QWidget*)));
+
+	toolbar->addAction(QIcon(":/core/actions/file/import_object_changefile.png"), tr("Change input file"), inputFilePUI, SLOT(showSelectionDialog()));
 	toolbar->addAction(QIcon(":/core/actions/file/import_object_reload.png"), tr("Reload current input file"), this, SLOT(onReloadFrame()));
 	toolbar->addAction(QIcon(":/core/actions/file/import_object_refresh_animation.png"), tr("Reload animation frames"), this, SLOT(onReloadAnimation()));
 	_parserSettingsAction = toolbar->addAction(QIcon(":/core/actions/file/import_object_settings.png"), tr("Import settings"), this, SLOT(onParserSettings()));
@@ -122,23 +124,13 @@ void LinkedFileObjectEditor::onReloadAnimation()
 	LinkedFileObject* obj = static_object_cast<LinkedFileObject>(editObject());
 	OVITO_CHECK_OBJECT_POINTER(obj);
 	try {
-		if(obj->updateFrames()) {
-			// Adjust the animation length number to match the number of frames in the input data source.
-			obj->adjustAnimationInterval();
-		}
+		obj->updateFrames();
 	}
 	catch(const Exception& ex) {
 		ex.showError();
 	}
-}
-
-/******************************************************************************
-* Is called when the user presses the Select File button.
-******************************************************************************/
-void LinkedFileObjectEditor::onChangeInputFile()
-{
-	LinkedFileObject* obj = static_object_cast<LinkedFileObject>(editObject());
-	OVITO_CHECK_OBJECT_POINTER(obj);
+	// Adjust the animation length number to match the number of frames in the input data source.
+	obj->adjustAnimationInterval();
 }
 
 /******************************************************************************

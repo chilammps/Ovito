@@ -131,7 +131,7 @@ Future<QVector<LinkedFileImporter::FrameSourceInformation>> LinkedFileImporter::
 		if(pattern.contains('*') == false && pattern.contains('?') == false) {
 			// It's not a wild-card pattern.
 			// Register only a single frame.
-			frames.push_back({ sourceUrl, 0, 0, fileInfo.lastModified() });
+			frames.push_back({ sourceUrl, 0, 0, fileInfo.lastModified(), fileInfo.fileName() });
 		}
 		else{
 
@@ -165,14 +165,17 @@ Future<QVector<LinkedFileImporter::FrameSourceInformation>> LinkedFileImporter::
 			// Generate final list of frames.
 			for(const auto& iter : sortedFilenames) {
 				QString filename = dir.absoluteFilePath(iter);
-				frames.push_back({ QUrl::fromLocalFile(filename), 0, 0, QFileInfo(filename).lastModified() });
+				frames.push_back({
+					QUrl::fromLocalFile(filename), 0, 0,
+					QFileInfo(filename).lastModified(),
+					iter });
 			}
 		}
 	}
 	else {
 		// It's not a file URL.
 		// Register only a single frame.
-		frames.push_back({ sourceUrl, 0, 0, QDateTime() });
+		frames.push_back({ sourceUrl, 0, 0, QDateTime(), QFileInfo(sourceUrl.fragment()).fileName() });
 	}
 
 	return Future<QVector<FrameSourceInformation>>(frames);

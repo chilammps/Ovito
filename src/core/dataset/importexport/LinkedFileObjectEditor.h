@@ -60,9 +60,6 @@ protected Q_SLOTS:
 	/// Is called when the user presses the Reload animation button.
 	void onReloadAnimation();
 
-	/// Is called when the user presses the Select File button.
-	void onChangeInputFile();
-
 	/// Is called when the user presses the Parser Settings button.
 	void onParserSettings();
 

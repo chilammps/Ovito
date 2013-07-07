@@ -30,7 +30,6 @@
 namespace Viz {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Viz, LAMMPSTextDumpImporter, ParticleImporter)
-DEFINE_PROPERTY_FIELD(LAMMPSTextDumpImporter, _isMultiTimestepFile, "IsMultiTimestepFile")
 
 /******************************************************************************
 * Opens the settings dialog for this importer.
@@ -68,9 +67,74 @@ bool LAMMPSTextDumpImporter::checkFileFormat(QIODevice& input)
 }
 
 /******************************************************************************
+* Scans the given input file to find all contained simulation frames.
+******************************************************************************/
+void LAMMPSTextDumpImporter::scanFileForTimesteps(FutureInterfaceBase& futureInterface, QVector<LinkedFileImporter::FrameSourceInformation>& frames, const QUrl& sourceUrl, CompressedTextParserStream& stream)
+{
+	// Regular expression for whitespace characters.
+	QRegularExpression ws_re(QStringLiteral("\\s+"));
+
+	int timestep;
+	size_t numParticles = 0;
+	QFileInfo fileInfo(stream.filename());
+	QString filename = fileInfo.fileName();
+	QDateTime lastModified = fileInfo.lastModified();
+
+	while(!stream.eof()) {
+		qint64 byteOffset = stream.byteOffset();
+
+		// Parse next line.
+		stream.readLine();
+
+		do {
+			int startLineNumber = stream.lineNumber();
+			if(stream.line().startsWith("ITEM: TIMESTEP")) {
+				if(sscanf(stream.readLine().constData(), "%i", &timestep) != 1)
+					throw Exception(tr("LAMMPS dump file parsing error. Invalid timestep number (line %1):\n%2").arg(stream.lineNumber()).arg(QString::fromLocal8Bit(stream.line())));
+				FrameSourceInformation frame;
+				frame.sourceFile = sourceUrl;
+				frame.byteOffset = byteOffset;
+				frame.lineNumber = startLineNumber;
+				frame.lastModificationTime = lastModified;
+				frame.label = QString("%1 (Timestep %2)").arg(filename).arg(timestep);
+				frames.push_back(frame);
+				break;
+			}
+			else if(stream.line().startsWith("ITEM: NUMBER OF ATOMS")) {
+				// Parse number of atoms.
+				unsigned int u;
+				if(sscanf(stream.readLine().constData(), "%u", &u) != 1 || u > 1e9)
+					throw Exception(tr("LAMMPS dump file parsing error. Invalid number of atoms in line %1:\n%2").arg(stream.lineNumber()).arg(stream.lineString()));
+				numParticles = u;
+				break;
+			}
+			else if(stream.line().startsWith("ITEM: ATOMS")) {
+				for(size_t i = 0; i < numParticles; i++) {
+					stream.readLine();
+				}
+				break;
+			}
+			else if(stream.line().startsWith("ITEM:")) {
+				// Skip lines up to next ITEM:
+				while(!stream.eof()) {
+					byteOffset = stream.byteOffset();
+					stream.readLine();
+					if(stream.line().startsWith("ITEM:"))
+						break;
+				}
+			}
+			else {
+				throw Exception(tr("LAMMPS dump file parsing error. Line %1 of file %2 is invalid.").arg(stream.lineNumber()).arg(stream.filename()));
+			}
+		}
+		while(!stream.eof());
+	}
+}
+
+/******************************************************************************
 * Parses the given input file and stores the data in the given container object.
 ******************************************************************************/
-void LAMMPSTextDumpImporter::parseFile(FutureInterface<ImportedDataPtr>& futureInterface, ParticleImportData& container, CompressedTextParserStream& stream)
+void LAMMPSTextDumpImporter::parseFile(FutureInterfaceBase& futureInterface, ParticleImportData& container, CompressedTextParserStream& stream)
 {
 	futureInterface.setProgressText(tr("Loading LAMMPS dump file..."));
 
@@ -158,11 +222,15 @@ void LAMMPSTextDumpImporter::parseFile(FutureInterface<ImportedDataPtr>& futureI
 
 				// Set up column-to-property mapping.
 				InputColumnMapping columnMapping;
+				bool reducedCoordinates = false;
 				for(int i = 0; i < columnNames.size(); i++) {
 					QString name = columnNames[i].toLower();
-					if(name == "x" || name == "xu" || name == "xs" || name == "xsu" || name == "coordinates") columnMapping.mapStandardColumn(i, ParticleProperty::PositionProperty, 0, name);
-					else if(name == "y" || name == "yu" || name == "ys" || name == "ysu") columnMapping.mapStandardColumn(i, ParticleProperty::PositionProperty, 1, name);
-					else if(name == "z" || name == "zu" || name == "zs" || name == "zsu") columnMapping.mapStandardColumn(i, ParticleProperty::PositionProperty, 2, name);
+					if(name == "x" || name == "xu" || name == "coordinates") columnMapping.mapStandardColumn(i, ParticleProperty::PositionProperty, 0, name);
+					else if(name == "y" || name == "yu") columnMapping.mapStandardColumn(i, ParticleProperty::PositionProperty, 1, name);
+					else if(name == "z" || name == "zu") columnMapping.mapStandardColumn(i, ParticleProperty::PositionProperty, 2, name);
+					else if(name == "xs" || name == "xsu") { columnMapping.mapStandardColumn(i, ParticleProperty::PositionProperty, 0, name); reducedCoordinates = true; }
+					else if(name == "ys" || name == "ysu") { columnMapping.mapStandardColumn(i, ParticleProperty::PositionProperty, 1, name); reducedCoordinates = true; }
+					else if(name == "zs" || name == "zsu") { columnMapping.mapStandardColumn(i, ParticleProperty::PositionProperty, 2, name); reducedCoordinates = true; }
 					else if(name == "vx" || name == "velocities") columnMapping.mapStandardColumn(i, ParticleProperty::VelocityProperty, 0, name);
 					else if(name == "vy") columnMapping.mapStandardColumn(i, ParticleProperty::VelocityProperty, 1, name);
 					else if(name == "vz") columnMapping.mapStandardColumn(i, ParticleProperty::VelocityProperty, 2, name);
@@ -217,6 +285,17 @@ void LAMMPSTextDumpImporter::parseFile(FutureInterface<ImportedDataPtr>& futureI
 				}
 				catch(Exception& ex) {
 					throw ex.prependGeneralMessage(tr("Parsing error in line %1 of LAMMPS dump file.").arg(stream.lineNumber()));
+				}
+
+				if(reducedCoordinates) {
+					ParticleProperty* posProperty = container.particleProperty(ParticleProperty::PositionProperty);
+					if(posProperty) {
+						const AffineTransformation simCell = container.simulationCell();
+						Point3* p = posProperty->dataPoint3();
+						Point3* p_end = p + posProperty->size();
+						for(; p != p_end; ++p)
+							*p = simCell * (*p);
+					}
 				}
 
 				return;	// Done!

@@ -69,6 +69,14 @@ public:
 	/// Returns the list of particle properties.
 	const std::vector<QExplicitlySharedDataPointer<ParticleProperty>>& particleProperties() const { return _properties; }
 
+	/// Returns a standard particle property if defined.
+	ParticleProperty* particleProperty(ParticleProperty::Type which) const {
+		for(const auto& prop : _properties)
+			if(prop->type() == which)
+				return prop.data();
+		return nullptr;
+	}
+
 	/// Adds a new particle property.
 	void addParticleProperty(const QExplicitlySharedDataPointer<ParticleProperty>& property) { _properties.push_back(property); }
 

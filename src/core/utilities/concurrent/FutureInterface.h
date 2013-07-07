@@ -55,6 +55,11 @@ public:
     void setProgressText(const QString& progressText);
     QString progressText() const { return _progressText; }
 
+	template<typename RS>
+	bool waitForSubTask(Future<RS>& subFuture) {
+		return waitForSubTask(subFuture.interface().get());
+	}
+
 protected:
 
 	FutureInterfaceBase(State initialState = NoState) : _subTask(nullptr), _state(initialState), _runnable(nullptr), _progressValue(0), _progressMaximum(0) {
@@ -133,11 +138,6 @@ class FutureInterface : public FutureInterfaceBase
 public:
 
 	FutureInterface() {}
-
-	template<typename RS>
-	bool waitForSubTask(Future<RS>& subFuture) {
-		return FutureInterfaceBase::waitForSubTask(subFuture.interface().get());
-	}
 
 	void setResult(const R& value) {
 		QMutexLocker locker(&_mutex);

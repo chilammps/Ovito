@@ -196,6 +196,13 @@ bool ProgressManager::waitForTask(const FutureInterfacePointer& futureInterface)
 {
 	OVITO_ASSERT_MSG(QThread::currentThread() == QApplication::instance()->thread(), "ProgressManager::waitForTask", "Function can only be called from the GUI thread.");
 
+	// TODO...
+	while(!sceneIsReady) {
+		if(progressDialog.wasCanceled())
+			return false;
+		QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents, 200);
+	}
+
 	futureInterface->waitForFinished();
 	return !futureInterface->isCanceled();
 }

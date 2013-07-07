@@ -54,6 +54,9 @@ public:
 		/// This is used to detect changes of the source file, which let the stored byte offset become invalid.
 		QDateTime lastModificationTime;
 
+		/// The name or label of the source frame.
+		QString label;
+
 		/// Compares two structures.
 		bool operator!=(const FrameSourceInformation& other) const {
 			return (sourceFile != other.sourceFile) ||
