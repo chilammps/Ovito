@@ -88,7 +88,12 @@ public:
 	const QVector<SceneObject*> sceneObjects() const { return _sceneObjects; }
 
 	/// \brief Inserts a new object into the list of scene objects held by this container object.
-	void addSceneObject(SceneObject* obj) { if(!_sceneObjects.contains(obj)) _sceneObjects.push_back(obj); }
+	void addSceneObject(SceneObject* obj) {
+		if(!_sceneObjects.contains(obj)) {
+			obj->setSaveWithScene(saveDataWithScene());
+			_sceneObjects.push_back(obj);
+		}
+	}
 
 	/// \brief Looks for an object of the given type in the list of scene objects and returns it.
 	template<class T>
@@ -108,16 +113,18 @@ public:
 				_sceneObjects.remove(index);
 	}
 
-#if 0
 	/// \brief Returns whether the loaded scene objects should be saved in a scene file.
 	/// \return \c true if a copy of the external data is stored in the scene file; \c false if the data resides only in the linked file.
-	bool storeDataWithScene() const { return atomsObject() ? atomsObject()->serializeAtoms() : false; }
+	bool saveDataWithScene() const { return _saveDataWithScene; }
 
 	/// \brief Controls whether the imported data is saved along with the scene.
 	/// \param on \c true if data should be stored in the scene file; \c false if the data resides only in the external file.
 	/// \undoable
-	void setStoreDataWithScene(bool on) { if(atomsObject()) atomsObject()->setSerializeAtoms(on); }
-#endif
+	void setSaveDataWithScene(bool on) {
+		_saveDataWithScene = on;
+		for(SceneObject* sceneObj : sceneObjects())
+			sceneObj->setSaveWithScene(on);
+	}
 
 	/// Returns the title of this object.
 	virtual QString objectTitle() override;
@@ -169,16 +176,12 @@ public Q_SLOTS:
 	/// \brief Displays the file selection dialog and lets the user select a new input file.
 	void showSelectionDialog(QWidget* parent = NULL);
 
-public:
-
-	Q_PROPERTY(QString inputFile READ inputFile)
-	Q_PROPERTY(bool storeAtomsWithScene READ storeAtomsWithScene WRITE setStoreAtomsWithScene)
-
 #endif
 
 public:
 
 	Q_PROPERTY(QUrl sourceUrl READ sourceUrl WRITE setSourceUrl)
+	Q_PROPERTY(bool saveDataWithScene READ saveDataWithScene WRITE setSaveDataWithScene)
 
 protected Q_SLOTS:
 
@@ -248,6 +251,10 @@ private:
 	/// The watcher object that is used to monitor the background operation.
 	FutureWatcher _loadFrameOperationWatcher;
 
+	/// Controls whether the per-particle data is saved along with the scene.
+	/// If false, only the metadata of the particle property is saved.
+	PropertyField<bool> _saveDataWithScene;
+
 #if 0
 
 	/// Controls the playback speed of simulation snapshots.
@@ -265,6 +272,7 @@ private:
 	//DECLARE_PROPERTY_FIELD(_framesPerSnapshot);
 	DECLARE_PROPERTY_FIELD(_adjustAnimationIntervalEnabled);
 	DECLARE_PROPERTY_FIELD(_sourceUrl);
+	DECLARE_PROPERTY_FIELD(_saveDataWithScene);
 };
 
 };

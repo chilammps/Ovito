@@ -50,10 +50,8 @@ void LinkedFileObjectEditor::createUI(const RolloutInsertionParameters& rolloutP
 	toolbar->addAction(QIcon(":/core/actions/file/import_object_refresh_animation.png"), tr("Reload animation frames"), this, SLOT(onReloadAnimation()));
 	_parserSettingsAction = toolbar->addAction(QIcon(":/core/actions/file/import_object_settings.png"), tr("Import settings"), this, SLOT(onParserSettings()));
 
-#if 0
-	QAction* storeAtomsWithSceneAction = toolbar->addAction(QIcon(":/atomviz/icons/store_with_scene.png"), tr("Store imported data with scene"));
-	new BooleanActionParameterUI(this, "storeAtomsWithScene", storeAtomsWithSceneAction);
-#endif
+	QAction* saveDataWithSceneAction = toolbar->addAction(QIcon(":/core/actions/file/import_object_save_with_scene.png"), tr("Store imported data in scene file"));
+	new BooleanActionParameterUI(this, "saveDataWithScene", saveDataWithSceneAction);
 
 	layout->addWidget(new QLabel(tr("<b>Source location:</b>"), rollout));
 	_sourceTextbox = new QLineEdit();

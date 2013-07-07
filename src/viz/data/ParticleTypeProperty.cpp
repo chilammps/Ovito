@@ -34,22 +34,6 @@ SET_PROPERTY_FIELD_LABEL(ParticleTypeProperty, _particleTypes, "Particle Types")
 /******************************************************************************
 * Deserialization constructor.
 ******************************************************************************/
-ParticleTypeProperty::ParticleTypeProperty()
-{
-	INIT_PROPERTY_FIELD(ParticleTypeProperty::_particleTypes);
-}
-
-/******************************************************************************
-* Special constructor to create a standard data property.
-******************************************************************************/
-ParticleTypeProperty::ParticleTypeProperty(ParticleProperty::Type which) : ParticlePropertyObject(which)
-{
-	INIT_PROPERTY_FIELD(ParticleTypeProperty::_particleTypes);
-}
-
-/******************************************************************************
-* Constructor that creates a property object from an existing property storage.
-******************************************************************************/
 ParticleTypeProperty::ParticleTypeProperty(ParticleProperty* storage)
 	: ParticlePropertyObject(storage)
 {

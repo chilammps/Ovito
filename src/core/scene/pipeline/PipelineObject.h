@@ -51,7 +51,7 @@ public:
 	///                 input object. \a upToHere must be one of the application objects returned by modifierApplications().
 	/// \param including Specifies whether the last modifier given by \a upToHere will also be applied to the input object.
 	/// \return The result object.
-	PipelineFlowState evalObject(TimePoint time, ModifierApplication* upToHere, bool including);
+	PipelineFlowState evaluatePipeline(TimePoint time, ModifierApplication* upToHere, bool including);
 
 	/// \brief Returns the input object of this modified object.
 	SceneObject* inputObject() const { return _inputObject; }
@@ -99,12 +99,10 @@ public:
 
 	/////////////////////////////////////// from SceneObject /////////////////////////////////////////
 
-#if 0
 	/// Asks the object for the result of the geometry pipeline at the given time.
 	virtual PipelineFlowState evaluate(TimePoint time) override {
-		return evalObject(time, nullptr, true);
+		return evaluatePipeline(time, nullptr, true);
 	}
-#endif
 
 	/// Returns the number of input objects that are referenced by this scene object.
 	virtual int inputObjectCount() override { return 1; }
@@ -123,19 +121,13 @@ protected:
 	/// Is called when a reference target has been removed from a list reference field of this RefMaker.
 	virtual void referenceRemoved(const PropertyFieldDescriptor& field, RefTarget* oldTarget, int listIndex) override;
 
+	/// Is called when the value of a reference field of this RefMaker changes.
+	virtual void referenceReplaced(const PropertyFieldDescriptor& field, RefTarget* oldTarget, RefTarget* newTarget) override;
+
 private:
 
 	/// Notifies all modifiers from the given index on that their input has changed.
 	void modifierChanged(int changedIndex);
-
-#if 0
-	/// This method invalidates the internal geometry pipeline cache of the PipelineObject.
-	void invalidatePipelineCache() {
-		_lastInputState.clear();
-		_cachedModifiedState.clear();
-		_cacheIndex = -1;
-	}
-#endif
 
 private:
 
@@ -146,9 +138,8 @@ private:
 	/// The modifiers are applied to the input object in the reverse order of this list.
 	VectorReferenceField<ModifierApplication> _modApps;
 
-#if 0
 	/// The state of the input object from the last evaluation of the pipeline.
-	PipelineFlowState _lastInputState;
+	PipelineFlowState _lastInput;
 
 	/// The cached result from the last geometry pipeline evaluation.
 	PipelineFlowState _cachedModifiedState;
@@ -156,7 +147,6 @@ private:
 	/// The pipeline stage that is saved in the cache.
 	/// If the pipeline cache is empty, then this is -1.
 	int _cacheIndex;
-#endif
 
 	Q_OBJECT
 	OVITO_OBJECT

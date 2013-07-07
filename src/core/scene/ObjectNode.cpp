@@ -65,8 +65,7 @@ const PipelineFlowState& ObjectNode::evalPipeline(TimePoint time)
 				DisplayObject* displayObj = displayObjects()[i];
 				// Check if display object is still being used by any of the scene objects that came out of the pipeline.
 				bool isAlive = false;
-				for(const auto& entry : _pipelineCache.objects()) {
-					SceneObject* sceneObj = entry.first.get();
+				for(const auto& sceneObj : _pipelineCache.objects()) {
 					if(sceneObj->displayObject() == displayObj) {
 						isAlive = true;
 						break;
@@ -78,8 +77,7 @@ const PipelineFlowState& ObjectNode::evalPipeline(TimePoint time)
 			}
 
 			// Now add new display objects to this node.
-			for(const auto& entry : _pipelineCache.objects()) {
-				SceneObject* sceneObj = entry.first.get();
+			for(const auto& sceneObj : _pipelineCache.objects()) {
 				DisplayObject* displayObj = sceneObj->displayObject();
 				if(displayObj && displayObjects().contains(displayObj) == false)
 					_displayObjects.push_back(displayObj);
@@ -109,11 +107,10 @@ void ObjectNode::invalidatePipelineCache()
 void ObjectNode::render(TimePoint time, SceneRenderer* renderer)
 {
 	const PipelineFlowState& state = evalPipeline(time);
-	for(const auto& obj : state.objects()) {
-		SceneObject* sceneObj = obj.first.get();
+	for(const auto& sceneObj : state.objects()) {
 		DisplayObject* displayObj = sceneObj->displayObject();
 		if(displayObj && displayObj->isEnabled()) {
-			displayObj->render(time, sceneObj, state, renderer, this);
+			displayObj->render(time, sceneObj.get(), state, renderer, this);
 		}
 	}
 }
@@ -158,11 +155,10 @@ Box3 ObjectNode::localBoundingBox(TimePoint time)
 	const PipelineFlowState& state = evalPipeline(time);
 
 	// Compute bounding boxes of scene objects.
-	for(const auto& obj : state.objects()) {
-		SceneObject* sceneObj = obj.first.get();
+	for(const auto& sceneObj : state.objects()) {
 		DisplayObject* displayObj = sceneObj->displayObject();
 		if(displayObj)
-			bb.addBox(displayObj->boundingBox(time, sceneObj, this, state));
+			bb.addBox(displayObj->boundingBox(time, sceneObj.get(), this, state));
 	}
 
 	return bb;

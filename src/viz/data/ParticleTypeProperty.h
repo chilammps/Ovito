@@ -40,20 +40,8 @@ class ParticleTypeProperty : public ParticlePropertyObject
 {
 public:
 
-	/// \brief Deserialization constructor that creates an empty object.
-	///
-	/// \note This constructor is only used when a particle type property is loaded from a file.
-	ParticleTypeProperty();
-
-	/// \brief Constructor that creates a standard particle property.
-	/// \param which Specifies which standard property type that should be created.
-	///              This must not be ParticleProperty::UserProperty.
-	///
-	/// Data type, component count and property name are automatically chosen by this constructor.
-	ParticleTypeProperty(ParticleProperty::Type which);
-
-	/// \brief Constructor that creates a property object from an existing property storage.
-	ParticleTypeProperty(ParticleProperty* storage);
+	/// \brief Standard constructor.
+	Q_INVOKABLE ParticleTypeProperty(ParticleProperty* storage = nullptr);
 
 	//////////////////////////////////// Specific methods //////////////////////////////////
 

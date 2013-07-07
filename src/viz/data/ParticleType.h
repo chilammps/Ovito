@@ -43,7 +43,7 @@ class ParticleType : public RefTarget
 public:
 
 	/// \brief Constructs a new particle type.
-	ParticleType();
+	Q_INVOKABLE ParticleType();
 
 	/// \brief Returns the identifier of the particle type.
 	/// \return The type identifier.

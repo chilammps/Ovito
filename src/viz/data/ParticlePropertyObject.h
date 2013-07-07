@@ -42,10 +42,11 @@ class ParticlePropertyObject : public SceneObject
 {
 public:
 
-	/// \brief Creates an empty property object.
-	Q_INVOKABLE ParticlePropertyObject();
+	/// \brief Creates an property object.
+	Q_INVOKABLE ParticlePropertyObject(ParticleProperty* storage = nullptr);
 
-	/// \brief Constructor that creates a user-defined property object.
+	/// \brief Factory function that creates a user-defined property object.
+	/// \param particleCount The number of particles.
 	/// \param dataType Specifies the data type (integer, floating-point, ...) of the per-particle elements
 	///                 in the new property storage. The data type is specified as identifier according to the
 	///                 Qt metatype system.
@@ -53,21 +54,19 @@ public:
 	///                     This is necessary because the Qt type system has no function to query
 	///                     the size of a data type at runtime.
 	/// \param componentCount The number of components per particle of type \a dataType.
-	ParticlePropertyObject(int dataType, size_t dataTypeSize, size_t componentCount);
+	static OORef<ParticlePropertyObject> create(size_t particleCount, int dataType, size_t dataTypeSize, size_t componentCount);
 
-	/// \brief Constructor that creates a standard property storage.
+	/// \brief Factory function that creates a standard property object.
+	/// \param particleCount The number of particles.
 	/// \param which Specifies which standard property should be created.
 	///              This must not be ParticlePropertyIdentifier::UserProperty.
 	/// \param componentCount The component count if this type of property
 	///                       has a variable component count; otherwise 0 to use the
 	///                       default number of components.
-	///
-	/// Data type, component count and property name are automatically set by this
-	/// constructor.
-	ParticlePropertyObject(ParticleProperty::Type which, size_t componentCount = 0);
+	static OORef<ParticlePropertyObject> create(size_t particleCount, ParticleProperty::Type which, size_t componentCount = 0);
 
-	/// \brief Constructor that creates a property object from an existing property storage.
-	ParticlePropertyObject(ParticleProperty* storage);
+	/// \brief Factory function that creates a property object based on an existing storage.
+	static OORef<ParticlePropertyObject> create(ParticleProperty* storage);
 
 	/// \brief Gets the property's name.
 	/// \return The name of property, which is shown to the user.

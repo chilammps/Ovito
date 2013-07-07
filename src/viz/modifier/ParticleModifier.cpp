@@ -25,7 +25,7 @@
 
 namespace Viz {
 
-IMPLEMENT_OVITO_OBJECT(Viz, ParticleModifier, Modifier)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Viz, ParticleModifier, Modifier)
 IMPLEMENT_OVITO_OBJECT(Viz, ParticleModifierEditor, PropertiesEditor)
 
 /******************************************************************************
@@ -33,54 +33,127 @@ IMPLEMENT_OVITO_OBJECT(Viz, ParticleModifierEditor, PropertiesEditor)
 ******************************************************************************/
 ObjectStatus ParticleModifier::modifyObject(TimePoint time, ModifierApplication* modApp, PipelineFlowState& state)
 {
-#if 0
-	// This method is not re-entrant. If the modifier is currently being evaluated and
-	// this method is called again then we are not able to process the request.
-	if(inputAtoms)
-		return EvaluationStatus(EvaluationStatus::EVALUATION_ERROR, tr("Cannot handle re-entrant modifier calls."));
+	// This method is not re-entrant. If this method is called while the modifier is already being
+	// evaluated then we are not able to process the request.
+	if(!_input.isEmpty())
+		return ObjectStatus(ObjectStatus::Error, tr("Cannot handle re-entrant modifier calls."));
 
 	// Prepare internal fields.
-	outputAtoms = NULL;
-	this->modApp = modApp;
-	EvaluationStatus status;
+	_input = state;
+	_output = state;
+	_modApp = modApp;
+	ObjectStatus status;
 
 	try {
-		inputAtoms = dynamic_object_cast<AtomsObject>(state.result());
-		if(!inputAtoms)
-			throw Exception(tr("This modifier cannot be evaluated because the input object does not contain any atoms."));
-		TimeInterval validityInterval = state.stateValidity();
+		ParticlePropertyObject* posProperty = inputStandardProperty(ParticleProperty::PositionProperty);
+		if(!posProperty)
+			throw Exception(tr("This modifier cannot be evaluated because the input does not contain any particles."));
+		_particleCount = posProperty->size();
 
-		// Let the virtual function of the derived class do the actual work.
-		status = modifyAtomsObject(time, validityInterval);
+		// Let the derived class do the actual work.
+		TimeInterval validityInterval = state.stateValidity();
+		status = modifyParticles(time, validityInterval);
 
 		// Put result into geometry pipeline.
-		if(outputAtoms) {
-			state.setResult(outputAtoms);
-		}
+		state = _output;
 		state.intersectStateValidity(validityInterval);
 	}
 	catch(const Exception& ex) {
 		ex.logError();
 		// Transfer exception message to evaluation status.
-		QString msg = ex.message();
-		for(int i=1; i<ex.messages().size(); i++) {
-			msg += "\n";
-			msg += ex.messages()[i];
-		}
-		status = EvaluationStatus(EvaluationStatus::EVALUATION_ERROR, msg);
+		status = ObjectStatus(ObjectStatus::Error, ex.messages().join('\n'));
 	}
 
 	// Cleanup
 	_cloneHelper.reset();
-	inputAtoms = NULL;
-	outputAtoms = NULL;
-	this->modApp = NULL;
+	_input.clear();
+	_output.clear();
+	_modApp = nullptr;
 
 	return status;
-#endif
-
-	return ObjectStatus();
 }
+
+/******************************************************************************
+* Returns a standard particle property from the input state.
+******************************************************************************/
+ParticlePropertyObject* ParticleModifier::inputStandardProperty(ParticleProperty::Type which) const
+{
+	OVITO_ASSERT(which != ParticleProperty::UserProperty);
+	for(const auto& o : _input.objects()) {
+		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o.get());
+		if(property && property->type() == which) return property;
+	}
+	return nullptr;
+}
+
+/******************************************************************************
+* Returns the property with the given identifier from the input object.
+******************************************************************************/
+ParticlePropertyObject* ParticleModifier::expectCustomProperty(const QString& propertyName, int dataType, size_t componentCount) const
+{
+	for(const auto& o : _input.objects()) {
+		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o.get());
+		if(property && property->name() == propertyName) {
+			if(property->dataType() != dataType)
+				throw Exception(tr("The modifier cannot be evaluated because the particle property '%1' does not have the required data type.").arg(property->name()));
+			if(property->componentCount() != componentCount)
+				throw Exception(tr("The modifier cannot be evaluated because the particle property '%1' does not have the required number of components per particle.").arg(property->name()));
+			return property;
+		}
+	}
+	throw Exception(tr("The modifier cannot be evaluated because the input does not contain the required particle property (name: %1).").arg(propertyName));
+}
+
+/******************************************************************************
+* Returns the given standard channel from the input object.
+* The returned channel may not be modified. If they input object does
+* not contain the standard channel then an exception is thrown.
+******************************************************************************/
+ParticlePropertyObject* ParticleModifier::expectStandardProperty(ParticleProperty::Type which) const
+{
+	ParticlePropertyObject* property = inputStandardProperty(which);
+	if(!property)
+		throw Exception(tr("The modifier cannot be evaluated because the input does not contain the required particle property '%1'.").arg(ParticleProperty::standardPropertyName(which)));
+	return property;
+}
+
+/******************************************************************************
+* Creates a standard particle in the modifier's output.
+* If the particle property already exists in the input, its contents are copied to the
+* output property by this method.
+******************************************************************************/
+ParticlePropertyObject* ParticleModifier::outputStandardProperty(ParticleProperty::Type which)
+{
+	// Check if property already exists in the input.
+	OORef<ParticlePropertyObject> inputProperty = inputStandardProperty(which);
+
+	// Check if property already exists in the output.
+	OORef<ParticlePropertyObject> outputProperty;
+	for(const auto& o : _output.objects()) {
+		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o.get());
+		if(property && property->type() == which) {
+			outputProperty = property;
+			break;
+		}
+	}
+
+	if(outputProperty) {
+		// Is the existing output property still a shallow copy of the input?
+		if(outputProperty == inputProperty) {
+			// Make a real copy of the property, which may be modified.
+			outputProperty = cloneHelper()->cloneObject(inputProperty, false);
+			_output.replaceObject(inputProperty.get(), inputProperty);
+		}
+	}
+	else {
+		// Create a new particle property in the output.
+		outputProperty = ParticlePropertyObject::create(_particleCount, which);
+		_output.addObject(outputProperty.get());
+	}
+
+	return outputProperty.get();
+}
+
 
 #if 0
 /******************************************************************************
@@ -96,58 +169,6 @@ AtomsObject* ParticleModifier::output()
 	return outputAtoms.get();
 }
 
-/******************************************************************************
-* Returns the standard channel with the given identifier from the input object.
-* The returned channel may be NULL if it does not exist. Its contents
-* may not be modified.
-******************************************************************************/
-DataChannel* ParticleModifier::inputStandardChannel(DataChannel::DataChannelIdentifier which) const
-{
-	return input()->getStandardDataChannel(which);
-}
-
-/******************************************************************************
-* Returns the channel with the given identifier from the input object.
-* The returned channel may not be modified. If they input object does
-* not contain a channel with the given identifier then an exception is thrown.
-* If there is a channel with the given identifier but with another data type then
-* an exception is thrown too.
-******************************************************************************/
-DataChannel* ParticleModifier::expectCustomChannel(const QString& channelName, int channelDataType, size_t componentCount) const
-{
-	DataChannel* channel = input()->findDataChannelByName(channelName);
-	if(!channel)
-		throw Exception(tr("The modifier cannot be evaluated because the input object does not contain the required data channel (name: %1).").arg(channelName));
-	if(channel->type() != channelDataType)
-		throw Exception(tr("The modifier cannot be evaluated because the data channel '%1' in the input object has not the required data type.").arg(channel->name()));
-	if(channel->componentCount() != componentCount)
-		throw Exception(tr("The modifier cannot be evaluated because the data channel '%1' in the input object has not the required number of components per atom.").arg(channel->name()));
-	return channel;
-}
-
-/******************************************************************************
-* Returns the given standard channel from the input object.
-* The returned channel may not be modified. If they input object does
-* not contain the standard channel then an exception is thrown.
-******************************************************************************/
-DataChannel* ParticleModifier::expectStandardChannel(DataChannel::DataChannelIdentifier which) const
-{
-	DataChannel* channel = input()->getStandardDataChannel(which);
-	if(!channel)
-		throw Exception(tr("The modifier cannot be evaluated because the input object does not contain the required data channel '%1'.").arg(DataChannel::standardChannelName(which)));
-	return channel;
-}
-
-/******************************************************************************
-* Returns the standard channel with the given identifier from the output object.
-* The requested data channel will be created or deep copied as needed.
-******************************************************************************/
-DataChannel* ParticleModifier::outputStandardChannel(DataChannel::DataChannelIdentifier which)
-{
-	DataChannel* channel = output()->copyShallowChannel(output()->createStandardDataChannel(which));
-	output()->invalidate();
-	return channel;
-}
 
 #endif
 
@@ -158,6 +179,7 @@ void ParticleModifier::saveToStream(ObjectSaveStream& stream)
 {
 	Modifier::saveToStream(stream);
 	stream.beginChunk(0x01);
+	// For future use...
 	stream.endChunk();
 }
 
@@ -168,17 +190,8 @@ void ParticleModifier::loadFromStream(ObjectLoadStream& stream)
 {
 	Modifier::loadFromStream(stream);
 	stream.expectChunk(0x01);
+	// For future use...
 	stream.closeChunk();
-}
-
-/******************************************************************************
-* Creates a copy of this object.
-******************************************************************************/
-OORef<RefTarget> ParticleModifier::clone(bool deepCopy, CloneHelper& cloneHelper)
-{
-	// Let the base class create an instance of this class.
-	OORef<ParticleModifier> clone = static_object_cast<ParticleModifier>(Modifier::clone(deepCopy, cloneHelper));
-	return clone;
 }
 
 /******************************************************************************

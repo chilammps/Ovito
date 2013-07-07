@@ -68,6 +68,7 @@ public:
 	/// \brief Discards the contents of this state object.
 	void clear() {
 		_objects.clear();
+		_revisionNumbers.clear();
 		_stateValidity.setEmpty();
 		_status = ObjectStatus();
 	}
@@ -75,15 +76,21 @@ public:
 	/// \brief Adds an additional scene object to this state.
 	void addObject(SceneObject* obj);
 
+	/// \brief Replaces a scene object with a new one.
+	void replaceObject(SceneObject* oldObj, const OORef<SceneObject>& newObj);
+
 	/// \brief Returns the list of scene objects stored in this flow state.
-	const std::map<OORef<SceneObject>, unsigned int>& objects() const { return _objects; }
+	const QVector<OORef<SceneObject>>& objects() const { return _objects; }
+
+	/// \brief Returns the number of objects stored in this container.
+	int count() const { return _objects.size(); }
 
 	/// \brief Finds a scene object of the given type in the list of
 	///        results stored in this flow state.
 	template<class ObjectType>
 	ObjectType* findObject() const {
-		for(const auto& entry : _objects) {
-			ObjectType* obj = dynamic_object_cast<ObjectType>(entry.first.get());
+		for(const auto& o : _objects) {
+			ObjectType* obj = dynamic_object_cast<ObjectType>(o.get());
 			if(obj) return obj;
 		}
 		return nullptr;
@@ -108,17 +115,29 @@ public:
 	bool isEmpty() const { return _objects.empty(); }
 
 	/// \brief Updates the stored revision number for a scene object.
-	void setRevisionNumber(SceneObject* obj, unsigned int revNumber);
+	void updateRevisionNumber(SceneObject* obj);
+
+	/// \brief Updates the stored revision numbers for all scene objects.
+	void updateRevisionNumbers();
+
+	/// \brief Returns the revision of the scene object at the given index.
+	int revisionNumber(int index) const { return _revisionNumbers[index]; }
 
 	/// Returns the status of the pipeline evaluation.
 	const ObjectStatus& status() const { return _status; }
 
+	/// Changes the stored status record.
+	void setStatus(const ObjectStatus& status) { _status = status; }
+
 private:
 
 	/// Contains the objects that flow up the geometry pipeline
-	/// and are modified by modifiers. Each object is associated
-	/// with a revision number, which is used to detect changes to an object.
-	std::map<OORef<SceneObject>, unsigned int> _objects;
+	/// and are modified by modifiers.
+	QVector<OORef<SceneObject>> _objects;
+
+	/// Each scene object is associated
+	/// with a revision number, which is used to detect changes to the object.
+	QVector<int> _revisionNumbers;
 
 	/// Contains the validity interval for this pipeline flow state.
 	TimeInterval _stateValidity;

@@ -91,7 +91,9 @@ void NavigationMode::mouseMoveEvent(Viewport* vp, QMouseEvent* event)
 		QPoint pos = event->pos();
 #endif
 		modifyView(vp, pos - _startPoint);
-		vp->redrawViewport();
+
+		// Force immediate viewport update.
+		ViewportManager::instance().processViewportUpdates();
 	}
 }
 

@@ -310,6 +310,10 @@ void RefMaker::loadFromStream(ObjectLoadStream& stream)
 	OVITO_ASSERT(!UndoManager::instance().isRecording());
 	OVITO_ASSERT(stream._currentObject && stream._currentObject->object.get() == this);
 
+#if 0
+	qDebug() << "Loading object" << this;
+#endif
+
 	// Read property field from the stream.
 	Q_FOREACH(const ObjectLoadStream::PropertyFieldEntry& fieldEntry, stream._currentObject->pluginClass->propertyFields) {
 		if(fieldEntry.isReferenceField) {
@@ -330,6 +334,9 @@ void RefMaker::loadFromStream(ObjectLoadStream& stream)
 							throw Exception(tr("Incompatible object stored in reference field %1 of class %2. Expected class %3 but found class %4 in file.")
 								.arg(QString(fieldEntry.identifier)).arg(fieldEntry.definingClass->name()).arg(fieldEntry.targetClass->name()).arg(target->getOOType().name()));
 						}
+#if 0
+						qDebug() << "  Reference field" << fieldEntry.identifier << " contains" << target.get();
+#endif
 						fieldEntry.field->singleStorageAccessFunc(this).setValue(target.get());
 					}
 					else {
@@ -347,6 +354,9 @@ void RefMaker::loadFromStream(ObjectLoadStream& stream)
 								throw Exception(tr("Incompatible object stored in reference field %1 of class %2. Expected class %3 but found class %4 in file.")
 									.arg(QString(fieldEntry.identifier)).arg(fieldEntry.definingClass->name(), fieldEntry.targetClass->name(), target->getOOType().name()));
 							}
+#if 0
+							qDebug() << "  Vector reference field" << fieldEntry.identifier << " contains" << target.get();
+#endif
 							refField.insertInternal(target.get());
 						}
 					}

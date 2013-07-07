@@ -94,9 +94,6 @@ public:
 
 private:
 
-	/// Creates an instance of ParticlePropertyObject or a derived class.
-	OORef<ParticlePropertyObject> createPropertyObject(ParticleProperty* input);
-
 	/// Inserts the stores particle types into the given destination object.
 	void insertParticleTypes(ParticlePropertyObject* propertyObj);
 

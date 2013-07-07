@@ -27,7 +27,7 @@
 
 namespace Ovito {
 
-IMPLEMENT_OVITO_OBJECT(Core, Modifier, RefTarget)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, Modifier, RefTarget)
 DEFINE_PROPERTY_FIELD(Modifier, _isEnabled, "IsEnabled")
 SET_PROPERTY_FIELD_LABEL(Modifier, _isEnabled, "Enabled")
 
@@ -68,7 +68,7 @@ QMap<ModifierApplication*, PipelineFlowState> Modifier::getModifierInputs(TimePo
 		PipelineObject* pipelineObj = app->pipelineObject();
 		if(!pipelineObj) continue;
 		
-		result[app] = pipelineObj->evalObject(time, app, false);
+		result[app] = pipelineObj->evaluatePipeline(time, app, false);
 	}
 
 	return result;
@@ -86,7 +86,7 @@ PipelineFlowState Modifier::getModifierInput() const
 	Q_FOREACH(ModifierApplication* app, modifierApplications()) {
 		PipelineObject* pipelineObj = app->pipelineObject();
 		if(!pipelineObj) continue;
-		return pipelineObj->evalObject(AnimManager::instance().time(), app, false);
+		return pipelineObj->evaluatePipeline(AnimManager::instance().time(), app, false);
 	}
 
 	return PipelineFlowState();

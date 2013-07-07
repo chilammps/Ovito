@@ -124,11 +124,20 @@ public:
 
 	/// \brief Returns the attached display object that is responsible for rendering this
 	///        scene object.
-	DisplayObject* displayObject() const { return _displayObject; }
+	DisplayObject* displayObject() const { return _displayObject.get(); }
 
 	/// \brief Attaches a display object to this scene object that will be responsible for rendering the
 	///        scene object.
 	void setDisplayObject(DisplayObject* displayObj) { _displayObject = displayObj; }
+
+	/// \brief Returns whether the internal data is saved along with the scene.
+	/// \return \c true if the data is stored in the scene file; \c false if the data can be restored from an external file or recomputed.
+	bool saveWithScene() const { return _saveWithScene; }
+
+	/// \brief Sets whether the per-particle data is saved along with the scene.
+	/// \param on \c true if the data should be stored in the scene file; \c false if the per-particle data can be restored from an external file.
+	/// \undoable
+	void setSaveWithScene(bool on) { _saveWithScene = on; }
 
 	/// \brief Returns the number of input objects that are referenced by this scene object.
 	/// \return The number of input objects that this object relies on.
@@ -163,6 +172,15 @@ protected:
 	/// Handles reference events sent by reference targets of this object.
 	virtual bool referenceEvent(RefTarget* source, ReferenceEvent* event) override;
 
+	/// Saves the class' contents to the given stream.
+	virtual void saveToStream(ObjectSaveStream& stream) override;
+
+	/// Loads the class' contents from the given stream.
+	virtual void loadFromStream(ObjectLoadStream& stream) override;
+
+	/// Creates a copy of this object.
+	virtual OORef<RefTarget> clone(bool deepCopy, CloneHelper& cloneHelper) override;
+
 private:
 
 	/// The revision counter of this scene object.
@@ -170,12 +188,17 @@ private:
 	unsigned int _revisionNumber;
 
 	/// The attached display object that is responsible for rendering this scene object.
-	ReferenceField<DisplayObject> _displayObject;
+	OORef<DisplayObject> _displayObject;
+
+	/// Controls whether the internal data is saved along with the scene.
+	/// If false, only metadata will be saved in a scene file while the contents get restored
+	/// from an external data source or get recomputed.
+	PropertyField<bool> _saveWithScene;
 
 	Q_OBJECT
 	OVITO_OBJECT
 
-	DECLARE_REFERENCE_FIELD(_displayObject);
+	DECLARE_PROPERTY_FIELD(_saveWithScene);
 };
 
 };

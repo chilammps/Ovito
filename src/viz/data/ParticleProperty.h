@@ -81,6 +81,7 @@ public:
 	ParticleProperty();
 
 	/// \brief Constructor that creates a standard property storage.
+	/// \param particleCount The number of particles.
 	/// \param type Specifies which standard property should be created.
 	///             This must not be ParticleProperty::Type::UserProperty.
 	/// \param componentCount The component count if this type of property
@@ -89,16 +90,17 @@ public:
 	///
 	/// Data type, component count and property name are automatically set by this
 	/// constructor.
-	ParticleProperty(Type type, size_t componentCount = 0);
+	ParticleProperty(size_t particleCount, Type type, size_t componentCount = 0);
 
 	/// \brief Constructor that creates a user-defined property storage.
+	/// \param particleCount The number of particles.
 	/// \param dataType Specifies the data type (integer, floating-point, ...) of the per-particle elements.
 	///                 The data type is specified as identifier according to the Qt metatype system.
 	/// \param dataTypeSize The size of the data type given by \a dataType in bytes.
 	///                     This is necessary because the Qt type system has no function to query
 	///                     the size of a data type at runtime.
 	/// \param componentCount The number of components per particle of type \a dataType.
-	ParticleProperty(int dataType, size_t dataTypeSize, size_t componentCount);
+	ParticleProperty(size_t particleCount, int dataType, size_t dataTypeSize, size_t componentCount);
 
 	/// \brief Copy constructor.
 	ParticleProperty(const ParticleProperty& other);
@@ -397,6 +399,12 @@ public:
 	/// Particles for which the bit in the given mask is set are skipped.
 	void filterCopy(const ParticleProperty& source, const std::vector<bool>& mask);
 
+	/// Writes the ParticleProperty to an output stream.
+	void saveToStream(SaveStream& stream, bool onlyMetadata = false) const;
+
+	/// Reads the ParticleProperty from an input stream.
+	void loadFromStream(LoadStream& stream);
+
 public:
 
 	/// \brief Returns the default name used by the given type of standard property.
@@ -449,16 +457,7 @@ protected:
 
 	/// The internal data array that holds the elements.
 	std::unique_ptr<uint8_t[]> _data;
-
-	friend SaveStream& operator<<(SaveStream& stream, const ParticleProperty& s);
-	friend LoadStream& operator>>(LoadStream& stream, ParticleProperty& s);
 };
-
-/// Writes a ParticleProperty to an output stream.
-SaveStream& operator<<(SaveStream& stream, const ParticleProperty& s);
-
-/// Reads a ParticleProperty from an input stream.
-LoadStream& operator>>(LoadStream& stream, ParticleProperty& s);
 
 };	// End of namespace
 

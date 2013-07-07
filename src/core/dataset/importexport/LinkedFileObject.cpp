@@ -42,20 +42,23 @@ DEFINE_FLAGS_REFERENCE_FIELD(LinkedFileObject, _importer, "Importer", LinkedFile
 DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(LinkedFileObject, _sceneObjects, "SceneObjects", SceneObject, PROPERTY_FIELD_ALWAYS_DEEP_COPY)
 DEFINE_PROPERTY_FIELD(LinkedFileObject, _adjustAnimationIntervalEnabled, "AdjustAnimationIntervalEnabled")
 DEFINE_PROPERTY_FIELD(LinkedFileObject, _sourceUrl, "SourceUrl")
+DEFINE_PROPERTY_FIELD(LinkedFileObject, _saveDataWithScene, "SaveDataWithScene")
 SET_PROPERTY_FIELD_LABEL(LinkedFileObject, _importer, "File Importer")
 SET_PROPERTY_FIELD_LABEL(LinkedFileObject, _sceneObjects, "Objects")
 SET_PROPERTY_FIELD_LABEL(LinkedFileObject, _adjustAnimationIntervalEnabled, "Adjust animation interval")
 SET_PROPERTY_FIELD_LABEL(LinkedFileObject, _sourceUrl, "Source location")
+SET_PROPERTY_FIELD_LABEL(LinkedFileObject, _saveDataWithScene, "Save data with scene")
 
 /******************************************************************************
 * Constructs the object.
 ******************************************************************************/
-LinkedFileObject::LinkedFileObject() : _adjustAnimationIntervalEnabled(true), _loadedFrame(-1), _frameBeingLoaded(-1)
+LinkedFileObject::LinkedFileObject() : _adjustAnimationIntervalEnabled(true), _loadedFrame(-1), _frameBeingLoaded(-1), _saveDataWithScene(false)
 {
 	INIT_PROPERTY_FIELD(LinkedFileObject::_importer);
 	INIT_PROPERTY_FIELD(LinkedFileObject::_sceneObjects);
 	INIT_PROPERTY_FIELD(LinkedFileObject::_adjustAnimationIntervalEnabled);
 	INIT_PROPERTY_FIELD(LinkedFileObject::_sourceUrl);
+	INIT_PROPERTY_FIELD(LinkedFileObject::_saveDataWithScene);
 
 	connect(&_loadFrameOperationWatcher, &FutureWatcher::finished, this, &LinkedFileObject::loadOperationFinished);
 }
@@ -335,7 +338,6 @@ void LinkedFileObject::adjustAnimationInterval()
 	}
 }
 
-
 #if 0
 
 /******************************************************************************
@@ -356,6 +358,10 @@ void LinkedFileObject::saveToStream(ObjectSaveStream& stream)
 	SceneObject::saveToStream(stream);
 	stream.beginChunk(0x01);
 	stream << _frames;
+	if(saveDataWithScene())
+		stream << _loadedFrame;
+	else
+		stream << -1;
 	stream.endChunk();
 }
 
@@ -367,6 +373,7 @@ void LinkedFileObject::loadFromStream(ObjectLoadStream& stream)
 	SceneObject::loadFromStream(stream);
 	stream.expectChunk(0x01);
 	stream >> _frames;
+	stream >> _loadedFrame;
 	stream.closeChunk();
 }
 

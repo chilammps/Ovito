@@ -28,6 +28,7 @@ namespace Viz {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Viz, AssignColorModifier, ParticleModifier)
 IMPLEMENT_OVITO_OBJECT(Viz, AssignColorModifierEditor, PropertiesEditor)
+SET_OVITO_OBJECT_EDITOR(AssignColorModifier, AssignColorModifierEditor)
 DEFINE_REFERENCE_FIELD(AssignColorModifier, _colorCtrl, "Color", VectorController)
 SET_PROPERTY_FIELD_LABEL(AssignColorModifier, _colorCtrl, "Color")
 
@@ -58,22 +59,22 @@ TimeInterval AssignColorModifier::modifierValidity(TimePoint time)
 ******************************************************************************/
 ObjectStatus AssignColorModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
 {
-#if 0
-	// Get the selection channel.
-	DataChannel* selChannel = inputStandardChannel(DataChannel::SelectionChannel);
+	// Get the selection property.
+	ParticlePropertyObject* selProperty = inputStandardProperty(ParticleProperty::SelectionProperty);
 
-	// Get the output color channel.
-	DataChannel* colorChannel = outputStandardChannel(DataChannel::ColorChannel);
-	colorChannel->setVisible(true);
+	// Get the output color property.
+	ParticlePropertyObject* colorProperty = outputStandardProperty(ParticleProperty::ColorProperty);
 
 	// Get the color to be assigned.
-	Vector3 selColor = Vector3(1,0,0);
-	if(colorCtrl) colorCtrl->getValue(time, selColor, validityInterval);
+	Color color(1,1,1);
+	if(_colorCtrl)
+		_colorCtrl->getValue(time, color, validityInterval);
 
-	if(selChannel != NULL) {
-		OVITO_ASSERT(colorChannel->size() == selChannel->size());
-		const int* s = selChannel->constDataInt();
-		Vector3* c = colorChannel->dataVector3();
+	if(selProperty) {
+#if 0
+		OVITO_ASSERT(colorProperty->size() == selProperty->size());
+		const int* s = selProperty->constDataInt();
+		Color* c = colorProperty->dataColor();
 
 		if(inputStandardChannel(DataChannel::ColorChannel) == NULL) {
 			QVector<Color> oldColors = input()->getAtomColors(time, validityInterval);
@@ -90,14 +91,13 @@ ObjectStatus AssignColorModifier::modifyParticles(TimePoint time, TimeInterval& 
 		// Hide selection channel to make assigned color visible.
 		if(selChannel->isVisible())
 			outputStandardChannel(DataChannel::SelectionChannel)->setVisible(false);
+#endif
 	}
 	else {
-		Vector3* c = colorChannel->dataVector3();
-		for(size_t i = colorChannel->size(); i != 0; i--)
-			*c++ = selColor;
+		// Assign color to all particles.
+		std::fill(colorProperty->dataColor(), colorProperty->dataColor() + colorProperty->size(), color);
 	}
 
-#endif
 	return ObjectStatus();
 }
 

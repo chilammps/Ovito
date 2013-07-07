@@ -31,22 +31,57 @@ namespace Ovito {
 void PipelineFlowState::addObject(SceneObject* obj)
 {
 	OVITO_CHECK_OBJECT_POINTER(obj);
-	OVITO_ASSERT_MSG(_objects.find(obj) == _objects.end(), "PipelineFlowState::addObject", "Cannot add the same scene object more than once.");
-	_objects.insert(std::make_pair(obj, obj->revisionNumber()));
+	OVITO_ASSERT_MSG(std::find(_objects.begin(), _objects.end(), obj) == _objects.end(), "PipelineFlowState::addObject", "Cannot add the same scene object more than once.");
+	_revisionNumbers.push_back(obj->revisionNumber());
+	_objects.push_back(obj);
+}
+
+/******************************************************************************
+* Replaces a scene object with a new one.
+******************************************************************************/
+void PipelineFlowState::replaceObject(SceneObject* oldObj, const OORef<SceneObject>& newObj)
+{
+	OVITO_CHECK_OBJECT_POINTER(oldObj);
+	for(int index = 0; index < _objects.size(); index++) {
+		if(_objects[index] == oldObj) {
+			if(newObj) {
+				_revisionNumbers[index] = newObj->revisionNumber();
+				_objects[index] = newObj;
+			}
+			else {
+				_revisionNumbers.remove(index);
+				_objects.remove(index);
+			}
+			return;
+		}
+	}
+	OVITO_ASSERT_MSG(false, "PipelineFlowState::replaceObject", "Scene object not found.");
 }
 
 /******************************************************************************
 * Updates the stored revision number for a scene object.
 ******************************************************************************/
-void PipelineFlowState::setRevisionNumber(SceneObject* obj, unsigned int revNumber)
+void PipelineFlowState::updateRevisionNumber(SceneObject* obj)
 {
-	for(auto& entry : _objects) {
-		if(entry.first == obj) {
-			entry.second = revNumber;
+	OVITO_ASSERT(_objects.size() == _revisionNumbers.size());
+	for(int index = 0; index < _objects.size(); index++) {
+		if(_objects[index] == obj) {
+			_revisionNumbers[index] = obj->revisionNumber();
 			return;
 		}
 	}
-	OVITO_ASSERT_MSG(false, "PipelineFlowState::setRevisionNumber", "Scene object not found.");
+	OVITO_ASSERT_MSG(false, "PipelineFlowState::updateRevisionNumber", "Scene object not found.");
+}
+
+/******************************************************************************
+* Updates the stored revision numbers for all scene objects.
+******************************************************************************/
+void PipelineFlowState::updateRevisionNumbers()
+{
+	OVITO_ASSERT(_objects.size() == _revisionNumbers.size());
+	for(int index = 0; index < _objects.size(); index++) {
+		_revisionNumbers[index] = _objects[index]->revisionNumber();
+	}
 }
 
 };

@@ -28,17 +28,16 @@
 namespace Ovito {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, SceneObject, RefTarget)
-DEFINE_FLAGS_REFERENCE_FIELD(SceneObject, _displayObject, "DisplayObject", DisplayObject, PROPERTY_FIELD_NO_CHANGE_MESSAGE)
-SET_PROPERTY_FIELD_LABEL(SceneObject, _displayObject, "Display")
-
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, AbstractCameraObject, SceneObject)
+DEFINE_PROPERTY_FIELD(SceneObject, _saveWithScene, "SaveWithScene")
+SET_PROPERTY_FIELD_LABEL(SceneObject, _saveWithScene, "Save data with scene")
 
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-SceneObject::SceneObject() : _revisionNumber(0)
+SceneObject::SceneObject() : _revisionNumber(0), _saveWithScene(true)
 {
-	INIT_PROPERTY_FIELD(SceneObject::_displayObject);
+	INIT_PROPERTY_FIELD(SceneObject::_saveWithScene);
 }
 
 /******************************************************************************
@@ -58,12 +57,6 @@ void SceneObject::notifyDependents(ReferenceEvent& event)
 ******************************************************************************/
 bool SceneObject::referenceEvent(RefTarget* source, ReferenceEvent* event)
 {
-	// Intercept messages from the display object since they don't represent a change of
-	// the scene object.
-	if(source == displayObject()) {
-		return false;
-	}
-
 	// Automatically increment revision counter each time a sub-object of this object changes.
 	if(event->type() == ReferenceEvent::TargetChanged)
 		_revisionNumber++;
@@ -71,5 +64,40 @@ bool SceneObject::referenceEvent(RefTarget* source, ReferenceEvent* event)
 	return RefTarget::referenceEvent(source, event);
 }
 
+/******************************************************************************
+* Saves the class' contents to the given stream.
+******************************************************************************/
+void SceneObject::saveToStream(ObjectSaveStream& stream)
+{
+	RefTarget::saveToStream(stream);
+	stream.beginChunk(0x01);
+	stream.saveObject(_displayObject.get());
+	stream.endChunk();
+}
+
+/******************************************************************************
+* Loads the class' contents from the given stream.
+******************************************************************************/
+void SceneObject::loadFromStream(ObjectLoadStream& stream)
+{
+	RefTarget::loadFromStream(stream);
+	stream.expectChunk(0x01);
+	_displayObject = stream.loadObject<DisplayObject>();
+	stream.closeChunk();
+}
+
+/******************************************************************************
+* Creates a copy of this object.
+******************************************************************************/
+OORef<RefTarget> SceneObject::clone(bool deepCopy, CloneHelper& cloneHelper)
+{
+	// Let the base class create an instance of this class.
+	OORef<SceneObject> clone = static_object_cast<SceneObject>(RefTarget::clone(deepCopy, cloneHelper));
+
+	// Copy the reference to the associated display object.
+	clone->_displayObject = this->_displayObject;
+
+	return clone;
+}
 
 };

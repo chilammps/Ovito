@@ -21,6 +21,8 @@
 
 #include <core/Core.h>
 #include "ParticlePropertyObject.h"
+#include "ParticleTypeProperty.h"
+#include "ParticleDisplay.h"
 
 namespace Viz {
 
@@ -29,34 +31,46 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Viz, ParticlePropertyObject, SceneObject)
 /******************************************************************************
 * Default constructor.
 ******************************************************************************/
-ParticlePropertyObject::ParticlePropertyObject()
-	: _storage(new ParticleProperty())
-{
-}
-
-/******************************************************************************
-* Constructor.
-******************************************************************************/
-ParticlePropertyObject::ParticlePropertyObject(int dataType, size_t dataTypeSize, size_t componentCount)
-	: _storage(new ParticleProperty(dataType, dataTypeSize, componentCount))
-{
-}
-
-/******************************************************************************
-* Constructor that creates a standard property storage.
-******************************************************************************/
-ParticlePropertyObject::ParticlePropertyObject(ParticleProperty::Type which, size_t componentCount)
-	: _storage(new ParticleProperty(which, componentCount))
-{
-}
-
-/******************************************************************************
-* Constructor that creates a property object from an existing property storage.
-******************************************************************************/
 ParticlePropertyObject::ParticlePropertyObject(ParticleProperty* storage)
-	: _storage(storage)
+	: _storage(storage != nullptr ? storage : new ParticleProperty())
 {
-	OVITO_CHECK_POINTER(storage);
+}
+
+/******************************************************************************
+* Factory function that creates a user-defined property object.
+******************************************************************************/
+OORef<ParticlePropertyObject> ParticlePropertyObject::create(size_t particleCount, int dataType, size_t dataTypeSize, size_t componentCount)
+{
+	return create(new ParticleProperty(particleCount, dataType, dataTypeSize, componentCount));
+}
+
+/******************************************************************************
+* Factory function that creates a standard property object.
+******************************************************************************/
+OORef<ParticlePropertyObject> ParticlePropertyObject::create(size_t particleCount, ParticleProperty::Type which, size_t componentCount)
+{
+	return create(new ParticleProperty(particleCount, which, componentCount));
+}
+
+/******************************************************************************
+* Factory function that creates a property object based on an existing storage.
+******************************************************************************/
+OORef<ParticlePropertyObject> ParticlePropertyObject::create(ParticleProperty* storage)
+{
+	OORef<ParticlePropertyObject> propertyObj;
+
+	switch(storage->type()) {
+	case ParticleProperty::ParticleTypeProperty:
+		propertyObj = new ParticleTypeProperty(storage);
+		break;
+	default:
+		propertyObj = new ParticlePropertyObject(storage);
+	}
+
+	if(storage->type() == ParticleProperty::PositionProperty)
+		propertyObj->setDisplayObject(new ParticleDisplay());
+
+	return propertyObj;
 }
 
 /******************************************************************************
@@ -94,7 +108,7 @@ void ParticlePropertyObject::saveToStream(ObjectSaveStream& stream)
 	SceneObject::saveToStream(stream);
 
 	stream.beginChunk(0x01);
-	stream << *_storage.constData();
+	_storage.constData()->saveToStream(stream, !saveWithScene());
 	stream.endChunk();
 }
 
@@ -106,7 +120,7 @@ void ParticlePropertyObject::loadFromStream(ObjectLoadStream& stream)
 	SceneObject::loadFromStream(stream);
 
 	stream.expectChunk(0x01);
-	stream >> *_storage.data();
+	_storage.data()->loadFromStream(stream);
 	stream.closeChunk();
 }
 

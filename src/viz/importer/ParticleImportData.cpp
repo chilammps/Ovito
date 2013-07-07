@@ -65,7 +65,7 @@ void ParticleImportData::insertIntoScene(LinkedFileObject* destination)
 		if(propertyObj)
 			propertyObj->replaceStorage(property.data());
 		else {
-			propertyObj = createPropertyObject(property.data());
+			propertyObj = ParticlePropertyObject::create(property.data());
 			destination->addSceneObject(propertyObj.get());
 		}
 		if(propertyObj->type() == ParticleProperty::ParticleTypeProperty)
@@ -74,27 +74,6 @@ void ParticleImportData::insertIntoScene(LinkedFileObject* destination)
 	}
 
 	destination->removeInactiveObjects(activeObjects);
-}
-
-/******************************************************************************
-* Creates an instance of ParticlePropertyObject or a derived class.
-******************************************************************************/
-OORef<ParticlePropertyObject> ParticleImportData::createPropertyObject(ParticleProperty* input)
-{
-	OORef<ParticlePropertyObject> propertyObj;
-
-	switch(input->type()) {
-	case ParticleProperty::ParticleTypeProperty:
-		propertyObj = new ParticleTypeProperty(input);
-		break;
-	default:
-		propertyObj = new ParticlePropertyObject(input);
-	}
-
-	if(input->type() == ParticleProperty::PositionProperty)
-		propertyObj->setDisplayObject(new ParticleDisplay());
-
-	return propertyObj;
 }
 
 /******************************************************************************

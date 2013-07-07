@@ -37,7 +37,7 @@ ParticleProperty::ParticleProperty()
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-ParticleProperty::ParticleProperty(int dataType, size_t dataTypeSize, size_t componentCount)
+ParticleProperty::ParticleProperty(size_t particleCount, int dataType, size_t dataTypeSize, size_t componentCount)
 	: _numParticles(0), _dataType(dataType), _dataTypeSize(dataTypeSize),
 	_perParticleSize(dataTypeSize*componentCount),
 	_componentCount(componentCount), _type(UserProperty)
@@ -48,12 +48,13 @@ ParticleProperty::ParticleProperty(int dataType, size_t dataTypeSize, size_t com
 		for(size_t i = 1; i <= componentCount; i++)
 			_componentNames << QString::number(i);
 	}
+	resize(particleCount);
 }
 
 /******************************************************************************
 * Constructor for a standard property.
 ******************************************************************************/
-ParticleProperty::ParticleProperty(Type type, size_t componentCount)
+ParticleProperty::ParticleProperty(size_t particleCount, Type type, size_t componentCount)
 	: _numParticles(0), _type(type)
 {
 	switch(type) {
@@ -127,6 +128,7 @@ ParticleProperty::ParticleProperty(Type type, size_t componentCount)
 	_perParticleSize = _componentCount * _dataTypeSize;
 	_componentNames = standardPropertyComponentNames(type, _componentCount);
 	_name = standardPropertyName(type);
+	resize(particleCount);
 }
 
 /******************************************************************************
@@ -171,73 +173,75 @@ void ParticleProperty::setComponentCount(size_t count)
 /******************************************************************************
 * Saves the class' contents to the given stream.
 ******************************************************************************/
-SaveStream& operator<<(SaveStream& stream, const ParticleProperty& s)
+void ParticleProperty::saveToStream(SaveStream& stream, bool onlyMetadata) const
 {
 	stream.beginChunk(0x01);
-	stream.writeEnum(s._type);
-	stream << QByteArray(QMetaType::typeName(s._dataType));
-	stream.writeSizeT(s._dataTypeSize);
-	stream.writeSizeT(s._perParticleSize);
-	stream.writeSizeT(s._numParticles);
-	stream.writeSizeT(s._componentCount);
-	stream << s._componentNames;
-	stream.write(s._data.get(), s._perParticleSize * s._numParticles);
+	stream.writeEnum(_type);
+	stream << QByteArray(QMetaType::typeName(_dataType));
+	stream.writeSizeT(_dataTypeSize);
+	stream.writeSizeT(_perParticleSize);
+	stream.writeSizeT(_componentCount);
+	stream << _componentNames;
+	if(onlyMetadata) {
+		stream.writeSizeT(0);
+	}
+	else {
+		stream.writeSizeT(_numParticles);
+		stream.write(_data.get(), _perParticleSize * _numParticles);
+	}
 	stream.endChunk();
-	return stream;
 }
 
 /******************************************************************************
 * Loads the class' contents from the given stream.
 ******************************************************************************/
-LoadStream& operator>>(LoadStream& stream, ParticleProperty& s)
+void ParticleProperty::loadFromStream(LoadStream& stream)
 {
 	stream.expectChunk(0x01);
-	stream.readEnum(s._type);
+	stream.readEnum(_type);
 	QByteArray dataTypeName;
 	stream >> dataTypeName;
-	s._dataType = QMetaType::type(dataTypeName.constData());
-	OVITO_ASSERT_MSG(s._type != 0, "ParticleProperty LoadStream operator", QString("The meta data type '%1' seems to be no longer defined.").arg(QString(dataTypeName)).toLocal8Bit().constData());
-	OVITO_ASSERT(dataTypeName == QMetaType::typeName(s._dataType));
-	stream.readSizeT(s._dataTypeSize);
-	stream.readSizeT(s._perParticleSize);
-	stream.readSizeT(s._numParticles);
-	stream.readSizeT(s._componentCount);
-	stream >> s._componentNames;
-	s._data.reset(new uint8_t[s._perParticleSize * s._numParticles]);
-	stream.read(s._data.get(), s._perParticleSize * s._numParticles);
+	_dataType = QMetaType::type(dataTypeName.constData());
+	OVITO_ASSERT_MSG(_type != 0, "ParticleProperty LoadStream operator", QString("The meta data type '%1' seems to be no longer defined.").arg(QString(dataTypeName)).toLocal8Bit().constData());
+	OVITO_ASSERT(dataTypeName == QMetaType::typeName(_dataType));
+	stream.readSizeT(_dataTypeSize);
+	stream.readSizeT(_perParticleSize);
+	stream.readSizeT(_componentCount);
+	stream >> _componentNames;
+	stream.readSizeT(_numParticles);
+	_data.reset(new uint8_t[_perParticleSize * _numParticles]);
+	stream.read(_data.get(), _perParticleSize * _numParticles);
 	stream.closeChunk();
 
 	// Do floating-point precision conversion from single to double precision.
-	if(s._dataType == qMetaTypeId<float>() && qMetaTypeId<FloatType>() == qMetaTypeId<double>()) {
+	if(_dataType == qMetaTypeId<float>() && qMetaTypeId<FloatType>() == qMetaTypeId<double>()) {
 		OVITO_ASSERT(sizeof(FloatType) == sizeof(double));
-		OVITO_ASSERT(s._dataTypeSize == sizeof(float));
-		s._perParticleSize *= sizeof(double) / sizeof(float);
-		s._dataTypeSize = sizeof(double);
-		s._dataType = qMetaTypeId<FloatType>();
-		std::unique_ptr<uint8_t[]> newBuffer(new uint8_t[s._perParticleSize * s._numParticles]);
+		OVITO_ASSERT(_dataTypeSize == sizeof(float));
+		_perParticleSize *= sizeof(double) / sizeof(float);
+		_dataTypeSize = sizeof(double);
+		_dataType = qMetaTypeId<FloatType>();
+		std::unique_ptr<uint8_t[]> newBuffer(new uint8_t[_perParticleSize * _numParticles]);
 		double* dst = reinterpret_cast<double*>(newBuffer.get());
-		const float* src = reinterpret_cast<const float*>(s._data.get());
-		for(size_t c = s._numParticles * s._componentCount; c--; )
+		const float* src = reinterpret_cast<const float*>(_data.get());
+		for(size_t c = _numParticles * _componentCount; c--; )
 			*dst++ = (double)*src++;
-		s._data.swap(newBuffer);
+		_data.swap(newBuffer);
 	}
 
 	// Do floating-point precision conversion from double to single precision.
-	if(s._dataType == qMetaTypeId<double>() && qMetaTypeId<FloatType>() == qMetaTypeId<float>()) {
+	if(_dataType == qMetaTypeId<double>() && qMetaTypeId<FloatType>() == qMetaTypeId<float>()) {
 		OVITO_ASSERT(sizeof(FloatType) == sizeof(float));
-		OVITO_ASSERT(s._dataTypeSize == sizeof(double));
-		s._perParticleSize /= sizeof(double) / sizeof(float);
-		s._dataTypeSize = sizeof(float);
-		s._dataType = qMetaTypeId<FloatType>();
-		std::unique_ptr<uint8_t[]> newBuffer(new uint8_t[s._perParticleSize * s._numParticles]);
+		OVITO_ASSERT(_dataTypeSize == sizeof(double));
+		_perParticleSize /= sizeof(double) / sizeof(float);
+		_dataTypeSize = sizeof(float);
+		_dataType = qMetaTypeId<FloatType>();
+		std::unique_ptr<uint8_t[]> newBuffer(new uint8_t[_perParticleSize * _numParticles]);
 		float* dst = reinterpret_cast<float*>(newBuffer.get());
-		const double* src = reinterpret_cast<const double*>(s._data.get());
-		for(size_t c = s._numParticles * s._componentCount; c--; )
+		const double* src = reinterpret_cast<const double*>(_data.get());
+		for(size_t c = _numParticles * _componentCount; c--; )
 			*dst++ = (float)*src++;
-		s._data.swap(newBuffer);
+		_data.swap(newBuffer);
 	}
-
-	return stream;
 }
 
 /******************************************************************************

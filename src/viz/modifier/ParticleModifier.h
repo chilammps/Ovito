@@ -29,6 +29,8 @@
 #include <core/reference/CloneHelper.h>
 #include <core/reference/RefTargetListener.h>
 
+#include <viz/data/ParticlePropertyObject.h>
+
 namespace Viz {
 
 using namespace Ovito;
@@ -56,13 +58,29 @@ protected:
 	/// Loads the class' contents from the given stream.
 	virtual void loadFromStream(ObjectLoadStream& stream) override;
 
-	/// Creates a copy of this object.
-	virtual OORef<RefTarget> clone(bool deepCopy, CloneHelper& cloneHelper) override;
-
 	/// Modifies the particle object. This function must be implemented by sub-classes
 	/// do the modifier specific work. The time interval passed
 	/// to the function should be reduced to the interval where the returned object is valid/constant.
 	virtual ObjectStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) = 0;
+
+	/// Returns a standard particle property from the input state.
+	/// The returned property may be NULL if it does not exist.
+	ParticlePropertyObject* inputStandardProperty(ParticleProperty::Type which) const;
+
+	/// Returns the given standard property from the input object.
+	/// The returned property may not be modified. If they input object does
+	/// not contain the standard property then an exception is thrown.
+	ParticlePropertyObject* expectStandardProperty(ParticleProperty::Type which) const;
+
+	/// Returns the property with the given name from the input particles.
+	/// The returned property may not be modified. If they input object does
+	/// not contain a property with the given name and data type, then an exception is thrown.
+	ParticlePropertyObject* expectCustomProperty(const QString& propertyName, int dataType, size_t componentCount = 1) const;
+
+	/// Creates a standard particle in the modifier's output.
+	/// If the particle property already exists in the input, its contents are copied to the
+	/// output property by this method.
+	ParticlePropertyObject* outputStandardProperty(ParticleProperty::Type which);
 
 #if 0
 	/// Returns the input atoms. The returned object may not be modified.
@@ -76,38 +94,15 @@ protected:
 	/// Completely replaces the output object with a new AtomsObject.
 	void setOutput(AtomsObject* newOutput) { outputAtoms = newOutput; }
 
-	/// Returns the standard channel with the given identifier from the output object.
-	/// The requested data channel will be created or deep copied as needed.
-	DataChannel* outputStandardChannel(DataChannel::DataChannelIdentifier which);
-
-	/// Returns the standard channel with the given identifier from the input object.
-	/// The returned channel may be NULL if it does not exist. Its contents
-	/// may not be modified.
-	DataChannel* inputStandardChannel(DataChannel::DataChannelIdentifier which) const;
-
-	/// Returns the given standard channel from the input object.
-	/// The returned channel may not be modified. If they input object does
-	/// not contain the standard channel then an exception is thrown.
-	DataChannel* expectStandardChannel(DataChannel::DataChannelIdentifier which) const;
-
-	/// Returns the channel with the given name from the input object.
-	/// The returned channel may not be modified. If they input object does
-	/// not contain a channel with the given name then an exception is thrown.
-	/// If there is a channel with the given name but with another data type then
-	/// an exception is thrown too.
-	DataChannel* expectCustomChannel(const QString& channelName, int channelDataType, size_t componentCount = 1) const;
-
 	/// Returns the current ModifierApplication object for this modifier.
 	ModifierApplication* modifierApplication() const { OVITO_ASSERT(modApp != NULL); return modApp; }
+#endif
 
-	/// Returns a clone helper object that should be used to create shallow and deep copies
-	/// of the atoms object and its data.
+	/// Returns a clone helper object that should be used to create shallow and deep copies.
 	CloneHelper* cloneHelper() {
 		if(!_cloneHelper) _cloneHelper.reset(new CloneHelper());
-		return _cloneHelper.get();
+		return _cloneHelper.data();
 	}
-
-#endif
 
 protected:
 
@@ -117,6 +112,15 @@ protected:
 
 	/// The current ModifierApplication object.
 	ModifierApplication* _modApp;
+
+	/// The input state.
+	PipelineFlowState _input;
+
+	/// The output state.
+	PipelineFlowState _output;
+
+	/// The number of particles in the input and the output.
+	size_t _particleCount;
 
 private:
 

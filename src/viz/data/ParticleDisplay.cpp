@@ -52,8 +52,8 @@ ParticleDisplay::ParticleDisplay() : _defaultParticleRadius(1.2)
 ******************************************************************************/
 ParticlePropertyObject* ParticleDisplay::findStandardProperty(ParticleProperty::Type type, const PipelineFlowState& flowState) const
 {
-	for(const auto& entry : flowState.objects()) {
-		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(entry.first.get());
+	for(const auto& sceneObj : flowState.objects()) {
+		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(sceneObj.get());
 		if(property && property->type() == type) return property;
 	}
 	return nullptr;

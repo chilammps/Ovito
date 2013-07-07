@@ -25,6 +25,7 @@
 	<file>actions/file/import_object_reload.png</file>
 	<file>actions/file/import_object_refresh_animation.png</file>
 	<file>actions/file/import_object_settings.png</file>
+	<file>actions/file/import_object_save_with_scene.png</file>
 
 	<file>actions/viewport/maximize_viewport.png</file>
 	<file>actions/viewport/mode_orbit.png</file>
