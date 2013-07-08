@@ -84,7 +84,13 @@ public:
 	void removeParticleProperty(int index) { _properties.erase(_properties.begin() + index); }
 
 	/// Defines a new particle type with the given id.
-	void addParticleType(int id, const QString& name = QString(), const Color& color = Color(0,0,0), FloatType radius = 0) {
+	void addParticleType(int id) {
+		if(_particleTypes.find(id) == _particleTypes.end())
+			_particleTypes[id] = { id, QString(), Color(0,0,0), 0 };
+	}
+
+	/// Defines a new particle type with the given id.
+	void addParticleType(int id, const QString& name, const Color& color = Color(0,0,0), FloatType radius = 0) {
 		_particleTypes[id] = { id, name, color, radius };
 	}
 

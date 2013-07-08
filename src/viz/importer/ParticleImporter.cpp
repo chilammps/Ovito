@@ -86,8 +86,6 @@ Future<QVector<LinkedFileImporter::FrameSourceInformation>> ParticleImporter::fi
 ******************************************************************************/
 void ParticleImporter::scanMultiTimestepFile(FutureInterface<QVector<LinkedFileImporter::FrameSourceInformation>>& futureInterface, const QUrl sourceUrl)
 {
-	futureInterface.setProgressText(tr("Scanning LAMMPS dump file %1").arg(sourceUrl.toString()));
-
 	// Fetch file.
 	Future<QString> fetchFileFuture;
 	fetchFileFuture = FileManager::instance().fetchUrl(sourceUrl);

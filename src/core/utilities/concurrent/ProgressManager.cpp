@@ -196,14 +196,33 @@ bool ProgressManager::waitForTask(const FutureInterfacePointer& futureInterface)
 {
 	OVITO_ASSERT_MSG(QThread::currentThread() == QApplication::instance()->thread(), "ProgressManager::waitForTask", "Function can only be called from the GUI thread.");
 
-	// TODO...
-	while(!sceneIsReady) {
-		if(progressDialog.wasCanceled())
-			return false;
-		QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents, 200);
+	// Before showing any progress dialog, check if task has already finished.
+	if(futureInterface->isFinished())
+		return !futureInterface->isCanceled();
+
+	// Show progress dialog.
+	QProgressDialog progressDialog(&MainWindow::instance());
+	progressDialog.setWindowModality(Qt::WindowModal);
+	progressDialog.setAutoClose(false);
+	progressDialog.setAutoReset(false);
+	progressDialog.setMinimumDuration(0);
+
+	FutureWatcher watcher;
+	connect(&watcher, SIGNAL(progressRangeChanged(int)), &progressDialog, SLOT(setMaximum(int)));
+	connect(&watcher, SIGNAL(progressValueChanged(int)), &progressDialog, SLOT(setValue(int)));
+	connect(&watcher, SIGNAL(progressTextChanged(const QString&)), &progressDialog, SLOT(setLabelText(const QString&)));
+	connect(&progressDialog, SIGNAL(canceled()), &watcher, SLOT(cancel()));
+	watcher.setFutureInterface(futureInterface);
+
+	progressDialog.setLabelText(futureInterface->progressText());
+	progressDialog.setMaximum(futureInterface->progressMaximum());
+	progressDialog.setValue(futureInterface->progressValue());
+
+	progressDialog.open();
+	while(!watcher.isFinished()) {
+		QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents, 100);
 	}
 
-	futureInterface->waitForFinished();
 	return !futureInterface->isCanceled();
 }
 

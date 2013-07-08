@@ -71,6 +71,9 @@ bool LAMMPSTextDumpImporter::checkFileFormat(QIODevice& input)
 ******************************************************************************/
 void LAMMPSTextDumpImporter::scanFileForTimesteps(FutureInterfaceBase& futureInterface, QVector<LinkedFileImporter::FrameSourceInformation>& frames, const QUrl& sourceUrl, CompressedTextParserStream& stream)
 {
+	futureInterface.setProgressText(tr("Scanning LAMMPS dump file %1").arg(stream.filename()));
+	futureInterface.setProgressRange(stream.underlyingSize() / 1000);
+
 	// Regular expression for whitespace characters.
 	QRegularExpression ws_re(QStringLiteral("\\s+"));
 
@@ -111,6 +114,11 @@ void LAMMPSTextDumpImporter::scanFileForTimesteps(FutureInterfaceBase& futureInt
 			else if(stream.line().startsWith("ITEM: ATOMS")) {
 				for(size_t i = 0; i < numParticles; i++) {
 					stream.readLine();
+					if((i % 4096) == 0) {
+						futureInterface.setProgressValue(stream.underlyingByteOffset() / 1000);
+						if(futureInterface.isCanceled())
+							return;
+					}
 				}
 				break;
 			}

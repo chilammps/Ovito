@@ -53,7 +53,6 @@ void ActionManager::on_RenderActiveViewport_triggered()
 			throw Exception(tr("There is no active viewport to render."));
 
 		// Show progress dialog.
-		//QProgressDialog progressDialog(tr("Rendering ..."), MainWindow::instance());
 		QProgressDialog progressDialog(&MainWindow::instance());
 		progressDialog.setWindowModality(Qt::WindowModal);
 		progressDialog.setAutoClose(false);
