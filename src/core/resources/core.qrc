@@ -77,14 +77,22 @@
 	<file>framebuffer/save_picture.png</file>	
 	<file>framebuffer/copy_picture_to_clipboard.png</file>
 	
-	<file>glsl/particle_flat.fragment.glsl</file>
-	<file>glsl/particle_raytraced_sphere.fragment.glsl</file>
-	<file>glsl/particle_raytraced_sphere.vertex.glsl</file>
-	<file>glsl/particle_raytraced_sphere.geometry.glsl</file>
-	<file>glsl/particle_sprite_sphere_with_depth.fragment.glsl</file>
-	<file>glsl/particle_sprite_sphere_with_depth.vertex.glsl</file>
-	<file>glsl/particle_sprite_sphere_without_depth.fragment.glsl</file>
-	<file>glsl/particle_sprite_sphere_without_depth.vertex.glsl</file>
+	<file>glsl/particles/sprites/flat.fs</file>
+	<file>glsl/particles/sprites/imposter_without_depth.vs</file>
+	<file>glsl/particles/sprites/imposter_without_depth.fs</file>
+	<file>glsl/particles/sprites/imposter_with_depth.vs</file>
+	<file>glsl/particles/sprites/imposter_with_depth.fs</file>
+	<file>glsl/particles/picking/sprites/imposter_without_depth.vs</file>
+	<file>glsl/particles/picking/sprites/imposter_without_depth.fs</file>
+	<file>glsl/particles/picking/sprites/imposter_with_depth.vs</file>
+	<file>glsl/particles/picking/sprites/imposter_with_depth.fs</file>
+	<file>glsl/particles/raytraced/sphere.vs</file>
+	<file>glsl/particles/raytraced/sphere.fs</file>
+	<file>glsl/particles/raytraced/sphere.gs</file>
+	<file>glsl/particles/picking/raytraced/sphere.vs</file>
+	<file>glsl/particles/picking/raytraced/sphere.fs</file>
+	<file>glsl/particles/picking/raytraced/sphere.gs</file>
+
 	<file>glsl/line.vertex.glsl</file>
 	<file>glsl/line.fragment.glsl</file>
 	<file>glsl/text.vertex.glsl</file>

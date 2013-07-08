@@ -102,13 +102,19 @@ public:
 	virtual OORef<LineGeometryBuffer> createLineGeometryBuffer() = 0;
 
 	/// Requests a new particle geometry buffer from the renderer.
-	virtual OORef<ParticleGeometryBuffer> createParticleGeometryBuffer() = 0;
+	virtual OORef<ParticleGeometryBuffer> createParticleGeometryBuffer(ParticleGeometryBuffer::ShadingMode shadingMode = ParticleGeometryBuffer::NormalShading, ParticleGeometryBuffer::RenderingQuality renderingQuality = ParticleGeometryBuffer::MediumQuality) = 0;
 
 	/// Requests a new text geometry buffer from the renderer.
 	virtual OORef<TextGeometryBuffer> createTextGeometryBuffer() = 0;
 
 	/// Requests a new image geometry buffer from the renderer.
 	virtual OORef<ImageGeometryBuffer> createImageGeometryBuffer() = 0;
+
+	/// Returns whether object picking mode is active.
+	bool isPicking() const { return _isPicking; }
+
+	/// When picking mode is active, this registers an object being rendered.
+	virtual quint32 registerPickObject(ObjectNode* objNode, SceneObject* sceneObj, quint32 subObjectCount = 1) { return 0; }
 
 protected:
 
@@ -120,6 +126,9 @@ protected:
 
 	/// \brief Render a scene node (and all its children).
 	virtual void renderNode(SceneNode* node);
+
+	/// Sets whether object picking mode is active.
+	void setPicking(bool enable) { _isPicking = enable; }
 
 private:
 
@@ -137,6 +146,9 @@ private:
 
 	/// The animation time being rendered.
 	TimePoint _time;
+
+	/// Indicates that object picking mode is active.
+	bool _isPicking;
 
 	Q_OBJECT
 	OVITO_OBJECT

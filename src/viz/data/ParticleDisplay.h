@@ -62,9 +62,23 @@ public:
 	/// \brief Sets the default display radius of atomic particles.
 	void setDefaultParticleRadius(FloatType newRadius) { _defaultParticleRadius = newRadius; }
 
+	/// \brief Returns the selected shading mode for particles.
+	ParticleGeometryBuffer::ShadingMode shadingMode() const { return _shadingMode; }
+
+	/// \brief Sets the shading mode for particles.
+	void setShadingMode(ParticleGeometryBuffer::ShadingMode mode) { _shadingMode = mode; }
+
+	/// \brief Returns the selected rendering quality mode for particles.
+	ParticleGeometryBuffer::RenderingQuality renderingQuality() const { return _renderingQuality; }
+
+	/// \brief Sets the rendering quality mode for particles.
+	void setRenderingQuality(ParticleGeometryBuffer::RenderingQuality quality) { _renderingQuality = quality; }
+
 public:
 
 	Q_PROPERTY(FloatType defaultParticleRadius READ defaultParticleRadius WRITE setDefaultParticleRadius)
+	Q_PROPERTY(Ovito::ParticleGeometryBuffer::ShadingMode shadingMode READ shadingMode WRITE setShadingMode)
+	Q_PROPERTY(Ovito::ParticleGeometryBuffer::RenderingQuality renderingQuality READ renderingQuality WRITE setRenderingQuality)
 
 protected:
 
@@ -75,6 +89,12 @@ protected:
 
 	/// Controls the default display radius of atomic particles.
 	PropertyField<FloatType> _defaultParticleRadius;
+
+	/// Controls the shading mode for particles.
+	PropertyField<ParticleGeometryBuffer::ShadingMode, int> _shadingMode;
+
+	/// Controls the rendering quality mode for particles.
+	PropertyField<ParticleGeometryBuffer::RenderingQuality, int> _renderingQuality;
 
 	/// The buffered particle geometry used to render the particles.
 	OORef<ParticleGeometryBuffer> _particleBuffer;
@@ -116,6 +136,8 @@ private:
 	OVITO_OBJECT
 
 	DECLARE_PROPERTY_FIELD(_defaultParticleRadius);
+	DECLARE_PROPERTY_FIELD(_shadingMode);
+	DECLARE_PROPERTY_FIELD(_renderingQuality);
 };
 
 /**

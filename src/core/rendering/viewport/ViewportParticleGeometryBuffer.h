@@ -43,7 +43,7 @@ class ViewportParticleGeometryBuffer : public ParticleGeometryBuffer, private Sh
 public:
 
 	/// Constructor.
-	ViewportParticleGeometryBuffer(ViewportSceneRenderer* renderer);
+	ViewportParticleGeometryBuffer(ViewportSceneRenderer* renderer, ShadingMode shadingMode, RenderingQuality renderingQuality);
 
 	/// Destructor.
 	virtual ~ViewportParticleGeometryBuffer();
@@ -73,7 +73,7 @@ public:
 	virtual bool isValid(SceneRenderer* renderer) override;
 
 	/// \brief Renders the geometry.
-	virtual void render(SceneRenderer* renderer) override;
+	virtual void render(SceneRenderer* renderer, quint32 pickingBaseID = 0) override;
 
 protected:
 
@@ -87,10 +87,10 @@ protected:
 	void activateBillboardTexture();
 
 	/// Renders the particles using OpenGL point sprites.
-	void renderPointSprites(ViewportSceneRenderer* renderer);
+	void renderPointSprites(ViewportSceneRenderer* renderer, quint32 pickingBaseID);
 
 	/// Renders the particles using raytracing implemented in an OpenGL fragment shader.
-	void renderRaytracedSpheres(ViewportSceneRenderer* renderer);
+	void renderRaytracedSpheres(ViewportSceneRenderer* renderer, quint32 pickingBaseID);
 
 private:
 
@@ -117,6 +117,10 @@ private:
 	QPointer<QOpenGLShaderProgram> _shadedImposterShaderWithoutDepth;
 	QPointer<QOpenGLShaderProgram> _shadedImposterShaderWithDepth;
 	QPointer<QOpenGLShaderProgram> _raytracedSphereShader;
+
+	QPointer<QOpenGLShaderProgram> _imposterPickingShaderWithoutDepth;
+	QPointer<QOpenGLShaderProgram> _imposterPickingShaderWithDepth;
+	QPointer<QOpenGLShaderProgram> _raytracedPickingSphereShader;
 
 	Q_OBJECT
 	OVITO_OBJECT

@@ -136,7 +136,7 @@ void ViewportLineGeometryBuffer::render(SceneRenderer* renderer)
 	OVITO_STATIC_ASSERT(sizeof(FloatType) == 4);
 	ViewportSceneRenderer* vpRenderer = dynamic_object_cast<ViewportSceneRenderer>(renderer);
 
-	if(_vertexCount <= 0 || !vpRenderer)
+	if(_vertexCount <= 0 || !vpRenderer || renderer->isPicking())
 		return;
 
 	if(!_shader->bind())

@@ -33,6 +33,7 @@ namespace Ovito {
 class VariantComboBoxParameterUI : public PropertyParameterUI
 {
 public:
+
 	/// Constructor.
 	VariantComboBoxParameterUI(QObject* parentEditor, const char* propertyName);
 	

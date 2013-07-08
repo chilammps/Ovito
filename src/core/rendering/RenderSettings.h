@@ -46,7 +46,7 @@ public:
 		ANIMATION_INTERVAL,	///< Render the complete animation interval.
 		CUSTOM_INTERVAL,	///< Render time interval defined by the user.
 	};
-	Q_ENUMS(RenderingRangeType)
+	Q_ENUMS(RenderingRangeType);
 	
 public:
 

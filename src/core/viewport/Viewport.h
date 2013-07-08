@@ -39,6 +39,8 @@
 
 namespace Ovito {
 
+class PickingSceneRenderer;		// defined in PickingSceneRenderer.h
+
 /******************************************************************************
 * This data structure describes a projection parameters used to render
 * the 3D contents in a viewport.
@@ -75,6 +77,27 @@ struct ViewProjectionParameters
 
 	/// Specifies the time interval during which the stored parameters stay constant.
 	TimeInterval validityInterval;
+};
+
+/******************************************************************************
+* This data structure is returned by the Viewport::pick() method.
+*******************************************************************************/
+struct PickResult
+{
+	/// Indicates whether an object was picked or not.
+	bool valid;
+
+	/// The coordinates of the hit point in world space.
+	Point3 worldPosition;
+
+	/// The object node that was picked.
+	OORef<ObjectNode> objectNode;
+
+	/// The scene object that was picked.
+	OORef<SceneObject> sceneObject;
+
+	/// The subobject that was picked.
+	quint32 subobjectId;
 };
 
 /**
@@ -275,6 +298,9 @@ public:
 	/// The center point is only used if it is activated with a call to setUseOrbitCenter().
 	void setOrbitCenter(const Point3& center) { _orbitCenter = center; }
 
+	/// \brief Determines the object that is visible under the given mouse cursor position.
+	PickResult pick(const QPoint& pos);
+
 	/// \brief Zooms to the extents of the scene.
 	void zoomToSceneExtents();
 
@@ -411,6 +437,9 @@ private:
 
 	/// This is used to render the render frame around the viewport.
 	OORef<ImageGeometryBuffer> _renderFrameOverlay;
+
+	/// This renderer generates an offscreen rendering of the scene that allows picking of objects.
+	OORef<PickingSceneRenderer> _pickingRenderer;
 
 private:
 

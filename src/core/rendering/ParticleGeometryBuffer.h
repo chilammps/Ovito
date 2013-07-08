@@ -45,17 +45,19 @@ public:
 		NormalShading,
 		FlatShading,
 	};
+	Q_ENUMS(ShadingMode);
 
 	enum RenderingQuality {
 		LowQuality,
 		MediumQuality,
 		HighQuality
 	};
+	Q_ENUMS(RenderingQuality);
 
 public:
 
 	/// Constructor.
-	ParticleGeometryBuffer() : _shadingMode(NormalShading), _renderingQuality(LowQuality) {}
+	ParticleGeometryBuffer(ShadingMode shadingMode, RenderingQuality renderingQuality) : _shadingMode(shadingMode), _renderingQuality(renderingQuality) {}
 
 	/// \brief Allocates a geometry buffer with the given number of particles.
 	virtual void setSize(int particleCount) = 0;
@@ -82,19 +84,21 @@ public:
 	virtual bool isValid(SceneRenderer* renderer) = 0;
 
 	/// \brief Renders the geometry.
-	virtual void render(SceneRenderer* renderer) = 0;
+	virtual void render(SceneRenderer* renderer, quint32 pickingBaseID = 0) = 0;
 
 	/// \brief Returns the shading mode for particles.
 	ShadingMode shadingMode() const { return _shadingMode; }
 
 	/// \brief Changes the shading mode for particles.
-	void setShadingMode(ShadingMode mode) { _shadingMode = mode; }
+	/// \return false if the shading mode cannot be changed after the buffer has been created; true otherwise.
+	virtual bool setShadingMode(ShadingMode mode) { _shadingMode = mode; return true; }
 
 	/// \brief Returns the rendering quality of particles.
 	RenderingQuality renderingQuality() const { return _renderingQuality; }
 
 	/// \brief Changes the rendering quality of particles.
-	void setRenderingQuality(RenderingQuality level) { _renderingQuality = level; }
+	/// \return false if the quality level cannot be changed after the buffer has been created; true otherwise.
+	virtual bool setRenderingQuality(RenderingQuality level) { _renderingQuality = level; return true; }
 
 private:
 
@@ -109,5 +113,10 @@ private:
 };
 
 };
+
+Q_DECLARE_METATYPE(Ovito::ParticleGeometryBuffer::ShadingMode);
+Q_DECLARE_METATYPE(Ovito::ParticleGeometryBuffer::RenderingQuality);
+Q_DECLARE_TYPEINFO(Ovito::ParticleGeometryBuffer::ShadingMode, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::ParticleGeometryBuffer::RenderingQuality, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_PARTICLE_GEOMETRY_BUFFER_H

@@ -141,9 +141,26 @@ bool Application::initialize()
 		// Create the main application window.
 		if(guiMode()) {
 			// Show the main window.
-			//MainWindow::instance().showMaximized();
+#ifndef OVITO_DEBUG
+			MainWindow::instance().showMaximized();
+#else
 			MainWindow::instance().show();
+#endif
 			MainWindow::instance().restoreLayout();
+		}
+
+		// Import data file specified on the command line.
+		if(_startupImportFile.isEmpty() == false) {
+			try {
+				OORef<FileImporter> importer = ImportExportManager::instance().autodetectFileFormat(_startupImportFile);
+				if(!importer)
+					throw Exception(tr("Could not auto-detect format of file to be imported."));
+				importer->importFile(QUrl::fromLocalFile(_startupImportFile), DataSetManager::instance().currentSet());
+			}
+			catch(Exception& ex) {
+				ex.prependGeneralMessage(tr("Failed to import file %1.").arg(_startupImportFile));
+				throw;
+			}
 		}
 
 		// Enable the viewports now. Viewport updates are suspended by default.
@@ -199,6 +216,12 @@ void Application::shutdown()
 bool Application::parseCommandLine()
 {
 	QStringList params = QCoreApplication::arguments();
+	if(params.size() >= 2) {
+		if(params[1].endsWith(".ovito", Qt::CaseInsensitive))
+			_startupSceneFile = params[1];
+		else
+			_startupImportFile = params[1];
+	}
 	return true;
 }
 

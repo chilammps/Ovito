@@ -97,7 +97,7 @@ void ViewportTextGeometryBuffer::render(SceneRenderer* renderer, const Point2& p
 	OVITO_STATIC_ASSERT(sizeof(FloatType) == sizeof(float) && sizeof(Point2) == sizeof(float)*2);
 	ViewportSceneRenderer* vpRenderer = dynamic_object_cast<ViewportSceneRenderer>(renderer);
 
-	if(text().isEmpty() || !vpRenderer)
+	if(text().isEmpty() || !vpRenderer || renderer->isPicking())
 		return;
 
 	// Prepare texture.

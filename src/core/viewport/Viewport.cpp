@@ -29,6 +29,7 @@
 #include <core/dataset/DataSetManager.h>
 #include <core/scene/objects/AbstractCameraObject.h>
 #include "ViewportMenu.h"
+#include "picking/PickingSceneRenderer.h"
 
 /// The default field of view in world units used for orthogonal view types when the scene is empty.
 #define DEFAULT_ORTHOGONAL_FIELD_OF_VIEW		200.0
@@ -65,7 +66,8 @@ Viewport::Viewport() :
 		_showRenderFrame(false), _orbitCenter(Point3::Origin()), _useOrbitCenter(false),
 		_isRendering(false),
 		_cameraPosition(Point3::Origin()), _cameraDirection(0,0,-1),
-		_renderDebugCounter(0)
+		_renderDebugCounter(0),
+		_pickingRenderer(new PickingSceneRenderer())
 {
 	INIT_PROPERTY_FIELD(Viewport::_viewNode);
 	INIT_PROPERTY_FIELD(Viewport::_viewType);
@@ -287,12 +289,14 @@ void Viewport::zoomToBox(const Box3& box)
 		setCameraPosition(box.center() - cameraDirection().resized(dist));
 	}
 	else {
-		AffineTransformation viewMat = viewMatrix();
+		// Setup projection.
+		FloatType aspectRatio = (FloatType)size().height() / size().width();
+		ViewProjectionParameters projParams = projectionParameters(AnimManager::instance().time(), aspectRatio, box);
 
 		FloatType minX =  FLOATTYPE_MAX, minY =  FLOATTYPE_MAX;
 		FloatType maxX = -FLOATTYPE_MAX, maxY = -FLOATTYPE_MAX;
 		for(int i = 0; i < 8; i++) {
-			Point3 trans = viewMat * box[i];
+			Point3 trans = projParams.viewMatrix * box[i];
 			if(trans.x() < minX) minX = trans.x();
 			if(trans.x() > maxX) maxX = trans.x();
 			if(trans.y() < minY) minY = trans.y();
@@ -300,8 +304,8 @@ void Viewport::zoomToBox(const Box3& box)
 		}
 		FloatType w = std::max(maxX - minX, FloatType(1e-5));
 		FloatType h = std::max(maxY - minY, FloatType(1e-5));
-		if(_projParams.aspectRatio > h/w)
-			setFieldOfView(w * _projParams.aspectRatio * 0.55);
+		if(aspectRatio > h/w)
+			setFieldOfView(w * aspectRatio * 0.55);
 		else
 			setFieldOfView(h * 0.55);
 		setCameraPosition(box.center());
@@ -682,6 +686,51 @@ void Viewport::renderRenderFrame()
 	_renderFrameOverlay->renderViewport(renderer, Point2(frameWidth,-1), Vector2(1.0 - frameWidth, 2));
 	_renderFrameOverlay->renderViewport(renderer, Point2(-frameWidth,-1), Vector2(2*frameWidth, 1.0 - frameHeight));
 	_renderFrameOverlay->renderViewport(renderer, Point2(-frameWidth,frameHeight), Vector2(2*frameWidth, 1.0 - frameHeight));
+}
+
+/******************************************************************************
+* Determines the object that is visible under the given mouse cursor position.
+******************************************************************************/
+PickResult Viewport::pick(const QPoint& pos)
+{
+	OVITO_ASSERT_MSG(!isRendering(), "Viewport::pick", "Object picking is not possible while rendering viewport contents.");
+
+	// Request scene bounding box.
+	Box3 boundingBox = DataSetManager::instance().currentSet()->sceneRoot()->worldBoundingBox(AnimManager::instance().time());
+	if(boundingBox.isEmpty())
+		boundingBox = Box3(Point3::Origin(), 100);
+
+	// Setup projection.
+	QSize vpSize = size();
+	FloatType aspectRatio = (FloatType)vpSize.height() / vpSize.width();
+	ViewProjectionParameters projParams = projectionParameters(AnimManager::instance().time(), aspectRatio, boundingBox);
+
+	// Adjust projection if render frame is shown.
+	if(renderFrameShown())
+		adjustProjectionForRenderFrame(projParams);
+
+	// Set up the picking renderer.
+	_pickingRenderer->startRender(DataSetManager::instance().currentSet(), DataSetManager::instance().currentSet()->renderSettings());
+	_pickingRenderer->beginFrame(AnimManager::instance().time(), projParams, this);
+
+	// Call the viewport renderer to render the scene objects.
+	_pickingRenderer->renderFrame(nullptr, nullptr);
+
+	// Stop rendering.
+	_pickingRenderer->endFrame();
+	_pickingRenderer->endRender();
+
+	// Query which object is located at the given window position.
+	PickResult result;
+	const PickingSceneRenderer::ObjectRecord* objInfo;
+	std::tie(objInfo, result.subobjectId) = _pickingRenderer->objectAtLocation(pos);
+	result.valid = (objInfo != nullptr);
+	if(objInfo) {
+		result.objectNode = objInfo->objectNode;
+		result.sceneObject = objInfo->sceneObject;
+	}
+	_pickingRenderer->reset();
+	return result;
 }
 
 };

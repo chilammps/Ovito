@@ -39,7 +39,7 @@ IMPLEMENT_OVITO_OBJECT(Core, ImageGeometryBuffer, OvitoObject);
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-SceneRenderer::SceneRenderer() : _dataset(nullptr), _settings(nullptr), _viewport(nullptr)
+SceneRenderer::SceneRenderer() : _dataset(nullptr), _settings(nullptr), _viewport(nullptr), _isPicking(false)
 {
 }
 

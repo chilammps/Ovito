@@ -73,8 +73,8 @@ public:
 	}
 
 	/// Requests a new particle geometry buffer from the renderer.
-	virtual OORef<ParticleGeometryBuffer> createParticleGeometryBuffer() override {
-		return new ViewportParticleGeometryBuffer(this);
+	virtual OORef<ParticleGeometryBuffer> createParticleGeometryBuffer(ParticleGeometryBuffer::ShadingMode shadingMode = ParticleGeometryBuffer::NormalShading, ParticleGeometryBuffer::RenderingQuality renderingQuality = ParticleGeometryBuffer::MediumQuality) override {
+		return new ViewportParticleGeometryBuffer(this, shadingMode, renderingQuality);
 	}
 
 	/// Requests a new text geometry buffer from the renderer.

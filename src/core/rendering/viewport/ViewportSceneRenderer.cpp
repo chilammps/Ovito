@@ -71,7 +71,7 @@ void ViewportSceneRenderer::beginFrame(TimePoint time, const ViewProjectionParam
 
 	// Set viewport background color.
 	Color backgroundColor = Viewport::viewportColor(ViewportSettings::COLOR_VIEWPORT_BKG);
-	glClearColor(backgroundColor.r(), backgroundColor.g(), backgroundColor.b(), 1);
+	OVITO_CHECK_OPENGL(glClearColor(backgroundColor.r(), backgroundColor.g(), backgroundColor.b(), 1));
 }
 
 /******************************************************************************
@@ -90,9 +90,11 @@ void ViewportSceneRenderer::endFrame()
 ******************************************************************************/
 bool ViewportSceneRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialog* progress)
 {
+	OVITO_ASSERT(_glcontext == QOpenGLContext::currentContext());
+
 	// Clear background.
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glEnable(GL_DEPTH_TEST);
+	OVITO_CHECK_OPENGL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+	OVITO_CHECK_OPENGL(glEnable(GL_DEPTH_TEST));
 
 	renderScene();
 

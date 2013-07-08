@@ -109,7 +109,7 @@ void ViewportImageGeometryBuffer::renderViewport(SceneRenderer* renderer, const 
 	OVITO_STATIC_ASSERT(sizeof(FloatType) == sizeof(float) && sizeof(Point2) == sizeof(float)*2);
 	ViewportSceneRenderer* vpRenderer = dynamic_object_cast<ViewportSceneRenderer>(renderer);
 
-	if(image().isNull() || !vpRenderer)
+	if(image().isNull() || !vpRenderer || renderer->isPicking())
 		return;
 
 	// Prepare texture.

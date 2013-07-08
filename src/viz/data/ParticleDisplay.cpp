@@ -23,7 +23,7 @@
 #include <core/utilities/units/UnitsManager.h>
 #include <core/rendering/SceneRenderer.h>
 #include <core/gui/properties/FloatParameterUI.h>
-#include <core/gui/properties/BooleanParameterUI.h>
+#include <core/gui/properties/VariantComboBoxParameterUI.h>
 
 #include "ParticleDisplay.h"
 #include "ParticleTypeProperty.h"
@@ -31,19 +31,27 @@
 namespace Viz {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Viz, ParticleDisplay, DisplayObject)
+IMPLEMENT_OVITO_OBJECT(Viz, ParticleDisplayEditor, PropertiesEditor)
 SET_OVITO_OBJECT_EDITOR(ParticleDisplay, ParticleDisplayEditor)
 DEFINE_PROPERTY_FIELD(ParticleDisplay, _defaultParticleRadius, "DefaultParticleRadius")
+DEFINE_PROPERTY_FIELD(ParticleDisplay, _shadingMode, "ShadingMode")
+DEFINE_PROPERTY_FIELD(ParticleDisplay, _renderingQuality, "RenderingQuality")
 SET_PROPERTY_FIELD_LABEL(ParticleDisplay, _defaultParticleRadius, "Default particle radius")
+SET_PROPERTY_FIELD_LABEL(ParticleDisplay, _shadingMode, "Shading mode")
+SET_PROPERTY_FIELD_LABEL(ParticleDisplay, _renderingQuality, "RenderingQuality")
 SET_PROPERTY_FIELD_UNITS(ParticleDisplay, _defaultParticleRadius, WorldParameterUnit)
-
-IMPLEMENT_OVITO_OBJECT(Viz, ParticleDisplayEditor, PropertiesEditor)
 
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-ParticleDisplay::ParticleDisplay() : _defaultParticleRadius(1.2)
+ParticleDisplay::ParticleDisplay() :
+	_defaultParticleRadius(1.2),
+	_shadingMode(ParticleGeometryBuffer::NormalShading),
+	_renderingQuality(ParticleGeometryBuffer::LowQuality)
 {
 	INIT_PROPERTY_FIELD(ParticleDisplay::_defaultParticleRadius);
+	INIT_PROPERTY_FIELD(ParticleDisplay::_shadingMode);
+	INIT_PROPERTY_FIELD(ParticleDisplay::_renderingQuality);
 }
 
 /******************************************************************************
@@ -114,6 +122,12 @@ void ParticleDisplay::render(TimePoint time, SceneObject* sceneObject, const Pip
 	// Do we have to re-create the geometry buffer from scratch?
 	bool recreateBuffer = !_particleBuffer || !_particleBuffer->isValid(renderer);
 
+	// Set shading mode and rendering quality.
+	if(!recreateBuffer) {
+		recreateBuffer |= !(_particleBuffer->setShadingMode(shadingMode()));
+		recreateBuffer |= !(_particleBuffer->setRenderingQuality(renderingQuality()));
+	}
+
 	// Do we have to resize the geometry buffer?
 	bool resizeBuffer = recreateBuffer || (_particleBuffer->particleCount() != particleCount);
 
@@ -136,7 +150,7 @@ void ParticleDisplay::render(TimePoint time, SceneObject* sceneObject, const Pip
 
 	// Re-create the geometry buffer if necessary.
 	if(recreateBuffer)
-		_particleBuffer = renderer->createParticleGeometryBuffer();
+		_particleBuffer = renderer->createParticleGeometryBuffer(shadingMode(), renderingQuality());
 
 	// Re-size the geometry buffer if necessary.
 	if(resizeBuffer)
@@ -212,7 +226,12 @@ void ParticleDisplay::render(TimePoint time, SceneObject* sceneObject, const Pip
 		}
 	}
 
-	_particleBuffer->render(renderer);
+	// Support picking of particles.
+	quint32 pickingBaseID = 0;
+	if(renderer->isPicking())
+		pickingBaseID = renderer->registerPickObject(contextNode, sceneObject, particleCount);
+
+	_particleBuffer->render(renderer, pickingBaseID);
 }
 
 /******************************************************************************
@@ -231,15 +250,22 @@ void ParticleDisplayEditor::createUI(const RolloutInsertionParameters& rolloutPa
 #endif
 	layout->setColumnStretch(1, 1);
 
-#if 0
-	BooleanPropertyUI* highQualityDisplayUI = new BooleanPropertyUI(this, PROPERTY_FIELD_DESCRIPTOR(PositionDataChannel, _useHighQualityRenderingInViewports));
-	layout->addWidget(highQualityDisplayUI->checkBox(), 1, 0, 1, 3);
+	// Shading mode.
+	VariantComboBoxParameterUI* shadingModeUI = new VariantComboBoxParameterUI(this, "shadingMode");
+	shadingModeUI->comboBox()->addItem(tr("Normal"), qVariantFromValue(ParticleGeometryBuffer::NormalShading));
+	shadingModeUI->comboBox()->addItem(tr("Flat"), qVariantFromValue(ParticleGeometryBuffer::FlatShading));
+	layout->addWidget(new QLabel(tr("Shading mode:")), 0, 0);
+	layout->addWidget(shadingModeUI->comboBox(), 0, 1);
 
-	BooleanPropertyUI* flatAtomDisplayUI = new BooleanPropertyUI(this, PROPERTY_FIELD_DESCRIPTOR(PositionDataChannel, _flatAtomRendering));
-	layout->addWidget(flatAtomDisplayUI->checkBox(), 2, 0, 1, 3);
-#endif
+	// Rendering quality.
+	VariantComboBoxParameterUI* renderingQualityUI = new VariantComboBoxParameterUI(this, "renderingQuality");
+	renderingQualityUI->comboBox()->addItem(tr("Low"), qVariantFromValue(ParticleGeometryBuffer::LowQuality));
+	renderingQualityUI->comboBox()->addItem(tr("Medium"), qVariantFromValue(ParticleGeometryBuffer::MediumQuality));
+	renderingQualityUI->comboBox()->addItem(tr("High"), qVariantFromValue(ParticleGeometryBuffer::HighQuality));
+	layout->addWidget(new QLabel(tr("Rendering quality:")), 1, 0);
+	layout->addWidget(renderingQualityUI->comboBox(), 1, 1);
 
-	// Default radius parameter.
+	// Default radius.
 	FloatParameterUI* radiusUI = new FloatParameterUI(this, PROPERTY_FIELD(ParticleDisplay::_defaultParticleRadius));
 	layout->addWidget(radiusUI->label(), 2, 0);
 	layout->addLayout(radiusUI->createFieldLayout(), 2, 1);
