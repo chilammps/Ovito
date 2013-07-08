@@ -144,7 +144,8 @@ PipelineFlowState PipelineObject::evaluatePipeline(TimePoint time, ModifierAppli
 			continue;
 		}
 
-		// Put evaluation result into cache if the next modifier is changing frequently (because it is being edited).
+		// Save current evaluation result in cache at this point of the pipeline
+		// if the next modifier is changing frequently (because it is currently being edited).
 		if(mod->modifierValidity(time).isEmpty()) {
 			_cachedModifiedState = flowState;
 			_cacheIndex = stackIndex;
