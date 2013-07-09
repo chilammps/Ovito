@@ -112,7 +112,6 @@ SET(OVITO_CORE_SOURCE_FILES
 	utilities/io/ObjectSaveStream.cpp
 	utilities/io/ObjectLoadStream.cpp
 	utilities/io/FileManager.cpp
-	utilities/io/gzstream/gzstream.cpp
 	utilities/io/gzdevice/qtiocompressor.cpp
 	utilities/concurrent/Future.cpp
 	utilities/concurrent/ProgressManager.cpp

@@ -79,6 +79,12 @@ public:
 	/// This may be NULL.
 	Viewport* viewport() const { return _viewport; }
 
+	/// \brief Computes the bounding box of the entire scene to be rendered.
+	/// \param time The time at which the bounding box should be computed.
+	/// \return An axis-aligned box in the world coordinate system that contains
+	///         everything to be rendered.
+	virtual Box3 sceneBoundingBox(TimePoint time);
+
 	/// This method is called just before renderFrame() is called.
 	/// Sets the view projection parameters, the animation frame to render.
 	/// and the viewport whose being rendered.
@@ -112,6 +118,10 @@ public:
 
 	/// Returns whether object picking mode is active.
 	bool isPicking() const { return _isPicking; }
+
+	/// Returns whether this renderer is rendering an interactive viewport.
+	/// \return true if rendering a real-time viewport; false if rendering an output image.
+	virtual bool isInteractive() const = 0;
 
 	/// When picking mode is active, this registers an object being rendered.
 	virtual quint32 registerPickObject(ObjectNode* objNode, SceneObject* sceneObj, quint32 subObjectCount = 1) { return 0; }

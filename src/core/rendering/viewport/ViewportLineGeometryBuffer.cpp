@@ -104,11 +104,13 @@ void ViewportLineGeometryBuffer::setVertexColor(const ColorA color)
 	if(!_glColorsBuffer.bind())
 		throw Exception(tr("Failed to bind OpenGL vertex buffer."));
 	_glColorsBuffer.allocate(_vertexCount * sizeof(ColorA));
-	ColorA* bufferData = static_cast<ColorA*>(_glColorsBuffer.map(QOpenGLBuffer::WriteOnly));
-	if(!bufferData)
-		throw Exception(tr("Failed to map OpenGL vertex buffer to memory."));
-	std::fill(bufferData, bufferData + _vertexCount, color);
-	_glColorsBuffer.unmap();
+	if(_vertexCount) {
+		ColorA* bufferData = static_cast<ColorA*>(_glColorsBuffer.map(QOpenGLBuffer::WriteOnly));
+		if(!bufferData)
+			throw Exception(tr("Failed to map OpenGL vertex buffer to memory."));
+		std::fill(bufferData, bufferData + _vertexCount, color);
+		_glColorsBuffer.unmap();
+	}
 	_glColorsBuffer.release();
 }
 

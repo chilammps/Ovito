@@ -61,6 +61,10 @@ public:
 	/// Is called after rendering has finished.
 	virtual void endRender() override;
 
+	/// Returns whether this renderer is rendering an interactive viewport.
+	/// \return true if rendering a real-time viewport; false if rendering an output image.
+	virtual bool isInteractive() const override { return false; }
+
 public:
 
 	Q_PROPERTY(int antialiasingLevel READ antialiasingLevel WRITE setAntialiasingLevel)

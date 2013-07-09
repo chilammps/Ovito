@@ -21,6 +21,7 @@
 
 #include <core/Core.h>
 #include <core/gui/widgets/SpinnerWidget.h>
+#include <core/viewport/ViewportManager.h>
 
 namespace Ovito {
 
@@ -315,6 +316,9 @@ void SpinnerWidget::mouseMoveEvent(QMouseEvent* event)
 
 				if(newVal != floatValue()) {
 					setFloatValue(newVal, true);
+
+					// Repaint viewports for immediate visual feedback when changing a parameter.
+					ViewportManager::instance().processViewportUpdates();
 				}
 			}
 		}

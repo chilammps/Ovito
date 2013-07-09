@@ -23,6 +23,7 @@
 #include <core/rendering/SceneRenderer.h>
 #include <core/scene/SceneNode.h>
 #include <core/dataset/DataSet.h>
+#include <core/dataset/DataSetManager.h>
 #include "moc_LineGeometryBuffer.cpp"
 #include "moc_ParticleGeometryBuffer.cpp"
 #include "moc_TextGeometryBuffer.cpp"
@@ -41,6 +42,19 @@ IMPLEMENT_OVITO_OBJECT(Core, ImageGeometryBuffer, OvitoObject);
 ******************************************************************************/
 SceneRenderer::SceneRenderer() : _dataset(nullptr), _settings(nullptr), _viewport(nullptr), _isPicking(false)
 {
+}
+
+/******************************************************************************
+* Computes the bounding box of the entire scene to be rendered.
+******************************************************************************/
+Box3 SceneRenderer::sceneBoundingBox(TimePoint time)
+{
+	OVITO_CHECK_OBJECT_POINTER(dataset());
+	Box3 bb = dataset()->sceneRoot()->worldBoundingBox(time);
+	if(!bb.isEmpty())
+		return bb;
+	else
+		return Box3(Point3::Origin(), 100);
 }
 
 /******************************************************************************

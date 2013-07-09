@@ -159,11 +159,13 @@ void ViewportParticleGeometryBuffer::setParticleRadius(FloatType radius)
 	if(!_glRadiiBuffer.bind())
 		throw Exception(tr("Failed to bind OpenGL vertex buffer."));
 	_glRadiiBuffer.allocate(_particleCount * sizeof(FloatType));
-	FloatType* bufferData = static_cast<FloatType*>(_glRadiiBuffer.map(QOpenGLBuffer::WriteOnly));
-	if(!bufferData)
-		throw Exception(tr("Failed to map OpenGL vertex buffer to memory."));
-	std::fill(bufferData, bufferData + _particleCount, radius);
-	_glRadiiBuffer.unmap();
+	if(_particleCount) {
+		FloatType* bufferData = static_cast<FloatType*>(_glRadiiBuffer.map(QOpenGLBuffer::WriteOnly));
+		if(!bufferData)
+			throw Exception(tr("Failed to map OpenGL vertex buffer to memory."));
+		std::fill(bufferData, bufferData + _particleCount, radius);
+		_glRadiiBuffer.unmap();
+	}
 	_glRadiiBuffer.release();
 }
 
@@ -194,11 +196,13 @@ void ViewportParticleGeometryBuffer::setParticleColor(const Color color)
 	if(!_glColorsBuffer.bind())
 		throw Exception(tr("Failed to bind OpenGL vertex buffer."));
 	_glColorsBuffer.allocate(_particleCount * sizeof(Color));
-	Color* bufferData = static_cast<Color*>(_glColorsBuffer.map(QOpenGLBuffer::WriteOnly));
-	if(!bufferData)
-		throw Exception(tr("Failed to map OpenGL vertex buffer to memory."));
-	std::fill(bufferData, bufferData + _particleCount, color);
-	_glColorsBuffer.unmap();
+	if(_particleCount) {
+		Color* bufferData = static_cast<Color*>(_glColorsBuffer.map(QOpenGLBuffer::WriteOnly));
+		if(!bufferData)
+			throw Exception(tr("Failed to map OpenGL vertex buffer to memory."));
+		std::fill(bufferData, bufferData + _particleCount, color);
+		_glColorsBuffer.unmap();
+	}
 	_glColorsBuffer.release();
 }
 

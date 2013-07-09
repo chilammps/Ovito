@@ -183,9 +183,7 @@ bool ActionManager::renderFrame(TimePoint renderTime, int frameNumber, RenderSet
 	progressDialog.setLabelText(tr("Rendering frame %1.").arg(frameNumber));
 
 	// Request scene bounding box.
-	Box3 boundingBox = DataSetManager::instance().currentSet()->sceneRoot()->worldBoundingBox(renderTime);
-	if(boundingBox.isEmpty())
-		boundingBox = Box3(Point3::Origin(), 100);
+	Box3 boundingBox = renderer->sceneBoundingBox(renderTime);
 
 	// Setup projection.
 	ViewProjectionParameters projParams = viewport->projectionParameters(renderTime, settings->outputImageAspectRatio(), boundingBox);

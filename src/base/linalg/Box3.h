@@ -129,20 +129,9 @@ public:
 	/// \return The coordinate of the i-th corner of the box.
 	Point_3<T> operator[](int i) const {
 		OVITO_ASSERT_MSG(!isEmpty(), "Box_3::operator[]", "Cannot calculate the corner of an empty box.");
-		switch(i) {
-			case 0: return Point_3<T>(minc.x(), minc.y(), minc.z());
-			case 1: return Point_3<T>(maxc.x(), minc.y(), minc.z());
-			case 2: return Point_3<T>(minc.x(), maxc.y(), minc.z());
-			case 3: return Point_3<T>(maxc.x(), maxc.y(), minc.z());
-			case 4: return Point_3<T>(minc.x(), minc.y(), maxc.z());
-			case 5: return Point_3<T>(maxc.x(), minc.y(), maxc.z());
-			case 6: return Point_3<T>(minc.x(), maxc.y(), maxc.z());
-			case 7: return Point_3<T>(maxc.x(), maxc.y(), maxc.z());
-			default:				
-				OVITO_ASSERT_MSG(false, "Box3::operator[]", "Corner index out of range.");
-                throw std::invalid_argument("Corner index out of range.");
-				return typename Point_3<T>::Origin();
-		}
+		OVITO_ASSERT_MSG(i >= 0 && i < 8, "Box3::operator[]", "Corner index out of range.");
+		const Point_3<T>* const c[2] = { &minc, &maxc };
+		return Point_3<T>(c[i&1]->x(), c[(i>>1)&1]->y(), c[(i>>2)&1]->z());
 	}
 
 	/////////////////////////////// Classification ///////////////////////////////
@@ -204,10 +193,10 @@ public:
 	/// \param count The number of points in the array.
 	/// \sa addPoint()
 	void addPoints(const Point_3<T>* points, std::size_t count) {
-		for(; count != 0; count--, points++) {
-			minc.x() = std::min(minc.x(), points->X); maxc.x() = std::max(maxc.x(), points->X);
-			minc.y() = std::min(minc.y(), points->Y); maxc.y() = std::max(maxc.y(), points->Y);
-			minc.z() = std::min(minc.z(), points->Z); maxc.z() = std::max(maxc.z(), points->Z);
+		for(; count != 0; count--, ++points) {
+			minc.x() = std::min(minc.x(), points->x()); maxc.x() = std::max(maxc.x(), points->x());
+			minc.y() = std::min(minc.y(), points->y()); maxc.y() = std::max(maxc.y(), points->y());
+			minc.z() = std::min(minc.z(), points->z()); maxc.z() = std::max(maxc.z(), points->z());
 		}
 	}
 
@@ -233,14 +222,9 @@ public:
 	Box_3 transformed(const Matrix_34<T>& tm) const {
 		if(isEmpty()) return *this;
 		Box_3 b;
-		b.addPoint(tm * Point_3<T>(minc.x(), minc.y(), minc.z()));
-		b.addPoint(tm * Point_3<T>(maxc.x(), minc.y(), minc.z()));
-		b.addPoint(tm * Point_3<T>(minc.x(), maxc.y(), minc.z()));
-		b.addPoint(tm * Point_3<T>(maxc.x(), maxc.y(), minc.z()));
-		b.addPoint(tm * Point_3<T>(minc.x(), minc.y(), maxc.z()));
-		b.addPoint(tm * Point_3<T>(maxc.x(), minc.y(), maxc.z()));
-		b.addPoint(tm * Point_3<T>(minc.x(), maxc.y(), maxc.z()));
-		b.addPoint(tm * Point_3<T>(maxc.x(), maxc.y(), maxc.z()));
+		const Point_3<T>* const c[2] = { &minc, &maxc };
+		for(unsigned int i = 0; i < 8; i++)
+			b.addPoint(tm * Point_3<T>(c[i&1]->x(), c[(i>>1)&1]->y(), c[(i>>2)&1]->z()));
 		return b;
 	}
 

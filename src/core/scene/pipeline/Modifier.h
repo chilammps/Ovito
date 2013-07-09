@@ -34,10 +34,10 @@
 
 namespace Ovito {
 
-class ModifierApplication;	// defined in ModifierApplication.h
-class PipelineObject;		// defined in PipelineObject.h
-class Viewport;				// defined in Viewport.h
-class ObjectNode;			// defined in ObjectNode.h
+class ModifierApplication;		// defined in ModifierApplication.h
+class PipelineObject;			// defined in PipelineObject.h
+class ViewportSceneRenderer;	// defined in ViewportSceneRenderer.h
+class ObjectNode;				// defined in ObjectNode.h
 
 /**
  * \brief Modifies an input object in some way.
@@ -80,19 +80,24 @@ public:
 	/// The default implementation always returns true.
 	virtual bool dependsOnInput(SceneObject* input) { return true; }
 
-#if 0
-	/// \brief Makes the modifier render itself into the viewport.
+	/// \brief Lets the modifier render itself into a viewport.
 	/// \param time The animation time at which to render the modifier.
 	/// \param contextNode The node context used to render the modifier.
 	/// \param modApp The modifier application specifies the particular application of this modifier in a geometry pipeline.
-	/// \param vp The viewport to render the modifier in.
+	/// \param renderer The viewport renderer to use.
 	///
-	/// The viewport transformation is already set up, when this method is called by the
-	/// system. The modifier has to be rendered in the local object coordinate system.
-	///
+	/// The viewport transformation is already set up when this method is called
 	/// The default implementation does nothing.
-	virtual void renderModifier(TimePoint time, ObjectNode* contextNode, ModifierApplication* modApp, Viewport* vp) {}
-#endif
+	virtual void render(TimePoint time, ObjectNode* contextNode, ModifierApplication* modApp, ViewportSceneRenderer* renderer) {}
+
+	/// \brief Computes the bounding box of the visual representation of the modifier.
+	/// \param time The animation time at which the bounding box should be computed.
+	/// \param contextNode The scene node to which this modifier was applied.
+	/// \param modApp The modifier application specifies the particular application of this modifier in a geometry pipeline.
+	/// \return The bounding box of the modifier in local object coordinates.
+	///
+	/// The default implementation returns an empty bounding box.
+	virtual Box3 boundingBox(TimePoint time,  ObjectNode* contextNode, ModifierApplication* modApp) { return Box3(); }
 
 	/// \brief Returns the list of applications of this modifier in pipelines.
 	/// \return The list of ModifierApplication objects that describe the particular applications of this Modifier.

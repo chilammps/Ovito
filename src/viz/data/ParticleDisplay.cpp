@@ -160,7 +160,7 @@ void ParticleDisplay::render(TimePoint time, SceneObject* sceneObject, const Pip
 	ParticlePropertyObject* radiusProperty = findStandardProperty(ParticleProperty::RadiusProperty, flowState);
 	ParticlePropertyObject* colorProperty = findStandardProperty(ParticleProperty::ColorProperty, flowState);
 	ParticleTypeProperty* typeProperty = dynamic_object_cast<ParticleTypeProperty>(findStandardProperty(ParticleProperty::ParticleTypeProperty, flowState));
-	ParticlePropertyObject* selectionProperty = findStandardProperty(ParticleProperty::SelectionProperty, flowState);
+	ParticlePropertyObject* selectionProperty = renderer->isInteractive() ? findStandardProperty(ParticleProperty::SelectionProperty, flowState) : nullptr;
 
 	// Get number of particles.
 	int particleCount = positionProperty ? positionProperty->size() : 0;

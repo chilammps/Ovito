@@ -30,6 +30,8 @@
 #include <core/gui/properties/FloatParameterUI.h>
 #include <core/gui/properties/Vector3ParameterUI.h>
 #include <core/gui/properties/BooleanParameterUI.h>
+#include <core/rendering/viewport/ViewportSceneRenderer.h>
+#include <viz/data/SimulationCell.h>
 #include "SliceModifier.h"
 
 namespace Viz {
@@ -192,92 +194,123 @@ size_t SliceModifier::filterParticles(std::vector<bool>& mask, TimePoint time, T
 	return na;
 }
 
-#if 0
 /******************************************************************************
-* Makes the modifier render itself into the viewport.
+* Lets the modifier render itself into the viewport.
 ******************************************************************************/
-void SliceModifier::renderModifier(TimeTicks time, ObjectNode* contextNode, ModifierApplication* modApp, Viewport* vp)
+void SliceModifier::render(TimePoint time, ObjectNode* contextNode, ModifierApplication* modApp, ViewportSceneRenderer* renderer)
+{
+	renderVisual(time, contextNode, renderer);
+}
+
+/******************************************************************************
+* Computes the bounding box of the visual representation of the modifier.
+******************************************************************************/
+Box3 SliceModifier::boundingBox(TimePoint time,  ObjectNode* contextNode, ModifierApplication* modApp)
+{
+	return renderVisual(time, contextNode, nullptr);
+}
+
+/******************************************************************************
+* Renders the modifier's visual representation and computes its bounding box.
+******************************************************************************/
+Box3 SliceModifier::renderVisual(TimePoint time, ObjectNode* contextNode, ViewportSceneRenderer* renderer)
 {
 	TimeInterval interval;
 
 	Box3 bb = contextNode->localBoundingBox(time);
-	if(bb.isEmpty()) return;
+	if(bb.isEmpty())
+		return Box3();
 
 	Plane3 plane = slicingPlane(time, interval);
 
-	FloatType sliceWidth;
-	_widthCtrl->getValue(time, sliceWidth, interval);
+	FloatType sliceWidth = 0;
+	if(_widthCtrl) _widthCtrl->getValue(time, sliceWidth, interval);
 
+	ColorA color(0.8f, 0.3f, 0.3f);
 	if(sliceWidth <= 0) {
-		renderPlane(vp, plane, bb, Color(0.8f, 0.3f, 0.3f));
+		return renderPlane(renderer, plane, bb, color);
 	}
 	else {
 		plane.dist += sliceWidth / 2;
-		renderPlane(vp, plane, bb, Color(0.8f, 0.3f, 0.3f));
+		Box3 box = renderPlane(renderer, plane, bb, color);
 		plane.dist -= sliceWidth;
-		renderPlane(vp, plane, bb, Color(0.8f, 0.3f, 0.3f));
+		box.addBox(renderPlane(renderer, plane, bb, color));
+		return box;
 	}
 }
 
 /******************************************************************************
-* Renders a plane in the viewport with the given color.
+* Renders the plane in the viewports.
 ******************************************************************************/
-void SliceModifier::renderPlane(Viewport* vp, const Plane3& plane, const Box3& bb, const Color& color) const
+Box3 SliceModifier::renderPlane(ViewportSceneRenderer* renderer, const Plane3& plane, const Box3& bb, const ColorA& color) const
 {
 	// Compute intersection lines of slicing plane and bounding box.
-	QVector<Point3> lines;
-	Ray3 edges[] = { Ray3(bb[0],bb[1]), Ray3(bb[1],bb[5]), Ray3(bb[5],bb[4]), Ray3(bb[4],bb[0]),
-					 Ray3(bb[1],bb[3]), Ray3(bb[0],bb[2]), Ray3(bb[5],bb[7]), Ray3(bb[4],bb[6]),
-					 Ray3(bb[2],bb[3]), Ray3(bb[3],bb[7]), Ray3(bb[7],bb[6]), Ray3(bb[6],bb[2]) };
+	QVector<Point3> vertices;
+	Point3 corners[8];
+	for(int i = 0; i < 8; i++)
+		corners[i] = bb[i];
 
-	planeQuadIntersesction(edges[0], edges[1], edges[2], edges[3], plane, lines);
-	planeQuadIntersesction(edges[1], edges[4], edges[9], edges[6], plane, lines);
-	planeQuadIntersesction(edges[8], edges[9], edges[10], edges[11], plane, lines);
-	planeQuadIntersesction(edges[5], edges[3], edges[7], edges[11], plane, lines);
-	planeQuadIntersesction(edges[0], edges[4], edges[8], edges[5], plane, lines);
-	planeQuadIntersesction(edges[2], edges[6], edges[10], edges[7], plane, lines);
+	planeQuadIntersesction(corners, {0, 1, 5, 4}, plane, vertices);
+	planeQuadIntersesction(corners, {1, 3, 7, 5}, plane, vertices);
+	planeQuadIntersesction(corners, {3, 2, 6, 7}, plane, vertices);
+	planeQuadIntersesction(corners, {2, 0, 4, 6}, plane, vertices);
+	planeQuadIntersesction(corners, {4, 5, 7, 6}, plane, vertices);
+	planeQuadIntersesction(corners, {0, 2, 3, 1}, plane, vertices);
 
 	// If there is not intersection with the simulation box then
-	// project the simulation box onto the plane to visualize the plane.
-	if(lines.empty()) {
+	// project the simulation box onto the plane.
+	if(vertices.empty()) {
+		const static int edges[12][2] = {
+				{0,1},{1,3},{3,2},{2,0},
+				{4,5},{5,7},{7,6},{6,4},
+				{0,4},{1,5},{3,7},{2,6}
+		};
 		for(int edge = 0; edge < 12; edge++) {
-			lines.push_back(plane.projectPoint(edges[edge].base));
-			lines.push_back(plane.projectPoint(edges[edge].base + edges[edge].dir));
+			vertices.push_back(plane.projectPoint(corners[edges[edge][0]]));
+			vertices.push_back(plane.projectPoint(corners[edges[edge][1]]));
 		}
 	}
 
-	// Render plane-box intersection lines.
-	vp->setRenderingColor(color);
-	vp->renderLines(lines.size(), bb, &lines.front());
+	if(renderer) {
+		// Render plane-box intersection lines.
+		OORef<LineGeometryBuffer> buffer = renderer->createLineGeometryBuffer();
+		buffer->setSize(vertices.size());
+		buffer->setVertexPositions(vertices.constData());
+		buffer->setVertexColor(color);
+		buffer->render(renderer);
+	}
+
+	// Compute bounding box.
+	Box3 vertexBoundingBox;
+	vertexBoundingBox.addPoints(vertices.constData(), vertices.size());
+	return vertexBoundingBox;
 }
 
 /******************************************************************************
 * Computes the intersection lines of a plane and a quad.
 ******************************************************************************/
-void SliceModifier::planeQuadIntersesction(const Ray3& r1, const Ray3& r2, const Ray3& r3, const Ray3& r4, const Plane3& plane, QVector<Point3>& lines) const
+void SliceModifier::planeQuadIntersesction(const Point3 corners[8], const std::array<int,4>& quadVerts, const Plane3& plane, QVector<Point3>& vertices) const
 {
-	const Ray3* rays[] = { &r1, &r2, &r3, &r4 };
-	Point3 p1, p2;
+	Point3 p1;
 	bool hasP1 = false;
-	FloatType t;
-	for(size_t i=0; i<4; i++) {
-		t = plane.intersectionT(*rays[i], FLOATTYPE_EPSILON);
-		if(t < 0.0 || t > 1.0) continue;
+	for(int i = 0; i < 4; i++) {
+		Ray3 edge(corners[quadVerts[i]], corners[quadVerts[(i+1)%4]]);
+		FloatType t = plane.intersectionT(edge, FLOATTYPE_EPSILON);
+		if(t < 0 || t > 1) continue;
 		if(!hasP1) {
-			p1 = rays[i]->base + rays[i]->dir * t;
+			p1 = edge.point(t);
 			hasP1 = true;
 		}
 		else {
-			p2 = rays[i]->base + rays[i]->dir * t;
-			if(!p2.equals(p1, FLOATTYPE_EPSILON)) {
-				lines.push_back(p1);
-				lines.push_back(p2);
-				return;Put
+			Point3 p2 = edge.point(t);
+			if(!p2.equals(p1)) {
+				vertices.push_back(p1);
+				vertices.push_back(p2);
+				return;
 			}
 		}
 	}
 }
-#endif
 
 /******************************************************************************
 * This method is called by the system when the modifier has been inserted
@@ -287,20 +320,17 @@ void SliceModifier::initializeModifier(PipelineObject* pipeline, ModifierApplica
 {
 	ParticleModifier::initializeModifier(pipeline, modApp);
 
-#if 0
-	// Get the simulation cell from the input object to center the slicing plane in
-	// the center of the simulation cell.
-	PipelineFlowState input = modObject->evalObject(ANIM_MANAGER.time(), modApp, false);
-	AtomsObject* inputObject = dynamic_object_cast<AtomsObject>(input.result());
-	if(inputObject != NULL) {
-		Point3 centerPoint = inputObject->simulationCell()->cellMatrix() * Point3(0.5, 0.5, 0.5);
-		FloatType centerDistance = DotProduct(normal(), centerPoint - ORIGIN);
+	// Get the input simulation cell to initially place the slicing plane in
+	// the center of the cell.
+	PipelineFlowState input = pipeline->evaluatePipeline(AnimManager::instance().time(), modApp, false);
+	SimulationCell* cell = input.findObject<SimulationCell>();
+	if(cell) {
+		Point3 centerPoint = cell->cellMatrix() * Point3(0.5, 0.5, 0.5);
+		FloatType centerDistance = normal().dot(centerPoint - Point3::Origin());
 		if(fabs(centerDistance) > FLOATTYPE_EPSILON)
 			setDistance(centerDistance);
 	}
-#endif
 }
-
 
 /******************************************************************************
 * Sets up the UI widgets of the editor.

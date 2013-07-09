@@ -43,16 +43,19 @@ public:
 	/// Asks the modifier for its validity interval at the given time.
 	virtual TimeInterval modifierValidity(TimePoint time) override;
 
-#if 0
-	/// Makes the modifier render itself into the viewport.
-	/// The viewport transformation is already set up, when this method is called by the
-	/// system. The modifier has to be rendered in the local object coordinate system.
-	///   time - The time at which to render the modifier.
-	///   contextNode - The node context used to render the modifier.
-	///   modApp - The modifier application associated with the modifier.
-	///   vp - The viewport to render in.
-	virtual void renderModifier(TimeTicks time, ObjectNode* contextNode, ModifierApplication* modApp, Viewport* vp) override;
-#endif
+	/// \brief Lets the modifier render itself into the viewport.
+	/// \param time The animation time at which to render the modifier.
+	/// \param contextNode The node context used to render the modifier.
+	/// \param modApp The modifier application specifies the particular application of this modifier in a geometry pipeline.
+	/// \param renderer The viewport renderer to use.
+	virtual void render(TimePoint time, ObjectNode* contextNode, ModifierApplication* modApp, ViewportSceneRenderer* renderer) override;
+
+	/// \brief Computes the bounding box of the visual representation of the modifier.
+	/// \param time The animation time at which the bounding box should be computed.
+	/// \param contextNode The scene node to which this modifier was applied.
+	/// \param modApp The modifier application specifies the particular application of this modifier in a geometry pipeline.
+	/// \return The bounding box of the modifier in local object coordinates.
+	virtual Box3 boundingBox(TimePoint time,  ObjectNode* contextNode, ModifierApplication* modApp) override;
 
 	/// \brief This virtual method is called by the system when the modifier has been inserted into a PipelineObject.
 	virtual void initializeModifier(PipelineObject* pipeline, ModifierApplication* modApp) override;
@@ -133,13 +136,14 @@ protected:
 	/// Performs the actual rejection of particles.
 	size_t filterParticles(std::vector<bool>& mask, TimePoint time, TimeInterval& validityInterval);
 
-#if 0
-	/// Renders a plane in the viewport with the given color.
-	void renderPlane(Viewport* vp, const Plane3& plane, const Box3& box, const Color& color) const;
+	/// \brief Renders the modifier's visual representation and computes its bounding box.
+	Box3 renderVisual(TimePoint time, ObjectNode* contextNode, ViewportSceneRenderer* renderer);
+
+	/// Renders the plane in the viewport.
+	Box3 renderPlane(ViewportSceneRenderer* renderer, const Plane3& plane, const Box3& box, const ColorA& color) const;
 
 	/// Computes the intersection lines of a plane and a quad.
-	void planeQuadIntersesction(const Ray3& r1, const Ray3& r2, const Ray3& r3, const Ray3& r4, const Plane3& plane, QVector<Point3>& lines) const;
-#endif
+	void planeQuadIntersesction(const Point3 corners[8], const std::array<int,4>& quadVerts, const Plane3& plane, QVector<Point3>& vertices) const;
 
 	/// This controller stores the normal of the slicing plane.
 	ReferenceField<VectorController> _normalCtrl;

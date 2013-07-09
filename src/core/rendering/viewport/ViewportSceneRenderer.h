@@ -67,6 +67,12 @@ public:
 	/// Returns the current model-to-view transformation matrix.
 	const AffineTransformation& modelViewTM() const { return _modelViewTM; }
 
+	/// \brief Computes the bounding box of the entire scene to be rendered.
+	/// \param time The time at which the bounding box should be computed.
+	/// \return An axis-aligned box in the world coordinate system that contains
+	///         everything to be rendered.
+	virtual Box3 sceneBoundingBox(TimePoint time) override;
+
 	/// Requests a new line geometry buffer from the renderer.
 	virtual OORef<LineGeometryBuffer> createLineGeometryBuffer() override {
 		return new ViewportLineGeometryBuffer(this);
@@ -86,6 +92,10 @@ public:
 	virtual OORef<ImageGeometryBuffer> createImageGeometryBuffer() override {
 		return new ViewportImageGeometryBuffer(this);
 	}
+
+	/// Returns whether this renderer is rendering an interactive viewport.
+	/// \return true if rendering a real-time viewport; false if rendering an output image.
+	virtual bool isInteractive() const override { return true; }
 
 	/// Returns the OpenGL context this renderer uses.
 	QOpenGLContext* glcontext() const { return _glcontext; }
@@ -113,8 +123,8 @@ protected:
 	/// \brief Renders a single node.
 	virtual void renderNode(SceneNode* node) override;
 
-	/// \brief Renders the selected modifiers.
-	void renderPipelineObject(PipelineObject* pipelineObj, ObjectNode* objNode);
+	/// \brief Renders the visual representation of the currently selected modifiers.
+	void renderModifiers(PipelineObject* pipelineObj, ObjectNode* objNode, Box3* boundingBox);
 
 	/// \brief Loads and compiles a GLSL shader and adds it to the given program object.
 	void loadShader(QOpenGLShaderProgram* program, QOpenGLShader::ShaderType shaderType, const QString& filename);

@@ -241,6 +241,10 @@ void MainWindow::createMainToolbar()
 
 	_mainToolbar->addAction(ActionManager::instance().getAction(ACTION_EDIT_UNDO));
 	_mainToolbar->addAction(ActionManager::instance().getAction(ACTION_EDIT_REDO));
+
+	_mainToolbar->addSeparator();
+
+	_mainToolbar->addAction(ActionManager::instance().getAction(ACTION_RENDER_ACTIVE_VIEWPORT));
 }
 
 /******************************************************************************

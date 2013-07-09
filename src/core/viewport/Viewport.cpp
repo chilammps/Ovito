@@ -191,6 +191,7 @@ bool Viewport::isPerspectiveProjection() const
 ViewProjectionParameters Viewport::projectionParameters(TimePoint time, FloatType aspectRatio, const Box3& sceneBoundingBox)
 {
 	OVITO_ASSERT(aspectRatio > FLOATTYPE_EPSILON);
+	OVITO_ASSERT(!sceneBoundingBox.isEmpty());
 
 	ViewProjectionParameters params;
 	params.aspectRatio = aspectRatio;
@@ -441,10 +442,11 @@ void Viewport::render(QOpenGLContext* context)
 		QSize vpSize = size();
 		glViewport(0, 0, vpSize.width(), vpSize.height());
 
+		// Set up the viewport renderer.
+		ViewportManager::instance().renderer()->startRender(DataSetManager::instance().currentSet(), DataSetManager::instance().currentSet()->renderSettings());
+
 		// Request scene bounding box.
-		Box3 boundingBox = DataSetManager::instance().currentSet()->sceneRoot()->worldBoundingBox(AnimManager::instance().time());
-		if(boundingBox.isEmpty())
-			boundingBox = Box3(Point3::Origin(), 100);
+		Box3 boundingBox = ViewportManager::instance().renderer()->sceneBoundingBox(AnimManager::instance().time());
 
 		// Setup projection.
 		FloatType aspectRatio = (FloatType)vpSize.height() / vpSize.width();
@@ -455,7 +457,6 @@ void Viewport::render(QOpenGLContext* context)
 			adjustProjectionForRenderFrame(_projParams);
 
 		// Set up the viewport renderer.
-		ViewportManager::instance().renderer()->startRender(DataSetManager::instance().currentSet(), DataSetManager::instance().currentSet()->renderSettings());
 		ViewportManager::instance().renderer()->beginFrame(AnimManager::instance().time(), _projParams, this);
 
 		// Call the viewport renderer to render the scene objects.
@@ -695,10 +696,11 @@ PickResult Viewport::pick(const QPoint& pos)
 {
 	OVITO_ASSERT_MSG(!isRendering(), "Viewport::pick", "Object picking is not possible while rendering viewport contents.");
 
+	// Set up the picking renderer.
+	_pickingRenderer->startRender(DataSetManager::instance().currentSet(), DataSetManager::instance().currentSet()->renderSettings());
+
 	// Request scene bounding box.
-	Box3 boundingBox = DataSetManager::instance().currentSet()->sceneRoot()->worldBoundingBox(AnimManager::instance().time());
-	if(boundingBox.isEmpty())
-		boundingBox = Box3(Point3::Origin(), 100);
+	Box3 boundingBox = _pickingRenderer->sceneBoundingBox(AnimManager::instance().time());
 
 	// Setup projection.
 	QSize vpSize = size();
@@ -710,7 +712,6 @@ PickResult Viewport::pick(const QPoint& pos)
 		adjustProjectionForRenderFrame(projParams);
 
 	// Set up the picking renderer.
-	_pickingRenderer->startRender(DataSetManager::instance().currentSet(), DataSetManager::instance().currentSet()->renderSettings());
 	_pickingRenderer->beginFrame(AnimManager::instance().time(), projParams, this);
 
 	// Call the viewport renderer to render the scene objects.

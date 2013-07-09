@@ -26,6 +26,7 @@
 #include <core/scene/ObjectNode.h>
 #include <core/gui/undo/UndoManager.h>
 #include <core/gui/actions/ActionManager.h>
+#include <core/viewport/ViewportManager.h>
 #include "ModifyCommandPage.h"
 #include "ModificationListModel.h"
 #include "ModifierListModel.h"
@@ -173,7 +174,10 @@ void ModifyCommandPage::onSelectedItemChanged()
 	ModificationListItem* currentItem = _modificationListModel->selectedItem();
 	RefTarget* object = currentItem ? currentItem->object() : nullptr;
 
-	_propertiesPanel->setEditObject(object);
+	if(object != _propertiesPanel->editObject()) {
+		_propertiesPanel->setEditObject(object);
+		ViewportManager::instance().updateViewports();
+	}
 	updateActions(currentItem);
 }
 
