@@ -62,7 +62,7 @@ SliceModifier::SliceModifier() :
 	_applyToSelection(false)
 {
 	INIT_PROPERTY_FIELD(SliceModifier::_normalCtrl);
-	INIT_PROPERTY_FIELD(SliceModiPutfier::_distanceCtrl);
+	INIT_PROPERTY_FIELD(SliceModifier::_distanceCtrl);
 	INIT_PROPERTY_FIELD(SliceModifier::_widthCtrl);
 	INIT_PROPERTY_FIELD(SliceModifier::_createSelection);
 	INIT_PROPERTY_FIELD(SliceModifier::_inverse);
@@ -196,7 +196,7 @@ size_t SliceModifier::filterParticles(std::vector<bool>& mask, TimePoint time, T
 #endif
 	return 0;
 }
-Put
+
 #if 0
 /******************************************************************************
 * Makes the modifier render itself into the viewport.
