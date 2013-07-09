@@ -107,6 +107,12 @@ public:
 	///         then no naming is necessary.
 	const QStringList& componentNames() const { return _storage->componentNames(); }
 
+	/// Copies the contents from the given source into this storage.
+	/// Particles for which the bit in the given mask is set are skipped.
+	void filterCopy(ParticlePropertyObject* source, const std::vector<bool>& mask) {
+		_storage->filterCopy(*source->_storage.constData(), mask);
+	}
+
 	/// \brief Returns a read-only pointer to the raw elements stored in this property object.
 	const void* constData() const {
 		return _storage->constData();

@@ -185,10 +185,10 @@ void LinkedFileObject::loadOperationFinished()
 		try {
 			// Adopt the data loaded by the importer.
 			LinkedFileImporter::ImportedDataPtr importedData = _loadFrameOperation.result();
-			if(importedData)
+			if(importedData) {
 				importedData->insertIntoScene(this);
-
-			newStatus = ObjectStatus(ObjectStatus::Success);
+				newStatus = importedData->status();
+			}
 
 			// Notify dependents that the loading operation has succeeded and the new data is available.
 			notificationType = ReferenceEvent::PendingOperationSucceeded;

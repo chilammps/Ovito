@@ -44,4 +44,4 @@ OVITO_PLUGIN(Viz
 )
 
 # Link Qt5.
-QT5_USE_MODULES(Viz Widgets Xml)
+QT5_USE_MODULES(Viz Widgets Xml Concurrent)

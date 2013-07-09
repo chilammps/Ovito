@@ -23,6 +23,8 @@
 #include <core/scene/pipeline/ModifierApplication.h>
 #include "ParticleModifier.h"
 
+#include <QtConcurrent>
+
 namespace Viz {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Viz, ParticleModifier, Modifier)
@@ -48,7 +50,7 @@ ObjectStatus ParticleModifier::modifyObject(TimePoint time, ModifierApplication*
 		ParticlePropertyObject* posProperty = inputStandardProperty(ParticleProperty::PositionProperty);
 		if(!posProperty)
 			throw Exception(tr("This modifier cannot be evaluated because the input does not contain any particles."));
-		_particleCount = posProperty->size();
+		_outputParticleCount = _inputParticleCount = posProperty->size();
 
 		// Let the derived class do the actual work.
 		TimeInterval validityInterval = state.stateValidity();
@@ -81,7 +83,9 @@ ParticlePropertyObject* ParticleModifier::inputStandardProperty(ParticleProperty
 	OVITO_ASSERT(which != ParticleProperty::UserProperty);
 	for(const auto& o : _input.objects()) {
 		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o.get());
-		if(property && property->type() == which) return property;
+		if(property && property->type() == which) {
+			return property;
+		}
 	}
 	return nullptr;
 }
@@ -98,6 +102,8 @@ ParticlePropertyObject* ParticleModifier::expectCustomProperty(const QString& pr
 				throw Exception(tr("The modifier cannot be evaluated because the particle property '%1' does not have the required data type.").arg(property->name()));
 			if(property->componentCount() != componentCount)
 				throw Exception(tr("The modifier cannot be evaluated because the particle property '%1' does not have the required number of components per particle.").arg(property->name()));
+
+			OVITO_ASSERT(property->size() == _inputParticleCount);
 			return property;
 		}
 	}
@@ -147,30 +153,57 @@ ParticlePropertyObject* ParticleModifier::outputStandardProperty(ParticlePropert
 	}
 	else {
 		// Create a new particle property in the output.
-		outputProperty = ParticlePropertyObject::create(_particleCount, which);
+		outputProperty = ParticlePropertyObject::create(_outputParticleCount, which);
 		_output.addObject(outputProperty.get());
 	}
 
+	OVITO_ASSERT(outputProperty->size() == _outputParticleCount);
 	return outputProperty.get();
 }
 
-
-#if 0
 /******************************************************************************
-* Creates a shallow copy of the given input object on demand and returns it.
+* Deletes the particles given by the bit-mask.
+* Returns the number of remaining particles.
 ******************************************************************************/
-AtomsObject* ParticleModifier::output()
+size_t ParticleModifier::deleteParticles(const std::vector<bool>& mask, size_t deleteCount)
 {
-	OVITO_ASSERT(inputAtoms != NULL);
-	if(outputAtoms) return outputAtoms.get();
+	OVITO_ASSERT(mask.size() == inputParticleCount());
+	OVITO_ASSERT(std::count(mask.begin(), mask.end(), true) == deleteCount);
 
-	// Make a shallow copy.
-	outputAtoms = cloneHelper()->cloneObject(inputAtoms, false);
-	return outputAtoms.get();
+	size_t oldParticleCount = inputParticleCount();
+	size_t newParticleCount = oldParticleCount - deleteCount;
+	if(newParticleCount == oldParticleCount)
+		return oldParticleCount;	// Nothing to delete.
+
+	_outputParticleCount = newParticleCount;
+
+	QVector<QPair<OORef<ParticlePropertyObject>, OORef<ParticlePropertyObject>>> oldToNewMap;
+
+	// Allocate output properties.
+	for(const auto& outobj : _output.objects()) {
+		OORef<ParticlePropertyObject> originalOutputProperty = dynamic_object_cast<ParticlePropertyObject>(outobj.get());
+		if(!originalOutputProperty)
+			continue;
+
+		OVITO_ASSERT(originalOutputProperty->size() == oldParticleCount);
+
+		// Create copy.
+		OORef<ParticlePropertyObject> newProperty = cloneHelper()->cloneObject(originalOutputProperty, false);
+		newProperty->resize(newParticleCount);
+
+		// Replace original property with the filtered one.
+		_output.replaceObject(originalOutputProperty.get(), newProperty);
+
+		oldToNewMap.push_back(qMakePair(originalOutputProperty, newProperty));
+	}
+
+	// Transfer and filter per-particle data elements.
+	QtConcurrent::blockingMap(oldToNewMap, [&mask](const QPair<OORef<ParticlePropertyObject>, OORef<ParticlePropertyObject>>& pair) {
+		pair.second->filterCopy(pair.first.get(), mask);
+	});
+
+	return newParticleCount;
 }
-
-
-#endif
 
 /******************************************************************************
 * Saves the class' contents to the given stream.

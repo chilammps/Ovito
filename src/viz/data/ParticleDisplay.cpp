@@ -106,6 +106,51 @@ Box3 ParticleDisplay::boundingBox(TimePoint time, SceneObject* sceneObject, Obje
 }
 
 /******************************************************************************
+* Determines the the display particle colors.
+******************************************************************************/
+void ParticleDisplay::particleColors(std::vector<Color>& output, ParticlePropertyObject* colorProperty, ParticleTypeProperty* typeProperty, ParticlePropertyObject* selectionProperty)
+{
+	if(colorProperty) {
+		// Take particle colors directly from the color property.
+		OVITO_ASSERT(colorProperty->size() == output.size());
+		std::copy(colorProperty->constDataColor(), colorProperty->constDataColor() + output.size(), output.begin());
+	}
+	else if(typeProperty) {
+		// Assign colors based on particle types.
+		OVITO_ASSERT(typeProperty->size() == output.size());
+		// Build a lookup map for particle type colors.
+		const std::map<int,Color> colorMap = typeProperty->colorMap();
+		// Fill color array.
+		const int* t = typeProperty->constDataInt();
+		for(auto c = output.begin(); c != output.end(); ++c, ++t) {
+			auto it = colorMap.find(*t);
+			if(it != colorMap.end())
+				*c = it->second;
+			else
+				c->setWhite();
+		}
+	}
+	else {
+		// Assign a constant color to all particles.
+		std::fill(output.begin(), output.end(), Color(1,1,1));
+	}
+
+	// Highlight selected particles.
+	if(selectionProperty) {
+		OVITO_ASSERT(selectionProperty->size() == output.size());
+		const Color selColor(1,0,0);
+		const int* t = selectionProperty->constDataInt();
+		for(auto c = output.begin(); c != output.end(); ++c, ++t) {
+			if(*t) {
+				c->r() = std::min(FloatType(1), c->r() + FloatType(0.5));
+				c->g() *= 0.5;
+				c->b() *= 0.5;
+			}
+		}
+	}
+}
+
+/******************************************************************************
 * Lets the display object render a scene object.
 ******************************************************************************/
 void ParticleDisplay::render(TimePoint time, SceneObject* sceneObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode)
@@ -115,6 +160,7 @@ void ParticleDisplay::render(TimePoint time, SceneObject* sceneObject, const Pip
 	ParticlePropertyObject* radiusProperty = findStandardProperty(ParticleProperty::RadiusProperty, flowState);
 	ParticlePropertyObject* colorProperty = findStandardProperty(ParticleProperty::ColorProperty, flowState);
 	ParticleTypeProperty* typeProperty = dynamic_object_cast<ParticleTypeProperty>(findStandardProperty(ParticleProperty::ParticleTypeProperty, flowState));
+	ParticlePropertyObject* selectionProperty = findStandardProperty(ParticleProperty::SelectionProperty, flowState);
 
 	// Get number of particles.
 	int particleCount = positionProperty ? positionProperty->size() : 0;
@@ -145,7 +191,8 @@ void ParticleDisplay::render(TimePoint time, SceneObject* sceneObject, const Pip
 	// Do we have to update the particle colors in the geometry buffer?
 	bool updateColors = _colorsCacheHelper.updateState(
 			colorProperty, colorProperty ? colorProperty->revisionNumber() : 0,
-			typeProperty, typeProperty ? typeProperty->revisionNumber() : 0)
+			typeProperty, typeProperty ? typeProperty->revisionNumber() : 0,
+			selectionProperty, selectionProperty ? selectionProperty->revisionNumber() : 0)
 			|| resizeBuffer;
 
 	// Re-create the geometry buffer if necessary.
@@ -197,33 +244,10 @@ void ParticleDisplay::render(TimePoint time, SceneObject* sceneObject, const Pip
 
 	// Update color buffer.
 	if(updateColors) {
-		if(colorProperty) {
-			// Take particle colors directly from the color property.
-			OVITO_ASSERT(colorProperty->size() == particleCount);
-			_particleBuffer->setParticleColors(colorProperty->constDataColor());
-		}
-		else if(typeProperty) {
-			// Assign colors based on particle types.
-			OVITO_ASSERT(typeProperty->size() == particleCount);
-			// Allocate memory buffer.
-			std::vector<Color> particleColors(particleCount);
-			// Build a lookup map for particle type colors.
-			const std::map<int,Color> colorMap = typeProperty->colorMap();
-			// Fill color array.
-			const int* t = typeProperty->constDataInt();
-			for(auto c = particleColors.begin(); c != particleColors.end(); ++c, ++t) {
-				auto it = colorMap.find(*t);
-				if(it != colorMap.end())
-					*c = it->second;
-				else
-					c->setWhite();
-			}
-			_particleBuffer->setParticleColors(particleColors.data());
-		}
-		else {
-			// Assign a constant color to all particles.
-			_particleBuffer->setParticleColor(Color(1,1,1));
-		}
+		// Allocate memory buffer.
+		std::vector<Color> colors(particleCount);
+		particleColors(colors, colorProperty, typeProperty, selectionProperty);
+		_particleBuffer->setParticleColors(colors.data());
 	}
 
 	// Support picking of particles.

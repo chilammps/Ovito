@@ -130,7 +130,7 @@ void ParticlePropertyObject::loadFromStream(ObjectLoadStream& stream)
 OORef<RefTarget> ParticlePropertyObject::clone(bool deepCopy, CloneHelper& cloneHelper)
 {
 	// Let the base class create an instance of this class.
-	OORef<ParticlePropertyObject> clone = static_object_cast<ParticlePropertyObject>(RefTarget::clone(deepCopy, cloneHelper));
+	OORef<ParticlePropertyObject> clone = static_object_cast<ParticlePropertyObject>(SceneObject::clone(deepCopy, cloneHelper));
 
 	// Shallow copy storage.
 	clone->_storage = this->_storage;

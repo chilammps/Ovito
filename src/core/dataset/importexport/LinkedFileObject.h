@@ -69,8 +69,11 @@ public:
 	/// \brief Returns the number of animation frames that can be loaded from the data source.
 	int numberOfFrames() const { return _frames.size(); }
 
-	/// Returns the index of the animation frame loaded last from the input file.
+	/// \brief Returns the index of the animation frame loaded last from the input file.
 	int loadedFrame() const { return _loadedFrame; }
+
+	/// \brief Returns the list of animation frames in the input file(s).
+	const QVector<LinkedFileImporter::FrameSourceInformation>& frames() const { return _frames; }
 
 	/// \brief Returns whether the scene's animation interval is being adjusted to the number of frames reported by the file parser.
 	bool adjustAnimationIntervalEnabled() const { return _adjustAnimationIntervalEnabled; }

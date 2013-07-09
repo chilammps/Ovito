@@ -82,6 +82,17 @@ protected:
 	/// output property by this method.
 	ParticlePropertyObject* outputStandardProperty(ParticleProperty::Type which);
 
+	/// Returns the number of particles in the input.
+	size_t inputParticleCount() const { return _inputParticleCount; }
+
+	/// Returns the number of particles in the output.
+	size_t outputParticleCount() const { return _outputParticleCount; }
+
+	/// Deletes the particles given by the bit-mask.
+	/// Returns the number of remaining particles.
+	size_t deleteParticles(const std::vector<bool>& mask, size_t deleteCount);
+
+
 #if 0
 	/// Returns the input atoms. The returned object may not be modified.
 	/// If you want to modify the AtomsObject then use the result() method instead.
@@ -119,8 +130,11 @@ protected:
 	/// The output state.
 	PipelineFlowState _output;
 
-	/// The number of particles in the input and the output.
-	size_t _particleCount;
+	/// The number of particles in the input.
+	size_t _inputParticleCount;
+
+	/// The number of particles in the output.
+	size_t _outputParticleCount;
 
 private:
 

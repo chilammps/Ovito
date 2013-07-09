@@ -269,29 +269,30 @@ void ParticleProperty::filterCopy(const ParticleProperty& source, const std::vec
 {
 	OVITO_ASSERT(source.size() == mask.size());
 	OVITO_ASSERT(perParticleSize() == source.perParticleSize());
+	OVITO_ASSERT(source.size() == std::count(mask.begin(), mask.end(), true) + this->size());
 	size_t oldParticleCount = source.size();
 
-	// Optimize filter operation for the most common channel types.
+	// Optimize filter operation for the most common property types.
 	if(perParticleSize() == sizeof(FloatType)) {
 		// Single float
-		const FloatType* src = source.constDataFloat();
-		FloatType* dst = dataFloat();
+		const FloatType* src = reinterpret_cast<const FloatType*>(source.constData());
+		FloatType* dst = reinterpret_cast<FloatType*>(data());
 		for(size_t i = 0; i < oldParticleCount; ++i, ++src) {
 			if(!mask[i]) *dst++ = *src;
 		}
 	}
 	else if(perParticleSize() == sizeof(int)) {
 		// Single integer
-		const int* src = source.constDataInt();
-		int* dst = dataInt();
+		const int* src = reinterpret_cast<const int*>(source.constData());
+		int* dst = reinterpret_cast<int*>(data());
 		for(size_t i = 0; i < oldParticleCount; ++i, ++src) {
 			if(!mask[i]) *dst++ = *src;
 		}
 	}
 	else if(perParticleSize() == sizeof(Point3)) {
 		// Triple float
-		const Point3* src = source.constDataPoint3();
-		Point3* dst = dataPoint3();
+		const Point3* src = reinterpret_cast<const Point3*>(source.constData());
+		Point3* dst = reinterpret_cast<Point3*>(data());
 		for(size_t i = 0; i < oldParticleCount; ++i, ++src) {
 			if(!mask[i]) *dst++ = *src;
 		}

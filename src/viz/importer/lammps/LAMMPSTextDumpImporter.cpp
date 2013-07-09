@@ -306,6 +306,7 @@ void LAMMPSTextDumpImporter::parseFile(FutureInterfaceBase& futureInterface, Par
 					}
 				}
 
+				container.setInfoText(tr("%1 particles at timestep %2").arg(numParticles).arg(timestep));
 				return;	// Done!
 			}
 			else {

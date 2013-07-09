@@ -113,41 +113,36 @@ Plane3 SliceModifier::slicingPlane(TimePoint time, TimeInterval& validityInterva
 ******************************************************************************/
 ObjectStatus SliceModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
 {
-#if 0
-	QString statusMessage = tr("Slicing results:\n%n input atoms", 0, input()->atomsCount());
+	QString statusMessage = tr("%n input particles", 0, inputParticleCount());
 
 	// Compute filter mask.
-	dynamic_bitset<> mask(input()->atomsCount());
-	size_t numRejected = filterAtoms(mask, time, validityInterval);
-	size_t numKept = input()->atomsCount() - numRejected;
+	std::vector<bool> mask(inputParticleCount());
+	size_t numRejected = filterParticles(mask, time, validityInterval);
+	size_t numKept = inputParticleCount() - numRejected;
 
 	if(createSelection() == false) {
 
-		statusMessage += tr("\n%n atoms deleted", 0, numRejected);
-		statusMessage += tr("\n%n atoms remaining", 0, numKept);
+		statusMessage += tr("\n%n particles deleted", 0, numRejected);
+		statusMessage += tr("\n%n particles remaining", 0, numKept);
 		if(numRejected == 0)
-			return EvaluationStatus(EvaluationStatus::EVALUATION_SUCCESS, QString(), statusMessage);
+			return ObjectStatus(ObjectStatus::Success, QString(), statusMessage);
 
-		// Replace referenced data channels with real copies and apply filter.
-		output()->deleteAtoms(mask);
-		OVITO_ASSERT(output()->atomsCount() == input()->atomsCount() - numRejected);
+		// Delete the rejected particles.
+		deleteParticles(mask, numRejected);
 	}
 	else {
-		statusMessage += tr("\n%n atoms selected", 0, numRejected);
-		statusMessage += tr("\n%n atoms unselected", 0, numKept);
+		statusMessage += tr("\n%n particles selected", 0, numRejected);
+		statusMessage += tr("\n%n particles unselected", 0, numKept);
 
-		// Get selection data channel.
-		DataChannel* selChannel = outputStandardChannel(DataChannel::SelectionChannel);
-		selChannel->setVisible(true);
-
-		int* s = selChannel->dataInt();
-		for(size_t i = 0; i < selChannel->size(); i++) {
-			*s++ = mask[i];
-		}
+		ParticlePropertyObject* selProperty = outputStandardProperty(ParticleProperty::SelectionProperty);
+		OVITO_ASSERT(mask.size() == selProperty->size());
+		int* s = selProperty->dataInt();
+		int* s_end = s + selProperty->size();
+		auto m = mask.begin();
+		for(; s != s_end; ++s, ++m)
+			*s = *m;
 	}
-	return EvaluationStatus(EvaluationStatus::EVALUATION_SUCCESS, QString(), statusMessage);
-#endif
-	return ObjectStatus();
+	return ObjectStatus(ObjectStatus::Success, QString(), statusMessage);
 }
 
 /******************************************************************************
@@ -155,46 +150,46 @@ ObjectStatus SliceModifier::modifyParticles(TimePoint time, TimeInterval& validi
 ******************************************************************************/
 size_t SliceModifier::filterParticles(std::vector<bool>& mask, TimePoint time, TimeInterval& validityInterval)
 {
-#if 0
-	// Get the required data channels.
-	DataChannel* posChannel = expectStandardChannel(DataChannel::PositionChannel);
-	OVITO_ASSERT(posChannel->size() == mask.size());
+	// Get the required input properties.
+	ParticlePropertyObject* posProperty = expectStandardProperty(ParticleProperty::PositionProperty);
+	ParticlePropertyObject* selProperty = applyToSelection() ? inputStandardProperty(ParticleProperty::SelectionProperty) : nullptr;
+	OVITO_ASSERT(posProperty->size() == mask.size());
 
-	DataChannel* selectionChannel = inputStandardChannel(DataChannel::SelectionChannel);
-	if(!applyToSelection()) selectionChannel = NULL;
-
-	FloatType sliceWidth;
-	_widthCtrl->getValue(time, sliceWidth, validityInterval);
-	sliceWidth /= 2;
+	FloatType sliceWidth = 0;
+	if(_widthCtrl) _widthCtrl->getValue(time, sliceWidth, validityInterval);
+	sliceWidth *= 0.5;
 
 	Plane3 plane = slicingPlane(time, validityInterval);
 
 	size_t na = 0;
-	const Point3* p = posChannel->constDataPoint3();
-	const int* s = NULL;
-	if(selectionChannel) s = selectionChannel->constDataInt();
+	auto m = mask.begin();
+	const Point3* p = posProperty->constDataPoint3();
+	const Point3* p_end = p + posProperty->size();
+	const int* s = nullptr;
+	if(selProperty) {
+		OVITO_ASSERT(selProperty->size() == mask.size());
+		s = selProperty->constDataInt();
+	}
 
 	if(sliceWidth <= 0) {
-		for(size_t i = 0; i < posChannel->size(); i++, ++p, ++s) {
+		for(; p != p_end; ++p, ++s, ++m) {
 			if(plane.pointDistance(*p) > 0) {
-				if(selectionChannel && !*s) continue;
-				mask.set(i);
+				if(selProperty && !*s) continue;
+				*m = true;
 				na++;
 			}
 		}
 	}
 	else {
-		for(size_t i = 0; i < posChannel->size(); i++, ++p, ++s) {
+		for(; p != p_end; ++p, ++s, ++m) {
 			if(inverse() == (plane.classifyPoint(*p, sliceWidth) == 0)) {
-				if(selectionChannel && !*s) continue;
-				mask.set(i);
+				if(selProperty && !*s) continue;
+				*m = true;
 				na++;
 			}
 		}
 	}
 	return na;
-#endif
-	return 0;
 }
 
 #if 0

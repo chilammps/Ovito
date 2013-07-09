@@ -37,6 +37,8 @@ namespace Viz {
 
 using namespace Ovito;
 
+class ParticleTypeProperty;
+
 /**
  * \brief A scene display object for particles.
  */
@@ -73,6 +75,9 @@ public:
 
 	/// \brief Sets the rendering quality mode for particles.
 	void setRenderingQuality(ParticleGeometryBuffer::RenderingQuality quality) { _renderingQuality = quality; }
+
+	/// \brief Determines the the display particle colors.
+	void particleColors(std::vector<Color>& output, ParticlePropertyObject* colorProperty, ParticleTypeProperty* typeProperty, ParticlePropertyObject* selectionProperty = nullptr);
 
 public:
 
@@ -115,7 +120,8 @@ protected:
 	/// that require updating the particle color buffer.
 	SceneObjectCacheHelper<
 		QPointer<ParticlePropertyObject>, unsigned int,		// Color property + revision number
-		QPointer<ParticlePropertyObject>, unsigned int		// Type property + revision number
+		QPointer<ParticlePropertyObject>, unsigned int,		// Type property + revision number
+		QPointer<ParticlePropertyObject>, unsigned int		// Selection property + revision number
 		> _colorsCacheHelper;
 
 	/// The bounding box that includes all particles.

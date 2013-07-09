@@ -190,19 +190,28 @@ void LinkedFileObjectEditor::updateInformationLabel()
 	if(!obj) {
 		_sourceTextbox->setText(QString());
 		_sourceTextbox->setEnabled(false);
+		_filenameLabel->setText(QString());
 		return;
 	}
 
-	//QFileInfo fileInfo(obj->sourceFile());
-
-	//filenameLabel->setText(fileInfo.fileName());
-	//filepathLabel->setText(fileInfo.absolutePath());
-
-	if(obj->sourceUrl().isLocalFile())
+	if(obj->sourceUrl().isLocalFile()) {
 		_sourceTextbox->setText(obj->sourceUrl().toLocalFile());
+	}
 	else
 		_sourceTextbox->setText(obj->sourceUrl().toString());
 	_sourceTextbox->setEnabled(true);
+
+	int frameIndex = obj->loadedFrame();
+	if(frameIndex >= 0) {
+		const LinkedFileImporter::FrameSourceInformation& frameInfo = obj->frames()[frameIndex];
+		if(frameInfo.sourceFile.isLocalFile()) {
+			_filenameLabel->setText(QFileInfo(frameInfo.sourceFile.toLocalFile()).fileName());
+		}
+		else {
+			_filenameLabel->setText(QFileInfo(frameInfo.sourceFile.fragment()).fileName());
+		}
+	}
+	else _filenameLabel->setText(QString());
 
 	_statusTextLabel->setText(obj->status().longText());
 	if(obj->status().type() == ObjectStatus::Warning)

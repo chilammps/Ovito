@@ -75,6 +75,17 @@ public:
 		/// Lets the data container insert the data it holds into the scene by creating
 		/// appropriate scene objects.
 		virtual void insertIntoScene(LinkedFileObject* destination) = 0;
+
+		/// Returns a status object that describes the outcome of the loading operation.
+		ObjectStatus status() const { return ObjectStatus(ObjectStatus::Success, QString(), _infoText); }
+
+		/// Sets the informational text.
+		void setInfoText(const QString& text) { _infoText = text; }
+
+	private:
+
+		/// Contains information about the loaded file.
+		QString _infoText;
 	};
 
 	typedef std::shared_ptr<ImportedData> ImportedDataPtr;

@@ -39,7 +39,7 @@ namespace Ovito {
  * \brief A plane in three-dimensional space.
  *
  * The plane is defined by a normal vector and a distance value that specifies
- * the distance of the plane from the orgin in the direction of the normal vector.
+ * the distance of the plane from the origin in the direction of the normal vector.
  *
  * \note This is a template class for general data types. Usually one wants to
  *       use this template class with the floating-point data type. There is
@@ -71,7 +71,7 @@ public:
 	/// \brief Initializes the plane from a point and a normal vector.
 	/// \param basePoint A point in the plane.
 	/// \param n The normal vector. This must be a unit vector.
-	constexpr Plane_3(const Point_3<T>& basePoint, const Vector_3<T>& n) : normal(n), dist(normal.dot((basePoint - Point_3<T>::Origin()))) {}
+	constexpr Plane_3(const Point_3<T>& basePoint, const Vector_3<T>& n) : normal(n), dist(normal.dot((basePoint - typename Point_3<T>::Origin()))) {}
 
 	/// \brief Initializes the plane from three points (without normalization).
 	/// \param p1 The first point in the plane.
@@ -82,7 +82,7 @@ public:
 	Plane_3(const Point_3<T>& p1, const Point_3<T>& p2, const Point_3<T>& p3) {
 		normal = (p2-p1).cross(p3-p1);
 		T lsq = normal.squaredLength();
-		if(lsq) dist = normal.dot(p1 - Point_3<T>::Origin()) / lsq;
+		if(lsq) dist = normal.dot(p1 - typename Point_3<T>::Origin()) / lsq;
 		else dist = 0;
 	}
 
@@ -97,12 +97,12 @@ public:
 	Plane_3(const Point_3<T>& p1, const Point_3<T>& p2, const Point_3<T>& p3, bool normalize) {
 		if(normalize) {
 			normal = (p2-p1).cross(p3-p1).normalized();
-			dist = normal.dot(p1 - Point_3<T>::Origin());
+			dist = normal.dot(p1 - typename Point_3<T>::Origin());
 		}
 		else {
 			normal = (p2-p1).cross(p3-p1);
 			T lsq = normal.squaredLength();
-			if(lsq) dist = normal.dot(p1 - Point_3<T>::Origin()) / lsq;
+			if(lsq) dist = normal.dot(p1 - typename Point_3<T>::Origin()) / lsq;
 			else dist = 0;
 		}
 	}
@@ -120,7 +120,7 @@ public:
 			normal = v1.cross(v2).normalized();
 		else
 			normal = v1.cross(v2);
-		dist = normal.dot(p - Point_3<T>::Origin());
+		dist = normal.dot(p - typename Point_3<T>::Origin());
 	}
 
 	/// \brief Scales the normal vector of the plane to unit length 1.
@@ -166,7 +166,7 @@ public:
 	/// back of the plane.
 	/// \sa classifyPoint()
 	constexpr T pointDistance(const Point_3<T>& p) const {
-		return normal.dot(p - Point_3<T>::Origin()) - dist;
+		return (normal.x() * p.x() + normal.y() * p.y() + normal.z() * p.z()) - dist;
 	}
 
 	///////////////////////////////// Intersection ///////////////////////////////
@@ -186,7 +186,7 @@ public:
 
 	/// \brief Computes the t value for a ray-plane intersection.
 	///
-	/// The returned t value is choosen so that (ray.base + t*ray.dir) == point of intersection.
+	/// The returned t value is chosen so that (ray.base + t*ray.dir) == point of intersection.
 	/// If there is no intersection point then the special value \c FLOATTYPE_MAX is returned.
 	/// \param ray The input ray.
 	/// \param epsilon A threshold value that determines whether the ray is considered parallel to the plane.
@@ -227,8 +227,8 @@ template<typename T>
 inline Plane_3<T> operator*(const Matrix_34<T>& tm, const Plane_3<T>& plane) {
 	Plane_3<T> p2;
 	p2.normal = (tm * plane.normal).normalized();
-	Point_3<T> base = tm * (Point_3<T>::Origin() + plane.normal * plane.dist);
-	p2.dist = p2.normal.dot(base - Point_3<T>::Origin());
+	Point_3<T> base = tm * (typename Point_3<T>::Origin() + plane.normal * plane.dist);
+	p2.dist = p2.normal.dot(base - typename Point_3<T>::Origin());
 	return p2;
 }
 
@@ -269,7 +269,7 @@ typedef Plane_3<FloatType> Plane3;
 
 };	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Plane3)
+Q_DECLARE_METATYPE(Ovito::Plane3);
 Q_DECLARE_TYPEINFO(Ovito::Plane3, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_PLANE_H
