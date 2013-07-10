@@ -138,7 +138,7 @@ InputColumnReader::InputColumnReader(const InputColumnMapping& mapping, Particle
 	// Create particle properties as defined by the mapping.
 	for(int i = 0; i < mapping.columnCount(); i++) {
 
-		QExplicitlySharedDataPointer<ParticleProperty> property;
+		ParticleProperty* property = nullptr;
 
 		int vectorComponent = mapping.vectorComponent(i);
 		int dataType = mapping.dataType(i);
@@ -159,7 +159,7 @@ InputColumnReader::InputColumnReader(const InputColumnMapping& mapping, Particle
 				// Look for existing standard property.
 				for(const auto& p : destination.particleProperties()) {
 					if(p->type() == propertyType) {
-						property = p;
+						property = p.get();
 						break;
 					}
 				}
@@ -172,10 +172,10 @@ InputColumnReader::InputColumnReader(const InputColumnMapping& mapping, Particle
 			else {
 				// Look for existing user-defined property with the same name.
 				for(int j = 0; j < destination.particleProperties().size(); j++) {
-					ParticleProperty* p = destination.particleProperties()[j].data();
+					const auto& p = destination.particleProperties()[j];
 					if(p->name() == propertyName) {
 						if(property->dataType() == dataType && property->componentCount() > vectorComponent)
-							property = p;
+							property = p.get();
 						else
 							destination.removeParticleProperty(j);
 						break;
@@ -190,9 +190,10 @@ InputColumnReader::InputColumnReader(const InputColumnMapping& mapping, Particle
 			if(property)
 				property->setName(propertyName);
 		}
+		OVITO_ASSERT(vectorComponent < property->componentCount());
 
 		// Build list of property objects for fast look up during parsing.
-		_properties.push_back(property.data());
+		_properties.push_back(property);
 	}
 }
 
@@ -244,6 +245,7 @@ void InputColumnReader::readParticle(size_t particleIndex, int ntokens, const ch
 
 		if(particleIndex >= property->size())
 			throw Exception(tr("Too many data lines in input file. Expected only %1 lines.").arg(property->size()));
+		OVITO_ASSERT_MSG(_mapping.vectorComponent(columnIndex) < property->componentCount(), "InputColumnReader::readParticle", "Component index is out of range.");
 
 		if(property->dataType() == _floatMetaTypeId) {
 			double f = strtod(*token, &endptr);

@@ -33,49 +33,76 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Viz, BondAngleAnalysisModifier, ParticleModi
 IMPLEMENT_OVITO_OBJECT(Viz, BondAngleAnalysisModifierEditor, ParticleModifierEditor)
 SET_OVITO_OBJECT_EDITOR(BondAngleAnalysisModifier, BondAngleAnalysisModifierEditor)
 DEFINE_VECTOR_REFERENCE_FIELD(BondAngleAnalysisModifier, _structureTypes, "StructureTypes", ParticleType)
-DEFINE_REFERENCE_FIELD(BondAngleAnalysisModifier, _outputProperty, "OutputProperty", ParticleTypeProperty)
 DEFINE_PROPERTY_FIELD(BondAngleAnalysisModifier, _autoUpdate, "AutoUpdate")
+DEFINE_PROPERTY_FIELD(BondAngleAnalysisModifier, _saveResults, "SaveResults")
 SET_PROPERTY_FIELD_LABEL(BondAngleAnalysisModifier, _structureTypes, "Structure types")
 SET_PROPERTY_FIELD_LABEL(BondAngleAnalysisModifier, _autoUpdate, "Automatic update")
+SET_PROPERTY_FIELD_LABEL(BondAngleAnalysisModifier, _saveResults, "Save results in scene file")
 
 /******************************************************************************
 * Constructs the modifier object.
 ******************************************************************************/
-BondAngleAnalysisModifier::BondAngleAnalysisModifier() : _autoUpdate(true)
+BondAngleAnalysisModifier::BondAngleAnalysisModifier() : _autoUpdate(true), _saveResults(false),
+	_structureProperty(new ParticleProperty(0, ParticleProperty::StructureTypeProperty))
 {
 	INIT_PROPERTY_FIELD(BondAngleAnalysisModifier::_structureTypes);
-	INIT_PROPERTY_FIELD(BondAngleAnalysisModifier::_outputProperty);
 	INIT_PROPERTY_FIELD(BondAngleAnalysisModifier::_autoUpdate);
+	INIT_PROPERTY_FIELD(BondAngleAnalysisModifier::_saveResults);
 
-	// Create the internal structure types.
+	// Create the structure types.
+	createStructureType(OTHER, tr("Other"), Color(0.95f, 0.95f, 0.95f));
+	createStructureType(FCC, tr("FCC"), Color(0.4f, 1.0f, 0.4f));
+	createStructureType(HCP, tr("HCP"), Color(1.0f, 0.4f, 0.4f));
+	createStructureType(BCC, tr("BCC"), Color(0.4f, 0.4f, 1.0f));
+	createStructureType(ICO, tr("Icosahedral"), Color(0.2f, 1.0f, 1.0f));
+}
 
-	OORef<ParticleType> fccType(new ParticleType());
-	fccType->setName(tr("FCC"));
-	fccType->setColor(Color(0.4f, 1.0f, 0.4f));
-	_structureTypes.push_back(fccType);
+/******************************************************************************
+* Create an instance of the ParticleType class to represent a structure type.
+******************************************************************************/
+void BondAngleAnalysisModifier::createStructureType(StructureType id, const QString& name, const Color& color)
+{
+	OORef<ParticleType> stype(new ParticleType());
+	stype->setId(id);
+	stype->setName(name);
+	stype->setColor(color);
+	_structureTypes.push_back(stype);
+}
 
-	OORef<ParticleType> hcpType(new ParticleType());
-	hcpType->setName(tr("HCP"));
-	hcpType->setColor(Color(1.0f, 0.4f, 0.4f));
-	_structureTypes.push_back(hcpType);
+/******************************************************************************
+* Saves the class' contents to the given stream.
+******************************************************************************/
+void BondAngleAnalysisModifier::saveToStream(ObjectSaveStream& stream)
+{
+	ParticleModifier::saveToStream(stream);
+	stream.beginChunk(0x01);
+	_structureProperty.constData()->saveToStream(stream, !storeResultsWithScene());
+	stream.endChunk();
+}
 
-	OORef<ParticleType> bccType(new ParticleType());
-	bccType->setName(tr("BCC"));
-	bccType->setColor(Color(0.4f, 0.4f, 1.0f));
-	_structureTypes.push_back(bccType);
+/******************************************************************************
+* Loads the class' contents from the given stream.
+******************************************************************************/
+void BondAngleAnalysisModifier::loadFromStream(ObjectLoadStream& stream)
+{
+	ParticleModifier::loadFromStream(stream);
+	stream.expectChunk(0x01);
+	_structureProperty.data()->loadFromStream(stream);
+	stream.closeChunk();
+}
 
-	OORef<ParticleType> icosahedralType(new ParticleType());
-	icosahedralType->setName(tr("Icosahedral"));
-	icosahedralType->setColor(Color(0.2f, 1.0f, 1.0f));
-	_structureTypes.push_back(icosahedralType);
+/******************************************************************************
+* Creates a copy of this object.
+******************************************************************************/
+OORef<RefTarget> BondAngleAnalysisModifier::clone(bool deepCopy, CloneHelper& cloneHelper)
+{
+	// Let the base class create an instance of this class.
+	OORef<BondAngleAnalysisModifier> clone = static_object_cast<BondAngleAnalysisModifier>(ParticleModifier::clone(deepCopy, cloneHelper));
 
-	OORef<ParticleType> noneType(new ParticleType());
-	noneType->setName(tr("Other"));
-	noneType->setColor(Color(0.95f, 0.95f, 0.95f));
-	_structureTypes.push_back(noneType);
+	// Shallow copy result storage.
+	clone->_structureProperty = this->_structureProperty;
 
-	// Create an (initially empty) property storage for the analysis results.
-	_outputProperty = static_object_cast<ParticleTypeProperty>(ParticlePropertyObject::create(0, ParticleProperty::StructureTypeProperty));
+	return clone;
 }
 
 /******************************************************************************
@@ -97,6 +124,43 @@ TimeInterval BondAngleAnalysisModifier::modifierValidity(TimePoint time)
 ******************************************************************************/
 ObjectStatus BondAngleAnalysisModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
 {
+	if(structureTypes().size() != NUM_STRUCTURE_TYPES)
+		return ObjectStatus(ObjectStatus::Error, tr("The number of structure types has changed. Please remove this modifier from the modification pipeline and insert it again."));
+
+	if(particleStructures().size() == 0)
+		return ObjectStatus(ObjectStatus::Error, tr("The analysis has not been performed yet."));
+
+	if(inputParticleCount() != particleStructures().size())
+		return ObjectStatus(ObjectStatus::Error, tr("The number of input particles has changed. The stored analysis results have become invalid."));
+
+	// Get output property object.
+	ParticleTypeProperty* structureProperty = static_object_cast<ParticleTypeProperty>(outputStandardProperty(ParticleProperty::StructureTypeProperty));
+
+	// Insert structure types into output property.
+	structureProperty->setParticleTypes(structureTypes());
+
+	// Insert results into output property.
+	structureProperty->replaceStorage(_structureProperty);
+
+	// Build list of type colors.
+	Color structureTypeColors[NUM_STRUCTURE_TYPES];
+	for(int index = 0; index < NUM_STRUCTURE_TYPES; index++) {
+		structureTypeColors[index] = structureTypes()[index]->color();
+	}
+
+	// Assign colors to particles based on structure type.
+	ParticlePropertyObject* colorProperty = outputStandardProperty(ParticleProperty::ColorProperty);
+	OVITO_ASSERT(colorProperty->size() == particleStructures().size());
+	const int* s = particleStructures().constDataInt();
+	Color* c = colorProperty->dataColor();
+	Color* c_end = c + colorProperty->size();
+	for(; c != c_end; ++s, ++c) {
+		OVITO_ASSERT(*s >= 0 && *s < NUM_STRUCTURE_TYPES);
+		*c = structureTypeColors[*s];
+		//typeCounters[*s]++;
+	}
+	colorProperty->changed();
+
 	return ObjectStatus();
 }
 
@@ -118,7 +182,7 @@ void BondAngleAnalysisModifierEditor::createUI(const RolloutInsertionParameters&
 	BooleanParameterUI* autoUpdateUI = new BooleanParameterUI(this, PROPERTY_FIELD(BondAngleAnalysisModifier::_autoUpdate));
 	layout1->addWidget(autoUpdateUI->checkBox());
 
-	BooleanParameterUI* saveResultsUI = new BooleanParameterUI(this, "storeResultsWithScene", tr("Save results in scene file"));
+	BooleanParameterUI* saveResultsUI = new BooleanParameterUI(this, PROPERTY_FIELD(BondAngleAnalysisModifier::_saveResults));
 	layout1->addWidget(saveResultsUI->checkBox());
 
 	// Status label.

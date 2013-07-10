@@ -109,6 +109,7 @@ ObjectStatus AssignColorModifier::modifyParticles(TimePoint time, TimeInterval& 
 		// Assign color to all particles.
 		std::fill(colorProperty->dataColor(), colorProperty->dataColor() + colorProperty->size(), color);
 	}
+	colorProperty->changed();
 
 	return ObjectStatus();
 }

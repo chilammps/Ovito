@@ -53,7 +53,7 @@ void ParticleImportData::insertIntoScene(LinkedFileObject* destination)
 	activeObjects.insert(cell.get());
 
 	// Adopt particle properties.
-	for(const auto& property : particleProperties()) {
+	for(auto& property : _properties) {
 		OORef<ParticlePropertyObject> propertyObj;
 		for(const auto& sceneObj : destination->sceneObjects()) {
 			ParticlePropertyObject* po = dynamic_object_cast<ParticlePropertyObject>(sceneObj);
@@ -63,9 +63,9 @@ void ParticleImportData::insertIntoScene(LinkedFileObject* destination)
 			}
 		}
 		if(propertyObj)
-			propertyObj->replaceStorage(property.data());
+			propertyObj->replaceStorage(QSharedDataPointer<ParticleProperty>(property.release()));
 		else {
-			propertyObj = ParticlePropertyObject::create(property.data());
+			propertyObj = ParticlePropertyObject::create(QSharedDataPointer<ParticleProperty>(property.release()));
 			destination->addSceneObject(propertyObj.get());
 		}
 		if(propertyObj->type() == ParticleProperty::ParticleTypeProperty)

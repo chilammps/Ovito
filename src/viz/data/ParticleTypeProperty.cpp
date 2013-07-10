@@ -34,7 +34,7 @@ SET_PROPERTY_FIELD_LABEL(ParticleTypeProperty, _particleTypes, "Particle Types")
 /******************************************************************************
 * Deserialization constructor.
 ******************************************************************************/
-ParticleTypeProperty::ParticleTypeProperty(ParticleProperty* storage)
+ParticleTypeProperty::ParticleTypeProperty(const QSharedDataPointer<ParticleProperty>& storage)
 	: ParticlePropertyObject(storage)
 {
 	INIT_PROPERTY_FIELD(ParticleTypeProperty::_particleTypes);

@@ -29,7 +29,6 @@
 
 #include <core/Core.h>
 #include <core/gui/properties/RefTargetListParameterUI.h>
-#include <core/viewport/Viewport.h>
 
 #include <viz/modifier/ParticleModifier.h>
 #include <viz/data/ParticleTypeProperty.h>
@@ -48,6 +47,19 @@ class BondAngleAnalysisModifier : public ParticleModifier
 {
 public:
 
+	/// The structure types recognized by the bond angle analysis.
+	enum StructureType {
+		OTHER = 0,				//< Unidentified structure
+		FCC,					//< Face-centered cubic
+		HCP,					//< Hexagonal close-packed
+		BCC,					//< Body-centered cubic
+		ICO,					//< Icosahedral structure
+
+		NUM_STRUCTURE_TYPES 	//< This just counts the number of defined structure types.
+	};
+
+public:
+
 	/// Default constructor.
 	Q_INVOKABLE BondAngleAnalysisModifier();
 
@@ -57,17 +69,17 @@ public:
 	/// Returns the array of structure types that are assigned to the particles by this modifier.
 	const ParticleTypeList& structureTypes() const { return _structureTypes; }
 
-	/// Returns the property that holds the computed per-particle structure types.
-	ParticleTypeProperty* outputProperty() const { return _outputProperty; }
+	/// Returns the computed per-particle structure types.
+	const ParticleProperty& particleStructures() const { return *_structureProperty; }
 
 	/// \brief Returns whether the analysis results are saved along with the scene.
 	/// \return \c true if data is stored in the scene file; \c false if the data needs to be recomputed after loading the scene file.
-	bool storeResultsWithScene() const { return outputProperty() ? outputProperty()->saveWithScene() : false; }
+	bool storeResultsWithScene() const { return _saveResults; }
 
 	/// \brief Returns whether analysis results are saved along with the scene.
 	/// \param on \c true if data should be stored in the scene file; \c false if the data needs to be recomputed after loading the scene file.
 	/// \undoable
-	void setStoreResultsWithScene(bool on) { if(outputProperty()) outputProperty()->setSaveWithScene(on); }
+	void setStoreResultsWithScene(bool on) { _saveResults = on; }
 
 public:
 
@@ -75,27 +87,45 @@ public:
 
 protected:
 
+	/// Saves the class' contents to the given stream.
+	virtual void saveToStream(ObjectSaveStream& stream) override;
+
+	/// Loads the class' contents from the given stream.
+	virtual void loadFromStream(ObjectLoadStream& stream) override;
+
+	/// Creates a copy of this object.
+	virtual OORef<RefTarget> clone(bool deepCopy, CloneHelper& cloneHelper) override;
+
 	/// Modifies the particle object. The time interval passed
 	/// to the function is reduced to the interval where the modified object is valid/constant.
 	virtual ObjectStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;
 
-	/// This stores the computed per-particle structure types.
-	ReferenceField<ParticleTypeProperty> _outputProperty;
+	/// Create an instance of the ParticleType class to represent a structure type.
+	void createStructureType(StructureType id, const QString& name, const Color& color);
+
+	/// This stores the structures assigned to the particles.
+	QSharedDataPointer<ParticleProperty> _structureProperty;
 
 	/// Contains the list of structure types recognized by this analysis modifier.
 	VectorReferenceField<ParticleType> _structureTypes;
 
-	/// Controls whether the analysis is performed every time the input data chanages.
+	/// Controls whether the analysis is performed every time the input data changes.
 	PropertyField<bool> _autoUpdate;
+
+	/// Controls whether the analysis results are saved in the scene file.
+	PropertyField<bool> _saveResults;
 
 private:
 
 	Q_OBJECT
 	OVITO_OBJECT
 
+	Q_CLASSINFO("DisplayName", "Bond Angle Analysis");
+	Q_CLASSINFO("ModifierCategory", "Analysis");
+
 	DECLARE_VECTOR_REFERENCE_FIELD(_structureTypes);
-	DECLARE_REFERENCE_FIELD(_outputProperty);
 	DECLARE_PROPERTY_FIELD(_autoUpdate);
+	DECLARE_PROPERTY_FIELD(_saveResults);
 };
 
 /**

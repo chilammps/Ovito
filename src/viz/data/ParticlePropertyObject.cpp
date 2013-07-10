@@ -31,8 +31,8 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Viz, ParticlePropertyObject, SceneObject)
 /******************************************************************************
 * Default constructor.
 ******************************************************************************/
-ParticlePropertyObject::ParticlePropertyObject(ParticleProperty* storage)
-	: _storage(storage != nullptr ? storage : new ParticleProperty())
+ParticlePropertyObject::ParticlePropertyObject(const QSharedDataPointer<ParticleProperty>& storage)
+	: _storage(storage ? storage : QSharedDataPointer<ParticleProperty>(new ParticleProperty()))
 {
 }
 
@@ -41,7 +41,7 @@ ParticlePropertyObject::ParticlePropertyObject(ParticleProperty* storage)
 ******************************************************************************/
 OORef<ParticlePropertyObject> ParticlePropertyObject::create(size_t particleCount, int dataType, size_t dataTypeSize, size_t componentCount)
 {
-	return create(new ParticleProperty(particleCount, dataType, dataTypeSize, componentCount));
+	return create(QSharedDataPointer<ParticleProperty>(new ParticleProperty(particleCount, dataType, dataTypeSize, componentCount)));
 }
 
 /******************************************************************************
@@ -49,13 +49,13 @@ OORef<ParticlePropertyObject> ParticlePropertyObject::create(size_t particleCoun
 ******************************************************************************/
 OORef<ParticlePropertyObject> ParticlePropertyObject::create(size_t particleCount, ParticleProperty::Type which, size_t componentCount)
 {
-	return create(new ParticleProperty(particleCount, which, componentCount));
+	return create(QSharedDataPointer<ParticleProperty>(new ParticleProperty(particleCount, which, componentCount)));
 }
 
 /******************************************************************************
 * Factory function that creates a property object based on an existing storage.
 ******************************************************************************/
-OORef<ParticlePropertyObject> ParticlePropertyObject::create(ParticleProperty* storage)
+OORef<ParticlePropertyObject> ParticlePropertyObject::create(const QSharedDataPointer<ParticleProperty>& storage)
 {
 	OORef<ParticlePropertyObject> propertyObj;
 
@@ -77,11 +77,11 @@ OORef<ParticlePropertyObject> ParticlePropertyObject::create(ParticleProperty* s
 /******************************************************************************
 * Replaces the internal storage object with the given one.
 ******************************************************************************/
-void ParticlePropertyObject::replaceStorage(ParticleProperty* storage)
+void ParticlePropertyObject::replaceStorage(const QSharedDataPointer<ParticleProperty>& storage)
 {
-	OVITO_CHECK_POINTER(storage);
+	OVITO_CHECK_POINTER(storage.constData());
 	_storage = storage;
-	notifyDependents(ReferenceEvent::TargetChanged);
+	changed();
 }
 
 /******************************************************************************

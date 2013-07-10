@@ -67,18 +67,18 @@ public:
 	void setPbcFlags(bool pbcX, bool pbcY, bool pbcZ) { _pbcFlags[0] = pbcX; _pbcFlags[1] = pbcY; _pbcFlags[2] = pbcZ; }
 
 	/// Returns the list of particle properties.
-	const std::vector<QExplicitlySharedDataPointer<ParticleProperty>>& particleProperties() const { return _properties; }
+	const std::vector<std::unique_ptr<ParticleProperty>>& particleProperties() const { return _properties; }
 
 	/// Returns a standard particle property if defined.
 	ParticleProperty* particleProperty(ParticleProperty::Type which) const {
 		for(const auto& prop : _properties)
 			if(prop->type() == which)
-				return prop.data();
+				return prop.get();
 		return nullptr;
 	}
 
 	/// Adds a new particle property.
-	void addParticleProperty(const QExplicitlySharedDataPointer<ParticleProperty>& property) { _properties.push_back(property); }
+	void addParticleProperty(ParticleProperty* property) { _properties.push_back(std::unique_ptr<ParticleProperty>(property)); }
 
 	/// Removes a particle property from the list.
 	void removeParticleProperty(int index) { _properties.erase(_properties.begin() + index); }
@@ -120,7 +120,7 @@ private:
 	std::array<bool,3> _pbcFlags = {{ true, true, true }};
 
 	/// Particle properties.
-	std::vector<QExplicitlySharedDataPointer<ParticleProperty>> _properties;
+	std::vector<std::unique_ptr<ParticleProperty>> _properties;
 
 	/// The list of particle types.
 	std::map<int, ParticleTypeDefinition> _particleTypes;

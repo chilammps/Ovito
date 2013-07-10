@@ -43,7 +43,7 @@ class ParticlePropertyObject : public SceneObject
 public:
 
 	/// \brief Creates an property object.
-	Q_INVOKABLE ParticlePropertyObject(ParticleProperty* storage = nullptr);
+	Q_INVOKABLE ParticlePropertyObject(const QSharedDataPointer<ParticleProperty>& storage = QSharedDataPointer<ParticleProperty>());
 
 	/// \brief Factory function that creates a user-defined property object.
 	/// \param particleCount The number of particles.
@@ -66,7 +66,7 @@ public:
 	static OORef<ParticlePropertyObject> create(size_t particleCount, ParticleProperty::Type which, size_t componentCount = 0);
 
 	/// \brief Factory function that creates a property object based on an existing storage.
-	static OORef<ParticlePropertyObject> create(ParticleProperty* storage);
+	static OORef<ParticlePropertyObject> create(const QSharedDataPointer<ParticleProperty>& storage);
 
 	/// \brief Gets the property's name.
 	/// \return The name of property, which is shown to the user.
@@ -78,7 +78,11 @@ public:
 	void setName(const QString& name);
 
 	/// \brief Replaces the internal storage object with the given one.
-	void replaceStorage(ParticleProperty* storage);
+	void replaceStorage(const QSharedDataPointer<ParticleProperty>& storage);
+
+	/// \brief This must be called every time the contents of the property are changed.
+	///        It generates a ReferenceEvent::TargetChanged event.
+	void changed() { notifyDependents(ReferenceEvent::TargetChanged); }
 
 	/// \brief Returns the number of particles for which this object stores the properties.
 	/// \return The total number of data elements in this channel divided by the
@@ -87,7 +91,10 @@ public:
 
 	/// \brief Resizes the property storage.
 	/// \param newSize The new number of particles.
-	void resize(size_t newSize) { _storage->resize(newSize); }
+	void resize(size_t newSize) {
+		_storage->resize(newSize);
+		changed();
+	}
 
 	/// \brief Returns the type of this property.
 	ParticleProperty::Type type() const { return _storage->type(); }
@@ -111,6 +118,7 @@ public:
 	/// Particles for which the bit in the given mask is set are skipped.
 	void filterCopy(ParticlePropertyObject* source, const std::vector<bool>& mask) {
 		_storage->filterCopy(*source->_storage.constData(), mask);
+		changed();
 	}
 
 	/// \brief Returns a read-only pointer to the raw elements stored in this property object.

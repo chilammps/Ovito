@@ -143,6 +143,7 @@ ObjectStatus SliceModifier::modifyParticles(TimePoint time, TimeInterval& validi
 		auto m = mask.begin();
 		for(; s != s_end; ++s, ++m)
 			*s = *m;
+		selProperty->changed();
 	}
 	return ObjectStatus(ObjectStatus::Success, QString(), statusMessage);
 }

@@ -101,22 +101,6 @@ protected:
 	/// Returns a reference to the output state.
 	PipelineFlowState& output() { return _output; }
 
-#if 0
-	/// Returns the input atoms. The returned object may not be modified.
-	/// If you want to modify the AtomsObject then use the result() method instead.
-	/// It will return a copy of the input object that may be modified.
-	AtomsObject* input() const { OVITO_ASSERT(inputAtoms != NULL); return inputAtoms; }
-
-	/// Creates a shallow copy of the input object on demand and returns it.
-	AtomsObject* output();
-
-	/// Completely replaces the output object with a new AtomsObject.
-	void setOutput(AtomsObject* newOutput) { outputAtoms = newOutput; }
-
-	/// Returns the current ModifierApplication object for this modifier.
-	ModifierApplication* modifierApplication() const { OVITO_ASSERT(modApp != NULL); return modApp; }
-#endif
-
 	/// Returns a clone helper object that should be used to create shallow and deep copies.
 	CloneHelper* cloneHelper() {
 		if(!_cloneHelper) _cloneHelper.reset(new CloneHelper());

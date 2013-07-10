@@ -41,7 +41,7 @@ class ParticleTypeProperty : public ParticlePropertyObject
 public:
 
 	/// \brief Standard constructor.
-	Q_INVOKABLE ParticleTypeProperty(ParticleProperty* storage = nullptr);
+	Q_INVOKABLE ParticleTypeProperty(const QSharedDataPointer<ParticleProperty>& storage = QSharedDataPointer<ParticleProperty>());
 
 	//////////////////////////////////// Specific methods //////////////////////////////////
 
@@ -50,6 +50,9 @@ public:
 
 	/// Returns the list of particle types.
 	const ParticleTypeList& particleTypes() const { return _particleTypes; }
+
+	/// Replaces the list of particle types.
+	void setParticleTypes(const ParticleTypeList& types) { _particleTypes = types; }
 
 	/// Returns the particle type with the given ID, or NULL if no such type exists.
 	ParticleType* particleType(int id) const {
