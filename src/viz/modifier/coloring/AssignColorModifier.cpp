@@ -22,6 +22,7 @@
 #include <core/Core.h>
 #include <core/animation/controller/StandardControllers.h>
 #include <core/gui/properties/ColorParameterUI.h>
+#include <core/gui/properties/BooleanParameterUI.h>
 #include "AssignColorModifier.h"
 
 namespace Viz {
@@ -30,14 +31,17 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Viz, AssignColorModifier, ParticleModifier)
 IMPLEMENT_OVITO_OBJECT(Viz, AssignColorModifierEditor, PropertiesEditor)
 SET_OVITO_OBJECT_EDITOR(AssignColorModifier, AssignColorModifierEditor)
 DEFINE_REFERENCE_FIELD(AssignColorModifier, _colorCtrl, "Color", VectorController)
+DEFINE_PROPERTY_FIELD(AssignColorModifier, _keepSelection, "KeepSelection")
 SET_PROPERTY_FIELD_LABEL(AssignColorModifier, _colorCtrl, "Color")
+SET_PROPERTY_FIELD_LABEL(AssignColorModifier, _keepSelection, "Keep selection")
 
 /******************************************************************************
 * Constructs the modifier object.
 ******************************************************************************/
-AssignColorModifier::AssignColorModifier()
+AssignColorModifier::AssignColorModifier() : _keepSelection(false)
 {
 	INIT_PROPERTY_FIELD(AssignColorModifier::_colorCtrl);
+	INIT_PROPERTY_FIELD(AssignColorModifier::_keepSelection);
 
 	_colorCtrl = ControllerManager::instance().createDefaultController<VectorController>();
 	_colorCtrl->setValue(0, Vector3(0.3,0.3,1));
@@ -77,27 +81,29 @@ ObjectStatus AssignColorModifier::modifyParticles(TimePoint time, TimeInterval& 
 		_colorCtrl->getValue(time, color, validityInterval);
 
 	if(selProperty) {
-#if 0
 		OVITO_ASSERT(colorProperty->size() == selProperty->size());
 		const int* s = selProperty->constDataInt();
 		Color* c = colorProperty->dataColor();
-
-		if(inputStandardChannel(DataChannel::ColorChannel) == NULL) {
-			QVector<Color> oldColors = input()->getAtomColors(time, validityInterval);
-			QVector<Color>::const_iterator oldc = oldColors.constBegin();
-			for(size_t i = selChannel->size(); i != 0; i--, ++c, ++s, ++oldc) {
-				if(*s) *c = selColor; else *c = *oldc;
+		Color* c_end = c + colorProperty->size();
+		if(inputStandardProperty(ParticleProperty::ColorProperty) == nullptr) {
+			std::vector<Color> existingColors = inputParticleColors(time, validityInterval);
+			OVITO_ASSERT(existingColors.size() == colorProperty->size());
+			auto ec = existingColors.cbegin();
+			for(; c != c_end; ++c, ++s, ++ec) {
+				if(*s)
+					*c = color;
+				else
+					*c = *ec;
 			}
 		}
 		else {
-			for(size_t i = selChannel->size(); i != 0; i--, ++c, ++s)
-				if(*s) *c = selColor;
+			for(; c != c_end; ++c, ++s)
+				if(*s) *c = color;
 		}
 
-		// Hide selection channel to make assigned color visible.
-		if(selChannel->isVisible())
-			outputStandardChannel(DataChannel::SelectionChannel)->setVisible(false);
-#endif
+		if(!keepSelection()) {
+			output().removeObject(selProperty);
+		}
 	}
 	else {
 		// Assign color to all particles.
@@ -113,7 +119,7 @@ ObjectStatus AssignColorModifier::modifyParticles(TimePoint time, TimeInterval& 
 void AssignColorModifierEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
 	// Create a rollout.
-	QWidget* rollout = createRollout(tr("Color"), rolloutParams);
+	QWidget* rollout = createRollout(tr("Assign color"), rolloutParams);
 
     // Create the rollout contents.
 	QGridLayout* layout = new QGridLayout(rollout);
@@ -121,10 +127,14 @@ void AssignColorModifierEditor::createUI(const RolloutInsertionParameters& rollo
 	layout->setSpacing(0);
 	layout->setColumnStretch(1, 1);
 
-	// Constant color parameter.
+	// Color parameter.
 	ColorParameterUI* constColorPUI = new ColorParameterUI(this, PROPERTY_FIELD(AssignColorModifier::_colorCtrl));
 	layout->addWidget(constColorPUI->label(), 0, 0);
 	layout->addWidget(constColorPUI->colorPicker(), 0, 1);
+
+	// Keep selection parameter.
+	BooleanParameterUI* keepSelectionPUI = new BooleanParameterUI(this, PROPERTY_FIELD(AssignColorModifier::_keepSelection));
+	layout->addWidget(keepSelectionPUI->checkBox(), 1, 0, 1, 2);
 }
 
 };	// End of namespace

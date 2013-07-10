@@ -61,6 +61,7 @@ OORef<ParticlePropertyObject> ParticlePropertyObject::create(ParticleProperty* s
 
 	switch(storage->type()) {
 	case ParticleProperty::ParticleTypeProperty:
+	case ParticleProperty::StructureTypeProperty:
 		propertyObj = new ParticleTypeProperty(storage);
 		break;
 	default:

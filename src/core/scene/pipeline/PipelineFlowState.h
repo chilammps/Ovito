@@ -79,6 +79,11 @@ public:
 	/// \brief Replaces a scene object with a new one.
 	void replaceObject(SceneObject* oldObj, const OORef<SceneObject>& newObj);
 
+	/// \brief Removes a scene object from this state.
+	void removeObject(SceneObject* sceneObj) {
+		replaceObject(sceneObj, nullptr);
+	}
+
 	/// \brief Returns the list of scene objects stored in this flow state.
 	const QVector<OORef<SceneObject>>& objects() const { return _objects; }
 

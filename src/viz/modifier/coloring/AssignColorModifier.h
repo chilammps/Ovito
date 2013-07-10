@@ -55,6 +55,19 @@ public:
 	/// Sets the controller for the color that is assigned to the selected atoms.
 	void setColorController(const OORef<VectorController>& ctrl) { _colorCtrl = ctrl; }
 
+	/// Returns whether the input particle selection is preserved.
+	/// If false, the selection is cleared by the modifier.
+	bool keepSelection() const { return _keepSelection; }
+
+	/// Sets whether the input particle selection is preserved.
+	/// If false, the selection is cleared by the modifier.
+	void setKeepSelection(bool keep) { _keepSelection = keep; }
+
+public:
+
+	Q_PROPERTY(bool keepSelection READ keepSelection WRITE setKeepSelection)
+	Q_PROPERTY(Ovito::Color color READ color WRITE setColor)
+
 protected:
 
 	/// Modifies the particle object. The time interval passed
@@ -63,6 +76,10 @@ protected:
 
 	/// This controller stores the constant color to be assigned to all atoms.
 	ReferenceField<VectorController> _colorCtrl;
+
+	/// Controls whether the input particle selection is preserved.
+	/// If false, the selection is cleared by the modifier.
+	PropertyField<bool> _keepSelection;
 
 private:
 
@@ -73,6 +90,7 @@ private:
 	Q_CLASSINFO("ModifierCategory", "Coloring");
 
 	DECLARE_REFERENCE_FIELD(_colorCtrl);
+	DECLARE_PROPERTY_FIELD(_keepSelection);
 };
 
 /******************************************************************************

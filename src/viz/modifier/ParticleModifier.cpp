@@ -21,6 +21,8 @@
 
 #include <core/Core.h>
 #include <core/scene/pipeline/ModifierApplication.h>
+#include <viz/data/ParticleDisplay.h>
+#include <viz/data/ParticleTypeProperty.h>
 #include "ParticleModifier.h"
 
 #include <QtConcurrent>
@@ -203,6 +205,27 @@ size_t ParticleModifier::deleteParticles(const std::vector<bool>& mask, size_t d
 	});
 
 	return newParticleCount;
+}
+
+/******************************************************************************
+* Returns a vector with the input particles colors.
+******************************************************************************/
+std::vector<Color> ParticleModifier::inputParticleColors(TimePoint time, TimeInterval& validityInterval)
+{
+	std::vector<Color> colors(inputParticleCount());
+
+	// Obtain the particle display object.
+	ParticlePropertyObject* positionProperty = inputStandardProperty(ParticleProperty::PositionProperty);
+	if(positionProperty) {
+		ParticleDisplay* particleDisplay = dynamic_object_cast<ParticleDisplay>(positionProperty->displayObject());
+		if(particleDisplay) {
+			// Query particle colors from display object.
+			particleDisplay->particleColors(colors,
+					inputStandardProperty(ParticleProperty::ColorProperty),
+					dynamic_object_cast<ParticleTypeProperty>(inputStandardProperty(ParticleProperty::ParticleTypeProperty)));
+		}
+	}
+	return colors;
 }
 
 /******************************************************************************

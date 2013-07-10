@@ -250,12 +250,12 @@ Box3 SliceModifier::renderPlane(ViewportSceneRenderer* renderer, const Plane3& p
 	for(int i = 0; i < 8; i++)
 		corners[i] = bb[i];
 
-	planeQuadIntersesction(corners, {0, 1, 5, 4}, plane, vertices);
-	planeQuadIntersesction(corners, {1, 3, 7, 5}, plane, vertices);
-	planeQuadIntersesction(corners, {3, 2, 6, 7}, plane, vertices);
-	planeQuadIntersesction(corners, {2, 0, 4, 6}, plane, vertices);
-	planeQuadIntersesction(corners, {4, 5, 7, 6}, plane, vertices);
-	planeQuadIntersesction(corners, {0, 2, 3, 1}, plane, vertices);
+	planeQuadIntersesction(corners, {{0, 1, 5, 4}}, plane, vertices);
+	planeQuadIntersesction(corners, {{1, 3, 7, 5}}, plane, vertices);
+	planeQuadIntersesction(corners, {{3, 2, 6, 7}}, plane, vertices);
+	planeQuadIntersesction(corners, {{2, 0, 4, 6}}, plane, vertices);
+	planeQuadIntersesction(corners, {{4, 5, 7, 6}}, plane, vertices);
+	planeQuadIntersesction(corners, {{0, 2, 3, 1}}, plane, vertices);
 
 	// If there is not intersection with the simulation box then
 	// project the simulation box onto the plane.

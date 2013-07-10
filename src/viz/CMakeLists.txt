@@ -30,6 +30,7 @@ SET(OVITO_VIZ_SOURCE_FILES
 	modifier/ParticleModifier.cpp
 	modifier/coloring/AssignColorModifier.cpp
 	modifier/slice/SliceModifier.cpp
+	modifier/analysis/bondangle/BondAngleAnalysisModifier.cpp
 	importer/ParticleImporter.cpp
 	importer/ParticleImportData.cpp
 	importer/InputColumnMapping.cpp

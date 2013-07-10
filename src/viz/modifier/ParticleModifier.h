@@ -88,10 +88,18 @@ protected:
 	/// Returns the number of particles in the output.
 	size_t outputParticleCount() const { return _outputParticleCount; }
 
+	/// Returns a vector with the input particles colors.
+	std::vector<Color> inputParticleColors(TimePoint time, TimeInterval& validityInterval);
+
 	/// Deletes the particles given by the bit-mask.
 	/// Returns the number of remaining particles.
 	size_t deleteParticles(const std::vector<bool>& mask, size_t deleteCount);
 
+	/// Returns a reference to the input state.
+	PipelineFlowState& input() { return _input; }
+
+	/// Returns a reference to the output state.
+	PipelineFlowState& output() { return _output; }
 
 #if 0
 	/// Returns the input atoms. The returned object may not be modified.
