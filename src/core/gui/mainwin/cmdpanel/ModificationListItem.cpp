@@ -78,43 +78,26 @@ bool ModificationListItem::referenceEvent(RefTarget* source, ReferenceEvent* eve
 ******************************************************************************/
 ModificationListItem::Status ModificationListItem::status() const
 {
+	ObjectStatus status;
 	Modifier* modifier = dynamic_object_cast<Modifier>(object());
-	if(modifier) {
-		if(!modifier->isEnabled()) {
-			return Disabled;
-		}
-		else {
-			ObjectStatus status;
-			Q_FOREACH(ModifierApplication* modApp, modifierApplications()) {
-				status = modApp->status();
-				if(status.type() == ObjectStatus::Error) break;
-			}
-			if(status.type() == ObjectStatus::Success) {
-				if(status.shortText().isEmpty())
-					return Enabled;
-				else
-					return Info;
-			}
-			else if(status.type() == ObjectStatus::Warning)
-				return Warning;
-			else if(status.type() == ObjectStatus::Error)
-				return Error;
-			else
-				return Enabled;
-		}
-	}
+	if(modifier)
+		status = modifier->status();
 	else {
 		SceneObject* sceneObject = dynamic_object_cast<SceneObject>(object());
-		if(sceneObject) {
-			ObjectStatus status = sceneObject->status();
-			if(status.type() == ObjectStatus::Warning)
-				return Warning;
-			else if(status.type() == ObjectStatus::Error)
-				return Error;
-			else if(status.type() == ObjectStatus::Pending)
-				return Pending;
-		}
+		if(sceneObject)
+			status = sceneObject->status();
 	}
+	if(status.type() == ObjectStatus::Success) {
+		if(!status.shortText().isEmpty())
+			return Info;
+	}
+	else if(status.type() == ObjectStatus::Warning)
+		return Warning;
+	else if(status.type() == ObjectStatus::Error)
+		return Error;
+	else if(status.type() == ObjectStatus::Pending)
+		return Pending;
+
 	return None;
 }
 
@@ -125,11 +108,7 @@ QVariant ModificationListItem::toolTip() const
 {
 	Modifier* modifier = dynamic_object_cast<Modifier>(object());
 	if(modifier && modifier->isEnabled()) {
-		ObjectStatus status;
-		Q_FOREACH(ModifierApplication* modApp, modifierApplications()) {
-			status = modApp->status();
-			if(status.type() == ObjectStatus::Error) break;
-		}
+		ObjectStatus status = modifier->status();
 		if(status.shortText().isEmpty() == false)
 			return qVariantFromValue(status.shortText());
 	}

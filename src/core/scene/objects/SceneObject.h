@@ -114,7 +114,7 @@ public:
 		return PipelineFlowState(this, objectValidity(time));
 	}
 
-	/// \brief Returns the a structure that describes the current status of the object.
+	/// \brief Returns a structure that describes the current status of the object.
 	///
 	/// The default implementation of this method returns an empty status object
 	/// that indicates success (ObjectStatus::StatusType::Success).

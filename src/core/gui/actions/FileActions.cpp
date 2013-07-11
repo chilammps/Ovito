@@ -48,10 +48,7 @@ void ActionManager::on_HelpAbout_triggered()
 	QString text = QString("Ovito (Open Visualization Tool)\n"
 			"%1\n\n"
 			"Visualization and analysis software for atomistic simulation data.\n\n"
-			"Copyright 2013, Alexander Stukowski\n"
-			"This program comes with ABSOLUTELY NO WARRANTY. "
-			"This is free software, and you are welcome to redistribute "
-			"it under certain conditions. See the source for copying conditions.\n\n"
+			"Copyright 2013, Alexander Stukowski\n\n"
 			"http://www.ovito.org/").arg(QCoreApplication::applicationVersion());
 
 	QMessageBox::about(&MainWindow::instance(), QCoreApplication::applicationName(), text);

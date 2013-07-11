@@ -127,11 +127,11 @@ PipelineFlowState LinkedFileObject::evaluate(TimePoint time)
 		else {
 			// Another frame than the requested one is already being loaded. Cancel loading operation now.
 			try {
+				// This will suppress any pending notification events.
+				_loadFrameOperationWatcher.unsetFuture();
 				_loadFrameOperation.cancel();
 				_loadFrameOperation.waitForFinished();
 			} catch(...) {}
-			// This will suppress any pending notification events.
-			_loadFrameOperationWatcher.unsetFuture();
 			_frameBeingLoaded = -1;
 			// Inform previous caller that the existing loading operation has been canceled.
 			oldTaskCanceled = true;
@@ -204,8 +204,8 @@ void LinkedFileObject::loadOperationFinished()
 	}
 
 	// Reset everything.
-	_loadFrameOperation = Future<LinkedFileImporter::ImportedDataPtr>();
 	_loadFrameOperationWatcher.unsetFuture();
+	_loadFrameOperation.reset();
 
 	// Set the new object status.
 	setStatus(newStatus);

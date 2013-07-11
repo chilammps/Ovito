@@ -30,6 +30,7 @@
 #include <core/reference/RefTargetListener.h>
 
 #include <viz/data/ParticlePropertyObject.h>
+#include <viz/data/SimulationCell.h>
 
 namespace Viz {
 
@@ -50,6 +51,9 @@ public:
 	/// This modifies the input object.
 	virtual ObjectStatus modifyObject(TimePoint time, ModifierApplication* modApp, PipelineFlowState& state) override;
 
+	/// \brief Returns a structure that describes the current status of the modifier.
+	virtual ObjectStatus status() const override { return _modifierStatus; }
+
 protected:
 
 	/// Saves the class' contents to the given stream.
@@ -68,14 +72,19 @@ protected:
 	ParticlePropertyObject* inputStandardProperty(ParticleProperty::Type which) const;
 
 	/// Returns the given standard property from the input object.
-	/// The returned property may not be modified. If they input object does
+	/// The returned property may not be modified. If the input object does
 	/// not contain the standard property then an exception is thrown.
 	ParticlePropertyObject* expectStandardProperty(ParticleProperty::Type which) const;
 
 	/// Returns the property with the given name from the input particles.
-	/// The returned property may not be modified. If they input object does
+	/// The returned property may not be modified. If the input object does
 	/// not contain a property with the given name and data type, then an exception is thrown.
 	ParticlePropertyObject* expectCustomProperty(const QString& propertyName, int dataType, size_t componentCount = 1) const;
+
+	/// Returns the input simulation cell.
+	/// The returned object may not be modified. If the input does
+	/// not contain a simulation cell, an exception is thrown.
+	SimulationCell* expectSimulationCell() const;
 
 	/// Creates a standard particle in the modifier's output.
 	/// If the particle property already exists in the input, its contents are copied to the
@@ -107,6 +116,9 @@ protected:
 		return _cloneHelper.data();
 	}
 
+	/// Sets the status returned by the modifier and generates a ReferenceEvent::StatusChanged event.
+	void setStatus(const ObjectStatus& status);
+
 protected:
 
 	/// The clone helper object that is used to create shallow and deep copies
@@ -128,6 +140,9 @@ protected:
 	/// The number of particles in the output.
 	size_t _outputParticleCount;
 
+	/// The status returned by the modifier.
+	ObjectStatus _modifierStatus;
+
 private:
 
 	Q_OBJECT
@@ -143,12 +158,11 @@ public:
 
 	/// Constructor.
 	ParticleModifierEditor() :
-		_modifierStatusInfoIcon(":/atomviz/icons/modifier_status_info.png"),
-		_modifierStatusWarningIcon(":/atomviz/icons/modifier_status_warning.png"),
-		_modifierStatusErrorIcon(":/atomviz/icons/modifier_status_error.png")
+		_modifierStatusInfoIcon(":/core/mainwin/status/status_info.png"),
+		_modifierStatusWarningIcon(":/core/mainwin/status/status_warning.png"),
+		_modifierStatusErrorIcon(":/core/mainwin/status/status_error.png")
 	{
-		connect(this, SIGNAL(contentsReplaced(RefTarget*)), this, SLOT(onContentsReplaced(RefTarget*)));
-		connect(&_modAppListener, SIGNAL(notificationEvent(ReferenceEvent*)), this, SLOT(onModAppNotificationEvent(ReferenceEvent*)));
+		connect(this, SIGNAL(contentsReplaced(RefTarget*)), this, SLOT(updateStatusLabel()));
 	}
 
 	/// Returns a widget that displays a message sent by the modifier that
@@ -156,20 +170,18 @@ public:
 	/// editor base class can add the widget to their user interface.
 	QWidget* statusLabel();
 
+protected:
+
+	/// This method is called when a reference target changes.
+	virtual bool referenceEvent(RefTarget* source, ReferenceEvent* event) override;
+
 private Q_SLOTS:
 
-	/// This handler is called when a new edit object has been loaded into the editor.
-	void onContentsReplaced(RefTarget* newEditObject);
-
-	/// This handler is called when the current ModifierApplication sends a notification event.
-	void onModAppNotificationEvent(ReferenceEvent* event);
+	/// Updates the text of the result label.
+	void updateStatusLabel();
 
 private:
 
-	/// Updates the text of the result label.
-	void updateStatusLabel(ModifierApplication* modApp);
-
-	RefTargetListener _modAppListener;
 	QPointer<QWidget> _statusLabel;
 	QPointer<QLabel> _statusTextLabel;
 	QPointer<QLabel> _statusIconLabel;

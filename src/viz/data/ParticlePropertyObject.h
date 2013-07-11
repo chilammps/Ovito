@@ -80,6 +80,9 @@ public:
 	/// \brief Replaces the internal storage object with the given one.
 	void replaceStorage(const QSharedDataPointer<ParticleProperty>& storage);
 
+	/// \brief Returns the internal storage object.
+	const QSharedDataPointer<ParticleProperty>& storage() const { return _storage; }
+
 	/// \brief This must be called every time the contents of the property are changed.
 	///        It generates a ReferenceEvent::TargetChanged event.
 	void changed() { notifyDependents(ReferenceEvent::TargetChanged); }

@@ -54,20 +54,10 @@ public:
 	/// \return The PipelineObject this application is part of.
 	PipelineObject* pipelineObject() const;
 
-	/// \brief Return the status returned by the modifier during its last evaluation.
-	const ObjectStatus& status() const { return _evalStatus; }
-
-	/// \brief Stores the status of this modifier application.
-	/// \note This is an internal function.
-	void setStatus(const ObjectStatus& status);
-
 private:
 
 	/// The modifier that is being applied.
 	ReferenceField<Modifier> _modifier;
-
-	/// The status returned by the modifier during its last evaluation.
-	ObjectStatus _evalStatus;
 
 	Q_OBJECT
 	OVITO_OBJECT

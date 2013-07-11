@@ -46,7 +46,7 @@ ActionManager::ActionManager()
 	createCommandAction(ACTION_FILE_SAVEAS, tr("Save State As"), ":/core/actions/file/file_save_as.png", tr("Save the current program state to a new file."), QKeySequence::SaveAs);
 	createCommandAction(ACTION_FILE_IMPORT, tr("Open File"), ":/core/actions/file/file_import.png", tr("Import data from a file."), Qt::CTRL + Qt::Key_I);
 	createCommandAction(ACTION_FILE_EXPORT, tr("Export File"), ":/core/actions/file/file_export.png", tr("Export data to a file."), Qt::CTRL + Qt::Key_E);
-	createCommandAction(ACTION_HELP_ABOUT, tr("About"), NULL, tr("Show information about the application."));
+	createCommandAction(ACTION_HELP_ABOUT, tr("About Ovito"), NULL, tr("Show information about the application."));
 	createCommandAction(ACTION_HELP_SHOW_ONLINE_HELP, tr("Manual"), NULL, tr("Open the online manual."));
 
 	createCommandAction(ACTION_SETTINGS_DIALOG, tr("&Settings..."));

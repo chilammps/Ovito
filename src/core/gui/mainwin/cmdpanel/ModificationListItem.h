@@ -40,8 +40,6 @@ public:
 
 	enum Status {
 		None,
-		Enabled,
-		Disabled,
 		Info,
 		Warning,
 		Error,

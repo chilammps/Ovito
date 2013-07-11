@@ -26,6 +26,7 @@
 #include <core/dataset/importexport/LinkedFileImporter.h>
 #include <viz/data/ParticleProperty.h>
 #include <viz/data/ParticlePropertyObject.h>
+#include <viz/data/SimulationCellData.h>
 
 namespace Viz {
 
@@ -52,19 +53,10 @@ public:
 	virtual void insertIntoScene(LinkedFileObject* destination) override;
 
 	/// Returns the current simulation cell matrix.
-	const AffineTransformation& simulationCell() const { return _simulationCell; }
+	const SimulationCellData& simulationCell() const { return _simulationCell; }
 
-	/// Sets the simulation cell matrix.
-	void setSimulationCell(const AffineTransformation& cellMatrix) { _simulationCell = cellMatrix; }
-
-	/// Returns the PBC flags.
-	const std::array<bool,3>& pbcFlags() const { return _pbcFlags; }
-
-	/// Sets the PBC flags.
-	void setPbcFlags(const std::array<bool,3>& flags) { _pbcFlags = flags; }
-
-	/// Sets the PBC flags.
-	void setPbcFlags(bool pbcX, bool pbcY, bool pbcZ) { _pbcFlags[0] = pbcX; _pbcFlags[1] = pbcY; _pbcFlags[2] = pbcZ; }
+	/// Returns a reference to the simulation cell.
+	SimulationCellData& simulationCell() { return _simulationCell; }
 
 	/// Returns the list of particle properties.
 	const std::vector<std::unique_ptr<ParticleProperty>>& particleProperties() const { return _properties; }
@@ -113,11 +105,8 @@ private:
 
 private:
 
-	/// The geometry of the cell.
-	AffineTransformation _simulationCell = AffineTransformation::Zero();
-
-	/// PBC flags.
-	std::array<bool,3> _pbcFlags = {{ true, true, true }};
+	/// The simulation cell.
+	SimulationCellData _simulationCell;
 
 	/// Particle properties.
 	std::vector<std::unique_ptr<ParticleProperty>> _properties;

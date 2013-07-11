@@ -43,12 +43,11 @@ void ParticleImportData::insertIntoScene(LinkedFileObject* destination)
 	// Adopt simulation cell.
 	OORef<SimulationCell> cell = destination->findSceneObject<SimulationCell>();
 	if(!cell) {
-		cell = new SimulationCell(simulationCell(), pbcFlags()[0], pbcFlags()[1], pbcFlags()[2]);
+		cell = new SimulationCell(simulationCell());
 		destination->addSceneObject(cell.get());
 	}
 	else {
-		cell->setCellMatrix(simulationCell());
-		cell->setPBCFlags(pbcFlags());
+		cell->setData(simulationCell());
 	}
 	activeObjects.insert(cell.get());
 

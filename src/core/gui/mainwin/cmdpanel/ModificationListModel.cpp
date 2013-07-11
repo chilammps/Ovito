@@ -41,8 +41,6 @@ ModificationListModel::ModificationListModel(QObject* parent) : QAbstractListMod
 	_statusErrorIcon(":/core/mainwin/status/status_error.png"),
 	_statusNoneIcon(":/core/mainwin/status/status_none.png"),
 	_statusPendingIcon(":/core/mainwin/status/status_pending.gif"),
-	_modifierEnabledIcon(":/core/command_panel/modifier_enabled.png"),
-	_modifierDisabledIcon(":/core/command_panel/modifier_disabled.png"),
 	_sectionHeaderFont(QGuiApplication::font())
 {
 	connect(&_statusPendingIcon, SIGNAL(frameChanged(int)), this, SLOT(iconAnimationFrameChanged()));
@@ -301,8 +299,6 @@ QVariant ModificationListModel::data(const QModelIndex& index, int role) const
 	else if(role == Qt::DecorationRole) {
 		if(item->object()) {
 			switch(item->status()) {
-			case ModificationListItem::Enabled: return qVariantFromValue(_modifierEnabledIcon);
-			case ModificationListItem::Disabled: return qVariantFromValue(_modifierDisabledIcon);
 			case ModificationListItem::Info: return qVariantFromValue(_statusInfoIcon);
 			case ModificationListItem::Warning: return qVariantFromValue(_statusWarningIcon);
 			case ModificationListItem::Error: return qVariantFromValue(_statusErrorIcon);

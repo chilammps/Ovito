@@ -28,6 +28,7 @@ SET(OVITO_VIZ_SOURCE_FILES
 	data/ParticleType.cpp
 	data/ParticleTypeProperty.cpp
 	modifier/ParticleModifier.cpp
+	modifier/AsynchronousParticleModifier.cpp
 	modifier/coloring/AssignColorModifier.cpp
 	modifier/slice/SliceModifier.cpp
 	modifier/analysis/bondangle/BondAngleAnalysisModifier.cpp

@@ -50,15 +50,4 @@ PipelineObject* ModifierApplication::pipelineObject() const
 	return nullptr;
 }
 
-/******************************************************************************
-* Explicitly sets the status of this modifier application. This
-* is an internal function.
-******************************************************************************/
-void ModifierApplication::setStatus(const ObjectStatus& status)
-{
-	if(status == _evalStatus) return;
-	_evalStatus = status;
-	notifyDependents(ReferenceEvent::StatusChanged);
-}
-
 };

@@ -57,6 +57,7 @@ public:
 		waitForFinished();
 	}
 	bool isValid() const { return (bool)_interface; }
+	void reset() { _interface.reset(); }
 
     int progressValue() const { return interface()->progressValue(); }
     int progressMaximum() const { return interface()->progressMaximum(); }

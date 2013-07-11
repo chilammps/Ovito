@@ -178,7 +178,7 @@ void LAMMPSTextDumpImporter::parseFile(FutureInterfaceBase& futureInterface, Par
 				// Parse optional boundary condition flags.
 				QStringList tokens = stream.lineString().mid(qstrlen("ITEM: BOX BOUNDS xy xz yz")).split(ws_re, QString::SkipEmptyParts);
 				if(tokens.size() >= 3)
-					container.setPbcFlags(tokens[0] == "pp", tokens[1] == "pp", tokens[2] == "pp");
+					container.simulationCell().setPbcFlags(tokens[0] == "pp", tokens[1] == "pp", tokens[2] == "pp");
 
 				// Parse triclinic simulation box.
 				FloatType tiltFactors[3];
@@ -194,7 +194,7 @@ void LAMMPSTextDumpImporter::parseFile(FutureInterfaceBase& futureInterface, Par
 				simBox.maxc.x() -= std::max(std::max(std::max(tiltFactors[0], tiltFactors[1]), tiltFactors[0]+tiltFactors[1]), (FloatType)0);
 				simBox.minc.y() -= std::min(tiltFactors[2], (FloatType)0);
 				simBox.maxc.y() -= std::max(tiltFactors[2], (FloatType)0);
-				container.setSimulationCell(AffineTransformation(
+				container.simulationCell().setMatrix(AffineTransformation(
 						Vector3(simBox.sizeX(), 0, 0),
 						Vector3(tiltFactors[0], simBox.sizeY(), 0),
 						Vector3(tiltFactors[1], tiltFactors[2], simBox.sizeZ()),
@@ -205,7 +205,7 @@ void LAMMPSTextDumpImporter::parseFile(FutureInterfaceBase& futureInterface, Par
 				// Parse optional boundary condition flags.
 				QStringList tokens = stream.lineString().mid(qstrlen("ITEM: BOX BOUNDS xy xz yz")).split(ws_re, QString::SkipEmptyParts);
 				if(tokens.size() >= 3)
-					container.setPbcFlags(tokens[0] == "pp", tokens[1] == "pp", tokens[2] == "pp");
+					container.simulationCell().setPbcFlags(tokens[0] == "pp", tokens[1] == "pp", tokens[2] == "pp");
 
 				// Parse orthogonal simulation box size.
 				Box3 simBox;
@@ -214,7 +214,7 @@ void LAMMPSTextDumpImporter::parseFile(FutureInterfaceBase& futureInterface, Par
 						throw Exception(tr("Invalid box size in line %1 of dump file: %2").arg(stream.lineNumber()).arg(stream.lineString()));
 				}
 
-				container.setSimulationCell(AffineTransformation(
+				container.simulationCell().setMatrix(AffineTransformation(
 						Vector3(simBox.sizeX(), 0, 0),
 						Vector3(0, simBox.sizeY(), 0),
 						Vector3(0, 0, simBox.sizeZ()),
@@ -298,7 +298,7 @@ void LAMMPSTextDumpImporter::parseFile(FutureInterfaceBase& futureInterface, Par
 				if(reducedCoordinates) {
 					ParticleProperty* posProperty = container.particleProperty(ParticleProperty::PositionProperty);
 					if(posProperty) {
-						const AffineTransformation simCell = container.simulationCell();
+						const AffineTransformation simCell = container.simulationCell().matrix();
 						Point3* p = posProperty->dataPoint3();
 						Point3* p_end = p + posProperty->size();
 						for(; p != p_end; ++p)

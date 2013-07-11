@@ -319,6 +319,10 @@ void SpinnerWidget::mouseMoveEvent(QMouseEvent* event)
 
 					// Repaint viewports for immediate visual feedback when changing a parameter.
 					ViewportManager::instance().processViewportUpdates();
+
+					// Also repaint text box for immediate visual updates.
+					if(textBox())
+						textBox()->repaint();
 				}
 			}
 		}

@@ -141,8 +141,6 @@ private:
 	bool _needListUpdate;
 
 	/// Status icons
-	QIcon _modifierEnabledIcon;
-	QIcon _modifierDisabledIcon;
 	QIcon _statusInfoIcon;
 	QIcon _statusWarningIcon;
 	QIcon _statusErrorIcon;

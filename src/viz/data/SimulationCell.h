@@ -31,6 +31,7 @@
 #include <core/scene/objects/SceneObject.h>
 #include <core/gui/properties/PropertiesEditor.h>
 #include <core/gui/properties/FloatParameterUI.h>
+#include "SimulationCellData.h"
 
 namespace Viz {
 
@@ -50,6 +51,13 @@ public:
 	Q_INVOKABLE SimulationCell() :
 		_cellVector1(Vector3::Zero()), _cellVector2(Vector3::Zero()), _cellVector3(Vector3::Zero()),
 		_cellOrigin(Point3::Origin()), _pbcX(false), _pbcY(false), _pbcZ(false) {
+		init();
+	}
+
+	/// \brief Constructs a cell from the given cell data structure.
+	explicit SimulationCell(const SimulationCellData& data) :
+			_cellVector1(data.matrix().column(0)), _cellVector2(data.matrix().column(1)), _cellVector3(data.matrix().column(2)),
+			_cellOrigin(Point3::Origin() + data.matrix().column(3)), _pbcX(data.pbcFlags()[0]), _pbcY(data.pbcFlags()[1]), _pbcZ(data.pbcFlags()[2]) {
 		init();
 	}
 
@@ -83,6 +91,25 @@ public:
 		_cellOrigin(box.minc), _pbcX(pbcX), _pbcY(pbcY), _pbcZ(pbcZ) {
 		init();
 		OVITO_ASSERT_MSG(box.sizeX() >= 0 && box.sizeY() >= 0 && box.sizeZ() >= 0, "SimulationCell constructor", "The simulation box must have a non-negative volume.");
+	}
+
+	/// \brief Sets the cell geometry to match the given cell data structure.
+	void setData(const SimulationCellData& data) {
+		_cellVector1 = data.matrix().column(0);
+		_cellVector2 = data.matrix().column(1);
+		_cellVector3 = data.matrix().column(2);
+		_cellOrigin = Point3::Origin() + data.matrix().column(3);
+		_pbcX = data.pbcFlags()[0];
+		_pbcY = data.pbcFlags()[1];
+		_pbcZ = data.pbcFlags()[2];
+	}
+
+	/// \brief Returns a simulation cell data structure that stores the cell's properties.
+	SimulationCellData data() const {
+		SimulationCellData data;
+		data.setMatrix(cellMatrix());
+		data.setPbcFlags(pbcX(), pbcY(), pbcZ());
+		return data;
 	}
 
 	/// \brief Returns the geometry of the simulation cell as a 3x4 matrix.

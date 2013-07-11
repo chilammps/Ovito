@@ -67,6 +67,7 @@ ObjectStatus ParticleModifier::modifyObject(TimePoint time, ModifierApplication*
 		// Transfer exception message to evaluation status.
 		status = ObjectStatus(ObjectStatus::Error, ex.messages().join('\n'));
 	}
+	setStatus(status);
 
 	// Cleanup
 	_cloneHelper.reset();
@@ -75,6 +76,18 @@ ObjectStatus ParticleModifier::modifyObject(TimePoint time, ModifierApplication*
 	_modApp = nullptr;
 
 	return status;
+}
+
+
+/******************************************************************************
+* Sets the status returned by the modifier and generates a
+* ReferenceEvent::StatusChanged event.
+******************************************************************************/
+void ParticleModifier::setStatus(const ObjectStatus& status)
+{
+	if(status == _modifierStatus) return;
+	_modifierStatus = status;
+	notifyDependents(ReferenceEvent::StatusChanged);
 }
 
 /******************************************************************************
@@ -123,6 +136,17 @@ ParticlePropertyObject* ParticleModifier::expectStandardProperty(ParticlePropert
 	if(!property)
 		throw Exception(tr("The modifier cannot be evaluated because the input does not contain the required particle property '%1'.").arg(ParticleProperty::standardPropertyName(which)));
 	return property;
+}
+
+/******************************************************************************
+* Returns the input simulation cell.
+******************************************************************************/
+SimulationCell* ParticleModifier::expectSimulationCell() const
+{
+	SimulationCell* cell = _input.findObject<SimulationCell>();
+	if(!cell)
+		throw Exception(tr("The modifier cannot be evaluated because the input does not contain a simulation cell."));
+	return cell;
 }
 
 /******************************************************************************
@@ -251,49 +275,37 @@ void ParticleModifier::loadFromStream(ObjectLoadStream& stream)
 }
 
 /******************************************************************************
-* This handler is called when a new edit object has been loaded into the editor.
+* This method is called when a reference target changes.
 ******************************************************************************/
-void ParticleModifierEditor::onContentsReplaced(RefTarget* newEditObject)
+bool ParticleModifierEditor::referenceEvent(RefTarget* source, ReferenceEvent* event)
 {
-	ModifierApplication* modApp = nullptr;
-	Modifier* mod = dynamic_object_cast<Modifier>(newEditObject);
-	if(mod && mod->modifierApplications().empty() == false)
-		modApp = mod->modifierApplications().front();
-	_modAppListener.setTarget(modApp);
-
-	updateStatusLabel(modApp);
-}
-
-/******************************************************************************
-* This handler is called when the current ModifierApplication sends a
-* notification event.
-******************************************************************************/
-void ParticleModifierEditor::onModAppNotificationEvent(ReferenceEvent* event)
-{
-	if(event->type() == ReferenceEvent::StatusChanged) {
-		ModifierApplication* modApp = dynamic_object_cast<ModifierApplication>(event->sender());
-		updateStatusLabel(modApp);
+	if(source == editObject() && event->type() == ReferenceEvent::StatusChanged) {
+		updateStatusLabel();
 	}
+	return PropertiesEditor::referenceEvent(source, event);
 }
 
 /******************************************************************************
 * Updates the text of the result label.
 ******************************************************************************/
-void ParticleModifierEditor::updateStatusLabel(ModifierApplication* modApp)
+void ParticleModifierEditor::updateStatusLabel()
 {
-	if(!_statusTextLabel || !_statusIconLabel) return;
+	if(!_statusTextLabel || !_statusIconLabel)
+		return;
 
-	if(modApp != NULL) {
-		_statusTextLabel->setText(modApp->status().longText());
-		if(modApp->status().type() == ObjectStatus::Success) {
-			if(modApp->status().longText().isEmpty() == false)
+	Modifier* modifier = dynamic_object_cast<Modifier>(editObject());
+	if(modifier) {
+		ObjectStatus status = modifier->status();
+		_statusTextLabel->setText(status.longText());
+		if(status.type() == ObjectStatus::Success) {
+			if(status.longText().isEmpty() == false)
 				_statusIconLabel->setPixmap(_modifierStatusInfoIcon);
 			else
 				_statusIconLabel->clear();
 		}
-		else if(modApp->status().type() == ObjectStatus::Warning)
+		else if(status.type() == ObjectStatus::Warning)
 			_statusIconLabel->setPixmap(_modifierStatusWarningIcon);
-		else if(modApp->status().type() == ObjectStatus::Error)
+		else if(status.type() == ObjectStatus::Error)
 			_statusIconLabel->setPixmap(_modifierStatusErrorIcon);
 		else
 			_statusIconLabel->clear();
