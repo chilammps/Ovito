@@ -92,5 +92,18 @@ PipelineFlowState Modifier::getModifierInput() const
 	return PipelineFlowState();
 }
 
+/******************************************************************************
+* Asks the modifier for its validity interval at the given time.
+******************************************************************************/
+TimeInterval Modifier::modifierValidity(TimePoint time)
+{
+	// Return an empty validity interval if the modifier is currently being edited
+	// to let the system create a pipeline cache point just before the modifier.
+	// This will speed up re-evaluation of the pipeline if the user adjusts this modifier's parameters interactively.
+	if(isBeingEdited())
+		return TimeInterval::empty();
+
+	return TimeInterval::forever();
+}
 
 };

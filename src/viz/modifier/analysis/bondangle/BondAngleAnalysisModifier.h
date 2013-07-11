@@ -58,32 +58,34 @@ public:
 		NUM_STRUCTURE_TYPES 	//< This just counts the number of defined structure types.
 	};
 
+	/// Computes the modifier's results.
+	class BondAngleAnalysisEngine : public AsynchronousParticleModifier::Engine
+	{
+	public:
+
+		/// Constructor.
+		BondAngleAnalysisEngine(ParticleProperty* positions, const SimulationCellData simCell) :
+			_positions(positions), _simCell(simCell) {}
+
+		/// Computes the modifier's results and stores them in this object for later retrieval.
+		virtual void compute(FutureInterfaceBase& futureInterface) override;
+
+	private:
+
+		QExplicitlySharedDataPointer<ParticleProperty> _positions;
+		SimulationCellData _simCell;
+	};
+
 public:
 
 	/// Default constructor.
 	Q_INVOKABLE BondAngleAnalysisModifier();
-
-	/// Asks the modifier for its validity interval at the given time.
-	virtual TimeInterval modifierValidity(TimePoint time) override;
 
 	/// Returns the array of structure types that are assigned to the particles by this modifier.
 	const ParticleTypeList& structureTypes() const { return _structureTypes; }
 
 	/// Returns the computed per-particle structure types.
 	const ParticleProperty& particleStructures() const { OVITO_CHECK_POINTER(_structureProperty.constData()); return *_structureProperty; }
-
-	/// \brief Returns whether the analysis results are saved along with the scene.
-	/// \return \c true if data is stored in the scene file; \c false if the data needs to be recomputed after loading the scene file.
-	bool storeResultsWithScene() const { return _saveResults; }
-
-	/// \brief Returns whether analysis results are saved along with the scene.
-	/// \param on \c true if data should be stored in the scene file; \c false if the data needs to be recomputed after loading the scene file.
-	/// \undoable
-	void setStoreResultsWithScene(bool on) { _saveResults = on; }
-
-public:
-
-	Q_PROPERTY(bool storeResultsWithScene READ storeResultsWithScene WRITE setStoreResultsWithScene)
 
 protected:
 
@@ -93,24 +95,22 @@ protected:
 	/// Loads the class' contents from the given stream.
 	virtual void loadFromStream(ObjectLoadStream& stream) override;
 
-	/// Modifies the particle object. The time interval passed
-	/// to the function is reduced to the interval where the modified object is valid/constant.
-	virtual ObjectStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;
-
 	/// Create an instance of the ParticleType class to represent a structure type.
 	void createStructureType(StructureType id, const QString& name, const Color& color);
 
-	/// Performs the actual analysis. This method is executed in a worker thread.
-	void performAnalysis(FutureInterface<QExplicitlySharedDataPointer<ParticleProperty>>& futureInterface, QSharedDataPointer<ParticleProperty> positions, SimulationCellData simCell);
+	/// Creates and initializes a computation engine that will compute the modifier's results.
+	virtual std::shared_ptr<Engine> createEngine(TimePoint time) override;
+
+	/// Unpacks the computation results stored in the given engine object.
+	virtual void retrieveResults(Engine* engine) override;
+
+private:
 
 	/// This stores the cached results of the modifier, i.e. the structures assigned to the particles.
-	QSharedDataPointer<ParticleProperty> _structureProperty;
+	QExplicitlySharedDataPointer<ParticleProperty> _structureProperty;
 
 	/// Contains the list of structure types recognized by this analysis modifier.
 	VectorReferenceField<ParticleType> _structureTypes;
-
-	/// Controls whether the analysis results are saved in the scene file.
-	PropertyField<bool> _saveResults;
 
 private:
 
@@ -121,7 +121,6 @@ private:
 	Q_CLASSINFO("ModifierCategory", "Analysis");
 
 	DECLARE_VECTOR_REFERENCE_FIELD(_structureTypes);
-	DECLARE_PROPERTY_FIELD(_saveResults);
 };
 
 /**

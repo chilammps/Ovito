@@ -70,7 +70,7 @@ public:
 	/// \return The maximum time interval that contains \a time and during which the modifier's
 	///         parameters do not change. This does not include the validity interval of the
 	///         modifier's input object.
-	virtual TimeInterval modifierValidity(TimePoint time) = 0;
+	virtual TimeInterval modifierValidity(TimePoint time);
 
 	/// \brief Informs the modifier that its input has changed.
 	/// \param modApp The application of this modifier in a geometry pipeline.

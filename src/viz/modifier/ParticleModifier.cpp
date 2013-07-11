@@ -63,7 +63,6 @@ ObjectStatus ParticleModifier::modifyObject(TimePoint time, ModifierApplication*
 		state.intersectStateValidity(validityInterval);
 	}
 	catch(const Exception& ex) {
-		ex.logError();
 		// Transfer exception message to evaluation status.
 		status = ObjectStatus(ObjectStatus::Error, ex.messages().join('\n'));
 	}

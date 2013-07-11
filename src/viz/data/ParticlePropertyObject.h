@@ -43,7 +43,7 @@ class ParticlePropertyObject : public SceneObject
 public:
 
 	/// \brief Creates an property object.
-	Q_INVOKABLE ParticlePropertyObject(const QSharedDataPointer<ParticleProperty>& storage = QSharedDataPointer<ParticleProperty>());
+	Q_INVOKABLE ParticlePropertyObject(ParticleProperty* storage = nullptr);
 
 	/// \brief Factory function that creates a user-defined property object.
 	/// \param particleCount The number of particles.
@@ -66,7 +66,7 @@ public:
 	static OORef<ParticlePropertyObject> create(size_t particleCount, ParticleProperty::Type which, size_t componentCount = 0);
 
 	/// \brief Factory function that creates a property object based on an existing storage.
-	static OORef<ParticlePropertyObject> create(const QSharedDataPointer<ParticleProperty>& storage);
+	static OORef<ParticlePropertyObject> create(ParticleProperty* storage);
 
 	/// \brief Gets the property's name.
 	/// \return The name of property, which is shown to the user.
@@ -78,10 +78,10 @@ public:
 	void setName(const QString& name);
 
 	/// \brief Replaces the internal storage object with the given one.
-	void replaceStorage(const QSharedDataPointer<ParticleProperty>& storage);
+	void replaceStorage(ParticleProperty* storage);
 
 	/// \brief Returns the internal storage object.
-	const QSharedDataPointer<ParticleProperty>& storage() const { return _storage; }
+	ParticleProperty* storage() const { return _storage.data(); }
 
 	/// \brief This must be called every time the contents of the property are changed.
 	///        It generates a ReferenceEvent::TargetChanged event.
@@ -95,6 +95,7 @@ public:
 	/// \brief Resizes the property storage.
 	/// \param newSize The new number of particles.
 	void resize(size_t newSize) {
+		_storage.detach();
 		_storage->resize(newSize);
 		changed();
 	}
@@ -120,6 +121,7 @@ public:
 	/// Copies the contents from the given source into this storage.
 	/// Particles for which the bit in the given mask is set are skipped.
 	void filterCopy(ParticlePropertyObject* source, const std::vector<bool>& mask) {
+		_storage.detach();
 		_storage->filterCopy(*source->_storage.constData(), mask);
 		changed();
 	}
@@ -179,54 +181,63 @@ public:
 
 	/// Returns a read-write pointer to the raw elements in the property storage.
 	void* data() {
+		_storage.detach();
 		return _storage->data();
 	}
 
 	/// \brief Returns a read-write pointer to the first integer element stored in this object..
 	/// \note This method may only be used if this property is of data type integer.
 	int* dataInt() {
+		_storage.detach();
 		return _storage->dataInt();
 	}
 
 	/// \brief Returns a read-only pointer to the first float element in the property storage.
 	/// \note This method may only be used if this property is of data type float.
 	FloatType* dataFloat() {
+		_storage.detach();
 		return _storage->dataFloat();
 	}
 
 	/// \brief Returns a read-write pointer to the first vector element in the property storage.
 	/// \note This method may only be used if this property is of data type Vector3 or a FloatType channel with 3 components.
 	Vector3* dataVector3() {
+		_storage.detach();
 		return _storage->dataVector3();
 	}
 
 	/// \brief Returns a read-write pointer to the first point element in the property storage.
 	/// \note This method may only be used if this property is of data type Point3 or a FloatType channel with 3 components.
 	Point3* dataPoint3() {
+		_storage.detach();
 		return _storage->dataPoint3();
 	}
 
 	/// \brief Returns a read-write pointer to the first point element in the property storage.
 	/// \note This method may only be used if this property is of data type Color or a FloatType channel with 3 components.
 	Color* dataColor() {
+		_storage.detach();
 		return _storage->dataColor();
 	}
 
 	/// \brief Returns a read-write pointer to the first tensor element in the property storage.
 	/// \note This method may only be used if this property is of data type Tensor2 or a FloatType channel with 9 components.
 	Tensor2* dataTensor2() {
+		_storage.detach();
 		return _storage->dataTensor2();
 	}
 
 	/// \brief Returns a read-write pointer to the first symmetric tensor element in the property storage.
 	/// \note This method may only be used if this property is of data type SymmetricTensor2 or a FloatType channel with 6 components.
 	SymmetricTensor2* dataSymmetricTensor2() {
+		_storage.detach();
 		return _storage->dataSymmetricTensor2();
 	}
 
 	/// \brief Returns a read-write pointer to the first quaternion element in the property storage.
 	/// \note This method may only be used if this property is of data type Quaternion or a FloatType channel with 4 components.
 	Quaternion* dataQuaternion() {
+		_storage.detach();
 		return _storage->dataQuaternion();
 	}
 
@@ -282,51 +293,61 @@ public:
 
 	/// Sets the value of an integer element at the given index (if this is an integer property).
 	void setInt(size_t particleIndex, int newValue) {
+		_storage.detach();
 		_storage->setInt(particleIndex, newValue);
 	}
 
 	/// Sets the value of a float element at the given index (if this is a float property).
 	void setFloat(size_t particleIndex, FloatType newValue) {
+		_storage.detach();
 		_storage->setFloat(particleIndex, newValue);
 	}
 
 	/// Sets the value of an integer element at the given index (if this is an integer property).
 	void setIntComponent(size_t particleIndex, size_t componentIndex, int newValue) {
+		_storage.detach();
 		_storage->setIntComponent(particleIndex, componentIndex, newValue);
 	}
 
 	/// Sets the value of a float element at the given index (if this is a float property).
 	void setFloatComponent(size_t particleIndex, size_t componentIndex, FloatType newValue) {
+		_storage.detach();
 		_storage->setFloatComponent(particleIndex, componentIndex, newValue);
 	}
 
 	/// Sets the value of a Vector3 element at the given index (if this is a vector property).
 	void setVector3(size_t particleIndex, const Vector3& newValue) {
+		_storage.detach();
 		_storage->setVector3(particleIndex, newValue);
 	}
 
 	/// Sets the value of a Point3 element at the given index (if this is a point property).
 	void setPoint3(size_t particleIndex, const Point3& newValue) {
+		_storage.detach();
 		_storage->setPoint3(particleIndex, newValue);
 	}
 
 	/// Sets the value of a Color element at the given index (if this is a point property).
 	void setColor(size_t particleIndex, const Color& newValue) {
+		_storage.detach();
 		_storage->setColor(particleIndex, newValue);
 	}
 
 	/// Sets the value of a Tensor2 element for the given particle.
 	void setTensor2(size_t particleIndex, const Tensor2& newValue) {
+		_storage.detach();
 		_storage->setTensor2(particleIndex, newValue);
 	}
 
 	/// Sets the value of a SymmetricTensor2 element for the given particle.
 	void setSymmetricTensor2(size_t particleIndex, const SymmetricTensor2& newValue) {
+		_storage.detach();
 		_storage->setSymmetricTensor2(particleIndex, newValue);
 	}
 
 	/// Sets the value of a Quaternion element for the given particle.
 	void setQuaternion(size_t particleIndex, const Quaternion& newValue) {
+		_storage.detach();
 		_storage->setQuaternion(particleIndex, newValue);
 	}
 
@@ -362,7 +383,7 @@ protected:
 	virtual OORef<RefTarget> clone(bool deepCopy, CloneHelper& cloneHelper) override;
 
 	/// The internal storage object that holds the elements.
-	QSharedDataPointer<ParticleProperty> _storage;
+	QExplicitlySharedDataPointer<ParticleProperty> _storage;
 
 private:
 

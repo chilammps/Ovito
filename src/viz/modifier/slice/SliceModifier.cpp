@@ -81,13 +81,7 @@ SliceModifier::SliceModifier() :
 ******************************************************************************/
 TimeInterval SliceModifier::modifierValidity(TimePoint time)
 {
-	// Return an empty validity interval if the modifier is currently being edited
-	// to let the system create a pipeline cache point just before the modifier.
-	// This will speed up re-evaluation of the pipeline if the user adjusts this modifier's parameters interactively.
-	if(isBeingEdited())
-		return TimeInterval::empty();
-
-	TimeInterval interval = TimeInterval::forever();
+	TimeInterval interval = Modifier::modifierValidity(time);
 	interval.intersect(_normalCtrl->validityInterval(time));
 	interval.intersect(_distanceCtrl->validityInterval(time));
 	interval.intersect(_widthCtrl->validityInterval(time));

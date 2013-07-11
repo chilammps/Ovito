@@ -33,18 +33,15 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Viz, BondAngleAnalysisModifier, Asynchronous
 IMPLEMENT_OVITO_OBJECT(Viz, BondAngleAnalysisModifierEditor, ParticleModifierEditor)
 SET_OVITO_OBJECT_EDITOR(BondAngleAnalysisModifier, BondAngleAnalysisModifierEditor)
 DEFINE_VECTOR_REFERENCE_FIELD(BondAngleAnalysisModifier, _structureTypes, "StructureTypes", ParticleType)
-DEFINE_PROPERTY_FIELD(BondAngleAnalysisModifier, _saveResults, "SaveResults")
 SET_PROPERTY_FIELD_LABEL(BondAngleAnalysisModifier, _structureTypes, "Structure types")
-SET_PROPERTY_FIELD_LABEL(BondAngleAnalysisModifier, _saveResults, "Save results in scene file")
 
 /******************************************************************************
 * Constructs the modifier object.
 ******************************************************************************/
-BondAngleAnalysisModifier::BondAngleAnalysisModifier() : _saveResults(false),
+BondAngleAnalysisModifier::BondAngleAnalysisModifier() :
 	_structureProperty(new ParticleProperty(0, ParticleProperty::StructureTypeProperty))
 {
 	INIT_PROPERTY_FIELD(BondAngleAnalysisModifier::_structureTypes);
-	INIT_PROPERTY_FIELD(BondAngleAnalysisModifier::_saveResults);
 
 	// Create the structure types.
 	createStructureType(OTHER, tr("Other"), Color(0.95f, 0.95f, 0.95f));
@@ -71,9 +68,8 @@ void BondAngleAnalysisModifier::createStructureType(StructureType id, const QStr
 ******************************************************************************/
 void BondAngleAnalysisModifier::saveToStream(ObjectSaveStream& stream)
 {
-	ParticleModifier::saveToStream(stream);
+	AsynchronousParticleModifier::saveToStream(stream);
 	stream.beginChunk(0x01);
-	stream << (storeResultsWithScene() ? _cacheValidity : TimeInterval::empty());
 	_structureProperty.constData()->saveToStream(stream, !storeResultsWithScene());
 	stream.endChunk();
 }
@@ -83,31 +79,16 @@ void BondAngleAnalysisModifier::saveToStream(ObjectSaveStream& stream)
 ******************************************************************************/
 void BondAngleAnalysisModifier::loadFromStream(ObjectLoadStream& stream)
 {
-	ParticleModifier::loadFromStream(stream);
+	AsynchronousParticleModifier::loadFromStream(stream);
 	stream.expectChunk(0x01);
-	stream >> _cacheValidity;
 	_structureProperty.data()->loadFromStream(stream);
 	stream.closeChunk();
 }
 
 /******************************************************************************
-* Asks the modifier for its validity interval at the given time.
+* Creates and initializes a computation engine that will compute the modifier's results.
 ******************************************************************************/
-TimeInterval BondAngleAnalysisModifier::modifierValidity(TimePoint time)
-{
-	// Return an empty validity interval if the modifier is currently being edited
-	// to let the system create a pipeline cache point just before the modifier.
-	// This will speed up re-evaluation of the pipeline if the user adjusts this modifier's parameters interactively.
-	if(isBeingEdited())
-		return TimeInterval::empty();
-
-	return TimeInterval::forever();
-}
-
-/******************************************************************************
-* This modifies the input object.
-******************************************************************************/
-ObjectStatus BondAngleAnalysisModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
+std::shared_ptr<AsynchronousParticleModifier::Engine> BondAngleAnalysisModifier::createEngine(TimePoint time)
 {
 	if(structureTypes().size() != NUM_STRUCTURE_TYPES)
 		throw Exception(tr("The number of structure types has changed. Please remove this modifier from the modification pipeline and insert it again."));
@@ -116,84 +97,30 @@ ObjectStatus BondAngleAnalysisModifier::modifyParticles(TimePoint time, TimeInte
 	ParticlePropertyObject* posProperty = expectStandardProperty(ParticleProperty::PositionProperty);
 	SimulationCell* simCell = expectSimulationCell();
 
-	if(autoUpdate() && !_cacheValidity.contains(time)) {
+	return std::make_shared<BondAngleAnalysisEngine>(posProperty->storage(), simCell->data());
+}
 
-		if(!_computationValidity.contains(time)) {
-
-			// Stop running job first.
-			cancelBackgroundJob();
-
-			// Start a background job to compute the modifier's results.
-			_computationValidity.setInstant(time);
-			_analysisOperation = runInBackground<QExplicitlySharedDataPointer<ParticleProperty>>(std::bind(&BondAngleAnalysisModifier::performAnalysis, this, std::placeholders::_1, posProperty->storage(), simCell->data()));
-			ProgressManager::instance().addTask(_analysisOperation);
-			_analysisOperationWatcher.setFuture(_analysisOperation);
-		}
-	}
-
-	if(!_structureProperty || !_cacheValidity.contains(time)) {
-		if(!_computationValidity.contains(time))
-			throw Exception(tr("The analysis has not been performed yet."));
-		else
-			return ObjectStatus::Pending;
-	}
-
-	if(inputParticleCount() != particleStructures().size()) {
-		if(!_computationValidity.contains(time))
-			throw Exception(tr("The number of input particles has changed. The cached analysis results have become invalid."));
-		else
-			return ObjectStatus::Pending;
-	}
-
-	// Get output property object.
-	ParticleTypeProperty* structureProperty = static_object_cast<ParticleTypeProperty>(outputStandardProperty(ParticleProperty::StructureTypeProperty));
-
-	// Insert structure types into output property.
-	structureProperty->setParticleTypes(structureTypes());
-
-	// Insert results into output property.
-	structureProperty->replaceStorage(_structureProperty);
-
-	// Build list of type colors.
-	Color structureTypeColors[NUM_STRUCTURE_TYPES];
-	for(int index = 0; index < NUM_STRUCTURE_TYPES; index++) {
-		structureTypeColors[index] = structureTypes()[index]->color();
-	}
-
-	// Assign colors to particles based on structure type.
-	ParticlePropertyObject* colorProperty = outputStandardProperty(ParticleProperty::ColorProperty);
-	OVITO_ASSERT(colorProperty->size() == particleStructures().size());
-	const int* s = particleStructures().constDataInt();
-	Color* c = colorProperty->dataColor();
-	Color* c_end = c + colorProperty->size();
-	for(; c != c_end; ++s, ++c) {
-		OVITO_ASSERT(*s >= 0 && *s < NUM_STRUCTURE_TYPES);
-		*c = structureTypeColors[*s];
-		//typeCounters[*s]++;
-	}
-	colorProperty->changed();
-
-	if(!_computationValidity.contains(time))
-		return ObjectStatus::Success;
-	else
-		return ObjectStatus::Pending;
+/******************************************************************************
+* Unpacks the computation results stored in the given engine object.
+******************************************************************************/
+void BondAngleAnalysisModifier::retrieveResults(Engine* engine)
+{
+	BondAngleAnalysisEngine* eng = static_cast<BondAngleAnalysisEngine*>(engine);
 }
 
 /******************************************************************************
 * Performs the actual analysis. This method is executed in a worker thread.
 ******************************************************************************/
-void BondAngleAnalysisModifier::performAnalysis(FutureInterface<QExplicitlySharedDataPointer<ParticleProperty>>& futureInterface, QSharedDataPointer<ParticleProperty> positions, SimulationCellData simCell)
+void BondAngleAnalysisModifier::BondAngleAnalysisEngine::compute(FutureInterfaceBase& futureInterface)
 {
 	futureInterface.setProgressText(tr("Performing bond angle analysis"));
 	futureInterface.setProgressRange(100);
 
-	QExplicitlySharedDataPointer<ParticleProperty> output(new ParticleProperty(positions->size(), ParticleProperty::StructureTypeProperty));
+	//QExplicitlySharedDataPointer<ParticleProperty> output(new ParticleProperty(positions->size(), ParticleProperty::StructureTypeProperty));
 	for(int i = 0; i < 100 && !futureInterface.isCanceled(); i++) {
 		QThread::msleep(30);
 		futureInterface.setProgressValue(i);
 	}
-
-	futureInterface.setResult(output);
 }
 
 /******************************************************************************
@@ -214,7 +141,7 @@ void BondAngleAnalysisModifierEditor::createUI(const RolloutInsertionParameters&
 	BooleanParameterUI* autoUpdateUI = new BooleanParameterUI(this, PROPERTY_FIELD(AsynchronousParticleModifier::_autoUpdate));
 	layout1->addWidget(autoUpdateUI->checkBox());
 
-	BooleanParameterUI* saveResultsUI = new BooleanParameterUI(this, PROPERTY_FIELD(BondAngleAnalysisModifier::_saveResults));
+	BooleanParameterUI* saveResultsUI = new BooleanParameterUI(this, PROPERTY_FIELD(AsynchronousParticleModifier::_saveResults));
 	layout1->addWidget(saveResultsUI->checkBox());
 
 	// Status label.

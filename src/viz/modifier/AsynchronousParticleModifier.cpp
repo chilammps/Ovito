@@ -32,17 +32,20 @@ namespace Viz {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Viz, AsynchronousParticleModifier, ParticleModifier)
 DEFINE_PROPERTY_FIELD(AsynchronousParticleModifier, _autoUpdate, "AutoUpdate")
+DEFINE_PROPERTY_FIELD(AsynchronousParticleModifier, _saveResults, "SaveResults")
 SET_PROPERTY_FIELD_LABEL(AsynchronousParticleModifier, _autoUpdate, "Automatic update")
+SET_PROPERTY_FIELD_LABEL(AsynchronousParticleModifier, _saveResults, "Save results in scene file")
 
 /******************************************************************************
 * Constructs the modifier object.
 ******************************************************************************/
-AsynchronousParticleModifier::AsynchronousParticleModifier() : _autoUpdate(true),
+AsynchronousParticleModifier::AsynchronousParticleModifier() : _autoUpdate(true), _saveResults(false),
 	_cacheValidity(TimeInterval::empty()), _computationValidity(TimeInterval::empty())
 {
 	INIT_PROPERTY_FIELD(AsynchronousParticleModifier::_autoUpdate);
+	INIT_PROPERTY_FIELD(AsynchronousParticleModifier::_saveResults);
 
-	connect(&_analysisOperationWatcher, &FutureWatcher::finished, this, &AsynchronousParticleModifier::backgroundJobFinished);
+	connect(&_backgroundOperationWatcher, &FutureWatcher::finished, this, &AsynchronousParticleModifier::backgroundJobFinished);
 }
 
 /******************************************************************************
@@ -62,13 +65,13 @@ void AsynchronousParticleModifier::modifierInputChanged(ModifierApplication* mod
 ******************************************************************************/
 void AsynchronousParticleModifier::cancelBackgroundJob()
 {
-	if(_analysisOperation.isValid()) {
+	if(_backgroundOperation.isValid()) {
 		try {
-			_analysisOperationWatcher.unsetFuture();
-			_analysisOperation.cancel();
-			_analysisOperation.waitForFinished();
+			_backgroundOperationWatcher.unsetFuture();
+			_backgroundOperation.cancel();
+			_backgroundOperation.waitForFinished();
 		} catch(...) {}
-		_analysisOperation.reset();
+		_backgroundOperation.reset();
 		if(status().type() == ObjectStatus::Pending)
 			setStatus(ObjectStatus());
 	}
@@ -80,14 +83,7 @@ void AsynchronousParticleModifier::cancelBackgroundJob()
 ******************************************************************************/
 ObjectStatus AsynchronousParticleModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
 {
-	if(structureTypes().size() != NUM_STRUCTURE_TYPES)
-		throw Exception(tr("The number of structure types has changed. Please remove this modifier from the modification pipeline and insert it again."));
-
-	// Get input.
-	ParticlePropertyObject* posProperty = expectStandardProperty(ParticleProperty::PositionProperty);
-	SimulationCell* simCell = expectSimulationCell();
-
-	if(autoUpdate() && !_cacheValidity.contains(time)) {
+	if(autoUpdateEnabled() && !_cacheValidity.contains(time) && input().status().type() != ObjectStatus::Pending) {
 
 		if(!_computationValidity.contains(time)) {
 
@@ -96,58 +92,36 @@ ObjectStatus AsynchronousParticleModifier::modifyParticles(TimePoint time, TimeI
 
 			// Start a background job to compute the modifier's results.
 			_computationValidity.setInstant(time);
-			_analysisOperation = runInBackground<QExplicitlySharedDataPointer<ParticleProperty>>(std::bind(&AsynchronousParticleModifier::performAnalysis, this, std::placeholders::_1, posProperty->storage(), simCell->data()));
-			ProgressManager::instance().addTask(_analysisOperation);
-			_analysisOperationWatcher.setFuture(_analysisOperation);
+
+			std::shared_ptr<Engine> engine = createEngine(time);
+			OVITO_ASSERT(engine);
+			_backgroundOperation = runInBackground<std::shared_ptr<Engine>>(std::bind(&AsynchronousParticleModifier::performAnalysis, this, std::placeholders::_1, engine));
+			ProgressManager::instance().addTask(_backgroundOperation);
+			_backgroundOperationWatcher.setFuture(_backgroundOperation);
 		}
 	}
 
-	if(!_structureProperty || !_cacheValidity.contains(time)) {
+	if(!_cacheValidity.contains(time)) {
 		if(!_computationValidity.contains(time))
-			throw Exception(tr("The analysis has not been performed yet."));
+			throw Exception(tr("The modifier results have not been computed yet."));
 		else
 			return ObjectStatus::Pending;
 	}
 
-	if(inputParticleCount() != particleStructures().size()) {
-		if(!_computationValidity.contains(time))
-			throw Exception(tr("The number of input particles has changed. The cached analysis results have become invalid."));
-		else
-			return ObjectStatus::Pending;
-	}
+	return ObjectStatus::Success;
+}
 
-	// Get output property object.
-	ParticleTypeProperty* structureProperty = static_object_cast<ParticleTypeProperty>(outputStandardProperty(ParticleProperty::StructureTypeProperty));
+/******************************************************************************
+* This function is executed in a background thread to compute the modifier results.
+******************************************************************************/
+void AsynchronousParticleModifier::performAnalysis(FutureInterface<std::shared_ptr<Engine>>& futureInterface, std::shared_ptr<Engine> engine)
+{
+	// Let the engine object do the actual work.
+	engine->compute(futureInterface);
 
-	// Insert structure types into output property.
-	structureProperty->setParticleTypes(structureTypes());
-
-	// Insert results into output property.
-	structureProperty->replaceStorage(_structureProperty);
-
-	// Build list of type colors.
-	Color structureTypeColors[NUM_STRUCTURE_TYPES];
-	for(int index = 0; index < NUM_STRUCTURE_TYPES; index++) {
-		structureTypeColors[index] = structureTypes()[index]->color();
-	}
-
-	// Assign colors to particles based on structure type.
-	ParticlePropertyObject* colorProperty = outputStandardProperty(ParticleProperty::ColorProperty);
-	OVITO_ASSERT(colorProperty->size() == particleStructures().size());
-	const int* s = particleStructures().constDataInt();
-	Color* c = colorProperty->dataColor();
-	Color* c_end = c + colorProperty->size();
-	for(; c != c_end; ++s, ++c) {
-		OVITO_ASSERT(*s >= 0 && *s < NUM_STRUCTURE_TYPES);
-		*c = structureTypeColors[*s];
-		//typeCounters[*s]++;
-	}
-	colorProperty->changed();
-
-	if(!_computationValidity.contains(time))
-		return ObjectStatus::Success;
-	else
-		return ObjectStatus::Pending;
+	// Pass engine back to caller since it carries the results.
+	if(!futureInterface.isCanceled())
+		futureInterface.setResult(engine);
 }
 
 /******************************************************************************
@@ -157,12 +131,13 @@ void AsynchronousParticleModifier::backgroundJobFinished()
 {
 	OVITO_ASSERT(!_computationValidity.isEmpty());
 	ReferenceEvent::Type notificationType = ReferenceEvent::PendingOperationFailed;
-	bool wasCanceled = _analysisOperation.isCanceled();
+	bool wasCanceled = _backgroundOperation.isCanceled();
 	ObjectStatus newStatus = status();
 
 	if(!wasCanceled) {
 		try {
-			_structureProperty = _analysisOperation.result().data();
+			std::shared_ptr<Engine> engine = _backgroundOperation.result();
+			retrieveResults(engine.get());
 			_cacheValidity = _computationValidity;
 
 			// Notify dependents that the background operation has succeeded and new data is available.
@@ -177,12 +152,10 @@ void AsynchronousParticleModifier::backgroundJobFinished()
 	else {
 		newStatus = ObjectStatus(ObjectStatus::Error, tr("Operation has been canceled by the user."));
 	}
-	if(!_structureProperty)
-		_structureProperty = new ParticleProperty(0, ParticleProperty::StructureTypeProperty);
 
 	// Reset everything.
-	_analysisOperationWatcher.unsetFuture();
-	_analysisOperation.reset();
+	_backgroundOperationWatcher.unsetFuture();
+	_backgroundOperation.reset();
 	_computationValidity.setEmpty();
 
 	// Set the new modifier status.
@@ -193,20 +166,25 @@ void AsynchronousParticleModifier::backgroundJobFinished()
 }
 
 /******************************************************************************
-* Performs the actual analysis. This method is executed in a worker thread.
+* Saves the class' contents to the given stream.
 ******************************************************************************/
-void AsynchronousParticleModifier::performAnalysis(FutureInterface<QExplicitlySharedDataPointer<ParticleProperty>>& futureInterface, QSharedDataPointer<ParticleProperty> positions, SimulationCellData simCell)
+void AsynchronousParticleModifier::saveToStream(ObjectSaveStream& stream)
 {
-	futureInterface.setProgressText(tr("Performing bond angle analysis"));
-	futureInterface.setProgressRange(100);
+	ParticleModifier::saveToStream(stream);
+	stream.beginChunk(0x01);
+	stream << (storeResultsWithScene() ? _cacheValidity : TimeInterval::empty());
+	stream.endChunk();
+}
 
-	QExplicitlySharedDataPointer<ParticleProperty> output(new ParticleProperty(positions->size(), ParticleProperty::StructureTypeProperty));
-	for(int i = 0; i < 100 && !futureInterface.isCanceled(); i++) {
-		QThread::msleep(30);
-		futureInterface.setProgressValue(i);
-	}
-
-	futureInterface.setResult(output);
+/******************************************************************************
+* Loads the class' contents from the given stream.
+******************************************************************************/
+void AsynchronousParticleModifier::loadFromStream(ObjectLoadStream& stream)
+{
+	ParticleModifier::loadFromStream(stream);
+	stream.expectChunk(0x01);
+	stream >> _cacheValidity;
+	stream.closeChunk();
 }
 
 };	// End of namespace

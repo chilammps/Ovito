@@ -189,8 +189,9 @@ InputColumnReader::InputColumnReader(const InputColumnMapping& mapping, Particle
 			}
 			if(property)
 				property->setName(propertyName);
+
+			OVITO_ASSERT(vectorComponent < property->componentCount());
 		}
-		OVITO_ASSERT(vectorComponent < property->componentCount());
 
 		// Build list of property objects for fast look up during parsing.
 		_properties.push_back(property);
