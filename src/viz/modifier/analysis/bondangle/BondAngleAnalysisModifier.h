@@ -70,9 +70,13 @@ public:
 		/// Computes the modifier's results and stores them in this object for later retrieval.
 		virtual void compute(FutureInterfaceBase& futureInterface) override;
 
+		/// Returns the property storage that contains the computed per-particle structure types.
+		ParticleProperty* structures() const { return _structures.data(); }
+
 	private:
 
 		QExplicitlySharedDataPointer<ParticleProperty> _positions;
+		QExplicitlySharedDataPointer<ParticleProperty> _structures;
 		SimulationCellData _simCell;
 	};
 

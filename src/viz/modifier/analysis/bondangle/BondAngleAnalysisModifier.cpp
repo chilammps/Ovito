@@ -106,6 +106,8 @@ std::shared_ptr<AsynchronousParticleModifier::Engine> BondAngleAnalysisModifier:
 void BondAngleAnalysisModifier::retrieveResults(Engine* engine)
 {
 	BondAngleAnalysisEngine* eng = static_cast<BondAngleAnalysisEngine*>(engine);
+	if(eng->structures())
+		_structureProperty = eng->structures();
 }
 
 /******************************************************************************
@@ -116,7 +118,7 @@ void BondAngleAnalysisModifier::BondAngleAnalysisEngine::compute(FutureInterface
 	futureInterface.setProgressText(tr("Performing bond angle analysis"));
 	futureInterface.setProgressRange(100);
 
-	//QExplicitlySharedDataPointer<ParticleProperty> output(new ParticleProperty(positions->size(), ParticleProperty::StructureTypeProperty));
+	_structures = new ParticleProperty(_positions->size(), ParticleProperty::StructureTypeProperty);
 	for(int i = 0; i < 100 && !futureInterface.isCanceled(); i++) {
 		QThread::msleep(30);
 		futureInterface.setProgressValue(i);
