@@ -139,11 +139,10 @@ public:
 	/// \brief Checks whether a point is inside the box.
 	/// \param p The point to test.
 	/// \return true if the given point is inside or on the edge of the bounding box; false if it is completely outside the box.
-	bool contains(const Point_3<T>& p) const {
-		if(p.x() < minc.x() || p.x() > maxc.x()) return false;
-		if(p.y() < minc.y() || p.y() > maxc.y()) return false;
-		if(p.z() < minc.z() || p.z() > maxc.z()) return false;
-		return true;
+	constexpr bool contains(const Point_3<T>& p) const {
+		return p.x() >= minc.x() && p.x() <= maxc.x() &&
+				p.y() >= minc.y() && p.y() <= maxc.y() &&
+				p.z() >= minc.z() && p.z() <= maxc.z();
 	}
 	
 	/// \brief Classifies the given point with respect to the box.

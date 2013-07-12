@@ -34,7 +34,7 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Viz, AsynchronousParticleModifier, ParticleM
 DEFINE_PROPERTY_FIELD(AsynchronousParticleModifier, _autoUpdate, "AutoUpdate")
 DEFINE_PROPERTY_FIELD(AsynchronousParticleModifier, _saveResults, "SaveResults")
 SET_PROPERTY_FIELD_LABEL(AsynchronousParticleModifier, _autoUpdate, "Automatic update")
-SET_PROPERTY_FIELD_LABEL(AsynchronousParticleModifier, _saveResults, "Save results in scene file")
+SET_PROPERTY_FIELD_LABEL(AsynchronousParticleModifier, _saveResults, "Save results")
 
 /******************************************************************************
 * Constructs the modifier object.
@@ -56,8 +56,10 @@ void AsynchronousParticleModifier::modifierInputChanged(ModifierApplication* mod
 {
 	ParticleModifier::modifierInputChanged(modApp);
 
-	_cacheValidity.setEmpty();
-	cancelBackgroundJob();
+	if(autoUpdateEnabled()) {
+		_cacheValidity.setEmpty();
+		cancelBackgroundJob();
+	}
 }
 
 /******************************************************************************
@@ -90,12 +92,13 @@ ObjectStatus AsynchronousParticleModifier::modifyParticles(TimePoint time, TimeI
 			// Stop running job first.
 			cancelBackgroundJob();
 
-			// Start a background job to compute the modifier's results.
-			_computationValidity.setInstant(time);
-
+			// Create the engine that will compute the results.
 			std::shared_ptr<Engine> engine = createEngine(time);
 			OVITO_ASSERT(engine);
-			_backgroundOperation = runInBackground<std::shared_ptr<Engine>>(std::bind(&AsynchronousParticleModifier::performAnalysis, this, std::placeholders::_1, engine));
+
+			// Start a background job that runs the engine to compute the modifier's results.
+			_computationValidity.setInstant(time);
+			_backgroundOperation = runInBackground<std::shared_ptr<Engine>>(std::bind(&AsynchronousParticleModifier::runEngine, this, std::placeholders::_1, engine));
 			ProgressManager::instance().addTask(_backgroundOperation);
 			_backgroundOperationWatcher.setFuture(_backgroundOperation);
 		}
@@ -108,13 +111,13 @@ ObjectStatus AsynchronousParticleModifier::modifyParticles(TimePoint time, TimeI
 			return ObjectStatus::Pending;
 	}
 
-	return ObjectStatus::Success;
+	return applyModifierResults(time, validityInterval);
 }
 
 /******************************************************************************
 * This function is executed in a background thread to compute the modifier results.
 ******************************************************************************/
-void AsynchronousParticleModifier::performAnalysis(FutureInterface<std::shared_ptr<Engine>>& futureInterface, std::shared_ptr<Engine> engine)
+void AsynchronousParticleModifier::runEngine(FutureInterface<std::shared_ptr<Engine>>& futureInterface, std::shared_ptr<Engine> engine)
 {
 	// Let the engine object do the actual work.
 	engine->compute(futureInterface);
@@ -137,7 +140,7 @@ void AsynchronousParticleModifier::backgroundJobFinished()
 	if(!wasCanceled) {
 		try {
 			std::shared_ptr<Engine> engine = _backgroundOperation.result();
-			retrieveResults(engine.get());
+			retrieveModifierResults(engine.get());
 			_cacheValidity = _computationValidity;
 
 			// Notify dependents that the background operation has succeeded and new data is available.

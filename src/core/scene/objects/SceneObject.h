@@ -92,7 +92,7 @@ public:
 		if(this->getOOType().isDerivedFrom(objectClass))
 			return this;
 		else
-			return NULL;
+			return nullptr;
 	}
 
 	/// \brief Lets the object convert itself to another object type.

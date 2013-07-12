@@ -38,6 +38,8 @@ namespace Viz {
 
 using namespace Ovito;
 
+class TreeNeighborListBuilder;
+
 /**
  * \brief A modifier that performs the structure analysis developed by Ackland and Jones.
  *
@@ -106,7 +108,13 @@ protected:
 	virtual std::shared_ptr<Engine> createEngine(TimePoint time) override;
 
 	/// Unpacks the computation results stored in the given engine object.
-	virtual void retrieveResults(Engine* engine) override;
+	virtual void retrieveModifierResults(Engine* engine) override;
+
+	/// This lets the modifier insert the previously computed results into the pipeline.
+	virtual ObjectStatus applyModifierResults(TimePoint time, TimeInterval& validityInterval) override;
+
+	/// Determines the coordination structure of a single particle using the bond-angle analysis method.
+	static StructureType determineStructure(TreeNeighborListBuilder& neighList, size_t particleIndex);
 
 private:
 

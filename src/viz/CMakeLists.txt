@@ -37,6 +37,7 @@ SET(OVITO_VIZ_SOURCE_FILES
 	importer/InputColumnMapping.cpp
 	importer/lammps/LAMMPSTextDumpImporter.cpp
 	importer/lammps/LAMMPSDumpImporterSettingsDialog.cpp
+	util/TreeNeighborListBuilder.cpp
 )
 
 # Generate plugin module.

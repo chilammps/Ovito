@@ -24,6 +24,8 @@
 #include <core/viewport/ViewportManager.h>
 #include <core/animation/AnimManager.h>
 #include <core/gui/properties/BooleanParameterUI.h>
+#include <core/utilities/concurrent/ParallelFor.h>
+#include <viz/util/TreeNeighborListBuilder.h>
 
 #include "BondAngleAnalysisModifier.h"
 
@@ -45,10 +47,10 @@ BondAngleAnalysisModifier::BondAngleAnalysisModifier() :
 
 	// Create the structure types.
 	createStructureType(OTHER, tr("Other"), Color(0.95f, 0.95f, 0.95f));
-	createStructureType(FCC, tr("FCC"), Color(0.4f, 1.0f, 0.4f));
-	createStructureType(HCP, tr("HCP"), Color(1.0f, 0.4f, 0.4f));
-	createStructureType(BCC, tr("BCC"), Color(0.4f, 0.4f, 1.0f));
-	createStructureType(ICO, tr("Icosahedral"), Color(0.2f, 1.0f, 1.0f));
+	createStructureType(FCC, tr("FCC - Face-centered cubic"), Color(0.4f, 1.0f, 0.4f));
+	createStructureType(HCP, tr("HCP - Hexagonal close-packed"), Color(1.0f, 0.4f, 0.4f));
+	createStructureType(BCC, tr("BCC - Body-centered cubic"), Color(0.4f, 0.4f, 1.0f));
+	createStructureType(ICO, tr("ICO - Icosahedral"), Color(0.95f, 0.8f, 0.2f));
 }
 
 /******************************************************************************
@@ -103,7 +105,7 @@ std::shared_ptr<AsynchronousParticleModifier::Engine> BondAngleAnalysisModifier:
 /******************************************************************************
 * Unpacks the computation results stored in the given engine object.
 ******************************************************************************/
-void BondAngleAnalysisModifier::retrieveResults(Engine* engine)
+void BondAngleAnalysisModifier::retrieveModifierResults(Engine* engine)
 {
 	BondAngleAnalysisEngine* eng = static_cast<BondAngleAnalysisEngine*>(engine);
 	if(eng->structures())
@@ -115,15 +117,156 @@ void BondAngleAnalysisModifier::retrieveResults(Engine* engine)
 ******************************************************************************/
 void BondAngleAnalysisModifier::BondAngleAnalysisEngine::compute(FutureInterfaceBase& futureInterface)
 {
+	size_t particleCount = _positions->size();
 	futureInterface.setProgressText(tr("Performing bond angle analysis"));
-	futureInterface.setProgressRange(100);
 
-	_structures = new ParticleProperty(_positions->size(), ParticleProperty::StructureTypeProperty);
-	for(int i = 0; i < 100 && !futureInterface.isCanceled(); i++) {
-		QThread::msleep(30);
-		futureInterface.setProgressValue(i);
-	}
+	// Prepare the neighbor list.
+	TreeNeighborListBuilder neighborListBuilder(14);
+	if(!neighborListBuilder.prepare(_positions.data(), _simCell))
+		return;
+
+	// Create output storage.
+	_structures = new ParticleProperty(particleCount, ParticleProperty::StructureTypeProperty);
+	ParticleProperty* output = _structures.data();
+
+	// Perform analysis on each particle.
+	parallelFor(particleCount, futureInterface, [&neighborListBuilder, output](size_t index) {
+		output->setInt(index, determineStructure(neighborListBuilder, index));
+	});
 }
+
+/******************************************************************************
+* This lets the modifier insert the previously computed results into the pipeline.
+******************************************************************************/
+ObjectStatus BondAngleAnalysisModifier::applyModifierResults(TimePoint time, TimeInterval& validityInterval)
+{
+	if(structureTypes().size() != NUM_STRUCTURE_TYPES)
+		throw Exception(tr("The number of structure types has changed. Please remove this modifier from the modification pipeline and insert it again."));
+
+	if(inputParticleCount() != particleStructures().size())
+		throw Exception(tr("The number of input particles has changed. The stored analysis results have become invalid."));
+
+	// Get output property object.
+	ParticleTypeProperty* structureProperty = static_object_cast<ParticleTypeProperty>(outputStandardProperty(ParticleProperty::StructureTypeProperty));
+
+	// Insert structure types into output property.
+	structureProperty->setParticleTypes(structureTypes());
+
+	// Insert results into output property.
+	structureProperty->replaceStorage(_structureProperty.data());
+
+	// Build list of type colors.
+	Color structureTypeColors[NUM_STRUCTURE_TYPES];
+	for(int index = 0; index < NUM_STRUCTURE_TYPES; index++) {
+		structureTypeColors[index] = structureTypes()[index]->color();
+	}
+
+	size_t typeCounters[NUM_STRUCTURE_TYPES];
+	for(int i = 0; i < NUM_STRUCTURE_TYPES; i++)
+		typeCounters[i] = 0;
+
+	// Assign colors to particles based on their structure type.
+	ParticlePropertyObject* colorProperty = outputStandardProperty(ParticleProperty::ColorProperty);
+	OVITO_ASSERT(colorProperty->size() == particleStructures().size());
+	const int* s = particleStructures().constDataInt();
+	Color* c = colorProperty->dataColor();
+	Color* c_end = c + colorProperty->size();
+	for(; c != c_end; ++s, ++c) {
+		OVITO_ASSERT(*s >= 0 && *s < NUM_STRUCTURE_TYPES);
+		*c = structureTypeColors[*s];
+		typeCounters[*s]++;
+	}
+	colorProperty->changed();
+
+	QString statusMessage;
+	statusMessage += tr("%n FCC atoms\n", 0, typeCounters[FCC]);
+	statusMessage += tr("%n HCP atoms\n", 0, typeCounters[HCP]);
+	statusMessage += tr("%n BCC atoms\n", 0, typeCounters[BCC]);
+	statusMessage += tr("%n ICO atoms\n", 0, typeCounters[ICO]);
+	statusMessage += tr("%n other atoms", 0, typeCounters[OTHER]);
+	return ObjectStatus(ObjectStatus::Success, QString(), statusMessage);
+}
+
+/******************************************************************************
+* Determines the coordination structure of a single particle using the bond-angle analysis method.
+******************************************************************************/
+BondAngleAnalysisModifier::StructureType BondAngleAnalysisModifier::determineStructure(TreeNeighborListBuilder& neighList, size_t particleIndex)
+{
+	// Create neighbor list finder.
+	TreeNeighborListBuilder::Locator<14> loc(neighList);
+
+	// Find N nearest neighbor of current atom.
+	loc.findNeighbors(neighList.particlePos(particleIndex));
+
+	// Reject under-coordinated particles.
+	if(loc.results().size() < 6)
+		return OTHER;
+
+	// Mean squared distance of 6 nearest neighbors.
+	FloatType r0_sq = 0.0;
+	for(int j = 0; j < 6; j++)
+		r0_sq += loc.results()[j].distanceSq;
+	r0_sq /= 6.0;
+
+	// n0 near neighbors with: distsq<1.45*r0_sq
+	// n1 near neighbors with: distsq<1.55*r0_sq
+	FloatType n0_dist_sq = 1.45f * r0_sq;
+	FloatType n1_dist_sq = 1.55f * r0_sq;
+	int n0 = 0;
+	for(auto n = loc.results().begin(); n != loc.results().end(); ++n, ++n0) {
+		if(n->distanceSq > n0_dist_sq) break;
+	}
+	auto n0end = loc.results().begin() + n0;
+	int n1 = n0;
+	for(auto n = n0end; n != loc.results().end(); ++n, ++n1) {
+		if(n->distanceSq >= n1_dist_sq) break;
+	}
+
+	// Evaluate all angles <(r_ij,rik) for all n0 particles with: distsq<1.45*r0_sq
+	int chi[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+	for(auto j = loc.results().begin(); j != n0end; ++j) {
+		FloatType norm_j = sqrt(j->distanceSq);
+		for(auto k = j + 1; k != n0end; ++k) {
+			FloatType norm_k = sqrt(k->distanceSq);
+			FloatType bond_angle = j->delta.dot(k->delta) / (norm_j*norm_k);
+
+			// Build histogram for identifying the relevant peaks.
+			if(bond_angle < -0.945) { chi[0]++; }
+			else if(-0.945 <= bond_angle && bond_angle < -0.915) { chi[1]++; }
+			else if(-0.915 <= bond_angle && bond_angle < -0.755) { chi[2]++; }
+			else if(-0.755 <= bond_angle && bond_angle < -0.195) { chi[3]++; }
+			else if(-0.195 <= bond_angle && bond_angle < 0.195) { chi[4]++; }
+			else if(0.195 <= bond_angle && bond_angle < 0.245) { chi[5]++; }
+			else if(0.245 <= bond_angle && bond_angle < 0.795) { chi[6]++; }
+			else if(0.795 <= bond_angle) { chi[7]++; }
+		}
+	}
+
+	// Calculate deviations from the different lattice structures.
+	FloatType delta_bcc = FloatType(0.35) * chi[4] / (FloatType)(chi[5] + chi[6] - chi[4]);
+	FloatType delta_cp = std::abs(FloatType(1) - (FloatType)chi[6] / 24);
+	FloatType delta_fcc = FloatType(0.61) * (FloatType)(std::abs(chi[0] + chi[1] - 6) + chi[2]) / 6;
+	FloatType delta_hcp = (FloatType)(std::abs(chi[0] - 3) + std::abs(chi[0] + chi[1] + chi[2] + chi[3] - 9)) / 12;
+
+	// Identification of the local structure according to the reference.
+	if(chi[0] == 7)       { delta_bcc = 0.; }
+	else if(chi[0] == 6)  { delta_fcc = 0.; }
+	else if(chi[0] <= 3)  { delta_hcp = 0.; }
+
+	if(chi[7] > 0) return OTHER;
+	else if(chi[4] < 3) {
+		if(n1 > 13 || n1 < 11) return OTHER;
+		else return ICO;
+	}
+	else if(delta_bcc <= delta_cp) {
+		if(n1 < 11) return OTHER;
+		else return BCC;
+	}
+	else if(n1 > 12 || n1 < 11) return OTHER;
+	else if(delta_fcc < delta_hcp) return FCC;
+	else return HCP;
+}
+
 
 /******************************************************************************
 * Sets up the UI widgets of the editor.

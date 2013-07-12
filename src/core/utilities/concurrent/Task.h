@@ -73,4 +73,4 @@ Future<R> runInBackground(Function f)
 
 };
 
-#endif // __OVITO_BACKGROUND_OPERATION_H
+#endif // __OVITO_TASK_H

@@ -227,8 +227,25 @@ void FutureInterfaceBase::setProgressValue(int value)
             return;
 
     _progressTime.start();
-    sendCallOut(FutureWatcher::CallOutEvent::ProgressValue, value);
+    sendCallOut(FutureWatcher::CallOutEvent::ProgressValue, _progressValue);
 }
+
+void FutureInterfaceBase::incrementProgressValue(int increment)
+{
+    QMutexLocker locker(&_mutex);
+
+    if(isCanceled() || isFinished())
+        return;
+
+    _progressValue += increment;
+    if(_progressTime.isValid() && _progressValue != _progressMaximum)
+    	if(_progressTime.elapsed() < (1000 / MaxProgressEmitsPerSecond))
+            return;
+
+    _progressTime.start();
+    sendCallOut(FutureWatcher::CallOutEvent::ProgressValue, _progressValue);
+}
+
 
 void FutureInterfaceBase::setProgressText(const QString& progressText)
 {

@@ -51,6 +51,7 @@ public:
     void setProgressRange(int maximum);
     bool isProgressUpdateNeeded();
     void setProgressValue(int progressValue);
+    void incrementProgressValue(int increment = 1);
     int progressValue() const { return _progressValue; }
     void setProgressText(const QString& progressText);
     QString progressText() const { return _progressText; }
