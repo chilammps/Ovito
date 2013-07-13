@@ -105,10 +105,14 @@ ObjectStatus AsynchronousParticleModifier::modifyParticles(TimePoint time, TimeI
 	}
 
 	if(!_cacheValidity.contains(time)) {
-		if(!_computationValidity.contains(time))
-			throw Exception(tr("The modifier results have not been computed yet."));
+		if(!_computationValidity.contains(time)) {
+			if(input().status().type() != ObjectStatus::Pending)
+				throw Exception(tr("The modifier results have not been computed yet."));
+			else
+				return ObjectStatus(ObjectStatus::Warning, QString(), tr("Waiting for input data to become ready..."));
+		}
 		else
-			return ObjectStatus::Pending;
+			return ObjectStatus(ObjectStatus::Pending, QString(), tr("Results are being computed..."));
 	}
 
 	return applyModifierResults(time, validityInterval);

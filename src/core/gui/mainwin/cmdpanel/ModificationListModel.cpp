@@ -254,6 +254,16 @@ void ModificationListModel::applyModifier(Modifier* modifier)
 			pipelineObj->insertModifier(modifier, 0);
 			return;
 		}
+		else if(dynamic_object_cast<SceneObject>(currentItem->object())) {
+			for(int i = _hiddenItems.size() - 1; i >= 0; i--) {
+				PipelineObject* pipelineObj = dynamic_object_cast<PipelineObject>(_hiddenItems[i]->object());
+				if(pipelineObj) {
+					OVITO_CHECK_OBJECT_POINTER(pipelineObj);
+					pipelineObj->insertModifier(modifier, 0);
+					return;
+				}
+			}
+		}
 	}
 
 	// Apply modifier to each selected node.

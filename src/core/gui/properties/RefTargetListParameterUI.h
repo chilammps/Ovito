@@ -100,6 +100,12 @@ protected:
 			dataChanged(index(itemIndex, 0), index(itemIndex, columnCount() - 1));
 		}
 
+		/// Notifies the system that the given column of all items has changed and the display needs to be updated.
+		void updateColumn(int columnIndex) {
+			// Update all columns of that item.
+			dataChanged(index(0, columnIndex), index(rowCount() - 1, columnIndex));
+		}
+
 		/// Returns the number of columns of the table model. Default is 1.
 		int columnCount(const QModelIndex& parent = QModelIndex()) const { return owner()->tableColumnCount(); }
 

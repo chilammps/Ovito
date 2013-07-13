@@ -114,6 +114,22 @@ inline LoadStream& operator>>(LoadStream& stream, ObjectStatus& s)
 	return stream;
 }
 
+/// \brief Writes a status object to the log stream.
+inline QDebug operator<<(QDebug debug, const ObjectStatus& s)
+{
+	switch(s.type()) {
+	case ObjectStatus::Success: debug << "Success"; break;
+	case ObjectStatus::Pending: debug << "Pending"; break;
+	case ObjectStatus::Warning: debug << "Warning"; break;
+	case ObjectStatus::Error: debug << "Error"; break;
+	}
+	if(s.shortText().isEmpty() == false)
+		debug << s.shortText();
+	if(s.longText().isEmpty() == false)
+		debug << s.longText();
+	return debug;
+}
+
 };
 
 #endif // __OVITO_OBJECT_STATUS_H

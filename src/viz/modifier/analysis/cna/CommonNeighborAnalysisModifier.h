@@ -20,12 +20,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
- * \file BondAngleAnalysisModifier.h
- * \brief Contains the definition of the Viz::BondAngleAnalysisModifier class.
+ * \file CommonNeighborAnalysisModifier.h
+ * \brief Contains the definition of the Viz::CommonNeighborAnalysisModifier class.
  */
 
-#ifndef __OVITO_BOND_ANGLE_ANALYSIS_MODIFIER_H
-#define __OVITO_BOND_ANGLE_ANALYSIS_MODIFIER_H
+#ifndef __OVITO_COMMON_NEIGHBOR_ANALYSIS_MODIFIER_H
+#define __OVITO_COMMON_NEIGHBOR_ANALYSIS_MODIFIER_H
 
 #include <core/Core.h>
 #include <core/gui/properties/RefTargetListParameterUI.h>
@@ -38,32 +38,32 @@ using namespace Ovito;
 class TreeNeighborListBuilder;
 
 /**
- * \brief A modifier that performs the structure analysis developed by Ackland and Jones.
- *
- * See G. Ackland, PRB(2006)73:054104.
+ * \brief A modifier that performs the common neighbor analysis (CNA) to identify
+ *        local coordination structure.
  */
-class BondAngleAnalysisModifier : public StructureIdentificationModifier
+class CommonNeighborAnalysisModifier : public StructureIdentificationModifier
 {
 public:
 
-	/// The structure types recognized by the bond angle analysis.
+	/// The structure types recognized by the common neighbor analysis.
 	enum StructureType {
 		OTHER = 0,				//< Unidentified structure
 		FCC,					//< Face-centered cubic
 		HCP,					//< Hexagonal close-packed
 		BCC,					//< Body-centered cubic
 		ICO,					//< Icosahedral structure
+		DIA,					//< Cubic diamond structure
 
 		NUM_STRUCTURE_TYPES 	//< This just counts the number of defined structure types.
 	};
 
 	/// Computes the modifier's results.
-	class BondAngleAnalysisEngine : public StructureIdentificationModifier::StructureIdentificationEngine
+	class CommonNeighborAnalysisEngine : public StructureIdentificationModifier::StructureIdentificationEngine
 	{
 	public:
 
 		/// Constructor.
-		BondAngleAnalysisEngine(ParticleProperty* positions, const SimulationCellData simCell) :
+		CommonNeighborAnalysisEngine(ParticleProperty* positions, const SimulationCellData simCell) :
 			StructureIdentificationModifier::StructureIdentificationEngine(positions, simCell) {}
 
 		/// Computes the modifier's results and stores them in this object for later retrieval.
@@ -73,14 +73,14 @@ public:
 public:
 
 	/// Default constructor.
-	Q_INVOKABLE BondAngleAnalysisModifier();
+	Q_INVOKABLE CommonNeighborAnalysisModifier();
 
 protected:
 
 	/// Creates and initializes a computation engine that will compute the modifier's results.
 	virtual std::shared_ptr<Engine> createEngine(TimePoint time) override;
 
-	/// Determines the coordination structure of a single particle using the bond-angle analysis method.
+	/// Determines the coordination structure of a single particle using the common neighbor analysis method.
 	static StructureType determineStructure(TreeNeighborListBuilder& neighList, size_t particleIndex);
 
 private:
@@ -88,19 +88,19 @@ private:
 	Q_OBJECT
 	OVITO_OBJECT
 
-	Q_CLASSINFO("DisplayName", "Bond-Angle Analysis");
+	Q_CLASSINFO("DisplayName", "Common Neighbor Analysis");
 	Q_CLASSINFO("ModifierCategory", "Analysis");
 };
 
 /**
- * \brief A properties editor for the BondAngleAnalysisModifier class.
+ * \brief A properties editor for the CommonNeighborAnalysisModifier class.
  */
-class BondAngleAnalysisModifierEditor : public ParticleModifierEditor
+class CommonNeighborAnalysisModifierEditor : public ParticleModifierEditor
 {
 public:
 
 	/// Default constructor.
-	Q_INVOKABLE BondAngleAnalysisModifierEditor() {}
+	Q_INVOKABLE CommonNeighborAnalysisModifierEditor() {}
 
 protected:
 
@@ -113,4 +113,4 @@ protected:
 
 };	// End of namespace
 
-#endif // __OVITO_BOND_ANGLE_ANALYSIS_MODIFIER_H
+#endif // __OVITO_COMMON_NEIGHBOR_ANALYSIS_MODIFIER_H

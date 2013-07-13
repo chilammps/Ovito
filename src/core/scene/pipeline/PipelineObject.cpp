@@ -151,13 +151,14 @@ PipelineFlowState PipelineObject::evaluatePipeline(TimePoint time, ModifierAppli
 		if(flowState.isEmpty() == false) {
 			// Apply modifier to current flow state.
 			ObjectStatus modifierStatus = mod->modifyObject(time, app, flowState);
+			flowState.setStatus(modifierStatus);
 			isPending |= (modifierStatus.type() == ObjectStatus::Pending);
+			if(isPending && flowState.status().type() != ObjectStatus::Pending)
+				flowState.setStatus(ObjectStatus::Pending);
 		}
 	}
 
 	flowState.updateRevisionNumbers();
-	if(isPending)
-		flowState.setStatus(ObjectStatus::Pending);
 
 	// Cache the final results.
 	if(_cacheIndex < 0 && flowState.isEmpty() == false) {
