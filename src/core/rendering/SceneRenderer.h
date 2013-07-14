@@ -51,10 +51,10 @@ class SceneRenderer : public RefTarget
 public:
 
 	/// Returns the data set that is being rendered.
-	DataSet* dataset() const { return _dataset; }
+	DataSet* dataset() const { OVITO_CHECK_POINTER(_dataset); return _dataset; }
 
 	/// Returns the general rendering settings.
-	RenderSettings* renderSettings() const { return _settings; }
+	RenderSettings* renderSettings() const { OVITO_CHECK_POINTER(_settings); return _settings; }
 
 	/// Prepares the renderer for rendering and sets the data set that is being rendered.
 	virtual bool startRender(DataSet* dataset, RenderSettings* settings) {
@@ -77,7 +77,7 @@ public:
 
 	/// Returns the viewport whose contents are currently being rendered.
 	/// This may be NULL.
-	Viewport* viewport() const { return _viewport; }
+	Viewport* viewport() const { OVITO_CHECK_OBJECT_POINTER(_viewport); return _viewport; }
 
 	/// \brief Computes the bounding box of the entire scene to be rendered.
 	/// \param time The time at which the bounding box should be computed.

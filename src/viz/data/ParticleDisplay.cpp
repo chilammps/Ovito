@@ -83,26 +83,41 @@ Box3 ParticleDisplay::boundingBox(TimePoint time, SceneObject* sceneObject, Obje
 			typeProperty, typeProperty ? typeProperty->revisionNumber() : 0,
 			defaultParticleRadius()) || _cachedBoundingBox.isEmpty()) {
 		// Recompute bounding box.
-		_cachedBoundingBox.setEmpty();
-		if(positionProperty) {
-			const Point3* p = positionProperty->constDataPoint3();
-			const Point3* p_end = p + positionProperty->size();
-			for(; p != p_end; ++p)
-				_cachedBoundingBox.addPoint(*p);
-		}
-		// Take into account radii of particles.
-		FloatType maxAtomRadius = defaultParticleRadius();
-		if(radiusProperty && radiusProperty->size() > 0) {
-			maxAtomRadius = *std::max_element(radiusProperty->constDataFloat(), radiusProperty->constDataFloat() + radiusProperty->size());
-		}
-		else if(typeProperty) {
-			for(const auto& it : typeProperty->radiusMap())
-				maxAtomRadius = std::max(maxAtomRadius, it.second);
-		}
-		// Enlarge the bounding box by the largest particle radius.
-		_cachedBoundingBox = _cachedBoundingBox.padBox(std::max(maxAtomRadius, FloatType(0)));
+		_cachedBoundingBox = particleBoundingBox(positionProperty, typeProperty, radiusProperty);
 	}
 	return _cachedBoundingBox;
+}
+
+/******************************************************************************
+* Computes the bounding box of the particles.
+******************************************************************************/
+Box3 ParticleDisplay::particleBoundingBox(ParticlePropertyObject* positionProperty, ParticleTypeProperty* typeProperty, ParticlePropertyObject* radiusProperty, bool includeParticleRadius)
+{
+	OVITO_ASSERT(positionProperty == nullptr || positionProperty->type() == ParticleProperty::PositionProperty);
+	OVITO_ASSERT(typeProperty == nullptr || typeProperty->type() == ParticleProperty::ParticleTypeProperty);
+	OVITO_ASSERT(radiusProperty == nullptr || radiusProperty->type() == ParticleProperty::RadiusProperty);
+
+	Box3 bbox;
+	if(positionProperty) {
+		const Point3* p = positionProperty->constDataPoint3();
+		const Point3* p_end = p + positionProperty->size();
+		for(; p != p_end; ++p)
+			bbox.addPoint(*p);
+	}
+	if(!includeParticleRadius)
+		return bbox;
+
+	// Take into account radii of particles.
+	FloatType maxAtomRadius = defaultParticleRadius();
+	if(radiusProperty && radiusProperty->size() > 0) {
+		maxAtomRadius = *std::max_element(radiusProperty->constDataFloat(), radiusProperty->constDataFloat() + radiusProperty->size());
+	}
+	else if(typeProperty) {
+		for(const auto& it : typeProperty->radiusMap())
+			maxAtomRadius = std::max(maxAtomRadius, it.second);
+	}
+	// Enlarge the bounding box by the largest particle radius.
+	return bbox.padBox(std::max(maxAtomRadius, FloatType(0)));
 }
 
 /******************************************************************************
@@ -110,6 +125,10 @@ Box3 ParticleDisplay::boundingBox(TimePoint time, SceneObject* sceneObject, Obje
 ******************************************************************************/
 void ParticleDisplay::particleColors(std::vector<Color>& output, ParticlePropertyObject* colorProperty, ParticleTypeProperty* typeProperty, ParticlePropertyObject* selectionProperty)
 {
+	OVITO_ASSERT(colorProperty == nullptr || colorProperty->type() == ParticleProperty::ColorProperty);
+	OVITO_ASSERT(typeProperty == nullptr || typeProperty->type() == ParticleProperty::ParticleTypeProperty);
+	OVITO_ASSERT(selectionProperty == nullptr || selectionProperty->type() == ParticleProperty::SelectionProperty);
+
 	if(colorProperty) {
 		// Take particle colors directly from the color property.
 		OVITO_ASSERT(colorProperty->size() == output.size());
@@ -147,6 +166,46 @@ void ParticleDisplay::particleColors(std::vector<Color>& output, ParticlePropert
 				c->b() *= 0.5;
 			}
 		}
+	}
+}
+
+/******************************************************************************
+* Determines the the display particle radii.
+******************************************************************************/
+void ParticleDisplay::particleRadii(std::vector<FloatType>& output, ParticlePropertyObject* radiusProperty, ParticleTypeProperty* typeProperty)
+{
+	OVITO_ASSERT(radiusProperty == nullptr || radiusProperty->type() == ParticleProperty::RadiusProperty);
+	OVITO_ASSERT(typeProperty == nullptr || typeProperty->type() == ParticleProperty::ParticleTypeProperty);
+
+	if(radiusProperty) {
+		// Take particle radii directly from the radius property.
+		OVITO_ASSERT(radiusProperty->size() == output.size());
+		std::copy(radiusProperty->constDataFloat(), radiusProperty->constDataFloat() + output.size(), output.begin());
+	}
+	else if(typeProperty) {
+		// Assign radii based on particle types.
+		OVITO_ASSERT(typeProperty->size() == output.size());
+		// Build a lookup map for particle type radii.
+		const std::map<int,FloatType> radiusMap = typeProperty->radiusMap();
+		// Skip the following loop if all per-type radii are zero. In this case, simply use the default radius for all particles.
+		if(std::any_of(radiusMap.cbegin(), radiusMap.cend(), [](const std::pair<int,FloatType>& it) { return it.second != 0; })) {
+			// Fill radius array.
+			const int* t = typeProperty->constDataInt();
+			for(auto c = output.begin(); c != output.end(); ++c, ++t) {
+				auto it = radiusMap.find(*t);
+				// Set particle radius only if the type's radius is non-zero.
+				if(it != radiusMap.end() && it->second != 0)
+					*c = it->second;
+			}
+		}
+		else {
+			// Assign a constant radius to all particles.
+			std::fill(output.begin(), output.end(), defaultParticleRadius());
+		}
+	}
+	else {
+		// Assign a constant radius to all particles.
+		std::fill(output.begin(), output.end(), defaultParticleRadius());
 	}
 }
 
@@ -221,7 +280,7 @@ void ParticleDisplay::render(TimePoint time, SceneObject* sceneObject, const Pip
 			OVITO_ASSERT(typeProperty->size() == particleCount);
 			// Allocate memory buffer.
 			std::vector<FloatType> particleRadii(particleCount, defaultParticleRadius());
-			// Build a lookup map for particle type colors.
+			// Build a lookup map for particle type raii.
 			const std::map<int,FloatType> radiusMap = typeProperty->radiusMap();
 			// Skip the following loop if all per-type radii are zero. In this case, simply use the default radius for all particles.
 			if(std::any_of(radiusMap.cbegin(), radiusMap.cend(), [](const std::pair<int,FloatType>& it) { return it.second != 0; })) {

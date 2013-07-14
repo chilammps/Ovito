@@ -100,6 +100,9 @@ protected:
 	/// Returns a vector with the input particles colors.
 	std::vector<Color> inputParticleColors(TimePoint time, TimeInterval& validityInterval);
 
+	/// Returns a vector with the input particles radii.
+	std::vector<FloatType> inputParticleRadii(TimePoint time, TimeInterval& validityInterval);
+
 	/// Deletes the particles given by the bit-mask.
 	/// Returns the number of remaining particles.
 	size_t deleteParticles(const std::vector<bool>& mask, size_t deleteCount);

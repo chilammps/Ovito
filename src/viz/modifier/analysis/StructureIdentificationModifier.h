@@ -99,6 +99,9 @@ protected:
 	/// Unpacks the computation results stored in the given engine object.
 	virtual void retrieveModifierResults(Engine* engine) override;
 
+	/// Asks the modifier if it has valid results available that can be fed into the pipeline.
+	virtual bool hasValidModifierResults() override { return particleStructures().size() == inputParticleCount(); }
+
 	/// This lets the modifier insert the previously computed results into the pipeline.
 	virtual ObjectStatus applyModifierResults(TimePoint time, TimeInterval& validityInterval) override;
 

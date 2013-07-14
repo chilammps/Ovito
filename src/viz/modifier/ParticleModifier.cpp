@@ -173,7 +173,7 @@ ParticlePropertyObject* ParticleModifier::outputStandardProperty(ParticlePropert
 		if(outputProperty == inputProperty) {
 			// Make a real copy of the property, which may be modified.
 			outputProperty = cloneHelper()->cloneObject(inputProperty, false);
-			_output.replaceObject(inputProperty.get(), inputProperty);
+			_output.replaceObject(inputProperty.get(), outputProperty);
 		}
 	}
 	else {
@@ -242,13 +242,44 @@ std::vector<Color> ParticleModifier::inputParticleColors(TimePoint time, TimeInt
 	if(positionProperty) {
 		ParticleDisplay* particleDisplay = dynamic_object_cast<ParticleDisplay>(positionProperty->displayObject());
 		if(particleDisplay) {
+
 			// Query particle colors from display object.
 			particleDisplay->particleColors(colors,
 					inputStandardProperty(ParticleProperty::ColorProperty),
 					dynamic_object_cast<ParticleTypeProperty>(inputStandardProperty(ParticleProperty::ParticleTypeProperty)));
+
+			return colors;
 		}
 	}
+
+	std::fill(colors.begin(), colors.end(), Color(1,1,1));
 	return colors;
+}
+
+/******************************************************************************
+* Returns a vector with the input particles radii.
+******************************************************************************/
+std::vector<FloatType> ParticleModifier::inputParticleRadii(TimePoint time, TimeInterval& validityInterval)
+{
+	std::vector<FloatType> radii(inputParticleCount());
+
+	// Obtain the particle display object.
+	ParticlePropertyObject* positionProperty = inputStandardProperty(ParticleProperty::PositionProperty);
+	if(positionProperty) {
+		ParticleDisplay* particleDisplay = dynamic_object_cast<ParticleDisplay>(positionProperty->displayObject());
+		if(particleDisplay) {
+
+			// Query particle radii from display object.
+			particleDisplay->particleRadii(radii,
+					inputStandardProperty(ParticleProperty::RadiusProperty),
+					dynamic_object_cast<ParticleTypeProperty>(inputStandardProperty(ParticleProperty::ParticleTypeProperty)));
+
+			return radii;
+		}
+	}
+
+	std::fill(radii.begin(), radii.end(), 1.0);
+	return radii;
 }
 
 /******************************************************************************

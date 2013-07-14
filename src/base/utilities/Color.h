@@ -220,6 +220,13 @@ inline std::ostream& operator<<(std::ostream &os, const ColorT<T>& c) {
 	return os << c.r() << ' ' << c.g()  << ' ' << c.b();
 }
 
+/// \brief Writes the color to the Qt debug stream.
+template<typename T>
+inline QDebug operator<<(QDebug dbg, const ColorT<T>& c) {
+    dbg.nospace() << "(" << c.r() << " " << c.g() << " " << c.b() << ")";
+    return dbg.space();
+}
+
 /// \brief Writes a color to a binary output stream.
 /// \param stream The destination stream.
 /// \param c The color to write.
@@ -401,6 +408,13 @@ constexpr inline ColorAT<T> operator*(const ColorAT<T>& c1, const ColorAT<T>& c2
 template<typename T>
 inline std::ostream& operator<<(std::ostream &os, const ColorAT<T>& c) {
 	return os << c.r() << ' ' << c.g()  << ' ' << c.b() << ' ' << c.a();
+}
+
+/// \brief Writes the color to the Qt debug stream.
+template<typename T>
+inline QDebug operator<<(QDebug dbg, const ColorAT<T>& c) {
+    dbg.nospace() << "(" << c.r() << " " << c.g() << " " << c.b() << " " << c.a() << ")";
+    return dbg.space();
 }
 
 /// \brief Writes a color to a binary output stream.

@@ -77,7 +77,7 @@ void CommonNeighborAnalysisModifier::CommonNeighborAnalysisEngine::compute(Futur
 
 	// Prepare the neighbor list.
 	TreeNeighborListBuilder neighborListBuilder(14);
-	if(!neighborListBuilder.prepare(positions(), cell()))
+	if(!neighborListBuilder.prepare(positions(), cell()) || futureInterface.isCanceled())
 		return;
 
 	// Create output storage.

@@ -55,7 +55,15 @@ AsynchronousParticleModifier::AsynchronousParticleModifier() : _autoUpdate(true)
 void AsynchronousParticleModifier::modifierInputChanged(ModifierApplication* modApp)
 {
 	ParticleModifier::modifierInputChanged(modApp);
+	invalidateCachedResults();
+}
 
+/******************************************************************************
+* Invalidates the modifier's result cache so that the results will be recomputed
+* next time the modifier is evaluated.
+******************************************************************************/
+void AsynchronousParticleModifier::invalidateCachedResults()
+{
 	if(autoUpdateEnabled()) {
 		_cacheValidity.setEmpty();
 		cancelBackgroundJob();
@@ -111,8 +119,13 @@ ObjectStatus AsynchronousParticleModifier::modifyParticles(TimePoint time, TimeI
 			else
 				return ObjectStatus(ObjectStatus::Warning, QString(), tr("Waiting for input data to become ready..."));
 		}
-		else
+		else {
+
+			if(hasValidModifierResults())
+				applyModifierResults(time, validityInterval);
+
 			return ObjectStatus(ObjectStatus::Pending, QString(), tr("Results are being computed..."));
+		}
 	}
 
 	return applyModifierResults(time, validityInterval);

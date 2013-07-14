@@ -101,6 +101,10 @@ protected:
 	/// to the function is reduced to the interval where the modified object is valid/constant.
 	virtual ObjectStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;
 
+	/// Invalidates the modifier's result cache so that the results will be recomputed
+	/// next time the modifier is evaluated.
+	void invalidateCachedResults();
+
 	/// Cancels any running background job.
 	void cancelBackgroundJob();
 
@@ -112,6 +116,9 @@ protected:
 
 	/// Unpacks the computation results stored in the given engine object.
 	virtual void retrieveModifierResults(Engine* engine) = 0;
+
+	/// Asks the modifier if it has valid results available that can be fed into the pipeline.
+	virtual bool hasValidModifierResults() = 0;
 
 	/// This lets the modifier insert the previously computed results into the pipeline.
 	virtual ObjectStatus applyModifierResults(TimePoint time, TimeInterval& validityInterval) = 0;

@@ -37,6 +37,8 @@ class OpenGLContextManager;
 class SharedOpenGLResource
 {
 public:
+
+	/// Destructor.
     ~SharedOpenGLResource() { destroyOpenGLResources(); }
 
     /// This should be called after the OpenGL resources have been allocated.

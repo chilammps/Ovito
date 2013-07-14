@@ -63,7 +63,9 @@ class OpenGLContextManager : public QObject
 
 public:
 
-	~OpenGLContextManager() { qDeleteAll(_contexts); }
+	~OpenGLContextManager() {
+		qDeleteAll(_contexts);
+	}
 
 	OpenGLContextInfo* contextInfo(QOpenGLContext* ctx) {
 		// Look for existing context wrapper.
@@ -75,7 +77,7 @@ public:
 		OpenGLContextInfo* info = new OpenGLContextInfo(ctx, ctx->surface());
 		_contexts.append(info);
 		// Install listener.
-		connect(ctx, SIGNAL(aboutToBeDestroyed()), this, SLOT(aboutToDestroyContext()));
+		connect(ctx, SIGNAL(aboutToBeDestroyed()), this, SLOT(aboutToDestroyContext()), Qt::DirectConnection);
 		return info;
 	}
 
@@ -91,12 +93,17 @@ private:
 
 #include "SharedOpenGLResource.moc"
 
-Q_GLOBAL_STATIC(OpenGLContextManager, qt_gl_context_manager);
+static QThreadStorage<OpenGLContextManager*> glContextManagerStorage;
+
+static OpenGLContextManager* glresource_context_manager() {
+	if(!glContextManagerStorage.hasLocalData()) {
+		glContextManagerStorage.setLocalData(new OpenGLContextManager());
+	}
+	return glContextManagerStorage.localData();
+}
 
 void OpenGLContextManager::aboutToDestroyContext()
 {
-	OVITO_ASSERT(QThread::currentThread() == QCoreApplication::instance()->thread());
-
 	QOpenGLContext* ctx = qobject_cast<QOpenGLContext*>(sender());
 	OVITO_CHECK_POINTER(ctx);
 
@@ -125,12 +132,12 @@ void OpenGLContextManager::aboutToDestroyContext()
 void SharedOpenGLResource::attachOpenGLResources()
 {
     OVITO_ASSERT(_contextInfo == nullptr);
-    OVITO_ASSERT(QThread::currentThread() == QCoreApplication::instance()->thread());
 
     QOpenGLContext* context = QOpenGLContext::currentContext();
     OVITO_CHECK_POINTER(context);
 
-    OpenGLContextManager* manager = qt_gl_context_manager();
+    OpenGLContextManager* manager = glresource_context_manager();
+
     _contextInfo = manager->contextInfo(context);
     _next = _contextInfo->_resources;
     _prev = nullptr;
@@ -144,7 +151,7 @@ void SharedOpenGLResource::destroyOpenGLResources()
 	if(!_contextInfo)
 		return;
 
-	OVITO_ASSERT(QThread::currentThread() == QCoreApplication::instance()->thread());
+    OpenGLContextManager* manager = glresource_context_manager();
 
     // Detach this resource from the context information block.
 	if(_next) _next->_prev = _prev;
