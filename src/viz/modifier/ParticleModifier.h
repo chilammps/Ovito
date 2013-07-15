@@ -91,6 +91,9 @@ protected:
 	/// output property by this method.
 	ParticlePropertyObject* outputStandardProperty(ParticleProperty::Type which);
 
+	/// Returns the modifier's output simulation cell.
+	SimulationCell* outputSimulationCell();
+
 	/// Removes the given particle property from the modifier's output.
 	void removeOutputProperty(ParticlePropertyObject* property);
 

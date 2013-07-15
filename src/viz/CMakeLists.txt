@@ -37,6 +37,7 @@ SET(OVITO_VIZ_SOURCE_FILES
 	modifier/analysis/cna/CommonNeighborAnalysisModifier.cpp
 	modifier/lighting/AmbientOcclusionModifier.cpp
 	modifier/lighting/AmbientOcclusionRenderer.cpp
+	modifier/transformation/AffineTransformationModifier.cpp
 	importer/ParticleImporter.cpp
 	importer/ParticleImportData.cpp
 	importer/InputColumnMapping.cpp

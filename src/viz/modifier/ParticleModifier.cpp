@@ -195,6 +195,32 @@ void ParticleModifier::removeOutputProperty(ParticlePropertyObject* property)
 }
 
 /******************************************************************************
+* Returns the modifier's output simulation cell.
+******************************************************************************/
+SimulationCell* ParticleModifier::outputSimulationCell()
+{
+	SimulationCell* inputCell = expectSimulationCell();
+
+	// Check if cell already exists in the output.
+	OORef<SimulationCell> outputCell = output().findObject<SimulationCell>();
+	if(outputCell) {
+		// Is the existing output property still a shallow copy of the input?
+		if(outputCell == inputCell) {
+			// Make a real copy of the property, which may be modified.
+			outputCell = cloneHelper()->cloneObject(inputCell, false);
+			_output.replaceObject(inputCell, outputCell);
+		}
+	}
+	else {
+		// Create a new particle property in the output.
+		outputCell = new SimulationCell();
+		_output.addObject(outputCell.get());
+	}
+
+	return outputCell.get();
+}
+
+/******************************************************************************
 * Deletes the particles given by the bit-mask.
 * Returns the number of remaining particles.
 ******************************************************************************/
