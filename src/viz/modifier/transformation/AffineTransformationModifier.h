@@ -38,7 +38,8 @@ namespace Viz {
 using namespace Ovito;
 
 /**
- * \brief This modifier applies an arbitrary affine transformation to the particles and/or the simulation box.
+ * \brief This modifier applies an arbitrary affine transformation to the
+ *        particles and/or the simulation box.
  *
  * The affine transformation is given by a 3x4 matrix.
  */

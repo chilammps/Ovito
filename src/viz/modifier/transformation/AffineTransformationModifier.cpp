@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (20013) Alexander Stukowski
+//  Copyright (2013) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -111,11 +111,13 @@ ObjectStatus AffineTransformationModifier::modifyParticles(TimePoint time, TimeI
 		if(toSelectionOnly()) {
 			ParticlePropertyObject* selProperty = inputStandardProperty(ParticleProperty::SelectionProperty);
 			if(selProperty) {
-#if 0
-				boost::counting_iterator<int> begin(0);
-				boost::counting_iterator<int> end(posChannel->size());
-				QtConcurrent::blockingMap(begin, end, KernelWithSelection(tm, posChannel, selChannel));
-#endif
+				const int* sbegin = selProperty->constDataInt();
+				Point3* pbegin = posProperty->dataPoint3();
+				Point3* pend = pbegin + posProperty->size();
+				QtConcurrent::blockingMap(pbegin, pend, [tm, pbegin, sbegin](Point3& p) {
+					if(sbegin[&p - pbegin])
+						p = tm * p;
+				});
 			}
 		}
 		else {
