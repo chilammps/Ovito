@@ -128,8 +128,6 @@ void AmbientOcclusionRenderer::endFrame()
 		_image = _image.rgbSwapped();
 	}
 
-	_image.save("ao.png");
-
 	ViewportSceneRenderer::endFrame();
 }
 

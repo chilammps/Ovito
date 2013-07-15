@@ -35,12 +35,12 @@ flat out vec4 particle_color_out;
 void main()
 {
 	// Compute color from object ID.
-	uint objectID = uint(pickingBaseID + gl_VertexID);
+	int objectID = pickingBaseID + gl_VertexID;
 	particle_color_out = vec4(
-		float(objectID & 255u) / 255.0, 
-		float((objectID >> 8) & 255u) / 255.0, 
-		float((objectID >> 16) & 255u) / 255.0, 
-		float((objectID >> 24) & 255u) / 255.0);
+		float(objectID & 0xFF) / 255.0, 
+		float((objectID >> 8) & 0xFF) / 255.0, 
+		float((objectID >> 16) & 0xFF) / 255.0, 
+		float((objectID >> 24) & 0xFF) / 255.0);		
 
 	// Transform and project particle position.
 	vec4 eye_position = modelview_matrix * vec4(particle_pos, 1);

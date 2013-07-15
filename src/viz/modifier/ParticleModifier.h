@@ -91,6 +91,9 @@ protected:
 	/// output property by this method.
 	ParticlePropertyObject* outputStandardProperty(ParticleProperty::Type which);
 
+	/// Removes the given particle property from the modifier's output.
+	void removeOutputProperty(ParticlePropertyObject* property);
+
 	/// Returns the number of particles in the input.
 	size_t inputParticleCount() const { return _inputParticleCount; }
 

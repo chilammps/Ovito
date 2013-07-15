@@ -37,12 +37,12 @@ flat out float ze0;					// The particle's Z coordinate in eye coordinates.
 void main()
 {
 	// Compute color from object ID.
-	uint objectID = uint(pickingBaseID + gl_VertexID);
+	int objectID = pickingBaseID + gl_VertexID;
 	particle_color_out = vec4(
-		float(objectID & 255u) / 255.0, 
-		float((objectID >> 8) & 255u) / 255.0, 
-		float((objectID >> 16) & 255u) / 255.0, 
-		float((objectID >> 24) & 255u) / 255.0);
+		float(objectID & 0xFF) / 255.0, 
+		float((objectID >> 8) & 0xFF) / 255.0, 
+		float((objectID >> 16) & 0xFF) / 255.0, 
+		float((objectID >> 24) & 0xFF) / 255.0);	
 
 	// Forward particle radius to fragment shader.
 	depth_radius = particle_radius;

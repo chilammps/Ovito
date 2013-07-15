@@ -187,6 +187,14 @@ ParticlePropertyObject* ParticleModifier::outputStandardProperty(ParticlePropert
 }
 
 /******************************************************************************
+* Removes the given particle property from the modifier's output.
+******************************************************************************/
+void ParticleModifier::removeOutputProperty(ParticlePropertyObject* property)
+{
+	output().removeObject(property);
+}
+
+/******************************************************************************
 * Deletes the particles given by the bit-mask.
 * Returns the number of remaining particles.
 ******************************************************************************/

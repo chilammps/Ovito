@@ -239,7 +239,6 @@ void AmbientOcclusionModifier::propertyChanged(const PropertyFieldDescriptor& fi
 	AsynchronousParticleModifier::propertyChanged(field);
 }
 
-
 /******************************************************************************
 * Sets up the UI widgets of the editor.
 ******************************************************************************/

@@ -61,9 +61,7 @@ bool StandardSceneRenderer::startRender(DataSet* dataset, RenderSettings* settin
 		}
 	}
 	_offscreenContext.reset(new QOpenGLContext());
-#ifndef Q_OS_LINUX	// Do not use resource sharing on Linux, because of segmentation fault in Gallium driver.
 	_offscreenContext->setShareContext(shareContext);
-#endif
 	_offscreenContext->setFormat(format);
 	if(!_offscreenContext->create())
 		throw Exception(tr("Failed to create OpenGL context."));

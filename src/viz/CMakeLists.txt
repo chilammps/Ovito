@@ -31,6 +31,7 @@ SET(OVITO_VIZ_SOURCE_FILES
 	modifier/AsynchronousParticleModifier.cpp
 	modifier/coloring/AssignColorModifier.cpp
 	modifier/slice/SliceModifier.cpp
+	modifier/delete/DeleteParticlesModifier.cpp
 	modifier/analysis/StructureIdentificationModifier.cpp
 	modifier/analysis/bondangle/BondAngleAnalysisModifier.cpp
 	modifier/analysis/cna/CommonNeighborAnalysisModifier.cpp

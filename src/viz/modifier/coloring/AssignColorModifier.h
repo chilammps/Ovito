@@ -96,7 +96,7 @@ private:
 /******************************************************************************
 * A properties editor for the AssignColorModifier class.
 ******************************************************************************/
-class AssignColorModifierEditor : public PropertiesEditor
+class AssignColorModifierEditor : public ParticleModifierEditor
 {
 public:
 

@@ -34,12 +34,12 @@ out float particle_radius_in;
 void main()
 {
 	// Compute color from object ID.
-	uint objectID = uint(pickingBaseID + gl_VertexID);
+	int objectID = pickingBaseID + gl_VertexID;
 	particle_color_in = vec4(
-		float(objectID & 255u) / 255.0, 
-		float((objectID >> 8) & 255u) / 255.0, 
-		float((objectID >> 16) & 255u) / 255.0, 
-		float((objectID >> 24) & 255u) / 255.0);
+		float(objectID & 0xFF) / 255.0, 
+		float((objectID >> 8) & 0xFF) / 255.0, 
+		float((objectID >> 16) & 0xFF) / 255.0, 
+		float((objectID >> 24) & 0xFF) / 255.0);	
 		
 	// Pass radius to geometry shader.
 	particle_radius_in = particle_radius;

@@ -28,7 +28,7 @@
 namespace Viz {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Viz, AssignColorModifier, ParticleModifier)
-IMPLEMENT_OVITO_OBJECT(Viz, AssignColorModifierEditor, PropertiesEditor)
+IMPLEMENT_OVITO_OBJECT(Viz, AssignColorModifierEditor, ParticleModifierEditor)
 SET_OVITO_OBJECT_EDITOR(AssignColorModifier, AssignColorModifierEditor)
 DEFINE_REFERENCE_FIELD(AssignColorModifier, _colorCtrl, "Color", VectorController)
 DEFINE_PROPERTY_FIELD(AssignColorModifier, _keepSelection, "KeepSelection")
