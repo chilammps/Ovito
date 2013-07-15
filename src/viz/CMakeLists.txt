@@ -38,6 +38,8 @@ SET(OVITO_VIZ_SOURCE_FILES
 	modifier/lighting/AmbientOcclusionModifier.cpp
 	modifier/lighting/AmbientOcclusionRenderer.cpp
 	modifier/transformation/AffineTransformationModifier.cpp
+	modifier/pbc/ShowPeriodicImagesModifier.cpp
+	modifier/pbc/WrapPeriodicImagesModifier.cpp
 	importer/ParticleImporter.cpp
 	importer/ParticleImportData.cpp
 	importer/InputColumnMapping.cpp

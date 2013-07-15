@@ -205,6 +205,16 @@ public:
 						_m[2][0], _m[2][1], _m[2][2]);
 	}
 
+	/// Multiplies a 3x3 matrix with a Point3 and returns one component of the resulting point.
+	inline constexpr T prodrow(const Point_3<T>& p, typename Point_3<T>::size_type index) const {
+		return _m[0][index] * p[0] + _m[1][index] * p[1] + _m[2][index] * p[2];
+	}
+
+	/// Multiplies a 3x3 matrix with a Vector3 and returns one component of the resulting vector.
+	inline constexpr T prodrow(const Vector_3<T>& v, typename Vector_3<T>::size_type index) const {
+		return _m[0][index] * v[0] + _m[1][index] * v[1] + _m[2][index] * v[2];
+	}
+
 	/// \brief Tests whether the matrix is a pure rotation matrix.
 	/// \return \c If the matrix is a pure rotation matrix; \c false otherwise.
 	///

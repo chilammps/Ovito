@@ -246,6 +246,18 @@ public:
 		return inv;
 	}
 
+	/// Multiplies a 3x4 matrix with a Point3 (which is extended to a 4-vector with the last
+	/// element being 1) and returns one component of the resulting point.
+	inline constexpr T prodrow(const Point_3<T>& p, typename Point_3<T>::size_type index) const {
+		return _m[0][index] * p[0] + _m[1][index] * p[1] + _m[2][index] * p[2] + _m[3][index];
+	}
+
+	/// Multiplies a 3x4 matrix with a Vector3 (which is automatically extended to a 4-vector with the last
+	/// element being 0) and returns one component of the resulting vector.
+	inline constexpr T prodrow(const Vector_3<T>& v, typename Vector_3<T>::size_type index) const {
+		return _m[0][index] * v[0] + _m[1][index] * v[1] + _m[2][index] * v[2];
+	}
+
 	////////////////////////////////// Generation ///////////////////////////////////
 	
 	/// \brief Generates a matrix describing a rotation around the X axis.

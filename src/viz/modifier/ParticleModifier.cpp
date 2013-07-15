@@ -228,6 +228,7 @@ size_t ParticleModifier::deleteParticles(const std::vector<bool>& mask, size_t d
 {
 	OVITO_ASSERT(mask.size() == inputParticleCount());
 	OVITO_ASSERT(std::count(mask.begin(), mask.end(), true) == deleteCount);
+	OVITO_ASSERT(outputParticleCount() == inputParticleCount());
 
 	size_t oldParticleCount = inputParticleCount();
 	size_t newParticleCount = oldParticleCount - deleteCount;
