@@ -406,17 +406,17 @@ class ParticlePropertyReference
 public:
 
 	/// \brief Default constructor.
-	ParticlePropertyReference() : _type(ParticleProperty::UserProperty) {}
+	ParticlePropertyReference() : _type(ParticleProperty::UserProperty), _vectorComponent(-1) {}
 	/// \brief Constructor for references to standard property.
-	ParticlePropertyReference(ParticleProperty::Type type) : _type(type), _name(ParticleProperty::standardPropertyName(type)) {}
+	ParticlePropertyReference(ParticleProperty::Type type, int vectorComponent = -1) : _type(type), _name(ParticleProperty::standardPropertyName(type)), _vectorComponent(vectorComponent) {}
 	/// \brief Constructor for references to a property.
-	ParticlePropertyReference(ParticleProperty::Type type, const QString& name) : _type(type), _name(name) {}
+	ParticlePropertyReference(ParticleProperty::Type type, const QString& name, int vectorComponent = -1) : _type(type), _name(name), _vectorComponent(vectorComponent) {}
 	/// \brief Constructor for references to user-defined properties.
-	ParticlePropertyReference(const QString& name) : _type(ParticleProperty::UserProperty), _name(name) {}
+	ParticlePropertyReference(const QString& name, int vectorComponent = -1) : _type(ParticleProperty::UserProperty), _name(name), _vectorComponent(vectorComponent) {}
 	/// \brief Constructor for references to an existing property instance.
-	ParticlePropertyReference(ParticleProperty* property) : _type(property->type()), _name(property->name()) {}
+	ParticlePropertyReference(ParticleProperty* property, int vectorComponent = -1) : _type(property->type()), _name(property->name()), _vectorComponent(vectorComponent) {}
 	/// \brief Constructor for references to an existing property instance.
-	ParticlePropertyReference(ParticlePropertyObject* property) : _type(property->type()), _name(property->name()) {}
+	ParticlePropertyReference(ParticlePropertyObject* property, int vectorComponent = -1) : _type(property->type()), _name(property->name()), _vectorComponent(vectorComponent) {}
 
 	/// \brief Gets the type identifier of the referenced property.
 	/// \return The property type.
@@ -433,9 +433,13 @@ public:
 	/// \return The property name.
 	const QString& name() const { return _name; }
 
+	/// Returns the selected component index if the property is a vector property.
+	int vectorComponent() const { return _vectorComponent; }
+
 	/// \brief Compares two references for equality.
 	bool operator==(const ParticlePropertyReference& other) const {
 		if(type() != other.type()) return false;
+		if(vectorComponent() != other.vectorComponent()) return false;
 		if(type() != ParticleProperty::UserProperty) return true;
 		return name() == other.name();
 	}
@@ -451,6 +455,9 @@ private:
 	/// The human-readable name of the property.
 	/// It is only used for user-defined properties.
 	QString _name;
+
+	/// The component index if the property is a vector property.
+	int _vectorComponent;
 };
 
 /// Writes a ParticlePropertyReference to an output stream.
@@ -458,6 +465,7 @@ inline SaveStream& operator<<(SaveStream& stream, const ParticlePropertyReferenc
 {
 	stream.writeEnum(r.type());
 	stream << r.name();
+	stream << r.vectorComponent();
 	return stream;
 }
 
@@ -468,15 +476,17 @@ inline LoadStream& operator>>(LoadStream& stream, ParticlePropertyReference& r)
 	QString name;
 	stream.readEnum(type);
 	stream >> name;
+	int vecComponent;
+	stream >> vecComponent;
 	if(type != ParticleProperty::UserProperty)
-		r = ParticlePropertyReference(type);
+		r = ParticlePropertyReference(type, vecComponent);
 	else
-		r = ParticlePropertyReference(name);
+		r = ParticlePropertyReference(name, vecComponent);
 	return stream;
 }
 
 };	// End of namespace
 
-Q_DECLARE_METATYPE(Viz::ParticlePropertyReference)
+Q_DECLARE_METATYPE(Viz::ParticlePropertyReference);
 
 #endif // __OVITO_PARTICLE_PROPERTY_OBJECT_H

@@ -154,6 +154,17 @@ QVariant StructureListParameterUI::getItemData(RefTarget* target, const QModelIn
 				else
 					return QVariant();
 			}
+			else if(index.column() == 3) {
+				size_t totalCount = 0;
+				for(const auto& entry : modifier->structureCounts())
+					totalCount += entry.second;
+				auto entry = modifier->structureCounts().find(stype->id());
+				if(entry != modifier->structureCounts().end()) {
+					return QString("%1%").arg((double)entry->second * 100.0 / std::max((size_t)1, totalCount), 0, 'f', 1);
+				}
+				else
+					return QVariant();
+			}
 		}
 		else if(role == Qt::DecorationRole) {
 			if(index.column() == 0)
@@ -170,8 +181,8 @@ bool StructureListParameterUI::referenceEvent(RefTarget* source, ReferenceEvent*
 {
 	if(source == editObject()) {
 		if(event->type() == ReferenceEvent::StatusChanged) {
-			// Update the structure count column.
-			_model->updateColumn(2);
+			// Update the structure count columns.
+			_model->updateColumns(2, 3);
 		}
 	}
 	return RefTargetListParameterUI::referenceEvent(source, event);

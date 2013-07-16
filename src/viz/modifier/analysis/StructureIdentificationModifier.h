@@ -143,7 +143,7 @@ protected:
 	virtual QVariant getItemData(RefTarget* target, const QModelIndex& index, int role) override;
 
 	/// Returns the number of columns for the table view.
-	virtual int tableColumnCount() override { return 3; }
+	virtual int tableColumnCount() override { return 4; }
 
 	/// Returns the header data under the given role for the given RefTarget.
 	virtual QVariant getHorizontalHeaderData(int index, int role) override {
@@ -151,8 +151,10 @@ protected:
 			return QVariant(tr("Color"));
 		else if(index == 1)
 			return QVariant(tr("Name"));
-		else
+		else if(index == 2)
 			return QVariant(tr("Count"));
+		else
+			return QVariant(tr("Fraction"));
 	}
 
 	/// Do not open sub-editor for selected atom type.

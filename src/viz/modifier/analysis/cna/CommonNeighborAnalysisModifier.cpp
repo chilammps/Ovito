@@ -45,11 +45,11 @@ CommonNeighborAnalysisModifier::CommonNeighborAnalysisModifier()
 {
 	// Create the structure types.
 	createStructureType(OTHER, tr("Other"), Color(0.95f, 0.95f, 0.95f));
-	createStructureType(FCC, tr("FCC - Face-centered cubic"), Color(0.4f, 1.0f, 0.4f));
-	createStructureType(HCP, tr("HCP - Hexagonal close-packed"), Color(1.0f, 0.4f, 0.4f));
-	createStructureType(BCC, tr("BCC - Body-centered cubic"), Color(0.4f, 0.4f, 1.0f));
-	createStructureType(ICO, tr("ICO - Icosahedral"), Color(0.95f, 0.8f, 0.2f));
-	createStructureType(DIA, tr("DIA - Cubic diamond"), Color(0.2f, 0.95f, 0.8f));
+	createStructureType(FCC, tr("FCC"), Color(0.4f, 1.0f, 0.4f));
+	createStructureType(HCP, tr("HCP"), Color(1.0f, 0.4f, 0.4f));
+	createStructureType(BCC, tr("BCC"), Color(0.4f, 0.4f, 1.0f));
+	createStructureType(ICO, tr("ICO"), Color(0.95f, 0.8f, 0.2f));
+	createStructureType(DIA, tr("DIA"), Color(0.2f, 0.95f, 0.8f));
 }
 
 /******************************************************************************

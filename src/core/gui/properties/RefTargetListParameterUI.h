@@ -100,10 +100,10 @@ protected:
 			dataChanged(index(itemIndex, 0), index(itemIndex, columnCount() - 1));
 		}
 
-		/// Notifies the system that the given column of all items has changed and the display needs to be updated.
-		void updateColumn(int columnIndex) {
-			// Update all columns of that item.
-			dataChanged(index(0, columnIndex), index(rowCount() - 1, columnIndex));
+		/// Notifies the system that the given columns of all items has changed and the display needs to be updated.
+		void updateColumns(int columnStartIndex, int columnEndIndex) {
+			// Update the columns of all items.
+			dataChanged(index(0, columnStartIndex), index(rowCount() - 1, columnEndIndex));
 		}
 
 		/// Returns the number of columns of the table model. Default is 1.

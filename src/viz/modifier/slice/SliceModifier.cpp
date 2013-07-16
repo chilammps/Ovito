@@ -245,12 +245,12 @@ Box3 SliceModifier::renderPlane(ViewportSceneRenderer* renderer, const Plane3& p
 	for(int i = 0; i < 8; i++)
 		corners[i] = bb[i];
 
-	planeQuadIntersesction(corners, {{0, 1, 5, 4}}, plane, vertices);
-	planeQuadIntersesction(corners, {{1, 3, 7, 5}}, plane, vertices);
-	planeQuadIntersesction(corners, {{3, 2, 6, 7}}, plane, vertices);
-	planeQuadIntersesction(corners, {{2, 0, 4, 6}}, plane, vertices);
-	planeQuadIntersesction(corners, {{4, 5, 7, 6}}, plane, vertices);
-	planeQuadIntersesction(corners, {{0, 2, 3, 1}}, plane, vertices);
+	planeQuadIntersection(corners, {{0, 1, 5, 4}}, plane, vertices);
+	planeQuadIntersection(corners, {{1, 3, 7, 5}}, plane, vertices);
+	planeQuadIntersection(corners, {{3, 2, 6, 7}}, plane, vertices);
+	planeQuadIntersection(corners, {{2, 0, 4, 6}}, plane, vertices);
+	planeQuadIntersection(corners, {{4, 5, 7, 6}}, plane, vertices);
+	planeQuadIntersection(corners, {{0, 2, 3, 1}}, plane, vertices);
 
 	// If there is not intersection with the simulation box then
 	// project the simulation box onto the plane.
@@ -284,7 +284,7 @@ Box3 SliceModifier::renderPlane(ViewportSceneRenderer* renderer, const Plane3& p
 /******************************************************************************
 * Computes the intersection lines of a plane and a quad.
 ******************************************************************************/
-void SliceModifier::planeQuadIntersesction(const Point3 corners[8], const std::array<int,4>& quadVerts, const Plane3& plane, QVector<Point3>& vertices) const
+void SliceModifier::planeQuadIntersection(const Point3 corners[8], const std::array<int,4>& quadVerts, const Plane3& plane, QVector<Point3>& vertices) const
 {
 	Point3 p1;
 	bool hasP1 = false;

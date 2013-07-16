@@ -331,7 +331,7 @@ QString ParticleProperty::standardPropertyName(Type which)
 	case TotalEnergyProperty: return ParticlePropertyObject::tr("Total Energy");
 	case RadiusProperty: return ParticlePropertyObject::tr("Radius");
 	case StructureTypeProperty: return ParticlePropertyObject::tr("Structure Type");
-	case IdentifierProperty: return ParticlePropertyObject::tr("Particle Index");
+	case IdentifierProperty: return ParticlePropertyObject::tr("Particle Identifier");
 	case StressTensorProperty: return ParticlePropertyObject::tr("Stress Tensor");
 	case StrainTensorProperty: return ParticlePropertyObject::tr("Strain Tensor");
 	case DeformationGradientProperty: return ParticlePropertyObject::tr("Deformation Gradient");

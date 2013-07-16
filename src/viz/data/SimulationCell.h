@@ -163,7 +163,7 @@ public:
 
 	/// \brief Returns the periodic boundary flags in all three spatial directions.
 	std::array<bool,3> pbcFlags() const {
-		return { pbcX(), pbcY(), pbcZ() };
+		return {{ pbcX(), pbcY(), pbcZ() }};
 	}
 
 	/// \brief Returns whether periodic boundary conditions are enabled in the X direction.

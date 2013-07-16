@@ -143,7 +143,7 @@ protected:
 	Box3 renderPlane(ViewportSceneRenderer* renderer, const Plane3& plane, const Box3& box, const ColorA& color) const;
 
 	/// Computes the intersection lines of a plane and a quad.
-	void planeQuadIntersesction(const Point3 corners[8], const std::array<int,4>& quadVerts, const Plane3& plane, QVector<Point3>& vertices) const;
+	void planeQuadIntersection(const Point3 corners[8], const std::array<int,4>& quadVerts, const Plane3& plane, QVector<Point3>& vertices) const;
 
 	/// This controller stores the normal of the slicing plane.
 	ReferenceField<VectorController> _normalCtrl;

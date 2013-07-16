@@ -2,7 +2,9 @@
 <RCC version="1.0">
 
 <qresource prefix="/viz">
-
+	
+	<file>icons/export_color_scale.png</file>
+	
 </qresource> 
 
 </RCC>

@@ -30,6 +30,7 @@ SET(OVITO_VIZ_SOURCE_FILES
 	modifier/ParticleModifier.cpp
 	modifier/AsynchronousParticleModifier.cpp
 	modifier/coloring/AssignColorModifier.cpp
+	modifier/coloring/ColorCodingModifier.cpp
 	modifier/slice/SliceModifier.cpp
 	modifier/delete/DeleteParticlesModifier.cpp
 	modifier/analysis/StructureIdentificationModifier.cpp
@@ -40,17 +41,35 @@ SET(OVITO_VIZ_SOURCE_FILES
 	modifier/transformation/AffineTransformationModifier.cpp
 	modifier/pbc/ShowPeriodicImagesModifier.cpp
 	modifier/pbc/WrapPeriodicImagesModifier.cpp
+	modifier/selection/InvertSelectionModifier.cpp
+	modifier/selection/SelectParticleTypeModifier.cpp
+	modifier/selection/SelectExpressionModifier.cpp
 	importer/ParticleImporter.cpp
 	importer/ParticleImportData.cpp
 	importer/InputColumnMapping.cpp
 	importer/lammps/LAMMPSTextDumpImporter.cpp
 	importer/lammps/LAMMPSDumpImporterSettingsDialog.cpp
 	util/TreeNeighborListBuilder.cpp
+	util/ParticlePropertyComboBox.cpp
+)
+
+
+# The source files of the muParser library.
+SET(muParser_SRCS
+	util/muparser/muParser.cpp
+	util/muparser/muParserBytecode.cpp
+	util/muparser/muParserTest.cpp
+	util/muparser/muParserDLL.cpp
+	util/muparser/muParserInt.cpp
+	util/muparser/muParserTokenReader.cpp
+	util/muparser/muParserError.cpp
+	util/muparser/muParserCallback.cpp
+	util/muparser/muParserBase.cpp
 )
 
 # Generate plugin module.
 OVITO_PLUGIN(Viz
-	SOURCES ${OVITO_VIZ_SOURCE_FILES}
+	SOURCES ${OVITO_VIZ_SOURCE_FILES} ${muParser_SRCS}
 	RESOURCE viz.rcc resources/viz.qrc
 )
 

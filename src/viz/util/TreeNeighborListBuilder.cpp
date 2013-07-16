@@ -210,8 +210,7 @@ void TreeNeighborListBuilder::splitLeafNode(TreeNode* node, int splitDim)
 	NeighborListAtom* atom = node->atoms;
 	while(atom != NULL) {
 		NeighborListAtom* next = atom->nextInBin;
-		Point3 v = atom->pos - simCell.translation();
-		FloatType p = simCellInverse(splitDim,0)*v.x() + simCellInverse(splitDim,1)*v.y() + simCellInverse(splitDim,2)*v.z();
+		FloatType p = simCellInverse.prodrow(atom->pos, splitDim);
 		if(p < node->splitPos) {
 			atom->nextInBin = node->children[0]->atoms;
 			node->children[0]->atoms = atom;

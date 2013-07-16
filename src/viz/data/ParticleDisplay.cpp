@@ -160,11 +160,8 @@ void ParticleDisplay::particleColors(std::vector<Color>& output, ParticlePropert
 		const Color selColor(1,0,0);
 		const int* t = selectionProperty->constDataInt();
 		for(auto c = output.begin(); c != output.end(); ++c, ++t) {
-			if(*t) {
-				c->r() = std::min(FloatType(1), c->r() + FloatType(0.5));
-				c->g() *= 0.5;
-				c->b() *= 0.5;
-			}
+			if(*t)
+				*c = selColor;
 		}
 	}
 }
