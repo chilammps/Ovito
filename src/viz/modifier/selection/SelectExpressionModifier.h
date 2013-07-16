@@ -23,6 +23,7 @@
 #define __OVITO_SELECT_EXPRESSION_MODIFIER_H
 
 #include <core/Core.h>
+#include <core/gui/widgets/AutocompleteLineEdit.h>
 #include "../ParticleModifier.h"
 
 class FunctionParser;	// From muParser library.
@@ -115,19 +116,13 @@ protected:
 	/// This method is called when a reference target changes.
 	virtual bool referenceEvent(RefTarget* source, ReferenceEvent* event) override;
 
-private Q_SLOTS:
-
-	/// Inserts a variable name into the expression text field.
-	void insertVariableName(const QString& completion);
-
 private:
 
 	/// Updates the enabled/disabled status of the editor's controls.
 	void updateEditorFields();
 
 	QLabel* variableNamesList;
-	QStringListModel* variableNamesListModel;
-	QCompleter* variableNameCompleter;
+	AutocompleteLineEdit* expressionLineEdit;
 
 	Q_OBJECT
 	OVITO_OBJECT

@@ -206,13 +206,15 @@ namespace mu
     value_type fVal(0);
 
     stringstream_type stream(a_szExpr);
-    stream.seekg(0);        // todo:  check if this really is necessary
-    stream.imbue(Parser::s_locale);
+    //stream.imbue(Parser::s_locale);
     stream >> fVal;
+    if(!stream) {
+    	return 0;
+    }
     stringstream_type::pos_type iEnd = stream.tellg(); // Position after reading
 
     if (iEnd==(stringstream_type::pos_type)-1)
-      return 0;
+      iEnd = std::strlen(a_szExpr);
 
     *a_iPos += (int)iEnd;
     *a_fVal = fVal;

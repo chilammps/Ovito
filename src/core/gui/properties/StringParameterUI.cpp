@@ -32,7 +32,7 @@ IMPLEMENT_OVITO_OBJECT(Core, StringParameterUI, PropertyParameterUI)
 * Constructor for a Qt property.
 ******************************************************************************/
 StringParameterUI::StringParameterUI(QObject* parentEditor, const char* propertyName) :
-	PropertyParameterUI(parentEditor, propertyName)
+	PropertyParameterUI(parentEditor, propertyName), _textBox(nullptr)
 {
 	// Create UI widget.
 	_textBox = new QLineEdit();
@@ -43,7 +43,7 @@ StringParameterUI::StringParameterUI(QObject* parentEditor, const char* property
 * Constructor for a PropertyField property.
 ******************************************************************************/
 StringParameterUI::StringParameterUI(QObject* parentEditor, const PropertyFieldDescriptor& propField) :
-	PropertyParameterUI(parentEditor, propField)
+	PropertyParameterUI(parentEditor, propField), _textBox(nullptr)
 {
 	// Create UI widget.
 	_textBox = new QLineEdit();
@@ -56,7 +56,19 @@ StringParameterUI::StringParameterUI(QObject* parentEditor, const PropertyFieldD
 StringParameterUI::~StringParameterUI()
 {
 	// Release GUI controls. 
-	delete textBox(); 
+	delete _textBox;
+}
+
+/******************************************************************************
+* Replaces the text box managed by this ParameterUI.
+* The ParameterUI becomes the owner of the new text box and the old widget is deleted.
+******************************************************************************/
+void StringParameterUI::setTextBox(QLineEdit* textBox)
+{
+	delete _textBox;
+	_textBox = textBox;
+	connect(_textBox, SIGNAL(editingFinished()), this, SLOT(updatePropertyValue()));
+	updateUI();
 }
 
 /******************************************************************************

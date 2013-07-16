@@ -122,7 +122,7 @@ public:
 			parser.DefineConst("t", timestep);
 		}
 		catch(mu::Parser::exception_type& ex) {
-			throw Exception(QString("%1").arg(QString::fromStdString(ex.GetMsg())));
+			throw Exception(QString::fromStdString(ex.GetMsg()));
 		}
 
 		// Setup data pointers to input channels.
@@ -236,6 +236,7 @@ ObjectStatus SelectExpressionModifier::modifyParticles(TimePoint time, TimeInter
 	int nthreads = std::max(QThread::idealThreadCount(), 1);
 	if((size_t)nthreads > inputParticleCount())
 		nthreads = (int)inputParticleCount();
+
 	QVector<SelExpressionEvaluationKernel> workers(nthreads);
 	for(QVector<SelExpressionEvaluationKernel>::iterator worker = workers.begin(); worker != workers.end(); ++worker) {
 		if(worker->initialize(expression(), _variableNames, input(), currentFrame, (int)inputParticleCount()))
@@ -295,69 +296,6 @@ void SelectExpressionModifier::initializeModifier(PipelineObject* pipeline, Modi
 void SelectExpressionModifierEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
 	QWidget* rollout = createRollout(tr("Expression select"), rolloutParams);
-#if 0
-	void TextEdit::keyPressEvent(QKeyEvent *e)
-	{
-	m_tabSpaces = false;
-	CurrentCursor = textCursor();
-
-	     if (e->key() == Qt::Key_Tab) {
-	             LastTabCursor = textCursor();
-	            if (!LastTabCursor.selectedText().isEmpty()) {
-	                m_tabSpaces = true;
-	                IndentText(true);
-	                return;
-	            }
-	      }
-
-
-	    if (c && c->popup()->isVisible()) {
-	        // The following keys are forwarded by the completer to the widget
-	       switch (e->key()) {
-	       case Qt::Key_Enter:
-	       case Qt::Key_Return:
-	       case Qt::Key_Escape:
-	       case Qt::Key_Backtab:
-	            e->ignore();
-	            return; // let the completer do default behavior
-	       default:
-	           break;
-	       }
-	    }
-
-
-
-
-
-	    bool isShortcut = ((e->modifiers() & Qt::ControlModifier) && e->key() == Qt::Key_E); // CTRL+E
-	    if (!c || !isShortcut) // dont process the shortcut when we have a completer
-	        QTextEdit::keyPressEvent(e);
-
-	    const bool ctrlOrShift = e->modifiers() & (Qt::ControlModifier | Qt::ShiftModifier);
-	    if (!c || (ctrlOrShift && e->text().isEmpty()))
-	        return;
-
-	    static QString eow("~!@#$%^&*()_+{}|:\"<>?,./;'[]\\-="); // end of word
-	    bool hasModifier = (e->modifiers() != Qt::NoModifier) && !ctrlOrShift;
-	    QString completionPrefix = textUnderCursor();
-
-	    if (!isShortcut && (hasModifier || e->text().isEmpty()|| completionPrefix.length() < 2
-	                      || eow.contains(e->text().right(1)))) {
-	        c->popup()->hide();
-	        return;
-	    }
-
-	    if (completionPrefix != c->completionPrefix()) {
-	        c->setCompletionPrefix(completionPrefix);
-	        c->popup()->setCurrentIndex(c->completionModel()->index(0, 0));
-	    }
-
-	    QRect cr = cursorRect();
-	    cr.setWidth(c->popup()->sizeHintForColumn(0)
-	                + c->popup()->verticalScrollBar()->sizeHint().width());
-	    c->complete(cr); // popup it up!
-	}
-#endif
 
     // Create the rollout contents.
 	QVBoxLayout* layout = new QVBoxLayout(rollout);
@@ -366,15 +304,9 @@ void SelectExpressionModifierEditor::createUI(const RolloutInsertionParameters& 
 
 	layout->addWidget(new QLabel(tr("Boolean expression:")));
 	StringParameterUI* expressionUI = new StringParameterUI(this, PROPERTY_FIELD(SelectExpressionModifier::_expression));
+	expressionLineEdit = new AutocompleteLineEdit();
+	expressionUI->setTextBox(expressionLineEdit);
 	layout->addWidget(expressionUI->textBox());
-
-	variableNamesListModel = new QStringListModel(this);
-	variableNameCompleter = new QCompleter(this);
-	variableNameCompleter->setCompletionMode(QCompleter::PopupCompletion);
-	variableNameCompleter->setCaseSensitivity(Qt::CaseInsensitive);
-	variableNameCompleter->setModel(variableNamesListModel);
-	variableNameCompleter->setWidget(expressionUI->textBox());
-	connect(variableNameCompleter, SIGNAL(activated(const QString&)), this, SLOT(insertVariableName(const QString&)));
 
 	// Status label.
 	layout->addSpacing(12);
@@ -387,17 +319,6 @@ void SelectExpressionModifierEditor::createUI(const RolloutInsertionParameters& 
 	variableNamesList->setWordWrap(true);
 	variableNamesList->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard | Qt::LinksAccessibleByMouse | Qt::LinksAccessibleByKeyboard);
 	variablesLayout->addWidget(variableNamesList);
-}
-
-/******************************************************************************
-* Inserts a variable name into the expression text field.
-******************************************************************************/
-void SelectExpressionModifierEditor::insertVariableName(const QString& completion)
-{
-	QLineEdit* textBox = static_cast<QLineEdit*>(variableNameCompleter->widget());
-	int extra = completion.length() - variableNameCompleter->completionPrefix().length();
-	textBox->insert(completion.right(extra));
-	textBox->cursorForward(false, extra);
 }
 
 /******************************************************************************
@@ -428,7 +349,7 @@ void SelectExpressionModifierEditor::updateEditorFields()
 	labelText.append("</ul><p></p>");
 	variableNamesList->setText(labelText);
 
-	variableNamesListModel->setStringList(mod->lastVariableNames());
+	expressionLineEdit->setWordList(mod->lastVariableNames());
 }
 
 

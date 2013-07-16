@@ -45,6 +45,9 @@ public:
 	/// This returns the text box managed by this ParameterUI.
 	QLineEdit* textBox() const { return _textBox; }
 	
+	/// Replaces the text box managed by this ParameterUI. The ParameterUI becomes the owner of the new text box.
+	void setTextBox(QLineEdit* textBox);
+
 	/// This method is called when a new editable object has been assigned to the properties owner this
 	/// parameter UI belongs to.  
 	virtual void resetUI() override;
