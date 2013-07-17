@@ -429,6 +429,8 @@ void ParticleModifierEditor::updateStatusLabel()
 		_statusTextLabel->clear();
 		_statusIconLabel->clear();
 	}
+
+	container()->updateRolloutsLater();
 }
 
 /******************************************************************************

@@ -21,9 +21,9 @@
 
 #include <core/Core.h>
 #include <core/gui/undo/UndoManager.h>
+#include <core/gui/widgets/AutocompleteLineEdit.h>
 #include <core/scene/pipeline/PipelineObject.h>
 #include <viz/util/muparser/muParser.h>
-#include <core/gui/widgets/AutocompleteLineEdit.h>
 #include "CreateExpressionPropertyModifier.h"
 
 #include <QtConcurrent>
@@ -360,7 +360,7 @@ void CreateExpressionPropertyModifier::initializeModifier(PipelineObject* pipeli
 ******************************************************************************/
 void CreateExpressionPropertyModifierEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
-	QWidget* rollout = createRollout(tr("Create expression property"), rolloutParams);
+	rollout = createRollout(tr("Create expression property"), rolloutParams);
 
     // Create the rollout contents.
 	QVBoxLayout* mainLayout = new QVBoxLayout(rollout);
@@ -410,7 +410,7 @@ void CreateExpressionPropertyModifierEditor::createUI(const RolloutInsertionPara
 	BooleanParameterUI* selectionFlagUI = new BooleanParameterUI(this, PROPERTY_FIELD(CreateExpressionPropertyModifier::_onlySelectedParticles));
 	propertiesLayout->addWidget(selectionFlagUI->checkBox(), 5, 0, 1, 2);
 
-	QGroupBox* expressionsGroupBox = new QGroupBox(tr("Expressions"));
+	expressionsGroupBox = new QGroupBox(tr("Expressions"));
 	mainLayout->addWidget(expressionsGroupBox);
 	expressionsLayout = new QVBoxLayout(expressionsGroupBox);
 	expressionsLayout->setContentsMargins(4,4,4,4);
@@ -454,8 +454,8 @@ void CreateExpressionPropertyModifierEditor::updateEditorFields()
 
 	const QStringList& expr = mod->expressions();
 	while(expr.size() > expressionBoxes.size()) {
-		QLabel* label = new QLabel(container());
-		AutocompleteLineEdit* edit = new AutocompleteLineEdit(container());
+		QLabel* label = new QLabel();
+		AutocompleteLineEdit* edit = new AutocompleteLineEdit();
 		edit->setWordList(mod->lastVariableNames());
 		expressionsLayout->insertWidget(expressionBoxes.size()*2, label);
 		expressionsLayout->insertWidget(expressionBoxes.size()*2 + 1, edit);
@@ -484,7 +484,7 @@ void CreateExpressionPropertyModifierEditor::updateEditorFields()
 			expressionBoxLabels[i]->setText(tr("Component %1:").arg(i+1));
 	}
 
-	QString labelText(tr("The following variables can be referenced in the expression:<ul>"));
+	QString labelText(tr("The following variables can be used in the expression:<ul>"));
 	Q_FOREACH(QString s, mod->lastVariableNames()) {
 		labelText.append(QString("<li>%1</li>").arg(s));
 	}
@@ -492,6 +492,8 @@ void CreateExpressionPropertyModifierEditor::updateEditorFields()
 	labelText.append(QString("<li>t (current animation frame)</li>"));
 	labelText.append("</ul><p></p>");
 	variableNamesList->setText(labelText);
+
+	container()->updateRolloutsLater();
 }
 
 /******************************************************************************

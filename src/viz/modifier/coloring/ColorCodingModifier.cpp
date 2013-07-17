@@ -121,7 +121,7 @@ void ColorCodingModifier::initializeModifier(PipelineObject* pipeline, ModifierA
 		for(const auto& o : input.objects()) {
 			ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o.get());
 			if(property && (property->dataType() == qMetaTypeId<int>() || property->dataType() == qMetaTypeId<FloatType>())) {
-				bestProperty = ParticlePropertyReference(property);
+				bestProperty = ParticlePropertyReference(property, (property->componentCount() > 1) ? 0 : -1);
 			}
 		}
 		if(!bestProperty.isNull()) {

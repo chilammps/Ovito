@@ -241,6 +241,8 @@ private:
 	VariantComboBoxParameterUI* propertyDataTypeUI;
 	IntegerParameterUI* numComponentsUI;
 
+	QWidget* rollout;
+	QGroupBox* expressionsGroupBox;
 	QList<QLineEdit*> expressionBoxes;
 	QList<QLabel*> expressionBoxLabels;
 

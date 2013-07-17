@@ -36,6 +36,7 @@ SET(OVITO_VIZ_SOURCE_FILES
 	modifier/analysis/StructureIdentificationModifier.cpp
 	modifier/analysis/bondangle/BondAngleAnalysisModifier.cpp
 	modifier/analysis/cna/CommonNeighborAnalysisModifier.cpp
+	modifier/analysis/displacements/CalculateDisplacementsModifier.cpp
 	modifier/lighting/AmbientOcclusionModifier.cpp
 	modifier/lighting/AmbientOcclusionRenderer.cpp
 	modifier/transformation/AffineTransformationModifier.cpp

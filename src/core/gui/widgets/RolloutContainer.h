@@ -162,6 +162,17 @@ public:
 	virtual QSize minimumSizeHint() const { 
 		return QSize(QFrame::minimumSizeHint().width(), 10); 
 	}
+
+public Q_SLOTS:
+
+	/// Updates the size of all rollouts.
+	void updateRollouts();
+
+	/// Updates the size of all rollouts soon.
+	void updateRolloutsLater() {
+		QTimer::singleShot(0, this, SLOT(updateRollouts()));
+	}
+
 };
 
 };

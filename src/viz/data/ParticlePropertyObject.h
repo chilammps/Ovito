@@ -441,6 +441,9 @@ public:
 	/// Returns the selected component index if the property is a vector property.
 	int vectorComponent() const { return _vectorComponent; }
 
+	/// Selects a component index if the property is a vector property.
+	void setVectorComponent(int index) { _vectorComponent = index; }
+
 	/// \brief Compares two references for equality.
 	bool operator==(const ParticlePropertyReference& other) const {
 		if(type() != other.type()) return false;

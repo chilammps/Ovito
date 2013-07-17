@@ -70,6 +70,18 @@ Rollout* RolloutContainer::addRollout(QWidget* content, const QString& title, co
 }
 
 /******************************************************************************
+* Updates the size of all rollouts.
+******************************************************************************/
+void RolloutContainer::updateRollouts()
+{
+	for(QObject* child : widget()->children()) {
+		if(child->isWidgetType()) {
+			static_cast<QWidget*>(child)->updateGeometry();
+		}
+	}
+}
+
+/******************************************************************************
 * Constructs a rollout widget.
 ******************************************************************************/
 Rollout::Rollout(QWidget* parent, QWidget* content, const QString& title, const RolloutInsertionParameters& params) :

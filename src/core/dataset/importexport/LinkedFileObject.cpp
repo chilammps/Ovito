@@ -117,6 +117,9 @@ bool LinkedFileObject::updateFrames()
 ******************************************************************************/
 PipelineFlowState LinkedFileObject::evaluate(TimePoint time)
 {
+	if(!importer())
+		return PipelineFlowState();
+
 	int frame = AnimManager::instance().timeToFrame(time);
 	bool oldTaskCanceled = false;
 	if(_frameBeingLoaded != -1) {
