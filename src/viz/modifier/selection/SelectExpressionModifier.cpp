@@ -76,7 +76,7 @@ QStringList SelectExpressionModifier::getVariableNames(const PipelineFlowState& 
 
 /**
  * This helper class is needed to enable multi-threaded evaluation of math expressions
- * for all atoms. Each instance of this class is assigned a chunk of atoms that it processes.
+ * for all particles. Each instance of this class is assigned a chunk of particles that it processes.
  */
 class SelExpressionEvaluationKernel
 {
@@ -125,7 +125,7 @@ public:
 			throw Exception(QString::fromStdString(ex.GetMsg()));
 		}
 
-		// Setup data pointers to input channels.
+		// Setup input data pointers.
 		size_t vindex = 0;
 		for(const auto& o : input.objects()) {
 			ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o.get());
@@ -248,6 +248,10 @@ ObjectStatus SelectExpressionModifier::modifyParticles(TimePoint time, TimeInter
 
 	if(inputParticleCount() != 0) {
 
+		// Shared memory management is not thread-safe. Make sure the deep copy of the data has been
+		// made before the worker threads are started.
+		selProperty->data();
+
 		// Spawn worker threads.
 		QFutureSynchronizer<void> synchronizer;
 		size_t chunkSize = std::max(inputParticleCount() / workers.size(), (size_t)1);
@@ -270,8 +274,9 @@ ObjectStatus SelectExpressionModifier::modifyParticles(TimePoint time, TimeInter
 
 			nSelected += worker.nSelected;
 		}
+
+		selProperty->changed();
 	}
-	selProperty->changed();
 
 	QString statusMessage = tr("%1 out of %2 particles selected (%3%)").arg(nSelected).arg(inputParticleCount()).arg(nSelected * 100 / std::max(inputParticleCount(), (size_t)1));
 	return ObjectStatus(ObjectStatus::Success, QString(), statusMessage);

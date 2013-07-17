@@ -182,7 +182,57 @@ ParticlePropertyObject* ParticleModifier::outputStandardProperty(ParticlePropert
 		_output.addObject(outputProperty.get());
 	}
 
-	OVITO_ASSERT(outputProperty->size() == _outputParticleCount);
+	OVITO_ASSERT(outputProperty->size() == outputParticleCount());
+	return outputProperty.get();
+}
+
+/******************************************************************************
+* Creates a custom particle property in the modifier's output.
+******************************************************************************/
+ParticlePropertyObject* ParticleModifier::outputCustomProperty(const QString& name, int dataType, size_t dataTypeSize, size_t componentCount)
+{
+	// Check if property already exists in the input.
+	OORef<ParticlePropertyObject> inputProperty;
+	for(const auto& o : input().objects()) {
+		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o.get());
+		if(property && property->type() == ParticleProperty::UserProperty && property->name() == name) {
+			inputProperty = property;
+			if(property->dataType() != dataType || property->dataTypeSize() != dataTypeSize)
+				throw Exception(tr("Existing property '%1' has a different data type.").arg(name));
+			if(property->componentCount() != componentCount)
+				throw Exception(tr("Existing property '%1' has a different number of components.").arg(name));
+			break;
+		}
+	}
+
+	// Check if property already exists in the output.
+	OORef<ParticlePropertyObject> outputProperty;
+	for(const auto& o : output().objects()) {
+		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o.get());
+		if(property && property->type() == ParticleProperty::UserProperty && property->name() == name) {
+			outputProperty = property;
+			OVITO_ASSERT(property->dataType() == dataType);
+			OVITO_ASSERT(property->componentCount() == componentCount);
+			break;
+		}
+	}
+
+	if(outputProperty) {
+		// Is the existing output property still a shallow copy of the input?
+		if(outputProperty == inputProperty) {
+			// Make a real copy of the property, which may be modified.
+			outputProperty = cloneHelper()->cloneObject(inputProperty, false);
+			_output.replaceObject(inputProperty.get(), outputProperty);
+		}
+	}
+	else {
+		// Create a new particle property in the output.
+		outputProperty = ParticlePropertyObject::create(_outputParticleCount, dataType, dataTypeSize, componentCount);
+		outputProperty->setName(name);
+		_output.addObject(outputProperty.get());
+	}
+
+	OVITO_ASSERT(outputProperty->size() == outputParticleCount());
 	return outputProperty.get();
 }
 

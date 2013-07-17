@@ -86,10 +86,15 @@ protected:
 	/// not contain a simulation cell, an exception is thrown.
 	SimulationCell* expectSimulationCell() const;
 
-	/// Creates a standard particle in the modifier's output.
+	/// Creates a standard particle property in the modifier's output.
 	/// If the particle property already exists in the input, its contents are copied to the
 	/// output property by this method.
 	ParticlePropertyObject* outputStandardProperty(ParticleProperty::Type which);
+
+	/// Creates a custom particle property in the modifier's output.
+	/// If the particle property already exists in the input, its contents are copied to the
+	/// output property by this method.
+	ParticlePropertyObject* outputCustomProperty(const QString& name, int dataType, size_t dataTypeSize, size_t componentCount);
 
 	/// Returns the modifier's output simulation cell.
 	SimulationCell* outputSimulationCell();

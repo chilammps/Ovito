@@ -461,4 +461,7 @@ protected:
 
 };	// End of namespace
 
+Q_DECLARE_METATYPE(Viz::ParticleProperty::Type);
+Q_DECLARE_TYPEINFO(Viz::ParticleProperty::Type, Q_PRIMITIVE_TYPE);
+
 #endif // __OVITO_PARTICLE_PROPERTY_H

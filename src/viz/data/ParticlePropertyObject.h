@@ -108,6 +108,11 @@ public:
 	///         this property storage according to the Qt meta type system.
 	int dataType() const { return _storage->dataType(); }
 
+	/// \brief Returns the number of bytes per value.
+	/// \return Number of bytes used to store a single value of the data type
+	///         specified by type().
+	size_t dataTypeSize() const { return _storage->dataTypeSize(); }
+
 	/// \brief Returns the number of bytes used per particle.
 	/// \return The size of the property' data type multiplied by the component count.
 	size_t perParticleSize() const { return _storage->perParticleSize(); }
