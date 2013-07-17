@@ -35,6 +35,7 @@ namespace Viz {
 
 using namespace Ovito;
 
+class OnTheFlyNeighborListBuilder;
 class TreeNeighborListBuilder;
 
 /**
@@ -63,11 +64,16 @@ public:
 	public:
 
 		/// Constructor.
-		FixedCommonNeighborAnalysisEngine(ParticleProperty* positions, const SimulationCellData simCell) :
-			StructureIdentificationModifier::StructureIdentificationEngine(positions, simCell) {}
+		FixedCommonNeighborAnalysisEngine(ParticleProperty* positions, const SimulationCellData& simCell, FloatType cutoff) :
+			StructureIdentificationModifier::StructureIdentificationEngine(positions, simCell), _cutoff(cutoff) {}
 
 		/// Computes the modifier's results and stores them in this object for later retrieval.
 		virtual void compute(FutureInterfaceBase& futureInterface) override;
+
+	private:
+
+		/// The CNA cutoff radius.
+		FloatType _cutoff;
 	};
 
 	/// Analysis engine that performs the adaptive common neighbor analysis.
@@ -76,7 +82,7 @@ public:
 	public:
 
 		/// Constructor.
-		AdaptiveCommonNeighborAnalysisEngine(ParticleProperty* positions, const SimulationCellData simCell) :
+		AdaptiveCommonNeighborAnalysisEngine(ParticleProperty* positions, const SimulationCellData& simCell) :
 			StructureIdentificationModifier::StructureIdentificationEngine(positions, simCell) {}
 
 		/// Computes the modifier's results and stores them in this object for later retrieval.
@@ -112,11 +118,17 @@ public:
 
 protected:
 
+	/// Is called when the value of a property of this object has changed.
+	virtual void propertyChanged(const PropertyFieldDescriptor& field) override;
+
 	/// Creates and initializes a computation engine that will compute the modifier's results.
 	virtual std::shared_ptr<Engine> createEngine(TimePoint time) override;
 
 	/// Determines the coordination structure of a single particle using the common neighbor analysis method.
-	static StructureType determineStructure(TreeNeighborListBuilder& neighList, size_t particleIndex);
+	static StructureType determineStructureAdaptive(TreeNeighborListBuilder& neighList, size_t particleIndex);
+
+	/// Determines the coordination structure of a single particle using the common neighbor analysis method.
+	static StructureType determineStructureFixed(OnTheFlyNeighborListBuilder& neighList, size_t particleIndex);
 
 	/// The cutoff radius for the CNA.
 	PropertyField<FloatType> _cutoff;

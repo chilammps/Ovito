@@ -333,21 +333,21 @@ void SliceModifier::initializeModifier(PipelineObject* pipeline, ModifierApplica
 void SliceModifierEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
 	// Create a rollout.
-	QWidget* rollout = createRollout(tr("Slicing plane"), rolloutParams);
+	QWidget* rollout = createRollout(tr("Slice"), rolloutParams);
 
     // Create the rollout contents.
-	QGridLayout* layout = new QGridLayout(rollout);
+	QVBoxLayout* layout = new QVBoxLayout(rollout);
 	layout->setContentsMargins(4,4,4,4);
-#ifndef Q_WS_MAC
-	layout->setHorizontalSpacing(0);
-	layout->setVerticalSpacing(2);
-#endif
-	layout->setColumnStretch(1, 1);
+	layout->setSpacing(4);
+
+	QGridLayout* gridlayout = new QGridLayout();
+	gridlayout->setContentsMargins(0,0,0,0);
+	gridlayout->setColumnStretch(1, 1);
 
 	// Distance parameter.
 	FloatParameterUI* distancePUI = new FloatParameterUI(this, PROPERTY_FIELD(SliceModifier::_distanceCtrl));
-	layout->addWidget(distancePUI->label(), 0, 0);
-	layout->addLayout(distancePUI->createFieldLayout(), 0, 1);
+	gridlayout->addWidget(distancePUI->label(), 0, 0);
+	gridlayout->addLayout(distancePUI->createFieldLayout(), 0, 1);
 
 	// Normal parameter.
 	for(int i = 0; i < 3; i++) {
@@ -356,27 +356,30 @@ void SliceModifierEditor::createUI(const RolloutInsertionParameters& rolloutPara
 		normalPUI->label()->setTextInteractionFlags(Qt::LinksAccessibleByMouse);
 		normalPUI->label()->setText(tr("<a href=\"%1\">%2</a>").arg(i).arg(normalPUI->label()->text()));
 		connect(normalPUI->label(), SIGNAL(linkActivated(const QString&)), this, SLOT(onXYZNormal(const QString&)));
-		layout->addWidget(normalPUI->label(), i+1, 0);
-		layout->addLayout(normalPUI->createFieldLayout(), i+1, 1);
+		gridlayout->addWidget(normalPUI->label(), i+1, 0);
+		gridlayout->addLayout(normalPUI->createFieldLayout(), i+1, 1);
 	}
 
 	// Slice width parameter.
 	FloatParameterUI* widthPUI = new FloatParameterUI(this, PROPERTY_FIELD(SliceModifier::_widthCtrl));
-	layout->addWidget(widthPUI->label(), 4, 0);
-	layout->addLayout(widthPUI->createFieldLayout(), 4, 1);
+	gridlayout->addWidget(widthPUI->label(), 4, 0);
+	gridlayout->addLayout(widthPUI->createFieldLayout(), 4, 1);
 	widthPUI->setMinValue(0);
+
+	layout->addLayout(gridlayout);
+	layout->addSpacing(8);
 
 	// Invert parameter.
 	BooleanParameterUI* invertPUI = new BooleanParameterUI(this, PROPERTY_FIELD(SliceModifier::_inverse));
-	layout->addWidget(invertPUI->checkBox(), 5, 0, 1, 2);
+	layout->addWidget(invertPUI->checkBox());
 
 	// Create selection parameter.
 	BooleanParameterUI* createSelectionPUI = new BooleanParameterUI(this, PROPERTY_FIELD(SliceModifier::_createSelection));
-	layout->addWidget(createSelectionPUI->checkBox(), 6, 0, 1, 2);
+	layout->addWidget(createSelectionPUI->checkBox());
 
 	// Apply to selection only parameter.
 	BooleanParameterUI* applyToSelectionPUI = new BooleanParameterUI(this, PROPERTY_FIELD(SliceModifier::_applyToSelection));
-	layout->addWidget(applyToSelectionPUI->checkBox(), 7, 0, 1, 2);
+	layout->addWidget(applyToSelectionPUI->checkBox());
 
 #if 0
 	// Add buttons for view alignment functions.
@@ -401,7 +404,8 @@ void SliceModifierEditor::createUI(const RolloutInsertionParameters& rolloutPara
 #endif
 
 	// Status label.
-	layout->addWidget(statusLabel(), 12, 0, 1, 2);
+	layout->addSpacing(12);
+	layout->addWidget(statusLabel());
 }
 
 /******************************************************************************

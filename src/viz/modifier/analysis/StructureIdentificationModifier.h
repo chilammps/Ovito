@@ -51,7 +51,7 @@ public:
 	public:
 
 		/// Constructor.
-		StructureIdentificationEngine(ParticleProperty* positions, const SimulationCellData simCell) :
+		StructureIdentificationEngine(ParticleProperty* positions, const SimulationCellData& simCell) :
 			_positions(positions), _simCell(simCell),
 			_structures(new ParticleProperty(positions->size(), ParticleProperty::StructureTypeProperty)) {}
 

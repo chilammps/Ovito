@@ -27,6 +27,7 @@
 #include <core/gui/properties/BooleanRadioButtonParameterUI.h>
 #include <core/utilities/concurrent/ParallelFor.h>
 #include <viz/util/TreeNeighborListBuilder.h>
+#include <viz/util/OnTheFlyNeighborListBuilder.h>
 
 #include "CommonNeighborAnalysisModifier.h"
 
@@ -48,7 +49,7 @@ SET_PROPERTY_FIELD_UNITS(CommonNeighborAnalysisModifier, _cutoff, WorldParameter
 * Constructs the modifier object.
 ******************************************************************************/
 CommonNeighborAnalysisModifier::CommonNeighborAnalysisModifier() :
-	_cutoff(0), _adaptiveMode(true)
+	_cutoff(3), _adaptiveMode(true)
 {
 	INIT_PROPERTY_FIELD(CommonNeighborAnalysisModifier::_cutoff);
 	INIT_PROPERTY_FIELD(CommonNeighborAnalysisModifier::_adaptiveMode);
@@ -69,6 +70,21 @@ CommonNeighborAnalysisModifier::CommonNeighborAnalysisModifier() :
 }
 
 /******************************************************************************
+* Is called when the value of a property of this object has changed.
+******************************************************************************/
+void CommonNeighborAnalysisModifier::propertyChanged(const PropertyFieldDescriptor& field)
+{
+	// Recompute results when the parameters have been changed.
+	if(autoUpdateEnabled()) {
+		if(field == PROPERTY_FIELD(CommonNeighborAnalysisModifier::_cutoff) ||
+			field == PROPERTY_FIELD(CommonNeighborAnalysisModifier::_adaptiveMode))
+			invalidateCachedResults();
+	}
+
+	StructureIdentificationModifier::propertyChanged(field);
+}
+
+/******************************************************************************
 * Creates and initializes a computation engine that will compute the modifier's results.
 ******************************************************************************/
 std::shared_ptr<AsynchronousParticleModifier::Engine> CommonNeighborAnalysisModifier::createEngine(TimePoint time)
@@ -83,7 +99,7 @@ std::shared_ptr<AsynchronousParticleModifier::Engine> CommonNeighborAnalysisModi
 	if(adaptiveMode())
 		return std::make_shared<AdaptiveCommonNeighborAnalysisEngine>(posProperty->storage(), simCell->data());
 	else
-		return std::make_shared<FixedCommonNeighborAnalysisEngine>(posProperty->storage(), simCell->data());
+		return std::make_shared<FixedCommonNeighborAnalysisEngine>(posProperty->storage(), simCell->data(), cutoff());
 }
 
 /******************************************************************************
@@ -104,7 +120,7 @@ void CommonNeighborAnalysisModifier::AdaptiveCommonNeighborAnalysisEngine::compu
 
 	// Perform analysis on each particle.
 	parallelFor(particleCount, futureInterface, [&neighborListBuilder, output](size_t index) {
-		output->setInt(index, determineStructure(neighborListBuilder, index));
+		output->setInt(index, determineStructureAdaptive(neighborListBuilder, index));
 	});
 }
 
@@ -116,15 +132,18 @@ void CommonNeighborAnalysisModifier::FixedCommonNeighborAnalysisEngine::compute(
 	size_t particleCount = positions()->size();
 	futureInterface.setProgressText(tr("Performing common neighbor analysis"));
 
+	// Prepare the neighbor list.
+	OnTheFlyNeighborListBuilder neighborListBuilder(_cutoff);
+	if(!neighborListBuilder.prepare(positions(), cell()) || futureInterface.isCanceled())
+		return;
+
 	// Create output storage.
 	ParticleProperty* output = structures();
 
-#if 0
 	// Perform analysis on each particle.
 	parallelFor(particleCount, futureInterface, [&neighborListBuilder, output](size_t index) {
-		output->setInt(index, determineStructure(neighborListBuilder, index));
+		output->setInt(index, determineStructureFixed(neighborListBuilder, index));
 	});
-#endif
 }
 
 /// Pair of neighbor atoms that form a bond (bit-wise storage).
@@ -263,9 +282,10 @@ static int calcMaxChainLength(CNAPairBond* neighborBonds, int numBonds)
 }
 
 /******************************************************************************
-* Determines the coordination structure of a single particle using the common neighbor analysis method.
+* Determines the coordination structure of a single particle using the
+* adaptive common neighbor analysis method.
 ******************************************************************************/
-CommonNeighborAnalysisModifier::StructureType CommonNeighborAnalysisModifier::determineStructure(TreeNeighborListBuilder& neighList, size_t particleIndex)
+CommonNeighborAnalysisModifier::StructureType CommonNeighborAnalysisModifier::determineStructureAdaptive(TreeNeighborListBuilder& neighList, size_t particleIndex)
 {
 	// Create neighbor list finder.
 	TreeNeighborListBuilder::Locator<CNA_MAX_PATTERN_NEIGHBORS> loc(neighList);
@@ -441,6 +461,134 @@ CommonNeighborAnalysisModifier::StructureType CommonNeighborAnalysisModifier::de
 }
 
 /******************************************************************************
+* Determines the coordination structure of a single particle using the
+* conventional common neighbor analysis method.
+******************************************************************************/
+CommonNeighborAnalysisModifier::StructureType CommonNeighborAnalysisModifier::determineStructureFixed(OnTheFlyNeighborListBuilder& neighList, size_t particleIndex)
+{
+	// Store neighbor vectors in a local array.
+	int numNeighbors = 0;
+	Vector3 neighborVectors[CNA_MAX_PATTERN_NEIGHBORS];
+	for(OnTheFlyNeighborListBuilder::iterator neighborIter(neighList, particleIndex); !neighborIter.atEnd(); neighborIter.next()) {
+		if(numNeighbors == CNA_MAX_PATTERN_NEIGHBORS) return OTHER;
+		neighborVectors[numNeighbors] = neighborIter.delta();
+		numNeighbors++;
+	}
+
+	if(numNeighbors == 12) { // Detect FCC and HCP atoms each having 12 NN.
+
+		// Compute bond bit-flag array.
+		NeighborBondArray neighborArray;
+		for(int ni1 = 0; ni1 < 12; ni1++) {
+			neighborArray.setNeighborBond(ni1, ni1, false);
+			for(int ni2 = ni1+1; ni2 < 12; ni2++)
+				neighborArray.setNeighborBond(ni1, ni2, (neighborVectors[ni1] - neighborVectors[ni2]).squaredLength() <= neighList.cutoffRadiusSquared());
+		}
+
+		int n421 = 0;
+		int n422 = 0;
+		int n555 = 0;
+		for(int ni = 0; ni < 12; ni++) {
+
+			// Determine number of neighbors the two atoms have in common.
+			unsigned int commonNeighbors;
+			int numCommonNeighbors = findCommonNeighbors(neighborArray, ni, commonNeighbors, 12);
+			if(numCommonNeighbors != 4 && numCommonNeighbors != 5)
+				return OTHER;
+
+			// Determine the number of bonds among the common neighbors.
+			CNAPairBond neighborBonds[CNA_MAX_PATTERN_NEIGHBORS*CNA_MAX_PATTERN_NEIGHBORS];
+			int numNeighborBonds = findNeighborBonds(neighborArray, commonNeighbors, 12, neighborBonds);
+			if(numNeighborBonds != 2 && numNeighborBonds != 5)
+				break;
+
+			// Determine the number of bonds in the longest continuous chain.
+			int maxChainLength = calcMaxChainLength(neighborBonds, numNeighborBonds);
+			if(numCommonNeighbors == 4 && numNeighborBonds == 2) {
+				if(maxChainLength == 1) n421++;
+				else if(maxChainLength == 2) n422++;
+				else return OTHER;
+			}
+			else if(numCommonNeighbors == 5 && numNeighborBonds == 5 && maxChainLength == 5) n555++;
+			else return OTHER;
+		}
+		if(n421 == 12) return FCC;
+		else if(n421 == 6 && n422 == 6) return HCP;
+		else if(n555 == 12) return ICO;
+	}
+	else if(numNeighbors == 14) { // Detect BCC atoms having 14 NN (in 1st and 2nd shell).
+
+		// Compute bond bit-flag array.
+		NeighborBondArray neighborArray;
+		for(int ni1 = 0; ni1 < 14; ni1++) {
+			neighborArray.setNeighborBond(ni1, ni1, false);
+			for(int ni2 = ni1+1; ni2 < 14; ni2++)
+				neighborArray.setNeighborBond(ni1, ni2, (neighborVectors[ni1] - neighborVectors[ni2]).squaredLength() <= neighList.cutoffRadiusSquared());
+		}
+
+		int n444 = 0;
+		int n666 = 0;
+		for(int ni = 0; ni < 14; ni++) {
+
+			// Determine number of neighbors the two atoms have in common.
+			unsigned int commonNeighbors;
+			int numCommonNeighbors = findCommonNeighbors(neighborArray, ni, commonNeighbors, 14);
+			if(numCommonNeighbors != 4 && numCommonNeighbors != 6)
+				return OTHER;
+
+			// Determine the number of bonds among the common neighbors.
+			CNAPairBond neighborBonds[CNA_MAX_PATTERN_NEIGHBORS*CNA_MAX_PATTERN_NEIGHBORS];
+			int numNeighborBonds = findNeighborBonds(neighborArray, commonNeighbors, 14, neighborBonds);
+			if(numNeighborBonds != 4 && numNeighborBonds != 6)
+				break;
+
+			// Determine the number of bonds in the longest continuous chain.
+			int maxChainLength = calcMaxChainLength(neighborBonds, numNeighborBonds);
+			if(numCommonNeighbors == 4 && numNeighborBonds == 4 && maxChainLength == 4) n444++;
+			else if(numCommonNeighbors == 6 && numNeighborBonds == 6 && maxChainLength == 6) n666++;
+			else return OTHER;
+		}
+		if(n666 == 8 && n444 == 6) return BCC;
+	}
+	else if(numNeighbors == 16) { // Detect DIA atoms having 16 NN. Detection according to http://arxiv.org/pdf/1202.5005.pdf
+
+		// Compute bond bit-flag array.
+		NeighborBondArray neighborArray;
+		for(int ni1 = 0; ni1 < numNeighbors; ni1++) {
+			neighborArray.setNeighborBond(ni1, ni1, false);
+			for(int ni2 = ni1+1; ni2 < numNeighbors; ni2++)
+				neighborArray.setNeighborBond(ni1, ni2, (neighborVectors[ni1] - neighborVectors[ni2]).squaredLength() <= neighList.cutoffRadiusSquared());
+		}
+
+		int n543 = 0;
+		int n663 = 0;
+		for(int ni = 0; ni < numNeighbors; ni++) {
+
+			// Determine number of neighbors the two atoms have in common.
+			unsigned int commonNeighbors;
+			int numCommonNeighbors = findCommonNeighbors(neighborArray, ni, commonNeighbors, numNeighbors);
+			if(numCommonNeighbors != 5 && numCommonNeighbors != 6)
+				return OTHER;
+
+			// Determine the number of bonds among the common neighbors.
+			CNAPairBond neighborBonds[CNA_MAX_PATTERN_NEIGHBORS*CNA_MAX_PATTERN_NEIGHBORS];
+			int numNeighborBonds = findNeighborBonds(neighborArray, commonNeighbors, numNeighbors, neighborBonds);
+			if(numNeighborBonds != 4 && numNeighborBonds != 6)
+				break;
+
+			// Determine the number of bonds in the longest continuous chain.
+			int maxChainLength = calcMaxChainLength(neighborBonds, numNeighborBonds);
+			if(numCommonNeighbors == 5 && numNeighborBonds == 4 && maxChainLength == 3) n543++;
+			else if(numCommonNeighbors == 6 && numNeighborBonds == 6 && maxChainLength == 3) n663++;
+			else return OTHER;
+		}
+		if(n543 == 12 && n663 == 4) return DIA;
+	}
+
+	return OTHER;
+}
+
+/******************************************************************************
 * Sets up the UI widgets of the editor.
 ******************************************************************************/
 void CommonNeighborAnalysisModifierEditor::createUI(const RolloutInsertionParameters& rolloutParams)
@@ -450,20 +598,18 @@ void CommonNeighborAnalysisModifierEditor::createUI(const RolloutInsertionParame
 
     // Create the rollout contents.
 	QVBoxLayout* layout1 = new QVBoxLayout(rollout);
-#ifndef Q_WS_MAC
 	layout1->setContentsMargins(4,4,4,4);
-	layout1->setSpacing(0);
-#endif
+	layout1->setSpacing(6);
 
 	BooleanRadioButtonParameterUI* adaptiveModeUI = new BooleanRadioButtonParameterUI(this, PROPERTY_FIELD(CommonNeighborAnalysisModifier::_adaptiveMode));
-	adaptiveModeUI->buttonTrue()->setText(tr("Adaptive (variable cutoff)"));
-	adaptiveModeUI->buttonFalse()->setText(tr("Conventional (fixed cutoff)"));
+	adaptiveModeUI->buttonTrue()->setText(tr("Adaptive CNA (variable cutoff)"));
+	adaptiveModeUI->buttonFalse()->setText(tr("Conventional CNA (fixed cutoff)"));
 	layout1->addWidget(adaptiveModeUI->buttonTrue());
 	layout1->addWidget(adaptiveModeUI->buttonFalse());
 
 	QGridLayout* gridlayout = new QGridLayout();
+	gridlayout->setContentsMargins(0,0,0,0);
 	gridlayout->setColumnStretch(2, 1);
-
 	gridlayout->setColumnMinimumWidth(0, 20);
 
 	// Cutoff parameter.

@@ -81,8 +81,7 @@ private:
 public:
 
 	//// Constructor that builds the binary search tree.
-	TreeNeighborListBuilder(int _numNeighbors) : numNeighbors(_numNeighbors), numLeafNodes(0)
-	{
+	TreeNeighborListBuilder(int _numNeighbors) : numNeighbors(_numNeighbors), numLeafNodes(0) {
 		bucketSize = numNeighbors * 2;
 		maxTreeDepth = 17;
 	}

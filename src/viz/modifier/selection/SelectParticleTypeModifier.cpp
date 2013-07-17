@@ -201,7 +201,7 @@ void SelectParticleTypeModifierEditor::createUI(const RolloutInsertionParameters
     // Create the rollout contents.
 	QVBoxLayout* layout = new QVBoxLayout(rollout);
 	layout->setContentsMargins(4,4,4,4);
-	layout->setSpacing(0);
+	layout->setSpacing(4);
 
 	propertyListBox = new ParticlePropertyComboBox();
 	layout->addWidget(new QLabel(tr("Property:"), rollout));
@@ -214,7 +214,7 @@ void SelectParticleTypeModifierEditor::createUI(const RolloutInsertionParameters
 	};
 	particleTypesBox = new MyListWidget();
 	particleTypesBox->setSelectionMode(QAbstractItemView::ExtendedSelection);
-	layout->addWidget(new QLabel(tr("Particle types:"), rollout));
+	layout->addWidget(new QLabel(tr("Types:"), rollout));
 	layout->addWidget(particleTypesBox);
 
 	// Update property list if another modifier has been loaded into the editor.
@@ -301,7 +301,7 @@ void SelectParticleTypeModifierEditor::onPropertySelected(int index)
 	SelectParticleTypeModifier* mod = static_object_cast<SelectParticleTypeModifier>(editObject());
 	if(!mod) return;
 
-	UndoManager::instance().beginCompoundOperation(tr("Select Input Property"));
+	UndoManager::instance().beginCompoundOperation(tr("Select property"));
 	mod->setSourceProperty(propertyListBox->currentProperty());
 	UndoManager::instance().endCompoundOperation();
 }
@@ -320,7 +320,7 @@ void SelectParticleTypeModifierEditor::onParticleTypeSelected(QListWidgetItem* i
 	else
 		types.remove(item->data(Qt::UserRole).toInt());
 
-	UndoManager::instance().beginCompoundOperation(tr("Select Particle Type"));
+	UndoManager::instance().beginCompoundOperation(tr("Select type"));
 	mod->setSelectedParticleTypes(types);
 	UndoManager::instance().endCompoundOperation();
 }

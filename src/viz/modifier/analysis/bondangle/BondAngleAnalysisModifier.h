@@ -63,7 +63,7 @@ public:
 	public:
 
 		/// Constructor.
-		BondAngleAnalysisEngine(ParticleProperty* positions, const SimulationCellData simCell) :
+		BondAngleAnalysisEngine(ParticleProperty* positions, const SimulationCellData& simCell) :
 			StructureIdentificationModifier::StructureIdentificationEngine(positions, simCell) {}
 
 		/// Computes the modifier's results and stores them in this object for later retrieval.

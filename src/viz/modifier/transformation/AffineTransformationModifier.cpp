@@ -42,9 +42,9 @@ DEFINE_PROPERTY_FIELD(AffineTransformationModifier, _applyToSimulationBox, "Appl
 DEFINE_PROPERTY_FIELD(AffineTransformationModifier, _destinationCell, "DestinationCell")
 DEFINE_PROPERTY_FIELD(AffineTransformationModifier, _relativeMode, "RelativeMode")
 SET_PROPERTY_FIELD_LABEL(AffineTransformationModifier, _transformationTM, "Transformation")
-SET_PROPERTY_FIELD_LABEL(AffineTransformationModifier, _applyToParticles, "Apply transformation to particles")
-SET_PROPERTY_FIELD_LABEL(AffineTransformationModifier, _toSelectionOnly, "Apply to selected particles only")
-SET_PROPERTY_FIELD_LABEL(AffineTransformationModifier, _applyToSimulationBox, "Apply transformation to simulation cell")
+SET_PROPERTY_FIELD_LABEL(AffineTransformationModifier, _applyToParticles, "Transform particles")
+SET_PROPERTY_FIELD_LABEL(AffineTransformationModifier, _toSelectionOnly, "Selected particles only")
+SET_PROPERTY_FIELD_LABEL(AffineTransformationModifier, _applyToSimulationBox, "Transform simulation cell")
 SET_PROPERTY_FIELD_LABEL(AffineTransformationModifier, _destinationCell, "Destination cell geometry")
 SET_PROPERTY_FIELD_LABEL(AffineTransformationModifier, _relativeMode, "Relative transformation")
 
@@ -142,10 +142,7 @@ void AffineTransformationModifierEditor::createUI(const RolloutInsertionParamete
 
     QGridLayout* layout = new QGridLayout(rollout);
 	layout->setContentsMargins(4,4,4,4);
-	layout->setHorizontalSpacing(0);
-#ifndef Q_WS_MAC
-	layout->setVerticalSpacing(0);
-#endif
+	layout->setSpacing(6);
 	layout->setColumnStretch(0, 5);
 	layout->setColumnStretch(1, 95);
 
@@ -171,6 +168,8 @@ void AffineTransformationModifierEditor::createUI(const RolloutInsertionParamete
 	rollout = createRollout(tr("Transformation"), rolloutParams.after(rollout));
 
 	QVBoxLayout* topLayout = new QVBoxLayout(rollout);
+	topLayout->setContentsMargins(8,8,8,8);
+	topLayout->setSpacing(4);
 
 	BooleanRadioButtonParameterUI* relativeModeUI = new BooleanRadioButtonParameterUI(this, PROPERTY_FIELD(AffineTransformationModifier::_relativeMode));
 
@@ -184,12 +183,14 @@ void AffineTransformationModifierEditor::createUI(const RolloutInsertionParamete
 	topLayout->addLayout(layout);
 
 	layout->addWidget(new QLabel(tr("Rotate/Scale/Shear:")), 0, 0, 1, 8);
-	for(int col=0; col<3; col++) {
+	for(int col = 0; col < 3; col++) {
 		layout->setColumnStretch(col*3 + 0, 1);
 		if(col < 2) layout->setColumnMinimumWidth(col*3 + 2, 4);
 		for(int row=0; row<4; row++) {
 			QLineEdit* lineEdit = new QLineEdit(rollout);
 			SpinnerWidget* spinner = new SpinnerWidget(rollout);
+			lineEdit->setEnabled(false);
+			spinner->setEnabled(false);
 			if(row < 3) {
 				elementSpinners[row][col] = spinner;
 				spinner->setProperty("column", col);
@@ -210,6 +211,8 @@ void AffineTransformationModifierEditor::createUI(const RolloutInsertionParamete
 			connect(spinner, SIGNAL(spinnerDragStart()), this, SLOT(onSpinnerDragStart()));
 			connect(spinner, SIGNAL(spinnerDragStop()), this, SLOT(onSpinnerDragStop()));
 			connect(spinner, SIGNAL(spinnerDragAbort()), this, SLOT(onSpinnerDragAbort()));
+			connect(relativeModeUI->buttonTrue(), SIGNAL(toggled(bool)), spinner, SLOT(setEnabled(bool)));
+			connect(relativeModeUI->buttonTrue(), SIGNAL(toggled(bool)), lineEdit, SLOT(setEnabled(bool)));
 		}
 	}
 	layout->addWidget(new QLabel(tr("Translation:")), 4, 0, 1, 8);
@@ -233,16 +236,20 @@ void AffineTransformationModifierEditor::createUI(const RolloutInsertionParamete
 		layout->addWidget(new QLabel(tr("Cell vector %1:").arg(v+1)), v*2, 0, 1, 8);
 		for(size_t r = 0; r < 3; r++) {
 			destinationCellUI = new AffineTransformationParameterUI(this, PROPERTY_FIELD(AffineTransformationModifier::_destinationCell), r, v);
+			destinationCellUI->setEnabled(false);
 			layout->addWidget(destinationCellUI->textBox(), v*2+1, r*3+0);
 			layout->addWidget(destinationCellUI->spinner(), v*2+1, r*3+1);
+			connect(relativeModeUI->buttonFalse(), SIGNAL(toggled(bool)), destinationCellUI, SLOT(setEnabled(bool)));
 		}
 	}
 
 	layout->addWidget(new QLabel(tr("Cell origin:")), 6, 0, 1, 8);
 	for(size_t r = 0; r < 3; r++) {
 		destinationCellUI = new AffineTransformationParameterUI(this, PROPERTY_FIELD(AffineTransformationModifier::_destinationCell), r, 3);
+		destinationCellUI->setEnabled(false);
 		layout->addWidget(destinationCellUI->textBox(), 7, r*3+0);
 		layout->addWidget(destinationCellUI->spinner(), 7, r*3+1);
+		connect(relativeModeUI->buttonFalse(), SIGNAL(toggled(bool)), destinationCellUI, SLOT(setEnabled(bool)));
 	}
 
 	// Update spinner values when a new object has been loaded into the editor.
