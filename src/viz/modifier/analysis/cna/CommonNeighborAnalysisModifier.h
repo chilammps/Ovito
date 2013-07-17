@@ -57,13 +57,26 @@ public:
 		NUM_STRUCTURE_TYPES 	//< This just counts the number of defined structure types.
 	};
 
-	/// Computes the modifier's results.
-	class CommonNeighborAnalysisEngine : public StructureIdentificationModifier::StructureIdentificationEngine
+	/// Analysis engine that performs the conventional common neighbor analysis.
+	class FixedCommonNeighborAnalysisEngine : public StructureIdentificationModifier::StructureIdentificationEngine
 	{
 	public:
 
 		/// Constructor.
-		CommonNeighborAnalysisEngine(ParticleProperty* positions, const SimulationCellData simCell) :
+		FixedCommonNeighborAnalysisEngine(ParticleProperty* positions, const SimulationCellData simCell) :
+			StructureIdentificationModifier::StructureIdentificationEngine(positions, simCell) {}
+
+		/// Computes the modifier's results and stores them in this object for later retrieval.
+		virtual void compute(FutureInterfaceBase& futureInterface) override;
+	};
+
+	/// Analysis engine that performs the adaptive common neighbor analysis.
+	class AdaptiveCommonNeighborAnalysisEngine : public StructureIdentificationModifier::StructureIdentificationEngine
+	{
+	public:
+
+		/// Constructor.
+		AdaptiveCommonNeighborAnalysisEngine(ParticleProperty* positions, const SimulationCellData simCell) :
 			StructureIdentificationModifier::StructureIdentificationEngine(positions, simCell) {}
 
 		/// Computes the modifier's results and stores them in this object for later retrieval.
@@ -75,6 +88,28 @@ public:
 	/// Default constructor.
 	Q_INVOKABLE CommonNeighborAnalysisModifier();
 
+	/// \brief Returns the cutoff radius used in the conventional common neighbor analysis.
+	/// \return The cutoff radius in world units.
+	/// \sa setCutoff()
+	FloatType cutoff() const { return _cutoff; }
+
+	/// \brief Sets the cutoff radius used in the conventional common neighbor analysis.
+	/// \param newCutoff The new cutoff radius in world units.
+	/// \undoable
+	/// \sa cutoff()
+	void setCutoff(FloatType newCutoff) { _cutoff = newCutoff; }
+
+	/// \brief Returns true if the cutoff radius is determined adaptively for each particle.
+	bool adaptiveMode() const { return _adaptiveMode; }
+
+	/// \brief Controls whether the cutoff radius should be determined adaptively for each particle.
+	void setAdaptiveMode(bool adaptive) { _adaptiveMode = adaptive; }
+
+public:
+
+	Q_PROPERTY(FloatType cutoff READ cutoff WRITE setCutoff)
+	Q_PROPERTY(bool adaptiveMode READ adaptiveMode WRITE setAdaptiveMode)
+
 protected:
 
 	/// Creates and initializes a computation engine that will compute the modifier's results.
@@ -83,6 +118,12 @@ protected:
 	/// Determines the coordination structure of a single particle using the common neighbor analysis method.
 	static StructureType determineStructure(TreeNeighborListBuilder& neighList, size_t particleIndex);
 
+	/// The cutoff radius for the CNA.
+	PropertyField<FloatType> _cutoff;
+
+	/// Controls whether the cutoff radius is determined adaptively for each particle.
+	PropertyField<bool> _adaptiveMode;
+
 private:
 
 	Q_OBJECT
@@ -90,6 +131,9 @@ private:
 
 	Q_CLASSINFO("DisplayName", "Common Neighbor Analysis");
 	Q_CLASSINFO("ModifierCategory", "Analysis");
+
+	DECLARE_PROPERTY_FIELD(_cutoff);
+	DECLARE_PROPERTY_FIELD(_adaptiveMode);
 };
 
 /**
@@ -106,6 +150,14 @@ protected:
 
 	/// Creates the user interface controls for the editor.
 	virtual void createUI(const RolloutInsertionParameters& rolloutParams) override;
+
+protected Q_SLOTS:
+
+	/// Stores the current cutoff radius in the application settings
+	/// so it can be used as default value for new modifiers in the future.
+	void memorizeCutoff();
+
+private:
 
 	Q_OBJECT
 	OVITO_OBJECT

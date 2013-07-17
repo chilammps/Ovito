@@ -24,6 +24,7 @@
 #include <core/viewport/ViewportManager.h>
 #include <core/animation/AnimManager.h>
 #include <core/gui/properties/BooleanParameterUI.h>
+#include <core/gui/properties/BooleanRadioButtonParameterUI.h>
 #include <core/utilities/concurrent/ParallelFor.h>
 #include <viz/util/TreeNeighborListBuilder.h>
 
@@ -34,6 +35,11 @@ namespace Viz {
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Viz, CommonNeighborAnalysisModifier, StructureIdentificationModifier)
 IMPLEMENT_OVITO_OBJECT(Viz, CommonNeighborAnalysisModifierEditor, ParticleModifierEditor)
 SET_OVITO_OBJECT_EDITOR(CommonNeighborAnalysisModifier, CommonNeighborAnalysisModifierEditor)
+DEFINE_PROPERTY_FIELD(CommonNeighborAnalysisModifier, _cutoff, "Cutoff")
+DEFINE_PROPERTY_FIELD(CommonNeighborAnalysisModifier, _adaptiveMode, "AdaptiveMode")
+SET_PROPERTY_FIELD_LABEL(CommonNeighborAnalysisModifier, _cutoff, "Cutoff radius")
+SET_PROPERTY_FIELD_LABEL(CommonNeighborAnalysisModifier, _adaptiveMode, "Adaptive CNA")
+SET_PROPERTY_FIELD_UNITS(CommonNeighborAnalysisModifier, _cutoff, WorldParameterUnit)
 
 // The maximum number of neighbor atoms taken into account for the common neighbor analysis.
 #define CNA_MAX_PATTERN_NEIGHBORS 16
@@ -41,8 +47,12 @@ SET_OVITO_OBJECT_EDITOR(CommonNeighborAnalysisModifier, CommonNeighborAnalysisMo
 /******************************************************************************
 * Constructs the modifier object.
 ******************************************************************************/
-CommonNeighborAnalysisModifier::CommonNeighborAnalysisModifier()
+CommonNeighborAnalysisModifier::CommonNeighborAnalysisModifier() :
+	_cutoff(0), _adaptiveMode(true)
 {
+	INIT_PROPERTY_FIELD(CommonNeighborAnalysisModifier::_cutoff);
+	INIT_PROPERTY_FIELD(CommonNeighborAnalysisModifier::_adaptiveMode);
+
 	// Create the structure types.
 	createStructureType(OTHER, tr("Other"), Color(0.95f, 0.95f, 0.95f));
 	createStructureType(FCC, tr("FCC"), Color(0.4f, 1.0f, 0.4f));
@@ -50,6 +60,12 @@ CommonNeighborAnalysisModifier::CommonNeighborAnalysisModifier()
 	createStructureType(BCC, tr("BCC"), Color(0.4f, 0.4f, 1.0f));
 	createStructureType(ICO, tr("ICO"), Color(0.95f, 0.8f, 0.2f));
 	createStructureType(DIA, tr("DIA"), Color(0.2f, 0.95f, 0.8f));
+
+	// Load the default cutoff radius stored in the application settings.
+	QSettings settings;
+	settings.beginGroup("viz/cna");
+	setCutoff(settings.value("DefaultCutoff", 0.0).value<FloatType>());
+	settings.endGroup();
 }
 
 /******************************************************************************
@@ -64,16 +80,19 @@ std::shared_ptr<AsynchronousParticleModifier::Engine> CommonNeighborAnalysisModi
 	ParticlePropertyObject* posProperty = expectStandardProperty(ParticleProperty::PositionProperty);
 	SimulationCell* simCell = expectSimulationCell();
 
-	return std::make_shared<CommonNeighborAnalysisEngine>(posProperty->storage(), simCell->data());
+	if(adaptiveMode())
+		return std::make_shared<AdaptiveCommonNeighborAnalysisEngine>(posProperty->storage(), simCell->data());
+	else
+		return std::make_shared<FixedCommonNeighborAnalysisEngine>(posProperty->storage(), simCell->data());
 }
 
 /******************************************************************************
 * Performs the actual analysis. This method is executed in a worker thread.
 ******************************************************************************/
-void CommonNeighborAnalysisModifier::CommonNeighborAnalysisEngine::compute(FutureInterfaceBase& futureInterface)
+void CommonNeighborAnalysisModifier::AdaptiveCommonNeighborAnalysisEngine::compute(FutureInterfaceBase& futureInterface)
 {
 	size_t particleCount = positions()->size();
-	futureInterface.setProgressText(tr("Performing common neighbor analysis"));
+	futureInterface.setProgressText(tr("Performing adaptive common neighbor analysis"));
 
 	// Prepare the neighbor list.
 	TreeNeighborListBuilder neighborListBuilder(14);
@@ -87,6 +106,25 @@ void CommonNeighborAnalysisModifier::CommonNeighborAnalysisEngine::compute(Futur
 	parallelFor(particleCount, futureInterface, [&neighborListBuilder, output](size_t index) {
 		output->setInt(index, determineStructure(neighborListBuilder, index));
 	});
+}
+
+/******************************************************************************
+* Performs the actual analysis. This method is executed in a worker thread.
+******************************************************************************/
+void CommonNeighborAnalysisModifier::FixedCommonNeighborAnalysisEngine::compute(FutureInterfaceBase& futureInterface)
+{
+	size_t particleCount = positions()->size();
+	futureInterface.setProgressText(tr("Performing common neighbor analysis"));
+
+	// Create output storage.
+	ParticleProperty* output = structures();
+
+#if 0
+	// Perform analysis on each particle.
+	parallelFor(particleCount, futureInterface, [&neighborListBuilder, output](size_t index) {
+		output->setInt(index, determineStructure(neighborListBuilder, index));
+	});
+#endif
 }
 
 /// Pair of neighbor atoms that form a bond (bit-wise storage).
@@ -417,6 +455,35 @@ void CommonNeighborAnalysisModifierEditor::createUI(const RolloutInsertionParame
 	layout1->setSpacing(0);
 #endif
 
+	BooleanRadioButtonParameterUI* adaptiveModeUI = new BooleanRadioButtonParameterUI(this, PROPERTY_FIELD(CommonNeighborAnalysisModifier::_adaptiveMode));
+	adaptiveModeUI->buttonTrue()->setText(tr("Adaptive (variable cutoff)"));
+	adaptiveModeUI->buttonFalse()->setText(tr("Conventional (fixed cutoff)"));
+	layout1->addWidget(adaptiveModeUI->buttonTrue());
+	layout1->addWidget(adaptiveModeUI->buttonFalse());
+
+	QGridLayout* gridlayout = new QGridLayout();
+	gridlayout->setColumnStretch(2, 1);
+
+	gridlayout->setColumnMinimumWidth(0, 20);
+
+	// Cutoff parameter.
+	FloatParameterUI* cutoffRadiusPUI = new FloatParameterUI(this, PROPERTY_FIELD(CommonNeighborAnalysisModifier::_cutoff));
+	gridlayout->addWidget(cutoffRadiusPUI->label(), 0, 1);
+	gridlayout->addLayout(cutoffRadiusPUI->createFieldLayout(), 0, 2);
+	cutoffRadiusPUI->setMinValue(0);
+	connect(cutoffRadiusPUI->spinner(), SIGNAL(spinnerValueChanged()), this, SLOT(memorizeCutoff()));
+
+#if 0
+	CutoffPresetsUI* cutoffPresetsPUI = new CutoffPresetsUI(this, PROPERTY_FIELD_DESCRIPTOR(CommonNeighborAnalysisModifier, _neighborCutoff));
+	gridlayout->addWidget(cutoffPresetsPUI->comboBox(), 1, 1, 1, 2);
+#endif
+	layout1->addLayout(gridlayout);
+
+	connect(adaptiveModeUI->buttonFalse(), SIGNAL(toggled(bool)), cutoffRadiusPUI, SLOT(setEnabled(bool)));
+//	connect(adaptiveModeUI->buttonFalse(), SIGNAL(toggled(bool)), cutoffPresetsPUI, SLOT(setEnabled(bool)));
+	cutoffRadiusPUI->setEnabled(false);
+//	cutoffPresetsPUI->setEnabled(false);
+
 	BooleanParameterUI* autoUpdateUI = new BooleanParameterUI(this, PROPERTY_FIELD(AsynchronousParticleModifier::_autoUpdate));
 	layout1->addWidget(autoUpdateUI->checkBox());
 
@@ -431,5 +498,19 @@ void CommonNeighborAnalysisModifierEditor::createUI(const RolloutInsertionParame
 	layout1->addWidget(new QLabel(tr("(Double-click to change colors)")));
 }
 
+/******************************************************************************
+* Stores the current cutoff radius in the application settings
+* so it can be used as default value for new modifiers in the future.
+******************************************************************************/
+void CommonNeighborAnalysisModifierEditor::memorizeCutoff()
+{
+	if(!editObject()) return;
+	CommonNeighborAnalysisModifier* modifier = static_object_cast<CommonNeighborAnalysisModifier>(editObject());
+
+	QSettings settings;
+	settings.beginGroup("viz/cna");
+	settings.setValue("DefaultCutoff", modifier->cutoff());
+	settings.endGroup();
+}
 
 };	// End of namespace
