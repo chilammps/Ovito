@@ -67,6 +67,58 @@ bool parallelFor(size_t loopCount, FutureInterfaceBase& futureInterface, Functio
 	return !futureInterface.isCanceled();
 }
 
+template<class Function>
+void parallelFor(size_t loopCount, Function kernel)
+{
+	std::vector<std::thread> workers;
+	int num_threads = std::max(1, QThread::idealThreadCount());
+	size_t chunkSize = loopCount / num_threads;
+	size_t startIndex = 0;
+	size_t endIndex = chunkSize;
+	for(int t = 0; t < num_threads; t++) {
+		if(t == num_threads - 1) {
+			endIndex += loopCount % num_threads;
+			for(size_t i = startIndex; i < endIndex; ++i) {
+				kernel(i);
+			}
+		}
+		else {
+			workers.push_back(std::thread([&kernel, startIndex, endIndex]() {
+				for(size_t i = startIndex; i < endIndex; ++i) {
+					kernel(i);
+				}
+			}));
+		}
+		startIndex = endIndex;
+		endIndex += chunkSize;
+	}
+
+	for(auto& t : workers)
+		t.join();
+}
+
+template<class Function>
+void parallelForChunks(size_t loopCount, Function kernel)
+{
+	std::vector<std::thread> workers;
+	int num_threads = std::max(1, QThread::idealThreadCount());
+	size_t chunkSize = loopCount / num_threads;
+	size_t startIndex = 0;
+	for(int t = 0; t < num_threads; t++) {
+		if(t == num_threads - 1) {
+			chunkSize += loopCount % num_threads;
+			kernel(startIndex, chunkSize);
+		}
+		else {
+			workers.push_back(std::thread([&kernel, startIndex, chunkSize]() {
+				kernel(startIndex, chunkSize);
+			}));
+		}
+		startIndex += chunkSize;
+	}
+	for(auto& t : workers)
+		t.join();
+}
 };
 
 #endif // __OVITO_PARALLEL_FOR_H

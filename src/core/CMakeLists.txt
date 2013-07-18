@@ -123,6 +123,7 @@ SET(OVITO_CORE_SOURCE_FILES
 	rendering/viewport/ViewportParticleGeometryBuffer.cpp
 	rendering/viewport/ViewportTextGeometryBuffer.cpp
 	rendering/viewport/ViewportImageGeometryBuffer.cpp
+	rendering/viewport/ViewportArrowGeometryBuffer.cpp
 	rendering/standard/StandardSceneRenderer.cpp
 	rendering/standard/StandardSceneRendererEditor.cpp
 	rendering/RenderSettings.cpp

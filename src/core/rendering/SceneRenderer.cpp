@@ -28,6 +28,7 @@
 #include "moc_ParticleGeometryBuffer.cpp"
 #include "moc_TextGeometryBuffer.cpp"
 #include "moc_ImageGeometryBuffer.cpp"
+#include "moc_ArrowGeometryBuffer.cpp"
 
 namespace Ovito {
 
@@ -36,6 +37,7 @@ IMPLEMENT_OVITO_OBJECT(Core, LineGeometryBuffer, OvitoObject);
 IMPLEMENT_OVITO_OBJECT(Core, ParticleGeometryBuffer, OvitoObject);
 IMPLEMENT_OVITO_OBJECT(Core, TextGeometryBuffer, OvitoObject);
 IMPLEMENT_OVITO_OBJECT(Core, ImageGeometryBuffer, OvitoObject);
+IMPLEMENT_OVITO_OBJECT(Core, ArrowGeometryBuffer, OvitoObject);
 
 /******************************************************************************
 * Constructor.

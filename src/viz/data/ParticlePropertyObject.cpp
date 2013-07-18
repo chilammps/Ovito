@@ -23,6 +23,7 @@
 #include "ParticlePropertyObject.h"
 #include "ParticleTypeProperty.h"
 #include "ParticleDisplay.h"
+#include "VectorDisplay.h"
 
 namespace Viz {
 
@@ -70,6 +71,8 @@ OORef<ParticlePropertyObject> ParticlePropertyObject::create(ParticleProperty* s
 
 	if(storage->type() == ParticleProperty::PositionProperty)
 		propertyObj->setDisplayObject(new ParticleDisplay());
+	else if(storage->type() == ParticleProperty::DisplacementProperty)
+		propertyObj->setDisplayObject(new VectorDisplay());
 
 	return propertyObj;
 }

@@ -24,6 +24,7 @@
 #include <core/dataset/importexport/LinkedFileObject.h>
 #include <core/gui/properties/BooleanParameterUI.h>
 #include <core/gui/properties/FilenameParameterUI.h>
+#include <core/utilities/concurrent/ParallelFor.h>
 #include "CalculateDisplacementsModifier.h"
 
 namespace Viz {
@@ -104,13 +105,59 @@ ObjectStatus CalculateDisplacementsModifier::modifyParticles(TimePoint time, Tim
 	// Get the current positions.
 	ParticlePropertyObject* posProperty = expectStandardProperty(ParticleProperty::PositionProperty);
 
-	// Deformed and reference configuration must contain the same number of particles.
-	if(posProperty->size() != refPosProperty->size()) {
-		if(refState.status().type() != ObjectStatus::Pending)
-			throw Exception(tr("Cannot calculate displacement vectors. Numbers of particles in reference configuration and current configuration do not match."));
-		else
-			return ObjectStatus(ObjectStatus::Pending, QString(), tr("Waiting for input data to become ready..."));
+	// Build particle-to-particle index map.
+	std::vector<size_t> indexToIndexMap(inputParticleCount());
+	ParticlePropertyObject* identifierProperty = inputStandardProperty(ParticleProperty::IdentifierProperty);
+	ParticlePropertyObject* refIdentifierProperty = nullptr;
+	for(const auto& o : refState.objects()) {
+		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o.get());
+		if(property && property->type() == ParticleProperty::IdentifierProperty) {
+			refIdentifierProperty = property;
+			break;
+		}
 	}
+	if(identifierProperty && refIdentifierProperty) {
+
+		// Build map of particle identifiers in reference configuration.
+		std::map<int, size_t> refMap;
+		size_t index = 0;
+		const int* id = refIdentifierProperty->constDataInt();
+		const int* id_end = id + refIdentifierProperty->size();
+		for(; id != id_end; ++id, ++index) {
+			if(refMap.insert(std::make_pair(*id, index)).second == false)
+				throw Exception(tr("Particles with the same identifier detected in reference configuration."));
+		}
+
+		// Check for duplicate identifiers in current configuration.
+		std::vector<size_t> idSet(identifierProperty->constDataInt(), identifierProperty->constDataInt() + identifierProperty->size());
+		std::sort(idSet.begin(), idSet.end());
+		if(std::adjacent_find(idSet.begin(), idSet.end()) != idSet.end())
+			throw Exception(tr("Particles with the same identifier detected in input configuration."));
+
+		// Build index map.
+		index = 0;
+		id = identifierProperty->constDataInt();
+		for(auto& mappedIndex : indexToIndexMap) {
+			auto iter = refMap.find(*id);
+			if(iter == refMap.end())
+				throw Exception(tr("Particle id %i not found in reference configuration.").arg(*id));
+			mappedIndex = iter->second;
+			index++;
+			++id;
+		}
+	}
+	else {
+		// Deformed and reference configuration must contain the same number of particles.
+		if(posProperty->size() != refPosProperty->size()) {
+			if(refState.status().type() != ObjectStatus::Pending)
+				throw Exception(tr("Cannot calculate displacement vectors. Numbers of particles in reference configuration and current configuration do not match."));
+			else
+				return ObjectStatus(ObjectStatus::Pending, QString(), tr("Waiting for input data to become ready..."));
+		}
+		// When particle identifiers are not available, use trivial 1-to-1 mapping.
+		std::iota(indexToIndexMap.begin(), indexToIndexMap.end(), size_t(0));
+	}
+
 
 	// Get simulation cells.
 	SimulationCell* inputCell = expectSimulationCell();
@@ -118,6 +165,7 @@ ObjectStatus CalculateDisplacementsModifier::modifyParticles(TimePoint time, Tim
 	if(!refCell)
 		throw Exception(tr("Reference configuration does not contain simulation cell info."));
 
+#if 0
 	// If enabled, feed particle positions from reference configuration into geometry pipeline.
 	ParticlePropertyObject* outputPosProperty = nullptr;
 	if(referenceShown()) {
@@ -126,10 +174,10 @@ ObjectStatus CalculateDisplacementsModifier::modifyParticles(TimePoint time, Tim
 		outputPosProperty->replaceStorage(refPosProperty->storage());
 		outputSimulationCell()->setCellMatrix(refCell->cellMatrix());
 	}
+#endif
 
 	// Create the displacement property.
 	ParticlePropertyObject* displacementProperty = outputStandardProperty(ParticleProperty::DisplacementProperty);
-	OVITO_ASSERT(displacementProperty->size() == refPosProperty->size());
 	OVITO_ASSERT(displacementProperty->size() == posProperty->size());
 
 	// Get simulation cell info.
@@ -145,6 +193,7 @@ ObjectStatus CalculateDisplacementsModifier::modifyParticles(TimePoint time, Tim
 		simCell = inputCell->cellMatrix();
 	}
 
+	// Compute inverse cell transformation.
 	AffineTransformation simCellInv;
 	AffineTransformation simCellRefInv;
 	if(eliminateCellDeformation()) {
@@ -155,39 +204,54 @@ ObjectStatus CalculateDisplacementsModifier::modifyParticles(TimePoint time, Tim
 		simCellRefInv = simCellRef.inverse();
 	}
 
+	// Compute displacement vectors.
+	const bool unwrap = !assumeUnwrappedCoordinates();
 	const Point3* u0 = refPosProperty->constDataPoint3();
-	const Point3* u = posProperty->constDataPoint3();
-	Vector3* d = displacementProperty->dataVector3();
-	Vector3* d_end = d + displacementProperty->size();
-	for(; d != d_end; ++d, ++u, ++u0) {
-		if(eliminateCellDeformation()) {
-			Point3 ru = simCellInv * (*u);
-			Point3 ru0 = simCellRefInv * (*u0);
-			Vector3 delta = ru - ru0;
-			if(!assumeUnwrappedCoordinates()) {
-				for(int k = 0; k < 3; k++) {
-					if(!pbc[k]) continue;
-					if(delta[k] > 0.5) delta[k] -= 1.0;
-					else if(delta[k] < -0.5) delta[k] += 1.0;
+	const Point3* u_begin = posProperty->constDataPoint3();
+	Vector3* d_begin = displacementProperty->dataVector3();
+	auto index_begin = indexToIndexMap.begin();
+	if(eliminateCellDeformation()) {
+		parallelForChunks(displacementProperty->size(), [d_begin, u_begin, index_begin, u0, unwrap, pbc, simCellRef, simCellInv, simCellRefInv] (size_t startIndex, size_t count) {
+			Vector3* d = d_begin + startIndex;
+			const Point3* u = u_begin + startIndex;
+			auto index = index_begin + startIndex;
+			for(; count; --count, ++d, ++u, ++index) {
+				Point3 ru = simCellInv * (*u);
+				Point3 ru0 = simCellRefInv * u0[*index];
+				Vector3 delta = ru - ru0;
+				if(unwrap) {
+					for(int k = 0; k < 3; k++) {
+						if(!pbc[k]) continue;
+						if(delta[k] > 0.5) delta[k] -= 1.0;
+						else if(delta[k] < -0.5) delta[k] += 1.0;
+					}
+				}
+				*d = simCellRef * delta;
+			}
+		});
+	}
+	else {
+		parallelForChunks(displacementProperty->size(), [d_begin, u_begin, index_begin, u0, unwrap, pbc, simCellRef, simCellInv, simCellRefInv] (size_t startIndex, size_t count) {
+			Vector3* d = d_begin + startIndex;
+			const Point3* u = u_begin + startIndex;
+			auto index = index_begin + startIndex;
+			for(; count; --count, ++d, ++u, ++index) {
+				*d = *u - u0[*index];
+				if(unwrap) {
+					for(int k = 0; k < 3; k++) {
+						if(!pbc[k]) continue;
+						if((*d + simCellRef.column(k)).squaredLength() < d->squaredLength())
+							*d += simCellRef.column(k);
+						else if((*d - simCellRef.column(k)).squaredLength() < d->squaredLength())
+							*d -= simCellRef.column(k);
+					}
 				}
 			}
-			*d = simCellRef * delta;
-		}
-		else {
-			*d = *u - *u0;
-			if(!assumeUnwrappedCoordinates()) {
-				for(int k = 0; k < 3; k++) {
-					if(!pbc[k]) continue;
-					if((*d + simCellRef.column(k)).squaredLength() < d->squaredLength())
-						*d += simCellRef.column(k);
-					else if((*d - simCellRef.column(k)).squaredLength() < d->squaredLength())
-						*d -= simCellRef.column(k);
-				}
-			}
-		}
-		if(referenceShown()) {
-			*d = -(*d);
-		}
+		});
+	}
+	if(referenceShown()) {
+		// Flip all displacement vectors.
+		std::for_each(displacementProperty->dataVector3(), displacementProperty->dataVector3() + displacementProperty->size(), [](Vector3& d) { d = -d; });
 	}
 	displacementProperty->changed();
 
@@ -215,8 +279,10 @@ void CalculateDisplacementsModifierEditor::createUI(const RolloutInsertionParame
 	BooleanParameterUI* assumeUnwrappedUI = new BooleanParameterUI(this, PROPERTY_FIELD(CalculateDisplacementsModifier::_assumeUnwrappedCoordinates));
 	layout->addWidget(assumeUnwrappedUI->checkBox());
 
+#if 0
 	BooleanParameterUI* showReferenceUI = new BooleanParameterUI(this, PROPERTY_FIELD(CalculateDisplacementsModifier::_referenceShown));
 	layout->addWidget(showReferenceUI->checkBox());
+#endif
 
 	// Status label.
 	layout->addSpacing(6);

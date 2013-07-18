@@ -33,6 +33,7 @@
 #include "ViewportParticleGeometryBuffer.h"
 #include "ViewportTextGeometryBuffer.h"
 #include "ViewportImageGeometryBuffer.h"
+#include "ViewportArrowGeometryBuffer.h"
 
 #include <QOpenGLFunctions_3_0>
 #include <QOpenGLFunctions_3_2_Core>
@@ -91,6 +92,11 @@ public:
 	/// Requests a new image geometry buffer from the renderer.
 	virtual OORef<ImageGeometryBuffer> createImageGeometryBuffer() override {
 		return new ViewportImageGeometryBuffer(this);
+	}
+
+	/// Requests a new arrow geometry buffer from the renderer.
+	virtual OORef<ArrowGeometryBuffer> createArrowGeometryBuffer(ArrowGeometryBuffer::ShadingMode shadingMode = ArrowGeometryBuffer::NormalShading, ArrowGeometryBuffer::RenderingQuality renderingQuality = ArrowGeometryBuffer::MediumQuality) override {
+		return new ViewportArrowGeometryBuffer(this, shadingMode, renderingQuality);
 	}
 
 	/// Returns whether this renderer is rendering an interactive viewport.

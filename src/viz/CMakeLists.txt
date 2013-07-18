@@ -27,6 +27,7 @@ SET(OVITO_VIZ_SOURCE_FILES
 	data/ParticleDisplay.cpp
 	data/ParticleType.cpp
 	data/ParticleTypeProperty.cpp
+	data/VectorDisplay.cpp
 	modifier/ParticleModifier.cpp
 	modifier/AsynchronousParticleModifier.cpp
 	modifier/coloring/AssignColorModifier.cpp
