@@ -317,7 +317,7 @@ QString LinkedFileObject::objectTitle()
 			filename = sourceUrl().toString();
 	}
 	if(importer())
-		return QString("%1: %2").arg(importer()->objectTitle()).arg(filename);
+		return QString("%2 [%1]").arg(importer()->objectTitle()).arg(filename);
 	return SceneObject::objectTitle();
 }
 

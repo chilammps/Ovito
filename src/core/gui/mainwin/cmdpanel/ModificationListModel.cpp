@@ -140,7 +140,7 @@ void ModificationListModel::refreshList()
 			if(modObj) {
 
 				if(!modObj->modifierApplications().empty())
-					items.push_back(new ModificationListItem(nullptr, false, tr("Modifiers")));
+					items.push_back(new ModificationListItem(nullptr, false, tr("Modifications")));
 
 				hiddenItems.push_back(new ModificationListItem(modObj));
 

@@ -50,7 +50,7 @@ ModifyCommandPage::ModifyCommandPage()
 	class ModifierStackListView : public QListView {
 	public:
 		ModifierStackListView(QWidget* parent) : QListView(parent) {}
-		virtual QSize sizeHint() const { return QSize(256, 130); }
+		virtual QSize sizeHint() const { return QSize(256, 240); }
 	};
 
 	QSplitter* splitter = new QSplitter(Qt::Vertical);
@@ -93,15 +93,12 @@ ModifyCommandPage::ModifyCommandPage()
 	connect(moveModifierDownAction, SIGNAL(triggered(bool)), this, SLOT(onModifierMoveDown()));
 	editToolbar->addAction(moveModifierDownAction);
 
-	editToolbar->addSeparator();
-
 	QAction* toggleModifierStateAction = ActionManager::instance().createCommandAction(ACTION_MODIFIER_TOGGLE_STATE, tr("Enable/Disable Modifier"));
 	toggleModifierStateAction->setCheckable(true);
 	QIcon toggleStateActionIcon(QString(":/core/actions/modify/modifier_enabled_large.png"));
 	toggleStateActionIcon.addFile(QString(":/core/actions/modify/modifier_disabled_large.png"), QSize(), QIcon::Normal, QIcon::On);
 	toggleModifierStateAction->setIcon(toggleStateActionIcon);
 	connect(toggleModifierStateAction, SIGNAL(triggered(bool)), this, SLOT(onModifierToggleState(bool)));
-	editToolbar->addAction(toggleModifierStateAction);
 
 	layout->addWidget(splitter);
 	layout->addSpacing(4);

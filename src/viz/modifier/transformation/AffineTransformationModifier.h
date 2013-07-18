@@ -115,7 +115,7 @@ private:
 	OVITO_OBJECT
 
 	Q_CLASSINFO("DisplayName", "Affine Transformation");
-	Q_CLASSINFO("ModifierCategory", "Modification");
+	Q_CLASSINFO("ModifierCategory", "Modify");
 
 	DECLARE_PROPERTY_FIELD(_transformationTM);
 	DECLARE_PROPERTY_FIELD(_applyToParticles);

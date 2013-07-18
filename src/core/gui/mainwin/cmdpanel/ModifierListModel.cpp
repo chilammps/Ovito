@@ -104,7 +104,7 @@ ModifierListModel::ModifierListModel(QObject* parent, ModificationListModel* mod
 void ModifierListModel::updateAvailableModifiers()
 {
 	clear();
-	QStandardItem* titleItem = new QStandardItem(tr("Modifier List"));
+	QStandardItem* titleItem = new QStandardItem(tr("Add modification..."));
 	titleItem->setFlags(Qt::ItemIsEnabled);
 	appendRow(titleItem);
 	_widget->setCurrentIndex(0);
