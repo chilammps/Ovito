@@ -72,6 +72,7 @@ public:
 		AngularMomentumProperty,
 		TorqueProperty,
 		SpinProperty,
+		CentroSymmetryProperty
 	};
 	Q_ENUMS(Type);
 

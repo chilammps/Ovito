@@ -630,8 +630,10 @@ void CommonNeighborAnalysisModifierEditor::createUI(const RolloutInsertionParame
 	cutoffRadiusPUI->setEnabled(false);
 //	cutoffPresetsPUI->setEnabled(false);
 
+#if 0
 	BooleanParameterUI* autoUpdateUI = new BooleanParameterUI(this, PROPERTY_FIELD(AsynchronousParticleModifier::_autoUpdate));
 	layout1->addWidget(autoUpdateUI->checkBox());
+#endif
 
 	// Status label.
 	layout1->addSpacing(10);

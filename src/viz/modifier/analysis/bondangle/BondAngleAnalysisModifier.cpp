@@ -68,7 +68,6 @@ std::shared_ptr<AsynchronousParticleModifier::Engine> BondAngleAnalysisModifier:
 ******************************************************************************/
 void BondAngleAnalysisModifier::BondAngleAnalysisEngine::compute(FutureInterfaceBase& futureInterface)
 {
-	size_t particleCount = positions()->size();
 	futureInterface.setProgressText(tr("Performing bond-angle analysis"));
 
 	// Prepare the neighbor list.
@@ -80,7 +79,7 @@ void BondAngleAnalysisModifier::BondAngleAnalysisEngine::compute(FutureInterface
 	ParticleProperty* output = structures();
 
 	// Perform analysis on each particle.
-	parallelFor(particleCount, futureInterface, [&neighborListBuilder, output](size_t index) {
+	parallelFor(positions()->size(), futureInterface, [&neighborListBuilder, output](size_t index) {
 		output->setInt(index, determineStructure(neighborListBuilder, index));
 	});
 }
@@ -175,13 +174,13 @@ void BondAngleAnalysisModifierEditor::createUI(const RolloutInsertionParameters&
 
     // Create the rollout contents.
 	QVBoxLayout* layout1 = new QVBoxLayout(rollout);
-#ifndef Q_WS_MAC
 	layout1->setContentsMargins(4,4,4,4);
-	layout1->setSpacing(0);
-#endif
+	layout1->setSpacing(4);
 
+#if 0
 	BooleanParameterUI* autoUpdateUI = new BooleanParameterUI(this, PROPERTY_FIELD(AsynchronousParticleModifier::_autoUpdate));
 	layout1->addWidget(autoUpdateUI->checkBox());
+#endif
 
 	// Status label.
 	layout1->addSpacing(10);

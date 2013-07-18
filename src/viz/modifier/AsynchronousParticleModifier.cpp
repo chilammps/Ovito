@@ -128,6 +128,9 @@ ObjectStatus AsynchronousParticleModifier::modifyParticles(TimePoint time, TimeI
 		}
 	}
 
+	if(_asyncStatus.type() == ObjectStatus::Error)
+		return _asyncStatus;
+
 	return applyModifierResults(time, validityInterval);
 }
 
@@ -152,25 +155,24 @@ void AsynchronousParticleModifier::backgroundJobFinished()
 	OVITO_ASSERT(!_computationValidity.isEmpty());
 	ReferenceEvent::Type notificationType = ReferenceEvent::PendingOperationFailed;
 	bool wasCanceled = _backgroundOperation.isCanceled();
-	ObjectStatus newStatus = status();
 
 	if(!wasCanceled) {
+		_cacheValidity = _computationValidity;
 		try {
 			std::shared_ptr<Engine> engine = _backgroundOperation.result();
 			retrieveModifierResults(engine.get());
-			_cacheValidity = _computationValidity;
 
 			// Notify dependents that the background operation has succeeded and new data is available.
 			notificationType = ReferenceEvent::PendingOperationSucceeded;
-			newStatus = ObjectStatus::Success;
+			_asyncStatus = ObjectStatus::Success;
 		}
-		catch(Exception& ex) {
+		catch(const Exception& ex) {
 			// Transfer exception message to evaluation status.
-			newStatus = ObjectStatus(ObjectStatus::Error, ex.messages().join(QChar('\n')));
+			_asyncStatus = ObjectStatus(ObjectStatus::Error, ex.messages().join(QChar('\n')));
 		}
 	}
 	else {
-		newStatus = ObjectStatus(ObjectStatus::Error, tr("Operation has been canceled by the user."));
+		_asyncStatus = ObjectStatus(ObjectStatus::Error, tr("Operation has been canceled by the user."));
 	}
 
 	// Reset everything.
@@ -179,7 +181,7 @@ void AsynchronousParticleModifier::backgroundJobFinished()
 	_computationValidity.setEmpty();
 
 	// Set the new modifier status.
-	setStatus(newStatus);
+	setStatus(_asyncStatus);
 
 	// Notify dependents that the evaluation request was satisfied or not satisfied.
 	notifyDependents(notificationType);

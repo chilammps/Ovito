@@ -91,6 +91,7 @@ ParticleProperty::ParticleProperty(size_t particleCount, Type type, size_t compo
 	case TransparencyProperty:
 	case SpinProperty:
 	case DipoleMagnitudeProperty:
+	case CentroSymmetryProperty:
 		_dataType = qMetaTypeId<FloatType>();
 		_dataTypeSize = sizeof(FloatType);
 		_componentCount = 1;
@@ -347,6 +348,7 @@ QString ParticleProperty::standardPropertyName(Type which)
 	case AngularMomentumProperty: return ParticlePropertyObject::tr("Angular Momentum");
 	case TorqueProperty: return ParticlePropertyObject::tr("Torque");
 	case SpinProperty: return ParticlePropertyObject::tr("Spin");
+	case CentroSymmetryProperty: return ParticlePropertyObject::tr("Centrosymmetry");
 	default:
 		OVITO_ASSERT_MSG(false, "ParticleProperty::standardChannelName", "Invalid standard particle property type");
 		throw Exception(ParticlePropertyObject::tr("This is not a valid standard particle property type: %1").arg(which));
@@ -389,6 +391,7 @@ int ParticleProperty::standardPropertyDataType(Type which)
 	case AngularVelocityProperty:
 	case AngularMomentumProperty:
 	case TorqueProperty:
+	case CentroSymmetryProperty:
 		return qMetaTypeId<FloatType>();
 	default:
 		OVITO_ASSERT_MSG(false, "ParticleProperty::standardPropertyDataType", "Invalid standard particle property type");
@@ -432,6 +435,7 @@ QMap<QString, ParticleProperty::Type> ParticleProperty::standardPropertyList()
 		table.insert(standardPropertyName(AngularMomentumProperty), AngularMomentumProperty);
 		table.insert(standardPropertyName(TorqueProperty), TorqueProperty);
 		table.insert(standardPropertyName(SpinProperty), SpinProperty);
+		table.insert(standardPropertyName(CentroSymmetryProperty), CentroSymmetryProperty);
 	}
 	return table;
 }
@@ -457,6 +461,7 @@ size_t ParticleProperty::standardPropertyComponentCount(Type which)
 	case TransparencyProperty:
 	case DipoleMagnitudeProperty:
 	case SpinProperty:
+	case CentroSymmetryProperty:
 		return 1;
 	case PositionProperty:
 	case ColorProperty:
@@ -510,6 +515,7 @@ QStringList ParticleProperty::standardPropertyComponentNames(Type which, size_t 
 	case TransparencyProperty:
 	case DipoleMagnitudeProperty:
 	case SpinProperty:
+	case CentroSymmetryProperty:
 		return emptyList;
 	case PositionProperty:
 	case DisplacementProperty:

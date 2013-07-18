@@ -249,19 +249,17 @@ void AmbientOcclusionModifierEditor::createUI(const RolloutInsertionParameters& 
 
     // Create the rollout contents.
 	QVBoxLayout* layout1 = new QVBoxLayout(rollout);
-#ifndef Q_WS_MAC
 	layout1->setContentsMargins(4,4,4,4);
-	layout1->setSpacing(0);
-#endif
+	layout1->setSpacing(4);
 
+#if 0
 	BooleanParameterUI* autoUpdateUI = new BooleanParameterUI(this, PROPERTY_FIELD(AsynchronousParticleModifier::_autoUpdate));
 	layout1->addWidget(autoUpdateUI->checkBox());
+#endif
 
 	QGridLayout* layout2 = new QGridLayout();
 	layout2->setContentsMargins(0,0,0,0);
-#ifndef Q_WS_MAC
-	layout2->setSpacing(0);
-#endif
+	layout2->setSpacing(4);
 	layout2->setColumnStretch(1, 1);
 	layout1->addLayout(layout2);
 

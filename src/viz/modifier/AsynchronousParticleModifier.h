@@ -143,6 +143,9 @@ private:
 	/// Indicates whether the modifier's results are currently being computed in the background.
 	TimeInterval _computationValidity;
 
+	/// The status returned by the asynchronous job.
+	ObjectStatus _asyncStatus;
+
 private:
 
 	Q_OBJECT
