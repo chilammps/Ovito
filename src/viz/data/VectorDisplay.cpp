@@ -21,6 +21,7 @@
 
 #include <core/Core.h>
 #include <core/utilities/units/UnitsManager.h>
+#include <core/utilities/concurrent/ParallelFor.h>
 #include <core/rendering/SceneRenderer.h>
 #include <core/gui/properties/FloatParameterUI.h>
 #include <core/gui/properties/VariantComboBoxParameterUI.h>
@@ -129,7 +130,7 @@ Box3 VectorDisplay::arrowBoundingBox(ParticlePropertyObject* vectorProperty, Par
 	}
 
 	// Enlarge the bounding box by the largest vector magnitude + padding.
-	return bbox.padBox((maxMagnitude * std::abs(scalingFactor())) + arrowWidth());
+	return bbox.padBox((sqrt(maxMagnitude) * std::abs(scalingFactor())) + arrowWidth());
 }
 
 /******************************************************************************
@@ -137,109 +138,61 @@ Box3 VectorDisplay::arrowBoundingBox(ParticlePropertyObject* vectorProperty, Par
 ******************************************************************************/
 void VectorDisplay::render(TimePoint time, SceneObject* sceneObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode)
 {
-#if 0
 	// Get input data.
-	ParticlePropertyObject* positionProperty = dynamic_object_cast<ParticlePropertyObject>(sceneObject);
-	ParticlePropertyObject* radiusProperty = findStandardProperty(ParticleProperty::RadiusProperty, flowState);
-	ParticlePropertyObject* colorProperty = findStandardProperty(ParticleProperty::ColorProperty, flowState);
-	ParticleTypeProperty* typeProperty = dynamic_object_cast<ParticleTypeProperty>(findStandardProperty(ParticleProperty::ParticleTypeProperty, flowState));
-	ParticlePropertyObject* selectionProperty = renderer->isInteractive() ? findStandardProperty(ParticleProperty::SelectionProperty, flowState) : nullptr;
+	ParticlePropertyObject* vectorProperty = dynamic_object_cast<ParticlePropertyObject>(sceneObject);
+	ParticlePropertyObject* positionProperty = findStandardProperty(ParticleProperty::PositionProperty, flowState);
+	if(vectorProperty && (vectorProperty->dataType() != qMetaTypeId<FloatType>() || vectorProperty->componentCount() != 3))
+		vectorProperty = nullptr;
 
-	// Get number of particles.
-	int particleCount = positionProperty ? positionProperty->size() : 0;
+	// Get number of vectors.
+	int vectorCount = (vectorProperty && positionProperty) ? vectorProperty->size() : 0;
 
 	// Do we have to re-create the geometry buffer from scratch?
-	bool recreateBuffer = !_particleBuffer || !_particleBuffer->isValid(renderer);
+	bool recreateBuffer = !_buffer || !_buffer->isValid(renderer);
 
 	// Set shading mode and rendering quality.
 	if(!recreateBuffer) {
-		recreateBuffer |= !(_particleBuffer->setShadingMode(shadingMode()));
-		recreateBuffer |= !(_particleBuffer->setRenderingQuality(renderingQuality()));
+		recreateBuffer |= !(_buffer->setShadingMode(shadingMode()));
+		recreateBuffer |= !(_buffer->setRenderingQuality(renderingQuality()));
 	}
 
-	// Do we have to resize the geometry buffer?
-	bool resizeBuffer = recreateBuffer || (_particleBuffer->particleCount() != particleCount);
-
-	// Do we have to update the particle positions in the geometry buffer?
-	bool updatePositions = _positionsCacheHelper.updateState(positionProperty, positionProperty ? positionProperty->revisionNumber() : 0)
-			|| resizeBuffer;
-
-	// Do we have to update the particle radii in the geometry buffer?
-	bool updateRadii = _radiiCacheHelper.updateState(
-			radiusProperty, radiusProperty ? radiusProperty->revisionNumber() : 0,
-			typeProperty, typeProperty ? typeProperty->revisionNumber() : 0,
-			defaultParticleRadius())
-			|| resizeBuffer;
-
-	// Do we have to update the particle colors in the geometry buffer?
-	bool updateColors = _colorsCacheHelper.updateState(
-			colorProperty, colorProperty ? colorProperty->revisionNumber() : 0,
-			typeProperty, typeProperty ? typeProperty->revisionNumber() : 0,
-			selectionProperty, selectionProperty ? selectionProperty->revisionNumber() : 0)
-			|| resizeBuffer;
+	// Do we have to update contents of the geometry buffer?
+	bool updateContents = _geometryCacheHelper.updateState(
+			vectorProperty, vectorProperty ? vectorProperty->revisionNumber() : 0,
+			positionProperty, positionProperty ? positionProperty->revisionNumber() : 0,
+			scalingFactor(), arrowWidth(), arrowColor(), reverseArrowDirection(), flipVectors())
+			|| recreateBuffer || (_buffer->arrowCount() != vectorCount);
 
 	// Re-create the geometry buffer if necessary.
 	if(recreateBuffer)
-		_particleBuffer = renderer->createParticleGeometryBuffer(shadingMode(), renderingQuality());
+		_buffer = renderer->createArrowGeometryBuffer(shadingMode(), renderingQuality());
 
-	// Re-size the geometry buffer if necessary.
-	if(resizeBuffer)
-		_particleBuffer->setSize(particleCount);
-
-	// Update position buffer.
-	if(updatePositions && positionProperty) {
-		OVITO_ASSERT(positionProperty->size() == particleCount);
-		_particleBuffer->setParticlePositions(positionProperty->constDataPoint3());
+	// Update buffer contents.
+	if(updateContents) {
+		_buffer->startSetArrows(vectorCount);
+		if(vectorProperty && positionProperty) {
+			FloatType scalingFac = scalingFactor();
+			if(flipVectors() ^ reverseArrowDirection())
+				scalingFac = -scalingFac;
+			bool reverseArrow = reverseArrowDirection();
+			const Point3* p_begin = positionProperty->constDataPoint3();
+			const Vector3* v_begin = vectorProperty->constDataVector3();
+			ColorA color(arrowColor());
+			FloatType width = arrowWidth();
+			ArrowGeometryBuffer* buffer = _buffer.get();
+			parallelFor(vectorCount, [buffer, scalingFac, reverseArrow, color, width, p_begin, v_begin](int index) {
+				buffer->setArrow(index, p_begin[index], v_begin[index] * scalingFac, color, width);
+			});
+		}
+		_buffer->endSetArrows();
 	}
 
-	// Update radius buffer.
-	if(updateRadii) {
-		if(radiusProperty) {
-			// Take particle radii directly from the radius property.
-			OVITO_ASSERT(radiusProperty->size() == particleCount);
-			_particleBuffer->setParticleRadii(radiusProperty->constDataFloat());
-		}
-		else if(typeProperty) {
-			// Assign radii based on particle types.
-			OVITO_ASSERT(typeProperty->size() == particleCount);
-			// Allocate memory buffer.
-			std::vector<FloatType> particleRadii(particleCount, defaultParticleRadius());
-			// Build a lookup map for particle type raii.
-			const std::map<int,FloatType> radiusMap = typeProperty->radiusMap();
-			// Skip the following loop if all per-type radii are zero. In this case, simply use the default radius for all particles.
-			if(std::any_of(radiusMap.cbegin(), radiusMap.cend(), [](const std::pair<int,FloatType>& it) { return it.second != 0; })) {
-				// Fill radius array.
-				const int* t = typeProperty->constDataInt();
-				for(auto c = particleRadii.begin(); c != particleRadii.end(); ++c, ++t) {
-					auto it = radiusMap.find(*t);
-					// Set particle radius only if the type's radius is non-zero.
-					if(it != radiusMap.end() && it->second != 0)
-						*c = it->second;
-				}
-			}
-			_particleBuffer->setParticleRadii(particleRadii.data());
-		}
-		else {
-			// Assign a constant radius to all particles.
-			_particleBuffer->setParticleRadius(defaultParticleRadius());
-		}
-	}
-
-	// Update color buffer.
-	if(updateColors) {
-		// Allocate memory buffer.
-		std::vector<Color> colors(particleCount);
-		particleColors(colors, colorProperty, typeProperty, selectionProperty);
-		_particleBuffer->setParticleColors(colors.data());
-	}
-
-	// Support picking of particles.
+	// Support picking of arrows.
 	quint32 pickingBaseID = 0;
 	if(renderer->isPicking())
-		pickingBaseID = renderer->registerPickObject(contextNode, sceneObject, particleCount);
+		pickingBaseID = renderer->registerPickObject(contextNode, sceneObject, vectorCount);
 
-	_particleBuffer->render(renderer, pickingBaseID);
-#endif
+	_buffer->render(renderer, pickingBaseID);
 }
 
 /******************************************************************************

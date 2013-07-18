@@ -92,6 +92,8 @@
 	<file>glsl/particles/picking/raytraced/sphere.vs</file>
 	<file>glsl/particles/picking/raytraced/sphere.fs</file>
 	<file>glsl/particles/picking/raytraced/sphere.gs</file>
+	<file>glsl/arrows/flat.fs</file>
+	<file>glsl/arrows/flat.vs</file>
 
 	<file>glsl/line.vertex.glsl</file>
 	<file>glsl/line.fragment.glsl</file>

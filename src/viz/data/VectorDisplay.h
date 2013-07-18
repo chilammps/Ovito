@@ -69,7 +69,7 @@ public:
 	void setRenderingQuality(ArrowGeometryBuffer::RenderingQuality quality) { _renderingQuality = quality; }
 
 	/// Returns whether the arrow pointing direction is reversed.
-	bool reverseArrowDirection() const { _reverseArrowDirection; }
+	bool reverseArrowDirection() const { return _reverseArrowDirection; }
 
 	/// Returns whether vectors are flipped.
 	bool flipVectors() const { return _flipVectors; }
@@ -121,6 +121,18 @@ protected:
 
 	/// The buffered particle geometry used to render the arrows.
 	OORef<ArrowGeometryBuffer> _buffer;
+
+	/// This helper structure is used to detect any changes in the input data
+	/// that require updating the geometry buffer.
+	SceneObjectCacheHelper<
+		QPointer<ParticlePropertyObject>, unsigned int,		// Vector property + revision number
+		QPointer<ParticlePropertyObject>, unsigned int,		// Particle position property + revision number
+		FloatType,											// Scaling factor
+		FloatType,											// Arrow width
+		Color,												// Arrow color
+		bool,												// Reverse arrow direction
+		bool												// Flip vectors
+		> _geometryCacheHelper;
 
 	/// The bounding box that includes all arrows.
 	Box3 _cachedBoundingBox;

@@ -33,97 +33,120 @@ IMPLEMENT_OVITO_OBJECT(Core, ViewportArrowGeometryBuffer, ArrowGeometryBuffer);
 ViewportArrowGeometryBuffer::ViewportArrowGeometryBuffer(ViewportSceneRenderer* renderer, ShadingMode shadingMode, RenderingQuality renderingQuality) :
 	ArrowGeometryBuffer(shadingMode, renderingQuality),
 	_contextGroup(QOpenGLContextGroup::currentContextGroup()),
-	_arrowCount(-1)
+	_arrowCount(-1), _cylinderSegments(8), _verticesPerArrow(0), _mappedVertices(nullptr)
 {
 	OVITO_ASSERT(renderer->glcontext()->shareGroup() == _contextGroup);
 
-	if(!_glVertexBuffer.create())
+	if(!_glGeometryBuffer.create())
 		throw Exception(tr("Failed to create OpenGL vertex buffer."));
-	_glVertexBuffer.setUsagePattern(QOpenGLBuffer::StaticDraw);
-
-	if(!_glColorsBuffer.create())
-		throw Exception(tr("Failed to create OpenGL vertex buffer."));
-	_glColorsBuffer.setUsagePattern(QOpenGLBuffer::DynamicDraw);
+	_glGeometryBuffer.setUsagePattern(QOpenGLBuffer::StaticDraw);
 
 	// Initialize OpenGL shaders.
-	_flatImposterShader = renderer->loadShaderProgram(
-			"particle_flat_sphere",
-			":/core/glsl/particles/sprites/imposter_without_depth.vs",
-			":/core/glsl/particles/sprites/flat.fs");
+	_flatShader = renderer->loadShaderProgram(
+			"arrow_flat",
+			":/core/glsl/arrows/flat.vs",
+			":/core/glsl/arrows/flat.fs");
 }
 
 /******************************************************************************
 * Allocates a particle buffer with the given number of arrows.
 ******************************************************************************/
-void ViewportArrowGeometryBuffer::setSize(int arrowCount)
+void ViewportArrowGeometryBuffer::startSetArrows(int arrowCount)
 {
-	OVITO_ASSERT(_glVertexBuffer.isCreated());
-	OVITO_ASSERT(_glColorsBuffer.isCreated());
+	OVITO_ASSERT(_glGeometryBuffer.isCreated());
 	OVITO_ASSERT(arrowCount >= 0);
-	OVITO_ASSERT(arrowCount < std::numeric_limits<int>::max() / sizeof(Point3) / 2);
 	OVITO_ASSERT(QOpenGLContextGroup::currentContextGroup() == _contextGroup);
+	OVITO_ASSERT(_mappedVertices == nullptr);
 
 	_arrowCount = arrowCount;
-}
+	_verticesPerArrow = _cylinderSegments * 2 + 2;
+	OVITO_ASSERT(arrowCount < std::numeric_limits<int>::max() / sizeof(ColoredVertexWithNormal) / _verticesPerArrow);
 
-/******************************************************************************
-* Sets the start and end coordinates of the arrows.
-******************************************************************************/
-void ViewportArrowGeometryBuffer::setArrows(const Point3* coordinates)
-{
-	OVITO_ASSERT(QOpenGLContextGroup::currentContextGroup() == _contextGroup);
-	OVITO_ASSERT(_glVertexBuffer.isCreated());
-	OVITO_ASSERT(_arrowCount >= 0);
-
-	if(!_glVertexBuffer.bind())
+	if(!_glGeometryBuffer.bind())
 		throw Exception(tr("Failed to bind OpenGL vertex buffer."));
-	_glVertexBuffer.allocate(coordinates, _arrowCount * sizeof(Point3));
-	_glVertexBuffer.release();
-}
-
-/******************************************************************************
-* Sets the colors of the arrows.
-******************************************************************************/
-void ViewportArrowGeometryBuffer::setArrowColors(const Color* colors)
-{
-	OVITO_ASSERT(QOpenGLContextGroup::currentContextGroup() == _contextGroup);
-	OVITO_ASSERT(_glColorsBuffer.isCreated());
-	OVITO_ASSERT(_arrowCount >= 0);
-
-	if(!_glColorsBuffer.bind())
-		throw Exception(tr("Failed to bind OpenGL vertex buffer."));
-	_glColorsBuffer.allocate(colors, _arrowCount * sizeof(Color));
-	_glColorsBuffer.release();
-}
-
-/******************************************************************************
-* Sets the color of all arrows to the given value.
-******************************************************************************/
-void ViewportArrowGeometryBuffer::setArrowColor(const Color color)
-{
-	OVITO_ASSERT(QOpenGLContextGroup::currentContextGroup() == _contextGroup);
-	OVITO_ASSERT(_glColorsBuffer.isCreated());
-	OVITO_ASSERT(_arrowCount >= 0);
-
-	if(!_glColorsBuffer.bind())
-		throw Exception(tr("Failed to bind OpenGL vertex buffer."));
-	_glColorsBuffer.allocate(_arrowCount * sizeof(Color));
+	_glGeometryBuffer.allocate(_arrowCount * _verticesPerArrow * sizeof(ColoredVertexWithNormal));
 	if(_arrowCount) {
-		Color* bufferData = static_cast<Color*>(_glColorsBuffer.map(QOpenGLBuffer::WriteOnly));
-		if(!bufferData)
+		_mappedVertices = static_cast<ColoredVertexWithNormal*>(_glGeometryBuffer.map(QOpenGLBuffer::WriteOnly));
+		if(!_mappedVertices)
 			throw Exception(tr("Failed to map OpenGL vertex buffer to memory."));
-		std::fill(bufferData, bufferData + _arrowCount, color);
-		_glColorsBuffer.unmap();
 	}
-	_glColorsBuffer.release();
+
+	// Prepare arrays to be passed to the glMultiDrawArrays() function.
+	_primitiveVertexStarts.resize(_arrowCount);
+	GLint startIndex = 0;
+	for(auto& i : _primitiveVertexStarts) {
+		i = startIndex;
+		startIndex += _verticesPerArrow;
+	}
+	_primitiveVertexCounts.resize(_arrowCount);
+	std::fill(_primitiveVertexCounts.begin(), _primitiveVertexCounts.end(), _verticesPerArrow);
+
+	// Precompute cosine and sine functions.
+	_cosTable.resize(_cylinderSegments+1);
+	_sinTable.resize(_cylinderSegments+1);
+	for(int i = 0; i <= _cylinderSegments; i++) {
+		float angle = (FLOATTYPE_PI * 2 / _cylinderSegments) * i;
+		_cosTable[i] = std::cos(angle);
+		_sinTable[i] = std::sin(angle);
+	}
 }
 
 /******************************************************************************
-* Sets the width of all arrows to the given value.
+* Sets the properties of a single arrow.
 ******************************************************************************/
-void ViewportArrowGeometryBuffer::setArrowWidth(FloatType width)
+void ViewportArrowGeometryBuffer::setArrow(int index, const Point3& pos, const Vector3& dir, const ColorA& color, FloatType width)
 {
+	OVITO_ASSERT(_mappedVertices != nullptr);
+	OVITO_ASSERT(index >= 0 && index < _arrowCount);
 
+	Vector_3<float> t, u, v;
+
+	if(dir != Vector3::Zero()) {
+		t = dir.normalized();
+		u = Vector_3<float>(dir.y(), -dir.x(), 0);
+		if(u == Vector_3<float>::Zero())
+			u = Vector_3<float>(-dir.z(), 0, dir.x());
+		u.normalize();
+		v = u.cross(t);
+	}
+	else {
+		t.setZero();
+		u.setZero();
+		v.setZero();
+	}
+
+	Point_3<float> v1 = pos;
+	Point_3<float> v2 = v1 + dir;
+	ColorAT<float> c = color;
+
+	ColoredVertexWithNormal* vertex = _mappedVertices + (index * _verticesPerArrow);
+	for(int i = 0; i <= _cylinderSegments; i++) {
+		Vector_3<float> n = _cosTable[i] * u + _sinTable[i] * v;
+		Vector_3<float> d = n * width;
+		vertex->pos = v1 + d;
+		vertex->normal = n;
+		vertex->color = c;
+		vertex++;
+		vertex->pos = v2 + d;
+		vertex->normal = n;
+		vertex->color = c;
+		vertex++;
+	}
+}
+
+/******************************************************************************
+* Finalizes the geometry buffer after all arrows have been set.
+******************************************************************************/
+void ViewportArrowGeometryBuffer::endSetArrows()
+{
+	OVITO_ASSERT(QOpenGLContextGroup::currentContextGroup() == _contextGroup);
+	OVITO_ASSERT(_arrowCount >= 0);
+	OVITO_ASSERT(_mappedVertices != nullptr || _arrowCount == 0);
+
+	if(_arrowCount)
+		_glGeometryBuffer.unmap();
+	_glGeometryBuffer.release();
+	_mappedVertices = nullptr;
 }
 
 /******************************************************************************
@@ -133,7 +156,7 @@ bool ViewportArrowGeometryBuffer::isValid(SceneRenderer* renderer)
 {
 	ViewportSceneRenderer* vpRenderer = dynamic_object_cast<ViewportSceneRenderer>(renderer);
 	if(!vpRenderer) return false;
-	return _glVertexBuffer.isCreated()
+	return _glGeometryBuffer.isCreated()
 			&& _arrowCount >= 0
 			&& (_contextGroup == vpRenderer->glcontext()->shareGroup());
 }
@@ -144,17 +167,34 @@ bool ViewportArrowGeometryBuffer::isValid(SceneRenderer* renderer)
 void ViewportArrowGeometryBuffer::render(SceneRenderer* renderer, quint32 pickingBaseID)
 {
 	OVITO_CHECK_OPENGL();
-	OVITO_ASSERT(_glVertexBuffer.isCreated());
+	OVITO_ASSERT(_glGeometryBuffer.isCreated());
 	OVITO_ASSERT(_contextGroup == QOpenGLContextGroup::currentContextGroup());
 	OVITO_ASSERT(_arrowCount >= 0);
-	OVITO_STATIC_ASSERT(sizeof(FloatType) == 4);
-	OVITO_STATIC_ASSERT(sizeof(Color) == 12);
-	OVITO_STATIC_ASSERT(sizeof(Point3) == 12);
+	OVITO_ASSERT(_mappedVertices== nullptr);
 
 	ViewportSceneRenderer* vpRenderer = dynamic_object_cast<ViewportSceneRenderer>(renderer);
 
 	if(_arrowCount <= 0 || !vpRenderer)
 		return;
+
+	glEnable(GL_CULL_FACE);
+
+	if(!_flatShader->bind())
+		throw Exception(tr("Failed to bind OpenGL shader."));
+
+	_flatShader->setUniformValue("modelview_projection_matrix",
+			(QMatrix4x4)(vpRenderer->projParams().projectionMatrix * vpRenderer->modelViewTM()));
+
+	_glGeometryBuffer.bind();
+	_flatShader->setAttributeBuffer("vertex_pos", GL_FLOAT, offsetof(ColoredVertexWithNormal, pos), 3, sizeof(ColoredVertexWithNormal));
+	_flatShader->enableAttributeArray("vertex_pos");
+	_flatShader->setAttributeBuffer("vertex_color", GL_FLOAT, offsetof(ColoredVertexWithNormal, color), 4, sizeof(ColoredVertexWithNormal));
+	_flatShader->enableAttributeArray("vertex_color");
+	_glGeometryBuffer.release();
+
+	OVITO_CHECK_OPENGL(glMultiDrawArrays(GL_TRIANGLE_STRIP, _primitiveVertexStarts.data(), _primitiveVertexCounts.data(), _arrowCount));
+
+	_flatShader->release();
 }
 
 };

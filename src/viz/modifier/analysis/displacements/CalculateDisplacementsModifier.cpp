@@ -140,7 +140,7 @@ ObjectStatus CalculateDisplacementsModifier::modifyParticles(TimePoint time, Tim
 		for(auto& mappedIndex : indexToIndexMap) {
 			auto iter = refMap.find(*id);
 			if(iter == refMap.end())
-				throw Exception(tr("Particle id %i not found in reference configuration.").arg(*id));
+				throw Exception(tr("Particle id %1 not found in reference configuration.").arg(*id));
 			mappedIndex = iter->second;
 			index++;
 			++id;

@@ -46,22 +46,16 @@ public:
 	ViewportArrowGeometryBuffer(ViewportSceneRenderer* renderer, ShadingMode shadingMode, RenderingQuality renderingQuality);
 
 	/// \brief Allocates a geometry buffer with the given number of arrows.
-	virtual void setSize(int particleCount) override;
+	virtual void startSetArrows(int arrowCount) override;
 
 	/// \brief Returns the number of arrows stored in the buffer.
 	virtual int arrowCount() const override { return _arrowCount; }
 
-	/// \brief Sets the start and end coordinates of the arrows.
-	virtual void setArrows(const Point3* coordinates) override;
+	/// \brief Sets the properties of a single arrow.
+	virtual void setArrow(int index, const Point3& pos, const Vector3& dir, const ColorA& color, FloatType width) override;
 
-	/// \brief Sets the width of all arrows to the given value.
-	virtual void setArrowWidth(FloatType width) override;
-
-	/// \brief Sets the colors of the arrows.
-	virtual void setArrowColors(const Color* colors) override;
-
-	/// \brief Sets the color of all arrows to the given value.
-	virtual void setArrowColor(const Color color) override;
+	/// \brief Finalizes the geometry buffer after all arrows have been set.
+	virtual void endSetArrows() override;
 
 	/// \brief Returns true if the geometry buffer is filled and can be rendered with the given renderer.
 	virtual bool isValid(SceneRenderer* renderer) override;
@@ -69,21 +63,18 @@ public:
 	/// \brief Renders the geometry.
 	virtual void render(SceneRenderer* renderer, quint32 pickingBaseID = 0) override;
 
-protected:
+private:
 
-	/// Renders the particles using OpenGL point sprites.
-	void renderPointSprites(ViewportSceneRenderer* renderer, quint32 pickingBaseID);
-
-	/// Renders the particles using raytracing implemented in an OpenGL fragment shader.
-	void renderRaytracedSpheres(ViewportSceneRenderer* renderer, quint32 pickingBaseID);
+	struct ColoredVertexWithNormal {
+		Point_3<float> pos;
+		Vector_3<float> normal;
+		ColorAT<float> color;
+	};
 
 private:
 
-	/// The internal OpenGL vertex buffer that stores the vertices.
-	QOpenGLBuffer _glVertexBuffer;
-
-	/// The internal OpenGL vertex buffer that stores the vertex colors.
-	QOpenGLBuffer _glColorsBuffer;
+	/// The internal OpenGL vertex buffer that stores the vertices and colors.
+	QOpenGLBuffer _glGeometryBuffer;
 
 	/// The GL context group under which the GL vertex buffers have been created.
 	QPointer<QOpenGLContextGroup> _contextGroup;
@@ -91,8 +82,29 @@ private:
 	/// The number of arrows stored in the buffer.
 	int _arrowCount;
 
+	/// The number of cylinder segments to generate.
+	int _cylinderSegments;
+
+	/// The number of mesh vertices generated per arrow.
+	int _verticesPerArrow;
+
 	// The OpenGL shader programs that are used to render the arrows.
-	QPointer<QOpenGLShaderProgram> _flatImposterShader;
+	QPointer<QOpenGLShaderProgram> _flatShader;
+
+	/// Pointer to the memory-mapped geometry buffer.
+	ColoredVertexWithNormal* _mappedVertices;
+
+	/// Lookup table for fast cylinder geometry generation.
+	std::vector<float> _cosTable;
+
+	/// Lookup table for fast cylinder geometry generation.
+	std::vector<float> _sinTable;
+
+	/// Primitive start indices passed to glMultiDrawArrays().
+	std::vector<GLint> _primitiveVertexStarts;
+
+	/// Primitive vertex counts passed to glMultiDrawArrays().
+	std::vector<GLsizei> _primitiveVertexCounts;
 
 	Q_OBJECT
 	OVITO_OBJECT

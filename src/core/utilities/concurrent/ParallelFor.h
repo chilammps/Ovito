@@ -27,21 +27,21 @@
 
 namespace Ovito {
 
-template<class Function>
-bool parallelFor(size_t loopCount, FutureInterfaceBase& futureInterface, Function kernel, size_t progressChunkSize = 1024)
+template<class Function, typename T>
+bool parallelFor(T loopCount, FutureInterfaceBase& futureInterface, Function kernel, T progressChunkSize = 1024)
 {
 	futureInterface.setProgressRange(loopCount / progressChunkSize);
 
 	std::vector<std::thread> workers;
 	int num_threads = std::max(1, QThread::idealThreadCount());
-	size_t chunkSize = loopCount / num_threads;
-	size_t startIndex = 0;
-	size_t endIndex = chunkSize;
+	T chunkSize = loopCount / num_threads;
+	T startIndex = 0;
+	T endIndex = chunkSize;
 	for(int t = 0; t < num_threads; t++) {
 		if(t == num_threads - 1)
 			endIndex += loopCount % num_threads;
 		workers.push_back(std::thread([&futureInterface, &kernel, startIndex, endIndex, progressChunkSize]() {
-			for(size_t i = startIndex; i < endIndex;) {
+			for(T i = startIndex; i < endIndex;) {
 				// Execute kernel.
 				kernel(i);
 
@@ -67,24 +67,24 @@ bool parallelFor(size_t loopCount, FutureInterfaceBase& futureInterface, Functio
 	return !futureInterface.isCanceled();
 }
 
-template<class Function>
-void parallelFor(size_t loopCount, Function kernel)
+template<class Function, typename T>
+void parallelFor(T loopCount, Function kernel)
 {
 	std::vector<std::thread> workers;
 	int num_threads = std::max(1, QThread::idealThreadCount());
-	size_t chunkSize = loopCount / num_threads;
-	size_t startIndex = 0;
-	size_t endIndex = chunkSize;
+	T chunkSize = loopCount / num_threads;
+	T startIndex = 0;
+	T endIndex = chunkSize;
 	for(int t = 0; t < num_threads; t++) {
 		if(t == num_threads - 1) {
 			endIndex += loopCount % num_threads;
-			for(size_t i = startIndex; i < endIndex; ++i) {
+			for(T i = startIndex; i < endIndex; ++i) {
 				kernel(i);
 			}
 		}
 		else {
 			workers.push_back(std::thread([&kernel, startIndex, endIndex]() {
-				for(size_t i = startIndex; i < endIndex; ++i) {
+				for(T i = startIndex; i < endIndex; ++i) {
 					kernel(i);
 				}
 			}));

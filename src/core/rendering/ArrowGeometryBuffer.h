@@ -60,22 +60,16 @@ public:
 	ArrowGeometryBuffer(ShadingMode shadingMode, RenderingQuality renderingQuality) : _shadingMode(shadingMode), _renderingQuality(renderingQuality) {}
 
 	/// \brief Allocates a geometry buffer with the given number of arrows.
-	virtual void setSize(int arrowCount) = 0;
+	virtual void startSetArrows(int arrowCount) = 0;
 
 	/// \brief Returns the number of arrows stored in the buffer.
 	virtual int arrowCount() const = 0;
 
-	/// \brief Sets the start and end coordinates of the arrows.
-	virtual void setArrows(const Point3* coordinates) = 0;
+	/// \brief Sets the properties of a single arrow.
+	virtual void setArrow(int index, const Point3& pos, const Vector3& dir, const ColorA& color, FloatType width) = 0;
 
-	/// \brief Sets the width of all arrows to the given value.
-	virtual void setArrowWidth(FloatType width) = 0;
-
-	/// \brief Sets the colors of the arrows.
-	virtual void setArrowColors(const Color* colors) = 0;
-
-	/// \brief Sets the color of all arrows to the given value.
-	virtual void setArrowColor(const Color color) = 0;
+	/// \brief Finalizes the geometry buffer after all arrows have been set.
+	virtual void endSetArrows() = 0;
 
 	/// \brief Returns true if the geometry buffer is filled and can be rendered with the given renderer.
 	virtual bool isValid(SceneRenderer* renderer) = 0;

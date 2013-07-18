@@ -59,7 +59,7 @@ ObjectStatus FreezeSelectionModifier::modifyParticles(TimePoint time, TimeInterv
 		const int* id_end = id + identifierProperty->size();
 		int* s = selProperty->dataInt();
 		for(; id != id_end; ++id, ++s) {
-			if(*s = std::binary_search(_selectedParticles.cbegin(), _selectedParticles.cend(), *id))
+			if((*s = std::binary_search(_selectedParticles.cbegin(), _selectedParticles.cend(), *id)))
 				nselected++;
 		}
 		selProperty->changed();
