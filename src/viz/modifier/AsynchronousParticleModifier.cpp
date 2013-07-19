@@ -101,14 +101,19 @@ ObjectStatus AsynchronousParticleModifier::modifyParticles(TimePoint time, TimeI
 			cancelBackgroundJob();
 
 			// Create the engine that will compute the results.
-			std::shared_ptr<Engine> engine = createEngine(time);
-			OVITO_ASSERT(engine);
+			try {
+				std::shared_ptr<Engine> engine = createEngine(time);
+				OVITO_CHECK_POINTER(engine.get());
 
-			// Start a background job that runs the engine to compute the modifier's results.
-			_computationValidity.setInstant(time);
-			_backgroundOperation = runInBackground<std::shared_ptr<Engine>>(std::bind(&AsynchronousParticleModifier::runEngine, this, std::placeholders::_1, engine));
-			ProgressManager::instance().addTask(_backgroundOperation);
-			_backgroundOperationWatcher.setFuture(_backgroundOperation);
+				// Start a background job that runs the engine to compute the modifier's results.
+				_computationValidity.setInstant(time);
+				_backgroundOperation = runInBackground<std::shared_ptr<Engine>>(std::bind(&AsynchronousParticleModifier::runEngine, this, std::placeholders::_1, engine));
+				ProgressManager::instance().addTask(_backgroundOperation);
+				_backgroundOperationWatcher.setFuture(_backgroundOperation);
+			}
+			catch(const ObjectStatus& status) {
+				return status;
+			}
 		}
 	}
 

@@ -58,8 +58,9 @@ void SceneObject::notifyDependents(ReferenceEvent& event)
 bool SceneObject::referenceEvent(RefTarget* source, ReferenceEvent* event)
 {
 	// Automatically increment revision counter each time a sub-object of this object changes.
-	if(event->type() == ReferenceEvent::TargetChanged)
+	if(event->type() == ReferenceEvent::TargetChanged) {
 		_revisionNumber++;
+	}
 
 	return RefTarget::referenceEvent(source, event);
 }

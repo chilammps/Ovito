@@ -54,7 +54,8 @@ public:
 	///                     This is necessary because the Qt type system has no function to query
 	///                     the size of a data type at runtime.
 	/// \param componentCount The number of components per particle of type \a dataType.
-	static OORef<ParticlePropertyObject> create(size_t particleCount, int dataType, size_t dataTypeSize, size_t componentCount);
+	/// \param name The name assigned to the property.
+	static OORef<ParticlePropertyObject> create(size_t particleCount, int dataType, size_t dataTypeSize, size_t componentCount, const QString& name);
 
 	/// \brief Factory function that creates a standard property object.
 	/// \param particleCount The number of particles.

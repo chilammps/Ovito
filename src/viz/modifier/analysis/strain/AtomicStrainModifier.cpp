@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2008) Alexander Stukowski
+//  Copyright (2013) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -20,422 +20,269 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include <core/viewport/Viewport.h>
-#include <core/viewport/ViewportManager.h>
-#include <core/scene/animation/AnimManager.h>
-#include <core/gui/properties/BooleanPropertyUI.h>
-#include <core/gui/properties/FilenamePropertyUI.h>
-#include <boost/iterator/counting_iterator.hpp>
-
+#include <core/scene/objects/SceneObject.h>
+#include <core/dataset/importexport/LinkedFileObject.h>
+#include <core/gui/properties/BooleanParameterUI.h>
+#include <core/gui/properties/SubObjectParameterUI.h>
+#include <core/utilities/concurrent/ParallelFor.h>
 #include "AtomicStrainModifier.h"
 
-#include <atomviz/parser/AtomsImportObject.h>
-#include <atomviz/utils/OnTheFlyNeighborList.h>
-#include <atomviz/utils/ChemicalElements.h>
+namespace Viz {
 
-namespace AtomViz {
-
-IMPLEMENT_SERIALIZABLE_PLUGIN_CLASS(AtomicStrainModifier, AtomsObjectAnalyzerBase)
-DEFINE_REFERENCE_FIELD(AtomicStrainModifier, SceneObject, "Reference Configuration", _referenceObject)
-DEFINE_PROPERTY_FIELD(AtomicStrainModifier, "NeighborCutoff", _neighborCutoff)
-DEFINE_PROPERTY_FIELD(AtomicStrainModifier, "ShowReferenceConfiguration", _referenceShown)
-DEFINE_PROPERTY_FIELD(AtomicStrainModifier, "EliminateCellDeformation", _eliminateCellDeformation)
-DEFINE_PROPERTY_FIELD(AtomicStrainModifier, "AssumeUnwrappedCoordinates", _assumeUnwrappedCoordinates)
-DEFINE_REFERENCE_FIELD(AtomicStrainModifier, DataChannel, "DeformationGradientChannel", _deformationGradientChannel)
-DEFINE_REFERENCE_FIELD(AtomicStrainModifier, DataChannel, "StrainTensorChannel", _strainTensorChannel)
-DEFINE_REFERENCE_FIELD(AtomicStrainModifier, DataChannel, "ShearStrainChannel", _shearStrainChannel)
-DEFINE_REFERENCE_FIELD(AtomicStrainModifier, DataChannel, "VolumetricStrainChannel", _volumetricStrainChannel)
-DEFINE_PROPERTY_FIELD(AtomicStrainModifier, "CalculateDeformationGradients", _calculateDeformationGradients)
-DEFINE_PROPERTY_FIELD(AtomicStrainModifier, "CalculateStrainTensors", _calculateStrainTensors)
-DEFINE_PROPERTY_FIELD(AtomicStrainModifier, "SelectInvalidAtoms", _selectInvalidAtoms)
-DEFINE_REFERENCE_FIELD(AtomicStrainModifier, DataChannel, "InvalidAtomsChannel", _invalidAtomsChannel)
-SET_PROPERTY_FIELD_LABEL(AtomicStrainModifier, _neighborCutoff, "Cutoff radius")
-SET_PROPERTY_FIELD_UNITS(AtomicStrainModifier, _neighborCutoff, WorldParameterUnit)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Viz, AtomicStrainModifier, ParticleModifier)
+IMPLEMENT_OVITO_OBJECT(Viz, AtomicStrainModifierEditor, ParticleModifierEditor)
+SET_OVITO_OBJECT_EDITOR(AtomicStrainModifier, AtomicStrainModifierEditor)
+DEFINE_REFERENCE_FIELD(AtomicStrainModifier, _referenceObject, "Reference Configuration", SceneObject)
+DEFINE_PROPERTY_FIELD(AtomicStrainModifier, _referenceShown, "ShowReferenceConfiguration")
+DEFINE_PROPERTY_FIELD(AtomicStrainModifier, _eliminateCellDeformation, "EliminateCellDeformation")
+DEFINE_PROPERTY_FIELD(AtomicStrainModifier, _assumeUnwrappedCoordinates, "AssumeUnwrappedCoordinates")
+DEFINE_PROPERTY_FIELD(AtomicStrainModifier, _cutoff, "Cutoff")
+DEFINE_PROPERTY_FIELD(AtomicStrainModifier, _calculateDeformationGradients, "CalculateDeformationGradients")
+DEFINE_PROPERTY_FIELD(AtomicStrainModifier, _calculateStrainTensors, "CalculateStrainTensors")
+DEFINE_PROPERTY_FIELD(AtomicStrainModifier, _selectInvalidParticles, "SelectInvalidParticles")
 SET_PROPERTY_FIELD_LABEL(AtomicStrainModifier, _referenceObject, "Reference Configuration")
-SET_PROPERTY_FIELD_LABEL(AtomicStrainModifier, _deformationGradientChannel, "Deformation Gradient Channel")
-SET_PROPERTY_FIELD_LABEL(AtomicStrainModifier, _strainTensorChannel, "Strain Tensor Channel")
-SET_PROPERTY_FIELD_LABEL(AtomicStrainModifier, _shearStrainChannel, "Shear Strain Channel")
-SET_PROPERTY_FIELD_LABEL(AtomicStrainModifier, _volumetricStrainChannel, "Volumetric Strain Channel")
 SET_PROPERTY_FIELD_LABEL(AtomicStrainModifier, _referenceShown, "Show reference configuration")
 SET_PROPERTY_FIELD_LABEL(AtomicStrainModifier, _eliminateCellDeformation, "Eliminate homogeneous cell deformation")
 SET_PROPERTY_FIELD_LABEL(AtomicStrainModifier, _assumeUnwrappedCoordinates, "Assume unwrapped coordinates")
+SET_PROPERTY_FIELD_LABEL(AtomicStrainModifier, _cutoff, "Cutoff radius")
 SET_PROPERTY_FIELD_LABEL(AtomicStrainModifier, _calculateDeformationGradients, "Output deformation gradient tensors")
 SET_PROPERTY_FIELD_LABEL(AtomicStrainModifier, _calculateStrainTensors, "Output strain tensors")
-SET_PROPERTY_FIELD_LABEL(AtomicStrainModifier, _selectInvalidAtoms, "Select invalid atoms")
-SET_PROPERTY_FIELD_LABEL(AtomicStrainModifier, _invalidAtomsChannel, "Invalid atoms")
+SET_PROPERTY_FIELD_LABEL(AtomicStrainModifier, _selectInvalidParticles, "Select invalid particles")
+SET_PROPERTY_FIELD_UNITS(AtomicStrainModifier, _cutoff, WorldParameterUnit)
 
 /******************************************************************************
 * Constructs the modifier object.
 ******************************************************************************/
-AtomicStrainModifier::AtomicStrainModifier(bool isLoading)
-	: AtomsObjectAnalyzerBase(isLoading), _neighborCutoff(0),
-	  _referenceShown(false), _eliminateCellDeformation(false), _assumeUnwrappedCoordinates(false),
-	  _calculateDeformationGradients(false), _calculateStrainTensors(false), _selectInvalidAtoms(true)
+AtomicStrainModifier::AtomicStrainModifier() :
+	_referenceShown(false), _eliminateCellDeformation(false), _assumeUnwrappedCoordinates(false),
+	_cutoff(3), _calculateDeformationGradients(false), _calculateStrainTensors(false), _selectInvalidParticles(true),
+	_shearStrainValues(new ParticleProperty(0, qMetaTypeId<FloatType>(), sizeof(FloatType), 1, tr("Shear Strain"))),
+	_volumetricStrainValues(new ParticleProperty(0, qMetaTypeId<FloatType>(), sizeof(FloatType), 1, tr("Volumetric Strain"))),
+	_strainTensors(new ParticleProperty(0, ParticleProperty::StrainTensorProperty)),
+	_deformationGradients(new ParticleProperty(0, ParticleProperty::DeformationGradientProperty)),
+	_invalidParticles(new ParticleProperty(0, ParticleProperty::SelectionProperty))
 {
-	INIT_PROPERTY_FIELD(AtomicStrainModifier, _neighborCutoff);
-	INIT_PROPERTY_FIELD(AtomicStrainModifier, _referenceObject);
-	INIT_PROPERTY_FIELD(AtomicStrainModifier, _referenceShown);
-	INIT_PROPERTY_FIELD(AtomicStrainModifier, _eliminateCellDeformation);
-	INIT_PROPERTY_FIELD(AtomicStrainModifier, _assumeUnwrappedCoordinates);
-	INIT_PROPERTY_FIELD(AtomicStrainModifier, _deformationGradientChannel);
-	INIT_PROPERTY_FIELD(AtomicStrainModifier, _strainTensorChannel);
-	INIT_PROPERTY_FIELD(AtomicStrainModifier, _shearStrainChannel);
-	INIT_PROPERTY_FIELD(AtomicStrainModifier, _volumetricStrainChannel);
-	INIT_PROPERTY_FIELD(AtomicStrainModifier, _calculateDeformationGradients);
-	INIT_PROPERTY_FIELD(AtomicStrainModifier, _calculateStrainTensors);
-	INIT_PROPERTY_FIELD(AtomicStrainModifier, _selectInvalidAtoms);
-	INIT_PROPERTY_FIELD(AtomicStrainModifier, _invalidAtomsChannel);
-	if(!isLoading) {
+	INIT_PROPERTY_FIELD(AtomicStrainModifier::_referenceObject);
+	INIT_PROPERTY_FIELD(AtomicStrainModifier::_referenceShown);
+	INIT_PROPERTY_FIELD(AtomicStrainModifier::_eliminateCellDeformation);
+	INIT_PROPERTY_FIELD(AtomicStrainModifier::_assumeUnwrappedCoordinates);
+	INIT_PROPERTY_FIELD(AtomicStrainModifier::_cutoff);
+	INIT_PROPERTY_FIELD(AtomicStrainModifier::_calculateDeformationGradients);
+	INIT_PROPERTY_FIELD(AtomicStrainModifier::_calculateStrainTensors);
+	INIT_PROPERTY_FIELD(AtomicStrainModifier::_selectInvalidParticles);
 
-		// Create data channels for the computation results.
-		_deformationGradientChannel = new DeformationGradientDataChannel(DataChannel::DeformationGradientChannel);
-		_deformationGradientChannel->setVisible(false);
-		_strainTensorChannel = new DataChannel(DataChannel::StrainTensorChannel);
-		_strainTensorChannel->setVisible(false);
-		_shearStrainChannel = new DataChannel(qMetaTypeId<FloatType>(), sizeof(FloatType), 1);
-		_shearStrainChannel->setName(tr("Shear Strain"));
-		_volumetricStrainChannel = new DataChannel(qMetaTypeId<FloatType>(), sizeof(FloatType), 1);
-		_volumetricStrainChannel->setName(tr("Volumetric Strain"));
+	OORef<LinkedFileObject> importObj(new LinkedFileObject());
+	importObj->setAdjustAnimationIntervalEnabled(false);
+	_referenceObject = importObj;
 
-		_invalidAtomsChannel = new DataChannel(DataChannel::SelectionChannel);
-		_invalidAtomsChannel->setVisible(true);
-
-		// Create data source object.
-		AtomsImportObject::SmartPtr importObj = new AtomsImportObject();
-		importObj->setAdjustAnimationInterval(false);
-		_referenceObject = importObj;
-
-		// Use the default cutoff radius stored in the application settings.
-		QSettings settings;
-		settings.beginGroup("atomviz/neigborlist");
-		setNeighborCutoff(settings.value("DefaultCutoff", 0.0).value<FloatType>());
-		settings.endGroup();
-	}
+	// Load the default cutoff radius stored in the application settings.
+	QSettings settings;
+	settings.beginGroup("viz/strain");
+	setCutoff(settings.value("DefaultCutoff", 0.0).value<FloatType>());
+	settings.endGroup();
 }
 
 /******************************************************************************
-* Applies the previously calculated analysis results to the atoms object.
+* Asks the modifier for its validity interval at the given time.
 ******************************************************************************/
-EvaluationStatus AtomicStrainModifier::applyResult(TimeTicks time, TimeInterval& validityInterval)
+TimeInterval AtomicStrainModifier::modifierValidity(TimePoint time)
 {
-	// Check if analysis results are still valid.
-	if(input()->atomsCount() != shearStrainChannel()->size())
-		throw Exception(tr("Number of atoms of input object has changed. Analysis results became invalid."));
+	TimeInterval interval = ParticleModifier::modifierValidity(time);
+	if(_referenceObject) {
+		interval.intersect(_referenceObject->objectValidity(time));
+		PipelineFlowState refState = _referenceObject->evaluate(time);
+		interval.intersect(refState.stateValidity());
+	}
+	return interval;
+}
 
-	// Get the reference positions of the atoms.
-	if(!_referenceObject)
-		throw Exception(tr("No atomic reference configuration has been specified."));
+/******************************************************************************
+* Creates and initializes a computation engine that will compute the modifier's results.
+******************************************************************************/
+std::shared_ptr<AsynchronousParticleModifier::Engine> AtomicStrainModifier::createEngine(TimePoint time)
+{
+	if(inputParticleCount() == 0)
+		throw Exception(tr("There are no input particles"));
+
+	// Get the current positions.
+	ParticlePropertyObject* posProperty = expectStandardProperty(ParticleProperty::PositionProperty);
+
+	// Get the reference positions of the particles.
+	if(!referenceConfiguration())
+		throw Exception(tr("Cannot calculate displacements. No reference configuration has been specified."));
 
 	// Get the reference configuration.
-	PipelineFlowState refState = _referenceObject->evalObject(time);
-	AtomsObject* refObj = dynamic_object_cast<AtomsObject>(refState.result());
-	if(!refObj)
-		throw Exception(tr("Please choose an atomic reference configuration."));
-	validityInterval.intersect(refState.stateValidity());
-
-	// Deformed and reference configuration must contain the same number of atoms.
-	if(refObj->atomsCount() != input()->atomsCount())
-		throw Exception(tr("Mismatch between number of atoms in reference configuration and current configuration."));
-
-	// Create copies of the output channels that store the calculated values.
-	CloneHelper cloneHelper;
-	if(_calculateDeformationGradients && input()->atomsCount() == deformationGradientChannel()->size())
-		output()->insertDataChannel(cloneHelper.cloneObject(deformationGradientChannel(), true));
-	if(_calculateStrainTensors && input()->atomsCount() == strainTensorChannel()->size())
-		output()->insertDataChannel(cloneHelper.cloneObject(strainTensorChannel(), true));
-	output()->insertDataChannel(cloneHelper.cloneObject(shearStrainChannel(), true));
-	output()->insertDataChannel(cloneHelper.cloneObject(volumetricStrainChannel(), true));
-
-	// Set selection channel.
-	if(_selectInvalidAtoms && input()->atomsCount() == invalidAtomsChannel()->size())
-		output()->insertDataChannel(cloneHelper.cloneObject(invalidAtomsChannel(), true));
-
-	// Copy atomic positions from reference configuration into geometry pipeline if requested.
-	if(referenceShown()) {
-		DataChannel* refPosChannel = refObj->getStandardDataChannel(DataChannel::PositionChannel);
-		if(!refPosChannel)
-			throw Exception(tr("The reference dataset does not contain atomic positions."));
-
-		output()->simulationCell()->setCellMatrix(refObj->simulationCell()->cellMatrix());
-		DataChannel* outputPosChannel = outputStandardChannel(DataChannel::PositionChannel);
-		OVITO_ASSERT(outputPosChannel->size() == refPosChannel->size());
-		memcpy(outputPosChannel->dataPoint3(), refPosChannel->constDataPoint3(), sizeof(Point3) * outputPosChannel->size());
+	PipelineFlowState refState = referenceConfiguration()->evaluate(time);
+	if(refState.isEmpty()) {
+		if(refState.status().type() != ObjectStatus::Pending)
+			throw Exception(tr("No reference configuration has been specified yet."));
+		else
+			throw ObjectStatus(ObjectStatus::Pending, QString(), tr("Waiting for input data to become ready..."));
 	}
 
-	QString statusMessage = tr("Number of invalid atoms: %1").arg(_analysisInfo.numInvalidAtoms);
-	statusMessage += tr("\nMinimum number of neighbors: %1").arg(_analysisInfo.minNeighbors);
-	statusMessage += tr("\nMaximum number of neighbors: %1").arg(_analysisInfo.maxNeighbors);
-
-	return EvaluationStatus(EvaluationStatus::EVALUATION_SUCCESS, QString(), statusMessage);
-}
-
-/******************************************************************************
-* This is the actual analysis method.
-******************************************************************************/
-EvaluationStatus AtomicStrainModifier::doAnalysis(TimeTicks time, bool suppressDialogs)
-{
-	// Perform analysis.
-	if(calculate(input(), suppressDialogs))
-		return EvaluationStatus();
-	else
-		return EvaluationStatus(EvaluationStatus::EVALUATION_ERROR, tr("Calculation has been canceled by the user."));
-}
-
-/******************************************************************************
-* This function is passed to QtConcurrent::mappedReduced() to combine
-* the analysis information from multiple worker threads.
-******************************************************************************/
-void AtomicStrainModifier::AnalysisInfo::reduce(AnalysisInfo& s, AnalysisInfo i)
-{
-	s.numInvalidAtoms += i.numInvalidAtoms;
-	s.minNeighbors = std::min(i.minNeighbors, s.minNeighbors);
-	s.maxNeighbors = std::max(i.maxNeighbors, s.maxNeighbors);
-}
-
-/******************************************************************************
-* Performs the analysis.
-* Throws an exception on error.
-* Returns false when the operation has been canceled by the user.
-******************************************************************************/
-bool AtomicStrainModifier::calculate(AtomsObject* atomsObject, bool suppressDialogs)
-{
-	ProgressIndicator progress(tr("Calculating atomic strain tensors (on %n processor(s))", NULL, QThread::idealThreadCount()), atomsObject->atomsCount(), suppressDialogs);
-
-	// Reset everything.
-	deformationGradientChannel()->setSize(0);
-	strainTensorChannel()->setSize(0);
-	shearStrainChannel()->setSize(0);
-	volumetricStrainChannel()->setSize(0);
-	invalidAtomsChannel()->setSize(0);
-
-	// Get the reference positions of the atoms.
-	if(!_referenceObject)
-		throw Exception(tr("Cannot calculate atomic displacements. Atomic reference configuration has not been specified."));
-
-	// Get the reference configuration.
-	PipelineFlowState refState = _referenceObject->evalObject(0);
-	AtomsObject* refObj = dynamic_object_cast<AtomsObject>(refState.result());
-	if(!refObj)
-		throw Exception(tr("Please choose a reference configuration."));
-
-	// Deformed and reference configuration must contain the same number of atoms.
-	if(refObj->atomsCount() != atomsObject->atomsCount())
-		throw Exception(tr("Cannot calculate atomic strain tensors. Mismatch between number of atoms in reference configuration and current configuration."));
-
-	// Check simulation cell(s).
-	if(fabs(atomsObject->simulationCell()->volume()) < FLOATTYPE_EPSILON || fabs(refObj->simulationCell()->volume()) < FLOATTYPE_EPSILON)
-		throw Exception(tr("Simulation cell is degenerate in either the deformed or the reference configuration."));
-
-	// Prepare the neighbor list.
-	OnTheFlyNeighborList neighborList(neighborCutoff());
-	if(!neighborList.prepare(refObj, suppressDialogs))
-		return false;
-
-	// Get the current position channels.
-	expectStandardChannel(DataChannel::PositionChannel);
-
-	// Prepare the output channels.
-	if(_calculateDeformationGradients)
-		deformationGradientChannel()->setSize(atomsObject->atomsCount());
-	if(_calculateStrainTensors)
-		strainTensorChannel()->setSize(atomsObject->atomsCount());
-	shearStrainChannel()->setSize(atomsObject->atomsCount());
-	volumetricStrainChannel()->setSize(atomsObject->atomsCount());
-	if(_selectInvalidAtoms)
-		invalidAtomsChannel()->setSize(atomsObject->atomsCount());
-
-	// These calls are necessary to deep copy the memory array of the data channels before accessing them from multiple threads.
-	if(_calculateDeformationGradients) deformationGradientChannel()->dataFloat();
-	if(_calculateStrainTensors)strainTensorChannel()->dataFloat();
-	shearStrainChannel()->dataFloat();
-	volumetricStrainChannel()->dataFloat();
-	if(_selectInvalidAtoms) invalidAtomsChannel()->dataInt();
-
-	// Execute analysis code for each atom in a parallel fashion.
-	Kernel kernel(neighborList, this, atomsObject, refObj);
-	boost::counting_iterator<int> firstAtom(0);
-	boost::counting_iterator<int> lastAtom(atomsObject->atomsCount());
-	QFuture<AtomicStrainModifier::AnalysisInfo> future = QtConcurrent::mappedReduced(firstAtom, lastAtom, kernel, AtomicStrainModifier::AnalysisInfo::reduce);
-	progress.waitForFuture(future);
-
-	// Throw away results obtained so far if the user cancels the calculation.
-	if(future.isCanceled()) {
-		deformationGradientChannel()->setSize(0);
-		strainTensorChannel()->setSize(0);
-		shearStrainChannel()->setSize(0);
-		volumetricStrainChannel()->setSize(0);
-		invalidAtomsChannel()->setSize(0);
-		return false;
-	}
-	_analysisInfo = future.result();
-
-	return true;
-}
-
-/******************************************************************************
-* Constructor that takes references to the input and output arrays.
-******************************************************************************/
-AtomicStrainModifier::Kernel::Kernel(const OnTheFlyNeighborList& _nnlist, AtomicStrainModifier* modifier, AtomsObject* currentObj, AtomsObject* refObj)
-	: nnlist(_nnlist)
-{
-	pbc = currentObj->simulationCell()->periodicity();
-	currentSimCellInv = currentObj->simulationCell()->cellMatrix().inverse();
-	if(modifier->eliminateCellDeformation())
-		simCell = refObj->simulationCell()->cellMatrix();
-	else
-		simCell = currentObj->simulationCell()->cellMatrix();
-	currentPositions = modifier->expectStandardChannel(DataChannel::PositionChannel)->constDataPoint3();
-	assumeUnwrappedCoordinates = modifier->assumeUnwrappedCoordinates();
-
-	if(modifier->deformationGradientChannel()->size() == currentObj->atomsCount())
-		deformationGradients = modifier->deformationGradientChannel()->dataTensor2();
-	else
-		deformationGradients = NULL;
-	if(modifier->strainTensorChannel()->size() == currentObj->atomsCount())
-		strains = modifier->strainTensorChannel()->dataSymmetricTensor2();
-	else
-		strains = NULL;
-	shearStrains = modifier->shearStrainChannel()->dataFloat();
-	volumetricStrains = modifier->volumetricStrainChannel()->dataFloat();
-
-	if(modifier->invalidAtomsChannel()->size() == currentObj->atomsCount())
-		selection = modifier->invalidAtomsChannel()->dataInt();
-	else
-		selection = NULL;
-}
-
-
-/******************************************************************************
-* Calculates the strain tensor for a single atom.
-******************************************************************************/
-AtomicStrainModifier::AnalysisInfo AtomicStrainModifier::Kernel::operator()(int atomIndex)
-{
-	Matrix3 V(NULL_MATRIX);
-	Matrix3 W(NULL_MATRIX);
-
-	// Iterate over neighbor vectors of central atom.
-	const Point3 x = currentPositions[atomIndex];
-	int numNeighbors = 0;
-	for(OnTheFlyNeighborList::iterator neighborIter(nnlist, atomIndex); !neighborIter.atEnd(); neighborIter.next()) {
-		const Vector3& r0 = neighborIter.delta();
-		Vector3 r = currentPositions[neighborIter.current()] - x;
-		Vector3 sr = currentSimCellInv * r;
-		if(!assumeUnwrappedCoordinates) {
-			for(int k = 0; k < 3; k++) {
-				if(!pbc[k]) continue;
-				while(sr[k] > 0.5) sr[k] -= 1.0;
-				while(sr[k] < -0.5) sr[k] += 1.0;
-			}
+	// Get the reference position property.
+	ParticlePropertyObject* refPosProperty = nullptr;
+	for(const auto& o : refState.objects()) {
+		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o.get());
+		if(property && property->type() == ParticleProperty::PositionProperty) {
+			refPosProperty = property;
+			break;
 		}
-		r = simCell * sr;
+	}
+	if(!refPosProperty)
+		throw Exception(tr("The reference configuration does not contain particle positions."));
 
-		for(int i = 0; i < 3; i++) {
-			for(int j = 0; j < 3; j++) {
-				V(i,j) += r0[j] * r0[i];
-				W(i,j) += r0[j] * r[i];
-			}
+	// Get simulation cells.
+	SimulationCell* inputCell = expectSimulationCell();
+	SimulationCell* refCell = refState.findObject<SimulationCell>();
+	if(!refCell)
+		throw Exception(tr("Reference configuration does not contain simulation cell info."));
+
+	// Get particle identifiers.
+	ParticlePropertyObject* identifierProperty = inputStandardProperty(ParticleProperty::IdentifierProperty);
+	ParticlePropertyObject* refIdentifierProperty = nullptr;
+#if 0
+	for(const auto& o : refState.objects()) {
+		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o.get());
+		if(property && property->type() == ParticleProperty::IdentifierProperty) {
+			refIdentifierProperty = property;
+			break;
+		}
+	}
+#endif
+
+	// Create engine object.
+	return std::make_shared<AtomicStrainEngine>(posProperty->storage(), inputCell->data(), refPosProperty->storage(), refCell->data(),
+			identifierProperty ? identifierProperty->data() : nullptr, refIdentifierProperty ? refIdentifierProperty->data() : nullptr,
+			cutoff(), eliminateCellDeformation(), assumeUnwrappedCoordinates(), calculateDeformationGradients(), calculateStrainTensors());
+}
+
+/******************************************************************************
+* Performs the actual computation. This method is executed in a worker thread.
+******************************************************************************/
+void AtomicStrainModifier::AtomicStrainEngine::compute(FutureInterfaceBase& futureInterface)
+{
+	futureInterface.setProgressText(tr("Computing atomic strain tensors"));
+
+#if 0
+	// Build particle-to-particle index map.
+	std::vector<size_t> indexToIndexMap(positions()->size());
+	if(_identifiers && _refIdentifiers) {
+
+		// Build map of particle identifiers in reference configuration.
+		std::map<int, size_t> refMap;
+		size_t index = 0;
+		const int* id = _refIdentifiers->constDataInt();
+		const int* id_end = id + _refIdentifiers->size();
+		for(; id != id_end; ++id, ++index) {
+			if(refMap.insert(std::make_pair(*id, index)).second == false)
+				throw Exception(tr("Particles with the same identifier detected in reference configuration."));
 		}
 
-		numNeighbors++;
+		if(futureInterface.isCanceled())
+			return;
+
+		// Check for duplicate identifiers in current configuration.
+		std::vector<size_t> idSet(_identifiers->constDataInt(), _identifiers->constDataInt() + _identifiers->size());
+		std::sort(idSet.begin(), idSet.end());
+		if(std::adjacent_find(idSet.begin(), idSet.end()) != idSet.end())
+			throw Exception(tr("Particles with the same identifier detected in input configuration."));
+
+		if(futureInterface.isCanceled())
+			return;
+
+		// Build index map.
+		index = 0;
+		id = _identifiers->constDataInt();
+		for(auto& mappedIndex : indexToIndexMap) {
+			auto iter = refMap.find(*id);
+			if(iter == refMap.end())
+				throw Exception(tr("Particle id %1 not found in reference configuration.").arg(*id));
+			mappedIndex = iter->second;
+			index++;
+			++id;
+		}
 	}
-
-	if(fabs(V.determinant()) < FLOATTYPE_EPSILON) {
-		if(selection) selection[atomIndex] = 1;
-		return AnalysisInfo(1, numNeighbors, numNeighbors);
+	else {
+		// Deformed and reference configuration must contain the same number of particles.
+		if(positions()->size() != refPositions()->size())
+			throw Exception(tr("Cannot calculate displacements. Numbers of particles in reference configuration and current configuration do not match."));
+		// When particle identifiers are not available, use trivial 1-to-1 mapping.
+		std::iota(indexToIndexMap.begin(), indexToIndexMap.end(), size_t(0));
 	}
-
-	// Calculate deformation gradient tensor.
-	Tensor2 F = W * V.inverse();
-	if(deformationGradients)
-		deformationGradients[atomIndex] = F;
-
-	// Calculate strain tensor.
-	SymmetricTensor2 strain = (Product_AtA(F) - IDENTITY) * 0.5;
-	if(strains)
-		strains[atomIndex] = strain;
-
-	// Calculate shear component.
-	if(shearStrains) {
-		shearStrains[atomIndex] = sqrt(square(strain(0,1)) + square(strain(1,2)) + square(strain(0,2)) + (square(strain(1,1) - strain(2,2)) + square(strain(0,0) - strain(2,2)) + square(strain(0,0) - strain(1,1))) / 6.0);
-#ifndef Q_CC_MSVC
-		OVITO_ASSERT(!isnan(shearStrains[atomIndex]) && !isinf(shearStrains[atomIndex]));
+	if(futureInterface.isCanceled())
+		return;
 #endif
-	}
-
-	// Calculate volumetric component.
-	if(volumetricStrains) {
-		volumetricStrains[atomIndex] = (strain(0,0) + strain(1,1) + strain(2,2)) / 3;
-#ifndef Q_CC_MSVC
-		OVITO_ASSERT(!isnan(volumetricStrains[atomIndex]) && !isinf(volumetricStrains[atomIndex]));
-#endif
-	}
-
-	if(selection) selection[atomIndex] = 0;
-	return AnalysisInfo(0, numNeighbors, numNeighbors);
 }
 
 /******************************************************************************
-* Saves the class' contents to the given stream.
+* Unpacks the computation results stored in the given engine object.
 ******************************************************************************/
-void AtomicStrainModifier::saveToStream(ObjectSaveStream& stream)
+void AtomicStrainModifier::retrieveModifierResults(Engine* engine)
 {
-	AtomsObjectAnalyzerBase::saveToStream(stream);
-
-	stream.beginChunk(0x1);
-	stream << _analysisInfo.numInvalidAtoms;
-	stream << _analysisInfo.minNeighbors;
-	stream << _analysisInfo.maxNeighbors;
-	stream.endChunk();
-}
-
-/******************************************************************************
-* Loads the class' contents from the given stream.
-******************************************************************************/
-void AtomicStrainModifier::loadFromStream(ObjectLoadStream& stream)
-{
-	AtomsObjectAnalyzerBase::loadFromStream(stream);
-
-	stream.expectChunk(0x1);
-	stream >> _analysisInfo.numInvalidAtoms;
-	stream >> _analysisInfo.minNeighbors;
-	stream >> _analysisInfo.maxNeighbors;
-	stream.closeChunk();
-}
-
-/******************************************************************************
-* Creates a copy of this object.
-******************************************************************************/
-RefTarget::SmartPtr AtomicStrainModifier::clone(bool deepCopy, CloneHelper& cloneHelper)
-{
-	// Let the base class create an instance of this class.
-	AtomicStrainModifier::SmartPtr clone = static_object_cast<AtomicStrainModifier>(AtomsObjectAnalyzerBase::clone(deepCopy, cloneHelper));
-	clone->_analysisInfo = this->_analysisInfo;
-	return clone;
-}
-
-/******************************************************************************
-* Returns the path to the reference configuration file.
-******************************************************************************/
-QString AtomicStrainModifier::inputFile() const
-{
-	AtomsImportObject* importObj = dynamic_object_cast<AtomsImportObject>(referenceConfiguration());
-	if(importObj)
-		return importObj->inputFile();
+	AtomicStrainEngine* eng = static_cast<AtomicStrainEngine*>(engine);
+	if(eng->shearStrains())
+		_shearStrainValues = eng->shearStrains();
 	else
-		return QString();
+		_shearStrainValues->resize(0);
+	if(eng->volumetricStrains())
+		_volumetricStrainValues = eng->volumetricStrains();
+	else
+		_volumetricStrainValues->resize(0);
+	if(eng->strainTensors())
+		_strainTensors = eng->strainTensors();
+	else
+		_strainTensors->resize(0);
+	if(eng->deformationGradients())
+		_deformationGradients = eng->deformationGradients();
+	else
+		_deformationGradients->resize(0);
+	if(eng->invalidParticles())
+		_invalidParticles = eng->invalidParticles();
+	else
+		_invalidParticles->resize(0);
 }
 
 /******************************************************************************
-* Displays the file selection dialog and lets the user select the file with the reference configuration.
+* This lets the modifier insert the previously computed results into the pipeline.
 ******************************************************************************/
-void AtomicStrainModifier::showSelectionDialog(QWidget* parent)
+ObjectStatus AtomicStrainModifier::applyModifierResults(TimePoint time, TimeInterval& validityInterval)
 {
-	AtomsImportObject* importObj = dynamic_object_cast<AtomsImportObject>(referenceConfiguration());
-	if(importObj)
-		importObj->showSelectionDialog(parent);
+	if(inputParticleCount() != shearStrainValues().size() || inputParticleCount() != volumetricStrainValues().size())
+		throw Exception(tr("The number of input particles has changed. The stored results have become invalid."));
+
+	if(selectInvalidParticles() && invalidParticles().size() == inputParticleCount())
+		outputStandardProperty(ParticleProperty::SelectionProperty)->replaceStorage(_invalidParticles.data());
+
+	if(calculateStrainTensors() && strainTensors().size() == inputParticleCount())
+		outputStandardProperty(ParticleProperty::StrainTensorProperty)->replaceStorage(_strainTensors.data());
+
+	if(calculateDeformationGradients() && deformationGradients().size() == inputParticleCount())
+		outputStandardProperty(ParticleProperty::DeformationGradientProperty)->replaceStorage(_deformationGradients.data());
+
+	outputCustomProperty(volumetricStrainValues().name(), qMetaTypeId<FloatType>(), sizeof(FloatType), 1)->replaceStorage(_volumetricStrainValues.data());
+	outputCustomProperty(shearStrainValues().name(), qMetaTypeId<FloatType>(), sizeof(FloatType), 1)->replaceStorage(_shearStrainValues.data());
+
+	return ObjectStatus::Success;
 }
 
-IMPLEMENT_PLUGIN_CLASS(AtomicStrainModifierEditor, AtomsObjectModifierEditorBase)
+/******************************************************************************
+* Is called when the value of a property of this object has changed.
+******************************************************************************/
+void AtomicStrainModifier::propertyChanged(const PropertyFieldDescriptor& field)
+{
+	// Recompute brightness values when the parameters have been changed.
+	if(autoUpdateEnabled()) {
+		if(field == PROPERTY_FIELD(AtomicStrainModifier::_eliminateCellDeformation) ||
+				field == PROPERTY_FIELD(AtomicStrainModifier::_assumeUnwrappedCoordinates) ||
+				field == PROPERTY_FIELD(AtomicStrainModifier::_cutoff) ||
+				field == PROPERTY_FIELD(AtomicStrainModifier::_calculateDeformationGradients) ||
+				field == PROPERTY_FIELD(AtomicStrainModifier::_calculateStrainTensors))
+			invalidateCachedResults();
+	}
+
+	AsynchronousParticleModifier::propertyChanged(field);
+}
 
 /******************************************************************************
 * Sets up the UI widgets of the editor.
@@ -443,95 +290,67 @@ IMPLEMENT_PLUGIN_CLASS(AtomicStrainModifierEditor, AtomsObjectModifierEditorBase
 void AtomicStrainModifierEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
 	// Create a rollout.
-	QWidget* rollout = createRollout(tr("Calculate atomic strain"), rolloutParams, "atomviz.modifiers.calculate_atomic_strain", "atomviz.modifiers.calculate_atomic_strain.html");
+	QWidget* rollout = createRollout(tr("Atomic strain"), rolloutParams);
 
     // Create the rollout contents.
-	QVBoxLayout* layout1 = new QVBoxLayout(rollout);
-	layout1->setContentsMargins(4,4,4,4);
-	layout1->setSpacing(0);
+	QVBoxLayout* layout = new QVBoxLayout(rollout);
+	layout->setContentsMargins(4,4,4,4);
+	layout->setSpacing(4);
 
 	QGridLayout* gridlayout = new QGridLayout();
+	gridlayout->setContentsMargins(4,4,4,4);
 	gridlayout->setColumnStretch(1, 1);
 
 	// Cutoff parameter.
-	FloatPropertyUI* cutoffRadiusPUI = new FloatPropertyUI(this, PROPERTY_FIELD_DESCRIPTOR(AtomicStrainModifier, _neighborCutoff));
+	FloatParameterUI* cutoffRadiusPUI = new FloatParameterUI(this, PROPERTY_FIELD(AtomicStrainModifier::_cutoff));
 	gridlayout->addWidget(cutoffRadiusPUI->label(), 0, 0);
 	gridlayout->addLayout(cutoffRadiusPUI->createFieldLayout(), 0, 1);
 	cutoffRadiusPUI->setMinValue(0);
 	connect(cutoffRadiusPUI->spinner(), SIGNAL(spinnerValueChanged()), this, SLOT(memorizeCutoff()));
 
-	CutoffPresetsUI* cutoffPresetsPUI = new CutoffPresetsUI(this, PROPERTY_FIELD_DESCRIPTOR(AtomicStrainModifier, _neighborCutoff));
-	gridlayout->addWidget(cutoffPresetsPUI->comboBox(), 1, 1);
+	layout->addLayout(gridlayout);
 
-	layout1->addLayout(gridlayout);
+	BooleanParameterUI* eliminateCellDeformationUI = new BooleanParameterUI(this, PROPERTY_FIELD(AtomicStrainModifier::_eliminateCellDeformation));
+	layout->addWidget(eliminateCellDeformationUI->checkBox());
 
-	BooleanPropertyUI* calculateDeformationGradientsUI = new BooleanPropertyUI(this, PROPERTY_FIELD_DESCRIPTOR(AtomicStrainModifier, _calculateDeformationGradients));
-	layout1->addWidget(calculateDeformationGradientsUI->checkBox());
+	BooleanParameterUI* assumeUnwrappedUI = new BooleanParameterUI(this, PROPERTY_FIELD(AtomicStrainModifier::_assumeUnwrappedCoordinates));
+	layout->addWidget(assumeUnwrappedUI->checkBox());
 
-	BooleanPropertyUI* calculateStrainTensorsUI = new BooleanPropertyUI(this, PROPERTY_FIELD_DESCRIPTOR(AtomicStrainModifier, _calculateStrainTensors));
-	layout1->addWidget(calculateStrainTensorsUI->checkBox());
+#if 0
+	BooleanParameterUI* showReferenceUI = new BooleanParameterUI(this, PROPERTY_FIELD(AtomicStrainModifier::_referenceShown));
+	layout->addWidget(showReferenceUI->checkBox());
+#endif
 
-	QCheckBox* calculateShearStrainsBox = new QCheckBox(tr("Output shear strains"));
+	QCheckBox* calculateShearStrainsBox = new QCheckBox(tr("Output von Mises shear strains"));
 	calculateShearStrainsBox->setEnabled(false);
 	calculateShearStrainsBox->setChecked(true);
-	layout1->addWidget(calculateShearStrainsBox);
+	layout->addWidget(calculateShearStrainsBox);
 
 	QCheckBox* calculateVolumetricStrainsBox = new QCheckBox(tr("Output volumetric strains"));
 	calculateVolumetricStrainsBox->setEnabled(false);
 	calculateVolumetricStrainsBox->setChecked(true);
-	layout1->addWidget(calculateVolumetricStrainsBox);
+	layout->addWidget(calculateVolumetricStrainsBox);
 
-	BooleanPropertyUI* eliminateCellDeformationUI = new BooleanPropertyUI(this, PROPERTY_FIELD_DESCRIPTOR(AtomicStrainModifier, _eliminateCellDeformation));
-	layout1->addWidget(eliminateCellDeformationUI->checkBox());
+	BooleanParameterUI* calculateDeformationGradientsUI = new BooleanParameterUI(this, PROPERTY_FIELD(AtomicStrainModifier::_calculateDeformationGradients));
+	layout->addWidget(calculateDeformationGradientsUI->checkBox());
 
-	BooleanPropertyUI* assumeUnwrappedUI = new BooleanPropertyUI(this, PROPERTY_FIELD_DESCRIPTOR(AtomicStrainModifier, _assumeUnwrappedCoordinates));
-	layout1->addWidget(assumeUnwrappedUI->checkBox());
+	BooleanParameterUI* calculateStrainTensorsUI = new BooleanParameterUI(this, PROPERTY_FIELD(AtomicStrainModifier::_calculateStrainTensors));
+	layout->addWidget(calculateStrainTensorsUI->checkBox());
 
-	BooleanPropertyUI* showReferenceUI = new BooleanPropertyUI(this, PROPERTY_FIELD_DESCRIPTOR(AtomicStrainModifier, _referenceShown));
-	layout1->addWidget(showReferenceUI->checkBox());
-
-	BooleanPropertyUI* selectInvalidAtomsUI = new BooleanPropertyUI(this, PROPERTY_FIELD_DESCRIPTOR(AtomicStrainModifier, _selectInvalidAtoms));
-	layout1->addWidget(selectInvalidAtomsUI->checkBox());
-
-	BooleanPropertyUI* autoUpdateUI = new BooleanPropertyUI(this, PROPERTY_FIELD_DESCRIPTOR(AtomsObjectAnalyzerBase, _autoUpdateOnTimeChange));
-	layout1->addWidget(autoUpdateUI->checkBox());
-
-	FilenamePropertyUI* inputFilePUI = new FilenamePropertyUI(this, "inputFile", SLOT(showSelectionDialog(QWidget*)));
-	layout1->addWidget(inputFilePUI->selectorWidget());
-	inputFilePUI->selectorWidget()->setSizePolicy(QSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed));
-
-	QPushButton* calcButton = new QPushButton(tr("Calculate"), rollout);
-	layout1->addSpacing(6);
-	layout1->addWidget(calcButton);
-	connect(calcButton, SIGNAL(clicked(bool)), this, SLOT(onCalculate()));
+	BooleanParameterUI* selectInvalidParticlesUI = new BooleanParameterUI(this, PROPERTY_FIELD(AtomicStrainModifier::_selectInvalidParticles));
+	layout->addWidget(selectInvalidParticlesUI->checkBox());
 
 	// Status label.
-	layout1->addSpacing(10);
-	layout1->addWidget(statusLabel());
+	layout->addSpacing(6);
+	layout->addWidget(statusLabel());
 
-	// Open a sub-editor for the internal AtomsImportObject.
-	subObjectUI = new SubObjectParameterUI(this, PROPERTY_FIELD_DESCRIPTOR(AtomicStrainModifier, _referenceObject));
-}
-
-/******************************************************************************
-* Is called when the user presses the Calculate button.
-******************************************************************************/
-void AtomicStrainModifierEditor::onCalculate()
-{
-	if(!editObject()) return;
-	AtomicStrainModifier* modifier = static_object_cast<AtomicStrainModifier>(editObject());
-	try {
-		modifier->performAnalysis(ANIM_MANAGER.time());
-	}
-	catch(Exception& ex) {
-		ex.prependGeneralMessage(tr("Failed to compute atomic strain tensors."));
-		ex.showError();
-	}
+	// Open a sub-editor for the reference object.
+	new SubObjectParameterUI(this, PROPERTY_FIELD(AtomicStrainModifier::_referenceObject));
 }
 
 /******************************************************************************
 * Stores the current cutoff radius in the application settings
-* so it can be used as default value for new modifiers.
+* so it can be used as default value for new modifiers in the future.
 ******************************************************************************/
 void AtomicStrainModifierEditor::memorizeCutoff()
 {
@@ -539,9 +358,10 @@ void AtomicStrainModifierEditor::memorizeCutoff()
 	AtomicStrainModifier* modifier = static_object_cast<AtomicStrainModifier>(editObject());
 
 	QSettings settings;
-	settings.beginGroup("atomviz/neigborlist");
-	settings.setValue("DefaultCutoff", modifier->neighborCutoff());
+	settings.beginGroup("viz/strain");
+	settings.setValue("DefaultCutoff", modifier->cutoff());
 	settings.endGroup();
 }
 
-};	// End of namespace AtomViz
+
+};	// End of namespace

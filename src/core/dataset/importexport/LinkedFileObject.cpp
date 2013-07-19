@@ -405,9 +405,11 @@ void LinkedFileObject::showFileSelectionDialog(QWidget* parent)
 					UndoManager::instance().endCompoundOperation();
 
 					// Adjust viewports to show the new object.
-					DataSetManager::instance().runWhenSceneIsReady([]() {
-						ActionManager::instance().getAction(ACTION_VIEWPORT_ZOOM_SELECTION_EXTENTS_ALL)->trigger();
-					});
+					if(_adjustAnimationIntervalEnabled) {
+						DataSetManager::instance().runWhenSceneIsReady([]() {
+							ActionManager::instance().getAction(ACTION_VIEWPORT_ZOOM_SELECTION_EXTENTS_ALL)->trigger();
+						});
+					}
 
 					return;
 				}

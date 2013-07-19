@@ -183,7 +183,7 @@ InputColumnReader::InputColumnReader(const InputColumnMapping& mapping, Particle
 				}
 				if(!property) {
 					// Create a new user-defined property for the column.
-					property = new ParticleProperty(particleCount, dataType, dataTypeSize, vectorComponent + 1);
+					property = new ParticleProperty(particleCount, dataType, dataTypeSize, vectorComponent + 1, propertyName);
 					destination.addParticleProperty(property);
 				}
 			}

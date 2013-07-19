@@ -44,6 +44,24 @@ class CentroSymmetryModifier : public AsynchronousParticleModifier
 {
 public:
 
+	/// Default constructor.
+	Q_INVOKABLE CentroSymmetryModifier();
+
+	/// Returns the computed per-particle CSP values.
+	const ParticleProperty& cspValues() const { OVITO_CHECK_POINTER(_cspValues.constData()); return *_cspValues; }
+
+	/// Returns the number of nearest neighbors to take into account when computing the CSP.
+	int numNeighbors() const { return _numNeighbors; }
+
+	/// Sets the number of nearest neighbors to take into account when computing the CSP.
+	void setNumNeighbors(int count) { _numNeighbors = count; }
+
+public:
+
+	Q_PROPERTY(int numNeighbors READ numNeighbors WRITE setNumNeighbors)
+
+private:
+
 	/// Computes the modifier's results.
 	class CentroSymmetryEngine : public AsynchronousParticleModifier::Engine
 	{
@@ -75,24 +93,6 @@ public:
 		QExplicitlySharedDataPointer<ParticleProperty> _positions;
 		QExplicitlySharedDataPointer<ParticleProperty> _csp;
 	};
-
-public:
-
-	/// Default constructor.
-	Q_INVOKABLE CentroSymmetryModifier();
-
-	/// Returns the computed per-particle CSP values.
-	const ParticleProperty& cspValues() const { OVITO_CHECK_POINTER(_cspValues.constData()); return *_cspValues; }
-
-	/// Returns the number of nearest neighbors to take into account when computing the CSP.
-	int numNeighbors() const { return _numNeighbors; }
-
-	/// Sets the number of nearest neighbors to take into account when computing the CSP.
-	void setNumNeighbors(int count) { _numNeighbors = count; }
-
-public:
-
-	Q_PROPERTY(int numNeighbors READ numNeighbors WRITE setNumNeighbors)
 
 protected:
 

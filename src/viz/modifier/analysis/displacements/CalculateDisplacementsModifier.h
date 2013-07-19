@@ -23,7 +23,6 @@
 #define __OVITO_CALCULATE_DISPLACEMENTS_MODIFIER_H
 
 #include <core/Core.h>
-#include <core/gui/properties/SubObjectParameterUI.h>
 #include <viz/data/VectorDisplay.h>
 #include "../../ParticleModifier.h"
 
@@ -77,6 +76,9 @@ public:
 
 protected:
 
+	/// Handles reference events sent by reference targets of this object.
+	virtual bool referenceEvent(RefTarget* source, ReferenceEvent* event) override;
+
 	/// Modifies the particle object.
 	virtual ObjectStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;
 
@@ -124,10 +126,6 @@ protected:
 
 	/// Creates the user interface controls for the editor.
 	virtual void createUI(const RolloutInsertionParameters& rolloutParams) override;
-
-private:
-
-	SubObjectParameterUI* subObjectUI;
 
 	Q_OBJECT
 	OVITO_OBJECT

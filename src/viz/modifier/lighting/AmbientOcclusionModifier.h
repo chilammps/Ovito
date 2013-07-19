@@ -53,7 +53,7 @@ public:
 			_samplingCount(samplingCount),
 			_positions(positions),
 			_boundingBox(boundingBox),
-			_brightness(new ParticleProperty(positions->size(), qMetaTypeId<FloatType>(), sizeof(FloatType), 1)),
+			_brightness(new ParticleProperty(positions->size(), qMetaTypeId<FloatType>(), sizeof(FloatType), 1, tr("Brightness"))),
 			_particleRadii(particleRadii) {}
 
 		/// Computes the modifier's results and stores them in this object for later retrieval.

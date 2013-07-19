@@ -23,7 +23,6 @@
 #include <core/scene/objects/SceneObject.h>
 #include <core/dataset/importexport/LinkedFileObject.h>
 #include <core/gui/properties/BooleanParameterUI.h>
-#include <core/gui/properties/FilenameParameterUI.h>
 #include <core/gui/properties/SubObjectParameterUI.h>
 #include <core/utilities/concurrent/ParallelFor.h>
 #include "CalculateDisplacementsModifier.h"
@@ -37,7 +36,7 @@ DEFINE_REFERENCE_FIELD(CalculateDisplacementsModifier, _referenceObject, "Refere
 DEFINE_PROPERTY_FIELD(CalculateDisplacementsModifier, _referenceShown, "ShowReferenceConfiguration")
 DEFINE_PROPERTY_FIELD(CalculateDisplacementsModifier, _eliminateCellDeformation, "EliminateCellDeformation")
 DEFINE_PROPERTY_FIELD(CalculateDisplacementsModifier, _assumeUnwrappedCoordinates, "AssumeUnwrappedCoordinates")
-DEFINE_REFERENCE_FIELD(CalculateDisplacementsModifier, _vectorDisplay, "Vector display", VectorDisplay)
+DEFINE_FLAGS_REFERENCE_FIELD(CalculateDisplacementsModifier, _vectorDisplay, "Vector display", VectorDisplay, PROPERTY_FIELD_ALWAYS_DEEP_COPY)
 SET_PROPERTY_FIELD_LABEL(CalculateDisplacementsModifier, _referenceObject, "Reference Configuration")
 SET_PROPERTY_FIELD_LABEL(CalculateDisplacementsModifier, _referenceShown, "Show reference configuration")
 SET_PROPERTY_FIELD_LABEL(CalculateDisplacementsModifier, _eliminateCellDeformation, "Eliminate homogeneous cell deformation")
@@ -78,6 +77,18 @@ TimeInterval CalculateDisplacementsModifier::modifierValidity(TimePoint time)
 		interval.intersect(refState.stateValidity());
 	}
 	return interval;
+}
+
+/******************************************************************************
+* Handles reference events sent by reference targets of this object.
+******************************************************************************/
+bool CalculateDisplacementsModifier::referenceEvent(RefTarget* source, ReferenceEvent* event)
+{
+	// Do not propagate messages from the attached display object.
+	if(source == _vectorDisplay)
+		return false;
+
+	return ParticleModifier::referenceEvent(source, event);
 }
 
 /******************************************************************************
@@ -281,9 +292,7 @@ void CalculateDisplacementsModifierEditor::createUI(const RolloutInsertionParame
     // Create the rollout contents.
 	QVBoxLayout* layout = new QVBoxLayout(rollout);
 	layout->setContentsMargins(4,4,4,4);
-#ifndef Q_WS_MAC
-	layout->setSpacing(0);
-#endif
+	layout->setSpacing(4);
 
 	BooleanParameterUI* eliminateCellDeformationUI = new BooleanParameterUI(this, PROPERTY_FIELD(CalculateDisplacementsModifier::_eliminateCellDeformation));
 	layout->addWidget(eliminateCellDeformationUI->checkBox());
@@ -304,7 +313,7 @@ void CalculateDisplacementsModifierEditor::createUI(const RolloutInsertionParame
 	new SubObjectParameterUI(this, PROPERTY_FIELD(CalculateDisplacementsModifier::_vectorDisplay), rolloutParams.after(rollout));
 
 	// Open a sub-editor for the reference object.
-	subObjectUI = new SubObjectParameterUI(this, PROPERTY_FIELD(CalculateDisplacementsModifier::_referenceObject));
+	new SubObjectParameterUI(this, PROPERTY_FIELD(CalculateDisplacementsModifier::_referenceObject));
 }
 
 };	// End of namespace

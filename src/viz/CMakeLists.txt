@@ -39,6 +39,7 @@ SET(OVITO_VIZ_SOURCE_FILES
 	modifier/analysis/cna/CommonNeighborAnalysisModifier.cpp
 	modifier/analysis/displacements/CalculateDisplacementsModifier.cpp
 	modifier/analysis/centrosymmetry/CentroSymmetryModifier.cpp
+	modifier/analysis/strain/AtomicStrainModifier.cpp
 	modifier/lighting/AmbientOcclusionModifier.cpp
 	modifier/lighting/AmbientOcclusionRenderer.cpp
 	modifier/transformation/AffineTransformationModifier.cpp

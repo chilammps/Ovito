@@ -40,9 +40,9 @@ ParticlePropertyObject::ParticlePropertyObject(ParticleProperty* storage)
 /******************************************************************************
 * Factory function that creates a user-defined property object.
 ******************************************************************************/
-OORef<ParticlePropertyObject> ParticlePropertyObject::create(size_t particleCount, int dataType, size_t dataTypeSize, size_t componentCount)
+OORef<ParticlePropertyObject> ParticlePropertyObject::create(size_t particleCount, int dataType, size_t dataTypeSize, size_t componentCount, const QString& name)
 {
-	return create(new ParticleProperty(particleCount, dataType, dataTypeSize, componentCount));
+	return create(new ParticleProperty(particleCount, dataType, dataTypeSize, componentCount, name));
 }
 
 /******************************************************************************

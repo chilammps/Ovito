@@ -101,7 +101,8 @@ public:
 	///                     This is necessary because the Qt type system has no function to query
 	///                     the size of a data type at runtime.
 	/// \param componentCount The number of components per particle of type \a dataType.
-	ParticleProperty(size_t particleCount, int dataType, size_t dataTypeSize, size_t componentCount);
+	/// \param name The name assigned to the property.
+	ParticleProperty(size_t particleCount, int dataType, size_t dataTypeSize, size_t componentCount, const QString& name);
 
 	/// \brief Copy constructor.
 	ParticleProperty(const ParticleProperty& other);

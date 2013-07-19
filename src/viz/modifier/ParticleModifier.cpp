@@ -227,8 +227,7 @@ ParticlePropertyObject* ParticleModifier::outputCustomProperty(const QString& na
 	}
 	else {
 		// Create a new particle property in the output.
-		outputProperty = ParticlePropertyObject::create(_outputParticleCount, dataType, dataTypeSize, componentCount);
-		outputProperty->setName(name);
+		outputProperty = ParticlePropertyObject::create(_outputParticleCount, dataType, dataTypeSize, componentCount, name);
 		_output.addObject(outputProperty.get());
 	}
 

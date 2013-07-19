@@ -148,7 +148,7 @@ ObjectStatus CentroSymmetryModifier::applyModifierResults(TimePoint time, TimeIn
 ******************************************************************************/
 void CentroSymmetryModifier::propertyChanged(const PropertyFieldDescriptor& field)
 {
-	// Recompute brightness values when the AO parameters have been changed.
+	// Recompute brightness values when the parameters have been changed.
 	if(autoUpdateEnabled()) {
 		if(field == PROPERTY_FIELD(CentroSymmetryModifier::_numNeighbors))
 			invalidateCachedResults();

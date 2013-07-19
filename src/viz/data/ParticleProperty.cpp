@@ -37,10 +37,10 @@ ParticleProperty::ParticleProperty()
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-ParticleProperty::ParticleProperty(size_t particleCount, int dataType, size_t dataTypeSize, size_t componentCount)
+ParticleProperty::ParticleProperty(size_t particleCount, int dataType, size_t dataTypeSize, size_t componentCount, const QString& name)
 	: _numParticles(0), _dataType(dataType), _dataTypeSize(dataTypeSize),
 	_perParticleSize(dataTypeSize*componentCount),
-	_componentCount(componentCount), _type(UserProperty)
+	_componentCount(componentCount), _type(UserProperty), _name(name)
 {
 	OVITO_ASSERT(_dataTypeSize > 0);
 	OVITO_ASSERT(_componentCount > 0);
