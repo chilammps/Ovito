@@ -24,6 +24,7 @@
 #include <core/dataset/importexport/LinkedFileObject.h>
 #include <core/gui/properties/BooleanParameterUI.h>
 #include <core/gui/properties/FilenameParameterUI.h>
+#include <core/gui/properties/SubObjectParameterUI.h>
 #include <core/utilities/concurrent/ParallelFor.h>
 #include "CalculateDisplacementsModifier.h"
 
@@ -36,10 +37,12 @@ DEFINE_REFERENCE_FIELD(CalculateDisplacementsModifier, _referenceObject, "Refere
 DEFINE_PROPERTY_FIELD(CalculateDisplacementsModifier, _referenceShown, "ShowReferenceConfiguration")
 DEFINE_PROPERTY_FIELD(CalculateDisplacementsModifier, _eliminateCellDeformation, "EliminateCellDeformation")
 DEFINE_PROPERTY_FIELD(CalculateDisplacementsModifier, _assumeUnwrappedCoordinates, "AssumeUnwrappedCoordinates")
+DEFINE_REFERENCE_FIELD(CalculateDisplacementsModifier, _vectorDisplay, "Vector display", VectorDisplay)
 SET_PROPERTY_FIELD_LABEL(CalculateDisplacementsModifier, _referenceObject, "Reference Configuration")
 SET_PROPERTY_FIELD_LABEL(CalculateDisplacementsModifier, _referenceShown, "Show reference configuration")
 SET_PROPERTY_FIELD_LABEL(CalculateDisplacementsModifier, _eliminateCellDeformation, "Eliminate homogeneous cell deformation")
 SET_PROPERTY_FIELD_LABEL(CalculateDisplacementsModifier, _assumeUnwrappedCoordinates, "Assume unwrapped coordinates")
+SET_PROPERTY_FIELD_LABEL(CalculateDisplacementsModifier, _vectorDisplay, "Assume unwrapped coordinates")
 
 /******************************************************************************
 * Constructs the modifier object.
@@ -51,10 +54,16 @@ CalculateDisplacementsModifier::CalculateDisplacementsModifier() :
 	INIT_PROPERTY_FIELD(CalculateDisplacementsModifier::_referenceShown);
 	INIT_PROPERTY_FIELD(CalculateDisplacementsModifier::_eliminateCellDeformation);
 	INIT_PROPERTY_FIELD(CalculateDisplacementsModifier::_assumeUnwrappedCoordinates);
+	INIT_PROPERTY_FIELD(CalculateDisplacementsModifier::_vectorDisplay);
 
 	OORef<LinkedFileObject> importObj(new LinkedFileObject());
 	importObj->setAdjustAnimationIntervalEnabled(false);
 	_referenceObject = importObj;
+
+	// Create display object for vectors.
+	_vectorDisplay = new VectorDisplay();
+	// Don't show vector by default.
+	_vectorDisplay->setEnabled(false);
 }
 
 /******************************************************************************
@@ -180,6 +189,9 @@ ObjectStatus CalculateDisplacementsModifier::modifyParticles(TimePoint time, Tim
 	ParticlePropertyObject* displacementProperty = outputStandardProperty(ParticleProperty::DisplacementProperty);
 	OVITO_ASSERT(displacementProperty->size() == posProperty->size());
 
+	// Plug in our internal display object.
+	displacementProperty->setDisplayObject(_vectorDisplay);
+
 	// Get simulation cell info.
 	const std::array<bool, 3> pbc = inputCell->pbcFlags();
 	AffineTransformation simCell;
@@ -288,8 +300,8 @@ void CalculateDisplacementsModifierEditor::createUI(const RolloutInsertionParame
 	layout->addSpacing(6);
 	layout->addWidget(statusLabel());
 
-	// Open a sub-editor for the displacement display object.
-	//new SubObjectParameterUI(this, PROPERTY_FIELD(CalculateDisplacementsModifier::_displacementChannelPrototype), rolloutParams.after(rollout));
+	// Open a sub-editor for the vector display object.
+	new SubObjectParameterUI(this, PROPERTY_FIELD(CalculateDisplacementsModifier::_vectorDisplay), rolloutParams.after(rollout));
 
 	// Open a sub-editor for the reference object.
 	subObjectUI = new SubObjectParameterUI(this, PROPERTY_FIELD(CalculateDisplacementsModifier::_referenceObject));

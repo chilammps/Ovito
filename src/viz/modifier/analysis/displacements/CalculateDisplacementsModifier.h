@@ -24,6 +24,7 @@
 
 #include <core/Core.h>
 #include <core/gui/properties/SubObjectParameterUI.h>
+#include <viz/data/VectorDisplay.h>
 #include "../../ParticleModifier.h"
 
 namespace Viz {
@@ -91,6 +92,9 @@ protected:
 	/// Controls the whether we assume the particle coordinates are unwrapped when calculating the displacement vectors.
 	PropertyField<bool> _assumeUnwrappedCoordinates;
 
+	/// The vector display object for rendering the displacement vectors.
+	ReferenceField<VectorDisplay> _vectorDisplay;
+
 private:
 
 	Q_OBJECT
@@ -103,6 +107,7 @@ private:
 	DECLARE_PROPERTY_FIELD(_referenceShown);
 	DECLARE_PROPERTY_FIELD(_eliminateCellDeformation);
 	DECLARE_PROPERTY_FIELD(_assumeUnwrappedCoordinates);
+	DECLARE_REFERENCE_FIELD(_vectorDisplay);
 };
 
 /******************************************************************************

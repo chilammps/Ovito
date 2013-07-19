@@ -50,7 +50,7 @@ ModifyCommandPage::ModifyCommandPage()
 	class ModifierStackListView : public QListView {
 	public:
 		ModifierStackListView(QWidget* parent) : QListView(parent) {}
-		virtual QSize sizeHint() const { return QSize(256, 240); }
+		virtual QSize sizeHint() const { return QSize(256, 260); }
 	};
 
 	QSplitter* splitter = new QSplitter(Qt::Vertical);

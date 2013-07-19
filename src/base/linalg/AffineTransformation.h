@@ -258,6 +258,11 @@ public:
 		return _m[0][index] * v[0] + _m[1][index] * v[1] + _m[2][index] * v[2];
 	}
 
+	/// Returns the upper left 3x3 submatrix of this 3x4 matrix containing only the rotation/scale/shear transformation but not the translations.
+	inline constexpr Matrix_3<T> linear() const {
+		return Matrix_3<T>(_m[0], _m[1], _m[2]);
+	}
+
 	////////////////////////////////// Generation ///////////////////////////////////
 	
 	/// \brief Generates a matrix describing a rotation around the X axis.

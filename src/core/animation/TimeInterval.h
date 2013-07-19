@@ -222,6 +222,13 @@ inline LoadStream& operator>>(LoadStream& stream, TimeInterval& iv)
 	return stream;
 }
 
+/// \brief Writes a time interval to the debug stream.
+inline QDebug operator<<(QDebug stream, const TimeInterval& iv)
+{
+	stream.nospace() << "[" << iv.start() << ", " << iv.end() << "]";
+	return stream.space();
+}
+
 };
 
 Q_DECLARE_METATYPE(Ovito::TimeInterval)

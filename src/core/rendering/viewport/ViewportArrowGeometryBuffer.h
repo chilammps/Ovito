@@ -57,6 +57,9 @@ public:
 	/// \brief Finalizes the geometry buffer after all arrows have been set.
 	virtual void endSetArrows() override;
 
+	/// \brief Changes the shading mode for arrows.
+	virtual bool setShadingMode(ShadingMode mode) override { return (mode == shadingMode()); }
+
 	/// \brief Returns true if the geometry buffer is filled and can be rendered with the given renderer.
 	virtual bool isValid(SceneRenderer* renderer) override;
 
@@ -70,6 +73,19 @@ private:
 		Vector_3<float> normal;
 		ColorAT<float> color;
 	};
+
+	struct ColoredVertexWithVector {
+		Point_3<float> pos;
+		Point_3<float> base;
+		Vector_3<float> dir;
+		ColorAT<float> color;
+	};
+
+	/// \brief Renders the arrows in shaded mode.
+	void renderShaded(ViewportSceneRenderer* renderer, quint32 pickingBaseID);
+
+	/// \brief Renders the arrows in flat mode.
+	void renderFlat(ViewportSceneRenderer* renderer, quint32 pickingBaseID);
 
 private:
 
@@ -90,9 +106,13 @@ private:
 
 	// The OpenGL shader programs that are used to render the arrows.
 	QPointer<QOpenGLShaderProgram> _flatShader;
+	QPointer<QOpenGLShaderProgram> _shadedShader;
 
 	/// Pointer to the memory-mapped geometry buffer.
-	ColoredVertexWithNormal* _mappedVertices;
+	ColoredVertexWithNormal* _mappedVerticesShaded;
+
+	/// Pointer to the memory-mapped geometry buffer.
+	ColoredVertexWithVector* _mappedVerticesFlat;
 
 	/// Lookup table for fast cylinder geometry generation.
 	std::vector<float> _cosTable;
@@ -100,11 +120,17 @@ private:
 	/// Lookup table for fast cylinder geometry generation.
 	std::vector<float> _sinTable;
 
-	/// Primitive start indices passed to glMultiDrawArrays().
-	std::vector<GLint> _primitiveVertexStarts;
+	/// Primitive start indices passed to glMultiDrawArrays() using GL_TRIANGLE_STRIP primitives.
+	std::vector<GLint> _stripPrimitiveVertexStarts;
 
-	/// Primitive vertex counts passed to glMultiDrawArrays().
-	std::vector<GLsizei> _primitiveVertexCounts;
+	/// Primitive vertex counts passed to glMultiDrawArrays() using GL_TRIANGLE_STRIP primitives.
+	std::vector<GLsizei> _stripPrimitiveVertexCounts;
+
+	/// Primitive start indices passed to glMultiDrawArrays() using GL_TRIANGLE_FAN primitives.
+	std::vector<GLint> _fanPrimitiveVertexStarts;
+
+	/// Primitive vertex counts passed to glMultiDrawArrays() using GL_TRIANGLE_FAN primitives.
+	std::vector<GLsizei> _fanPrimitiveVertexCounts;
 
 	Q_OBJECT
 	OVITO_OBJECT

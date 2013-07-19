@@ -20,27 +20,18 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 uniform mat4 modelview_projection_matrix;
-uniform vec3 view_dir;
+uniform mat3 normal_matrix;
 
 in vec3 vertex_pos;
-in vec3 vector_base;
-in vec3 vector_dir;
+in vec3 vertex_normal;
 in vec4 vertex_color;
 
-out vec4 vertex_color_out;
+flat out vec4 vertex_color_out;
+out vec3 vertex_normal_out;
 
 void main()
 {
 	vertex_color_out = vertex_color;
-	
-	if(vector_dir != vec3(0)) {
-		// Build local coordinate system.
-		vec3 u = normalize(cross(view_dir, vector_dir));
-		vec3 rotated_pos = mat3(vector_dir,u,vec3(0)) * vertex_pos + vector_base;
-		gl_Position = modelview_projection_matrix * vec4(rotated_pos, 1.0);
-	}
-	else {
-		gl_Position = vec4(0);
-	}
-	
+	gl_Position = modelview_projection_matrix * vec4(vertex_pos, 1.0);
+	vertex_normal_out = normal_matrix * vertex_normal;
 }

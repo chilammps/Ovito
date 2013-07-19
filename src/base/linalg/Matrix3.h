@@ -232,6 +232,15 @@ public:
 			(std::abs(determinant() - T(1)) <= epsilon);
 	}
 
+	/// \brief Converts this matrix to a Qt 3x3 matrix object.
+	operator QMatrix3x3() const {
+		QMatrix3x3 qtm;
+		for(int row = 0; row < 3; row++)
+			for(int col = 0; col < 3; col++)
+				qtm(row,col) = (*this)(row,col);
+		return qtm;
+	}
+
 	////////////////////////////////// Generation ///////////////////////////////////
 
 	/// \brief Generates a matrix describing a rotation around the X axis.

@@ -19,28 +19,19 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-uniform mat4 modelview_projection_matrix;
-uniform vec3 view_dir;
+flat in vec4 vertex_color_out;
+in vec3 vertex_normal_out;
+out vec4 FragColor;
 
-in vec3 vertex_pos;
-in vec3 vector_base;
-in vec3 vector_dir;
-in vec4 vertex_color;
+const float ambient = 0.4;
+const float diffuse_strength = 0.6;
+const float shininess = 6.0;
+const vec3 specular_lightdir = normalize(vec3(-1.8, 1.5, -0.2));
 
-out vec4 vertex_color_out;
-
-void main()
+void main() 
 {
-	vertex_color_out = vertex_color;
+	float diffuse = abs(vertex_normal_out.z) * diffuse_strength;	
+	float specular = pow(max(0.0, dot(reflect(specular_lightdir, vertex_normal_out), vec3(0,0,1))), shininess) * 0.25;
 	
-	if(vector_dir != vec3(0)) {
-		// Build local coordinate system.
-		vec3 u = normalize(cross(view_dir, vector_dir));
-		vec3 rotated_pos = mat3(vector_dir,u,vec3(0)) * vertex_pos + vector_base;
-		gl_Position = modelview_projection_matrix * vec4(rotated_pos, 1.0);
-	}
-	else {
-		gl_Position = vec4(0);
-	}
-	
+	FragColor = vec4(vertex_color_out.rgb * (diffuse + ambient) + vec3(specular), vertex_color_out.a);
 }

@@ -123,10 +123,14 @@ public:
 	inline operator QVariant() const { return qVariantFromValue<qvariant_type>((qvariant_type)_value); }
 
 	/// Saves the property's value to a stream.
-	inline void saveToStream(SaveStream& stream) const { stream << _value; }
+	inline void saveToStream(SaveStream& stream) const {
+		stream << _value;
+	}
 
 	/// Loads the property's value from a stream.
-	inline void loadFromStream(LoadStream& stream) { stream >> _value; }
+	inline void loadFromStream(LoadStream& stream) {
+		stream >> _value;
+	}
 
 private:
 

@@ -25,6 +25,8 @@
 #include <core/rendering/SceneRenderer.h>
 #include <core/gui/properties/FloatParameterUI.h>
 #include <core/gui/properties/VariantComboBoxParameterUI.h>
+#include <core/gui/properties/ColorParameterUI.h>
+#include <core/gui/properties/BooleanParameterUI.h>
 
 #include "VectorDisplay.h"
 #include "ParticleTypeProperty.h"
@@ -55,7 +57,7 @@ SET_PROPERTY_FIELD_UNITS(VectorDisplay, _arrowWidth, WorldParameterUnit)
 ******************************************************************************/
 VectorDisplay::VectorDisplay() :
 	_reverseArrowDirection(false), _flipVectors(false), _arrowColor(1, 1, 0), _arrowWidth(0.5), _scalingFactor(1),
-	_shadingMode(ArrowGeometryBuffer::NormalShading),
+	_shadingMode(ArrowGeometryBuffer::FlatShading),
 	_renderingQuality(ArrowGeometryBuffer::LowQuality)
 {
 	INIT_PROPERTY_FIELD(VectorDisplay::_arrowColor);
@@ -174,15 +176,22 @@ void VectorDisplay::render(TimePoint time, SceneObject* sceneObject, const Pipel
 			FloatType scalingFac = scalingFactor();
 			if(flipVectors() ^ reverseArrowDirection())
 				scalingFac = -scalingFac;
-			bool reverseArrow = reverseArrowDirection();
 			const Point3* p_begin = positionProperty->constDataPoint3();
 			const Vector3* v_begin = vectorProperty->constDataVector3();
 			ColorA color(arrowColor());
 			FloatType width = arrowWidth();
 			ArrowGeometryBuffer* buffer = _buffer.get();
-			parallelFor(vectorCount, [buffer, scalingFac, reverseArrow, color, width, p_begin, v_begin](int index) {
-				buffer->setArrow(index, p_begin[index], v_begin[index] * scalingFac, color, width);
-			});
+			if(!reverseArrowDirection()) {
+				parallelFor(vectorCount, [buffer, scalingFac, color, width, p_begin, v_begin](int index) {
+					buffer->setArrow(index, p_begin[index], v_begin[index] * scalingFac, color, width);
+				});
+			}
+			else {
+				parallelFor(vectorCount, [buffer, scalingFac, color, width, p_begin, v_begin](int index) {
+					Vector3 v = v_begin[index] * scalingFac;
+					buffer->setArrow(index, p_begin[index] - v, v, color, width);
+				});
+			}
 		}
 		_buffer->endSetArrows();
 	}
@@ -237,6 +246,16 @@ void VectorDisplayEditor::createUI(const RolloutInsertionParameters& rolloutPara
 	layout->addWidget(arrowWidthUI->label(), 3, 0);
 	layout->addLayout(arrowWidthUI->createFieldLayout(), 3, 1);
 	arrowWidthUI->setMinValue(0);
+
+	BooleanParameterUI* reverseArrowDirectionUI = new BooleanParameterUI(this, PROPERTY_FIELD(VectorDisplay::_reverseArrowDirection));
+	layout->addWidget(reverseArrowDirectionUI->checkBox(), 4, 0, 1, 2);
+
+	BooleanParameterUI* flipVectorsUI = new BooleanParameterUI(this, PROPERTY_FIELD(VectorDisplay::_flipVectors));
+	layout->addWidget(flipVectorsUI->checkBox(), 5, 0, 1, 2);
+
+	ColorParameterUI* arrowColorUI = new ColorParameterUI(this, PROPERTY_FIELD(VectorDisplay::_arrowColor));
+	layout->addWidget(arrowColorUI->label(), 6, 0);
+	layout->addWidget(arrowColorUI->colorPicker(), 6, 1);
 }
 
 };
