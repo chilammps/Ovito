@@ -24,6 +24,7 @@
 
 #include <core/Core.h>
 #include <viz/data/ParticleProperty.h>
+#include <viz/util/OnTheFlyNeighborListBuilder.h>
 #include "../../AsynchronousParticleModifier.h"
 
 namespace Viz {
@@ -127,7 +128,8 @@ private:
 			_volumetricStrains(new ParticleProperty(positions->size(), qMetaTypeId<FloatType>(), sizeof(FloatType), 1, tr("Volumetric Strain"))),
 			_strainTensors(calculateStrainTensors ? new ParticleProperty(positions->size(), ParticleProperty::StrainTensorProperty) : nullptr),
 			_deformationGradients(calculateDeformationGradients ? new ParticleProperty(positions->size(), ParticleProperty::DeformationGradientProperty) : nullptr),
-			_invalidParticles(new ParticleProperty(positions->size(), ParticleProperty::SelectionProperty)) {}
+			_invalidParticles(new ParticleProperty(positions->size(), ParticleProperty::SelectionProperty)),
+			_currentSimCellInv(simCell.matrix().inverse()) {}
 
 		/// Computes the modifier's results and stores them in this object for later retrieval.
 		virtual void compute(FutureInterfaceBase& futureInterface) override;
@@ -161,9 +163,13 @@ private:
 
 	private:
 
+		/// Computes the strain tensor of a single particle.
+		bool computeStrain(size_t particleIndex, OnTheFlyNeighborListBuilder& neighborListBuilder, std::vector<size_t>& indexToIndexMap);
+
 		FloatType _cutoff;
 		SimulationCellData _simCell;
 		SimulationCellData _simCellRef;
+		AffineTransformation _currentSimCellInv;
 		QExplicitlySharedDataPointer<ParticleProperty> _positions;
 		QExplicitlySharedDataPointer<ParticleProperty> _refPositions;
 		QExplicitlySharedDataPointer<ParticleProperty> _identifiers;

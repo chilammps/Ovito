@@ -89,6 +89,15 @@ public:
 				Vector_3<T>(T(0),T(1),T(0)),
 				Vector_3<T>(T(0),T(0),T(1))} {}
 
+	/// \brief Casts the matrix to a matrix with another data type.
+	template<typename U>
+	constexpr explicit operator Matrix_3<U>() const {
+		return Matrix_3<U>(
+				static_cast<U>((*this)(0,0)), static_cast<U>((*this)(0,1)), static_cast<U>((*this)(0,2)),
+				static_cast<U>((*this)(1,0)), static_cast<U>((*this)(1,1)), static_cast<U>((*this)(1,2)),
+				static_cast<U>((*this)(2,0)), static_cast<U>((*this)(2,1)), static_cast<U>((*this)(2,2)));
+	}
+
 	/// \brief Returns the number of rows in this matrix.
 	static constexpr size_type row_count() { return 3; }
 
@@ -99,7 +108,7 @@ public:
 	/// \param row The row of the element to return.
 	/// \param col The column of the element to return.
 	/// \return The value of the matrix element.
-	constexpr inline const T& operator()(size_type row, size_type col) const {
+	constexpr inline T operator()(size_type row, size_type col) const {
 		return _m[col][row];
 	}
 
@@ -188,6 +197,24 @@ public:
 						(_m[0][1]*_m[1][2] - _m[1][1]*_m[0][2])/det,
 						(_m[0][2]*_m[1][0] - _m[0][0]*_m[1][2])/det,
 						(_m[0][0]*_m[1][1] - _m[1][0]*_m[0][1])/det);
+	}
+
+	/// \brief Computes the inverse of the matrix.
+	/// \return False if matrix is not invertible because it is singular; true if the inverse has been calculated
+	///         and stored in the output parameter.
+	bool inverse(Matrix_3& result, FloatType epsilon = FLOATTYPE_EPSILON) const {
+		T det = determinant();
+		if(std::abs(det) <= epsilon) return false;
+		result = Matrix_3((_m[1][1]*_m[2][2] - _m[1][2]*_m[2][1])/det,
+						(_m[2][0]*_m[1][2] - _m[1][0]*_m[2][2])/det,
+						(_m[1][0]*_m[2][1] - _m[1][1]*_m[2][0])/det,
+						(_m[2][1]*_m[0][2] - _m[0][1]*_m[2][2])/det,
+						(_m[0][0]*_m[2][2] - _m[2][0]*_m[0][2])/det,
+						(_m[0][1]*_m[2][0] - _m[0][0]*_m[2][1])/det,
+						(_m[0][1]*_m[1][2] - _m[1][1]*_m[0][2])/det,
+						(_m[0][2]*_m[1][0] - _m[0][0]*_m[1][2])/det,
+						(_m[0][0]*_m[1][1] - _m[1][0]*_m[0][1])/det);
+		return true;
 	}
 
 	/// \brief Computes the determinant of the matrix.

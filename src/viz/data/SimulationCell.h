@@ -156,6 +156,11 @@ public:
 	/// Returns the cell origin.
 	const Point3& origin() const { return _cellOrigin; }
 
+	/// Computes the (positive) volume of the cell.
+	FloatType volume() const {
+		return std::abs(edgeVector1().dot(edgeVector2().cross(edgeVector3())));
+	}
+
 	/// \brief Enables or disables periodic boundary conditions in the three spatial directions.
 	void setPBCFlags(const std::array<bool,3>& flags) {
 		_pbcX = flags[0]; _pbcY = flags[1]; _pbcZ = flags[2];

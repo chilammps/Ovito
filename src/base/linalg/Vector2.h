@@ -101,10 +101,10 @@ public:
 	//////////////////////////// Component access //////////////////////////
 
 	/// \brief Returns the value of the X component of this vector.
-	constexpr const T& x() const { return (*this)[0]; }
+	constexpr T x() const { return (*this)[0]; }
 
 	/// \brief Returns the value of the Y component of this vector.
-	constexpr const T& y() const { return (*this)[1]; }
+	constexpr T y() const { return (*this)[1]; }
 
 	/// \brief Returns a reference to the X component of this vector.
 	T& x() { return (*this)[0]; }

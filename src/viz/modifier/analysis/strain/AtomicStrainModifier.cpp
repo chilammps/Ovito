@@ -78,7 +78,7 @@ AtomicStrainModifier::AtomicStrainModifier() :
 	// Load the last cutoff radius from the application settings store.
 	QSettings settings;
 	settings.beginGroup("viz/strain");
-	setCutoff(settings.value("DefaultCutoff", 0.0).value<FloatType>());
+	setCutoff(settings.value("DefaultCutoff", 3.5).value<FloatType>());
 	settings.endGroup();
 }
 
@@ -109,16 +109,14 @@ std::shared_ptr<AsynchronousParticleModifier::Engine> AtomicStrainModifier::crea
 
 	// Get the reference positions of the particles.
 	if(!referenceConfiguration())
-		throw Exception(tr("Cannot calculate displacements. No reference configuration has been specified."));
+		throw Exception(tr("Cannot calculate displacements. Reference configuration has not been specified."));
 
 	// Get the reference configuration.
 	PipelineFlowState refState = referenceConfiguration()->evaluate(time);
-	if(refState.isEmpty()) {
-		if(refState.status().type() != ObjectStatus::Pending)
-			throw Exception(tr("No reference configuration has been specified yet."));
-		else
-			throw ObjectStatus(ObjectStatus::Pending, QString(), tr("Waiting for input data to become ready..."));
-	}
+	if(refState.status().type() == ObjectStatus::Pending)
+		throw ObjectStatus(ObjectStatus::Pending, QString(), tr("Waiting for input data to become ready..."));
+	if(refState.isEmpty())
+		throw Exception(tr("Reference configuration has not been specified yet."));
 
 	// Get the reference position property.
 	ParticlePropertyObject* refPosProperty = nullptr;
@@ -138,10 +136,15 @@ std::shared_ptr<AsynchronousParticleModifier::Engine> AtomicStrainModifier::crea
 	if(!refCell)
 		throw Exception(tr("Reference configuration does not contain simulation cell info."));
 
+	// Check simulation cell(s).
+	if(inputCell->volume() < FLOATTYPE_EPSILON)
+		throw Exception(tr("Simulation cell is degenerate in the deformed configuration."));
+	if(refCell->volume() < FLOATTYPE_EPSILON)
+		throw Exception(tr("Simulation cell is degenerate in the reference configuration."));
+
 	// Get particle identifiers.
 	ParticlePropertyObject* identifierProperty = inputStandardProperty(ParticleProperty::IdentifierProperty);
 	ParticlePropertyObject* refIdentifierProperty = nullptr;
-#if 0
 	for(const auto& o : refState.objects()) {
 		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o.get());
 		if(property && property->type() == ParticleProperty::IdentifierProperty) {
@@ -149,7 +152,6 @@ std::shared_ptr<AsynchronousParticleModifier::Engine> AtomicStrainModifier::crea
 			break;
 		}
 	}
-#endif
 
 	// Create engine object. Pass all relevant modifier parameters to the engine as well as the input data.
 	return std::make_shared<AtomicStrainEngine>(posProperty->storage(), inputCell->data(), refPosProperty->storage(), refCell->data(),
@@ -164,7 +166,6 @@ void AtomicStrainModifier::AtomicStrainEngine::compute(FutureInterfaceBase& futu
 {
 	futureInterface.setProgressText(tr("Computing atomic strain tensors"));
 
-#if 0
 	// Build particle-to-particle index map.
 	std::vector<size_t> indexToIndexMap(positions()->size());
 	if(_identifiers && _refIdentifiers) {
@@ -176,7 +177,7 @@ void AtomicStrainModifier::AtomicStrainEngine::compute(FutureInterfaceBase& futu
 		const int* id_end = id + _refIdentifiers->size();
 		for(; id != id_end; ++id, ++index) {
 			if(refMap.insert(std::make_pair(*id, index)).second == false)
-				throw Exception(tr("Particles with the same identifier detected in reference configuration."));
+				throw Exception(tr("Particles with duplicate identifiers detected in reference configuration."));
 		}
 
 		if(futureInterface.isCanceled())
@@ -186,7 +187,7 @@ void AtomicStrainModifier::AtomicStrainEngine::compute(FutureInterfaceBase& futu
 		std::vector<size_t> idSet(_identifiers->constDataInt(), _identifiers->constDataInt() + _identifiers->size());
 		std::sort(idSet.begin(), idSet.end());
 		if(std::adjacent_find(idSet.begin(), idSet.end()) != idSet.end())
-			throw Exception(tr("Particles with the same identifier detected in input configuration."));
+			throw Exception(tr("Particles with duplicate identifiers detected in input configuration."));
 
 		if(futureInterface.isCanceled())
 			return;
@@ -206,13 +207,101 @@ void AtomicStrainModifier::AtomicStrainEngine::compute(FutureInterfaceBase& futu
 	else {
 		// Deformed and reference configuration must contain the same number of particles.
 		if(positions()->size() != refPositions()->size())
-			throw Exception(tr("Cannot calculate displacements. Numbers of particles in reference configuration and current configuration do not match."));
+			throw Exception(tr("Cannot calculate displacements. Number of particles in reference configuration and current configuration does not match."));
 		// When particle identifiers are not available, use trivial 1-to-1 mapping.
 		std::iota(indexToIndexMap.begin(), indexToIndexMap.end(), size_t(0));
 	}
 	if(futureInterface.isCanceled())
 		return;
-#endif
+
+	// Prepare the neighbor list for the reference configuration.
+	OnTheFlyNeighborListBuilder neighborListBuilder(_cutoff);
+	if(!neighborListBuilder.prepare(refPositions(), refCell()) || futureInterface.isCanceled())
+		return;
+
+	// Perform analysis on each particle.
+	parallelFor(positions()->size(), futureInterface, [&neighborListBuilder, &indexToIndexMap, this](size_t index) {
+		this->computeStrain(index, neighborListBuilder, indexToIndexMap);
+	});
+}
+
+/******************************************************************************
+* Computes the strain tensor of a single particle.
+******************************************************************************/
+bool AtomicStrainModifier::AtomicStrainEngine::computeStrain(size_t particleIndex, OnTheFlyNeighborListBuilder& neighborListBuilder, std::vector<size_t>& indexToIndexMap)
+{
+	// We do the following calculations using double precision to
+	// achieve best results.
+
+	Matrix_3<double> V = Matrix_3<double>::Zero();
+	Matrix_3<double> W = Matrix_3<double>::Zero();
+
+	// Iterate over neighbor vectors of central particle.
+	size_t refParticleIndex = indexToIndexMap[particleIndex];
+	const Point3 x = positions()->getPoint3(particleIndex);
+	int numNeighbors = 0;
+	for(OnTheFlyNeighborListBuilder::iterator neighborIter(neighborListBuilder, refParticleIndex); !neighborIter.atEnd(); neighborIter.next()) {
+		const Vector3& r0 = neighborIter.delta();
+		Vector3 r = positions()->getPoint3(neighborIter.current()) - x;
+		Vector3 sr = _currentSimCellInv * r;
+		if(!_assumeUnwrappedCoordinates) {
+			for(size_t k = 0; k < 3; k++) {
+				if(!_simCell.pbcFlags()[k]) continue;
+				while(sr[k] > FloatType(+0.5)) sr[k] -= FloatType(1);
+				while(sr[k] < FloatType(-0.5)) sr[k] += FloatType(1);
+			}
+		}
+		r = _simCell.matrix() * sr;
+
+		for(size_t i = 0; i < 3; i++) {
+			for(size_t j = 0; j < 3; j++) {
+				V(i,j) += r0[j] * r0[i];
+				W(i,j) += r0[j] * r[i];
+			}
+		}
+
+		numNeighbors++;
+	}
+
+	// Check if matrix can be inverted.
+	Matrix_3<double> inverseV;
+	if(numNeighbors < 3 || !V.inverse(inverseV, 1e-4) || std::abs(W.determinant()) < 1e-4) {
+		_invalidParticles->setInt(particleIndex, 1);
+		if(_deformationGradients)
+			_deformationGradients->setTensor2(particleIndex, Tensor2::Zero());
+		if(_strainTensors)
+			_strainTensors->setSymmetricTensor2(particleIndex, SymmetricTensor2::Zero());
+		_shearStrains->setFloat(particleIndex, 0);
+		_volumetricStrains->setFloat(particleIndex, 0);
+		return false;
+	}
+
+	// Calculate deformation gradient tensor.
+	Matrix_3<double> F = W * inverseV;
+	if(_deformationGradients)
+		_deformationGradients->setTensor2(particleIndex, (Tensor2)F);
+
+	// Calculate strain tensor.
+	SymmetricTensor2T<double> strain = (Product_AtA(F) - SymmetricTensor2T<double>::Identity()) * 0.5;
+	if(_strainTensors)
+		_strainTensors->setSymmetricTensor2(particleIndex, (SymmetricTensor2)strain);
+
+	// Calculate von Mises shear strain.
+	double xydiff = strain.xx() - strain.yy();
+	double xzdiff = strain.xx() - strain.zz();
+	double yzdiff = strain.yy() - strain.zz();
+	double shearStrain = sqrt(strain.xy()*strain.xy() + strain.xz()*strain.xz() + strain.yz()*strain.yz() +
+			(xydiff*xydiff + xydiff*xydiff + yzdiff*yzdiff) / 6.0);
+	OVITO_ASSERT(!std::isnan(shearStrain) && !std::isinf(shearStrain));
+	_shearStrains->setFloat(particleIndex, (FloatType)shearStrain);
+
+	// Calculate volumetric component.
+	double volumetricStrain = (strain(0,0) + strain(1,1) + strain(2,2)) / 3;
+	OVITO_ASSERT(!std::isnan(volumetricStrain) && !std::isinf(volumetricStrain));
+	_volumetricStrains->setFloat(particleIndex, (FloatType)volumetricStrain);
+
+	_invalidParticles->setInt(particleIndex, 0);
+	return true;
 }
 
 /******************************************************************************

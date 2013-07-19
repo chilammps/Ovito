@@ -49,7 +49,7 @@ SET_PROPERTY_FIELD_UNITS(CommonNeighborAnalysisModifier, _cutoff, WorldParameter
 * Constructs the modifier object.
 ******************************************************************************/
 CommonNeighborAnalysisModifier::CommonNeighborAnalysisModifier() :
-	_cutoff(3), _adaptiveMode(true)
+	_cutoff(3.2), _adaptiveMode(true)
 {
 	INIT_PROPERTY_FIELD(CommonNeighborAnalysisModifier::_cutoff);
 	INIT_PROPERTY_FIELD(CommonNeighborAnalysisModifier::_adaptiveMode);
@@ -65,7 +65,7 @@ CommonNeighborAnalysisModifier::CommonNeighborAnalysisModifier() :
 	// Load the default cutoff radius stored in the application settings.
 	QSettings settings;
 	settings.beginGroup("viz/cna");
-	setCutoff(settings.value("DefaultCutoff", 0.0).value<FloatType>());
+	setCutoff(settings.value("DefaultCutoff", 3.2).value<FloatType>());
 	settings.endGroup();
 }
 

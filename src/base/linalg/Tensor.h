@@ -58,11 +58,22 @@ public:
 	/// \brief Constructor that initializes all tensor components to the same value.
 	explicit SymmetricTensor2T(T val) : std::array<T, 6>{{val,val,val,val,val,val}} {}
 
+	/// \brief Constructor that initializes the six tensor components.
+	constexpr SymmetricTensor2T(T xx, T yy, T zz, T xy, T xz, T yz) : std::array<T, 6>{{xx,yy,zz,xy,xz,yz}} {}
+
 	/// \brief Initializes the tensor to the null tensor. All components are set to zero.
 	constexpr SymmetricTensor2T(Zero) : std::array<T, 6>{{T(0), T(0), T(0), T(0), T(0), T(0)}} {}
 
 	/// \brief Initializes the tensor to the identity tensor.
 	constexpr SymmetricTensor2T(Identity) : std::array<T, 6>{{T(1), T(1), T(1), T(0), T(0), T(0)}} {}
+
+	/// \brief Casts the tensor to a tensor with another data type.
+	template<typename U>
+	constexpr explicit operator SymmetricTensor2T<U>() const {
+		return SymmetricTensor2T<U>(
+				static_cast<U>(xx()), static_cast<U>(yy()), static_cast<U>(zz()),
+				static_cast<U>(xy()), static_cast<U>(xz()), static_cast<U>(yz()));
+	}
 
 	/// \brief Returns the number of rows in this matrix.
 	static constexpr size_type row_count() { return 3; }
@@ -93,7 +104,141 @@ public:
 			default: OVITO_ASSERT(false); return (*this)[0];
 		}
 	}
+
+	/// \brief Returns the value of the XX component of this tensor.
+	constexpr T xx() const { return (*this)[0]; }
+
+	/// \brief Returns the value of the YY component of this tensor.
+	constexpr T yy() const { return (*this)[1]; }
+
+	/// \brief Returns the value of the ZZ component of this tensor.
+	constexpr T zz() const { return (*this)[2]; }
+
+	/// \brief Returns the value of the XY component of this tensor.
+	constexpr T xy() const { return (*this)[3]; }
+
+	/// \brief Returns the value of the XZ component of this tensor.
+	constexpr T xz() const { return (*this)[4]; }
+
+	/// \brief Returns the value of the YZ component of this tensor.
+	constexpr T yz() const { return (*this)[5]; }
+
+	/// \brief Returns a reference to the XX component of this tensor.
+	T& xx() { return (*this)[0]; }
+
+	/// \brief Returns a reference to the YY component of this tensor.
+	T& yy() { return (*this)[1]; }
+
+	/// \brief Returns a reference to the ZZ component of this tensor.
+	T& zz() { return (*this)[2]; }
+
+	/// \brief Returns a reference to the XY component of this tensor.
+	T& xy() { return (*this)[3]; }
+
+	/// \brief Returns a reference to the XZ component of this tensor.
+	T& xz() { return (*this)[4]; }
+
+	/// \brief Returns a reference to the YZ component of this tensor.
+	T& yz() { return (*this)[5]; }
+
 };
+
+// Addition / subtraction
+
+template<typename T>
+constexpr inline SymmetricTensor2T<T> operator+(const SymmetricTensor2T<T>& A, const SymmetricTensor2T<T>& B)
+{
+	return { A[0]+B[0], A[1]+B[1], A[2]+B[2], A[3]+B[3], A[4]+B[4], A[5]+B[5] };
+}
+
+template<typename T>
+constexpr inline SymmetricTensor2T<T> operator-(const SymmetricTensor2T<T>& A, const SymmetricTensor2T<T>& B)
+{
+	return { A[0]-B[0], A[1]-B[1], A[2]-B[2], A[3]-B[3], A[4]-B[4], A[5]-B[5] };
+}
+
+template<typename T>
+constexpr inline SymmetricTensor2T<T> operator-(const SymmetricTensor2T<T>& A, typename SymmetricTensor2T<T>::Identity)
+{
+	return { A[0]-T(1), A[1]-T(1), A[2]-T(1), A[3], A[4], A[5] };
+}
+
+// Product with scalar
+
+template<typename T>
+constexpr inline SymmetricTensor2T<T> operator*(const SymmetricTensor2T<T>& A, T s)
+{
+	return { A[0]*s, A[1]*s, A[2]*s, A[3]*s, A[4]*s, A[5]*s };
+}
+
+template<typename T>
+constexpr inline SymmetricTensor2T<T> operator*(T s, const SymmetricTensor2T<T>& A)
+{
+	return { A[0]*s, A[1]*s, A[2]*s, A[3]*s, A[4]*s, A[5]*s };
+}
+
+// Special tensor products:
+
+/// Computes A^t * A.
+template<typename T>
+inline SymmetricTensor2T<T> Product_AtA(const Matrix_3<T>& A)
+{
+	SymmetricTensor2T<T> S;
+	for(size_t i = 0; i < 3; i++) {
+		for(size_t j = 0; j <= i; j++) {
+			T b = 0;
+			for(size_t k = 0; k < 3; k++)
+				b += A(k,i) * A(k,j);
+			S(i,j) = b;
+		}
+	}
+	return S;
+}
+
+/// Computes A * A^t.
+template<typename T>
+inline SymmetricTensor2T<T> Product_AAt(const Matrix_3<T>& A)
+{
+	SymmetricTensor2T<T> S;
+	for(size_t i = 0; i < 3; i++) {
+		for(size_t j = 0; j <= i; j++) {
+			T b = 0;
+			for(size_t k = 0; k < 3; k++)
+				b += A(i,k) * A(j,k);
+			S(i,j) = b;
+		}
+	}
+	return S;
+}
+
+/// Computes A * S * A^t.
+template<typename T>
+inline SymmetricTensor2T<T> TripleProduct_ASAt(const Matrix_3<T>& A, const SymmetricTensor2T<T>& S)
+{
+	Matrix_3<T> AS = A * S;
+	SymmetricTensor2T<T> R;
+	for(size_t i = 0; i < 3; i++) {
+		for(size_t j = 0; j <= i; j++) {
+			T b = 0;
+			for(size_t k=0; k<3; k++)
+				b += AS(i,k) * A(j,k);
+			R(i,j) = b;
+		}
+	}
+	return R;
+}
+
+/// Compute the double contraction of two tensors (A : B)
+template<typename T>
+inline T DoubleContraction(const SymmetricTensor2T<T>& A, const SymmetricTensor2T<T>& B)
+{
+	T d = 0;
+	for(size_t i = 0; i < 3; i++)
+		d += A[i] * B[i];
+	for(size_t i = 3; i < 6; i++)
+		d += T(2) * A[i] * B[i];
+	return d;
+}
 
 /// Writes the symmetric tensor to an output stream.
 template<typename T>

@@ -136,7 +136,7 @@ public:
 	/// \param row The row of the element to return.
 	/// \param col The column of the element to return.
 	/// \return The value of the matrix element.
-	inline constexpr const T& operator()(size_type row, size_type col) const {
+	inline constexpr T operator()(size_type row, size_type col) const {
 		return _m[col][row];
 	}
 

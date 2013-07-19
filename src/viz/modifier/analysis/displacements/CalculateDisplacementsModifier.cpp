@@ -98,13 +98,13 @@ ObjectStatus CalculateDisplacementsModifier::modifyParticles(TimePoint time, Tim
 {
 	// Get the reference positions of the particles.
 	if(!referenceConfiguration())
-		throw Exception(tr("Cannot calculate displacement vectors. No reference configuration has been specified."));
+		throw Exception(tr("Cannot calculate displacement vectors. Reference configuration has not been specified."));
 
 	// Get the reference configuration.
 	PipelineFlowState refState = referenceConfiguration()->evaluate(time);
 	if(refState.isEmpty()) {
 		if(refState.status().type() != ObjectStatus::Pending)
-			throw Exception(tr("No reference configuration has been specified yet."));
+			throw Exception(tr("Reference configuration has not been specified yet."));
 		else
 			return ObjectStatus(ObjectStatus::Pending, QString(), tr("Waiting for input data to become ready..."));
 	}
@@ -120,7 +120,7 @@ ObjectStatus CalculateDisplacementsModifier::modifyParticles(TimePoint time, Tim
 		}
 	}
 	if(!refPosProperty)
-		throw Exception(tr("The reference configuration does not contain particle positions."));
+		throw Exception(tr("Reference configuration does not contain particle positions."));
 
 	// Get the current positions.
 	ParticlePropertyObject* posProperty = expectStandardProperty(ParticleProperty::PositionProperty);
@@ -145,14 +145,14 @@ ObjectStatus CalculateDisplacementsModifier::modifyParticles(TimePoint time, Tim
 		const int* id_end = id + refIdentifierProperty->size();
 		for(; id != id_end; ++id, ++index) {
 			if(refMap.insert(std::make_pair(*id, index)).second == false)
-				throw Exception(tr("Particles with the same identifier detected in reference configuration."));
+				throw Exception(tr("Particles with duplicate identifiers detected in reference configuration."));
 		}
 
 		// Check for duplicate identifiers in current configuration.
 		std::vector<size_t> idSet(identifierProperty->constDataInt(), identifierProperty->constDataInt() + identifierProperty->size());
 		std::sort(idSet.begin(), idSet.end());
 		if(std::adjacent_find(idSet.begin(), idSet.end()) != idSet.end())
-			throw Exception(tr("Particles with the same identifier detected in input configuration."));
+			throw Exception(tr("Particles with duplicate identifiers detected in input configuration."));
 
 		// Build index map.
 		index = 0;
