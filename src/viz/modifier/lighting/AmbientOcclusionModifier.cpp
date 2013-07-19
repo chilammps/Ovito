@@ -78,6 +78,7 @@ std::shared_ptr<AsynchronousParticleModifier::Engine> AmbientOcclusionModifier::
 	int resolution = (128 << res);
 
 	TimeInterval interval;
+	// Create engine object. Pass all relevant modifier parameters to the engine as well as the input data.
 	return std::make_shared<AmbientOcclusionEngine>(resolution, samplingCount(), posProperty->storage(), boundingBox, inputParticleRadii(time, interval));
 }
 

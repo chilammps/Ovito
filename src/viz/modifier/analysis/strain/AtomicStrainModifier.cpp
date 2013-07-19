@@ -75,7 +75,7 @@ AtomicStrainModifier::AtomicStrainModifier() :
 	importObj->setAdjustAnimationIntervalEnabled(false);
 	_referenceObject = importObj;
 
-	// Load the default cutoff radius stored in the application settings.
+	// Load the last cutoff radius from the application settings store.
 	QSettings settings;
 	settings.beginGroup("viz/strain");
 	setCutoff(settings.value("DefaultCutoff", 0.0).value<FloatType>());
@@ -151,9 +151,9 @@ std::shared_ptr<AsynchronousParticleModifier::Engine> AtomicStrainModifier::crea
 	}
 #endif
 
-	// Create engine object.
+	// Create engine object. Pass all relevant modifier parameters to the engine as well as the input data.
 	return std::make_shared<AtomicStrainEngine>(posProperty->storage(), inputCell->data(), refPosProperty->storage(), refCell->data(),
-			identifierProperty ? identifierProperty->data() : nullptr, refIdentifierProperty ? refIdentifierProperty->data() : nullptr,
+			identifierProperty ? identifierProperty->storage() : nullptr, refIdentifierProperty ? refIdentifierProperty->storage() : nullptr,
 			cutoff(), eliminateCellDeformation(), assumeUnwrappedCoordinates(), calculateDeformationGradients(), calculateStrainTensors());
 }
 

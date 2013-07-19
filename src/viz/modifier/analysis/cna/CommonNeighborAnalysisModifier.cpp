@@ -96,6 +96,7 @@ std::shared_ptr<AsynchronousParticleModifier::Engine> CommonNeighborAnalysisModi
 	ParticlePropertyObject* posProperty = expectStandardProperty(ParticleProperty::PositionProperty);
 	SimulationCell* simCell = expectSimulationCell();
 
+	// Create engine object. Pass all relevant modifier parameters to the engine as well as the input data.
 	if(adaptiveMode())
 		return std::make_shared<AdaptiveCommonNeighborAnalysisEngine>(posProperty->storage(), simCell->data());
 	else

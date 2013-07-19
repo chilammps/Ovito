@@ -23,6 +23,7 @@
 #define __OVITO_ATOMIC_STRAIN_MODIFIER_H
 
 #include <core/Core.h>
+#include <viz/data/ParticleProperty.h>
 #include "../../AsynchronousParticleModifier.h"
 
 namespace Viz {

@@ -64,6 +64,7 @@ std::shared_ptr<AsynchronousParticleModifier::Engine> CentroSymmetryModifier::cr
 	if(numNeighbors() % 2)
 		throw Exception(tr("The number of neighbors to take into account for the centrosymmetry calculation must be a positive, even integer."));
 
+	// Create engine object. Pass all relevant modifier parameters to the engine as well as the input data.
 	return std::make_shared<CentroSymmetryEngine>(posProperty->storage(), simCell->data(), numNeighbors());
 }
 

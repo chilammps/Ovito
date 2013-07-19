@@ -60,6 +60,7 @@ std::shared_ptr<AsynchronousParticleModifier::Engine> BondAngleAnalysisModifier:
 	ParticlePropertyObject* posProperty = expectStandardProperty(ParticleProperty::PositionProperty);
 	SimulationCell* simCell = expectSimulationCell();
 
+	// Create engine object. Pass all relevant modifier parameters to the engine as well as the input data.
 	return std::make_shared<BondAngleAnalysisEngine>(posProperty->storage(), simCell->data());
 }
 
