@@ -19,11 +19,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/***********************************************************************
- * This OpenGL fragment shader renders a spherical atom using 
- * the raytracing method. 
- ***********************************************************************/
-
 // Input from calling program:
 uniform mat4 projection_matrix;
 uniform mat4 inverse_projection_matrix;

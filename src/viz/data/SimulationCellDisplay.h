@@ -30,6 +30,9 @@
 #include <core/Core.h>
 #include <core/scene/display/DisplayObject.h>
 #include <core/rendering/LineGeometryBuffer.h>
+#include <core/rendering/ArrowGeometryBuffer.h>
+#include <core/rendering/ParticleGeometryBuffer.h>
+#include <core/gui/properties/PropertiesEditor.h>
 #include <base/utilities/Color.h>
 
 #include "SimulationCell.h"
@@ -95,6 +98,14 @@ public:
 
 protected:
 
+	/// Renders the given simulation using wireframe mode.
+	void renderWireframe(SimulationCell* cell, SceneRenderer* renderer);
+
+	/// Renders the given simulation using solid shading mode.
+	void renderSolid(SimulationCell* cell, SceneRenderer* renderer);
+
+protected:
+
 	/// Controls the line width used to render the simulation cell.
 	PropertyField<FloatType> _simulationCellLineWidth;
 
@@ -104,12 +115,25 @@ protected:
 	/// Controls the rendering color of the simulation cell.
 	PropertyField<Color> _simulationCellColor;
 
-	/// The buffered line geometry used to render the simulation cell.
-	OORef<LineGeometryBuffer> _lineGeometry;
+	/// The geometry buffer used to render the simulation cell in wireframe mode.
+	OORef<LineGeometryBuffer> _wireframeGeometry;
 
 	/// This helper structure is used to detect any changes in the input simulation cell
-	/// that require updating the display geometry buffer.
-	SceneObjectCacheHelper<QPointer<SimulationCell>, unsigned int> _geometryCacheHelper;
+	/// that require updating the display geometry buffer for wireframe rendering.
+	SceneObjectCacheHelper<QPointer<SimulationCell>, unsigned int> _wireframeGeometryCacheHelper;
+
+	/// The geometry buffer used to render the edges of the cell.
+	OORef<ArrowGeometryBuffer> _edgeGeometry;
+
+	/// The geometry buffer used to render the corners of the cell.
+	OORef<ParticleGeometryBuffer> _cornerGeometry;
+
+	/// This helper structure is used to detect any changes in the input simulation cell
+	/// that require updating the display geometry buffer for solid rendering mode.
+	SceneObjectCacheHelper<
+		QPointer<SimulationCell>, unsigned int,			// The simulation cell + revision number
+		FloatType, Color								// Line width + color
+		> _solidGeometryCacheHelper;
 
 private:
 
@@ -119,6 +143,25 @@ private:
 	DECLARE_PROPERTY_FIELD(_renderSimulationCell);
 	DECLARE_PROPERTY_FIELD(_simulationCellLineWidth);
 	DECLARE_PROPERTY_FIELD(_simulationCellColor);
+};
+
+/**
+ * \brief A properties editor for the SimulationCellDisplay class.
+ */
+class SimulationCellDisplayEditor : public PropertiesEditor
+{
+public:
+
+	/// Constructor.
+	Q_INVOKABLE SimulationCellDisplayEditor() {}
+
+protected:
+
+	/// Creates the user interface controls for the editor.
+	virtual void createUI(const RolloutInsertionParameters& rolloutParams) override;
+
+	Q_OBJECT
+	OVITO_OBJECT
 };
 
 };	// End of namespace

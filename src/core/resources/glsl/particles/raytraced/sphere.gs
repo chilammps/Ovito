@@ -36,25 +36,21 @@ flat out vec3 particle_view_pos;
 
 const vec3 cubeVerts[8] = vec3[8]
 (
-vec3(-1 , -1, -1),
-vec3(-1, 1, -1),
-vec3(1, -1, -1),
-vec3(1, 1, -1),
-vec3(-1, -1, 1),
-vec3(-1, 1, 1),
-vec3(1, -1, 1),
-vec3(1, 1, 1)
+	vec3(-1, -1, -1),
+	vec3(-1,  1, -1),
+	vec3( 1, -1, -1),
+	vec3( 1,  1, -1),
+	vec3(-1, -1,  1),
+	vec3(-1,  1,  1),
+	vec3( 1,  1,  1),
+	vec3( 1, -1,  1)
 );
-    
-const int cubeIndices[24] = int[24]
+
+const int stripIndices[14] = int[14]
 (
-  0,1,2,3,
-  7,6,3,2,
-  7,5,6,4,
-  4,0,6,2, 
-  1,0,5,4,
-  3,1,7,5
+	3,2,6,7,4,2,0,3,1,6,5,4,1,0
 );
+
 
 void main()
 {
@@ -62,11 +58,8 @@ void main()
 	particle_color = particle_color_in[0];
 	particle_radius_squared = particle_radius_in[0] * particle_radius_in[0];
 
-	for(int face = 0; face < 6; face++) {
-		for(int corner = 0; corner < 4; corner++) {
-			gl_Position = projection_matrix * vec4(particle_view_pos + cubeVerts[cubeIndices[corner + face*4]] * particle_radius_in[0], 1);
-			EmitVertex();
-		}
-		EndPrimitive();
+	for(int vertex = 0; vertex < 14; vertex++) {
+		gl_Position = projection_matrix * vec4(particle_view_pos + cubeVerts[stripIndices[vertex]] * particle_radius_in[0], 1);
+		EmitVertex();
 	}
 }

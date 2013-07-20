@@ -26,7 +26,6 @@
 #include <core/viewport/ViewportManager.h>
 
 #include "SimulationCell.h"
-#include "SimulationCellDisplay.h"
 
 namespace Viz {
 
@@ -63,8 +62,6 @@ void SimulationCell::init()
 	INIT_PROPERTY_FIELD(SimulationCell::_pbcX);
 	INIT_PROPERTY_FIELD(SimulationCell::_pbcY);
 	INIT_PROPERTY_FIELD(SimulationCell::_pbcZ);
-
-	setDisplayObject(new SimulationCellDisplay());
 }
 
 IMPLEMENT_OVITO_OBJECT(Viz, SimulationCellEditor, PropertiesEditor)

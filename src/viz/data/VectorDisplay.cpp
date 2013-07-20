@@ -163,15 +163,15 @@ void VectorDisplay::render(TimePoint time, SceneObject* sceneObject, const Pipel
 			vectorProperty, vectorProperty ? vectorProperty->revisionNumber() : 0,
 			positionProperty, positionProperty ? positionProperty->revisionNumber() : 0,
 			scalingFactor(), arrowWidth(), arrowColor(), reverseArrowDirection(), flipVectors())
-			|| recreateBuffer || (_buffer->arrowCount() != vectorCount);
+			|| recreateBuffer || (_buffer->elementCount() != vectorCount);
 
 	// Re-create the geometry buffer if necessary.
 	if(recreateBuffer)
-		_buffer = renderer->createArrowGeometryBuffer(shadingMode(), renderingQuality());
+		_buffer = renderer->createArrowGeometryBuffer(ArrowGeometryBuffer::ArrowShape, shadingMode(), renderingQuality());
 
 	// Update buffer contents.
 	if(updateContents) {
-		_buffer->startSetArrows(vectorCount);
+		_buffer->startSetElements(vectorCount);
 		if(vectorProperty && positionProperty) {
 			FloatType scalingFac = scalingFactor();
 			if(flipVectors() ^ reverseArrowDirection())
@@ -183,17 +183,17 @@ void VectorDisplay::render(TimePoint time, SceneObject* sceneObject, const Pipel
 			ArrowGeometryBuffer* buffer = _buffer.get();
 			if(!reverseArrowDirection()) {
 				parallelFor(vectorCount, [buffer, scalingFac, color, width, p_begin, v_begin](int index) {
-					buffer->setArrow(index, p_begin[index], v_begin[index] * scalingFac, color, width);
+					buffer->setElement(index, p_begin[index], v_begin[index] * scalingFac, color, width);
 				});
 			}
 			else {
 				parallelFor(vectorCount, [buffer, scalingFac, color, width, p_begin, v_begin](int index) {
 					Vector3 v = v_begin[index] * scalingFac;
-					buffer->setArrow(index, p_begin[index] - v, v, color, width);
+					buffer->setElement(index, p_begin[index] - v, v, color, width);
 				});
 			}
 		}
-		_buffer->endSetArrows();
+		_buffer->endSetElements();
 	}
 
 	// Support picking of arrows.

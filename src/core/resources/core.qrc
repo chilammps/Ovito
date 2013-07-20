@@ -96,6 +96,8 @@
 	<file>glsl/arrows/flat.vs</file>
 	<file>glsl/arrows/shaded.fs</file>
 	<file>glsl/arrows/shaded.vs</file>
+	<file>glsl/cylinder/cylinder_raytraced.vs</file>
+	<file>glsl/cylinder/cylinder_raytraced.fs</file>
 
 	<file>glsl/line.vertex.glsl</file>
 	<file>glsl/line.fragment.glsl</file>

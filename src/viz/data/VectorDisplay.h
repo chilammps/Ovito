@@ -119,7 +119,7 @@ protected:
 	/// Controls the rendering quality mode for arrows.
 	PropertyField<ArrowGeometryBuffer::RenderingQuality, int> _renderingQuality;
 
-	/// The buffered particle geometry used to render the arrows.
+	/// The buffered geometry used to render the arrows.
 	OORef<ArrowGeometryBuffer> _buffer;
 
 	/// This helper structure is used to detect any changes in the input data

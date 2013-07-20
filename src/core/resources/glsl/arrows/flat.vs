@@ -20,7 +20,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 uniform mat4 modelview_projection_matrix;
-uniform vec3 view_dir;
+uniform bool is_perspective;
+uniform vec3 parallel_view_dir;
+uniform vec3 eye_pos;
 
 in vec3 vertex_pos;
 in vec3 vector_base;
@@ -34,6 +36,14 @@ void main()
 	vertex_color_out = vertex_color;
 	
 	if(vector_dir != vec3(0)) {
+	
+		// Get view direction.
+		vec3 view_dir;
+		if(!is_perspective)
+			view_dir = parallel_view_dir;
+		else
+			view_dir = eye_pos - vector_base;
+	
 		// Build local coordinate system.
 		vec3 u = normalize(cross(view_dir, vector_dir));
 		vec3 rotated_pos = mat3(vector_dir,u,vec3(0)) * vertex_pos + vector_base;

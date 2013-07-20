@@ -43,22 +43,25 @@ class ViewportArrowGeometryBuffer : public ArrowGeometryBuffer
 public:
 
 	/// Constructor.
-	ViewportArrowGeometryBuffer(ViewportSceneRenderer* renderer, ShadingMode shadingMode, RenderingQuality renderingQuality);
+	ViewportArrowGeometryBuffer(ViewportSceneRenderer* renderer, ArrowGeometryBuffer::Shape shape, ShadingMode shadingMode, RenderingQuality renderingQuality);
 
-	/// \brief Allocates a geometry buffer with the given number of arrows.
-	virtual void startSetArrows(int arrowCount) override;
+	/// \brief Allocates a geometry buffer with the given number of elements.
+	virtual void startSetElements(int elementCount) override;
 
-	/// \brief Returns the number of arrows stored in the buffer.
-	virtual int arrowCount() const override { return _arrowCount; }
+	/// \brief Returns the number of elements stored in the buffer.
+	virtual int elementCount() const override { return _elementCount; }
 
-	/// \brief Sets the properties of a single arrow.
-	virtual void setArrow(int index, const Point3& pos, const Vector3& dir, const ColorA& color, FloatType width) override;
+	/// \brief Sets the properties of a single line element.
+	virtual void setElement(int index, const Point3& pos, const Vector3& dir, const ColorA& color, FloatType width) override;
 
-	/// \brief Finalizes the geometry buffer after all arrows have been set.
-	virtual void endSetArrows() override;
+	/// \brief Finalizes the geometry buffer after all elements have been set.
+	virtual void endSetElements() override;
 
-	/// \brief Changes the shading mode for arrows.
+	/// \brief Changes the shading mode for elements.
 	virtual bool setShadingMode(ShadingMode mode) override { return (mode == shadingMode()); }
+
+	/// \brief Changes the rendering quality of elements.
+	virtual bool setRenderingQuality(RenderingQuality level) { return (renderingQuality() == level); }
 
 	/// \brief Returns true if the geometry buffer is filled and can be rendered with the given renderer.
 	virtual bool isValid(SceneRenderer* renderer) override;
@@ -81,8 +84,25 @@ private:
 		ColorAT<float> color;
 	};
 
-	/// \brief Renders the arrows in shaded mode.
-	void renderShaded(ViewportSceneRenderer* renderer, quint32 pickingBaseID);
+	struct ColoredVertexWithElementInfo {
+		Point_3<float> pos;
+		Point_3<float> base;
+		Vector_3<float> dir;
+		ColorAT<float> color;
+		float radius;
+	};
+
+	/// \brief Creates the geometry for a single cylinder element.
+	void createCylinderElement(int index, const Point3& pos, const Vector3& dir, const ColorA& color, FloatType width);
+
+	/// \brief Creates the geometry for a single arrow element.
+	void createArrowElement(int index, const Point3& pos, const Vector3& dir, const ColorA& color, FloatType width);
+
+	/// \brief Renders the elements in shaded mode.
+	void renderShadedTriangles(ViewportSceneRenderer* renderer, quint32 pickingBaseID);
+
+	/// \brief Renders the cylinder elements in using a raytracing hardware shader.
+	void renderRaytracedCylinders(ViewportSceneRenderer* renderer, quint32 pickingBaseID);
 
 	/// \brief Renders the arrows in flat mode.
 	void renderFlat(ViewportSceneRenderer* renderer, quint32 pickingBaseID);
@@ -96,23 +116,21 @@ private:
 	QPointer<QOpenGLContextGroup> _contextGroup;
 
 	/// The number of arrows stored in the buffer.
-	int _arrowCount;
+	int _elementCount;
 
 	/// The number of cylinder segments to generate.
 	int _cylinderSegments;
 
-	/// The number of mesh vertices generated per arrow.
-	int _verticesPerArrow;
+	/// The number of mesh vertices generated per element.
+	int _verticesPerElement;
 
 	// The OpenGL shader programs that are used to render the arrows.
 	QPointer<QOpenGLShaderProgram> _flatShader;
 	QPointer<QOpenGLShaderProgram> _shadedShader;
+	QPointer<QOpenGLShaderProgram> _raytracedCylinderShader;
 
 	/// Pointer to the memory-mapped geometry buffer.
-	ColoredVertexWithNormal* _mappedVerticesShaded;
-
-	/// Pointer to the memory-mapped geometry buffer.
-	ColoredVertexWithVector* _mappedVerticesFlat;
+	void* _mappedBuffer;
 
 	/// Lookup table for fast cylinder geometry generation.
 	std::vector<float> _cosTable;

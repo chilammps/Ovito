@@ -35,7 +35,7 @@ namespace Ovito {
 class SceneRenderer;			// defined in SceneRenderer.h
 
 /**
- * \brief Abstract base class for buffer objects that store arrows.
+ * \brief Abstract base class for buffer objects that store vector glyphs.
  */
 class ArrowGeometryBuffer : public OvitoObject
 {
@@ -54,22 +54,29 @@ public:
 	};
 	Q_ENUMS(RenderingQuality);
 
+	enum Shape {
+		CylinderShape,
+		ArrowShape,
+	};
+	Q_ENUMS(Shape);
+
 public:
 
 	/// Constructor.
-	ArrowGeometryBuffer(ShadingMode shadingMode, RenderingQuality renderingQuality) : _shadingMode(shadingMode), _renderingQuality(renderingQuality) {}
+	ArrowGeometryBuffer(Shape shape, ShadingMode shadingMode, RenderingQuality renderingQuality) :
+		_shape(shape), _shadingMode(shadingMode), _renderingQuality(renderingQuality) {}
 
-	/// \brief Allocates a geometry buffer with the given number of arrows.
-	virtual void startSetArrows(int arrowCount) = 0;
+	/// \brief Allocates a geometry buffer with the given number of elements.
+	virtual void startSetElements(int elementCount) = 0;
 
-	/// \brief Returns the number of arrows stored in the buffer.
-	virtual int arrowCount() const = 0;
+	/// \brief Returns the number of elements stored in the buffer.
+	virtual int elementCount() const = 0;
 
-	/// \brief Sets the properties of a single arrow.
-	virtual void setArrow(int index, const Point3& pos, const Vector3& dir, const ColorA& color, FloatType width) = 0;
+	/// \brief Sets the properties of a single element.
+	virtual void setElement(int index, const Point3& pos, const Vector3& dir, const ColorA& color, FloatType width) = 0;
 
-	/// \brief Finalizes the geometry buffer after all arrows have been set.
-	virtual void endSetArrows() = 0;
+	/// \brief Finalizes the geometry buffer after all elements have been set.
+	virtual void endSetElements() = 0;
 
 	/// \brief Returns true if the geometry buffer is filled and can be rendered with the given renderer.
 	virtual bool isValid(SceneRenderer* renderer) = 0;
@@ -77,27 +84,33 @@ public:
 	/// \brief Renders the geometry.
 	virtual void render(SceneRenderer* renderer, quint32 pickingBaseID = 0) = 0;
 
-	/// \brief Returns the shading mode for arrows.
+	/// \brief Returns the shading mode for elements.
 	ShadingMode shadingMode() const { return _shadingMode; }
 
-	/// \brief Changes the shading mode for arrows.
+	/// \brief Changes the shading mode for elements.
 	/// \return false if the shading mode cannot be changed after the buffer has been created; true otherwise.
 	virtual bool setShadingMode(ShadingMode mode) { _shadingMode = mode; return true; }
 
-	/// \brief Returns the rendering quality of arrows.
+	/// \brief Returns the rendering quality of elements.
 	RenderingQuality renderingQuality() const { return _renderingQuality; }
 
-	/// \brief Changes the rendering quality of arrows.
+	/// \brief Changes the rendering quality of elements.
 	/// \return false if the quality level cannot be changed after the buffer has been created; true otherwise.
 	virtual bool setRenderingQuality(RenderingQuality level) { _renderingQuality = level; return true; }
 
+	/// \brief Returns the selected element shape.
+	Shape shape() const { return _shape; }
+
 private:
 
-	/// Controls the shading of arrows.
+	/// Controls the shading.
 	ShadingMode _shadingMode;
 
-	/// Controls the rendering quality of arrows.
+	/// Controls the rendering quality.
 	RenderingQuality _renderingQuality;
+
+	/// The shape of the elements.
+	Shape _shape;
 
 	Q_OBJECT
 	OVITO_OBJECT
@@ -107,7 +120,9 @@ private:
 
 Q_DECLARE_METATYPE(Ovito::ArrowGeometryBuffer::ShadingMode);
 Q_DECLARE_METATYPE(Ovito::ArrowGeometryBuffer::RenderingQuality);
+Q_DECLARE_METATYPE(Ovito::ArrowGeometryBuffer::Shape);
 Q_DECLARE_TYPEINFO(Ovito::ArrowGeometryBuffer::ShadingMode, Q_PRIMITIVE_TYPE);
 Q_DECLARE_TYPEINFO(Ovito::ArrowGeometryBuffer::RenderingQuality, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::ArrowGeometryBuffer::Shape, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_ARROW_GEOMETRY_BUFFER_H

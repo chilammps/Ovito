@@ -19,38 +19,37 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/***********************************************************************
- * This OpenGL fragment shader renders a cylindirical bond using 
- * the raytracing method. 
- ***********************************************************************/
-
 // Inputs from calling program
-uniform bool isPerspective;			// Specifies the projection mode.
-uniform vec2 viewport_origin;		// Specifies the transformation from pixel coordinates to viewport coordinates.
-uniform vec2 inverse_viewport_size;	// Specifies the transformation from pixel coordinates to viewport coordinates.
+uniform mat4 projection_matrix;
+uniform mat4 inverse_projection_matrix;
+uniform bool is_perspective;			// Specifies the projection mode.
+uniform vec2 viewport_origin;			// Specifies the transformation from screen coordinates to viewport coordinates.
+uniform vec2 inverse_viewport_size;		// Specifies the transformation from screen coordinates to viewport coordinates.
 
 // Inputs from vertex shader
-varying vec4 cylinder_color;			// The base color of the bond.
-varying vec3 cylinder_view_base;		// Transformed cylinder position in view coordinates
-varying vec3 cylinder_view_axis;		// Transformed cylinder axis in view coordinates
-varying float cylinder_radius;			// The radius of the cylinder
-varying float cylinder_length_squared;	// The squared length of the cylinder
+flat in vec4 cylinder_color_in;			// The base color of the cylinder.
+flat in vec3 cylinder_view_base;		// Transformed cylinder position in view coordinates
+flat in vec3 cylinder_view_axis;		// Transformed cylinder axis in view coordinates
+flat in float cylinder_radius_in;		// The radius of the cylinder
+flat in float cylinder_length_squared;	// The squared length of the cylinder
+
+out vec4 FragColor;
 
 void main() 
 {
-	// Calculate the pixel coordinate in viewport space first.
-	vec2 view_c = ((gl_FragCoord.xy - viewport_origin) * inverse_viewport_size) - 1.0;		
+	// Calculate the pixel coordinate in viewport space.
+	vec2 view_c = ((gl_FragCoord.xy - viewport_origin) * inverse_viewport_size) - 1.0;
 
-	// Calculate viewing ray direction in world space
+	// Calculate viewing ray direction in view space
 	vec3 ray_dir;
 	vec3 ray_origin;
-	if(isPerspective) {
-		ray_dir = normalize(vec3(gl_ProjectionMatrixInverse * vec4(view_c.x, view_c.y, 1.0, 1.0)));
-		ray_origin = vec3(0.0,0.0,0.0);
+	if(is_perspective) {
+		ray_dir = normalize(vec3(inverse_projection_matrix * vec4(view_c.x, view_c.y, 1.0, 1.0)));
+		ray_origin = vec3(0.0);
 	}
 	else {
-		ray_origin = vec3(gl_ProjectionMatrixInverse * vec4(view_c.x, view_c.y, 0.0, 1.0));
-		ray_dir = normalize(vec3(gl_ProjectionMatrixInverse * vec4(0.0, 0.0, 1.0, 0.0)));
+		ray_origin = vec3(inverse_projection_matrix * vec4(view_c.x, view_c.y, 0.0, 1.0));
+		ray_dir = vec3(0.0, 0.0, -1.0);
 	}
 
 	vec3 RC = ray_origin - cylinder_view_base;
@@ -65,18 +64,18 @@ void main()
 	n /= ln;
 	float d = abs(dot(RC,n));
 	
-	if(d > cylinder_radius) 
+	if(d > cylinder_radius_in) 
 		discard;	// Ray missed cylinder, discard fragment.
 			
 	// Calculate closest intersection position.
 	vec3 O = cross(RC, cylinder_view_axis);
 	float t = -dot(O, n) / ln;
 	O = cross(n, cylinder_view_axis);
-	float s = abs(sqrt(cylinder_radius*cylinder_radius - d*d) / dot(ray_dir, O) * sqrt(cylinder_length_squared));
+	float s = abs(sqrt(cylinder_radius_in*cylinder_radius_in - d*d) / dot(ray_dir, O) * sqrt(cylinder_length_squared));
 	float tnear = t - s;
 
 	// Discard intersections behind the view point.
-	if(isPerspective && tnear < 0.0)
+	if(is_perspective && tnear < 0.0)
 		discard;
 		
 	// Calculate intersection point in view coordinate system.
@@ -91,11 +90,11 @@ void main()
 	// rather than the depth of the bounding box polygons.
 	// The eye coordinate Z value must be transformed to normalized device 
 	// coordinates before being assigned as the final fragment depth.
-	vec4 projected_intersection = gl_ProjectionMatrix * vec4(view_intersection_pnt, 1.0);
+	vec4 projected_intersection = projection_matrix * vec4(view_intersection_pnt, 1.0);
 	gl_FragDepth = (projected_intersection.z / projected_intersection.w + 1.0) * 0.5;
 
 	// Calculate surface normal in view coordinate system.
-	vec3 surface_normal = (view_intersection_pnt - (cylinder_view_base + a * cylinder_view_axis)) / cylinder_radius;
+	vec3 surface_normal = (view_intersection_pnt - (cylinder_view_base + a * cylinder_view_axis)) / cylinder_radius_in;
 	
 	float ambient = 0.4;
 	float diffuse = abs(surface_normal.z) * 0.6;
@@ -104,6 +103,5 @@ void main()
 	vec3 specular_lightdir = normalize(vec3(-1.8, 1.5, -0.2));
 	float specular = pow(max(0.0, dot(reflect(specular_lightdir, surface_normal), ray_dir)), shininess) * 0.25;
 	
-	gl_FragColor.rgb = cylinder_color.rgb * (diffuse + ambient) + vec3(specular);
-	gl_FragColor.a = cylinder_color.a;
+	FragColor = vec4(cylinder_color_in.rgb * (diffuse + ambient) + vec3(specular), cylinder_color_in.a);
 }

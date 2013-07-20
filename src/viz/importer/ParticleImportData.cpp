@@ -22,6 +22,7 @@
 #include <core/Core.h>
 #include <core/dataset/importexport/LinkedFileObject.h>
 #include <viz/data/SimulationCell.h>
+#include <viz/data/SimulationCellDisplay.h>
 #include <viz/data/ParticleProperty.h>
 #include <viz/data/ParticlePropertyObject.h>
 #include <viz/data/ParticleTypeProperty.h>
@@ -44,6 +45,18 @@ void ParticleImportData::insertIntoScene(LinkedFileObject* destination)
 	OORef<SimulationCell> cell = destination->findSceneObject<SimulationCell>();
 	if(!cell) {
 		cell = new SimulationCell(simulationCell());
+
+		// Create a display object for the simulation cell.
+		OORef<SimulationCellDisplay> cellDisplay = new SimulationCellDisplay();
+		cell->setDisplayObject(cellDisplay.get());
+
+		// Choose an appropriate simulation cell line rendering width for the given cell dimensions.
+		FloatType cellDiameter = (
+				simulationCell().matrix().column(0) +
+				simulationCell().matrix().column(1) +
+				simulationCell().matrix().column(2)).length();
+		cellDisplay->setSimulationCellLineWidth(cellDiameter * 2e-3f);
+
 		destination->addSceneObject(cell.get());
 	}
 	else {

@@ -346,6 +346,8 @@ void ViewportParticleGeometryBuffer::renderRaytracedSpheres(ViewportSceneRendere
 	if(!shader->bind())
 		throw Exception(tr("Failed to bind OpenGL shader program."));
 
+	glEnable(GL_CULL_FACE);
+
 	shader->setUniformValue("projection_matrix", (QMatrix4x4)renderer->projParams().projectionMatrix);
 	shader->setUniformValue("inverse_projection_matrix", (QMatrix4x4)renderer->projParams().inverseProjectionMatrix);
 	shader->setUniformValue("modelview_matrix", (QMatrix4x4)renderer->modelViewTM());
