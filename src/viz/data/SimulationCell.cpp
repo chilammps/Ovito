@@ -144,7 +144,7 @@ void SimulationCellEditor::createUI(const RolloutInsertionParameters& rolloutPar
 	}
 
 	// Create second rollout.
-	rollout = createRollout(tr("Geometry"), rolloutParams);
+	rollout = createRollout(tr("Simulation cell vectors"), rolloutParams.collapse());
 
 	layout1 = new QVBoxLayout(rollout);
 	layout1->setContentsMargins(4,4,4,4);

@@ -55,7 +55,7 @@ void ParticleImportData::insertIntoScene(LinkedFileObject* destination)
 				simulationCell().matrix().column(0) +
 				simulationCell().matrix().column(1) +
 				simulationCell().matrix().column(2)).length();
-		cellDisplay->setSimulationCellLineWidth(cellDiameter * 2e-3f);
+		cellDisplay->setSimulationCellLineWidth(cellDiameter * 1.4e-3f);
 
 		destination->addSceneObject(cell.get());
 	}

@@ -321,6 +321,8 @@ QString LinkedFileObject::objectTitle()
 	return SceneObject::objectTitle();
 }
 
+#if 0
+
 /******************************************************************************
 * Returns the number of sub-objects that should be displayed in the modifier stack.
 ******************************************************************************/
@@ -337,13 +339,17 @@ RefTarget* LinkedFileObject::editableSubObject(int index)
 	return sceneObjects()[index];
 }
 
+#endif
+
 /******************************************************************************
 * Is called when a RefTarget has been added to a VectorReferenceField of this RefMaker.
 ******************************************************************************/
 void LinkedFileObject::referenceInserted(const PropertyFieldDescriptor& field, RefTarget* newTarget, int listIndex)
 {
+#if 0
 	if(field == PROPERTY_FIELD(LinkedFileObject::_sceneObjects))
 		notifyDependents(ReferenceEvent::SubobjectListChanged);
+#endif
 
 	SceneObject::referenceInserted(field, newTarget, listIndex);
 }
@@ -353,8 +359,10 @@ void LinkedFileObject::referenceInserted(const PropertyFieldDescriptor& field, R
 ******************************************************************************/
 void LinkedFileObject::referenceRemoved(const PropertyFieldDescriptor& field, RefTarget* newTarget, int listIndex)
 {
+#if 0
 	if(field == PROPERTY_FIELD(LinkedFileObject::_sceneObjects))
 		notifyDependents(ReferenceEvent::SubobjectListChanged);
+#endif
 
 	SceneObject::referenceRemoved(field, newTarget, listIndex);
 }

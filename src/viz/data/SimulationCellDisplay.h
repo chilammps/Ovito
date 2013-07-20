@@ -55,7 +55,7 @@ public:
 	virtual void render(TimePoint time, SceneObject* sceneObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode) override;
 
 	/// \brief Returns the title of this object.
-	virtual QString objectTitle() override { return tr("Box"); }
+	virtual QString objectTitle() override { return tr("Simulation cell"); }
 
 	/// \brief Returns the line width used to render the simulation cell box.
 	/// \return The line with in world units or zero if the simulation box is not rendered.

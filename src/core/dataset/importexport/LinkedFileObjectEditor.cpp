@@ -85,6 +85,8 @@ void LinkedFileObjectEditor::createUI(const RolloutInsertionParameters& rolloutP
 	_statusErrorIcon.load(":/core/mainwin/status/status_error.png");
 
 	layout->addLayout(layout2);
+
+	_subEditorRolloutParams = rolloutParams;
 }
 
 /******************************************************************************
@@ -104,6 +106,20 @@ void LinkedFileObjectEditor::setEditObject(RefTarget* newObject)
 		_parserSettingsAction->setEnabled(false);
 
 	updateInformationLabel();
+
+	// Close old sub-editors.
+	_subEditors.clear();
+	if(obj) {
+		// Open new sub-editors.
+		for(SceneObject* sceneObj : obj->sceneObjects()) {
+			OORef<PropertiesEditor> subEditor = sceneObj->createPropertiesEditor();
+			if(subEditor) {
+				subEditor->initialize(container(), _subEditorRolloutParams);
+				subEditor->setEditObject(sceneObj);
+				_subEditors.push_back(subEditor);
+			}
+		}
+	}
 }
 
 /******************************************************************************
@@ -230,6 +246,30 @@ bool LinkedFileObjectEditor::referenceEvent(RefTarget* source, ReferenceEvent* e
 	if(source == editObject()) {
 		if(event->type() == ReferenceEvent::StatusChanged || event->type() == ReferenceEvent::TitleChanged) {
 			updateInformationLabel();
+		}
+		else if(event->type() == ReferenceEvent::ReferenceAdded || event->type() == ReferenceEvent::ReferenceRemoved) {
+			ReferenceFieldEvent* refEvent = static_cast<ReferenceFieldEvent*>(event);
+			if(refEvent->field() == PROPERTY_FIELD(LinkedFileObject::_sceneObjects)) {
+				SceneObject* sceneObj = dynamic_object_cast<SceneObject>(event->type() == ReferenceEvent::ReferenceAdded ? refEvent->newTarget() : refEvent->oldTarget());
+				if(sceneObj) {
+					if(event->type() == ReferenceEvent::ReferenceAdded) {
+						// Open a new sub-editor.
+						OORef<PropertiesEditor> subEditor = sceneObj->createPropertiesEditor();
+						if(subEditor) {
+							subEditor->initialize(container(), _subEditorRolloutParams);
+							subEditor->setEditObject(sceneObj);
+							_subEditors.push_back(subEditor);
+						}
+					}
+					else {
+						// Close sub-editor.
+						for(int i = _subEditors.size() - 1; i >= 0; i--) {
+							if(_subEditors[i]->editObject() == sceneObj)
+								_subEditors.erase(_subEditors.begin() + i);
+						}
+					}
+				}
+			}
 		}
 	}
 	return PropertiesEditor::referenceEvent(source, event);

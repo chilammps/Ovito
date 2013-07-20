@@ -81,6 +81,9 @@ private:
 	QPixmap _statusWarningIcon;
 	QPixmap _statusErrorIcon;
 
+	std::vector<OORef<PropertiesEditor>> _subEditors;
+	RolloutInsertionParameters _subEditorRolloutParams;
+
 	Q_OBJECT
 	OVITO_OBJECT
 };
