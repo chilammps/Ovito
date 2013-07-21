@@ -137,6 +137,9 @@ private:
 	/// The watcher object that is used to monitor the background operation.
 	FutureWatcher _backgroundOperationWatcher;
 
+	/// Indicates that the modifier's results need to be recalculated.
+	bool _needsUpdate;
+
 	/// Indicates if and how long the cached modifier results are valid.
 	TimeInterval _cacheValidity;
 

@@ -40,7 +40,7 @@ SET_PROPERTY_FIELD_LABEL(AsynchronousParticleModifier, _saveResults, "Save resul
 * Constructs the modifier object.
 ******************************************************************************/
 AsynchronousParticleModifier::AsynchronousParticleModifier() : _autoUpdate(true), _saveResults(false),
-	_cacheValidity(TimeInterval::empty()), _computationValidity(TimeInterval::empty())
+	_cacheValidity(TimeInterval::empty()), _computationValidity(TimeInterval::empty()), _needsUpdate(true)
 {
 	INIT_PROPERTY_FIELD(AsynchronousParticleModifier::_autoUpdate);
 	INIT_PROPERTY_FIELD(AsynchronousParticleModifier::_saveResults);
@@ -65,7 +65,7 @@ void AsynchronousParticleModifier::modifierInputChanged(ModifierApplication* mod
 void AsynchronousParticleModifier::invalidateCachedResults()
 {
 	if(autoUpdateEnabled()) {
-		_cacheValidity.setEmpty();
+		_needsUpdate = true;
 		cancelBackgroundJob();
 	}
 }
@@ -93,7 +93,7 @@ void AsynchronousParticleModifier::cancelBackgroundJob()
 ******************************************************************************/
 ObjectStatus AsynchronousParticleModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
 {
-	if(autoUpdateEnabled() && !_cacheValidity.contains(time) && input().status().type() != ObjectStatus::Pending) {
+	if(autoUpdateEnabled() && _needsUpdate && input().status().type() != ObjectStatus::Pending) {
 
 		if(!_computationValidity.contains(time)) {
 
@@ -117,20 +117,21 @@ ObjectStatus AsynchronousParticleModifier::modifyParticles(TimePoint time, TimeI
 		}
 	}
 
-	if(!_cacheValidity.contains(time)) {
-		if(!_computationValidity.contains(time)) {
+	if(!_computationValidity.contains(time)) {
+		if(_needsUpdate) {
 			if(input().status().type() != ObjectStatus::Pending)
 				throw Exception(tr("The modifier results have not been computed yet."));
 			else
 				return ObjectStatus(ObjectStatus::Warning, QString(), tr("Waiting for input data to become ready..."));
 		}
-		else {
+	}
+	else {
 
-			if(hasValidModifierResults())
-				applyModifierResults(time, validityInterval);
-
-			return ObjectStatus(ObjectStatus::Pending, QString(), tr("Results are being computed..."));
+		if(_cacheValidity.contains(time) && hasValidModifierResults()) {
+			applyModifierResults(time, validityInterval);
 		}
+
+		return ObjectStatus(ObjectStatus::Pending, QString(), tr("Results are being computed..."));
 	}
 
 	if(_asyncStatus.type() == ObjectStatus::Error)
@@ -163,6 +164,7 @@ void AsynchronousParticleModifier::backgroundJobFinished()
 
 	if(!wasCanceled) {
 		_cacheValidity = _computationValidity;
+		_needsUpdate = false;
 		try {
 			std::shared_ptr<Engine> engine = _backgroundOperation.result();
 			retrieveModifierResults(engine.get());
@@ -211,6 +213,7 @@ void AsynchronousParticleModifier::loadFromStream(ObjectLoadStream& stream)
 	ParticleModifier::loadFromStream(stream);
 	stream.expectChunk(0x01);
 	stream >> _cacheValidity;
+	_needsUpdate = _cacheValidity.isEmpty();
 	stream.closeChunk();
 }
 

@@ -53,6 +53,22 @@ public:
 	Future<QString> fetchUrl(const QUrl& url);
 
 private:
+
+	/// Creates a future that downloads the given remote file.
+	Future<QString> fetchRemoteFile(const QUrl& url);
+
+private:
+
+	/// The remote files that are currently being fetched.
+	QMap<QUrl, Future<QString>> _pendingFiles;
+
+	/// The remote files that have already been downloaded to the local cache.
+	QMap<QUrl, QTemporaryFile*> _cachedFiles;
+
+	/// The mutex to synchronize access to above data structures.
+	QMutex _mutex;
+
+private:
     
 	/// This is a singleton class. No public instances allowed.
 	FileManager();

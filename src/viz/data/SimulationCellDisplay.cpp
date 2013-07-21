@@ -71,16 +71,18 @@ Box3 SimulationCellDisplay::boundingBox(TimePoint time, SceneObject* sceneObject
 ******************************************************************************/
 void SimulationCellDisplay::render(TimePoint time, SceneObject* sceneObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode)
 {
-	if(!renderSimulationCell())
-		return;		// Do nothing if rendering has been disabled by the user.
-
 	SimulationCell* cell = dynamic_object_cast<SimulationCell>(sceneObject);
 	OVITO_CHECK_OBJECT_POINTER(cell);
 
-	if(renderer->isInteractive())
+	if(renderer->isInteractive()) {
 		renderWireframe(cell, renderer);
-	else
+	}
+	else {
+		if(!renderSimulationCell())
+			return;		// Do nothing if rendering has been disabled by the user.
+
 		renderSolid(cell, renderer);
+	}
 }
 
 /******************************************************************************

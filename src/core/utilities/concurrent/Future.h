@@ -33,6 +33,9 @@ public:
 	typedef FutureInterface<R> Interface;
 
 	Future() {}
+
+	explicit Future(const std::shared_ptr<Interface>& p) : _interface(p) {}
+
 	explicit Future(const R& result, const QString& text = QString()) : _interface(std::make_shared<Interface>()) {
 		interface()->reportStarted();
 		if(text.isEmpty() == false)
@@ -64,7 +67,6 @@ public:
     QString progressText() const { return interface()->progressText(); }
 
 private:
-	explicit Future(const std::shared_ptr<Interface>& p) : _interface(p) {}
 
 	std::shared_ptr<Interface>& interface() {
 		OVITO_ASSERT(isValid());

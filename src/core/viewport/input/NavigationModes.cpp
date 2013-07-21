@@ -191,10 +191,23 @@ void OrbitMode::mousePressEvent(Viewport* vp, QMouseEvent* event)
 	NavigationMode::mousePressEvent(vp, event);
 	if(event->button() == Qt::LeftButton) {
 		// Update orbiting center.
-		if(centerMode() == ORBIT_CONSTRUCTION_PLANE || centerMode() == ORBIT_SELECTION_CENTER) {
-			Point3 center = Point3::Origin();
-			FloatType d = (center - vp->cameraPosition()).dot(vp->cameraDirection());
-			_orbitCenter = vp->cameraPosition() + vp->cameraDirection() * (d / vp->cameraDirection().squaredLength());
+		if(centerMode() == ORBIT_CONSTRUCTION_PLANE) {
+			Box3 sceneBoundingBox = DataSetManager::instance().currentSet()->sceneRoot()->worldBoundingBox(AnimManager::instance().time());
+			if(!sceneBoundingBox.isEmpty())
+				_orbitCenter = sceneBoundingBox.center();
+		}
+		else if(centerMode() == ORBIT_SELECTION_CENTER) {
+			Box3 selectionBoundingBox;
+			for(SceneNode* node : DataSetManager::instance().currentSelection()->nodes()) {
+				selectionBoundingBox.addBox(node->worldBoundingBox(AnimManager::instance().time()));
+			}
+			if(!selectionBoundingBox.isEmpty())
+				_orbitCenter = selectionBoundingBox.center();
+			else {
+				Box3 sceneBoundingBox = DataSetManager::instance().currentSet()->sceneRoot()->worldBoundingBox(AnimManager::instance().time());
+				if(!sceneBoundingBox.isEmpty())
+					_orbitCenter = sceneBoundingBox.center();
+			}
 		}
 	}
 }
@@ -208,12 +221,7 @@ void OrbitMode::modifyView(Viewport* vp, const QPoint& delta)
 		vp->setViewType(Viewport::VIEW_ORTHO);
 
 	Matrix3 coordSys = ViewportSettings::getSettings().coordinateSystemOrientation();
-	Vector3 v;
-	if(vp->isPerspectiveProjection())
-		v = (_oldCameraPosition - _orbitCenter);
-	else
-		v = -_oldCameraDirection;
-	v = coordSys.inverse() * v;
+	Vector3 v = coordSys.inverse() * -_oldCameraDirection;
 
 	FloatType theta, phi;
 	if(v.x() == 0 && v.y() == 0)
@@ -223,22 +231,26 @@ void OrbitMode::modifyView(Viewport* vp, const QPoint& delta)
 	phi = atan2(sqrt(v.x() * v.x() + v.y() * v.y()), v.z());
 
 	FloatType speed = 4.0 / vp->size().height();
-	theta += speed * delta.x();
-	phi -= speed * delta.y();
+	FloatType deltaTheta = speed * delta.x();
+	FloatType deltaPhi = -speed * delta.y();
+	if(phi + deltaPhi < FLOATTYPE_EPSILON)
+		deltaPhi = -phi + FLOATTYPE_EPSILON;
+	else if(phi + deltaPhi > FLOATTYPE_PI - FLOATTYPE_EPSILON)
+		deltaPhi = FLOATTYPE_PI - FLOATTYPE_EPSILON - phi;
 
-	phi = std::max(FLOATTYPE_EPSILON, std::min(FLOATTYPE_PI- FLOATTYPE_EPSILON, phi));
-	FloatType radius = v.length();
+	AffineTransformation oldViewMatrix = AffineTransformation::lookAlong(_oldCameraPosition, _oldCameraDirection, ViewportSettings::getSettings().upVector());
+	Vector3 t = (oldViewMatrix * orbitCenter()) - Point3::Origin();
+	AffineTransformation newViewMatrix =
+		AffineTransformation::translation(t) *
+		AffineTransformation::rotationX(-deltaPhi) *
+		AffineTransformation::translation(-t) *
+		oldViewMatrix *
+		AffineTransformation::translation(orbitCenter() - Point3::Origin()) *
+		AffineTransformation::rotation(Rotation(ViewportSettings::getSettings().upVector(), deltaTheta)) *
+		AffineTransformation::translation(-(orbitCenter() - Point3::Origin()));
 
-	v.x() = sin(phi) * sin(theta);
-	v.y() = sin(phi) * cos(theta);
-	v.z() = cos(phi);
-	v = coordSys * v;
-
-	vp->setCameraPosition(_orbitCenter + v * radius);
-	if(vp->isPerspectiveProjection())
-		vp->setCameraDirection(_orbitCenter - vp->cameraPosition());
-	else
-		vp->setCameraDirection(-v);
+	vp->setCameraDirection(newViewMatrix.inverse() * Vector3(0,0,-1));
+	vp->setCameraPosition(Point3::Origin() + newViewMatrix.inverse().translation());
 }
 
 /******************************************************************************
