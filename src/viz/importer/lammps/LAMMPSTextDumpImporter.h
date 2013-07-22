@@ -48,7 +48,7 @@ public:
 	virtual QString fileFilterDescription() override { return tr("LAMMPS Text Dump Files"); }
 
 	/// \brief Checks if the given file has format that can be read by this importer.
-	virtual bool checkFileFormat(QIODevice& input) override;
+	virtual bool checkFileFormat(QIODevice& input, const QUrl& sourceLocation) override;
 
 	/// \brief Opens the settings dialog for this importer.
 	virtual bool showSettingsDialog(QWidget* parent, LinkedFileObject* object) override;
@@ -62,7 +62,7 @@ public:
 protected:
 
 	/// \brief Parses the given input file and stores the data in the given container object.
-	virtual void parseFile(FutureInterfaceBase& futureInterface, ParticleImportData& container, CompressedTextParserStream& stream) override;
+	virtual void parseFile(FutureInterfaceBase& futureInterface, ParticleImportData& container, CompressedTextParserStream& stream, const FrameSourceInformation& frame) override;
 
 	/// \brief Scans the given input file to find all contained simulation frames.
 	virtual void scanFileForTimesteps(FutureInterfaceBase& futureInterface, QVector<LinkedFileImporter::FrameSourceInformation>& frames, const QUrl& sourceUrl, CompressedTextParserStream& stream) override;

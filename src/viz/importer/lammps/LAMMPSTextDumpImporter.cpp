@@ -53,10 +53,10 @@ bool LAMMPSTextDumpImporter::showSettingsDialog(QWidget* parent, LinkedFileObjec
 /******************************************************************************
 * Checks if the given file has format that can be read by this importer.
 ******************************************************************************/
-bool LAMMPSTextDumpImporter::checkFileFormat(QIODevice& input)
+bool LAMMPSTextDumpImporter::checkFileFormat(QIODevice& input, const QUrl& sourceLocation)
 {
 	// Open input file.
-	CompressedTextParserStream stream(input);
+	CompressedTextParserStream stream(input, sourceLocation.path());
 
 	// Read first line.
 	stream.readLine(15);
@@ -142,9 +142,9 @@ void LAMMPSTextDumpImporter::scanFileForTimesteps(FutureInterfaceBase& futureInt
 /******************************************************************************
 * Parses the given input file and stores the data in the given container object.
 ******************************************************************************/
-void LAMMPSTextDumpImporter::parseFile(FutureInterfaceBase& futureInterface, ParticleImportData& container, CompressedTextParserStream& stream)
+void LAMMPSTextDumpImporter::parseFile(FutureInterfaceBase& futureInterface, ParticleImportData& container, CompressedTextParserStream& stream, const FrameSourceInformation& frame)
 {
-	futureInterface.setProgressText(tr("Loading LAMMPS dump file..."));
+	futureInterface.setProgressText(tr("Reading LAMMPS dump file %1").arg(frame.sourceFile.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
 
 	// Regular expression for whitespace characters.
 	QRegularExpression ws_re(QStringLiteral("\\s+"));

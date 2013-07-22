@@ -63,7 +63,7 @@ public:
 	/// \brief Returns the status returned by the file parser on its last invocation.
 	virtual ObjectStatus status() const override { return _importStatus; }
 
-	/// \brief Scans the input source for animation frames and updates the internal list of frames.
+	/// \brief Scans the inpframeut source for animation frames and updates the internal list of frames.
 	bool updateFrames();
 
 	/// \brief Returns the number of animation frames that can be loaded from the data source.

@@ -24,6 +24,7 @@
 #include <core/animation/AnimManager.h>
 #include <core/utilities/io/ObjectLoadStream.h>
 #include <core/utilities/io/ObjectSaveStream.h>
+#include <core/utilities/io/FileManager.h>
 #include <core/utilities/concurrent/Task.h>
 #include <core/utilities/concurrent/ProgressManager.h>
 #include <core/viewport/Viewport.h>
@@ -225,6 +226,11 @@ void LinkedFileObject::refreshFromSource(int frame)
 	if(!importer())
 		return;
 
+	// Remove external file from local file cache so that it will be fetched from the
+	// remote server again.
+	if(frame >= 0 && frame < _frames.size())
+		FileManager::instance().removeFromCache(_frames[frame].sourceFile);
+
 	if(frame == loadedFrame() || frame == -1) {
 		_loadedFrame = -1;
 		notifyDependents(ReferenceEvent::TargetChanged);
@@ -310,11 +316,7 @@ QString LinkedFileObject::objectTitle()
 {
 	QString filename;
 	if(!sourceUrl().isEmpty()) {
-		if(sourceUrl().isLocalFile()) {
-			filename = QFileInfo(sourceUrl().toLocalFile()).fileName();
-		}
-		if(filename.isEmpty())
-			filename = sourceUrl().toString();
+		filename = QFileInfo(sourceUrl().path()).fileName();
 	}
 	if(importer())
 		return QString("%2 [%1]").arg(importer()->objectTitle()).arg(filename);

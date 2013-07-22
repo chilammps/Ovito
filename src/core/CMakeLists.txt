@@ -73,6 +73,7 @@ SET(OVITO_CORE_SOURCE_FILES
 	gui/dialogs/ViewportSettingsPage.cpp
 	gui/dialogs/HistoryFileDialog.cpp
 	gui/dialogs/ImportFileDialog.cpp
+	gui/dialogs/ImportRemoteFileDialog.cpp
 	gui/dialogs/SaveImageFileDialog.cpp
 	gui/actions/ActionManager.cpp
 	gui/actions/FileActions.cpp
@@ -150,7 +151,7 @@ INCLUDE_DIRECTORIES(${ZLIB_INCLUDE_DIRS})
 
 # Build library
 ADD_LIBRARY(Core ${OVITO_CORE_SOURCE_FILES} ${OVITO_CORE_RESOURCE_FILES})
-TARGET_LINK_LIBRARIES(Core Base)
+TARGET_LINK_LIBRARIES(Core Base QSsh)
 
 # Link to OpenGL library.
 TARGET_LINK_LIBRARIES(Core ${OPENGL_gl_LIBRARY})
@@ -159,7 +160,7 @@ TARGET_LINK_LIBRARIES(Core ${OPENGL_gl_LIBRARY})
 TARGET_LINK_LIBRARIES(Core ${ZLIB_LIBRARIES})
 
 # Link Qt5.
-QT5_USE_MODULES(Core Widgets Xml Network OpenGL)
+QT5_USE_MODULES(Core Widgets Xml Network OpenGL Concurrent)
 
 # This is required to avoid error by install_name_tool on MacOS.
 IF(APPLE)

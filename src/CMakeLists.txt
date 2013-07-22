@@ -19,12 +19,14 @@
 #
 ###############################################################################
 
+# Place all compiled libraries into OVITO's library directory.
+SET(LIBRARY_OUTPUT_PATH "${OVITO_LIBRARY_DIRECTORY}")
+
+################# 3rd-party libraries  ####################
+
 ADD_SUBDIRECTORY(ssh)
 
 ################# Core libraries  ####################
-
-# Place all compiled libraries into OVITO's library directory.
-SET(LIBRARY_OUTPUT_PATH "${OVITO_LIBRARY_DIRECTORY}")
 
 ADD_SUBDIRECTORY(base)
 ADD_SUBDIRECTORY(core)

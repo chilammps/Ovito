@@ -47,6 +47,8 @@ class FrameBuffer;				// defined in FrameBuffer.h
 #define ACTION_FILE_SAVEAS		"FileSaveAs"
 /// This action shows the file import dialog.
 #define ACTION_FILE_IMPORT		"FileImport"
+/// This action shows the remote file import dialog.
+#define ACTION_FILE_REMOTE_IMPORT "FileRemoteImport"
 /// This action shows the file export dialog.
 #define ACTION_FILE_EXPORT		"FileExport"
 
@@ -183,6 +185,7 @@ private Q_SLOTS:
 	void on_FileSave_triggered();
 	void on_FileSaveAs_triggered();
 	void on_FileImport_triggered();
+	void on_FileRemoteImport_triggered();
 	void on_FileExport_triggered();
 	void on_ViewportMaximize_triggered();
 	void on_ViewportZoomSceneExtents_triggered();

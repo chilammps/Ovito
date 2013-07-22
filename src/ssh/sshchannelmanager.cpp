@@ -38,6 +38,7 @@
 #include "sshsendfacility_p.h"
 
 #include <QList>
+#include <QDebug>
 
 namespace QSsh {
 namespace Internal {
@@ -179,8 +180,9 @@ void SshChannelManager::insertChannel(AbstractSshChannel *priv,
 int SshChannelManager::closeAllChannels(CloseAllMode mode)
 {
     const int count = m_channels.count();
-    for (ChannelIterator it = m_channels.begin(); it != m_channels.end(); ++it)
+    for (ChannelIterator it = m_channels.begin(); it != m_channels.end(); ++it) {
         it.value()->closeChannel();
+    }
     if (mode == CloseAllAndReset) {
         m_channels.clear();
         m_sessions.clear();

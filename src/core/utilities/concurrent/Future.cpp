@@ -114,7 +114,7 @@ void FutureInterfaceBase::waitForResult()
 	throwPossibleException();
 
 	QMutexLocker lock(&_mutex);
-	if(!isRunning())
+	if(!isRunning() && isStarted())
 		return;
 
 	lock.unlock();
@@ -124,7 +124,7 @@ void FutureInterfaceBase::waitForResult()
 	tryToRunImmediately();
 
 	lock.relock();
-	if(!isRunning())
+	if(!isRunning() && isStarted())
 		return;
 
 	while(isRunning() && isResultSet() == false)
@@ -138,13 +138,13 @@ void FutureInterfaceBase::waitForFinished()
 	//qDebug() << "BEG FutureInterfaceBase::waitForFinished() this=" << this << "thread=" << QThread::currentThread() << "text=" << progressText();
 
 	QMutexLocker lock(&_mutex);
-    const bool alreadyFinished = !isRunning();
+    const bool alreadyFinished = !isRunning() && isStarted();
     lock.unlock();
 
     if(!alreadyFinished) {
     	tryToRunImmediately();
         lock.relock();
-        while(isRunning())
+        while(isRunning() || !isStarted())
             _waitCondition.wait(&_mutex);
     }
 
@@ -195,6 +195,7 @@ bool FutureInterfaceBase::waitForSubTask(FutureInterfaceBase* subTask)
 	}
 	locker.relock();
 	this->_subTask = nullptr;
+	locker.unlock();
 	if(subTask->isCanceled()) {
 		this->cancel();
 		//qDebug() << "END FutureInterfaceBase::waitForSubTask() this=" << this << "thread=" << QThread::currentThread() << "text=" << progressText() << "subtask=" << subTask;

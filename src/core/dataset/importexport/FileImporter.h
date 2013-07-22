@@ -63,10 +63,11 @@ public:
 
 	/// \brief Checks if the given file has format that can be read by this importer.
 	/// \param input The I/O device that contains the file data to check.
+	/// \param sourceLocation The original source location of the file if it was loaded from a remote location.
 	/// \return \c true if the data can be parsed.
 	//	        \c false if the data has some unknown format.
 	/// \throw Exception when the check has failed.
-	virtual bool checkFileFormat(QIODevice& input) { return false; }
+	virtual bool checkFileFormat(QIODevice& input, const QUrl& sourceLocation) { return false; }
 
 	/// \brief Returns whether the importer will reset the scene before importing the new data by calling DataSet::clearScene().
 	/// \return \c true if the old scene should be completely by the new data; \c false if the imported

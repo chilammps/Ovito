@@ -224,7 +224,7 @@ void LinkedFileObjectEditor::updateInformationLabel()
 			_filenameLabel->setText(QFileInfo(frameInfo.sourceFile.toLocalFile()).fileName());
 		}
 		else {
-			_filenameLabel->setText(QFileInfo(frameInfo.sourceFile.fragment()).fileName());
+			_filenameLabel->setText(QFileInfo(frameInfo.sourceFile.path()).fileName());
 		}
 	}
 	else _filenameLabel->setText(QString());
@@ -236,6 +236,8 @@ void LinkedFileObjectEditor::updateInformationLabel()
 		_statusIconLabel->setPixmap(_statusErrorIcon);
 	else
 		_statusIconLabel->clear();
+
+	container()->updateRolloutsLater();
 }
 
 /******************************************************************************

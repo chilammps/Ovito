@@ -38,18 +38,19 @@ DEFINE_PROPERTY_FIELD(ParticleImporter, _isMultiTimestepFile, "IsMultiTimestepFi
 ******************************************************************************/
 void ParticleImporter::loadImplementation(FutureInterface<ImportedDataPtr>& futureInterface, FrameSourceInformation frame)
 {
-	futureInterface.setProgressText(tr("Loading file %1").arg(frame.sourceFile.toString()));
+	futureInterface.setProgressText(tr("Reading file %1").arg(frame.sourceFile.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
 
 	// Fetch file.
-	Future<QString> fetchFileFuture;
-	fetchFileFuture = FileManager::instance().fetchUrl(frame.sourceFile);
+	Future<QString> fetchFileFuture = FileManager::instance().fetchUrl(frame.sourceFile);
 	ProgressManager::instance().addTask(fetchFileFuture);
-	if(!futureInterface.waitForSubTask(fetchFileFuture))
+	if(!futureInterface.waitForSubTask(fetchFileFuture)) {
 		return;
+	}
+	OVITO_ASSERT(fetchFileFuture.isCanceled() == false);
 
 	// Open file.
 	QFile file(fetchFileFuture.result());
-	CompressedTextParserStream stream(file);
+	CompressedTextParserStream stream(file, frame.sourceFile.path());
 
 	// Jump to requested file byte offset.
 	if(frame.byteOffset != 0)
@@ -57,7 +58,7 @@ void ParticleImporter::loadImplementation(FutureInterface<ImportedDataPtr>& futu
 
 	// Parse file.
 	std::shared_ptr<ParticleImportData> result(std::make_shared<ParticleImportData>());
-	parseFile(futureInterface, *result, stream);
+	parseFile(futureInterface, *result, stream, frame);
 
 	// Return results.
 	if(!futureInterface.isCanceled())
@@ -86,16 +87,17 @@ Future<QVector<LinkedFileImporter::FrameSourceInformation>> ParticleImporter::fi
 ******************************************************************************/
 void ParticleImporter::scanMultiTimestepFile(FutureInterface<QVector<LinkedFileImporter::FrameSourceInformation>>& futureInterface, const QUrl sourceUrl)
 {
+	futureInterface.setProgressText(tr("Scanning file %1").arg(sourceUrl.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
+
 	// Fetch file.
-	Future<QString> fetchFileFuture;
-	fetchFileFuture = FileManager::instance().fetchUrl(sourceUrl);
+	Future<QString> fetchFileFuture = FileManager::instance().fetchUrl(sourceUrl);
 	ProgressManager::instance().addTask(fetchFileFuture);
 	if(!futureInterface.waitForSubTask(fetchFileFuture))
 		return;
 
 	// Open file.
 	QFile file(fetchFileFuture.result());
-	CompressedTextParserStream stream(file);
+	CompressedTextParserStream stream(file, sourceUrl.path());
 
 	// Scan file.
 	QVector<LinkedFileImporter::FrameSourceInformation> result;

@@ -195,6 +195,7 @@ void MainWindow::createMainMenu()
 	// Build the file menu.
 	QMenu* fileMenu = menuBar->addMenu(tr("&File"));
 	fileMenu->addAction(ActionManager::instance().getAction(ACTION_FILE_IMPORT));
+	fileMenu->addAction(ActionManager::instance().getAction(ACTION_FILE_REMOTE_IMPORT));
 	fileMenu->addAction(ActionManager::instance().getAction(ACTION_FILE_EXPORT));
 	fileMenu->addSeparator();
 	fileMenu->addAction(ActionManager::instance().getAction(ACTION_FILE_OPEN));

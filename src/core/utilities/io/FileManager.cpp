@@ -23,8 +23,11 @@
 #include <core/utilities/concurrent/Future.h>
 #include <core/utilities/concurrent/Task.h>
 #include <core/utilities/concurrent/ProgressManager.h>
-#include <ssh/SshConnection.h>
-#include <ssh/SshConnectionManager.h>
+
+#include <ssh/sshconnection.h>
+#include <ssh/sshconnectionmanager.h>
+#include <ssh/sftpchannel.h>
+
 #include "FileManager.h"
 
 namespace Ovito {
@@ -35,7 +38,7 @@ FileManager* FileManager::_instance = nullptr;
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-FileManager::FileManager()
+FileManager::FileManager() : _mutex(QMutex::Recursive)
 {
 	OVITO_ASSERT_MSG(!_instance, "FileManager constructor", "Multiple instances of this singleton class have been created.");
 }
@@ -47,24 +50,25 @@ Future<QString> FileManager::fetchUrl(const QUrl& url)
 {
 	if(url.isLocalFile()) {
 		// Nothing to do to fetch local files. Simply return a finished Future object.
-		return Future<QString>(url.toLocalFile(), tr("Loading URL %1").arg(url.toString()));
+		return Future<QString>(url.toLocalFile(), tr("Loading file %1").arg(url.toLocalFile()));
 	}
 	else if(url.scheme() == "sftp") {
 		QMutexLocker lock(&_mutex);
 
 		// Check if requested URL is already in the cache.
 		auto cacheEntry = _cachedFiles.find(url);
-		if(cacheEntry != _cachedFiles.end())
-			return Future<QString>(cacheEntry.value()->fileName(), tr("Loading URL %1").arg(url.toString()));
+		if(cacheEntry != _cachedFiles.end()) {
+			return Future<QString>(cacheEntry.value()->fileName(), tr("Loading URL %1").arg(url.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
+		}
 
 		// Check if requested URL is already being loaded.
 		auto inProgressEntry = _pendingFiles.find(url);
-		if(inProgressEntry != _pendingFiles.end())
+		if(inProgressEntry != _pendingFiles.end()) {
 			return inProgressEntry.value();
+		}
 
 		// Fetch remote file.
 		Future<QString> future = FileManager::fetchRemoteFile(url);
-		ProgressManager::instance().addTask(future);
 		_pendingFiles.insert(url, future);
 		return future;
 	}
@@ -72,44 +76,110 @@ Future<QString> FileManager::fetchUrl(const QUrl& url)
 }
 
 /******************************************************************************
+* Removes a cached remote file so that it will be downloaded again next
+* time it is requested.
+******************************************************************************/
+void FileManager::removeFromCache(const QUrl& url)
+{
+	QMutexLocker lock(&_mutex);
+
+	auto cacheEntry = _cachedFiles.find(url);
+	if(cacheEntry != _cachedFiles.end()) {
+		cacheEntry.value()->deleteLater();
+		_cachedFiles.erase(cacheEntry);
+	}
+}
+
+/******************************************************************************
+* Is called when a remote file has been fetched.
+******************************************************************************/
+void FileManager::fileFetched(QUrl url, QTemporaryFile* localFile)
+{
+	QMutexLocker lock(&_mutex);
+
+	auto inProgressEntry = _pendingFiles.find(url);
+	if(inProgressEntry != _pendingFiles.end())
+		_pendingFiles.erase(inProgressEntry);
+
+	if(localFile) {
+		// Store downloaded file in local cache.
+		auto cacheEntry = _cachedFiles.find(url);
+		if(cacheEntry != _cachedFiles.end())
+			cacheEntry.value()->deleteLater();
+		OVITO_ASSERT(localFile->thread() == this->thread());
+		localFile->setParent(this);
+		_cachedFiles[url] = localFile;
+	}
+}
+
+/******************************************************************************
 * Future object that is responsible for downloading a file via sftp protocol.
 ******************************************************************************/
 class SftpFileFetcher : public QObject, public FutureInterface<QString>
 {
+	Q_OBJECT
+
 public:
 
 	/// Constructor.
-	SftpFileFetcher(const QUrl& url) : _url(url), _connection(nullptr) {
+	SftpFileFetcher(const QUrl& url) : _url(url), _connection(nullptr), _timerId(0) {
 
+		// Run all event handlers of this class in the main thread.
+		moveToThread(QApplication::instance()->thread());
+
+		// Start download process in the main thread.
+		QMetaObject::invokeMethod(this, "start", Qt::AutoConnection);
+	}
+
+	/// Opens the SSH connection.
+	Q_INVOKABLE void start() {
+
+		// This background task started to run.
 		reportStarted();
 
+		// Check if process has already been canceled.
+    	if(isCanceled()) {
+    		shutdown();
+    		return;
+    	}
+
 		QSsh::SshConnectionParameters connectionParams;
-		connectionParams.host = url.host();
-		connectionParams.userName = url.userName();
-		connectionParams.password = url.password();
-		connectionParams.port = url.port(22);
+		connectionParams.host = _url.host();
+		connectionParams.userName = _url.userName();
+		connectionParams.password = _url.password();
+		connectionParams.port = _url.port(22);
+		connectionParams.authenticationType = QSsh::SshConnectionParameters::AuthenticationByPassword;
+		connectionParams.timeout = 10;
+
+		setProgressText(tr("Connecting to remote server %1").arg(_url.host()));
 
 		// Open connection
 		_connection = QSsh::SshConnectionManager::instance().acquireConnection(connectionParams);
 		OVITO_CHECK_POINTER(_connection);
 
 		// Listen for signals of the connection.
-		connect(_connection, SIGNAL(error(QSsh::SshError)), this, SLOT(onSshConnectionError(QSsh::SshError))));
+		connect(_connection, SIGNAL(error(QSsh::SshError)), this, SLOT(onSshConnectionError(QSsh::SshError)));
 		if(_connection->state() == QSsh::SshConnection::Connected) {
 			onSshConnectionEstablished();
 			return;
 	    }
 		QObject::connect(_connection, SIGNAL(connected()), this, SLOT(onSshConnectionEstablished()));
-		if(_connection->state() == QSsh::SshConnection::Unconnected)
+
+		// Start to connect.
+		if(_connection->state() == QSsh::SshConnection::Unconnected) {
 			_connection->connectToHost();
+		}
 	}
 
 	/// Destructor.
 	virtual ~SftpFileFetcher() {
-		shutdown();
+		OVITO_ASSERT(_sftpChannel == nullptr);
+		OVITO_ASSERT(_connection == nullptr);
 	}
 
 	void shutdown() {
+		if(_timerId)
+			killTimer(_timerId);
 		if(_sftpChannel) {
 			QObject::disconnect(_sftpChannel.data(), 0, this, 0);
 			_sftpChannel->closeChannel();
@@ -120,17 +190,28 @@ public:
 			QSsh::SshConnectionManager::instance().releaseConnection(_connection);
 			_connection = nullptr;
 		}
+
+		if(_localFile) {
+			setResult(_localFile->fileName());
+		}
 		reportFinished();
+		FileManager::instance().fileFetched(_url, _localFile.take());
+
+		// Warning: This object will have been deleted at this point.
 	}
 
 private Q_SLOTS:
 
 	/// Handles SSH connection errors.
 	void onSshConnectionError(QSsh::SshError error) {
-		try { throw Exception(_connection->errorString()); }
+		try {
+			throw Exception(tr("Cannot access URL %1\nSSH connection error: %2").arg(_url.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)).
+				arg(_connection->errorString()));
+		}
 		catch(Exception& ex) {
 			reportException();
 		}
+		_localFile.reset();
 		shutdown();
 	}
 
@@ -141,6 +222,8 @@ private Q_SLOTS:
     		return;
     	}
 
+    	setProgressText(tr("Opening SFTP file transfer channel."));
+
     	_sftpChannel = _connection->createSftpChannel();
         connect(_sftpChannel.data(), SIGNAL(initialized()), SLOT(onSftpChannelInitialized()));
         connect(_sftpChannel.data(), SIGNAL(initializationFailed(const QString&)), SLOT(onSftpChannelInitializationFailed(const QString&)));
@@ -149,7 +232,9 @@ private Q_SLOTS:
 
     /// Is called when the SFTP channel could not be created.
     void onSftpChannelInitializationFailed(const QString& reason) {
-		try { throw Exception(reason); }
+		try {
+			throw Exception(tr("Cannot access URL %1\nSFTP error: %2").arg(_url.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)).arg(reason));
+		}
 		catch(Exception& ex) {
 			reportException();
 		}
@@ -163,7 +248,82 @@ private Q_SLOTS:
     		return;
     	}
 
+		connect(_sftpChannel.data(), SIGNAL(finished(QSsh::SftpJobId, QString)), this, SLOT(onSftpJobFinished(QSsh::SftpJobId, QString)));
+		connect(_sftpChannel.data(), SIGNAL(fileInfoAvailable(QSsh::SftpJobId, const QList<QSsh::SftpFileInfo>&)), this, SLOT(onFileInfoAvailable(QSsh::SftpJobId, const QList<QSsh::SftpFileInfo>&)));
+    	try {
 
+    		// Set progress text.
+    		setProgressText(tr("Fetching remote file %1").arg(_url.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
+
+			// Create temporary file.
+			_localFile.reset(new QTemporaryFile());
+			if(!_localFile->open())
+				throw Exception(tr("Failed to create temporary file: %1").arg(_localFile->errorString()));
+			_localFile->close();
+
+			// Request file info.
+			_sftpChannel->statFile(_url.path());
+
+			// Start to download file.
+			_downloadJob = _sftpChannel->downloadFile(_url.path(), _localFile->fileName(), QSsh::SftpOverwriteExisting);
+			if(_downloadJob == QSsh::SftpInvalidJob)
+				throw Exception(tr("Failed to download remote file %1.").arg(_url.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
+
+			// Start timer to monitor download progress.
+			_timerId = startTimer(500);
+    	}
+		catch(Exception& ex) {
+			_localFile.reset();
+			reportException();
+			shutdown();
+			return;
+		}
+    }
+
+    /// Is called after the file has been downloaded.
+    void onSftpJobFinished(QSsh::SftpJobId jobId, const QString& errorMessage) {
+    	if(jobId != _downloadJob)
+    		return;
+
+    	if(isCanceled()) {
+    		_localFile.reset();
+    		shutdown();
+    		return;
+    	}
+        if(!errorMessage.isEmpty()) {
+        	try {
+    			throw Exception(tr("Cannot access URL %1\nSFTP error: %2")
+    					.arg(_url.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded))
+    					.arg(errorMessage));
+        	}
+			catch(Exception& ex) {
+				reportException();
+			}
+			_localFile.reset();
+			shutdown();
+			return;
+        }
+        shutdown();
+    }
+
+    /// Is called when the file info for the requested file arrived.
+    void onFileInfoAvailable(QSsh::SftpJobId job, const QList<QSsh::SftpFileInfo>& fileInfoList) {
+    	if(fileInfoList.empty() == false ) {
+    		if(fileInfoList[0].sizeValid) {
+    			setProgressRange(fileInfoList[0].size / 1000);
+    		}
+    	}
+    }
+
+protected:
+
+    void timerEvent(QTimerEvent* event) override {
+    	if(_localFile) {
+    		qint64 size = _localFile->size();
+    		if(size >= 0 && progressMaximum() > 0) {
+    			setProgressValue(size / 1000);
+    		}
+    	}
     }
 
 private:
@@ -176,7 +336,17 @@ private:
 
 	/// The SFTP channel.
     QSsh::SftpChannel::Ptr _sftpChannel;
+
+    /// The local copy of the file.
+    QScopedPointer<QTemporaryFile> _localFile;
+
+    /// The SFTP file download job.
+    QSsh::SftpJobId _downloadJob;
+
+    /// The progress monitor timer.
+    int _timerId;
 };
+#include "FileManager.moc"
 
 /******************************************************************************
 * Creates a future that downloads the given remote file.
@@ -186,9 +356,8 @@ Future<QString> FileManager::fetchRemoteFile(const QUrl& url)
 	if(url.scheme() != "sftp")
 		throw Exception(tr("Invalid or unsupported URL scheme %1 in URL %2").arg(url.scheme()).arg(url.toString()));
 
-	std::shared_ptr<FutureInterface<QString>> futureInterface(new SftpFileFetcher(url));
+	std::shared_ptr<SftpFileFetcher> futureInterface(new SftpFileFetcher(url));
 	return Future<QString>(futureInterface);
 }
-
 
 };

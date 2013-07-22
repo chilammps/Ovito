@@ -48,14 +48,21 @@ public:
 		return *_instance;
 	}
 
-	/// \brief makes a file available on this computer.
+	/// \brief Makes a file available on this computer.
 	/// \return A QFuture that will provide the local file name of the downloaded file.
 	Future<QString> fetchUrl(const QUrl& url);
+
+	/// \brief Removes a cached remote file so that it will be downloaded again next
+	///        time it is requested.
+	void removeFromCache(const QUrl& url);
 
 private:
 
 	/// Creates a future that downloads the given remote file.
 	Future<QString> fetchRemoteFile(const QUrl& url);
+
+	/// Is called when a remote file has been fetched.
+	void fileFetched(QUrl url, QTemporaryFile* localFile);
 
 private:
 
@@ -83,6 +90,7 @@ private:
 	static FileManager* _instance;
 
 	friend class Application;
+	friend class SftpFileFetcher;
 };
 
 

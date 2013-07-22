@@ -175,7 +175,7 @@ Future<QVector<LinkedFileImporter::FrameSourceInformation>> LinkedFileImporter::
 	else {
 		// It's not a file URL.
 		// Register only a single frame.
-		frames.push_back({ sourceUrl, 0, 0, QDateTime(), QFileInfo(sourceUrl.fragment()).fileName() });
+		frames.push_back({ sourceUrl, 0, 0, QDateTime(), QFileInfo(sourceUrl.path()).fileName() });
 	}
 
 	return Future<QVector<FrameSourceInformation>>(frames);
