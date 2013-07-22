@@ -23,6 +23,7 @@
 #include <core/utilities/concurrent/Future.h>
 #include <core/utilities/concurrent/Task.h>
 #include <core/utilities/concurrent/ProgressManager.h>
+#include <core/gui/dialogs/RemoteAuthenticationDialog.h>
 
 #include <ssh/sshconnection.h>
 #include <ssh/sshconnectionmanager.h>
@@ -55,21 +56,24 @@ Future<QString> FileManager::fetchUrl(const QUrl& url)
 	else if(url.scheme() == "sftp") {
 		QMutexLocker lock(&_mutex);
 
+		QUrl normalizedUrl = normalizeUrl(url);
+
 		// Check if requested URL is already in the cache.
-		auto cacheEntry = _cachedFiles.find(url);
+		auto cacheEntry = _cachedFiles.find(normalizedUrl);
 		if(cacheEntry != _cachedFiles.end()) {
 			return Future<QString>(cacheEntry.value()->fileName(), tr("Loading URL %1").arg(url.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
 		}
 
 		// Check if requested URL is already being loaded.
-		auto inProgressEntry = _pendingFiles.find(url);
+		auto inProgressEntry = _pendingFiles.find(normalizedUrl);
 		if(inProgressEntry != _pendingFiles.end()) {
+			qDebug() << "Returning running download job";
 			return inProgressEntry.value();
 		}
 
 		// Fetch remote file.
 		Future<QString> future = FileManager::fetchRemoteFile(url);
-		_pendingFiles.insert(url, future);
+		_pendingFiles.insert(normalizedUrl, future);
 		return future;
 	}
 	else throw Exception(tr("URL scheme not supported. The program supports only the sftp:// scheme and loading of local files."));
@@ -83,7 +87,7 @@ void FileManager::removeFromCache(const QUrl& url)
 {
 	QMutexLocker lock(&_mutex);
 
-	auto cacheEntry = _cachedFiles.find(url);
+	auto cacheEntry = _cachedFiles.find(normalizeUrl(url));
 	if(cacheEntry != _cachedFiles.end()) {
 		cacheEntry.value()->deleteLater();
 		_cachedFiles.erase(cacheEntry);
@@ -97,18 +101,22 @@ void FileManager::fileFetched(QUrl url, QTemporaryFile* localFile)
 {
 	QMutexLocker lock(&_mutex);
 
-	auto inProgressEntry = _pendingFiles.find(url);
+	QUrl normalizedUrl = normalizeUrl(url);
+
+	auto inProgressEntry = _pendingFiles.find(normalizedUrl);
 	if(inProgressEntry != _pendingFiles.end())
 		_pendingFiles.erase(inProgressEntry);
+	else
+		OVITO_ASSERT(false);
 
 	if(localFile) {
 		// Store downloaded file in local cache.
-		auto cacheEntry = _cachedFiles.find(url);
+		auto cacheEntry = _cachedFiles.find(normalizedUrl);
 		if(cacheEntry != _cachedFiles.end())
 			cacheEntry.value()->deleteLater();
 		OVITO_ASSERT(localFile->thread() == this->thread());
 		localFile->setParent(this);
-		_cachedFiles[url] = localFile;
+		_cachedFiles[normalizedUrl] = localFile;
 	}
 }
 
@@ -147,6 +155,13 @@ public:
 		connectionParams.host = _url.host();
 		connectionParams.userName = _url.userName();
 		connectionParams.password = _url.password();
+		if(connectionParams.userName.isEmpty() || connectionParams.password.isEmpty()) {
+			auto loginInfo = _loginCache.find(connectionParams.host);
+			if(loginInfo != _loginCache.end()) {
+				connectionParams.userName = loginInfo.value().first;
+				connectionParams.password = loginInfo.value().second;
+			}
+		}
 		connectionParams.port = _url.port(22);
 		connectionParams.authenticationType = QSsh::SshConnectionParameters::AuthenticationByPassword;
 		connectionParams.timeout = 10;
@@ -204,8 +219,34 @@ private Q_SLOTS:
 
 	/// Handles SSH connection errors.
 	void onSshConnectionError(QSsh::SshError error) {
+		// If authentication failed, ask the user to re-enter username/password.
+		if(error == QSsh::SshAuthenticationError && !isCanceled()) {
+			OVITO_ASSERT(!_sftpChannel);
+
+			// Ask for new username/password.
+			RemoteAuthenticationDialog dialog(nullptr, tr("Remote authentication"),
+					_url.password().isEmpty() ?
+					tr("<p>Please enter username and password to access the remote machine</p><p><b>%1</b></p>").arg(_url.host()) :
+					tr("<p>Authentication failed. Please enter the correct username and password to access the remote machine</p><p><b>%1</b></p>").arg(_url.host()));
+			dialog.setUsername(_url.userName());
+			dialog.setPassword(_url.password());
+			if(dialog.exec() == QDialog::Accepted) {
+				// Start over with new login information.
+				QObject::disconnect(_connection, 0, this, 0);
+				QSsh::SshConnectionManager::instance().releaseConnection(_connection);
+				_connection = nullptr;
+				_url.setUserName(dialog.username());
+				_url.setPassword(dialog.password());
+				start();
+				return;
+			}
+			else {
+				cancel();
+			}
+		}
+
 		try {
-			throw Exception(tr("Cannot access URL %1\nSSH connection error: %2").arg(_url.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)).
+			throw Exception(tr("Cannot access URL\n\n%1\n\nSSH connection error: %2").arg(_url.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)).
 				arg(_connection->errorString()));
 		}
 		catch(Exception& ex) {
@@ -222,6 +263,10 @@ private Q_SLOTS:
     		return;
     	}
 
+    	// After success login, store login information in cache.
+    	QSsh::SshConnectionParameters connectionParams = _connection->connectionParameters();
+    	_loginCache.insert(connectionParams.host, qMakePair(connectionParams.userName, connectionParams.password));
+
     	setProgressText(tr("Opening SFTP file transfer channel."));
 
     	_sftpChannel = _connection->createSftpChannel();
@@ -233,7 +278,7 @@ private Q_SLOTS:
     /// Is called when the SFTP channel could not be created.
     void onSftpChannelInitializationFailed(const QString& reason) {
 		try {
-			throw Exception(tr("Cannot access URL %1\nSFTP error: %2").arg(_url.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)).arg(reason));
+			throw Exception(tr("Cannot access URL\n\n%1\n\nSFTP error: %2").arg(_url.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)).arg(reason));
 		}
 		catch(Exception& ex) {
 			reportException();
@@ -292,7 +337,7 @@ private Q_SLOTS:
     	}
         if(!errorMessage.isEmpty()) {
         	try {
-    			throw Exception(tr("Cannot access URL %1\nSFTP error: %2")
+    			throw Exception(tr("Cannot access URL\n\n%1\n\nSFTP error: %2")
     					.arg(_url.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded))
     					.arg(errorMessage));
         	}
@@ -323,6 +368,10 @@ protected:
     		if(size >= 0 && progressMaximum() > 0) {
     			setProgressValue(size / 1000);
     		}
+        	if(isCanceled()) {
+        		QScopedPointer<QTemporaryFile> file(_localFile.take());
+        		shutdown();
+        	}
     	}
     }
 
@@ -345,7 +394,12 @@ private:
 
     /// The progress monitor timer.
     int _timerId;
+
+	/// Cache of login/password information for remote machines.
+	static QMap<QString, QPair<QString,QString>> _loginCache;
 };
+QMap<QString, QPair<QString,QString>> SftpFileFetcher::_loginCache;
+
 #include "FileManager.moc"
 
 /******************************************************************************

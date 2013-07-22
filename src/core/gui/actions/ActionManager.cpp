@@ -44,8 +44,8 @@ ActionManager::ActionManager()
 	createCommandAction(ACTION_FILE_OPEN, tr("Load State"), ":/core/actions/file/file_open.png", tr("Load a saved state from a file."), QKeySequence::Open);
 	createCommandAction(ACTION_FILE_SAVE, tr("Save State"), ":/core/actions/file/file_save.png", tr("Save the current program state to a file."), QKeySequence::Save);
 	createCommandAction(ACTION_FILE_SAVEAS, tr("Save State As"), ":/core/actions/file/file_save_as.png", tr("Save the current program state to a new file."), QKeySequence::SaveAs);
-	createCommandAction(ACTION_FILE_IMPORT, tr("Open File"), ":/core/actions/file/file_import.png", tr("Import data from a file."), Qt::CTRL + Qt::Key_I);
-	createCommandAction(ACTION_FILE_REMOTE_IMPORT, tr("Open Remote File"), ":/core/actions/file/file_import.png", tr("Import a file from a remote location."));
+	createCommandAction(ACTION_FILE_IMPORT, tr("Open Local File"), ":/core/actions/file/file_import.png", tr("Import data from a file on this computer."), Qt::CTRL + Qt::Key_I);
+	createCommandAction(ACTION_FILE_REMOTE_IMPORT, tr("Open Remote File"), ":/core/actions/file/file_import_remote.png", tr("Import a file from a remote location."), Qt::CTRL + Qt::SHIFT + Qt::Key_I);
 	createCommandAction(ACTION_FILE_EXPORT, tr("Export File"), ":/core/actions/file/file_export.png", tr("Export data to a file."), Qt::CTRL + Qt::Key_E);
 	createCommandAction(ACTION_HELP_ABOUT, tr("About Ovito"), NULL, tr("Show information about the application."));
 	createCommandAction(ACTION_HELP_SHOW_ONLINE_HELP, tr("Manual"), NULL, tr("Open the online manual."));

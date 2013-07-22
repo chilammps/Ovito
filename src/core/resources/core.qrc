@@ -20,6 +20,7 @@
 	<file>actions/file/file_save.png</file>
 	<file>actions/file/file_save_as.png</file>
 	<file>actions/file/file_import.png</file>
+	<file>actions/file/file_import_remote.png</file>
 	<file>actions/file/file_export.png</file>
 	<file>actions/file/import_object_changefile.png</file>
 	<file>actions/file/import_object_reload.png</file>

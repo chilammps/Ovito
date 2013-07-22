@@ -20,12 +20,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /** 
- * \file ImportRemoteFileDialog.h
- * \brief Contains the definition of the Ovito::ImportRemoteFileDialog class.
+ * \file RemoteAuthenticationDialog.h
+ * \brief Contains the definition of the Ovito::RemoteAuthenticationDialog class.
  */
 
-#ifndef __OVITO_IMPORT_REMOTE_FILE_DIALOG_H
-#define __OVITO_IMPORT_REMOTE_FILE_DIALOG_H
+#ifndef __OVITO_REMOTE_AUTHENTICATION_DIALOG_H
+#define __OVITO_REMOTE_AUTHENTICATION_DIALOG_H
 
 #include <core/Core.h>
 #include <core/dataset/importexport/FileImporter.h>
@@ -33,39 +33,38 @@
 namespace Ovito {
 
 /**
- * \brief This dialog lets the user select a remote file to be imported.
+ * \brief This dialog asks the user for a username/password for a remote server.
  */
-class ImportRemoteFileDialog : public QDialog
+class RemoteAuthenticationDialog : public QDialog
 {
 	Q_OBJECT
 	
 public:
 
 	/// \brief Constructs the dialog window.
-	ImportRemoteFileDialog(QWidget* parent = nullptr, const QString& caption = QString());
+	RemoteAuthenticationDialog(QWidget* parent, const QString& title, const QString& labelText);
 
-	/// \brief Returns the file to import after the dialog has been closed with "OK".
-	QUrl fileToImport() const;
+	/// \brief Sets the username shown in the dialog.
+	void setUsername(const QString& username) { _usernameEdit->setText(username); }
 
-	/// \brief After the dialog has been closed with "OK", this method creates a parser object for the selected file.
-	OORef<FileImporter> createFileImporter();
+	/// \brief Sets the password shown in the dialog.
+	void setPassword(const QString& password) { _passwordEdit->setText(password); }
 
-	virtual QSize sizeHint() const override {
-		return QDialog::sizeHint().expandedTo(QSize(500, 0));
-	}
+	/// \brief Returns the username entered by the user.
+	QString username() const { return _usernameEdit->text(); }
 
-protected Q_SLOTS:
+	/// \brief Returns the password entered by the user.
+	QString password() const { return _passwordEdit->text(); }
 
-	/// This is called when the user has pressed the OK button of the dialog.
-	/// Validates and saves all input made by the user and closes the dialog box.
-	void onOk();
+	/// \brief Displays the dialog.
+	virtual int exec() override;
 
 private:
 
-	QComboBox* _urlEdit;
-	QComboBox* _formatSelector;
+	QLineEdit* _usernameEdit;
+	QLineEdit* _passwordEdit;
 };
 
 };
 
-#endif // __OVITO_IMPORT_REMOTE_FILE_DIALOG_H
+#endif // __OVITO_REMOTE_AUTHENTICATION_DIALOG_H

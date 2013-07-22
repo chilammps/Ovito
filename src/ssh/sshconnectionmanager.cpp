@@ -148,7 +148,7 @@ public:
             if (!haveConnection) {
                 // Let's nag clients who release connections with open channels.
                 const int channelCount = connection->closeAllChannels();
-                QSSH_ASSERT(channelCount == 0);
+                //QSSH_ASSERT(channelCount == 0);
 
                 m_unacquiredConnections.append(connection);
             } else {

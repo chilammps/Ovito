@@ -64,6 +64,14 @@ private:
 	/// Is called when a remote file has been fetched.
 	void fileFetched(QUrl url, QTemporaryFile* localFile);
 
+	/// Strips a URL from username and password information.
+	QUrl normalizeUrl(const QUrl& url) const {
+		QUrl strippedUrl = url;
+		strippedUrl.setUserName(QString());
+		strippedUrl.setPassword(QString());
+		return strippedUrl;
+	}
+
 private:
 
 	/// The remote files that are currently being fetched.

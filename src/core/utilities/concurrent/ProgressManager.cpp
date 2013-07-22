@@ -206,6 +206,10 @@ bool ProgressManager::waitForTask(const FutureInterfacePointer& futureInterface)
 	progressDialog.setAutoClose(false);
 	progressDialog.setAutoReset(false);
 	progressDialog.setMinimumDuration(0);
+	QLabel* label = new QLabel();
+	label->setWordWrap(true);
+	label->setMinimumWidth(500);
+	progressDialog.setLabel(label);
 
 	FutureWatcher watcher;
 	connect(&watcher, SIGNAL(progressRangeChanged(int)), &progressDialog, SLOT(setMaximum(int)));

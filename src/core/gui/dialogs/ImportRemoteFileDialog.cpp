@@ -35,11 +35,35 @@ ImportRemoteFileDialog::ImportRemoteFileDialog(QWidget* parent, const QString& c
 	setWindowTitle(caption);
 
 	QVBoxLayout* layout1 = new QVBoxLayout(this);
+	layout1->setSpacing(2);
 
 	layout1->addWidget(new QLabel(tr("Remote URL:")));
-	_urlEdit = new QLineEdit(this);
-	_urlEdit->setPlaceholderText(tr("sftp://username@hostname/path/file"));
+	_urlEdit = new QComboBox(this);
+	_urlEdit->setEditable(true);
+	_urlEdit->setInsertPolicy(QComboBox::NoInsert);
+	if(_urlEdit->lineEdit())
+		_urlEdit->lineEdit()->setPlaceholderText(tr("sftp://username@hostname/path/file"));
+
+	// Load list of recently accessed URLs.
+	QSettings settings;
+	settings.beginGroup("file/import_remote_file");
+	QStringList list = settings.value("history").toStringList();
+	for(QString entry : list)
+		_urlEdit->addItem(entry);
+
 	layout1->addWidget(_urlEdit);
+	layout1->addSpacing(10);
+
+	layout1->addWidget(new QLabel(tr("File type:")));
+	_formatSelector = new QComboBox(this);
+
+	_formatSelector->addItem(tr("<Auto-detect file format>"));
+	for(const auto& descriptor : ImportExportManager::instance().fileImporters()) {
+		_formatSelector->addItem(descriptor.fileFilterDescription());
+	}
+
+	layout1->addWidget(_formatSelector);
+	layout1->addSpacing(10);
 
 	QDialogButtonBox* buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, this);
 	connect(buttonBox, SIGNAL(accepted()), this, SLOT(onOk()));
@@ -54,9 +78,23 @@ ImportRemoteFileDialog::ImportRemoteFileDialog(QWidget* parent, const QString& c
 void ImportRemoteFileDialog::onOk()
 {
 	try {
-		QUrl url = QUrl::fromUserInput(_urlEdit->text());
+		QUrl url = QUrl::fromUserInput(_urlEdit->currentText());
 		if(!url.isValid())
 			throw Exception(tr("The entered URL is invalid."));
+
+		// Save list of recently accessed URLs.
+		QStringList list;
+		for(int index = 0; index < _urlEdit->count(); index++) {
+			list << _urlEdit->itemText(index);
+		}
+		QString newEntry = url.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded);
+		list.removeAll(newEntry);
+		list.prepend(newEntry);
+		while(list.size() > 40)
+			list.removeLast();
+		QSettings settings;
+		settings.beginGroup("file/import_remote_file");
+		settings.setValue("history", list);
 
 		// Close dialog box.
 		accept();
@@ -72,7 +110,7 @@ void ImportRemoteFileDialog::onOk()
 ******************************************************************************/
 QUrl ImportRemoteFileDialog::fileToImport() const
 {
-	return QUrl::fromUserInput(_urlEdit->text());
+	return QUrl::fromUserInput(_urlEdit->currentText());
 }
 
 /******************************************************************************
@@ -84,12 +122,8 @@ OORef<FileImporter> ImportRemoteFileDialog::createFileImporter()
 	QUrl importFile = fileToImport();
 	if(importFile.isEmpty()) return nullptr;
 
-#if 0
-	int importFilterIndex = _filterStrings.indexOf(selectedNameFilter()) - 1;
-	OVITO_ASSERT(importFilterIndex >= -1 && importFilterIndex < _filterStrings.size());
-#else
-	int importFilterIndex = -1;
-#endif
+	int importFilterIndex = _formatSelector->currentIndex() - 1;
+	OVITO_ASSERT(importFilterIndex < ImportExportManager::instance().fileImporters().size());
 
 	OORef<FileImporter> importer;
 	if(importFilterIndex >= 0)

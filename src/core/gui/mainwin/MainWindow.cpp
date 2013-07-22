@@ -231,13 +231,14 @@ void MainWindow::createMainToolbar()
 	_mainToolbar = addToolBar(tr("Main Toolbar"));
 	_mainToolbar->setObjectName("MainToolbar");
 
-	_mainToolbar->addAction(ActionManager::instance().getAction(ACTION_FILE_OPEN));
-	_mainToolbar->addAction(ActionManager::instance().getAction(ACTION_FILE_SAVE));
+	_mainToolbar->addAction(ActionManager::instance().getAction(ACTION_FILE_IMPORT));
+	_mainToolbar->addAction(ActionManager::instance().getAction(ACTION_FILE_REMOTE_IMPORT));
+	_mainToolbar->addAction(ActionManager::instance().getAction(ACTION_FILE_EXPORT));
 
 	_mainToolbar->addSeparator();
 
-	_mainToolbar->addAction(ActionManager::instance().getAction(ACTION_FILE_IMPORT));
-	_mainToolbar->addAction(ActionManager::instance().getAction(ACTION_FILE_EXPORT));
+	_mainToolbar->addAction(ActionManager::instance().getAction(ACTION_FILE_OPEN));
+	_mainToolbar->addAction(ActionManager::instance().getAction(ACTION_FILE_SAVE));
 
 	_mainToolbar->addSeparator();
 

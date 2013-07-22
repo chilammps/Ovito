@@ -39,7 +39,7 @@ class StandardSceneRenderer : public ViewportSceneRenderer
 public:
 
 	/// Default constructor.
-	Q_INVOKABLE StandardSceneRenderer() : ViewportSceneRenderer(), _antialiasingLevel(2) {
+	Q_INVOKABLE StandardSceneRenderer() : ViewportSceneRenderer(), _antialiasingLevel(3) {
 		INIT_PROPERTY_FIELD(StandardSceneRenderer::_antialiasingLevel)
 	}
 
