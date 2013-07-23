@@ -32,7 +32,7 @@ namespace Ovito {
 HistoryFileDialog::HistoryFileDialog(const QString& dialogClass, QWidget* parent, const QString& caption, const QString& directory, const QString& filter) :
 	QFileDialog(parent, caption, directory, filter), _dialogClass(dialogClass)
 {
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MACX
 	connect(this, SIGNAL(fileSelected(const QString&)), this, SLOT(onFileSelected(const QString&)));
 
 	QStringList history = loadDirHistory();

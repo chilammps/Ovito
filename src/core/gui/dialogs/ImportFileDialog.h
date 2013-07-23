@@ -51,7 +51,7 @@ public:
 	/// \brief Returns the selected importer or NULL if auto-detection is requested.
 	const FileImporterDescription* selectedFileImporter() const;
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MACX
 	/// Shows the dialog box.
 	virtual int exec() override;
 #endif

@@ -215,7 +215,7 @@ void VectorDisplayEditor::createUI(const RolloutInsertionParameters& rolloutPara
     // Create the rollout contents.
 	QGridLayout* layout = new QGridLayout(rollout);
 	layout->setContentsMargins(4,4,4,4);
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MACX
 	layout->setSpacing(0);
 #endif
 	layout->setColumnStretch(1, 1);

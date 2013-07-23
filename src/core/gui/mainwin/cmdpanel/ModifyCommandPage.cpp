@@ -75,7 +75,7 @@ ModifyCommandPage::ModifyCommandPage()
 
 	QToolBar* editToolbar = new QToolBar(this);
 	editToolbar->setOrientation(Qt::Vertical);
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MACX
 	editToolbar->setStyleSheet("QToolBar { padding: 0px; margin: 0px; border: 0px none black; }");
 #endif
 	subLayout->addWidget(editToolbar);

@@ -371,7 +371,7 @@ void CreateExpressionPropertyModifierEditor::createUI(const RolloutInsertionPara
 	QGridLayout* propertiesLayout = new QGridLayout(propertiesGroupBox);
 	propertiesLayout->setContentsMargins(4,4,4,4);
 	propertiesLayout->setColumnStretch(1, 1);
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MACX
 	propertiesLayout->setSpacing(2);
 #endif
 
@@ -414,7 +414,7 @@ void CreateExpressionPropertyModifierEditor::createUI(const RolloutInsertionPara
 	mainLayout->addWidget(expressionsGroupBox);
 	expressionsLayout = new QVBoxLayout(expressionsGroupBox);
 	expressionsLayout->setContentsMargins(4,4,4,4);
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MACX
 	expressionsLayout->setSpacing(0);
 #endif
 

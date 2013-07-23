@@ -309,7 +309,7 @@ void ColorCodingModifierEditor::createUI(const RolloutInsertionParameters& rollo
     // Create the rollout contents.
 	QVBoxLayout* layout1 = new QVBoxLayout(rollout);
 	layout1->setContentsMargins(4,4,4,4);
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MACX
 	layout1->setSpacing(0);
 #endif
 

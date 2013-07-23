@@ -94,7 +94,7 @@ const FileImporterDescription* ImportFileDialog::selectedFileImporter() const
 		return nullptr;
 }
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MACX
 
 /******************************************************************************
 * Shows the dialog box.

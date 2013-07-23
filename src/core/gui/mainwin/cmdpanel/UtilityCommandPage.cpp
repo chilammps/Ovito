@@ -45,13 +45,13 @@ UtilityCommandPage::UtilityCommandPage() : CommandPanelPage(),
 	// Create rollout that displays the list of installed utility plugins.
 	utilityListPanel = new QWidget();
 	QGridLayout* gridLayout = new QGridLayout();
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MACX
 	gridLayout->setContentsMargins(4,4,4,4);
 #endif
 	utilityListPanel->setLayout(gridLayout);
 	rolloutContainer->addRollout(utilityListPanel, tr("Utilities"));
 
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MACX
 	utilityListPanel->setStyleSheet("QPushButton:checked { "
 							   		"background-color: moccasin; "
 							   		"}");

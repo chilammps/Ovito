@@ -19,23 +19,33 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <core/Core.h>
-#include <core/gui/app/Application.h>
+/**
+ * \file VideoEncoder.h
+ * \brief Contains the definition of the Ovito::VideoEncoder class.
+ */
 
-int main(int argc, char** argv)
+#ifndef __OVITO_VIDEO_ENCODER_H
+#define __OVITO_VIDEO_ENCODER_H
+
+#include <base/Base.h>
+
+namespace Ovito {
+
+/**
+ * \brief Wrapper class for the FFmpeg video encoding library.
+ */
+class VideoEncoder : public QObject
 {
-	Q_INIT_RESOURCE(core);
+public:
 
-	// Initialize the application.
-	Ovito::Application app(argc, argv);
-	if(!app.initialize())
-		return 1;
+	/// \brief Constructor.
+	VideoEncoder(QObject* parent = nullptr);
 
-	// Enter event loop.
-	int result = app.runApplication();
+private:
 
-	// Shutdown application.
-	app.shutdown();
+	Q_OBJECT
+};
 
-	return result;
-}
+};	// End of namespace
+
+#endif // __OVITO_VIDEO_ENCODER_H

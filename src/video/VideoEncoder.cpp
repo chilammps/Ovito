@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// 
+//
 //  Copyright (2013) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
@@ -19,36 +19,21 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <core/Core.h>
-#include <core/gui/properties/IntegerParameterUI.h>
-#include "StandardSceneRenderer.h"
-#include "StandardSceneRendererEditor.h"
+#include <base/Base.h>
+#include "VideoEncoder.h"
+
+#include <libavutil/mathematics.h>
+#include <libavformat/avformat.h>
+#include <libswscale/swscale.h>
 
 namespace Ovito {
 
-IMPLEMENT_OVITO_OBJECT(Core, StandardSceneRendererEditor, PropertiesEditor)
-
 /******************************************************************************
-* Constructor that creates the UI controls for the editor.
+* Constructor
 ******************************************************************************/
-void StandardSceneRendererEditor::createUI(const RolloutInsertionParameters& rolloutParams)
+VideoEncoder::VideoEncoder(QObject* parent) : QObject(parent)
 {
-	// Create the rollout.
-	QWidget* rollout = createRollout(tr("OpenGL renderer settings"), rolloutParams);
-	
-	QGridLayout* layout = new QGridLayout(rollout);
-	layout->setContentsMargins(4,4,4,4);
-#ifndef Q_OS_MACX
-	layout->setSpacing(2);
-#endif
-	layout->setColumnStretch(1, 1);
-	
-	// Antialiasing level	
-	IntegerParameterUI* antialiasingLevelUI = new IntegerParameterUI(this, PROPERTY_FIELD(StandardSceneRenderer::_antialiasingLevel));
-	layout->addWidget(antialiasingLevelUI->label(), 0, 0);
-	layout->addLayout(antialiasingLevelUI->createFieldLayout(), 0, 1);
-	antialiasingLevelUI->setMinValue(1);
-	antialiasingLevelUI->setMaxValue(6);	
 }
 
-};
+};	// End of namespace
+

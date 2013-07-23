@@ -273,11 +273,19 @@ void ViewportParticleGeometryBuffer::renderPointSprites(ViewportSceneRenderer* r
 		OVITO_CHECK_OPENGL(renderer->glfuncs30()->glPointParameterfv(GL_POINT_DISTANCE_ATTENUATION, distanceAttenuation));
 		OVITO_CHECK_OPENGL(renderer->glfuncs30()->glPointParameterf(GL_POINT_FADE_THRESHOLD_SIZE, 0.0f));
 		OVITO_CHECK_OPENGL(renderer->glfuncs30()->glPointParameterf(GL_POINT_SIZE_MIN, 0.01f));
+#ifdef Q_OS_MACX
+		if(renderer->glcontext()->surface()->surfaceClass() == QSurface::Offscreen)
+			OVITO_CHECK_OPENGL(renderer->glfuncs30()->glPointParameterf(GL_POINT_SPRITE_COORD_ORIGIN, GL_LOWER_LEFT));
+#endif
 	}
 	else if(renderer->glfuncs32()) {
 		OVITO_CHECK_OPENGL(renderer->glfuncs32()->glPointParameterfv(GL_POINT_DISTANCE_ATTENUATION, distanceAttenuation));
 		OVITO_CHECK_OPENGL(renderer->glfuncs32()->glPointParameterf(GL_POINT_FADE_THRESHOLD_SIZE, 0.0f));
 		OVITO_CHECK_OPENGL(renderer->glfuncs32()->glPointParameterf(GL_POINT_SIZE_MIN, 0.01f));
+#ifdef Q_OS_MACX
+		if(renderer->glcontext()->surface()->surfaceClass() == QSurface::Offscreen)
+			OVITO_CHECK_OPENGL(renderer->glfuncs32()->glPointParameterf(GL_POINT_SPRITE_COORD_ORIGIN, GL_LOWER_LEFT));
+#endif
 	}
 	else {
 		OVITO_ASSERT(false);

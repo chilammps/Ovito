@@ -19,31 +19,30 @@
 #
 ###############################################################################
 
-# Place all compiled libraries into OVITO's library directory.
-SET(LIBRARY_OUTPUT_PATH "${OVITO_LIBRARY_DIRECTORY}")
+SET(VIDEO_SOURCE_FILES 
+	VideoEncoder.cpp
+)
 
-################# 3rd-party libraries  ####################
+# Find FFmpeg library.
+FIND_PACKAGE(FFmpeg REQUIRED)
+IF(NOT FFMPEG_FOUND)
+	MESSAGE(FATAL_ERROR "FFmpeg library not found.")
+ENDIF()
+INCLUDE_DIRECTORIES(${FFMPEG_INCLUDE_DIR})
 
-ADD_SUBDIRECTORY(ssh)
+# Build library.
+ADD_LIBRARY(Video ${VIDEO_SOURCE_FILES})
+TARGET_LINK_LIBRARIES(Video Base)
 
-################# Core libraries  ####################
+# Link to FFmpeg library.
+TARGET_LINK_LIBRARIES(Video ${FFMPEG_LIBRARIES})
 
-ADD_SUBDIRECTORY(base)
-ADD_SUBDIRECTORY(video)
-ADD_SUBDIRECTORY(core)
+# Link Qt5.
+QT5_USE_MODULES(Video Core Gui Widgets Xml)
 
-################# Plugins ####################
-
-# Place all plugins libraries into the plugin directory.
-FILE(MAKE_DIRECTORY ${OVITO_PLUGINS_DIRECTORY})
-INSTALL(DIRECTORY DESTINATION ${OVITO_RELATIVE_PLUGINS_DIRECTORY})
-SET(LIBRARY_OUTPUT_PATH "${OVITO_PLUGINS_DIRECTORY}")
-
-ADD_SUBDIRECTORY(viz)
-
-################# Main executable ####################
-
-# Place the executable into the "bin" output directory.
-SET(EXECUTABLE_OUTPUT_PATH ${OVITO_BINARY_DIRECTORY})
-
-ADD_SUBDIRECTORY(main)
+# This library is part of the installation package.
+IF(APPLE OR WIN32)
+	INSTALL(TARGETS Video 
+		RUNTIME DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}"
+		LIBRARY DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}")
+ENDIF()

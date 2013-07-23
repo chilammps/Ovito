@@ -145,7 +145,7 @@ void ShowPeriodicImagesModifierEditor::createUI(const RolloutInsertionParameters
     // Create the rollout contents.
 	QGridLayout* layout = new QGridLayout(panel);
 	layout->setContentsMargins(4,4,4,4);
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MACX
 	layout->setHorizontalSpacing(2);
 	layout->setVerticalSpacing(2);
 #endif

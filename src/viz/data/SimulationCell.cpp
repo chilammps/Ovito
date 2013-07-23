@@ -105,7 +105,7 @@ void SimulationCellEditor::createUI(const RolloutInsertionParameters& rolloutPar
 
 		QGridLayout* layout2 = new QGridLayout(sizeGroupBox);
 		layout2->setContentsMargins(4,4,4,4);
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MACX
 		layout2->setSpacing(0);
 #endif
 		layout2->setColumnStretch(1, 1);

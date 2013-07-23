@@ -105,7 +105,7 @@ void AnimationTimeSlider::paintEvent(QPaintEvent* event)
 ******************************************************************************/
 QSize AnimationTimeSlider::sizeHint() const
 {
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MACX
 	QStyleOptionButton btnOption;
 	btnOption.initFrom(this);
 	QSize sz = fontMetrics().size(Qt::TextSingleLine, "XXXXXXXXXX");

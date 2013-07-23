@@ -64,12 +64,12 @@ void RenderSettingsEditor::createUI(const RolloutInsertionParameters& rolloutPar
 
 		QVBoxLayout* layout2 = new QVBoxLayout(groupBox);
 		layout2->setContentsMargins(4,4,4,4);
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MACX
 		layout2->setSpacing(2);
 #endif
 		QGridLayout* layout2c = new QGridLayout();
 		layout2c->setContentsMargins(0,0,0,0);
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MACX
 		layout2c->setSpacing(2);
 #endif
 		layout2->addLayout(layout2c);
@@ -99,7 +99,7 @@ void RenderSettingsEditor::createUI(const RolloutInsertionParameters& rolloutPar
 
 		QGridLayout* layout2a = new QGridLayout();
 		layout2a->setContentsMargins(0,6,0,0);
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MACX
 		layout2a->setSpacing(2);
 #endif
 		layout2->addLayout(layout2a);
@@ -121,7 +121,7 @@ void RenderSettingsEditor::createUI(const RolloutInsertionParameters& rolloutPar
 		layout->addWidget(groupBox);
 		QGridLayout* layout2 = new QGridLayout(groupBox);
 		layout2->setContentsMargins(4,4,4,4);
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MACX
 		layout2->setSpacing(2);
 #endif
 		layout2->setColumnStretch(1, 1);
@@ -152,7 +152,7 @@ void RenderSettingsEditor::createUI(const RolloutInsertionParameters& rolloutPar
 		layout->addWidget(groupBox);
 		QGridLayout* layout2 = new QGridLayout(groupBox);
 		layout2->setContentsMargins(4,4,4,4);
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MACX
 		layout2->setSpacing(2);
 #endif
 		// Background color parameter.
@@ -178,7 +178,7 @@ void RenderSettingsEditor::createUI(const RolloutInsertionParameters& rolloutPar
 		layout->addWidget(groupBox);
 		QGridLayout* layout2 = new QGridLayout(groupBox);
 		layout2->setContentsMargins(4,4,4,4);
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MACX
 		layout2->setSpacing(2);
 #endif
 		layout2->setColumnStretch(0, 1);

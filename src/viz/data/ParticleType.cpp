@@ -63,7 +63,7 @@ void ParticleTypeEditor::createUI(const RolloutInsertionParameters& rolloutParam
     // Create the rollout contents.
 	QGridLayout* layout1 = new QGridLayout(rollout);
 	layout1->setContentsMargins(4,4,4,4);
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MACX
 	layout1->setSpacing(0);
 #endif
 	layout1->setColumnStretch(1, 1);

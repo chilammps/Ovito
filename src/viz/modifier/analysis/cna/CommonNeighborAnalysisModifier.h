@@ -40,7 +40,7 @@ class TreeNeighborListBuilder;
 
 /**
  * \brief A modifier that performs the common neighbor analysis (CNA) to identify
- *        local coordination structure.
+ *        local coordination structures.
  */
 class CommonNeighborAnalysisModifier : public StructureIdentificationModifier
 {
