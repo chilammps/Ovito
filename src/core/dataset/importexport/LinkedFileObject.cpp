@@ -387,9 +387,26 @@ void LinkedFileObject::showFileSelectionDialog(QWidget* parent)
 
 			// Create a file parser based on the selected filename filter.
 			newSourceUrl = QUrl::fromLocalFile(dialog.fileToImport());
-			fileimporter = dialog.createFileImporter();
-			if(!fileimporter)
-				return;
+
+			// Create file importer.
+			const FileImporterDescription* importerType = dialog.selectedFileImporter();
+			if(!importerType) {
+
+				// Download file so we can determine its format.
+				Future<QString> fetchFileFuture = FileManager::instance().fetchUrl(newSourceUrl);
+				if(!ProgressManager::instance().waitForTask(fetchFileFuture))
+					return;
+
+				// Detect file format.
+				fileimporter = ImportExportManager::instance().autodetectFileFormat(fetchFileFuture.result(), newSourceUrl.path());
+				if(!fileimporter)
+					throw Exception(tr("Could not detect the format of the file to be imported. The format might not be supported."));
+			}
+			else {
+				fileimporter = importerType->createService();
+				if(!fileimporter)
+					return;
+			}
 		}
 		OORef<LinkedFileImporter> newImporter = dynamic_object_cast<LinkedFileImporter>(fileimporter);
 		if(!newImporter)

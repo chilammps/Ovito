@@ -201,7 +201,7 @@ protected:
 		return shearStrainValues().size() == inputParticleCount();
 	}
 
-	/// This lets the modifier insert the previously computed results into the pipeline.
+	/// Inserts the computed and cached modifier results into the modification pipeline.
 	virtual ObjectStatus applyModifierResults(TimePoint time, TimeInterval& validityInterval) override;
 
 	/// This stores the cached results of the modifier.

@@ -34,6 +34,8 @@
 
 namespace Ovito {
 
+class FileImporterDescription;		// Defined in FileImporter.h
+
 /**
  * \brief Manages the current DataSet.
  * 
@@ -71,6 +73,12 @@ public:
 	/// \brief Calls the given slot as soon as the geometry pipelines of all scene nodes has been
 	///        completely evaluated.
 	void runWhenSceneIsReady(std::function<void ()> fn);
+
+	/// \brief Imports a given file into the scene.
+	/// \param url The location of the file to import.
+	/// \param importerType The type of importer to use. If NULL, the file format will be automatically detected.
+	/// \return true if the file was successfully imported; false otherwise.
+	bool importFile(const QUrl& url, const FileImporterDescription* importerType = nullptr);
 
 public Q_SLOTS:
 	

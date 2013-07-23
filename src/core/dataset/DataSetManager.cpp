@@ -21,6 +21,8 @@
 
 #include <core/Core.h>
 #include <core/dataset/DataSetManager.h>
+#include <core/dataset/importexport/FileImporter.h>
+#include <core/dataset/importexport/ImportExportManager.h>
 #include <core/viewport/ViewportManager.h>
 #include <core/gui/undo/UndoManager.h>
 #include <core/gui/app/Application.h>
@@ -28,6 +30,8 @@
 #include <core/animation/AnimManager.h>
 #include <core/utilities/io/ObjectSaveStream.h>
 #include <core/utilities/io/ObjectLoadStream.h>
+#include <core/utilities/io/FileManager.h>
+#include <core/utilities/concurrent/ProgressManager.h>
 
 namespace Ovito {
 
@@ -267,6 +271,58 @@ bool DataSetManager::fileLoad(const QString& filename)
 		return false;
 	}
 	return true;
+}
+
+/******************************************************************************
+* Imports a given file into the scene.
+******************************************************************************/
+bool DataSetManager::importFile(const QUrl& url, const FileImporterDescription* importerType)
+{
+	try {
+
+		if(!url.isValid())
+			throw Exception(tr("URL is not valid: %1").arg(url.toString()));
+
+		// Ask user if current scene should be saved before it is replaced by the imported data.
+		if(!askForSaveChanges())
+			return false;
+
+		OORef<FileImporter> importer;
+		if(!importerType) {
+
+			// Download file so we can determine its format.
+			Future<QString> fetchFileFuture = FileManager::instance().fetchUrl(url);
+			if(!ProgressManager::instance().waitForTask(fetchFileFuture))
+				return false;
+
+			// Detect file format.
+			importer = ImportExportManager::instance().autodetectFileFormat(fetchFileFuture.result(), url.path());
+			if(!importer)
+				throw Exception(tr("Could not detect the format of the file to be imported. The format might not be supported."));
+		}
+		else {
+			importer = importerType->createService();
+			if(!importer)
+				return false;
+		}
+
+		UndoManager::instance().beginCompoundOperation(tr("Import %1").arg(QFileInfo(url.path()).baseName()));
+		try {
+			importer->importFile(url, currentSet());
+			UndoManager::instance().endCompoundOperation();
+		}
+		catch(...) {
+			UndoManager::instance().currentCompoundOperation()->clear();
+			UndoManager::instance().endCompoundOperation();
+			throw;
+		}
+
+		return true;
+	}
+	catch(const Exception& ex) {
+		ex.showError();
+		return false;
+	}
 }
 
 /******************************************************************************

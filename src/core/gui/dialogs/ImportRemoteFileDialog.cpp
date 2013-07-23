@@ -114,33 +114,17 @@ QUrl ImportRemoteFileDialog::fileToImport() const
 }
 
 /******************************************************************************
-* After the dialog has been closed with "OK", this method creates a parser
-* object for the selected file.
+* Returns the selected importer or NULL if auto-detection is requested.
 ******************************************************************************/
-OORef<FileImporter> ImportRemoteFileDialog::createFileImporter()
+const FileImporterDescription* ImportRemoteFileDialog::selectedFileImporter() const
 {
-	QUrl importFile = fileToImport();
-	if(importFile.isEmpty()) return nullptr;
-
 	int importFilterIndex = _formatSelector->currentIndex() - 1;
-	OVITO_ASSERT(importFilterIndex < ImportExportManager::instance().fileImporters().size());
+	OVITO_ASSERT(importFilterIndex >= -1 && importFilterIndex < ImportExportManager::instance().fileImporters().size());
 
-	OORef<FileImporter> importer;
 	if(importFilterIndex >= 0)
-		return ImportExportManager::instance().fileImporters()[importFilterIndex].createService();
-	else {
-
-		// Download file so we can determine its format.
-		Future<QString> fetchFileFuture = FileManager::instance().fetchUrl(importFile);
-		if(!ProgressManager::instance().waitForTask(fetchFileFuture))
-			return nullptr;
-
-		OORef<FileImporter> importer = ImportExportManager::instance().autodetectFileFormat(fetchFileFuture.result(), importFile.path());
-		if(!importer)
-			throw Exception(tr("Could not auto-detect the format of the selected file. Please specify its format explicitly"));
-
-		return importer;
-	}
+		return &ImportExportManager::instance().fileImporters()[importFilterIndex];
+	else
+		return nullptr;
 }
 
 };

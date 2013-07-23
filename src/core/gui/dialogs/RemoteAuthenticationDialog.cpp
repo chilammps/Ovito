@@ -61,8 +61,15 @@ RemoteAuthenticationDialog::RemoteAuthenticationDialog(QWidget* parent, const QS
 ******************************************************************************/
 int RemoteAuthenticationDialog::exec()
 {
-	if(_usernameEdit->text().isEmpty())
+	if(_usernameEdit->text().isEmpty()) {
+
+		if(qEnvironmentVariableIsSet("USER"))
+			_usernameEdit->setText(QString::fromLocal8Bit(qgetenv("USER")));
+		else if(qEnvironmentVariableIsSet("USERNAME"))
+			_usernameEdit->setText(QString::fromLocal8Bit(qgetenv("USERNAME")));
+
 		_usernameEdit->setFocus();
+	}
 	else
 		_passwordEdit->setFocus();
 

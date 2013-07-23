@@ -86,7 +86,7 @@ void StructureIdentificationModifier::retrieveModifierResults(Engine* engine)
 }
 
 /******************************************************************************
-* This lets the modifier insert the previously computed results into the pipeline.
+* Inserts the computed and cached modifier results into the modification pipeline.
 ******************************************************************************/
 ObjectStatus StructureIdentificationModifier::applyModifierResults(TimePoint time, TimeInterval& validityInterval)
 {

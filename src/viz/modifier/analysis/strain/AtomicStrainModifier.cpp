@@ -231,7 +231,8 @@ void AtomicStrainModifier::AtomicStrainEngine::compute(FutureInterfaceBase& futu
 bool AtomicStrainModifier::AtomicStrainEngine::computeStrain(size_t particleIndex, OnTheFlyNeighborListBuilder& neighborListBuilder, std::vector<size_t>& indexToIndexMap)
 {
 	// We do the following calculations using double precision to
-	// achieve best results.
+	// achieve best results. Final results will be converted back to
+	// standard precision numbers.
 
 	Matrix_3<double> V = Matrix_3<double>::Zero();
 	Matrix_3<double> W = Matrix_3<double>::Zero();
@@ -333,7 +334,7 @@ void AtomicStrainModifier::retrieveModifierResults(Engine* engine)
 }
 
 /******************************************************************************
-* This lets the modifier insert the previously computed results into the pipeline.
+* Inserts the computed and cached modifier results into the modification pipeline.
 ******************************************************************************/
 ObjectStatus AtomicStrainModifier::applyModifierResults(TimePoint time, TimeInterval& validityInterval)
 {

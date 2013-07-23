@@ -47,8 +47,8 @@ public:
 	/// \brief Returns the file to import after the dialog has been closed with "OK".
 	QUrl fileToImport() const;
 
-	/// \brief After the dialog has been closed with "OK", this method creates a parser object for the selected file.
-	OORef<FileImporter> createFileImporter();
+	/// \brief Returns the selected importer or NULL if auto-detection is requested.
+	const FileImporterDescription* selectedFileImporter() const;
 
 	virtual QSize sizeHint() const override {
 		return QDialog::sizeHint().expandedTo(QSize(500, 0));

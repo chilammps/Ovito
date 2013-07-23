@@ -81,26 +81,17 @@ QString ImportFileDialog::fileToImport() const
 }
 
 /******************************************************************************
-* After the dialog has been closed with "OK", this method creates a parser
-* object for the selected file.
+* Returns the selected importer or NULL if auto-detection is requested.
 ******************************************************************************/
-OORef<FileImporter> ImportFileDialog::createFileImporter()
+const FileImporterDescription* ImportFileDialog::selectedFileImporter() const
 {
-	QString importFile = fileToImport();
-	if(importFile.isEmpty()) return nullptr;
-
 	int importFilterIndex = _filterStrings.indexOf(selectedNameFilter()) - 1;
 	OVITO_ASSERT(importFilterIndex >= -1 && importFilterIndex < _filterStrings.size());
 
-	OORef<FileImporter> importer;
 	if(importFilterIndex >= 0)
-		return ImportExportManager::instance().fileImporters()[importFilterIndex].createService();
-	else {
-		OORef<FileImporter> importer = ImportExportManager::instance().autodetectFileFormat(importFile);
-		if(!importer)
-			throw Exception(tr("Could not auto-detect the format of the selected file. Please specify its format explicitly in the file selector dialog."));
-		return importer;
-	}
+		return &ImportExportManager::instance().fileImporters()[importFilterIndex];
+	else
+		return nullptr;
 }
 
 #ifdef Q_WS_MAC

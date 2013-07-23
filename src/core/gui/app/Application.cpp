@@ -149,22 +149,14 @@ bool Application::initialize()
 			MainWindow::instance().restoreLayout();
 		}
 
-		// Import data file specified on the command line.
-		if(_startupImportFile.isEmpty() == false) {
-			try {
-				OORef<FileImporter> importer = ImportExportManager::instance().autodetectFileFormat(_startupImportFile);
-				if(!importer)
-					throw Exception(tr("Could not auto-detect format of file to be imported."));
-				importer->importFile(QUrl::fromLocalFile(_startupImportFile), DataSetManager::instance().currentSet());
-			}
-			catch(Exception& ex) {
-				ex.prependGeneralMessage(tr("Failed to import file %1.").arg(_startupImportFile));
-				throw;
-			}
-		}
-
 		// Enable the viewports now. Viewport updates are suspended by default.
 		ViewportManager::instance().resumeViewportUpdates();
+
+		// Import file specified on the command line.
+		if(_startupImportFile.isEmpty() == false) {
+			QUrl importURL = QUrl::fromUserInput(_startupImportFile);
+			DataSetManager::instance().importFile(importURL);
+		}
 	}
 	catch(const Exception& ex) {
 		ex.showError();

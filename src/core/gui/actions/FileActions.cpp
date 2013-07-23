@@ -146,34 +146,13 @@ void ActionManager::on_Settings_triggered()
 ******************************************************************************/
 void ActionManager::on_FileImport_triggered()
 {
-	// Import selected file.
-	try {
-		// Let the user select a file.
-		ImportFileDialog dialog(&MainWindow::instance(), tr("Import Data"));
-		if(dialog.exec() != QDialog::Accepted)
-			return;
-		OORef<FileImporter> importer = dialog.createFileImporter();
-		if(!importer) return;
+	// Let the user select a file.
+	ImportFileDialog dialog(&MainWindow::instance(), tr("Import Data"));
+	if(dialog.exec() != QDialog::Accepted)
+		return;
 
-		// Ask user if current scene should be saved before it is replaced by the imported data.
-		if(!DataSetManager::instance().askForSaveChanges())
-			return;
-
-		QString importFile = dialog.fileToImport();
-		UndoManager::instance().beginCompoundOperation(tr("Import %1").arg(QFileInfo(importFile).baseName()));
-		try {
-			importer->importFile(QUrl::fromLocalFile(importFile), DataSetManager::instance().currentSet());
-			UndoManager::instance().endCompoundOperation();
-		}
-		catch(...) {
-			UndoManager::instance().currentCompoundOperation()->clear();
-			UndoManager::instance().endCompoundOperation();
-			throw;
-		}
-	}
-	catch(const Exception& ex) {
-		ex.showError();
-	}
+	// Import file.
+	DataSetManager::instance().importFile(QUrl::fromLocalFile(dialog.fileToImport()), dialog.selectedFileImporter());
 }
 
 /******************************************************************************
@@ -181,33 +160,13 @@ void ActionManager::on_FileImport_triggered()
 ******************************************************************************/
 void ActionManager::on_FileRemoteImport_triggered()
 {
-	try {
-		// Let the user enter the URL of the remote file.
-		ImportRemoteFileDialog dialog(&MainWindow::instance(), tr("Import Remote File"));
-		if(dialog.exec() != QDialog::Accepted)
-			return;
-		OORef<FileImporter> importer = dialog.createFileImporter();
-		if(!importer) return;
+	// Let the user enter the URL of the remote file.
+	ImportRemoteFileDialog dialog(&MainWindow::instance(), tr("Import Remote File"));
+	if(dialog.exec() != QDialog::Accepted)
+		return;
 
-		// Ask user if current scene should be saved before it is replaced by the imported data.
-		if(!DataSetManager::instance().askForSaveChanges())
-			return;
-
-		QUrl importURL = dialog.fileToImport();
-		UndoManager::instance().beginCompoundOperation(tr("Import %1").arg(QFileInfo(importURL.path()).baseName()));
-		try {
-			importer->importFile(importURL, DataSetManager::instance().currentSet());
-			UndoManager::instance().endCompoundOperation();
-		}
-		catch(...) {
-			UndoManager::instance().currentCompoundOperation()->clear();
-			UndoManager::instance().endCompoundOperation();
-			throw;
-		}
-	}
-	catch(const Exception& ex) {
-		ex.showError();
-	}
+	// Import URL.
+	DataSetManager::instance().importFile(dialog.fileToImport(), dialog.selectedFileImporter());
 }
 
 /******************************************************************************
