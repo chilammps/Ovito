@@ -137,6 +137,9 @@ MACRO(OVITO_FIXUP_BUNDLE)
 			"${OVITO_CMAKE_INSTALL_PREFIX}/${plugin_dest_dir}/plugins/imageformats"
 			"${OVITO_CMAKE_INSTALL_PREFIX}/${plugin_dest_dir}/plugins/platforms"
 			"${OVITO_CMAKE_INSTALL_PREFIX}/${plugin_dest_dir}/plugins/accessible")
+		IF(OVITO_VIDEO_OUTPUT_SUPPORT)
+			SET(DIRS ${DIRS} "/opt/local/lib")
+		ENDIF()
 		
 		# Now the work of copying dependencies into the bundle/package
 		# The quotes are escaped and variables to use at install time have their $ escaped

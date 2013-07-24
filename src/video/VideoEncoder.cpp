@@ -74,6 +74,7 @@ QList<VideoEncoder::Format> VideoEncoder::supportedFormats()
 
 	AVOutputFormat* fmt = nullptr;
 	while((fmt = av_oformat_next(fmt))) {
+
 		if(fmt->flags & AVFMT_NOFILE || fmt->flags & AVFMT_NEEDNUMBER)
 			continue;
 
@@ -268,8 +269,8 @@ void VideoEncoder::writeFrame(const QImage& image)
 
 	sws_scale(_imgConvertCtx, srcplanes, srcstride, 0, videoHeight, _frame->data, _frame->linesize);
 
+#ifndef FF_API_OLD_ENCODE_VIDEO
 	int out_size = avcodec_encode_video(_codecContext, _outputBuf.data(), _outputBuf.size(), _frame.get());
-
 	// If zero size, it means the image was buffered.
 	if(out_size > 0) {
 		AVPacket pkt;
@@ -285,6 +286,24 @@ void VideoEncoder::writeFrame(const QImage& image)
 		if(av_interleaved_write_frame(_formatContext.get(), &pkt) < 0)
 			throw Exception(tr("Error while writing video frame."));
 	}
+#else
+	int got_packet_ptr;
+	AVPacket pkt = {0};
+	av_init_packet(&pkt);
+
+	if(avcodec_encode_video2(_codecContext, &pkt, _frame.get(), &got_packet_ptr) < 0)
+		throw Exception(tr("Error while encoding video frame."));
+
+	if(got_packet_ptr && pkt.size) {
+		pkt.stream_index = _videoStream->index;
+		if(av_interleaved_write_frame(_formatContext.get(), &pkt) < 0) {
+			av_free_packet(&pkt);
+			throw Exception(tr("Error while writing video frame."));
+		}
+		av_free_packet(&pkt);
+	}
+
+#endif
 }
 
 };	// End of namespace
