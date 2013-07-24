@@ -21,10 +21,28 @@
 
 #include <core/Core.h>
 #include <core/rendering/FrameBuffer.h>
+#ifdef OVITO_VIDEO_OUTPUT_SUPPORT
+#include <video/VideoEncoder.h>
+#endif
 
 namespace Ovito {
 
 #define IMAGE_FORMAT_FILE_FORMAT_VERSION		1
+
+/******************************************************************************
+* Returns whether the selected file format is a video format.
+******************************************************************************/
+bool ImageInfo::isMovie() const
+{
+#ifdef OVITO_VIDEO_OUTPUT_SUPPORT
+	for(const auto& videoFormat : VideoEncoder::supportedFormats()) {
+		if(format() == videoFormat.name)
+			return true;
+	}
+#endif
+
+	return false;
+}
 
 /******************************************************************************
 * Writes an ImageInfo to an output stream.

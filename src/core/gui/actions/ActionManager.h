@@ -32,6 +32,7 @@ class ViewportInputHandler;		// defined in ViewportInputHandler.h
 class SceneRenderer;			// defined in SceneRenderer.h
 class RenderSettings;			// defined in RenderSettings.h
 class FrameBuffer;				// defined in FrameBuffer.h
+class VideoEncoder;				// defined in VideoEncoder.h
 
 //////////////////////// Action identifiers ///////////////////////////
 
@@ -207,7 +208,8 @@ private:
 	OORef<ViewportInputHandler> createAnimationPlaybackViewportMode();
 
 	/// Renders a single frame and saves the output file.
-	bool renderFrame(TimePoint renderTime, int frameNumber, RenderSettings* settings, SceneRenderer* renderer, Viewport* viewport, FrameBuffer* frameBuffer, QProgressDialog& progressDialog);
+	bool renderFrame(TimePoint renderTime, int frameNumber, RenderSettings* settings, SceneRenderer* renderer,
+			Viewport* viewport, FrameBuffer* frameBuffer, VideoEncoder* videoEncoder, QProgressDialog& progressDialog);
 
 	/// Constructor.
 	ActionManager();

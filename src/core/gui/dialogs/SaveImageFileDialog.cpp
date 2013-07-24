@@ -20,6 +20,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
+#ifdef OVITO_VIDEO_OUTPUT_SUPPORT
+#include <video/VideoEncoder.h>
+#endif
 #include "SaveImageFileDialog.h"
 
 namespace Ovito {
@@ -37,12 +40,24 @@ SaveImageFileDialog::SaveImageFileDialog(QWidget* parent, const QString& caption
 	QStringList filterStrings;
 	QList<QByteArray> supportedFormats = QImageWriter::supportedImageFormats();
 
+	// Add image formats.
 	if(supportedFormats.contains("png")) { filterStrings << tr("PNG image file (*.png)"); _formatList << "png"; }
 	if(supportedFormats.contains("jpg")) { filterStrings << tr("JPEG image file (*.jpg *.jpeg)"); _formatList << "jpg"; }
-	if(supportedFormats.contains("bmp")) { filterStrings << tr("BMP Windows bitmap (*.bmp)"); _formatList << "bmp"; }
 	if(supportedFormats.contains("eps")) { filterStrings << tr("EPS Encapsulated PostScript (*.eps)"); _formatList << "eps"; }
 	if(supportedFormats.contains("tiff")) { filterStrings << tr("TIFF Tagged image file (*.tif *.tiff)"); _formatList << "tiff"; }
 	if(supportedFormats.contains("tga")) { filterStrings << tr("TGA Targa image file (*.tga)"); _formatList << "tga"; }
+
+#ifdef OVITO_VIDEO_OUTPUT_SUPPORT
+	// Add video formats.
+	for(const auto& videoFormat : VideoEncoder::supportedFormats()) {
+		QString filterString = videoFormat.longName + " (";
+		for(const QString& ext : videoFormat.extensions)
+			filterString += "*." + ext;
+		filterString += ")";
+		filterStrings << filterString;
+		_formatList << videoFormat.name;
+	}
+#endif
 
 	if(filterStrings.isEmpty())
 		throw Exception(tr("There are no image format plugins available."));
@@ -51,7 +66,8 @@ SaveImageFileDialog::SaveImageFileDialog(QWidget* parent, const QString& caption
 	setAcceptMode(QFileDialog::AcceptSave);
 	setConfirmOverwrite(true);
 	setLabelText(QFileDialog::FileType, tr("Save as type"));
-	if(_imageInfo.filename().isEmpty() == false) selectFile(_imageInfo.filename());
+	if(_imageInfo.filename().isEmpty() == false)
+		selectFile(_imageInfo.filename());
 
 	int index = _formatList.indexOf(_imageInfo.format().toLower());
 	if(index >= 0) selectNameFilter(filterStrings[index]);
@@ -77,9 +93,8 @@ void SaveImageFileDialog::onFileSelected(const QString& file)
 {
 	_imageInfo.setFilename(file);
 	int index = nameFilters().indexOf(selectedNameFilter());
-	if(index >= 0 && index < _formatList.size()) {
+	if(index >= 0 && index < _formatList.size())
 		_imageInfo.setFormat(_formatList[index]);
-	}
 }
 
 };

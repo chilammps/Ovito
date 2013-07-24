@@ -30,6 +30,9 @@
 #include <core/gui/mainwin/MainWindow.h>
 #include <core/gui/app/Application.h>
 #include <core/dataset/DataSetManager.h>
+#ifdef OVITO_VIDEO_OUTPUT_SUPPORT
+#include <video/VideoEncoder.h>
+#endif
 
 namespace Ovito {
 
@@ -67,11 +70,26 @@ void ActionManager::on_RenderActiveViewport_triggered()
 			// Initialize the renderer.
 			if(renderer->startRender(DataSetManager::instance().currentSet(), settings)) {
 
+#ifdef OVITO_VIDEO_OUTPUT_SUPPORT
+				// Initialize video encoder.
+				QScopedPointer<VideoEncoder> videoEncoder;
+				if(settings->saveToFile() && settings->imageInfo().isMovie()) {
+
+					if(settings->imageFilename().isEmpty())
+						throw Exception(tr("Cannot save rendered images to movie file. Output filename has not been specified."));
+
+					videoEncoder.reset(new VideoEncoder());
+					videoEncoder->openFile(settings->imageFilename(), settings->outputImageWidth(), settings->outputImageHeight(), AnimManager::instance().framesPerSecond());
+				}
+#else
+				VideoEncoder* videoEncoder = nullptr;
+#endif
+
 				if(settings->renderingRangeType() == RenderSettings::CURRENT_FRAME) {
 					// Render a single frame.
 					TimePoint renderTime = AnimManager::instance().time();
 					int frameNumber = AnimManager::instance().timeToFrame(renderTime);
-					if(renderFrame(renderTime, frameNumber, settings, renderer, viewport, frameBuffer.data(), progressDialog)) {
+					if(renderFrame(renderTime, frameNumber, settings, renderer, viewport, frameBuffer.data(), &*videoEncoder, progressDialog)) {
 						// Open a display window for the rendered frame.
 						if(Application::instance().guiMode()) {
 							FrameBufferWindow* display = MainWindow::instance().frameBufferWindow();
@@ -107,7 +125,7 @@ void ActionManager::on_RenderActiveViewport_triggered()
 						progressDialog.setValue(frameIndex);
 
 						int frameNumber = firstFrameNumber + frameIndex * settings->everyNthFrame() + settings->fileNumberBase();
-						if(renderFrame(renderTime, frameNumber, settings, renderer, viewport, frameBuffer.data(), progressDialog)) {
+						if(renderFrame(renderTime, frameNumber, settings, renderer, viewport, frameBuffer.data(), &*videoEncoder, progressDialog)) {
 							// Open a display window for the rendered frame.
 							if(Application::instance().guiMode()) {
 								FrameBufferWindow* display = MainWindow::instance().frameBufferWindow();
@@ -127,6 +145,12 @@ void ActionManager::on_RenderActiveViewport_triggered()
 						renderTime += AnimManager::instance().ticksPerFrame() * settings->everyNthFrame();
 					}
 				}
+
+#ifdef OVITO_VIDEO_OUTPUT_SUPPORT
+				// Finalize movie file.
+				if(videoEncoder)
+					videoEncoder->closeFile();
+#endif
 			}
 
 			// Shutdown renderer.
@@ -146,11 +170,12 @@ void ActionManager::on_RenderActiveViewport_triggered()
 /******************************************************************************
 * Renders a single frame and saves the output file.
 ******************************************************************************/
-bool ActionManager::renderFrame(TimePoint renderTime, int frameNumber, RenderSettings* settings, SceneRenderer* renderer, Viewport* viewport, FrameBuffer* frameBuffer, QProgressDialog& progressDialog)
+bool ActionManager::renderFrame(TimePoint renderTime, int frameNumber, RenderSettings* settings, SceneRenderer* renderer, Viewport* viewport,
+		FrameBuffer* frameBuffer, VideoEncoder* videoEncoder, QProgressDialog& progressDialog)
 {
 	// Generate output filename.
 	QString imageFilename;
-	if(settings->saveToFile()) {
+	if(settings->saveToFile() && !videoEncoder) {
 		imageFilename = settings->imageFilename();
 		if(imageFilename.isEmpty())
 			throw Exception(tr("Cannot save rendered image to file. Output filename has not been specified."));
@@ -200,8 +225,15 @@ bool ActionManager::renderFrame(TimePoint renderTime, int frameNumber, RenderSet
 
 	// Save rendered image to disk.
 	if(settings->saveToFile()) {
-		if(!frameBuffer->image().save(imageFilename, settings->imageInfo().format()))
-			throw Exception(tr("Failed to save rendered image to image file '%1'.").arg(imageFilename));
+		if(!videoEncoder) {
+			if(!frameBuffer->image().save(imageFilename, settings->imageInfo().format()))
+				throw Exception(tr("Failed to save rendered image to image file '%1'.").arg(imageFilename));
+		}
+		else {
+#ifdef OVITO_VIDEO_OUTPUT_SUPPORT
+			videoEncoder->writeFrame(frameBuffer->image());
+#endif
+		}
 	}
 
 	return !progressDialog.wasCanceled();

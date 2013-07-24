@@ -147,9 +147,11 @@ SET(OVITO_CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
 # Add the plugins directory to the library path. Maybe some plugins link against other plugins.
 LINK_DIRECTORIES(${OVITO_PLUGINS_DIRECTORY})
 
-# Controls compilation of the video encoding  module.
-OPTION(OVITO_VIDEO_ENCODER "Build the video encoding module." "OFF")
-
+# Controls compilation of the video encoding module.
+OPTION(OVITO_VIDEO_OUTPUT_SUPPORT "Build the video encoding module." "OFF")
+IF(OVITO_VIDEO_OUTPUT_SUPPORT)
+	ADD_DEFINITIONS(-DOVITO_VIDEO_OUTPUT_SUPPORT)
+ENDIF()
 
 # Build program.
 ADD_SUBDIRECTORY(src)

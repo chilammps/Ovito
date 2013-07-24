@@ -69,6 +69,9 @@ public:
 	/// Sets the format of the image on disk.
 	void setFormat(const QByteArray& format) { _format = format; }
 	
+	/// Returns whether the selected file format is a video format.
+	bool isMovie() const;
+
 private:
 
 	/// The width of the image in pixels.

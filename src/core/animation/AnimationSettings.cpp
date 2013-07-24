@@ -34,7 +34,7 @@ DEFINE_PROPERTY_FIELD(AnimationSettings, _playbackSpeed, "PlaybackSpeed");
 * Default constructor. Assigns default values.
 ******************************************************************************/
 AnimationSettings::AnimationSettings() :
-		_ticksPerFrame(TICKS_PER_SECOND/25), _playbackSpeed(1),
+		_ticksPerFrame(TICKS_PER_SECOND/10), _playbackSpeed(1),
 		_animationInterval(0, 0), _time(0)
 {
 	INIT_PROPERTY_FIELD(AnimationSettings::_time);

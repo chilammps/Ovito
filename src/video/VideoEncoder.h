@@ -29,6 +29,16 @@
 
 #include <base/Base.h>
 
+extern "C" {
+struct AVFormatContext;
+struct AVOutputFormat;
+struct AVCodec;
+struct AVStream;
+struct AVCodecContext;
+struct AVFrame;
+struct SwsContext;
+};
+
 namespace Ovito {
 
 /**
@@ -38,10 +48,57 @@ class VideoEncoder : public QObject
 {
 public:
 
-	/// \brief Constructor.
+	/**
+	 * Describes an output format supported by the video encoding engine.
+	 */
+	class Format {
+	public:
+		QByteArray name;
+		QString longName;
+		QStringList extensions;
+
+		AVOutputFormat* avformat;
+	};
+
+public:
+
+	/// Constructor.
 	VideoEncoder(QObject* parent = nullptr);
 
+	/// Destructor.
+	virtual ~VideoEncoder() { closeFile(); }
+
+	/// Opens a video file for writing.
+	void openFile(const QString& filename, int width, int height, int fps, VideoEncoder::Format* format = nullptr, int bitrate = 0);
+
+	/// Writes a single frame into the video file.
+	void writeFrame(const QImage& image);
+
+	/// This closes the written video file.
+	void closeFile();
+
+	/// Returns the list of supported output formats.
+	static QList<Format> supportedFormats();
+
 private:
+
+	/// Initializes libavcodec, and register all codecs and formats.
+	static void initCodecs();
+
+	/// Returns the error string for the given error code.
+	static QString errorMessage(int errorCode);
+
+	std::shared_ptr<AVFormatContext> _formatContext;
+	std::unique_ptr<quint8[]> _pictureBuf;
+	std::vector<quint8> _outputBuf;
+	std::shared_ptr<AVFrame> _frame;
+	AVStream* _videoStream;
+	AVCodecContext* _codecContext;
+	SwsContext* _imgConvertCtx;
+	bool _isOpen;
+
+	/// The list of supported video formats.
+	static QList<Format> _supportedFormats;
 
 	Q_OBJECT
 };

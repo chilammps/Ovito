@@ -165,7 +165,7 @@ protected:
 	
 private:
 
-	/// Stores the output filename and format of the rendered image.
+	/// Contains the output filename and format of the image to be rendered.
 	ImageInfo _imageInfo;
 
 	/// The instance of the plugin renderer class. 

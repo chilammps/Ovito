@@ -43,6 +43,7 @@
 #include <utility>
 #include <random>
 #include <memory>
+#include <mutex>
 #include <thread>
 
 /******************************************************************************
