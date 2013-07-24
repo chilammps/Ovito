@@ -122,8 +122,7 @@ void ColorParameterUI::onColorPickerChanged()
 {
 	if(colorPicker() && editObject()) {
 		ViewportSuspender noVPUpdate;
-		UndoManager::instance().beginCompoundOperation(tr("Change color"));
-		try {
+		UndoableTransaction::handleExceptions(tr("Change color"), [this]() {
 			if(isReferenceFieldUI()) {
 				VectorController* ctrl = dynamic_object_cast<VectorController>(parameterObject());
 				if(ctrl)
@@ -134,11 +133,7 @@ void ColorParameterUI::onColorPickerChanged()
 				newValue.setValue(colorPicker()->color());
 				editObject()->setPropertyFieldValue(*propertyField(), newValue);
 			}
-		}
-		catch(const Exception& ex) {
-			ex.showError();
-		}
-		UndoManager::instance().endCompoundOperation();
+		});
 	}
 }
 

@@ -202,9 +202,9 @@ void StructureListParameterUI::onDoubleClickStructureType(const QModelIndex& ind
 	QColor newColor = QColorDialog::getColor(oldColor, editor()->container());
 	if(!newColor.isValid() || newColor == oldColor) return;
 
-	UndoManager::instance().beginCompoundOperation(tr("Change structure type color"));
-	stype->setColor(Color(newColor));
-	UndoManager::instance().endCompoundOperation();
+	UndoableTransaction::handleExceptions(tr("Change structure type color"), [stype, newColor]() {
+		stype->setColor(Color(newColor));
+	});
 }
 
 };	// End of namespace

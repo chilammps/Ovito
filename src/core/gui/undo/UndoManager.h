@@ -442,6 +442,57 @@ struct UndoSuspender {
 	~UndoSuspender() { UndoManager::instance().resume(); }
 };
 
+/**
+ * Helper class that begins a new compound operation.
+ * Unless the operation committed, the destructor of this class will undo all operations.
+ */
+class UndoableTransaction
+{
+public:
+
+	/// Constructor that calls UndoManager::beginCompoundOperation().
+	UndoableTransaction(const QString& displayName) : _committed(false) {
+		UndoManager::instance().beginCompoundOperation(displayName);
+	}
+
+	/// Destructor that undoes all recorded operations unless commit() was called.
+	~UndoableTransaction() {
+		if(!_committed) {
+			UndoManager::instance().currentCompoundOperation()->clear();
+			UndoManager::instance().endCompoundOperation();
+		}
+	}
+
+	/// Commits all recorded operations by calling UndoManager::endCompoundOperation().
+	void commit() {
+		OVITO_ASSERT(!_committed);
+		_committed = true;
+		UndoManager::instance().endCompoundOperation();
+	}
+
+	/// Executes the passed functor and catches any exceptions during its execution.
+	/// If an exception is thrown by the functor, all changes done by the functor
+	/// so far will be undone, the error message is shown to the user, and this function returns false.
+	/// If no exception is thrown, the operations are committed and this function returns true.
+	template<typename Function>
+	static bool handleExceptions(const QString& operationLabel, Function func) {
+		try {
+			UndoableTransaction transaction(operationLabel);
+			func();
+			transaction.commit();
+			return true;
+		}
+		catch(const Exception& ex) {
+			ex.showError();
+			return false;
+		}
+	}
+
+private:
+
+	bool _committed;
+};
+
 };
 
 #endif // __OVITO_UNDO_MANAGER_H

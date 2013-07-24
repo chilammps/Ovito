@@ -306,16 +306,9 @@ bool DataSetManager::importFile(const QUrl& url, const FileImporterDescription* 
 				return false;
 		}
 
-		UndoManager::instance().beginCompoundOperation(tr("Import %1").arg(QFileInfo(url.path()).baseName()));
-		try {
-			importer->importFile(url, currentSet());
-			UndoManager::instance().endCompoundOperation();
-		}
-		catch(...) {
-			UndoManager::instance().currentCompoundOperation()->clear();
-			UndoManager::instance().endCompoundOperation();
-			throw;
-		}
+		UndoableTransaction transaction(tr("Import %1").arg(QFileInfo(url.path()).baseName()));
+		importer->importFile(url, currentSet());
+		transaction.commit();
 
 		return true;
 	}

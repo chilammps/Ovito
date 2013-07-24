@@ -416,14 +416,14 @@ void SliceModifierEditor::onXYZNormal(const QString& link)
 	SliceModifier* mod = static_object_cast<SliceModifier>(editObject());
 	if(!mod) return;
 
-	UndoManager::instance().beginCompoundOperation(tr("Set plane normal"));
-	if(link == "0")
-		mod->setNormal(Vector3(1,0,0));
-	else if(link == "1")
-		mod->setNormal(Vector3(0,1,0));
-	else if(link == "2")
-		mod->setNormal(Vector3(0,0,1));
-	UndoManager::instance().endCompoundOperation();
+	UndoableTransaction::handleExceptions(tr("Set plane normal"), [mod, &link]() {
+		if(link == "0")
+			mod->setNormal(Vector3(1,0,0));
+		else if(link == "1")
+			mod->setNormal(Vector3(0,1,0));
+		else if(link == "2")
+			mod->setNormal(Vector3(0,0,1));
+	});
 }
 
 /******************************************************************************
@@ -456,10 +456,10 @@ void SliceModifierEditor::onAlignPlaneToView()
 	if(abs(newPlaneLocal.normal.Y) < FLOATTYPE_EPSILON) newPlaneLocal.normal.Y = 0;
 	if(abs(newPlaneLocal.normal.Z) < FLOATTYPE_EPSILON) newPlaneLocal.normal.Z = 0;
 
-	UndoManager::instance().beginCompoundOperation(tr("Align plane to view"));
-	mod->setNormal(Normalize(newPlaneLocal.normal));
-	mod->setDistance(newPlaneLocal.dist);
-	UndoManager::instance().endCompoundOperation();
+	UndoableTransaction::handleExceptions(tr("Align plane to view"), [mod, &newPlaneLocal]() {
+		mod->setNormal(Normalize(newPlaneLocal.normal));
+		mod->setDistance(newPlaneLocal.dist);
+	});
 #endif
 }
 
@@ -481,9 +481,9 @@ void SliceModifierEditor::onCenterOfBox()
 	Point3 centerPoint = inputObject->simulationCell()->cellMatrix() * Point3(0.5, 0.5, 0.5);
 	FloatType centerDistance = DotProduct(mod->normal(), centerPoint - ORIGIN);
 
-	UndoManager::instance().beginCompoundOperation(tr("Set plane position"));
-	mod->setDistance(centerDistance);
-	UndoManager::instance().endCompoundOperation();
+	UndoableTransaction::handleExceptions(tr("Set plane position"), [mod, centerDistance]() {
+		mod->setDistance(centerDistance);
+	});
 #endif
 }
 
@@ -615,10 +615,10 @@ void PickAtomPlaneInputMode::alignPlane(SliceModifier* mod)
 			localPlane = -localPlane;
 
 		localPlane.normalizePlane();
-		UNDO_MANAGER.beginCompoundOperation(tr("Align plane to atoms"));
-		mod->setNormal(localPlane.normal);
-		mod->setDistance(localPlane.dist);
-		UNDO_MANAGER.endCompoundOperation();
+		UndoableTransaction::handleExceptions(tr("Align plane to particles"), [mod, &localPlane]() {
+			mod->setNormal(localPlane.normal);
+			mod->setDistance(localPlane.dist);
+		});
 	}
 	catch(const Exception& ex) {
 		ex.showError();

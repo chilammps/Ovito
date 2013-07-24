@@ -363,28 +363,16 @@ bool ModificationListModel::setData(const QModelIndex& index, const QVariant& va
 		ModificationListItem* item = this->item(index.row());
 		DisplayObject* displayObj = dynamic_object_cast<DisplayObject>(item->object());
 		if(displayObj) {
-			UndoManager::instance().beginCompoundOperation(tr("Enable/disable display"));
-			try {
+			UndoableTransaction::handleExceptions(tr("Enable/disable display"), [displayObj, &value]() {
 				displayObj->setEnabled(value == Qt::Checked);
-			}
-			catch(const Exception& ex) {
-				ex.showError();
-				UndoManager::instance().currentCompoundOperation()->clear();
-			}
-			UndoManager::instance().endCompoundOperation();
+			});
 		}
 		else {
 			Modifier* modifier = dynamic_object_cast<Modifier>(item->object());
 			if(modifier) {
-				UndoManager::instance().beginCompoundOperation(tr("Enable/disable modifier"));
-				try {
+				UndoableTransaction::handleExceptions(tr("Enable/disable modifier"), [modifier, &value]() {
 					modifier->setEnabled(value == Qt::Checked);
-				}
-				catch(const Exception& ex) {
-					ex.showError();
-					UndoManager::instance().currentCompoundOperation()->clear();
-				}
-				UndoManager::instance().endCompoundOperation();
+				});
 			}
 		}
 	}

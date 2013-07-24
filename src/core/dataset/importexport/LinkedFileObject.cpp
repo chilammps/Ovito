@@ -415,43 +415,34 @@ void LinkedFileObject::showFileSelectionDialog(QWidget* parent)
 		ViewportSuspender noVPUpdate;
 
 		// Make the import processes reversible.
-		UndoManager::instance().beginCompoundOperation(tr("Pick new input file"));
+		UndoableTransaction transaction(tr("Pick new input file"));
 
-		try {
-			// Re-use the existing importer if possible.
-			OORef<LinkedFileImporter> oldImporter = importer();
-			if(!oldImporter || oldImporter->getOOType() != newImporter->getOOType())
-				setImporter(newImporter.get());
+		// Re-use the existing importer if possible.
+		OORef<LinkedFileImporter> oldImporter = importer();
+		if(!oldImporter || oldImporter->getOOType() != newImporter->getOOType())
+			setImporter(newImporter.get());
 
-			// Set the input location.
-			if(setSourceUrl(newSourceUrl)) {
-				// Scan the input source for animation frames.
-				if(updateFrames()) {
-					// Adjust the animation length number to match the number of frames in the input data source.
-					adjustAnimationInterval();
-					UndoManager::instance().endCompoundOperation();
+		// Set the input location.
+		if(setSourceUrl(newSourceUrl)) {
+			// Scan the input source for animation frames.
+			if(updateFrames()) {
+				// Adjust the animation length number to match the number of frames in the input data source.
+				adjustAnimationInterval();
+				UndoManager::instance().endCompoundOperation();
 
-					// Adjust viewports to show the new object.
-					if(_adjustAnimationIntervalEnabled) {
-						DataSetManager::instance().runWhenSceneIsReady([]() {
-							ActionManager::instance().getAction(ACTION_VIEWPORT_ZOOM_SELECTION_EXTENTS_ALL)->trigger();
-						});
-					}
-
-					return;
+				// Adjust viewports to show the new object.
+				if(_adjustAnimationIntervalEnabled) {
+					DataSetManager::instance().runWhenSceneIsReady([]() {
+						ActionManager::instance().getAction(ACTION_VIEWPORT_ZOOM_SELECTION_EXTENTS_ALL)->trigger();
+					});
 				}
-			}
 
-			// Revert to old state.
-			UndoManager::instance().currentCompoundOperation()->clear();
+				transaction.commit();
+				return;
+			}
 		}
-		catch(...) {
-			UndoManager::instance().currentCompoundOperation()->clear();
-			UndoManager::instance().endCompoundOperation();
-			throw;
-		}
-		UndoManager::instance().endCompoundOperation();
-		adjustAnimationInterval();
+
+		// Transaction has not been committed. We will revert to old state.
 	}
 	catch(const Exception& ex) {
 		ex.showError();

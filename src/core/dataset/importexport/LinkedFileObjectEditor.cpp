@@ -157,8 +157,8 @@ void LinkedFileObjectEditor::onSourceUrlEntered()
 	LinkedFileObject* obj = static_object_cast<LinkedFileObject>(editObject());
 	OVITO_CHECK_OBJECT_POINTER(obj);
 
-	UndoManager::instance().beginCompoundOperation(tr("Change source URL"));
-	try {
+	UndoableTransaction::handleExceptions(tr("Change source URL"), [this, obj]() {
+
 		QUrl url = QUrl::fromUserInput(_sourceTextbox->text());
 		if(!url.isValid())
 			throw Exception(tr("URL is not valid."));
@@ -168,13 +168,8 @@ void LinkedFileObjectEditor::onSourceUrlEntered()
 				obj->adjustAnimationInterval();
 			}
 		}
-	}
-	catch(const Exception& ex) {
-		ex.showError();
-		UndoManager::instance().currentCompoundOperation()->clear();
-		updateInformationLabel();
-	}
-	UndoManager::instance().endCompoundOperation();
+	});
+	updateInformationLabel();
 }
 
 /******************************************************************************

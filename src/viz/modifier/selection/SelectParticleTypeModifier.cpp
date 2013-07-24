@@ -301,9 +301,9 @@ void SelectParticleTypeModifierEditor::onPropertySelected(int index)
 	SelectParticleTypeModifier* mod = static_object_cast<SelectParticleTypeModifier>(editObject());
 	if(!mod) return;
 
-	UndoManager::instance().beginCompoundOperation(tr("Select property"));
-	mod->setSourceProperty(propertyListBox->currentProperty());
-	UndoManager::instance().endCompoundOperation();
+	UndoableTransaction::handleExceptions(tr("Select property"), [mod, propertyListBox]() {
+		mod->setSourceProperty(propertyListBox->currentProperty());
+	});
 }
 
 /******************************************************************************
@@ -320,9 +320,9 @@ void SelectParticleTypeModifierEditor::onParticleTypeSelected(QListWidgetItem* i
 	else
 		types.remove(item->data(Qt::UserRole).toInt());
 
-	UndoManager::instance().beginCompoundOperation(tr("Select type"));
-	mod->setSelectedParticleTypes(types);
-	UndoManager::instance().endCompoundOperation();
+	UndoableTransaction::handleExceptions(tr("Select type"), [mod, &types]() {
+		mod->setSelectedParticleTypes(types);
+	});
 }
 
 /******************************************************************************

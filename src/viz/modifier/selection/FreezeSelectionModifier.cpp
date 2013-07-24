@@ -217,10 +217,10 @@ void FreezeSelectionModifierEditor::takeSelectionSnapshot()
 	FreezeSelectionModifier* mod = static_object_cast<FreezeSelectionModifier>(editObject());
 	if(!mod) return;
 
-	PipelineFlowState input = mod->getModifierInput();
-	UndoManager::instance().beginCompoundOperation(tr("Take selection snapshot"));
-	mod->takeSelectionSnapshot(input);
-	UndoManager::instance().endCompoundOperation();
+	UndoableTransaction::handleExceptions(tr("Take selection snapshot"), [mod]() {
+		PipelineFlowState input = mod->getModifierInput();
+		mod->takeSelectionSnapshot(input);
+	});
 }
 
 };	// End of namespace

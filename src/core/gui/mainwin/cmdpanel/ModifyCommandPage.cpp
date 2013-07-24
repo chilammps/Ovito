@@ -230,19 +230,13 @@ void ModifyCommandPage::onModifierAdd(int index)
 	if(index >= 0 && _modificationListModel->isUpToDate()) {
 		const OvitoObjectType* descriptor = static_cast<const OvitoObjectType*>(_modifierSelector->itemData(index).value<void*>());
 		if(descriptor) {
-			UndoManager::instance().beginCompoundOperation(tr("Apply modifier"));
-			try {
+			UndoableTransaction::handleExceptions(tr("Apply modifier"), [descriptor, this]() {
 				// Create an instance of the modifier...
 				OORef<Modifier> modifier = static_object_cast<Modifier>(descriptor->createInstance());
 				OVITO_CHECK_OBJECT_POINTER(modifier);
 				// .. and apply it.
 				_modificationListModel->applyModifier(modifier.get());
-			}
-			catch(const Exception& ex) {
-				ex.showError();
-				UndoManager::instance().currentCompoundOperation()->clear();
-			}
-			UndoManager::instance().endCompoundOperation();
+			});
 			_modificationListModel->requestUpdate();
 		}
 		_modifierSelector->setCurrentIndex(0);
@@ -261,20 +255,16 @@ void ModifyCommandPage::onDeleteModifier()
 	Modifier* modifier = dynamic_object_cast<Modifier>(selectedItem->object());
 	if(!modifier) return;
 
-	UndoManager::instance().beginCompoundOperation(tr("Delete modifier"));
-	try {
+	UndoableTransaction::handleExceptions(tr("Delete modifier"), [selectedItem, modifier]() {
+
 		// Remove each ModifierApplication from the ModifiedObject it belongs to.
 		Q_FOREACH(ModifierApplication* modApp, selectedItem->modifierApplications()) {
 			OVITO_ASSERT(modApp->modifier() == modifier);
 			OVITO_CHECK_OBJECT_POINTER(modApp->pipelineObject());
 			modApp->pipelineObject()->removeModifier(modApp);
 		}
-	}
-	catch(const Exception& ex) {
-		ex.showError();
-		UndoManager::instance().currentCompoundOperation()->clear();
-	}
-	UndoManager::instance().endCompoundOperation();
+
+	});
 }
 
 /******************************************************************************
@@ -288,15 +278,9 @@ void ModifyCommandPage::onModifierStackDoubleClicked(const QModelIndex& index)
 	Modifier* modifier = dynamic_object_cast<Modifier>(item->object());
 	if(modifier) {
 		// Toggle enabled state of modifier.
-		UndoManager::instance().beginCompoundOperation(tr("Toggle modifier state"));
-		try {
+		UndoableTransaction::handleExceptions(tr("Toggle modifier state"), [modifier]() {
 			modifier->setEnabled(!modifier->isEnabled());
-		}
-		catch(const Exception& ex) {
-			ex.showError();
-			UndoManager::instance().currentCompoundOperation()->clear();
-		}
-		UndoManager::instance().endCompoundOperation();
+		});
 	}
 }
 
@@ -321,20 +305,14 @@ void ModifyCommandPage::onModifierMoveUp()
 	if(modApp == pipelineObj->modifierApplications().back())
 		return;
 
-	UndoManager::instance().beginCompoundOperation(tr("Move modifier up"));
-	try {
+	UndoableTransaction::handleExceptions(tr("Move modifier up"), [pipelineObj, modApp]() {
 		// Determine old position in stack.
 		int index = pipelineObj->modifierApplications().indexOf(modApp.get());
 		// Remove ModifierApplication from the ModifiedObject.
 		pipelineObj->removeModifier(modApp.get());
 		// Re-insert ModifierApplication into the ModifiedObject.
 		pipelineObj->insertModifierApplication(modApp.get(), index+1);
-	}
-	catch(const Exception& ex) {
-		ex.showError();
-		UndoManager::instance().currentCompoundOperation()->clear();
-	}
-	UndoManager::instance().endCompoundOperation();
+	});
 }
 
 /******************************************************************************
@@ -359,20 +337,14 @@ void ModifyCommandPage::onModifierMoveDown()
 	if(modApp == pipelineObj->modifierApplications().front())
 		return;
 
-	UndoManager::instance().beginCompoundOperation(tr("Move modifier down"));
-	try {
+	UndoableTransaction::handleExceptions(tr("Move modifier down"), [pipelineObj, modApp]() {
 		// Determine old position in stack.
 		int index = pipelineObj->modifierApplications().indexOf(modApp.get());
 		// Remove ModifierApplication from the ModifiedObject.
 		pipelineObj->removeModifier(modApp.get());
 		// Re-insert ModifierApplication into the ModifiedObject.
 		pipelineObj->insertModifierApplication(modApp.get(), index-1);
-	}
-	catch(const Exception& ex) {
-		ex.showError();
-		UndoManager::instance().currentCompoundOperation()->clear();
-	}
-	UndoManager::instance().endCompoundOperation();
+	});
 }
 
 /******************************************************************************

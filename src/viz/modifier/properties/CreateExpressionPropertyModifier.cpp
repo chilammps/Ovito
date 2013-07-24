@@ -506,12 +506,12 @@ void CreateExpressionPropertyModifierEditor::onExpressionEditingFinished()
 	OVITO_ASSERT(index >= 0);
 
 	CreateExpressionPropertyModifier* mod = static_object_cast<CreateExpressionPropertyModifier>(editObject());
-	QStringList expr = mod->expressions();
-	expr[index] = edit->text();
 
-	UndoManager::instance().beginCompoundOperation(tr("Change expression"));
-	mod->setExpressions(expr);
-	UndoManager::instance().endCompoundOperation();
+	UndoableTransaction::handleExceptions(tr("Change expression"), [mod, index]() {
+		QStringList expr = mod->expressions();
+		expr[index] = edit->text();
+		mod->setExpressions(expr);
+	});
 }
 
 };	// End of namespace

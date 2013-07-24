@@ -255,9 +255,9 @@ void SimulationCellEditor::onSizeSpinnerValueChanged(int dim)
 {
 	ViewportSuspender noVPUpdate;
 	if(!UndoManager::instance().isRecording()) {
-		UndoManager::instance().beginCompoundOperation(tr("Change simulation cell size"));
-		changeSimulationBoxSize(dim);
-		UndoManager::instance().endCompoundOperation();
+		UndoableTransaction::handleExceptions(tr("Change simulation cell size"), [this, dim]() {
+			changeSimulationBoxSize(dim);
+		});
 	}
 	else {
 		UndoManager::instance().currentCompoundOperation()->clear();

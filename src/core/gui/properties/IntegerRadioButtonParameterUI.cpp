@@ -152,28 +152,25 @@ void IntegerRadioButtonParameterUI::setEnabled(bool enabled)
 void IntegerRadioButtonParameterUI::updatePropertyValue()
 {
 	if(buttonGroup() && editObject()) {
-		
 		int id = buttonGroup()->checkedId();
 		if(id != -1) {
-			UndoManager::instance().beginCompoundOperation(tr("Change parameter"));
-
-			if(isReferenceFieldUI()) {
-				IntegerController* ctrl = dynamic_object_cast<IntegerController>(parameterObject());
-				if(ctrl) {
-					ctrl->setCurrentValue(id);
-					updateUI();
+			UndoableTransaction::handleExceptions(tr("Change parameter"), [this, id]() {
+				if(isReferenceFieldUI()) {
+					IntegerController* ctrl = dynamic_object_cast<IntegerController>(parameterObject());
+					if(ctrl) {
+						ctrl->setCurrentValue(id);
+						updateUI();
+					}
 				}
-			}
-			else if(isQtPropertyUI()) {
-				if(!editObject()->setProperty(propertyName(), id)) {
-					OVITO_ASSERT_MSG(false, "IntegerRadioButtonPropertyUI::updatePropertyValue()", QString("The value of property %1 of object class %2 could not be set.").arg(QString(propertyName()), editObject()->metaObject()->className()).toLocal8Bit().constData());
+				else if(isQtPropertyUI()) {
+					if(!editObject()->setProperty(propertyName(), id)) {
+						OVITO_ASSERT_MSG(false, "IntegerRadioButtonPropertyUI::updatePropertyValue()", QString("The value of property %1 of object class %2 could not be set.").arg(QString(propertyName()), editObject()->metaObject()->className()).toLocal8Bit().constData());
+					}
 				}
-			}
-			else if(isPropertyFieldUI()) {
-				editObject()->setPropertyFieldValue(*propertyField(), id);
-			}
-
-			UndoManager::instance().endCompoundOperation();
+				else if(isPropertyFieldUI()) {
+					editObject()->setPropertyFieldValue(*propertyField(), id);
+				}
+			});
 		}
 	}
 }

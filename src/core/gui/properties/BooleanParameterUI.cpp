@@ -138,8 +138,7 @@ void BooleanParameterUI::updatePropertyValue()
 {
 	if(checkBox() && editObject()) {
 		
-		UndoManager::instance().beginCompoundOperation(tr("Change parameter"));
-		try {
+		UndoableTransaction::handleExceptions(tr("Change parameter"), [this]() {
 			if(isReferenceFieldUI()) {
 				BooleanController* ctrl = dynamic_object_cast<BooleanController>(parameterObject());
 				if(ctrl) {
@@ -155,12 +154,7 @@ void BooleanParameterUI::updatePropertyValue()
 			else if(isPropertyFieldUI()) {
 				editObject()->setPropertyFieldValue(*propertyField(), checkBox()->isChecked());
 			}
-		}
-		catch(const Exception& ex) {
-			ex.showError();
-		}
-		
-		UndoManager::instance().endCompoundOperation();
+		});
 	}
 }
 

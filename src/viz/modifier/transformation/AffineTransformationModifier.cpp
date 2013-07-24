@@ -284,9 +284,9 @@ void AffineTransformationModifierEditor::onSpinnerValueChanged()
 {
 	ViewportSuspender noVPUpdate;
 	if(!UndoManager::instance().isRecording()) {
-		UndoManager::instance().beginCompoundOperation(tr("Change Parameter"));
+		UndoableTransaction transaction(tr("Change parameter"));
 		updateParameterValue();
-		UndoManager::instance().endCompoundOperation();
+		transaction.commit();
 	}
 	else {
 		UndoManager::instance().currentCompoundOperation()->clear();
@@ -321,7 +321,7 @@ void AffineTransformationModifierEditor::updateParameterValue()
 void AffineTransformationModifierEditor::onSpinnerDragStart()
 {
 	OVITO_ASSERT(!UndoManager::instance().isRecording());
-	UndoManager::instance().beginCompoundOperation(tr("Change Parameter"));
+	UndoManager::instance().beginCompoundOperation(tr("Change parameter"));
 }
 
 /******************************************************************************

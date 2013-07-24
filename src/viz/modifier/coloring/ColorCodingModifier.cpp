@@ -477,9 +477,9 @@ void ColorCodingModifierEditor::onPropertySelected(int index)
 	ColorCodingModifier* mod = static_object_cast<ColorCodingModifier>(editObject());
 	OVITO_CHECK_OBJECT_POINTER(mod);
 
-	UndoManager::instance().beginCompoundOperation(tr("Select property"));
-	mod->setSourceProperty(propertyListBox->property(index));
-	UndoManager::instance().endCompoundOperation();
+	UndoableTransaction::handleExceptions(tr("Select property"), [mod, propertyListBox, index]() {
+		mod->setSourceProperty(propertyListBox->property(index));
+	});
 }
 
 /******************************************************************************
@@ -495,18 +495,12 @@ void ColorCodingModifierEditor::onColorGradientSelected(int index)
 	const OvitoObjectType* descriptor = static_cast<const OvitoObjectType*>(colorGradientList->itemData(index).value<void*>());
 	if(!descriptor) return;
 
-	UndoManager::instance().beginCompoundOperation(tr("Change color gradient"));
-	try {
+	UndoableTransaction::handleExceptions(tr("Change color gradient"), [descriptor, mod]() {
 		// Create an instance of the selected color gradient class.
 		OORef<ColorCodingGradient> gradient = static_object_cast<ColorCodingGradient>(descriptor->createInstance());
 		if(gradient)
 	        mod->setColorGradient(gradient);
-	}
-	catch(const Exception& ex) {
-		ex.showError();
-		UndoManager::instance().currentCompoundOperation()->clear();
-	}
-	UndoManager::instance().endCompoundOperation();
+	});
 }
 
 /******************************************************************************
@@ -518,9 +512,9 @@ void ColorCodingModifierEditor::onAdjustRange()
 	ColorCodingModifier* mod = static_object_cast<ColorCodingModifier>(editObject());
 	OVITO_CHECK_OBJECT_POINTER(mod);
 
-	UndoManager::instance().beginCompoundOperation(tr("Adjust range"));
-	mod->adjustRange();
-	UndoManager::instance().endCompoundOperation();
+	UndoableTransaction::handleExceptions(tr("Adjust range"), [mod]() {
+		mod->adjustRange();
+	});
 }
 
 /******************************************************************************
@@ -531,14 +525,14 @@ void ColorCodingModifierEditor::onReverseRange()
 	ColorCodingModifier* mod = static_object_cast<ColorCodingModifier>(editObject());
 
 	if(mod->startValueController() && mod->endValueController()) {
-		UndoManager::instance().beginCompoundOperation(tr("Reverse range"));
+		UndoableTransaction::handleExceptions(tr("Reverse range"), [mod]() {
 
-		// Swap controllers for start and end value.
-		OORef<FloatController> oldStartValue = mod->startValueController();
-		mod->setStartValueController(mod->endValueController());
-		mod->setEndValueController(oldStartValue);
+			// Swap controllers for start and end value.
+			OORef<FloatController> oldStartValue = mod->startValueController();
+			mod->setStartValueController(mod->endValueController());
+			mod->setEndValueController(oldStartValue);
 
-		UndoManager::instance().endCompoundOperation();
+		});
 	}
 }
 

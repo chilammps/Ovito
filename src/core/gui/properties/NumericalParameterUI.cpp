@@ -133,9 +133,9 @@ void NumericalParameterUI::onSpinnerValueChanged()
 {
 	ViewportSuspender noVPUpdate;
 	if(!UndoManager::instance().isRecording()) {
-		UndoManager::instance().beginCompoundOperation(tr("Change parameter"));
+		UndoableTransaction transaction(tr("Change parameter"));
 		updatePropertyValue();
-		UndoManager::instance().endCompoundOperation();
+		transaction.commit();
 	}
 	else {
 		UndoManager::instance().currentCompoundOperation()->clear();

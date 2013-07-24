@@ -131,9 +131,7 @@ void BooleanRadioButtonParameterUI::setEnabled(bool enabled)
 void BooleanRadioButtonParameterUI::updatePropertyValue()
 {
 	if(buttonGroup() && editObject()) {
-		
-		UndoManager::instance().beginCompoundOperation(tr("Change parameter"));
-		try {
+		UndoableTransaction::handleExceptions(tr("Change parameter"), [this]() {
 			int id = buttonGroup()->checkedId();
 			if(id != -1) {
 				if(propertyName()) {
@@ -145,12 +143,7 @@ void BooleanRadioButtonParameterUI::updatePropertyValue()
 					editObject()->setPropertyFieldValue(*propertyField(), (bool)id);
 				}
 			}
-		}
-		catch(const Exception& ex) {
-			ex.showError();
-		}
-		
-		UndoManager::instance().endCompoundOperation();
+		});
 	}
 }
 

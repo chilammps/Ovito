@@ -213,17 +213,12 @@ void RenderSettingsEditor::onChooseImageFilename()
 	RenderSettings* settings = static_object_cast<RenderSettings>(editObject());
 	if(!settings) return;
 
-	try {
-		SaveImageFileDialog fileDialog(container(), tr("Output image file"), settings->imageInfo());
-		if(fileDialog.exec()) {
-			UndoManager::instance().beginCompoundOperation(tr("Change output file"));
+	SaveImageFileDialog fileDialog(container(), tr("Output image file"), settings->imageInfo());
+	if(fileDialog.exec()) {
+		UndoableTransaction::handleExceptions(tr("Change output file"), [settings, &fileDialog]() {
 			settings->setImageInfo(fileDialog.imageInfo());
 			settings->setSaveToFile(true);
-			UndoManager::instance().endCompoundOperation();
-		}
-	}
-	catch(const Exception& ex) {
-		ex.showError();
+		});
 	}
 }
 
@@ -234,10 +229,10 @@ void RenderSettingsEditor::onSizePresetActivated(int index)
 {
 	RenderSettings* settings = static_object_cast<RenderSettings>(editObject());
 	if(settings && index >= 1 && index <= sizeof(imageSizePresets)/sizeof(imageSizePresets[0])) {
-		UndoManager::instance().beginCompoundOperation(tr("Change output dimensions"));
-		settings->setOutputImageWidth(imageSizePresets[index-1][0]);
-		settings->setOutputImageHeight(imageSizePresets[index-1][1]);
-		UndoManager::instance().endCompoundOperation();
+		UndoableTransaction::handleExceptions(tr("Change output dimensions"), [settings, index]() {
+			settings->setOutputImageWidth(imageSizePresets[index-1][0]);
+			settings->setOutputImageHeight(imageSizePresets[index-1][1]);
+		});
 	}
 	sizePresetsBox->setCurrentIndex(0);
 }

@@ -126,9 +126,7 @@ void StringParameterUI::updatePropertyValue()
 {
 	if(textBox() && editObject()) {
 		
-		UndoManager::instance().beginCompoundOperation(tr("Change parameter"));
-
-		try {
+		UndoableTransaction::handleExceptions(tr("Change parameter"), [this]() {
 			if(isQtPropertyUI()) {
 				if(!editObject()->setProperty(propertyName(), textBox()->text())) {
 					OVITO_ASSERT_MSG(false, "StringParameterUI::updatePropertyValue()", QString("The value of property %1 of object class %2 could not be set.").arg(QString(propertyName()), editObject()->metaObject()->className()).toLocal8Bit().constData());
@@ -137,12 +135,7 @@ void StringParameterUI::updatePropertyValue()
 			else if(isPropertyFieldUI()) {
 				editObject()->setPropertyFieldValue(*propertyField(), textBox()->text());
 			}
-		}
-		catch(const Exception& ex) {
-			ex.showError();
-		}
-		
-		UndoManager::instance().endCompoundOperation();
+		});
 	}
 }
 
