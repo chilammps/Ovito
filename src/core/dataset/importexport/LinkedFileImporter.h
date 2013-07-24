@@ -104,10 +104,6 @@ public:
 
 	//////////////////////////// Specific methods ////////////////////////////////
 
-	/// \brief Lets the importer check the given source location.
-	/// \return \c true if the new source location has been accepted; \c false when the user has canceled the operation or if the new source location is invalid.
-	virtual bool acceptNewSource(const QUrl& sourceUrl) { return true; }
-
 	/// \brief Opens the settings dialog for this importer.
 	/// \param parent The parent window for the dialog box.
 	/// \param object The LinkedFileObject that owns this importer.

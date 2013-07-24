@@ -47,7 +47,8 @@ void LinkedFileObjectEditor::createUI(const RolloutInsertionParameters& rolloutP
 
 	FilenameParameterUI* inputFilePUI = new FilenameParameterUI(this, "sourceUrl", SLOT(showFileSelectionDialog(QWidget*)));
 
-	toolbar->addAction(QIcon(":/core/actions/file/import_object_changefile.png"), tr("Change input file"), inputFilePUI, SLOT(showSelectionDialog()));
+	toolbar->addAction(QIcon(":/core/actions/file/import_object_changefile.png"), tr("Pick new local input file"), inputFilePUI, SLOT(showSelectionDialog()));
+	toolbar->addAction(QIcon(":/core/actions/file/file_import_remote.png"), tr("Pick new remote input file"), this, SLOT(onPickRemoteInputFile()));
 	toolbar->addAction(QIcon(":/core/actions/file/import_object_reload.png"), tr("Reload current input file"), this, SLOT(onReloadFrame()));
 	toolbar->addAction(QIcon(":/core/actions/file/import_object_refresh_animation.png"), tr("Reload animation frames"), this, SLOT(onReloadAnimation()));
 	_parserSettingsAction = toolbar->addAction(QIcon(":/core/actions/file/import_object_settings.png"), tr("Import settings"), this, SLOT(onParserSettings()));
@@ -123,13 +124,23 @@ void LinkedFileObjectEditor::setEditObject(RefTarget* newObject)
 }
 
 /******************************************************************************
+* Is called when the user presses the "Pick remote input file" button.
+******************************************************************************/
+void LinkedFileObjectEditor::onPickRemoteInputFile()
+{
+	LinkedFileObject* obj = static_object_cast<LinkedFileObject>(editObject());
+	if(obj)
+		obj->showURLSelectionDialog();
+}
+
+/******************************************************************************
 * Is called when the user presses the Reload frame button.
 ******************************************************************************/
 void LinkedFileObjectEditor::onReloadFrame()
 {
 	LinkedFileObject* obj = static_object_cast<LinkedFileObject>(editObject());
-	OVITO_CHECK_OBJECT_POINTER(obj);
-	obj->refreshFromSource(obj->loadedFrame());
+	if(obj)
+		obj->refreshFromSource(obj->loadedFrame());
 }
 
 /******************************************************************************
@@ -163,7 +174,7 @@ void LinkedFileObjectEditor::onSourceUrlEntered()
 		if(!url.isValid())
 			throw Exception(tr("URL is not valid."));
 
-		if(obj->setSourceUrl(url)) {
+		if(obj->setSource(url, obj->importer())) {
 			if(obj->updateFrames()) {
 				obj->adjustAnimationInterval();
 			}

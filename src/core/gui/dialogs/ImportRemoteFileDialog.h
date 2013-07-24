@@ -44,6 +44,9 @@ public:
 	/// \brief Constructs the dialog window.
 	ImportRemoteFileDialog(QWidget* parent = nullptr, const QString& caption = QString());
 
+	/// \brief Sets the current URL in the dialog.
+	void selectFile(const QUrl& url);
+
 	/// \brief Returns the file to import after the dialog has been closed with "OK".
 	QUrl fileToImport() const;
 

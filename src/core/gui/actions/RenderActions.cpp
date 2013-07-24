@@ -70,9 +70,9 @@ void ActionManager::on_RenderActiveViewport_triggered()
 			// Initialize the renderer.
 			if(renderer->startRender(DataSetManager::instance().currentSet(), settings)) {
 
+				QScopedPointer<VideoEncoder> videoEncoder;
 #ifdef OVITO_VIDEO_OUTPUT_SUPPORT
 				// Initialize video encoder.
-				QScopedPointer<VideoEncoder> videoEncoder;
 				if(settings->saveToFile() && settings->imageInfo().isMovie()) {
 
 					if(settings->imageFilename().isEmpty())
@@ -81,15 +81,13 @@ void ActionManager::on_RenderActiveViewport_triggered()
 					videoEncoder.reset(new VideoEncoder());
 					videoEncoder->openFile(settings->imageFilename(), settings->outputImageWidth(), settings->outputImageHeight(), AnimManager::instance().framesPerSecond());
 				}
-#else
-				VideoEncoder* videoEncoder = nullptr;
 #endif
 
 				if(settings->renderingRangeType() == RenderSettings::CURRENT_FRAME) {
 					// Render a single frame.
 					TimePoint renderTime = AnimManager::instance().time();
 					int frameNumber = AnimManager::instance().timeToFrame(renderTime);
-					if(renderFrame(renderTime, frameNumber, settings, renderer, viewport, frameBuffer.data(), &*videoEncoder, progressDialog)) {
+					if(renderFrame(renderTime, frameNumber, settings, renderer, viewport, frameBuffer.data(), videoEncoder.data(), progressDialog)) {
 						// Open a display window for the rendered frame.
 						if(Application::instance().guiMode()) {
 							FrameBufferWindow* display = MainWindow::instance().frameBufferWindow();
@@ -125,7 +123,7 @@ void ActionManager::on_RenderActiveViewport_triggered()
 						progressDialog.setValue(frameIndex);
 
 						int frameNumber = firstFrameNumber + frameIndex * settings->everyNthFrame() + settings->fileNumberBase();
-						if(renderFrame(renderTime, frameNumber, settings, renderer, viewport, frameBuffer.data(), &*videoEncoder, progressDialog)) {
+						if(renderFrame(renderTime, frameNumber, settings, renderer, viewport, frameBuffer.data(), videoEncoder.data(), progressDialog)) {
 							// Open a display window for the rendered frame.
 							if(Application::instance().guiMode()) {
 								FrameBufferWindow* display = MainWindow::instance().frameBufferWindow();

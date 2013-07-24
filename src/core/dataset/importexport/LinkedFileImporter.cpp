@@ -54,11 +54,8 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl, DataSet* dataset)
 		// Create the object that will feed the imported data into the scene.
 		obj = new LinkedFileObject();
 
-		// Makes this importer part of the scene object.
-		obj->setImporter(this);
-
-		// Set the input location.
-		if(!obj->setSourceUrl(sourceUrl))
+		// Set the input location and importer.
+		if(!obj->setSource(sourceUrl, this))
 			return false;
 
 		// Scan the input source for animation frames.

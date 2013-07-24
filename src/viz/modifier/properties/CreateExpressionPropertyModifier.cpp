@@ -507,7 +507,7 @@ void CreateExpressionPropertyModifierEditor::onExpressionEditingFinished()
 
 	CreateExpressionPropertyModifier* mod = static_object_cast<CreateExpressionPropertyModifier>(editObject());
 
-	UndoableTransaction::handleExceptions(tr("Change expression"), [mod, index]() {
+	UndoableTransaction::handleExceptions(tr("Change expression"), [mod, edit, index]() {
 		QStringList expr = mod->expressions();
 		expr[index] = edit->text();
 		mod->setExpressions(expr);

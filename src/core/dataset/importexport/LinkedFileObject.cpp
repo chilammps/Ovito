@@ -31,6 +31,7 @@
 #include <core/viewport/ViewportManager.h>
 #include <core/scene/ObjectNode.h>
 #include <core/gui/dialogs/ImportFileDialog.h>
+#include <core/gui/dialogs/ImportRemoteFileDialog.h>
 #include <core/dataset/importexport/ImportExportManager.h>
 #include <core/dataset/DataSetManager.h>
 #include <core/gui/actions/ActionManager.h>
@@ -69,22 +70,75 @@ LinkedFileObject::LinkedFileObject() : _adjustAnimationIntervalEnabled(true), _l
 /******************************************************************************
 * Sets the source location for importing data.
 ******************************************************************************/
-bool LinkedFileObject::setSourceUrl(const QUrl& url)
+bool LinkedFileObject::setSource(const QUrl& newSourceUrl, const FileImporterDescription* importerType)
 {
-	if(sourceUrl() == url)
+	OORef<FileImporter> fileimporter;
+
+	// Create file importer.
+	if(!importerType) {
+
+		// Download file so we can determine its format.
+		Future<QString> fetchFileFuture = FileManager::instance().fetchUrl(newSourceUrl);
+		if(!ProgressManager::instance().waitForTask(fetchFileFuture))
+			return false;
+
+		// Detect file format.
+		fileimporter = ImportExportManager::instance().autodetectFileFormat(fetchFileFuture.result(), newSourceUrl.path());
+		if(!fileimporter)
+			throw Exception(tr("Could not detect the format of the file to be imported. The format might not be supported."));
+	}
+	else {
+		fileimporter = importerType->createService();
+		if(!fileimporter)
+			return false;
+	}
+	OORef<LinkedFileImporter> newImporter = dynamic_object_cast<LinkedFileImporter>(fileimporter);
+	if(!newImporter)
+		throw Exception(tr("You did not select a compatible file."));
+
+	ViewportSuspender noVPUpdate;
+
+	// Re-use the old importer if possible.
+	if(importer() && importer()->getOOType() == newImporter->getOOType())
+		newImporter = importer();
+
+	// Set the new input location.
+	return setSource(newSourceUrl, newImporter);
+}
+
+/******************************************************************************
+* Sets the source location for importing data.
+******************************************************************************/
+bool LinkedFileObject::setSource(const QUrl& sourceUrl, const OORef<LinkedFileImporter>& importer)
+{
+	if(this->sourceUrl() == sourceUrl && this->importer() == importer)
 		return true;
 
-	// Let the parser inspect the file to import.
-	if(importer() && !importer()->acceptNewSource(url))
-		return false;
+	// Make the import processes reversible.
+	UndoableTransaction transaction(tr("Set input file"));
 
-	// Make this change undoable.
-	if(UndoManager::instance().isRecording())
-		UndoManager::instance().push(new SimplePropertyChangeOperation(this, "sourceUrl"));
+	_sourceUrl = sourceUrl;
+	_importer = importer;
 
-	_sourceUrl = url;
+	// Scan the input source for animation frames.
+	if(updateFrames()) {
 
-	return true;
+		// Adjust the animation length number to match the number of frames in the input data source.
+		adjustAnimationInterval();
+
+		// Adjust views to completely show the new object.
+		if(_adjustAnimationIntervalEnabled) {
+			DataSetManager::instance().runWhenSceneIsReady([]() {
+				ActionManager::instance().getAction(ACTION_VIEWPORT_ZOOM_SELECTION_EXTENTS_ALL)->trigger();
+			});
+		}
+
+		transaction.commit();
+		return true;
+	}
+
+	// Transaction has not been committed. We will revert to old state.
+	return false;
 }
 
 /******************************************************************************
@@ -375,78 +429,56 @@ void LinkedFileObject::referenceRemoved(const PropertyFieldDescriptor& field, Re
 void LinkedFileObject::showFileSelectionDialog(QWidget* parent)
 {
 	try {
-		OORef<FileImporter> fileimporter;
 		QUrl newSourceUrl;
+		const FileImporterDescription* importerType;
 
 		// Put code in a block: Need to release dialog before loading new input file.
 		{
 			// Let the user select a file.
 			ImportFileDialog dialog(parent, tr("Pick input file"));
-			if(!dialog.exec())
+			if(sourceUrl().isLocalFile())
+				dialog.selectFile(sourceUrl().toLocalFile());
+			if(dialog.exec() != QDialog::Accepted)
 				return;
 
-			// Create a file parser based on the selected filename filter.
 			newSourceUrl = QUrl::fromLocalFile(dialog.fileToImport());
-
-			// Create file importer.
-			const FileImporterDescription* importerType = dialog.selectedFileImporter();
-			if(!importerType) {
-
-				// Download file so we can determine its format.
-				Future<QString> fetchFileFuture = FileManager::instance().fetchUrl(newSourceUrl);
-				if(!ProgressManager::instance().waitForTask(fetchFileFuture))
-					return;
-
-				// Detect file format.
-				fileimporter = ImportExportManager::instance().autodetectFileFormat(fetchFileFuture.result(), newSourceUrl.path());
-				if(!fileimporter)
-					throw Exception(tr("Could not detect the format of the file to be imported. The format might not be supported."));
-			}
-			else {
-				fileimporter = importerType->createService();
-				if(!fileimporter)
-					return;
-			}
-		}
-		OORef<LinkedFileImporter> newImporter = dynamic_object_cast<LinkedFileImporter>(fileimporter);
-		if(!newImporter)
-			throw Exception(tr("You did not select a compatible file."));
-
-		ViewportSuspender noVPUpdate;
-
-		// Make the import processes reversible.
-		UndoableTransaction transaction(tr("Pick new input file"));
-
-		// Re-use the existing importer if possible.
-		OORef<LinkedFileImporter> oldImporter = importer();
-		if(!oldImporter || oldImporter->getOOType() != newImporter->getOOType())
-			setImporter(newImporter.get());
-
-		// Set the input location.
-		if(setSourceUrl(newSourceUrl)) {
-			// Scan the input source for animation frames.
-			if(updateFrames()) {
-				// Adjust the animation length number to match the number of frames in the input data source.
-				adjustAnimationInterval();
-				UndoManager::instance().endCompoundOperation();
-
-				// Adjust viewports to show the new object.
-				if(_adjustAnimationIntervalEnabled) {
-					DataSetManager::instance().runWhenSceneIsReady([]() {
-						ActionManager::instance().getAction(ACTION_VIEWPORT_ZOOM_SELECTION_EXTENTS_ALL)->trigger();
-					});
-				}
-
-				transaction.commit();
-				return;
-			}
+			importerType = dialog.selectedFileImporter();
 		}
 
-		// Transaction has not been committed. We will revert to old state.
+		// Set the new input location.
+		setSource(newSourceUrl, importerType);
 	}
 	catch(const Exception& ex) {
 		ex.showError();
-		adjustAnimationInterval();
+	}
+}
+
+/******************************************************************************
+* Displays the file selection dialog and lets the user select a new input file.
+******************************************************************************/
+void LinkedFileObject::showURLSelectionDialog(QWidget* parent)
+{
+	try {
+		QUrl newSourceUrl;
+		const FileImporterDescription* importerType;
+
+		// Put code in a block: Need to release dialog before loading new input file.
+		{
+			// Let the user select a new URL.
+			ImportRemoteFileDialog dialog(parent, tr("Pick source"));
+			dialog.selectFile(sourceUrl());
+			if(dialog.exec() != QDialog::Accepted)
+				return;
+
+			newSourceUrl = dialog.fileToImport();
+			importerType = dialog.selectedFileImporter();
+		}
+
+		// Set the new input location.
+		setSource(newSourceUrl, importerType);
+	}
+	catch(const Exception& ex) {
+		ex.showError();
 	}
 }
 

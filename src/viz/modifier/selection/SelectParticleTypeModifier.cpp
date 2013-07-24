@@ -301,7 +301,7 @@ void SelectParticleTypeModifierEditor::onPropertySelected(int index)
 	SelectParticleTypeModifier* mod = static_object_cast<SelectParticleTypeModifier>(editObject());
 	if(!mod) return;
 
-	UndoableTransaction::handleExceptions(tr("Select property"), [mod, propertyListBox]() {
+	UndoableTransaction::handleExceptions(tr("Select property"), [this, mod]() {
 		mod->setSourceProperty(propertyListBox->currentProperty());
 	});
 }

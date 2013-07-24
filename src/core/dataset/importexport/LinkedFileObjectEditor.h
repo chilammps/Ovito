@@ -54,6 +54,9 @@ protected:
 
 protected Q_SLOTS:
 
+	/// Is called when the user presses the "Pick remote input file" button.
+	void onPickRemoteInputFile();
+
 	/// Is called when the user presses the Reload frame button.
 	void onReloadFrame();
 

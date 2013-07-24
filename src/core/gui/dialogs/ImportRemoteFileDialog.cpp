@@ -72,6 +72,14 @@ ImportRemoteFileDialog::ImportRemoteFileDialog(QWidget* parent, const QString& c
 }
 
 /******************************************************************************
+* Sets the current URL in the dialog.
+******************************************************************************/
+void ImportRemoteFileDialog::selectFile(const QUrl& url)
+{
+	_urlEdit->setCurrentText(url.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded));
+}
+
+/******************************************************************************
 * This is called when the user has pressed the OK button of the dialog.
 * Validates and saves all input made by the user and closes the dialog box.
 ******************************************************************************/

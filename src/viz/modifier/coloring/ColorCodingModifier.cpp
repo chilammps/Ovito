@@ -477,7 +477,7 @@ void ColorCodingModifierEditor::onPropertySelected(int index)
 	ColorCodingModifier* mod = static_object_cast<ColorCodingModifier>(editObject());
 	OVITO_CHECK_OBJECT_POINTER(mod);
 
-	UndoableTransaction::handleExceptions(tr("Select property"), [mod, propertyListBox, index]() {
+	UndoableTransaction::handleExceptions(tr("Select property"), [this, mod, index]() {
 		mod->setSourceProperty(propertyListBox->property(index));
 	});
 }

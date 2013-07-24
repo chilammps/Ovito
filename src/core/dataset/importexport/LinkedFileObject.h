@@ -40,18 +40,20 @@ public:
 	/// \brief Constructs a new instance of this class.
 	Q_INVOKABLE LinkedFileObject();
 
-	/// \brief Changes the parser associated with this object.
-	/// \note After the replacing the parser with this method,
-	///       reload() should be called to let the new parser reload the input file.
-	virtual void setImporter(LinkedFileImporter* importer) { _importer = importer; }
-
 	/// \brief Returns the parser that loads the input file.
 	LinkedFileImporter* importer() const { return _importer; }
 
 	/// \brief Sets the source location for importing data.
 	/// \param sourceUrl The new source location.
+	/// \param importerType The type of importer object that will parse the input file.
 	/// \return false if the operation has been canceled by the user.
-	bool setSourceUrl(const QUrl& sourceUrl);
+	bool setSource(const QUrl& sourceUrl, const FileImporterDescription* importerType);
+
+	/// \brief Sets the source location for importing data.
+	/// \param sourceUrl The new source location.
+	/// \param importer The importer object that will parse the input file.
+	/// \return false if the operation has been canceled by the user.
+	bool setSource(const QUrl& sourceUrl, const OORef<LinkedFileImporter>& importer);
 
 	/// \brief Returns the source location of the data.
 	const QUrl& sourceUrl() const { return _sourceUrl; }
@@ -165,9 +167,12 @@ public Q_SLOTS:
 	/// \brief Displays the file selection dialog and lets the user select a new input file.
 	void showFileSelectionDialog(QWidget* parent = nullptr);
 
+	/// \brief Displays the remote file selection dialog and lets the user select a new source URL.
+	void showURLSelectionDialog(QWidget* parent = nullptr);
+
 public:
 
-	Q_PROPERTY(QUrl sourceUrl READ sourceUrl WRITE setSourceUrl)
+	Q_PROPERTY(QUrl sourceUrl READ sourceUrl)
 	Q_PROPERTY(bool saveDataWithScene READ saveDataWithScene WRITE setSaveDataWithScene)
 
 protected Q_SLOTS:
