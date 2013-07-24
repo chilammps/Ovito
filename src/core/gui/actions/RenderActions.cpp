@@ -70,15 +70,17 @@ void ActionManager::on_RenderActiveViewport_triggered()
 			// Initialize the renderer.
 			if(renderer->startRender(DataSetManager::instance().currentSet(), settings)) {
 
-				QScopedPointer<VideoEncoder> videoEncoder;
+				VideoEncoder* videoEncoder = nullptr;
 #ifdef OVITO_VIDEO_OUTPUT_SUPPORT
+				QScopedPointer<VideoEncoder> videoEncoderPtr;
 				// Initialize video encoder.
 				if(settings->saveToFile() && settings->imageInfo().isMovie()) {
 
 					if(settings->imageFilename().isEmpty())
 						throw Exception(tr("Cannot save rendered images to movie file. Output filename has not been specified."));
 
-					videoEncoder.reset(new VideoEncoder());
+					videoEncoderPtr.reset(new VideoEncoder());
+					videoEncoder = videoEncoderPtr.data();
 					videoEncoder->openFile(settings->imageFilename(), settings->outputImageWidth(), settings->outputImageHeight(), AnimManager::instance().framesPerSecond());
 				}
 #endif
@@ -87,7 +89,7 @@ void ActionManager::on_RenderActiveViewport_triggered()
 					// Render a single frame.
 					TimePoint renderTime = AnimManager::instance().time();
 					int frameNumber = AnimManager::instance().timeToFrame(renderTime);
-					if(renderFrame(renderTime, frameNumber, settings, renderer, viewport, frameBuffer.data(), videoEncoder.data(), progressDialog)) {
+					if(renderFrame(renderTime, frameNumber, settings, renderer, viewport, frameBuffer.data(), videoEncoder, progressDialog)) {
 						// Open a display window for the rendered frame.
 						if(Application::instance().guiMode()) {
 							FrameBufferWindow* display = MainWindow::instance().frameBufferWindow();
@@ -123,7 +125,7 @@ void ActionManager::on_RenderActiveViewport_triggered()
 						progressDialog.setValue(frameIndex);
 
 						int frameNumber = firstFrameNumber + frameIndex * settings->everyNthFrame() + settings->fileNumberBase();
-						if(renderFrame(renderTime, frameNumber, settings, renderer, viewport, frameBuffer.data(), videoEncoder.data(), progressDialog)) {
+						if(renderFrame(renderTime, frameNumber, settings, renderer, viewport, frameBuffer.data(), videoEncoder, progressDialog)) {
 							// Open a display window for the rendered frame.
 							if(Application::instance().guiMode()) {
 								FrameBufferWindow* display = MainWindow::instance().frameBufferWindow();
