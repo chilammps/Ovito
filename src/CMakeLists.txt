@@ -29,7 +29,9 @@ ADD_SUBDIRECTORY(ssh)
 ################# Core libraries  ####################
 
 ADD_SUBDIRECTORY(base)
-ADD_SUBDIRECTORY(video)
+IF(OVITO_VIDEO_ENCODER)
+	ADD_SUBDIRECTORY(video)
+ENDIF()
 ADD_SUBDIRECTORY(core)
 
 ################# Plugins ####################
