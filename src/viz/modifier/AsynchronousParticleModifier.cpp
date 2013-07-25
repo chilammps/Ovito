@@ -127,7 +127,7 @@ ObjectStatus AsynchronousParticleModifier::modifyParticles(TimePoint time, TimeI
 	}
 	else {
 
-		if(_cacheValidity.contains(time) && hasValidModifierResults()) {
+		if(_cacheValidity.contains(time)) {
 			applyModifierResults(time, validityInterval);
 		}
 

@@ -196,11 +196,6 @@ protected:
 	/// Unpacks the computation results stored in the given engine object.
 	virtual void retrieveModifierResults(Engine* engine) override;
 
-	/// Asks the modifier if it has valid results available that can be fed into the pipeline.
-	virtual bool hasValidModifierResults() override {
-		return shearStrainValues().size() == inputParticleCount();
-	}
-
 	/// Inserts the computed and cached modifier results into the modification pipeline.
 	virtual ObjectStatus applyModifierResults(TimePoint time, TimeInterval& validityInterval) override;
 

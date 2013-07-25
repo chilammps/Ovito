@@ -117,9 +117,6 @@ protected:
 	/// Unpacks the computation results stored in the given engine object.
 	virtual void retrieveModifierResults(Engine* engine) = 0;
 
-	/// Asks the modifier if it has valid results available that can be fed into the pipeline.
-	virtual bool hasValidModifierResults() = 0;
-
 	/// This lets the modifier insert the previously computed results into the pipeline.
 	virtual ObjectStatus applyModifierResults(TimePoint time, TimeInterval& validityInterval) = 0;
 

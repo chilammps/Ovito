@@ -65,7 +65,7 @@ CommonNeighborAnalysisModifier::CommonNeighborAnalysisModifier() :
 	// Load the default cutoff radius stored in the application settings.
 	QSettings settings;
 	settings.beginGroup("viz/cna");
-	setCutoff(settings.value("DefaultCutoff", 3.2).value<FloatType>());
+	setCutoff(settings.value("DefaultCutoff", _cutoff).value<FloatType>());
 	settings.endGroup();
 }
 

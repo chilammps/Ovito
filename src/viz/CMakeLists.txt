@@ -28,6 +28,7 @@ SET(OVITO_VIZ_SOURCE_FILES
 	data/ParticleType.cpp
 	data/ParticleTypeProperty.cpp
 	data/VectorDisplay.cpp
+	data/BondsObject.cpp
 	modifier/ParticleModifier.cpp
 	modifier/AsynchronousParticleModifier.cpp
 	modifier/coloring/AssignColorModifier.cpp
@@ -40,6 +41,7 @@ SET(OVITO_VIZ_SOURCE_FILES
 	modifier/analysis/displacements/CalculateDisplacementsModifier.cpp
 	modifier/analysis/centrosymmetry/CentroSymmetryModifier.cpp
 	modifier/analysis/strain/AtomicStrainModifier.cpp
+	modifier/analysis/bonds/CreateBondsModifier.cpp
 	modifier/lighting/AmbientOcclusionModifier.cpp
 	modifier/lighting/AmbientOcclusionRenderer.cpp
 	modifier/transformation/AffineTransformationModifier.cpp
