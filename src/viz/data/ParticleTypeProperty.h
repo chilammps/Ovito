@@ -80,17 +80,12 @@ public:
 			m.insert({ptype->id(), ptype->radius()});
 		return m;
 	}
-	//////////////////////////////// from RefTarget //////////////////////////////
+
+	/////////////////////////////////////// from RefTarget //////////////////////////////
 
 	/// \brief Returns whether this object, when returned as an editable sub-object by another object,
 	///        should be displayed in the modification stack.
-	///
-	/// In contrast to generic data channels, the displacement data channel can be edited,
-	/// i.e. we return true.
 	virtual bool isSubObjectEditable() const override { return true; }
-
-	/// Returns the title of this object.
-	virtual QString objectTitle() override { return tr("Particle types"); }
 
 protected:
 

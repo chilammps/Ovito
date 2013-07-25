@@ -115,8 +115,11 @@ private:
 	/// The GL context group under which the GL vertex buffers have been created.
 	QPointer<QOpenGLContextGroup> _contextGroup;
 
-	/// The number of arrows stored in the buffer.
+	/// The number of elements stored in the buffer.
 	int _elementCount;
+
+	/// The maximum number of elements we can render. This may be less then the above number.
+	int _elementRenderCount;
 
 	/// The number of cylinder segments to generate.
 	int _cylinderSegments;

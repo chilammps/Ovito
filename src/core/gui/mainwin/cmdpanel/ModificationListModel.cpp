@@ -149,6 +149,14 @@ void ModificationListModel::refreshList()
 					ModificationListItem* item = new ModificationListItem(app->modifier());
 					item->setModifierApplications({1, app});
 					items.push_back(item);
+
+					// Create list items for the modifier's editable sub-objects.
+					for(int j = 0; j < app->modifier()->editableSubObjectCount(); j++) {
+						RefTarget* subobject = app->modifier()->editableSubObject(j);
+						if(subobject != NULL && subobject->isSubObjectEditable()) {
+							items.push_back(new ModificationListItem(subobject, true));
+						}
+					}
 				}
 			}
 			else {
@@ -300,7 +308,8 @@ QVariant ModificationListModel::data(const QModelIndex& index, int role) const
 	if(role == Qt::DisplayRole) {
 		if(item->object()) {
 			if(item->isSubObject())
-				return "   " + item->object()->objectTitle();
+				//return QStringLiteral("  ↳ ") + item->object()->objectTitle();
+				return QStringLiteral("  ⇾ ") + item->object()->objectTitle();
 			else
 				return item->object()->objectTitle();
 		}
@@ -316,6 +325,7 @@ QVariant ModificationListModel::data(const QModelIndex& index, int role) const
 				const_cast<QMovie&>(_statusPendingIcon).start();
 				return qVariantFromValue(_statusPendingIcon.currentImage());
 			case ModificationListItem::None: return qVariantFromValue(_statusNoneIcon);
+			default: OVITO_ASSERT(false);
 			}
 		}
 	}

@@ -42,23 +42,22 @@ RolloutContainer::RolloutContainer(QWidget* parent) : QScrollArea(parent)
 
 /******************************************************************************
 * Inserts a new rollout into the container.
-*		collapsed - Controls whether the new rollout should set to collapsed state.
 ******************************************************************************/
 Rollout* RolloutContainer::addRollout(QWidget* content, const QString& title, const RolloutInsertionParameters& params)
 {
 	OVITO_CHECK_POINTER(content);
 	Rollout* rollout = new Rollout(widget(), content, title, params);
 	QBoxLayout* layout = static_cast<QBoxLayout*>(widget()->layout());
-	if(params.afterThisRollout != NULL) {
-		Rollout* otherRollout = qobject_cast<Rollout*>(params.afterThisRollout->parent());
+	if(params._afterThisRollout) {
+		Rollout* otherRollout = qobject_cast<Rollout*>(params._afterThisRollout->parent());
 		for(int i = 0; i < layout->count(); i++) {
 			if(layout->itemAt(i)->widget() == otherRollout) {
 				layout->insertWidget(i + 1, rollout);
 			}
 		}
 	}
-	else if(params.beforeThisRollout != NULL) {
-		Rollout* otherRollout = qobject_cast<Rollout*>(params.beforeThisRollout->parent());
+	else if(params._beforeThisRollout) {
+		Rollout* otherRollout = qobject_cast<Rollout*>(params._beforeThisRollout->parent());
 		for(int i = 0; i < layout->count(); i++) {
 			if(layout->itemAt(i)->widget() == otherRollout) {
 				layout->insertWidget(i, rollout);
@@ -92,7 +91,7 @@ Rollout::Rollout(QWidget* parent, QWidget* content, const QString& title, const 
 	_collapseAnimation.setEasingCurve(QEasingCurve::InOutCubic);
 
 	// Set initial open/collapsed state.
-	if(!params.animateFirstOpening && !params.collapsed)
+	if(!params._animateFirstOpening && !params._collapsed)
 		_visiblePercentage = 100;
 	else
 		_visiblePercentage = 0;
@@ -120,7 +119,7 @@ Rollout::Rollout(QWidget* parent, QWidget* content, const QString& title, const 
 							   "}");
 	connect(_titleButton, SIGNAL(clicked(bool)), this, SLOT(toggleCollapsed()));
 
-	if(params.animateFirstOpening && !params.collapsed)
+	if(params._animateFirstOpening && !params._collapsed)
 		setCollapsed(false);
 }
 

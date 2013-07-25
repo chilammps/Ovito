@@ -65,7 +65,7 @@ void ParticleTypeProperty::removeParticleType(int index)
 void ParticleTypePropertyEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
 	// Create a rollout.
-	QWidget* rollout = createRollout(tr("Particle types"), rolloutParams);
+	QWidget* rollout = createRollout(QString(), rolloutParams);
 
     // Create the rollout contents.
 	QVBoxLayout* layout = new QVBoxLayout(rollout);

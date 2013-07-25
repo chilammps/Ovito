@@ -28,50 +28,79 @@ namespace Ovito {
 
 class RolloutContainer;		// defined below
 
-/******************************************************************************
-* This data structure is used to specify how and where a new rollout is
-* inserted into RolloutContainer.
-******************************************************************************/
+/**
+ * This data structure specifies how and where a new rollout is inserted into a RolloutContainer.
+ */
 class RolloutInsertionParameters
 {
 public:
-	RolloutInsertionParameters() : collapsed(false), animateFirstOpening(false), afterThisRollout(NULL), beforeThisRollout(NULL), intoThisContainer(NULL) {}
-	RolloutInsertionParameters(bool _collapsed) : collapsed(_collapsed), animateFirstOpening(false), afterThisRollout(NULL), beforeThisRollout(NULL), intoThisContainer(NULL) {}
-	RolloutInsertionParameters(QWidget* _afterThisRollout, bool _collapsed = false) : collapsed(_collapsed), animateFirstOpening(false), afterThisRollout(_afterThisRollout), beforeThisRollout(NULL), intoThisContainer(NULL) {}
+
+	/// Default constructor that sets all parameters to default values.
+	RolloutInsertionParameters() :
+		_collapsed(false),
+		_animateFirstOpening(false),
+		_afterThisRollout(nullptr),
+		_beforeThisRollout(nullptr),
+		_intoThisContainer(nullptr) {}
 
 	RolloutInsertionParameters after(QWidget* afterThisRollout) const { 
-		RolloutInsertionParameters p(collapsed);
-		p.afterThisRollout = afterThisRollout;
+		RolloutInsertionParameters p;
+		p._collapsed = this->_collapsed;
+		p._intoThisContainer = this->_intoThisContainer;
+		p._afterThisRollout = afterThisRollout;
 		return p;
 	}
+
 	RolloutInsertionParameters before(QWidget* beforeThisRollout) const { 
-		RolloutInsertionParameters p(collapsed);
-		p.beforeThisRollout = beforeThisRollout;
+		RolloutInsertionParameters p;
+		p._collapsed = this->_collapsed;
+		p._intoThisContainer = this->_intoThisContainer;
+		p._beforeThisRollout = beforeThisRollout;
 		return p;
 	}
+
 	RolloutInsertionParameters collapse() const {
 		RolloutInsertionParameters p(*this);
-		p.collapsed = true;
+		p._collapsed = true;
 		return p;
 	}
+
 	RolloutInsertionParameters animate() const {
 		RolloutInsertionParameters p(*this);
-		p.animateFirstOpening = true;
+		p._animateFirstOpening = true;
 		return p;
 	}
+
 	RolloutInsertionParameters insertInto(QWidget* intoThisContainer) const {
 		RolloutInsertionParameters p;
-		p.intoThisContainer = intoThisContainer;
+		p._intoThisContainer = intoThisContainer;
+		return p;
+	}
+
+	RolloutInsertionParameters setTitle(const QString& title) const {
+		RolloutInsertionParameters p(*this);
+		p._title = title;
 		return p;
 	}
 	
-public:
+	/// Returns the container set by insertInto() into which the properties editor should inserted.
+	QWidget* container() const {
+		return _intoThisContainer;
+	}
+
+	const QString& title() const { return _title; }
+
+private:
 	
-	bool collapsed;
-	bool animateFirstOpening;
-	QPointer<QWidget> afterThisRollout;
-	QPointer<QWidget> beforeThisRollout;
-	QPointer<QWidget> intoThisContainer;
+	bool _collapsed;
+	bool _animateFirstOpening;
+	QPointer<QWidget> _afterThisRollout;
+	QPointer<QWidget> _beforeThisRollout;
+	QPointer<QWidget> _intoThisContainer;
+	QString _title;
+
+	friend class Rollout;
+	friend class RolloutContainer;
 };
 
 /******************************************************************************
@@ -119,6 +148,11 @@ public Q_SLOTS:
 		_collapseAnimation.setStartValue(_visiblePercentage);
 		_collapseAnimation.setEndValue(collapsed ? 0 : 100);
 		_collapseAnimation.start();
+	}
+
+	/// Changes the title of the rollout.
+	void setTitle(const QString& title) {
+		_titleButton->setText(title);
 	}
 
 protected:

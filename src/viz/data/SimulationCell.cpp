@@ -72,7 +72,7 @@ IMPLEMENT_OVITO_OBJECT(Viz, SimulationCellEditor, PropertiesEditor)
 void SimulationCellEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
 	// Create first rollout.
-	QWidget* rollout = createRollout(tr("Simulation cell"), rolloutParams);
+	QWidget* rollout = createRollout(QString(), rolloutParams);
 
 	QVBoxLayout* layout1 = new QVBoxLayout(rollout);
 	layout1->setContentsMargins(4,4,4,4);
@@ -144,7 +144,7 @@ void SimulationCellEditor::createUI(const RolloutInsertionParameters& rolloutPar
 	}
 
 	// Create second rollout.
-	rollout = createRollout(tr("Simulation cell vectors"), rolloutParams.collapse());
+	rollout = createRollout(tr("Cell vectors"), rolloutParams.collapse());
 
 	layout1 = new QVBoxLayout(rollout);
 	layout1->setContentsMargins(4,4,4,4);

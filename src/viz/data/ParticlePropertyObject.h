@@ -372,7 +372,10 @@ public:
 
 	/// \brief Returns the title of this object.
 	virtual QString objectTitle() override {
-		return name();
+		if(type() == ParticleProperty::UserProperty)
+			return name();
+		else
+			return ParticleProperty::standardPropertyTitle(type());
 	}
 
 public:

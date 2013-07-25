@@ -43,13 +43,34 @@ PropertiesEditor::PropertiesEditor() : _container(nullptr)
 ******************************************************************************/
 QWidget* PropertiesEditor::createRollout(const QString& title, const RolloutInsertionParameters& params)
 {
-	OVITO_ASSERT_MSG(container(), "PropertiesEditor::createRollout()", "Editor has not been initialized properly.");
-	QWidget* panel = new QWidget(params.intoThisContainer);
+	OVITO_ASSERT_MSG(container(), "PropertiesEditor::createRollout()", "Editor has not been properly initialized.");
+	QWidget* panel = new QWidget(params.container());
 	_rollouts.add(panel);
-	if(params.intoThisContainer == NULL)
-		container()->addRollout(panel, title, params);
-	else if(params.intoThisContainer->layout())
-		params.intoThisContainer->layout()->addWidget(panel);
+	if(params.container() == nullptr) {
+
+		// Create a new rollout in the rollout container.
+		QPointer<Rollout> rollout = container()->addRollout(panel, title, params);
+
+		// Check if a title for the rollout has been specified. If not,
+		// automatically set the rollout title to the title of the object being edited.
+		if(title.isEmpty()) {
+
+			if(editObject())
+				rollout->setTitle(editObject()->objectTitle());
+
+			// Automatically update rollout title each time a new object is loaded into the editor.
+			connect(this, &PropertiesEditor::contentsReplaced, [rollout](RefTarget* target) {
+				if(rollout && target)
+					rollout->setTitle(target->objectTitle());
+			});
+
+		}
+	}
+	else if(params.container()->layout()) {
+
+		// Instead of creating a new rollout for the widget, insert widget into a prescribed parent widget.
+		params.container()->layout()->addWidget(panel);
+	}
 	return panel;
 }
 

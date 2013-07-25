@@ -34,7 +34,7 @@ IMPLEMENT_OVITO_OBJECT(Core, LinkedFileObjectEditor, PropertiesEditor)
 void LinkedFileObjectEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
 	// Create a rollout.
-	QWidget* rollout = createRollout(tr("External file"), rolloutParams);
+	QWidget* rollout = createRollout(rolloutParams.title().isEmpty() ? tr("External file") : rolloutParams.title(), rolloutParams);
 
 	// Create the rollout contents.
 	QVBoxLayout* layout = new QVBoxLayout(rollout);
@@ -87,7 +87,7 @@ void LinkedFileObjectEditor::createUI(const RolloutInsertionParameters& rolloutP
 
 	layout->addLayout(layout2);
 
-	_subEditorRolloutParams = rolloutParams;
+	_subEditorRolloutParams = rolloutParams.collapse();
 }
 
 /******************************************************************************

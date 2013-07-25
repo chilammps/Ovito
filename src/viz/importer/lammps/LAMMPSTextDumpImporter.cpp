@@ -203,7 +203,7 @@ void LAMMPSTextDumpImporter::parseFile(FutureInterfaceBase& futureInterface, Par
 			}
 			else if(stream.line().startsWith("ITEM: BOX BOUNDS")) {
 				// Parse optional boundary condition flags.
-				QStringList tokens = stream.lineString().mid(qstrlen("ITEM: BOX BOUNDS xy xz yz")).split(ws_re, QString::SkipEmptyParts);
+				QStringList tokens = stream.lineString().mid(qstrlen("ITEM: BOX BOUNDS")).split(ws_re, QString::SkipEmptyParts);
 				if(tokens.size() >= 3)
 					container.simulationCell().setPbcFlags(tokens[0] == "pp", tokens[1] == "pp", tokens[2] == "pp");
 

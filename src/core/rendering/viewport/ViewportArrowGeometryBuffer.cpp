@@ -94,18 +94,19 @@ void ViewportArrowGeometryBuffer::startSetElements(int elementCount)
 			}
 		}
 		_verticesPerElement = cylinderCount * cylinderVertexCount + discCount * discVertexCount;
+		_elementRenderCount = std::min(_elementCount, std::numeric_limits<int>::max() / (int)bytesPerVertex / _verticesPerElement);
 
 		// Prepare arrays to be passed to the glMultiDrawArrays() function.
-		_stripPrimitiveVertexStarts.resize(_elementCount * cylinderCount);
-		_stripPrimitiveVertexCounts.resize(_elementCount * cylinderCount);
-		_fanPrimitiveVertexStarts.resize(_elementCount * discCount);
-		_fanPrimitiveVertexCounts.resize(_elementCount * discCount);
+		_stripPrimitiveVertexStarts.resize(_elementRenderCount * cylinderCount);
+		_stripPrimitiveVertexCounts.resize(_elementRenderCount * cylinderCount);
+		_fanPrimitiveVertexStarts.resize(_elementRenderCount * discCount);
+		_fanPrimitiveVertexCounts.resize(_elementRenderCount * discCount);
 		std::fill(_stripPrimitiveVertexCounts.begin(), _stripPrimitiveVertexCounts.end(), cylinderVertexCount);
 		std::fill(_fanPrimitiveVertexCounts.begin(), _fanPrimitiveVertexCounts.end(), discVertexCount);
 		auto ps_strip = _stripPrimitiveVertexStarts.begin();
 		auto ps_fan = _fanPrimitiveVertexStarts.begin();
 		GLint baseIndex = 0;
-		for(GLint index = 0; index < _elementCount; index++) {
+		for(GLint index = 0; index < _elementRenderCount; index++) {
 			for(int p = 0; p < cylinderCount; p++, baseIndex += cylinderVertexCount)
 				*ps_strip++ = baseIndex;
 			for(int p = 0; p < discCount; p++, baseIndex += discVertexCount)
@@ -115,15 +116,16 @@ void ViewportArrowGeometryBuffer::startSetElements(int elementCount)
 	else if(shadingMode() == FlatShading) {
 		_verticesPerElement = 7;
 		bytesPerVertex = sizeof(ColoredVertexWithVector);
+		_elementRenderCount = std::min(_elementCount, std::numeric_limits<int>::max() / (int)bytesPerVertex / _verticesPerElement);
 
 		// Prepare arrays to be passed to the glMultiDrawArrays() function.
-		_fanPrimitiveVertexStarts.resize(_elementCount);
+		_fanPrimitiveVertexStarts.resize(_elementRenderCount);
 		GLint startIndex = 0;
 		for(auto& i : _fanPrimitiveVertexStarts) {
 			i = startIndex;
 			startIndex += _verticesPerElement;
 		}
-		_fanPrimitiveVertexCounts.resize(_elementCount);
+		_fanPrimitiveVertexCounts.resize(_elementRenderCount);
 		std::fill(_fanPrimitiveVertexCounts.begin(), _fanPrimitiveVertexCounts.end(), _verticesPerElement);
 		_stripPrimitiveVertexStarts.clear();
 		_stripPrimitiveVertexCounts.clear();
@@ -131,9 +133,8 @@ void ViewportArrowGeometryBuffer::startSetElements(int elementCount)
 	else OVITO_ASSERT(false);
 
 	// Allocate vertex buffer memory.
-	OVITO_ASSERT(_elementCount < std::numeric_limits<int>::max() / bytesPerVertex / _verticesPerElement);
-	_glGeometryBuffer.allocate(_elementCount * _verticesPerElement * bytesPerVertex);
-	if(_elementCount) {
+	_glGeometryBuffer.allocate(_elementRenderCount * _verticesPerElement * bytesPerVertex);
+	if(_elementRenderCount) {
 		_mappedBuffer = _glGeometryBuffer.map(QOpenGLBuffer::WriteOnly);
 		if(!_mappedBuffer)
 			throw Exception(tr("Failed to map OpenGL vertex buffer to memory."));
@@ -158,6 +159,9 @@ void ViewportArrowGeometryBuffer::setElement(int index, const Point3& pos, const
 {
 	OVITO_ASSERT(index >= 0 && index < _elementCount);
 	OVITO_ASSERT(_mappedBuffer != nullptr);
+
+	if(index >= _elementRenderCount)
+		return;		// Skip elements if there are too many.
 
 	if(shape() == ArrowShape)
 		createArrowElement(index, pos, dir, color, width);
@@ -412,10 +416,10 @@ void ViewportArrowGeometryBuffer::createArrowElement(int index, const Point3& po
 void ViewportArrowGeometryBuffer::endSetElements()
 {
 	OVITO_ASSERT(QOpenGLContextGroup::currentContextGroup() == _contextGroup);
-	OVITO_ASSERT(_elementCount >= 0);
-	OVITO_ASSERT(_mappedBuffer != nullptr || _elementCount == 0);
+	OVITO_ASSERT(_elementCount >= 0 && _elementRenderCount >= 0);
+	OVITO_ASSERT(_mappedBuffer != nullptr || _elementRenderCount == 0);
 
-	if(_elementCount)
+	if(_elementRenderCount)
 		_glGeometryBuffer.unmap();
 	_glGeometryBuffer.release();
 	_mappedBuffer = nullptr;

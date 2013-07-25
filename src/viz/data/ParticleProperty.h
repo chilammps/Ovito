@@ -409,10 +409,15 @@ public:
 
 public:
 
-	/// \brief Returns the default name used by the given type of standard property.
+	/// \brief Returns the name of a standard property.
 	/// \param which Any of the standard property types except Type::UserProperty.
 	/// \return The name string used for the given standard property by default.
 	static QString standardPropertyName(Type which);
+
+	/// \brief Returns the display title used for a standard property object.
+	/// \param which Any of the standard property types except Type::UserProperty.
+	/// \return The title string used for a property object.
+	static QString standardPropertyTitle(Type which);
 
 	/// Returns the data type used by the given standard property type.
 	static int standardPropertyDataType(Type which);

@@ -134,7 +134,7 @@ public:
 	/// Returns the title of this object.
 	virtual QString objectTitle() override;
 
-#if 0
+#if 1
 	/// Returns the number of sub-objects that should be displayed in the modifier stack.
 	virtual int editableSubObjectCount() override;
 

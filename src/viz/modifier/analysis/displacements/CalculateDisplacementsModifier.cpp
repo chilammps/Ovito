@@ -313,7 +313,7 @@ void CalculateDisplacementsModifierEditor::createUI(const RolloutInsertionParame
 	new SubObjectParameterUI(this, PROPERTY_FIELD(CalculateDisplacementsModifier::_vectorDisplay), rolloutParams.after(rollout));
 
 	// Open a sub-editor for the reference object.
-	new SubObjectParameterUI(this, PROPERTY_FIELD(CalculateDisplacementsModifier::_referenceObject));
+	new SubObjectParameterUI(this, PROPERTY_FIELD(CalculateDisplacementsModifier::_referenceObject), RolloutInsertionParameters().setTitle(tr("Reference configuration")));
 }
 
 };	// End of namespace

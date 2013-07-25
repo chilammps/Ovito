@@ -435,7 +435,7 @@ void AtomicStrainModifierEditor::createUI(const RolloutInsertionParameters& roll
 	layout->addWidget(statusLabel());
 
 	// Open a sub-editor for the reference object.
-	new SubObjectParameterUI(this, PROPERTY_FIELD(AtomicStrainModifier::_referenceObject));
+	new SubObjectParameterUI(this, PROPERTY_FIELD(AtomicStrainModifier::_referenceObject), RolloutInsertionParameters().setTitle(tr("Reference configuration")));
 }
 
 /******************************************************************************

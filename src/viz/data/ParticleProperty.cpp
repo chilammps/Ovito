@@ -285,7 +285,7 @@ void ParticleProperty::filterCopy(const ParticleProperty& source, const std::vec
 		}
 	}
 	else if(perParticleSize() == sizeof(int)) {
-		// Single integer
+		// Single integer(int)
 		const int* src = reinterpret_cast<const int*>(source.constData());
 		int* dst = reinterpret_cast<int*>(data());
 		for(size_t i = 0; i < oldParticleCount; ++i, ++src) {
@@ -314,7 +314,7 @@ void ParticleProperty::filterCopy(const ParticleProperty& source, const std::vec
 }
 
 /******************************************************************************
-* Returns the name string used by default for the given standard property.
+* Returns the name of a standard property.
 ******************************************************************************/
 QString ParticleProperty::standardPropertyName(Type which)
 {
@@ -350,8 +350,27 @@ QString ParticleProperty::standardPropertyName(Type which)
 	case SpinProperty: return ParticlePropertyObject::tr("Spin");
 	case CentroSymmetryProperty: return ParticlePropertyObject::tr("Centrosymmetry");
 	default:
-		OVITO_ASSERT_MSG(false, "ParticleProperty::standardChannelName", "Invalid standard particle property type");
+		OVITO_ASSERT_MSG(false, "ParticleProperty::standardPropertyName", "Invalid standard particle property type");
 		throw Exception(ParticlePropertyObject::tr("This is not a valid standard particle property type: %1").arg(which));
+	}
+}
+
+/******************************************************************************
+* Returns the display title used for a standard property object.
+******************************************************************************/
+QString ParticleProperty::standardPropertyTitle(Type which)
+{
+	switch(which) {
+	case ParticleTypeProperty: return ParticlePropertyObject::tr("Particle types");
+	case PositionProperty: return ParticlePropertyObject::tr("Particle positions");
+	case ColorProperty: return ParticlePropertyObject::tr("Particle colors");
+	case DisplacementProperty: return ParticlePropertyObject::tr("Displacements");
+	case VelocityProperty: return ParticlePropertyObject::tr("Velocities");
+	case RadiusProperty: return ParticlePropertyObject::tr("Radii");
+	case StructureTypeProperty: return ParticlePropertyObject::tr("Structure types");
+	case IdentifierProperty: return ParticlePropertyObject::tr("Particle identifiers");
+	default:
+		return standardPropertyName(which);
 	}
 }
 
