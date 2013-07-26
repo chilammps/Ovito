@@ -33,6 +33,7 @@
 #include <core/gui/properties/PropertiesEditor.h>
 #include "BondsObject.h"
 #include "ParticlePropertyObject.h"
+#include "SimulationCell.h"
 
 namespace Viz {
 
@@ -75,9 +76,23 @@ public:
 	/// \brief Sets the rendering quality mode for bonds.
 	void setRenderingQuality(ArrowGeometryBuffer::RenderingQuality quality) { _renderingQuality = quality; }
 
+	/// Returns the display color for bonds.
+	const Color& bondColor() const { return _bondColor; }
+
+	/// Sets the display color for bonds.
+	void setBondColor(const Color& color) { _bondColor = color; }
+
+	/// Returns whether bonds colors are derived from particle colors.
+	bool useParticleColors() const { return _useParticleColors; }
+
+	/// Controls whether bonds colors are derived from particle colors.
+	void setUseParticleColors(bool enable) { _useParticleColors = enable; }
+
 public:
 
 	Q_PROPERTY(FloatType bondWidth READ bondWidth WRITE setBondWidth)
+	Q_PROPERTY(Ovito::Color bondColor READ bondColor WRITE setBondColor)
+	Q_PROPERTY(bool useParticleColors READ useParticleColors WRITE setUseParticleColors)
 	Q_PROPERTY(Ovito::ArrowGeometryBuffer::ShadingMode shadingMode READ shadingMode WRITE setShadingMode)
 	Q_PROPERTY(Ovito::ArrowGeometryBuffer::RenderingQuality renderingQuality READ renderingQuality WRITE setRenderingQuality)
 
@@ -90,6 +105,12 @@ protected:
 
 	/// Controls the display width of bonds.
 	PropertyField<FloatType> _bondWidth;
+
+	/// Controls the color of the bonds.
+	PropertyField<Color> _bondColor;
+
+	/// Controls whether bonds colors are derived from particle colors.
+	PropertyField<bool> _useParticleColors;
 
 	/// Controls the shading mode for bonds.
 	PropertyField<ArrowGeometryBuffer::ShadingMode, int> _shadingMode;
@@ -107,7 +128,10 @@ protected:
 		QPointer<ParticlePropertyObject>, unsigned int,		// Particle position property + revision number
 		QPointer<ParticlePropertyObject>, unsigned int,		// Particle color property + revision number
 		QPointer<ParticlePropertyObject>, unsigned int,		// Particle type property + revision number
-		FloatType											// Bond width
+		QPointer<SimulationCell>, unsigned int,				// Simulation cell + revision number
+		FloatType,											// Bond width
+		Color,												// Bond color
+		bool												// Use particle colors
 	> _geometryCacheHelper;
 
 	/// The bounding box that includes all bonds.
@@ -118,6 +142,7 @@ protected:
 	SceneObjectCacheHelper<
 		QPointer<BondsObject>, unsigned int,				// The bonds scene object + revision number
 		QPointer<ParticlePropertyObject>, unsigned int,		// Particle position property + revision number
+		QPointer<SimulationCell>, unsigned int,				// Simulation cell + revision number
 		FloatType											// Bond width
 	> _boundingBoxCacheHelper;
 
@@ -127,6 +152,8 @@ private:
 	OVITO_OBJECT
 
 	DECLARE_PROPERTY_FIELD(_bondWidth);
+	DECLARE_PROPERTY_FIELD(_bondColor);
+	DECLARE_PROPERTY_FIELD(_useParticleColors);
 	DECLARE_PROPERTY_FIELD(_shadingMode);
 	DECLARE_PROPERTY_FIELD(_renderingQuality);
 };
@@ -148,9 +175,9 @@ protected:
 
 protected Q_SLOTS:
 
-	/// Stores the current bond display width in the application settings
-	/// so it can be used as default value in the future.
-	void memorizeBondWidth();
+	/// Stores the current parameters in the application settings
+	/// so they can be used as default value in the future.
+	void memorizeParameters();
 
 private:
 

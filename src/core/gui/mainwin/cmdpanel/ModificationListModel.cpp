@@ -56,7 +56,7 @@ ModificationListModel::ModificationListModel(QObject* parent) : QAbstractListMod
 /******************************************************************************
 * Populates the model with the given list items.
 ******************************************************************************/
-void ModificationListModel::setItems(const QVector<OORef<ModificationListItem>>& newItems, const QVector<OORef<ModificationListItem>>& newHiddenItems)
+void ModificationListModel::setItems(const QList<OORef<ModificationListItem>>& newItems, const QList<OORef<ModificationListItem>>& newHiddenItems)
 {
 	beginResetModel();
 	_items = newItems;
@@ -119,8 +119,8 @@ void ModificationListModel::refreshList()
 		}
 	}
 
-	QVector<OORef<ModificationListItem>> items;
-	QVector<OORef<ModificationListItem>> hiddenItems;
+	QList<OORef<ModificationListItem>> items;
+	QList<OORef<ModificationListItem>> hiddenItems;
 	if(cmnObject) {
 
 		// Create list items for display objects.
@@ -139,42 +139,44 @@ void ModificationListModel::refreshList()
 			PipelineObject* modObj = dynamic_object_cast<PipelineObject>(cmnObject);
 			if(modObj) {
 
-				if(!modObj->modifierApplications().empty())
-					items.push_back(new ModificationListItem(nullptr, false, tr("Modifications")));
-
 				hiddenItems.push_back(new ModificationListItem(modObj));
 
 				for(int i = modObj->modifierApplications().size(); i--; ) {
 					ModifierApplication* app = modObj->modifierApplications()[i];
 					ModificationListItem* item = new ModificationListItem(app->modifier());
 					item->setModifierApplications({1, app});
-					items.push_back(item);
+					items.push_front(item);
 
 					// Create list items for the modifier's editable sub-objects.
+					int insertionIndex = 1;
 					for(int j = 0; j < app->modifier()->editableSubObjectCount(); j++) {
 						RefTarget* subobject = app->modifier()->editableSubObject(j);
 						if(subobject != NULL && subobject->isSubObjectEditable()) {
-							items.push_back(new ModificationListItem(subobject, true));
+							items.insert(insertionIndex++, new ModificationListItem(subobject, true));
 						}
 					}
 				}
+
+				if(!modObj->modifierApplications().empty())
+					items.push_front(new ModificationListItem(nullptr, false, tr("Modifications")));
 			}
 			else {
 
-				items.push_back(new ModificationListItem(nullptr, false, tr("Input")));
-
 				// Create an entry for the scene object.
-				items.push_back(new ModificationListItem(cmnObject));
+				items.push_front(new ModificationListItem(cmnObject));
 				if(_nextToSelectObject == nullptr)
 					_nextToSelectObject = cmnObject;
 
 				// Create list items for the object's editable sub-objects.
+				int insertionIndex = 1;
 				for(int i = 0; i < cmnObject->editableSubObjectCount(); i++) {
 					RefTarget* subobject = cmnObject->editableSubObject(i);
 					if(subobject != NULL && subobject->isSubObjectEditable()) {
-						items.push_back(new ModificationListItem(subobject, true));
+						items.insert(insertionIndex++, new ModificationListItem(subobject, true));
 					}
 				}
+
+				items.push_front(new ModificationListItem(nullptr, false, tr("Input")));
 			}
 
 			// In case the current object has multiple input slots, determine if they all point to the same input object.
@@ -308,8 +310,8 @@ QVariant ModificationListModel::data(const QModelIndex& index, int role) const
 	if(role == Qt::DisplayRole) {
 		if(item->object()) {
 			if(item->isSubObject())
-#if Q_OS_X11
-			return QStringLiteral("  ‚áæ ") + item->object()->objectTitle();
+#ifdef Q_OS_LINUX
+			return QStringLiteral("  ⇾ ") + item->object()->objectTitle();
 #else
 			return QStringLiteral("    ") + item->object()->objectTitle();
 #endif

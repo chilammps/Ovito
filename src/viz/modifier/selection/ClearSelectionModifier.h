@@ -19,8 +19,8 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef __OVITO_DELETE_PARTICLES_MODIFIER_H
-#define __OVITO_DELETE_PARTICLES_MODIFIER_H
+#ifndef __OVITO_CLEAR_SELECTION_MODIFIER_H
+#define __OVITO_CLEAR_SELECTION_MODIFIER_H
 
 #include <core/Core.h>
 #include "../ParticleModifier.h"
@@ -29,17 +29,17 @@ namespace Viz {
 
 using namespace Ovito;
 
-/******************************************************************************
-* This modifier deletes the selected particles.
-******************************************************************************/
-class DeleteParticlesModifier : public ParticleModifier
+/**
+ * \brief This modifier clear the current selection such that no particles are selected.
+ */
+class ClearSelectionModifier : public ParticleModifier
 {
 public:
 
-	/// Default constructor.
-	Q_INVOKABLE DeleteParticlesModifier() {}
+	/// \brief Constructs a new instance of this class.
+	Q_INVOKABLE ClearSelectionModifier() {}
 
-	/// Asks the modifier for its validity interval at the given time.
+	/// \brief Asks the modifier for its validity interval at the given time.
 	virtual TimeInterval modifierValidity(TimePoint time) override { return TimeInterval::forever(); }
 
 protected:
@@ -53,32 +53,10 @@ private:
 	Q_OBJECT
 	OVITO_OBJECT
 
-	Q_CLASSINFO("DisplayName", "Delete selected particles");
-	Q_CLASSINFO("ModifierCategory", "Modify");
-};
-
-
-/******************************************************************************
-* A properties editor for the DeleteParticlesModifier class.
-******************************************************************************/
-class DeleteParticlesModifierEditor : public ParticleModifierEditor
-{
-public:
-
-	/// Default constructor.
-	Q_INVOKABLE DeleteParticlesModifierEditor() {}
-
-protected:
-
-	/// Creates the user interface controls for the editor.
-	virtual void createUI(const RolloutInsertionParameters& rolloutParams) override;
-
-private:
-
-	Q_OBJECT
-	OVITO_OBJECT
+	Q_CLASSINFO("DisplayName", "Clear selection");
+	Q_CLASSINFO("ModifierCategory", "Selection");
 };
 
 };	// End of namespace
 
-#endif // __OVITO_DELETE_PARTICLES_MODIFIER_H
+#endif // __OVITO_CLEAR_SELECTION_MODIFIER_H

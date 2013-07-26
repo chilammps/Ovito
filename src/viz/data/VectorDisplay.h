@@ -77,16 +77,28 @@ public:
 	/// Returns the display color of the arrows.
 	const Color& arrowColor() const { return _arrowColor; }
 
+	/// Sets the display color of the arrows.
+	void setArrowColor(const Color& color) { _arrowColor = color; }
+
 	/// Returns the display width of the arrows.
 	FloatType arrowWidth() const { return _arrowWidth; }
 
+	/// Sets the display width of the arrows.
+	void setArrowWidth(FloatType width) { _arrowWidth = width; }
+
 	/// Returns the scaling factor that is applied to the vectors.
 	FloatType scalingFactor() const { return _scalingFactor; }
+
+	/// Sets the scaling factor that is applied to the vectors.
+	void setScalingFactor(FloatType factor) { _scalingFactor = factor; }
 
 public:
 
 	Q_PROPERTY(Ovito::ArrowGeometryBuffer::ShadingMode shadingMode READ shadingMode WRITE setShadingMode)
 	Q_PROPERTY(Ovito::ArrowGeometryBuffer::RenderingQuality renderingQuality READ renderingQuality WRITE setRenderingQuality)
+	Q_PROPERTY(Ovito::Color arrowColor READ arrowColor WRITE setArrowColor)
+	Q_PROPERTY(FloatType arrowWidth READ arrowWidth WRITE setArrowWidth)
+	Q_PROPERTY(FloatType scalingFactor READ scalingFactor WRITE setScalingFactor)
 
 protected:
 

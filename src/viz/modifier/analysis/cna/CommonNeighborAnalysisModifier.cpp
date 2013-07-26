@@ -112,7 +112,7 @@ void CommonNeighborAnalysisModifier::AdaptiveCommonNeighborAnalysisEngine::compu
 	futureInterface.setProgressText(tr("Performing adaptive common neighbor analysis"));
 
 	// Prepare the neighbor list.
-	TreeNeighborListBuilder neighborListBuilder(14);
+	TreeNeighborListBuilder neighborListBuilder(CNA_MAX_PATTERN_NEIGHBORS);
 	if(!neighborListBuilder.prepare(positions(), cell()) || futureInterface.isCanceled())
 		return;
 
@@ -408,8 +408,10 @@ CommonNeighborAnalysisModifier::StructureType CommonNeighborAnalysisModifier::de
 
 	{ /////////// 16 neighbors ///////////
 
+	// Detect DIA atoms having 16 NN. Detection according to http://arxiv.org/pdf/1202.5005.pdf
+
 	// Number of neighbors to analyze.
-	int nn = 16; // For BCC atoms
+	int nn = 16;
 
 	// Early rejection of under-coordinated atoms:
 	if(numNeighbors < nn)
@@ -618,7 +620,7 @@ void CommonNeighborAnalysisModifierEditor::createUI(const RolloutInsertionParame
 	gridlayout->addWidget(cutoffRadiusPUI->label(), 0, 1);
 	gridlayout->addLayout(cutoffRadiusPUI->createFieldLayout(), 0, 2);
 	cutoffRadiusPUI->setMinValue(0);
-	connect(cutoffRadiusPUI->spinner(), SIGNAL(spinnerValueChanged()), this, SLOT(memorizeCutoff()));
+	connect(cutoffRadiusPUI, SIGNAL(valueEntered()), this, SLOT(memorizeCutoff()));
 
 #if 0
 	CutoffPresetsUI* cutoffPresetsPUI = new CutoffPresetsUI(this, PROPERTY_FIELD_DESCRIPTOR(CommonNeighborAnalysisModifier, _neighborCutoff));

@@ -124,7 +124,7 @@ private:
 	Q_OBJECT
 	OVITO_OBJECT
 
-	Q_CLASSINFO("DisplayName", "Compute Centrosymmetry Parameter");
+	Q_CLASSINFO("DisplayName", "Centrosymmetry parameter");
 	Q_CLASSINFO("ModifierCategory", "Analysis");
 
 	DECLARE_PROPERTY_FIELD(_numNeighbors);

@@ -75,6 +75,7 @@ void AffineTransformationParameterUI::updatePropertyValue()
 				}
 				editObject()->setPropertyFieldValue(*propertyField(), currentValue);
 			}
+			Q_EMIT valueEntered();
 		}
 		catch(const Exception& ex) {
 			ex.showError();

@@ -166,7 +166,7 @@ size_t OnTheFlyNeighborListBuilder::iterator::next()
 {
 	while(dir[0] != 2) {
 		while(binatom) {
-			_delta = binatom->pos - center - pbcshift;
+			_delta = binatom->pos - center - pbcOffset;
 			neighborindex = binatom->index;
 			OVITO_ASSERT(neighborindex < _builder.atoms.size());
 			binatom = binatom->nextInBin;
@@ -202,10 +202,19 @@ size_t OnTheFlyNeighborListBuilder::iterator::next()
 		if(currentbin[2] == -1 && !_builder.pbc[2]) continue;
 		if(currentbin[2] == _builder.binDim[2] && !_builder.pbc[2]) continue;
 
-		pbcshift.setZero();
+		pbcOffset.setZero();
+		_pbcShift.setZero();
 		for(size_t k = 0; k < 3; k++) {
-			if(currentbin[k] == -1) { currentbin[k] = _builder.binDim[k]-1; pbcshift += _builder.simCell.column(k); }
-			else if(currentbin[k] == _builder.binDim[k]) { currentbin[k] = 0; pbcshift -= _builder.simCell.column(k); }
+			if(currentbin[k] == -1) {
+				currentbin[k] = _builder.binDim[k]-1;
+				pbcOffset += _builder.simCell.column(k);
+				_pbcShift[k]--;
+			}
+			else if(currentbin[k] == _builder.binDim[k]) {
+				currentbin[k] = 0;
+				pbcOffset -= _builder.simCell.column(k);
+				_pbcShift[k]++;
+			}
 		}
 
 		binatom = _builder.bins[currentbin[0] + currentbin[1]*_builder.binDim[0] + currentbin[2] * _builder.binDim[0]*_builder.binDim[1]];

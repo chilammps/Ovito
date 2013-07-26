@@ -54,7 +54,7 @@ private:
 	Q_OBJECT
 	OVITO_OBJECT
 
-	Q_CLASSINFO("DisplayName", "Wrap at Periodic Boundaries");
+	Q_CLASSINFO("DisplayName", "Wrap at periodic boundaries");
 	Q_CLASSINFO("ModifierCategory", "Modify");
 };
 

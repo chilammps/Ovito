@@ -34,7 +34,7 @@ BondsStorage::BondsStorage()
 /******************************************************************************
 * Copy constructor.
 ******************************************************************************/
-BondsStorage::BondsStorage(const BondsStorage& other)
+BondsStorage::BondsStorage(const BondsStorage& other) : _bonds(other._bonds)
 {
 }
 
@@ -44,6 +44,13 @@ BondsStorage::BondsStorage(const BondsStorage& other)
 void BondsStorage::saveToStream(SaveStream& stream, bool onlyMetadata) const
 {
 	stream.beginChunk(0x01);
+	if(!onlyMetadata) {
+		stream.writeSizeT(_bonds.size());
+		stream.write(_bonds.data(), _bonds.size() * sizeof(Bond));
+	}
+	else {
+		stream.writeSizeT(0);
+	}
 	stream.endChunk();
 }
 
@@ -53,6 +60,10 @@ void BondsStorage::saveToStream(SaveStream& stream, bool onlyMetadata) const
 void BondsStorage::loadFromStream(LoadStream& stream)
 {
 	stream.expectChunk(0x01);
+	size_t bondCount;
+	stream.readSizeT(bondCount);
+	_bonds.resize(bondCount);
+	stream.read(_bonds.data(), _bonds.size() * sizeof(Bond));
 	stream.closeChunk();
 }
 

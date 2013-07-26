@@ -80,6 +80,12 @@ public:
 	Q_PROPERTY(bool isEnabled READ isEnabled WRITE setEnabled)
 	Q_PROPERTY(bool isDisabled READ isDisabled WRITE setDisabled)
 		
+Q_SIGNALS:
+
+	/// This signal is emitted when the user has changed the value of the parameter.
+	/// It is not emitted when the parameter's value has been changed programmatically.
+	void valueEntered();
+
 public Q_SLOTS:	
 		
 	/// \brief This method is called when a new editable object has been assigned to the properties owner 

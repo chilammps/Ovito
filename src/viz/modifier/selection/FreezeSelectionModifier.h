@@ -77,7 +77,7 @@ private:
 	Q_OBJECT
 	OVITO_OBJECT
 
-	Q_CLASSINFO("DisplayName", "Freeze Selection");
+	Q_CLASSINFO("DisplayName", "Freeze selection");
 	Q_CLASSINFO("ModifierCategory", "Selection");
 };
 

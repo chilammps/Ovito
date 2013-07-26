@@ -243,7 +243,7 @@ private:
 	Q_OBJECT
 	OVITO_OBJECT
 
-	Q_CLASSINFO("DisplayName", "Calculate Atomic Strain");
+	Q_CLASSINFO("DisplayName", "Atomic strain");
 	Q_CLASSINFO("ModifierCategory", "Analysis");
 
 	DECLARE_REFERENCE_FIELD(_referenceObject);

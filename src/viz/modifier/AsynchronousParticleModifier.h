@@ -103,7 +103,7 @@ protected:
 
 	/// Invalidates the modifier's result cache so that the results will be recomputed
 	/// next time the modifier is evaluated.
-	void invalidateCachedResults();
+	virtual void invalidateCachedResults();
 
 	/// Cancels any running background job.
 	void cancelBackgroundJob();

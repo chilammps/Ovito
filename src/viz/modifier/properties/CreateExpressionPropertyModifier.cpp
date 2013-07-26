@@ -305,7 +305,7 @@ ObjectStatus CreateExpressionPropertyModifier::modifyParticles(TimePoint time, T
 	if(onlySelectedParticles()) {
 		ParticlePropertyObject* selProperty = inputStandardProperty(ParticleProperty::SelectionProperty);
 		if(!selProperty)
-			throw Exception(tr("Evaluation has been restricted to selected particles but input does not contain a selection set."));
+			throw Exception(tr("Evaluation has been restricted to selected particles but no selection set has been defined."));
 		OVITO_ASSERT(selProperty->size() == inputParticleCount());
 		selectionValues = selProperty->constDataInt();
 	}

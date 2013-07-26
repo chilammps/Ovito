@@ -252,7 +252,7 @@ private:
 	Q_OBJECT
 	OVITO_OBJECT
 
-	Q_CLASSINFO("DisplayName", "Color Coding");
+	Q_CLASSINFO("DisplayName", "Color coding");
 	Q_CLASSINFO("ModifierCategory", "Coloring");
 
 	DECLARE_REFERENCE_FIELD(_startValueCtrl);

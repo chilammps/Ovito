@@ -23,9 +23,14 @@
 #include <core/utilities/units/UnitsManager.h>
 #include <core/rendering/SceneRenderer.h>
 #include <core/gui/properties/FloatParameterUI.h>
+#include <core/gui/properties/BooleanParameterUI.h>
 #include <core/gui/properties/VariantComboBoxParameterUI.h>
+#include <core/gui/properties/ColorParameterUI.h>
 
 #include "BondsDisplay.h"
+#include "ParticleDisplay.h"
+#include "SimulationCell.h"
+#include "ParticleTypeProperty.h"
 
 namespace Viz {
 
@@ -33,9 +38,13 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Viz, BondsDisplay, DisplayObject)
 IMPLEMENT_OVITO_OBJECT(Viz, BondsDisplayEditor, PropertiesEditor)
 SET_OVITO_OBJECT_EDITOR(BondsDisplay, BondsDisplayEditor)
 DEFINE_PROPERTY_FIELD(BondsDisplay, _bondWidth, "BondWidth")
+DEFINE_PROPERTY_FIELD(BondsDisplay, _bondColor, "BondColor")
+DEFINE_PROPERTY_FIELD(BondsDisplay, _useParticleColors, "UseParticleColors")
 DEFINE_PROPERTY_FIELD(BondsDisplay, _shadingMode, "ShadingMode")
 DEFINE_PROPERTY_FIELD(BondsDisplay, _renderingQuality, "RenderingQuality")
 SET_PROPERTY_FIELD_LABEL(BondsDisplay, _bondWidth, "Bond width")
+SET_PROPERTY_FIELD_LABEL(BondsDisplay, _bondColor, "Bond color")
+SET_PROPERTY_FIELD_LABEL(BondsDisplay, _useParticleColors, "Use particle colors")
 SET_PROPERTY_FIELD_LABEL(BondsDisplay, _shadingMode, "Shading mode")
 SET_PROPERTY_FIELD_LABEL(BondsDisplay, _renderingQuality, "RenderingQuality")
 SET_PROPERTY_FIELD_UNITS(BondsDisplay, _bondWidth, WorldParameterUnit)
@@ -44,18 +53,21 @@ SET_PROPERTY_FIELD_UNITS(BondsDisplay, _bondWidth, WorldParameterUnit)
 * Constructor.
 ******************************************************************************/
 BondsDisplay::BondsDisplay() :
-	_bondWidth(0.3),
+	_bondWidth(0.4), _bondColor(0.6, 0.6, 0.6), _useParticleColors(true),
 	_shadingMode(ArrowGeometryBuffer::NormalShading),
-	_renderingQuality(ArrowGeometryBuffer::LowQuality)
+	_renderingQuality(ArrowGeometryBuffer::HighQuality)
 {
 	INIT_PROPERTY_FIELD(BondsDisplay::_bondWidth);
+	INIT_PROPERTY_FIELD(BondsDisplay::_bondColor);
+	INIT_PROPERTY_FIELD(BondsDisplay::_useParticleColors);
 	INIT_PROPERTY_FIELD(BondsDisplay::_shadingMode);
 	INIT_PROPERTY_FIELD(BondsDisplay::_renderingQuality);
 
-	// Load the default bond width stored in the application settings.
+	// Load the default parameters stored in the application settings.
 	QSettings settings;
 	settings.beginGroup("viz/bonds");
-	setBondWidth(settings.value("DefaultBondWidth", bondWidth()).value<FloatType>());
+	setBondWidth(settings.value("DefaultBondWidth", qVariantFromValue(bondWidth())).value<FloatType>());
+	setBondColor(settings.value("DefaultBondColor", qVariantFromValue(bondColor())).value<Color>());
 	settings.endGroup();
 }
 
@@ -78,14 +90,39 @@ ParticlePropertyObject* BondsDisplay::findStandardProperty(ParticleProperty::Typ
 Box3 BondsDisplay::boundingBox(TimePoint time, SceneObject* sceneObject, ObjectNode* contextNode, const PipelineFlowState& flowState)
 {
 	BondsObject* bondsObj = dynamic_object_cast<BondsObject>(sceneObject);
-	ParticlePropertyObject* positionProperty = dynamic_object_cast<ParticlePropertyObject>(sceneObject);
+	ParticlePropertyObject* positionProperty = findStandardProperty(ParticleProperty::PositionProperty, flowState);
+	SimulationCell* simulationCell = flowState.findObject<SimulationCell>();
 
 	// Detect if the input data has changed since the last time we computed the bounding box.
 	if(_boundingBoxCacheHelper.updateState(
 			bondsObj, bondsObj ? bondsObj->revisionNumber() : 0,
 			positionProperty, positionProperty ? positionProperty->revisionNumber() : 0,
+			simulationCell, simulationCell ? simulationCell->revisionNumber() : 0,
 			bondWidth())) {
+
 		// Recompute bounding box.
+		_cachedBoundingBox.setEmpty();
+		if(bondsObj && positionProperty) {
+
+			unsigned int particleCount = (unsigned int)positionProperty->size();
+			const Point3* positions = positionProperty->constDataPoint3();
+			const AffineTransformation cell = simulationCell ? simulationCell->cellMatrix() : AffineTransformation::Zero();
+
+			for(const BondsStorage::Bond& bond : bondsObj->bonds()) {
+				if(bond.index1 >= particleCount || bond.index2 >= particleCount)
+					continue;
+
+				_cachedBoundingBox.addPoint(positions[bond.index1]);
+				if(bond.pbcShift != Vector_3<int8_t>::Zero()) {
+					Vector3 vec = positions[bond.index2] - positions[bond.index1];
+					for(size_t k = 0; k < 3; k++)
+						if(bond.pbcShift[k] != 0) vec += cell.column(k) * (FloatType)bond.pbcShift[k];
+					_cachedBoundingBox.addPoint(positions[bond.index1] + (vec * FloatType(0.5)));
+				}
+			}
+
+			_cachedBoundingBox = _cachedBoundingBox.padBox(bondWidth() / 2);
+		}
 	}
 	return _cachedBoundingBox;
 }
@@ -95,6 +132,72 @@ Box3 BondsDisplay::boundingBox(TimePoint time, SceneObject* sceneObject, ObjectN
 ******************************************************************************/
 void BondsDisplay::render(TimePoint time, SceneObject* sceneObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode)
 {
+	BondsObject* bondsObj = dynamic_object_cast<BondsObject>(sceneObject);
+	ParticlePropertyObject* positionProperty = findStandardProperty(ParticleProperty::PositionProperty, flowState);
+	SimulationCell* simulationCell = flowState.findObject<SimulationCell>();
+	ParticlePropertyObject* colorProperty = findStandardProperty(ParticleProperty::ColorProperty, flowState);
+	ParticleTypeProperty* typeProperty = dynamic_object_cast<ParticleTypeProperty>(findStandardProperty(ParticleProperty::ParticleTypeProperty, flowState));
+	if(!useParticleColors()) {
+		colorProperty = nullptr;
+		typeProperty = nullptr;
+	}
+
+	if(_geometryCacheHelper.updateState(
+			bondsObj, bondsObj ? bondsObj->revisionNumber() : 0,
+			positionProperty, positionProperty ? positionProperty->revisionNumber() : 0,
+			colorProperty, colorProperty ? colorProperty->revisionNumber() : 0,
+			typeProperty, typeProperty ? typeProperty->revisionNumber() : 0,
+			simulationCell, simulationCell ? simulationCell->revisionNumber() : 0,
+			bondWidth(), bondColor(), useParticleColors())
+			|| !_buffer	|| !_buffer->isValid(renderer)
+			|| !_buffer->setShadingMode(shadingMode())
+			|| !_buffer->setRenderingQuality(renderingQuality())) {
+
+		FloatType bondRadius = bondWidth() / 2;
+		if(bondsObj && positionProperty && bondRadius > 0) {
+
+			// Create bond geometry buffer.
+			_buffer = renderer->createArrowGeometryBuffer(ArrowGeometryBuffer::CylinderShape, shadingMode(), renderingQuality());
+			_buffer->startSetElements(bondsObj->bonds().size());
+
+			// Obtain particle colors since they determine the bond colors.
+			std::vector<Color> particleColors(positionProperty->size());
+			ParticleDisplay* particleDisplay = dynamic_object_cast<ParticleDisplay>(positionProperty->displayObject());
+			if(particleDisplay && useParticleColors())
+				particleDisplay->particleColors(particleColors, colorProperty, typeProperty, nullptr);
+			else
+				std::fill(particleColors.begin(), particleColors.end(), bondColor());
+
+			// Cache some variables.
+			unsigned int particleCount = (unsigned int)positionProperty->size();
+			const Point3* positions = positionProperty->constDataPoint3();
+			const AffineTransformation cell = simulationCell ? simulationCell->cellMatrix() : AffineTransformation::Zero();
+
+			int elementIndex = 0;
+			for(const BondsStorage::Bond& bond : bondsObj->bonds()) {
+				if(bond.index1 < particleCount && bond.index2 < particleCount) {
+					if(bond.pbcShift == Vector_3<int8_t>::Zero()) {
+						_buffer->setElement(elementIndex, positions[bond.index1],
+								(positions[bond.index2] - positions[bond.index1]) * FloatType(0.5), (ColorA)particleColors[bond.index1], bondRadius);
+					}
+					else {
+						Vector3 vec = positions[bond.index2] - positions[bond.index1];
+						for(size_t k = 0; k < 3; k++)
+							if(bond.pbcShift[k] != 0) vec += cell.column(k) * (FloatType)bond.pbcShift[k];
+						_buffer->setElement(elementIndex, positions[bond.index1], vec * FloatType(0.5), (ColorA)particleColors[bond.index1], bondRadius);
+					}
+				}
+				else _buffer->setElement(elementIndex, Point3::Origin(), Vector3::Zero(), ColorA(1,1,1), 0);
+				elementIndex++;
+			}
+
+			_buffer->endSetElements();
+		}
+		else _buffer.reset();
+	}
+
+	if(_buffer)
+		_buffer->render(renderer);
 }
 
 /******************************************************************************
@@ -131,21 +234,32 @@ void BondsDisplayEditor::createUI(const RolloutInsertionParameters& rolloutParam
 	layout->addWidget(bondWidthUI->label(), 2, 0);
 	layout->addLayout(bondWidthUI->createFieldLayout(), 2, 1);
 	bondWidthUI->setMinValue(0);
-	connect(bondWidthUI->spinner(), SIGNAL(spinnerValueChanged()), this, SLOT(memorizeBondWidth()));
+	connect(bondWidthUI, SIGNAL(valueEntered()), this, SLOT(memorizeParameters()));
+
+	// Bond color.
+	ColorParameterUI* bondColorUI = new ColorParameterUI(this, PROPERTY_FIELD(BondsDisplay::_bondColor));
+	layout->addWidget(bondColorUI->label(), 3, 0);
+	layout->addWidget(bondColorUI->colorPicker(), 3, 1);
+	connect(bondColorUI, SIGNAL(valueEntered()), this, SLOT(memorizeParameters()));
+
+	// Use particle colors.
+	BooleanParameterUI* useParticleColorsUI = new BooleanParameterUI(this, PROPERTY_FIELD(BondsDisplay::_useParticleColors));
+	layout->addWidget(useParticleColorsUI->checkBox(), 4, 0, 1, 2);
 }
 
 /******************************************************************************
-* Stores the current bond display width in the application settings
-* so it can be used as default value in the future.
+* Stores the current parameters in the application settings
+* so they can be used as default value in the future.
 ******************************************************************************/
-void BondsDisplayEditor::memorizeBondWidth()
+void BondsDisplayEditor::memorizeParameters()
 {
 	if(!editObject()) return;
 	BondsDisplay* displayObj = static_object_cast<BondsDisplay>(editObject());
 
 	QSettings settings;
 	settings.beginGroup("viz/bonds");
-	settings.setValue("DefaultBondWidth", displayObj->bondWidth());
+	settings.setValue("DefaultBondWidth", qVariantFromValue(displayObj->bondWidth()));
+	settings.setValue("DefaultBondColor", qVariantFromValue(displayObj->bondColor()));
 	settings.endGroup();
 }
 

@@ -45,14 +45,17 @@ public:
 	 */
 	struct Bond {
 
+		/// If the bond crosses a periodic boundary, this tells us
+		/// in which direction.
+		Vector_3<int8_t> pbcShift;
+
 		/// The index of the first particle.
-		size_t index1;
+		/// Note that we are not using size_t here to save memory.
+		unsigned int index1;
 
 		/// The index of the second particle.
-		size_t index2;
-
-		/// The
-		 index1;
+		/// Note that we are not using size_t here to save memory.
+		unsigned int index2;
 	};
 
 public:
@@ -69,8 +72,21 @@ public:
 	/// Reads the stored data from an input stream.
 	void loadFromStream(LoadStream& stream);
 
+	/// Returns the list of bonds between particles.
+	const std::vector<Bond>& bonds() const { return _bonds; }
+
+	/// Returns the list of bonds between particles.
+	std::vector<Bond>& bonds() { return _bonds; }
+
+	/// Adds a new bond to the bonds list.
+	void addBond(unsigned int index1, unsigned int index2, const Vector_3<int8_t>& pbcShift) {
+		_bonds.push_back({ pbcShift, index1, index2 });
+	}
+
 protected:
 
+	/// The list of bonds between particles.
+	std::vector<Bond> _bonds;
 };
 
 };	// End of namespace

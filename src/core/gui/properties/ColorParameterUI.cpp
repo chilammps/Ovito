@@ -133,6 +133,7 @@ void ColorParameterUI::onColorPickerChanged()
 				newValue.setValue(colorPicker()->color());
 				editObject()->setPropertyFieldValue(*propertyField(), newValue);
 			}
+			Q_EMIT valueEntered();
 		});
 	}
 }

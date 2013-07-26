@@ -91,7 +91,7 @@ private:
 	Q_OBJECT
 	OVITO_OBJECT
 
-	Q_CLASSINFO("DisplayName", "Select Particle Type");
+	Q_CLASSINFO("DisplayName", "Select particle type");
 	Q_CLASSINFO("ModifierCategory", "Selection");
 };
 

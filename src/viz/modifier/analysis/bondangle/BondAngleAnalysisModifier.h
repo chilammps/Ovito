@@ -88,7 +88,7 @@ private:
 	Q_OBJECT
 	OVITO_OBJECT
 
-	Q_CLASSINFO("DisplayName", "Bond-Angle Analysis");
+	Q_CLASSINFO("DisplayName", "Bond-angle analysis");
 	Q_CLASSINFO("ModifierCategory", "Analysis");
 };
 

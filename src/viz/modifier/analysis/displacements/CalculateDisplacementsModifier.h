@@ -102,7 +102,7 @@ private:
 	Q_OBJECT
 	OVITO_OBJECT
 
-	Q_CLASSINFO("DisplayName", "Calculate Displacements");
+	Q_CLASSINFO("DisplayName", "Displacement vectors");
 	Q_CLASSINFO("ModifierCategory", "Analysis");
 
 	DECLARE_REFERENCE_FIELD(_referenceObject);

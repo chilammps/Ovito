@@ -54,6 +54,20 @@ public:
 	/// \brief Returns the internal storage object.
 	BondsStorage* storage() const { return _storage.data(); }
 
+	/// Returns the list of bonds between particles.
+	const std::vector<BondsStorage::Bond>& bonds() const { return _storage->bonds(); }
+
+	/// Deletes all bonds.
+	void clear() {
+		_storage.detach();
+		_storage->bonds().clear();
+		changed();
+	}
+
+	/// Remaps the bonds after some of the particles have been deleted.
+	/// Dangling bonds are removed too.
+	void particlesDeleted(const std::vector<bool>& deletedParticlesMask);
+
 	/// \brief This method must be called every time the contents of the bonds object are changed.
 	///        It generates a ReferenceEvent::TargetChanged event.
 	void changed() { notifyDependents(ReferenceEvent::TargetChanged); }

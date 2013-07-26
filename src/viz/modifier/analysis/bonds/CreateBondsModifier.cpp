@@ -56,6 +56,7 @@ CreateBondsModifier::CreateBondsModifier() : _cutoff(3.2)
 
 	// Create the output object.
 	_bondsObj = new BondsObject();
+	_bondsObj->setSaveWithScene(storeResultsWithScene());
 
 	// Create the display object for bonds rendering and assign it to the scene object.
 	_bondsDisplay = new BondsDisplay();
@@ -73,6 +74,12 @@ void CreateBondsModifier::propertyChanged(const PropertyFieldDescriptor& field)
 			invalidateCachedResults();
 	}
 
+	// Adopt "Save with scene" flag.
+	if(field == PROPERTY_FIELD(AsynchronousParticleModifier::_saveResults)) {
+		if(bondsObject())
+			bondsObject()->setSaveWithScene(storeResultsWithScene());
+	}
+
 	AsynchronousParticleModifier::propertyChanged(field);
 }
 
@@ -86,6 +93,18 @@ bool CreateBondsModifier::referenceEvent(RefTarget* source, ReferenceEvent* even
 		return false;
 
 	return AsynchronousParticleModifier::referenceEvent(source, event);
+}
+
+/******************************************************************************
+* Resets the modifier's result cache.
+******************************************************************************/
+void CreateBondsModifier::invalidateCachedResults()
+{
+	AsynchronousParticleModifier::invalidateCachedResults();
+
+	// Reset all bonds when the input has changed.
+	if(bondsObject())
+		bondsObject()->clear();
 }
 
 /******************************************************************************
@@ -113,15 +132,22 @@ void CreateBondsModifier::BondGenerationEngine::compute(FutureInterfaceBase& fut
 	if(!neighborListBuilder.prepare(_positions.data(), _simCell) || futureInterface.isCanceled())
 		return;
 
-#if 0
-	// Create output storage.
-	ParticleProperty* output = structures();
+	// Generate (half) bonds.
+	size_t particleCount = _positions->size();
+	futureInterface.setProgressRange(particleCount);
+	for(size_t particleIndex = 0; particleIndex < particleCount; particleIndex++) {
+		for(OnTheFlyNeighborListBuilder::iterator neighborIter(neighborListBuilder, particleIndex); !neighborIter.atEnd(); neighborIter.next()) {
+			_bonds->addBond(particleIndex, neighborIter.current(), neighborIter.pbcShift());
+		}
 
-	// Perform analysis on each particle.
-	parallelFor(particleCount, futureInterface, [&neighborListBuilder, output](size_t index) {
-		output->setInt(index, determineStructureFixed(neighborListBuilder, index));
-	});
-#endif
+		// Update progress indicator.
+		if((particleIndex % 1024) == 0) {
+			futureInterface.setProgressValue(particleIndex);
+			if(futureInterface.isCanceled())
+				return;
+		}
+	}
+	futureInterface.setProgressValue(particleCount);
 }
 
 /******************************************************************************
@@ -130,8 +156,9 @@ void CreateBondsModifier::BondGenerationEngine::compute(FutureInterfaceBase& fut
 void CreateBondsModifier::retrieveModifierResults(Engine* engine)
 {
 	BondGenerationEngine* eng = static_cast<BondGenerationEngine*>(engine);
-	if(eng->bonds() && bondsObject())
+	if(eng->bonds() && bondsObject()) {
 		bondsObject()->setStorage(eng->bonds());
+	}
 }
 
 /******************************************************************************
@@ -140,10 +167,13 @@ void CreateBondsModifier::retrieveModifierResults(Engine* engine)
 ObjectStatus CreateBondsModifier::applyModifierResults(TimePoint time, TimeInterval& validityInterval)
 {
 	// Insert output object into pipeline.
-	if(bondsObject())
+	size_t bondsCount = 0;
+	if(bondsObject()) {
 		output().addObject(bondsObject());
+		bondsCount = bondsObject()->bonds().size();
+	}
 
-	return ObjectStatus::Success;
+	return ObjectStatus(ObjectStatus::Success, QString(), tr("Created %1 bonds").arg(bondsCount));
 }
 
 /******************************************************************************
@@ -168,7 +198,7 @@ void CreateBondsModifierEditor::createUI(const RolloutInsertionParameters& rollo
 	gridlayout->addWidget(cutoffRadiusPUI->label(), 0, 0);
 	gridlayout->addLayout(cutoffRadiusPUI->createFieldLayout(), 0, 1);
 	cutoffRadiusPUI->setMinValue(0);
-	connect(cutoffRadiusPUI->spinner(), SIGNAL(spinnerValueChanged()), this, SLOT(memorizeCutoff()));
+	connect(cutoffRadiusPUI, SIGNAL(valueEntered()), this, SLOT(memorizeCutoff()));
 
 	layout1->addLayout(gridlayout);
 

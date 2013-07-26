@@ -143,6 +143,7 @@ void BooleanRadioButtonParameterUI::updatePropertyValue()
 					editObject()->setPropertyFieldValue(*propertyField(), (bool)id);
 				}
 			}
+			Q_EMIT valueEntered();
 		});
 	}
 }

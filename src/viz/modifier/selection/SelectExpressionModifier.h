@@ -86,7 +86,7 @@ private:
 	Q_OBJECT
 	OVITO_OBJECT
 
-	Q_CLASSINFO("DisplayName", "Expression Select");
+	Q_CLASSINFO("DisplayName", "Expression select");
 	Q_CLASSINFO("ModifierCategory", "Selection");
 
 	DECLARE_PROPERTY_FIELD(_expression);

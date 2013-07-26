@@ -99,6 +99,8 @@ void Vector3ParameterUI::updatePropertyValue()
 				}
 				editObject()->setPropertyFieldValue(*propertyField(), currentValue);
 			}
+
+			Q_EMIT valueEntered();
 		}
 		catch(const Exception& ex) {
 			ex.showError();

@@ -196,8 +196,8 @@ void ModifyCommandPage::updateActions(ModificationListItem* currentItem)
 			PipelineObject* pipelineObj = modApp->pipelineObject();
 			if(pipelineObj) {
 				OVITO_ASSERT(pipelineObj->modifierApplications().contains(modApp));
-				moveModifierUpAction->setEnabled(modApp != pipelineObj->modifierApplications().back());
-				moveModifierDownAction->setEnabled(modApp != pipelineObj->modifierApplications().front());
+				moveModifierUpAction->setEnabled(modApp != pipelineObj->modifierApplications().front());
+				moveModifierDownAction->setEnabled(modApp != pipelineObj->modifierApplications().back());
 			}
 		}
 		else {
@@ -299,10 +299,11 @@ void ModifyCommandPage::onModifierMoveUp()
 
 	OORef<ModifierApplication> modApp = selectedItem->modifierApplications()[0];
 	OORef<PipelineObject> pipelineObj = modApp->pipelineObject();
-	if(!pipelineObj) return;
+	if(!pipelineObj)
+		return;
 
 	OVITO_ASSERT(pipelineObj->modifierApplications().contains(modApp.get()));
-	if(modApp == pipelineObj->modifierApplications().back())
+	if(modApp == pipelineObj->modifierApplications().front())
 		return;
 
 	UndoableTransaction::handleExceptions(tr("Move modifier up"), [pipelineObj, modApp]() {
@@ -311,7 +312,7 @@ void ModifyCommandPage::onModifierMoveUp()
 		// Remove ModifierApplication from the ModifiedObject.
 		pipelineObj->removeModifier(modApp.get());
 		// Re-insert ModifierApplication into the ModifiedObject.
-		pipelineObj->insertModifierApplication(modApp.get(), index+1);
+		pipelineObj->insertModifierApplication(modApp.get(), index-1);
 	});
 }
 
@@ -330,11 +331,10 @@ void ModifyCommandPage::onModifierMoveDown()
 
 	OORef<ModifierApplication> modApp = selectedItem->modifierApplications()[0];
 	OORef<PipelineObject> pipelineObj = modApp->pipelineObject();
-	if(!pipelineObj)
-		return;
+	if(!pipelineObj) return;
 
 	OVITO_ASSERT(pipelineObj->modifierApplications().contains(modApp.get()));
-	if(modApp == pipelineObj->modifierApplications().front())
+	if(modApp == pipelineObj->modifierApplications().back())
 		return;
 
 	UndoableTransaction::handleExceptions(tr("Move modifier down"), [pipelineObj, modApp]() {
@@ -343,7 +343,7 @@ void ModifyCommandPage::onModifierMoveDown()
 		// Remove ModifierApplication from the ModifiedObject.
 		pipelineObj->removeModifier(modApp.get());
 		// Re-insert ModifierApplication into the ModifiedObject.
-		pipelineObj->insertModifierApplication(modApp.get(), index-1);
+		pipelineObj->insertModifierApplication(modApp.get(), index+1);
 	});
 }
 

@@ -115,6 +115,7 @@ void BooleanActionParameterUI::updatePropertyValue()
 			else if(isPropertyFieldUI()) {
 				editObject()->setPropertyFieldValue(*propertyField(), action()->isChecked());
 			}
+			Q_EMIT valueEntered();
 		});
 	}
 }

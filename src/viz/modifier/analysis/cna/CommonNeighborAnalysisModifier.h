@@ -141,7 +141,7 @@ private:
 	Q_OBJECT
 	OVITO_OBJECT
 
-	Q_CLASSINFO("DisplayName", "Common Neighbor Analysis");
+	Q_CLASSINFO("DisplayName", "Common neighbor analysis");
 	Q_CLASSINFO("ModifierCategory", "Analysis");
 
 	DECLARE_PROPERTY_FIELD(_cutoff);

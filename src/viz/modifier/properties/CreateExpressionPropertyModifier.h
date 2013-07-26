@@ -193,7 +193,7 @@ private:
 	Q_OBJECT
 	OVITO_OBJECT
 
-	Q_CLASSINFO("DisplayName", "Create Expression Property");
+	Q_CLASSINFO("DisplayName", "Compute property");
 	Q_CLASSINFO("ModifierCategory", "Modify");
 
 	DECLARE_PROPERTY_FIELD(_expressions);

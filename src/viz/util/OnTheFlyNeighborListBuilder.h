@@ -78,8 +78,8 @@ public:
 
 	/// \brief This iterator class lists all neighbors of a given atom.
 	class iterator {
-	public
-	:
+	public:
+
 		/// \brief Constructor
 		iterator(const OnTheFlyNeighborListBuilder& builder, size_t atomIndex);
 
@@ -88,6 +88,7 @@ public:
 		size_t current() { return neighborindex; }
 		const Vector3& delta() const { return _delta; }
 		FloatType distanceSquared() const { return distsq; }
+		const Vector_3<int8_t>& pbcShift() const { return _pbcShift; }
 
 	private:
 		const OnTheFlyNeighborListBuilder& _builder;
@@ -98,7 +99,8 @@ public:
 		int currentbin[3];
 		NeighborListAtom* binatom;
 		size_t neighborindex;
-		Vector3 pbcshift;
+		Vector3 pbcOffset;
+		Vector_3<int8_t> _pbcShift;
 		Vector3 _delta;
 		FloatType distsq;
 	};

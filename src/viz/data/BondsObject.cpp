@@ -82,4 +82,41 @@ OORef<RefTarget> BondsObject::clone(bool deepCopy, CloneHelper& cloneHelper)
 	return clone;
 }
 
+/******************************************************************************
+* Remaps the bonds after some of the particles have been deleted.
+* Dangling bonds are removed too.
+******************************************************************************/
+void BondsObject::particlesDeleted(const std::vector<bool>& deletedParticlesMask)
+{
+	// Build map that maps old particle indices to new indices.
+	std::vector<unsigned int> indexMap(deletedParticlesMask.size());
+	auto index = indexMap.begin();
+	unsigned int oldParticleCount = deletedParticlesMask.size();
+	unsigned int newParticleCount = 0;
+	for(bool deleted : deletedParticlesMask)
+		*index++ = deleted ? std::numeric_limits<unsigned int>::max() : newParticleCount++;
+
+	_storage.detach();
+	auto result = _storage->bonds().begin();
+	auto bond = _storage->bonds().begin();
+	auto last = _storage->bonds().end();
+	for(; bond != last; ++bond) {
+		// Remove invalid bonds.
+		if(bond->index1 >= oldParticleCount || bond->index2 >= oldParticleCount)
+			continue;
+
+		// Remove dangling bonds whose particles have gone.
+		if(deletedParticlesMask[bond->index1] || deletedParticlesMask[bond->index2])
+			continue;
+
+		// Keep but, remap particle indices.
+		result->pbcShift = bond->pbcShift;
+		result->index1 = indexMap[bond->index1];
+		result->index2 = indexMap[bond->index2];
+		++result;
+	}
+	_storage->bonds().erase(result, last);
+	changed();
+}
+
 };

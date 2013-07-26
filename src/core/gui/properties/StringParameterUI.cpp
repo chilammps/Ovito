@@ -135,6 +135,7 @@ void StringParameterUI::updatePropertyValue()
 			else if(isPropertyFieldUI()) {
 				editObject()->setPropertyFieldValue(*propertyField(), textBox()->text());
 			}
+			Q_EMIT valueEntered();
 		});
 	}
 }

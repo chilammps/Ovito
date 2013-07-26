@@ -66,6 +66,7 @@ void FloatParameterUI::updatePropertyValue()
 		else if(isPropertyFieldUI()) {
 			editObject()->setPropertyFieldValue(*propertyField(), spinner()->floatValue());						
 		}
+		Q_EMIT valueEntered();
 	}
 }
 

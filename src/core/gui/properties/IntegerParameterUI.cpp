@@ -98,6 +98,7 @@ void IntegerParameterUI::updateUI()
 				}
 				spinner()->setIntValue(val.toInt());
 			}
+			Q_EMIT valueEntered();
 		}
 		catch(const Exception& ex) {
 			ex.showError();

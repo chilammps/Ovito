@@ -141,8 +141,7 @@ void BooleanGroupBoxParameterUI::updatePropertyValue()
 {
 	if(groupBox() && editObject()) {
 
-		UndoManager::instance().beginCompoundOperation(tr("Change parameter"));
-		try {
+		UndoableTransaction::handleExceptions(tr("Change parameter"), [this]() {
 			if(isReferenceFieldUI()) {
 				BooleanController* ctrl = dynamic_object_cast<BooleanController>(parameterObject());
 				if(ctrl) {
@@ -158,12 +157,8 @@ void BooleanGroupBoxParameterUI::updatePropertyValue()
 			else if(isPropertyFieldUI()) {
 				editObject()->setPropertyFieldValue(*propertyField(), groupBox()->isChecked());
 			}
-		}
-		catch(const Exception& ex) {
-			ex.showError();
-		}
-
-		UndoManager::instance().endCompoundOperation();
+			Q_EMIT valueEntered();
+		});
 	}
 }
 

@@ -23,6 +23,7 @@
 #include <core/scene/pipeline/ModifierApplication.h>
 #include <viz/data/ParticleDisplay.h>
 #include <viz/data/ParticleTypeProperty.h>
+#include <viz/data/BondsObject.h>
 #include "ParticleModifier.h"
 
 #include <QtConcurrent>
@@ -288,7 +289,7 @@ size_t ParticleModifier::deleteParticles(const std::vector<bool>& mask, size_t d
 
 	QVector<QPair<OORef<ParticlePropertyObject>, OORef<ParticlePropertyObject>>> oldToNewMap;
 
-	// Allocate output properties.
+	// Create output particle properties.
 	for(const auto& outobj : _output.objects()) {
 		OORef<ParticlePropertyObject> originalOutputProperty = dynamic_object_cast<ParticlePropertyObject>(outobj.get());
 		if(!originalOutputProperty)
@@ -310,6 +311,20 @@ size_t ParticleModifier::deleteParticles(const std::vector<bool>& mask, size_t d
 	QtConcurrent::blockingMap(oldToNewMap, [&mask](const QPair<OORef<ParticlePropertyObject>, OORef<ParticlePropertyObject>>& pair) {
 		pair.second->filterCopy(pair.first.get(), mask);
 	});
+
+	// Delete bonds for particles that have been deleted.
+	for(const auto& outobj : _output.objects()) {
+		OORef<BondsObject> originalBondsObject = dynamic_object_cast<BondsObject>(outobj.get());
+		if(!originalBondsObject)
+			continue;
+
+		// Create copy.
+		OORef<BondsObject> newBondsObject = cloneHelper()->cloneObject(originalBondsObject, false);
+		newBondsObject->particlesDeleted(mask);
+
+		// Replace original bonds object with the filtered one.
+		_output.replaceObject(originalBondsObject.get(), newBondsObject);
+	}
 
 	return newParticleCount;
 }

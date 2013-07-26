@@ -58,6 +58,9 @@ public:
 		/// Returns the generated bonds.
 		BondsStorage* bonds() { return _bonds.data(); }
 
+		/// Returns the input particle positions.
+		ParticleProperty* positions() const { return _positions.data(); }
+
 	private:
 
 		FloatType _cutoff;
@@ -100,6 +103,9 @@ protected:
 	/// Is called when the value of a property of this object has changed.
 	virtual void propertyChanged(const PropertyFieldDescriptor& field) override;
 
+	/// Resets the modifier's result cache.
+	virtual void invalidateCachedResults() override;
+
 	/// Creates and initializes a computation engine that will compute the modifier's results.
 	virtual std::shared_ptr<Engine> createEngine(TimePoint time) override;
 
@@ -123,7 +129,7 @@ private:
 	Q_OBJECT
 	OVITO_OBJECT
 
-	Q_CLASSINFO("DisplayName", "Create Bonds");
+	Q_CLASSINFO("DisplayName", "Create bonds");
 	Q_CLASSINFO("ModifierCategory", "Modify");
 
 	DECLARE_PROPERTY_FIELD(_cutoff);

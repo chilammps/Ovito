@@ -142,7 +142,7 @@ private:
 	Q_OBJECT
 	OVITO_OBJECT
 
-	Q_CLASSINFO("DisplayName", "Ambient Occlusion");
+	Q_CLASSINFO("DisplayName", "Ambient occlusion");
 	Q_CLASSINFO("ModifierCategory", "Coloring");
 
 	DECLARE_PROPERTY_FIELD(_intensity);

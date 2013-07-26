@@ -53,7 +53,7 @@ private:
 	Q_OBJECT
 	OVITO_OBJECT
 
-	Q_CLASSINFO("DisplayName", "Invert Selection");
+	Q_CLASSINFO("DisplayName", "Invert selection");
 	Q_CLASSINFO("ModifierCategory", "Selection");
 };
 
