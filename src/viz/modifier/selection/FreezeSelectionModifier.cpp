@@ -46,7 +46,7 @@ ObjectStatus FreezeSelectionModifier::modifyParticles(TimePoint time, TimeInterv
 
 		// Restore selection simply by placing the snapshot into the pipeline.
 		ParticlePropertyObject* selProperty = outputStandardProperty(ParticleProperty::SelectionProperty);
-		selProperty->replaceStorage(_selectionProperty.data());
+		selProperty->setStorage(_selectionProperty.data());
 
 		nselected = inputParticleCount() - std::count(_selectionProperty->constDataInt(), _selectionProperty->constDataInt() + _selectionProperty->size(), 0);
 	}

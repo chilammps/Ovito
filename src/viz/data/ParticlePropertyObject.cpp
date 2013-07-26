@@ -80,7 +80,7 @@ OORef<ParticlePropertyObject> ParticlePropertyObject::create(ParticleProperty* s
 /******************************************************************************
 * Replaces the internal storage object with the given one.
 ******************************************************************************/
-void ParticlePropertyObject::replaceStorage(ParticleProperty* storage)
+void ParticlePropertyObject::setStorage(ParticleProperty* storage)
 {
 	OVITO_CHECK_POINTER(storage);
 	_storage = storage;

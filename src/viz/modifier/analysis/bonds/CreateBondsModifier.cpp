@@ -20,6 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
+#include <core/gui/properties/SubObjectParameterUI.h>
 #include <core/utilities/concurrent/ParallelFor.h>
 #include <viz/util/OnTheFlyNeighborListBuilder.h>
 
@@ -31,7 +32,11 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Viz, CreateBondsModifier, AsynchronousPartic
 IMPLEMENT_OVITO_OBJECT(Viz, CreateBondsModifierEditor, ParticleModifierEditor)
 SET_OVITO_OBJECT_EDITOR(CreateBondsModifier, CreateBondsModifierEditor)
 DEFINE_PROPERTY_FIELD(CreateBondsModifier, _cutoff, "Cutoff")
+DEFINE_FLAGS_REFERENCE_FIELD(CreateBondsModifier, _bondsDisplay, "BondsDisplay", BondsDisplay, PROPERTY_FIELD_ALWAYS_DEEP_COPY)
+DEFINE_FLAGS_REFERENCE_FIELD(CreateBondsModifier, _bondsObj, "BondsObject", BondsObject, PROPERTY_FIELD_ALWAYS_DEEP_COPY)
 SET_PROPERTY_FIELD_LABEL(CreateBondsModifier, _cutoff, "Cutoff radius")
+SET_PROPERTY_FIELD_LABEL(CreateBondsModifier, _bondsDisplay, "Bonds display")
+SET_PROPERTY_FIELD_LABEL(CreateBondsModifier, _bondsObj, "Bonds")
 SET_PROPERTY_FIELD_UNITS(CreateBondsModifier, _cutoff, WorldParameterUnit)
 
 /******************************************************************************
@@ -40,12 +45,21 @@ SET_PROPERTY_FIELD_UNITS(CreateBondsModifier, _cutoff, WorldParameterUnit)
 CreateBondsModifier::CreateBondsModifier() : _cutoff(3.2)
 {
 	INIT_PROPERTY_FIELD(CreateBondsModifier::_cutoff);
+	INIT_PROPERTY_FIELD(CreateBondsModifier::_bondsDisplay);
+	INIT_PROPERTY_FIELD(CreateBondsModifier::_bondsObj);
 
 	// Load the default cutoff radius stored in the application settings.
 	QSettings settings;
 	settings.beginGroup("viz/bonds");
 	setCutoff(settings.value("DefaultCutoff", _cutoff).value<FloatType>());
 	settings.endGroup();
+
+	// Create the output object.
+	_bondsObj = new BondsObject();
+
+	// Create the display object for bonds rendering and assign it to the scene object.
+	_bondsDisplay = new BondsDisplay();
+	_bondsObj->setDisplayObject(_bondsDisplay);
 }
 
 /******************************************************************************
@@ -60,6 +74,18 @@ void CreateBondsModifier::propertyChanged(const PropertyFieldDescriptor& field)
 	}
 
 	AsynchronousParticleModifier::propertyChanged(field);
+}
+
+/******************************************************************************
+* Handles reference events sent by reference targets of this object.
+******************************************************************************/
+bool CreateBondsModifier::referenceEvent(RefTarget* source, ReferenceEvent* event)
+{
+	// Do not propagate messages from the attached output and display objects.
+	if(source == _bondsDisplay || source == _bondsObj)
+		return false;
+
+	return AsynchronousParticleModifier::referenceEvent(source, event);
 }
 
 /******************************************************************************
@@ -104,6 +130,8 @@ void CreateBondsModifier::BondGenerationEngine::compute(FutureInterfaceBase& fut
 void CreateBondsModifier::retrieveModifierResults(Engine* engine)
 {
 	BondGenerationEngine* eng = static_cast<BondGenerationEngine*>(engine);
+	if(eng->bonds() && bondsObject())
+		bondsObject()->setStorage(eng->bonds());
 }
 
 /******************************************************************************
@@ -111,6 +139,10 @@ void CreateBondsModifier::retrieveModifierResults(Engine* engine)
 ******************************************************************************/
 ObjectStatus CreateBondsModifier::applyModifierResults(TimePoint time, TimeInterval& validityInterval)
 {
+	// Insert output object into pipeline.
+	if(bondsObject())
+		output().addObject(bondsObject());
+
 	return ObjectStatus::Success;
 }
 
@@ -143,6 +175,9 @@ void CreateBondsModifierEditor::createUI(const RolloutInsertionParameters& rollo
 	// Status label.
 	layout1->addSpacing(10);
 	layout1->addWidget(statusLabel());
+
+	// Open a sub-editor for the bonds display object.
+	new SubObjectParameterUI(this, PROPERTY_FIELD(CreateBondsModifier::_bondsDisplay), rolloutParams.after(rollout));
 }
 
 /******************************************************************************

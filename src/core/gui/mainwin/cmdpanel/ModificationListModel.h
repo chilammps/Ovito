@@ -141,10 +141,10 @@ private:
 	bool _needListUpdate;
 
 	/// Status icons
-	QIcon _statusInfoIcon;
-	QIcon _statusWarningIcon;
-	QIcon _statusErrorIcon;
-	QIcon _statusNoneIcon;
+	QPixmap _statusInfoIcon;
+	QPixmap _statusWarningIcon;
+	QPixmap _statusErrorIcon;
+	QPixmap _statusNoneIcon;
 	QMovie _statusPendingIcon;
 
 	/// The font used for section headers.

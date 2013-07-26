@@ -20,66 +20,40 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include "BondsObject.h"
+#include "BondsStorage.h"
 
 namespace Viz {
-
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Viz, BondsObject, SceneObject)
 
 /******************************************************************************
 * Default constructor.
 ******************************************************************************/
-BondsObject::BondsObject(BondsStorage* storage)
-	: _storage(storage ? storage : new BondsStorage())
+BondsStorage::BondsStorage()
 {
 }
 
 /******************************************************************************
-* Replaces the internal storage object with the given one.
+* Copy constructor.
 ******************************************************************************/
-void BondsObject::setStorage(BondsStorage* storage)
+BondsStorage::BondsStorage(const BondsStorage& other)
 {
-	OVITO_CHECK_POINTER(storage);
-	_storage = storage;
-	changed();
 }
 
 /******************************************************************************
 * Saves the class' contents to the given stream.
 ******************************************************************************/
-void BondsObject::saveToStream(ObjectSaveStream& stream)
+void BondsStorage::saveToStream(SaveStream& stream, bool onlyMetadata) const
 {
-	SceneObject::saveToStream(stream);
-
 	stream.beginChunk(0x01);
-	_storage.constData()->saveToStream(stream, !saveWithScene());
 	stream.endChunk();
 }
 
 /******************************************************************************
 * Loads the class' contents from the given stream.
 ******************************************************************************/
-void BondsObject::loadFromStream(ObjectLoadStream& stream)
+void BondsStorage::loadFromStream(LoadStream& stream)
 {
-	SceneObject::loadFromStream(stream);
-
 	stream.expectChunk(0x01);
-	_storage->loadFromStream(stream);
 	stream.closeChunk();
 }
 
-/******************************************************************************
-* Creates a copy of this object.
-******************************************************************************/
-OORef<RefTarget> BondsObject::clone(bool deepCopy, CloneHelper& cloneHelper)
-{
-	// Let the base class create an instance of this class.
-	OORef<BondsObject> clone = static_object_cast<BondsObject>(SceneObject::clone(deepCopy, cloneHelper));
-
-	// Shallow copy storage.
-	clone->_storage = this->_storage;
-
-	return clone;
-}
-
-};
+};	// End of namespace

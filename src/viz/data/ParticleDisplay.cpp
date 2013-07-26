@@ -325,9 +325,7 @@ void ParticleDisplayEditor::createUI(const RolloutInsertionParameters& rolloutPa
     // Create the rollout contents.
 	QGridLayout* layout = new QGridLayout(rollout);
 	layout->setContentsMargins(4,4,4,4);
-#ifndef Q_OS_MACX
-	layout->setSpacing(0);
-#endif
+	layout->setSpacing(4);
 	layout->setColumnStretch(1, 1);
 
 	// Shading mode.

@@ -28,6 +28,7 @@
 #define __OVITO_CREATE_BONDS_MODIFIER_H
 
 #include <core/Core.h>
+#include <viz/data/BondsDisplay.h>
 #include "../../AsynchronousParticleModifier.h"
 
 namespace Viz {
@@ -48,15 +49,20 @@ public:
 
 		/// Constructor.
 		BondGenerationEngine(ParticleProperty* positions, const SimulationCellData& simCell, FloatType cutoff) :
-			_positions(positions), _simCell(simCell), _cutoff(cutoff) {}
+			_positions(positions), _simCell(simCell), _cutoff(cutoff),
+			_bonds(new BondsStorage()) {}
 
 		/// Computes the modifier's results and stores them in this object for later retrieval.
 		virtual void compute(FutureInterfaceBase& futureInterface) override;
+
+		/// Returns the generated bonds.
+		BondsStorage* bonds() { return _bonds.data(); }
 
 	private:
 
 		FloatType _cutoff;
 		QExplicitlySharedDataPointer<ParticleProperty> _positions;
+		QExplicitlySharedDataPointer<BondsStorage> _bonds;
 		SimulationCellData _simCell;
 	};
 
@@ -76,11 +82,20 @@ public:
 	/// \sa cutoff()
 	void setCutoff(FloatType newCutoff) { _cutoff = newCutoff; }
 
+	/// \brief Returns the display object that is responsible for rendering the bonds.
+	BondsDisplay* bondsDisplay() const { return _bondsDisplay; }
+
+	/// \brief Returns the scene object that stores the generated bonds.
+	BondsObject* bondsObject() const { return _bondsObj; }
+
 public:
 
 	Q_PROPERTY(FloatType cutoff READ cutoff WRITE setCutoff)
 
 protected:
+
+	/// Handles reference events sent by reference targets of this object.
+	virtual bool referenceEvent(RefTarget* source, ReferenceEvent* event) override;
 
 	/// Is called when the value of a property of this object has changed.
 	virtual void propertyChanged(const PropertyFieldDescriptor& field) override;
@@ -97,6 +112,12 @@ protected:
 	/// The cutoff radius for bond generation.
 	PropertyField<FloatType> _cutoff;
 
+	/// The display object for rendering the bonds.
+	ReferenceField<BondsDisplay> _bondsDisplay;
+
+	/// This stores the cached results of the modifier, i.e. the bonds information.
+	ReferenceField<BondsObject> _bondsObj;
+
 private:
 
 	Q_OBJECT
@@ -106,6 +127,8 @@ private:
 	Q_CLASSINFO("ModifierCategory", "Modify");
 
 	DECLARE_PROPERTY_FIELD(_cutoff);
+	DECLARE_REFERENCE_FIELD(_bondsDisplay);
+	DECLARE_REFERENCE_FIELD(_bondsObj);
 };
 
 /**

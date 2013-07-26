@@ -36,12 +36,12 @@ DEFINE_REFERENCE_FIELD(CalculateDisplacementsModifier, _referenceObject, "Refere
 DEFINE_PROPERTY_FIELD(CalculateDisplacementsModifier, _referenceShown, "ShowReferenceConfiguration")
 DEFINE_PROPERTY_FIELD(CalculateDisplacementsModifier, _eliminateCellDeformation, "EliminateCellDeformation")
 DEFINE_PROPERTY_FIELD(CalculateDisplacementsModifier, _assumeUnwrappedCoordinates, "AssumeUnwrappedCoordinates")
-DEFINE_FLAGS_REFERENCE_FIELD(CalculateDisplacementsModifier, _vectorDisplay, "Vector display", VectorDisplay, PROPERTY_FIELD_ALWAYS_DEEP_COPY)
+DEFINE_FLAGS_REFERENCE_FIELD(CalculateDisplacementsModifier, _vectorDisplay, "VectorDisplay", VectorDisplay, PROPERTY_FIELD_ALWAYS_DEEP_COPY)
 SET_PROPERTY_FIELD_LABEL(CalculateDisplacementsModifier, _referenceObject, "Reference Configuration")
 SET_PROPERTY_FIELD_LABEL(CalculateDisplacementsModifier, _referenceShown, "Show reference configuration")
 SET_PROPERTY_FIELD_LABEL(CalculateDisplacementsModifier, _eliminateCellDeformation, "Eliminate homogeneous cell deformation")
 SET_PROPERTY_FIELD_LABEL(CalculateDisplacementsModifier, _assumeUnwrappedCoordinates, "Assume unwrapped coordinates")
-SET_PROPERTY_FIELD_LABEL(CalculateDisplacementsModifier, _vectorDisplay, "Assume unwrapped coordinates")
+SET_PROPERTY_FIELD_LABEL(CalculateDisplacementsModifier, _vectorDisplay, "Vector display")
 
 /******************************************************************************
 * Constructs the modifier object.
@@ -178,7 +178,6 @@ ObjectStatus CalculateDisplacementsModifier::modifyParticles(TimePoint time, Tim
 		std::iota(indexToIndexMap.begin(), indexToIndexMap.end(), size_t(0));
 	}
 
-
 	// Get simulation cells.
 	SimulationCell* inputCell = expectSimulationCell();
 	SimulationCell* refCell = refState.findObject<SimulationCell>();
@@ -191,7 +190,7 @@ ObjectStatus CalculateDisplacementsModifier::modifyParticles(TimePoint time, Tim
 	if(referenceShown()) {
 		outputPosProperty = outputStandardProperty(ParticleProperty::PositionProperty);
 		OVITO_ASSERT(outputPosProperty->size() == refPosProperty->size());
-		outputPosProperty->replaceStorage(refPosProperty->storage());
+		outputPosProperty->setStorage(refPosProperty->storage());
 		outputSimulationCell()->setCellMatrix(refCell->cellMatrix());
 	}
 #endif

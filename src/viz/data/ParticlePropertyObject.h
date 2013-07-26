@@ -79,7 +79,7 @@ public:
 	void setName(const QString& name);
 
 	/// \brief Replaces the internal storage object with the given one.
-	void replaceStorage(ParticleProperty* storage);
+	void setStorage(ParticleProperty* storage);
 
 	/// \brief Returns the internal storage object.
 	ParticleProperty* storage() const { return _storage.data(); }

@@ -342,16 +342,16 @@ ObjectStatus AtomicStrainModifier::applyModifierResults(TimePoint time, TimeInte
 		throw Exception(tr("The number of input particles has changed. The stored results have become invalid."));
 
 	if(selectInvalidParticles() && invalidParticles().size() == inputParticleCount())
-		outputStandardProperty(ParticleProperty::SelectionProperty)->replaceStorage(_invalidParticles.data());
+		outputStandardProperty(ParticleProperty::SelectionProperty)->setStorage(_invalidParticles.data());
 
 	if(calculateStrainTensors() && strainTensors().size() == inputParticleCount())
-		outputStandardProperty(ParticleProperty::StrainTensorProperty)->replaceStorage(_strainTensors.data());
+		outputStandardProperty(ParticleProperty::StrainTensorProperty)->setStorage(_strainTensors.data());
 
 	if(calculateDeformationGradients() && deformationGradients().size() == inputParticleCount())
-		outputStandardProperty(ParticleProperty::DeformationGradientProperty)->replaceStorage(_deformationGradients.data());
+		outputStandardProperty(ParticleProperty::DeformationGradientProperty)->setStorage(_deformationGradients.data());
 
-	outputCustomProperty(volumetricStrainValues().name(), qMetaTypeId<FloatType>(), sizeof(FloatType), 1)->replaceStorage(_volumetricStrainValues.data());
-	outputCustomProperty(shearStrainValues().name(), qMetaTypeId<FloatType>(), sizeof(FloatType), 1)->replaceStorage(_shearStrainValues.data());
+	outputCustomProperty(volumetricStrainValues().name(), qMetaTypeId<FloatType>(), sizeof(FloatType), 1)->setStorage(_volumetricStrainValues.data());
+	outputCustomProperty(shearStrainValues().name(), qMetaTypeId<FloatType>(), sizeof(FloatType), 1)->setStorage(_shearStrainValues.data());
 
 	return ObjectStatus::Success;
 }

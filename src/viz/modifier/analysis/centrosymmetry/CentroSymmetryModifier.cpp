@@ -139,7 +139,7 @@ ObjectStatus CentroSymmetryModifier::applyModifierResults(TimePoint time, TimeIn
 	// Get output property object.
 	ParticlePropertyObject* cspProperty = outputStandardProperty(ParticleProperty::CentroSymmetryProperty);
 	OVITO_ASSERT(cspProperty->size() == cspValues().size());
-	cspProperty->replaceStorage(_cspValues.data());
+	cspProperty->setStorage(_cspValues.data());
 
 	return ObjectStatus::Success;
 }

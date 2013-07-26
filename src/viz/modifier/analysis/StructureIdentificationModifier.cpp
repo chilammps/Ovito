@@ -100,7 +100,7 @@ ObjectStatus StructureIdentificationModifier::applyModifierResults(TimePoint tim
 	structureProperty->setParticleTypes(structureTypes());
 
 	// Insert results into output property.
-	structureProperty->replaceStorage(_structureProperty.data());
+	structureProperty->setStorage(_structureProperty.data());
 
 	// Build structure type to color map.
 	std::vector<Color> structureTypeColors(structureTypes().size());

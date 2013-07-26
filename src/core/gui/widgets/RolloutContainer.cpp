@@ -129,7 +129,7 @@ Rollout::Rollout(QWidget* parent, QWidget* content, const QString& title, const 
 QSize Rollout::sizeHint() const
 {
 	QSize titleSize = _titleButton->sizeHint();
-	QSize contentSize = _content->sizeHint() * _visiblePercentage / 100;
+	QSize contentSize = _content ? (_content->sizeHint() * _visiblePercentage / 100) : QSize(0,0);
 	return QSize(std::max(titleSize.width(), contentSize.width()), titleSize.height() + contentSize.height());
 }
 

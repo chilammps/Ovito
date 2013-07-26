@@ -29,6 +29,7 @@
 
 #include <core/Core.h>
 #include <core/scene/objects/SceneObject.h>
+#include "BondsStorage.h"
 
 namespace Viz {
 
@@ -42,10 +43,34 @@ class BondsObject : public SceneObject
 public:
 
 	/// \brief Default constructor.
-	Q_INVOKABLE BondsObject() {}
+	Q_INVOKABLE BondsObject(BondsStorage* storage = nullptr);
 
 	/// \brief Returns the title of this object.
 	virtual QString objectTitle() override { return tr("Bonds"); }
+
+	/// \brief Replaces the internal storage object with the given one.
+	void setStorage(BondsStorage* storage);
+
+	/// \brief Returns the internal storage object.
+	BondsStorage* storage() const { return _storage.data(); }
+
+	/// \brief This method must be called every time the contents of the bonds object are changed.
+	///        It generates a ReferenceEvent::TargetChanged event.
+	void changed() { notifyDependents(ReferenceEvent::TargetChanged); }
+
+protected:
+
+	/// Saves the class' contents to the given stream.
+	virtual void saveToStream(ObjectSaveStream& stream) override;
+
+	/// Loads the class' contents from the given stream.
+	virtual void loadFromStream(ObjectLoadStream& stream) override;
+
+	/// Creates a copy of this object.
+	virtual OORef<RefTarget> clone(bool deepCopy, CloneHelper& cloneHelper) override;
+
+	/// The internal storage object that holds the bonds data.
+	QExplicitlySharedDataPointer<BondsStorage> _storage;
 
 private:
 

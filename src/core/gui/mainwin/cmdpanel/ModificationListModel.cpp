@@ -308,8 +308,11 @@ QVariant ModificationListModel::data(const QModelIndex& index, int role) const
 	if(role == Qt::DisplayRole) {
 		if(item->object()) {
 			if(item->isSubObject())
-				//return QStringLiteral("  ↳ ") + item->object()->objectTitle();
-				return QStringLiteral("  ⇾ ") + item->object()->objectTitle();
+#if Q_OS_X11
+			return QStringLiteral("  ‚áæ ") + item->object()->objectTitle();
+#else
+			return QStringLiteral("    ") + item->object()->objectTitle();
+#endif
 			else
 				return item->object()->objectTitle();
 		}
@@ -323,7 +326,7 @@ QVariant ModificationListModel::data(const QModelIndex& index, int role) const
 			case ModificationListItem::Error: return qVariantFromValue(_statusErrorIcon);
 			case ModificationListItem::Pending:
 				const_cast<QMovie&>(_statusPendingIcon).start();
-				return qVariantFromValue(_statusPendingIcon.currentImage());
+				return qVariantFromValue(_statusPendingIcon.currentPixmap());
 			case ModificationListItem::None: return qVariantFromValue(_statusNoneIcon);
 			default: OVITO_ASSERT(false);
 			}

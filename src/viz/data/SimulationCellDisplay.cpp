@@ -178,7 +178,7 @@ void SimulationCellDisplayEditor::createUI(const RolloutInsertionParameters& rol
     // Create the rollout contents.
 	QGridLayout* layout = new QGridLayout(rollout);
 	layout->setContentsMargins(4,4,4,4);
-	layout->setSpacing(6);
+	layout->setSpacing(4);
 	layout->setColumnStretch(1, 1);
 
 	// Render cell

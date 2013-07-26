@@ -75,7 +75,7 @@ void ParticleImportData::insertIntoScene(LinkedFileObject* destination)
 			}
 		}
 		if(propertyObj)
-			propertyObj->replaceStorage(QSharedDataPointer<ParticleProperty>(property.release()));
+			propertyObj->setStorage(QSharedDataPointer<ParticleProperty>(property.release()));
 		else {
 			propertyObj = ParticlePropertyObject::create(QSharedDataPointer<ParticleProperty>(property.release()));
 			destination->addSceneObject(propertyObj.get());
