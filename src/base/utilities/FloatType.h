@@ -41,6 +41,9 @@ typedef float FloatType;
 #define FLOATTYPE_MAX	(std::numeric_limits<FloatType>::max())
 #define FLOATTYPE_PI	Ovito::FloatType(3.14159265358979323846)
 
+/// The placeholder passed to the sscanf() function to parse a floating-point number.
+#define FLOATTYPE_SCANF_STRING 		"%g"
+
 // Type-specific OpenGL functions:
 inline void glVertex3(FloatType x, FloatType y, FloatType z) { glVertex3f(x,y,z); }
 inline void glColor3(FloatType r, FloatType g, FloatType b) { glColor3f(r,g,b); }

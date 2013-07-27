@@ -60,6 +60,7 @@ SET(OVITO_VIZ_SOURCE_FILES
 	importer/InputColumnMapping.cpp
 	importer/lammps/LAMMPSTextDumpImporter.cpp
 	importer/lammps/LAMMPSDumpImporterSettingsDialog.cpp
+	importer/vasp/POSCARImporter.cpp
 	util/TreeNeighborListBuilder.cpp
 	util/OnTheFlyNeighborListBuilder.cpp
 	util/ParticlePropertyComboBox.cpp
