@@ -43,14 +43,17 @@ class OnTheFlyNeighborListBuilder
 {
 private:
 
-	// An internal atom structure.
-	struct NeighborListAtom {
-		/// The next atom in the linked list used for binning.
-		NeighborListAtom* nextInBin;
-		/// The index of the atom in the original AtomsObject.
-		size_t index;
-		/// The wrapped position of the atom.
+	// An internal per-particle data structure.
+	struct NeighborListParticle {
+
+		/// The position of the particle, wrapped at periodic boundaries.
 		Point3 pos;
+
+		/// The next item in the linked list used for binning.
+		NeighborListParticle* nextInBin;
+
+		/// The index of the particle.
+		size_t index;
 	};
 
 public:
@@ -72,37 +75,38 @@ public:
 	/// Returns the square of the neighbor cutoff radius.
 	FloatType cutoffRadiusSquared() const { return _cutoffRadiusSquared; }
 
-	/// \brief Tests whether two atoms are closer to each other than the
+	/// \brief Tests whether two particles are closer to each other than the
 	///        nearest-neighbor cutoff radius.
-	bool areNeighbors(size_t atom1, size_t atom2) const;
+	bool areNeighbors(size_t particle1, size_t particle2) const;
 
 	/// \brief This iterator class lists all neighbors of a given atom.
 	class iterator {
 	public:
 
-		/// \brief Constructor
-		iterator(const OnTheFlyNeighborListBuilder& builder, size_t atomIndex);
+		iterator(const OnTheFlyNeighborListBuilder& builder, size_t particleIndex);
 
-		bool atEnd() const { return dir[0] > 1; }
+		bool atEnd() const { return _atEnd; }
 		size_t next();
-		size_t current() { return neighborindex; }
+		size_t current() { return _neighborIndex; }
 		const Vector3& delta() const { return _delta; }
-		FloatType distanceSquared() const { return distsq; }
+		FloatType distanceSquared() const { return _distsq; }
 		const Vector_3<int8_t>& pbcShift() const { return _pbcShift; }
 
 	private:
+
 		const OnTheFlyNeighborListBuilder& _builder;
-		Point3 center;
-		size_t centerindex;
-		int dir[3];
-		int centerbin[3];
-		int currentbin[3];
-		NeighborListAtom* binatom;
-		size_t neighborindex;
-		Vector3 pbcOffset;
+		bool _atEnd;
+		Point3 _center;
+		size_t _centerIndex;
+		std::vector<Vector3I>::const_iterator _stencilIter;
+		Point3I _centerBin;
+		Point3I _currentBin;
+		NeighborListParticle* _neighbor;
+		size_t _neighborIndex;
+		Vector3 _pbcOffset;
 		Vector_3<int8_t> _pbcShift;
 		Vector3 _delta;
-		FloatType distsq;
+		FloatType _distsq;
 	};
 
 private:
@@ -121,11 +125,18 @@ private:
 	/// Number of bins in each spatial direction.
 	int binDim[3];
 
-	/// The internal list of atoms.
-	std::vector<NeighborListAtom> atoms;
+	/// Used to determine the bin from a particle position.
+	AffineTransformation reciprocalBinCell;
 
-	/// An 3d array of cubic bins. Each bin is a linked list of atoms.
-	std::vector<NeighborListAtom*> bins;
+	/// The internal list of particles.
+	std::vector<NeighborListParticle> particles;
+
+	/// An 3d array of cubic bins. Each bin is a linked list of particles.
+	std::vector<NeighborListParticle*> bins;
+
+	/// The list of adjacent cells to visit while finding the neighbors of a
+	/// central particle.
+	std::vector<Vector3I> stencil;
 };
 
 };	// End of namespace

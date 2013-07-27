@@ -33,7 +33,7 @@ OnTheFlyNeighborListBuilder::OnTheFlyNeighborListBuilder(FloatType cutoffRadius)
 }
 
 /******************************************************************************
-* Preparation
+* Initialization function.
 ******************************************************************************/
 bool OnTheFlyNeighborListBuilder::prepare(ParticleProperty* posProperty, const SimulationCellData& cellData)
 {
@@ -56,60 +56,76 @@ bool OnTheFlyNeighborListBuilder::prepare(ParticleProperty* posProperty, const S
 	planeNormals[2] = simCell.column(0).cross(simCell.column(1)).normalized();
 
 	// Calculate the number of bins required in each spatial direction.
-	binDim[0] = binDim[1] = binDim[2] = 1;
+	AffineTransformation binCell;
+	binCell.translation() = simCell.translation();
 	for(size_t i = 0; i < 3; i++) {
 		binDim[i] = (int)floor(fabs(simCell.column(i).dot(planeNormals[i])) / _cutoffRadius);
 		binDim[i] = std::min(binDim[i], 60);
 		binDim[i] = std::max(binDim[i], 1);
-		if(binDim[i] < 2) {
-			if(pbc[i]) {
-				qDebug() << "Periodic simulation cell too small: axis:" << i << "  cutoff radius:" << _cutoffRadius << "   cell size:" << simCell.column(i).dot(planeNormals[i]);
-				throw Exception("Periodic simulation cell is smaller than twice the neighbor cutoff radius. Minimum image convention cannot be used with such a small simulation box.");
-			}
-			binDim[i] = 1;
-		}
+		binCell.column(i) = simCell.column(i) / binDim[i];
 	}
 	bins.resize(binDim[0] * binDim[1] * binDim[2]);
 
-	// Put atoms into bins.
-	atoms.resize(posProperty->size());
+	// Compute the reciprocal bin cell for fast lookup.
+	reciprocalBinCell = binCell.inverse();
 
+	// Calculate size of stencil.
+	Vector3I stencilCount;
+	for(size_t dim = 0; dim < 3; dim++) {
+		stencilCount[dim] = (int)floor(fabs(binCell.column(dim).dot(planeNormals[dim])) / _cutoffRadius);
+		stencilCount[dim] = std::min(stencilCount[dim], 50);
+		stencilCount[dim] = std::max(stencilCount[dim], 1);
+	}
+
+	// Generate stencil.
+	for(int ix = -stencilCount[0]; ix <= +stencilCount[0]; ix++) {
+		for(int iy = -stencilCount[1]; iy <= +stencilCount[1]; iy++) {
+			for(int iz = -stencilCount[2]; iz <= +stencilCount[2]; iz++) {
+				stencil.push_back(Vector3I(ix,iy,iz));
+			}
+		}
+	}
+
+	particles.resize(posProperty->size());
+
+	// Sort particles into bins.
 	const Point3* p = posProperty->constDataPoint3();
 	const Point3* p_end = p + posProperty->size();
-	auto a = atoms.begin();
-	size_t atomIndex = 0;
-	for(; p != p_end; ++a, ++p, ++atomIndex) {
-		a->index = atomIndex;
-
-		// Transform atom position from absolute coordinates to reduced coordinates.
+	auto a = particles.begin();
+	size_t particleIndex = 0;
+	for(; p != p_end; ++a, ++p, ++particleIndex) {
+		a->index = particleIndex;
 		a->pos = *p;
-		Point3 reducedp = simCellInverse * (*p);
 
-		int indices[3];
+		// Determine the bin the atom is located in.
+		Point3 rp = reciprocalBinCell * (*p);
+
+		Point3I binLocation;
 		for(size_t k = 0; k < 3; k++) {
-			// Shift atom position to be inside simulation cell.
+
+			binLocation[k] = (int)floor(rp[k]);
+
 			if(pbc[k]) {
-				while(reducedp[k] < 0) {
-					reducedp[k] += 1;
+				while(binLocation[k] < 0) {
+					binLocation[k] += binDim[k];
 					a->pos += simCell.column(k);
 				}
-				while(reducedp[k] > 1) {
-					reducedp[k] -= 1;
+				while(binLocation[k] >= binDim[k]) {
+					binLocation[k] -= binDim[k];
 					a->pos -= simCell.column(k);
 				}
 			}
-			else {
-				reducedp[k] = std::max(reducedp[k], (FloatType)0);
-				reducedp[k] = std::min(reducedp[k], (FloatType)1);
+			else if(binLocation[k] < 0) {
+				binLocation[k] = 0;
 			}
-
-			// Determine the atom's bin from its position.
-			indices[k] = std::max(std::min((int)(reducedp[k] * binDim[k]), binDim[k]-1), 0);
-			OVITO_ASSERT(indices[k] >= 0 && indices[k] < binDim[k]);
+			else if(binLocation[k] >= binDim[k]) {
+				binLocation[k] = binDim[k] - 1;
+			}
+			OVITO_ASSERT(binLocation[k] >= 0 && binLocation[k] < binDim[k]);
 		}
 
-		// Put atom into its bin.
-		NeighborListAtom*& binList = bins[indices[0] + indices[1]*binDim[0] + indices[2]*binDim[0]*binDim[1]];
+		// Put particle into its bin.
+		NeighborListParticle*& binList = bins[binLocation[0] + binLocation[1]*binDim[0] + binLocation[2]*binDim[0]*binDim[1]];
 		a->nextInBin = binList;
 		binList = &*a;
 	}
@@ -118,16 +134,17 @@ bool OnTheFlyNeighborListBuilder::prepare(ParticleProperty* posProperty, const S
 }
 
 /******************************************************************************
-* Tests whether two atoms are closer to each other than the
+* Tests whether two particles are closer to each other than the
 * nearest-neighbor cutoff radius.
 ******************************************************************************/
-bool OnTheFlyNeighborListBuilder::areNeighbors(size_t atom1, size_t atom2) const
+bool OnTheFlyNeighborListBuilder::areNeighbors(size_t particle1, size_t particle2) const
 {
-	OVITO_ASSERT(atom1 < atoms.size());
-	OVITO_ASSERT(atom2 < atoms.size());
-	OVITO_ASSERT(atom1 != atom2);
-	for(iterator neighborIter(*this, atom1); !neighborIter.atEnd(); neighborIter.next()) {
-		if(neighborIter.current() == atom2) return true;
+	OVITO_ASSERT(particle1 < particles.size());
+	OVITO_ASSERT(particle2 < particles.size());
+	OVITO_ASSERT(particle1 != particle2);
+	// Check if particle 2 is in the neighbor list of particle 1.
+	for(iterator neighborIter(*this, particle1); !neighborIter.atEnd(); neighborIter.next()) {
+		if(neighborIter.current() == particle2) return true;
 	}
 	return false;
 }
@@ -135,25 +152,22 @@ bool OnTheFlyNeighborListBuilder::areNeighbors(size_t atom1, size_t atom2) const
 /******************************************************************************
 * Iterator constructor
 ******************************************************************************/
-OnTheFlyNeighborListBuilder::iterator::iterator(const OnTheFlyNeighborListBuilder& builder, size_t atomIndex)
-	: _builder(builder), centerindex(atomIndex)
+OnTheFlyNeighborListBuilder::iterator::iterator(const OnTheFlyNeighborListBuilder& builder, size_t particleIndex)
+	: _builder(builder), _centerIndex(particleIndex)
 {
-	dir[0] = -2;
-	dir[1] = 1;
-	dir[2] = 1;
-	binatom = nullptr;
-	center = _builder.atoms[atomIndex].pos;
-	neighborindex = std::numeric_limits<size_t>::max();
+	OVITO_ASSERT(particleIndex < _builder.particles.size());
 
-	// Determine the bin the central atom is located in.
-	// Transform atom position from absolute coordinates to reduced coordinates.
-	OVITO_ASSERT(atomIndex < _builder.atoms.size());
-	Point3 reducedp = _builder.simCellInverse * center;
+	_stencilIter = _builder.stencil.begin();
+	_neighbor = nullptr;
+	_atEnd = false;
+	_center = _builder.particles[particleIndex].pos;
+	_neighborIndex = std::numeric_limits<size_t>::max();
 
+	// Determine the bin the central particle is located in.
 	for(size_t k = 0; k < 3; k++) {
-		// Determine the atom's bin from its position.
-		centerbin[k] = std::max(std::min((int)(reducedp[k] * _builder.binDim[k]), _builder.binDim[k]-1), 0);
-		OVITO_ASSERT(centerbin[k] >= 0 && centerbin[k] < _builder.binDim[k]);
+		_centerBin[k] = (int)floor(_builder.reciprocalBinCell.prodrow(_center, k));
+		if(_centerBin[k] < 0) _centerBin[k] = 0;
+		else if(_centerBin[k] >= _builder.binDim[k]) _centerBin[k] = _builder.binDim[k];
 	}
 
 	next();
@@ -164,63 +178,65 @@ OnTheFlyNeighborListBuilder::iterator::iterator(const OnTheFlyNeighborListBuilde
 ******************************************************************************/
 size_t OnTheFlyNeighborListBuilder::iterator::next()
 {
-	while(dir[0] != 2) {
-		while(binatom) {
-			_delta = binatom->pos - center - pbcOffset;
-			neighborindex = binatom->index;
-			OVITO_ASSERT(neighborindex < _builder.atoms.size());
-			binatom = binatom->nextInBin;
-			distsq = _delta.squaredLength();
-			if(distsq <= _builder._cutoffRadiusSquared && neighborindex != centerindex) {
-				return neighborindex;
+	OVITO_ASSERT(!_atEnd);
+
+	for(;;) {
+		while(_neighbor) {
+			_delta = _neighbor->pos - _center + _pbcOffset;
+			_neighborIndex = _neighbor->index;
+			OVITO_ASSERT(_neighborIndex < _builder.particles.size());
+			_neighbor = _neighbor->nextInBin;
+			_distsq = _delta.squaredLength();
+			if(_distsq <= _builder._cutoffRadiusSquared && (_pbcShift != Vector_3<int8_t>::Zero() || _neighborIndex != _centerIndex)) {
+				return _neighborIndex;
 			}
 		};
-		if(dir[2] == 1) {
-			dir[2] = -1;
-			if(dir[1] == 1) {
-				dir[1] = -1;
-				if(dir[0] == 1) {
-					dir[0]++;
-					neighborindex = std::numeric_limits<size_t>::max();
-					return std::numeric_limits<size_t>::max();
+
+		for(;;) {
+			if(_stencilIter == _builder.stencil.end()) {
+				_neighborIndex = std::numeric_limits<size_t>::max();
+				_atEnd = true;
+				return std::numeric_limits<size_t>::max();
+			}
+
+			_pbcOffset.setZero();
+			_pbcShift.setZero();
+			bool skipBin = false;
+			for(size_t k = 0; k < 3; k++) {
+				_currentBin[k] = _centerBin[k] + (*_stencilIter)[k];
+				if(!_builder.pbc[k]) {
+					if(_currentBin[k] < 0 || _currentBin[k] >= _builder.binDim[k]) {
+						skipBin = true;
+						break;
+					}
 				}
-				else dir[0]++;
+				else {
+					if(_currentBin[k] >= _builder.binDim[k]) {
+						int s = _currentBin[k] / _builder.binDim[k];
+						if(s > std::numeric_limits<int8_t>::max())
+							throw Exception(QString("Periodic simulation cell is too small or cutoff radius is too large to generate neighbor lists."));
+						_pbcShift[k] = (int8_t)s;
+						_currentBin[k] -= s * _builder.binDim[k];
+						_pbcOffset += _builder.simCell.column(k) * (FloatType)s;
+					}
+					else if(_currentBin[k] < 0) {
+						int s = (_currentBin[k] - _builder.binDim[k] + 1) / _builder.binDim[k];
+						if(s < std::numeric_limits<int8_t>::min())
+							throw Exception(QString("Periodic simulation cell is too small or cutoff radius is too large to generate neighbor lists."));
+						_pbcShift[k] = (int8_t)s;
+						_currentBin[k] -= s * _builder.binDim[k];
+						_pbcOffset += _builder.simCell.column(k) * (FloatType)s;
+					}
+				}
+				OVITO_ASSERT(_currentBin[k] >= 0 && _currentBin[k] < _builder.binDim[k]);
 			}
-			else dir[1]++;
-		}
-		else dir[2]++;
-
-		currentbin[0] = centerbin[0] + dir[0];
-		if(currentbin[0] == -1 && !_builder.pbc[0]) continue;
-		if(currentbin[0] == _builder.binDim[0] && !_builder.pbc[0]) continue;
-
-		currentbin[1] = centerbin[1] + dir[1];
-		if(currentbin[1] == -1 && !_builder.pbc[1]) continue;
-		if(currentbin[1] == _builder.binDim[1] && !_builder.pbc[1]) continue;
-
-		currentbin[2] = centerbin[2] + dir[2];
-		if(currentbin[2] == -1 && !_builder.pbc[2]) continue;
-		if(currentbin[2] == _builder.binDim[2] && !_builder.pbc[2]) continue;
-
-		pbcOffset.setZero();
-		_pbcShift.setZero();
-		for(size_t k = 0; k < 3; k++) {
-			if(currentbin[k] == -1) {
-				currentbin[k] = _builder.binDim[k]-1;
-				pbcOffset += _builder.simCell.column(k);
-				_pbcShift[k]--;
-			}
-			else if(currentbin[k] == _builder.binDim[k]) {
-				currentbin[k] = 0;
-				pbcOffset -= _builder.simCell.column(k);
-				_pbcShift[k]++;
+			++_stencilIter;
+			if(!skipBin) {
+				_neighbor = _builder.bins[_currentBin[0] + _currentBin[1] * _builder.binDim[0] + _currentBin[2] * _builder.binDim[0] * _builder.binDim[1]];
+				break;
 			}
 		}
-
-		binatom = _builder.bins[currentbin[0] + currentbin[1]*_builder.binDim[0] + currentbin[2] * _builder.binDim[0]*_builder.binDim[1]];
 	}
-	neighborindex = std::numeric_limits<size_t>::max();
-	return std::numeric_limits<size_t>::max();
 }
 
 };	// End of namespace

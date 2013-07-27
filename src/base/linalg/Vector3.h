@@ -260,8 +260,8 @@ constexpr Vector_3<T> operator*(T s, const Vector_3<T>& a) {
 }
 
 /// \brief Computes the division of a vector by a scalar value.
-template<typename T>
-constexpr Vector_3<T> operator/(const Vector_3<T>& a, T s) {
+template<typename T, typename S>
+constexpr Vector_3<T> operator/(const Vector_3<T>& a, S s) {
 	return { a.x() / s, a.y() / s, a.z() / s };
 }
 
