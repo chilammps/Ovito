@@ -63,46 +63,71 @@ void main()
 	vec3 n = cross(ray_dir, cylinder_view_axis);
 	
 	float ln = length(n);
-	if(ln <= 1e-8)
-		discard;	// Ray is parallel to cylinder, discard fragment.
-		
-	n /= ln;
-	float d = abs(dot(RC,n));
-	
-	if(d > cylinder_radius_in) 
-		discard;	// Ray missed cylinder, discard fragment.
-			
-	// Calculate closest intersection position.
-	vec3 O = cross(RC, cylinder_view_axis);
-	float t = -dot(O, n) / ln;
-	O = cross(n, cylinder_view_axis);
-	float s = abs(sqrt(cylinder_radius_in*cylinder_radius_in - d*d) / dot(ray_dir, O) * cylinder_length);
-	float tnear = t - s;
-
-	// Discard intersections behind the view point.
-	if(is_perspective && tnear < 0.0)
-		discard;
-		
-	// Calculate intersection point in view coordinate system.
-	vec3 view_intersection_pnt = ray_origin + tnear * ray_dir;
+	bool hitCylinder = false;
 	vec3 surface_normal;
+	vec3 view_intersection_pnt;
 	
-	// Find position along cylinder axis.
-	float a = dot(view_intersection_pnt - cylinder_view_base, cylinder_view_axis) / (cylinder_length*cylinder_length);
-	if(a < 0.0) {
-		// Compute intersection of ray with cap plane.
-		t = dot(cylinder_view_base - ray_origin, cylinder_view_axis) / dot(cylinder_view_axis, ray_dir);
-		view_intersection_pnt = ray_origin + t * ray_dir;
-		if(length(view_intersection_pnt - cylinder_view_base) > 0.5)
+	// Check if ray is parallel to cylinder.
+	if(ln > 1e-8) {
+		
+		n /= ln;
+		float d = abs(dot(RC,n));
+		
+		// Check if ray missed cylinder.
+		if(d > cylinder_radius_in)
 			discard;
-		surface_normal = -cylinder_view_axis / cylinder_length;
+			
+		// Calculate closest intersection position.
+		vec3 O = cross(RC, cylinder_view_axis);
+		float t = -dot(O, n) / ln;
+		O = cross(n, cylinder_view_axis);
+		float s = abs(sqrt(cylinder_radius_in*cylinder_radius_in - d*d) / dot(ray_dir, O) * cylinder_length);
+		float tnear = t - s;
+	
+		// Calculate intersection point in view coordinate system.
+		view_intersection_pnt = ray_origin + tnear * ray_dir;
+		
+		// Find intersection position along cylinder axis.
+		float a = dot(view_intersection_pnt - cylinder_view_base, cylinder_view_axis) / (cylinder_length*cylinder_length);
+
+		if(a >= 0 && a <= 1.0) {
+			// Discard intersections behind the view point.
+			if(!is_perspective || tnear > 0.0) {
+		
+				// Calculate surface normal in view coordinate system.
+				surface_normal = (view_intersection_pnt - (cylinder_view_base + a * cylinder_view_axis)) / cylinder_radius_in;
+			
+				hitCylinder = true;
+			}
+		}
 	}
-	else if(a > 1.0) {
-		discard;
-	}
-	else {
-		// Calculate surface normal in view coordinate system.
-		surface_normal = (view_intersection_pnt - (cylinder_view_base + a * cylinder_view_axis)) / cylinder_radius_in;
+
+	// Test for intersection with cylinder caps.
+	if(!hitCylinder) {
+
+		// Compute intersection of ray with first cap plane.
+ 		float d = dot(cylinder_view_axis, ray_dir);
+ 		if(abs(d) < 1e-8)
+	 		discard;
+		float t1 = dot(cylinder_view_base - ray_origin, cylinder_view_axis) / d;
+
+		// Compute intersection of ray with second cap plane.
+		float t2 = t1 + cylinder_length * cylinder_length / d;
+ 
+ 		if(t1 < t2) {
+			if(length(ray_origin + t1 * ray_dir - cylinder_view_base) >= cylinder_radius_in)
+				discard;
+			surface_normal = -cylinder_view_axis / cylinder_length;
+ 			t1 += 3e-3;
+			view_intersection_pnt = ray_origin + t1 * ray_dir;
+	 	}
+	 	else {
+			if(length(ray_origin + t2 * ray_dir - cylinder_view_base - cylinder_view_axis) >= cylinder_radius_in)
+				discard;
+			surface_normal = cylinder_view_axis / cylinder_length;
+ 			t2 += 3e-3;
+			view_intersection_pnt = ray_origin + t2 * ray_dir;
+	 	}
 	}
 		
 	// Output the ray-cylinder intersection point as the fragment depth 

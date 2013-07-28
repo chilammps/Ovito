@@ -224,11 +224,11 @@ ViewProjectionParameters Viewport::projectionParameters(TimePoint time, FloatTyp
 	if(params.isPerspective) {
 		if(bb.minc.z() < -FLOATTYPE_EPSILON) {
 			params.zfar = -bb.minc.z();
-			params.znear = std::max(-bb.maxc.z(), params.zfar * 1e-5f);
+			params.znear = std::max(-bb.maxc.z(), params.zfar * 1e-4f);
 		}
 		else {
 			params.zfar = sceneBoundingBox.size().length();
-			params.znear = params.zfar * 1e-5f;
+			params.znear = params.zfar * 1e-4f;
 		}
 		params.projectionMatrix = Matrix4::perspective(params.fieldOfView, 1.0 / params.aspectRatio, params.znear, params.zfar);
 	}
