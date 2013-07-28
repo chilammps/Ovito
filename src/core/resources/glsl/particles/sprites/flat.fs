@@ -27,7 +27,7 @@ flat in vec4 particle_color_out;
 
 out vec4 FragColor;
 
-void main() 
+void main()
 {
 	vec2 shifted_coords = gl_PointCoord - vec2(0.5, 0.5);
 	if(dot(shifted_coords, shifted_coords) >= 0.25) discard;

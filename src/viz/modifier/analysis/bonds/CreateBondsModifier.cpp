@@ -129,13 +129,14 @@ void CreateBondsModifier::BondGenerationEngine::compute(FutureInterfaceBase& fut
 
 	// Prepare the neighbor list.
 	OnTheFlyNeighborListBuilder neighborListBuilder(_cutoff);
-	if(!neighborListBuilder.prepare(_positions.data(), _simCell) || futureInterface.isCanceled())
+	if(!neighborListBuilder.prepare(_positions.data(), _simCell, &_hasWrappedParticles) || futureInterface.isCanceled())
 		return;
 
 	// Generate (half) bonds.
 	size_t particleCount = _positions->size();
 	futureInterface.setProgressRange(particleCount);
 	for(size_t particleIndex = 0; particleIndex < particleCount; particleIndex++) {
+
 		for(OnTheFlyNeighborListBuilder::iterator neighborIter(neighborListBuilder, particleIndex); !neighborIter.atEnd(); neighborIter.next()) {
 			_bonds->addBond(particleIndex, neighborIter.current(), neighborIter.pbcShift());
 		}
@@ -158,6 +159,7 @@ void CreateBondsModifier::retrieveModifierResults(Engine* engine)
 	BondGenerationEngine* eng = static_cast<BondGenerationEngine*>(engine);
 	if(eng->bonds() && bondsObject()) {
 		bondsObject()->setStorage(eng->bonds());
+		_hasWrappedParticles = eng->hasWrappedParticles();
 	}
 }
 
@@ -173,7 +175,10 @@ ObjectStatus CreateBondsModifier::applyModifierResults(TimePoint time, TimeInter
 		bondsCount = bondsObject()->bonds().size();
 	}
 
-	return ObjectStatus(ObjectStatus::Success, QString(), tr("Created %1 bonds").arg(bondsCount));
+	if(!_hasWrappedParticles)
+		return ObjectStatus(ObjectStatus::Success, QString(), tr("Created %1 bonds").arg(bondsCount));
+	else
+		return ObjectStatus(ObjectStatus::Warning, QString(), tr("Created %1 bonds. Some of the particles are located outside the simulation cell boundaries. The bonds of these particles may not display correctly. Please use the 'Wrap at periodic boundaries' modifier to avoid this problem.").arg(bondsCount));
 }
 
 /******************************************************************************

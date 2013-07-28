@@ -64,10 +64,12 @@ public:
 	/// \brief Prepares the bin cells.
 	/// \param posProperty The positions of the particles.
 	/// \param simCell The simulation cell data.
+	/// \param hasWrappedParticles If non-null, this output parameter will indicate whether one or more particles
+	///                            have been wrapped at periodic boundaries.
 	/// \return \c false when the operation has been canceled by the user;
 	///         \c true on success.
 	/// \throw Exception on error.
-	bool prepare(ParticleProperty* posProperty, const SimulationCellData& cellData);
+	bool prepare(ParticleProperty* posProperty, const SimulationCellData& cellData, bool* hasWrappedParticles = nullptr);
 
 	/// Returns the neighbor cutoff radius.
 	FloatType cutoffRadius() const { return _cutoffRadius; }

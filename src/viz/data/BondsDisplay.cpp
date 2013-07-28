@@ -67,7 +67,7 @@ BondsDisplay::BondsDisplay() :
 	QSettings settings;
 	settings.beginGroup("viz/bonds");
 	setBondWidth(settings.value("DefaultBondWidth", qVariantFromValue(bondWidth())).value<FloatType>());
-	setBondColor(settings.value("DefaultBondColor", qVariantFromValue(bondColor())).value<Color>());
+	setBondColor(Color(settings.value("DefaultBondColor", qVariantFromValue((QColor)bondColor())).value<QColor>()));
 	settings.endGroup();
 }
 
@@ -259,7 +259,7 @@ void BondsDisplayEditor::memorizeParameters()
 	QSettings settings;
 	settings.beginGroup("viz/bonds");
 	settings.setValue("DefaultBondWidth", qVariantFromValue(displayObj->bondWidth()));
-	settings.setValue("DefaultBondColor", qVariantFromValue(displayObj->bondColor()));
+	settings.setValue("DefaultBondColor", qVariantFromValue((QColor)displayObj->bondColor()));
 	settings.endGroup();
 }
 

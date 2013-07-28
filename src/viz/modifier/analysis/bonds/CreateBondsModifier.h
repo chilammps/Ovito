@@ -61,12 +61,17 @@ public:
 		/// Returns the input particle positions.
 		ParticleProperty* positions() const { return _positions.data(); }
 
+		/// Returns true if some of the particles were outside the simulation cell and had to be wrapped back
+		/// into the cell at periodic boundaries.
+		bool hasWrappedParticles() const { return _hasWrappedParticles; }
+
 	private:
 
 		FloatType _cutoff;
 		QExplicitlySharedDataPointer<ParticleProperty> _positions;
 		QExplicitlySharedDataPointer<BondsStorage> _bonds;
 		SimulationCellData _simCell;
+		bool _hasWrappedParticles;
 	};
 
 public:
@@ -123,6 +128,10 @@ protected:
 
 	/// This stores the cached results of the modifier, i.e. the bonds information.
 	ReferenceField<BondsObject> _bondsObj;
+
+	/// Flag that indicates that some of the input particles were outside the simulation cell and
+	/// had to be wrapped back into the cell at periodic boundaries.
+	bool _hasWrappedParticles;
 
 private:
 

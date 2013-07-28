@@ -35,7 +35,7 @@ OnTheFlyNeighborListBuilder::OnTheFlyNeighborListBuilder(FloatType cutoffRadius)
 /******************************************************************************
 * Initialization function.
 ******************************************************************************/
-bool OnTheFlyNeighborListBuilder::prepare(ParticleProperty* posProperty, const SimulationCellData& cellData)
+bool OnTheFlyNeighborListBuilder::prepare(ParticleProperty* posProperty, const SimulationCellData& cellData, bool* hasWrappedParticles)
 {
 	OVITO_CHECK_POINTER(posProperty);
 
@@ -86,6 +86,10 @@ bool OnTheFlyNeighborListBuilder::prepare(ParticleProperty* posProperty, const S
 		}
 	}
 
+	// Reset flag.
+	if(hasWrappedParticles)
+		*hasWrappedParticles = false;
+
 	particles.resize(posProperty->size());
 
 	// Sort particles into bins.
@@ -109,10 +113,14 @@ bool OnTheFlyNeighborListBuilder::prepare(ParticleProperty* posProperty, const S
 				while(binLocation[k] < 0) {
 					binLocation[k] += binDim[k];
 					a->pos += simCell.column(k);
+					if(hasWrappedParticles)
+						*hasWrappedParticles = true;
 				}
 				while(binLocation[k] >= binDim[k]) {
 					binLocation[k] -= binDim[k];
 					a->pos -= simCell.column(k);
+					if(hasWrappedParticles)
+						*hasWrappedParticles = true;
 				}
 			}
 			else if(binLocation[k] < 0) {
@@ -166,6 +174,7 @@ OnTheFlyNeighborListBuilder::iterator::iterator(const OnTheFlyNeighborListBuilde
 	// Determine the bin the central particle is located in.
 	for(size_t k = 0; k < 3; k++) {
 		_centerBin[k] = (int)floor(_builder.reciprocalBinCell.prodrow(_center, k));
+		OVITO_ASSERT(_centerBin[k] >= 0 && _centerBin[k] <  _builder.binDim[k]);
 		if(_centerBin[k] < 0) _centerBin[k] = 0;
 		else if(_centerBin[k] >= _builder.binDim[k]) _centerBin[k] = _builder.binDim[k];
 	}
