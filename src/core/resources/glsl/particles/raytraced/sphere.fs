@@ -32,6 +32,11 @@ flat in vec3 particle_view_pos;
 
 out vec4 FragColor;
 
+const float ambient = 0.4;
+const float diffuse_strength = 1.0 - ambient;
+const float shininess = 6.0;
+const vec3 specular_lightdir = normalize(vec3(-1.8, 1.5, -0.2));
+
 void main() 
 {
 	// Calculate the pixel coordinate in viewport space.
@@ -80,11 +85,8 @@ void main()
 	// Calculate surface normal in view coordinate system.
 	vec3 surface_normal = normalize(view_intersection_pnt - particle_view_pos);
 	
-	float ambient = 0.4;
-	float diffuse = abs(surface_normal.z) * 0.6;
+	float diffuse = abs(surface_normal.z) * diffuse_strength;
 	
-	float shininess = 6.0;
-	vec3 specular_lightdir = normalize(vec3(-1.8, 1.5, -0.2));
 	float specular = pow(max(0.0, dot(reflect(specular_lightdir, surface_normal), ray_dir)), shininess) * 0.25;
 	
 	FragColor = vec4(particle_color.rgb * (diffuse + ambient) + vec3(specular), particle_color.a);

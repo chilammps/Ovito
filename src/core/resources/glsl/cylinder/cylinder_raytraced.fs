@@ -31,9 +31,14 @@ flat in vec4 cylinder_color_in;			// The base color of the cylinder.
 flat in vec3 cylinder_view_base;		// Transformed cylinder position in view coordinates
 flat in vec3 cylinder_view_axis;		// Transformed cylinder axis in view coordinates
 flat in float cylinder_radius_in;		// The radius of the cylinder
-flat in float cylinder_length_squared;	// The squared length of the cylinder
+flat in float cylinder_length;			// The length of the cylinder
 
 out vec4 FragColor;
+
+const float ambient = 0.4;
+const float diffuse_strength = 1.0 - ambient;
+const float shininess = 6.0;
+const vec3 specular_lightdir = normalize(vec3(-1.8, 1.5, -0.2));
 
 void main() 
 {
@@ -71,7 +76,7 @@ void main()
 	vec3 O = cross(RC, cylinder_view_axis);
 	float t = -dot(O, n) / ln;
 	O = cross(n, cylinder_view_axis);
-	float s = abs(sqrt(cylinder_radius_in*cylinder_radius_in - d*d) / dot(ray_dir, O) * sqrt(cylinder_length_squared));
+	float s = abs(sqrt(cylinder_radius_in*cylinder_radius_in - d*d) / dot(ray_dir, O) * cylinder_length);
 	float tnear = t - s;
 
 	// Discard intersections behind the view point.
@@ -80,11 +85,25 @@ void main()
 		
 	// Calculate intersection point in view coordinate system.
 	vec3 view_intersection_pnt = ray_origin + tnear * ray_dir;
+	vec3 surface_normal;
 	
 	// Find position along cylinder axis.
-	float a = dot(view_intersection_pnt - cylinder_view_base, cylinder_view_axis) / cylinder_length_squared;
-	if(a < 0.0 || a > 1.0)
+	float a = dot(view_intersection_pnt - cylinder_view_base, cylinder_view_axis) / (cylinder_length*cylinder_length);
+	if(a < 0.0) {
+		// Compute intersection of ray with cap plane.
+		t = dot(cylinder_view_base - ray_origin, cylinder_view_axis) / dot(cylinder_view_axis, ray_dir);
+		view_intersection_pnt = ray_origin + t * ray_dir;
+		if(length(view_intersection_pnt - cylinder_view_base) > 0.5)
+			discard;
+		surface_normal = -cylinder_view_axis / cylinder_length;
+	}
+	else if(a > 1.0) {
 		discard;
+	}
+	else {
+		// Calculate surface normal in view coordinate system.
+		surface_normal = (view_intersection_pnt - (cylinder_view_base + a * cylinder_view_axis)) / cylinder_radius_in;
+	}
 		
 	// Output the ray-cylinder intersection point as the fragment depth 
 	// rather than the depth of the bounding box polygons.
@@ -93,14 +112,7 @@ void main()
 	vec4 projected_intersection = projection_matrix * vec4(view_intersection_pnt, 1.0);
 	gl_FragDepth = (projected_intersection.z / projected_intersection.w + 1.0) * 0.5;
 
-	// Calculate surface normal in view coordinate system.
-	vec3 surface_normal = (view_intersection_pnt - (cylinder_view_base + a * cylinder_view_axis)) / cylinder_radius_in;
-	
-	float ambient = 0.4;
-	float diffuse = abs(surface_normal.z) * 0.6;
-	
-	float shininess = 6.0;
-	vec3 specular_lightdir = normalize(vec3(-1.8, 1.5, -0.2));
+	float diffuse = abs(surface_normal.z) * diffuse_strength;
 	float specular = pow(max(0.0, dot(reflect(specular_lightdir, surface_normal), ray_dir)), shininess) * 0.25;
 	
 	FragColor = vec4(cylinder_color_in.rgb * (diffuse + ambient) + vec3(specular), cylinder_color_in.a);
