@@ -64,6 +64,7 @@ SET(OVITO_VIZ_SOURCE_FILES
 	util/TreeNeighborListBuilder.cpp
 	util/OnTheFlyNeighborListBuilder.cpp
 	util/ParticlePropertyComboBox.cpp
+	util/CutoffRadiusPresetsUI.cpp
 )
 
 

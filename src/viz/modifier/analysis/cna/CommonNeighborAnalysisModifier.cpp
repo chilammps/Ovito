@@ -28,6 +28,7 @@
 #include <core/utilities/concurrent/ParallelFor.h>
 #include <viz/util/TreeNeighborListBuilder.h>
 #include <viz/util/OnTheFlyNeighborListBuilder.h>
+#include <viz/util/CutoffRadiusPresetsUI.h>
 
 #include "CommonNeighborAnalysisModifier.h"
 
@@ -622,16 +623,15 @@ void CommonNeighborAnalysisModifierEditor::createUI(const RolloutInsertionParame
 	cutoffRadiusPUI->setMinValue(0);
 	connect(cutoffRadiusPUI, SIGNAL(valueEntered()), this, SLOT(memorizeCutoff()));
 
-#if 0
-	CutoffPresetsUI* cutoffPresetsPUI = new CutoffPresetsUI(this, PROPERTY_FIELD_DESCRIPTOR(CommonNeighborAnalysisModifier, _neighborCutoff));
+	CutoffRadiusPresetsUI* cutoffPresetsPUI = new CutoffRadiusPresetsUI(this, PROPERTY_FIELD(CommonNeighborAnalysisModifier::_cutoff));
 	gridlayout->addWidget(cutoffPresetsPUI->comboBox(), 1, 1, 1, 2);
-#endif
+	connect(cutoffPresetsPUI, SIGNAL(valueEntered()), this, SLOT(memorizeCutoff()));
 	layout1->addLayout(gridlayout);
 
 	connect(adaptiveModeUI->buttonFalse(), SIGNAL(toggled(bool)), cutoffRadiusPUI, SLOT(setEnabled(bool)));
-//	connect(adaptiveModeUI->buttonFalse(), SIGNAL(toggled(bool)), cutoffPresetsPUI, SLOT(setEnabled(bool)));
+	connect(adaptiveModeUI->buttonFalse(), SIGNAL(toggled(bool)), cutoffPresetsPUI, SLOT(setEnabled(bool)));
 	cutoffRadiusPUI->setEnabled(false);
-//	cutoffPresetsPUI->setEnabled(false);
+	cutoffPresetsPUI->setEnabled(false);
 
 #if 0
 	BooleanParameterUI* autoUpdateUI = new BooleanParameterUI(this, PROPERTY_FIELD(AsynchronousParticleModifier::_autoUpdate));
