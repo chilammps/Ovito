@@ -21,6 +21,9 @@
 
 #include <core/Core.h>
 #include <core/gui/actions/ActionManager.h>
+#include <core/gui/dialogs/AnimationSettingsDialog.h>
+#include <core/gui/app/Application.h>
+#include <core/gui/mainwin/MainWindow.h>
 #include <core/animation/AnimManager.h>
 #include <core/viewport/input/ViewportInputHandler.h>
 #include <core/viewport/input/ViewportInputManager.h>
@@ -173,6 +176,8 @@ void ActionManager::on_AnimationStopPlayback_triggered()
 ******************************************************************************/
 void ActionManager::on_AnimationSettings_triggered()
 {
+	if(Application::instance().guiMode())
+		AnimationSettingsDialog(&MainWindow::instance()).exec();
 }
 
 };

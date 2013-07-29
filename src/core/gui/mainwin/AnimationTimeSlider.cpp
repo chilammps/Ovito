@@ -55,10 +55,10 @@ void AnimationTimeSlider::paintEvent(QPaintEvent* event)
 	QFrame::paintEvent(event);
 
 	// Show slider only if there is more than one animation frame.
-	if(AnimManager::instance().animationInterval().duration() != 0) {
+	int numFrames = (int)((AnimManager::instance().animationInterval().duration()+1) / AnimManager::instance().ticksPerFrame());
+	if(numFrames > 1) {
 		QStylePainter painter(this);
 
-		int numFrames = (int)((AnimManager::instance().animationInterval().duration()+1) / AnimManager::instance().ticksPerFrame());
 		QRect clientRect = frameRect();
 		clientRect.adjust(frameWidth(), frameWidth(), -frameWidth(), -frameWidth());
 		int thumbWidth = this->thumbWidth();
@@ -67,7 +67,7 @@ void AnimationTimeSlider::paintEvent(QPaintEvent* event)
 		int lastFrame = AnimManager::instance().timeToFrame(AnimManager::instance().animationInterval().end());
 		int labelWidth = painter.fontMetrics().boundingRect(QString::number(lastFrame)).width();
 		int nticks = std::min(clientWidth / (labelWidth + 20), numFrames);
-		int ticksevery = numFrames / nticks;
+		int ticksevery = numFrames / std::max(nticks, 1);
 		if(ticksevery <= 1) ticksevery = ticksevery;
 		else if(ticksevery <= 5) ticksevery = 5;
 		else if(ticksevery <= 10) ticksevery = 10;

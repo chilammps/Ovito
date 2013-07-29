@@ -139,9 +139,9 @@ QSize Rollout::sizeHint() const
 void Rollout::resizeEvent(QResizeEvent* event)
 {
 	int titleHeight = _titleButton->sizeHint().height();
-	int contentHeight = _content->sizeHint().height();
+	int contentHeight = _content ? _content->sizeHint().height() : 0;
 	_titleButton->setGeometry(0, 0, width(), titleHeight);
-	_content->setGeometry(0, height() - contentHeight, width(), contentHeight);
+	if(_content) _content->setGeometry(0, height() - contentHeight, width(), contentHeight);
 }
 
 /******************************************************************************
