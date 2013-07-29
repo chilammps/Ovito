@@ -149,8 +149,6 @@ void AnimationSettingsDialog::onFramesPerSecondChanged(int index)
 	newInterval.setEnd(oldInterval.end() * newTicksPerFrame / oldTicksPerFrame);
 	AnimManager::instance().setAnimationInterval(newInterval);
 
-	qDebug() << "oldTicksPerFrame=" << oldTicksPerFrame << "newTicksPerFrame=" << newTicksPerFrame;
-	qDebug() << "oldInterval=" << oldInterval << "newInterval=" << newInterval;
 #if 0
 	DataSetManager::instance().currentSet()->rescaleTime(oldInterval, newInterval);
 #endif

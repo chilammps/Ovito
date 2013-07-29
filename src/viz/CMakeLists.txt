@@ -86,6 +86,3 @@ OVITO_PLUGIN(Viz
 	SOURCES ${OVITO_VIZ_SOURCE_FILES} ${muParser_SRCS}
 	RESOURCE viz.rcc resources/viz.qrc
 )
-
-# Link Qt5.
-QT5_USE_MODULES(Viz Widgets Xml Concurrent)

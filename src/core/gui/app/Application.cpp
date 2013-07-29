@@ -87,10 +87,15 @@ bool Application::initialize()
 		// Set the application name provided by the active branding class.
 		setApplicationName(tr("Ovito"));
 		setOrganizationName(tr("Alexander Stukowski"));
+		setOrganizationDomain("ovito.org");
 		setApplicationVersion(tr("Version %1.%2.%3")
 				.arg(OVITO_VERSION_MAJOR)
 				.arg(OVITO_VERSION_MINOR)
 				.arg(OVITO_VERSION_REVISION));
+
+#ifdef OVITO_DEBUG
+		qDebug() << "Application settings store:" << QSettings().fileName();
+#endif
 
 		// Initialize global manager objects in the right order.
 		UndoManager::initialize();

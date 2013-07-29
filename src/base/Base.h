@@ -64,6 +64,7 @@
 #include <QtDebug>
 #include <QtXml>
 #include <QtGui>
+#include <QtNetwork>
 #include <qopengl.h>
 
 // Defines the number type used for numerical computations.

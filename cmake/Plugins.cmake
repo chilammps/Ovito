@@ -77,6 +77,9 @@ MACRO(OVITO_PLUGIN target_name)
 	# Link required OVITO libraries.
 	TARGET_LINK_LIBRARIES(${target_name} ${lib_dependencies})
 
+	# Link Qt5.
+	QT5_USE_MODULES(${target_name} Widgets Xml Concurrent Network)
+
 	# Link plugin dependencies.
 	FOREACH(plugin_name ${plugin_dependencies})
 		OVITO_ADD_PLUGIN_DEPENDENCY(${target_name} ${plugin_name})

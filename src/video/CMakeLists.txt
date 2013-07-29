@@ -38,7 +38,7 @@ TARGET_LINK_LIBRARIES(Video Base)
 TARGET_LINK_LIBRARIES(Video ${FFMPEG_LIBRARIES})
 
 # Link Qt5.
-QT5_USE_MODULES(Video Core Gui Widgets Xml)
+QT5_USE_MODULES(Video Core Gui Widgets Xml Network)
 
 # This library is part of the installation package.
 IF(APPLE OR WIN32)

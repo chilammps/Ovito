@@ -111,6 +111,9 @@ ModifyCommandPage::ModifyCommandPage()
 
 	connect(&_selectionSetListener, SIGNAL(notificationEvent(ReferenceEvent*)), this, SLOT(onSelectionSetEvent(ReferenceEvent*)));
 	updateActions(nullptr);
+
+	// Create About panel.
+	createAboutPanel();
 }
 
 /******************************************************************************
@@ -171,11 +174,18 @@ void ModifyCommandPage::onSelectedItemChanged()
 	ModificationListItem* currentItem = _modificationListModel->selectedItem();
 	RefTarget* object = currentItem ? currentItem->object() : nullptr;
 
+	if(currentItem != nullptr)
+		_aboutRollout->hide();
+
 	if(object != _propertiesPanel->editObject()) {
 		_propertiesPanel->setEditObject(object);
 		ViewportManager::instance().updateViewports();
 	}
 	updateActions(currentItem);
+
+	// Whenever no object is selected, show the About Panel containing information about the program.
+	if(currentItem == nullptr)
+		_aboutRollout->show();
 }
 
 /******************************************************************************
@@ -359,6 +369,100 @@ void ModifyCommandPage::onModifierToggleState(bool newState)
 		return;
 
 	onModifierStackDoubleClicked(selection.front());
+}
+
+/******************************************************************************
+* Creates the rollout panel that shows information about the application
+* whenever no object is selected.
+******************************************************************************/
+void ModifyCommandPage::createAboutPanel()
+{
+	QWidget* rollout = new QWidget();
+	QVBoxLayout* layout = new QVBoxLayout(rollout);
+	layout->setContentsMargins(8,8,8,8);
+
+	QTextBrowser* aboutLabel = new QTextBrowser(rollout);
+	aboutLabel->setObjectName("AboutLabel");
+	aboutLabel->setOpenExternalLinks(true);
+	aboutLabel->setMinimumHeight(600);
+	aboutLabel->setFrameStyle(QFrame::NoFrame | QFrame::Plain);
+	aboutLabel->viewport()->setAutoFillBackground(false);
+	layout->addWidget(aboutLabel);
+
+	// Retrieve cached news page from settings store.
+	QSettings settings;
+	settings.beginGroup("news");
+	QByteArray newsPage = settings.value("cached_webpage").toByteArray();
+	if(newsPage.isEmpty()) {
+		QResource res("/core/mainwin/command_panel/about_panel.html");
+		newsPage = QByteArray((const char *)res.data(), (int)res.size());
+	}
+	aboutLabel->setHtml(QString::fromUtf8(newsPage.constData()));
+	settings.endGroup();
+
+	_aboutRollout = _propertiesPanel->addRollout(rollout, QCoreApplication::applicationName());
+
+	// Retrieve/generate unique installation id.
+	QByteArray id;
+	settings.beginGroup("installation");
+	if(settings.contains("id")) {
+		id = settings.value("id").toByteArray();
+	}
+	else {
+		// Look in old Ovito's settings.
+		QSettings oldSettings("ovito", "ovito");
+		oldSettings.beginGroup("installation");
+		if(oldSettings.contains("id")) {
+			id = oldSettings.value("id").toByteArray();
+		}
+		else {
+			// Generate a new unique ID.
+			id = QByteArray(16, '0');
+			qsrand(time(NULL));
+			for(int i = 0; i < id.size(); i++)
+				id[i] = qrand() * 0xFF / RAND_MAX;
+		}
+		settings.setValue("id", id);
+	}
+
+	// Fetch newest web page from web server.
+	QNetworkAccessManager* networkAccessManager = new QNetworkAccessManager(_aboutRollout);
+	QString urlString = QString("http://www.ovito.org/appnews/v%1.%2.%3/?ovito=%4")
+			.arg(OVITO_VERSION_MAJOR)
+			.arg(OVITO_VERSION_MINOR)
+			.arg(OVITO_VERSION_REVISION)
+			.arg(QString(id.toHex()));
+	QNetworkReply* networkReply = networkAccessManager->get(QNetworkRequest(QUrl(urlString)));
+	connect(networkAccessManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(onWebRequestFinished(QNetworkReply*)));
+}
+
+/******************************************************************************
+* Is called by the system when fetching the news web page from the server is
+* completed.
+******************************************************************************/
+void ModifyCommandPage::onWebRequestFinished(QNetworkReply* reply)
+{
+	if(reply->error() == QNetworkReply::NoError) {
+		QByteArray page = reply->readAll();
+		reply->close();
+		if(page.startsWith("<html><!--OVITO-->")) {
+
+			QTextBrowser* aboutLabel = _aboutRollout->findChild<QTextBrowser*>("AboutLabel");
+			OVITO_CHECK_POINTER(aboutLabel);
+			aboutLabel->setHtml(QString::fromUtf8(page.constData()));
+
+			QSettings settings;
+			settings.beginGroup("news");
+			settings.setValue("cached_webpage", page);
+		}
+		else {
+			qDebug() << "News page fetched from server is invalid.";
+		}
+	}
+	else {
+		qDebug() << "Failed to fetch news page from server: " << reply->errorString() << "URL:" << reply->url();
+	}
+	reply->deleteLater();
 }
 
 };

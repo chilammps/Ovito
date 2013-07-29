@@ -33,7 +33,7 @@ ADD_LIBRARY(Base ${OVITO_BASE_SOURCE_FILES})
 TARGET_LINK_LIBRARIES(Base ${OPENGL_gl_LIBRARY})
 
 # Link Qt5.
-QT5_USE_MODULES(Base Widgets Xml)
+QT5_USE_MODULES(Base Widgets Xml Network)
 
 # This library is part of the installation package.
 IF(APPLE OR WIN32)

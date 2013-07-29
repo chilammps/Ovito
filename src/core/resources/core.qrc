@@ -52,6 +52,8 @@
 	<file>cursor/viewport/cursor_zoom.png</file> 
 	<file>cursor/viewport/cursor_fov.png</file>
 	
+	<file>mainwin/command_panel/about_panel.html</file>
+	
 	<file>mainwin/command_panel/tab_create.png</file>
 	<file>mainwin/command_panel/tab_modify.png</file>
 	<file>mainwin/command_panel/tab_render.png</file>
