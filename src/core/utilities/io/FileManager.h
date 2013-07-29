@@ -56,10 +56,17 @@ public:
 	///        time it is requested.
 	void removeFromCache(const QUrl& url);
 
-private:
+	/// \brief Lists all files in a remote directory.
+	/// \return A QFuture that will provide the list of file names.
+	Future<QStringList> listDirectoryContents(const QUrl& url);
 
-	/// Creates a future that downloads the given remote file.
-	Future<QString> fetchRemoteFile(const QUrl& url);
+	/// \brief Looks up login name and password for the given host in the credential cache.
+	QPair<QString,QString> findCredentials(const QString& host);
+
+	/// \brief Saves the login name and password for the given host in the credential cache.
+	void cacheCredentials(const QString& host, const QString& username, const QString& password);
+
+private:
 
 	/// Is called when a remote file has been fetched.
 	void fileFetched(QUrl url, QTemporaryFile* localFile);
@@ -83,6 +90,9 @@ private:
 	/// The mutex to synchronize access to above data structures.
 	QMutex _mutex;
 
+	/// Cache of login/password information for remote machines.
+	QMap<QString, QPair<QString,QString>> _credentialCache;
+
 private:
     
 	/// This is a singleton class. No public instances allowed.
@@ -98,7 +108,7 @@ private:
 	static FileManager* _instance;
 
 	friend class Application;
-	friend class SftpFileFetcher;
+	friend class SftpDownloadJob;
 };
 
 

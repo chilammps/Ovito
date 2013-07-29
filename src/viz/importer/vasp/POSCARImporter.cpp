@@ -191,6 +191,8 @@ void POSCARImporter::parseFile(FutureInterfaceBase& futureInterface, ParticleImp
 			}
 		}
 	}
+
+	container.setInfoText(tr("%1 atoms").arg(totalAtomCount));
 }
 
 };

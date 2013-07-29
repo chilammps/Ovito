@@ -56,18 +56,22 @@ void LinkedFileObjectEditor::createUI(const RolloutInsertionParameters& rolloutP
 	QAction* saveDataWithSceneAction = toolbar->addAction(QIcon(":/core/actions/file/import_object_save_with_scene.png"), tr("Store imported data in scene file"));
 	new BooleanActionParameterUI(this, "saveDataWithScene", saveDataWithSceneAction);
 
-	layout->addWidget(new QLabel(tr("<b>Source location:</b>"), rollout));
-	_sourceTextbox = new QLineEdit();
-	connect(_sourceTextbox, SIGNAL(editingFinished()), this, SLOT(onSourceUrlEntered()));
-	layout->addWidget(_sourceTextbox);
+	layout->addWidget(new QLabel(tr("<b>Source path:</b>"), rollout));
+	_sourcePathLabel = new ElidedTextLabel(rollout);
+	_sourcePathLabel->setIndent(10);
+	_sourcePathLabel->setTextInteractionFlags(Qt::TextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard | Qt::LinksAccessibleByMouse | Qt::LinksAccessibleByKeyboard));
+	layout->addWidget(_sourcePathLabel);
 
-	layout->addWidget(new QLabel(tr("<b>Loaded file:</b>"), rollout));
+	layout->addWidget(new QLabel(tr("<b>Wildcard pattern:</b>"), rollout));
+	_wildcardPatternTextbox = new QLineEdit();
+	connect(_wildcardPatternTextbox, SIGNAL(editingFinished()), this, SLOT(onWildcardPatternEntered()));
+	layout->addWidget(_wildcardPatternTextbox);
+
+	layout->addWidget(new QLabel(tr("<b>Current file:</b>"), rollout));
 	_filenameLabel = new ElidedTextLabel(rollout);
 	_filenameLabel->setIndent(10);
 	_filenameLabel->setTextInteractionFlags(Qt::TextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard | Qt::LinksAccessibleByMouse | Qt::LinksAccessibleByKeyboard));
 	layout->addWidget(_filenameLabel);
-
-	layout->addWidget(new QLabel(tr("<b>Info:</b>"), rollout));
 
 	QGridLayout* layout2 = new QGridLayout();
 	layout2->setContentsMargins(0,0,0,0);
@@ -163,22 +167,25 @@ void LinkedFileObjectEditor::onReloadAnimation()
 /******************************************************************************
 * This is called when the user has changed the source URL.
 ******************************************************************************/
-void LinkedFileObjectEditor::onSourceUrlEntered()
+void LinkedFileObjectEditor::onWildcardPatternEntered()
 {
 	LinkedFileObject* obj = static_object_cast<LinkedFileObject>(editObject());
 	OVITO_CHECK_OBJECT_POINTER(obj);
 
-	UndoableTransaction::handleExceptions(tr("Change source URL"), [this, obj]() {
+	UndoableTransaction::handleExceptions(tr("Change wildcard pattern"), [this, obj]() {
 
-		QUrl url = QUrl::fromUserInput(_sourceTextbox->text());
-		if(!url.isValid())
+		QString pattern = _wildcardPatternTextbox->text().trimmed();
+		if(pattern.isEmpty())
+			return;
+
+		QUrl newUrl = obj->sourceUrl();
+		QFileInfo fileInfo(newUrl.path());
+		fileInfo.setFile(fileInfo.dir(), pattern);
+		newUrl.setPath(fileInfo.filePath());
+		if(!newUrl.isValid())
 			throw Exception(tr("URL is not valid."));
 
-		if(obj->setSource(url, obj->importer())) {
-			if(obj->updateFrames()) {
-				obj->adjustAnimationInterval();
-			}
-		}
+		obj->setSource(newUrl, obj->importer());
 	});
 	updateInformationLabel();
 }
@@ -210,18 +217,19 @@ void LinkedFileObjectEditor::updateInformationLabel()
 {
 	LinkedFileObject* obj = static_object_cast<LinkedFileObject>(editObject());
 	if(!obj) {
-		_sourceTextbox->setText(QString());
-		_sourceTextbox->setEnabled(false);
+		_wildcardPatternTextbox->clear();
+		_wildcardPatternTextbox->setEnabled(false);
+		_sourcePathLabel->setText(QString());
 		_filenameLabel->setText(QString());
 		return;
 	}
 
-	if(obj->sourceUrl().isLocalFile()) {
-		_sourceTextbox->setText(obj->sourceUrl().toLocalFile());
-	}
-	else
-		_sourceTextbox->setText(obj->sourceUrl().toString());
-	_sourceTextbox->setEnabled(true);
+	QFileInfo fileInfo(obj->sourceUrl().path());
+	QUrl url = obj->sourceUrl();
+	url.setPath(fileInfo.path());
+	_sourcePathLabel->setText(url.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded));
+	_wildcardPatternTextbox->setText(fileInfo.fileName());
+	_wildcardPatternTextbox->setEnabled(true);
 
 	int frameIndex = obj->loadedFrame();
 	if(frameIndex >= 0) {

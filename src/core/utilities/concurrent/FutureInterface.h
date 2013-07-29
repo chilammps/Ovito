@@ -61,6 +61,14 @@ public:
 		return waitForSubTask(subFuture.interface().get());
 	}
 
+	void cancel();
+
+    bool reportStarted();
+
+    void reportFinished();
+
+    void reportException();
+
 protected:
 
 	FutureInterfaceBase(State initialState = NoState) : _subTask(nullptr), _state(initialState), _runnable(nullptr), _progressValue(0), _progressMaximum(0) {
@@ -71,14 +79,6 @@ protected:
 	bool isStarted() const { return (_state & Started); }
 	bool isFinished() const { return (_state & Finished); }
 	bool isResultSet() const { return (_state & ResultSet); }
-
-	void cancel();
-
-    bool reportStarted();
-
-    void reportFinished();
-
-    void reportException();
 
     void reportResultReady();
 

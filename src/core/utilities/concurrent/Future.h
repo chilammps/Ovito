@@ -36,12 +36,24 @@ public:
 
 	explicit Future(const std::shared_ptr<Interface>& p) : _interface(p) {}
 
-	explicit Future(const R& result, const QString& text = QString()) : _interface(std::make_shared<Interface>()) {
-		interface()->reportStarted();
+	/// Create a Future with immediate results.
+	static Future createImmediate(const R& result, const QString& text = QString()) {
+		std::shared_ptr<Interface> interface(std::make_shared<Interface>());
+		interface->reportStarted();
 		if(text.isEmpty() == false)
-			interface()->setProgressText(text);
-		interface()->setResult(result);
-		interface()->reportFinished();
+			interface->setProgressText(text);
+		interface->setResult(result);
+		interface->reportFinished();
+		return Future(interface);
+	}
+
+	/// Create a Future without results that is in the canceled state.
+	static Future createCanceled() {
+		std::shared_ptr<Interface> interface(std::make_shared<Interface>());
+		interface->reportStarted();
+		interface->cancel();
+		interface->reportFinished();
+		return Future(interface);
 	}
 
 	bool isCanceled() const { return interface()->isCanceled(); }

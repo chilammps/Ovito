@@ -29,6 +29,7 @@
 #include <core/gui/mainwin/MainWindow.h>
 #include <core/utilities/concurrent/Task.h>
 #include <core/utilities/concurrent/ProgressManager.h>
+#include <core/utilities/io/FileManager.h>
 #include "LinkedFileImporter.h"
 #include "LinkedFileObject.h"
 
@@ -120,62 +121,83 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl, DataSet* dataset)
 Future<QVector<LinkedFileImporter::FrameSourceInformation>> LinkedFileImporter::findFrames(const QUrl& sourceUrl)
 {
 	QVector<FrameSourceInformation> frames;
-	if(sourceUrl.isLocalFile()) {
 
-		// Check if filename is a wild-card pattern.
-		QFileInfo fileInfo(sourceUrl.toLocalFile());
-		QString pattern = fileInfo.fileName();
-		if(pattern.contains('*') == false && pattern.contains('?') == false) {
-			// It's not a wild-card pattern.
-			// Register only a single frame.
-			frames.push_back({ sourceUrl, 0, 0, fileInfo.lastModified(), fileInfo.fileName() });
-		}
-		else{
+	// Determine whether the filename contains wildcard characters.
+	QFileInfo fileInfo(sourceUrl.path());
+	QString pattern = fileInfo.fileName();
+	if(pattern.contains('*') == false && pattern.contains('?') == false) {
 
-			// Scan the directory for matching files.
-			QDir dir = fileInfo.dir();
-			QStringList entries = dir.entryList(QStringList(pattern), QDir::Files|QDir::NoDotAndDotDot, QDir::Name);
+		// It's not a wildcard pattern. Register just a single frame.
+		frames.push_back({ sourceUrl, 0, 0, fileInfo.lastModified(), fileInfo.fileName() });
 
-			// Now the file names have to be sorted.
-			// This is a little bit tricky since a file called "abc9.xyz" must come before
-			// a file named "abc10.xyz" which is not the default lexicographical ordering.
-			QMap<QString, QString> sortedFilenames;
-			Q_FOREACH(QString oldName, entries) {
-				// Generate a new name from the original filename that yields the correct ordering.
-				QString newName;
-				QString number;
-				for(int index = 0; index < oldName.length(); index++) {
-					QChar c = oldName[index];
-					if(!c.isDigit()) {
-						if(!number.isEmpty()) {
-							newName.append(number.rightJustified(10, '0'));
-							number.clear();
-						}
-						newName.append(c);
-					}
-					else number.append(c);
-				}
-				if(!number.isEmpty()) newName.append(number.rightJustified(10, '0'));
-				sortedFilenames[newName] = oldName;
-			}
-
-			// Generate final list of frames.
-			for(const auto& iter : sortedFilenames) {
-				QString filename = dir.absoluteFilePath(iter);
-				frames.push_back({
-					QUrl::fromLocalFile(filename), 0, 0,
-					QFileInfo(filename).lastModified(),
-					iter });
-			}
-		}
 	}
 	else {
-		// It's not a file URL.
-		// Register only a single frame.
-		frames.push_back({ sourceUrl, 0, 0, QDateTime(), QFileInfo(sourceUrl.path()).fileName() });
+
+		QDir directory = fileInfo.dir();
+		bool isLocalPath = false;
+
+		// Scan the directory for files matching the wildcard pattern.
+		QStringList entries;
+		if(sourceUrl.isLocalFile()) {
+
+			isLocalPath = true;
+			entries = directory.entryList(QStringList(pattern), QDir::Files|QDir::NoDotAndDotDot, QDir::Name);
+
+		}
+		else {
+
+			QUrl directoryUrl = sourceUrl;
+			directoryUrl.setPath(fileInfo.path());
+
+			// Retrieve list of files in remote directory.
+			Future<QStringList> fileListFuture = FileManager::instance().listDirectoryContents(directoryUrl);
+			if(!ProgressManager::instance().waitForTask(fileListFuture))
+				return Future<QVector<FrameSourceInformation>>::createCanceled();
+
+			// Filter file names.
+			QRegExp patternExp(pattern, Qt::CaseSensitive, QRegExp::Wildcard);
+			for(const QString& filename : fileListFuture.result()) {
+				if(patternExp.exactMatch(filename))
+					entries << filename;
+			}
+		}
+
+		// Now the file names have to be sorted.
+		// This is a little bit tricky since a file called "abc9.xyz" must come before
+		// a file named "abc10.xyz" which is not the default lexicographic ordering.
+		QMap<QString, QString> sortedFilenames;
+		Q_FOREACH(QString oldName, entries) {
+			// Generate a new name from the original filename that yields the correct ordering.
+			QString newName;
+			QString number;
+			for(int index = 0; index < oldName.length(); index++) {
+				QChar c = oldName[index];
+				if(!c.isDigit()) {
+					if(!number.isEmpty()) {
+						newName.append(number.rightJustified(10, '0'));
+						number.clear();
+					}
+					newName.append(c);
+				}
+				else number.append(c);
+			}
+			if(!number.isEmpty()) newName.append(number.rightJustified(10, '0'));
+			sortedFilenames[newName] = oldName;
+		}
+
+		// Generate final list of frames.
+		for(const auto& iter : sortedFilenames) {
+			QFileInfo fileInfo(directory, iter);
+			QUrl url = sourceUrl;
+			url.setPath(fileInfo.filePath());
+			frames.push_back({
+				url, 0, 0,
+				isLocalPath ? fileInfo.lastModified() : QDateTime(),
+				iter });
+		}
 	}
 
-	return Future<QVector<FrameSourceInformation>>(frames);
+	return Future<QVector<FrameSourceInformation>>::createImmediate(frames);
 }
 
 /******************************************************************************

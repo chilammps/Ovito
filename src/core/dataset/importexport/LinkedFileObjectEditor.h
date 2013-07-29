@@ -70,16 +70,17 @@ protected Q_SLOTS:
 	void updateInformationLabel();
 
 	/// This is called when the user has changed the source URL.
-	void onSourceUrlEntered();
+	void onWildcardPatternEntered();
 
 private:
 
 	QAction* _parserSettingsAction;
 
+	ElidedTextLabel* _sourcePathLabel;
 	ElidedTextLabel* _filenameLabel;
+	QLineEdit* _wildcardPatternTextbox;
 	QLabel* _statusTextLabel;
 	QLabel* _statusIconLabel;
-	QLineEdit* _sourceTextbox;
 
 	QPixmap _statusWarningIcon;
 	QPixmap _statusErrorIcon;

@@ -369,7 +369,11 @@ void LinkedFileObject::loadFromStream(ObjectLoadStream& stream)
 QString LinkedFileObject::objectTitle()
 {
 	QString filename;
-	if(!sourceUrl().isEmpty()) {
+	int frameIndex = loadedFrame();
+	if(frameIndex >= 0) {
+		filename = QFileInfo(frames()[frameIndex].sourceFile.path()).fileName();
+	}
+	else if(!sourceUrl().isEmpty()) {
 		filename = QFileInfo(sourceUrl().path()).fileName();
 	}
 	if(importer())

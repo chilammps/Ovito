@@ -174,7 +174,6 @@ OnTheFlyNeighborListBuilder::iterator::iterator(const OnTheFlyNeighborListBuilde
 	// Determine the bin the central particle is located in.
 	for(size_t k = 0; k < 3; k++) {
 		_centerBin[k] = (int)floor(_builder.reciprocalBinCell.prodrow(_center, k));
-		OVITO_ASSERT(_centerBin[k] >= 0 && _centerBin[k] <  _builder.binDim[k]);
 		if(_centerBin[k] < 0) _centerBin[k] = 0;
 		else if(_centerBin[k] >= _builder.binDim[k]) _centerBin[k] = _builder.binDim[k];
 	}
