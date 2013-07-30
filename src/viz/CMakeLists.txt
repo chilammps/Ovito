@@ -44,6 +44,7 @@ SET(OVITO_VIZ_SOURCE_FILES
 	modifier/analysis/centrosymmetry/CentroSymmetryModifier.cpp
 	modifier/analysis/strain/AtomicStrainModifier.cpp
 	modifier/analysis/bonds/CreateBondsModifier.cpp
+	modifier/analysis/coordination/CoordinationNumberModifier.cpp
 	modifier/lighting/AmbientOcclusionModifier.cpp
 	modifier/lighting/AmbientOcclusionRenderer.cpp
 	modifier/transformation/AffineTransformationModifier.cpp
@@ -84,6 +85,6 @@ SET(muParser_SRCS
 
 # Generate plugin module.
 OVITO_PLUGIN(Viz
-	SOURCES ${OVITO_VIZ_SOURCE_FILES} ${muParser_SRCS}
+	SOURCES ${OVITO_VIZ_SOURCE_FILES} ${muParser_SRCS} util/qcustomplot/qcustomplot.cpp
 	RESOURCE viz.rcc resources/viz.qrc
 )

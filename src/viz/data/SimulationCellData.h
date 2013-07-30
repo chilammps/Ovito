@@ -53,6 +53,11 @@ public:
 	/// Sets the PBC flags.
 	void setPbcFlags(bool pbcX, bool pbcY, bool pbcZ) { _pbcFlags[0] = pbcX; _pbcFlags[1] = pbcY; _pbcFlags[2] = pbcZ; }
 
+	/// Computes the (positive) volume of the cell.
+	FloatType volume() const {
+		return std::abs(_simulationCell.determinant());
+	}
+
 private:
 
 	/// The geometry of the cell.

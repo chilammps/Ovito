@@ -78,7 +78,7 @@ AtomicStrainModifier::AtomicStrainModifier() :
 	// Load the last cutoff radius from the application settings store.
 	QSettings settings;
 	settings.beginGroup("viz/strain");
-	setCutoff(settings.value("DefaultCutoff", 3.5).value<FloatType>());
+	setCutoff(settings.value("DefaultCutoff", cutoff()).value<FloatType>());
 	settings.endGroup();
 }
 

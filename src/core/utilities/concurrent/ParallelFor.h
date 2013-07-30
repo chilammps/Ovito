@@ -28,9 +28,14 @@
 namespace Ovito {
 
 template<class Function, typename T>
-bool parallelFor(T loopCount, FutureInterfaceBase& futureInterface, Function kernel, T progressChunkSize = 1024)
+bool parallelFor(
+		T loopCount,
+		FutureInterfaceBase& futureInterface,
+		Function kernel,
+		T progressChunkSize = 1024)
 {
 	futureInterface.setProgressRange(loopCount / progressChunkSize);
+	futureInterface.setProgressValue(0);
 
 	std::vector<std::thread> workers;
 	int num_threads = std::max(1, QThread::idealThreadCount());

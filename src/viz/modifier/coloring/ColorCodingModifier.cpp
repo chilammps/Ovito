@@ -309,9 +309,7 @@ void ColorCodingModifierEditor::createUI(const RolloutInsertionParameters& rollo
     // Create the rollout contents.
 	QVBoxLayout* layout1 = new QVBoxLayout(rollout);
 	layout1->setContentsMargins(4,4,4,4);
-#ifndef Q_OS_MACX
-	layout1->setSpacing(0);
-#endif
+	layout1->setSpacing(2);
 
 	propertyListBox = new ParticlePropertyComboBox();
 	layout1->addWidget(new QLabel(tr("Property:"), rollout));
@@ -335,7 +333,6 @@ void ColorCodingModifierEditor::createUI(const RolloutInsertionParameters& rollo
 
 	QGridLayout* layout2 = new QGridLayout();
 	layout2->setContentsMargins(0,0,0,0);
-	layout2->setSpacing(0);
 	layout2->setColumnStretch(1, 1);
 	layout1->addLayout(layout2);
 
