@@ -28,6 +28,7 @@
 #include <core/scene/pipeline/Modifier.h>
 #include <core/scene/display/DisplayObject.h>
 #include <core/dataset/DataSet.h>
+#include <core/viewport/input/ViewportInputManager.h>
 #include "ViewportSceneRenderer.h"
 
 namespace Ovito {
@@ -99,8 +100,9 @@ bool ViewportSceneRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialo
 
 	renderScene();
 
-	// Render visual representation of the currently selected modifier.
 	if(isInteractive()) {
+		// Render visual representation of the currently selected modifier.
+
 		// Visit all pipeline objects in the scene.
 		dataset()->sceneRoot()->visitChildren([this](SceneNode* node) {
 			if(node->isObjectNode()) {
@@ -110,6 +112,11 @@ bool ViewportSceneRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialo
 					renderModifiers(pipelineObj, objNode, nullptr);
 			}
 		});
+
+		// Render input mode overlays.
+		for(const auto& handler : ViewportInputManager::instance().stack()) {
+			handler->renderOverlay(viewport(), this, handler == ViewportInputManager::instance().currentHandler());
+		}
 	}
 
 	return true;

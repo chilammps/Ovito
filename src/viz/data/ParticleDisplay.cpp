@@ -207,6 +207,30 @@ void ParticleDisplay::particleRadii(std::vector<FloatType>& output, ParticleProp
 }
 
 /******************************************************************************
+* Determines the display radius of a single particle.
+******************************************************************************/
+FloatType ParticleDisplay::particleRadius(size_t particleIndex, ParticlePropertyObject* radiusProperty, ParticleTypeProperty* typeProperty)
+{
+	OVITO_ASSERT(radiusProperty == nullptr || radiusProperty->type() == ParticleProperty::RadiusProperty);
+	OVITO_ASSERT(typeProperty == nullptr || typeProperty->type() == ParticleProperty::ParticleTypeProperty);
+
+	if(radiusProperty) {
+		// Take particle radius directly from the radius property.
+		OVITO_ASSERT(particleIndex < radiusProperty->size());
+		return radiusProperty->getFloat(particleIndex);
+	}
+	else if(typeProperty) {
+		// Assign radius based on particle types.
+		OVITO_ASSERT(particleIndex < typeProperty->size());
+		ParticleType* ptype = typeProperty->particleType(typeProperty->getInt(particleIndex));
+		if(ptype && ptype->radius() > 0)
+			return ptype->radius();
+	}
+
+	return defaultParticleRadius();
+}
+
+/******************************************************************************
 * Lets the display object render a scene object.
 ******************************************************************************/
 void ParticleDisplay::render(TimePoint time, SceneObject* sceneObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode)

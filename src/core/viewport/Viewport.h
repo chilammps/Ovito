@@ -82,7 +82,7 @@ struct ViewProjectionParameters
 /******************************************************************************
 * This data structure is returned by the Viewport::pick() method.
 *******************************************************************************/
-struct PickResult
+struct ViewportPickResult
 {
 	/// Indicates whether an object was picked or not.
 	bool valid;
@@ -299,7 +299,7 @@ public:
 	void setOrbitCenter(const Point3& center) { _orbitCenter = center; }
 
 	/// \brief Determines the object that is visible under the given mouse cursor position.
-	PickResult pick(const QPoint& pos);
+	ViewportPickResult pick(const QPoint& pos);
 
 	/// \brief Zooms to the extents of the scene.
 	void zoomToSceneExtents();

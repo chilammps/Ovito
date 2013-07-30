@@ -76,11 +76,14 @@ public:
 	/// \brief Sets the rendering quality mode for particles.
 	void setRenderingQuality(ParticleGeometryBuffer::RenderingQuality quality) { _renderingQuality = quality; }
 
-	/// \brief Determines the the display particle colors.
+	/// \brief Determines the display particle colors.
 	void particleColors(std::vector<Color>& output, ParticlePropertyObject* colorProperty, ParticleTypeProperty* typeProperty, ParticlePropertyObject* selectionProperty = nullptr);
 
-	/// \brief Determines the the display particle radii.
+	/// \brief Determines the display particle radii.
 	void particleRadii(std::vector<FloatType>& output, ParticlePropertyObject* radiusProperty, ParticleTypeProperty* typeProperty);
+
+	/// \brief Determines the display radius of a single particle.
+	FloatType particleRadius(size_t particleIndex, ParticlePropertyObject* radiusProperty, ParticleTypeProperty* typeProperty);
 
 	/// \brief Computes the bounding box of the particles.
 	Box3 particleBoundingBox(ParticlePropertyObject* positionProperty, ParticleTypeProperty* typeProperty, ParticlePropertyObject* radiusProperty, bool includeParticleRadius = true);

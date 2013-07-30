@@ -31,7 +31,8 @@
 
 namespace Ovito {
 
-class Viewport;			// defined in Viewport.h
+class Viewport;					// defined in Viewport.h
+class ViewportSceneRenderer;	// defined in ViewportSceneRenderer.h
 
 /**
  * \brief Abstract base class for viewport input handlers that process mouse events
@@ -144,6 +145,7 @@ public:
 
 	/// \brief Lets the input mode render its overlay content in a viewport.
 	/// \param vp The viewport into which the mode should render its specific overlay content.
+	/// \param renderer The renderer that should be used to display the overlay.
 	/// \param isActive Indicates whether this input is currently active. The renderOverlay()
 	///                 method is also called for an inactive input mode if it is suspended due to
 	///                 one or more modes on top of it on the mode stack.
@@ -155,9 +157,9 @@ public:
 	/// method then it should also override the hasOverlay() function.
 	///
 	/// \sa hasOverlay()
-	virtual void renderOverlay(Viewport* vp, bool isActive) {
+	virtual void renderOverlay(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive) {
 		if(_temporaryNavMode != NULL)
-			_temporaryNavMode->renderOverlay(vp, isActive);
+			_temporaryNavMode->renderOverlay(vp, renderer, isActive);
 	}
 
 protected:

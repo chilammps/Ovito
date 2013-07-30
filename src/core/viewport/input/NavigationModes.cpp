@@ -276,9 +276,9 @@ void OrbitMode::setOrbitCenter(const Point3& center)
 /******************************************************************************
 * Lets the input mode render its overlay content in a viewport.
 ******************************************************************************/
-void OrbitMode::renderOverlay(Viewport* vp, bool isActive)
+void OrbitMode::renderOverlay(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive)
 {
-	NavigationMode::renderOverlay(vp, isActive);
+	NavigationMode::renderOverlay(vp, renderer, isActive);
 #if 0
 	// Render center of rotation when in user mode.
 	if(_centerMode == ORBIT_USER_DEFINED) {

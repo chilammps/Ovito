@@ -33,5 +33,5 @@ void main()
 {
 	vertex_color_out = vertex_color;
 	gl_Position = modelview_projection_matrix * vec4(vertex_pos, 1.0);
-	vertex_normal_out = normal_matrix * vertex_normal;
+	vertex_normal_out = normalize(normal_matrix * vertex_normal);
 }

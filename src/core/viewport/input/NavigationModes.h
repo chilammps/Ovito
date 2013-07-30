@@ -206,7 +206,7 @@ public:
 	const Point3& orbitCenter() const { return _orbitCenter; }
 
 	/// \brief Lets the input mode render its overlay content in a viewport.
-	virtual void renderOverlay(Viewport* vp, bool isActive) override;
+	virtual void renderOverlay(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive) override;
 
 	/// \brief Indicates whether this input mode renders into the viewports.
 	virtual bool hasOverlay() override { return true; }

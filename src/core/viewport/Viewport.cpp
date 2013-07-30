@@ -692,7 +692,7 @@ void Viewport::renderRenderFrame()
 /******************************************************************************
 * Determines the object that is visible under the given mouse cursor position.
 ******************************************************************************/
-PickResult Viewport::pick(const QPoint& pos)
+ViewportPickResult Viewport::pick(const QPoint& pos)
 {
 	OVITO_ASSERT_MSG(!isRendering(), "Viewport::pick", "Object picking is not possible while rendering viewport contents.");
 
@@ -722,7 +722,7 @@ PickResult Viewport::pick(const QPoint& pos)
 	_pickingRenderer->endRender();
 
 	// Query which object is located at the given window position.
-	PickResult result;
+	ViewportPickResult result;
 	const PickingSceneRenderer::ObjectRecord* objInfo;
 	std::tie(objInfo, result.subobjectId) = _pickingRenderer->objectAtLocation(pos);
 	result.valid = (objInfo != nullptr);

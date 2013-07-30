@@ -107,7 +107,7 @@ void UtilityCommandPage::rebuildUtilityList()
 
 	Q_FOREACH(const OvitoObjectType* descriptor, classes) {
 
-   		QString displayName = descriptor->name();
+   		QString displayName = descriptor->displayName();
 
 		// Create a button that activates the utility.
 		QPushButton* btn = new QPushButton(displayName, utilityListPanel);
