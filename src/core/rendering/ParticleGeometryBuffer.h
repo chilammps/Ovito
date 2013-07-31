@@ -50,7 +50,8 @@ public:
 	enum RenderingQuality {
 		LowQuality,
 		MediumQuality,
-		HighQuality
+		HighQuality,
+		AutoQuality
 	};
 	Q_ENUMS(RenderingQuality);
 

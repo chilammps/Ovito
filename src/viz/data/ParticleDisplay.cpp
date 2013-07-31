@@ -47,7 +47,7 @@ SET_PROPERTY_FIELD_UNITS(ParticleDisplay, _defaultParticleRadius, WorldParameter
 ParticleDisplay::ParticleDisplay() :
 	_defaultParticleRadius(1.2),
 	_shadingMode(ParticleGeometryBuffer::NormalShading),
-	_renderingQuality(ParticleGeometryBuffer::LowQuality)
+	_renderingQuality(ParticleGeometryBuffer::AutoQuality)
 {
 	INIT_PROPERTY_FIELD(ParticleDisplay::_defaultParticleRadius);
 	INIT_PROPERTY_FIELD(ParticleDisplay::_shadingMode);
@@ -248,10 +248,22 @@ void ParticleDisplay::render(TimePoint time, SceneObject* sceneObject, const Pip
 	// Do we have to re-create the geometry buffer from scratch?
 	bool recreateBuffer = !_particleBuffer || !_particleBuffer->isValid(renderer);
 
+	// If set to automatic, pick rendering quality based on number of particles.
+	ParticleGeometryBuffer::RenderingQuality renderQuality = renderingQuality();
+	if(renderQuality == ParticleGeometryBuffer::AutoQuality) {
+		// Always use highest quality for non-interactive output.
+		if(particleCount < 2000 || renderer->isInteractive() == false)
+			renderQuality = ParticleGeometryBuffer::HighQuality;
+		else if(particleCount < 100000)
+			renderQuality = ParticleGeometryBuffer::MediumQuality;
+		else
+			renderQuality = ParticleGeometryBuffer::LowQuality;
+	}
+
 	// Set shading mode and rendering quality.
 	if(!recreateBuffer) {
 		recreateBuffer |= !(_particleBuffer->setShadingMode(shadingMode()));
-		recreateBuffer |= !(_particleBuffer->setRenderingQuality(renderingQuality()));
+		recreateBuffer |= !(_particleBuffer->setRenderingQuality(renderQuality));
 	}
 
 	// Do we have to resize the geometry buffer?
@@ -364,6 +376,7 @@ void ParticleDisplayEditor::createUI(const RolloutInsertionParameters& rolloutPa
 	renderingQualityUI->comboBox()->addItem(tr("Low"), qVariantFromValue(ParticleGeometryBuffer::LowQuality));
 	renderingQualityUI->comboBox()->addItem(tr("Medium"), qVariantFromValue(ParticleGeometryBuffer::MediumQuality));
 	renderingQualityUI->comboBox()->addItem(tr("High"), qVariantFromValue(ParticleGeometryBuffer::HighQuality));
+	renderingQualityUI->comboBox()->addItem(tr("Automatic"), qVariantFromValue(ParticleGeometryBuffer::AutoQuality));
 	layout->addWidget(new QLabel(tr("Rendering quality:")), 1, 0);
 	layout->addWidget(renderingQualityUI->comboBox(), 1, 1);
 
