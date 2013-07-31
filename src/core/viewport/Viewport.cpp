@@ -507,7 +507,7 @@ void Viewport::renderViewportTitle()
 
 	QFontMetricsF metrics(_captionBuffer->font());
 	_contextMenuArea = QRect(0, 0, std::max(metrics.width(_captionBuffer->text()), 30.0) + 2, metrics.height() + 2);
-	_captionBuffer->render(renderer, Point2(2, metrics.ascent() + 2));
+	_captionBuffer->renderWindow(renderer, Point2(2, 2), Qt::AlignLeft | Qt::AlignTop);
 }
 
 /******************************************************************************
@@ -603,11 +603,11 @@ void Viewport::renderOrientationIndicator()
 		}
 
 		Point3 p = Point3::Origin() + _projParams.viewMatrix.column(axis).resized(1.2f);
-		Point3 screenPoint = projParams.projectionMatrix * p;
-		Point2 pos(( screenPoint.x() + 1.0) * size().width()  / 2,
-					(-screenPoint.y() + 1.0) * size().height() / 2);
-		pos += Vector2(-4, 3);
-		_orientationTripodLabels[axis]->render(renderer, pos);
+		Point3 ndcPoint = projParams.projectionMatrix * p;
+		Point2 windowPoint(( ndcPoint.x() + 1.0) * size().width()  / 2,
+							(-ndcPoint.y() + 1.0) * size().height() / 2);
+		windowPoint += Vector2(3, -6);
+		_orientationTripodLabels[axis]->renderWindow(renderer, windowPoint, Qt::AlignHCenter | Qt::AlignVCenter);
 	}
 
 	// Restore old rendering attributes.

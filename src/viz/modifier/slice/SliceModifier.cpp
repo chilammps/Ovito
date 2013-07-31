@@ -192,23 +192,27 @@ size_t SliceModifier::filterParticles(std::vector<bool>& mask, TimePoint time, T
 /******************************************************************************
 * Lets the modifier render itself into the viewport.
 ******************************************************************************/
-void SliceModifier::render(TimePoint time, ObjectNode* contextNode, ModifierApplication* modApp, ViewportSceneRenderer* renderer)
+void SliceModifier::render(TimePoint time, ObjectNode* contextNode, ModifierApplication* modApp, SceneRenderer* renderer, bool renderOverlay)
 {
-	renderVisual(time, contextNode, renderer);
+	if(!renderOverlay && isBeingEdited() && renderer->isInteractive())
+		renderVisual(time, contextNode, renderer);
 }
 
 /******************************************************************************
 * Computes the bounding box of the visual representation of the modifier.
 ******************************************************************************/
-Box3 SliceModifier::boundingBox(TimePoint time,  ObjectNode* contextNode, ModifierApplication* modApp)
+Box3 SliceModifier::boundingBox(TimePoint time, ObjectNode* contextNode, ModifierApplication* modApp)
 {
-	return renderVisual(time, contextNode, nullptr);
+	if(isBeingEdited())
+		return renderVisual(time, contextNode, nullptr);
+	else
+		return Box3();
 }
 
 /******************************************************************************
 * Renders the modifier's visual representation and computes its bounding box.
 ******************************************************************************/
-Box3 SliceModifier::renderVisual(TimePoint time, ObjectNode* contextNode, ViewportSceneRenderer* renderer)
+Box3 SliceModifier::renderVisual(TimePoint time, ObjectNode* contextNode, SceneRenderer* renderer)
 {
 	TimeInterval interval;
 
@@ -237,7 +241,7 @@ Box3 SliceModifier::renderVisual(TimePoint time, ObjectNode* contextNode, Viewpo
 /******************************************************************************
 * Renders the plane in the viewports.
 ******************************************************************************/
-Box3 SliceModifier::renderPlane(ViewportSceneRenderer* renderer, const Plane3& plane, const Box3& bb, const ColorA& color) const
+Box3 SliceModifier::renderPlane(SceneRenderer* renderer, const Plane3& plane, const Box3& bb, const ColorA& color) const
 {
 	// Compute intersection lines of slicing plane and bounding box.
 	QVector<Point3> vertices;

@@ -65,8 +65,11 @@ public:
 	/// \brief Returns true if the geometry buffer is filled and can be rendered with the given renderer.
 	virtual bool isValid(SceneRenderer* renderer) override;
 
-	/// \brief Renders the text.
-	virtual void render(SceneRenderer* renderer, const Point2& pos) override;
+	/// \brief Renders the text string at the given 2D window (pixel) coordinates.
+	virtual void renderWindow(SceneRenderer* renderer, const Point2& pos, int alignment = Qt::AlignLeft | Qt::AlignTop) override;
+
+	/// \brief Renders the text string at the given 2D normalized viewport coordinates ([-1,+1] range).
+	virtual void renderViewport(SceneRenderer* renderer, const Point2& pos, int alignment = Qt::AlignLeft | Qt::AlignTop) override;
 
 protected:
 

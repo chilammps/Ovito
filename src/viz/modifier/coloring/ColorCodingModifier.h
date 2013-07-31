@@ -24,6 +24,8 @@
 
 #include <core/Core.h>
 #include <core/animation/controller/Controller.h>
+#include <core/rendering/ImageGeometryBuffer.h>
+#include <core/rendering/TextGeometryBuffer.h>
 #include <viz/util/ParticlePropertyComboBox.h>
 #include "../ParticleModifier.h"
 
@@ -168,6 +170,9 @@ public:
 	/// Asks the modifier for its validity interval at the given time.
 	virtual TimeInterval modifierValidity(TimePoint time) override;
 
+	/// Lets the modifier render itself into the viewport.
+	virtual void render(TimePoint time, ObjectNode* contextNode, ModifierApplication* modApp, SceneRenderer* renderer, bool renderOverlay) override;
+
 	/// This virtual method is called by the system when the modifier has been inserted into a PipelineObject.
 	virtual void initializeModifier(PipelineObject* pipelineObject, ModifierApplication* modApp) override;
 
@@ -245,6 +250,27 @@ protected:
 	/// The particle type property that is used as source for the coloring.
 	ParticlePropertyReference _sourcePropertyRef;
 
+	/// Controls the display of the color legend in the rendered image.
+	PropertyField<bool> _renderLegend;
+
+	/// Used to render the color scale legend on top the scene.
+	OORef<ImageGeometryBuffer> _colorScaleImageBuffer;
+
+	/// Used to render the color scale labels.
+	OORef<TextGeometryBuffer> _colorScaleTopLabel;
+
+	/// Used to render the color scale labels.
+	OORef<TextGeometryBuffer> _colorScaleBottomLabel;
+
+	/// Used to render the color scale title.
+	OORef<TextGeometryBuffer> _colorScaleTitleLabel;
+
+	/// This helper object is used to detect changes in the settings that required
+	/// updating the render buffers used to display the color scale legend.
+	SceneObjectCacheHelper<
+		QPointer<ColorCodingGradient>					// The color gradient type
+		> _renderBufferUpdateHelper;
+
 	friend class ColorCodingModifierEditor;
 
 private:
@@ -258,6 +284,7 @@ private:
 	DECLARE_REFERENCE_FIELD(_startValueCtrl);
 	DECLARE_REFERENCE_FIELD(_endValueCtrl);
 	DECLARE_REFERENCE_FIELD(_colorGradient);
+	DECLARE_PROPERTY_FIELD(_renderLegend);
 };
 
 /*

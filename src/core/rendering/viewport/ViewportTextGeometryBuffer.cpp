@@ -88,9 +88,20 @@ bool ViewportTextGeometryBuffer::isValid(SceneRenderer* renderer)
 }
 
 /******************************************************************************
-* Renders the geometry.
+* normalized viewport coordinates ([-1,+1] range).
 ******************************************************************************/
-void ViewportTextGeometryBuffer::render(SceneRenderer* renderer, const Point2& pos)
+void ViewportTextGeometryBuffer::renderViewport(SceneRenderer* renderer, const Point2& pos, int alignment)
+{
+	GLint vc[4];
+	glGetIntegerv(GL_VIEWPORT, vc);
+	Point2 windowPos((pos.x() + 1.0) * vc[2] / 2, (-pos.y() + 1.0) * vc[3] / 2);
+	renderWindow(renderer, windowPos, alignment);
+}
+
+/******************************************************************************
+* Renders the text string at the given 2D window (pixel) coordinates.
+******************************************************************************/
+void ViewportTextGeometryBuffer::renderWindow(SceneRenderer* renderer, const Point2& pos, int alignment)
 {
 	OVITO_ASSERT(_contextGroup == QOpenGLContextGroup::currentContextGroup());
 	OVITO_ASSERT(_texture != 0);
@@ -121,7 +132,7 @@ void ViewportTextGeometryBuffer::render(SceneRenderer* renderer, const Point2& p
 		}
 
 		// Generate texture image.
-		_textureImage = QImage(rect.width(), rect.height(), QImage::Format_RGB32);
+		_textureImage = QImage(rect.width()+1, rect.height()+1, QImage::Format_RGB32);
 		_textureImage.fill(0);
 		{
 			QPainter painter(&_textureImage);
@@ -130,6 +141,7 @@ void ViewportTextGeometryBuffer::render(SceneRenderer* renderer, const Point2& p
 			painter.drawText(-rect.left(), -rect.top(), text());
 		}
 		_textOffset = rect.topLeft();
+		//_textureImage.save(QString("%1.png").arg(text()));
 
 		// Upload texture data.
 		QImage textureImage = QGLWidget::convertToGLFormat(_textureImage);
@@ -137,8 +149,16 @@ void ViewportTextGeometryBuffer::render(SceneRenderer* renderer, const Point2& p
 	}
 
 	// Transform rectangle to normalized device coordinates.
-	QRectF rect2(_textOffset, _textureImage.size());
+	int x = 0, y = 0;
+	int w = vpRenderer->antialiasingLevel() * _textureImage.width();
+	int h = vpRenderer->antialiasingLevel() * _textureImage.height();
+	if(alignment & Qt::AlignRight) x = -w;
+	else if(alignment & Qt::AlignHCenter) x = -w / 2;
+	if(alignment & Qt::AlignBottom) y = -h;
+	else if(alignment & Qt::AlignVCenter) x = -h / 2;
+	QRectF rect2(x, y, w, h);
 	rect2.translate(pos.x(), pos.y());
+	//rect2.translate(_textOffset.x(), _textOffset.y());
 	GLint vc[4];
 	glGetIntegerv(GL_VIEWPORT, vc);
 	Point2 corners[4] = {

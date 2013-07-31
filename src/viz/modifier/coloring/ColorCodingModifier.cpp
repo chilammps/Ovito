@@ -27,8 +27,10 @@
 #include <core/gui/properties/FloatParameterUI.h>
 #include <core/gui/properties/Vector3ParameterUI.h>
 #include <core/gui/properties/ColorParameterUI.h>
+#include <core/gui/properties/BooleanParameterUI.h>
 #include <core/plugins/PluginManager.h>
 #include <core/gui/dialogs/SaveImageFileDialog.h>
+#include <core/rendering/SceneRenderer.h>
 #include "ColorCodingModifier.h"
 
 namespace Viz {
@@ -39,9 +41,11 @@ SET_OVITO_OBJECT_EDITOR(ColorCodingModifier, ColorCodingModifierEditor)
 DEFINE_REFERENCE_FIELD(ColorCodingModifier, _startValueCtrl, "StartValue", FloatController)
 DEFINE_REFERENCE_FIELD(ColorCodingModifier, _endValueCtrl, "EndValue", FloatController)
 DEFINE_REFERENCE_FIELD(ColorCodingModifier, _colorGradient, "ColorGradient", ColorCodingGradient)
+DEFINE_PROPERTY_FIELD(ColorCodingModifier, _renderLegend, "RenderLegend")
 SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _startValueCtrl, "Start value")
 SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _endValueCtrl, "End value")
 SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _colorGradient, "Color gradient")
+SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _renderLegend, "Display color legend (experimental)")
 
 IMPLEMENT_OVITO_OBJECT(Viz, ColorCodingGradient, RefTarget)
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Viz, ColorCodingHSVGradient, ColorCodingGradient)
@@ -52,11 +56,12 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Viz, ColorCodingJetGradient, ColorCodingGrad
 /******************************************************************************
 * Constructs the modifier object.
 ******************************************************************************/
-ColorCodingModifier::ColorCodingModifier()
+ColorCodingModifier::ColorCodingModifier() : _renderLegend(false)
 {
 	INIT_PROPERTY_FIELD(ColorCodingModifier::_startValueCtrl);
 	INIT_PROPERTY_FIELD(ColorCodingModifier::_endValueCtrl);
 	INIT_PROPERTY_FIELD(ColorCodingModifier::_colorGradient);
+	INIT_PROPERTY_FIELD(ColorCodingModifier::_renderLegend);
 
 	_colorGradient = new ColorCodingHSVGradient();
 	_startValueCtrl = ControllerManager::instance().createDefaultController<FloatController>();
@@ -291,12 +296,75 @@ OORef<RefTarget> ColorCodingModifier::clone(bool deepCopy, CloneHelper& cloneHel
 {
 	// Let the base class create an instance of this class.
 	OORef<ColorCodingModifier> clone = static_object_cast<ColorCodingModifier>(ParticleModifier::clone(deepCopy, cloneHelper));
-
 	clone->_sourcePropertyRef = this->_sourcePropertyRef;
 
 	return clone;
 }
 
+/******************************************************************************
+* Lets the modifier render itself into the viewport.
+******************************************************************************/
+void ColorCodingModifier::render(TimePoint time, ObjectNode* contextNode, ModifierApplication* modApp, SceneRenderer* renderer, bool renderOverlay)
+{
+	if(!renderOverlay || !isEnabled() || !_renderLegend)
+		return;
+
+	if(!colorGradient())
+		return;
+
+	// Get modifier's parameter values.
+	TimeInterval validityInterval;
+	FloatType startValue = 0, endValue = 0;
+	if(_startValueCtrl) _startValueCtrl->getValue(time, startValue, validityInterval);
+	if(_endValueCtrl) _endValueCtrl->getValue(time, endValue, validityInterval);
+
+	QString topLabel = QString::number(endValue);
+	QString bottomLabel = QString::number(startValue);
+	QString titleLabel = _sourcePropertyRef.name();
+
+	if(_renderBufferUpdateHelper.updateState(colorGradient())
+			|| !_colorScaleImageBuffer
+			|| !_colorScaleImageBuffer->isValid(renderer)) {
+
+		// Create the color legend image.
+		int imageHeight = 256;
+		QImage image(1, imageHeight, QImage::Format_RGB32);
+		for(int y = 0; y < image.height(); y++) {
+			FloatType t = (FloatType)y / (FloatType)(imageHeight - 1);
+			Color color = colorGradient()->valueToColor(1.0 - t);
+			image.setPixel(0, y, QColor(color).rgb());
+		}
+
+		_colorScaleImageBuffer = renderer->createImageGeometryBuffer();
+		_colorScaleImageBuffer->setImage(image);
+	}
+
+	FloatType legendSize = 0.4;
+	FloatType topMargin = 0.1;
+	FloatType rightMargin = 0.03;
+
+	_colorScaleImageBuffer->renderViewport(renderer, Point2(1.0 - rightMargin - legendSize * 0.2, 1.0 - topMargin - legendSize), Vector2(legendSize * 0.2, legendSize));
+
+	if(!_colorScaleTopLabel || !_colorScaleTopLabel->isValid(renderer))
+		_colorScaleTopLabel = renderer->createTextGeometryBuffer();
+	if(!_colorScaleBottomLabel || !_colorScaleBottomLabel->isValid(renderer))
+		_colorScaleBottomLabel = renderer->createTextGeometryBuffer();
+	if(!_colorScaleTitleLabel || !_colorScaleTitleLabel->isValid(renderer))
+		_colorScaleTitleLabel = renderer->createTextGeometryBuffer();
+
+	ColorA labelColor = renderer->isInteractive() ? ColorA(1,1,1) : ColorA(0,0,0);
+
+	_colorScaleTopLabel->setText(topLabel);
+	_colorScaleTopLabel->setColor(labelColor);
+	_colorScaleBottomLabel->setText(bottomLabel);
+	_colorScaleBottomLabel->setColor(labelColor);
+	_colorScaleTitleLabel->setText(titleLabel);
+	_colorScaleTitleLabel->setColor(labelColor);
+
+	_colorScaleTitleLabel->renderViewport(renderer, Point2(1.0 - rightMargin, 1.0 - topMargin + 0.01), Qt::AlignRight | Qt::AlignBottom);
+	_colorScaleTopLabel->renderViewport(renderer, Point2(1.0 - rightMargin - legendSize * 0.24, 1.0 - topMargin), Qt::AlignRight | Qt::AlignTop);
+	_colorScaleBottomLabel->renderViewport(renderer, Point2(1.0 - rightMargin - legendSize * 0.24, 1.0 - topMargin - legendSize), Qt::AlignRight | Qt::AlignBottom);
+}
 
 /******************************************************************************
 * Sets up the UI widgets of the editor.
@@ -368,6 +436,12 @@ void ColorCodingModifierEditor::createUI(const RolloutInsertionParameters& rollo
 	QPushButton* reverseBtn = new QPushButton(tr("Reverse range"), rollout);
 	connect(reverseBtn, SIGNAL(clicked(bool)), this, SLOT(onReverseRange()));
 	layout1->addWidget(reverseBtn);
+
+	layout1->addSpacing(8);
+
+	// Render legend.
+	BooleanParameterUI* renderLegendPUI = new BooleanParameterUI(this, PROPERTY_FIELD(ColorCodingModifier::_renderLegend));
+	layout1->addWidget(renderLegendPUI->checkBox());
 
 	// Status label.
 	layout1->addSpacing(10);

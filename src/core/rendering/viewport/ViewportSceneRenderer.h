@@ -103,6 +103,9 @@ public:
 	/// \return true if rendering a real-time viewport; false if rendering an output image.
 	virtual bool isInteractive() const override { return true; }
 
+	/// Returns the supersampling level.
+	virtual int antialiasingLevel() const { return 1; }
+
 	/// Returns the OpenGL context this renderer uses.
 	QOpenGLContext* glcontext() const { return _glcontext; }
 
@@ -129,8 +132,14 @@ protected:
 	/// \brief Renders a single node.
 	virtual void renderNode(SceneNode* node) override;
 
-	/// \brief Renders the visual representation of the currently selected modifiers.
-	void renderModifiers(PipelineObject* pipelineObj, ObjectNode* objNode, Box3* boundingBox);
+	/// \brief Renders the visual representation of the modifiers.
+	void renderModifiers(bool renderOverlay);
+
+	/// \brief Renders the visual representation of the modifiers.
+	void renderModifiers(PipelineObject* pipelineObj, ObjectNode* objNode, bool renderOverlay);
+
+	/// \brief Determines the bounding box of the visual representation of the modifiers.
+	void boundingBoxModifiers(PipelineObject* pipelineObj, ObjectNode* objNode, Box3& boundingBox);
 
 	/// \brief Loads and compiles a GLSL shader and adds it to the given program object.
 	void loadShader(QOpenGLShaderProgram* program, QOpenGLShader::ShaderType shaderType, const QString& filename);

@@ -100,23 +100,15 @@ bool ViewportSceneRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialo
 
 	renderScene();
 
-	if(isInteractive()) {
-		// Render visual representation of the currently selected modifier.
+	// Render visual 3D representation of the modifiers.
+	renderModifiers(false);
 
-		// Visit all pipeline objects in the scene.
-		dataset()->sceneRoot()->visitChildren([this](SceneNode* node) {
-			if(node->isObjectNode()) {
-				ObjectNode* objNode = static_object_cast<ObjectNode>(node);
-				PipelineObject* pipelineObj = dynamic_object_cast<PipelineObject>(objNode->sceneObject());
-				if(pipelineObj)
-					renderModifiers(pipelineObj, objNode, nullptr);
-			}
-		});
+	// Render visual 2D representation of the modifiers.
+	renderModifiers(true);
 
-		// Render input mode overlays.
-		for(const auto& handler : ViewportInputManager::instance().stack()) {
-			handler->renderOverlay(viewport(), this, handler == ViewportInputManager::instance().currentHandler());
-		}
+	// Render input mode overlays.
+	for(const auto& handler : ViewportInputManager::instance().stack()) {
+		handler->renderOverlay(viewport(), this, handler == ViewportInputManager::instance().currentHandler());
 	}
 
 	return true;
@@ -179,37 +171,70 @@ void ViewportSceneRenderer::renderNode(SceneNode* node)
 }
 
 /******************************************************************************
-* Renders the visual representation of the currently selected modifiers.
+* Renders the visual representation of the modifiers.
 ******************************************************************************/
-void ViewportSceneRenderer::renderModifiers(PipelineObject* pipelineObj, ObjectNode* objNode, Box3* boundingBox)
+void ViewportSceneRenderer::renderModifiers(bool renderOverlay)
+{
+	// Visit all pipeline objects in the scene.
+	dataset()->sceneRoot()->visitChildren([this, renderOverlay](SceneNode* node) {
+		if(node->isObjectNode()) {
+			ObjectNode* objNode = static_object_cast<ObjectNode>(node);
+			PipelineObject* pipelineObj = dynamic_object_cast<PipelineObject>(objNode->sceneObject());
+			if(pipelineObj)
+				renderModifiers(pipelineObj, objNode, renderOverlay);
+		}
+	});
+}
+
+
+/******************************************************************************
+* Renders the visual representation of the modifiers.
+******************************************************************************/
+void ViewportSceneRenderer::renderModifiers(PipelineObject* pipelineObj, ObjectNode* objNode, bool renderOverlay)
 {
 	OVITO_CHECK_OBJECT_POINTER(pipelineObj);
 
 	// Render the visual representation of the modifier that is currently being edited.
 	for(ModifierApplication* modApp : pipelineObj->modifierApplications()) {
 		Modifier* mod = modApp->modifier();
-		if(mod->isBeingEdited()) {
 
-			TimeInterval interval;
-			if(!boundingBox) {
-				// Setup transformation.
-				setWorldTransform(objNode->getWorldTransform(time(), interval));
+		TimeInterval interval;
+		// Setup transformation.
+		setWorldTransform(objNode->getWorldTransform(time(), interval));
 
-				// Render selected modifier.
-				mod->render(time(), objNode, modApp, this);
-			}
-			else {
-				// Compute bounding box and transform it to world space.
-				boundingBox->addBox(mod->boundingBox(time(), objNode, modApp).transformed(objNode->getWorldTransform(time(), interval)));
-			}
-		}
+		// Render selected modifier.
+		mod->render(time(), objNode, modApp, this, renderOverlay);
 	}
 
 	// Continue with nested pipeline objects.
 	for(int i = 0; i < pipelineObj->inputObjectCount(); i++) {
 		PipelineObject* input = dynamic_object_cast<PipelineObject>(pipelineObj->inputObject(i));
 		if(input)
-			renderModifiers(input, objNode, boundingBox);
+			renderModifiers(input, objNode, renderOverlay);
+	}
+}
+
+/******************************************************************************
+* Determines the bounding box of the visual representation of the modifiers.
+******************************************************************************/
+void ViewportSceneRenderer::boundingBoxModifiers(PipelineObject* pipelineObj, ObjectNode* objNode, Box3& boundingBox)
+{
+	OVITO_CHECK_OBJECT_POINTER(pipelineObj);
+	TimeInterval interval;
+
+	// Render the visual representation of the modifier that is currently being edited.
+	for(ModifierApplication* modApp : pipelineObj->modifierApplications()) {
+		Modifier* mod = modApp->modifier();
+
+		// Compute bounding box and transform it to world space.
+		boundingBox.addBox(mod->boundingBox(time(), objNode, modApp).transformed(objNode->getWorldTransform(time(), interval)));
+	}
+
+	// Continue with nested pipeline objects.
+	for(int i = 0; i < pipelineObj->inputObjectCount(); i++) {
+		PipelineObject* input = dynamic_object_cast<PipelineObject>(pipelineObj->inputObject(i));
+		if(input)
+			boundingBoxModifiers(input, objNode, boundingBox);
 	}
 }
 
@@ -226,7 +251,7 @@ Box3 ViewportSceneRenderer::sceneBoundingBox(TimePoint time)
 				ObjectNode* objNode = static_object_cast<ObjectNode>(node);
 				PipelineObject* pipelineObj = dynamic_object_cast<PipelineObject>(objNode->sceneObject());
 				if(pipelineObj)
-					renderModifiers(pipelineObj, objNode, &bb);
+					boundingBoxModifiers(pipelineObj, objNode, bb);
 			}
 		});
 	}

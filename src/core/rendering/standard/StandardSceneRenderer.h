@@ -44,7 +44,7 @@ public:
 	}
 
 	/// Returns the number of sub-pixels to render.
-	int antialiasingLevel() const { return _antialiasingLevel; }
+	virtual int antialiasingLevel() const override { return _antialiasingLevel; }
 
 	/// Sets the number of sub-pixels to render.
 	void setAntialiasingLevel(int newLevel) { _antialiasingLevel = newLevel; }

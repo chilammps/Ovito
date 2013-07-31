@@ -101,11 +101,14 @@ public:
 	/// \param time The animation time at which to render the modifier.
 	/// \param contextNode The node context used to render the modifier.
 	/// \param modApp The modifier application specifies the particular application of this modifier in a geometry pipeline.
-	/// \param renderer The viewport renderer to use.
+	/// \param renderer The scene renderer to use.
+	/// \param renderOverlay Specifies the rendering pass. The method is called twice by the system: First with renderOverlay==false
+	///                      to render any 3d representation of the modifier, and a second time with renderOverlay==true to render
+	///                      any overlay graphics on top of the 3d scene.
 	///
 	/// The viewport transformation is already set up when this method is called
 	/// The default implementation does nothing.
-	virtual void render(TimePoint time, ObjectNode* contextNode, ModifierApplication* modApp, ViewportSceneRenderer* renderer) {}
+	virtual void render(TimePoint time, ObjectNode* contextNode, ModifierApplication* modApp, SceneRenderer* renderer, bool renderOverlay) {}
 
 	/// \brief Computes the bounding box of the visual representation of the modifier.
 	/// \param time The animation time at which the bounding box should be computed.
