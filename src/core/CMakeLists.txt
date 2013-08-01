@@ -148,10 +148,6 @@ SET(OVITO_CORE_SOURCE_FILES
 # Compile resource files.
 QT5_ADD_RESOURCES(OVITO_CORE_RESOURCE_FILES resources/core.qrc)
 
-# Find the ZLib library.
-FIND_PACKAGE(ZLIB REQUIRED)
-INCLUDE_DIRECTORIES(${ZLIB_INCLUDE_DIRS})
-
 # This will let the source code export symbols when building a DLL.
 ADD_DEFINITIONS(-DOVITO_CORE_LIBRARY)
 
@@ -169,7 +165,7 @@ TARGET_LINK_LIBRARIES(Core ${OPENGL_gl_LIBRARY})
 TARGET_LINK_LIBRARIES(Core ${ZLIB_LIBRARIES})
 
 # Link Qt5.
-QT5_USE_MODULES(Core Widgets Xml Network OpenGL Concurrent)
+QT5_USE_MODULES(Core ${OVITO_REQUIRED_QT_MODULES})
 
 # This is required to avoid error by install_name_tool on MacOS.
 IF(APPLE)

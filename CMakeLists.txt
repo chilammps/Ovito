@@ -41,19 +41,21 @@ SET(CMAKE_AUTOMOC ON)
 # As moc files are generated in the binary dir, tell CMake to always look for includes there:
 SET(CMAKE_INCLUDE_CURRENT_DIR ON)
   
-# Find and setup Qt5 library.
-FIND_PACKAGE(Qt5Widgets REQUIRED)
-FIND_PACKAGE(Qt5Xml REQUIRED)
-FIND_PACKAGE(Qt5OpenGL REQUIRED)
-FIND_PACKAGE(Qt5Concurrent REQUIRED)
-FIND_PACKAGE(Qt5Network REQUIRED)
-FIND_PACKAGE(Qt5PrintSupport REQUIRED)
+# Find and setup Qt5 libraries.
+SET(OVITO_REQUIRED_QT_MODULES Core Gui Widgets Xml OpenGL Concurrent Network PrintSupport)
+FOREACH(COMPONENT ${OVITO_REQUIRED_QT_MODULES})
+	FIND_PACKAGE(Qt5${COMPONENT} REQUIRED)
+ENDFOREACH()
 
 # Use the Q_SIGNALS and Q_SLOTS macros to avoid name conflicts.
 ADD_DEFINITIONS(-DQT_NO_KEYWORDS)
 
 # Find OpenGL library.
 FIND_PACKAGE(OpenGL REQUIRED)
+
+# Find the ZLib library.
+FIND_PACKAGE(ZLIB REQUIRED)
+INCLUDE_DIRECTORIES(${ZLIB_INCLUDE_DIRS})
 
 # Define the OVITO_DEBUG macro in debug builds.
 IF(CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -164,6 +166,38 @@ ENDIF()
 
 # Build program.
 ADD_SUBDIRECTORY(src)
+
+# On Window the third-party library DLLs are usually not part of the system. 
+# We need to copy them to the OVITO directory.
+IF(WIN32)
+	# Gather Qt dynamic link libraries.
+	FOREACH(COMPONENT ${OVITO_REQUIRED_QT_MODULES})
+		GET_TARGET_PROPERTY(dll Qt5::${COMPONENT} LOCATION_${CMAKE_BUILD_TYPE})
+		LIST(APPEND REQUIRED_DLLS "${dll}")
+		IF(${COMPONENT} MATCHES "Core")
+			GET_FILENAME_COMPONENT(QtBinaryPath ${dll} PATH)
+			LIST(APPEND REQUIRED_DLLS "${QtBinaryPath}/icudt51.dll")		
+			LIST(APPEND REQUIRED_DLLS "${QtBinaryPath}/icuin51.dll")		
+			LIST(APPEND REQUIRED_DLLS "${QtBinaryPath}/icuuc51.dll")
+			IF(MINGW)
+				LIST(APPEND REQUIRED_DLLS "${QtBinaryPath}/libgcc_s_dw2-1.dll")
+				LIST(APPEND REQUIRED_DLLS "${QtBinaryPath}/libstdc++-6.dll")
+				LIST(APPEND REQUIRED_DLLS "${QtBinaryPath}/libwinpthread-1.dll")
+			ENDIF()
+		ENDIF()
+	ENDFOREACH()
+	
+	# Install zlib DLL.
+	GET_FILENAME_COMPONENT(ZLIB_LIBRARY_PATH ${ZLIB_LIBRARIES} PATH)
+	LIST(APPEND REQUIRED_DLLS "${ZLIB_LIBRARY_PATH}/../bin/libzlib.dll")
+
+	# Copy library DLLs to output directory.
+	FOREACH(dll ${REQUIRED_DLLS})
+		MESSAGE("Installing DLL library ${dll} in output directory.")
+		CONFIGURE_FILE("${dll}" "${OVITO_BINARY_DIRECTORY}" COPYONLY)
+		INSTALL(FILES "${dll}" DESTINATION "${OVITO_RELATIVE_BINARY_DIRECTORY}")
+	ENDFOREACH(dll ${REQUIRED_DLLS})
+ENDIF(WIN32)
 
 ######################### Setup CPack #######################
 INCLUDE(${OVITO_SOURCE_BASE_DIR}/cmake/Packaging.cmake)

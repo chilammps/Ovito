@@ -107,7 +107,7 @@ ADD_DEFINITIONS(-DQSSH_LIBRARY)
 ADD_LIBRARY(QSsh ${SSH_LIB_SOURCE_FILES})
 
 # Link Qt5.
-QT5_USE_MODULES(QSsh Core Network Widgets Gui)
+QT5_USE_MODULES(QSsh ${OVITO_REQUIRED_QT_MODULES})
 
 # This library is part of the installation package.
 IF(APPLE OR WIN32)
