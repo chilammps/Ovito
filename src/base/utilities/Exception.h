@@ -38,7 +38,7 @@ namespace Ovito {
 /**
  * \brief The base exception class used by this application.
  */
-class Exception : public QException
+class OVITO_BASE_EXPORT Exception : public QException
 {
 public:
 

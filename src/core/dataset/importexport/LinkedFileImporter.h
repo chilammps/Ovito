@@ -34,7 +34,7 @@ class LinkedFileObject;		// defined in LinkedFileObject.h
 /**
  * \brief Base class for file parsers that can reload a file that has been imported into the scene.
  */
-class LinkedFileImporter : public FileImporter
+class OVITO_CORE_EXPORT LinkedFileImporter : public FileImporter
 {
 public:
 

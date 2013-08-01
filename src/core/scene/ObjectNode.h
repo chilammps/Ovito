@@ -39,7 +39,7 @@ class Modifier;			// defined in Modifier.h
 /**
  * \brief A node in the scene tree that represents an object.
  */
-class ObjectNode : public SceneNode
+class OVITO_CORE_EXPORT ObjectNode : public SceneNode
 {
 public:
 

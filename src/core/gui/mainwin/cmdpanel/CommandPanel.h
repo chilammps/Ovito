@@ -38,7 +38,7 @@ class UtilityCommandPage;	// defined in UtilityCommandPage.h
 /******************************************************************************
 * The command panel in the main window.
 ******************************************************************************/
-class CommandPanel : public QWidget
+class OVITO_CORE_EXPORT CommandPanel : public QWidget
 {
 	Q_OBJECT
 

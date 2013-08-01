@@ -37,7 +37,7 @@ typedef std::shared_ptr<Ovito::FutureInterfaceBase> FutureInterfacePointer;
 /**
  * \brief Manages the running background tasks.
  */
-class ProgressManager : public QObject
+class OVITO_CORE_EXPORT ProgressManager : public QObject
 {
 	Q_OBJECT
 

@@ -36,7 +36,7 @@ namespace Ovito {
 /**
  * \brief This file chooser dialog lets the user select a file to be imported.
  */
-class ImportFileDialog : public HistoryFileDialog
+class OVITO_CORE_EXPORT ImportFileDialog : public HistoryFileDialog
 {
 	Q_OBJECT
 	

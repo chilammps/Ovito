@@ -36,7 +36,7 @@ namespace Ovito {
 /**
  * \brief This file chooser dialog lets the user select an image file for output.
  */
-class SaveImageFileDialog : public HistoryFileDialog
+class OVITO_CORE_EXPORT SaveImageFileDialog : public HistoryFileDialog
 {
 	Q_OBJECT
 	

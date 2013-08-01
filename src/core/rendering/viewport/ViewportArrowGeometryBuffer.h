@@ -38,7 +38,7 @@ class ViewportSceneRenderer;
 /**
  * \brief Buffer object that stores a set of arrows to be rendered in the viewports.
  */
-class ViewportArrowGeometryBuffer : public ArrowGeometryBuffer
+class OVITO_CORE_EXPORT ViewportArrowGeometryBuffer : public ArrowGeometryBuffer
 {
 public:
 

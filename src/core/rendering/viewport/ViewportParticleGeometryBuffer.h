@@ -38,7 +38,7 @@ class ViewportSceneRenderer;
 /**
  * \brief Buffer object that stores a set of particles to be rendered in the viewports.
  */
-class ViewportParticleGeometryBuffer : public ParticleGeometryBuffer, private SharedOpenGLResource
+class OVITO_CORE_EXPORT ViewportParticleGeometryBuffer : public ParticleGeometryBuffer, private SharedOpenGLResource
 {
 public:
 

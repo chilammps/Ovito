@@ -43,7 +43,7 @@ class Viewport; // defined in Viewport.h
  * \author Alexander Stukowski
  * \sa ViewportInputHandler
  */
-class ViewportInputManager : public QObject
+class OVITO_CORE_EXPORT ViewportInputManager : public QObject
 {
 	Q_OBJECT
 

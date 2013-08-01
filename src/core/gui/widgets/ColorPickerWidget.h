@@ -34,7 +34,7 @@ namespace Ovito {
 /**
  * \brief A UI control lets the user choose a color.
  */
-class ColorPickerWidget : public QPushButton
+class OVITO_CORE_EXPORT ColorPickerWidget : public QPushButton
 {
 	Q_OBJECT
 	

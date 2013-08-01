@@ -30,7 +30,7 @@ namespace Ovito {
 /******************************************************************************
 * This UI allows the user to change a boolean property of the object being edited.
 ******************************************************************************/
-class BooleanActionParameterUI : public PropertyParameterUI
+class OVITO_CORE_EXPORT BooleanActionParameterUI : public PropertyParameterUI
 {
 public:
 

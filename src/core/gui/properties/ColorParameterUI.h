@@ -31,7 +31,7 @@ namespace Ovito {
 /******************************************************************************
 * Allows the user to edit a color parameter in the properties panel.
 ******************************************************************************/
-class ColorParameterUI : public PropertyParameterUI
+class OVITO_CORE_EXPORT ColorParameterUI : public PropertyParameterUI
 {
 public:
 

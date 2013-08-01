@@ -125,7 +125,7 @@ class VideoEncoder;				// defined in VideoEncoder.h
 /**
  * \brief Manages the application's actions.
  */
-class ActionManager : public QObject
+class OVITO_CORE_EXPORT ActionManager : public QObject
 {
 	Q_OBJECT
 

@@ -30,7 +30,7 @@ namespace Ovito {
 /******************************************************************************
 * This UI allows the user to select a filename as property value.
 ******************************************************************************/
-class FilenameParameterUI : public PropertyParameterUI
+class OVITO_CORE_EXPORT FilenameParameterUI : public PropertyParameterUI
 {
 public:
 

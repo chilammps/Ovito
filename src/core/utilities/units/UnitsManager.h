@@ -39,7 +39,7 @@ namespace Ovito {
  * another unit presented to the user and vice versa. One example for
  * a ParameterUnit is the AngleUnit class which converts between radians and degrees.
  */
-class ParameterUnit : public OvitoObject
+class OVITO_CORE_EXPORT ParameterUnit : public OvitoObject
 {
 	Q_OBJECT
 	OVITO_OBJECT
@@ -99,7 +99,7 @@ Q_SIGNALS:
  * 
  * It does no unit conversion at all. Values are formatted as floating-point strings.
  */
-class FloatParameterUnit : public ParameterUnit
+class OVITO_CORE_EXPORT FloatParameterUnit : public ParameterUnit
 {
 	Q_OBJECT
 	OVITO_OBJECT
@@ -171,7 +171,7 @@ public:
  * 
  * It does no unit conversion at all. Values are formatted as integer value strings.
  */
-class IntegerParameterUnit : public ParameterUnit
+class OVITO_CORE_EXPORT IntegerParameterUnit : public ParameterUnit
 {
 	Q_OBJECT
 	OVITO_OBJECT
@@ -224,7 +224,7 @@ public:
 /*
  * \brief This ParameterUnit is used by parameter values that specify a distance or a position in space.
  */
-class WorldParameterUnit : public FloatParameterUnit
+class OVITO_CORE_EXPORT WorldParameterUnit : public FloatParameterUnit
 {
 	Q_OBJECT
 	OVITO_OBJECT
@@ -238,7 +238,7 @@ public:
 /**
  * \brief This ParameterUnit implementation converts between radians and degrees.
  */
-class AngleParameterUnit : public FloatParameterUnit
+class OVITO_CORE_EXPORT AngleParameterUnit : public FloatParameterUnit
 {
 	Q_OBJECT
 	OVITO_OBJECT
@@ -268,7 +268,7 @@ public:
 /**
  * \brief This ParameterUnit implementation is used for percentage values.
  */
-class PercentParameterUnit : public FloatParameterUnit
+class OVITO_CORE_EXPORT PercentParameterUnit : public FloatParameterUnit
 {
 	Q_OBJECT
 	OVITO_OBJECT
@@ -298,7 +298,7 @@ public:
 /**
  * \brief This ParameterUnit is used by parameter values that specify a time value.
  */
-class TimeParameterUnit : public IntegerParameterUnit
+class OVITO_CORE_EXPORT TimeParameterUnit : public IntegerParameterUnit
 {
 	Q_OBJECT
 	OVITO_OBJECT
@@ -345,7 +345,7 @@ public:
 /**
  * \brief Manages the parameter units.
  */
-class UnitsManager : public QObject
+class OVITO_CORE_EXPORT UnitsManager : public QObject
 {
 	Q_OBJECT
 

@@ -35,7 +35,7 @@ namespace Ovito {
 /**
  * \brief Loads and manages the installed plugins.
  */
-class PluginManager : public QObject
+class OVITO_CORE_EXPORT PluginManager : public QObject
 {
 	Q_OBJECT
 

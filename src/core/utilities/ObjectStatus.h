@@ -34,7 +34,7 @@ namespace Ovito {
 /**
  * \brief Encapsulates status information about an operation, e.g. evaluating a Modifier in the geometry pipeline.
  */
-class ObjectStatus
+class OVITO_CORE_EXPORT ObjectStatus
 {
 public:
 

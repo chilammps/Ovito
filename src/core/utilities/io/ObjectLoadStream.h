@@ -40,7 +40,7 @@ namespace Ovito {
  * \sa ObjectSaveStream
  * \author Alexander Stukowski
  */
-class ObjectLoadStream : public LoadStream
+class OVITO_CORE_EXPORT ObjectLoadStream : public LoadStream
 {
 	Q_OBJECT
 

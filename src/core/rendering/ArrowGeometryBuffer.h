@@ -37,7 +37,7 @@ class SceneRenderer;			// defined in SceneRenderer.h
 /**
  * \brief Abstract base class for buffer objects that store vector glyphs.
  */
-class ArrowGeometryBuffer : public OvitoObject
+class OVITO_CORE_EXPORT ArrowGeometryBuffer : public OvitoObject
 {
 public:
 

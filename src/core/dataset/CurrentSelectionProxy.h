@@ -41,7 +41,7 @@ namespace Ovito {
  * 
  * \note This is an internal class that is not for public use.
  */
-class CurrentSelectionProxy : public SelectionSet
+class OVITO_CORE_EXPORT CurrentSelectionProxy : public SelectionSet
 {
 public:
 

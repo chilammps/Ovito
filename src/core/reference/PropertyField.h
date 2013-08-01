@@ -36,7 +36,7 @@ class RefMaker;						// defined in RefMaker.h
 /******************************************************************************
 * RefMaker derived classes use this helper class to store their properties.
 ******************************************************************************/
-class PropertyFieldBase
+class OVITO_CORE_EXPORT PropertyFieldBase
 {
 public:
 
@@ -177,7 +177,7 @@ private:
 /******************************************************************************
 * An instance of this helper class stores a pointer to a RefTarget derived class.
 ******************************************************************************/
-class SingleReferenceFieldBase : public PropertyFieldBase
+class OVITO_CORE_EXPORT SingleReferenceFieldBase : public PropertyFieldBase
 {
 public:
 
@@ -299,7 +299,7 @@ inline T* dynamic_object_cast(const ReferenceField<U>& field) {
 * RefMaker derived classes must use this helper class to store their
 * vector reference lists.
 ******************************************************************************/
-class VectorReferenceFieldBase : public PropertyFieldBase
+class OVITO_CORE_EXPORT VectorReferenceFieldBase : public PropertyFieldBase
 {
 public:
 

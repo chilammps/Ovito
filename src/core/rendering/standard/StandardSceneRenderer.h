@@ -34,7 +34,7 @@ namespace Ovito {
 /**
  * \brief This is the default scene renderer used for high-quality image output.
  */
-class StandardSceneRenderer : public ViewportSceneRenderer
+class OVITO_CORE_EXPORT StandardSceneRenderer : public ViewportSceneRenderer
 {
 public:
 

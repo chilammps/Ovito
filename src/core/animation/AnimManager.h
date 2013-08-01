@@ -36,7 +36,7 @@ namespace Ovito {
 /**
  * \brief Manages the global animation settings.
  */
-class AnimManager : public QObject
+class OVITO_CORE_EXPORT AnimManager : public QObject
 {
 	Q_OBJECT
 

@@ -36,7 +36,7 @@ class SceneRenderer; 		// defined in SceneRenderer.h
 /******************************************************************************
 * Stores the general settings for rendering output.
 ******************************************************************************/
-class RenderSettings : public RefTarget
+class OVITO_CORE_EXPORT RenderSettings : public RefTarget
 {
 public:
 

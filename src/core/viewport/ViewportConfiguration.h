@@ -37,7 +37,7 @@ namespace Ovito {
  *
  * It also keeps track of the current viewport and the maximized viewport.
  */
-class ViewportConfiguration : public RefTarget
+class OVITO_CORE_EXPORT ViewportConfiguration : public RefTarget
 {
 public:
 

@@ -38,7 +38,7 @@ class PipelineObject;	// defined in PipelineObject.h
  * \brief Stores information about a particular application of a Modifier
  *        instance in a geometry pipeline.
  */
-class ModifierApplication : public RefTarget
+class OVITO_CORE_EXPORT ModifierApplication : public RefTarget
 {
 public:
 

@@ -39,7 +39,7 @@ class CloneHelper;			// defined in CloneHelper.h
 /**
  * \brief Base class for objects that are referenced by RefMaker objects.
  */
-class RefTarget : public RefMaker
+class OVITO_CORE_EXPORT RefTarget : public RefMaker
 {
 	Q_OBJECT
 	OVITO_OBJECT

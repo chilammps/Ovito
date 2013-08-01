@@ -41,7 +41,7 @@ namespace Ovito {
  * manner. When reading the written data from the file the LoadStream class will take care of the data type conversion
  * needed to match the architecture present on the actual computer.
  */
-class LoadStream : public QObject
+class OVITO_BASE_EXPORT LoadStream : public QObject
 {
 	Q_OBJECT
 

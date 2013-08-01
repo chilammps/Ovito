@@ -34,7 +34,7 @@ class ParameterUnit;	// defined in ParameterUnit.h
 * Base class for UI components that allow the user to edit a numerical
 * property of an object via a spinner widget and a text box.
 ******************************************************************************/
-class NumericalParameterUI : public PropertyParameterUI
+class OVITO_CORE_EXPORT NumericalParameterUI : public PropertyParameterUI
 {
 public:
 

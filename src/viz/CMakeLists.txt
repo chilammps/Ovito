@@ -69,7 +69,6 @@ SET(OVITO_VIZ_SOURCE_FILES
 	util/ParticleInformationApplet.cpp
 )
 
-
 # The source files of the muParser library.
 SET(muParser_SRCS
 	util/muparser/muParser.cpp
@@ -82,6 +81,9 @@ SET(muParser_SRCS
 	util/muparser/muParserCallback.cpp
 	util/muparser/muParserBase.cpp
 )
+
+# This will let the source code export symbols when building a DLL.
+ADD_DEFINITIONS(-DOVITO_VIZ_LIBRARY)
 
 # Generate plugin module.
 OVITO_PLUGIN(Viz

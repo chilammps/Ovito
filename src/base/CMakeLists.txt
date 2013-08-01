@@ -26,6 +26,9 @@ SET(OVITO_BASE_SOURCE_FILES
 	io/LoadStream.cpp
 )
 
+# This will let the source code export symbols when building a DLL.
+ADD_DEFINITIONS(-DOVITO_BASE_LIBRARY)
+
 # Build library
 ADD_LIBRARY(Base ${OVITO_BASE_SOURCE_FILES})
 

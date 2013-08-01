@@ -103,7 +103,7 @@ struct ViewportPickResult
 /**
  * \brief A viewport window that displays the current scene.
  */
-class Viewport : public RefTarget
+class OVITO_CORE_EXPORT Viewport : public RefTarget
 {
 public:
 

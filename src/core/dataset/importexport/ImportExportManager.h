@@ -36,7 +36,7 @@ namespace Ovito {
 /**
  * \brief Manages the installed data import and export services.
  */
-class ImportExportManager
+class OVITO_CORE_EXPORT ImportExportManager
 {
 public:
 

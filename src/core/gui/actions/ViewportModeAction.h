@@ -30,7 +30,7 @@ namespace Ovito {
 /******************************************************************************
 * An action that activates a ViewportInputHandler.
 ******************************************************************************/
-class ViewportModeAction : public QAction
+class OVITO_CORE_EXPORT ViewportModeAction : public QAction
 {
 	Q_OBJECT
 

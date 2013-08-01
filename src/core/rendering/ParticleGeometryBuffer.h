@@ -37,7 +37,7 @@ class SceneRenderer;			// defined in SceneRenderer.h
 /**
  * \brief Abstract base class for buffer objects that store point-like particles.
  */
-class ParticleGeometryBuffer : public OvitoObject
+class OVITO_CORE_EXPORT ParticleGeometryBuffer : public OvitoObject
 {
 public:
 

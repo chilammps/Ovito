@@ -34,7 +34,7 @@ namespace Ovito {
 /**
  * \brief A QLabel-like widget that display a line of text, which is shortened if necessary to fit the available space.
  */
-class ElidedTextLabel : public QLabel
+class OVITO_CORE_EXPORT ElidedTextLabel : public QLabel
 {
 	Q_OBJECT
 	

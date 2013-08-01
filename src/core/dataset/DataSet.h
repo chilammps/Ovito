@@ -44,7 +44,7 @@ class RenderSettings;			// defined in RenderSettings.h
  * A DataSet is the document (or scene) edited by the user.
  * It can be saved to and loaded from a file.
  */
-class DataSet : public RefTarget
+class OVITO_CORE_EXPORT DataSet : public RefTarget
 {
 public:
 

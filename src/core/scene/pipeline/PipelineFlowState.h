@@ -39,7 +39,7 @@ class SceneObject;		// defined in SceneObject.h
 /**
  * \brief This object flows down the geometry pipeline of an ObjectNode.
  */
-class PipelineFlowState
+class OVITO_CORE_EXPORT PipelineFlowState
 {
 public:
 

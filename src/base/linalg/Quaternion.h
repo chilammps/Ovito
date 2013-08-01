@@ -60,11 +60,11 @@ public:
 	/// \param _y The second quaternion component.
 	/// \param _z The third quaternion component.
 	/// \param _w The fourth quaternion component.
-	constexpr QuaternionT(T x, T y, T z, T w) : std::array<T, 4>{{x,y,z,w}} {}
+	Q_DECL_CONSTEXPR QuaternionT(T x, T y, T z, T w) : std::array<T, 4>{{x,y,z,w}} {}
 
 	/// \brief Constructs an identity quaternion.
 	/// The new quaternion represents the null transformation, i.e. no rotation at all.
-	explicit constexpr QuaternionT(Identity) : std::array<T, 4>{{ T(0), T(0), T(0), T(1) }} {}
+	explicit Q_DECL_CONSTEXPR QuaternionT(Identity) : std::array<T, 4>{{ T(0), T(0), T(0), T(1) }} {}
 
 	/// \brief Initializes the quaternion from rotational part of a transformation matrix.
 	/// \param tm A rotation matrix.
@@ -85,16 +85,16 @@ public:
     ///////////////////////////// Component access ///////////////////////////////
 
 	/// \brief Returns the value of the X component of this quaternion.
-	constexpr const T& x() const { return (*this)[0]; }
+	Q_DECL_CONSTEXPR const T& x() const { return (*this)[0]; }
 
 	/// \brief Returns the value of the Y component of this quaternion.
-	constexpr const T& y() const { return (*this)[1]; }
+	Q_DECL_CONSTEXPR const T& y() const { return (*this)[1]; }
 
 	/// \brief Returns the value of the Z component of this quaternion.
-	constexpr const T& z() const { return (*this)[2]; }
+	Q_DECL_CONSTEXPR const T& z() const { return (*this)[2]; }
 
 	/// \brief Returns the value of the W component of this quaternion.
-	constexpr const T& w() const { return (*this)[3]; }
+	Q_DECL_CONSTEXPR const T& w() const { return (*this)[3]; }
 
 	/// \brief Returns a reference to the X component of this quaternion.
 	T& x() { return (*this)[0]; }
@@ -114,23 +114,23 @@ public:
 	/// \return A new quaternion with all components negated.
 	/// \note The returned quaternion does not represent the inverse rotation!
 	/// \sa inverse()
-	constexpr QuaternionT operator-() const { return {-x(), -y(), -z(), -w()}; }
+	Q_DECL_CONSTEXPR QuaternionT operator-() const { return {-x(), -y(), -z(), -w()}; }
 
 	/// \brief Returns the inverse (or conjugate) of this rotation.
 	/// \return A new quaternion representing the inverse rotation of this quaternion.
-	constexpr QuaternionT  inverse() const { return { -x(), -y(), -z(), w() }; }
+	Q_DECL_CONSTEXPR QuaternionT  inverse() const { return { -x(), -y(), -z(), w() }; }
 
 	////////////////////////////////// Comparison ////////////////////////////////
 
 	/// \brief Compares two quaternions for equality.
 	/// \param q The quaternion to compare with.
 	/// \return \c true if each of the components are equal; \c false otherwise.
-	constexpr bool operator==(const QuaternionT& q) const { return (q.x() == x() && q.y() == y() && q.z() == z() && q.w() == w()); }
+	Q_DECL_CONSTEXPR bool operator==(const QuaternionT& q) const { return (q.x() == x() && q.y() == y() && q.z() == z() && q.w() == w()); }
 
 	/// \brief Compares two quaternions for inequality.
 	/// \param q The quaternion to compare with.
 	/// \return \c true if any of the components are not equal; \c false if all are equal.
-	constexpr bool operator!=(const QuaternionT& q) const { return !(q == *this); }
+	Q_DECL_CONSTEXPR bool operator!=(const QuaternionT& q) const { return !(q == *this); }
 
 	///////////////////////////////// Computations ////////////////////////////////
 
@@ -145,7 +145,7 @@ public:
 	QuaternionT& operator/=(T s) { x() /= s; y() /= s; z() /= s; w() /= s; return *this; }
 
 	/// \brief Computes the scalar product of two quaternions.
-	constexpr T dot(const QuaternionT& b) const { return x()*b.y() + y()*b.y() + z()*b.z() + w()*b.w(); }
+	Q_DECL_CONSTEXPR T dot(const QuaternionT& b) const { return x()*b.y() + y()*b.y() + z()*b.z() + w()*b.w(); }
 
 	/// \brief Normalizes this quaternion to unit length.
 	inline void normalize() {

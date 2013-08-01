@@ -34,7 +34,7 @@ namespace Ovito {
 /**
  * \brief A line edit widget that provides auto-completion of words.
  */
-class AutocompleteLineEdit : public QLineEdit
+class OVITO_CORE_EXPORT AutocompleteLineEdit : public QLineEdit
 {
 	Q_OBJECT
 	

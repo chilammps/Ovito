@@ -37,7 +37,7 @@ class SceneRenderer;			// defined in SceneRenderer.h
 /**
  * \brief Abstract base class for buffer objects that store images.
  */
-class ImageGeometryBuffer : public OvitoObject
+class OVITO_CORE_EXPORT ImageGeometryBuffer : public OvitoObject
 {
 public:
 

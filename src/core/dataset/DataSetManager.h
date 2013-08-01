@@ -41,7 +41,7 @@ class FileImporterDescription;		// Defined in FileImporter.h
  * 
  * This is a singleton class with only one predefined instance of this class. 
  */
-class DataSetManager : public RefMaker
+class OVITO_CORE_EXPORT DataSetManager : public RefMaker
 {
 public:
 

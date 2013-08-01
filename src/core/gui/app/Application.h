@@ -35,7 +35,7 @@ namespace Ovito {
 /**
  * \brief The main application.
  */
-class Application : public QApplication
+class OVITO_CORE_EXPORT Application : public QApplication
 {
 	Q_OBJECT
 

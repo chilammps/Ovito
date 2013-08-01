@@ -39,7 +39,7 @@ namespace Ovito {
  * This RotationController computes a rotation matrix for a SceneNode such
  * that it always faces into the direction of another SceneNode.
  */
-class LookAtController : public RotationController
+class OVITO_CORE_EXPORT LookAtController : public RotationController
 {
 public:
 	

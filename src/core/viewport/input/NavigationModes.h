@@ -30,7 +30,7 @@ namespace Ovito {
 /**
  * \brief Base class for viewport navigation modes likes zoom, pan and orbit.
  */
-class NavigationMode : public ViewportInputHandler
+class OVITO_CORE_EXPORT NavigationMode : public ViewportInputHandler
 {
 	Q_OBJECT
 	
@@ -89,7 +89,7 @@ protected:
 /******************************************************************************
 * The pan viewport input mode.
 ******************************************************************************/
-class PanMode : public NavigationMode
+class OVITO_CORE_EXPORT PanMode : public NavigationMode
 {
 	Q_OBJECT
 	
@@ -118,7 +118,7 @@ public:
 /******************************************************************************
 * The zoom viewport input mode.
 ******************************************************************************/
-class ZoomMode : public NavigationMode
+class OVITO_CORE_EXPORT ZoomMode : public NavigationMode
 {
 	Q_OBJECT
 
@@ -153,7 +153,7 @@ public:
 /******************************************************************************
 * The field of view input mode.
 ******************************************************************************/
-class FOVMode : public NavigationMode
+class OVITO_CORE_EXPORT FOVMode : public NavigationMode
 {
 	Q_OBJECT
 
@@ -181,7 +181,7 @@ public:
 /******************************************************************************
 * The orbit viewport input mode.
 ******************************************************************************/
-class OrbitMode : public NavigationMode
+class OVITO_CORE_EXPORT OrbitMode : public NavigationMode
 {
 	Q_OBJECT
 	
@@ -248,7 +248,7 @@ public:
 /******************************************************************************
 * This input mode lets the user pick the center of rotation for the orbit mode.
 ******************************************************************************/
-class PickOrbitCenterMode : public SimpleInputHandler
+class OVITO_CORE_EXPORT PickOrbitCenterMode : public SimpleInputHandler
 {
 public:
 

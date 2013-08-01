@@ -48,15 +48,15 @@ typedef int TimePoint;
 #define TICKS_PER_SECOND		4800
 
 /// Returns a special time point that represents an infinite negative value on the time axis.
-constexpr inline TimePoint TimeNegativeInfinity() { return INT_MIN; }
+Q_DECL_CONSTEXPR inline TimePoint TimeNegativeInfinity() { return INT_MIN; }
 
 /// Returns a special time point that represents an infinite positive value on the time axis.
-constexpr inline TimePoint TimePositiveInfinity() { return INT_MAX; }
+Q_DECL_CONSTEXPR inline TimePoint TimePositiveInfinity() { return INT_MAX; }
 
 /// \brief This is a function to convert internal time units to real seconds.
 /// \param time The time in internal time units.
 /// \return The same time in seconds.
-constexpr inline FloatType timeToSeconds(TimePoint time) { return (FloatType)time / (FloatType)TICKS_PER_SECOND; }
+Q_DECL_CONSTEXPR inline FloatType timeToSeconds(TimePoint time) { return (FloatType)time / (FloatType)TICKS_PER_SECOND; }
 
 // \brief This is a function to convert seconds to internal time units.
 /// \param timeInSeconds The time in seconds.
@@ -73,24 +73,24 @@ public:
 	/// \brief Creates an empty time interval.
 	/// 
 	/// Both start time and end time are initialized to negative infinity. 
-	constexpr TimeInterval() : _start(TimeNegativeInfinity()), _end(TimeNegativeInfinity()) {}
+	Q_DECL_CONSTEXPR TimeInterval() : _start(TimeNegativeInfinity()), _end(TimeNegativeInfinity()) {}
 	
 	/// \brief Initializes the interval with start and end values.
 	/// \param start The start time of the time interval.
 	/// \param end The end time (including) of the time interval.
-	constexpr TimeInterval(const TimePoint& start, const TimePoint& end) : _start(start), _end(end) {}
+	Q_DECL_CONSTEXPR TimeInterval(const TimePoint& start, const TimePoint& end) : _start(start), _end(end) {}
 	
 	/// \brief Initializes the interval to an instant time.
 	/// \param time The time where the interval starts and ends.
-	constexpr TimeInterval(const TimePoint& time) : _start(time), _end(time) {}
+	Q_DECL_CONSTEXPR TimeInterval(const TimePoint& time) : _start(time), _end(time) {}
 
 	/// \brief Returns the start time of the interval.
 	/// \return The beginning of the time interval.
-	constexpr TimePoint start() const { return _start; }
+	Q_DECL_CONSTEXPR TimePoint start() const { return _start; }
 	
 	/// \brief Returns the end time of the interval.
 	/// \return The time at which the interval end.
-	constexpr TimePoint end() const { return _end; }
+	Q_DECL_CONSTEXPR TimePoint end() const { return _end; }
 
 	/// \brief Sets the start time of the interval.
 	/// \param start The new start time.
@@ -105,17 +105,17 @@ public:
 	///         end time is negative infinity (TimeNegativeInfinity);
 	///         \c false otherwise.
 	/// \sa setEmpty()
-	constexpr bool isEmpty() const { return (end() == TimeNegativeInfinity() || start() > end()); }
+	Q_DECL_CONSTEXPR bool isEmpty() const { return (end() == TimeNegativeInfinity() || start() > end()); }
 	
 	/// \brief Returns whether this is the infinite time interval.
 	/// \return \c true if the start time is negative infinity and the end time of the interval is positive infinity.
 	/// \sa setInfinite()
-	constexpr bool isInfinite() const { return (end() == TimePositiveInfinity() && start() == TimeNegativeInfinity()); }
+	Q_DECL_CONSTEXPR bool isInfinite() const { return (end() == TimePositiveInfinity() && start() == TimeNegativeInfinity()); }
 
 	/// \brief Returns the duration of the time interval.
 	/// \return The difference between the end and the start time.
 	/// \sa setDuration()
-	constexpr TimePoint duration() const { return end() - start(); }
+	Q_DECL_CONSTEXPR TimePoint duration() const { return end() - start(); }
 	
 	/// \brief Sets the duration of the time interval.
 	/// \param duration The new duration of the interval.
@@ -169,7 +169,7 @@ public:
 	/// \brief Returns whether a time lies between start and end time of this interval.
 	/// \param time The time to check.
 	/// \return \c true if \a time is equal or larger than start() and smaller or equal than end().
-	constexpr bool contains(TimePoint time) const {
+	Q_DECL_CONSTEXPR bool contains(TimePoint time) const {
 		return (start() <= time && time <= end()); 
 	}
 
@@ -191,10 +191,10 @@ public:
 	}
 
 	/// Return the infinite time interval that contains all time values.
-	static constexpr TimeInterval forever() { return TimeInterval(TimeNegativeInfinity(), TimePositiveInfinity()); }
+	static Q_DECL_CONSTEXPR TimeInterval forever() { return TimeInterval(TimeNegativeInfinity(), TimePositiveInfinity()); }
 
 	/// Return the empty time interval that contains no time values.
-	static constexpr TimeInterval empty() { return TimeInterval(TimeNegativeInfinity()); }
+	static Q_DECL_CONSTEXPR TimeInterval empty() { return TimeInterval(TimeNegativeInfinity()); }
 
 private:
 

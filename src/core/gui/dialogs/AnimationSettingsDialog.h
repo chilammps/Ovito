@@ -31,7 +31,7 @@ namespace Ovito {
 /******************************************************************************
 * This dialog box lets the user manage the animation settings.
 ******************************************************************************/
-class AnimationSettingsDialog : public QDialog, private UndoableTransaction
+class OVITO_CORE_EXPORT AnimationSettingsDialog : public QDialog, private UndoableTransaction
 {
 	Q_OBJECT
 	

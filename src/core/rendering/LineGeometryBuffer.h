@@ -37,7 +37,7 @@ class SceneRenderer;			// defined in SceneRenderer.h
 /**
  * \brief Abstract base class for buffer objects that store line geometry.
  */
-class LineGeometryBuffer : public OvitoObject
+class OVITO_CORE_EXPORT LineGeometryBuffer : public OvitoObject
 {
 public:
 

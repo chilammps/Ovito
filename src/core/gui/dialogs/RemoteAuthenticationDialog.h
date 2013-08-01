@@ -35,7 +35,7 @@ namespace Ovito {
 /**
  * \brief This dialog asks the user for a username/password for a remote server.
  */
-class RemoteAuthenticationDialog : public QDialog
+class OVITO_CORE_EXPORT RemoteAuthenticationDialog : public QDialog
 {
 	Q_OBJECT
 	

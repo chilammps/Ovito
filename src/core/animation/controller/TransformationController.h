@@ -44,7 +44,7 @@ class SceneNode;		// define in SceneNode.h
  * Each SceneNode has a transformation controller that can be accessed via
  * the SceneNode::transformationController() method.
  */
-class TransformationController : public TypedController<AffineTransformation, AffineTransformation>
+class OVITO_CORE_EXPORT TransformationController : public TypedController<AffineTransformation, AffineTransformation>
 {
 protected:
 	
@@ -113,7 +113,7 @@ private:
  * 
  * This controller uses three sub-controllers to animate position, rotation and scaling.
  */
-class PRSTransformationController : public TransformationController
+class OVITO_CORE_EXPORT PRSTransformationController : public TransformationController
 {
 public:
 

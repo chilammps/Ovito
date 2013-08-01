@@ -35,7 +35,7 @@ namespace Ovito {
 /**
  * \brief The file manager provides transparent access to remote file.
  */
-class FileManager : public QObject
+class OVITO_CORE_EXPORT FileManager : public QObject
 {
 	Q_OBJECT
 

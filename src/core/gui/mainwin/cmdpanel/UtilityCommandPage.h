@@ -28,7 +28,7 @@ namespace Ovito {
 /******************************************************************************
 * The utility page lets the user invoke utility plugins.
 ******************************************************************************/
-class UtilityCommandPage : public CommandPanelPage
+class OVITO_CORE_EXPORT UtilityCommandPage : public CommandPanelPage
 {
 	Q_OBJECT
 

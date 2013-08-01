@@ -70,11 +70,11 @@ public:
 	/// \param _axis The vector that specifies the rotation axis. It does not have to be a unit vector.
 	///              It is automatically normalized by the Rotation constructor.
 	/// \param _angle The rotation angle in radians.
-	constexpr RotationT(const Vector_3<T>& axis, T angle, bool normalize = true) : _axis(normalize ? axis.normalized() : axis), _angle(angle) {}
+	Q_DECL_CONSTEXPR RotationT(const Vector_3<T>& axis, T angle, bool normalize = true) : _axis(normalize ? axis.normalized() : axis), _angle(angle) {}
 
 	/// \brief Initializes the object to the null rotation.
 	/// The axis is initialized with the (0,0,1) vector and the angle is set to zero.
-	constexpr RotationT(Identity) : _axis{T(0),T(0),T(1)}, _angle(T(0)) {}
+	Q_DECL_CONSTEXPR RotationT(Identity) : _axis{T(0),T(0),T(1)}, _angle(T(0)) {}
 
 	/// \brief Initializes the object from rotational part of the matrix.
 	/// \param tm A rotation matrix.
@@ -143,10 +143,10 @@ public:
 	/////////////////////////////// Component access //////////////////////////////
 
 	/// \brief Returns the axis of rotation.
-	constexpr const Vector_3<T>& axis() const { return _axis; }
+	Q_DECL_CONSTEXPR const Vector_3<T>& axis() const { return _axis; }
 
 	/// \brief Returns the angle of rotation.
-	constexpr T angle() const { return _angle; }
+	Q_DECL_CONSTEXPR T angle() const { return _angle; }
 
 	/// \brief Changes the axis of rotation.
 	void setAxis(const Vector_3<T>& axis) { _axis = axis; }
@@ -158,7 +158,7 @@ public:
 
 	/// \brief Returns the inverse of this rotation.
 	/// \return A rotation with the same axis but negative rotation angle.
-	constexpr RotationT inverse() const  { return RotationT(_axis, -_angle, false); }
+	Q_DECL_CONSTEXPR RotationT inverse() const  { return RotationT(_axis, -_angle, false); }
 
 	/// \brief Converts the rotation to a Quaternion.
 	/// \return A quaternion that represents the same rotation.
@@ -198,21 +198,21 @@ public:
 	/// \param r The rotation to compare with.
 	/// \return \c true if the axis and the angle of both rotations are either equal or opposite;
 	///         \c false otherwise.
-	constexpr bool operator==(const RotationT& r) const { return ((r._axis==_axis) && (r._angle==_angle)) || ((r._axis==-_axis) && (r._angle==-_angle)); }
+	Q_DECL_CONSTEXPR bool operator==(const RotationT& r) const { return ((r._axis==_axis) && (r._angle==_angle)) || ((r._axis==-_axis) && (r._angle==-_angle)); }
 
 	/// \brief Returns whether two rotations are the not same.
 	/// \param r The rotation to compare with.
 	/// \return \c true if the axis or the angle of both rotations are neither equal or opposite;
 	///         \c false otherwise.
-	constexpr bool operator!=(const RotationT& r) const { return ((r._axis!=_axis) || (r._angle!=_angle)) && ((r._axis!=-_axis) || (r._angle!=-_angle)); }
+	Q_DECL_CONSTEXPR bool operator!=(const RotationT& r) const { return ((r._axis!=_axis) || (r._angle!=_angle)) && ((r._axis!=-_axis) || (r._angle!=-_angle)); }
 
 	/// \brief Returns whether the rotation angle is zero.
 	/// \return \c true if the rotation angle is zero; \c false otherwise.
-	constexpr bool operator==(Identity) const { return (_angle == T(0)); }
+	Q_DECL_CONSTEXPR bool operator==(Identity) const { return (_angle == T(0)); }
 
 	/// \brief Returns whether the rotation angle is not zero.
 	/// \return \c true if the rotation angle is not zero; \c false otherwise.
-	constexpr bool operator!=(Identity) const { return (_angle != T(0)); }
+	Q_DECL_CONSTEXPR bool operator!=(Identity) const { return (_angle != T(0)); }
 
 	///////////////////////////////// Interpolation //////////////////////////////
 
@@ -283,7 +283,7 @@ public:
 	/// \return The rounded value of \c angle divided by 2*pi.
 	/// \sa setRevolutions()
 	/// \sa addRevolutions()
-	constexpr int revolutions() const { return (int)(_angle/T(M_PI*2)); }
+	Q_DECL_CONSTEXPR int revolutions() const { return (int)(_angle/T(M_PI*2)); }
 
 	/// \brief Sets the number of revolutions.
 	/// \param n The new number of revolutions. This can be negative.

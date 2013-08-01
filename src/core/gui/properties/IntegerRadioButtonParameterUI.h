@@ -31,7 +31,7 @@ namespace Ovito {
 * This UI lets the user change an integer-value property of the object 
 * being edited using a set of radio buttons.
 ******************************************************************************/
-class IntegerRadioButtonParameterUI : public PropertyParameterUI
+class OVITO_CORE_EXPORT IntegerRadioButtonParameterUI : public PropertyParameterUI
 {
 public:
 	/// Constructor.

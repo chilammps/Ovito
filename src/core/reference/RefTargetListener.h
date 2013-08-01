@@ -40,7 +40,7 @@ namespace Ovito {
  * class that is not derived from RefMaker but still wants to receive notification events
  * from a RefTarget.
  */
-class RefTargetListener : public RefMaker
+class OVITO_CORE_EXPORT RefTargetListener : public RefMaker
 {
 public:
 

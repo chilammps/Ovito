@@ -35,7 +35,7 @@ namespace Ovito {
 /**
  * \brief A plugin that is implemented as a native shared library.
  */
-class NativePlugin : public Plugin
+class OVITO_CORE_EXPORT NativePlugin : public Plugin
 {
 	Q_OBJECT
 

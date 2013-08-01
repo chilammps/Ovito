@@ -34,7 +34,7 @@ namespace Ovito {
 /**
  * \brief stores a geometry structure that is made up of vertices and triangles.
  */
-class TriMesh
+class OVITO_CORE_EXPORT TriMesh
 {
 public:
 

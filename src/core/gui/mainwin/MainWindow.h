@@ -40,7 +40,7 @@ class FrameBufferWindow;	// defined in FrameBufferWindow.h
  * 
  * Please not that in console mode no instance of the main window class is created.
  */
-class MainWindow : public QMainWindow
+class OVITO_CORE_EXPORT MainWindow : public QMainWindow
 {
 	Q_OBJECT
 	

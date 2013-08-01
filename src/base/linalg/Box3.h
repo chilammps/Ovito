@@ -87,7 +87,7 @@ public:
 	/// The box is considered empty when one of the maximum corner coordinates is less
 	/// then the minimum corner coordinate.
 	/// \return true if this box is empty; false otherwise.
-	constexpr bool isEmpty() const {
+	Q_DECL_CONSTEXPR bool isEmpty() const {
         return (minc.x() > maxc.x()) || (minc.y() > maxc.y()) || (minc.z() > maxc.z());
 	}
 
@@ -99,30 +99,30 @@ public:
 
 	/// \brief Computes the center of the box.
 	/// \return The center of the box.
-	constexpr Point_3<T> center() const {
+	Q_DECL_CONSTEXPR Point_3<T> center() const {
 		return Point_3<T>((minc.x() + maxc.x()) / 2, (minc.y() + maxc.y()) / 2, (minc.z() + maxc.z()) / 2);
 	}
 
 	/// \brief Computes the size of the box.
 	/// \return The difference between the maximum and minimum corner.
-	constexpr Vector_3<T> size() const {
+	Q_DECL_CONSTEXPR Vector_3<T> size() const {
 		return maxc - minc;
 	}
 	
 	/// \brief Returns the size of the box in the given dimension.
 	/// \param dimension The index of the dimension (0 - 2).
-	constexpr T size(typename Point_3<T>::size_type dimension) const {
+	Q_DECL_CONSTEXPR T size(typename Point_3<T>::size_type dimension) const {
 		return maxc[dimension] - minc[dimension]; 
 	}
 
 	/// Returns the size in X direction (Max.x() - Min.x()) of the box.
-	constexpr T sizeX() const { return maxc.x() - minc.x(); }
+	Q_DECL_CONSTEXPR T sizeX() const { return maxc.x() - minc.x(); }
 
 	/// Returns the size in Y direction (Max.y() - Min.y()) of the box.
-	constexpr T sizeY() const { return maxc.y() - minc.y(); }
+	Q_DECL_CONSTEXPR T sizeY() const { return maxc.y() - minc.y(); }
 
 	/// Returns the size in Z direction (Max.z() - Min.z()) of the box.
-	constexpr T sizeZ() const { return maxc.z() - minc.z(); }
+	Q_DECL_CONSTEXPR T sizeZ() const { return maxc.z() - minc.z(); }
 
 	/// \brief Returns the position of one of the eight corners of the box corner.
 	/// \param i The index of the corner (0 - 7).
@@ -139,7 +139,7 @@ public:
 	/// \brief Checks whether a point is inside the box.
 	/// \param p The point to test.
 	/// \return true if the given point is inside or on the edge of the bounding box; false if it is completely outside the box.
-	constexpr bool contains(const Point_3<T>& p) const {
+	Q_DECL_CONSTEXPR bool contains(const Point_3<T>& p) const {
 		return p.x() >= minc.x() && p.x() <= maxc.x() &&
 				p.y() >= minc.y() && p.y() <= maxc.y() &&
 				p.z() >= minc.z() && p.z() <= maxc.z();

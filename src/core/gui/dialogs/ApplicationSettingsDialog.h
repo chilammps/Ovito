@@ -36,7 +36,7 @@ class ApplicationSettingsDialog;		// defined below.
 /**
  * \brief Abstract base class for tab providers for the application's settings dialog.
  */
-class ApplicationSettingsPage : public OvitoObject
+class OVITO_CORE_EXPORT ApplicationSettingsPage : public OvitoObject
 {
 protected:
 
@@ -67,7 +67,7 @@ private:
  * Plugins can add additional pages to this dialog by deriving new classes from
  * the ApplicationSettingsPage class.
  */
-class ApplicationSettingsDialog : public QDialog
+class OVITO_CORE_EXPORT ApplicationSettingsDialog : public QDialog
 {
 	Q_OBJECT
 	

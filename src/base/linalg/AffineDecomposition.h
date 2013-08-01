@@ -55,7 +55,7 @@ namespace Ovito {
  * 
  * \note Decomposing a matrix into its affine parts is a slow operation and should only be done when really necessary.
  */
-class AffineDecomposition
+class OVITO_BASE_EXPORT AffineDecomposition
 {
 public:
 	/// Translation part.

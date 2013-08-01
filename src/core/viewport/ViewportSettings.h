@@ -34,7 +34,7 @@ namespace Ovito {
 /**
  * \brief Stores general settings related to the viewports.
  */
-class ViewportSettings
+class OVITO_CORE_EXPORT ViewportSettings
 {
 public:
 

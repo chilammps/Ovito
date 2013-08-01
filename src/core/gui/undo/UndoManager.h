@@ -43,7 +43,7 @@ namespace Ovito {
  * Multiple atomic operations can be combined into a CompoundOperation. They can then be undone
  * or redone at once.
  */
-class UndoableOperation
+class OVITO_CORE_EXPORT UndoableOperation
 {
 public:
 
@@ -78,7 +78,7 @@ public:
 /**
  * \brief This class is used to combine multiple UndoableOperation objects into one.
  */
-class CompoundOperation : public UndoableOperation
+class OVITO_CORE_EXPORT CompoundOperation : public UndoableOperation
 {
 public:
 
@@ -154,7 +154,7 @@ private:
  * a change to a Qt property of an object. The property must defined through the
  * standard Qt mechanism using the \c Q_PROPERTY macro.
  */
-class SimplePropertyChangeOperation : public UndoableOperation
+class OVITO_CORE_EXPORT SimplePropertyChangeOperation : public UndoableOperation
 {
 public:
 
@@ -201,7 +201,7 @@ private:
  * The UndoManager records all user operations. Operations can be undone or reversed
  * one by one.
  */
-class UndoManager : public QObject
+class OVITO_CORE_EXPORT UndoManager : public QObject
 {
 	Q_OBJECT
 	

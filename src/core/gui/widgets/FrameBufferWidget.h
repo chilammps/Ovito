@@ -30,7 +30,7 @@ namespace Ovito {
 /******************************************************************************
 * This widget displays the contents of a FrameBuffer.
 ******************************************************************************/
-class FrameBufferWidget : public QAbstractScrollArea
+class OVITO_CORE_EXPORT FrameBufferWidget : public QAbstractScrollArea
 {
 public:
 

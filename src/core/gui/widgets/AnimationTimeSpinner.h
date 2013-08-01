@@ -40,7 +40,7 @@ namespace Ovito {
  * It displays the current animation time given by AnimManager::time() and changes
  * it when the user enters a new time value.
  */
-class AnimationTimeSpinner : public SpinnerWidget
+class OVITO_CORE_EXPORT AnimationTimeSpinner : public SpinnerWidget
 {
 	Q_OBJECT
 	

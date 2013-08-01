@@ -42,7 +42,7 @@ namespace Ovito {
  * 
  * Property editors live in a PropertiesPanel.
  */
-class PropertiesEditor : public RefMaker
+class OVITO_CORE_EXPORT PropertiesEditor : public RefMaker
 {
 	
 protected:

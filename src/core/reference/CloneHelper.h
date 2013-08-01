@@ -54,7 +54,7 @@ namespace Ovito {
  * sub-object references. This methods interprets the \c deepCopy parameter by returning the unmodified
  * input object if \c deepCopy==false.
  */
-class CloneHelper : public QObject
+class OVITO_CORE_EXPORT CloneHelper : public QObject
 {
 	Q_OBJECT
 

@@ -35,7 +35,7 @@ namespace Ovito {
 /**
  * \brief Represents a plugin that is loaded at runtime.
  */
-class Plugin : public QObject
+class OVITO_CORE_EXPORT Plugin : public QObject
 {
 	Q_OBJECT
 

@@ -42,7 +42,7 @@ class ViewportSceneRenderer;	// defined in ViewportSceneRenderer.h
  * The topmost handler on the stack handles the mouse messages for the viewport
  * windows.
  */
-class ViewportInputHandler : public OvitoObject
+class OVITO_CORE_EXPORT ViewportInputHandler : public OvitoObject
 {
 public:
 

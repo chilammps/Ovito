@@ -30,7 +30,7 @@ namespace Ovito {
 /******************************************************************************
 * A parameter UI for floating-point properties.
 ******************************************************************************/
-class FloatParameterUI : public NumericalParameterUI
+class OVITO_CORE_EXPORT FloatParameterUI : public NumericalParameterUI
 {
 public:
 

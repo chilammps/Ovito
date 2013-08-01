@@ -30,7 +30,7 @@ namespace Ovito {
 /******************************************************************************
 * This UI lets the user change a property using a combo box widget.
 ******************************************************************************/
-class VariantComboBoxParameterUI : public PropertyParameterUI
+class OVITO_CORE_EXPORT VariantComboBoxParameterUI : public PropertyParameterUI
 {
 public:
 

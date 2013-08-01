@@ -29,6 +29,12 @@
 #include <base/linalg/LinAlg.h>
 #include <base/utilities/Color.h>
 
+#ifdef OVITO_CORE_LIBRARY
+#  define OVITO_CORE_EXPORT Q_DECL_EXPORT
+#else
+#  define OVITO_CORE_EXPORT Q_DECL_IMPORT
+#endif
+
 /******************************************************************************
 * Include some basic headers.
 ******************************************************************************/

@@ -37,7 +37,7 @@ class OvitoObject;		// defined in OvitoObject.h
 /**
  * \brief An output stream that can serialize a graph of OvitoObject instances to a file.
  */
-class ObjectSaveStream : public SaveStream
+class OVITO_CORE_EXPORT ObjectSaveStream : public SaveStream
 {
 	Q_OBJECT	
 

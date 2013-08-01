@@ -29,14 +29,20 @@
 
 #include <base/Base.h>
 
+#ifdef OVITO_VIDEO_LIBRARY
+#  define OVITO_VIDEO_EXPORT Q_DECL_EXPORT
+#else
+#  define OVITO_VIDEO_EXPORT Q_DECL_IMPORT
+#endif
+
 extern "C" {
-struct AVFormatContext;
-struct AVOutputFormat;
-struct AVCodec;
-struct AVStream;
-struct AVCodecContext;
-struct AVFrame;
-struct SwsContext;
+	struct AVFormatContext;
+	struct AVOutputFormat;
+	struct AVCodec;
+	struct AVStream;
+	struct AVCodecContext;
+	struct AVFrame;
+	struct SwsContext;
 };
 
 namespace Ovito {
@@ -44,7 +50,7 @@ namespace Ovito {
 /**
  * \brief Wrapper class for the FFmpeg video encoding library.
  */
-class VideoEncoder : public QObject
+class OVITO_VIDEO_EXPORT VideoEncoder : public QObject
 {
 public:
 

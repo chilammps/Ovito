@@ -31,7 +31,7 @@ namespace Ovito {
 * A parameter UI for Vector3 properties. 
 * This ParameterUI lets the user edit one of the X, Y and Z components of the vector.
 ******************************************************************************/
-class Vector3ParameterUI : public FloatParameterUI
+class OVITO_CORE_EXPORT Vector3ParameterUI : public FloatParameterUI
 {
 public:
 

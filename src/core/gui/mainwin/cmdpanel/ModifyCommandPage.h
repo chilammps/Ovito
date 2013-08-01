@@ -36,7 +36,7 @@ class Modifier;					// defined in Modifier.h
 /******************************************************************************
 * The creation page lets the user modify the selected object.
 ******************************************************************************/
-class ModifyCommandPage : public CommandPanelPage
+class OVITO_CORE_EXPORT ModifyCommandPage : public CommandPanelPage
 {
 	Q_OBJECT
 

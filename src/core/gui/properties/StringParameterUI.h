@@ -30,7 +30,7 @@ namespace Ovito {
 /******************************************************************************
 * This UI allows the user to edit a string property of the object being edited.
 ******************************************************************************/
-class StringParameterUI : public PropertyParameterUI
+class OVITO_CORE_EXPORT StringParameterUI : public PropertyParameterUI
 {
 public:
 	/// Constructor for a Qt property.

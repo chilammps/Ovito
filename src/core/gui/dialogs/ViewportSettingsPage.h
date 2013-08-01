@@ -33,7 +33,7 @@ namespace Ovito {
  * \brief A dialog page that is plugged into the application's settings dialog to let the user
  *        configure the general viewport settings.
  */
-class ViewportSettingsPage : public ApplicationSettingsPage
+class OVITO_CORE_EXPORT ViewportSettingsPage : public ApplicationSettingsPage
 {
 public:
 

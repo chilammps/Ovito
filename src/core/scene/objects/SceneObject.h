@@ -43,7 +43,7 @@ class DataSet;				// defined in DataSet.h
 
  * A single SceneObject can be referenced by multiple ObjectNode instances.
  */
-class SceneObject : public RefTarget
+class OVITO_CORE_EXPORT SceneObject : public RefTarget
 {
 protected:
 

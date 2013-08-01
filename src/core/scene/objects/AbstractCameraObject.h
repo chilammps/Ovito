@@ -37,7 +37,7 @@ struct ViewProjectionParameters;	// defined in Viewport.h
 /**
  * \brief Abstract base class for camera scene objects.
  */
-class AbstractCameraObject : public SceneObject
+class OVITO_CORE_EXPORT AbstractCameraObject : public SceneObject
 {
 public:
 	

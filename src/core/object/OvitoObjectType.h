@@ -42,7 +42,7 @@ class Plugin;						// defined in Plugin.h
 /**
  * \brief Stores meta-information about a class in Ovito's object system.
  */
-class OvitoObjectType
+class OVITO_CORE_EXPORT OvitoObjectType
 {
 public:
 

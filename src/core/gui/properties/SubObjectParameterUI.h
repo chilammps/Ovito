@@ -32,7 +32,7 @@ namespace Ovito {
 * This parameter UI will open up a sub-editor for an object that is
 * referenced by the edit object.
 ******************************************************************************/
-class SubObjectParameterUI : public PropertyParameterUI
+class OVITO_CORE_EXPORT SubObjectParameterUI : public PropertyParameterUI
 {
 public:
 

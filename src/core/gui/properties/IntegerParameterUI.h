@@ -30,7 +30,7 @@ namespace Ovito {
 /******************************************************************************
 * A parameter UI for integer properties.
 ******************************************************************************/
-class IntegerParameterUI : public NumericalParameterUI
+class OVITO_CORE_EXPORT IntegerParameterUI : public NumericalParameterUI
 {
 public:
 

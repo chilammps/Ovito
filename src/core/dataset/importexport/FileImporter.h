@@ -36,7 +36,7 @@ namespace Ovito {
 /**
  * \brief Abstract base class for file import services.
  */
-class FileImporter : public RefTarget
+class OVITO_CORE_EXPORT FileImporter : public RefTarget
 {
 protected:
 	
@@ -91,7 +91,7 @@ private:
 /**
  * \brief This descriptor contains information about an installed FileImorpter service.
  */
-class FileImporterDescription
+class OVITO_CORE_EXPORT FileImporterDescription
 {
 public:
 

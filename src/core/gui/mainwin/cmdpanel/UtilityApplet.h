@@ -46,7 +46,7 @@ namespace Ovito {
  * When the utilities page of the command panel is closed, the current applet is
  * also closed by calling its closeUtility() method.
  */
-class UtilityApplet : public RefMaker
+class OVITO_CORE_EXPORT UtilityApplet : public RefMaker
 {
 protected:
 	

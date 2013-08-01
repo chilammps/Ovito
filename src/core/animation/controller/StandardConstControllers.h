@@ -117,7 +117,7 @@ protected:
 };
 
 // Define some standard constant controllers.
-class ConstFloatController : public StandardConstController<FloatController, FloatType, FloatType> {
+class OVITO_CORE_EXPORT ConstFloatController : public StandardConstController<FloatController, FloatType, FloatType> {
 public:
 	Q_INVOKABLE ConstFloatController() {}
 private:
@@ -125,7 +125,7 @@ private:
 	OVITO_OBJECT
 };
 
-class ConstIntegerController : public StandardConstController<IntegerController, int, int> {
+class OVITO_CORE_EXPORT ConstIntegerController : public StandardConstController<IntegerController, int, int> {
 public:
 	Q_INVOKABLE ConstIntegerController() {}
 private:
@@ -133,7 +133,7 @@ private:
 	OVITO_OBJECT
 };
 
-class ConstVectorController : public StandardConstController<VectorController, Vector3, Vector3::Zero> {
+class OVITO_CORE_EXPORT ConstVectorController : public StandardConstController<VectorController, Vector3, Vector3::Zero> {
 public:
 	Q_INVOKABLE ConstVectorController() {}
 private:
@@ -144,7 +144,7 @@ private:
 struct _BooleanValueAddFunction : public std::binary_function<bool, bool, bool> {
 	bool operator()(const bool& b1, const bool& b2) const { return b2; }
 };
-class ConstBooleanController : public StandardConstController<BooleanController, bool, bool, _BooleanValueAddFunction> {
+class OVITO_CORE_EXPORT ConstBooleanController : public StandardConstController<BooleanController, bool, bool, _BooleanValueAddFunction> {
 public:
 	Q_INVOKABLE ConstBooleanController() {}
 private:

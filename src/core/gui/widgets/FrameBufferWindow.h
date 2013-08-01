@@ -31,7 +31,7 @@ namespace Ovito {
 /******************************************************************************
 * This window displays the contents of a FrameBuffer.
 ******************************************************************************/
-class FrameBufferWindow : public QMainWindow
+class OVITO_CORE_EXPORT FrameBufferWindow : public QMainWindow
 {
 public:
 

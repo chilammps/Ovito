@@ -33,7 +33,7 @@ namespace Ovito {
  *
  * This class is always used in conjunction with a LinkedFileImporter class.
  */
-class LinkedFileObject : public SceneObject
+class OVITO_CORE_EXPORT LinkedFileObject : public SceneObject
 {
 public:
 

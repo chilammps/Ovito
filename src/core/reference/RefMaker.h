@@ -44,7 +44,7 @@ class VectorReferenceFieldBase;		// defined in PropertyFieldDescriptor.h
  * a cyclic reference would be created by setting a reference field to
  * a new target.
  */
-class CyclicReferenceError : public Exception
+class OVITO_CORE_EXPORT CyclicReferenceError : public Exception
 {
 public:
 
@@ -55,7 +55,7 @@ public:
 /**
  * \brief Base class for all objects that hold references to other objects (reference targets).
  */
-class RefMaker : public OvitoObject
+class OVITO_CORE_EXPORT RefMaker : public OvitoObject
 {
 	Q_OBJECT
 

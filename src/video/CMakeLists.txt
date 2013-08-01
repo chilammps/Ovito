@@ -30,6 +30,9 @@ IF(NOT FFMPEG_FOUND)
 ENDIF()
 INCLUDE_DIRECTORIES(${FFMPEG_INCLUDE_DIR})
 
+# This will let the source code export symbols when building a DLL.
+ADD_DEFINITIONS(-DOVITO_VIDEO_LIBRARY)
+
 # Build library.
 ADD_LIBRARY(Video ${VIDEO_SOURCE_FILES})
 TARGET_LINK_LIBRARIES(Video Base)

@@ -31,7 +31,7 @@ namespace Ovito {
 /******************************************************************************
 * A list view that shows the RefTarget items contained in a vector reference field.
 ******************************************************************************/
-class RefTargetListParameterUI : public ParameterUI
+class OVITO_CORE_EXPORT RefTargetListParameterUI : public ParameterUI
 {
 public:
 	/// Constructor.

@@ -31,7 +31,7 @@ namespace Ovito {
 * A parameter UI for AffineTransformation type properties.
 * This ParameterUI lets the user edit the individual matrix components.
 ******************************************************************************/
-class AffineTransformationParameterUI : public FloatParameterUI
+class OVITO_CORE_EXPORT AffineTransformationParameterUI : public FloatParameterUI
 {
 public:
 

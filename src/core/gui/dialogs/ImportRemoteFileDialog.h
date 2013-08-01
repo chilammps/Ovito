@@ -35,7 +35,7 @@ namespace Ovito {
 /**
  * \brief This dialog lets the user select a remote file to be imported.
  */
-class ImportRemoteFileDialog : public QDialog
+class OVITO_CORE_EXPORT ImportRemoteFileDialog : public QDialog
 {
 	Q_OBJECT
 	

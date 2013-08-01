@@ -37,7 +37,7 @@ namespace Ovito {
  * \brief Base class for UI components that allow the user to edit a parameter
  *        of a RefTarget derived object in the PropertiesEditor.
  */
-class ParameterUI : public RefMaker
+class OVITO_CORE_EXPORT ParameterUI : public RefMaker
 {
 public:
 
@@ -139,7 +139,7 @@ private:
  * \brief Base class for UI components that allow the user to edit a property of
  *        an object that is stored in a reference field, a property field, or a Qt property.
  */
-class PropertyParameterUI : public ParameterUI
+class OVITO_CORE_EXPORT PropertyParameterUI : public ParameterUI
 {
 public:
 	

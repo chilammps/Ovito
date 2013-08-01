@@ -38,7 +38,7 @@ class ViewportSceneRenderer;
 /**
  * \brief Buffer object that stores a text string to be rendered in the viewports.
  */
-class ViewportTextGeometryBuffer : public TextGeometryBuffer, private SharedOpenGLResource
+class OVITO_CORE_EXPORT ViewportTextGeometryBuffer : public TextGeometryBuffer, private SharedOpenGLResource
 {
 public:
 

@@ -35,7 +35,7 @@ namespace Ovito {
 /**
  * \brief Scene node that groups all child nodes together.
  */
-class GroupNode : public SceneNode
+class OVITO_CORE_EXPORT GroupNode : public SceneNode
 {
 public:
 

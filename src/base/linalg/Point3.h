@@ -53,20 +53,20 @@ public:
 	Point_3() {}
 
 	/// \brief Constructs a point with all three coordinates set to the given value.
-	constexpr explicit Point_3(T val) : std::array<T, 3>{{val,val,val}} {}
+	Q_DECL_CONSTEXPR explicit Point_3(T val) : std::array<T, 3>{{val,val,val}} {}
 
 	/// \brief Initializes the coordinates of the point with the given component values.
-	constexpr Point_3(T x, T y, T z) : std::array<T, 3>{{x, y, z}} {}
+	Q_DECL_CONSTEXPR Point_3(T x, T y, T z) : std::array<T, 3>{{x, y, z}} {}
 
 	/// \brief Initializes the point to the origin. All coordinates are set to zero.
-	constexpr Point_3(Origin) : std::array<T, 3>{{T(0), T(0), T(0)}} {}
+	Q_DECL_CONSTEXPR Point_3(Origin) : std::array<T, 3>{{T(0), T(0), T(0)}} {}
 
 	/// \brief Initializes the point from an array.
-	constexpr explicit Point_3(const std::array<T, 3>& a) : std::array<T, 3>(a) {}
+	Q_DECL_CONSTEXPR explicit Point_3(const std::array<T, 3>& a) : std::array<T, 3>(a) {}
 
 	/// \brief Casts the point to a point with another data type.
 	template<typename U>
-	constexpr explicit operator Point_3<U>() const { return Point_3<U>(static_cast<U>(x()), static_cast<U>(y()), static_cast<U>(z())); }
+	Q_DECL_CONSTEXPR explicit operator Point_3<U>() const { return Point_3<U>(static_cast<U>(x()), static_cast<U>(y()), static_cast<U>(z())); }
 
 	///////////////////////////// Assignment operators ///////////////////////////
 
@@ -101,13 +101,13 @@ public:
 	//////////////////////////// Component access //////////////////////////
 
 	/// \brief Returns the value of the X coordinate of this point.
-	constexpr T x() const { return (*this)[0]; }
+	Q_DECL_CONSTEXPR T x() const { return (*this)[0]; }
 
 	/// \brief Returns the value of the Y coordinate of this point.
-	constexpr T y() const { return (*this)[1]; }
+	Q_DECL_CONSTEXPR T y() const { return (*this)[1]; }
 
 	/// \brief Returns the value of the Z coordinate of this point.
-	constexpr T z() const { return (*this)[2]; }
+	Q_DECL_CONSTEXPR T z() const { return (*this)[2]; }
 
 	/// \brief Returns a reference to the X coordinate of this point.
 	T& x() { return (*this)[0]; }
@@ -122,45 +122,45 @@ public:
 
 	/// \brief Compares two points for exact equality.
 	/// \return true if all coordinates are equal; false otherwise.
-	constexpr bool operator==(const Point_3& p) const { return (p.x()==x()) && (p.y()==y()) && (p.z()==z()); }
+	Q_DECL_CONSTEXPR bool operator==(const Point_3& p) const { return (p.x()==x()) && (p.y()==y()) && (p.z()==z()); }
 
 	/// \brief Compares two vectors for inequality.
 	/// \return true if any of the coordinates is not equal; false if all are equal.
-	constexpr bool operator!=(const Point_3& p) const { return (p.x()!=x()) || (p.y()!=y()) || (p.z()!=z()); }
+	Q_DECL_CONSTEXPR bool operator!=(const Point_3& p) const { return (p.x()!=x()) || (p.y()!=y()) || (p.z()!=z()); }
 
 	/// \brief Checks whether the point is origin, i.e. all coordinates are zero.
 	/// \return true if all of the coordinates are exactly zero; false otherwise.
-	constexpr bool operator==(Origin) const { return (x()==T(0)) && (y()==T(0)) && (z()==T(0)); }
+	Q_DECL_CONSTEXPR bool operator==(Origin) const { return (x()==T(0)) && (y()==T(0)) && (z()==T(0)); }
 
 	/// \brief Checks whether the point is not the origin, i.e. any of the coordinates is nonzero.
 	/// \return true if any of the coordinates is nonzero; false if this is the origin point otherwise.
-	constexpr bool operator!=(Origin) const { return (x()!=T(0)) || (y()!=T(0)) || (z()!=T(0)); }
+	Q_DECL_CONSTEXPR bool operator!=(Origin) const { return (x()!=T(0)) || (y()!=T(0)) || (z()!=T(0)); }
 
 	/// \brief Checks whether two points are equal within a given tolerance.
 	/// \param p The point that should be compared to this object.
 	/// \param tolerance A non-negative threshold for the equality test. The two points are considered equal when
 	///        the differences in the X, Y, and Z directions are all smaller than this tolerance value.
 	/// \return true if this point is equal to the given point within the given tolerance.
-	constexpr bool equals(const Point_3& p, T tolerance = T(FLOATTYPE_EPSILON)) const {
+	Q_DECL_CONSTEXPR bool equals(const Point_3& p, T tolerance = T(FLOATTYPE_EPSILON)) const {
 		return std::abs(p.x() - x()) <= tolerance && std::abs(p.y() - y()) <= tolerance && std::abs(p.z() - z()) <= tolerance;
 	}
 
 	/// \brief Checks whether the point is the origin within a given tolerance.
 	/// \param tolerance A non-negative threshold.
 	/// \return true if the absolute value of all components is smaller than the tolerance.
-	constexpr bool isOrigin(T tolerance = T(FLOATTYPE_EPSILON)) const {
+	Q_DECL_CONSTEXPR bool isOrigin(T tolerance = T(FLOATTYPE_EPSILON)) const {
 		return std::abs(x()) <= tolerance && std::abs(y()) <= tolerance && std::abs(z()) <= tolerance;
 	}
 
 	///////////////////////////////// Utilities ////////////////////////////////
 
 	/// \brief Returns the index of the coordinate with the maximum value.
-	constexpr inline std::size_t maxComponent() const {
+	Q_DECL_CONSTEXPR inline std::size_t maxComponent() const {
 	    return ((x() >= y()) ? ((x() >= z()) ? 0 : 2) : ((y() >= z()) ? 1 : 2));
 	}
 
 	/// \brief Returns the index of the coordinate with the minimum value.
-	constexpr inline std::size_t minComponent() const {
+	Q_DECL_CONSTEXPR inline std::size_t minComponent() const {
 	    return ((x() <= y()) ? ((x() <= z()) ? 0 : 2) : ((y() <= z()) ? 1 : 2));
 	}
 
@@ -173,49 +173,49 @@ public:
 
 /// \brief Computes the sum of a point and a vector.
 template<typename T>
-constexpr Point_3<T> operator+(const Point_3<T>& a, const Vector_3<T>& b) {
+Q_DECL_CONSTEXPR Point_3<T> operator+(const Point_3<T>& a, const Vector_3<T>& b) {
 	return { a.x() + b.x(), a.y() + b.y(), a.z() + b.z() };
 }
 
 /// \brief Converts a vector to a point.
 template<typename T>
-constexpr Point_3<T> operator+(typename Point_3<T>::Origin, const Vector_3<T>& b) {
+Q_DECL_CONSTEXPR Point_3<T> operator+(typename Point_3<T>::Origin, const Vector_3<T>& b) {
 	return Point_3<T>(b);
 }
 
 /// \brief Computes the sum of a vector and a point.
 template<typename T>
-constexpr Point_3<T> operator+(const Vector_3<T>& a, const Point_3<T>& b) {
+Q_DECL_CONSTEXPR Point_3<T> operator+(const Vector_3<T>& a, const Point_3<T>& b) {
 	return b + a;
 }
 
 /// \brief Computes the difference of a point and a vector.
 template<typename T>
-constexpr Point_3<T> operator-(const Point_3<T>& a, const Vector_3<T>& b) {
+Q_DECL_CONSTEXPR Point_3<T> operator-(const Point_3<T>& a, const Vector_3<T>& b) {
 	return { a.x() - b.x(), a.y() - b.y(), a.z() - b.z() };
 }
 
 /// \brief Computes the difference vector of two points.
 template<typename T>
-constexpr Vector_3<T> operator-(const Point_3<T>& a, const Point_3<T>& b) {
+Q_DECL_CONSTEXPR Vector_3<T> operator-(const Point_3<T>& a, const Point_3<T>& b) {
 	return { a.x() - b.x(), a.y() - b.y(), a.z() - b.z() };
 }
 
 /// \brief Computes the product of a point and a scalar value.
 template<typename T>
-constexpr Point_3<T> operator*(const Point_3<T>& a, T s) {
+Q_DECL_CONSTEXPR Point_3<T> operator*(const Point_3<T>& a, T s) {
 	return { a.x() * s, a.y() * s, a.z() * s };
 }
 
 /// \brief Computes the product of a point and a scalar value.
 template<typename T>
-constexpr Point_3<T> operator*(T s, const Point_3<T>& a) {
+Q_DECL_CONSTEXPR Point_3<T> operator*(T s, const Point_3<T>& a) {
 	return { a.x() * s, a.y() * s, a.z() * s };
 }
 
 /// \brief Computes the division of a vector by a scalar value.
 template<typename T>
-constexpr Point_3<T> operator/(const Point_3<T>& a, T s) {
+Q_DECL_CONSTEXPR Point_3<T> operator/(const Point_3<T>& a, T s) {
 	return { a.x() / s, a.y() / s, a.z() / s };
 }
 

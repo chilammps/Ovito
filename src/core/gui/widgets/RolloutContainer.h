@@ -108,7 +108,7 @@ private:
 * This is part of the implementation of the RolloutContainer and
 * should not be used outside of a RolloutContainer.
 ******************************************************************************/
-class Rollout : public QWidget
+class OVITO_CORE_EXPORT Rollout : public QWidget
 {
 	Q_OBJECT
 
@@ -181,7 +181,7 @@ private:
 /******************************************************************************
 * This container manages multiple rollouts.
 ******************************************************************************/
-class RolloutContainer : public QScrollArea
+class OVITO_CORE_EXPORT RolloutContainer : public QScrollArea
 {
 	Q_OBJECT
 

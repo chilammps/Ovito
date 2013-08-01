@@ -35,7 +35,7 @@ namespace Ovito {
 /**
  * \brief A spinner control for editing a numeric value.
  */
-class SpinnerWidget : public QWidget
+class OVITO_CORE_EXPORT SpinnerWidget : public QWidget
 {
 	Q_OBJECT
 	

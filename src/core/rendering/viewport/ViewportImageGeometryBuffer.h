@@ -38,7 +38,7 @@ class ViewportSceneRenderer;
 /**
  * \brief Buffer object that stores an image to be rendered in the viewports.
  */
-class ViewportImageGeometryBuffer : public ImageGeometryBuffer, private SharedOpenGLResource
+class OVITO_CORE_EXPORT ViewportImageGeometryBuffer : public ImageGeometryBuffer, private SharedOpenGLResource
 {
 public:
 

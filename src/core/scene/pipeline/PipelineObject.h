@@ -36,7 +36,7 @@ namespace Ovito {
 /**
  * \brief This scene object type takes an input object and applies a list of modifiers to it.
  */
-class PipelineObject : public SceneObject
+class OVITO_CORE_EXPORT PipelineObject : public SceneObject
 {
 public:
 

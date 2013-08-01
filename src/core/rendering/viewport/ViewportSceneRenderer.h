@@ -46,7 +46,7 @@ class PipelineObject;		// defined in PipelineObject.h
  * \brief This is the default scene renderer used to render the contents
  *        of the interactive viewports.
  */
-class ViewportSceneRenderer : public SceneRenderer
+class OVITO_CORE_EXPORT ViewportSceneRenderer : public SceneRenderer
 {
 public:
 

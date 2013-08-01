@@ -74,7 +74,7 @@ public:
 	/// The box is considered empty when one of the maximum corner coordinates is less
 	/// then the minimum corner coordinate.
 	/// \return true if this box is empty; false otherwise.
-	constexpr bool isEmpty() const {
+	Q_DECL_CONSTEXPR bool isEmpty() const {
         return (minc.x() > maxc.x()) || (minc.y() > maxc.y());
 	}
 
@@ -101,28 +101,28 @@ public:
 	}
 
 	/// \brief Computes the width of the box.
-	constexpr T width() const { return maxc.x() - minc.x(); }
+	Q_DECL_CONSTEXPR T width() const { return maxc.x() - minc.x(); }
 
 	/// \brief Computes the height of the box.
-	constexpr T height() const { return maxc.y() - minc.y(); }
+	Q_DECL_CONSTEXPR T height() const { return maxc.y() - minc.y(); }
 
 	/// \brief Computes the center of the box.
 	/// \return The center of the box.
-	constexpr Point_2<T> center() const {
+	Q_DECL_CONSTEXPR Point_2<T> center() const {
 		return Point_2<T>((minc.x() + maxc.x()) / 2, (minc.y() + maxc.y()) / 2);
 	}
 
 	/// \brief Computes the size of the box.
 	/// \return The difference between the maximum and minimum corner.
 	/// \sa width(), height()
-	constexpr Vector_2<T> size() const {
+	Q_DECL_CONSTEXPR Vector_2<T> size() const {
 		return maxc - minc;
 	}
 
 	/// \brief Returns the size of the box in the given dimension.
 	/// \param dimension The index of the dimension (0 or 1).
 	/// \sa size(), width(), height()
-	constexpr T size(typename Point_2<T>::size_type dimension) const {
+	Q_DECL_CONSTEXPR T size(typename Point_2<T>::size_type dimension) const {
 		return maxc[dimension] - minc[dimension];
 	}
 
@@ -131,7 +131,7 @@ public:
 	/// \brief Checks whether a point is inside the box.
 	/// \param p The point to test.
 	/// \return true if the given point is inside or on the edge of the bounding box; false if it is completely outside the box.
-	constexpr bool contains(const Point_2<T>& p) const {
+	Q_DECL_CONSTEXPR bool contains(const Point_2<T>& p) const {
 		return (p.x() >= minc.x() && p.x() <= maxc.x() && p.y() >= minc.y() && p.y() <= maxc.y());
 	}
 
@@ -140,7 +140,7 @@ public:
 	/// Returns -1 if the point is outside of the box.
 	/// Returns 0 if the point is on the boundary of the box within the given tolerance.
 	/// Returns +1 if the point is inside of the box.
-	constexpr int classifyPoint(const Point_2<T>& p, T epsilon = T(FLOATTYPE_EPSILON)) const {
+	Q_DECL_CONSTEXPR int classifyPoint(const Point_2<T>& p, T epsilon = T(FLOATTYPE_EPSILON)) const {
 		return
 				(p.x() > maxc.x() + epsilon || p.y() > maxc.y() + epsilon) ||
 				(p.x() < minc.x() - epsilon || p.y() < minc.y() - epsilon)
@@ -151,14 +151,14 @@ public:
 
 	/// \brief Checks whether another box is contained in this box.
 	/// \return true if the given box is completely inside the bounding box.
-	constexpr bool containsBox(const Box_2<T>& b) const {
+	Q_DECL_CONSTEXPR bool containsBox(const Box_2<T>& b) const {
 		return (b.minc.x() >= minc.x() && b.maxc.x() <= maxc.x()) &&
 			(b.minc.y() >= minc.y() && b.maxc.y() <= maxc.y());
 	}
 
 	/// \brief Checks whether the intersection of two boxes is not empty.
 	/// \return true if the given box is not completely outside of this box.
-	constexpr bool intersects(const Box_2<T>& b) const {
+	Q_DECL_CONSTEXPR bool intersects(const Box_2<T>& b) const {
 		return (maxc.x() > b.minc.x() && minc.x() < b.maxc.x() &&
 				maxc.y() > b.minc.y() && minc.y() < b.maxc.y() &&
 				!isEmpty() && !b.isEmpty());

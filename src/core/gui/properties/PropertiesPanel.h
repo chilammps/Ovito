@@ -32,7 +32,7 @@ namespace Ovito {
 /******************************************************************************
 * This panel lets the user edit the properties of some RefTarget derived object.
 ******************************************************************************/
-class PropertiesPanel : public RolloutContainer
+class OVITO_CORE_EXPORT PropertiesPanel : public RolloutContainer
 {
 	Q_OBJECT
 	

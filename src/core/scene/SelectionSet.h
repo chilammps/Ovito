@@ -41,7 +41,7 @@ namespace Ovito {
  *
  * The current selection set can be accessed via the DataSetManager::currentSelection() method.
  */
-class SelectionSet : public RefTarget
+class OVITO_CORE_EXPORT SelectionSet : public RefTarget
 {
 public:
 

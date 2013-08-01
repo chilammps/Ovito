@@ -29,7 +29,7 @@ namespace Ovito {
 template<typename R> class Future;
 class FutureInterfaceBase;
 
-class FutureWatcher : public QObject
+class OVITO_CORE_EXPORT FutureWatcher : public QObject
 {
 public:
 

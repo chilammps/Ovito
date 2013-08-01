@@ -34,7 +34,7 @@ namespace Ovito {
 /**
  * \brief A viewport renderer used for object picking.
  */
-class PickingSceneRenderer : public ViewportSceneRenderer
+class OVITO_CORE_EXPORT PickingSceneRenderer : public ViewportSceneRenderer
 {
 public:
 

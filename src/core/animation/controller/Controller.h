@@ -45,7 +45,7 @@ class SceneNode;		// defined in SceneNode.h
  * 
  * Instances of Controller-derived classes can be created using the ControllerManager.
  */
-class Controller : public RefTarget
+class OVITO_CORE_EXPORT Controller : public RefTarget
 {
 protected:
 	
@@ -197,7 +197,7 @@ public:
  * 
  * This controller class is used for object parameters with the FloatType data type.
  */
-class FloatController : public TypedController<FloatType, FloatType>
+class OVITO_CORE_EXPORT FloatController : public TypedController<FloatType, FloatType>
 { 
 protected:
 
@@ -224,7 +224,7 @@ private:
  * 
  * This controller class is used for object parameters with the \c int data type.
  */
-class IntegerController : public TypedController<int, int>
+class OVITO_CORE_EXPORT IntegerController : public TypedController<int, int>
 {
 protected: 
 
@@ -251,7 +251,7 @@ private:
  * 
  * This controller class is used for object parameters with the \c bool data type.
  */
-class BooleanController : public TypedController<bool, bool>
+class OVITO_CORE_EXPORT BooleanController : public TypedController<bool, bool>
 {
 protected:
 
@@ -278,7 +278,7 @@ private:
  * 
  * This controller class is used for object parameters with the Vector3 data type.
  */
-class VectorController : public TypedController<Vector3, Vector3>
+class OVITO_CORE_EXPORT VectorController : public TypedController<Vector3, Vector3>
 {
 protected:
 
@@ -316,7 +316,7 @@ private:
  * 
  * A position controller is used to animate the position of an object.
  */
-class PositionController : public TypedController<Vector3, AffineTransformation>
+class OVITO_CORE_EXPORT PositionController : public TypedController<Vector3, AffineTransformation>
 {
 protected:
 
@@ -353,7 +353,7 @@ private:
  * 
  * A position controller is used to animate the orientation of an object.
  */
-class RotationController : public TypedController<Rotation, AffineTransformation>
+class OVITO_CORE_EXPORT RotationController : public TypedController<Rotation, AffineTransformation>
 {
 protected:
 
@@ -390,7 +390,7 @@ private:
  * 
  * A position controller is used to animate the scaling of an object.
  */
-class ScalingController : public TypedController<Scaling, AffineTransformation>
+class OVITO_CORE_EXPORT ScalingController : public TypedController<Scaling, AffineTransformation>
 { 
 protected:
 
@@ -427,7 +427,7 @@ private:
 /**
  * \brief Provides access to default controller implementations.
  */
-class ControllerManager
+class OVITO_CORE_EXPORT ControllerManager
 {
 public:
 

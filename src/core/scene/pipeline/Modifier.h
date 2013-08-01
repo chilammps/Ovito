@@ -48,7 +48,7 @@ class ObjectNode;				// defined in ObjectNode.h
  *
  * A Modifier is applied to an object using ObjectNode::applyModifier().
  */
-class Modifier : public RefTarget
+class OVITO_CORE_EXPORT Modifier : public RefTarget
 {
 protected:
 

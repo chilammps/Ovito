@@ -30,7 +30,7 @@ namespace Ovito {
 template<typename R> class Future;						// Defined in Future.h
 template<typename R, typename Function> class Task;		// Defined in Task.h
 
-class FutureInterfaceBase
+class OVITO_CORE_EXPORT FutureInterfaceBase
 {
 public:
 

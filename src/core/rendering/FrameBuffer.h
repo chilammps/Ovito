@@ -29,7 +29,7 @@ namespace Ovito {
 /******************************************************************************
 * Stores information about the image in a FrameBuffer.
 ******************************************************************************/
-class ImageInfo
+class OVITO_CORE_EXPORT ImageInfo
 {
 public:
 
@@ -98,7 +98,7 @@ LoadStream& operator>>(LoadStream& stream, ImageInfo& i);
 /******************************************************************************
 * A frame buffer is used by a renderer to store the rendered image.
 ******************************************************************************/
-class FrameBuffer : public QObject
+class OVITO_CORE_EXPORT FrameBuffer : public QObject
 {
 public:
 

@@ -31,7 +31,7 @@ namespace Ovito {
 * Allows the user to edit a boolean parameter.
 * The check box is displayed in the title bar of a QGroupBox.
 ******************************************************************************/
-class BooleanGroupBoxParameterUI : public PropertyParameterUI
+class OVITO_CORE_EXPORT BooleanGroupBoxParameterUI : public PropertyParameterUI
 {
 public:
 

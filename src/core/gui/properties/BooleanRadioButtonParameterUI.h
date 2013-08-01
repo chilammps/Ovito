@@ -31,7 +31,7 @@ namespace Ovito {
 * This UI allows the user to change a boolean-value property of the object being edited
 * using two radio buttons.
 ******************************************************************************/
-class BooleanRadioButtonParameterUI : public PropertyParameterUI
+class OVITO_CORE_EXPORT BooleanRadioButtonParameterUI : public PropertyParameterUI
 {
 public:
 

@@ -34,7 +34,7 @@ namespace Ovito {
 /**
  * \brief The file chooser dialog that saves a history of recently visited directories.
  */
-class HistoryFileDialog : public QFileDialog
+class OVITO_CORE_EXPORT HistoryFileDialog : public QFileDialog
 {
 	Q_OBJECT
 	

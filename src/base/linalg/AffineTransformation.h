@@ -65,7 +65,7 @@ public:
 
 	/// \brief Constructor that initializes 9 elements of the matrix to the given values. Translation is set to zero.
 	/// \note Values are given in row-major order, i.e. row by row.
-	constexpr Matrix_34(T m11, T m12, T m13,
+	Q_DECL_CONSTEXPR Matrix_34(T m11, T m12, T m13,
 					    T m21, T m22, T m23,
 					    T m31, T m32, T m33) :
 		_m{Vector_3<T>(m11,m21,m31),
@@ -75,7 +75,7 @@ public:
 
 	/// \brief Constructor that initializes all elements of the matrix to the given values.
 	/// \note Values are given in row-major order, i.e. row by row.
-	constexpr Matrix_34(T m11, T m12, T m13, T m14,
+	Q_DECL_CONSTEXPR Matrix_34(T m11, T m12, T m13, T m14,
 					    T m21, T m22, T m23, T m24,
 					    T m31, T m32, T m33, T m34) :
 		_m{Vector_3<T>(m11,m21,m31),
@@ -84,12 +84,12 @@ public:
 			Vector_3<T>(m14,m24,m34)} {}
 
 	/// \brief Constructor that initializes the matrix from four column vectors.
-	constexpr Matrix_34(const Vector_3<T>& c1, const Vector_3<T>& c2, const Vector_3<T>& c3, const Vector_3<T>& c4) :
+	Q_DECL_CONSTEXPR Matrix_34(const Vector_3<T>& c1, const Vector_3<T>& c2, const Vector_3<T>& c3, const Vector_3<T>& c4) :
 			_m{c1, c2, c3, c4} {}
 
 	/// \brief Initializes the matrix to the null matrix.
 	/// All matrix elements are set to zero by this constructor.
-	constexpr Matrix_34(Zero) : _m{
+	Q_DECL_CONSTEXPR Matrix_34(Zero) : _m{
 		typename Vector_3<T>::Zero(),
 		typename Vector_3<T>::Zero(),
 		typename Vector_3<T>::Zero(),
@@ -97,7 +97,7 @@ public:
 
 	/// \brief Initializes the matrix to the identity matrix.
 	/// All diagonal elements are set to one and all off-diagonal elements are set to zero.
-	constexpr Matrix_34(Identity) : _m{
+	Q_DECL_CONSTEXPR Matrix_34(Identity) : _m{
 		Vector_3<T>(T(1),T(0),T(0)),
 		Vector_3<T>(T(0),T(1),T(0)),
 		Vector_3<T>(T(0),T(0),T(1)),
@@ -105,19 +105,19 @@ public:
 
 	/// \brief Initializes the 3x4 matrix from a 3x3 matrix.
 	/// The translation component of the affine transformation is set to the null vector.
-	explicit constexpr Matrix_34(const Matrix_3<T>& tm) : _m{tm.column(0), tm.column(1), tm.column(2), typename Vector_3<T>::Zero()} {}
+	explicit Q_DECL_CONSTEXPR Matrix_34(const Matrix_3<T>& tm) : _m{tm.column(0), tm.column(1), tm.column(2), typename Vector_3<T>::Zero()} {}
 
 	/// \brief Returns the number of rows in this matrix.
-	static constexpr size_type row_count() { return 3; }
+	static Q_DECL_CONSTEXPR size_type row_count() { return 3; }
 
 	/// \brief Returns the columns of rows in this matrix.
-	static constexpr size_type col_count() { return 4; }
+	static Q_DECL_CONSTEXPR size_type col_count() { return 4; }
 
 	/// \brief Returns the value of a matrix element.
 	/// \param row The row of the element to return.
 	/// \param col The column of the element to return.
 	/// \return The value of the matrix element.
-	inline constexpr T operator()(size_type row, size_type col) const {
+	inline Q_DECL_CONSTEXPR T operator()(size_type row, size_type col) const {
 		return _m[col][row];
 	}
 
@@ -131,7 +131,7 @@ public:
 	/// \brief Returns a column vector in the matrix.
 	/// \param col The index of the column to return.
 	/// \return The i-th column of the matrix as a vector.
-	inline constexpr const Vector_3<T>& column(size_type col) const {
+	inline Q_DECL_CONSTEXPR const Vector_3<T>& column(size_type col) const {
 		return _m[col];
 	}
 
@@ -145,13 +145,13 @@ public:
 	/// \brief Returns a row from the matrix.
 	/// \param row The row to return.
 	/// \return The i-th row of the matrix as a vector.
-	constexpr Vector_4<T> row(size_type row) const {
+	Q_DECL_CONSTEXPR Vector_4<T> row(size_type row) const {
 		return { _m[0][row], _m[1][row], _m[2][row], _m[3][row] };
 	}
 
 	/// \brief Returns the translational part of this transformation matrix.
 	/// \return A vector that specifies the translation.
-	constexpr const Vector_3<T>& translation() const { return column(3); }
+	Q_DECL_CONSTEXPR const Vector_3<T>& translation() const { return column(3); }
 
 	/// \brief Returns a reference to the translational part of this transformation matrix.
 	Vector_3<T>& translation() { return column(3); }
@@ -202,20 +202,20 @@ public:
 
 	/// \brief Compares two matrices for exact equality.
 	/// \return true if all elements are equal; false otherwise.
-	constexpr bool operator==(const Matrix_34& b) const {
+	Q_DECL_CONSTEXPR bool operator==(const Matrix_34& b) const {
 		return (b._m[0] == _m[0]) && (b._m[1] == _m[1]) && (b._m[2] == _m[2]) && (b._m[3] == _m[3]);
 	}
 
 	/// \brief Compares two matrices for inequality.
 	/// \return true if not all elements are equal; false if all are equal.
-	constexpr bool operator!=(const Matrix_34& b) const {
+	Q_DECL_CONSTEXPR bool operator!=(const Matrix_34& b) const {
 		return (b._m[0] != _m[0]) || (b._m[1] != _m[1]) || (b._m[2] != _m[2]) || (b._m[3] != _m[3]);
 	}
 
 	////////////////////////////////// Computations ///////////////////////////////////
 
 	/// \brief Computes the determinant of the matrix.
-	constexpr inline T determinant() const {
+	Q_DECL_CONSTEXPR inline T determinant() const {
 		return((_m[0][0]*_m[1][1] - _m[0][1]*_m[1][0])*(_m[2][2])
 			  -(_m[0][0]*_m[1][2] - _m[0][2]*_m[1][0])*(_m[2][1])
 			  +(_m[0][1]*_m[1][2] - _m[0][2]*_m[1][1])*(_m[2][0]));
@@ -248,18 +248,18 @@ public:
 
 	/// Multiplies a 3x4 matrix with a Point3 (which is extended to a 4-vector with the last
 	/// element being 1) and returns one component of the resulting point.
-	inline constexpr T prodrow(const Point_3<T>& p, typename Point_3<T>::size_type index) const {
+	inline Q_DECL_CONSTEXPR T prodrow(const Point_3<T>& p, typename Point_3<T>::size_type index) const {
 		return _m[0][index] * p[0] + _m[1][index] * p[1] + _m[2][index] * p[2] + _m[3][index];
 	}
 
 	/// Multiplies a 3x4 matrix with a Vector3 (which is automatically extended to a 4-vector with the last
 	/// element being 0) and returns one component of the resulting vector.
-	inline constexpr T prodrow(const Vector_3<T>& v, typename Vector_3<T>::size_type index) const {
+	inline Q_DECL_CONSTEXPR T prodrow(const Vector_3<T>& v, typename Vector_3<T>::size_type index) const {
 		return _m[0][index] * v[0] + _m[1][index] * v[1] + _m[2][index] * v[2];
 	}
 
 	/// Returns the upper left 3x3 submatrix of this 3x4 matrix containing only the rotation/scale/shear transformation but not the translations.
-	inline constexpr Matrix_3<T> linear() const {
+	inline Q_DECL_CONSTEXPR Matrix_3<T> linear() const {
 		return Matrix_3<T>(_m[0], _m[1], _m[2]);
 	}
 
@@ -363,7 +363,7 @@ public:
 	/// The matrix A is a pure rotation matrix if:
 	///   (1) det(A) = 1  and
 	///   (2) A * A^T = I
-	constexpr bool isRotationMatrix(T epsilon = T(FLOATTYPE_EPSILON)) const {
+	Q_DECL_CONSTEXPR bool isRotationMatrix(T epsilon = T(FLOATTYPE_EPSILON)) const {
 		return
 			translation().isZero(epsilon) &&
 			(std::abs(_m[0][0]*_m[1][0] + _m[0][1]*_m[1][1] + _m[0][2]*_m[1][2]) <= epsilon) &&
@@ -388,7 +388,7 @@ public:
 /// Multiplies a 3x4 matrix with a Vector3 (which is automatically extended to a 4-vector with the last
 /// element being 0).
 template<typename T>
-inline constexpr Vector_3<T> operator*(const Matrix_34<T>& m, const Vector_3<T>& v)
+inline Q_DECL_CONSTEXPR Vector_3<T> operator*(const Matrix_34<T>& m, const Vector_3<T>& v)
 {
 	return { m(0,0) * v[0] + m(0,1) * v[1] + m(0,2) * v[2],
 			 m(1,0) * v[0] + m(1,1) * v[1] + m(1,2) * v[2],
@@ -398,7 +398,7 @@ inline constexpr Vector_3<T> operator*(const Matrix_34<T>& m, const Vector_3<T>&
 /// Multiplies a 3x4 matrix with a Point3 (which is extended to a 4-vector with the last
 /// element being 1).
 template<typename T>
-inline constexpr Point_3<T> operator*(const Matrix_34<T>& m, const Point_3<T>& p)
+inline Q_DECL_CONSTEXPR Point_3<T> operator*(const Matrix_34<T>& m, const Point_3<T>& p)
 {
 	return { m(0,0) * p[0] + m(0,1) * p[1] + m(0,2) * p[2] + m(0,3),
 			 m(1,0) * p[0] + m(1,1) * p[1] + m(1,2) * p[2] + m(1,3),
@@ -421,14 +421,14 @@ inline Matrix_34<T> operator*(const Matrix_34<T>& a, const Matrix_34<T>& b)
 
 /// Multiplies a 3x4 matrix with a scalar.
 template<typename T>
-constexpr inline Matrix_34<T> operator*(const Matrix_34<T>& a, T s)
+Q_DECL_CONSTEXPR inline Matrix_34<T> operator*(const Matrix_34<T>& a, T s)
 {
 	return { a.column(0)*s, a.column(1)*s, a.column(2)*s, a.column(3)*s };
 }
 
 /// Multiplies a 3x4 matrix with a scalar.
 template<typename T>
-constexpr inline Matrix_34<T> operator*(T s, const Matrix_34<T>& a)
+Q_DECL_CONSTEXPR inline Matrix_34<T> operator*(T s, const Matrix_34<T>& a)
 {
 	return a * s;
 }

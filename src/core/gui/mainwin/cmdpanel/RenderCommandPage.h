@@ -28,7 +28,7 @@ namespace Ovito {
 /******************************************************************************
 * The command panel page lets user render the scene.
 ******************************************************************************/
-class RenderCommandPage : public CommandPanelPage
+class OVITO_CORE_EXPORT RenderCommandPage : public CommandPanelPage
 {
 	Q_OBJECT
 

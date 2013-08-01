@@ -48,7 +48,7 @@ class SceneNode;			// defined below
  * A SceneNode is a node in the scene graph. Every object shown in the viewports
  * has an associated SceneNode.
  */
-class SceneNode : public RefTarget
+class OVITO_CORE_EXPORT SceneNode : public RefTarget
 {
 protected:
 

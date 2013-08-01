@@ -66,12 +66,12 @@ public:
 	/// \brief Initializes the plane from a normal vector and a distance.
 	/// \param n The normal vector. This must be a unit vector.
 	/// \param d The distance of the plane from the origin in the direction of the normal vector \a n.
-	constexpr Plane_3(const Vector_3<T>& n, T d) : normal(n), dist(d) {}
+	Q_DECL_CONSTEXPR Plane_3(const Vector_3<T>& n, T d) : normal(n), dist(d) {}
 
 	/// \brief Initializes the plane from a point and a normal vector.
 	/// \param basePoint A point in the plane.
 	/// \param n The normal vector. This must be a unit vector.
-	constexpr Plane_3(const Point_3<T>& basePoint, const Vector_3<T>& n) : normal(n), dist(normal.dot((basePoint - typename Point_3<T>::Origin()))) {}
+	Q_DECL_CONSTEXPR Plane_3(const Point_3<T>& basePoint, const Vector_3<T>& n) : normal(n), dist(normal.dot((basePoint - typename Point_3<T>::Origin()))) {}
 
 	/// \brief Initializes the plane from three points (without normalization).
 	/// \param p1 The first point in the plane.
@@ -136,11 +136,11 @@ public:
 
 	/// \brief Flips the plane orientation.
 	/// \return A new plane with reversed orientation.
-	constexpr Plane_3<T> operator-() const { return Plane_3<T>(-normal, -dist); }
+	Q_DECL_CONSTEXPR Plane_3<T> operator-() const { return Plane_3<T>(-normal, -dist); }
 
 	/// \brief Compares two planes for equality.
 	/// \return \c true if the normal vectors and the distance value of both planes a equal; \c false otherwise.
-	constexpr bool operator==(const Plane_3<T>& other) const { return normal == other.normal && dist == other.dist; }
+	Q_DECL_CONSTEXPR bool operator==(const Plane_3<T>& other) const { return normal == other.normal && dist == other.dist; }
 
 	/////////////////////////////// Classification ///////////////////////////////
 
@@ -165,7 +165,7 @@ public:
 	/// is on the positive side of the plane. A negative value means that the points is located in the
 	/// back of the plane.
 	/// \sa classifyPoint()
-	constexpr T pointDistance(const Point_3<T>& p) const {
+	Q_DECL_CONSTEXPR T pointDistance(const Point_3<T>& p) const {
 		return (normal.x() * p.x() + normal.y() * p.y() + normal.z() * p.z()) - dist;
 	}
 
@@ -206,7 +206,7 @@ public:
 	/// \param p The point to be projected.
 	/// \return The projected point. This is the point on the plane that is
 	///         is closest to the input point.
-	constexpr Point_3<T> projectPoint(const Point_3<T>& p) const {
+	Q_DECL_CONSTEXPR Point_3<T> projectPoint(const Point_3<T>& p) const {
 		return p - pointDistance(p) * normal;
 	}
 

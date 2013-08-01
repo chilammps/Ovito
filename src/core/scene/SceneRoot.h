@@ -36,7 +36,7 @@ namespace Ovito {
 /**
  * \brief This is the scene's root node.
  */
-class SceneRoot : public SceneNode
+class OVITO_CORE_EXPORT SceneRoot : public SceneNode
 {
 public:
 

@@ -34,7 +34,7 @@ namespace Ovito {
 class OpenGLContextInfo;
 class OpenGLContextManager;
 
-class SharedOpenGLResource
+class OVITO_CORE_EXPORT SharedOpenGLResource
 {
 public:
 

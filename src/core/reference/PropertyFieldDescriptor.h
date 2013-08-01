@@ -59,7 +59,7 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(PropertyFieldFlags)
 * This class describes one member field of a RefMaker that stores
 * a property of the object.
 ******************************************************************************/
-class PropertyFieldDescriptor
+class OVITO_CORE_EXPORT PropertyFieldDescriptor
 {
 public:
 

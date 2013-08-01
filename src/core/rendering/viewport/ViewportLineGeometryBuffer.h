@@ -37,7 +37,7 @@ class ViewportSceneRenderer;
 /**
  * \brief Buffer object that stores line geometry to be rendered in the viewports.
  */
-class ViewportLineGeometryBuffer : public LineGeometryBuffer
+class OVITO_CORE_EXPORT ViewportLineGeometryBuffer : public LineGeometryBuffer
 {
 public:
 

@@ -39,7 +39,7 @@ class ViewportSceneRenderer;	// defined in ViewportSceneRenderer.h
 /**
  * \brief Manages the viewports.
  */
-class ViewportManager : public RefMaker
+class OVITO_CORE_EXPORT ViewportManager : public RefMaker
 {
 public:
 

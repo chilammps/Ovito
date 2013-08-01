@@ -67,31 +67,31 @@ public:
 
 	/// \brief Constructor that initializes all 9 elements of the matrix to the given values.
 	/// \note Values are given in row-major order, i.e. row by row.
-	constexpr Matrix_3(T m11, T m12, T m13,
+	Q_DECL_CONSTEXPR Matrix_3(T m11, T m12, T m13,
 					   T m21, T m22, T m23,
 					   T m31, T m32, T m33) :
 		_m{Vector_3<T>(m11,m21,m31),Vector_3<T>(m12,m22,m32),Vector_3<T>(m13,m23,m33)} {}
 
 	/// \brief Constructor that initializes the matrix from three column vectors.
-	constexpr Matrix_3(const Vector_3<T>& c1, const Vector_3<T>& c2, const Vector_3<T>& c3) : _m{c1, c2, c3} {}
+	Q_DECL_CONSTEXPR Matrix_3(const Vector_3<T>& c1, const Vector_3<T>& c2, const Vector_3<T>& c3) : _m{c1, c2, c3} {}
 
 	/// \brief Initializes the matrix to the null matrix.
 	/// All matrix elements are set to zero by this constructor.
-	constexpr Matrix_3(Zero) : _m{
+	Q_DECL_CONSTEXPR Matrix_3(Zero) : _m{
 		typename Vector_3<T>::Zero(),
 		typename Vector_3<T>::Zero(),
 		typename Vector_3<T>::Zero()} {}
 
 	/// \brief Initializes the matrix to the identity matrix.
 	/// All diagonal elements are set to one and all off-diagonal elements are set to zero.
-	constexpr Matrix_3(Identity) : _m{
+	Q_DECL_CONSTEXPR Matrix_3(Identity) : _m{
 				Vector_3<T>(T(1),T(0),T(0)),
 				Vector_3<T>(T(0),T(1),T(0)),
 				Vector_3<T>(T(0),T(0),T(1))} {}
 
 	/// \brief Casts the matrix to a matrix with another data type.
 	template<typename U>
-	constexpr explicit operator Matrix_3<U>() const {
+	Q_DECL_CONSTEXPR explicit operator Matrix_3<U>() const {
 		return Matrix_3<U>(
 				static_cast<U>((*this)(0,0)), static_cast<U>((*this)(0,1)), static_cast<U>((*this)(0,2)),
 				static_cast<U>((*this)(1,0)), static_cast<U>((*this)(1,1)), static_cast<U>((*this)(1,2)),
@@ -99,16 +99,16 @@ public:
 	}
 
 	/// \brief Returns the number of rows in this matrix.
-	static constexpr size_type row_count() { return 3; }
+	static Q_DECL_CONSTEXPR size_type row_count() { return 3; }
 
 	/// \brief Returns the columns of rows in this matrix.
-	static constexpr size_type col_count() { return 3; }
+	static Q_DECL_CONSTEXPR size_type col_count() { return 3; }
 
 	/// \brief Returns the value of a matrix element.
 	/// \param row The row of the element to return.
 	/// \param col The column of the element to return.
 	/// \return The value of the matrix element.
-	constexpr inline T operator()(size_type row, size_type col) const {
+	Q_DECL_CONSTEXPR inline T operator()(size_type row, size_type col) const {
 		return _m[col][row];
 	}
 
@@ -122,7 +122,7 @@ public:
 	/// \brief Returns a column vector in the matrix.
 	/// \param col The index of the column to return.
 	/// \return The i-th column of the matrix as a vector.
-	constexpr const Vector_3<T>& column(size_type col) const {
+	Q_DECL_CONSTEXPR const Vector_3<T>& column(size_type col) const {
 		return _m[col];
 	}
 
@@ -136,7 +136,7 @@ public:
 	/// \brief Returns a row from the matrix.
 	/// \param row The row to return.
 	/// \return The i-th row of the matrix as a vector.
-	constexpr Vector_3<T> row(size_type row) const {
+	Q_DECL_CONSTEXPR Vector_3<T> row(size_type row) const {
 		return { _m[0][row], _m[1][row], _m[2][row] };
 	}
 
@@ -170,13 +170,13 @@ public:
 
 	/// \brief Compares two matrices for exact equality.
 	/// \return true if all elements are equal; false otherwise.
-	constexpr bool operator==(const Matrix_3& b) const {
+	Q_DECL_CONSTEXPR bool operator==(const Matrix_3& b) const {
 		return (b._m[0] == _m[0]) && (b._m[1] == _m[1]) && (b._m[2] == _m[2]);
 	}
 
 	/// \brief Compares two matrices for inequality.
 	/// \return true if not all elements are equal; false if all are equal.
-	constexpr bool operator!=(const Matrix_3& b) const {
+	Q_DECL_CONSTEXPR bool operator!=(const Matrix_3& b) const {
 		return (b._m[0] != _m[0]) || (b._m[1] != _m[1]) || (b._m[2] != _m[2]);
 	}
 
@@ -218,7 +218,7 @@ public:
 	}
 
 	/// \brief Computes the determinant of the matrix.
-	constexpr inline T determinant() const {
+	Q_DECL_CONSTEXPR inline T determinant() const {
 		return((_m[0][0]*_m[1][1] - _m[0][1]*_m[1][0])*(_m[2][2])
 			  -(_m[0][0]*_m[1][2] - _m[0][2]*_m[1][0])*(_m[2][1])
 			  +(_m[0][1]*_m[1][2] - _m[0][2]*_m[1][1])*(_m[2][0]));
@@ -226,19 +226,19 @@ public:
 
 	/// \brief Returns the transpose of this matrix.
 	/// \return A new matrix with columns and rows swapped.
-	constexpr Matrix_3 transposed() const {
+	Q_DECL_CONSTEXPR Matrix_3 transposed() const {
 		return Matrix_3(_m[0][0], _m[0][1], _m[0][2],
 						_m[1][0], _m[1][1], _m[1][2],
 						_m[2][0], _m[2][1], _m[2][2]);
 	}
 
 	/// Multiplies a 3x3 matrix with a Point3 and returns one component of the resulting point.
-	inline constexpr T prodrow(const Point_3<T>& p, typename Point_3<T>::size_type index) const {
+	inline Q_DECL_CONSTEXPR T prodrow(const Point_3<T>& p, typename Point_3<T>::size_type index) const {
 		return _m[0][index] * p[0] + _m[1][index] * p[1] + _m[2][index] * p[2];
 	}
 
 	/// Multiplies a 3x3 matrix with a Vector3 and returns one component of the resulting vector.
-	inline constexpr T prodrow(const Vector_3<T>& v, typename Vector_3<T>::size_type index) const {
+	inline Q_DECL_CONSTEXPR T prodrow(const Vector_3<T>& v, typename Vector_3<T>::size_type index) const {
 		return _m[0][index] * v[0] + _m[1][index] * v[1] + _m[2][index] * v[2];
 	}
 
@@ -248,7 +248,7 @@ public:
 	/// The matrix A is a pure rotation matrix if:
 	///   (1) det(A) = 1  and 
 	///   (2) A * A^T = I
-	constexpr bool isRotationMatrix(T epsilon = T(FLOATTYPE_EPSILON)) const {
+	Q_DECL_CONSTEXPR bool isRotationMatrix(T epsilon = T(FLOATTYPE_EPSILON)) const {
 		return
 			(std::abs(_m[0][0]*_m[1][0] + _m[0][1]*_m[1][1] + _m[0][2]*_m[1][2]) <= epsilon) &&
 			(std::abs(_m[0][0]*_m[2][0] + _m[0][1]*_m[2][1] + _m[0][2]*_m[2][2]) <= epsilon) &&
@@ -363,7 +363,7 @@ inline Matrix_3<T> Matrix_3<T>::scaling(const ScalingT<T>& scaling)
 
 /// \brief Multiplies a 3x3 matrix with a Vector3.
 template<typename T>
-constexpr inline Vector_3<T> operator*(const Matrix_3<T>& m, const Vector_3<T>& v)
+Q_DECL_CONSTEXPR inline Vector_3<T> operator*(const Matrix_3<T>& m, const Vector_3<T>& v)
 {
 	return { m(0,0)*v[0] + m(0,1)*v[1] + m(0,2)*v[2],
 			 m(1,0)*v[0] + m(1,1)*v[1] + m(1,2)*v[2],
@@ -372,7 +372,7 @@ constexpr inline Vector_3<T> operator*(const Matrix_3<T>& m, const Vector_3<T>& 
 
 /// \brief Multiplies a 3x3 matrix with a Point3.
 template<typename T>
-constexpr inline Point_3<T> operator*(const Matrix_3<T>& m, const Point_3<T>& p)
+Q_DECL_CONSTEXPR inline Point_3<T> operator*(const Matrix_3<T>& m, const Point_3<T>& p)
 {
 	return { m(0,0)*p[0] + m(0,1)*p[1] + m(0,2)*p[2],
 			 m(1,0)*p[0] + m(1,1)*p[1] + m(1,2)*p[2],

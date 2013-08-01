@@ -47,7 +47,7 @@ class FrameBuffer;		// defined in FrameBuffer.h
 /**
  * \brief This is the base class for scene renderers.
  */
-class SceneRenderer : public RefTarget
+class OVITO_CORE_EXPORT SceneRenderer : public RefTarget
 {
 public:
 

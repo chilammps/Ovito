@@ -59,7 +59,7 @@ class ObjectLoadStream;		// defined in ObjectLoadStream.h
  * \author Alexander Stukowski
  * \sa OvitoObjectType
  */
-class OvitoObject : public QObject
+class OVITO_CORE_EXPORT OvitoObject : public QObject
 {
 public:
 

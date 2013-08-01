@@ -41,7 +41,7 @@ namespace Ovito {
  *
  * It can be accessed through the the static \c pluginClassDescriptor() method of each OvitoObject-derived class.
  */
-class NativeOvitoObjectType : public OvitoObjectType
+class OVITO_CORE_EXPORT NativeOvitoObjectType : public OvitoObjectType
 {
 public:
 

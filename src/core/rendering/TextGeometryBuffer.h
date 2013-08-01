@@ -37,7 +37,7 @@ class SceneRenderer;			// defined in SceneRenderer.h
 /**
  * \brief Abstract base class for buffer objects that store text strings.
  */
-class TextGeometryBuffer : public OvitoObject
+class OVITO_CORE_EXPORT TextGeometryBuffer : public OvitoObject
 {
 public:
 

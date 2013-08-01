@@ -66,7 +66,7 @@ public:
 
 	/// \brief Constructor that initializes 9 elements of the matrix to the given values. All other elements are set to zero.
 	/// \note Values are given in row-major order, i.e. row by row.
-	constexpr Matrix_4(T m11, T m12, T m13,
+	Q_DECL_CONSTEXPR Matrix_4(T m11, T m12, T m13,
 					   T m21, T m22, T m23,
 					   T m31, T m32, T m33) :
 		_m{{m11,m21,m31,T(0)},{m12,m22,m32,T(0)},{m13,m23,m33,T(0)},
@@ -74,7 +74,7 @@ public:
 
 	/// \brief Constructor that initializes 12 elements of the matrix to the given values. All other elements are set to zero.
 	/// \note Values are given in row-major order, i.e. row by row.
-	constexpr Matrix_4(T m11, T m12, T m13, T m14,
+	Q_DECL_CONSTEXPR Matrix_4(T m11, T m12, T m13, T m14,
 					    T m21, T m22, T m23, T m24,
 					    T m31, T m32, T m33, T m34) : _m{
 		Vector_4<T>(m11,m21,m31,T(0)),
@@ -84,7 +84,7 @@ public:
 
 	/// \brief Constructor that initializes 16 elements of the matrix to the given values.
 	/// \note Values are given in row-major order, i.e. row by row.
-	constexpr Matrix_4(T m11, T m12, T m13, T m14,
+	Q_DECL_CONSTEXPR Matrix_4(T m11, T m12, T m13, T m14,
 						T m21, T m22, T m23, T m24,
 						T m31, T m32, T m33, T m34,
 						T m41, T m42, T m43, T m44) : _m{
@@ -94,17 +94,17 @@ public:
 		Vector_4<T>(m14,m24,m34,m44)} {}
 
 	/// \brief Constructor that initializes the matrix from four column vectors.
-	constexpr Matrix_4(const Vector_4<T>& c1, const Vector_4<T>& c2, const Vector_4<T>& c3, const Vector_4<T>& c4) : _m{c1, c2, c3, c4} {}
+	Q_DECL_CONSTEXPR Matrix_4(const Vector_4<T>& c1, const Vector_4<T>& c2, const Vector_4<T>& c3, const Vector_4<T>& c4) : _m{c1, c2, c3, c4} {}
 
 	/// \brief Initializes the 4x4 matrix from a 3x4 matrix.
-	explicit constexpr Matrix_4(const Matrix_34<T>& tm) : _m{
+	explicit Q_DECL_CONSTEXPR Matrix_4(const Matrix_34<T>& tm) : _m{
 		Vector_4<T>(tm(0,0),tm(1,0),tm(2,0),T(0)),
 		Vector_4<T>(tm(0,1),tm(1,1),tm(2,1),T(0)),
 		Vector_4<T>(tm(0,2),tm(1,2),tm(2,2),T(0)),
 		Vector_4<T>(tm(0,3),tm(1,3),tm(2,3),T(1))} {}
 
 	/// \brief Initializes the 4x4 matrix from 4 column vectors.
-	constexpr Matrix_4(const Vector_3<T>& c1, const Vector_3<T>& c2, const Vector_3<T>& c3, const Vector_3<T>& c4) : _m{
+	Q_DECL_CONSTEXPR Matrix_4(const Vector_3<T>& c1, const Vector_3<T>& c2, const Vector_3<T>& c3, const Vector_3<T>& c4) : _m{
 		Vector_4<T>(c1[0],c1[1],c1[2],T(0)),
 		Vector_4<T>(c2[0],c2[1],c2[2],T(0)),
 		Vector_4<T>(c3[0],c3[1],c3[2],T(0)),
@@ -112,7 +112,7 @@ public:
 
 	/// \brief Initializes the matrix to the null matrix.
 	/// All matrix elements are set to zero by this constructor.
-	constexpr Matrix_4(Zero) : _m{
+	Q_DECL_CONSTEXPR Matrix_4(Zero) : _m{
 		typename Vector_4<T>::Zero(),
 		typename Vector_4<T>::Zero(),
 		typename Vector_4<T>::Zero(),
@@ -120,23 +120,23 @@ public:
 
 	/// \brief Initializes the matrix to the identity matrix.
 	/// All diagonal elements are set to one and all off-diagonal elements are set to zero.
-	constexpr Matrix_4(Identity) : _m{
+	Q_DECL_CONSTEXPR Matrix_4(Identity) : _m{
 		Vector_4<T>(T(1),T(0),T(0),T(0)),
 		Vector_4<T>(T(0),T(1),T(0),T(0)),
 		Vector_4<T>(T(0),T(0),T(1),T(0)),
 		Vector_4<T>(T(0),T(0),T(0),T(1))} {}
 
 	/// \brief Returns the number of rows in this matrix.
-	static constexpr size_type row_count() { return 4; }
+	static Q_DECL_CONSTEXPR size_type row_count() { return 4; }
 
 	/// \brief Returns the columns of rows in this matrix.
-	static constexpr size_type col_count() { return 4; }
+	static Q_DECL_CONSTEXPR size_type col_count() { return 4; }
 
 	/// \brief Returns the value of a matrix element.
 	/// \param row The row of the element to return.
 	/// \param col The column of the element to return.
 	/// \return The value of the matrix element.
-	inline constexpr T operator()(size_type row, size_type col) const {
+	inline Q_DECL_CONSTEXPR T operator()(size_type row, size_type col) const {
 		return _m[col][row];
 	}
 
@@ -150,7 +150,7 @@ public:
 	/// \brief Returns a column vector in the matrix.
 	/// \param col The index of the column to return.
 	/// \return The i-th column of the matrix as a vector.
-	inline constexpr const Vector_4<T>& column(size_type col) const {
+	inline Q_DECL_CONSTEXPR const Vector_4<T>& column(size_type col) const {
 		return _m[col];
 	}
 
@@ -164,7 +164,7 @@ public:
 	/// \brief Returns a row from the matrix.
 	/// \param row The row to return.
 	/// \return The i-th row of the matrix as a vector.
-	constexpr Vector_4<T> row(size_type row) const {
+	Q_DECL_CONSTEXPR Vector_4<T> row(size_type row) const {
 		return { _m[0][row], _m[1][row], _m[2][row], _m[3][row] };
 	}
 
@@ -207,7 +207,7 @@ public:
 	////////////////////////////////// Comparison ///////////////////////////////////
 
 	/// \brief Computes the determinant of the matrix.
-	constexpr inline T determinant() const {
+	Q_DECL_CONSTEXPR inline T determinant() const {
 		return (_m[0][3] * _m[1][2] * _m[2][1] * _m[3][0]-_m[0][2] * _m[1][3] * _m[2][1] * _m[3][0]-_m[0][3] * _m[1][1] * _m[2][2] * _m[3][0]+_m[0][1] * _m[1][3] * _m[2][2] * _m[3][0]+
 				_m[0][2] * _m[1][1] * _m[2][3] * _m[3][0]-_m[0][1] * _m[1][2] * _m[2][3] * _m[3][0]-_m[0][3] * _m[1][2] * _m[2][0] * _m[3][1]+_m[0][2] * _m[1][3] * _m[2][0] * _m[3][1]+
 				_m[0][3] * _m[1][0] * _m[2][2] * _m[3][1]-_m[0][0] * _m[1][3] * _m[2][2] * _m[3][1]-_m[0][2] * _m[1][0] * _m[2][3] * _m[3][1]+_m[0][0] * _m[1][2] * _m[2][3] * _m[3][1]+
@@ -317,10 +317,10 @@ public:
 private:
 
 	// Computes the determinant of a 2x2 matrix. This is for internal use only.
-	static constexpr inline T det2x2(T a, T b, T c, T d) { return (a * d - b * c); }
+	static Q_DECL_CONSTEXPR inline T det2x2(T a, T b, T c, T d) { return (a * d - b * c); }
 
 	// Computes the determinant of a 3x3 matrix. This is for internal use only.
-	static constexpr inline T det3x3(T a1, T a2, T a3, T b1, T b2, T b3, T c1, T c2, T c3) {
+	static Q_DECL_CONSTEXPR inline T det3x3(T a1, T a2, T a3, T b1, T b2, T b3, T c1, T c2, T c3) {
 		return (a1 * det2x2( b2, b3, c2, c3 )
 			- b1 * det2x2( a2, a3, c2, c3 )
 	        + c1 * det2x2( a2, a3, b2, b3 ));
@@ -330,7 +330,7 @@ private:
 
 /// \brief Multiplies a 4x4 matrix with a Vector4.
 template<typename T>
-constexpr inline Vector_4<T> operator*(const Matrix_4<T>& a, const Vector_4<T>& v)
+Q_DECL_CONSTEXPR inline Vector_4<T> operator*(const Matrix_4<T>& a, const Vector_4<T>& v)
 {
 	return {
 		a(0,0)*v[0] + a(0,1)*v[1] + a(0,2)*v[2] + a(0,3)*v[3],
@@ -393,14 +393,14 @@ inline Matrix_4<T> operator*(const Matrix_4<T>& a, const Matrix_34<T>& b)
 
 /// Multiplies a 4x4 matrix with a scalar.
 template<typename T>
-constexpr inline Matrix_4<T> operator*(const Matrix_4<T>& a, T s)
+Q_DECL_CONSTEXPR inline Matrix_4<T> operator*(const Matrix_4<T>& a, T s)
 {
 	return { a.column(0)*s, a.column(1)*s, a.column(2)*s, a.column(3)*s };
 }
 
 /// Multiplies a 4x4 matrix with a scalar.
 template<typename T>
-constexpr inline Matrix_4<T> operator*(T s, const Matrix_4<T>& a)
+Q_DECL_CONSTEXPR inline Matrix_4<T> operator*(T s, const Matrix_4<T>& a)
 {
 	return a * s;
 }

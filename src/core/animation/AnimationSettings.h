@@ -42,7 +42,7 @@ namespace Ovito {
  * To access the animation settings of the current scene you can also use
  * the methods of AnimManager.
  */
-class AnimationSettings : public RefTarget
+class OVITO_CORE_EXPORT AnimationSettings : public RefTarget
 {
 public:
 

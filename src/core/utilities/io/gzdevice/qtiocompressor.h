@@ -50,7 +50,7 @@
 #include <core/Core.h>
 
 class QtIOCompressorPrivate;
-class QtIOCompressor : public QIODevice
+class OVITO_CORE_EXPORT QtIOCompressor : public QIODevice
 {
 	Q_OBJECT
 public:

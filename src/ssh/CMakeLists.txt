@@ -100,6 +100,7 @@ IF(CMAKE_COMPILER_IS_GNUCXX)
 	ADD_DEFINITIONS(-DBOTAN_BUILD_COMPILER_IS_GCC)
 ENDIF()
 
+# This will let the source code export symbols when building a DLL.
 ADD_DEFINITIONS(-DQSSH_LIBRARY)
 
 # Build library

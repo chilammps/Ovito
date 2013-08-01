@@ -59,7 +59,7 @@ public:
 	/// \brief Initializes the ray with a base point and a direction vector.
 	/// \param b A point through which the ray passes.
 	/// \param d A direction vector. This vector should have length 1.
-	constexpr Ray_3(const Point_3<T>& b, const Vector_3<T>& d) : base(b), dir(d) {}
+	Q_DECL_CONSTEXPR Ray_3(const Point_3<T>& b, const Vector_3<T>& d) : base(b), dir(d) {}
 
 	/// \brief Initializes the ray from two points.
 	/// \param a The first point on the ray
@@ -67,7 +67,7 @@ public:
 	///
 	/// The direction vector of the ray is initialized to the vector pointing from
 	/// point \a a to point \a b.
-	constexpr Ray_3(const Point_3<T>& a, const Point_3<T>& b) : base(a), dir(b - a) {}
+	Q_DECL_CONSTEXPR Ray_3(const Point_3<T>& a, const Point_3<T>& b) : base(a), dir(b - a) {}
 	
 	////////////////////////////////// Queries ///////////////////////////////////
 	
@@ -76,13 +76,13 @@ public:
 	///        starting at the base point and going into the direction specified
 	///        by the ray vector.
 	/// \return The point base + dir * t.
-	constexpr Point_3<T> point(T t) const { return base + dir * t; }
+	Q_DECL_CONSTEXPR Point_3<T> point(T t) const { return base + dir * t; }
 
     /////////////////////////////// Unary operators //////////////////////////////
 
 	/// \brief Flips the ray direction.
 	/// \return A new ray with reversed direction vector.
-	constexpr Ray_3 operator-() const { return Ray_3(base, -dir); }
+	Q_DECL_CONSTEXPR Ray_3 operator-() const { return Ray_3(base, -dir); }
 
     ////////////////////////////////// Utilities /////////////////////////////////
 

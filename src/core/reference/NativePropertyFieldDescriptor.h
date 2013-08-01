@@ -31,7 +31,7 @@ namespace Ovito {
 * This structure describes one member field of a RefMaker object that stores
 * a property of that object.
 ******************************************************************************/
-class NativePropertyFieldDescriptor : public PropertyFieldDescriptor
+class OVITO_CORE_EXPORT NativePropertyFieldDescriptor : public PropertyFieldDescriptor
 {
 public:
 
