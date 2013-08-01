@@ -24,6 +24,9 @@ PROJECT(Ovito)
 # Make sure we have a recent version of CMake.
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.8 FATAL_ERROR)
 
+# Automatically link to qtmain.lib on Windows.
+CMAKE_POLICY(SET CMP0020 NEW)
+
 # Include program revision information.
 GET_FILENAME_COMPONENT(OVITO_SOURCE_BASE_DIR ${CMAKE_CURRENT_LIST_FILE} PATH)
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${OVITO_SOURCE_BASE_DIR}/cmake)
@@ -56,7 +59,9 @@ IF(CMAKE_BUILD_TYPE STREQUAL "Debug")
 ENDIF()
 
 # Enable C++11.
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+IF(NOT MSVC)
+	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+ENDIF()
 IF(APPLE)
 	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++ -Wno-invalid-offsetof")
 ENDIF()

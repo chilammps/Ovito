@@ -67,6 +67,12 @@
 #include <QtNetwork>
 #include <qopengl.h>
 
+#ifdef OVITO_BASE_LIBRARY
+#  define OVITO_BASE_EXPORT Q_DECL_EXPORT
+#else
+#  define OVITO_BASE_EXPORT Q_DECL_IMPORT
+#endif
+
 // Defines the number type used for numerical computations.
 #include "utilities/Debugging.h"
 #include "utilities/FloatType.h"
