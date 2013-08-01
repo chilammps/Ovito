@@ -1,0 +1,19 @@
+
+**************************************************************************
+Build static Qt libraries:
+
+Edit file /qtbase/mkspecs/common/g++-base.conf and specify absolute
+path to gcc and g++ compilers.
+
+./configure \
+	-opensource \
+	-static \
+	-confirm-license \
+	-no-qml-debug \
+	-nomake examples \
+	-no-glib \
+	-qt-xcb \
+	-qt-xkbcommon \
+	-prefix $HOME/progs/qt5static
+
+make install
