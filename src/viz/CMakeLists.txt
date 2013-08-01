@@ -82,9 +82,6 @@ SET(muParser_SRCS
 	util/muparser/muParserBase.cpp
 )
 
-# This will let the source code export symbols when building a DLL.
-ADD_DEFINITIONS(-DOVITO_VIZ_LIBRARY)
-
 # Generate plugin module.
 OVITO_PLUGIN(Viz
 	SOURCES ${OVITO_VIZ_SOURCE_FILES} ${muParser_SRCS} util/qcustomplot/qcustomplot.cpp

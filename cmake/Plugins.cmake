@@ -78,7 +78,7 @@ MACRO(OVITO_PLUGIN target_name)
 	TARGET_LINK_LIBRARIES(${target_name} ${lib_dependencies})
 
 	# Link Qt5.
-	QT5_USE_MODULES(${target_name} Widgets Xml Concurrent Network PrintSupport)
+	QT5_USE_MODULES(${target_name} ${OVITO_REQUIRED_QT_MODULES})
 
 	# Link plugin dependencies.
 	FOREACH(plugin_name ${plugin_dependencies})
@@ -102,7 +102,8 @@ MACRO(OVITO_PLUGIN target_name)
 	
 	# Copy Plugin manifest to destination directory.
 	CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/resources/${target_name}.manifest.xml"
-               "${OVITO_PLUGINS_DIRECTORY}/${target_name}.manifest.xml")	
+               "${OVITO_PLUGINS_DIRECTORY}/${target_name}.manifest.xml")
+	INSTALL(FILES "${OVITO_PLUGINS_DIRECTORY}/${target_name}.manifest.xml" DESTINATION "${OVITO_RELATIVE_PLUGINS_DIRECTORY}")
 
 	# This plugin will be part of the installation package.
 	IF(NOT OVITO_MONOLITHIC_BUILD)
