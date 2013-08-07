@@ -24,6 +24,7 @@
 #include <core/viewport/Viewport.h>
 #include <core/viewport/ViewportManager.h>
 #include <core/viewport/input/ViewportInputManager.h>
+#include <core/rendering/viewport/ViewportSceneRenderer.h>
 
 namespace Ovito {
 
@@ -40,8 +41,8 @@ ViewportWindow::ViewportWindow(Viewport* owner) :
 	// Indicate that we want a depth buffer.
 	QSurfaceFormat format;
 	format.setDepthBufferSize(24);
-	format.setMajorVersion(3);
-	format.setMinorVersion(2);
+	format.setMajorVersion(OVITO_OPENGL_REQUESTED_VERSION_MAJOR);
+	format.setMinorVersion(OVITO_OPENGL_REQUESTED_VERSION_MINOR);
 	format.setProfile(QSurfaceFormat::CoreProfile);
 	setFormat(format);
 }
@@ -193,26 +194,6 @@ void ViewportWindow::renderNow()
 		if(shareContext && _context->shareContext() != shareContext)
 			qWarning() << "Viewport cannot share OpenGL context with other viewports.";
 
-		if(_context->format().majorVersion() < 3) {
-			_context->makeCurrent(this);
-			Exception ex(tr(
-					"The OpenGL implementation available on this system does not support OpenGL version 3.0 or newer.\n\n"
-					"Ovito requires modern graphics hardware to accelerate interactive 3d rendering. You current system configuration is not compatible with Ovito and the application will quit.\n\n"
-					"To avoid this error message, please install the newest graphics driver, or upgrade your graphics card.\n\n"
-					"The currently installed OpenGL graphics driver reports the following information:\n\n"
-					"OpenGL Vendor: %1\n"
-					"OpenGL Renderer: %2\n"
-					"OpenGL Version: %3")
-					.arg(QString((const char*)glGetString(GL_VENDOR)))
-					.arg(QString((const char*)glGetString(GL_RENDERER)))
-					.arg(QString((const char*)glGetString(GL_VERSION)))
-					);
-			ViewportManager::instance().suspendViewportUpdates();
-			QCoreApplication::removePostedEvents(nullptr, 0);
-			ex.showError();
-			QCoreApplication::instance()->quit();
-		}
-
 		static bool firstTime = true;
 		if(!shareContext && firstTime) {
 			firstTime = false;
@@ -229,6 +210,35 @@ void ViewportWindow::renderNow()
 			qDebug() << "OpenGL renderer: " << QString((const char*)glGetString(GL_RENDERER));
 			qDebug() << "OpenGL version string: " << QString((const char*)glGetString(GL_VERSION));
 			qDebug() << "OpenGL shading language: " << QString((const char*)glGetString(GL_SHADING_LANGUAGE_VERSION));
+			qDebug() << "OpenGL framebuffer objects: " << QOpenGLFramebufferObject::hasOpenGLFramebufferObjects();
+			qDebug() << "OpenGL shader programs: " << QOpenGLShaderProgram::hasOpenGLShaderPrograms();
+			qDebug() << "OpenGL vertex shaders: " << QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Vertex);
+			qDebug() << "OpenGL fragment shaders: " << QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Fragment);
+			qDebug() << "OpenGL geometry shaders: " << QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Geometry);
+		}
+
+		if(_context->format().majorVersion() < OVITO_OPENGL_MINIMUM_VERSION_MAJOR || _context->format().minorVersion() < OVITO_OPENGL_MINIMUM_VERSION_MINOR) {
+			_context->makeCurrent(this);
+			Exception ex(tr(
+					"The OpenGL implementation available on this system does not support OpenGL version %4.%5 or newer.\n\n"
+					"Ovito requires modern graphics hardware and up-to-date graphics drivers to display 3D content. Your current system configuration is not compatible with Ovito and the application will quit now.\n\n"
+					"To avoid this error message, please install the newest graphics driver, or upgrade your graphics card.\n\n"
+					"The installed OpenGL graphics driver reports the following information:\n\n"
+					"OpenGL Vendor: %1\n"
+					"OpenGL Renderer: %2\n"
+					"OpenGL Version: %3\n\n"
+					"Ovito requires OpenGL version %4.%5 or higher.")
+					.arg(QString((const char*)glGetString(GL_VENDOR)))
+					.arg(QString((const char*)glGetString(GL_RENDERER)))
+					.arg(QString((const char*)glGetString(GL_VERSION)))
+					.arg(OVITO_OPENGL_MINIMUM_VERSION_MAJOR)
+					.arg(OVITO_OPENGL_MINIMUM_VERSION_MINOR)
+					);
+			ViewportManager::instance().suspendViewportUpdates();
+			QCoreApplication::removePostedEvents(nullptr, 0);
+			ex.showError();
+			QCoreApplication::instance()->quit();
+			return;
 		}
 	}
 

@@ -42,15 +42,27 @@ QT5_USE_MODULES(${PROJECT_NAME} ${OVITO_REQUIRED_QT_MODULES})
 # This executable will be part of the installation package.
 INSTALL(TARGETS ${PROJECT_NAME} DESTINATION "${OVITO_RELATIVE_BINARY_DIRECTORY}")
 
-# If we build a monolithic executable that includes all plugins then
-# we have to make it dependent on these too.
-#
-# When statically linking the plugin libraries the linker will eliminate
-# unreferenced static objects in these libraries. To prevent this from
-# happening we have to use the -whole-archive linker option. 
 IF(OVITO_MONOLITHIC_BUILD)
+
+	# If we build a monolithic executable that includes all plugins then
+	# we have to make it dependent on these too.
+	#
+	# When statically linking the plugin libraries the linker will eliminate
+	# unreferenced static objects in these libraries. To prevent this from
+	# happening we have to use the -whole-archive linker option. 
 	LINK_WHOLE_LIBRARY(${PROJECT_NAME} Core)
 	LINK_WHOLE_LIBRARY(${PROJECT_NAME} Viz)
+
+	IF(UNIX AND NOT APPLE)
+		# The static Qt plugins must be linked into the executable.
+		TARGET_LINK_LIBRARIES(${PROJECT_NAME} "${_qt5Core_install_prefix}/plugins/platforms/libqxcb.a")
+		TARGET_LINK_LIBRARIES(${PROJECT_NAME} "${_qt5Core_install_prefix}/plugins/platforms/libqminimal.a")
+		TARGET_LINK_LIBRARIES(${PROJECT_NAME} "/home/stuko/progs/qt-everywhere-opensource-src-5.1.1-rc1/qtbase/src/plugins/platforms/xcb/xcb-static/libxcb-static.a")
+		TARGET_LINK_LIBRARIES(${PROJECT_NAME} "${_qt5Core_install_prefix}/lib/libQt5PlatformSupport.a")
+
+		# Some additional system libraries are required.
+		TARGET_LINK_LIBRARIES(${PROJECT_NAME} "pthread" "dl" "rt" "Xext" "X11" "Xrender" "X11-xcb" "xcb" "GL")
+	ENDIF()
 ENDIF()
 
 IF(APPLE)

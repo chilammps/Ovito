@@ -176,19 +176,33 @@ void ViewportTextGeometryBuffer::renderWindow(SceneRenderer* renderer, const Poi
 
 	if(!_shader->bind())
 		throw Exception(tr("Failed to bind OpenGL shader."));
-
-	if(!_vertexBuffer.bind())
-		throw Exception(tr("Failed to bind OpenGL vertex buffer."));
-
-	_vertexBuffer.write(0, corners, 4 * sizeof(Point2));
-	_shader->setAttributeBuffer("vertex_pos", GL_FLOAT, 0, 2);
-	_shader->enableAttributeArray("vertex_pos");
-
 	_shader->setUniformValue("text_color", color().r(), color().g(), color().b(), color().a());
 
-	OVITO_CHECK_OPENGL(glDrawArrays(GL_TRIANGLE_STRIP, 0, 4));
+	if(vpRenderer->glformat().majorVersion() >= 3) {
 
-	_vertexBuffer.release();
+		if(!_vertexBuffer.bind())
+			throw Exception(tr("Failed to bind OpenGL vertex buffer."));
+
+		_vertexBuffer.write(0, corners, 4 * sizeof(Point2));
+		_shader->setAttributeBuffer("vertex_pos", GL_FLOAT, 0, 2);
+		_shader->enableAttributeArray("vertex_pos");
+		_vertexBuffer.release();
+
+		OVITO_CHECK_OPENGL(glDrawArrays(GL_TRIANGLE_STRIP, 0, 4));	
+	}
+	else {
+		glBegin(GL_TRIANGLE_STRIP);
+		glTexCoord2f(0,0);
+		glVertex2f(corners[0].x(), corners[0].y());
+		glTexCoord2f(1,0);
+		glVertex2f(corners[1].x(), corners[1].y());
+		glTexCoord2f(0,1);
+		glVertex2f(corners[2].x(), corners[2].y());
+		glTexCoord2f(1,1);
+		glVertex2f(corners[3].x(), corners[3].y());
+		glEnd();
+	}
+
 	_shader->release();
 
 	// Restore old state.

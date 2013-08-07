@@ -46,8 +46,15 @@ void ViewportSceneRenderer::beginFrame(TimePoint time, const ViewProjectionParam
 	if(!_glcontext)
 		throw Exception(tr("Cannot render scene: There is no active OpenGL context"));
 
+	OVITO_CHECK_OPENGL();
+
 	// Obtain a functions object that allows to call OpenGL 2.0 functions in a platform-independent way.
 	_glFunctions = _glcontext->functions();
+
+	// Obtain a functions object that allows to call OpenGL 2.1 functions in a platform-independent way.
+	_glFunctions21 = _glcontext->versionFunctions<QOpenGLFunctions_2_1>();
+	if(!_glFunctions21 || !_glFunctions21->initializeOpenGLFunctions())
+		_glFunctions21 = nullptr;
 
 	// Obtain a functions object that allows to call OpenGL 3.0 functions in a platform-independent way.
 	_glFunctions30 = _glcontext->versionFunctions<QOpenGLFunctions_3_0>();
@@ -59,19 +66,18 @@ void ViewportSceneRenderer::beginFrame(TimePoint time, const ViewProjectionParam
 	if(!_glFunctions32 || !_glFunctions32->initializeOpenGLFunctions())
 		_glFunctions32 = nullptr;
 
-	OVITO_ASSERT(_glFunctions30 || _glFunctions32);
-
 	// Obtain surface format.
 	_glformat = _glcontext->format();
 
 	// Set up a vertex array object. This is only required when using OpenGL 3.2 Core Profile.
-	if(glformat().majorVersion() >= 3 && glformat().minorVersion() >= 2) {
+	if(glformat().profile() == QSurfaceFormat::CoreProfile) {
 		_vertexArrayObject.reset(new QOpenGLVertexArrayObject());
 		_vertexArrayObject->create();
 		_vertexArrayObject->bind();
 	}
 
 	// Set viewport background color.
+	OVITO_CHECK_OPENGL();
 	Color backgroundColor = Viewport::viewportColor(ViewportSettings::COLOR_VIEWPORT_BKG);
 	OVITO_CHECK_OPENGL(glClearColor(backgroundColor.r(), backgroundColor.g(), backgroundColor.b(), 1));
 }
@@ -95,6 +101,7 @@ bool ViewportSceneRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialo
 	OVITO_ASSERT(_glcontext == QOpenGLContext::currentContext());
 
 	// Clear background.
+	OVITO_CHECK_OPENGL();
 	OVITO_CHECK_OPENGL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 	OVITO_CHECK_OPENGL(glEnable(GL_DEPTH_TEST));
 
@@ -314,8 +321,10 @@ void ViewportSceneRenderer::loadShader(QOpenGLShaderProgram* program, QOpenGLSha
 	// Pick GLSL language version based on current OpenGL version.
 	if(glformat().profile() == QSurfaceFormat::CoreProfile)
 		shaderSource.prepend("#version 150\n");
-	else
+	else if(glformat().majorVersion() >= 3)
 		shaderSource.prepend("#version 130\n");
+	else 
+		shaderSource.prepend("#version 120\n");
 
 	// Load and compile vertex shader source.
     if(!program->addShaderFromSourceCode(shaderType, shaderSource)) {

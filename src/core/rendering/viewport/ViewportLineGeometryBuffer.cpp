@@ -148,18 +148,34 @@ void ViewportLineGeometryBuffer::render(SceneRenderer* renderer)
 			(QMatrix4x4)(vpRenderer->projParams().projectionMatrix * vpRenderer->modelViewTM()));
 
 	_glPositionsBuffer.bind();
-	_shader->setAttributeBuffer("vertex_pos", GL_FLOAT, 0, 3);
-	_shader->enableAttributeArray("vertex_pos");
+	if(vpRenderer->glformat().majorVersion() >= 3) {
+		_shader->setAttributeBuffer("vertex_pos", GL_FLOAT, 0, 3);
+		_shader->enableAttributeArray("vertex_pos");
+	}
+	else {
+		OVITO_CHECK_OPENGL(glEnableClientState(GL_VERTEX_ARRAY));
+		OVITO_CHECK_OPENGL(glVertexPointer(3, GL_FLOAT, 0, 0));
+	}
 	_glPositionsBuffer.release();
 
 	_glColorsBuffer.bind();
-	_shader->setAttributeBuffer("vertex_color", GL_FLOAT, 0, 4);
-	_shader->enableAttributeArray("vertex_color");
+	if(vpRenderer->glformat().majorVersion() >= 3) {
+		_shader->setAttributeBuffer("vertex_color", GL_FLOAT, 0, 4);
+		_shader->enableAttributeArray("vertex_color");
+	}
+	else {
+		OVITO_CHECK_OPENGL(glEnableClientState(GL_COLOR_ARRAY));
+		OVITO_CHECK_OPENGL(glColorPointer(4, GL_FLOAT, 0, 0));
+	}
 	_glColorsBuffer.release();
 
 	OVITO_CHECK_OPENGL(glDrawArrays(GL_LINES, 0, _vertexCount));
 
 	_shader->release();
+	if(vpRenderer->glformat().majorVersion() < 3) {
+		OVITO_CHECK_OPENGL(glDisableClientState(GL_VERTEX_ARRAY));
+		OVITO_CHECK_OPENGL(glDisableClientState(GL_COLOR_ARRAY));
+	}
 }
 
 };

@@ -83,6 +83,9 @@ private:
 	/// The OpenGL framebuffer.
 	QScopedPointer<QOpenGLFramebufferObject> _framebufferObject;
 
+	/// The resolution of the offscreen framebuffer.
+	QSize _framebufferSize;
+
 	Q_OBJECT
 	OVITO_OBJECT
 

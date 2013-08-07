@@ -19,6 +19,8 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+#if __VERSION__ >= 130
+
 in vec2 vertex_pos;
 
 const vec2 uvcoords[4] = vec2[4]( 
@@ -35,3 +37,13 @@ void main()
 	gl_Position = vec4(vertex_pos, 0, 1);
 	tex_coords = uvcoords[gl_VertexID % 4];
 }
+
+#else
+
+void main()
+{
+	gl_Position = gl_Vertex;
+	gl_TexCoord[0] = gl_MultiTexCoord0;
+}
+
+#endif

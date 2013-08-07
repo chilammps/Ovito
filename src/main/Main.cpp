@@ -22,8 +22,15 @@
 #include <core/Core.h>
 #include <core/gui/app/Application.h>
 
+#ifdef OVITO_MONOLITHIC_BUILD
+	#ifdef Q_OS_LINUX
+		Q_IMPORT_PLUGIN(QXcbIntegrationPlugin)
+	#endif
+#endif
+
 int main(int argc, char** argv)
 {
+
 #ifdef OVITO_MONOLITHIC_BUILD
 	// If we build a monolithic executable with static libraries then
 	// the core's resources are not automatically initialized. Therefore

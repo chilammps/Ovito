@@ -36,7 +36,16 @@ ELSE()
 			     ${SWSCALE_INCLUDE_DIRS})
 
 	IF(NOT APPLE)
-		SET(FFMPEG_LIBRARIES avformat avcodec avutil avdevice swscale)
+		IF(NOT UNIX)
+			SET(FFMPEG_LIBRARIES avformat avcodec avutil avdevice swscale)
+		ELSE()
+			SET(FFMPEG_LIBRARIES libavformat.a libavcodec.a libavutil.a libavdevice.a libswscale.a)
+
+#			SET(FFMPEG_LIBRARIES ${FFMPEG_LIBRARIES} libvorbisenc.a libx264.a 
+#				libvorbis.a libogg.a libtheoraenc.a libtheoradec.a libspeex.a libschroedinger-1.0.a
+#				libopus.a libmp3lame.a libopenjpeg.a liborc-0.4.a libpostproc.a
+#				libswresample.a libswscale.a libxcb.a libiconv.a libvpx.a modplug z bz2)
+		ENDIF()
 	ELSE()
 		SET(FFMPEG_LIBRARIES libavformat.a libavcodec.a libavutil.a libavdevice.a 
 			libswscale.a libxvidcore.a libSDL.a libvorbisenc.a libx264.a 
@@ -51,7 +60,7 @@ SET(FFMPEG_FOUND TRUE)
 SET(FFMPEG_INCLUDE_DIR ${FFMPEG_INCLUDE_PATHS})
 FOREACH(HEADER ${FFMPEG_HEADERS})
 	SET(HEADER_PATH NOTFOUND)
-	FIND_PATH(HEADER_PATH ${HEADER} PATHS ${FFMPEG_INCLUDE_PATHS} /opt/local/include)
+	FIND_PATH(HEADER_PATH ${HEADER} PATHS ${FFMPEG_INCLUDE_PATHS} /opt/local/include $ENV{HOME}/progs/libavstatic/include)
 	IF(HEADER_PATH)
 		SET(FFMPEG_INCLUDE_DIR ${FFMPEG_INCLUDE_DIR} ${HEADER_PATH})
 	ELSE()
@@ -76,7 +85,7 @@ ENDIF()
 IF(NOT WIN32)
 	FOREACH(LIB ${FFMPEG_LIBRARIES})
 		SET(LIB_PATH NOTFOUND)
-		FIND_LIBRARY(LIB_PATH NAMES ${LIB} PATHS ${FFMPEG_LIBRARY_DIR})
+		FIND_LIBRARY(LIB_PATH NAMES ${LIB} PATHS ${FFMPEG_LIBRARY_DIR} $ENV{HOME}/progs/libavstatic/lib)
 		IF(LIB_PATH)
 			SET(FFMPEG_LIBRARIES_FULL ${FFMPEG_LIBRARIES_FULL} ${LIB_PATH})
 		ELSE()

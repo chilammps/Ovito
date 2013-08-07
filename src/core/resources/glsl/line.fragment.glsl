@@ -19,8 +19,17 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+#if __VERSION__ >= 130
+
 in vec4 vertex_color_out;
 out vec4 FragColor;
+
+#else
+
+#define vertex_color_out gl_Color
+#define FragColor gl_FragColor
+
+#endif
 
 void main() 
 {

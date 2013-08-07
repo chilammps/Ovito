@@ -47,8 +47,8 @@ bool StandardSceneRenderer::startRender(DataSet* dataset, RenderSettings* settin
 	// Set up surface format with a depth buffer.
 	QSurfaceFormat format;
 	format.setDepthBufferSize(24);
-	format.setMajorVersion(3);
-	format.setMinorVersion(2);
+	format.setMajorVersion(OVITO_OPENGL_REQUESTED_VERSION_MINOR);
+	format.setMinorVersion(OVITO_OPENGL_REQUESTED_VERSION_MAJOR);
 	format.setProfile(QSurfaceFormat::CoreProfile);
 	format.setSwapBehavior(QSurfaceFormat::SingleBuffer);
 
@@ -77,50 +77,62 @@ bool StandardSceneRenderer::startRender(DataSet* dataset, RenderSettings* settin
 	// Make the context current.
 	if(!_offscreenContext->makeCurrent(&_offscreenSurface))
 		throw Exception(tr("Failed to make OpenGL context current."));
+	OVITO_CHECK_OPENGL();
 
 	// Check OpenGL version.
-	if(_offscreenContext->format().majorVersion() < 3) {
+	if(_offscreenContext->format().majorVersion() < OVITO_OPENGL_MINIMUM_VERSION_MAJOR || _offscreenContext->format().minorVersion() < OVITO_OPENGL_MINIMUM_VERSION_MINOR) {
 		throw Exception(tr(
-				"The OpenGL implementation available on this system does not support OpenGL version 3.0 or newer.\n\n"
-				"Ovito requires modern graphics hardware to accelerate 3d rendering. You current system configuration is not compatible with Ovito.\n\n"
-				"To avoid this error message, please install the newest graphics driver, or upgrade your graphics card.\n\n"
-				"The currently installed OpenGL graphics driver reports the following information:\n\n"
-				"OpenGL Vendor: %1\n"
-				"OpenGL Renderer: %2\n"
-				"OpenGL Version: %3")
-				.arg(QString((const char*)glGetString(GL_VENDOR)))
-				.arg(QString((const char*)glGetString(GL_RENDERER)))
-				.arg(QString((const char*)glGetString(GL_VERSION)))
+					"The OpenGL implementation available on this system does not support OpenGL version %4.%5 or newer.\n\n"
+					"Ovito requires modern graphics hardware and up-to-date graphics drivers to display 3D content. Your current system configuration is not compatible with Ovito and the application will quit now.\n\n"
+					"To avoid this error message, please install the newest graphics driver, or upgrade your graphics card.\n\n"
+					"The installed OpenGL graphics driver reports the following information:\n\n"
+					"OpenGL Vendor: %1\n"
+					"OpenGL Renderer: %2\n"
+					"OpenGL Version: %3\n\n"
+					"Ovito requires OpenGL version %4.%5 or higher.")
+					.arg(QString((const char*)glGetString(GL_VENDOR)))
+					.arg(QString((const char*)glGetString(GL_RENDERER)))
+					.arg(QString((const char*)glGetString(GL_VERSION)))
+					.arg(OVITO_OPENGL_MINIMUM_VERSION_MAJOR)
+					.arg(OVITO_OPENGL_MINIMUM_VERSION_MINOR)
 				);
 	}
 
-#if 0
+#if 1
 	{
-	QSurfaceFormat format = _offscreenContext->format();
-	qDebug() << "OpenGL depth buffer size:" << format.depthBufferSize();
-	qDebug() << "OpenGL stencil buffer size:" << format.stencilBufferSize();
-	(qDebug() << "OpenGL version:").nospace() << format.majorVersion() << "." << format.minorVersion();
-	qDebug() << "OpenGL profile:" << (format.profile() == QSurfaceFormat::CoreProfile ? "core" : (format.profile() == QSurfaceFormat::CompatibilityProfile ? "compatibility" : "none"));
-	qDebug() << "OpenGL has alpha:" << format.hasAlpha();
-	qDebug() << "OpenGL samples:" << format.samples();
-	qDebug() << "OpenGL swap behavior:" << format.swapBehavior();
-	qDebug() << "OpenGL vendor: " << QString((const char*)glGetString(GL_VENDOR));
-	qDebug() << "OpenGL renderer: " << QString((const char*)glGetString(GL_RENDERER));
-	qDebug() << "OpenGL version string: " << QString((const char*)glGetString(GL_VERSION));
-	qDebug() << "OpenGL shading language: " << QString((const char*)glGetString(GL_SHADING_LANGUAGE_VERSION));
+		QSurfaceFormat format = _offscreenContext->format();
+		qDebug() << "OpenGL depth buffer size:" << format.depthBufferSize();
+		qDebug() << "OpenGL stencil buffer size:" << format.stencilBufferSize();
+		(qDebug() << "OpenGL version:").nospace() << format.majorVersion() << "." << format.minorVersion();
+		qDebug() << "OpenGL profile:" << (format.profile() == QSurfaceFormat::CoreProfile ? "core" : (format.profile() == QSurfaceFormat::CompatibilityProfile ? "compatibility" : "none"));
+		qDebug() << "OpenGL has alpha:" << format.hasAlpha();
+		qDebug() << "OpenGL samples:" << format.samples();
+		qDebug() << "OpenGL swap behavior:" << format.swapBehavior();
+		qDebug() << "OpenGL vendor: " << QString((const char*)glGetString(GL_VENDOR));
+		qDebug() << "OpenGL renderer: " << QString((const char*)glGetString(GL_RENDERER));
+		qDebug() << "OpenGL version string: " << QString((const char*)glGetString(GL_VERSION));
+		qDebug() << "OpenGL shading language: " << QString((const char*)glGetString(GL_SHADING_LANGUAGE_VERSION));
+		qDebug() << "OpenGL framebuffer objects: " << QOpenGLFramebufferObject::hasOpenGLFramebufferObjects();
+		qDebug() << "OpenGL shader programs: " << QOpenGLShaderProgram::hasOpenGLShaderPrograms();
+		qDebug() << "OpenGL vertex shaders: " << QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Vertex);
+		qDebug() << "OpenGL fragment shaders: " << QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Fragment);
+		qDebug() << "OpenGL geometry shaders: " << QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Geometry);
 	}
 #endif
 
 	// Create OpenGL framebuffer.
+	_framebufferSize = QSize(settings->outputImageWidth() * sampling, settings->outputImageHeight() * sampling);
 	QOpenGLFramebufferObjectFormat framebufferFormat;
 	framebufferFormat.setAttachment(QOpenGLFramebufferObject::Depth);
-	_framebufferObject.reset(new QOpenGLFramebufferObject(settings->outputImageWidth() * sampling, settings->outputImageHeight() * sampling, framebufferFormat));
+	_framebufferObject.reset(new QOpenGLFramebufferObject(_framebufferSize.width(), _framebufferSize.height(), framebufferFormat));
 	if(!_framebufferObject->isValid())
 		throw Exception(tr("Failed to create OpenGL framebuffer object for offscreen rendering."));
+	OVITO_CHECK_OPENGL();
 
 	// Bind OpenGL buffer.
 	if(!_framebufferObject->bind())
 		throw Exception(tr("Failed to bind OpenGL framebuffer object for offscreen rendering."));
+	OVITO_CHECK_OPENGL();
 
 	return true;
 }
@@ -133,12 +145,12 @@ void StandardSceneRenderer::beginFrame(TimePoint time, const ViewProjectionParam
 	// Make GL context current.
 	if(!_offscreenContext->makeCurrent(&_offscreenSurface))
 		throw Exception(tr("Failed to make OpenGL context current."));
+	OVITO_CHECK_OPENGL();
 
 	ViewportSceneRenderer::beginFrame(time, params, vp);
 
 	// Setup GL viewport.
-	QSize size = _framebufferObject->size();
-	glViewport(0, 0, size.width(), size.height());
+	OVITO_CHECK_OPENGL(glViewport(0, 0, _framebufferSize.width(), _framebufferSize.height()));
 
 	// Set rendering background color.
 	Color backgroundColor = renderSettings()->backgroundColor();

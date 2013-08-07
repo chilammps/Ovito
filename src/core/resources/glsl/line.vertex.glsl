@@ -21,10 +21,19 @@
 
 uniform mat4 modelview_projection_matrix;
 
+#if __VERSION__ >= 130
+
 in vec3 vertex_pos;
 in vec4 vertex_color;
-
 out vec4 vertex_color_out;
+
+#else
+
+#define vertex_pos gl_Vertex 
+#define vertex_color gl_Color
+#define vertex_color_out gl_FrontColor
+
+#endif
 
 void main()
 {

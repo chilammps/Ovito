@@ -35,12 +35,21 @@
 #include "ViewportImageGeometryBuffer.h"
 #include "ViewportArrowGeometryBuffer.h"
 
+#include <QOpenGLFunctions_2_1>
 #include <QOpenGLFunctions_3_0>
 #include <QOpenGLFunctions_3_2_Core>
 
 namespace Ovito {
 
 class PipelineObject;		// defined in PipelineObject.h
+
+// The minimum OpenGL version required by Ovito:
+#define OVITO_OPENGL_MINIMUM_VERSION_MAJOR 			3
+#define OVITO_OPENGL_MINIMUM_VERSION_MINOR			0
+
+// The standard OpenGL version used by Ovito:
+#define OVITO_OPENGL_REQUESTED_VERSION_MAJOR 		3
+#define OVITO_OPENGL_REQUESTED_VERSION_MINOR		2
 
 /**
  * \brief This is the default scene renderer used to render the contents
@@ -112,6 +121,9 @@ public:
 	/// Returns a pointer to the OpenGL functions object.
 	QOpenGLFunctions* glfuncs() const { return _glFunctions; }
 
+	/// Returns a pointer to the OpenGL 2.1 functions object.
+	QOpenGLFunctions_2_1* glfuncs21() const { return _glFunctions21; }
+
 	/// Returns a pointer to the OpenGL 3.0 functions object.
 	QOpenGLFunctions_3_0* glfuncs30() const { return _glFunctions30; }
 
@@ -151,6 +163,9 @@ private:
 
 	/// The OpenGL functions object.
 	QOpenGLFunctions* _glFunctions;
+
+	/// The OpenGL 2.1 functions object.
+	QOpenGLFunctions_2_1* _glFunctions21;
 
 	/// The OpenGL 3.0 functions object.
 	QOpenGLFunctions_3_0* _glFunctions30;

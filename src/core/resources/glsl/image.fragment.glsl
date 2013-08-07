@@ -21,9 +21,18 @@
 
 uniform sampler2D tex;
 
-in vec2 tex_coords;
+#if __VERSION__ >= 130
 
+in vec2 tex_coords;
 out vec4 FragColor;
+
+#else
+
+#define tex_coords gl_TexCoord[0].xy
+#define texture texture2D
+#define FragColor gl_FragColor
+
+#endif
 
 void main() 
 {

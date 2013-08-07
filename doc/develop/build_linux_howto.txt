@@ -17,3 +17,20 @@ path to gcc and g++ compilers.
 	-prefix $HOME/progs/qt5static
 
 make install
+
+**************************************************************************
+Build static libav (release 0.8.8):
+
+sudo apt-get install yasm
+export CC=gcc-4.8
+export CXX=g++-4.8
+./configure \
+	--disable-ffmpeg \
+	--disable-avprobe \
+	--disable-avplay \
+	--disable-avserver \
+	--disable-debug \
+	--prefix=$HOME/progs/libavstatic
+
+export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$HOME/progs/libavstatic/lib/pkgconfig
+
