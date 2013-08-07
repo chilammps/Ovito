@@ -460,7 +460,7 @@ void ModifyCommandPage::onWebRequestFinished(QNetworkReply* reply)
 		}
 	}
 	else {
-		qDebug() << "Failed to fetch news page from server: " << reply->errorString() << "URL:" << reply->url();
+		qDebug() << "Failed to fetch news page from server: " << reply->errorString();
 	}
 	reply->deleteLater();
 }

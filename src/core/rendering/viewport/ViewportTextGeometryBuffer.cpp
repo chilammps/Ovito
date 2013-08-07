@@ -115,6 +115,10 @@ void ViewportTextGeometryBuffer::renderWindow(SceneRenderer* renderer, const Poi
 	OVITO_CHECK_OPENGL(glBindTexture(GL_TEXTURE_2D, _texture));
 	vpRenderer->glfuncs()->glActiveTexture(GL_TEXTURE0);
 
+	// Enable texturing when using compatibility OpenGL. In the core profile, this is enabled by default.
+	if(vpRenderer->glformat().profile() != QSurfaceFormat::CoreProfile)
+		glEnable(GL_TEXTURE_2D);
+
 	if(_needTextureUpdate) {
 		_needTextureUpdate = false;
 
@@ -208,6 +212,10 @@ void ViewportTextGeometryBuffer::renderWindow(SceneRenderer* renderer, const Poi
 	// Restore old state.
 	if(wasDepthTestEnabled) glEnable(GL_DEPTH_TEST);
 	if(!wasBlendEnabled) glDisable(GL_BLEND);
+
+	// Turn off texturing.
+	if(vpRenderer->glformat().profile() != QSurfaceFormat::CoreProfile)
+		glDisable(GL_TEXTURE_2D);
 }
 
 };

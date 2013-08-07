@@ -26,14 +26,20 @@ uniform bool is_perspective;			// Specifies the projection mode.
 uniform vec2 viewport_origin;			// Specifies the transformation from screen coordinates to viewport coordinates.
 uniform vec2 inverse_viewport_size;		// Specifies the transformation from screen coordinates to viewport coordinates.
 
+#if __VERSION__ < 130
+	#define in varying
+	#define flat
+	#define FragColor gl_FragColor
+#else
+	out vec4 FragColor;
+#endif
+
 // Inputs from vertex shader
 flat in vec4 cylinder_color_in;			// The base color of the cylinder.
 flat in vec3 cylinder_view_base;		// Transformed cylinder position in view coordinates
 flat in vec3 cylinder_view_axis;		// Transformed cylinder axis in view coordinates
 flat in float cylinder_radius_in;		// The radius of the cylinder
 flat in float cylinder_length;			// The length of the cylinder
-
-out vec4 FragColor;
 
 const float ambient = 0.4;
 const float diffuse_strength = 1.0 - ambient;

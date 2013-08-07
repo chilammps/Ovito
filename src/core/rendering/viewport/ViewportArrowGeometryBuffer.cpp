@@ -488,7 +488,11 @@ void ViewportArrowGeometryBuffer::renderShadedTriangles(ViewportSceneRenderer* r
 	_shadedShader->enableAttributeArray("vertex_color");
 	_glGeometryBuffer.release();
 
-	if(renderer->glfuncs30()) {
+	if(renderer->glfuncs21()) {
+		OVITO_CHECK_OPENGL(renderer->glfuncs21()->glMultiDrawArrays(GL_TRIANGLE_STRIP, _stripPrimitiveVertexStarts.data(), _stripPrimitiveVertexCounts.data(), _stripPrimitiveVertexStarts.size()));
+		OVITO_CHECK_OPENGL(renderer->glfuncs21()->glMultiDrawArrays(GL_TRIANGLE_FAN, _fanPrimitiveVertexStarts.data(), _fanPrimitiveVertexCounts.data(), _fanPrimitiveVertexStarts.size()));
+	}
+	else if(renderer->glfuncs30()) {
 		OVITO_CHECK_OPENGL(renderer->glfuncs30()->glMultiDrawArrays(GL_TRIANGLE_STRIP, _stripPrimitiveVertexStarts.data(), _stripPrimitiveVertexCounts.data(), _stripPrimitiveVertexStarts.size()));
 		OVITO_CHECK_OPENGL(renderer->glfuncs30()->glMultiDrawArrays(GL_TRIANGLE_FAN, _fanPrimitiveVertexStarts.data(), _fanPrimitiveVertexCounts.data(), _fanPrimitiveVertexStarts.size()));
 	}
@@ -539,7 +543,10 @@ void ViewportArrowGeometryBuffer::renderRaytracedCylinders(ViewportSceneRenderer
 	_raytracedCylinderShader->enableAttributeArray("cylinder_radius");
 	_glGeometryBuffer.release();
 
-	if(renderer->glfuncs30()) {
+	if(renderer->glfuncs21()) {
+		OVITO_CHECK_OPENGL(renderer->glfuncs21()->glMultiDrawArrays(GL_TRIANGLE_STRIP, _stripPrimitiveVertexStarts.data(), _stripPrimitiveVertexCounts.data(), _stripPrimitiveVertexStarts.size()));
+	}
+	else if(renderer->glfuncs30()) {
 		OVITO_CHECK_OPENGL(renderer->glfuncs30()->glMultiDrawArrays(GL_TRIANGLE_STRIP, _stripPrimitiveVertexStarts.data(), _stripPrimitiveVertexCounts.data(), _stripPrimitiveVertexStarts.size()));
 	}
 	else if(renderer->glfuncs32()) {
@@ -580,7 +587,10 @@ void ViewportArrowGeometryBuffer::renderFlat(ViewportSceneRenderer* renderer, qu
 	_flatShader->enableAttributeArray("vertex_color");
 	_glGeometryBuffer.release();
 
-	if(renderer->glfuncs30()) {
+	if(renderer->glfuncs21()) {
+		OVITO_CHECK_OPENGL(renderer->glfuncs21()->glMultiDrawArrays(GL_TRIANGLE_FAN, _fanPrimitiveVertexStarts.data(), _fanPrimitiveVertexCounts.data(), _fanPrimitiveVertexStarts.size()));
+	}
+	else if(renderer->glfuncs30()) {
 		OVITO_CHECK_OPENGL(renderer->glfuncs30()->glMultiDrawArrays(GL_TRIANGLE_FAN, _fanPrimitiveVertexStarts.data(), _fanPrimitiveVertexCounts.data(), _fanPrimitiveVertexStarts.size()));
 	}
 	else if(renderer->glfuncs32()) {

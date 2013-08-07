@@ -22,12 +22,27 @@
 // Input from calling program:
 uniform mat4 projection_matrix;
 
+#if __VERSION__ >= 130
+
 // Input from vertex shader:
 flat in vec4 particle_color_out;
 flat in float depth_radius;		// The particle radius.
 flat in float ze0;				// The particle's Z coordinate in eye coordinates.
 
 out vec4 FragColor;
+
+#else
+
+// Input from vertex shader:
+varying vec4 particle_color_out;
+varying float depth_radius;		// The particle radius.
+varying float ze0;				// The particle's Z coordinate in eye coordinates.
+
+#define FragColor gl_FragColor
+#define gl_PointCoord gl_TexCoord[0].xy
+#define texture texture2D
+
+#endif
 
 void main() 
 {

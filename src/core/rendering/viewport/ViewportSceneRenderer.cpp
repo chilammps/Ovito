@@ -66,6 +66,9 @@ void ViewportSceneRenderer::beginFrame(TimePoint time, const ViewProjectionParam
 	if(!_glFunctions32 || !_glFunctions32->initializeOpenGLFunctions())
 		_glFunctions32 = nullptr;
 
+	if(!_glFunctions21 && !_glFunctions30 && !_glFunctions32)
+		throw Exception(tr("Could not resolve OpenGL functions. Invalid OpenGL context."));
+
 	// Obtain surface format.
 	_glformat = _glcontext->format();
 
@@ -319,7 +322,7 @@ void ViewportSceneRenderer::loadShader(QOpenGLShaderProgram* program, QOpenGLSha
 
     // Insert GLSL version string at the top.
 	// Pick GLSL language version based on current OpenGL version.
-	if(glformat().profile() == QSurfaceFormat::CoreProfile)
+	if(glformat().majorVersion() >= 3 && glformat().minorVersion() >= 2)
 		shaderSource.prepend("#version 150\n");
 	else if(glformat().majorVersion() >= 3)
 		shaderSource.prepend("#version 130\n");

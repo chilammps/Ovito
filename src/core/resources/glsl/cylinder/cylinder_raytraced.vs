@@ -23,6 +23,12 @@
 uniform mat4 modelview_matrix;
 uniform mat4 modelview_projection_matrix;
 
+#if __VERSION__ < 130
+	#define in attribute
+	#define out varying
+	#define flat
+#endif
+
 // The vertex data
 in vec3 vertex_pos;
 

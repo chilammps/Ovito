@@ -24,6 +24,12 @@ uniform float basePointSize;
 uniform mat4 modelview_matrix;
 uniform mat4 projection_matrix;
 
+#if __VERSION__ < 130
+	#define in attribute
+	#define out varying
+	#define flat
+#endif
+
 // The particle data:
 in vec3 particle_pos;
 in vec3 particle_color;

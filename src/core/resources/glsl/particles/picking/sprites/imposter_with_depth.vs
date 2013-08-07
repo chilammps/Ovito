@@ -25,6 +25,8 @@ uniform mat4 modelview_matrix;
 uniform mat4 projection_matrix;
 uniform int pickingBaseID;
 
+#if __VERSION__ >= 130
+
 // The particle data:
 in vec3 particle_pos;
 in float particle_radius;
@@ -34,15 +36,38 @@ flat out vec4 particle_color_out;
 flat out float depth_radius;		// The particle's radius.
 flat out float ze0;					// The particle's Z coordinate in eye coordinates.
 
+#else
+
+// The particle data:
+attribute vec3 particle_pos;
+attribute float particle_radius;
+attribute float vertexID;
+#define gl_VertexID int(vertexID)
+
+// Output to fragment shader:
+varying vec4 particle_color_out;
+varying float depth_radius;			// The particle's radius.
+varying float ze0;					// The particle's Z coordinate in eye coordinates.
+
+#endif
+
 void main()
 {
 	// Compute color from object ID.
 	int objectID = pickingBaseID + gl_VertexID;
+#if __VERSION__ >= 130
 	particle_color_out = vec4(
 		float(objectID & 0xFF) / 255.0, 
 		float((objectID >> 8) & 0xFF) / 255.0, 
 		float((objectID >> 16) & 0xFF) / 255.0, 
-		float((objectID >> 24) & 0xFF) / 255.0);	
+		float((objectID >> 24) & 0xFF) / 255.0);		
+#else
+	particle_color_out = vec4(
+		float(mod(objectID, 0x100)) / 255.0, 
+		float(mod(objectID / 0x100, 0x100)) / 255.0, 
+		float(mod(objectID / 0x10000, 0x100)) / 255.0, 
+		float(mod(objectID / 0x1000000, 0x100)) / 255.0);		
+#endif
 
 	// Forward particle radius to fragment shader.
 	depth_radius = particle_radius;

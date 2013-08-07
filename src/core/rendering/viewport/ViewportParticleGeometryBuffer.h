@@ -103,6 +103,9 @@ private:
 	/// The internal OpenGL vertex buffer that stores the particle colors.
 	QOpenGLBuffer _glColorsBuffer;
 
+	/// The internal OpenGL vertex buffer that stores the particle indices.
+	QOpenGLBuffer _glIndexBuffer;
+
 	/// The GL context group under which the GL vertex buffers have been created.
 	QPointer<QOpenGLContextGroup> _contextGroup;
 

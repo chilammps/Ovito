@@ -29,7 +29,6 @@ out vec4 vertex_color_out;
 
 #else
 
-#define vertex_pos gl_Vertex 
 #define vertex_color gl_Color
 #define vertex_color_out gl_FrontColor
 
@@ -38,5 +37,9 @@ out vec4 vertex_color_out;
 void main()
 {
 	vertex_color_out = vertex_color;
+#if __VERSION__ >= 130
 	gl_Position = modelview_projection_matrix * vec4(vertex_pos, 1.0);
+#else
+	gl_Position = modelview_projection_matrix * gl_Vertex;
+#endif
 }

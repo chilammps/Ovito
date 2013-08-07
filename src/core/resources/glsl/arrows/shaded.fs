@@ -19,9 +19,19 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+#if __VERSION__ >= 130
+
 flat in vec4 vertex_color_out;
 in vec3 vertex_normal_out;
 out vec4 FragColor;
+
+#else
+
+varying vec4 vertex_color_out;
+varying vec3 vertex_normal_out;
+#define FragColor gl_FragColor
+
+#endif
 
 const float ambient = 0.4;
 const float diffuse_strength = 0.6;

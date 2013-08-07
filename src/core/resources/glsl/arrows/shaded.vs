@@ -22,6 +22,12 @@
 uniform mat4 modelview_projection_matrix;
 uniform mat3 normal_matrix;
 
+#if __VERSION__ < 130
+	#define in attribute
+	#define out varying
+	#define flat
+#endif
+
 in vec3 vertex_pos;
 in vec3 vertex_normal;
 in vec4 vertex_color;

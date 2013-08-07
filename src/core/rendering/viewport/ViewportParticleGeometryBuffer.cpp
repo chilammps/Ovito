@@ -41,20 +41,6 @@ ViewportParticleGeometryBuffer::ViewportParticleGeometryBuffer(ViewportSceneRend
 {
 	OVITO_ASSERT(renderer->glcontext()->shareGroup() == _contextGroup);
 
-	if(!_glPositionsBuffer.create())
-		throw Exception(tr("Failed to create OpenGL vertex buffer."));
-	_glPositionsBuffer.setUsagePattern(QOpenGLBuffer::StaticDraw);
-
-	if(!_glRadiiBuffer.create())
-		throw Exception(tr("Failed to create OpenGL vertex buffer."));
-	_glRadiiBuffer.setUsagePattern(QOpenGLBuffer::StaticDraw);
-
-	if(!_glColorsBuffer.create())
-		throw Exception(tr("Failed to create OpenGL vertex buffer."));
-	_glColorsBuffer.setUsagePattern(QOpenGLBuffer::DynamicDraw);
-
-	initializeBillboardTexture(renderer);
-
 	// Initialize OpenGL shaders.
 	_flatImposterShader = renderer->loadShaderProgram(
 			"particle_flat_sphere",
@@ -92,6 +78,20 @@ ViewportParticleGeometryBuffer::ViewportParticleGeometryBuffer(ViewportSceneRend
 		_raytracedSphereShader = nullptr;
 		_raytracedPickingSphereShader = nullptr;
 	}
+
+	if(!_glPositionsBuffer.create())
+		throw Exception(tr("Failed to create OpenGL vertex buffer."));
+	_glPositionsBuffer.setUsagePattern(QOpenGLBuffer::StaticDraw);
+
+	if(!_glRadiiBuffer.create())
+		throw Exception(tr("Failed to create OpenGL vertex buffer."));
+	_glRadiiBuffer.setUsagePattern(QOpenGLBuffer::StaticDraw);
+
+	if(!_glColorsBuffer.create())
+		throw Exception(tr("Failed to create OpenGL vertex buffer."));
+	_glColorsBuffer.setUsagePattern(QOpenGLBuffer::DynamicDraw);
+
+	initializeBillboardTexture(renderer);
 }
 
 /******************************************************************************
@@ -115,6 +115,10 @@ void ViewportParticleGeometryBuffer::setSize(int particleCount)
 	OVITO_ASSERT(QOpenGLContextGroup::currentContextGroup() == _contextGroup);
 
 	_particleCount = particleCount;
+
+	// Reset index buffer.
+	if(_glIndexBuffer.isCreated())
+		_glIndexBuffer.destroy();
 }
 
 /******************************************************************************
@@ -251,9 +255,13 @@ void ViewportParticleGeometryBuffer::renderPointSprites(ViewportSceneRenderer* r
 	if(shadingMode() != FlatShading && !renderer->isPicking())
 		activateBillboardTexture();
 
-	// Enable point sprites when Using OpenGL 3.0/3.1. For later versions, they are already enabled by default.
-	if(renderer->glformat().profile() != QSurfaceFormat::CoreProfile)
+	// Enable point sprites when using compatibility OpenGL. In the core profile, they are already enabled by default.
+	if(renderer->glformat().profile() != QSurfaceFormat::CoreProfile) {
 		OVITO_CHECK_OPENGL(glEnable(GL_POINT_SPRITE));
+
+		// Specify point sprite texture coordinate replacement mode.
+		glTexEnvf(GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE);
+	}
 
 	// This is how our point sprite's size will be modified by its
 	// distance from the viewer
@@ -269,7 +277,17 @@ void ViewportParticleGeometryBuffer::renderPointSprites(ViewportSceneRenderer* r
 		distanceAttenuation[0] = 1;
 		OVITO_CHECK_OPENGL(glPointSize(param));
 	}
-	if(renderer->glfuncs30()) {
+
+	if(renderer->glfuncs21()) {
+		OVITO_CHECK_OPENGL(renderer->glfuncs21()->glPointParameterfv(GL_POINT_DISTANCE_ATTENUATION, distanceAttenuation));
+		OVITO_CHECK_OPENGL(renderer->glfuncs21()->glPointParameterf(GL_POINT_FADE_THRESHOLD_SIZE, 0.0f));
+		OVITO_CHECK_OPENGL(renderer->glfuncs21()->glPointParameterf(GL_POINT_SIZE_MIN, 0.01f));
+#ifdef Q_OS_MACX
+		if(renderer->glcontext()->surface()->surfaceClass() == QSurface::Offscreen)
+			OVITO_CHECK_OPENGL(renderer->glfuncs21()->glPointParameterf(GL_POINT_SPRITE_COORD_ORIGIN, GL_LOWER_LEFT));
+#endif
+	}
+	else if(renderer->glfuncs30()) {
 		OVITO_CHECK_OPENGL(renderer->glfuncs30()->glPointParameterfv(GL_POINT_DISTANCE_ATTENUATION, distanceAttenuation));
 		OVITO_CHECK_OPENGL(renderer->glfuncs30()->glPointParameterf(GL_POINT_FADE_THRESHOLD_SIZE, 0.0f));
 		OVITO_CHECK_OPENGL(renderer->glfuncs30()->glPointParameterf(GL_POINT_SIZE_MIN, 0.01f));
@@ -298,7 +316,8 @@ void ViewportParticleGeometryBuffer::renderPointSprites(ViewportSceneRenderer* r
 				(renderingQuality() == LowQuality ? _shadedImposterShaderWithoutDepth : _shadedImposterShaderWithDepth);
 	}
 	else {
-		shader = (shadingMode() == FlatShading || renderingQuality() == LowQuality) ? _imposterPickingShaderWithoutDepth : _imposterPickingShaderWithDepth;
+		shader = (shadingMode() == FlatShading || renderingQuality() == LowQuality) ?
+				_imposterPickingShaderWithoutDepth : _imposterPickingShaderWithDepth;
 	}
 	OVITO_CHECK_POINTER(shader);
 	if(!shader->bind())
@@ -323,6 +342,33 @@ void ViewportParticleGeometryBuffer::renderPointSprites(ViewportSceneRenderer* r
 		shader->enableAttributeArray("particle_color");
 		_glColorsBuffer.release();
 	}
+	else {
+		if(renderer->glformat().majorVersion() < 3) {
+			// Create and fill vertex index buffer.
+			if(!_glIndexBuffer.isCreated()) {
+				if(!_glIndexBuffer.create())
+					throw Exception(tr("Failed to create OpenGL vertex buffer."));
+				_glIndexBuffer.setUsagePattern(QOpenGLBuffer::StaticDraw);
+				if(!_glIndexBuffer.bind())
+					throw Exception(tr("Failed to bind OpenGL vertex buffer."));
+				_glIndexBuffer.allocate(_particleCount * sizeof(GLint));
+				OVITO_ASSERT(_particleCount > 0);
+				GLint* bufferData = static_cast<GLint*>(_glIndexBuffer.map(QOpenGLBuffer::WriteOnly));
+				if(!bufferData)
+					throw Exception(tr("Failed to map OpenGL vertex buffer to memory."));
+				for(GLint index = 0; index < _particleCount; index++)
+					bufferData[index] = index;
+				_glIndexBuffer.unmap();
+			}
+			else {
+				if(!_glIndexBuffer.bind())
+					throw Exception(tr("Failed to bind OpenGL vertex buffer."));
+			}
+			shader->setAttributeBuffer("vertexID", GL_INT, 0, 1);
+			shader->enableAttributeArray("vertexID");
+			_glIndexBuffer.release();
+		}
+	}
 
 	if(!_glRadiiBuffer.bind())
 		throw Exception(tr("Failed to bind OpenGL vertex buffer."));
@@ -341,6 +387,10 @@ void ViewportParticleGeometryBuffer::renderPointSprites(ViewportSceneRenderer* r
 		shader->disableAttributeArray("particle_color");
 	shader->disableAttributeArray("particle_radius");
 	shader->release();
+
+	// Disable point sprites.
+	if(renderer->glformat().profile() != QSurfaceFormat::CoreProfile)
+		OVITO_CHECK_OPENGL(glDisable(GL_POINT_SPRITE));
 }
 
 /******************************************************************************

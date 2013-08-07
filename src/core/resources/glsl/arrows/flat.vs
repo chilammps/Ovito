@@ -24,6 +24,12 @@ uniform bool is_perspective;
 uniform vec3 parallel_view_dir;
 uniform vec3 eye_pos;
 
+#if __VERSION__ < 130
+	#define in attribute
+	#define out varying
+	#define flat
+#endif
+
 in vec3 vertex_pos;
 in vec3 vector_base;
 in vec3 vector_dir;

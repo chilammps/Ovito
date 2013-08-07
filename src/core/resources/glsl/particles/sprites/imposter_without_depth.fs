@@ -26,9 +26,19 @@
 
 uniform sampler2D tex;			// The imposter texture.
 
-flat in vec4 particle_color_out;
+#if __VERSION__ >= 130
 
+flat in vec4 particle_color_out;
 out vec4 FragColor;
+
+#else
+
+varying vec4 particle_color_out;
+#define FragColor gl_FragColor
+#define gl_PointCoord gl_TexCoord[0].xy
+#define texture texture2D
+
+#endif
 
 void main() 
 {

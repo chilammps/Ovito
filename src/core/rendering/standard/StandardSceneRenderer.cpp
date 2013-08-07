@@ -47,8 +47,8 @@ bool StandardSceneRenderer::startRender(DataSet* dataset, RenderSettings* settin
 	// Set up surface format with a depth buffer.
 	QSurfaceFormat format;
 	format.setDepthBufferSize(24);
-	format.setMajorVersion(OVITO_OPENGL_REQUESTED_VERSION_MINOR);
-	format.setMinorVersion(OVITO_OPENGL_REQUESTED_VERSION_MAJOR);
+	format.setMajorVersion(OVITO_OPENGL_REQUESTED_VERSION_MAJOR);
+	format.setMinorVersion(OVITO_OPENGL_REQUESTED_VERSION_MINOR);
 	format.setProfile(QSurfaceFormat::CoreProfile);
 	format.setSwapBehavior(QSurfaceFormat::SingleBuffer);
 
@@ -79,25 +79,6 @@ bool StandardSceneRenderer::startRender(DataSet* dataset, RenderSettings* settin
 		throw Exception(tr("Failed to make OpenGL context current."));
 	OVITO_CHECK_OPENGL();
 
-	// Check OpenGL version.
-	if(_offscreenContext->format().majorVersion() < OVITO_OPENGL_MINIMUM_VERSION_MAJOR || _offscreenContext->format().minorVersion() < OVITO_OPENGL_MINIMUM_VERSION_MINOR) {
-		throw Exception(tr(
-					"The OpenGL implementation available on this system does not support OpenGL version %4.%5 or newer.\n\n"
-					"Ovito requires modern graphics hardware and up-to-date graphics drivers to display 3D content. Your current system configuration is not compatible with Ovito and the application will quit now.\n\n"
-					"To avoid this error message, please install the newest graphics driver, or upgrade your graphics card.\n\n"
-					"The installed OpenGL graphics driver reports the following information:\n\n"
-					"OpenGL Vendor: %1\n"
-					"OpenGL Renderer: %2\n"
-					"OpenGL Version: %3\n\n"
-					"Ovito requires OpenGL version %4.%5 or higher.")
-					.arg(QString((const char*)glGetString(GL_VENDOR)))
-					.arg(QString((const char*)glGetString(GL_RENDERER)))
-					.arg(QString((const char*)glGetString(GL_VERSION)))
-					.arg(OVITO_OPENGL_MINIMUM_VERSION_MAJOR)
-					.arg(OVITO_OPENGL_MINIMUM_VERSION_MINOR)
-				);
-	}
-
 #if 1
 	{
 		QSurfaceFormat format = _offscreenContext->format();
@@ -119,6 +100,25 @@ bool StandardSceneRenderer::startRender(DataSet* dataset, RenderSettings* settin
 		qDebug() << "OpenGL geometry shaders: " << QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Geometry);
 	}
 #endif
+
+	// Check OpenGL version.
+	if(_offscreenContext->format().majorVersion() < OVITO_OPENGL_MINIMUM_VERSION_MAJOR || _offscreenContext->format().minorVersion() < OVITO_OPENGL_MINIMUM_VERSION_MINOR) {
+		throw Exception(tr(
+					"The OpenGL implementation available on this system does not support OpenGL version %4.%5 or newer.\n\n"
+					"Ovito requires modern graphics hardware and up-to-date graphics drivers to display 3D content. Your current system configuration is not compatible with Ovito and the application will quit now.\n\n"
+					"To avoid this error message, please install the newest graphics driver, or upgrade your graphics card.\n\n"
+					"The installed OpenGL graphics driver reports the following information:\n\n"
+					"OpenGL Vendor: %1\n"
+					"OpenGL Renderer: %2\n"
+					"OpenGL Version: %3\n\n"
+					"Ovito requires OpenGL version %4.%5 or higher.")
+					.arg(QString((const char*)glGetString(GL_VENDOR)))
+					.arg(QString((const char*)glGetString(GL_RENDERER)))
+					.arg(QString((const char*)glGetString(GL_VERSION)))
+					.arg(OVITO_OPENGL_MINIMUM_VERSION_MAJOR)
+					.arg(OVITO_OPENGL_MINIMUM_VERSION_MINOR)
+				);
+	}
 
 	// Create OpenGL framebuffer.
 	_framebufferSize = QSize(settings->outputImageWidth() * sampling, settings->outputImageHeight() * sampling);
