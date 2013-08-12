@@ -41,10 +41,14 @@ SET_OVITO_OBJECT_EDITOR(ColorCodingModifier, ColorCodingModifierEditor)
 DEFINE_REFERENCE_FIELD(ColorCodingModifier, _startValueCtrl, "StartValue", FloatController)
 DEFINE_REFERENCE_FIELD(ColorCodingModifier, _endValueCtrl, "EndValue", FloatController)
 DEFINE_REFERENCE_FIELD(ColorCodingModifier, _colorGradient, "ColorGradient", ColorCodingGradient)
+DEFINE_PROPERTY_FIELD(ColorCodingModifier, _onlySelected, "SelectedOnly")
+DEFINE_PROPERTY_FIELD(ColorCodingModifier, _keepSelection, "KeepSelection")
 DEFINE_PROPERTY_FIELD(ColorCodingModifier, _renderLegend, "RenderLegend")
 SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _startValueCtrl, "Start value")
 SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _endValueCtrl, "End value")
 SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _colorGradient, "Color gradient")
+SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _onlySelected, "Color only selected particles")
+SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _keepSelection, "Keep selection")
 SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _renderLegend, "Display color legend (experimental)")
 
 IMPLEMENT_OVITO_OBJECT(Viz, ColorCodingGradient, RefTarget)
@@ -56,11 +60,13 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Viz, ColorCodingJetGradient, ColorCodingGrad
 /******************************************************************************
 * Constructs the modifier object.
 ******************************************************************************/
-ColorCodingModifier::ColorCodingModifier() : _renderLegend(false)
+ColorCodingModifier::ColorCodingModifier() : _onlySelected(false), _keepSelection(false), _renderLegend(false)
 {
 	INIT_PROPERTY_FIELD(ColorCodingModifier::_startValueCtrl);
 	INIT_PROPERTY_FIELD(ColorCodingModifier::_endValueCtrl);
 	INIT_PROPERTY_FIELD(ColorCodingModifier::_colorGradient);
+	INIT_PROPERTY_FIELD(ColorCodingModifier::_onlySelected);
+	INIT_PROPERTY_FIELD(ColorCodingModifier::_keepSelection);
 	INIT_PROPERTY_FIELD(ColorCodingModifier::_renderLegend);
 
 	_colorGradient = new ColorCodingHSVGradient();
@@ -141,9 +147,9 @@ void ColorCodingModifier::initializeModifier(PipelineObject* pipeline, ModifierA
 ******************************************************************************/
 ObjectStatus ColorCodingModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
 {
+	// Get the source property.
 	if(sourceProperty().isNull())
 		throw Exception(tr("Select a particle property first."));
-
 	ParticlePropertyObject* property = lookupInputProperty(input());
 	if(!property)
 		throw Exception(tr("The selected particle property with the name '%1' does not exist.").arg(sourceProperty().name()));
@@ -161,15 +167,33 @@ ObjectStatus ColorCodingModifier::modifyParticles(TimePoint time, TimeInterval& 
 	if(_startValueCtrl) _startValueCtrl->getValue(time, startValue, validityInterval);
 	if(_endValueCtrl) _endValueCtrl->getValue(time, endValue, validityInterval);
 
+	// Get the particle selection property if enabled by the user.
+	ParticlePropertyObject* selProperty = nullptr;
+	if(_onlySelected)
+		selProperty = inputStandardProperty(ParticleProperty::SelectionProperty);
+
 	// Get the deep copy of the color output property.
 	ParticlePropertyObject* colorProperty = outputStandardProperty(ParticleProperty::ColorProperty);
 
 	OVITO_ASSERT(colorProperty->size() == property->size());
+
+	Color* c_begin = colorProperty->dataColor();
+	Color* c_end = c_begin + colorProperty->size();
+	Color* c = c_begin;
+	const int* sel = selProperty ? selProperty->constDataInt() : nullptr;
+	std::vector<Color> existingColors;
+	if(selProperty)
+		existingColors = inputParticleColors(time, validityInterval);
+
 	if(property->dataType() == qMetaTypeId<FloatType>()) {
 		const FloatType* v = property->constDataFloat() + vecComponent;
-		Color* c = colorProperty->dataColor();
-		Color* c_end = c + colorProperty->size();
 		for(; c != c_end; ++c, v += vecComponentCount) {
+
+			// If the "only selected" option is enabled, and the particle is not selected, use the existing particle color.
+			if(sel && !(*sel++)) {
+				*c = existingColors[c - c_begin];
+				continue;
+			}
 
 			// Compute linear interpolation.
 			FloatType t;
@@ -189,9 +213,13 @@ ObjectStatus ColorCodingModifier::modifyParticles(TimePoint time, TimeInterval& 
 	}
 	else if(property->dataType() == qMetaTypeId<int>()) {
 		const int* v = property->constDataInt() + vecComponent;
-		Color* c = colorProperty->dataColor();
-		Color* c_end = c + colorProperty->size();
 		for(; c != c_end; ++c, v += vecComponentCount) {
+
+			// If the "only selected" option is enabled, and the particle is not selected, use the existing particle color.
+			if(sel && !(*sel++)) {
+				*c = existingColors[c - c_begin];
+				continue;
+			}
 
 			// Compute linear interpolation.
 			FloatType t;
@@ -211,6 +239,10 @@ ObjectStatus ColorCodingModifier::modifyParticles(TimePoint time, TimeInterval& 
 	}
 	else
 		throw Exception(tr("The particle property '%1' has an invalid or non-numeric data type.").arg(property->name()));
+
+	// Clear particle selection if requested.
+	if(selProperty && !_keepSelection)
+		output().removeObject(selProperty);
 
 	colorProperty->changed();
 	return ObjectStatus::Success;
@@ -438,6 +470,10 @@ void ColorCodingModifierEditor::createUI(const RolloutInsertionParameters& rollo
 	layout1->addWidget(reverseBtn);
 
 	layout1->addSpacing(8);
+
+	// Only selected particles.
+	BooleanParameterUI* onlySelectedPUI = new BooleanParameterUI(this, PROPERTY_FIELD(ColorCodingModifier::_onlySelected));
+	layout1->addWidget(onlySelectedPUI->checkBox());
 
 	// Render legend.
 	BooleanParameterUI* renderLegendPUI = new BooleanParameterUI(this, PROPERTY_FIELD(ColorCodingModifier::_renderLegend));

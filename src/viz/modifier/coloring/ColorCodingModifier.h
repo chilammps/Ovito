@@ -250,6 +250,13 @@ protected:
 	/// The particle type property that is used as source for the coloring.
 	ParticlePropertyReference _sourcePropertyRef;
 
+	/// Controls whether the modifier assigns a color only to selected particles.
+	PropertyField<bool> _onlySelected;
+
+	/// Controls whether the input particle selection is preserved.
+	/// If false, the selection is cleared by the modifier.
+	PropertyField<bool> _keepSelection;
+
 	/// Controls the display of the color legend in the rendered image.
 	PropertyField<bool> _renderLegend;
 
@@ -284,6 +291,8 @@ private:
 	DECLARE_REFERENCE_FIELD(_startValueCtrl);
 	DECLARE_REFERENCE_FIELD(_endValueCtrl);
 	DECLARE_REFERENCE_FIELD(_colorGradient);
+	DECLARE_PROPERTY_FIELD(_onlySelected);
+	DECLARE_PROPERTY_FIELD(_keepSelection);
 	DECLARE_PROPERTY_FIELD(_renderLegend);
 };
 

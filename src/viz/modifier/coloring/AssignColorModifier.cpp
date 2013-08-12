@@ -94,9 +94,9 @@ ObjectStatus AssignColorModifier::modifyParticles(TimePoint time, TimeInterval& 
 				if(*s) *c = color;
 		}
 
-		if(!keepSelection()) {
+		// Clear particle selection if requested.
+		if(!keepSelection())
 			output().removeObject(selProperty);
-		}
 	}
 	else {
 		// Assign color to all particles.
