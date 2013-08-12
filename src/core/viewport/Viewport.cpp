@@ -606,7 +606,6 @@ void Viewport::renderOrientationIndicator()
 		Point3 ndcPoint = projParams.projectionMatrix * p;
 		Point2 windowPoint(( ndcPoint.x() + 1.0) * size().width()  / 2,
 							(-ndcPoint.y() + 1.0) * size().height() / 2);
-		windowPoint += Vector2(3, -6);
 		_orientationTripodLabels[axis]->renderWindow(renderer, windowPoint, Qt::AlignHCenter | Qt::AlignVCenter);
 	}
 

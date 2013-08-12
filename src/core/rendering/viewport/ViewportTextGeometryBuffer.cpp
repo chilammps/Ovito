@@ -159,7 +159,7 @@ void ViewportTextGeometryBuffer::renderWindow(SceneRenderer* renderer, const Poi
 	if(alignment & Qt::AlignRight) x = -w;
 	else if(alignment & Qt::AlignHCenter) x = -w / 2;
 	if(alignment & Qt::AlignBottom) y = -h;
-	else if(alignment & Qt::AlignVCenter) x = -h / 2;
+	else if(alignment & Qt::AlignVCenter) y = -h / 2;
 	QRectF rect2(x, y, w, h);
 	rect2.translate(pos.x(), pos.y());
 	//rect2.translate(_textOffset.x(), _textOffset.y());
