@@ -213,7 +213,7 @@ void RenderSettingsEditor::onChooseImageFilename()
 	RenderSettings* settings = static_object_cast<RenderSettings>(editObject());
 	if(!settings) return;
 
-	SaveImageFileDialog fileDialog(container(), tr("Output image file"), settings->imageInfo());
+	SaveImageFileDialog fileDialog(container(), tr("Output image file"), true, settings->imageInfo());
 	if(fileDialog.exec()) {
 		UndoableTransaction::handleExceptions(tr("Change output file"), [settings, &fileDialog]() {
 			settings->setImageInfo(fileDialog.imageInfo());

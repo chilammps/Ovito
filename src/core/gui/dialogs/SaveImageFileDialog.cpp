@@ -30,7 +30,7 @@ namespace Ovito {
 /******************************************************************************
 * Constructs the dialog window.
 ******************************************************************************/
-SaveImageFileDialog::SaveImageFileDialog(QWidget* parent, const QString& caption, const ImageInfo& imageInfo) :
+SaveImageFileDialog::SaveImageFileDialog(QWidget* parent, const QString& caption, bool includeVideoFormats, const ImageInfo& imageInfo) :
 	HistoryFileDialog("save_image", parent, caption), _imageInfo(imageInfo)
 {
 	connect(this, SIGNAL(fileSelected(const QString&)), this, SLOT(onFileSelected(const QString&)));
@@ -48,14 +48,16 @@ SaveImageFileDialog::SaveImageFileDialog(QWidget* parent, const QString& caption
 	if(supportedFormats.contains("tga")) { filterStrings << tr("TGA Targa image file (*.tga)"); _formatList << "tga"; }
 
 #ifdef OVITO_VIDEO_OUTPUT_SUPPORT
-	// Add video formats.
-	for(const auto& videoFormat : VideoEncoder::supportedFormats()) {
-		QString filterString = videoFormat.longName + " (";
-		for(const QString& ext : videoFormat.extensions)
-			filterString += "*." + ext;
-		filterString += ")";
-		filterStrings << filterString;
-		_formatList << videoFormat.name;
+	if(includeVideoFormats) {
+		// Add video formats.
+		for(const auto& videoFormat : VideoEncoder::supportedFormats()) {
+			QString filterString = videoFormat.longName + " (";
+			for(const QString& ext : videoFormat.extensions)
+				filterString += "*." + ext;
+			filterString += ")";
+			filterStrings << filterString;
+			_formatList << videoFormat.name;
+		}
 	}
 #endif
 

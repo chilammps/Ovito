@@ -43,7 +43,7 @@ class OVITO_CORE_EXPORT SaveImageFileDialog : public HistoryFileDialog
 public:
 
 	/// \brief Constructs the dialog window.
-	SaveImageFileDialog(QWidget* parent = nullptr, const QString& caption = QString(), const ImageInfo& imageInfo = ImageInfo());
+	SaveImageFileDialog(QWidget* parent = nullptr, const QString& caption = QString(), bool includeVideoFormats = false, const ImageInfo& imageInfo = ImageInfo());
 
 	/// \brief Returns the file info after the dialog has been closed with "OK".
 	const ImageInfo& imageInfo() const { return _imageInfo; }
