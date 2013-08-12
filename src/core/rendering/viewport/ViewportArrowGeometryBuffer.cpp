@@ -114,7 +114,10 @@ void ViewportArrowGeometryBuffer::startSetElements(int elementCount)
 		}
 	}
 	else if(shadingMode() == FlatShading) {
-		_verticesPerElement = 7;
+		if(shape() == ArrowShape)
+			_verticesPerElement = 7;
+		else
+			_verticesPerElement = 4;
 		bytesPerVertex = sizeof(ColoredVertexWithVector);
 		_elementRenderCount = std::min(_elementCount, std::numeric_limits<int>::max() / (int)bytesPerVertex / _verticesPerElement);
 
@@ -273,7 +276,15 @@ void ViewportArrowGeometryBuffer::createCylinderElement(int index, const Point3&
 		Point_3<float> base = pos;
 
 		ColoredVertexWithVector* vertices = static_cast<ColoredVertexWithVector*>(_mappedBuffer) + (index * _verticesPerElement);
-		OVITO_ASSERT_MSG(false, "ViewportArrowGeometryBuffer::createCylinderElement", "Function not implemented yet.");
+		vertices[0].pos = Point_3<float>(0, width, 0);
+		vertices[1].pos = Point_3<float>(0, -width, 0);
+		vertices[2].pos = Point_3<float>(length, -width, 0);
+		vertices[3].pos = Point_3<float>(length, width, 0);
+		for(int i = 0; i < _verticesPerElement; i++, ++vertices) {
+			vertices->base = base;
+			vertices->dir = t;
+			vertices->color = c;
+		}
 	}
 }
 
