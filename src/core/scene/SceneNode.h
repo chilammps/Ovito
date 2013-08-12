@@ -291,6 +291,10 @@ protected:
 	/// so it will be rebuilt during the next call to getWorldTransform().
 	virtual void invalidateWorldTransformation();
 
+	/// This method marks the cached world bounding box as invalid,
+	/// so it will be rebuilt during the next call to worldBoundingBox().
+	virtual void invalidateBoundingBox();
+
 	/// This node's parent node in the hierarchy.
 	SceneNode* _parentNode;
 

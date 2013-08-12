@@ -125,6 +125,7 @@ bool ObjectNode::referenceEvent(RefTarget* source, ReferenceEvent* event)
 				event->type() == ReferenceEvent::PendingOperationSucceeded ||
 				event->type() == ReferenceEvent::PendingOperationFailed) {
 			invalidatePipelineCache();
+			invalidateBoundingBox();
 		}
 		else if(event->type() == ReferenceEvent::TargetDeleted) {
 			// Object has been deleted -> delete node too.
@@ -140,8 +141,10 @@ bool ObjectNode::referenceEvent(RefTarget* source, ReferenceEvent* event)
 ******************************************************************************/
 void ObjectNode::referenceReplaced(const PropertyFieldDescriptor& field, RefTarget* oldTarget, RefTarget* newTarget)
 {
-	if(field == PROPERTY_FIELD(ObjectNode::_sceneObject))
+	if(field == PROPERTY_FIELD(ObjectNode::_sceneObject)) {
 		invalidatePipelineCache();
+		invalidateBoundingBox();
+	}
 
 	SceneNode::referenceReplaced(field, oldTarget, newTarget);
 }

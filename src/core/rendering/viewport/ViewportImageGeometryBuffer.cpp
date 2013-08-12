@@ -106,7 +106,7 @@ void ViewportImageGeometryBuffer::renderViewport(SceneRenderer* renderer, const 
 {
 	OVITO_ASSERT(_contextGroup == QOpenGLContextGroup::currentContextGroup());
 	OVITO_ASSERT(_texture != 0);
-	OVITO_STATIC_ASSERT(sizeof(FloatType) == sizeof(float) && sizeof(Point2) == sizeof(float)*2);
+	OVITO_STATIC_ASSERT(sizeof(FloatType) == sizeof(GLfloat) && sizeof(Point2) == sizeof(GLfloat)*2);
 	ViewportSceneRenderer* vpRenderer = dynamic_object_cast<ViewportSceneRenderer>(renderer);
 
 	if(image().isNull() || !vpRenderer || renderer->isPicking())
@@ -115,6 +115,10 @@ void ViewportImageGeometryBuffer::renderViewport(SceneRenderer* renderer, const 
 	// Prepare texture.
 	OVITO_CHECK_OPENGL(glBindTexture(GL_TEXTURE_2D, _texture));
 	vpRenderer->glfuncs()->glActiveTexture(GL_TEXTURE0);
+
+	// Enable texturing when using compatibility OpenGL. In the core profile, this is enabled by default.
+	if(vpRenderer->glformat().profile() != QSurfaceFormat::CoreProfile)
+		glEnable(GL_TEXTURE_2D);
 
 	if(_needTextureUpdate) {
 		_needTextureUpdate = false;
@@ -175,6 +179,10 @@ void ViewportImageGeometryBuffer::renderViewport(SceneRenderer* renderer, const 
 	// Restore old state.
 	if(wasDepthTestEnabled) glEnable(GL_DEPTH_TEST);
 	if(!wasBlendEnabled) glDisable(GL_BLEND);
+
+	// Turn off texturing.
+	if(vpRenderer->glformat().profile() != QSurfaceFormat::CoreProfile)
+		glDisable(GL_TEXTURE_2D);
 }
 
 };

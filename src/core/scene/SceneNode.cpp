@@ -108,7 +108,7 @@ AffineTransformation SceneNode::getLocalTransform(TimePoint time, TimeInterval& 
 void SceneNode::invalidateWorldTransformation()
 {
 	_worldTransformValidity.setEmpty();
-	_worldBBTime = TimeNegativeInfinity();
+	invalidateBoundingBox();
 	for(SceneNode* child : children())
 		child->invalidateWorldTransformation();
 }
@@ -173,6 +173,17 @@ LookAtController* SceneNode::bindToTarget(SceneNode* targetNode)
 }
 
 /******************************************************************************
+* This method marks the cached world bounding box as invalid,
+* so it will be rebuilt during the next call to worldBoundingBox().
+******************************************************************************/
+void SceneNode::invalidateBoundingBox()
+{
+	_worldBBTime = TimeNegativeInfinity();
+	if(parentNode())
+		parentNode()->invalidateBoundingBox();
+}
+
+/******************************************************************************
 * From RefMaker.
 ******************************************************************************/
 bool SceneNode::referenceEvent(RefTarget* source, ReferenceEvent* event)
@@ -182,8 +193,10 @@ bool SceneNode::referenceEvent(RefTarget* source, ReferenceEvent* event)
 			// TM has changed -> rebuild world tm cache.
 			invalidateWorldTransformation();
 		}
-		// The bounding box might have changed if the object has changed.
-		_worldBBTime = TimeNegativeInfinity();
+		else {
+			// The bounding box might have changed if the object has changed.
+			invalidateBoundingBox();
+		}
 	}
 	else if(event->type() == ReferenceEvent::TargetDeleted && source == targetNode()) {
 		// Target node has been deleted -> delete this node too.
@@ -205,7 +218,7 @@ void SceneNode::referenceInserted(const PropertyFieldDescriptor& field, RefTarge
 		OVITO_ASSERT(child->parentNode() == nullptr);
 		child->_parentNode = this;
 		// Invalidate cached world bounding box of this parent node.
-		_worldBBTime = TimeNegativeInfinity();
+		invalidateBoundingBox();
 	}
 	RefTarget::referenceInserted(field, newTarget, listIndex);
 }
@@ -221,7 +234,7 @@ void SceneNode::referenceRemoved(const PropertyFieldDescriptor& field, RefTarget
 		OVITO_ASSERT(child->parentNode() == this);
 		child->_parentNode = nullptr;
 		// Invalidate cached world bounding box of this parent node.
-		_worldBBTime = TimeNegativeInfinity();
+		invalidateBoundingBox();
 	}
 	RefTarget::referenceRemoved(field, oldTarget, listIndex);
 }
