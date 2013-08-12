@@ -36,9 +36,9 @@ ELSE()
 			     ${SWSCALE_INCLUDE_DIRS})
 
 	IF(NOT APPLE)
-		IF(NOT UNIX)
+		IF(NOT OVITO_MONOLITHIC_BUILD OR NOT UNIX)
 			SET(FFMPEG_LIBRARIES avformat avcodec avutil avdevice swscale)
-		ELSE()
+		ELSE()		
 			SET(FFMPEG_LIBRARIES libavformat.a libavcodec.a libavutil.a libavdevice.a libswscale.a)
 
 #			SET(FFMPEG_LIBRARIES ${FFMPEG_LIBRARIES} libvorbisenc.a libx264.a 

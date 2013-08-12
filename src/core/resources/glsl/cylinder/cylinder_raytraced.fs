@@ -73,41 +73,40 @@ void main()
 	vec3 surface_normal;
 	vec3 view_intersection_pnt;
 	
-	// Check if ray is parallel to cylinder.
-	if(ln > 1e-8) {
-		
-		n /= ln;
-		float d = abs(dot(RC,n));
-		
-		// Check if ray missed cylinder.
-		if(d > cylinder_radius_in)
-			discard;
-			
-		// Calculate closest intersection position.
-		vec3 O = cross(RC, cylinder_view_axis);
-		float t = -dot(O, n) / ln;
-		O = cross(n, cylinder_view_axis);
-		float s = abs(sqrt(cylinder_radius_in*cylinder_radius_in - d*d) / dot(ray_dir, O) * cylinder_length);
-		float tnear = t - s;
+	n /= ln;
+	float d = abs(dot(RC,n));
 	
+	// Check if ray missed cylinder.
+	if(d > cylinder_radius_in) {
+		discard;
+		return;
+	}
+		
+	// Calculate closest intersection position.
+	vec3 O = cross(RC, cylinder_view_axis);
+	float t = -dot(O, n) / ln;
+	O = cross(n, cylinder_view_axis);
+	float s = abs(sqrt(cylinder_radius_in*cylinder_radius_in - d*d) / dot(ray_dir, O) * cylinder_length);
+	float tnear = t - s;
+
+	// Ignore intersections behind the view point.
+	if(!is_perspective || tnear > 0.0) {
+
 		// Calculate intersection point in view coordinate system.
 		view_intersection_pnt = ray_origin + tnear * ray_dir;
 		
 		// Find intersection position along cylinder axis.
 		float a = dot(view_intersection_pnt - cylinder_view_base, cylinder_view_axis) / (cylinder_length*cylinder_length);
 
-		if(a >= 0 && a <= 1.0) {
-			// Discard intersections behind the view point.
-			if(!is_perspective || tnear > 0.0) {
-		
-				// Calculate surface normal in view coordinate system.
-				surface_normal = (view_intersection_pnt - (cylinder_view_base + a * cylinder_view_axis)) / cylinder_radius_in;
-			
-				hitCylinder = true;
-			}
+		if(a >= 0 && a <= 1.0 && ln != 0.0) {
+	
+			// Calculate surface normal in view coordinate system.
+			surface_normal = (view_intersection_pnt - (cylinder_view_base + a * cylinder_view_axis)) / cylinder_radius_in;			
+
+			hitCylinder = true;
 		}
 	}
-
+	
 	// Test for intersection with cylinder caps.
 	if(!hitCylinder) {
 
