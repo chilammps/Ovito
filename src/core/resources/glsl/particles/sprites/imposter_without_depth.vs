@@ -24,29 +24,36 @@ uniform float basePointSize;
 uniform mat4 modelview_matrix;
 uniform mat4 projection_matrix;
 
-#if __VERSION__ < 130
-	#define in attribute
-	#define out varying
-	#define flat
+#if __VERSION__ >= 130
+	// The particle data:
+	in vec3 particle_pos;
+	in vec3 particle_color;
+	in float particle_radius;
+
+	// Output passed to fragment shader.
+	flat out vec4 particle_color_out;
+#else
+	attribute float particle_radius;
 #endif
-
-// The particle data:
-in vec3 particle_pos;
-in vec3 particle_color;
-in float particle_radius;
-
-// Output passed to fragment shader.
-flat out vec4 particle_color_out;
 
 void main()
 {
-	// Forward color to fragment shader.
+#if __VERSION__ >= 130
+	// Pass color to fragment shader.
 	particle_color_out = vec4(particle_color, 1);
 
 	// Transform and project particle position.
 	vec4 eye_position = modelview_matrix * vec4(particle_pos, 1);
+#else
+	// Pass color to fragment shader.
+	gl_FrontColor = gl_Color;
+
+	// Transform and project particle position.
+	vec4 eye_position = modelview_matrix * gl_Vertex;
+#endif
 	gl_Position = projection_matrix * eye_position;
 
 	// Compute sprite size.		
 	gl_PointSize = basePointSize * particle_radius / (eye_position.z * projection_matrix[2][3] + projection_matrix[3][3]);
 }
+

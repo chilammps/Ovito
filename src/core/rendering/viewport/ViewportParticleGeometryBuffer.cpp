@@ -255,8 +255,12 @@ void ViewportParticleGeometryBuffer::renderPointSprites(ViewportSceneRenderer* r
 	if(shadingMode() != FlatShading && !renderer->isPicking())
 		activateBillboardTexture();
 
+	// Let the vertex shader compute the point size.
+	OVITO_CHECK_OPENGL(glEnable(GL_VERTEX_PROGRAM_POINT_SIZE));
+
 	// Enable point sprites when using compatibility OpenGL. In the core profile, they are already enabled by default.
 	if(renderer->glformat().profile() != QSurfaceFormat::CoreProfile) {
+		OVITO_CHECK_OPENGL(glEnable(GL_TEXTURE_2D));
 		OVITO_CHECK_OPENGL(glEnable(GL_POINT_SPRITE));
 
 		// Specify point sprite texture coordinate replacement mode.
@@ -268,20 +272,21 @@ void ViewportParticleGeometryBuffer::renderPointSprites(ViewportSceneRenderer* r
 	GLint viewportCoords[4];
 	glGetIntegerv(GL_VIEWPORT, viewportCoords);
 	float param = renderer->projParams().projectionMatrix(1,1) * viewportCoords[3];
-	float distanceAttenuation[] = { 0, 0, 0 };
+	float distanceAttenuation[3];
 	if(renderer->projParams().isPerspective) {
-		distanceAttenuation[2] = 100.0f / (param * param);
-		OVITO_CHECK_OPENGL(glPointSize(10.0));
+		distanceAttenuation[0] = 0;
+		distanceAttenuation[1] = 0;
+		distanceAttenuation[2] = 1.0f / (param * param);
 	}
 	else {
-		distanceAttenuation[0] = 1;
-		OVITO_CHECK_OPENGL(glPointSize(param));
+		distanceAttenuation[0] = 1.0f / param;
+		distanceAttenuation[1] = 0;
+		distanceAttenuation[2] = 0;
 	}
+	OVITO_CHECK_OPENGL(glPointSize(1));
 
 	if(renderer->glfuncs21()) {
 		OVITO_CHECK_OPENGL(renderer->glfuncs21()->glPointParameterfv(GL_POINT_DISTANCE_ATTENUATION, distanceAttenuation));
-		OVITO_CHECK_OPENGL(renderer->glfuncs21()->glPointParameterf(GL_POINT_FADE_THRESHOLD_SIZE, 0.0f));
-		OVITO_CHECK_OPENGL(renderer->glfuncs21()->glPointParameterf(GL_POINT_SIZE_MIN, 0.01f));
 #ifdef Q_OS_MACX
 		if(renderer->glcontext()->surface()->surfaceClass() == QSurface::Offscreen)
 			OVITO_CHECK_OPENGL(renderer->glfuncs21()->glPointParameterf(GL_POINT_SPRITE_COORD_ORIGIN, GL_LOWER_LEFT));
@@ -289,8 +294,6 @@ void ViewportParticleGeometryBuffer::renderPointSprites(ViewportSceneRenderer* r
 	}
 	else if(renderer->glfuncs30()) {
 		OVITO_CHECK_OPENGL(renderer->glfuncs30()->glPointParameterfv(GL_POINT_DISTANCE_ATTENUATION, distanceAttenuation));
-		OVITO_CHECK_OPENGL(renderer->glfuncs30()->glPointParameterf(GL_POINT_FADE_THRESHOLD_SIZE, 0.0f));
-		OVITO_CHECK_OPENGL(renderer->glfuncs30()->glPointParameterf(GL_POINT_SIZE_MIN, 0.01f));
 #ifdef Q_OS_MACX
 		if(renderer->glcontext()->surface()->surfaceClass() == QSurface::Offscreen)
 			OVITO_CHECK_OPENGL(renderer->glfuncs30()->glPointParameterf(GL_POINT_SPRITE_COORD_ORIGIN, GL_LOWER_LEFT));
@@ -298,8 +301,6 @@ void ViewportParticleGeometryBuffer::renderPointSprites(ViewportSceneRenderer* r
 	}
 	else if(renderer->glfuncs32()) {
 		OVITO_CHECK_OPENGL(renderer->glfuncs32()->glPointParameterfv(GL_POINT_DISTANCE_ATTENUATION, distanceAttenuation));
-		OVITO_CHECK_OPENGL(renderer->glfuncs32()->glPointParameterf(GL_POINT_FADE_THRESHOLD_SIZE, 0.0f));
-		OVITO_CHECK_OPENGL(renderer->glfuncs32()->glPointParameterf(GL_POINT_SIZE_MIN, 0.01f));
 #ifdef Q_OS_MACX
 		if(renderer->glcontext()->surface()->surfaceClass() == QSurface::Offscreen)
 			OVITO_CHECK_OPENGL(renderer->glfuncs32()->glPointParameterf(GL_POINT_SPRITE_COORD_ORIGIN, GL_LOWER_LEFT));
@@ -331,19 +332,31 @@ void ViewportParticleGeometryBuffer::renderPointSprites(ViewportSceneRenderer* r
 
 	if(!_glPositionsBuffer.bind())
 		throw Exception(tr("Failed to bind OpenGL vertex buffer."));
-	shader->setAttributeBuffer("particle_pos", GL_FLOAT, 0, 3);
-	shader->enableAttributeArray("particle_pos");
+	if(renderer->glformat().majorVersion() >= 3) {
+		shader->setAttributeBuffer("particle_pos", GL_FLOAT, 0, 3);
+		shader->enableAttributeArray("particle_pos");
+	}
+	else {
+		OVITO_CHECK_OPENGL(glEnableClientState(GL_VERTEX_ARRAY));
+		OVITO_CHECK_OPENGL(glVertexPointer(3, GL_FLOAT, 0, 0));
+	}
 	_glPositionsBuffer.release();
 
 	if(!renderer->isPicking()) {
 		if(!_glColorsBuffer.bind())
 			throw Exception(tr("Failed to bind OpenGL vertex buffer."));
-		shader->setAttributeBuffer("particle_color", GL_FLOAT, 0, 3);
-		shader->enableAttributeArray("particle_color");
+		if(renderer->glformat().majorVersion() >= 3) {
+			shader->setAttributeBuffer("particle_color", GL_FLOAT, 0, 3);
+			shader->enableAttributeArray("particle_color");
+		}
+		else {
+			OVITO_CHECK_OPENGL(glEnableClientState(GL_COLOR_ARRAY));
+			OVITO_CHECK_OPENGL(glColorPointer(3, GL_FLOAT, 0, 0));
+		}
 		_glColorsBuffer.release();
 	}
 	else {
-		if(renderer->glformat().majorVersion() < 3) {
+		if(renderer->glformat().majorVersion() >= 3) {
 			// Create and fill vertex index buffer.
 			if(!_glIndexBuffer.isCreated()) {
 				if(!_glIndexBuffer.create())
@@ -376,21 +389,26 @@ void ViewportParticleGeometryBuffer::renderPointSprites(ViewportSceneRenderer* r
 	shader->enableAttributeArray("particle_radius");
 	_glRadiiBuffer.release();
 
-	// Let the vertex shader compute the point size.
-	OVITO_CHECK_OPENGL(glEnable(GL_VERTEX_PROGRAM_POINT_SIZE));
-
 	OVITO_CHECK_OPENGL(glDrawArrays(GL_POINTS, 0, _particleCount));
 
 	OVITO_CHECK_OPENGL(glDisable(GL_VERTEX_PROGRAM_POINT_SIZE));
-	shader->disableAttributeArray("particle_pos");
-	if(!renderer->isPicking())
-		shader->disableAttributeArray("particle_color");
+	if(renderer->glformat().majorVersion() < 3) {
+		OVITO_CHECK_OPENGL(glDisableClientState(GL_VERTEX_ARRAY));
+		OVITO_CHECK_OPENGL(glDisableClientState(GL_COLOR_ARRAY));
+	}
+	else {
+		shader->disableAttributeArray("particle_pos");
+		if(!renderer->isPicking())
+			shader->disableAttributeArray("particle_color");
+	}
 	shader->disableAttributeArray("particle_radius");
 	shader->release();
 
 	// Disable point sprites.
-	if(renderer->glformat().profile() != QSurfaceFormat::CoreProfile)
+	if(renderer->glformat().profile() != QSurfaceFormat::CoreProfile) {
 		OVITO_CHECK_OPENGL(glDisable(GL_POINT_SPRITE));
+		OVITO_CHECK_OPENGL(glDisable(GL_TEXTURE_2D));
+	}
 }
 
 /******************************************************************************
@@ -452,7 +470,7 @@ void ViewportParticleGeometryBuffer::renderRaytracedSpheres(ViewportSceneRendere
 ******************************************************************************/
 void ViewportParticleGeometryBuffer::initializeBillboardTexture(ViewportSceneRenderer* renderer)
 {
-	static std::vector<std::array<GLubyte,2>> textureImages[BILLBOARD_TEXTURE_LEVELS];
+	static std::vector<std::array<GLubyte,4>> textureImages[BILLBOARD_TEXTURE_LEVELS];
 	static bool generatedImages = false;
 
 	if(generatedImages == false) {
@@ -470,6 +488,9 @@ void ViewportParticleGeometryBuffer::initializeBillboardTexture(ViewportSceneRen
 
 					textureImages[mipmapLevel][pixelOffset][0] =
 							(GLubyte)(std::min(diffuse_brightness, (FloatType)1.0) * 255.0);
+
+					textureImages[mipmapLevel][pixelOffset][2] = 255;
+					textureImages[mipmapLevel][pixelOffset][3] = 255;
 
 					if(r2 < 1.0) {
 						// Store specular brightness in alpha channel of texture.
@@ -501,8 +522,9 @@ void ViewportParticleGeometryBuffer::initializeBillboardTexture(ViewportSceneRen
 	OVITO_CHECK_OPENGL(glBindTexture(GL_TEXTURE_2D, _billboardTexture));
 	for(int mipmapLevel = 0; mipmapLevel < BILLBOARD_TEXTURE_LEVELS; mipmapLevel++) {
 		int resolution = (1 << (BILLBOARD_TEXTURE_LEVELS - mipmapLevel - 1));
-		OVITO_CHECK_OPENGL(glTexImage2D(GL_TEXTURE_2D, mipmapLevel, GL_RG,
-				resolution, resolution, 0, GL_RG, GL_UNSIGNED_BYTE, textureImages[mipmapLevel].data()));
+
+		OVITO_CHECK_OPENGL(glTexImage2D(GL_TEXTURE_2D, mipmapLevel, GL_RGBA,
+				resolution, resolution, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureImages[mipmapLevel].data()));
 	}
 }
 

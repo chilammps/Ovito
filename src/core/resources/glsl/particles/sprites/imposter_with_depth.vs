@@ -24,37 +24,67 @@ uniform float basePointSize;
 uniform mat4 modelview_matrix;
 uniform mat4 projection_matrix;
 
-#if __VERSION__ < 130
-	#define in attribute
-	#define out varying
-	#define flat
+#if __VERSION__ >= 130
+
+	// The particle data:
+	in vec3 particle_pos;
+	in vec3 particle_color;
+	in float particle_radius;
+
+	// Output to fragment shader:
+	flat out vec4 particle_color_out;
+	flat out float depth_radius;		// The particle's radius.
+	flat out float ze0;					// The particle's Z coordinate in eye coordinates.
+
+#else
+
+	attribute float particle_radius;
+	//varying float ze0;					// The particle's Z coordinate in eye coordinates.
+	//varying float depth_radius;			// The particle's radius.
+
 #endif
-
-// The particle data:
-in vec3 particle_pos;
-in vec3 particle_color;
-in float particle_radius;
-
-// Output to fragment shader:
-flat out vec4 particle_color_out;
-flat out float depth_radius;		// The particle's radius.
-flat out float ze0;					// The particle's Z coordinate in eye coordinates.
 
 void main()
 {
+#if __VERSION__ >= 130
+
 	// Forward color to fragment shader.
 	particle_color_out = vec4(particle_color, 1);
 
-	// Forward particle radius to fragment shader.
-	depth_radius = particle_radius;
-
 	// Transform and project particle position.
 	vec4 eye_position = modelview_matrix * vec4(particle_pos, 1);
+
+#else
+
+	// Pass color to fragment shader.
+	gl_FrontColor = gl_Color;
+
+	// Transform and project particle position.
+	vec4 eye_position = modelview_matrix * gl_Vertex;
+
+#endif
+
 	gl_Position = projection_matrix * eye_position;
 
 	// Compute sprite size.		
 	gl_PointSize = basePointSize * particle_radius / (eye_position.z * projection_matrix[2][3] + projection_matrix[3][3]);
+
+#if __VERSION__ >= 130
+
+	// Forward particle radius to fragment shader.
+	depth_radius = particle_radius;
 	
 	// Pass particle position in eye coordinates to fragment shader.
 	ze0 = eye_position.z;
+
+#else
+
+	// Forward particle radius to fragment shader.
+	gl_FogFragCoord = particle_radius;
+	
+	// Pass particle position in eye coordinates to fragment shader.
+	gl_FrontColor.a = eye_position.z;
+
+#endif
 }
+

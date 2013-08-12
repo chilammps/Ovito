@@ -33,7 +33,7 @@ out vec4 FragColor;
 
 #else
 
-varying vec4 particle_color_out;
+#define particle_color_out gl_Color
 #define FragColor gl_FragColor
 #define gl_PointCoord gl_TexCoord[0].xy
 #define texture texture2D
