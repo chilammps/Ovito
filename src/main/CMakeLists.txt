@@ -62,7 +62,17 @@ IF(OVITO_MONOLITHIC_BUILD)
 
 		# Some additional system libraries are required.
 		TARGET_LINK_LIBRARIES(${PROJECT_NAME} "pthread" "dl" "rt" "Xext" "X11" "Xrender" "X11-xcb" "xcb" "GL")
+
+		# Install a qt.conf file.
+		INSTALL(CODE "
+			file(WRITE \"\${CMAKE_INSTALL_PREFIX}/${OVITO_RELATIVE_BINARY_DIRECTORY}/qt.conf\" \"[Paths]\\nLibraries = ../${OVITO_RELATIVE_LIBRARY_DIRECTORY}/\")
+			" COMPONENT Runtime)
+
+		# Install Qt fonts.
+		INSTALL(DIRECTORY "${_qt5Core_install_prefix}/lib/fonts" DESTINATION ${OVITO_RELATIVE_LIBRARY_DIRECTORY} COMPONENT Runtime)
+
 	ENDIF()
+
 ENDIF()
 
 IF(APPLE)
