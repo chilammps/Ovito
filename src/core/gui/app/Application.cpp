@@ -88,10 +88,7 @@ bool Application::initialize()
 		setApplicationName(tr("Ovito"));
 		setOrganizationName(tr("Alexander Stukowski"));
 		setOrganizationDomain("ovito.org");
-		setApplicationVersion(tr("Version %1.%2.%3")
-				.arg(OVITO_VERSION_MAJOR)
-				.arg(OVITO_VERSION_MINOR)
-				.arg(OVITO_VERSION_REVISION));
+		setApplicationVersion(QStringLiteral(OVITO_VERSION_STRING));
 
 #ifdef OVITO_DEBUG
 		qDebug() << "Application settings store:" << QSettings().fileName();

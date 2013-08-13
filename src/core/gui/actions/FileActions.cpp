@@ -47,7 +47,7 @@ void ActionManager::on_HelpAbout_triggered()
 	if(!Application::instance().guiMode()) return;
 
 	QString text = QString("Ovito (Open Visualization Tool)\n"
-			"%1\n\n"
+			"Version %1\n\n"
 			"Visualization and analysis software for atomistic simulation data.\n\n"
 			"Copyright 2013, Alexander Stukowski\n\n"
 			"http://www.ovito.org/").arg(QCoreApplication::applicationVersion());
