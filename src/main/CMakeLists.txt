@@ -27,8 +27,16 @@ ENDIF(WIN32)
 # Put the executable into the right directory.
 SET(EXECUTABLE_OUTPUT_PATH ${OVITO_BINARY_DIRECTORY})
 
+IF(CMAKE_BUILD_TYPE STREQUAL "Release")
+	# This will create a GUI application on Windows platform.
+	SET(OVITO_WIN32_EXECUTABLE "WIN32")
+ELSE()
+	# This will create a console application on Windows platform.
+	SET(OVITO_WIN32_EXECUTABLE "")
+ENDIF()
+
 # Builds the main executable of the application
-ADD_EXECUTABLE(${PROJECT_NAME} WIN32 MACOSX_BUNDLE Main.cpp ${WINDOWS_RESOURCES})
+ADD_EXECUTABLE(${PROJECT_NAME} ${OVITO_WIN32_EXECUTABLE} MACOSX_BUNDLE Main.cpp ${WINDOWS_RESOURCES})
 
 # The executable directly depends on the core modules.
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} Base Core)

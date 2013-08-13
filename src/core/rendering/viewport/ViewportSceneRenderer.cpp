@@ -48,13 +48,13 @@ void ViewportSceneRenderer::beginFrame(TimePoint time, const ViewProjectionParam
 
 	OVITO_CHECK_OPENGL();
 
-	// Obtain a functions object that allows to call OpenGL 2.0 functions in a platform-independent way.
+	// Obtain a functions object that allows to call basic OpenGL functions in a platform-independent way.
 	_glFunctions = _glcontext->functions();
 
-	// Obtain a functions object that allows to call OpenGL 2.1 functions in a platform-independent way.
-	_glFunctions21 = _glcontext->versionFunctions<QOpenGLFunctions_2_1>();
-	if(!_glFunctions21 || !_glFunctions21->initializeOpenGLFunctions())
-		_glFunctions21 = nullptr;
+	// Obtain a functions object that allows to call OpenGL 2.0 functions in a platform-independent way.
+	_glFunctions20 = _glcontext->versionFunctions<QOpenGLFunctions_2_0>();
+	if(!_glFunctions20 || !_glFunctions20->initializeOpenGLFunctions())
+		_glFunctions20 = nullptr;
 
 	// Obtain a functions object that allows to call OpenGL 3.0 functions in a platform-independent way.
 	_glFunctions30 = _glcontext->versionFunctions<QOpenGLFunctions_3_0>();
@@ -66,7 +66,7 @@ void ViewportSceneRenderer::beginFrame(TimePoint time, const ViewProjectionParam
 	if(!_glFunctions32 || !_glFunctions32->initializeOpenGLFunctions())
 		_glFunctions32 = nullptr;
 
-	if(!_glFunctions21 && !_glFunctions30 && !_glFunctions32)
+	if(!_glFunctions20 && !_glFunctions30 && !_glFunctions32)
 		throw Exception(tr("Could not resolve OpenGL functions. Invalid OpenGL context."));
 
 	// Obtain surface format.

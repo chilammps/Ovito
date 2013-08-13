@@ -285,11 +285,11 @@ void ViewportParticleGeometryBuffer::renderPointSprites(ViewportSceneRenderer* r
 	}
 	OVITO_CHECK_OPENGL(glPointSize(1));
 
-	if(renderer->glfuncs21()) {
-		OVITO_CHECK_OPENGL(renderer->glfuncs21()->glPointParameterfv(GL_POINT_DISTANCE_ATTENUATION, distanceAttenuation));
+	if(renderer->glfuncs20()) {
+		OVITO_CHECK_OPENGL(renderer->glfuncs20()->glPointParameterfv(GL_POINT_DISTANCE_ATTENUATION, distanceAttenuation));
 #ifdef Q_OS_MACX
 		if(renderer->glcontext()->surface()->surfaceClass() == QSurface::Offscreen)
-			OVITO_CHECK_OPENGL(renderer->glfuncs21()->glPointParameterf(GL_POINT_SPRITE_COORD_ORIGIN, GL_LOWER_LEFT));
+			OVITO_CHECK_OPENGL(renderer->glfuncs20()->glPointParameterf(GL_POINT_SPRITE_COORD_ORIGIN, GL_LOWER_LEFT));
 #endif
 	}
 	else if(renderer->glfuncs30()) {
