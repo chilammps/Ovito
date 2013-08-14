@@ -46,13 +46,17 @@ void ActionManager::on_HelpAbout_triggered()
 {
 	if(!Application::instance().guiMode()) return;
 
-	QString text = QString("Ovito (Open Visualization Tool)\n"
-			"Version %1\n\n"
-			"Visualization and analysis software for atomistic simulation data.\n\n"
-			"Copyright 2013, Alexander Stukowski\n\n"
-			"http://www.ovito.org/").arg(QCoreApplication::applicationVersion());
-
-	QMessageBox::about(&MainWindow::instance(), QCoreApplication::applicationName(), text);
+	QMessageBox msgBox(QMessageBox::NoIcon, QCoreApplication::applicationName(),
+			tr("<h3>Ovito (Open Visualization Tool)</h3>"
+				"<p>Version %1</p>").arg(QCoreApplication::applicationVersion()),
+			QMessageBox::Ok);
+	msgBox.setInformativeText(tr(
+			"<p>A visualization and analysis software for atomistic simulation data.</p>"
+			"<p>Copyright (C) 2013, Alexander Stukowski</p>"
+			"<p><a href=\"http://www.ovito.org/\">http://www.ovito.org/</a></p>"));
+	msgBox.setDefaultButton(QMessageBox::Ok);
+	msgBox.setIconPixmap(QApplication::windowIcon().pixmap(64));
+	msgBox.exec();
 }
 
 /******************************************************************************
