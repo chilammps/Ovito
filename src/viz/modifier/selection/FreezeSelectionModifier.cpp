@@ -65,7 +65,7 @@ ObjectStatus FreezeSelectionModifier::modifyParticles(TimePoint time, TimeInterv
 		selProperty->changed();
 	}
 
-	return ObjectStatus(ObjectStatus::Success, QString(), tr("%1 selected particles in stored selection set").arg(nselected));
+	return ObjectStatus(ObjectStatus::Success, QString(), tr("%1 particles in stored selection set").arg(nselected));
 }
 
 /******************************************************************************

@@ -212,7 +212,7 @@ PipelineFlowState LinkedFileObject::evaluate(TimePoint time)
 			if(numberOfFrames() > 0)
 				setStatus(ObjectStatus(ObjectStatus::Error, tr("The requested animation frame (%1) is out of range.").arg(frame)));
 			else
-				setStatus(ObjectStatus(ObjectStatus::Error, tr("The source location is empty.")));
+				setStatus(ObjectStatus(ObjectStatus::Error, tr("The source location is empty (no files found).")));
 			return PipelineFlowState(status(), _sceneObjects.targets(), TimeInterval(time));
 		}
 		_frameBeingLoaded = frame;

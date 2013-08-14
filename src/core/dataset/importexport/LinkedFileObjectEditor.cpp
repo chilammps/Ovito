@@ -39,7 +39,9 @@ void LinkedFileObjectEditor::createUI(const RolloutInsertionParameters& rolloutP
 	// Create the rollout contents.
 	QVBoxLayout* layout = new QVBoxLayout(rollout);
 	layout->setContentsMargins(4,4,4,4);
-	layout->setSpacing(0);
+	layout->setSpacing(4);
+
+	QVBoxLayout* sublayout;
 
 	QToolBar* toolbar = new QToolBar(rollout);
 	toolbar->setStyleSheet("QToolBar { padding: 0px; margin: 0px; border: 0px none black; }");
@@ -56,25 +58,38 @@ void LinkedFileObjectEditor::createUI(const RolloutInsertionParameters& rolloutP
 	QAction* saveDataWithSceneAction = toolbar->addAction(QIcon(":/core/actions/file/import_object_save_with_scene.png"), tr("Store imported data in scene file"));
 	new BooleanActionParameterUI(this, "saveDataWithScene", saveDataWithSceneAction);
 
-	layout->addWidget(new QLabel(tr("<b>Source path:</b>"), rollout));
-	_sourcePathLabel = new ElidedTextLabel(rollout);
-	_sourcePathLabel->setIndent(10);
-	_sourcePathLabel->setTextInteractionFlags(Qt::TextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard | Qt::LinksAccessibleByMouse | Qt::LinksAccessibleByKeyboard));
-	layout->addWidget(_sourcePathLabel);
-
-	layout->addWidget(new QLabel(tr("<b>Wildcard pattern:</b>"), rollout));
+	_wildcardBox = new QGroupBox(tr("Load multiple files (wildcard pattern)"), rollout);
+	_wildcardBox->setCheckable(true);
+	layout->addWidget(_wildcardBox);
+	sublayout = new QVBoxLayout(_wildcardBox);
+	sublayout->setContentsMargins(4,4,4,4);
+	connect(_wildcardBox, SIGNAL(clicked(bool)), this, SLOT(onWildcardPatternEntered()));
 	_wildcardPatternTextbox = new QLineEdit();
 	connect(_wildcardPatternTextbox, SIGNAL(editingFinished()), this, SLOT(onWildcardPatternEntered()));
-	layout->addWidget(_wildcardPatternTextbox);
+	sublayout->addWidget(_wildcardPatternTextbox);
 
-	layout->addWidget(new QLabel(tr("<b>Current file:</b>"), rollout));
-	_filenameLabel = new ElidedTextLabel(rollout);
+	QGroupBox* sourcePathBox = new QGroupBox(tr("Source path"), rollout);
+	layout->addWidget(sourcePathBox);
+	sublayout = new QVBoxLayout(sourcePathBox);
+	sublayout->setContentsMargins(4,4,4,4);
+	_sourcePathLabel = new ElidedTextLabel();
+	_sourcePathLabel->setIndent(10);
+	_sourcePathLabel->setTextInteractionFlags(Qt::TextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard | Qt::LinksAccessibleByMouse | Qt::LinksAccessibleByKeyboard));
+	sublayout->addWidget(_sourcePathLabel);
+
+	QGroupBox* currentFileBox = new QGroupBox(tr("Current file"), rollout);
+	layout->addWidget(currentFileBox);
+	sublayout = new QVBoxLayout(currentFileBox);
+	sublayout->setContentsMargins(4,4,4,4);
+	_filenameLabel = new ElidedTextLabel();
 	_filenameLabel->setIndent(10);
 	_filenameLabel->setTextInteractionFlags(Qt::TextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard | Qt::LinksAccessibleByMouse | Qt::LinksAccessibleByKeyboard));
-	layout->addWidget(_filenameLabel);
+	sublayout->addWidget(_filenameLabel);
 
-	QGridLayout* layout2 = new QGridLayout();
-	layout2->setContentsMargins(0,0,0,0);
+	QGroupBox* statusBox = new QGroupBox(tr("Status"), rollout);
+	layout->addWidget(statusBox);
+	QGridLayout* layout2 = new QGridLayout(statusBox);
+	layout2->setContentsMargins(4,4,4,4);
 	layout2->setColumnStretch(1, 1);
 	_statusIconLabel = new QLabel(rollout);
 	_statusIconLabel->setAlignment(Qt::AlignTop);
@@ -88,8 +103,6 @@ void LinkedFileObjectEditor::createUI(const RolloutInsertionParameters& rolloutP
 
 	_statusWarningIcon.load(":/core/mainwin/status/status_warning.png");
 	_statusErrorIcon.load(":/core/mainwin/status/status_error.png");
-
-	layout->addLayout(layout2);
 
 	_subEditorRolloutParams = rolloutParams.collapse();
 }
@@ -169,6 +182,9 @@ void LinkedFileObjectEditor::onReloadAnimation()
 ******************************************************************************/
 void LinkedFileObjectEditor::onWildcardPatternEntered()
 {
+	if(!_wildcardBox->isChecked())
+		return;
+
 	LinkedFileObject* obj = static_object_cast<LinkedFileObject>(editObject());
 	OVITO_CHECK_OBJECT_POINTER(obj);
 
@@ -219,6 +235,7 @@ void LinkedFileObjectEditor::updateInformationLabel()
 	if(!obj) {
 		_wildcardPatternTextbox->clear();
 		_wildcardPatternTextbox->setEnabled(false);
+		_wildcardBox->setEnabled(false);
 		_sourcePathLabel->setText(QString());
 		_filenameLabel->setText(QString());
 		return;
@@ -228,7 +245,26 @@ void LinkedFileObjectEditor::updateInformationLabel()
 	QUrl url = obj->sourceUrl();
 	url.setPath(fileInfo.path());
 	_sourcePathLabel->setText(url.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded));
-	_wildcardPatternTextbox->setText(fileInfo.fileName());
+
+	QString wildcardPattern = fileInfo.fileName();
+	if(wildcardPattern.contains('*') || wildcardPattern.contains('?')) {
+		_wildcardBox->setChecked(true);
+	}
+	else {
+		_wildcardBox->setChecked(false);
+
+		// Replace last sequence of numbers in the filename with a wildcard character.
+		int startIndex, endIndex;
+		for(endIndex = wildcardPattern.length()-1; endIndex >= 0; endIndex--)
+			if(wildcardPattern.at(endIndex).isNumber()) break;
+		if(endIndex >= 0) {
+			for(startIndex = endIndex-1; startIndex >= 0; startIndex--)
+				if(!wildcardPattern.at(startIndex).isNumber()) break;
+			wildcardPattern = wildcardPattern.left(startIndex+1) + '*' + wildcardPattern.mid(endIndex+1);
+		}
+	}
+	_wildcardBox->setEnabled(true);
+	_wildcardPatternTextbox->setText(wildcardPattern);
 	_wildcardPatternTextbox->setEnabled(true);
 
 	int frameIndex = obj->loadedFrame();

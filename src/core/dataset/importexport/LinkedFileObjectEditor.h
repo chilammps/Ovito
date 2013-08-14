@@ -78,6 +78,7 @@ private:
 
 	ElidedTextLabel* _sourcePathLabel;
 	ElidedTextLabel* _filenameLabel;
+	QGroupBox* _wildcardBox;
 	QLineEdit* _wildcardPatternTextbox;
 	QLabel* _statusTextLabel;
 	QLabel* _statusIconLabel;

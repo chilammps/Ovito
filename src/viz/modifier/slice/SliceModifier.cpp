@@ -386,6 +386,7 @@ void SliceModifierEditor::createUI(const RolloutInsertionParameters& rolloutPara
 	BooleanParameterUI* applyToSelectionPUI = new BooleanParameterUI(this, PROPERTY_FIELD(SliceModifier::_applyToSelection));
 	layout->addWidget(applyToSelectionPUI->checkBox());
 
+	layout->addSpacing(8);
 	QPushButton* centerPlaneBtn = new QPushButton(tr("Move plane to simulation box center"), rollout);
 	connect(centerPlaneBtn, SIGNAL(clicked(bool)), this, SLOT(onCenterOfBox()));
 	layout->addWidget(centerPlaneBtn);

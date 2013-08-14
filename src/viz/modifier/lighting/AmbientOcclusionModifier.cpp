@@ -37,8 +37,8 @@ SET_OVITO_OBJECT_EDITOR(AmbientOcclusionModifier, AmbientOcclusionModifierEditor
 DEFINE_PROPERTY_FIELD(AmbientOcclusionModifier, _intensity, "Intensity")
 DEFINE_PROPERTY_FIELD(AmbientOcclusionModifier, _samplingCount, "SamplingCount")
 DEFINE_PROPERTY_FIELD(AmbientOcclusionModifier, _bufferResolution, "BufferResolution")
-SET_PROPERTY_FIELD_LABEL(AmbientOcclusionModifier, _intensity, "Intensity")
-SET_PROPERTY_FIELD_LABEL(AmbientOcclusionModifier, _samplingCount, "Samples")
+SET_PROPERTY_FIELD_LABEL(AmbientOcclusionModifier, _intensity, "Shading intensity")
+SET_PROPERTY_FIELD_LABEL(AmbientOcclusionModifier, _samplingCount, "Number of exposure samples")
 SET_PROPERTY_FIELD_LABEL(AmbientOcclusionModifier, _bufferResolution, "Render buffer resolution")
 SET_PROPERTY_FIELD_UNITS(AmbientOcclusionModifier, _intensity, PercentParameterUnit)
 

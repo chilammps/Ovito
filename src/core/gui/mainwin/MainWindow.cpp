@@ -196,7 +196,7 @@ void MainWindow::createMainMenu()
 	QMenu* fileMenu = menuBar->addMenu(tr("&File"));
 	fileMenu->addAction(ActionManager::instance().getAction(ACTION_FILE_IMPORT));
 	fileMenu->addAction(ActionManager::instance().getAction(ACTION_FILE_REMOTE_IMPORT));
-	fileMenu->addAction(ActionManager::instance().getAction(ACTION_FILE_EXPORT));
+	//fileMenu->addAction(ActionManager::instance().getAction(ACTION_FILE_EXPORT));
 	fileMenu->addSeparator();
 	fileMenu->addAction(ActionManager::instance().getAction(ACTION_FILE_OPEN));
 	fileMenu->addAction(ActionManager::instance().getAction(ACTION_FILE_SAVE));
@@ -233,7 +233,7 @@ void MainWindow::createMainToolbar()
 
 	_mainToolbar->addAction(ActionManager::instance().getAction(ACTION_FILE_IMPORT));
 	_mainToolbar->addAction(ActionManager::instance().getAction(ACTION_FILE_REMOTE_IMPORT));
-	_mainToolbar->addAction(ActionManager::instance().getAction(ACTION_FILE_EXPORT));
+	//_mainToolbar->addAction(ActionManager::instance().getAction(ACTION_FILE_EXPORT));
 
 	_mainToolbar->addSeparator();
 
