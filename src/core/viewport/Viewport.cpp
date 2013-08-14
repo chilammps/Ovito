@@ -99,6 +99,9 @@ Viewport::~Viewport()
 ******************************************************************************/
 void Viewport::showViewportMenu(const QPoint& pos)
 {
+	if(_viewportWindow)
+		_viewportWindow->requestActivate();
+
 	// Create the context menu for the viewport.
 	ViewportMenu contextMenu(this);
 
