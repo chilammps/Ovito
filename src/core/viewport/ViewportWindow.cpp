@@ -200,12 +200,9 @@ void ViewportWindow::renderNow()
 			_context->makeCurrent(this);
 			QSurfaceFormat format = _context->format();
 			qDebug() << "OpenGL depth buffer size:" << format.depthBufferSize();
-			qDebug() << "OpenGL stencil buffer size:" << format.stencilBufferSize();
 			(qDebug() << "OpenGL version:").nospace() << format.majorVersion() << "." << format.minorVersion();
 			qDebug() << "OpenGL profile:" << (format.profile() == QSurfaceFormat::CoreProfile ? "core" : (format.profile() == QSurfaceFormat::CompatibilityProfile ? "compatibility" : "none"));
 			qDebug() << "OpenGL has alpha:" << format.hasAlpha();
-			qDebug() << "OpenGL samples:" << format.samples();
-			qDebug() << "OpenGL swap behavior:" << format.swapBehavior();
 			qDebug() << "OpenGL vendor: " << QString((const char*)glGetString(GL_VENDOR));
 			qDebug() << "OpenGL renderer: " << QString((const char*)glGetString(GL_RENDERER));
 			qDebug() << "OpenGL version string: " << QString((const char*)glGetString(GL_VERSION));
