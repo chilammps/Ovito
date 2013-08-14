@@ -161,7 +161,6 @@ void SpinnerWidget::setIntValue(int newValInt, bool emitChangeSignal)
 ******************************************************************************/
 void SpinnerWidget::setMinValue(FloatType minValue)
 {
-	OVITO_ASSERT_MSG(minValue <= maxValue(), "SpinnerWidget::setMinValue", "Minimal spinner value must not be greater than maximum spinner value.");
 	_minValue = minValue;
 }
 
@@ -172,7 +171,6 @@ void SpinnerWidget::setMinValue(FloatType minValue)
 ******************************************************************************/
 void SpinnerWidget::setMaxValue(FloatType maxValue)
 {
-	OVITO_ASSERT_MSG(maxValue >= minValue(), "SpinnerWidget::setMaxValue", "Maximal spinner value must not be less than minimum spinner value.");
 	_maxValue = maxValue;
 }
 

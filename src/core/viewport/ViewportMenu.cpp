@@ -24,6 +24,8 @@
 #include <core/scene/ObjectNode.h>
 #include <core/dataset/DataSetManager.h>
 #include <core/dataset/DataSet.h>
+#include <core/gui/dialogs/AdjustCameraDialog.h>
+#include <core/gui/mainwin/MainWindow.h>
 #include "ViewportMenu.h"
 
 namespace Ovito {
@@ -77,7 +79,10 @@ ViewportMenu::ViewportMenu(Viewport* vp) : viewport(vp)
 	addActions(viewTypeGroup->actions());
 	connect(viewTypeGroup, SIGNAL(triggered(QAction*)), this, SLOT(onViewType(QAction*)));
 
-	connect(QGuiApplication::instance(), SIGNAL(focusWindowChanged(QWindow*)), this, SLOT(onWindowFocusChanged()));
+	addSeparator();
+	addAction(tr("Adjust Camera"), this, SLOT(onAdjustCamera()));
+
+	//connect(QGuiApplication::instance(), SIGNAL(focusWindowChanged(QWindow*)), this, SLOT(onWindowFocusChanged()));
 }
 
 /******************************************************************************
@@ -110,6 +115,15 @@ void ViewportMenu::onShowRenderFrame(bool checked)
 void ViewportMenu::onViewType(QAction* action)
 {
 	viewport->setViewType((Viewport::ViewType)action->data().toInt());
+}
+
+/******************************************************************************
+* Handles the menu item event.
+******************************************************************************/
+void ViewportMenu::onAdjustCamera()
+{
+	AdjustCameraDialog dialog(viewport, &MainWindow::instance());
+	dialog.exec();
 }
 
 };

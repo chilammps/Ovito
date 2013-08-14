@@ -475,6 +475,11 @@ void ColorCodingModifierEditor::createUI(const RolloutInsertionParameters& rollo
 	BooleanParameterUI* onlySelectedPUI = new BooleanParameterUI(this, PROPERTY_FIELD(ColorCodingModifier::_onlySelected));
 	layout1->addWidget(onlySelectedPUI->checkBox());
 
+	// Keep selection
+	BooleanParameterUI* keepSelectionPUI = new BooleanParameterUI(this, PROPERTY_FIELD(ColorCodingModifier::_keepSelection));
+	layout1->addWidget(keepSelectionPUI->checkBox());
+	connect(onlySelectedPUI->checkBox(), SIGNAL(toggled(bool)), keepSelectionPUI->checkBox(), SLOT(setEnabled(bool)));
+
 	// Render legend.
 	BooleanParameterUI* renderLegendPUI = new BooleanParameterUI(this, PROPERTY_FIELD(ColorCodingModifier::_renderLegend));
 	layout1->addWidget(renderLegendPUI->checkBox());

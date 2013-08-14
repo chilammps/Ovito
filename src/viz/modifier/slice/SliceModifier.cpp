@@ -27,6 +27,7 @@
 #include <core/animation/AnimManager.h>
 #include <core/animation/controller/StandardControllers.h>
 #include <core/scene/pipeline/PipelineObject.h>
+#include <core/gui/actions/ActionManager.h>
 #include <core/gui/properties/FloatParameterUI.h>
 #include <core/gui/properties/Vector3ParameterUI.h>
 #include <core/gui/properties/BooleanParameterUI.h>
@@ -385,15 +386,19 @@ void SliceModifierEditor::createUI(const RolloutInsertionParameters& rolloutPara
 	BooleanParameterUI* applyToSelectionPUI = new BooleanParameterUI(this, PROPERTY_FIELD(SliceModifier::_applyToSelection));
 	layout->addWidget(applyToSelectionPUI->checkBox());
 
-#if 0
-	// Add buttons for view alignment functions.
-	QPushButton* alignViewToPlaneBtn = new QPushButton(tr("Align view to plane"), rollout);
-	connect(alignViewToPlaneBtn, SIGNAL(clicked(bool)), this, SLOT(onAlignViewToPlane()));
-	layout->addWidget(alignViewToPlaneBtn, 8, 0, 1, 2);
-	QPushButton* alignPlaneToViewBtn = new QPushButton(tr("Align plane to view"), rollout);
-	connect(alignPlaneToViewBtn, SIGNAL(clicked(bool)), this, SLOT(onAlignPlaneToView()));
-	layout->addWidget(alignPlaneToViewBtn, 9, 0, 1, 2);
+	QPushButton* centerPlaneBtn = new QPushButton(tr("Move plane to simulation box center"), rollout);
+	connect(centerPlaneBtn, SIGNAL(clicked(bool)), this, SLOT(onCenterOfBox()));
+	layout->addWidget(centerPlaneBtn);
 
+	// Add buttons for view alignment functions.
+	QPushButton* alignViewToPlaneBtn = new QPushButton(tr("Align view direction to plane normal"), rollout);
+	connect(alignViewToPlaneBtn, SIGNAL(clicked(bool)), this, SLOT(onAlignViewToPlane()));
+	layout->addWidget(alignViewToPlaneBtn);
+	QPushButton* alignPlaneToViewBtn = new QPushButton(tr("Align plane normal to view direction"), rollout);
+	connect(alignPlaneToViewBtn, SIGNAL(clicked(bool)), this, SLOT(onAlignPlaneToView()));
+	layout->addWidget(alignPlaneToViewBtn);
+
+#if 0
 	pickAtomPlaneInputMode = new PickAtomPlaneInputMode();
 	pickAtomPlaneInputModeAction = new ViewportModeAction("SliceModifier.AlignPlaneToAtoms", pickAtomPlaneInputMode);
 	pickAtomPlaneInputModeActionProxy = new ActionProxy(pickAtomPlaneInputModeAction);
@@ -401,10 +406,6 @@ void SliceModifierEditor::createUI(const RolloutInsertionParameters& rolloutPara
 	pickAtomPlaneInputModeActionProxy->setText(tr("Align plane to atoms"));
 	QWidget* alignPlaneToAtomsBtn = pickAtomPlaneInputModeActionProxy->requestWidget(rollout);
 	layout->addWidget(alignPlaneToAtomsBtn, 10, 0, 1, 2);
-
-	QPushButton* centerPlaneBtn = new QPushButton(tr("Center of simulation box"), rollout);
-	connect(centerPlaneBtn, SIGNAL(clicked(bool)), this, SLOT(onCenterOfBox()));
-	layout->addWidget(centerPlaneBtn, 11, 0, 1, 2);
 #endif
 
 	// Status label.
@@ -435,60 +436,33 @@ void SliceModifierEditor::onXYZNormal(const QString& link)
 ******************************************************************************/
 void SliceModifierEditor::onAlignPlaneToView()
 {
-#if 0
 	TimeInterval interval;
 
-	Viewport* vp = VIEWPORT_MANAGER.activeViewport();
+	Viewport* vp = ViewportManager::instance().activeViewport();
 	if(!vp) return;
 
 	// Get the object to world transformation for the currently selected object.
-	ObjectNode* node = dynamic_object_cast<ObjectNode>(DATASET_MANAGER.currentSet()->selection()->firstNode());
+	ObjectNode* node = dynamic_object_cast<ObjectNode>(DataSetManager::instance().currentSet()->selection()->firstNode());
 	if(!node) return;
-	const AffineTransformation& nodeTM = node->getWorldTransform(ANIM_MANAGER.time(), interval);
-	AffineTransformation localToWorldTM = node->objectTransform() * nodeTM;
+	const AffineTransformation& nodeTM = node->getWorldTransform(AnimManager::instance().time(), interval);
 
 	// Get the base point of the current slicing plane in local coordinates.
 	SliceModifier* mod = static_object_cast<SliceModifier>(editObject());
 	if(!mod) return;
-	Plane3 oldPlaneLocal = mod->slicingPlane(ANIM_MANAGER.time(), interval);
-	Point3 basePoint = ORIGIN + oldPlaneLocal.normal * oldPlaneLocal.dist;
+	Plane3 oldPlaneLocal = mod->slicingPlane(AnimManager::instance().time(), interval);
+	Point3 basePoint = Point3::Origin() + oldPlaneLocal.normal * oldPlaneLocal.dist;
 
 	// Get the orientation of the projection plane of the current viewport.
-	Vector3 dirWorld = Normalize(vp->currentView().inverseViewMatrix * Vector3(0, 0, 1));
-	Plane3 newPlaneLocal(basePoint, localToWorldTM.inverse() * dirWorld);
-	if(abs(newPlaneLocal.normal.X) < FLOATTYPE_EPSILON) newPlaneLocal.normal.X = 0;
-	if(abs(newPlaneLocal.normal.Y) < FLOATTYPE_EPSILON) newPlaneLocal.normal.Y = 0;
-	if(abs(newPlaneLocal.normal.Z) < FLOATTYPE_EPSILON) newPlaneLocal.normal.Z = 0;
+	Vector3 dirWorld = -vp->cameraDirection();
+	Plane3 newPlaneLocal(basePoint, nodeTM.inverse() * dirWorld);
+	if(std::abs(newPlaneLocal.normal.x()) < FLOATTYPE_EPSILON) newPlaneLocal.normal.x() = 0;
+	if(std::abs(newPlaneLocal.normal.y()) < FLOATTYPE_EPSILON) newPlaneLocal.normal.y() = 0;
+	if(std::abs(newPlaneLocal.normal.z()) < FLOATTYPE_EPSILON) newPlaneLocal.normal.z() = 0;
 
 	UndoableTransaction::handleExceptions(tr("Align plane to view"), [mod, &newPlaneLocal]() {
-		mod->setNormal(Normalize(newPlaneLocal.normal));
+		mod->setNormal(newPlaneLocal.normal.normalized());
 		mod->setDistance(newPlaneLocal.dist);
 	});
-#endif
-}
-
-/******************************************************************************
-* Moves the plane to the center of the simulation box.
-******************************************************************************/
-void SliceModifierEditor::onCenterOfBox()
-{
-#if 0
-	SliceModifier* mod = static_object_cast<SliceModifier>(editObject());
-	if(!mod) return;
-
-	// Get the simulation cell from the input object to center the slicing plane in
-	// the center of the simulation cell.
-	PipelineFlowState input = mod->getModifierInput();
-	AtomsObject* inputObject = dynamic_object_cast<AtomsObject>(input.result());
-	if(inputObject == NULL) return;
-
-	Point3 centerPoint = inputObject->simulationCell()->cellMatrix() * Point3(0.5, 0.5, 0.5);
-	FloatType centerDistance = DotProduct(mod->normal(), centerPoint - ORIGIN);
-
-	UndoableTransaction::handleExceptions(tr("Set plane position"), [mod, centerDistance]() {
-		mod->setDistance(centerDistance);
-	});
-#endif
 }
 
 /******************************************************************************
@@ -496,46 +470,64 @@ void SliceModifierEditor::onCenterOfBox()
 ******************************************************************************/
 void SliceModifierEditor::onAlignViewToPlane()
 {
-#if 0
 	TimeInterval interval;
 
-	Viewport* vp = VIEWPORT_MANAGER.activeViewport();
+	Viewport* vp = ViewportManager::instance().activeViewport();
 	if(!vp) return;
 
 	// Get the object to world transformation for the currently selected object.
-	ObjectNode* node = dynamic_object_cast<ObjectNode>(DATASET_MANAGER.currentSet()->selection()->firstNode());
+	ObjectNode* node = dynamic_object_cast<ObjectNode>(DataSetManager::instance().currentSet()->selection()->firstNode());
 	if(!node) return;
-	const AffineTransformation& nodeTM = node->getWorldTransform(ANIM_MANAGER.time(), interval);
-	AffineTransformation localToWorldTM = node->objectTransform() * nodeTM;
+	const AffineTransformation& nodeTM = node->getWorldTransform(AnimManager::instance().time(), interval);
 
 	// Transform the current slicing plane to the world coordinate system.
 	SliceModifier* mod = static_object_cast<SliceModifier>(editObject());
 	if(!mod) return;
-	Plane3 planeLocal = mod->slicingPlane(ANIM_MANAGER.time(), interval);
-	Plane3 planeWorld = localToWorldTM * planeLocal;
+	Plane3 planeLocal = mod->slicingPlane(AnimManager::instance().time(), interval);
+	Plane3 planeWorld = nodeTM * planeLocal;
 
 	// Calculate the intersection point of the current viewing direction with the current slicing plane.
-	Ray3 viewportRay = vp->viewportRay(Point2(0,0));
+	Ray3 viewportRay(vp->cameraPosition(), vp->cameraDirection());
 	FloatType t = planeWorld.intersectionT(viewportRay);
 	Point3 intersectionPoint;
 	if(t != FLOATTYPE_MAX)
 		intersectionPoint = viewportRay.point(t);
 	else
-		intersectionPoint = ORIGIN + localToWorldTM.getTranslation();
+		intersectionPoint = Point3::Origin() + nodeTM.translation();
 
-	if(vp->currentView().isPerspective) {
-		FloatType distance = Distance(ORIGIN + vp->currentView().inverseViewMatrix.getTranslation(), intersectionPoint);
-		vp->settings()->setViewType(Viewport::VIEW_PERSPECTIVE);
-		vp->settings()->setViewMatrix(AffineTransformation::lookAt(intersectionPoint + planeWorld.normal * distance,
-			intersectionPoint, Vector3(0,0,1)));
+	if(vp->isPerspectiveProjection()) {
+		FloatType distance = (vp->cameraPosition() - intersectionPoint).length();
+		vp->setViewType(Viewport::VIEW_PERSPECTIVE);
+		vp->setCameraDirection(-planeWorld.normal);
+		vp->setCameraPosition(intersectionPoint + planeWorld.normal * distance);
 	}
 	else {
-		vp->settings()->setViewType(Viewport::VIEW_ORTHO);
-		vp->settings()->setViewMatrix(AffineTransformation::lookAt(ORIGIN, ORIGIN + (-planeWorld.normal), Vector3(0,0,1))
-			* AffineTransformation::translation(Vector3(-intersectionPoint.X, -intersectionPoint.Y, -intersectionPoint.Z)));
+		vp->setViewType(Viewport::VIEW_ORTHO);
+		vp->setCameraDirection(-planeWorld.normal);
 	}
-	vp->updateViewport(true);
-#endif
+	ActionManager::instance().invokeAction(ACTION_VIEWPORT_ZOOM_SELECTION_EXTENTS);
+}
+
+/******************************************************************************
+* Moves the plane to the center of the simulation box.
+******************************************************************************/
+void SliceModifierEditor::onCenterOfBox()
+{
+	SliceModifier* mod = static_object_cast<SliceModifier>(editObject());
+	if(!mod) return;
+
+	// Get the simulation cell from the input object to center the slicing plane in
+	// the center of the simulation cell.
+	PipelineFlowState input = mod->getModifierInput();
+	SimulationCell* cell = input.findObject<SimulationCell>();
+	if(!cell) return;
+
+	Point3 centerPoint = cell->cellMatrix() * Point3(0.5, 0.5, 0.5);
+	FloatType centerDistance = mod->normal().dot(centerPoint - Point3::Origin());
+
+	UndoableTransaction::handleExceptions(tr("Set plane position"), [mod, centerDistance]() {
+		mod->setDistance(centerDistance);
+	});
 }
 
 #if 0

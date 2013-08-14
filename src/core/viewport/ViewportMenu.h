@@ -44,9 +44,11 @@ private Q_SLOTS:
 	void onShowGrid(bool checked);
 	void onShowRenderFrame(bool checked);
 	void onViewType(QAction* action);
+	void onAdjustCamera();
 	void onWindowFocusChanged() {
-		if(QGuiApplication::focusWindow() && QGuiApplication::focusWindow()->flags().testFlag(Qt::Popup) == false)
+		if(QGuiApplication::focusWindow() && QGuiApplication::focusWindow()->flags().testFlag(Qt::Popup) == false) {
 			hide();
+		}
 	}
 	
 private:

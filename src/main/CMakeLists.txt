@@ -27,8 +27,16 @@ ENDIF(WIN32)
 # Put the executable into the right directory.
 SET(EXECUTABLE_OUTPUT_PATH ${OVITO_BINARY_DIRECTORY})
 
+IF(CMAKE_BUILD_TYPE STREQUAL "Release")
+	# This will create a GUI application on Windows platform.
+	SET(OVITO_WIN32_EXECUTABLE "WIN32")
+ELSE()
+	# This will create a console application on Windows platform.
+	SET(OVITO_WIN32_EXECUTABLE "")
+ENDIF()
+
 # Builds the main executable of the application
-ADD_EXECUTABLE(${PROJECT_NAME} WIN32 MACOSX_BUNDLE Main.cpp ${WINDOWS_RESOURCES})
+ADD_EXECUTABLE(${PROJECT_NAME} ${OVITO_WIN32_EXECUTABLE} MACOSX_BUNDLE Main.cpp ${WINDOWS_RESOURCES})
 
 # The executable directly depends on the core modules.
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} Base Core)
@@ -62,7 +70,17 @@ IF(OVITO_MONOLITHIC_BUILD)
 
 		# Some additional system libraries are required.
 		TARGET_LINK_LIBRARIES(${PROJECT_NAME} "pthread" "dl" "rt" "Xext" "X11" "Xrender" "X11-xcb" "xcb" "GL")
+
+		# Install a qt.conf file.
+		INSTALL(CODE "
+			file(WRITE \"\${CMAKE_INSTALL_PREFIX}/${OVITO_RELATIVE_BINARY_DIRECTORY}/qt.conf\" \"[Paths]\\nLibraries = ../${OVITO_RELATIVE_LIBRARY_DIRECTORY}/\")
+			" COMPONENT Runtime)
+
+		# Install Qt fonts.
+		INSTALL(DIRECTORY "${_qt5Core_install_prefix}/lib/fonts" DESTINATION ${OVITO_RELATIVE_LIBRARY_DIRECTORY} COMPONENT Runtime)
+
 	ENDIF()
+
 ENDIF()
 
 IF(APPLE)
