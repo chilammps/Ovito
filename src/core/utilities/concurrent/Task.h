@@ -25,6 +25,7 @@
 #include <core/Core.h>
 #include "FutureInterface.h"
 #include "Future.h"
+#include "ProgressManager.h"
 
 namespace Ovito {
 
@@ -49,16 +50,12 @@ public:
 
 	Future<R> start() {
 		_p->_runnable = this;
-		std::shared_ptr<FutureInterface<R>> p2(_p);
+		auto p2 = _p;
 		QThreadPool::globalInstance()->start(this);
 		return Future<R>(p2);
 	}
 
 	Future<R> future() const { return Future<R>(_p); }
-
-	void abort() {
-		Future<R>(_p).abort();
-	}
 
 private:
 	Function _function;
@@ -66,9 +63,12 @@ private:
 };
 
 template<typename R, typename Function>
-Future<R> runInBackground(Function f)
+Future<R> runInBackground(Function f, bool registerWithProgressManager = true)
 {
-	return (new Task<R,Function>(f))->start();
+	Future<R> future = (new Task<R,Function>(f))->start();
+	if(registerWithProgressManager)
+		ProgressManager::instance().addTask(future);
+	return future;
 }
 
 };

@@ -24,33 +24,37 @@
 #include <core/utilities/concurrent/Future.h>
 #include <core/dataset/importexport/LinkedFileObject.h>
 #include <core/gui/properties/BooleanParameterUI.h>
+#include <core/gui/properties/BooleanRadioButtonParameterUI.h>
+
+#include <viz/importer/InputColumnMappingDialog.h>
 #include "LAMMPSTextDumpImporter.h"
-#include "LAMMPSDumpImporterSettingsDialog.h"
-#include <viz/importer/InputColumnMapping.h>
 
 namespace Viz {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Viz, LAMMPSTextDumpImporter, ParticleImporter)
 IMPLEMENT_OVITO_OBJECT(Viz, LAMMPSTextDumpImporterEditor, PropertiesEditor)
 SET_OVITO_OBJECT_EDITOR(LAMMPSTextDumpImporter, LAMMPSTextDumpImporterEditor)
+DEFINE_PROPERTY_FIELD(LAMMPSTextDumpImporter, _useCustomColumnMapping, "UseCustomColumnMapping")
+SET_PROPERTY_FIELD_LABEL(LAMMPSTextDumpImporter, _useCustomColumnMapping, "Custom file column mapping")
 
 /******************************************************************************
-* Opens the settings dialog for this importer.
-******************************************************************************/
-bool LAMMPSTextDumpImporter::showSettingsDialog(QWidget* parent, LinkedFileObject* object)
+ * Sets the user-defined mapping between data columns in the input file and
+ * the internal particle properties.
+ *****************************************************************************/
+void LAMMPSTextDumpImporter::setCustomColumnMapping(const InputColumnMapping& mapping)
 {
-	LAMMPSDumpImporterSettingsDialog dialog(this, parent);
-	if(dialog.exec() != QDialog::Accepted)
-		return false;
+	_customColumnMapping = mapping;
 
-	// Scan the input source for animation frames.
-	if(!object->updateFrames())
-		return false;
+#if 0
+	// Remember the mapping for the next time.
+	QSettings settings;
+	settings.beginGroup("atomviz/io/columnmapping/");
+	settings.setValue(pluginClassDescriptor()->name(), mapping.toByteArray());
+	OVITO_ASSERT(settings.contains(pluginClassDescriptor()->name()));
+	settings.endGroup();
+#endif
 
-	// Adjust the animation length number to match the number of frames in the input data source.
-	object->adjustAnimationInterval();
-
-	return true;
+	notifyDependents(ReferenceEvent::TargetChanged);
 }
 
 /******************************************************************************
@@ -145,9 +149,9 @@ void LAMMPSTextDumpImporter::scanFileForTimesteps(FutureInterfaceBase& futureInt
 /******************************************************************************
 * Parses the given input file and stores the data in the given container object.
 ******************************************************************************/
-void LAMMPSTextDumpImporter::parseFile(FutureInterfaceBase& futureInterface, ParticleImportData& container, CompressedTextParserStream& stream, const FrameSourceInformation& frame)
+void LAMMPSTextDumpImporter::LAMMPSTextDumpImportTask::parseFile(FutureInterfaceBase& futureInterface, CompressedTextParserStream& stream)
 {
-	futureInterface.setProgressText(tr("Reading LAMMPS dump file %1").arg(frame.sourceFile.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
+	futureInterface.setProgressText(tr("Reading LAMMPS dump file %1").arg(frame().sourceFile.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
 
 	// Regular expression for whitespace characters.
 	QRegularExpression ws_re(QStringLiteral("\\s+"));
@@ -181,7 +185,7 @@ void LAMMPSTextDumpImporter::parseFile(FutureInterfaceBase& futureInterface, Par
 				// Parse optional boundary condition flags.
 				QStringList tokens = stream.lineString().mid(qstrlen("ITEM: BOX BOUNDS xy xz yz")).split(ws_re, QString::SkipEmptyParts);
 				if(tokens.size() >= 3)
-					container.simulationCell().setPbcFlags(tokens[0] == "pp", tokens[1] == "pp", tokens[2] == "pp");
+					simulationCell().setPbcFlags(tokens[0] == "pp", tokens[1] == "pp", tokens[2] == "pp");
 
 				// Parse triclinic simulation box.
 				FloatType tiltFactors[3];
@@ -197,7 +201,7 @@ void LAMMPSTextDumpImporter::parseFile(FutureInterfaceBase& futureInterface, Par
 				simBox.maxc.x() -= std::max(std::max(std::max(tiltFactors[0], tiltFactors[1]), tiltFactors[0]+tiltFactors[1]), (FloatType)0);
 				simBox.minc.y() -= std::min(tiltFactors[2], (FloatType)0);
 				simBox.maxc.y() -= std::max(tiltFactors[2], (FloatType)0);
-				container.simulationCell().setMatrix(AffineTransformation(
+				simulationCell().setMatrix(AffineTransformation(
 						Vector3(simBox.sizeX(), 0, 0),
 						Vector3(tiltFactors[0], simBox.sizeY(), 0),
 						Vector3(tiltFactors[1], tiltFactors[2], simBox.sizeZ()),
@@ -208,7 +212,7 @@ void LAMMPSTextDumpImporter::parseFile(FutureInterfaceBase& futureInterface, Par
 				// Parse optional boundary condition flags.
 				QStringList tokens = stream.lineString().mid(qstrlen("ITEM: BOX BOUNDS")).split(ws_re, QString::SkipEmptyParts);
 				if(tokens.size() >= 3)
-					container.simulationCell().setPbcFlags(tokens[0] == "pp", tokens[1] == "pp", tokens[2] == "pp");
+					simulationCell().setPbcFlags(tokens[0] == "pp", tokens[1] == "pp", tokens[2] == "pp");
 
 				// Parse orthogonal simulation box size.
 				Box3 simBox;
@@ -217,7 +221,7 @@ void LAMMPSTextDumpImporter::parseFile(FutureInterfaceBase& futureInterface, Par
 						throw Exception(tr("Invalid box size in line %1 of dump file: %2").arg(stream.lineNumber()).arg(stream.lineString()));
 				}
 
-				container.simulationCell().setMatrix(AffineTransformation(
+				simulationCell().setMatrix(AffineTransformation(
 						Vector3(simBox.sizeX(), 0, 0),
 						Vector3(0, simBox.sizeY(), 0),
 						Vector3(0, 0, simBox.sizeZ()),
@@ -233,56 +237,13 @@ void LAMMPSTextDumpImporter::parseFile(FutureInterfaceBase& futureInterface, Par
 
 				// Set up column-to-property mapping.
 				InputColumnMapping columnMapping;
-				bool reducedCoordinates = false;
-				for(int i = 0; i < columnNames.size(); i++) {
-					QString name = columnNames[i].toLower();
-					if(name == "x" || name == "xu" || name == "coordinates") columnMapping.mapStandardColumn(i, ParticleProperty::PositionProperty, 0, name);
-					else if(name == "y" || name == "yu") columnMapping.mapStandardColumn(i, ParticleProperty::PositionProperty, 1, name);
-					else if(name == "z" || name == "zu") columnMapping.mapStandardColumn(i, ParticleProperty::PositionProperty, 2, name);
-					else if(name == "xs" || name == "xsu") { columnMapping.mapStandardColumn(i, ParticleProperty::PositionProperty, 0, name); reducedCoordinates = true; }
-					else if(name == "ys" || name == "ysu") { columnMapping.mapStandardColumn(i, ParticleProperty::PositionProperty, 1, name); reducedCoordinates = true; }
-					else if(name == "zs" || name == "zsu") { columnMapping.mapStandardColumn(i, ParticleProperty::PositionProperty, 2, name); reducedCoordinates = true; }
-					else if(name == "vx" || name == "velocities") columnMapping.mapStandardColumn(i, ParticleProperty::VelocityProperty, 0, name);
-					else if(name == "vy") columnMapping.mapStandardColumn(i, ParticleProperty::VelocityProperty, 1, name);
-					else if(name == "vz") columnMapping.mapStandardColumn(i, ParticleProperty::VelocityProperty, 2, name);
-					else if(name == "id") columnMapping.mapStandardColumn(i, ParticleProperty::IdentifierProperty, 0, name);
-					else if(name == "type" || name == "element" || name == "atom_types") columnMapping.mapStandardColumn(i, ParticleProperty::ParticleTypeProperty, 0, name);
-					else if(name == "mass") columnMapping.mapStandardColumn(i, ParticleProperty::MassProperty, 0, name);
-					else if(name == "radius") columnMapping.mapStandardColumn(i, ParticleProperty::RadiusProperty, 0, name);
-					else if(name == "ix") columnMapping.mapStandardColumn(i, ParticleProperty::PeriodicImageProperty, 0, name);
-					else if(name == "iy") columnMapping.mapStandardColumn(i, ParticleProperty::PeriodicImageProperty, 1, name);
-					else if(name == "iz") columnMapping.mapStandardColumn(i, ParticleProperty::PeriodicImageProperty, 2, name);
-					else if(name == "fx" || name == "forces") columnMapping.mapStandardColumn(i, ParticleProperty::ForceProperty, 0, name);
-					else if(name == "fy") columnMapping.mapStandardColumn(i, ParticleProperty::ForceProperty, 1, name);
-					else if(name == "fz") columnMapping.mapStandardColumn(i, ParticleProperty::ForceProperty, 2, name);
-					else if(name == "mux") columnMapping.mapStandardColumn(i, ParticleProperty::DipoleOrientationProperty, 0, name);
-					else if(name == "muy") columnMapping.mapStandardColumn(i, ParticleProperty::DipoleOrientationProperty, 1, name);
-					else if(name == "muz") columnMapping.mapStandardColumn(i, ParticleProperty::DipoleOrientationProperty, 2, name);
-					else if(name == "mu") columnMapping.mapStandardColumn(i, ParticleProperty::DipoleMagnitudeProperty, 0, name);
-					else if(name == "omegax") columnMapping.mapStandardColumn(i, ParticleProperty::AngularVelocityProperty, 0, name);
-					else if(name == "omegay") columnMapping.mapStandardColumn(i, ParticleProperty::AngularVelocityProperty, 1, name);
-					else if(name == "omegaz") columnMapping.mapStandardColumn(i, ParticleProperty::AngularVelocityProperty, 2, name);
-					else if(name == "angmomx") columnMapping.mapStandardColumn(i, ParticleProperty::AngularMomentumProperty, 0, name);
-					else if(name == "angmomy") columnMapping.mapStandardColumn(i, ParticleProperty::AngularMomentumProperty, 1, name);
-					else if(name == "angmomz") columnMapping.mapStandardColumn(i, ParticleProperty::AngularMomentumProperty, 2, name);
-					else if(name == "tqx") columnMapping.mapStandardColumn(i, ParticleProperty::TorqueProperty, 0, name);
-					else if(name == "tqy") columnMapping.mapStandardColumn(i, ParticleProperty::TorqueProperty, 1, name);
-					else if(name == "tqz") columnMapping.mapStandardColumn(i, ParticleProperty::TorqueProperty, 2, name);
-					else if(name == "spin") columnMapping.mapStandardColumn(i, ParticleProperty::SpinProperty, 0, name);
-					else if(name == "c_cna" || name == "pattern") columnMapping.mapStandardColumn(i, ParticleProperty::StructureTypeProperty, 0, name);
-					else if(name == "c_epot") columnMapping.mapStandardColumn(i, ParticleProperty::PotentialEnergyProperty, 0, name);
-					else if(name == "c_kpot") columnMapping.mapStandardColumn(i, ParticleProperty::KineticEnergyProperty, 0, name);
-					else if(name == "c_stress[1]") columnMapping.mapStandardColumn(i, ParticleProperty::StressTensorProperty, 0, name);
-					else if(name == "c_stress[2]") columnMapping.mapStandardColumn(i, ParticleProperty::StressTensorProperty, 1, name);
-					else if(name == "c_stress[3]") columnMapping.mapStandardColumn(i, ParticleProperty::StressTensorProperty, 2, name);
-					else if(name == "c_stress[4]") columnMapping.mapStandardColumn(i, ParticleProperty::StressTensorProperty, 3, name);
-					else if(name == "c_stress[5]") columnMapping.mapStandardColumn(i, ParticleProperty::StressTensorProperty, 4, name);
-					else if(name == "c_stress[6]") columnMapping.mapStandardColumn(i, ParticleProperty::StressTensorProperty, 5, name);
-					else if(name == "selection") columnMapping.mapStandardColumn(i, ParticleProperty::SelectionProperty, 0, name);
-				}
+				if(_useCustomColumnMapping)
+					columnMapping = _customColumnMapping;
+				else
+					columnMapping = generateAutomaticColumnMapping(columnNames);
 
 				// Parse data columns.
-				InputColumnReader columnParser(columnMapping, container, numParticles);
+				InputColumnReader columnParser(columnMapping, *this, numParticles);
 				try {
 					for(size_t i = 0; i < numParticles; i++) {
 						if((i % 4096) == 0) {
@@ -298,10 +259,35 @@ void LAMMPSTextDumpImporter::parseFile(FutureInterfaceBase& futureInterface, Par
 					throw ex.prependGeneralMessage(tr("Parsing error in line %1 of LAMMPS dump file.").arg(stream.lineNumber()));
 				}
 
-				if(reducedCoordinates) {
-					ParticleProperty* posProperty = container.particleProperty(ParticleProperty::PositionProperty);
+				// Find out if coordinates are given in reduced format and need to be rescaled to absolute format.
+				bool reducedCoordinates = false;
+				if(!columnNames.empty()) {
+					for(int i = 0; i < columnMapping.columnCount() && i < columnNames.size(); i++) {
+						if(columnMapping.propertyType(i) == ParticleProperty::PositionProperty) {
+							reducedCoordinates = (
+									columnNames[i] == "xs" || columnNames[i] == "xsu" ||
+									columnNames[i] == "ys" || columnNames[i] == "ysu" ||
+									columnNames[i] == "zs" || columnNames[i] == "zsu");
+						}
+					}
+				}
+				else {
+					// Check if all atom coordinates are within the [0,1] interval.
+					// If yes, we assume reduced coordinate format.
+					ParticleProperty* posProperty = particleProperty(ParticleProperty::PositionProperty);
 					if(posProperty) {
-						const AffineTransformation simCell = container.simulationCell().matrix();
+						Box3 boundingBox;
+						boundingBox.addPoints(posProperty->constDataPoint3(), posProperty->size());
+						if(Box3(Point3(-0.02f), Point3(1.02f)).containsBox(boundingBox))
+							reducedCoordinates = true;
+					}
+				}
+
+				if(reducedCoordinates) {
+					// Convert all atom coordinates from reduced to absolute (Cartesian) format.
+					ParticleProperty* posProperty = particleProperty(ParticleProperty::PositionProperty);
+					if(posProperty) {
+						const AffineTransformation simCell = simulationCell().matrix();
 						Point3* p = posProperty->dataPoint3();
 						Point3* p_end = p + posProperty->size();
 						for(; p != p_end; ++p)
@@ -309,7 +295,7 @@ void LAMMPSTextDumpImporter::parseFile(FutureInterfaceBase& futureInterface, Par
 					}
 				}
 
-				container.setInfoText(tr("%1 particles at timestep %2").arg(numParticles).arg(timestep));
+				setInfoText(tr("%1 particles at timestep %2").arg(numParticles).arg(timestep));
 				return;	// Done!
 			}
 			else {
@@ -320,6 +306,110 @@ void LAMMPSTextDumpImporter::parseFile(FutureInterfaceBase& futureInterface, Par
 	}
 
 	throw Exception(tr("LAMMPS dump file parsing error. Unexpected end of file at line %1.").arg(stream.lineNumber()));
+}
+
+/******************************************************************************
+ * Guesses the mapping of input file columns to internal particle properties.
+ *****************************************************************************/
+InputColumnMapping LAMMPSTextDumpImporter::generateAutomaticColumnMapping(const QStringList& columnNames)
+{
+	InputColumnMapping columnMapping;
+	for(int i = 0; i < columnNames.size(); i++) {
+		QString name = columnNames[i].toLower();
+		if(name == "x" || name == "xu" || name == "coordinates") columnMapping.mapStandardColumn(i, ParticleProperty::PositionProperty, 0, name);
+		else if(name == "y" || name == "yu") columnMapping.mapStandardColumn(i, ParticleProperty::PositionProperty, 1, name);
+		else if(name == "z" || name == "zu") columnMapping.mapStandardColumn(i, ParticleProperty::PositionProperty, 2, name);
+		else if(name == "xs" || name == "xsu") { columnMapping.mapStandardColumn(i, ParticleProperty::PositionProperty, 0, name); }
+		else if(name == "ys" || name == "ysu") { columnMapping.mapStandardColumn(i, ParticleProperty::PositionProperty, 1, name); }
+		else if(name == "zs" || name == "zsu") { columnMapping.mapStandardColumn(i, ParticleProperty::PositionProperty, 2, name); }
+		else if(name == "vx" || name == "velocities") columnMapping.mapStandardColumn(i, ParticleProperty::VelocityProperty, 0, name);
+		else if(name == "vy") columnMapping.mapStandardColumn(i, ParticleProperty::VelocityProperty, 1, name);
+		else if(name == "vz") columnMapping.mapStandardColumn(i, ParticleProperty::VelocityProperty, 2, name);
+		else if(name == "id") columnMapping.mapStandardColumn(i, ParticleProperty::IdentifierProperty, 0, name);
+		else if(name == "type" || name == "element" || name == "atom_types") columnMapping.mapStandardColumn(i, ParticleProperty::ParticleTypeProperty, 0, name);
+		else if(name == "mass") columnMapping.mapStandardColumn(i, ParticleProperty::MassProperty, 0, name);
+		else if(name == "radius") columnMapping.mapStandardColumn(i, ParticleProperty::RadiusProperty, 0, name);
+		else if(name == "ix") columnMapping.mapStandardColumn(i, ParticleProperty::PeriodicImageProperty, 0, name);
+		else if(name == "iy") columnMapping.mapStandardColumn(i, ParticleProperty::PeriodicImageProperty, 1, name);
+		else if(name == "iz") columnMapping.mapStandardColumn(i, ParticleProperty::PeriodicImageProperty, 2, name);
+		else if(name == "fx" || name == "forces") columnMapping.mapStandardColumn(i, ParticleProperty::ForceProperty, 0, name);
+		else if(name == "fy") columnMapping.mapStandardColumn(i, ParticleProperty::ForceProperty, 1, name);
+		else if(name == "fz") columnMapping.mapStandardColumn(i, ParticleProperty::ForceProperty, 2, name);
+		else if(name == "mux") columnMapping.mapStandardColumn(i, ParticleProperty::DipoleOrientationProperty, 0, name);
+		else if(name == "muy") columnMapping.mapStandardColumn(i, ParticleProperty::DipoleOrientationProperty, 1, name);
+		else if(name == "muz") columnMapping.mapStandardColumn(i, ParticleProperty::DipoleOrientationProperty, 2, name);
+		else if(name == "mu") columnMapping.mapStandardColumn(i, ParticleProperty::DipoleMagnitudeProperty, 0, name);
+		else if(name == "omegax") columnMapping.mapStandardColumn(i, ParticleProperty::AngularVelocityProperty, 0, name);
+		else if(name == "omegay") columnMapping.mapStandardColumn(i, ParticleProperty::AngularVelocityProperty, 1, name);
+		else if(name == "omegaz") columnMapping.mapStandardColumn(i, ParticleProperty::AngularVelocityProperty, 2, name);
+		else if(name == "angmomx") columnMapping.mapStandardColumn(i, ParticleProperty::AngularMomentumProperty, 0, name);
+		else if(name == "angmomy") columnMapping.mapStandardColumn(i, ParticleProperty::AngularMomentumProperty, 1, name);
+		else if(name == "angmomz") columnMapping.mapStandardColumn(i, ParticleProperty::AngularMomentumProperty, 2, name);
+		else if(name == "tqx") columnMapping.mapStandardColumn(i, ParticleProperty::TorqueProperty, 0, name);
+		else if(name == "tqy") columnMapping.mapStandardColumn(i, ParticleProperty::TorqueProperty, 1, name);
+		else if(name == "tqz") columnMapping.mapStandardColumn(i, ParticleProperty::TorqueProperty, 2, name);
+		else if(name == "spin") columnMapping.mapStandardColumn(i, ParticleProperty::SpinProperty, 0, name);
+		else if(name == "c_cna" || name == "pattern") columnMapping.mapStandardColumn(i, ParticleProperty::StructureTypeProperty, 0, name);
+		else if(name == "c_epot") columnMapping.mapStandardColumn(i, ParticleProperty::PotentialEnergyProperty, 0, name);
+		else if(name == "c_kpot") columnMapping.mapStandardColumn(i, ParticleProperty::KineticEnergyProperty, 0, name);
+		else if(name == "c_stress[1]") columnMapping.mapStandardColumn(i, ParticleProperty::StressTensorProperty, 0, name);
+		else if(name == "c_stress[2]") columnMapping.mapStandardColumn(i, ParticleProperty::StressTensorProperty, 1, name);
+		else if(name == "c_stress[3]") columnMapping.mapStandardColumn(i, ParticleProperty::StressTensorProperty, 2, name);
+		else if(name == "c_stress[4]") columnMapping.mapStandardColumn(i, ParticleProperty::StressTensorProperty, 3, name);
+		else if(name == "c_stress[5]") columnMapping.mapStandardColumn(i, ParticleProperty::StressTensorProperty, 4, name);
+		else if(name == "c_stress[6]") columnMapping.mapStandardColumn(i, ParticleProperty::StressTensorProperty, 5, name);
+		else if(name == "selection") columnMapping.mapStandardColumn(i, ParticleProperty::SelectionProperty, 0, name);
+		else {
+			columnMapping.mapCustomColumn(i, name, qMetaTypeId<FloatType>(), 0, ParticleProperty::UserProperty, name);
+		}
+	}
+	return columnMapping;
+}
+
+/******************************************************************************
+ * Saves the class' contents to the given stream.
+ *****************************************************************************/
+void LAMMPSTextDumpImporter::saveToStream(ObjectSaveStream& stream)
+{
+	ParticleImporter::saveToStream(stream);
+
+	stream.beginChunk(0x01);
+	_customColumnMapping.saveToStream(stream);
+	stream.endChunk();
+}
+
+/******************************************************************************
+ * Loads the class' contents from the given stream.
+ *****************************************************************************/
+void LAMMPSTextDumpImporter::loadFromStream(ObjectLoadStream& stream)
+{
+	ParticleImporter::loadFromStream(stream);
+
+	stream.expectChunk(0x01);
+	_customColumnMapping.loadFromStream(stream);
+	stream.closeChunk();
+}
+
+/******************************************************************************
+ * Creates a copy of this object.
+ *****************************************************************************/
+OORef<RefTarget> LAMMPSTextDumpImporter::clone(bool deepCopy, CloneHelper& cloneHelper)
+{
+	// Let the base class create an instance of this class.
+	OORef<LAMMPSTextDumpImporter> clone = static_object_cast<LAMMPSTextDumpImporter>(ParticleImporter::clone(deepCopy, cloneHelper));
+	clone->_customColumnMapping = this->_customColumnMapping;
+	return clone;
+}
+
+/******************************************************************************
+ * Displays a dialog box that allows the user to edit the custom file column to particle
+ * property mapping.
+ *****************************************************************************/
+void LAMMPSTextDumpImporter::showEditColumnMappingDialog(QWidget* parent)
+{
+	InputColumnMappingDialog dialog(_customColumnMapping, parent);
+	if(dialog.exec() == QDialog::Accepted) {
+	}
 }
 
 /******************************************************************************
@@ -335,9 +425,40 @@ void LAMMPSTextDumpImporterEditor::createUI(const RolloutInsertionParameters& ro
 	layout->setContentsMargins(4,4,4,4);
 	layout->setSpacing(4);
 
+	QGroupBox* animFramesBox = new QGroupBox(tr("Timesteps"), rollout);
+	QVBoxLayout* sublayout = new QVBoxLayout(animFramesBox);
+	sublayout->setContentsMargins(4,4,4,4);
+	layout->addWidget(animFramesBox);
+
 	// Multi-timestep file
 	BooleanParameterUI* multitimestepUI = new BooleanParameterUI(this, PROPERTY_FIELD(ParticleImporter::_isMultiTimestepFile));
-	layout->addWidget(multitimestepUI->checkBox());
+	sublayout->addWidget(multitimestepUI->checkBox());
+
+	QGroupBox* columnMappingBox = new QGroupBox(tr("File columns"), rollout);
+	sublayout = new QVBoxLayout(columnMappingBox);
+	sublayout->setContentsMargins(4,4,4,4);
+	layout->addWidget(columnMappingBox);
+
+	BooleanRadioButtonParameterUI* useCustomMappingUI = new BooleanRadioButtonParameterUI(this, PROPERTY_FIELD(LAMMPSTextDumpImporter::_useCustomColumnMapping));
+	useCustomMappingUI->buttonFalse()->setText(tr("Automatic mapping"));
+	sublayout->addWidget(useCustomMappingUI->buttonFalse());
+	useCustomMappingUI->buttonTrue()->setText(tr("User-defined mapping to particle properties"));
+	sublayout->addWidget(useCustomMappingUI->buttonTrue());
+
+	QPushButton* editMappingButton = new QPushButton(tr("Edit column mapping"));
+	sublayout->addWidget(editMappingButton);
+	connect(editMappingButton, SIGNAL(clicked(bool)), this, SLOT(onEditColumnMapping()));
+}
+
+/******************************************************************************
+* Is called when the user pressed the "Edit column mapping" button.
+******************************************************************************/
+void LAMMPSTextDumpImporterEditor::onEditColumnMapping()
+{
+	LAMMPSTextDumpImporter* importer = static_object_cast<LAMMPSTextDumpImporter>(editObject());
+	if(importer) {
+		importer->showEditColumnMappingDialog();
+	}
 }
 
 };

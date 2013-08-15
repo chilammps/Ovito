@@ -66,15 +66,27 @@ public:
 		}
 	};
 
-	class ImportedData {
+	/**
+	 * Base class for background file loaders.
+	 */
+	class ImportTask {
 	public:
 
+		/// Constructor.
+		ImportTask(const FrameSourceInformation& frame) : _frame(frame) {}
+
 		/// Destructor of virtual class.
-		virtual ~ImportedData() {}
+		virtual ~ImportTask() {}
+
+		/// \brief Is called in the background thread to perform the actual loading.
+		virtual void load(FutureInterfaceBase& futureInterface) = 0;
 
 		/// Lets the data container insert the data it holds into the scene by creating
 		/// appropriate scene objects.
 		virtual void insertIntoScene(LinkedFileObject* destination) = 0;
+
+		/// Returns the source file information.
+		const FrameSourceInformation& frame() const { return _frame; }
 
 		/// Returns a status object that describes the outcome of the loading operation.
 		ObjectStatus status() const { return ObjectStatus(ObjectStatus::Success, QString(), _infoText); }
@@ -84,11 +96,14 @@ public:
 
 	private:
 
-		/// Contains information about the loaded file.
+		/// The source file information.
+		FrameSourceInformation _frame;
+
+		/// Contains information about the loaded file set by the parser.
 		QString _infoText;
 	};
 
-	typedef std::shared_ptr<ImportedData> ImportedDataPtr;
+	typedef std::shared_ptr<ImportTask> ImportTaskPtr;
 
 public:
 
@@ -104,26 +119,10 @@ public:
 
 	//////////////////////////// Specific methods ////////////////////////////////
 
-	/// \brief Opens the settings dialog for this importer.
-	/// \param parent The parent window for the dialog box.
-	/// \param object The LinkedFileObject that owns this importer.
-	/// \return \c true if the dialog has been approved by the user; \c false when the user has canceled the operation.
-	///
-	/// The default implementation of this method does not show any dialog and always returns \a true.
-	/// If this method is overridden to show a dialog box then the method hasSettingsDialog() should
-	/// be overridden too.
-	virtual bool showSettingsDialog(QWidget* parent, LinkedFileObject* object) { return true; }
-
-	/// \brief Returns whether this importer has a settings dialog box to let the user configure the import settings.
-	/// \return \c true if a call to showSettingsDialog() will show a dialog box; \c false otherwise.
-	///
-	/// The default implementation returns \c false.
-	virtual bool hasSettingsDialog() { return false; }
-
 	/// \brief Reads the data from the input file(s).
 	/// \param frame The record that specifies the frame to load.
 	/// \return A future that will give access to the loaded data.
-	virtual Future<ImportedDataPtr> load(FrameSourceInformation frame);
+	virtual Future<ImportTaskPtr> load(const FrameSourceInformation& frame);
 
 	/// \brief Scans the input source (which can be a directory or a single file) to discover all animation frames.
 	///
@@ -139,8 +138,8 @@ public:
 
 protected:
 
-	/// \brief Reads the data from the input file(s).
-	virtual void loadImplementation(FutureInterface<ImportedDataPtr>& futureInterface, FrameSourceInformation frame) = 0;
+	/// \brief Creates an import task object to read the given frame.
+	virtual ImportTaskPtr createImportTask(const FrameSourceInformation& frame) = 0;
 
 private:
 

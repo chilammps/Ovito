@@ -55,8 +55,24 @@ public:
 
 protected:
 
-	/// \brief Parses the given input file and stores the data in the given container object.
-	virtual void parseFile(FutureInterfaceBase& futureInterface, ParticleImportData& container, CompressedTextParserStream& stream, const FrameSourceInformation& frame) override;
+	/// The format-specific task object that is responsible to read an input file in the background.
+	class POSCARImportTask : public ParticleImportTask
+	{
+	public:
+
+		/// Constructor.
+		POSCARImportTask(const LinkedFileImporter::FrameSourceInformation& frame) : ParticleImportTask(frame) {}
+
+	protected:
+
+		/// Parses the given input file and stores the data in this container object.
+		virtual void parseFile(FutureInterfaceBase& futureInterface, CompressedTextParserStream& stream) override;
+	};
+
+	/// \brief Creates an import task object to read the given frame.
+	virtual ImportTaskPtr createImportTask(const FrameSourceInformation& frame) override {
+		return std::make_shared<POSCARImportTask>(frame);
+	}
 
 private:
 

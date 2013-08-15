@@ -19,25 +19,29 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef __OVITO_LAMMPS_DUMP_IMPORTER_SETTINGS_DIALOG_H
-#define __OVITO_LAMMPS_DUMP_IMPORTER_SETTINGS_DIALOG_H
+#ifndef __OVITO_INPUT_COLUMN_MAPPING_DIALOG_H
+#define __OVITO_INPUT_COLUMN_MAPPING_DIALOG_H
 
 #include <core/Core.h>
-#include "LAMMPSTextDumpImporter.h"
+#include "InputColumnMapping.h"
 
 namespace Viz {
 
 /******************************************************************************
-* This dialog box lets the user adjust the settings of the LAMMPS dump importer.
+* This dialog box lets the user edit the mapping from data columns
+* in an input file to particle properties.
 ******************************************************************************/
-class LAMMPSDumpImporterSettingsDialog : public QDialog
+class InputColumnMappingDialog : public QDialog
 {
 	Q_OBJECT
 	
 public:
 
 	/// Constructor.
-	LAMMPSDumpImporterSettingsDialog(LAMMPSTextDumpImporter* importer, QWidget* parent = 0);
+	InputColumnMappingDialog(const InputColumnMapping& mapping, QWidget* parent = 0);
+
+	/// Returns the user-defined column mapping.
+	InputColumnMapping mapping() const;
 
 protected Q_SLOTS:
 
@@ -46,12 +50,14 @@ protected Q_SLOTS:
 
 protected:
 
-	/// The parser whose settings are being edited.
-	OORef<LAMMPSTextDumpImporter> importer;
-	QLineEdit* sourceTextbox;
-	QCheckBox* multiTimestepCheckbox;
-};
+	/// \brief Returns the string representation of a property's data type.
+	static QString dataTypeToString(int dataType);
+
+	/// The main table widget that entries for each data column of the input file.
+	QTableWidget* _tableWidget;
 
 };
 
-#endif // __OVITO_LAMMPS_DUMP_IMPORTER_SETTINGS_DIALOG_H
+};
+
+#endif // __OVITO_INPUT_COLUMN_MAPPING_DIALOG_H

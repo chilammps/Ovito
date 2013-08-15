@@ -57,7 +57,7 @@ ImportRemoteFileDialog::ImportRemoteFileDialog(QWidget* parent, const QString& c
 	layout1->addWidget(new QLabel(tr("File type:")));
 	_formatSelector = new QComboBox(this);
 
-	_formatSelector->addItem(tr("<Auto-detect file format>"));
+	_formatSelector->addItem(tr("<Auto-detect format>"));
 	for(const auto& descriptor : ImportExportManager::instance().fileImporters()) {
 		_formatSelector->addItem(descriptor.fileFilterDescription());
 	}
@@ -65,7 +65,7 @@ ImportRemoteFileDialog::ImportRemoteFileDialog(QWidget* parent, const QString& c
 	layout1->addWidget(_formatSelector);
 	layout1->addSpacing(10);
 
-	QDialogButtonBox* buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, this);
+	QDialogButtonBox* buttonBox = new QDialogButtonBox(QDialogButtonBox::Open | QDialogButtonBox::Cancel, Qt::Horizontal, this);
 	connect(buttonBox, SIGNAL(accepted()), this, SLOT(onOk()));
 	connect(buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
 	layout1->addWidget(buttonBox);

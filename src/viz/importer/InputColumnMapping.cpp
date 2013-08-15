@@ -131,7 +131,7 @@ void InputColumnMapping::loadFromStream(LoadStream& stream)
 /******************************************************************************
  * Initializes the object.
  *****************************************************************************/
-InputColumnReader::InputColumnReader(const InputColumnMapping& mapping, ParticleImportData& destination, size_t particleCount)
+InputColumnReader::InputColumnReader(const InputColumnMapping& mapping, ParticleImportTask& destination, size_t particleCount)
 	: _mapping(mapping), _destination(destination),
 	  _intMetaTypeId(qMetaTypeId<int>()), _floatMetaTypeId(qMetaTypeId<FloatType>())
 {
@@ -233,7 +233,7 @@ void InputColumnReader::readParticle(size_t particleIndex, int ntokens, const ch
 {
 	OVITO_ASSERT(_properties.size() == _mapping.columnCount());
 	if(ntokens < _properties.size())
-		throw Exception(tr("Data line in input file contains not enough items. Expected %1 file columns but found only %2.").arg(_properties.size()).arg(ntokens));
+		throw Exception(tr("Data line in input file contains not enough columns. Expected %1 file columns but found only %2.").arg(_properties.size()).arg(ntokens));
 
 	auto propertyIterator = _properties.cbegin();
 	const char** token = tokens;

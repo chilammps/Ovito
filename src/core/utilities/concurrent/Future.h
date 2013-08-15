@@ -67,10 +67,6 @@ public:
 	void waitForFinished() const {
 		interface()->waitForFinished();
 	}
-	void abort() {
-		cancel();
-		waitForFinished();
-	}
 	bool isValid() const { return (bool)_interface; }
 	void reset() { _interface.reset(); }
 

@@ -70,12 +70,6 @@ protected:
 	/// \brief Is called when the value of a property of this object has changed.
 	virtual void propertyChanged(const PropertyFieldDescriptor& field) override;
 
-	/// \brief Reads the data from the input file(s).
-	virtual void loadImplementation(FutureInterface<ImportedDataPtr>& futureInterface, FrameSourceInformation frame) override;
-
-	/// \brief Parses the given input file and stores the data in the given container object.
-	virtual void parseFile(FutureInterfaceBase& futureInterface, ParticleImportData& container, CompressedTextParserStream& stream, const FrameSourceInformation& frame) = 0;
-
 	/// \brief Scans the given input file to find all contained simulation frames.
 	virtual void scanFileForTimesteps(FutureInterfaceBase& futureInterface, QVector<LinkedFileImporter::FrameSourceInformation>& frames, const QUrl& sourceUrl, CompressedTextParserStream& stream);
 

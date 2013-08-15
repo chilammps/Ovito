@@ -191,7 +191,7 @@ void ModificationListModel::refreshList()
 		while(cmnObject != nullptr);
 	}
 
-	int selIndex = 0;
+	int selIndex = -1;
 	for(int index = 0; index < items.size(); index++) {
 		if(_nextToSelectObject == items[index]->object()) {
 			selIndex = index;
@@ -201,9 +201,18 @@ void ModificationListModel::refreshList()
 	setItems(items, hiddenItems);
 	_nextToSelectObject = nullptr;
 
-	// Select the right item in the list box.
-	if(!items.empty())
+	// Select the proper item in the list box.
+	if(!items.empty()) {
+		if(selIndex < 0) {
+			for(int index = 0; index < items.size(); index++) {
+				if(items[index]->object()) {
+					selIndex = index;
+					break;
+				}
+			}
+		}
 		_selectionModel->select(index(selIndex), QItemSelectionModel::SelectCurrent | QItemSelectionModel::Clear);
+	}
 }
 
 /******************************************************************************

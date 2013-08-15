@@ -242,7 +242,7 @@ void LinkedFileObject::loadOperationFinished()
 	if(!wasCanceled) {
 		try {
 			// Adopt the data loaded by the importer.
-			LinkedFileImporter::ImportedDataPtr importedData = _loadFrameOperation.result();
+			LinkedFileImporter::ImportTaskPtr importedData = _loadFrameOperation.result();
 			if(importedData) {
 				importedData->insertIntoScene(this);
 				newStatus = importedData->status();

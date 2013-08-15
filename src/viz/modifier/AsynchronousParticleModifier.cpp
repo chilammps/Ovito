@@ -108,7 +108,6 @@ ObjectStatus AsynchronousParticleModifier::modifyParticles(TimePoint time, TimeI
 				// Start a background job that runs the engine to compute the modifier's results.
 				_computationValidity.setInstant(time);
 				_backgroundOperation = runInBackground<std::shared_ptr<Engine>>(std::bind(&AsynchronousParticleModifier::runEngine, this, std::placeholders::_1, engine));
-				ProgressManager::instance().addTask(_backgroundOperation);
 				_backgroundOperationWatcher.setFuture(_backgroundOperation);
 			}
 			catch(const ObjectStatus& status) {

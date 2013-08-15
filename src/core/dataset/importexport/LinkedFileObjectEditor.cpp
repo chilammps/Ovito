@@ -54,7 +54,6 @@ void LinkedFileObjectEditor::createUI(const RolloutInsertionParameters& rolloutP
 	toolbar->addAction(QIcon(":/core/actions/file/file_import_remote.png"), tr("Pick new remote input file"), this, SLOT(onPickRemoteInputFile()));
 	toolbar->addAction(QIcon(":/core/actions/file/import_object_reload.png"), tr("Reload current input file"), this, SLOT(onReloadFrame()));
 	toolbar->addAction(QIcon(":/core/actions/file/import_object_refresh_animation.png"), tr("Reload animation frames"), this, SLOT(onReloadAnimation()));
-	_parserSettingsAction = toolbar->addAction(QIcon(":/core/actions/file/import_object_settings.png"), tr("Import settings"), this, SLOT(onParserSettings()));
 
 	QAction* saveDataWithSceneAction = toolbar->addAction(QIcon(":/core/actions/file/import_object_save_with_scene.png"), tr("Store imported data in scene file"));
 	new BooleanActionParameterUI(this, "saveDataWithScene", saveDataWithSceneAction);
@@ -119,19 +118,11 @@ void LinkedFileObjectEditor::setEditObject(RefTarget* newObject)
 {
 	PropertiesEditor::setEditObject(newObject);
 
-	// Enable/disable button for the settings dialog depending on whether such a dialog box
-	// is provided by the selected parser.
-
-	LinkedFileObject* obj = static_object_cast<LinkedFileObject>(newObject);
-	if(obj && obj->importer() && obj->importer()->hasSettingsDialog())
-		_parserSettingsAction->setEnabled(true);
-	else
-		_parserSettingsAction->setEnabled(false);
-
 	updateInformationLabel();
 
 	// Close old sub-editors.
 	_subEditors.clear();
+	LinkedFileObject* obj = static_object_cast<LinkedFileObject>(newObject);
 	if(obj) {
 		// Open new sub-editors.
 		for(SceneObject* sceneObj : obj->sceneObjects()) {
@@ -206,26 +197,6 @@ void LinkedFileObjectEditor::onWildcardPatternEntered()
 		obj->setSource(newUrl, obj->importer());
 	});
 	updateInformationLabel();
-}
-
-/******************************************************************************
-* Is called when the user presses the Parser Settings button.
-******************************************************************************/
-void LinkedFileObjectEditor::onParserSettings()
-{
-	LinkedFileObject* obj = static_object_cast<LinkedFileObject>(editObject());
-	OVITO_CHECK_OBJECT_POINTER(obj);
-
-	try {
-		if(obj->importer() == nullptr)
-			throw Exception(tr("There is no parser available."));
-
-		// Show settings dialog.
-		obj->importer()->showSettingsDialog(container(), obj);
-	}
-	catch(const Exception& ex) {
-		ex.showError();
-	}
 }
 
 /******************************************************************************

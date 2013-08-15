@@ -21,6 +21,8 @@
 
 #include <core/Core.h>
 #include <core/dataset/importexport/LinkedFileObject.h>
+#include <core/utilities/io/FileManager.h>
+#include <core/utilities/concurrent/ProgressManager.h>
 #include <viz/data/SimulationCell.h>
 #include <viz/data/SimulationCellDisplay.h>
 #include <viz/data/ParticleProperty.h>
@@ -34,10 +36,37 @@
 namespace Viz {
 
 /******************************************************************************
+* Reads the data from the input file(s).
+******************************************************************************/
+void ParticleImportTask::load(FutureInterfaceBase& futureInterface)
+{
+	futureInterface.setProgressText(ParticleImporter::tr("Reading file %1").arg(frame().sourceFile.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
+
+	// Fetch file.
+	Future<QString> fetchFileFuture = FileManager::instance().fetchUrl(frame().sourceFile);
+	ProgressManager::instance().addTask(fetchFileFuture);
+	if(!futureInterface.waitForSubTask(fetchFileFuture)) {
+		return;
+	}
+	OVITO_ASSERT(fetchFileFuture.isCanceled() == false);
+
+	// Open file.
+	QFile file(fetchFileFuture.result());
+	CompressedTextParserStream stream(file, frame().sourceFile.path());
+
+	// Jump to requested file byte offset.
+	if(frame().byteOffset != 0)
+		stream.seek(frame().byteOffset);
+
+	// Parse file.
+	parseFile(futureInterface, stream);
+}
+
+/******************************************************************************
 * Lets the data container insert the data it holds into the scene by creating
 * appropriate scene objects.
 ******************************************************************************/
-void ParticleImportData::insertIntoScene(LinkedFileObject* destination)
+void ParticleImportTask::insertIntoScene(LinkedFileObject* destination)
 {
 	QSet<SceneObject*> activeObjects;
 
@@ -91,7 +120,7 @@ void ParticleImportData::insertIntoScene(LinkedFileObject* destination)
 /******************************************************************************
 * Inserts the stores particle types into the given destination object.
 ******************************************************************************/
-void ParticleImportData::insertParticleTypes(ParticlePropertyObject* propertyObj)
+void ParticleImportTask::insertParticleTypes(ParticlePropertyObject* propertyObj)
 {
 	ParticleTypeProperty* typeProperty = dynamic_object_cast<ParticleTypeProperty>(propertyObj);
 	if(!typeProperty)

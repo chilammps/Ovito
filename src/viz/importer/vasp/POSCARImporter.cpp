@@ -82,9 +82,9 @@ bool POSCARImporter::checkFileFormat(QIODevice& input, const QUrl& sourceLocatio
 /******************************************************************************
 * Parses the given input file and stores the data in the given container object.
 ******************************************************************************/
-void POSCARImporter::parseFile(FutureInterfaceBase& futureInterface, ParticleImportData& container, CompressedTextParserStream& stream, const FrameSourceInformation& frame)
+void POSCARImporter::POSCARImportTask::parseFile(FutureInterfaceBase& futureInterface, CompressedTextParserStream& stream)
 {
-	futureInterface.setProgressText(tr("Reading POSCAR file %1").arg(frame.sourceFile.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
+	futureInterface.setProgressText(tr("Reading POSCAR file %1").arg(frame().sourceFile.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
 
 	// Regular expression for whitespace characters.
 	QRegularExpression ws_re(QStringLiteral("\\s+"));
@@ -106,7 +106,7 @@ void POSCARImporter::parseFile(FutureInterfaceBase& futureInterface, ParticleImp
 			throw Exception(tr("Invalid cell vector (line %1): %2").arg(stream.lineNumber()).arg(stream.lineString()));
 	}
 	cell = cell * scaling_factor;
-	container.simulationCell().setMatrix(cell);
+	simulationCell().setMatrix(cell);
 
 	// Parse atom type names and atom type counts.
 	QVector<int> atomCounts;
@@ -147,15 +147,15 @@ void POSCARImporter::parseFile(FutureInterfaceBase& futureInterface, ParticleImp
 
 	// Create the particle properties.
 	ParticleProperty* posProperty = new ParticleProperty(totalAtomCount, ParticleProperty::PositionProperty);
-	container.addParticleProperty(posProperty);
+	addParticleProperty(posProperty);
 	ParticleProperty* typeProperty = new ParticleProperty(totalAtomCount, ParticleProperty::ParticleTypeProperty);
-	container.addParticleProperty(typeProperty);
+	addParticleProperty(typeProperty);
 
 	// Read atom coordinates.
 	Point3* p = posProperty->dataPoint3();
 	int* a = typeProperty->dataInt();
 	for(int atype = 1; atype <= atomCounts.size(); atype++) {
-		container.addParticleType(atype,
+		addParticleType(atype,
 				(atomTypeNames.size() == atomCounts.size()) ? atomTypeNames[atype-1] : QString());
 		for(int i = 0; i < atomCounts[atype-1]; i++, ++p, ++a) {
 			*a = atype;
@@ -179,7 +179,7 @@ void POSCARImporter::parseFile(FutureInterfaceBase& futureInterface, ParticleImp
 
 		// Read atom velocities.
 		ParticleProperty* velocityProperty = new ParticleProperty(totalAtomCount, ParticleProperty::VelocityProperty);
-		container.addParticleProperty(velocityProperty);
+		addParticleProperty(velocityProperty);
 		Vector3* v = velocityProperty->dataVector3();
 		for(int atype = 1; atype <= atomCounts.size(); atype++) {
 			for(int i = 0; i < atomCounts[atype-1]; i++, ++v) {
@@ -192,7 +192,7 @@ void POSCARImporter::parseFile(FutureInterfaceBase& futureInterface, ParticleImp
 		}
 	}
 
-	container.setInfoText(tr("%1 atoms").arg(totalAtomCount));
+	setInfoText(tr("%1 atoms").arg(totalAtomCount));
 }
 
 };

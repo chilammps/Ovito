@@ -32,10 +32,12 @@ namespace Viz {
 
 using namespace Ovito;
 
+class CompressedTextParserStream;
+
 /**
  * Container structure for data imported by a ParticleImporter.
  */
-class ParticleImportData : public LinkedFileImporter::ImportedData
+class ParticleImportTask : public LinkedFileImporter::ImportTask
 {
 public:
 
@@ -47,6 +49,9 @@ public:
 	};
 
 public:
+
+	/// Constructor.
+	ParticleImportTask(const LinkedFileImporter::FrameSourceInformation& frame) : LinkedFileImporter::ImportTask(frame) {}
 
 	/// Lets the data container insert the data it holds into the scene by creating
 	/// appropriate scene objects.
@@ -98,7 +103,13 @@ public:
 		return -1;
 	}
 
-private:
+protected:
+
+	/// Is called in the background thread to perform the data file import.
+	virtual void load(FutureInterfaceBase& futureInterface) override;
+
+	/// Parses the given input file and stores the data in this container object.
+	virtual void parseFile(FutureInterfaceBase& futureInterface, CompressedTextParserStream& stream) = 0;
 
 	/// Inserts the stores particle types into the given destination object.
 	void insertParticleTypes(ParticlePropertyObject* propertyObj);

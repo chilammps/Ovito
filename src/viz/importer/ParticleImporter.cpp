@@ -22,7 +22,6 @@
 #include <core/Core.h>
 #include <core/utilities/io/FileManager.h>
 #include <core/utilities/concurrent/Future.h>
-#include <core/utilities/concurrent/ProgressManager.h>
 #include <core/utilities/concurrent/Task.h>
 #include <core/dataset/importexport/LinkedFileObject.h>
 #include "ParticleImporter.h"
@@ -35,48 +34,14 @@ DEFINE_PROPERTY_FIELD(ParticleImporter, _isMultiTimestepFile, "IsMultiTimestepFi
 SET_PROPERTY_FIELD_LABEL(ParticleImporter, _isMultiTimestepFile, "File contains multiple timesteps")
 
 /******************************************************************************
-* Reads the data from the input file(s).
-******************************************************************************/
-void ParticleImporter::loadImplementation(FutureInterface<ImportedDataPtr>& futureInterface, FrameSourceInformation frame)
-{
-	futureInterface.setProgressText(tr("Reading file %1").arg(frame.sourceFile.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
-
-	// Fetch file.
-	Future<QString> fetchFileFuture = FileManager::instance().fetchUrl(frame.sourceFile);
-	ProgressManager::instance().addTask(fetchFileFuture);
-	if(!futureInterface.waitForSubTask(fetchFileFuture)) {
-		return;
-	}
-	OVITO_ASSERT(fetchFileFuture.isCanceled() == false);
-
-	// Open file.
-	QFile file(fetchFileFuture.result());
-	CompressedTextParserStream stream(file, frame.sourceFile.path());
-
-	// Jump to requested file byte offset.
-	if(frame.byteOffset != 0)
-		stream.seek(frame.byteOffset);
-
-	// Parse file.
-	std::shared_ptr<ParticleImportData> result(std::make_shared<ParticleImportData>());
-	parseFile(futureInterface, *result, stream, frame);
-
-	// Return results.
-	if(!futureInterface.isCanceled())
-		futureInterface.setResult(result);
-}
-
-/******************************************************************************
 * Scans the input source (which can be a directory or a single file) to
 * discover all animation frames.
 ******************************************************************************/
 Future<QVector<LinkedFileImporter::FrameSourceInformation>> ParticleImporter::findFrames(const QUrl& sourceUrl)
 {
-	if(isMultiTimestepFile()) {
-		auto future = runInBackground<QVector<LinkedFileImporter::FrameSourceInformation>>(
+	if(isMultiTimestepFile() && !sourceUrl.path().contains('*') && !sourceUrl.path().contains('?')) {
+		return runInBackground<QVector<LinkedFileImporter::FrameSourceInformation>>(
 				std::bind(&ParticleImporter::scanMultiTimestepFile, this, std::placeholders::_1, sourceUrl));
-		ProgressManager::instance().addTask(future);
-		return future;
 	}
 	else {
 		return LinkedFileImporter::findFrames(sourceUrl);

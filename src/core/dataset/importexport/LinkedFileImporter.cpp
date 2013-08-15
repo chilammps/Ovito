@@ -247,11 +247,21 @@ Future<QVector<LinkedFileImporter::FrameSourceInformation>> LinkedFileImporter::
 /******************************************************************************
 * Reads the data from the input file(s).
 ******************************************************************************/
-Future<LinkedFileImporter::ImportedDataPtr> LinkedFileImporter::load(LinkedFileImporter::FrameSourceInformation frame)
+Future<LinkedFileImporter::ImportTaskPtr> LinkedFileImporter::load(const LinkedFileImporter::FrameSourceInformation& frame)
 {
-	Future<LinkedFileImporter::ImportedDataPtr> future = runInBackground<ImportedDataPtr>(std::bind(&LinkedFileImporter::loadImplementation, this, std::placeholders::_1, frame));
-	ProgressManager::instance().addTask(future);
-	return future;
+	ImportTaskPtr importTask = createImportTask(frame);
+
+	return runInBackground<ImportTaskPtr>(
+			[importTask] (FutureInterface<LinkedFileImporter::ImportTaskPtr>& futureInterface) {
+
+		// Run the task
+		importTask->load(futureInterface);
+
+		// Return the importer task object as the result.
+		if(!futureInterface.isCanceled())
+			futureInterface.setResult(importTask);
+
+		});
 }
 
 };

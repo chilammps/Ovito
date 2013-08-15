@@ -24,7 +24,8 @@
 
 #include <core/Core.h>
 #include <core/gui/properties/PropertiesEditor.h>
-#include "../ParticleImporter.h"
+#include <viz/importer/InputColumnMapping.h>
+#include <viz/importer/ParticleImporter.h>
 
 namespace Viz {
 
@@ -38,7 +39,9 @@ class LAMMPSTextDumpImporter : public ParticleImporter
 public:
 
 	/// \brief Constructs a new instance of this class.
-	Q_INVOKABLE LAMMPSTextDumpImporter() {}
+	Q_INVOKABLE LAMMPSTextDumpImporter() : _useCustomColumnMapping(false) {
+		INIT_PROPERTY_FIELD(LAMMPSTextDumpImporter::_useCustomColumnMapping);
+	}
 
 	/// \brief Returns the file filter that specifies the files that can be imported by this service.
 	/// \return A wild-card pattern that specifies the file types that can be handled by this import class.
@@ -51,27 +54,80 @@ public:
 	/// \brief Checks if the given file has format that can be read by this importer.
 	virtual bool checkFileFormat(QIODevice& input, const QUrl& sourceLocation) override;
 
-	/// \brief Opens the settings dialog for this importer.
-	virtual bool showSettingsDialog(QWidget* parent, LinkedFileObject* object) override;
-
-	/// \brief Returns whether this importer has a settings dialog box to let the user configure the import settings.
-	virtual bool hasSettingsDialog() override { return true; }
-
 	/// Returns the title of this object.
 	virtual QString objectTitle() override { return tr("LAMMPS Dump"); }
 
+	/// \brief Returns the user-defined mapping between data columns in the input file and
+	///        the internal particle properties.
+	const InputColumnMapping& customColumnMapping() const { return _customColumnMapping; }
+
+	/// \brief Sets the user-defined mapping between data columns in the input file and
+	///        the internal particle properties.
+	void setCustomColumnMapping(const InputColumnMapping& mapping);
+
+	/// Displays a dialog box that allows the user to edit the custom file column to particle
+	/// property mapping.
+	void showEditColumnMappingDialog(QWidget* parent = nullptr);
+
 protected:
 
-	/// \brief Parses the given input file and stores the data in the given container object.
-	virtual void parseFile(FutureInterfaceBase& futureInterface, ParticleImportData& container, CompressedTextParserStream& stream, const FrameSourceInformation& frame) override;
+	/// The format-specific task object that is responsible to read an input file in the background.
+	class LAMMPSTextDumpImportTask : public ParticleImportTask
+	{
+	public:
+
+		/// Constructor.
+		LAMMPSTextDumpImportTask(const LinkedFileImporter::FrameSourceInformation& frame,
+				bool useCustomColumnMapping, const InputColumnMapping& customColumnMapping)
+			: ParticleImportTask(frame), _useCustomColumnMapping(useCustomColumnMapping), _customColumnMapping(customColumnMapping) {}
+
+	protected:
+
+		/// Parses the given input file and stores the data in this container object.
+		virtual void parseFile(FutureInterfaceBase& futureInterface, CompressedTextParserStream& stream) override;
+
+	private:
+
+		bool _useCustomColumnMapping;
+		InputColumnMapping _customColumnMapping;
+	};
+
+protected:
+
+	/// \brief Saves the class' contents to the given stream.
+	virtual void saveToStream(ObjectSaveStream& stream) override;
+
+	/// \brief Loads the class' contents from the given stream.
+	virtual void loadFromStream(ObjectLoadStream& stream) override;
+
+	/// \brief Creates a copy of this object.
+	virtual OORef<RefTarget> clone(bool deepCopy, CloneHelper& cloneHelper) override;
+
+	/// \brief Creates an import task object to read the given frame.
+	virtual ImportTaskPtr createImportTask(const FrameSourceInformation& frame) override {
+		return std::make_shared<LAMMPSTextDumpImportTask>(frame, _useCustomColumnMapping, _customColumnMapping);
+	}
 
 	/// \brief Scans the given input file to find all contained simulation frames.
 	virtual void scanFileForTimesteps(FutureInterfaceBase& futureInterface, QVector<LinkedFileImporter::FrameSourceInformation>& frames, const QUrl& sourceUrl, CompressedTextParserStream& stream) override;
 
+	/// \brief Guesses the mapping of input file columns to internal particle properties.
+	static InputColumnMapping generateAutomaticColumnMapping(const QStringList& columnNames);
+
 private:
+
+	/// Controls whether the mapping between input file columns and particle
+	/// properties is done automatically or by the user.
+	PropertyField<bool> _useCustomColumnMapping;
+
+	/// Stores the user-defined mapping between data columns in the input file and
+	/// the internal particle properties.
+	InputColumnMapping _customColumnMapping;
 
 	Q_OBJECT
 	OVITO_OBJECT
+
+	DECLARE_PROPERTY_FIELD(_useCustomColumnMapping);
 };
 
 /**
@@ -88,6 +144,11 @@ protected:
 
 	/// Creates the user interface controls for the editor.
 	virtual void createUI(const RolloutInsertionParameters& rolloutParams) override;
+
+protected Q_SLOTS:
+
+	/// Is called when the user pressed the "Edit column mapping" button.
+	void onEditColumnMapping();
 
 private:
 

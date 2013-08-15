@@ -224,7 +224,7 @@ private:
 	int _frameBeingLoaded;
 
 	/// The background file loading task started by evaluate().
-	Future<LinkedFileImporter::ImportedDataPtr> _loadFrameOperation;
+	Future<LinkedFileImporter::ImportTaskPtr> _loadFrameOperation;
 
 	/// The watcher object that is used to monitor the background operation.
 	FutureWatcher _loadFrameOperationWatcher;
