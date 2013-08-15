@@ -32,6 +32,7 @@ namespace Viz {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Viz, ParticleImporter, LinkedFileImporter)
 DEFINE_PROPERTY_FIELD(ParticleImporter, _isMultiTimestepFile, "IsMultiTimestepFile")
+SET_PROPERTY_FIELD_LABEL(ParticleImporter, _isMultiTimestepFile, "File contains multiple timesteps")
 
 /******************************************************************************
 * Reads the data from the input file(s).
@@ -116,6 +117,19 @@ void ParticleImporter::scanFileForTimesteps(FutureInterfaceBase& futureInterface
 	// By default, register a single frame.
 	QFileInfo fileInfo(stream.filename());
 	frames.push_back({ sourceUrl, 0, 0, fileInfo.lastModified(), fileInfo.fileName() });
+}
+
+/******************************************************************************
+* Is called when the value of a property of this object has changed.
+******************************************************************************/
+void ParticleImporter::propertyChanged(const PropertyFieldDescriptor& field)
+{
+	if(field == PROPERTY_FIELD(ParticleImporter::_isMultiTimestepFile)) {
+		// Automatically rescan input file for animation frames when this option has been activated.
+		if(isMultiTimestepFile())
+			requestFramesUpdate();
+	}
+	LinkedFileImporter::propertyChanged(field);
 }
 
 };

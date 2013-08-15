@@ -82,16 +82,16 @@ void SingleReferenceFieldBase::swapReference(OORef<RefTarget>& inactiveTarget, b
 	// Remove the RefMaker from the old target's list of dependents if it has no
 	// more references to it.
 	if(inactiveTarget) {
-		OVITO_ASSERT(inactiveTarget->dependents().contains(refmaker));
+		OVITO_ASSERT(inactiveTarget->_dependents.contains(refmaker));
 		if(!refmaker->hasReferenceTo(inactiveTarget.get())) {
-			inactiveTarget->dependents().remove(refmaker);
+			inactiveTarget->_dependents.remove(refmaker);
 		}
 	}
 
 	// Add the RefMaker to the list of dependents of the new target.
 	if(_pointer) {
-		if(_pointer->dependents().contains(refmaker) == false)
-			_pointer->dependents().push_back(refmaker);
+		if(_pointer->_dependents.contains(refmaker) == false)
+			_pointer->_dependents.push_back(refmaker);
 	}
 
 	if(generateNotificationEvents) {
@@ -155,9 +155,9 @@ OORef<RefTarget> VectorReferenceFieldBase::removeReference(int index, bool gener
 
 		// Remove the refmaker from the old target's list of dependents.
 		OVITO_CHECK_OBJECT_POINTER(target);
-		OVITO_ASSERT(target->dependents().contains(refmaker));
+		OVITO_ASSERT(target->_dependents.contains(refmaker));
 		if(!refmaker->hasReferenceTo(target.get())) {
-			target->dependents().remove(refmaker);
+			target->_dependents.remove(refmaker);
 		}
 	}
 
@@ -212,8 +212,8 @@ int VectorReferenceFieldBase::addReference(const OORef<RefTarget>& target, int i
 		target->incrementReferenceCount();
 
 	// Add the RefMaker to the list of dependents of the new target.
-	if(target && target->dependents().contains(refmaker) == false)
-		target->dependents().push_back(refmaker);
+	if(target && target->_dependents.contains(refmaker) == false)
+		target->_dependents.push_back(refmaker);
 
 	try {
 		// Inform derived classes.

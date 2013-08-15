@@ -280,11 +280,6 @@ public:
 
 private:
 
-	/// \brief Returns a modifiable list of RefMaker objects that depend on this RefTarget.
-	DependentsList& dependents() { return _dependents; }
-
-private:
-
 	/// The list of reference fields that hold a reference to this target.
 	DependentsList _dependents;
 

@@ -23,6 +23,7 @@
 #define __OVITO_LAMMPS_TEXT_DUMP_IMPORTER_H
 
 #include <core/Core.h>
+#include <core/gui/properties/PropertiesEditor.h>
 #include "../ParticleImporter.h"
 
 namespace Viz {
@@ -72,6 +73,28 @@ private:
 	Q_OBJECT
 	OVITO_OBJECT
 };
+
+/**
+ * \brief A properties editor for the LAMMPSTextDumpImporter class.
+ */
+class LAMMPSTextDumpImporterEditor : public PropertiesEditor
+{
+public:
+
+	/// Constructor.
+	Q_INVOKABLE LAMMPSTextDumpImporterEditor() {}
+
+protected:
+
+	/// Creates the user interface controls for the editor.
+	virtual void createUI(const RolloutInsertionParameters& rolloutParams) override;
+
+private:
+
+	Q_OBJECT
+	OVITO_OBJECT
+};
+
 
 };
 

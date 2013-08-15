@@ -23,6 +23,7 @@
 #include <core/utilities/io/FileManager.h>
 #include <core/utilities/concurrent/Future.h>
 #include <core/dataset/importexport/LinkedFileObject.h>
+#include <core/gui/properties/BooleanParameterUI.h>
 #include "LAMMPSTextDumpImporter.h"
 #include "LAMMPSDumpImporterSettingsDialog.h"
 #include <viz/importer/InputColumnMapping.h>
@@ -30,6 +31,8 @@
 namespace Viz {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Viz, LAMMPSTextDumpImporter, ParticleImporter)
+IMPLEMENT_OVITO_OBJECT(Viz, LAMMPSTextDumpImporterEditor, PropertiesEditor)
+SET_OVITO_OBJECT_EDITOR(LAMMPSTextDumpImporter, LAMMPSTextDumpImporterEditor)
 
 /******************************************************************************
 * Opens the settings dialog for this importer.
@@ -317,6 +320,24 @@ void LAMMPSTextDumpImporter::parseFile(FutureInterfaceBase& futureInterface, Par
 	}
 
 	throw Exception(tr("LAMMPS dump file parsing error. Unexpected end of file at line %1.").arg(stream.lineNumber()));
+}
+
+/******************************************************************************
+* Sets up the UI widgets of the editor.
+******************************************************************************/
+void LAMMPSTextDumpImporterEditor::createUI(const RolloutInsertionParameters& rolloutParams)
+{
+	// Create a rollout.
+	QWidget* rollout = createRollout(tr("LAMMPS dump file"), rolloutParams);
+
+    // Create the rollout contents.
+	QVBoxLayout* layout = new QVBoxLayout(rollout);
+	layout->setContentsMargins(4,4,4,4);
+	layout->setSpacing(4);
+
+	// Multi-timestep file
+	BooleanParameterUI* multitimestepUI = new BooleanParameterUI(this, PROPERTY_FIELD(ParticleImporter::_isMultiTimestepFile));
+	layout->addWidget(multitimestepUI->checkBox());
 }
 
 };

@@ -131,6 +131,12 @@ public:
 	/// If yes, it scans the directory to find all matching files.
 	virtual Future<QVector<FrameSourceInformation>> findFrames(const QUrl& sourceUrl);
 
+	/// \brief Sends a request to the LinkedFileObject owning this importer to reload the input file.
+	void requestReload(int frame = -1);
+
+	/// \brief Sends a request to the LinkedFileObject owning this importer to refresh the animation frame sequence.
+	void requestFramesUpdate();
+
 protected:
 
 	/// \brief Reads the data from the input file(s).

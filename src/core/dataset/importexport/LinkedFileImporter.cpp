@@ -38,6 +38,50 @@ namespace Ovito {
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LinkedFileImporter, FileImporter)
 
 /******************************************************************************
+* Sends a request to the LinkedFileObject owning this importer to reload
+* the input file.
+******************************************************************************/
+void LinkedFileImporter::requestReload(int frame)
+{
+	// Retrieve the LinkedFileObject that owns this importer by looking it up in the list of dependents.
+	for(RefMaker* refmaker : dependents()) {
+		LinkedFileObject* obj = dynamic_object_cast<LinkedFileObject>(refmaker);
+		if(obj) {
+			try {
+				obj->refreshFromSource(frame);
+			}
+			catch(const Exception& ex) {
+				ex.showError();
+			}
+		}
+	}
+}
+
+/******************************************************************************
+* Sends a request to the LinkedFileObject owning this importer to refresh the
+* animation frame sequence.
+******************************************************************************/
+void LinkedFileImporter::requestFramesUpdate()
+{
+	// Retrieve the LinkedFileObject that owns this importer by looking it up in the list of dependents.
+	for(RefMaker* refmaker : dependents()) {
+		LinkedFileObject* obj = dynamic_object_cast<LinkedFileObject>(refmaker);
+		if(obj) {
+			try {
+				// Scan input source for animation frames.
+				obj->updateFrames();
+			}
+			catch(const Exception& ex) {
+				ex.showError();
+			}
+
+			// Adjust the animation length number to match the number of frames in the input data source.
+			obj->adjustAnimationInterval();
+		}
+	}
+}
+
+/******************************************************************************
 * Imports the given file into the scene.
 * Return true if the file has been imported.
 * Return false if the import has been aborted by the user.
