@@ -208,7 +208,7 @@ private:
 	/// Controls whether the scene's animation interval is adjusted to the number of frames found in the input file.
 	PropertyField<bool> _adjustAnimationIntervalEnabled;
 
-	/// The source file (may be a wild-card pattern).
+	/// The source file (may include a wild-card pattern).
 	PropertyField<QUrl, QUrl, ReferenceEvent::TitleChanged> _sourceUrl;
 
 	/// Stores the list of animation frames in the input file(s).

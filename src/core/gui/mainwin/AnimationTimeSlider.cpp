@@ -55,7 +55,7 @@ void AnimationTimeSlider::paintEvent(QPaintEvent* event)
 	QFrame::paintEvent(event);
 
 	// Show slider only if there is more than one animation frame.
-	int numFrames = (int)((AnimManager::instance().animationInterval().duration()+1) / AnimManager::instance().ticksPerFrame());
+	int numFrames = (int)(AnimManager::instance().animationInterval().duration() / AnimManager::instance().ticksPerFrame()) + 1;
 	if(numFrames > 1) {
 		QStylePainter painter(this);
 

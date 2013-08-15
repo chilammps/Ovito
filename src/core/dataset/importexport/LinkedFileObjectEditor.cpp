@@ -22,6 +22,7 @@
 #include <core/Core.h>
 #include <core/gui/properties/FilenameParameterUI.h>
 #include <core/gui/properties/BooleanActionParameterUI.h>
+#include <core/gui/properties/SubObjectParameterUI.h>
 #include "LinkedFileObjectEditor.h"
 
 namespace Ovito {
@@ -58,15 +59,16 @@ void LinkedFileObjectEditor::createUI(const RolloutInsertionParameters& rolloutP
 	QAction* saveDataWithSceneAction = toolbar->addAction(QIcon(":/core/actions/file/import_object_save_with_scene.png"), tr("Store imported data in scene file"));
 	new BooleanActionParameterUI(this, "saveDataWithScene", saveDataWithSceneAction);
 
-	_wildcardBox = new QGroupBox(tr("Load multiple files (wildcard pattern)"), rollout);
-	_wildcardBox->setCheckable(true);
-	layout->addWidget(_wildcardBox);
-	sublayout = new QVBoxLayout(_wildcardBox);
-	sublayout->setContentsMargins(4,4,4,4);
-	connect(_wildcardBox, SIGNAL(clicked(bool)), this, SLOT(onWildcardPatternEntered()));
+	QGroupBox* wildcardBox = new QGroupBox(tr("File sequence pattern"), rollout);
+	layout->addWidget(wildcardBox);
+	QHBoxLayout* sublayout2 = new QHBoxLayout(wildcardBox);
+	sublayout2->setContentsMargins(4,4,4,4);
 	_wildcardPatternTextbox = new QLineEdit();
-	connect(_wildcardPatternTextbox, SIGNAL(editingFinished()), this, SLOT(onWildcardPatternEntered()));
-	sublayout->addWidget(_wildcardPatternTextbox);
+	connect(_wildcardPatternTextbox, SIGNAL(returnPressed()), this, SLOT(onWildcardPatternEntered()));
+	sublayout2->addWidget(_wildcardPatternTextbox, 1);
+	QPushButton* setPatternButton = new QPushButton(tr("Set"));
+	connect(setPatternButton, SIGNAL(clicked(bool)), this, SLOT(onWildcardPatternEntered()));
+	sublayout2->addWidget(setPatternButton);
 
 	QGroupBox* sourcePathBox = new QGroupBox(tr("Source path"), rollout);
 	layout->addWidget(sourcePathBox);
@@ -103,6 +105,9 @@ void LinkedFileObjectEditor::createUI(const RolloutInsertionParameters& rolloutP
 
 	_statusWarningIcon.load(":/core/mainwin/status/status_warning.png");
 	_statusErrorIcon.load(":/core/mainwin/status/status_error.png");
+
+	// Show settings editor of importer class.
+	new SubObjectParameterUI(this, PROPERTY_FIELD(LinkedFileObject::_importer), rolloutParams.after(rollout));
 
 	_subEditorRolloutParams = rolloutParams.collapse();
 }
@@ -182,9 +187,6 @@ void LinkedFileObjectEditor::onReloadAnimation()
 ******************************************************************************/
 void LinkedFileObjectEditor::onWildcardPatternEntered()
 {
-	if(!_wildcardBox->isChecked())
-		return;
-
 	LinkedFileObject* obj = static_object_cast<LinkedFileObject>(editObject());
 	OVITO_CHECK_OBJECT_POINTER(obj);
 
@@ -235,7 +237,6 @@ void LinkedFileObjectEditor::updateInformationLabel()
 	if(!obj) {
 		_wildcardPatternTextbox->clear();
 		_wildcardPatternTextbox->setEnabled(false);
-		_wildcardBox->setEnabled(false);
 		_sourcePathLabel->setText(QString());
 		_filenameLabel->setText(QString());
 		return;
@@ -247,12 +248,8 @@ void LinkedFileObjectEditor::updateInformationLabel()
 	_sourcePathLabel->setText(url.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded));
 
 	QString wildcardPattern = fileInfo.fileName();
-	if(wildcardPattern.contains('*') || wildcardPattern.contains('?')) {
-		_wildcardBox->setChecked(true);
-	}
-	else {
-		_wildcardBox->setChecked(false);
-
+	if(!wildcardPattern.contains('*') && !wildcardPattern.contains('?')) {
+		// Generate a default wildcard pattern.
 		// Replace last sequence of numbers in the filename with a wildcard character.
 		int startIndex, endIndex;
 		for(endIndex = wildcardPattern.length()-1; endIndex >= 0; endIndex--)
@@ -263,7 +260,6 @@ void LinkedFileObjectEditor::updateInformationLabel()
 			wildcardPattern = wildcardPattern.left(startIndex+1) + '*' + wildcardPattern.mid(endIndex+1);
 		}
 	}
-	_wildcardBox->setEnabled(true);
 	_wildcardPatternTextbox->setText(wildcardPattern);
 	_wildcardPatternTextbox->setEnabled(true);
 
