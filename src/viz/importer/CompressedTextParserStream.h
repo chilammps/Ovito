@@ -69,6 +69,9 @@ public:
 	/// Returns the name of the input file (if known).
 	const QString& filename() const { return _filename; }
 
+	/// Returns the underlying I/O device.
+	QIODevice& device() { return _device; }
+
 	/// Reads in the next line.
 	const QByteArray& readLine(qint64 maxSize = 0) {
 		_lineNumber++;

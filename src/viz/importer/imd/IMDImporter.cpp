@@ -20,9 +20,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include <core/utilities/io/FileManager.h>
-#include <core/utilities/concurrent/Future.h>
-#include <core/dataset/importexport/LinkedFileObject.h>
 #include "IMDImporter.h"
 #include "../InputColumnMapping.h"
 
@@ -38,7 +35,7 @@ bool IMDImporter::checkFileFormat(QIODevice& input, const QUrl& sourceLocation)
 	// Open input file.
 	CompressedTextParserStream stream(input, sourceLocation.path());
 
-	// Read first comment line.
+	// Read first header line.
 	stream.readLine(1024);
 
 	// Read first line.
@@ -141,6 +138,9 @@ void IMDImporter::IMDImportTask::parseFile(FutureInterfaceBase& futureInterface,
 	while(!stream.eof()) {
 		if(stream.readLine().isEmpty()) break;
 		numAtoms++;
+
+		if((numAtoms % 1000) == 0 && futureInterface.isCanceled())
+			return;
 	}
 
 	futureInterface.setProgressRange(numAtoms);

@@ -19,10 +19,11 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef __OVITO_IMD_FILE_IMPORTER_H
-#define __OVITO_IMD_FILE_IMPORTER_H
+#ifndef __OVITO_PARCAS_FILE_IMPORTER_H
+#define __OVITO_PARCAS_FILE_IMPORTER_H
 
 #include <core/Core.h>
+#include <core/gui/properties/PropertiesEditor.h>
 #include <viz/importer/ParticleImporter.h>
 
 namespace Viz {
@@ -32,12 +33,12 @@ using namespace Ovito;
 /**
  * \brief File parser for IMD atom files.
  */
-class IMDImporter : public ParticleImporter
+class ParcasFileImporter : public ParticleImporter
 {
 public:
 
 	/// \brief Constructs a new instance of this class.
-	Q_INVOKABLE IMDImporter() {}
+	Q_INVOKABLE ParcasFileImporter() {}
 
 	/// \brief Returns the file filter that specifies the files that can be imported by this service.
 	/// \return A wild-card pattern that specifies the file types that can be handled by this import class.
@@ -45,23 +46,23 @@ public:
 
 	/// \brief Returns the filter description that is displayed in the drop-down box of the file dialog.
 	/// \return A string that describes the file format.
-	virtual QString fileFilterDescription() override { return tr("IMD Files"); }
+	virtual QString fileFilterDescription() override { return tr("Parcas Files"); }
 
 	/// \brief Checks if the given file has format that can be read by this importer.
 	virtual bool checkFileFormat(QIODevice& input, const QUrl& sourceLocation) override;
 
 	/// Returns the title of this object.
-	virtual QString objectTitle() override { return tr("IMD"); }
+	virtual QString objectTitle() override { return tr("Parcas"); }
 
 protected:
 
 	/// The format-specific task object that is responsible for reading an input file in the background.
-	class IMDImportTask : public ParticleImportTask
+	class ParcasFileImportTask : public ParticleImportTask
 	{
 	public:
 
 		/// Normal constructor.
-		IMDImportTask(const LinkedFileImporter::FrameSourceInformation& frame) : ParticleImportTask(frame) {}
+		ParcasFileImportTask(const LinkedFileImporter::FrameSourceInformation& frame) : ParticleImportTask(frame) {}
 
 	protected:
 
@@ -73,7 +74,7 @@ protected:
 
 	/// \brief Creates an import task object to read the given frame.
 	virtual ImportTaskPtr createImportTask(const FrameSourceInformation& frame) override {
-		return std::make_shared<IMDImportTask>(frame);
+		return std::make_shared<ParcasFileImportTask>(frame);
 	}
 
 	Q_OBJECT
@@ -82,4 +83,4 @@ protected:
 
 };
 
-#endif // __OVITO_IMD_FILE_IMPORTER_H
+#endif // __OVITO_PARCAS_FILE_IMPORTER_H

@@ -371,9 +371,7 @@ void CreateExpressionPropertyModifierEditor::createUI(const RolloutInsertionPara
 	QGridLayout* propertiesLayout = new QGridLayout(propertiesGroupBox);
 	propertiesLayout->setContentsMargins(4,4,4,4);
 	propertiesLayout->setColumnStretch(1, 1);
-#ifndef Q_OS_MACX
-	propertiesLayout->setSpacing(2);
-#endif
+	propertiesLayout->setSpacing(4);
 
 	// Create the combo box with the standard property types.
 	VariantComboBoxParameterUI* propertyTypeUI = new VariantComboBoxParameterUI(this, "propertyType");
@@ -414,9 +412,7 @@ void CreateExpressionPropertyModifierEditor::createUI(const RolloutInsertionPara
 	mainLayout->addWidget(expressionsGroupBox);
 	expressionsLayout = new QVBoxLayout(expressionsGroupBox);
 	expressionsLayout->setContentsMargins(4,4,4,4);
-#ifndef Q_OS_MACX
-	expressionsLayout->setSpacing(0);
-#endif
+	expressionsLayout->setSpacing(1);
 
 	// Status label.
 	mainLayout->addWidget(statusLabel());
