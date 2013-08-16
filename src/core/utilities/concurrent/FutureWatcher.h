@@ -26,7 +26,7 @@
 
 namespace Ovito {
 
-template<typename R> class Future;
+class FutureBase;
 class FutureInterfaceBase;
 
 class OVITO_CORE_EXPORT FutureWatcher : public QObject
@@ -39,8 +39,7 @@ public:
 		setFutureInterface(nullptr, false);
 	}
 
-	template<typename R>
-	void setFuture(const Future<R>& future);
+	void setFuture(const FutureBase& future);
 
 	void setFutureInterface(const std::shared_ptr<FutureInterfaceBase>& futureInterface) {
 		setFutureInterface(futureInterface, true);

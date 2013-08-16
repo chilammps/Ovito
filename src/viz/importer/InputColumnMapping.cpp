@@ -129,6 +129,47 @@ void InputColumnMapping::loadFromStream(LoadStream& stream)
 }
 
 /******************************************************************************
+ * Saves the mapping into a byte array.
+ *****************************************************************************/
+QByteArray InputColumnMapping::toByteArray() const
+{
+	QByteArray buffer;
+	QDataStream dstream(&buffer, QIODevice::WriteOnly);
+	SaveStream stream(dstream);
+	saveToStream(stream);
+	stream.close();
+	return buffer;
+}
+
+/******************************************************************************
+ * Loads the mapping from a byte array.
+ *****************************************************************************/
+void InputColumnMapping::fromByteArray(const QByteArray& array)
+{
+	QDataStream dstream(array);
+	LoadStream stream(dstream);
+	loadFromStream(stream);
+	stream.close();
+}
+
+/******************************************************************************
+ * Checks if the mapping is valid; throws an exception if not.
+ *****************************************************************************/
+void InputColumnMapping::validate()
+{
+	// Make sure that at least the particle positions are read from the input file.
+	bool posPropertyPresent = false;
+	for(int i = 0; i < columnCount(); i++) {
+		if(propertyType(i) == ParticleProperty::PositionProperty) {
+			posPropertyPresent = true;
+			break;
+		}
+	}
+	if(!posPropertyPresent)
+		throw Exception(InputColumnReader::tr("No file columns have been mapped to the particle position property."));
+}
+
+/******************************************************************************
  * Initializes the object.
  *****************************************************************************/
 InputColumnReader::InputColumnReader(const InputColumnMapping& mapping, ParticleImportTask& destination, size_t particleCount)

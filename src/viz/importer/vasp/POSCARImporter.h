@@ -55,7 +55,7 @@ public:
 
 protected:
 
-	/// The format-specific task object that is responsible to read an input file in the background.
+	/// The format-specific task object that is responsible for reading an input file in the background.
 	class POSCARImportTask : public ParticleImportTask
 	{
 	public:

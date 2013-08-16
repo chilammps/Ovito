@@ -73,6 +73,9 @@ public:
 	/// \return The name of the column or an empty string if the input file does not contain column name information.
 	QString columnName(int columnIndex) const { return (columnIndex < _columns.size()) ? _columns[columnIndex].columnName : QString(); }
 
+	/// \brief Sets the assigned name of a column in the input file.
+	void setColumnName(int columnIndex, const QString& name) { if(columnIndex < _columns.size()) _columns[columnIndex].columnName  = name; }
+
 	/// \brief Resets the assigned column names.
 	void resetColumnNames() {
 		for(Column& col : _columns)
@@ -88,6 +91,9 @@ public:
 	/// \brief Returns the data type of the property to which the given column of the input file has been mapped.
 	int dataType(int columnIndex) const { return (columnIndex < _columns.size()) ? _columns[columnIndex].dataType : QMetaType::Void; }
 
+	/// \brief Returns true if the given file column is mapped to a particle property; false otherwise.
+	bool isMapped(int columnIndex) const { return columnIndex < columnCount() && dataType(columnIndex) != QMetaType::Void; }
+
 	/// \brief Returns the vector component for a column when it has been mapped to a vector particle property.
 	int vectorComponent(int columnIndex) const { return (columnIndex < _columns.size()) ? _columns[columnIndex].vectorComponent : 0; }
 
@@ -96,6 +102,15 @@ public:
 
 	/// \brief Loads the mapping from a stream.
 	void loadFromStream(LoadStream& stream);
+
+	/// \brief Saves the mapping into a byte array.
+	QByteArray toByteArray() const;
+
+	/// \brief Loads the mapping from a byte array.
+	void fromByteArray(const QByteArray& array);
+
+	/// \brief Checks if the mapping is valid; throws an exception if not.
+	void validate();
 
 private:
 

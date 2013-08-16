@@ -134,13 +134,11 @@ public:
 	/// Returns the title of this object.
 	virtual QString objectTitle() override;
 
-#if 1
 	/// Returns the number of sub-objects that should be displayed in the modifier stack.
 	virtual int editableSubObjectCount() override;
 
 	/// Returns a sub-object that should be listed in the modifier stack.
 	virtual RefTarget* editableSubObject(int index) override;
-#endif
 
 #if 0
 	/// \brief Returns the number of animation frames per simulation snapshot.

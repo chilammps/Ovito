@@ -200,6 +200,15 @@ bool ProgressManager::waitForTask(const FutureInterfacePointer& futureInterface)
 	if(futureInterface->isFinished())
 		return !futureInterface->isCanceled();
 
+	// Poll the task for a few milliseconds to give it a chance to finish
+	// before showing the progress dialog.
+	for(int i = 0; i < 10; i++) {
+		QThread::msleep(10);
+		QThread::yieldCurrentThread();
+		if(futureInterface->isFinished())
+			return !futureInterface->isCanceled();
+	}
+
 	// Show progress dialog.
 	QProgressDialog progressDialog(&MainWindow::instance());
 	progressDialog.setWindowModality(Qt::WindowModal);

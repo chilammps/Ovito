@@ -131,6 +131,8 @@ protected:
 
 	friend class FutureWatcher;
 	friend class ProgressManager;
+	friend class FutureBase;
+	template<typename R2> friend class Future;
 };
 
 template<typename R>
@@ -161,6 +163,16 @@ public:
 private:
 
 	R _result;
+
+	template<typename R2, typename Function> friend class Task;
+	template<typename R2> friend class Future;
+};
+
+template<>
+class FutureInterface<void> : public FutureInterfaceBase
+{
+public:
+	FutureInterface() {}
 
 	template<typename R2, typename Function> friend class Task;
 	template<typename R2> friend class Future;

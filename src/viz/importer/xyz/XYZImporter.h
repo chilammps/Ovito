@@ -19,8 +19,8 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef __OVITO_LAMMPS_TEXT_DUMP_IMPORTER_H
-#define __OVITO_LAMMPS_TEXT_DUMP_IMPORTER_H
+#ifndef __OVITO_XYZ_IMPORTER_H
+#define __OVITO_XYZ_IMPORTER_H
 
 #include <core/Core.h>
 #include <core/gui/properties/PropertiesEditor.h>
@@ -34,14 +34,12 @@ using namespace Ovito;
 /**
  * \brief File parser for text-based LAMMPS dump simulation files.
  */
-class LAMMPSTextDumpImporter : public ParticleImporter
+class XYZImporter : public ParticleImporter
 {
 public:
 
 	/// \brief Constructs a new instance of this class.
-	Q_INVOKABLE LAMMPSTextDumpImporter() : _useCustomColumnMapping(false) {
-		INIT_PROPERTY_FIELD(LAMMPSTextDumpImporter::_useCustomColumnMapping);
-	}
+	Q_INVOKABLE XYZImporter() {}
 
 	/// \brief Returns the file filter that specifies the files that can be imported by this service.
 	/// \return A wild-card pattern that specifies the file types that can be handled by this import class.
@@ -49,21 +47,25 @@ public:
 
 	/// \brief Returns the filter description that is displayed in the drop-down box of the file dialog.
 	/// \return A string that describes the file format.
-	virtual QString fileFilterDescription() override { return tr("LAMMPS Text Dump Files"); }
+	virtual QString fileFilterDescription() override { return tr("XYZ Files"); }
 
 	/// \brief Checks if the given file has format that can be read by this importer.
 	virtual bool checkFileFormat(QIODevice& input, const QUrl& sourceLocation) override;
 
 	/// Returns the title of this object.
-	virtual QString objectTitle() override { return tr("LAMMPS Dump"); }
+	virtual QString objectTitle() override { return tr("XYZ File"); }
+
+	/// This method is called by the LinkedFileObject each time a new source
+	/// file has been selected by the user.
+	virtual bool inspectNewFile(LinkedFileObject* obj) override;
 
 	/// \brief Returns the user-defined mapping between data columns in the input file and
 	///        the internal particle properties.
-	const InputColumnMapping& customColumnMapping() const { return _customColumnMapping; }
+	const InputColumnMapping& columnMapping() const { return _columnMapping; }
 
 	/// \brief Sets the user-defined mapping between data columns in the input file and
 	///        the internal particle properties.
-	void setCustomColumnMapping(const InputColumnMapping& mapping);
+	void setColumnMapping(const InputColumnMapping& mapping);
 
 	/// Displays a dialog box that allows the user to edit the custom file column to particle
 	/// property mapping.
@@ -72,21 +74,20 @@ public:
 protected:
 
 	/// The format-specific task object that is responsible for reading an input file in the background.
-	class LAMMPSTextDumpImportTask : public ParticleImportTask
+	class XYZImportTask : public ParticleImportTask
 	{
 	public:
 
 		/// Normal constructor.
-		LAMMPSTextDumpImportTask(const LinkedFileImporter::FrameSourceInformation& frame,
-				bool useCustomColumnMapping, const InputColumnMapping& customColumnMapping)
-			: ParticleImportTask(frame), _parseFileHeaderOnly(false), _useCustomColumnMapping(useCustomColumnMapping), _customColumnMapping(customColumnMapping) {}
+		XYZImportTask(const LinkedFileImporter::FrameSourceInformation& frame, const InputColumnMapping& columnMapping)
+			: ParticleImportTask(frame), _parseFileHeaderOnly(false), _columnMapping(columnMapping) {}
 
 		/// Constructor used when reading only the file header information.
-		LAMMPSTextDumpImportTask(const LinkedFileImporter::FrameSourceInformation& frame)
-			: ParticleImportTask(frame), _parseFileHeaderOnly(true), _useCustomColumnMapping(false) {}
+		XYZImportTask(const LinkedFileImporter::FrameSourceInformation& frame)
+			: ParticleImportTask(frame), _parseFileHeaderOnly(true) {}
 
 		/// Returns the file column mapping used to load the file.
-		const InputColumnMapping& columnMapping() const { return _customColumnMapping; }
+		const InputColumnMapping& columnMapping() const { return _columnMapping; }
 
 	protected:
 
@@ -96,8 +97,7 @@ protected:
 	private:
 
 		bool _parseFileHeaderOnly;
-		bool _useCustomColumnMapping;
-		InputColumnMapping _customColumnMapping;
+		InputColumnMapping _columnMapping;
 	};
 
 protected:
@@ -113,40 +113,31 @@ protected:
 
 	/// \brief Creates an import task object to read the given frame.
 	virtual ImportTaskPtr createImportTask(const FrameSourceInformation& frame) override {
-		return std::make_shared<LAMMPSTextDumpImportTask>(frame, _useCustomColumnMapping, _customColumnMapping);
+		return std::make_shared<XYZImportTask>(frame, _columnMapping);
 	}
 
 	/// \brief Scans the given input file to find all contained simulation frames.
 	virtual void scanFileForTimesteps(FutureInterfaceBase& futureInterface, QVector<LinkedFileImporter::FrameSourceInformation>& frames, const QUrl& sourceUrl, CompressedTextParserStream& stream) override;
 
-	/// \brief Guesses the mapping of input file columns to internal particle properties.
-	static InputColumnMapping generateAutomaticColumnMapping(const QStringList& columnNames);
-
 private:
-
-	/// Controls whether the mapping between input file columns and particle
-	/// properties is done automatically or by the user.
-	PropertyField<bool> _useCustomColumnMapping;
 
 	/// Stores the user-defined mapping between data columns in the input file and
 	/// the internal particle properties.
-	InputColumnMapping _customColumnMapping;
+	InputColumnMapping _columnMapping;
 
 	Q_OBJECT
 	OVITO_OBJECT
-
-	DECLARE_PROPERTY_FIELD(_useCustomColumnMapping);
 };
 
 /**
- * \brief A properties editor for the LAMMPSTextDumpImporter class.
+ * \brief A properties editor for the XYZImporter class.
  */
-class LAMMPSTextDumpImporterEditor : public PropertiesEditor
+class XYZImporterEditor : public PropertiesEditor
 {
 public:
 
 	/// Constructor.
-	Q_INVOKABLE LAMMPSTextDumpImporterEditor() {}
+	Q_INVOKABLE XYZImporterEditor() {}
 
 protected:
 
@@ -167,4 +158,4 @@ private:
 
 };
 
-#endif // __OVITO_LAMMPS_TEXT_DUMP_IMPORTER_H
+#endif // __OVITO_XYZ_IMPORTER_H

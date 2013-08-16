@@ -205,7 +205,7 @@ void ParticleProperty::loadFromStream(LoadStream& stream)
 	QByteArray dataTypeName;
 	stream >> dataTypeName;
 	_dataType = QMetaType::type(dataTypeName.constData());
-	OVITO_ASSERT_MSG(_type != 0, "ParticleProperty LoadStream operator", QString("The meta data type '%1' seems to be no longer defined.").arg(QString(dataTypeName)).toLocal8Bit().constData());
+	OVITO_ASSERT_MSG(_dataType != 0, "ParticleProperty LoadStream operator", QString("The meta data type '%1' seems to be no longer defined.").arg(QString(dataTypeName)).toLocal8Bit().constData());
 	OVITO_ASSERT(dataTypeName == QMetaType::typeName(_dataType));
 	stream.readSizeT(_dataTypeSize);
 	stream.readSizeT(_perParticleSize);

@@ -27,43 +27,16 @@
 
 namespace Ovito {
 
-template<typename R>
-class Future {
+class FutureBase {
 public:
-	typedef FutureInterface<R> Interface;
+	FutureBase() {}
 
-	Future() {}
-
-	explicit Future(const std::shared_ptr<Interface>& p) : _interface(p) {}
-
-	/// Create a Future with immediate results.
-	static Future createImmediate(const R& result, const QString& text = QString()) {
-		std::shared_ptr<Interface> interface(std::make_shared<Interface>());
-		interface->reportStarted();
-		if(text.isEmpty() == false)
-			interface->setProgressText(text);
-		interface->setResult(result);
-		interface->reportFinished();
-		return Future(interface);
-	}
-
-	/// Create a Future without results that is in the canceled state.
-	static Future createCanceled() {
-		std::shared_ptr<Interface> interface(std::make_shared<Interface>());
-		interface->reportStarted();
-		interface->cancel();
-		interface->reportFinished();
-		return Future(interface);
-	}
+	explicit FutureBase(const std::shared_ptr<FutureInterfaceBase>& p) : _interface(p) {}
 
 	bool isCanceled() const { return interface()->isCanceled(); }
 	bool isFinished() const { return interface()->isFinished(); }
 
 	void cancel() { interface()->cancel(); }
-	const R& result() const {
-		interface()->waitForResult();
-		return interface()->_result;
-	}
 	void waitForFinished() const {
 		interface()->waitForFinished();
 	}
@@ -74,17 +47,17 @@ public:
     int progressMaximum() const { return interface()->progressMaximum(); }
     QString progressText() const { return interface()->progressText(); }
 
-private:
+protected:
 
-	std::shared_ptr<Interface>& interface() {
+	std::shared_ptr<FutureInterfaceBase>& interface() {
 		OVITO_ASSERT(isValid());
 		return _interface;
 	}
-	const std::shared_ptr<Interface>& interface() const {
+	const std::shared_ptr<FutureInterfaceBase>& interface() const {
 		OVITO_ASSERT(isValid());
 		return _interface;
 	}
-	std::shared_ptr<Interface> _interface;
+	std::shared_ptr<FutureInterfaceBase> _interface;
 
 	template<typename R2, typename Function> friend class Task;
 	template<typename R2> friend class FutureInterface;
@@ -94,9 +67,54 @@ private:
 };
 
 template<typename R>
-void FutureWatcher::setFuture(const Future<R>& future)
+class Future : public FutureBase {
+public:
+	typedef FutureInterface<R> Interface;
+
+	Future() {}
+
+	explicit Future(const std::shared_ptr<Interface>& p) : FutureBase(p) {}
+
+	/// Create a Future with immediate results.
+	static Future createImmediate(const R& result, const QString& text = QString()) {
+		auto interface = std::make_shared<Interface>();
+		interface->reportStarted();
+		if(text.isEmpty() == false)
+			interface->setProgressText(text);
+		interface->setResult(result);
+		interface->reportFinished();
+		return Future(interface);
+	}
+
+	/// Create a Future without results that is in the canceled state.
+	static Future createCanceled() {
+		auto interface = std::make_shared<Interface>();
+		interface->reportStarted();
+		interface->cancel();
+		interface->reportFinished();
+		return Future(interface);
+	}
+
+	const R& result() const {
+		interface()->waitForResult();
+		return static_cast<FutureInterface<R>*>(interface().get())->_result;
+	}
+};
+
+template<>
+class Future<void> : public FutureBase {
+public:
+	Future() {}
+	explicit Future(const std::shared_ptr<FutureInterface<void>>& p) : FutureBase(p) {}
+
+	void result() const {
+		interface()->waitForResult();
+	}
+};
+
+inline void FutureWatcher::setFuture(const FutureBase& future)
 {
-	setFutureInterface(future._interface);
+	setFutureInterface(future.interface());
 }
 
 };

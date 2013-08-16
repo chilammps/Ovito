@@ -136,6 +136,12 @@ public:
 	/// \brief Sends a request to the LinkedFileObject owning this importer to refresh the animation frame sequence.
 	void requestFramesUpdate();
 
+	/// This method is called by the LinkedFileObject each time a new source
+	/// file has been selected by the user. The importer class may inspect
+	/// the new file at this point before it is actually loaded.
+	/// Returns false if the operation has been canceled by the user.
+	virtual bool inspectNewFile(LinkedFileObject* obj) { return true; }
+
 protected:
 
 	/// \brief Creates an import task object to read the given frame.

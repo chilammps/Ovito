@@ -126,6 +126,11 @@ bool LinkedFileObject::setSource(const QUrl& sourceUrl, const OORef<LinkedFileIm
 		// Adjust the animation length number to match the number of frames in the input data source.
 		adjustAnimationInterval();
 
+		// Let the parser inspect the file. The user may still cancel the import
+		// operation at this point.
+		if(!_frames.empty() && importer->inspectNewFile(this) == false)
+			return false;
+
 		// Adjust views to completely show the new object.
 		if(_adjustAnimationIntervalEnabled) {
 			DataSetManager::instance().runWhenSceneIsReady([]() {

@@ -40,6 +40,9 @@ public:
 	/// Constructor.
 	InputColumnMappingDialog(const InputColumnMapping& mapping, QWidget* parent = 0);
 
+	/// Fills the editor with the given mapping.
+	void setMapping(const InputColumnMapping& mapping);
+
 	/// Returns the user-defined column mapping.
 	InputColumnMapping mapping() const;
 
@@ -48,14 +51,22 @@ protected Q_SLOTS:
 	/// This is called when the user has pressed the OK button.
 	void onOk();
 
+	/// Updates the list of vector components for the given file column.
+	void updateVectorComponentList(int columnIndex);
+
 protected:
 
 	/// \brief Returns the string representation of a property's data type.
 	static QString dataTypeToString(int dataType);
 
-	/// The main table widget that entries for each data column of the input file.
+	/// The main table widget that contains the entries for each data column of the input file.
 	QTableWidget* _tableWidget;
 
+	QVector<QCheckBox*> _fileColumnBoxes;
+	QVector<QComboBox*> _propertyBoxes;
+	QVector<QComboBox*> _vectorComponentBoxes;
+
+	QSignalMapper* _vectorCmpntSignalMapper;
 };
 
 };

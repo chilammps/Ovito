@@ -22,6 +22,8 @@
 #include <core/Core.h>
 #include <core/utilities/io/FileManager.h>
 #include <core/utilities/concurrent/Future.h>
+#include <core/utilities/concurrent/Task.h>
+#include <core/utilities/concurrent/ProgressManager.h>
 #include <core/dataset/importexport/LinkedFileObject.h>
 #include <core/gui/properties/BooleanParameterUI.h>
 #include <core/gui/properties/BooleanRadioButtonParameterUI.h>
@@ -233,14 +235,29 @@ void LAMMPSTextDumpImporter::LAMMPSTextDumpImportTask::parseFile(FutureInterface
 				// Read the column names list.
 				QStringList tokens = stream.lineString().split(ws_re, QString::SkipEmptyParts);
 				OVITO_ASSERT(tokens[0] == "ITEM:" && tokens[1] == "ATOMS");
-				QStringList columnNames = tokens.mid(2);
+				QStringList fileColumnNames = tokens.mid(2);
+
+				// Stop here if we are only inspecting the file's header.
+				if(_parseFileHeaderOnly) {
+					if(fileColumnNames.isEmpty()) {
+						// If no file columns names are available, count at least the number
+						// of data columns.
+						stream.readLine();
+						int columnCount = stream.lineString().split(ws_re, QString::SkipEmptyParts).size();
+						_customColumnMapping.setColumnCount(columnCount);
+					}
+					else {
+						_customColumnMapping = generateAutomaticColumnMapping(fileColumnNames);
+					}
+					return;
+				}
 
 				// Set up column-to-property mapping.
 				InputColumnMapping columnMapping;
 				if(_useCustomColumnMapping)
 					columnMapping = _customColumnMapping;
 				else
-					columnMapping = generateAutomaticColumnMapping(columnNames);
+					columnMapping = generateAutomaticColumnMapping(fileColumnNames);
 
 				// Parse data columns.
 				InputColumnReader columnParser(columnMapping, *this, numParticles);
@@ -261,13 +278,13 @@ void LAMMPSTextDumpImporter::LAMMPSTextDumpImportTask::parseFile(FutureInterface
 
 				// Find out if coordinates are given in reduced format and need to be rescaled to absolute format.
 				bool reducedCoordinates = false;
-				if(!columnNames.empty()) {
-					for(int i = 0; i < columnMapping.columnCount() && i < columnNames.size(); i++) {
+				if(!fileColumnNames.empty()) {
+					for(int i = 0; i < columnMapping.columnCount() && i < fileColumnNames.size(); i++) {
 						if(columnMapping.propertyType(i) == ParticleProperty::PositionProperty) {
 							reducedCoordinates = (
-									columnNames[i] == "xs" || columnNames[i] == "xsu" ||
-									columnNames[i] == "ys" || columnNames[i] == "ysu" ||
-									columnNames[i] == "zs" || columnNames[i] == "zsu");
+									fileColumnNames[i] == "xs" || fileColumnNames[i] == "xsu" ||
+									fileColumnNames[i] == "ys" || fileColumnNames[i] == "ysu" ||
+									fileColumnNames[i] == "zs" || fileColumnNames[i] == "zsu");
 						}
 					}
 				}
@@ -407,8 +424,44 @@ OORef<RefTarget> LAMMPSTextDumpImporter::clone(bool deepCopy, CloneHelper& clone
  *****************************************************************************/
 void LAMMPSTextDumpImporter::showEditColumnMappingDialog(QWidget* parent)
 {
-	InputColumnMappingDialog dialog(_customColumnMapping, parent);
+	// Retrieve column names from current input file.
+	LinkedFileObject* obj = nullptr;
+	for(RefMaker* refmaker : dependents()) {
+		obj = dynamic_object_cast<LinkedFileObject>(refmaker);
+		if(obj) break;
+	}
+	if(!obj) return;
+
+	// Start task that inspects the file header to determine the number of data columns.
+	std::unique_ptr<LAMMPSTextDumpImportTask> inspectionTask(new LAMMPSTextDumpImportTask(obj->frames().front()));
+	Future<void> future = runInBackground<void>(std::bind(&LAMMPSTextDumpImportTask::load, inspectionTask.get(), std::placeholders::_1));
+	if(!ProgressManager::instance().waitForTask(future))
+		return;
+
+	try {
+		// This is to detect if an error has occurred.
+		future.result();
+	}
+	catch(const Exception& ex) {
+		ex.showError();
+		return;
+	}
+
+	InputColumnMapping mapping;
+	if(_customColumnMapping.columnCount() == 0)
+		mapping = inspectionTask->columnMapping();
+	else {
+		mapping = _customColumnMapping;
+		mapping.setColumnCount(inspectionTask->columnMapping().columnCount());
+		for(int i = 0; i < mapping.columnCount(); i++)
+			mapping.setColumnName(i, inspectionTask->columnMapping().columnName(i));
+	}
+
+	InputColumnMappingDialog dialog(mapping, parent);
 	if(dialog.exec() == QDialog::Accepted) {
+		setCustomColumnMapping(dialog.mapping());
+		_useCustomColumnMapping = true;
+		requestReload();
 	}
 }
 

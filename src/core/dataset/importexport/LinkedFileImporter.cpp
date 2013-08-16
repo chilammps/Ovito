@@ -100,12 +100,9 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl, DataSet* dataset)
 		obj = new LinkedFileObject();
 
 		// Set the input location and importer.
-		if(!obj->setSource(sourceUrl, this))
+		if(!obj->setSource(sourceUrl, this)) {
 			return false;
-
-		// Scan the input source for animation frames.
-		if(!obj->updateFrames())
-			return false;
+		}
 	}
 
 	// Make the import processes reversible.

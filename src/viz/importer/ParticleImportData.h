@@ -53,6 +53,9 @@ public:
 	/// Constructor.
 	ParticleImportTask(const LinkedFileImporter::FrameSourceInformation& frame) : LinkedFileImporter::ImportTask(frame) {}
 
+	/// Is called in the background thread to perform the data file import.
+	virtual void load(FutureInterfaceBase& futureInterface) override;
+
 	/// Lets the data container insert the data it holds into the scene by creating
 	/// appropriate scene objects.
 	virtual void insertIntoScene(LinkedFileObject* destination) override;
@@ -104,9 +107,6 @@ public:
 	}
 
 protected:
-
-	/// Is called in the background thread to perform the data file import.
-	virtual void load(FutureInterfaceBase& futureInterface) override;
 
 	/// Parses the given input file and stores the data in this container object.
 	virtual void parseFile(FutureInterfaceBase& futureInterface, CompressedTextParserStream& stream) = 0;

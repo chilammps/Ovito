@@ -67,7 +67,17 @@ void ParticleImporter::scanMultiTimestepFile(FutureInterface<QVector<LinkedFileI
 
 	// Scan file.
 	QVector<LinkedFileImporter::FrameSourceInformation> result;
-	scanFileForTimesteps(futureInterface, result, sourceUrl, stream);
+	try {
+		scanFileForTimesteps(futureInterface, result, sourceUrl, stream);
+	}
+	catch(const Exception& ex) {
+		// Silently ignore parsing and I/O errors if at least two frames have been read.
+		// Keep all frames read up to where the error occurred.
+		if(result.size() <= 1)
+			throw;
+		else
+			result.pop_back();		// Remove last discovered frame because it may be corrupted.
+	}
 
 	// Return results.
 	if(!futureInterface.isCanceled())
