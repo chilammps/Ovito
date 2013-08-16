@@ -19,8 +19,8 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef __OVITO_LAMMPS_DATA_IMPORTER_H
-#define __OVITO_LAMMPS_DATA_IMPORTER_H
+#ifndef __OVITO_IMD_FILE_IMPORTER_H
+#define __OVITO_IMD_FILE_IMPORTER_H
 
 #include <core/Core.h>
 #include <core/gui/properties/PropertiesEditor.h>
@@ -31,14 +31,14 @@ namespace Viz {
 using namespace Ovito;
 
 /**
- * \brief File parser for LAMMPS data files.
+ * \brief File parser for IMD atom files.
  */
-class LAMMPSDataImporter : public ParticleImporter
+class IMDImporter : public ParticleImporter
 {
 public:
 
 	/// \brief Constructs a new instance of this class.
-	Q_INVOKABLE LAMMPSDataImporter() {}
+	Q_INVOKABLE IMDImporter() {}
 
 	/// \brief Returns the file filter that specifies the files that can be imported by this service.
 	/// \return A wild-card pattern that specifies the file types that can be handled by this import class.
@@ -46,23 +46,23 @@ public:
 
 	/// \brief Returns the filter description that is displayed in the drop-down box of the file dialog.
 	/// \return A string that describes the file format.
-	virtual QString fileFilterDescription() override { return tr("LAMMPS Data Files"); }
+	virtual QString fileFilterDescription() override { return tr("IMD Files"); }
 
 	/// \brief Checks if the given file has format that can be read by this importer.
 	virtual bool checkFileFormat(QIODevice& input, const QUrl& sourceLocation) override;
 
 	/// Returns the title of this object.
-	virtual QString objectTitle() override { return tr("LAMMPS Data"); }
+	virtual QString objectTitle() override { return tr("IMD"); }
 
 protected:
 
 	/// The format-specific task object that is responsible for reading an input file in the background.
-	class LAMMPSDataImportTask : public ParticleImportTask
+	class IMDImportTask : public ParticleImportTask
 	{
 	public:
 
 		/// Normal constructor.
-		LAMMPSDataImportTask(const LinkedFileImporter::FrameSourceInformation& frame) : ParticleImportTask(frame) {}
+		IMDImportTask(const LinkedFileImporter::FrameSourceInformation& frame) : ParticleImportTask(frame) {}
 
 	protected:
 
@@ -74,7 +74,7 @@ protected:
 
 	/// \brief Creates an import task object to read the given frame.
 	virtual ImportTaskPtr createImportTask(const FrameSourceInformation& frame) override {
-		return std::make_shared<LAMMPSDataImportTask>(frame);
+		return std::make_shared<IMDImportTask>(frame);
 	}
 
 	Q_OBJECT
@@ -83,4 +83,4 @@ protected:
 
 };
 
-#endif // __OVITO_LAMMPS_DATA_IMPORTER_H
+#endif // __OVITO_IMD_FILE_IMPORTER_H
