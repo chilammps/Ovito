@@ -94,6 +94,9 @@ bool Application::initialize()
 		qDebug() << "Application settings store:" << QSettings().fileName();
 #endif
 
+		// Activate default "C" locale, which will be used to parse numbers in strings.
+		std::setlocale(LC_NUMERIC, "C");
+
 		// Initialize global manager objects in the right order.
 		UndoManager::initialize();
 		PluginManager::initialize();

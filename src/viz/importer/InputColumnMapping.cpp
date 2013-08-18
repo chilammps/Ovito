@@ -290,13 +290,17 @@ void InputColumnReader::readParticle(size_t particleIndex, int ntokens, const ch
 		OVITO_ASSERT_MSG(_mapping.vectorComponent(columnIndex) < property->componentCount(), "InputColumnReader::readParticle", "Component index is out of range.");
 
 		if(property->dataType() == _floatMetaTypeId) {
-			double f = strtod(*token, &endptr);
+#ifdef FLOATTYPE_FLOAT
+			float f = std::strtof(*token, &endptr);
+#else
+			double f = std::strtod(*token, &endptr);
+#endif
 			if(*endptr)
 				throw Exception(tr("Invalid floating-point value in column %1 (%2): \"%3\"").arg(columnIndex+1).arg(property->name()).arg(*token));
 			property->setFloatComponent(particleIndex, _mapping.vectorComponent(columnIndex), (FloatType)f);
 		}
 		else if(property->dataType() == _intMetaTypeId) {
-			d = strtol(*token, &endptr, 10);
+			d = std::strtol(*token, &endptr, 10);
 			if(property->type() != ParticleProperty::ParticleTypeProperty) {
 				if(*endptr)
 					throw Exception(tr("Invalid integer value in column %1 (%2): \"%3\"").arg(columnIndex+1).arg(property->name()).arg(*token));

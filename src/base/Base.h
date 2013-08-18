@@ -45,6 +45,7 @@
 #include <memory>
 #include <mutex>
 #include <thread>
+#include <clocale>
 
 /******************************************************************************
 * QT Library
