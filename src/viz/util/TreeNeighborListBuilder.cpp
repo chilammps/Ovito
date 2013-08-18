@@ -43,13 +43,6 @@ bool TreeNeighborListBuilder::prepare(ParticleProperty* posProperty, const Simul
 	simCellInverse = simCell.inverse();
 	pbc = cellData.pbcFlags();
 
-#if 0
-	// Show progress dialog.
-	scoped_ptr<ProgressIndicator> progress;
-	if(!noProgressIndicator)
-		progress.reset(new ProgressIndicator("Preparing neighbor lists", input->atomsCount()));
-#endif
-
 	// Compute normal vectors of simulation cell faces.
 	planeNormals[0] = simCell.column(1).cross(simCell.column(2)).normalized();
 	planeNormals[1] = simCell.column(2).cross(simCell.column(0)).normalized();
@@ -118,17 +111,6 @@ bool TreeNeighborListBuilder::prepare(ParticleProperty* posProperty, const Simul
 	size_t atomIndex = 0;
 	for(; p != p_end; ++a, ++p, ++atomIndex) {
 		a->index = atomIndex;
-
-#if 0
-		// Update progress indicator.
-		if(progress && (atomIndex % 100000) == 0) {
-			progress->setValue(atomIndex);
-			if(progress->isCanceled()) {
-				atoms.clear();
-				return false;
-			}
-		}
-#endif
 
 		// Transform atom position from absolute coordinates to reduced coordinates.
 		a->pos = *p;

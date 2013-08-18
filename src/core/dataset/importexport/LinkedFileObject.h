@@ -140,26 +140,6 @@ public:
 	/// Returns a sub-object that should be listed in the modifier stack.
 	virtual RefTarget* editableSubObject(int index) override;
 
-#if 0
-	/// \brief Returns the number of animation frames per simulation snapshot.
-	/// \return The number of animation frames per simulation snapshot. This is always equal or greater than 1.
-	int framesPerSnapshot() const { return max((int)_framesPerSnapshot, 1); }
-
-	/// \brief Sets the number of animation frames per simulation snapshot to control the playback speed.
-	/// \param fps The number of animation frames per simulation snapshot. This must be equal or greater than 1.
-	void setFramesPerSnapshot(int fps) { _framesPerSnapshot = fps; }
-
-	// From SceneObject:
-
-	/// Asks the object for its validity interval at the given time.
-	virtual TimeInterval objectValidity(TimeTicks time);
-	/// Makes the object render itself into the viewport.
-	virtual void renderObject(TimeTicks time, ObjectNode* contextNode, Viewport* vp) {}
-	/// Returns the bounding box of the object in local object coordinates.
-	virtual Box3 boundingBox(TimeTicks time, ObjectNode* contextNode) { return Box3(); }
-
-#endif
-
 public Q_SLOTS:
 
 	/// \brief Displays the file selection dialog and lets the user select a new input file.
@@ -231,13 +211,6 @@ private:
 	/// If false, only the metadata of the particle property is saved.
 	PropertyField<bool> _saveDataWithScene;
 
-#if 0
-
-	/// Controls the playback speed of simulation snapshots.
-	PropertyField<int> _framesPerSnapshot;
-
-#endif
-
 private:
 
 	Q_OBJECT
@@ -245,7 +218,6 @@ private:
 
 	DECLARE_REFERENCE_FIELD(_importer);
 	DECLARE_VECTOR_REFERENCE_FIELD(_sceneObjects);
-	//DECLARE_PROPERTY_FIELD(_framesPerSnapshot);
 	DECLARE_PROPERTY_FIELD(_adjustAnimationIntervalEnabled);
 	DECLARE_PROPERTY_FIELD(_sourceUrl);
 	DECLARE_PROPERTY_FIELD(_saveDataWithScene);

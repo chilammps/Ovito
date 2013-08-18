@@ -53,6 +53,9 @@ void ActionManager::on_HelpAbout_triggered()
 	msgBox.setInformativeText(tr(
 			"<p>A visualization and analysis software for atomistic simulation data.</p>"
 			"<p>Copyright (C) 2013, Alexander Stukowski</p>"
+			"<p>This program comes with ABSOLUTELY NO WARRANTY.<br>"
+			"This is free software, and you are welcome to redistribute\n"
+			"it under certain conditions. See the source for copying conditions.</p>"
 			"<p><a href=\"http://www.ovito.org/\">http://www.ovito.org/</a></p>"));
 	msgBox.setDefaultButton(QMessageBox::Ok);
 	msgBox.setIconPixmap(QApplication::windowIcon().pixmap(64));

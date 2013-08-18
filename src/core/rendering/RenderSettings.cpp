@@ -106,9 +106,6 @@ void RenderSettings::setRendererClass(const OvitoObjectType* rendererClass)
 	
 	// Create a new instance of the specified class.
 	OORef<SceneRenderer> newRenderer = static_object_cast<SceneRenderer>(rendererClass->createInstance());
-#if 0
-	newRenderer->_renderSettings = this;
-#endif
 	
 	// Make the new renderer the current renderer.
 	_renderer = newRenderer;
@@ -171,9 +168,6 @@ void RenderSettings::loadFromStream(ObjectLoadStream& stream)
 		stream >> _imageInfo;
 	}
 	stream.closeChunk();
-#if 0
-	if(renderer()) renderer()->_renderSettings = this;
-#endif
 }
 
 /******************************************************************************
@@ -189,9 +183,6 @@ OORef<RefTarget> RenderSettings::clone(bool deepCopy, CloneHelper& cloneHelper)
 	
 	/// Copy renderer.
 	OVITO_ASSERT((clone->renderer() != NULL) == (renderer() != NULL));
-#if 0
-	if(clone->renderer()) renderer()->_renderSettings = clone.get();
-#endif
 
 	return clone;
 }
