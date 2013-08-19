@@ -103,19 +103,19 @@ void LAMMPSDataImporter::LAMMPSDataImportTask::parseFile(FutureInterfaceBase& fu
     			throw Exception(tr("Invalid number of atom types (line %1): %2").arg(stream.lineNumber()).arg(line.c_str()));
     	}
     	else if(line.find("xlo xhi") != string::npos) {
-    		if(sscanf(line.c_str(), FLOAT_SCANF_STRING_2, &xlo, &xhi) != 2)
+    		if(sscanf(line.c_str(), FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING, &xlo, &xhi) != 2)
     			throw Exception(tr("Invalid xlo/xhi values (line %1): %2").arg(stream.lineNumber()).arg(line.c_str()));
     	}
     	else if(line.find("ylo yhi") != string::npos) {
-    		if(sscanf(line.c_str(), FLOAT_SCANF_STRING_2, &ylo, &yhi) != 2)
+    		if(sscanf(line.c_str(), FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING, &ylo, &yhi) != 2)
     			throw Exception(tr("Invalid ylo/yhi values (line %1): %2").arg(stream.lineNumber()).arg(line.c_str()));
     	}
     	else if(line.find("zlo zhi") != string::npos) {
-    		if(sscanf(line.c_str(), FLOAT_SCANF_STRING_2, &zlo, &zhi) != 2)
+    		if(sscanf(line.c_str(), FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING, &zlo, &zhi) != 2)
     			throw Exception(tr("Invalid zlo/zhi values (line %1): %2").arg(stream.lineNumber()).arg(line.c_str()));
     	}
     	else if(line.find("xy xz yz") != string::npos) {
-    		if(sscanf(line.c_str(), FLOAT_SCANF_STRING_3, &xy, &xz, &yz) != 3)
+    		if(sscanf(line.c_str(), FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING, &xy, &xz, &yz) != 3)
     			throw Exception(tr("Invalid xy/xz/yz values (line %1): %2").arg(stream.lineNumber()).arg(line.c_str()));
     	}
     	else if(line.find("bonds") != string::npos) {}

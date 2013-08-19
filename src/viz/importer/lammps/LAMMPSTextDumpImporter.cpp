@@ -193,7 +193,7 @@ void LAMMPSTextDumpImporter::LAMMPSTextDumpImportTask::parseFile(FutureInterface
 				FloatType tiltFactors[3];
 				Box3 simBox;
 				for(int k = 0; k < 3; k++) {
-					if(sscanf(stream.readLine().constData(), FLOAT_SCANF_STRING_3, &simBox.minc[k], &simBox.maxc[k], &tiltFactors[k]) != 3)
+					if(sscanf(stream.readLine().constData(), FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING, &simBox.minc[k], &simBox.maxc[k], &tiltFactors[k]) != 3)
 						throw Exception(tr("Invalid box size in line %1 of LAMMPS dump file: %2").arg(stream.lineNumber()).arg(stream.lineString()));
 				}
 
@@ -219,7 +219,7 @@ void LAMMPSTextDumpImporter::LAMMPSTextDumpImportTask::parseFile(FutureInterface
 				// Parse orthogonal simulation box size.
 				Box3 simBox;
 				for(int k = 0; k < 3; k++) {
-					if(sscanf(stream.readLine().constData(), FLOAT_SCANF_STRING_2, &simBox.minc[k], &simBox.maxc[k]) != 2)
+					if(sscanf(stream.readLine().constData(), FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING, &simBox.minc[k], &simBox.maxc[k]) != 2)
 						throw Exception(tr("Invalid box size in line %1 of dump file: %2").arg(stream.lineNumber()).arg(stream.lineString()));
 				}
 
