@@ -33,7 +33,8 @@ void FrameBufferWidget::setFrameBuffer(const QSharedPointer<FrameBuffer>& newFra
 	
 	_frameBuffer = newFrameBuffer;
 
-	updateScrollBars();
+	if(_frameBuffer)
+		resize(_frameBuffer->image().size());
 }
 
 /******************************************************************************
@@ -42,37 +43,10 @@ void FrameBufferWidget::setFrameBuffer(const QSharedPointer<FrameBuffer>& newFra
 QSize FrameBufferWidget::sizeHint() const 
 {
 	if(_frameBuffer) {
-		return _frameBuffer->image().size() + QSize(frameWidth() + 2, frameWidth() + 2);
+		return _frameBuffer->image().size();
 	}
-	return QAbstractScrollArea::sizeHint(); 
+	return QWidget::sizeHint();
 } 
-
-/******************************************************************************
-* Receive resize events for the viewport widget.
-******************************************************************************/
-void FrameBufferWidget::resizeEvent(QResizeEvent* event)
-{
-	updateScrollBars();
-}
-
-/******************************************************************************
-* Updates the ranges of the scroll bars after the size of the
-* frame buffer or the widget have changed.
-******************************************************************************/
-void FrameBufferWidget::updateScrollBars()
-{
-	if(frameBuffer()) {
-		QSize areaSize = viewport()->size();
-		horizontalScrollBar()->setPageStep(40);
-		verticalScrollBar()->setPageStep(40);
-		horizontalScrollBar()->setRange(0, frameBuffer()->width() - areaSize.width());     
-		verticalScrollBar()->setRange(0, frameBuffer()->height() - areaSize.height());
-	}
-	else {
-		horizontalScrollBar()->setRange(0, 0);     
-		verticalScrollBar()->setRange(0, 0);
-	}
-}
 
 /******************************************************************************
 * This is called by the system to paint the widgets area.
@@ -80,8 +54,8 @@ void FrameBufferWidget::updateScrollBars()
 void FrameBufferWidget::paintEvent(QPaintEvent* event)
 {
 	if(frameBuffer()) {
-		QPainter painter(viewport());
-		painter.drawImage(-horizontalScrollBar()->value(), -verticalScrollBar()->value(), frameBuffer()->image());
+		QPainter painter(this);
+		painter.drawImage(0, 0, frameBuffer()->image());
 	}
 }
 

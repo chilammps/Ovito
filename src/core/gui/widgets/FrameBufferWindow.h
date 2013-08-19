@@ -45,7 +45,9 @@ public:
 	void setFrameBuffer(const QSharedPointer<FrameBuffer>& frameBuffer) { frameBufferWidget->setFrameBuffer(frameBuffer); }
 
 	/// Repaints the contents of the frame buffer.
-	void updateFrame() { frameBufferWidget->viewport()->update(); }
+	void updateFrame() {
+		frameBufferWidget->update();
+	}
 
 public Q_SLOTS:
 

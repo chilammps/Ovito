@@ -30,8 +30,23 @@ namespace Ovito {
 ******************************************************************************/
 FrameBufferWindow::FrameBufferWindow(QWidget* parent) : QMainWindow(parent, (Qt::WindowFlags)(Qt::Tool | Qt::CustomizeWindowHint | Qt::WindowMaximizeButtonHint | Qt::WindowCloseButtonHint))
 {
-	frameBufferWidget = new FrameBufferWidget(this);
-	setCentralWidget(frameBufferWidget);
+	frameBufferWidget = new FrameBufferWidget();
+
+	class MyScrollArea : public QScrollArea {
+	public:
+		MyScrollArea(QWidget* parent) : QScrollArea(parent) {}
+		virtual QSize sizeHint() const override {
+			int f = 2 * frameWidth();
+			QSize sz(f, f);
+			if(widget())
+				sz += widget()->sizeHint();
+			return sz;
+		}
+	};
+
+	QScrollArea* scrollArea = new MyScrollArea(this);
+	scrollArea->setWidget(frameBufferWidget);
+	setCentralWidget(scrollArea);
 
 	QToolBar* toolBar = addToolBar(tr("Frame Buffer"));
 	toolBar->addAction(QIcon(":/core/framebuffer/save_picture.png"), tr("Save to file"), this, SLOT(saveImage()));

@@ -95,6 +95,8 @@ void ActionManager::on_RenderActiveViewport_triggered()
 							FrameBufferWindow* display = MainWindow::instance().frameBufferWindow();
 							display->setFrameBuffer(frameBuffer);
 							display->setWindowTitle(tr("Frame %1").arg(frameNumber));
+							if(!display->isVisible())
+								display->resize(display->sizeHint());
 							display->show();
 							display->activateWindow();
 							display->updateFrame();

@@ -30,12 +30,12 @@ namespace Ovito {
 /******************************************************************************
 * This widget displays the contents of a FrameBuffer.
 ******************************************************************************/
-class OVITO_CORE_EXPORT FrameBufferWidget : public QAbstractScrollArea
+class OVITO_CORE_EXPORT FrameBufferWidget : public QWidget
 {
 public:
 
 	/// Constructor.
-	FrameBufferWidget(QWidget* parent = nullptr) : QAbstractScrollArea(parent) {}
+	FrameBufferWidget(QWidget* parent = nullptr) : QWidget(parent) {}
 
 	/// Return the FrameBuffer that is currently shown in the widget (can be NULL).
 	const QSharedPointer<FrameBuffer>& frameBuffer() const { return _frameBuffer; }
@@ -51,16 +51,10 @@ protected:
 	/// This is called by the system to paint the viewport area.
 	virtual void paintEvent(QPaintEvent* event) override;
 	
-	/// Receive resize events for the viewport widget.
-	void resizeEvent(QResizeEvent* event) override;
-
 private:
 
 	/// The FrameBuffer that is shown in the widget. 
 	QSharedPointer<FrameBuffer> _frameBuffer;
-	
-	/// Updates the ranges of the scroll bars after the size of the frame buffer or the widget have changed.
-	void updateScrollBars();
 
 private:
 
