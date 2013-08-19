@@ -23,10 +23,12 @@
 #include <core/plugins/PluginManager.h>
 #include "ImportExportManager.h"
 #include "moc_FileImporter.cpp"
+#include "moc_FileExporter.cpp"
 
 namespace Ovito {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, FileImporter, RefTarget)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, FileExporter, RefTarget)
 
 /// The singleton instance of the class.
 ImportExportManager* ImportExportManager::_instance = nullptr;
@@ -45,6 +47,19 @@ ImportExportManager::ImportExportManager()
 			OORef<FileImporter> obj = static_object_cast<FileImporter>(clazz->createInstance());
 			if(obj)
 				_fileImporters.push_back(FileImporterDescription(obj.get()));
+		}
+		catch(const Exception& ex) {
+			ex.showError();
+		}
+	}
+
+	// Scan the class list for file export services.
+	Q_FOREACH(const OvitoObjectType* clazz, PluginManager::instance().listClasses(FileExporter::OOType)) {
+		try {
+			// Create a temporary instance to get the supported file formats.
+			OORef<FileExporter> obj = static_object_cast<FileExporter>(clazz->createInstance());
+			if(obj)
+				_fileExporters.push_back(FileExporterDescription(obj.get()));
 		}
 		catch(const Exception& ex) {
 			ex.showError();

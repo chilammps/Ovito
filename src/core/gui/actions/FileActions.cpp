@@ -181,14 +181,13 @@ void ActionManager::on_FileRemoteImport_triggered()
 ******************************************************************************/
 void ActionManager::on_FileExport_triggered()
 {
-#if 0
 	// Build filter string.
 	QStringList filterStrings;
-	Q_FOREACH(const ImportExportDescriptor& descr, IMPORTEXPORT_MANAGER.exporters()) {
-		filterStrings << QString("%1 (%2)").arg(descr.fileFilterDescription(), descr.fileFilter());
+	for(const auto& descriptor : ImportExportManager::instance().fileExporters()) {
+		filterStrings << QString("%1 (%2)").arg(descriptor.fileFilterDescription(), descriptor.fileFilter());
 	}
 	if(filterStrings.isEmpty()) {
-		Exception(tr("This function is disabled. There are no export plugins installed.")).showError();
+		Exception(tr("This function is disabled, because there are no export services available.")).showError();
 		return;
 	}
 
@@ -196,8 +195,8 @@ void ActionManager::on_FileExport_triggered()
 	settings.beginGroup("file/export");
 
 	// Let the user select a destination file.
-	HistoryFileDialog dialog("export", MAIN_FRAME, tr("Export Data"));
-	dialog.setFilters(filterStrings);
+	HistoryFileDialog dialog("export", &MainWindow::instance(), tr("Export Data"));
+	dialog.setNameFilters(filterStrings);
 	dialog.setAcceptMode(QFileDialog::AcceptSave);
 	dialog.setFileMode(QFileDialog::AnyFile);
 	dialog.setConfirmOverwrite(true);
@@ -209,7 +208,7 @@ void ActionManager::on_FileExport_triggered()
 	// Select the last export filter being used ...
 	QString lastExportFilter = settings.value("last_export_filter").toString();
 	if(!lastExportFilter.isEmpty())
-		dialog.selectFilter(lastExportFilter);
+		dialog.selectNameFilter(lastExportFilter);
 
 	if(!dialog.exec())
 		return;
@@ -222,20 +221,19 @@ void ActionManager::on_FileExport_triggered()
 	// Remember directory for the next time...
 	settings.setValue("last_export_dir", dialog.directory().absolutePath());
 	// Remember export filter for the next time...
-	settings.setValue("last_export_filter", dialog.selectedFilter());
+	settings.setValue("last_export_filter", dialog.selectedNameFilter());
 
 	// Export to selected file.
 	try {
-		int exportFilterIndex = filterStrings.indexOf(dialog.selectedFilter());
+		int exportFilterIndex = filterStrings.indexOf(dialog.selectedNameFilter());
 		OVITO_ASSERT(exportFilterIndex >= 0 && exportFilterIndex < filterStrings.size());
-		ImporterExporter::SmartPtr exporter = IMPORTEXPORT_MANAGER.exporters()[exportFilterIndex].createService();
 
-		exporter->exportToFile(exportFile, DATASET_MANAGER.currentSet());
+		OORef<FileExporter> exporter = ImportExportManager::instance().fileExporters()[exportFilterIndex].createService();
+		exporter->exportToFile(exportFile, DataSetManager::instance().currentSet());
 	}
 	catch(const Exception& ex) {
 		ex.showError();
 	}
-#endif
 }
 
 };

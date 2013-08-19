@@ -30,6 +30,7 @@
 #include <core/Core.h>
 #include <core/object/OvitoObject.h>
 #include "FileImporter.h"
+#include "FileExporter.h"
 
 namespace Ovito {
 
@@ -50,10 +51,8 @@ public:
 	/// Return the list of available import services.
 	const QVector<FileImporterDescription>& fileImporters() const { return _fileImporters; }
 
-#if 0
 	/// Return the list of available export services.
 	const QVector<FileExporterDescription>& fileExporters() const { return _fileExporters; }
-#endif
 
 	/// \brief Tries to detect the format of the given file.
 	/// \return The importer class that can handle the given file. If the file format could not be recognized then NULL is returned.
@@ -64,10 +63,8 @@ private:
 	/// List of data import plugins.
 	QVector<FileImporterDescription> _fileImporters;
 
-#if 0
 	/// List of data export plugins.
 	QVector<FileExporterDescription> _fileExporters;
-#endif
 
 private:
 

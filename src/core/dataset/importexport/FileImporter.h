@@ -89,7 +89,7 @@ private:
 };
 
 /**
- * \brief This descriptor contains information about an installed FileImorpter service.
+ * \brief This descriptor contains information about an installed FileImporter service.
  */
 class OVITO_CORE_EXPORT FileImporterDescription
 {
@@ -98,7 +98,7 @@ public:
 	/// \brief Default constructor (required by QVector container).
 	FileImporterDescription() {}
 
-	/// \brief Initializes this descriptor.
+	/// \brief Initializes this descriptor from a file importer instance.
 	FileImporterDescription(FileImporter* importer) :
 		_fileFilter(importer->fileFilter()),
 		_fileFilterDescription(importer->fileFilterDescription()),
@@ -118,7 +118,7 @@ public:
 	}
 
 	/// \brief Returns the class descriptor for the file importer service.
-	/// \return The descriptor of the FileImporterderived class.
+	/// \return The descriptor of the FileImporter-derived class.
 	const OvitoObjectType* pluginClass() const { return _pluginClass; }
 
 private:
