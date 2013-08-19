@@ -32,18 +32,6 @@ namespace Viz {
 
 using namespace Ovito;
 
-// These are format strings used with the sscanf() parsing function
-// when parsing floating point numbers.
-#ifdef FLOATTYPE_FLOAT
-	#define FLOAT_SCANF_STRING_1   "%g"
-	#define FLOAT_SCANF_STRING_2   "%g %g"
-	#define FLOAT_SCANF_STRING_3   "%g %g %g"
-#else
-	#define FLOAT_SCANF_STRING_1   "%lg"
-	#define FLOAT_SCANF_STRING_2   "%lg %lg"
-	#define FLOAT_SCANF_STRING_3   "%lg %lg %lg"
-#endif
-
 /**
  * \brief Base class for file parsers that read particle-position data.
  */
