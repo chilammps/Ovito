@@ -117,7 +117,7 @@ void ActionManager::on_RenderActiveViewport_triggered()
 						renderTime = AnimManager::instance().frameToTime(firstFrameNumber);
 						numberOfFrames = (settings->customRangeEnd() - firstFrameNumber + 1);
 					}
-					numberOfFrames = (numberOfFrames + settings->everyNthFrame()-1) / settings->everyNthFrame();
+					numberOfFrames = (numberOfFrames + settings->everyNthFrame() - 1) / settings->everyNthFrame();
 					if(numberOfFrames < 1)
 						throw Exception(tr("Invalid rendering range: Frame %1 to %2").arg(settings->customRangeStart()).arg(settings->customRangeEnd()));
 					progressDialog.setMaximum(numberOfFrames);
@@ -143,7 +143,7 @@ void ActionManager::on_RenderActiveViewport_triggered()
 						if(progressDialog.wasCanceled())
 							break;
 
-						// Goto next animation frame.
+						// Go to next animation frame.
 						renderTime += AnimManager::instance().ticksPerFrame() * settings->everyNthFrame();
 					}
 				}

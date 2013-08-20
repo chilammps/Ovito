@@ -67,6 +67,7 @@ SET(OVITO_VIZ_SOURCE_FILES
 	importer/imd/IMDImporter.cpp
 	importer/parcas/ParcasFileImporter.cpp
 	importer/cfg/CFGImporter.cpp
+	exporter/ParticleExporter.cpp
 	util/TreeNeighborListBuilder.cpp
 	util/OnTheFlyNeighborListBuilder.cpp
 	util/ParticlePropertyComboBox.cpp

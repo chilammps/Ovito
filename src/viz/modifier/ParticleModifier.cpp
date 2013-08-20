@@ -78,7 +78,6 @@ ObjectStatus ParticleModifier::modifyObject(TimePoint time, ModifierApplication*
 	return status;
 }
 
-
 /******************************************************************************
 * Sets the status returned by the modifier and generates a
 * ReferenceEvent::StatusChanged event.
