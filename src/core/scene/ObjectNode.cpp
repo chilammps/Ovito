@@ -160,7 +160,7 @@ Box3 ObjectNode::localBoundingBox(TimePoint time)
 	// Compute bounding boxes of scene objects.
 	for(const auto& sceneObj : state.objects()) {
 		DisplayObject* displayObj = sceneObj->displayObject();
-		if(displayObj)
+		if(displayObj && displayObj->isEnabled())
 			bb.addBox(displayObj->boundingBox(time, sceneObj.get(), this, state));
 	}
 

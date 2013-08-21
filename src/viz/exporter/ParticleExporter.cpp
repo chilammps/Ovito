@@ -26,6 +26,7 @@
 #include <core/scene/objects/SceneObject.h>
 #include <core/dataset/DataSetManager.h>
 #include <core/gui/mainwin/MainWindow.h>
+#include <core/viewport/ViewportManager.h>
 
 #include <viz/data/ParticlePropertyObject.h>
 #include "ParticleExporter.h"
@@ -52,7 +53,8 @@ SET_PROPERTY_FIELD_LABEL(ParticleExporter, _everyNthFrame, "Every Nth frame")
 * Constructs a new instance of the class.
 ******************************************************************************/
 ParticleExporter::ParticleExporter() : _exportAnimation(false),
-	_useWildcardFilename(false), _startFrame(0), _endFrame(-1), _everyNthFrame(1)
+	_useWildcardFilename(false), _startFrame(0), _endFrame(-1),
+	_everyNthFrame(1), _compressor(&_outputFile)
 {
 	INIT_PROPERTY_FIELD(ParticleExporter::_outputFilename);
 	INIT_PROPERTY_FIELD(ParticleExporter::_exportAnimation);
@@ -66,7 +68,7 @@ ParticleExporter::ParticleExporter() : _exportAnimation(false),
 /******************************************************************************
 * Sets the name of the output file that should be written by this exporter.
 ******************************************************************************/
-void ParticleExporter::setOutputFile(const QString& filename)
+void ParticleExporter::setOutputFilename(const QString& filename)
 {
 	_outputFilename = filename;
 
@@ -85,7 +87,7 @@ void ParticleExporter::setOutputFile(const QString& filename)
 bool ParticleExporter::exportToFile(const QString& filePath, DataSet* dataset)
 {
 	// Save the output path.
-	setOutputFile(filePath);
+	setOutputFilename(filePath);
 
 	// Get the data to be exported.
 	PipelineFlowState flowState = getParticles(dataset, dataset->animationSettings()->time());
@@ -137,7 +139,7 @@ PipelineFlowState ParticleExporter::getParticles(DataSet* dataset, TimePoint tim
  *****************************************************************************/
 bool ParticleExporter::writeOutputFiles(DataSet* dataset)
 {
-	OVITO_ASSERT_MSG(!outputFile().isEmpty(), "ParticleExporter::exportParticles()", "Output filename has not been set. ParticleExporter::setOutputFile() must be called first.");
+	OVITO_ASSERT_MSG(!outputFilename().isEmpty(), "ParticleExporter::exportParticles()", "Output filename has not been set. ParticleExporter::setOutputFilename() must be called first.");
 	OVITO_ASSERT_MSG(startFrame() <= endFrame(), "ParticleExporter::exportParticles()", "Export interval has not been set. ParticleExporter::setStartFrame() and ParticleExporter::setEndFrame() must be called first.");
 
 	if(startFrame() > endFrame())
@@ -174,9 +176,9 @@ bool ParticleExporter::writeOutputFiles(DataSet* dataset)
 			throw Exception(tr("Cannot write animation frames to separate files. The filename must contain the '*' wildcard character, which gets replaced by the frame number."));
 	}
 
-	progressDialog.setMaximum(numberOfFrames);
+	progressDialog.setMaximum(numberOfFrames * 100);
 	QDir dir = QFileInfo(outputFile()).dir();
-	QString filename = outputFile();
+	QString filename = outputFilename();
 
 	// Open output file for writing.
 	if(!_exportAnimation || !useWildcardFilename()) {
@@ -188,7 +190,7 @@ bool ParticleExporter::writeOutputFiles(DataSet* dataset)
 
 		// Export animation frames.
 		for(int frameIndex = 0; frameIndex < numberOfFrames; frameIndex++) {
-			progressDialog.setValue(frameIndex);
+			progressDialog.setValue(frameIndex * 100);
 
 			int frameNumber = firstFrameNumber + frameIndex * everyNthFrame();
 
@@ -196,15 +198,16 @@ bool ParticleExporter::writeOutputFiles(DataSet* dataset)
 				// Generate an output filename based on the wildcard pattern.
 				filename = dir.absoluteFilePath(wildcardFilename());
 				filename.replace(QChar('*'), QString::number(frameNumber));
+
 				if(!openOutputFile(filename, 1))
 					return false;
 			}
 
-			if(!exportParticles(dataset, frameNumber, exportTime, filename))
+			if(!exportFrame(dataset, frameNumber, exportTime, filename, progressDialog))
 				progressDialog.cancel();
 
 			if(_exportAnimation && useWildcardFilename())
-				closeOutputFile(true);
+				closeOutputFile(!progressDialog.wasCanceled());
 
 			if(progressDialog.wasCanceled())
 				break;
@@ -220,10 +223,100 @@ bool ParticleExporter::writeOutputFiles(DataSet* dataset)
 
 	// Close output file.
 	if(!_exportAnimation || !useWildcardFilename()) {
-		closeOutputFile(true);
+		closeOutputFile(!progressDialog.wasCanceled());
 	}
 
 	return true;
+}
+
+/******************************************************************************
+ * This is called once for every output file to be written and before exportParticles() is called.
+ *****************************************************************************/
+bool ParticleExporter::openOutputFile(const QString& filePath, int numberOfFrames)
+{
+	OVITO_ASSERT(!_outputFile.isOpen());
+
+	_outputFile.setFileName(filePath);
+
+	// Automatically write a gzipped file if filename ends with .gz suffix.
+	if(filePath.endsWith(".gz", Qt::CaseInsensitive)) {
+
+		// Open compressed file for writing.
+		_compressor.setStreamFormat(QtIOCompressor::GzipFormat);
+		if(!_compressor.open(QIODevice::WriteOnly))
+			throw Exception(tr("Failed to open file '%1' for writing: %2").arg(filePath).arg(_compressor.errorString()));
+
+		_textStream.setDevice(&_compressor);
+	}
+	else {
+		if(!_outputFile.open(QIODevice::WriteOnly | QIODevice::Text))
+			throw Exception(tr("Failed to open file '%1' for writing: %2").arg(filePath).arg(_outputFile.errorString()));
+
+		_textStream.setDevice(&_outputFile);
+	}
+	_textStream.setRealNumberPrecision(10);
+
+	return true;
+}
+
+/******************************************************************************
+ * This is called once for every output file written after exportParticles() has been called.
+ *****************************************************************************/
+void ParticleExporter::closeOutputFile(bool exportCompleted)
+{
+	if(_compressor.isOpen())
+		_compressor.close();
+	if(_outputFile.isOpen())
+		_outputFile.close();
+
+	if(!exportCompleted)
+		_outputFile.remove();
+}
+
+/******************************************************************************
+ * Exports a single animation frame to the current output file.
+ *****************************************************************************/
+bool ParticleExporter::exportFrame(DataSet* dataset, int frameNumber, TimePoint time, const QString& filePath, QProgressDialog& progressDialog)
+{
+	// The data set to be exported must be the current data set.
+	if(dataset != DataSetManager::instance().currentSet())
+		throw Exception(tr("Can only export particle from the current scene."));
+
+	// Jump to animation time.
+	AnimManager::instance().setTime(time);
+
+	// Wait until the scene is ready.
+	volatile bool sceneIsReady = false;
+	DataSetManager::instance().runWhenSceneIsReady( [&sceneIsReady]() { sceneIsReady = true; } );
+	if(!sceneIsReady) {
+		progressDialog.setLabelText(tr("Preparing frame %1 for export...").arg(frameNumber));
+		while(!sceneIsReady) {
+			if(progressDialog.wasCanceled())
+				return false;
+			QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents, 200);
+		}
+	}
+	progressDialog.setLabelText(tr("Exporting frame %1 to file '%2'.").arg(frameNumber).arg(filePath));
+
+	// Evaluate modification pipeline to get the particles to be exported.
+	PipelineFlowState state = getParticles(dataset, time);
+	if(state.isEmpty())
+		throw Exception(tr("The scene does not contain any particles that can be exported."));
+
+	ProgressInterface progressInterface(progressDialog);
+	return exportParticles(state, frameNumber, time, filePath, progressInterface);
+}
+
+/******************************************************************************
+* Retrieves the given standard particle property from the pipeline flow state.
+******************************************************************************/
+ParticlePropertyObject* ParticleExporter::findStandardProperty(ParticleProperty::Type type, const PipelineFlowState& flowState)
+{
+	for(const auto& sceneObj : flowState.objects()) {
+		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(sceneObj.get());
+		if(property && property->type() == type) return property;
+	}
+	return nullptr;
 }
 
 };

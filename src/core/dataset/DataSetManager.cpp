@@ -306,7 +306,7 @@ bool DataSetManager::importFile(const QUrl& url, const FileImporterDescription* 
 				return false;
 		}
 
-		UndoableTransaction transaction(tr("Import %1").arg(QFileInfo(url.path()).baseName()));
+		UndoableTransaction transaction(tr("Import '%1'").arg(QFileInfo(url.path()).fileName()));
 		if(importer->importFile(url, currentSet())) {
 			transaction.commit();
 			return true;

@@ -25,6 +25,7 @@
 #include <core/Core.h>
 #include <core/scene/pipeline/PipelineFlowState.h>
 #include <core/dataset/importexport/FileExporter.h>
+#include <core/utilities/io/gzdevice/qtiocompressor.h>
 
 namespace Viz {
 
@@ -50,14 +51,15 @@ public:
 	/////////////////////////// Specific methods //////////////////////////////
 
 	/// \brief Sets the name of the output file that should be written by this exporter.
-	virtual void setOutputFile(const QString& filename);
+	virtual void setOutputFilename(const QString& filename);
 
 	/// \brief Returns the path of the output file written by this exporter.
-	const QString& outputFile() const { return _outputFilename; }
+	const QString& outputFilename() const { return _outputFilename; }
 
 	/// \brief Opens the export settings dialog for this exporter service.
 	///
 	/// \param dataset The data set to be exported.
+
 	/// \param state The result of the pipeline evaluation. Contains the particle data to be exported.
 	/// \param parent The widget to be used as parent for the settings dialog.
 	/// \return \a true if the dialog has been approved by the user; \a false when the user has canceled the operation.
@@ -107,6 +109,16 @@ public:
 
 protected:
 
+	class ProgressInterface {
+	public:
+		ProgressInterface(QProgressDialog& dialog) : _dialog(dialog), _baseValue(dialog.value()) {}
+		void setPercentage(int progress) { _dialog.setValue(_baseValue + progress); }
+		bool wasCanceled() const { return _dialog.wasCanceled(); }
+	protected:
+		QProgressDialog& _dialog;
+		int _baseValue;
+	};
+
 	/// \brief Retrieves the particles to be exported by evaluating the modification pipeline.
 	/// \param dataset The scene to be exported.
 	/// \param time The animation time at which to request the particles.
@@ -115,19 +127,31 @@ protected:
 	PipelineFlowState getParticles(DataSet* dataset, TimePoint time);
 
 	/// \brief This is called once for every output file to be written and before exportParticles() is called.
-	virtual bool openOutputFile(const QString& filePath, int numberOfFrames) = 0;
+	virtual bool openOutputFile(const QString& filePath, int numberOfFrames);
 
-	/// \brief Writes the particles of one or multiple animation frames to the given output file.
-	/// \param dataset The scene containing the data to be exported.
+	/// \brief This is called once for every output file written after exportParticles() has been called.
+	virtual void closeOutputFile(bool exportCompleted);
+
+	/// \brief Exports a single animation frame to the current output file.
+	virtual bool exportFrame(DataSet* dataset, int frameNumber, TimePoint time, const QString& filePath, QProgressDialog& progressDialog);
+
+	/// \brief Writes the particles of one animation frame to the current output file.
+	/// \param state The pipeline results containing the particles to be exported.
 	/// \param frameNumber The animation frame to be written to the output file.
 	/// \param time The animation time to be written to the output file.
 	/// \param filePath The path of the output file.
 	/// \throws Exception on error.
 	/// \return \a false when the operation has been canceled by the user; \a true on success.
-	virtual bool exportParticles(DataSet* dataset, int frameNumber, TimePoint time, const QString& filePath) = 0;
+	virtual bool exportParticles(const PipelineFlowState& state, int frameNumber, TimePoint time, const QString& filePath, ProgressInterface& progress) = 0;
 
-	/// \brief This is called once for every output file written after exportParticles() has been called.
-	virtual void closeOutputFile(bool exportCompleted) = 0;
+	/// Returns the current output file stream.
+	QFile& outputFile() { return _outputFile; }
+
+	/// Returns the text stream writing to the current output file.
+	QTextStream& textStream() { return _textStream; }
+
+	/// Retrieves the given standard particle property from the pipeline flow state.
+	static ParticlePropertyObject* findStandardProperty(ParticleProperty::Type type, const PipelineFlowState& flowState);
 
 private:
 
@@ -151,6 +175,15 @@ private:
 
 	/// Controls the interval between exported frames.
 	PropertyField<int> _everyNthFrame;
+
+	/// The output file stream.
+	QFile _outputFile;
+
+	/// The optional compression filter.
+	QtIOCompressor _compressor;
+
+	/// The text stream writing to the current output file.
+	QTextStream _textStream;
 
 private:
 

@@ -197,7 +197,7 @@ bool ActionManager::renderFrame(TimePoint renderTime, int frameNumber, RenderSet
 	AnimManager::instance().setTime(renderTime);
 
 	// Wait until the scene is ready.
-	bool sceneIsReady = false;
+	volatile bool sceneIsReady = false;
 	DataSetManager::instance().runWhenSceneIsReady( [&sceneIsReady]() { sceneIsReady = true; } );
 	if(!sceneIsReady) {
 		progressDialog.setLabelText(tr("Rendering frame %1. Preparing scene...").arg(frameNumber));
