@@ -20,6 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
+#include <core/gui/mainwin/MainWindow.h>
 #include "InputColumnMappingDialog.h"
 
 namespace Viz {
@@ -34,7 +35,7 @@ enum {
 * Constructor.
 ******************************************************************************/
 InputColumnMappingDialog::InputColumnMappingDialog(const InputColumnMapping& mapping, QWidget* parent)
-	: QDialog(parent)
+	: QDialog(parent ? parent : &MainWindow::instance())
 {
 	setWindowTitle(tr("Input file column mapping"));
 
@@ -62,7 +63,7 @@ InputColumnMappingDialog::InputColumnMappingDialog(const InputColumnMapping& map
 
 	_tableWidget->setColumnCount(3);
 	QStringList horizontalHeaders;
-	horizontalHeaders << tr("File columns");
+	horizontalHeaders << tr("File column");
 	horizontalHeaders << tr("Particle property");
 	horizontalHeaders << tr("Component");
 	_tableWidget->setHorizontalHeaderLabels(horizontalHeaders);
