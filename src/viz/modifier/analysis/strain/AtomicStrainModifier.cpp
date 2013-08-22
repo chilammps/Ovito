@@ -88,11 +88,6 @@ AtomicStrainModifier::AtomicStrainModifier() :
 TimeInterval AtomicStrainModifier::modifierValidity(TimePoint time)
 {
 	TimeInterval interval = ParticleModifier::modifierValidity(time);
-	if(_referenceObject) {
-		interval.intersect(_referenceObject->objectValidity(time));
-		PipelineFlowState refState = _referenceObject->evaluate(time);
-		interval.intersect(refState.stateValidity());
-	}
 	return interval;
 }
 
@@ -112,7 +107,8 @@ std::shared_ptr<AsynchronousParticleModifier::Engine> AtomicStrainModifier::crea
 		throw Exception(tr("Cannot calculate displacements. Reference configuration has not been specified."));
 
 	// Get the reference configuration.
-	PipelineFlowState refState = referenceConfiguration()->evaluate(time);
+	// Always use frame 0 as reference configuration.
+	PipelineFlowState refState = referenceConfiguration()->evaluate(0);
 	if(refState.status().type() == ObjectStatus::Pending)
 		throw ObjectStatus(ObjectStatus::Pending, QString(), tr("Waiting for input data to become ready..."));
 	if(refState.isEmpty())

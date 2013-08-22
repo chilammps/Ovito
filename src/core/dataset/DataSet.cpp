@@ -73,9 +73,12 @@ bool DataSet::referenceEvent(RefTarget* source, ReferenceEvent* event)
 	if(event->type() == ReferenceEvent::TargetChanged
 			|| event->type() == ReferenceEvent::PendingOperationSucceeded
 			|| event->type() == ReferenceEvent::PendingOperationFailed) {
-		// Update all viewports when something has changed in the current data set.
+
+		// Update the viewports whenever something has changed in the current data set.
 		if(this == DataSetManager::instance().currentSet() && source != viewportConfig() && source != animationSettings()) {
-			ViewportManager::instance().updateViewports();
+			// Do not automatically update while in the process of jumping to a new animation frame.
+			if(!AnimManager::instance().isTimeChanging())
+				ViewportManager::instance().updateViewports();
 		}
 	}
 	return RefTarget::referenceEvent(source, event);

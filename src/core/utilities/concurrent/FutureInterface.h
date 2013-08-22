@@ -29,6 +29,7 @@ namespace Ovito {
 
 template<typename R> class Future;						// Defined in Future.h
 template<typename R, typename Function> class Task;		// Defined in Task.h
+class TaskBase;											// Defined in Task.h
 
 class OVITO_CORE_EXPORT FutureInterfaceBase
 {
@@ -43,7 +44,7 @@ public:
 		ResultSet  = (1<<4)
 	};
 
-	virtual ~FutureInterfaceBase() {}
+	virtual ~FutureInterfaceBase();
 
 	bool isCanceled() const { return (_state & Canceled); }
 
@@ -123,7 +124,7 @@ protected:
 	State _state;
 	QWaitCondition _waitCondition;
 	std::exception_ptr _exceptionStore;
-	QRunnable* _runnable;
+	TaskBase* _runnable;
     int _progressValue;
     int _progressMaximum;
     QString _progressText;

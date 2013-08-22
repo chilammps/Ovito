@@ -32,7 +32,7 @@ AnimManager* AnimManager::_instance = nullptr;
 /******************************************************************************
 * Initializes the animation manager.
 ******************************************************************************/
-AnimManager::AnimManager() : _animSuspendCount(0),  _animationMode(false)
+AnimManager::AnimManager() : _animSuspendCount(0),  _animationMode(false), _timeIsChanging(0)
 {
 	OVITO_ASSERT_MSG(!_instance, "AnimManager constructor", "Multiple instances of this singleton class have been created.");
 
@@ -75,8 +75,12 @@ void AnimManager::reset()
 void AnimManager::onTimeChanged(TimePoint newTime)
 {
 	// Wait until scene is ready, then repaint viewports.
-	DataSetManager::instance().runWhenSceneIsReady(
-			std::bind(&ViewportManager::updateViewports, &ViewportManager::instance()));
+
+	_timeIsChanging++;
+	DataSetManager::instance().runWhenSceneIsReady([this] () {
+		_timeIsChanging--;
+		ViewportManager::instance().updateViewports();
+	});
 }
 
 /******************************************************************************

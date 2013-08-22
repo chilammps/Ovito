@@ -23,6 +23,7 @@
 #include "FutureWatcher.h"
 #include "FutureInterface.h"
 #include "Future.h"
+#include "Task.h"
 #include "moc_FutureWatcher.cpp"
 
 namespace Ovito {
@@ -30,6 +31,13 @@ namespace Ovito {
 enum {
     MaxProgressEmitsPerSecond = 20
 };
+
+FutureInterfaceBase::~FutureInterfaceBase()
+{
+	//qDebug() << "FutureInterfaceBase::~FutureInterfaceBase() this=" << this;
+	// Clean up the associated QRunnable object.
+	delete _runnable;
+}
 
 void FutureInterfaceBase::cancel()
 {
@@ -56,10 +64,9 @@ bool FutureInterfaceBase::reportStarted()
 	//qDebug() << "BEG FutureInterfaceBase::reportStarted() this=" << this << "thread=" << QThread::currentThread() << "text=" << progressText();
 	//qDebug() << "THREAD COUNT=" << QThreadPool::globalInstance()->activeThreadCount();
     QMutexLocker locker(&_mutex);
-    bool isAlreadyStarted = isStarted();
+    if(isStarted())
+        return false;	// It's already started. Don't run it again.
     OVITO_ASSERT(!isFinished() || isRunning());
-    if(isAlreadyStarted)
-        return false;
     _state = State(Started | Running);
     sendCallOut(FutureWatcher::CallOutEvent::Started);
 	//qDebug() << "END FutureInterfaceBase::reportStarted() this=" << this << "thread=" << QThread::currentThread() << "text=" << progressText();
@@ -69,14 +76,14 @@ bool FutureInterfaceBase::reportStarted()
 void FutureInterfaceBase::reportFinished()
 {
 	//qDebug() << "BEG FutureInterfaceBase::reportFinished() this=" << this << "thread=" << QThread::currentThread() << "text=" << progressText();
-    QMutexLocker locker(&_mutex);
+	QMutexLocker locker(&_mutex);
     OVITO_ASSERT(isStarted());
     if(!isFinished()) {
         _state = State((_state & ~Running) | Finished);
         _waitCondition.wakeAll();
         sendCallOut(FutureWatcher::CallOutEvent::Finished);
     }
-	//qDebug() << "END FutureInterfaceBase::reportFinished() this=" << this << "thread=" << QThread::currentThread() << "text=" << progressText();
+	//qDebug() << "END FutureInterfaceBase::reportFinished() this=" << this << "thread=" << QThread::currentThread();
 }
 
 void FutureInterfaceBase::reportException()
@@ -105,7 +112,7 @@ void FutureInterfaceBase::reportResultReady()
 void FutureInterfaceBase::tryToRunImmediately()
 {
 	if(_runnable)
-		_runnable->run();
+		_runnable->runInternal();
 }
 
 void FutureInterfaceBase::waitForResult()
@@ -271,11 +278,11 @@ void FutureWatcher::setFutureInterface(const std::shared_ptr<FutureInterfaceBase
 		return;
 
 	if(_futureInterface) {
+		_futureInterface->unregisterWatcher(this);
 		if(pendingAssignment) {
 	        _finished = false;
 	        QCoreApplication::removePostedEvents(this);
 		}
-		_futureInterface->unregisterWatcher(this);
 	}
 	_futureInterface = futureInterface;
 	if(_futureInterface)

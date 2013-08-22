@@ -29,23 +29,42 @@
 
 namespace Ovito {
 
+class TaskBase : public QRunnable
+{
+public:
+
+	TaskBase() {
+		setAutoDelete(false);
+	}
+
+	virtual void runInternal() = 0;
+};
+
 template<typename R, typename Function>
-class Task : public QRunnable
+class Task : public TaskBase
 {
 public:
 
 	Task(Function fn) : _p(std::make_shared<FutureInterface<R>>()), _function(fn) {}
 
-	virtual void run() override {
-		if(!_p->reportStarted())
+	virtual void runInternal() override {
+		auto p = _p;
+		if(!p || !p->reportStarted()) {
 			return;
+		}
 		try {
-			_function(*_p.get());
+			_function(*p.get());
 		}
 		catch(...) {
-			_p->reportException();
+			p->reportException();
 		}
-		_p->reportFinished();
+		p->reportFinished();
+	}
+
+	virtual void run() override {
+		runInternal();
+		// Detach QRunnable from future interface.
+		_p.reset();
 	}
 
 	Future<R> start() {
@@ -54,8 +73,6 @@ public:
 		QThreadPool::globalInstance()->start(this);
 		return Future<R>(p2);
 	}
-
-	Future<R> future() const { return Future<R>(_p); }
 
 private:
 	Function _function;

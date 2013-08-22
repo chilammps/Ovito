@@ -191,6 +191,10 @@ public:
 	/// \throw Exception when a parsing error occurs.
 	TimePoint stringToTime(const QString& stringValue);
 
+	/// \brief Indicates whether the animation has recently been changed, and the scene
+	///        is still being prepared for display of the new frame.
+	bool isTimeChanging() const { return _timeIsChanging != 0; }
+
 public Q_SLOTS:
 
 	/// \brief Enables or disables animation mode.
@@ -237,6 +241,9 @@ private:
 	
 	/// Indicates whether animation recording mode is active.
 	bool _animationMode;
+
+	/// Indicates that the animation has been changed, and the scene is still being prepared for display of the new frame.
+	int _timeIsChanging;
 
 private:
     
