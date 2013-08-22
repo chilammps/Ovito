@@ -71,11 +71,6 @@ CalculateDisplacementsModifier::CalculateDisplacementsModifier() :
 TimeInterval CalculateDisplacementsModifier::modifierValidity(TimePoint time)
 {
 	TimeInterval interval = ParticleModifier::modifierValidity(time);
-	if(_referenceObject) {
-		interval.intersect(_referenceObject->objectValidity(time));
-		PipelineFlowState refState = _referenceObject->evaluate(time);
-		interval.intersect(refState.stateValidity());
-	}
 	return interval;
 }
 
@@ -101,7 +96,8 @@ ObjectStatus CalculateDisplacementsModifier::modifyParticles(TimePoint time, Tim
 		throw Exception(tr("Cannot calculate displacement vectors. Reference configuration has not been specified."));
 
 	// Get the reference configuration.
-	PipelineFlowState refState = referenceConfiguration()->evaluate(time);
+	// Always use frame 0 as reference configuration.
+	PipelineFlowState refState = referenceConfiguration()->evaluate(0);
 	if(refState.isEmpty()) {
 		if(refState.status().type() != ObjectStatus::Pending)
 			throw Exception(tr("Reference configuration has not been specified yet."));
@@ -160,7 +156,7 @@ ObjectStatus CalculateDisplacementsModifier::modifyParticles(TimePoint time, Tim
 		for(auto& mappedIndex : indexToIndexMap) {
 			auto iter = refMap.find(*id);
 			if(iter == refMap.end())
-				throw Exception(tr("Particle id %1 not found in reference configuration.").arg(*id));
+				throw Exception(tr("Particle id %1 from current configuration not found in reference configuration.").arg(*id));
 			mappedIndex = iter->second;
 			index++;
 			++id;

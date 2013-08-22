@@ -164,7 +164,7 @@ private:
 	private:
 
 		/// Computes the strain tensor of a single particle.
-		bool computeStrain(size_t particleIndex, OnTheFlyNeighborListBuilder& neighborListBuilder, std::vector<size_t>& indexToIndexMap);
+		bool computeStrain(size_t particleIndex, OnTheFlyNeighborListBuilder& neighborListBuilder, const std::vector<size_t>& refToCurrentIndexMap, const std::vector<size_t>& currentToRefIndexMap);
 
 		FloatType _cutoff;
 		SimulationCellData _simCell;
