@@ -48,6 +48,7 @@ public:
 		SelectionProperty,
 		ColorProperty,
 		DisplacementProperty,
+		DisplacementMagnitudeProperty,
 		PotentialEnergyProperty,
 		KineticEnergyProperty,
 		TotalEnergyProperty,

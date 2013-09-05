@@ -92,6 +92,7 @@ ParticleProperty::ParticleProperty(size_t particleCount, Type type, size_t compo
 	case SpinProperty:
 	case DipoleMagnitudeProperty:
 	case CentroSymmetryProperty:
+	case DisplacementMagnitudeProperty:
 		_dataType = qMetaTypeId<FloatType>();
 		_dataTypeSize = sizeof(FloatType);
 		_componentCount = 1;
@@ -326,6 +327,7 @@ QString ParticleProperty::standardPropertyName(Type which)
 	case PositionProperty: return ParticlePropertyObject::tr("Position");
 	case ColorProperty: return ParticlePropertyObject::tr("Color");
 	case DisplacementProperty: return ParticlePropertyObject::tr("Displacement");
+	case DisplacementMagnitudeProperty: return ParticlePropertyObject::tr("Displacement Magnitude");
 	case VelocityProperty: return ParticlePropertyObject::tr("Velocity");
 	case PotentialEnergyProperty: return ParticlePropertyObject::tr("Potential Energy");
 	case KineticEnergyProperty: return ParticlePropertyObject::tr("Kinetic Energy");
@@ -391,6 +393,7 @@ int ParticleProperty::standardPropertyDataType(Type which)
 	case PositionProperty:
 	case ColorProperty:
 	case DisplacementProperty:
+	case DisplacementMagnitudeProperty:
 	case VelocityProperty:
 	case PotentialEnergyProperty:
 	case KineticEnergyProperty:
@@ -432,6 +435,7 @@ QMap<QString, ParticleProperty::Type> ParticleProperty::standardPropertyList()
 		table.insert(standardPropertyName(PositionProperty), PositionProperty);
 		table.insert(standardPropertyName(ColorProperty), ColorProperty);
 		table.insert(standardPropertyName(DisplacementProperty), DisplacementProperty);
+		table.insert(standardPropertyName(DisplacementMagnitudeProperty), DisplacementMagnitudeProperty);
 		table.insert(standardPropertyName(VelocityProperty), VelocityProperty);
 		table.insert(standardPropertyName(PotentialEnergyProperty), PotentialEnergyProperty);
 		table.insert(standardPropertyName(KineticEnergyProperty), KineticEnergyProperty);
@@ -481,6 +485,7 @@ size_t ParticleProperty::standardPropertyComponentCount(Type which)
 	case DipoleMagnitudeProperty:
 	case SpinProperty:
 	case CentroSymmetryProperty:
+	case DisplacementMagnitudeProperty:
 		return 1;
 	case PositionProperty:
 	case ColorProperty:
@@ -535,6 +540,7 @@ QStringList ParticleProperty::standardPropertyComponentNames(Type which, size_t 
 	case DipoleMagnitudeProperty:
 	case SpinProperty:
 	case CentroSymmetryProperty:
+	case DisplacementMagnitudeProperty:
 		return emptyList;
 	case PositionProperty:
 	case DisplacementProperty:

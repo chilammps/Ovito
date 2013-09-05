@@ -193,7 +193,9 @@ ObjectStatus CalculateDisplacementsModifier::modifyParticles(TimePoint time, Tim
 
 	// Create the displacement property.
 	ParticlePropertyObject* displacementProperty = outputStandardProperty(ParticleProperty::DisplacementProperty);
+	ParticlePropertyObject* displacementMagnitudeProperty = outputStandardProperty(ParticleProperty::DisplacementMagnitudeProperty);
 	OVITO_ASSERT(displacementProperty->size() == posProperty->size());
+	OVITO_ASSERT(displacementMagnitudeProperty->size() == posProperty->size());
 
 	// Plug in our internal display object.
 	displacementProperty->setDisplayObject(_vectorDisplay);
@@ -227,13 +229,15 @@ ObjectStatus CalculateDisplacementsModifier::modifyParticles(TimePoint time, Tim
 	const Point3* u0 = refPosProperty->constDataPoint3();
 	const Point3* u_begin = posProperty->constDataPoint3();
 	Vector3* d_begin = displacementProperty->dataVector3();
+	FloatType* dmag_begin = displacementMagnitudeProperty->dataFloat();
 	auto index_begin = indexToIndexMap.begin();
 	if(eliminateCellDeformation()) {
-		parallelForChunks(displacementProperty->size(), [d_begin, u_begin, index_begin, u0, unwrap, pbc, simCellRef, simCellInv, simCellRefInv] (size_t startIndex, size_t count) {
+		parallelForChunks(displacementProperty->size(), [d_begin, dmag_begin, u_begin, index_begin, u0, unwrap, pbc, simCellRef, simCellInv, simCellRefInv] (size_t startIndex, size_t count) {
 			Vector3* d = d_begin + startIndex;
+			FloatType* dmag = dmag_begin + startIndex;
 			const Point3* u = u_begin + startIndex;
 			auto index = index_begin + startIndex;
-			for(; count; --count, ++d, ++u, ++index) {
+			for(; count; --count, ++d, ++dmag, ++u, ++index) {
 				Point3 ru = simCellInv * (*u);
 				Point3 ru0 = simCellRefInv * u0[*index];
 				Vector3 delta = ru - ru0;
@@ -245,15 +249,17 @@ ObjectStatus CalculateDisplacementsModifier::modifyParticles(TimePoint time, Tim
 					}
 				}
 				*d = simCellRef * delta;
+				*dmag = d->length();
 			}
 		});
 	}
 	else {
-		parallelForChunks(displacementProperty->size(), [d_begin, u_begin, index_begin, u0, unwrap, pbc, simCellRef, simCellInv, simCellRefInv] (size_t startIndex, size_t count) {
+		parallelForChunks(displacementProperty->size(), [d_begin, dmag_begin, u_begin, index_begin, u0, unwrap, pbc, simCellRef, simCellInv, simCellRefInv] (size_t startIndex, size_t count) {
 			Vector3* d = d_begin + startIndex;
+			FloatType* dmag = dmag_begin + startIndex;
 			const Point3* u = u_begin + startIndex;
 			auto index = index_begin + startIndex;
-			for(; count; --count, ++d, ++u, ++index) {
+			for(; count; --count, ++d, ++dmag, ++u, ++index) {
 				*d = *u - u0[*index];
 				if(unwrap) {
 					for(int k = 0; k < 3; k++) {
@@ -264,6 +270,7 @@ ObjectStatus CalculateDisplacementsModifier::modifyParticles(TimePoint time, Tim
 							*d -= simCellRef.column(k);
 					}
 				}
+				*dmag = d->length();
 			}
 		});
 	}

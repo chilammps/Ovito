@@ -1,7 +1,5 @@
 - Atom-type dependent radius for bond creation
 
-- Support loading of gzipped IMD files.
-
 - Better viewport navigation (check Atomeye for comparison)
 
 - Selection of atoms by drawing a path in the viewports
