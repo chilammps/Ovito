@@ -1,0 +1,44 @@
+- Support loading of gzipped IMD files.
+
+- Better viewport navigation (check Atomeye for comparison)
+
+- Selection of atoms by drawing a path in the viewports
+
+- Rendering of the coordinate system tripod in the output image
+
+- Display of color scale legend in rendered image
+
+- Add variables for simulation box size to Compute Channel modifier.
+
+- Visualization of particle trajectories
+
+- Export of general triclinic cells to LAMMPS data/dump formats. See http://lammps.sandia.gov/doc/Section_howto.html#howto_12
+
+- Add "Duplicate particles" option to Affine Transformation modifier.
+
+Sha Zhendong (IHPC) <shaz@ihpc.a-star.edu.sg>:
+
+- Calculation of the pair correlation function
+- Calculation of Voronoi atomic volume
+- Calculation of local atomic number density functions
+
+Fossati, Paul C <p.fossati@imperial.ac.uk>:
+
+- is there a way to use different setups for each viewport? That would be very useful to see e. g. the apparition of defects during one simulation while monitoring the stress field at the same time. Admittedly, this is possible by doing two rendering batches and then playing the movies simultaneously, but this is not as elegant.
+
+- is there a way to set key strokes to various settings? For example one key to add coordination analysis or CNA to the stack, or the ability to move the camera with the arrow keys (e. g. rotate with the arrows, pan and zoom with the arrows and a modifier).
+
+Wolfgang Verestek <wolfgang.verestek@imwf.uni-stuttgart.de>:
+
+- uU könnte es hilfreich sein, wenn man eigene ColorMaps einzubinden.
+- für eine weitere Bearbeitung von IMD-chkpt-files wäre eine Exportfunktion für alle/mehrere timesteps wünschenswert (momentan wird das über ein ovitos script geregelt)
+- Modifier Displacement: hier werden x, y und z-Displacement angezeigt. Die Gesamtverformung kann man zwar über ComputeChannel berechnen, könnte sinnvoller Weise aber auch gleich vom Modifier bereitgestellt werden.
+- Die Histogrammfunktion (an der Sie ja schon arbeiten) wurde mehrfach erwähnt.
+- Vermutlich schwer zu realisieren, aber verschiedene Pipelinebrowser für die Fenster, so dass z.B. in einem Fenster eine CNA-Analyse und in einem anderen Displacement oder Spannung dargestellt werden kann.
+- Beim Speichern eines scene files werden bei mir die zugrunde liegenden cfg Dateien mitgespeichert, so dass, wenn ich das scene file öffne, die dazugehörigen Datendateien geöffnet werde, statt dass es auf die aktuell geladenen Daten angewendet wird.
+- Ein View Modifier (z.B. Polarkoordinaten oder in kartesischen Koordinaten), der die Kameraposition festlegt, um für mehrere Simulationen denselben Blickwinkel bereitstellen zu können.
+- Ein Messtool zur Messung von Atomabständen und/oder –winkeln
+
+Tobias:
+
+- "User-defined" modifiers (i.e. saving/loading often-needed sequences of modifier)
