@@ -73,6 +73,7 @@ public:
     void close() override;
     void flush();
     qint64 bytesAvailable() const override;
+    bool seek(qint64 pos) override;
 
 protected:
 

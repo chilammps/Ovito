@@ -315,6 +315,33 @@ bool QtIOCompressor::isSequential() const
     return true;
 }
 
+bool QtIOCompressor::seek(qint64 pos)
+{
+    Q_D(QtIOCompressor);
+
+    if(isWritable())
+		return false;
+
+	OpenMode mode = openMode();
+	close();
+    if(d->device->isOpen()) {
+    	if(!d->device->reset())
+    		return false;
+    }
+	if(!open(mode))
+		return false;
+
+	char buffer[0x10000];
+	while(pos > 0) {
+		qint64 s = read(buffer, std::min(pos, (qint64)sizeof(buffer)));
+		if(s <= 0)
+			return false;
+		pos -= s;
+	}
+
+	return true;
+}
+
 /*!
     Opens the QtIOCompressor in \a mode. Only ReadOnly and WriteOnly is supported.
     This functon will return false if you try to open in other modes.
@@ -444,6 +471,12 @@ void QtIOCompressor::close()
     if (d->manageDevice)
         d->device->close();
 
+    d->zlibStream.next_in = 0;
+    d->zlibStream.avail_in = 0;
+    d->zlibStream.next_out = NULL;
+    d->zlibStream.avail_out = 0;
+    d->state = QtIOCompressorPrivate::Closed;
+
     QIODevice::close();
 }
 
@@ -558,7 +591,7 @@ qint64 QtIOCompressor::readData(char *data, qint64 maxSize)
                 return 0;
             break;
         }
-    // Loop util data buffer is full or we reach the end of the input stream.
+    // Loop until data buffer is full or we reach the end of the input stream.
     } while (d->zlibStream.avail_out != 0 && status != Z_STREAM_END);
 
     if (status == Z_STREAM_END) {
@@ -570,7 +603,7 @@ qint64 QtIOCompressor::readData(char *data, qint64 maxSize)
     }
 
     const ZlibSize outputSize = maxSize - d->zlibStream.avail_out;
-    return outputSize;
+	return outputSize;
 }
 
 

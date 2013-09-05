@@ -39,7 +39,7 @@ public:
 
 	/// Constructor that opens the input stream.
 	CompressedTextParserStream(QIODevice& input, const QString& originalFilePath) :
-		_device(input), _lineNumber(0), /*_byteOffset(0),*/ _uncompressor(&input, 6, 0x100000)
+		_device(input), _lineNumber(0), _byteOffset(0), _uncompressor(&input, 6, 0x100000)
 	{
 		// Try to find out what the filename is.
 		if(originalFilePath.isEmpty() == false)
@@ -60,7 +60,7 @@ public:
 		}
 		else {
 			// Open uncompressed file for reading.
-			if(!input.open(QIODevice::ReadOnly | QIODevice::Text))
+			if(!input.open(QIODevice::ReadOnly))
 				throw Exception(tr("Failed to open input file: %1").arg(input.errorString()));
 			_stream = &input;
 		}
@@ -80,11 +80,12 @@ public:
 			throw Exception(tr("File parsing error. Unexpected end of file after line %1.").arg(_lineNumber));
 
 		_line = _stream->readLine(maxSize);
+		_byteOffset += _line.size();
 		return _line;
 	}
 
 	/// Checks whether the end of file is reached.
-	bool eof() {
+	bool eof() const {
 		return _stream->atEnd();
 	}
 
@@ -99,7 +100,14 @@ public:
 
 	/// Returns the current position in the file.
 	qint64 byteOffset() const {
-		return _stream->pos();
+		return _byteOffset;
+	}
+
+	/// Jumps to the given position in the file.
+	void seek(qint64 pos) {
+		if(!_stream->seek(pos))
+			throw Exception(tr("Failed to seek to byte offset %1 in file %2: %3").arg(pos).arg(_filename).arg(_stream->errorString()));
+		_byteOffset = pos;
 	}
 
 	/// Returns the current position in the compressed file if it is gzipped.
@@ -110,12 +118,6 @@ public:
 	/// Returns the size of the compressed file if it is gzipped.
 	qint64 underlyingSize() const {
 		return _device.size();
-	}
-
-	/// Jumps to the given position in the file.
-	void seek(qint64 pos) {
-		if(!_stream->seek(pos))
-			throw Exception(tr("Failed to seek to byte offset %1 in file %2: %3").arg(pos).arg(_filename).arg(_stream->errorString()));
 	}
 
 private:
@@ -130,7 +132,7 @@ private:
 	int _lineNumber;
 
 	/// The current position in the uncompressed data stream.
-	//qint64 _byteOffset;
+	qint64 _byteOffset;
 
 	/// The underlying input device.
 	QIODevice& _device;
@@ -140,9 +142,6 @@ private:
 
 	/// The input stream from which uncompressed data is read.
 	QIODevice* _stream;
-
-	/// The number of bytes for a line break;
-	//int _lineBreakBytes;
 
 	Q_OBJECT
 };
