@@ -74,10 +74,16 @@ void ParticleExporter::setOutputFilename(const QString& filename)
 
 	// Generate a default wildcard pattern from the filename.
 	if(wildcardFilename().isEmpty()) {
-		if(!filename.contains('*'))
-			setWildcardFilename(QFileInfo(filename).fileName() + ".*");
+		QString fn = QFileInfo(filename).fileName();
+		if(!fn.contains('*')) {
+			int dotIndex = fn.lastIndexOf('.');
+			if(dotIndex > 0)
+				setWildcardFilename(fn.left(dotIndex) + QStringLiteral(".*") + fn.mid(dotIndex));
+			else
+				setWildcardFilename(fn + QStringLiteral(".*"));
+		}
 		else
-			setWildcardFilename(QFileInfo(filename).fileName());
+			setWildcardFilename(fn);
 	}
 }
 
@@ -94,7 +100,7 @@ bool ParticleExporter::exportToFile(const QString& filePath, DataSet* dataset)
 	if(flowState.isEmpty())
 		throw Exception(tr("The scene does not contain any particles that can be exported."));
 
-	// Use the current time as default export interval if no interval has been set before.
+	// Use the entire animation as default export interval if no interval has been set before.
 	if(startFrame() > endFrame()) {
 		setStartFrame(0);
 		int lastFrame = dataset->animationSettings()->animationInterval().end() / dataset->animationSettings()->ticksPerFrame();
@@ -102,7 +108,7 @@ bool ParticleExporter::exportToFile(const QString& filePath, DataSet* dataset)
 	}
 
 	// Show optional export settings dialog.
-	if(!showSettingsDialog(dataset, flowState, nullptr))
+	if(!showSettingsDialog(dataset, flowState, &MainWindow::instance()))
 		return false;
 
 	// Perform the actual export operation.
@@ -177,7 +183,7 @@ bool ParticleExporter::writeOutputFiles(DataSet* dataset)
 	}
 
 	progressDialog.setMaximum(numberOfFrames * 100);
-	QDir dir = QFileInfo(outputFile()).dir();
+	QDir dir = QFileInfo(outputFilename()).dir();
 	QString filename = outputFilename();
 
 	// Open output file for writing.

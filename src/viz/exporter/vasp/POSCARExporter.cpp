@@ -24,10 +24,20 @@
 #include <viz/data/ParticleTypeProperty.h>
 #include <viz/data/SimulationCell.h>
 #include "POSCARExporter.h"
+#include "../ParticleExporterSettingsDialog.h"
 
 namespace Viz {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Viz, POSCARExporter, ParticleExporter)
+
+/******************************************************************************
+* Opens the export settings dialog for this exporter service.
+******************************************************************************/
+bool POSCARExporter::showSettingsDialog(DataSet* dataset, const PipelineFlowState& state, QWidget* parent)
+{
+	ParticleExporterSettingsDialog dialog(this, dataset, parent);
+	return (dialog.exec() == QDialog::Accepted);
+}
 
 /******************************************************************************
 * Writes the particles of one animation frame to the current output file.

@@ -26,10 +26,13 @@
 #include <core/scene/pipeline/PipelineFlowState.h>
 #include <core/dataset/importexport/FileExporter.h>
 #include <core/utilities/io/gzdevice/qtiocompressor.h>
+#include <viz/data/ParticleProperty.h>
 
 namespace Viz {
 
 using namespace Ovito;
+
+class ParticlePropertyObject;
 
 /**
  * \brief Abstract base class for export services that write the particles to a file.
@@ -59,7 +62,6 @@ public:
 	/// \brief Opens the export settings dialog for this exporter service.
 	///
 	/// \param dataset The data set to be exported.
-
 	/// \param state The result of the pipeline evaluation. Contains the particle data to be exported.
 	/// \param parent The widget to be used as parent for the settings dialog.
 	/// \return \a true if the dialog has been approved by the user; \a false when the user has canceled the operation.
@@ -74,6 +76,12 @@ public:
 	/// \throws Exception on error.
 	/// \return \a false when the operation has been canceled by the user; \a true on success.
 	virtual bool writeOutputFiles(DataSet* dataset);
+
+	/// Returns whether only the current animation frame or an entire animation interval should be exported.
+	bool exportAnimation() const { return _exportAnimation; }
+
+	/// Sets whether only the current animation frame or an entire animation interval should be exported.
+	void setExportAnimation(bool exportAnim) { _exportAnimation = exportAnim; }
 
 	/// \brief Controls whether the exporter should produce separate files for each exported frame.
 	void setUseWildcardFilename(bool enable) { _useWildcardFilename = enable; }
@@ -106,6 +114,9 @@ public:
 
 	/// \brief Returns the interval between exported frames.
 	int everyNthFrame() const { return _everyNthFrame; }
+
+	/// \brief Sets the interval between exported frames.
+	void setEveryNthFrame(int n) { _everyNthFrame = n; }
 
 protected:
 
