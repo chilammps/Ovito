@@ -190,6 +190,14 @@ public:
 	}
 
 	/// \brief Returns a read-only pointer to the first point element in the property storage.
+	/// \note This method may only be used if this property is of data type Point3I or an integer channel with 3 components.
+	const Point3I* constDataPoint3I() const {
+		OVITO_ASSERT(dataType() == qMetaTypeId<Point3I>() || (dataType() == qMetaTypeId<int>() && componentCount() == 3));
+		OVITO_STATIC_ASSERT(sizeof(Point3I) == sizeof(int) * 3);
+		return reinterpret_cast<const Point3I*>(constData());
+	}
+
+	/// \brief Returns a read-only pointer to the first point element in the property storage.
 	/// \note This method may only be used if this property is of data type Color or a FloatType channel with 3 components.
 	const Color* constDataColor() const {
 		OVITO_ASSERT(dataType() == qMetaTypeId<Color>() || (dataType() == qMetaTypeId<FloatType>() && componentCount() == 3));
@@ -248,6 +256,14 @@ public:
 	Point3* dataPoint3() {
 		OVITO_ASSERT(dataType() == qMetaTypeId<Point3>() || (dataType() == qMetaTypeId<FloatType>() && componentCount() == 3));
 		return reinterpret_cast<Point3*>(data());
+	}
+
+	/// \brief Returns a read-write pointer to the first point element in the property storage.
+	/// \note This method may only be used if this property is of data type Point3I or an integer channel with 3 components.
+	Point3I* dataPoint3I() {
+		OVITO_ASSERT(dataType() == qMetaTypeId<Point3I>() || (dataType() == qMetaTypeId<int>() && componentCount() == 3));
+		OVITO_STATIC_ASSERT(sizeof(Point3I) == sizeof(int) * 3);
+		return reinterpret_cast<Point3I*>(data());
 	}
 
 	/// \brief Returns a read-write pointer to the first point element in the property storage.
@@ -314,6 +330,12 @@ public:
 		return constDataPoint3()[particleIndex];
 	}
 
+	/// Returns a Point3I element at the given index (if this is a point property).
+	const Point3I& getPoint3I(size_t particleIndex) const {
+		OVITO_ASSERT(particleIndex < size());
+		return constDataPoint3I()[particleIndex];
+	}
+
 	/// Returns a Color element at the given index (if this is a color property).
 	const Color& getColor(size_t particleIndex) const {
 		OVITO_ASSERT(particleIndex < size());
@@ -372,6 +394,12 @@ public:
 	void setPoint3(size_t particleIndex, const Point3& newValue) {
 		OVITO_ASSERT(particleIndex < size());
 		dataPoint3()[particleIndex] = newValue;
+	}
+
+	/// Sets the value of a Point3I element at the given index (if this is a point property).
+	void setPoint3I(size_t particleIndex, const Point3I& newValue) {
+		OVITO_ASSERT(particleIndex < size());
+		dataPoint3I()[particleIndex] = newValue;
 	}
 
 	/// Sets the value of a Color element at the given index (if this is a color property).

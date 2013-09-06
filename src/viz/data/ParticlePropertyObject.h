@@ -166,6 +166,12 @@ public:
 	}
 
 	/// \brief Returns a read-only pointer to the first point element in the property storage.
+	/// \note This method may only be used if this property is of data type Point3I or an integer channel with 3 components.
+	const Point3I* constDataPoint3I() const {
+		return _storage->constDataPoint3I();
+	}
+
+	/// \brief Returns a read-only pointer to the first point element in the property storage.
 	/// \note This method may only be used if this property is of data type Color or a FloatType channel with 3 components.
 	const Color* constDataColor() const {
 		return _storage->constDataColor();
@@ -221,6 +227,13 @@ public:
 	Point3* dataPoint3() {
 		_storage.detach();
 		return _storage->dataPoint3();
+	}
+
+	/// \brief Returns a read-write pointer to the first point element in the property storage.
+	/// \note This method may only be used if this property is of data type Point3I or an integer channel with 3 components.
+	Point3I* dataPoint3I() {
+		_storage.detach();
+		return _storage->dataPoint3I();
 	}
 
 	/// \brief Returns a read-write pointer to the first point element in the property storage.
@@ -281,6 +294,11 @@ public:
 		return _storage->getPoint3(particleIndex);
 	}
 
+	/// Returns a Point3I element at the given index (if this is a point property).
+	const Point3I& getPoint3I(size_t particleIndex) const {
+		return _storage->getPoint3I(particleIndex);
+	}
+
 	/// Returns a Color element at the given index (if this is a point property).
 	const Color& getColor(size_t particleIndex) const {
 		return _storage->getColor(particleIndex);
@@ -335,6 +353,12 @@ public:
 	void setPoint3(size_t particleIndex, const Point3& newValue) {
 		_storage.detach();
 		_storage->setPoint3(particleIndex, newValue);
+	}
+
+	/// Sets the value of a Point3I element at the given index (if this is a point property).
+	void setPoint3I(size_t particleIndex, const Point3I& newValue) {
+		_storage.detach();
+		_storage->setPoint3I(particleIndex, newValue);
 	}
 
 	/// Sets the value of a Color element at the given index (if this is a point property).
