@@ -52,7 +52,7 @@ bool CFGImporter::checkFileFormat(QIODevice& input, const QUrl& sourceLocation)
 	stream.readLine(20);
 
 	// CFG files start with the string "Number of particles".
-	if(stream.line().startsWith("Number of particles"))
+	if(stream.lineStartsWith("Number of particles"))
 		return true;
 
 	return false;
@@ -76,7 +76,7 @@ void CFGHeader::parse(CompressedTextParserStream& stream)
 
 	while(!stream.eof()) {
 
-		string line = stream.readLine().constData();
+		string line(stream.readLine());
 
 		// Ignore comments
 		size_t commentChar = line.find('#');
@@ -89,7 +89,7 @@ void CFGHeader::parse(CompressedTextParserStream& stream)
 
 		size_t splitChar = line.find('=');
 		if(splitChar == string::npos) {
-			if(stream.line().startsWith(".NO_VELOCITY.")) {
+			if(stream.lineStartsWith(".NO_VELOCITY.")) {
 				containsVelocities = false;
 				continue;
 			}
@@ -222,7 +222,7 @@ void CFGImporter::CFGImportTask::parseFile(FutureInterfaceBase& futureInterface,
 
 		if(header.isExtendedFormat) {
 			bool isNewType = true;
-			for(const char* line = stream.line().constData(); *line != '\0'; ++line) {
+			for(const char* line = stream.line(); *line != '\0'; ++line) {
 				if(std::isspace(*line)) {
 					for(; *line != '\0'; ++line) {
 						if(!std::isspace(*line)) {
@@ -234,7 +234,7 @@ void CFGImporter::CFGImportTask::parseFile(FutureInterfaceBase& futureInterface,
 			if(isNewType) {
 				// Parse mass and atom type name.
 				currentAtomType++;
-				currentMass = atof(stream.line().constData());
+				currentMass = atof(stream.line());
 				stream.readLine();
 				addParticleType(currentAtomType, stream.lineString().trimmed());
 				continue;
@@ -245,7 +245,7 @@ void CFGImporter::CFGImportTask::parseFile(FutureInterfaceBase& futureInterface,
 		}
 
 		try {
-			columnParser.readParticle(particleIndex, const_cast<QByteArray&>(stream.line()).data());
+			columnParser.readParticle(particleIndex, const_cast<char*>(stream.line()));
 			particleIndex++;
 		}
 		catch(Exception& ex) {

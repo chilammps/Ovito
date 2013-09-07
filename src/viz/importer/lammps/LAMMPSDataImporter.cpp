@@ -44,7 +44,7 @@ bool LAMMPSDataImporter::checkFileFormat(QIODevice& input, const QUrl& sourceLoc
 	for(int i = 0; i < 20; i++) {
 		if(stream.eof())
 			return false;
-		std::string line(stream.readLine(1024).constData());
+		std::string line(stream.readLine(1024));
 		// Trim anything from '#' onward.
 		size_t commentStart = line.find('#');
 		if(commentStart != std::string::npos) line.resize(commentStart);
@@ -83,7 +83,7 @@ void LAMMPSDataImporter::LAMMPSDataImportTask::parseFile(FutureInterfaceBase& fu
 
 	while(true) {
 
-		string line(stream.readLine().constData());
+		string line(stream.readLine());
 
 		// Trim anything from '#' onward.
 		size_t commentStart = line.find('#');
@@ -149,7 +149,7 @@ void LAMMPSDataImporter::LAMMPSDataImportTask::parseFile(FutureInterfaceBase& fu
 		addParticleType(i);
 
 	// Read up to non-blank line plus 1 following line.
-	while(!stream.eof() && string(stream.line().constData()).find_first_not_of(" \t\n\r") == string::npos) {
+	while(!stream.eof() && string(stream.line()).find_first_not_of(" \t\n\r") == string::npos) {
 		stream.readLine();
 	}
 
@@ -187,7 +187,7 @@ void LAMMPSDataImporter::LAMMPSDataImportTask::parseFile(FutureInterfaceBase& fu
 				Point3 pos;
 				int tag, atypeindex;
 
-    			if(sscanf(stream.line().constData(), "%u %u " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING, &tag, &atypeindex, &pos.x(), &pos.y(), &pos.z()) != 5)
+    			if(sscanf(stream.line(), "%u %u " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING, &tag, &atypeindex, &pos.x(), &pos.y(), &pos.z()) != 5)
 					throw Exception(tr("Invalid atom specification (line %1): %2").arg(stream.lineNumber()).arg(stream.lineString()));
 
 				if(atypeindex < 1 || atypeindex > natomtypes)
@@ -223,7 +223,7 @@ void LAMMPSDataImporter::LAMMPSDataImportTask::parseFile(FutureInterfaceBase& fu
 				Vector3 v;
 				int id;
 
-    			if(sscanf(stream.line().constData(), "%u " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING, &id, &v.x(), &v.y(), &v.z()) != 4)
+    			if(sscanf(stream.line(), "%u " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING, &id, &v.x(), &v.y(), &v.z()) != 4)
 					throw Exception(tr("Invalid velocity specification (line %1): %2").arg(stream.lineNumber()).arg(stream.lineString()));
 
 				velocityProperty->setVector3(i, v);
@@ -235,7 +235,7 @@ void LAMMPSDataImporter::LAMMPSDataImportTask::parseFile(FutureInterfaceBase& fu
 		else break;
 
 		// Read up to non-blank line plus one subsequent line.
-		while(!stream.eof() && string(stream.readLine().constData()).find_first_not_of(" \t\n\r") == string::npos);
+		while(!stream.eof() && string(stream.readLine()).find_first_not_of(" \t\n\r") == string::npos);
 
 		// Read identifier strings one by one in free-form part of data file.
 		keyword = stream.line();

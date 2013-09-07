@@ -69,7 +69,7 @@ bool LAMMPSTextDumpImporter::checkFileFormat(QIODevice& input, const QUrl& sourc
 
 	// Read first line.
 	stream.readLine(15);
-	if(stream.line().startsWith("ITEM: TIMESTEP"))
+	if(stream.lineStartsWith("ITEM: TIMESTEP"))
 		return true;
 
 	return false;
@@ -100,8 +100,8 @@ void LAMMPSTextDumpImporter::scanFileForTimesteps(FutureInterfaceBase& futureInt
 
 		do {
 			int startLineNumber = stream.lineNumber();
-			if(stream.line().startsWith("ITEM: TIMESTEP")) {
-				if(sscanf(stream.readLine().constData(), "%i", &timestep) != 1)
+			if(stream.lineStartsWith("ITEM: TIMESTEP")) {
+				if(sscanf(stream.readLine(), "%i", &timestep) != 1)
 					throw Exception(tr("LAMMPS dump file parsing error. Invalid timestep number (line %1):\n%2").arg(stream.lineNumber()).arg(QString::fromLocal8Bit(stream.line())));
 				FrameSourceInformation frame;
 				frame.sourceFile = sourceUrl;
@@ -112,15 +112,15 @@ void LAMMPSTextDumpImporter::scanFileForTimesteps(FutureInterfaceBase& futureInt
 				frames.push_back(frame);
 				break;
 			}
-			else if(stream.line().startsWith("ITEM: NUMBER OF ATOMS")) {
+			else if(stream.lineStartsWith("ITEM: NUMBER OF ATOMS")) {
 				// Parse number of atoms.
 				unsigned int u;
-				if(sscanf(stream.readLine().constData(), "%u", &u) != 1 || u > 1e9)
+				if(sscanf(stream.readLine(), "%u", &u) != 1 || u > 1e9)
 					throw Exception(tr("LAMMPS dump file parsing error. Invalid number of atoms in line %1:\n%2").arg(stream.lineNumber()).arg(stream.lineString()));
 				numParticles = u;
 				break;
 			}
-			else if(stream.line().startsWith("ITEM: ATOMS")) {
+			else if(stream.lineStartsWith("ITEM: ATOMS")) {
 				for(size_t i = 0; i < numParticles; i++) {
 					stream.readLine();
 					if((i % 4096) == 0) {
@@ -131,12 +131,12 @@ void LAMMPSTextDumpImporter::scanFileForTimesteps(FutureInterfaceBase& futureInt
 				}
 				break;
 			}
-			else if(stream.line().startsWith("ITEM:")) {
+			else if(stream.lineStartsWith("ITEM:")) {
 				// Skip lines up to next ITEM:
 				while(!stream.eof()) {
 					byteOffset = stream.byteOffset();
 					stream.readLine();
-					if(stream.line().startsWith("ITEM:"))
+					if(stream.lineStartsWith("ITEM:"))
 						break;
 				}
 			}
@@ -167,22 +167,22 @@ void LAMMPSTextDumpImporter::LAMMPSTextDumpImportTask::parseFile(FutureInterface
 		stream.readLine();
 
 		do {
-			if(stream.line().startsWith("ITEM: TIMESTEP")) {
-				if(sscanf(stream.readLine().constData(), "%i", &timestep) != 1)
+			if(stream.lineStartsWith("ITEM: TIMESTEP")) {
+				if(sscanf(stream.readLine(), "%i", &timestep) != 1)
 					throw Exception(tr("LAMMPS dump file parsing error. Invalid timestep number (line %1):\n%2").arg(stream.lineNumber()).arg(QString::fromLocal8Bit(stream.line())));
 				break;
 			}
-			else if(stream.line().startsWith("ITEM: NUMBER OF ATOMS")) {
+			else if(stream.lineStartsWith("ITEM: NUMBER OF ATOMS")) {
 				// Parse number of atoms.
 				unsigned int u;
-				if(sscanf(stream.readLine().constData(), "%u", &u) != 1 || u > 1e9)
+				if(sscanf(stream.readLine(), "%u", &u) != 1 || u > 1e9)
 					throw Exception(tr("LAMMPS dump file parsing error. Invalid number of atoms in line %1:\n%2").arg(stream.lineNumber()).arg(stream.lineString()));
 
 				numParticles = u;
 				futureInterface.setProgressRange(u);
 				break;
 			}
-			else if(stream.line().startsWith("ITEM: BOX BOUNDS xy xz yz")) {
+			else if(stream.lineStartsWith("ITEM: BOX BOUNDS xy xz yz")) {
 
 				// Parse optional boundary condition flags.
 				QStringList tokens = stream.lineString().mid(qstrlen("ITEM: BOX BOUNDS xy xz yz")).split(ws_re, QString::SkipEmptyParts);
@@ -193,7 +193,7 @@ void LAMMPSTextDumpImporter::LAMMPSTextDumpImportTask::parseFile(FutureInterface
 				FloatType tiltFactors[3];
 				Box3 simBox;
 				for(int k = 0; k < 3; k++) {
-					if(sscanf(stream.readLine().constData(), FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING, &simBox.minc[k], &simBox.maxc[k], &tiltFactors[k]) != 3)
+					if(sscanf(stream.readLine(), FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING, &simBox.minc[k], &simBox.maxc[k], &tiltFactors[k]) != 3)
 						throw Exception(tr("Invalid box size in line %1 of LAMMPS dump file: %2").arg(stream.lineNumber()).arg(stream.lineString()));
 				}
 
@@ -210,7 +210,7 @@ void LAMMPSTextDumpImporter::LAMMPSTextDumpImportTask::parseFile(FutureInterface
 						simBox.minc - Point3::Origin()));
 				break;
 			}
-			else if(stream.line().startsWith("ITEM: BOX BOUNDS")) {
+			else if(stream.lineStartsWith("ITEM: BOX BOUNDS")) {
 				// Parse optional boundary condition flags.
 				QStringList tokens = stream.lineString().mid(qstrlen("ITEM: BOX BOUNDS")).split(ws_re, QString::SkipEmptyParts);
 				if(tokens.size() >= 3)
@@ -219,7 +219,7 @@ void LAMMPSTextDumpImporter::LAMMPSTextDumpImportTask::parseFile(FutureInterface
 				// Parse orthogonal simulation box size.
 				Box3 simBox;
 				for(int k = 0; k < 3; k++) {
-					if(sscanf(stream.readLine().constData(), FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING, &simBox.minc[k], &simBox.maxc[k]) != 2)
+					if(sscanf(stream.readLine(), FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING, &simBox.minc[k], &simBox.maxc[k]) != 2)
 						throw Exception(tr("Invalid box size in line %1 of dump file: %2").arg(stream.lineNumber()).arg(stream.lineString()));
 				}
 
@@ -230,7 +230,7 @@ void LAMMPSTextDumpImporter::LAMMPSTextDumpImportTask::parseFile(FutureInterface
 						simBox.minc - Point3::Origin()));
 				break;
 			}
-			else if(stream.line().startsWith("ITEM: ATOMS")) {
+			else if(stream.lineStartsWith("ITEM: ATOMS")) {
 
 				// Read the column names list.
 				QStringList tokens = stream.lineString().split(ws_re, QString::SkipEmptyParts);
@@ -269,7 +269,7 @@ void LAMMPSTextDumpImporter::LAMMPSTextDumpImportTask::parseFile(FutureInterface
 							futureInterface.setProgressValue((int)i);
 						}
 						stream.readLine();
-						columnParser.readParticle(i, const_cast<QByteArray&>(stream.line()).data());
+						columnParser.readParticle(i, const_cast<char*>(stream.line()));
 					}
 				}
 				catch(Exception& ex) {

@@ -63,11 +63,11 @@ bool XYZImporter::checkFileFormat(QIODevice& input, const QUrl& sourceLocation)
 
 	// Read first line.
 	stream.readLine(20);
-	if(stream.line().isEmpty())
+	if(stream.line()[0] == '\0')
 		return true;
 
 	// Skip initial whitespace.
-	const char* p = stream.line().constData();
+	const char* p = stream.line();
 	while(isspace(*p)) {
 		if(*p == '\0') return false;
 		++p;
@@ -161,8 +161,8 @@ void XYZImporter::scanFileForTimesteps(FutureInterfaceBase& futureInterface, QVe
 		stream.readLine();
 		int startLineNumber = stream.lineNumber();
 
-		if(stream.line().isEmpty()) break;
-		if(sscanf(stream.line().constData(), "%u", &numParticles) != 1 || numParticles < 0 || numParticles > 1e9)
+		if(stream.line()[0] == '\0') break;
+		if(sscanf(stream.line(), "%u", &numParticles) != 1 || numParticles < 0 || numParticles > 1e9)
 			throw Exception(tr("Invalid number of particles in line %1 of XYZ file: %2").arg(stream.lineNumber()).arg(stream.lineString()));
 
 		// Create a new record for the time step.
@@ -198,7 +198,7 @@ void XYZImporter::XYZImportTask::parseFile(FutureInterfaceBase& futureInterface,
 
 	// Parse number of atoms.
 	int numParticles;
-	if(sscanf(stream.readLine().constData(), "%u", &numParticles) != 1 || numParticles < 0 || numParticles > 1e9)
+	if(sscanf(stream.readLine(), "%u", &numParticles) != 1 || numParticles < 0 || numParticles > 1e9)
 		throw Exception(tr("Invalid number of particles in line %1 of XYZ file: %2").arg(stream.lineNumber()).arg(stream.lineString()));
 	futureInterface.setProgressRange(numParticles);
 
@@ -283,7 +283,7 @@ void XYZImporter::XYZImportTask::parseFile(FutureInterfaceBase& futureInterface,
 				futureInterface.setProgressValue((int)i);
 			}
 			stream.readLine();
-			columnParser.readParticle(i, const_cast<QByteArray&>(stream.line()).data());
+			columnParser.readParticle(i, const_cast<char*>(stream.line()));
 		}
 	}
 	catch(Exception& ex) {

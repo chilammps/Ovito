@@ -32,10 +32,8 @@ Wolfgang Verestek <wolfgang.verestek@imwf.uni-stuttgart.de>:
 
 - uU könnte es hilfreich sein, wenn man eigene ColorMaps einzubinden.
 - für eine weitere Bearbeitung von IMD-chkpt-files wäre eine Exportfunktion für alle/mehrere timesteps wünschenswert (momentan wird das über ein ovitos script geregelt)
-- Modifier Displacement: hier werden x, y und z-Displacement angezeigt. Die Gesamtverformung kann man zwar über ComputeChannel berechnen, könnte sinnvoller Weise aber auch gleich vom Modifier bereitgestellt werden.
 - Die Histogrammfunktion (an der Sie ja schon arbeiten) wurde mehrfach erwähnt.
 - Vermutlich schwer zu realisieren, aber verschiedene Pipelinebrowser für die Fenster, so dass z.B. in einem Fenster eine CNA-Analyse und in einem anderen Displacement oder Spannung dargestellt werden kann.
-- Beim Speichern eines scene files werden bei mir die zugrunde liegenden cfg Dateien mitgespeichert, so dass, wenn ich das scene file öffne, die dazugehörigen Datendateien geöffnet werde, statt dass es auf die aktuell geladenen Daten angewendet wird.
 - Ein View Modifier (z.B. Polarkoordinaten oder in kartesischen Koordinaten), der die Kameraposition festlegt, um für mehrere Simulationen denselben Blickwinkel bereitstellen zu können.
 - Ein Messtool zur Messung von Atomabständen und/oder –winkeln
 

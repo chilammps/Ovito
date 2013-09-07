@@ -46,7 +46,7 @@ bool POSCARImporter::checkFileFormat(QIODevice& input, const QUrl& sourceLocatio
 	// Read global scaling factor
 	double scaling_factor;
 	stream.readLine();
-	if(stream.eof() || sscanf(stream.line().constData(), "%lg", &scaling_factor) != 1 || scaling_factor <= 0)
+	if(stream.eof() || sscanf(stream.line(), "%lg", &scaling_factor) != 1 || scaling_factor <= 0)
 		return false;
 
 	// Read cell matrix
@@ -55,7 +55,7 @@ bool POSCARImporter::checkFileFormat(QIODevice& input, const QUrl& sourceLocatio
 		if(stream.lineString().split(ws_re, QString::SkipEmptyParts).size() != 3)
 			return false;
 		double x,y,z;
-		if(sscanf(stream.line().constData(), "%lg %lg %lg", &x, &y, &z) != 3 || stream.eof())
+		if(sscanf(stream.line(), "%lg %lg %lg", &x, &y, &z) != 3 || stream.eof())
 			return false;
 	}
 
@@ -94,13 +94,13 @@ void POSCARImporter::POSCARImportTask::parseFile(FutureInterfaceBase& futureInte
 
 	// Read global scaling factor
 	FloatType scaling_factor = 0;
-	if(sscanf(stream.readLine().constData(), FLOATTYPE_SCANF_STRING, &scaling_factor) != 1 || scaling_factor <= 0)
+	if(sscanf(stream.readLine(), FLOATTYPE_SCANF_STRING, &scaling_factor) != 1 || scaling_factor <= 0)
 		throw Exception(tr("Invalid scaling factor (line 1): %1").arg(stream.lineString()));
 
 	// Read cell matrix
 	AffineTransformation cell = AffineTransformation::Identity();
 	for(size_t i = 0; i < 3; i++) {
-		if(sscanf(stream.readLine().constData(),
+		if(sscanf(stream.readLine(),
 				FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING,
 				&cell(0,i), &cell(1,i), &cell(2,i)) != 3 || cell.column(i) == Vector3::Zero())
 			throw Exception(tr("Invalid cell vector (line %1): %2").arg(stream.lineNumber()).arg(stream.lineString()));
@@ -137,12 +137,12 @@ void POSCARImporter::POSCARImportTask::parseFile(FutureInterfaceBase& futureInte
 
 	// Read in 'Selective dynamics' flag
 	stream.readLine();
-	if(stream.line().length() >= 1 && (stream.line().at(0) == 'S' || stream.line().at(0) == 's'))
+	if(stream.line()[0] == 'S' || stream.line()[0] == 's')
 		stream.readLine();
 
 	// Parse coordinate system.
 	bool isCartesian = false;
-	if(stream.line().length() >= 1 && (stream.line().at(0) == 'C' || stream.line().at(0) == 'c' || stream.line().at(0) == 'K' || stream.line().at(0) == 'k'))
+	if(stream.line()[0] == 'C' || stream.line()[0] == 'c' || stream.line()[0] == 'K' || stream.line()[0] == 'k')
 		isCartesian = true;
 
 	// Create the particle properties.
@@ -159,7 +159,7 @@ void POSCARImporter::POSCARImportTask::parseFile(FutureInterfaceBase& futureInte
 				(atomTypeNames.size() == atomCounts.size()) ? atomTypeNames[atype-1] : QString());
 		for(int i = 0; i < atomCounts[atype-1]; i++, ++p, ++a) {
 			*a = atype;
-			if(sscanf(stream.readLine().constData(), FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING,
+			if(sscanf(stream.readLine(), FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING,
 					&p->x(), &p->y(), &p->z()) != 3)
 				throw Exception(tr("Invalid atom coordinates (line %1): %2").arg(stream.lineNumber()).arg(stream.lineString()));
 			if(!isCartesian)
@@ -172,9 +172,9 @@ void POSCARImporter::POSCARImportTask::parseFile(FutureInterfaceBase& futureInte
 	// Parse coordinate system for velocity vectors.
 	if(!stream.eof())
 		stream.readLine();
-	if(!stream.eof() && stream.line().length() >= 1) {
+	if(!stream.eof() && stream.line()[0] != '\0') {
 		isCartesian = false;
-		if(stream.line().at(0) == 'C' || stream.line().at(0) == 'c' || stream.line().at(0) == 'K' || stream.line().at(0) == 'k')
+		if(stream.line()[0] == 'C' || stream.line()[0] == 'c' || stream.line()[0] == 'K' || stream.line()[0] == 'k')
 			isCartesian = true;
 
 		// Read atom velocities.
@@ -183,7 +183,7 @@ void POSCARImporter::POSCARImportTask::parseFile(FutureInterfaceBase& futureInte
 		Vector3* v = velocityProperty->dataVector3();
 		for(int atype = 1; atype <= atomCounts.size(); atype++) {
 			for(int i = 0; i < atomCounts[atype-1]; i++, ++v) {
-				if(sscanf(stream.readLine().constData(), FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING,
+				if(sscanf(stream.readLine(), FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING,
 						&v->x(), &v->y(), &v->z()) != 3)
 					throw Exception(tr("Invalid atom velocity vector (line %1): %2").arg(stream.lineNumber()).arg(stream.lineString()));
 				if(!isCartesian)

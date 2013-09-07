@@ -245,16 +245,16 @@ InputColumnReader::InputColumnReader(const InputColumnMapping& mapping, Particle
  *****************************************************************************/
 void InputColumnReader::readParticle(size_t particleIndex, char* dataLine)
 {
-	if(_tokens.isNull())
+	if(!_tokens)
 		_tokens.reset(new const char*[_properties.size()]);
 
 	// Divide string into tokens.
 	int ntokens = 0;
 	while(ntokens < _properties.size()) {
-		while(*dataLine != '\0' && std::isblank(*dataLine))
+		while(*dataLine == ' ' || *dataLine == '\t')
 			++dataLine;
 		_tokens[ntokens] = dataLine;
-		while(*dataLine != '\0' && !std::isspace(*dataLine))
+		while(*dataLine > ' ')
 			++dataLine;
 		if(*dataLine == '\n' || *dataLine == '\r') *dataLine = '\0';
 		if(dataLine != _tokens[ntokens]) ntokens++;
@@ -263,12 +263,63 @@ void InputColumnReader::readParticle(size_t particleIndex, char* dataLine)
 		dataLine++;
 	}
 
-	readParticle(particleIndex, ntokens, _tokens.data());
+	readParticle(particleIndex, ntokens, _tokens.get());
+}
+
+
+/******************************************************************************
+ * Helper function that converts a string to a floating-point number.
+ *****************************************************************************/
+inline bool parseFloatType(const char* s, float& f)
+{
+	// First use the atof() function to parse the number because it's fast.
+	// However, atof() returns 0.0 to report a parsing error. Thus, if
+	// we get 0.0, we need to use the slower strtof() function as a means to
+	// discriminate invalid strings from an actual zero value.
+
+	f = (float)std::atof(s);
+	if(f != 0.0f)
+		return true;
+	else {
+		char* endptr;
+		f = std::strtof(s, &endptr);
+		return !*endptr;
+	}
+}
+
+/******************************************************************************
+ * Helper function that converts a string to a floating-point number.
+ *****************************************************************************/
+inline bool parseFloatType(const char* s, double& f)
+{
+	// First use the atof() function to parse the number because it's fast.
+	// However, atof() returns 0.0 to report a parsing error. Thus, if
+	// we get 0.0, we need to use the slower strtod() function as a means to
+	// discriminate invalid strings from an actual zero value.
+
+	f = std::atof(s);
+	if(f != 0.0)
+		return true;
+	else {
+		char* endptr;
+		f = std::strtod(s, &endptr);
+		return !*endptr;
+	}
+}
+
+/******************************************************************************
+ * Helper function that converts a string to an integer number.
+ *****************************************************************************/
+inline bool parseInt(const char* s, int& i)
+{
+	char* endptr;
+	i = std::strtol(s, &endptr, 10);
+	return !*endptr;
 }
 
 /******************************************************************************
  * Parses the string tokens from one line of the input file and stores the values
- * in the data channels of the destination AtomsObject.
+ * in the particle properties.
  *****************************************************************************/
 void InputColumnReader::readParticle(size_t particleIndex, int ntokens, const char* tokens[])
 {
@@ -290,24 +341,20 @@ void InputColumnReader::readParticle(size_t particleIndex, int ntokens, const ch
 		OVITO_ASSERT_MSG(_mapping.vectorComponent(columnIndex) < property->componentCount(), "InputColumnReader::readParticle", "Component index is out of range.");
 
 		if(property->dataType() == _floatMetaTypeId) {
-#ifdef FLOATTYPE_FLOAT
-			float f = std::strtof(*token, &endptr);
-#else
-			double f = std::strtod(*token, &endptr);
-#endif
-			if(*endptr)
+			FloatType f;
+			if(!parseFloatType(*token, f))
 				throw Exception(tr("Invalid floating-point value in column %1 (%2): \"%3\"").arg(columnIndex+1).arg(property->name()).arg(*token));
-			property->setFloatComponent(particleIndex, _mapping.vectorComponent(columnIndex), (FloatType)f);
+			property->setFloatComponent(particleIndex, _mapping.vectorComponent(columnIndex), f);
 		}
 		else if(property->dataType() == _intMetaTypeId) {
-			d = std::strtol(*token, &endptr, 10);
+			bool ok = parseInt(*token, d);
 			if(property->type() != ParticleProperty::ParticleTypeProperty) {
-				if(*endptr)
+				if(!ok)
 					throw Exception(tr("Invalid integer value in column %1 (%2): \"%3\"").arg(columnIndex+1).arg(property->name()).arg(*token));
 			}
 			else {
 				// Automatically register a new particle type if a new type identifier is encountered.
-				if(!*endptr) {
+				if(ok) {
 					_destination.addParticleType(d);
 				}
 				else {

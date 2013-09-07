@@ -188,7 +188,7 @@ private:
 	int _intMetaTypeId, _floatMetaTypeId;
 
 	/// Array of pointers to the tokens in a text string.
-	QScopedArrayPointer<const char*> _tokens;
+	std::unique_ptr<const char*[]> _tokens;
 };
 
 };	// End of namespace

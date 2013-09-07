@@ -39,7 +39,7 @@ bool IMDImporter::checkFileFormat(QIODevice& input, const QUrl& sourceLocation)
 	stream.readLine(1024);
 
 	// Read first line.
-	return stream.line().startsWith("#F A ");
+	return stream.lineStartsWith("#F A ");
 }
 
 /******************************************************************************
@@ -54,7 +54,7 @@ void IMDImporter::IMDImportTask::parseFile(FutureInterfaceBase& futureInterface,
 
 	// Read first header line.
 	stream.readLine();
-	if(!stream.line().startsWith("#F"))
+	if(!stream.lineStartsWith("#F"))
 		throw Exception(tr("Not an IMD atom file."));
 	QStringList tokens = stream.lineString().split(ws_re, QString::SkipEmptyParts);
 	if(tokens.size() < 2 || tokens[1] != "A")
@@ -66,11 +66,11 @@ void IMDImporter::IMDImportTask::parseFile(FutureInterfaceBase& futureInterface,
 	// Read remaining header lines
 	for(;;) {
 		stream.readLine();
-		if(stream.line().isEmpty() || stream.line().at(0) != '#')
+		if(stream.line()[0] != '#')
 			throw Exception(tr("Invalid header in IMD atom file (line %1): %2").arg(stream.lineNumber()).arg(stream.lineString()));
-		if(stream.line().at(1) == '#') continue;
-		else if(stream.line().at(1) == 'E') break;
-		else if(stream.line().at(1) == 'C') {
+		if(stream.line()[1] == '#') continue;
+		else if(stream.line()[1] == 'E') break;
+		else if(stream.line()[1] == 'C') {
 			QStringList tokens = stream.lineString().split(ws_re, QString::SkipEmptyParts);
 			int columnIndex = 0;
 			for(int t = 1; t < tokens.size(); t++) {
@@ -113,16 +113,16 @@ void IMDImporter::IMDImportTask::parseFile(FutureInterfaceBase& futureInterface,
 				columnIndex++;
 			}
 		}
-		else if(stream.line().at(1) == 'X') {
-			if(sscanf(stream.line().constData() + 2, FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING, &cell(0,0), &cell(1,0), &cell(2,0)) != 3)
+		else if(stream.line()[1] == 'X') {
+			if(sscanf(stream.line() + 2, FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING, &cell(0,0), &cell(1,0), &cell(2,0)) != 3)
 				throw Exception(tr("Invalid simulation cell bounds in line %1 of IMD file: %2").arg(stream.lineNumber()).arg(stream.lineString()));
 		}
-		else if(stream.line().at(1) == 'Y') {
-			if(sscanf(stream.line().constData() + 2, FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING, &cell(0,1), &cell(1,1), &cell(2,1)) != 3)
+		else if(stream.line()[1] == 'Y') {
+			if(sscanf(stream.line() + 2, FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING, &cell(0,1), &cell(1,1), &cell(2,1)) != 3)
 				throw Exception(tr("Invalid simulation cell bounds in line %1 of IMD file: %2").arg(stream.lineNumber()).arg(stream.lineString()));
 		}
-		else if(stream.line().at(1) == 'Z') {
-			if(sscanf(stream.line().constData() + 2, FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING, &cell(0,2), &cell(1,2), &cell(2,2)) != 3)
+		else if(stream.line()[1] == 'Z') {
+			if(sscanf(stream.line() + 2, FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING, &cell(0,2), &cell(1,2), &cell(2,2)) != 3)
 				throw Exception(tr("Invalid simulation cell bounds in line %1 of IMD file: %2").arg(stream.lineNumber()).arg(stream.lineString()));
 		}
 		else throw Exception(tr("Invalid header line key in IMD atom file (line %2).").arg(stream.lineNumber()));
@@ -136,7 +136,7 @@ void IMDImporter::IMDImportTask::parseFile(FutureInterfaceBase& futureInterface,
 	// Count the number of atoms (=lines) in the input file.
 	int numAtoms = 0;
 	while(!stream.eof()) {
-		if(stream.readLine().isEmpty()) break;
+		if(stream.readLine()[0] == '\0') break;
 		numAtoms++;
 
 		if((numAtoms % 1000) == 0 && futureInterface.isCanceled())
@@ -158,7 +158,7 @@ void IMDImporter::IMDImportTask::parseFile(FutureInterfaceBase& futureInterface,
 				futureInterface.setProgressValue((int)i);
 			}
 			stream.readLine();
-			columnParser.readParticle(i, const_cast<QByteArray&>(stream.line()).data());
+			columnParser.readParticle(i, const_cast<char*>(stream.line()));
 		}
 		catch(Exception& ex) {
 			throw ex.prependGeneralMessage(tr("Parsing error in line %1 of IMD file.").arg(headerLinerNumber + i));

@@ -39,7 +39,8 @@ public:
 
 	/// Constructor that opens the input stream.
 	CompressedTextParserStream(QIODevice& input, const QString& originalFilePath) :
-		_device(input), _lineNumber(0), _byteOffset(0), _uncompressor(&input, 6, 0x100000)
+		_device(input), _lineNumber(0), _byteOffset(0), _uncompressor(&input, 6, 0x100000),
+		_lineCapacity(0)
 	{
 		// Try to find out what the filename is.
 		if(originalFilePath.isEmpty() == false)
@@ -73,15 +74,53 @@ public:
 	QIODevice& device() { return _device; }
 
 	/// Reads in the next line.
-	const QByteArray& readLine(qint64 maxSize = 0) {
+	const char* readLine(int maxSize = 0) {
 		_lineNumber++;
 
 		if(_stream->atEnd())
 			throw Exception(tr("File parsing error. Unexpected end of file after line %1.").arg(_lineNumber));
 
-		_line = _stream->readLine(maxSize);
-		_byteOffset += _line.size();
-		return _line;
+		qint64 readBytes = 0;
+		if(!maxSize) {
+			if(_lineCapacity <= 1) {
+				_line.reset(new char[2]);
+				_lineCapacity = 2;
+			}
+			readBytes = _stream->readLine(_line.get(), _lineCapacity);
+
+			if(readBytes == _lineCapacity - 1 && _line[readBytes - 1] != '\n') {
+				qint64 readResult;
+				do {
+					size_t newCapacity = _lineCapacity + 16384;
+					std::unique_ptr<char[]> newBuffer(new char[newCapacity]);
+					memcpy(newBuffer.get(), _line.get(), _lineCapacity);
+					_line.reset(newBuffer.release());
+					_lineCapacity = newCapacity;
+					readResult = _stream->readLine(_line.get() + readBytes, _lineCapacity - readBytes);
+					if(readResult > 0 || readBytes == 0)
+						readBytes += readResult;
+				}
+				while(readResult == Q_INT64_C(16384) && _line[readBytes - 1] != '\n');
+			}
+		}
+		else {
+			if(maxSize > _lineCapacity) {
+				_lineCapacity = maxSize + 1;
+				_line.reset(new char[_lineCapacity]);
+			}
+			OVITO_ASSERT(_line.get() != nullptr);
+			readBytes = _stream->readLine(_line.get(), _lineCapacity);
+		}
+
+		OVITO_ASSERT(_line.get() != nullptr);
+		if(readBytes <= 0)
+			_line[0] = '\0';
+		else {
+			_line[readBytes] = '\0';
+			_byteOffset += readBytes;
+		}
+
+		return _line.get();
 	}
 
 	/// Checks whether the end of file is reached.
@@ -90,10 +129,21 @@ public:
 	}
 
 	/// Returns the last line read from the data stream.
-	const QByteArray& line() const { return _line; }
+	const char* line() const { return _line.get(); }
+
+	/// Returns true if the current line starts with the given string.
+	bool lineStartsWith(const char* s) const {
+		const char* l = line();
+		while(*s) {
+			if(*l != *s)
+				return false;
+			++s; ++l;
+		}
+		return true;
+	}
 
 	/// Returns the current line as a string.
-	QString lineString() const { return QString::fromLocal8Bit(_line); }
+	QString lineString() const { return QString::fromLocal8Bit(_line.get()); }
 
 	/// Returns the number of the current line.
 	int lineNumber() const { return _lineNumber; }
@@ -125,8 +175,11 @@ private:
 	/// The name of the input file (if known).
 	QString _filename;
 
-	/// The current line.
-	QByteArray _line;
+	/// Buffer that holds the current line.
+	std::unique_ptr<char[]> _line;
+
+	/// The capacity of the line buffer.
+	size_t _lineCapacity;
 
 	/// The current line number.
 	int _lineNumber;
