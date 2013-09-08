@@ -45,6 +45,7 @@ SET(OVITO_VIZ_SOURCE_FILES
 	modifier/analysis/strain/AtomicStrainModifier.cpp
 	modifier/analysis/bonds/CreateBondsModifier.cpp
 	modifier/analysis/coordination/CoordinationNumberModifier.cpp
+	modifier/analysis/histogram/HistogramModifier.cpp
 	modifier/lighting/AmbientOcclusionModifier.cpp
 	modifier/lighting/AmbientOcclusionRenderer.cpp
 	modifier/transformation/AffineTransformationModifier.cpp

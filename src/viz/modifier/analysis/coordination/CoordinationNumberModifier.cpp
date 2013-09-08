@@ -27,7 +27,7 @@
 
 namespace Viz {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Viz, CoordinationNumberModifier, ParticleModifier)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Viz, CoordinationNumberModifier, AsynchronousParticleModifier)
 IMPLEMENT_OVITO_OBJECT(Viz, CoordinationNumberModifierEditor, ParticleModifierEditor)
 SET_OVITO_OBJECT_EDITOR(CoordinationNumberModifier, CoordinationNumberModifierEditor)
 DEFINE_PROPERTY_FIELD(CoordinationNumberModifier, _cutoff, "Cutoff")
@@ -172,7 +172,7 @@ ObjectStatus CoordinationNumberModifier::applyModifierResults(TimePoint time, Ti
 ******************************************************************************/
 void CoordinationNumberModifier::propertyChanged(const PropertyFieldDescriptor& field)
 {
-	// Recompute brightness values when the parameters have been changed.
+	// Recompute modifier results when the parameters have been changed.
 	if(autoUpdateEnabled()) {
 		if(field == PROPERTY_FIELD(CoordinationNumberModifier::_cutoff))
 			invalidateCachedResults();
@@ -206,11 +206,6 @@ void CoordinationNumberModifierEditor::createUI(const RolloutInsertionParameters
 	connect(cutoffRadiusPUI, SIGNAL(valueEntered()), this, SLOT(memorizeCutoff()));
 
 	layout->addLayout(gridlayout);
-
-#if 0
-	BooleanParameterUI* showReferenceUI = new BooleanParameterUI(this, PROPERTY_FIELD(CoordinationNumberModifier::_referenceShown));
-	layout->addWidget(showReferenceUI->checkBox());
-#endif
 
 	_rdfPlot = new QCustomPlot();
 	_rdfPlot->setMinimumHeight(180);

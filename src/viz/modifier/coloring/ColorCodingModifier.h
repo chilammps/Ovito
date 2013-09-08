@@ -313,7 +313,7 @@ protected:
 
 private:
 
-	/// The list of particle type properties.
+	/// The list of particle properties.
 	ParticlePropertyComboBox* propertyListBox;
 
 	/// The list of available color gradients.
