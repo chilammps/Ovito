@@ -128,6 +128,17 @@ public:
 	///         then no naming is necessary.
 	const QStringList& componentNames() const { return _storage->componentNames(); }
 
+	/// \brief Returns the display name of the property including the name of the given
+	///        vector component.
+	QString nameWithComponent(int vectorComponent) const {
+		if(componentCount() <= 1 || vectorComponent < 0)
+			return name();
+		else if(vectorComponent < componentNames().size())
+			return QString("%1.%2").arg(name()).arg(componentNames()[vectorComponent]);
+		else
+			return QString("%1.%2").arg(name()).arg(vectorComponent + 1);
+	}
+
 	/// Copies the contents from the given source into this storage.
 	/// Particles for which the bit in the given mask is set are skipped.
 	void filterCopy(ParticlePropertyObject* source, const std::vector<bool>& mask) {

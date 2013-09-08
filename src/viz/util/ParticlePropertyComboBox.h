@@ -54,17 +54,7 @@ public:
 	/// \brief Adds a particle property to the end of the list.
 	/// \param property The particle property to be added.
 	void addItem(ParticlePropertyObject* property, int vectorComponent = -1) {
-
-		QString componentName;
-		if(vectorComponent != -1 && vectorComponent < property->componentNames().size())
-			componentName = property->componentNames()[vectorComponent];
-
-		QString label;
-		if(componentName.isEmpty())
-			label = property->name();
-		else
-			label = QString("%1.%2").arg(property->name()).arg(componentName);
-
+		QString label = property->nameWithComponent(vectorComponent);
 		ParticlePropertyReference propRef(property, vectorComponent);
 		QComboBox::addItem(label, qVariantFromValue(propRef));
 	}

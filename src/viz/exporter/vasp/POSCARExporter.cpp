@@ -35,7 +35,7 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Viz, POSCARExporter, ParticleExporter)
 ******************************************************************************/
 bool POSCARExporter::showSettingsDialog(DataSet* dataset, const PipelineFlowState& state, QWidget* parent)
 {
-	ParticleExporterSettingsDialog dialog(this, dataset, parent);
+	ParticleExporterSettingsDialog dialog(parent, this, dataset, state);
 	return (dialog.exec() == QDialog::Accepted);
 }
 

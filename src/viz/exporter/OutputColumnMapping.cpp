@@ -27,21 +27,21 @@ namespace Viz {
 /******************************************************************************
  * Inserts a column that will be written to the output data file.
  *****************************************************************************/
-void OutputColumnMapping::insertColumn(int columnIndex, DataChannel::DataChannelIdentifier channelId, const QString& channelName, size_t vectorComponent)
+void OutputColumnMapping::insertColumn(int columnIndex, ParticleProperty::Type propertyType, const QString& propertyName, int vectorComponent)
 {
 	OVITO_ASSERT(columnIndex >= 0);
 
 	// Expand column array if necessary and initialize all new columns to their default values.
 	while(columnIndex >= columnCount()) {
-		MapEntry newEntry;
-		newEntry.dataChannelId = DataChannel::UserDataChannel;
+		Column newEntry;
+		newEntry.propertyType = ParticleProperty::UserProperty;
 		newEntry.vectorComponent = 0;
-		columns.append(newEntry);
+		_columns.append(newEntry);
 	}
 
-	columns[columnIndex].dataChannelId = channelId;
-	columns[columnIndex].dataChannelName = channelName;
-	columns[columnIndex].vectorComponent = vectorComponent;
+	_columns[columnIndex].propertyType = propertyType;
+	_columns[columnIndex].propertyName = propertyName;
+	_columns[columnIndex].vectorComponent = vectorComponent;
 }
 
 /******************************************************************************
@@ -51,7 +51,7 @@ void OutputColumnMapping::removeColumn(int columnIndex)
 {
 	OVITO_ASSERT(columnIndex >= 0);
 	if(columnIndex < columnCount()) {
-		columns.remove(columnIndex);
+		_columns.remove(columnIndex);
 	}
 }
 
@@ -60,12 +60,12 @@ void OutputColumnMapping::removeColumn(int columnIndex)
  *****************************************************************************/
 void OutputColumnMapping::saveToStream(SaveStream& stream) const
 {
-	stream.beginChunk(0x10000000);
-	stream << columns.size();
-	for(QVector<MapEntry>::const_iterator entry = columns.constBegin(); entry != columns.constEnd(); ++entry) {
-		stream.writeEnum(entry->dataChannelId);
-		stream << entry->dataChannelName;
-		stream.writeSizeT(entry->vectorComponent);
+	stream.beginChunk(0x01);
+	stream << (int)_columns.size();
+	for(const Column& col : _columns) {
+		stream.writeEnum(col.propertyType);
+		stream << col.propertyName;
+		stream << col.vectorComponent;
 	}
 	stream.endChunk();
 }
@@ -75,14 +75,14 @@ void OutputColumnMapping::saveToStream(SaveStream& stream) const
  *****************************************************************************/
 void OutputColumnMapping::loadFromStream(LoadStream& stream)
 {
-	stream.expectChunk(0x10000000);
+	stream.expectChunk(0x01);
 	int numColumns;
 	stream >> numColumns;
-	columns.resize(numColumns);
-	for(QVector<MapEntry>::iterator entry = columns.begin(); entry != columns.end(); ++entry) {
-		stream.readEnum(entry->dataChannelId);
-		stream >> entry->dataChannelName;
-		stream.readSizeT(entry->vectorComponent);
+	_columns.resize(numColumns);
+	for(Column& col : _columns) {
+		stream.readEnum(col.propertyType);
+		stream >> col.propertyName;
+		stream >> col.vectorComponent;
 	}
 	stream.closeChunk();
 }
@@ -112,183 +112,63 @@ void OutputColumnMapping::fromByteArray(const QByteArray& array)
 }
 
 /******************************************************************************
- * Saves the mapping the application's settings store.
- *****************************************************************************/
-void OutputColumnMapping::savePreset(const QString& presetName) const
-{
-	QSettings settings;
-	settings.beginGroup("atomviz/io/channelmapping/presets");
-	settings.beginGroup(presetName);
-	settings.setValue("name", presetName);
-	settings.setValue("data", toByteArray());
-	settings.endGroup();
-	settings.endGroup();
-}
-
-/******************************************************************************
- * Loads a mapping from the application's settings store.
- *****************************************************************************/
-void OutputColumnMapping::loadPreset(const QString& presetName)
-{
-	QSettings settings;
-	settings.beginGroup("atomviz/io/channelmapping/presets");
-	settings.beginGroup(presetName);
-	if(settings.value("name").toString() != presetName)
-		throw Exception(tr("No preset found with the name: %1").arg(presetName));
-	fromByteArray(settings.value("data").toByteArray());
-}
-
-/******************************************************************************
- * Returns a list of all presets found in the
- *****************************************************************************/
-QStringList OutputColumnMapping::listPresets()
-{
-	QStringList list;
-	QSettings settings;
-	settings.beginGroup("atomviz/io/channelmapping/presets");
-	// Find preset with the given name.
-	Q_FOREACH(QString group, settings.childGroups()) {
-		settings.beginGroup(group);
-		list.push_back(settings.value("name").toString());
-		settings.endGroup();
-	}
-	return list;
-}
-
-/******************************************************************************
- * Deletes a mapping from the application's settings store.
- *****************************************************************************/
-void OutputColumnMapping::deletePreset(const QString& presetName)
-{
-	QSettings settings;
-	settings.beginGroup("atomviz/io/channelmapping/presets");
-	// Find preset with the given name.
-	Q_FOREACH(QString group, settings.childGroups()) {
-		settings.beginGroup(group);
-		if(settings.value("name").toString() == presetName) {
-			settings.endGroup();
-			settings.remove(group);
-			return;
-		}
-		settings.endGroup();
-	}
-	throw Exception(tr("No preset found with the name: %1").arg(presetName));
-}
-
-/******************************************************************************
- * Makes a copy of the mapping object.
- *****************************************************************************/
-OutputColumnMapping& OutputColumnMapping::operator=(const OutputColumnMapping& other)
-{
-	this->columns = other.columns;
-	return *this;
-}
-
-/******************************************************************************
  * Initializes the helper object.
  *****************************************************************************/
-DataRecordWriterHelper::DataRecordWriterHelper(const OutputColumnMapping* mapping, AtomsObject* source)
+OutputColumnWriter::OutputColumnWriter(const OutputColumnMapping& mapping, const PipelineFlowState& source)
+	: _mapping(mapping), _source(source)
 {
-	CHECK_POINTER(mapping);
-	CHECK_OBJECT_POINTER(source);
+	// Gather the source properties.
+	for(int i = 0; i < mapping.columnCount(); i++) {
 
-	this->mapping = mapping;
-	this->source = source;
+		ParticleProperty::Type propertyType = mapping.propertyType(i);
+		QString propertyName = mapping.propertyName(i);
+		int vectorComponent = mapping.vectorComponent(i);
 
-	// Gather the source data channels.
-	for(int i=0; i<mapping->columnCount(); i++) {
-
-		DataChannel::DataChannelIdentifier channelId = mapping->getChannelId(i);
-		QString channelName = mapping->getChannelName(i);
-		size_t vectorComponent = mapping->getVectorComponent(i);
-
-		DataChannel* channel;
-		if(channelId != DataChannel::UserDataChannel)
-			channel = source->getStandardDataChannel(channelId);
-		else
-			channel = source->findDataChannelByName(channelName);
-
-		// Validate column
-		if(channel == NULL && channelId != DataChannel::AtomIndexChannel) {
-			throw Exception(tr("The mapping between data channels and columns in the output file is not valid. "
-			                   "The source dataset does not contain a data channel named '%1'.").arg(channelName));
+		ParticlePropertyObject* property = nullptr;
+		for(const auto& o : source.objects()) {
+			ParticlePropertyObject* p = dynamic_object_cast<ParticlePropertyObject>(o.get());
+			if(p && p->type() == propertyType) {
+				if(propertyType != ParticleProperty::UserProperty || p->name() == propertyName) {
+					property = p;
+					break;
+				}
+			}
 		}
-		if(channel && channel->componentCount() <= vectorComponent)
-			throw Exception(tr("The vector component specified for column %1 exceeds the number of available vector components in data channel '%2'.").arg(i).arg(channelName));
-		if(channel && channel->type() == QMetaType::Void)
-			throw Exception(tr("The data channel '%1' cannot be written to the output file because it is empty.").arg(channelName));
 
-		// Build internal list of channel objects for fast look up during writing.
-		channels.push_back(channel);
-		vectorComponents.push_back(vectorComponent);
+		if(property == nullptr && propertyType != ParticleProperty::IdentifierProperty) {
+			throw Exception(tr("The defined data columns to be written to the output file are not valid. "
+			                   "The source data does not contain a particle property named '%1'.").arg(propertyName));
+		}
+		if(property && property->componentCount() <= vectorComponent)
+			throw Exception(tr("The vector component specified for column %1 exceeds the number of available vector components in the particle property '%2'.").arg(i).arg(propertyName));
+		if(property && property->dataType() == QMetaType::Void)
+			throw Exception(tr("The particle property '%1' cannot be written to the output file because it is empty.").arg(propertyName));
+
+		// Build internal list of property objects for fast look up during writing.
+		_properties.push_back(property);
+		_vectorComponents.push_back(vectorComponent);
 	}
 }
 
 /******************************************************************************
  * Writes the data record for a single atom to the output stream.
  *****************************************************************************/
-void DataRecordWriterHelper::writeAtom(int atomIndex, QIODevice& stream)
+void OutputColumnWriter::writeParticle(size_t particleIndex, QTextStream& stream)
 {
-	QVector<DataChannel*>::const_iterator channel = channels.constBegin();
-	QVector<size_t>::const_iterator vcomp = vectorComponents.constBegin();
-	for(; channel != channels.constEnd(); ++channel, ++vcomp) {
-		if(channel != channels.constBegin()) stream.putChar(' ');
-		if(*channel != NULL) {
-			if((*channel)->type() == qMetaTypeId<int>())
-				buffer.setNum((*channel)->getIntComponent(atomIndex, *vcomp));
-			else if((*channel)->type() == qMetaTypeId<FloatType>())
-				buffer.setNum((*channel)->getFloatComponent(atomIndex, *vcomp), 'g', 12);
-			else buffer.clear();
+	QVector<ParticlePropertyObject*>::const_iterator property = _properties.constBegin();
+	QVector<int>::const_iterator vcomp = _vectorComponents.constBegin();
+	for(; property != _properties.constEnd(); ++property, ++vcomp) {
+		if(property != _properties.constBegin()) stream << QStringLiteral(" ");
+		if(*property) {
+			if((*property)->dataType() == qMetaTypeId<int>())
+				stream << (*property)->getIntComponent(particleIndex, *vcomp);
+			else if((*property)->dataType() == qMetaTypeId<FloatType>())
+				stream << (*property)->getFloatComponent(particleIndex, *vcomp);
 		}
 		else {
-			buffer.setNum(atomIndex+1);
-		}
-		stream.write(buffer);
-	}
-}
-
-/******************************************************************************
- * Writes the data record for a single atom to the output stream.
- *****************************************************************************/
-void DataRecordWriterHelper::writeAtom(int atomIndex, std::ostream& stream)
-{
-	QVector<DataChannel*>::const_iterator channel = channels.constBegin();
-	QVector<size_t>::const_iterator vcomp = vectorComponents.constBegin();
-	for(; channel != channels.constEnd(); ++channel, ++vcomp) {
-		if(channel != channels.constBegin()) stream << ' ';
-		if(*channel != NULL) {
-			if((*channel)->type() == qMetaTypeId<int>())
-				stream << (*channel)->getIntComponent(atomIndex, *vcomp);
-			else if((*channel)->type() == qMetaTypeId<FloatType>())
-				stream << (*channel)->getFloatComponent(atomIndex, *vcomp);
-		}
-		else {
-			stream << (atomIndex+1);
+			stream << (particleIndex + 1);
 		}
 	}
 }
-
-/******************************************************************************
- * Stores the data channels values for one atom in the given buffer
- * according to the OutputColumnMapping.
- *****************************************************************************/
-void DataRecordWriterHelper::writeAtom(int atomIndex, double* buffer)
-{
-	QVector<DataChannel*>::const_iterator channel = channels.constBegin();
-	QVector<size_t>::const_iterator vcomp = vectorComponents.constBegin();
-	for(; channel != channels.constEnd(); ++channel, ++vcomp, ++buffer) {
-		if(*channel != NULL) {
-			if((*channel)->type() == qMetaTypeId<int>())
-				*buffer = (*channel)->getIntComponent(atomIndex, *vcomp);
-			else if((*channel)->type() == qMetaTypeId<FloatType>())
-				*buffer = (*channel)->getFloatComponent(atomIndex, *vcomp);
-			else *buffer = 0;
-		}
-		else {
-			*buffer = atomIndex+1;
-		}
-	}
-}
-
 
 };	// End of namespace

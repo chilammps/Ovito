@@ -69,8 +69,10 @@ SET(OVITO_VIZ_SOURCE_FILES
 	importer/cfg/CFGImporter.cpp
 	exporter/ParticleExporter.cpp
 	exporter/ParticleExporterSettingsDialog.cpp
+	exporter/OutputColumnMapping.cpp
 	exporter/vasp/POSCARExporter.cpp
 	exporter/lammps/LAMMPSDataExporter.cpp
+	exporter/lammps/LAMMPSDumpExporter.cpp
 	util/TreeNeighborListBuilder.cpp
 	util/OnTheFlyNeighborListBuilder.cpp
 	util/ParticlePropertyComboBox.cpp

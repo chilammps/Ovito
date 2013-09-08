@@ -28,6 +28,8 @@
 
 namespace Viz {
 
+class OutputColumnMapping;
+
 /******************************************************************************
 * This dialog box lets the user adjust the export settings.
 ******************************************************************************/
@@ -38,7 +40,7 @@ class ParticleExporterSettingsDialog : public QDialog
 public:
 
 	/// Constructor.
-	ParticleExporterSettingsDialog(ParticleExporter* exporter, DataSet* dataset, QWidget* parent = 0);
+	ParticleExporterSettingsDialog(QWidget* parent, ParticleExporter* exporter, DataSet* dataset, const PipelineFlowState& state, OutputColumnMapping* columnMapping = nullptr);
 
 protected Q_SLOTS:
 
@@ -54,6 +56,8 @@ protected:
 	QLineEdit* _wildcardTextbox;
 	QButtonGroup* _fileGroupButtonGroup;
 	QButtonGroup* _rangeButtonGroup;
+	OutputColumnMapping* _columnMapping;
+	QListWidget* _columnMappingWidget;
 };
 
 };	// End of namespace

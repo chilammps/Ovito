@@ -21,14 +21,15 @@
 
 #include <core/Core.h>
 #include "ParticleExporterSettingsDialog.h"
+#include "OutputColumnMapping.h"
 
 namespace Viz {
 
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-ParticleExporterSettingsDialog::ParticleExporterSettingsDialog(ParticleExporter* exporter, DataSet* dataset, QWidget* parent)
-	: QDialog(parent), _exporter(exporter)
+ParticleExporterSettingsDialog::ParticleExporterSettingsDialog(QWidget* parent, ParticleExporter* exporter, DataSet* dataset, const PipelineFlowState& state, OutputColumnMapping* columnMapping)
+	: QDialog(parent), _exporter(exporter), _columnMapping(columnMapping)
 {
 	setWindowTitle(tr("Export Settings"));
 
@@ -118,6 +119,78 @@ ParticleExporterSettingsDialog::ParticleExporterSettingsDialog(ParticleExporter*
 	_wildcardTextbox->setEnabled(radioBtn->isChecked());
 	connect(radioBtn, SIGNAL(toggled(bool)), _wildcardTextbox, SLOT(setEnabled(bool)));
 
+	if(columnMapping) {
+		QGroupBox* columnsGroupBox = new QGroupBox(tr("Particle properties to export"), this);
+		layout1->addWidget(columnsGroupBox);
+		QGridLayout* columnsGroupBoxLayout = new QGridLayout(columnsGroupBox);
+
+		_columnMappingWidget = new QListWidget();
+		columnsGroupBoxLayout->addWidget(_columnMappingWidget, 0, 0, 3, 1);
+		columnsGroupBoxLayout->setRowStretch(2, 1);
+
+		for(const auto& o : state.objects()) {
+			ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o.get());
+			if(!property) continue;
+			for(int vectorComponent = 0; vectorComponent < property->componentCount(); vectorComponent++) {
+				QString propertyName = property->nameWithComponent(vectorComponent);
+				QListWidgetItem* item = new QListWidgetItem(propertyName);
+				item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled | Qt::ItemNeverHasChildren);
+				item->setCheckState(Qt::Unchecked);
+				ParticlePropertyReference propRef(property, vectorComponent);
+				item->setData(Qt::UserRole, qVariantFromValue(propRef));
+				int sortKey = columnMapping->columnCount();
+
+				for(int c = 0; c < columnMapping->columnCount(); c++) {
+					if(columnMapping->propertyType(c) == property->type() && columnMapping->vectorComponent(c) == vectorComponent && columnMapping->propertyName(c) == property->name()) {
+						item->setCheckState(Qt::Checked);
+						sortKey = c;
+						break;
+					}
+				}
+
+				item->setData(Qt::InitialSortOrderRole, sortKey);
+				if(sortKey < columnMapping->columnCount()) {
+					int insertIndex = 0;
+					for(; insertIndex < _columnMappingWidget->count(); insertIndex++) {
+						int k = _columnMappingWidget->item(insertIndex)->data(Qt::InitialSortOrderRole).value<int>();
+						if(sortKey < k)
+							break;
+					}
+					_columnMappingWidget->insertItem(insertIndex, item);
+				}
+				else {
+					_columnMappingWidget->addItem(item);
+				}
+			}
+		}
+
+		QPushButton* moveUpButton = new QPushButton(tr("Move up"), columnsGroupBox);
+		QPushButton* moveDownButton = new QPushButton(tr("Move down"), columnsGroupBox);
+		columnsGroupBoxLayout->addWidget(moveUpButton, 0, 1, 1, 1);
+		columnsGroupBoxLayout->addWidget(moveDownButton, 1, 1, 1, 1);
+		moveUpButton->setEnabled(_columnMappingWidget->currentRow() >= 1);
+		moveDownButton->setEnabled(_columnMappingWidget->currentRow() >= 0 && _columnMappingWidget->currentRow() < _columnMappingWidget->count() - 1);
+
+		connect(_columnMappingWidget, &QListWidget::itemSelectionChanged, [moveUpButton, moveDownButton, this]() {
+			moveUpButton->setEnabled(_columnMappingWidget->currentRow() >= 1);
+			moveDownButton->setEnabled(_columnMappingWidget->currentRow() >= 0 && _columnMappingWidget->currentRow() < _columnMappingWidget->count() - 1);
+		});
+
+		connect(moveUpButton, &QPushButton::clicked, [this]() {
+			int currentIndex = _columnMappingWidget->currentRow();
+			QListWidgetItem* currentItem = _columnMappingWidget->takeItem(currentIndex);
+			_columnMappingWidget->insertItem(currentIndex - 1, currentItem);
+			_columnMappingWidget->setCurrentRow(currentIndex - 1);
+		});
+
+		connect(moveDownButton, &QPushButton::clicked, [this]() {
+			int currentIndex = _columnMappingWidget->currentRow();
+			QListWidgetItem* currentItem = _columnMappingWidget->takeItem(currentIndex);
+			_columnMappingWidget->insertItem(currentIndex + 1, currentItem);
+			_columnMappingWidget->setCurrentRow(currentIndex + 1);
+		});
+	}
+
 	QDialogButtonBox* buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, this);
 	connect(buttonBox, SIGNAL(accepted()), this, SLOT(onOk()));
 	connect(buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
@@ -137,6 +210,17 @@ void ParticleExporterSettingsDialog::onOk()
 		_exporter->setStartFrame(_startTimeSpinner->intValue());
 		_exporter->setEndFrame(std::max(_endTimeSpinner->intValue(), _startTimeSpinner->intValue()));
 		_exporter->setEveryNthFrame(_nthFrameSpinner->intValue());
+
+		if(_columnMapping) {
+			OutputColumnMapping newMapping;
+			for(int index = 0; index < _columnMappingWidget->count(); index++) {
+				if(_columnMappingWidget->item(index)->checkState() == Qt::Checked) {
+					ParticlePropertyReference propRef = _columnMappingWidget->item(index)->data(Qt::UserRole).value<ParticlePropertyReference>();
+					newMapping.insertColumn(newMapping.columnCount(), propRef.type(), propRef.name(), propRef.vectorComponent());
+				}
+			}
+			*_columnMapping = newMapping;
+		}
 
 		accept();
 	}
