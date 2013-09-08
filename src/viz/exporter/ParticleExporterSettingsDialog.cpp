@@ -128,40 +128,20 @@ ParticleExporterSettingsDialog::ParticleExporterSettingsDialog(QWidget* parent, 
 		columnsGroupBoxLayout->addWidget(_columnMappingWidget, 0, 0, 3, 1);
 		columnsGroupBoxLayout->setRowStretch(2, 1);
 
+		bool hasParticleIdentifiers = false;
 		for(const auto& o : state.objects()) {
 			ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o.get());
 			if(!property) continue;
 			for(int vectorComponent = 0; vectorComponent < property->componentCount(); vectorComponent++) {
 				QString propertyName = property->nameWithComponent(vectorComponent);
-				QListWidgetItem* item = new QListWidgetItem(propertyName);
-				item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled | Qt::ItemNeverHasChildren);
-				item->setCheckState(Qt::Unchecked);
 				ParticlePropertyReference propRef(property, vectorComponent);
-				item->setData(Qt::UserRole, qVariantFromValue(propRef));
-				int sortKey = columnMapping->columnCount();
-
-				for(int c = 0; c < columnMapping->columnCount(); c++) {
-					if(columnMapping->propertyType(c) == property->type() && columnMapping->vectorComponent(c) == vectorComponent && columnMapping->propertyName(c) == property->name()) {
-						item->setCheckState(Qt::Checked);
-						sortKey = c;
-						break;
-					}
-				}
-
-				item->setData(Qt::InitialSortOrderRole, sortKey);
-				if(sortKey < columnMapping->columnCount()) {
-					int insertIndex = 0;
-					for(; insertIndex < _columnMappingWidget->count(); insertIndex++) {
-						int k = _columnMappingWidget->item(insertIndex)->data(Qt::InitialSortOrderRole).value<int>();
-						if(sortKey < k)
-							break;
-					}
-					_columnMappingWidget->insertItem(insertIndex, item);
-				}
-				else {
-					_columnMappingWidget->addItem(item);
-				}
+				insertPropertyItem(propRef, propertyName);
+				if(property->type() == ParticleProperty::IdentifierProperty)
+					hasParticleIdentifiers = true;
 			}
+		}
+		if(!hasParticleIdentifiers) {
+			insertPropertyItem(ParticleProperty::IdentifierProperty, tr("Particle index"));
 		}
 
 		QPushButton* moveUpButton = new QPushButton(tr("Move up"), columnsGroupBox);
@@ -195,6 +175,40 @@ ParticleExporterSettingsDialog::ParticleExporterSettingsDialog(QWidget* parent, 
 	connect(buttonBox, SIGNAL(accepted()), this, SLOT(onOk()));
 	connect(buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
 	layout1->addWidget(buttonBox);
+}
+
+/******************************************************************************
+* Populates the column mapping list box with an entry.
+******************************************************************************/
+void ParticleExporterSettingsDialog::insertPropertyItem(ParticlePropertyReference propRef, const QString& displayName)
+{
+	QListWidgetItem* item = new QListWidgetItem(displayName);
+	item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled | Qt::ItemNeverHasChildren);
+	item->setCheckState(Qt::Unchecked);
+	item->setData(Qt::UserRole, qVariantFromValue(propRef));
+	int sortKey = _columnMapping->columnCount();
+
+	for(int c = 0; c < _columnMapping->columnCount(); c++) {
+		if(_columnMapping->propertyType(c) == propRef.type() && _columnMapping->vectorComponent(c) == propRef.vectorComponent() && _columnMapping->propertyName(c) == propRef.name()) {
+			item->setCheckState(Qt::Checked);
+			sortKey = c;
+			break;
+		}
+	}
+
+	item->setData(Qt::InitialSortOrderRole, sortKey);
+	if(sortKey < _columnMapping->columnCount()) {
+		int insertIndex = 0;
+		for(; insertIndex < _columnMappingWidget->count(); insertIndex++) {
+			int k = _columnMappingWidget->item(insertIndex)->data(Qt::InitialSortOrderRole).value<int>();
+			if(sortKey < k)
+				break;
+		}
+		_columnMappingWidget->insertItem(insertIndex, item);
+	}
+	else {
+		_columnMappingWidget->addItem(item);
+	}
 }
 
 /******************************************************************************

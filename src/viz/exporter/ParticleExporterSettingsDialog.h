@@ -24,6 +24,7 @@
 
 #include <core/Core.h>
 #include <core/gui/widgets/SpinnerWidget.h>
+#include <viz/data/ParticlePropertyObject.h>
 #include "ParticleExporter.h"
 
 namespace Viz {
@@ -48,6 +49,9 @@ protected Q_SLOTS:
 	virtual void onOk();
 
 protected:
+
+	/// Populates the column mapping list box with an entry.
+	void insertPropertyItem(ParticlePropertyReference propRef, const QString& displayName);
 
 	OORef<ParticleExporter> _exporter;
 	SpinnerWidget* _startTimeSpinner;
