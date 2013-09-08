@@ -21,6 +21,7 @@
 
 #include <core/Core.h>
 #include <core/gui/widgets/RolloutContainer.h>
+#include <core/gui/actions/ViewportModeAction.h>
 #include <core/animation/AnimManager.h>
 #include <core/viewport/Viewport.h>
 #include <core/viewport/ViewportManager.h>
@@ -56,6 +57,10 @@ void ParticleInformationApplet::openUtility(RolloutContainer* container, const R
 	layout->setContentsMargins(4,4,4,4);
 	layout->setSpacing(4);
 
+	QPushButton* pickModeButton = new QPushButton(tr("Picking mode"));
+	pickModeButton->setCheckable(true);
+	layout->addWidget(pickModeButton);
+
 	_captionLabel = new QLabel(tr("Double-click on a particle in the viewports."), _panel);
 	layout->addWidget(_captionLabel);
 	_captionLabel->setTextInteractionFlags(Qt::TextSelectableByMouse|Qt::TextSelectableByKeyboard);
@@ -75,6 +80,9 @@ void ParticleInformationApplet::openUtility(RolloutContainer* container, const R
 	layout->addWidget(_table);
 
 	_inputMode = new ParticleInformationInputMode(this);
+	ViewportModeAction* pickModeAction = new ViewportModeAction(tr("Pick mode"), this, _inputMode);
+	connect(pickModeAction, SIGNAL(toggled(bool)), pickModeButton, SLOT(setChecked(bool)));
+	connect(pickModeButton, SIGNAL(clicked(bool)), pickModeAction, SLOT(trigger()));
 	ViewportInputManager::instance().pushInputHandler(_inputMode);
 }
 
@@ -166,9 +174,9 @@ void ParticleInformationApplet::updateInformationDisplay()
 /******************************************************************************
 * Handles the mouse down events for a Viewport.
 ******************************************************************************/
-void ParticleInformationInputMode::mouseDoubleClickEvent(Viewport* vp, QMouseEvent* event)
+void ParticleInformationInputMode::mousePressEvent(Viewport* vp, QMouseEvent* event)
 {
-	ViewportInputHandler::mouseDoubleClickEvent(vp, event);
+	ViewportInputHandler::mousePressEvent(vp, event);
 	if(event->button() == Qt::LeftButton) {
 
 		_selectedNode = nullptr;
@@ -205,11 +213,15 @@ void ParticleInformationInputMode::renderOverlay(Viewport* vp, ViewportSceneRend
 {
 	ViewportInputHandler::renderOverlay(vp, renderer, isActive);
 
+	if(!renderer->isInteractive())
+		return;
+
 	if(!_selectedNode)
 		return;
 
 	const PipelineFlowState& flowState = _selectedNode->evalPipeline(AnimManager::instance().time());
 
+	// If particle selection is based on ID, find particle with the given ID.
 	size_t particleIndex = _particleIndex;
 	if(_particleId >= 0) {
 		for(const auto& sceneObj : flowState.objects()) {
@@ -224,6 +236,7 @@ void ParticleInformationInputMode::renderOverlay(Viewport* vp, ViewportSceneRend
 		}
 	}
 
+	// Fetch properties of selected particle needed to render the overlay.
 	ParticlePropertyObject* posProperty = nullptr;
 	ParticlePropertyObject* radiusProperty = nullptr;
 	ParticlePropertyObject* typeProperty = nullptr;
@@ -253,25 +266,6 @@ void ParticleInformationInputMode::renderOverlay(Viewport* vp, ViewportSceneRend
 
 	TimeInterval iv;
 	const AffineTransformation& nodeTM = _selectedNode->getWorldTransform(AnimManager::instance().time(), iv);
-	AffineTransformation particleTM = nodeTM * AffineTransformation::translation(pos - Point3::Origin()) * AffineTransformation::scaling(radius);
-	renderer->setWorldTransform(particleTM);
-
-	// Prepare marker geometry buffer.
-	if(!_markerBuffer || !_markerBuffer->isValid(renderer)) {
-		ColorA markerColor(0.2, 1.0, 1.0);
-		FloatType markerWidth = 0.25;
-		FloatType markerSize = 4;
-		_markerBuffer = renderer->createArrowGeometryBuffer(ArrowGeometryBuffer::ArrowShape, ArrowGeometryBuffer::NormalShading, ArrowGeometryBuffer::MediumQuality);
-		_markerBuffer->startSetElements(6);
-		_markerBuffer->setElement(0, Point3( markerSize,0,0), Vector3(-markerSize + 1,0,0), markerColor, markerWidth);
-		_markerBuffer->setElement(1, Point3(-markerSize,0,0), Vector3( markerSize - 1,0,0), markerColor, markerWidth);
-		_markerBuffer->setElement(2, Point3(0, markerSize,0), Vector3(0,-markerSize + 1,0), markerColor, markerWidth);
-		_markerBuffer->setElement(3, Point3(0,-markerSize,0), Vector3(0, markerSize - 1,0), markerColor, markerWidth);
-		_markerBuffer->setElement(4, Point3(0,0, markerSize), Vector3(0,0,-markerSize + 1), markerColor, markerWidth);
-		_markerBuffer->setElement(5, Point3(0,0,-markerSize), Vector3(0,0, markerSize - 1), markerColor, markerWidth);
-		_markerBuffer->endSetElements();
-	}
-	_markerBuffer->render(renderer);
 
 	// Prepare marker geometry buffer.
 	if(!_markerBuffer2 || !_markerBuffer2->isValid(renderer)
@@ -291,6 +285,42 @@ void ParticleInformationInputMode::renderOverlay(Viewport* vp, ViewportSceneRend
 	glDepthFunc(GL_LEQUAL);
 	_markerBuffer2->render(renderer);
 	glDepthFunc(oldDepthFunc);
+
+	// Prepare marker geometry buffer.
+	if(!_markerBuffer || !_markerBuffer->isValid(renderer)) {
+		ColorA markerColor(1.0, 1.0, 1.0);
+		_markerBuffer = renderer->createLineGeometryBuffer();
+		Point3 vertices[64];
+		for(int i = 0; i < sizeof(vertices)/sizeof(vertices[0])/2; i++) {
+			FloatType angle = (FloatType)i * 2.0 * FLOATTYPE_PI / (sizeof(vertices)/sizeof(vertices[0])/2);
+			vertices[i*2] = Point3(0, cos(angle), sin(angle));
+		}
+		for(int i = 0; i < sizeof(vertices)/sizeof(vertices[0])/2; i++) {
+			vertices[i*2+1] = vertices[(i*2+2)%(sizeof(vertices)/sizeof(vertices[0]))];
+		}
+		_markerBuffer->setSize(sizeof(vertices)/sizeof(vertices[0]));
+		_markerBuffer->setVertexPositions(vertices);
+		_markerBuffer->setVertexColor(markerColor);
+	}
+	AffineTransformation particleTM = nodeTM * AffineTransformation::translation(pos - Point3::Origin()) * AffineTransformation::scaling(radius);
+	glDisable(GL_DEPTH_TEST);
+	for(int i = 0; i < 6; i++) {
+		renderer->setWorldTransform(particleTM * AffineTransformation::rotationZ(FLOATTYPE_PI/6 * i));
+		_markerBuffer->render(renderer);
+	}
+#if 0
+	ViewProjectionParameters vparams = renderer->projParams();
+	AffineTransformation oldViewMatrix = vparams.viewMatrix;
+	vparams.viewMatrix = nodeTM * AffineTransformation::translation(oldViewMatrix * pos - Point3::Origin()) * AffineTransformation::scaling(radius);
+	vparams.inverseViewMatrix = vparams.viewMatrix.inverse();
+	renderer->setProjParams(vparams);
+	renderer->setWorldTransform(AffineTransformation::Identity());
+	_markerBuffer->render(renderer);
+	vparams.viewMatrix = oldViewMatrix;
+	vparams.inverseViewMatrix = oldViewMatrix.inverse();
+	renderer->setProjParams(vparams);
+#endif
+	glEnable(GL_DEPTH_TEST);
 }
 
 };

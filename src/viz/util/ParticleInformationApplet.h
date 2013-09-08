@@ -26,7 +26,7 @@
 #include <core/gui/mainwin/cmdpanel/UtilityApplet.h>
 #include <core/viewport/input/ViewportInputHandler.h>
 #include <core/viewport/input/ViewportInputManager.h>
-#include <core/rendering/ArrowGeometryBuffer.h>
+#include <core/rendering/LineGeometryBuffer.h>
 #include <core/rendering/ParticleGeometryBuffer.h>
 
 namespace Viz {
@@ -47,7 +47,7 @@ public:
 	virtual InputHandlerType handlerType() override { return ViewportInputHandler::NORMAL; }
 
 	/// Handles the mouse down events for a Viewport.
-	virtual void mouseDoubleClickEvent(Viewport* vp, QMouseEvent* event) override;
+	virtual void mousePressEvent(Viewport* vp, QMouseEvent* event) override;
 
 	/// \brief Lets the input mode render its overlay content in a viewport.
 	virtual void renderOverlay(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive) override;
@@ -70,7 +70,7 @@ private:
 	QPointer<ObjectNode> _selectedNode;
 
 	/// Used to render the marker for the selected particle.
-	OORef<ArrowGeometryBuffer> _markerBuffer;
+	OORef<LineGeometryBuffer> _markerBuffer;
 
 	/// Used to render the marker for the selected particle.
 	OORef<ParticleGeometryBuffer> _markerBuffer2;

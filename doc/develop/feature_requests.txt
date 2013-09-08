@@ -24,14 +24,18 @@ Sha Zhendong (IHPC) <shaz@ihpc.a-star.edu.sg>:
 
 Fossati, Paul C <p.fossati@imperial.ac.uk>:
 
-- is there a way to use different setups for each viewport? That would be very useful to see e. g. the apparition of defects during one simulation while monitoring the stress field at the same time. Admittedly, this is possible by doing two rendering batches and then playing the movies simultaneously, but this is not as elegant.
+- is there a way to use different setups for each viewport? That would be very useful to see e. g. the 
+apparition of defects during one simulation while monitoring the stress field at the same time. 
+Admittedly, this is possible by doing two rendering batches and then playing the movies simultaneously, 
+but this is not as elegant.
 
-- is there a way to set key strokes to various settings? For example one key to add coordination analysis or CNA to the stack, or the ability to move the camera with the arrow keys (e. g. rotate with the arrows, pan and zoom with the arrows and a modifier).
+- is there a way to set key strokes to various settings? For example one key to add coordination analysis or 
+CNA to the stack, or the ability to move the camera with the arrow keys (e. g. rotate with the arrows, pan and 
+zoom with the arrows and a modifier).
 
 Wolfgang Verestek <wolfgang.verestek@imwf.uni-stuttgart.de>:
 
 - uU könnte es hilfreich sein, wenn man eigene ColorMaps einzubinden.
-- für eine weitere Bearbeitung von IMD-chkpt-files wäre eine Exportfunktion für alle/mehrere timesteps wünschenswert (momentan wird das über ein ovitos script geregelt)
 - Die Histogrammfunktion (an der Sie ja schon arbeiten) wurde mehrfach erwähnt.
 - Vermutlich schwer zu realisieren, aber verschiedene Pipelinebrowser für die Fenster, so dass z.B. in einem Fenster eine CNA-Analyse und in einem anderen Displacement oder Spannung dargestellt werden kann.
 - Ein View Modifier (z.B. Polarkoordinaten oder in kartesischen Koordinaten), der die Kameraposition festlegt, um für mehrere Simulationen denselben Blickwinkel bereitstellen zu können.
