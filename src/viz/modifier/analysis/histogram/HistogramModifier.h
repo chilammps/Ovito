@@ -28,6 +28,7 @@
 #include "../../ParticleModifier.h"
 
 class QCustomPlot;
+class QCPItemStraightLine;
 
 namespace Viz {
 
@@ -59,6 +60,24 @@ public:
 	/// Sets the number of bins in the computed histogram.
 	void setNumberOfBins(int n) { _numberOfBins = n; }
 
+	/// Returns the stored histogram data.
+	const std::vector<int>& histogramData() const { return _histogramData; }
+
+	/// Returns the start value of the histogram interval.
+	FloatType intervalStart() const { return _intervalStart; }
+
+	/// Returns the end value of the histogram interval.
+	FloatType intervalEnd() const { return _intervalEnd; }
+
+	/// Returns the whether particles within the specified range should be selected.
+	bool selectInRange() const { return _selectInRange; }
+
+	/// Returns the start value of the selection interval.
+	FloatType selectionRangeStart() const { return _selectionRangeStart; }
+
+	/// Returns the end value of the selection interval.
+	FloatType selectionRangeEnd() const { return _selectionRangeEnd; }
+
 public:
 
 	Q_PROPERTY(Viz::ParticlePropertyReference sourceProperty READ sourceProperty WRITE setSourceProperty)
@@ -86,6 +105,24 @@ private:
 	/// Controls the number of histogram bins.
 	PropertyField<int> _numberOfBins;
 
+	/// Controls the whether particles within the specified range should be selected.
+	PropertyField<bool> _selectInRange;
+
+	/// Controls the start value of the selection interval.
+	PropertyField<FloatType> _selectionRangeStart;
+
+	/// Controls the end value of the selection interval.
+	PropertyField<FloatType> _selectionRangeEnd;
+
+	/// Stores the histogram data.
+	std::vector<int> _histogramData;
+
+	/// The start value of the histogram interval.
+	FloatType _intervalStart;
+
+	/// The end value of the histogram interval.
+	FloatType _intervalEnd;
+
 	Q_OBJECT
 	OVITO_OBJECT
 
@@ -93,6 +130,9 @@ private:
 	Q_CLASSINFO("ModifierCategory", "Analysis");
 
 	DECLARE_PROPERTY_FIELD(_numberOfBins);
+	DECLARE_PROPERTY_FIELD(_selectInRange);
+	DECLARE_PROPERTY_FIELD(_selectionRangeStart);
+	DECLARE_PROPERTY_FIELD(_selectionRangeEnd);
 };
 
 /******************************************************************************
@@ -135,6 +175,12 @@ private:
 
 	/// The graph widget to display the histogram.
 	QCustomPlot* _histogramPlot;
+
+	/// Marks the selection interval in the histogram plot.
+	QCPItemStraightLine* _selectionRangeStartMarker;
+
+	/// Marks the selection interval in the histogram plot.
+	QCPItemStraightLine* _selectionRangeEndMarker;
 
 	Q_OBJECT
 	OVITO_OBJECT
