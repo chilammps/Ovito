@@ -30,7 +30,7 @@ namespace Ovito {
 ******************************************************************************/
 FrameBufferWindow::FrameBufferWindow(QWidget* parent) : QMainWindow(parent, (Qt::WindowFlags)(Qt::Tool | Qt::CustomizeWindowHint | Qt::WindowMaximizeButtonHint | Qt::WindowCloseButtonHint))
 {
-	frameBufferWidget = new FrameBufferWidget();
+	_frameBufferWidget = new FrameBufferWidget();
 
 	class MyScrollArea : public QScrollArea {
 	public:
@@ -45,12 +45,13 @@ FrameBufferWindow::FrameBufferWindow(QWidget* parent) : QMainWindow(parent, (Qt:
 	};
 
 	QScrollArea* scrollArea = new MyScrollArea(this);
-	scrollArea->setWidget(frameBufferWidget);
+	scrollArea->setWidget(_frameBufferWidget);
 	setCentralWidget(scrollArea);
 
 	QToolBar* toolBar = addToolBar(tr("Frame Buffer"));
 	toolBar->addAction(QIcon(":/core/framebuffer/save_picture.png"), tr("Save to file"), this, SLOT(saveImage()));
 	toolBar->addAction(QIcon(":/core/framebuffer/copy_picture_to_clipboard.png"), tr("Copy to clipboard"), this, SLOT(copyImageToClipboard()));
+	toolBar->addAction(QIcon(":/core/framebuffer/auto_crop.png"), tr("Auto-crop image"), this, SLOT(autoCrop()));
 }
 
 /******************************************************************************
@@ -59,7 +60,8 @@ FrameBufferWindow::FrameBufferWindow(QWidget* parent) : QMainWindow(parent, (Qt:
 ******************************************************************************/
 void FrameBufferWindow::saveImage()
 {
-	if(frameBuffer() == nullptr) return;
+	if(!frameBuffer())
+		return;
 
 	SaveImageFileDialog fileDialog(this, tr("Save image"));
 	if(fileDialog.exec()) {
@@ -76,10 +78,92 @@ void FrameBufferWindow::saveImage()
 ******************************************************************************/
 void FrameBufferWindow::copyImageToClipboard()
 {
-	if(frameBuffer() == nullptr) return;
+	if(!frameBuffer())
+		return;
 
 	QClipboard *clipboard = QApplication::clipboard();
 	clipboard->setImage(frameBuffer()->image());
+}
+
+/******************************************************************************
+* Removes unnecessary pixels at the outer edges of the rendered image.
+******************************************************************************/
+void FrameBufferWindow::autoCrop()
+{
+	if(!frameBuffer())
+		return;
+
+	QImage image = frameBuffer()->image().convertToFormat(QImage::Format_ARGB32);
+	auto determineCropRect = [&image](QRgb backgroundColor) -> QRect {
+		int x1 = 0, y1 = 0;
+		int x2 = image.width() - 1, y2 = image.height() - 1;
+		bool significant;
+		for(;; x1++) {
+			significant = false;
+			for(int y = y1; y <= y2; y++) {
+				if(reinterpret_cast<const QRgb*>(image.constScanLine(y))[x1] != backgroundColor) {
+					significant = true;
+					break;
+				}
+			}
+			if(significant || x1 > x2)
+				break;
+		}
+		for(; x2 >= x1; x2--) {
+			significant = false;
+			for(int y = y1; y <= y2; y++) {
+				if(reinterpret_cast<const QRgb*>(image.constScanLine(y))[x2] != backgroundColor) {
+					significant = true;
+					break;
+				}
+			}
+			if(significant || x1 > x2)
+				break;
+		}
+		for(;; y1++) {
+			significant = false;
+			const QRgb* s = reinterpret_cast<const QRgb*>(image.constScanLine(y1));
+			for(int x = x1; x <= x2; x++) {
+				if(s[x] != backgroundColor) {
+					significant = true;
+					break;
+				}
+			}
+			if(significant || y1 > y2)
+				break;
+		}
+		for(; y2 >= y1; y2--) {
+			significant = false;
+			const QRgb* s = reinterpret_cast<const QRgb*>(image.constScanLine(y2));
+			for(int x = x1; x <= x2; x++) {
+				if(s[x] != backgroundColor) {
+					significant = true;
+					break;
+				}
+			}
+			if(significant || y1 > y2)
+				break;
+		}
+		return QRect(x1, y1, x2 - x1 + 1, y2 - y1 + 1);
+	};
+
+	// Use the pixel colors in the four corners of the images as candidate background colors.
+	// Compute the crop rect for each candidate color and use the one that leads
+	// to the smallest crop rect.
+	QRect cropRect = determineCropRect(image.pixel(0,0));
+	QRect r;
+	r = determineCropRect(image.pixel(image.width()-1,0));
+	if(r.width()*r.height() < cropRect.width()*cropRect.height()) cropRect = r;
+	r = determineCropRect(image.pixel(image.width()-1,image.height()-1));
+	if(r.width()*r.height() < cropRect.width()*cropRect.height()) cropRect = r;
+	r = determineCropRect(image.pixel(0,image.height()-1));
+	if(r.width()*r.height() < cropRect.width()*cropRect.height()) cropRect = r;
+
+	if(cropRect != image.rect() && cropRect.width() > 0 && cropRect.height() > 0) {
+		QSharedPointer<FrameBuffer> newFrameBuffer(new FrameBuffer(cropRect.width(), cropRect.height()));
+		newFrameBuffer->image() = frameBuffer()->image().copy(cropRect);
+		setFrameBuffer(newFrameBuffer);
+	}
 }
 
 };

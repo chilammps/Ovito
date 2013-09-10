@@ -174,6 +174,7 @@ bool StandardSceneRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialo
 	// Fetch rendered image from OpenGL framebuffer.
 	// Scale it down to the output size.
 	QImage image = _framebufferObject->toImage().scaled(frameBuffer->image().width(), frameBuffer->image().height(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+
 	// Copy OpenGL image to the output frame buffer.
 	QPainter painter(&frameBuffer->image());
 	painter.drawImage(0, 0, image);

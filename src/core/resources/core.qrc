@@ -83,6 +83,7 @@
 
 	<file>framebuffer/save_picture.png</file>	
 	<file>framebuffer/copy_picture_to_clipboard.png</file>
+	<file>framebuffer/auto_crop.png</file>
 	
 	<file>glsl/particles/sprites/flat.fs</file>
 	<file>glsl/particles/sprites/imposter_without_depth.vs</file>

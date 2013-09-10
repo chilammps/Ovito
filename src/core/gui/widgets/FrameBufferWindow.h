@@ -39,14 +39,14 @@ public:
 	FrameBufferWindow(QWidget* parent = nullptr);
 
 	/// Return the FrameBuffer that is currently shown in the widget (can be NULL).
-	const QSharedPointer<FrameBuffer>& frameBuffer() const { return frameBufferWidget->frameBuffer(); }
+	const QSharedPointer<FrameBuffer>& frameBuffer() const { return _frameBufferWidget->frameBuffer(); }
 
 	/// Sets the FrameBuffer that is currently shown in the widget.
-	void setFrameBuffer(const QSharedPointer<FrameBuffer>& frameBuffer) { frameBufferWidget->setFrameBuffer(frameBuffer); }
+	void setFrameBuffer(const QSharedPointer<FrameBuffer>& frameBuffer) { _frameBufferWidget->setFrameBuffer(frameBuffer); }
 
 	/// Repaints the contents of the frame buffer.
 	void updateFrame() {
-		frameBufferWidget->update();
+		_frameBufferWidget->update();
 	}
 
 public Q_SLOTS:
@@ -58,10 +58,13 @@ public Q_SLOTS:
 	/// This copies the current image to the clipboard.
 	void copyImageToClipboard();
 
+	/// Removes unnecessary pixels at the outer edges of the rendered image.
+	void autoCrop();
+
 private:
 
 	/// The widget that displays the FrameBuffer.
-	FrameBufferWidget* frameBufferWidget;
+	FrameBufferWidget* _frameBufferWidget;
 
 private:
 
