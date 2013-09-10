@@ -22,6 +22,7 @@
 // Inputs from calling program:
 uniform mat4 modelview_matrix;
 uniform mat4 modelview_projection_matrix;
+uniform float modelview_uniform_scale;
 
 #if __VERSION__ < 130
 	#define in attribute
@@ -49,14 +50,16 @@ void main()
 {
 	// Pass color to fragment shader.
 	cylinder_color_in = cylinder_color;
+	
 	// Pass radius to fragment shader.
-	cylinder_radius_in = cylinder_radius;
-	// Pass length to fragment shader.
-	cylinder_length = length(cylinder_axis);
+	cylinder_radius_in = cylinder_radius * modelview_uniform_scale;
 
 	// Transform cylinder to eye coordinates.
 	cylinder_view_base = vec3(modelview_matrix * vec4(cylinder_base, 1));
 	cylinder_view_axis = vec3(modelview_matrix * vec4(cylinder_axis, 0));
+
+	// Pass length to fragment shader.
+	cylinder_length = length(cylinder_view_axis);
 
 	// Transform and project vertex position.
 	gl_Position = modelview_projection_matrix * vec4(vertex_pos, 1.0);

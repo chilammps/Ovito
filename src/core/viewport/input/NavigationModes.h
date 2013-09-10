@@ -23,6 +23,8 @@
 #define __OVITO_NAVIGATION_MODES_H
 
 #include <core/Core.h>
+#include <core/gui/app/Application.h>
+#include <core/rendering/ArrowGeometryBuffer.h>
 #include "ViewportInputHandler.h"
 
 namespace Ovito {
@@ -33,6 +35,14 @@ namespace Ovito {
 class OVITO_CORE_EXPORT NavigationMode : public ViewportInputHandler
 {
 	Q_OBJECT
+
+public:
+
+	enum OrbitCenterMode {
+		ORBIT_CONSTRUCTION_PLANE,	/// Take the current construction plane as orbit center.
+		ORBIT_SELECTION_CENTER,		/// Take the center of mass of the current selection as orbit center.
+		ORBIT_USER_DEFINED			/// Use the orbit center set by the user.
+	};
 	
 public:
 
@@ -49,6 +59,27 @@ public:
 
 	/// \brief Handles the mouse move event for the given viewport.
 	virtual void mouseMoveEvent(Viewport* vp, QMouseEvent* event) override;
+
+	/// \brief Lets the input mode render its overlay content in a viewport.
+	virtual void renderOverlay(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive) override;
+
+	/// \brief Computes the bounding box of the visual viewport overlay rendered by the input mode.
+	virtual Box3 overlayBoundingBox(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive) override;
+
+	/// \brief Indicates whether this input mode renders into the viewports.
+	virtual bool hasOverlay() override { return true; }
+
+	/// Changes the way the center of rotation is chosen.
+	static void setOrbitCenterMode(OrbitCenterMode mode);
+
+	/// Returns the current center of orbit mode.
+	static OrbitCenterMode orbitCenterMode() { return _orbitCenterMode; }
+
+	/// Sets the world space point around which the camera orbits.
+	static void setUserOrbitCenter(const Point3& center);
+
+	/// Returns the world space point around which the camera orbits.
+	static Point3 orbitCenter();
 
 protected:
 
@@ -84,6 +115,42 @@ protected:
 
 	/// The current viewport we are working in.
 	Viewport* _viewport;
+
+	/// Indicates around which point the camera should orbit.
+	static OrbitCenterMode _orbitCenterMode;
+
+	/// The user-defined orbiting center.
+	static Point3 _userOrbitCenter;
+
+	/// The geometry buffer used to render the orbit center.
+	static OORef<ArrowGeometryBuffer> _orbitCenterMarker;
+};
+
+/******************************************************************************
+* The orbit viewport input mode.
+******************************************************************************/
+class OVITO_CORE_EXPORT OrbitMode : public NavigationMode
+{
+	Q_OBJECT
+
+protected:
+
+	/// \brief Protected constructor to prevent the creation of second instances.
+	OrbitMode() {
+		setCursor(QCursor(QPixmap(":/core/cursor/viewport/cursor_orbit.png")));
+	}
+
+	/// Computes the new view based on the new mouse position.
+	virtual void modifyView(Viewport* vp, const QPoint& delta) override;
+
+public:
+
+	/// \brief Returns the instance of this class.
+	/// \return A pointer to the global instance of this singleton class.
+	static OrbitMode* instance() {
+		static OORef<OrbitMode> instance(new OrbitMode());
+		return instance.get();
+	}
 };
 
 /******************************************************************************
@@ -96,13 +163,12 @@ class OVITO_CORE_EXPORT PanMode : public NavigationMode
 protected:
 	
 	/// \brief Protected constructor to prevent the creation of multiple instances.
-	PanMode() : NavigationMode() {}
+	PanMode() : NavigationMode() {
+		setCursor(QCursor(QPixmap(":/core/cursor/viewport/cursor_pan.png")));
+	}
 
 	/// Computes the new view based on the new mouse position.
 	virtual void modifyView(Viewport* vp, const QPoint& delta) override;
-
-	/// Gets the mouse cursor of this viewport mode.
-	virtual QCursor getCursor() override { return QCursor(QPixmap(":/core/cursor/viewport/cursor_pan.png")); }
 
 public:
 
@@ -125,13 +191,12 @@ class OVITO_CORE_EXPORT ZoomMode : public NavigationMode
 protected:
 
 	/// \brief Protected constructor to prevent the creation of second instances.
-	ZoomMode() : NavigationMode() {}
+	ZoomMode() : NavigationMode() {
+		setCursor(QCursor(QPixmap(":/core/cursor/viewport/cursor_zoom.png")));
+	}
 
 	/// Computes the new view based on the new mouse position.
 	virtual void modifyView(Viewport* vp, const QPoint& delta) override;
-
-	/// Gets the mouse cursor of this viewport mode.
-	virtual QCursor getCursor() override { return QCursor(QPixmap(":/core/cursor/viewport/cursor_zoom.png")); }
 
 	/// Computes a scaling factor that depends on the total size of the scene which is used to
 	/// control the zoom sensitivity in perspective mode.
@@ -160,13 +225,12 @@ class OVITO_CORE_EXPORT FOVMode : public NavigationMode
 protected:
 
 	/// \brief Protected constructor to prevent the creation of second instances.
-	FOVMode() : NavigationMode() {}
+	FOVMode() : NavigationMode() {
+		setCursor(QCursor(QPixmap(":/core/cursor/viewport/cursor_fov.png")));
+	}
 
 	/// Computes the new view based on the new mouse position.
 	virtual void modifyView(Viewport* vp, const QPoint& delta) override;
-
-	/// Gets the mouse cursor of this viewport mode.
-	virtual QCursor getCursor() override { return QCursor(QPixmap(":/core/cursor/viewport/cursor_fov.png")); }
 
 public:
 
@@ -179,128 +243,63 @@ public:
 };
 
 /******************************************************************************
-* The orbit viewport input mode.
-******************************************************************************/
-class OVITO_CORE_EXPORT OrbitMode : public NavigationMode
-{
-	Q_OBJECT
-	
-public:
-
-	enum CenterMode {
-		ORBIT_CONSTRUCTION_PLANE,	/// Take the current construction plane as orbit center.
-		ORBIT_SELECTION_CENTER,		/// Take the center of mass of the current selection as orbit center.
-		ORBIT_USER_DEFINED			/// Use the orbit center set by the user.
-	};
-
-	/// Changes the way the center of rotation is chosen.
-	void setCenterMode(CenterMode mode);
-
-	/// Returns the current center of orbit mode.
-	CenterMode centerMode() const { return _centerMode; }
-
-	/// Sets the world space point around which the camera orbits.
-	void setOrbitCenter(const Point3& center);
-
-	/// Returns the world space point around which the camera orbits.
-	const Point3& orbitCenter() const { return _orbitCenter; }
-
-	/// \brief Lets the input mode render its overlay content in a viewport.
-	virtual void renderOverlay(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive) override;
-
-	/// \brief Indicates whether this input mode renders into the viewports.
-	virtual bool hasOverlay() override { return true; }
-
-protected:
-
-	/// \brief Protected constructor to prevent the creation of second instances.
-	OrbitMode() : NavigationMode(), _centerMode(ORBIT_SELECTION_CENTER), _orbitCenter(Point3::Origin()) {}
-
-	/// Computes the new view based on the new mouse position.
-	virtual void modifyView(Viewport* vp, const QPoint& delta) override;
-
-	/// Gets the mouse cursor of this viewport mode.
-	virtual QCursor getCursor() override { return QCursor(QPixmap(":/core/cursor/viewport/cursor_orbit.png")); }
-
-	/// \brief Handles the mouse down event for the given viewport.
-	virtual void mousePressEvent(Viewport* vp, QMouseEvent* event) override;
-
-protected:
-
-	/// Contains the current orbiting center.
-	Point3 _orbitCenter;
-	
-	/// Indicates around which point the camera should orbit.
-	CenterMode _centerMode;
-
-public:
-
-	/// \brief Returns the instance of this class.
-	/// \return A pointer to the global instance of this singleton class.
-	static OrbitMode* instance() { 
-		static OORef<OrbitMode> instance(new OrbitMode());
-		return instance.get(); 
-	}
-};
-
-#if 0
-
-/******************************************************************************
 * This input mode lets the user pick the center of rotation for the orbit mode.
 ******************************************************************************/
-class OVITO_CORE_EXPORT PickOrbitCenterMode : public SimpleInputHandler
+class OVITO_CORE_EXPORT PickOrbitCenterMode : public ViewportInputHandler
 {
 public:
 
 	/// Constructor.
-	PickOrbitCenterMode() : showCursor(false) {
-		if(APPLICATION_MANAGER.guiMode())
-			hoverCursor = QCursor(QPixmap(":/core/main/cursor_mode_select.png"));
+	PickOrbitCenterMode() : _showCursor(false) {
+		if(Application::instance().guiMode())
+			_hoverCursor = QCursor(QPixmap(":/core/cursor/editing/cursor_mode_select.png"));
 	}
 
-	/// Returns the activation behaviour of this input handler.
-	virtual InputHandlerType handlerActivationType() { return ViewportInputHandler::NORMAL; }
+	/// Returns the activation behavior of this input handler.
+	virtual InputHandlerType handlerType() override { return ViewportInputHandler::NORMAL; }
 
 	/// Handles the mouse click event for a Viewport.
-	virtual void onMousePressed(QMouseEvent* event);
+	virtual void mousePressEvent(Viewport* vp, QMouseEvent* event) override;
 
-	/// Is called when the user moves the mouse without pressing the button.
-	virtual void onMouseFreeMove(Viewport& vp, QMouseEvent* event);
-
-	/// Gets the current cursor of this viewport mode.
-	virtual QCursor getCursor() {
-		if(showCursor)
-			return hoverCursor;
-		else
-			return SimpleInputHandler::getCursor();
-	}
+	/// Is called when the user moves the mouse.
+	virtual void mouseMoveEvent(Viewport* vp, QMouseEvent* event) override;
 
 	/// \brief Lets the input mode render its overlay content in a viewport.
-	virtual void renderOverlay(Viewport* vp, bool isActive) { OrbitMode::instance()->renderOverlay(vp, isActive); }
+	virtual void renderOverlay(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive) override {
+		OrbitMode::instance()->renderOverlay(vp, renderer, isActive);
+	}
+
+	/// \brief Computes the bounding box of the visual viewport overlay rendered by the input mode.
+	virtual Box3 overlayBoundingBox(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive) override {
+		return OrbitMode::instance()->overlayBoundingBox(vp, renderer, isActive);
+	}
 
 	/// \brief Indicates whether this input mode renders into the viewports.
-	virtual bool hasOverlay() { return true; }
+	virtual bool hasOverlay() override { return true; }
 
-	/// \brief Returns the instance of this class.
-	/// \return A pointer to the global instance of this singleton class.
-	static PickOrbitCenterMode* instance() {
-		static intrusive_ptr<PickOrbitCenterMode> instance(new PickOrbitCenterMode());
-		return instance.get();
-	}
+	/// \brief Sets the orbit rotation center to the space location under given mouse coordinates.
+	bool pickOrbitCenter(Viewport* vp, const QPoint& pos);
 
 private:
 
 	/// Finds the intersection point between a ray originating from the current mouse cursor position and the scene.
-	bool findIntersection(Viewport* vp, const Point2I& mousePos, Point3& intersectionPoint);
+	bool findIntersection(Viewport* vp, const QPoint& mousePos, Point3& intersectionPoint);
 
 	/// The mouse cursor that is shown when over an object.
-	QCursor hoverCursor;
+	QCursor _hoverCursor;
 
 	/// Indicates that the mouse cursor is over an object.
-	bool showCursor;
-};
+	bool _showCursor;
 
-#endif
+public:
+
+	/// \brief Returns the instance of this class.
+	/// \return A pointer to the global instance of this singleton class.
+	static PickOrbitCenterMode* instance() {
+		static OORef<PickOrbitCenterMode> instance(new PickOrbitCenterMode());
+		return instance.get();
+	}
+};
 
 };
 

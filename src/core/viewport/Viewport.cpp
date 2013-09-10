@@ -52,8 +52,6 @@ DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _fieldOfView, "FieldOfView", PROPERTY_FIEL
 DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _cameraPosition, "CameraPosition", PROPERTY_FIELD_NO_UNDO)
 DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _cameraDirection, "CameraDirection", PROPERTY_FIELD_NO_UNDO)
 DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _showRenderFrame, "ShowRenderFrame", PROPERTY_FIELD_NO_UNDO)
-DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _orbitCenter, "OrbitCenter", PROPERTY_FIELD_NO_UNDO)
-DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _useOrbitCenter, "UseOrbitCenter", PROPERTY_FIELD_NO_UNDO)
 DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _viewportTitle, "Title", PROPERTY_FIELD_NO_UNDO)
 
 /******************************************************************************
@@ -63,7 +61,7 @@ Viewport::Viewport() :
 		_widget(nullptr), _viewportWindow(nullptr),
 		_viewType(VIEW_NONE), _shadingMode(SHADING_WIREFRAME), _showGrid(false),
 		_fieldOfView(100),
-		_showRenderFrame(false), _orbitCenter(Point3::Origin()), _useOrbitCenter(false),
+		_showRenderFrame(false),
 		_isRendering(false),
 		_cameraPosition(Point3::Origin()), _cameraDirection(0,0,-1),
 		_renderDebugCounter(0),
@@ -78,8 +76,6 @@ Viewport::Viewport() :
 	INIT_PROPERTY_FIELD(Viewport::_cameraPosition);
 	INIT_PROPERTY_FIELD(Viewport::_cameraDirection);
 	INIT_PROPERTY_FIELD(Viewport::_showRenderFrame);
-	INIT_PROPERTY_FIELD(Viewport::_orbitCenter);
-	INIT_PROPERTY_FIELD(Viewport::_useOrbitCenter);
 	INIT_PROPERTY_FIELD(Viewport::_viewportTitle);
 }
 
@@ -451,7 +447,7 @@ void Viewport::render(QOpenGLContext* context)
 		// Request scene bounding box.
 		Box3 boundingBox = ViewportManager::instance().renderer()->sceneBoundingBox(AnimManager::instance().time());
 
-		// Setup projection.
+		// Set up preliminary projection.
 		FloatType aspectRatio = (FloatType)vpSize.height() / vpSize.width();
 		_projParams = projectionParameters(AnimManager::instance().time(), aspectRatio, boundingBox);
 
@@ -461,6 +457,19 @@ void Viewport::render(QOpenGLContext* context)
 
 		// Set up the viewport renderer.
 		ViewportManager::instance().renderer()->beginFrame(AnimManager::instance().time(), _projParams, this);
+
+		// Add bounding box of interative elements.
+		boundingBox.addBox(ViewportManager::instance().renderer()->boundingBoxInteractive(AnimManager::instance().time(), this));
+
+		// Set up final projection.
+		_projParams = projectionParameters(AnimManager::instance().time(), aspectRatio, boundingBox);
+
+		// Adjust projection if render frame is shown.
+		if(renderFrameShown())
+			adjustProjectionForRenderFrame(_projParams);
+
+		// Pass final projection parameters to renderer.
+		ViewportManager::instance().renderer()->setProjParams(_projParams);
 
 		// Call the viewport renderer to render the scene objects.
 		ViewportManager::instance().renderer()->renderFrame(nullptr, nullptr);
@@ -494,7 +503,7 @@ void Viewport::render(QOpenGLContext* context)
 ******************************************************************************/
 void Viewport::renderViewportTitle()
 {
-	/// Create a rendering buffer that is responsible for rendering the viewport's caption text.
+	// Create a rendering buffer that is responsible for rendering the viewport's caption text.
 	SceneRenderer* renderer = ViewportManager::instance().renderer();
 	if(!_captionBuffer || !_captionBuffer->isValid(renderer)) {
 		_captionBuffer = renderer->createTextGeometryBuffer();
@@ -692,6 +701,28 @@ void Viewport::renderRenderFrame()
 }
 
 /******************************************************************************
+* Computes the world size of an object that should appear always in the
+* same size on the screen.
+******************************************************************************/
+FloatType Viewport::nonScalingSize(const Point3& worldPosition)
+{
+	if(isPerspectiveProjection()) {
+
+		Point3 p = viewMatrix() * worldPosition;
+        if(std::abs(p.z()) < FLOATTYPE_EPSILON) return 1.0f;
+
+        Point3 p1 = projectionMatrix() * p;
+		Point3 p2 = projectionMatrix() * (p + Vector3(1,0,0));
+
+		return 0.1f / (p1 - p2).length();
+	}
+	else {
+		if(size().height() == 0) return 1.0f;
+		return fieldOfView() / (FloatType)size().height() * 60.0f;
+	}
+}
+
+/******************************************************************************
 * Determines the object that is visible under the given mouse cursor position.
 ******************************************************************************/
 ViewportPickResult Viewport::pick(const QPoint& pos)
@@ -716,6 +747,19 @@ ViewportPickResult Viewport::pick(const QPoint& pos)
 	// Set up the picking renderer.
 	_pickingRenderer->beginFrame(AnimManager::instance().time(), projParams, this);
 
+	// Add bounding box of interactive elements.
+	boundingBox.addBox(_pickingRenderer->boundingBoxInteractive(AnimManager::instance().time(), this));
+
+	// Set up final projection.
+	_projParams = projectionParameters(AnimManager::instance().time(), aspectRatio, boundingBox);
+
+	// Adjust projection if render frame is shown.
+	if(renderFrameShown())
+		adjustProjectionForRenderFrame(_projParams);
+
+	// Pass final projection parameters to renderer.
+	_pickingRenderer->setProjParams(_projParams);
+
 	// Call the viewport renderer to render the scene objects.
 	_pickingRenderer->renderFrame(nullptr, nullptr);
 
@@ -731,6 +775,7 @@ ViewportPickResult Viewport::pick(const QPoint& pos)
 	if(objInfo) {
 		result.objectNode = objInfo->objectNode;
 		result.sceneObject = objInfo->sceneObject;
+		result.worldPosition = _pickingRenderer->worldPositionFromLocation(pos);
 	}
 	_pickingRenderer->reset();
 	return result;

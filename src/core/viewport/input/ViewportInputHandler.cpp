@@ -32,21 +32,11 @@ namespace Ovito {
 IMPLEMENT_OVITO_OBJECT(Core, ViewportInputHandler, OvitoObject)
 
 /******************************************************************************
-* Updates the cursor in the viewport.
-******************************************************************************/
-void ViewportInputHandler::updateCursor()
-{
-	if(Application::instance().guiMode()) {
-	//	if(ViewportInputManager::instance().currentHandler() == NULL) return;
-	//	if(ViewportInputManager::instance().currentHandler() == this || ViewportInputManager::instance().currentHandler() == _temporaryNavMode) {
-	}
-}
-
-/******************************************************************************
 * This is called by the system after the input handler has become the active handler.
 ******************************************************************************/
 void ViewportInputHandler::activated()
 {
+	_showOrbitCenter = false;
 }
 
 /******************************************************************************
@@ -56,7 +46,7 @@ void ViewportInputHandler::deactivated()
 {
 	if(_temporaryNavMode) {
 		_temporaryNavMode->deactivated();
-		_temporaryNavMode = NULL;
+		_temporaryNavMode = nullptr;
 	}
 }
 
@@ -65,10 +55,26 @@ void ViewportInputHandler::deactivated()
 ******************************************************************************/
 void ViewportInputHandler::activateTemporaryNavigationMode(ViewportInputHandler* mode)
 {
-	OVITO_ASSERT(mode != NULL);
+	OVITO_ASSERT(mode != nullptr);
+	if(this->hasOverlay())
+		ViewportManager::instance().updateViewports();
+	_showOrbitCenter = false;
 	_temporaryNavMode = mode;
 	_temporaryNavMode->activated();
-	updateCursor();
+	if(_temporaryNavMode->hasOverlay())
+		ViewportManager::instance().updateViewports();
+	ViewportInputManager::instance().updateViewportCursor();
+}
+
+/******************************************************************************
+* Sets the mouse cursor shown in the viewport windows
+* while this input handler is active.
+******************************************************************************/
+void ViewportInputHandler::setCursor(const QCursor& cursor)
+{
+	_cursor = cursor;
+	if(ViewportInputManager::isInitialized())
+		ViewportInputManager::instance().updateViewportCursor();
 }
 
 /******************************************************************************
@@ -76,23 +82,26 @@ void ViewportInputHandler::activateTemporaryNavigationMode(ViewportInputHandler*
 ******************************************************************************/
 void ViewportInputHandler::mousePressEvent(Viewport* vp, QMouseEvent* event)
 {
-	ViewportManager::instance().setActiveViewport(vp);
+	_lastMousePressEvent.reset();
 	if(ViewportInputManager::instance().currentHandler() == this) {
 		if(event->button() == Qt::RightButton) {
-			if(handlerType() != EXCLUSIVE)
+			if(handlerType() != EXCLUSIVE) {
 				ViewportInputManager::instance().removeInputHandler(this);
+			}
 			else {
 				activateTemporaryNavigationMode(PanMode::instance());
 				temporaryNavigationMode()->mousePressEvent(vp, event);
 			}
+			event->accept();
 		}
 		else if(event->button() == Qt::LeftButton) {
-			activateTemporaryNavigationMode(OrbitMode::instance());
-			temporaryNavigationMode()->mousePressEvent(vp, event);
+			_lastMousePressEvent.reset(new QMouseEvent(event->type(), event->localPos(), event->windowPos(), event->screenPos(), event->button(), event->buttons(), event->modifiers()));
+			event->accept();
 		}
 		else if(event->button() == Qt::MidButton) {
 			activateTemporaryNavigationMode(PanMode::instance());
 			temporaryNavigationMode()->mousePressEvent(vp, event);
+			event->accept();
 		}
 	}
 }
@@ -102,11 +111,17 @@ void ViewportInputHandler::mousePressEvent(Viewport* vp, QMouseEvent* event)
 ******************************************************************************/
 void ViewportInputHandler::mouseReleaseEvent(Viewport* vp, QMouseEvent* event)
 {
-	if(_temporaryNavMode) {
-		_temporaryNavMode->mouseReleaseEvent(vp, event);
-		_temporaryNavMode->deactivated();
-		_temporaryNavMode = NULL;
-		updateCursor();
+	_lastMousePressEvent.reset();
+	if(temporaryNavigationMode()) {
+		temporaryNavigationMode()->mouseReleaseEvent(vp, event);
+		temporaryNavigationMode()->deactivated();
+		if(temporaryNavigationMode()->hasOverlay())
+			ViewportManager::instance().updateViewports();
+		_temporaryNavMode = nullptr;
+		if(this->hasOverlay())
+			ViewportManager::instance().updateViewports();
+		ViewportInputManager::instance().updateViewportCursor();
+		event->accept();
 	}
 }
 
@@ -115,8 +130,14 @@ void ViewportInputHandler::mouseReleaseEvent(Viewport* vp, QMouseEvent* event)
 ******************************************************************************/
 void ViewportInputHandler::mouseMoveEvent(Viewport* vp, QMouseEvent* event)
 {
-	if(_temporaryNavMode) {
-		_temporaryNavMode->mouseMoveEvent(vp, event);
+	if(_lastMousePressEvent && (event->pos() - _lastMousePressEvent->pos()).manhattanLength() > 2) {
+		activateTemporaryNavigationMode(OrbitMode::instance());
+		temporaryNavigationMode()->mousePressEvent(vp, _lastMousePressEvent.get());
+		_lastMousePressEvent.reset();
+	}
+	if(temporaryNavigationMode()) {
+		temporaryNavigationMode()->mouseMoveEvent(vp, event);
+		event->accept();
 	}
 }
 
@@ -125,7 +146,49 @@ void ViewportInputHandler::mouseMoveEvent(Viewport* vp, QMouseEvent* event)
 ******************************************************************************/
 void ViewportInputHandler::wheelEvent(Viewport* vp, QWheelEvent* event)
 {
+	_lastMousePressEvent.reset();
 	ZoomMode::instance()->zoom(vp, (FloatType)event->delta());
+	event->accept();
+}
+
+/******************************************************************************
+* Handles the mouse double-click events for the given viewport.
+******************************************************************************/
+void ViewportInputHandler::mouseDoubleClickEvent(Viewport* vp, QMouseEvent* event)
+{
+	_lastMousePressEvent.reset();
+	if(ViewportInputManager::instance().currentHandler() == this) {
+		if(event->button() == Qt::LeftButton) {
+			PickOrbitCenterMode::instance()->pickOrbitCenter(vp, event->pos());
+			event->accept();
+			_showOrbitCenter = true;
+			ViewportManager::instance().updateViewports();
+		}
+	}
+}
+
+/******************************************************************************
+* Lets the input mode render its overlay content in a viewport.
+******************************************************************************/
+void ViewportInputHandler::renderOverlay(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive)
+{
+	if(_temporaryNavMode)
+		_temporaryNavMode->renderOverlay(vp, renderer, isActive);
+	else if(_showOrbitCenter)
+		OrbitMode::instance()->renderOverlay(vp, renderer, isActive);
+}
+
+/******************************************************************************
+* Computes the bounding box of the visual viewport overlay rendered by the input mode.
+******************************************************************************/
+Box3 ViewportInputHandler::overlayBoundingBox(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive)
+{
+	Box3 bb;
+	if(_temporaryNavMode)
+		bb.addBox(_temporaryNavMode->overlayBoundingBox(vp, renderer, isActive));
+	else if(_showOrbitCenter)
+		bb.addBox(OrbitMode::instance()->overlayBoundingBox(vp, renderer, isActive));
+	return bb;
 }
 
 };

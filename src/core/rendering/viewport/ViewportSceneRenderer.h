@@ -77,11 +77,12 @@ public:
 	/// Returns the current model-to-view transformation matrix.
 	const AffineTransformation& modelViewTM() const { return _modelViewTM; }
 
-	/// \brief Computes the bounding box of the entire scene to be rendered.
+	/// \brief Computes the bounding box of the the 3D visual elements
+	///        shown only in the interactive viewports.
 	/// \param time The time at which the bounding box should be computed.
 	/// \return An axis-aligned box in the world coordinate system that contains
 	///         everything to be rendered.
-	virtual Box3 sceneBoundingBox(TimePoint time) override;
+	Box3 boundingBoxInteractive(TimePoint time, Viewport* viewport);
 
 	/// Requests a new line geometry buffer from the renderer.
 	virtual OORef<LineGeometryBuffer> createLineGeometryBuffer() override {

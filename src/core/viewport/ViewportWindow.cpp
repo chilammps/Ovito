@@ -120,9 +120,10 @@ void ViewportWindow::mouseDoubleClickEvent(QMouseEvent* event)
 ******************************************************************************/
 void ViewportWindow::mousePressEvent(QMouseEvent* event)
 {
+	ViewportManager::instance().setActiveViewport(_viewport);
+
 	// Intercept mouse clicks on the viewport caption.
 	if(_viewport->_contextMenuArea.contains(event->pos())) {
-		ViewportManager::instance().setActiveViewport(_viewport);
 		_viewport->showViewportMenu(event->pos());
 		return;
 	}

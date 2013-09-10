@@ -120,7 +120,7 @@ MainWindow::MainWindow(const QString& title) :
 	viewportControlBar1->addAction(ActionManager::instance().getAction(ACTION_VIEWPORT_ZOOM));
 	viewportControlBar1->addAction(ActionManager::instance().getAction(ACTION_VIEWPORT_PAN));
 	viewportControlBar1->addAction(ActionManager::instance().getAction(ACTION_VIEWPORT_ORBIT));
-	//viewportControlBar1->addAction(ActionManager::instance().getAction(ACTION_VIEWPORT_PICK_ORBIT_CENTER));
+	viewportControlBar1->addAction(ActionManager::instance().getAction(ACTION_VIEWPORT_PICK_ORBIT_CENTER));
 	viewportControlBar1->setStyleSheet("QToolBar { padding: 0px; margin: 0px; border: 0px none black; } QToolButton { padding: 0px; margin: 0px }");
 	QToolBar* viewportControlBar2 = new QToolBar();
 	viewportControlBar2->addAction(ActionManager::instance().getAction(ACTION_VIEWPORT_ZOOM_SCENE_EXTENTS));
@@ -133,7 +133,10 @@ MainWindow::MainWindow(const QString& title) :
 	viewportControlPanelLayout->setSpacing(0);
 	viewportControlPanelLayout->setContentsMargins(0, 1, 0, 0);
 	viewportControlPanelLayout->addWidget(viewportControlBar1);
-	viewportControlPanelLayout->addWidget(viewportControlBar2);
+	QHBoxLayout* sublayout = new QHBoxLayout();
+	sublayout->addStretch(1);
+	sublayout->addWidget(viewportControlBar2);
+	viewportControlPanelLayout->addLayout(sublayout);
 	viewportControlPanelLayout->addStretch(1);
 	viewportControlPanel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
 

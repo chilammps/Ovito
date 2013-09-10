@@ -27,8 +27,19 @@
 #include <core/viewport/ViewportSettings.h>
 #include <core/dataset/DataSetManager.h>
 #include <core/animation/AnimManager.h>
+#include <core/rendering/viewport/ViewportSceneRenderer.h>
+#include <core/gui/mainwin/MainWindow.h>
 
 namespace Ovito {
+
+// Indicates around which point the camera should orbit.
+NavigationMode::OrbitCenterMode NavigationMode::_orbitCenterMode = NavigationMode::ORBIT_SELECTION_CENTER;
+
+// The user-defined orbiting center.
+Point3 NavigationMode::_userOrbitCenter = Point3::Origin();
+
+// The geometry buffer used to render the orbit center.
+OORef<ArrowGeometryBuffer> NavigationMode::_orbitCenterMarker;
 
 /******************************************************************************
 * This is called by the system after the input handler is
@@ -56,7 +67,6 @@ void NavigationMode::mousePressEvent(Viewport* vp, QMouseEvent* event)
 		return;
 	}
 
-	ViewportManager::instance().setActiveViewport(vp);
 	_viewport = vp;
 	_startPoint = event->pos();
 	_oldCameraPosition = vp->cameraPosition();
@@ -97,6 +107,91 @@ void NavigationMode::mouseMoveEvent(Viewport* vp, QMouseEvent* event)
 	}
 }
 
+/******************************************************************************
+* Changes the way the center of rotation is chosen.
+******************************************************************************/
+void NavigationMode::setOrbitCenterMode(NavigationMode::OrbitCenterMode mode)
+{
+	if(_orbitCenterMode == mode) return;
+	_orbitCenterMode = mode;
+	ViewportManager::instance().updateViewports();
+}
+
+/******************************************************************************
+* Sets the world space point around which the camera orbits.
+******************************************************************************/
+void NavigationMode::setUserOrbitCenter(const Point3& center)
+{
+	if(_userOrbitCenter == center) return;
+	_userOrbitCenter = center;
+	ViewportManager::instance().updateViewports();
+}
+
+/******************************************************************************
+* Returns the world space point around which the camera orbits.
+******************************************************************************/
+Point3 NavigationMode::orbitCenter()
+{
+	// Update orbiting center.
+	if(orbitCenterMode() == ORBIT_CONSTRUCTION_PLANE) {
+		Box3 sceneBoundingBox = DataSetManager::instance().currentSet()->sceneRoot()->worldBoundingBox(AnimManager::instance().time());
+		if(!sceneBoundingBox.isEmpty())
+			return sceneBoundingBox.center();
+	}
+	else if(orbitCenterMode() == ORBIT_SELECTION_CENTER) {
+		Box3 selectionBoundingBox;
+		for(SceneNode* node : DataSetManager::instance().currentSelection()->nodes()) {
+			selectionBoundingBox.addBox(node->worldBoundingBox(AnimManager::instance().time()));
+		}
+		if(!selectionBoundingBox.isEmpty())
+			return selectionBoundingBox.center();
+		else {
+			Box3 sceneBoundingBox = DataSetManager::instance().currentSet()->sceneRoot()->worldBoundingBox(AnimManager::instance().time());
+			if(!sceneBoundingBox.isEmpty())
+				return sceneBoundingBox.center();
+		}
+	}
+	else if(orbitCenterMode() == ORBIT_USER_DEFINED) {
+		return _userOrbitCenter;
+	}
+	return Point3::Origin();
+}
+
+/******************************************************************************
+* Lets the input mode render its overlay content in a viewport.
+******************************************************************************/
+void NavigationMode::renderOverlay(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive)
+{
+	if(renderer->isPicking())
+		return;
+
+	// Render center of rotation.
+	Point3 center = orbitCenter();
+	FloatType symbolSize = vp->nonScalingSize(center);
+	renderer->setWorldTransform(AffineTransformation::translation(center - Point3::Origin()) * AffineTransformation::scaling(symbolSize));
+
+	// Create line buffer.
+	if(!_orbitCenterMarker || !_orbitCenterMarker->isValid(renderer)) {
+		_orbitCenterMarker = renderer->createArrowGeometryBuffer(ArrowGeometryBuffer::CylinderShape, ArrowGeometryBuffer::NormalShading, ArrowGeometryBuffer::HighQuality);
+		_orbitCenterMarker->startSetElements(3);
+		_orbitCenterMarker->setElement(0, {-1,0,0}, {2,0,0}, {1,0,0}, 0.05f);
+		_orbitCenterMarker->setElement(1, {0,-1,0}, {0,2,0}, {0,1,0}, 0.05f);
+		_orbitCenterMarker->setElement(2, {0,0,-1}, {0,0,2}, {0.2,0.2,1}, 0.05f);
+		_orbitCenterMarker->endSetElements();
+	}
+	_orbitCenterMarker->render(renderer);
+}
+
+/******************************************************************************
+* Computes the bounding box of the visual viewport overlay rendered by the input mode.
+******************************************************************************/
+Box3 NavigationMode::overlayBoundingBox(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive)
+{
+	Point3 center = orbitCenter();
+	FloatType symbolSize = vp->nonScalingSize(center);
+	return Box3(center, symbolSize);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////// Pan Mode ///////////////////////////////////
 
@@ -107,9 +202,9 @@ void PanMode::modifyView(Viewport* vp, const QPoint& delta)
 {
 	FloatType scaling;
 	if(vp->isPerspectiveProjection())
-		scaling = 50.0 / vp->size().height();
+		scaling = 10.0f * vp->nonScalingSize(OrbitMode::instance()->orbitCenter()) / vp->size().height();
 	else
-		scaling = 2.0 * _oldFieldOfView / vp->size().height();
+		scaling = 2.0f * _oldFieldOfView / vp->size().height();
 	FloatType deltaX = -scaling * delta.x();
 	FloatType deltaY =  scaling * delta.y();
 	Vector3 displacement = _oldInverseViewMatrix * Vector3(deltaX, deltaY, 0);
@@ -184,35 +279,6 @@ void FOVMode::modifyView(Viewport* vp, const QPoint& delta)
 //////////////////////////////// Orbit Mode ///////////////////////////////////
 
 /******************************************************************************
-* Handles the mouse down event for the given viewport.
-******************************************************************************/
-void OrbitMode::mousePressEvent(Viewport* vp, QMouseEvent* event)
-{
-	NavigationMode::mousePressEvent(vp, event);
-	if(event->button() == Qt::LeftButton) {
-		// Update orbiting center.
-		if(centerMode() == ORBIT_CONSTRUCTION_PLANE) {
-			Box3 sceneBoundingBox = DataSetManager::instance().currentSet()->sceneRoot()->worldBoundingBox(AnimManager::instance().time());
-			if(!sceneBoundingBox.isEmpty())
-				_orbitCenter = sceneBoundingBox.center();
-		}
-		else if(centerMode() == ORBIT_SELECTION_CENTER) {
-			Box3 selectionBoundingBox;
-			for(SceneNode* node : DataSetManager::instance().currentSelection()->nodes()) {
-				selectionBoundingBox.addBox(node->worldBoundingBox(AnimManager::instance().time()));
-			}
-			if(!selectionBoundingBox.isEmpty())
-				_orbitCenter = selectionBoundingBox.center();
-			else {
-				Box3 sceneBoundingBox = DataSetManager::instance().currentSet()->sceneRoot()->worldBoundingBox(AnimManager::instance().time());
-				if(!sceneBoundingBox.isEmpty())
-					_orbitCenter = sceneBoundingBox.center();
-			}
-		}
-	}
-}
-
-/******************************************************************************
 * Computes the new view matrix based on the new mouse position.
 ******************************************************************************/
 void OrbitMode::modifyView(Viewport* vp, const QPoint& delta)
@@ -253,101 +319,57 @@ void OrbitMode::modifyView(Viewport* vp, const QPoint& delta)
 	vp->setCameraPosition(Point3::Origin() + newViewMatrix.inverse().translation());
 }
 
-/******************************************************************************
-* Changes the way the center of rotation is chosen.
-******************************************************************************/
-void OrbitMode::setCenterMode(OrbitMode::CenterMode mode)
-{
-	if(_centerMode == mode) return;
-	_centerMode = mode;
-	ViewportManager::instance().updateViewports();
-}
-
-/******************************************************************************
-* Sets the world space point around which the camera orbits.
-******************************************************************************/
-void OrbitMode::setOrbitCenter(const Point3& center)
-{
-	if(_orbitCenter == center) return;
-	_orbitCenter = center;
-	ViewportManager::instance().updateViewports();
-}
-
-/******************************************************************************
-* Lets the input mode render its overlay content in a viewport.
-******************************************************************************/
-void OrbitMode::renderOverlay(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive)
-{
-	NavigationMode::renderOverlay(vp, renderer, isActive);
-#if 0
-	// Render center of rotation when in user mode.
-	if(_centerMode == ORBIT_USER_DEFINED) {
-		vp->setDepthTest(true);
-		vp->setBackfaceCulling(true);
-		vp->setLightingEnabled(false);
-		vp->setWorldMatrix(AffineTransformation::translation(orbitCenter() - ORIGIN));
-
-		FloatType symbolSize = 1.0 * vp->nonScalingSize(orbitCenter());
-
-		Box3 bbox(Point3(-symbolSize), Point3(+symbolSize));
-		Point3 verts[2];
-		verts[0] = Point3(-symbolSize,0,0);
-		verts[1] = Point3(+symbolSize,0,0);
-		vp->setRenderingColor(Color(1,0,0));
-		vp->renderLines(2, bbox, verts);
-		verts[0] = Point3(0,-symbolSize,0);
-		verts[1] = Point3(0,+symbolSize,0);
-		vp->setRenderingColor(Color(0,1,0));
-		vp->renderLines(2, bbox, verts);
-		verts[0] = Point3(0,0,-symbolSize);
-		verts[1] = Point3(0,0,+symbolSize);
-		vp->setRenderingColor(Color(0,0,1));
-		vp->renderLines(2, bbox, verts);
-	}
-#endif
-}
-
 /////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////// Pick Orbit Center Mode ////////////////////////////////
 
-#if 0
+/******************************************************************************
+* Sets the orbit rotation center to the space location under given mouse coordinates.
+******************************************************************************/
+bool PickOrbitCenterMode::pickOrbitCenter(Viewport* vp, const QPoint& pos)
+{
+	Point3 p;
+	if(findIntersection(vp, pos, p)) {
+		NavigationMode::setOrbitCenterMode(NavigationMode::ORBIT_USER_DEFINED);
+		NavigationMode::setUserOrbitCenter(p);
+		return true;
+	}
+	else {
+		NavigationMode::setOrbitCenterMode(NavigationMode::ORBIT_SELECTION_CENTER);
+		NavigationMode::setUserOrbitCenter(Point3::Origin());
+		MainWindow::instance().statusBar()->showMessage(tr("No object has been picked. Resetting orbit center to default position."), 1200);
+		return false;
+	}
+}
+
 /******************************************************************************
 * Handles the mouse down events for a Viewport.
 ******************************************************************************/
-void PickOrbitCenterMode::onMousePressed(QMouseEvent* event)
+void PickOrbitCenterMode::mousePressEvent(Viewport* vp, QMouseEvent* event)
 {
-	SimpleInputHandler::onMousePressed(event);
-
-	Point3 p;
-	if(findIntersection(viewport(), event->pos(), p)) {
-		OrbitMode::instance()->setCenterMode(OrbitMode::ORBIT_USER_DEFINED);
-		OrbitMode::instance()->setOrbitCenter(p);
+	if(event->button() == Qt::LeftButton) {
+		if(pickOrbitCenter(vp, event->pos()))
+			return;
 	}
-	else {
-		OrbitMode::instance()->setCenterMode(OrbitMode::ORBIT_SELECTION_CENTER);
-		OrbitMode::instance()->setOrbitCenter(ORIGIN);
-	}
-
-	onFinish();
+	ViewportInputHandler::mousePressEvent(vp, event);
 }
 
 /******************************************************************************
 * Is called when the user moves the mouse while the operation is not active.
 ******************************************************************************/
-void PickOrbitCenterMode::onMouseFreeMove(Viewport& vp, QMouseEvent* event)
+void PickOrbitCenterMode::mouseMoveEvent(Viewport* vp, QMouseEvent* event)
 {
-	SimpleInputHandler::onMouseFreeMove(vp, event);
+	ViewportInputHandler::mouseMoveEvent(vp, event);
 
 	Point3 p;
-	bool isOverObject = findIntersection(&vp, event->pos(), p);
+	bool isOverObject = findIntersection(vp, event->pos(), p);
 
-	if(!isOverObject && showCursor) {
-		showCursor = false;
-		updateCursor();
+	if(!isOverObject && _showCursor) {
+		_showCursor = false;
+		setCursor(QCursor());
 	}
-	else if(isOverObject && !showCursor) {
-		showCursor = true;
-		updateCursor();
+	else if(isOverObject && !_showCursor) {
+		_showCursor = true;
+		setCursor(_hoverCursor);
 	}
 }
 
@@ -355,43 +377,14 @@ void PickOrbitCenterMode::onMouseFreeMove(Viewport& vp, QMouseEvent* event)
 * Finds the closest intersection point between a ray originating from the
 * current mouse cursor position and the whole scene.
 ******************************************************************************/
-bool PickOrbitCenterMode::findIntersection(Viewport* vp, const Point2I& mousePos, Point3& intersectionPoint)
+bool PickOrbitCenterMode::findIntersection(Viewport* vp, const QPoint& mousePos, Point3& intersectionPoint)
 {
-	OVITO_ASSERT(vp != NULL);
+	ViewportPickResult pickResults = vp->pick(mousePos);
+	if(!pickResults.valid)
+		return false;
 
-	TimeTicks time = ANIM_MANAGER.time();
-	Ray3 ray = vp->screenRay(mousePos);
-
-	// Iterate over all object nodes in the scene.
-	SceneRoot* rootNode = DATASET_MANAGER.currentSet()->sceneRoot();
-	if(rootNode == NULL) return false;
-
-	FloatType closestDistance = FLOATTYPE_MAX;
-
-	for(SceneNodesIterator iter(rootNode); !iter.finished(); iter.next()) {
-		ObjectNode* objNode = dynamic_object_cast<ObjectNode>(iter.current());
-		if(!objNode) continue;
-
-		const PipelineFlowState& flowState = objNode->evalPipeline(time);
-		if(flowState.result() == NULL) continue;
-
-		TimeInterval iv;
-		const AffineTransformation& nodeTM = objNode->getWorldTransform(time, iv);
-
-		Ray3 transformedRay = nodeTM.inverse() * ray;
-		Vector3 normal;
-		FloatType t;
-
-		if(flowState.result()->intersectRay(transformedRay, time, objNode, t, normal)) {
-			if(t < closestDistance) {
-				closestDistance = t;
-				intersectionPoint = nodeTM * transformedRay.point(t);
-			}
-		}
-	}
-
-	return closestDistance != FLOATTYPE_MAX;
+	intersectionPoint = pickResults.worldPosition;
+	return true;
 }
-#endif
 
 };

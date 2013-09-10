@@ -97,6 +97,10 @@ bool PickingSceneRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialog
 	}
 	_image = _image.mirrored();
 
+	// Also fetch depth buffer data.
+	_depthBuffer.reset(new GLfloat[size.width() * size.height()]);
+	glReadPixels(0, 0, size.width(), size.height(), GL_DEPTH_COMPONENT, GL_FLOAT, _depthBuffer.get());
+
 	return true;
 }
 
@@ -172,5 +176,25 @@ const PickingSceneRenderer::ObjectRecord* PickingSceneRenderer::lookupObjectReco
 	return &_objects.back();
 }
 
+/******************************************************************************
+* Returns the world space position corresponding to the given screen position.
+******************************************************************************/
+Point3 PickingSceneRenderer::worldPositionFromLocation(const QPoint& pos) const
+{
+	if(!_image.isNull() && _depthBuffer) {
+		if(pos.x() >= 0 && pos.x() < _image.width() && pos.y() >= 0 && pos.y() < _image.height()) {
+			if(_image.pixel(pos) != 0) {
+				GLfloat zvalue = _depthBuffer[(_image.height() - 1 - pos.y()) * _image.width() + pos.x()];
+				Point3 ndc(
+						(FloatType)pos.x() / _image.width() * 2.0f - 1.0f,
+						1.0f - (FloatType)pos.y() / _image.height() * 2.0f,
+						zvalue * 2.0f - 1.0f);
+				Point3 worldPos = projParams().inverseViewMatrix * (projParams().inverseProjectionMatrix * ndc);
+				return worldPos;
+			}
+		}
+	}
+	return Point3::Origin();
+}
 
 };

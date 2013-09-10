@@ -128,13 +128,23 @@ public:
 
 	/// \brief Returns all viewports of the main viewport panel.
 	/// \return The list of viewports.
-	const QVector<Viewport*>& viewports() const { return viewportConfig()->viewports(); }
+	const QVector<Viewport*>& viewports() const {
+		if(viewportConfig())
+			return viewportConfig()->viewports();
+		else {
+			static QVector<Viewport*> emptyVPList;
+			return emptyVPList;
+		}
+	}
 
 	/// Returns the font to be used for rendering text in the viewports.
 	const QFont& viewportFont() const { return _viewportFont; }
 
 	/// Returns the renderer that takes care of rendering the scene in the viewports.
 	ViewportSceneRenderer* renderer() const { return _renderer.get(); }
+
+	/// Returns true if the singleton instance of this class has been created and initialized.
+	static bool isInitialized() { return _instance != nullptr; }
 
 Q_SIGNALS:
 

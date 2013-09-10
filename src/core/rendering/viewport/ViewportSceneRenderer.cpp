@@ -117,8 +117,12 @@ bool ViewportSceneRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialo
 	renderModifiers(true);
 
 	// Render input mode overlays.
-	for(const auto& handler : ViewportInputManager::instance().stack()) {
-		handler->renderOverlay(viewport(), this, handler == ViewportInputManager::instance().currentHandler());
+	if(isInteractive()) {
+		for(const auto& handler : ViewportInputManager::instance().stack()) {
+			if(handler->hasOverlay()) {
+				handler->renderOverlay(viewport(), this, handler == ViewportInputManager::instance().currentHandler());
+			}
+		}
 	}
 
 	return true;
@@ -196,7 +200,6 @@ void ViewportSceneRenderer::renderModifiers(bool renderOverlay)
 	});
 }
 
-
 /******************************************************************************
 * Renders the visual representation of the modifiers.
 ******************************************************************************/
@@ -249,22 +252,31 @@ void ViewportSceneRenderer::boundingBoxModifiers(PipelineObject* pipelineObj, Ob
 }
 
 /******************************************************************************
-* Computes the bounding box of the entire scene to be rendered.
+* Computes the bounding box of the the 3D visual elements
+* shown only in the interactive viewports.
 ******************************************************************************/
-Box3 ViewportSceneRenderer::sceneBoundingBox(TimePoint time)
+Box3 ViewportSceneRenderer::boundingBoxInteractive(TimePoint time, Viewport* viewport)
 {
-	Box3 bb = SceneRenderer::sceneBoundingBox(time);
-	if(isInteractive()) {
-		// Visit all pipeline objects in the scene.
-		dataset()->sceneRoot()->visitChildren([this, &bb](SceneNode* node) {
-			if(node->isObjectNode()) {
-				ObjectNode* objNode = static_object_cast<ObjectNode>(node);
-				PipelineObject* pipelineObj = dynamic_object_cast<PipelineObject>(objNode->sceneObject());
-				if(pipelineObj)
-					boundingBoxModifiers(pipelineObj, objNode, bb);
-			}
-		});
+	OVITO_CHECK_POINTER(viewport);
+	Box3 bb;
+
+	// Visit all pipeline objects in the scene.
+	dataset()->sceneRoot()->visitChildren([this, &bb](SceneNode* node) {
+		if(node->isObjectNode()) {
+			ObjectNode* objNode = static_object_cast<ObjectNode>(node);
+			PipelineObject* pipelineObj = dynamic_object_cast<PipelineObject>(objNode->sceneObject());
+			if(pipelineObj)
+				boundingBoxModifiers(pipelineObj, objNode, bb);
+		}
+	});
+
+	// Include input mode overlays.
+	for(const auto& handler : ViewportInputManager::instance().stack()) {
+		if(handler->hasOverlay()) {
+			bb.addBox(handler->overlayBoundingBox(viewport, this, handler == ViewportInputManager::instance().currentHandler()));
+		}
 	}
+
 	return bb;
 }
 

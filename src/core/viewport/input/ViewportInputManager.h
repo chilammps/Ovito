@@ -74,6 +74,9 @@ public:
 	/// \sa pushInputHandler()
 	void removeInputHandler(ViewportInputHandler* handler);
 
+	/// Returns true if the singleton instance of this class has been created and initialized.
+	static bool isInitialized() { return _instance != nullptr; }
+
 public Q_SLOTS:
 
 	/// \brief Resets the input mode stack to its initial state on application startup.
@@ -81,6 +84,9 @@ public Q_SLOTS:
 	/// All input handlers are removed from the handler stack and a default input handler
 	/// is activated.
 	void reset();
+
+	/// \brief Updates the mouse cursor displayed in the viewports.
+	void updateViewportCursor();
 
 Q_SIGNALS:
 

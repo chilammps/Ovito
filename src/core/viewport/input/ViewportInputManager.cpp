@@ -24,6 +24,7 @@
 #include <core/viewport/input/ViewportInputHandler.h>
 #include <core/viewport/ViewportManager.h>
 #include <core/dataset/DataSetManager.h>
+#include <core/gui/app/Application.h>
 
 namespace Ovito {
 
@@ -37,6 +38,9 @@ ViewportInputManager::ViewportInputManager()
 {
 	// Reset the viewport input manager when a new scene has been loaded.
 	connect(&DataSetManager::instance(), SIGNAL(dataSetReset(DataSet*)), this, SLOT(reset()));
+
+	// Update mouse cursor whenever input mode changes.
+	connect(this, SIGNAL(inputModeChanged(ViewportInputHandler*,ViewportInputHandler*)), this, SLOT(updateViewportCursor()));
 }
 
 /******************************************************************************
@@ -132,11 +136,35 @@ void ViewportInputManager::reset()
 
 	class DefaultInputMode : public ViewportInputHandler {
 	public:
-		InputHandlerType handlerType() { return EXCLUSIVE; }
+		InputHandlerType handlerType() override { return EXCLUSIVE; }
 	};
 
 	// Activate default mode
 	pushInputHandler(new DefaultInputMode());
+}
+
+/******************************************************************************
+* Updates the mouse cursor displayed in the viewports.
+******************************************************************************/
+void ViewportInputManager::updateViewportCursor()
+{
+	if(!Application::instance().guiMode())
+		return;
+	if(!ViewportManager::isInitialized())
+		return;
+
+	ViewportInputHandler* handler = currentHandler();
+	QCursor cursor;
+	if(handler) {
+		if(handler->temporaryNavigationMode())
+			handler = handler->temporaryNavigationMode();
+		cursor = handler->cursor();
+	}
+
+	for(Viewport* vp : ViewportManager::instance().viewports()) {
+		if(vp->viewportWindow())
+			vp->viewportWindow()->setCursor(cursor);
+	}
 }
 
 };

@@ -279,24 +279,9 @@ public:
 	///             to enable the camera tracking mode for this viewport.
 	void setViewNode(ObjectNode* node) { _viewNode = node; }
 
-	/// \brief Returns whether a explicitly set center point is used by the orbit navigation mode.
-	/// \return \c true if a center point is set.
-	bool useOrbitCenter() const { return _useOrbitCenter; }
-
-	/// \brief Sets whether the explicitly set center point is used by the orbit navigation mode.
-	void setUseOrbitCenter(bool enable) { _useOrbitCenter = enable; }
-
-	/// \brief Returns the current center point for the orbit navigation mode.
-	/// \return The center point in world space.
-	///
-	/// The center point is only used if it has been activated with a call to setUseOrbitCenter().
-	const Point3& orbitCenter() const { return _orbitCenter; }
-
-	/// \brief Sets the current center point to use for the orbit navigation mode.
-	/// \param center The center point in world space.
-	///
-	/// The center point is only used if it is activated with a call to setUseOrbitCenter().
-	void setOrbitCenter(const Point3& center) { _orbitCenter = center; }
+	/// Computes the world size of an object that should appear always in the
+	/// same size on the screen.
+	FloatType nonScalingSize(const Point3& worldPosition);
 
 	/// \brief Determines the object that is visible under the given mouse cursor position.
 	ViewportPickResult pick(const QPoint& pos);
@@ -398,12 +383,6 @@ private:
 	/// The scene node (camera) that has been selected as the view node.
 	ReferenceField<ObjectNode> _viewNode;
 
-	/// The center point in world space used for the orbit navigation mode.
-	PropertyField<Point3> _orbitCenter;
-
-	/// Controls whether the explicit center point is used by the orbit navigation mode.
-	PropertyField<bool> _useOrbitCenter;
-
 	/// The title of the viewport.
 	PropertyField<QString> _viewportTitle;
 
@@ -455,8 +434,6 @@ private:
 	DECLARE_PROPERTY_FIELD(_cameraPosition);
 	DECLARE_PROPERTY_FIELD(_cameraDirection);
 	DECLARE_PROPERTY_FIELD(_showRenderFrame);
-	DECLARE_PROPERTY_FIELD(_orbitCenter);
-	DECLARE_PROPERTY_FIELD(_useOrbitCenter);
 	DECLARE_PROPERTY_FIELD(_viewportTitle);
 
 	friend class ViewportWindow;

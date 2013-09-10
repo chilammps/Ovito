@@ -530,6 +530,7 @@ void ViewportArrowGeometryBuffer::renderRaytracedCylinders(ViewportSceneRenderer
 
 	_raytracedCylinderShader->setUniformValue("modelview_matrix",
 			(QMatrix4x4)renderer->modelViewTM());
+	_raytracedCylinderShader->setUniformValue("modelview_uniform_scale", (float)pow(std::abs(renderer->modelViewTM().determinant()), (FloatType(1.0/3.0))));
 	_raytracedCylinderShader->setUniformValue("modelview_projection_matrix",
 			(QMatrix4x4)(renderer->projParams().projectionMatrix * renderer->modelViewTM()));
 	_raytracedCylinderShader->setUniformValue("projection_matrix", (QMatrix4x4)renderer->projParams().projectionMatrix);

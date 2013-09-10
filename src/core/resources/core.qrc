@@ -51,6 +51,10 @@
 	<file>cursor/viewport/cursor_pan.png</file>
 	<file>cursor/viewport/cursor_zoom.png</file> 
 	<file>cursor/viewport/cursor_fov.png</file>
+	<file>cursor/editing/cursor_mode_select.png</file>
+	<file>cursor/editing/cursor_mode_move.png</file>
+	<file>cursor/editing/cursor_mode_rotate.png</file>
+	<file>cursor/editing/cursor_mode_scale.png</file>
 	
 	<file>mainwin/command_panel/about_panel.html</file>
 	

@@ -69,6 +69,9 @@ public:
 	/// Given an object ID, looks up the corresponding record.
 	const ObjectRecord* lookupObjectRecord(quint32 objectID) const;
 
+	/// Returns the world space position corresponding to the given screen position.
+	Point3 worldPositionFromLocation(const QPoint& pos) const;
+
 	/// Resets the internal state of the picking renderer and clears the stored object records.
 	void reset();
 
@@ -83,8 +86,11 @@ private:
 	/// The list of registered objects.
 	std::vector<ObjectRecord> _objects;
 
-	/// The rendered picking image.
+	/// The image containing the object information.
 	QImage _image;
+
+	/// The depth buffer data.
+	std::unique_ptr<GLfloat[]> _depthBuffer;
 
 	Q_OBJECT
 	OVITO_OBJECT

@@ -172,12 +172,11 @@ void ParticleInformationApplet::updateInformationDisplay()
 }
 
 /******************************************************************************
-* Handles the mouse down events for a Viewport.
+* Handles the mouse up events for a Viewport.
 ******************************************************************************/
-void ParticleInformationInputMode::mousePressEvent(Viewport* vp, QMouseEvent* event)
+void ParticleInformationInputMode::mouseReleaseEvent(Viewport* vp, QMouseEvent* event)
 {
-	ViewportInputHandler::mousePressEvent(vp, event);
-	if(event->button() == Qt::LeftButton) {
+	if(event->button() == Qt::LeftButton && temporaryNavigationMode() == nullptr) {
 
 		_selectedNode = nullptr;
 		ViewportPickResult pickResult = vp->pick(event->pos());
@@ -204,6 +203,7 @@ void ParticleInformationInputMode::mousePressEvent(Viewport* vp, QMouseEvent* ev
 		_applet->updateInformationDisplay();
 		ViewportManager::instance().updateViewports();
 	}
+	ViewportInputHandler::mouseReleaseEvent(vp, event);
 }
 
 /******************************************************************************
@@ -213,7 +213,7 @@ void ParticleInformationInputMode::renderOverlay(Viewport* vp, ViewportSceneRend
 {
 	ViewportInputHandler::renderOverlay(vp, renderer, isActive);
 
-	if(!renderer->isInteractive())
+	if(!renderer->isInteractive() || renderer->isPicking())
 		return;
 
 	if(!_selectedNode)

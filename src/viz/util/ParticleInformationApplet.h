@@ -46,8 +46,8 @@ public:
 	/// Returns the activation behavior of this input handler.
 	virtual InputHandlerType handlerType() override { return ViewportInputHandler::NORMAL; }
 
-	/// Handles the mouse down events for a Viewport.
-	virtual void mousePressEvent(Viewport* vp, QMouseEvent* event) override;
+	/// Handles the mouse up events for a Viewport.
+	virtual void mouseReleaseEvent(Viewport* vp, QMouseEvent* event) override;
 
 	/// \brief Lets the input mode render its overlay content in a viewport.
 	virtual void renderOverlay(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive) override;

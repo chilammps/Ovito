@@ -54,19 +54,12 @@ public:
 	};
 
 	/// \brief Default constructor.
-	ViewportInputHandler() : _temporaryNavMode(NULL) {}
+	ViewportInputHandler() : _temporaryNavMode(nullptr), _showOrbitCenter(false) {}
 
 	/// \brief Returns the activation behavior of this input handler.
 	/// \return The activation type controls what happens when the handler is activated and deactivated.
 	///         The returned value is interpreted by the ViewportInputManager.
 	virtual InputHandlerType handlerType() = 0;
-
-	/// \brief Handles double click events for a Viewport.
-	/// \param vp The viewport in which the mouse event occurred.
-	/// \param event The mouse event.
-	///
-	/// The default implementation does nothing.
-	virtual void mouseDoubleClickEvent(Viewport* vp, QMouseEvent* event) {}
 
 	/// \brief Handles mouse press events for a Viewport.
 	/// \param vp The viewport in which the mouse event occurred.
@@ -104,19 +97,18 @@ public:
 	/// The default implementation zooms in or out according to the wheel rotation.
 	virtual void wheelEvent(Viewport* vp, QWheelEvent* event);
 
-	/// \brief Return the cursor to be used for the viewport windows
+	/// \brief Handles double click events for a Viewport.
+	/// \param vp The viewport in which the mouse event occurred.
+	/// \param event The mouse event.
+	virtual void mouseDoubleClickEvent(Viewport* vp, QMouseEvent* event);
+
+	/// \brief Return the mouse cursor shown in the viewport windows
 	///        while this input handler is active.
-	/// \return A cursor.
-	///
-	/// The default implementation returns the standard arrow cursor.
-	///
-	/// An input handler can update the current dynamically by calling
-	/// updateCursor().
-	///
-	/// \sa updateCursor()
-	virtual QCursor getCursor() {
-		return QCursor(Qt::ArrowCursor);
-	}
+	const QCursor& cursor() { return _cursor; }
+
+	/// \brief Sets the mouse cursor shown in the viewport windows
+	///        while this input handler is active.
+	void setCursor(const QCursor& cursor);
 
 	/// \brief Return the temporary navigation mode if the user is currently using the
 	///        middle button or the mouse wheel.
@@ -137,10 +129,8 @@ public:
 	///
 	/// Subclasses should override this method to return \c true if they also override the renderOverlay() method.
 	/// The default implementation returns \c false.
-	///
-	/// \sa renderOverlay()
 	virtual bool hasOverlay() {
-		return (_temporaryNavMode != NULL) ? _temporaryNavMode->hasOverlay() : false;
+		return (_temporaryNavMode != nullptr) ? _temporaryNavMode->hasOverlay() : _showOrbitCenter;
 	}
 
 	/// \brief Lets the input mode render its overlay content in a viewport.
@@ -155,12 +145,11 @@ public:
 	///
 	/// The default implementation of this method does nothing. If a subclasses implements this
 	/// method then it should also override the hasOverlay() function.
-	///
-	/// \sa hasOverlay()
-	virtual void renderOverlay(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive) {
-		if(_temporaryNavMode != NULL)
-			_temporaryNavMode->renderOverlay(vp, renderer, isActive);
-	}
+	virtual void renderOverlay(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive);
+
+	/// \brief Computes the bounding box of the visual viewport overlay rendered by the input mode.
+	/// \return The bounding box of the modifier in world coordinates.
+	virtual Box3 overlayBoundingBox(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive);
 
 protected:
 
@@ -180,20 +169,20 @@ protected:
 	/// \sa ViewportInputManager::removeInputHandler()
 	virtual void deactivated();
 
-	/// \brief Updates the cursor in the viewport.
-	///
-	/// This method can be called by an input handler to change the current viewport
-	/// cursor dynamically. After calling updateCursor() the system will query
-	/// the handler for the new cursor through the getCursor() method.
-	///
-	/// \sa getCursor()
-	void updateCursor();
-
 private:
 
 	/// Contains one of the temporary navigation modes if the user is using the
 	/// middle button or the mouse wheel.
 	ViewportInputHandler* _temporaryNavMode;
+
+	/// Stores a copy of the last mouse-press event.
+	std::unique_ptr<QMouseEvent> _lastMousePressEvent;
+
+	/// Indicates that the orbit center of rotation should be shown.
+	bool _showOrbitCenter;
+
+	/// The cursor shown while this mode is active.
+	QCursor _cursor;
 
 	Q_OBJECT
 	OVITO_OBJECT
