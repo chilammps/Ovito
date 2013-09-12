@@ -65,13 +65,18 @@ IF(OVITO_MONOLITHIC_BUILD)
 		# The static Qt plugins must be linked into the executable.
 		TARGET_LINK_LIBRARIES(${PROJECT_NAME} "${_qt5Core_install_prefix}/plugins/platforms/libqxcb.a")
 		TARGET_LINK_LIBRARIES(${PROJECT_NAME} "${_qt5Core_install_prefix}/plugins/platforms/libqminimal.a")
-		TARGET_LINK_LIBRARIES(${PROJECT_NAME} "/home/stuko/progs/qt-everywhere-opensource-src-5.1.1-rc1/qtbase/src/plugins/platforms/xcb/xcb-static/libxcb-static.a")
+		TARGET_LINK_LIBRARIES(${PROJECT_NAME} "/home/stuko/progs/qt-everywhere-opensource-src-5.1.1/qtbase/src/plugins/platforms/xcb/xcb-static/libxcb-static.a")
 		TARGET_LINK_LIBRARIES(${PROJECT_NAME} "${_qt5Core_install_prefix}/lib/libQt5PlatformSupport.a")
 
 		# Some additional system libraries are required.
 		TARGET_LINK_LIBRARIES(${PROJECT_NAME} "pthread" "dl" "rt" "Xext" "X11" "Xrender" "X11-xcb" "xcb" "GL" 
 				"freetype" "libfontconfig.a" "libexpat.a" "libpcre.a" "libpcreposix.a" "Xi")
 
+		SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "\$ORIGIN/../lib/ovito")
+		FIND_LIBRARY(OVITO_LIBSTDCXX NAMES libstdc++.so.6 PATHS /usr/lib NO_DEFAULT_PATH)
+		GET_FILENAME_COMPONENT(OVITO_LIBSTDCXX_REAL ${OVITO_LIBSTDCXX} REALPATH)
+		INSTALL(FILES "${OVITO_LIBSTDCXX}" "${OVITO_LIBSTDCXX_REAL}" DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}/")
+		
 		# Install a qt.conf file.
 		# INSTALL(CODE "
 		#	file(WRITE \"\${CMAKE_INSTALL_PREFIX}/${OVITO_RELATIVE_BINARY_DIRECTORY}/qt.conf\" \"[Paths]\\nLibraries = ../${OVITO_RELATIVE_LIBRARY_DIRECTORY}/\")

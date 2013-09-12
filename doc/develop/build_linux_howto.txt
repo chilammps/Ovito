@@ -2,8 +2,8 @@
 **************************************************************************
 Build static Qt libraries (version 5.1.1) on Ubuntu 10.04:
 
-Edit file /qtbase/mkspecs/common/g++-base.conf and specify absolute
-path to gcc and g++ compilers.
+Edit file qtbase/mkspecs/common/g++-base.conf and specify absolute
+paths to newest gcc and g++ compilers.
 
 ./configure \
 	-opensource \
@@ -20,6 +20,8 @@ path to gcc and g++ compilers.
 	-no-cups \
 	-no-glib \
 	-prefix $HOME/progs/qt5static
+
+make
 
 cd qtbase/src/plugins/platforms/xcb/xcb-static/
 make
