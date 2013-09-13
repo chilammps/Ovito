@@ -1,5 +1,3 @@
-- "Align to particles" function in Slice modifier.
-
 - Atom-type dependent radius for bond creation
 
 - Selection of atoms by drawing a path in the viewports
