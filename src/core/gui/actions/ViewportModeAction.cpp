@@ -68,4 +68,25 @@ void ViewportModeAction::onInputModeChanged(ViewportInputHandler* oldMode, Viewp
 	}
 }
 
+/******************************************************************************
+* Create a push button that activates this action.
+******************************************************************************/
+QPushButton* ViewportModeAction::createPushButton(QWidget* parent)
+{
+	QPushButton* button = new QPushButton(text(), parent);
+	button->setCheckable(true);
+	button->setChecked(isChecked());
+
+#ifndef Q_OS_MACX
+	if(_highlightColor.isValid())
+		button->setStyleSheet("QPushButton:checked { background-color: " + _highlightColor.name() + " }");
+	else
+		button->setStyleSheet("QPushButton:checked { background-color: moccasin; }");
+#endif
+
+	connect(this, SIGNAL(toggled(bool)), button, SLOT(setChecked(bool)));
+	connect(button, SIGNAL(clicked(bool)), this, SLOT(trigger()));
+	return button;
+}
+
 };

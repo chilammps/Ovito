@@ -25,10 +25,9 @@
 #include <core/animation/AnimManager.h>
 #include <core/viewport/Viewport.h>
 #include <core/viewport/ViewportManager.h>
+#include <core/rendering/viewport/ViewportSceneRenderer.h>
 #include <viz/data/ParticlePropertyObject.h>
 #include <viz/data/ParticleTypeProperty.h>
-#include <viz/data/ParticleDisplay.h>
-#include <core/rendering/viewport/ViewportSceneRenderer.h>
 #include "ParticleInformationApplet.h"
 
 namespace Viz {
@@ -57,9 +56,9 @@ void ParticleInformationApplet::openUtility(RolloutContainer* container, const R
 	layout->setContentsMargins(4,4,4,4);
 	layout->setSpacing(4);
 
-	QPushButton* pickModeButton = new QPushButton(tr("Picking mode"));
-	pickModeButton->setCheckable(true);
-	layout->addWidget(pickModeButton);
+	_inputMode = new ParticleInformationInputMode(this);
+	ViewportModeAction* pickModeAction = new ViewportModeAction(tr("Pick mode"), this, _inputMode);
+	layout->addWidget(pickModeAction->createPushButton());
 
 	_captionLabel = new QLabel(tr("Double-click on a particle in the viewports."), _panel);
 	layout->addWidget(_captionLabel);
@@ -79,10 +78,6 @@ void ParticleInformationApplet::openUtility(RolloutContainer* container, const R
 	_table->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
 	layout->addWidget(_table);
 
-	_inputMode = new ParticleInformationInputMode(this);
-	ViewportModeAction* pickModeAction = new ViewportModeAction(tr("Pick mode"), this, _inputMode);
-	connect(pickModeAction, SIGNAL(toggled(bool)), pickModeButton, SLOT(setChecked(bool)));
-	connect(pickModeButton, SIGNAL(clicked(bool)), pickModeAction, SLOT(trigger()));
 	ViewportInputManager::instance().pushInputHandler(_inputMode);
 }
 
@@ -102,17 +97,17 @@ void ParticleInformationApplet::closeUtility(RolloutContainer* container)
 ******************************************************************************/
 void ParticleInformationApplet::updateInformationDisplay()
 {
-	if(_inputMode->_selectedNode) {
-		const PipelineFlowState& flowState = _inputMode->_selectedNode->evalPipeline(AnimManager::instance().time());
+	if(_inputMode->_pickedParticle.objNode) {
+		const PipelineFlowState& flowState = _inputMode->_pickedParticle.objNode->evalPipeline(AnimManager::instance().time());
 
-		size_t particleIndex = _inputMode->_particleIndex;
-		if(_inputMode->_particleId >= 0) {
+		size_t particleIndex = _inputMode->_pickedParticle.particleIndex;
+		if(_inputMode->_pickedParticle.particleId >= 0) {
 			for(const auto& sceneObj : flowState.objects()) {
 				ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(sceneObj.get());
 				if(property && property->type() == ParticleProperty::IdentifierProperty) {
 					const int* begin = property->constDataInt();
 					const int* end = begin + property->size();
-					const int* iter = std::find(begin, end, _inputMode->_particleId);
+					const int* iter = std::find(begin, end, _inputMode->_pickedParticle.particleId);
 					if(iter != end)
 						particleIndex = (iter - begin);
 				}
@@ -177,29 +172,7 @@ void ParticleInformationApplet::updateInformationDisplay()
 void ParticleInformationInputMode::mouseReleaseEvent(Viewport* vp, QMouseEvent* event)
 {
 	if(event->button() == Qt::LeftButton && temporaryNavigationMode() == nullptr) {
-
-		_selectedNode = nullptr;
-		ViewportPickResult pickResult = vp->pick(event->pos());
-		if(pickResult.valid) {
-			// Check if user has really clicked on a particle.
-			OORef<ParticlePropertyObject> posProperty = dynamic_object_cast<ParticlePropertyObject>(pickResult.sceneObject);
-			if(posProperty && posProperty->type() == ParticleProperty::PositionProperty) {
-
-				// Save reference to the selected particle.
-				_selectedNode = pickResult.objectNode.get();
-				_particleIndex = pickResult.subobjectId;
-
-				// Also save particle ID in case ordering of particles changes.
-				_particleId = -1;
-				const PipelineFlowState& flowState = pickResult.objectNode->evalPipeline(AnimManager::instance().time());
-				for(const auto& sceneObj : flowState.objects()) {
-					ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(sceneObj.get());
-					if(property && property->type() == ParticleProperty::IdentifierProperty && _particleIndex < property->size()) {
-						_particleId = property->getInt(_particleIndex);
-					}
-				}
-			}
-		}
+		pickParticle(vp, event->pos(), _pickedParticle);
 		_applet->updateInformationDisplay();
 		ViewportManager::instance().updateViewports();
 	}
@@ -212,115 +185,7 @@ void ParticleInformationInputMode::mouseReleaseEvent(Viewport* vp, QMouseEvent* 
 void ParticleInformationInputMode::renderOverlay(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive)
 {
 	ViewportInputHandler::renderOverlay(vp, renderer, isActive);
-
-	if(!renderer->isInteractive() || renderer->isPicking())
-		return;
-
-	if(!_selectedNode)
-		return;
-
-	const PipelineFlowState& flowState = _selectedNode->evalPipeline(AnimManager::instance().time());
-
-	// If particle selection is based on ID, find particle with the given ID.
-	size_t particleIndex = _particleIndex;
-	if(_particleId >= 0) {
-		for(const auto& sceneObj : flowState.objects()) {
-			ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(sceneObj.get());
-			if(property && property->type() == ParticleProperty::IdentifierProperty) {
-				const int* begin = property->constDataInt();
-				const int* end = begin + property->size();
-				const int* iter = std::find(begin, end, _particleId);
-				if(iter != end)
-					particleIndex = (iter - begin);
-			}
-		}
-	}
-
-	// Fetch properties of selected particle needed to render the overlay.
-	ParticlePropertyObject* posProperty = nullptr;
-	ParticlePropertyObject* radiusProperty = nullptr;
-	ParticlePropertyObject* typeProperty = nullptr;
-	for(const auto& sceneObj : flowState.objects()) {
-		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(sceneObj.get());
-		if(!property) continue;
-		if(property->type() == ParticleProperty::PositionProperty && property->size() >= particleIndex)
-			posProperty = property;
-		else if(property->type() == ParticleProperty::RadiusProperty && property->size() >= particleIndex)
-			radiusProperty = property;
-		if(property->type() == ParticleProperty::ParticleTypeProperty && property->size() >= particleIndex)
-			typeProperty = property;
-	}
-	if(!posProperty)
-		return;
-	ParticleDisplay* particleDisplay = dynamic_object_cast<ParticleDisplay>(posProperty->displayObject());
-	if(!particleDisplay)
-		return;
-
-	// Determine position of selected particle.
-	Point3 pos = posProperty->getPoint3(particleIndex);
-
-	// Determine radius of selected particle.
-	FloatType radius = particleDisplay->particleRadius(particleIndex, radiusProperty, dynamic_object_cast<ParticleTypeProperty>(typeProperty));
-	if(radius <= 0)
-		return;
-
-	TimeInterval iv;
-	const AffineTransformation& nodeTM = _selectedNode->getWorldTransform(AnimManager::instance().time(), iv);
-
-	// Prepare marker geometry buffer.
-	if(!_markerBuffer2 || !_markerBuffer2->isValid(renderer)
-			|| !_markerBuffer2->setShadingMode(particleDisplay->shadingMode())
-			|| !_markerBuffer2->setRenderingQuality(particleDisplay->renderingQuality())) {
-		Color markerColor(1.0, 0.0, 0.0);
-		_markerBuffer2 = renderer->createParticleGeometryBuffer(particleDisplay->shadingMode(), particleDisplay->renderingQuality());
-		_markerBuffer2->setSize(1);
-		_markerBuffer2->setParticleColor(markerColor);
-	}
-	_markerBuffer2->setParticlePositions(&pos);
-	_markerBuffer2->setParticleRadius(radius);
-
-	renderer->setWorldTransform(nodeTM);
-	int oldDepthFunc;
-	glGetIntegerv(GL_DEPTH_FUNC, &oldDepthFunc);
-	glDepthFunc(GL_LEQUAL);
-	_markerBuffer2->render(renderer);
-	glDepthFunc(oldDepthFunc);
-
-	// Prepare marker geometry buffer.
-	if(!_markerBuffer || !_markerBuffer->isValid(renderer)) {
-		ColorA markerColor(1.0, 1.0, 1.0);
-		_markerBuffer = renderer->createLineGeometryBuffer();
-		Point3 vertices[64];
-		for(int i = 0; i < sizeof(vertices)/sizeof(vertices[0])/2; i++) {
-			FloatType angle = (FloatType)i * 2.0 * FLOATTYPE_PI / (sizeof(vertices)/sizeof(vertices[0])/2);
-			vertices[i*2] = Point3(0, cos(angle), sin(angle));
-		}
-		for(int i = 0; i < sizeof(vertices)/sizeof(vertices[0])/2; i++) {
-			vertices[i*2+1] = vertices[(i*2+2)%(sizeof(vertices)/sizeof(vertices[0]))];
-		}
-		_markerBuffer->setSize(sizeof(vertices)/sizeof(vertices[0]));
-		_markerBuffer->setVertexPositions(vertices);
-		_markerBuffer->setVertexColor(markerColor);
-	}
-	AffineTransformation particleTM = nodeTM * AffineTransformation::translation(pos - Point3::Origin()) * AffineTransformation::scaling(radius);
-	glDisable(GL_DEPTH_TEST);
-	for(int i = 0; i < 6; i++) {
-		renderer->setWorldTransform(particleTM * AffineTransformation::rotationZ(FLOATTYPE_PI/6 * i));
-		_markerBuffer->render(renderer);
-	}
-#if 0
-	ViewProjectionParameters vparams = renderer->projParams();
-	AffineTransformation oldViewMatrix = vparams.viewMatrix;
-	vparams.viewMatrix = nodeTM * AffineTransformation::translation(oldViewMatrix * pos - Point3::Origin()) * AffineTransformation::scaling(radius);
-	vparams.inverseViewMatrix = vparams.viewMatrix.inverse();
-	renderer->setProjParams(vparams);
-	renderer->setWorldTransform(AffineTransformation::Identity());
-	_markerBuffer->render(renderer);
-	vparams.viewMatrix = oldViewMatrix;
-	vparams.inverseViewMatrix = oldViewMatrix.inverse();
-	renderer->setProjParams(vparams);
-#endif
-	glEnable(GL_DEPTH_TEST);
+	renderSelectionMarker(vp, renderer, _pickedParticle);
 }
 
 };

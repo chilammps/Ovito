@@ -26,8 +26,7 @@
 #include <core/gui/mainwin/cmdpanel/UtilityApplet.h>
 #include <core/viewport/input/ViewportInputHandler.h>
 #include <core/viewport/input/ViewportInputManager.h>
-#include <core/rendering/LineGeometryBuffer.h>
-#include <core/rendering/ParticleGeometryBuffer.h>
+#include <viz/util/ParticlePickingHelper.h>
 
 namespace Viz {
 
@@ -35,7 +34,7 @@ using namespace Ovito;
 
 class ParticleInformationApplet;
 
-class ParticleInformationInputMode : public ViewportInputHandler
+class ParticleInformationInputMode : public ViewportInputHandler, ParticlePickingHelper
 {
 public:
 
@@ -60,20 +59,8 @@ private:
 	/// The particle information applet.
 	ParticleInformationApplet* _applet;
 
-	/// The index of the selected particle whose properties are being displayed.
-	size_t _particleIndex;
-
-	/// The identifier of the selected particle whose properties are being displayed.
-	int _particleId;
-
-	/// The scene node to which the particle belongs.
-	QPointer<ObjectNode> _selectedNode;
-
-	/// Used to render the marker for the selected particle.
-	OORef<LineGeometryBuffer> _markerBuffer;
-
-	/// Used to render the marker for the selected particle.
-	OORef<ParticleGeometryBuffer> _markerBuffer2;
+	/// The selected particle whose properties are being displayed.
+	PickResult _pickedParticle;
 
 	friend class ParticleInformationApplet;
 };

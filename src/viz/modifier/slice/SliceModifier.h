@@ -24,6 +24,10 @@
 
 #include <core/Core.h>
 #include <core/animation/controller/Controller.h>
+#include <core/viewport/input/ViewportInputHandler.h>
+#include <core/viewport/input/ViewportInputManager.h>
+#include <core/gui/actions/ViewportModeAction.h>
+#include <viz/util/ParticlePickingHelper.h>
 #include "../ParticleModifier.h"
 
 namespace Viz {
@@ -171,6 +175,52 @@ private:
 	DECLARE_PROPERTY_FIELD(_applyToSelection);
 };
 
+class SliceModifierEditor;
+
+/******************************************************************************
+* The viewport input mode that lets the user select three particles
+* to define the slicing plane.
+******************************************************************************/
+class PickParticlePlaneInputMode : public ViewportInputHandler, ParticlePickingHelper
+{
+public:
+
+	/// Constructor.
+	PickParticlePlaneInputMode(SliceModifierEditor* editor) : _editor(editor) {}
+
+	/// Returns the activation behavior of this input handler.
+	virtual InputHandlerType handlerType() override { return ViewportInputHandler::NORMAL; }
+
+	/// Handles the mouse events for a Viewport.
+	virtual void mouseReleaseEvent(Viewport* vp, QMouseEvent* event) override;
+
+	/// Lets the input mode render its overlay content in a viewport.
+	virtual void renderOverlay(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive) override;
+
+	/// Indicates whether this input mode renders into the viewports.
+	virtual bool hasOverlay() override { return true; }
+
+protected:
+
+	/// This is called by the system after the input handler has become the active handler.
+	virtual void activated() override;
+
+	/// This is called by the system after the input handler is no longer the active handler.
+	virtual void deactivated() override;
+
+private:
+
+	/// Aligns the modifier's slicing plane to the three selected particles.
+	void alignPlane(SliceModifier* mod);
+
+	/// The list of particles picked by the user so far.
+	QVector<PickResult> _pickedParticles;
+
+	/// The properties editor of the Slice modifier.
+	SliceModifierEditor* _editor;
+};
+
+
 /******************************************************************************
 * A properties editor for the SliceModifier class.
 ******************************************************************************/
@@ -183,10 +233,8 @@ public:
 
 	/// Destructor.
 	virtual ~SliceModifierEditor() {
-#if 0
-		// Deactivate the editor's input mode.
-		VIEWPORT_INPUT_MANAGER.removeInputHandler(pickAtomPlaneInputMode.get());
-#endif
+		// Deactivate the input mode when editor is closed.
+		ViewportInputManager::instance().removeInputHandler(_pickParticlePlaneInputMode.get());
 	}
 
 protected:
@@ -210,11 +258,8 @@ protected Q_SLOTS:
 
 private:
 
-#if 0
-	PickAtomPlaneInputMode::SmartPtr pickAtomPlaneInputMode;
-	ViewportModeAction::SmartPtr pickAtomPlaneInputModeAction;
-	ActionProxy* pickAtomPlaneInputModeActionProxy;
-#endif
+	OORef<PickParticlePlaneInputMode> _pickParticlePlaneInputMode;
+	ViewportModeAction* _pickParticlePlaneInputModeAction;
 
 	Q_OBJECT
 	OVITO_OBJECT

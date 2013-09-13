@@ -81,6 +81,7 @@ SET(OVITO_VIZ_SOURCE_FILES
 	util/ParticlePropertyComboBox.cpp
 	util/CutoffRadiusPresetsUI.cpp
 	util/ParticleInformationApplet.cpp
+	util/ParticlePickingHelper.cpp
 )
 
 # The source files of the muParser library.

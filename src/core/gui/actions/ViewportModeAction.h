@@ -40,6 +40,9 @@ public:
 	/// \param id The unique identifier string of this action object.
 	ViewportModeAction(const QString& text, QObject* parent, const OORef<ViewportInputHandler>& inputHandler, const QColor& highlightColor = QColor());
 
+	/// \brief Create a push button that activates this action.
+	QPushButton* createPushButton(QWidget* parent = nullptr);
+
 protected Q_SLOTS:
 
 	/// Is called when the active viewport input handler has changed.

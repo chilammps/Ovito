@@ -28,6 +28,7 @@
 #include <core/animation/controller/StandardControllers.h>
 #include <core/scene/pipeline/PipelineObject.h>
 #include <core/gui/actions/ActionManager.h>
+#include <core/gui/mainwin/MainWindow.h>
 #include <core/gui/properties/FloatParameterUI.h>
 #include <core/gui/properties/Vector3ParameterUI.h>
 #include <core/gui/properties/BooleanParameterUI.h>
@@ -399,15 +400,9 @@ void SliceModifierEditor::createUI(const RolloutInsertionParameters& rolloutPara
 	connect(alignPlaneToViewBtn, SIGNAL(clicked(bool)), this, SLOT(onAlignPlaneToView()));
 	layout->addWidget(alignPlaneToViewBtn);
 
-#if 0
-	pickAtomPlaneInputMode = new PickAtomPlaneInputMode();
-	pickAtomPlaneInputModeAction = new ViewportModeAction("SliceModifier.AlignPlaneToAtoms", pickAtomPlaneInputMode);
-	pickAtomPlaneInputModeActionProxy = new ActionProxy(pickAtomPlaneInputModeAction);
-	pickAtomPlaneInputModeActionProxy->setParent(this);
-	pickAtomPlaneInputModeActionProxy->setText(tr("Align plane to atoms"));
-	QWidget* alignPlaneToAtomsBtn = pickAtomPlaneInputModeActionProxy->requestWidget(rollout);
-	layout->addWidget(alignPlaneToAtomsBtn, 10, 0, 1, 2);
-#endif
+	_pickParticlePlaneInputMode = new PickParticlePlaneInputMode(this);
+	_pickParticlePlaneInputModeAction = new ViewportModeAction(tr("Pick three particles"), this, _pickParticlePlaneInputMode);
+	layout->addWidget(_pickParticlePlaneInputModeAction->createPushButton());
 
 	// Status label.
 	layout->addSpacing(12);
@@ -531,84 +526,84 @@ void SliceModifierEditor::onCenterOfBox()
 	});
 }
 
-#if 0
 /******************************************************************************
 * This is called by the system after the input handler has become the active handler.
 ******************************************************************************/
-void PickAtomPlaneInputMode::onActivated()
+void PickParticlePlaneInputMode::activated()
 {
-	MAIN_FRAME->statusBar()->showMessage(tr("Select three atoms to define the slicing plane."));
+	MainWindow::instance().statusBar()->showMessage(tr("Pick three particles to define a new slicing plane."));
 }
 
 /******************************************************************************
 * This is called by the system after the input handler is no longer the active handler.
 ******************************************************************************/
-void PickAtomPlaneInputMode::onDeactivated()
+void PickParticlePlaneInputMode::deactivated()
 {
-	pickedAtoms.clear();
-	MAIN_FRAME->statusBar()->clearMessage();
+	_pickedParticles.clear();
+	MainWindow::instance().statusBar()->clearMessage();
 }
 
 /******************************************************************************
-* Handles the mouse down events for a Viewport.
+* Handles the mouse events for a Viewport.
 ******************************************************************************/
-void PickAtomPlaneInputMode::onMouseDown(Viewport& vp, QMouseEvent* event)
+void PickParticlePlaneInputMode::mouseReleaseEvent(Viewport* vp, QMouseEvent* event)
 {
-	ViewportInputHandler::onMouseDown(vp, event);
+	if(event->button() == Qt::LeftButton && temporaryNavigationMode() == nullptr) {
 
-	if(event->button() == Qt::LeftButton) {
-
-		if(pickedAtoms.size() >= 3) {
-			pickedAtoms.clear();
-			VIEWPORT_MANAGER.updateViewports();
+		if(_pickedParticles.size() >= 3) {
+			_pickedParticles.clear();
+			ViewportManager::instance().updateViewports();
 		}
 
-		PickAtomResult pickResult;
-		if(pickAtom(vp, event->pos(), ANIM_MANAGER.time(), pickResult)) {
+		PickResult pickResult;
+		if(pickParticle(vp, event->pos(), pickResult)) {
 
-			// Do not select the same atom twice.
-			if(pickedAtoms.size() >= 1 && pickedAtoms[0].worldPos.equals(pickResult.worldPos, FLOATTYPE_EPSILON)) return;
-			if(pickedAtoms.size() >= 2 && pickedAtoms[1].worldPos.equals(pickResult.worldPos, FLOATTYPE_EPSILON)) return;
+			// Do not select the same particle twice.
+			bool ignore = false;
+			if(_pickedParticles.size() >= 1 && _pickedParticles[0].worldPos.equals(pickResult.worldPos, FLOATTYPE_EPSILON)) ignore = true;
+			if(_pickedParticles.size() >= 2 && _pickedParticles[1].worldPos.equals(pickResult.worldPos, FLOATTYPE_EPSILON)) ignore = true;
 
-			pickedAtoms.push_back(pickResult);
-			VIEWPORT_MANAGER.updateViewports();
+			if(!ignore) {
+				_pickedParticles.push_back(pickResult);
+				ViewportManager::instance().updateViewports();
 
-			if(pickedAtoms.size() == 3) {
+				if(_pickedParticles.size() == 3) {
 
-				// Get the slice modifier that is currently being edited.
-				SliceModifier* mod = dynamic_object_cast<SliceModifier>(MAIN_FRAME->commandPanel()->editObject());
-				if(mod)
-					alignPlane(mod);
+					// Get the slice modifier that is currently being edited.
+					SliceModifier* mod = dynamic_object_cast<SliceModifier>(_editor->editObject());
+					if(mod)
+						alignPlane(mod);
+					_pickedParticles.clear();
+				}
 			}
 		}
 	}
 
+	ViewportInputHandler::mouseReleaseEvent(vp, event);
 }
 
 /******************************************************************************
-* Aligns the modifier's slicing plane to the three selected atoms.
+* Aligns the modifier's slicing plane to the three selected particles.
 ******************************************************************************/
-void PickAtomPlaneInputMode::alignPlane(SliceModifier* mod)
+void PickParticlePlaneInputMode::alignPlane(SliceModifier* mod)
 {
-	OVITO_ASSERT(pickedAtoms.size() == 3);
+	OVITO_ASSERT(_pickedParticles.size() == 3);
 
 	try {
-		Plane3 worldPlane(pickedAtoms[0].worldPos, pickedAtoms[1].worldPos, pickedAtoms[2].worldPos, true);
-		if(worldPlane.normal.equals(NULL_VECTOR, FLOATTYPE_EPSILON))
-			throw Exception(tr("Cannot determine the new slicing plane. The three selected atoms are colinear."));
+		Plane3 worldPlane(_pickedParticles[0].worldPos, _pickedParticles[1].worldPos, _pickedParticles[2].worldPos, true);
+		if(worldPlane.normal.equals(Vector3::Zero(), FLOATTYPE_EPSILON))
+			throw Exception(tr("Cannot set the new slicing plane. The three selected particle are colinear."));
 
-		// Get the object to world transformation for the currently selected object.
-		ObjectNode* node = dynamic_object_cast<ObjectNode>(DATASET_MANAGER.currentSet()->selection()->firstNode());
-		if(!node) return;
+		// Get the object to world transformation for the currently selected node.
+		ObjectNode* node = _pickedParticles[0].objNode.get();
 		TimeInterval interval;
-		const AffineTransformation& nodeTM = node->getWorldTransform(ANIM_MANAGER.time(), interval);
-		AffineTransformation localToWorldTM = node->objectTransform() * nodeTM;
+		const AffineTransformation& nodeTM = node->getWorldTransform(AnimManager::instance().time(), interval);
 
 		// Transform new plane from world to object space.
-		Plane3 localPlane = localToWorldTM.inverse() * worldPlane;
+		Plane3 localPlane = nodeTM.inverse() * worldPlane;
 
 		// Flip new plane orientation if necessary to align it with old orientation.
-		if(DotProduct(localPlane.normal, mod->normal()) < 0)
+		if(localPlane.normal.dot(mod->normal()) < 0)
 			localPlane = -localPlane;
 
 		localPlane.normalizePlane();
@@ -625,14 +620,13 @@ void PickAtomPlaneInputMode::alignPlane(SliceModifier* mod)
 /******************************************************************************
 * Lets the input mode render its overlay content in a viewport.
 ******************************************************************************/
-void PickAtomPlaneInputMode::renderOverlay(Viewport* vp, bool isActive)
+void PickParticlePlaneInputMode::renderOverlay(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive)
 {
-	ViewportInputHandler::renderOverlay(vp, isActive);
+	ViewportInputHandler::renderOverlay(vp, renderer, isActive);
 
-	Q_FOREACH(const PickAtomResult& pa, pickedAtoms) {
-		renderSelectionMarker(vp, pa);
+	Q_FOREACH(const PickResult& pa, _pickedParticles) {
+		renderSelectionMarker(vp, renderer, pa);
 	}
 }
-#endif
 
 };	// End of namespace
