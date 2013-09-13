@@ -273,7 +273,7 @@ bool AtomicStrainModifier::AtomicStrainEngine::computeStrain(size_t particleInde
 				while(sr[k] < FloatType(-0.5)) sr[k] += FloatType(1);
 			}
 		}
-		r = _simCell.matrix() * sr;
+		r = _reducedToAbsolute * sr;
 
 		for(size_t i = 0; i < 3; i++) {
 			for(size_t j = 0; j < 3; j++) {
@@ -313,7 +313,7 @@ bool AtomicStrainModifier::AtomicStrainEngine::computeStrain(size_t particleInde
 	double xzdiff = strain.xx() - strain.zz();
 	double yzdiff = strain.yy() - strain.zz();
 	double shearStrain = sqrt(strain.xy()*strain.xy() + strain.xz()*strain.xz() + strain.yz()*strain.yz() +
-			(xydiff*xydiff + xydiff*xydiff + yzdiff*yzdiff) / 6.0);
+			(xydiff*xydiff + xzdiff*xzdiff + yzdiff*yzdiff) / 6.0);
 	OVITO_ASSERT(!std::isnan(shearStrain) && !std::isinf(shearStrain));
 	_shearStrains->setFloat(particleIndex, (FloatType)shearStrain);
 
