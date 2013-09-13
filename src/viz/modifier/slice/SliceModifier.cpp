@@ -59,7 +59,7 @@ SET_PROPERTY_FIELD_UNITS(SliceModifier, _widthCtrl, WorldParameterUnit)
 
 /******************************************************************************
 * Constructs the modifier object.
-******************************************************************************/
+******************************************************qDebug() << "Rendering color scale " << renderer->viewport();************************/
 SliceModifier::SliceModifier() :
 	_createSelection(false),
 	_inverse(false),

@@ -515,6 +515,10 @@ void ViewportArrowGeometryBuffer::renderShadedTriangles(ViewportSceneRenderer* r
 		OVITO_ASSERT_MSG(false, "ViewportArrowGeometryBuffer::renderShadedTriangles", "glMultiDrawArrays() is not supported.");
 	}
 
+	_shadedShader->disableAttributeArray("vertex_pos");
+	_shadedShader->disableAttributeArray("vertex_normal");
+	_shadedShader->disableAttributeArray("vertex_color");
+
 	_shadedShader->release();
 }
 
@@ -568,6 +572,12 @@ void ViewportArrowGeometryBuffer::renderRaytracedCylinders(ViewportSceneRenderer
 		OVITO_ASSERT_MSG(false, "ViewportArrowGeometryBuffer::renderRaytracedCylinders", "glMultiDrawArrays() is not supported.");
 	}
 
+	_raytracedCylinderShader->disableAttributeArray("vertex_pos");
+	_raytracedCylinderShader->disableAttributeArray("cylinder_color");
+	_raytracedCylinderShader->disableAttributeArray("cylinder_base");
+	_raytracedCylinderShader->disableAttributeArray("cylinder_axis");
+	_raytracedCylinderShader->disableAttributeArray("cylinder_radius");
+
 	_raytracedCylinderShader->release();
 }
 
@@ -611,6 +621,11 @@ void ViewportArrowGeometryBuffer::renderFlat(ViewportSceneRenderer* renderer, qu
 	else {
 		OVITO_ASSERT_MSG(false, "ViewportArrowGeometryBuffer::renderFlat", "glMultiDrawArrays() is not supported.");
 	}
+
+	_flatShader->disableAttributeArray("vertex_pos");
+	_flatShader->disableAttributeArray("vector_base");
+	_flatShader->disableAttributeArray("vector_dir");
+	_flatShader->disableAttributeArray("vertex_color");
 
 	_flatShader->release();
 }

@@ -160,6 +160,8 @@ void ViewportImageGeometryBuffer::renderViewport(SceneRenderer* renderer, const 
 		_vertexBuffer.release();
 
 		OVITO_CHECK_OPENGL(glDrawArrays(GL_TRIANGLE_STRIP, 0, 4));
+
+		_shader->disableAttributeArray("vertex_pos");
 	}
 	else {
 		glBegin(GL_TRIANGLE_STRIP);

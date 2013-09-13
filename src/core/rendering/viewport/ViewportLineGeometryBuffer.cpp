@@ -171,11 +171,15 @@ void ViewportLineGeometryBuffer::render(SceneRenderer* renderer)
 
 	OVITO_CHECK_OPENGL(glDrawArrays(GL_LINES, 0, _vertexCount));
 
-	_shader->release();
-	if(vpRenderer->glformat().majorVersion() < 3) {
+	if(vpRenderer->glformat().majorVersion() >= 3) {
+		_shader->disableAttributeArray("vertex_pos");
+		_shader->disableAttributeArray("vertex_color");
+	}
+	else {
 		OVITO_CHECK_OPENGL(glDisableClientState(GL_VERTEX_ARRAY));
 		OVITO_CHECK_OPENGL(glDisableClientState(GL_COLOR_ARRAY));
 	}
+	_shader->release();
 }
 
 };
