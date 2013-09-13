@@ -283,6 +283,11 @@ public:
 	/// same size on the screen.
 	FloatType nonScalingSize(const Point3& worldPosition);
 
+	/// Returns the geometry of the render frame, i.e., the region of the viewport that
+	/// will be visible in a rendered image.
+	/// The returned box is given in viewport coordinates (interval [-1,+1]).
+	Box2 renderFrameRect() const;
+
 	/// \brief Determines the object that is visible under the given mouse cursor position.
 	ViewportPickResult pick(const QPoint& pos);
 

@@ -659,26 +659,16 @@ void Viewport::adjustProjectionForRenderFrame(ViewProjectionParameters& params)
 }
 
 /******************************************************************************
-* Renders the frame on top of the scene that indicates the visible rendering area.
+* Returns the geometry of the render frame, i.e., the region of the viewport that
+* will be visible in a rendered image.
+* The returned box is given in viewport coordinates (interval [-1,+1]).
 ******************************************************************************/
-void Viewport::renderRenderFrame()
+Box2 Viewport::renderFrameRect() const
 {
-	if(!renderFrameShown())
-		return;
-
 	QSize vpSize = size();
 	RenderSettings* renderSettings = DataSetManager::instance().currentSet()->renderSettings();
 	if(!renderSettings || vpSize.width() == 0 || vpSize.height() == 0)
-		return;
-
-	// Create a rendering buffer that is responsible for rendering the frame.
-	SceneRenderer* renderer = ViewportManager::instance().renderer();
-	if(!_renderFrameOverlay || !_renderFrameOverlay->isValid(renderer)) {
-		_renderFrameOverlay = renderer->createImageGeometryBuffer();
-		QImage image(1, 1, QImage::Format_ARGB32_Premultiplied);
-		image.fill(0xA0FFFFFF);
-		_renderFrameOverlay->setImage(image);
-	}
+		return Box2(Point2(-1), Point2(+1));
 
 	// Compute a rectangle that has the same aspect ratio as the rendered image.
 	FloatType renderAspectRatio = renderSettings->outputImageAspectRatio();
@@ -693,11 +683,33 @@ void Viewport::renderRenderFrame()
 		frameWidth = frameHeight / renderAspectRatio * windowAspectRatio;
 	}
 
+	return Box2(-frameWidth, -frameHeight, frameWidth, frameHeight);
+}
+
+/******************************************************************************
+* Renders the frame on top of the scene that indicates the visible rendering area.
+******************************************************************************/
+void Viewport::renderRenderFrame()
+{
+	if(!renderFrameShown())
+		return;
+
+	// Create a rendering buffer that is responsible for rendering the frame.
+	SceneRenderer* renderer = ViewportManager::instance().renderer();
+	if(!_renderFrameOverlay || !_renderFrameOverlay->isValid(renderer)) {
+		_renderFrameOverlay = renderer->createImageGeometryBuffer();
+		QImage image(1, 1, QImage::Format_ARGB32_Premultiplied);
+		image.fill(0xA0FFFFFF);
+		_renderFrameOverlay->setImage(image);
+	}
+
+	Box2 rect = renderFrameRect();
+
 	// Render rectangle borders
-	_renderFrameOverlay->renderViewport(renderer, Point2(-1,-1), Vector2(1.0 - frameWidth, 2));
-	_renderFrameOverlay->renderViewport(renderer, Point2(frameWidth,-1), Vector2(1.0 - frameWidth, 2));
-	_renderFrameOverlay->renderViewport(renderer, Point2(-frameWidth,-1), Vector2(2*frameWidth, 1.0 - frameHeight));
-	_renderFrameOverlay->renderViewport(renderer, Point2(-frameWidth,frameHeight), Vector2(2*frameWidth, 1.0 - frameHeight));
+	_renderFrameOverlay->renderViewport(renderer, Point2(-1,-1), Vector2(1.0 + rect.minc.x(), 2));
+	_renderFrameOverlay->renderViewport(renderer, Point2(rect.maxc.x(),-1), Vector2(1.0 - rect.maxc.x(), 2));
+	_renderFrameOverlay->renderViewport(renderer, Point2(rect.minc.x(),-1), Vector2(rect.width(), 1.0 + rect.minc.y()));
+	_renderFrameOverlay->renderViewport(renderer, Point2(rect.minc.x(),rect.maxc.y()), Vector2(rect.width(), 1.0 - rect.maxc.y()));
 }
 
 /******************************************************************************

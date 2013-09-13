@@ -87,22 +87,22 @@ bool ViewportImageGeometryBuffer::isValid(SceneRenderer* renderer)
 }
 
 /******************************************************************************
-* Renders the image in a rectangle given in window coordinates.
+* Renders the image in a rectangle given in viewport coordinates.
 ******************************************************************************/
-void ViewportImageGeometryBuffer::renderWindow(SceneRenderer* renderer, const Point2& pos, const Vector2& size)
+void ViewportImageGeometryBuffer::renderViewport(SceneRenderer* renderer, const Point2& pos, const Vector2& size)
 {
 	GLint vc[4];
 	glGetIntegerv(GL_VIEWPORT, vc);
 
-	// Transform rectangle to normalized device coordinates.
-	renderViewport(renderer, Point2(pos.x() / vc[2] * 2 - 1, 1 - (pos.y() + size.y()) / vc[3] * 2),
-		Vector2(size.x() / vc[2] * 2, size.y() / vc[3] * 2));
+	Point2 windowPos((pos.x() + 1.0) * vc[2] / 2, (-(pos.y() + size.y()) + 1.0) * vc[3] / 2);
+	Vector2 windowSize(size.x() * vc[2] / 2, size.y() * vc[3] / 2);
+	renderWindow(renderer, windowPos, windowSize);
 }
 
 /******************************************************************************
-* Renders the image in a rectangle given in viewport coordinates.
+* Renders the image in a rectangle given in window coordinates.
 ******************************************************************************/
-void ViewportImageGeometryBuffer::renderViewport(SceneRenderer* renderer, const Point2& pos, const Vector2& size)
+void ViewportImageGeometryBuffer::renderWindow(SceneRenderer* renderer, const Point2& pos, const Vector2& size)
 {
 	OVITO_ASSERT(_contextGroup == QOpenGLContextGroup::currentContextGroup());
 	OVITO_ASSERT(_texture != 0);
@@ -134,11 +134,21 @@ void ViewportImageGeometryBuffer::renderViewport(SceneRenderer* renderer, const 
 	}
 
 	// Transform rectangle to normalized device coordinates.
+	int x = pos.x(), y = pos.y();
+	int w = size.x();
+	int h = size.y();
+	x = (x / vpRenderer->antialiasingLevel()) * vpRenderer->antialiasingLevel();
+	y = (y / vpRenderer->antialiasingLevel()) * vpRenderer->antialiasingLevel();
+	w = (w / vpRenderer->antialiasingLevel()) * vpRenderer->antialiasingLevel();
+	h = (h / vpRenderer->antialiasingLevel()) * vpRenderer->antialiasingLevel();
+	QRectF rect2(x, y, w, h);
+	GLint vc[4];
+	glGetIntegerv(GL_VIEWPORT, vc);
 	Point2 corners[4] = {
-			Point2(pos.x(), pos.y()),
-			Point2(pos.x() + size.x(), pos.y()),
-			Point2(pos.x(), pos.y() + size.y()),
-			Point2(pos.x() + size.x(), pos.y() + size.y())
+			Point2(rect2.left() / vc[2] * 2 - 1, 1 - rect2.bottom() / vc[3] * 2),
+			Point2(rect2.right() / vc[2] * 2 - 1, 1 - rect2.bottom() / vc[3] * 2),
+			Point2(rect2.left() / vc[2] * 2 - 1, 1 - rect2.top() / vc[3] * 2),
+			Point2(rect2.right() / vc[2] * 2 - 1, 1 - rect2.top() / vc[3] * 2)
 	};
 
 	bool wasDepthTestEnabled = glIsEnabled(GL_DEPTH_TEST);

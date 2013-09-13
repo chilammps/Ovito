@@ -49,7 +49,7 @@ SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _endValueCtrl, "End value")
 SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _colorGradient, "Color gradient")
 SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _onlySelected, "Color only selected particles")
 SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _keepSelection, "Keep selection")
-SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _renderLegend, "Display color legend (experimental)")
+SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _renderLegend, "Render color legend (experimental)")
 
 IMPLEMENT_OVITO_OBJECT(Viz, ColorCodingGradient, RefTarget)
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Viz, ColorCodingHSVGradient, ColorCodingGradient)
@@ -341,6 +341,10 @@ void ColorCodingModifier::render(TimePoint time, ObjectNode* contextNode, Modifi
 	if(!renderOverlay || !isEnabled() || !_renderLegend)
 		return;
 
+	// Show color legend in the viewports only if the render frame has been activated.
+	if(renderer->viewport() && renderer->isInteractive() && !renderer->viewport()->renderFrameShown())
+		return;
+
 	if(!colorGradient())
 		return;
 
@@ -371,11 +375,18 @@ void ColorCodingModifier::render(TimePoint time, ObjectNode* contextNode, Modifi
 		_colorScaleImageBuffer->setImage(image);
 	}
 
-	FloatType legendSize = 0.4;
-	FloatType topMargin = 0.1;
-	FloatType rightMargin = 0.03;
+	Box2 renderRect(Point2(-1), Point2(+1));
+	if(renderer->viewport() && renderer->isInteractive())
+		renderRect = renderer->viewport()->renderFrameRect();
 
-	_colorScaleImageBuffer->renderViewport(renderer, Point2(1.0 - rightMargin - legendSize * 0.2, 1.0 - topMargin - legendSize), Vector2(legendSize * 0.2, legendSize));
+	FloatType canvasSize = 0.5 * renderRect.height();
+	FloatType legendSize = 0.4 * canvasSize;
+	FloatType topMargin = 0.1 * canvasSize;
+	FloatType rightMargin = 0.03 * canvasSize;
+
+	_colorScaleImageBuffer->renderViewport(renderer,
+			Point2(renderRect.maxc.x() - rightMargin - legendSize * 0.2, renderRect.maxc.y() - topMargin - legendSize),
+			Vector2(legendSize * 0.2, legendSize));
 
 	if(!_colorScaleTopLabel || !_colorScaleTopLabel->isValid(renderer))
 		_colorScaleTopLabel = renderer->createTextGeometryBuffer();
@@ -393,9 +404,9 @@ void ColorCodingModifier::render(TimePoint time, ObjectNode* contextNode, Modifi
 	_colorScaleTitleLabel->setText(titleLabel);
 	_colorScaleTitleLabel->setColor(labelColor);
 
-	_colorScaleTitleLabel->renderViewport(renderer, Point2(1.0 - rightMargin, 1.0 - topMargin + 0.01), Qt::AlignRight | Qt::AlignBottom);
-	_colorScaleTopLabel->renderViewport(renderer, Point2(1.0 - rightMargin - legendSize * 0.24, 1.0 - topMargin), Qt::AlignRight | Qt::AlignTop);
-	_colorScaleBottomLabel->renderViewport(renderer, Point2(1.0 - rightMargin - legendSize * 0.24, 1.0 - topMargin - legendSize), Qt::AlignRight | Qt::AlignBottom);
+	_colorScaleTitleLabel->renderViewport(renderer, Point2(renderRect.maxc.x() - rightMargin, renderRect.maxc.y() - topMargin + 0.01), Qt::AlignRight | Qt::AlignBottom);
+	_colorScaleTopLabel->renderViewport(renderer, Point2(renderRect.maxc.x() - rightMargin - legendSize * 0.24, renderRect.maxc.y() - topMargin), Qt::AlignRight | Qt::AlignTop);
+	_colorScaleBottomLabel->renderViewport(renderer, Point2(renderRect.maxc.x() - rightMargin - legendSize * 0.24, renderRect.maxc.y() - topMargin - legendSize), Qt::AlignRight | Qt::AlignBottom);
 }
 
 /******************************************************************************

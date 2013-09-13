@@ -88,12 +88,14 @@ bool ViewportTextGeometryBuffer::isValid(SceneRenderer* renderer)
 }
 
 /******************************************************************************
-* normalized viewport coordinates ([-1,+1] range).
+* Renders the text string at the given location given in normalized
+* viewport coordinates ([-1,+1] range).
 ******************************************************************************/
 void ViewportTextGeometryBuffer::renderViewport(SceneRenderer* renderer, const Point2& pos, int alignment)
 {
 	GLint vc[4];
 	glGetIntegerv(GL_VIEWPORT, vc);
+
 	Point2 windowPos((pos.x() + 1.0) * vc[2] / 2, (-pos.y() + 1.0) * vc[3] / 2);
 	renderWindow(renderer, windowPos, alignment);
 }
@@ -160,9 +162,11 @@ void ViewportTextGeometryBuffer::renderWindow(SceneRenderer* renderer, const Poi
 	else if(alignment & Qt::AlignHCenter) x = -w / 2;
 	if(alignment & Qt::AlignBottom) y = -h;
 	else if(alignment & Qt::AlignVCenter) y = -h / 2;
+	x += pos.x();
+	y += pos.y();
+	x = (x / vpRenderer->antialiasingLevel()) * vpRenderer->antialiasingLevel();
+	y = (y / vpRenderer->antialiasingLevel()) * vpRenderer->antialiasingLevel();
 	QRectF rect2(x, y, w, h);
-	rect2.translate(pos.x(), pos.y());
-	//rect2.translate(_textOffset.x(), _textOffset.y());
 	GLint vc[4];
 	glGetIntegerv(GL_VIEWPORT, vc);
 	Point2 corners[4] = {
