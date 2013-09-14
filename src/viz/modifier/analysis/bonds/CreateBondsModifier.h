@@ -161,12 +161,6 @@ protected:
 	/// Creates the user interface controls for the editor.
 	virtual void createUI(const RolloutInsertionParameters& rolloutParams) override;
 
-protected Q_SLOTS:
-
-	/// Stores the current cutoff radius in the application settings
-	/// so it can be used as default value for new modifiers in the future.
-	void memorizeCutoff();
-
 private:
 
 	Q_OBJECT

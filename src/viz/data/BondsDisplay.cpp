@@ -37,9 +37,9 @@ namespace Viz {
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Viz, BondsDisplay, DisplayObject)
 IMPLEMENT_OVITO_OBJECT(Viz, BondsDisplayEditor, PropertiesEditor)
 SET_OVITO_OBJECT_EDITOR(BondsDisplay, BondsDisplayEditor)
-DEFINE_PROPERTY_FIELD(BondsDisplay, _bondWidth, "BondWidth")
-DEFINE_PROPERTY_FIELD(BondsDisplay, _bondColor, "BondColor")
-DEFINE_PROPERTY_FIELD(BondsDisplay, _useParticleColors, "UseParticleColors")
+DEFINE_FLAGS_PROPERTY_FIELD(BondsDisplay, _bondWidth, "BondWidth", PROPERTY_FIELD_MEMORIZE)
+DEFINE_FLAGS_PROPERTY_FIELD(BondsDisplay, _bondColor, "BondColor", PROPERTY_FIELD_MEMORIZE)
+DEFINE_FLAGS_PROPERTY_FIELD(BondsDisplay, _useParticleColors, "UseParticleColors", PROPERTY_FIELD_MEMORIZE)
 DEFINE_PROPERTY_FIELD(BondsDisplay, _shadingMode, "ShadingMode")
 DEFINE_PROPERTY_FIELD(BondsDisplay, _renderingQuality, "RenderingQuality")
 SET_PROPERTY_FIELD_LABEL(BondsDisplay, _bondWidth, "Bond width")
@@ -62,13 +62,6 @@ BondsDisplay::BondsDisplay() :
 	INIT_PROPERTY_FIELD(BondsDisplay::_useParticleColors);
 	INIT_PROPERTY_FIELD(BondsDisplay::_shadingMode);
 	INIT_PROPERTY_FIELD(BondsDisplay::_renderingQuality);
-
-	// Load the default parameters stored in the application settings.
-	QSettings settings;
-	settings.beginGroup("viz/bonds");
-	setBondWidth(settings.value("DefaultBondWidth", qVariantFromValue(bondWidth())).value<FloatType>());
-	setBondColor(Color(settings.value("DefaultBondColor", qVariantFromValue((QColor)bondColor())).value<QColor>()));
-	settings.endGroup();
 }
 
 /******************************************************************************
@@ -234,33 +227,15 @@ void BondsDisplayEditor::createUI(const RolloutInsertionParameters& rolloutParam
 	layout->addWidget(bondWidthUI->label(), 2, 0);
 	layout->addLayout(bondWidthUI->createFieldLayout(), 2, 1);
 	bondWidthUI->setMinValue(0);
-	connect(bondWidthUI, SIGNAL(valueEntered()), this, SLOT(memorizeParameters()));
 
 	// Bond color.
 	ColorParameterUI* bondColorUI = new ColorParameterUI(this, PROPERTY_FIELD(BondsDisplay::_bondColor));
 	layout->addWidget(bondColorUI->label(), 3, 0);
 	layout->addWidget(bondColorUI->colorPicker(), 3, 1);
-	connect(bondColorUI, SIGNAL(valueEntered()), this, SLOT(memorizeParameters()));
 
 	// Use particle colors.
 	BooleanParameterUI* useParticleColorsUI = new BooleanParameterUI(this, PROPERTY_FIELD(BondsDisplay::_useParticleColors));
 	layout->addWidget(useParticleColorsUI->checkBox(), 4, 0, 1, 2);
-}
-
-/******************************************************************************
-* Stores the current parameters in the application settings
-* so they can be used as default value in the future.
-******************************************************************************/
-void BondsDisplayEditor::memorizeParameters()
-{
-	if(!editObject()) return;
-	BondsDisplay* displayObj = static_object_cast<BondsDisplay>(editObject());
-
-	QSettings settings;
-	settings.beginGroup("viz/bonds");
-	settings.setValue("DefaultBondWidth", qVariantFromValue(displayObj->bondWidth()));
-	settings.setValue("DefaultBondColor", qVariantFromValue((QColor)displayObj->bondColor()));
-	settings.endGroup();
 }
 
 };

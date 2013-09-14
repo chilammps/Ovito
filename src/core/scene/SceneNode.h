@@ -313,7 +313,7 @@ protected:
 	PropertyField<QString, QString, ReferenceEvent::TitleChanged> _nodeName;
 
 	/// The display color of the node.
-	PropertyField<Color> _displayColor;
+	PropertyField<Color, QColor> _displayColor;
 
 	/// Stores the target node this scene node is bound to using a look
 	/// at controller or null if this scene node is not bound to a target node.

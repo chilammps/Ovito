@@ -31,7 +31,7 @@ namespace Viz {
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Viz, CreateBondsModifier, AsynchronousParticleModifier)
 IMPLEMENT_OVITO_OBJECT(Viz, CreateBondsModifierEditor, ParticleModifierEditor)
 SET_OVITO_OBJECT_EDITOR(CreateBondsModifier, CreateBondsModifierEditor)
-DEFINE_PROPERTY_FIELD(CreateBondsModifier, _cutoff, "Cutoff")
+DEFINE_FLAGS_PROPERTY_FIELD(CreateBondsModifier, _cutoff, "Cutoff", PROPERTY_FIELD_MEMORIZE)
 DEFINE_FLAGS_REFERENCE_FIELD(CreateBondsModifier, _bondsDisplay, "BondsDisplay", BondsDisplay, PROPERTY_FIELD_ALWAYS_DEEP_COPY)
 DEFINE_FLAGS_REFERENCE_FIELD(CreateBondsModifier, _bondsObj, "BondsObject", BondsObject, PROPERTY_FIELD_ALWAYS_DEEP_COPY)
 SET_PROPERTY_FIELD_LABEL(CreateBondsModifier, _cutoff, "Cutoff radius")
@@ -47,12 +47,6 @@ CreateBondsModifier::CreateBondsModifier() : _cutoff(3.2)
 	INIT_PROPERTY_FIELD(CreateBondsModifier::_cutoff);
 	INIT_PROPERTY_FIELD(CreateBondsModifier::_bondsDisplay);
 	INIT_PROPERTY_FIELD(CreateBondsModifier::_bondsObj);
-
-	// Load the default cutoff radius stored in the application settings.
-	QSettings settings;
-	settings.beginGroup("viz/bonds");
-	setCutoff(settings.value("DefaultCutoff", _cutoff).value<FloatType>());
-	settings.endGroup();
 
 	// Create the output object.
 	_bondsObj = new BondsObject();
@@ -203,7 +197,6 @@ void CreateBondsModifierEditor::createUI(const RolloutInsertionParameters& rollo
 	gridlayout->addWidget(cutoffRadiusPUI->label(), 0, 0);
 	gridlayout->addLayout(cutoffRadiusPUI->createFieldLayout(), 0, 1);
 	cutoffRadiusPUI->setMinValue(0);
-	connect(cutoffRadiusPUI, SIGNAL(valueEntered()), this, SLOT(memorizeCutoff()));
 
 	layout1->addLayout(gridlayout);
 
@@ -213,21 +206,6 @@ void CreateBondsModifierEditor::createUI(const RolloutInsertionParameters& rollo
 
 	// Open a sub-editor for the bonds display object.
 	new SubObjectParameterUI(this, PROPERTY_FIELD(CreateBondsModifier::_bondsDisplay), rolloutParams.after(rollout));
-}
-
-/******************************************************************************
-* Stores the current cutoff radius in the application settings
-* so it can be used as default value for new modifiers in the future.
-******************************************************************************/
-void CreateBondsModifierEditor::memorizeCutoff()
-{
-	if(!editObject()) return;
-	CreateBondsModifier* modifier = static_object_cast<CreateBondsModifier>(editObject());
-
-	QSettings settings;
-	settings.beginGroup("viz/bonds");
-	settings.setValue("DefaultCutoff", modifier->cutoff());
-	settings.endGroup();
 }
 
 };	// End of namespace

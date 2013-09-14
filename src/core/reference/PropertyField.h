@@ -27,6 +27,7 @@
 #include <core/gui/undo/UndoManager.h>
 #include <core/reference/PropertyFieldDescriptor.h>
 #include <core/reference/ReferenceEvent.h>
+#include <core/plugins/Plugin.h>
 
 namespace Ovito {
 
@@ -98,6 +99,13 @@ public:
 	template<class... Args>
 	PropertyField(Args&&... args) : PropertyFieldBase(), _value(std::forward<Args>(args)...) {}
 
+	/// Connects the property field to its owning RefMaker derived class.
+	inline void init(RefMaker* owner, PropertyFieldDescriptor* descriptor) {
+		PropertyFieldBase::init(owner, descriptor);
+		if(descriptor->flags().testFlag(PROPERTY_FIELD_MEMORIZE))
+			restoreSavedPropertyValue();
+	}
+
 	/// Cast the property field to the property value.
 	inline operator const property_type&() const { return _value; }
 
@@ -107,20 +115,24 @@ public:
 		if(UndoManager::instance().isRecording() && descriptor()->automaticUndo())
 			UndoManager::instance().push(new PropertyChangeOperation(*this));
 		setPropertyValue(newValue);
+		if(descriptor()->flags().testFlag(PROPERTY_FIELD_MEMORIZE))
+			memorizePropertyValue();
 		return *this;
 	}
 
 	/// Changes the value of the property. Handles undo and sends a notification message.
 	inline PropertyField& operator=(const QVariant& newValue) {
-		OVITO_ASSERT_MSG(newValue.canConvert<qvariant_type>(), "PropertyField assignment", "The assigned QVariant value cannot be converted to the data type of the property field.");
-		return ((*this) = (property_type)newValue.value<qvariant_type>());
+		if(newValue.canConvert<qvariant_type>())
+			return ((*this) = static_cast<property_type>(newValue.value<qvariant_type>()));
+		OVITO_ASSERT_MSG(false, "PropertyField assignment", "The assigned QVariant value cannot be converted to the data type of the property field.");
+		return *this;
 	}
 
 	/// Returns the internal value stored in this property field.
 	inline const property_type& value() const { return _value; }
 
 	/// Returns the internal value stored in this property field as a QVariant.
-	inline operator QVariant() const { return qVariantFromValue<qvariant_type>((qvariant_type)_value); }
+	inline operator QVariant() const { return qVariantFromValue<qvariant_type>(static_cast<qvariant_type>(_value)); }
 
 	/// Saves the property's value to a stream.
 	inline void saveToStream(SaveStream& stream) const {
@@ -132,7 +144,25 @@ public:
 		stream >> _value;
 	}
 
+	/// Saves the current property value in the application's settings store.
+	void memorizePropertyValue() {
+		QSettings settings;
+		settings.beginGroup(descriptor()->definingClass()->plugin()->pluginId());
+		settings.beginGroup(descriptor()->definingClass()->name());
+		settings.setValue(descriptor()->identifier(), qVariantFromValue<qvariant_type>(static_cast<qvariant_type>(_value)));
+	}
+
 private:
+
+	/// Loads the memorized property value from the application's settings store.
+	void restoreSavedPropertyValue() {
+		QSettings settings;
+		settings.beginGroup(descriptor()->definingClass()->plugin()->pluginId());
+		settings.beginGroup(descriptor()->definingClass()->name());
+		QVariant v = settings.value(descriptor()->identifier());
+		if(!v.isNull() && v.canConvert<qvariant_type>())
+			_value = static_cast<property_type>(v.value<qvariant_type>());
+	}
 
 	/// Internal helper function that changes the stored value and
 	/// generates notification events.

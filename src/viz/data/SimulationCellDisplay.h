@@ -113,7 +113,7 @@ protected:
 	PropertyField<bool> _renderSimulationCell;
 
 	/// Controls the rendering color of the simulation cell.
-	PropertyField<Color> _simulationCellColor;
+	PropertyField<Color, QColor> _simulationCellColor;
 
 	/// The geometry buffer used to render the simulation cell in wireframe mode.
 	OORef<LineGeometryBuffer> _wireframeGeometry;

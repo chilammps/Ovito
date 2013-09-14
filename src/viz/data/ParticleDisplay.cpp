@@ -33,7 +33,7 @@ namespace Viz {
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Viz, ParticleDisplay, DisplayObject)
 IMPLEMENT_OVITO_OBJECT(Viz, ParticleDisplayEditor, PropertiesEditor)
 SET_OVITO_OBJECT_EDITOR(ParticleDisplay, ParticleDisplayEditor)
-DEFINE_PROPERTY_FIELD(ParticleDisplay, _defaultParticleRadius, "DefaultParticleRadius")
+DEFINE_FLAGS_PROPERTY_FIELD(ParticleDisplay, _defaultParticleRadius, "DefaultParticleRadius", PROPERTY_FIELD_MEMORIZE)
 DEFINE_PROPERTY_FIELD(ParticleDisplay, _shadingMode, "ShadingMode")
 DEFINE_PROPERTY_FIELD(ParticleDisplay, _renderingQuality, "RenderingQuality")
 SET_PROPERTY_FIELD_LABEL(ParticleDisplay, _defaultParticleRadius, "Default particle radius")

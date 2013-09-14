@@ -105,7 +105,7 @@ protected:
 	PropertyField<QString, QString, ReferenceEvent::TitleChanged> _name;
 
 	/// Stores the color of the particle type.
-	PropertyField<Color> _color;
+	PropertyField<Color, QColor> _color;
 
 	/// Stores the radius of the particle type.
 	PropertyField<FloatType> _radius;

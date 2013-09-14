@@ -93,8 +93,10 @@ void ColorParameterUI::updateUI()
 			QVariant currentValue = editObject()->getPropertyFieldValue(*propertyField());
 			OVITO_ASSERT(currentValue.isValid());
 			if(currentValue.canConvert<Color>()) {
-				Color val = currentValue.value<Color>();
-				colorPicker()->setColor(val);
+				colorPicker()->setColor(currentValue.value<Color>());
+			}
+			else if(currentValue.canConvert<QColor>()) {
+				colorPicker()->setColor(currentValue.value<QColor>());
 			}
 		}
 	}
@@ -129,9 +131,7 @@ void ColorParameterUI::onColorPickerChanged()
 					ctrl->setCurrentValue((Vector3)colorPicker()->color());
 			}
 			else if(isPropertyFieldUI()) {
-				QVariant newValue;
-				newValue.setValue(colorPicker()->color());
-				editObject()->setPropertyFieldValue(*propertyField(), newValue);
+				editObject()->setPropertyFieldValue(*propertyField(), qVariantFromValue((QColor)colorPicker()->color()));
 			}
 			Q_EMIT valueEntered();
 		});

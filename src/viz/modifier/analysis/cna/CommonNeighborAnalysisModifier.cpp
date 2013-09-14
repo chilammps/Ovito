@@ -37,8 +37,8 @@ namespace Viz {
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Viz, CommonNeighborAnalysisModifier, StructureIdentificationModifier)
 IMPLEMENT_OVITO_OBJECT(Viz, CommonNeighborAnalysisModifierEditor, ParticleModifierEditor)
 SET_OVITO_OBJECT_EDITOR(CommonNeighborAnalysisModifier, CommonNeighborAnalysisModifierEditor)
-DEFINE_PROPERTY_FIELD(CommonNeighborAnalysisModifier, _cutoff, "Cutoff")
-DEFINE_PROPERTY_FIELD(CommonNeighborAnalysisModifier, _adaptiveMode, "AdaptiveMode")
+DEFINE_FLAGS_PROPERTY_FIELD(CommonNeighborAnalysisModifier, _cutoff, "Cutoff", PROPERTY_FIELD_MEMORIZE)
+DEFINE_FLAGS_PROPERTY_FIELD(CommonNeighborAnalysisModifier, _adaptiveMode, "AdaptiveMode", PROPERTY_FIELD_MEMORIZE)
 SET_PROPERTY_FIELD_LABEL(CommonNeighborAnalysisModifier, _cutoff, "Cutoff radius")
 SET_PROPERTY_FIELD_LABEL(CommonNeighborAnalysisModifier, _adaptiveMode, "Adaptive CNA")
 SET_PROPERTY_FIELD_UNITS(CommonNeighborAnalysisModifier, _cutoff, WorldParameterUnit)
@@ -62,12 +62,6 @@ CommonNeighborAnalysisModifier::CommonNeighborAnalysisModifier() :
 	createStructureType(BCC, tr("BCC"), Color(0.4f, 0.4f, 1.0f));
 	createStructureType(ICO, tr("ICO"), Color(0.95f, 0.8f, 0.2f));
 	createStructureType(DIA, tr("DIA"), Color(0.2f, 0.95f, 0.8f));
-
-	// Load the default cutoff radius stored in the application settings.
-	QSettings settings;
-	settings.beginGroup("viz/cna");
-	setCutoff(settings.value("DefaultCutoff", _cutoff).value<FloatType>());
-	settings.endGroup();
 }
 
 /******************************************************************************
@@ -621,11 +615,9 @@ void CommonNeighborAnalysisModifierEditor::createUI(const RolloutInsertionParame
 	gridlayout->addWidget(cutoffRadiusPUI->label(), 0, 1);
 	gridlayout->addLayout(cutoffRadiusPUI->createFieldLayout(), 0, 2);
 	cutoffRadiusPUI->setMinValue(0);
-	connect(cutoffRadiusPUI, SIGNAL(valueEntered()), this, SLOT(memorizeCutoff()));
 
 	CutoffRadiusPresetsUI* cutoffPresetsPUI = new CutoffRadiusPresetsUI(this, PROPERTY_FIELD(CommonNeighborAnalysisModifier::_cutoff));
 	gridlayout->addWidget(cutoffPresetsPUI->comboBox(), 1, 1, 1, 2);
-	connect(cutoffPresetsPUI, SIGNAL(valueEntered()), this, SLOT(memorizeCutoff()));
 	layout1->addLayout(gridlayout);
 
 	connect(adaptiveModeUI->buttonFalse(), SIGNAL(toggled(bool)), cutoffRadiusPUI, SLOT(setEnabled(bool)));
@@ -647,21 +639,6 @@ void CommonNeighborAnalysisModifierEditor::createUI(const RolloutInsertionParame
 	layout1->addWidget(new QLabel(tr("Structure types:")));
 	layout1->addWidget(structureTypesPUI->tableWidget());
 	layout1->addWidget(new QLabel(tr("(Double-click to change colors)")));
-}
-
-/******************************************************************************
-* Stores the current cutoff radius in the application settings
-* so it can be used as default value for new modifiers in the future.
-******************************************************************************/
-void CommonNeighborAnalysisModifierEditor::memorizeCutoff()
-{
-	if(!editObject()) return;
-	CommonNeighborAnalysisModifier* modifier = static_object_cast<CommonNeighborAnalysisModifier>(editObject());
-
-	QSettings settings;
-	settings.beginGroup("viz/cna");
-	settings.setValue("DefaultCutoff", modifier->cutoff());
-	settings.endGroup();
 }
 
 };	// End of namespace

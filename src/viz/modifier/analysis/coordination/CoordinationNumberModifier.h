@@ -157,10 +157,6 @@ protected:
 
 protected Q_SLOTS:
 
-	/// Stores the current cutoff radius in the application settings
-	/// so it can be used as default value for new modifiers in the future.
-	void memorizeCutoff();
-
 	/// Replots the RDF computed by the modifier.
 	void plotRDF();
 

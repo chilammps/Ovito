@@ -30,7 +30,7 @@ namespace Viz {
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Viz, CoordinationNumberModifier, AsynchronousParticleModifier)
 IMPLEMENT_OVITO_OBJECT(Viz, CoordinationNumberModifierEditor, ParticleModifierEditor)
 SET_OVITO_OBJECT_EDITOR(CoordinationNumberModifier, CoordinationNumberModifierEditor)
-DEFINE_PROPERTY_FIELD(CoordinationNumberModifier, _cutoff, "Cutoff")
+DEFINE_FLAGS_PROPERTY_FIELD(CoordinationNumberModifier, _cutoff, "Cutoff", PROPERTY_FIELD_MEMORIZE)
 SET_PROPERTY_FIELD_LABEL(CoordinationNumberModifier, _cutoff, "Cutoff radius")
 SET_PROPERTY_FIELD_UNITS(CoordinationNumberModifier, _cutoff, WorldParameterUnit)
 
@@ -42,12 +42,6 @@ CoordinationNumberModifier::CoordinationNumberModifier() :
 	_coordinationNumbers(new ParticleProperty(0, ParticleProperty::CoordinationProperty))
 {
 	INIT_PROPERTY_FIELD(CoordinationNumberModifier::_cutoff);
-
-	// Load the last cutoff radius from the application settings store.
-	QSettings settings;
-	settings.beginGroup("viz/coordination");
-	setCutoff(settings.value("DefaultCutoff", cutoff()).value<FloatType>());
-	settings.endGroup();
 }
 
 /******************************************************************************
@@ -203,7 +197,6 @@ void CoordinationNumberModifierEditor::createUI(const RolloutInsertionParameters
 	gridlayout->addWidget(cutoffRadiusPUI->label(), 0, 0);
 	gridlayout->addLayout(cutoffRadiusPUI->createFieldLayout(), 0, 1);
 	cutoffRadiusPUI->setMinValue(0);
-	connect(cutoffRadiusPUI, SIGNAL(valueEntered()), this, SLOT(memorizeCutoff()));
 
 	layout->addLayout(gridlayout);
 
@@ -220,21 +213,6 @@ void CoordinationNumberModifierEditor::createUI(const RolloutInsertionParameters
 	// Status label.
 	layout->addSpacing(6);
 	layout->addWidget(statusLabel());
-}
-
-/******************************************************************************
-* Stores the current cutoff radius in the application settings
-* so it can be used as default value for new modifiers in the future.
-******************************************************************************/
-void CoordinationNumberModifierEditor::memorizeCutoff()
-{
-	if(!editObject()) return;
-	CoordinationNumberModifier* modifier = static_object_cast<CoordinationNumberModifier>(editObject());
-
-	QSettings settings;
-	settings.beginGroup("viz/coordination");
-	settings.setValue("DefaultCutoff", modifier->cutoff());
-	settings.endGroup();
 }
 
 /******************************************************************************

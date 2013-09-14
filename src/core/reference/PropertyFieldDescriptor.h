@@ -38,7 +38,7 @@ enum PropertyFieldFlag
 {
 	/// Default behavior.
 	PROPERTY_FIELD_NO_FLAGS				= 0,
-	/// Indicates that a reference field is actually a vector of references.
+	/// Indicates that a reference field is a vector of references.
 	PROPERTY_FIELD_VECTOR				= (1<<1),
 	/// With this flag set no undo records are created when the property value is changed.
 	PROPERTY_FIELD_NO_UNDO				= (1<<2),
@@ -51,6 +51,9 @@ enum PropertyFieldFlag
 	PROPERTY_FIELD_ALWAYS_CLONE         = (1<<5),
 	/// The target of the reference field is always deep-copied completely when the owning RefMaker is cloned.
 	PROPERTY_FIELD_ALWAYS_DEEP_COPY		= (1<<6),
+	/// Save the last value of the property in the application's settings store and use it to initialize
+	/// the property when a new object is created.
+	PROPERTY_FIELD_MEMORIZE				= (1<<7),
 };
 Q_DECLARE_FLAGS(PropertyFieldFlags, PropertyFieldFlag)
 Q_DECLARE_OPERATORS_FOR_FLAGS(PropertyFieldFlags)

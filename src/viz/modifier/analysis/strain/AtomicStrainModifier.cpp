@@ -36,7 +36,7 @@ DEFINE_REFERENCE_FIELD(AtomicStrainModifier, _referenceObject, "Reference Config
 DEFINE_PROPERTY_FIELD(AtomicStrainModifier, _referenceShown, "ShowReferenceConfiguration")
 DEFINE_PROPERTY_FIELD(AtomicStrainModifier, _eliminateCellDeformation, "EliminateCellDeformation")
 DEFINE_PROPERTY_FIELD(AtomicStrainModifier, _assumeUnwrappedCoordinates, "AssumeUnwrappedCoordinates")
-DEFINE_PROPERTY_FIELD(AtomicStrainModifier, _cutoff, "Cutoff")
+DEFINE_FLAGS_PROPERTY_FIELD(AtomicStrainModifier, _cutoff, "Cutoff", PROPERTY_FIELD_MEMORIZE)
 DEFINE_PROPERTY_FIELD(AtomicStrainModifier, _calculateDeformationGradients, "CalculateDeformationGradients")
 DEFINE_PROPERTY_FIELD(AtomicStrainModifier, _calculateStrainTensors, "CalculateStrainTensors")
 DEFINE_PROPERTY_FIELD(AtomicStrainModifier, _selectInvalidParticles, "SelectInvalidParticles")
@@ -74,12 +74,6 @@ AtomicStrainModifier::AtomicStrainModifier() :
 	OORef<LinkedFileObject> importObj(new LinkedFileObject());
 	importObj->setAdjustAnimationIntervalEnabled(false);
 	_referenceObject = importObj;
-
-	// Load the last cutoff radius from the application settings store.
-	QSettings settings;
-	settings.beginGroup("viz/strain");
-	setCutoff(settings.value("DefaultCutoff", cutoff()).value<FloatType>());
-	settings.endGroup();
 }
 
 /******************************************************************************
@@ -417,7 +411,6 @@ void AtomicStrainModifierEditor::createUI(const RolloutInsertionParameters& roll
 	gridlayout->addWidget(cutoffRadiusPUI->label(), 0, 0);
 	gridlayout->addLayout(cutoffRadiusPUI->createFieldLayout(), 0, 1);
 	cutoffRadiusPUI->setMinValue(0);
-	connect(cutoffRadiusPUI, SIGNAL(valueEntered()), this, SLOT(memorizeCutoff()));
 
 	layout->addLayout(gridlayout);
 
@@ -458,21 +451,5 @@ void AtomicStrainModifierEditor::createUI(const RolloutInsertionParameters& roll
 	// Open a sub-editor for the reference object.
 	new SubObjectParameterUI(this, PROPERTY_FIELD(AtomicStrainModifier::_referenceObject), RolloutInsertionParameters().setTitle(tr("Reference configuration")));
 }
-
-/******************************************************************************
-* Stores the current cutoff radius in the application settings
-* so it can be used as default value for new modifiers in the future.
-******************************************************************************/
-void AtomicStrainModifierEditor::memorizeCutoff()
-{
-	if(!editObject()) return;
-	AtomicStrainModifier* modifier = static_object_cast<AtomicStrainModifier>(editObject());
-
-	QSettings settings;
-	settings.beginGroup("viz/strain");
-	settings.setValue("DefaultCutoff", modifier->cutoff());
-	settings.endGroup();
-}
-
 
 };	// End of namespace

@@ -107,7 +107,7 @@ protected:
 	PropertyField<FloatType> _bondWidth;
 
 	/// Controls the color of the bonds.
-	PropertyField<Color> _bondColor;
+	PropertyField<Color, QColor> _bondColor;
 
 	/// Controls whether bonds colors are derived from particle colors.
 	PropertyField<bool> _useParticleColors;
@@ -172,12 +172,6 @@ protected:
 
 	/// Creates the user interface controls for the editor.
 	virtual void createUI(const RolloutInsertionParameters& rolloutParams) override;
-
-protected Q_SLOTS:
-
-	/// Stores the current parameters in the application settings
-	/// so they can be used as default value in the future.
-	void memorizeParameters();
 
 private:
 

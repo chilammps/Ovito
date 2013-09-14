@@ -65,7 +65,7 @@ public:
 
 	/// \brief Conversion from a Qt color object.
 	/// \param c The Qt color to convert to a floating-point representation.
-	Q_DECL_CONSTEXPR explicit ColorT(const QColor& c) : std::array<T, 3>{{T(c.redF()), T(c.greenF()), T(c.blueF())}} {}
+	Q_DECL_CONSTEXPR ColorT(const QColor& c) : std::array<T, 3>{{T(c.redF()), T(c.greenF()), T(c.blueF())}} {}
 
 	/// \brief Sets all components to zero.
 	void setBlack() { r() = g() = b() = 0; }
@@ -75,7 +75,7 @@ public:
 
 	/// \brief Converts this color to a Qt color object.
 	/// \return A Qt color object. All color components are clamped to the [0,1] range before the conversion.
-	explicit operator QColor() const {
+	operator QColor() const {
 		return QColor::fromRgbF(
 				qMin(qMax(r(), T(0)), T(1)),
 				qMin(qMax(g(), T(0)), T(1)),
@@ -277,7 +277,7 @@ public:
 
 	/// \brief Conversion from a Qt color object.
 	/// \param c The Qt color to convert to a floating-point representation.
-	Q_DECL_CONSTEXPR explicit ColorAT(const QColor& c) : std::array<T, 4>{{c.redF(), c.greenF(), c.blueF(), 1}} {}
+	Q_DECL_CONSTEXPR ColorAT(const QColor& c) : std::array<T, 4>{{c.redF(), c.greenF(), c.blueF(), c.alphaF()}} {}
 
 	/// \brief Converts a RGB color to an RGBA color.
 	/// \param c The RGB color.
@@ -295,11 +295,12 @@ public:
 
 	/// \brief Converts this color to a Qt color object.
 	/// \return A Qt color object. All color components are clamped to the [0,1] range before the conversion.
-	explicit operator QColor() const {
+	operator QColor() const {
 		return QColor::fromRgbF(
 				qMin(qMax(r(), T(0)), T(1)),
 				qMin(qMax(g(), T(0)), T(1)),
-				qMin(qMax(b(), T(0)), T(1)));
+				qMin(qMax(b(), T(0)), T(1)),
+				qMin(qMax(a(), T(0)), T(1)));
 	}
 
 	//////////////////////////// Component access //////////////////////////

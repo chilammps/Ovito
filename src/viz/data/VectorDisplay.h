@@ -117,7 +117,7 @@ protected:
 	PropertyField<bool> _flipVectors;
 
 	/// Controls the color of the arrows.
-	PropertyField<Color> _arrowColor;
+	PropertyField<Color, QColor> _arrowColor;
 
 	/// Controls the width of the arrows in world units.
 	PropertyField<FloatType> _arrowWidth;

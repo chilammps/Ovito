@@ -157,10 +157,6 @@ protected:
 
 protected Q_SLOTS:
 
-	/// Stores the current number of bins in the application settings
-	/// so it can be used as default value for new modifiers in the future.
-	void memorizeNumberOfBins();
-
 	/// Replots the histogram computed by the modifier.
 	void plotHistogram();
 

@@ -33,10 +33,10 @@ namespace Viz {
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Viz, HistogramModifier, ParticleModifier)
 IMPLEMENT_OVITO_OBJECT(Viz, HistogramModifierEditor, ParticleModifierEditor)
 SET_OVITO_OBJECT_EDITOR(HistogramModifier, HistogramModifierEditor)
-DEFINE_PROPERTY_FIELD(HistogramModifier, _numberOfBins, "NumberOfBins")
+DEFINE_FLAGS_PROPERTY_FIELD(HistogramModifier, _numberOfBins, "NumberOfBins", PROPERTY_FIELD_MEMORIZE)
 DEFINE_PROPERTY_FIELD(HistogramModifier, _selectInRange, "SelectInRange")
-DEFINE_PROPERTY_FIELD(HistogramModifier, _selectionRangeStart, "SelectionRangeStart")
-DEFINE_PROPERTY_FIELD(HistogramModifier, _selectionRangeEnd, "SelectionRangeEnd")
+DEFINE_FLAGS_PROPERTY_FIELD(HistogramModifier, _selectionRangeStart, "SelectionRangeStart", PROPERTY_FIELD_MEMORIZE)
+DEFINE_FLAGS_PROPERTY_FIELD(HistogramModifier, _selectionRangeEnd, "SelectionRangeEnd", PROPERTY_FIELD_MEMORIZE)
 SET_PROPERTY_FIELD_LABEL(HistogramModifier, _numberOfBins, "Number of histogram bins")
 SET_PROPERTY_FIELD_LABEL(HistogramModifier, _selectInRange, "Select particles in range")
 SET_PROPERTY_FIELD_LABEL(HistogramModifier, _selectionRangeStart, "Selection range start")
@@ -52,12 +52,6 @@ HistogramModifier::HistogramModifier() : _numberOfBins(200), _intervalStart(0), 
 	INIT_PROPERTY_FIELD(HistogramModifier::_selectInRange);
 	INIT_PROPERTY_FIELD(HistogramModifier::_selectionRangeStart);
 	INIT_PROPERTY_FIELD(HistogramModifier::_selectionRangeEnd);
-
-	// Load the last number of bins from the application settings store.
-	QSettings settings;
-	settings.beginGroup("viz/histogram");
-	setNumberOfBins(settings.value("NumberOfBins", numberOfBins()).value<int>());
-	settings.endGroup();
 }
 
 /******************************************************************************
@@ -293,7 +287,6 @@ void HistogramModifierEditor::createUI(const RolloutInsertionParameters& rollout
 	gridlayout->addWidget(numBinsPUI->label(), 0, 0);
 	gridlayout->addLayout(numBinsPUI->createFieldLayout(), 0, 1);
 	numBinsPUI->setMinValue(1);
-	connect(numBinsPUI, SIGNAL(valueEntered()), this, SLOT(memorizeNumberOfBins()));
 
 	layout->addLayout(gridlayout);
 
@@ -353,21 +346,6 @@ void HistogramModifierEditor::createUI(const RolloutInsertionParameters& rollout
 	// Status label.
 	layout->addSpacing(6);
 	layout->addWidget(statusLabel());
-}
-
-/******************************************************************************
-* Stores the current number of bins in the application settings
-* so it can be used as default value for new modifiers in the future.
-******************************************************************************/
-void HistogramModifierEditor::memorizeNumberOfBins()
-{
-	if(!editObject()) return;
-	HistogramModifier* modifier = static_object_cast<HistogramModifier>(editObject());
-
-	QSettings settings;
-	settings.beginGroup("viz/histogram");
-	settings.setValue("NumberOfBins", modifier->numberOfBins());
-	settings.endGroup();
 }
 
 /******************************************************************************
