@@ -23,6 +23,7 @@
 #include <core/gui/properties/IntegerParameterUI.h>
 #include <core/gui/properties/FloatParameterUI.h>
 #include <core/gui/properties/BooleanParameterUI.h>
+#include <core/gui/mainwin/MainWindow.h>
 #include <core/scene/pipeline/PipelineObject.h>
 #include <viz/util/qcustomplot/qcustomplot.h>
 #include "HistogramModifier.h"
@@ -323,6 +324,10 @@ void HistogramModifierEditor::createUI(const RolloutInsertionParameters& rollout
 	layout->addWidget(_histogramPlot);
 	connect(this, SIGNAL(contentsReplaced(RefTarget*)), this, SLOT(plotHistogram()));
 
+	QPushButton* saveDataButton = new QPushButton(tr("Save histogram data"));
+	layout->addWidget(saveDataButton);
+	connect(saveDataButton, SIGNAL(clicked(bool)), this, SLOT(onSaveData()));
+
 	QGroupBox* selectionBox = new QGroupBox(tr("Selection"), rollout);
 	QVBoxLayout* sublayout = new QVBoxLayout(selectionBox);
 	sublayout->setContentsMargins(4,4,4,4);
@@ -487,6 +492,43 @@ void HistogramModifierEditor::plotHistogram()
 	}
 
 	_histogramPlot->replot();
+}
+
+/******************************************************************************
+* This is called when the user has clicked the "Save Data" button.
+******************************************************************************/
+void HistogramModifierEditor::onSaveData()
+{
+	HistogramModifier* modifier = static_object_cast<HistogramModifier>(editObject());
+	if(!modifier)
+		return;
+
+	if(modifier->histogramData().empty())
+		return;
+
+	QString fileName = QFileDialog::getSaveFileName(&MainWindow::instance(),
+	    tr("Save Histogram"), QString(), tr("Text files (*.txt);;All files (*)"));
+	if(fileName.isEmpty())
+		return;
+
+	try {
+
+		QFile file(fileName);
+		if(!file.open(QIODevice::WriteOnly | QIODevice::Text))
+			throw Exception(tr("Could not open file for writing: %1").arg(file.errorString()));
+
+		QTextStream stream(&file);
+
+		FloatType binSize = (modifier->intervalEnd() - modifier->intervalStart()) / modifier->histogramData().size();
+		stream << "# " << modifier->sourceProperty().name() << " histogram (bin size: " << binSize << ")" << endl;
+		for(int i = 0; i < modifier->histogramData().size(); i++) {
+			stream << (binSize * (FloatType(i) + 0.5f) + modifier->intervalStart()) << " " <<
+					modifier->histogramData()[i] << endl;
+		}
+	}
+	catch(const Exception& ex) {
+		ex.showError();
+	}
 }
 
 

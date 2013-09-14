@@ -82,6 +82,8 @@ public:
 
 	Q_PROPERTY(Viz::ParticlePropertyReference sourceProperty READ sourceProperty WRITE setSourceProperty)
 	Q_PROPERTY(int numberOfBins READ numberOfBins WRITE setNumberOfBins)
+	Q_PROPERTY(FloatType selectionRangeStart READ selectionRangeStart)
+	Q_PROPERTY(FloatType selectionRangeEnd READ selectionRangeEnd)
 
 protected:
 
@@ -167,6 +169,9 @@ protected Q_SLOTS:
 
 	/// This is called when the user has selected another item in the particle property list.
 	void onPropertySelected(int index);
+
+	/// This is called when the user has clicked the "Save Data" button.
+	void onSaveData();
 
 private:
 
