@@ -53,7 +53,7 @@ public:
 	/// \param sourceUrl The new source location.
 	/// \param importer The importer object that will parse the input file.
 	/// \return false if the operation has been canceled by the user.
-	bool setSource(const QUrl& sourceUrl, const OORef<LinkedFileImporter>& importer);
+	bool setSource(QUrl sourceUrl, const OORef<LinkedFileImporter>& importer);
 
 	/// \brief Returns the source location of the data.
 	const QUrl& sourceUrl() const { return _sourceUrl; }
@@ -84,7 +84,7 @@ public:
 	void setAdjustAnimationIntervalEnabled(bool enabled) { _adjustAnimationIntervalEnabled = enabled; }
 
 	/// \brief Adjusts the animation interval of the current data set to the number of frames in the data source.
-	void adjustAnimationInterval();
+	void adjustAnimationInterval(int gotoFrameIndex = -1);
 
 	/// \brief Asks the object for the result of the geometry pipeline at the given time.
 	virtual PipelineFlowState evaluate(TimePoint time) override;
@@ -186,14 +186,15 @@ private:
 	/// Controls whether the scene's animation interval is adjusted to the number of frames found in the input file.
 	PropertyField<bool> _adjustAnimationIntervalEnabled;
 
+	/// Controls whether the imported data is saved along with the scene.
+	/// If false, only the metadata is saved while the actual data reside in the external file.
+	PropertyField<bool> _saveDataWithScene;
+
 	/// The source file (may include a wild-card pattern).
 	PropertyField<QUrl, QUrl, ReferenceEvent::TitleChanged> _sourceUrl;
 
 	/// Stores the list of animation frames in the input file(s).
 	QVector<LinkedFileImporter::FrameSourceInformation> _frames;
-
-	/// The status returned by the parser during its last call.
-	ObjectStatus _importStatus;
 
 	/// The index of the animation frame loaded last from the input file.
 	int _loadedFrame;
@@ -207,9 +208,8 @@ private:
 	/// The watcher object that is used to monitor the background operation.
 	FutureWatcher _loadFrameOperationWatcher;
 
-	/// Controls whether the per-particle data is saved along with the scene.
-	/// If false, only the metadata of the particle property is saved.
-	PropertyField<bool> _saveDataWithScene;
+	/// The status returned by the parser during its last call.
+	ObjectStatus _importStatus;
 
 private:
 

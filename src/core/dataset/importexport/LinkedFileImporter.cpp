@@ -96,7 +96,7 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl, DataSet* dataset)
 	{
 		UndoSuspender noUndo;		// Do not create undo records for this part of the operation.
 
-		// Create the object that will feed the imported data into the scene.
+		// Create the object that will insert the imported data into the scene.
 		obj = new LinkedFileObject();
 
 		// Set the input location and importer.
@@ -132,8 +132,17 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl, DataSet* dataset)
 		dataset->selection()->clear();
 		dataset->selection()->add(node);
 
+		// Jump to the right frame to show the originally selected file.
+		int jumpToFrame = -1;
+		for(int frameIndex = 0; frameIndex < obj->frames().size(); frameIndex++) {
+			if(obj->frames()[frameIndex].sourceFile == sourceUrl) {
+				jumpToFrame = frameIndex;
+				break;
+			}
+		}
+
 		// Adjust the animation length number to match the number of frames in the input data source.
-		obj->adjustAnimationInterval();
+		obj->adjustAnimationInterval(jumpToFrame);
 
 		UndoManager::instance().endCompoundOperation();
 	}
@@ -142,7 +151,7 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl, DataSet* dataset)
 		throw;
 	}
 
-	// Adjust viewports to show the newly imported object.
+	// Adjust views to show the newly imported object.
 	if(dataset == DataSetManager::instance().currentSet()) {
 		DataSetManager::instance().runWhenSceneIsReady([]() {
 			ActionManager::instance().getAction(ACTION_VIEWPORT_ZOOM_SELECTION_EXTENTS_ALL)->trigger();
@@ -182,7 +191,10 @@ Future<QVector<LinkedFileImporter::FrameSourceInformation>> LinkedFileImporter::
 		if(sourceUrl.isLocalFile()) {
 
 			isLocalPath = true;
-			entries = directory.entryList(QStringList(pattern), QDir::Files|QDir::NoDotAndDotDot, QDir::Name);
+			for(const QString& filename : directory.entryList(QDir::Files|QDir::NoDotAndDotDot, QDir::Name)) {
+				if(matchesWildcardPattern(pattern, filename))
+					entries << filename;
+			}
 
 		}
 		else {
@@ -196,16 +208,15 @@ Future<QVector<LinkedFileImporter::FrameSourceInformation>> LinkedFileImporter::
 				return Future<QVector<FrameSourceInformation>>::createCanceled();
 
 			// Filter file names.
-			QRegExp patternExp(pattern, Qt::CaseSensitive, QRegExp::Wildcard);
 			for(const QString& filename : fileListFuture.result()) {
-				if(patternExp.exactMatch(filename))
+				if(matchesWildcardPattern(pattern, filename))
 					entries << filename;
 			}
 		}
 
-		// Now the file names have to be sorted.
-		// This is a little bit tricky since a file called "abc9.xyz" must come before
-		// a file named "abc10.xyz" which is not the default lexicographic ordering.
+		// Sorted the files.
+		// A file called "abc9.xyz" must come before a file named "abc10.xyz", which is not
+		// the default lexicographic ordering.
 		QMap<QString, QString> sortedFilenames;
 		Q_FOREACH(QString oldName, entries) {
 			// Generate a new name from the original filename that yields the correct ordering.
@@ -240,6 +251,36 @@ Future<QVector<LinkedFileImporter::FrameSourceInformation>> LinkedFileImporter::
 
 	return Future<QVector<FrameSourceInformation>>::createImmediate(frames);
 }
+
+/******************************************************************************
+* Checks if a filename matches to the given wildcard pattern.
+******************************************************************************/
+bool LinkedFileImporter::matchesWildcardPattern(const QString& pattern, const QString& filename)
+{
+#if 0
+	QRegExp patternExp(pattern, Qt::CaseSensitive, QRegExp::Wildcard);
+	return patternExp.exactMatch(filename);
+#else
+	QString::const_iterator p = pattern.constBegin();
+	QString::const_iterator f = filename.constBegin();
+	while(p != pattern.constEnd() && f != filename.constEnd()) {
+		if(*p == QChar('*')) {
+			if(!f->isDigit())
+				return false;
+			do { ++f; }
+			while(f != filename.constEnd() && f->isDigit());
+			++p;
+			continue;
+		}
+		else if(*p != *f)
+			return false;
+		++p;
+		++f;
+	}
+	return p == pattern.constEnd() && f == filename.constEnd();
+#endif
+}
+
 
 /******************************************************************************
 * Reads the data from the input file(s).

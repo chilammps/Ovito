@@ -219,18 +219,6 @@ void LinkedFileObjectEditor::updateInformationLabel()
 	_sourcePathLabel->setText(url.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded));
 
 	QString wildcardPattern = fileInfo.fileName();
-	if(!wildcardPattern.contains('*') && !wildcardPattern.contains('?')) {
-		// Generate a default wildcard pattern.
-		// Replace last sequence of numbers in the filename with a wildcard character.
-		int startIndex, endIndex;
-		for(endIndex = wildcardPattern.length()-1; endIndex >= 0; endIndex--)
-			if(wildcardPattern.at(endIndex).isNumber()) break;
-		if(endIndex >= 0) {
-			for(startIndex = endIndex-1; startIndex >= 0; startIndex--)
-				if(!wildcardPattern.at(startIndex).isNumber()) break;
-			wildcardPattern = wildcardPattern.left(startIndex+1) + '*' + wildcardPattern.mid(endIndex+1);
-		}
-	}
 	_wildcardPatternTextbox->setText(wildcardPattern);
 	_wildcardPatternTextbox->setEnabled(true);
 

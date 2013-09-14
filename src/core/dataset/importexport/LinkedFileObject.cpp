@@ -56,7 +56,9 @@ SET_PROPERTY_FIELD_LABEL(LinkedFileObject, _saveDataWithScene, "Save data with s
 /******************************************************************************
 * Constructs the object.
 ******************************************************************************/
-LinkedFileObject::LinkedFileObject() : _adjustAnimationIntervalEnabled(true), _loadedFrame(-1), _frameBeingLoaded(-1), _saveDataWithScene(false)
+LinkedFileObject::LinkedFileObject() :
+	_adjustAnimationIntervalEnabled(true), _loadedFrame(-1), _frameBeingLoaded(-1),
+	_saveDataWithScene(false)
 {
 	INIT_PROPERTY_FIELD(LinkedFileObject::_importer);
 	INIT_PROPERTY_FIELD(LinkedFileObject::_sceneObjects);
@@ -109,12 +111,33 @@ bool LinkedFileObject::setSource(const QUrl& newSourceUrl, const FileImporterDes
 /******************************************************************************
 * Sets the source location for importing data.
 ******************************************************************************/
-bool LinkedFileObject::setSource(const QUrl& sourceUrl, const OORef<LinkedFileImporter>& importer)
+bool LinkedFileObject::setSource(QUrl sourceUrl, const OORef<LinkedFileImporter>& importer)
 {
 	if(this->sourceUrl() == sourceUrl && this->importer() == importer)
 		return true;
 
-	// Make the import processes reversible.
+	// If URL is not already a wildcard pattern, generate a default pattern by
+	// replacing last sequence of numbers in the filename with a wildcard character.
+	QFileInfo fileInfo(sourceUrl.path());
+	QString originalFilename = fileInfo.fileName();
+	if(!originalFilename.contains('*') && !originalFilename.contains('?')) {
+		int startIndex, endIndex;
+		for(endIndex = originalFilename.length() - 1; endIndex >= 0; endIndex--)
+			if(originalFilename.at(endIndex).isNumber()) break;
+		if(endIndex >= 0) {
+			for(startIndex = endIndex-1; startIndex >= 0; startIndex--)
+				if(!originalFilename.at(startIndex).isNumber()) break;
+			QString wildcardPattern = originalFilename.left(startIndex+1) + '*' + originalFilename.mid(endIndex+1);
+			fileInfo.setFile(fileInfo.dir(), wildcardPattern);
+			sourceUrl.setPath(fileInfo.filePath());
+			OVITO_ASSERT(sourceUrl.isValid());
+		}
+	}
+
+	if(this->sourceUrl() == sourceUrl && this->importer() == importer)
+		return true;
+
+	// Make the import process reversible.
 	UndoableTransaction transaction(tr("Set input file"));
 
 	_sourceUrl = sourceUrl;
@@ -123,16 +146,27 @@ bool LinkedFileObject::setSource(const QUrl& sourceUrl, const OORef<LinkedFileIm
 	// Scan the input source for animation frames.
 	if(updateFrames()) {
 
+		// Jump to the right frame to show the originally selected file.
+		int jumpToFrame = -1;
+		for(int frameIndex = 0; frameIndex < _frames.size(); frameIndex++) {
+			QFileInfo fileInfo(_frames[frameIndex].sourceFile.path());
+			if(fileInfo.fileName() == originalFilename) {
+				jumpToFrame = frameIndex;
+				break;
+			}
+		}
+
 		// Adjust the animation length number to match the number of frames in the input data source.
-		adjustAnimationInterval();
+		adjustAnimationInterval(jumpToFrame);
 
 		// Let the parser inspect the file. The user may still cancel the import
 		// operation at this point.
 		if(!_frames.empty() && importer->inspectNewFile(this) == false)
 			return false;
 
-		// Adjust views to completely show the new object.
 		if(_adjustAnimationIntervalEnabled) {
+
+			// Adjust views to completely show the new object.
 			DataSetManager::instance().runWhenSceneIsReady([]() {
 				ActionManager::instance().getAction(ACTION_VIEWPORT_ZOOM_SELECTION_EXTENTS_ALL)->trigger();
 			});
@@ -311,7 +345,7 @@ void LinkedFileObject::setStatus(const ObjectStatus& status)
 * Adjusts the animation interval of the current data set to the number of
 * frames reported by the file parser.
 ******************************************************************************/
-void LinkedFileObject::adjustAnimationInterval()
+void LinkedFileObject::adjustAnimationInterval(int gotoFrameIndex)
 {
 	if(!_adjustAnimationIntervalEnabled)
 		return;
@@ -332,7 +366,10 @@ void LinkedFileObject::adjustAnimationInterval()
 	if(numberOfFrames() > 1) {
 		TimeInterval interval(0, (numberOfFrames()-1) * animSettings->ticksPerFrame());
 		animSettings->setAnimationInterval(interval);
-		if(animSettings->time() > interval.end())
+		if(gotoFrameIndex >= 0 && gotoFrameIndex < numberOfFrames()) {
+			animSettings->setTime(gotoFrameIndex * animSettings->ticksPerFrame());
+		}
+		else if(animSettings->time() > interval.end())
 			animSettings->setTime(interval.end());
 	}
 	else {

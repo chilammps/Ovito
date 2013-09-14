@@ -77,7 +77,7 @@ void AnimationTimeSlider::paintEvent(QPaintEvent* event)
 		else if(ticksevery <= 500) ticksevery = 500;
 		int labelypos = clientRect.y() + (clientRect.height() + painter.fontMetrics().height())/2 - painter.fontMetrics().descent();
 		if(ticksevery > 0) {
-			painter.setPen(QPen(QColor(200,200,255)));
+			painter.setPen(QPen(QColor(170,170,255)));
 			for(int frame = firstFrame; frame <= lastFrame; frame += ticksevery) {
 				TimePoint time = AnimManager::instance().frameToTime(frame);
 				FloatType percentage = (FloatType)(time - AnimManager::instance().animationInterval().start()) / (FloatType)(AnimManager::instance().animationInterval().duration() + 1);

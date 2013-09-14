@@ -147,6 +147,9 @@ protected:
 	/// \brief Creates an import task object to read the given frame.
 	virtual ImportTaskPtr createImportTask(const FrameSourceInformation& frame) = 0;
 
+	/// Checks if a filename matches to the given wildcard pattern.
+	static bool matchesWildcardPattern(const QString& pattern, const QString& filename);
+
 private:
 
 	Q_OBJECT
