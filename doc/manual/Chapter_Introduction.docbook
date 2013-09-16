@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<chapter version="5.0"
+         xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xml:id="introduction" xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title>Introduction</title>
+
+  <para>OVITO is a scientific data visualization and analysis software for
+  large-scale atomistic simulations, in particular classical molecular
+  dynamics (MD). OVITO is freely available under an open-source license for
+  Windows, Linux and MacOS platforms. It is being developed by Alexander
+  Stukowski at <link xlink:href="http://www.mm.mw.tu-darmstadt.de/">the
+  Material Science Department at Darmstadt University of Technology,
+  Germany</link>. Note that OVITO is not a product of a research project, or
+  of a particular development effort. It's just a tool that was created by
+  Alexander to make his life easier and more fun when he was a PhD student and
+  performed molecular dynamics simulations of crystal plasticity. By now,
+  OVITO has found many more friends throughout the world and is being used in
+  many materials simulation studies.</para>
+
+  <para>OVITO is targeted at the visualization and data analysis of molecular
+  dynamics simulations of atomic systems, especially solid-state materials.
+  Here is an incomplete list of features: <itemizedlist>
+      <listitem>
+        <para>It's free software </para>
+      </listitem>
+
+      <listitem>
+        <para>Platform independent design </para>
+      </listitem>
+
+      <listitem>
+        <para>Imports several file formats written by various MD simulation
+        codes including LAMMPS, XYZ, IMD and POSCAR </para>
+      </listitem>
+
+      <listitem>
+        <para>Realtime rendering of large datasets using hardware-accelerated
+        OpenGL graphics </para>
+      </listitem>
+
+      <listitem>
+        <para>Flexible data model: allows to associate an abitrary set of
+        properties with each atom </para>
+      </listitem>
+
+      <listitem>
+        <para>Flexible processing model: Modification and analysis steps can
+        be performed in any order; parameters can be altered at any time.
+        Functions include <itemizedlist>
+            <listitem>
+              <para>Slicing</para>
+            </listitem>
+
+            <listitem>
+              <para>Selection of atoms based on user-definable criteria</para>
+            </listitem>
+
+            <listitem>
+              <para>Color coding</para>
+            </listitem>
+
+            <listitem>
+              <para>Transformation of atomic positions</para>
+            </listitem>
+
+            <listitem>
+              <para>Display of periodic images; wrapping of atoms at periodic
+              boundaries</para>
+            </listitem>
+          </itemizedlist> </para>
+      </listitem>
+
+      <listitem>
+        <para> Unlimited undo functionality </para>
+      </listitem>
+
+      <listitem>
+        <para> Generation of images for publication (using OpenGL, POV-Ray, or
+        the Tachyon renderer) </para>
+      </listitem>
+
+      <listitem>
+        <para> Visualization of sequences of timesteps (realtime playback or
+        movie image sequence) </para>
+      </listitem>
+
+      <listitem>
+        <para> Powerful analysis functions including </para>
+
+        <itemizedlist>
+          <listitem>
+            <para>Common neighbor analysis (CNA)</para>
+          </listitem>
+
+          <listitem>
+            <para>Bond angle analysis (BAA)</para>
+          </listitem>
+
+          <listitem>
+            <para>Cluster analysis</para>
+          </listitem>
+
+          <listitem>
+            <para>Coordination number analysis (including the option to
+            display bonds)</para>
+          </listitem>
+
+          <listitem>
+            <para>Displacement vector calculation</para>
+          </listitem>
+
+          <listitem>
+            <para>Calculation of strain tensors at the atomic level</para>
+          </listitem>
+        </itemizedlist>
+
+         
+      </listitem>
+
+      <listitem>
+        <para> Export of atomic datasets to be used as input for new
+        simulations </para>
+      </listitem>
+
+      <listitem>
+        <para> Python-based scripting interface enables batch-processing
+        </para>
+      </listitem>
+
+      <listitem>
+        <para> A modular software design makes it easy to extend OVITO via
+        plugins written in C++ </para>
+      </listitem>
+    </itemizedlist></para>
+
+  <para>After you have successfully <link
+  linkend="installation">installed</link> the program, you can find <link
+  linkend="usage">usage instructions</link> in this manual.</para>
+</chapter>

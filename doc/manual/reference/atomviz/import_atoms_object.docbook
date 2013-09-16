@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<section version="5.0"
+         xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xml:id="atomviz.objects.import_atoms_object"
+         xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title>Data source</title>
+
+  <para><figure>
+      <title>The Data Source panel</title>
+
+      <screenshot>
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="images/atomviz/import_atoms_object_panel.png"
+                       format="PNG" xml:base="../../"/>
+          </imageobject>
+        </mediaobject>
+      </screenshot>
+    </figure><variablelist>
+      <varlistentry>
+        <term><inlinemediaobject>
+            <imageobject>
+              <imagedata fileref="images/atomviz/import_newfile.png"
+                         format="PNG" valign="top" xml:base="../../"/>
+            </imageobject>
+          </inlinemediaobject> Change input file</term>
+
+        <listitem>
+          <para>Opens a file selection dialog that lets you choose a different
+          input file. This is useful if you want to keep the current modifiers
+          and only replace the input.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><inlinemediaobject>
+            <imageobject>
+              <imagedata fileref="images/atomviz/import_reload.png"
+                         format="PNG" valign="top" xml:base="../../"/>
+            </imageobject>
+          </inlinemediaobject> Reload input file</term>
+
+        <listitem>
+          <para>Reloads the input file after it has been modified by an
+          external program.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><inlinemediaobject>
+            <imageobject>
+              <imagedata fileref="images/atomviz/import_settings.png"
+                         format="PNG" valign="top" xml:base="../../"/>
+            </imageobject>
+          </inlinemediaobject> Settings</term>
+
+        <listitem>
+          <para>Opens the Import Settings dialog that allows you to specify
+          the mapping of file columns to OVITO's internal data
+          channels.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><inlinemediaobject>
+            <imageobject>
+              <imagedata fileref="images/atomviz/store_with_scene.png"
+                         format="PNG" valign="top" xml:base="../../"/>
+            </imageobject>
+          </inlinemediaobject> Store Imported Data with Scene</term>
+
+        <listitem>
+          <para>Enables/disables whether the atomic dataset imported from the
+          external simulation file is saved along with the scene when you save
+          it as an OVITO file. If disabled (default), only the file path is
+          stored in the OVITO scene file and the original data file must be
+          present when opening the scene at a later time. If enabled, the
+          original data file is not needed when opening the scene file, but
+          the scene file will take up more space. Note that this doesn't work
+          with time sequences of snapshots since OVITO can only store a single
+          frame in the scene file.</para>
+        </listitem>
+      </varlistentry>
+    </variablelist></para>
+</section>

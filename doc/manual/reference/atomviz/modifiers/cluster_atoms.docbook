@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<section version="5.0"
+         xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xml:id="atomviz.modifiers.cluster_atoms"
+         xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title>Cluster Atoms</title>
+
+  <para><figure>
+      <title>Cluster Atoms modifier</title>
+
+      <screenshot>
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="images/modifiers/cluster_atoms_panel.png"
+                       format="PNG" xml:base="../../../"/>
+          </imageobject>
+        </mediaobject>
+      </screenshot>
+    </figure></para>
+
+  <para>Builds clusters of atoms, which are spatially separated. Given a
+  cutoff radius, the analysis modifier decomposes the atomic structure into
+  clusters of connected (bonded) atoms. Within one cluster, one can connect
+  any two atoms with an atom-to-atom bond sequence.</para>
+
+  <para>The modifier stores the cluster identifier assigned to each atom in a
+  data channel.</para>
+
+  <para>The <guibutton>Calculate</guibutton> button runs the analysis. If you
+  are working with a time sequence of simulation snapshots, you should enable
+  the <guilabel>Auto-update on time change</guilabel> option to let OVITO
+  automatically re-perform the analysis whenever you jump to a different
+  simulation frame.</para>
+
+  <simplesect>
+    <title>Parameters</title>
+
+    <variablelist>
+      <varlistentry>
+        <term>Auto-update on time change</term>
+
+        <listitem>
+          <para>If activated, the modifier re-runs the analysis automatically
+          when you jump to a different simulation frame.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Only selected atoms</term>
+
+        <listitem>
+          <para>If activated, the clustering algorithm completely ignores all
+          unselected atoms (i.e., as if they did not exist).</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Cutoff radius</term>
+
+        <listitem>
+          <para>The distance threshold for bonded (connected) atoms.</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </simplesect>
+</section>

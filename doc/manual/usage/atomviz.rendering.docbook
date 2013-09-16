@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<section version="5.0"
+         xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xml:id="atomviz.rendering" xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title>Rendering</title>
+
+  <para><firstterm>Rendering</firstterm> refers to generating a
+  two-dimensional image of the atomic dataset as seen through one of the
+  viewports. The rendered image can be saved to a file and used for
+  publication purposes.</para>
+
+  <para>All rendering functions are found on the <emphasis>Render</emphasis>
+  tab <inlinemediaobject>
+      <imageobject>
+        <imagedata fileref="images/command_panel/tab_render.png" format="png"
+                   xml:base="../"/>
+      </imageobject>
+    </inlinemediaobject> of the command panel. Here, you find the <link
+  linkend="core.rendering.render_settings">Render settings</link> panel, which
+  allows you to specify general settings such as the resolution of the image
+  to be rendered. You can start the rendering process by pressing the
+  <emphasis>Render Active Viewport</emphasis> <inlinemediaobject>
+      <imageobject>
+        <imagedata fileref="images/rendering/render_active_viewport.png"
+                   format="png" xml:base="../"/>
+      </imageobject>
+    </inlinemediaobject> button, which is also found in the main toolbar.
+  OVITO uses the viewing direction of the <link
+  linkend="gui.viewports_area"><emphasis>active viewport</emphasis></link> for
+  rendering, which is surrounded by a yellow border. The active viewport can
+  be set by right-clicking into one of the viewports.</para>
+
+  <para>OVITO supports different rendering backends
+  (<firstterm>renderers</firstterm>), which compute the final image of the
+  simulation data. The user can choose which renderer to use. In the current
+  version, OVITO provides three renderers: <variablelist>
+      <varlistentry>
+        <term><link linkend="core.rendering.preview_renderer">Built-in OpenGL
+        renderer</link></term>
+
+        <listitem>
+          <para>This is the default. It is based on the same realtime
+          rendering engine that OVITO uses to display atoms in the viewports.
+          The <emphasis>OpenGL Renderer</emphasis> is optimized for fast
+          operation and utilizes the available graphics hardware. The image
+          quality is similar to the display in OVITO's viewports.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><link linkend="core.rendering.povray_renderer">POV-Ray
+        renderer</link></term>
+
+        <listitem>
+          <para><link xlink:href="http://www.povray.org/">POV-Ray</link> is a
+          third-party raytracing program that is freely available for many
+          platforms. It can produce high-quality pictures of geometric objects
+          such as sphere, taking into account reflections, lighting, shadows
+          and textures. The POV-Ray rendering plug-in of OVITO translates the
+          entire scene into the format of POV-Ray first. It then invokes the
+          external POV-Ray program in the background, hands of the scene
+          description, and lets it render the image. After POV-Ray has
+          finished, the resulting image is read back into OVITO. This all
+          happens transparently for the user.<note>
+              <para>Alternatively, you can use the <link
+              linkend="atomviz.exporting">export function</link> of OVITO to
+              save the scene to a POV-Ray file. Then you can edit the exported
+              file before running the POV-Ray executable manually.</para>
+            </note></para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Tachyon renderer</term>
+
+        <listitem>
+          <para>Tachyon is a parallel ray tracing engine developed by John E.
+          Stone and has been integrated into OVITO. Tachyon supports
+          on-the-fly ambient occlusion lighting.</para>
+        </listitem>
+      </varlistentry>
+    </variablelist> You can choose the renderer plug-in from the <link
+  linkend="core.rendering.render_settings">Render settings</link> panel by
+  clicking the <guibutton>Change renderer</guibutton> button.</para>
+</section>

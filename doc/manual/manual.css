@@ -1,0 +1,36 @@
+.figure {
+    clear: both;
+    float: right;
+    margin: 0em 1em;
+}
+
+.figure p.title {
+    max-width: 8cm;
+	font-size: 80%;
+}
+
+
+.guibutton {
+    font-family: sans-serif;
+    font-size: 90%;
+    background: lightgrey;
+    border-style: outset;
+    border-width: 2px;
+    white-space: nowrap;
+}
+
+.guimenu {
+    font-family: monospace;
+}
+
+.guimenuitem {
+    font-family: monospace;
+}
+
+.guilabel {
+    font-family: monospace;
+}
+
+.title {
+    font-family: sans-serif;
+}

@@ -1,0 +1,506 @@
+<?xml version="1.0" encoding="utf-8"?>
+<chapter version="5.0"
+         xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xml:id="installation" xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title>Installation</title>
+
+  <section xml:id="installation.binary">
+    <title>Installing OVITO</title>
+
+    <para>Binary program packages for Linux, Windows, and MacOS X platforms
+    can be downloaded from <link
+    xlink:href="http://www.ovito.org/">http://www.ovito.org/</link>. After
+    extracting the downloaded archive, OVITO should run out of the box.</para>
+
+    <section xml:id="installation.runovito.linux">
+      <title>Linux</title>
+
+      <para>Extract the <filename>.tar.gz</filename> archive downloaded from
+      the website using the following commd: <screen><command>tar xzf ovito-1.0.0-i386.tar.gz</command></screen>Replace
+      the filename above with the one that you actually downloaded from the
+      website. This will create a new subdirectory that contains the extracted
+      program package. Change into that subdirectory and run OVITO by invoking
+      the command<screen><command>bin/ovito</command></screen>The command line
+      options that can be passed to the OVITO executable are described <link
+      linkend="installation.commandline">here</link>.</para>
+    </section>
+
+    <section xml:id="installation.runovito.windows">
+      <title>Windows</title>
+
+      <para>Extract the downloaded <filename>.zip</filename> archive to an
+      empty directory of your choice. Then start OVITO by double-clicking
+      <command>ovito.exe</command>.</para>
+    </section>
+
+    <section xml:id="installation.runovito.macos">
+      <title>MacOS</title>
+
+      <para>Extract the downloaded <filename>.zip</filename> archive to a
+      directory of your choice. Then start OVITO by double-clicking the
+      extracted application. To run multiple instances of OVITO, you can
+      invoke the command <command>open -n ./Ovito.app/</command> from the
+      Terminal several times.</para>
+    </section>
+  </section>
+
+  <section xml:id="installation.commandline">
+    <title>Command line options</title>
+
+    <para>The following command line options can be passed to the
+    <command>ovito</command> executable: <table>
+        <title>OVITO command line options</title>
+
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>Command line option</entry>
+
+              <entry>Description</entry>
+            </row>
+          </thead>
+
+          <tbody>
+            <row>
+              <entry><command>--verbose</command></entry>
+
+              <entry>Enables the output of additional program information to
+              the console. This can be useful for debugging purposes.</entry>
+            </row>
+
+            <row>
+              <entry><command>--nobanner</command></entry>
+
+              <entry>Suppresses the license notice printed to the console at
+              startup.</entry>
+            </row>
+
+            <row>
+              <entry><command>--help</command></entry>
+
+              <entry>Shows information about the available command line
+              options and exits.</entry>
+            </row>
+
+            <row>
+              <entry><command>--experimental</command></entry>
+
+              <entry>Enables experimental program features that are still in
+              development.</entry>
+            </row>
+
+            <row>
+              <entry><command>--script
+              <replaceable>scriptfile.py</replaceable> ...</command></entry>
+
+              <entry>Executes the given Python script file after startup. This
+              option is only available when OVITO has been built with
+              scripting support enabled. Please note that all command line
+              options following the script filename will be passed directly to
+              the Python script and will therefore be ignored by
+              OVITO.</entry>
+            </row>
+
+            <row>
+              <entry><command>--nogui</command></entry>
+
+              <entry>Starts OVITO in console mode and does not show the main
+              window (no graphical user interface). This option only makes
+              sense in conjunction with the <command>--script</command> option
+              to process script files without user interaction. OVITO
+              terminates after executing the script.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table></para>
+  </section>
+
+  <section xml:id="installation.configure_graphics">
+    <title>Configuring OpenGL</title>
+
+    <para>OVITO utilizes the OpenGL libraries installed on your system to
+    render atoms. Depending on the configuration of your system the OpenGL
+    calls made by OVITO are either executed by a software implementation or
+    are passed to the graphics card, which can perform fast hardware-based
+    rendering. The latter is highly recommended, as only hardware rendering
+    enables the display of millions of atoms in realtime. Thus, you should
+    install a reasonable graphics card, and make make sure that the OpenGL
+    graphics driver for it is properly installed and working! On a Linux
+    machine you can check this by running the command
+    <command>glxinfo</command> in a terminal window. It provides a lot of
+    information on the installed OpenGL driver. Check the OpenGL vendor and
+    renderer strings. They should match your graphics hardware.</para>
+
+    <para>Only newer graphics cards fully support the entire OpenGL graphics
+    standard.For the sake of compatibility with older graphics cards, OVITO
+    provides several ways of rendering atoms in the viewports. Some of them
+    are supported by older cards, which provide only a subset of the OpenGL
+    functions. You can configure the rendering method in the OVITO settings
+    dialog (choose <menuchoice>
+        <guimenu>Options</guimenu>
+
+        <guimenuitem>Settings</guimenuitem>
+      </menuchoice> from the <link linkend="gui.main_menu">main menu</link>).
+    In addition, on the <emphasis>Utilities</emphasis> tab of the command
+    panel, you find the <emphasis>OpenGL Test Utility</emphasis> which lets
+    you check the capabilities of your graphics card.</para>
+  </section>
+
+  <section xml:id="installation.building">
+    <title>Building OVITO from source</title>
+
+    <section xml:id="installation.platforms">
+      <title>Linux platform</title>
+
+      <para>OVITO has been mostly developed on Linux machines, and building it
+      on this platform is the easiest. In the following you will find
+      instructions on how to compile OVITO from source yourself.</para>
+
+      <para>OVITO requires several third-party libraries, and -depending on
+      your Linux distribution- the compilation of the source code can be more
+      or less work. Recent versions of Linux already provide everything you
+      need. They come with the development packages of the required libraries,
+      which can be installed through the appropriate administrative tools of
+      your Linux distribution. Note that, to be able to install all required
+      packages, you might need superuser privileges or ask your administrator
+      to do it for you.</para>
+
+      <para>You will find a detailed list of required third-party libraries
+      below.</para>
+    </section>
+
+    <section xml:id="installation.system_requirements">
+      <title>System requirements</title>
+
+      <para>OVITO is a complex software package that makes use of several
+      functions provided by third-party libraries. These libraries (and the
+      corresponding header files) must be available on your computer to
+      successfully build OVITO. Also note that OVITO is a modular software.
+      During the build process you can choose which parts of the package
+      should be built. Accordingly, only those third-party libraries need to
+      be available on your system that are required by the modules of OVITO
+      you intend to build. Here is the complete list of things you will need
+      to build OVITO: <itemizedlist>
+          <listitem>
+            <para>A C++ compiler, e.g. GNU <command>g++</command> for
+            Linux.</para>
+          </listitem>
+
+          <listitem>
+            <para>CMake v2.6 or newer (<link
+            xlink:href="http://www.cmake.org/">Website</link>)</para>
+          </listitem>
+
+          <listitem>
+            <para>Qt library v4.4 or newer, including development files (<link
+            xlink:href="http://qt.nokia.com/">Website</link>)</para>
+          </listitem>
+
+          <listitem>
+            <para>Boost libraries v1.34 or newer, including development files
+            (<link xlink:href="http://www.boost.org/">Website</link>)</para>
+          </listitem>
+
+          <listitem>
+            <para>OpenGL libraries and development files</para>
+          </listitem>
+
+          <listitem>
+            <para>Optional: The Python interpreter (v2.4 or higher) and
+            development files, only required for scripting support (<link
+            xlink:href="http://www.python.org/">Website</link>)</para>
+          </listitem>
+
+          <listitem>
+            <para>Optional: The QScintilla2 component. Only required for
+            visual scripting support in the Ovito application (<link
+            xlink:href="http://www.riverbankcomputing.co.uk/software/qscintilla/">Website</link>)</para>
+          </listitem>
+
+          <listitem>
+            <para>Optional: The POV-Ray renderer (<link
+            xlink:href="http://www.povray.org/">Website</link>)</para>
+          </listitem>
+
+          <listitem>
+            <para>Optional: Docbook, only required for building the
+            documentation files</para>
+          </listitem>
+
+          <listitem>
+            <para>Optional: xsltproc, only required for building the
+            documentation files</para>
+          </listitem>
+        </itemizedlist></para>
+
+      <section>
+        <title>Ubuntu Linux</title>
+
+        <para>In case you are running Ubuntu Linux, these are the repository
+        packages that must be installed (Ubuntu 10.04 or newer) to build OVITO
+        from source:</para>
+
+        <para><package>subversion</package><package>cmake</package><package>cmake-curses-gui</package><package>g++</package><package>libboost-dev</package><package>libboost-iostreams-dev</package><package>libboost-python-dev</package><package>povray</package><package>libqt4-opengl-dev</package><package>qt4-dev-tools</package><package>xsltproc</package><package>docbook-xml</package><package>docbook-xsl</package><package>docbook-xsl-doc-html</package><package>libqscintilla2-dev</package><package>python-dev</package></para>
+
+        <para>Use the command <command>sudo apt-get install</command>,
+        followed by the above list of packages, to install them.</para>
+      </section>
+    </section>
+
+    <section xml:id="installation.getting_the_source">
+      <title>Downloading the source code</title>
+
+      <para>The newest source code for OVITO can be obtained from the <link
+      xlink:href="http://sourceforge.net/projects/ovito/">SourceForge</link>
+      code repository. To this end, you need a Subversion client program
+      (usually called <command>svn</command>) to download the code to a local
+      directory on your computer. The Subversion client <command>svn</command>
+      is included in most Linux distributions. Before you retrieve the source
+      code, you should create an empty parent directory, e.g.<screen><command>mkdir ovito</command>
+<command>cd ovito</command></screen>Download the source code from the
+      repository: <screen><command>svn checkout http://ovito.svn.sourceforge.net/svnroot/ovito/trunk/ source</command></screen>
+      This command creates a new subdirectory named <literal>source</literal>
+      and downloads the complete source code tree into this directory.</para>
+
+      <para>New features and bug fixes are added to the source code in the
+      Subversion repository from time to time. You can update your local copy
+      of the source code to the newest version at any time by running the
+      command <screen><command>svn update</command></screen>in the
+      <filename>source</filename> directory. This will update only those local
+      files to new versions that have been changed.</para>
+    </section>
+
+    <section xml:id="installation.build_instructions">
+      <title>Build instructions</title>
+
+      <para>This section describes how to build the OVITO executable from the
+      source code. The <link xlink:href="http://www.cmake.org/">CMake</link>
+      build tool is required to compile OVITO. CMake is a platform and
+      compiler-independent makefile generator that already comes with most
+      Linux distributions. The OVITO source package includes a project file
+      for CMake, which is processed by CMake to generate the actual
+      platform-dependent makefile that can then be compiled using the standard
+      GNU <command>make</command> tool.</para>
+
+      <para>The first step is to create a second directory in addition to the
+      <emphasis>source</emphasis> directory. This will be the
+      <emphasis>build</emphasis> directory: <screen><command>mkdir build</command><command>
+cd build</command></screen><emphasis/>Start the CMake configuration program
+      from within the <emphasis>build</emphasis> directory:<screen><command>ccmake ../source</command></screen>The
+      <command>ccmake</command> command takes the path to the
+      <emphasis>source</emphasis> directory where OVITO's source code files
+      are located. <command>ccmake</command> is the CMake configuration
+      program that lets you configure the build settings (e.g. which modules
+      to build, where third-party libraries are located etc.). This <link
+      xlink:href="http://cmake.org/cmake/help/runningcmake.html">introduction</link>
+      on the CMake website provides a brief description of this tool.</para>
+
+      <para>Configuring the build options withing the
+      <command>ccmake</command> program is an iterative process: First, you
+      press the <shortcut>
+          <keycap>c</keycap>
+        </shortcut> key to let CMake parse the project file. After the first
+      configuration pass, <command>ccmake</command> will present you a list of
+      settings that you can modify.</para>
+
+      <para>CMake tries to automatically locate all libraries on your computer
+      that are required to build OVITO. If it is not able to find them (either
+      because they are missing or maybe because they have not been installed
+      in a default directory) CMake will print an error message, and you have
+      to enter the path to the library manually in the
+      <command>ccmake</command> configuration program. Note that only those
+      libraries must be present on your coputer that are required by the
+      components of OVITO that you have enabled. Several options can be
+      changed in the <command>ccmake</command> configuration program to
+      customize the build process and to enable/disable program components
+      (so-called plug-ins):</para>
+
+      <para><table>
+          <title>CMake project configuration options</title>
+
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>CMake options</entry>
+
+                <entry>Description</entry>
+              </row>
+            </thead>
+
+            <tbody>
+              <row>
+                <entry>CMAKE_BUILD_TYPE</entry>
+
+                <entry>This should be <code>Release</code> to build the OVITO
+                executable with all perforance optimizations turned
+                on.</entry>
+              </row>
+
+              <row>
+                <entry>CMAKE_INSTALL_PREFIX</entry>
+
+                <entry>Specifies the directory into which the compiled program
+                will be installed if you run <command>make
+                install</command>.</entry>
+              </row>
+
+              <row>
+                <entry>OVITO_BUILD_DOCUMENTATION</entry>
+
+                <entry>Controls the generation of the HTML documentation
+                files. The OVITO manual is written in the Docbook XML format
+                and needs to be translated to HTML before it can be viewed in
+                a web browser. You will need special tools as discussed in the
+                <link
+                linkend="installation.system_requirements">prerequisites</link>
+                section to do this.</entry>
+              </row>
+
+              <row>
+                <entry>OVITO_BUILD_PLUGIN_ATOMVIZ</entry>
+
+                <entry>This boolean option controls whether the AtomViz plugin
+                is built. This should be set to ON.</entry>
+              </row>
+
+              <row>
+                <entry>OVITO_BUILD_PLUGIN_POVRAY</entry>
+
+                <entry>This boolean option controls whether the POV-Ray plugin
+                is built. Setting this option to ON makes only sense when the
+                POV-Ray renderer is available on your computer.</entry>
+              </row>
+
+              <row>
+                <entry>OVITO_BUILD_PLUGIN_TACHYON</entry>
+
+                <entry>This boolean option controls whether the Tachyon
+                renderer plugin is built.</entry>
+              </row>
+
+              <row>
+                <entry>OVITO_BUILD_PLUGIN_SCRIPTING</entry>
+
+                <entry>This boolean option controls whether the scripting
+                plugin is built. When this option is set to ON then OVITO and
+                all other plugins will be built with scripting support
+                enabled, and the Python interpreter and Boost.Python must be
+                present on your computer.</entry>
+              </row>
+
+              <row>
+                <entry>OVITO_BUILD_PLUGIN_SCRIPTING_GUI</entry>
+
+                <entry>This boolean option controls whether the graphical user
+                interface for the scripting plugin is built. This feature is
+                not required to use scripting functions from the console or
+                stand-alone Python scripts. It's in a very initial state, so
+                you probably don't want this component.</entry>
+              </row>
+
+              <row>
+                <entry>OVITO_BUILD_PLUGIN_STDOBJECTS</entry>
+
+                <entry>This boolean option controls whether the plugin that
+                provides the standard object types is built. This is part of
+                the experimental feautures of OVITO. Normally you don't need
+                this.</entry>
+              </row>
+
+              <row>
+                <entry>OVITO_MONOLITHIC_BUILD</entry>
+
+                <entry>Turn this on to build OVITO as a single static
+                executable. By default OVITO is build as a collection of
+                plugin modules (shared libraries). In a monolithic build, all
+                plugins and all third-party libraries are linked into a single
+                exectauble file that can be transferred to another computer
+                more easily. This is used to build the official binaries for
+                the Linux platform that you find on the OVITO website.</entry>
+              </row>
+
+              <row>
+                <entry>OVITO_USE_DOUBLE_PRECISION_FP</entry>
+
+                <entry>This boolean option controls whether double-precision
+                (ON) or single-precision (OFF) floating-point numbers should
+                be used for all computations in OVITO. The default,
+                single-precision numbers (32 bit) are usually sufficient for
+                visualization purposes. They also take less memory when you
+                work with a large number of atoms. Double-precision numbers
+                (64 bit) may only be required in some cases for very exact
+                analysis calculations.</entry>
+              </row>
+
+              <row>
+                <entry>OVITO_USE_PRECOMPILED_HEADERS</entry>
+
+                <entry>This controls the generation of precompiled headers
+                when using the GCC compiler. Precompiled headers speed up the
+                compilation process and are turned ON by default.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>Do not forget to set the CMAKE_BUILD_TYPE setting to either
+      <code>Release</code> or <code>Debug</code> since it has no valid default
+      value.</para>
+
+      <para>After all options have been specified in the CMake configuration
+      program, and CMake does not complain about any missing libraries, you
+      can finally press the <shortcut>
+          <keycap>g</keycap>
+        </shortcut> key to generate the Makefile. This will also quit the
+      <command>ccmake</command> program. Now simply run <screen><command>make</command></screen>This
+      will start the build process. To use your multi-core processor and to
+      speed up the build process you can add the parameter
+      <command>-j4</command> to the <command>make</command> command. Then,
+      multiple source files will be compiled in parallel (four files
+      simultaneously in the example; you can specify a different number if
+      your processor has more or less cores).</para>
+
+      <para>A more detailed description of the <command>ccmake</command>
+      configuration program and the necessary steps to build a CMake project
+      can be found in the <link
+      xlink:href="http://www.cmake.org/HTML/Documentation.html">CMake
+      documentation</link> or on <link
+      xlink:href="http://cmake.org/cmake/help/runningcmake.html">this
+      page</link>.</para>
+
+      <para><note>
+          <para>On some systems we have observed an incompatibility issue
+          between newer versions of Python and old versions of Boost (before
+          version 1.40) that generated a compiler error. This problem has been
+          fixed in version 1.40 of the Boost library. Please upgrade to the
+          new version if you get a compilation error in the file
+          <filename>foreach.hpp</filename> of Boost.</para>
+        </note></para>
+
+      <para>After you have successfully compiled OVITO you can start the
+      program with the command <command>./bin/ovito</command>. OVITO is
+      constantly being enhanced, and new features are made available in the
+      source code repository. To upgrade to a newer version of OVITO, you just
+      have to perform two simple steps: First run the command <command>svn
+      update</command> in the OVITO source directory to fetch the newest
+      source code updates from the server. Then, just run
+      <command>make</command> in the build directory to recompile OVITO.
+      Re-running the <command>ccmake</command> program is usually not
+      necessary.</para>
+
+      <para>Optionally, you can install OVITO to an installation directory by
+      running <command>make install</command>. The installation directory is
+      specified by the <code>CMAKE_INSTALL_PREFIX</code> configuration
+      variable in CMake. On Linux, the default directory is
+      <code>/usr/local</code>, which usually requires superuser priviliges,
+      i.e. you have to run <screen><command>sudo make install</command></screen>
+      to install OVITO in this location. For a private installation in your
+      home directory, I would recommend not to install OVITO at all; just
+      leave the compiled executable in the build directory and run it from
+      there.</para>
+    </section>
+  </section>
+</chapter>

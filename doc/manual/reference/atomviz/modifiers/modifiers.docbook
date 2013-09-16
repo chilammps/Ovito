@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="utf-8"?>
+<section version="5.0"
+         xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xml:id="atomviz.modifiers" xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title>Modifiers</title>
+
+  <para>Modifiers are the basic building blocks of OVITO's <link
+  linkend="atomviz.overview.processing_model">processing pipeline</link>. You
+  can <link linkend="atomviz.modifiers.usage">add a new modifier</link> to the
+  current processing pipeline by choosing it from the modifier drop-down list
+  in the upper right part of the main window.</para>
+
+  <section xml:id="atomviz.modifiers.list">
+    <title>List of Modifiers</title>
+
+    <para><table>
+        <title>List of Modifiers</title>
+
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>Modifier name</entry>
+
+              <entry>Short description</entry>
+            </row>
+          </thead>
+
+          <tbody>
+            <row>
+              <entry><link
+              linkend="atomviz.modifiers.ambient_occlusion">Ambient Occlusion
+              Lighting</link></entry>
+
+              <entry>Calculates a brightness value for each atom based on an
+              ambient occlusion algorithm.</entry>
+            </row>
+
+            <row>
+              <entry><link linkend="atomviz.modifiers.ackland_analysis">Bond
+              Angle Analysis</link></entry>
+
+              <entry>Performs the Ackland-Jones bond angle analysis to
+              determine the local crystal structure.</entry>
+            </row>
+
+            <row>
+              <entry><link
+              linkend="atomviz.modifiers.add_expression_channel">Compute
+              Channel</link></entry>
+
+              <entry>Creates/assigns a new property to each atom based on a
+              user-defined expression.</entry>
+            </row>
+
+            <row>
+              <entry><link
+              linkend="atomviz.modifiers.assign_atom_type_color">Assign Type Colors</link></entry>
+
+              <entry>Assigns a color to each atom based on the its type.</entry>
+            </row>
+
+            <row>
+              <entry><link linkend="atomviz.modifiers.assign_color">Assign
+              Color</link></entry>
+
+              <entry>Assigns a color to all selected atoms.</entry>
+            </row>
+
+            <row>
+              <entry><link
+              linkend="atomviz.modifiers.affine_transformation">Affine
+              Transformation</link></entry>
+
+              <entry>Applies an affine transformation to atomic
+              coordinates.</entry>
+            </row>
+
+            <row>
+              <entry><link
+              linkend="atomviz.modifiers.calculate_atomic_strain">Calculate
+              Atomic Strain</link></entry>
+
+              <entry>Calculates the atomic-level strain tensor based on an
+              initial and the deformed configuration of the system. </entry>
+            </row>
+
+            <row>
+              <entry><link
+              linkend="atomviz.modifiers.calculate_displacements">Calculate
+              Displacement Vectors</link></entry>
+
+              <entry>Calculates displacement vectors of atoms based on an
+              initial and the deformed configuration of the system.</entry>
+            </row>
+
+            <row>
+              <entry><link linkend="atomviz.modifiers.color_coding">Color
+              Coding</link></entry>
+
+              <entry>Assigns a color to each atom based on some other
+              property.</entry>
+            </row>
+
+            <row>
+              <entry><link linkend="atomviz.modifiers.cluster_atoms">Cluster
+              Atoms</link></entry>
+
+              <entry>Divides atoms into groups based on their bond
+              connectivity.</entry>
+            </row>
+
+            <row>
+              <entry><link
+              linkend="atomviz.modifiers.common_neighbor_analysis">Common
+              Neighbor Analysis</link></entry>
+
+              <entry>Performs the common neighbor analysis (CNA) to determine
+              the local crystal structure.</entry>
+            </row>
+
+            <row>
+              <entry><link
+              linkend="atomviz.modifiers.coordination_analysis">Coordination
+              Analysis</link></entry>
+
+              <entry>Determines the number of near neighbors of each
+              atom.</entry>
+            </row>
+
+            <row>
+              <entry><link
+              linkend="atomviz.modifiers.delete_selected_atoms">Delete
+              Selected Atoms</link></entry>
+
+              <entry>Deletes all currently selected atoms.</entry>
+            </row>
+
+            <row>
+              <entry><link linkend="atomviz.modifiers.invert_selection">Invert
+              Selection</link></entry>
+
+              <entry>Inverts the selection state of each atom.</entry>
+            </row>
+
+            <row>
+              <entry><link linkend="atomviz.modifiers.freeze_selection">Freeze
+              Selection</link></entry>
+
+              <entry>Preserves the current selection state over time.</entry>
+            </row>
+
+            <row>
+              <entry><link linkend="atomviz.modifiers.select_atom_type">Select
+              Atom Type</link></entry>
+
+              <entry>Selects atoms of a certain type.</entry>
+            </row>
+
+            <row>
+              <entry><link
+              linkend="atomviz.modifiers.select_by_expression">Expression
+              Select</link></entry>
+
+              <entry>Selects atoms based on a user defined criterion.</entry>
+            </row>
+
+            <row>
+              <entry><link
+              linkend="atomviz.modifiers.show_periodic_images">Show Periodic
+              Images</link></entry>
+
+              <entry>Displays the periodic images of every atom.</entry>
+            </row>
+
+            <row>
+              <entry><link
+              linkend="atomviz.modifiers.slice">Slice</link></entry>
+
+              <entry>Cuts out a slice or a cross-section from the atomic
+              structure.</entry>
+            </row>
+
+            <row>
+              <entry><link
+              linkend="atomviz.modifiers.wrap_periodic_images">Wrap at
+              Periodic Boundaries</link></entry>
+
+              <entry>Maps atoms outside of the simulation box into the
+              box.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table></para>
+  </section>
+
+  <xi:include href="ackland_analysis.docbook"/>
+
+  <xi:include href="add_expression_channel.docbook"/>
+
+  <xi:include href="ambient_occlusion.docbook"/>
+
+  <xi:include href="assign_atom_type_color.docbook"/>
+
+  <xi:include href="assign_color.docbook"/>
+
+  <xi:include href="affine_transformation.docbook"/>
+
+  <xi:include href="calculate_atomic_strain.docbook"/>
+
+  <xi:include href="calculate_displacements.docbook"/>
+
+  <xi:include href="cluster_atoms.docbook"/>
+
+  <xi:include href="color_coding.docbook"/>
+
+  <xi:include href="common_neighbor_analysis.docbook"/>
+
+  <xi:include href="coordination_analysis.docbook"/>
+
+  <xi:include href="delete_selected_atoms.docbook"/>
+
+  <xi:include href="invert_selection.docbook"/>
+
+  <xi:include href="freeze_selection.docbook"/>
+
+  <xi:include href="select_atom_type.docbook"/>
+
+  <xi:include href="select_by_expression.docbook"/>
+
+  <xi:include href="show_periodic_images.docbook"/>
+
+  <xi:include href="slice.docbook"/>
+
+  <xi:include href="wrap_periodic_images.docbook"/>
+</section>

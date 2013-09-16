@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<section version="5.0"
+         xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xml:id="core.rendering.povray_renderer"
+         xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title>POV-Ray renderer</title>
+
+  <para><figure xml:id="core.rendering.povray_renderer.parameter_panel">
+      <title>The <emphasis>settings panel of the POV-Ray
+      renderer</emphasis></title>
+
+      <screenshot>
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="images/rendering/povray_renderer_settings_panel.png"
+                       format="PNG" xml:base="../../../"/>
+          </imageobject>
+        </mediaobject>
+      </screenshot>
+    </figure> This <link linkend="atomviz.rendering">renderer backend</link>
+  is based on the external <emphasis>POV-Ray</emphasis> program. See <xref
+  linkend="atomviz.rendering"/> on how to activate this renderer.</para>
+
+  <para><link xlink:href="http://www.povray.org/">POV-Ray</link> is a
+  raytracing program that is freely available. It can produce high-quality
+  pictures of geometric objects such as spheres, taking into account
+  reflections, lighting, shadows and textures. The <emphasis>POV-Ray rendering
+  plug-in</emphasis> of OVITO first translates the current scene including all
+  the atoms into the format of POV-Ray. It then invokes the external POV-Ray
+  program in the background and lets it render the image. After POV-Ray has
+  finished, the resulting image is read back into OVITO. This all happens
+  transparently for the user. <note>
+      <para>OVITO also has an export function that lets you <link
+      linkend="atomviz.export.povray">export the atomic dataset to a file in
+      the POV-Ray format</link>. This allows you to further customize the
+      POV-Ray scene before running the POV-Ray program manually.</para>
+    </note></para>
+
+  <para>This renderer requires the external <command>povray</command> program
+  to be installed on your system.</para>
+</section>

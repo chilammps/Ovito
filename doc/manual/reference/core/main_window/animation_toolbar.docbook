@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<section version="5.0"
+         xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xml:id="gui.animation_toolbar" xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title>Animation toolbar</title>
+
+  <variablelist>
+    <varlistentry>
+      <term><inlinemediaobject>
+          <imageobject>
+            <imagedata fileref="images/animation_toolbar/goto_first.png"
+                       format="PNG" valign="top" xml:base="../../../"/>
+          </imageobject>
+        </inlinemediaobject> Go to first frame</term>
+
+      <listitem>
+        <para>Jumps to the first frame of the animation sequence.</para>
+      </listitem>
+    </varlistentry>
+
+    <varlistentry>
+      <term><inlinemediaobject>
+          <imageobject>
+            <imagedata fileref="images/animation_toolbar/goto_last.png"
+                       format="PNG" valign="top" xml:base="../../../"/>
+          </imageobject>
+        </inlinemediaobject> Go to last frame</term>
+
+      <listitem>
+        <para>Jumps to the last frame of the animation sequence.</para>
+      </listitem>
+    </varlistentry>
+
+    <varlistentry>
+      <term><inlinemediaobject>
+          <imageobject>
+            <imagedata fileref="images/animation_toolbar/goto_previous_frame.png"
+                       format="PNG" valign="top" xml:base="../../../"/>
+          </imageobject>
+        </inlinemediaobject> Go to previous frame</term>
+
+      <listitem>
+        <para>Steps one frame back in the animation sequence.</para>
+      </listitem>
+    </varlistentry>
+
+    <varlistentry>
+      <term><inlinemediaobject>
+          <imageobject>
+            <imagedata fileref="images/animation_toolbar/goto_next_frame.png"
+                       format="PNG" valign="top" xml:base="../../../"/>
+          </imageobject>
+        </inlinemediaobject> Go to next frame</term>
+
+      <listitem>
+        <para>Steps one frame forward in the animation sequence.</para>
+      </listitem>
+    </varlistentry>
+
+    <varlistentry>
+      <term><inlinemediaobject>
+          <imageobject>
+            <imagedata fileref="images/animation_toolbar/play_animation.png"
+                       format="PNG" valign="top" xml:base="../../../"/>
+          </imageobject>
+        </inlinemediaobject> Play Animation</term>
+
+      <listitem>
+        <para>Starts/stops playing the animation in the viewports.</para>
+      </listitem>
+    </varlistentry>
+
+    <varlistentry>
+      <term><inlinemediaobject>
+          <imageobject>
+            <imagedata fileref="images/animation_toolbar/animation_mode.png"
+                       format="PNG" valign="top" xml:base="../../../"/>
+          </imageobject>
+        </inlinemediaobject> Animation Mode</term>
+
+      <listitem>
+        <para>Enables/disables animation mode. Changing a numerical parameter
+        or the position of some object in the scene while the animation mode
+        is active will generate an animation keyframe. A red animation time
+        slider and a red viewport border indicate that animation mode is
+        active.</para>
+      </listitem>
+    </varlistentry>
+
+    <varlistentry>
+      <term><inlinemediaobject>
+          <imageobject>
+            <imagedata fileref="images/animation_toolbar/animation_settings.png"
+                       format="PNG" valign="top" xml:base="../../../"/>
+          </imageobject>
+        </inlinemediaobject> Animation Settings</term>
+
+      <listitem>
+        <para>Opens the <link
+        linkend="gui.animation_settings_dialog">Animation Settings Dialog
+        box</link>.</para>
+      </listitem>
+    </varlistentry>
+
+    <varlistentry>
+      <term><inlinemediaobject>
+          <imageobject>
+            <imagedata fileref="images/animation_toolbar/current_animation_frame.png"
+                       format="PNG" valign="top" xml:base="../../../"/>
+          </imageobject>
+        </inlinemediaobject> Current Animation Frame</term>
+
+      <listitem>
+        <para>Numerical input box that controls the current animation
+        position. It is meant as an alternative way of jumping to a certain
+        animation time in addition to the Animation Time Slider.</para>
+      </listitem>
+    </varlistentry>
+  </variablelist>
+
+  <section>
+    <title>Animation time slider</title>
+
+    <para>The animation time slider is located below the <link
+    linkend="gui.viewports_area">viewports area</link>. It can be dragged with
+    the mouse to navigate in time.</para>
+  </section>
+
+  <section xml:id="gui.animation_settings_dialog">
+    <title>Animation settings dialog</title>
+
+    <figure>
+      <title>Animation settings dialog</title>
+
+      <screenshot>
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="images/animation_settings_dialog/dialog_screenshot.png"
+                       format="PNG" xml:base="../../../"/>
+          </imageobject>
+        </mediaobject>
+      </screenshot>
+    </figure>
+
+    <para>This dialog lets the user setup the animation for the current scene.
+    The animation speed is given as frames per second and can only be changed
+    in discrete steps because OVITO internally works with a time unit called
+    <firstterm>time ticks</firstterm>. One time tick is 1/4800 of a second,
+    allowing only integer divisors of 4800 for the frames per second
+    value.</para>
+
+    <para>The duration of the animation is defined by the start frame number
+    and the end frame number. The number of animation frames is given by the
+    formula (end – start + 1).</para>
+
+    <para>Changing the frames per second value will automatically alter the
+    number of animation frames to keep the animation length (in seconds)
+    constant. It will also rescale the positions of all animation keys in the
+    scene to preserve their timing.</para>
+
+    <para>To just change the playback speed for the animation in the viewports
+    without touching the animation keys and the animation interval, the
+    playback speed multiplier can be set in the dialog.</para>
+  </section>
+</section>

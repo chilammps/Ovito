@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<section version="5.0"
+         xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xml:id="core.rendering.render_settings"
+         xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title>Render settings</title>
+
+  <para><figure xml:id="core.rendering.render_settings.parameter_panel">
+      <title>The <emphasis>Render settings</emphasis> panel</title>
+
+      <screenshot>
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="images/rendering/render_settings_panel.png"
+                       format="PNG" xml:base="../../../"/>
+          </imageobject>
+        </mediaobject>
+      </screenshot>
+    </figure> This parameter panel lets you control the rendering of static
+  images or movie sequence of your scene. <variablelist>
+      <varlistentry>
+        <term>Time output</term>
+
+        <listitem>
+          <para>You can either render an image of the current simulation frame
+          or the complete animation if you have loaded a sequence of snapshots
+          into OVITO. Note that if you select the <guimenuitem>Complete
+          animation</guimenuitem> or <guimenuitem>Range</guimenuitem> option,
+          you must also specify an output filename. The filename will be used
+          as base name for a sequence of numbered image files.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Every Nth frame</term>
+
+        <listitem>
+          <para>When rendering an animation, this controls the regular sample
+          of frames. Available only for <guimenuitem>Complete
+          animation</guimenuitem> or <guimenuitem>Range</guimenuitem>
+          output.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>File number base</term>
+
+        <listitem>
+          <para>Sets the base file number, from which the animation file
+          number will increase. Available only for <guimenuitem>Complete
+          animation</guimenuitem> or <guimenuitem>Range</guimenuitem>
+          output.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Output image size</term>
+
+        <listitem>
+          <para>Specifies the output image width and height in pixels. The
+          ratio of both values controls the shape of the final image. To
+          monitor the current aspect ratio, you can right-click on the title
+          of a viewport found in its top left corner, and activate the
+          <guimenuitem><link linkend="gui.viewports">Show Render
+          Frame</link></guimenuitem> option.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Background color</term>
+
+        <listitem>
+          <para>Controls the background color of the output image.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Generate alpha channel</term>
+
+        <listitem>
+          <para>If you save the renderer image to a file format that supports
+          an alpha channel (in addition to the RGB channels) then this option
+          will let you save the transparency information to the output file.
+          The PNG format is a popular image format that supports alpha
+          channels. The transparency information is very useful if you plan to
+          position the rendered image in front of an arbitrary background,
+          i.e. on a presentation slide. Then, the background will show through
+          those parts of the image that are not covered by atoms.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Change renderer</term>
+
+        <listitem>
+          <para>Lets you select another <link
+          linkend="atomviz.rendering">rendering backend</link>.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Save to file</term>
+
+        <listitem>
+          <para>Activate this option to save the generated image or image
+          sequence to disk. Otherwise the rendered image will not be saved
+          automatically. In addition, you must specify an output filename with
+          the <guibutton>Choose...</guibutton> button. When rendering an
+          animation sequence, the selected filename will serve as a base name,
+          to which the frame number is appended.</para>
+        </listitem>
+      </varlistentry>
+    </variablelist></para>
+
+  <para>To start the rendering process, press <guibutton>Render Active
+  Viewport</guibutton> <inlinemediaobject>
+      <imageobject>
+        <imagedata fileref="images/rendering/render_active_viewport.png"
+                   format="png" xml:base="../../../"/>
+      </imageobject>
+    </inlinemediaobject> .</para>
+</section>

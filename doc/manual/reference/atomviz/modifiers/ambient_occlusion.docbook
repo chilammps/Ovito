@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<section version="5.0"
+         xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xml:id="atomviz.modifiers.ambient_occlusion"
+         xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title>Ambient Occlusion Lighting</title>
+
+  <para><figure>
+      <title>Ambient Occlusion Lighting modifier</title>
+
+      <screenshot>
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="images/modifiers/ambient_occlusion_panel.png"
+                       format="PNG" xml:base="../../../"/>
+          </imageobject>
+        </mediaobject>
+      </screenshot>
+    </figure></para>
+
+  <para>Performs a lighting calculation to shade atoms according to their
+  occlusion by other atoms. The ambient occlusion algorithm is a quick way to
+  compute the shadows cast by an atomic structure onto itself. OVITO uses the
+  graphics card to perform this illumination calculation. </para>
+
+  <para>The purposes of the ambient occlusion lighting is to improve the
+  perception of three-dimensional structures, which otherwise appear "flat"
+  when all atoms have the same color.</para>
+
+  <para>The <guibutton>Update</guibutton> button starts the computation. If
+  you are working with a time sequence of simulation snapshots, you should
+  enable the <guilabel>Auto-update on time change</guilabel> option to let
+  OVITO automatically re-perform the shading calculation whenever you jump to
+  a different simulation frame.</para>
+
+  <note>
+    <para>This modifier should be placed at the end of the processing
+    pipeline, following all other modifiers.</para>
+  </note>
+
+  <simplesect>
+    <title>Parameters</title>
+
+    <variablelist>
+      <varlistentry>
+        <term>Intensity</term>
+
+        <listitem>
+          <para>Percentage value that controls the amount of shading. The
+          higher the shading intensity the larger the effect, and the darker
+          the atoms appear.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Sampling level</term>
+
+        <listitem>
+          <para>Controls the number of directions from which the atomic
+          structure is diffusely illuminated. The samples are uniformly
+          distributed over the "sky" sphere.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Render buffer resolution</term>
+
+        <listitem>
+          <para>The resolution level of the rendering buffer used to compute
+          the illumination from one direction. Should be higher for structures
+          with a larger number of atoms.</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </simplesect>
+</section>

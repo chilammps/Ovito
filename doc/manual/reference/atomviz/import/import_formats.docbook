@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<section version="5.0"
+         xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xml:id="atomviz.import" xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title>Import formats</title>
+
+  <para>OVITO can import file formats written by various simulation
+  packages:</para>
+
+  <itemizedlist>
+    <listitem>
+      <para><link linkend="atomviz.import.lammps_dump">LAMMPS dump
+      files</link></para>
+    </listitem>
+
+    <listitem>
+      <para><link linkend="atomviz.import.lammps_data">LAMMPS data
+      files</link></para>
+    </listitem>
+
+    <listitem>
+      <para><link linkend="atomviz.import.xyz">XYZ files</link></para>
+    </listitem>
+
+    <listitem>
+      <para><link linkend="atomviz.import.poscar">POSCAR files</link></para>
+    </listitem>
+
+    <listitem>
+      <para><link linkend="atomviz.import.imd">IMD files</link></para>
+    </listitem>
+
+    <listitem>
+      <para>CFG files (This format is used by the <emphasis>AtomEye</emphasis> software)</para>
+    </listitem>
+
+    <listitem>
+      <para>PARCAS binary files (<emphasis>Parcas</emphasis> is an MD code
+      developed in K. Nordlund's group)</para>
+    </listitem>
+
+    <listitem>
+      <para>DXA intermediate analysis files (written by the LAMMPS module of
+      the <link xlink:href="http://dxa.ovito.org/">Dislocation Extraction
+      Algorithm</link> tool)</para>
+    </listitem>
+  </itemizedlist>
+
+  <xi:include href="lammps_dump.docbook"/>
+
+  <xi:include href="lammps_data.docbook"/>
+
+  <xi:include href="xyz.docbook"/>
+
+  <xi:include href="poscar.docbook"/>
+
+  <xi:include href="imd.docbook"/>
+</section>

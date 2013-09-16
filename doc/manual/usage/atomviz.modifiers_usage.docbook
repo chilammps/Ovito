@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<section xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xml:id="atomviz.modifiers.usage"
+         xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title version="5.0">Working with modifiers</title>
+
+  <para><figure xml:id="atomviz.modify_tab.screenshot">
+      <title>The <emphasis>Modify</emphasis> tab</title>
+
+      <screenshot>
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="images/command_panel/modify_tab_screenshot.png"
+                       format="png" xml:base="../"/>
+          </imageobject>
+        </mediaobject>
+      </screenshot>
+    </figure> Modifiers can be added to the processing pipeline from the
+  <emphasis>Modify</emphasis> tab of the command panel (<xref
+  linkend="atomviz.modify_tab.screenshot"/>). The modify tab is labeled with
+  the <inlinemediaobject>
+      <imageobject>
+        <imagedata fileref="images/command_panel/tab_modify.png" format="png"
+                   xml:base="../"/>
+      </imageobject>
+    </inlinemediaobject> icon and is divided into three sections:
+  <itemizedlist>
+      <listitem>
+        <para>A drop-down listbox at the top, labeled <emphasis>Modifier
+        List</emphasis> , which lets you add new modifiers to the processing
+        pipeline.</para>
+      </listitem>
+
+      <listitem>
+        <para>A listbox that shows the current processing pipeline.</para>
+      </listitem>
+
+      <listitem>
+        <para>The properties panel at the bottom, showing the parameters of
+        the currently selected entry of the processing pipeline.</para>
+      </listitem>
+    </itemizedlist></para>
+
+  <para>After importing a dataset file, the processing pipeline listbox
+  contains one entry named <literal>Data source</literal>, which is followed
+  by at least two subitems (<literal>Simulation Cell</literal> and
+  <literal>Atoms display</literal>). The <literal>Data source</literal> entry
+  denotes the origin of the atomistic data that is fed into the processing
+  pipeline. Selecting it opens the corresponding properties panel in the area
+  below the listbox. Here you will find buttons to replace the data source
+  with a different input file, or to reload the input file. See <xref
+  linkend="atomviz.objects.import_atoms_object"/> for more details.</para>
+
+  <para>The entries <literal>Simulation Cell</literal> and <literal>Atoms
+  display</literal> found below the <literal>Data source</literal> let you
+  control how atoms and the simulation cell are displayed in the viewports and
+  in the rendered image. Depending on what data channels you have imported
+  from the input file, you might find more entries here, for instance
+  <literal>Atom Types</literal> which lets you control how different atomic
+  species are rendered.</para>
+
+  <para>You can add a modifier to the processing pipeline by choosing an entry
+  from the drop-down box labeled <emphasis>Modifier List</emphasis>. The new
+  modifier will be inserted into the pipeline <emphasis>above</emphasis> the
+  currently selected entry. Note that the processing pipeline is displayed in
+  a bottom-up order. Hence, the data source is always at the bottom and
+  modifiers are executed from bottom to top. The order of modifiers in the
+  processing pipeline can be changed with the arrow buttons next to the
+  listbox. The delete button completely removes the selected modifier from the
+  processing pipeline. The tool button with the light bulb lets you
+  temporarily deactivate the selected modifier. <tip>
+      <para>You can also double-click an entry in the listbox to
+      activate/deactivate the modifier.</para>
+    </tip></para>
+</section>

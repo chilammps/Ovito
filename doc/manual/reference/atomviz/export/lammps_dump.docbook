@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<section version="5.0"
+         xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xml:id="atomviz.export.lammps_dump"
+         xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title>LAMMPS dump files</title>
+
+  <para>OVITO can write dump files as produced by the <link
+  xlink:href="http://lammps.sandia.gov">LAMMPS molecular dynamics
+  package</link>.</para>
+
+  <para>The export filter can write dump files in text and binary
+  format.</para>
+
+  <para>If the output filename has a .gz suffix then the dump file is
+  compressed on the fly.</para>
+</section>
