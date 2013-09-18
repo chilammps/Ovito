@@ -1,52 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
 <section version="5.0"
          xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
-         xml:id="atomviz.export" xmlns="http://docbook.org/ns/docbook"
+         xml:id="viz.export" xmlns="http://docbook.org/ns/docbook"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xmlns:xs="http://www.w3.org/2001/XMLSchema"
          xmlns:xlink="http://www.w3.org/1999/xlink"
          xmlns:xi="http://www.w3.org/2001/XInclude"
          xmlns:ns="http://docbook.org/ns/docbook">
-  <title>Export formats</title>
+  <title>Export particles</title>
 
-  <para>OVITO can export the atomic coordinates to several file
-  formats:</para>
+  <para>To export the current particle dataset to a file, select the <menuchoice><guimenu>File</guimenu><guimenuitem>Export File</guimenuitem></menuchoice> menu item.
+  After picking an output filename and format, an export settings dialog lets you specify the animation frames and the particle properties to export.
+  </para>
+  
+  <para><note>If you pick an output filename that ends with a <filename>.gz</filename> suffix, then the file will be automatically compressed by OVITO.</note></para>
+  
+  <para>
+    OVITO can export particle datasets to several file formats:
+    <informaltable>
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>File format</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
 
-  <itemizedlist>
-    <listitem>
-      <para><link linkend="atomviz.export.lammps_dump">LAMMPS dump
-      files</link></para>
-    </listitem>
-
-    <listitem>
-      <para><link linkend="atomviz.export.lammps_data">LAMMPS data
-      files</link></para>
-    </listitem>
-
-    <listitem>
-      <para><link linkend="atomviz.export.xyz">XYZ files</link></para>
-    </listitem>
-
-    <listitem>
-      <para><link linkend="atomviz.export.poscar">POSCAR files</link></para>
-    </listitem>
-
-    <listitem>
-      <para><link linkend="atomviz.export.povray">POV-Ray files</link></para>
-    </listitem>
-
-    <listitem>
-      <para>IMD files</para>
-    </listitem>
-  </itemizedlist>
-
-  <xi:include href="lammps_dump.docbook"/>
-
-  <xi:include href="lammps_data.docbook"/>
-
-  <xi:include href="xyz.docbook"/>
-
-  <xi:include href="poscar.docbook"/>
-
-  <xi:include href="povray.docbook"/>
+          <tbody>
+            <row>
+              <entry>LAMMPS dump</entry>
+              <entry><para>File format produced and read by the <link xlink:href="http://lammps.sandia.gov">LAMMPS molecular dynamics code</link>.</para></entry>
+            </row>
+            <row>
+              <entry>LAMMPS data</entry>
+              <entry><para>File format read by the <link xlink:href="http://lammps.sandia.gov">LAMMPS molecular dynamics code</link>.</para></entry>
+            </row>
+            <row>
+              <entry>XYZ</entry>
+              <entry><para>A simple column-based text format, which is documented <link xlink:href="http://en.wikipedia.org/wiki/XYZ_file_format">here</link>.</para></entry>
+            </row>
+            <row>
+              <entry>POSCAR</entry>
+              <entry><para>File format used by the <emphasis>ab initio</emphasis> simulation package <link xlink:href="http://www.vasp.at/">VASP</link>.</para></entry>
+            </row>
+            <row>
+              <entry>IMD</entry>
+              <entry><para>File format used by the molecular dynamics code <link xlink:href="http://imd.itap.physik.uni-stuttgart.de/">IMD</link>.</para></entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>  
+  </para>
 </section>

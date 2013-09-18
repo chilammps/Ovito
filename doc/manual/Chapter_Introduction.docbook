@@ -10,54 +10,54 @@
   <title>Introduction</title>
 
   <para>OVITO is a scientific data visualization and analysis software for
-  large-scale atomistic simulations, in particular classical molecular
-  dynamics (MD). OVITO is freely available under an open-source license for
+  large-scale atomistic simulations in materials science. 
+  OVITO is freely available under an open-source license for
   Windows, Linux and MacOS platforms. It is being developed by Alexander
   Stukowski at <link xlink:href="http://www.mm.mw.tu-darmstadt.de/">the
-  Material Science Department at Darmstadt University of Technology,
-  Germany</link>. Note that OVITO is not a product of a research project, or
-  of a particular development effort. It's just a tool that was created by
-  Alexander to make his life easier and more fun when he was a PhD student and
-  performed molecular dynamics simulations of crystal plasticity. By now,
-  OVITO has found many more friends throughout the world and is being used in
-  many materials simulation studies.</para>
+  Material Science Department of Darmstadt University of Technology,
+  Germany</link>.
+  </para>
+  
+  <para>
+  The first version of OVITO was released in December 2009.
+  Since that time, several software updates have been made available to the community, 
+  which today comprises several hundred active users from the materials science field. 
+  Development of the software began at the end of 2007, the author's first year as a PhD student. 
+  When he started doing multi-million atom molecular dynamics simulations of nanocrystalline materials 
+  at that time, he realized that the existing, freely available visualization tools wouldn't 
+  fully suit his own needs. Luckily, the author's job as a research assistant left enough spare time to work on 
+  a new solution: a flexible visualization tool for atomistic simulation data that 
+  integrates several common analysis functions. Two years later, the code had become mature enough to 
+  share it with the general public. To further advertise OVITO an <link xlink:href="http://stacks.iop.org/0965-0393/18/015012">article was published 
+  in the MSMSE journal</link> in 2010.
+  </para>
 
-  <para>OVITO is targeted at the visualization and data analysis of molecular
-  dynamics simulations of atomic systems, especially solid-state materials.
-  Here is an incomplete list of features: <itemizedlist>
+  <para>OVITO is a software tool to visualize and analyze output from molecular
+  dynamics simulations of particles, in particular atomistic simulations of solid-state materials.
+  This is a list of the main program features: <itemizedlist>
+
       <listitem>
-        <para>It's free software </para>
+        <para>Reads and writes various file formats used by MD simulation codes including LAMMPS, XYZ, CFG, IMD, and POSCAR</para>
       </listitem>
 
       <listitem>
-        <para>Platform independent design </para>
+        <para>Interactive display of large data sets using hardware-accelerated OpenGL rendering </para>
       </listitem>
 
       <listitem>
-        <para>Imports several file formats written by various MD simulation
-        codes including LAMMPS, XYZ, IMD and POSCAR </para>
+        <para>Flexible data model: allows to associate an arbitrary set of properties with each particle </para>
       </listitem>
 
       <listitem>
-        <para>Realtime rendering of large datasets using hardware-accelerated
-        OpenGL graphics </para>
-      </listitem>
-
-      <listitem>
-        <para>Flexible data model: allows to associate an abitrary set of
-        properties with each atom </para>
-      </listitem>
-
-      <listitem>
-        <para>Flexible processing model: Modification and analysis steps can
-        be performed in any order; parameters can be altered at any time.
+        <para>Flexible processing model: Data modification and analysis steps can be performed in any order; parameters can be altered at any time with immediate update of the results.
         Functions include <itemizedlist>
+        
             <listitem>
               <para>Slicing</para>
             </listitem>
 
             <listitem>
-              <para>Selection of atoms based on user-definable criteria</para>
+              <para>Selection of particles based on user-definable criteria</para>
             </listitem>
 
             <listitem>
@@ -69,9 +69,17 @@
             </listitem>
 
             <listitem>
-              <para>Display of periodic images; wrapping of atoms at periodic
-              boundaries</para>
+              <para>Calculation of new particle properties from existing properties </para>
             </listitem>
+
+            <listitem>
+              <para>Display of periodic images; wrapping of atoms at periodic boundaries</para>
+            </listitem>
+            
+            <listitem>
+              <para>Generation and display of atomic bonds</para>
+            </listitem>
+            
           </itemizedlist> </para>
       </listitem>
 
@@ -80,13 +88,11 @@
       </listitem>
 
       <listitem>
-        <para> Generation of images for publication (using OpenGL, POV-Ray, or
-        the Tachyon renderer) </para>
+        <para> Generation of high-quality images for publication </para>
       </listitem>
 
       <listitem>
-        <para> Visualization of sequences of timesteps (realtime playback or
-        movie image sequence) </para>
+        <para> Handles simulation sequences (realtime playback and movie file generation) </para>
       </listitem>
 
       <listitem>
@@ -102,12 +108,15 @@
           </listitem>
 
           <listitem>
+            <para>Centro-symmetry parameter</para>
+          </listitem>
+
+          <listitem>
             <para>Cluster analysis</para>
           </listitem>
 
           <listitem>
-            <para>Coordination number analysis (including the option to
-            display bonds)</para>
+            <para>Coordination number analysis and radial distribution function</para>
           </listitem>
 
           <listitem>
@@ -115,30 +124,25 @@
           </listitem>
 
           <listitem>
-            <para>Calculation of strain tensors at the atomic level</para>
+            <para>Calculation of atomic strain tensors</para>
           </listitem>
+          
+          <listitem>
+            <para>Histogram function</para>
+          </listitem>
+          
         </itemizedlist>
 
          
       </listitem>
 
       <listitem>
-        <para> Export of atomic datasets to be used as input for new
-        simulations </para>
+        <para> A modular software design makes it easy to extend OVITO via plugins written in C++ </para>
       </listitem>
 
       <listitem>
-        <para> Python-based scripting interface enables batch-processing
-        </para>
+        <para> Open source license </para>
       </listitem>
-
-      <listitem>
-        <para> A modular software design makes it easy to extend OVITO via
-        plugins written in C++ </para>
-      </listitem>
+      
     </itemizedlist></para>
-
-  <para>After you have successfully <link
-  linkend="installation">installed</link> the program, you can find <link
-  linkend="usage">usage instructions</link> in this manual.</para>
 </chapter>

@@ -58,12 +58,12 @@ FILE(MAKE_DIRECTORY "${OVITO_SHARE_DIRECTORY}/doc/manual/html")
 #
 ADD_CUSTOM_TARGET(documentation 
 				COMMAND ${CMAKE_COMMAND} "-E" copy_directory "images/" "${OVITO_SHARE_DIRECTORY}/doc/manual/html/images/"
-				COMMAND ${CMAKE_COMMAND} "-E" copy_directory "images/" "${OVITO_SHARE_DIRECTORY}/doc/manual/assistant/images/"
 				COMMAND ${CMAKE_COMMAND} "-E" copy "manual.css" "${OVITO_SHARE_DIRECTORY}/doc/manual/html/"
+				COMMAND ${XSLT_PROCESSOR} ${XSLT_PROCESSOR_OPTIONS} --stringparam base.dir "${OVITO_SHARE_DIRECTORY}/doc/manual/html/" html-customization-layer.xsl Manual.docbook
+				COMMAND ${CMAKE_COMMAND} "-E" copy_directory "images/" "${OVITO_SHARE_DIRECTORY}/doc/manual/assistant/images/"
 				COMMAND ${XSLT_PROCESSOR} ${XSLT_PROCESSOR_OPTIONS} --stringparam base.dir "${OVITO_SHARE_DIRECTORY}/doc/manual/assistant/" assistant-customization-layer.xsl Manual.docbook
 				COMMAND ${CMAKE_COMMAND} "-E" copy "documentation.qhcp" "${OVITO_SHARE_DIRECTORY}/doc/manual/assistant/documentation.qhcp"
 				COMMAND ${QT_HELP_COLLECTION_GENERATOR} ${OVITO_SHARE_DIRECTORY}/doc/manual/assistant/documentation.qhcp -o ${OVITO_SHARE_DIRECTORY}/doc/manual/assistant/documentation.qhc
-				COMMAND ${XSLT_PROCESSOR} ${XSLT_PROCESSOR_OPTIONS} --stringparam base.dir "${OVITO_SHARE_DIRECTORY}/doc/manual/html/" html-customization-layer.xsl Manual.docbook
 				WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/doc/manual/"
 				COMMENT "Building documentation files")
 

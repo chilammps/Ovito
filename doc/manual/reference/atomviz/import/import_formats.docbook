@@ -1,63 +1,71 @@
 <?xml version="1.0" encoding="utf-8"?>
 <section version="5.0"
          xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
-         xml:id="atomviz.import" xmlns="http://docbook.org/ns/docbook"
+         xml:id="viz.import" xmlns="http://docbook.org/ns/docbook"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xmlns:xs="http://www.w3.org/2001/XMLSchema"
          xmlns:xlink="http://www.w3.org/1999/xlink"
          xmlns:xi="http://www.w3.org/2001/XInclude"
          xmlns:ns="http://docbook.org/ns/docbook">
-  <title>Import formats</title>
+  <title>Import particles</title>
 
-  <para>OVITO can import file formats written by various simulation
-  packages:</para>
+  <para>To open a simulation file from your local hard disk, use the 
+  <menuchoice><guimenu>File</guimenu><guimenuitem>Open Local File</guimenuitem></menuchoice> menu item.  
+  </para>
 
-  <itemizedlist>
-    <listitem>
-      <para><link linkend="atomviz.import.lammps_dump">LAMMPS dump
-      files</link></para>
-    </listitem>
+  <para>To open a simulation file from a remote machine, use the 
+  <menuchoice><guimenu>File</guimenu><guimenuitem>Open Remote File</guimenuitem></menuchoice> menu item.  
+  </para>
 
-    <listitem>
-      <para><link linkend="atomviz.import.lammps_data">LAMMPS data
-      files</link></para>
-    </listitem>
+  <para>OVITO will try to detect the format of the input file automatically.</para>
+  
+  <para><note>OVITO can read compressed files that have the <filename>.gz</filename> suffix.</note></para>
+  
+  <para>
+   Supported file formats:
+    <informaltable>
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>File format</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
 
-    <listitem>
-      <para><link linkend="atomviz.import.xyz">XYZ files</link></para>
-    </listitem>
-
-    <listitem>
-      <para><link linkend="atomviz.import.poscar">POSCAR files</link></para>
-    </listitem>
-
-    <listitem>
-      <para><link linkend="atomviz.import.imd">IMD files</link></para>
-    </listitem>
-
-    <listitem>
-      <para>CFG files (This format is used by the <emphasis>AtomEye</emphasis> software)</para>
-    </listitem>
-
-    <listitem>
-      <para>PARCAS binary files (<emphasis>Parcas</emphasis> is an MD code
-      developed in K. Nordlund's group)</para>
-    </listitem>
-
-    <listitem>
-      <para>DXA intermediate analysis files (written by the LAMMPS module of
-      the <link xlink:href="http://dxa.ovito.org/">Dislocation Extraction
-      Algorithm</link> tool)</para>
-    </listitem>
-  </itemizedlist>
-
-  <xi:include href="lammps_dump.docbook"/>
-
-  <xi:include href="lammps_data.docbook"/>
-
-  <xi:include href="xyz.docbook"/>
-
-  <xi:include href="poscar.docbook"/>
-
-  <xi:include href="imd.docbook"/>
+          <tbody>
+            <row>
+              <entry>LAMMPS dump</entry>
+              <entry><para>Text-based file format produced by the <link xlink:href="http://lammps.sandia.gov">LAMMPS molecular dynamics code</link>.</para></entry>
+            </row>
+            <row>
+              <entry>LAMMPS data</entry>
+              <entry><para>File format used by the <link xlink:href="http://lammps.sandia.gov">LAMMPS molecular dynamics code</link>. Only the <literal>atomic</literal> style is supported.</para>
+              </entry>
+            </row>
+            <row>
+              <entry>XYZ</entry>
+              <entry><para>A simple column-based text format, which is documented <link xlink:href="http://en.wikipedia.org/wiki/XYZ_file_format">here</link>.</para>
+			    <para>This format does not store simulation box dimensions. OVITO will take the axis-aligned bounding box of all particles as the simulation box.</para>
+                </entry>
+            </row>
+            <row>
+              <entry>POSCAR</entry>
+              <entry><para>File format used by the <emphasis>ab initio</emphasis> simulation package <link xlink:href="http://www.vasp.at/">VASP</link>.</para></entry>
+            </row>
+            <row>
+              <entry>IMD</entry>
+              <entry><para>File format used by the molecular dynamics code <link xlink:href="http://imd.itap.physik.uni-stuttgart.de/">IMD</link>.</para></entry>
+            </row>
+            <row>
+              <entry>CFG</entry>
+              <entry><para>File format used by the <link xlink:href="http://li.mit.edu/Archive/Graphics/A/"><emphasis>AtomEye</emphasis> software</link>.</para></entry>
+            </row>
+            <row>
+              <entry>PARCAS</entry>
+              <entry><para>A binary file format written by the <emphasis>Parcas</emphasis> MD code developed in K. Nordlund's group.</para></entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>  
+  </para>
 </section>
