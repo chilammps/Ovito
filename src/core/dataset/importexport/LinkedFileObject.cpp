@@ -42,10 +42,10 @@ namespace Ovito {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LinkedFileObject, SceneObject)
 SET_OVITO_OBJECT_EDITOR(LinkedFileObject, LinkedFileObjectEditor)
-DEFINE_FLAGS_REFERENCE_FIELD(LinkedFileObject, _importer, "Importer", LinkedFileImporter, PROPERTY_FIELD_ALWAYS_DEEP_COPY)
+DEFINE_FLAGS_REFERENCE_FIELD(LinkedFileObject, _importer, "Importer", LinkedFileImporter, PROPERTY_FIELD_ALWAYS_DEEP_COPY|PROPERTY_FIELD_NO_UNDO)
 DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(LinkedFileObject, _sceneObjects, "SceneObjects", SceneObject, PROPERTY_FIELD_ALWAYS_DEEP_COPY)
 DEFINE_PROPERTY_FIELD(LinkedFileObject, _adjustAnimationIntervalEnabled, "AdjustAnimationIntervalEnabled")
-DEFINE_PROPERTY_FIELD(LinkedFileObject, _sourceUrl, "SourceUrl")
+DEFINE_FLAGS_PROPERTY_FIELD(LinkedFileObject, _sourceUrl, "SourceUrl", PROPERTY_FIELD_NO_UNDO)
 DEFINE_PROPERTY_FIELD(LinkedFileObject, _saveDataWithScene, "SaveDataWithScene")
 SET_PROPERTY_FIELD_LABEL(LinkedFileObject, _importer, "File Importer")
 SET_PROPERTY_FIELD_LABEL(LinkedFileObject, _sceneObjects, "Objects")
@@ -140,6 +140,26 @@ bool LinkedFileObject::setSource(QUrl sourceUrl, const OORef<LinkedFileImporter>
 	// Make the import process reversible.
 	UndoableTransaction transaction(tr("Set input file"));
 
+	// Make the call to setSource() undoable.
+	class SetSourceOperation : public UndoableOperation {
+	public:
+		SetSourceOperation(LinkedFileObject* obj) : _obj(obj), _oldUrl(obj->sourceUrl()), _oldImporter(obj->importer()) {}
+		virtual void undo() override {
+			QUrl url = _obj->sourceUrl();
+			OORef<LinkedFileImporter> importer = _obj->importer();
+			_obj->setSource(_oldUrl, _oldImporter);
+			_oldUrl = url;
+			_oldImporter = importer;
+		}
+		virtual void redo() override { undo(); }
+	private:
+		QUrl _oldUrl;
+		OORef<LinkedFileImporter> _oldImporter;
+		OORef<LinkedFileObject> _obj;
+	};
+	if(UndoManager::instance().isRecording())
+		UndoManager::instance().push(new SetSourceOperation(this));
+
 	_sourceUrl = sourceUrl;
 	_importer = importer;
 
@@ -171,6 +191,9 @@ bool LinkedFileObject::setSource(QUrl sourceUrl, const OORef<LinkedFileImporter>
 				ActionManager::instance().getAction(ACTION_VIEWPORT_ZOOM_SELECTION_EXTENTS_ALL)->trigger();
 			});
 		}
+
+		// Cancel any old load operation in progress.
+		cancelLoadOperation();
 
 		transaction.commit();
 		return true;
@@ -204,6 +227,23 @@ bool LinkedFileObject::updateFrames()
 	notifyDependents(ReferenceEvent::TargetChanged);
 
 	return true;
+}
+
+/******************************************************************************
+* Cancels the current load operation if there is any in progress.
+******************************************************************************/
+void LinkedFileObject::cancelLoadOperation()
+{
+	if(_frameBeingLoaded != -1) {
+		try {
+			// This will suppress any pending notification events.
+			_loadFrameOperationWatcher.unsetFuture();
+			_loadFrameOperation.cancel();
+			_loadFrameOperation.waitForFinished();
+		} catch(...) {}
+		_frameBeingLoaded = -1;
+		notifyDependents(ReferenceEvent::PendingOperationFailed);
+	}
 }
 
 /******************************************************************************
@@ -423,8 +463,6 @@ QString LinkedFileObject::objectTitle()
 	return SceneObject::objectTitle();
 }
 
-#if 1
-
 /******************************************************************************
 * Returns the number of sub-objects that should be displayed in the modifier stack.
 ******************************************************************************/
@@ -441,17 +479,13 @@ RefTarget* LinkedFileObject::editableSubObject(int index)
 	return sceneObjects()[index];
 }
 
-#endif
-
 /******************************************************************************
 * Is called when a RefTarget has been added to a VectorReferenceField of this RefMaker.
 ******************************************************************************/
 void LinkedFileObject::referenceInserted(const PropertyFieldDescriptor& field, RefTarget* newTarget, int listIndex)
 {
-#if 1
 	if(field == PROPERTY_FIELD(LinkedFileObject::_sceneObjects))
 		notifyDependents(ReferenceEvent::SubobjectListChanged);
-#endif
 
 	SceneObject::referenceInserted(field, newTarget, listIndex);
 }
@@ -461,10 +495,8 @@ void LinkedFileObject::referenceInserted(const PropertyFieldDescriptor& field, R
 ******************************************************************************/
 void LinkedFileObject::referenceRemoved(const PropertyFieldDescriptor& field, RefTarget* newTarget, int listIndex)
 {
-#if 1
 	if(field == PROPERTY_FIELD(LinkedFileObject::_sceneObjects))
 		notifyDependents(ReferenceEvent::SubobjectListChanged);
-#endif
 
 	SceneObject::referenceRemoved(field, newTarget, listIndex);
 }

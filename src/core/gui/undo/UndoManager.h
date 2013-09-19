@@ -248,7 +248,7 @@ public:
 	///
 	/// The recording state can be controlled via the suspend() and resume() methods.
 	/// Or it can be temporarily suspended using the UndoSuspender helper class.
-	bool isRecording() const { return _suspendCount == 0 && _compoundStack.empty() == false; }
+	bool isRecording() const { return !isSuspended() && _compoundStack.empty() == false; }
 
 	/// \brief Records a single operation.
 	/// \param operation An instance of a UndoableOperation derived class that encapsulates
@@ -265,6 +265,9 @@ public:
 	/// It is recommended to use the UndoSuspender helper class to suspend recording because
 	/// this is more exception save than the suspend()/resume() combination.
 	void suspend() { _suspendCount++; }
+
+	/// \brief Returns true if the recording of operations is currently suspended.
+	bool isSuspended() const { return _suspendCount != 0; }
 
 	/// \brief Resumes the recording of undoable operations.
 	/// 
@@ -452,12 +455,13 @@ public:
 
 	/// Constructor that calls UndoManager::beginCompoundOperation().
 	UndoableTransaction(const QString& displayName) : _committed(false) {
-		UndoManager::instance().beginCompoundOperation(displayName);
+		if(!UndoManager::instance().isSuspended())
+			UndoManager::instance().beginCompoundOperation(displayName);
 	}
 
 	/// Destructor that undoes all recorded operations unless commit() was called.
 	~UndoableTransaction() {
-		if(!_committed) {
+		if(!_committed && !UndoManager::instance().isSuspended()) {
 			UndoManager::instance().currentCompoundOperation()->clear();
 			UndoManager::instance().endCompoundOperation();
 		}
@@ -467,7 +471,8 @@ public:
 	void commit() {
 		OVITO_ASSERT(!_committed);
 		_committed = true;
-		UndoManager::instance().endCompoundOperation();
+		if(!UndoManager::instance().isSuspended())
+			UndoManager::instance().endCompoundOperation();
 	}
 
 	/// Executes the passed functor and catches any exceptions during its execution.

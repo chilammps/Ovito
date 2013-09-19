@@ -222,11 +222,11 @@ bool DataSetManager::askForSaveChanges()
 		tr("The current scene has been modified. Do you want to save the changes?"),
 		QMessageBox::Yes|QMessageBox::No|QMessageBox::Cancel, QMessageBox::Cancel);
 	if(result == QMessageBox::Cancel)
-		return false; // operation canceled by user
+		return false; // Operation canceled by user
 	else if(result == QMessageBox::No)
-		return true; // go on without saving
+		return true; // Continue without saving scene first.
 	else {
-		// Save scene
+		// Save scene first.
         return fileSave();
 	}
 }
@@ -282,10 +282,6 @@ bool DataSetManager::importFile(const QUrl& url, const FileImporterDescription* 
 
 		if(!url.isValid())
 			throw Exception(tr("URL is not valid: %1").arg(url.toString()));
-
-		// Ask user if current scene should be saved before it is replaced by the imported data.
-		if(!askForSaveChanges())
-			return false;
 
 		OORef<FileImporter> importer;
 		if(!importerType) {
