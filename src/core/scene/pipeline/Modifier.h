@@ -86,7 +86,7 @@ public:
 	/// The default implementation of this method returns an empty status object
 	/// that indicates success (ObjectStatus::StatusType::Success).
 	///
-	/// A modifier should generate a ReferenceEvent::StatusChanged event when its status has changed.
+	/// A modifier should generate a ReferenceEvent::ObjectStatusChanged event when its status has changed.
 	virtual ObjectStatus status() const { return ObjectStatus(); }
 
 	/// \brief Asks the modifier if its output depends on the given input object.

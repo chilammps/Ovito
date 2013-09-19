@@ -80,13 +80,13 @@ ObjectStatus ParticleModifier::modifyObject(TimePoint time, ModifierApplication*
 
 /******************************************************************************
 * Sets the status returned by the modifier and generates a
-* ReferenceEvent::StatusChanged event.
+* ReferenceEvent::ObjectStatusChanged event.
 ******************************************************************************/
 void ParticleModifier::setStatus(const ObjectStatus& status)
 {
 	if(status == _modifierStatus) return;
 	_modifierStatus = status;
-	notifyDependents(ReferenceEvent::StatusChanged);
+	notifyDependents(ReferenceEvent::ObjectStatusChanged);
 }
 
 /******************************************************************************
@@ -407,7 +407,7 @@ void ParticleModifier::loadFromStream(ObjectLoadStream& stream)
 ******************************************************************************/
 bool ParticleModifierEditor::referenceEvent(RefTarget* source, ReferenceEvent* event)
 {
-	if(source == editObject() && event->type() == ReferenceEvent::StatusChanged) {
+	if(source == editObject() && event->type() == ReferenceEvent::ObjectStatusChanged) {
 		updateStatusLabel();
 	}
 	return PropertiesEditor::referenceEvent(source, event);

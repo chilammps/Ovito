@@ -251,7 +251,7 @@ void LinkedFileObjectEditor::updateInformationLabel()
 bool LinkedFileObjectEditor::referenceEvent(RefTarget* source, ReferenceEvent* event)
 {
 	if(source == editObject()) {
-		if(event->type() == ReferenceEvent::StatusChanged || event->type() == ReferenceEvent::TitleChanged) {
+		if(event->type() == ReferenceEvent::ObjectStatusChanged || event->type() == ReferenceEvent::TitleChanged) {
 			updateInformationLabel();
 		}
 		else if(event->type() == ReferenceEvent::ReferenceAdded || event->type() == ReferenceEvent::ReferenceRemoved) {

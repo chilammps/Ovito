@@ -324,15 +324,9 @@ bool DataSetManager::isSceneReady(TimePoint time) const
 	OVITO_CHECK_OBJECT_POINTER(currentSet());
 	OVITO_CHECK_OBJECT_POINTER(currentSet()->sceneRoot());
 
-	bool isReady = true;
-
 	// Iterate over all object nodes and request an evaluation of their geometry pipeline.
-	currentSet()->sceneRoot()->visitChildren([time, &isReady](SceneNode* node) {
-		if(!node->isObjectNode()) return;
-		ObjectNode* objNode = static_object_cast<ObjectNode>(node);
-		PipelineFlowState state = objNode->evalPipeline(time);
-		if(state.status().type() == ObjectStatus::Pending)
-			isReady = false;
+	bool isReady = currentSet()->sceneRoot()->visitObjectNodes([time](ObjectNode* node) {
+		return (node->evalPipeline(time).status().type() != ObjectStatus::Pending);
 	});
 
 	return isReady;
@@ -349,15 +343,10 @@ void DataSetManager::runWhenSceneIsReady(std::function<void ()> fn)
 	OVITO_CHECK_OBJECT_POINTER(currentSet()->sceneRoot());
 
 	TimePoint time = currentSet()->animationSettings()->time();
-	bool isReady = true;
 
 	// Iterate over all object nodes and request an evaluation of their geometry pipeline.
-	currentSet()->sceneRoot()->visitChildren([time, &isReady](SceneNode* node) {
-		if(!node->isObjectNode()) return;
-		ObjectNode* objNode = static_object_cast<ObjectNode>(node);
-		PipelineFlowState state = objNode->evalPipeline(time);
-		if(state.status().type() == ObjectStatus::Pending)
-			isReady = false;
+	bool isReady = currentSet()->sceneRoot()->visitObjectNodes([time](ObjectNode* node) {
+		return (node->evalPipeline(time).status().type() != ObjectStatus::Pending);
 	});
 
 	if(isReady)
@@ -371,7 +360,7 @@ void DataSetManager::runWhenSceneIsReady(std::function<void ()> fn)
 ******************************************************************************/
 void DataSetManager::notifySceneReadyListeners()
 {
-	if(isSceneReady(currentSet()->animationSettings()->time())) {
+	if(!_sceneReadyListeners.empty() && isSceneReady(currentSet()->animationSettings()->time())) {
 		auto oldListenerList = _sceneReadyListeners;
 		_sceneReadyListeners.clear();
 		for(const auto& listener : oldListenerList) {
@@ -385,12 +374,10 @@ void DataSetManager::notifySceneReadyListeners()
 ******************************************************************************/
 bool DataSetManager::referenceEvent(RefTarget* source, ReferenceEvent* event)
 {
-	OVITO_ASSERT_MSG(QThread::currentThread() == QApplication::instance()->thread(), "DataSetManager::referenceEvent", "Reference events may only be processed by the GUI thread.");
+	OVITO_ASSERT_MSG(QThread::currentThread() == QApplication::instance()->thread(), "DataSetManager::referenceEvent", "Reference events may only be processed in the GUI thread.");
 
-	if(source == currentSet()) {
-		if(event->type() == ReferenceEvent::PendingOperationSucceeded || event->type() == ReferenceEvent::PendingOperationFailed) {
-			notifySceneReadyListeners();
-		}
+	if(source == currentSet() && event->type() == ReferenceEvent::PendingStateChanged) {
+		notifySceneReadyListeners();
 	}
 	return RefMaker::referenceEvent(source, event);
 }

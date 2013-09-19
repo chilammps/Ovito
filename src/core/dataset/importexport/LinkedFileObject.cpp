@@ -242,7 +242,7 @@ void LinkedFileObject::cancelLoadOperation()
 			_loadFrameOperation.waitForFinished();
 		} catch(...) {}
 		_frameBeingLoaded = -1;
-		notifyDependents(ReferenceEvent::PendingOperationFailed);
+		notifyDependents(ReferenceEvent::PendingStateChanged);
 	}
 }
 
@@ -276,7 +276,7 @@ PipelineFlowState LinkedFileObject::evaluate(TimePoint time)
 	}
 	if(_loadedFrame == frame) {
 		if(oldTaskCanceled)
-			notifyDependents(ReferenceEvent::PendingOperationFailed);
+			notifyDependents(ReferenceEvent::PendingStateChanged);
 
 		// The requested frame has already been loaded and is available immediately.
 		return PipelineFlowState(status(), _sceneObjects.targets(), TimeInterval(time));
@@ -285,9 +285,8 @@ PipelineFlowState LinkedFileObject::evaluate(TimePoint time)
 		// The requested frame needs to be loaded first. Start background loading task.
 		OVITO_CHECK_OBJECT_POINTER(importer());
 		if(frame < 0 || frame >= numberOfFrames()) {
-			if(oldTaskCanceled) {
-				notifyDependents(ReferenceEvent::PendingOperationFailed);
-			}
+			if(oldTaskCanceled)
+				notifyDependents(ReferenceEvent::PendingStateChanged);
 			if(numberOfFrames() > 0)
 				setStatus(ObjectStatus(ObjectStatus::Error, tr("The requested animation frame (%1) is out of range.").arg(frame)));
 			else
@@ -297,10 +296,9 @@ PipelineFlowState LinkedFileObject::evaluate(TimePoint time)
 		_frameBeingLoaded = frame;
 		_loadFrameOperation = importer()->load(_frames[frame]);
 		_loadFrameOperationWatcher.setFuture(_loadFrameOperation);
-		if(oldTaskCanceled) {
-			notifyDependents(ReferenceEvent::PendingOperationFailed);
-		}
 		setStatus(ObjectStatus::Pending);
+		if(oldTaskCanceled)
+			notifyDependents(ReferenceEvent::PendingStateChanged);
 		// Indicate to the caller that the result is pending.
 		return PipelineFlowState(ObjectStatus::Pending, _sceneObjects.targets(), TimeInterval(time));
 	}
@@ -312,7 +310,6 @@ PipelineFlowState LinkedFileObject::evaluate(TimePoint time)
 void LinkedFileObject::loadOperationFinished()
 {
 	OVITO_ASSERT(_frameBeingLoaded != -1);
-	ReferenceEvent::Type notificationType = ReferenceEvent::PendingOperationFailed;
 	bool wasCanceled = _loadFrameOperation.isCanceled();
 	_loadedFrame = _frameBeingLoaded;
 	_frameBeingLoaded = -1;
@@ -326,9 +323,6 @@ void LinkedFileObject::loadOperationFinished()
 				importedData->insertIntoScene(this);
 				newStatus = importedData->status();
 			}
-
-			// Notify dependents that the loading operation has succeeded and the new data is available.
-			notificationType = ReferenceEvent::PendingOperationSucceeded;
 		}
 		catch(Exception& ex) {
 			// Transfer exception message to evaluation status.
@@ -348,7 +342,7 @@ void LinkedFileObject::loadOperationFinished()
 	setStatus(newStatus);
 
 	// Notify dependents that the evaluation request was satisfied or not satisfied.
-	notifyDependents(notificationType);
+	notifyDependents(ReferenceEvent::PendingStateChanged);
 }
 
 /******************************************************************************
@@ -372,13 +366,13 @@ void LinkedFileObject::refreshFromSource(int frame)
 
 /******************************************************************************
 * Saves the status returned by the parser object and generates a
-* ReferenceEvent::StatusChanged event.
+* ReferenceEvent::ObjectStatusChanged event.
 ******************************************************************************/
 void LinkedFileObject::setStatus(const ObjectStatus& status)
 {
 	if(status == _importStatus) return;
 	_importStatus = status;
-	notifyDependents(ReferenceEvent::StatusChanged);
+	notifyDependents(ReferenceEvent::ObjectStatusChanged);
 }
 
 /******************************************************************************

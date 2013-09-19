@@ -160,7 +160,7 @@ protected Q_SLOTS:
 
 protected:
 
-	/// \brief Saves the status returned by the parser object and generates a ReferenceEvent::StatusChanged event.
+	/// \brief Saves the status returned by the parser object and generates a ReferenceEvent::ObjectStatusChanged event.
 	void setStatus(const ObjectStatus& status);
 
 	/// Is called when a RefTarget has been added to a VectorReferenceField of this RefMaker.

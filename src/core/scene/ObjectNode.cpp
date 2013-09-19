@@ -121,9 +121,7 @@ void ObjectNode::render(TimePoint time, SceneRenderer* renderer)
 bool ObjectNode::referenceEvent(RefTarget* source, ReferenceEvent* event)
 {
 	if(source == sceneObject()) {
-		if(event->type() == ReferenceEvent::TargetChanged ||
-				event->type() == ReferenceEvent::PendingOperationSucceeded ||
-				event->type() == ReferenceEvent::PendingOperationFailed) {
+		if(event->type() == ReferenceEvent::TargetChanged || event->type() == ReferenceEvent::PendingStateChanged) {
 			invalidatePipelineCache();
 			invalidateBoundingBox();
 		}
@@ -144,6 +142,10 @@ void ObjectNode::referenceReplaced(const PropertyFieldDescriptor& field, RefTarg
 	if(field == PROPERTY_FIELD(ObjectNode::_sceneObject)) {
 		invalidatePipelineCache();
 		invalidateBoundingBox();
+
+		// When the scene object is being replaced, the pending state of the node might change.
+		// Even though we don't know for sure if the state has really changed, we send a notification event here.
+		notifyDependents(ReferenceEvent::PendingStateChanged);
 	}
 
 	SceneNode::referenceReplaced(field, oldTarget, newTarget);

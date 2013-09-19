@@ -197,6 +197,7 @@ void ViewportSceneRenderer::renderModifiers(bool renderOverlay)
 			if(pipelineObj)
 				renderModifiers(pipelineObj, objNode, renderOverlay);
 		}
+		return true;
 	});
 }
 
@@ -261,13 +262,11 @@ Box3 ViewportSceneRenderer::boundingBoxInteractive(TimePoint time, Viewport* vie
 	Box3 bb;
 
 	// Visit all pipeline objects in the scene.
-	dataset()->sceneRoot()->visitChildren([this, &bb](SceneNode* node) {
-		if(node->isObjectNode()) {
-			ObjectNode* objNode = static_object_cast<ObjectNode>(node);
-			PipelineObject* pipelineObj = dynamic_object_cast<PipelineObject>(objNode->sceneObject());
-			if(pipelineObj)
-				boundingBoxModifiers(pipelineObj, objNode, bb);
-		}
+	dataset()->sceneRoot()->visitObjectNodes([this, &bb](ObjectNode* node) {
+		PipelineObject* pipelineObj = dynamic_object_cast<PipelineObject>(node->sceneObject());
+		if(pipelineObj)
+			boundingBoxModifiers(pipelineObj, node, bb);
+		return true;
 	});
 
 	// Include input mode overlays.

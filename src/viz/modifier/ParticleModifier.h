@@ -130,7 +130,7 @@ protected:
 		return _cloneHelper.data();
 	}
 
-	/// Sets the status returned by the modifier and generates a ReferenceEvent::StatusChanged event.
+	/// Sets the status returned by the modifier and generates a ReferenceEvent::ObjectStatusChanged event.
 	void setStatus(const ObjectStatus& status);
 
 protected:

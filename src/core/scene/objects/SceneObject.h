@@ -119,7 +119,7 @@ public:
 	/// The default implementation of this method returns an empty status object
 	/// that indicates success (ObjectStatus::StatusType::Success).
 	///
-	/// An object should generate a ReferenceEvent::StatusChanged event when its status has changed.
+	/// An object should generate a ReferenceEvent::ObjectStatusChanged event when its status has changed.
 	virtual ObjectStatus status() const { return ObjectStatus(); }
 
 	/// \brief Returns the attached display object that is responsible for rendering this
