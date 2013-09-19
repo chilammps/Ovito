@@ -372,10 +372,11 @@ void DataSetManager::runWhenSceneIsReady(std::function<void ()> fn)
 void DataSetManager::notifySceneReadyListeners()
 {
 	if(isSceneReady(currentSet()->animationSettings()->time())) {
-		for(const auto& listener : _sceneReadyListeners) {
+		auto oldListenerList = _sceneReadyListeners;
+		_sceneReadyListeners.clear();
+		for(const auto& listener : oldListenerList) {
 			listener();
 		}
-		_sceneReadyListeners.clear();
 	}
 }
 

@@ -77,8 +77,10 @@ void AnimManager::onTimeChanged(TimePoint newTime)
 	// Wait until scene is ready, then repaint viewports.
 
 	_timeIsChanging++;
+	qDebug() << "onTimeChanged" << newTime << " _timeIsChanging=" << _timeIsChanging;
 	DataSetManager::instance().runWhenSceneIsReady([this] () {
 		_timeIsChanging--;
+		qDebug() << "onTimeChanged scene is ready handler: current time= " << time() << " _timeIsChanging=" << _timeIsChanging;
 		ViewportManager::instance().updateViewports();
 	});
 }
