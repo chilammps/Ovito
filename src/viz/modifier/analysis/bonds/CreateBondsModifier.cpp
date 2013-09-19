@@ -21,8 +21,10 @@
 
 #include <core/Core.h>
 #include <core/gui/properties/SubObjectParameterUI.h>
+#include <core/gui/properties/IntegerRadioButtonParameterUI.h>
 #include <core/utilities/concurrent/ParallelFor.h>
 #include <viz/util/OnTheFlyNeighborListBuilder.h>
+#include <viz/data/ParticleTypeProperty.h>
 
 #include "CreateBondsModifier.h"
 
@@ -31,20 +33,23 @@ namespace Viz {
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Viz, CreateBondsModifier, AsynchronousParticleModifier)
 IMPLEMENT_OVITO_OBJECT(Viz, CreateBondsModifierEditor, ParticleModifierEditor)
 SET_OVITO_OBJECT_EDITOR(CreateBondsModifier, CreateBondsModifierEditor)
-DEFINE_FLAGS_PROPERTY_FIELD(CreateBondsModifier, _cutoff, "Cutoff", PROPERTY_FIELD_MEMORIZE)
+DEFINE_PROPERTY_FIELD(CreateBondsModifier, _cutoffMode, "CutoffMode")
+DEFINE_FLAGS_PROPERTY_FIELD(CreateBondsModifier, _uniformCutoff, "UniformCutoff", PROPERTY_FIELD_MEMORIZE)
 DEFINE_FLAGS_REFERENCE_FIELD(CreateBondsModifier, _bondsDisplay, "BondsDisplay", BondsDisplay, PROPERTY_FIELD_ALWAYS_DEEP_COPY)
 DEFINE_FLAGS_REFERENCE_FIELD(CreateBondsModifier, _bondsObj, "BondsObject", BondsObject, PROPERTY_FIELD_ALWAYS_DEEP_COPY)
-SET_PROPERTY_FIELD_LABEL(CreateBondsModifier, _cutoff, "Cutoff radius")
+SET_PROPERTY_FIELD_LABEL(CreateBondsModifier, _cutoffMode, "Cutoff mode")
+SET_PROPERTY_FIELD_LABEL(CreateBondsModifier, _uniformCutoff, "Cutoff radius")
 SET_PROPERTY_FIELD_LABEL(CreateBondsModifier, _bondsDisplay, "Bonds display")
 SET_PROPERTY_FIELD_LABEL(CreateBondsModifier, _bondsObj, "Bonds")
-SET_PROPERTY_FIELD_UNITS(CreateBondsModifier, _cutoff, WorldParameterUnit)
+SET_PROPERTY_FIELD_UNITS(CreateBondsModifier, _uniformCutoff, WorldParameterUnit)
 
 /******************************************************************************
 * Constructs the modifier object.
 ******************************************************************************/
-CreateBondsModifier::CreateBondsModifier() : _cutoff(3.2)
+CreateBondsModifier::CreateBondsModifier() : _cutoffMode(UniformCutoff), _uniformCutoff(3.2)
 {
-	INIT_PROPERTY_FIELD(CreateBondsModifier::_cutoff);
+	INIT_PROPERTY_FIELD(CreateBondsModifier::_cutoffMode);
+	INIT_PROPERTY_FIELD(CreateBondsModifier::_uniformCutoff);
 	INIT_PROPERTY_FIELD(CreateBondsModifier::_bondsDisplay);
 	INIT_PROPERTY_FIELD(CreateBondsModifier::_bondsObj);
 
@@ -64,7 +69,7 @@ void CreateBondsModifier::propertyChanged(const PropertyFieldDescriptor& field)
 {
 	// Recompute results when the parameters have been changed.
 	if(autoUpdateEnabled()) {
-		if(field == PROPERTY_FIELD(CreateBondsModifier::_cutoff))
+		if(field == PROPERTY_FIELD(CreateBondsModifier::_uniformCutoff) || field == PROPERTY_FIELD(CreateBondsModifier::_cutoffMode))
 			invalidateCachedResults();
 	}
 
@@ -75,6 +80,58 @@ void CreateBondsModifier::propertyChanged(const PropertyFieldDescriptor& field)
 	}
 
 	AsynchronousParticleModifier::propertyChanged(field);
+}
+
+/******************************************************************************
+* Sets the cutoff radii for pairs of particle types.
+******************************************************************************/
+void CreateBondsModifier::setPairCutoffs(const PairCutoffsList& pairCutoffs)
+{
+	// Make the property change undoable.
+	UndoManager::instance().undoablePropertyChange<PairCutoffsList>(this,
+			&CreateBondsModifier::pairCutoffs, &CreateBondsModifier::setPairCutoffs);
+
+	_pairCutoffs = pairCutoffs;
+
+	if(autoUpdateEnabled())
+		invalidateCachedResults();
+
+	notifyDependents(ReferenceEvent::TargetChanged);
+}
+
+/******************************************************************************
+* Saves the class' contents to the given stream.
+******************************************************************************/
+void CreateBondsModifier::saveToStream(ObjectSaveStream& stream)
+{
+	AsynchronousParticleModifier::saveToStream(stream);
+
+	stream.beginChunk(0x01);
+	stream << _pairCutoffs;
+	stream.endChunk();
+}
+
+/******************************************************************************
+* Loads the class' contents from the given stream.
+******************************************************************************/
+void CreateBondsModifier::loadFromStream(ObjectLoadStream& stream)
+{
+	AsynchronousParticleModifier::loadFromStream(stream);
+
+	stream.expectChunk(0x01);
+	stream >> _pairCutoffs;
+	stream.closeChunk();
+}
+
+/******************************************************************************
+* Creates a copy of this object.
+******************************************************************************/
+OORef<RefTarget> CreateBondsModifier::clone(bool deepCopy, CloneHelper& cloneHelper)
+{
+	// Let the base class create an instance of this class.
+	OORef<CreateBondsModifier> clone = static_object_cast<CreateBondsModifier>(AsynchronousParticleModifier::clone(deepCopy, cloneHelper));
+	clone->_pairCutoffs = this->_pairCutoffs;
+	return clone;
 }
 
 /******************************************************************************
@@ -111,7 +168,7 @@ std::shared_ptr<AsynchronousParticleModifier::Engine> CreateBondsModifier::creat
 	SimulationCell* simCell = expectSimulationCell();
 
 	// Create engine object. Pass all relevant modifier parameters to the engine as well as the input data.
-	return std::make_shared<BondGenerationEngine>(posProperty->storage(), simCell->data(), cutoff());
+	return std::make_shared<BondGenerationEngine>(posProperty->storage(), simCell->data(), uniformCutoff());
 }
 
 /******************************************************************************
@@ -192,13 +249,30 @@ void CreateBondsModifierEditor::createUI(const RolloutInsertionParameters& rollo
 	gridlayout->setContentsMargins(0,0,0,0);
 	gridlayout->setColumnStretch(1, 1);
 
+	IntegerRadioButtonParameterUI* cutoffModePUI = new IntegerRadioButtonParameterUI(this, PROPERTY_FIELD(CreateBondsModifier::_cutoffMode));
+	QRadioButton* uniformCutoffModeBtn = cutoffModePUI->addRadioButton(CreateBondsModifier::UniformCutoff, tr("Uniform cutoff radius"));
+
 	// Cutoff parameter.
-	FloatParameterUI* cutoffRadiusPUI = new FloatParameterUI(this, PROPERTY_FIELD(CreateBondsModifier::_cutoff));
-	gridlayout->addWidget(cutoffRadiusPUI->label(), 0, 0);
+	FloatParameterUI* cutoffRadiusPUI = new FloatParameterUI(this, PROPERTY_FIELD(CreateBondsModifier::_uniformCutoff));
+	gridlayout->addWidget(uniformCutoffModeBtn, 0, 0);
 	gridlayout->addLayout(cutoffRadiusPUI->createFieldLayout(), 0, 1);
 	cutoffRadiusPUI->setMinValue(0);
+	cutoffRadiusPUI->setEnabled(false);
+	connect(uniformCutoffModeBtn, SIGNAL(toggled(bool)), cutoffRadiusPUI, SLOT(setEnabled(bool)));
 
 	layout1->addLayout(gridlayout);
+
+	QRadioButton* pairCutoffModeBtn = cutoffModePUI->addRadioButton(CreateBondsModifier::PairCutoff, tr("Pair-wise cutoff radii:"));
+	layout1->addWidget(pairCutoffModeBtn);
+
+	_pairCutoffTable = new QTableWidget();
+	_pairCutoffTable->setColumnCount(3);
+	_pairCutoffTable->setHorizontalHeaderLabels({ tr("1st Type"), tr("2nd Type"), tr("Cutoff") });
+	_pairCutoffTable->verticalHeader()->setVisible(false);
+	_pairCutoffTable->setEnabled(false);
+	connect(pairCutoffModeBtn, SIGNAL(toggled(bool)), _pairCutoffTable, SLOT(setEnabled(bool)));
+	layout1->addWidget(_pairCutoffTable);
+	connect(_pairCutoffTable, SIGNAL(itemChanged(QTableWidgetItem*)), this, SLOT(onPairCutoffTableChanged(QTableWidgetItem*)));
 
 	// Status label.
 	layout1->addSpacing(10);
@@ -206,6 +280,87 @@ void CreateBondsModifierEditor::createUI(const RolloutInsertionParameters& rollo
 
 	// Open a sub-editor for the bonds display object.
 	new SubObjectParameterUI(this, PROPERTY_FIELD(CreateBondsModifier::_bondsDisplay), rolloutParams.after(rollout));
+
+	// Update pair-wise cutoff table whenever a modifier has been loaded into the editor.
+	connect(this, SIGNAL(contentsReplaced(RefTarget*)), this, SLOT(updatePairCutoffList()));
+	connect(this, SIGNAL(contentsChanged(RefTarget*)), this, SLOT(updatePairCutoffList()));
+}
+
+/******************************************************************************
+* Updates the contents of the pair-wise cutoff table.
+******************************************************************************/
+void CreateBondsModifierEditor::updatePairCutoffList()
+{
+	_pairCutoffTable->clearContents();
+
+	CreateBondsModifier* mod = static_object_cast<CreateBondsModifier>(editObject());
+	if(!mod) return;
+
+	// Obtain the list of particle types in the modifier's input.
+	PipelineFlowState inputState = mod->getModifierInput();
+	for(const auto& o : inputState.objects()) {
+		ParticleTypeProperty* typeProperty = dynamic_object_cast<ParticleTypeProperty>(o.get());
+		if(typeProperty && typeProperty->type() == ParticleProperty::ParticleTypeProperty) {
+			_pairCutoffTable->setRowCount(typeProperty->particleTypes().size() * (typeProperty->particleTypes().size() + 1) / 2);
+			int row = 0;
+			for(auto ptype1 = typeProperty->particleTypes().constBegin(); ptype1 != typeProperty->particleTypes().constEnd(); ++ptype1) {
+				for(auto ptype2 = ptype1; ptype2 != typeProperty->particleTypes().constEnd(); ++ptype2) {
+					QTableWidgetItem* typeItem1 = new QTableWidgetItem((*ptype1)->name());
+					QTableWidgetItem* typeItem2 = new QTableWidgetItem((*ptype2)->name());
+					QTableWidgetItem* cutoffItem = new QTableWidgetItem();
+					typeItem1->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemNeverHasChildren);
+					typeItem2->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemNeverHasChildren);
+					cutoffItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemNeverHasChildren | Qt::ItemIsEditable);
+					_pairCutoffTable->setItem(row, 0, typeItem1);
+					_pairCutoffTable->setItem(row, 1, typeItem2);
+					_pairCutoffTable->setItem(row, 2, cutoffItem);
+					row++;
+				}
+			}
+			break;
+		}
+	}
+
+	updatePairCutoffListValues();
+}
+
+/******************************************************************************
+* Updates the cutoff values in the pair-wise cutoff table.
+******************************************************************************/
+void CreateBondsModifierEditor::updatePairCutoffListValues()
+{
+	CreateBondsModifier* mod = static_object_cast<CreateBondsModifier>(editObject());
+	if(!mod) return;
+
+	for(int row = 0; row < _pairCutoffTable->rowCount(); row++) {
+		QString typeName1 = _pairCutoffTable->item(row, 0)->text();
+		QString typeName2 = _pairCutoffTable->item(row, 1)->text();
+		FloatType cutoffRadius = mod->pairCutoffs()[qMakePair(typeName1, typeName2)];
+		if(cutoffRadius > 0.0f)
+			_pairCutoffTable->item(row, 2)->setText(QString::number(cutoffRadius));
+		else
+			_pairCutoffTable->item(row, 2)->setText(QString());
+	}
+}
+
+/******************************************************************************
+* Is called when the user has changed a cutoff value in the pair cutoff table.
+******************************************************************************/
+void CreateBondsModifierEditor::onPairCutoffTableChanged(QTableWidgetItem* item)
+{
+	CreateBondsModifier* mod = static_object_cast<CreateBondsModifier>(editObject());
+	if(!mod) return;
+
+	int row = item->row();
+	QString typeName1 = _pairCutoffTable->item(row, 0)->text();
+	QString typeName2 = _pairCutoffTable->item(row, 1)->text();
+	bool ok;
+	FloatType cutoff = (FloatType)item->text().toDouble(&ok);
+	if(!ok) cutoff = 0.0f;
+
+	CreateBondsModifier::PairCutoffsList pairCutoffs = mod->pairCutoffs();
+
+	updatePairCutoffListValues();
 }
 
 };	// End of namespace

@@ -42,6 +42,15 @@ class CreateBondsModifier : public AsynchronousParticleModifier
 {
 public:
 
+	enum CutoffMode {
+		UniformCutoff,		///< A single cutoff radius for all particles.
+		PairCutoff,			///< Individual cutoff radius for each pair of particle types.
+	};
+	Q_ENUMS(CutoffMode);
+
+	/// The container type used to store the pair-wise cutoffs.
+	typedef QMap<QPair<QString,QString>, FloatType> PairCutoffsList;
+
 	/// Engine that determines the bonds between particles.
 	class BondGenerationEngine : public AsynchronousParticleModifier::Engine
 	{
@@ -79,16 +88,25 @@ public:
 	/// Default constructor.
 	Q_INVOKABLE CreateBondsModifier();
 
-	/// \brief Returns the cutoff radius used to determine which particles are bonded.
-	/// \return The cutoff radius in world units.
-	/// \sa setCutoff()
-	FloatType cutoff() const { return _cutoff; }
+	/// Returns the mode of choosing the cutoff radius.
+	CutoffMode cutoffMode() const { return _cutoffMode; }
+
+	/// Sets the mode of choosing the cutoff radius.
+	void setCutoffMode(CutoffMode mode) { _cutoffMode = mode; }
+
+	/// \brief Returns the uniform cutoff radius used to determine which particles are bonded.
+	/// \return The uniform cutoff radius in world units.
+	FloatType uniformCutoff() const { return _uniformCutoff; }
 
 	/// \brief Sets the cutoff radius that is used for generating bonds.
 	/// \param newCutoff The new cutoff radius in world units.
-	/// \undoable
-	/// \sa cutoff()
-	void setCutoff(FloatType newCutoff) { _cutoff = newCutoff; }
+	void setUniformCutoff(FloatType newCutoff) { _uniformCutoff = newCutoff; }
+
+	/// Returns the cutoff radii for pairs of particle types.
+	const PairCutoffsList& pairCutoffs() const { return _pairCutoffs; }
+
+	/// Sets the cutoff radii for pairs of particle types.
+	void setPairCutoffs(const PairCutoffsList& pairCutoffs);
 
 	/// \brief Returns the display object that is responsible for rendering the bonds.
 	BondsDisplay* bondsDisplay() const { return _bondsDisplay; }
@@ -98,9 +116,19 @@ public:
 
 public:
 
-	Q_PROPERTY(FloatType cutoff READ cutoff WRITE setCutoff)
+	Q_PROPERTY(FloatType uniformCutoff READ uniformCutoff WRITE setUniformCutoff)
+	Q_PROPERTY(Viz::CreateBondsModifier::CutoffMode cutoffMode READ cutoffMode WRITE setCutoffMode)
 
 protected:
+
+	/// Saves the class' contents to the given stream.
+	virtual void saveToStream(ObjectSaveStream& stream) override;
+
+	/// Loads the class' contents from the given stream.
+	virtual void loadFromStream(ObjectLoadStream& stream) override;
+
+	/// Creates a copy of this object.
+	virtual OORef<RefTarget> clone(bool deepCopy, CloneHelper& cloneHelper) override;
 
 	/// Handles reference events sent by reference targets of this object.
 	virtual bool referenceEvent(RefTarget* source, ReferenceEvent* event) override;
@@ -120,8 +148,14 @@ protected:
 	/// This lets the modifier insert the previously computed results into the pipeline.
 	virtual ObjectStatus applyModifierResults(TimePoint time, TimeInterval& validityInterval) override;
 
+	/// The mode of choosing the cutoff radius.
+	PropertyField<CutoffMode, int> _cutoffMode;
+
 	/// The cutoff radius for bond generation.
-	PropertyField<FloatType> _cutoff;
+	PropertyField<FloatType> _uniformCutoff;
+
+	/// The cutoff radii for pairs of particle types.
+	PairCutoffsList _pairCutoffs;
 
 	/// The display object for rendering the bonds.
 	ReferenceField<BondsDisplay> _bondsDisplay;
@@ -141,7 +175,8 @@ private:
 	Q_CLASSINFO("DisplayName", "Create bonds");
 	Q_CLASSINFO("ModifierCategory", "Modify");
 
-	DECLARE_PROPERTY_FIELD(_cutoff);
+	DECLARE_PROPERTY_FIELD(_cutoffMode);
+	DECLARE_PROPERTY_FIELD(_uniformCutoff);
 	DECLARE_REFERENCE_FIELD(_bondsDisplay);
 	DECLARE_REFERENCE_FIELD(_bondsObj);
 };
@@ -161,12 +196,29 @@ protected:
 	/// Creates the user interface controls for the editor.
 	virtual void createUI(const RolloutInsertionParameters& rolloutParams) override;
 
+protected Q_SLOTS:
+
+	/// Updates the contents of the pair-wise cutoff table.
+	void updatePairCutoffList();
+
+	/// Updates the cutoff values in the pair-wise cutoff table.
+	void updatePairCutoffListValues();
+
+	/// Is called when the user has changed a cutoff value in the pair cutoff table.
+	void onPairCutoffTableChanged(QTableWidgetItem* item);
+
 private:
+
+	QTableWidget* _pairCutoffTable;
 
 	Q_OBJECT
 	OVITO_OBJECT
 };
 
 };	// End of namespace
+
+Q_DECLARE_METATYPE(Viz::CreateBondsModifier::CutoffMode);
+Q_DECLARE_TYPEINFO(Viz::CreateBondsModifier::CutoffMode, Q_PRIMITIVE_TYPE);
+
 
 #endif // __OVITO_CREATE_BONDS_MODIFIER_H

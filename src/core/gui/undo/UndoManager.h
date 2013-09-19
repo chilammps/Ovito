@@ -148,6 +148,52 @@ private:
 };
 
 /**
+ * \brief This helper class records a change to an object's property.
+ *
+ * It stores the old value of the property, which will be restored on a call to undo().
+ *
+ * The user of this class has to specify the property getter and setter methods as
+ * template parameters.
+ */
+template<typename ValueType, typename ObjectType, typename GetterFunction, typename SetterFunction>
+class OVITO_CORE_EXPORT SimpleValueChangeOperation : public UndoableOperation
+{
+public:
+
+	/// \brief Constructor.
+	SimpleValueChangeOperation(ObjectType* obj, GetterFunction getterFunc, SetterFunction setterFunc) :
+		_obj(obj),
+		_oldValue((obj->*getterFunc)()),
+		_getterFunc(getterFunc),
+		_setterFunc(setterFunc) {}
+
+	/// \brief Restores the old property value.
+	virtual void undo() override {
+		// Swap old value and current property value.
+		ValueType temp = (_obj.get()->*_getterFunc)();
+		(_obj.get()->*_setterFunc)(_oldValue);
+		_oldValue = temp;
+	}
+
+	/// \brief Re-apply the change, assuming that it has been undone.
+	virtual void redo() override { undo(); }
+
+private:
+
+	/// The value getter function.
+	GetterFunction _getterFunc;
+
+	/// The value setter function.
+	SetterFunction _setterFunc;
+
+	/// The old value of the property.
+	ValueType _oldValue;
+
+	/// The object whose property was changed.
+	OORef<ObjectType> _obj;
+};
+
+/**
  * \brief This class records a change to a Qt property to a QObject derived class.
  * 
  * This UndoableOperation can be used to record
@@ -343,6 +389,21 @@ public:
 
 	/// Creates a redo QAction object with the given parent. Triggering this action will cause a call to redo().
 	QAction* createRedoAction(QObject* parent);
+
+	/// Registers an undo record for changing a property of an object.
+	///
+	/// The setter method for a property of an object should call this function
+	/// to create an undo record that allows to restore the old property value.
+	/// Note that the function must be called by the setter method before the new
+	/// property value is stored, because this method will query the old property
+	/// value by calling the getter method.
+	template<typename ValueType, class ObjectType, typename GetterFunction, typename SetterFunction>
+	void undoablePropertyChange(ObjectType* obj, GetterFunction getterFunc, SetterFunction setterFunc) {
+		if(isRecording()) {
+			push(new SimpleValueChangeOperation<ValueType, ObjectType,
+					GetterFunction, SetterFunction>(obj, getterFunc, setterFunc));
+		}
+	}
 
 public Q_SLOTS:
 
