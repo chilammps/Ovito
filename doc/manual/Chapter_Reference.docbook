@@ -19,7 +19,7 @@
 
   <xi:include href="reference/atomviz/modifiers/modifiers.docbook"/>
 
-  <xi:include href="reference/atomviz/data_channels/data_channels.docbook"/>
+  <xi:include href="reference/atomviz/particle_properties/particle_properties.docbook"/>
 
   <xi:include href="reference/atomviz/import/import_formats.docbook"/>
 

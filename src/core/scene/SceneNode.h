@@ -204,7 +204,7 @@ public:
 	bool visitObjectNodes(Function fn) const {
 		for(SceneNode* child : children()) {
 			if(child->isObjectNode()) {
-				if(!fn(static_cast<ObjectNode*>(child)))
+				if(!fn((ObjectNode*)child))
 					return false;
 			}
 			else if(!child->visitObjectNodes(fn))

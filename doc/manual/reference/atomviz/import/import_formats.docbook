@@ -7,22 +7,69 @@
          xmlns:xlink="http://www.w3.org/1999/xlink"
          xmlns:xi="http://www.w3.org/2001/XInclude"
          xmlns:ns="http://docbook.org/ns/docbook">
-  <title>Import particles</title>
+  <title>Importing particles</title>
 
   <para>To open a simulation file from your local hard disk, use the 
   <menuchoice><guimenu>File</guimenu><guimenuitem>Open Local File</guimenuitem></menuchoice> menu item.  
   </para>
 
-  <para>To open a simulation file from a remote machine, use the 
-  <menuchoice><guimenu>File</guimenu><guimenuitem>Open Remote File</guimenuitem></menuchoice> menu item.  
-  </para>
+  <para>OVITO will try to detect the format of the input file automatically. However, you still have the option
+  to specify the format explicitly in the file selector dialog. The program can directly read compressed files that have 
+  a <filename>.gz</filename> suffix.</para>
 
-  <para>OVITO will try to detect the format of the input file automatically.</para>
+  <sect3 xml:id="viz.import.sequence">
+    <title>Simulation sequences</title>
+    <para>
+       OVITO can load animation sequences that consist of multiple simulation frames. It will try to detect this
+       case by finding more files in the same directory with a similar name as the one you picked. 
+       To do this, it looks for a sequence of digits in the filename (if there is any), starting from the end. 
+       The digits are replaced by the special wildcard character <emphasis>*</emphasis> to generate a search pattern. This pattern
+       is used to find other files in the same directory that belong to the same animation sequence. For instance,
+       if the user initially picks the file <filename>anim1c_5000.dump</filename>, OVITO generates the search pattern
+       <filename>anim1c_*.dump</filename> and then finds all matching frames, e.g. <filename>anim1c_0.dump</filename>,
+       <filename>anim1c_1000.dump</filename>, <filename>anim1c_2000.dump</filename>, etc. It is possible to
+       adjust the search pattern manually in case the automatically generated one does not fit. 
+    </para>
+    <para>
+       Some file formats can store more than one simulation frame, for instance the LAMMPS dump format.
+       By default, OVITO will only import the first frame from a file. You have to explicitly tell OVITO to look 
+       for extra frames in the file by checking the <emphasis>File contains multiple timestep</emphasis> option
+       in the import settings panel. OVITO will then scan the entire file for the contained frames.
+    </para>
+  </sect3>
   
-  <para><note>OVITO can read compressed files that have the <filename>.gz</filename> suffix.</note></para>
+  <sect3 xml:id="viz.import.remote">
+    <title>Remote file import</title>
+    <para>
+       OVITO has a built-in SSH client to access files located on remote computers. This is useful if you want to 
+       load simulation files that are stored on a parallel computing cluster without copying them to the local computer
+       first. To open a simulation file from a remote machine, use the 
+       <menuchoice><guimenu>File</guimenu><guimenuitem>Open Remote File</guimenuitem></menuchoice> menu item.  
+    </para>
+    <para>
+       In the current version, OVITO does not allow to browse directories on remote machines. Thus, you have to directly specify
+       the full path of a remote file. The format for remote paths follows the URL scheme
+       <screen>
+		<command>sftp://user@hostname/path/filename</command>
+       </screen>
+       Where <command>sftp://</command> is the file access protocol (Secure File Transfer Protocol), 
+       <command>user</command> the username to log into the remote machine,
+       <command>hostname</command> the name of the remote machine,
+       and <command>/path/filename</command> the path to the file to import. It is possible to 
+       specify a non-standard port using <command>:port</command> following the hostname.
+    </para>
+    <para>
+       When OVITO connects to the remote machine it will ask for the login password. The SSH connection is kept
+       alive until OVITO is quit.
+       When opening a remote file, OVITO will first create a temporary copy of the file on the local computer before
+       reading it. The local copy is kept until you quit OVITO or press the <emphasis>Reload</emphasis> button
+       in the import file panel.
+    </para>
+  </sect3>
   
+  <sect3 xml:id="viz.import.formats">
+  <title>Supported file formats</title>
   <para>
-   Supported file formats:
     <informaltable>
         <tgroup cols="2">
           <thead>
@@ -68,4 +115,18 @@
         </tgroup>
       </informaltable>  
   </para>
+  </sect3>
+  
+  <sect3 xml:id="viz.import.tips">
+    <title>Tips and tricks</title>
+    <para>
+      When starting OVITO from the terminal, you can directly specify a simulation file to import. Both local and remote
+      files can be specified, i.e.
+       <screen>
+		<command>ovito /path/filename</command>
+		<command>ovito sftp://hostname/path/filename</command>
+       </screen>
+    </para>
+  </sect3>
+  
 </section>

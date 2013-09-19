@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<section version="5.0"
+         xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xml:id="viz.particle_properties" xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title>Particle properties</title>
+
+  <para>Particle properties play a central role in OVITO. Each particle in a data set is associated with a set of properties.
+  For example, the particle's position, type, or velocity are all properties managed by OVITO.
+  These properties are read from the imported simulation file. Modifiers have access
+  to the existing particle properties, can alter the stored values, or can associate
+  new properties with particles. For instance, the Coordination Analysis modifier
+  adds the <emphasis>Coordination number</emphasis> property to each particle, which stores their number
+  of neighbors. 
+  </para>
+  
+  <para>
+  All particles in a data set have the same set of properties associated with them. Internally, particle
+  properties are implemented as data arrays with one entry per particle. A single entry can 
+  hold an integer or floating-point number, or a more complex data type such as a vector or a tensor.
+  The <emphasis>Position</emphasis> property, for instance, stores vectors with three components.
+  The individual components of this property are referred to as 
+  <emphasis>Position.X</emphasis>, <emphasis>Position.Y</emphasis>, and <emphasis>Position.Z</emphasis>. 
+  </para>
+
+  <para>One can distinguish two types of particle properties: Standard properties and user-defined properties.
+  Standard properties have a pre-defined name, data type, and specific meaning or function.
+  The standard property <emphasis>Position</emphasis>, for instance, is used by OVITO to store the particle
+  positions while the <emphasis>Color</emphasis> standard property stores the particle colors etc.
+  Particles always have at least the <emphasis>Position</emphasis> associated with them; all other 
+  standard properties are optional. That means, they are only defined if the input file contains a 
+  corresponding data column or if they have been added later by a modifier.
+  </para>
+
+  <para>Certain standard properties have a special meaning and affect how OVITO displays particles. 
+  The following table lists the most important standard properties and explains their functions:
+   <informaltable>
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>Standard property name</entry>
+              <entry>Data type / Components</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+
+          <tbody>
+            <row>
+              <entry><emphasis>Position</emphasis></entry>
+              <entry>X, Y, Z</entry>
+              <entry><para>Controls the location of particles in space.</para></entry>
+            </row>
+            <row>
+              <entry><emphasis>Color</emphasis></entry>
+              <entry>R, G, B</entry>
+              <entry><para>Controls the display color of individual particles.</para></entry>
+            </row>
+            <row>
+              <entry><emphasis>Radius</emphasis></entry>
+              <entry>Real</entry>
+              <entry><para>Controls the size of individual particles.</para></entry>
+            </row>
+            <row>
+              <entry><emphasis>Particle Type</emphasis></entry>
+              <entry>Integer</entry>
+              <entry><para>Stores the type identifier of each particle. This will also determine the display size and color of 
+              particles unless the <emphasis>Radius</emphasis> or <emphasis>Color</emphasis> properties are present.</para></entry>
+            </row>
+            <row>
+              <entry><emphasis>Particle Identifier</emphasis></entry>
+              <entry>Integer</entry>
+              <entry><para>Stores the unique ID of each particle. This is used by some modifiers
+              to track particles over time when the storage order of particles changes between simulation
+              frames.</para></entry>
+            </row>
+            <row>
+              <entry><emphasis>Selection</emphasis></entry>
+              <entry>Integer</entry>
+              <entry><para>Stores the selection state of particles. The <emphasis>Selection</emphasis> property of 
+              selected particles is 1 (and 0 otherwise).</para></entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>  
+    </para>
+    
+    <para>
+    User-defined particles properties are created by OVITO when reading a simulation file with
+    data columns that cannot be mapped to any of its standard property types. While OVITO itself does 
+    not interpret the data stored in such user-defined properties in any specific way, they can still be 
+    used as input for certain modifiers. For instance, the <emphasis>Color Coding</emphasis> modifier 
+    can also use user-defined properties to color particles.
+    </para>
+
+</section>
