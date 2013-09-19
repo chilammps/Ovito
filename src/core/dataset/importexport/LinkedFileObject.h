@@ -175,6 +175,9 @@ protected:
 	/// \brief Loads the class' contents from the given stream.
 	virtual void loadFromStream(ObjectLoadStream& stream) override;
 
+	/// \brief Cancels the current load operation if there is any in progress.
+	void cancelLoadOperation();
+
 private:
 
 	/// The associated importer object that is responsible for parsing the input file.

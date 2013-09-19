@@ -41,7 +41,7 @@ class OVITO_CORE_EXPORT FileImporter : public RefTarget
 protected:
 	
 	/// \brief The default constructor.
-	FileImporter() : _shouldReplaceScene(true) {}
+	FileImporter() {}
 
 public:
 
@@ -69,20 +69,7 @@ public:
 	/// \throw Exception when the check has failed.
 	virtual bool checkFileFormat(QIODevice& input, const QUrl& sourceLocation) { return false; }
 
-	/// \brief Returns whether the importer will reset the scene before importing the new data by calling DataSet::clearScene().
-	/// \return \c true if the old scene should be completely by the new data; \c false if the imported
-	///         data should be added to the current scene.
-	bool shouldReplaceScene() const { return _shouldReplaceScene; }
-
-	/// \brief Sets whether the importer should reset the scene before importing the new data by calling DataSet::clearScene().
-	/// \param replace \c true to have the old scene completely replaced by the new data; \c false if the imported
-	///         data should be added to the existing scene.
-	void setShouldReplaceScene(bool replace) { _shouldReplaceScene = replace; }
-
 private:
-
-	/// \brief Controls whether the importer should reset the scene before importing the new data.
-	bool _shouldReplaceScene;
 
 	Q_OBJECT
 	OVITO_OBJECT

@@ -77,6 +77,7 @@ bool DataSet::referenceEvent(RefTarget* source, ReferenceEvent* event)
 		// Update the viewports whenever something has changed in the current data set.
 		if(this == DataSetManager::instance().currentSet() && source != viewportConfig() && source != animationSettings()) {
 			// Do not automatically update while in the process of jumping to a new animation frame.
+			qDebug() << "is time changin" << AnimManager::instance().isTimeChanging();
 			if(!AnimManager::instance().isTimeChanging())
 				ViewportManager::instance().updateViewports();
 		}
