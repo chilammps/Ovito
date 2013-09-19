@@ -21,6 +21,7 @@
 
 #include <core/Core.h>
 #include <core/gui/widgets/ColorPickerWidget.h>
+#include <core/gui/mainwin/MainWindow.h>
 
 namespace Ovito {
 
@@ -72,7 +73,7 @@ void ColorPickerWidget::setColor(const Color& newVal, bool emitChangeSignal)
 ******************************************************************************/
 void ColorPickerWidget::activateColorPicker()
 {
-	QColor newColor = QColorDialog::getColor((QColor)_color, parentWidget());
+	QColor newColor = QColorDialog::getColor((QColor)_color, window());
 	if(newColor.isValid()) {
 		setColor(Color(newColor), true);				
 	}

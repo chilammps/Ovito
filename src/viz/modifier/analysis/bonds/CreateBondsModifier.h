@@ -57,9 +57,10 @@ public:
 	public:
 
 		/// Constructor.
-		BondGenerationEngine(ParticleProperty* positions, const SimulationCellData& simCell, FloatType cutoff) :
-			_positions(positions), _simCell(simCell), _cutoff(cutoff),
-			_bonds(new BondsStorage()) {}
+		BondGenerationEngine(ParticleProperty* positions, ParticleProperty* particleTypes, const SimulationCellData& simCell, CutoffMode cutoffMode,
+				FloatType uniformCutoff, std::vector<std::vector<FloatType>>&& pairCutoffs) :
+			_positions(positions), _particleTypes(particleTypes), _simCell(simCell), _cutoffMode(cutoffMode), _uniformCutoff(uniformCutoff),
+			_pairCutoffs(std::move(pairCutoffs)), _bonds(new BondsStorage()) {}
 
 		/// Computes the modifier's results and stores them in this object for later retrieval.
 		virtual void compute(FutureInterfaceBase& futureInterface) override;
@@ -76,8 +77,11 @@ public:
 
 	private:
 
-		FloatType _cutoff;
+		CutoffMode _cutoffMode;
+		FloatType _uniformCutoff;
+		std::vector<std::vector<FloatType>> _pairCutoffs;
 		QExplicitlySharedDataPointer<ParticleProperty> _positions;
+		QExplicitlySharedDataPointer<ParticleProperty> _particleTypes;
 		QExplicitlySharedDataPointer<BondsStorage> _bonds;
 		SimulationCellData _simCell;
 		bool _hasWrappedParticles;
@@ -204,12 +208,46 @@ protected Q_SLOTS:
 	/// Updates the cutoff values in the pair-wise cutoff table.
 	void updatePairCutoffListValues();
 
-	/// Is called when the user has changed a cutoff value in the pair cutoff table.
-	void onPairCutoffTableChanged(QTableWidgetItem* item);
-
 private:
 
-	QTableWidget* _pairCutoffTable;
+	class PairCutoffTableModel : public QAbstractTableModel {
+	public:
+		typedef QVector<QPair<QString,QString>> ContentType;
+
+		PairCutoffTableModel(QObject* parent) : QAbstractTableModel(parent) {}
+		virtual int	rowCount(const QModelIndex& parent) const override { return _data.size(); }
+		virtual int	columnCount(const QModelIndex& parent) const override { return 3; }
+		virtual QVariant data(const QModelIndex& index, int role) const override;
+		virtual QVariant headerData(int section, Qt::Orientation orientation, int role) const override {
+			if(orientation != Qt::Horizontal || role != Qt::DisplayRole) return QVariant();
+			switch(section) {
+			case 0: return CreateBondsModifierEditor::tr("1st type");
+			case 1: return CreateBondsModifierEditor::tr("2nd type");
+			case 2: return CreateBondsModifierEditor::tr("Cutoff");
+			default: return QVariant();
+			}
+		}
+		virtual Qt::ItemFlags flags(const QModelIndex& index) const override {
+			if(index.column() != 2)
+				return Qt::ItemIsSelectable | Qt::ItemIsEnabled;
+			else
+				return Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsEditable;
+		}
+		virtual bool setData(const QModelIndex& index, const QVariant& value, int role) override;
+		void setContent(CreateBondsModifier* modifier, const ContentType& data) {
+			beginResetModel();
+			_modifier = modifier;
+			_data = data;
+			endResetModel();
+		}
+		void updateContent() { Q_EMIT dataChanged(index(0,2), index(_data.size()-1,2)); }
+	private:
+		ContentType _data;
+		OORef<CreateBondsModifier> _modifier;
+	};
+
+	QTableView* _pairCutoffTable;
+	PairCutoffTableModel* _pairCutoffTableModel;
 
 	Q_OBJECT
 	OVITO_OBJECT

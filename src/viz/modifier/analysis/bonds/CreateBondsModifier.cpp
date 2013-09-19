@@ -167,8 +167,32 @@ std::shared_ptr<AsynchronousParticleModifier::Engine> CreateBondsModifier::creat
 	ParticlePropertyObject* posProperty = expectStandardProperty(ParticleProperty::PositionProperty);
 	SimulationCell* simCell = expectSimulationCell();
 
+	// Build table of pair-wise cutoff radii.
+	ParticleTypeProperty* typeProperty = nullptr;
+	std::vector<std::vector<FloatType>> pairCutoffTable;
+	if(cutoffMode() == PairCutoff) {
+		typeProperty = dynamic_object_cast<ParticleTypeProperty>(expectStandardProperty(ParticleProperty::ParticleTypeProperty));
+		if(typeProperty) {
+			for(PairCutoffsList::const_iterator entry = pairCutoffs().begin(); entry != pairCutoffs().end(); ++entry) {
+				FloatType cutoff = entry.value();
+				if(cutoff > 0.0f) {
+					ParticleType* ptype1 = typeProperty->particleType(entry.key().first);
+					ParticleType* ptype2 = typeProperty->particleType(entry.key().second);
+					if(ptype1 && ptype2 && ptype1->id() >= 0 && ptype2->id() >= 0) {
+						if(pairCutoffTable.size() <= std::max(ptype1->id(), ptype2->id())) pairCutoffTable.resize(std::max(ptype1->id(), ptype2->id()) + 1);
+						if(pairCutoffTable[ptype1->id()].size() <= ptype2->id()) pairCutoffTable[ptype1->id()].resize(ptype2->id() + 1, FloatType(0));
+						if(pairCutoffTable[ptype2->id()].size() <= ptype1->id()) pairCutoffTable[ptype2->id()].resize(ptype1->id() + 1, FloatType(0));
+						pairCutoffTable[ptype1->id()][ptype2->id()] = cutoff * cutoff;
+						pairCutoffTable[ptype2->id()][ptype1->id()] = cutoff * cutoff;
+					}
+				}
+			}
+		}
+	}
+
 	// Create engine object. Pass all relevant modifier parameters to the engine as well as the input data.
-	return std::make_shared<BondGenerationEngine>(posProperty->storage(), simCell->data(), uniformCutoff());
+	return std::make_shared<BondGenerationEngine>(posProperty->storage(), typeProperty ? typeProperty->storage() : nullptr,
+			simCell->data(), cutoffMode(), uniformCutoff(), std::move(pairCutoffTable));
 }
 
 /******************************************************************************
@@ -178,25 +202,52 @@ void CreateBondsModifier::BondGenerationEngine::compute(FutureInterfaceBase& fut
 {
 	futureInterface.setProgressText(tr("Generating bonds"));
 
+	// Determine maximum cutoff.
+	FloatType maxCutoff = _uniformCutoff;
+	if(_particleTypes) {
+		OVITO_ASSERT(_particleTypes->size() == _positions->size());
+		for(const auto& innerList : _pairCutoffs)
+			for(const auto& cutoff : innerList)
+				if(cutoff > maxCutoff) maxCutoff = cutoff;
+	}
+
 	// Prepare the neighbor list.
-	OnTheFlyNeighborListBuilder neighborListBuilder(_cutoff);
+	OnTheFlyNeighborListBuilder neighborListBuilder(maxCutoff);
 	if(!neighborListBuilder.prepare(_positions.data(), _simCell, &_hasWrappedParticles) || futureInterface.isCanceled())
 		return;
 
 	// Generate (half) bonds.
 	size_t particleCount = _positions->size();
 	futureInterface.setProgressRange(particleCount);
-	for(size_t particleIndex = 0; particleIndex < particleCount; particleIndex++) {
-
-		for(OnTheFlyNeighborListBuilder::iterator neighborIter(neighborListBuilder, particleIndex); !neighborIter.atEnd(); neighborIter.next()) {
-			_bonds->addBond(particleIndex, neighborIter.current(), neighborIter.pbcShift());
+	if(!_particleTypes) {
+		for(size_t particleIndex = 0; particleIndex < particleCount; particleIndex++) {
+			for(OnTheFlyNeighborListBuilder::iterator neighborIter(neighborListBuilder, particleIndex); !neighborIter.atEnd(); neighborIter.next()) {
+				_bonds->addBond(particleIndex, neighborIter.current(), neighborIter.pbcShift());
+			}
+			// Update progress indicator.
+			if((particleIndex % 4096) == 0) {
+				futureInterface.setProgressValue(particleIndex);
+				if(futureInterface.isCanceled())
+					return;
+			}
 		}
-
-		// Update progress indicator.
-		if((particleIndex % 1024) == 0) {
-			futureInterface.setProgressValue(particleIndex);
-			if(futureInterface.isCanceled())
-				return;
+	}
+	else {
+		for(size_t particleIndex = 0; particleIndex < particleCount; particleIndex++) {
+			for(OnTheFlyNeighborListBuilder::iterator neighborIter(neighborListBuilder, particleIndex); !neighborIter.atEnd(); neighborIter.next()) {
+				int type1 = _particleTypes->getInt(particleIndex);
+				int type2 = _particleTypes->getInt(neighborIter.current());
+				if(type1 >= 0 && type1 < _pairCutoffs.size() && type2 >= 0 && type2 < _pairCutoffs[type1].size()) {
+					if(neighborIter.distanceSquared() <= _pairCutoffs[type1][type2])
+						_bonds->addBond(particleIndex, neighborIter.current(), neighborIter.pbcShift());
+				}
+			}
+			// Update progress indicator.
+			if((particleIndex % 4096) == 0) {
+				futureInterface.setProgressValue(particleIndex);
+				if(futureInterface.isCanceled())
+					return;
+			}
 		}
 	}
 	futureInterface.setProgressValue(particleCount);
@@ -265,14 +316,13 @@ void CreateBondsModifierEditor::createUI(const RolloutInsertionParameters& rollo
 	QRadioButton* pairCutoffModeBtn = cutoffModePUI->addRadioButton(CreateBondsModifier::PairCutoff, tr("Pair-wise cutoff radii:"));
 	layout1->addWidget(pairCutoffModeBtn);
 
-	_pairCutoffTable = new QTableWidget();
-	_pairCutoffTable->setColumnCount(3);
-	_pairCutoffTable->setHorizontalHeaderLabels({ tr("1st Type"), tr("2nd Type"), tr("Cutoff") });
+	_pairCutoffTable = new QTableView();
 	_pairCutoffTable->verticalHeader()->setVisible(false);
 	_pairCutoffTable->setEnabled(false);
+	_pairCutoffTableModel = new PairCutoffTableModel(_pairCutoffTable);
+	_pairCutoffTable->setModel(_pairCutoffTableModel);
 	connect(pairCutoffModeBtn, SIGNAL(toggled(bool)), _pairCutoffTable, SLOT(setEnabled(bool)));
 	layout1->addWidget(_pairCutoffTable);
-	connect(_pairCutoffTable, SIGNAL(itemChanged(QTableWidgetItem*)), this, SLOT(onPairCutoffTableChanged(QTableWidgetItem*)));
 
 	// Status label.
 	layout1->addSpacing(10);
@@ -283,7 +333,7 @@ void CreateBondsModifierEditor::createUI(const RolloutInsertionParameters& rollo
 
 	// Update pair-wise cutoff table whenever a modifier has been loaded into the editor.
 	connect(this, SIGNAL(contentsReplaced(RefTarget*)), this, SLOT(updatePairCutoffList()));
-	connect(this, SIGNAL(contentsChanged(RefTarget*)), this, SLOT(updatePairCutoffList()));
+	connect(this, SIGNAL(contentsChanged(RefTarget*)), this, SLOT(updatePairCutoffListValues()));
 }
 
 /******************************************************************************
@@ -291,37 +341,24 @@ void CreateBondsModifierEditor::createUI(const RolloutInsertionParameters& rollo
 ******************************************************************************/
 void CreateBondsModifierEditor::updatePairCutoffList()
 {
-	_pairCutoffTable->clearContents();
-
 	CreateBondsModifier* mod = static_object_cast<CreateBondsModifier>(editObject());
 	if(!mod) return;
 
 	// Obtain the list of particle types in the modifier's input.
+	PairCutoffTableModel::ContentType pairCutoffs;
 	PipelineFlowState inputState = mod->getModifierInput();
 	for(const auto& o : inputState.objects()) {
 		ParticleTypeProperty* typeProperty = dynamic_object_cast<ParticleTypeProperty>(o.get());
 		if(typeProperty && typeProperty->type() == ParticleProperty::ParticleTypeProperty) {
-			_pairCutoffTable->setRowCount(typeProperty->particleTypes().size() * (typeProperty->particleTypes().size() + 1) / 2);
-			int row = 0;
 			for(auto ptype1 = typeProperty->particleTypes().constBegin(); ptype1 != typeProperty->particleTypes().constEnd(); ++ptype1) {
 				for(auto ptype2 = ptype1; ptype2 != typeProperty->particleTypes().constEnd(); ++ptype2) {
-					QTableWidgetItem* typeItem1 = new QTableWidgetItem((*ptype1)->name());
-					QTableWidgetItem* typeItem2 = new QTableWidgetItem((*ptype2)->name());
-					QTableWidgetItem* cutoffItem = new QTableWidgetItem();
-					typeItem1->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemNeverHasChildren);
-					typeItem2->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemNeverHasChildren);
-					cutoffItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemNeverHasChildren | Qt::ItemIsEditable);
-					_pairCutoffTable->setItem(row, 0, typeItem1);
-					_pairCutoffTable->setItem(row, 1, typeItem2);
-					_pairCutoffTable->setItem(row, 2, cutoffItem);
-					row++;
+					pairCutoffs.push_back(qMakePair((*ptype1)->name(), (*ptype2)->name()));
 				}
 			}
 			break;
 		}
 	}
-
-	updatePairCutoffListValues();
+	_pairCutoffTableModel->setContent(mod, pairCutoffs);
 }
 
 /******************************************************************************
@@ -329,38 +366,45 @@ void CreateBondsModifierEditor::updatePairCutoffList()
 ******************************************************************************/
 void CreateBondsModifierEditor::updatePairCutoffListValues()
 {
-	CreateBondsModifier* mod = static_object_cast<CreateBondsModifier>(editObject());
-	if(!mod) return;
-
-	for(int row = 0; row < _pairCutoffTable->rowCount(); row++) {
-		QString typeName1 = _pairCutoffTable->item(row, 0)->text();
-		QString typeName2 = _pairCutoffTable->item(row, 1)->text();
-		FloatType cutoffRadius = mod->pairCutoffs()[qMakePair(typeName1, typeName2)];
-		if(cutoffRadius > 0.0f)
-			_pairCutoffTable->item(row, 2)->setText(QString::number(cutoffRadius));
-		else
-			_pairCutoffTable->item(row, 2)->setText(QString());
-	}
+	_pairCutoffTableModel->updateContent();
 }
 
 /******************************************************************************
-* Is called when the user has changed a cutoff value in the pair cutoff table.
+* Returns data from the pair-cutoff table model.
 ******************************************************************************/
-void CreateBondsModifierEditor::onPairCutoffTableChanged(QTableWidgetItem* item)
+QVariant CreateBondsModifierEditor::PairCutoffTableModel::data(const QModelIndex& index, int role) const
 {
-	CreateBondsModifier* mod = static_object_cast<CreateBondsModifier>(editObject());
-	if(!mod) return;
+	if(role == Qt::DisplayRole) {
+		if(index.column() == 0) return _data[index.row()].first;
+		else if(index.column() == 1) return _data[index.row()].second;
+		else if(index.column() == 2) {
+			FloatType cutoffRadius = _modifier->pairCutoffs()[_data[index.row()]];
+			if(cutoffRadius > 0.0f)
+				return cutoffRadius;
+		}
+	}
+	return QVariant();
+}
 
-	int row = item->row();
-	QString typeName1 = _pairCutoffTable->item(row, 0)->text();
-	QString typeName2 = _pairCutoffTable->item(row, 1)->text();
-	bool ok;
-	FloatType cutoff = (FloatType)item->text().toDouble(&ok);
-	if(!ok) cutoff = 0.0f;
+/******************************************************************************
+* Sets data in the pair-cutoff table model.
+******************************************************************************/
+bool CreateBondsModifierEditor::PairCutoffTableModel::setData(const QModelIndex& index, const QVariant& value, int role)
+{
+	if(role == Qt::EditRole && index.column() == 2) {
+		bool ok;
+		FloatType cutoff = (FloatType)value.toDouble(&ok);
+		if(!ok) cutoff = 0;
 
-	CreateBondsModifier::PairCutoffsList pairCutoffs = mod->pairCutoffs();
+		CreateBondsModifier::PairCutoffsList pairCutoffs = _modifier->pairCutoffs();
+		pairCutoffs[_data[index.row()]] = cutoff;
 
-	updatePairCutoffListValues();
+		UndoableTransaction::handleExceptions(tr("Change cutoff"), [&pairCutoffs, this]() {
+			_modifier->setPairCutoffs(pairCutoffs);
+		});
+		return true;
+	}
+	return false;
 }
 
 };	// End of namespace
