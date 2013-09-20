@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<section version="5.0"
+         xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xml:id="usage.import" xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title>Importing particles</title>
+
+  <para>To open a simulation file from your local hard disk, use the 
+  <menuchoice><guimenu>File</guimenu><guimenuitem>Open Local File</guimenuitem></menuchoice> menu item.  
+  </para>
+
+  <para>OVITO will try to detect the format of the input file automatically. However, you still have the option
+  to specify the format explicitly in the file selector dialog. The program can directly read compressed files that have 
+  a <filename>.gz</filename> suffix.</para>
+
+  <sect3 xml:id="usage.import.sequence">
+    <title>Simulation sequences</title>
+    <para>
+       OVITO can load animation sequences that consist of multiple simulation frames. It will try to detect sequences
+       by finding other files in the same directory that have a similar name like the one you picked. 
+       To do this, it looks for a sequence of digits in the filename (if there is any), starting from the end. 
+       The digits are replaced by the special wildcard character <emphasis>*</emphasis> to generate a search pattern. This pattern
+       is used to find other files in the same directory that belong to the same animation sequence. For instance,
+       if the user initially picks the file <filename>anim1c_5000.dump</filename>, OVITO generates the search pattern
+       <filename>anim1c_*.dump</filename> to find all matching frames, e.g. <filename>anim1c_0.dump</filename>,
+       <filename>anim1c_1000.dump</filename>, <filename>anim1c_2000.dump</filename>, etc. It is possible to
+       adjust the search pattern manually in case the automatic one does not fit. 
+    </para>
+    <para>
+       Some file formats can store more than one simulation frame in a single file, for instance the LAMMPS dump format.
+       By default, OVITO imports only the first frame from a file. You have to explicitly tell OVITO to look 
+       for extra frames by checking the <emphasis>File contains multiple timesteps</emphasis> option
+       in the import settings panel. OVITO will then scan the entire file for the contained frames.
+    </para>
+  </sect3>
+  
+  <sect3 xml:id="usage.import.remote">
+    <title>Remote file import</title>
+    <para>
+       OVITO has a built-in SSH client to access files located on remote computers. This is useful if you want to 
+       load simulation files that are stored on a parallel computing cluster without copying them to the local computer
+       first. To open a simulation file from a remote machine, use the 
+       <menuchoice><guimenu>File</guimenu><guimenuitem>Open Remote File</guimenuitem></menuchoice> menu item.  
+    </para>
+    <para>
+       In the current version, OVITO does not allow to browse directories on remote machines. Thus, you have to directly specify
+       the full path of a remote file. The format for remote paths follows the URL scheme
+       <screen>
+		<command>sftp://user@hostname/path/filename</command>
+       </screen>
+       Where <command>sftp://</command> is the file access protocol (Secure File Transfer Protocol), 
+       <command>user</command> the username to log into the remote machine,
+       <command>hostname</command> the name of the remote machine,
+       and <command>/path/filename</command> the path to the file to import. It is possible to 
+       specify a non-standard port using <command>:port</command> following the hostname.
+    </para>
+    <para>
+       When OVITO connects to the remote machine it will ask for the login password. The SSH connection is kept
+       alive until OVITO is quit.
+       When opening a remote file, OVITO will first create a temporary copy of the file on the local computer before
+       reading it to speed up subsequent accesses. The local copy is kept until you quit OVITO or press the <emphasis>Reload</emphasis> button
+       in the import file panel.
+    </para>
+  </sect3>
+  
+  <sect3 xml:id="usage.import.formats">
+  <title>Supported file formats</title>
+  <para>
+    <informaltable>
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>File format</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+
+          <tbody>
+            <row>
+              <entry>LAMMPS dump</entry>
+              <entry><para>Text-based file format produced by the <link xlink:href="http://lammps.sandia.gov">LAMMPS molecular dynamics code</link>.</para></entry>
+            </row>
+            <row>
+              <entry>LAMMPS data</entry>
+              <entry><para>File format used by the <link xlink:href="http://lammps.sandia.gov">LAMMPS molecular dynamics code</link>. Only the <literal>atomic</literal> style is supported.</para>
+              </entry>
+            </row>
+            <row>
+              <entry>XYZ</entry>
+              <entry><para>A simple column-based text format, which is documented <link xlink:href="http://en.wikipedia.org/wiki/XYZ_file_format">here</link>.</para>
+			    <para>This format does not store simulation box dimensions. OVITO will take the axis-aligned bounding box of all particles as the simulation box.</para>
+                </entry>
+            </row>
+            <row>
+              <entry>POSCAR</entry>
+              <entry><para>File format used by the <emphasis>ab initio</emphasis> simulation package <link xlink:href="http://www.vasp.at/">VASP</link>.</para></entry>
+            </row>
+            <row>
+              <entry>IMD</entry>
+              <entry><para>File format used by the molecular dynamics code <link xlink:href="http://imd.itap.physik.uni-stuttgart.de/">IMD</link>.</para></entry>
+            </row>
+            <row>
+              <entry>CFG</entry>
+              <entry><para>File format used by the <link xlink:href="http://li.mit.edu/Archive/Graphics/A/"><emphasis>AtomEye</emphasis> software</link>.</para></entry>
+            </row>
+            <row>
+              <entry>PARCAS</entry>
+              <entry><para>A binary file format written by the <emphasis>Parcas</emphasis> MD code developed in K. Nordlund's group.</para></entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>  
+  </para>
+  </sect3>
+  
+  <sect3 xml:id="usage.import.tips">
+    <title>Tips and tricks</title>
+    <para>
+      When starting OVITO from the terminal, you can directly specify a simulation file to import. Both local and remote
+      files can be specified, i.e.
+       <screen>
+		<command>ovito /path/filename</command>
+		<command>ovito sftp://hostname/path/filename</command>
+       </screen>
+    </para>
+  </sect3>
+  
+</section>

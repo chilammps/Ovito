@@ -1,0 +1,359 @@
+<?xml version="1.0" encoding="utf-8"?>
+<section version="5.0"
+         xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xml:id="viz.modifiers.compute_property"
+         xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title>Compute property</title>
+
+  <para>
+  
+    <informalfigure><screenshot><mediaobject><imageobject>
+       <imagedata fileref="images/modifiers/compute_property_panel.png" format="PNG" />
+    </imageobject></mediaobject></screenshot></informalfigure>
+  
+  The <literal>Compute Channel</literal> modifier evaluates a
+  user-defined mathematical expression for each atom and stores the results in
+  a <link linkend="atomviz.data_channels">data channel</link>. This modifier
+  can be used to create new custom data channels, or to fully control the
+  values stored in existing data channels.</para>
+
+  <para>The math formula may contain references to existing per-atom
+  properties such as atomic coordinates or atom types. The list of variables
+  that may be referenced in the formula is displayed in the bottom part of the
+  panel. Variable names are case-sensitive.</para>
+
+  <simplesect>
+    <title>Parameters</title>
+
+    <variablelist>
+      <varlistentry>
+        <term>Channel to compute</term>
+
+        <listitem>
+          <para>Specifies the target data channel that should be filled with
+          the calculated values. You can choose between a new
+          <emphasis>custom</emphasis> data channel and one of the <link
+          linkend="atomviz.data_channels">predefined standard data
+          channels</link>.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Name</term>
+
+        <listitem>
+          <para>The name of the custom data channel to create.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Data type</term>
+
+        <listitem>
+          <para>The data type of the custom data channel to create
+          (floating-point or integer numbers).</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Number of components</term>
+
+        <listitem>
+          <para>The number of vector components of the custom data channel to
+          create. This allows you to create channels that contain more than
+          one value per atom. Each vector component can be controlled by a
+          separate formula.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Show/activate channel</term>
+
+        <listitem>
+          <para>This controls the visibility of the computed channel. Each
+          data channel has a visibility flag that controls whether the
+          information stored in the channel is displayed in the viewports. The
+          meaning of the visibility flag depends on the channel type. For
+          example, the visibility flag of the <link
+          linkend="atomviz.data_channels.position"><literal>Position</literal>
+          data channel</link> controls whether atoms are rendered in the
+          viewports or not. The visibility flag of the <link
+          linkend="atomviz.data_channels.displacement"><literal>Displacement</literal>
+          data channel</link> contros whether the displacement vectors are
+          shown in the viewports. For most of the other standard data channels
+          (and for custom data channels) the visibility flag is ignored and
+          has no meaning.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Compute only for selected atoms</term>
+
+        <listitem>
+          <para>Controls whether the math formula is only evaluated for
+          selected atoms. This option is useful if you don't want to overwrite
+          the existing values of some of the atoms.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Expressions</term>
+
+        <listitem>
+          <para>The panel contains one input field for every vector component
+          of the data channel to be computed. You must enter a mathematical
+          expression in each field that will be evaluated for every individual
+          atom. The expression syntax understood by the modifier is very
+          similar to the C-syntax. Arithmetic expressions can be created from
+          float literals, variables or functions using the following operators
+          in the given order of precedence: <informaltable frame="none">
+              <tbody>
+                <tr>
+                  <td>(...)</td>
+
+                  <td>expressions in parentheses are evaluated first</td>
+                </tr>
+
+                <tr>
+                  <td>A^B</td>
+
+                  <td>exponentiation (A raised to the power B)</td>
+                </tr>
+
+                <tr>
+                  <td>A*B, A/B</td>
+
+                  <td>multiplication and division</td>
+                </tr>
+
+                <tr>
+                  <td>A+B, A-B</td>
+
+                  <td>addition and subtraction</td>
+                </tr>
+
+                <tr>
+                  <td>A==B, A!=B, A&lt;B, A&lt;=B, A&gt;B, A&gt;=B</td>
+
+                  <td>comparison between A and B (result is either 0 or
+                  1)</td>
+                </tr>
+
+                <tr>
+                  <td>A &amp;&amp; B</td>
+
+                  <td>logical AND operator: result is 1 if A and B differ from
+                  0, else 0</td>
+                </tr>
+
+                <tr>
+                  <td>A || B</td>
+
+                  <td>logical OR operator: result is 1 if A or B differ from
+                  0, else 0</td>
+                </tr>
+              </tbody>
+            </informaltable></para>
+
+          <para>The expression parser supports the following functions:
+          <informaltable frame="none">
+              <tbody>
+                <tr>
+                  <td>abs(A)</td>
+
+                  <td>Absolute value of A. If A is negative, returns -A
+                  otherwise returns A.</td>
+                </tr>
+
+                <tr>
+                  <td>acos(A)</td>
+
+                  <td>Arc-cosine of A. Returns the angle, measured in radians,
+                  whose cosine is A.</td>
+                </tr>
+
+                <tr>
+                  <td>acosh(A)</td>
+
+                  <td>Same as acos() but for hyperbolic cosine.</td>
+                </tr>
+
+                <tr>
+                  <td>asin(A)</td>
+
+                  <td>Arc-sine of A. Returns the angle, measured in radians,
+                  whose sine is A.</td>
+                </tr>
+
+                <tr>
+                  <td>asinh(A)</td>
+
+                  <td>Same as asin() but for hyperbolic sine.</td>
+                </tr>
+
+                <tr>
+                  <td>atan(A)</td>
+
+                  <td>Arc-tangent of A. Returns the angle, measured in
+                  radians, whose tangent is A.</td>
+                </tr>
+
+                <tr>
+                  <td>atan2(Y,X)</td>
+
+                  <td>Two argument variant of the arctangent function. Returns
+                  the angle, measured in radians. This function is documented
+                  <link
+                  xlink:href="http://en.wikipedia.org/wiki/Atan2">here</link>.</td>
+                </tr>
+
+                <tr>
+                  <td>atanh(A)</td>
+
+                  <td>Same as atan() but for hyperbolic tangent.</td>
+                </tr>
+
+                <tr>
+                  <td>avg(A,B,...)</td>
+
+                  <td>Returns the average of all arguments.</td>
+                </tr>
+
+                <tr>
+                  <td>cos(A)</td>
+
+                  <td>Cosine of A. Returns the cosine of the angle A, where A
+                  is measured in radians.</td>
+                </tr>
+
+                <tr>
+                  <td>cosh(A)</td>
+
+                  <td>Same as cos() but for hyperbolic cosine.</td>
+                </tr>
+
+                <tr>
+                  <td>exp(A)</td>
+
+                  <td>Exponential of A. Returns the value of e raised to the
+                  power A where e is the base of the natural logarithm, i.e.
+                  the non-repeating value approximately equal to
+                  2.71828182846.</td>
+                </tr>
+
+                <tr>
+                  <td>A ? B : C</td>
+
+                  <td>If A differs from 0 (i.e. is true), the resulting value of this expression
+                  is B, else C.</td>
+                </tr>
+
+                <tr>
+                  <td>rint(A)</td>
+
+                  <td>Rounds A to the closest integer. 0.5 is rounded to
+                  1.</td>
+                </tr>
+
+                <tr>
+                  <td>ln(A)</td>
+
+                  <td>Natural (base e) logarithm of A.</td>
+                </tr>
+
+                <tr>
+                  <td>log10(A)</td>
+
+                  <td>Base 10 logarithm of A.</td>
+                </tr>
+
+                <tr>
+                  <td>log2(A)</td>
+
+                  <td>Base 2 logarithm of A.</td>
+                </tr>
+
+                <tr>
+                  <td>max(A,B,...)</td>
+
+                  <td>Returns the maximum of all values.</td>
+                </tr>
+
+                <tr>
+                  <td>min(A,B,...)</td>
+
+                  <td>Returns the minimum of all values.</td>
+                </tr>
+
+                <tr>
+                  <td>sin(A)</td>
+
+                  <td>Sine of A. Returns the sine of the angle A, where A is
+                  measured in radians.</td>
+                </tr>
+
+                <tr>
+                  <td>sinh(A)</td>
+
+                  <td>Same as sin() but for hyperbolic sine.</td>
+                </tr>
+
+                <tr>
+                  <td>sqrt(A)</td>
+
+                  <td>Square root of a value.</td>
+                </tr>
+
+                <tr>
+                  <td>tan(A)</td>
+
+                  <td>Tangent of A. Returns the tangent of the angle A, where
+                  A is measured in radians.</td>
+                </tr>
+              </tbody>
+            </informaltable></para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </simplesect>
+
+  <simplesect>
+    <title>Example 1</title>
+
+    <para>In the first example, we want to compute the linear velocity of each
+    atom based on the components v<subscript>x</subscript>,
+    v<subscript>y</subscript>, and v<subscript>z</subscript> of the velocity
+    vectors. For this, we create a new custom channel with the name "Linear
+    Velocity" <literal>(Float</literal> data type). We enter the following
+    formula into the expression field:<programlisting>sqrt(Velocity.X^2 + Velocity.Y^2 + Velocity.Z^2)</programlisting>Here
+    we accessed the X, Y, and Z components of the standard
+    <literal>Velocity</literal> data channel, which must be present in the
+    input dataset. The computed linear velocity data channel can be
+    subsequently used to color atoms with the <literal><link
+    linkend="atomviz.modifiers.color_coding">Color Coding</link></literal>
+    modifier.</para>
+  </simplesect>
+
+  <simplesect>
+    <title>Example 2</title>
+
+    <para>The <literal>Compute Channel</literal> modifier can be used to set
+    atomic properties which are not accessible by other means. One example is
+    the per-atom radius. Let us assume we have selected a set of atoms, and we
+    want the selected atoms to be displayed in a different size than the rest.
+    To this end, we use the <literal>Compute Channel</literal> modifier to set
+    the values of the <literal>Radius</literal> data channel, which stores the
+    per-atom radii. The selection state of each atom is stored in the existing
+    <literal>Selection</literal> data channel, which we can access from the
+    formula as follows:<programlisting>1.2+Selection*0.4</programlisting>For
+    atoms which are currently selected the <literal>Selection</literal>
+    variable will be 1 (and 0 otherwise). Thus, the above radius expression
+    will evaluate to 1.6 for selected atoms, and to 1.2 for unselected
+    atoms.</para>
+  </simplesect>
+</section>

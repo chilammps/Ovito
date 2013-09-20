@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<section version="5.0"
+         xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xml:id="usage.viewports" xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title>Viewports</title>
+
+  <para>
+    OVITO's main window contains four viewports which are laid out in a 2x2
+    grid. Each viewport shows a different view of the same three-dimensional scene.
+    The viewing direction is indicated by the caption in the upper left corner
+    and the axis tripod in the lower left corner of every viewport.
+  </para> 
+
+  <sect3 xml:id="usage.viewports.navigation">
+  <title>Navigation</title>     
+  <para>
+    Use the mouse to navigate within a viewport and to move the camera around:
+    <itemizedlist>
+    <listitem><para>
+      Left-click and dragging the mouse rotates the camera around the current orbit center, which, by default, is located at the center of the simulation box.
+    </para></listitem>
+    <listitem><para>
+      Right-click and dragging moves the camera parallel to the current projection plane. You can also use the middle mouse button for this.
+    </para></listitem>
+    <listitem><para>
+      Use the mouse wheel to zoom in and out.
+    </para></listitem>
+    <listitem><para>
+      Double-click on a particle to make it the new orbit center. From now on the camera will rotate around that location in space, which is marked by a symbol.
+    </para></listitem>
+    <listitem><para>
+      Double-click in an empty region of a viewport to reset the orbit center to the simulation box center.
+    </para></listitem>
+    </itemizedlist>
+
+     By default, the z-axis is considered the "up" direction, and OVITO ensures that it is always pointing up when you rotate the camera. 
+     Depending on your simulation setup, this might not be the best choice. In such a case you can also make the x-axis or the y-axis the "up" directions in the 
+     application settings dialog.
+  </para>
+  </sect3>
+  
+  <sect3 xml:id="usage.viewports.toolbar">
+  <title>Viewport toolbar</title>     
+   <para>
+     The <link linkend="gui.viewport_control_toolbar">viewports toolbar</link> is located below the viewports on the right. It contains buttons to activate dedicated viewport navigation modes. 
+     With the <link linkend="gui.viewport_control_toolbar.maximize_viewport">Maximize Active Viewport</link> button in 
+     the active viewport can be enlarged to fill the entire main window. Clicking that button again restores the original 2x2 layout.
+     The active viewport is marked by a yellow border.
+   </para>
+   <para>
+     The <link linkend="gui.viewport_control_toolbar.zoom_all">Zoom Scene Extents</link> button adjust the zoom of the active viewport
+     such that the entire scene is fully visible.
+   </para>
+  </sect3>
+
+  <sect3 xml:id="usage.viewports.menu">
+  <title>Viewport menu</title>
+   <para>
+     Clicking on a viewport's caption text in the upper left corner opens the viewport's menu. Here you can switch between the standard viewport types
+     such as <emphasis>Top</emphasis>, <emphasis>Left</emphasis>, <emphasis>Front</emphasis> etc. 
+   </para>
+   <para>
+     Selecting <menuchoice><guimenuitem>Adjust Camera</guimenuitem></menuchoice> open a dialog box that lets you adjust the camera position and orientation numerically.
+   </para>
+   <para>
+     The <menuchoice><guimenuitem>Show Render Frame</guimenuitem></menuchoice> option activates a visual clue that indicates which area of the viewport will be visible 
+     in the final output picture. The aspect ratio of the rendered image can be adjusted in the <link linkend="core.rendering.render_settings">Render Settings</link> panel. 
+   </para>
+  </sect3>     
+
+</section>

@@ -1,16 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<chapter version="5.0"
+<section version="5.0"
          xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xml:id="viz.modifiers.centrosymmetry"
          xmlns="http://docbook.org/ns/docbook"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xmlns:xs="http://www.w3.org/2001/XMLSchema"
          xmlns:xlink="http://www.w3.org/1999/xlink"
          xmlns:xi="http://www.w3.org/2001/XInclude"
          xmlns:ns="http://docbook.org/ns/docbook">
-  <title>Reference</title>
+  <title>Centrosymmetry parameter</title>
 
-  <xi:include href="reference/modifiers/modifiers.docbook"/>
+  <para></para>
   
-  <xi:include href="reference/rendering/render_settings.docbook"/>
-
-</chapter>
+</section>

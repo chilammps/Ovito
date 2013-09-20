@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<section version="5.0"
+         xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xml:id="viz.modifiers.bond_angle_analysis"
+         xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title>Bond-angle analysis</title>
+
+  <para>
+    <informalfigure><screenshot><mediaobject><imageobject>
+       <imagedata fileref="images/modifiers/bond_angle_analysis_panel.png" format="PNG" />
+    </imageobject></mediaobject></screenshot></informalfigure>
+  This modifier analyzes the local atomic environment of each atom
+  according to the Ackland-Jones bond angle method [<link
+  xlink:href="http://link.aps.org/doi/10.1103/PhysRevB.73.054104">Ackland and
+  Jones, Phys. Rev. B 73, 054104</link>]. It assigns a local structure type
+  (FCC, BCC, HCP etc.) to each atom. The results are stored as integer values
+  in the <link linkend="atomviz.data_channels.cnaatomtype"><literal>Structure
+  Type</literal> data channel</link>:</para>
+
+  <itemizedlist>
+    <listitem>
+      <para>1 = FCC, face-centered cubic</para>
+    </listitem>
+
+    <listitem>
+      <para>2 = HCP, hexagonal close-packed</para>
+    </listitem>
+
+    <listitem>
+      <para>3 = BCC, body-centered cubic</para>
+    </listitem>
+
+    <listitem>
+      <para>4 = Icosahedral coordination</para>
+    </listitem>
+
+    <listitem>
+      <para>5 = Other, unknown coordination structure</para>
+    </listitem>
+  </itemizedlist>
+
+  <para>The <guibutton>Calculate</guibutton> button runs the analysis. If you
+  are working with a time sequence of simulation snapshots, you should enable
+  the <guilabel>Auto-update on time change</guilabel> option to let OVITO
+  automatically re-perform the analysis whenever you jump to a different
+  simulation frame. The <guilabel>Save results to scene file</guilabel> option
+  controls whether the results of the analysis are stored to disk when saving
+  the scene to an OVITO file. If disabled, the results are discarded when
+  quitting OVITO and need to be recalculated after opening the scene
+  file.</para>
+
+  <para>Double-click on an entry in the <guilabel>Type colors</guilabel> list
+  to change the color being assigned to atoms of that structure type.</para>
+
+  <para>When generating neighbor lists of atoms, the analysis modifer uses
+  periodic boundary conditions if enabled for the <link
+  linkend="atomviz.objects.simulation_cell">simulation cell</link>. Note that
+  the analysis modifier must be placed at the begining of the processing
+  pipeline as it requires access to the complete set of input atoms. Hence,
+  place any modifiers that delete atoms after this analysis modifier.</para>
+</section>

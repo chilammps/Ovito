@@ -73,7 +73,7 @@ private:
 	OVITO_OBJECT
 
 	Q_CLASSINFO("DisplayName", "Show periodic images");
-	Q_CLASSINFO("ModifierCategory", "Modify");
+	Q_CLASSINFO("ModifierCategory", "Modification");
 
 	DECLARE_PROPERTY_FIELD(_showImageX);
 	DECLARE_PROPERTY_FIELD(_showImageY);

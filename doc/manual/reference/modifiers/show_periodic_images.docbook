@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<section version="5.0"
+         xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xml:id="viz.modifiers.show_periodic_images"
+         xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title>Show periodic images</title>
+
+  <para>
+  
+    <informalfigure><screenshot><mediaobject><imageobject>
+       <imagedata fileref="images/modifiers/show_periodic_images_panel.png" format="PNG" />
+    </imageobject></mediaobject></screenshot></informalfigure>
+  
+  Duplicates all atoms to show the periodic images of the
+  system.</para>
+
+  <simplesect>
+    <title>Parameters</title>
+
+    <variablelist>
+      <varlistentry>
+        <term>Show periodic images (X,Y,Z)</term>
+
+        <listitem>
+          <para>Enables the display of periodic images of the system in the
+          three spatial directions. You can control how often the system is
+          duplicated in each direction.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Adjust simulation box size</term>
+
+        <listitem>
+          <para>If activated, the simulation cell size is extended accordingly
+          to match the duplicated system.</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </simplesect>
+</section>

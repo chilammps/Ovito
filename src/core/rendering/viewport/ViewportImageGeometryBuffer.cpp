@@ -134,13 +134,16 @@ void ViewportImageGeometryBuffer::renderWindow(SceneRenderer* renderer, const Po
 	}
 
 	// Transform rectangle to normalized device coordinates.
-	int x = pos.x(), y = pos.y();
-	int w = size.x();
-	int h = size.y();
-	x = (x / vpRenderer->antialiasingLevel()) * vpRenderer->antialiasingLevel();
-	y = (y / vpRenderer->antialiasingLevel()) * vpRenderer->antialiasingLevel();
-	w = (w / vpRenderer->antialiasingLevel()) * vpRenderer->antialiasingLevel();
-	h = (h / vpRenderer->antialiasingLevel()) * vpRenderer->antialiasingLevel();
+	FloatType x = pos.x(), y = pos.y();
+	FloatType w = size.x(), h = size.y();
+	if(vpRenderer->antialiasingLevel() > 1) {
+		x = (int)(x / vpRenderer->antialiasingLevel()) * vpRenderer->antialiasingLevel();
+		y = (int)(y / vpRenderer->antialiasingLevel()) * vpRenderer->antialiasingLevel();
+		int x2 = (int)((x + w) / vpRenderer->antialiasingLevel()) * vpRenderer->antialiasingLevel();
+		int y2 = (int)((y + h) / vpRenderer->antialiasingLevel()) * vpRenderer->antialiasingLevel();
+		w = x2 - x;
+		h = y2 - y;
+	}
 	QRectF rect2(x, y, w, h);
 	GLint vc[4];
 	glGetIntegerv(GL_VIEWPORT, vc);

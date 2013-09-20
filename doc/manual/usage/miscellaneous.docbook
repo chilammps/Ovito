@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<section version="5.0"
+         xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xml:id="usage.miscellaneous" xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title>Miscellaneous</title>
+
+  <sect3 xml:id="usage.saving_loading_scene">
+  <title>Saving program state</title>
+    <para>
+      The complete program state, including the viewports, modifiers and display settings, can be saved to a <emphasis>scene file</emphasis>
+      via <menuchoice><guimenu>File</guimenu><guimenuitem>Save State</guimenuitem></menuchoice>. This allows to continue your work at a later time 
+      and to preserve a visualization setup for later use. You can load an old visualization setup stored in a scene file via 
+      <menuchoice><guimenu>File</guimenu><guimenuitem>Load State</guimenuitem></menuchoice>. Note that you have the possibility to replace the input simulation file
+      while preserving the modification pipeline and parameters. Thus, you can use a scene file as a template to visualize several simulations
+      with the same setup.
+    </para>
+    <para>
+      OVITO uses a binary format for the scene files to store all objects, their parameters, and their dependencies. 
+      However, by default, OVITO does not store the original particle data in the scene file to keep its size small. Instead, a reference
+      to the original simulation file is stored, and the particle data is restored from the external source when the scene file is loaded.
+    </para>
+  </sect3>
+
+  <sect3 xml:id="usage.particle_inspection_utility">
+    <title>Particle inspection utility</title>
+    <para>
+      OVITO's command panel contains a third tab, the "Utilities" tab. It hosts a utility, which allows to 
+      inspect the properties of individual particles. Simply activate this utility and click on a particle in the
+      viewports to show the values of its properties.
+    </para>
+  </sect3>
+  
+</section>

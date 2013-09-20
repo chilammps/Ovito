@@ -177,7 +177,7 @@ private:
 	OVITO_OBJECT
 
 	Q_CLASSINFO("DisplayName", "Create bonds");
-	Q_CLASSINFO("ModifierCategory", "Modify");
+	Q_CLASSINFO("ModifierCategory", "Modification");
 
 	DECLARE_PROPERTY_FIELD(_cutoffMode);
 	DECLARE_PROPERTY_FIELD(_uniformCutoff);

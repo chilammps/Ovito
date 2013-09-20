@@ -26,6 +26,26 @@
 <xsl:param name="navig.showtitles" select="1"/>
 <xsl:param name="generate.id.attributes" select="1"/>
 
+<xsl:param name="generate.toc">
+appendix  toc,title
+article/appendix  nop
+article   toc,title
+book      toc,title
+chapter   nop
+part      nop
+preface   nop
+qandadiv  nop
+qandaset  nop
+reference toc,title
+sect1     nop
+sect2     nop
+sect3     nop
+sect4     nop
+sect5     nop
+section   nop
+set       toc
+</xsl:param>
+
 
 <xsl:template name="gentext.nav.home">Table of Contents</xsl:template>
 

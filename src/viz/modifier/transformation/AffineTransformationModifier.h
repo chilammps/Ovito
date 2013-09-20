@@ -29,8 +29,6 @@
 
 #include <core/Core.h>
 #include <core/gui/widgets/SpinnerWidget.h>
-#include <core/animation/controller/Controller.h>
-#include <core/animation/controller/TransformationController.h>
 #include "../ParticleModifier.h"
 
 namespace Viz {
@@ -115,7 +113,7 @@ private:
 	OVITO_OBJECT
 
 	Q_CLASSINFO("DisplayName", "Affine transformation");
-	Q_CLASSINFO("ModifierCategory", "Modify");
+	Q_CLASSINFO("ModifierCategory", "Modification");
 
 	DECLARE_PROPERTY_FIELD(_transformationTM);
 	DECLARE_PROPERTY_FIELD(_applyToParticles);
