@@ -70,6 +70,9 @@ bool LAMMPSDataExporter::exportParticles(const PipelineFlowState& state, int fra
 	FloatType xz = simCell.column(2).x();
 	FloatType yz = simCell.column(2).y();
 
+	if(simCell.column(0).y() != 0 || simCell.column(0).z() != 0 || simCell.column(1).z() != 0)
+		throw Exception(tr("Cannot save simulation cell to a LAMMPS data file. This type of non-orthogonal cell shape is not supported by LAMMPS. See documentation of LAMMPS for details."));
+
 	textStream() << "# LAMMPS data file written by OVITO" << endl;
 	textStream() << posProperty->size() << " atoms" << endl;
 
