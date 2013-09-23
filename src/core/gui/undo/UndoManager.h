@@ -156,7 +156,7 @@ private:
  * template parameters.
  */
 template<typename ValueType, typename ObjectType, typename GetterFunction, typename SetterFunction>
-class OVITO_CORE_EXPORT SimpleValueChangeOperation : public UndoableOperation
+class SimpleValueChangeOperation : public UndoableOperation
 {
 public:
 
