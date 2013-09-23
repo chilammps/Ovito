@@ -16,54 +16,43 @@
        <imagedata fileref="images/modifiers/displacement_vectors_panel.png" format="PNG" />
     </imageobject></mediaobject></screenshot></informalfigure>
   
-  This modifier calculates displacement vectors from two different
+  This modifier calculates the displacement vectors of particles from two different
   configurations of the simulated system.</para>
 
-  <para>For this purpose, the current input dataset to which the modifier has
-  been applied is considered the <emphasis>current</emphasis> (or final)
-  configuration. The <emphasis>reference</emphasis> (or initial) configuration
-  of the system is loaded from a second input file by the modifier. The
-  modifier calculates the displacement vector of each atom by subtracting the
-  position in the reference configuration from the atom's position in the
-  current configuration. The calculated vectors are stored in the <link
-  linkend="atomviz.data_channels.displacement"><literal>Displacement</literal>
-  data channel</link> and can be visualized as arrows in the viewports.
+  <para>The input particle set, to which the modifier is applied, is considered the
+  <emphasis>current</emphasis> (or deformed) configuration of the system. The
+  <emphasis>reference</emphasis> (or initial) configuration of the system is
+  loaded from a separate input file by the modifier.</para>
+
+  <para>The
+  modifier calculates the displacement vector of a particle by subtracting the
+  position in the reference configuration from the particles's position in the
+  current configuration. The calculated vector is stored in the <literal>Displacement</literal>
+  particle property and can optionally be visualized as an arrow.
   Alternatively, one can use the <link
-  linkend="atomviz.modifiers.color_coding">Color Coding modifier</link> to
-  display the displacements through coloring.</para>
+  linkend="viz.modifiers.color_coding">Color coding modifier</link> to
+  visualize the displacement magnitude through a color scheme.</para>
 
-  <para>Press the <guibutton>[Choose File...]</guibutton> button to pick the
-  file which contains the reference dataset (initial atom coordinates). Note
-  that this reference file must contain the exact same number of atoms as the
-  current configuration (as seen by the modifier). This also means that you do
-  not delete atoms before applying the <emphasis>Calculate Displacement
-  Vectors</emphasis> modifier, i.e., the modifier must be placed at the
-  beginning of the processing pipeline to have access to the full set of
-  atoms. For example, a <link linkend="atomviz.modifiers.slice">Slice</link>
-  modifier, which deletes part of the atoms, must be placed behind the
-  <emphasis>Calculate Displacement Vectors</emphasis> modifier. If the number
-  of atoms in the reference file does not match, an error is indicated by the
-  modifier.</para>
+  <para>Use the <emphasis>Reference configuration</emphasis> panel to pick the
+  file containing the initial particle positions. Note
+  that this reference file should contain the same set of particles as the
+  input configuration seen by the modifier. That implies that you should
+  not delete particles before applying the <emphasis>Displacement vectors</emphasis> modifier. 
+  The modifier should usually be placed at the beginning of the processing pipeline.</para>
 
-  <para>Note that a consistent ordering of atoms is important since it is used
-  by the modifier to map atoms from the current configuration to corresponding
-  atoms in the reference configuration. Many parallel MD codes outut atoms in
-  a random order. Hence the ordering of atoms can change over time and fro
-  file to file. To facilitate the tracking of atom identities, many MD codes
-  such as LAMMPS can therefore output a unique identifier (or atom index) for
-  each atom. You have to make sure that this atom index is read from the
-  dataset file during import into OVITO, for both the current configuration
-  and the reference configuration, such that their atomic ordering is
-  identitical. Otherwise the <emphasis>Calculate Displacements</emphasis>
-  modifier will incorrectly calculate a displacement vector from mixed-up
-  pairs of atoms, and you will likely observe wrong (often huge)
-  displacements.</para>
+  <para>
+  To calculate the displacement vector of a particle, the modifier has to
+  find the corresponding particle in the supplied reference configuration.
+  If the particles have unique IDs assigned to them, the modifier will
+  use this information to map particles from the current configuration to
+  the reference configuration. If no particle IDs are available, the modifier assumes
+  that particles have the same ordering in both configurations.</para>
 
-  <para>Below the parameters panel of the <emphasis>Calculate Displacement
-  Vector</emphasis> modifier your find a second panel that lets you configure
-  the parameters of the <link
-  linkend="atomviz.data_channels.displacement"><literal>Displacement</literal>
-  data channel</link> created by the modifier.</para>
+  <para>The vectors computed by the modifier are stored in the <literal>Displacement</literal>
+  particle property. This property is associated with a vector <emphasis>display object</emphasis>,
+  which allows to render the displacement vectors as arrows. By default, the
+  display object is disabled. You have to enable it in the pipeline editor first to make the arrows visible. 
+  </para>
 
   <simplesect>
     <title>Parameters</title>
@@ -71,42 +60,26 @@
     <variablelist>
       <varlistentry>
         <term>Eliminate homogeneous cell deformation</term>
-
         <listitem>
-          <para>If activated, and if the size/shape of the simulation cell is
-          different in the reference and the current configuration, then the
-          modifier internally recales the current coordinates first to match
-          the reference configuration before calculating the displacement
-          vectors. This eliminates any macroscopic, homogeneous deformation of
-          the (periodic) simulation cell, and the calculated displacement
-          vectors represent only the internal, microscopic motion of
-          atoms.</para>
+          <para>This option lets the modifier first rescale the current
+          simulation cell including all particle coordinates to match the 
+          cell shape in the reference configuration before calculating the displacement vectors. 
+          This effectively eliminates any macroscopic, homogeneous deformation of the simulation cell, and the
+          calculated vectors will reflect only the internal, microscopic displacements of particles.</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
         <term>Assume unwrapped coordinates</term>
-
         <listitem>
           <para>This only affects the treatment of simulation cells with
-          periodic boundary conditions. If activated, the atomic coordinates
-          in the reference and the current configuration are taken as is, and
-          the displacement vector is simply the difference between the two. If
-          this option is not set, a minimum image convention is used to handle
-          atoms which have crossed a periodic boundary.</para>
+          periodic boundary conditions. If activated, the particle coordinates
+          in the reference and the current configuration are taken as is. If
+          this option is not checked, the minimum image convention is used to
+          deal with particles that have crossed a periodic boundary.</para>
         </listitem>
       </varlistentry>
 
-      <varlistentry>
-        <term>Show reference configuration</term>
-
-        <listitem>
-          <para>If this option is activated, then the atomic positions are
-          replaced with the reference coordinates by the modifier. This will
-          effectively exchange the current configuration and the reference
-          configuration, and displacements vectors will be flipped.</para>
-        </listitem>
-      </varlistentry>
     </variablelist>
   </simplesect>
 </section>

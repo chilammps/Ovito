@@ -20,18 +20,18 @@
           </imageobject>
         </mediaobject>
       </screenshot>
-    </figure> This parameter panel lets you control the rendering of static
-  images or movie sequence of your scene. <variablelist>
+    </figure> This parameter panel lets you control the rendering of images or movies
+    for publication and presentation purposes.<variablelist>
       <varlistentry>
         <term>Time output</term>
 
         <listitem>
-          <para>You can either render an image of the current simulation frame
-          or the complete animation if you have loaded a sequence of snapshots
-          into OVITO. Note that if you select the <guimenuitem>Complete
-          animation</guimenuitem> or <guimenuitem>Range</guimenuitem> option,
-          you must also specify an output filename. The filename will be used
-          as base name for a sequence of numbered image files.</para>
+          <para>Selects the frames to be rendered. You can either render only the current animation
+          frame or a sequence of frames.
+          Note that when selecting <guimenuitem>Complete
+          animation</guimenuitem> or <guimenuitem>Range</guimenuitem>,
+          you should also specify an output filename. Otherwise all but the last
+          rendered frame will be discarded.</para>
         </listitem>
       </varlistentry>
 
@@ -39,21 +39,17 @@
         <term>Every Nth frame</term>
 
         <listitem>
-          <para>When rendering an animation, this controls the regular sample
-          of frames. Available only for <guimenuitem>Complete
-          animation</guimenuitem> or <guimenuitem>Range</guimenuitem>
-          output.</para>
+          <para>When rendering an animation sequence, this controls the 
+          how many frames are actually rendered. Set this to 1 to render all frames.
+          Set this to 2 to render only every other frame etc.</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
         <term>File number base</term>
-
         <listitem>
-          <para>Sets the base file number, from which the animation file
-          number will increase. Available only for <guimenuitem>Complete
-          animation</guimenuitem> or <guimenuitem>Range</guimenuitem>
-          output.</para>
+          <para>Sets the base file number for generation of image file
+          sequences.</para>
         </listitem>
       </varlistentry>
 
@@ -62,11 +58,7 @@
 
         <listitem>
           <para>Specifies the output image width and height in pixels. The
-          ratio of both values controls the shape of the final image. To
-          monitor the current aspect ratio, you can right-click on the title
-          of a viewport found in its top left corner, and activate the
-          <guimenuitem><link linkend="gui.viewports">Show Render
-          Frame</link></guimenuitem> option.</para>
+          ratio of both values controls the shape of the final image.</para>
         </listitem>
       </varlistentry>
 
@@ -80,38 +72,29 @@
 
       <varlistentry>
         <term>Generate alpha channel</term>
-
         <listitem>
           <para>If you save the renderer image to a file format that supports
           an alpha channel (in addition to the RGB channels) then this option
-          will let you save the transparency information to the output file.
+          will include the transparency information in the output file.
           The PNG format is a popular image format that supports alpha
-          channels. The transparency information is very useful if you plan to
-          position the rendered image in front of an arbitrary background,
-          i.e. on a presentation slide. Then, the background will show through
-          those parts of the image that are not covered by atoms.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>Change renderer</term>
-
-        <listitem>
-          <para>Lets you select another <link
-          linkend="atomviz.rendering">rendering backend</link>.</para>
+          channels. The transparency information is very useful if you intend to
+          position the image in front of some other background later,
+          for instance on a presentation slide.</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
         <term>Save to file</term>
-
         <listitem>
-          <para>Activate this option to save the generated image or image
-          sequence to disk. Otherwise the rendered image will not be saved
-          automatically. In addition, you must specify an output filename with
-          the <guibutton>Choose...</guibutton> button. When rendering an
-          animation sequence, the selected filename will serve as a base name,
-          to which the frame number is appended.</para>
+          <para>Activate this option to save the generated image or movie to disk. 
+          Otherwise the rendered image will not be saved automatically. 
+          In addition to activating this option you must specify an output filename by
+          pressing the <guibutton>Choose...</guibutton> button.</para>
+          <para>When rendering an
+          animation sequence, the generated frames will be written to single movie
+          file when selecting a movie format (e.g. AVI). When an image format is selected,
+          the selected filename will serve as a base name, and a sqeuence of image files
+          is generated by appending the frame number.</para>
         </listitem>
       </varlistentry>
     </variablelist></para>

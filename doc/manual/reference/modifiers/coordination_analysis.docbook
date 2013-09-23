@@ -16,92 +16,25 @@
        <imagedata fileref="images/modifiers/coordination_analysis_panel.png" format="PNG" />
     </imageobject></mediaobject></screenshot></informalfigure>
   
-  This analysis modifier determines the number of nearest neighbors
-  of each atom (the <emphasis>coordination number</emphasis>). In addition, it
-  can generate bonds between bonds for visualization purposes.</para>
-
-  <para>The <guibutton>Calculate</guibutton> button runs the analysis. If you
-  are working with a time sequence of simulation snapshots, you should enable
-  the <guilabel>Auto-update on time change</guilabel> option to let OVITO
-  automatically re-perform the analysis whenever you jump to a different
-  simulation frame.</para>
-
-  <para>When finding neighbor atoms, the analysis modifier uses periodic
-  boundary conditions if enabled for the <link
-  linkend="atomviz.objects.simulation_cell">simulation cell</link>.</para>
+  This modifier determines the number of nearest neighbors
+  of each particle within a given cutoff radius (the <emphasis>coordination number</emphasis>).
+  </para>
+  
+  <para>
+  The modifier stores its results in the <literal>Coordination</literal> particle property.
+  </para>
 
   <simplesect>
     <title>Parameters</title>
 
     <variablelist>
       <varlistentry>
-        <term>Auto-update on time change</term>
-
-        <listitem>
-          <para>If activated, the modifier re-runs the analysis automatically
-          when you jump to a different simulation frame.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>Save results to scene file</term>
-
-        <listitem>
-          <para>If activated, the analysis results are stored in the OVITO
-          file when the scene is saved. This takes additional disk space, but
-          you don't have to run the analysis again after loading the scene
-          file.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>Generate bonds</term>
-
-        <listitem>
-          <para>If activated, the modifier not only determines the number of
-          near neighbors of each atom (coordination number), but it also
-          generates the list of bonds. The bonds are displayed in the
-          viewports.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
         <term>Cutoff radius</term>
-
         <listitem>
-          <para>The distance threshold for near neighbor atoms.</para>
+          <para>The maximum distance between pairs of particles to be considered neighbors.</para>
         </listitem>
       </varlistentry>
 
-      <varlistentry>
-        <term>Maximum bonds per atom</term>
-
-        <listitem>
-          <para>Upper limit for the number of bonds a single atom can have.
-          This controls how much memory is allocated for each atom to store
-          its bonds to other atoms. Note that this does not affect the
-          calculation of coordination numbers.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>Show bonds</term>
-
-        <listitem>
-          <para>Controls the display of bonds in the viewports and in the
-          rendered image. Note that is only takes effect if <guilabel>Generate
-          bonds</guilabel> has been activated.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>Render flat bonds</term>
-
-        <listitem>
-          <para>Controls whether bonds are displayed as flat lines, or as
-          shaded cylinders.</para>
-        </listitem>
-      </varlistentry>
     </variablelist>
   </simplesect>
 </section>

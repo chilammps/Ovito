@@ -14,7 +14,7 @@
   These properties are read from the imported simulation file. Modifiers have access
   to the existing particle properties, can alter the stored values, or can associate
   new properties with particles. For instance, the Coordination Analysis modifier
-  adds the <emphasis>Coordination number</emphasis> property to each particle, which stores their number
+  adds the <literal>Coordination number</literal> property to each particle, which stores their number
   of neighbors. 
   </para>
   
@@ -22,16 +22,16 @@
   All particles in a data set have the same set of properties associated with them. Internally, particle
   properties are implemented as data arrays with one entry per particle. A single entry can 
   hold an integer or floating-point number, or a more complex data type such as a vector or a tensor.
-  The <emphasis>Position</emphasis> property, for instance, stores vectors with three components.
+  The <literal>Position</literal> property, for instance, stores vectors with three components.
   The individual components of this property are referred to as 
-  <emphasis>Position.X</emphasis>, <emphasis>Position.Y</emphasis>, and <emphasis>Position.Z</emphasis>. 
+  <literal>Position.X</literal>, <literal>Position.Y</literal>, and <literal>Position.Z</literal>. 
   </para>
 
   <para>One can distinguish two types of particle properties: Standard properties and user-defined properties.
   Standard properties have a pre-defined name, data type, and specific meaning or function.
-  The standard property <emphasis>Position</emphasis>, for instance, is used by OVITO to store the particle
-  positions while the <emphasis>Color</emphasis> standard property stores the particle colors etc.
-  Particles always have at least the <emphasis>Position</emphasis> associated with them; all other 
+  The standard property <literal>Position</literal>, for instance, is used by OVITO to store the particle
+  positions while the <literal>Color</literal> standard property stores the particle colors etc.
+  Particles always have at least the <literal>Position</literal> associated with them; all other 
   standard properties are optional. That means, they are only defined if the input file contains a 
   corresponding data column or if they have been added later by a <link linkend="usage.modification_pipeline">modifier</link>.
   </para>
@@ -42,7 +42,7 @@
         <tgroup cols="2">
           <thead>
             <row>
-              <entry>Standard property name</entry>
+              <entry>Standard property</entry>
               <entry>Data type / Components</entry>
               <entry>Description</entry>
             </row>
@@ -50,35 +50,35 @@
 
           <tbody>
             <row>
-              <entry><emphasis>Position</emphasis></entry>
+              <entry><literal>Position</literal></entry>
               <entry>X, Y, Z</entry>
               <entry><para>Controls the location of particles in space.</para></entry>
             </row>
             <row>
-              <entry><emphasis>Color</emphasis></entry>
+              <entry><literal>Color</literal></entry>
               <entry>R, G, B</entry>
               <entry><para>Controls the display color of individual particles.</para></entry>
             </row>
             <row>
-              <entry><emphasis>Radius</emphasis></entry>
+              <entry><literal>Radius</literal></entry>
               <entry>Real</entry>
               <entry><para>Controls the size of individual particles.</para></entry>
             </row>
             <row>
-              <entry><emphasis>Particle Type</emphasis></entry>
+              <entry><literal>Particle Type</literal></entry>
               <entry>Integer</entry>
               <entry><para>Stores the type identifier of each particle. This will also determine the display size and color of 
               particles unless the <emphasis>Radius</emphasis> or <emphasis>Color</emphasis> properties are present.</para></entry>
             </row>
             <row>
-              <entry><emphasis>Particle Identifier</emphasis></entry>
+              <entry><literal>Particle Identifier</literal></entry>
               <entry>Integer</entry>
               <entry><para>Stores the unique ID of each particle. This is used by some modifiers
               to track particles over time when the storage order of particles changes between simulation
               frames.</para></entry>
             </row>
             <row>
-              <entry><emphasis>Selection</emphasis></entry>
+              <entry><literal>Selection</literal></entry>
               <entry>Integer</entry>
               <entry><para>Stores the selection state of particles. The <emphasis>Selection</emphasis> property of 
               selected particles is 1 (and 0 otherwise).</para></entry>

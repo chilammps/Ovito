@@ -47,13 +47,13 @@
   <sect3 xml:id="usage.viewports.toolbar">
   <title>Viewport toolbar</title>     
    <para>
-     The <link linkend="gui.viewport_control_toolbar">viewports toolbar</link> is located below the viewports on the right. It contains buttons to activate dedicated viewport navigation modes. 
-     With the <link linkend="gui.viewport_control_toolbar.maximize_viewport">Maximize Active Viewport</link> button in 
-     the active viewport can be enlarged to fill the entire main window. Clicking that button again restores the original 2x2 layout.
+     The viewports toolbar is located below the viewports on the right. It contains buttons to activate dedicated viewport navigation modes. 
+     With the <emphasis>Maximize Active Viewport</emphasis> button 
+     the active viewport can be enlarged to fill the entire main window. Clicking the button again restores the original 2x2 layout.
      The active viewport is marked by a yellow border.
    </para>
    <para>
-     The <link linkend="gui.viewport_control_toolbar.zoom_all">Zoom Scene Extents</link> button adjust the zoom of the active viewport
+     The <emphasis>Zoom Scene Extents</emphasis> button adjust the zoom of the active viewport
      such that the entire scene is fully visible.
    </para>
   </sect3>
@@ -69,7 +69,7 @@
    </para>
    <para>
      The <menuchoice><guimenuitem>Show Render Frame</guimenuitem></menuchoice> option activates a visual clue that indicates which area of the viewport will be visible 
-     in the final output picture. The aspect ratio of the rendered image can be adjusted in the <link linkend="core.rendering.render_settings">Render Settings</link> panel. 
+     in the final output picture. The aspect ratio of the rendered image can be adjusted in the <link linkend="core.render_settings">Render Settings</link> panel. 
    </para>
   </sect3>     
 

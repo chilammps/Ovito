@@ -30,10 +30,9 @@
                    format="png" xml:base="../"/>
       </imageobject>
     </inlinemediaobject> button, which is also found in the main toolbar.
-  OVITO uses the viewing direction of the <link
-  linkend="gui.viewports_area"><emphasis>active viewport</emphasis></link> for
-  rendering, which is surrounded by a yellow border. The active viewport can
-  be set by right-clicking into one of the viewports.</para>
+  OVITO uses the viewing direction of the active viewport for
+  rendering, which is surrounded by the yellow border. The different viewport can
+  be activated by right-clicking into it.</para>
 
   <para>OVITO supports different rendering backends
   (<firstterm>renderers</firstterm>), which compute the final image of the

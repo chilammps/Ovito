@@ -10,15 +10,14 @@
          xmlns:ns="http://docbook.org/ns/docbook">
   <title>Wrap at periodic boundaries</title>
 
-  <para>This modifier maps atoms that are located outside the simulation cell
+  <para>This modifier maps particles that are located outside the simulation cell
   back into the simulation cell by "wrapping" their coordinates around at
   periodic boundaries.</para>
 
   <note>
     <para>The modifier acts only in spatial directions for which periodic
-    boundary conditions (PBC) are activated. The PBC flags are read from the
-    input file, and can be changed manually in the <link
-    linkend="atomviz.objects.simulation_cell">simulation cell</link>
-    parameters panel.</para>
+    boundary conditions (PBC) are enabled. The PBC flags are read from the
+    input simulation file.
+    </para>
   </note>
 </section>

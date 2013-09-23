@@ -10,6 +10,36 @@
          xmlns:ns="http://docbook.org/ns/docbook">
   <title>Centrosymmetry parameter</title>
 
-  <para></para>
+  <para>
+  This modifier calculates the centro-symmetry parameter of each particle [<link
+  xlink:href="http://link.aps.org/doi/10.1103/PhysRevB.58.11085">Kelchner, Plimpton, Hamilton, Phys Rev B, 58, 11085 (1998)</link>].
+  In solid-state systems the centro-symmetry parameter is a useful measure of the local 
+  lattice disorder around an atom and can be used to characterize whether the atom is 
+  part of a perfect lattice, a local defect (e.g. a dislocation or stacking fault), or at a surface.
+  </para>
+  
+  <para>
+    The centry-symmetry parameter is calculated by OVITO using 
+    the <link xlink:href="http://lammps.sandia.gov/doc/compute_centro_atom.html">algorithm implemented in LAMMPS</link>.
+  </para>
+  
+  <para>
+    The modifier expects a parameter that specifies the number of neighbors to take into account.
+    It should correspond to the number of nearest neighbors in the underlying lattice of atoms. 
+    For fcc and bcc lattices, it should be set to 12 and 8 respectively. 
+    More generally, the parameter can be set to a positive, even integer.
+  </para>
+  
+  <para>
+    For an atom on a lattice site, surrounded by atoms on a perfect lattice, 
+    the centro-symmetry parameter will be 0. It will be near 0 for small thermal perturbations 
+    of a perfect lattice. If a point defect exists, the symmetry is broken, and the parameter 
+    will be a larger positive value. An atom at a surface will have a large positive parameter.
+  </para>
+  
+  <para>
+    The modifier requires access to the complete set of particles. It should therefore be placed at the 
+    beginning of the processing pipeline, preceding any modifiers that delete particles.
+  </para>
   
 </section>

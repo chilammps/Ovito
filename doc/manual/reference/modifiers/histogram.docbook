@@ -16,6 +16,41 @@
        <imagedata fileref="images/modifiers/histogram_panel.png" format="PNG" />
     </imageobject></mediaobject></screenshot></informalfigure>
   
+    This modifier generates a histogram for a particle property. 
   </para>
   
+  <para>
+  Optionally, the modifier can be used to select all particles having a property value
+  that falls into a specified range.
+  </para>
+  
+  <simplesect>
+    <title>Parameters</title>
+
+    <variablelist>
+      <varlistentry>
+        <term>Property</term>
+        <listitem>
+          <para>The input particle property for which the histogram should be computed.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Number of histogram bins</term>
+        <listitem>
+          <para>Controls the resolution of the generated histogram.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Select particles in range</term>
+        <listitem>
+          <para>If this option is activated the modifier will select particles whose property value falls
+          into the given range.</para>
+        </listitem>
+      </varlistentry>
+      
+    </variablelist>
+  </simplesect>
+    
 </section>

@@ -10,6 +10,6 @@
          xmlns:ns="http://docbook.org/ns/docbook">
   <title>Invert selection</title>
 
-  <para>This modifier inverts the atom selection. All atoms that were not
-  selected before are selected by this modifier and vice versa.</para>
+  <para>This modifier inverts the selection state of all particles. 
+  Particles that were not selected are selected by this modifier and vice versa.</para>
 </section>

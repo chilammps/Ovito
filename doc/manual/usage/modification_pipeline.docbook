@@ -27,6 +27,9 @@
   <sect3 xml:id="usage.modification_pipeline.pipeline_listbox">
     <title>The pipeline editor</title>
     <para>
+	    <figure><title>The modification pipeline editor</title><screenshot><mediaobject><imageobject>
+	       <imagedata fileref="images/command_panel/pipeline_editor.png" format="PNG" />
+	    </imageobject></mediaobject></screenshot></figure>
        The pipeline editor is found in the command panel on the right side of the main window and is plays a central role in OVITO's user interface. It shows the current 
        modification pipeline and allows to select individual modifiers to adjust their parameters. After importing a simulation file, the modification 
        pipeline is empty and initially contains no modifiers. Still, the pipeline editor already shows two sections "Display" and "Input", which are always present.

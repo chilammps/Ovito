@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <section version="5.0"
          xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
-         xml:id="viz.modifiers.delete_selected_particle"
+         xml:id="viz.modifiers.delete_selected_particles"
          xmlns="http://docbook.org/ns/docbook"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xmlns:xs="http://www.w3.org/2001/XMLSchema"
@@ -10,8 +10,6 @@
          xmlns:ns="http://docbook.org/ns/docbook">
   <title>Delete selected particles</title>
 
-  <para>This modifier deletes all currently selected atoms. For instance, use
-  the <link linkend="atomviz.modifiers.select_by_expression">Expression
-  Select</link> or <link linkend="atomviz.modifiers.select_atom_type">Select
-  Atom Type</link> modifiers to select some atoms first.</para>
+  <para>This modifier deletes all currently selected particles.</para>
+  
 </section>

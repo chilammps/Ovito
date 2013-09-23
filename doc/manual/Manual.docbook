@@ -33,8 +33,10 @@
 
   <xi:include href="Chapter_Installation.docbook"/>
 
+<!-- 
   <xi:include href="Chapter_Tutorial.docbook"/>
-
+ -->
+ 
   <xi:include href="Chapter_Usage.docbook"/>
 
   <xi:include href="Chapter_Reference.docbook"/>

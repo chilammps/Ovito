@@ -16,18 +16,16 @@
        <imagedata fileref="images/modifiers/expression_select_panel.png" format="PNG" />
     </imageobject></mediaobject></screenshot></informalfigure>
 
-  This modifier selects atoms based on a user-defined criterion.
-  The user specifies a Boolean expression, which is evaluated for each
-  individual atom. If the expression evaluates to zero (or
-  <emphasis>false</emphasis>) then the atom is unselected; otherwise it is
+  This modifier selects particles based on a user-defined criterion.
+  The user has to specify a Boolean expression, which is evaluated for every
+  individual particle. If the expression evaluates to zero (or
+  <emphasis>false</emphasis>) then the particle gets unselected; otherwise it gets
   selected.</para>
 
-  <para>The mathematical expression can contain references to other per-atom
-  properties stored in the data channels. Hence this Expression Select
-  modifier can be used to select atoms based on properties such as position,
-  atom type, energy etc., and any combination thereof. The list of available
-  input data channels is displayed in the lower part of the modifier panel.
-  Variable names are case-sensitive.</para>
+  <para>The Boolean expression can contain references to other per-particle
+  properties. Hence this modifier can be used to select particles based on properties such as position,
+  type, energy etc., and any combination thereof. The list of available
+  input properties is displayed in the lower panel. Variable and function names are case-sensitive.</para>
 
   <simplesect>
     <title>Parameters</title>
@@ -38,236 +36,243 @@
 
         <listitem>
           <para>This specifies the Boolean expression to be evaluated for each
-          atom. The expression syntax understood by the modifier is very
-          similar to the C-syntax. Arithmetic expressions can be created from
+          particle. The expression syntax supported by the modifier is very
+          similar to the C language syntax. Arithmetic expressions can be created from
           float literals, variables or functions using the following operators
-          in this order of precedence: <informaltable frame="none">
+          in this order of precedence:
+          <informaltable>
+          <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>Operator</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
               <tbody>
-                <tr>
-                  <td>()</td>
+                <row>
+                  <entry>(...)</entry>
 
-                  <td>expressions in parentheses are evaluated first</td>
-                </tr>
+                  <entry>expressions in parentheses are evaluated first</entry>
+                </row>
 
-                <tr>
-                  <td>A^B</td>
+                <row>
+                  <entry>A^B</entry>
 
-                  <td>exponentiation (A raised to the power B)</td>
-                </tr>
+                  <entry>exponentiation (A raised to the power B)</entry>
+                </row>
 
-                <tr>
-                  <td>A*B, A/B</td>
+                <row>
+                  <entry>A*B, A/B</entry>
 
-                  <td>multiplication and division</td>
-                </tr>
+                  <entry>multiplication and division</entry>
+                </row>
 
-                <tr>
-                  <td>A+B, A-B</td>
+                <row>
+                  <entry>A+B, A-B</entry>
 
-                  <td>addition and subtraction</td>
-                </tr>
+                  <entry>addition and subtraction</entry>
+                </row>
 
-                <tr>
-                  <td>A==B, A!=B, A&lt;B, A&lt;=B, A&gt;B, A&gt;=B</td>
+                <row>
+                  <entry>A==B, A!=B, A&lt;B, A&lt;=B, A&gt;B, A&gt;=B</entry>
 
-                  <td>comparison between A and B (result is either 0 or
-                  1)</td>
-                </tr>
+                  <entry>comparison between A and B (result is either 0 or
+                  1)</entry>
+                </row>
 
-                <tr>
-                  <td>A &amp;&amp; B</td>
+                <row>
+                  <entry>A &amp;&amp; B</entry>
 
-                  <td>logical AND operator: result is 1 if A and B differ from
-                  0, else 0</td>
-                </tr>
+                  <entry>logical AND operator: result is 1 if A and B differ from
+                  0, else 0</entry>
+                </row>
 
-                <tr>
-                  <td>A || B</td>
+                <row>
+                  <entry>A || B</entry>
 
-                  <td>logical OR operator: result is 1 if A or B differ from
-                  0, else 0</td>
-                </tr>
-              </tbody>
+                  <entry>logical OR operator: result is 1 if A or B differ from
+                  0, else 0</entry>
+                </row>
+                
+                <row>
+                  <entry>A ? B : C</entry>
+                  <entry>If A differs from 0 (i.e. is true), the resulting value of this expression
+                  is B, else C.</entry>
+                </row>
+                
+              </tbody></tgroup>
             </informaltable></para>
 
           <para>The expression parser supports the following functions:
-          <informaltable frame="none">
+          <informaltable>
+          <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>Function name</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
               <tbody>
-                <tr>
-                  <td>abs(A)</td>
+                <row>
+                  <entry>abs(A)</entry>
 
-                  <td>Absolute value of A. If A is negative, returns -A
-                  otherwise returns A.</td>
-                </tr>
+                  <entry>Absolute value of A. If A is negative, returns -A
+                  otherwise returns A.</entry>
+                </row>
 
-                <tr>
-                  <td>acos(A)</td>
+                <row>
+                  <entry>acos(A)</entry>
 
-                  <td>Arc-cosine of A. Returns the angle, measured in radians,
-                  whose cosine is A.</td>
-                </tr>
+                  <entry>Arc-cosine of A. Returns the angle, measured in radians,
+                  whose cosine is A.</entry>
+                </row>
 
-                <tr>
-                  <td>acosh(A)</td>
+                <row>
+                  <entry>acosh(A)</entry>
 
-                  <td>Same as acos() but for hyperbolic cosine.</td>
-                </tr>
+                  <entry>Same as acos() but for hyperbolic cosine.</entry>
+                </row>
 
-                <tr>
-                  <td>asin(A)</td>
+                <row>
+                  <entry>asin(A)</entry>
 
-                  <td>Arc-sine of A. Returns the angle, measured in radians,
-                  whose sine is A.</td>
-                </tr>
+                  <entry>Arc-sine of A. Returns the angle, measured in radians,
+                  whose sine is A.</entry>
+                </row>
 
-                <tr>
-                  <td>asinh(A)</td>
+                <row>
+                  <entry>asinh(A)</entry>
 
-                  <td>Same as asin() but for hyperbolic sine.</td>
-                </tr>
+                  <entry>Same as asin() but for hyperbolic sine.</entry>
+                </row>
 
-                <tr>
-                  <td>atan(A)</td>
+                <row>
+                  <entry>atan(A)</entry>
 
-                  <td>Arc-tangent of A. Returns the angle, measured in
-                  radians, whose tangent is A.</td>
-                </tr>
+                  <entry>Arc-tangent of A. Returns the angle, measured in
+                  radians, whose tangent is A.</entry>
+                </row>
 
-                <tr>
-                  <td>atan2(Y,X)</td>
+                <row>
+                  <entry>atan2(Y,X)</entry>
 
-                  <td>Two argument variant of the arctangent function. Returns
+                  <entry>Two argument variant of the arctangent function. Returns
                   the angle, measured in radians. This function is documented
                   <link
-                  xlink:href="http://en.wikipedia.org/wiki/Atan2">here</link>.</td>
-                </tr>
+                  xlink:href="http://en.wikipedia.org/wiki/Atan2">here</link>.</entry>
+                </row>
 
-                <tr>
-                  <td>atanh(A)</td>
+                <row>
+                  <entry>atanh(A)</entry>
 
-                  <td>Same as atan() but for hyperbolic tangent.</td>
-                </tr>
+                  <entry>Same as atan() but for hyperbolic tangent.</entry>
+                </row>
 
-                <tr>
-                  <td>avg(A,B,...)</td>
+                <row>
+                  <entry>avg(A,B,...)</entry>
 
-                  <td>Returns the average of all arguments.</td>
-                </tr>
+                  <entry>Returns the average of all arguments.</entry>
+                </row>
 
-                <tr>
-                  <td>cos(A)</td>
+                <row>
+                  <entry>cos(A)</entry>
 
-                  <td>Cosine of A. Returns the cosine of the angle A, where A
-                  is measured in radians.</td>
-                </tr>
+                  <entry>Cosine of A. Returns the cosine of the angle A, where A
+                  is measured in radians.</entry>
+                </row>
 
-                <tr>
-                  <td>cosh(A)</td>
+                <row>
+                  <entry>cosh(A)</entry>
 
-                  <td>Same as cos() but for hyperbolic cosine.</td>
-                </tr>
+                  <entry>Same as cos() but for hyperbolic cosine.</entry>
+                </row>
 
-                <tr>
-                  <td>exp(A)</td>
+                <row>
+                  <entry>exp(A)</entry>
 
-                  <td>Exponential of A. Returns the value of e raised to the
+                  <entry>Exponential of A. Returns the value of e raised to the
                   power A where e is the base of the natural logarithm, i.e.
                   the non-repeating value approximately equal to
-                  2.71828182846.</td>
-                </tr>
+                  2.71828182846.</entry>
+                </row>
 
-                <tr>
-                  <td>A ? B : C</td>
+                <row>
+                  <entry>rint(A)</entry>
 
-                  <td>If A differs from 0 (i.e. is true), the resulting value of this expression
-                  is B, else C.</td>
-                </tr>
+                  <entry>Rounds A to the closest integer. 0.5 is rounded to
+                  1.</entry>
+                </row>
 
-                <tr>
-                  <td>rint(A)</td>
+                <row>
+                  <entry>ln(A)</entry>
 
-                  <td>Rounds A to the closest integer. 0.5 is rounded to
-                  1.</td>
-                </tr>
+                  <entry>Natural (base e) logarithm of A.</entry>
+                </row>
 
-                <tr>
-                  <td>ln(A)</td>
+                <row>
+                  <entry>log10(A)</entry>
 
-                  <td>Natural (base e) logarithm of A.</td>
-                </tr>
+                  <entry>Base 10 logarithm of A.</entry>
+                </row>
 
-                <tr>
-                  <td>log10(A)</td>
+                <row>
+                  <entry>log2(A)</entry>
 
-                  <td>Base 10 logarithm of A.</td>
-                </tr>
+                  <entry>Base 2 logarithm of A.</entry>
+                </row>
 
-                <tr>
-                  <td>log2(A)</td>
+                <row>
+                  <entry>max(A,B,...)</entry>
 
-                  <td>Base 2 logarithm of A.</td>
-                </tr>
+                  <entry>Returns the maximum of all values.</entry>
+                </row>
 
-                <tr>
-                  <td>max(A,B,...)</td>
+                <row>
+                  <entry>min(A,B,...)</entry>
 
-                  <td>Returns the maximum of all values.</td>
-                </tr>
+                  <entry>Returns the minimum of all values.</entry>
+                </row>
 
-                <tr>
-                  <td>min(A,B,...)</td>
+                <row>
+                  <entry>sin(A)</entry>
 
-                  <td>Returns the minimum of all values.</td>
-                </tr>
+                  <entry>Sine of A. Returns the sine of the angle A, where A is
+                  measured in radians.</entry>
+                </row>
 
-                <tr>
-                  <td>sin(A)</td>
+                <row>
+                  <entry>sinh(A)</entry>
 
-                  <td>Sine of A. Returns the sine of the angle A, where A is
-                  measured in radians.</td>
-                </tr>
+                  <entry>Same as sin() but for hyperbolic sine.</entry>
+                </row>
 
-                <tr>
-                  <td>sinh(A)</td>
+                <row>
+                  <entry>sqrt(A)</entry>
 
-                  <td>Same as sin() but for hyperbolic sine.</td>
-                </tr>
+                  <entry>Square root of a value.</entry>
+                </row>
 
-                <tr>
-                  <td>sqrt(A)</td>
+                <row>
+                  <entry>tan(A)</entry>
 
-                  <td>Square root of a value.</td>
-                </tr>
-
-                <tr>
-                  <td>tan(A)</td>
-
-                  <td>Tangent of A. Returns the tangent of the angle A, where
-                  A is measured in radians.</td>
-                </tr>
-              </tbody>
+                  <entry>Tangent of A. Returns the tangent of the angle A, where
+                  A is measured in radians.</entry>
+                </row>
+              </tbody></tgroup>
             </informaltable></para>
         </listitem>
       </varlistentry>
 
-      <varlistentry>
-        <term>Highlight selected atoms</term>
-
-        <listitem>
-          <para>Controls whether the atoms selected by the modifier should be
-          hightlighted (with a red color) in the viewports.</para>
-        </listitem>
-      </varlistentry>
     </variablelist>
   </simplesect>
 
   <simplesect>
     <title>Examples</title>
 
-    <para>Here are some example expressions:</para>
+    <para>Here are two examples for Boolean expressions:</para>
 
-    <para><programlisting>AtomType==1 || AtomType==2
- 
+    <para><programlisting>ParticleType==1 || ParticleType==2
+    
 sqrt(Position.X*Position.X + Position.Y*Position.Y) &lt; 10</programlisting></para>
   </simplesect>
 </section>

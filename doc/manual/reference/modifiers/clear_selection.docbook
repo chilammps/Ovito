@@ -10,6 +10,8 @@
          xmlns:ns="http://docbook.org/ns/docbook">
   <title>Clear selection</title>
 
-  <para></para>
+  <para>
+    This modifier clears any existing selection of particles by deleting the <literal>Selection</literal> particle property.
+  </para>
   
 </section>

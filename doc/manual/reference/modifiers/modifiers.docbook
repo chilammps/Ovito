@@ -83,7 +83,7 @@
               <entry namest="name" nameend="descr" align="center" role="subth">Modification</entry>
             </row>
             <row>
-              <entry><link linkend="atomviz.modifiers.affine_transformation">Affine transformation</link></entry>
+              <entry><link linkend="viz.modifiers.affine_transformation">Affine transformation</link></entry>
               <entry>Applies an affine transformation to particle coordinates.</entry>
             </row>
             <row>

@@ -11,43 +11,40 @@
   <title>Affine transformation</title>
 
   <para>
-  Applies an affine transformation to the atomic positions and/or
-  the simulation cell. The transformation is specified in terms of a 3x3
-  matrix and a translation vector.</para>
-
-  <para>The modifier supports two modes: You can either specify the components
-  of the 3x3 transformation matrix directly, or you can specify the shape of a
-  target simulation cell. In the latter case, the modifier determines the
-  actual transformation matrix, which it applies to the atomic positions, from
-  this fixed target cell and the geometry of the current cell. One common
-  application of this mode is a system with a box that changes with time, and
-  which you want to homogeneously scale to some fixed initial size.</para>
-
-  <simplesect>
-    <title>Parameters</title>
-    
+  
     <informalfigure><screenshot><mediaobject><imageobject>
        <imagedata fileref="images/modifiers/affine_transformation_panel.png" format="PNG" />
     </imageobject></mediaobject></screenshot></informalfigure>
 
+  Applies an affine transformation to the particle positions and/or
+  the simulation cell. The transformation is specified as a 3 x 3
+  matrix and a translation vector.</para>
+
+  <para>The modifier supports two modes: The user can either specify the
+  transformation matrix or the final shape of the simulation cell. 
+  In the latter mode the modifier computes the transformation matrix
+  such that the old simulation cell is mapped to the specified target shape.</para>
+
+  <simplesect>
+    <title>Parameters</title>
+    
     <variablelist>
       <varlistentry>
-        <term>Apply transformation to simulation cell</term>
+        <term>Transform simulation cell</term>
 
         <listitem>
-          <para>Controls whether the affine transformation is applied to the
-          simulation cell geometry, i.e. to the three vectors that span the
-          simulation cell as well as its origin.</para>
+          <para>Controls whether the transformation matrix is applied to the
+          simulation cell geometry.</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term>Apply transformation to atoms</term>
+        <term>Transform particles</term>
 
         <listitem>
-          <para>Controls whether the affine transformation is applied to the
-          atomic coordinates. You can choose which atoms are affected by the
-          modifier: All atoms or only the selected atoms.</para>
+          <para>Controls whether the transformation is applied to the
+          atomic coordinates. You can select which particles should be affected by the
+          modifier: All or only the selected particles.</para>
         </listitem>
       </varlistentry>
 
@@ -55,8 +52,8 @@
         <term>Transformation matrix - Rotate/Scale/Shear</term>
 
         <listitem>
-          <para>The 3x3 matrix that specifies the affine transformation. The
-          atomic coordinate vectors are left-multiplied with this
+          <para>The 3 x 3 matrix that determines the affine transformation. The
+          particle coordinates are left-multiplied with this
           matrix.</para>
         </listitem>
       </varlistentry>
@@ -65,33 +62,23 @@
         <term>Transformation matrix - Translation</term>
 
         <listitem>
-          <para>A translation vector that is added to the atomic positions
+          <para>A translation vector that is added to the particle positions
           and/or the simulation box after they have been transformed by the
-          3x3 matrix.</para>
+          3 x 3 matrix.</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term>Scale to fixed box size - Cell vectors</term>
+        <term>Transform to target box</term>
 
         <listitem>
           <para>The three vectors that span the target simulation cell. The
-          actual 3x3 transformation matrix applied to the atomic coordinates
-          is calculated from the current simulation cell geometry and these
-          three target vectors.</para>
+          3 x 3 transformation matrix applied to the particles coordinates
+          is calculated from the current simulation cell geometry and the
+          three target cell vectors.</para>
         </listitem>
       </varlistentry>
 
-      <varlistentry>
-        <term>Scale to fixed box size - Cell origin</term>
-
-        <listitem>
-          <para>The origin of the target simulation cell. The displacement
-          vector by which all atoms are translated is calculated from the
-          origin of the current simulation cell and this target base
-          point.</para>
-        </listitem>
-      </varlistentry>
     </variablelist>
   </simplesect>
 </section>

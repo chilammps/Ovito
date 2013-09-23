@@ -10,27 +10,11 @@
          xmlns:ns="http://docbook.org/ns/docbook">
   <title>Assign color</title>
 
-  <para>This modifier assigns a single color to all selected atoms. If no
-  selection exists then the color is assigned to all atoms.</para>
+  <para>This modifier assigns a uniform color to all selected particles. If no
+  selection is defined, the color is assigned to all particles.</para>
 
-  <para>Note that selected atoms are usually highlighted in a special color
-  (red by default) to indicate that they are selected. Therefore, the
-  highlighting masks the actual colors of atoms (as stored in the <link
-  linkend="atomviz.data_channels.color">Color data channel</link>). After
-  applying this modifier, the highlighting of selected atoms is automatically
-  disabled such that the assigned colors become visible. </para>
-
-  <simplesect>
-    <title>Parameters</title>
-
-    <variablelist>
-      <varlistentry>
-        <term>Color</term>
-
-        <listitem>
-          <para>The color to be assigned to all selected atoms.</para>
-        </listitem>
-      </varlistentry>
-    </variablelist>
-  </simplesect>
+  <para>Note that selected particles are highlighted with a special color
+  (red by default). Since the highlighting would mask the actual color assigned by this
+  modifier, the modifier clears the current selection. You can suppress this behavior
+  by activating the <emphasis>Keep selection</emphasis> option.</para>
 </section>

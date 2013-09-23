@@ -16,32 +16,24 @@
        <imagedata fileref="images/modifiers/select_particle_type_panel.png" format="PNG" />
     </imageobject></mediaobject></screenshot></informalfigure>
 
-  This modifier selects atoms of a specific type (or types).
-  Depending on the input, atoms can be classified in one of several ways, for
-  instance in terms of chemical species or structural type.</para>
+  This modifier selects particles of a specific type (or types).</para>
 
   <simplesect>
     <title>Parameters</title>
 
     <variablelist>
       <varlistentry>
-        <term>Data Channel</term>
-
+        <term>Property</term>
         <listitem>
-          <para>The drop-down list shows all data channels (type
-          classifications) that can be used as input for the modifier.</para>
+          <para>This selects the classification used by the modifier. Particles may belong to multiple types
+          (e.g. both chemical type and structural type). This selects the kind of type property to use as input.</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term>Atom Type</term>
-
+        <term>Types</term>
         <listitem>
-          <para>List of atom types in the selected data channel
-          (classification). You can select multiple entries with the
-          <keycap>Control</keycap> key. The modifier will select all atoms
-          belonging to one of the selected entries; all other atoms become
-          unselected.</para>
+          <para>List of available types. Check one or multiple types to select the corresponding particles.</para>
         </listitem>
       </varlistentry>
     </variablelist>

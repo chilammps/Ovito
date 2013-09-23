@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <section version="5.0"
          xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
-         xml:id="atomviz.modifiers.common_neighbor_analysis"
+         xml:id="viz.modifiers.common_neighbor_analysis"
          xmlns="http://docbook.org/ns/docbook"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xmlns:xs="http://www.w3.org/2001/XMLSchema"
@@ -16,47 +16,45 @@
        <imagedata fileref="images/modifiers/common_neighbor_analysis_panel.png" format="PNG" />
     </imageobject></mediaobject></screenshot></informalfigure>
   
-  This analysis modifier performs the <emphasis>common neighbor
-  analysis</emphasis> (CNA) [<link
+  This analysis modifier performs the <emphasis>Common Neighbor
+  Analysis</emphasis> (CNA) [<link
   xlink:href="http://dx.doi.org/10.1021/j100303a014">Honeycutt and Andersen,
-  J. Phys. Chem. 91, 4950</link>] to assign a structural type (FCC, BCC, HCP
-  etc.) to each atom. The analysis algorithm is based on a nearest-neighbor
-  <link
-  xlink:href="http://en.wikipedia.org/wiki/Graph_(mathematics)">graph</link>
-  that describes the connectivity among neighbors of a given central atom.
-  What pairs of atoms are considered nearest neighbors (bonded) is determined
-  by a cutoff radius: atoms closer to each other than the radius are
-  considered bonded. Recently, an adaptive version of the CNA has been
-  formulated, which works without the fixed cutoff radius. This
-  <emphasis>advaptive common neighbor analysis</emphasis> (a-CNA) [<link
+  J. Phys. Chem. 91, 4950</link>] to assign a structure type (FCC, BCC, HCP
+  etc.) to every particle. The algorithm is based on a nearest-neighbor graph
+  that encodes the bond connectivity among neighbors of a given central particle.
+  </para>
+
+  <para>
+  Which pairs of particle are considered nearest neighbors (bonded) is determined
+  by the cutoff radius parameter: Particles closer to each other than the cutoff radius are
+  considered bonded. 
+  Since it is sometimes difficult to choose this cutoff radius correctly, in particular in the
+  case of multiphase systems, an adaptive version of the CNA has been
+  developed that works without a fixed cutoff radius. The
+  <emphasis>Advaptive Common Neighbor Analysis</emphasis> (a-CNA) method [<link
   xlink:href="http://dx.doi.org/10.1088/0965-0393/20/4/045021">Stukowski,
-  Modell. Simul. Mater. Sci. Eng. 20, 045021</link>] doesn't require the user
-  to specify a cutoff radius since it automatically determines the optimal
-  radius for each individual atom.</para>
+  Modell. Simul. Mater. Sci. Eng. 20, 045021</link>] determines the optimal cutoff radius automatically 
+  for each individual particle.</para>
 
   <para>When using the conventional CNA, the fixed cutoff must be chosen
   according to the crystal structure at hand. For face-centered cubic (FCC)
-  and hexagonal close-packed (HCP) structures the cutoff radius must be chosen
-  such that it lies midway between the first and the second neighbor shell of
-  atoms. For body-centered cubic (BCC) material the cutoff radius should lie
+  and hexagonal close-packed (HCP) structures the cutoff radius must lie midway between 
+  the first and the second neighbor shell of
+  neighbors. For body-centered cubic (BCC) materials the cutoff radius should lie
   between the second and the third neighbor shell. OVITO provides a list of
-  optimal cutoff distances for fcc and bcc crystal structures of many pure
+  optimal cutoff distances for fcc and bcc crystal structures formed by common pure
   elements. These radii can be accessed via the <guilabel>Presets</guilabel>
   drop-down list.</para>
 
-  <para>When generating neighbor lists, the analysis modifer uses periodic
-  boundary conditions if enabled for the <link
-  linkend="atomviz.objects.simulation_cell">simulation cell</link>. Note that
-  the analysis modifier must be placed at the begining of the processing
-  pipeline since it requires access to the complete set of input atoms. Hence,
-  place any modifiers that delete atoms after this analysis modifier.</para>
-
-  <simplesect>
-    <para>The modifier stores its results as integer values in the <link
-    linkend="atomviz.data_channels.cnaatomtype"><literal>Structure
-    Type</literal></link> data channel:</para>
-
+  <para>
+  In addition to assigning colors to particles, the modifier stores its results in the <literal>Structure Type</literal> particle property.
+  The coordination structure types are encoded as integer values:
     <itemizedlist>
+    
+      <listitem>
+        <para>0 = Other, unknown coordination structure</para>
+      </listitem>
+    
       <listitem>
         <para>1 = FCC, face-centered cubic</para>
       </listitem>
@@ -70,26 +68,19 @@
       </listitem>
 
       <listitem>
-        <para>4 = Icosahedral coordination</para>
+        <para>4 = ICO, Icosahedral coordination</para>
       </listitem>
 
       <listitem>
-        <para>5 = Other, unknown coordination structure</para>
+        <para>5 = DIA, cubic diamond structure</para>
       </listitem>
+
     </itemizedlist>
+  </para>
 
-    <para>The <guibutton>Calculate</guibutton> button runs the analysis. If
-    you are working with a time sequence of simulation snapshots, you should
-    enable the <guilabel>Auto-update on time change</guilabel> option to let
-    OVITO automatically re-perform the analysis whenever you jump to a
-    different simulation frame. The <guilabel>Save results to scene
-    file</guilabel> option controls whether the results of the analysis are
-    stored to disk when saving the scene to an OVITO file. If disabled, the
-    results are discarded when quitting OVITO and need to be recalculated
-    after opening the scene file.</para>
-
-    <para>Double-click on an entry in the <guilabel>Type colors</guilabel>
-    list to change the color being assigned to atoms of that structure
-    type.</para>
-  </simplesect>
+  <para>
+    The modifier requires access to the complete set of particles. It should therefore be placed at the 
+    beginning of the processing pipeline, preceding any modifiers that delete particles.
+  </para>
+  
 </section>

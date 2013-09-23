@@ -16,28 +16,26 @@
        <imagedata fileref="images/modifiers/show_periodic_images_panel.png" format="PNG" />
     </imageobject></mediaobject></screenshot></informalfigure>
   
-  Duplicates all atoms to show the periodic images of the
-  system.</para>
+  Duplicates particles to show multiple images of a periodic system.</para>
 
   <simplesect>
     <title>Parameters</title>
 
     <variablelist>
       <varlistentry>
-        <term>Show periodic images (X,Y,Z)</term>
+        <term>Periodic images (X,Y,Z)</term>
 
         <listitem>
-          <para>Enables the display of periodic images of the system in the
-          three spatial directions. You can control how often the system is
+          <para>Enables the generation of images of the system in the
+          three spatial directions. You can control how many times the system is
           duplicated in each direction.</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
         <term>Adjust simulation box size</term>
-
         <listitem>
-          <para>If activated, the simulation cell size is extended accordingly
+          <para>If activated, the simulation cell is extended accordingly
           to match the duplicated system.</para>
         </listitem>
       </varlistentry>

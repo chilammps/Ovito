@@ -16,21 +16,21 @@
        <imagedata fileref="images/modifiers/slice_panel.png" format="PNG" />
     </imageobject></mediaobject></screenshot></informalfigure>
   
-  The <emphasis>Slice</emphasis> modifier cuts away part of the
-  atoms based on an inifinite plane. There are two modes of operation: The
-  modifier can either remove all atoms on one side of the infinite plane. Or
-  it can cut out a thin slice of a certain width.</para>
+  This modifier cuts away particles located on one side of an infinite plane. 
+  In a second mode of operation the modifier can delete particles that are not within a certain 
+  distance of the plane. This will cut out a thin slice with a certain width from the system.</para>
 
   <para>While the <emphasis>Slice</emphasis> modifier is selected in the
-  modifier list the infinite slicing plane is visualized in the viewports. Its
-  position is indicated by lines showing the plane's intersection with the
+  pipeline editor, the slicing plane is shown in the viewports. Its
+  position is indicated by red lines showing the plane's intersection with the
   simulation box. </para>
 
-  <para>Several buttons allow to align the slicing plane with the viewing
+  <para>Buttons in the parameter panel allow to align the slicing plane with the viewing
   direction of the active viewport and vice versa. In addition, you can align
-  the slicing plane to three non-coplanar atoms. For this, first press the
-  <guibutton>Align plane to atoms</guibutton> button, then pick three atoms in
-  the viewports by clicking on them one by one.</para>
+  the slicing plane to three non-coplanar particles, which can be picked with the mouse. 
+  To do this, first press the <guibutton>Pick three particles</guibutton> button, then pick three particles in
+  the viewports by clicking on them one after the other. After clicking on the third particle, the
+  modifier's slicing plane is adjusted such that it intersects all three particles.</para>
 
   <simplesect>
     <title>Parameters</title>
@@ -38,7 +38,6 @@
     <variablelist>
       <varlistentry>
         <term>Distance</term>
-
         <listitem>
           <para>The (signed) distance of the slicing plane from the coordinate
           system's origin along the direction of the normal vector.</para>
@@ -47,50 +46,45 @@
 
       <varlistentry>
         <term>Normal (X,Y,Z)</term>
-
         <listitem>
-          <para>Components of the slicing plane's normal vector. They don't
-          have to form a unit vector.</para>
+          <para>Components of the slicing plane's normal vector. The vectors does not
+          have to be a unit vector.</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
         <term>Slice width</term>
-
         <listitem>
-          <para>Specifies the width of the slice to cut from the atomic
-          structure. If exactly zero, all atoms on the positive side of the
-          slicing plane are deleted. If <emphasis>the slice width</emphasis>
-          parameter is non-zero, all atoms whose distance from the slicing
-          plane is more than half of the slice width get deleted. </para>
+          <para>Specifies the width of the slice to cut from the particle
+          set. If exactly zero, all particles on the positive side of the
+          slicing plane are deleted. If the <emphasis>slice width</emphasis>
+          parameter is non-zero, all particles whose distance from the slicing
+          plane is more than half of the slice width get deleted.</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
         <term>Invert</term>
-
         <listitem>
-          <para>Inverts the selection of atoms, i.e., reverses the slicing
+          <para>Inverts the selection of particles, i.e., reverses the slicing
           plane's orientation.</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term>Select atoms (do not delete)</term>
-
+        <term>Select particles (do not delete)</term>
         <listitem>
-          <para>If activated, the modifier just selects atoms instead of
+          <para>If activated, the modifier selects particles instead of
           deleting them.</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term>Apply to selected atoms only</term>
-
+        <term>Apply to selected particles only</term>
         <listitem>
-          <para>If activated, the modifier touches only atoms that are
+          <para>If activated, the modifier touches only particles that are
           selected. This option can be used to restrict the modifier's action
-          to a subset of atoms.</para>
+          to a subset of particles.</para>
         </listitem>
       </varlistentry>
     </variablelist>

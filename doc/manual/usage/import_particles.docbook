@@ -23,7 +23,7 @@
        OVITO can load animation sequences that consist of multiple simulation frames. It will try to detect sequences
        by finding other files in the same directory that have a similar name like the one you picked. 
        To do this, it looks for a sequence of digits in the filename (if there is any), starting from the end. 
-       The digits are replaced by the special wildcard character <emphasis>*</emphasis> to generate a search pattern. This pattern
+       The digits are replaced by the special wildcard character <literal>*</literal> to generate a search pattern. This pattern
        is used to find other files in the same directory that belong to the same animation sequence. For instance,
        if the user initially picks the file <filename>anim1c_5000.dump</filename>, OVITO generates the search pattern
        <filename>anim1c_*.dump</filename> to find all matching frames, e.g. <filename>anim1c_0.dump</filename>,

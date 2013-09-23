@@ -11,25 +11,40 @@
   <title>Ambient occlusion</title>
 
   <para>
-  Performs a lighting calculation to shade atoms according to their
-  occlusion by other atoms. The ambient occlusion algorithm is a quick way to
-  compute the shadows cast by an atomic structure onto itself. OVITO uses the
-  graphics card to perform this illumination calculation. </para>
+    <informalfigure>
+      <informaltable frame="none">
+        <tgroup cols="2">
+          <tbody>
+            <row>
+              <entry>
+                <para>Input:
+		        <mediaobject><imageobject>
+		        <imagedata fileref="images/modifiers/ambient_occlusion_input.png" format="PNG" />
+		        </imageobject></mediaobject></para>
+              </entry>
+              <entry>
+                <para>Output:
+		        <mediaobject><imageobject>
+		        <imagedata fileref="images/modifiers/ambient_occlusion_output.png" format="PNG" />
+		        </imageobject></mediaobject></para>
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </informalfigure>
+  Performs a lighting calculation to shade particles based on their
+  occlusion by other particles. The ambient occlusion shading model has the nice property of offering 
+  a better perception of the three-dimensional shape of the structure. The ambient occlusion algorithm 
+  simulates the shading produced by a spherical light source enclosing the structure (similar to an overcast sky).
+  OVITO uses the graphics card to quickly perform this illumination calculation.
+  </para>
 
-  <para>The purposes of the ambient occlusion lighting is to improve the
-  perception of three-dimensional structures, which otherwise appear "flat"
-  when all atoms have the same color.</para>
-
-  <para>The <guibutton>Update</guibutton> button starts the computation. If
-  you are working with a time sequence of simulation snapshots, you should
-  enable the <guilabel>Auto-update on time change</guilabel> option to let
-  OVITO automatically re-perform the shading calculation whenever you jump to
-  a different simulation frame.</para>
-
-  <note>
-    <para>This modifier should be placed at the end of the processing
-    pipeline, following all other modifiers.</para>
-  </note>
+  <para>
+  Note that the modifier outputs the shading results to the <literal>Color</literal> particle property,
+  and assigning a new color to particles after this modifier would  overwrite
+  its results. Therefore the modifier should always be placed at the end of the processing pipeline.
+  </para>
 
   <simplesect>
     <title>Parameters</title>
@@ -39,32 +54,35 @@
 
     <variablelist>
       <varlistentry>
-        <term>Intensity</term>
+        <term>Shading intensity</term>
 
         <listitem>
-          <para>Percentage value that controls the amount of shading. The
+          <para>Percentage value controlling the strength of the shading. The
           higher the shading intensity the larger the effect, and the darker
-          the atoms appear.</para>
+          the paricles will appear.</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term>Sampling level</term>
-
+        <term>Number of exposure samples</term>
         <listitem>
-          <para>Controls the number of directions from which the atomic
-          structure is diffusely illuminated. The samples are uniformly
-          distributed over the "sky" sphere.</para>
+          <para>The uniform lighting produced by an overcast sky is approximated by a finite number
+            of parallel light sources, which are placed evenly around the particle structure. This parameter
+            controls the number of light sources to compute the ambient occlusion shading.
+          </para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
         <term>Render buffer resolution</term>
-
         <listitem>
-          <para>The resolution level of the rendering buffer used to compute
-          the illumination from one direction. Should be higher for structures
-          with a larger number of atoms.</para>
+          <para>
+          To compute the illumnation produced by a single light source from one direction, the modifier
+          renders the particles as seen from that light source. All visible particles will receive 
+          a certain amount of light while the covered particles do not. This parameter controls 
+          the resolution of the internal rendering buffer. For systems with a large number of particles it
+          might be necessary to increase this value such that every particles occupies at least one
+          pixel in the rendering buffer.</para>
         </listitem>
       </varlistentry>
     </variablelist>
