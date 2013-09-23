@@ -42,10 +42,10 @@ namespace Ovito {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LinkedFileObject, SceneObject)
 SET_OVITO_OBJECT_EDITOR(LinkedFileObject, LinkedFileObjectEditor)
-DEFINE_FLAGS_REFERENCE_FIELD(LinkedFileObject, _importer, "Importer", LinkedFileImporter, PROPERTY_FIELD_ALWAYS_DEEP_COPY)
+DEFINE_FLAGS_REFERENCE_FIELD(LinkedFileObject, _importer, "Importer", LinkedFileImporter, PROPERTY_FIELD_ALWAYS_DEEP_COPY|PROPERTY_FIELD_NO_UNDO)
 DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(LinkedFileObject, _sceneObjects, "SceneObjects", SceneObject, PROPERTY_FIELD_ALWAYS_DEEP_COPY)
 DEFINE_PROPERTY_FIELD(LinkedFileObject, _adjustAnimationIntervalEnabled, "AdjustAnimationIntervalEnabled")
-DEFINE_PROPERTY_FIELD(LinkedFileObject, _sourceUrl, "SourceUrl")
+DEFINE_FLAGS_PROPERTY_FIELD(LinkedFileObject, _sourceUrl, "SourceUrl", PROPERTY_FIELD_NO_UNDO)
 DEFINE_PROPERTY_FIELD(LinkedFileObject, _saveDataWithScene, "SaveDataWithScene")
 SET_PROPERTY_FIELD_LABEL(LinkedFileObject, _importer, "File Importer")
 SET_PROPERTY_FIELD_LABEL(LinkedFileObject, _sceneObjects, "Objects")
@@ -140,6 +140,26 @@ bool LinkedFileObject::setSource(QUrl sourceUrl, const OORef<LinkedFileImporter>
 	// Make the import process reversible.
 	UndoableTransaction transaction(tr("Set input file"));
 
+	// Make the call to setSource() undoable.
+	class SetSourceOperation : public UndoableOperation {
+	public:
+		SetSourceOperation(LinkedFileObject* obj) : _obj(obj), _oldUrl(obj->sourceUrl()), _oldImporter(obj->importer()) {}
+		virtual void undo() override {
+			QUrl url = _obj->sourceUrl();
+			OORef<LinkedFileImporter> importer = _obj->importer();
+			_obj->setSource(_oldUrl, _oldImporter);
+			_oldUrl = url;
+			_oldImporter = importer;
+		}
+		virtual void redo() override { undo(); }
+	private:
+		QUrl _oldUrl;
+		OORef<LinkedFileImporter> _oldImporter;
+		OORef<LinkedFileObject> _obj;
+	};
+	if(UndoManager::instance().isRecording())
+		UndoManager::instance().push(new SetSourceOperation(this));
+
 	_sourceUrl = sourceUrl;
 	_importer = importer;
 
@@ -171,6 +191,9 @@ bool LinkedFileObject::setSource(QUrl sourceUrl, const OORef<LinkedFileImporter>
 				ActionManager::instance().getAction(ACTION_VIEWPORT_ZOOM_SELECTION_EXTENTS_ALL)->trigger();
 			});
 		}
+
+		// Cancel any old load operation in progress.
+		cancelLoadOperation();
 
 		transaction.commit();
 		return true;
@@ -207,6 +230,23 @@ bool LinkedFileObject::updateFrames()
 }
 
 /******************************************************************************
+* Cancels the current load operation if there is any in progress.
+******************************************************************************/
+void LinkedFileObject::cancelLoadOperation()
+{
+	if(_frameBeingLoaded != -1) {
+		try {
+			// This will suppress any pending notification events.
+			_loadFrameOperationWatcher.unsetFuture();
+			_loadFrameOperation.cancel();
+			_loadFrameOperation.waitForFinished();
+		} catch(...) {}
+		_frameBeingLoaded = -1;
+		notifyDependents(ReferenceEvent::PendingStateChanged);
+	}
+}
+
+/******************************************************************************
 * Asks the object for the result of the geometry pipeline at the given time.
 ******************************************************************************/
 PipelineFlowState LinkedFileObject::evaluate(TimePoint time)
@@ -236,7 +276,7 @@ PipelineFlowState LinkedFileObject::evaluate(TimePoint time)
 	}
 	if(_loadedFrame == frame) {
 		if(oldTaskCanceled)
-			notifyDependents(ReferenceEvent::PendingOperationFailed);
+			notifyDependents(ReferenceEvent::PendingStateChanged);
 
 		// The requested frame has already been loaded and is available immediately.
 		return PipelineFlowState(status(), _sceneObjects.targets(), TimeInterval(time));
@@ -245,9 +285,8 @@ PipelineFlowState LinkedFileObject::evaluate(TimePoint time)
 		// The requested frame needs to be loaded first. Start background loading task.
 		OVITO_CHECK_OBJECT_POINTER(importer());
 		if(frame < 0 || frame >= numberOfFrames()) {
-			if(oldTaskCanceled) {
-				notifyDependents(ReferenceEvent::PendingOperationFailed);
-			}
+			if(oldTaskCanceled)
+				notifyDependents(ReferenceEvent::PendingStateChanged);
 			if(numberOfFrames() > 0)
 				setStatus(ObjectStatus(ObjectStatus::Error, tr("The requested animation frame (%1) is out of range.").arg(frame)));
 			else
@@ -257,10 +296,9 @@ PipelineFlowState LinkedFileObject::evaluate(TimePoint time)
 		_frameBeingLoaded = frame;
 		_loadFrameOperation = importer()->load(_frames[frame]);
 		_loadFrameOperationWatcher.setFuture(_loadFrameOperation);
-		if(oldTaskCanceled) {
-			notifyDependents(ReferenceEvent::PendingOperationFailed);
-		}
 		setStatus(ObjectStatus::Pending);
+		if(oldTaskCanceled)
+			notifyDependents(ReferenceEvent::PendingStateChanged);
 		// Indicate to the caller that the result is pending.
 		return PipelineFlowState(ObjectStatus::Pending, _sceneObjects.targets(), TimeInterval(time));
 	}
@@ -272,7 +310,6 @@ PipelineFlowState LinkedFileObject::evaluate(TimePoint time)
 void LinkedFileObject::loadOperationFinished()
 {
 	OVITO_ASSERT(_frameBeingLoaded != -1);
-	ReferenceEvent::Type notificationType = ReferenceEvent::PendingOperationFailed;
 	bool wasCanceled = _loadFrameOperation.isCanceled();
 	_loadedFrame = _frameBeingLoaded;
 	_frameBeingLoaded = -1;
@@ -286,9 +323,6 @@ void LinkedFileObject::loadOperationFinished()
 				importedData->insertIntoScene(this);
 				newStatus = importedData->status();
 			}
-
-			// Notify dependents that the loading operation has succeeded and the new data is available.
-			notificationType = ReferenceEvent::PendingOperationSucceeded;
 		}
 		catch(Exception& ex) {
 			// Transfer exception message to evaluation status.
@@ -308,7 +342,7 @@ void LinkedFileObject::loadOperationFinished()
 	setStatus(newStatus);
 
 	// Notify dependents that the evaluation request was satisfied or not satisfied.
-	notifyDependents(notificationType);
+	notifyDependents(ReferenceEvent::PendingStateChanged);
 }
 
 /******************************************************************************
@@ -332,13 +366,13 @@ void LinkedFileObject::refreshFromSource(int frame)
 
 /******************************************************************************
 * Saves the status returned by the parser object and generates a
-* ReferenceEvent::StatusChanged event.
+* ReferenceEvent::ObjectStatusChanged event.
 ******************************************************************************/
 void LinkedFileObject::setStatus(const ObjectStatus& status)
 {
 	if(status == _importStatus) return;
 	_importStatus = status;
-	notifyDependents(ReferenceEvent::StatusChanged);
+	notifyDependents(ReferenceEvent::ObjectStatusChanged);
 }
 
 /******************************************************************************
@@ -423,8 +457,6 @@ QString LinkedFileObject::objectTitle()
 	return SceneObject::objectTitle();
 }
 
-#if 1
-
 /******************************************************************************
 * Returns the number of sub-objects that should be displayed in the modifier stack.
 ******************************************************************************/
@@ -441,17 +473,13 @@ RefTarget* LinkedFileObject::editableSubObject(int index)
 	return sceneObjects()[index];
 }
 
-#endif
-
 /******************************************************************************
 * Is called when a RefTarget has been added to a VectorReferenceField of this RefMaker.
 ******************************************************************************/
 void LinkedFileObject::referenceInserted(const PropertyFieldDescriptor& field, RefTarget* newTarget, int listIndex)
 {
-#if 1
 	if(field == PROPERTY_FIELD(LinkedFileObject::_sceneObjects))
 		notifyDependents(ReferenceEvent::SubobjectListChanged);
-#endif
 
 	SceneObject::referenceInserted(field, newTarget, listIndex);
 }
@@ -461,10 +489,8 @@ void LinkedFileObject::referenceInserted(const PropertyFieldDescriptor& field, R
 ******************************************************************************/
 void LinkedFileObject::referenceRemoved(const PropertyFieldDescriptor& field, RefTarget* newTarget, int listIndex)
 {
-#if 1
 	if(field == PROPERTY_FIELD(LinkedFileObject::_sceneObjects))
 		notifyDependents(ReferenceEvent::SubobjectListChanged);
-#endif
 
 	SceneObject::referenceRemoved(field, newTarget, listIndex);
 }

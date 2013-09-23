@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<chapter version="5.0"
+         xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xml:id="introduction" xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title>Introduction</title>
+
+  <para>OVITO is a scientific data visualization and analysis software for
+  large-scale atomistic simulations in materials science. 
+  OVITO is freely available under an open-source license for
+  Windows, Linux and MacOS platforms. It is being developed by Alexander
+  Stukowski at <link xlink:href="http://www.mm.mw.tu-darmstadt.de/">the
+  Material Science Department of Darmstadt University of Technology,
+  Germany</link>.
+  </para>
+  
+  <para>
+  The first version of OVITO was released in December 2009.
+  Since that time, several software updates have been made available to the community, 
+  which today comprises several hundred active users from the materials science field. 
+  Development of the software began at the end of 2007, the author's first year as a PhD student. 
+  When he started doing multi-million atom molecular dynamics simulations of nanocrystalline materials 
+  at that time, he realized that the existing, freely available visualization tools wouldn't 
+  fully suit his own needs. Luckily, the author's job as a research assistant left enough spare time to work on 
+  a new solution: a flexible visualization tool for atomistic simulation data that 
+  integrates several common analysis functions. Two years later, the code had become mature enough to 
+  share it with the general public. To further advertise OVITO an <link xlink:href="http://stacks.iop.org/0965-0393/18/015012">article was published 
+  in the MSMSE journal</link> in 2010.
+  </para>
+
+  <para>OVITO is a software tool to visualize and analyze output from molecular
+  dynamics simulations of particles, in particular atomistic simulations of solid-state materials.
+  This is a list of the main program features: <itemizedlist>
+
+      <listitem>
+        <para>Reads and writes various file formats used by MD simulation codes including LAMMPS, XYZ, CFG, IMD, and POSCAR</para>
+      </listitem>
+
+      <listitem>
+        <para>Interactive display of large data sets using hardware-accelerated OpenGL rendering </para>
+      </listitem>
+
+      <listitem>
+        <para>Flexible data model: allows to associate an arbitrary set of properties with each particle </para>
+      </listitem>
+
+      <listitem>
+        <para>Flexible processing model: Data modification and analysis steps can be performed in any order; parameters can be altered at any time with immediate update of the results.
+        Functions include <itemizedlist>
+        
+            <listitem>
+              <para>Slicing</para>
+            </listitem>
+
+            <listitem>
+              <para>Selection of particles based on user-definable criteria</para>
+            </listitem>
+
+            <listitem>
+              <para>Color coding</para>
+            </listitem>
+
+            <listitem>
+              <para>Transformation of atomic positions</para>
+            </listitem>
+
+            <listitem>
+              <para>Calculation of new particle properties from existing properties </para>
+            </listitem>
+
+            <listitem>
+              <para>Display of periodic images; wrapping of atoms at periodic boundaries</para>
+            </listitem>
+            
+            <listitem>
+              <para>Generation and display of atomic bonds</para>
+            </listitem>
+            
+          </itemizedlist> </para>
+      </listitem>
+
+      <listitem>
+        <para> Unlimited undo functionality </para>
+      </listitem>
+
+      <listitem>
+        <para> Generation of high-quality images for publication </para>
+      </listitem>
+
+      <listitem>
+        <para> Handles simulation sequences (realtime playback and movie file generation) </para>
+      </listitem>
+
+      <listitem>
+        <para> Powerful analysis functions including </para>
+
+        <itemizedlist>
+          <listitem>
+            <para>Common neighbor analysis (CNA)</para>
+          </listitem>
+
+          <listitem>
+            <para>Bond angle analysis (BAA)</para>
+          </listitem>
+
+          <listitem>
+            <para>Centro-symmetry parameter</para>
+          </listitem>
+
+          <listitem>
+            <para>Cluster analysis</para>
+          </listitem>
+
+          <listitem>
+            <para>Coordination number analysis and radial distribution function</para>
+          </listitem>
+
+          <listitem>
+            <para>Displacement vector calculation</para>
+          </listitem>
+
+          <listitem>
+            <para>Calculation of atomic strain tensors</para>
+          </listitem>
+          
+          <listitem>
+            <para>Histogram function</para>
+          </listitem>
+          
+        </itemizedlist>
+
+         
+      </listitem>
+
+      <listitem>
+        <para> A modular software design makes it easy to extend OVITO via plugins written in C++ </para>
+      </listitem>
+
+      <listitem>
+        <para> Open source license </para>
+      </listitem>
+      
+    </itemizedlist></para>
+</chapter>

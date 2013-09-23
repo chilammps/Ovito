@@ -62,6 +62,14 @@ public:
 		return nullptr;
 	}
 
+	/// Returns the particle type with the given name, or NULL if no such type exists.
+	ParticleType* particleType(const QString& name) const {
+		for(ParticleType* ptype : particleTypes())
+			if(ptype->name() == name)
+				return ptype;
+		return nullptr;
+	}
+
 	/// Removes a single particle type from this object.
 	void removeParticleType(int index);
 

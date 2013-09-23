@@ -55,7 +55,7 @@ private:
 	OVITO_OBJECT
 
 	Q_CLASSINFO("DisplayName", "Wrap at periodic boundaries");
-	Q_CLASSINFO("ModifierCategory", "Modify");
+	Q_CLASSINFO("ModifierCategory", "Modification");
 };
 
 };	// End of namespace

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<chapter version="5.0"
+         xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xml:id="installation" xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title>Installation</title>
+
+    <para>Binary program packages for Linux, Windows, and MacOS X platforms
+    can be downloaded from <link xlink:href="http://www.ovito.org/">http://www.ovito.org/</link>.
+    Installation of OVITO is very simple. No administrator privileges are required.</para>
+    <para>Since OVITO makes use of hardware-accelerated OpenGL rendering to display particles, it is important to 
+    install proper graphics drivers. Old computers or outdated OpenGL graphics drivers may not be compatible with OVITO.</para>
+
+    <sect3 xml:id="installation.runovito.linux">
+      <title>Linux</title>
+      <para>Extract the downloaded <filename>.tar.gz</filename> archive using the command: <command>tar xzf ovito-2.0.0-i386.tar.gz</command>. Replace
+      the filename with the one that you actually downloaded from the
+      website. This will create a new subdirectory that contains the extracted
+      program package. Change into that subdirectory and run OVITO by invoking
+      the command <command>bin/ovito</command>.
+      </para>
+      <para>
+      Note that OVITO should only be run on the local computer and not on remote machines.
+      </para>
+    </sect3>
+
+    <sect3 xml:id="installation.runovito.windows">
+      <title>Windows</title>
+
+      <para>Extract the <filename>.zip</filename> archive to an
+      empty directory of your choice. Then start OVITO by double-clicking
+      <command>ovito.exe</command>.</para>
+    </sect3>
+
+    <sect3 xml:id="installation.runovito.macos">
+      <title>MacOS</title>
+
+      <para>Extract the <filename>.zip</filename> archive to a 
+      directory of your choice. Then start OVITO by double-clicking the
+      extracted application. To run multiple instances of OVITO simultaneously, you can
+      invoke the command <command>open -n ./Ovito.app/</command> from the
+      Terminal more than once.</para>
+    </sect3>
+    
+    <sect3 xml:id="installation.commandline">
+      <title>Command line options</title>
+      <para>You can pass a local filename or a remote URL to OVITO on the command line, which will be opened on application startup.</para>
+    </sect3>  
+
+</chapter>

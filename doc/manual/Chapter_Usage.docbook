@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<chapter version="5.0"
+         xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xml:id="usage" xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title>Usage</title>
+
+  <xi:include href="usage/import_particles.docbook"/>
+  <xi:include href="usage/export_particles.docbook"/>
+  <xi:include href="usage/viewports.docbook"/>
+  <xi:include href="usage/particle_properties.docbook"/>
+  <xi:include href="usage/modification_pipeline.docbook"/>
+  <xi:include href="usage/rendering.docbook"/>
+  <xi:include href="usage/miscellaneous.docbook"/>
+
+  <!-- 
+  <xi:include href="usage/atomviz.data_model.docbook"/>
+  <xi:include href="usage/atomviz.modifiers_usage.docbook"/>
+  <xi:include href="usage/atomviz.rendering.docbook"/>
+   -->
+</chapter>

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<section version="5.0"
+         xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xml:id="usage.rendering" xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title>Rendering</title>
+
+  <para>
+    While OVITO's viewports and processing pipeline allow to work with simulation data interactively, one usually needs to
+    produce a final, high-quality image of the simulation for publication in a paper or presentation. Rendering an output image, which can be saved to disk,
+    is done on the <emphasis>Render</emphasis> tab <inlinemediaobject><imageobject><imagedata fileref="images/command_panel/tab_render.png" format="png" xml:base="../"/>
+	</imageobject></inlinemediaobject> of the command panel.
+  </para>
+  
+  <sect3 xml:id="usage.rendering.render_settings">
+    <title>Render settings</title>     
+    <para>
+      The <emphasis>Render settings</emphasis> panel allows to adjust the parameters that control the generation of the out image, for instance
+      the image resolution and background color.
+    </para>
+    <para>
+      Pressing the <emphasis>Render Active Viewport</emphasis> <inlinemediaobject><imageobject><imagedata fileref="images/rendering/render_active_viewport.png" format="png" xml:base="../"/>
+      </imageobject></inlinemediaobject> button starts the rendering process and opens a new window showing the rendered image. 
+    </para>
+  </sect3>
+
+  <sect3 xml:id="usage.rendering.animation">
+    <title>Creating animation movies</title>     
+    <para>
+      If you have imported a simulation sequence that consists of multiple frames, you can let OVITO render a movie. For this, select <emphasis>Complete animation</emphasis>
+      in the render settings panel and choose an output filename for the movie. Common video formats such as AVI and MPEG are supported by
+      OVITO's built-in video encoder. Alternatively, you can let the program produce a sequence of image files and convert them to a video file 
+      using some external tool.
+    </para>
+    <para>
+      The playback speed (frames per second) of the generated movie file is controlled in the <emphasis>Animation settings</emphasis> dialog, which can be accessed 
+      through the animation toolbar of OVITO.
+    </para>
+  </sect3>
+  
+
+</section>

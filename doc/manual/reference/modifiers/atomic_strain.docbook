@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<section version="5.0"
+         xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xml:id="viz.modifiers.atomic_strain"
+         xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title>Atomic strain</title>
+
+  <para>
+  
+    <informalfigure><screenshot><mediaobject><imageobject>
+       <imagedata fileref="images/modifiers/atomic_strain_panel.png" format="PNG" />
+    </imageobject></mediaobject></screenshot></informalfigure>
+  
+  This modifier calculates he atomic-level strain tensors from two
+  configurations of the simulated system. See <link
+  xlink:href="http://li.mit.edu/Archive/Activities/Archive/Papers/07/Shimizu07a.pdf">[Mater.
+  Trans. 48 (2007), 2923]</link> for a description of how the per-particle deformation
+  tensors are calculated by OVITO.</para>
+
+  <para>The input data set, to which the modifier is applied, is considered the
+  <emphasis>current</emphasis> (or deformed) configuration of the system. The
+  <emphasis>reference</emphasis> (or initial) configuration of the system is
+  loaded from a separate input file by the modifier.</para>
+
+  <para>OVITO calculates the local deformation gradient tensor <emphasis>F</emphasis> for each particle
+  from the relative displacements of the particle's nearest neighbors within the given
+  cutoff radius. Note that the set of neighbors around the central particle is determined in
+  the <emphasis>initial</emphasis> configuration. At least three
+  non-conplanar neighbors are required to calculate <emphasis>F</emphasis> for a particle.
+  Thus, the calculation will fail for isolated or undercoordinated particles. The
+  modifier can select those invalid particles for diagnostic purposes.</para>
+
+  <para>After calculating the atomic deformation gradient tensor <emphasis>F</emphasis>, the
+  Green-Langrangian strain tensor <inlineequation><mathphrase>E=1/2(F<superscript>T</superscript>F-I)</mathphrase></inlineequation> 
+  is derived from it. Finally, the modifier
+  calculates and outputs the <emphasis>von Mises</emphasis> local shear invariant and the
+  volumetric (hydrostatic) part of the strain tensor.</para>
+
+  <para>Use the <emphasis>Reference configuration</emphasis> panel to pick the
+  file containing the initial particle positions. Note
+  that this reference file must contain the same set of particles as the
+  input configuration seen by the modifier. That implies that you should
+  not delete particles before applying the <emphasis>Atomic
+  strain</emphasis> modifier. The modifier should usually be placed at the
+  beginning of the processing pipeline.</para>
+
+  <para>
+  To calculate the displacement vectors of individual particles, the modifier has to
+  find corresponding particles in the two configurations of the system.
+  If the particles have unique IDs assigned to them, the modifier will
+  use this information to map particles from the reference configuration to
+  the current configuration. If no particle IDs are available, the modifier assumes
+  that particles have the same ordering in both configurations.</para>
+
+  <simplesect>
+    <title>Parameters</title>
+
+    <variablelist>
+      <varlistentry>
+        <term>Cutoff radius</term>
+        <listitem>
+          <para>Selects the nearest neighbors that are taken
+          into account to compute the deformation gradient tensor of a particle.
+          This radius must be large enough to include at least three non-coplanar neighbors for
+          every particle in the reference configuration. The larger you choose the cutoff, the larger 
+          the volume will be over which the local deformation gradient tensor is averaged.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Eliminate homogeneous cell deformation</term>
+        <listitem>
+          <para>This option lets the modifier first rescale the current
+          simulation cell including all particle coordinates to match the 
+          cell shape in the reference configuration before calculating the deformation tensors. This effectively eliminates any
+          macroscopic, homogeneous deformation of the simulation cell, and the
+          calculated deformation tensors will reflect only the internal, microscopic displacements of particles.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Assume unwrapped coordinates</term>
+        <listitem>
+          <para>This only affects the treatment of simulation cells with
+          periodic boundary conditions. If activated, the particle coordinates
+          in the reference and the current configuration are taken as is. If
+          this option is not active, the minimum image convention is used to
+          deal with particles that have crossed a periodic boundary.</para>
+        </listitem>
+      </varlistentry>
+      
+      <varlistentry>
+        <term>Output deformation gradient tensors</term>
+        <listitem>
+          <para>If activated, the modifier stores the nine components of the calculated per-particle
+          deformation gradient tensors in an output property. Turn this off to save memory if you
+          do not need the complete deformation gradient tensors.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Output strain tensors</term>
+
+        <listitem>
+          <para>If activated, the modifier stores the six components of the calculated per-particle
+          strain tensors in an output property. Turn this off to save memory if you
+          do not need the complete strain tensor tensors.</para>
+        </listitem>
+      </varlistentry>      
+
+      <varlistentry>
+        <term>Select invalid particles</term>
+
+        <listitem>
+          <para>If activated, the modifier selects those particles for which it
+          could not calculate the local deformation gradient and strain tensors
+          (due to too few neighbors within the cutoff radius).</para>
+        </listitem>
+      </varlistentry>
+
+    </variablelist>
+  </simplesect>
+</section>

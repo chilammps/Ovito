@@ -148,6 +148,52 @@ private:
 };
 
 /**
+ * \brief This helper class records a change to an object's property.
+ *
+ * It stores the old value of the property, which will be restored on a call to undo().
+ *
+ * The user of this class has to specify the property getter and setter methods as
+ * template parameters.
+ */
+template<typename ValueType, typename ObjectType, typename GetterFunction, typename SetterFunction>
+class OVITO_CORE_EXPORT SimpleValueChangeOperation : public UndoableOperation
+{
+public:
+
+	/// \brief Constructor.
+	SimpleValueChangeOperation(ObjectType* obj, GetterFunction getterFunc, SetterFunction setterFunc) :
+		_obj(obj),
+		_oldValue((obj->*getterFunc)()),
+		_getterFunc(getterFunc),
+		_setterFunc(setterFunc) {}
+
+	/// \brief Restores the old property value.
+	virtual void undo() override {
+		// Swap old value and current property value.
+		ValueType temp = (_obj.get()->*_getterFunc)();
+		(_obj.get()->*_setterFunc)(_oldValue);
+		_oldValue = temp;
+	}
+
+	/// \brief Re-apply the change, assuming that it has been undone.
+	virtual void redo() override { undo(); }
+
+private:
+
+	/// The value getter function.
+	GetterFunction _getterFunc;
+
+	/// The value setter function.
+	SetterFunction _setterFunc;
+
+	/// The old value of the property.
+	ValueType _oldValue;
+
+	/// The object whose property was changed.
+	OORef<ObjectType> _obj;
+};
+
+/**
  * \brief This class records a change to a Qt property to a QObject derived class.
  * 
  * This UndoableOperation can be used to record
@@ -248,7 +294,7 @@ public:
 	///
 	/// The recording state can be controlled via the suspend() and resume() methods.
 	/// Or it can be temporarily suspended using the UndoSuspender helper class.
-	bool isRecording() const { return _suspendCount == 0 && _compoundStack.empty() == false; }
+	bool isRecording() const { return !isSuspended() && _compoundStack.empty() == false; }
 
 	/// \brief Records a single operation.
 	/// \param operation An instance of a UndoableOperation derived class that encapsulates
@@ -265,6 +311,9 @@ public:
 	/// It is recommended to use the UndoSuspender helper class to suspend recording because
 	/// this is more exception save than the suspend()/resume() combination.
 	void suspend() { _suspendCount++; }
+
+	/// \brief Returns true if the recording of operations is currently suspended.
+	bool isSuspended() const { return _suspendCount != 0; }
 
 	/// \brief Resumes the recording of undoable operations.
 	/// 
@@ -343,6 +392,21 @@ public:
 
 	/// Creates a redo QAction object with the given parent. Triggering this action will cause a call to redo().
 	QAction* createRedoAction(QObject* parent);
+
+	/// Registers an undo record for changing a property of an object.
+	///
+	/// The setter method for a property of an object should call this function
+	/// to create an undo record that allows to restore the old property value.
+	/// Note that the function must be called by the setter method before the new
+	/// property value is stored, because this method will query the old property
+	/// value by calling the getter method.
+	template<typename ValueType, class ObjectType, typename GetterFunction, typename SetterFunction>
+	void undoablePropertyChange(ObjectType* obj, GetterFunction getterFunc, SetterFunction setterFunc) {
+		if(isRecording()) {
+			push(new SimpleValueChangeOperation<ValueType, ObjectType,
+					GetterFunction, SetterFunction>(obj, getterFunc, setterFunc));
+		}
+	}
 
 public Q_SLOTS:
 
@@ -452,12 +516,13 @@ public:
 
 	/// Constructor that calls UndoManager::beginCompoundOperation().
 	UndoableTransaction(const QString& displayName) : _committed(false) {
-		UndoManager::instance().beginCompoundOperation(displayName);
+		if(!UndoManager::instance().isSuspended())
+			UndoManager::instance().beginCompoundOperation(displayName);
 	}
 
 	/// Destructor that undoes all recorded operations unless commit() was called.
 	~UndoableTransaction() {
-		if(!_committed) {
+		if(!_committed && !UndoManager::instance().isSuspended()) {
 			UndoManager::instance().currentCompoundOperation()->clear();
 			UndoManager::instance().endCompoundOperation();
 		}
@@ -467,7 +532,8 @@ public:
 	void commit() {
 		OVITO_ASSERT(!_committed);
 		_committed = true;
-		UndoManager::instance().endCompoundOperation();
+		if(!UndoManager::instance().isSuspended())
+			UndoManager::instance().endCompoundOperation();
 	}
 
 	/// Executes the passed functor and catches any exceptions during its execution.

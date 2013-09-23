@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<book version="5.0"
+      xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+      xmlns="http://docbook.org/ns/docbook"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:xs="http://www.w3.org/2001/XMLSchema"
+      xmlns:xlink="http://www.w3.org/1999/xlink"
+      xmlns:xi="http://www.w3.org/2001/XInclude"
+      xmlns:ns="http://docbook.org/ns/docbook">
+  <info>
+    <title>OVITO User Manual</title>
+
+    <author>
+      <personname><firstname>Alexander</firstname><surname>Stukowski</surname></personname>
+    </author>
+
+    <copyright>
+      <year>2013</year>
+
+      <holder>Alexander Stukowski</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.2 or any later version published by the Free Software Foundation. A
+      copy of the license is included in the appendix section entitled "<link
+      linkend="appendix.GFDL">GNU Free Documentation License</link>". </para>
+    </legalnotice>
+  </info>
+
+  <xi:include href="Chapter_Introduction.docbook"/>
+
+  <xi:include href="Chapter_Installation.docbook"/>
+
+<!-- 
+  <xi:include href="Chapter_Tutorial.docbook"/>
+ -->
+ 
+  <xi:include href="Chapter_Usage.docbook"/>
+
+  <xi:include href="Chapter_Reference.docbook"/>
+
+  <xi:include href="Chapter_Credits.docbook"/>
+
+  <xi:include href="Appendix_License_gpl.docbook"/>
+
+  <xi:include href="Appendix_License_fdl.docbook"/>
+</book>

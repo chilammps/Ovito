@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<section version="5.0"
+         xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xml:id="usage.modification_pipeline" xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title>Modification pipeline</title>
+
+  <para>
+    The central concept of OVITO is the so-called <emphasis>modification pipeline</emphasis>. It is a sequence of modification operations (<emphasis>modifiers</emphasis>)
+    which is applied to the simulation data. After the simulation data has undergone these modifications, the final result is shown on the screen.
+    OVITO provides a set of modifier types, each performing a different basic task such as selecting particles, coloring particles, or removing particles. 
+    By combining and arranging these simple building blocks into a modification pipeline, the user can control the visualization of the simulation data in a 
+    very flexible manner.
+  </para> 
+  <para>
+    Every modifier type provided by OVITO has a certain set of parameters that control its operation. Modifiers allow to work non-destructively with the simulation data. 
+    That means, the user can change a modifier's parameters at any time, and OVITO will immediately recalculate the effect of the modifier on the original simulation data and
+    update the display in the viewports. To accomplish this, OVITO basically keeps two data sets in memory: The original particles read from the imported 
+    file and the processed data set that came out of the last evaluation of the modification pipeline. The latter is regenerated every time you change the modifier sequence 
+    in some way. An efficient caching mechanism keeps the amount of data processing at a minimum.
+  </para>
+
+  <sect3 xml:id="usage.modification_pipeline.pipeline_listbox">
+    <title>The pipeline editor</title>
+    <para>
+	    <figure><title>The modification pipeline editor</title><screenshot><mediaobject><imageobject>
+	       <imagedata fileref="images/command_panel/pipeline_editor.png" format="PNG" />
+	    </imageobject></mediaobject></screenshot></figure>
+       The pipeline editor is found in the command panel on the right side of the main window and is plays a central role in OVITO's user interface. It shows the current 
+       modification pipeline and allows to select individual modifiers to adjust their parameters. After importing a simulation file, the modification 
+       pipeline is empty and initially contains no modifiers. Still, the pipeline editor already shows two sections "Display" and "Input", which are always present.
+       The former allows to control the display of particles and other elements in the viewports. The "Input" section contains one or more entries
+       that represent the imported data file, i.e. the source of the modification pipeline.
+    </para>
+    <para>
+       Above the pipeline editor is a drop-down box that contains the list of available modifier types. Picking an entry will add a new modifier to the current modification
+       sequence. The parameters of the currently selected item in the pipeline are shown in the area below the pipeline listbox.
+    </para>
+  </sect3>
+
+  <sect3 xml:id="usage.modification_pipeline.input">
+    <title>Data source</title>
+    <para>
+      The section "Input" in the pipeline editor lists the data source of the modification pipeline, i.e. the input simulation file. Selecting this entry, shows a
+      control panel that allows to replace the input data with another file. That is, you can reuse the existing modification sequence and apply it to another 
+      simulation file.
+    </para>
+    <para>
+      Depending on the input file, the "Input" section lists additional sub-entries corresponding to various elements in the input file. For instance, the 
+      <emphasis>Simulation cell</emphasis> entry represents the simulation box that was read from the input file. In the corresponding parameters
+      panel you can inspect the cell vectors and boundary conditions etc.
+    </para>
+    <para>
+      If the imported simulation file contains particle type information, they are listed under the <emphasis>Particle types</emphasis> entry.
+      You can adjust the name, color, and display radius of individual particle types here. Note that a particle radius of zero means that the default 
+      display radius will be used instead (which is set in the <emphasis>Particles</emphasis> display object).
+    </para>
+  </sect3>
+
+  <sect3 xml:id="usage.modification_pipeline.display">
+    <title>Display objects</title>
+    <para>
+      As explained above, the results of the modification pipeline computed by OVITO are shown in the viewports. So called <emphasis>display objects</emphasis> are responsible for 
+      actually rendering that output data on the screen. The pipeline editor contains a section "Display", which lists the individual display objects that are associated with the data that 
+      came out of the processing pipeline. For instance, the particles are rendered by a display object which has additional parameters to control the appearance of
+      particles. There is also a separate display object that controls the display of the simulation cell. When working with OVITO's modifiers, you will notice that
+      additional objects may appear under the "Display" section to render other visual elements such as bonds and displacement vectors.
+    </para>
+    <para>
+      You can hide individual elements by unchecking the box next to the corresponding display object in the pipeline editor.
+    </para>
+  </sect3>
+
+</section>

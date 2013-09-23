@@ -180,7 +180,7 @@ QVariant StructureListParameterUI::getItemData(RefTarget* target, const QModelIn
 bool StructureListParameterUI::referenceEvent(RefTarget* source, ReferenceEvent* event)
 {
 	if(source == editObject()) {
-		if(event->type() == ReferenceEvent::StatusChanged) {
+		if(event->type() == ReferenceEvent::ObjectStatusChanged) {
 			// Update the structure count columns.
 			_model->updateColumns(2, 3);
 		}

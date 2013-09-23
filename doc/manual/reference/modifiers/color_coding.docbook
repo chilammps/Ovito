@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<section version="5.0"
+         xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xml:id="viz.modifiers.color_coding"
+         xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title>Color coding</title>
+
+  <para>
+    <informalfigure><screenshot><mediaobject><imageobject>
+       <imagedata fileref="images/modifiers/color_coding_panel.png" format="PNG" />
+    </imageobject></mediaobject></screenshot></informalfigure>
+  
+  This modifier assigns a color to each particle based on an existing scalar
+  particle property. 
+  </para>
+  
+  <para>
+  The input property values are first mapped and clamped to the [0,1] range based on the
+  <emphasis>Start value</emphasis> and <emphasis>End value</emphasis>
+  parameters of the modifier. The normalized property value of each particle is then mapped to 
+  a color using the selected color gradient.</para>
+
+  <para>The <guibutton>Adjust range</guibutton> button sets the <emphasis>Start value</emphasis> and
+  <emphasis>End value</emphasis> parameters to the minimum and maximum values
+  stored in the input particle property. This ensures that no clamping occurs
+  during the color mapping. The <guibutton>Reverse range</guibutton> button
+  swaps the <emphasis>Start value</emphasis> and <emphasis>End
+  value</emphasis> parameters to effectively reverse the color scale.</para>
+
+  <simplesect>
+    <title>Parameters</title>
+
+    <variablelist>
+      <varlistentry>
+        <term>Property</term>
+        <listitem>
+          <para>The input particle property whose values are mapped to a color.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Color gradient</term>
+        <listitem>
+          <para>The type of color gradient to use.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Start value, end value</term>
+        <listitem>
+          <para>This interval controls the linear mapping of the input values to the [0,1] range.</para>
+        </listitem>
+      </varlistentry>
+      
+      <varlistentry>
+        <term>Color only selected particles</term>
+        <listitem>
+          <para>This option restricts the assigment of colors to selected particles.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Keep selection</term>
+        <listitem>
+          <para>Selected particles are highlighted with a special color (red by default). 
+          Since the highlighting would mask the color assigned by this modifier, the modifier clears 
+          the current selection. You can suppress this behavior and keep the particle selection by 
+          activating this option.</para>
+        </listitem>
+      </varlistentry>
+
+    </variablelist>
+  </simplesect>
+</section>

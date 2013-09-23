@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<section version="5.0"
+         xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xml:id="viz.modifiers.ambient_occlusion"
+         xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title>Ambient occlusion</title>
+
+  <para>
+    <informalfigure>
+      <informaltable frame="none">
+        <tgroup cols="2">
+          <tbody>
+            <row>
+              <entry>
+                <para>Input:
+		        <mediaobject><imageobject>
+		        <imagedata fileref="images/modifiers/ambient_occlusion_input.png" format="PNG" />
+		        </imageobject></mediaobject></para>
+              </entry>
+              <entry>
+                <para>Output:
+		        <mediaobject><imageobject>
+		        <imagedata fileref="images/modifiers/ambient_occlusion_output.png" format="PNG" />
+		        </imageobject></mediaobject></para>
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </informalfigure>
+  Performs a lighting calculation to shade particles based on their
+  occlusion by other particles. The ambient occlusion shading model has the nice property of offering 
+  a better perception of the three-dimensional shape of the structure. The ambient occlusion algorithm 
+  simulates the shading produced by a spherical light source enclosing the structure (similar to an overcast sky).
+  OVITO uses the graphics card to quickly perform this illumination calculation.
+  </para>
+
+  <para>
+  Note that the modifier outputs the shading results to the <literal>Color</literal> particle property,
+  and assigning a new color to particles after this modifier would  overwrite
+  its results. Therefore the modifier should always be placed at the end of the processing pipeline.
+  </para>
+
+  <simplesect>
+    <title>Parameters</title>
+    <informalfigure><screenshot><mediaobject><imageobject>
+       <imagedata fileref="images/modifiers/ambient_occlusion_panel.png" format="PNG" />
+    </imageobject></mediaobject></screenshot></informalfigure>
+
+    <variablelist>
+      <varlistentry>
+        <term>Shading intensity</term>
+
+        <listitem>
+          <para>Percentage value controlling the strength of the shading. The
+          higher the shading intensity the larger the effect, and the darker
+          the paricles will appear.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Number of exposure samples</term>
+        <listitem>
+          <para>The uniform lighting produced by an overcast sky is approximated by a finite number
+            of parallel light sources, which are placed evenly around the particle structure. This parameter
+            controls the number of light sources to compute the ambient occlusion shading.
+          </para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Render buffer resolution</term>
+        <listitem>
+          <para>
+          To compute the illumnation produced by a single light source from one direction, the modifier
+          renders the particles as seen from that light source. All visible particles will receive 
+          a certain amount of light while the covered particles do not. This parameter controls 
+          the resolution of the internal rendering buffer. For systems with a large number of particles it
+          might be necessary to increase this value such that every particles occupies at least one
+          pixel in the rendering buffer.</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </simplesect>
+</section>

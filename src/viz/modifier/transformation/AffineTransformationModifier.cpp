@@ -105,8 +105,7 @@ ObjectStatus AffineTransformationModifier::modifyParticles(TimePoint time, TimeI
 	}
 
 	if(applyToParticles()) {
-		expectStandardProperty(ParticleProperty::PositionProperty);
-		ParticlePropertyObject* posProperty = outputStandardProperty(ParticleProperty::PositionProperty);
+		ParticlePropertyObject* posProperty = expectStandardProperty(ParticleProperty::PositionProperty);
 
 		if(toSelectionOnly()) {
 			ParticlePropertyObject* selProperty = inputStandardProperty(ParticleProperty::SelectionProperty);

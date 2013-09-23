@@ -217,17 +217,14 @@ void PipelineObject::removeModifier(ModifierApplication* app)
 bool PipelineObject::referenceEvent(RefTarget* source, ReferenceEvent* event)
 {
 	if(source == inputObject()) {
-		if(event->type() == ReferenceEvent::TargetChanged ||
-			event->type() == ReferenceEvent::PendingOperationSucceeded ||
-			event->type() == ReferenceEvent::PendingOperationFailed) {
+		if(event->type() == ReferenceEvent::TargetChanged || event->type() == ReferenceEvent::PendingStateChanged) {
 			modifierChanged(-1);
 		}
 	}
 	else {
 		if(event->type() == ReferenceEvent::TargetChanged ||
 			event->type() == ReferenceEvent::TargetEnabledOrDisabled ||
-			event->type() == ReferenceEvent::PendingOperationSucceeded ||
-			event->type() == ReferenceEvent::PendingOperationFailed) {
+			event->type() == ReferenceEvent::PendingStateChanged) {
 			// If one of the modifiers has changed then all other modifiers
 			// following it in the stack need to be informed.
 			int index = _modApps.indexOf(source);

@@ -160,7 +160,7 @@ protected Q_SLOTS:
 
 protected:
 
-	/// \brief Saves the status returned by the parser object and generates a ReferenceEvent::StatusChanged event.
+	/// \brief Saves the status returned by the parser object and generates a ReferenceEvent::ObjectStatusChanged event.
 	void setStatus(const ObjectStatus& status);
 
 	/// Is called when a RefTarget has been added to a VectorReferenceField of this RefMaker.
@@ -174,6 +174,9 @@ protected:
 
 	/// \brief Loads the class' contents from the given stream.
 	virtual void loadFromStream(ObjectLoadStream& stream) override;
+
+	/// \brief Cancels the current load operation if there is any in progress.
+	void cancelLoadOperation();
 
 private:
 

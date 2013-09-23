@@ -158,7 +158,6 @@ void AsynchronousParticleModifier::runEngine(FutureInterface<std::shared_ptr<Eng
 void AsynchronousParticleModifier::backgroundJobFinished()
 {
 	OVITO_ASSERT(!_computationValidity.isEmpty());
-	ReferenceEvent::Type notificationType = ReferenceEvent::PendingOperationFailed;
 	bool wasCanceled = _backgroundOperation.isCanceled();
 
 	if(!wasCanceled) {
@@ -169,7 +168,6 @@ void AsynchronousParticleModifier::backgroundJobFinished()
 			retrieveModifierResults(engine.get());
 
 			// Notify dependents that the background operation has succeeded and new data is available.
-			notificationType = ReferenceEvent::PendingOperationSucceeded;
 			_asyncStatus = ObjectStatus::Success;
 		}
 		catch(const Exception& ex) {
@@ -190,7 +188,7 @@ void AsynchronousParticleModifier::backgroundJobFinished()
 	setStatus(_asyncStatus);
 
 	// Notify dependents that the evaluation request was satisfied or not satisfied.
-	notifyDependents(notificationType);
+	notifyDependents(ReferenceEvent::PendingStateChanged);
 }
 
 /******************************************************************************

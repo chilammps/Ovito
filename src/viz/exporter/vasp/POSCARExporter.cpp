@@ -61,6 +61,7 @@ bool POSCARExporter::exportParticles(const PipelineFlowState& state, int frameNu
 	AffineTransformation cell = simulationCell->cellMatrix();
 	for(size_t i = 0; i < 3; i++)
 		textStream() << cell(0, i) << " " << cell(1, i) << " " << cell(2, i) << endl;
+	Vector3 origin = cell.translation();
 
 	// Count number of particle per particle type.
 	QMap<int,int> particleCounts;
@@ -91,7 +92,7 @@ bool POSCARExporter::exportParticles(const PipelineFlowState& state, int frameNu
 		for(size_t i = 0; i < posProperty->size(); i++, ++p) {
 			if(particleTypeProperty && particleTypeProperty->getInt(i) != ptype)
 				continue;
-			textStream() << p->x() << " " << p->y() << " " << p->z() << endl;
+			textStream() << (p->x() - origin.x()) << " " << (p->y() - origin.y()) << " " << (p->z() - origin.z()) << endl;
 			currentProgress++;
 
 			if((currentProgress % 1000) == 0) {

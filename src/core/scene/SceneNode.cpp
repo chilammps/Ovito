@@ -217,6 +217,7 @@ void SceneNode::referenceInserted(const PropertyFieldDescriptor& field, RefTarge
 		OVITO_CHECK_OBJECT_POINTER(child);
 		OVITO_ASSERT(child->parentNode() == nullptr);
 		child->_parentNode = this;
+
 		// Invalidate cached world bounding box of this parent node.
 		invalidateBoundingBox();
 	}
@@ -233,8 +234,13 @@ void SceneNode::referenceRemoved(const PropertyFieldDescriptor& field, RefTarget
 		SceneNode* child = static_object_cast<SceneNode>(oldTarget);
 		OVITO_ASSERT(child->parentNode() == this);
 		child->_parentNode = nullptr;
+
 		// Invalidate cached world bounding box of this parent node.
 		invalidateBoundingBox();
+
+		// Whenever a node has been removed from the scene, the pending state of the scene might change.
+		// Even though we don't know for sure if the state has changed, we send a notification event here.
+		notifyDependents(ReferenceEvent::PendingStateChanged);
 	}
 	RefTarget::referenceRemoved(field, oldTarget, listIndex);
 }

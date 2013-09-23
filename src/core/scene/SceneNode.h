@@ -41,6 +41,7 @@ class LookAtController;		// defined in LookAtController.h
 class GroupNode;			// defined in GroupNode.h
 class DataSet;				// defined in DataSet.h
 class SceneNode;			// defined below
+class ObjectNode;			// defined in ObjectNode.h
 
 /**
  * \brief Tree node in the scene hierarchy.
@@ -171,13 +172,45 @@ public:
 	const QVector<SceneNode*>& children() const { return _children; }
 
 	/// \brief Recursively visits all nodes below this parent node
-	///        and invokes the given function for every node encountered.
+	///        and invokes the given visitor function for every node.
+	///
+	/// \param fn A function that takes a SceneNode pointer as argument and returns a boolean value.
+	/// \return true if all child nodes have been visited; false if the loop has been
+	///         terminated early because the visitor function has returned false.
+	///
+	/// The visitor function must return a boolean value to indicate whether
+	/// it wants to continue visit more nodes. A return value of false
+	/// leads to early termination and no further nodes are visited.
 	template<class Function>
-	void visitChildren(Function fn) const {
+	bool visitChildren(Function fn) const {
 		for(SceneNode* child : children()) {
-			fn(child);
-			child->visitChildren(fn);
+			if(!fn(child) || !child->visitChildren(fn))
+				return false;
 		}
+		return true;
+	}
+
+	/// \brief Recursively visits all object nodes below this parent node
+	///        and invokes the given visitor function for every ObjectNode.
+	///
+	/// \param fn A function that takes an ObjectNode pointer as argument and returns a boolean value.
+	/// \return true if all object nodes have been visited; false if the loop has been
+	///         terminated early because the visitor function has returned false.
+	///
+	/// The visitor function must return a boolean value to indicate whether
+	/// it wants to continue visit more nodes. A return value of false
+	/// leads to early termination and no further nodes are visited.
+	template<class Function>
+	bool visitObjectNodes(Function fn) const {
+		for(SceneNode* child : children()) {
+			if(child->isObjectNode()) {
+				if(!fn((ObjectNode*)child))
+					return false;
+			}
+			else if(!child->visitObjectNodes(fn))
+				return false;
+		}
+		return true;
 	}
 
 	/// \brief Binds this scene node to a target node and creates a LookAtController

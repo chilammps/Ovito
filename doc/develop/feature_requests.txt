@@ -1,5 +1,3 @@
-- Atom-type dependent radius for bond creation
-
 - Selection of atoms by drawing a path in the viewports
 
 - Rendering of the coordinate system tripod in the output image

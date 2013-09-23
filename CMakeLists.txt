@@ -226,5 +226,16 @@ IF(WIN32)
 	ENDFOREACH()
 ENDIF(WIN32)
 
+
+################## Build documentation #####################
+
+# Controls the generation of the documentation files.
+OPTION(OVITO_BUILD_DOCUMENTATION "Build the documentation" "OFF")
+
+IF(OVITO_BUILD_DOCUMENTATION)
+	INCLUDE(cmake/Documentation.cmake)
+	ADD_DEPENDENCIES(${PROJECT_NAME} documentation)
+ENDIF(OVITO_BUILD_DOCUMENTATION)
+
 ######################### Setup CPack #######################
 INCLUDE(${OVITO_SOURCE_BASE_DIR}/cmake/Packaging.cmake)

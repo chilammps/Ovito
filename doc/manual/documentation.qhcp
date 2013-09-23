@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<QHelpCollectionProject version="1.0">
+	<assistant>
+		<title>Ovito Help</title>
+		<startPage>qthelp://ovito/doc/introduction.html</startPage>
+		<currentFilter>OVITO</currentFilter>		
+		<enableFilterFunctionality>false</enableFilterFunctionality>
+		<enableDocumentationManager>false</enableDocumentationManager>
+		<enableAddressBar visible="true">true</enableAddressBar>
+		<cacheDirectory>ovito</cacheDirectory>
+	</assistant>
+	<docFiles>
+		<generate>
+			<file>
+				<input>documentation.qhp</input>
+				<output>documentation.qch</output>
+			</file>
+		</generate>
+		<register>
+			<file>documentation.qch</file>
+		</register>
+	</docFiles>
+</QHelpCollectionProject>

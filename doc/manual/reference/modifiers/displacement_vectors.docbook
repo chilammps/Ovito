@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<section version="5.0"
+         xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xml:id="viz.modifiers.displacement_vectors"
+         xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title>Displacement vectors</title>
+
+  <para>
+  
+    <informalfigure><screenshot><mediaobject><imageobject>
+       <imagedata fileref="images/modifiers/displacement_vectors_panel.png" format="PNG" />
+    </imageobject></mediaobject></screenshot></informalfigure>
+  
+  This modifier calculates the displacement vectors of particles from two different
+  configurations of the simulated system.</para>
+
+  <para>The input particle set, to which the modifier is applied, is considered the
+  <emphasis>current</emphasis> (or deformed) configuration of the system. The
+  <emphasis>reference</emphasis> (or initial) configuration of the system is
+  loaded from a separate input file by the modifier.</para>
+
+  <para>The
+  modifier calculates the displacement vector of a particle by subtracting the
+  position in the reference configuration from the particles's position in the
+  current configuration. The calculated vector is stored in the <literal>Displacement</literal>
+  particle property and can optionally be visualized as an arrow.
+  Alternatively, one can use the <link
+  linkend="viz.modifiers.color_coding">Color coding modifier</link> to
+  visualize the displacement magnitude through a color scheme.</para>
+
+  <para>Use the <emphasis>Reference configuration</emphasis> panel to pick the
+  file containing the initial particle positions. Note
+  that this reference file should contain the same set of particles as the
+  input configuration seen by the modifier. That implies that you should
+  not delete particles before applying the <emphasis>Displacement vectors</emphasis> modifier. 
+  The modifier should usually be placed at the beginning of the processing pipeline.</para>
+
+  <para>
+  To calculate the displacement vector of a particle, the modifier has to
+  find the corresponding particle in the supplied reference configuration.
+  If the particles have unique IDs assigned to them, the modifier will
+  use this information to map particles from the current configuration to
+  the reference configuration. If no particle IDs are available, the modifier assumes
+  that particles have the same ordering in both configurations.</para>
+
+  <para>The vectors computed by the modifier are stored in the <literal>Displacement</literal>
+  particle property. This property is associated with a vector <emphasis>display object</emphasis>,
+  which allows to render the displacement vectors as arrows. By default, the
+  display object is disabled. You have to enable it in the pipeline editor first to make the arrows visible. 
+  </para>
+
+  <simplesect>
+    <title>Parameters</title>
+
+    <variablelist>
+      <varlistentry>
+        <term>Eliminate homogeneous cell deformation</term>
+        <listitem>
+          <para>This option lets the modifier first rescale the current
+          simulation cell including all particle coordinates to match the 
+          cell shape in the reference configuration before calculating the displacement vectors. 
+          This effectively eliminates any macroscopic, homogeneous deformation of the simulation cell, and the
+          calculated vectors will reflect only the internal, microscopic displacements of particles.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Assume unwrapped coordinates</term>
+        <listitem>
+          <para>This only affects the treatment of simulation cells with
+          periodic boundary conditions. If activated, the particle coordinates
+          in the reference and the current configuration are taken as is. If
+          this option is not checked, the minimum image convention is used to
+          deal with particles that have crossed a periodic boundary.</para>
+        </listitem>
+      </varlistentry>
+
+    </variablelist>
+  </simplesect>
+</section>

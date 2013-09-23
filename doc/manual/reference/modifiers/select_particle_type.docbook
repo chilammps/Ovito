@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<section version="5.0"
+         xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xml:id="viz.modifiers.select_particle_type"
+         xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title>Select particle type</title>
+
+  <para>
+ 
+    <informalfigure><screenshot><mediaobject><imageobject>
+       <imagedata fileref="images/modifiers/select_particle_type_panel.png" format="PNG" />
+    </imageobject></mediaobject></screenshot></informalfigure>
+
+  This modifier selects particles of a specific type (or types).</para>
+
+  <simplesect>
+    <title>Parameters</title>
+
+    <variablelist>
+      <varlistentry>
+        <term>Property</term>
+        <listitem>
+          <para>This selects the classification used by the modifier. Particles may belong to multiple types
+          (e.g. both chemical type and structural type). This selects the kind of type property to use as input.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Types</term>
+        <listitem>
+          <para>List of available types. Check one or multiple types to select the corresponding particles.</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </simplesect>
+</section>

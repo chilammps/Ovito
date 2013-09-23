@@ -165,7 +165,7 @@ private:
 	OVITO_OBJECT
 
 	Q_CLASSINFO("DisplayName", "Slice");
-	Q_CLASSINFO("ModifierCategory", "Modify");
+	Q_CLASSINFO("ModifierCategory", "Modification");
 
 	DECLARE_REFERENCE_FIELD(_normalCtrl);
 	DECLARE_REFERENCE_FIELD(_distanceCtrl);

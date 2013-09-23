@@ -199,7 +199,7 @@ ObjectStatus HistogramModifier::modifyParticles(TimePoint time, TimeInterval& va
 		statusMessage += tr("%1 particles selected (%2%)").arg(numSelected).arg((FloatType)numSelected * 100 / std::max(1,(int)selProperty->size()), 0, 'f', 1);
 	}
 
-	notifyDependents(ReferenceEvent::StatusChanged);
+	notifyDependents(ReferenceEvent::ObjectStatusChanged);
 
 	return ObjectStatus(ObjectStatus::Success, QString(), statusMessage);
 }
@@ -421,7 +421,7 @@ bool HistogramModifierEditor::referenceEvent(RefTarget* source, ReferenceEvent* 
 		HistogramModifier* mod = static_object_cast<HistogramModifier>(editObject());
 		_propertyListBox->setCurrentProperty(mod->sourceProperty());
 	}
-	else if(event->sender() == editObject() && event->type() == ReferenceEvent::StatusChanged) {
+	else if(event->sender() == editObject() && event->type() == ReferenceEvent::ObjectStatusChanged) {
 		plotHistogram();
 	}
 	return ParticleModifierEditor::referenceEvent(source, event);

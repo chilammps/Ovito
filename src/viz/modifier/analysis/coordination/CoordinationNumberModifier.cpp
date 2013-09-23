@@ -220,7 +220,7 @@ void CoordinationNumberModifierEditor::createUI(const RolloutInsertionParameters
 ******************************************************************************/
 bool CoordinationNumberModifierEditor::referenceEvent(RefTarget* source, ReferenceEvent* event)
 {
-	if(event->sender() == editObject() && event->type() == ReferenceEvent::StatusChanged) {
+	if(event->sender() == editObject() && event->type() == ReferenceEvent::ObjectStatusChanged) {
 		plotRDF();
 	}
 	return ParticleModifierEditor::referenceEvent(source, event);

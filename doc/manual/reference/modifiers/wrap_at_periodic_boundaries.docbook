@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<section version="5.0"
+         xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xml:id="viz.modifiers.wrap_at_periodic_boundaries"
+         xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title>Wrap at periodic boundaries</title>
+
+  <para>This modifier maps particles that are located outside the simulation cell
+  back into the simulation cell by "wrapping" their coordinates around at
+  periodic boundaries.</para>
+
+  <note>
+    <para>The modifier acts only in spatial directions for which periodic
+    boundary conditions (PBC) are enabled. The PBC flags are read from the
+    input simulation file.
+    </para>
+  </note>
+</section>
