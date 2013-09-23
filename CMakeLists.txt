@@ -190,16 +190,40 @@ IF(WIN32)
 		ENDIF()
 	ENDFOREACH()
 	
+	# Install Qt plugins.
+	IF(CMAKE_BUILD_TYPE STREQUAL "Debug")
+		INSTALL(FILES "${QtBinaryPath}/../plugins/platforms/qwindowsd.dll" DESTINATION "${OVITO_RELATIVE_BINARY_DIRECTORY}/plugins/platforms/")
+		INSTALL(FILES "${QtBinaryPath}/../plugins/imageformats/qjpegd.dll" DESTINATION "${OVITO_RELATIVE_BINARY_DIRECTORY}/plugins/imageformats/")
+	ELSE()
+		INSTALL(FILES "${QtBinaryPath}/../plugins/platforms/qwindows.dll" DESTINATION "${OVITO_RELATIVE_BINARY_DIRECTORY}/plugins/platforms/")
+		INSTALL(FILES "${QtBinaryPath}/../plugins/imageformats/qjpeg.dll" DESTINATION "${OVITO_RELATIVE_BINARY_DIRECTORY}/plugins/imageformats/")
+	ENDIF()
+	
+	# Install a qt.conf file.
+	INSTALL(CODE "
+	    file(WRITE \"\${CMAKE_INSTALL_PREFIX}/${OVITO_RELATIVE_BINARY_DIRECTORY}/qt.conf\" \"[Paths]\\nPlugins = plugins/\")
+	    " COMPONENT Runtime)
+		
 	# Install zlib DLL.
 	GET_FILENAME_COMPONENT(ZLIB_LIBRARY_PATH ${ZLIB_LIBRARIES} PATH)
 	LIST(APPEND REQUIRED_DLLS "${ZLIB_LIBRARY_PATH}/../bin/libzlib.dll")
 
+	# Install libav DLLS.
+	IF(OVITO_VIDEO_OUTPUT_SUPPORT)
+		SET(LIBAV_DLLS avcodec-55.dll avdevice-54.dll avformat-55.dll avutil-52.dll libmp3lame-0.dll
+						libogg-0.dll librtmp.dll libvo-aacenc-0.dll libvorbis-0.dll libvorbisenc-2.dll 
+						libvorbisfile-3.dll libx264-118.dll libx264-125.dll swscale-2.dll)
+		FOREACH(dll ${LIBAV_DLLS})
+			LIST(APPEND REQUIRED_DLLS "${FFMPEG_LIBRARY_DIR}/../bin/${dll}")
+		ENDFOREACH()
+	ENDIF()
+	
 	# Copy library DLLs to output directory.
 	FOREACH(dll ${REQUIRED_DLLS})
 		MESSAGE("Installing DLL library ${dll} in output directory.")
 		CONFIGURE_FILE("${dll}" "${OVITO_BINARY_DIRECTORY}" COPYONLY)
 		INSTALL(FILES "${dll}" DESTINATION "${OVITO_RELATIVE_BINARY_DIRECTORY}")
-	ENDFOREACH(dll ${REQUIRED_DLLS})
+	ENDFOREACH()
 ENDIF(WIN32)
 
 ######################### Setup CPack #######################

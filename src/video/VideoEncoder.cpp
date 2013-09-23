@@ -24,9 +24,14 @@
 
 extern "C" {
 #include <libavutil/mathematics.h>
+#include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
 #include <libswscale/swscale.h>
 };
+
+#if LIBAVCODEC_VERSION_MAJOR >= 55
+	#define CODEC_ID_NONE AV_CODEC_ID_NONE
+#endif
 
 namespace Ovito {
 
@@ -269,7 +274,7 @@ void VideoEncoder::writeFrame(const QImage& image)
 
 	sws_scale(_imgConvertCtx, srcplanes, srcstride, 0, videoHeight, _frame->data, _frame->linesize);
 
-#ifndef FF_API_OLD_ENCODE_VIDEO
+#if !defined(FF_API_OLD_ENCODE_VIDEO) && LIBAVCODEC_VERSION_MAJOR < 55
 	int out_size = avcodec_encode_video(_codecContext, _outputBuf.data(), _outputBuf.size(), _frame.get());
 	// If zero size, it means the image was buffered.
 	if(out_size > 0) {
@@ -302,7 +307,6 @@ void VideoEncoder::writeFrame(const QImage& image)
 		}
 		av_free_packet(&pkt);
 	}
-
 #endif
 }
 
