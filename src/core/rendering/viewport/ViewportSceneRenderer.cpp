@@ -190,7 +190,7 @@ void ViewportSceneRenderer::renderNode(SceneNode* node)
 void ViewportSceneRenderer::renderModifiers(bool renderOverlay)
 {
 	// Visit all pipeline objects in the scene.
-	dataset()->sceneRoot()->visitChildren([this, renderOverlay](SceneNode* node) {
+	dataset()->sceneRoot()->visitChildren([this, renderOverlay](SceneNode* node) -> bool {
 		if(node->isObjectNode()) {
 			ObjectNode* objNode = static_object_cast<ObjectNode>(node);
 			PipelineObject* pipelineObj = dynamic_object_cast<PipelineObject>(objNode->sceneObject());
@@ -262,7 +262,7 @@ Box3 ViewportSceneRenderer::boundingBoxInteractive(TimePoint time, Viewport* vie
 	Box3 bb;
 
 	// Visit all pipeline objects in the scene.
-	dataset()->sceneRoot()->visitObjectNodes([this, &bb](ObjectNode* node) {
+	dataset()->sceneRoot()->visitObjectNodes([this, &bb](ObjectNode* node) -> bool {
 		PipelineObject* pipelineObj = dynamic_object_cast<PipelineObject>(node->sceneObject());
 		if(pipelineObj)
 			boundingBoxModifiers(pipelineObj, node, bb);
