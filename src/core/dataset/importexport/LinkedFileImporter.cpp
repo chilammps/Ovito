@@ -234,7 +234,7 @@ Future<QVector<LinkedFileImporter::FrameSourceInformation>> LinkedFileImporter::
 	}
 	else {
 
-		QDir directory = fileInfo.dir();
+		QDir directory;
 		bool isLocalPath = false;
 
 		// Scan the directory for files matching the wildcard pattern.
@@ -242,6 +242,7 @@ Future<QVector<LinkedFileImporter::FrameSourceInformation>> LinkedFileImporter::
 		if(sourceUrl.isLocalFile()) {
 
 			isLocalPath = true;
+			directory = QFileInfo(sourceUrl.toLocalFile()).dir();
 			for(const QString& filename : directory.entryList(QDir::Files|QDir::NoDotAndDotDot, QDir::Name)) {
 				if(matchesWildcardPattern(pattern, filename))
 					entries << filename;
@@ -250,6 +251,7 @@ Future<QVector<LinkedFileImporter::FrameSourceInformation>> LinkedFileImporter::
 		}
 		else {
 
+			directory = fileInfo.dir();
 			QUrl directoryUrl = sourceUrl;
 			directoryUrl.setPath(fileInfo.path());
 
@@ -292,7 +294,10 @@ Future<QVector<LinkedFileImporter::FrameSourceInformation>> LinkedFileImporter::
 		for(const auto& iter : sortedFilenames) {
 			QFileInfo fileInfo(directory, iter);
 			QUrl url = sourceUrl;
-			url.setPath(fileInfo.filePath());
+			if(isLocalPath)
+				url = QUrl::fromLocalFile(fileInfo.filePath());
+			else
+				url.setPath(fileInfo.filePath());
 			frames.push_back({
 				url, 0, 0,
 				isLocalPath ? fileInfo.lastModified() : QDateTime(),
