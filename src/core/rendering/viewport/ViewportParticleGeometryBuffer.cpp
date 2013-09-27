@@ -424,6 +424,23 @@ void ViewportParticleGeometryBuffer::renderRaytracedSpheres(ViewportSceneRendere
 
 	glEnable(GL_CULL_FACE);
 
+	// Set up look-up table for cube vertices.
+	static const GLfloat cubeVerts[8][3] = {
+		{-1, -1, -1},
+		{-1,  1, -1},
+		{ 1, -1, -1},
+		{ 1,  1, -1},
+		{-1, -1,  1},
+		{-1,  1,  1},
+		{ 1,  1,  1},
+		{ 1, -1,  1}
+	};
+	shader->setUniformValueArray("cubeVerts", &cubeVerts[0][0], 8, 3);
+
+	// Set up look-up table for cube triangle strip.
+	static const GLint stripIndices[14] = { 3,2,6,7,4,2,0,3,1,6,5,4,1,0 };
+	shader->setUniformValueArray("stripIndices", &stripIndices[0], 14);
+
 	shader->setUniformValue("projection_matrix", (QMatrix4x4)renderer->projParams().projectionMatrix);
 	shader->setUniformValue("inverse_projection_matrix", (QMatrix4x4)renderer->projParams().inverseProjectionMatrix);
 	shader->setUniformValue("modelview_matrix", (QMatrix4x4)renderer->modelViewTM());

@@ -34,23 +34,8 @@ flat out vec4 particle_color;
 flat out float particle_radius_squared;
 flat out vec3 particle_view_pos;
 
-const vec3 cubeVerts[8] = vec3[8]
-(
-	vec3(-1, -1, -1),
-	vec3(-1,  1, -1),
-	vec3( 1, -1, -1),
-	vec3( 1,  1, -1),
-	vec3(-1, -1,  1),
-	vec3(-1,  1,  1),
-	vec3( 1,  1,  1),
-	vec3( 1, -1,  1)
-);
-
-const int stripIndices[14] = int[14]
-(
-	3,2,6,7,4,2,0,3,1,6,5,4,1,0
-);
-
+uniform vec3 cubeVerts[8];
+uniform int stripIndices[14];
 
 void main()
 {

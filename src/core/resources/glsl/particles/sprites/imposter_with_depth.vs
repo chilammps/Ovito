@@ -39,8 +39,6 @@ uniform mat4 projection_matrix;
 #else
 
 	attribute float particle_radius;
-	//varying float ze0;					// The particle's Z coordinate in eye coordinates.
-	//varying float depth_radius;			// The particle's radius.
 
 #endif
 

@@ -21,20 +21,14 @@
 
 #if __VERSION__ >= 130
 
+uniform vec2 uvcoords[4];
 in vec2 vertex_pos;
 out vec2 tex_coords;
-
-const vec2 uvcoords[4] = vec2[4]( 
-	vec2(0,0),
-	vec2(1,0),
-	vec2(0,1),
-	vec2(1,1) 
-);
 
 void main()
 {
 	gl_Position = vec4(vertex_pos, 0, 1);
-	tex_coords = uvcoords[gl_VertexID % 4];
+	tex_coords = uvcoords[gl_VertexID];
 }
 
 #else

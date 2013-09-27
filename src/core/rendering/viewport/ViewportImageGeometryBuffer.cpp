@@ -167,6 +167,10 @@ void ViewportImageGeometryBuffer::renderWindow(SceneRenderer* renderer, const Po
 		if(!_vertexBuffer.bind())
 				throw Exception(tr("Failed to bind OpenGL vertex buffer."));
 
+		// Set up look-up table for texture coordinates.
+		const GLfloat uvcoords[] { 0,0,  1,0,  0,1,  1,1 };
+		_shader->setUniformValueArray("uvcoords", uvcoords, 4, 2);
+
 		_vertexBuffer.write(0, corners, 4 * sizeof(Point2));
 		_shader->setAttributeBuffer("vertex_pos", GL_FLOAT, 0, 2);
 		_shader->enableAttributeArray("vertex_pos");
