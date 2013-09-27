@@ -47,7 +47,7 @@ SET_PROPERTY_FIELD_UNITS(AmbientOcclusionModifier, _intensity, PercentParameterU
 ******************************************************************************/
 AmbientOcclusionModifier::AmbientOcclusionModifier() :
 	_brightnessValues(new ParticleProperty(0, qMetaTypeId<FloatType>(), sizeof(FloatType), 1, tr("Brightness"))),
-	_intensity(0.7f), _samplingCount(15), _bufferResolution(2)
+	_intensity(0.7f), _samplingCount(20), _bufferResolution(3)
 {
 	INIT_PROPERTY_FIELD(AmbientOcclusionModifier::_intensity);
 	INIT_PROPERTY_FIELD(AmbientOcclusionModifier::_samplingCount);

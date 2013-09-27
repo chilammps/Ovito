@@ -57,9 +57,7 @@ FIND_PACKAGE(ZLIB REQUIRED)
 INCLUDE_DIRECTORIES(${ZLIB_INCLUDE_DIRS})
 
 # Define the OVITO_DEBUG macro in debug builds.
-IF(CMAKE_BUILD_TYPE STREQUAL "Debug")
-	SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DOVITO_DEBUG")
-ENDIF()
+SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DOVITO_DEBUG")
 
 # Enable C++11 standard.
 IF(NOT MSVC)
@@ -72,6 +70,16 @@ ENDIF()
 IF(APPLE)
 	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++ -Wno-invalid-offsetof")
 ENDIF()
+
+
+# Enable additional optimizations for release builds.
+IF(CMAKE_COMPILER_IS_GNUCXX)
+	# Use -flto flag to enable GCC's link-time optimization.
+	SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto -fuse-linker-plugin")
+	SET(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -flto -fuse-linker-plugin")
+	SET(CMAKE_MODULE_LINKER_FLAGS_RELEASE "${CMAKE_MODULE_LINKER_FLAGS_RELEASE} -flto -fuse-linker-plugin")
+ENDIF()
+
 
 # This is the base directory for all included header files.
 INCLUDE_DIRECTORIES("${OVITO_SOURCE_BASE_DIR}/src")
