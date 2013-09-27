@@ -407,21 +407,27 @@ void ModifyCommandPage::createAboutPanel()
 	settings.beginGroup("installation");
 	if(settings.contains("id")) {
 		id = settings.value("id").toByteArray();
+		if(id == QByteArray(16, '\0'))
+			id.clear();
 	}
-	else {
+	if(id.isEmpty()) {
 		// Look in old Ovito's settings.
 		QSettings oldSettings("ovito", "ovito");
 		oldSettings.beginGroup("installation");
 		if(oldSettings.contains("id")) {
 			id = oldSettings.value("id").toByteArray();
+			if(id == QByteArray(16, '\0'))
+				id.clear();
 		}
-		else {
-			// Generate a new unique ID.
-			id = QByteArray(16, '0');
-			qsrand(time(NULL));
-			for(int i = 0; i < id.size(); i++)
-				id[i] = qrand() * 0xFF / RAND_MAX;
-		}
+	}
+	if(id.isEmpty()) {
+		// Generate a new unique ID.
+		id.fill(16, '0');
+		std::random_device rdev;
+		std::default_random_engine reng(rdev());
+		std::uniform_int_distribution<int> rdist(0, 0xFF);
+		for(auto& c : id)
+			c = (char)rdist(reng);
 		settings.setValue("id", id);
 	}
 

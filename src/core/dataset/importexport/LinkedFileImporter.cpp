@@ -96,7 +96,7 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl, DataSet* dataset)
 
 		// Look for an existing LinkedFileObject in the scene whose
 		// input file we can replace with the newly imported file.
-		dataset->sceneRoot()->visitObjectNodes([&existingObj, &existingNode] (ObjectNode* node) {
+		dataset->sceneRoot()->visitObjectNodes([&existingObj, &existingNode] (ObjectNode* node) -> bool {
 			SceneObject* sceneObj = node->sceneObject();
 			while(sceneObj) {
 				LinkedFileObject* linkedFileObj = dynamic_object_cast<LinkedFileObject>(sceneObj);
