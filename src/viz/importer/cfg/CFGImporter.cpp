@@ -227,8 +227,10 @@ void CFGImporter::CFGImportTask::parseFile(FutureInterfaceBase& futureInterface,
 					for(; *line != '\0'; ++line) {
 						if(!std::isspace(*line)) {
 							isNewType = false;
+							break;
 						}
 					}
+					break;
 				}
 			}
 			if(isNewType) {
