@@ -53,7 +53,7 @@ public:
 	/// \param sourceUrl The new source location.
 	/// \param importer The importer object that will parse the input file.
 	/// \return false if the operation has been canceled by the user.
-	bool setSource(QUrl sourceUrl, const OORef<LinkedFileImporter>& importer);
+	bool setSource(QUrl sourceUrl, const OORef<LinkedFileImporter>& importer, bool useExactURL = false);
 
 	/// \brief Returns the source location of the data.
 	const QUrl& sourceUrl() const { return _sourceUrl; }

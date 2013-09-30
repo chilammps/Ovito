@@ -105,13 +105,13 @@ bool LinkedFileObject::setSource(const QUrl& newSourceUrl, const FileImporterDes
 		newImporter = importer();
 
 	// Set the new input location.
-	return setSource(newSourceUrl, newImporter);
+	return setSource(newSourceUrl, newImporter, true);
 }
 
 /******************************************************************************
 * Sets the source location for importing data.
 ******************************************************************************/
-bool LinkedFileObject::setSource(QUrl sourceUrl, const OORef<LinkedFileImporter>& importer)
+bool LinkedFileObject::setSource(QUrl sourceUrl, const OORef<LinkedFileImporter>& importer, bool useExactURL)
 {
 	if(this->sourceUrl() == sourceUrl && this->importer() == importer)
 		return true;
@@ -120,7 +120,7 @@ bool LinkedFileObject::setSource(QUrl sourceUrl, const OORef<LinkedFileImporter>
 	// replacing last sequence of numbers in the filename with a wildcard character.
 	QFileInfo fileInfo(sourceUrl.path());
 	QString originalFilename = fileInfo.fileName();
-	if(!originalFilename.contains('*') && !originalFilename.contains('?')) {
+	if(!useExactURL && importer->autoGenerateWildcardPattern() && !originalFilename.contains('*') && !originalFilename.contains('?')) {
 		int startIndex, endIndex;
 		for(endIndex = originalFilename.length() - 1; endIndex >= 0; endIndex--)
 			if(originalFilename.at(endIndex).isNumber()) break;
@@ -147,7 +147,7 @@ bool LinkedFileObject::setSource(QUrl sourceUrl, const OORef<LinkedFileImporter>
 		virtual void undo() override {
 			QUrl url = _obj->sourceUrl();
 			OORef<LinkedFileImporter> importer = _obj->importer();
-			_obj->setSource(_oldUrl, _oldImporter);
+			_obj->setSource(_oldUrl, _oldImporter, true);
 			_oldUrl = url;
 			_oldImporter = importer;
 		}

@@ -53,6 +53,10 @@ public:
 	/// \brief Scans the input source (which can be a directory or a single file) to discover all animation frames.
 	virtual Future<QVector<LinkedFileImporter::FrameSourceInformation>> findFrames(const QUrl& sourceUrl) override;
 
+	/// This method indicates whether a wildcard pattern should be automatically generated
+	/// when the user picks a new input filename.
+	virtual bool autoGenerateWildcardPattern() override { return !isMultiTimestepFile(); }
+
 protected:
 
 	/// \brief Is called when the value of a property of this object has changed.

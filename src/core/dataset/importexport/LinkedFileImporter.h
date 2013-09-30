@@ -124,6 +124,11 @@ public:
 	/// \return A future that will give access to the loaded data.
 	virtual Future<ImportTaskPtr> load(const FrameSourceInformation& frame);
 
+	/// This method indicates whether a wildcard pattern should be automatically generated
+	/// when the user picks a new input filename. The default implementation returns true.
+	/// Subclasses can override this method to disable generation of wildcard patterns.
+	virtual bool autoGenerateWildcardPattern() { return true; }
+
 	/// \brief Scans the input source (which can be a directory or a single file) to discover all animation frames.
 	///
 	/// The default implementation of this method checks if the source URL contains a wild-card pattern.

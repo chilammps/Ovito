@@ -39,7 +39,7 @@ SET_PROPERTY_FIELD_LABEL(ParticleImporter, _isMultiTimestepFile, "File contains 
 ******************************************************************************/
 Future<QVector<LinkedFileImporter::FrameSourceInformation>> ParticleImporter::findFrames(const QUrl& sourceUrl)
 {
-	if(isMultiTimestepFile() && !sourceUrl.path().contains('*') && !sourceUrl.path().contains('?')) {
+	if(isMultiTimestepFile()) {
 		return runInBackground<QVector<LinkedFileImporter::FrameSourceInformation>>(
 				std::bind(&ParticleImporter::scanMultiTimestepFile, this, std::placeholders::_1, sourceUrl));
 	}
@@ -101,8 +101,7 @@ void ParticleImporter::propertyChanged(const PropertyFieldDescriptor& field)
 {
 	if(field == PROPERTY_FIELD(ParticleImporter::_isMultiTimestepFile)) {
 		// Automatically rescan input file for animation frames when this option has been activated.
-		if(isMultiTimestepFile())
-			requestFramesUpdate();
+		requestFramesUpdate();
 	}
 	LinkedFileImporter::propertyChanged(field);
 }

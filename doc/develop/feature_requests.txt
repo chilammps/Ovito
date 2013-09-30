@@ -12,6 +12,16 @@
 
 - Add "Duplicate particles" option to Affine Transformation modifier.
 
+- Although the new version can read the new POSCAR file format, it still exports the old POSCAR format file.
+
+- Export of the RDF data computed by the "Coordination analysis" modifier
+
+- Manual reset of the URL history in the "Import Remote File" dialog.
+
+- Import file should keep a history of visited directories like the old Ovito version did.
+
+- Integration of Tachyon renderer.
+
 Sha Zhendong:
 
 - Calculation of the pair correlation function

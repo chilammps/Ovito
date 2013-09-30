@@ -68,6 +68,21 @@ void LinkedFileImporter::requestFramesUpdate()
 		LinkedFileObject* obj = dynamic_object_cast<LinkedFileObject>(refmaker);
 		if(obj) {
 			try {
+				// If wildcard pattern seach has been disabled, replace
+				// wildcard pattern URL with an actual filename first.
+				if(!autoGenerateWildcardPattern()) {
+					QFileInfo fileInfo(obj->sourceUrl().path());
+					if(fileInfo.fileName().contains('*') || fileInfo.fileName().contains('?')) {
+						if(obj->loadedFrame() >= 0 && obj->loadedFrame() < obj->frames().size()) {
+							QUrl currentUrl = obj->frames()[obj->loadedFrame()].sourceFile;
+							if(currentUrl != obj->sourceUrl()) {
+								obj->setSource(currentUrl, this);
+								continue;
+							}
+						}
+					}
+				}
+
 				// Scan input source for animation frames.
 				obj->updateFrames();
 			}
