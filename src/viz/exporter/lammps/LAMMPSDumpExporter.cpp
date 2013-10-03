@@ -97,7 +97,8 @@ bool LAMMPSDumpExporter::exportParticles(const PipelineFlowState& state, int fra
 	FloatType yz = simCell.column(2).y();
 
 	if(simCell.column(0).y() != 0 || simCell.column(0).z() != 0 || simCell.column(1).z() != 0)
-		throw Exception(tr("Cannot save simulation cell to a LAMMPS dump file. This type of non-orthogonal cell shape is not supported by LAMMPS. See documentation of LAMMPS for details."));
+		throw Exception(tr("Cannot save simulation cell to a LAMMPS dump file. This type of non-orthogonal "
+				"cell is not supported by LAMMPS and its file format. See the documentation of LAMMPS for details."));
 
 	xlo += std::min((FloatType)0, std::min(xy, std::min(xz, xy+xz)));
 	xhi += std::max((FloatType)0, std::max(xy, std::max(xz, xy+xz)));

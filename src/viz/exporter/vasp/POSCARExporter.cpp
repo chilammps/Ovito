@@ -63,7 +63,7 @@ bool POSCARExporter::exportParticles(const PipelineFlowState& state, int frameNu
 		textStream() << cell(0, i) << " " << cell(1, i) << " " << cell(2, i) << endl;
 	Vector3 origin = cell.translation();
 
-	// Count number of particle per particle type.
+	// Count number of particles per particle type.
 	QMap<int,int> particleCounts;
 	ParticleTypeProperty* particleTypeProperty = dynamic_object_cast<ParticleTypeProperty>(findStandardProperty(ParticleProperty::ParticleTypeProperty, state));
 	if(particleTypeProperty) {
@@ -72,13 +72,32 @@ bool POSCARExporter::exportParticles(const PipelineFlowState& state, int frameNu
 		for(; ptype != ptype_end; ++ptype) {
 			particleCounts[*ptype]++;
 		}
-	}
-	else particleCounts[0] = posProperty->size();
 
-	for(auto c = particleCounts.begin(); c != particleCounts.end(); ++c) {
-		textStream() << c.value() << " ";
+		// Write line with particle type names.
+		for(auto c = particleCounts.begin(); c != particleCounts.end(); ++c) {
+			ParticleType* particleType = particleTypeProperty->particleType(c.key());
+			if(particleType) {
+				QString typeName = particleType->name();
+				typeName.replace(' ', '_');
+				textStream() << typeName << " ";
+			}
+			else textStream() << "Type" << c.key() << " ";
+		}
+		textStream() << endl;
+
+		// Write line with particle counts per type.
+		for(auto c = particleCounts.begin(); c != particleCounts.end(); ++c) {
+			textStream() << c.value() << " ";
+		}
+		textStream() << endl;
 	}
-	textStream() << endl;
+	else {
+		// Write line with particle type name.
+		textStream() << "A" << endl;
+		// Write line with particle count.
+		textStream() << posProperty->size() << endl;
+		particleCounts[0] = posProperty->size();
+	}
 
 	size_t totalProgressCount = posProperty->size();
 	if(velocityProperty) totalProgressCount += posProperty->size();
