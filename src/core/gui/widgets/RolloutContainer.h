@@ -39,6 +39,7 @@ public:
 	RolloutInsertionParameters() :
 		_collapsed(false),
 		_animateFirstOpening(false),
+		_useAvailableSpace(false),
 		_afterThisRollout(nullptr),
 		_beforeThisRollout(nullptr),
 		_intoThisContainer(nullptr) {}
@@ -46,6 +47,7 @@ public:
 	RolloutInsertionParameters after(QWidget* afterThisRollout) const { 
 		RolloutInsertionParameters p;
 		p._collapsed = this->_collapsed;
+		p._useAvailableSpace = this->_useAvailableSpace;
 		p._intoThisContainer = this->_intoThisContainer;
 		p._afterThisRollout = afterThisRollout;
 		return p;
@@ -54,6 +56,7 @@ public:
 	RolloutInsertionParameters before(QWidget* beforeThisRollout) const { 
 		RolloutInsertionParameters p;
 		p._collapsed = this->_collapsed;
+		p._useAvailableSpace = this->_useAvailableSpace;
 		p._intoThisContainer = this->_intoThisContainer;
 		p._beforeThisRollout = beforeThisRollout;
 		return p;
@@ -62,6 +65,12 @@ public:
 	RolloutInsertionParameters collapse() const {
 		RolloutInsertionParameters p(*this);
 		p._collapsed = true;
+		return p;
+	}
+
+	RolloutInsertionParameters useAvailableSpace() const {
+		RolloutInsertionParameters p(*this);
+		p._useAvailableSpace = true;
 		return p;
 	}
 
@@ -94,6 +103,7 @@ private:
 	
 	bool _collapsed;
 	bool _animateFirstOpening;
+	bool _useAvailableSpace;
 	QPointer<QWidget> _afterThisRollout;
 	QPointer<QWidget> _beforeThisRollout;
 	QPointer<QWidget> _intoThisContainer;
@@ -176,6 +186,9 @@ private:
 
 	/// The object that animates the collapse/opening of the rollout.
 	QPropertyAnimation _collapseAnimation;
+
+	/// Indicates that this rollout should automatically expand to use all available space in the container.
+	bool _useAvailableSpace;
 };
 
 /******************************************************************************
@@ -195,6 +208,14 @@ public:
 	
 	virtual QSize minimumSizeHint() const { 
 		return QSize(QFrame::minimumSizeHint().width(), 10); 
+	}
+
+protected:
+
+	/// Handles the resize events of the rollout container widget.
+	virtual void resizeEvent(QResizeEvent* event) override {
+		QScrollArea::resizeEvent(event);
+		updateRollouts();
 	}
 
 public Q_SLOTS:

@@ -49,7 +49,7 @@ void ParticleInformationApplet::openUtility(RolloutContainer* container, const R
 {
 	// Create a rollout.
 	_panel = new QWidget();
-	container->addRollout(_panel, tr("Particle information"), rolloutParams);
+	container->addRollout(_panel, tr("Particle information"), rolloutParams.useAvailableSpace());
 
     // Create the rollout contents.
 	QVBoxLayout* layout = new QVBoxLayout(_panel);
@@ -57,26 +57,18 @@ void ParticleInformationApplet::openUtility(RolloutContainer* container, const R
 	layout->setSpacing(4);
 
 	_inputMode = new ParticleInformationInputMode(this);
-	ViewportModeAction* pickModeAction = new ViewportModeAction(tr("Pick mode"), this, _inputMode);
+	ViewportModeAction* pickModeAction = new ViewportModeAction(tr("Selection mode"), this, _inputMode);
 	layout->addWidget(pickModeAction->createPushButton());
 
-	_captionLabel = new QLabel(tr("Double-click on a particle in the viewports."), _panel);
-	layout->addWidget(_captionLabel);
-	_captionLabel->setTextInteractionFlags(Qt::TextSelectableByMouse|Qt::TextSelectableByKeyboard);
-
-	class MyTableWidget : public QTableWidget {
-	public:
-		MyTableWidget(QWidget* parent) : QTableWidget(parent) {}
-		virtual QSize sizeHint() const override { return QTableWidget::sizeHint().expandedTo(QSize(0, 420)); }
-	};
-
-	_table = new MyTableWidget(_panel);
-	_table->setEnabled(false);
-	_table->verticalHeader()->setVisible(false);
-	_table->setCornerButtonEnabled(false);
-	_table->setEditTriggers(QAbstractItemView::NoEditTriggers);
-	_table->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
-	layout->addWidget(_table);
+	_infoDisplay = new QTextEdit(_panel);
+	_infoDisplay->setReadOnly(true);
+	_infoDisplay->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+#ifndef Q_OS_MACX
+	_infoDisplay->setText(tr("Pick a particle in the viewports. Hold down CTRL key to select multiple particles."));
+#else
+	_infoDisplay->setText(tr("Pick a particle in the viewports. Hold down COMMAND key to select multiple particles."));
+#endif
+	layout->addWidget(_infoDisplay, 1);
 
 	ViewportInputManager::instance().pushInputHandler(_inputMode);
 }
@@ -97,29 +89,31 @@ void ParticleInformationApplet::closeUtility(RolloutContainer* container)
 ******************************************************************************/
 void ParticleInformationApplet::updateInformationDisplay()
 {
-	if(_inputMode->_pickedParticle.objNode) {
-		const PipelineFlowState& flowState = _inputMode->_pickedParticle.objNode->evalPipeline(AnimManager::instance().time());
+	QString infoText;
+	QTextStream stream(&infoText, QIODevice::WriteOnly);
+	for(auto& pickedParticle : _inputMode->_pickedParticles) {
+		OVITO_ASSERT(pickedParticle.objNode);
+		const PipelineFlowState& flowState = pickedParticle.objNode->evalPipeline(AnimManager::instance().time());
 
-		size_t particleIndex = _inputMode->_pickedParticle.particleIndex;
-		if(_inputMode->_pickedParticle.particleId >= 0) {
+		if(pickedParticle.particleId >= 0) {
 			for(const auto& sceneObj : flowState.objects()) {
 				ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(sceneObj.get());
 				if(property && property->type() == ParticleProperty::IdentifierProperty) {
 					const int* begin = property->constDataInt();
 					const int* end = begin + property->size();
-					const int* iter = std::find(begin, end, _inputMode->_pickedParticle.particleId);
+					const int* iter = std::find(begin, end, pickedParticle.particleId);
 					if(iter != end)
-						particleIndex = (iter - begin);
+						pickedParticle.particleIndex = (iter - begin);
 				}
 			}
 		}
 
-		_captionLabel->setText(tr("Particle %1:").arg(particleIndex + 1));
+		stream << QStringLiteral("<b>") << tr("Particle") << QStringLiteral(" ") << (pickedParticle.particleIndex + 1) << QStringLiteral(":</b>");
+		stream << QStringLiteral("<table border=\"0\">");
 
-		QVector< QPair<QTableWidgetItem*, QTableWidgetItem*> > tableItems;
 		for(const auto& sceneObj : flowState.objects()) {
 			ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(sceneObj.get());
-			if(!property || property->size() <= particleIndex) continue;
+			if(!property || property->size() <= pickedParticle.particleIndex) continue;
 			if(property->dataType() != qMetaTypeId<int>() && property->dataType() != qMetaTypeId<FloatType>()) continue;
 			for(size_t component = 0; component < property->componentCount(); component++) {
 				QString propertyName = property->name();
@@ -129,41 +123,64 @@ void ParticleInformationApplet::updateInformationDisplay()
 				}
 				QString valueString;
 				if(property->dataType() == qMetaTypeId<int>()) {
-					valueString = QString::number(property->getIntComponent(particleIndex, component));
+					valueString = QString::number(property->getIntComponent(pickedParticle.particleIndex, component));
 					ParticleTypeProperty* typeProperty = dynamic_object_cast<ParticleTypeProperty>(property);
 					if(typeProperty && typeProperty->particleTypes().empty() == false) {
-						ParticleType* ptype = typeProperty->particleType(property->getIntComponent(particleIndex, component));
+						ParticleType* ptype = typeProperty->particleType(property->getIntComponent(pickedParticle.particleIndex, component));
 						if(ptype) {
 							valueString.append(" (" + ptype->name() + ")");
 						}
 					}
 				}
 				else if(property->dataType() == qMetaTypeId<FloatType>())
-					valueString = QString::number(property->getFloatComponent(particleIndex, component));
+					valueString = QString::number(property->getFloatComponent(pickedParticle.particleIndex, component));
 
-				tableItems.push_back(qMakePair(new QTableWidgetItem(propertyName), new QTableWidgetItem(valueString)));
+				stream << QStringLiteral("<tr><td>") << propertyName << QStringLiteral(":</td><td>") << valueString << QStringLiteral("</td></tr>");
 			}
 		}
-		_table->setEnabled(true);
-		_table->setColumnCount(2);
-		_table->setRowCount(tableItems.size());
-		QStringList headerItems;
-		headerItems << tr("Property");
-		headerItems << tr("Value");
-		_table->setHorizontalHeaderLabels(headerItems);
-		_table->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
-		_table->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
-		for(int i = 0; i < tableItems.size(); i++) {
-			_table->setItem(i, 0, tableItems[i].first);
-			_table->setItem(i, 1, tableItems[i].second);
+		stream << QStringLiteral("</table><hr>");
+	}
+	if(_inputMode->_pickedParticles.empty())
+		infoText = tr("No particles selected.");
+	else if(_inputMode->_pickedParticles.size() >= 2) {
+		stream << QStringLiteral("<b>") << tr("Distances:") << QStringLiteral("</b>");
+		stream << QStringLiteral("<table border=\"0\">");
+		for(int i = 0; i < _inputMode->_pickedParticles.size(); i++) {
+			const auto& p1 = _inputMode->_pickedParticles[i];
+			for(int j = i + 1; j < _inputMode->_pickedParticles.size(); j++) {
+				const auto& p2 = _inputMode->_pickedParticles[j];
+				stream << QStringLiteral("<tr><td>(") <<
+						(p1.particleIndex+1) << QStringLiteral(",") << (p2.particleIndex+1) <<
+						QStringLiteral("):</td><td>") << (p1.localPos - p2.localPos).length() << QStringLiteral("</td></tr>");
+			}
 		}
+		stream << QStringLiteral("</table><hr>");
 	}
-	else {
-		_captionLabel->setText(tr("You did not click on a particle."));
-		_table->setEnabled(false);
-		_table->setColumnCount(0);
-		_table->setRowCount(0);
+	if(_inputMode->_pickedParticles.size() >= 3) {
+		stream << QStringLiteral("<b>") << tr("Angles:") << QStringLiteral("</b>");
+		stream << QStringLiteral("<table border=\"0\">");
+		for(int i = 0; i < _inputMode->_pickedParticles.size(); i++) {
+			const auto& p1 = _inputMode->_pickedParticles[i];
+			for(int j = 0; j < _inputMode->_pickedParticles.size(); j++) {
+				if(j == i) continue;
+				const auto& p2 = _inputMode->_pickedParticles[j];
+				for(int k = j + 1; k < _inputMode->_pickedParticles.size(); k++) {
+					if(k == i) continue;
+					const auto& p3 = _inputMode->_pickedParticles[k];
+					Vector3 v1 = p1.localPos - p2.localPos;
+					Vector3 v2 = p3.localPos - p2.localPos;
+					v1.normalizeSafely();
+					v2.normalizeSafely();
+					FloatType angle = acos(v1.dot(v2));
+					stream << QStringLiteral("<tr><td>(") <<
+							(p1.particleIndex+1) << QStringLiteral(" - ") << (p2.particleIndex+1) << QStringLiteral(" - ") << (p3.particleIndex+1) <<
+							QStringLiteral("):</td><td>") << (angle * 180.0f / FLOATTYPE_PI) << QStringLiteral("</td></tr>");
+				}
+			}
+		}
+		stream << QStringLiteral("</table><hr>");
 	}
+	_infoDisplay->setText(infoText);
 }
 
 /******************************************************************************
@@ -172,7 +189,23 @@ void ParticleInformationApplet::updateInformationDisplay()
 void ParticleInformationInputMode::mouseReleaseEvent(Viewport* vp, QMouseEvent* event)
 {
 	if(event->button() == Qt::LeftButton && temporaryNavigationMode() == nullptr) {
-		pickParticle(vp, event->pos(), _pickedParticle);
+		PickResult pickResult;
+		pickParticle(vp, event->pos(), pickResult);
+		if(!event->modifiers().testFlag(Qt::ControlModifier))
+			_pickedParticles.clear();
+		if(pickResult.objNode) {
+			// Don't select the same particle twice.
+			bool alreadySelected = false;
+			for(auto p = _pickedParticles.begin(); p != _pickedParticles.end(); ++p) {
+				if(p->objNode == pickResult.objNode && p->particleIndex == pickResult.particleIndex) {
+					alreadySelected = true;
+					_pickedParticles.erase(p);
+					break;
+				}
+			}
+			if(!alreadySelected)
+				_pickedParticles.push_back(pickResult);
+		}
 		_applet->updateInformationDisplay();
 		ViewportManager::instance().updateViewports();
 	}
@@ -185,7 +218,8 @@ void ParticleInformationInputMode::mouseReleaseEvent(Viewport* vp, QMouseEvent* 
 void ParticleInformationInputMode::renderOverlay(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive)
 {
 	ViewportInputHandler::renderOverlay(vp, renderer, isActive);
-	renderSelectionMarker(vp, renderer, _pickedParticle);
+	for(const auto& pickedParticle : _pickedParticles)
+		renderSelectionMarker(vp, renderer, pickedParticle);
 }
 
 };

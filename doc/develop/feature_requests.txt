@@ -4,7 +4,7 @@
 
 - Display of color scale legend in rendered image
 
-- Add variables for simulation box size to Compute Channel modifier.
+- Add variables for simulation box size to Compute Property modifier.
 
 - Visualization of particle trajectories
 

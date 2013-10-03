@@ -84,7 +84,7 @@ void RolloutContainer::updateRollouts()
 * Constructs a rollout widget.
 ******************************************************************************/
 Rollout::Rollout(QWidget* parent, QWidget* content, const QString& title, const RolloutInsertionParameters& params) :
-	QWidget(parent), _content(content), _collapseAnimation(this, "visiblePercentage")
+	QWidget(parent), _content(content), _collapseAnimation(this, "visiblePercentage"), _useAvailableSpace(params._useAvailableSpace)
 {
 	setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
 	_collapseAnimation.setDuration(350);
@@ -129,7 +129,23 @@ Rollout::Rollout(QWidget* parent, QWidget* content, const QString& title, const 
 QSize Rollout::sizeHint() const
 {
 	QSize titleSize = _titleButton->sizeHint();
-	QSize contentSize = _content ? (_content->sizeHint() * _visiblePercentage / 100) : QSize(0,0);
+	QSize contentSize(0,0);
+	if(_content)
+		contentSize = _content->sizeHint();
+	if(_useAvailableSpace) {
+		int occupiedSpace = 0;
+		for(Rollout* rollout : parentWidget()->findChildren<Rollout*>()) {
+			if(rollout->_useAvailableSpace) continue;
+			occupiedSpace += rollout->sizeHint().height();
+		}
+		occupiedSpace += parentWidget()->layout()->spacing() * (parentWidget()->findChildren<Rollout*>().size() - 1);
+		int totalSpace = parentWidget()->parentWidget()->height();
+		int availSpace = totalSpace - occupiedSpace;
+		availSpace -= titleSize.height();
+		if(availSpace > contentSize.height())
+			contentSize.setHeight(availSpace);
+	}
+	contentSize.setHeight(contentSize.height() * _visiblePercentage / 100);
 	return QSize(std::max(titleSize.width(), contentSize.width()), titleSize.height() + contentSize.height());
 }
 
@@ -139,7 +155,22 @@ QSize Rollout::sizeHint() const
 void Rollout::resizeEvent(QResizeEvent* event)
 {
 	int titleHeight = _titleButton->sizeHint().height();
-	int contentHeight = _content ? _content->sizeHint().height() : 0;
+	int contentHeight = 0;
+	if(_content)
+		contentHeight = _content->sizeHint().height();
+	if(_useAvailableSpace) {
+		int occupiedSpace = 0;
+		for(Rollout* rollout : parentWidget()->findChildren<Rollout*>()) {
+			if(rollout->_useAvailableSpace) continue;
+			occupiedSpace += rollout->sizeHint().height();
+		}
+		occupiedSpace += parentWidget()->layout()->spacing() * (parentWidget()->findChildren<Rollout*>().size() - 1);
+		int totalSpace = parentWidget()->parentWidget()->height();
+		int availSpace = totalSpace - occupiedSpace;
+		availSpace -= titleHeight;
+		if(availSpace > contentHeight)
+			contentHeight = availSpace;
+	}
 	_titleButton->setGeometry(0, 0, width(), titleHeight);
 	if(_content) _content->setGeometry(0, height() - contentHeight, width(), contentHeight);
 }

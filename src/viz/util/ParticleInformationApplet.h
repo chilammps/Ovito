@@ -59,8 +59,8 @@ private:
 	/// The particle information applet.
 	ParticleInformationApplet* _applet;
 
-	/// The selected particle whose properties are being displayed.
-	PickResult _pickedParticle;
+	/// The selected particles whose properties are being displayed.
+	std::deque<PickResult> _pickedParticles;
 
 	friend class ParticleInformationApplet;
 };
@@ -89,8 +89,7 @@ public Q_SLOTS:
 
 private:
 
-	QLabel* _captionLabel;
-	QTableWidget* _table;
+	QTextEdit* _infoDisplay;
 	QWidget* _panel;
 
 	/// The viewport input mode.
