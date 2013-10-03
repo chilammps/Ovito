@@ -38,9 +38,15 @@ ImportRemoteFileDialog::ImportRemoteFileDialog(QWidget* parent, const QString& c
 	layout1->setSpacing(2);
 
 	layout1->addWidget(new QLabel(tr("Remote URL:")));
+
+	QHBoxLayout* layout2 = new QHBoxLayout();
+	layout2->setContentsMargins(0,0,0,0);
+	layout2->setSpacing(4);
+
 	_urlEdit = new QComboBox(this);
 	_urlEdit->setEditable(true);
 	_urlEdit->setInsertPolicy(QComboBox::NoInsert);
+	_urlEdit->setMinimumContentsLength(40);
 	if(_urlEdit->lineEdit())
 		_urlEdit->lineEdit()->setPlaceholderText(tr("sftp://username@hostname/path/file"));
 
@@ -51,7 +57,18 @@ ImportRemoteFileDialog::ImportRemoteFileDialog(QWidget* parent, const QString& c
 	for(QString entry : list)
 		_urlEdit->addItem(entry);
 
-	layout1->addWidget(_urlEdit);
+	layout2->addWidget(_urlEdit);
+	QToolButton* clearURLHistoryButton = new QToolButton();
+	clearURLHistoryButton->setIcon(QIcon(":/core/actions/edit/edit_clear.png"));
+	clearURLHistoryButton->setToolTip(tr("Clear history"));
+	connect(clearURLHistoryButton, &QToolButton::clicked, [this]() {
+		QString text = _urlEdit->currentText();
+		_urlEdit->clear();
+		_urlEdit->setCurrentText(text);
+	});
+	layout2->addWidget(clearURLHistoryButton);
+
+	layout1->addLayout(layout2);
 	layout1->addSpacing(10);
 
 	layout1->addWidget(new QLabel(tr("File type:")));

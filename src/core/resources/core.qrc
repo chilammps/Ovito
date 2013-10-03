@@ -13,6 +13,7 @@
 
 	<file>actions/edit/edit_undo.png</file>
 	<file>actions/edit/edit_redo.png</file>
+	<file>actions/edit/edit_clear.png</file>
 	
 	<file>actions/file/file_open.png</file>
 	<file>actions/file/file_quit.png</file>
