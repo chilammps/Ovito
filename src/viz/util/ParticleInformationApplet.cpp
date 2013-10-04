@@ -167,13 +167,13 @@ void ParticleInformationApplet::updateInformationDisplay()
 				for(int k = j + 1; k < _inputMode->_pickedParticles.size(); k++) {
 					if(k == i) continue;
 					const auto& p3 = _inputMode->_pickedParticles[k];
-					Vector3 v1 = p1.localPos - p2.localPos;
-					Vector3 v2 = p3.localPos - p2.localPos;
+					Vector3 v1 = p2.localPos - p1.localPos;
+					Vector3 v2 = p3.localPos - p1.localPos;
 					v1.normalizeSafely();
 					v2.normalizeSafely();
 					FloatType angle = acos(v1.dot(v2));
 					stream << QStringLiteral("<tr><td>(") <<
-							(p1.particleIndex+1) << QStringLiteral(" - ") << (p2.particleIndex+1) << QStringLiteral(" - ") << (p3.particleIndex+1) <<
+							(p2.particleIndex+1) << QStringLiteral(" - ") << (p1.particleIndex+1) << QStringLiteral(" - ") << (p3.particleIndex+1) <<
 							QStringLiteral("):</td><td>") << (angle * 180.0f / FLOATTYPE_PI) << QStringLiteral("</td></tr>");
 				}
 			}
