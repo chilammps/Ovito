@@ -41,8 +41,11 @@ out vec4 FragColor;
 
 #define particle_color_out gl_Color
 #define FragColor gl_FragColor
-#define gl_PointCoord gl_TexCoord[0].xy
 #define texture texture2D
+
+#if __VERSION__ < 120
+#define gl_PointCoord gl_TexCoord[0].xy
+#endif
 
 #endif
 
@@ -52,7 +55,7 @@ void main()
 	float rsq = dot(shifted_coords, shifted_coords);
 	if(rsq >= 0.25) discard;
 	vec4 texValue = texture(tex, gl_PointCoord);
-	
+
 #if __VERSION__ >= 130
 
 	// Specular highlights are stored in the green channel of the texture. 
