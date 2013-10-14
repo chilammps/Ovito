@@ -31,6 +31,11 @@
 	<key>NSHumanReadableCopyright</key>
 	<string>Copyright (C) 2013 Alexander Stukowski. This program comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions. See the source for copying conditions.</string>
 	<key>LSMinimumSystemVersion</key>
-	<string>10.6.0</string>
+	<string>10.7.0</string>
+	
+	<key>NSPrincipalClass</key>
+	<string>NSApplication</string>
+	<key>NSHighResolutionCapable</key>
+	<true/>
 </dict>
 </plist>

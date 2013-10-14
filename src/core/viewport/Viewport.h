@@ -289,7 +289,7 @@ public:
 	Box2 renderFrameRect() const;
 
 	/// \brief Determines the object that is visible under the given mouse cursor position.
-	ViewportPickResult pick(const QPoint& pos);
+	ViewportPickResult pick(const QPointF& pos);
 
 	/// \brief Zooms to the extents of the scene.
 	void zoomToSceneExtents();
@@ -324,7 +324,7 @@ public:
 	void unsetCursor();
 
 	/// Returns the current size of the viewport window.
-	QSize size() const { return _widget ? _widget->size() : QSize(); }
+	QSize size() const { return _widget ? (_widget->size() * viewportWindow()->devicePixelRatio()) : QSize(); }
 
 	/// Returns a pointer to the internal OpenGL rendering window.
 	ViewportWindow* viewportWindow() const { return _viewportWindow.data(); }

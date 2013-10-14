@@ -87,7 +87,7 @@ protected:
 	NavigationMode() : _viewport(nullptr) {}
 
 	/// Computes the new view based on the new mouse position.
-	virtual void modifyView(Viewport* vp, const QPoint& delta) {}
+	virtual void modifyView(Viewport* vp, const QPointF& delta) {}
 
 	/// \brief This is called by the system after the input handler is
 	///        no longer the active handler.
@@ -141,7 +141,7 @@ protected:
 	}
 
 	/// Computes the new view based on the new mouse position.
-	virtual void modifyView(Viewport* vp, const QPoint& delta) override;
+	virtual void modifyView(Viewport* vp, const QPointF& delta) override;
 
 public:
 
@@ -168,7 +168,7 @@ protected:
 	}
 
 	/// Computes the new view based on the new mouse position.
-	virtual void modifyView(Viewport* vp, const QPoint& delta) override;
+	virtual void modifyView(Viewport* vp, const QPointF& delta) override;
 
 public:
 
@@ -196,7 +196,7 @@ protected:
 	}
 
 	/// Computes the new view based on the new mouse position.
-	virtual void modifyView(Viewport* vp, const QPoint& delta) override;
+	virtual void modifyView(Viewport* vp, const QPointF& delta) override;
 
 	/// Computes a scaling factor that depends on the total size of the scene which is used to
 	/// control the zoom sensitivity in perspective mode.
@@ -230,7 +230,7 @@ protected:
 	}
 
 	/// Computes the new view based on the new mouse position.
-	virtual void modifyView(Viewport* vp, const QPoint& delta) override;
+	virtual void modifyView(Viewport* vp, const QPointF& delta) override;
 
 public:
 
@@ -278,12 +278,12 @@ public:
 	virtual bool hasOverlay() override { return true; }
 
 	/// \brief Sets the orbit rotation center to the space location under given mouse coordinates.
-	bool pickOrbitCenter(Viewport* vp, const QPoint& pos);
+	bool pickOrbitCenter(Viewport* vp, const QPointF& pos);
 
 private:
 
 	/// Finds the intersection point between a ray originating from the current mouse cursor position and the scene.
-	bool findIntersection(Viewport* vp, const QPoint& mousePos, Point3& intersectionPoint);
+	bool findIntersection(Viewport* vp, const QPointF& mousePos, Point3& intersectionPoint);
 
 	/// The mouse cursor that is shown when over an object.
 	QCursor _hoverCursor;

@@ -518,8 +518,9 @@ void Viewport::renderViewportTitle()
 	_captionBuffer->setColor(ColorA(viewportColor(ViewportSettings::COLOR_VIEWPORT_CAPTION)));
 
 	QFontMetricsF metrics(_captionBuffer->font());
-	_contextMenuArea = QRect(0, 0, std::max(metrics.width(_captionBuffer->text()), 30.0) + 2, metrics.height() + 2);
-	_captionBuffer->renderWindow(renderer, Point2(2, 2), Qt::AlignLeft | Qt::AlignTop);
+	QPointF pos = QPointF(2, 2) * viewportWindow()->devicePixelRatio();
+	_contextMenuArea = QRect(0, 0, std::max(metrics.width(_captionBuffer->text()), 30.0) + pos.x(), metrics.height() + pos.y());
+	_captionBuffer->renderWindow(renderer, Point2(pos.x(), pos.y()), Qt::AlignLeft | Qt::AlignTop);
 }
 
 /******************************************************************************
@@ -557,7 +558,7 @@ void Viewport::unsetCursor()
 ******************************************************************************/
 void Viewport::renderOrientationIndicator()
 {
-	const FloatType tripodSize = 60.0f;			// pixels
+	const FloatType tripodSize = 60.0f * viewportWindow()->devicePixelRatio();			// pixels
 	const FloatType tripodArrowSize = 0.17f; 	// percentage of the above value.
 	SceneRenderer* renderer = ViewportManager::instance().renderer();
 
@@ -729,15 +730,16 @@ FloatType Viewport::nonScalingSize(const Point3& worldPosition)
 		return 0.1f / (p1 - p2).length();
 	}
 	else {
-		if(size().height() == 0) return 1.0f;
-		return fieldOfView() / (FloatType)size().height() * 60.0f;
+		int height = size().height();
+		if(height == 0) return 1.0f;
+		return fieldOfView() / (FloatType)height * 60.0f;
 	}
 }
 
 /******************************************************************************
 * Determines the object that is visible under the given mouse cursor position.
 ******************************************************************************/
-ViewportPickResult Viewport::pick(const QPoint& pos)
+ViewportPickResult Viewport::pick(const QPointF& pos)
 {
 	OVITO_ASSERT_MSG(!isRendering(), "Viewport::pick", "Object picking is not possible while rendering viewport contents.");
 
@@ -782,12 +784,12 @@ ViewportPickResult Viewport::pick(const QPoint& pos)
 	// Query which object is located at the given window position.
 	ViewportPickResult result;
 	const PickingSceneRenderer::ObjectRecord* objInfo;
-	std::tie(objInfo, result.subobjectId) = _pickingRenderer->objectAtLocation(pos);
+	std::tie(objInfo, result.subobjectId) = _pickingRenderer->objectAtLocation((pos * viewportWindow()->devicePixelRatio()).toPoint());
 	result.valid = (objInfo != nullptr);
 	if(objInfo) {
 		result.objectNode = objInfo->objectNode;
 		result.sceneObject = objInfo->sceneObject;
-		result.worldPosition = _pickingRenderer->worldPositionFromLocation(pos);
+		result.worldPosition = _pickingRenderer->worldPositionFromLocation((pos * viewportWindow()->devicePixelRatio()).toPoint());
 	}
 	_pickingRenderer->reset();
 	return result;

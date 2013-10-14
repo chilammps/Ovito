@@ -198,13 +198,13 @@ Box3 NavigationMode::overlayBoundingBox(Viewport* vp, ViewportSceneRenderer* ren
 /******************************************************************************
 * Computes the new view matrix based on the new mouse position.
 ******************************************************************************/
-void PanMode::modifyView(Viewport* vp, const QPoint& delta)
+void PanMode::modifyView(Viewport* vp, const QPointF& delta)
 {
 	FloatType scaling;
 	if(vp->isPerspectiveProjection())
 		scaling = 10.0f * vp->nonScalingSize(OrbitMode::instance()->orbitCenter()) / vp->size().height();
 	else
-		scaling = 2.0f * _oldFieldOfView / vp->size().height();
+		scaling = 2.0f * _oldFieldOfView * vp->viewportWindow()->devicePixelRatio() / vp->size().height();
 	FloatType deltaX = -scaling * delta.x();
 	FloatType deltaY =  scaling * delta.y();
 	Vector3 displacement = _oldInverseViewMatrix * Vector3(deltaX, deltaY, 0);
@@ -217,7 +217,7 @@ void PanMode::modifyView(Viewport* vp, const QPoint& delta)
 /******************************************************************************
 * Computes the new view matrix based on the new mouse position.
 ******************************************************************************/
-void ZoomMode::modifyView(Viewport* vp, const QPoint& delta)
+void ZoomMode::modifyView(Viewport* vp, const QPointF& delta)
 {
 	if(vp->isPerspectiveProjection()) {
 		FloatType amount =  -5.0 * sceneSizeFactor() * delta.y();
@@ -261,7 +261,7 @@ void ZoomMode::zoom(Viewport* vp, FloatType steps)
 /******************************************************************************
 * Computes the new field of view based on the new mouse position.
 ******************************************************************************/
-void FOVMode::modifyView(Viewport* vp, const QPoint& delta)
+void FOVMode::modifyView(Viewport* vp, const QPointF& delta)
 {
 	if(vp->isPerspectiveProjection()) {
 		FloatType newFOV = _oldFieldOfView + (FloatType)delta.y() * 0.002;
@@ -281,7 +281,7 @@ void FOVMode::modifyView(Viewport* vp, const QPoint& delta)
 /******************************************************************************
 * Computes the new view matrix based on the new mouse position.
 ******************************************************************************/
-void OrbitMode::modifyView(Viewport* vp, const QPoint& delta)
+void OrbitMode::modifyView(Viewport* vp, const QPointF& delta)
 {
 	if(!vp->isPerspectiveProjection())
 		vp->setViewType(Viewport::VIEW_ORTHO);
@@ -325,7 +325,7 @@ void OrbitMode::modifyView(Viewport* vp, const QPoint& delta)
 /******************************************************************************
 * Sets the orbit rotation center to the space location under given mouse coordinates.
 ******************************************************************************/
-bool PickOrbitCenterMode::pickOrbitCenter(Viewport* vp, const QPoint& pos)
+bool PickOrbitCenterMode::pickOrbitCenter(Viewport* vp, const QPointF& pos)
 {
 	Point3 p;
 	if(findIntersection(vp, pos, p)) {
@@ -347,7 +347,7 @@ bool PickOrbitCenterMode::pickOrbitCenter(Viewport* vp, const QPoint& pos)
 void PickOrbitCenterMode::mousePressEvent(Viewport* vp, QMouseEvent* event)
 {
 	if(event->button() == Qt::LeftButton) {
-		if(pickOrbitCenter(vp, event->pos()))
+		if(pickOrbitCenter(vp, event->localPos()))
 			return;
 	}
 	ViewportInputHandler::mousePressEvent(vp, event);
@@ -361,7 +361,7 @@ void PickOrbitCenterMode::mouseMoveEvent(Viewport* vp, QMouseEvent* event)
 	ViewportInputHandler::mouseMoveEvent(vp, event);
 
 	Point3 p;
-	bool isOverObject = findIntersection(vp, event->pos(), p);
+	bool isOverObject = findIntersection(vp, event->localPos(), p);
 
 	if(!isOverObject && _showCursor) {
 		_showCursor = false;
@@ -377,7 +377,7 @@ void PickOrbitCenterMode::mouseMoveEvent(Viewport* vp, QMouseEvent* event)
 * Finds the closest intersection point between a ray originating from the
 * current mouse cursor position and the whole scene.
 ******************************************************************************/
-bool PickOrbitCenterMode::findIntersection(Viewport* vp, const QPoint& mousePos, Point3& intersectionPoint)
+bool PickOrbitCenterMode::findIntersection(Viewport* vp, const QPointF& mousePos, Point3& intersectionPoint)
 {
 	ViewportPickResult pickResults = vp->pick(mousePos);
 	if(!pickResults.valid)
