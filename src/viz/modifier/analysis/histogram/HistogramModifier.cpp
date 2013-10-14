@@ -37,21 +37,40 @@ DEFINE_FLAGS_PROPERTY_FIELD(HistogramModifier, _numberOfBins, "NumberOfBins", PR
 DEFINE_PROPERTY_FIELD(HistogramModifier, _selectInRange, "SelectInRange")
 DEFINE_FLAGS_PROPERTY_FIELD(HistogramModifier, _selectionRangeStart, "SelectionRangeStart", PROPERTY_FIELD_MEMORIZE)
 DEFINE_FLAGS_PROPERTY_FIELD(HistogramModifier, _selectionRangeEnd, "SelectionRangeEnd", PROPERTY_FIELD_MEMORIZE)
+DEFINE_PROPERTY_FIELD(HistogramModifier, _fixXAxisRange, "FixXAxisRange")
+DEFINE_FLAGS_PROPERTY_FIELD(HistogramModifier, _xAxisRangeStart, "XAxisRangeStart", PROPERTY_FIELD_MEMORIZE)
+DEFINE_FLAGS_PROPERTY_FIELD(HistogramModifier, _xAxisRangeEnd, "XAxisRangeEnd", PROPERTY_FIELD_MEMORIZE)
+DEFINE_PROPERTY_FIELD(HistogramModifier, _fixYAxisRange, "FixYAxisRange")
+DEFINE_FLAGS_PROPERTY_FIELD(HistogramModifier, _yAxisRangeStart, "YAxisRangeStart", PROPERTY_FIELD_MEMORIZE)
+DEFINE_FLAGS_PROPERTY_FIELD(HistogramModifier, _yAxisRangeEnd, "YAxisRangeEnd", PROPERTY_FIELD_MEMORIZE)
 SET_PROPERTY_FIELD_LABEL(HistogramModifier, _numberOfBins, "Number of histogram bins")
 SET_PROPERTY_FIELD_LABEL(HistogramModifier, _selectInRange, "Select particles in range")
 SET_PROPERTY_FIELD_LABEL(HistogramModifier, _selectionRangeStart, "Selection range start")
 SET_PROPERTY_FIELD_LABEL(HistogramModifier, _selectionRangeEnd, "Selection range end")
+SET_PROPERTY_FIELD_LABEL(HistogramModifier, _fixXAxisRange, "Fix x-axis range")
+SET_PROPERTY_FIELD_LABEL(HistogramModifier, _xAxisRangeStart, "X-axis range start")
+SET_PROPERTY_FIELD_LABEL(HistogramModifier, _xAxisRangeEnd, "X-axis range end")
+SET_PROPERTY_FIELD_LABEL(HistogramModifier, _fixYAxisRange, "Fix y-axis range")
+SET_PROPERTY_FIELD_LABEL(HistogramModifier, _yAxisRangeStart, "Y-axis range start")
+SET_PROPERTY_FIELD_LABEL(HistogramModifier, _yAxisRangeEnd, "Y-axis range end")
 
 /******************************************************************************
 * Constructs the modifier object.
 ******************************************************************************/
-HistogramModifier::HistogramModifier() : _numberOfBins(200), _intervalStart(0), _intervalEnd(0),
-	_selectInRange(false), _selectionRangeStart(0), _selectionRangeEnd(1)
+HistogramModifier::HistogramModifier() : _numberOfBins(200), _selectInRange(false),
+	_selectionRangeStart(0), _selectionRangeEnd(1), _fixXAxisRange(false), _xAxisRangeStart(0),
+	_xAxisRangeEnd(0), _fixYAxisRange(false), _yAxisRangeStart(0), _yAxisRangeEnd(0)
 {
 	INIT_PROPERTY_FIELD(HistogramModifier::_numberOfBins);
 	INIT_PROPERTY_FIELD(HistogramModifier::_selectInRange);
 	INIT_PROPERTY_FIELD(HistogramModifier::_selectionRangeStart);
 	INIT_PROPERTY_FIELD(HistogramModifier::_selectionRangeEnd);
+	INIT_PROPERTY_FIELD(HistogramModifier::_fixXAxisRange);
+	INIT_PROPERTY_FIELD(HistogramModifier::_xAxisRangeStart);
+	INIT_PROPERTY_FIELD(HistogramModifier::_xAxisRangeEnd);
+	INIT_PROPERTY_FIELD(HistogramModifier::_fixYAxisRange);
+	INIT_PROPERTY_FIELD(HistogramModifier::_yAxisRangeStart);
+	INIT_PROPERTY_FIELD(HistogramModifier::_yAxisRangeEnd);
 }
 
 /******************************************************************************
@@ -123,19 +142,24 @@ ObjectStatus HistogramModifier::modifyParticles(TimePoint time, TimeInterval& va
 			std::swap(selectionRangeStart, selectionRangeEnd);
 	}
 
+	double intervalStart = _xAxisRangeStart;
+	double intervalEnd = _xAxisRangeEnd;
+
 	if(property->size() > 0) {
 		if(property->dataType() == qMetaTypeId<FloatType>()) {
 			const FloatType* v_begin = property->constDataFloat() + vecComponent;
 			const FloatType* v_end = v_begin + (property->size() * vecComponentCount);
-			_intervalStart = _intervalEnd = *v_begin;
-			for(auto v = v_begin; v != v_end; v += vecComponentCount) {
-				if(*v < _intervalStart) _intervalStart = *v;
-				if(*v > _intervalEnd) _intervalEnd = *v;
-			}
-			if(_intervalEnd != _intervalStart) {
-				FloatType binSize = (_intervalEnd - _intervalStart) / _histogramData.size();
+			if (!_fixXAxisRange) {
+				intervalStart = intervalEnd = *v_begin;
 				for(auto v = v_begin; v != v_end; v += vecComponentCount) {
-					size_t binIndex = (*v - _intervalStart) / binSize;
+					if(*v < intervalStart) intervalStart = *v;
+					if(*v > intervalEnd) intervalEnd = *v;
+				}
+			}
+			if(intervalEnd != intervalStart) {
+				FloatType binSize = (intervalEnd - intervalStart) / _histogramData.size();
+				for(auto v = v_begin; v != v_end; v += vecComponentCount) {
+					size_t binIndex = (*v - intervalStart) / binSize;
 					_histogramData[std::min(binIndex, _histogramData.size() - 1)]++;
 				}
 			}
@@ -159,15 +183,17 @@ ObjectStatus HistogramModifier::modifyParticles(TimePoint time, TimeInterval& va
 		else if(property->dataType() == qMetaTypeId<int>()) {
 			const int* v_begin = property->constDataInt() + vecComponent;
 			const int* v_end = v_begin + (property->size() * vecComponentCount);
-			_intervalStart = _intervalEnd = *v_begin;
-			for(auto v = v_begin; v != v_end; v += vecComponentCount) {
-				if(*v < _intervalStart) _intervalStart = *v;
-				if(*v > _intervalEnd) _intervalEnd = *v;
-			}
-			if(_intervalEnd != _intervalStart) {
-				FloatType binSize = (_intervalEnd - _intervalStart) / _histogramData.size();
+			if (!_fixXAxisRange) {
+				intervalStart = intervalEnd = *v_begin;
 				for(auto v = v_begin; v != v_end; v += vecComponentCount) {
-					size_t binIndex = ((FloatType)*v - _intervalStart) / binSize;
+					if(*v < intervalStart) intervalStart = *v;
+					if(*v > intervalEnd) intervalEnd = *v;
+				}
+			}
+			if(intervalEnd != intervalStart) {
+				FloatType binSize = (intervalEnd - intervalStart) / _histogramData.size();
+				for(auto v = v_begin; v != v_end; v += vecComponentCount) {
+					size_t binIndex = ((FloatType)*v - intervalStart) / binSize;
 					_histogramData[std::min(binIndex, _histogramData.size() - 1)]++;
 				}
 			}
@@ -190,13 +216,21 @@ ObjectStatus HistogramModifier::modifyParticles(TimePoint time, TimeInterval& va
 		}
 	}
 	else {
-		_intervalStart = _intervalEnd = 0;
+		intervalStart = intervalEnd = 0;
 	}
 
 	QString statusMessage;
 	if(selProperty) {
 		selProperty->changed();
 		statusMessage += tr("%1 particles selected (%2%)").arg(numSelected).arg((FloatType)numSelected * 100 / std::max(1,(int)selProperty->size()), 0, 'f', 1);
+	}
+
+	_xAxisRangeStart = intervalStart;
+	_xAxisRangeEnd = intervalEnd;
+
+	if (!_fixYAxisRange) {
+		_yAxisRangeStart = 0.0;
+		_yAxisRangeEnd = *std::max_element(_histogramData.begin(), _histogramData.end());
 	}
 
 	notifyDependents(ReferenceEvent::ObjectStatusChanged);
@@ -321,6 +355,7 @@ void HistogramModifierEditor::createUI(const RolloutInsertionParameters& rollout
 	layout->addWidget(saveDataButton);
 	connect(saveDataButton, SIGNAL(clicked(bool)), this, SLOT(onSaveData()));
 
+	// Selection.
 	QGroupBox* selectionBox = new QGroupBox(tr("Selection"), rollout);
 	QVBoxLayout* sublayout = new QVBoxLayout(selectionBox);
 	sublayout->setContentsMargins(4,4,4,4);
@@ -342,6 +377,50 @@ void HistogramModifierEditor::createUI(const RolloutInsertionParameters& rollout
 	selRangeEndPUI->setEnabled(false);
 	connect(selectInRangeUI->checkBox(), SIGNAL(toggled(bool)), selRangeStartPUI, SLOT(setEnabled(bool)));
 	connect(selectInRangeUI->checkBox(), SIGNAL(toggled(bool)), selRangeEndPUI, SLOT(setEnabled(bool)));
+
+	// Axes.
+	QGroupBox* axesBox = new QGroupBox(tr("Axes"), rollout);
+	QVBoxLayout* axesSublayout = new QVBoxLayout(axesBox);
+	axesSublayout->setContentsMargins(4,4,4,4);
+	layout->addWidget(axesBox);
+	// x-axis.
+	{
+		BooleanParameterUI* rangeUI = new BooleanParameterUI(this, PROPERTY_FIELD(HistogramModifier::_fixXAxisRange));
+		axesSublayout->addWidget(rangeUI->checkBox());
+
+		QHBoxLayout* hlayout = new QHBoxLayout();
+		axesSublayout->addLayout(hlayout);
+		FloatParameterUI* startPUI = new FloatParameterUI(this, PROPERTY_FIELD(HistogramModifier::_xAxisRangeStart));
+		FloatParameterUI* endPUI = new FloatParameterUI(this, PROPERTY_FIELD(HistogramModifier::_xAxisRangeEnd));
+		hlayout->addWidget(new QLabel(tr("From:")));
+		hlayout->addLayout(startPUI->createFieldLayout());
+		hlayout->addSpacing(12);
+		hlayout->addWidget(new QLabel(tr("To:")));
+		hlayout->addLayout(endPUI->createFieldLayout());
+		startPUI->setEnabled(false);
+		endPUI->setEnabled(false);
+		connect(rangeUI->checkBox(), SIGNAL(toggled(bool)), startPUI, SLOT(setEnabled(bool)));
+		connect(rangeUI->checkBox(), SIGNAL(toggled(bool)), endPUI, SLOT(setEnabled(bool)));
+	}
+	// y-axis.
+	{
+		BooleanParameterUI* rangeUI = new BooleanParameterUI(this, PROPERTY_FIELD(HistogramModifier::_fixYAxisRange));
+		axesSublayout->addWidget(rangeUI->checkBox());
+
+		QHBoxLayout* hlayout = new QHBoxLayout();
+		axesSublayout->addLayout(hlayout);
+		FloatParameterUI* startPUI = new FloatParameterUI(this, PROPERTY_FIELD(HistogramModifier::_yAxisRangeStart));
+		FloatParameterUI* endPUI = new FloatParameterUI(this, PROPERTY_FIELD(HistogramModifier::_yAxisRangeEnd));
+		hlayout->addWidget(new QLabel(tr("From:")));
+		hlayout->addLayout(startPUI->createFieldLayout());
+		hlayout->addSpacing(12);
+		hlayout->addWidget(new QLabel(tr("To:")));
+		hlayout->addLayout(endPUI->createFieldLayout());
+		startPUI->setEnabled(false);
+		endPUI->setEnabled(false);
+		connect(rangeUI->checkBox(), SIGNAL(toggled(bool)), startPUI, SLOT(setEnabled(bool)));
+		connect(rangeUI->checkBox(), SIGNAL(toggled(bool)), endPUI, SLOT(setEnabled(bool)));
+	}
 
 	// Status label.
 	layout->addSpacing(6);
@@ -443,18 +522,18 @@ void HistogramModifierEditor::plotHistogram()
 
 	QVector<double> xdata(modifier->histogramData().size());
 	QVector<double> ydata(modifier->histogramData().size());
-	double binSize = (modifier->intervalEnd() - modifier->intervalStart()) / xdata.size();
+	double binSize = (modifier->xAxisRangeEnd() - modifier->xAxisRangeStart()) / xdata.size();
+	double maxHistogramData = 0.0;
 	for(int i = 0; i < xdata.size(); i++) {
-		xdata[i] = binSize * ((double)i + 0.5) + modifier->intervalStart();
+		xdata[i] = binSize * ((double)i + 0.5) + modifier->xAxisRangeStart();
 		ydata[i] = modifier->histogramData()[i];
+		maxHistogramData = std::max(maxHistogramData, ydata[i]);
 	}
 	_histogramPlot->graph()->setLineStyle(QCPGraph::lsStepCenter);
 	_histogramPlot->graph()->setData(xdata, ydata);
 
-	_histogramPlot->graph()->rescaleAxes();
-	_histogramPlot->xAxis->setRangeLower(modifier->intervalStart());
-	_histogramPlot->xAxis->setRangeUpper(modifier->intervalEnd());
-	_histogramPlot->yAxis->setRangeLower(0);
+	_histogramPlot->xAxis->setRange(modifier->xAxisRangeStart(), modifier->xAxisRangeEnd());
+	_histogramPlot->yAxis->setRange(modifier->yAxisRangeStart(), modifier->yAxisRangeEnd());
 
 	if(modifier->selectInRange()) {
 		_selectionRangeStartMarker->setVisible(true);
@@ -497,10 +576,10 @@ void HistogramModifierEditor::onSaveData()
 
 		QTextStream stream(&file);
 
-		FloatType binSize = (modifier->intervalEnd() - modifier->intervalStart()) / modifier->histogramData().size();
+		FloatType binSize = (modifier->xAxisRangeEnd() - modifier->xAxisRangeStart()) / modifier->histogramData().size();
 		stream << "# " << modifier->sourceProperty().name() << " histogram (bin size: " << binSize << ")" << endl;
 		for(int i = 0; i < modifier->histogramData().size(); i++) {
-			stream << (binSize * (FloatType(i) + 0.5f) + modifier->intervalStart()) << " " <<
+			stream << (binSize * (FloatType(i) + 0.5f) + modifier->xAxisRangeStart()) << " " <<
 					modifier->histogramData()[i] << endl;
 		}
 	}

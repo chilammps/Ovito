@@ -63,13 +63,7 @@ public:
 	/// Returns the stored histogram data.
 	const std::vector<int>& histogramData() const { return _histogramData; }
 
-	/// Returns the start value of the histogram interval.
-	FloatType intervalStart() const { return _intervalStart; }
-
-	/// Returns the end value of the histogram interval.
-	FloatType intervalEnd() const { return _intervalEnd; }
-
-	/// Returns the whether particles within the specified range should be selected.
+	/// Returns whether particles within the specified range should be selected.
 	bool selectInRange() const { return _selectInRange; }
 
 	/// Returns the start value of the selection interval.
@@ -77,6 +71,24 @@ public:
 
 	/// Returns the end value of the selection interval.
 	FloatType selectionRangeEnd() const { return _selectionRangeEnd; }
+
+	/// Returns whether the range of the x-axis of the histogram should be fixed.
+	bool fixXAxisRange() const { return _fixXAxisRange; }
+
+	/// Returns the start value of the x-axis.
+	FloatType xAxisRangeStart() const { return _xAxisRangeStart; }
+
+	/// Returns the end value of the x-axis.
+	FloatType xAxisRangeEnd() const { return _xAxisRangeEnd; }
+
+	/// Returns whether the range of the y-axis of the histogram should be fixed.
+	bool fixYAxisRange() const { return _fixYAxisRange; }
+
+	/// Returns the start value of the y-axis.
+	FloatType yAxisRangeStart() const { return _yAxisRangeStart; }
+
+	/// Returns the end value of the y-axis.
+	FloatType yAxisRangeEnd() const { return _yAxisRangeEnd; }
 
 public:
 
@@ -116,14 +128,26 @@ private:
 	/// Controls the end value of the selection interval.
 	PropertyField<FloatType> _selectionRangeEnd;
 
+	/// Controls the whether the range of the x-axis of the histogram should be fixed.
+	PropertyField<bool> _fixXAxisRange;
+
+	/// Controls the start value of the x-axis.
+	PropertyField<FloatType> _xAxisRangeStart;
+
+	/// Controls the end value of the x-axis.
+	PropertyField<FloatType> _xAxisRangeEnd;
+
+	/// Controls the whether the range of the y-axis of the histogram should be fixed.
+	PropertyField<bool> _fixYAxisRange;
+
+	/// Controls the start value of the y-axis.
+	PropertyField<FloatType> _yAxisRangeStart;
+
+	/// Controls the end value of the y-axis.
+	PropertyField<FloatType> _yAxisRangeEnd;
+
 	/// Stores the histogram data.
 	std::vector<int> _histogramData;
-
-	/// The start value of the histogram interval.
-	FloatType _intervalStart;
-
-	/// The end value of the histogram interval.
-	FloatType _intervalEnd;
 
 	Q_OBJECT
 	OVITO_OBJECT
@@ -135,6 +159,12 @@ private:
 	DECLARE_PROPERTY_FIELD(_selectInRange);
 	DECLARE_PROPERTY_FIELD(_selectionRangeStart);
 	DECLARE_PROPERTY_FIELD(_selectionRangeEnd);
+	DECLARE_PROPERTY_FIELD(_fixXAxisRange);
+	DECLARE_PROPERTY_FIELD(_xAxisRangeStart);
+	DECLARE_PROPERTY_FIELD(_xAxisRangeEnd);
+	DECLARE_PROPERTY_FIELD(_fixYAxisRange);
+	DECLARE_PROPERTY_FIELD(_yAxisRangeStart);
+	DECLARE_PROPERTY_FIELD(_yAxisRangeEnd);
 };
 
 /******************************************************************************
