@@ -73,7 +73,7 @@ void ViewportLineGeometryBuffer::setVertexPositions(const Point3* coordinates)
 
 	if(!_glPositionsBuffer.bind())
 		throw Exception(tr("Failed to bind OpenGL vertex buffer."));
-	_glPositionsBuffer.allocate(coordinates, _vertexCount * sizeof(Point3));
+	OVITO_CHECK_OPENGL(_glPositionsBuffer.allocate(coordinates, _vertexCount * sizeof(Point3)));
 	_glPositionsBuffer.release();
 }
 
@@ -88,7 +88,7 @@ void ViewportLineGeometryBuffer::setVertexColors(const ColorA* colors)
 
 	if(!_glColorsBuffer.bind())
 		throw Exception(tr("Failed to bind OpenGL vertex buffer."));
-	_glColorsBuffer.allocate(colors, _vertexCount * sizeof(ColorA));
+	OVITO_CHECK_OPENGL(_glColorsBuffer.allocate(colors, _vertexCount * sizeof(ColorA)));
 	_glColorsBuffer.release();
 }
 
@@ -103,7 +103,7 @@ void ViewportLineGeometryBuffer::setVertexColor(const ColorA color)
 
 	if(!_glColorsBuffer.bind())
 		throw Exception(tr("Failed to bind OpenGL vertex buffer."));
-	_glColorsBuffer.allocate(_vertexCount * sizeof(ColorA));
+	OVITO_CHECK_OPENGL(_glColorsBuffer.allocate(_vertexCount * sizeof(ColorA)));
 	if(_vertexCount) {
 		ColorA* bufferData = static_cast<ColorA*>(_glColorsBuffer.map(QOpenGLBuffer::WriteOnly));
 		if(!bufferData)
@@ -144,13 +144,13 @@ void ViewportLineGeometryBuffer::render(SceneRenderer* renderer)
 	if(!_shader->bind())
 		throw Exception(tr("Failed to bind OpenGL shader."));
 
-	_shader->setUniformValue("modelview_projection_matrix",
-			(QMatrix4x4)(vpRenderer->projParams().projectionMatrix * vpRenderer->modelViewTM()));
+	OVITO_CHECK_OPENGL(_shader->setUniformValue("modelview_projection_matrix",
+			(QMatrix4x4)(vpRenderer->projParams().projectionMatrix * vpRenderer->modelViewTM())));
 
-	_glPositionsBuffer.bind();
+	OVITO_CHECK_OPENGL(_glPositionsBuffer.bind());
 	if(vpRenderer->glformat().majorVersion() >= 3) {
-		_shader->setAttributeBuffer("vertex_pos", GL_FLOAT, 0, 3);
-		_shader->enableAttributeArray("vertex_pos");
+		OVITO_CHECK_OPENGL(_shader->setAttributeBuffer("vertex_pos", GL_FLOAT, 0, 3));
+		OVITO_CHECK_OPENGL(_shader->enableAttributeArray("vertex_pos"));
 	}
 	else {
 		OVITO_CHECK_OPENGL(glEnableClientState(GL_VERTEX_ARRAY));
@@ -158,10 +158,10 @@ void ViewportLineGeometryBuffer::render(SceneRenderer* renderer)
 	}
 	_glPositionsBuffer.release();
 
-	_glColorsBuffer.bind();
+	OVITO_CHECK_OPENGL(_glColorsBuffer.bind());
 	if(vpRenderer->glformat().majorVersion() >= 3) {
-		_shader->setAttributeBuffer("vertex_color", GL_FLOAT, 0, 4);
-		_shader->enableAttributeArray("vertex_color");
+		OVITO_CHECK_OPENGL(_shader->setAttributeBuffer("vertex_color", GL_FLOAT, 0, 4));
+		OVITO_CHECK_OPENGL(_shader->enableAttributeArray("vertex_color"));
 	}
 	else {
 		OVITO_CHECK_OPENGL(glEnableClientState(GL_COLOR_ARRAY));
@@ -180,6 +180,8 @@ void ViewportLineGeometryBuffer::render(SceneRenderer* renderer)
 		OVITO_CHECK_OPENGL(glDisableClientState(GL_COLOR_ARRAY));
 	}
 	_shader->release();
+
+	OVITO_CHECK_OPENGL();
 }
 
 };

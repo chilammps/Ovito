@@ -75,9 +75,10 @@ void ViewportSceneRenderer::beginFrame(TimePoint time, const ViewProjectionParam
 	// Set up a vertex array object. This is only required when using OpenGL 3.2 Core Profile.
 	if(glformat().profile() == QSurfaceFormat::CoreProfile) {
 		_vertexArrayObject.reset(new QOpenGLVertexArrayObject());
-		_vertexArrayObject->create();
-		_vertexArrayObject->bind();
+		OVITO_CHECK_OPENGL(_vertexArrayObject->create());
+		OVITO_CHECK_OPENGL(_vertexArrayObject->bind());
 	}
+	OVITO_CHECK_OPENGL();
 
 	// Set viewport background color.
 	OVITO_CHECK_OPENGL();
