@@ -37,6 +37,7 @@ ObjectStatus InvertSelectionModifier::modifyParticles(TimePoint time, TimeInterv
 	int* s_end = s + selProperty->size();
 	for(; s != s_end; ++s)
 		*s = !(*s);
+	selProperty->changed();
 
 	return ObjectStatus::Success;
 }

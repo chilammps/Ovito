@@ -125,6 +125,7 @@ ObjectStatus SelectParticleTypeModifier::modifyParticles(TimePoint time, TimeInt
 		}
 		else *s = 0;
 	}
+	selProperty->changed();
 
 	QString statusMessage = tr("%1 out of %2 particles selected (%3%)").arg(nSelected).arg(inputParticleCount()).arg(nSelected * 100 / std::max((int)inputParticleCount(), 1));
 	return ObjectStatus(ObjectStatus::Success, QString(), statusMessage);

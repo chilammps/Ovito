@@ -67,6 +67,7 @@ ObjectStatus WrapPeriodicImagesModifier::modifyParticles(TimePoint time, TimeInt
 		if(FloatType n = floor(inverseSimCell.prodrow(p, 2)))
 			p -= simCell.column(2) * n;
 	});
+	posProperty->changed();
 
 	return ObjectStatus::Success;
 }
