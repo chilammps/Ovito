@@ -94,6 +94,15 @@ protected:
 	/// Controls the whether we assume the particle coordinates are unwrapped when calculating the displacement vectors.
 	PropertyField<bool> _assumeUnwrappedCoordinates;
 
+	/// Specify reference frame relative to current frame.
+	PropertyField<bool> _useFrameOffset;
+
+	/// Absolute frame number to use.
+	PropertyField<FloatType> _frameNumber;
+
+	/// Offset for finding reference coordinates.
+	PropertyField<FloatType> _frameOffset;
+
 	/// The vector display object for rendering the displacement vectors.
 	ReferenceField<VectorDisplay> _vectorDisplay;
 
@@ -109,6 +118,9 @@ private:
 	DECLARE_PROPERTY_FIELD(_referenceShown);
 	DECLARE_PROPERTY_FIELD(_eliminateCellDeformation);
 	DECLARE_PROPERTY_FIELD(_assumeUnwrappedCoordinates);
+	DECLARE_PROPERTY_FIELD(_useFrameOffset);
+	DECLARE_PROPERTY_FIELD(_frameNumber);
+	DECLARE_PROPERTY_FIELD(_frameOffset);
 	DECLARE_REFERENCE_FIELD(_vectorDisplay);
 };
 

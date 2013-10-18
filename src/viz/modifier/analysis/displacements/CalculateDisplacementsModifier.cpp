@@ -23,6 +23,8 @@
 #include <core/scene/objects/SceneObject.h>
 #include <core/dataset/importexport/LinkedFileObject.h>
 #include <core/gui/properties/BooleanParameterUI.h>
+#include <core/gui/properties/BooleanRadioButtonParameterUI.h>
+#include <core/gui/properties/IntegerParameterUI.h>
 #include <core/gui/properties/SubObjectParameterUI.h>
 #include <core/utilities/concurrent/ParallelFor.h>
 #include "CalculateDisplacementsModifier.h"
@@ -36,23 +38,34 @@ DEFINE_REFERENCE_FIELD(CalculateDisplacementsModifier, _referenceObject, "Refere
 DEFINE_PROPERTY_FIELD(CalculateDisplacementsModifier, _referenceShown, "ShowReferenceConfiguration")
 DEFINE_PROPERTY_FIELD(CalculateDisplacementsModifier, _eliminateCellDeformation, "EliminateCellDeformation")
 DEFINE_PROPERTY_FIELD(CalculateDisplacementsModifier, _assumeUnwrappedCoordinates, "AssumeUnwrappedCoordinates")
+DEFINE_PROPERTY_FIELD(CalculateDisplacementsModifier, _useFrameOffset, "UseFrameOffet")
+DEFINE_FLAGS_PROPERTY_FIELD(CalculateDisplacementsModifier, _frameNumber, "FrameNumber", PROPERTY_FIELD_MEMORIZE)
+DEFINE_FLAGS_PROPERTY_FIELD(CalculateDisplacementsModifier, _frameOffset, "FrameOffset", PROPERTY_FIELD_MEMORIZE)
 DEFINE_FLAGS_REFERENCE_FIELD(CalculateDisplacementsModifier, _vectorDisplay, "VectorDisplay", VectorDisplay, PROPERTY_FIELD_ALWAYS_DEEP_COPY)
 SET_PROPERTY_FIELD_LABEL(CalculateDisplacementsModifier, _referenceObject, "Reference Configuration")
 SET_PROPERTY_FIELD_LABEL(CalculateDisplacementsModifier, _referenceShown, "Show reference configuration")
 SET_PROPERTY_FIELD_LABEL(CalculateDisplacementsModifier, _eliminateCellDeformation, "Eliminate homogeneous cell deformation")
 SET_PROPERTY_FIELD_LABEL(CalculateDisplacementsModifier, _assumeUnwrappedCoordinates, "Assume unwrapped coordinates")
+SET_PROPERTY_FIELD_LABEL(CalculateDisplacementsModifier, _useFrameOffset, "Reference frame")
+SET_PROPERTY_FIELD_LABEL(CalculateDisplacementsModifier, _frameNumber, "Reference frame number")
+SET_PROPERTY_FIELD_LABEL(CalculateDisplacementsModifier, _frameOffset, "Reference frame offset")
 SET_PROPERTY_FIELD_LABEL(CalculateDisplacementsModifier, _vectorDisplay, "Vector display")
 
 /******************************************************************************
 * Constructs the modifier object.
 ******************************************************************************/
 CalculateDisplacementsModifier::CalculateDisplacementsModifier() :
-	_referenceShown(false), _eliminateCellDeformation(false), _assumeUnwrappedCoordinates(false)
+    _referenceShown(false), _eliminateCellDeformation(false),
+    _useFrameOffset(false), _frameNumber(0), _frameOffset(0),
+    _assumeUnwrappedCoordinates(false)
 {
 	INIT_PROPERTY_FIELD(CalculateDisplacementsModifier::_referenceObject);
 	INIT_PROPERTY_FIELD(CalculateDisplacementsModifier::_referenceShown);
 	INIT_PROPERTY_FIELD(CalculateDisplacementsModifier::_eliminateCellDeformation);
 	INIT_PROPERTY_FIELD(CalculateDisplacementsModifier::_assumeUnwrappedCoordinates);
+	INIT_PROPERTY_FIELD(CalculateDisplacementsModifier::_useFrameOffset);
+	INIT_PROPERTY_FIELD(CalculateDisplacementsModifier::_frameNumber);
+	INIT_PROPERTY_FIELD(CalculateDisplacementsModifier::_frameOffset);
 	INIT_PROPERTY_FIELD(CalculateDisplacementsModifier::_vectorDisplay);
 
 	OORef<LinkedFileObject> importObj(new LinkedFileObject());
@@ -96,8 +109,15 @@ ObjectStatus CalculateDisplacementsModifier::modifyParticles(TimePoint time, Tim
 		throw Exception(tr("Cannot calculate displacement vectors. Reference configuration has not been specified."));
 
 	// Get the reference configuration.
-	// Always use frame 0 as reference configuration.
-	PipelineFlowState refState = referenceConfiguration()->evaluate(0);
+	PipelineFlowState refState;
+	if (_useFrameOffset) {
+		// Use offset relativ to current configuration.
+		refState = referenceConfiguration()->evaluate(time + _frameOffset * AnimManager::instance().ticksPerFrame());
+	}
+	else {
+		// Always use frame 0 as reference configuration.
+		refState = referenceConfiguration()->evaluate(_frameNumber * AnimManager::instance().ticksPerFrame());
+	}
 	if(refState.isEmpty()) {
 		if(refState.status().type() != ObjectStatus::Pending)
 			throw Exception(tr("Reference configuration has not been specified yet."));
@@ -306,6 +326,31 @@ void CalculateDisplacementsModifierEditor::createUI(const RolloutInsertionParame
 	BooleanParameterUI* showReferenceUI = new BooleanParameterUI(this, PROPERTY_FIELD(CalculateDisplacementsModifier::_referenceShown));
 	layout->addWidget(showReferenceUI->checkBox());
 #endif
+
+	// Add box for selection between absolute and relative reference frames.
+	BooleanRadioButtonParameterUI* frameOffsetUI = new BooleanRadioButtonParameterUI(this, PROPERTY_FIELD(CalculateDisplacementsModifier::_useFrameOffset));
+	frameOffsetUI->buttonTrue()->setText(tr("Use reference frame relative to current frame"));
+	frameOffsetUI->buttonFalse()->setText(tr("Use absolute reference frame"));
+
+	layout->addWidget(frameOffsetUI->buttonFalse());
+
+	QHBoxLayout* hlayout = new QHBoxLayout();
+	layout->addLayout(hlayout);
+	IntegerParameterUI* frameNumberPUI = new IntegerParameterUI(this, PROPERTY_FIELD(CalculateDisplacementsModifier::_frameNumber));
+	hlayout->addWidget(new QLabel(tr("Reference frame number:")));
+	hlayout->addLayout(frameNumberPUI->createFieldLayout());
+	frameNumberPUI->setEnabled(true);
+	connect(frameOffsetUI->buttonFalse(), SIGNAL(toggled(bool)), frameNumberPUI, SLOT(setEnabled(bool)));
+
+	layout->addWidget(frameOffsetUI->buttonTrue());
+
+	hlayout = new QHBoxLayout();
+	layout->addLayout(hlayout);
+	IntegerParameterUI* frameOffsetPUI = new IntegerParameterUI(this, PROPERTY_FIELD(CalculateDisplacementsModifier::_frameOffset));
+	hlayout->addWidget(new QLabel(tr("Reference frame offset:")));
+	hlayout->addLayout(frameOffsetPUI->createFieldLayout());
+	frameOffsetPUI->setEnabled(false);
+	connect(frameOffsetUI->buttonTrue(), SIGNAL(toggled(bool)), frameOffsetPUI, SLOT(setEnabled(bool)));
 
 	// Status label.
 	layout->addSpacing(6);
