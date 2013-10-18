@@ -131,20 +131,27 @@ void ViewportTextGeometryBuffer::renderWindow(SceneRenderer* renderer, const Poi
 
 		// Measure text size.
 		QRect rect;
+		qreal devicePixelRatio = 1.0;
 		{
+			if(vpRenderer->glcontext()->surface()->surfaceClass() == QSurface::Window) {
+				QWindow* window = static_cast<QWindow*>(vpRenderer->glcontext()->surface());
+				devicePixelRatio = window->devicePixelRatio();
+			}
+			_textureImage.setDevicePixelRatio(devicePixelRatio);
 			QPainter painter(&_textureImage);
 			painter.setFont(font());
-			rect = painter.fontMetrics().boundingRect(text());
+			rect = painter.boundingRect(QRect(), Qt::AlignLeft | Qt::AlignTop, text());
 		}
 
 		// Generate texture image.
-		_textureImage = QImage(rect.width()+1, rect.height()+1, QImage::Format_RGB32);
+		_textureImage = QImage((rect.width() * devicePixelRatio)+1, (rect.height() * devicePixelRatio)+1, QImage::Format_RGB32);
+		_textureImage.setDevicePixelRatio(devicePixelRatio);
 		_textureImage.fill(0);
 		{
 			QPainter painter(&_textureImage);
 			painter.setFont(font());
 			painter.setPen(Qt::white);
-			painter.drawText(-rect.left(), -rect.top(), text());
+			painter.drawText(rect, Qt::AlignLeft | Qt::AlignTop, text());
 		}
 		_textOffset = rect.topLeft();
 		//_textureImage.save(QString("%1.png").arg(text()));

@@ -1,3 +1,4 @@
+
 - Selection of atoms by drawing a path in the viewports
 
 - Rendering of the coordinate system tripod in the output image
@@ -16,7 +17,11 @@
 
 - Import file should keep a history of visited directories like the old Ovito version did.
 
-- Integration of Tachyon renderer.
+- Integration of Tachyon and POV-Ray renderer.
+
+- OVITO freezes when applying the Create Bonds modifier on large systems.
+
+- Add 'lower bound' parameter to Create Bonds modifier such that, when using the modifier multiple times, bonds with different lengths can be assigned different colors.
 
 Sha Zhendong:
 
