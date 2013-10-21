@@ -255,6 +255,7 @@ PipelineFlowState LinkedFileObject::evaluate(TimePoint time)
 		return PipelineFlowState();
 
 	int frame = AnimManager::instance().timeToFrame(time);
+
 	bool oldTaskCanceled = false;
 	if(_frameBeingLoaded != -1) {
 		if(_frameBeingLoaded == frame) {
@@ -279,6 +280,7 @@ PipelineFlowState LinkedFileObject::evaluate(TimePoint time)
 			notifyDependents(ReferenceEvent::PendingStateChanged);
 
 		// The requested frame has already been loaded and is available immediately.
+		setStatus(ObjectStatus::Success);
 		return PipelineFlowState(status(), _sceneObjects.targets(), TimeInterval(time));
 	}
 	else {

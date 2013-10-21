@@ -105,7 +105,9 @@ std::shared_ptr<AsynchronousParticleModifier::Engine> AtomicStrainModifier::crea
 	PipelineFlowState refState = referenceConfiguration()->evaluate(0);
 	if(refState.status().type() == ObjectStatus::Pending)
 		throw ObjectStatus(ObjectStatus::Pending, QString(), tr("Waiting for input data to become ready..."));
-	if(refState.isEmpty())
+	else if(refState.status().type() == ObjectStatus::Error)
+		throw refState.status();
+	else if(refState.isEmpty())
 		throw Exception(tr("Reference configuration has not been specified yet."));
 
 	// Get the reference position property.

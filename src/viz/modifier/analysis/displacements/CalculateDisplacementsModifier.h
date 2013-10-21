@@ -50,12 +50,6 @@ public:
 	/// used for calculating the displacement vectors.
 	void setReferenceConfiguration(const OORef<SceneObject>& refConf) { _referenceObject = refConf; }
 
-	/// Returns whether the reference configuration is shown instead of the current configuration.
-	bool referenceShown() const { return _referenceShown; }
-
-	/// Sets whether the reference configuration is shown instead of the current configuration.
-	void setReferenceShown(bool show) { _referenceShown = show; }
-
 	/// Returns true if the homogeneous deformation of the simulation cell is eliminated from the calculated displacement vectors.
 	bool eliminateCellDeformation() const { return _eliminateCellDeformation; }
 
@@ -70,7 +64,6 @@ public:
 
 public:
 
-	Q_PROPERTY(bool referenceShown READ referenceShown WRITE setReferenceShown)
 	Q_PROPERTY(bool eliminateCellDeformation READ eliminateCellDeformation WRITE setEliminateCellDeformation)
 	Q_PROPERTY(bool assumeUnwrappedCoordinates READ assumeUnwrappedCoordinates WRITE setAssumeUnwrappedCoordinates)
 
@@ -95,13 +88,13 @@ protected:
 	PropertyField<bool> _assumeUnwrappedCoordinates;
 
 	/// Specify reference frame relative to current frame.
-	PropertyField<bool> _useFrameOffset;
+	PropertyField<bool> _useReferenceFrameOffset;
 
-	/// Absolute frame number to use.
-	PropertyField<FloatType> _frameNumber;
+	/// Absolute frame number from reference file to use when calculating displacement vectors.
+	PropertyField<int> _referenceFrameNumber;
 
-	/// Offset for finding reference coordinates.
-	PropertyField<FloatType> _frameOffset;
+	/// Relative frame offset for reference coordinates.
+	PropertyField<int> _referenceFrameOffset;
 
 	/// The vector display object for rendering the displacement vectors.
 	ReferenceField<VectorDisplay> _vectorDisplay;
@@ -118,9 +111,9 @@ private:
 	DECLARE_PROPERTY_FIELD(_referenceShown);
 	DECLARE_PROPERTY_FIELD(_eliminateCellDeformation);
 	DECLARE_PROPERTY_FIELD(_assumeUnwrappedCoordinates);
-	DECLARE_PROPERTY_FIELD(_useFrameOffset);
-	DECLARE_PROPERTY_FIELD(_frameNumber);
-	DECLARE_PROPERTY_FIELD(_frameOffset);
+	DECLARE_PROPERTY_FIELD(_useReferenceFrameOffset);
+	DECLARE_PROPERTY_FIELD(_referenceFrameNumber);
+	DECLARE_PROPERTY_FIELD(_referenceFrameOffset);
 	DECLARE_REFERENCE_FIELD(_vectorDisplay);
 };
 
