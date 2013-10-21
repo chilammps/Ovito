@@ -19,26 +19,26 @@
   This modifier calculates the displacement vectors of particles from two different
   configurations of the simulated system.</para>
 
-  <para>The input particle set, to which the modifier is applied, is considered the
+  <para>The input particle set, to which the modifier has been applied, is considered the
   <emphasis>current</emphasis> (or deformed) configuration of the system. The
-  <emphasis>reference</emphasis> (or initial) configuration of the system is
+  <emphasis>reference</emphasis> (or initial) particle coordinates are
   loaded from a separate input file by the modifier.</para>
 
   <para>The
-  modifier calculates the displacement vector of a particle by subtracting the
+  modifier calculates the displacement vector of each particle by subtracting its
   position in the reference configuration from the particles's position in the
-  current configuration. The calculated vector is stored in the <literal>Displacement</literal>
-  particle property and can optionally be visualized as an arrow.
+  current configuration. The calculated vectors are stored in the <literal>Displacement</literal>
+  particle property and can optionally be visualized as arrows.
   Alternatively, one can use the <link
   linkend="viz.modifiers.color_coding">Color coding modifier</link> to
-  visualize the displacement magnitude through a color scheme.</para>
+  visualize the displacement magnitudes through a color scheme.</para>
 
   <para>Use the <emphasis>Reference configuration</emphasis> panel to pick the
   file containing the initial particle positions. Note
   that this reference file should contain the same set of particles as the
   input configuration seen by the modifier. That implies that you should
   not delete particles before applying the <emphasis>Displacement vectors</emphasis> modifier. 
-  The modifier should usually be placed at the beginning of the processing pipeline.</para>
+  The modifier should typically be placed at the beginning of the processing pipeline.</para>
 
   <para>
   To calculate the displacement vector of a particle, the modifier has to
@@ -51,7 +51,7 @@
   <para>The vectors computed by the modifier are stored in the <literal>Displacement</literal>
   particle property. This property is associated with a vector <emphasis>display object</emphasis>,
   which allows to render the displacement vectors as arrows. By default, the
-  display object is disabled. You have to enable it in the pipeline editor first to make the arrows visible. 
+  display object is disabled. You have to enable it in the pipeline editor first to show the arrows in the viewports. 
   </para>
 
   <simplesect>
@@ -77,6 +77,26 @@
           in the reference and the current configuration are taken as is. If
           this option is not checked, the minimum image convention is used to
           deal with particles that have crossed a periodic boundary.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Fixed reference configuration</term>
+        <listitem>
+          <para>If this option is active, the selected animation frame from the reference simulation sequence is used
+          as a fixed reference to calculate the displacement vectors. This is the default mode.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Relative to current frame</term>
+        <listitem>
+          <para>If this option is active, then a variable reference configuration is used to calculate the displacement vectors. 
+          This allows to compute incremental displacement vectors (similar to discrete velocity vectors).
+          The frame offset controls the distance between reference and current frame and can be negative or positive. If it is negative, then the reference frame 
+          precedes the current frame in the simulation sequence.
+          Note that the displacement vectors will not be computed for simulation frames for which the resulting reference frame is negative or out of range.
+          </para>
         </listitem>
       </varlistentry>
 

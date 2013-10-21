@@ -84,6 +84,17 @@
       </varlistentry>
 
       <varlistentry>
+        <term>Change renderer</term>
+        <listitem>
+          <para>Select this button activate a different rendering engine. OVITO offers
+          multiple rendering back-ends, which differ in terms of quality and rendering speed.
+          By default the hardware-accelerated OpenGL renderer is active, which is the same rendering engine used for interactive display
+          in the viewports. The Tachyon renderer is a software raytracing engine, which offsers better shading algorithms at a slower
+          rendering speed.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term>Save to file</term>
         <listitem>
           <para>Activate this option to save the generated image or movie to disk. 
