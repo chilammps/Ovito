@@ -17,8 +17,6 @@
 
 - POV-Ray rendering and file export.
 
-- OVITO freezes when applying the Create Bonds modifier on large systems.
-
 - Add 'lower bound' parameter to Create Bonds modifier such that, when using the modifier multiple times, bonds with different lengths can be assigned different colors.
 
 Sha Zhendong:

@@ -275,10 +275,16 @@ ObjectStatus CreateBondsModifier::applyModifierResults(TimePoint time, TimeInter
 	if(bondsObject()) {
 		output().addObject(bondsObject());
 		bondsCount = bondsObject()->bonds().size();
+
+		// If there are too many bonds, we better turn off bond sdisplay to prevent the program from freezing.
+		if(bondsCount > 1000000 && bondsDisplay()) {
+			bondsDisplay()->setEnabled(false);
+			return ObjectStatus(ObjectStatus::Warning, QString(), tr("Created %1 bonds. Automatically disabled display of such a large number of bonds to prevent the program from freezing.").arg(bondsCount));
+		}
 	}
 
 	if(!_hasWrappedParticles)
-		return ObjectStatus(ObjectStatus::Success, QString(), tr("Created %1 bonds").arg(bondsCount));
+		return ObjectStatus(ObjectStatus::Success, QString(), tr("Created %1 bonds.").arg(bondsCount));
 	else
 		return ObjectStatus(ObjectStatus::Warning, QString(), tr("Created %1 bonds. Some of the particles are located outside the simulation cell boundaries. The bonds of these particles may not display correctly. Please use the 'Wrap at periodic boundaries' modifier to avoid this problem.").arg(bondsCount));
 }
