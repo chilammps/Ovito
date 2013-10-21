@@ -742,57 +742,75 @@ FloatType Viewport::nonScalingSize(const Point3& worldPosition)
 ViewportPickResult Viewport::pick(const QPointF& pos)
 {
 	OVITO_ASSERT_MSG(!isRendering(), "Viewport::pick", "Object picking is not possible while rendering viewport contents.");
+	
+	try {
 
-	// Set up the picking renderer.
-	_pickingRenderer->startRender(DataSetManager::instance().currentSet(), DataSetManager::instance().currentSet()->renderSettings());
+		// Set up the picking renderer.
+		_pickingRenderer->startRender(DataSetManager::instance().currentSet(), DataSetManager::instance().currentSet()->renderSettings());
 
-	// Request scene bounding box.
-	Box3 boundingBox = _pickingRenderer->sceneBoundingBox(AnimManager::instance().time());
+		try {
+			// Request scene bounding box.
+			Box3 boundingBox = _pickingRenderer->sceneBoundingBox(AnimManager::instance().time());
 
-	// Setup projection.
-	QSize vpSize = size();
-	FloatType aspectRatio = (FloatType)vpSize.height() / vpSize.width();
-	ViewProjectionParameters projParams = projectionParameters(AnimManager::instance().time(), aspectRatio, boundingBox);
+			// Setup projection.
+			QSize vpSize = size();
+			FloatType aspectRatio = (FloatType)vpSize.height() / vpSize.width();
+			ViewProjectionParameters projParams = projectionParameters(AnimManager::instance().time(), aspectRatio, boundingBox);
 
-	// Adjust projection if render frame is shown.
-	if(renderFrameShown())
-		adjustProjectionForRenderFrame(projParams);
+			// Adjust projection if render frame is shown.
+			if(renderFrameShown())
+				adjustProjectionForRenderFrame(projParams);
 
-	// Set up the picking renderer.
-	_pickingRenderer->beginFrame(AnimManager::instance().time(), projParams, this);
+			// Set up the picking renderer.
+			_pickingRenderer->beginFrame(AnimManager::instance().time(), projParams, this);
+			
+			try {
+				// Add bounding box of interactive elements.
+				boundingBox.addBox(_pickingRenderer->boundingBoxInteractive(AnimManager::instance().time(), this));
 
-	// Add bounding box of interactive elements.
-	boundingBox.addBox(_pickingRenderer->boundingBoxInteractive(AnimManager::instance().time(), this));
+				// Set up final projection.
+				_projParams = projectionParameters(AnimManager::instance().time(), aspectRatio, boundingBox);
 
-	// Set up final projection.
-	_projParams = projectionParameters(AnimManager::instance().time(), aspectRatio, boundingBox);
+				// Adjust projection if render frame is shown.
+				if(renderFrameShown())
+					adjustProjectionForRenderFrame(_projParams);
 
-	// Adjust projection if render frame is shown.
-	if(renderFrameShown())
-		adjustProjectionForRenderFrame(_projParams);
+				// Pass final projection parameters to renderer.
+				_pickingRenderer->setProjParams(_projParams);
 
-	// Pass final projection parameters to renderer.
-	_pickingRenderer->setProjParams(_projParams);
+				// Call the viewport renderer to render the scene objects.
+				_pickingRenderer->renderFrame(nullptr, nullptr);
+			}
+			catch(...) {
+				_pickingRenderer->endFrame();
+				throw;
+			}
 
-	// Call the viewport renderer to render the scene objects.
-	_pickingRenderer->renderFrame(nullptr, nullptr);
+			// Stop rendering.
+			_pickingRenderer->endFrame();
+		}
+		catch(...) {
+			_pickingRenderer->endRender();
+			throw;
+		}
+		_pickingRenderer->endRender();
 
-	// Stop rendering.
-	_pickingRenderer->endFrame();
-	_pickingRenderer->endRender();
-
-	// Query which object is located at the given window position.
-	ViewportPickResult result;
-	const PickingSceneRenderer::ObjectRecord* objInfo;
-	std::tie(objInfo, result.subobjectId) = _pickingRenderer->objectAtLocation((pos * viewportWindow()->devicePixelRatio()).toPoint());
-	result.valid = (objInfo != nullptr);
-	if(objInfo) {
-		result.objectNode = objInfo->objectNode;
-		result.sceneObject = objInfo->sceneObject;
-		result.worldPosition = _pickingRenderer->worldPositionFromLocation((pos * viewportWindow()->devicePixelRatio()).toPoint());
+		// Query which object is located at the given window position.
+		ViewportPickResult result;
+		const PickingSceneRenderer::ObjectRecord* objInfo;
+		std::tie(objInfo, result.subobjectId) = _pickingRenderer->objectAtLocation((pos * viewportWindow()->devicePixelRatio()).toPoint());
+		result.valid = (objInfo != nullptr);
+		if(objInfo) {
+			result.objectNode = objInfo->objectNode;
+			result.sceneObject = objInfo->sceneObject;
+			result.worldPosition = _pickingRenderer->worldPositionFromLocation((pos * viewportWindow()->devicePixelRatio()).toPoint());
+		}
+		_pickingRenderer->reset();
+		return result;
 	}
-	_pickingRenderer->reset();
-	return result;
+	catch(const Exception& ex) {
+		ex.showError();
+	}
 }
 
 };

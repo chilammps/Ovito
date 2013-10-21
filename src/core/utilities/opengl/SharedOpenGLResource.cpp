@@ -106,7 +106,7 @@ void OpenGLContextManager::aboutToDestroyContext()
 {
 	QOpenGLContext* ctx = qobject_cast<QOpenGLContext*>(sender());
 	OVITO_CHECK_POINTER(ctx);
-
+	
 	int index = 0;
 	while(index < _contexts.size()) {
 		OpenGLContextInfo* info = _contexts[index];
@@ -127,6 +127,12 @@ void OpenGLContextManager::aboutToDestroyContext()
 		}
 		++index;
 	}
+}
+
+/// Destructor.
+SharedOpenGLResource::~SharedOpenGLResource() 
+{
+	destroyOpenGLResources(); 
 }
 
 void SharedOpenGLResource::attachOpenGLResources()
@@ -178,7 +184,9 @@ void SharedOpenGLResource::destroyOpenGLResources()
 				ownerContext->doneCurrent();
 		}
 	}
-	else freeOpenGLResources();
+	else {
+		freeOpenGLResources();
+	}
 }
 
 };

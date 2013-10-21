@@ -96,6 +96,7 @@ bool PickingSceneRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialog
 		_image = _image.rgbSwapped();
 	}
 	_image = _image.mirrored();
+	//_image.save("picking.png");
 
 	// Also fetch depth buffer data.
 	_depthBuffer.reset(new GLfloat[size.width() * size.height()]);
@@ -119,7 +120,12 @@ void PickingSceneRenderer::endFrame()
 void PickingSceneRenderer::reset()
 {
 	_objects.clear();
+#if 1
 	_currentObjectID = 1;
+#else
+	// This can be enabled during debugging to avoid alpha!=1 pixels in the picking render buffer.
+	_currentObjectID = 0xFF000000;
+#endif
 	_image = QImage();
 }
 

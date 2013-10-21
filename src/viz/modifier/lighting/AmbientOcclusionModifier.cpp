@@ -87,7 +87,7 @@ std::shared_ptr<AsynchronousParticleModifier::Engine> AmbientOcclusionModifier::
 ******************************************************************************/
 void AmbientOcclusionModifier::AmbientOcclusionEngine::compute(FutureInterfaceBase& futureInterface)
 {
-	futureInterface.setProgressText(tr("Computing ambient occlusion lighting"));
+	futureInterface.setProgressText(tr("Computing ambient occlusion"));
 
 	AmbientOcclusionRenderer renderer(QSize(_resolution, _resolution));
 	renderer.startRender(nullptr, nullptr);

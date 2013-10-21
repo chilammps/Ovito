@@ -72,7 +72,7 @@ ViewportImageGeometryBuffer::~ViewportImageGeometryBuffer()
 ******************************************************************************/
 void ViewportImageGeometryBuffer::freeOpenGLResources()
 {
-	OVITO_CHECK_OPENGL(glDeleteTextures(1, &_texture));
+	glDeleteTextures(1, &_texture);
 	_texture = 0;
 }
 

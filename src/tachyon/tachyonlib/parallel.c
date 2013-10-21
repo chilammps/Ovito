@@ -19,7 +19,7 @@
 #include "util.h"
 #include "threads.h"
 
-#if !defined(_MSC_VER)
+#if !defined(WIN32)
 #include <unistd.h>
 #endif
 
@@ -99,7 +99,7 @@ int rt_getcpuinfo(nodeinfo **nodes) {
                 &(*nodes)[     0], sizeof(nodeinfo), MPI_BYTE, 
                 MPI_COMM_WORLD);
 #else
-#if defined(_MSC_VER)
+#if defined(WIN32)
   strcpy((*nodes)[mynode].machname, "Windows");
 #elif defined(MCOS)
   strcpy((*nodes)[mynode].machname, "Mercury");

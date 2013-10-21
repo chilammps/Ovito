@@ -43,7 +43,7 @@
 #define OLDUNIXTIME
 #endif
 
-#if defined(_MSC_VER) || defined(WIN32)
+#if defined(WIN32) || defined(WIN32)
 #include <windows.h>
 #undef STDTIME
 #define WIN32GETTICKCOUNT

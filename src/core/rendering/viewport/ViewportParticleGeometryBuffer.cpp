@@ -78,7 +78,7 @@ ViewportParticleGeometryBuffer::ViewportParticleGeometryBuffer(ViewportSceneRend
 		_raytracedSphereShader = nullptr;
 		_raytracedPickingSphereShader = nullptr;
 	}
-
+	
 	if(!_glPositionsBuffer.create())
 		throw Exception(tr("Failed to create OpenGL vertex buffer."));
 	_glPositionsBuffer.setUsagePattern(QOpenGLBuffer::StaticDraw);
@@ -90,7 +90,7 @@ ViewportParticleGeometryBuffer::ViewportParticleGeometryBuffer(ViewportSceneRend
 	if(!_glColorsBuffer.create())
 		throw Exception(tr("Failed to create OpenGL vertex buffer."));
 	_glColorsBuffer.setUsagePattern(QOpenGLBuffer::DynamicDraw);
-
+	
 	initializeBillboardTexture(renderer);
 }
 
@@ -531,6 +531,7 @@ void ViewportParticleGeometryBuffer::initializeBillboardTexture(ViewportSceneRen
 	glGenTextures(1, &_billboardTexture);
 
 	// Make sure texture gets deleted again when this object is destroyed.
+	qDebug() << "Attaching texture resource";
 	attachOpenGLResources();
 
 	renderer->glfuncs()->glActiveTexture(GL_TEXTURE0);
@@ -551,7 +552,8 @@ void ViewportParticleGeometryBuffer::initializeBillboardTexture(ViewportSceneRen
 ******************************************************************************/
 void ViewportParticleGeometryBuffer::freeOpenGLResources()
 {
-	OVITO_CHECK_OPENGL(glDeleteTextures(1, &_billboardTexture));
+	glDeleteTextures(1, &_billboardTexture);
+	_billboardTexture = 0;
 }
 
 /******************************************************************************

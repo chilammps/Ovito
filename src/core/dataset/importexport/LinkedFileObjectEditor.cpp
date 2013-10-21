@@ -213,12 +213,20 @@ void LinkedFileObjectEditor::updateInformationLabel()
 		return;
 	}
 
-	QFileInfo fileInfo(obj->sourceUrl().path());
-	QUrl url = obj->sourceUrl();
-	url.setPath(fileInfo.path());
-	_sourcePathLabel->setText(url.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded));
+	QString wildcardPattern;
+	if(obj->sourceUrl().isLocalFile()) {
+		QFileInfo fileInfo(obj->sourceUrl().toLocalFile());
+		_sourcePathLabel->setText(fileInfo.dir().path());
+		wildcardPattern = fileInfo.fileName();
+	}
+	else {
+		QFileInfo fileInfo(obj->sourceUrl().path());
+		QUrl url = obj->sourceUrl();
+		url.setPath(fileInfo.path());
+		_sourcePathLabel->setText(url.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded));
+		wildcardPattern = fileInfo.fileName();
+	}
 
-	QString wildcardPattern = fileInfo.fileName();
 	_wildcardPatternTextbox->setText(wildcardPattern);
 	_wildcardPatternTextbox->setEnabled(true);
 

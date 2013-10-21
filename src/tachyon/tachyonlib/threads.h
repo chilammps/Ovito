@@ -59,7 +59,7 @@ typedef rwlock_t  rt_rwlock_t;
 #endif
 
 
-#ifdef _MSC_VER
+#ifdef WIN32
 #include <windows.h>
 typedef HANDLE rt_thread_t;
 typedef CRITICAL_SECTION rt_mutex_t;
@@ -97,7 +97,7 @@ typedef struct rwlock_struct {
 } rt_rwlock_t;
 
 #endif
-#endif /* _MSC_VER */
+#endif /* WIN32 */
 
 
 #ifndef THR

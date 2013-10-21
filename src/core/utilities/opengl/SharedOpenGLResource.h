@@ -39,7 +39,7 @@ class OVITO_CORE_EXPORT SharedOpenGLResource
 public:
 
 	/// Destructor.
-    ~SharedOpenGLResource() { destroyOpenGLResources(); }
+    ~SharedOpenGLResource();
 
     /// This should be called after the OpenGL resources have been allocated.
     void attachOpenGLResources();

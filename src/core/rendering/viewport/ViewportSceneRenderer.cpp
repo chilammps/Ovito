@@ -91,7 +91,8 @@ void ViewportSceneRenderer::beginFrame(TimePoint time, const ViewProjectionParam
 ******************************************************************************/
 void ViewportSceneRenderer::endFrame()
 {
-	_vertexArrayObject.reset();
+	OVITO_CHECK_OPENGL();
+	OVITO_CHECK_OPENGL(_vertexArrayObject.reset());
 	_glcontext = nullptr;
 
 	SceneRenderer::endFrame();

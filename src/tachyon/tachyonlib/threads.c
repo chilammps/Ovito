@@ -52,7 +52,7 @@
 
 #include "threads.h"
 
-#ifdef _MSC_VER
+#ifdef WIN32
 #if 0
 #define RTUSENEWWIN32APIS 1
 #define _WIN32_WINNT 0x0400 /**< needed for TryEnterCriticalSection(), etc */
@@ -101,11 +101,11 @@ int rt_thread_numphysprocessors(void) {
   a = (int)count;       /**< Number of active/running CPUs */
 #endif
 
-#ifdef _MSC_VER
+#ifdef WIN32
   struct _SYSTEM_INFO sysinfo;
   GetSystemInfo(&sysinfo);
   a = sysinfo.dwNumberOfProcessors;  /**< total number of CPUs */
-#endif /* _MSC_VER */
+#endif /* WIN32 */
 
 #if defined(__PARAGON__) 
   a=2; /**< Threads-capable Paragons have 2 CPUs for computation */
@@ -164,7 +164,7 @@ int * rt_cpu_affinitylist(int *cpuaffinitycount) {
   *cpuaffinitycount = -1; /* return count -1 if unimplemented or err occurs */
 
 /* Win32 process affinity mask query */
-#if 0 && defined(_MSC_VER)
+#if 0 && defined(WIN32)
   /* XXX untested, but based on the linux code, may work with a few tweaks */
   HANDLE myproc = GetCurrentProcess(); /* returns a psuedo-handle */
   DWORD affinitymask, sysaffinitymask;
@@ -324,13 +324,13 @@ int rt_thread_create(rt_thread_t * thr, void * fctn(void *), void * arg) {
   int status=0;
 
 #ifdef THR
-#ifdef _MSC_VER
+#ifdef WIN32
   DWORD tid; /* thread id, msvc only */
   *thr = CreateThread(NULL, 8192, (LPTHREAD_START_ROUTINE) fctn, arg, 0, &tid);
   if (*thr == NULL) {
     status = -1;
   }
-#endif /* _MSC_VER */
+#endif /* WIN32 */
 
 #ifdef USEPOSIXTHREADS 
 #if defined(_AIX)
@@ -362,7 +362,7 @@ int rt_thread_join(rt_thread_t thr, void ** stat) {
   int status=0;  
 
 #ifdef THR
-#ifdef _MSC_VER
+#ifdef WIN32
   DWORD wstatus = 0;
  
   wstatus = WAIT_TIMEOUT;
@@ -370,7 +370,7 @@ int rt_thread_join(rt_thread_t thr, void ** stat) {
   while (wstatus != WAIT_OBJECT_0) {
     wstatus = WaitForSingleObject(thr, INFINITE);
   }
-#endif /* _MSC_VER */
+#endif /* WIN32 */
 
 #ifdef USEPOSIXTHREADS
   status = pthread_join(thr, stat);
@@ -392,9 +392,9 @@ int rt_mutex_init(rt_mutex_t * mp) {
   int status=0;
 
 #ifdef THR
-#ifdef _MSC_VER
+#ifdef WIN32
   InitializeCriticalSection(mp);
-#endif /* _MSC_VER */
+#endif /* WIN32 */
 
 #ifdef USEPOSIXTHREADS
   status = pthread_mutex_init(mp, 0);
@@ -413,9 +413,9 @@ int rt_mutex_lock(rt_mutex_t * mp) {
   int status=0;
 
 #ifdef THR
-#ifdef _MSC_VER
+#ifdef WIN32
   EnterCriticalSection(mp);
-#endif /* _MSC_VER */
+#endif /* WIN32 */
 
 #ifdef USEPOSIXTHREADS
   status = pthread_mutex_lock(mp);
@@ -434,13 +434,13 @@ int rt_mutex_trylock(rt_mutex_t * mp) {
   int status=0;
 
 #ifdef THR
-#ifdef _MSC_VER
+#ifdef WIN32
 #if defined(THRUSENEWWIN32APIS)
   /* TryEnterCriticalSection() is only available on newer */
   /* versions of Win32: _WIN32_WINNT/WINVER >= 0x0400     */
   status = (!(TryEnterCriticalSection(mp)));
 #endif
-#endif /* _MSC_VER */
+#endif /* WIN32 */
 
 #ifdef USEPOSIXTHREADS
   status = (pthread_mutex_lock(mp) != 0);
@@ -455,7 +455,7 @@ int rt_mutex_spin_lock(rt_mutex_t * mp) {
   int status=0;
 
 #ifdef THR
-#ifdef _MSC_VER
+#ifdef WIN32
 #if defined(THRUSENEWWIN32APIS)
   /* TryEnterCriticalSection() is only available on newer */
   /* versions of Win32: _WIN32_WINNT/WINVER >= 0x0400     */
@@ -463,7 +463,7 @@ int rt_mutex_spin_lock(rt_mutex_t * mp) {
 #else
   EnterCriticalSection(mp);
 #endif
-#endif /* _MSC_VER */
+#endif /* WIN32 */
 
 #ifdef USEPOSIXTHREADS
   while ((status = pthread_mutex_trylock(mp)) != 0);
@@ -478,9 +478,9 @@ int rt_mutex_unlock(rt_mutex_t * mp) {
   int status=0;
 
 #ifdef THR  
-#ifdef _MSC_VER
+#ifdef WIN32
   LeaveCriticalSection(mp);
-#endif /* _MSC_VER */
+#endif /* WIN32 */
 
 #ifdef USEPOSIXTHREADS
   status = pthread_mutex_unlock(mp);
@@ -499,9 +499,9 @@ int rt_mutex_destroy(rt_mutex_t * mp) {
   int status=0;
 
 #ifdef THR
-#ifdef _MSC_VER
+#ifdef WIN32
   DeleteCriticalSection(mp);
-#endif /* _MSC_VER */
+#endif /* WIN32 */
 
 #ifdef USEPOSIXTHREADS
   status = pthread_mutex_destroy(mp);
@@ -523,7 +523,7 @@ int rt_cond_init(rt_cond_t * cvp) {
   int status=0;
 
 #ifdef THR
-#ifdef _MSC_VER
+#ifdef WIN32
 #if defined(RTUSEWIN2008CONDVARS)
   InitializeConditionVariable(cvp);
 #else
@@ -542,7 +542,7 @@ int rt_cond_init(rt_cond_t * cvp) {
                                                FALSE, /* non-signaled initially */
                                                NULL); /* unnamed */
 #endif
-#endif /* _MSC_VER */
+#endif /* WIN32 */
 
 #ifdef USEPOSIXTHREADS
   status = pthread_cond_init(cvp, NULL);
@@ -559,14 +559,14 @@ int rt_cond_destroy(rt_cond_t * cvp) {
   int status=0;
 
 #ifdef THR
-#ifdef _MSC_VER
+#ifdef WIN32
 #if defined(RTUSEWIN2008CONDVARS)
   /* XXX not implemented */
 #else
   CloseHandle(cvp->events[RT_COND_SIGNAL]);
   CloseHandle(cvp->events[RT_COND_BROADCAST]);
 #endif
-#endif /* _MSC_VER */
+#endif /* WIN32 */
 
 #ifdef USEPOSIXTHREADS
   status = pthread_cond_destroy(cvp);
@@ -581,14 +581,14 @@ int rt_cond_destroy(rt_cond_t * cvp) {
 
 int rt_cond_wait(rt_cond_t * cvp, rt_mutex_t * mp) {
   int status=0;
-#if defined(THR) && defined(_MSC_VER)
+#if defined(THR) && defined(WIN32)
   int result=0;
   LONG last_waiter;
   LONG my_waiter;
 #endif
 
 #ifdef THR
-#ifdef _MSC_VER
+#ifdef WIN32
 #if defined(RTUSEWIN2008CONDVARS)
   SleepConditionVariableCS(cvp, mp, INFINITE)
 #else
@@ -625,7 +625,7 @@ int rt_cond_wait(rt_cond_t * cvp, rt_mutex_t * mp) {
 
   EnterCriticalSection(mp);
 #endif
-#endif /* _MSC_VER */
+#endif /* WIN32 */
 
 #ifdef USEPOSIXTHREADS
   status = pthread_cond_wait(cvp, mp);
@@ -642,7 +642,7 @@ int rt_cond_signal(rt_cond_t * cvp) {
   int status=0;
 
 #ifdef THR
-#ifdef _MSC_VER
+#ifdef WIN32
 #if defined(RTUSEWIN2008CONDVARS)
   WakeConditionVariable(cvp);
 #else
@@ -657,7 +657,7 @@ int rt_cond_signal(rt_cond_t * cvp) {
     SetEvent(cvp->events[RT_COND_SIGNAL]);
 #endif
 #endif
-#endif /* _MSC_VER */
+#endif /* WIN32 */
 
 #ifdef USEPOSIXTHREADS
   status = pthread_cond_signal(cvp);
@@ -674,7 +674,7 @@ int rt_cond_broadcast(rt_cond_t * cvp) {
   int status=0;
 
 #ifdef THR
-#ifdef _MSC_VER
+#ifdef WIN32
 #if defined(RTUSEWIN2008CONDVARS)
   WakeAllConditionVariable(cvp);
 #else
@@ -690,7 +690,7 @@ int rt_cond_broadcast(rt_cond_t * cvp) {
 #endif
 
 #endif
-#endif /* _MSC_VER */
+#endif /* WIN32 */
 
 #ifdef USEPOSIXTHREADS
   status = pthread_cond_broadcast(cvp);
@@ -711,7 +711,7 @@ int rt_rwlock_init(rt_rwlock_t * rwp) {
   int status=0;
 
 #ifdef THR  
-#ifdef _MSC_VER
+#ifdef WIN32
   rt_mutex_init(&rwp->lock);
   rt_cond_init(&rwp->rdrs_ok);
   rt_cond_init(&rwp->wrtr_ok);
@@ -740,7 +740,7 @@ int rt_rwlock_readlock(rt_rwlock_t * rwp) {
   int status=0;
 
 #ifdef THR  
-#ifdef _MSC_VER
+#ifdef WIN32
   rt_mutex_lock(&rwp->lock);
   while (rwp->rwlock < 0 || rwp->waiting_writers) 
     rt_cond_wait(&rwp->rdrs_ok, &rwp->lock);   
@@ -769,7 +769,7 @@ int rt_rwlock_writelock(rt_rwlock_t * rwp) {
   int status=0;
 
 #ifdef THR  
-#ifdef _MSC_VER
+#ifdef WIN32
   rt_mutex_lock(&rwp->lock);
   while (rwp->rwlock != 0) {
     rwp->waiting_writers++;
@@ -804,7 +804,7 @@ int rt_rwlock_unlock(rt_rwlock_t * rwp) {
   int status=0;
 
 #ifdef THR  
-#ifdef _MSC_VER
+#ifdef WIN32
   int ww, wr;
   rt_mutex_lock(&rwp->lock);
   if (rwp->rwlock > 0) {
