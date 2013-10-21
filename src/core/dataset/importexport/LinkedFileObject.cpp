@@ -275,12 +275,11 @@ PipelineFlowState LinkedFileObject::evaluate(TimePoint time)
 			oldTaskCanceled = true;
 		}
 	}
-	if(_loadedFrame == frame) {
+	if(frame >= 0 && _loadedFrame == frame) {
 		if(oldTaskCanceled)
 			notifyDependents(ReferenceEvent::PendingStateChanged);
 
 		// The requested frame has already been loaded and is available immediately.
-		setStatus(ObjectStatus::Success);
 		return PipelineFlowState(status(), _sceneObjects.targets(), TimeInterval(time));
 	}
 	else {
@@ -293,6 +292,7 @@ PipelineFlowState LinkedFileObject::evaluate(TimePoint time)
 				setStatus(ObjectStatus(ObjectStatus::Error, tr("The requested animation frame (%1) is out of range.").arg(frame)));
 			else
 				setStatus(ObjectStatus(ObjectStatus::Error, tr("The source location is empty (no files found).")));
+			_loadedFrame = -1;
 			return PipelineFlowState(status(), _sceneObjects.targets(), TimeInterval(time));
 		}
 		_frameBeingLoaded = frame;
