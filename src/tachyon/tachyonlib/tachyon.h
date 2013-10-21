@@ -622,6 +622,13 @@ void rt_fcylinder(SceneHandle, void *tex, apivector center,
 void rt_fcylinder3fv(SceneHandle, void *tex, const float *center, 
                      const float *axis, float radius);
 
+/** Define a cone.  */
+void rt_cone(SceneHandle, void *tex, apivector center,
+                  apivector axis, flt radius);
+/** Define a cone.  */
+void rt_cone3fv(SceneHandle, void *tex, const float *center,
+                     const float *axis, float radius);
+
 
 /** Define a sequence of connected cylinders.  */
 void rt_polycylinder(SceneHandle, void *tex, apivector *points, 

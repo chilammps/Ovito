@@ -286,26 +286,75 @@ void TachyonRenderer::renderParticles(const DefaultParticleGeometryBuffer& parti
 ******************************************************************************/
 void TachyonRenderer::renderArrows(const DefaultArrowGeometryBuffer& arrowBuffer)
 {
-	if(arrowBuffer.shape() != ArrowGeometryBuffer::CylinderShape)
-		return;		// Not supported by this renderer.
-
 	const AffineTransformation tm = modelTM();
-	for(const DefaultArrowGeometryBuffer::ArrowElement& element : arrowBuffer.elements()) {
-		void* tex = getTachyonTexture(element.color.r(), element.color.g(), element.color.b(), element.color.a());
-		Point3 tp = tm * element.pos;
-		Vector3 ta = tm * element.dir;
-		rt_fcylinder(_rtscene, tex,
-					   rt_vector(tp.x(), tp.y(), -tp.z()),
-					   rt_vector(ta.x(), ta.y(), -ta.z()),
-					   element.width);
+	if(arrowBuffer.shape() == ArrowGeometryBuffer::CylinderShape) {
+		for(const DefaultArrowGeometryBuffer::ArrowElement& element : arrowBuffer.elements()) {
+			void* tex = getTachyonTexture(element.color.r(), element.color.g(), element.color.b(), element.color.a());
+			Point3 tp = tm * element.pos;
+			Vector3 ta = tm * element.dir;
+			rt_fcylinder(_rtscene, tex,
+						   rt_vector(tp.x(), tp.y(), -tp.z()),
+						   rt_vector(ta.x(), ta.y(), -ta.z()),
+						   element.width);
 
-		rt_ring(_rtscene, tex,
-				rt_vector(tp.x()+ta.x(), tp.y()+ta.y(), -tp.z()-ta.z()),
-				rt_vector(ta.x(), ta.y(), -ta.z()), 0, element.width);
+			rt_ring(_rtscene, tex,
+					rt_vector(tp.x()+ta.x(), tp.y()+ta.y(), -tp.z()-ta.z()),
+					rt_vector(ta.x(), ta.y(), -ta.z()), 0, element.width);
 
-		rt_ring(_rtscene, tex,
-				rt_vector(tp.x(), tp.y(), -tp.z()),
-				rt_vector(-ta.x(), -ta.y(), ta.z()), 0, element.width);
+			rt_ring(_rtscene, tex,
+					rt_vector(tp.x(), tp.y(), -tp.z()),
+					rt_vector(-ta.x(), -ta.y(), ta.z()), 0, element.width);
+		}
+	}
+
+	else if(arrowBuffer.shape() == ArrowGeometryBuffer::ArrowShape) {
+		for(const DefaultArrowGeometryBuffer::ArrowElement& element : arrowBuffer.elements()) {
+			void* tex = getTachyonTexture(element.color.r(), element.color.g(), element.color.b(), element.color.a());
+			FloatType arrowHeadRadius = element.width * 2.5f;
+			FloatType arrowHeadLength = arrowHeadRadius * 1.8f;
+			FloatType length = element.dir.length();
+			if(length == 0.0f)
+				continue;
+
+			if(length > arrowHeadLength) {
+				Point3 tp = tm * element.pos;
+				Vector3 ta = tm * (element.dir * ((length - arrowHeadLength) / length));
+				Vector3 tb = tm * (element.dir * (arrowHeadLength / length));
+
+				rt_fcylinder(_rtscene, tex,
+							   rt_vector(tp.x(), tp.y(), -tp.z()),
+							   rt_vector(ta.x(), ta.y(), -ta.z()),
+							   element.width);
+
+				rt_ring(_rtscene, tex,
+						rt_vector(tp.x(), tp.y(), -tp.z()),
+						rt_vector(-ta.x(), -ta.y(), ta.z()), 0, element.width);
+
+				rt_ring(_rtscene, tex,
+						rt_vector(tp.x()+ta.x(), tp.y()+ta.y(), -tp.z()-ta.z()),
+						rt_vector(-ta.x(), -ta.y(), ta.z()), element.width, arrowHeadRadius);
+
+				rt_cone(_rtscene, tex,
+							   rt_vector(tp.x()+ta.x()+tb.x(), tp.y()+ta.y()+tb.y(), -tp.z()-ta.z()-tb.z()),
+							   rt_vector(-tb.x(), -tb.y(), tb.z()),
+							   arrowHeadRadius);
+			}
+			else {
+				FloatType r = arrowHeadRadius * length / arrowHeadLength;
+
+				Point3 tp = tm * element.pos;
+				Vector3 ta = tm * element.dir;
+
+				rt_ring(_rtscene, tex,
+						rt_vector(tp.x(), tp.y(), -tp.z()),
+						rt_vector(-ta.x(), -ta.y(), ta.z()), 0, r);
+
+				rt_cone(_rtscene, tex,
+							   rt_vector(tp.x()+ta.x(), tp.y()+ta.y(), -tp.z()-ta.z()),
+							   rt_vector(-ta.x(), -ta.y(), ta.z()),
+							   r);
+			}
+		}
 	}
 }
 

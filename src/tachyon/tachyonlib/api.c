@@ -18,6 +18,7 @@
 #include "threads.h"
 
 #include "box.h"
+#include "cone.h"
 #include "cylinder.h"
 #include "plane.h"
 #include "quadric.h"
@@ -997,6 +998,18 @@ void rt_fcylinder3fv(SceneHandle scene, void * tex,
   vctr.x = ctr[0];   vctr.y = ctr[1];   vctr.z = ctr[2];
   vaxis.x = axis[0]; vaxis.y = axis[1]; vaxis.z = axis[2];
   add_bounded_object((scenedef *) scene, newfcylinder(tex, vctr, vaxis, rad));
+}
+
+void rt_cone(SceneHandle scene, void * tex, apivector ctr, apivector axis, flt rad) {
+  add_bounded_object((scenedef *) scene, newcone(tex, ctr, axis, rad));
+}
+
+void rt_cone3fv(SceneHandle scene, void * tex,
+                     const float *ctr, const float *axis, float rad) {
+  vector vctr, vaxis;
+  vctr.x = ctr[0];   vctr.y = ctr[1];   vctr.z = ctr[2];
+  vaxis.x = axis[0]; vaxis.y = axis[1]; vaxis.z = axis[2];
+  add_bounded_object((scenedef *) scene, newcone(tex, vctr, vaxis, rad));
 }
 
 

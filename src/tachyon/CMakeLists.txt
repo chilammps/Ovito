@@ -33,6 +33,7 @@ SET(TachyonLib_SRCS
 	tachyonlib/box.c
 	tachyonlib/camera.c
 	tachyonlib/coordsys.c
+	tachyonlib/cone.c
 	tachyonlib/cylinder.c
 	tachyonlib/extvol.c
 	tachyonlib/global.c

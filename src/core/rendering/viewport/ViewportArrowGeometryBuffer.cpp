@@ -293,8 +293,8 @@ void ViewportArrowGeometryBuffer::createCylinderElement(int index, const Point3&
 ******************************************************************************/
 void ViewportArrowGeometryBuffer::createArrowElement(int index, const Point3& pos, const Vector3& dir, const ColorA& color, FloatType width)
 {
-	float arrowHeadRadius = width * 2.5;
-	float arrowHeadLength = arrowHeadRadius * 1.8f;
+	const float arrowHeadRadius = width * 2.5f;
+	const float arrowHeadLength = arrowHeadRadius * 1.8f;
 
 	if(shadingMode() == NormalShading) {
 
