@@ -26,6 +26,7 @@
 #include <core/scene/ObjectNode.h>
 
 #include "TachyonRenderer.h"
+#include "TachyonRendererEditor.h"
 
 extern "C" {
 
@@ -42,6 +43,7 @@ extern "C" {
 namespace TachyonPlugin {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Tachyon, TachyonRenderer, NonInteractiveSceneRenderer)
+SET_OVITO_OBJECT_EDITOR(TachyonRenderer, TachyonRendererEditor)
 DEFINE_FLAGS_PROPERTY_FIELD(TachyonRenderer, _enableAntialiasing, "EnableAntialiasing", PROPERTY_FIELD_MEMORIZE)
 DEFINE_FLAGS_PROPERTY_FIELD(TachyonRenderer, _enableDirectLightSource, "EnableDirectLightSource", PROPERTY_FIELD_MEMORIZE)
 DEFINE_FLAGS_PROPERTY_FIELD(TachyonRenderer, _enableShadows, "EnableShadows", PROPERTY_FIELD_MEMORIZE)

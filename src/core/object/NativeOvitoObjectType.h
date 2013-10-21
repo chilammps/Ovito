@@ -47,7 +47,7 @@ public:
 
 	/// \brief Constructs the plugin class descriptor object.
 	/// \note This is an internal constructor that is not for public use.
-	NativeOvitoObjectType(const char* name, const char* pluginId, const NativeOvitoObjectType* superClass, const QMetaObject* qtClassInfo, bool isSerializable)
+	NativeOvitoObjectType(const QString& name, const char* pluginId, const NativeOvitoObjectType* superClass, const QMetaObject* qtClassInfo, bool isSerializable)
 		: OvitoObjectType(name, superClass, (qtClassInfo->constructorCount() == 0), isSerializable), _pluginId(pluginId), _qtClassInfo(qtClassInfo), _pureClassName(nullptr)
 	{
 		// Insert into linked list of all object types.
@@ -121,11 +121,11 @@ private:
 
 /// This macro must be included in the .cpp file for a OvitoObject-derived class.
 #define IMPLEMENT_OVITO_OBJECT(plugin, name, basename)							\
-	const Ovito::NativeOvitoObjectType name::OOType(#name, #plugin, &basename::OOType, &name::staticMetaObject, false);
+	const Ovito::NativeOvitoObjectType name::OOType(QStringLiteral(#name), #plugin, &basename::OOType, &name::staticMetaObject, false);
 
 /// This macro must be included in the .cpp file for a OvitoObject-derived class.
 #define IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(plugin, name, basename)				\
-	const Ovito::NativeOvitoObjectType name::OOType(#name, #plugin, &basename::OOType, &name::staticMetaObject, true);
+	const Ovito::NativeOvitoObjectType name::OOType(QStringLiteral(#name), #plugin, &basename::OOType, &name::staticMetaObject, true);
 
 };
 

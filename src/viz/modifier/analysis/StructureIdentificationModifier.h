@@ -145,13 +145,13 @@ protected:
 	/// Returns the header data under the given role for the given RefTarget.
 	virtual QVariant getHorizontalHeaderData(int index, int role) override {
 		if(index == 0)
-			return QVariant(tr("Color"));
+			return qVariantFromValue(tr("Color"));
 		else if(index == 1)
-			return QVariant(tr("Name"));
+			return qVariantFromValue(tr("Name"));
 		else if(index == 2)
-			return QVariant(tr("Count"));
+			return qVariantFromValue(tr("Count"));
 		else
-			return QVariant(tr("Fraction"));
+			return qVariantFromValue(tr("Fraction"));
 	}
 
 	/// Do not open sub-editor for selected atom type.

@@ -30,7 +30,6 @@
 namespace TachyonPlugin {
 
 IMPLEMENT_OVITO_OBJECT(Tachyon, TachyonRendererEditor, PropertiesEditor)
-SET_OVITO_OBJECT_EDITOR(TachyonRenderer, TachyonRendererEditor)
 
 /******************************************************************************
 * Creates the UI controls for the editor.

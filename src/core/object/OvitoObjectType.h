@@ -136,6 +136,7 @@ public:
 		EditorClassSetter(OvitoObjectType& type, const OvitoObjectType* editorClass) {
 			OVITO_ASSERT(editorClass != nullptr);
 			OVITO_ASSERT(type._editorClass == nullptr);
+			OVITO_ASSERT_MSG(type._superClass != nullptr, "SET_OVITO_OBJECT_EDITOR", "Cannot assign editor class to object class that has not been initialized yet. Always use the SET_OVITO_OBJECT_EDITOR macro in the .cpp file of the object class.");
 			type._editorClass = editorClass;
 		}
 	};
