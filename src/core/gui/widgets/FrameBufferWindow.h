@@ -44,11 +44,6 @@ public:
 	/// Sets the FrameBuffer that is currently shown in the widget.
 	void setFrameBuffer(const QSharedPointer<FrameBuffer>& frameBuffer) { _frameBufferWidget->setFrameBuffer(frameBuffer); }
 
-	/// Repaints the contents of the frame buffer.
-	void updateFrame() {
-		_frameBufferWidget->update();
-	}
-
 public Q_SLOTS:
 
 	/// This opens the file dialog and lets the user save the current contents of the frame buffer

@@ -52,6 +52,9 @@ private Q_SLOTS:
 	/// Is called when the user selects an output size preset from the drop-down list.
 	void onSizePresetActivated(int index);
 	
+	/// Lets the user choose a different plug-in rendering engine.
+	void onChangeRenderer();
+
 private:
 
 	QComboBox* sizePresetsBox;

@@ -114,8 +114,6 @@ class VideoEncoder;				// defined in VideoEncoder.h
 
 /// This action starts rendering of the current view.
 #define ACTION_RENDER_ACTIVE_VIEWPORT		"RenderActiveViewport"
-/// This action shows a dialog box that lets the user select the renderer plugin.
-#define ACTION_SELECT_RENDERER_DIALOG		"SelectRenderer"
 /// This action displays the frame buffer windows showing the last rendered image.
 #define ACTION_SHOW_FRAME_BUFFER			"ShowFrameBuffer"
 

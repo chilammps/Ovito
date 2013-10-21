@@ -156,36 +156,6 @@ const char* ViewportSceneRenderer::openglErrorString(GLenum errorCode)
 }
 
 /******************************************************************************
-* Renders a single node.
-******************************************************************************/
-void ViewportSceneRenderer::renderNode(SceneNode* node)
-{
-    OVITO_CHECK_OBJECT_POINTER(node);
-
-    // Setup transformation matrix.
-	TimeInterval interval;
-	const AffineTransformation& nodeTM = node->getWorldTransform(time(), interval);
-	setWorldTransform(nodeTM);
-
-	if(node->isObjectNode()) {
-		ObjectNode* objNode = static_object_cast<ObjectNode>(node);
-
-		// Do not render node if it is the view node of the viewport or
-		// if it is the target of the view node.
-		if(viewport() && viewport()->viewNode()) {
-			if(viewport()->viewNode() == objNode || viewport()->viewNode()->targetNode() == objNode)
-				return;
-		}
-
-		// Evaluate geometry pipeline of object node and render the results.
-		objNode->render(time(), this);
-	}
-
-	// Continue with rendering the child nodes.
-	SceneRenderer::renderNode(node);
-}
-
-/******************************************************************************
 * Renders the visual representation of the modifiers.
 ******************************************************************************/
 void ViewportSceneRenderer::renderModifiers(bool renderOverlay)

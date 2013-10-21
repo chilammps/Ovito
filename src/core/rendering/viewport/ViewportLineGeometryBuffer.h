@@ -45,7 +45,7 @@ public:
 	ViewportLineGeometryBuffer(ViewportSceneRenderer* renderer);
 
 	/// \brief Allocates a geometry buffer with the given number of vertices.
-	virtual void setSize(int particleCount) override;
+	virtual void setSize(int vertexCount) override;
 
 	/// \brief Returns the number of vertices stored in the buffer.
 	virtual int vertexCount() const override { return _vertexCount; }

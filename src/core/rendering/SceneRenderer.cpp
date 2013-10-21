@@ -79,6 +79,28 @@ void SceneRenderer::renderScene()
 ******************************************************************************/
 void SceneRenderer::renderNode(SceneNode* node)
 {
+    OVITO_CHECK_OBJECT_POINTER(node);
+
+    // Setup transformation matrix.
+	TimeInterval interval;
+	const AffineTransformation& nodeTM = node->getWorldTransform(time(), interval);
+	setWorldTransform(nodeTM);
+
+	if(node->isObjectNode()) {
+		ObjectNode* objNode = static_object_cast<ObjectNode>(node);
+
+		// Do not render node if it is the view node of the viewport or
+		// if it is the target of the view node.
+		if(viewport() && viewport()->viewNode()) {
+			if(viewport()->viewNode() == objNode || viewport()->viewNode()->targetNode() == objNode)
+				return;
+		}
+
+		// Evaluate geometry pipeline of object node and render the results.
+		objNode->render(time(), this);
+	}
+
+	// Render child nodes.
 	for(SceneNode* child : node->children())
 		renderNode(child);
 }

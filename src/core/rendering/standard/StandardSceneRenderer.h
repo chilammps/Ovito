@@ -89,6 +89,8 @@ private:
 	Q_OBJECT
 	OVITO_OBJECT
 
+	Q_CLASSINFO("DisplayName", "OpenGL renderer");
+
 	DECLARE_PROPERTY_FIELD(_antialiasingLevel);
 };
 

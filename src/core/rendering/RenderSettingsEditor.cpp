@@ -31,6 +31,8 @@
 #include <core/gui/actions/ActionManager.h>
 #include <core/rendering/RenderSettings.h>
 #include <core/rendering/RenderSettingsEditor.h>
+#include <core/rendering/SceneRenderer.h>
+#include <core/plugins/PluginManager.h>
 
 namespace Ovito {
 
@@ -164,12 +166,10 @@ void RenderSettingsEditor::createUI(const RolloutInsertionParameters& rolloutPar
 		BooleanParameterUI* generateAlphaUI = new BooleanParameterUI(this, PROPERTY_FIELD(RenderSettings::_generateAlphaChannel));
 		layout2->addWidget(generateAlphaUI->checkBox(), 3, 0, 1, 3);
 
-#if 0
 		// Create 'Change renderer' button.
 		QPushButton* changeRendererButton = new QPushButton(tr("Change renderer..."), groupBox);
-		connect(changeRendererButton, SIGNAL(clicked(bool)), ACTION_MANAGER.findActionProxy(ACTION_SELECT_RENDERER_DIALOG), SLOT(trigger()));
+		connect(changeRendererButton, SIGNAL(clicked(bool)), this, SLOT(onChangeRenderer()));
 		layout2->addWidget(changeRendererButton, 4, 0, 1, 3);
-#endif
 	}
 
 	// Render output
@@ -235,6 +235,35 @@ void RenderSettingsEditor::onSizePresetActivated(int index)
 		});
 	}
 	sizePresetsBox->setCurrentIndex(0);
+}
+
+/******************************************************************************
+* Lets the user choose a different plug-in rendering engine.
+******************************************************************************/
+void RenderSettingsEditor::onChangeRenderer()
+{
+	RenderSettings* settings = static_object_cast<RenderSettings>(editObject());
+	if(!settings) return;
+
+	QVector<OvitoObjectType*> rendererClasses = PluginManager::instance().listClasses(SceneRenderer::OOType);
+	QStringList itemList;
+	Q_FOREACH(OvitoObjectType* clazz, rendererClasses)
+		itemList << clazz->displayName();
+
+	int currentIndex = 0;
+	if(settings->rendererClass())
+		currentIndex = itemList.indexOf(settings->rendererClass()->displayName());
+
+	bool ok;
+	QString selectedClass = QInputDialog::getItem(NULL, tr("Choose renderer"), tr("Select the rendering engine:"), itemList, currentIndex, false, &ok);
+	if(!ok) return;
+
+	int newIndex = itemList.indexOf(selectedClass);
+	if(newIndex != currentIndex && newIndex >= 0) {
+		UndoableTransaction::handleExceptions(tr("Change renderer"), [settings, newIndex, &rendererClasses]() {
+			settings->setRendererClass(rendererClasses[newIndex]);
+		});
+	}
 }
 
 

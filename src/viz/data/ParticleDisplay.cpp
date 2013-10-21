@@ -289,7 +289,7 @@ void ParticleDisplay::render(TimePoint time, SceneObject* sceneObject, const Pip
 
 	// Re-create the geometry buffer if necessary.
 	if(recreateBuffer)
-		_particleBuffer = renderer->createParticleGeometryBuffer(shadingMode(), renderingQuality());
+		_particleBuffer = renderer->createParticleGeometryBuffer(shadingMode(), renderQuality);
 
 	// Re-size the geometry buffer if necessary.
 	if(resizeBuffer)
@@ -342,11 +342,12 @@ void ParticleDisplay::render(TimePoint time, SceneObject* sceneObject, const Pip
 		_particleBuffer->setParticleColors(colors.data());
 	}
 
-	// Support picking of particles.
+	// Handle picking of particles.
 	quint32 pickingBaseID = 0;
 	if(renderer->isPicking())
 		pickingBaseID = renderer->registerPickObject(contextNode, sceneObject, particleCount);
 
+	// Actually render the particles.
 	_particleBuffer->render(renderer, pickingBaseID);
 }
 

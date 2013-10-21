@@ -176,8 +176,11 @@ bool StandardSceneRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialo
 	QImage image = _framebufferObject->toImage().scaled(frameBuffer->image().width(), frameBuffer->image().height(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
 
 	// Copy OpenGL image to the output frame buffer.
-	QPainter painter(&frameBuffer->image());
-	painter.drawImage(0, 0, image);
+	{
+		QPainter painter(&frameBuffer->image());
+		painter.drawImage(0, 0, image);
+	}
+	frameBuffer->update();
 
 	OVITO_ASSERT(_offscreenContext.data() == QOpenGLContext::currentContext());
 	return true;

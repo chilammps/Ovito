@@ -131,6 +131,12 @@ SET(OVITO_CORE_SOURCE_FILES
 	rendering/viewport/ViewportArrowGeometryBuffer.cpp
 	rendering/standard/StandardSceneRenderer.cpp
 	rendering/standard/StandardSceneRendererEditor.cpp
+	rendering/noninteractive/NonInteractiveSceneRenderer.cpp
+	rendering/noninteractive/DefaultLineGeometryBuffer.cpp
+	rendering/noninteractive/DefaultParticleGeometryBuffer.cpp
+	rendering/noninteractive/DefaultTextGeometryBuffer.cpp
+	rendering/noninteractive/DefaultImageGeometryBuffer.cpp
+	rendering/noninteractive/DefaultArrowGeometryBuffer.cpp
 	rendering/RenderSettings.cpp
 	rendering/RenderSettingsEditor.cpp
 	rendering/FrameBuffer.cpp

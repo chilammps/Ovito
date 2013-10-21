@@ -160,9 +160,8 @@ void FrameBufferWindow::autoCrop()
 	if(r.width()*r.height() < cropRect.width()*cropRect.height()) cropRect = r;
 
 	if(cropRect != image.rect() && cropRect.width() > 0 && cropRect.height() > 0) {
-		QSharedPointer<FrameBuffer> newFrameBuffer(new FrameBuffer(cropRect.width(), cropRect.height()));
-		newFrameBuffer->image() = frameBuffer()->image().copy(cropRect);
-		setFrameBuffer(newFrameBuffer);
+		frameBuffer()->image() = frameBuffer()->image().copy(cropRect);
+		frameBuffer()->update();
 	}
 }
 

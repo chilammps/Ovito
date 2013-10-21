@@ -29,12 +29,22 @@ namespace Ovito {
 ******************************************************************************/
 void FrameBufferWidget::setFrameBuffer(const QSharedPointer<FrameBuffer>& newFrameBuffer)
 {
-	if(newFrameBuffer == frameBuffer()) return;	// Nothing has changed.
+	if(newFrameBuffer == frameBuffer()) {
+		onFrameBufferContentReset();
+		return;
+	}
+
+	if(frameBuffer()) {
+		disconnect(_frameBuffer.data(), SIGNAL(contentChanged(QRect)), this, SLOT(onFrameBufferContentChanged(QRect)));
+		disconnect(_frameBuffer.data(), SIGNAL(contentReset()), this, SLOT(update()));
+	}
 	
 	_frameBuffer = newFrameBuffer;
 
-	if(_frameBuffer)
-		resize(_frameBuffer->image().size());
+	onFrameBufferContentReset();
+
+	connect(_frameBuffer.data(), SIGNAL(contentChanged(QRect)), this, SLOT(onFrameBufferContentChanged(QRect)));
+	connect(_frameBuffer.data(), SIGNAL(contentReset()), this, SLOT(onFrameBufferContentReset()));
 }
 
 /******************************************************************************

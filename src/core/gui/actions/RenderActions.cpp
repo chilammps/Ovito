@@ -61,9 +61,7 @@ void ActionManager::on_RenderActiveViewport_triggered()
 		progressDialog.setAutoClose(false);
 		progressDialog.setAutoReset(false);
 		progressDialog.setMinimumDuration(0);
-
-		// Allocate the frame buffer.
-		QSharedPointer<FrameBuffer> frameBuffer(new FrameBuffer(settings->outputImageWidth(), settings->outputImageHeight()));
+		progressDialog.setValue(0);
 
 		try {
 
@@ -85,23 +83,38 @@ void ActionManager::on_RenderActiveViewport_triggered()
 				}
 #endif
 
+				// Create the frame buffer for the output image.
+				FrameBufferWindow* frameBufferWindow = nullptr;
+				QSharedPointer<FrameBuffer> frameBuffer;
+				if(Application::instance().guiMode()) {
+					frameBufferWindow = MainWindow::instance().frameBufferWindow();
+					frameBuffer = frameBufferWindow->frameBuffer();
+				}
+				if(!frameBuffer) {
+					frameBuffer.reset(new FrameBuffer(settings->outputImageWidth(), settings->outputImageHeight()));
+					if(frameBufferWindow) {
+						frameBufferWindow->setFrameBuffer(frameBuffer);
+						frameBufferWindow->resize(frameBufferWindow->sizeHint());
+					}
+				}
+				else if(frameBuffer->size() != QSize(settings->outputImageWidth(), settings->outputImageHeight())) {
+					frameBuffer->setSize(QSize(settings->outputImageWidth(), settings->outputImageHeight()));
+					frameBuffer->clear();
+					if(frameBufferWindow)
+						frameBufferWindow->resize(frameBufferWindow->sizeHint());
+				}
+				if(frameBufferWindow) {
+					frameBufferWindow->show();
+					frameBufferWindow->activateWindow();
+				}
+
 				if(settings->renderingRangeType() == RenderSettings::CURRENT_FRAME) {
 					// Render a single frame.
 					TimePoint renderTime = AnimManager::instance().time();
 					int frameNumber = AnimManager::instance().timeToFrame(renderTime);
-					if(renderFrame(renderTime, frameNumber, settings, renderer, viewport, frameBuffer.data(), videoEncoder, progressDialog)) {
-						// Open a display window for the rendered frame.
-						if(Application::instance().guiMode()) {
-							FrameBufferWindow* display = MainWindow::instance().frameBufferWindow();
-							display->setFrameBuffer(frameBuffer);
-							display->setWindowTitle(tr("Frame %1").arg(frameNumber));
-							if(!display->isVisible())
-								display->resize(display->sizeHint());
-							display->show();
-							display->activateWindow();
-							display->updateFrame();
-						}
-					}
+					if(frameBufferWindow)
+						frameBufferWindow->setWindowTitle(tr("Frame %1").arg(frameNumber));
+					renderFrame(renderTime, frameNumber, settings, renderer, viewport, frameBuffer.data(), videoEncoder, progressDialog);
 				}
 				else if(settings->renderingRangeType() == RenderSettings::ANIMATION_INTERVAL || settings->renderingRangeType() == RenderSettings::CUSTOM_INTERVAL) {
 					// Render an animation interval.
@@ -128,16 +141,8 @@ void ActionManager::on_RenderActiveViewport_triggered()
 
 						int frameNumber = firstFrameNumber + frameIndex * settings->everyNthFrame() + settings->fileNumberBase();
 						if(renderFrame(renderTime, frameNumber, settings, renderer, viewport, frameBuffer.data(), videoEncoder, progressDialog)) {
-							// Open a display window for the rendered frame.
-							if(Application::instance().guiMode()) {
-								FrameBufferWindow* display = MainWindow::instance().frameBufferWindow();
-								display->setWindowTitle(tr("Frame %1").arg(AnimManager::instance().timeToFrame(renderTime)));
-								if(frameIndex == 0) {
-									display->setFrameBuffer(frameBuffer);
-									display->show();
-								}
-								display->updateFrame();
-							}
+							if(frameBufferWindow)
+								frameBufferWindow->setWindowTitle(tr("Frame %1").arg(AnimManager::instance().timeToFrame(renderTime)));
 						}
 
 						if(progressDialog.wasCanceled())

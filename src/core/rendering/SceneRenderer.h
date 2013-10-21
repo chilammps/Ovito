@@ -64,7 +64,7 @@ public:
 		return true;
 	}
 
-	/// Is called after rendering has finished.
+	/// Is called after rendering is finished.
 	virtual void endRender() { _dataset = nullptr; _settings = nullptr; }
 
 	/// Returns the view projection parameters.
@@ -125,7 +125,8 @@ public:
 
 	/// Returns whether this renderer is rendering an interactive viewport.
 	/// \return true if rendering a real-time viewport; false if rendering an output image.
-	virtual bool isInteractive() const = 0;
+	/// The default implementation returns false.
+	virtual bool isInteractive() const { return false; }
 
 	/// When picking mode is active, this registers an object being rendered.
 	virtual quint32 registerPickObject(ObjectNode* objNode, SceneObject* sceneObj, quint32 subObjectCount = 1) { return 0; }

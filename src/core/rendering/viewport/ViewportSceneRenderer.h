@@ -142,9 +142,6 @@ public:
 
 protected:
 
-	/// \brief Renders a single node.
-	virtual void renderNode(SceneNode* node) override;
-
 	/// \brief Renders the visual representation of the modifiers.
 	void renderModifiers(bool renderOverlay);
 

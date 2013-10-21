@@ -51,6 +51,29 @@ protected:
 	/// This is called by the system to paint the viewport area.
 	virtual void paintEvent(QPaintEvent* event) override;
 	
+private Q_SLOTS:
+
+	/// This handles contentChanged() signals from the frame buffer.
+	void onFrameBufferContentChanged(QRect changedRegion) {
+		// Repaint only portion of the widget.
+		update(changedRegion);
+	}
+
+	/// This handles contentReset() signals from the frame buffer.
+	void onFrameBufferContentReset() {
+
+		// Resize widget.
+		if(_frameBuffer) {
+			resize(_frameBuffer->image().size());
+			// Size hint of scroll area has changed. Update its geometry.
+			if(parentWidget() && parentWidget()->parentWidget())
+				parentWidget()->parentWidget()->updateGeometry();
+		}
+
+		// Repaint the widget.
+		update();
+	}
+
 private:
 
 	/// The FrameBuffer that is shown in the widget. 

@@ -42,7 +42,7 @@ class OVITO_CORE_EXPORT LineGeometryBuffer : public OvitoObject
 public:
 
 	/// \brief Allocates a geometry buffer with the given number of vertices.
-	virtual void setSize(int particleCount) = 0;
+	virtual void setSize(int vertexCount) = 0;
 
 	/// \brief Returns the number of vertices stored in the buffer.
 	virtual int vertexCount() const = 0;

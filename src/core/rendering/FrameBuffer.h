@@ -109,6 +109,7 @@ public:
 	FrameBuffer(int width, int height, QObject* parent = nullptr) : QObject(parent), _image(width, height, QImage::Format_ARGB32) {
 		_info.setImageWidth(width);
 		_info.setImageHeight(height);
+		clear();
 	}
 
 	/// Returns the internal QImage that is used to store the pixel data.
@@ -118,16 +119,49 @@ public:
 	const QImage& image() const { return _image; }
 
 	/// Returns the width of the image.
-	int width() const { return info().imageWidth(); }
+	int width() const { return _image.width(); }
 
 	/// Returns the height of the image.
-	int height() const { return info().imageHeight(); }
+	int height() const { return _image.height(); }
 	
+	/// Returns the size of the image.
+	QSize size() const { return _image.size(); }
+
+	/// Sets the size of the frame buffer image.
+	void setSize(const QSize& newSize) {
+		if(newSize == size())
+			return;
+		_info.setImageWidth(newSize.width());
+		_info.setImageHeight(newSize.height());
+		_image = _image.copy(0, 0, newSize.width(), newSize.height());
+		update();
+	}
+
 	/// Returns the descriptor of the image.
 	const ImageInfo& info() const { return _info; }
 	
 	/// Clears the framebuffer.
 	void clear() { _image.fill(0); }
+
+	/// This method must be called each time the contents of the frame buffer have been modified.
+	/// Fires the contentReset() signal.
+	void update() {
+		contentReset();
+	}
+
+	/// This method must be called each time the contents of the frame buffer have been modified.
+	/// Fires the contentChanged() signal.
+	void update(const QRect& changedRegion) {
+		contentChanged(changedRegion);
+	}
+
+Q_SIGNALS:
+
+	/// This signal is emitted by the framebuffer when a part of its content has changed.
+	void contentChanged(QRect changedRegion);
+
+	/// This signal is emitted by the framebuffer when its content has been replaced.
+	void contentReset();
 
 private:
 
