@@ -60,6 +60,7 @@ IF(OVITO_MONOLITHIC_BUILD)
 	# happening we have to use the -whole-archive linker option. 
 	LINK_WHOLE_LIBRARY(${PROJECT_NAME} Core)
 	LINK_WHOLE_LIBRARY(${PROJECT_NAME} Viz)
+	LINK_WHOLE_LIBRARY(${PROJECT_NAME} Tachyon)
 
 	IF(UNIX AND NOT APPLE)
 		# The static Qt plugins must be linked into the executable.

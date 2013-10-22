@@ -5,6 +5,8 @@ Build static Qt libraries (version 5.1.1) on Ubuntu 10.04:
 Edit file qtbase/mkspecs/common/g++-base.conf and specify absolute
 paths to newest gcc and g++ compilers.
 
+sudo apt-get install libx11-xcb-dev libpcre3-dev libxi-dev
+
 ./configure \
 	-opensource \
 	-static \
@@ -30,9 +32,12 @@ cd ../../../../../..
 make install
 
 **************************************************************************
-Build static libav (release 0.8.8):
+Build static libav (release 0.8.8) on Ubuntu 10.04:
 
 sudo apt-get install yasm
+wget http://libav.org/releases/libav-0.8.8.tar.gz
+tar xzfv libav-0.8.8.tar.gz
+cd libav-0.8.8
 export CC=gcc-4.8
 export CXX=g++-4.8
 ./configure \
@@ -42,6 +47,8 @@ export CXX=g++-4.8
 	--disable-avserver \
 	--disable-debug \
 	--prefix=$HOME/progs/libavstatic
+
+make install
 
 export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$HOME/progs/libavstatic/lib/pkgconfig
 
