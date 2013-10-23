@@ -21,7 +21,7 @@
 
 /**
  * \file BondsObject.h
- * \brief Contains the definition of the Ovito::BondsObject class.
+ * \brief Contains the definition of the Viz::BondsObject class.
  */
 
 #ifndef __OVITO_BONDS_OBJECT_H

@@ -107,6 +107,10 @@
 	<file>glsl/arrows/shaded.vs</file>
 	<file>glsl/cylinder/cylinder_raytraced.vs</file>
 	<file>glsl/cylinder/cylinder_raytraced.fs</file>
+	<file>glsl/mesh/mesh.fs</file>
+	<file>glsl/mesh/mesh.vs</file>
+	<file>glsl/mesh/picking/mesh.fs</file>
+	<file>glsl/mesh/picking/mesh.vs</file>
 
 	<file>glsl/line.vertex.glsl</file>
 	<file>glsl/line.fragment.glsl</file>

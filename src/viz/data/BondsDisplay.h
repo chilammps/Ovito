@@ -21,7 +21,7 @@
 
 /**
  * \file BondsDisplay.h
- * \brief Contains the definition of the Ovito::BondsDisplay class.
+ * \brief Contains the definition of the Viz::BondsDisplay class.
  */
 
 #ifndef __OVITO_BONDS_DISPLAY_H

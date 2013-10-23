@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2008) Alexander Stukowski
+//  Copyright (2013) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -21,48 +21,31 @@
 
 /**
  * \file TriMeshFace.h
- * \brief Contains definition of Mesh::TriMeshFace class.
+ * \brief Contains definition of Ovito::TriMeshFace class.
  */
 
 #ifndef __OVITO_TRI_MESH_FACE_H
 #define __OVITO_TRI_MESH_FACE_H
 
-#include <mesh/Mesh.h>
+#include <core/Core.h>
 
-namespace Mesh {
+namespace Ovito {
 
 /// \brief The maximum number of smoothing groups in a mesh.
 ///
-/// Each face in a TriMesh can be a member of one of the 32 smoothing groups.
+/// Each face in a TriMesh can be a member of one of the 32 possible smoothing groups.
 /// Adjacent faces that belong to the same smoothing group are rendered with
-/// an interpolated normal vector.
-///
-/// \sa TriMeshFace::setSmootingGroup()
-#define MAX_NUM_SMOOTHING_GROUPS 32
+/// interpolated normal vectors.
+#define OVITO_MAX_NUM_SMOOTHING_GROUPS 		32
 
-/******************************************************************************
-*
-******************************************************************************/
 /**
  * \brief Represents a triangle in a TriMesh structure.
- *
- * \author Alexander Stukowski
- * \sa TriMesh
  */
-struct TriMeshFace
+class TriMeshFace
 {
-	/************************************ Fields *********************************/
+public:
 
-	/// \brief Indices of the three triangle vertices.
-	///
-	/// These values are indices into the vertex array of the mesh, starting at 0.
-	/// \sa TriMesh::vertexPositions()
-	int v[3];
-
-	/// \brief The face normal vector.
-	Vector3 normal;
-
-	/// Flags that can be assigned to a mesh face.
+	/// Bit-flags that can be assigned to a mesh face.
 	enum MeshFaceFlag {
 		NONE = 0,		//< No flags
 		EDGE1 = (1<<0),	//< First edge visible
@@ -75,80 +58,92 @@ struct TriMeshFace
 	};
 	Q_DECLARE_FLAGS(MeshFaceFlags, MeshFaceFlag)
 
-	/// Smoothing group bits for the face.
-	quint32 smGroup;
+public:
 
-	/// The material index assigned to the face.
-	int matIndex;
-
-	/// The bit flags.
-	MeshFaceFlags flags;
-
-	/// Default constructor that sets all flags and the smoothing group to zero.
-	TriMeshFace() : smGroup(0), matIndex(0), flags(EDGES123) {}
+	/// Default constructor, which sets all flags and the smoothing group to zero.
+	TriMeshFace() : _smoothingGroups(0), _materialIndex(0), _flags(EDGES123) {}
 
 	/************************************ Vertices *******************************/
 
 	/// Sets the vertex indices of this face to new values.
 	void setVertices(int a, int b, int c) {
-		v[0] = a; v[1] = b; v[2] = c;
+		_vertices[0] = a; _vertices[1] = b; _vertices[2] = c;
 	}
 
 	/// Sets the vertex index of one vertex to a new value.
 	///    which - 0, 1 or 2
 	///    newIndex - The new index for the vertex.
-	void setVertex(int which, int newIndex) {
-		OVITO_ASSERT(which >= 0 && which < 3);
-		v[which] = newIndex;
+	void setVertex(std::size_t which, int newIndex) {
+		OVITO_ASSERT(which < 3);
+		_vertices[which] = newIndex;
 	}
 
 	/// Returns the index into the Mesh vertices array of a face vertex.
 	///    which - 0, 1 or 2
 	/// Returns the index of the requested vertex.
-	int vertex(int which) const {
-		OVITO_ASSERT(which >= 0 && which < 3);
-		return v[which];
+	int vertex(std::size_t which) const {
+		OVITO_ASSERT(which < 3);
+		return _vertices[which];
 	}
 
 	/************************************ Edges *******************************/
 
 	/// Sets the visibility of the three face edges.
 	void setEdgeVisibility(bool e1, bool e2, bool e3) {
-		if(e1) flags |= EDGE1; else flags &= ~EDGE1;
-		if(e2) flags |= EDGE2; else flags &= ~EDGE2;
-		if(e3) flags |= EDGE3; else flags &= ~EDGE3;
+		if(e1) _flags |= EDGE1; else _flags &= ~EDGE1;
+		if(e2) _flags |= EDGE2; else _flags &= ~EDGE2;
+		if(e3) _flags |= EDGE3; else _flags &= ~EDGE3;
 	}
 
 	/// Sets the visibility of the three face edges all at once.
 	void setEdgeVisibility(MeshFaceFlags edgeVisibility) {
-		flags = edgeVisibility | (flags & ~EDGES123);
+		_flags = edgeVisibility | (_flags & ~EDGES123);
 	}
 
 	/// Returns true if the edge is visible.
 	///    which - The index of the edge (0, 1 or 2)
-	bool edgeVisibility(int which) const {
-		OVITO_ASSERT(which >= 0 && which < 3);
-		return (flags & (1<<which)) != 0;
+	bool edgeVisible(std::size_t which) const {
+		OVITO_ASSERT(which < 3);
+		return (_flags & (1<<which));
 	}
 
 	/************************************ Material *******************************/
 
 	/// Returns the material index assigned to this face.
-	int materialIndex() const { return matIndex; }
+	int materialIndex() const { return _materialIndex; }
 
 	/// Sets the material index of this face.
-	void setMaterialIndex(int index) { this->matIndex = index; }
+	void setMaterialIndex(int index) { _materialIndex = index; }
 
-	/// Sets the smooting group of this face.
-	void setSmoothingGroup(quint32 smGroup) { this->smGroup = smGroup; }
+	/// Sets the smoothing groups of this face.
+	void setSmoothingGroups(quint32 smGroups) { _smoothingGroups = smGroups; }
 
-	/// Returns the smooting group of this face.
-	quint32 smoothingGroup() const { return smGroup; }
+	/// Returns the smoothing groups this face belongs to as a bit array.
+	quint32 smoothingGroups() const { return _smoothingGroups; }
+
+private:
+
+	/// \brief The three vertices of the triangle face.
+	///
+	/// These values are indices into the vertex array of the mesh, starting at 0.
+	std::array<int,3> _vertices;
+
+	/// The bit flags.
+	MeshFaceFlags _flags;
+
+	/// Smoothing group bits. Specifies the smoothing groups this face belongs to.
+	quint32 _smoothingGroups;
+
+	/// The material index assigned to the face.
+	int _materialIndex;
+
+	friend class TriMesh;
 };
-Q_DECLARE_OPERATORS_FOR_FLAGS(TriMeshFace::MeshFaceFlags)
 
-};	// End of namespace Mesh
+Q_DECLARE_OPERATORS_FOR_FLAGS(TriMeshFace::MeshFaceFlags);
 
-Q_DECLARE_TYPEINFO(Mesh::TriMeshFace, Q_MOVABLE_TYPE);
+};	// End of namespace
+
+Q_DECLARE_TYPEINFO(Ovito::TriMeshFace, Q_MOVABLE_TYPE);
 
 #endif // __OVITO_TRI_MESH_FACE_H

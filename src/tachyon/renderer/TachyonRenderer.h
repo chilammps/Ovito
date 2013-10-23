@@ -68,6 +68,9 @@ public:
 	/// Renders the image stored in the given buffer.
 	virtual void renderImage(const DefaultImageGeometryBuffer& imageBuffer) override;
 
+	/// Renders the triangle mesh stored in the given buffer.
+	virtual void renderMesh(const DefaultTriMeshGeometryBuffer& meshBuffer) override;
+
 private:
 
 	/// Creates a texture with the given color.

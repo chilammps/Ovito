@@ -356,7 +356,7 @@ void ViewportParticleGeometryBuffer::renderPointSprites(ViewportSceneRenderer* r
 		_glColorsBuffer.release();
 	}
 	else {
-		if(renderer->glformat().majorVersion() >= 3) {
+		if(renderer->glformat().majorVersion() < 3) {
 			// Create and fill vertex index buffer.
 			if(!_glIndexBuffer.isCreated()) {
 				if(!_glIndexBuffer.create())
@@ -395,6 +395,8 @@ void ViewportParticleGeometryBuffer::renderPointSprites(ViewportSceneRenderer* r
 	if(renderer->glformat().majorVersion() < 3) {
 		OVITO_CHECK_OPENGL(glDisableClientState(GL_VERTEX_ARRAY));
 		OVITO_CHECK_OPENGL(glDisableClientState(GL_COLOR_ARRAY));
+		if(renderer->isPicking())
+			shader->disableAttributeArray("vertexID");
 	}
 	else {
 		shader->disableAttributeArray("particle_pos");
@@ -531,7 +533,6 @@ void ViewportParticleGeometryBuffer::initializeBillboardTexture(ViewportSceneRen
 	glGenTextures(1, &_billboardTexture);
 
 	// Make sure texture gets deleted again when this object is destroyed.
-	qDebug() << "Attaching texture resource";
 	attachOpenGLResources();
 
 	renderer->glfuncs()->glActiveTexture(GL_TEXTURE0);

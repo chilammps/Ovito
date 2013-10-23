@@ -34,6 +34,7 @@
 #include "ViewportTextGeometryBuffer.h"
 #include "ViewportImageGeometryBuffer.h"
 #include "ViewportArrowGeometryBuffer.h"
+#include "ViewportTriMeshGeometryBuffer.h"
 
 #include <QOpenGLFunctions_2_0>
 #include <QOpenGLFunctions_3_0>
@@ -107,6 +108,11 @@ public:
 	/// Requests a new arrow geometry buffer from the renderer.
 	virtual OORef<ArrowGeometryBuffer> createArrowGeometryBuffer(ArrowGeometryBuffer::Shape shape, ArrowGeometryBuffer::ShadingMode shadingMode = ArrowGeometryBuffer::NormalShading, ArrowGeometryBuffer::RenderingQuality renderingQuality = ArrowGeometryBuffer::MediumQuality) override {
 		return new ViewportArrowGeometryBuffer(this, shape, shadingMode, renderingQuality);
+	}
+
+	/// Requests a new triangle mesh buffer from the renderer.
+	virtual OORef<TriMeshGeometryBuffer> createTriMeshGeometryBuffer() override {
+		return new ViewportTriMeshGeometryBuffer(this);
 	}
 
 	/// Returns whether this renderer is rendering an interactive viewport.

@@ -29,6 +29,9 @@
 #include "moc_TextGeometryBuffer.cpp"
 #include "moc_ImageGeometryBuffer.cpp"
 #include "moc_ArrowGeometryBuffer.cpp"
+#include "moc_TriMeshGeometryBuffer.cpp"
+
+#include <core/scene/objects/geometry/TriMesh.h>
 
 namespace Ovito {
 
@@ -38,6 +41,7 @@ IMPLEMENT_OVITO_OBJECT(Core, ParticleGeometryBuffer, OvitoObject);
 IMPLEMENT_OVITO_OBJECT(Core, TextGeometryBuffer, OvitoObject);
 IMPLEMENT_OVITO_OBJECT(Core, ImageGeometryBuffer, OvitoObject);
 IMPLEMENT_OVITO_OBJECT(Core, ArrowGeometryBuffer, OvitoObject);
+IMPLEMENT_OVITO_OBJECT(Core, TriMeshGeometryBuffer, OvitoObject);
 
 /******************************************************************************
 * Constructor.

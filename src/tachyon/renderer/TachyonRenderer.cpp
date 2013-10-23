@@ -368,11 +368,18 @@ void TachyonRenderer::renderText(const DefaultTextGeometryBuffer& textBuffer)
 	// Not supported by this renderer.
 }
 
-/// Renders the image stored in the given buffer.
 /******************************************************************************
-* Creates a texture with the given color.
+* Renders the image stored in the given buffer.
 ******************************************************************************/
 void TachyonRenderer::renderImage(const DefaultImageGeometryBuffer& imageBuffer)
+{
+	// Not supported by this renderer.
+}
+
+/******************************************************************************
+* Renders the triangle mesh stored in the given buffer.
+******************************************************************************/
+void TachyonRenderer::renderMesh(const DefaultTriMeshGeometryBuffer& meshBuffer)
 {
 	// Not supported by this renderer.
 }

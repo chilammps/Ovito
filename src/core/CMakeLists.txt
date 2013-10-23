@@ -52,11 +52,14 @@ SET(OVITO_CORE_SOURCE_FILES
 	scene/SceneRoot.cpp
 	scene/SelectionSet.cpp
 	scene/objects/SceneObject.cpp
+	scene/objects/geometry/TriMesh.cpp
+	scene/objects/geometry/TriMeshObject.cpp
 	scene/pipeline/PipelineFlowState.cpp
 	scene/pipeline/PipelineObject.cpp
 	scene/pipeline/Modifier.cpp
 	scene/pipeline/ModifierApplication.cpp
 	scene/display/DisplayObject.cpp
+	scene/display/geometry/TriMeshDisplay.cpp
 	gui/app/Application.cpp
 	gui/mainwin/MainWindow.cpp
 	gui/mainwin/AnimationTimeSlider.cpp
@@ -129,6 +132,7 @@ SET(OVITO_CORE_SOURCE_FILES
 	rendering/viewport/ViewportTextGeometryBuffer.cpp
 	rendering/viewport/ViewportImageGeometryBuffer.cpp
 	rendering/viewport/ViewportArrowGeometryBuffer.cpp
+	rendering/viewport/ViewportTriMeshGeometryBuffer.cpp
 	rendering/standard/StandardSceneRenderer.cpp
 	rendering/standard/StandardSceneRendererEditor.cpp
 	rendering/noninteractive/NonInteractiveSceneRenderer.cpp
@@ -137,6 +141,7 @@ SET(OVITO_CORE_SOURCE_FILES
 	rendering/noninteractive/DefaultTextGeometryBuffer.cpp
 	rendering/noninteractive/DefaultImageGeometryBuffer.cpp
 	rendering/noninteractive/DefaultArrowGeometryBuffer.cpp
+	rendering/noninteractive/DefaultTriMeshGeometryBuffer.cpp
 	rendering/RenderSettings.cpp
 	rendering/RenderSettingsEditor.cpp
 	rendering/FrameBuffer.cpp

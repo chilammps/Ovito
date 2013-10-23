@@ -33,6 +33,7 @@
 #include "DefaultLineGeometryBuffer.h"
 #include "DefaultParticleGeometryBuffer.h"
 #include "DefaultTextGeometryBuffer.h"
+#include "DefaultTriMeshGeometryBuffer.h"
 
 namespace Ovito {
 
@@ -80,6 +81,11 @@ public:
 		return new DefaultArrowGeometryBuffer(shape, shadingMode, renderingQuality);
 	}
 
+	/// Requests a new triangle mesh buffer from the renderer.
+	virtual OORef<TriMeshGeometryBuffer> createTriMeshGeometryBuffer() override {
+		return new DefaultTriMeshGeometryBuffer();
+	}
+
 	/// Renders the line geometry stored in the given buffer.
 	virtual void renderLines(const DefaultLineGeometryBuffer& lineBuffer) = 0;
 
@@ -94,6 +100,9 @@ public:
 
 	/// Renders the image stored in the given buffer.
 	virtual void renderImage(const DefaultImageGeometryBuffer& imageBuffer) = 0;
+
+	/// Renders the triangle mesh stored in the given buffer.
+	virtual void renderMesh(const DefaultTriMeshGeometryBuffer& meshBuffer) = 0;
 
 private:
 

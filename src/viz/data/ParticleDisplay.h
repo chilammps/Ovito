@@ -21,7 +21,7 @@
 
 /**
  * \file ParticleDisplay.h
- * \brief Contains the definition of the Ovito::ParticleDisplay class.
+ * \brief Contains the definition of the Viz::ParticleDisplay class.
  */
 
 #ifndef __OVITO_PARTICLE_DISPLAY_H

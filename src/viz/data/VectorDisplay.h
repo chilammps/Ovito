@@ -21,7 +21,7 @@
 
 /**
  * \file VectorDisplay.h
- * \brief Contains the definition of the Ovito::VectorDisplay class.
+ * \brief Contains the definition of the Viz::VectorDisplay class.
  */
 
 #ifndef __OVITO_VECTOR_DISPLAY_H

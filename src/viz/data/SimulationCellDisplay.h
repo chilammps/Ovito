@@ -21,7 +21,7 @@
 
 /**
  * \file SimulationCellDisplay.h
- * \brief Contains the definition of the Ovito::SimulationCellDisplay class.
+ * \brief Contains the definition of the Viz::SimulationCellDisplay class.
  */
 
 #ifndef __OVITO_SIMULATION_CELL_DISPLAY_H

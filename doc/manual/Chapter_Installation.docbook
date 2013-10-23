@@ -17,7 +17,7 @@
 
     <sect3 xml:id="installation.runovito.linux">
       <title>Linux</title>
-      <para>Extract the downloaded <filename>.tar.gz</filename> archive using the command: <command>tar xzf ovito-2.0.0-i386.tar.gz</command>. Replace
+      <para>Extract the downloaded <filename>.tar.gz</filename> archive using the command: <command>tar xzf ovito-2.0.0-i686.tar.gz</command>. Replace
       the filename with the one that you actually downloaded from the
       website. This will create a new subdirectory that contains the extracted
       program package. Change into that subdirectory and run OVITO by invoking

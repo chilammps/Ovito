@@ -36,6 +36,7 @@
 #include "TextGeometryBuffer.h"
 #include "ImageGeometryBuffer.h"
 #include "ArrowGeometryBuffer.h"
+#include "TriMeshGeometryBuffer.h"
 
 namespace Ovito {
 
@@ -119,6 +120,9 @@ public:
 
 	/// Requests a new arrow geometry buffer from the renderer.
 	virtual OORef<ArrowGeometryBuffer> createArrowGeometryBuffer(ArrowGeometryBuffer::Shape shape, ArrowGeometryBuffer::ShadingMode shadingMode = ArrowGeometryBuffer::NormalShading, ArrowGeometryBuffer::RenderingQuality renderingQuality = ArrowGeometryBuffer::MediumQuality) = 0;
+
+	/// Requests a new triangle mesh geometry buffer from the renderer.
+	virtual OORef<TriMeshGeometryBuffer> createTriMeshGeometryBuffer() = 0;
 
 	/// Returns whether object picking mode is active.
 	bool isPicking() const { return _isPicking; }

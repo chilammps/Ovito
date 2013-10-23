@@ -21,7 +21,7 @@
 
 /**
  * \file SimulationCell.h
- * \brief Contains the definition of the Ovito::SimulationCell class.
+ * \brief Contains the definition of the Viz::SimulationCell class.
  */
 
 #ifndef __OVITO_SIMULATION_CELL_H
