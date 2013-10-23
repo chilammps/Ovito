@@ -259,7 +259,7 @@ void ViewportParticleGeometryBuffer::renderPointSprites(ViewportSceneRenderer* r
 	OVITO_CHECK_OPENGL(glEnable(GL_VERTEX_PROGRAM_POINT_SIZE));
 
 	// Enable point sprites when using compatibility OpenGL. In the core profile, they are already enabled by default.
-	if(renderer->glformat().profile() != QSurfaceFormat::CoreProfile) {
+	if(renderer->isCoreProfile() == false) {
 		OVITO_CHECK_OPENGL(glEnable(GL_TEXTURE_2D));
 		OVITO_CHECK_OPENGL(glEnable(GL_POINT_SPRITE));
 
@@ -333,8 +333,8 @@ void ViewportParticleGeometryBuffer::renderPointSprites(ViewportSceneRenderer* r
 	if(!_glPositionsBuffer.bind())
 		throw Exception(tr("Failed to bind OpenGL vertex buffer."));
 	if(renderer->glformat().majorVersion() >= 3) {
-		shader->setAttributeBuffer("particle_pos", GL_FLOAT, 0, 3);
 		shader->enableAttributeArray("particle_pos");
+		shader->setAttributeBuffer("particle_pos", GL_FLOAT, 0, 3);
 	}
 	else {
 		OVITO_CHECK_OPENGL(glEnableClientState(GL_VERTEX_ARRAY));
@@ -346,8 +346,8 @@ void ViewportParticleGeometryBuffer::renderPointSprites(ViewportSceneRenderer* r
 		if(!_glColorsBuffer.bind())
 			throw Exception(tr("Failed to bind OpenGL vertex buffer."));
 		if(renderer->glformat().majorVersion() >= 3) {
-			shader->setAttributeBuffer("particle_color", GL_FLOAT, 0, 3);
 			shader->enableAttributeArray("particle_color");
+			shader->setAttributeBuffer("particle_color", GL_FLOAT, 0, 3);
 		}
 		else {
 			OVITO_CHECK_OPENGL(glEnableClientState(GL_COLOR_ARRAY));
@@ -377,16 +377,16 @@ void ViewportParticleGeometryBuffer::renderPointSprites(ViewportSceneRenderer* r
 				if(!_glIndexBuffer.bind())
 					throw Exception(tr("Failed to bind OpenGL vertex buffer."));
 			}
-			shader->setAttributeBuffer("vertexID", GL_INT, 0, 1);
 			shader->enableAttributeArray("vertexID");
+			shader->setAttributeBuffer("vertexID", GL_INT, 0, 1);
 			_glIndexBuffer.release();
 		}
 	}
 
 	if(!_glRadiiBuffer.bind())
 		throw Exception(tr("Failed to bind OpenGL vertex buffer."));
-	shader->setAttributeBuffer("particle_radius", GL_FLOAT, 0, 1);
 	shader->enableAttributeArray("particle_radius");
+	shader->setAttributeBuffer("particle_radius", GL_FLOAT, 0, 1);
 	_glRadiiBuffer.release();
 
 	OVITO_CHECK_OPENGL(glDrawArrays(GL_POINTS, 0, _particleCount));
@@ -405,7 +405,7 @@ void ViewportParticleGeometryBuffer::renderPointSprites(ViewportSceneRenderer* r
 	shader->release();
 
 	// Disable point sprites.
-	if(renderer->glformat().profile() != QSurfaceFormat::CoreProfile) {
+	if(renderer->isCoreProfile() == false) {
 		OVITO_CHECK_OPENGL(glDisable(GL_POINT_SPRITE));
 		OVITO_CHECK_OPENGL(glDisable(GL_TEXTURE_2D));
 	}
@@ -455,22 +455,22 @@ void ViewportParticleGeometryBuffer::renderRaytracedSpheres(ViewportSceneRendere
 
 	if(!_glPositionsBuffer.bind())
 		throw Exception(tr("Failed to bind OpenGL vertex buffer."));
-	shader->setAttributeBuffer("particle_pos", GL_FLOAT, 0, 3);
 	shader->enableAttributeArray("particle_pos");
+	shader->setAttributeBuffer("particle_pos", GL_FLOAT, 0, 3);
 	_glPositionsBuffer.release();
 
 	if(!renderer->isPicking()) {
 		if(!_glColorsBuffer.bind())
 			throw Exception(tr("Failed to bind OpenGL vertex buffer."));
-		shader->setAttributeBuffer("particle_color", GL_FLOAT, 0, 3);
 		shader->enableAttributeArray("particle_color");
+		shader->setAttributeBuffer("particle_color", GL_FLOAT, 0, 3);
 		_glColorsBuffer.release();
 	}
 
 	if(!_glRadiiBuffer.bind())
 		throw Exception(tr("Failed to bind OpenGL vertex buffer."));
-	shader->setAttributeBuffer("particle_radius", GL_FLOAT, 0, 1);
 	shader->enableAttributeArray("particle_radius");
+	shader->setAttributeBuffer("particle_radius", GL_FLOAT, 0, 1);
 	_glRadiiBuffer.release();
 
 	OVITO_CHECK_OPENGL(glDrawArrays(GL_POINTS, 0, _particleCount));

@@ -117,7 +117,7 @@ void ViewportImageGeometryBuffer::renderWindow(SceneRenderer* renderer, const Po
 	vpRenderer->glfuncs()->glActiveTexture(GL_TEXTURE0);
 
 	// Enable texturing when using compatibility OpenGL. In the core profile, this is enabled by default.
-	if(vpRenderer->glformat().profile() != QSurfaceFormat::CoreProfile)
+	if(vpRenderer->isCoreProfile() == false)
 		glEnable(GL_TEXTURE_2D);
 
 	if(_needTextureUpdate) {
@@ -172,8 +172,8 @@ void ViewportImageGeometryBuffer::renderWindow(SceneRenderer* renderer, const Po
 		_shader->setUniformValueArray("uvcoords", uvcoords, 4, 2);
 
 		_vertexBuffer.write(0, corners, 4 * sizeof(Point2));
-		_shader->setAttributeBuffer("vertex_pos", GL_FLOAT, 0, 2);
 		_shader->enableAttributeArray("vertex_pos");
+		_shader->setAttributeBuffer("vertex_pos", GL_FLOAT, 0, 2);
 		_vertexBuffer.release();
 
 		OVITO_CHECK_OPENGL(glDrawArrays(GL_TRIANGLE_STRIP, 0, 4));
@@ -200,7 +200,7 @@ void ViewportImageGeometryBuffer::renderWindow(SceneRenderer* renderer, const Po
 	if(!wasBlendEnabled) glDisable(GL_BLEND);
 
 	// Turn off texturing.
-	if(vpRenderer->glformat().profile() != QSurfaceFormat::CoreProfile)
+	if(vpRenderer->isCoreProfile() == false)
 		glDisable(GL_TEXTURE_2D);
 }
 

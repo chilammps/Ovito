@@ -147,10 +147,12 @@ void ViewportLineGeometryBuffer::render(SceneRenderer* renderer)
 	OVITO_CHECK_OPENGL(_shader->setUniformValue("modelview_projection_matrix",
 			(QMatrix4x4)(vpRenderer->projParams().projectionMatrix * vpRenderer->modelViewTM())));
 
+	qDebug() << "Binding positions buffer";
 	OVITO_CHECK_OPENGL(_glPositionsBuffer.bind());
 	if(vpRenderer->glformat().majorVersion() >= 3) {
-		OVITO_CHECK_OPENGL(_shader->setAttributeBuffer("vertex_pos", GL_FLOAT, 0, 3));
+		qDebug() << "Setting positions attribute array";
 		OVITO_CHECK_OPENGL(_shader->enableAttributeArray("vertex_pos"));
+		OVITO_CHECK_OPENGL(_shader->setAttributeBuffer("vertex_pos", GL_FLOAT, 0, 3));
 	}
 	else {
 		OVITO_CHECK_OPENGL(glEnableClientState(GL_VERTEX_ARRAY));
@@ -158,10 +160,12 @@ void ViewportLineGeometryBuffer::render(SceneRenderer* renderer)
 	}
 	_glPositionsBuffer.release();
 
+	qDebug() << "Binding colors buffer";
 	OVITO_CHECK_OPENGL(_glColorsBuffer.bind());
 	if(vpRenderer->glformat().majorVersion() >= 3) {
-		OVITO_CHECK_OPENGL(_shader->setAttributeBuffer("vertex_color", GL_FLOAT, 0, 4));
+		qDebug() << "Setting clor attribute array";
 		OVITO_CHECK_OPENGL(_shader->enableAttributeArray("vertex_color"));
+		OVITO_CHECK_OPENGL(_shader->setAttributeBuffer("vertex_color", GL_FLOAT, 0, 4));
 	}
 	else {
 		OVITO_CHECK_OPENGL(glEnableClientState(GL_COLOR_ARRAY));
@@ -169,9 +173,11 @@ void ViewportLineGeometryBuffer::render(SceneRenderer* renderer)
 	}
 	_glColorsBuffer.release();
 
+	qDebug() << "glDrawArrays";
 	OVITO_CHECK_OPENGL(glDrawArrays(GL_LINES, 0, _vertexCount));
 
 	if(vpRenderer->glformat().majorVersion() >= 3) {
+		qDebug() << "Disabling attribute arrays";
 		_shader->disableAttributeArray("vertex_pos");
 		_shader->disableAttributeArray("vertex_color");
 	}
@@ -179,6 +185,7 @@ void ViewportLineGeometryBuffer::render(SceneRenderer* renderer)
 		OVITO_CHECK_OPENGL(glDisableClientState(GL_VERTEX_ARRAY));
 		OVITO_CHECK_OPENGL(glDisableClientState(GL_COLOR_ARRAY));
 	}
+	qDebug() << "Releasing shader";
 	_shader->release();
 
 	OVITO_CHECK_OPENGL();

@@ -72,8 +72,20 @@ void ViewportSceneRenderer::beginFrame(TimePoint time, const ViewProjectionParam
 	// Obtain surface format.
 	_glformat = _glcontext->format();
 
-	// Set up a vertex array object. This is only required when using OpenGL 3.2 Core Profile.
-	if(glformat().profile() == QSurfaceFormat::CoreProfile) {
+	// Check if this context implements the core profile.
+	_isCoreProfile = (_glformat.profile() == QSurfaceFormat::CoreProfile);
+	// Qt reports the core profile only for OpenGL >= 3.2. Some implementations of OpenGL 3.1
+	// may also follow the core profile. The only way to detect this seems to be inspecting the 
+	// version string.
+	if(glformat().majorVersion() == 3 && glformat().minorVersion() == 1) {
+		const char* versionString = (const char*)glGetString(GL_VERSION);
+		if(QByteArray::fromRawData(versionString, qstrlen(versionString)).indexOf("Core Profile") >= 0)
+			_isCoreProfile = true;
+	}
+	qDebug() << "OpenGL is core profile:" << _isCoreProfile;
+
+	// Set up a vertex array object. This is only required when using OpenGL Core Profile.
+	if(isCoreProfile()) {
 		_vertexArrayObject.reset(new QOpenGLVertexArrayObject());
 		OVITO_CHECK_OPENGL(_vertexArrayObject->create());
 		OVITO_CHECK_OPENGL(_vertexArrayObject->bind());
@@ -301,9 +313,9 @@ void ViewportSceneRenderer::loadShader(QOpenGLShaderProgram* program, QOpenGLSha
 	QFile shaderSourceFile(filename);
 	if(!shaderSourceFile.open(QFile::ReadOnly))
 		throw Exception(QString("Unable to open shader source file %1.").arg(filename));
-    QByteArray shaderSource = shaderSourceFile.readAll();
+	QByteArray shaderSource = shaderSourceFile.readAll();
 
-    // Insert GLSL version string at the top.
+	// Insert GLSL version string at the top.
 	// Pick GLSL language version based on current OpenGL version.
 	if(glformat().majorVersion() >= 3 && glformat().minorVersion() >= 2)
 		shaderSource.prepend("#version 150\n");
@@ -313,7 +325,7 @@ void ViewportSceneRenderer::loadShader(QOpenGLShaderProgram* program, QOpenGLSha
 		shaderSource.prepend("#version 120\n");
 
 	// Load and compile vertex shader source.
-    if(!program->addShaderFromSourceCode(shaderType, shaderSource)) {
+	if(!program->addShaderFromSourceCode(shaderType, shaderSource)) {
 		qDebug() << "OpenGL shader log:";
 		qDebug() << program->log();
 		throw Exception(QString("The shader source file %1 failed to compile. See log for details.").arg(filename));

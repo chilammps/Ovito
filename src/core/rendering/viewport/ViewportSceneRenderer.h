@@ -134,6 +134,9 @@ public:
 	/// Returns the surface format of the current OpenGL context.
 	const QSurfaceFormat& glformat() const { return _glformat; }
 
+	/// Indicates whether the current OpenGL implementation is according to the core profile.
+	bool isCoreProfile() const { return _isCoreProfile; }
+
 	/// Translates an OpenGL error code to a human-readable message string.
 	static const char* openglErrorString(GLenum errorCode);
 
@@ -176,6 +179,9 @@ private:
 
 	/// The OpenGL surface format.
 	QSurfaceFormat _glformat;
+
+	/// Indicates whether the current OpenGL implementation is according to the core profile.
+	bool _isCoreProfile;
 
 	/// The current model-to-view transformation matrix.
 	AffineTransformation _modelViewTM;
