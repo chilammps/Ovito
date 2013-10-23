@@ -43,6 +43,7 @@ SET(LIBRARY_OUTPUT_PATH "${OVITO_PLUGINS_DIRECTORY}")
 
 ADD_SUBDIRECTORY(viz)
 ADD_SUBDIRECTORY(tachyon)
+ADD_SUBDIRECTORY(mesh)
 
 ################# Main executable ####################
 

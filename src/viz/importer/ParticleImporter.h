@@ -24,8 +24,8 @@
 
 #include <core/Core.h>
 #include <core/dataset/importexport/LinkedFileImporter.h>
+#include <core/utilities/io/CompressedTextParserStream.h>
 #include <viz/data/ParticleProperty.h>
-#include "CompressedTextParserStream.h"
 #include "ParticleImportData.h"
 
 namespace Viz {

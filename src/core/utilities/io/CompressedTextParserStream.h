@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include <core/utilities/io/gzdevice/qtiocompressor.h>
 
-namespace Viz {
+namespace Ovito {
 
 /**
  * \brief A helper class that uncompresses gzipped text files on the fly.

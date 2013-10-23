@@ -25,7 +25,6 @@
 #include <core/utilities/concurrent/Task.h>
 #include <core/dataset/importexport/LinkedFileObject.h>
 #include "ParticleImporter.h"
-#include "moc_CompressedTextParserStream.cpp"
 
 namespace Viz {
 

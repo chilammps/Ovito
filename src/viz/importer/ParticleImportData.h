@@ -24,6 +24,7 @@
 
 #include <core/Core.h>
 #include <core/dataset/importexport/LinkedFileImporter.h>
+#include <core/utilities/io/CompressedTextParserStream.h>
 #include <viz/data/ParticleProperty.h>
 #include <viz/data/ParticlePropertyObject.h>
 #include <viz/data/SimulationCellData.h>
@@ -31,8 +32,6 @@
 namespace Viz {
 
 using namespace Ovito;
-
-class CompressedTextParserStream;
 
 /**
  * Container structure for data imported by a ParticleImporter.

@@ -25,6 +25,7 @@
 #include <core/plugins/Plugin.h>
 #include <core/object/OvitoObject.h>
 #include <core/object/OvitoObjectReference.h>
+#include "moc_CompressedTextParserStream.cpp"
 
 namespace Ovito {
 

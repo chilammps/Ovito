@@ -31,12 +31,6 @@
 #include <core/scene/SelectionSet.h>
 #include <core/rendering/RenderSettings.h>
 
-#if 0
-#include <core/scene/objects/geometry/TriMeshObject.h>
-#include <core/scene/display/geometry/TriMeshDisplay.h>
-#include <core/scene/ObjectNode.h>
-#endif
-
 namespace Ovito {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, DataSet, RefTarget);
@@ -69,24 +63,6 @@ DataSet::DataSet()
 	_sceneRoot = new SceneRoot();
 	_selection = new SelectionSet();
 	_renderSettings = new RenderSettings();
-
-#if 0
-	TriMeshObject* triMeshObj = new TriMeshObject();
-	triMeshObj->mesh().setVertexCount(4);
-	triMeshObj->mesh().setFaceCount(2);
-	triMeshObj->mesh().setVertex(0,Point3(0,0,0));
-	triMeshObj->mesh().setVertex(1,Point3(100,0,0));
-	triMeshObj->mesh().setVertex(2,Point3(0,100,0));
-	triMeshObj->mesh().setVertex(3,Point3(100,100,30));
-	triMeshObj->mesh().face(0).setVertices(0,1,2);
-	triMeshObj->mesh().face(1).setVertices(1,3,2);
-	TriMeshDisplay* triMeshDisplay = new TriMeshDisplay();
-	triMeshObj->setDisplayObject(triMeshDisplay);
-	ObjectNode* objNode = new ObjectNode();
-	objNode->setSceneObject(triMeshObj);
-	_sceneRoot->addChild(objNode);
-	_selection->add(objNode);
-#endif
 }
 
 /******************************************************************************
