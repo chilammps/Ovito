@@ -381,7 +381,109 @@ void TachyonRenderer::renderImage(const DefaultImageGeometryBuffer& imageBuffer)
 ******************************************************************************/
 void TachyonRenderer::renderMesh(const DefaultTriMeshGeometryBuffer& meshBuffer)
 {
-	// Not supported by this renderer.
+	// Stores data of a single vertex passed to Tachyon.
+	struct ColoredVertexWithNormal {
+		ColorT<float> color;
+		Vector_3<float> normal;
+		Point_3<float> pos;
+	};
+
+	const TriMesh& mesh = meshBuffer.mesh();
+
+	// Allocate render vertex buffer.
+	int renderVertexCount = mesh.faceCount() * 3;
+	if(renderVertexCount == 0)
+		return;
+	std::vector<ColoredVertexWithNormal> renderVertices(renderVertexCount);
+
+	const AffineTransformation tm = modelTM();
+	const Matrix3 normalTM = modelTM().linear().inverse().transposed();
+	quint32 allMask = 0;
+
+	// Compute face normals.
+	std::vector<Vector_3<float>> faceNormals(mesh.faceCount());
+	auto faceNormal = faceNormals.begin();
+	for(auto face = mesh.faces().constBegin(); face != mesh.faces().constEnd(); ++face, ++faceNormal) {
+		const Point3& p0 = mesh.vertex(face->vertex(0));
+		Vector3 d1 = mesh.vertex(face->vertex(1)) - p0;
+		Vector3 d2 = mesh.vertex(face->vertex(2)) - p0;
+		*faceNormal = normalTM * d1.cross(d2);
+		if(*faceNormal != Vector_3<float>::Zero()) {
+			faceNormal->normalize();
+			allMask |= face->smoothingGroups();
+		}
+	}
+
+	// Initialize render vertices.
+	std::vector<ColoredVertexWithNormal>::iterator rv = renderVertices.begin();
+	faceNormal = faceNormals.begin();
+	ColorT<float> defaultVertexColor = ColorT<float>(meshBuffer.meshColor());
+	for(auto face = mesh.faces().constBegin(); face != mesh.faces().constEnd(); ++face, ++faceNormal) {
+
+		// Initialize render vertices for this face.
+		for(size_t v = 0; v < 3; v++, rv++) {
+			if(face->smoothingGroups())
+				rv->normal = Vector_3<float>::Zero();
+			else
+				rv->normal = *faceNormal;
+			rv->pos = tm * mesh.vertex(face->vertex(v));
+			if(mesh.hasVertexColors() == false)
+				rv->color = defaultVertexColor;
+			else
+				rv->color = ColorT<float>(mesh.vertexColor(face->vertex(v)));
+		}
+	}
+
+	if(allMask) {
+		std::vector<Vector_3<float>> groupVertexNormals(mesh.vertexCount());
+		for(int group = 0; group < OVITO_MAX_NUM_SMOOTHING_GROUPS; group++) {
+			quint32 groupMask = quint32(1) << group;
+            if((allMask & groupMask) == 0) continue;
+
+			// Reset work arrays.
+            std::fill(groupVertexNormals.begin(), groupVertexNormals.end(), Vector_3<float>::Zero());
+
+			// Compute vertex normals at original vertices for current smoothing group.
+            faceNormal = faceNormals.begin();
+			for(auto face = mesh.faces().constBegin(); face != mesh.faces().constEnd(); ++face, ++faceNormal) {
+				// Skip faces which do not belong to the current smoothing group.
+				if((face->smoothingGroups() & groupMask) == 0) continue;
+
+				// Add face's normal to vertex normals.
+				for(size_t fv = 0; fv < 3; fv++)
+					groupVertexNormals[face->vertex(fv)] += *faceNormal;
+			}
+
+			// Transfer vertex normals from original vertices to render vertices.
+			rv = renderVertices.begin();
+			for(const auto& face : mesh.faces()) {
+				if(face.smoothingGroups() & groupMask) {
+					for(size_t fv = 0; fv < 3; fv++, ++rv)
+						rv->normal += groupVertexNormals[face.vertex(fv)];
+				}
+				else rv += 3;
+			}
+		}
+	}
+
+	// Pass transformed triangles to Tachyon renderer.
+	void* tex = getTachyonTexture(1.0f, 1.0f, 1.0f, 1.0f);
+	for(auto rv = renderVertices.begin(); rv != renderVertices.end(); ) {
+		auto rv0 = rv++;
+		auto rv1 = rv++;
+		auto rv2 = rv++;
+
+		rt_vcstri(_rtscene, tex,
+				rt_vector(rv0->pos.x(), rv0->pos.y(), -rv0->pos.z()),
+				rt_vector(rv1->pos.x(), rv1->pos.y(), -rv1->pos.z()),
+				rt_vector(rv2->pos.x(), rv2->pos.y(), -rv2->pos.z()),
+				rt_vector(-rv0->normal.x(), -rv0->normal.y(), rv0->normal.z()),
+				rt_vector(-rv1->normal.x(), -rv1->normal.y(), rv1->normal.z()),
+				rt_vector(-rv2->normal.x(), -rv2->normal.y(), rv2->normal.z()),
+				rt_color(rv0->color.r(), rv0->color.g(), rv0->color.b()),
+				rt_color(rv1->color.r(), rv1->color.g(), rv1->color.b()),
+				rt_color(rv2->color.r(), rv2->color.g(), rv2->color.b()));
+	}
 }
 
 /******************************************************************************

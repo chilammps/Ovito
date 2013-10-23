@@ -72,12 +72,14 @@ DataSet::DataSet()
 
 #if 0
 	TriMeshObject* triMeshObj = new TriMeshObject();
-	triMeshObj->mesh().setVertexCount(3);
-	triMeshObj->mesh().setFaceCount(1);
+	triMeshObj->mesh().setVertexCount(4);
+	triMeshObj->mesh().setFaceCount(2);
 	triMeshObj->mesh().setVertex(0,Point3(0,0,0));
 	triMeshObj->mesh().setVertex(1,Point3(100,0,0));
 	triMeshObj->mesh().setVertex(2,Point3(0,100,0));
+	triMeshObj->mesh().setVertex(3,Point3(100,100,30));
 	triMeshObj->mesh().face(0).setVertices(0,1,2);
+	triMeshObj->mesh().face(1).setVertices(1,3,2);
 	TriMeshDisplay* triMeshDisplay = new TriMeshDisplay();
 	triMeshObj->setDisplayObject(triMeshDisplay);
 	ObjectNode* objNode = new ObjectNode();

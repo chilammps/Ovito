@@ -90,10 +90,6 @@ bool Application::initialize()
 		setOrganizationDomain("ovito.org");
 		setApplicationVersion(QStringLiteral(OVITO_VERSION_STRING));
 
-#ifdef OVITO_DEBUG
-		qDebug() << "Application settings store:" << QSettings().fileName();
-#endif
-
 		// Activate default "C" locale, which will be used to parse numbers in strings.
 		std::setlocale(LC_NUMERIC, "C");
 

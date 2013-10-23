@@ -229,6 +229,7 @@ ViewProjectionParameters Viewport::projectionParameters(TimePoint time, FloatTyp
 			params.zfar = std::max(sceneBoundingBox.size().length(), FloatType(1));
 			params.znear = params.zfar * 1e-4f;
 		}
+		params.zfar = std::max(params.zfar, params.znear * 1.01f);
 		params.projectionMatrix = Matrix4::perspective(params.fieldOfView, 1.0 / params.aspectRatio, params.znear, params.zfar);
 	}
 	else {
@@ -810,6 +811,9 @@ ViewportPickResult Viewport::pick(const QPointF& pos)
 	}
 	catch(const Exception& ex) {
 		ex.showError();
+		ViewportPickResult result;
+		result.valid = false;
+		return result;
 	}
 }
 
