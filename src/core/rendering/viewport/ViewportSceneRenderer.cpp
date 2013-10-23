@@ -82,7 +82,6 @@ void ViewportSceneRenderer::beginFrame(TimePoint time, const ViewProjectionParam
 		if(QByteArray::fromRawData(versionString, qstrlen(versionString)).indexOf("Core Profile") >= 0)
 			_isCoreProfile = true;
 	}
-	qDebug() << "OpenGL is core profile:" << _isCoreProfile;
 
 	// Set up a vertex array object. This is only required when using OpenGL Core Profile.
 	if(isCoreProfile()) {
