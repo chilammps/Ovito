@@ -166,7 +166,7 @@ SET(OVITO_SHARE_DIRECTORY "${${PROJECT_NAME}_BINARY_DIR}/${OVITO_RELATIVE_SHARE_
 # Our installation path.
 SET(OVITO_CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
 
-# Add the plugins directory to the library path. Maybe some plugins link against other plugins.
+# Add the plugins directory to the library path. Some plugins may link against other plugins.
 LINK_DIRECTORIES(${OVITO_PLUGINS_DIRECTORY})
 
 # Controls compilation of the video encoding module.
