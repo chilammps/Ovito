@@ -37,7 +37,7 @@ namespace Ovito {
 /**
  * \brief A scene display object for per-particle vectors.
  */
-class TriMeshDisplay : public DisplayObject
+class OVITO_CORE_EXPORT TriMeshDisplay : public DisplayObject
 {
 public:
 
@@ -98,7 +98,7 @@ private:
 /**
  * \brief A properties editor for the TriMeshDisplay class.
  */
-class TriMeshDisplayEditor : public PropertiesEditor
+class OVITO_CORE_EXPORT TriMeshDisplayEditor : public PropertiesEditor
 {
 public:
 
