@@ -87,15 +87,6 @@ public:
 	/// \param renderer The renderer that should be called by this method to display geometry.
 	void render(TimePoint time, SceneRenderer* renderer);
 
-#if 0
-	/// \brief Performs a hit test on this node.
-	/// \param time The animation time at which to perform the hit test.
-	/// \param vp The viewport where the mouse was clicked.
-	/// \param pickRegion The picking region to be used for hit testing.
-	/// \return The distance of the hit from the viewer or HIT_TEST_NONE if no hit was found.
-	virtual FloatType hitTest(TimePoint time, Viewport* vp, const PickRegion& pickRegion) override;
-#endif
-
 	/// \brief Applies a modifier to the object node.
 	/// \param mod The modifier to be applied.
 	///
@@ -109,6 +100,9 @@ public:
 	/// Same method as above, but this one accepts a smart pointer.
 	/// \undoable
 	void applyModifier(const OORef<Modifier>& mod) {  applyModifier(mod.get()); }
+
+	/// \brief Returns the title of this object.
+	virtual QString objectTitle() override;
 
 public:
 

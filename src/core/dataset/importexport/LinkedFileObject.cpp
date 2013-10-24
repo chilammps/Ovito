@@ -196,6 +196,8 @@ bool LinkedFileObject::setSource(QUrl sourceUrl, const OORef<LinkedFileImporter>
 		cancelLoadOperation();
 
 		transaction.commit();
+		notifyDependents(ReferenceEvent::TitleChanged);
+
 		return true;
 	}
 
@@ -343,8 +345,9 @@ void LinkedFileObject::loadOperationFinished()
 	// Set the new object status.
 	setStatus(newStatus);
 
-	// Notify dependents that the evaluation request was satisfied or not satisfied.
+	// Notify dependents that the evaluation request was completed.
 	notifyDependents(ReferenceEvent::PendingStateChanged);
+	notifyDependents(ReferenceEvent::TitleChanged);
 }
 
 /******************************************************************************

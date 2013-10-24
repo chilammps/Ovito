@@ -117,6 +117,8 @@ void VTKFileImporter::VTKFileImportTask::parseFile(FutureInterfaceBase& futureIn
 		f->setVertices(a,b,c);
 	}
 	mesh().invalidateFaces();
+
+	setInfoText(tr("%1 vertices, %2 triangles").arg(pointCount).arg(cellCount));
 }
 
 };

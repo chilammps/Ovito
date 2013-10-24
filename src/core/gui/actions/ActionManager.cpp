@@ -26,6 +26,7 @@
 #include <core/gui/undo/UndoManager.h>
 #include <core/viewport/input/NavigationModes.h>
 #include <core/animation/AnimManager.h>
+#include <core/dataset/DataSetManager.h>
 
 namespace Ovito {
 
@@ -49,6 +50,8 @@ ActionManager::ActionManager()
 	createCommandAction(ACTION_FILE_EXPORT, tr("Export File"), ":/core/actions/file/file_export.png", tr("Export data to a file."), Qt::CTRL + Qt::Key_E);
 	createCommandAction(ACTION_HELP_ABOUT, tr("About Ovito"), NULL, tr("Show information about the application."));
 	createCommandAction(ACTION_HELP_SHOW_ONLINE_HELP, tr("Manual"), NULL, tr("Open the online manual."));
+
+	createCommandAction(ACTION_EDIT_DELETE, tr("Delete"), ":/core/actions/edit/edit_delete.png", tr("Deletes the selected objects."), QKeySequence::Delete);
 
 	createCommandAction(ACTION_SETTINGS_DIALOG, tr("&Settings..."));
 
@@ -147,5 +150,18 @@ QAction* ActionManager::createViewportModeAction(const QString& id, const OORef<
 	addAction(action);
 	return action;
 }
+
+/******************************************************************************
+* Handles ACTION_EDIT_DELETE command
+******************************************************************************/
+void ActionManager::on_EditDelete_triggered()
+{
+	UndoableTransaction::handleExceptions(tr("Delete"), []() {
+		// Delete all nodes in selection set.
+		for(SceneNode* node : DataSetManager::instance().currentSelection()->nodes())
+			node->deleteNode();
+	});
+}
+
 
 };

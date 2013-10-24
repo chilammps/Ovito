@@ -220,6 +220,9 @@ bool PipelineObject::referenceEvent(RefTarget* source, ReferenceEvent* event)
 		if(event->type() == ReferenceEvent::TargetChanged || event->type() == ReferenceEvent::PendingStateChanged) {
 			modifierChanged(-1);
 		}
+		else if(event->type() == ReferenceEvent::TitleChanged) {
+			notifyDependents(ReferenceEvent::TitleChanged);
+		}
 	}
 	else {
 		if(event->type() == ReferenceEvent::TargetChanged ||

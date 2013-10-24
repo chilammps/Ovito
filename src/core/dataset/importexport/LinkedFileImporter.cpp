@@ -110,52 +110,61 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl, DataSet* dataset)
 	if(dataset->sceneRoot()->children().empty() == false) {
 
 		// Look for an existing LinkedFileObject in the scene whose
-		// input file we can replace with the newly imported file.
-		dataset->sceneRoot()->visitObjectNodes([&existingObj, &existingNode] (ObjectNode* node) -> bool {
-			SceneObject* sceneObj = node->sceneObject();
-			while(sceneObj) {
-				LinkedFileObject* linkedFileObj = dynamic_object_cast<LinkedFileObject>(sceneObj);
-				if(linkedFileObj) {
-					existingObj = linkedFileObj;
-					existingNode = node;
-					return false;
+		// data source we can replace with the newly imported file.
+		for(SceneNode* node : dataset->selection()->nodes()) {
+			if(ObjectNode* objNode = dynamic_object_cast<ObjectNode>(node)) {
+				SceneObject* sceneObj = objNode->sceneObject();
+				while(sceneObj) {
+					if(LinkedFileObject* linkedFileObj = dynamic_object_cast<LinkedFileObject>(sceneObj)) {
+						existingObj = linkedFileObj;
+						existingNode = objNode;
+						break;
+					}
+					sceneObj = (sceneObj->inputObjectCount() > 0) ? sceneObj->inputObject(0) : nullptr;
 				}
-				sceneObj = (sceneObj->inputObjectCount() > 0) ? sceneObj->inputObject(0) : nullptr;
 			}
-			return true;
-		});
-
+		}
 		if(existingObj) {
 
 			// Ask user if the current import node including any applied modifiers should be kept.
-			QMessageBox::StandardButton result = QMessageBox::question(&MainWindow::instance(), tr("Import file"),
-				tr("Do you want to keep the current modifiers and settings when importing the new file?"),
-				QMessageBox::Yes|QMessageBox::No|QMessageBox::Cancel, QMessageBox::Yes);
+			QMessageBox msgBox(QMessageBox::Question, tr("Import file"),
+					tr("Do you want to keep the existing objects?"),
+					QMessageBox::NoButton, &MainWindow::instance());
 
-			if(result == QMessageBox::Cancel)
+			QPushButton* cancelButton = msgBox.addButton(QMessageBox::Cancel);
+			QPushButton* resetSceneButton = msgBox.addButton(tr("No"), QMessageBox::NoRole);
+			QPushButton* addToSceneButton = msgBox.addButton(tr("Add to scene"), QMessageBox::YesRole);
+			QPushButton* replaceSourceButton = msgBox.addButton(tr("Replace selected"), QMessageBox::AcceptRole);
+			msgBox.exec();
+
+			if(msgBox.clickedButton() == cancelButton)
 				return false; // Operation canceled by user.
-
-			if(result == QMessageBox::No) {
-
+			else if(msgBox.clickedButton() == resetSceneButton){
 				existingObj = nullptr;
 				existingNode = nullptr;
+
+				// Ask user if current scene should be saved before it is replaced by the imported data.
+				if(!DataSetManager::instance().askForSaveChanges())
+					return false;
 
 				// Clear current scene.
 				dataset->clearScene();
 				dataset->setFilePath(QString());
 			}
+			else if(msgBox.clickedButton() == addToSceneButton){
+				existingObj = nullptr;
+				existingNode = nullptr;
+			}
 		}
 		else {
-
 			// Ask user if the current scene should be completely replaced by the imported data.
 			QMessageBox::StandardButton result = QMessageBox::question(&MainWindow::instance(), tr("Import file"),
-				tr("Do you want to completely replace the current scene with the imported data?"),
+				tr("Do you want to keep the existing objects in the current scene?"),
 				QMessageBox::Yes|QMessageBox::No|QMessageBox::Cancel, QMessageBox::Cancel);
 
 			if(result == QMessageBox::Cancel)
 				return false; // Operation canceled by user.
-
-			if(result == QMessageBox::Yes) {
+			else if(result == QMessageBox::No) {
 
 				// Ask user if current scene should be saved before it is replaced by the imported data.
 				if(!DataSetManager::instance().askForSaveChanges())

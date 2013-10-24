@@ -135,14 +135,15 @@ bool TachyonRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialog* pro
 		rt_camera_projection(_rtscene, RT_PROJECTION_ORTHOGRAPHIC);
 
 		// Calculate projection point and directions in camera space.
-		Point3 p0 = projParams().inverseProjectionMatrix * Point3(0,0,0);
+		Point3 p0 = projParams().inverseProjectionMatrix * Point3(0,0,-1);
 		Vector3 direction = projParams().inverseProjectionMatrix * Point3(0,0,1) - p0;
-		Vector3 up = projParams().inverseProjectionMatrix * Point3(0,1,0) - p0;
+		Vector3 up = projParams().inverseProjectionMatrix * Point3(0,1,-1) - p0;
 		// Transform to world space.
 		p0 = projParams().inverseViewMatrix * p0;
 		direction = (projParams().inverseViewMatrix * direction).normalized();
 		up = (projParams().inverseViewMatrix * up).normalized();
 		p0 += direction * projParams().znear;
+
 		rt_camera_position(_rtscene, rt_vector(p0.x(), p0.y(), -p0.z()), rt_vector(direction.x(), direction.y(), -direction.z()), rt_vector(up.x(), up.y(), -up.z()));
 		rt_camera_zoom(_rtscene, 0.5 / projParams().fieldOfView);
 	}

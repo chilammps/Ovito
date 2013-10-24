@@ -195,6 +195,7 @@ ViewProjectionParameters Viewport::projectionParameters(TimePoint time, FloatTyp
 	ViewProjectionParameters params;
 	params.aspectRatio = aspectRatio;
 	params.validityInterval.setInfinite();
+	params.boundingBox = sceneBoundingBox;
 
 	// Get transformation from view scene node.
 	if(viewType() == VIEW_SCENENODE && viewNode()) {

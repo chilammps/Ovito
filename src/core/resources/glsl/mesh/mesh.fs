@@ -36,7 +36,7 @@ varying vec3 vertex_normal_out;
 const float ambient = 0.4;
 const float diffuse_strength = 0.6;
 const float shininess = 6.0;
-const vec3 specular_lightdir = normalize(vec3(-1.8, 1.5, -0.2));
+const vec3 specular_lightdir = normalize(vec3(1.8, -1.5, 0.2));
 
 void main() 
 {

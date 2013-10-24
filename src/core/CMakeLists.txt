@@ -97,6 +97,8 @@ SET(OVITO_CORE_SOURCE_FILES
 	gui/widgets/FrameBufferWidget.cpp
 	gui/widgets/FrameBufferWindow.cpp
 	gui/widgets/AutocompleteLineEdit.cpp
+	gui/widgets/SceneNodesListModel.cpp
+	gui/widgets/SceneNodeSelectionBox.cpp
 	gui/properties/PropertiesEditor.cpp
 	gui/properties/PropertiesPanel.cpp
 	gui/properties/ParameterUI.cpp

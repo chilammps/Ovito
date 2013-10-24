@@ -71,7 +71,6 @@ QString SceneRoot::makeNameUnique(QString baseName) const
 	}		
 }
 
-
 /******************************************************************************
 * Returns the bounding box of the scene.
 ******************************************************************************/

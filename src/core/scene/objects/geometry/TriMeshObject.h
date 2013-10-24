@@ -43,6 +43,15 @@ public:
 	/// Default constructor that creates an object with an empty triangle mesh.
 	Q_INVOKABLE TriMeshObject();
 
+	/// \brief Returns the title of this object.
+	virtual QString objectTitle() override { return tr("Triangle mesh"); }
+
+	/// \brief Returns whether this object, when returned as an editable sub-object by another object,
+	///        should be displayed in the modification stack.
+	///
+	/// Return false because this object cannot be edited.
+	virtual bool isSubObjectEditable() const override { return false; }
+
 	/// Returns a const-reference to the triangle mesh encapsulated by this scene object.
 	const TriMesh& mesh() const { return _mesh; }
 

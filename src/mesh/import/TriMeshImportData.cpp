@@ -44,7 +44,7 @@ void TriMeshImportData::load(FutureInterfaceBase& futureInterface)
 	}
 	OVITO_ASSERT(fetchFileFuture.isCanceled() == false);
 
-	// Open file.
+	// Open file.s
 	QFile file(fetchFileFuture.result());
 	CompressedTextParserStream stream(file, frame().sourceFile.path());
 
@@ -74,6 +74,9 @@ void TriMeshImportData::insertIntoScene(LinkedFileObject* destination)
 	}
 	triMeshObj->mesh() = mesh();
 	triMeshObj->notifyDependents(ReferenceEvent::TargetChanged);
+
+	// Remove all other scene objects from the LinkedFileObject.
+	destination->removeInactiveObjects({triMeshObj.get()});
 }
 
 };

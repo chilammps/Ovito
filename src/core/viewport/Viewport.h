@@ -75,6 +75,9 @@ struct ViewProjectionParameters
 	/// The screen space to view space transformation matrix.
 	Matrix4 inverseProjectionMatrix;
 
+	/// The bounding box of the scene.
+	Box3 boundingBox;
+
 	/// Specifies the time interval during which the stored parameters stay constant.
 	TimeInterval validityInterval;
 };

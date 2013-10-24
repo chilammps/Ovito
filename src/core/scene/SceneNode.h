@@ -276,15 +276,6 @@ public:
 	/// \return The GroupNode that contains this scene node at is in the closed state at the same time.
 	GroupNode* closedParentGroup() const;
 
-#if 0
-	/// \brief Performs a hit test on this node.
-	/// \param time The animation time at which to perform the hit test.
-	/// \param vp The viewport where the mouse was clicked.
-	/// \param pickRegion The picking region to be used for hit testing.
-	/// \return The distance of the hit from the viewer or HIT_TEST_NONE if no hit was found.
-	virtual FloatType hitTest(TimePoint time, Viewport* vp, const PickRegion& pickRegion) override { return HIT_TEST_NONE; }
-#endif
-
 	/// \brief Returns the title of this object.
 	virtual QString objectTitle() override { return _nodeName; }
 
@@ -382,7 +373,6 @@ private:
 	DECLARE_PROPERTY_FIELD(_nodeName)
 	DECLARE_PROPERTY_FIELD(_displayColor)
 
-	friend class AddRemoveChildNodeOperation;
 	friend class SceneRoot;
 };
 
@@ -438,6 +428,7 @@ public:
 	}
 
 private:
+
 	QVector<std::pair<SceneNode*, int>> _nodeStack;
 };
 

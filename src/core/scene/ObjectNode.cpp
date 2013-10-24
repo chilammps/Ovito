@@ -130,6 +130,9 @@ bool ObjectNode::referenceEvent(RefTarget* source, ReferenceEvent* event)
 			if(!UndoManager::instance().isUndoingOrRedoing())
 				deleteNode();
 		}
+		else if(event->type() == ReferenceEvent::TitleChanged) {
+			notifyDependents(ReferenceEvent::TitleChanged);
+		}
 	}
 	return SceneNode::referenceEvent(source, event);
 }
@@ -191,29 +194,26 @@ void ObjectNode::loadFromStream(ObjectLoadStream& stream)
 	stream.closeChunk();
 }
 
-#if 0
 /******************************************************************************
-* Performs a hit test on this node.
-* Returns distance of the
-* hit from the viewer or HIT_TEST_NONE if no hit was found.
+* Returns the title of this object.
 ******************************************************************************/
-FloatType ObjectNode::hitTest(TimeTicks time, Viewport* vp, const PickRegion& pickRegion)
+QString ObjectNode::objectTitle()
 {
-	CHECK_POINTER(vp);
+	// If a name has been assigned to this node, return it as display title.
+	if(name().isEmpty() == false)
+		return name();
 
-	const PipelineFlowState& flowState = evalPipeline(time);
-	if(flowState.result() == NULL) return HIT_TEST_NONE;
-    CHECK_OBJECT_POINTER(flowState.result());
+	// Otherwise, use the display title of the node's source scene object.
+	SceneObject* sceneObj = sceneObject();
+	while(sceneObj) {
+		if(sceneObj->inputObjectCount() == 0)
+			return sceneObj->objectTitle();
+		sceneObj = sceneObj->inputObject(0);
+	}
 
-	// Setup transformation.
-	TimeInterval iv;
-	const AffineTransformation& nodeTM = getWorldTransform(time, iv);
-	vp->setWorldMatrix(objectTransform() * nodeTM);
-
-	// Hit test object.
-	return flowState.result()->hitTest(time, vp, this, pickRegion);
+	return SceneNode::objectTitle();
 }
-#endif
+
 
 /******************************************************************************
 * Applies the given modifier to the object node.

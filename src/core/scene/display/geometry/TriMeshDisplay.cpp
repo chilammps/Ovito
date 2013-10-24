@@ -37,7 +37,7 @@ SET_PROPERTY_FIELD_LABEL(TriMeshDisplay, _color, "Display color")
 * Constructor.
 ******************************************************************************/
 TriMeshDisplay::TriMeshDisplay() :
-	_color(1, 1, 1)
+	_color(0.85, 0.85, 1)
 {
 	INIT_PROPERTY_FIELD(TriMeshDisplay::_color);
 }

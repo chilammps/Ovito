@@ -52,15 +52,11 @@ INSTALL(TARGETS ${PROJECT_NAME} DESTINATION "${OVITO_RELATIVE_BINARY_DIRECTORY}"
 
 IF(OVITO_MONOLITHIC_BUILD)
 
-	# If we build a monolithic executable that includes all plugins then
-	# we have to make it dependent on these too.
-	#
-	# When statically linking the plugin libraries the linker will eliminate
-	# unreferenced static objects in these libraries. To prevent this from
-	# happening we have to use the -whole-archive linker option. 
+	# Build a monolithic executable that includes everything.
+	# When statically linking, the linker will typically eliminate
+	# unreferenced static objects in the final executable. To prevent this from
+	# happening, we have to use the -whole-archive linker option. 
 	LINK_WHOLE_LIBRARY(${PROJECT_NAME} Core)
-	LINK_WHOLE_LIBRARY(${PROJECT_NAME} Viz)
-	LINK_WHOLE_LIBRARY(${PROJECT_NAME} Tachyon)
 
 	IF(UNIX AND NOT APPLE)
 		# The static Qt plugins must be linked into the executable.

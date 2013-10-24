@@ -60,8 +60,10 @@ class VideoEncoder;				// defined in VideoEncoder.h
 
 /// This action undoes the last operation.
 #define ACTION_EDIT_UNDO		"EditUndo"
-/// This action redoues the last undone operation.
+/// This action does the last undone operation again.
 #define ACTION_EDIT_REDO		"EditRedo"
+/// This action deletes the selected objects.
+#define ACTION_EDIT_DELETE		"EditDelete"
 
 /// This action maximizes the active viewport.
 #define ACTION_VIEWPORT_MAXIMIZE					"ViewportMaximize"
@@ -200,6 +202,7 @@ private Q_SLOTS:
 	void on_AnimationStopPlayback_triggered();
 	void on_AnimationSettings_triggered();
 	void on_RenderActiveViewport_triggered();
+	void on_EditDelete_triggered();
 
 private:
 

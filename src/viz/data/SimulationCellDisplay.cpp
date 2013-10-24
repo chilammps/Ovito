@@ -75,7 +75,7 @@ void SimulationCellDisplay::render(TimePoint time, SceneObject* sceneObject, con
 	OVITO_CHECK_OBJECT_POINTER(cell);
 
 	if(renderer->isInteractive()) {
-		renderWireframe(cell, renderer);
+		renderWireframe(cell, renderer, contextNode);
 	}
 	else {
 		if(!renderSimulationCell())
@@ -88,9 +88,11 @@ void SimulationCellDisplay::render(TimePoint time, SceneObject* sceneObject, con
 /******************************************************************************
 * Renders the given simulation using wireframe mode.
 ******************************************************************************/
-void SimulationCellDisplay::renderWireframe(SimulationCell* cell, SceneRenderer* renderer)
+void SimulationCellDisplay::renderWireframe(SimulationCell* cell, SceneRenderer* renderer, ObjectNode* contextNode)
 {
-	if(_wireframeGeometryCacheHelper.updateState(cell, cell->revisionNumber())
+	ColorA color = contextNode->isSelected() ? ColorA(1,1,1) : ColorA(0.6,0.6,1);
+
+	if(_wireframeGeometryCacheHelper.updateState(cell, cell->revisionNumber(), color)
 			|| !_wireframeGeometry
 			|| !_wireframeGeometry->isValid(renderer)) {
 		_wireframeGeometry = renderer->createLineGeometryBuffer();
@@ -118,7 +120,7 @@ void SimulationCellDisplay::renderWireframe(SimulationCell* cell, SceneRenderer*
 			corners[2], corners[6],
 			corners[3], corners[7]};
 		_wireframeGeometry->setVertexPositions(vertices);
-		_wireframeGeometry->setVertexColor(ColorA(1,1,1));
+		_wireframeGeometry->setVertexColor(color);
 	}
 	_wireframeGeometry->render(renderer);
 }

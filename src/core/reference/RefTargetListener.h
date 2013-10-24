@@ -130,6 +130,19 @@ public:
 	/// \brief Adds an new object to the list of targets this listener should listen to.
 	void push_back(RefTarget* target) { OVITO_CHECK_OBJECT_POINTER(target); _targets.push_back(target); }
 
+	/// \brief Removes an object from the list of targets this listener should listen to.
+	void remove(RefTarget* target) {
+		OVITO_CHECK_OBJECT_POINTER(target);
+		int index = _targets.indexOf(target);
+		if(index >= 0)
+			_targets.remove(index);
+	}
+
+	/// \brief Removes an object from the list of targets this listener should listen to.
+	void remove(int index) {
+		_targets.remove(index);
+	}
+
 Q_SIGNALS:
 
 	/// \brief This Qt signal is emitted by the listener each time it receives a notification

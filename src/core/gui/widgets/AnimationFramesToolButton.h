@@ -42,7 +42,7 @@ class AnimationFramesToolButton : public QToolButton
 	
 public:
 	
-	/// Constructs the spinner control.
+	/// Constructs the widget.
 	AnimationFramesToolButton(QWidget* parent = 0) : QToolButton(parent) {
 		setIcon(QIcon(QString(":/core/actions/animation/named_frames.png")));
 		setToolTip(tr("Jump to animation frame"));

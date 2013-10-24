@@ -99,7 +99,7 @@ public:
 protected:
 
 	/// Renders the given simulation using wireframe mode.
-	void renderWireframe(SimulationCell* cell, SceneRenderer* renderer);
+	void renderWireframe(SimulationCell* cell, SceneRenderer* renderer, ObjectNode* contextNode);
 
 	/// Renders the given simulation using solid shading mode.
 	void renderSolid(SimulationCell* cell, SceneRenderer* renderer);
@@ -120,7 +120,7 @@ protected:
 
 	/// This helper structure is used to detect any changes in the input simulation cell
 	/// that require updating the display geometry buffer for wireframe rendering.
-	SceneObjectCacheHelper<QPointer<SimulationCell>, unsigned int> _wireframeGeometryCacheHelper;
+	SceneObjectCacheHelper<QPointer<SimulationCell>, unsigned int, ColorA> _wireframeGeometryCacheHelper;
 
 	/// The geometry buffer used to render the edges of the cell.
 	OORef<ArrowGeometryBuffer> _edgeGeometry;
