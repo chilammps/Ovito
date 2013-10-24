@@ -119,16 +119,9 @@ MACRO(OVITO_PLUGIN target_name)
 		INSTALL(FILES "${OVITO_PLUGINS_DIRECTORY}/${resource_output}" DESTINATION "${OVITO_RELATIVE_PLUGINS_DIRECTORY}")
 	ENDIF()
 	
-	IF(OVITO_MONOLITHIC_BUILD)
-		# If we build a monolithic executable that includes all plugins then
-		# we have to make it dependent on these too.
-		#
-		# When statically linking the plugin libraries the linker will eliminate
-		# unreferenced static objects in these libraries. To prevent this from
-		# happening we have to use the -whole-archive linker option. 
-		LINK_WHOLE_LIBRARY(${PROJECT_NAME} ${target_name})
-	ENDIF()
-	
+	# Keep a list plugins.
+	LIST(APPEND OVITO_PLUGINS_LIST ${target_name})
+	SET(OVITO_PLUGINS_LIST "${OVITO_PLUGINS_LIST}" PARENT_SCOPE)
 
 ENDMACRO(OVITO_PLUGIN)
 
