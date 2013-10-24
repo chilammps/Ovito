@@ -51,7 +51,7 @@ SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _onlySelected, "Color only selecte
 SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _keepSelection, "Keep selection")
 SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _renderLegend, "Render color legend (experimental)")
 
-IMPLEMENT_OVITO_OBJECT(Viz, ColorCodingGradient, RefTarget)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Viz, ColorCodingGradient, RefTarget)
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Viz, ColorCodingHSVGradient, ColorCodingGradient)
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Viz, ColorCodingGrayscaleGradient, ColorCodingGradient)
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Viz, ColorCodingHotGradient, ColorCodingGradient)
