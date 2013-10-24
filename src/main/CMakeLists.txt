@@ -57,6 +57,9 @@ IF(OVITO_MONOLITHIC_BUILD)
 	# unreferenced static objects in the final executable. To prevent this from
 	# happening, we have to use the -whole-archive linker option. 
 	LINK_WHOLE_LIBRARY(${PROJECT_NAME} Core)
+	FOREACH(plugin ${OVITO_PLUGINS_LIST})
+		LINK_WHOLE_LIBRARY(${PROJECT_NAME} ${plugin})
+	ENDFOREACH()
 
 	IF(UNIX AND NOT APPLE)
 		# The static Qt plugins must be linked into the executable.
