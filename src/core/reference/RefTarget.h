@@ -215,9 +215,16 @@ public:
 	}
 
 	/// \brief Generates a list of dependents that directly or indirectly reference this target object.
-	/// \param type Lists only dependents that are of the given type.
-	/// \return A list of all dependents that match to the given type.
-	QSet<RefMaker*> findDependents(const OvitoObjectType& type) const;
+	/// \return A list of all dependents that are instance of the object type specified by the template parameter.
+	template<class ObjectType>
+	QSet<ObjectType*> findDependents() const {
+		QSet<ObjectType*> results;
+		visitDependents([&results](RefMaker* dependent) {
+			if(ObjectType* o = dynamic_object_cast<ObjectType>(dependent))
+				results.insert(o);
+		});
+		return results;
+	}
 
 	///////////////////////////// from PluginClass ///////////////////////////////
 

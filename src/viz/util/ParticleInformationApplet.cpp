@@ -64,7 +64,7 @@ void ParticleInformationApplet::openUtility(RolloutContainer* container, const R
 	_infoDisplay->setReadOnly(true);
 	_infoDisplay->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 #ifndef Q_OS_MACX
-	_infoDisplay->setText(tr("Pick a particle in the viewports. Hold down CTRL key to select multiple particles."));
+	_infoDisplay->setText(tr("Pick a particle in the viewports. Hold down CONTROL key to select multiple particles."));
 #else
 	_infoDisplay->setText(tr("Pick a particle in the viewports. Hold down COMMAND key to select multiple particles."));
 #endif
@@ -215,9 +215,9 @@ void ParticleInformationInputMode::mouseReleaseEvent(Viewport* vp, QMouseEvent* 
 /******************************************************************************
 * Lets the input mode render its overlay content in a viewport.
 ******************************************************************************/
-void ParticleInformationInputMode::renderOverlay(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive)
+void ParticleInformationInputMode::renderOverlay3D(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive)
 {
-	ViewportInputHandler::renderOverlay(vp, renderer, isActive);
+	ViewportInputHandler::renderOverlay3D(vp, renderer, isActive);
 	for(const auto& pickedParticle : _pickedParticles)
 		renderSelectionMarker(vp, renderer, pickedParticle);
 }

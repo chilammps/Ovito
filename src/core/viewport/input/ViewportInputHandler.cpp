@@ -170,12 +170,12 @@ void ViewportInputHandler::mouseDoubleClickEvent(Viewport* vp, QMouseEvent* even
 /******************************************************************************
 * Lets the input mode render its overlay content in a viewport.
 ******************************************************************************/
-void ViewportInputHandler::renderOverlay(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive)
+void ViewportInputHandler::renderOverlay3D(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive)
 {
 	if(_temporaryNavMode)
-		_temporaryNavMode->renderOverlay(vp, renderer, isActive);
+		_temporaryNavMode->renderOverlay3D(vp, renderer, isActive);
 	else if(_showOrbitCenter)
-		OrbitMode::instance()->renderOverlay(vp, renderer, isActive);
+		OrbitMode::instance()->renderOverlay3D(vp, renderer, isActive);
 }
 
 /******************************************************************************
@@ -189,6 +189,15 @@ Box3 ViewportInputHandler::overlayBoundingBox(Viewport* vp, ViewportSceneRendere
 	else if(_showOrbitCenter)
 		bb.addBox(OrbitMode::instance()->overlayBoundingBox(vp, renderer, isActive));
 	return bb;
+}
+
+/******************************************************************************
+* Lets the input mode render its overlay content in a viewport.
+******************************************************************************/
+void ViewportInputHandler::renderOverlay2D(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive)
+{
+	if(_temporaryNavMode)
+		_temporaryNavMode->renderOverlay2D(vp, renderer, isActive);
 }
 
 };

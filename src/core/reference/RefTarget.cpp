@@ -185,20 +185,6 @@ OORef<RefTarget> RefTarget::clone(bool deepCopy, CloneHelper& cloneHelper)
 }
 
 /******************************************************************************
-* Generates a list of dependents that directly or indirectly reference
-* this target object.
-******************************************************************************/
-QSet<RefMaker*> RefTarget::findDependents(const OvitoObjectType& type) const
-{
-	QSet<RefMaker*> results;
-	visitDependents([&](RefMaker* dependent) {
-		if(dependent->getOOType().isDerivedFrom(type))
-			results.insert(dependent);
-	} );
-	return results;
-}
-
-/******************************************************************************
 * Returns the title of this object.
 ******************************************************************************/
 QString RefTarget::objectTitle()

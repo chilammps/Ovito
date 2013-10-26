@@ -45,6 +45,15 @@ class ParticleSelectionSet : public RefTarget
 {
 public:
 
+	/// Controls the mode of operation of the setParticleSelection() method.
+	enum SelectionMode {
+		SelectionReplace,		//< Replace the selection with the new selection set.
+		SelectionAdd,			//< Add the selection set to the existing selection.
+		SelectionSubtract		//< Subtracts the selection set from the existing selection.
+	};
+
+public:
+
 	/// Default constructor.
 	Q_INVOKABLE ParticleSelectionSet() : _useIdentifiers(true) {
 		INIT_PROPERTY_FIELD(ParticleSelectionSet::_useIdentifiers);
@@ -61,6 +70,18 @@ public:
 
 	/// Selects all particles in the given particle data set.
 	void selectAll(const PipelineFlowState& state);
+
+	/// Toggles the selection state of a single particle.
+	void toggleParticle(const PipelineFlowState& state, size_t particleIndex);
+
+	/// Toggles the selection state of a single particle.
+	void toggleParticleIdentifier(int particleId);
+
+	/// Toggles the selection state of a single particle.
+	void toggleParticleIndex(size_t particleIndex);
+
+	/// Replaces the particle selection.
+	void setParticleSelection(const PipelineFlowState& state, const QBitArray& selection, SelectionMode mode = SelectionReplace);
 
 	/// Copies the stored selection set into the given output selection particle property.
 	ObjectStatus applySelection(ParticlePropertyObject* outputSelectionProperty, ParticlePropertyObject* identifierProperty);

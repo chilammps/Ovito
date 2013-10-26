@@ -47,6 +47,25 @@ private:
 	QSet<int> _selectedIdentifiers;
 };
 
+/* Undo record that can restore selection state of a single particle. */
+class ToggleSelectionOperation : public UndoableOperation
+{
+public:
+	ToggleSelectionOperation(ParticleSelectionSet* owner, int particleId, size_t particleIndex = std::numeric_limits<size_t>::max()) :
+		_owner(owner), _particleIndex(particleIndex), _particleId(particleId) {}
+	virtual void undo() override {
+		if(_particleIndex != std::numeric_limits<size_t>::max())
+			_owner->toggleParticleIndex(_particleIndex);
+		else
+			_owner->toggleParticleIdentifier(_particleId);
+	}
+	virtual void redo() override { undo(); }
+private:
+	OORef<ParticleSelectionSet> _owner;
+	int _particleId;
+	size_t _particleIndex;
+};
+
 /******************************************************************************
 * Saves the class' contents to the given stream.
 ******************************************************************************/
@@ -156,6 +175,108 @@ void ParticleSelectionSet::clearSelection(const PipelineFlowState& state)
 		_selection.fill(false, particleCount(state));
 		_selectedIdentifiers.clear();
 	}
+	notifyDependents(ReferenceEvent::TargetChanged);
+}
+
+/******************************************************************************
+* Replaces the particle selection.
+******************************************************************************/
+void ParticleSelectionSet::setParticleSelection(const PipelineFlowState& state, const QBitArray& selection, SelectionMode mode)
+{
+	// Make a backup of the old snapshot so it may be restored.
+	if(UndoManager::instance().isRecording())
+		UndoManager::instance().push(new ReplaceSelectionOperation(this));
+
+	ParticlePropertyObject* identifierProperty = ParticlePropertyObject::findInState(state, ParticleProperty::IdentifierProperty);
+	if(identifierProperty && useIdentifiers()) {
+		OVITO_ASSERT(selection.size() == identifierProperty->size());
+		_selection.clear();
+		int index = 0;
+		if(mode == SelectionReplace) {
+			_selectedIdentifiers.clear();
+			for(int id : identifierProperty->constIntRange()) {
+				if(selection.testBit(index++))
+					_selectedIdentifiers.insert(id);
+			}
+		}
+		else if(mode == SelectionAdd) {
+			for(int id : identifierProperty->constIntRange()) {
+				if(selection.testBit(index++))
+					_selectedIdentifiers.insert(id);
+			}
+		}
+		else if(mode == SelectionSubtract) {
+			for(int id : identifierProperty->constIntRange()) {
+				if(selection.testBit(index++))
+					_selectedIdentifiers.remove(id);
+			}
+		}
+	}
+	else {
+		_selectedIdentifiers.clear();
+		if(mode == SelectionReplace)
+			_selection = selection;
+		else if(mode == SelectionAdd) {
+			_selection.resize(selection.size());
+			_selection |= selection;
+		}
+		else if(mode == SelectionSubtract) {
+			_selection.resize(selection.size());
+			_selection &= ~selection;
+		}
+	}
+
+	notifyDependents(ReferenceEvent::TargetChanged);
+}
+
+/******************************************************************************
+* Toggles the selection state of a single particle.
+******************************************************************************/
+void ParticleSelectionSet::toggleParticle(const PipelineFlowState& state, size_t particleIndex)
+{
+	if(particleIndex >= particleCount(state))
+		return;
+
+	ParticlePropertyObject* identifiers = ParticlePropertyObject::findInState(state, ParticleProperty::IdentifierProperty);
+	if(useIdentifiers() && identifiers) {
+		_selection.clear();
+		toggleParticleIdentifier(identifiers->getInt(particleIndex));
+	}
+	else if(particleIndex < _selection.size()) {
+		_selectedIdentifiers.clear();
+		toggleParticleIndex(particleIndex);
+	}
+}
+
+/******************************************************************************
+* Toggles the selection state of a single particle.
+******************************************************************************/
+void ParticleSelectionSet::toggleParticleIdentifier(int particleId)
+{
+	// Make a backup of the old selection state so it may be restored.
+	if(UndoManager::instance().isRecording())
+		UndoManager::instance().push(new ToggleSelectionOperation(this, particleId));
+
+	if(useIdentifiers()) {
+		if(_selectedIdentifiers.contains(particleId))
+			_selectedIdentifiers.remove(particleId);
+		else
+			_selectedIdentifiers.insert(particleId);
+	}
+	notifyDependents(ReferenceEvent::TargetChanged);
+}
+
+/******************************************************************************
+* Toggles the selection state of a single particle.
+******************************************************************************/
+void ParticleSelectionSet::toggleParticleIndex(size_t particleIndex)
+{
+	// Make a backup of the old selection state so it may be restored.
+	if(UndoManager::instance().isRecording())
+		UndoManager::instance().push(new ToggleSelectionOperation(this, -1, particleIndex));
+
+	if(particleIndex < _selection.size())
+		_selection.toggleBit(particleIndex);
 	notifyDependents(ReferenceEvent::TargetChanged);
 }
 

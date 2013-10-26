@@ -54,9 +54,11 @@ void FreezeSelectionModifier::initializeModifier(PipelineObject* pipeline, Modif
 {
 	ParticleModifier::initializeModifier(pipeline, modApp);
 
-	// Take a snapshot of the current selection state at the moment the modifier is created.
-	PipelineFlowState input = pipeline->evaluatePipeline(AnimManager::instance().time(), modApp, false);
-	takeSelectionSnapshot(modApp, input);
+	// Take a snapshot of the existing selection state at the time the modifier is created.
+	if(dynamic_object_cast<ParticleSelectionSet>(modApp->modifierData()) == nullptr) {
+		PipelineFlowState input = pipeline->evaluatePipeline(AnimManager::instance().time(), modApp, false);
+		takeSelectionSnapshot(modApp, input);
+	}
 }
 
 /******************************************************************************

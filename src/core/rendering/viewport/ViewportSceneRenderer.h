@@ -115,6 +115,9 @@ public:
 		return new ViewportTriMeshGeometryBuffer(this);
 	}
 
+	/// Renders a 2d polyline in the viewport.
+	void render2DPolyline(const Point2* points, int count, const ColorA& color, bool closed);
+
 	/// Returns whether this renderer is rendering an interactive viewport.
 	/// \return true if rendering a real-time viewport; false if rendering an output image.
 	virtual bool isInteractive() const override { return true; }

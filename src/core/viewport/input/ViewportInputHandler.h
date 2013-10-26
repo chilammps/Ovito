@@ -124,19 +124,19 @@ public:
 	/// \brief Activates the given temporary navigation mode.
 	void activateTemporaryNavigationMode(ViewportInputHandler* mode);
 
-	/// \brief Indicates whether this input mode renders into the viewports.
-	/// \return \c true if the renderOverlay() method has been overridden for this class; \c false otherwise.
+	/// \brief Indicates whether this input mode renders 3d geometry into the viewports.
+	/// \return \c true if the renderOverlay3D() method has been overridden for this class; \c false otherwise.
 	///
-	/// Subclasses should override this method to return \c true if they also override the renderOverlay() method.
+	/// Subclasses should override this method to return \c true if they also override the renderOverlay3D() method.
 	/// The default implementation returns \c false.
 	virtual bool hasOverlay() {
 		return (_temporaryNavMode != nullptr) ? _temporaryNavMode->hasOverlay() : _showOrbitCenter;
 	}
 
-	/// \brief Lets the input mode render its overlay content in a viewport.
+	/// \brief Lets the input mode render its 3d overlay content in a viewport.
 	/// \param vp The viewport into which the mode should render its specific overlay content.
 	/// \param renderer The renderer that should be used to display the overlay.
-	/// \param isActive Indicates whether this input is currently active. The renderOverlay()
+	/// \param isActive Indicates whether this input is currently active. The renderOverlay3D()
 	///                 method is also called for an inactive input mode if it is suspended due to
 	///                 one or more modes on top of it on the mode stack.
 	///
@@ -145,11 +145,25 @@ public:
 	///
 	/// The default implementation of this method does nothing. If a subclasses implements this
 	/// method then it should also override the hasOverlay() function.
-	virtual void renderOverlay(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive);
+	virtual void renderOverlay3D(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive);
 
-	/// \brief Computes the bounding box of the visual viewport overlay rendered by the input mode.
-	/// \return The bounding box of the modifier in world coordinates.
+	/// \brief Computes the bounding box of the 3d visual viewport overlay rendered by the input mode.
+	/// \return The bounding box of the geometry in world coordinates.
 	virtual Box3 overlayBoundingBox(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive);
+
+	/// \brief Lets the input mode render its 2d overlay content in a viewport.
+	/// \param vp The viewport into which the mode should render its specific overlay content.
+	/// \param renderer The renderer that should be used to display the overlay.
+	/// \param isActive Indicates whether this input is currently active. The renderOverlay2D()
+	///                 method is also called for an inactive input mode if it is suspended due to
+	///                 one or more modes on top of it on the mode stack.
+	///
+	/// This method is called by the system every time the viewports are redrawn and this input
+	/// mode is on the input mode stack.
+	///
+	/// The default implementation of this method does nothing. If a subclasses implements this
+	/// method then it should also override the hasOverlay() function.
+	virtual void renderOverlay2D(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive);
 
 protected:
 

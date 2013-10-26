@@ -49,7 +49,7 @@ public:
 	virtual void mouseReleaseEvent(Viewport* vp, QMouseEvent* event) override;
 
 	/// \brief Lets the input mode render its overlay content in a viewport.
-	virtual void renderOverlay(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive) override;
+	virtual void renderOverlay3D(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive) override;
 
 	/// \brief Indicates whether this input mode renders into the viewports.
 	virtual bool hasOverlay() override { return true; }

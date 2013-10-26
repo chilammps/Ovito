@@ -124,6 +124,10 @@
               <entry>Preserves the current selection state over time.</entry>
             </row>
             <row>
+              <entry><link linkend="viz.modifiers.manual_selection">Manual selection</link></entry>
+              <entry>Allows to select particles with the mouse.</entry>
+            </row>
+            <row>
               <entry><link linkend="viz.modifiers.invert_selection">Invert selection</link></entry>
               <entry>Inverts the selection state of each particle.</entry>
             </row>
@@ -175,6 +179,8 @@
   <xi:include href="histogram.docbook"/>
 
   <xi:include href="invert_selection.docbook"/>
+
+  <xi:include href="manual_selection.docbook"/>
 
   <xi:include href="select_particle_type.docbook"/>
 

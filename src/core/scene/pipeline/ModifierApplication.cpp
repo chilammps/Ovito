@@ -22,6 +22,7 @@
 #include <core/Core.h>
 #include <core/scene/pipeline/ModifierApplication.h>
 #include <core/scene/pipeline/PipelineObject.h>
+#include <core/scene/ObjectNode.h>
 
 namespace Ovito {
 
@@ -51,6 +52,14 @@ PipelineObject* ModifierApplication::pipelineObject() const
 		if(pipelineObj) return pipelineObj;
 	}
 	return nullptr;
+}
+
+/******************************************************************************
+* Returns the PipelineObject this application object belongs to.
+******************************************************************************/
+QSet<ObjectNode*> ModifierApplication::objectNodes() const
+{
+	return findDependents<ObjectNode>();
 }
 
 };

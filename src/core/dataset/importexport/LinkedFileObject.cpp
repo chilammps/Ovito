@@ -389,11 +389,11 @@ void LinkedFileObject::adjustAnimationInterval(int gotoFrameIndex)
 	if(!_adjustAnimationIntervalEnabled)
 		return;
 
-	QSet<RefMaker*> datasets = findDependents(DataSet::OOType);
+	QSet<DataSet*> datasets = findDependents<DataSet>();
 	if(datasets.empty())
 		return;
 
-	DataSet* dataset = static_object_cast<DataSet>(*datasets.cbegin());
+	DataSet* dataset = *datasets.cbegin();
 	AnimationSettings* animSettings = dataset->animationSettings();
 
 	animSettings->clearNamedFrames();

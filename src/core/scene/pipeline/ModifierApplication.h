@@ -50,9 +50,12 @@ public:
 	/// \return The modifier instance.
 	Modifier* modifier() const { return _modifier; }
 
-	/// \brief Returns the geometry pipeline in which the modifier is used.
-	/// \return The PipelineObject this application is part of.
+	/// \brief Returns the geometry pipeline in which the modifier is being used.
+	/// \return The PipelineObject this modifier application is referenced by.
 	PipelineObject* pipelineObject() const;
+
+	/// \brief Returns a list of ObjectNode instances that depend on this ModifierApplication.
+	QSet<ObjectNode*> objectNodes() const;
 
 	/// \brief Returns the optional data object managed by the modifier.
 	/// \return The modifier data.

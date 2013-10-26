@@ -61,7 +61,7 @@ public:
 	virtual void mouseMoveEvent(Viewport* vp, QMouseEvent* event) override;
 
 	/// \brief Lets the input mode render its overlay content in a viewport.
-	virtual void renderOverlay(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive) override;
+	virtual void renderOverlay3D(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive) override;
 
 	/// \brief Computes the bounding box of the visual viewport overlay rendered by the input mode.
 	virtual Box3 overlayBoundingBox(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive) override;
@@ -265,8 +265,8 @@ public:
 	virtual void mouseMoveEvent(Viewport* vp, QMouseEvent* event) override;
 
 	/// \brief Lets the input mode render its overlay content in a viewport.
-	virtual void renderOverlay(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive) override {
-		OrbitMode::instance()->renderOverlay(vp, renderer, isActive);
+	virtual void renderOverlay3D(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive) override {
+		OrbitMode::instance()->renderOverlay3D(vp, renderer, isActive);
 	}
 
 	/// \brief Computes the bounding box of the visual viewport overlay rendered by the input mode.

@@ -618,9 +618,9 @@ void PickParticlePlaneInputMode::alignPlane(SliceModifier* mod)
 /******************************************************************************
 * Lets the input mode render its overlay content in a viewport.
 ******************************************************************************/
-void PickParticlePlaneInputMode::renderOverlay(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive)
+void PickParticlePlaneInputMode::renderOverlay3D(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive)
 {
-	ViewportInputHandler::renderOverlay(vp, renderer, isActive);
+	ViewportInputHandler::renderOverlay3D(vp, renderer, isActive);
 
 	Q_FOREACH(const PickResult& pa, _pickedParticles) {
 		renderSelectionMarker(vp, renderer, pa);

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<section version="5.0"
+         xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xml:id="viz.modifiers.manual_selection"
+         xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title>Manual selection</title>
+
+  <para>This modifier allows to select particles manually in the viewports.
+  The modifier stores the selection state of all particles in an internal array. The parameter panel of the 
+  modifier provides several functions to modify the stored selection set. 
+  When the modifier acts on the input particles, it replaces any existing particle selection state
+  with its stored selection state.</para>
+
+  <para>When the <guibutton>Pick particles</guibutton> mode is activated, individual particles
+  can be selected or deselected by clicking on them in the viewports.</para>
+
+  <para>When the <guibutton>Fence selection</guibutton> mode is activated, 
+  the mouse can be used to draw a closed fence around a group of particles in the viewports.
+  All particles within the fence polygon will be selected.</para>
+  
+</section>

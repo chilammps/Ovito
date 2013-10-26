@@ -126,15 +126,22 @@ bool ViewportSceneRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialo
 	// Render visual 3D representation of the modifiers.
 	renderModifiers(false);
 
+	// Render input mode 3D overlays.
+	if(isInteractive()) {
+		for(const auto& handler : ViewportInputManager::instance().stack()) {
+			if(handler->hasOverlay())
+				handler->renderOverlay3D(viewport(), this, handler == ViewportInputManager::instance().currentHandler());
+		}
+	}
+
 	// Render visual 2D representation of the modifiers.
 	renderModifiers(true);
 
-	// Render input mode overlays.
+	// Render input mode 2D overlays.
 	if(isInteractive()) {
 		for(const auto& handler : ViewportInputManager::instance().stack()) {
-			if(handler->hasOverlay()) {
-				handler->renderOverlay(viewport(), this, handler == ViewportInputManager::instance().currentHandler());
-			}
+			if(handler->hasOverlay())
+				handler->renderOverlay2D(viewport(), this, handler == ViewportInputManager::instance().currentHandler());
 		}
 	}
 
@@ -254,9 +261,8 @@ Box3 ViewportSceneRenderer::boundingBoxInteractive(TimePoint time, Viewport* vie
 
 	// Include input mode overlays.
 	for(const auto& handler : ViewportInputManager::instance().stack()) {
-		if(handler->hasOverlay()) {
+		if(handler->hasOverlay())
 			bb.addBox(handler->overlayBoundingBox(viewport, this, handler == ViewportInputManager::instance().currentHandler()));
-		}
 	}
 
 	return bb;
@@ -331,5 +337,62 @@ void ViewportSceneRenderer::loadShader(QOpenGLShaderProgram* program, QOpenGLSha
 	}
 }
 
+/******************************************************************************
+* Renders a 2d polyline in the viewport.
+******************************************************************************/
+void ViewportSceneRenderer::render2DPolyline(const Point2* points, int count, const ColorA& color, bool closed)
+{
+	OVITO_STATIC_ASSERT(sizeof(points[0]) == 2*sizeof(GLfloat));
+
+	// Initialize OpenGL shader.
+	QOpenGLShaderProgram* shader = loadShaderProgram("line", ":/core/glsl/line.vertex.glsl", ":/core/glsl/line.fragment.glsl");
+
+	if(!shader->bind())
+		throw Exception(tr("Failed to bind OpenGL shader."));
+
+	bool wasDepthTestEnabled = glIsEnabled(GL_DEPTH_TEST);
+	glDisable(GL_DEPTH_TEST);
+
+	GLint vc[4];
+	glGetIntegerv(GL_VIEWPORT, vc);
+	QMatrix4x4 tm;
+	tm.ortho(vc[0], vc[0] + vc[2], vc[1] + vc[3], vc[1], -1, 1);
+	OVITO_CHECK_OPENGL(shader->setUniformValue("modelview_projection_matrix", tm));
+
+	QOpenGLBuffer vertexBuffer;
+	if(glformat().majorVersion() >= 3) {
+		if(!vertexBuffer.create())
+			throw Exception(tr("Failed to create OpenGL vertex buffer."));
+		if(!vertexBuffer.bind())
+				throw Exception(tr("Failed to bind OpenGL vertex buffer."));
+		vertexBuffer.allocate(points, 2 * sizeof(GLfloat) * count);
+		OVITO_CHECK_OPENGL(shader->enableAttributeArray("vertex_pos"));
+		OVITO_CHECK_OPENGL(shader->setAttributeBuffer("vertex_pos", GL_FLOAT, 0, 2));
+		vertexBuffer.release();
+	}
+	else {
+		OVITO_CHECK_OPENGL(glEnableClientState(GL_VERTEX_ARRAY));
+		OVITO_CHECK_OPENGL(glVertexPointer(2, GL_FLOAT, 0, points));
+	}
+
+	if(glformat().majorVersion() >= 3) {
+		OVITO_CHECK_OPENGL(shader->disableAttributeArray("vertex_color"));
+		OVITO_CHECK_OPENGL(shader->setAttributeValue("vertex_color", color.r(), color.g(), color.b(), color.a()));
+	}
+	else {
+		OVITO_CHECK_OPENGL(glColor4(color));
+	}
+
+	OVITO_CHECK_OPENGL(glDrawArrays(closed ? GL_LINE_LOOP : GL_LINE_STRIP, 0, count));
+
+	if(glformat().majorVersion() >= 3) {
+		shader->disableAttributeArray("vertex_pos");
+	}
+	else {
+		OVITO_CHECK_OPENGL(glDisableClientState(GL_VERTEX_ARRAY));
+	}
+	shader->release();
+	if(wasDepthTestEnabled) glEnable(GL_DEPTH_TEST);
+}
 
 };

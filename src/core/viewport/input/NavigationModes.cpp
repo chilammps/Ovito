@@ -160,7 +160,7 @@ Point3 NavigationMode::orbitCenter()
 /******************************************************************************
 * Lets the input mode render its overlay content in a viewport.
 ******************************************************************************/
-void NavigationMode::renderOverlay(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive)
+void NavigationMode::renderOverlay3D(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive)
 {
 	if(renderer->isPicking())
 		return;
