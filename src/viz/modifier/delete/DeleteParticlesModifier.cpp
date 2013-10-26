@@ -61,7 +61,7 @@ ObjectStatus DeleteParticlesModifier::modifyParticles(TimePoint time, TimeInterv
 	deleteParticles(mask, numRejected);
 
 	statusMessage += tr("\n%n particles deleted (%1%)", 0, numRejected).arg(numRejected * 100 / std::max((int)inputParticleCount(), 1));
-	return ObjectStatus(ObjectStatus::Success, QString(), statusMessage);
+	return ObjectStatus(ObjectStatus::Success, statusMessage);
 }
 
 /******************************************************************************

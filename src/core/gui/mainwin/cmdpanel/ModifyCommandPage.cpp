@@ -29,7 +29,7 @@
 #include <core/viewport/ViewportManager.h>
 #include "ModifyCommandPage.h"
 #include "ModificationListModel.h"
-#include "ModifierListModel.h"
+#include "ModifierListBox.h"
 
 namespace Ovito {
 
@@ -42,7 +42,8 @@ ModifyCommandPage::ModifyCommandPage()
 	layout->setContentsMargins(2,2,2,2);
 	layout->setSpacing(0);
 
-	_modifierSelector = new QComboBox();
+	_modificationListModel = new ModificationListModel(this);
+	_modifierSelector = new ModifierListBox(this, _modificationListModel);
 	layout->addSpacing(4);
     layout->addWidget(_modifierSelector);
     connect(_modifierSelector, SIGNAL(activated(int)), this, SLOT(onModifierAdd(int)));
@@ -62,7 +63,6 @@ ModifyCommandPage::ModifyCommandPage()
 	subLayout->setContentsMargins(0,0,0,0);
 	subLayout->setSpacing(2);
 
-	_modificationListModel = new ModificationListModel(this);
 	_modificationListWidget = new ModifierStackListView(upperContainer);
 	_modificationListWidget->setModel(_modificationListModel);
 	_modificationListWidget->setSelectionModel(_modificationListModel->selectionModel());
@@ -70,8 +70,6 @@ ModifyCommandPage::ModifyCommandPage()
 	connect(_modificationListWidget, SIGNAL(doubleClicked(const QModelIndex&)), this, SLOT(onModifierStackDoubleClicked(const QModelIndex&)));
 	layout->addSpacing(4);
 	subLayout->addWidget(_modificationListWidget);
-
-	_modifierSelector->setModel(new ModifierListModel(this, _modificationListModel, _modifierSelector));
 
 	QToolBar* editToolbar = new QToolBar(this);
 	editToolbar->setOrientation(Qt::Vertical);

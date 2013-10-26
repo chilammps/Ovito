@@ -123,7 +123,7 @@ ObjectStatus SliceModifier::modifyParticles(TimePoint time, TimeInterval& validi
 		statusMessage += tr("\n%n particles deleted", 0, numRejected);
 		statusMessage += tr("\n%n particles remaining", 0, numKept);
 		if(numRejected == 0)
-			return ObjectStatus(ObjectStatus::Success, QString(), statusMessage);
+			return ObjectStatus(ObjectStatus::Success, statusMessage);
 
 		// Delete the rejected particles.
 		deleteParticles(mask, numRejected);
@@ -134,14 +134,12 @@ ObjectStatus SliceModifier::modifyParticles(TimePoint time, TimeInterval& validi
 
 		ParticlePropertyObject* selProperty = outputStandardProperty(ParticleProperty::SelectionProperty);
 		OVITO_ASSERT(mask.size() == selProperty->size());
-		int* s = selProperty->dataInt();
-		int* s_end = s + selProperty->size();
 		auto m = mask.begin();
-		for(; s != s_end; ++s, ++m)
-			*s = *m;
+		for(int& s : selProperty->intRange())
+			s = *m++;
 		selProperty->changed();
 	}
-	return ObjectStatus(ObjectStatus::Success, QString(), statusMessage);
+	return ObjectStatus(ObjectStatus::Success, statusMessage);
 }
 
 /******************************************************************************

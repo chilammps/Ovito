@@ -128,13 +128,15 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl, DataSet* dataset)
 
 			// Ask user if the current import node including any applied modifiers should be kept.
 			QMessageBox msgBox(QMessageBox::Question, tr("Import file"),
-					tr("Do you want to keep the existing objects?"),
+					tr("When importing the selected file, do you want to keep the existing objects?"),
 					QMessageBox::NoButton, &MainWindow::instance());
 
 			QPushButton* cancelButton = msgBox.addButton(QMessageBox::Cancel);
 			QPushButton* resetSceneButton = msgBox.addButton(tr("No"), QMessageBox::NoRole);
 			QPushButton* addToSceneButton = msgBox.addButton(tr("Add to scene"), QMessageBox::YesRole);
 			QPushButton* replaceSourceButton = msgBox.addButton(tr("Replace selected"), QMessageBox::AcceptRole);
+			msgBox.setDefaultButton(resetSceneButton);
+			msgBox.setEscapeButton(cancelButton);
 			msgBox.exec();
 
 			if(msgBox.clickedButton() == cancelButton)

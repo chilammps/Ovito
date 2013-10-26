@@ -37,42 +37,23 @@ class FreezeSelectionModifier : public ParticleModifier
 public:
 
 	/// Default constructor.
-	Q_INVOKABLE FreezeSelectionModifier() :
-		_selectionProperty(new ParticleProperty(0, ParticleProperty::SelectionProperty)){}
+	Q_INVOKABLE FreezeSelectionModifier() {}
 
-	/// This virtual method is called by the system when the modifier has been inserted into a PipelineObject.
+	/// This virtual method is called by the modification system when the modifier has been inserted into a PipelineObject.
 	virtual void initializeModifier(PipelineObject* pipelineObject, ModifierApplication* modApp) override;
 
 	/// Asks the modifier for its validity interval at the given time.
 	virtual TimeInterval modifierValidity(TimePoint time) override { return TimeInterval::forever(); }
 
-	/// Returns the frozen selection state.
-	const ParticleProperty& selectionSnapshot() const { OVITO_CHECK_POINTER(_selectionProperty.constData()); return *_selectionProperty; }
-
 	/// Takes a snapshot of the selection state.
-	void takeSelectionSnapshot(const PipelineFlowState& state);
+	void takeSelectionSnapshot(ModifierApplication* modApp, const PipelineFlowState& state);
 
 protected:
-
-	/// Saves the class' contents to the given stream.
-	virtual void saveToStream(ObjectSaveStream& stream) override;
-
-	/// Loads the class' contents from the given stream.
-	virtual void loadFromStream(ObjectLoadStream& stream) override;
-
-	/// Creates a copy of this object.
-	virtual OORef<RefTarget> clone(bool deepCopy, CloneHelper& cloneHelper) override;
 
 	/// Modifies the particle object.
 	virtual ObjectStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;
 
 private:
-
-	/// This stores the frozen selection when not using particle identifiers.
-	QExplicitlySharedDataPointer<ParticleProperty> _selectionProperty;
-
-	/// This stores the frozen selection when using particle identifiers.
-	QVector<int> _selectedParticles;
 
 	Q_OBJECT
 	OVITO_OBJECT

@@ -77,6 +77,16 @@ public:
 	};
 	Q_ENUMS(Type);
 
+	/// Define our own iterator range type that can be used to iterate over
+	/// the values stored in a ParticleProperty using C++11 range-based for loops.
+	template<class T>
+	class Range : public std::pair<T,T> {
+	public:
+		Q_DECL_CONSTEXPR Range(T begin, std::size_t size) : std::pair<T,T>(begin, begin + size) {}
+		Q_DECL_CONSTEXPR T begin() const { return this->first; }
+		Q_DECL_CONSTEXPR T end() const { return this->second; }
+	};
+
 public:
 
 	/// \brief Default constructor that creates an empty, uninitialized storage.
@@ -225,6 +235,60 @@ public:
 		return reinterpret_cast<const Quaternion*>(constData());
 	}
 
+	/// \brief Returns a range of const iterators over the elements stored in this object.
+	Range<const int*> constIntRange() const {
+		OVITO_ASSERT(componentCount() == 1);
+		return Range<const int*>(constDataInt(), size());
+	}
+
+	/// \brief Returns a range of const iterators over the elements stored in this object.
+	Range<const FloatType*> constFloatRange() const {
+		OVITO_ASSERT(componentCount() == 1);
+		return Range<const FloatType*>(constDataFloat(), size());
+	}
+
+	/// \brief Returns a range of const iterators over the elements stored in this object.
+	Range<const Point3*> constPoint3Range() const {
+		OVITO_ASSERT(componentCount() == 1);
+		return Range<const Point3*>(constDataPoint3(), size());
+	}
+
+	/// \brief Returns a range of const iterators over the elements stored in this object.
+	Range<const Vector3*> constVector3Range() const {
+		OVITO_ASSERT(componentCount() == 1);
+		return Range<const Vector3*>(constDataVector3(), size());
+	}
+
+	/// \brief Returns a range of const iterators over the elements stored in this object.
+	Range<const Color*> constColorRange() const {
+		OVITO_ASSERT(componentCount() == 1);
+		return Range<const Color*>(constDataColor(), size());
+	}
+
+	/// \brief Returns a range of const iterators over the elements stored in this object.
+	Range<const Point3I*> constPoint3IRange() const {
+		OVITO_ASSERT(componentCount() == 1);
+		return Range<const Point3I*>(constDataPoint3I(), size());
+	}
+
+	/// \brief Returns a range of const iterators over the elements stored in this object.
+	Range<const Tensor2*> constTensor2Range() const {
+		OVITO_ASSERT(componentCount() == 1);
+		return Range<const Tensor2*>(constDataTensor2(), size());
+	}
+
+	/// \brief Returns a range of const iterators over the elements stored in this object.
+	Range<const SymmetricTensor2*> constSymmetricTensor2Range() const {
+		OVITO_ASSERT(componentCount() == 1);
+		return Range<const SymmetricTensor2*>(constDataSymmetricTensor2(), size());
+	}
+
+	/// \brief Returns a range of const iterators over the elements stored in this object.
+	Range<const Quaternion*> constQuaternionRange() const {
+		OVITO_ASSERT(componentCount() == 1);
+		return Range<const Quaternion*>(constDataQuaternion(), size());
+	}
+
 	/// Returns a read-write pointer to the raw elements in the property storage.
 	void* data() {
 		return _data.get();
@@ -292,6 +356,60 @@ public:
 	Quaternion* dataQuaternion() {
 		OVITO_ASSERT(dataType() == qMetaTypeId<Quaternion>() || (dataType() == qMetaTypeId<FloatType>() && componentCount() == 4));
 		return reinterpret_cast<Quaternion*>(data());
+	}
+
+	/// \brief Returns a range of iterators over the elements stored in this object.
+	Range<int*> intRange() {
+		OVITO_ASSERT(componentCount() == 1);
+		return Range<int*>(dataInt(), size());
+	}
+
+	/// \brief Returns a range of iterators over the elements stored in this object.
+	Range<FloatType*> floatRange() {
+		OVITO_ASSERT(componentCount() == 1);
+		return Range<FloatType*>(dataFloat(), size());
+	}
+
+	/// \brief Returns a range of iterators over the elements stored in this object.
+	Range<Point3*> point3Range() {
+		OVITO_ASSERT(componentCount() == 1);
+		return Range<Point3*>(dataPoint3(), size());
+	}
+
+	/// \brief Returns a range of iterators over the elements stored in this object.
+	Range<Vector3*> vector3Range() {
+		OVITO_ASSERT(componentCount() == 1);
+		return Range<Vector3*>(dataVector3(), size());
+	}
+
+	/// \brief Returns a range of const iterators over the elements stored in this object.
+	Range<Color*> colorRange() {
+		OVITO_ASSERT(componentCount() == 1);
+		return Range<Color*>(dataColor(), size());
+	}
+
+	/// \brief Returns a range of iterators over the elements stored in this object.
+	Range<Point3I*> point3IRange() {
+		OVITO_ASSERT(componentCount() == 1);
+		return Range<Point3I*>(dataPoint3I(), size());
+	}
+
+	/// \brief Returns a range of iterators over the elements stored in this object.
+	Range<Tensor2*> tensor2Range() {
+		OVITO_ASSERT(componentCount() == 1);
+		return Range<Tensor2*>(dataTensor2(), size());
+	}
+
+	/// \brief Returns a range of iterators over the elements stored in this object.
+	Range<SymmetricTensor2*> symmetricTensor2Range() {
+		OVITO_ASSERT(componentCount() == 1);
+		return Range<SymmetricTensor2*>(dataSymmetricTensor2(), size());
+	}
+
+	/// \brief Returns a range of iterators over the elements stored in this object.
+	Range<Quaternion*> quaternionRange() {
+		OVITO_ASSERT(componentCount() == 1);
+		return Range<Quaternion*>(dataQuaternion(), size());
 	}
 
 	/// \brief Returns an integer element at the given index (if this is an integer property).

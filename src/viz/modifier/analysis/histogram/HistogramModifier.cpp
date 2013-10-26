@@ -235,7 +235,7 @@ ObjectStatus HistogramModifier::modifyParticles(TimePoint time, TimeInterval& va
 
 	notifyDependents(ReferenceEvent::ObjectStatusChanged);
 
-	return ObjectStatus(ObjectStatus::Success, QString(), statusMessage);
+	return ObjectStatus(ObjectStatus::Success, statusMessage);
 }
 
 /******************************************************************************

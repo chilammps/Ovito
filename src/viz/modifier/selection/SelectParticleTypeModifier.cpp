@@ -116,19 +116,17 @@ ObjectStatus SelectParticleTypeModifier::modifyParticles(TimePoint time, TimeInt
 
 	OVITO_ASSERT(selProperty->size() == typeProperty->size());
 	const int* t = typeProperty->constDataInt();
-	const int* t_end = t + typeProperty->size();
-	int* s = selProperty->dataInt();
-	for(; t != t_end; ++t, ++s) {
-		if(selectedParticleTypes().contains(*t)) {
-			*s = 1;
+	for(int& s : selProperty->intRange()) {
+		if(selectedParticleTypes().contains(*t++)) {
+			s = 1;
 			nSelected++;
 		}
-		else *s = 0;
+		else s = 0;
 	}
 	selProperty->changed();
 
 	QString statusMessage = tr("%1 out of %2 particles selected (%3%)").arg(nSelected).arg(inputParticleCount()).arg(nSelected * 100 / std::max((int)inputParticleCount(), 1));
-	return ObjectStatus(ObjectStatus::Success, QString(), statusMessage);
+	return ObjectStatus(ObjectStatus::Success, statusMessage);
 }
 
 /******************************************************************************

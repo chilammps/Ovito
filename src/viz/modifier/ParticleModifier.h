@@ -133,6 +133,10 @@ protected:
 	/// Sets the status returned by the modifier and generates a ReferenceEvent::ObjectStatusChanged event.
 	void setStatus(const ObjectStatus& status);
 
+	/// Returns the current ModifierApplication object. It is only valid to call this
+	/// method from an implementation of modifyParticles().
+	ModifierApplication* modifierApplication() const { OVITO_CHECK_POINTER(_modApp); return _modApp; }
+
 protected:
 
 	/// The clone helper object that is used to create shallow and deep copies

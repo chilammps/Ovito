@@ -279,14 +279,14 @@ ObjectStatus CreateBondsModifier::applyModifierResults(TimePoint time, TimeInter
 		// If there are too many bonds, we better turn off bond sdisplay to prevent the program from freezing.
 		if(bondsCount > 1000000 && bondsDisplay()) {
 			bondsDisplay()->setEnabled(false);
-			return ObjectStatus(ObjectStatus::Warning, QString(), tr("Created %1 bonds. Automatically disabled display of such a large number of bonds to prevent the program from freezing.").arg(bondsCount));
+			return ObjectStatus(ObjectStatus::Warning, tr("Created %1 bonds. Automatically disabled display of such a large number of bonds to prevent the program from freezing.").arg(bondsCount));
 		}
 	}
 
 	if(!_hasWrappedParticles)
-		return ObjectStatus(ObjectStatus::Success, QString(), tr("Created %1 bonds.").arg(bondsCount));
+		return ObjectStatus(ObjectStatus::Success, tr("Created %1 bonds.").arg(bondsCount));
 	else
-		return ObjectStatus(ObjectStatus::Warning, QString(), tr("Created %1 bonds. Some of the particles are located outside the simulation cell boundaries. The bonds of these particles may not display correctly. Please use the 'Wrap at periodic boundaries' modifier to avoid this problem.").arg(bondsCount));
+		return ObjectStatus(ObjectStatus::Warning, tr("Created %1 bonds. Some of the particles are located outside the simulation cell boundaries. The bonds of these particles may not display correctly. Please use the 'Wrap at periodic boundaries' modifier to avoid this problem.").arg(bondsCount));
 }
 
 /******************************************************************************
@@ -353,15 +353,13 @@ void CreateBondsModifierEditor::updatePairCutoffList()
 	// Obtain the list of particle types in the modifier's input.
 	PairCutoffTableModel::ContentType pairCutoffs;
 	PipelineFlowState inputState = mod->getModifierInput();
-	for(const auto& o : inputState.objects()) {
-		ParticleTypeProperty* typeProperty = dynamic_object_cast<ParticleTypeProperty>(o.get());
-		if(typeProperty && typeProperty->type() == ParticleProperty::ParticleTypeProperty) {
-			for(auto ptype1 = typeProperty->particleTypes().constBegin(); ptype1 != typeProperty->particleTypes().constEnd(); ++ptype1) {
-				for(auto ptype2 = ptype1; ptype2 != typeProperty->particleTypes().constEnd(); ++ptype2) {
-					pairCutoffs.push_back(qMakePair((*ptype1)->name(), (*ptype2)->name()));
-				}
+	ParticleTypeProperty* typeProperty = dynamic_object_cast<ParticleTypeProperty>(
+			ParticlePropertyObject::findInState(inputState, ParticleProperty::ParticleTypeProperty));
+	if(typeProperty) {
+		for(auto ptype1 = typeProperty->particleTypes().constBegin(); ptype1 != typeProperty->particleTypes().constEnd(); ++ptype1) {
+			for(auto ptype2 = ptype1; ptype2 != typeProperty->particleTypes().constEnd(); ++ptype2) {
+				pairCutoffs.push_back(qMakePair((*ptype1)->name(), (*ptype2)->name()));
 			}
-			break;
 		}
 	}
 	_pairCutoffTableModel->setContent(mod, pairCutoffs);

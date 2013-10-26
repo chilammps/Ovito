@@ -244,6 +244,22 @@ void ModificationListModel::refreshItem(ModificationListItem* item)
 }
 
 /******************************************************************************
+* The the current modification stack contains a hidden pipeline object
+* at the top, this function returns it.
+******************************************************************************/
+PipelineObject* ModificationListModel::hiddenPipelineObject()
+{
+	for(int i = _hiddenItems.size() - 1; i >= 0; i--) {
+		PipelineObject* pipelineObj = dynamic_object_cast<PipelineObject>(_hiddenItems[i]->object());
+		if(pipelineObj) {
+			OVITO_CHECK_OBJECT_POINTER(pipelineObj);
+			return pipelineObj;
+		}
+	}
+	return nullptr;
+}
+
+/******************************************************************************
 * Inserts the given modifier into the modification pipeline of the
 * selected scene nodes.
 ******************************************************************************/
@@ -271,19 +287,15 @@ void ModificationListModel::applyModifier(Modifier* modifier)
 			return;
 		}
 		else if(dynamic_object_cast<SceneObject>(currentItem->object())) {
-			for(int i = _hiddenItems.size() - 1; i >= 0; i--) {
-				PipelineObject* pipelineObj = dynamic_object_cast<PipelineObject>(_hiddenItems[i]->object());
-				if(pipelineObj) {
-					OVITO_CHECK_OBJECT_POINTER(pipelineObj);
-					pipelineObj->insertModifier(modifier, 0);
-					return;
-				}
+			if(PipelineObject* pipelineObj = hiddenPipelineObject()) {
+				pipelineObj->insertModifier(modifier, 0);
+				return;
 			}
 		}
 	}
 
 	// Apply modifier to each selected node.
-	for(RefTarget* objNode : _selectedNodes.targets()) {
+	for(RefTarget* objNode : selectedNodes()) {
 		static_object_cast<ObjectNode>(objNode)->applyModifier(modifier);
 	}
 }
@@ -339,9 +351,6 @@ QVariant ModificationListModel::data(const QModelIndex& index, int role) const
 			default: OVITO_ASSERT(false);
 			}
 		}
-	}
-	else if(role == Qt::ToolTipRole) {
-		return item->toolTip();
 	}
 	else if(role == Qt::CheckStateRole) {
 		DisplayObject* displayObj = dynamic_object_cast<DisplayObject>(item->object());

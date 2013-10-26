@@ -32,7 +32,8 @@
 namespace Ovito {
 
 /**
- * \brief Encapsulates status information about an operation, e.g. evaluating a Modifier in the geometry pipeline.
+ * \brief Encapsulates the status information associated with a scene object or
+ *        a pipeline evaluation.
  */
 class OVITO_CORE_EXPORT ObjectStatus
 {
@@ -49,23 +50,19 @@ public:
 	ObjectStatus() : _type(Success) {}
 
 	/// Constructs a status object with the given status and optional text string describing the status.
-	ObjectStatus(StatusType t, const QString& shortText = QString(), const QString& longText = QString()) :
-		_type(t), _shortText(shortText), _longText(longText) {}
+	ObjectStatus(StatusType t, const QString& text = QString()) :
+		_type(t), _text(text) {}
 
 	/// Returns the type of status stores in this object.
 	StatusType type() const { return _type; }
 
-	/// Returns a short text string describing the status.
-	const QString& shortText() const { return _shortText; }
-
-	/// Returns a more verbose text string describing the status.
-	const QString& longText() const { return _longText.isEmpty() ? _shortText : _longText; }
+	/// Returns a text string describing the status.
+	const QString& text() const { return _text; }
 
 	/// Tests two status objects for equality.
 	bool operator==(const ObjectStatus& other) const {
 		return (_type == other._type) &&
-				(_shortText == other._shortText) &&
-				(_longText == other._longText);
+				(_text == other._text);
 	}
 
 	/// Tests two status objects for inequality.
@@ -77,10 +74,7 @@ private:
 	StatusType _type;
 
 	/// A human-readable string describing the status.
-	QString _shortText;
-
-	/// A more verbose, human-readable string describing the status.
-	QString _longText;
+	QString _text;
 
 	friend SaveStream& operator<<(SaveStream& stream, const ObjectStatus& s);
 	friend LoadStream& operator>>(LoadStream& stream, ObjectStatus& s);
@@ -92,10 +86,9 @@ private:
 /// \return The output stream \a stream.
 inline SaveStream& operator<<(SaveStream& stream, const ObjectStatus& s)
 {
-	stream.beginChunk(0x01);
+	stream.beginChunk(0x02);
 	stream.writeEnum(s._type);
-	stream << s._shortText;
-	stream << s._longText;
+	stream << s._text;
 	stream.endChunk();
 	return stream;
 }
@@ -106,10 +99,11 @@ inline SaveStream& operator<<(SaveStream& stream, const ObjectStatus& s)
 /// \return The input stream \a stream.
 inline LoadStream& operator>>(LoadStream& stream, ObjectStatus& s)
 {
-	stream.expectChunk(0x01);
+	quint32 version = stream.expectChunkRange(0x0, 0x02);
 	stream.readEnum(s._type);
-	stream >> s._shortText;
-	stream >> s._longText;
+	stream >> s._text;
+	if(version <= 0x01)
+		stream >> s._text;
 	stream.closeChunk();
 	return stream;
 }
@@ -123,10 +117,8 @@ inline QDebug operator<<(QDebug debug, const ObjectStatus& s)
 	case ObjectStatus::Warning: debug << "Warning"; break;
 	case ObjectStatus::Error: debug << "Error"; break;
 	}
-	if(s.shortText().isEmpty() == false)
-		debug << s.shortText();
-	if(s.longText().isEmpty() == false)
-		debug << s.longText();
+	if(s.text().isEmpty() == false)
+		debug << s.text();
 	return debug;
 }
 

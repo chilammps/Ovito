@@ -242,7 +242,7 @@ void LinkedFileObjectEditor::updateInformationLabel()
 	}
 	else _filenameLabel->setText(QString());
 
-	_statusTextLabel->setText(obj->status().longText());
+	_statusTextLabel->setText(obj->status().text());
 	if(obj->status().type() == ObjectStatus::Warning)
 		_statusIconLabel->setPixmap(_statusWarningIcon);
 	else if(obj->status().type() == ObjectStatus::Error)

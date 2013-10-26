@@ -174,12 +174,10 @@ void AmbientOcclusionModifier::AmbientOcclusionEngine::compute(FutureInterfaceBa
 	if(!futureInterface.isCanceled()) {
 		futureInterface.setProgressValue(_samplingCount);
 		// Normalize brightness values.
-		FloatType* b = brightness()->dataFloat();
-		FloatType* b_end = b + brightness()->size();
-		FloatType maxBrightness = *std::max_element(b, b_end);
+		FloatType maxBrightness = *std::max_element(brightness()->constDataFloat(), brightness()->constDataFloat() + brightness()->size());
 		if(maxBrightness != 0) {
-			for(; b != b_end; ++b) {
-				*b /= maxBrightness;
+			for(FloatType& b : brightness()->floatRange()) {
+				b /= maxBrightness;
 			}
 		}
 	}
@@ -217,8 +215,11 @@ ObjectStatus AmbientOcclusionModifier::applyModifierResults(TimePoint time, Time
 	Color* c_end = c + colorProperty->size();
 	auto c_in = existingColors.cbegin();
 	for(; c != c_end; ++b, ++c, ++c_in) {
-		FloatType factor = std::min(FloatType(1), FloatType(1) - intens + (*b));
-		*c = factor * (*c_in);
+		FloatType factor = FloatType(1) - intens + (*b);
+		if(factor < 1.0f)
+			*c = factor * (*c_in);
+		else
+			*c = *c_in;
 	}
 	colorProperty->changed();
 

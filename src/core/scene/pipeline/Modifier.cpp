@@ -59,19 +59,21 @@ QVector<ModifierApplication*> Modifier::modifierApplications() const
 * Note: This method might return empty result objects in some cases when the modifier stack
 * cannot be evaluated because of an invalid modifier.
 ******************************************************************************/
-QMap<ModifierApplication*, PipelineFlowState> Modifier::getModifierInputs(TimePoint time) const
-{	
+QVector<QPair<ModifierApplication*, PipelineFlowState>> Modifier::getModifierInputs() const
+{
 	UndoSuspender noUndo;
 		
-	QMap<ModifierApplication*, PipelineFlowState> result;	
-	Q_FOREACH(ModifierApplication* app, modifierApplications()) {
-		PipelineObject* pipelineObj = app->pipelineObject();
-		if(!pipelineObj) continue;
-		
-		result[app] = pipelineObj->evaluatePipeline(time, app, false);
+	TimePoint time = AnimManager::instance().time();
+	QVector<QPair<ModifierApplication*, PipelineFlowState>> results;
+	Q_FOREACH(RefMaker* dependent, dependents()) {
+        ModifierApplication* modApp = dynamic_object_cast<ModifierApplication>(dependent);
+		if(modApp != NULL && modApp->modifier() == this) {
+			if(PipelineObject* pipelineObj = modApp->pipelineObject())
+				results.push_back(qMakePair(modApp, pipelineObj->evaluatePipeline(time, modApp, false)));
+		}
 	}
 
-	return result;
+	return results;
 }
 
 /******************************************************************************
@@ -82,11 +84,13 @@ QMap<ModifierApplication*, PipelineFlowState> Modifier::getModifierInputs(TimePo
 PipelineFlowState Modifier::getModifierInput() const 
 {
 	UndoSuspender noUndo;
-		
-	Q_FOREACH(ModifierApplication* app, modifierApplications()) {
-		PipelineObject* pipelineObj = app->pipelineObject();
-		if(!pipelineObj) continue;
-		return pipelineObj->evaluatePipeline(AnimManager::instance().time(), app, false);
+
+	Q_FOREACH(RefMaker* dependent, dependents()) {
+        ModifierApplication* modApp = dynamic_object_cast<ModifierApplication>(dependent);
+		if(modApp != NULL && modApp->modifier() == this) {
+			if(PipelineObject* pipelineObj = modApp->pipelineObject())
+				return pipelineObj->evaluatePipeline(AnimManager::instance().time(), modApp, false);
+		}
 	}
 
 	return PipelineFlowState();

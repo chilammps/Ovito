@@ -75,7 +75,7 @@ void SceneNodesListModel::onDataSetReset(DataSet* newDataSet)
 	_rootNodeListener.setTarget(nullptr);
 	if(newDataSet) {
 		_rootNodeListener.setTarget(newDataSet->sceneRoot());
-		newDataSet->sceneRoot()->visitChildren([this](SceneNode* node) {
+		newDataSet->sceneRoot()->visitChildren([this](SceneNode* node) -> bool {
 			_nodeListener.push_back(node);
 			return true;
 		});
@@ -105,7 +105,7 @@ void SceneNodesListModel::onNodeNotificationEvent(RefTarget* source, ReferenceEv
 				_nodeListener.push_back(node);
 				endInsertRows();
 				// Add all child nodes too.
-				node->visitChildren([this](SceneNode* node) {
+				node->visitChildren([this](SceneNode* node) -> bool {
 					beginInsertRows(QModelIndex(), _nodeListener.targets().size(), _nodeListener.targets().size());
 					_nodeListener.push_back(node);
 					endInsertRows();

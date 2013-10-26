@@ -87,11 +87,7 @@ ModificationListItem::Status ModificationListItem::status() const
 		if(sceneObject)
 			status = sceneObject->status();
 	}
-	if(status.type() == ObjectStatus::Success) {
-		if(!status.shortText().isEmpty())
-			return Info;
-	}
-	else if(status.type() == ObjectStatus::Warning)
+	if(status.type() == ObjectStatus::Warning)
 		return Warning;
 	else if(status.type() == ObjectStatus::Error)
 		return Error;
@@ -99,20 +95,6 @@ ModificationListItem::Status ModificationListItem::status() const
 		return Pending;
 
 	return None;
-}
-
-/******************************************************************************
-* Returns the tooltip text for the list item.
-******************************************************************************/
-QVariant ModificationListItem::toolTip() const
-{
-	Modifier* modifier = dynamic_object_cast<Modifier>(object());
-	if(modifier && modifier->isEnabled()) {
-		ObjectStatus status = modifier->status();
-		if(status.shortText().isEmpty() == false)
-			return qVariantFromValue(status.shortText());
-	}
-	return QVariant();
 }
 
 };

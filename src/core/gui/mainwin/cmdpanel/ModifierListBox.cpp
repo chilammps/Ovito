@@ -22,19 +22,19 @@
 #include <core/Core.h>
 #include <core/plugins/PluginManager.h>
 #include <core/scene/pipeline/Modifier.h>
-#include "ModifierListModel.h"
+#include <core/scene/pipeline/PipelineObject.h>
+#include <core/scene/ObjectNode.h>
+#include "ModifierListBox.h"
 #include "ModificationListModel.h"
 
 namespace Ovito {
 
 /******************************************************************************
-* Initializes the object.
+* Initializes the widget.
 ******************************************************************************/
-ModifierListModel::ModifierListModel(QObject* parent, ModificationListModel* modificationList, QComboBox* widget) : QStandardItemModel(parent), _modificationList(modificationList), _widget(widget)
+ModifierListBox::ModifierListBox(QWidget* parent, ModificationListModel* modificationList) : QComboBox(parent),
+		_modificationList(modificationList)
 {
-	// Listen for selection changes in the modification list box.
-	connect(modificationList, SIGNAL(selectedItemChanged()), this, SLOT(updateAvailableModifiers()));
-
 	ModifierCategory otherCategory;
 	otherCategory.name = tr("Others");
 
@@ -85,7 +85,7 @@ ModifierListModel::ModifierListModel(QObject* parent, ModificationListModel* mod
 		} );
 	}
 
-	_categoryFont = _widget->font();
+	_categoryFont = font();
 	_categoryFont.setBold(true);
 	if(_categoryFont.pixelSize() < 0)
 		_categoryFont.setPointSize(_categoryFont.pointSize() * 4 / 5);
@@ -101,19 +101,44 @@ ModifierListModel::ModifierListModel(QObject* parent, ModificationListModel* mod
 * Updates the list box of modifier classes that can be applied to the current selected
 * item in the modification list.
 ******************************************************************************/
-void ModifierListModel::updateAvailableModifiers()
+void ModifierListBox::updateAvailableModifiers()
 {
 	clear();
+
+	QStandardItemModel* model = qobject_cast<QStandardItemModel*>(this->model());
+	OVITO_CHECK_POINTER(model);
 	QStandardItem* titleItem = new QStandardItem(tr("Add modification..."));
 	titleItem->setFlags(Qt::ItemIsEnabled);
-	appendRow(titleItem);
-	_widget->setCurrentIndex(0);
+	model->appendRow(titleItem);
+	setCurrentIndex(0);
 
 	ModificationListItem* currentItem = _modificationList->selectedItem();
-	if(currentItem == nullptr) {
-		_widget->setEnabled(false);
+	if(currentItem == nullptr)
 		return;
+
+#if 0
+	// Get the input state to which the modifier would be applied.
+	PipelineFlowState inputState;
+	if(dynamic_object_cast<Modifier>(currentItem->object())) {
+		for(ModifierApplication* modApp : currentItem->modifierApplications()) {
+			PipelineObject* pipelineObj = modApp->pipelineObject();
+			OVITO_CHECK_OBJECT_POINTER(pipelineObj);
+			inputState = pipelineObj->evaluatePipeline(AnimManager::instance().time(), modApp, true);
+			break;
+		}
 	}
+	else if(dynamic_object_cast<PipelineObject>(currentItem->object())) {
+		PipelineObject* pipelineObj = static_object_cast<PipelineObject>(currentItem->object());
+		OVITO_CHECK_OBJECT_POINTER(pipelineObj);
+		inputState = pipelineObj->evaluate(AnimManager::instance().time());
+	}
+	else {
+		for(RefTarget* objNode : _modificationList->selectedNodes()) {
+			inputState = static_object_cast<ObjectNode>(objNode)->evalPipeline(AnimManager::instance().time());
+			break;
+		}
+	}
+#endif
 
 	for(const ModifierCategory& category : _modifierCategories) {
 
@@ -123,17 +148,16 @@ void ModifierListModel::updateAvailableModifiers()
 		categoryItem->setForeground(_categoryForegroundBrush);
 		categoryItem->setFlags(Qt::ItemIsEnabled);
 		categoryItem->setTextAlignment(Qt::AlignCenter);
-		appendRow(categoryItem);
+		model->appendRow(categoryItem);
 
 		for(const OvitoObjectType* descriptor : category.modifierClasses) {
 			QStandardItem* modifierItem = new QStandardItem("   " + descriptor->displayName());
 			modifierItem->setData(qVariantFromValue((void*)descriptor), Qt::UserRole);
-			appendRow(modifierItem);
+			model->appendRow(modifierItem);
 		}
 	}
 
-    _widget->setEnabled(true);
-    _widget->setMaxVisibleItems(_widget->count());
+    setMaxVisibleItems(count());
 }
 
 };

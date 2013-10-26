@@ -143,4 +143,18 @@ OORef<RefTarget> ParticlePropertyObject::clone(bool deepCopy, CloneHelper& clone
 	return clone;
 }
 
+/******************************************************************************
+* This helper method returns the particle property (if present) from the
+* given pipeline state with the given type.
+******************************************************************************/
+ParticlePropertyObject* ParticlePropertyObject::findInState(const PipelineFlowState& state, ParticleProperty::Type type)
+{
+	for(const auto& o : state.objects()) {
+		ParticlePropertyObject* particleProperty = dynamic_object_cast<ParticlePropertyObject>(o.get());
+		if(particleProperty && particleProperty->type() == type)
+			return particleProperty;
+	}
+	return nullptr;
+}
+
 };	// End of namespace

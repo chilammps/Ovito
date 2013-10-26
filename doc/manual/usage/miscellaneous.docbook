@@ -21,7 +21,7 @@
     </para>
     <para>
       OVITO uses a binary format for the scene files to store all objects, their parameters, and their dependencies. 
-      However, by default, OVITO does not store the original particle data in the scene file to keep its size small. Instead, a reference
+      By default, OVITO does not store the original particle data in the scene file to keep its compact. Only a reference
       to the original simulation file is stored, and the particle data is restored from the external source when the scene file is loaded.
     </para>
   </sect3>

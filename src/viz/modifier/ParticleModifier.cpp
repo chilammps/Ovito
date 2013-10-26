@@ -95,13 +95,7 @@ void ParticleModifier::setStatus(const ObjectStatus& status)
 ParticlePropertyObject* ParticleModifier::inputStandardProperty(ParticleProperty::Type which) const
 {
 	OVITO_ASSERT(which != ParticleProperty::UserProperty);
-	for(const auto& o : _input.objects()) {
-		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o.get());
-		if(property && property->type() == which) {
-			return property;
-		}
-	}
-	return nullptr;
+	return ParticlePropertyObject::findInState(_input, which);
 }
 
 /******************************************************************************
@@ -159,14 +153,7 @@ ParticlePropertyObject* ParticleModifier::outputStandardProperty(ParticlePropert
 	OORef<ParticlePropertyObject> inputProperty = inputStandardProperty(which);
 
 	// Check if property already exists in the output.
-	OORef<ParticlePropertyObject> outputProperty;
-	for(const auto& o : _output.objects()) {
-		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o.get());
-		if(property && property->type() == which) {
-			outputProperty = property;
-			break;
-		}
-	}
+	OORef<ParticlePropertyObject> outputProperty = ParticlePropertyObject::findInState(_output, which);
 
 	if(outputProperty) {
 		// Is the existing output property still a shallow copy of the input?
@@ -424,9 +411,9 @@ void ParticleModifierEditor::updateStatusLabel()
 	Modifier* modifier = dynamic_object_cast<Modifier>(editObject());
 	if(modifier) {
 		ObjectStatus status = modifier->status();
-		_statusTextLabel->setText(status.longText());
+		_statusTextLabel->setText(status.text());
 		if(status.type() == ObjectStatus::Success) {
-			if(status.longText().isEmpty() == false)
+			if(status.text().isEmpty() == false)
 				_statusIconLabel->setPixmap(_modifierStatusInfoIcon);
 			else
 				_statusIconLabel->clear();

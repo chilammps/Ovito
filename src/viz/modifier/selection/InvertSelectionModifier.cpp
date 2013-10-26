@@ -33,10 +33,8 @@ ObjectStatus InvertSelectionModifier::modifyParticles(TimePoint time, TimeInterv
 {
 	ParticlePropertyObject* selProperty = outputStandardProperty(ParticleProperty::SelectionProperty);
 
-	int* s = selProperty->dataInt();
-	int* s_end = s + selProperty->size();
-	for(; s != s_end; ++s)
-		*s = !(*s);
+	for(int& s : selProperty->intRange())
+		s = !s;
 	selProperty->changed();
 
 	return ObjectStatus::Success;

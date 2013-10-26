@@ -279,7 +279,7 @@ ObjectStatus SelectExpressionModifier::modifyParticles(TimePoint time, TimeInter
 	}
 
 	QString statusMessage = tr("%1 out of %2 particles selected (%3%)").arg(nSelected).arg(inputParticleCount()).arg(nSelected * 100 / std::max(inputParticleCount(), (size_t)1));
-	return ObjectStatus(ObjectStatus::Success, QString(), statusMessage);
+	return ObjectStatus(ObjectStatus::Success, statusMessage);
 }
 
 /******************************************************************************

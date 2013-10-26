@@ -31,6 +31,7 @@ SET(OVITO_VIZ_SOURCE_FILES
 	data/BondsObject.cpp
 	data/BondsStorage.cpp
 	data/BondsDisplay.cpp
+	data/ParticleSelectionSet.cpp
 	modifier/ParticleModifier.cpp
 	modifier/AsynchronousParticleModifier.cpp
 	modifier/coloring/AssignColorModifier.cpp
@@ -55,6 +56,7 @@ SET(OVITO_VIZ_SOURCE_FILES
 	modifier/selection/SelectParticleTypeModifier.cpp
 	modifier/selection/SelectExpressionModifier.cpp
 	modifier/selection/FreezeSelectionModifier.cpp
+#	modifier/selection/ManualSelectionModifier.cpp
 	modifier/selection/ClearSelectionModifier.cpp
 	modifier/properties/CreateExpressionPropertyModifier.cpp
 	importer/ParticleImporter.cpp

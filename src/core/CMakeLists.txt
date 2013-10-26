@@ -69,7 +69,7 @@ SET(OVITO_CORE_SOURCE_FILES
 	gui/mainwin/cmdpanel/ModifyCommandPage.cpp
 	gui/mainwin/cmdpanel/ModificationListModel.cpp
 	gui/mainwin/cmdpanel/ModificationListItem.cpp
-	gui/mainwin/cmdpanel/ModifierListModel.cpp
+	gui/mainwin/cmdpanel/ModifierListBox.cpp
 	gui/mainwin/cmdpanel/UtilityCommandPage.cpp
 	gui/mainwin/cmdpanel/UtilityApplet.cpp
 	gui/dialogs/AdjustCameraDialog.cpp

@@ -69,9 +69,6 @@ public:
 	/// Returns the status of the object represented by the list item.
 	Status status() const;
 
-	/// Returns the tooltip text for the list item.
-	QVariant toolTip() const;
-
 	/// Returns the title text if this is a section header item.
 	const QString title() const { return _title; }
 

@@ -13,8 +13,8 @@
   large-scale atomistic simulations in materials science. 
   OVITO is freely available under an open-source license for
   Windows, Linux and MacOS platforms. It is being developed by Alexander
-  Stukowski at <link xlink:href="http://www.mm.mw.tu-darmstadt.de/">the
-  Material Science Department of Darmstadt University of Technology,
+  Stukowski at the <link xlink:href="http://www.mm.mw.tu-darmstadt.de/">
+  Institute of Materials Science at Darmstadt University of Technology,
   Germany</link>.
   </para>
   
@@ -34,22 +34,23 @@
 
   <para>OVITO is a software tool to visualize and analyze output from molecular
   dynamics simulations of particles, in particular atomistic simulations of solid-state materials.
-  This is a list of the main program features: <itemizedlist>
+  Key program features: <itemizedlist>
 
       <listitem>
-        <para>Reads and writes various file formats used by MD simulation codes including LAMMPS, XYZ, CFG, IMD, and POSCAR</para>
+        <para>Reading and writing file formats used by various MD simulation codes including LAMMPS, XYZ, CFG, IMD, and POSCAR.</para>
       </listitem>
 
       <listitem>
-        <para>Interactive display of large data sets using hardware-accelerated OpenGL rendering </para>
+        <para>Interactive display of large sets of particles using hardware-accelerated OpenGL rendering.</para>
       </listitem>
 
       <listitem>
-        <para>Flexible data model: allows to associate an arbitrary set of properties with each particle </para>
+        <para>Flexible data model, which allows to associate an arbitrary number of properties with each particle.</para>
       </listitem>
 
       <listitem>
-        <para>Flexible processing model: Data modification and analysis steps can be performed in any order; parameters can be altered at any time with immediate update of the results.
+        <para>Flexible processing model: Data modification and analysis steps can be performed in any order; parameters can be altered at 
+        any time with immediate update of the results.
         Functions include <itemizedlist>
         
             <listitem>
@@ -65,15 +66,15 @@
             </listitem>
 
             <listitem>
-              <para>Transformation of atomic positions</para>
+              <para>Transformation of particle coordinates</para>
             </listitem>
 
             <listitem>
-              <para>Calculation of new particle properties from existing properties </para>
+              <para>Calculation of derived particle properties from existing properties </para>
             </listitem>
 
             <listitem>
-              <para>Display of periodic images; wrapping of atoms at periodic boundaries</para>
+              <para>Display of periodic images; wrapping of particles at periodic boundaries</para>
             </listitem>
             
             <listitem>
@@ -92,11 +93,11 @@
       </listitem>
 
       <listitem>
-        <para> Handles simulation sequences (realtime playback and movie file generation) </para>
+        <para> Simulation time series (realtime playback and movie file generation) </para>
       </listitem>
 
       <listitem>
-        <para> Powerful analysis functions including </para>
+        <para> Useful analysis functions including </para>
 
         <itemizedlist>
           <listitem>
@@ -104,15 +105,11 @@
           </listitem>
 
           <listitem>
-            <para>Bond angle analysis (BAA)</para>
+            <para>Bond-angle analysis (BAA)</para>
           </listitem>
 
           <listitem>
             <para>Centro-symmetry parameter</para>
-          </listitem>
-
-          <listitem>
-            <para>Cluster analysis</para>
           </listitem>
 
           <listitem>
@@ -137,7 +134,7 @@
       </listitem>
 
       <listitem>
-        <para> A modular software design makes it easy to extend OVITO via plugins written in C++ </para>
+        <para> A modular software design makes it easy to extend OVITO through plugins written in C++ </para>
       </listitem>
 
       <listitem>

@@ -89,7 +89,7 @@ public:
 		const FrameSourceInformation& frame() const { return _frame; }
 
 		/// Returns a status object that describes the outcome of the loading operation.
-		ObjectStatus status() const { return ObjectStatus(ObjectStatus::Success, QString(), _infoText); }
+		ObjectStatus status() const { return ObjectStatus(ObjectStatus::Success, _infoText); }
 
 		/// Sets the informational text.
 		void setInfoText(const QString& text) { _infoText = text; }

@@ -54,15 +54,26 @@ public:
 	/// \return The PipelineObject this application is part of.
 	PipelineObject* pipelineObject() const;
 
+	/// \brief Returns the optional data object managed by the modifier.
+	/// \return The modifier data.
+	RefTarget* modifierData() const { return _modifierData; }
+
+	/// \brief Sets or replaces the optional data object managed by the modifier.
+	void setModifierData(RefTarget* data) { _modifierData = data; }
+
 private:
 
 	/// The modifier that is being applied.
 	ReferenceField<Modifier> _modifier;
 
+	/// Stores optional data managed by the modifier.
+	ReferenceField<RefTarget> _modifierData;
+
 	Q_OBJECT
 	OVITO_OBJECT
 
 	DECLARE_REFERENCE_FIELD(_modifier);
+	DECLARE_REFERENCE_FIELD(_modifierData);
 };
 
 

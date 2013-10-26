@@ -125,19 +125,12 @@ ObjectStatus CalculateDisplacementsModifier::modifyParticles(TimePoint time, Tim
 		if(refState.status().type() != ObjectStatus::Pending)
 			throw Exception(tr("Reference configuration has not been specified yet or is empty. Please pick a reference simulation file."));
 		else
-			return ObjectStatus(ObjectStatus::Pending, QString(), tr("Waiting for input data to become ready..."));
+			return ObjectStatus(ObjectStatus::Pending, tr("Waiting for input data to become ready..."));
 	}
 	validityInterval.intersect(refState.stateValidity());
 
 	// Get the reference position property.
-	ParticlePropertyObject* refPosProperty = nullptr;
-	for(const auto& o : refState.objects()) {
-		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o.get());
-		if(property && property->type() == ParticleProperty::PositionProperty) {
-			refPosProperty = property;
-			break;
-		}
-	}
+	ParticlePropertyObject* refPosProperty = ParticlePropertyObject::findInState(refState, ParticleProperty::PositionProperty);
 	if(!refPosProperty)
 		throw Exception(tr("Reference configuration does not contain any particle positions."));
 
@@ -147,14 +140,7 @@ ObjectStatus CalculateDisplacementsModifier::modifyParticles(TimePoint time, Tim
 	// Build particle-to-particle index map.
 	std::vector<size_t> indexToIndexMap(inputParticleCount());
 	ParticlePropertyObject* identifierProperty = inputStandardProperty(ParticleProperty::IdentifierProperty);
-	ParticlePropertyObject* refIdentifierProperty = nullptr;
-	for(const auto& o : refState.objects()) {
-		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o.get());
-		if(property && property->type() == ParticleProperty::IdentifierProperty) {
-			refIdentifierProperty = property;
-			break;
-		}
-	}
+	ParticlePropertyObject* refIdentifierProperty = ParticlePropertyObject::findInState(refState, ParticleProperty::IdentifierProperty);;
 	if(identifierProperty && refIdentifierProperty) {
 
 		// Build map of particle identifiers in reference configuration.
@@ -191,7 +177,7 @@ ObjectStatus CalculateDisplacementsModifier::modifyParticles(TimePoint time, Tim
 			if(refState.status().type() != ObjectStatus::Pending)
 				throw Exception(tr("Cannot calculate displacement vectors. Numbers of particles in reference configuration and current configuration do not match."));
 			else
-				return ObjectStatus(ObjectStatus::Pending, QString(), tr("Waiting for input data to become ready..."));
+				return ObjectStatus(ObjectStatus::Pending, tr("Waiting for input data to become ready..."));
 		}
 		// When particle identifiers are not available, use trivial 1-to-1 mapping.
 		std::iota(indexToIndexMap.begin(), indexToIndexMap.end(), size_t(0));

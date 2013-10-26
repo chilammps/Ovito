@@ -104,21 +104,14 @@ std::shared_ptr<AsynchronousParticleModifier::Engine> AtomicStrainModifier::crea
 	// Always use frame 0 as reference configuration.
 	PipelineFlowState refState = referenceConfiguration()->evaluate(0);
 	if(refState.status().type() == ObjectStatus::Pending)
-		throw ObjectStatus(ObjectStatus::Pending, QString(), tr("Waiting for input data to become ready..."));
+		throw ObjectStatus(ObjectStatus::Pending, tr("Waiting for input data to become ready..."));
 	else if(refState.status().type() == ObjectStatus::Error)
 		throw refState.status();
 	else if(refState.isEmpty())
 		throw Exception(tr("Reference configuration has not been specified yet."));
 
 	// Get the reference position property.
-	ParticlePropertyObject* refPosProperty = nullptr;
-	for(const auto& o : refState.objects()) {
-		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o.get());
-		if(property && property->type() == ParticleProperty::PositionProperty) {
-			refPosProperty = property;
-			break;
-		}
-	}
+	ParticlePropertyObject* refPosProperty = ParticlePropertyObject::findInState(refState, ParticleProperty::PositionProperty);
 	if(!refPosProperty)
 		throw Exception(tr("The reference configuration does not contain particle positions."));
 
@@ -136,14 +129,7 @@ std::shared_ptr<AsynchronousParticleModifier::Engine> AtomicStrainModifier::crea
 
 	// Get particle identifiers.
 	ParticlePropertyObject* identifierProperty = inputStandardProperty(ParticleProperty::IdentifierProperty);
-	ParticlePropertyObject* refIdentifierProperty = nullptr;
-	for(const auto& o : refState.objects()) {
-		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o.get());
-		if(property && property->type() == ParticleProperty::IdentifierProperty) {
-			refIdentifierProperty = property;
-			break;
-		}
-	}
+	ParticlePropertyObject* refIdentifierProperty = ParticlePropertyObject::findInState(refState, ParticleProperty::IdentifierProperty);
 
 	// Create engine object. Pass all relevant modifier parameters to the engine as well as the input data.
 	return std::make_shared<AtomicStrainEngine>(posProperty->storage(), inputCell->data(), refPosProperty->storage(), refCell->data(),
@@ -168,11 +154,10 @@ void AtomicStrainModifier::AtomicStrainEngine::compute(FutureInterfaceBase& futu
 		// Build map of particle identifiers in reference configuration.
 		std::map<int, size_t> refMap;
 		size_t index = 0;
-		const int* id = _refIdentifiers->constDataInt();
-		const int* id_end = id + _refIdentifiers->size();
-		for(; id != id_end; ++id, ++index) {
-			if(refMap.insert(std::make_pair(*id, index)).second == false)
+		for(int id : _refIdentifiers->constIntRange()) {
+			if(refMap.insert(std::make_pair(id, index)).second == false)
 				throw Exception(tr("Particles with duplicate identifiers detected in reference configuration."));
+			index++;
 		}
 
 		if(futureInterface.isCanceled())
@@ -187,11 +172,10 @@ void AtomicStrainModifier::AtomicStrainEngine::compute(FutureInterfaceBase& futu
 #else
 		std::map<int, size_t> currentMap;
 		index = 0;
-		id = _identifiers->constDataInt();
-		id_end = id + _identifiers->size();
-		for(; id != id_end; ++id, ++index) {
-			if(currentMap.insert(std::make_pair(*id, index)).second == false)
+		for(int id : _identifiers->constIntRange()) {
+			if(currentMap.insert(std::make_pair(id, index)).second == false)
 				throw Exception(tr("Particles with duplicate identifiers detected in current configuration."));
+			index++;
 		}
 #endif
 
@@ -199,7 +183,7 @@ void AtomicStrainModifier::AtomicStrainEngine::compute(FutureInterfaceBase& futu
 			return;
 
 		// Build index maps.
-		id = _identifiers->constDataInt();
+		const int* id = _identifiers->constDataInt();
 		for(auto& mappedIndex : currentToRefIndexMap) {
 			auto iter = refMap.find(*id);
 			if(iter == refMap.end())

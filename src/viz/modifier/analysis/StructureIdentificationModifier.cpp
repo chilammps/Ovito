@@ -119,12 +119,11 @@ ObjectStatus StructureIdentificationModifier::applyModifierResults(TimePoint tim
 	ParticlePropertyObject* colorProperty = outputStandardProperty(ParticleProperty::ColorProperty);
 	OVITO_ASSERT(colorProperty->size() == particleStructures().size());
 	const int* s = particleStructures().constDataInt();
-	Color* c = colorProperty->dataColor();
-	Color* c_end = c + colorProperty->size();
-	for(; c != c_end; ++s, ++c) {
+	for(Color& c : colorProperty->colorRange()) {
 		OVITO_ASSERT(*s >= 0 && *s < structureTypeColors.size());
-		*c = structureTypeColors[*s];
+		c = structureTypeColors[*s];
 		typeCounters[*s]++;
+		++s;
 	}
 	colorProperty->changed();
 

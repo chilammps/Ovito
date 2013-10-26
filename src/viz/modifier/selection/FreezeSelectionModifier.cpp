@@ -22,6 +22,7 @@
 #include <core/Core.h>
 #include <core/gui/undo/UndoManager.h>
 #include <core/scene/pipeline/PipelineObject.h>
+#include <viz/data/ParticleSelectionSet.h>
 #include "FreezeSelectionModifier.h"
 
 namespace Viz {
@@ -35,37 +36,14 @@ SET_OVITO_OBJECT_EDITOR(FreezeSelectionModifier, FreezeSelectionModifierEditor)
 ******************************************************************************/
 ObjectStatus FreezeSelectionModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
 {
-	ParticlePropertyObject* identifierProperty = inputStandardProperty(ParticleProperty::IdentifierProperty);
+	// Retrieve the selection stored in the modifier application.
+	ParticleSelectionSet* selectionSet = dynamic_object_cast<ParticleSelectionSet>(modifierApplication()->modifierData());
+	if(!selectionSet)
+		throw Exception(tr("No stored selection set available. Please take a new snapshot of the current selection state."));
 
-	size_t nselected = 0;
-	if(!identifierProperty) {
-
-		// When not using particle identifiers, the number of particles may not change.
-		if(inputParticleCount() != selectionSnapshot().size())
-			throw Exception(tr("Cannot restore saved selection. The number of particles has changed since the selection snapshot was taken."));
-
-		// Restore selection simply by placing the snapshot into the pipeline.
-		ParticlePropertyObject* selProperty = outputStandardProperty(ParticleProperty::SelectionProperty);
-		selProperty->setStorage(_selectionProperty.data());
-
-		nselected = inputParticleCount() - std::count(_selectionProperty->constDataInt(), _selectionProperty->constDataInt() + _selectionProperty->size(), 0);
-	}
-	else {
-
-		ParticlePropertyObject* selProperty = outputStandardProperty(ParticleProperty::SelectionProperty);
-		OVITO_ASSERT(selProperty->size() == identifierProperty->size());
-
-		const int* id = identifierProperty->constDataInt();
-		const int* id_end = id + identifierProperty->size();
-		int* s = selProperty->dataInt();
-		for(; id != id_end; ++id, ++s) {
-			if((*s = std::binary_search(_selectedParticles.cbegin(), _selectedParticles.cend(), *id)))
-				nselected++;
-		}
-		selProperty->changed();
-	}
-
-	return ObjectStatus(ObjectStatus::Success, QString(), tr("%1 particles in stored selection set").arg(nselected));
+	return selectionSet->applySelection(
+			outputStandardProperty(ParticleProperty::SelectionProperty),
+			inputStandardProperty(ParticleProperty::IdentifierProperty));
 }
 
 /******************************************************************************
@@ -76,116 +54,22 @@ void FreezeSelectionModifier::initializeModifier(PipelineObject* pipeline, Modif
 {
 	ParticleModifier::initializeModifier(pipeline, modApp);
 
-	// Make a snapshot of the current selection when the modifier is created.
+	// Take a snapshot of the current selection state at the moment the modifier is created.
 	PipelineFlowState input = pipeline->evaluatePipeline(AnimManager::instance().time(), modApp, false);
-	takeSelectionSnapshot(input);
+	takeSelectionSnapshot(modApp, input);
 }
 
 /******************************************************************************
 * Takes a snapshot of the selection state.
 ******************************************************************************/
-void FreezeSelectionModifier::takeSelectionSnapshot(const PipelineFlowState& state)
+void FreezeSelectionModifier::takeSelectionSnapshot(ModifierApplication* modApp, const PipelineFlowState& state)
 {
-	// An undo stack record that restores the old selection snapshot.
-	class ReplaceSelectionOperation : public UndoableOperation {
-	public:
-		ReplaceSelectionOperation(FreezeSelectionModifier* modifier) :
-			_modifier(modifier), _selectionProperty(modifier->_selectionProperty), _selectedParticles(modifier->_selectedParticles) {}
-		virtual void undo() override {
-			_selectionProperty.swap(_modifier->_selectionProperty);
-			_selectedParticles.swap(_modifier->_selectedParticles);
-			_modifier->notifyDependents(ReferenceEvent::TargetChanged);
-		}
-		virtual void redo() override { undo(); }
-	private:
-		OORef<FreezeSelectionModifier> _modifier;
-		QExplicitlySharedDataPointer<ParticleProperty> _selectionProperty;
-		QVector<int> _selectedParticles;
-	};
-
-	// Take a snapshot of the current selection.
-	for(const auto& o : state.objects()) {
-		ParticlePropertyObject* selProperty = dynamic_object_cast<ParticlePropertyObject>(o.get());
-		if(selProperty && selProperty->type() == ParticleProperty::SelectionProperty) {
-
-			// Make a backup of the old snapshot so it can be restored.
-			if(UndoManager::instance().isRecording())
-				UndoManager::instance().push(new ReplaceSelectionOperation(this));
-
-			// Take new snapshot.
-			_selectionProperty = selProperty->storage();
-			_selectedParticles.clear();
-
-			// Save identifiers of selected particles in case the ordering of particle changes.
-			for(const auto& o2 : state.objects()) {
-				ParticlePropertyObject* identifierProperty = dynamic_object_cast<ParticlePropertyObject>(o2.get());
-				if(identifierProperty && identifierProperty->type() == ParticleProperty::IdentifierProperty) {
-					OVITO_ASSERT(identifierProperty->size() == selProperty->size());
-					const int* id = identifierProperty->constDataInt();
-					const int* id_end = id + identifierProperty->size();
-					const int* s = selProperty->constDataInt();
-					for(; id != id_end; ++id, ++s) {
-						if(*s) _selectedParticles.push_back(*id);
-					}
-					// Sort identifiers.
-					std::sort(_selectedParticles.begin(), _selectedParticles.end());
-					break;
-				}
-			}
-
-			notifyDependents(ReferenceEvent::TargetChanged);
-			return;
-		}
+	OORef<ParticleSelectionSet> selectionSet = dynamic_object_cast<ParticleSelectionSet>(modApp->modifierData());
+	if(!selectionSet) {
+		selectionSet = new ParticleSelectionSet();
+		modApp->setModifierData(selectionSet.get());
 	}
-
-	// Reset selection snapshot if input doesn't contain a selection state.
-	if(_selectionProperty->size() != 0) {
-		if(UndoManager::instance().isRecording())
-			UndoManager::instance().push(new ReplaceSelectionOperation(this));
-		_selectionProperty = new ParticleProperty(0, ParticleProperty::SelectionProperty);
-		_selectedParticles.clear();
-		notifyDependents(ReferenceEvent::TargetChanged);
-	}
-}
-
-/******************************************************************************
-* Saves the class' contents to the given stream.
-******************************************************************************/
-void FreezeSelectionModifier::saveToStream(ObjectSaveStream& stream)
-{
-	ParticleModifier::saveToStream(stream);
-
-	stream.beginChunk(0x01);
-	_selectionProperty->saveToStream(stream);
-	stream << _selectedParticles;
-	stream.endChunk();
-}
-
-/******************************************************************************
-* Loads the class' contents from the given stream.
-******************************************************************************/
-void FreezeSelectionModifier::loadFromStream(ObjectLoadStream& stream)
-{
-	ParticleModifier::loadFromStream(stream);
-
-	stream.expectChunk(0x01);
-	_selectionProperty->loadFromStream(stream);
-	stream >> _selectedParticles;
-	stream.closeChunk();
-}
-
-/******************************************************************************
-* Creates a copy of this object.
-******************************************************************************/
-OORef<RefTarget> FreezeSelectionModifier::clone(bool deepCopy, CloneHelper& cloneHelper)
-{
-	// Let the base class create an instance of this class.
-	OORef<FreezeSelectionModifier> clone = static_object_cast<FreezeSelectionModifier>(ParticleModifier::clone(deepCopy, cloneHelper));
-
-	clone->_selectionProperty = this->_selectionProperty;
-	clone->_selectedParticles = this->_selectedParticles;
-
-	return clone;
+	selectionSet->resetSelection(state);
 }
 
 /******************************************************************************
@@ -218,8 +102,8 @@ void FreezeSelectionModifierEditor::takeSelectionSnapshot()
 	if(!mod) return;
 
 	UndoableTransaction::handleExceptions(tr("Take selection snapshot"), [mod]() {
-		PipelineFlowState input = mod->getModifierInput();
-		mod->takeSelectionSnapshot(input);
+		for(const auto& modInput : mod->getModifierInputs())
+			mod->takeSelectionSnapshot(modInput.first, modInput.second);
 	});
 }
 

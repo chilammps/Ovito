@@ -87,6 +87,12 @@ public:
 	/// Returns true if the list model is currently in a valid state.
 	bool isUpToDate() const { return !_needListUpdate; }
 
+	/// The the current modification stack contains a hidden pipeline object at the top, this function returns it.
+	PipelineObject* hiddenPipelineObject();
+
+	/// The list of currently selected ObjectNode instances.
+	const QVector<RefTarget*>& selectedNodes() const { return _selectedNodes.targets(); }
+
 Q_SIGNALS:
 
 	/// This signal is emitted if a new list item has been selected, or if the currently

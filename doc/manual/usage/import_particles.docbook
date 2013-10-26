@@ -32,9 +32,9 @@
     </para>
     <para>
        Some file formats can store more than one simulation frame in a single file, for instance the LAMMPS dump format.
-       By default, OVITO imports only the first frame from a file. You have to explicitly tell OVITO to look 
+       By default, OVITO imports only the first frame from the selected file. You have to explicitly tell OVITO to look 
        for extra frames by checking the <emphasis>File contains multiple timesteps</emphasis> option
-       in the import settings panel. OVITO will then scan the entire file for the contained frames.
+       in the import settings panel. This will let OVITO scan the entire file for the contained frames.
     </para>
   </sect3>
   
@@ -42,8 +42,8 @@
     <title>Remote file import</title>
     <para>
        OVITO has a built-in SSH client to access files located on remote computers. This is useful if you want to 
-       load simulation files that are stored on a parallel computing cluster without copying them to the local computer
-       first. To open a simulation file from a remote machine, use the 
+       load simulation files that are stored on a parallel computing cluster without first copying them to the local computer. 
+       To open a simulation file from a remote machine, use the 
        <menuchoice><guimenu>File</guimenu><guimenuitem>Open Remote File</guimenuitem></menuchoice> menu item.  
     </para>
     <para>
@@ -59,10 +59,10 @@
        specify a non-standard port using <command>:port</command> following the hostname.
     </para>
     <para>
-       When OVITO connects to the remote machine it will ask for the login password. The SSH connection is kept
-       alive until OVITO is quit.
-       When opening a remote file, OVITO will first create a temporary copy of the file on the local computer before
-       reading it to speed up subsequent accesses. The local copy is kept until you quit OVITO or press the <emphasis>Reload</emphasis> button
+       When OVITO connects to the remote machine, it will ask for the login password. Once established, 
+       the SSH connection is kept alive until OVITO is quit.
+       When opening a remote file, OVITO will first make a temporary copy of the file on the local computer before
+       parsing it to speed up subsequent accesses. The local copy is kept until you quit OVITO or press the <emphasis>Reload</emphasis> button
        in the import file panel.
     </para>
   </sect3>
@@ -120,7 +120,7 @@
   <sect3 xml:id="usage.import.tips">
     <title>Tips and tricks</title>
     <para>
-      When starting OVITO from the terminal, you can directly specify a simulation file to import. Both local and remote
+      When starting OVITO from the terminal, you can pass a simulation file to load after program startup. Both local and remote
       files can be specified, i.e.
        <screen>
 		<command>ovito /path/filename</command>

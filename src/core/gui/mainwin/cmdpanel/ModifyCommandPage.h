@@ -30,6 +30,7 @@ namespace Ovito {
 
 class ModificationListModel;	// defined in ModificationListModel.h
 class ModificationListItem;		// defined in ModificationListModel.h
+class ModifierListBox;			// defined in ModifierListBox.h
 class SceneObject;				// defined in SceneObject.h
 class Modifier;					// defined in Modifier.h
 
@@ -114,7 +115,7 @@ private:
 	ModificationListModel* _modificationListModel;
 
 	/// This control displays the list of available modifier classes and allows the user to apply a modifier.
-	QComboBox* _modifierSelector;
+	ModifierListBox* _modifierSelector;
 
 	/// This panel shows the properties of the selected modifier stack entry
 	PropertiesPanel* _propertiesPanel;

@@ -129,15 +129,15 @@ public:
 
 	/// \brief Returns the input object of this modifier for each application of the modifier.
 	/// \param time The animation for which the geometry pipelines should be evaluated.
-	/// \return A map that contains for each particular application of this modifier instance the
-	///         object as it comes out of the geometry pipeline up to the modifier.
+	/// \return A container that contains for each application of this modifier the
+	///         state of the geometry pipeline evaluation up to the modifier's application.
 	///
 	/// This method evaluates the geometry pipeline up this modifier. It can be used to work with
 	/// the input objects outside of a normal call to modifyObject().
 	///
 	/// \note This method might return empty result objects in some cases when the modifier stack
 	///       cannot be evaluated because of an invalid modifier.
-	QMap<ModifierApplication*, PipelineFlowState> getModifierInputs(TimePoint time) const;
+	QVector<QPair<ModifierApplication*, PipelineFlowState>> getModifierInputs() const;
 
 	/// \brief Returns the input object of the modifier assuming that it has been applied only in a single geometry pipeline.
 	/// \return The object that comes out of the geometry pipeline when it is evaluated up the application of this modifier.

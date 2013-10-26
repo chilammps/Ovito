@@ -9,7 +9,7 @@
          xmlns:ns="http://docbook.org/ns/docbook">
   <title>Exporting particles</title>
 
-  <para>To export the current particle dataset to a file, select the <menuchoice><guimenu>File</guimenu><guimenuitem>Export File</guimenuitem></menuchoice> menu item.
+  <para>To export the current particle dataset to a file or a series of files, select the <menuchoice><guimenu>File</guimenu><guimenuitem>Export File</guimenuitem></menuchoice> menu item.
   After choosing an output filename and a format, the export settings dialog lets you specify the animation frames and the particle properties to export.
   </para>
   

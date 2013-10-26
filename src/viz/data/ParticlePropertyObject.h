@@ -29,6 +29,7 @@
 
 #include <core/Core.h>
 #include <core/scene/objects/SceneObject.h>
+#include <core/scene/pipeline/PipelineFlowState.h>
 #include "ParticleProperty.h"
 
 namespace Viz {
@@ -206,6 +207,51 @@ public:
 		return _storage->constDataQuaternion();
 	}
 
+	/// \brief Returns a range of const iterators over the elements stored in this object.
+	ParticleProperty::Range<const int*> constIntRange() const {
+		return _storage->constIntRange();
+	}
+
+	/// \brief Returns a range of const iterators over the elements stored in this object.
+	ParticleProperty::Range<const FloatType*> constFloatRange() const {
+		return _storage->constFloatRange();
+	}
+
+	/// \brief Returns a range of const iterators over the elements stored in this object.
+	ParticleProperty::Range<const Point3*> constPoint3Range() const {
+		return _storage->constPoint3Range();
+	}
+
+	/// \brief Returns a range of const iterators over the elements stored in this object.
+	ParticleProperty::Range<const Vector3*> constVector3Range() const {
+		return _storage->constVector3Range();
+	}
+
+	/// \brief Returns a range of const iterators over the elements stored in this object.
+	ParticleProperty::Range<const Color*> constColorRange() const {
+		return _storage->constColorRange();
+	}
+
+	/// \brief Returns a range of const iterators over the elements stored in this object.
+	ParticleProperty::Range<const Point3I*> constPoint3IRange() const {
+		return _storage->constPoint3IRange();
+	}
+
+	/// \brief Returns a range of const iterators over the elements stored in this object.
+	ParticleProperty::Range<const Tensor2*> constTensor2Range() const {
+		return _storage->constTensor2Range();
+	}
+
+	/// \brief Returns a range of const iterators over the elements stored in this object.
+	ParticleProperty::Range<const SymmetricTensor2*> constSymmetricTensor2Range() const {
+		return _storage->constSymmetricTensor2Range();
+	}
+
+	/// \brief Returns a range of const iterators over the elements stored in this object.
+	ParticleProperty::Range<const Quaternion*> constQuaternionRange() const {
+		return _storage->constQuaternionRange();
+	}
+
 	/// Returns a read-write pointer to the raw elements in the property storage.
 	void* data() {
 		_storage.detach();
@@ -273,6 +319,60 @@ public:
 	Quaternion* dataQuaternion() {
 		_storage.detach();
 		return _storage->dataQuaternion();
+	}
+
+	/// \brief Returns a range of iterators over the elements stored in this object.
+	ParticleProperty::Range<int*> intRange() {
+		_storage.detach();
+		return _storage->intRange();
+	}
+
+	/// \brief Returns a range of iterators over the elements stored in this object.
+	ParticleProperty::Range<FloatType*> floatRange() {
+		_storage.detach();
+		return _storage->floatRange();
+	}
+
+	/// \brief Returns a range of iterators over the elements stored in this object.
+	ParticleProperty::Range<Point3*> point3Range() {
+		_storage.detach();
+		return _storage->point3Range();
+	}
+
+	/// \brief Returns a range of iterators over the elements stored in this object.
+	ParticleProperty::Range<Vector3*> vector3Range() {
+		_storage.detach();
+		return _storage->vector3Range();
+	}
+
+	/// \brief Returns a range of const iterators over the elements stored in this object.
+	ParticleProperty::Range<Color*> colorRange() {
+		_storage.detach();
+		return _storage->colorRange();
+	}
+
+	/// \brief Returns a range of iterators over the elements stored in this object.
+	ParticleProperty::Range<Point3I*> point3IRange() {
+		_storage.detach();
+		return _storage->point3IRange();
+	}
+
+	/// \brief Returns a range of iterators over the elements stored in this object.
+	ParticleProperty::Range<Tensor2*> tensor2Range() {
+		_storage.detach();
+		return _storage->tensor2Range();
+	}
+
+	/// \brief Returns a range of iterators over the elements stored in this object.
+	ParticleProperty::Range<SymmetricTensor2*> symmetricTensor2Range() {
+		_storage.detach();
+		return _storage->symmetricTensor2Range();
+	}
+
+	/// \brief Returns a range of iterators over the elements stored in this object.
+	ParticleProperty::Range<Quaternion*> quaternionRange() {
+		_storage.detach();
+		return _storage->quaternionRange();
 	}
 
 	/// \brief Returns an integer element at the given index (if this is an integer property).
@@ -412,6 +512,9 @@ public:
 		else
 			return ParticleProperty::standardPropertyTitle(type());
 	}
+
+	/// This helper method returns the particle property (if present) from the given pipeline state with the given type.
+	static ParticlePropertyObject* findInState(const PipelineFlowState& state, ParticleProperty::Type type);
 
 public:
 

@@ -19,8 +19,8 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef __OVITO_MODIFIER_LIST_MODEL_H
-#define __OVITO_MODIFIER_LIST_MODEL_H
+#ifndef __OVITO_MODIFIER_LIST_BOX_H
+#define __OVITO_MODIFIER_LIST_BOX_H
 
 #include <core/Core.h>
 #include <core/object/OvitoObjectType.h>
@@ -31,14 +31,20 @@ class ModificationListModel;
 class ModificationListItem;
 
 /*
- * A list model for the modifier selection combo-box.
+ * A combo-box widget that lets the user insert new modifiers into the modification pipeline.
  */
-class ModifierListModel : public QStandardItemModel
+class ModifierListBox : public QComboBox
 {
 public:
 
-	/// Initializes the object.
-	ModifierListModel(QObject* parent, ModificationListModel* modificationList, QComboBox* widget);
+	/// Initializes the widget.
+	ModifierListBox(QWidget* parent, ModificationListModel* modificationList);
+
+	/// Is called just before the drop-down box is activated.
+	virtual void showPopup() override {
+		updateAvailableModifiers();
+		QComboBox::showPopup();
+	}
 
 private Q_SLOTS:
 
@@ -60,9 +66,6 @@ private:
 	/// The modification list model.
 	ModificationListModel* _modificationList;
 
-	/// The QComboxBox that is using this model.
-	QComboBox* _widget;
-
 	/// The font to be used for category headers.
 	QFont _categoryFont;
 
@@ -77,4 +80,4 @@ private:
 
 };
 
-#endif // __OVITO_MODIFIER_LIST_MODEL_H
+#endif // __OVITO_MODIFIER_LIST_BOX_H
