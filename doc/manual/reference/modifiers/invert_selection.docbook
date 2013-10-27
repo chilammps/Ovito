@@ -11,5 +11,5 @@
   <title>Invert selection</title>
 
   <para>This modifier inverts the selection state of all particles. 
-  Particles that were not selected are selected by this modifier and vice versa.</para>
+  Particles that are not selected are selected by this modifier and vice versa.</para>
 </section>

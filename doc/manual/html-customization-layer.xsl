@@ -12,9 +12,9 @@
 	
 <xsl:import href="http://docbook.sourceforge.net/release/xsl/current/html/chunk.xsl"/>
 
+<xsl:param name="chunk.section.depth" select="3"/>
+<xsl:param name="chunk.first.sections" select="1"/>
 <xsl:param name="use.id.as.filename" select="1"/>
-<xsl:param name="chunk.section.depth" select="2"/>
-<xsl:param name="chunk.first.sections" select="0"/>
 <xsl:param name="html.stylesheet" select="'manual.css'"/>
 <xsl:param name="chapter.autolabel" select="0"/>
 <xsl:param name="section.autolabel" select="0"/>
@@ -45,7 +45,6 @@ sect5     nop
 section   nop
 set       toc
 </xsl:param>
-
 
 <xsl:template name="gentext.nav.home">Table of Contents</xsl:template>
 

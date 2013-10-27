@@ -10,17 +10,58 @@
          xmlns:ns="http://docbook.org/ns/docbook">
   <title>Manual selection</title>
 
-  <para>This modifier allows to select particles manually in the viewports.
-  The modifier stores the selection state of all particles in an internal array. The parameter panel of the 
-  modifier provides several functions to modify the stored selection set. 
-  When the modifier acts on the input particles, it replaces any existing particle selection state
-  with its stored selection state.</para>
-
-  <para>When the <guibutton>Pick particles</guibutton> mode is activated, individual particles
-  can be selected or deselected by clicking on them in the viewports.</para>
-
-  <para>When the <guibutton>Fence selection</guibutton> mode is activated, 
+  <para>This modifier lets the user manually select particles in the viewports using the mouse.
+  It stores the user-defined selection state of particles in an internal array (see implementation notes). 
+  During an evaluation of the modification pipeline, the modifier replaces any existing particle selection
+  with its stored selection state.
+  </para>
+  
+  <para>Two input modes are available to select particles: With the <guibutton>Pick particles</guibutton> mode individual particles
+  can be selected or deselected by clicking them in the viewports.
+  When the <guibutton>Fence selection</guibutton> mode is activated, 
   the mouse can be used to draw a closed fence around a group of particles in the viewports.
-  All particles within the fence polygon will be selected.</para>
+  All particles within the polygon path will be selected. Press the <keycap>Control</keycap>
+  key (<keycap>Command</keycap> on Mac) to add particles to an existing selection.
+   The <keycap>Alt</keycap> key can be used to remove particles from an existing selection.
+  </para>
+  
+  <simplesect>
+    <title>Implementation notes</title>
+    <para>
+    The modifier can store the user's selection of particles in two ways: It either keeps a list of 
+    selected particle indices or a list of particle identifiers.
+      <informaltable>
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>Index-based selection mode</entry>
+              <entry>Identifier-based selection mode</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry valign="top">In this mode, the modifier stores a Boolean value for each particle index indicating 
+              the selection state. The number of input particles and their storage order must not change.
+              Otherwise the modifier cannot apply the stored selection state to the particle dataset or 
+              may even assign it to the wrong particles.</entry>
+              
+              <entry valign="top"><para>This selection storage method is preferred and will automatically be used when the 
+              input dataset contains particle identifiers. The modifier keeps track of the selection state by 
+              storing the identifiers of all selected particles. 
+              When the modifier applies the stored selection state to the input particles during an evaluation of the modification pipeline,
+              it checks for each input particle if its identifier is contained in the stored selection set.</para>
+              <para>
+              Note that this selection mode requires that particles have unique identifiers.
+              The number of input particles, however, may change after the modifier has been applied.
+              </para></entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </para>
+    <para>
+    Note that the selection set managed by the modifier is always time-independent.
+    </para>
+  </simplesect>
   
 </section>

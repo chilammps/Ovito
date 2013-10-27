@@ -12,26 +12,58 @@
 
   <para>
   
+   <informalfigure>
+      <informaltable frame="none">
+        <tgroup cols="2">
+          <tbody>
+            <row>
+              <entry>
+                <para>Input:
+		        <mediaobject><imageobject>
+		        <imagedata fileref="images/modifiers/slice_example_input.png" format="PNG" />
+		        </imageobject></mediaobject></para>
+              </entry>
+              <entry>
+                <para>Output (slice width = 0):
+		        <mediaobject><imageobject>
+		        <imagedata fileref="images/modifiers/slice_example_output1.png" format="PNG" />
+		        </imageobject></mediaobject></para>
+              </entry>
+              <entry>
+                <para>Output (slice width > 0):
+		        <mediaobject><imageobject>
+		        <imagedata fileref="images/modifiers/slice_example_output2.png" format="PNG" />
+		        </imageobject></mediaobject></para>
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </informalfigure>
+      
     <informalfigure><screenshot><mediaobject><imageobject>
        <imagedata fileref="images/modifiers/slice_panel.png" format="PNG" />
     </imageobject></mediaobject></screenshot></informalfigure>
   
-  This modifier cuts away particles located on one side of an infinite plane. 
-  In a second mode of operation the modifier can delete particles that are not within a certain 
-  distance of the plane. This will cut out a thin slice with a certain width from the system.</para>
+  This modifier deletes particles on one side of an infinite cutting plane. 
+  Alternatively, the modifier can cut out a slice of particles as shown
+  in the third picture on the right.</para>
 
-  <para>While the <emphasis>Slice</emphasis> modifier is selected in the
-  pipeline editor, the slicing plane is shown in the viewports. Its
-  position is indicated by red lines showing the plane's intersection with the
-  simulation box. </para>
+  <para>Several buttons in the modifier's parameter panel allow to position and align the slicing plane:</para>
 
-  <para>Buttons in the parameter panel allow to align the slicing plane with the viewing
-  direction of the active viewport and vice versa. In addition, you can align
-  the slicing plane to three non-coplanar particles, which can be picked with the mouse. 
-  To do this, first press the <guibutton>Pick three particles</guibutton> button, then pick three particles in
-  the viewports by clicking on them one after the other. After clicking on the third particle, the
-  modifier's slicing plane is adjusted such that it intersects all three particles.</para>
+  <para><guibutton>Move plane to simulation box center</guibutton> positions the plane in the 
+  center of the simulation cell. The current plane orientation is kept.</para>
 
+  <para><guibutton>Align view direction to plane normal</guibutton> rotates the viewing
+  direction of the active viewport such that it is perpendicular to the cutting plane.</para>
+
+  <para><guibutton>Align plane normal to view direction</guibutton> rotates the cutting plan
+  such that it is perpendicular to the current viewing direction.</para>
+
+  <para><guibutton>Pick three particles</guibutton> lets the user select three particles
+  in the viewport with the mouse. The slicing plane will be repositioned such that it intersects
+  all three particles.</para>
+  
   <simplesect>
     <title>Parameters</title>
 
@@ -47,7 +79,7 @@
       <varlistentry>
         <term>Normal (X,Y,Z)</term>
         <listitem>
-          <para>Components of the slicing plane's normal vector. The vectors does not
+          <para>Components of the slicing plane's normal vector. The vector does not
           have to be a unit vector.</para>
         </listitem>
       </varlistentry>
@@ -56,10 +88,10 @@
         <term>Slice width</term>
         <listitem>
           <para>Specifies the width of the slice to cut from the particle
-          set. If exactly zero, all particles on the positive side of the
+          set. If this parameter is zero, all particles on the positive side of the
           slicing plane are deleted. If the <emphasis>slice width</emphasis>
           parameter is non-zero, all particles whose distance from the slicing
-          plane is more than half of the slice width get deleted.</para>
+          plane is more than half of the slice width are deleted.</para>
         </listitem>
       </varlistentry>
 

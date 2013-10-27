@@ -16,7 +16,7 @@
 	</imageobject></inlinemediaobject> of the command panel.
   </para>
   
-  <sect3 xml:id="usage.rendering.render_settings">
+  <simplesect xml:id="usage.rendering.render_settings">
     <title>Render settings</title>     
     <para>
       The <emphasis>Render settings</emphasis> panel allows to adjust the parameters that control the generation of the out image, for instance
@@ -26,9 +26,9 @@
       Pressing the <emphasis>Render Active Viewport</emphasis> <inlinemediaobject><imageobject><imagedata fileref="images/rendering/render_active_viewport.png" format="png" xml:base="../"/>
       </imageobject></inlinemediaobject> button starts the rendering process and opens a new window showing the rendered image. 
     </para>
-  </sect3>
+  </simplesect>
 
-  <sect3 xml:id="usage.rendering.animation">
+  <simplesect xml:id="usage.rendering.animation">
     <title>Creating animation movies</title>     
     <para>
       If you have imported a simulation sequence that consists of multiple frames, you can let OVITO render a movie. For this, select <emphasis>Complete animation</emphasis>
@@ -40,7 +40,6 @@
       The playback speed (frames per second) of the generated movie file is controlled in the <emphasis>Animation settings</emphasis> dialog, which can be accessed 
       through the animation toolbar of OVITO.
     </para>
-  </sect3>
+  </simplesect>
   
-
 </section>

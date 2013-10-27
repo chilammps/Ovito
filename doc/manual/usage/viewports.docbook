@@ -10,13 +10,13 @@
   <title>Viewports</title>
 
   <para>
-    OVITO's main window contains four viewports which are laid out in a 2x2
+    OVITO's main window contains four viewports, which are laid out in a 2x2
     grid. Each viewport shows a different view of the same three-dimensional scene.
-    The viewing direction is indicated by the caption in the upper left corner
-    and the axis tripod in the lower left corner of every viewport.
+    The caption in the upper left corner
+    and the axis tripod in the lower left corner of every viewport indicate the viewing direction.
   </para> 
 
-  <sect3 xml:id="usage.viewports.navigation">
+  <simplesect xml:id="usage.viewports.navigation">
   <title>Navigation</title>     
   <para>
     Use the mouse to navigate within a viewport and to move the camera around:
@@ -42,9 +42,9 @@
      Depending on your simulation setup, this might not be the best choice. In such a case you can also make the x-axis or the y-axis the "up" directions in the 
      application settings dialog.
   </para>
-  </sect3>
+  </simplesect>
   
-  <sect3 xml:id="usage.viewports.toolbar">
+  <simplesect xml:id="usage.viewports.toolbar">
   <title>Viewport toolbar</title>     
    <para>
      The viewports toolbar is located below the viewports on the right. It contains buttons to activate dedicated viewport navigation modes. 
@@ -53,12 +53,12 @@
      The active viewport is marked by a yellow border.
    </para>
    <para>
-     The <emphasis>Zoom Scene Extents</emphasis> button adjust the zoom of the active viewport
+     The <emphasis>Zoom Scene Extents</emphasis> button adjusts the zoom of the active viewport
      such that the entire scene is fully visible.
    </para>
-  </sect3>
+  </simplesect>
 
-  <sect3 xml:id="usage.viewports.menu">
+  <simplesect xml:id="usage.viewports.menu">
   <title>Viewport menu</title>
    <para>
      Clicking on a viewport's caption text in the upper left corner opens the viewport's menu. Here you can switch between the standard viewport types
@@ -71,6 +71,6 @@
      The <menuchoice><guimenuitem>Show Render Frame</guimenuitem></menuchoice> option activates a visual clue that indicates which area of the viewport will be visible 
      in the final output picture. The aspect ratio of the rendered image can be adjusted in the <link linkend="core.render_settings">Render Settings</link> panel. 
    </para>
-  </sect3>     
+  </simplesect>     
 
 </section>

@@ -15,7 +15,7 @@
   
   <para>If you pick an output filename that ends with a <filename>.gz</filename> suffix, then the file will automatically be compressed by OVITO.</para>
   
-  <sect3 xml:id="usage.export.formats">
+  <simplesect xml:id="usage.export.formats">
   <title>Supported output formats</title>
   <para>
     <informaltable>
@@ -52,5 +52,5 @@
         </tgroup>
       </informaltable>  
   </para>
-  </sect3>
+  </simplesect>
 </section>

@@ -10,14 +10,39 @@
          xmlns:ns="http://docbook.org/ns/docbook">
   <title>Wrap at periodic boundaries</title>
 
-  <para>This modifier maps particles that are located outside the simulation cell
-  back into the simulation cell by "wrapping" their coordinates around at
-  periodic boundaries.</para>
+  <para>
+    <informalfigure>
+      <informaltable frame="none">
+        <tgroup cols="2">
+          <tbody>
+            <row>
+              <entry>
+                <para>Input:
+		        <mediaobject><imageobject>
+		        <imagedata fileref="images/modifiers/wrap_at_periodic_boundaries_example_before.png" format="PNG" />
+		        </imageobject></mediaobject></para>
+              </entry>
+              <entry>
+                <para>Output:
+		        <mediaobject><imageobject>
+		        <imagedata fileref="images/modifiers/wrap_at_periodic_boundaries_example_after.png" format="PNG" />
+		        </imageobject></mediaobject></para>
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </informalfigure>
+  
+  This modifier maps particles that are located outside of the simulation cell
+  back into the box by "wrapping" their coordinates around at
+  the periodic boundaries of the simulation box.</para>
 
-  <note>
-    <para>The modifier acts only in spatial directions for which periodic
-    boundary conditions (PBC) are enabled. The PBC flags are read from the
-    input simulation file.
-    </para>
-  </note>
+  <simplesect>
+    <title>Implementation note</title>
+      <para>The modifier acts only in spatial directions for which periodic
+      boundary conditions (PBC) are enabled. The PBC flags are usually read from the
+      simulation file.
+      </para>
+  </simplesect>
 </section>

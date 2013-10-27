@@ -16,7 +16,7 @@
        <imagedata fileref="images/modifiers/compute_property_panel.png" format="PNG" />
     </imageobject></mediaobject></screenshot></informalfigure>
   
-  This modifier modifier evaluates a user-defined mathematical expression for every particle 
+  This modifier evaluates a user-defined mathematical expression for every particle 
   and stores the results in a particle property. The modifier
   can be used to assign new properties to a particle, or to overwrite the
   values stored in an existing particle property.</para>
@@ -42,7 +42,7 @@
       <varlistentry>
         <term>Name</term>
         <listitem>
-          <para>The name of the user-defined property to create.</para>
+          <para>The name of the user-defined property to generate.</para>
         </listitem>
       </varlistentry>
 

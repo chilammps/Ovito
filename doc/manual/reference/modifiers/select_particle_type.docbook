@@ -16,7 +16,7 @@
        <imagedata fileref="images/modifiers/select_particle_type_panel.png" format="PNG" />
     </imageobject></mediaobject></screenshot></informalfigure>
 
-  This modifier selects particles of a specific type (or types).</para>
+  This modifier selects particles of a certain type.</para>
 
   <simplesect>
     <title>Parameters</title>
@@ -25,15 +25,17 @@
       <varlistentry>
         <term>Property</term>
         <listitem>
-          <para>This selects the classification used by the modifier. Particles may belong to multiple types
-          (e.g. both chemical type and structural type). This selects the kind of type property to use as input.</para>
+          <para>Controls what input property, for instance the chemical type or the structural type, 
+          should be used to select particles. The drop-down box lists all available source properties
+          that store type information.</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
         <term>Types</term>
         <listitem>
-          <para>List of available types. Check one or multiple types to select the corresponding particles.</para>
+          <para>The list of types defined in the source property. 
+          Check one or multiple types to let the modifier select the corresponding particles.</para>
         </listitem>
       </varlistentry>
     </variablelist>

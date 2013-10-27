@@ -16,7 +16,7 @@
        <imagedata fileref="images/modifiers/show_periodic_images_panel.png" format="PNG" />
     </imageobject></mediaobject></screenshot></informalfigure>
   
-  Duplicates particles to show multiple images of a periodic system.</para>
+  Makes copies of all particles to visualize multiple images of a periodic system.</para>
 
   <simplesect>
     <title>Parameters</title>
@@ -26,7 +26,7 @@
         <term>Periodic images (X,Y,Z)</term>
 
         <listitem>
-          <para>Enables the generation of images of the system in the
+          <para>Enables the generation of copies of the system in the
           three spatial directions. You can control how many times the system is
           duplicated in each direction.</para>
         </listitem>
@@ -35,10 +35,22 @@
       <varlistentry>
         <term>Adjust simulation box size</term>
         <listitem>
-          <para>If activated, the simulation cell is extended accordingly
-          to match the duplicated system.</para>
+          <para>If this option is active, the simulation cell is also extended
+          to match the size of the multiplied system.</para>
         </listitem>
       </varlistentry>
     </variablelist>
   </simplesect>
+  
+  <simplesect>
+    <title>Usage note</title>
+    <para>
+      When duplicating each particle, the modifier also copies all assigned properties including the particle's identifier.
+      Thus, applying this modifier will lead to duplicate identifiers. Keep in mind that this may cause problems with 
+      other modifiers (e.g. the <link
+	  linkend="viz.modifiers.manual_selection">Manual selection</link> modifier) that rely on the uniqueness of particle 
+	  identifiers, and which following in the modification pipeline.
+    </para>
+  </simplesect>
+    
 </section>

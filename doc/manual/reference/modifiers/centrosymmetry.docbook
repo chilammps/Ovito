@@ -19,7 +19,7 @@
   </para>
   
   <para>
-    The centry-symmetry parameter is calculated by OVITO using 
+    The centro-symmetry parameter is calculated by OVITO using 
     the <link xlink:href="http://lammps.sandia.gov/doc/compute_centro_atom.html">algorithm implemented in LAMMPS</link>.
   </para>
   

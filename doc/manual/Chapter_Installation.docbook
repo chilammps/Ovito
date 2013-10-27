@@ -9,14 +9,14 @@
          xmlns:ns="http://docbook.org/ns/docbook">
   <title>Installation</title>
 
-    <para>Binary program packages for Linux, Windows, and MacOS X platforms
+    <para>Binary program packages for Linux, Windows, and Mac OS X platforms
     can be downloaded from <link xlink:href="http://www.ovito.org/">http://www.ovito.org/</link>.
     Installation of OVITO is very simple. No administrator privileges are required.</para>
     <para>Since OVITO makes use of hardware-accelerated OpenGL rendering to display particles. 
     Older computers or outdated OpenGL graphics drivers may not be compatible with OVITO. 
     It is highly recommended to install your hardware vendor's graphics card driver.</para>
 
-    <sect3 xml:id="installation.runovito.linux">
+    <simplesect xml:id="installation.runovito.linux">
       <title>Linux</title>
       <para>Extract the downloaded <filename>.tar.gz</filename> archive using the command: <command>tar xzf ovito-2.0.0-x86_64.tar.gz</command>. Replace
       the filename with the one that you actually downloaded from the
@@ -27,30 +27,30 @@
       <para>
       Note that OVITO should only be run on the local computer and not on remote machines.
       </para>
-    </sect3>
+    </simplesect>
 
-    <sect3 xml:id="installation.runovito.windows">
+    <simplesect xml:id="installation.runovito.windows">
       <title>Windows</title>
 
       <para>Extract the <filename>.zip</filename> archive to an
       empty directory of your choice. Then start OVITO by double-clicking
       <command>ovito.exe</command>.</para>
-    </sect3>
+    </simplesect>
 
-    <sect3 xml:id="installation.runovito.macos">
-      <title>MacOS</title>
+    <simplesect xml:id="installation.runovito.macos">
+      <title>Mac</title>
 
       <para>Extract the <filename>.zip</filename> archive to a 
       directory of your choice. Then start OVITO by double-clicking the
       extracted application. To run multiple instances of OVITO simultaneously, you can
       invoke the command <command>open -n ./Ovito.app/</command> from the
       Terminal more than once.</para>
-    </sect3>
+    </simplesect>
     
-    <sect3 xml:id="installation.commandline">
+    <simplesect xml:id="installation.commandline">
       <title>Command line options</title>
       <para>You can pass a local file path or a remote URL to OVITO on the command line. 
       The data file will be opened after the application starts.</para>
-    </sect3>  
+    </simplesect>  
 
 </chapter>

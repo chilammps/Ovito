@@ -31,7 +31,7 @@
   from the relative displacements of the particle's nearest neighbors within the given
   cutoff radius. Note that the set of neighbors around the central particle is determined in
   the <emphasis>initial</emphasis> configuration. At least three
-  non-conplanar neighbors are required to calculate <emphasis>F</emphasis> for a particle.
+  non-coplanar neighbors are required to calculate <emphasis>F</emphasis> for a particle.
   Thus, the calculation will fail for isolated or undercoordinated particles. The
   modifier can select those invalid particles for diagnostic purposes.</para>
 

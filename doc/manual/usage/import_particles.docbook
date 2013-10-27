@@ -17,7 +17,7 @@
   to specify the format explicitly in the file selector dialog. The program can directly read compressed files that have 
   a <filename>.gz</filename> suffix.</para>
 
-  <sect3 xml:id="usage.import.sequence">
+  <simplesect xml:id="usage.import.sequence">
     <title>Simulation sequences</title>
     <para>
        OVITO can load animation sequences that consist of multiple simulation frames. It will try to detect sequences
@@ -36,9 +36,9 @@
        for extra frames by checking the <emphasis>File contains multiple timesteps</emphasis> option
        in the import settings panel. This will let OVITO scan the entire file for the contained frames.
     </para>
-  </sect3>
+  </simplesect>
   
-  <sect3 xml:id="usage.import.remote">
+  <simplesect xml:id="usage.import.remote">
     <title>Remote file import</title>
     <para>
        OVITO has a built-in SSH client to access files located on remote computers. This is useful if you want to 
@@ -65,9 +65,9 @@
        parsing it to speed up subsequent accesses. The local copy is kept until you quit OVITO or press the <emphasis>Reload</emphasis> button
        in the import file panel.
     </para>
-  </sect3>
+  </simplesect>
   
-  <sect3 xml:id="usage.import.formats">
+  <simplesect xml:id="usage.import.formats">
   <title>Supported file formats</title>
   <para>
     <informaltable>
@@ -115,9 +115,9 @@
         </tgroup>
       </informaltable>  
   </para>
-  </sect3>
+  </simplesect>
   
-  <sect3 xml:id="usage.import.tips">
+  <simplesect xml:id="usage.import.tips">
     <title>Tips and tricks</title>
     <para>
       When starting OVITO from the terminal, you can pass a simulation file to load after program startup. Both local and remote
@@ -127,6 +127,6 @@
 		<command>ovito sftp://hostname/path/filename</command>
        </screen>
     </para>
-  </sect3>
+  </simplesect>
   
 </section>

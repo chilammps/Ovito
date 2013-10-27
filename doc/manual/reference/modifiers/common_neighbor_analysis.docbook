@@ -31,7 +31,7 @@
   Since it is sometimes difficult to choose this cutoff radius correctly, in particular in the
   case of multiphase systems, an adaptive version of the CNA has been
   developed that works without a fixed cutoff radius. The
-  <emphasis>Advaptive Common Neighbor Analysis</emphasis> (a-CNA) method [<link
+  <emphasis>Adaptive Common Neighbor Analysis</emphasis> (a-CNA) method [<link
   xlink:href="http://dx.doi.org/10.1088/0965-0393/20/4/045021">Stukowski,
   Modell. Simul. Mater. Sci. Eng. 20, 045021</link>] determines the optimal cutoff radius automatically 
   for each individual particle.</para>

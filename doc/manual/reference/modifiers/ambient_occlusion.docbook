@@ -59,7 +59,7 @@
         <listitem>
           <para>Percentage value controlling the strength of the shading. The
           higher the shading intensity the larger the effect, and the darker
-          the paricles will appear.</para>
+          the particles will appear.</para>
         </listitem>
       </varlistentry>
 
@@ -77,7 +77,7 @@
         <term>Render buffer resolution</term>
         <listitem>
           <para>
-          To compute the illumnation produced by a single light source from one direction, the modifier
+          To compute the illumination produced by a single light source from one direction, the modifier
           renders the particles as seen from that light source. All visible particles will receive 
           a certain amount of light while the covered particles do not. This parameter controls 
           the resolution of the internal rendering buffer. For systems with a large number of particles it

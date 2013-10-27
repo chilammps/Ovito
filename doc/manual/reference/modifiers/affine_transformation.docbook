@@ -43,8 +43,8 @@
 
         <listitem>
           <para>Controls whether the transformation is applied to the
-          atomic coordinates. You can select which particles should be affected by the
-          modifier: All or only the selected particles.</para>
+          atomic coordinates. You can select which particles are affected by the
+          modifier: All particles or only the selected ones.</para>
         </listitem>
       </varlistentry>
 
@@ -52,7 +52,7 @@
         <term>Transformation matrix - Rotate/Scale/Shear</term>
 
         <listitem>
-          <para>The 3 x 3 matrix that determines the affine transformation. The
+          <para>The 3 x 3 matrix spcifying the affine transformation. The
           particle coordinates are left-multiplied with this
           matrix.</para>
         </listitem>
@@ -72,7 +72,7 @@
         <term>Transform to target box</term>
 
         <listitem>
-          <para>The three vectors that span the target simulation cell. The
+          <para>The three vectors that define the target simulation cell. The
           3 x 3 transformation matrix applied to the particles coordinates
           is calculated from the current simulation cell geometry and the
           three target cell vectors.</para>

@@ -32,41 +32,18 @@ ENDIF(NOT XSLT_PROCESSOR)
 SET(XSLT_PROCESSOR_OPTIONS "--xinclude" CACHE STRING "Additional to pass to the XSLT processor program when building the documentation" )
 MARK_AS_ADVANCED(XSLT_PROCESSOR_OPTIONS)
 
-#
-# Find the Qt help generator program.
-#
-FIND_PROGRAM(QT_HELP_COLLECTION_GENERATOR 
-	NAMES "qcollectiongenerator"
-	HINTS "${_qt5Core_install_prefix}/bin"
-	DOC "Path to the Qt Help Collection Generator program used to build the documentation."
-)
-IF(NOT QT_HELP_COLLECTION_GENERATOR)
-	MESSAGE(FATAL_ERROR "The Qt Help Collection Generator program (qcollectiongenerator) was not found. Please install it and/or specify its location manually.")
-ENDIF(NOT QT_HELP_COLLECTION_GENERATOR)
-
 # Create destination directories.
 FILE(MAKE_DIRECTORY "${OVITO_SHARE_DIRECTORY}/doc/manual")
-FILE(MAKE_DIRECTORY "${OVITO_SHARE_DIRECTORY}/doc/manual/assistant")
 FILE(MAKE_DIRECTORY "${OVITO_SHARE_DIRECTORY}/doc/manual/html")
 
 #
 # XSL transform documentation files.
 #
-# We create the manual in two different format: 
-# Standard HTML format for the manual on the webserver and
-# the special Qt Help assistant format for online help in the application.
-#
 ADD_CUSTOM_TARGET(documentation 
 				COMMAND ${CMAKE_COMMAND} "-E" copy_directory "images/" "${OVITO_SHARE_DIRECTORY}/doc/manual/html/images/"
 				COMMAND ${CMAKE_COMMAND} "-E" copy "manual.css" "${OVITO_SHARE_DIRECTORY}/doc/manual/html/"
 				COMMAND ${XSLT_PROCESSOR} ${XSLT_PROCESSOR_OPTIONS} --stringparam base.dir "${OVITO_SHARE_DIRECTORY}/doc/manual/html/" html-customization-layer.xsl Manual.docbook
-				COMMAND ${CMAKE_COMMAND} "-E" copy_directory "images/" "${OVITO_SHARE_DIRECTORY}/doc/manual/assistant/images/"
-				COMMAND ${XSLT_PROCESSOR} ${XSLT_PROCESSOR_OPTIONS} --stringparam base.dir "${OVITO_SHARE_DIRECTORY}/doc/manual/assistant/" assistant-customization-layer.xsl Manual.docbook
-				COMMAND ${CMAKE_COMMAND} "-E" copy "documentation.qhcp" "${OVITO_SHARE_DIRECTORY}/doc/manual/assistant/documentation.qhcp"
-				COMMAND ${QT_HELP_COLLECTION_GENERATOR} ${OVITO_SHARE_DIRECTORY}/doc/manual/assistant/documentation.qhcp -o ${OVITO_SHARE_DIRECTORY}/doc/manual/assistant/documentation.qhc
 				WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/doc/manual/"
 				COMMENT "Building documentation files")
 
-INSTALL(FILES "${OVITO_SHARE_DIRECTORY}/doc/manual/assistant/documentation.qhc" DESTINATION "${OVITO_RELATIVE_SHARE_DIRECTORY}/doc/manual/assistant/")
-INSTALL(FILES "${OVITO_SHARE_DIRECTORY}/doc/manual/assistant/documentation.qch" DESTINATION "${OVITO_RELATIVE_SHARE_DIRECTORY}/doc/manual/assistant/")
 INSTALL(DIRECTORY "${OVITO_SHARE_DIRECTORY}/doc/manual/html/" DESTINATION "${OVITO_RELATIVE_SHARE_DIRECTORY}/doc/manual/html/")
