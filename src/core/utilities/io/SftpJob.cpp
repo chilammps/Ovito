@@ -28,11 +28,19 @@
 
 namespace Ovito {
 
+/// List SFTP jobs that are waiting to be executed.
+QQueue<SftpJob*> SftpJob::_queuedJobs;
+
+/// Keeps track of how many SFTP jobs are currently active.
+int SftpJob::_numActiveJobs = 0;
+
+enum { MaximumNumberOfSimulateousSftpJobs = 2 };
+
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
 SftpJob::SftpJob(const QUrl& url, const std::shared_ptr<FutureInterfaceBase>& futureInterface) :
-		_url(url), _connection(nullptr), _futureInterface(futureInterface)
+		_url(url), _connection(nullptr), _futureInterface(futureInterface), _isActive(false)
 {
 	// Run all event handlers of this class in the main thread.
 	moveToThread(QApplication::instance()->thread());
@@ -46,6 +54,17 @@ SftpJob::SftpJob(const QUrl& url, const std::shared_ptr<FutureInterfaceBase>& fu
 ******************************************************************************/
 void SftpJob::start()
 {
+	if(!_isActive) {
+		// Keep a counter of active jobs.
+		// If there are too many jobs active simultaneously, queue them to be executed later.
+		if(_numActiveJobs >= MaximumNumberOfSimulateousSftpJobs) {
+			_queuedJobs.enqueue(this);
+			return;
+		}
+		else _numActiveJobs++;
+		_isActive = true;
+	}
+
 	// This background task started to run.
 	_futureInterface->reportStarted();
 
@@ -107,8 +126,24 @@ void SftpJob::shutdown(bool success)
 
 	_futureInterface->reportFinished();
 
+	// Update the counter of active jobs.
+	_numActiveJobs--;
+
 	// Schedule this object for deletion.
 	deleteLater();
+
+	// If there are now less jobs active simultaneously, execute one of the waiting jobs.
+	if(_numActiveJobs < MaximumNumberOfSimulateousSftpJobs && !_queuedJobs.isEmpty()) {
+		SftpJob* waitingJob = _queuedJobs.dequeue();
+		if(waitingJob->_futureInterface->isCanceled() == false) {
+			waitingJob->start();
+		}
+		else {
+			// Skip canceled jobs.
+			waitingJob->_futureInterface->reportStarted();
+			waitingJob->shutdown(false);
+		}
+	}
 }
 
 /******************************************************************************

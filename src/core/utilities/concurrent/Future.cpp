@@ -43,14 +43,15 @@ void FutureInterfaceBase::cancel()
 {
 	//qDebug() << "BEG FutureInterfaceBase::cancel() this=" << this << "thread=" << QThread::currentThread() << "text=" << progressText();
 	QMutexLocker locker(&_mutex);
-	if(isCanceled()) {
-	//	qDebug() << "ALREADY CANCELED FutureInterfaceBase::cancel() this=" << this << "thread=" << QThread::currentThread() << "text=" << progressText();
-		return;
-	}
 
 	if(_subTask) {
-	//	qDebug() << "Canceling subtask";
+		//qDebug() << "Canceling subtask " << _subTask;
 		_subTask->cancel();
+	}
+
+	if(isCanceled()) {
+//		qDebug() << "ALREADY CANCELED FutureInterfaceBase::cancel() this=" << this << "thread=" << QThread::currentThread() << "text=" << progressText();
+		return;
 	}
 
 	_state = State(_state | Canceled);
@@ -61,7 +62,7 @@ void FutureInterfaceBase::cancel()
 
 bool FutureInterfaceBase::reportStarted()
 {
-	//qDebug() << "BEG FutureInterfaceBase::reportStarted() this=" << this << "thread=" << QThread::currentThread() << "text=" << progressText();
+	//qDebug() << "BEG FutureInterfaceBase::reportStarted() this=" << this << "thread=" << QThread::currentThread() << "text=" << progressText()  << "isAlreadyStarted=" << isStarted();
 	//qDebug() << "THREAD COUNT=" << QThreadPool::globalInstance()->activeThreadCount();
     QMutexLocker locker(&_mutex);
     if(isStarted())
@@ -189,11 +190,34 @@ bool FutureInterfaceBase::waitForSubTask(FutureInterfaceBase* subTask)
 {
 	//qDebug() << "BEG FutureInterfaceBase::waitForSubTask() this=" << this << "thread=" << QThread::currentThread() << "text=" << progressText() << "subtask=" << subTask;
 	QMutexLocker locker(&_mutex);
+	if(this->isCanceled()) {
+		subTask->cancel();
+		return false;
+	}
+	if(subTask->isCanceled()) {
+		locker.unlock();
+		this->cancel();
+		return false;
+	}
 	this->_subTask = subTask;
-	if(this->isCanceled()) subTask->cancel();
 	locker.unlock();
 	try {
+#if 0
 		subTask->waitForFinished();
+#else
+		QMutexLocker subtaskLock(&subTask->_mutex);
+	    const bool subTaskAlreadyFinished = !subTask->isRunning() && subTask->isStarted();
+	    subtaskLock.unlock();
+
+	    if(!subTaskAlreadyFinished) {
+	    	subTask->tryToRunImmediately();
+	    	subtaskLock.relock();
+	        while(!subTask->isCanceled() && (subTask->isRunning() || !subTask->isStarted()))
+	        	subTask->_waitCondition.wait(&subTask->_mutex);
+	    }
+
+	    subTask->throwPossibleException();
+#endif
 	}
 	catch(...) {
 		locker.relock();
@@ -258,6 +282,7 @@ void FutureInterfaceBase::incrementProgressValue(int increment)
 void FutureInterfaceBase::setProgressText(const QString& progressText)
 {
     QMutexLocker locker(&_mutex);
+    //qDebug() << "FutureInterfaceBase::setProgressText() this=" << this << "thread=" << QThread::currentThread() << "text=" << progressText;
 
     if(isCanceled() || isFinished())
         return;

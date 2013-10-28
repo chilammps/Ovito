@@ -42,7 +42,7 @@ SceneNodeSelectionBox::SceneNodeSelectionBox(QWidget* parent) : QComboBox(parent
 
 	// Listen for selection changes.
 	connect(&DataSetManager::instance(), SIGNAL(selectionChangeComplete(SelectionSet*)), this, SLOT(onSceneSelectionChanged()));
-	connect(&DataSetManager::instance(), SIGNAL(dataSetReset(DataSet*)), this, SLOT(onSceneSelectionChanged()));
+	connect(model(), SIGNAL(modelReset()), this, SLOT(onSceneSelectionChanged()));
 
 	connect(this, SIGNAL(activated(int)), this, SLOT(onItemActivated(int)));
 }

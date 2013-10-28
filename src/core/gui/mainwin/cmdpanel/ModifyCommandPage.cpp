@@ -405,18 +405,8 @@ void ModifyCommandPage::createAboutPanel()
 	settings.beginGroup("installation");
 	if(settings.contains("id")) {
 		id = settings.value("id").toByteArray();
-		if(id == QByteArray(16, '\0'))
+		if(id == QByteArray(16, '\0') || id.size() != 16)
 			id.clear();
-	}
-	if(id.isEmpty()) {
-		// Look in old Ovito's settings.
-		QSettings oldSettings("ovito", "ovito");
-		oldSettings.beginGroup("installation");
-		if(oldSettings.contains("id")) {
-			id = oldSettings.value("id").toByteArray();
-			if(id == QByteArray(16, '\0'))
-				id.clear();
-		}
 	}
 	if(id.isEmpty()) {
 		// Generate a new unique ID.

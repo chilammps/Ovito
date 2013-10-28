@@ -89,6 +89,15 @@ protected:
 
     /// The associated future interface of the job.
     std::shared_ptr<FutureInterfaceBase> _futureInterface;
+
+    /// Indicates whether this SFTP job is currently active.
+    bool _isActive;
+
+    /// List SFTP jobs that are waiting to be executed.
+    static QQueue<SftpJob*> _queuedJobs;
+
+    /// Keeps track of how many SFTP jobs are currently active.
+    static int _numActiveJobs;
 };
 
 /**
