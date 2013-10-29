@@ -116,7 +116,7 @@ hr {
 }
 
 .guilabel {
-    font-family: monospace;
+    font-style: italic;
 }
 
 .title {

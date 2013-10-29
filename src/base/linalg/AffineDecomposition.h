@@ -58,6 +58,7 @@ namespace Ovito {
 class OVITO_BASE_EXPORT AffineDecomposition
 {
 public:
+
 	/// Translation part.
 	Vector3 translation;
 

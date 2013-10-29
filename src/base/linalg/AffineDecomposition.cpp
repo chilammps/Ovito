@@ -42,7 +42,8 @@ AffineDecomposition::AffineDecomposition(const AffineTransformation& tm)
 	OVITO_ASSERT_MSG(std::abs(scaling.Q.dot(scaling.Q) - 1.0) <= FLOATTYPE_EPSILON, "AffineDecomposition", "Resulting quaternion is not normalized.");
 
 	// The following code checks whether the decomposed parts give the original affine matrix.
-#if defined(_DEBUG) && 0
+#if 0
+#ifdef OVITO_DEBUG
 
 	// Decompose 4x4 affine matrix A as TFRUK(U transpose), where t contains the
 	// translation components, q contains the rotation R, u contains U, k contains
@@ -58,10 +59,10 @@ AffineDecomposition::AffineDecomposition(const AffineTransformation& tm)
     	if(!product[i].Equals(tm[i], FLOATTYPE_EPSILON)) {
     		qDebug() << "Original matrix: " << tm;
     		qDebug() << "Product of affine parts: " << product;
-			OVITO_ASSERT_MSG(false, "AffineDecomposition(const AffineTransformation& tm)", "Could not decompose matrix to affine transformations.");
+			OVITO_ASSERT_MSG(false, "AffineDecomposition", "Could not decompose matrix to affine transformations.");
     	}
     }
-
+#endif
 #endif
 }
 
@@ -71,19 +72,19 @@ enum QuatPart {X, Y, Z, W};
 #define mat_pad(A) (A(W,X)=A(X,W)=A(W,Y)=A(Y,W)=A(W,Z)=A(Z,W)=0,A(W,W)=1)
 
 /** Copy nxn matrix A to C using "gets" for assignment **/
-#define mat_copy(C,gets,A,n) {int i,j; for(i=0;i<n;i++) for(j=0;j<n;j++) C(i,j) gets (A(i,j));}
+#define mat_copy(C,gets,A,n) { for(size_t i=0; i<n; i++) for(size_t j=0; j<n; j++) C(i,j) gets (A(i,j)); }
 
 /** Copy transpose of nxn matrix A to C using "gets" for assignment **/
-#define mat_tpose(AT,gets,A,n) {int i,j; for(i=0;i<n;i++) for(j=0;j<n;j++) AT(i,j) gets (A(j,i));}
+#define mat_tpose(AT,gets,A,n) { for(size_t i=0; i<n; i++) for(size_t j=0; j<n; j++) AT(i,j) gets (A(j,i)); }
 
 /** Assign nxn matrix C the element-wise combination of A and B using "op" **/
-#define mat_binop(C,gets,A,op,B,n) {int i,j; for(i=0;i<n;i++) for(j=0;j<n;j++) C(i,j) gets (A(i,j)) op (B(i,j));}
+#define mat_binop(C,gets,A,op,B,n) { for(size_t i=0; i<n; i++) for(size_t j=0; j<n; j++) C(i,j) gets (A(i,j)) op (B(i,j)); }
 
 /** Multiply the upper left 3x3 parts of A and B to get AB **/
 inline void mat_mult(const Matrix4& A, const Matrix4& B, Matrix4& AB)
 {
-    for(int i=0; i<3; i++) 
-		for(int j=0; j<3; j++)
+    for(size_t i=0; i < 3; i++)
+		for(size_t j=0; j < 3; j++)
 			AB(i,j) = A(i,0)*B(0,j) + A(i,1)*B(1,j) + A(i,2)*B(2,j);
 }
 
@@ -130,12 +131,6 @@ void adjoint_transpose(Matrix4& M, Matrix4& MadjT)
 
 /******* Quaternion Preliminaries *******/
 
-/* Return conjugate of quaternion. */
-inline Quaternion Qt_Conj(const Quaternion& q)
-{
-	return q.inverse();
-}
-
 /* Construct a unit quaternion from rotation matrix.  Assumes matrix is
  * used to multiply column vector on the left: vnew = mat vold.	 Works
  * correctly for right-handed coordinate system and right-handed rotations.
@@ -163,7 +158,15 @@ Quaternion Qt_FromMatrix(const Matrix4& mat)
 	    if(mat(Y,Y) > mat(X,X)) h = Y;
 	    if(mat(Z,Z) > mat(h,h)) h = Z;
 	    switch(h) {
-#define caseMacro(i,j,k,I,J,K)  case I:	s = sqrt( (mat(I,I) - (mat(J,J)+mat(K,K))) + mat(W,W) ); qu.i() = s*0.5;	s = 0.5 / s;	qu.j() = (mat(I,J) + mat(J,I)) * s;		qu.k() = (mat(K,I) + mat(I,K)) * s;		qu.w() = (mat(K,J) - mat(J,K)) * s;		break
+
+#define caseMacro(i,j,k,I,J,K)  case I:	\
+		s = sqrt( (mat(I,I) - (mat(J,J)+mat(K,K))) + mat(W,W) ); \
+		qu.i() = s*0.5;	s = 0.5 / s; \
+		qu.j() = (mat(I,J) + mat(J,I)) * s; \
+		qu.k() = (mat(K,I) + mat(I,K)) * s; \
+		qu.w() = (mat(K,J) - mat(J,K)) * s; \
+		break
+
 	    caseMacro(x,y,z,X,Y,Z);
 	    caseMacro(y,z,x,Y,Z,X);
 	    caseMacro(z,x,y,Z,X,Y);
@@ -189,8 +192,8 @@ inline FloatType mat_norm(const Matrix4& M, bool tpose)
     return max;
 }
 
-FloatType norm_inf(const Matrix4& M) {return mat_norm(M, false);}
-FloatType norm_one(const Matrix4& M) {return mat_norm(M, true);}
+inline FloatType norm_inf(const Matrix4& M) { return mat_norm(M, false); }
+inline FloatType norm_one(const Matrix4& M) { return mat_norm(M, true); }
 
 /** Return index of column of M containing maximum abs entry, or -1 if M=0 **/
 int find_max_col(const Matrix4& M)
@@ -210,74 +213,76 @@ int find_max_col(const Matrix4& M)
 /** Setup u for Household reflection to zero all v components but first **/
 void make_reflector(const Vector3& v, Vector3& u)
 {
-    float s = v.length();
+    FloatType s = v.length();
     u[0] = v[0]; u[1] = v[1];
-    u[2] = v[2] + ((v[2]<0.0) ? -s : s);
-    s = sqrt(2.0/u.squaredLength());
+    u[2] = v[2] + ((v[2] < 0) ? -s : s);
+    s = sqrt(FloatType(2) / u.squaredLength());
     u[0] = u[0]*s; u[1] = u[1]*s; u[2] = u[2]*s;
 }
 
 /** Apply Householder reflection represented by u to column vectors of M **/
 void reflect_cols(Matrix4& M, const Vector3& u)
 {
-    int i, j;
-	for (i=0; i<3; i++) {
+	for(size_t i=0; i < 3; i++) {
 		FloatType s = u[0]*M(0,i) + u[1]*M(1,i) + u[2]*M(2,i);
-		for (j=0; j<3; j++) M(j,i) -= u[j]*s;
+		for(size_t j = 0; j < 3; j++) M(j,i) -= u[j]*s;
     }
 }
 /** Apply Householder reflection represented by u to row vectors of M **/
 void reflect_rows(Matrix4& M, const Vector3& u)
 {
-    int i, j;
-    for (i=0; i<3; i++) {
+    for(size_t i=0; i<3; i++) {
 		FloatType s = vdot(u, M.column(i));
-		for (j=0; j<3; j++) M(i,j) -= u[j]*s;
+		for(size_t j=0; j<3; j++) M(i,j) -= u[j]*s;
     }
 }
 
 /** Find orthogonal factor Q of rank 1 (or less) M **/
 void do_rank1(Matrix4& M, Matrix4& Q)
 {
-    Vector3 v1, v2;
-    FloatType s;
-    int col;
 	Q = Matrix4::Identity();
-    /* If rank(M) is 1, we should find a non-zero column in M */
-    col = find_max_col(M);
-    if (col<0) return; /* Rank is 0 */
-    v1[0] = M(0,col); v1[1] = M(1,col); v1[2] = M(2,col);
-    make_reflector(v1, v1); reflect_cols(M, v1);
-    v2[0] = M(2,0); v2[1] = M(2,1); v2[2] = M(2,2);
-    make_reflector(v2, v2); reflect_rows(M, v2);
-    s = M(2,2);
-    if (s<0.0) Q(2,2) = -1.0;
-    reflect_cols(Q, v1); reflect_rows(Q, v2);
+    // If rank(M) is 1, we should find a non-zero column in M.
+    int col = find_max_col(M);
+    if(col < 0) return; // Rank is 0.
+    Vector3 v1{ M(0,col), M(1,col), M(2,col) };
+    make_reflector(v1, v1);
+    reflect_cols(M, v1);
+    Vector3 v2{ M(2,0), M(2,1), M(2,2) };
+    make_reflector(v2, v2);
+    reflect_rows(M, v2);
+    if(M(2,2) < 0.0) Q(2,2) = -1;
+    reflect_cols(Q, v1);
+    reflect_rows(Q, v2);
 }
 
 /** Find orthogonal factor Q of rank 2 (or less) M using adjoint transpose **/
 void do_rank2(Matrix4& M, Matrix4& MadjT, Matrix4& Q)
 {
-    Vector3 v1, v2;
     FloatType w, x, y, z, c, s, d;
-    int col;
-    /* If rank(M) is 2, we should find a non-zero column in MadjT */
-    col = find_max_col(MadjT);
-    if (col<0) {do_rank1(M, Q); return;} /* Rank<2 */
-    v1[0] = MadjT(0,col); v1[1] = MadjT(1,col); v1[2] = MadjT(2,col);
-    make_reflector(v1, v1); reflect_cols(M, v1);
+    // If rank(M) is 2, we should find a non-zero column in MadjT.
+    int col = find_max_col(MadjT);
+    if(col<0) {   // Rank<2
+    	do_rank1(M, Q);
+    	return;
+    }
+    Vector3 v1{ MadjT(0,col), MadjT(1,col), MadjT(2,col) };
+    make_reflector(v1, v1);
+    reflect_cols(M, v1);
+    Vector3 v2;
     vcross(M.row(0), M.row(1), v2);
-    make_reflector(v2, v2); reflect_rows(M, v2);
+    make_reflector(v2, v2);
+    reflect_rows(M, v2);
     w = M(0,0); x = M(0,1); y = M(1,0); z = M(1,1);
     if (w*z>x*y) {
-	c = z+w; s = y-x; d = sqrt(c*c+s*s); c = c/d; s = s/d;
-	Q(0,0) = Q(1,1) = c; Q(0,1) = -(Q(1,0) = s);
+    	c = z+w; s = y-x; d = sqrt(c*c+s*s); c = c/d; s = s/d;
+    	Q(0,0) = Q(1,1) = c; Q(0,1) = -(Q(1,0) = s);
     } else {
-	c = z-w; s = y+x; d = sqrt(c*c+s*s); c = c/d; s = s/d;
-	Q(0,0) = -(Q(1,1) = c); Q(0,1) = Q(1,0) = s;
+    	c = z-w; s = y+x; d = sqrt(c*c+s*s); c = c/d; s = s/d;
+    	Q(0,0) = -(Q(1,1) = c); Q(0,1) = Q(1,0) = s;
     }
     Q(0,2) = Q(2,0) = Q(1,2) = Q(2,1) = 0.0; Q(2,2) = 1.0;
-    reflect_cols(Q, v1); reflect_rows(Q, v2);
+    reflect_cols(Q, v1);
+    reflect_rows(Q, v2);
 }
 
 /* Polar Decomposition of 3x3 matrix in 4x4,
@@ -290,7 +295,6 @@ FloatType polar_decomp(Matrix4& M, Matrix4& Q, Matrix4& S)
 {
     Matrix4 Mk, MadjTk, Ek;
     FloatType det, M_one, M_inf, MadjT_one, MadjT_inf, E_one, gamma, g1, g2;
-    int i, j;
 
     mat_tpose(Mk,=,M,3);
     M_one = norm_one(Mk);  M_inf = norm_inf(Mk);
@@ -315,8 +319,8 @@ FloatType polar_decomp(Matrix4& M, Matrix4& Q, Matrix4& S)
 	mat_pad(Q);
     mat_mult(Mk, M, S);	 
 	mat_pad(S);
-    for(i=0; i<3; i++) 
-		for (j=i; j<3; j++)
+    for(size_t i=0; i<3; i++)
+		for(size_t j=i; j<3; j++)
 			S(i,j) = S(j,i) = 0.5*(S(i,j)+S(j,i));
     return det;
 }
@@ -395,76 +399,87 @@ Quaternion snuggle(Quaternion q, Vector3& k)
     if (ka[X]==ka[Y]) {if (ka[X]==ka[Z]) turn = W; else turn = Z;}
     else {if (ka[X]==ka[Z]) turn = Y; else if (ka[Y]==ka[Z]) turn = X;}
     if (turn>=0) {
-	Quaternion qtoz, qp;
-	unsigned neg[3], win;
-	FloatType mag[3], t;
-	static Quaternion qxtoz(0,SQRTHALF,0,SQRTHALF);
-	static Quaternion qytoz(SQRTHALF,0,0,SQRTHALF);
-	static Quaternion qppmm( 0.5, 0.5,-0.5,-0.5);
-	static Quaternion qpppp( 0.5, 0.5, 0.5, 0.5);
-	static Quaternion qmpmm(-0.5, 0.5,-0.5,-0.5);
-	static Quaternion qpppm( 0.5, 0.5, 0.5,-0.5);
-	static Quaternion q0001( 0.0, 0.0, 0.0, 1.0);
-	static Quaternion q1000( 1.0, 0.0, 0.0, 0.0);
-	switch (turn) {
-	default: return (Qt_Conj(q));
-	case X: q = q * (qtoz = qxtoz); swap(ka,X,Z) break;
-	case Y: q = q * (qtoz = qytoz); swap(ka,Y,Z) break;
-	case Z: qtoz = q0001; break;
-	}
-	q = Qt_Conj(q);
-	mag[0] = (FloatType)q.z()*q.z()+(FloatType)q.w()*q.w()-0.5;
-	mag[1] = (FloatType)q.x()*q.z()-(FloatType)q.y()*q.w();
-	mag[2] = (FloatType)q.y()*q.z()+(FloatType)q.x()*q.w();
-	for (i=0; i<3; i++) if ((neg[i] = (mag[i]<0.0))) mag[i] = -mag[i];
-	if (mag[0]>mag[1]) {if (mag[0]>mag[2]) win = 0; else win = 2;}
-	else		   {if (mag[1]>mag[2]) win = 1; else win = 2;}
-	switch (win) {
-	case 0: if (neg[0]) p = q1000; else p = q0001; break;
-	case 1: if (neg[1]) p = qppmm; else p = qpppp; cycle(ka,0) break;
-	case 2: if (neg[2]) p = qmpmm; else p = qpppm; cycle(ka,1) break;
-	}
-	qp = q * p;
-	t = sqrt(mag[win]+0.5);
-	p = p * Quaternion(0.0,0.0,-qp.z()/t,qp.w()/t);
-	p = qtoz * p.inverse();
-    } else {
-	FloatType qa[4], pa[4];
-	unsigned lo, hi, neg[4], par = 0;
-	FloatType all, big, two;
-	qa[0] = q.x(); qa[1] = q.y(); qa[2] = q.z(); qa[3] = q.w();
-	for (i=0; i<4; i++) {
-	    pa[i] = 0.0;
-	    if ((neg[i] = (qa[i]<0.0))) qa[i] = -qa[i];
-	    par ^= neg[i];
-	}
-	/* Find two largest components, indices in hi and lo */
-	if (qa[0]>qa[1]) lo = 0; else lo = 1;
-	if (qa[2]>qa[3]) hi = 2; else hi = 3;
-	if (qa[lo]>qa[hi]) {
-	    if (qa[lo^1]>qa[hi]) {hi = lo; lo ^= 1;}
-	    else {hi ^= lo; lo ^= hi; hi ^= lo;}
-	} else {if (qa[hi^1]>qa[lo]) lo = hi^1;}
-	all = (qa[0]+qa[1]+qa[2]+qa[3])*0.5;
-	two = (qa[hi]+qa[lo])*SQRTHALF;
-	big = qa[hi];
-	if (all>two) {
-	    if (all>big) {/*all*/
-		{int i; for (i=0; i<4; i++) pa[i] = sgn(neg[i], 0.5);}
-		cycle(ka,par)
-	    } else {/*big*/ pa[hi] = sgn(neg[hi],1.0);}
-	} else {
-	    if (two>big) {/*two*/
-		pa[hi] = sgn(neg[hi],SQRTHALF); pa[lo] = sgn(neg[lo], SQRTHALF);
-		if (lo>hi) {hi ^= lo; lo ^= hi; hi ^= lo;}
-		if (hi==W) {hi = "\001\002\000"[lo]; lo = 3-hi-lo;}
-		swap(ka,hi,lo)
-	    } else {/*big*/ pa[hi] = sgn(neg[hi],1.0);}
-	}
-	p.x() = -pa[0]; p.y() = -pa[1]; p.z() = -pa[2]; p.w() = pa[3];
+		Quaternion qtoz, qp;
+		unsigned neg[3], win;
+		FloatType mag[3], t;
+		static const Quaternion qxtoz(0,SQRTHALF,0,SQRTHALF);
+		static const Quaternion qytoz(SQRTHALF,0,0,SQRTHALF);
+		static const Quaternion qppmm( 0.5, 0.5,-0.5,-0.5);
+		static const Quaternion qpppp( 0.5, 0.5, 0.5, 0.5);
+		static const Quaternion qmpmm(-0.5, 0.5,-0.5,-0.5);
+		static const Quaternion qpppm( 0.5, 0.5, 0.5,-0.5);
+		static const Quaternion q0001( 0.0, 0.0, 0.0, 1.0);
+		static const Quaternion q1000( 1.0, 0.0, 0.0, 0.0);
+		switch (turn) {
+		default: return q.inverse();
+		case X: q = q * (qtoz = qxtoz); swap(ka,X,Z) break;
+		case Y: q = q * (qtoz = qytoz); swap(ka,Y,Z) break;
+		case Z: qtoz = q0001; break;
+		}
+		q = q.inverse();
+		mag[0] = q.z()*q.z()+q.w()*q.w()-0.5;
+		mag[1] = q.x()*q.z()-q.y()*q.w();
+		mag[2] = q.y()*q.z()+q.x()*q.w();
+		for(i=0; i<3; i++)
+			if((neg[i] = (mag[i]<0.0)))
+				mag[i] = -mag[i];
+		if(mag[0]>mag[1])
+			win = (mag[0]>mag[2]) ? 0 : 2;
+		else
+			win = (mag[1] > mag[2]) ? 1 : 2;
+		switch (win) {
+		case 0: if (neg[0]) p = q1000; else p = q0001; break;
+		case 1: if (neg[1]) p = qppmm; else p = qpppp; cycle(ka,0) break;
+		case 2: if (neg[2]) p = qmpmm; else p = qpppm; cycle(ka,1) break;
+		}
+		qp = q * p;
+		t = sqrt(mag[win]+0.5);
+		p = p * Quaternion(0.0,0.0,-qp.z()/t,qp.w()/t);
+		p = qtoz * p.inverse();
+    }
+    else {
+		FloatType qa[4], pa[4];
+		unsigned lo, hi, neg[4], par = 0;
+		FloatType all, big, two;
+		qa[0] = q.x(); qa[1] = q.y(); qa[2] = q.z(); qa[3] = q.w();
+		for (i=0; i<4; i++) {
+			pa[i] = 0.0;
+			if ((neg[i] = (qa[i]<0.0))) qa[i] = -qa[i];
+			par ^= neg[i];
+		}
+		/* Find two largest components, indices in hi and lo */
+		if (qa[0]>qa[1]) lo = 0; else lo = 1;
+		if (qa[2]>qa[3]) hi = 2; else hi = 3;
+		if (qa[lo]>qa[hi]) {
+			if (qa[lo^1]>qa[hi]) {hi = lo; lo ^= 1;}
+			else {hi ^= lo; lo ^= hi; hi ^= lo;}
+		}
+		else { if (qa[hi^1]>qa[lo]) lo = hi^1;}
+		all = (qa[0]+qa[1]+qa[2]+qa[3])*0.5;
+		two = (qa[hi]+qa[lo])*SQRTHALF;
+		big = qa[hi];
+		if(all>two) {
+			if (all>big) {/*all*/
+				{ size_t i; for (i=0; i<4; i++) pa[i] = sgn(neg[i], 0.5); }
+				cycle(ka,par)
+			}
+			else {/*big*/ pa[hi] = sgn(neg[hi],1.0);}
+		}
+		else {
+			if (two>big) {/*two*/
+				pa[hi] = sgn(neg[hi],SQRTHALF); pa[lo] = sgn(neg[lo], SQRTHALF);
+				if (lo>hi) {hi ^= lo; lo ^= hi; hi ^= lo;}
+				if (hi==W) {hi = "\001\002\000"[lo]; lo = 3-hi-lo;}
+				swap(ka,hi,lo)
+			}
+			else {
+				/*big*/ pa[hi] = sgn(neg[hi],1.0);
+			}
+		}
+		p.x() = -pa[0]; p.y() = -pa[1]; p.z() = -pa[2]; p.w() = pa[3];
     }
     k.x() = ka[X]; k.y() = ka[Y]; k.z() = ka[Z];
-    return (p);
+    return p;
 }
 
 /******* Decompose Affine AffineTransformation *******/

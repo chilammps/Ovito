@@ -20,13 +20,13 @@
   <simplesect xml:id="usage.import.sequence">
     <title>Simulation sequences</title>
     <para>
-       OVITO can load animation sequences that consist of multiple simulation frames. It will try to detect sequences
-       by finding other files in the same directory that have a similar name like the one you picked. 
-       To do this, it looks for a sequence of digits in the filename (if there is any), starting from the end. 
-       The digits are replaced by the special wildcard character <literal>*</literal> to generate a search pattern. This pattern
-       is used to find other files in the same directory that belong to the same animation sequence. For instance,
+       OVITO can load animation sequences that consist of multiple simulation frames. It will try to automatically detect sequences
+       by looking for other files in the same directory having a similar name like the one you picked in the file selection dialog. 
+       To do this, it replaces the last number in the filename (if there is one) with the wildcard character <literal>*</literal> 
+       to generate a search pattern. This pattern
+       is used to find other files in the same directory belonging to the same animation sequence. For instance,
        if the user initially picks the file <filename>anim1c_5000.dump</filename>, OVITO generates the search pattern
-       <filename>anim1c_*.dump</filename> to find all matching frames, e.g. <filename>anim1c_0.dump</filename>,
+       <filename>anim1c_*.dump</filename> to find all matching frames such as <filename>anim1c_0.dump</filename>,
        <filename>anim1c_1000.dump</filename>, <filename>anim1c_2000.dump</filename>, etc. It is possible to
        adjust the search pattern manually in case the automatic one does not fit. 
     </para>
@@ -34,7 +34,7 @@
        Some file formats can store more than one simulation frame in a single file, for instance the LAMMPS dump format.
        By default, OVITO imports only the first frame from the selected file. You have to explicitly tell OVITO to look 
        for extra frames by checking the <emphasis>File contains multiple timesteps</emphasis> option
-       in the import settings panel. This will let OVITO scan the entire file for the contained frames.
+       in the import settings panel. This will let OVITO scan the entire file for the contained animation frames.
     </para>
   </simplesect>
   
@@ -109,7 +109,7 @@
             </row>
             <row>
               <entry>PARCAS</entry>
-              <entry><para>A binary file format written by the <emphasis>Parcas</emphasis> MD code developed in K. Nordlund's group.</para></entry>
+              <entry><para>A binary file format written by the MD code <emphasis>Parcas</emphasis> developed in K. Nordlund's group at University of Helsinki.</para></entry>
             </row>
           </tbody>
         </tgroup>
