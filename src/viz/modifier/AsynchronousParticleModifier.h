@@ -28,6 +28,7 @@
 #define __OVITO_ASYNC_PARTICLE_MODIFIER_H
 
 #include <core/Core.h>
+#include <core/utilities/concurrent/Future.h>
 
 #include <viz/modifier/ParticleModifier.h>
 #include <viz/data/ParticleTypeProperty.h>

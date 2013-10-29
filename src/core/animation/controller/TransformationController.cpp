@@ -79,7 +79,7 @@ void PRSTransformationController::setValue(TimePoint time, const AffineTransform
 * parent node.
 *		oldParentTM - The transformation of the old parent node
 *		newParentTM - The transformation of the new parent node
-*		contextNode - The node to which this cotnroller is assigned to
+*		contextNode - The node to which this controller is assigned to
 ******************************************************************************/
 void PRSTransformationController::changeParent(TimePoint time, const AffineTransformation& oldParentTM, const AffineTransformation& newParentTM, SceneNode* contextNode)
 {

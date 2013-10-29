@@ -43,8 +43,11 @@ private Q_SLOTS:
 
 	void onShowGrid(bool checked);
 	void onShowRenderFrame(bool checked);
+	void onShowViewTypeMenu();
 	void onViewType(QAction* action);
-	void onAdjustCamera();
+	void onAdjustView();
+	void onViewNode(QAction* action);
+	void onCreateCamera();
 	void onWindowFocusChanged() {
 		if(QGuiApplication::focusWindow() && QGuiApplication::focusWindow()->flags().testFlag(Qt::Popup) == false) {
 			hide();
@@ -54,13 +57,10 @@ private Q_SLOTS:
 private:
     
 	/// The viewport this menu belongs to.
-	Viewport* viewport;
+	Viewport* _viewport;
 	
 	/// The view type sub-menu.
-	QMenu* viewTypeMenu;
-	
-	/// The menu group that lists all cameras.
-	QActionGroup* viewNodeGroup;
+	QMenu* _viewTypeMenu;
 };
 
 

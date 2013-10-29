@@ -82,15 +82,15 @@ public:
 	/// It is assumed that \a tm is a pure rotation matrix.
 	/// The calculated rotation angle will be in the range [-pi, +pi].
     explicit RotationT(const Matrix_34<T>& tm) {
-    	_axis.x() = (tm(2,1) - tm(1,2));
-    	_axis.y() = (tm(0,2) - tm(2,0));
-    	_axis.z() = (tm(1,0) - tm(0,1));
+    	_axis.x() = tm(2,1) - tm(1,2);
+    	_axis.y() = tm(0,2) - tm(2,0);
+    	_axis.z() = tm(1,0) - tm(0,1);
     	if(_axis == typename Vector_3<T>::Zero()) {
     		_angle = T(0);
     		_axis = Vector_3<T>(0, 0, 1);
     	}
     	else {
-    		T trace = (tm(0,0) + tm(1,1) + tm(2,2) - T(1));
+    		T trace = tm(0,0) + tm(1,1) + tm(2,2) - T(1);
     		T s = _axis.length();
     		_axis /= s;
     		_angle = atan2(s, trace);
@@ -102,18 +102,18 @@ public:
 	///
 	/// The calculated rotation angle will be in the range [0, 2*pi].
 	explicit RotationT(const QuaternionT<T>& q) {
-		T scaleSquared = q.dot(q);
+		T scaleSquared = q.x()*q.x() + q.y()*q.y() + q.z()*q.z();
 		if(scaleSquared <= T(FLOATTYPE_EPSILON)) {
 			_angle = T(0);
 			_axis = Vector_3<T>(0, 0, 1);
 		}
 		else {
-			if(q.w() < -1)
-				_angle = T(2 * M_PI);
-			else if(q.w() > 1)
+			if(q.w() < T(-1))
+				_angle = T(M_PI) * 2;
+			else if(q.w() > T(1))
 				_angle = T(0);
 			else
-				_angle = T(2 * acos(q.w()));
+				_angle = acos(q.w()) * 2;
 			_axis = Vector_3<T>(q.x(), q.y(), q.z()) / (T)sqrt(scaleSquared);
 			OVITO_ASSERT(std::abs(_axis.squaredLength() - T(1)) <= T(FLOATTYPE_EPSILON));
 		}
@@ -381,6 +381,14 @@ template<typename T>
 inline std::ostream& operator<<(std::ostream &os, const RotationT<T>& r) {
 	return os << '[' << r.axis().x() << ' ' << r.axis().y()  << ' ' << r.axis().z() << "], " << r.angle();
 }
+
+/// \brief Writes the rotation to the Qt debug stream.
+template<typename T>
+inline QDebug operator<<(QDebug dbg, const RotationT<T>& r) {
+    dbg.nospace() << "[" << r.axis().x() << ", " << r.axis().y() << ", " << r.axis().z() << "], " << r.angle();
+    return dbg.space();
+}
+
 
 /// \brief Writes a Rotation to a binary output stream.
 /// \param stream The output stream.

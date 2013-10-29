@@ -23,18 +23,18 @@
 #include <core/viewport/Viewport.h>
 #include <core/viewport/ViewportWindow.h>
 #include <core/viewport/ViewportManager.h>
+#include <core/viewport/picking/PickingSceneRenderer.h>
 #include <core/animation/AnimManager.h>
 #include <core/rendering/viewport/ViewportSceneRenderer.h>
 #include <core/rendering/RenderSettings.h>
 #include <core/dataset/DataSetManager.h>
-#include <core/scene/objects/AbstractCameraObject.h>
+#include <core/scene/objects/camera/AbstractCameraObject.h>
 #include "ViewportMenu.h"
-#include "picking/PickingSceneRenderer.h"
 
 /// The default field of view in world units used for orthogonal view types when the scene is empty.
 #define DEFAULT_ORTHOGONAL_FIELD_OF_VIEW		200.0
 
-/// The default field of view in radians used for perspective view types when the scene is empty.
+/// The default field of view angle in radians used for perspective view types when the scene is empty.
 #define DEFAULT_PERSPECTIVE_FIELD_OF_VIEW		(FLOATTYPE_PI/4.0)
 
 /// Controls the margin size between the overlay render frame and the viewport border.
@@ -200,8 +200,8 @@ ViewProjectionParameters Viewport::projectionParameters(TimePoint time, FloatTyp
 	// Get transformation from view scene node.
 	if(viewType() == VIEW_SCENENODE && viewNode()) {
 		PipelineFlowState state = viewNode()->evalPipeline(time);
-		AbstractCameraObject* camera = state.findObject<AbstractCameraObject>();
-		if(camera) {
+		if(OORef<AbstractCameraObject> camera = state.convertObject<AbstractCameraObject>(time)) {
+
 			// Get camera transformation.
 			params.inverseViewMatrix = viewNode()->getWorldTransform(time, params.validityInterval);
 			params.viewMatrix = params.inverseViewMatrix.inverse();
@@ -291,8 +291,13 @@ void Viewport::zoomToBox(const Box3& box)
 		setCameraPosition(box.center() - cameraDirection().resized(dist));
 	}
 	else {
+
 		// Setup projection.
 		FloatType aspectRatio = (FloatType)size().height() / size().width();
+		if(renderFrameShown()) {
+			if(RenderSettings* renderSettings = DataSetManager::instance().currentSet()->renderSettings())
+				aspectRatio = renderSettings->outputImageAspectRatio();
+		}
 		ViewProjectionParameters projParams = projectionParameters(AnimManager::instance().time(), aspectRatio, box);
 
 		FloatType minX =  FLOATTYPE_MAX, minY =  FLOATTYPE_MAX;
@@ -339,14 +344,12 @@ bool Viewport::referenceEvent(RefTarget* source, ReferenceEvent* event)
 void Viewport::referenceReplaced(const PropertyFieldDescriptor& field, RefTarget* oldTarget, RefTarget* newTarget)
 {
 	if(field == PROPERTY_FIELD(Viewport::_viewNode)) {
-		// Switch to perspective mode when camera node has been deleted.
 		if(viewType() == VIEW_SCENENODE && newTarget == nullptr) {
-			setViewType(VIEW_PERSPECTIVE);
+			setViewType(isPerspectiveProjection() ? VIEW_PERSPECTIVE : VIEW_ORTHO);
 		}
-		else {
-			// Update viewport when the camera has been replaced by another scene node.
-			updateViewportTitle();
-		}
+
+		// Update viewport when the camera has been replaced by another scene node.
+		updateViewportTitle();
 	}
 	RefTarget::referenceReplaced(field, oldTarget, newTarget);
 }
@@ -460,7 +463,7 @@ void Viewport::render(QOpenGLContext* context)
 		// Set up the viewport renderer.
 		ViewportManager::instance().renderer()->beginFrame(AnimManager::instance().time(), _projParams, this);
 
-		// Add bounding box of interative elements.
+		// Add bounding box of interactive elements.
 		boundingBox.addBox(ViewportManager::instance().renderer()->boundingBoxInteractive(AnimManager::instance().time(), this));
 
 		// Set up final projection.

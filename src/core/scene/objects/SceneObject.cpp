@@ -21,14 +21,12 @@
 
 #include <core/Core.h>
 #include <core/scene/objects/SceneObject.h>
-#include <core/scene/objects/AbstractCameraObject.h>
+#include <core/scene/objects/camera/AbstractCameraObject.h>
 #include <core/scene/display/DisplayObject.h>
-#include "moc_AbstractCameraObject.cpp"
 
 namespace Ovito {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, SceneObject, RefTarget)
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, AbstractCameraObject, SceneObject)
 DEFINE_PROPERTY_FIELD(SceneObject, _saveWithScene, "SaveWithScene")
 SET_PROPERTY_FIELD_LABEL(SceneObject, _saveWithScene, "Save data with scene")
 

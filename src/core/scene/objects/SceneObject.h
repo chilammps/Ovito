@@ -32,11 +32,8 @@
 #include <core/animation/TimeInterval.h>
 #include <core/scene/pipeline/PipelineFlowState.h>
 #include <core/scene/display/DisplayObject.h>
-#include <core/utilities/concurrent/Future.h>
 
 namespace Ovito {
-
-class DataSet;				// defined in DataSet.h
 
 /**
  * \brief Abstract base class for all objects in the scene.
@@ -92,7 +89,7 @@ public:
 		if(this->getOOType().isDerivedFrom(objectClass))
 			return this;
 		else
-			return nullptr;
+			return {};
 	}
 
 	/// \brief Lets the object convert itself to another object type.
@@ -117,7 +114,7 @@ public:
 	/// \brief Returns a structure that describes the current status of the object.
 	///
 	/// The default implementation of this method returns an empty status object
-	/// that indicates success (ObjectStatus::StatusType::Success).
+	/// that indicates success (ObjectStatus::Success).
 	///
 	/// An object should generate a ReferenceEvent::ObjectStatusChanged event when its status has changed.
 	virtual ObjectStatus status() const { return ObjectStatus(); }
