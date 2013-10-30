@@ -87,7 +87,7 @@ protected:
 	NavigationMode() : _viewport(nullptr) {}
 
 	/// Computes the new view based on the new mouse position.
-	virtual void modifyView(Viewport* vp, const QPointF& delta) {}
+	virtual void modifyView(Viewport* vp, QPointF delta) {}
 
 	/// \brief This is called by the system after the input handler is
 	///        no longer the active handler.
@@ -96,7 +96,7 @@ protected:
 protected:
 
 	/// Mouse position at first click.
-	QPoint _startPoint;
+	QPointF _startPoint;
 
 	/// The saved camera position.
 	Point3 _oldCameraPosition;
@@ -141,7 +141,7 @@ protected:
 	}
 
 	/// Computes the new view based on the new mouse position.
-	virtual void modifyView(Viewport* vp, const QPointF& delta) override;
+	virtual void modifyView(Viewport* vp, QPointF delta) override;
 
 public:
 
@@ -168,7 +168,7 @@ protected:
 	}
 
 	/// Computes the new view based on the new mouse position.
-	virtual void modifyView(Viewport* vp, const QPointF& delta) override;
+	virtual void modifyView(Viewport* vp, QPointF delta) override;
 
 public:
 
@@ -196,7 +196,7 @@ protected:
 	}
 
 	/// Computes the new view based on the new mouse position.
-	virtual void modifyView(Viewport* vp, const QPointF& delta) override;
+	virtual void modifyView(Viewport* vp, QPointF delta) override;
 
 	/// Computes a scaling factor that depends on the total size of the scene which is used to
 	/// control the zoom sensitivity in perspective mode.
@@ -230,7 +230,7 @@ protected:
 	}
 
 	/// Computes the new view based on the new mouse position.
-	virtual void modifyView(Viewport* vp, const QPointF& delta) override;
+	virtual void modifyView(Viewport* vp, QPointF delta) override;
 
 public:
 

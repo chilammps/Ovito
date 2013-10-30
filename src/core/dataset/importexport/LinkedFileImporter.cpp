@@ -213,8 +213,7 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl, DataSet* dataset)
 	else node = existingNode;
 
 	// Select import node.
-	dataset->selection()->clear();
-	dataset->selection()->add(node);
+	dataset->selection()->setNode(node.get());
 
 	// Jump to the right frame to show the originally selected file.
 	int jumpToFrame = -1;

@@ -37,6 +37,7 @@ class ObjectNode;				// defined in ObjectNode.h
 class SceneRenderer;			// defined in SceneRenderer.h
 class SceneObject;				// defined in SceneObject.h
 class PipelineFlowState;		// defined in PipelineFlowState.h
+class Viewport;					// defined in Viewport.h
 
 /**
  * \brief Abstract base class for display object that are responsible
@@ -63,13 +64,24 @@ public:
 	/// system. The object has to be rendered in the local object coordinate system.
 	virtual void render(TimePoint time, SceneObject* sceneObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode) = 0;
 
-	/// \brief Computes the bounding box of the given scene object.
+	/// \brief Computes the view-independent bounding box of the given scene object.
 	/// \param time The animation time for which the bounding box should be computed.
 	/// \param sceneObject The scene object for which to compute the bounding box.
 	/// \param contextNode The scene node to which this object belongs to.
 	/// \param flowState The pipeline evaluation result of the object node.
 	/// \return The bounding box of the object in local object coordinates.
 	virtual Box3 boundingBox(TimePoint time, SceneObject* sceneObject, ObjectNode* contextNode, const PipelineFlowState& flowState) = 0;
+
+	/// \brief Computes the view-dependent bounding box of the scene object for interactive rendering in the viewports.
+	/// \param time The animation time for which the bounding box should be computed.
+	/// \param viewport The viewport which should be used to determine the view-dependent bounding box.
+	/// \param sceneObject The scene object for which to compute the bounding box.
+	/// \param contextNode The scene node to which this object belongs to.
+	/// \param flowState The pipeline evaluation result of the object node.
+	/// \return The bounding box of the object in local object coordinates.
+	virtual Box3 viewDependentBoundingBox(TimePoint time, Viewport* viewport, SceneObject* sceneObject, ObjectNode* contextNode, const PipelineFlowState& flowState) {
+		return Box3();
+	}
 
 	/// \brief Indicates whether this object should be surrounded by a selection marker in the viewports when it is selected.
 	/// \return \c true to let the system render a selection marker around the object when it is selected.

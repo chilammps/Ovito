@@ -125,7 +125,7 @@ MainWindow::MainWindow(const QString& title) :
 	viewportControlBar1->setStyleSheet("QToolBar { padding: 0px; margin: 0px; border: 0px none black; } QToolButton { padding: 0px; margin: 0px }");
 	QToolBar* viewportControlBar2 = new QToolBar();
 	viewportControlBar2->addAction(ActionManager::instance().getAction(ACTION_VIEWPORT_ZOOM_SCENE_EXTENTS));
-	//viewportControlBar2->addAction(ActionManager::instance().getAction(ACTION_VIEWPORT_ZOOM_SELECTION_EXTENTS));
+	viewportControlBar2->addAction(ActionManager::instance().getAction(ACTION_VIEWPORT_ZOOM_SELECTION_EXTENTS));
 	viewportControlBar2->addAction(ActionManager::instance().getAction(ACTION_VIEWPORT_FOV));
 	viewportControlBar2->addAction(ActionManager::instance().getAction(ACTION_VIEWPORT_MAXIMIZE));
 	viewportControlBar2->setStyleSheet("QToolBar { padding: 0px; margin: 0px; border: 0px none black; } QToolButton { padding: 0px; margin: 0px }");

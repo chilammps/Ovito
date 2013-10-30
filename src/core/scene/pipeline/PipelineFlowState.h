@@ -90,15 +90,23 @@ public:
 	/// \brief Returns the number of objects stored in this container.
 	int count() const { return _objects.size(); }
 
-	/// \brief Finds a scene object of the given type in the list of
-	///        results stored in this flow state.
+	/// \brief Finds an object of the given type in the list of scene objects stored in this flow state.
 	template<class ObjectType>
 	ObjectType* findObject() const {
 		for(const auto& o : _objects) {
-			ObjectType* obj = dynamic_object_cast<ObjectType>(o.get());
-			if(obj) return obj;
+			if(ObjectType* obj = dynamic_object_cast<ObjectType>(o.get()))
+				return obj;
 		}
 		return nullptr;
+	}
+
+	/// \brief Tries to convert one of the to scene objects stored in this flow state to the given object type.
+	OORef<SceneObject> convertObject(const OvitoObjectType& objectClass, TimePoint time) const;
+
+	/// \brief Tries to convert one of the to scene objects stored in this flow state to the given object type.
+	template<class ObjectType>
+	OORef<ObjectType> convertObject(TimePoint time) const {
+		return static_object_cast<ObjectType>(convertObject(ObjectType::OOType, time));
 	}
 
 	/// \brief Gets the validity interval for this pipeline state.

@@ -101,6 +101,7 @@ void ModificationListModel::refreshList()
 		if(item)
 			_nextToSelectObject = item->object();
 	}
+	RefTarget* defaultObjectToSelect = nullptr;
 
 	// Collect all selected ObjectNodes.
 	// Also check if all selected object nodes reference the same scene object.
@@ -164,8 +165,8 @@ void ModificationListModel::refreshList()
 
 				// Create an entry for the scene object.
 				items.push_back(new ModificationListItem(cmnObject));
-				if(_nextToSelectObject == nullptr)
-					_nextToSelectObject = cmnObject;
+				if(defaultObjectToSelect == nullptr)
+					defaultObjectToSelect = cmnObject;
 
 				// Create list items for the object's editable sub-objects.
 				for(int i = 0; i < cmnObject->editableSubObjectCount(); i++) {
@@ -192,18 +193,22 @@ void ModificationListModel::refreshList()
 	}
 
 	int selIndex = -1;
+	int selDefaultIndex = -1;
 	for(int index = 0; index < items.size(); index++) {
-		if(_nextToSelectObject == items[index]->object()) {
+		if(_nextToSelectObject && _nextToSelectObject == items[index]->object())
 			selIndex = index;
-			break;
-		}
+		if(defaultObjectToSelect && defaultObjectToSelect == items[index]->object())
+			selDefaultIndex = index;
 	}
+	if(selIndex == -1)
+		selIndex = selDefaultIndex;
+
 	setItems(items, hiddenItems);
 	_nextToSelectObject = nullptr;
 
 	// Select the proper item in the list box.
 	if(!items.empty()) {
-		if(selIndex < 0) {
+		if(selIndex == -1) {
 			for(int index = 0; index < items.size(); index++) {
 				if(items[index]->object()) {
 					selIndex = index;

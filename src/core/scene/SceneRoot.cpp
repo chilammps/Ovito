@@ -63,8 +63,7 @@ QString SceneRoot::makeNameUnique(QString baseName) const
 		baseName.at(baseName.size()-1).isDigit() && baseName.at(baseName.size()-2).isDigit())
 		baseName.chop(2);
 		
-	int startIndex = 1;
-	for(int i = startIndex; ; i++) {
+	for(int i = 1; ; i++) {
 		QString newName = baseName + QString::number(i).rightJustified(2, '0');
 		if(getNodeByName(newName) == NULL)
 			return newName;

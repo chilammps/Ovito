@@ -246,6 +246,36 @@ public:
 		return inv;
 	}
 
+    // Algorithm uses Gram-Schmidt orthogonalization.  If 'this' matrix is
+    // M = [m0|m1|m2], then orthonormal output matrix is Q = [q0|q1|q2],
+    //
+    //   q0 = m0/|m0|
+    //   q1 = (m1-(q0*m1)q0)/|m1-(q0*m1)q0|
+    //   q2 = (m2-(q0*m2)q0-(q1*m2)q1)/|m2-(q0*m2)q0-(q1*m2)q1|
+    //
+    // where |V| indicates length of vector V and A*B indicates dot
+    // product of vectors A and B.
+	void orthonormalize() {
+
+		// Compute q0.
+		_m[0].normalize();
+
+	    // Compute q1.
+		T dot0 = _m[0].dot(_m[1]);
+		_m[1][0] -= dot0 * _m[0][0];
+		_m[1][1] -= dot0 * _m[0][1];
+		_m[1][2] -= dot0 * _m[0][2];
+		_m[1].normalize();
+
+	    // compute q2
+	    dot0 = _m[0].dot(_m[2]);
+	    T dot1 = _m[1].dot(_m[2]);
+	    _m[2][0] -= dot0*_m[0][0] + dot1*_m[1][0];
+	    _m[2][1] -= dot0*_m[0][1] + dot1*_m[1][1];
+	    _m[2][2] -= dot0*_m[0][2] + dot1*_m[1][2];
+	    _m[2].normalize();
+	}
+
 	/// Multiplies a 3x4 matrix with a Point3 (which is extended to a 4-vector with the last
 	/// element being 1) and returns one component of the resulting point.
 	inline Q_DECL_CONSTEXPR T prodrow(const Point_3<T>& p, typename Point_3<T>::size_type index) const {

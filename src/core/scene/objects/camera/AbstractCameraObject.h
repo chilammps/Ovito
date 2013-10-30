@@ -28,7 +28,7 @@
 #define __OVITO_ABSTRACT_CAMERA_OBJECT_H
 
 #include <core/Core.h>
-#include "SceneObject.h"
+#include <core/scene/objects/SceneObject.h>
 
 namespace Ovito {
 	
@@ -44,16 +44,20 @@ public:
 	/// \brief Default constructor.
 	AbstractCameraObject() {}
 
-	/// \brief Returns a structure that describes the camera.
-	/// \param[in] time The animation time for which the camera's projection parameters should be returned.
+	/// \brief Returns a structure describing the camera's projection.
+	/// \param[in] time The animation time for which the camera's projection parameters should be determined.
 	/// \param[in,out] projParams The structure that is to be filled with the projection parameters.
-	///     The following fields of the ViewProjectionParameters structure are already filled in when
-	///     the method is called:
+	///     The following fields of the ViewProjectionParameters structure are already filled in when the method is called:
 	///   - ViewProjectionParameters::aspectRatio (The aspect ratio (height/width) of the viewport)
 	///   - ViewProjectionParameters::viewMatrix (The world to view space transformation)
-	///   - ViewProjectionParameters::znear (The distance to the bounding box of the scene in view space)
-	///   - ViewProjectionParameters::zfar (The distance to the back side of the bounding box of the scene in view space)
+	///   - ViewProjectionParameters::boundingBox (The bounding box of the scene in world space coordinates)
 	virtual void projectionParameters(TimePoint time, ViewProjectionParameters& projParams) = 0;
+
+	/// \brief Returns the field of view of the camera.
+	virtual FloatType fieldOfView(TimePoint time, TimeInterval& validityInterval) = 0;
+
+	/// \brief Changes the field of view of the camera.
+	virtual void setFieldOfView(TimePoint time, FloatType newFOV) = 0;
 
 private:
 

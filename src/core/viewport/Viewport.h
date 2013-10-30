@@ -186,9 +186,11 @@ public:
 
 	/// \brief Changes the view type.
 	/// \param type The new view type.
+	/// \param keepViewParams When setting the view type to ViewType::VIEW_ORTHO or ViewType::VIEW_PERSPECTIVE,
+	///        this controls whether the camera is reset to the default position/orientation.
 	/// \note if \a type is set to ViewType::VIEW_SCENENODE then a view node should be set
 	///       using setViewNode().
-	void setViewType(ViewType type);
+	void setViewType(ViewType type, bool keepCurrentView = false);
 
 	/// \brief Returns true if the viewport is using a perspective project;
 	///        returns false if it is using an orthogonal projection.

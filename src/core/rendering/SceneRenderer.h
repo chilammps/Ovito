@@ -103,8 +103,11 @@ public:
 	/// This method is called after renderFrame() has been called.
 	virtual void endFrame() {}
 
-	/// Changes the current local to world transformation matrix.
+	/// Changes the current local-to-world transformation matrix.
 	virtual void setWorldTransform(const AffineTransformation& tm) = 0;
+
+	/// Returns the current local-to-world transformation matrix.
+	virtual const AffineTransformation& worldTransform() const = 0;
 
 	/// Requests a new line geometry buffer from the renderer.
 	virtual OORef<LineGeometryBuffer> createLineGeometryBuffer() = 0;

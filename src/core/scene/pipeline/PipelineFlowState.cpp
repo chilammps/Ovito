@@ -26,6 +26,19 @@
 namespace Ovito {
 
 /******************************************************************************
+* Tries to convert one of the to scene objects stored in this flow state to
+* the given object type.
+******************************************************************************/
+OORef<SceneObject> PipelineFlowState::convertObject(const OvitoObjectType& objectClass, TimePoint time) const
+{
+	for(const auto& o : _objects) {
+		if(OORef<SceneObject> obj = o->convertTo(objectClass, time))
+			return obj;
+	}
+	return {};
+}
+
+/******************************************************************************
 * Adds an additional scene object to this state.
 ******************************************************************************/
 void PipelineFlowState::addObject(SceneObject* obj)

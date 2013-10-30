@@ -27,7 +27,7 @@
 
 namespace Ovito {
 
-IMPLEMENT_OVITO_OBJECT(Core, TransformationController, Controller)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, TransformationController, Controller)
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, PRSTransformationController, TransformationController)
 DEFINE_REFERENCE_FIELD(PRSTransformationController, _position, "Position", PositionController)
 DEFINE_REFERENCE_FIELD(PRSTransformationController, _rotation, "Rotation", RotationController)
@@ -70,7 +70,6 @@ void PRSTransformationController::setValue(TimePoint time, const AffineTransform
 	AffineDecomposition decomp(newValue);
 	positionController()->setValue(time, decomp.translation, isAbsoluteValue);
 	rotationController()->setValue(time, Rotation(decomp.rotation), isAbsoluteValue);
-	OVITO_ASSERT_MSG(fabs(decomp.scaling.Q.dot(decomp.scaling.Q) - 1.0) <= FLOATTYPE_EPSILON, "PRSTransformationController::setValue", "Quaternion must be normalized.");
 	scalingController()->setValue(time, decomp.scaling, isAbsoluteValue);
 }
 
@@ -79,7 +78,7 @@ void PRSTransformationController::setValue(TimePoint time, const AffineTransform
 * parent node.
 *		oldParentTM - The transformation of the old parent node
 *		newParentTM - The transformation of the new parent node
-*		contextNode - The node to which this cotnroller is assigned to
+*		contextNode - The node to which this controller is assigned to
 ******************************************************************************/
 void PRSTransformationController::changeParent(TimePoint time, const AffineTransformation& oldParentTM, const AffineTransformation& newParentTM, SceneNode* contextNode)
 {

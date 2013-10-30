@@ -54,12 +54,14 @@ SET(OVITO_CORE_SOURCE_FILES
 	scene/objects/SceneObject.cpp
 	scene/objects/geometry/TriMesh.cpp
 	scene/objects/geometry/TriMeshObject.cpp
+	scene/objects/camera/CameraObject.cpp
 	scene/pipeline/PipelineFlowState.cpp
 	scene/pipeline/PipelineObject.cpp
 	scene/pipeline/Modifier.cpp
 	scene/pipeline/ModifierApplication.cpp
 	scene/display/DisplayObject.cpp
 	scene/display/geometry/TriMeshDisplay.cpp
+	scene/display/camera/CameraDisplayObject.cpp
 	gui/app/Application.cpp
 	gui/mainwin/MainWindow.cpp
 	gui/mainwin/AnimationTimeSlider.cpp

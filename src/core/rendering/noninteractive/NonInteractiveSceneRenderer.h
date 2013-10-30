@@ -53,6 +53,9 @@ public:
 	/// Changes the current local to world transformation matrix.
 	virtual void setWorldTransform(const AffineTransformation& tm) override { _modelTM = tm; }
 
+	/// Returns the current local-to-world transformation matrix.
+	virtual const AffineTransformation& worldTransform() const override { return _modelTM; }
+
 	/// Returns the current model-to-world transformation matrix.
 	const AffineTransformation& modelTM() const { return _modelTM; }
 

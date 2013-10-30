@@ -302,6 +302,14 @@ inline std::ostream& operator<<(std::ostream &os, const QuaternionT<T>& q) {
 	return os << '[' << q.x() << ' ' << q.y() << ' ' << q.z() << ' ' << q.w() << ']';
 }
 
+
+/// \brief Writes the quaternion to the Qt debug stream.
+template<typename T>
+inline QDebug operator<<(QDebug dbg, const QuaternionT<T>& q) {
+    dbg.nospace() << "[" << q.x() << ", " << q.y() << ", " << q.z() << ", " << q.w() << "]";
+    return dbg.space();
+}
+
 /// \brief Writes a Quaternion to a binary output stream.
 /// \param stream The output stream.
 /// \param q The quaternion to write to the output stream \a stream.

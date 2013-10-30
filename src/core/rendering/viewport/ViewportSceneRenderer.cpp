@@ -153,6 +153,7 @@ bool ViewportSceneRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialo
 ******************************************************************************/
 void ViewportSceneRenderer::setWorldTransform(const AffineTransformation& tm)
 {
+	_modelWorldTM = tm;
 	_modelViewTM = projParams().viewMatrix * tm;
 }
 
@@ -252,7 +253,25 @@ Box3 ViewportSceneRenderer::boundingBoxInteractive(TimePoint time, Viewport* vie
 	Box3 bb;
 
 	// Visit all pipeline objects in the scene.
-	dataset()->sceneRoot()->visitObjectNodes([this, &bb](ObjectNode* node) -> bool {
+	dataset()->sceneRoot()->visitObjectNodes([this, viewport, time, &bb](ObjectNode* node) -> bool {
+
+		// Ignore node if it is the view node of the viewport or if it is the target of the view node.
+		if(viewport->viewNode()) {
+			if(viewport->viewNode() == node || viewport->viewNode()->targetNode() == node)
+				return true;
+		}
+
+		// Evaluate geometry pipeline of object node.
+		const PipelineFlowState& state = node->evalPipeline(time);
+		for(const auto& sceneObj : state.objects()) {
+			DisplayObject* displayObj = sceneObj->displayObject();
+			if(displayObj && displayObj->isEnabled()) {
+				TimeInterval interval;
+				bb.addBox(displayObj->viewDependentBoundingBox(time, viewport,
+						sceneObj.get(), node, state).transformed(node->getWorldTransform(time, interval)));
+			}
+		}
+
 		PipelineObject* pipelineObj = dynamic_object_cast<PipelineObject>(node->sceneObject());
 		if(pipelineObj)
 			boundingBoxModifiers(pipelineObj, node, bb);

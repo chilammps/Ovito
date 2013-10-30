@@ -23,18 +23,18 @@
 #include <core/viewport/Viewport.h>
 #include <core/viewport/ViewportWindow.h>
 #include <core/viewport/ViewportManager.h>
+#include <core/viewport/picking/PickingSceneRenderer.h>
 #include <core/animation/AnimManager.h>
 #include <core/rendering/viewport/ViewportSceneRenderer.h>
 #include <core/rendering/RenderSettings.h>
 #include <core/dataset/DataSetManager.h>
-#include <core/scene/objects/AbstractCameraObject.h>
+#include <core/scene/objects/camera/AbstractCameraObject.h>
 #include "ViewportMenu.h"
-#include "picking/PickingSceneRenderer.h"
 
 /// The default field of view in world units used for orthogonal view types when the scene is empty.
 #define DEFAULT_ORTHOGONAL_FIELD_OF_VIEW		200.0
 
-/// The default field of view in radians used for perspective view types when the scene is empty.
+/// The default field of view angle in radians used for perspective view types when the scene is empty.
 #define DEFAULT_PERSPECTIVE_FIELD_OF_VIEW		(FLOATTYPE_PI/4.0)
 
 /// Controls the margin size between the overlay render frame and the viewport border.
@@ -43,7 +43,7 @@
 namespace Ovito {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, Viewport, RefTarget);
-DEFINE_FLAGS_REFERENCE_FIELD(Viewport, _viewNode, "ViewNode", ObjectNode, PROPERTY_FIELD_NO_UNDO|PROPERTY_FIELD_NEVER_CLONE_TARGET)
+DEFINE_FLAGS_REFERENCE_FIELD(Viewport, _viewNode, "ViewNode", ObjectNode, PROPERTY_FIELD_NEVER_CLONE_TARGET)
 DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _viewType, "ViewType", PROPERTY_FIELD_NO_UNDO)
 DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _shadingMode, "ShadingMode", PROPERTY_FIELD_NO_UNDO)
 DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _showGrid, "ShowGrid", PROPERTY_FIELD_NO_UNDO)
@@ -108,13 +108,14 @@ void Viewport::showViewportMenu(const QPoint& pos)
 /******************************************************************************
 * Changes the view type.
 ******************************************************************************/
-void Viewport::setViewType(ViewType type)
+void Viewport::setViewType(ViewType type, bool keepCurrentView)
 {
 	if(type == viewType())
 		return;
 
 	// Reset camera node.
-	setViewNode(nullptr);
+	if(type != VIEW_SCENENODE)
+		setViewNode(nullptr);
 
 	// Setup default view.
 	switch(type) {
@@ -143,17 +144,21 @@ void Viewport::setViewType(ViewType type)
 			setCameraDirection(-ViewportSettings::getSettings().coordinateSystemOrientation().column(1));
 			break;
 		case VIEW_ORTHO:
-			setCameraPosition(Point3::Origin());
-			if(viewType() == VIEW_NONE)
-				setCameraDirection(-ViewportSettings::getSettings().coordinateSystemOrientation().column(2));
+			if(!keepCurrentView) {
+				setCameraPosition(Point3::Origin());
+				if(viewType() == VIEW_NONE)
+					setCameraDirection(-ViewportSettings::getSettings().coordinateSystemOrientation().column(2));
+			}
 			break;
 		case VIEW_PERSPECTIVE:
-			if(viewType() >= VIEW_TOP && viewType() <= VIEW_ORTHO) {
-				setCameraPosition(cameraPosition() - (cameraDirection().normalized() * fieldOfView()));
-			}
-			else if(viewType() != VIEW_PERSPECTIVE) {
-				setCameraPosition(ViewportSettings::getSettings().coordinateSystemOrientation() * Point3(0,0,-50));
-				setCameraDirection(ViewportSettings::getSettings().coordinateSystemOrientation() * Vector3(0,0,1));
+			if(!keepCurrentView) {
+				if(viewType() >= VIEW_TOP && viewType() <= VIEW_ORTHO) {
+					setCameraPosition(cameraPosition() - (cameraDirection().normalized() * fieldOfView()));
+				}
+				else if(viewType() != VIEW_PERSPECTIVE) {
+					setCameraPosition(ViewportSettings::getSettings().coordinateSystemOrientation() * Point3(0,0,-50));
+					setCameraDirection(ViewportSettings::getSettings().coordinateSystemOrientation() * Vector3(0,0,1));
+				}
 			}
 			break;
 		case VIEW_SCENENODE:
@@ -162,14 +167,16 @@ void Viewport::setViewType(ViewType type)
 			break;
 	}
 
-	// Setup default zoom.
-	if(type == VIEW_PERSPECTIVE) {
-		if(viewType() != VIEW_PERSPECTIVE)
-			setFieldOfView(DEFAULT_PERSPECTIVE_FIELD_OF_VIEW);
-	}
-	else {
-		if(viewType() == VIEW_PERSPECTIVE || viewType() == VIEW_NONE)
-			setFieldOfView(DEFAULT_ORTHOGONAL_FIELD_OF_VIEW);
+	if(!keepCurrentView) {
+		// Setup default zoom.
+		if(type == VIEW_PERSPECTIVE) {
+			if(viewType() != VIEW_PERSPECTIVE)
+				setFieldOfView(DEFAULT_PERSPECTIVE_FIELD_OF_VIEW);
+		}
+		else {
+			if(viewType() == VIEW_PERSPECTIVE || viewType() == VIEW_NONE)
+				setFieldOfView(DEFAULT_ORTHOGONAL_FIELD_OF_VIEW);
+		}
 	}
 
 	_viewType = type;
@@ -181,7 +188,7 @@ void Viewport::setViewType(ViewType type)
 ******************************************************************************/
 bool Viewport::isPerspectiveProjection() const
 {
-	return (viewType() == VIEW_PERSPECTIVE);
+	return _projParams.isPerspective;
 }
 
 /******************************************************************************
@@ -200,8 +207,8 @@ ViewProjectionParameters Viewport::projectionParameters(TimePoint time, FloatTyp
 	// Get transformation from view scene node.
 	if(viewType() == VIEW_SCENENODE && viewNode()) {
 		PipelineFlowState state = viewNode()->evalPipeline(time);
-		AbstractCameraObject* camera = state.findObject<AbstractCameraObject>();
-		if(camera) {
+		if(OORef<AbstractCameraObject> camera = state.convertObject<AbstractCameraObject>(time)) {
+
 			// Get camera transformation.
 			params.inverseViewMatrix = viewNode()->getWorldTransform(time, params.validityInterval);
 			params.viewMatrix = params.inverseViewMatrix.inverse();
@@ -291,8 +298,13 @@ void Viewport::zoomToBox(const Box3& box)
 		setCameraPosition(box.center() - cameraDirection().resized(dist));
 	}
 	else {
+
 		// Setup projection.
 		FloatType aspectRatio = (FloatType)size().height() / size().width();
+		if(renderFrameShown()) {
+			if(RenderSettings* renderSettings = DataSetManager::instance().currentSet()->renderSettings())
+				aspectRatio = renderSettings->outputImageAspectRatio();
+		}
 		ViewProjectionParameters projParams = projectionParameters(AnimManager::instance().time(), aspectRatio, box);
 
 		FloatType minX =  FLOATTYPE_MAX, minY =  FLOATTYPE_MAX;
@@ -339,14 +351,20 @@ bool Viewport::referenceEvent(RefTarget* source, ReferenceEvent* event)
 void Viewport::referenceReplaced(const PropertyFieldDescriptor& field, RefTarget* oldTarget, RefTarget* newTarget)
 {
 	if(field == PROPERTY_FIELD(Viewport::_viewNode)) {
-		// Switch to perspective mode when camera node has been deleted.
 		if(viewType() == VIEW_SCENENODE && newTarget == nullptr) {
-			setViewType(VIEW_PERSPECTIVE);
+			// If the camera node has been deleted, switch to Ortho or Perspective view mode.
+			// Keep current camera orientation.
+			setFieldOfView(_projParams.fieldOfView);
+			setCameraPosition(Point3::Origin() + _projParams.inverseViewMatrix.translation());
+			setCameraDirection(_projParams.inverseViewMatrix * Vector3(0,0,-1));
+			setViewType(isPerspectiveProjection() ? VIEW_PERSPECTIVE : VIEW_ORTHO, true);
 		}
-		else {
-			// Update viewport when the camera has been replaced by another scene node.
-			updateViewportTitle();
+		else if(viewType() != VIEW_SCENENODE && newTarget != nullptr) {
+			setViewType(VIEW_SCENENODE);
 		}
+
+		// Update viewport when the camera has been replaced by another scene node.
+		updateViewportTitle();
 	}
 	RefTarget::referenceReplaced(field, oldTarget, newTarget);
 }
@@ -460,7 +478,7 @@ void Viewport::render(QOpenGLContext* context)
 		// Set up the viewport renderer.
 		ViewportManager::instance().renderer()->beginFrame(AnimManager::instance().time(), _projParams, this);
 
-		// Add bounding box of interative elements.
+		// Add bounding box of interactive elements.
 		boundingBox.addBox(ViewportManager::instance().renderer()->boundingBoxInteractive(AnimManager::instance().time(), this));
 
 		// Set up final projection.

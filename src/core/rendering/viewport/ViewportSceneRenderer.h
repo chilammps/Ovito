@@ -75,6 +75,11 @@ public:
 	/// Changes the current local to world transformation matrix.
 	virtual void setWorldTransform(const AffineTransformation& tm) override;
 
+	/// Returns the current local-to-world transformation matrix.
+	virtual const AffineTransformation& worldTransform() const override {
+		return _modelWorldTM;
+	}
+
 	/// Returns the current model-to-view transformation matrix.
 	const AffineTransformation& modelViewTM() const { return _modelViewTM; }
 
@@ -191,6 +196,9 @@ private:
 
 	/// Indicates whether the current OpenGL implementation is according to the core profile.
 	bool _isCoreProfile;
+
+	/// The current model-to-world transformation matrix.
+	AffineTransformation _modelWorldTM;
 
 	/// The current model-to-view transformation matrix.
 	AffineTransformation _modelViewTM;

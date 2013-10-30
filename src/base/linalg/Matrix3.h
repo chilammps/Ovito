@@ -268,6 +268,36 @@ public:
 		return qtm;
 	}
 
+    // Algorithm uses Gram-Schmidt orthogonalization.  If 'this' matrix is
+    // M = [m0|m1|m2], then orthonormal output matrix is Q = [q0|q1|q2],
+    //
+    //   q0 = m0/|m0|
+    //   q1 = (m1-(q0*m1)q0)/|m1-(q0*m1)q0|
+    //   q2 = (m2-(q0*m2)q0-(q1*m2)q1)/|m2-(q0*m2)q0-(q1*m2)q1|
+    //
+    // where |V| indicates length of vector V and A*B indicates dot
+    // product of vectors A and B.
+	void orthonormalize() {
+
+		// Compute q0.
+		_m[0].normalize();
+
+	    // Compute q1.
+		T dot0 = _m[0].dot(_m[1]);
+		_m[1][0] -= dot0 * _m[0][0];
+		_m[1][1] -= dot0 * _m[0][1];
+		_m[1][2] -= dot0 * _m[0][2];
+		_m[1].normalize();
+
+	    // compute q2
+	    dot0 = _m[0].dot(_m[2]);
+	    T dot1 = _m[1].dot(_m[2]);
+	    _m[2][0] -= dot0*_m[0][0] + dot1*_m[1][0];
+	    _m[2][1] -= dot0*_m[0][1] + dot1*_m[1][1];
+	    _m[2][2] -= dot0*_m[0][2] + dot1*_m[1][2];
+	    _m[2].normalize();
+	}
+
 	////////////////////////////////// Generation ///////////////////////////////////
 
 	/// \brief Generates a matrix describing a rotation around the X axis.
@@ -325,6 +355,8 @@ namespace Ovito {
 template<typename T>
 inline Matrix_3<T> Matrix_3<T>::rotation(const RotationT<T>& rot)
 {
+	if(rot.angle() == T(0))
+		return Matrix_3<T>::Identity();
 	T c = cos(rot.angle());
 	T s = sin(rot.angle());
 	T t = T(1) - c;
@@ -344,6 +376,8 @@ inline Matrix_3<T> Matrix_3<T>::rotation(const QuaternionT<T>& q)
 		OVITO_ASSERT_MSG(false, "Matrix3::rotation", "Quaternion must be normalized.");
 	}
 #endif
+	if(std::abs(q.w()) >= T(1))
+		return Matrix_3<T>::Identity();
 	return Matrix_3<T>(T(1) - T(2)*(q.y()*q.y() + q.z()*q.z()),       T(2)*(q.x()*q.y() - q.w()*q.z()),       T(2)*(q.x()*q.z() + q.w()*q.y()),
 						T(2)*(q.x()*q.y() + q.w()*q.z()), T(1) - T(2)*(q.x()*q.x() + q.z()*q.z()),       T(2)*(q.y()*q.z() - q.w()*q.x()),
 						T(2)*(q.x()*q.z() - q.w()*q.y()),       T(2)*(q.y()*q.z() + q.w()*q.x()), T(1) - T(2)*(q.x()*q.x() + q.y()*q.y()));
@@ -354,10 +388,12 @@ inline Matrix_3<T> Matrix_3<T>::rotation(const QuaternionT<T>& q)
 template<typename T>
 inline Matrix_3<T> Matrix_3<T>::scaling(const ScalingT<T>& scaling)
 {
-	Matrix_3<T> U = Matrix_3<T>::rotation(scaling.Q);
 	Matrix_3<T> K = Matrix_3<T>(scaling.S.x(), T(0), T(0),
 			T(0), scaling.S.y(), T(0),
 			T(0), T(0), scaling.S.z());
+	if(std::abs(scaling.Q.w()) >= T(1))
+		return K;
+	Matrix_3<T> U = Matrix_3<T>::rotation(scaling.Q);
 	return U * K * U.transposed();
 }
 

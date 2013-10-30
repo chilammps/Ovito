@@ -18,7 +18,7 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 //  The matrix decomposition code has been taken from the book
-//  Graphics Gems IV - Ken Shoemake, Polar AffineTransformation Decomposition. 
+//  Graphics Gems IV - Ken Shoemake, Polar Matrix Decomposition.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -40,6 +40,10 @@ AffineDecomposition::AffineDecomposition(const AffineTransformation& tm)
     decomp_affine(A, this);
 
 	OVITO_ASSERT_MSG(std::abs(scaling.Q.dot(scaling.Q) - 1.0) <= FLOATTYPE_EPSILON, "AffineDecomposition", "Resulting quaternion is not normalized.");
+	if(std::abs(scaling.Q.w()) >= FloatType(1) || scaling.S.equals(Vector3(1,1,1)))
+		scaling.Q.setIdentity();
+
+	//qDebug() << "T=" << translation << "R=" << rotation << "S=" << scaling << "S.Q=" << scaling.Q << "Sign=" << sign << "det=" << tm.determinant();
 
 	// The following code checks whether the decomposed parts give the original affine matrix.
 #if 0
@@ -52,11 +56,11 @@ AffineDecomposition::AffineDecomposition(const AffineTransformation& tm)
 	AffineTransformation S = AffineTransformation::scaling(scaling);
 	AffineTransformation R = AffineTransformation::rotation(rotation);
 	AffineTransformation T = AffineTransformation::translation(translation);
-	AffineTransformation F(IDENTITY);	
+	AffineTransformation F(AffineTransformation::Identity());
 	F(0,0) *= f; F(1,1) *= f; F(2,2) *= f;
 	AffineTransformation product = T * F * R * S;
     for(size_t i=0; i<4; i++) {
-    	if(!product[i].Equals(tm[i], FLOATTYPE_EPSILON)) {
+    	if(!product[i].equals(tm[i], FLOATTYPE_EPSILON)) {
     		qDebug() << "Original matrix: " << tm;
     		qDebug() << "Product of affine parts: " << product;
 			OVITO_ASSERT_MSG(false, "AffineDecomposition", "Could not decompose matrix to affine transformations.");
@@ -181,13 +185,11 @@ Quaternion Qt_FromMatrix(const Matrix4& mat)
 /** Compute either the 1 or infinity norm of M, depending on tpose **/
 inline FloatType mat_norm(const Matrix4& M, bool tpose)
 {
-    int i;
-    FloatType sum, max;
-    max = 0.0;
-    for (i=0; i<3; i++) {
-		if (tpose) sum = abs(M(0,i))+abs(M(1,i))+abs(M(2,i));
-		else	   sum = abs(M(i,0))+abs(M(i,1))+abs(M(i,2));
-		if (max<sum) max = sum;
+    FloatType sum, max = 0;
+    for(size_t i=0; i<3; i++) {
+		if(tpose) sum = std::fabs(M(0,i))+std::fabs(M(1,i))+std::fabs(M(2,i));
+		else sum = std::fabs(M(i,0))+std::fabs(M(i,1))+std::fabs(M(i,2));
+		if(max < sum) max = sum;
     }
     return max;
 }
@@ -198,13 +200,13 @@ inline FloatType norm_one(const Matrix4& M) { return mat_norm(M, true); }
 /** Return index of column of M containing maximum abs entry, or -1 if M=0 **/
 int find_max_col(const Matrix4& M)
 {
-    FloatType abs, max;
-    int i, j, col;
-    max = 0.0; col = -1;
-	for(i=0; i<3; i++) {
-		for(j=0; j<3; j++) {
-			abs = M(i,j); if (abs<0.0) abs = -abs;
-			if (abs>max) {max = abs; col = j;}
+    FloatType abs, max = 0;
+    int col = -1;
+	for(size_t i=0; i<3; i++) {
+		for(size_t j=0; j<3; j++) {
+			abs = M(i,j);
+			if(abs < 0.0) abs = -abs;
+			if(abs > max) { max = abs; col = j; }
 		}
     }
     return col;
@@ -297,7 +299,8 @@ FloatType polar_decomp(Matrix4& M, Matrix4& Q, Matrix4& S)
     FloatType det, M_one, M_inf, MadjT_one, MadjT_inf, E_one, gamma, g1, g2;
 
     mat_tpose(Mk,=,M,3);
-    M_one = norm_one(Mk);  M_inf = norm_inf(Mk);
+    M_one = norm_one(Mk);
+    M_inf = norm_inf(Mk);
     do {
 		adjoint_transpose(Mk, MadjTk);
 		det = vdot(Mk.row(0), MadjTk.row(0));
@@ -305,16 +308,19 @@ FloatType polar_decomp(Matrix4& M, Matrix4& Q, Matrix4& S)
 			do_rank2(Mk, MadjTk, Mk); 
 			break;
 		}
-		MadjT_one = norm_one(MadjTk); MadjT_inf = norm_inf(MadjTk);
-		gamma = sqrt(sqrt((MadjT_one*MadjT_inf)/(M_one*M_inf))/abs(det));
+		MadjT_one = norm_one(MadjTk);
+		MadjT_inf = norm_inf(MadjTk);
+		gamma = sqrt(sqrt((MadjT_one*MadjT_inf)/(M_one*M_inf))/std::fabs(det));
 		g1 = gamma*0.5;
 		g2 = 0.5/(gamma*det);
 		mat_copy(Ek,=,Mk,3);
 		mat_binop(Mk,=,g1*Mk,+,g2*MadjTk,3);
 		mat_copy(Ek,-=,Mk,3);
 		E_one = norm_one(Ek);
-		M_one = norm_one(Mk);  M_inf = norm_inf(Mk);
-    } while (E_one>(M_one*FLOATTYPE_EPSILON));
+		M_one = norm_one(Mk);
+		M_inf = norm_inf(Mk);
+    }
+    while(E_one > M_one * FLOATTYPE_EPSILON);
     mat_tpose(Q,=,Mk,3); 
 	mat_pad(Q);
     mat_mult(Mk, M, S);	 
@@ -343,20 +349,20 @@ Vector3 spect_decomp(Matrix4& S, Matrix4& U)
 	Diag[X] = S(X,X); Diag[Y] = S(Y,Y); Diag[Z] = S(Z,Z);
 	OffD[X] = S(Y,Z); OffD[Y] = S(Z,X); OffD[Z] = S(X,Y);
 	for (sweep=20; sweep>0; sweep--) {
-		FloatType sm = abs(OffD[X])+abs(OffD[Y])+abs(OffD[Z]);
+		FloatType sm = std::abs(OffD[X])+std::abs(OffD[Y])+std::abs(OffD[Z]);
 		if (sm==0.0) break;
 		for (i=Z; i>=X; i--) {
 			int p = nxt[i]; int q = nxt[p];
-			fabsOffDi = abs(OffD[i]);
+			fabsOffDi = std::abs(OffD[i]);
 			g = 100.0*fabsOffDi;
 			if (fabsOffDi>0.0) {
 				h = Diag[q] - Diag[p];
-				fabsh = abs(h);
+				fabsh = std::abs(h);
 				if (fabsh+g==fabsh) {
 					t = OffD[i]/h;
 				} else {
 					theta = 0.5*h/OffD[i];
-					t = 1.0/(abs(theta)+sqrt(theta*theta+1.0));
+					t = 1.0/(std::abs(theta)+sqrt(theta*theta+1.0));
 					if (theta<0.0) t = -t;
 				}
 				c = 1.0/sqrt(t*t+1.0); s = t*c;

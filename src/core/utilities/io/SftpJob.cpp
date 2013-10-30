@@ -350,7 +350,6 @@ void SftpListDirectoryJob::onSftpChannelInitialized()
 	connect(_sftpChannel.data(), SIGNAL(finished(QSsh::SftpJobId, QString)), this, SLOT(onSftpJobFinished(QSsh::SftpJobId, QString)));
 	connect(_sftpChannel.data(), SIGNAL(fileInfoAvailable(QSsh::SftpJobId, const QList<QSsh::SftpFileInfo>&)), this, SLOT(onFileInfoAvailable(QSsh::SftpJobId, const QList<QSsh::SftpFileInfo>&)));
 	try {
-
 		// Set progress text.
 		_futureInterface->setProgressText(tr("Listing remote directory %1").arg(_url.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
 

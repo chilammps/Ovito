@@ -131,8 +131,10 @@ void ViewportInputHandler::mouseReleaseEvent(Viewport* vp, QMouseEvent* event)
 void ViewportInputHandler::mouseMoveEvent(Viewport* vp, QMouseEvent* event)
 {
 	if(_lastMousePressEvent && (event->pos() - _lastMousePressEvent->pos()).manhattanLength() > 2) {
-		activateTemporaryNavigationMode(OrbitMode::instance());
-		temporaryNavigationMode()->mousePressEvent(vp, _lastMousePressEvent.get());
+		if(!temporaryNavigationMode() && this != OrbitMode::instance()) {
+			activateTemporaryNavigationMode(OrbitMode::instance());
+			temporaryNavigationMode()->mousePressEvent(vp, _lastMousePressEvent.get());
+		}
 		_lastMousePressEvent.reset();
 	}
 	if(temporaryNavigationMode()) {
