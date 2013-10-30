@@ -73,15 +73,16 @@ void NavigationMode::mousePressEvent(Viewport* vp, QMouseEvent* event)
 		return;
 	}
 
-	OVITO_ASSERT(_viewport == nullptr);
-	_viewport = vp;
-	_startPoint = event->localPos();
-	_oldCameraPosition = vp->cameraPosition();
-	_oldCameraDirection = vp->cameraDirection();
-	_oldFieldOfView = vp->fieldOfView();
-	_oldViewMatrix = vp->viewMatrix();
-	_oldInverseViewMatrix = vp->inverseViewMatrix();
-	UndoManager::instance().beginCompoundOperation(tr("Modify camera"));
+	if(_viewport == nullptr) {
+		_viewport = vp;
+		_startPoint = event->localPos();
+		_oldCameraPosition = vp->cameraPosition();
+		_oldCameraDirection = vp->cameraDirection();
+		_oldFieldOfView = vp->fieldOfView();
+		_oldViewMatrix = vp->viewMatrix();
+		_oldInverseViewMatrix = vp->inverseViewMatrix();
+		UndoManager::instance().beginCompoundOperation(tr("Modify camera"));
+	}
 }
 
 /******************************************************************************

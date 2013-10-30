@@ -26,6 +26,7 @@
 #include <core/scene/ObjectNode.h>
 #include <core/gui/undo/UndoManager.h>
 #include <core/gui/actions/ActionManager.h>
+#include <core/gui/widgets/SceneNodeSelectionBox.h>
 #include <core/viewport/ViewportManager.h>
 #include "ModifyCommandPage.h"
 #include "ModificationListModel.h"
@@ -38,14 +39,16 @@ namespace Ovito {
 ******************************************************************************/
 ModifyCommandPage::ModifyCommandPage()
 {
-	QVBoxLayout* layout = new QVBoxLayout(this);
+	QGridLayout* layout = new QGridLayout(this);
 	layout->setContentsMargins(2,2,2,2);
-	layout->setSpacing(0);
+	layout->setSpacing(4);
+	layout->setColumnStretch(1,1);
+
+	layout->addWidget(new SceneNodeSelectionBox(this), 0, 0, 1, 2);
 
 	_modificationListModel = new ModificationListModel(this);
 	_modifierSelector = new ModifierListBox(this, _modificationListModel);
-	layout->addSpacing(4);
-    layout->addWidget(_modifierSelector);
+    layout->addWidget(_modifierSelector, 1, 0, 1, 2);
     connect(_modifierSelector, SIGNAL(activated(int)), this, SLOT(onModifierAdd(int)));
 
 	class ModifierStackListView : public QListView {
@@ -68,7 +71,6 @@ ModifyCommandPage::ModifyCommandPage()
 	_modificationListWidget->setSelectionModel(_modificationListModel->selectionModel());
 	connect(_modificationListModel, SIGNAL(selectedItemChanged()), this, SLOT(onSelectedItemChanged()));
 	connect(_modificationListWidget, SIGNAL(doubleClicked(const QModelIndex&)), this, SLOT(onModifierStackDoubleClicked(const QModelIndex&)));
-	layout->addSpacing(4);
 	subLayout->addWidget(_modificationListWidget);
 
 	QToolBar* editToolbar = new QToolBar(this);
@@ -98,8 +100,8 @@ ModifyCommandPage::ModifyCommandPage()
 	toggleModifierStateAction->setIcon(toggleStateActionIcon);
 	connect(toggleModifierStateAction, SIGNAL(triggered(bool)), this, SLOT(onModifierToggleState(bool)));
 
-	layout->addWidget(splitter);
-	layout->addSpacing(4);
+	layout->addWidget(splitter, 2, 0, 1, 2);
+	layout->setRowStretch(2, 1);
 
 	// Create the properties panel.
 	_propertiesPanel = new PropertiesPanel(nullptr);

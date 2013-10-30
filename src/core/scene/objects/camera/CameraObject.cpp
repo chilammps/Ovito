@@ -40,7 +40,7 @@ DEFINE_PROPERTY_FIELD(CameraObject, _isPerspective, "IsPerspective")
 DEFINE_REFERENCE_FIELD(CameraObject, _fov, "FOV", FloatController)
 DEFINE_REFERENCE_FIELD(CameraObject, _zoom, "Zoom", FloatController)
 SET_PROPERTY_FIELD_LABEL(CameraObject, _isPerspective, "Perspective projection")
-SET_PROPERTY_FIELD_LABEL(CameraObject, _fov, "Field of View")
+SET_PROPERTY_FIELD_LABEL(CameraObject, _fov, "View angle")
 SET_PROPERTY_FIELD_LABEL(CameraObject, _zoom, "Zoom")
 SET_PROPERTY_FIELD_UNITS(CameraObject, _fov, AngleParameterUnit)
 SET_PROPERTY_FIELD_UNITS(CameraObject, _zoom, WorldParameterUnit)
@@ -153,27 +153,43 @@ void CameraObjectEditor::createUI(const RolloutInsertionParameters& rolloutParam
 	// Create the rollout.
 	QWidget* rollout = createRollout(tr("Camera"), rolloutParams);
 
-	QGridLayout* layout = new QGridLayout(rollout);
+	QVBoxLayout* layout = new QVBoxLayout(rollout);
 	layout->setContentsMargins(4,4,4,4);
-	layout->setSpacing(0);
-	layout->setColumnStretch(1, 1);
+	layout->setSpacing(6);
 
 	// Is perspective parameter.
 	BooleanParameterUI* isPerspectivePUI = new BooleanParameterUI(this, PROPERTY_FIELD(CameraObject::_isPerspective));
-	layout->addWidget(isPerspectivePUI->checkBox(), 0, 0, 1, 2);
+	layout->addWidget(isPerspectivePUI->checkBox());
+
+	QGroupBox* perspectiveProjBox = new QGroupBox(tr("Perspective camera"), rollout);
+	perspectiveProjBox->setEnabled(false);
+	layout->addWidget(perspectiveProjBox);
+	QGridLayout* sublayout = new QGridLayout(perspectiveProjBox);
+	sublayout->setContentsMargins(4,4,4,4);
+	sublayout->setColumnStretch(1, 1);
 
 	// FOV parameter.
 	FloatParameterUI* fovPUI = new FloatParameterUI(this, PROPERTY_FIELD(CameraObject::_fov));
-	layout->addWidget(fovPUI->label(), 1, 0);
-	layout->addLayout(fovPUI->createFieldLayout(), 1, 1);
+	sublayout->addWidget(fovPUI->label(), 0, 0);
+	sublayout->addLayout(fovPUI->createFieldLayout(), 0, 1);
 	fovPUI->setMinValue(fovPUI->parameterUnit()->userToNative(0.01f));
 	fovPUI->setMaxValue(fovPUI->parameterUnit()->userToNative(179.99f));
 
+	QGroupBox* parallelProjBox = new QGroupBox(tr("Parallel camera"), rollout);
+	parallelProjBox->setEnabled(false);
+	layout->addWidget(parallelProjBox);
+	sublayout = new QGridLayout(parallelProjBox);
+	sublayout->setContentsMargins(4,4,4,4);
+	sublayout->setColumnStretch(1, 1);
+
 	// Zoom parameter.
 	FloatParameterUI* zoomPUI = new FloatParameterUI(this, PROPERTY_FIELD(CameraObject::_zoom));
-	layout->addWidget(zoomPUI->label(), 2, 0);
-	layout->addLayout(zoomPUI->createFieldLayout(), 2, 1);
+	sublayout->addWidget(zoomPUI->label(), 0, 0);
+	sublayout->addLayout(zoomPUI->createFieldLayout(), 0, 1);
 	zoomPUI->setMinValue(0);
+
+	connect(isPerspectivePUI->checkBox(), SIGNAL(toggled(bool)), perspectiveProjBox, SLOT(setEnabled(bool)));
+	connect(isPerspectivePUI->checkBox(), SIGNAL(toggled(bool)), parallelProjBox, SLOT(setDisabled(bool)));
 }
 
 };

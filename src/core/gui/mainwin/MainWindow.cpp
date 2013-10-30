@@ -28,7 +28,6 @@
 #include <core/gui/widgets/AnimationTimeSpinner.h>
 #include <core/gui/widgets/AnimationFramesToolButton.h>
 #include <core/gui/widgets/FrameBufferWindow.h>
-#include <core/gui/widgets/SceneNodeSelectionBox.h>
 #include <core/viewport/ViewportManager.h>
 
 namespace Ovito {
@@ -254,10 +253,6 @@ void MainWindow::createMainToolbar()
 	_mainToolbar->addSeparator();
 
 	_mainToolbar->addAction(ActionManager::instance().getAction(ACTION_RENDER_ACTIVE_VIEWPORT));
-
-	_mainToolbar->addSeparator();
-
-	_mainToolbar->addWidget(new SceneNodeSelectionBox(this));
 }
 
 /******************************************************************************

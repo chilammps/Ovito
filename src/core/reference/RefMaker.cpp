@@ -320,10 +320,10 @@ void RefMaker::loadFromStream(ObjectLoadStream& stream)
 			OVITO_ASSERT(fieldEntry.targetClass != NULL);
 	
 			// Parse target object(s).
-			if(fieldEntry.targetClass->isSerializable()) {
+			int chunkId = stream.openChunk();
+			if(fieldEntry.targetClass->isSerializable() && chunkId == 0x02) {
 
 				// Parse target object chunk.
-				stream.expectChunk(0x02);
 				if(fieldEntry.field != NULL) {
 					OVITO_CHECK_POINTER(fieldEntry.field);
 					OVITO_ASSERT(fieldEntry.field->isVector() == ((fieldEntry.field->flags() & PROPERTY_FIELD_VECTOR) != 0));
@@ -375,7 +375,9 @@ void RefMaker::loadFromStream(ObjectLoadStream& stream)
 					}
 				}
 			}
-			else stream.expectChunk(0x03);
+			else if(chunkId != 0x03) {
+				throw Exception(tr("Expected non-serializable reference field '%1' in object %2").arg(QString(fieldEntry.identifier)).arg(fieldEntry.definingClass->name()));
+			}
 			stream.closeChunk();
 		}
 		else {
@@ -393,6 +395,10 @@ void RefMaker::loadFromStream(ObjectLoadStream& stream)
 			stream.closeChunk();
 		}
 	}
+
+#if 0
+	qDebug() << "Done loading automatic fields of " << this;
+#endif
 }
 
 /******************************************************************************
