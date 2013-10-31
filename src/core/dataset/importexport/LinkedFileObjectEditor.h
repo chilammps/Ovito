@@ -76,6 +76,7 @@ private:
 	QLineEdit* _wildcardPatternTextbox;
 	QLabel* _statusTextLabel;
 	QLabel* _statusIconLabel;
+	QGroupBox* _currentFileBox;
 
 	QPixmap _statusWarningIcon;
 	QPixmap _statusErrorIcon;

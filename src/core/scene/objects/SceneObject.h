@@ -134,7 +134,7 @@ public:
 	/// \brief Sets whether the per-particle data is saved along with the scene.
 	/// \param on \c true if the data should be stored in the scene file; \c false if the per-particle data can be restored from an external file.
 	/// \undoable
-	void setSaveWithScene(bool on) { _saveWithScene = on; }
+	virtual void setSaveWithScene(bool on) { _saveWithScene = on; }
 
 	/// \brief Returns the number of input objects that are referenced by this scene object.
 	/// \return The number of input objects that this object relies on.
@@ -163,6 +163,12 @@ public:
 	inline void notifyDependents(ReferenceEvent::Type eventType) {
 		RefTarget::notifyDependents(eventType);
 	}
+
+public:
+
+	Q_PROPERTY(bool saveWithScene READ saveWithScene WRITE setSaveWithScene)
+	Q_PROPERTY(int revisionNumber READ revisionNumber)
+	Q_PROPERTY(DisplayObject* displayObject READ displayObject WRITE setDisplayObject)
 
 protected:
 

@@ -53,7 +53,7 @@ LoadStream::LoadStream(QDataStream& source) : _is(source), _isOpen(false)
 
 	// Check file format version.
 	if(_fileFormat > OVITO_FILE_FORMAT_VERSION)
-		throw Exception(tr("Unsupported file format version: %1. This file has been written with a newer program version. Please upgrade to the newest program version.").arg(_fileFormat));
+		throw Exception(tr("Unsupported file format version: %1. This file has been written by a newer program version. Please upgrade to the newest program version.").arg(_fileFormat));
 
 	_is.setVersion(QDataStream::Qt_5_1);
 	_is.setFloatingPointPrecision(_fpPrecision == 4 ? QDataStream::SinglePrecision : QDataStream::DoublePrecision);

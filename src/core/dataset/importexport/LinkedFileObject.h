@@ -31,7 +31,7 @@ namespace Ovito {
 /**
  * \brief A place holder object that feeds data read from an external file into the scene.
  *
- * This class is always used in conjunction with a LinkedFileImporter class.
+ * This class is used in conjunction with a LinkedFileImporter class.
  */
 class OVITO_CORE_EXPORT LinkedFileObject : public SceneObject
 {
@@ -65,7 +65,7 @@ public:
 	/// \brief Returns the status returned by the file parser on its last invocation.
 	virtual ObjectStatus status() const override { return _importStatus; }
 
-	/// \brief Scans the inpframeut source for animation frames and updates the internal list of frames.
+	/// \brief Scans the input source for animation frames and updates the internal list of frames.
 	bool updateFrames();
 
 	/// \brief Returns the number of animation frames that can be loaded from the data source.
@@ -86,6 +86,9 @@ public:
 	/// \brief Adjusts the animation interval of the current data set to the number of frames in the data source.
 	void adjustAnimationInterval(int gotoFrameIndex = -1);
 
+	/// \brief Requests a frame of the input file sequence.
+	PipelineFlowState requestFrame(int frame);
+
 	/// \brief Asks the object for the result of the geometry pipeline at the given time.
 	virtual PipelineFlowState evaluate(TimePoint time) override;
 
@@ -95,7 +98,7 @@ public:
 	/// \brief Inserts a new object into the list of scene objects held by this container object.
 	void addSceneObject(SceneObject* obj) {
 		if(!_sceneObjects.contains(obj)) {
-			obj->setSaveWithScene(saveDataWithScene());
+			obj->setSaveWithScene(saveWithScene());
 			_sceneObjects.push_back(obj);
 		}
 	}
@@ -118,15 +121,12 @@ public:
 				_sceneObjects.remove(index);
 	}
 
-	/// \brief Returns whether the loaded scene objects should be saved in a scene file.
-	/// \return \c true if a copy of the external data is stored in the scene file; \c false if the data resides only in the linked file.
-	bool saveDataWithScene() const { return _saveDataWithScene; }
-
 	/// \brief Controls whether the imported data is saved along with the scene.
 	/// \param on \c true if data should be stored in the scene file; \c false if the data resides only in the external file.
 	/// \undoable
-	void setSaveDataWithScene(bool on) {
-		_saveDataWithScene = on;
+	void setSaveWithScene(bool on) override {
+		SceneObject::setSaveWithScene(on);
+		// Propagate flag to sub-objects.
 		for(SceneObject* sceneObj : sceneObjects())
 			sceneObj->setSaveWithScene(on);
 	}
@@ -151,7 +151,6 @@ public Q_SLOTS:
 public:
 
 	Q_PROPERTY(QUrl sourceUrl READ sourceUrl)
-	Q_PROPERTY(bool saveDataWithScene READ saveDataWithScene WRITE setSaveDataWithScene)
 
 protected Q_SLOTS:
 
@@ -189,10 +188,6 @@ private:
 	/// Controls whether the scene's animation interval is adjusted to the number of frames found in the input file.
 	PropertyField<bool> _adjustAnimationIntervalEnabled;
 
-	/// Controls whether the imported data is saved along with the scene.
-	/// If false, only the metadata is saved while the actual data reside in the external file.
-	PropertyField<bool> _saveDataWithScene;
-
 	/// The source file (may include a wild-card pattern).
 	PropertyField<QUrl, QUrl, ReferenceEvent::TitleChanged> _sourceUrl;
 
@@ -223,7 +218,6 @@ private:
 	DECLARE_VECTOR_REFERENCE_FIELD(_sceneObjects);
 	DECLARE_PROPERTY_FIELD(_adjustAnimationIntervalEnabled);
 	DECLARE_PROPERTY_FIELD(_sourceUrl);
-	DECLARE_PROPERTY_FIELD(_saveDataWithScene);
 };
 
 };

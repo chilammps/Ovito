@@ -58,9 +58,11 @@ public:
 	/// \param status A status object that describes the outcome of the pipeline evaluation.
 	/// \param sceneObjects The objects that represents the current state of a geometry pipeline evaluation.
 	/// \param validityInterval Specifies the time interval during which the returned objects are valid.
-	PipelineFlowState(const ObjectStatus& status, const QVector<SceneObject*>& sceneObjects, const TimeInterval& validityInterval) :
-		_status(status), _stateValidity(validityInterval)
+	PipelineFlowState(const ObjectStatus& status, const QVector<SceneObject*>& sceneObjects, const TimeInterval& validityInterval, const QVariantMap& attributes = QVariantMap()) :
+		_status(status), _stateValidity(validityInterval), _attributes(attributes)
 	{
+		_objects.reserve(sceneObjects.size());
+		_revisionNumbers.reserve(sceneObjects.size());
 		for(const auto& obj : sceneObjects)
 			addObject(obj);
 	}
@@ -71,6 +73,7 @@ public:
 		_revisionNumbers.clear();
 		_stateValidity.setEmpty();
 		_status = ObjectStatus();
+		_attributes.clear();
 	}
 
 	/// \brief Adds an additional scene object to this state.
@@ -142,6 +145,12 @@ public:
 	/// Changes the stored status record.
 	void setStatus(const ObjectStatus& status) { _status = status; }
 
+	/// Returns the extra attributes associated with the pipeline flow state.
+	const QVariantMap& attributes() const { return _attributes; }
+
+	/// Returns a reference to the extra attributes associated with the pipeline flow state.
+	QVariantMap& attributes() { return _attributes; }
+
 private:
 
 	/// Contains the objects that flow up the geometry pipeline
@@ -157,6 +166,9 @@ private:
 
 	/// The status structure.
 	ObjectStatus _status;
+
+	/// Extra attributes associated with the pipeline flow state.
+	QVariantMap _attributes;
 };
 
 };

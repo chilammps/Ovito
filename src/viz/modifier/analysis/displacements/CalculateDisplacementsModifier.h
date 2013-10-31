@@ -39,9 +39,6 @@ public:
 	/// Default constructor.
 	Q_INVOKABLE CalculateDisplacementsModifier();
 
-	/// Asks the modifier for its validity interval at the given time.
-	virtual TimeInterval modifierValidity(TimePoint time) override;
-
 	/// Returns the object that contains the reference configuration of the particles
 	/// used for calculating the displacement vectors.
 	SceneObject* referenceConfiguration() const { return _referenceObject; }

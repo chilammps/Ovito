@@ -45,7 +45,7 @@ SaveStream::SaveStream(QDataStream& destination) : _os(destination), _isOpen(fal
 	*this << (quint32)0x0AFCCA5A;	// The second magic file code.
 	
 	// This is the version of the stream file format.
-	*this << (quint32)11;		// Version 1.1
+	*this << (quint32)OVITO_FILE_FORMAT_VERSION;
 	_os.setVersion(QDataStream::Qt_5_1);
 	_os.setFloatingPointPrecision(sizeof(FloatType) == 4 ? QDataStream::SinglePrecision : QDataStream::DoublePrecision);
 

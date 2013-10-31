@@ -56,9 +56,9 @@ void LinkedFileObjectEditor::createUI(const RolloutInsertionParameters& rolloutP
 	toolbar->addAction(QIcon(":/core/actions/file/import_object_refresh_animation.png"), tr("Reload animation frames"), this, SLOT(onReloadAnimation()));
 
 	QAction* saveDataWithSceneAction = toolbar->addAction(QIcon(":/core/actions/file/import_object_save_with_scene.png"), tr("Store imported data in scene file"));
-	new BooleanActionParameterUI(this, "saveDataWithScene", saveDataWithSceneAction);
+	new BooleanActionParameterUI(this, "saveWithScene", saveDataWithSceneAction);
 
-	QGroupBox* wildcardBox = new QGroupBox(tr("File sequence pattern"), rollout);
+	QGroupBox* wildcardBox = new QGroupBox(tr("Wildcard pattern"), rollout);
 	layout->addWidget(wildcardBox);
 	QHBoxLayout* sublayout2 = new QHBoxLayout(wildcardBox);
 	sublayout2->setContentsMargins(4,4,4,4);
@@ -78,9 +78,9 @@ void LinkedFileObjectEditor::createUI(const RolloutInsertionParameters& rolloutP
 	_sourcePathLabel->setTextInteractionFlags(Qt::TextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard | Qt::LinksAccessibleByMouse | Qt::LinksAccessibleByKeyboard));
 	sublayout->addWidget(_sourcePathLabel);
 
-	QGroupBox* currentFileBox = new QGroupBox(tr("Current file"), rollout);
-	layout->addWidget(currentFileBox);
-	sublayout = new QVBoxLayout(currentFileBox);
+	_currentFileBox = new QGroupBox(tr("Current file"), rollout);
+	layout->addWidget(_currentFileBox);
+	sublayout = new QVBoxLayout(_currentFileBox);
 	sublayout->setContentsMargins(4,4,4,4);
 	_filenameLabel = new ElidedTextLabel();
 	_filenameLabel->setIndent(10);
@@ -240,7 +240,13 @@ void LinkedFileObjectEditor::updateInformationLabel()
 			_filenameLabel->setText(QFileInfo(frameInfo.sourceFile.path()).fileName());
 		}
 	}
-	else _filenameLabel->setText(QString());
+	else {
+		_filenameLabel->setText(QString());
+	}
+	if(obj->numberOfFrames() > 1 && frameIndex >= 0)
+		_currentFileBox->setTitle(tr("Current file (frame %1)").arg(frameIndex));
+	else
+		_currentFileBox->setTitle(tr("Current file"));
 
 	_statusTextLabel->setText(obj->status().text());
 	if(obj->status().type() == ObjectStatus::Warning)

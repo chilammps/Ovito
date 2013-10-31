@@ -46,27 +46,26 @@ DEFINE_FLAGS_REFERENCE_FIELD(LinkedFileObject, _importer, "Importer", LinkedFile
 DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(LinkedFileObject, _sceneObjects, "SceneObjects", SceneObject, PROPERTY_FIELD_ALWAYS_DEEP_COPY)
 DEFINE_PROPERTY_FIELD(LinkedFileObject, _adjustAnimationIntervalEnabled, "AdjustAnimationIntervalEnabled")
 DEFINE_FLAGS_PROPERTY_FIELD(LinkedFileObject, _sourceUrl, "SourceUrl", PROPERTY_FIELD_NO_UNDO)
-DEFINE_PROPERTY_FIELD(LinkedFileObject, _saveDataWithScene, "SaveDataWithScene")
 SET_PROPERTY_FIELD_LABEL(LinkedFileObject, _importer, "File Importer")
 SET_PROPERTY_FIELD_LABEL(LinkedFileObject, _sceneObjects, "Objects")
 SET_PROPERTY_FIELD_LABEL(LinkedFileObject, _adjustAnimationIntervalEnabled, "Adjust animation interval")
 SET_PROPERTY_FIELD_LABEL(LinkedFileObject, _sourceUrl, "Source location")
-SET_PROPERTY_FIELD_LABEL(LinkedFileObject, _saveDataWithScene, "Save data with scene")
 
 /******************************************************************************
 * Constructs the object.
 ******************************************************************************/
 LinkedFileObject::LinkedFileObject() :
-	_adjustAnimationIntervalEnabled(true), _loadedFrame(-1), _frameBeingLoaded(-1),
-	_saveDataWithScene(false)
+	_adjustAnimationIntervalEnabled(true), _loadedFrame(-1), _frameBeingLoaded(-1)
 {
 	INIT_PROPERTY_FIELD(LinkedFileObject::_importer);
 	INIT_PROPERTY_FIELD(LinkedFileObject::_sceneObjects);
 	INIT_PROPERTY_FIELD(LinkedFileObject::_adjustAnimationIntervalEnabled);
 	INIT_PROPERTY_FIELD(LinkedFileObject::_sourceUrl);
-	INIT_PROPERTY_FIELD(LinkedFileObject::_saveDataWithScene);
 
 	connect(&_loadFrameOperationWatcher, &FutureWatcher::finished, this, &LinkedFileObject::loadOperationFinished);
+
+	// Do not save a copy of the linked external data in scene file by default.
+	setSaveWithScene(false);
 }
 
 /******************************************************************************
@@ -253,19 +252,36 @@ void LinkedFileObject::cancelLoadOperation()
 ******************************************************************************/
 PipelineFlowState LinkedFileObject::evaluate(TimePoint time)
 {
-	if(!importer())
-		return PipelineFlowState();
+	return requestFrame(AnimManager::instance().timeToFrame(time));
+}
 
-	int frame = AnimManager::instance().timeToFrame(time);
+/******************************************************************************
+* Requests a frame of the input file sequence.
+******************************************************************************/
+PipelineFlowState LinkedFileObject::requestFrame(int frame)
+{
+	// Handle out-of-range cases.
+	if(frame < 0) frame = 0;
+	if(frame >= numberOfFrames()) frame = numberOfFrames() - 1;
 
-	bool oldTaskCanceled = false;
+	// Determine validity interval of the returned state.
+	TimeInterval interval = TimeInterval::forever();
+	if(frame > 0)
+		interval.setStart(AnimManager::instance().frameToTime(frame));
+	if(frame < numberOfFrames() - 1)
+		interval.setEnd(AnimManager::instance().frameToTime(frame+1)-1);
+
+	bool oldLoadingTaskWasCanceled = false;
 	if(_frameBeingLoaded != -1) {
 		if(_frameBeingLoaded == frame) {
-			// The requested frame is already being loaded at the moment. Indicate to the caller that the result is pending.
-			return PipelineFlowState(ObjectStatus::Pending, _sceneObjects.targets(), TimeInterval(time));
+			// The requested frame is already being loaded at the moment.
+			// Indicate to the caller that the result is pending.
+			return PipelineFlowState(ObjectStatus::Pending, _sceneObjects.targets(), interval,
+					{{ QStringLiteral("Frame"), QVariant::fromValue(frame) }} );
 		}
 		else {
-			// Another frame than the requested one is already being loaded. Cancel loading operation now.
+			// Another frame than the requested one is already being loaded.
+			// Cancel pending loading operation first.
 			try {
 				// This will suppress any pending notification events.
 				_loadFrameOperationWatcher.unsetFuture();
@@ -274,37 +290,35 @@ PipelineFlowState LinkedFileObject::evaluate(TimePoint time)
 			} catch(...) {}
 			_frameBeingLoaded = -1;
 			// Inform previous caller that the existing loading operation has been canceled.
-			oldTaskCanceled = true;
+			oldLoadingTaskWasCanceled = true;
 		}
 	}
 	if(frame >= 0 && _loadedFrame == frame) {
-		if(oldTaskCanceled)
+		if(oldLoadingTaskWasCanceled)
 			notifyDependents(ReferenceEvent::PendingStateChanged);
 
 		// The requested frame has already been loaded and is available immediately.
-		return PipelineFlowState(status(), _sceneObjects.targets(), TimeInterval(time));
+		return PipelineFlowState(status(), _sceneObjects.targets(), interval,
+				{{ QStringLiteral("Frame"), QVariant::fromValue(frame) }} );
 	}
 	else {
 		// The requested frame needs to be loaded first. Start background loading task.
-		OVITO_CHECK_OBJECT_POINTER(importer());
-		if(frame < 0 || frame >= numberOfFrames()) {
-			if(oldTaskCanceled)
+		if(frame < 0 || frame >= numberOfFrames() || !importer()) {
+			if(oldLoadingTaskWasCanceled)
 				notifyDependents(ReferenceEvent::PendingStateChanged);
-			if(numberOfFrames() > 0)
-				setStatus(ObjectStatus(ObjectStatus::Error, tr("The requested animation frame (%1) is out of range.").arg(frame)));
-			else
-				setStatus(ObjectStatus(ObjectStatus::Error, tr("The source location is empty (no files found).")));
+			setStatus(ObjectStatus(ObjectStatus::Error, tr("The source location is empty (no files found).")));
 			_loadedFrame = -1;
-			return PipelineFlowState(status(), _sceneObjects.targets(), TimeInterval(time));
+			return PipelineFlowState(status(), _sceneObjects.targets(), interval);
 		}
 		_frameBeingLoaded = frame;
 		_loadFrameOperation = importer()->load(_frames[frame]);
 		_loadFrameOperationWatcher.setFuture(_loadFrameOperation);
 		setStatus(ObjectStatus::Pending);
-		if(oldTaskCanceled)
+		if(oldLoadingTaskWasCanceled)
 			notifyDependents(ReferenceEvent::PendingStateChanged);
 		// Indicate to the caller that the result is pending.
-		return PipelineFlowState(ObjectStatus::Pending, _sceneObjects.targets(), TimeInterval(time));
+		return PipelineFlowState(ObjectStatus::Pending, _sceneObjects.targets(), interval,
+				{{ QStringLiteral("Frame"), QVariant::fromValue(frame) }} );
 	}
 }
 
@@ -425,7 +439,7 @@ void LinkedFileObject::saveToStream(ObjectSaveStream& stream)
 	SceneObject::saveToStream(stream);
 	stream.beginChunk(0x01);
 	stream << _frames;
-	if(saveDataWithScene())
+	if(saveWithScene())
 		stream << _loadedFrame;
 	else
 		stream << -1;

@@ -55,9 +55,9 @@ CameraObject::CameraObject() : _isPerspective(true)
 	INIT_PROPERTY_FIELD(CameraObject::_zoom);
 
 	_fov = ControllerManager::instance().createDefaultController<FloatController>();
-	_fov->setValue(0, FLOATTYPE_PI/3.0);
+	_fov->setValue(0, FLOATTYPE_PI/4.0);
 	_zoom = ControllerManager::instance().createDefaultController<FloatController>();
-	_zoom->setValue(0, 100);
+	_zoom->setValue(0, 200);
 
 	setDisplayObject(new CameraDisplayObject());
 }

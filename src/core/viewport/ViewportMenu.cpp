@@ -45,7 +45,7 @@ ViewportMenu::ViewportMenu(Viewport* vp) : _viewport(vp)
 	action->setChecked(_viewport->renderFrameShown());
 	addSeparator();
 
-	_viewTypeMenu = addMenu(tr("View type"));
+	_viewTypeMenu = addMenu(tr("View Type"));
 	connect(_viewTypeMenu, SIGNAL(aboutToShow()), this, SLOT(onShowViewTypeMenu()));
 
 	QActionGroup* viewTypeGroup = new QActionGroup(this);
@@ -127,7 +127,7 @@ void ViewportMenu::onShowViewTypeMenu()
 	}
 
 	_viewTypeMenu->addSeparator();
-	_viewTypeMenu->addAction(tr("Create new camera"), this, SLOT(onCreateCamera()))->setEnabled(_viewport->viewNode() == nullptr);
+	_viewTypeMenu->addAction(tr("Create Camera"), this, SLOT(onCreateCamera()))->setEnabled(_viewport->viewNode() == nullptr);
 
 	disconnect(_viewTypeMenu, SIGNAL(aboutToShow()), this, SLOT(onShowViewTypeMenu()));
 }
@@ -211,7 +211,8 @@ void ViewportMenu::onCreateCamera()
 			AffineTransformation tm = _viewport->inverseViewMatrix();
 			if(_viewport->isPerspectiveProjection() == false) {
 				// Position camera with parallel projection outside of scene bounding box.
-				tm = tm * AffineTransformation::translation(Vector3(0, 0, -_viewport->_projParams.znear));
+				tm = tm * AffineTransformation::translation(
+						Vector3(0, 0, -_viewport->_projParams.znear + 0.2f * (_viewport->_projParams.zfar-_viewport->_projParams.znear)));
 			}
 			cameraNode->transformationController()->setValue(0, tm);
 		}

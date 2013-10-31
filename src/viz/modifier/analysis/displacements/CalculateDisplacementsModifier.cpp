@@ -56,7 +56,7 @@ SET_PROPERTY_FIELD_LABEL(CalculateDisplacementsModifier, _vectorDisplay, "Vector
 ******************************************************************************/
 CalculateDisplacementsModifier::CalculateDisplacementsModifier() :
     _referenceShown(false), _eliminateCellDeformation(false),
-    _useReferenceFrameOffset(false), _referenceFrameNumber(0), _referenceFrameOffset(1),
+    _useReferenceFrameOffset(false), _referenceFrameNumber(0), _referenceFrameOffset(-1),
     _assumeUnwrappedCoordinates(false)
 {
 	INIT_PROPERTY_FIELD(CalculateDisplacementsModifier::_referenceObject);
@@ -68,23 +68,22 @@ CalculateDisplacementsModifier::CalculateDisplacementsModifier() :
 	INIT_PROPERTY_FIELD(CalculateDisplacementsModifier::_referenceFrameOffset);
 	INIT_PROPERTY_FIELD(CalculateDisplacementsModifier::_vectorDisplay);
 
+	// Create the scene object, which will be responsible for loading
+	// and storing the reference configuration.
 	OORef<LinkedFileObject> importObj(new LinkedFileObject());
-	importObj->setAdjustAnimationIntervalEnabled(false);
 	_referenceObject = importObj;
+
+	// Disable automatic adjustment of animation length for the reference object.
+	// We don't want the scene's animation interval to be affected by an animation
+	// loaded into the reference configuration object.
+	importObj->setAdjustAnimationIntervalEnabled(false);
 
 	// Create display object for vectors.
 	_vectorDisplay = new VectorDisplay();
-	// Don't show vector by default.
-	_vectorDisplay->setEnabled(false);
-}
 
-/******************************************************************************
-* Asks the modifier for its validity interval at the given time.
-******************************************************************************/
-TimeInterval CalculateDisplacementsModifier::modifierValidity(TimePoint time)
-{
-	TimeInterval interval = ParticleModifier::modifierValidity(time);
-	return interval;
+	// Don't show vectors by default, because too many vectors could make the
+	// program hang.
+	_vectorDisplay->setEnabled(false);
 }
 
 /******************************************************************************
@@ -92,7 +91,7 @@ TimeInterval CalculateDisplacementsModifier::modifierValidity(TimePoint time)
 ******************************************************************************/
 bool CalculateDisplacementsModifier::referenceEvent(RefTarget* source, ReferenceEvent* event)
 {
-	// Do not propagate messages from the attached display object.
+	// Do not propagate messages sent by the attached display object.
 	if(source == _vectorDisplay)
 		return false;
 
@@ -108,28 +107,50 @@ ObjectStatus CalculateDisplacementsModifier::modifyParticles(TimePoint time, Tim
 	if(!referenceConfiguration())
 		throw Exception(tr("Cannot calculate displacement vectors. Reference configuration has not been specified."));
 
-	// Get the reference configuration.
-	PipelineFlowState refState;
+	// What is the reference frame number to use?
+	int referenceFrame;
 	if(_useReferenceFrameOffset) {
+		// Determine the current frame, preferably from the attributes stored with the pipeline flow state.
+		// If the "Frame" attribute is not present, infer it from the current animation time.
+		int currentFrame = input().attributes().value(QStringLiteral("Frame"),
+				AnimManager::instance().timeToFrame(time)).toInt();
+
 		// Use frame offset relative to current configuration.
-		refState = referenceConfiguration()->evaluate(time + _referenceFrameOffset * AnimManager::instance().ticksPerFrame());
+		referenceFrame = currentFrame + _referenceFrameOffset;
 	}
 	else {
-		// Always use the same frame as reference configuration.
-		refState = referenceConfiguration()->evaluate(_referenceFrameNumber * AnimManager::instance().ticksPerFrame());
+		// Always use the same, user-specified frame as reference configuration.
+		referenceFrame = _referenceFrameNumber;
 	}
-	if(refState.status().type() == ObjectStatus::Error) {
+
+	// Get the reference configuration.
+	PipelineFlowState refState;
+	if(LinkedFileObject* linkedFileObj = dynamic_object_cast<LinkedFileObject>(referenceConfiguration())) {
+		if(linkedFileObj->numberOfFrames() > 0) {
+			if(referenceFrame < 0 || referenceFrame >= linkedFileObj->numberOfFrames())
+				throw Exception(tr("Requested reference frame %1 is out of range.").arg(referenceFrame));
+			refState = linkedFileObj->requestFrame(referenceFrame);
+		}
+	}
+	else
+		refState = referenceConfiguration()->evaluate(referenceFrame * AnimManager::instance().ticksPerFrame());
+
+	// Make sure the obtained reference configuration is valid and ready to use.
+	if(refState.status().type() == ObjectStatus::Error)
 		return refState.status();
-	}
 	if(refState.isEmpty()) {
 		if(refState.status().type() != ObjectStatus::Pending)
 			throw Exception(tr("Reference configuration has not been specified yet or is empty. Please pick a reference simulation file."));
 		else
 			return ObjectStatus(ObjectStatus::Pending, tr("Waiting for input data to become ready..."));
 	}
+	// Make sure we really got back the requested reference frame.
+	if(refState.attributes().value(QStringLiteral("Frame"), referenceFrame).toInt() != referenceFrame)
+		throw Exception(tr("Requested reference frame %1 is out of range.").arg(referenceFrame));
+
 	validityInterval.intersect(refState.stateValidity());
 
-	// Get the reference position property.
+	// Get the reference positions.
 	ParticlePropertyObject* refPosProperty = ParticlePropertyObject::findInState(refState, ParticleProperty::PositionProperty);
 	if(!refPosProperty)
 		throw Exception(tr("Reference configuration does not contain any particle positions."));
