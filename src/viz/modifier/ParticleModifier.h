@@ -26,6 +26,7 @@
 #include <core/scene/pipeline/Modifier.h>
 #include <core/scene/objects/SceneObject.h>
 #include <core/gui/properties/PropertiesEditor.h>
+#include <core/gui/widgets/ObjectStatusWidget.h>
 #include <core/reference/CloneHelper.h>
 #include <core/reference/RefTargetListener.h>
 
@@ -175,18 +176,14 @@ class ParticleModifierEditor : public PropertiesEditor
 public:
 
 	/// Constructor.
-	ParticleModifierEditor() :
-		_modifierStatusInfoIcon(":/core/mainwin/status/status_info.png"),
-		_modifierStatusWarningIcon(":/core/mainwin/status/status_warning.png"),
-		_modifierStatusErrorIcon(":/core/mainwin/status/status_error.png")
-	{
+	ParticleModifierEditor() {
 		connect(this, SIGNAL(contentsReplaced(RefTarget*)), this, SLOT(updateStatusLabel()));
 	}
 
 	/// Returns a widget that displays a message sent by the modifier that
 	/// states the outcome of the modifier evaluation. Derived classes of this
 	/// editor base class can add the widget to their user interface.
-	QWidget* statusLabel();
+	ObjectStatusWidget* statusLabel();
 
 protected:
 
@@ -200,13 +197,7 @@ private Q_SLOTS:
 
 private:
 
-	QPointer<QWidget> _statusLabel;
-	QPointer<QLabel> _statusTextLabel;
-	QPointer<QLabel> _statusIconLabel;
-
-	QPixmap _modifierStatusInfoIcon;
-	QPixmap _modifierStatusWarningIcon;
-	QPixmap _modifierStatusErrorIcon;
+	QPointer<ObjectStatusWidget> _statusLabel;
 
 	Q_OBJECT
 	OVITO_OBJECT

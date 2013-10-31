@@ -223,7 +223,7 @@ void MainWindow::createMainMenu()
 	helpMenu->addAction(ActionManager::instance().getAction(ACTION_HELP_SHOW_ONLINE_HELP));
 	helpMenu->addSeparator();
 	helpMenu->addAction(ActionManager::instance().getAction(ACTION_HELP_ABOUT));
-	helpMenu->addAction(tr("About Qt"), QApplication::instance(), SLOT(aboutQt()));
+	//helpMenu->addAction(tr("About Qt"), QApplication::instance(), SLOT(aboutQt()));
 
 	setMenuBar(menuBar);
 }

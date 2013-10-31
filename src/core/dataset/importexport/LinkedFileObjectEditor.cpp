@@ -21,6 +21,7 @@
 
 #include <core/Core.h>
 #include <core/gui/properties/FilenameParameterUI.h>
+#include <core/gui/properties/BooleanParameterUI.h>
 #include <core/gui/properties/BooleanActionParameterUI.h>
 #include <core/gui/properties/SubObjectParameterUI.h>
 #include "LinkedFileObjectEditor.h"
@@ -35,7 +36,7 @@ IMPLEMENT_OVITO_OBJECT(Core, LinkedFileObjectEditor, PropertiesEditor)
 void LinkedFileObjectEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
 	// Create a rollout.
-	QWidget* rollout = createRollout(rolloutParams.title().isEmpty() ? tr("External file") : rolloutParams.title(), rolloutParams);
+	QWidget* rollout = createRollout(tr("External source"), rolloutParams);
 
 	// Create the rollout contents.
 	QVBoxLayout* layout = new QVBoxLayout(rollout);
@@ -58,52 +59,58 @@ void LinkedFileObjectEditor::createUI(const RolloutInsertionParameters& rolloutP
 	QAction* saveDataWithSceneAction = toolbar->addAction(QIcon(":/core/actions/file/import_object_save_with_scene.png"), tr("Store imported data in scene file"));
 	new BooleanActionParameterUI(this, "saveWithScene", saveDataWithSceneAction);
 
-	QGroupBox* wildcardBox = new QGroupBox(tr("Wildcard pattern"), rollout);
-	layout->addWidget(wildcardBox);
-	QHBoxLayout* sublayout2 = new QHBoxLayout(wildcardBox);
-	sublayout2->setContentsMargins(4,4,4,4);
-	_wildcardPatternTextbox = new QLineEdit();
-	connect(_wildcardPatternTextbox, SIGNAL(returnPressed()), this, SLOT(onWildcardPatternEntered()));
-	sublayout2->addWidget(_wildcardPatternTextbox, 1);
-	QPushButton* setPatternButton = new QPushButton(tr("Set"));
-	connect(setPatternButton, SIGNAL(clicked(bool)), this, SLOT(onWildcardPatternEntered()));
-	sublayout2->addWidget(setPatternButton);
-
-	QGroupBox* sourcePathBox = new QGroupBox(tr("Source path"), rollout);
-	layout->addWidget(sourcePathBox);
-	sublayout = new QVBoxLayout(sourcePathBox);
-	sublayout->setContentsMargins(4,4,4,4);
-	_sourcePathLabel = new ElidedTextLabel();
-	_sourcePathLabel->setIndent(10);
-	_sourcePathLabel->setTextInteractionFlags(Qt::TextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard | Qt::LinksAccessibleByMouse | Qt::LinksAccessibleByKeyboard));
-	sublayout->addWidget(_sourcePathLabel);
-
-	_currentFileBox = new QGroupBox(tr("Current file"), rollout);
-	layout->addWidget(_currentFileBox);
-	sublayout = new QVBoxLayout(_currentFileBox);
-	sublayout->setContentsMargins(4,4,4,4);
-	_filenameLabel = new ElidedTextLabel();
-	_filenameLabel->setIndent(10);
-	_filenameLabel->setTextInteractionFlags(Qt::TextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard | Qt::LinksAccessibleByMouse | Qt::LinksAccessibleByKeyboard));
-	sublayout->addWidget(_filenameLabel);
+	QGroupBox* sourceBox = new QGroupBox(tr("Source"), rollout);
+	layout->addWidget(sourceBox);
+	QGridLayout* gridlayout = new QGridLayout(sourceBox);
+	gridlayout->setContentsMargins(4,4,4,4);
+	gridlayout->setColumnStretch(1,1);
+	gridlayout->setVerticalSpacing(2);
+	gridlayout->setHorizontalSpacing(6);
+	_filenameLabel = new QLineEdit();
+	_filenameLabel->setReadOnly(true);
+	_filenameLabel->setFrame(false);
+	gridlayout->addWidget(new QLabel(tr("File:")), 0, 0);
+	gridlayout->addWidget(_filenameLabel, 0, 1);
+	_sourcePathLabel = new QLineEdit();
+	_sourcePathLabel->setReadOnly(true);
+	_sourcePathLabel->setFrame(false);
+	gridlayout->addWidget(new QLabel(tr("Dir:")), 1, 0);
+	gridlayout->addWidget(_sourcePathLabel, 1, 1);
 
 	QGroupBox* statusBox = new QGroupBox(tr("Status"), rollout);
 	layout->addWidget(statusBox);
-	QGridLayout* layout2 = new QGridLayout(statusBox);
-	layout2->setContentsMargins(4,4,4,4);
-	layout2->setColumnStretch(1, 1);
-	_statusIconLabel = new QLabel(rollout);
-	_statusIconLabel->setAlignment(Qt::AlignTop);
-	layout2->addWidget(_statusIconLabel, 0, 0, Qt::AlignTop);
+	sublayout = new QVBoxLayout(statusBox);
+	sublayout->setContentsMargins(4,4,4,4);
+	_statusLabel = new ObjectStatusWidget(rollout);
+	sublayout->addWidget(_statusLabel);
 
-	_statusTextLabel = new QLabel(rollout);
-	_statusTextLabel->setAlignment(Qt::AlignTop);
-	_statusTextLabel->setTextInteractionFlags(Qt::TextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard | Qt::LinksAccessibleByMouse | Qt::LinksAccessibleByKeyboard));
-	_statusTextLabel->setWordWrap(true);
-	layout2->addWidget(_statusTextLabel, 0, 1);
+	// Create another rollout for animation settings.
+	rollout = createRollout(tr("Frame sequence"), rolloutParams.after(rollout));
 
-	_statusWarningIcon.load(":/core/mainwin/status/status_warning.png");
-	_statusErrorIcon.load(":/core/mainwin/status/status_error.png");
+	// Create the rollout contents.
+	layout = new QVBoxLayout(rollout);
+	layout->setContentsMargins(4,4,4,4);
+	layout->setSpacing(4);
+
+	QGroupBox* wildcardBox = new QGroupBox(tr("File wildcard pattern"), rollout);
+	layout->addWidget(wildcardBox);
+	sublayout = new QVBoxLayout(wildcardBox);
+	sublayout->setContentsMargins(4,4,4,4);
+	_wildcardPatternTextbox = new QLineEdit();
+	connect(_wildcardPatternTextbox, SIGNAL(returnPressed()), this, SLOT(onWildcardPatternEntered()));
+	sublayout->addWidget(_wildcardPatternTextbox);
+
+	QGroupBox* frameSequenceBox = new QGroupBox(tr("Frames"), rollout);
+	layout->addWidget(frameSequenceBox);
+	sublayout = new QVBoxLayout(frameSequenceBox);
+	sublayout->setContentsMargins(4,4,4,4);
+	_framesListBox = new QComboBox();
+	_framesListBox->setEditable(false);
+	connect(_framesListBox, SIGNAL(activated(int)), this, SLOT(onFrameSelected(int)));
+	sublayout->addWidget(_framesListBox);
+
+	BooleanParameterUI* adjustAnimIntervalUI = new BooleanParameterUI(this, PROPERTY_FIELD(LinkedFileObject::_adjustAnimationIntervalEnabled));
+	sublayout->addWidget(adjustAnimIntervalUI->checkBox());
 
 	// Show settings editor of importer class.
 	new SubObjectParameterUI(this, PROPERTY_FIELD(LinkedFileObject::_importer), rolloutParams.after(rollout));
@@ -152,8 +159,10 @@ void LinkedFileObjectEditor::onPickRemoteInputFile()
 void LinkedFileObjectEditor::onReloadFrame()
 {
 	LinkedFileObject* obj = static_object_cast<LinkedFileObject>(editObject());
-	if(obj)
+	if(obj) {
 		obj->refreshFromSource(obj->loadedFrame());
+		obj->notifyDependents(ReferenceEvent::TargetChanged);
+	}
 }
 
 /******************************************************************************
@@ -182,6 +191,8 @@ void LinkedFileObjectEditor::onWildcardPatternEntered()
 	OVITO_CHECK_OBJECT_POINTER(obj);
 
 	UndoableTransaction::handleExceptions(tr("Change wildcard pattern"), [this, obj]() {
+		if(!obj->importer())
+			return;
 
 		QString pattern = _wildcardPatternTextbox->text().trimmed();
 		if(pattern.isEmpty())
@@ -200,7 +211,7 @@ void LinkedFileObjectEditor::onWildcardPatternEntered()
 }
 
 /******************************************************************************
-* Updates the contents of the status label.
+* Updates the displayed status informations.
 ******************************************************************************/
 void LinkedFileObjectEditor::updateInformationLabel()
 {
@@ -210,6 +221,9 @@ void LinkedFileObjectEditor::updateInformationLabel()
 		_wildcardPatternTextbox->setEnabled(false);
 		_sourcePathLabel->setText(QString());
 		_filenameLabel->setText(QString());
+		_statusLabel->clearStatus();
+		_framesListBox->clear();
+		_framesListBox->setEnabled(false);
 		return;
 	}
 
@@ -243,20 +257,34 @@ void LinkedFileObjectEditor::updateInformationLabel()
 	else {
 		_filenameLabel->setText(QString());
 	}
-	if(obj->numberOfFrames() > 1 && frameIndex >= 0)
-		_currentFileBox->setTitle(tr("Current file (frame %1)").arg(frameIndex));
-	else
-		_currentFileBox->setTitle(tr("Current file"));
 
-	_statusTextLabel->setText(obj->status().text());
-	if(obj->status().type() == ObjectStatus::Warning)
-		_statusIconLabel->setPixmap(_statusWarningIcon);
-	else if(obj->status().type() == ObjectStatus::Error)
-		_statusIconLabel->setPixmap(_statusErrorIcon);
-	else
-		_statusIconLabel->clear();
+	_framesListBox->setEnabled(true);
+	for(int index = 0; index < obj->frames().size(); index++) {
+		if(_framesListBox->count() <= index) {
+			_framesListBox->addItem(obj->frames()[index].label);
+		}
+		else {
+			if(_framesListBox->itemText(index) != obj->frames()[index].label)
+				_framesListBox->setItemText(index, obj->frames()[index].label);
+		}
+	}
+	for(int index = _framesListBox->count() - 1; index >= obj->frames().size(); index--) {
+		_framesListBox->removeItem(index);
+	}
+	_framesListBox->setCurrentIndex(frameIndex);
 
-	container()->updateRolloutsLater();
+	_statusLabel->setStatus(obj->status());
+}
+
+/******************************************************************************
+* Is called when the user has selected a certain frame in the frame list box.
+******************************************************************************/
+void LinkedFileObjectEditor::onFrameSelected(int index)
+{
+	LinkedFileObject* obj = static_object_cast<LinkedFileObject>(editObject());
+	if(!obj) return;
+
+	AnimManager::instance().setTime(AnimManager::instance().frameToTime(index));
 }
 
 /******************************************************************************

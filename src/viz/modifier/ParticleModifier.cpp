@@ -405,32 +405,13 @@ bool ParticleModifierEditor::referenceEvent(RefTarget* source, ReferenceEvent* e
 ******************************************************************************/
 void ParticleModifierEditor::updateStatusLabel()
 {
-	if(!_statusTextLabel || !_statusIconLabel)
+	if(!_statusLabel)
 		return;
 
-	Modifier* modifier = dynamic_object_cast<Modifier>(editObject());
-	if(modifier) {
-		ObjectStatus status = modifier->status();
-		_statusTextLabel->setText(status.text());
-		if(status.type() == ObjectStatus::Success) {
-			if(status.text().isEmpty() == false)
-				_statusIconLabel->setPixmap(_modifierStatusInfoIcon);
-			else
-				_statusIconLabel->clear();
-		}
-		else if(status.type() == ObjectStatus::Warning)
-			_statusIconLabel->setPixmap(_modifierStatusWarningIcon);
-		else if(status.type() == ObjectStatus::Error)
-			_statusIconLabel->setPixmap(_modifierStatusErrorIcon);
-		else
-			_statusIconLabel->clear();
-	}
-	else {
-		_statusTextLabel->clear();
-		_statusIconLabel->clear();
-	}
-
-	container()->updateRolloutsLater();
+	if(Modifier* modifier = dynamic_object_cast<Modifier>(editObject()))
+		_statusLabel->setStatus(modifier->status());
+	else
+		_statusLabel->clearStatus();
 }
 
 /******************************************************************************
@@ -438,27 +419,10 @@ void ParticleModifierEditor::updateStatusLabel()
 * states the outcome of the modifier evaluation. Derived classes of this
 * editor base class can add the widget to their user interface.
 ******************************************************************************/
-QWidget* ParticleModifierEditor::statusLabel()
+ObjectStatusWidget* ParticleModifierEditor::statusLabel()
 {
-	if(_statusLabel) return _statusLabel;
-
-	_statusLabel = new QWidget();
-	QGridLayout* layout = new QGridLayout(_statusLabel);
-	layout->setContentsMargins(0,0,0,0);
-	layout->setColumnStretch(1, 1);
-	//_statusLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-
-	_statusIconLabel = new QLabel(_statusLabel);
-	_statusIconLabel->setAlignment(Qt::AlignTop);
-	layout->addWidget(_statusIconLabel, 0, 0, Qt::AlignTop);
-
-	_statusTextLabel = new QLabel(_statusLabel);
-	_statusTextLabel->setAlignment(Qt::AlignTop);
-	//_statusTextLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-	_statusTextLabel->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard | Qt::LinksAccessibleByMouse | Qt::LinksAccessibleByKeyboard);
-	_statusTextLabel->setWordWrap(true);
-	layout->addWidget(_statusTextLabel, 0, 1);
-
+	if(!_statusLabel)
+		_statusLabel = new ObjectStatusWidget();
 	return _statusLabel;
 }
 

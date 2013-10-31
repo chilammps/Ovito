@@ -108,7 +108,7 @@ void LAMMPSTextDumpImporter::scanFileForTimesteps(FutureInterfaceBase& futureInt
 				frame.byteOffset = byteOffset;
 				frame.lineNumber = startLineNumber;
 				frame.lastModificationTime = lastModified;
-				frame.label = QString("%1 (Timestep %2)").arg(filename).arg(timestep);
+				frame.label = QString("Timestep %1").arg(timestep);
 				frames.push_back(frame);
 				break;
 			}
@@ -312,7 +312,7 @@ void LAMMPSTextDumpImporter::LAMMPSTextDumpImportTask::parseFile(FutureInterface
 					}
 				}
 
-				setInfoText(tr("%1 particles at timestep %2").arg(numParticles).arg(timestep));
+				setInfoText(tr("%1 particles at simulation timestep %2").arg(numParticles).arg(timestep));
 				return;	// Done!
 			}
 			else {

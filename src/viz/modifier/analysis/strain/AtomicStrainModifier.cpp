@@ -77,15 +77,6 @@ AtomicStrainModifier::AtomicStrainModifier() :
 }
 
 /******************************************************************************
-* Asks the modifier for its validity interval at the given time.
-******************************************************************************/
-TimeInterval AtomicStrainModifier::modifierValidity(TimePoint time)
-{
-	TimeInterval interval = ParticleModifier::modifierValidity(time);
-	return interval;
-}
-
-/******************************************************************************
 * Creates and initializes a computation engine that will compute the modifier's results.
 ******************************************************************************/
 std::shared_ptr<AsynchronousParticleModifier::Engine> AtomicStrainModifier::createEngine(TimePoint time)
@@ -100,15 +91,30 @@ std::shared_ptr<AsynchronousParticleModifier::Engine> AtomicStrainModifier::crea
 	if(!referenceConfiguration())
 		throw Exception(tr("Cannot calculate displacements. Reference configuration has not been specified."));
 
-	// Get the reference configuration.
 	// Always use frame 0 as reference configuration.
-	PipelineFlowState refState = referenceConfiguration()->evaluate(0);
+	int referenceFrame = 0;
+
+	// Get the reference configuration.
+	PipelineFlowState refState;
+	if(LinkedFileObject* linkedFileObj = dynamic_object_cast<LinkedFileObject>(referenceConfiguration())) {
+		if(linkedFileObj->numberOfFrames() > 0) {
+			if(referenceFrame < 0 || referenceFrame >= linkedFileObj->numberOfFrames())
+				throw Exception(tr("Requested reference frame %1 is out of range.").arg(referenceFrame));
+			refState = linkedFileObj->requestFrame(referenceFrame);
+		}
+	}
+	else refState = referenceConfiguration()->evaluate(referenceFrame * AnimManager::instance().ticksPerFrame());
+
+	// Make sure the obtained reference configuration is valid and ready to use.
+	if(refState.status().type() == ObjectStatus::Error)
+		throw refState.status();
 	if(refState.status().type() == ObjectStatus::Pending)
 		throw ObjectStatus(ObjectStatus::Pending, tr("Waiting for input data to become ready..."));
-	else if(refState.status().type() == ObjectStatus::Error)
-		throw refState.status();
-	else if(refState.isEmpty())
-		throw Exception(tr("Reference configuration has not been specified yet."));
+	if(refState.isEmpty())
+		throw Exception(tr("Reference configuration has not been specified yet or is empty. Please pick a reference simulation file."));
+	// Make sure we really got back the requested reference frame.
+	if(refState.attributes().value(QStringLiteral("Frame"), referenceFrame).toInt() != referenceFrame)
+		throw Exception(tr("Requested reference frame %1 is out of range.").arg(referenceFrame));
 
 	// Get the reference position property.
 	ParticlePropertyObject* refPosProperty = ParticlePropertyObject::findInState(refState, ParticleProperty::PositionProperty);
@@ -222,7 +228,8 @@ void AtomicStrainModifier::AtomicStrainEngine::compute(FutureInterfaceBase& futu
 
 	// Perform analysis on each particle.
 	parallelFor(positions()->size(), futureInterface, [&neighborListBuilder, &refToCurrentIndexMap, &currentToRefIndexMap, this](size_t index) {
-		this->computeStrain(index, neighborListBuilder, refToCurrentIndexMap, currentToRefIndexMap);
+		if(!this->computeStrain(index, neighborListBuilder, refToCurrentIndexMap, currentToRefIndexMap))
+			_numInvalidParticles.fetchAndAddRelaxed(1);
 	});
 }
 
@@ -332,6 +339,8 @@ void AtomicStrainModifier::retrieveModifierResults(Engine* engine)
 		_invalidParticles = eng->invalidParticles();
 	else
 		_invalidParticles->resize(0);
+
+	_numInvalidParticles = eng->numInvalidParticles();
 }
 
 /******************************************************************************
@@ -354,7 +363,10 @@ ObjectStatus AtomicStrainModifier::applyModifierResults(TimePoint time, TimeInte
 	outputCustomProperty(volumetricStrainValues().name(), qMetaTypeId<FloatType>(), sizeof(FloatType), 1)->setStorage(_volumetricStrainValues.data());
 	outputCustomProperty(shearStrainValues().name(), qMetaTypeId<FloatType>(), sizeof(FloatType), 1)->setStorage(_shearStrainValues.data());
 
-	return ObjectStatus::Success;
+	if(_numInvalidParticles == 0)
+		return ObjectStatus::Success;
+	else
+		return ObjectStatus(ObjectStatus::Warning, tr("Could not compute compute strain tensor for %1 particles. Increase cutoff radius to include more neighbors.").arg(_numInvalidParticles));
 }
 
 /******************************************************************************
@@ -435,7 +447,7 @@ void AtomicStrainModifierEditor::createUI(const RolloutInsertionParameters& roll
 	layout->addWidget(statusLabel());
 
 	// Open a sub-editor for the reference object.
-	new SubObjectParameterUI(this, PROPERTY_FIELD(AtomicStrainModifier::_referenceObject), RolloutInsertionParameters().setTitle(tr("Reference configuration")));
+	new SubObjectParameterUI(this, PROPERTY_FIELD(AtomicStrainModifier::_referenceObject), RolloutInsertionParameters().setTitle(tr("Reference")));
 }
 
 };	// End of namespace

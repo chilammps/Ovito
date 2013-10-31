@@ -50,6 +50,7 @@ public:
 		p._useAvailableSpace = this->_useAvailableSpace;
 		p._intoThisContainer = this->_intoThisContainer;
 		p._afterThisRollout = afterThisRollout;
+		p._title = this->_title;
 		return p;
 	}
 
@@ -59,6 +60,7 @@ public:
 		p._useAvailableSpace = this->_useAvailableSpace;
 		p._intoThisContainer = this->_intoThisContainer;
 		p._beforeThisRollout = beforeThisRollout;
+		p._title = this->_title;
 		return p;
 	}
 

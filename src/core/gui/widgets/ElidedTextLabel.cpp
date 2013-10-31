@@ -60,6 +60,10 @@ void ElidedTextLabel::paintEvent(QPaintEvent *)
     int flags = QStyle::visualAlignment(layoutDirection(), alignment());
     QString elidedText = painter.fontMetrics().elidedText(text(), Qt::ElideLeft, cr.width(), flags);
     style->drawItemText(&painter, cr, flags, palette(), isEnabled(), elidedText, foregroundRole());
+
+    // Use the label's full text as tool tip.
+    if(toolTip() != text())
+    	setToolTip(text());
 }
 
 };

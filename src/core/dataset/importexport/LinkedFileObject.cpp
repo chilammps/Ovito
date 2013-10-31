@@ -112,6 +112,8 @@ bool LinkedFileObject::setSource(const QUrl& newSourceUrl, const FileImporterDes
 ******************************************************************************/
 bool LinkedFileObject::setSource(QUrl sourceUrl, const OORef<LinkedFileImporter>& importer, bool useExactURL)
 {
+	OVITO_CHECK_OBJECT_POINTER(importer);
+
 	if(this->sourceUrl() == sourceUrl && this->importer() == importer)
 		return true;
 

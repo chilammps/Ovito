@@ -26,6 +26,7 @@
 #include <core/gui/properties/PropertiesEditor.h>
 #include <core/gui/properties/PropertiesPanel.h>
 #include <core/gui/widgets/ElidedTextLabel.h>
+#include <core/gui/widgets/ObjectStatusWidget.h>
 
 #include "LinkedFileObject.h"
 
@@ -63,23 +64,22 @@ protected Q_SLOTS:
 	/// Is called when the user presses the Reload animation button.
 	void onReloadAnimation();
 
-	/// Updates the contents of the status label.
+	/// Updates the displayed status information.
 	void updateInformationLabel();
 
 	/// This is called when the user has changed the source URL.
 	void onWildcardPatternEntered();
 
+	/// Is called when the user has selected a certain frame in the frame list box.
+	void onFrameSelected(int index);
+
 private:
 
-	ElidedTextLabel* _sourcePathLabel;
-	ElidedTextLabel* _filenameLabel;
+	QLineEdit* _filenameLabel;
+	QLineEdit* _sourcePathLabel;
 	QLineEdit* _wildcardPatternTextbox;
-	QLabel* _statusTextLabel;
-	QLabel* _statusIconLabel;
-	QGroupBox* _currentFileBox;
-
-	QPixmap _statusWarningIcon;
-	QPixmap _statusErrorIcon;
+	ObjectStatusWidget* _statusLabel;
+	QComboBox* _framesListBox;
 
 	std::vector<OORef<PropertiesEditor>> _subEditors;
 	RolloutInsertionParameters _subEditorRolloutParams;

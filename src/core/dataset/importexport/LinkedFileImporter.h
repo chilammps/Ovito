@@ -164,8 +164,8 @@ private:
 /// \brief Writes an animation frame information record to a binary output stream.
 inline SaveStream& operator<<(SaveStream& stream, const LinkedFileImporter::FrameSourceInformation& frame)
 {
-	stream.beginChunk(0x01);
-	stream << frame.sourceFile << frame.byteOffset << frame.lineNumber << frame.lastModificationTime;
+	stream.beginChunk(0x02);
+	stream << frame.sourceFile << frame.byteOffset << frame.lineNumber << frame.lastModificationTime << frame.label;
 	stream.endChunk();
 	return stream;
 }
@@ -173,8 +173,10 @@ inline SaveStream& operator<<(SaveStream& stream, const LinkedFileImporter::Fram
 /// \brief Reads a box from a binary input stream.
 inline LoadStream& operator>>(LoadStream& stream, LinkedFileImporter::FrameSourceInformation& frame)
 {
-	stream.expectChunk(0x01);
+	int version = stream.expectChunkRange(0, 2);
 	stream >> frame.sourceFile >> frame.byteOffset >> frame.lineNumber >> frame.lastModificationTime;
+	if(version >= 2)
+		stream >> frame.label;
 	stream.closeChunk();
 	return stream;
 }

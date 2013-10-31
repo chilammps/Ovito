@@ -40,9 +40,6 @@ public:
 	/// Default constructor.
 	Q_INVOKABLE AtomicStrainModifier();
 
-	/// Asks the modifier for its validity interval at the given time.
-	virtual TimeInterval modifierValidity(TimePoint time) override;
-
 	/// Returns the object that contains the reference configuration of the particles
 	/// used for calculating the displacement vectors.
 	SceneObject* referenceConfiguration() const { return _referenceObject; }
@@ -162,6 +159,9 @@ private:
 		/// Returns the property storage that contains the selection of invalid particles.
 		ParticleProperty* invalidParticles() const { return _invalidParticles.data(); }
 
+		/// Returns the number of invalid particles for which the strain tensor could not be computed.
+		size_t numInvalidParticles() const { return _numInvalidParticles.load(); }
+
 	private:
 
 		/// Computes the strain tensor of a single particle.
@@ -185,6 +185,7 @@ private:
 		bool _assumeUnwrappedCoordinates;
 		bool _calculateDeformationGradients;
 		bool _calculateStrainTensors;
+		QAtomicInt _numInvalidParticles;
 	};
 
 protected:
@@ -239,6 +240,9 @@ protected:
 
 	/// Controls the whether particles, for which the strain tensor could not be computed, are selected.
 	PropertyField<bool> _selectInvalidParticles;
+
+	/// Counts the number of invalid particles for which the strain tensor could not be computed.
+	size_t _numInvalidParticles;
 
 private:
 

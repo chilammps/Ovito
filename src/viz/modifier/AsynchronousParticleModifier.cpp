@@ -59,6 +59,17 @@ void AsynchronousParticleModifier::modifierInputChanged(ModifierApplication* mod
 }
 
 /******************************************************************************
+* Is called when a RefTarget referenced by this object has generated an event.
+******************************************************************************/
+bool AsynchronousParticleModifier::referenceEvent(RefTarget* source, ReferenceEvent* event)
+{
+	if(event->type() == ReferenceEvent::TargetChanged || event->type() == ReferenceEvent::PendingStateChanged) {
+		invalidateCachedResults();
+	}
+	return ParticleModifier::referenceEvent(source, event);
+}
+
+/******************************************************************************
 * Invalidates the modifier's result cache so that the results will be recomputed
 * next time the modifier is evaluated.
 ******************************************************************************/

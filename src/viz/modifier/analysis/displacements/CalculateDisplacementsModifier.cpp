@@ -132,8 +132,7 @@ ObjectStatus CalculateDisplacementsModifier::modifyParticles(TimePoint time, Tim
 			refState = linkedFileObj->requestFrame(referenceFrame);
 		}
 	}
-	else
-		refState = referenceConfiguration()->evaluate(referenceFrame * AnimManager::instance().ticksPerFrame());
+	else refState = referenceConfiguration()->evaluate(referenceFrame * AnimManager::instance().ticksPerFrame());
 
 	// Make sure the obtained reference configuration is valid and ready to use.
 	if(refState.status().type() == ObjectStatus::Error)
@@ -337,7 +336,7 @@ void CalculateDisplacementsModifierEditor::createUI(const RolloutInsertionParame
 	layout->addWidget(showReferenceUI->checkBox());
 #endif
 
-	QGroupBox* referenceFrameGroupBox = new QGroupBox(tr("Reference animation frame"));
+	QGroupBox* referenceFrameGroupBox = new QGroupBox(tr("Reference frame"));
 	layout->addWidget(referenceFrameGroupBox);
 
 	QGridLayout* sublayout = new QGridLayout(referenceFrameGroupBox);
@@ -376,7 +375,7 @@ void CalculateDisplacementsModifierEditor::createUI(const RolloutInsertionParame
 	new SubObjectParameterUI(this, PROPERTY_FIELD(CalculateDisplacementsModifier::_vectorDisplay), rolloutParams.after(rollout));
 
 	// Open a sub-editor for the reference object.
-	new SubObjectParameterUI(this, PROPERTY_FIELD(CalculateDisplacementsModifier::_referenceObject), RolloutInsertionParameters().setTitle(tr("Reference configuration")));
+	new SubObjectParameterUI(this, PROPERTY_FIELD(CalculateDisplacementsModifier::_referenceObject), RolloutInsertionParameters().setTitle(tr("Reference")));
 }
 
 };	// End of namespace

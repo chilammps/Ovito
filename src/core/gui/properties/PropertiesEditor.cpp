@@ -48,20 +48,25 @@ QWidget* PropertiesEditor::createRollout(const QString& title, const RolloutInse
 	_rollouts.add(panel);
 	if(params.container() == nullptr) {
 
+		// Let the rollout-insertion parameters set the rollout title prefix.
+		QString titlePrefix;
+		if(!params.title().isEmpty())
+			titlePrefix = QString("%1: ").arg(params.title());
+
 		// Create a new rollout in the rollout container.
-		QPointer<Rollout> rollout = container()->addRollout(panel, title, params);
+		QPointer<Rollout> rollout = container()->addRollout(panel, titlePrefix + title, params);
 
 		// Check if a title for the rollout has been specified. If not,
 		// automatically set the rollout title to the title of the object being edited.
 		if(title.isEmpty()) {
 
 			if(editObject())
-				rollout->setTitle(editObject()->objectTitle());
+				rollout->setTitle(titlePrefix + editObject()->objectTitle());
 
 			// Automatically update rollout title each time a new object is loaded into the editor.
-			connect(this, &PropertiesEditor::contentsReplaced, [rollout](RefTarget* target) {
+			connect(this, &PropertiesEditor::contentsReplaced, [rollout, titlePrefix](RefTarget* target) {
 				if(rollout && target)
-					rollout->setTitle(target->objectTitle());
+					rollout->setTitle(titlePrefix + target->objectTitle());
 			});
 
 		}
