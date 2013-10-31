@@ -145,7 +145,7 @@ public:
 	QuaternionT& operator/=(T s) { x() /= s; y() /= s; z() /= s; w() /= s; return *this; }
 
 	/// \brief Computes the scalar product of two quaternions.
-	Q_DECL_CONSTEXPR T dot(const QuaternionT& b) const { return x()*b.y() + y()*b.y() + z()*b.z() + w()*b.w(); }
+	Q_DECL_CONSTEXPR T dot(const QuaternionT& b) const { return x()*b.x() + y()*b.y() + z()*b.z() + w()*b.w(); }
 
 	/// \brief Normalizes this quaternion to unit length.
 	inline void normalize() {
@@ -288,9 +288,9 @@ template<typename T>
 inline Vector_3<T> operator*(const QuaternionT<T>& q, const Vector_3<T>& v)
 {
 	OVITO_ASSERT_MSG(std::fabs(q.dot(q) - T(1)) <= T(FLOATTYPE_EPSILON), "Vector rotation", "Quaternion must be normalized.");
-	return Matrix3(1.0 - 2.0*(q.y()*q.y() + q.z()*q.z()),       2.0*(q.x()*q.y() - q.w()*q.z()),       2.0*(q.x()*q.z() + q.w()*q.y()),
-			         2.0*(q.x()*q.y() + q.w()*q.z()), 1.0 - 2.0*(q.x()*q.x() + q.z()*q.z()),       2.0*(q.y()*q.z() - q.w()*q.x()),
-		             2.0*(q.x()*q.z() - q.w()*q.y()),       2.0*(q.y()*q.z() + q.w()*q.x()), 1.0 - 2.0*(q.x()*q.x() + q.y()*q.y())) * v;
+	return Matrix3(T(1) - T(2)*(q.y()*q.y() + q.z()*q.z()),        T(2)*(q.x()*q.y() - q.w()*q.z()),        T(2)*(q.x()*q.z() + q.w()*q.y()),
+						  T(2)*(q.x()*q.y() + q.w()*q.z()), T(1) - T(2)*(q.x()*q.x() + q.z()*q.z()),        T(2)*(q.y()*q.z() - q.w()*q.x()),
+						  T(2)*(q.x()*q.z() - q.w()*q.y()),        T(2)*(q.y()*q.z() + q.w()*q.x()), T(1) - T(2)*(q.x()*q.x() + q.y()*q.y())) * v;
 }
 
 /// \brief Writes a quaternion to a text output stream.
