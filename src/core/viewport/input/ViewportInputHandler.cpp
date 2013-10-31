@@ -67,6 +67,22 @@ void ViewportInputHandler::activateTemporaryNavigationMode(ViewportInputHandler*
 }
 
 /******************************************************************************
+* Deactivates the temporary navigation mode if active.
+******************************************************************************/
+void ViewportInputHandler::deactivateTemporaryNavigationMode()
+{
+	if(temporaryNavigationMode()) {
+		temporaryNavigationMode()->deactivated();
+		if(temporaryNavigationMode()->hasOverlay())
+			ViewportManager::instance().updateViewports();
+		_temporaryNavMode = nullptr;
+		if(this->hasOverlay())
+			ViewportManager::instance().updateViewports();
+		ViewportInputManager::instance().updateViewportCursor();
+	}
+}
+
+/******************************************************************************
 * Sets the mouse cursor shown in the viewport windows
 * while this input handler is active.
 ******************************************************************************/
@@ -88,9 +104,12 @@ void ViewportInputHandler::mousePressEvent(Viewport* vp, QMouseEvent* event)
 			if(handlerType() != EXCLUSIVE) {
 				ViewportInputManager::instance().removeInputHandler(this);
 			}
-			else {
+			else if(temporaryNavigationMode() == nullptr) {
 				activateTemporaryNavigationMode(PanMode::instance());
 				temporaryNavigationMode()->mousePressEvent(vp, event);
+			}
+			else {
+				deactivateTemporaryNavigationMode();
 			}
 			event->accept();
 		}
@@ -114,13 +133,7 @@ void ViewportInputHandler::mouseReleaseEvent(Viewport* vp, QMouseEvent* event)
 	_lastMousePressEvent.reset();
 	if(temporaryNavigationMode()) {
 		temporaryNavigationMode()->mouseReleaseEvent(vp, event);
-		temporaryNavigationMode()->deactivated();
-		if(temporaryNavigationMode()->hasOverlay())
-			ViewportManager::instance().updateViewports();
-		_temporaryNavMode = nullptr;
-		if(this->hasOverlay())
-			ViewportManager::instance().updateViewports();
-		ViewportInputManager::instance().updateViewportCursor();
+		deactivateTemporaryNavigationMode();
 		event->accept();
 	}
 }

@@ -46,21 +46,31 @@ DEFINE_FLAGS_REFERENCE_FIELD(LinkedFileObject, _importer, "Importer", LinkedFile
 DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(LinkedFileObject, _sceneObjects, "SceneObjects", SceneObject, PROPERTY_FIELD_ALWAYS_DEEP_COPY)
 DEFINE_PROPERTY_FIELD(LinkedFileObject, _adjustAnimationIntervalEnabled, "AdjustAnimationIntervalEnabled")
 DEFINE_FLAGS_PROPERTY_FIELD(LinkedFileObject, _sourceUrl, "SourceUrl", PROPERTY_FIELD_NO_UNDO)
+DEFINE_PROPERTY_FIELD(LinkedFileObject, _playbackSpeedNumerator, "PlaybackSpeedNumerator")
+DEFINE_PROPERTY_FIELD(LinkedFileObject, _playbackSpeedDenominator, "PlaybackSpeedDenominator")
+DEFINE_PROPERTY_FIELD(LinkedFileObject, _playbackStartTime, "PlaybackStartTime")
 SET_PROPERTY_FIELD_LABEL(LinkedFileObject, _importer, "File Importer")
 SET_PROPERTY_FIELD_LABEL(LinkedFileObject, _sceneObjects, "Objects")
-SET_PROPERTY_FIELD_LABEL(LinkedFileObject, _adjustAnimationIntervalEnabled, "Adjust animation interval")
+SET_PROPERTY_FIELD_LABEL(LinkedFileObject, _adjustAnimationIntervalEnabled, "Auto-adjust animation interval")
 SET_PROPERTY_FIELD_LABEL(LinkedFileObject, _sourceUrl, "Source location")
+SET_PROPERTY_FIELD_LABEL(LinkedFileObject, _playbackSpeedNumerator, "Playback speed numerator")
+SET_PROPERTY_FIELD_LABEL(LinkedFileObject, _playbackSpeedDenominator, "Playback speed denominator")
+SET_PROPERTY_FIELD_LABEL(LinkedFileObject, _playbackStartTime, "Playback start time")
 
 /******************************************************************************
 * Constructs the object.
 ******************************************************************************/
 LinkedFileObject::LinkedFileObject() :
-	_adjustAnimationIntervalEnabled(true), _loadedFrame(-1), _frameBeingLoaded(-1)
+	_adjustAnimationIntervalEnabled(true), _loadedFrame(-1), _frameBeingLoaded(-1),
+	_playbackSpeedNumerator(1), _playbackSpeedDenominator(1), _playbackStartTime(0)
 {
 	INIT_PROPERTY_FIELD(LinkedFileObject::_importer);
 	INIT_PROPERTY_FIELD(LinkedFileObject::_sceneObjects);
 	INIT_PROPERTY_FIELD(LinkedFileObject::_adjustAnimationIntervalEnabled);
 	INIT_PROPERTY_FIELD(LinkedFileObject::_sourceUrl);
+	INIT_PROPERTY_FIELD(LinkedFileObject::_playbackSpeedNumerator);
+	INIT_PROPERTY_FIELD(LinkedFileObject::_playbackSpeedDenominator);
+	INIT_PROPERTY_FIELD(LinkedFileObject::_playbackStartTime);
 
 	connect(&_loadFrameOperationWatcher, &FutureWatcher::finished, this, &LinkedFileObject::loadOperationFinished);
 
@@ -250,11 +260,34 @@ void LinkedFileObject::cancelLoadOperation()
 }
 
 /******************************************************************************
+* Given an animation time, computes the input frame index to be shown at that time.
+******************************************************************************/
+int LinkedFileObject::animationTimeToInputFrame(TimePoint time) const
+{
+	int animFrame = AnimManager::instance().timeToFrame(time);
+	return (animFrame - _playbackStartTime) *
+			std::max(1, (int)_playbackSpeedNumerator) /
+			std::max(1, (int)_playbackSpeedDenominator);
+}
+
+/******************************************************************************
+* Given an input frame index, returns the animation time at which it is shown.
+******************************************************************************/
+TimePoint LinkedFileObject::inputFrameToAnimationTime(int frame) const
+{
+	int animFrame = frame *
+			std::max(1, (int)_playbackSpeedDenominator) /
+			std::max(1, (int)_playbackSpeedNumerator) +
+			_playbackStartTime;
+	return AnimManager::instance().frameToTime(animFrame);
+}
+
+/******************************************************************************
 * Asks the object for the result of the geometry pipeline at the given time.
 ******************************************************************************/
 PipelineFlowState LinkedFileObject::evaluate(TimePoint time)
 {
-	return requestFrame(AnimManager::instance().timeToFrame(time));
+	return requestFrame(animationTimeToInputFrame(time));
 }
 
 /******************************************************************************
@@ -269,9 +302,9 @@ PipelineFlowState LinkedFileObject::requestFrame(int frame)
 	// Determine validity interval of the returned state.
 	TimeInterval interval = TimeInterval::forever();
 	if(frame > 0)
-		interval.setStart(AnimManager::instance().frameToTime(frame));
+		interval.setStart(inputFrameToAnimationTime(frame));
 	if(frame < numberOfFrames() - 1)
-		interval.setEnd(AnimManager::instance().frameToTime(frame+1)-1);
+		interval.setEnd(inputFrameToAnimationTime(frame+1)-1);
 
 	bool oldLoadingTaskWasCanceled = false;
 	if(_frameBeingLoaded != -1) {
@@ -412,24 +445,22 @@ void LinkedFileObject::adjustAnimationInterval(int gotoFrameIndex)
 	DataSet* dataset = *datasets.cbegin();
 	AnimationSettings* animSettings = dataset->animationSettings();
 
-	animSettings->clearNamedFrames();
-	for(int frameIndex = 0; frameIndex < _frames.size(); frameIndex++) {
-		if(!_frames[frameIndex].label.isEmpty())
-			animSettings->assignFrameName(frameIndex, _frames[frameIndex].label);
+	int numFrames = std::max(1, numberOfFrames());
+	TimeInterval interval(inputFrameToAnimationTime(0), inputFrameToAnimationTime(numberOfFrames()-1));
+	animSettings->setAnimationInterval(interval);
+	if(gotoFrameIndex >= 0 && gotoFrameIndex < numberOfFrames()) {
+		animSettings->setTime(inputFrameToAnimationTime(gotoFrameIndex));
 	}
+	else if(animSettings->time() > interval.end())
+		animSettings->setTime(interval.end());
+	else if(animSettings->time() < interval.start())
+		animSettings->setTime(interval.start());
 
-	if(numberOfFrames() > 1) {
-		TimeInterval interval(0, (numberOfFrames()-1) * animSettings->ticksPerFrame());
-		animSettings->setAnimationInterval(interval);
-		if(gotoFrameIndex >= 0 && gotoFrameIndex < numberOfFrames()) {
-			animSettings->setTime(gotoFrameIndex * animSettings->ticksPerFrame());
-		}
-		else if(animSettings->time() > interval.end())
-			animSettings->setTime(interval.end());
-	}
-	else {
-		animSettings->setAnimationInterval(0);
-		animSettings->setTime(0);
+	animSettings->clearNamedFrames();
+	for(int animFrame = animSettings->timeToFrame(interval.start()); animFrame <= animSettings->timeToFrame(interval.end()); animFrame++) {
+		int inputFrame = animationTimeToInputFrame(animSettings->frameToTime(animFrame));
+		if(inputFrame >= 0 && inputFrame < _frames.size() && !_frames[inputFrame].label.isEmpty())
+			animSettings->assignFrameName(animFrame, _frames[inputFrame].label);
 	}
 }
 
@@ -514,6 +545,20 @@ void LinkedFileObject::referenceRemoved(const PropertyFieldDescriptor& field, Re
 		notifyDependents(ReferenceEvent::SubobjectListChanged);
 
 	SceneObject::referenceRemoved(field, newTarget, listIndex);
+}
+
+/******************************************************************************
+* Is called when the value of a property of this object has changed.
+******************************************************************************/
+void LinkedFileObject::propertyChanged(const PropertyFieldDescriptor& field)
+{
+	if(field == PROPERTY_FIELD(LinkedFileObject::_adjustAnimationIntervalEnabled) ||
+			field == PROPERTY_FIELD(LinkedFileObject::_playbackSpeedNumerator) ||
+			field == PROPERTY_FIELD(LinkedFileObject::_playbackSpeedDenominator) ||
+			field == PROPERTY_FIELD(LinkedFileObject::_playbackStartTime)) {
+		adjustAnimationInterval();
+	}
+	SceneObject::propertyChanged(field);
 }
 
 /******************************************************************************

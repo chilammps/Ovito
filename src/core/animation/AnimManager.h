@@ -146,7 +146,7 @@ public:
 
 	/// \brief Sets the number of time ticks per frame.
 	/// \param ticksPerFrame The number of time tick units per animation frame.
-	///                      Thsi must be a positive value.
+	///                      This must be a positive value.
 	/// \undoable
 	/// 
 	/// This setting controls the playback speed of the animation.

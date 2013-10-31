@@ -116,6 +116,9 @@ protected:
 	/// The current viewport we are working in.
 	Viewport* _viewport;
 
+	/// The cached orbit center as determined when the navigation mode was activated.
+	Point3 _currentOrbitCenter;
+
 	/// Indicates around which point the camera should orbit.
 	static OrbitCenterMode _orbitCenterMode;
 

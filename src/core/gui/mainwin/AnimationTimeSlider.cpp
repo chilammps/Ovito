@@ -158,7 +158,7 @@ void AnimationTimeSlider::mouseMoveEvent(QMouseEvent* event)
 
 	int rectWidth = frameRect().width() - 2*frameWidth();
 	TimeInterval interval = AnimManager::instance().animationInterval();
-	TimePoint newTime = (TimePoint)((qint64)newPos * (qint64)(interval.duration() + 1) / (qint64)(rectWidth - thumbSize));
+	TimePoint newTime = (TimePoint)((qint64)newPos * (qint64)(interval.duration() + 1) / (qint64)(rectWidth - thumbSize)) + interval.start();
 
 	// Clamp new time to animation interval.
 	newTime = std::max(newTime, interval.start());
@@ -180,7 +180,8 @@ void AnimationTimeSlider::mouseMoveEvent(QMouseEvent* event)
 	else if(interval.duration() > 0) {
 		if(thumbRectangle().contains(event->pos()) == false) {
 			QString frameName = DataSetManager::instance().currentSet()->animationSettings()->namedFrames()[newFrame];
-			FloatType percentage = (FloatType)(AnimManager::instance().frameToTime(newFrame) - AnimManager::instance().animationInterval().start()) / (FloatType)(AnimManager::instance().animationInterval().duration() + 1);
+			FloatType percentage = (FloatType)(AnimManager::instance().frameToTime(newFrame) - AnimManager::instance().animationInterval().start())
+					/ (FloatType)(AnimManager::instance().animationInterval().duration() + 1);
 			QRect clientRect = frameRect();
 			clientRect.adjust(frameWidth(), frameWidth(), -frameWidth(), -frameWidth());
 			int clientWidth = clientRect.width() - thumbWidth();

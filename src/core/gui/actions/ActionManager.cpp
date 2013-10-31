@@ -77,7 +77,7 @@ ActionManager::ActionManager()
 	createCommandAction(ACTION_ANIMATION_SETTINGS, tr("Animation Settings"), ":/core/actions/animation/animation_settings.png");
 	createViewportModeAction(ACTION_TOGGLE_ANIMATION_PLAYBACK, createAnimationPlaybackViewportMode(), tr("Play Animation"), ":/core/actions/animation/play_animation.png");
 
-	// Create action that toggles animation mode.
+	// Create action that toggles animation mode on or off.
 	QAction* animModeAction = createCommandAction(ACTION_ANIMATION_MODE_TOGGLE, tr("Animation Mode"), ":/core/actions/animation/animation_mode.png");
 	animModeAction->setCheckable(true);
 	animModeAction->setChecked(AnimManager::instance().animationMode());

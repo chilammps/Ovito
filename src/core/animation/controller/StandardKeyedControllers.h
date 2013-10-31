@@ -148,10 +148,20 @@ public:
 
 		if(!AnimManager::instance().isAnimating()) {
 			if(_keys.size() == 1 && isAbsoluteValue) {
+#if 1
+				if(isAbsoluteValue) deltaValue -= oldValue;
+				ValueType s = _keys.begin()->second;
+				s += deltaValue;
+				if(s != newValue) {
+					qDebug() << "oldValue=" << _keys.begin()->second;
+					qDebug() << "newValue=" << newValue;
+					qDebug() << "delta=" << deltaValue;
+					qDebug() << "s=" << s;
+				}
+#endif
 				_keys.begin()->second = newValue;
 			}
 			else {
-
 				if(isAbsoluteValue) deltaValue -= oldValue;
 				// Apply delta value to all keys.
 				for(auto key = _keys.begin(); key != _keys.end(); ++key)

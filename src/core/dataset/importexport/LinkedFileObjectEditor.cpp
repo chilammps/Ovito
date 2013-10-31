@@ -23,6 +23,7 @@
 #include <core/gui/properties/FilenameParameterUI.h>
 #include <core/gui/properties/BooleanParameterUI.h>
 #include <core/gui/properties/BooleanActionParameterUI.h>
+#include <core/gui/properties/IntegerParameterUI.h>
 #include <core/gui/properties/SubObjectParameterUI.h>
 #include "LinkedFileObjectEditor.h"
 
@@ -85,7 +86,7 @@ void LinkedFileObjectEditor::createUI(const RolloutInsertionParameters& rolloutP
 	sublayout->addWidget(_statusLabel);
 
 	// Create another rollout for animation settings.
-	rollout = createRollout(tr("Frame sequence"), rolloutParams.after(rollout));
+	rollout = createRollout(tr("Frame sequence"), rolloutParams.after(rollout).collapse());
 
 	// Create the rollout contents.
 	layout = new QVBoxLayout(rollout);
@@ -100,14 +101,43 @@ void LinkedFileObjectEditor::createUI(const RolloutInsertionParameters& rolloutP
 	connect(_wildcardPatternTextbox, SIGNAL(returnPressed()), this, SLOT(onWildcardPatternEntered()));
 	sublayout->addWidget(_wildcardPatternTextbox);
 
-	QGroupBox* frameSequenceBox = new QGroupBox(tr("Frames"), rollout);
+	QGroupBox* frameSequenceBox = new QGroupBox(tr("Input frames"), rollout);
 	layout->addWidget(frameSequenceBox);
 	sublayout = new QVBoxLayout(frameSequenceBox);
 	sublayout->setContentsMargins(4,4,4,4);
+
+	QHBoxLayout* subsublayout = new QHBoxLayout();
+	subsublayout->setContentsMargins(0,0,0,0);
+	subsublayout->setSpacing(2);
+	subsublayout->addWidget(new QLabel(tr("Current:")));
 	_framesListBox = new QComboBox();
 	_framesListBox->setEditable(false);
+	_framesListBox->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
 	connect(_framesListBox, SIGNAL(activated(int)), this, SLOT(onFrameSelected(int)));
-	sublayout->addWidget(_framesListBox);
+	subsublayout->addWidget(_framesListBox, 1);
+	sublayout->addLayout(subsublayout);
+
+	subsublayout = new QHBoxLayout();
+	subsublayout->setContentsMargins(0,0,0,0);
+	subsublayout->setSpacing(2);
+	IntegerParameterUI* playbackSpeedNumeratorUI = new IntegerParameterUI(this, PROPERTY_FIELD(LinkedFileObject::_playbackSpeedNumerator));
+	playbackSpeedNumeratorUI->setMinValue(1);
+	subsublayout->addWidget(new QLabel(tr("Playback speed:")));
+	subsublayout->addWidget(playbackSpeedNumeratorUI->textBox());
+	subsublayout->addWidget(playbackSpeedNumeratorUI->spinner());
+	subsublayout->addWidget(new QLabel(tr("/")));
+	IntegerParameterUI* playbackSpeedDenominatorUI = new IntegerParameterUI(this, PROPERTY_FIELD(LinkedFileObject::_playbackSpeedDenominator));
+	playbackSpeedDenominatorUI->setMinValue(1);
+	subsublayout->addWidget(playbackSpeedDenominatorUI->textBox());
+	subsublayout->addWidget(playbackSpeedDenominatorUI->spinner());
+	sublayout->addLayout(subsublayout);
+
+	subsublayout = new QHBoxLayout();
+	subsublayout->setContentsMargins(0,0,0,0);
+	IntegerParameterUI* playbackStartUI = new IntegerParameterUI(this, PROPERTY_FIELD(LinkedFileObject::_playbackStartTime));
+	subsublayout->addWidget(new QLabel(tr("Start at animation frame:")));
+	subsublayout->addLayout(playbackStartUI->createFieldLayout());
+	sublayout->addLayout(subsublayout);
 
 	BooleanParameterUI* adjustAnimIntervalUI = new BooleanParameterUI(this, PROPERTY_FIELD(LinkedFileObject::_adjustAnimationIntervalEnabled));
 	sublayout->addWidget(adjustAnimIntervalUI->checkBox());
@@ -284,7 +314,7 @@ void LinkedFileObjectEditor::onFrameSelected(int index)
 	LinkedFileObject* obj = static_object_cast<LinkedFileObject>(editObject());
 	if(!obj) return;
 
-	AnimManager::instance().setTime(AnimManager::instance().frameToTime(index));
+	AnimManager::instance().setTime(obj->inputFrameToAnimationTime(index));
 }
 
 /******************************************************************************

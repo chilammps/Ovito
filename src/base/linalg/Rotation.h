@@ -109,11 +109,11 @@ public:
 		}
 		else {
 			if(q.w() < T(-1))
-				_angle = T(M_PI) * 2;
+				_angle = T(M_PI) * T(2);
 			else if(q.w() > T(1))
 				_angle = T(0);
 			else
-				_angle = acos(q.w()) * 2;
+				_angle = acos(q.w()) * T(2);
 			_axis = Vector_3<T>(q.x(), q.y(), q.z()) / (T)sqrt(scaleSquared);
 			OVITO_ASSERT(std::abs(_axis.squaredLength() - T(1)) <= T(FLOATTYPE_EPSILON));
 		}
@@ -165,7 +165,7 @@ public:
 	///
 	/// Please note that any extra revolutions are lost by this conversion.
 	explicit operator QuaternionT<T>() const {
-		T omega = _angle * 0.5;
+		T omega = _angle * T(0.5);
 		T s = sin(omega);
 		return QuaternionT<T>(_axis.x() * s, _axis.y() * s, _axis.z() * s, cos(omega)).normalized();
 	}

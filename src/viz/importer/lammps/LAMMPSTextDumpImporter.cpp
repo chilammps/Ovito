@@ -153,6 +153,28 @@ void LAMMPSTextDumpImporter::scanFileForTimesteps(FutureInterfaceBase& futureInt
 ******************************************************************************/
 void LAMMPSTextDumpImporter::LAMMPSTextDumpImportTask::parseFile(FutureInterfaceBase& futureInterface, CompressedTextParserStream& stream)
 {
+#if 0
+//	Rotation rold(Vector3(1,2,3), 0.5f);
+//	Rotation rnew(Vector3(-2,0,3), -0.5f);
+	Rotation rold(Vector3(1,2,3), 0.5f);
+	Rotation rnew(Vector3(1,2,3), 0.2f);
+//	Rotation delta = rnew;
+//	delta -= rold;
+	Rotation delta = rnew * rold.inverse();
+
+	Quaternion qold(rold);
+	Quaternion qold_inv(rold.inverse());
+	Quaternion qnew(rnew);
+	Quaternion qdelta = qnew * qold_inv;
+	Quaternion qnew2 = qdelta * qold;
+
+	qDebug() << "old=" << rold <<  "quat=" << qold << "rot=" << Rotation(qold);
+	qDebug() << "old.inverse=" << rold.inverse() <<  "quat=" << Quaternion(qold_inv);
+	qDebug() << "new=" << rnew <<  "quat=" << Quaternion(qnew) << "rot=" << Rotation(qnew);
+	qDebug() << "delta=" << delta <<  "quat=" << Quaternion(qdelta) << "rot=" << Rotation(qdelta);
+	rold += delta;
+	qDebug() << "old+delta" << rold << " quat=" << qnew2 << "rot=" << Rotation(qnew2);
+#endif
 	futureInterface.setProgressText(tr("Reading LAMMPS dump file %1").arg(frame().sourceFile.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
 
 	// Regular expression for whitespace characters.

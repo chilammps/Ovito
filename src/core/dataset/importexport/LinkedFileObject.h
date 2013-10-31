@@ -77,6 +77,12 @@ public:
 	/// \brief Returns the list of animation frames in the input file(s).
 	const QVector<LinkedFileImporter::FrameSourceInformation>& frames() const { return _frames; }
 
+	/// \brief Given an animation time, computes the input frame index to be shown at that time.
+	int animationTimeToInputFrame(TimePoint time) const;
+
+	/// \brief Given an input frame index, returns the animation time at which it is shown.
+	TimePoint inputFrameToAnimationTime(int frame) const;
+
 	/// \brief Returns whether the scene's animation interval is being adjusted to the number of frames reported by the file parser.
 	bool adjustAnimationIntervalEnabled() const { return _adjustAnimationIntervalEnabled; }
 
@@ -168,6 +174,9 @@ protected:
 	/// Is called when a RefTarget has been added to a VectorReferenceField of this RefMaker.
 	virtual void referenceRemoved(const PropertyFieldDescriptor& field, RefTarget* newTarget, int listIndex) override;
 
+	/// Is called when the value of a property of this object has changed.
+	virtual void propertyChanged(const PropertyFieldDescriptor& field) override;
+
 	/// \brief Saves the class' contents to the given stream.
 	virtual void saveToStream(ObjectSaveStream& stream) override;
 
@@ -190,6 +199,15 @@ private:
 
 	/// The source file (may include a wild-card pattern).
 	PropertyField<QUrl, QUrl, ReferenceEvent::TitleChanged> _sourceUrl;
+
+	/// Controls the mapping of input file frames to animation frames (i.e. the numerator of the playback rate for the file sequence).
+	PropertyField<int> _playbackSpeedNumerator;
+
+	/// Controls the mapping of input file frames to animation frames (i.e. the denominator of the playback rate for the file sequence).
+	PropertyField<int> _playbackSpeedDenominator;
+
+	/// Specifies the starting animation frame to which the first frame of the file sequence is mapped.
+	PropertyField<int> _playbackStartTime;
 
 	/// Stores the list of animation frames in the input file(s).
 	QVector<LinkedFileImporter::FrameSourceInformation> _frames;
@@ -218,6 +236,9 @@ private:
 	DECLARE_VECTOR_REFERENCE_FIELD(_sceneObjects);
 	DECLARE_PROPERTY_FIELD(_adjustAnimationIntervalEnabled);
 	DECLARE_PROPERTY_FIELD(_sourceUrl);
+	DECLARE_PROPERTY_FIELD(_playbackSpeedNumerator);
+	DECLARE_PROPERTY_FIELD(_playbackSpeedDenominator);
+	DECLARE_PROPERTY_FIELD(_playbackStartTime);
 };
 
 };

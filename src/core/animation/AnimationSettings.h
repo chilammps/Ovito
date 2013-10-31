@@ -112,6 +112,16 @@ public:
 	/// \sa ticksPerFrame()
 	void setTicksPerFrame(int ticksPerFrame) { _ticksPerFrame = ticksPerFrame; }
 
+	/// \brief Converts an animation frame number to a time value.
+	/// \param frame A frame number starting at 0.
+	/// \return The animation time at which the animation frame begins.
+	TimePoint frameToTime(int frame) const { return frame * ticksPerFrame(); }
+
+	/// \brief Converts a time value to an animation frame number.
+	/// \param time A time in ticks units.
+	/// \return The animation frame that corresponds to the given time.
+	int timeToFrame(TimePoint time) const { return time / ticksPerFrame(); }
+
 	/// \brief Returns the playback speed factor that is used for animation playback in the viewports.
 	/// \return The playback speed factor. A value greater than 1 means that the animation is played at a speed higher
 	///         than realtime whereas a value smaller than -1 means that the animation is played at a speed lower than realtime.

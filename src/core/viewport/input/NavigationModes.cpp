@@ -54,7 +54,7 @@ void NavigationMode::deactivated()
 		_viewport->setCameraPosition(_oldCameraPosition);
 		_viewport->setCameraDirection(_oldCameraDirection);
 		_viewport->setFieldOfView(_oldFieldOfView);
-		_viewport = NULL;
+		_viewport = nullptr;
 
 		OVITO_ASSERT(UndoManager::instance().isRecording());
 		UndoManager::instance().currentCompoundOperation()->clear();
@@ -81,6 +81,7 @@ void NavigationMode::mousePressEvent(Viewport* vp, QMouseEvent* event)
 		_oldFieldOfView = vp->fieldOfView();
 		_oldViewMatrix = vp->viewMatrix();
 		_oldInverseViewMatrix = vp->inverseViewMatrix();
+		_currentOrbitCenter = orbitCenter();
 		UndoManager::instance().beginCompoundOperation(tr("Modify camera"));
 	}
 }
@@ -215,7 +216,7 @@ void PanMode::modifyView(Viewport* vp, QPointF delta)
 {
 	FloatType scaling;
 	if(vp->isPerspectiveProjection())
-		scaling = 10.0f * vp->nonScalingSize(OrbitMode::instance()->orbitCenter()) / vp->size().height();
+		scaling = 10.0f * vp->nonScalingSize(_currentOrbitCenter) / vp->size().height();
 	else
 		scaling = 2.0f * _oldFieldOfView * vp->viewportWindow()->devicePixelRatio() / vp->size().height();
 	FloatType deltaX = -scaling * delta.x();
@@ -390,8 +391,8 @@ void OrbitMode::modifyView(Viewport* vp, QPointF delta)
 	else if(phi + deltaPhi > FLOATTYPE_PI - FLOATTYPE_EPSILON)
 		deltaPhi = FLOATTYPE_PI - FLOATTYPE_EPSILON - phi;
 
-	Vector3 t1 = orbitCenter() - Point3::Origin();
-	Vector3 t2 = (_oldViewMatrix * orbitCenter()) - Point3::Origin();
+	Vector3 t1 = _currentOrbitCenter - Point3::Origin();
+	Vector3 t2 = (_oldViewMatrix * _currentOrbitCenter) - Point3::Origin();
 	AffineTransformation newTM =
 			AffineTransformation::translation(t1) *
 			AffineTransformation::rotation(Rotation(ViewportSettings::getSettings().upVector(), -deltaTheta)) *

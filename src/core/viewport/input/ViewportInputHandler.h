@@ -124,6 +124,9 @@ public:
 	/// \brief Activates the given temporary navigation mode.
 	void activateTemporaryNavigationMode(ViewportInputHandler* mode);
 
+	/// \brief Deactivates the temporary navigation mode if active.
+	void deactivateTemporaryNavigationMode();
+
 	/// \brief Indicates whether this input mode renders 3d geometry into the viewports.
 	/// \return \c true if the renderOverlay3D() method has been overridden for this class; \c false otherwise.
 	///
