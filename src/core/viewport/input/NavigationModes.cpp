@@ -147,12 +147,7 @@ void NavigationMode::setUserOrbitCenter(const Point3& center)
 Point3 NavigationMode::orbitCenter()
 {
 	// Update orbiting center.
-	if(orbitCenterMode() == ORBIT_CONSTRUCTION_PLANE) {
-		Box3 sceneBoundingBox = DataSetManager::instance().currentSet()->sceneRoot()->worldBoundingBox(AnimManager::instance().time());
-		if(!sceneBoundingBox.isEmpty())
-			return sceneBoundingBox.center();
-	}
-	else if(orbitCenterMode() == ORBIT_SELECTION_CENTER) {
+	if(orbitCenterMode() == ORBIT_SELECTION_CENTER) {
 		Box3 selectionBoundingBox;
 		for(SceneNode* node : DataSetManager::instance().currentSelection()->nodes()) {
 			selectionBoundingBox.addBox(node->worldBoundingBox(AnimManager::instance().time()));

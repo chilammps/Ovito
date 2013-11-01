@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include <core/reference/RefTarget.h>
 #include <core/gui/properties/PropertiesEditor.h>
-#include <core/gui/widgets/RolloutContainer.h>
+#include <core/gui/widgets/general/RolloutContainer.h>
 
 namespace Ovito {
 

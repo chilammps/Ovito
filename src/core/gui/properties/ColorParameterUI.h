@@ -23,7 +23,7 @@
 #define __OVITO_COLOR_PARAMETER_UI_H
 
 #include <core/Core.h>
-#include <core/gui/widgets/ColorPickerWidget.h>
+#include <core/gui/widgets/general/ColorPickerWidget.h>
 #include "ParameterUI.h"
 
 namespace Ovito {

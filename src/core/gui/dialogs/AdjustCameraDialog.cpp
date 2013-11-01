@@ -21,7 +21,7 @@
 
 #include <core/Core.h>
 #include <core/viewport/Viewport.h>
-#include <core/gui/widgets/SpinnerWidget.h>
+#include <core/gui/widgets/general/SpinnerWidget.h>
 #include <core/utilities/units/UnitsManager.h>
 #include "AdjustCameraDialog.h"
 

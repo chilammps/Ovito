@@ -26,7 +26,7 @@
 #include <core/rendering/RenderSettings.h>
 #include <core/rendering/FrameBuffer.h>
 #include <core/rendering/SceneRenderer.h>
-#include <core/gui/widgets/FrameBufferWindow.h>
+#include <core/gui/widgets/rendering/FrameBufferWindow.h>
 #include <core/gui/mainwin/MainWindow.h>
 #include <core/gui/app/Application.h>
 #include <core/dataset/DataSetManager.h>

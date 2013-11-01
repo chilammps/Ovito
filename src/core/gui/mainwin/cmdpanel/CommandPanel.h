@@ -23,7 +23,7 @@
 #define __OVITO_COMMAND_PANEL_H
 
 #include <core/Core.h>
-#include <core/gui/widgets/RolloutContainer.h>
+#include <core/gui/widgets/general/RolloutContainer.h>
 #include <core/dataset/DataSetManager.h>
 
 namespace Ovito {

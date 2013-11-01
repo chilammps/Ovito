@@ -25,8 +25,8 @@
 #include <core/Core.h>
 #include <core/gui/properties/PropertiesEditor.h>
 #include <core/gui/properties/PropertiesPanel.h>
-#include <core/gui/widgets/ElidedTextLabel.h>
-#include <core/gui/widgets/ObjectStatusWidget.h>
+#include <core/gui/widgets/general/ElidedTextLabel.h>
+#include <core/gui/widgets/display/ObjectStatusWidget.h>
 
 #include "LinkedFileObject.h"
 

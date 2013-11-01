@@ -64,7 +64,6 @@ SET(OVITO_CORE_SOURCE_FILES
 	scene/display/camera/CameraDisplayObject.cpp
 	gui/app/Application.cpp
 	gui/mainwin/MainWindow.cpp
-	gui/mainwin/AnimationTimeSlider.cpp
 	gui/mainwin/ViewportsPanel.cpp
 	gui/mainwin/cmdpanel/CommandPanel.cpp
 	gui/mainwin/cmdpanel/RenderCommandPage.cpp
@@ -90,18 +89,19 @@ SET(OVITO_CORE_SOURCE_FILES
 	gui/actions/RenderActions.cpp
 	gui/actions/ViewportModeAction.cpp
 	gui/undo/UndoManager.cpp
-	gui/widgets/RolloutContainer.cpp
-	gui/widgets/SpinnerWidget.cpp
-	gui/widgets/ColorPickerWidget.cpp
-	gui/widgets/AnimationTimeSpinner.cpp
-	gui/widgets/AnimationFramesToolButton.cpp
-	gui/widgets/ElidedTextLabel.cpp
-	gui/widgets/FrameBufferWidget.cpp
-	gui/widgets/FrameBufferWindow.cpp
-	gui/widgets/AutocompleteLineEdit.cpp
-	gui/widgets/SceneNodesListModel.cpp
-	gui/widgets/SceneNodeSelectionBox.cpp
-	gui/widgets/ObjectStatusWidget.cpp
+	gui/widgets/general/RolloutContainer.cpp
+	gui/widgets/general/SpinnerWidget.cpp
+	gui/widgets/general/ColorPickerWidget.cpp
+	gui/widgets/general/ElidedTextLabel.cpp
+	gui/widgets/general/AutocompleteLineEdit.cpp
+	gui/widgets/animation/AnimationTimeSpinner.cpp
+	gui/widgets/animation/AnimationFramesToolButton.cpp
+	gui/widgets/animation/AnimationTimeSlider.cpp
+	gui/widgets/rendering/FrameBufferWidget.cpp
+	gui/widgets/rendering/FrameBufferWindow.cpp
+	gui/widgets/selection/SceneNodesListModel.cpp
+	gui/widgets/selection/SceneNodeSelectionBox.cpp
+	gui/widgets/display/ObjectStatusWidget.cpp
 	gui/properties/PropertiesEditor.cpp
 	gui/properties/PropertiesPanel.cpp
 	gui/properties/ParameterUI.cpp

@@ -70,7 +70,7 @@ void VTKFileImporter::VTKFileImportTask::parseFile(FutureInterfaceBase& futureIn
 	// Read data set type.
 	stream.readLine();
 	if(!stream.lineStartsWith("DATASET UNSTRUCTURED_GRID"))
-		throw Exception(tr("Can read only VTK files with unstructured grids."));
+		throw Exception(tr("Can read only VTK files storing unstructured grids."));
 
 	// Read point count.
 	stream.readLine();
@@ -107,11 +107,12 @@ void VTKFileImporter::VTKFileImportTask::parseFile(FutureInterfaceBase& futureIn
 	mesh().setFaceCount(cellCount);
 	auto f = mesh().faces().begin();
 	for(int i = 0; i < cellCount; i++, ++f) {
-		int vcount, a, b, c;
-		if(sscanf(stream.readLine(), "%i %i %i %i", &vcount, &a, &b, &c) != 4)
-			throw Exception(tr("Invalid triangle cell in VTK file (line %1): %2").arg(stream.lineNumber()).arg(stream.lineString()));
+		int vcount = 0, a, b, c, token_count;
+		token_count = sscanf(stream.readLine(), "%i %i %i %i", &vcount, &a, &b, &c);
 		if(vcount != 3)
-			throw Exception(tr("Wrong number of cell vertices in VTK file (line %1): %2").arg(stream.lineNumber()).arg(stream.lineString()));
+			throw Exception(tr("Only triangle cells are supported in VTK files. Wrong number of cell vertices in line %1 of VTK file: %2").arg(stream.lineNumber()).arg(stream.lineString()));
+		if(token_count != 4)
+			throw Exception(tr("Invalid triangle cell in VTK file (line %1): %2").arg(stream.lineNumber()).arg(stream.lineString()));
 		if(a >= pointCount || b >= pointCount || c >= pointCount)
 			throw Exception(tr("Vertex indices out of range in triangle cell (line %1): %2").arg(stream.lineNumber()).arg(stream.lineString()));
 		f->setVertices(a,b,c);

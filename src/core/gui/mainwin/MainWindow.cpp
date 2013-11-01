@@ -20,15 +20,15 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
+#include <core/gui/actions/ActionManager.h>
+#include <core/gui/widgets/animation/AnimationTimeSpinner.h>
+#include <core/gui/widgets/animation/AnimationFramesToolButton.h>
+#include <core/gui/widgets/animation/AnimationTimeSlider.h>
+#include <core/gui/widgets/rendering/FrameBufferWindow.h>
+#include <core/viewport/ViewportManager.h>
 #include "MainWindow.h"
-#include "AnimationTimeSlider.h"
 #include "ViewportsPanel.h"
 #include "cmdpanel/CommandPanel.h"
-#include <core/gui/actions/ActionManager.h>
-#include <core/gui/widgets/AnimationTimeSpinner.h>
-#include <core/gui/widgets/AnimationFramesToolButton.h>
-#include <core/gui/widgets/FrameBufferWindow.h>
-#include <core/viewport/ViewportManager.h>
 
 namespace Ovito {
 

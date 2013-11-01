@@ -20,7 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/gui/mainwin/cmdpanel/CommandPanel.h>
-#include <core/gui/widgets/RolloutContainer.h>
+#include <core/gui/widgets/general/RolloutContainer.h>
 #include "UtilityApplet.h"
 
 namespace Ovito {

@@ -23,7 +23,7 @@
 #define __OVITO_NUMERICAL_PARAMETER_UI_H
 
 #include <core/Core.h>
-#include <core/gui/widgets/SpinnerWidget.h>
+#include <core/gui/widgets/general/SpinnerWidget.h>
 #include "ParameterUI.h"
 
 namespace Ovito {

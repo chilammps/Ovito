@@ -26,7 +26,7 @@
 #include <core/scene/ObjectNode.h>
 #include <core/gui/undo/UndoManager.h>
 #include <core/gui/actions/ActionManager.h>
-#include <core/gui/widgets/SceneNodeSelectionBox.h>
+#include <core/gui/widgets/selection/SceneNodeSelectionBox.h>
 #include <core/viewport/ViewportManager.h>
 #include "ModifyCommandPage.h"
 #include "ModificationListModel.h"

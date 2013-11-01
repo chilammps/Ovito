@@ -58,6 +58,13 @@ Plugin* PluginManager::plugin(const QString& pluginId)
 		if(plugin->pluginId() == pluginId)
 			return plugin;
 	}
+
+	// In Ovito 2.1, the "Viz" plugin has been renamed to "Particles".
+	// To support loading of old scene files in newer versions of Ovito,
+	// use "Viz" as an alias for the Particles plugin.
+	if(pluginId == QStringLiteral("Viz"))
+		return plugin(QStringLiteral("Particles"));
+
 	return nullptr;
 }
 
@@ -106,6 +113,12 @@ void PluginManager::registerPlugins()
 
 	// Load each manifest file in the plugins directory.
 	for(const QString& file : files) {
+
+		// The Viz plugin has been renamed to Particles as of Ovito 2.1.
+		// Skip an old plugin file, which may still exist in the installation directory.
+		if(file == QStringLiteral("Viz.manifest.xml"))
+			continue;
+
 		try {
 			loadPluginManifest(pluginDir.absoluteFilePath(file));
 		}

@@ -20,7 +20,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include <core/gui/widgets/ColorPickerWidget.h>
 #include <core/gui/properties/PropertiesPanel.h>
 #include <core/gui/mainwin/cmdpanel/CommandPanel.h>
 #include <core/viewport/input/ViewportInputManager.h>

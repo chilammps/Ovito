@@ -48,7 +48,7 @@ ObjectLoadStream::ObjectLoadStream(QDataStream& source) : LoadStream(source), _c
 	*this >> objCount;
 	_objects.resize(objCount);
 
-	// Go to start of class table.
+	// Jump to beginning of the class table, which is stored at the end of the file.
 	setFilePosition(beginOfRTTI);
 	expectChunk(0x200);
 	for(ClassEntry& classEntry : _classes) {

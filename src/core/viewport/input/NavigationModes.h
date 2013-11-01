@@ -39,8 +39,8 @@ class OVITO_CORE_EXPORT NavigationMode : public ViewportInputHandler
 public:
 
 	enum OrbitCenterMode {
-		ORBIT_CONSTRUCTION_PLANE,	/// Take the current construction plane as orbit center.
 		ORBIT_SELECTION_CENTER,		/// Take the center of mass of the current selection as orbit center.
+									/// If there is no selection, use scene bounding box.
 		ORBIT_USER_DEFINED			/// Use the orbit center set by the user.
 	};
 	

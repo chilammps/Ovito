@@ -24,7 +24,7 @@
 
 #include <core/Core.h>
 #include <core/gui/dialogs/ApplicationSettingsDialog.h>
-#include <core/gui/widgets/ColorPickerWidget.h>
+#include <core/gui/widgets/general/ColorPickerWidget.h>
 #include <core/viewport/ViewportSettings.h>
 
 namespace Ovito {

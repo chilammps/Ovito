@@ -24,7 +24,7 @@
 
 #include <core/animation/AnimManager.h>
 #include <core/gui/undo/UndoManager.h>
-#include <core/gui/widgets/SpinnerWidget.h>
+#include <core/gui/widgets/general/SpinnerWidget.h>
 
 namespace Ovito {
 
