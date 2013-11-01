@@ -302,11 +302,8 @@ bool DataSetManager::importFile(const QUrl& url, const FileImporterDescription* 
 				return false;
 		}
 
-		UndoableTransaction transaction(tr("Import '%1'").arg(QFileInfo(url.path()).fileName()));
-		if(importer->importFile(url, currentSet())) {
-			transaction.commit();
+		if(importer->importFile(url))
 			return true;
-		}
 	}
 	catch(const Exception& ex) {
 		ex.showError();
@@ -381,7 +378,5 @@ bool DataSetManager::referenceEvent(RefTarget* source, ReferenceEvent* event)
 	}
 	return RefMaker::referenceEvent(source, event);
 }
-
-
 
 };

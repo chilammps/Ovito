@@ -92,4 +92,17 @@ void DataSet::clearScene()
 	}
 }
 
+/******************************************************************************
+* Rescales the animation keys of all controllers in the scene.
+******************************************************************************/
+void DataSet::rescaleTime(const TimeInterval& oldAnimationInterval, const TimeInterval& newAnimationInterval)
+{
+	// Iterate over all controllers in the scene.
+	for(RefTarget* reftarget : getAllDependencies()) {
+		if(Controller* ctrl = dynamic_object_cast<Controller>(reftarget)) {
+			ctrl->rescaleTime(oldAnimationInterval, newAnimationInterval);
+		}
+	}
+}
+
 };

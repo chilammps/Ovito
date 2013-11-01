@@ -102,17 +102,17 @@ void LinkedFileImporter::requestFramesUpdate()
 * Return false if the import has been aborted by the user.
 * Throws an exception when the import has failed.
 ******************************************************************************/
-bool LinkedFileImporter::importFile(const QUrl& sourceUrl, DataSet* dataset)
+bool LinkedFileImporter::importFile(const QUrl& sourceUrl)
 {
 	OORef<LinkedFileObject> existingObj;
 	ObjectNode* existingNode = nullptr;
 	bool addingToScene = false;
 
-	if(dataset->sceneRoot()->children().empty() == false) {
+	if(DataSetManager::instance().currentSet()->sceneRoot()->children().empty() == false) {
 
 		// Look for an existing LinkedFileObject in the scene whose
 		// data source we can replace with the newly imported file.
-		for(SceneNode* node : dataset->selection()->nodes()) {
+		for(SceneNode* node : DataSetManager::instance().currentSet()->selection()->nodes()) {
 			if(ObjectNode* objNode = dynamic_object_cast<ObjectNode>(node)) {
 				SceneObject* sceneObj = objNode->sceneObject();
 				while(sceneObj) {
@@ -151,8 +151,7 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl, DataSet* dataset)
 					return false;
 
 				// Clear current scene.
-				dataset->clearScene();
-				dataset->setFilePath(QString());
+				DataSetManager::instance().fileReset();
 			}
 			else if(msgBox.clickedButton() == addToSceneButton){
 				existingObj = nullptr;
@@ -175,14 +174,15 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl, DataSet* dataset)
 					return false;
 
 				// Clear current scene.
-				dataset->clearScene();
-				dataset->setFilePath(QString());
+				DataSetManager::instance().fileReset();
 			}
 			else {
 				addingToScene = true;
 			}
 		}
 	}
+
+	UndoableTransaction transaction(tr("Import '%1'").arg(QFileInfo(sourceUrl.path()).fileName()));
 
 	// Do not create any animation keys during import.
 	AnimationSuspender animSuspender;
@@ -207,7 +207,7 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl, DataSet* dataset)
 	}
 
 	// Create a new object node in the scene for the linked data.
-	SceneRoot* scene = dataset->sceneRoot();
+	SceneRoot* scene = DataSetManager::instance().currentSet()->sceneRoot();
 	OORef<ObjectNode> node;
 	if(existingNode == nullptr) {
 		{
@@ -224,7 +224,7 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl, DataSet* dataset)
 	else node = existingNode;
 
 	// Select import node.
-	dataset->selection()->setNode(node.get());
+	DataSetManager::instance().currentSet()->selection()->setNode(node.get());
 
 	// Jump to the right frame to show the originally selected file.
 	int jumpToFrame = -1;
@@ -239,12 +239,11 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl, DataSet* dataset)
 	obj->adjustAnimationInterval(jumpToFrame);
 
 	// Adjust views to show the newly imported object.
-	if(dataset == DataSetManager::instance().currentSet()) {
-		DataSetManager::instance().runWhenSceneIsReady([]() {
-			ActionManager::instance().getAction(ACTION_VIEWPORT_ZOOM_SELECTION_EXTENTS_ALL)->trigger();
-		});
-	}
+	DataSetManager::instance().runWhenSceneIsReady([]() {
+		ActionManager::instance().getAction(ACTION_VIEWPORT_ZOOM_SELECTION_EXTENTS_ALL)->trigger();
+	});
 
+	transaction.commit();
 	return true;
 }
 
@@ -349,10 +348,6 @@ Future<QVector<LinkedFileImporter::FrameSourceInformation>> LinkedFileImporter::
 ******************************************************************************/
 bool LinkedFileImporter::matchesWildcardPattern(const QString& pattern, const QString& filename)
 {
-#if 0
-	QRegExp patternExp(pattern, Qt::CaseSensitive, QRegExp::Wildcard);
-	return patternExp.exactMatch(filename);
-#else
 	QString::const_iterator p = pattern.constBegin();
 	QString::const_iterator f = filename.constBegin();
 	while(p != pattern.constEnd() && f != filename.constEnd()) {
@@ -370,7 +365,6 @@ bool LinkedFileImporter::matchesWildcardPattern(const QString& pattern, const QS
 		++f;
 	}
 	return p == pattern.constEnd() && f == filename.constEnd();
-#endif
 }
 
 
@@ -391,7 +385,7 @@ Future<LinkedFileImporter::ImportTaskPtr> LinkedFileImporter::load(const LinkedF
 		if(!futureInterface.isCanceled())
 			futureInterface.setResult(importTask);
 
-		});
+	});
 }
 
 };

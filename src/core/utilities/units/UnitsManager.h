@@ -77,13 +77,18 @@ public:
 	/// \sa parseString()
 	virtual QString formatValue(FloatType value) = 0;
 	
-	/// \brief Returns the step size used by spinner widgets for this paremeter unit type.
+	/// \brief Returns positive the step size used by spinner widgets for this parameter unit type.
 	/// \param currentValue The current value of the spinner in native units. This can be used to make the step size value dependent.
 	/// \param upDirection Specifies whether the spinner is dragged in the positive or the negative direction.
 	/// \return The numeric step size used by SpinnerWidget for this parameter type. This is in native units.
 	/// 
 	/// The default implementation just returns 1.
 	virtual FloatType stepSize(FloatType currentValue, bool upDirection) { return 1; }
+
+	/// \brief Given an arbitrary value, which is potentially invalid, rounds it to the closest valid value.
+	///
+	/// The default implementation does no rounding and simply returns the unmodified value.
+	virtual FloatType roundValue(FloatType value) { return value; }
 
 Q_SIGNALS:
 
@@ -148,7 +153,7 @@ public:
 		return QString::number(value);
 	}
 
-	/// \brief Returns the step size used by spinner widgets for this parameter unit type.
+	/// \brief Returns the positive step size used by spinner widgets for this parameter unit type.
 	/// \param currentValue The current value of the spinner in native units. This can be used to make the step size value dependent.
 	/// \param upDirection Specifies whether the spinner is dragged in the positive or the negative direction.
 	/// \return The numeric step size used by SpinnerWidget for this parameter type. This is in native units.
@@ -219,6 +224,12 @@ public:
 	virtual QString formatValue(FloatType value) override {
 		return QString::number((int)value);
 	}
+
+	/// \brief Given an arbitrary value, which is potentially invalid, rounds it to the closest valid value.
+	virtual FloatType roundValue(FloatType value) override {
+		return floor(value + (FloatType)0.5);
+	}
+
 };
 
 /*
@@ -331,12 +342,20 @@ public:
 		return AnimManager::instance().timeToString((TimePoint)value);
 	}
 
-	/// \brief Returns the step size used by spinner widgets for this parameter unit type.
+	/// \brief Returns the (positive) step size used by spinner widgets for this parameter unit type.
 	/// \param currentValue The current value of the spinner. This can be used to make the step size value dependent.
 	/// \param upDirection Specifies whether the spinner is dragged in the positive or the negative direction.
 	/// \return The numeric step size used by SpinnerWidget for this parameter type. This is in TimeTicks units.
 	virtual FloatType stepSize(FloatType currentValue, bool upDirection) override {
-		return AnimManager::instance().ticksPerFrame();
+		if(upDirection)
+			return ceil((currentValue + FloatType(1)) / AnimManager::instance().ticksPerFrame()) * AnimManager::instance().ticksPerFrame() - currentValue;
+		else
+			return currentValue - floor((currentValue - FloatType(1)) / AnimManager::instance().ticksPerFrame()) * AnimManager::instance().ticksPerFrame();
+	}
+
+	/// \brief Given an arbitrary value, which is potentially invalid, rounds it to the closest valid value.
+	virtual FloatType roundValue(FloatType value) override {
+		return floor(value / AnimManager::instance().ticksPerFrame() + (FloatType)0.5) * AnimManager::instance().ticksPerFrame();
 	}
 };
 

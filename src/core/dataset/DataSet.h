@@ -59,7 +59,6 @@ public:
 
 	/// \brief Returns the animation settings.
 	/// \return The internal object that stores the animation settings for the scene.
-	/// \sa AnimManager
 	AnimationSettings* animationSettings() const { return _animSettings; }
 
 	/// \brief Returns this dataset's root scene node.
@@ -82,7 +81,6 @@ public:
 
 	/// \brief Returns the path where this dataset is stored on disk.
 	/// \return The location where the dataset is stored or will be stored on disk.
-	/// \sa setFilePath()
 	const QString& filePath() const { return _filePath; }
 
 	/// \brief Sets the path where this dataset is stored.
@@ -93,6 +91,20 @@ public:
 	/// \brief Deletes all nodes from the scene.
 	/// \undoable
 	void clearScene();
+
+	/// \brief Rescales the animation keys of all controllers in the scene.
+	/// \param oldAnimationInterval The old animation interval, which will be mapped to the new animation interval.
+	/// \param newAnimationInterval The new animation interval.
+	///
+	/// This method calls Controller::rescaleTime() for all controllers in the scene.
+	/// For keyed controllers this will rescale the key times of all keys from the
+	/// old animation interval to the new interval using a linear mapping.
+	///
+	/// Keys that lie outside of the old active animation interval will also be rescaled
+	/// according to a linear extrapolation.
+	///
+	/// \undoable
+	void rescaleTime(const TimeInterval& oldAnimationInterval, const TimeInterval& newAnimationInterval);
 
 protected:
 

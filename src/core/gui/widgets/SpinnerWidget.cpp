@@ -30,7 +30,7 @@ namespace Ovito {
 ******************************************************************************/
 SpinnerWidget::SpinnerWidget(QWidget* parent, QLineEdit* textBox) : QWidget(parent),
 	_textBox(NULL), _value(0), _minValue(-FLOATTYPE_MAX), _maxValue(FLOATTYPE_MAX),  
-	_upperBtnPressed(false), _lowerBtnPressed(false), _unit(NULL)
+	_upperBtnPressed(false), _lowerBtnPressed(false), _unit(nullptr)
 {
 	setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Maximum, QSizePolicy::SpinBox));
 	setUnit(UnitsManager::instance().floatIdentityUnit());
@@ -182,7 +182,7 @@ void SpinnerWidget::setUnit(ParameterUnit* unit)
 	OVITO_CHECK_POINTER(unit);
 	if(unit == _unit) return;
 
-	if(_unit != NULL)
+	if(_unit)
 		disconnect(_unit, SIGNAL(formatChanged()), this, SLOT(updateTextBox()));
 	
 	_unit = unit; 
@@ -255,9 +255,9 @@ void SpinnerWidget::mouseReleaseEvent(QMouseEvent* event)
 			spinnerDragStop();
 		}
 		else if(_upperBtnPressed)
-			setFloatValue(floatValue() + unit()->stepSize(floatValue(), true), true);
+			setFloatValue(unit()->roundValue(floatValue() + unit()->stepSize(floatValue(), true)), true);
 		else
-			setFloatValue(floatValue() - unit()->stepSize(floatValue(), false), true);
+			setFloatValue(unit()->roundValue(floatValue() - unit()->stepSize(floatValue(), false)), true);
 
 		_upperBtnPressed = false;
 		_lowerBtnPressed = false;
@@ -298,7 +298,7 @@ void SpinnerWidget::mouseMoveEvent(QMouseEvent* event)
 				if(screenY <= 5 && _lastMouseY == screenHeight-1) return;
 				if(screenY >= screenHeight - 5 && _lastMouseY == 0) return;
 				
-				FloatType newVal = _oldValue + _currentStepSize * (FloatType)(_startMouseY - screenY) * 0.1;
+				FloatType newVal = unit()->roundValue(_oldValue + _currentStepSize * (FloatType)(_startMouseY - screenY) * 0.1f);
 	
 				if(screenY < _lastMouseY && screenY <= 5) {
 					_lastMouseY = screenHeight-1;

@@ -32,7 +32,7 @@ AnimManager* AnimManager::_instance = nullptr;
 /******************************************************************************
 * Initializes the animation manager.
 ******************************************************************************/
-AnimManager::AnimManager() : _animSuspendCount(0),  _animationMode(false), _timeIsChanging(0)
+AnimManager::AnimManager() : _animSuspendCount(0),  _autoKeyMode(false), _timeIsChanging(0)
 {
 	OVITO_ASSERT_MSG(!_instance, "AnimManager constructor", "Multiple instances of this singleton class have been created.");
 
@@ -48,7 +48,7 @@ AnimManager::AnimManager() : _animSuspendCount(0),  _animationMode(false), _time
 ******************************************************************************/
 void AnimManager::reset()
 {
-	setAnimationMode(false);
+	setAutoKeyMode(false);
 	
 	if(_settings) {
 		disconnect(_settings.get(), SIGNAL(timeChanged(TimePoint)), this, SIGNAL(timeChanged(TimePoint)));
@@ -106,15 +106,15 @@ TimePoint AnimManager::stringToTime(const QString& stringValue)
 }
 
 /******************************************************************************
-* Enables or disables animation mode.
+* Enables or disables auto key generation mode.
 ******************************************************************************/
-void AnimManager::setAnimationMode(bool on)
+void AnimManager::setAutoKeyMode(bool on)
 {
-	if(_animationMode == on)
+	if(_autoKeyMode == on)
 		return;
 	
-	_animationMode = on;
-	animationModeChanged(_animationMode);
+	_autoKeyMode = on;
+	Q_EMIT autoKeyModeChanged(_autoKeyMode);
 }
 
 };

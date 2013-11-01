@@ -33,10 +33,10 @@ namespace Ovito {
 ******************************************************************************/
 ViewportsPanel::ViewportsPanel(QWidget* parent) : QWidget(parent)
 {
-	// Repaint the viewport borders if the animation mode has been activated.
-	connect(&AnimManager::instance(), SIGNAL(animationModeChanged(bool)), SLOT(update()));
+	// Repaint the viewport borders whenever the Auto Key mode has been activated.
+	connect(&AnimManager::instance(), SIGNAL(autoKeyModeChanged(bool)), SLOT(update()));
 
-	// Repaint the viewport borders if another viewport has been activated.
+	// Repaint the viewport borders when another viewport has been activated.
 	connect(&ViewportManager::instance(), SIGNAL(activeViewportChanged(Viewport*)), SLOT(update()));
 
 	// Update layout when a viewport has been maximized.
@@ -81,7 +81,7 @@ void ViewportsPanel::paintEvent(QPaintEvent* event)
 
 	// Choose a color for the viewport border.
 	Color borderColor;
-	if(AnimManager::instance().animationMode())
+	if(AnimManager::instance().autoKeyMode())
 		borderColor = Viewport::viewportColor(ViewportSettings::COLOR_ANIMATION_MODE);
 	else
 		borderColor = Viewport::viewportColor(ViewportSettings::COLOR_ACTIVE_VIEWPORT_BORDER);

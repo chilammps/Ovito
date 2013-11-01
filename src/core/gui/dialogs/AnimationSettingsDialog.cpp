@@ -149,9 +149,7 @@ void AnimationSettingsDialog::onFramesPerSecondChanged(int index)
 	newInterval.setEnd(oldInterval.end() * newTicksPerFrame / oldTicksPerFrame);
 	AnimManager::instance().setAnimationInterval(newInterval);
 
-#if 0
 	DataSetManager::instance().currentSet()->rescaleTime(oldInterval, newInterval);
-#endif
 	
 	// Update dialog controls to reflect new values.
 	updateValues();

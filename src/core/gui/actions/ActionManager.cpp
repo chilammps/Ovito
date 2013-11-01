@@ -77,12 +77,12 @@ ActionManager::ActionManager()
 	createCommandAction(ACTION_ANIMATION_SETTINGS, tr("Animation Settings"), ":/core/actions/animation/animation_settings.png");
 	createViewportModeAction(ACTION_TOGGLE_ANIMATION_PLAYBACK, createAnimationPlaybackViewportMode(), tr("Play Animation"), ":/core/actions/animation/play_animation.png");
 
-	// Create action that toggles animation mode on or off.
-	QAction* animModeAction = createCommandAction(ACTION_ANIMATION_MODE_TOGGLE, tr("Animation Mode"), ":/core/actions/animation/animation_mode.png");
-	animModeAction->setCheckable(true);
-	animModeAction->setChecked(AnimManager::instance().animationMode());
-	connect(animModeAction, SIGNAL(toggled(bool)), &AnimManager::instance(), SLOT(setAnimationMode(bool)));
-	connect(&AnimManager::instance(), SIGNAL(animationModeChanged(bool)), animModeAction, SLOT(setChecked(bool)));
+	// Create action that toggles Auto Key mode on or off.
+	QAction* autoKeyModeAction = createCommandAction(ACTION_AUTO_KEY_MODE_TOGGLE, tr("Auto Key Mode"), ":/core/actions/animation/animation_mode.png");
+	autoKeyModeAction->setCheckable(true);
+	autoKeyModeAction->setChecked(AnimManager::instance().autoKeyMode());
+	connect(autoKeyModeAction, SIGNAL(toggled(bool)), &AnimManager::instance(), SLOT(setAutoKeyMode(bool)));
+	connect(&AnimManager::instance(), SIGNAL(autoKeyModeChanged(bool)), autoKeyModeAction, SLOT(setChecked(bool)));
 
 	// Create Edit->Undo action.
 	QAction* undoAction = UndoManager::instance().createUndoAction(this);
@@ -162,6 +162,5 @@ void ActionManager::on_EditDelete_triggered()
 			node->deleteNode();
 	});
 }
-
 
 };

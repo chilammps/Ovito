@@ -53,14 +53,14 @@ public:
 	/// \return \c true if animating is currently turned on and not suspended; \c false otherwise.
 	/// 
 	/// When animating is turned on, controllers should automatically set keys when their value is changed.
-	bool isAnimating() const { return _animationMode && _animSuspendCount == 0; }
+	bool isAnimating() const { return autoKeyMode() && _animSuspendCount == 0; }
 	
-	/// \brief Returns whether animation mode has been activated.
+	/// \brief Returns whether Auto Key mode is active.
 	/// \return \c true if the automatic generation of keys has been enabled. 
 	/// \note The automatic generation of animation keys may be suspended by a call to suspendAnim().
-	///       This overrides the animation mode. Controllers should use isAnimating() to check whether
-	///       have to generate a key on value change.
-	bool animationMode() const { return _animationMode; }
+	///       This overrides the Auto Key mode. Controllers should use isAnimating() to check whether
+	///       have to generate a key whenever their values is changed.
+	bool autoKeyMode() const { return _autoKeyMode; }
 
 	/// \brief Suspends the animation mode temporarily.
 	/// 
@@ -197,12 +197,12 @@ public:
 
 public Q_SLOTS:
 
-	/// \brief Enables or disables animation mode.
-	/// \param on Controls the state of the animation mode.
-	/// \note The automatic generation of animation keys may be suspended by a call to suspendAnim().
-	///       This overrides the animation mode. Controllers should use isAnimating() to check whether
-	///       have to generate a key on value change.
-	void setAnimationMode(bool on);
+	/// \brief Enables or disables animation mode (i.e. automatic creation of animation keys).
+	/// \param on Flag indicating whether Auto Key mode should turned on or off.
+	/// \note The automatic generation of animation keys may be temporarily suspended by a call to suspendAnim()
+	///       even if Auto Key is active. Controllers should use isAnimating() to check whether
+	///       they have to generate a key when their value is changed.
+	void setAutoKeyMode(bool on);
 
 	/// \brief Resets the animation manager.
 	/// 
@@ -228,8 +228,8 @@ Q_SIGNALS:
 	/// This signal is emitted by the AnimManager when the time to string conversion format has changed.
 	void timeFormatChanged();
 	
-	/// This signal is emitted when the animation mode has been activated or deactivated.
-	void animationModeChanged(bool active);
+	/// This signal is emitted when the Auto Key mode has been activated or deactivated.
+	void autoKeyModeChanged(bool active);
 	
 private:
 
@@ -240,7 +240,7 @@ private:
 	OORef<AnimationSettings> _settings;
 	
 	/// Indicates whether animation recording mode is active.
-	bool _animationMode;
+	bool _autoKeyMode;
 
 	/// Indicates that the animation has been changed, and the scene is still being prepared for display of the new frame.
 	int _timeIsChanging;

@@ -35,6 +35,10 @@ using namespace std;
 AnimationTimeSlider::AnimationTimeSlider(QWidget* parent) :
 	QFrame(parent), _dragPos(-1)
 {
+	_normalPalette = palette();
+	_autoKeyModePalette = _normalPalette;
+	_autoKeyModePalette.setColor(QPalette::Window, QColor(240, 60, 60));
+
 	setFrameShape(QFrame::Panel);
 	setFrameShadow(QFrame::Sunken);
 	setAutoFillBackground(true);
@@ -44,7 +48,7 @@ AnimationTimeSlider::AnimationTimeSlider(QWidget* parent) :
 	connect(&AnimManager::instance(), SIGNAL(timeChanged(TimePoint)), SLOT(repaint()));
 	connect(&AnimManager::instance(), SIGNAL(timeFormatChanged()), SLOT(update()));
 	connect(&AnimManager::instance(), SIGNAL(intervalChanged(TimeInterval)), SLOT(update()));
-	connect(&AnimManager::instance(), SIGNAL(animationModeChanged(bool)), SLOT(update()));
+	connect(&AnimManager::instance(), SIGNAL(autoKeyModeChanged(bool)), SLOT(onAutoKeyModeChanged(bool)));
 }
 
 /******************************************************************************
@@ -77,7 +81,7 @@ void AnimationTimeSlider::paintEvent(QPaintEvent* event)
 		else if(ticksevery <= 500) ticksevery = 500;
 		int labelypos = clientRect.y() + (clientRect.height() + painter.fontMetrics().height())/2 - painter.fontMetrics().descent();
 		if(ticksevery > 0) {
-			painter.setPen(QPen(QColor(170,170,255)));
+			painter.setPen(QPen(QColor(180,180,220)));
 			for(int frame = firstFrame; frame <= lastFrame; frame += ticksevery) {
 				TimePoint time = AnimManager::instance().frameToTime(frame);
 				FloatType percentage = (FloatType)(time - AnimManager::instance().animationInterval().start()) / (FloatType)(AnimManager::instance().animationInterval().duration() + 1);
@@ -217,7 +221,19 @@ QRect AnimationTimeSlider::thumbRectangle()
 	clientRect.adjust(frameWidth(), frameWidth(), -frameWidth(), -frameWidth());
 	int thumbSize = thumbWidth();
 	int thumbPos = (int)((clientRect.width() - thumbSize) * percentage);
+	qDebug() << "percent=" << percentage << "time=" << AnimManager::instance().time() << " value=" << value << "interval" << interval << "thumbPos=" << thumbPos <<
+			"start" << (FloatType(interval.start())/AnimManager::instance().ticksPerFrame()) << "end" << (FloatType(interval.end())/AnimManager::instance().ticksPerFrame());
 	return QRect(thumbPos + clientRect.x(), clientRect.y(), thumbSize, clientRect.height());
 }
+
+/******************************************************************************
+* Is called whenever the Auto Key mode is activated or deactivated.
+******************************************************************************/
+void AnimationTimeSlider::onAutoKeyModeChanged(bool active)
+{
+	setPalette(active ? _autoKeyModePalette : _normalPalette);
+	update();
+}
+
 
 };

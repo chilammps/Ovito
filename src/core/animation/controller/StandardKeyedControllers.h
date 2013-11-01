@@ -177,14 +177,18 @@ public:
 		if(UndoManager::instance().isRecording())
 			UndoManager::instance().push(new KeyChangeOperation(this));
 		KeyArray newKeys;
-		TimePoint newTime;
-		for(auto key = _keys.begin(); key != _keys.end(); ++key) {
-			if(oldAnimationInterval.duration() == 0)
-				newTime = key->first - oldAnimationInterval.start() + newAnimationInterval.start();
-			else
-				newTime = (key->first - oldAnimationInterval.start()) * newAnimationInterval.duration()
-							/ oldAnimationInterval.duration() + newAnimationInterval.start();
-			newKeys.insert(std::make_pair(newTime, key->second));
+		if(oldAnimationInterval.duration() != 0) {
+			for(auto key = _keys.begin(); key != _keys.end(); ++key) {
+				TimePoint newTime = (qint64)(key->first - oldAnimationInterval.start()) * newAnimationInterval.duration()
+								/ oldAnimationInterval.duration() + newAnimationInterval.start();
+				newKeys.insert(std::make_pair(newTime, key->second));
+			}
+		}
+		else {
+			for(auto key = _keys.begin(); key != _keys.end(); ++key) {
+				TimePoint newTime = key->first - oldAnimationInterval.start() + newAnimationInterval.start();
+				newKeys.insert(std::make_pair(newTime, key->second));
+			}
 		}
 		_keys = newKeys;
 		updateKeys();

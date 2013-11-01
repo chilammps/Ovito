@@ -122,31 +122,32 @@ bool LinkedFileObject::setSource(const QUrl& newSourceUrl, const FileImporterDes
 ******************************************************************************/
 bool LinkedFileObject::setSource(QUrl sourceUrl, const OORef<LinkedFileImporter>& importer, bool useExactURL)
 {
-	OVITO_CHECK_OBJECT_POINTER(importer);
-
 	if(this->sourceUrl() == sourceUrl && this->importer() == importer)
 		return true;
 
-	// If URL is not already a wildcard pattern, generate a default pattern by
-	// replacing last sequence of numbers in the filename with a wildcard character.
 	QFileInfo fileInfo(sourceUrl.path());
 	QString originalFilename = fileInfo.fileName();
-	if(!useExactURL && importer->autoGenerateWildcardPattern() && !originalFilename.contains('*') && !originalFilename.contains('?')) {
-		int startIndex, endIndex;
-		for(endIndex = originalFilename.length() - 1; endIndex >= 0; endIndex--)
-			if(originalFilename.at(endIndex).isNumber()) break;
-		if(endIndex >= 0) {
-			for(startIndex = endIndex-1; startIndex >= 0; startIndex--)
-				if(!originalFilename.at(startIndex).isNumber()) break;
-			QString wildcardPattern = originalFilename.left(startIndex+1) + '*' + originalFilename.mid(endIndex+1);
-			fileInfo.setFile(fileInfo.dir(), wildcardPattern);
-			sourceUrl.setPath(fileInfo.filePath());
-			OVITO_ASSERT(sourceUrl.isValid());
-		}
-	}
 
-	if(this->sourceUrl() == sourceUrl && this->importer() == importer)
-		return true;
+	if(importer) {
+		// If URL is not already a wildcard pattern, generate a default pattern by
+		// replacing last sequence of numbers in the filename with a wildcard character.
+		if(!useExactURL && importer->autoGenerateWildcardPattern() && !originalFilename.contains('*') && !originalFilename.contains('?')) {
+			int startIndex, endIndex;
+			for(endIndex = originalFilename.length() - 1; endIndex >= 0; endIndex--)
+				if(originalFilename.at(endIndex).isNumber()) break;
+			if(endIndex >= 0) {
+				for(startIndex = endIndex-1; startIndex >= 0; startIndex--)
+					if(!originalFilename.at(startIndex).isNumber()) break;
+				QString wildcardPattern = originalFilename.left(startIndex+1) + '*' + originalFilename.mid(endIndex+1);
+				fileInfo.setFile(fileInfo.dir(), wildcardPattern);
+				sourceUrl.setPath(fileInfo.filePath());
+				OVITO_ASSERT(sourceUrl.isValid());
+			}
+		}
+
+		if(this->sourceUrl() == sourceUrl && this->importer() == importer)
+			return true;
+	}
 
 	// Make the import process reversible.
 	UndoableTransaction transaction(tr("Set input file"));
@@ -221,8 +222,11 @@ bool LinkedFileObject::setSource(QUrl sourceUrl, const OORef<LinkedFileImporter>
 ******************************************************************************/
 bool LinkedFileObject::updateFrames()
 {
-	if(!importer())
+	if(!importer()) {
+		_frames.clear();
+		_loadedFrame = -1;
 		return false;
+	}
 
 	Future<QVector<LinkedFileImporter::FrameSourceInformation>> framesFuture = importer()->findFrames(sourceUrl());
 	if(!ProgressManager::instance().waitForTask(framesFuture))

@@ -56,6 +56,11 @@ protected:
 	/// Returns the minimum size of the widget.
 	virtual QSize minimumSizeHint() const override { return sizeHint(); }
 	
+protected Q_SLOTS:
+
+	/// Is called whenever the Auto Key mode is activated or deactivated.
+	void onAutoKeyModeChanged(bool active);
+
 private:
 
 	/// Computes the current position of the slider thumb.
@@ -66,6 +71,12 @@ private:
 	
 	/// The dragging start position.
 	int _dragPos;
+
+	/// The default palette used to the draw the time slide background.
+	QPalette _normalPalette;
+
+	/// The color palette used to the draw the time slide background when Auto Key mode is active.
+	QPalette _autoKeyModePalette;
 };
 
 };

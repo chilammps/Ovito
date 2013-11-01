@@ -112,7 +112,7 @@ class VideoEncoder;				// defined in VideoEncoder.h
 /// This action shows the animation settings dialog
 #define ACTION_ANIMATION_SETTINGS			"AnimationSettings"
 /// This action activates/deactivates the animation mode
-#define ACTION_ANIMATION_MODE_TOGGLE		"AnimationToggleRecording"
+#define ACTION_AUTO_KEY_MODE_TOGGLE		"AnimationToggleRecording"
 
 /// This action starts rendering of the current view.
 #define ACTION_RENDER_ACTIVE_VIEWPORT		"RenderActiveViewport"

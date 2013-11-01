@@ -188,7 +188,12 @@ void Viewport::setViewType(ViewType type, bool keepCurrentView)
 ******************************************************************************/
 bool Viewport::isPerspectiveProjection() const
 {
-	return _projParams.isPerspective;
+	if(viewType() <= VIEW_ORTHO)
+		return false;
+	else if(viewType() == VIEW_PERSPECTIVE)
+		return true;
+	else
+		return _projParams.isPerspective;
 }
 
 /******************************************************************************

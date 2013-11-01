@@ -60,15 +60,14 @@ public:
 	/// \return The interval during which the controller's value does not change.
 	virtual TimeInterval validityInterval(TimePoint time) = 0;
 	
-	/// \brief Rescales the key times of all keys from the old animation interval to the new interval.
-	/// \param oldAnimationInterval The old animation interval that will be mapped to the new animation interval.
+	/// \brief Rescales the times of all animation keys from the old animation interval to the new interval.
+	/// \param oldAnimationInterval The old animation interval, which should be mapped to the new animation interval.
 	/// \param newAnimationInterval The new animation interval.
 	/// 
 	/// For keyed controllers this will rescale the key times of all keys from the 
 	/// old animation interval to the new interval using a linear mapping.
 	///
-	/// Please note that keys that lie outside the old animation interval will also be scaled 
-	/// according to a linear extrapolation.
+	/// Keys that lie outside the old animation interval will also be scaled using linear extrapolation.
 	///
 	/// The default implementation does nothing. 
 	///

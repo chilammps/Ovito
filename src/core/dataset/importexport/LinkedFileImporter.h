@@ -115,7 +115,7 @@ public:
 	/// \brief Imports the given file into the scene.
 	/// \return \a true if the file has been imported; \a false if the import has been aborted by the user.
 	/// \throws Exception when the import has failed.
-	virtual bool importFile(const QUrl& sourceUrl, DataSet* scene) override;
+	virtual bool importFile(const QUrl& sourceUrl) override;
 
 	//////////////////////////// Specific methods ////////////////////////////////
 
