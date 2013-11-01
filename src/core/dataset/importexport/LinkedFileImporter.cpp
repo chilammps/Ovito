@@ -106,6 +106,7 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl, DataSet* dataset)
 {
 	OORef<LinkedFileObject> existingObj;
 	ObjectNode* existingNode = nullptr;
+	bool addingToScene = false;
 
 	if(dataset->sceneRoot()->children().empty() == false) {
 
@@ -156,6 +157,7 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl, DataSet* dataset)
 			else if(msgBox.clickedButton() == addToSceneButton){
 				existingObj = nullptr;
 				existingNode = nullptr;
+				addingToScene = true;
 			}
 		}
 		else {
@@ -176,6 +178,9 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl, DataSet* dataset)
 				dataset->clearScene();
 				dataset->setFilePath(QString());
 			}
+			else {
+				addingToScene = true;
+			}
 		}
 	}
 
@@ -185,8 +190,14 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl, DataSet* dataset)
 	OORef<LinkedFileObject> obj;
 
 	// Create the object that will insert the imported data into the scene.
-	if(existingObj == nullptr)
+	if(existingObj == nullptr) {
 		obj = new LinkedFileObject();
+
+		// When adding the imported data to an existing scene,
+		// do not auto-adjust animation interval.
+		if(addingToScene)
+			obj->setAdjustAnimationIntervalEnabled(false);
+	}
 	else
 		obj = existingObj;
 

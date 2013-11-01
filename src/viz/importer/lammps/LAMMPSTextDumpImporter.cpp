@@ -498,7 +498,7 @@ void LAMMPSTextDumpImporterEditor::createUI(const RolloutInsertionParameters& ro
 	useCustomMappingUI->buttonTrue()->setText(tr("User-defined mapping to particle properties"));
 	sublayout->addWidget(useCustomMappingUI->buttonTrue());
 
-	QPushButton* editMappingButton = new QPushButton(tr("Edit column mapping"));
+	QPushButton* editMappingButton = new QPushButton(tr("Edit column mapping..."));
 	sublayout->addWidget(editMappingButton);
 	connect(editMappingButton, SIGNAL(clicked(bool)), this, SLOT(onEditColumnMapping()));
 }

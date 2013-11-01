@@ -37,7 +37,7 @@ enum {
 InputColumnMappingDialog::InputColumnMappingDialog(const InputColumnMapping& mapping, QWidget* parent)
 	: QDialog(parent ? parent : &MainWindow::instance())
 {
-	setWindowTitle(tr("Input file column mapping"));
+	setWindowTitle(tr("File column mapping"));
 
 	_vectorCmpntSignalMapper = new QSignalMapper(this);
 	connect(_vectorCmpntSignalMapper, SIGNAL(mapped(int)), this, SLOT(updateVectorComponentList(int)));
@@ -47,7 +47,7 @@ InputColumnMappingDialog::InputColumnMappingDialog(const InputColumnMapping& map
 
 	QLabel* captionLabel = new QLabel(
 			tr("Please specify how the data columns of the input file should be mapped "
-				"to Ovito's particle properties."));
+				"to OVITO's particle properties."));
 	captionLabel->setWordWrap(true);
 	layout->addWidget(captionLabel);
 	layout->addSpacing(10);

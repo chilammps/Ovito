@@ -406,7 +406,7 @@ void XYZImporterEditor::createUI(const RolloutInsertionParameters& rolloutParams
 	sublayout->setContentsMargins(4,4,4,4);
 	layout->addWidget(columnMappingBox);
 
-	QPushButton* editMappingButton = new QPushButton(tr("Edit column mapping"));
+	QPushButton* editMappingButton = new QPushButton(tr("Edit column mapping..."));
 	sublayout->addWidget(editMappingButton);
 	connect(editMappingButton, SIGNAL(clicked(bool)), this, SLOT(onEditColumnMapping()));
 }
