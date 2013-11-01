@@ -86,21 +86,9 @@ SET(OVITO_PARTICLES_SOURCE_FILES
 	util/ParticlePickingHelper.cpp
 )
 
-# The source files of the muParser library.
-SET(muParser_SRCS
-	util/muparser/muParser.cpp
-	util/muparser/muParserBytecode.cpp
-	util/muparser/muParserTest.cpp
-	util/muparser/muParserDLL.cpp
-	util/muparser/muParserInt.cpp
-	util/muparser/muParserTokenReader.cpp
-	util/muparser/muParserError.cpp
-	util/muparser/muParserCallback.cpp
-	util/muparser/muParserBase.cpp
-)
-
 # Generate plugin module.
 OVITO_PLUGIN(Particles
-	SOURCES ${OVITO_PARTICLES_SOURCE_FILES} ${muParser_SRCS} util/qcustomplot/qcustomplot.cpp
+	SOURCES ${OVITO_PARTICLES_SOURCE_FILES}
 	RESOURCE particles.rcc resources/particles.qrc
+	LIB_DEPENDENCIES muParser qcustomplot
 )

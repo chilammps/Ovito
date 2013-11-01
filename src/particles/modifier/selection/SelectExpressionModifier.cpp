@@ -24,7 +24,7 @@
 #include <core/scene/ObjectNode.h>
 #include <core/scene/pipeline/PipelineObject.h>
 #include <core/gui/properties/StringParameterUI.h>
-#include <particles/util/muparser/muParser.h>
+#include <muparser/muParser.h>
 #include "SelectExpressionModifier.h"
 
 #include <QtConcurrent>

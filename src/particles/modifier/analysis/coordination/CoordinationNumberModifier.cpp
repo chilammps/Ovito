@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include <core/scene/objects/SceneObject.h>
 #include <core/dataset/importexport/LinkedFileObject.h>
-#include <particles/util/qcustomplot/qcustomplot.h>
+#include <qcustomplot/qcustomplot.h>
 #include "CoordinationNumberModifier.h"
 
 namespace Particles {

@@ -25,7 +25,7 @@
 #include <core/gui/properties/BooleanParameterUI.h>
 #include <core/gui/mainwin/MainWindow.h>
 #include <core/scene/pipeline/PipelineObject.h>
-#include <particles/util/qcustomplot/qcustomplot.h>
+#include <qcustomplot/qcustomplot.h>
 #include "HistogramModifier.h"
 
 namespace Particles {
