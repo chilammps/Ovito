@@ -31,7 +31,7 @@
 #include <core/gui/app/Application.h>
 #include <core/dataset/DataSetManager.h>
 #ifdef OVITO_VIDEO_OUTPUT_SUPPORT
-#include <video/VideoEncoder.h>
+#include <3rdparty/video/VideoEncoder.h>
 #endif
 
 namespace Ovito {

@@ -24,15 +24,15 @@ SET(LIBRARY_OUTPUT_PATH "${OVITO_LIBRARY_DIRECTORY}")
 
 ################# 3rd-party libraries  ####################
 
-ADD_SUBDIRECTORY(ssh)
-ADD_SUBDIRECTORY(muparser)
-ADD_SUBDIRECTORY(qcustomplot)
+ADD_SUBDIRECTORY(3rdparty/ssh)
+ADD_SUBDIRECTORY(3rdparty/muparser)
+ADD_SUBDIRECTORY(3rdparty/qcustomplot)
 
 ################# Core libraries  ####################
 
 ADD_SUBDIRECTORY(base)
 IF(OVITO_VIDEO_OUTPUT_SUPPORT)
-	ADD_SUBDIRECTORY(video)
+	ADD_SUBDIRECTORY(3rdparty/video)
 ENDIF()
 ADD_SUBDIRECTORY(core)
 
@@ -43,9 +43,9 @@ FILE(MAKE_DIRECTORY ${OVITO_PLUGINS_DIRECTORY})
 INSTALL(DIRECTORY DESTINATION ${OVITO_RELATIVE_PLUGINS_DIRECTORY})
 SET(LIBRARY_OUTPUT_PATH "${OVITO_PLUGINS_DIRECTORY}")
 
-ADD_SUBDIRECTORY(particles)
-ADD_SUBDIRECTORY(tachyon)
-ADD_SUBDIRECTORY(mesh)
+ADD_SUBDIRECTORY(plugins/particles)
+ADD_SUBDIRECTORY(plugins/tachyon)
+ADD_SUBDIRECTORY(plugins/mesh)
 
 ################# Main executable ####################
 

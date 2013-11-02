@@ -127,7 +127,6 @@ SET(OVITO_CORE_SOURCE_FILES
 	utilities/io/FileManager.cpp
 	utilities/io/SftpJob.cpp
 	utilities/io/CompressedTextParserStream.cpp
-	utilities/io/gzdevice/qtiocompressor.cpp
 	utilities/concurrent/Future.cpp
 	utilities/concurrent/ProgressManager.cpp
 	utilities/opengl/SharedOpenGLResource.cpp
@@ -178,9 +177,6 @@ ENDIF()
 
 # Link to OpenGL library.
 TARGET_LINK_LIBRARIES(Core ${OPENGL_gl_LIBRARY})
-
-# Link to ZLib library.
-TARGET_LINK_LIBRARIES(Core ${ZLIB_LIBRARIES})
 
 # Link Qt5.
 QT5_USE_MODULES(Core ${OVITO_REQUIRED_QT_MODULES})

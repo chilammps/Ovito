@@ -21,7 +21,7 @@
 
 #include <core/Core.h>
 #ifdef OVITO_VIDEO_OUTPUT_SUPPORT
-#include <video/VideoEncoder.h>
+#include <3rdparty/video/VideoEncoder.h>
 #endif
 #include "SaveImageFileDialog.h"
 

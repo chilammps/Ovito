@@ -24,6 +24,7 @@ SET(OVITO_BASE_SOURCE_FILES
 	linalg/AffineDecomposition.cpp
 	io/SaveStream.cpp
 	io/LoadStream.cpp
+	io/gzdevice/qtiocompressor.cpp
 )
 
 # This will let the source code export symbols when building a DLL.
@@ -34,6 +35,9 @@ ADD_LIBRARY(Base ${OVITO_BASE_SOURCE_FILES})
 
 # Link to OpenGL library.
 TARGET_LINK_LIBRARIES(Base ${OPENGL_gl_LIBRARY})
+
+# Link to ZLib library.
+TARGET_LINK_LIBRARIES(Base ${ZLIB_LIBRARIES})
 
 # Link Qt5.
 QT5_USE_MODULES(Base ${OVITO_REQUIRED_QT_MODULES})

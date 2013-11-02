@@ -23,7 +23,7 @@
 #define __OVITO_COMPRESSED_TEXT_PARSER_STREAM_H
 
 #include <core/Core.h>
-#include <core/utilities/io/gzdevice/qtiocompressor.h>
+#include <base/io/gzdevice/qtiocompressor.h>
 
 namespace Ovito {
 
