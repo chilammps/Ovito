@@ -19,7 +19,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <core/gui/undo/UndoManager.h>
 #include <plugins/particles/data/ParticlePropertyObject.h>
 #include "ParticleSelectionSet.h"

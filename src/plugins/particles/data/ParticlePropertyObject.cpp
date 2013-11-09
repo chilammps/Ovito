@@ -19,7 +19,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include "ParticlePropertyObject.h"
 #include "ParticleTypeProperty.h"
 #include "ParticleDisplay.h"
@@ -70,9 +70,9 @@ OORef<ParticlePropertyObject> ParticlePropertyObject::create(ParticleProperty* s
 	}
 
 	if(storage->type() == ParticleProperty::PositionProperty)
-		propertyObj->setDisplayObject(new ParticleDisplay());
+		propertyObj->addDisplayObject(new ParticleDisplay());
 	else if(storage->type() == ParticleProperty::DisplacementProperty)
-		propertyObj->setDisplayObject(new VectorDisplay());
+		propertyObj->addDisplayObject(new VectorDisplay());
 
 	return propertyObj;
 }

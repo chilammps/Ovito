@@ -19,7 +19,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <core/scene/objects/SceneObject.h>
 #include <core/dataset/importexport/LinkedFileObject.h>
 #include <3rdparty/qcustomplot/qcustomplot.h>

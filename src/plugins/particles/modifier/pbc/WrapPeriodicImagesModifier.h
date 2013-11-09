@@ -22,7 +22,7 @@
 #ifndef __OVITO_WRAP_PERIODIC_IMAGES_MODIFIER_H
 #define __OVITO_WRAP_PERIODIC_IMAGES_MODIFIER_H
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include "../ParticleModifier.h"
 
 namespace Particles {
@@ -33,7 +33,7 @@ using namespace Ovito;
  * \brief This modifier wraps around the atomic positions in directions with periodic boundary
  *        conditions.
  */
-class WrapPeriodicImagesModifier : public ParticleModifier
+class OVITO_PARTICLES_EXPORT WrapPeriodicImagesModifier : public ParticleModifier
 {
 public:
 

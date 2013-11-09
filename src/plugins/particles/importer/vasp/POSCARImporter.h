@@ -22,7 +22,7 @@
 #ifndef __OVITO_POSCAR_IMPORTER_H
 #define __OVITO_POSCAR_IMPORTER_H
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include "../ParticleImporter.h"
 
 namespace Particles {
@@ -32,7 +32,7 @@ using namespace Ovito;
 /**
  * \brief File parser for POSCAR files as used by the VASP DFT code.
  */
-class POSCARImporter : public ParticleImporter
+class OVITO_PARTICLES_EXPORT POSCARImporter : public ParticleImporter
 {
 public:
 
@@ -41,7 +41,7 @@ public:
 
 	/// \brief Returns the file filter that specifies the files that can be imported by this service.
 	/// \return A wild-card pattern that specifies the file types that can be handled by this import class.
-	virtual QString fileFilter() override { return "*"; }
+	virtual QString fileFilter() override { return QStringLiteral("*"); }
 
 	/// \brief Returns the filter description that is displayed in the drop-down box of the file dialog.
 	/// \return A string that describes the file format.

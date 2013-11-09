@@ -22,7 +22,7 @@
 #ifndef __OVITO_CREATE_EXPRESSION_PROPERTY_MODIFIER_H
 #define __OVITO_CREATE_EXPRESSION_PROPERTY_MODIFIER_H
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <core/gui/properties/StringParameterUI.h>
 #include <core/gui/properties/IntegerParameterUI.h>
 #include <core/gui/properties/BooleanParameterUI.h>
@@ -35,7 +35,7 @@ namespace Particles {
  * \brief Creates a particle property with values computed by n
  *        user-defined math expression.
  */
-class CreateExpressionPropertyModifier : public ParticleModifier
+class OVITO_PARTICLES_EXPORT CreateExpressionPropertyModifier : public ParticleModifier
 {
 public:
 

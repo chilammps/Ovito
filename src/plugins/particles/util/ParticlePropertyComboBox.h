@@ -27,7 +27,7 @@
 #ifndef __OVITO_PARTICLE_PROPERTY_COMBO_BOX_H
 #define __OVITO_PARTICLE_PROPERTY_COMBO_BOX_H
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <plugins/particles/data/ParticlePropertyObject.h>
 
 namespace Particles {
@@ -35,7 +35,7 @@ namespace Particles {
 /**
  * \brief Widget that allows the user to select a particle property from a list.
  */
-class ParticlePropertyComboBox : public QComboBox
+class OVITO_PARTICLES_EXPORT ParticlePropertyComboBox : public QComboBox
 {
 	Q_OBJECT
 

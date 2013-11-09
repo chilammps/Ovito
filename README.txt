@@ -18,13 +18,14 @@ Release 2.1.0 (xx-Nov-13):
  - Added the Manual Selection modifier, which allows selecting individual particles
    with the mouse in the viewports. Using its "Fence selection" mode, a group of particles
    can be selected by drawing a closed path around them.
- - OVITO can now import more than one dataset into the scene and display them next to 
-   each other. Use the "Import Local/Remote File" function multiple times to load 
+ - OVITO can now import more than one dataset into the scene and display them side by side. 
+   Use the "Import Local/Remote File" function multiple times to load 
    several simulation files (or multiple instances of the same file) into the program.
    Each dataset has its own modification pipeline, i.e., one can customize the 
    visualization of each dataset separately. Use the Affine Transformation modifier
-   to move a dataset to the desired location in space.
- - The new VTK file importer allows reading triangle meshes into OVITO to visualize
+   to move one of the datasets to a different location such that multiple
+   objects do not overlap.
+ - A new VTK file importer allows reading triangle meshes into OVITO to visualize
    geometric objects such as indentor tips etc. The VTK format is the native format
    used by the ParaView software and can, for instance, be written by LIGGGHTS/LAMMPS.
  - Camera objects can be created through the viewport context menu. A viewport can be 
@@ -33,9 +34,13 @@ Release 2.1.0 (xx-Nov-13):
  - When importing a sequence of simulation snapshots into OVITO, one can now configure
    the mapping of input frames to OVITO's animation frames. This allows to generate output
    movies with less (or more) frames than the imported snapshot sequence. 
+ - The Tachyon renderer now supports semi-transparent particles. The transparency is controlled
+   through the "Transparency" particle property. Use, for instance, the Computer Property
+   modifier to set this property for certain particles. The transparency values can range
+   from 0 (=fully opaque) to 1 (=not visible).
  - Fixed saving/loading of the selected gradient type in the Color Coding modifier.
  - Fixed program deadlock when when dragging the time slider after loading a file sequence.
-   from a remote server.
+   from a remote location.
 
 Release 2.0.3 (22-Oct-13):
 

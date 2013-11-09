@@ -19,7 +19,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <core/gui/actions/ViewportModeAction.h>
 #include <core/animation/AnimManager.h>
 #include <core/viewport/Viewport.h>

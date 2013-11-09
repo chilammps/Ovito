@@ -19,7 +19,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <core/gui/properties/BooleanParameterUI.h>
 #include <core/gui/properties/BooleanRadioButtonParameterUI.h>
 #include <core/gui/properties/AffineTransformationParameterUI.h>
@@ -76,9 +76,8 @@ void AffineTransformationModifier::initializeModifier(PipelineObject* pipeline, 
 	if((AffineTransformation)_destinationCell == AffineTransformation::Zero()) {
 		PipelineFlowState input = pipeline->evaluatePipeline(AnimManager::instance().time(), modApp, false);
 		SimulationCell* cell = input.findObject<SimulationCell>();
-		if(cell) {
+		if(cell)
 			_destinationCell = cell->cellMatrix();
-		}
 	}
 }
 
@@ -121,15 +120,25 @@ ObjectStatus AffineTransformationModifier::modifyParticles(TimePoint time, TimeI
 			}
 		}
 		else {
-			Point3* pbegin = posProperty->dataPoint3();
-			Point3* pend = pbegin + posProperty->size();
-			QtConcurrent::blockingMap(pbegin, pend, [tm](Point3& p) { p = tm * p; });
+			Point3* const pbegin = posProperty->dataPoint3();
+			Point3* const pend = pbegin + posProperty->size();
+
+			// Check if the matrix describes a pure translation. If yes, we can
+			// simply add vectors instead of computing full matrix products.
+			Vector3 translation = tm.translation();
+			if(tm == AffineTransformation::translation(translation)) {
+				for(Point3* p = pbegin; p != pend; ++p)
+					*p += translation;
+			}
+			else {
+				QtConcurrent::blockingMap(pbegin, pend, [tm](Point3& p) { p = tm * p; });
+			}
 		}
 
 		posProperty->changed();
 	}
 
-	return ObjectStatus();
+	return ObjectStatus::Success;
 }
 
 /******************************************************************************

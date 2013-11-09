@@ -22,7 +22,7 @@
 #ifndef __OVITO_POSCAR_EXPORTER_H
 #define __OVITO_POSCAR_EXPORTER_H
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include "../ParticleExporter.h"
 
 namespace Particles {
@@ -32,7 +32,7 @@ using namespace Ovito;
 /**
  * Exporter service that writes the particles to a POSCAR file.
  */
-class POSCARExporter : public ParticleExporter
+class OVITO_PARTICLES_EXPORT POSCARExporter : public ParticleExporter
 {
 public:
 

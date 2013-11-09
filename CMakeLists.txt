@@ -71,7 +71,6 @@ IF(APPLE)
 	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++ -Wno-invalid-offsetof")
 ENDIF()
 
-
 # Enable additional optimizations for release builds.
 IF(CMAKE_COMPILER_IS_GNUCXX)
 	# Use -flto flag to enable GCC's link-time optimization.
@@ -79,7 +78,6 @@ IF(CMAKE_COMPILER_IS_GNUCXX)
 	SET(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -flto -fuse-linker-plugin")
 	SET(CMAKE_MODULE_LINKER_FLAGS_RELEASE "${CMAKE_MODULE_LINKER_FLAGS_RELEASE} -flto -fuse-linker-plugin")
 ENDIF()
-
 
 # This is the base directory for all included header files.
 INCLUDE_DIRECTORIES("${OVITO_SOURCE_BASE_DIR}/src")
@@ -174,6 +172,12 @@ OPTION(OVITO_VIDEO_OUTPUT_SUPPORT "Build the video encoding module." "OFF")
 IF(OVITO_VIDEO_OUTPUT_SUPPORT)
 	ADD_DEFINITIONS(-DOVITO_VIDEO_OUTPUT_SUPPORT)
 ENDIF()
+
+# Add options that control the building of plugins.
+OPTION(OVITO_BUILD_PLUGIN_PARTICLES "Build the Particles plugin." "ON")
+OPTION(OVITO_BUILD_PLUGIN_MESH "Build the Mesh plugin." "ON")
+OPTION(OVITO_BUILD_PLUGIN_TACHYON "Build the Tachyon plugin." "ON")
+OPTION(OVITO_BUILD_PLUGIN_CRYSTALANALYSIS "Build the CrystalAnalysis plugin." "OFF")
 
 # Build program.
 ADD_SUBDIRECTORY(src)

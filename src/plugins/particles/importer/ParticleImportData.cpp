@@ -19,7 +19,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <core/dataset/importexport/LinkedFileObject.h>
 #include <core/utilities/io/FileManager.h>
 #include <core/utilities/concurrent/ProgressManager.h>
@@ -66,7 +66,7 @@ void ParticleImportTask::load(FutureInterfaceBase& futureInterface)
 * Lets the data container insert the data it holds into the scene by creating
 * appropriate scene objects.
 ******************************************************************************/
-void ParticleImportTask::insertIntoScene(LinkedFileObject* destination)
+QSet<SceneObject*> ParticleImportTask::insertIntoScene(LinkedFileObject* destination)
 {
 	QSet<SceneObject*> activeObjects;
 
@@ -77,7 +77,7 @@ void ParticleImportTask::insertIntoScene(LinkedFileObject* destination)
 
 		// Create a display object for the simulation cell.
 		OORef<SimulationCellDisplay> cellDisplay = new SimulationCellDisplay();
-		cell->setDisplayObject(cellDisplay.get());
+		cell->addDisplayObject(cellDisplay.get());
 
 		// Choose an appropriate simulation cell line rendering width for the given cell dimensions.
 		FloatType cellDiameter = (
@@ -114,7 +114,7 @@ void ParticleImportTask::insertIntoScene(LinkedFileObject* destination)
 		activeObjects.insert(propertyObj.get());
 	}
 
-	destination->removeInactiveObjects(activeObjects);
+	return activeObjects;
 }
 
 /******************************************************************************

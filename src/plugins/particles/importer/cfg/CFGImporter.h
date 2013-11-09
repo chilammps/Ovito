@@ -22,7 +22,7 @@
 #ifndef __OVITO_CFG_FILE_IMPORTER_H
 #define __OVITO_CFG_FILE_IMPORTER_H
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <plugins/particles/importer/ParticleImporter.h>
 #include <plugins/particles/importer/InputColumnMapping.h>
 
@@ -33,7 +33,7 @@ using namespace Ovito;
 /**
  * \brief File parser for IMD atom files.
  */
-class CFGImporter : public ParticleImporter
+class OVITO_PARTICLES_EXPORT CFGImporter : public ParticleImporter
 {
 public:
 
@@ -42,7 +42,7 @@ public:
 
 	/// \brief Returns the file filter that specifies the files that can be imported by this service.
 	/// \return A wild-card pattern that specifies the file types that can be handled by this import class.
-	virtual QString fileFilter() override { return "*"; }
+	virtual QString fileFilter() override { return QStringLiteral("*"); }
 
 	/// \brief Returns the filter description that is displayed in the drop-down box of the file dialog.
 	/// \return A string that describes the file format.

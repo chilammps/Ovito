@@ -49,6 +49,7 @@ public:
 		_positionsBuffer.resize(particleCount);
 		_radiiBuffer.resize(particleCount);
 		_colorsBuffer.resize(particleCount);
+		_transparenciesBuffer.clear();
 	}
 
 	/// \brief Returns the number of particles stored in the buffer.
@@ -79,6 +80,19 @@ public:
 		std::fill(_colorsBuffer.begin(), _colorsBuffer.end(), color);
 	}
 
+	/// \brief Sets the transparency of the particles.
+	virtual void setParticleTransparencies(const FloatType* transparencies) override {
+		_transparenciesBuffer.assign(transparencies, transparencies + _positionsBuffer.size());
+	}
+
+	/// \brief Sets the transparency of all particles to the given value.
+	virtual void setParticleTransparency(FloatType transparency) override {
+		if(transparency != FloatType(0))
+			_transparenciesBuffer.assign(_positionsBuffer.size(), transparency);
+		else
+			_transparenciesBuffer.clear();
+	}
+
 	/// \brief Returns true if the geometry buffer is filled and can be rendered with the given renderer.
 	virtual bool isValid(SceneRenderer* renderer) override;
 
@@ -94,6 +108,9 @@ public:
 	/// Returns a reference to the internal buffer that stores the particle colors.
 	const std::vector<Color>& colors() const { return _colorsBuffer; }
 
+	/// Returns a reference to the internal buffer that stores the particle transparencies.
+	const std::vector<FloatType>& transparencies() const { return _transparenciesBuffer; }
+
 private:
 
 	/// The internal buffer that stores the particle positions.
@@ -104,6 +121,9 @@ private:
 
 	/// The internal buffer that stores the particle colors.
 	std::vector<Color> _colorsBuffer;
+
+	/// The internal buffer that stores the particle transparencies.
+	std::vector<FloatType> _transparenciesBuffer;
 
 	Q_OBJECT
 	OVITO_OBJECT

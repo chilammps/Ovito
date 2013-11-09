@@ -19,7 +19,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <core/Core.h>
+#include <plugins/mesh/Mesh.h>
 #include <core/dataset/importexport/LinkedFileObject.h>
 #include <core/utilities/io/FileManager.h>
 #include <core/utilities/concurrent/ProgressManager.h>
@@ -60,7 +60,7 @@ void TriMeshImportData::load(FutureInterfaceBase& futureInterface)
 * Lets the data container insert the data it holds into the scene by creating
 * appropriate scene objects.
 ******************************************************************************/
-void TriMeshImportData::insertIntoScene(LinkedFileObject* destination)
+QSet<SceneObject*> TriMeshImportData::insertIntoScene(LinkedFileObject* destination)
 {
 	OORef<TriMeshObject> triMeshObj = destination->findSceneObject<TriMeshObject>();
 	if(!triMeshObj) {
@@ -68,15 +68,14 @@ void TriMeshImportData::insertIntoScene(LinkedFileObject* destination)
 
 		// Create a display object for the scene object.
 		OORef<TriMeshDisplay> triMeshDisplay = new TriMeshDisplay();
-		triMeshObj->setDisplayObject(triMeshDisplay.get());
+		triMeshObj->addDisplayObject(triMeshDisplay.get());
 
 		destination->addSceneObject(triMeshObj.get());
 	}
 	triMeshObj->mesh() = mesh();
 	triMeshObj->notifyDependents(ReferenceEvent::TargetChanged);
 
-	// Remove all other scene objects from the LinkedFileObject.
-	destination->removeInactiveObjects({triMeshObj.get()});
+	return { triMeshObj.get() };
 }
 
 };

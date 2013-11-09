@@ -59,7 +59,7 @@ CameraObject::CameraObject() : _isPerspective(true)
 	_zoom = ControllerManager::instance().createDefaultController<FloatController>();
 	_zoom->setValue(0, 200);
 
-	setDisplayObject(new CameraDisplayObject());
+	addDisplayObject(new CameraDisplayObject());
 }
 
 /******************************************************************************

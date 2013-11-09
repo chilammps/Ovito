@@ -19,7 +19,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <core/gui/properties/BooleanParameterUI.h>
 #include <core/gui/properties/IntegerParameterUI.h>
 #include "ShowPeriodicImagesModifier.h"

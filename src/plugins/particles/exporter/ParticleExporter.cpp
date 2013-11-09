@@ -19,7 +19,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <core/animation/AnimManager.h>
 #include <core/scene/ObjectNode.h>
 #include <core/scene/SceneRoot.h>

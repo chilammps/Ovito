@@ -22,7 +22,7 @@
 #ifndef __OVITO_INPUT_COLUMN_MAPPING_H
 #define __OVITO_INPUT_COLUMN_MAPPING_H
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <plugins/particles/data/ParticleProperty.h>
 #include <plugins/particles/importer/ParticleImporter.h>
 
@@ -32,7 +32,7 @@ namespace Particles {
  * \brief Describes the mapping between data columns in a column-based input file
  *        and the internal particle properties.
  */
-class InputColumnMapping
+class OVITO_PARTICLES_EXPORT InputColumnMapping
 {
 public:
 

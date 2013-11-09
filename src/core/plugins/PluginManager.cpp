@@ -35,7 +35,6 @@ PluginManager* PluginManager::_instance = nullptr;
 PluginManager::PluginManager() : _corePlugin(nullptr)
 {
 	OVITO_ASSERT_MSG(!_instance, "PluginManager constructor", "Multiple instances of this singleton class have been created.");
-	registerPlugins();
 }
 
 /******************************************************************************

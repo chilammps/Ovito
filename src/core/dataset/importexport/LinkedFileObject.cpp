@@ -376,10 +376,12 @@ void LinkedFileObject::loadOperationFinished()
 		try {
 			// Adopt the data loaded by the importer.
 			LinkedFileImporter::ImportTaskPtr importedData = _loadFrameOperation.result();
+			QSet<SceneObject*> activeObjects;
 			if(importedData) {
-				importedData->insertIntoScene(this);
+				activeObjects = importedData->insertIntoScene(this);
 				newStatus = importedData->status();
 			}
+			removeInactiveObjects(activeObjects);
 		}
 		catch(Exception& ex) {
 			// Transfer exception message to evaluation status.

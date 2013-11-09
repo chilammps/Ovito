@@ -114,7 +114,7 @@ bool TachyonRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialog* pro
 	rt_background(_rtscene, rt_color(backgroundColor.r(), backgroundColor.g(), backgroundColor.b()));
 
 	// Set equation used for rendering specular highlights.
-	rt_phong_shader(_rtscene, RT_SHADER_BLINN_FAST);	// Fast version of Blinn's equation
+	rt_phong_shader(_rtscene, RT_SHADER_NULL_PHONG);
 
 	// Set up camera.
 	if(projParams().isPerspective) {
@@ -180,6 +180,9 @@ bool TachyonRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialog* pro
 		rt_rescale_lights(_rtscene, 0.2);
 		rt_ambient_occlusion(_rtscene, _ambientOcclusionSamples, skycol);
 	}
+
+	rt_trans_mode(_rtscene, RT_TRANS_VMD);
+	rt_trans_max_surfaces(_rtscene, 4);
 
 	// Export Ovito scene objects to Tachyon scene.
 	renderScene();
@@ -263,7 +266,7 @@ void TachyonRenderer::endRender()
 ******************************************************************************/
 void TachyonRenderer::renderLines(const DefaultLineGeometryBuffer& lineBuffer)
 {
-
+	// Lines are not supported by this renderer.
 }
 
 /******************************************************************************
@@ -275,10 +278,12 @@ void TachyonRenderer::renderParticles(const DefaultParticleGeometryBuffer& parti
 	auto p_end = particleBuffer.positions().end();
 	auto c = particleBuffer.colors().begin();
 	auto r = particleBuffer.radii().begin();
+	const FloatType* transparency = particleBuffer.transparencies().empty() ? nullptr : particleBuffer.transparencies().data();
 
 	const AffineTransformation tm = modelTM();
 	for(; p != p_end; ++p, ++c, ++r) {
-		void* tex = getTachyonTexture(c->r(), c->g(), c->b());
+		FloatType alpha = transparency ? (FloatType(1) - *transparency++) : FloatType(1);
+		void* tex = getTachyonTexture(c->r(), c->g(), c->b(), alpha);
 		Point3 tp = tm * (*p);
 		rt_sphere(_rtscene, tex, rt_vector(tp.x(), tp.y(), -tp.z()), *r);
 	}
@@ -494,9 +499,9 @@ void* TachyonRenderer::getTachyonTexture(FloatType r, FloatType g, FloatType b, 
 {
 	apitexture tex;
 	memset(&tex, 0, sizeof(tex));
-	tex.ambient  = 0.3;
-	tex.diffuse  = 0.8;
-	tex.specular = 0.0;
+	tex.ambient  = FloatType(0.3);// * alpha;
+	tex.diffuse  = FloatType(0.8);// * alpha;
+	tex.specular = FloatType(0.0);
 	tex.opacity  = alpha;
 	tex.col.r = r;
 	tex.col.g = g;

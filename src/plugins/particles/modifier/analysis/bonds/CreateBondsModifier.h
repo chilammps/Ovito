@@ -27,7 +27,7 @@
 #ifndef __OVITO_CREATE_BONDS_MODIFIER_H
 #define __OVITO_CREATE_BONDS_MODIFIER_H
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <plugins/particles/data/BondsDisplay.h>
 #include "../../AsynchronousParticleModifier.h"
 
@@ -38,7 +38,7 @@ using namespace Ovito;
 /**
  * \brief A modifier that creates bonds between pairs of particles based on their distance.
  */
-class CreateBondsModifier : public AsynchronousParticleModifier
+class OVITO_PARTICLES_EXPORT CreateBondsModifier : public AsynchronousParticleModifier
 {
 public:
 

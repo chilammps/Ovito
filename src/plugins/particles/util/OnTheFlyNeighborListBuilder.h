@@ -27,7 +27,7 @@
 #ifndef __OVITO_ONTHEFLY_NEIGHBOR_LIST_H
 #define __OVITO_ONTHEFLY_NEIGHBOR_LIST_H
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <plugins/particles/data/ParticleProperty.h>
 #include <plugins/particles/data/SimulationCellData.h>
 
@@ -39,7 +39,7 @@ using namespace Ovito;
  * \brief This class returns the list of neighbors within a given cutoff radius for a particle.
  *        The neighbor lists are not stored in memory but are calculated on demand for individual particles.
  */
-class OnTheFlyNeighborListBuilder
+class OVITO_PARTICLES_EXPORT OnTheFlyNeighborListBuilder
 {
 private:
 

@@ -22,7 +22,7 @@
 #ifndef __OVITO_MANUAL_SELECTION_MODIFIER_H
 #define __OVITO_MANUAL_SELECTION_MODIFIER_H
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <core/viewport/input/ViewportInputHandler.h>
 #include <plugins/particles/util/ParticlePickingHelper.h>
 #include "../ParticleModifier.h"
@@ -36,7 +36,7 @@ class ParticleSelectionSet;		// Defined in ParticleSelectionSet.h
 /**
  * Modifiers that allows the user to select individual particles by hand.
  */
-class ManualSelectionModifier : public ParticleModifier
+class OVITO_PARTICLES_EXPORT ManualSelectionModifier : public ParticleModifier
 {
 public:
 

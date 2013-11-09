@@ -22,7 +22,7 @@
 #ifndef __OVITO_INPUT_COLUMN_MAPPING_DIALOG_H
 #define __OVITO_INPUT_COLUMN_MAPPING_DIALOG_H
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include "InputColumnMapping.h"
 
 namespace Particles {
@@ -31,7 +31,7 @@ namespace Particles {
 * This dialog box lets the user edit the mapping from data columns
 * in an input file to particle properties.
 ******************************************************************************/
-class InputColumnMappingDialog : public QDialog
+class OVITO_PARTICLES_EXPORT InputColumnMappingDialog : public QDialog
 {
 	Q_OBJECT
 	

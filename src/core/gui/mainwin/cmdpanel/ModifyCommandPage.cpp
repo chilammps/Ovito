@@ -44,7 +44,8 @@ ModifyCommandPage::ModifyCommandPage()
 	layout->setSpacing(4);
 	layout->setColumnStretch(1,1);
 
-	layout->addWidget(new SceneNodeSelectionBox(this), 0, 0, 1, 2);
+	SceneNodeSelectionBox* nodeSelBox = new SceneNodeSelectionBox(this);
+	layout->addWidget(nodeSelBox, 0, 0, 1, 2);
 
 	_modificationListModel = new ModificationListModel(this);
 	_modifierSelector = new ModifierListBox(this, _modificationListModel);

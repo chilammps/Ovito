@@ -22,8 +22,8 @@
 #ifndef __OVITO_VTK_FILE_IMPORTER_H
 #define __OVITO_VTK_FILE_IMPORTER_H
 
-#include <core/Core.h>
 #include <core/dataset/importexport/LinkedFileImporter.h>
+#include <plugins/mesh/Mesh.h>
 #include "TriMeshImportData.h"
 
 namespace Mesh {
@@ -33,7 +33,7 @@ using namespace Ovito;
 /**
  * \brief File parser for VTK files containing triangle mesh data.
  */
-class VTKFileImporter : public LinkedFileImporter
+class OVITO_MESH_EXPORT VTKFileImporter : public LinkedFileImporter
 {
 public:
 

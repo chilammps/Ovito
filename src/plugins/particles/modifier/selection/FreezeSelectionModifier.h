@@ -22,7 +22,7 @@
 #ifndef __OVITO_FREEZE_SELECTION_MODIFIER_H
 #define __OVITO_FREEZE_SELECTION_MODIFIER_H
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include "../ParticleModifier.h"
 
 namespace Particles {
@@ -32,7 +32,7 @@ using namespace Ovito;
 /******************************************************************************
 * Preserves the selection of particles over animation time.
 ******************************************************************************/
-class FreezeSelectionModifier : public ParticleModifier
+class OVITO_PARTICLES_EXPORT FreezeSelectionModifier : public ParticleModifier
 {
 public:
 

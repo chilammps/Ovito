@@ -27,7 +27,7 @@
 #ifndef __OVITO_CENTRO_SYMMETRY_MODIFIER_H
 #define __OVITO_CENTRO_SYMMETRY_MODIFIER_H
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <core/gui/properties/RefTargetListParameterUI.h>
 #include <plugins/particles/modifier/AsynchronousParticleModifier.h>
 
@@ -40,7 +40,7 @@ class TreeNeighborListBuilder;
 /**
  * \brief Calculates the centro-symmetry parameter (CSP) for particles.
  */
-class CentroSymmetryModifier : public AsynchronousParticleModifier
+class OVITO_PARTICLES_EXPORT CentroSymmetryModifier : public AsynchronousParticleModifier
 {
 public:
 

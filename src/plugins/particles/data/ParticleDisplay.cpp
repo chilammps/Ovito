@@ -19,7 +19,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <core/utilities/units/UnitsManager.h>
 #include <core/rendering/SceneRenderer.h>
 #include <core/gui/properties/FloatParameterUI.h>
@@ -241,6 +241,7 @@ void ParticleDisplay::render(TimePoint time, SceneObject* sceneObject, const Pip
 	ParticlePropertyObject* colorProperty = findStandardProperty(ParticleProperty::ColorProperty, flowState);
 	ParticleTypeProperty* typeProperty = dynamic_object_cast<ParticleTypeProperty>(findStandardProperty(ParticleProperty::ParticleTypeProperty, flowState));
 	ParticlePropertyObject* selectionProperty = renderer->isInteractive() ? findStandardProperty(ParticleProperty::SelectionProperty, flowState) : nullptr;
+	ParticlePropertyObject* transparencyProperty = findStandardProperty(ParticleProperty::TransparencyProperty, flowState);
 
 	// Get number of particles.
 	int particleCount = positionProperty ? positionProperty->size() : 0;
@@ -284,7 +285,8 @@ void ParticleDisplay::render(TimePoint time, SceneObject* sceneObject, const Pip
 	bool updateColors = _colorsCacheHelper.updateState(
 			colorProperty, colorProperty ? colorProperty->revisionNumber() : 0,
 			typeProperty, typeProperty ? typeProperty->revisionNumber() : 0,
-			selectionProperty, selectionProperty ? selectionProperty->revisionNumber() : 0)
+			selectionProperty, selectionProperty ? selectionProperty->revisionNumber() : 0,
+			transparencyProperty, transparencyProperty ? transparencyProperty->revisionNumber() : 0)
 			|| resizeBuffer;
 
 	// Re-create the geometry buffer if necessary.
@@ -340,6 +342,10 @@ void ParticleDisplay::render(TimePoint time, SceneObject* sceneObject, const Pip
 		std::vector<Color> colors(particleCount);
 		particleColors(colors, colorProperty, typeProperty, selectionProperty);
 		_particleBuffer->setParticleColors(colors.data());
+		if(transparencyProperty)
+			_particleBuffer->setParticleTransparencies(transparencyProperty->constDataFloat());
+		else
+			_particleBuffer->setParticleTransparency(0);
 	}
 
 	// Handle picking of particles.

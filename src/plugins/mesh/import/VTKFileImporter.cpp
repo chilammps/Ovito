@@ -19,7 +19,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <core/Core.h>
+#include <plugins/mesh/Mesh.h>
 #include <core/utilities/io/CompressedTextParserStream.h>
 #include "VTKFileImporter.h"
 

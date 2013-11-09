@@ -40,7 +40,7 @@ using namespace Ovito;
 /**
  * \brief Finds the N nearest neighbors of particles.
  */
-class TreeNeighborListBuilder
+class OVITO_PARTICLES_EXPORT TreeNeighborListBuilder
 {
 private:
 

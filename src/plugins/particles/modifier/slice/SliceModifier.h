@@ -22,7 +22,7 @@
 #ifndef __OVITO_SLICE_MODIFIER_H
 #define __OVITO_SLICE_MODIFIER_H
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <core/animation/controller/Controller.h>
 #include <core/viewport/input/ViewportInputHandler.h>
 #include <core/viewport/input/ViewportInputManager.h>
@@ -37,7 +37,7 @@ using namespace Ovito;
 /******************************************************************************
 * The slice modifier deletes all particles on one side of a plane.
 ******************************************************************************/
-class SliceModifier : public ParticleModifier
+class OVITO_PARTICLES_EXPORT SliceModifier : public ParticleModifier
 {
 public:
 

@@ -103,7 +103,10 @@ private:
 	PluginManager();
 
 	/// Create the singleton instance of this class.
-	static void initialize() { _instance = new PluginManager(); }
+	static void initialize() {
+		_instance = new PluginManager();
+		_instance->registerPlugins();
+	}
 
 	/// Deletes the singleton instance of this class.
 	static void shutdown() { delete _instance; _instance = nullptr; }

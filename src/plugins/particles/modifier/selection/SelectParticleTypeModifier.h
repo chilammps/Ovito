@@ -22,7 +22,7 @@
 #ifndef __OVITO_SELECT_PARTICLE_TYPE_MODIFIER_H
 #define __OVITO_SELECT_PARTICLE_TYPE_MODIFIER_H
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include "../ParticleModifier.h"
 
 namespace Particles {
@@ -34,7 +34,7 @@ class ParticlePropertyComboBox;
 /******************************************************************************
 * Selects particles of of one or more types.
 ******************************************************************************/
-class SelectParticleTypeModifier : public ParticleModifier
+class OVITO_PARTICLES_EXPORT SelectParticleTypeModifier : public ParticleModifier
 {
 public:
 

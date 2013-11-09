@@ -19,7 +19,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <core/gui/properties/BooleanParameterUI.h>
 #include <core/gui/properties/IntegerParameterUI.h>
 #include <core/gui/properties/FloatParameterUI.h>
@@ -66,12 +66,16 @@ std::shared_ptr<AsynchronousParticleModifier::Engine> AmbientOcclusionModifier::
 	ParticlePropertyObject* posProperty = expectStandardProperty(ParticleProperty::PositionProperty);
 	ParticleTypeProperty* typeProperty = dynamic_object_cast<ParticleTypeProperty>(inputStandardProperty(ParticleProperty::PositionProperty));
 	ParticlePropertyObject* radiusProperty = inputStandardProperty(ParticleProperty::RadiusProperty);
-	ParticleDisplay* displayObj = dynamic_object_cast<ParticleDisplay>(posProperty->displayObject());
-	if(!displayObj)
-		throw Exception(tr("Particles have no display object."));
 
 	// Compute bounding box of input particles.
-	Box3 boundingBox = displayObj->particleBoundingBox(posProperty, typeProperty, radiusProperty);
+	Box3 boundingBox;
+	for(DisplayObject* displayObj : posProperty->displayObjects()) {
+		if(ParticleDisplay* particleDisplay = dynamic_object_cast<ParticleDisplay>(displayObj)) {
+			boundingBox.addBox(particleDisplay->particleBoundingBox(posProperty, typeProperty, radiusProperty));
+		}
+	}
+	if(!boundingBox.isEmpty())
+		throw Exception(tr("There are no valid particles."));
 
 	// The render buffer resolution.
 	int res = std::min(std::max(bufferResolution(), 0), (int)MAX_AO_RENDER_BUFFER_RESOLUTION);

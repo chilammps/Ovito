@@ -19,7 +19,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include "ParcasFileImporter.h"
 
 namespace Particles {
@@ -131,7 +131,7 @@ void ParcasFileImporter::ParcasFileImportTask::parseFile(FutureInterfaceBase& fu
 
 	// Open input file for reading.
 	if(!file.open(QIODevice::ReadOnly))
-		throw Exception(tr("Failed to open PARCAS file: %2.").arg(file.errorString()));
+		throw Exception(tr("Failed to open PARCAS file: %1.").arg(file.errorString()));
 
 	// Read in the static part of the header.
 	ParcaseFileParserStream stream(file);

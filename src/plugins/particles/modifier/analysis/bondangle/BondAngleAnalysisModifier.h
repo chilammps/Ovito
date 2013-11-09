@@ -27,7 +27,7 @@
 #ifndef __OVITO_BOND_ANGLE_ANALYSIS_MODIFIER_H
 #define __OVITO_BOND_ANGLE_ANALYSIS_MODIFIER_H
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <core/gui/properties/RefTargetListParameterUI.h>
 #include <plugins/particles/modifier/analysis/StructureIdentificationModifier.h>
 
@@ -42,7 +42,7 @@ class TreeNeighborListBuilder;
  *
  * See G. Ackland, PRB(2006)73:054104.
  */
-class BondAngleAnalysisModifier : public StructureIdentificationModifier
+class OVITO_PARTICLES_EXPORT BondAngleAnalysisModifier : public StructureIdentificationModifier
 {
 public:
 

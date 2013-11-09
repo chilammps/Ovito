@@ -158,6 +158,7 @@ OORef<RefTarget> RefTarget::clone(bool deepCopy, CloneHelper& cloneHelper)
 					// Clone all reference targets in the source vector.
 					const VectorReferenceFieldBase& sourceField = field->vectorStorageAccessFunc(this);
 					VectorReferenceFieldBase& destField = field->vectorStorageAccessFunc(clone.get());
+					destField.clear();
 					for(int i=0; i<sourceField.size(); i++) {
 						OORef<RefTarget> clonedReference;
 						// Clone reference target.

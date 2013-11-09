@@ -22,7 +22,7 @@
 #ifndef __OVITO_PARTICLE_INFORMATION_APPLET_H
 #define __OVITO_PARTICLE_INFORMATION_APPLET_H
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <core/gui/mainwin/cmdpanel/UtilityApplet.h>
 #include <core/viewport/input/ViewportInputHandler.h>
 #include <core/viewport/input/ViewportInputManager.h>
@@ -69,7 +69,7 @@ private:
  * \brief This utility applet lets the user select a particle in the viewports
  *        and lists its properties.
  */
-class ParticleInformationApplet : public UtilityApplet
+class OVITO_PARTICLES_EXPORT ParticleInformationApplet : public UtilityApplet
 {
 public:
 

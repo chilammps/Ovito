@@ -22,7 +22,7 @@
 #ifndef __OVITO_COORDINATION_NUMBER_MODIFIER_H
 #define __OVITO_COORDINATION_NUMBER_MODIFIER_H
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <plugins/particles/data/ParticleProperty.h>
 #include <plugins/particles/util/OnTheFlyNeighborListBuilder.h>
 #include "../../AsynchronousParticleModifier.h"
@@ -34,7 +34,7 @@ namespace Particles {
 /*
  * This modifier determines the coordination number of each particle.
  */
-class CoordinationNumberModifier : public AsynchronousParticleModifier
+class OVITO_PARTICLES_EXPORT CoordinationNumberModifier : public AsynchronousParticleModifier
 {
 public:
 

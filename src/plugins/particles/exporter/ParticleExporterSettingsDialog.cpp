@@ -19,7 +19,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include "ParticleExporterSettingsDialog.h"
 #include "OutputColumnMapping.h"
 

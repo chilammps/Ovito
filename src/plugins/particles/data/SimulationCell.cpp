@@ -19,7 +19,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <core/utilities/units/UnitsManager.h>
 #include <core/gui/properties/Vector3ParameterUI.h>
 #include <core/gui/properties/BooleanParameterUI.h>

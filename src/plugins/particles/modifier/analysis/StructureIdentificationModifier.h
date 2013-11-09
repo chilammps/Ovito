@@ -27,7 +27,7 @@
 #ifndef __OVITO_STRUCTURE_IDENTIFICATION_MODIFIER_H
 #define __OVITO_STRUCTURE_IDENTIFICATION_MODIFIER_H
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <core/gui/properties/RefTargetListParameterUI.h>
 
 #include <plugins/particles/modifier/AsynchronousParticleModifier.h>
@@ -41,7 +41,7 @@ using namespace Ovito;
 /**
  * \brief Base class for modifiers that assign a structure type to each particle.
  */
-class StructureIdentificationModifier : public AsynchronousParticleModifier
+class OVITO_PARTICLES_EXPORT StructureIdentificationModifier : public AsynchronousParticleModifier
 {
 public:
 

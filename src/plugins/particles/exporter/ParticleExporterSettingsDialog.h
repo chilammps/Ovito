@@ -22,7 +22,7 @@
 #ifndef __OVITO_PARTICLE_EXPORTER_SETTINGS_DIALOG_H
 #define __OVITO_PARTICLE_EXPORTER_SETTINGS_DIALOG_H
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <core/gui/widgets/general/SpinnerWidget.h>
 #include <plugins/particles/data/ParticlePropertyObject.h>
 #include "ParticleExporter.h"
@@ -34,7 +34,7 @@ class OutputColumnMapping;
 /******************************************************************************
 * This dialog box lets the user adjust the export settings.
 ******************************************************************************/
-class ParticleExporterSettingsDialog : public QDialog
+class OVITO_PARTICLES_EXPORT ParticleExporterSettingsDialog : public QDialog
 {
 	Q_OBJECT
 	

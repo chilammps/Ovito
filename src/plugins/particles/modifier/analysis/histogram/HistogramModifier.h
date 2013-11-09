@@ -22,7 +22,7 @@
 #ifndef __OVITO_HISTOGRAM_MODIFIER_H
 #define __OVITO_HISTOGRAM_MODIFIER_H
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <plugins/particles/data/ParticleProperty.h>
 #include <plugins/particles/util/ParticlePropertyComboBox.h>
 #include "../../ParticleModifier.h"
@@ -35,7 +35,7 @@ namespace Particles {
 /*
  * This modifier computes a value histogram for a particle property.
  */
-class HistogramModifier : public ParticleModifier
+class OVITO_PARTICLES_EXPORT HistogramModifier : public ParticleModifier
 {
 public:
 

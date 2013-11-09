@@ -27,7 +27,7 @@
 #ifndef __OVITO_ASYNC_PARTICLE_MODIFIER_H
 #define __OVITO_ASYNC_PARTICLE_MODIFIER_H
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <core/utilities/concurrent/Future.h>
 
 #include <plugins/particles/modifier/ParticleModifier.h>
@@ -41,7 +41,7 @@ using namespace Ovito;
 /**
  * \brief Base class for modifiers that compute their results in a background thread.
  */
-class AsynchronousParticleModifier : public ParticleModifier
+class OVITO_PARTICLES_EXPORT AsynchronousParticleModifier : public ParticleModifier
 {
 public:
 

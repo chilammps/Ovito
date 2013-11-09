@@ -22,7 +22,7 @@
 #ifndef __OVITO_SELECT_EXPRESSION_MODIFIER_H
 #define __OVITO_SELECT_EXPRESSION_MODIFIER_H
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <core/gui/widgets/general/AutocompleteLineEdit.h>
 #include "../ParticleModifier.h"
 
@@ -35,7 +35,7 @@ using namespace Ovito;
 /******************************************************************************
 * Selects particles based on a user-defined Boolean expression.
 ******************************************************************************/
-class SelectExpressionModifier : public ParticleModifier
+class OVITO_PARTICLES_EXPORT SelectExpressionModifier : public ParticleModifier
 {
 public:
 

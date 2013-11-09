@@ -19,7 +19,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <core/scene/pipeline/ModifierApplication.h>
 #include <plugins/particles/data/ParticleDisplay.h>
 #include <plugins/particles/data/ParticleTypeProperty.h>
@@ -66,6 +66,7 @@ ObjectStatus ParticleModifier::modifyObject(TimePoint time, ModifierApplication*
 	catch(const Exception& ex) {
 		// Transfer exception message to evaluation status.
 		status = ObjectStatus(ObjectStatus::Error, ex.messages().join('\n'));
+		state.intersectStateValidity(TimeInterval(time));
 	}
 	setStatus(status);
 
@@ -325,15 +326,16 @@ std::vector<Color> ParticleModifier::inputParticleColors(TimePoint time, TimeInt
 	// Obtain the particle display object.
 	ParticlePropertyObject* positionProperty = inputStandardProperty(ParticleProperty::PositionProperty);
 	if(positionProperty) {
-		ParticleDisplay* particleDisplay = dynamic_object_cast<ParticleDisplay>(positionProperty->displayObject());
-		if(particleDisplay) {
+		for(DisplayObject* displayObj : positionProperty->displayObjects()) {
+			if(ParticleDisplay* particleDisplay = dynamic_object_cast<ParticleDisplay>(displayObj)) {
 
-			// Query particle colors from display object.
-			particleDisplay->particleColors(colors,
-					inputStandardProperty(ParticleProperty::ColorProperty),
-					dynamic_object_cast<ParticleTypeProperty>(inputStandardProperty(ParticleProperty::ParticleTypeProperty)));
+				// Query particle colors from display object.
+				particleDisplay->particleColors(colors,
+						inputStandardProperty(ParticleProperty::ColorProperty),
+						dynamic_object_cast<ParticleTypeProperty>(inputStandardProperty(ParticleProperty::ParticleTypeProperty)));
 
-			return colors;
+				return colors;
+			}
 		}
 	}
 
@@ -351,15 +353,16 @@ std::vector<FloatType> ParticleModifier::inputParticleRadii(TimePoint time, Time
 	// Obtain the particle display object.
 	ParticlePropertyObject* positionProperty = inputStandardProperty(ParticleProperty::PositionProperty);
 	if(positionProperty) {
-		ParticleDisplay* particleDisplay = dynamic_object_cast<ParticleDisplay>(positionProperty->displayObject());
-		if(particleDisplay) {
+		for(DisplayObject* displayObj : positionProperty->displayObjects()) {
+			if(ParticleDisplay* particleDisplay = dynamic_object_cast<ParticleDisplay>(displayObj)) {
 
-			// Query particle radii from display object.
-			particleDisplay->particleRadii(radii,
-					inputStandardProperty(ParticleProperty::RadiusProperty),
-					dynamic_object_cast<ParticleTypeProperty>(inputStandardProperty(ParticleProperty::ParticleTypeProperty)));
+				// Query particle radii from display object.
+				particleDisplay->particleRadii(radii,
+						inputStandardProperty(ParticleProperty::RadiusProperty),
+						dynamic_object_cast<ParticleTypeProperty>(inputStandardProperty(ParticleProperty::ParticleTypeProperty)));
 
-			return radii;
+				return radii;
+			}
 		}
 	}
 

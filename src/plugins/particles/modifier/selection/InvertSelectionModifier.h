@@ -22,7 +22,7 @@
 #ifndef __OVITO_INVERT_SELECTION_MODIFIER_H
 #define __OVITO_INVERT_SELECTION_MODIFIER_H
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include "../ParticleModifier.h"
 
 namespace Particles {
@@ -32,7 +32,7 @@ using namespace Ovito;
 /**
  * \brief This modifier inverts the selection status of each particle.
  */
-class InvertSelectionModifier : public ParticleModifier
+class OVITO_PARTICLES_EXPORT InvertSelectionModifier : public ParticleModifier
 {
 public:
 

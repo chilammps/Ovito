@@ -19,7 +19,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <core/utilities/units/UnitsManager.h>
 #include <core/rendering/SceneRenderer.h>
 #include <core/gui/properties/FloatParameterUI.h>
@@ -155,8 +155,13 @@ void BondsDisplay::render(TimePoint time, SceneObject* sceneObject, const Pipeli
 
 			// Obtain particle colors since they determine the bond colors.
 			std::vector<Color> particleColors(positionProperty->size());
-			ParticleDisplay* particleDisplay = dynamic_object_cast<ParticleDisplay>(positionProperty->displayObject());
-			if(particleDisplay && useParticleColors())
+			ParticleDisplay* particleDisplay = nullptr;
+			if(useParticleColors()) {
+				for(DisplayObject* displayObj : positionProperty->displayObjects())
+					if((particleDisplay = dynamic_object_cast<ParticleDisplay>(displayObj)) != nullptr)
+						break;
+			}
+			if(particleDisplay)
 				particleDisplay->particleColors(particleColors, colorProperty, typeProperty, nullptr);
 			else
 				std::fill(particleColors.begin(), particleColors.end(), bondColor());

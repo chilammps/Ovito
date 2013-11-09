@@ -19,7 +19,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <core/gui/properties/ColorParameterUI.h>
 #include <core/gui/properties/FloatParameterUI.h>
 #include <core/gui/properties/StringParameterUI.h>

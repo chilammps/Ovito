@@ -27,7 +27,7 @@
 #ifndef __OVITO_PARTICLE_PROPERTY_H
 #define __OVITO_PARTICLE_PROPERTY_H
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 
 namespace Particles {
 
@@ -36,7 +36,7 @@ using namespace Ovito;
 /**
  * \brief Memory storage for a per-particle property.
  */
-class ParticleProperty : public QSharedData
+class OVITO_PARTICLES_EXPORT ParticleProperty : public QSharedData
 {
 public:
 

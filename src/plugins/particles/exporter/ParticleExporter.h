@@ -22,7 +22,7 @@
 #ifndef __OVITO_PARTICLE_EXPORTER_H
 #define __OVITO_PARTICLE_EXPORTER_H
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <core/scene/pipeline/PipelineFlowState.h>
 #include <core/dataset/importexport/FileExporter.h>
 #include <base/io/gzdevice/qtiocompressor.h>
@@ -37,7 +37,7 @@ class ParticlePropertyObject;
 /**
  * \brief Abstract base class for export services that write the particles to a file.
  */
-class ParticleExporter : public FileExporter
+class OVITO_PARTICLES_EXPORT ParticleExporter : public FileExporter
 {
 protected:
 

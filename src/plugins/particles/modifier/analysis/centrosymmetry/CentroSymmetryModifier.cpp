@@ -19,7 +19,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <core/gui/properties/IntegerParameterUI.h>
 #include <core/utilities/concurrent/ParallelFor.h>
 #include <plugins/particles/util/TreeNeighborListBuilder.h>

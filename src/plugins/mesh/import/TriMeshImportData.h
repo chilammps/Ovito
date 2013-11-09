@@ -22,10 +22,10 @@
 #ifndef __OVITO_TRIMESH_IMPORT_DATA_H
 #define __OVITO_TRIMESH_IMPORT_DATA_H
 
-#include <core/Core.h>
 #include <core/dataset/importexport/LinkedFileImporter.h>
 #include <core/utilities/io/CompressedTextParserStream.h>
 #include <core/scene/objects/geometry/TriMesh.h>
+#include <plugins/mesh/Mesh.h>
 
 namespace Mesh {
 
@@ -34,7 +34,7 @@ using namespace Ovito;
 /**
  * Container structure for triangle mesh data imported by a parser class.
  */
-class TriMeshImportData : public LinkedFileImporter::ImportTask
+class OVITO_MESH_EXPORT TriMeshImportData : public LinkedFileImporter::ImportTask
 {
 public:
 
@@ -46,7 +46,7 @@ public:
 
 	/// Lets the data container insert the data it holds into the scene by creating
 	/// appropriate scene objects.
-	virtual void insertIntoScene(LinkedFileObject* destination) override;
+	virtual QSet<SceneObject*> insertIntoScene(LinkedFileObject* destination) override;
 
 	/// Returns the triangle mesh data structure.
 	const TriMesh& mesh() const { return _mesh; }

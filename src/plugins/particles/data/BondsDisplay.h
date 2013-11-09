@@ -27,7 +27,7 @@
 #ifndef __OVITO_BONDS_DISPLAY_H
 #define __OVITO_BONDS_DISPLAY_H
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <core/scene/display/DisplayObject.h>
 #include <core/rendering/ArrowGeometryBuffer.h>
 #include <core/gui/properties/PropertiesEditor.h>
@@ -42,7 +42,7 @@ using namespace Ovito;
 /**
  * \brief A scene display object for bonds.
  */
-class BondsDisplay : public DisplayObject
+class OVITO_PARTICLES_EXPORT BondsDisplay : public DisplayObject
 {
 public:
 

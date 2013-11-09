@@ -19,7 +19,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <core/viewport/Viewport.h>
 #include <core/scene/pipeline/PipelineObject.h>
 #include <core/animation/controller/StandardControllers.h>

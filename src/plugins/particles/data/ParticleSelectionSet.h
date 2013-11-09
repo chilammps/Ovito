@@ -22,7 +22,7 @@
 #ifndef __OVITO_PARTICLE_SELECTION_SET_H
 #define __OVITO_PARTICLE_SELECTION_SET_H
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <core/scene/pipeline/PipelineFlowState.h>
 #include <core/reference/RefTarget.h>
 
@@ -41,7 +41,7 @@ class ParticlePropertyObject;		// defined in ParticlePropertyObject.h
  * or as a list of particle identifiers. The second storage scheme is less efficient,
  * but supports situations where the order or the number of particles change.
  */
-class ParticleSelectionSet : public RefTarget
+class OVITO_PARTICLES_EXPORT ParticleSelectionSet : public RefTarget
 {
 public:
 

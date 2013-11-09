@@ -107,7 +107,8 @@ void ViewportTriMeshGeometryBuffer::setMesh(const TriMesh& mesh, const ColorA& m
 		std::vector<Vector_3<float>> groupVertexNormals(mesh.vertexCount());
 		for(int group = 0; group < OVITO_MAX_NUM_SMOOTHING_GROUPS; group++) {
 			quint32 groupMask = quint32(1) << group;
-            if((allMask & groupMask) == 0) continue;
+            if((allMask & groupMask) == 0)
+            	continue;	// Group is not used.
 
 			// Reset work arrays.
             std::fill(groupVertexNormals.begin(), groupVertexNormals.end(), Vector_3<float>::Zero());
@@ -115,7 +116,7 @@ void ViewportTriMeshGeometryBuffer::setMesh(const TriMesh& mesh, const ColorA& m
 			// Compute vertex normals at original vertices for current smoothing group.
             faceNormal = faceNormals.begin();
 			for(auto face = mesh.faces().constBegin(); face != mesh.faces().constEnd(); ++face, ++faceNormal) {
-				// Skip faces which do not belong to the current smoothing group.
+				// Skip faces that do not belong to the current smoothing group.
 				if((face->smoothingGroups() & groupMask) == 0) continue;
 
 				// Add face's normal to vertex normals.
@@ -158,13 +159,12 @@ void ViewportTriMeshGeometryBuffer::render(SceneRenderer* renderer, quint32 pick
 {
 	OVITO_ASSERT(_glVertexBuffer.isCreated());
 	OVITO_ASSERT(_contextGroup == QOpenGLContextGroup::currentContextGroup());
-	OVITO_ASSERT(_renderVertexCount >= 0);
 	ViewportSceneRenderer* vpRenderer = dynamic_object_cast<ViewportSceneRenderer>(renderer);
 
 	if(_renderVertexCount <= 0 || !vpRenderer)
 		return;
 
-	glEnable(GL_CULL_FACE);
+	glDisable(GL_CULL_FACE);
 
 	if(!renderer->isPicking()) {
 		if(!_shader->bind())

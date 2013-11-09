@@ -22,7 +22,7 @@
 #ifndef __OVITO_OUTPUT_COLUMN_MAPPING_H
 #define __OVITO_OUTPUT_COLUMN_MAPPING_H
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <core/scene/pipeline/PipelineFlowState.h>
 #include <plugins/particles/data/ParticleProperty.h>
 #include <plugins/particles/data/ParticlePropertyObject.h>
@@ -32,7 +32,7 @@ namespace Particles {
 /**
  * \brief This class defines how particle properties should be written to data columns in an output file.
  */
-class OutputColumnMapping
+class OVITO_PARTICLES_EXPORT OutputColumnMapping
 {
 public:
 

@@ -27,7 +27,7 @@
 #ifndef __OVITO_PARTICLE_TYPE_PROPERTY_H
 #define __OVITO_PARTICLE_TYPE_PROPERTY_H
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include "ParticlePropertyObject.h"
 #include "ParticleType.h"
 
@@ -36,7 +36,7 @@ namespace Particles {
 /**
  * \brief A particle property that stores the particle types.
  */
-class ParticleTypeProperty : public ParticlePropertyObject
+class OVITO_PARTICLES_EXPORT ParticleTypeProperty : public ParticlePropertyObject
 {
 public:
 

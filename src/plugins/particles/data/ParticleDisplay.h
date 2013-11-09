@@ -27,7 +27,7 @@
 #ifndef __OVITO_PARTICLE_DISPLAY_H
 #define __OVITO_PARTICLE_DISPLAY_H
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <core/scene/display/DisplayObject.h>
 #include <core/rendering/ParticleGeometryBuffer.h>
 #include <core/gui/properties/PropertiesEditor.h>
@@ -42,7 +42,7 @@ class ParticleTypeProperty;
 /**
  * \brief A scene display object for particles.
  */
-class ParticleDisplay : public DisplayObject
+class OVITO_PARTICLES_EXPORT ParticleDisplay : public DisplayObject
 {
 public:
 
@@ -130,7 +130,8 @@ protected:
 	SceneObjectCacheHelper<
 		QPointer<ParticlePropertyObject>, unsigned int,		// Color property + revision number
 		QPointer<ParticlePropertyObject>, unsigned int,		// Type property + revision number
-		QPointer<ParticlePropertyObject>, unsigned int		// Selection property + revision number
+		QPointer<ParticlePropertyObject>, unsigned int,		// Selection property + revision number
+		QPointer<ParticlePropertyObject>, unsigned int		// Transparency property + revision number
 		> _colorsCacheHelper;
 
 	/// The bounding box that includes all particles.

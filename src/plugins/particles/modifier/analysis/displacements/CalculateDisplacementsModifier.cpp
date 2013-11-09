@@ -19,7 +19,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <core/scene/objects/SceneObject.h>
 #include <core/dataset/importexport/LinkedFileObject.h>
 #include <core/gui/properties/BooleanParameterUI.h>
@@ -227,7 +227,7 @@ ObjectStatus CalculateDisplacementsModifier::modifyParticles(TimePoint time, Tim
 	OVITO_ASSERT(displacementMagnitudeProperty->size() == posProperty->size());
 
 	// Plug in our internal display object.
-	displacementProperty->setDisplayObject(_vectorDisplay);
+	displacementProperty->addDisplayObject(_vectorDisplay);
 
 	// Get simulation cell info.
 	const std::array<bool, 3> pbc = inputCell->pbcFlags();

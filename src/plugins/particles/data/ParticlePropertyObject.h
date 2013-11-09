@@ -27,7 +27,7 @@
 #ifndef __OVITO_PARTICLE_PROPERTY_OBJECT_H
 #define __OVITO_PARTICLE_PROPERTY_OBJECT_H
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <core/scene/objects/SceneObject.h>
 #include <core/scene/pipeline/PipelineFlowState.h>
 #include "ParticleProperty.h"
@@ -39,7 +39,7 @@ using namespace Ovito;
 /**
  * \brief Storage for a per-particle property.
  */
-class ParticlePropertyObject : public SceneObject
+class OVITO_PARTICLES_EXPORT ParticlePropertyObject : public SceneObject
 {
 public:
 

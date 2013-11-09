@@ -27,7 +27,7 @@
 #ifndef __OVITO_COMMON_NEIGHBOR_ANALYSIS_MODIFIER_H
 #define __OVITO_COMMON_NEIGHBOR_ANALYSIS_MODIFIER_H
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <core/gui/properties/RefTargetListParameterUI.h>
 #include <plugins/particles/modifier/analysis/StructureIdentificationModifier.h>
 
@@ -42,7 +42,7 @@ class TreeNeighborListBuilder;
  * \brief A modifier that performs the common neighbor analysis (CNA) to identify
  *        local coordination structures.
  */
-class CommonNeighborAnalysisModifier : public StructureIdentificationModifier
+class OVITO_PARTICLES_EXPORT CommonNeighborAnalysisModifier : public StructureIdentificationModifier
 {
 public:
 

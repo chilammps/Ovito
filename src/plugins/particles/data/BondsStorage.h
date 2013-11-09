@@ -27,7 +27,7 @@
 #ifndef __OVITO_BONDS_STORAGE_H
 #define __OVITO_BONDS_STORAGE_H
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 
 namespace Particles {
 
@@ -36,7 +36,7 @@ using namespace Ovito;
 /**
  * \brief Memory storage for bonds between particles.
  */
-class BondsStorage : public QSharedData
+class OVITO_PARTICLES_EXPORT BondsStorage : public QSharedData
 {
 public:
 

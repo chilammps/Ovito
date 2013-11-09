@@ -93,6 +93,11 @@ public:
 	/// \brief Sets all coordinates of the point to zero.
 	Point_2& operator=(Origin) { y() = x() = T(0); return *this; }
 
+	/// \brief Converts a point to a vector.
+	Vector_2<T> operator-(Origin) const {
+		return Vector_2<T>(*this);
+	}
+
 	//////////////////////////// Component access //////////////////////////
 
 	/// \brief Returns the value of the X coordinate of this point.

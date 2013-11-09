@@ -264,11 +264,12 @@ Box3 ViewportSceneRenderer::boundingBoxInteractive(TimePoint time, Viewport* vie
 		// Evaluate geometry pipeline of object node.
 		const PipelineFlowState& state = node->evalPipeline(time);
 		for(const auto& sceneObj : state.objects()) {
-			DisplayObject* displayObj = sceneObj->displayObject();
-			if(displayObj && displayObj->isEnabled()) {
-				TimeInterval interval;
-				bb.addBox(displayObj->viewDependentBoundingBox(time, viewport,
-						sceneObj.get(), node, state).transformed(node->getWorldTransform(time, interval)));
+			for(DisplayObject* displayObj : sceneObj->displayObjects()) {
+				if(displayObj && displayObj->isEnabled()) {
+					TimeInterval interval;
+					bb.addBox(displayObj->viewDependentBoundingBox(time, viewport,
+							sceneObj.get(), node, state).transformed(node->getWorldTransform(time, interval)));
+				}
 			}
 		}
 

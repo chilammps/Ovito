@@ -81,6 +81,12 @@ public:
 	/// \brief Sets the color of all particles to the given value.
 	virtual void setParticleColor(const Color color) = 0;
 
+	/// \brief Sets the transparency of the particles.
+	virtual void setParticleTransparencies(const FloatType* transparencies) = 0;
+
+	/// \brief Sets the transparency of all particles to the given value.
+	virtual void setParticleTransparency(FloatType transparency) = 0;
+
 	/// \brief Returns true if the geometry buffer is filled and can be rendered with the given renderer.
 	virtual bool isValid(SceneRenderer* renderer) = 0;
 

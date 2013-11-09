@@ -35,7 +35,7 @@
 namespace Ovito {
 
 /**
- * \brief A scene display object for per-particle vectors.
+ * \brief A scene display object for triangle meshes.
  */
 class OVITO_CORE_EXPORT TriMeshDisplay : public DisplayObject
 {

@@ -27,7 +27,7 @@
 #ifndef __OVITO_SIMULATION_CELL_H
 #define __OVITO_SIMULATION_CELL_H
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <core/scene/objects/SceneObject.h>
 #include <core/gui/properties/PropertiesEditor.h>
 #include <core/gui/properties/FloatParameterUI.h>
@@ -43,7 +43,7 @@ using namespace Ovito;
  * The simulation box geometry is a parallelepiped defined by three edge vectors.
  * A fourth vector specifies the origin of the simulation box in space.
  */
-class SimulationCell : public SceneObject
+class OVITO_PARTICLES_EXPORT SimulationCell : public SceneObject
 {
 public:
 

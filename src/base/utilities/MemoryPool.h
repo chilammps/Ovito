@@ -82,6 +82,13 @@ public:
 		return pages.size() * pageSize * sizeof(T);
 	}
 
+	void swap(MemoryPool<T>& other) {
+		pages.swap(other.pages);
+		std::swap(lastPageNumber, other.lastPageNumber);
+		std::swap(pageSize, other.pageSize);
+		std::swap(alloc, other.alloc);
+	}
+
 private:
 
 	/// Allocates memory for a new object instance.

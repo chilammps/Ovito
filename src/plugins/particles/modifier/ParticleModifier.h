@@ -22,7 +22,7 @@
 #ifndef __OVITO_PARTICLE_MODIFIER_H
 #define __OVITO_PARTICLE_MODIFIER_H
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <core/scene/pipeline/Modifier.h>
 #include <core/scene/objects/SceneObject.h>
 #include <core/gui/properties/PropertiesEditor.h>
@@ -40,7 +40,7 @@ using namespace Ovito;
 /*
  * Abstract base class for modifiers that operate on a system of particles.
  */
-class ParticleModifier : public Modifier
+class OVITO_PARTICLES_EXPORT ParticleModifier : public Modifier
 {
 protected:
 
@@ -171,7 +171,7 @@ private:
 /**
  * Base class for properties editors for ParticleModifier derived classes.
  */
-class ParticleModifierEditor : public PropertiesEditor
+class OVITO_PARTICLES_EXPORT ParticleModifierEditor : public PropertiesEditor
 {
 public:
 

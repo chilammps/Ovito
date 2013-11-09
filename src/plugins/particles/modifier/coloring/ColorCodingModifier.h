@@ -22,7 +22,7 @@
 #ifndef __OVITO_COLOR_CODING_MODIFIER_H
 #define __OVITO_COLOR_CODING_MODIFIER_H
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <core/animation/controller/Controller.h>
 #include <core/rendering/ImageGeometryBuffer.h>
 #include <core/rendering/TextGeometryBuffer.h>
@@ -37,7 +37,7 @@ using namespace Ovito;
  * Abstract base class for color gradients that can be used with the ColorCodingModifier.
  * It converts a scalar value in the range [0,1] to a color value.
  */
-class ColorCodingGradient : public RefTarget
+class OVITO_PARTICLES_EXPORT ColorCodingGradient : public RefTarget
 {
 protected:
 

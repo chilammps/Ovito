@@ -19,7 +19,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <core/viewport/Viewport.h>
 #include <core/viewport/ViewportManager.h>
 #include <core/dataset/DataSetManager.h>
@@ -83,7 +83,7 @@ SliceModifier::SliceModifier() :
 ******************************************************************************/
 TimeInterval SliceModifier::modifierValidity(TimePoint time)
 {
-	TimeInterval interval = Modifier::modifierValidity(time);
+	TimeInterval interval = ParticleModifier::modifierValidity(time);
 	interval.intersect(_normalCtrl->validityInterval(time));
 	interval.intersect(_distanceCtrl->validityInterval(time));
 	interval.intersect(_widthCtrl->validityInterval(time));

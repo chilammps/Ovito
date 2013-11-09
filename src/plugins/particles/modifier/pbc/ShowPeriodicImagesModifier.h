@@ -22,7 +22,7 @@
 #ifndef __OVITO_SHOW_PERIODIC_IMAGES_MODIFIER_H
 #define __OVITO_SHOW_PERIODIC_IMAGES_MODIFIER_H
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include "../ParticleModifier.h"
 
 namespace Particles {
@@ -35,7 +35,7 @@ using namespace Ovito;
  *
  * \author Alexander Stukowski
  */
-class ShowPeriodicImagesModifier : public ParticleModifier
+class OVITO_PARTICLES_EXPORT ShowPeriodicImagesModifier : public ParticleModifier
 {
 public:
 

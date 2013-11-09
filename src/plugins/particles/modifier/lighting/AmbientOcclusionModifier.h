@@ -27,7 +27,7 @@
 #ifndef __OVITO_AMBIENT_OCCLUSION_MODIFIER_H
 #define __OVITO_AMBIENT_OCCLUSION_MODIFIER_H
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <core/gui/properties/RefTargetListParameterUI.h>
 #include <plugins/particles/modifier/AsynchronousParticleModifier.h>
 
@@ -38,7 +38,7 @@ using namespace Ovito;
 /**
  * \brief Calculates ambient occlusion lighting for particles.
  */
-class AmbientOcclusionModifier : public AsynchronousParticleModifier
+class OVITO_PARTICLES_EXPORT AmbientOcclusionModifier : public AsynchronousParticleModifier
 {
 public:
 

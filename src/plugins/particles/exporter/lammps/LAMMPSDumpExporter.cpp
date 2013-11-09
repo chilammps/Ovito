@@ -19,7 +19,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <plugins/particles/data/ParticlePropertyObject.h>
 #include <plugins/particles/data/SimulationCell.h>
 #include "LAMMPSDumpExporter.h"

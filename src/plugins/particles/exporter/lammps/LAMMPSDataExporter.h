@@ -22,7 +22,7 @@
 #ifndef __OVITO_LAMMPS_DATA_FILE_EXPORTER_H
 #define __OVITO_LAMMPS_DATA_FILE_EXPORTER_H
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include "../ParticleExporter.h"
 
 namespace Particles {
@@ -32,7 +32,7 @@ using namespace Ovito;
 /**
  * Exporter service that writes the particles to a LAMMPS data file.
  */
-class LAMMPSDataExporter : public ParticleExporter
+class OVITO_PARTICLES_EXPORT LAMMPSDataExporter : public ParticleExporter
 {
 public:
 

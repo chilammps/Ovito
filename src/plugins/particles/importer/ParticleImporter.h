@@ -22,7 +22,7 @@
 #ifndef __OVITO_PARTICLE_IMPORTER_H
 #define __OVITO_PARTICLE_IMPORTER_H
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <core/dataset/importexport/LinkedFileImporter.h>
 #include <core/utilities/io/CompressedTextParserStream.h>
 #include <plugins/particles/data/ParticleProperty.h>
@@ -35,7 +35,7 @@ using namespace Ovito;
 /**
  * \brief Base class for file parsers that read particle-position data.
  */
-class ParticleImporter : public LinkedFileImporter
+class OVITO_PARTICLES_EXPORT ParticleImporter : public LinkedFileImporter
 {
 public:
 

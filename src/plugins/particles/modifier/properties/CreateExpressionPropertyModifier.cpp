@@ -19,7 +19,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <core/gui/undo/UndoManager.h>
 #include <core/gui/widgets/general/AutocompleteLineEdit.h>
 #include <core/scene/pipeline/PipelineObject.h>

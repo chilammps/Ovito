@@ -44,7 +44,6 @@ void TriMesh::setVertexCount(int n)
 	_vertices.resize(n);
 	if(_hasVertexColors)
 		_vertexColors.resize(n);
-	invalidateVertices();
 }
 
 /******************************************************************************
@@ -53,7 +52,6 @@ void TriMesh::setVertexCount(int n)
 void TriMesh::setFaceCount(int n)
 {
 	_faces.resize(n);
-	invalidateFaces();
 }
 
 /******************************************************************************

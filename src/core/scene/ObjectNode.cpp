@@ -66,7 +66,7 @@ const PipelineFlowState& ObjectNode::evalPipeline(TimePoint time)
 				// Check if display object is still being used by any of the scene objects that came out of the pipeline.
 				bool isAlive = false;
 				for(const auto& sceneObj : _pipelineCache.objects()) {
-					if(sceneObj->displayObject() == displayObj) {
+					if(sceneObj->displayObjects().contains(displayObj)) {
 						isAlive = true;
 						break;
 					}
@@ -78,9 +78,11 @@ const PipelineFlowState& ObjectNode::evalPipeline(TimePoint time)
 
 			// Now add new display objects to this node.
 			for(const auto& sceneObj : _pipelineCache.objects()) {
-				DisplayObject* displayObj = sceneObj->displayObject();
-				if(displayObj && displayObjects().contains(displayObj) == false)
-					_displayObjects.push_back(displayObj);
+				for(DisplayObject* displayObj : sceneObj->displayObjects()) {
+					OVITO_CHECK_OBJECT_POINTER(displayObj);
+					if(displayObjects().contains(displayObj) == false)
+						_displayObjects.push_back(displayObj);
+				}
 			}
 		}
 		else {
@@ -108,9 +110,10 @@ void ObjectNode::render(TimePoint time, SceneRenderer* renderer)
 {
 	const PipelineFlowState& state = evalPipeline(time);
 	for(const auto& sceneObj : state.objects()) {
-		DisplayObject* displayObj = sceneObj->displayObject();
-		if(displayObj && displayObj->isEnabled()) {
-			displayObj->render(time, sceneObj.get(), state, renderer, this);
+		for(DisplayObject* displayObj : sceneObj->displayObjects()) {
+			if(displayObj && displayObj->isEnabled()) {
+				displayObj->render(time, sceneObj.get(), state, renderer, this);
+			}
 		}
 	}
 }
@@ -164,9 +167,10 @@ Box3 ObjectNode::localBoundingBox(TimePoint time)
 
 	// Compute bounding boxes of scene objects.
 	for(const auto& sceneObj : state.objects()) {
-		DisplayObject* displayObj = sceneObj->displayObject();
-		if(displayObj && displayObj->isEnabled())
-			bb.addBox(displayObj->boundingBox(time, sceneObj.get(), this, state));
+		for(DisplayObject* displayObj : sceneObj->displayObjects()) {
+			if(displayObj && displayObj->isEnabled())
+				bb.addBox(displayObj->boundingBox(time, sceneObj.get(), this, state));
+		}
 	}
 
 	return bb;

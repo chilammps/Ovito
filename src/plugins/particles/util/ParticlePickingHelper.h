@@ -22,7 +22,7 @@
 #ifndef __OVITO_PARTICLE_PICKING_HELPER_H
 #define __OVITO_PARTICLE_PICKING_HELPER_H
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <core/scene/pipeline/PipelineFlowState.h>
 #include <core/scene/ObjectNode.h>
 #include <core/viewport/Viewport.h>
@@ -37,7 +37,7 @@ using namespace Ovito;
 /******************************************************************************
 * Provides support for picking of atoms.
 ******************************************************************************/
-class ParticlePickingHelper
+class OVITO_PARTICLES_EXPORT ParticlePickingHelper
 {
 public:
 

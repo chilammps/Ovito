@@ -119,13 +119,13 @@ public:
 	/// An object should generate a ReferenceEvent::ObjectStatusChanged event when its status has changed.
 	virtual ObjectStatus status() const { return ObjectStatus(); }
 
-	/// \brief Returns the attached display object that is responsible for rendering this
+	/// \brief Returns the list of attached display objects that are responsible for rendering this
 	///        scene object.
-	DisplayObject* displayObject() const { return _displayObject.get(); }
+	const QVector<DisplayObject*>& displayObjects() const { return _displayObjects; }
 
 	/// \brief Attaches a display object to this scene object that will be responsible for rendering the
 	///        scene object.
-	void setDisplayObject(DisplayObject* displayObj) { _displayObject = displayObj; }
+	void addDisplayObject(DisplayObject* displayObj) { _displayObjects.push_back(displayObj); }
 
 	/// \brief Returns whether the internal data is saved along with the scene.
 	/// \return \c true if the data is stored in the scene file; \c false if the data can be restored from an external file or recomputed.
@@ -168,7 +168,6 @@ public:
 
 	Q_PROPERTY(bool saveWithScene READ saveWithScene WRITE setSaveWithScene)
 	Q_PROPERTY(int revisionNumber READ revisionNumber)
-	Q_PROPERTY(DisplayObject* displayObject READ displayObject WRITE setDisplayObject)
 
 protected:
 
@@ -181,27 +180,25 @@ protected:
 	/// Loads the class' contents from the given stream.
 	virtual void loadFromStream(ObjectLoadStream& stream) override;
 
-	/// Creates a copy of this object.
-	virtual OORef<RefTarget> clone(bool deepCopy, CloneHelper& cloneHelper) override;
-
 private:
 
 	/// The revision counter of this scene object.
 	/// The counter is increment every time the object changes.
 	unsigned int _revisionNumber;
 
-	/// The attached display object that is responsible for rendering this scene object.
-	OORef<DisplayObject> _displayObject;
-
 	/// Controls whether the internal data is saved along with the scene.
 	/// If false, only metadata will be saved in a scene file while the contents get restored
 	/// from an external data source or get recomputed.
 	PropertyField<bool> _saveWithScene;
 
+	/// The attached display objects that are responsible for rendering this scene object.
+	VectorReferenceField<DisplayObject> _displayObjects;
+
 	Q_OBJECT
 	OVITO_OBJECT
 
 	DECLARE_PROPERTY_FIELD(_saveWithScene);
+	DECLARE_VECTOR_REFERENCE_FIELD(_displayObjects);
 };
 
 };

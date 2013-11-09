@@ -30,6 +30,7 @@
 namespace Ovito {
 
 class LinkedFileObject;		// defined in LinkedFileObject.h
+class SceneObject;			// defined in SceneObject.h
 
 /**
  * \brief Base class for file parsers that can reload a file that has been imported into the scene.
@@ -81,9 +82,12 @@ public:
 		/// \brief Is called in the background thread to perform the actual loading.
 		virtual void load(FutureInterfaceBase& futureInterface) = 0;
 
-		/// Lets the data container insert the data it holds into the scene by creating
-		/// appropriate scene objects.
-		virtual void insertIntoScene(LinkedFileObject* destination) = 0;
+		/// \brief Lets the data container insert the data it holds into the scene by
+		///        creating appropriate scene objects.
+		/// \return All scene objects newly inserted into the destination LinkedFileObject
+		///         or existing scene objects modified by the importer. The LinkedFileObject
+		///         will discard all existing scene objects which are not in this set.
+		virtual QSet<SceneObject*> insertIntoScene(LinkedFileObject* destination) = 0;
 
 		/// Returns the source file information.
 		const FrameSourceInformation& frame() const { return _frame; }

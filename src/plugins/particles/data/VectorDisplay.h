@@ -27,7 +27,7 @@
 #ifndef __OVITO_VECTOR_DISPLAY_H
 #define __OVITO_VECTOR_DISPLAY_H
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <core/scene/display/DisplayObject.h>
 #include <core/gui/properties/PropertiesEditor.h>
 #include <core/rendering/ArrowGeometryBuffer.h>
@@ -40,7 +40,7 @@ using namespace Ovito;
 /**
  * \brief A scene display object for per-particle vectors.
  */
-class VectorDisplay : public DisplayObject
+class OVITO_PARTICLES_EXPORT VectorDisplay : public DisplayObject
 {
 public:
 

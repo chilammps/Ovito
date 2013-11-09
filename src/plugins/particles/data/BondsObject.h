@@ -27,7 +27,7 @@
 #ifndef __OVITO_BONDS_OBJECT_H
 #define __OVITO_BONDS_OBJECT_H
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <core/scene/objects/SceneObject.h>
 #include "BondsStorage.h"
 
@@ -38,7 +38,7 @@ using namespace Ovito;
 /**
  * \brief Stores the bonds between particles.
  */
-class BondsObject : public SceneObject
+class OVITO_PARTICLES_EXPORT BondsObject : public SceneObject
 {
 public:
 

@@ -26,7 +26,7 @@
 #ifndef __OVITO_AMBIENT_OCCLUSION_RENDERER_H
 #define __OVITO_AMBIENT_OCCLUSION_RENDERER_H
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <core/rendering/viewport/ViewportSceneRenderer.h>
 
 namespace Particles {
@@ -36,7 +36,7 @@ using namespace Ovito;
 /**
  * \brief A renderer used to compute ambient occlusion lighting.
  */
-class AmbientOcclusionRenderer : public ViewportSceneRenderer
+class OVITO_PARTICLES_EXPORT AmbientOcclusionRenderer : public ViewportSceneRenderer
 {
 public:
 

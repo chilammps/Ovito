@@ -54,6 +54,7 @@ SET(OVITO_CORE_SOURCE_FILES
 	scene/objects/SceneObject.cpp
 	scene/objects/geometry/TriMesh.cpp
 	scene/objects/geometry/TriMeshObject.cpp
+	scene/objects/geometry/HalfEdgeMesh.cpp
 	scene/objects/camera/CameraObject.cpp
 	scene/pipeline/PipelineFlowState.cpp
 	scene/pipeline/PipelineObject.cpp

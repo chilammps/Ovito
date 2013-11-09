@@ -22,14 +22,14 @@
 #ifndef __OVITO_CUTOFF_RADIUS_PRESETS_H
 #define __OVITO_CUTOFF_RADIUS_PRESETS_H
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <core/gui/properties/ParameterUI.h>
 
 namespace Particles {
 
 using namespace Ovito;
 
-class ChemicalElement
+class OVITO_PARTICLES_EXPORT ChemicalElement
 {
 public:
 
@@ -48,7 +48,7 @@ public:
 extern ChemicalElement ChemicalElements[];
 extern const size_t NumberOfChemicalElements;
 
-class CutoffRadiusPresetsUI : public PropertyParameterUI
+class OVITO_PARTICLES_EXPORT CutoffRadiusPresetsUI : public PropertyParameterUI
 {
 public:
 

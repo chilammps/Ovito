@@ -1,0 +1,28 @@
+
+**************************************************************************
+Install Qt libraries, version 5.1.1
+
+**************************************************************************
+Build static libav library (release 0.8.8):
+
+wget http://libav.org/releases/libav-0.8.8.tar.gz
+tar xzfv libav-0.8.8.tar.gz
+cd libav-0.8.8
+./configure \
+	--disable-ffmpeg \
+	--disable-avprobe \
+	--disable-avplay \
+	--disable-avserver \
+	--disable-debug \
+	--disable-doc \
+	--disable-avplay \
+	--disable-avserver \
+	--disable-network \
+	--disable-filters \
+	--disable-decoders \
+	--prefix=$HOME/Documents/progs/libavstatic
+
+make -j3 install
+
+export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$HOME/Documents/progs/libavstatic/lib/pkgconfig
+export MACOSX_DEPLOYMENT_TARGET=10.7

@@ -22,7 +22,7 @@
 #ifndef __OVITO_PARTICLE_IMPORT_DATA_H
 #define __OVITO_PARTICLE_IMPORT_DATA_H
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <core/dataset/importexport/LinkedFileImporter.h>
 #include <core/utilities/io/CompressedTextParserStream.h>
 #include <plugins/particles/data/ParticleProperty.h>
@@ -36,7 +36,7 @@ using namespace Ovito;
 /**
  * Container structure for data imported by a ParticleImporter.
  */
-class ParticleImportTask : public LinkedFileImporter::ImportTask
+class OVITO_PARTICLES_EXPORT ParticleImportTask : public LinkedFileImporter::ImportTask
 {
 public:
 
@@ -57,7 +57,7 @@ public:
 
 	/// Lets the data container insert the data it holds into the scene by creating
 	/// appropriate scene objects.
-	virtual void insertIntoScene(LinkedFileObject* destination) override;
+	virtual QSet<SceneObject*> insertIntoScene(LinkedFileObject* destination) override;
 
 	/// Returns the current simulation cell matrix.
 	const SimulationCellData& simulationCell() const { return _simulationCell; }

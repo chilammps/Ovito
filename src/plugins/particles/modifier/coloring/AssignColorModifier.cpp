@@ -19,7 +19,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <core/animation/controller/StandardControllers.h>
 #include <core/gui/properties/ColorParameterUI.h>
 #include <core/gui/properties/BooleanParameterUI.h>

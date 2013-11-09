@@ -19,7 +19,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <core/gui/properties/SubObjectParameterUI.h>
 #include <core/gui/properties/IntegerRadioButtonParameterUI.h>
 #include <core/utilities/concurrent/ParallelFor.h>
@@ -59,7 +59,7 @@ CreateBondsModifier::CreateBondsModifier() : _cutoffMode(UniformCutoff), _unifor
 
 	// Create the display object for bonds rendering and assign it to the scene object.
 	_bondsDisplay = new BondsDisplay();
-	_bondsObj->setDisplayObject(_bondsDisplay);
+	_bondsObj->addDisplayObject(_bondsDisplay);
 }
 
 /******************************************************************************

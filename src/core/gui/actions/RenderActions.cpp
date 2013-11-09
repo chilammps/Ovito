@@ -140,10 +140,9 @@ void ActionManager::on_RenderActiveViewport_triggered()
 						progressDialog.setValue(frameIndex);
 
 						int frameNumber = firstFrameNumber + frameIndex * settings->everyNthFrame() + settings->fileNumberBase();
-						if(renderFrame(renderTime, frameNumber, settings, renderer, viewport, frameBuffer.data(), videoEncoder, progressDialog)) {
-							if(frameBufferWindow)
-								frameBufferWindow->setWindowTitle(tr("Frame %1").arg(AnimManager::instance().timeToFrame(renderTime)));
-						}
+						if(frameBufferWindow)
+							frameBufferWindow->setWindowTitle(tr("Frame %1").arg(AnimManager::instance().timeToFrame(renderTime)));
+						renderFrame(renderTime, frameNumber, settings, renderer, viewport, frameBuffer.data(), videoEncoder, progressDialog);
 
 						if(progressDialog.wasCanceled())
 							break;

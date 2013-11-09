@@ -176,7 +176,7 @@ void ViewportWindow::renderNow()
 
 	_updateRequested = false;
 
-	// Create OpenGL context on first redraw.nouveau opengl version support
+	// Create OpenGL context on first redraw.
 	if(!_context) {
 		_context = new QOpenGLContext(this);
 

@@ -27,7 +27,7 @@
 #ifndef __OVITO_PARTICLE_TYPE_H
 #define __OVITO_PARTICLE_TYPE_H
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <core/reference/RefTarget.h>
 #include <core/gui/properties/PropertiesEditor.h>
 
@@ -38,7 +38,7 @@ using namespace Ovito;
 /**
  * \brief Represents a particle type and stores it properties such as name, color, and radius.
  */
-class ParticleType : public RefTarget
+class OVITO_PARTICLES_EXPORT ParticleType : public RefTarget
 {
 public:
 

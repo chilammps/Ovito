@@ -22,7 +22,7 @@
 #ifndef __OVITO_ASSIGN_COLOR_MODIFIER_H
 #define __OVITO_ASSIGN_COLOR_MODIFIER_H
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <core/animation/controller/Controller.h>
 #include "../ParticleModifier.h"
 
@@ -33,7 +33,7 @@ using namespace Ovito;
 /******************************************************************************
 * This modifier assigns a single color to the selected atoms of the input object.
 ******************************************************************************/
-class AssignColorModifier : public ParticleModifier
+class OVITO_PARTICLES_EXPORT AssignColorModifier : public ParticleModifier
 {
 public:
 

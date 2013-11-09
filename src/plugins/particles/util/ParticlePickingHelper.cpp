@@ -19,7 +19,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <core/viewport/Viewport.h>
 #include <core/viewport/ViewportManager.h>
 #include <core/dataset/DataSetManager.h>
@@ -115,7 +115,12 @@ void ParticlePickingHelper::renderSelectionMarker(Viewport* vp, ViewportSceneRen
 	if(!posProperty)
 		return;
 
-	ParticleDisplay* particleDisplay = dynamic_object_cast<ParticleDisplay>(posProperty->displayObject());
+	// Get the particle display object, which is attached to the position property object.
+	ParticleDisplay* particleDisplay = nullptr;
+	for(DisplayObject* displayObj : posProperty->displayObjects()) {
+		if((particleDisplay = dynamic_object_cast<ParticleDisplay>(displayObj)) != nullptr)
+			break;
+	}
 	if(!particleDisplay)
 		return;
 

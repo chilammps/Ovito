@@ -27,7 +27,7 @@
 #ifndef __OVITO_SIMULATION_CELL_DISPLAY_H
 #define __OVITO_SIMULATION_CELL_DISPLAY_H
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <core/scene/display/DisplayObject.h>
 #include <core/rendering/LineGeometryBuffer.h>
 #include <core/rendering/ArrowGeometryBuffer.h>
@@ -44,7 +44,7 @@ using namespace Ovito;
 /**
  * \brief A display object for SimulationObject.
  */
-class SimulationCellDisplay : public DisplayObject
+class OVITO_PARTICLES_EXPORT SimulationCellDisplay : public DisplayObject
 {
 public:
 

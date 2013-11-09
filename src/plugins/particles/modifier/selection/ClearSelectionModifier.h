@@ -22,7 +22,7 @@
 #ifndef __OVITO_CLEAR_SELECTION_MODIFIER_H
 #define __OVITO_CLEAR_SELECTION_MODIFIER_H
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include "../ParticleModifier.h"
 
 namespace Particles {
@@ -32,7 +32,7 @@ using namespace Ovito;
 /**
  * \brief This modifier clear the current selection such that no particles are selected.
  */
-class ClearSelectionModifier : public ParticleModifier
+class OVITO_PARTICLES_EXPORT ClearSelectionModifier : public ParticleModifier
 {
 public:
 

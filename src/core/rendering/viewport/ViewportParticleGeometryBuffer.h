@@ -69,6 +69,12 @@ public:
 	/// \brief Sets the color of all particles to the given value.
 	virtual void setParticleColor(const Color color) override;
 
+	/// \brief Sets the transparency of the particles.
+	virtual void setParticleTransparencies(const FloatType* transparencies) override { /* Not supported by OpenGL renderer. */ }
+
+	/// \brief Sets the transparency of all particles to the given value.
+	virtual void setParticleTransparency(FloatType transparency) override { /* Not supported by OpenGL renderer. */ }
+
 	/// \brief Returns true if the geometry buffer is filled and can be rendered with the given renderer.
 	virtual bool isValid(SceneRenderer* renderer) override;
 

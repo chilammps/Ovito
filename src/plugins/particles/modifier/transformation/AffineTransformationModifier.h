@@ -27,7 +27,7 @@
 #ifndef __OVITO_AFFINE_TRANSFORMATION_MODIFIER_H
 #define __OVITO_AFFINE_TRANSFORMATION_MODIFIER_H
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <core/gui/widgets/general/SpinnerWidget.h>
 #include "../ParticleModifier.h"
 
@@ -41,7 +41,7 @@ using namespace Ovito;
  *
  * The affine transformation is given by a 3x4 matrix.
  */
-class AffineTransformationModifier : public ParticleModifier
+class OVITO_PARTICLES_EXPORT AffineTransformationModifier : public ParticleModifier
 {
 public:
 
@@ -79,9 +79,9 @@ public:
 
 public:
 
-	Q_PROPERTY(bool applyToParticles READ applyToParticles WRITE setApplyToParticles)
 	Q_PROPERTY(bool toSelectionOnly READ toSelectionOnly WRITE setToSelectionOnly)
 	Q_PROPERTY(bool applyToSimulationBox READ applyToSimulationBox WRITE setApplyToSimulationBox)
+	Q_PROPERTY(bool applyToParticles READ applyToParticles WRITE setApplyToParticles)
 
 protected:
 

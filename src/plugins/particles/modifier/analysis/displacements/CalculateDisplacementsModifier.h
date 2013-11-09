@@ -22,7 +22,7 @@
 #ifndef __OVITO_CALCULATE_DISPLACEMENTS_MODIFIER_H
 #define __OVITO_CALCULATE_DISPLACEMENTS_MODIFIER_H
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <plugins/particles/data/VectorDisplay.h>
 #include "../../ParticleModifier.h"
 
@@ -32,7 +32,7 @@ namespace Particles {
 * Calculates the per-particle displacement vectors by comparing the current
 * positions to a reference configuration.
 ******************************************************************************/
-class CalculateDisplacementsModifier : public ParticleModifier
+class OVITO_PARTICLES_EXPORT CalculateDisplacementsModifier : public ParticleModifier
 {
 public:
 

@@ -22,7 +22,7 @@
 #ifndef __OVITO_SIMULATION_CELL_DATA_H
 #define __OVITO_SIMULATION_CELL_DATA_H
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 
 namespace Particles {
 
@@ -34,7 +34,7 @@ using namespace Ovito;
  * The simulation box geometry is a parallelepiped defined by three edge vectors.
  * A fourth vector specifies the origin of the simulation box in space.
  */
-class SimulationCellData
+class OVITO_PARTICLES_EXPORT SimulationCellData
 {
 public:
 
@@ -56,6 +56,11 @@ public:
 	/// Computes the (positive) volume of the cell.
 	FloatType volume() const {
 		return std::abs(_simulationCell.determinant());
+	}
+
+	/// Checks if two simulation cells are identical.
+	bool operator==(const SimulationCellData& other) const {
+		return (_simulationCell == other._simulationCell && _pbcFlags == other._pbcFlags);
 	}
 
 private:

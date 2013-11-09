@@ -22,7 +22,7 @@
 #ifndef __OVITO_DELETE_PARTICLES_MODIFIER_H
 #define __OVITO_DELETE_PARTICLES_MODIFIER_H
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include "../ParticleModifier.h"
 
 namespace Particles {
@@ -32,7 +32,7 @@ using namespace Ovito;
 /******************************************************************************
 * This modifier deletes the selected particles.
 ******************************************************************************/
-class DeleteParticlesModifier : public ParticleModifier
+class OVITO_PARTICLES_EXPORT DeleteParticlesModifier : public ParticleModifier
 {
 public:
 

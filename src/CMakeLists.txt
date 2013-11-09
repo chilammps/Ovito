@@ -38,14 +38,34 @@ ADD_SUBDIRECTORY(core)
 
 ################# Plugins ####################
 
-# Place all plugins libraries into the plugin directory.
+# Place all plugin libraries into the plugins directory.
 FILE(MAKE_DIRECTORY ${OVITO_PLUGINS_DIRECTORY})
 INSTALL(DIRECTORY DESTINATION ${OVITO_RELATIVE_PLUGINS_DIRECTORY})
 SET(LIBRARY_OUTPUT_PATH "${OVITO_PLUGINS_DIRECTORY}")
 
-ADD_SUBDIRECTORY(plugins/particles)
-ADD_SUBDIRECTORY(plugins/tachyon)
-ADD_SUBDIRECTORY(plugins/mesh)
+IF(OVITO_BUILD_PLUGIN_PARTICLES)
+	ADD_SUBDIRECTORY(plugins/particles)
+ELSE()
+	FILE(REMOVE ${OVITO_PLUGINS_DIRECTORY}/Particles.manifest.xml)
+ENDIF()
+
+IF(OVITO_BUILD_PLUGIN_TACHYON)
+	ADD_SUBDIRECTORY(plugins/tachyon)
+ELSE()
+	FILE(REMOVE ${OVITO_PLUGINS_DIRECTORY}/Tachyon.manifest.xml)
+ENDIF()
+
+IF(OVITO_BUILD_PLUGIN_MESH)
+	ADD_SUBDIRECTORY(plugins/mesh)
+ELSE()
+	FILE(REMOVE ${OVITO_PLUGINS_DIRECTORY}/Mesh.manifest.xml)
+ENDIF()
+
+IF(OVITO_BUILD_PLUGIN_CRYSTALANALYSIS)
+	ADD_SUBDIRECTORY(plugins/crystalanalysis)
+ELSE()
+	FILE(REMOVE ${OVITO_PLUGINS_DIRECTORY}/CrystalAnalysis.manifest.xml)
+ENDIF()
 
 ################# Main executable ####################
 

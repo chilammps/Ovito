@@ -38,20 +38,11 @@ ELSE()
 	IF(NOT APPLE)
 		IF(NOT OVITO_MONOLITHIC_BUILD OR NOT UNIX)
 			SET(FFMPEG_LIBRARIES avformat avcodec avutil avdevice swscale)
-		ELSE()		
+		ELSE()
 			SET(FFMPEG_LIBRARIES libavformat.a libavcodec.a libavutil.a libavdevice.a libswscale.a)
-
-#			SET(FFMPEG_LIBRARIES ${FFMPEG_LIBRARIES} libvorbisenc.a libx264.a 
-#				libvorbis.a libogg.a libtheoraenc.a libtheoradec.a libspeex.a libschroedinger-1.0.a
-#				libopus.a libmp3lame.a libopenjpeg.a liborc-0.4.a libpostproc.a
-#				libswresample.a libswscale.a libxcb.a libiconv.a libvpx.a modplug z bz2)
 		ENDIF()
 	ELSE()
-		SET(FFMPEG_LIBRARIES libavformat.a libavcodec.a libavutil.a libavdevice.a 
-			libswscale.a libxvidcore.a libSDL.a libvorbisenc.a libx264.a 
-			libvorbis.a libogg.a libtheoraenc.a libtheoradec.a libspeex.a libschroedinger-1.0.a
-			libopus.a libmp3lame.a libopenjpeg.a liborc-0.4.a libpostproc.a
-			libswresample.a libswscale.a libxcb.a libiconv.a libvpx.a modplug z bz2)
+		SET(FFMPEG_LIBRARIES libavformat.a libavcodec.a libavutil.a libavdevice.a libswscale.a bz2)
 	ENDIF()
 ENDIF()
 
@@ -60,7 +51,7 @@ SET(FFMPEG_FOUND TRUE)
 SET(FFMPEG_INCLUDE_DIR ${FFMPEG_INCLUDE_PATHS})
 FOREACH(HEADER ${FFMPEG_HEADERS})
 	SET(HEADER_PATH NOTFOUND)
-	FIND_PATH(HEADER_PATH ${HEADER} PATHS ${FFMPEG_INCLUDE_PATHS} /opt/local/include $ENV{HOME}/progs/libavstatic/include)
+	FIND_PATH(HEADER_PATH ${HEADER} PATHS ${FFMPEG_INCLUDE_PATHS} $ENV{HOME}/progs/libavstatic/include)
 	IF(HEADER_PATH)
 		SET(FFMPEG_INCLUDE_DIR ${FFMPEG_INCLUDE_DIR} ${HEADER_PATH})
 	ELSE()
@@ -77,10 +68,6 @@ IF(NOT "${FFMPEG_LIBRARY_DIR}" MATCHES "")
 	LIST(REMOVE_DUPLICATES FFMPEG_LIBRARY_DIR)
 ENDIF()
 
-IF(APPLE AND NOT FFMPEG_LIBRARY_DIR)
-	SET(FFMPEG_LIBRARY_DIR "/opt/local/lib")
-ENDIF()
-
 # Find the full paths of the libraries
 FOREACH(LIB ${FFMPEG_LIBRARIES})
 	SET(LIB_PATH NOTFOUND)
@@ -93,6 +80,12 @@ FOREACH(LIB ${FFMPEG_LIBRARIES})
 	ENDIF()
 ENDFOREACH()
 SET(FFMPEG_LIBRARIES ${FFMPEG_LIBRARIES_FULL})
+IF(APPLE)
+	FIND_LIBRARY(COREFOUNDATION_LIBRARY CoreFoundation)
+	FIND_LIBRARY(COREVIDEO_LIBRARY CoreVideo)
+	FIND_LIBRARY(VIDEODECODEACCELERATION_LIBRARY VideoDecodeAcceleration)
+	LIST(APPEND FFMPEG_LIBRARIES ${COREFOUNDATION_LIBRARY} ${COREVIDEO_LIBRARY} ${VIDEODECODEACCELERATION_LIBRARY})
+ENDIF()
 
 UNSET(LIB_PATH CACHE)
 UNSET(HEADER_PATH CACHE)
