@@ -40,8 +40,8 @@ class OVITO_CORE_EXPORT DefaultParticleGeometryBuffer : public ParticleGeometryB
 public:
 
 	/// Constructor.
-	DefaultParticleGeometryBuffer(ShadingMode shadingMode, RenderingQuality renderingQuality) :
-		ParticleGeometryBuffer(shadingMode, renderingQuality) {}
+	DefaultParticleGeometryBuffer(ShadingMode shadingMode, RenderingQuality renderingQuality, ParticleShape shape) :
+		ParticleGeometryBuffer(shadingMode, renderingQuality, shape) {}
 
 	/// \brief Allocates a geometry buffer with the given number of particles.
 	virtual void setSize(int particleCount) override {

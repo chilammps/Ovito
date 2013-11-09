@@ -36,9 +36,11 @@ SET_OVITO_OBJECT_EDITOR(ParticleDisplay, ParticleDisplayEditor)
 DEFINE_FLAGS_PROPERTY_FIELD(ParticleDisplay, _defaultParticleRadius, "DefaultParticleRadius", PROPERTY_FIELD_MEMORIZE)
 DEFINE_PROPERTY_FIELD(ParticleDisplay, _shadingMode, "ShadingMode")
 DEFINE_PROPERTY_FIELD(ParticleDisplay, _renderingQuality, "RenderingQuality")
+DEFINE_PROPERTY_FIELD(ParticleDisplay, _particleShape, "ParticleShape")
 SET_PROPERTY_FIELD_LABEL(ParticleDisplay, _defaultParticleRadius, "Default particle radius")
 SET_PROPERTY_FIELD_LABEL(ParticleDisplay, _shadingMode, "Shading mode")
-SET_PROPERTY_FIELD_LABEL(ParticleDisplay, _renderingQuality, "RenderingQuality")
+SET_PROPERTY_FIELD_LABEL(ParticleDisplay, _renderingQuality, "Rendering quality")
+SET_PROPERTY_FIELD_LABEL(ParticleDisplay, _particleShape, "Shape")
 SET_PROPERTY_FIELD_UNITS(ParticleDisplay, _defaultParticleRadius, WorldParameterUnit)
 
 /******************************************************************************
@@ -47,11 +49,13 @@ SET_PROPERTY_FIELD_UNITS(ParticleDisplay, _defaultParticleRadius, WorldParameter
 ParticleDisplay::ParticleDisplay() :
 	_defaultParticleRadius(1.2),
 	_shadingMode(ParticleGeometryBuffer::NormalShading),
-	_renderingQuality(ParticleGeometryBuffer::AutoQuality)
+	_renderingQuality(ParticleGeometryBuffer::AutoQuality),
+	_particleShape(ParticleGeometryBuffer::SphericalShape)
 {
 	INIT_PROPERTY_FIELD(ParticleDisplay::_defaultParticleRadius);
 	INIT_PROPERTY_FIELD(ParticleDisplay::_shadingMode);
 	INIT_PROPERTY_FIELD(ParticleDisplay::_renderingQuality);
+	INIT_PROPERTY_FIELD(ParticleDisplay::_particleShape);
 }
 
 /******************************************************************************
@@ -265,6 +269,7 @@ void ParticleDisplay::render(TimePoint time, SceneObject* sceneObject, const Pip
 	if(!recreateBuffer) {
 		recreateBuffer |= !(_particleBuffer->setShadingMode(shadingMode()));
 		recreateBuffer |= !(_particleBuffer->setRenderingQuality(renderQuality));
+		recreateBuffer |= !(_particleBuffer->setParticleShape(particleShape()));
 	}
 
 	// Do we have to resize the geometry buffer?
@@ -291,7 +296,7 @@ void ParticleDisplay::render(TimePoint time, SceneObject* sceneObject, const Pip
 
 	// Re-create the geometry buffer if necessary.
 	if(recreateBuffer)
-		_particleBuffer = renderer->createParticleGeometryBuffer(shadingMode(), renderQuality);
+		_particleBuffer = renderer->createParticleGeometryBuffer(shadingMode(), renderQuality, particleShape());
 
 	// Re-size the geometry buffer if necessary.
 	if(resizeBuffer)
@@ -387,10 +392,17 @@ void ParticleDisplayEditor::createUI(const RolloutInsertionParameters& rolloutPa
 	layout->addWidget(new QLabel(tr("Rendering quality:")), 1, 0);
 	layout->addWidget(renderingQualityUI->comboBox(), 1, 1);
 
+	// Shape.
+	VariantComboBoxParameterUI* particleShapeUI = new VariantComboBoxParameterUI(this, "particleShape");
+	particleShapeUI->comboBox()->addItem(tr("Spherical"), qVariantFromValue(ParticleGeometryBuffer::SphericalShape));
+	particleShapeUI->comboBox()->addItem(tr("Square"), qVariantFromValue(ParticleGeometryBuffer::SquareShape));
+	layout->addWidget(new QLabel(tr("Shape:")), 2, 0);
+	layout->addWidget(particleShapeUI->comboBox(), 2, 1);
+
 	// Default radius.
 	FloatParameterUI* radiusUI = new FloatParameterUI(this, PROPERTY_FIELD(ParticleDisplay::_defaultParticleRadius));
-	layout->addWidget(radiusUI->label(), 2, 0);
-	layout->addLayout(radiusUI->createFieldLayout(), 2, 1);
+	layout->addWidget(radiusUI->label(), 3, 0);
+	layout->addLayout(radiusUI->createFieldLayout(), 3, 1);
 	radiusUI->setMinValue(0);
 }
 

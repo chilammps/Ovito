@@ -227,7 +227,7 @@ ObjectStatus CalculateDisplacementsModifier::modifyParticles(TimePoint time, Tim
 	OVITO_ASSERT(displacementMagnitudeProperty->size() == posProperty->size());
 
 	// Plug in our internal display object.
-	displacementProperty->addDisplayObject(_vectorDisplay);
+	displacementProperty->setDisplayObject(_vectorDisplay);
 
 	// Get simulation cell info.
 	const std::array<bool, 3> pbc = inputCell->pbcFlags();

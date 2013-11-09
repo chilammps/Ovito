@@ -76,6 +76,12 @@ public:
 	/// \brief Sets the rendering quality mode for particles.
 	void setRenderingQuality(ParticleGeometryBuffer::RenderingQuality quality) { _renderingQuality = quality; }
 
+	/// \brief Returns the display shape of particles.
+	ParticleGeometryBuffer::ParticleShape particleShape() const { return _particleShape; }
+
+	/// \brief Sets the display shape of particles.
+	void setParticleShape(ParticleGeometryBuffer::ParticleShape shape) { _particleShape = shape; }
+
 	/// \brief Determines the display particle colors.
 	void particleColors(std::vector<Color>& output, ParticlePropertyObject* colorProperty, ParticleTypeProperty* typeProperty, ParticlePropertyObject* selectionProperty = nullptr);
 
@@ -93,6 +99,7 @@ public:
 	Q_PROPERTY(FloatType defaultParticleRadius READ defaultParticleRadius WRITE setDefaultParticleRadius)
 	Q_PROPERTY(Ovito::ParticleGeometryBuffer::ShadingMode shadingMode READ shadingMode WRITE setShadingMode)
 	Q_PROPERTY(Ovito::ParticleGeometryBuffer::RenderingQuality renderingQuality READ renderingQuality WRITE setRenderingQuality)
+	Q_PROPERTY(Ovito::ParticleGeometryBuffer::ParticleShape particleShape READ particleShape WRITE setParticleShape)
 
 protected:
 
@@ -109,6 +116,9 @@ protected:
 
 	/// Controls the rendering quality mode for particles.
 	PropertyField<ParticleGeometryBuffer::RenderingQuality, int> _renderingQuality;
+
+	/// Controls the display shape of particles.
+	PropertyField<ParticleGeometryBuffer::ParticleShape, int> _particleShape;
 
 	/// The buffered particle geometry used to render the particles.
 	OORef<ParticleGeometryBuffer> _particleBuffer;
@@ -154,6 +164,7 @@ private:
 	DECLARE_PROPERTY_FIELD(_defaultParticleRadius);
 	DECLARE_PROPERTY_FIELD(_shadingMode);
 	DECLARE_PROPERTY_FIELD(_renderingQuality);
+	DECLARE_PROPERTY_FIELD(_particleShape);
 };
 
 /**

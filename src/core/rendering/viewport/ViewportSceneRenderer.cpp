@@ -83,6 +83,11 @@ void ViewportSceneRenderer::beginFrame(TimePoint time, const ViewProjectionParam
 			_isCoreProfile = true;
 	}
 
+	// Get pointers to some required OpenGL functions.
+	this->glPointParameterf = ::glPointParameterf;
+	this->glPointParameterfv = ::glPointParameterfv;
+	this->glMultiDrawArrays = ::glMultiDrawArrays;
+
 	// Set up a vertex array object. This is only required when using OpenGL Core Profile.
 	if(isCoreProfile()) {
 		_vertexArrayObject.reset(new QOpenGLVertexArrayObject());

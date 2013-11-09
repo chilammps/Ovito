@@ -55,10 +55,17 @@ public:
 	};
 	Q_ENUMS(RenderingQuality);
 
+	enum ParticleShape {
+		SphericalShape,
+		SquareShape
+	};
+	Q_ENUMS(ParticleShape);
+
 public:
 
 	/// Constructor.
-	ParticleGeometryBuffer(ShadingMode shadingMode, RenderingQuality renderingQuality) : _shadingMode(shadingMode), _renderingQuality(renderingQuality) {}
+	ParticleGeometryBuffer(ShadingMode shadingMode, RenderingQuality renderingQuality, ParticleShape shape = SphericalShape)
+		: _shadingMode(shadingMode), _renderingQuality(renderingQuality), _particleShape(shape) {}
 
 	/// \brief Allocates a geometry buffer with the given number of particles.
 	virtual void setSize(int particleCount) = 0;
@@ -107,6 +114,13 @@ public:
 	/// \return false if the quality level cannot be changed after the buffer has been created; true otherwise.
 	virtual bool setRenderingQuality(RenderingQuality level) { _renderingQuality = level; return true; }
 
+	/// \brief Returns the display shape of particles.
+	ParticleShape particleShape() const { return _particleShape; }
+
+	/// \brief Changes the display shape of particles.
+	/// \return false if the shape cannot be changed after the buffer has been created; true otherwise.
+	virtual bool setParticleShape(ParticleShape shape) { _particleShape = shape; return true; }
+
 private:
 
 	/// Controls the shading of particles.
@@ -114,6 +128,9 @@ private:
 
 	/// Controls the rendering quality of particles.
 	RenderingQuality _renderingQuality;
+
+	/// Controls the shape of particles.
+	ParticleShape _particleShape;
 
 	Q_OBJECT
 	OVITO_OBJECT
@@ -123,7 +140,9 @@ private:
 
 Q_DECLARE_METATYPE(Ovito::ParticleGeometryBuffer::ShadingMode);
 Q_DECLARE_METATYPE(Ovito::ParticleGeometryBuffer::RenderingQuality);
+Q_DECLARE_METATYPE(Ovito::ParticleGeometryBuffer::ParticleShape);
 Q_DECLARE_TYPEINFO(Ovito::ParticleGeometryBuffer::ShadingMode, Q_PRIMITIVE_TYPE);
 Q_DECLARE_TYPEINFO(Ovito::ParticleGeometryBuffer::RenderingQuality, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::ParticleGeometryBuffer::ParticleShape, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_PARTICLE_GEOMETRY_BUFFER_H

@@ -127,6 +127,13 @@ public:
 	///        scene object.
 	void addDisplayObject(DisplayObject* displayObj) { _displayObjects.push_back(displayObj); }
 
+	/// \brief Attaches a display object to this scene object that will be responsible for rendering the
+	///        scene object.
+	void setDisplayObject(DisplayObject* displayObj) {
+		_displayObjects.clear();
+		_displayObjects.push_back(displayObj);
+	}
+
 	/// \brief Returns whether the internal data is saved along with the scene.
 	/// \return \c true if the data is stored in the scene file; \c false if the data can be restored from an external file or recomputed.
 	bool saveWithScene() const { return _saveWithScene; }

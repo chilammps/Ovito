@@ -27,27 +27,19 @@ uniform int pickingBaseID;
 
 #if __VERSION__ >= 130
 
-// The particle data:
+// The input particle data:
 in vec3 particle_pos;
 in float particle_radius;
 
-// Output to fragment shader:
+// Output passed to fragment shader.
 flat out vec4 particle_color_out;
-flat out float depth_radius;		// The particle's radius.
-flat out float ze0;					// The particle's Z coordinate in eye coordinates.
 
 #else
 
-// The particle data:
-attribute vec3 particle_pos;
+// The input particle data:
 attribute float particle_radius;
 attribute float vertexID;
 #define gl_VertexID int(vertexID)
-
-// Output to fragment shader:
-varying vec4 particle_color_out;
-varying float depth_radius;			// The particle's radius.
-varying float ze0;					// The particle's Z coordinate in eye coordinates.
 
 #endif
 
@@ -60,25 +52,25 @@ void main()
 		float(objectID & 0xFF) / 255.0, 
 		float((objectID >> 8) & 0xFF) / 255.0, 
 		float((objectID >> 16) & 0xFF) / 255.0, 
-		float((objectID >> 24) & 0xFF) / 255.0);		
+		float((objectID >> 24) & 0xFF) / 255.0);
+		
+	// Transform and project particle position.
+	vec4 eye_position = modelview_matrix * vec4(particle_pos, 1);
+				
 #else
-	particle_color_out = vec4(
+	gl_FrontColor = vec4(
 		float(mod(objectID, 0x100)) / 255.0, 
 		float(mod(objectID / 0x100, 0x100)) / 255.0, 
 		float(mod(objectID / 0x10000, 0x100)) / 255.0, 
 		float(mod(objectID / 0x1000000, 0x100)) / 255.0);		
-#endif
-
-	// Forward particle radius to fragment shader.
-	depth_radius = particle_radius;
 
 	// Transform and project particle position.
-	vec4 eye_position = modelview_matrix * vec4(particle_pos, 1);
+	vec4 eye_position = modelview_matrix * gl_Vertex;
+#endif
+
+	// Transform and project particle position.
 	gl_Position = projection_matrix * eye_position;
 
-	// Compute sprite size.		
+	// Compute sprite size.
 	gl_PointSize = basePointSize * particle_radius / (eye_position.z * projection_matrix[2][3] + projection_matrix[3][3]);
-	
-	// Pass particle position in eye coordinates to fragment shader.
-	ze0 = eye_position.z;
 }

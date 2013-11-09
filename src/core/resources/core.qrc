@@ -87,21 +87,32 @@
 	<file>framebuffer/copy_picture_to_clipboard.png</file>
 	<file>framebuffer/auto_crop.png</file>
 	
-	<file>glsl/particles/sprites/flat.fs</file>
-	<file>glsl/particles/sprites/imposter_without_depth.vs</file>
-	<file>glsl/particles/sprites/imposter_without_depth.fs</file>
-	<file>glsl/particles/sprites/imposter_with_depth.vs</file>
-	<file>glsl/particles/sprites/imposter_with_depth.fs</file>
-	<file>glsl/particles/picking/sprites/imposter_without_depth.vs</file>
-	<file>glsl/particles/picking/sprites/imposter_without_depth.fs</file>
-	<file>glsl/particles/picking/sprites/imposter_with_depth.vs</file>
-	<file>glsl/particles/picking/sprites/imposter_with_depth.fs</file>
-	<file>glsl/particles/raytraced/sphere.vs</file>
-	<file>glsl/particles/raytraced/sphere.fs</file>
-	<file>glsl/particles/raytraced/sphere.gs</file>
-	<file>glsl/particles/picking/raytraced/sphere.vs</file>
-	<file>glsl/particles/picking/raytraced/sphere.fs</file>
-	<file>glsl/particles/picking/raytraced/sphere.gs</file>
+	<file>glsl/particles/pointsprites/sphere/flat_shading.fs</file>
+	<file>glsl/particles/pointsprites/sphere/with_depth.fs</file>
+	<file>glsl/particles/pointsprites/sphere/with_depth.vs</file>
+	<file>glsl/particles/pointsprites/sphere/without_depth.fs</file>
+	<file>glsl/particles/pointsprites/sphere/without_depth.vs</file>
+	<file>glsl/particles/pointsprites/sphere/picking/flat_shading.fs</file>
+	<file>glsl/particles/pointsprites/sphere/picking/with_depth.fs</file>
+	<file>glsl/particles/pointsprites/sphere/picking/with_depth.vs</file>
+	<file>glsl/particles/pointsprites/sphere/picking/without_depth.vs</file>
+	<file>glsl/particles/pointsprites/square/flat_shading.fs</file>
+	<file>glsl/particles/pointsprites/square/picking/flat_shading.fs</file>
+	<file>glsl/particles/geometry/sphere/sphere.fs</file>
+	<file>glsl/particles/geometry/sphere/sphere.vs</file>
+	<file>glsl/particles/geometry/sphere/sphere.gs</file>
+	<file>glsl/particles/geometry/sphere/picking/sphere.fs</file>
+	<file>glsl/particles/geometry/sphere/picking/sphere.vs</file>
+	<file>glsl/particles/geometry/sphere/picking/sphere.gs</file>
+	<file>glsl/particles/geometry/cube/cube.fs</file>
+	<file>glsl/particles/geometry/cube/cube.vs</file>
+	<file>glsl/particles/geometry/cube/cube.gs</file>
+	<file>glsl/particles/geometry/cube/cube_tristrip.vs</file>
+	<file>glsl/particles/geometry/cube/picking/cube.fs</file>
+	<file>glsl/particles/geometry/cube/picking/cube.vs</file>
+	<file>glsl/particles/geometry/cube/picking/cube.gs</file>
+	<file>glsl/particles/geometry/cube/picking/cube_tristrip.vs</file>
+	
 	<file>glsl/arrows/flat.fs</file>
 	<file>glsl/arrows/flat.vs</file>
 	<file>glsl/arrows/shaded.fs</file>

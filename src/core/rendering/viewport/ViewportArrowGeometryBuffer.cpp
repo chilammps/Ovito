@@ -499,21 +499,8 @@ void ViewportArrowGeometryBuffer::renderShadedTriangles(ViewportSceneRenderer* r
 	_shadedShader->setAttributeBuffer("vertex_color", GL_FLOAT, offsetof(ColoredVertexWithNormal, color), 4, sizeof(ColoredVertexWithNormal));
 	_glGeometryBuffer.release();
 
-	if(renderer->glfuncs20()) {
-		OVITO_CHECK_OPENGL(renderer->glfuncs20()->glMultiDrawArrays(GL_TRIANGLE_STRIP, _stripPrimitiveVertexStarts.data(), _stripPrimitiveVertexCounts.data(), _stripPrimitiveVertexStarts.size()));
-		OVITO_CHECK_OPENGL(renderer->glfuncs20()->glMultiDrawArrays(GL_TRIANGLE_FAN, _fanPrimitiveVertexStarts.data(), _fanPrimitiveVertexCounts.data(), _fanPrimitiveVertexStarts.size()));
-	}
-	else if(renderer->glfuncs30()) {
-		OVITO_CHECK_OPENGL(renderer->glfuncs30()->glMultiDrawArrays(GL_TRIANGLE_STRIP, _stripPrimitiveVertexStarts.data(), _stripPrimitiveVertexCounts.data(), _stripPrimitiveVertexStarts.size()));
-		OVITO_CHECK_OPENGL(renderer->glfuncs30()->glMultiDrawArrays(GL_TRIANGLE_FAN, _fanPrimitiveVertexStarts.data(), _fanPrimitiveVertexCounts.data(), _fanPrimitiveVertexStarts.size()));
-	}
-	else if(renderer->glfuncs32()) {
-		OVITO_CHECK_OPENGL(renderer->glfuncs32()->glMultiDrawArrays(GL_TRIANGLE_STRIP, _stripPrimitiveVertexStarts.data(), _stripPrimitiveVertexCounts.data(), _stripPrimitiveVertexStarts.size()));
-		OVITO_CHECK_OPENGL(renderer->glfuncs32()->glMultiDrawArrays(GL_TRIANGLE_FAN, _fanPrimitiveVertexStarts.data(), _fanPrimitiveVertexCounts.data(), _fanPrimitiveVertexStarts.size()));
-	}
-	else {
-		OVITO_ASSERT_MSG(false, "ViewportArrowGeometryBuffer::renderShadedTriangles", "glMultiDrawArrays() is not supported.");
-	}
+	OVITO_CHECK_OPENGL(renderer->glMultiDrawArrays(GL_TRIANGLE_STRIP, _stripPrimitiveVertexStarts.data(), _stripPrimitiveVertexCounts.data(), _stripPrimitiveVertexStarts.size()));
+	OVITO_CHECK_OPENGL(renderer->glMultiDrawArrays(GL_TRIANGLE_FAN, _fanPrimitiveVertexStarts.data(), _fanPrimitiveVertexCounts.data(), _fanPrimitiveVertexStarts.size()));
 
 	_shadedShader->disableAttributeArray("vertex_pos");
 	_shadedShader->disableAttributeArray("vertex_normal");
@@ -559,18 +546,7 @@ void ViewportArrowGeometryBuffer::renderRaytracedCylinders(ViewportSceneRenderer
 	_raytracedCylinderShader->setAttributeBuffer("cylinder_radius", GL_FLOAT, offsetof(ColoredVertexWithElementInfo, radius), 1, sizeof(ColoredVertexWithElementInfo));
 	_glGeometryBuffer.release();
 
-	if(renderer->glfuncs20()) {
-		OVITO_CHECK_OPENGL(renderer->glfuncs20()->glMultiDrawArrays(GL_TRIANGLE_STRIP, _stripPrimitiveVertexStarts.data(), _stripPrimitiveVertexCounts.data(), _stripPrimitiveVertexStarts.size()));
-	}
-	else if(renderer->glfuncs30()) {
-		OVITO_CHECK_OPENGL(renderer->glfuncs30()->glMultiDrawArrays(GL_TRIANGLE_STRIP, _stripPrimitiveVertexStarts.data(), _stripPrimitiveVertexCounts.data(), _stripPrimitiveVertexStarts.size()));
-	}
-	else if(renderer->glfuncs32()) {
-		OVITO_CHECK_OPENGL(renderer->glfuncs32()->glMultiDrawArrays(GL_TRIANGLE_STRIP, _stripPrimitiveVertexStarts.data(), _stripPrimitiveVertexCounts.data(), _stripPrimitiveVertexStarts.size()));
-	}
-	else {
-		OVITO_ASSERT_MSG(false, "ViewportArrowGeometryBuffer::renderRaytracedCylinders", "glMultiDrawArrays() is not supported.");
-	}
+	OVITO_CHECK_OPENGL(renderer->glMultiDrawArrays(GL_TRIANGLE_STRIP, _stripPrimitiveVertexStarts.data(), _stripPrimitiveVertexCounts.data(), _stripPrimitiveVertexStarts.size()));
 
 	_raytracedCylinderShader->disableAttributeArray("vertex_pos");
 	_raytracedCylinderShader->disableAttributeArray("cylinder_color");
@@ -609,18 +585,7 @@ void ViewportArrowGeometryBuffer::renderFlat(ViewportSceneRenderer* renderer, qu
 	_flatShader->setAttributeBuffer("vertex_color", GL_FLOAT, offsetof(ColoredVertexWithVector, color), 4, sizeof(ColoredVertexWithVector));
 	_glGeometryBuffer.release();
 
-	if(renderer->glfuncs20()) {
-		OVITO_CHECK_OPENGL(renderer->glfuncs20()->glMultiDrawArrays(GL_TRIANGLE_FAN, _fanPrimitiveVertexStarts.data(), _fanPrimitiveVertexCounts.data(), _fanPrimitiveVertexStarts.size()));
-	}
-	else if(renderer->glfuncs30()) {
-		OVITO_CHECK_OPENGL(renderer->glfuncs30()->glMultiDrawArrays(GL_TRIANGLE_FAN, _fanPrimitiveVertexStarts.data(), _fanPrimitiveVertexCounts.data(), _fanPrimitiveVertexStarts.size()));
-	}
-	else if(renderer->glfuncs32()) {
-		OVITO_CHECK_OPENGL(renderer->glfuncs32()->glMultiDrawArrays(GL_TRIANGLE_FAN, _fanPrimitiveVertexStarts.data(), _fanPrimitiveVertexCounts.data(), _fanPrimitiveVertexStarts.size()));
-	}
-	else {
-		OVITO_ASSERT_MSG(false, "ViewportArrowGeometryBuffer::renderFlat", "glMultiDrawArrays() is not supported.");
-	}
+	OVITO_CHECK_OPENGL(renderer->glMultiDrawArrays(GL_TRIANGLE_FAN, _fanPrimitiveVertexStarts.data(), _fanPrimitiveVertexCounts.data(), _fanPrimitiveVertexStarts.size()));
 
 	_flatShader->disableAttributeArray("vertex_pos");
 	_flatShader->disableAttributeArray("vector_base");

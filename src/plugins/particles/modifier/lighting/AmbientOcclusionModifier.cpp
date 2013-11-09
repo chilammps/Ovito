@@ -136,7 +136,7 @@ void AmbientOcclusionModifier::AmbientOcclusionEngine::compute(FutureInterfaceBa
 			try {
 				// Create particle buffer.
 				if(!particleBuffer || !particleBuffer->isValid(&renderer)) {
-					particleBuffer = renderer.createParticleGeometryBuffer(ParticleGeometryBuffer::FlatShading, ParticleGeometryBuffer::LowQuality);
+					particleBuffer = renderer.createParticleGeometryBuffer(ParticleGeometryBuffer::FlatShading, ParticleGeometryBuffer::LowQuality, ParticleGeometryBuffer::SphericalShape);
 					particleBuffer->setSize(positions()->size());
 					particleBuffer->setParticlePositions(positions()->constDataPoint3());
 					particleBuffer->setParticleRadii(_particleRadii.data());

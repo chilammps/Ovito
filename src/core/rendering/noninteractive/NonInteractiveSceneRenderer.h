@@ -65,8 +65,11 @@ public:
 	}
 
 	/// Requests a new particle geometry buffer from the renderer.
-	virtual OORef<ParticleGeometryBuffer> createParticleGeometryBuffer(ParticleGeometryBuffer::ShadingMode shadingMode = ParticleGeometryBuffer::NormalShading, ParticleGeometryBuffer::RenderingQuality renderingQuality = ParticleGeometryBuffer::MediumQuality) override {
-		return new DefaultParticleGeometryBuffer(shadingMode, renderingQuality);
+	virtual OORef<ParticleGeometryBuffer> createParticleGeometryBuffer(
+			ParticleGeometryBuffer::ShadingMode shadingMode,
+			ParticleGeometryBuffer::RenderingQuality renderingQuality,
+			ParticleGeometryBuffer::ParticleShape shape) override {
+		return new DefaultParticleGeometryBuffer(shadingMode, renderingQuality, shape);
 	}
 
 	/// Requests a new text geometry buffer from the renderer.
@@ -80,7 +83,10 @@ public:
 	}
 
 	/// Requests a new arrow geometry buffer from the renderer.
-	virtual OORef<ArrowGeometryBuffer> createArrowGeometryBuffer(ArrowGeometryBuffer::Shape shape, ArrowGeometryBuffer::ShadingMode shadingMode = ArrowGeometryBuffer::NormalShading, ArrowGeometryBuffer::RenderingQuality renderingQuality = ArrowGeometryBuffer::MediumQuality) override {
+	virtual OORef<ArrowGeometryBuffer> createArrowGeometryBuffer(
+			ArrowGeometryBuffer::Shape shape,
+			ArrowGeometryBuffer::ShadingMode shadingMode,
+			ArrowGeometryBuffer::RenderingQuality renderingQuality) override {
 		return new DefaultArrowGeometryBuffer(shape, shadingMode, renderingQuality);
 	}
 

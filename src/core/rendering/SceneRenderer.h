@@ -113,7 +113,9 @@ public:
 	virtual OORef<LineGeometryBuffer> createLineGeometryBuffer() = 0;
 
 	/// Requests a new particle geometry buffer from the renderer.
-	virtual OORef<ParticleGeometryBuffer> createParticleGeometryBuffer(ParticleGeometryBuffer::ShadingMode shadingMode = ParticleGeometryBuffer::NormalShading, ParticleGeometryBuffer::RenderingQuality renderingQuality = ParticleGeometryBuffer::MediumQuality) = 0;
+	virtual OORef<ParticleGeometryBuffer> createParticleGeometryBuffer(ParticleGeometryBuffer::ShadingMode shadingMode = ParticleGeometryBuffer::NormalShading,
+			ParticleGeometryBuffer::RenderingQuality renderingQuality = ParticleGeometryBuffer::MediumQuality,
+			ParticleGeometryBuffer::ParticleShape shape = ParticleGeometryBuffer::SphericalShape) = 0;
 
 	/// Requests a new text geometry buffer from the renderer.
 	virtual OORef<TextGeometryBuffer> createTextGeometryBuffer() = 0;
@@ -122,7 +124,9 @@ public:
 	virtual OORef<ImageGeometryBuffer> createImageGeometryBuffer() = 0;
 
 	/// Requests a new arrow geometry buffer from the renderer.
-	virtual OORef<ArrowGeometryBuffer> createArrowGeometryBuffer(ArrowGeometryBuffer::Shape shape, ArrowGeometryBuffer::ShadingMode shadingMode = ArrowGeometryBuffer::NormalShading, ArrowGeometryBuffer::RenderingQuality renderingQuality = ArrowGeometryBuffer::MediumQuality) = 0;
+	virtual OORef<ArrowGeometryBuffer> createArrowGeometryBuffer(ArrowGeometryBuffer::Shape shape,
+			ArrowGeometryBuffer::ShadingMode shadingMode = ArrowGeometryBuffer::NormalShading,
+			ArrowGeometryBuffer::RenderingQuality renderingQuality = ArrowGeometryBuffer::MediumQuality) = 0;
 
 	/// Requests a new triangle mesh geometry buffer from the renderer.
 	virtual OORef<TriMeshGeometryBuffer> createTriMeshGeometryBuffer() = 0;

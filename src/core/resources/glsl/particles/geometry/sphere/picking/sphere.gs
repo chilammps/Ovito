@@ -19,22 +19,30 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#if __VERSION__ >= 130
+layout(points) in;
+layout(triangle_strip, max_vertices=14) out;
+uniform vec3 cubeVerts[14];
 
-flat in vec4 particle_color_out;
-out vec4 FragColor;
+// Inputs from calling program:
+uniform mat4 projection_matrix;
 
-#else
+// Inputs from vertex shader
+in vec4 particle_color_in[1];
+in float particle_radius_in[1];
 
-varying vec4 particle_color_out;
-#define FragColor gl_FragColor
-#define gl_PointCoord gl_TexCoord[0].xy
+// Outputs to fragment shader
+flat out vec4 particle_color;
+flat out float particle_radius_squared;
+flat out vec3 particle_view_pos;
 
-#endif
-
-void main() 
+void main()
 {
-	vec2 shifted_coords = gl_PointCoord - vec2(0.5, 0.5);
-	if(dot(shifted_coords, shifted_coords) >= 0.25) discard;
-	FragColor = particle_color_out;
+	particle_view_pos = vec3(gl_in[0].gl_Position); 
+	particle_color = particle_color_in[0];
+	particle_radius_squared = particle_radius_in[0] * particle_radius_in[0];
+	
+	for(int vertex = 0; vertex < 14; vertex++) {
+		gl_Position = projection_matrix * vec4(particle_view_pos + cubeVerts[vertex] * particle_radius_in[0], 1);
+		EmitVertex();
+	}
 }

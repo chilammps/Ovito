@@ -96,8 +96,9 @@ public:
 	}
 
 	/// Requests a new particle geometry buffer from the renderer.
-	virtual OORef<ParticleGeometryBuffer> createParticleGeometryBuffer(ParticleGeometryBuffer::ShadingMode shadingMode = ParticleGeometryBuffer::NormalShading, ParticleGeometryBuffer::RenderingQuality renderingQuality = ParticleGeometryBuffer::MediumQuality) override {
-		return new ViewportParticleGeometryBuffer(this, shadingMode, renderingQuality);
+	virtual OORef<ParticleGeometryBuffer> createParticleGeometryBuffer(ParticleGeometryBuffer::ShadingMode shadingMode,
+			ParticleGeometryBuffer::RenderingQuality renderingQuality, ParticleGeometryBuffer::ParticleShape shape) override {
+		return new ViewportParticleGeometryBuffer(this, shadingMode, renderingQuality, shape);
 	}
 
 	/// Requests a new text geometry buffer from the renderer.
@@ -111,7 +112,9 @@ public:
 	}
 
 	/// Requests a new arrow geometry buffer from the renderer.
-	virtual OORef<ArrowGeometryBuffer> createArrowGeometryBuffer(ArrowGeometryBuffer::Shape shape, ArrowGeometryBuffer::ShadingMode shadingMode = ArrowGeometryBuffer::NormalShading, ArrowGeometryBuffer::RenderingQuality renderingQuality = ArrowGeometryBuffer::MediumQuality) override {
+	virtual OORef<ArrowGeometryBuffer> createArrowGeometryBuffer(ArrowGeometryBuffer::Shape shape,
+			ArrowGeometryBuffer::ShadingMode shadingMode,
+			ArrowGeometryBuffer::RenderingQuality renderingQuality) override {
 		return new ViewportArrowGeometryBuffer(this, shape, shadingMode, renderingQuality);
 	}
 
@@ -156,6 +159,15 @@ public:
 
 	/// Loads and compiles an OpenGL shader program.
 	QOpenGLShaderProgram* loadShaderProgram(const QString& id, const QString& vertexShaderFile, const QString& fragmentShaderFile, const QString& geometryShaderFile = QString());
+
+	/// The OpenGL glPointParameterf() function.
+	void (*glPointParameterf)(GLenum pname, GLfloat param);
+
+	/// The OpenGL glPointParameterfv() function.
+	void (*glPointParameterfv)(GLenum pname, const GLfloat* params);
+
+	/// The OpenGL glMultiDrawArrays() function.
+	void (*glMultiDrawArrays)(GLenum mode, const GLint* first, const GLsizei* count, GLsizei drawcount);
 
 protected:
 

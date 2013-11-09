@@ -20,31 +20,31 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 layout(points) in;
-layout(triangle_strip, max_vertices=24) out;
+layout(triangle_strip, max_vertices=14) out;
 
 // Inputs from calling program:
 uniform mat4 projection_matrix;
+uniform mat4 modelview_matrix;
+uniform mat3 normal_matrix;
+uniform vec3 cubeVerts[14];
+uniform vec3 normals[14];
 
 // Inputs from vertex shader
-in vec4 particle_color_in[1];
-in float particle_radius_in[1];
+in vec4 particle_color_gs[1];
+in float particle_radius_gs[1];
 
 // Outputs to fragment shader
-flat out vec4 particle_color;
-flat out float particle_radius_squared;
-flat out vec3 particle_view_pos;
-
-uniform vec3 cubeVerts[8];
-uniform int stripIndices[14];
+flat out vec4 particle_color_fs;
+flat out vec3 surface_normal_fs;
 
 void main()
 {
-	particle_view_pos = vec3(gl_in[0].gl_Position); 
-	particle_color = particle_color_in[0];
-	particle_radius_squared = particle_radius_in[0] * particle_radius_in[0];
-
+	particle_color_fs = particle_color_gs[0];
+	
 	for(int vertex = 0; vertex < 14; vertex++) {
-		gl_Position = projection_matrix * vec4(particle_view_pos + cubeVerts[stripIndices[vertex]] * particle_radius_in[0], 1);
+		surface_normal_fs = normal_matrix * normals[vertex];
+		gl_Position = projection_matrix * modelview_matrix *
+			(gl_in[0].gl_Position + vec4(cubeVerts[vertex] * particle_radius_gs[0], 0));
 		EmitVertex();
-	}
+	}	
 }

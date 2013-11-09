@@ -140,7 +140,10 @@ void ParticlePickingHelper::renderSelectionMarker(Viewport* vp, ViewportSceneRen
 			|| !_markerBuffer2->setShadingMode(particleDisplay->shadingMode())
 			|| !_markerBuffer2->setRenderingQuality(particleDisplay->renderingQuality())) {
 		Color markerColor(1.0, 0.0, 0.0);
-		_markerBuffer2 = renderer->createParticleGeometryBuffer(particleDisplay->shadingMode(), particleDisplay->renderingQuality());
+		_markerBuffer2 = renderer->createParticleGeometryBuffer(
+				particleDisplay->shadingMode(),
+				particleDisplay->renderingQuality(),
+				particleDisplay->particleShape());
 		_markerBuffer2->setSize(1);
 		_markerBuffer2->setParticleColor(markerColor);
 	}

@@ -281,11 +281,24 @@ void TachyonRenderer::renderParticles(const DefaultParticleGeometryBuffer& parti
 	const FloatType* transparency = particleBuffer.transparencies().empty() ? nullptr : particleBuffer.transparencies().data();
 
 	const AffineTransformation tm = modelTM();
-	for(; p != p_end; ++p, ++c, ++r) {
-		FloatType alpha = transparency ? (FloatType(1) - *transparency++) : FloatType(1);
-		void* tex = getTachyonTexture(c->r(), c->g(), c->b(), alpha);
-		Point3 tp = tm * (*p);
-		rt_sphere(_rtscene, tex, rt_vector(tp.x(), tp.y(), -tp.z()), *r);
+
+	if(particleBuffer.particleShape() == ParticleGeometryBuffer::SphericalShape) {
+		// Rendering spherical particles.
+		for(; p != p_end; ++p, ++c, ++r) {
+			FloatType alpha = transparency ? (FloatType(1) - *transparency++) : FloatType(1);
+			void* tex = getTachyonTexture(c->r(), c->g(), c->b(), alpha);
+			Point3 tp = tm * (*p);
+			rt_sphere(_rtscene, tex, rt_vector(tp.x(), tp.y(), -tp.z()), *r);
+		}
+	}
+	else {
+		// Rendering cubic particles.
+		for(; p != p_end; ++p, ++c, ++r) {
+			FloatType alpha = transparency ? (FloatType(1) - *transparency++) : FloatType(1);
+			void* tex = getTachyonTexture(c->r(), c->g(), c->b(), alpha);
+			Point3 tp = tm * (*p);
+			rt_box(_rtscene, tex, rt_vector(tp.x() - *r, tp.y() - *r, -tp.z() - *r), rt_vector(tp.x() + *r, tp.y() + *r, -tp.z() + *r));
+		}
 	}
 }
 

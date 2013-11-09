@@ -43,7 +43,8 @@ class OVITO_CORE_EXPORT ViewportParticleGeometryBuffer : public ParticleGeometry
 public:
 
 	/// Constructor.
-	ViewportParticleGeometryBuffer(ViewportSceneRenderer* renderer, ShadingMode shadingMode, RenderingQuality renderingQuality);
+	ViewportParticleGeometryBuffer(ViewportSceneRenderer* renderer,
+			ShadingMode shadingMode, RenderingQuality renderingQuality, ParticleShape shape);
 
 	/// Destructor.
 	virtual ~ViewportParticleGeometryBuffer();
@@ -81,6 +82,15 @@ public:
 	/// \brief Renders the geometry.
 	virtual void render(SceneRenderer* renderer, quint32 pickingBaseID = 0) override;
 
+	/// \brief Changes the shading mode for particles.
+	virtual bool setShadingMode(ShadingMode mode) override { return (mode == shadingMode()); }
+
+	/// \brief Changes the rendering quality of particles.
+	virtual bool setRenderingQuality(RenderingQuality level) override { return (level == renderingQuality()); }
+
+	/// \brief Changes the display shape of particles.
+	virtual bool setParticleShape(ParticleShape shape) override { return (shape == particleShape()); }
+
 protected:
 
     /// This method that takes care of freeing the shared OpenGL resources owned by this class.
@@ -90,13 +100,49 @@ protected:
 	void initializeBillboardTexture(ViewportSceneRenderer* renderer);
 
 	/// Activates a texture for billboard rendering of particles.
-	void activateBillboardTexture();
+	void activateBillboardTexture(ViewportSceneRenderer* renderer);
+
+	/// Deactivates the texture used for billboard rendering of spherical particles.
+	void deactivateBillboardTexture(ViewportSceneRenderer* renderer);
+
+	/// Binds the vertex buffer containing the particle positions to the corresponding
+	/// shader input attribute.
+	void bindParticlePositionBuffer(ViewportSceneRenderer* renderer, QOpenGLShaderProgram* shader);
+
+	/// Binds the vertex buffer containing the particle colors to the corresponding
+	/// shader input attribute.
+	void bindParticleColorBuffer(ViewportSceneRenderer* renderer, QOpenGLShaderProgram* shader, quint32 pickingBaseID);
+
+	/// Binds the vertex buffer containing the particle radii to the corresponding
+	/// shader input attribute.
+	void bindParticleRadiusBuffer(ViewportSceneRenderer* renderer, QOpenGLShaderProgram* shader);
+
+	/// Detaches the vertex buffer containing the particle positions from the corresponding
+	/// shader input attribute.
+	void detachParticlePositionBuffer(ViewportSceneRenderer* renderer, QOpenGLShaderProgram* shader);
+
+	/// Detaches the vertex buffer containing the particle colors from the corresponding
+	/// shader input attribute.
+	void detachParticleColorBuffer(ViewportSceneRenderer* renderer, QOpenGLShaderProgram* shader);
+
+	/// Detaches the vertex buffer containing the particle radii from the corresponding
+	/// shader input attribute.
+	void detachParticleRadiusBuffer(ViewportSceneRenderer* renderer, QOpenGLShaderProgram* shader);
+
+	/// Makes vertex IDs available to the shader.
+	void activateVertexIDs(ViewportSceneRenderer* renderer, QOpenGLShaderProgram* shader);
+
+	/// Disables vertex IDs.
+	void deactivateVertexIDs(ViewportSceneRenderer* renderer, QOpenGLShaderProgram* shader);
 
 	/// Renders the particles using OpenGL point sprites.
 	void renderPointSprites(ViewportSceneRenderer* renderer, quint32 pickingBaseID);
 
-	/// Renders the particles using raytracing implemented in an OpenGL fragment shader.
-	void renderRaytracedSpheres(ViewportSceneRenderer* renderer, quint32 pickingBaseID);
+	/// Renders a cube for each particle using triangle strips.
+	void renderCubes(ViewportSceneRenderer* renderer, quint32 pickingBaseID);
+
+	/// Returns true if the OpenGL implementation supports geometry shaders.
+	bool hasGeometryShaders() const { return _raytracedSphereShader != nullptr; }
 
 private:
 
@@ -118,18 +164,33 @@ private:
 	/// The number of particles stored in the buffers.
 	int _particleCount;
 
+	/// The number of vertices per particles stored in the buffers.
+	int _verticesPerParticle;
+
 	/// Resource identifier of the OpenGL texture that is used for billboard rendering of particles.
 	GLuint _billboardTexture;
+
+	/// This array contains the start indices of primitives and is passed to glMultiDrawArrays().
+	std::vector<GLint> _primitiveStartIndices;
+
+	/// This array contains the vertex counts of primitives and is passed to glMultiDrawArrays().
+	std::vector<GLsizei> _primitiveVertexCounts;
 
 	/// The OpenGL shader programs that are used to render the particles.
 	QPointer<QOpenGLShaderProgram> _flatImposterShader;
 	QPointer<QOpenGLShaderProgram> _shadedImposterShaderWithoutDepth;
 	QPointer<QOpenGLShaderProgram> _shadedImposterShaderWithDepth;
 	QPointer<QOpenGLShaderProgram> _raytracedSphereShader;
+	QPointer<QOpenGLShaderProgram> _cubeShader;
+	QPointer<QOpenGLShaderProgram> _cubePickingShader;
+	QPointer<QOpenGLShaderProgram> _cubeTristripShader;
+	QPointer<QOpenGLShaderProgram> _cubeTristripPickingShader;
+	QPointer<QOpenGLShaderProgram> _flatSquareImposterShader;
 
 	QPointer<QOpenGLShaderProgram> _imposterPickingShaderWithoutDepth;
 	QPointer<QOpenGLShaderProgram> _imposterPickingShaderWithDepth;
 	QPointer<QOpenGLShaderProgram> _raytracedPickingSphereShader;
+	QPointer<QOpenGLShaderProgram> _imposterSquarePickingShaderWithoutDepth;
 
 	Q_OBJECT
 	OVITO_OBJECT
