@@ -369,9 +369,9 @@ void ViewportParticleGeometryBuffer::renderPointSprites(ViewportSceneRenderer* r
 		// This is a fallback if GL_VERTEX_PROGRAM_POINT_SIZE is not supported.
 		std::array<float,3> distanceAttenuation;
 		if(renderer->projParams().isPerspective)
-			distanceAttenuation = { 0, 0, 1.0f / (param * param) };
+			distanceAttenuation = std::array<float,3>{ 0.0f, 0.0f, 1.0f / (param * param) };
 		else
-			distanceAttenuation = { 1.0f / param, 0, 0 };
+			distanceAttenuation = std::array<float,3>{ 1.0f / param, 0.0f, 0.0f };
 		OVITO_CHECK_OPENGL(glPointSize(1));
 		OVITO_CHECK_OPENGL(renderer->glPointParameterfv(GL_POINT_DISTANCE_ATTENUATION, distanceAttenuation.data()));
 	}

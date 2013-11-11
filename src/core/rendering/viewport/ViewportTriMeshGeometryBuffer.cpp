@@ -100,6 +100,10 @@ void ViewportTriMeshGeometryBuffer::setMesh(const TriMesh& mesh, const ColorA& m
 				rv->color = defaultVertexColor;
 			else
 				rv->color = mesh.vertexColor(face->vertex(v));
+#if 1
+			// There is not support for semi-transparent meshes yet.
+			rv->color.a() = 1;
+#endif
 		}
 	}
 

@@ -55,10 +55,6 @@ ImportFileDialog::ImportFileDialog(QWidget* parent, const QString& caption) :
 		selectNameFilter(lastImportFilter);
 	else
 		selectNameFilter(_filterStrings.front());
-
-	for(QString s : nameFilters())
-		qDebug() << "STR:" << s;
-	qDebug() << "Selected:" << selectedNameFilter();
 }
 
 /******************************************************************************
@@ -108,6 +104,7 @@ const FileImporterDescription* ImportFileDialog::selectedFileImporter() const
 int ImportFileDialog::exec()
 {
 #if 1
+
 	return QFileDialog::exec();
 
 #else

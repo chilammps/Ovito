@@ -82,6 +82,11 @@ protected:
 	/// This internal method receives events to the viewport window.
 	virtual bool event(QEvent* event) override;
 
+protected Q_SLOTS:
+
+	/// This receives log messages from the QOpenGLDebugLogger.
+	void openGLDebugMessage(const QOpenGLDebugMessage& debugMessage);
+
 private:
 
 	/// The owning viewport of this window.

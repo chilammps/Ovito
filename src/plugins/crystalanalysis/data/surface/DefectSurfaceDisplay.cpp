@@ -331,8 +331,7 @@ void DefectSurfaceDisplay::buildCapMesh(const HalfEdgeMesh& input, const Simulat
 				const Point3& v2 = reducedPos[edge->vertex2()->index()];
 				if(v2[dim] - v1[dim] >= 0.5f) {
 					std::vector<Point2> contour = traceContour(edge, reducedPos, cell, dim);
-					clipContour(contour, { cell.pbcFlags()[(dim+1)%3],
-											cell.pbcFlags()[(dim+2)%3] }, openContours, closedContours);
+					clipContour(contour, std::array<bool,2>{ cell.pbcFlags()[(dim+1)%3], cell.pbcFlags()[(dim+2)%3] }, openContours, closedContours);
 				}
 			}
 		}

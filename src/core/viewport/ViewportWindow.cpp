@@ -200,10 +200,18 @@ void ViewportWindow::renderNow()
 		_context->makeCurrent(this);
 
 #ifdef OVITO_DEBUG
+		// Initialize the the OpenGL debug logger object.
+		// It will forward error messages from the OpenGL server to the console.
 		_oglDebugLogger = new QOpenGLDebugLogger(this);
 		if(!_oglDebugLogger->initialize()) {
 			delete _oglDebugLogger;
 			_oglDebugLogger = nullptr;
+		}
+		else {
+			for(const QOpenGLDebugMessage& message : _oglDebugLogger->loggedMessages())
+				openGLDebugMessage(message);
+			connect(_oglDebugLogger, &QOpenGLDebugLogger::messageLogged, this, &ViewportWindow::openGLDebugMessage);
+			_oglDebugLogger->startLogging();
 		}
 #endif
 
@@ -219,7 +227,6 @@ void ViewportWindow::renderNow()
 			qDebug() << "OpenGL renderer:            " << QString((const char*)glGetString(GL_RENDERER));
 			qDebug() << "OpenGL version string:      " << QString((const char*)glGetString(GL_VERSION));
 			qDebug() << "OpenGL shading language:    " << QString((const char*)glGetString(GL_SHADING_LANGUAGE_VERSION));
-			qDebug() << "OpenGL framebuffer objects: " << QOpenGLFramebufferObject::hasOpenGLFramebufferObjects();
 			qDebug() << "OpenGL shader programs:     " << QOpenGLShaderProgram::hasOpenGLShaderPrograms();
 			qDebug() << "OpenGL vertex shaders:      " << QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Vertex);
 			qDebug() << "OpenGL fragment shaders:    " << QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Fragment);
@@ -256,24 +263,18 @@ void ViewportWindow::renderNow()
 		return;
 	}
 
-#ifdef OVITO_DEBUG
-	if(_oglDebugLogger) {
-		for(const QOpenGLDebugMessage& message : _oglDebugLogger->loggedMessages())
-			qDebug() << message;
-	}
-#endif
-
 	_viewport->render(_context);
 	_context->swapBuffers(this);
 
-#ifdef OVITO_DEBUG
-	if(_oglDebugLogger) {
-		for(const QOpenGLDebugMessage& message : _oglDebugLogger->loggedMessages())
-			qDebug() << message;
-	}
-#endif
-
 	_context->doneCurrent();
+}
+
+/******************************************************************************
+* This receives log messages from the QOpenGLDebugLogger.
+******************************************************************************/
+void ViewportWindow::openGLDebugMessage(const QOpenGLDebugMessage& debugMessage)
+{
+	qDebug().nospace() << "Viewport " << _viewport->viewportTitle() << ": " << debugMessage.message() << " (" << debugMessage.id() << ")";
 }
 
 };
