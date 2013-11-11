@@ -122,10 +122,13 @@ public:
 		/// Returns the index of the vertex in the list of vertices of the mesh.
 		int index() const { return _index; }
 
+		/// Returns the number of faces (as well as half-edges) adjacent to this vertex.
+		int numEdges() const { return _numEdges; }
+
 	protected:
 
 		/// Constructor.
-		Vertex(const Point3& pos, int index = -1) : _pos(pos), _edges(nullptr), _numEdges(0), _normal(Vector3::Zero()), _index(index) {}
+		Vertex(const Point3& pos, int index = -1) : _pos(pos), _edges(nullptr), _numEdges(0),  _index(index) {}
 
 		/// Adds an adjacent half-edge to this vertex.
 		void addEdge(Edge* edge) {
@@ -136,9 +139,6 @@ public:
 
 		/// The coordinates of the vertex.
 		Point3 _pos;
-
-		/// The surface normal at this vertex.
-		Vector3 _normal;
 
 		/// The number of faces (as well as half-edges) adjacent to this vertex.
 		int _numEdges;

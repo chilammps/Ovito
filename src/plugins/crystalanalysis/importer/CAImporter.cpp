@@ -22,7 +22,9 @@
 #include <plugins/crystalanalysis/CrystalAnalysis.h>
 #include <core/utilities/concurrent/Future.h>
 #include <core/dataset/importexport/LinkedFileObject.h>
+#include <core/scene/ObjectNode.h>
 #include <plugins/crystalanalysis/data/surface/DefectSurface.h>
+#include <plugins/crystalanalysis/modifier/SmoothSurfaceModifier.h>
 #include "CAImporter.h"
 
 namespace CrystalAnalysis {
@@ -279,6 +281,16 @@ QSet<SceneObject*> CAImporter::CrystalAnalysisImportTask::insertIntoScene(Linked
 	activeObjects.insert(defectSurfaceObj.get());
 
 	return activeObjects;
+}
+
+/******************************************************************************
+* This method is called when the scene node for the LinkedFileObject is created.
+******************************************************************************/
+void CAImporter::prepareSceneNode(ObjectNode* node, LinkedFileObject* importObj)
+{
+	LinkedFileImporter::prepareSceneNode(node, importObj);
+
+	node->applyModifier(new SmoothSurfaceModifier());
 }
 
 

@@ -35,7 +35,7 @@ namespace Ovito {
 /******************************************************************************
 * Initializes the menu.
 ******************************************************************************/
-ViewportMenu::ViewportMenu(Viewport* vp) : _viewport(vp)
+ViewportMenu::ViewportMenu(Viewport* vp) : QMenu(vp->widget()), _viewport(vp)
 {
 	QAction* action;
 
@@ -87,7 +87,9 @@ ViewportMenu::ViewportMenu(Viewport* vp) : _viewport(vp)
 	addSeparator();
 	addAction(tr("Adjust View..."), this, SLOT(onAdjustView()))->setEnabled(_viewport->viewType() != Viewport::VIEW_SCENENODE);
 
-	//connect(QGuiApplication::instance(), SIGNAL(focusWindowChanged(QWindow*)), this, SLOT(onWindowFocusChanged()));
+#ifdef Q_OS_MACX
+	connect(QGuiApplication::instance(), SIGNAL(focusWindowChanged(QWindow*)), this, SLOT(onWindowFocusChanged()));
+#endif
 }
 
 /******************************************************************************

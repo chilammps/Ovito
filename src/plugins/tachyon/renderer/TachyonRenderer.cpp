@@ -402,7 +402,7 @@ void TachyonRenderer::renderMesh(const DefaultTriMeshGeometryBuffer& meshBuffer)
 {
 	// Stores data of a single vertex passed to Tachyon.
 	struct ColoredVertexWithNormal {
-		ColorT<float> color;
+		ColorAT<float> color;
 		Vector_3<float> normal;
 		Point_3<float> pos;
 	};
@@ -436,7 +436,7 @@ void TachyonRenderer::renderMesh(const DefaultTriMeshGeometryBuffer& meshBuffer)
 	// Initialize render vertices.
 	std::vector<ColoredVertexWithNormal>::iterator rv = renderVertices.begin();
 	faceNormal = faceNormals.begin();
-	ColorT<float> defaultVertexColor = ColorT<float>(meshBuffer.meshColor());
+	ColorAT<float> defaultVertexColor = ColorAT<float>(meshBuffer.meshColor());
 	for(auto face = mesh.faces().constBegin(); face != mesh.faces().constEnd(); ++face, ++faceNormal) {
 
 		// Initialize render vertices for this face.
@@ -449,7 +449,7 @@ void TachyonRenderer::renderMesh(const DefaultTriMeshGeometryBuffer& meshBuffer)
 			if(mesh.hasVertexColors() == false)
 				rv->color = defaultVertexColor;
 			else
-				rv->color = ColorT<float>(mesh.vertexColor(face->vertex(v)));
+				rv->color = ColorAT<float>(mesh.vertexColor(face->vertex(v)));
 		}
 	}
 
@@ -486,7 +486,7 @@ void TachyonRenderer::renderMesh(const DefaultTriMeshGeometryBuffer& meshBuffer)
 	}
 
 	// Pass transformed triangles to Tachyon renderer.
-	void* tex = getTachyonTexture(1.0f, 1.0f, 1.0f, 1.0f);
+	void* tex = getTachyonTexture(1.0f, 1.0f, 1.0f, defaultVertexColor.a());
 	for(auto rv = renderVertices.begin(); rv != renderVertices.end(); ) {
 		auto rv0 = rv++;
 		auto rv1 = rv++;
@@ -512,8 +512,8 @@ void* TachyonRenderer::getTachyonTexture(FloatType r, FloatType g, FloatType b, 
 {
 	apitexture tex;
 	memset(&tex, 0, sizeof(tex));
-	tex.ambient  = FloatType(0.3);// * alpha;
-	tex.diffuse  = FloatType(0.8);// * alpha;
+	tex.ambient  = FloatType(0.3);
+	tex.diffuse  = FloatType(0.8);
 	tex.specular = FloatType(0.0);
 	tex.opacity  = alpha;
 	tex.col.r = r;

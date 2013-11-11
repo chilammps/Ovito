@@ -283,6 +283,11 @@ public:
 	/// \param c The RGB color.
 	Q_DECL_CONSTEXPR explicit ColorAT(const ColorT<T>& c) : std::array<T, 4>{{c.r(), c.g(), c.b(), T(1)}} {}
 
+	/// \brief Converts a RGB color to an RGBA color.
+	/// \param c The RGB color.
+	/// \param alpha The opaqueness.
+	Q_DECL_CONSTEXPR ColorAT(const ColorT<T>& c, T alpha) : std::array<T, 4>{{c.r(), c.g(), c.b(), alpha}} {}
+
 	/// \brief Sets all components to zero.
 	void setBlack() { r() = g() = b() = 0; a() = 1; }
 

@@ -216,6 +216,9 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl)
 			// Add object to scene.
 			node = new ObjectNode();
 			node->setSceneObject(obj);
+
+			// Let the import subclass customize the node.
+			prepareSceneNode(node.get(), obj.get());
 		}
 
 		// Insert node into scene.

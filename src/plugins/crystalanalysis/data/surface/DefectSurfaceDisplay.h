@@ -28,6 +28,7 @@
 #include <core/scene/objects/geometry/HalfEdgeMesh.h>
 #include <core/rendering/TriMeshGeometryBuffer.h>
 #include <core/gui/properties/PropertiesEditor.h>
+#include <core/animation/controller/Controller.h>
 #include <plugins/particles/data/SimulationCellData.h>
 
 namespace CrystalAnalysis {
@@ -88,18 +89,13 @@ protected:
 	/// Clips a 2d contour at a periodic boundary.
 	void clipContour(std::vector<Point2>& input, std::array<bool,2> periodic, std::vector<std::vector<Point2>>& openContours, std::vector<std::vector<Point2>>& closedContours);
 
-	void clipContourSegment(size_t dim, FloatType t, Point2& base, Vector2& delta, int crossDir, std::vector<std::vector<Point2>>& contours);
+	/// Computes the intersection point of a 2d contour segment crossing a periodic boundary.
+	void computeContourIntersection(size_t dim, FloatType t, Point2& base, Vector2& delta, int crossDir, std::vector<std::vector<Point2>>& contours);
 
-	static FloatType side(const Point2& p) {
-		if(p.x() == 0) return p.y();
-		if(p.y() == 1) return p.x() + 1.0f;
-		if(p.x() == 1) return 3.0f - p.y();
-		if(p.y() == 0) return 4.0f - p.x();
-		OVITO_ASSERT(false);
-		return 0;
-	}
-
+	/// Determines if the 2D box corner (0,0) is inside the closed region described by the 2d polygon.
 	bool isCornerInside2DRegion(const std::vector<std::vector<Point2>>& contours);
+
+	/// Determines if the 3D box corner (0,0,0) is inside the region described by the half-edge polyhedron.
 	bool isCornerInside3DRegion(const HalfEdgeMesh& mesh, const std::vector<Point3>& reducedPos, const std::array<bool,3> pbcFlags);
 
 	/// Controls the display color of the surface mesh.
@@ -114,6 +110,12 @@ protected:
 	/// Controls whether the surface mesh is rendered using smooth shading.
 	PropertyField<bool> _smoothShading;
 
+	/// Controls the transparency of the surface mesh.
+	ReferenceField<FloatController> _surfaceTransparency;
+
+	/// Controls the transparency of the surface cap mesh.
+	ReferenceField<FloatController> _capTransparency;
+
 	/// The buffered geometry used to render the surface mesh.
 	OORef<TriMeshGeometryBuffer> _surfaceBuffer;
 
@@ -125,8 +127,8 @@ protected:
 	SceneObjectCacheHelper<
 		QPointer<SceneObject>, unsigned int,		// Source object + revision number
 		SimulationCellData,							// Simulation cell geometry
-		Color,										// Surface color
-		Color,										// Cap color
+		ColorA,										// Surface color
+		ColorA,										// Cap color
 		bool										// Smooth shading
 		> _geometryCacheHelper;
 
@@ -149,6 +151,8 @@ private:
 	DECLARE_PROPERTY_FIELD(_capColor);
 	DECLARE_PROPERTY_FIELD(_showCap);
 	DECLARE_PROPERTY_FIELD(_smoothShading);
+	DECLARE_REFERENCE_FIELD(_surfaceTransparency);
+	DECLARE_REFERENCE_FIELD(_capTransparency);
 };
 
 /**

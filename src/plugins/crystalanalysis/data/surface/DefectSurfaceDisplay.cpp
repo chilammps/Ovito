@@ -23,7 +23,10 @@
 #include <core/rendering/SceneRenderer.h>
 #include <core/gui/properties/ColorParameterUI.h>
 #include <core/gui/properties/BooleanParameterUI.h>
+#include <core/gui/properties/FloatParameterUI.h>
+#include <core/gui/properties/BooleanGroupBoxParameterUI.h>
 #include <core/scene/objects/geometry/TriMesh.h>
+#include <core/animation/controller/StandardControllers.h>
 #include <plugins/particles/data/SimulationCell.h>
 #include "DefectSurfaceDisplay.h"
 #include "DefectSurface.h"
@@ -38,10 +41,16 @@ DEFINE_FLAGS_PROPERTY_FIELD(DefectSurfaceDisplay, _surfaceColor, "SurfaceColor",
 DEFINE_FLAGS_PROPERTY_FIELD(DefectSurfaceDisplay, _capColor, "CapColor", PROPERTY_FIELD_MEMORIZE)
 DEFINE_PROPERTY_FIELD(DefectSurfaceDisplay, _showCap, "ShowCap")
 DEFINE_PROPERTY_FIELD(DefectSurfaceDisplay, _smoothShading, "SmoothShading")
+DEFINE_REFERENCE_FIELD(DefectSurfaceDisplay, _surfaceTransparency, "SurfaceTransparency", FloatController)
+DEFINE_REFERENCE_FIELD(DefectSurfaceDisplay, _capTransparency, "CapTransparency", FloatController)
 SET_PROPERTY_FIELD_LABEL(DefectSurfaceDisplay, _surfaceColor, "Surface color")
 SET_PROPERTY_FIELD_LABEL(DefectSurfaceDisplay, _capColor, "Cap color")
 SET_PROPERTY_FIELD_LABEL(DefectSurfaceDisplay, _showCap, "Show cap")
 SET_PROPERTY_FIELD_LABEL(DefectSurfaceDisplay, _smoothShading, "Smooth shading")
+SET_PROPERTY_FIELD_LABEL(DefectSurfaceDisplay, _surfaceTransparency, "Surface transparency")
+SET_PROPERTY_FIELD_LABEL(DefectSurfaceDisplay, _capTransparency, "Cap transparency")
+SET_PROPERTY_FIELD_UNITS(DefectSurfaceDisplay, _surfaceTransparency, PercentParameterUnit)
+SET_PROPERTY_FIELD_UNITS(DefectSurfaceDisplay, _capTransparency, PercentParameterUnit)
 
 /******************************************************************************
 * Constructor.
@@ -53,6 +62,11 @@ DefectSurfaceDisplay::DefectSurfaceDisplay() :
 	INIT_PROPERTY_FIELD(DefectSurfaceDisplay::_capColor);
 	INIT_PROPERTY_FIELD(DefectSurfaceDisplay::_showCap);
 	INIT_PROPERTY_FIELD(DefectSurfaceDisplay::_smoothShading);
+	INIT_PROPERTY_FIELD(DefectSurfaceDisplay::_surfaceTransparency);
+	INIT_PROPERTY_FIELD(DefectSurfaceDisplay::_capTransparency);
+
+	_surfaceTransparency = ControllerManager::instance().createDefaultController<FloatController>();
+	_capTransparency = ControllerManager::instance().createDefaultController<FloatController>();
 }
 
 /******************************************************************************
@@ -84,12 +98,22 @@ void DefectSurfaceDisplay::render(TimePoint time, SceneObject* sceneObject, cons
 
 	// Do we have to re-create the geometry buffers from scratch?
 	bool recreateSurfaceBuffer = !_surfaceBuffer || !_surfaceBuffer->isValid(renderer);
-	bool recreateCapBuffer = !_capBuffer || !_capBuffer->isValid(renderer);
+	bool recreateCapBuffer = _showCap && (!_capBuffer || !_capBuffer->isValid(renderer));
+
+	// Get the rendering colors for the surface and cap meshes.
+	FloatType transp_surface = 0;
+	FloatType transp_cap = 0;
+	TimeInterval iv;
+	if(_surfaceTransparency) _surfaceTransparency->getValue(time, transp_surface, iv);
+	if(_capTransparency) _capTransparency->getValue(time, transp_cap, iv);
+	ColorA color_surface(surfaceColor(), 1.0f - transp_surface);
+	ColorA color_cap(capColor(), 1.0f - transp_cap);
 
 	// Do we have to update contents of the geometry buffer?
 	bool updateContents = _geometryCacheHelper.updateState(
 			sceneObject, sceneObject ? sceneObject->revisionNumber() : 0,
-			cellObject->data(), surfaceColor(), capColor(), _smoothShading) || recreateSurfaceBuffer || recreateCapBuffer;
+			cellObject->data(), color_surface, color_cap, _smoothShading)
+					|| recreateSurfaceBuffer || recreateCapBuffer;
 
 	// Re-create the geometry buffers if necessary.
 	if(recreateSurfaceBuffer)
@@ -104,10 +128,10 @@ void DefectSurfaceDisplay::render(TimePoint time, SceneObject* sceneObject, cons
 			TriMesh surfaceMesh;
 			TriMesh capMesh;
 			buildSurfaceMesh(defectSurfaceObj->mesh(), cellObject->data(), surfaceMesh);
-			_surfaceBuffer->setMesh(surfaceMesh, ColorA(surfaceColor()));
+			_surfaceBuffer->setMesh(surfaceMesh, color_surface);
 			if(_showCap) {
 				buildCapMesh(defectSurfaceObj->mesh(), cellObject->data(), capMesh);
-				_capBuffer->setMesh(capMesh, ColorA(capColor()));
+				_capBuffer->setMesh(capMesh, color_cap);
 			}
 		}
 		else {
@@ -313,114 +337,89 @@ void DefectSurfaceDisplay::buildCapMesh(const HalfEdgeMesh& input, const Simulat
 			}
 		}
 
-		std::vector<std::vector<Point2>>& contourList = closedContours;
-		std::vector<Point2> outputContour;
-
-		// Close open contours.
-		if(!openContours.empty()) {
-			QBitArray visitedContours(openContours.size());
-			for(auto c1 = openContours.begin(); c1 != openContours.end(); ++c1) {
-				auto currentContour = c1;
-				while(!visitedContours.testBit(currentContour - openContours.begin())) {
-					outputContour.insert(outputContour.end(), currentContour->begin(), currentContour->end());
-					visitedContours.setBit(currentContour - openContours.begin());
-
-					FloatType exitSide = side(currentContour->back());
-
-					// Find the next contour.
-					FloatType entrySide;
-					FloatType closestDist = FLOATTYPE_MAX;
-					for(auto c = openContours.begin(); c != openContours.end(); ++c) {
-						FloatType pos = side(c->front());
-						FloatType dist = exitSide - pos;
-						if(dist < 0.0f) dist += 4.0f;
-						if(dist < closestDist) {
-							closestDist = dist;
-							currentContour = c;
-							entrySide = pos;
-						}
-					}
-
-					int exitCorner = (int)floor(exitSide);
-					int entryCorner = (int)floor(entrySide);
-					if(exitCorner != entryCorner || exitSide < entrySide) {
-						for(int corner = exitCorner; ;) {
-							switch(corner) {
-							case 0: outputContour.push_back(Point2(0,0)); break;
-							case 1: outputContour.push_back(Point2(0,1)); break;
-							case 2: outputContour.push_back(Point2(1,1)); break;
-							case 3: outputContour.push_back(Point2(1,0)); break;
-							}
-							corner = (corner + 3) % 4;
-							if(corner == entryCorner) break;
-						}
-					}
-				}
-
-				if(!outputContour.empty()) {
-					contourList.push_back(outputContour);
-					outputContour.clear();
-				}
-			}
-		}
-		else {
-			if(closedContours.empty()) {
-				if(isBoxCornerInside3DRegion == -1)
-					isBoxCornerInside3DRegion = isCornerInside3DRegion(input, reducedPos, cell.pbcFlags());
-				if(isBoxCornerInside3DRegion)
-					contourList.push_back( { Point2(0,0), Point2(1,0), Point2(1,1), Point2(0,1) });
-			}
-			else {
-				if(isCornerInside2DRegion(closedContours))
-					contourList.push_back( { Point2(0,0), Point2(1,0), Point2(1,1), Point2(0,1) });
-			}
-		}
-
-#if 0
-		size_t totalNumContourPoints = 0;
-		for(const auto& c : contourList)
-			totalNumContourPoints += c.size();
-
-		QFile file(QString("dim%1.vtk").arg(dim));
-		file.open(QIODevice::WriteOnly | QIODevice::Text);
-		QTextStream stream(&file);
-		stream << "# vtk DataFile Version 3.0" << endl;
-		stream << "# Contours" << endl;
-		stream << "ASCII" << endl;
-		stream << "DATASET UNSTRUCTURED_GRID" << endl;
-		stream << "POINTS " << totalNumContourPoints << " float" << endl;
-		FloatType z = 0;
-		for(const auto& contour : contourList) {
-			z = 0;
-			for(const Point2& p : contour) {
-				stream << p.x() << " " << p.y() << " " << z << endl;
-				z += 0.2 / contour.size();
-			}
-		}
-		size_t numCells = contourList.size();
-		stream << endl << "CELLS " << numCells << " " << (totalNumContourPoints + numCells) << endl;
-		size_t pointIndex = 0;
-		for(const auto& contour : contourList) {
-			stream << contour.size();
-			for(size_t i = 0; i < contour.size(); i++, pointIndex++)
-				stream << " " << pointIndex;
-			stream << endl;
-		}
-		stream << endl << "CELL_TYPES " << numCells << endl;
-		for(size_t i = 0; i < numCells; i++)
-			stream << "7" << endl;	// Polygon
-//			stream << "4" << endl;	// Poly line
-#endif
-
 		// Feed contours into tessellator to create triangles.
 		CapPolygonTessellator tessellator(output, dim);
 		tessellator.beginPolygon();
-		for(const auto& contour : contourList) {
+		for(const auto& contour : closedContours) {
 			tessellator.beginContour();
 			for(const Point2& p : contour)
 				tessellator.vertex(p);
 			tessellator.endContour();
 		}
+
+		// Build the outer contour.
+		if(!openContours.empty()) {
+			QBitArray visitedContours(openContours.size());
+			for(auto c1 = openContours.begin(); c1 != openContours.end(); ++c1) {
+				if(!visitedContours.testBit(c1 - openContours.begin())) {
+					tessellator.beginContour();
+					auto currentContour = c1;
+					do {
+						for(const Point2& p : *currentContour)
+							tessellator.vertex(p);
+						visitedContours.setBit(currentContour - openContours.begin());
+
+						FloatType exitSide = 0;
+						if(currentContour->back().x() == 0) exitSide = currentContour->back().y();
+						else if(currentContour->back().y() == 1) exitSide = currentContour->back().x() + 1.0f;
+						else if(currentContour->back().x() == 1) exitSide = 3.0f - currentContour->back().y();
+						else if(currentContour->back().y() == 0) exitSide = 4.0f - currentContour->back().x();
+
+						// Find the next contour.
+						FloatType entrySide;
+						FloatType closestDist = FLOATTYPE_MAX;
+						for(auto c = openContours.begin(); c != openContours.end(); ++c) {
+							FloatType pos = 0;
+							if(c->front().x() == 0) pos = c->front().y();
+							else if(c->front().y() == 1) pos = c->front().x() + 1.0f;
+							else if(c->front().x() == 1) pos = 3.0f - c->front().y();
+							else if(c->front().y() == 0) pos = 4.0f - c->front().x();
+							FloatType dist = exitSide - pos;
+							if(dist < 0.0f) dist += 4.0f;
+							if(dist < closestDist) {
+								closestDist = dist;
+								currentContour = c;
+								entrySide = pos;
+							}
+						}
+
+						int exitCorner = (int)floor(exitSide);
+						int entryCorner = (int)floor(entrySide);
+						if(exitCorner != entryCorner || exitSide < entrySide) {
+							for(int corner = exitCorner; ;) {
+								switch(corner) {
+								case 0: tessellator.vertex(Point2(0,0)); break;
+								case 1: tessellator.vertex(Point2(0,1)); break;
+								case 2: tessellator.vertex(Point2(1,1)); break;
+								case 3: tessellator.vertex(Point2(1,0)); break;
+								}
+								corner = (corner + 3) % 4;
+								if(corner == entryCorner) break;
+							}
+						}
+					}
+					while(!visitedContours.testBit(currentContour - openContours.begin()));
+					tessellator.endContour();
+				}
+			}
+		}
+		else {
+			if(isBoxCornerInside3DRegion == -1) {
+				if(closedContours.empty())
+					isBoxCornerInside3DRegion = isCornerInside3DRegion(input, reducedPos, cell.pbcFlags());
+				else
+					isBoxCornerInside3DRegion = isCornerInside2DRegion(closedContours);
+			}
+			if(isBoxCornerInside3DRegion) {
+				tessellator.beginContour();
+				tessellator.vertex(Point2(0,0));
+				tessellator.vertex(Point2(1,0));
+				tessellator.vertex(Point2(1,1));
+				tessellator.vertex(Point2(0,1));
+				tessellator.endContour();
+			}
+		}
+
 		tessellator.endPolygon();
 	}
 
@@ -538,14 +537,14 @@ void DefectSurfaceDisplay::clipContour(std::vector<Point2>& input, std::array<bo
 
 		Point2 base = *v1;
 		if(t[0] < t[1]) {
-			clipContourSegment(0, t[0], base, delta, crossDir[0], contours);
+			computeContourIntersection(0, t[0], base, delta, crossDir[0], contours);
 			if(crossDir[1] != 0)
-				clipContourSegment(1, t[1], base, delta, crossDir[1], contours);
+				computeContourIntersection(1, t[1], base, delta, crossDir[1], contours);
 		}
 		else if(t[1] < t[0]) {
-			clipContourSegment(1, t[1], base, delta, crossDir[1], contours);
+			computeContourIntersection(1, t[1], base, delta, crossDir[1], contours);
 			if(crossDir[0] != 0)
-				clipContourSegment(0, t[0], base, delta, crossDir[0], contours);
+				computeContourIntersection(0, t[0], base, delta, crossDir[0], contours);
 		}
 	}
 
@@ -560,7 +559,11 @@ void DefectSurfaceDisplay::clipContour(std::vector<Point2>& input, std::array<bo
 	}
 }
 
-void DefectSurfaceDisplay::clipContourSegment(size_t dim, FloatType t, Point2& base, Vector2& delta, int crossDir, std::vector<std::vector<Point2>>& contours)
+/******************************************************************************
+* Computes the intersection point of a 2d contour segment crossing a
+* periodic boundary.
+******************************************************************************/
+void DefectSurfaceDisplay::computeContourIntersection(size_t dim, FloatType t, Point2& base, Vector2& delta, int crossDir, std::vector<std::vector<Point2>>& contours)
 {
 	Point2 intersection = base + t * delta;
 	intersection[dim] = (crossDir == -1) ? 0.0f : 1.0f;
@@ -571,16 +574,19 @@ void DefectSurfaceDisplay::clipContourSegment(size_t dim, FloatType t, Point2& b
 	delta *= (1.0f - t);
 }
 
+/******************************************************************************
+* Determines if the 2D box corner (0,0) is inside the closed region described
+* by the 2d polygon.
+*
+* 2D version of the algorithm:
+*
+* J. Andreas Baerentzen and Henrik Aanaes
+* Signed Distance Computation Using the Angle Weighted Pseudonormal
+* IEEE Transactions on Visualization and Computer Graphics 11 (2005), Page 243
+******************************************************************************/
 bool DefectSurfaceDisplay::isCornerInside2DRegion(const std::vector<std::vector<Point2>>& contours)
 {
 	OVITO_ASSERT(!contours.empty());
-
-	// 2D version of the algorithm:
-	//
-	// J. Andreas Baerentzen and Henrik Aanaes
-	// Signed Distance Computation Using the Angle Weighted Pseudonormal
-	// IEEE Transactions on Visualization and Computer Graphics, Volume 11, Issue 3 (May 2005), Pages: 243 - 253
-
 	bool isInside = true;
 
 	// Determine which vertex is closest to the test point.
@@ -624,16 +630,20 @@ bool DefectSurfaceDisplay::isCornerInside2DRegion(const std::vector<std::vector<
 	return isInside;
 }
 
+/******************************************************************************
+* Determines if the 3D box corner (0,0,0) is inside the region described by
+* the half-edge polyhedron.
+*
+* Algorithm:
+*
+* J. Andreas Baerentzen and Henrik Aanaes
+* Signed Distance Computation Using the Angle Weighted Pseudonormal
+* IEEE Transactions on Visualization and Computer Graphics 11 (2005), Page 243
+******************************************************************************/
 bool DefectSurfaceDisplay::isCornerInside3DRegion(const HalfEdgeMesh& mesh, const std::vector<Point3>& reducedPos, const std::array<bool,3> pbcFlags)
 {
 	if(mesh.vertices().empty())
 		return true;
-
-	// 3D version of the algorithm:
-	//
-	// J. Andreas Baerentzen and Henrik Aanaes
-	// Signed Distance Computation Using the Angle Weighted Pseudonormal
-	// IEEE Transactions on Visualization and Computer Graphics, Volume 11, Issue 3 (May 2005), Pages: 243 - 253
 
 	// Determine which vertex is closest to the test point.
 	FloatType closestDistanceSq = FLOATTYPE_MAX;
@@ -789,24 +799,47 @@ void DefectSurfaceDisplayEditor::createUI(const RolloutInsertionParameters& roll
 	QWidget* rollout = createRollout(tr("Surface display"), rolloutParams);
 
     // Create the rollout contents.
-	QGridLayout* layout = new QGridLayout(rollout);
+	QVBoxLayout* layout = new QVBoxLayout(rollout);
 	layout->setContentsMargins(4,4,4,4);
 	layout->setSpacing(4);
-	layout->setColumnStretch(1, 1);
+
+	QGroupBox* surfaceGroupBox = new QGroupBox(tr("Surface"));
+	QGridLayout* sublayout = new QGridLayout(surfaceGroupBox);
+	sublayout->setContentsMargins(4,4,4,4);
+	sublayout->setSpacing(4);
+	sublayout->setColumnStretch(1, 1);
+	layout->addWidget(surfaceGroupBox);
 
 	ColorParameterUI* surfaceColorUI = new ColorParameterUI(this, PROPERTY_FIELD(DefectSurfaceDisplay::_surfaceColor));
-	layout->addWidget(surfaceColorUI->label(), 0, 0);
-	layout->addWidget(surfaceColorUI->colorPicker(), 0, 1);
+	sublayout->addWidget(surfaceColorUI->label(), 0, 0);
+	sublayout->addWidget(surfaceColorUI->colorPicker(), 0, 1);
+
+	FloatParameterUI* surfaceTransparencyUI = new FloatParameterUI(this, PROPERTY_FIELD(DefectSurfaceDisplay::_surfaceTransparency));
+	sublayout->addWidget(new QLabel(tr("Transparency:")), 1, 0);
+	sublayout->addLayout(surfaceTransparencyUI->createFieldLayout(), 1, 1);
+	surfaceTransparencyUI->setMinValue(0);
+	surfaceTransparencyUI->setMaxValue(1);
 
 	BooleanParameterUI* smoothShadingUI = new BooleanParameterUI(this, PROPERTY_FIELD(DefectSurfaceDisplay::_smoothShading));
-	layout->addWidget(smoothShadingUI->checkBox(), 1, 0, 1, 2);
+	sublayout->addWidget(smoothShadingUI->checkBox(), 2, 0, 1, 2);
+
+	BooleanGroupBoxParameterUI* capGroupUI = new BooleanGroupBoxParameterUI(this, PROPERTY_FIELD(DefectSurfaceDisplay::_showCap));
+	capGroupUI->groupBox()->setTitle(tr("Cap"));
+	sublayout = new QGridLayout(capGroupUI->groupBox());
+	sublayout->setContentsMargins(4,4,4,4);
+	sublayout->setSpacing(4);
+	sublayout->setColumnStretch(1, 1);
+	layout->addWidget(capGroupUI->groupBox());
 
 	ColorParameterUI* capColorUI = new ColorParameterUI(this, PROPERTY_FIELD(DefectSurfaceDisplay::_capColor));
-	layout->addWidget(capColorUI->label(), 2, 0);
-	layout->addWidget(capColorUI->colorPicker(), 2, 1);
+	sublayout->addWidget(capColorUI->label(), 0, 0);
+	sublayout->addWidget(capColorUI->colorPicker(), 0, 1);
 
-	BooleanParameterUI* showCapUI = new BooleanParameterUI(this, PROPERTY_FIELD(DefectSurfaceDisplay::_showCap));
-	layout->addWidget(showCapUI->checkBox(), 3, 0, 1, 2);
+	FloatParameterUI* capTransparencyUI = new FloatParameterUI(this, PROPERTY_FIELD(DefectSurfaceDisplay::_capTransparency));
+	sublayout->addWidget(new QLabel(tr("Transparency:")), 1, 0);
+	sublayout->addLayout(capTransparencyUI->createFieldLayout(), 1, 1);
+	capTransparencyUI->setMinValue(0);
+	capTransparencyUI->setMaxValue(1);
 }
 
 };

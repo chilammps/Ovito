@@ -156,6 +156,11 @@ protected:
 	/// \brief Creates an import task object to read the given frame.
 	virtual ImportTaskPtr createImportTask(const FrameSourceInformation& frame) = 0;
 
+	/// This method is called when the scene node for the LinkedFileObject is created.
+	/// It can be overwritten by importer subclasses to customize the node, add modifiers, etc.
+	/// The default implementation does nothing.
+	virtual void prepareSceneNode(ObjectNode* node, LinkedFileObject* importObj) {}
+
 	/// Checks if a filename matches to the given wildcard pattern.
 	static bool matchesWildcardPattern(const QString& pattern, const QString& filename);
 

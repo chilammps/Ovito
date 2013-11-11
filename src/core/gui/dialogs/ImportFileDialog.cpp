@@ -53,6 +53,12 @@ ImportFileDialog::ImportFileDialog(QWidget* parent, const QString& caption) :
 	QString lastImportFilter = settings.value("last_import_filter").toString();
 	if(!lastImportFilter.isEmpty())
 		selectNameFilter(lastImportFilter);
+	else
+		selectNameFilter(_filterStrings.front());
+
+	for(QString s : nameFilters())
+		qDebug() << "STR:" << s;
+	qDebug() << "Selected:" << selectedNameFilter();
 }
 
 /******************************************************************************
@@ -101,6 +107,10 @@ const FileImporterDescription* ImportFileDialog::selectedFileImporter() const
 ******************************************************************************/
 int ImportFileDialog::exec()
 {
+#if 1
+	return QFileDialog::exec();
+
+#else
 	// On Mac OS X, use the native dialog box (by calling QFileDialog::getOpenFileName) instead of QFileDialog,
 	// because it provides easier access to external drives.
 
@@ -117,6 +127,7 @@ int ImportFileDialog::exec()
 	selectFile(filename);
 
 	return 1;
+#endif
 }
 
 #endif

@@ -22,7 +22,7 @@ cd libav-0.8.8
 	--disable-decoders \
 	--prefix=$HOME/Documents/progs/libavstatic
 
-make -j3 install
-
 export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$HOME/Documents/progs/libavstatic/lib/pkgconfig
 export MACOSX_DEPLOYMENT_TARGET=10.7
+
+make -j3 install

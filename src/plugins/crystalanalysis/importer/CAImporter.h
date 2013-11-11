@@ -82,6 +82,9 @@ protected:
 		return std::make_shared<CrystalAnalysisImportTask>(frame);
 	}
 
+	/// This method is called when the scene node for the LinkedFileObject is created.
+	virtual void prepareSceneNode(ObjectNode* node, LinkedFileObject* importObj) override;
+
 private:
 
 	Q_OBJECT
