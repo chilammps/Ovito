@@ -96,6 +96,9 @@ private:
 	/// The OpenGL context used for rendering.
 	QOpenGLContext* _context;
 
+	/// The OpenGL debug logger that receives log messages from the OpenGL server.
+	QOpenGLDebugLogger* _oglDebugLogger;
+
 private:
 
 	Q_OBJECT

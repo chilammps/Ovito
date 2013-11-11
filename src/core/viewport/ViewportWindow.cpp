@@ -33,7 +33,7 @@ namespace Ovito {
 ******************************************************************************/
 ViewportWindow::ViewportWindow(Viewport* owner) :
 		_viewport(owner), _updateRequested(false), _updatePending(false),
-		_context(nullptr)
+		_context(nullptr), _oglDebugLogger(nullptr)
 {
 	// Indicate that the window is to be used for OpenGL rendering.
 	setSurfaceType(QWindow::OpenGLSurface);
@@ -44,6 +44,9 @@ ViewportWindow::ViewportWindow(Viewport* owner) :
 	format.setMajorVersion(OVITO_OPENGL_REQUESTED_VERSION_MAJOR);
 	format.setMinorVersion(OVITO_OPENGL_REQUESTED_VERSION_MINOR);
 	format.setProfile(QSurfaceFormat::CoreProfile);
+#ifdef OVITO_DEBUG
+	format.setOption(QSurfaceFormat::DebugContext);
+#endif
 	setFormat(format);
 }
 
@@ -194,29 +197,37 @@ void ViewportWindow::renderNow()
 			throw Exception(tr("Failed to create OpenGL context."));
 		if(shareContext && _context->shareContext() != shareContext)
 			qWarning() << "Viewport cannot share OpenGL context with other viewports.";
+		_context->makeCurrent(this);
+
+#ifdef OVITO_DEBUG
+		_oglDebugLogger = new QOpenGLDebugLogger(this);
+		if(!_oglDebugLogger->initialize()) {
+			delete _oglDebugLogger;
+			_oglDebugLogger = nullptr;
+		}
+#endif
 
 		static bool firstTime = true;
 		if(!shareContext && firstTime) {
 			firstTime = false;
-			_context->makeCurrent(this);
 			QSurfaceFormat format = _context->format();
-			qDebug() << "OpenGL depth buffer size:" << format.depthBufferSize();
-			(qDebug() << "OpenGL version:").nospace() << format.majorVersion() << "." << format.minorVersion();
-			qDebug() << "OpenGL profile:" << (format.profile() == QSurfaceFormat::CoreProfile ? "core" : (format.profile() == QSurfaceFormat::CompatibilityProfile ? "compatibility" : "none"));
-			qDebug() << "OpenGL has alpha:" << format.hasAlpha();
-			qDebug() << "OpenGL vendor: " << QString((const char*)glGetString(GL_VENDOR));
-			qDebug() << "OpenGL renderer: " << QString((const char*)glGetString(GL_RENDERER));
-			qDebug() << "OpenGL version string: " << QString((const char*)glGetString(GL_VERSION));
-			qDebug() << "OpenGL shading language: " << QString((const char*)glGetString(GL_SHADING_LANGUAGE_VERSION));
+			qDebug() << "OpenGL depth buffer size:   " << format.depthBufferSize();
+			(qDebug() << "OpenGL version:             ").nospace() << format.majorVersion() << "." << format.minorVersion();
+			qDebug() << "OpenGL profile:             " << (format.profile() == QSurfaceFormat::CoreProfile ? "core" : (format.profile() == QSurfaceFormat::CompatibilityProfile ? "compatibility" : "none"));
+			qDebug() << "OpenGL has alpha:           " << format.hasAlpha();
+			qDebug() << "OpenGL vendor:              " << QString((const char*)glGetString(GL_VENDOR));
+			qDebug() << "OpenGL renderer:            " << QString((const char*)glGetString(GL_RENDERER));
+			qDebug() << "OpenGL version string:      " << QString((const char*)glGetString(GL_VERSION));
+			qDebug() << "OpenGL shading language:    " << QString((const char*)glGetString(GL_SHADING_LANGUAGE_VERSION));
 			qDebug() << "OpenGL framebuffer objects: " << QOpenGLFramebufferObject::hasOpenGLFramebufferObjects();
-			qDebug() << "OpenGL shader programs: " << QOpenGLShaderProgram::hasOpenGLShaderPrograms();
-			qDebug() << "OpenGL vertex shaders: " << QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Vertex);
-			qDebug() << "OpenGL fragment shaders: " << QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Fragment);
-			qDebug() << "OpenGL geometry shaders: " << QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Geometry);
+			qDebug() << "OpenGL shader programs:     " << QOpenGLShaderProgram::hasOpenGLShaderPrograms();
+			qDebug() << "OpenGL vertex shaders:      " << QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Vertex);
+			qDebug() << "OpenGL fragment shaders:    " << QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Fragment);
+			qDebug() << "OpenGL geometry shaders:    " << QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Geometry);
+			qDebug() << "OpenGL debug logger:        " << (_oglDebugLogger != nullptr);
 		}
 
 		if(_context->format().majorVersion() < OVITO_OPENGL_MINIMUM_VERSION_MAJOR || _context->format().minorVersion() < OVITO_OPENGL_MINIMUM_VERSION_MINOR) {
-			_context->makeCurrent(this);
 			Exception ex(tr(
 					"The OpenGL implementation available on this system does not support OpenGL version %4.%5 or newer.\n\n"
 					"Ovito requires modern graphics hardware and up-to-date graphics drivers to display 3D content. Your current system configuration is not compatible with Ovito and the application will quit now.\n\n"
@@ -245,8 +256,23 @@ void ViewportWindow::renderNow()
 		return;
 	}
 
+#ifdef OVITO_DEBUG
+	if(_oglDebugLogger) {
+		for(const QOpenGLDebugMessage& message : _oglDebugLogger->loggedMessages())
+			qDebug() << message;
+	}
+#endif
+
 	_viewport->render(_context);
 	_context->swapBuffers(this);
+
+#ifdef OVITO_DEBUG
+	if(_oglDebugLogger) {
+		for(const QOpenGLDebugMessage& message : _oglDebugLogger->loggedMessages())
+			qDebug() << message;
+	}
+#endif
+
 	_context->doneCurrent();
 }
 

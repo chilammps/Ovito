@@ -79,24 +79,26 @@ bool StandardSceneRenderer::startRender(DataSet* dataset, RenderSettings* settin
 		throw Exception(tr("Failed to make OpenGL context current."));
 	OVITO_CHECK_OPENGL();
 
-#if 1
+#ifdef OVITO_DEBUG
 	static bool firstTime = true;
 	if(firstTime) {
 		firstTime = false;
-		QSurfaceFormat format = _offscreenContext->format();
-		qDebug() << "OpenGL depth buffer size:" << format.depthBufferSize();
-		(qDebug() << "OpenGL version:").nospace() << format.majorVersion() << "." << format.minorVersion();
-		qDebug() << "OpenGL profile:" << (format.profile() == QSurfaceFormat::CoreProfile ? "core" : (format.profile() == QSurfaceFormat::CompatibilityProfile ? "compatibility" : "none"));
-		qDebug() << "OpenGL has alpha:" << format.hasAlpha();
-		qDebug() << "OpenGL vendor: " << QString((const char*)glGetString(GL_VENDOR));
-		qDebug() << "OpenGL renderer: " << QString((const char*)glGetString(GL_RENDERER));
-		qDebug() << "OpenGL version string: " << QString((const char*)glGetString(GL_VERSION));
-		qDebug() << "OpenGL shading language: " << QString((const char*)glGetString(GL_SHADING_LANGUAGE_VERSION));
-		qDebug() << "OpenGL framebuffer objects: " << QOpenGLFramebufferObject::hasOpenGLFramebufferObjects();
-		qDebug() << "OpenGL shader programs: " << QOpenGLShaderProgram::hasOpenGLShaderPrograms();
-		qDebug() << "OpenGL vertex shaders: " << QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Vertex);
-		qDebug() << "OpenGL fragment shaders: " << QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Fragment);
-		qDebug() << "OpenGL geometry shaders: " << QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Geometry);
+		if(shareContext == nullptr || _offscreenContext->shareContext() != shareContext) {
+			QSurfaceFormat format = _offscreenContext->format();
+			qDebug() << "OpenGL depth buffer size:  " << format.depthBufferSize();
+			(qDebug() << "OpenGL version:            ").nospace() << format.majorVersion() << "." << format.minorVersion();
+			qDebug() << "OpenGL profile:            " << (format.profile() == QSurfaceFormat::CoreProfile ? "core" : (format.profile() == QSurfaceFormat::CompatibilityProfile ? "compatibility" : "none"));
+			qDebug() << "OpenGL has alpha:           " << format.hasAlpha();
+			qDebug() << "OpenGL vendor:              " << QString((const char*)glGetString(GL_VENDOR));
+			qDebug() << "OpenGL renderer:            " << QString((const char*)glGetString(GL_RENDERER));
+			qDebug() << "OpenGL version string:      " << QString((const char*)glGetString(GL_VERSION));
+			qDebug() << "OpenGL shading language:    " << QString((const char*)glGetString(GL_SHADING_LANGUAGE_VERSION));
+			qDebug() << "OpenGL framebuffer objects: " << QOpenGLFramebufferObject::hasOpenGLFramebufferObjects();
+			qDebug() << "OpenGL shader programs:     " << QOpenGLShaderProgram::hasOpenGLShaderPrograms();
+			qDebug() << "OpenGL vertex shaders:      " << QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Vertex);
+			qDebug() << "OpenGL fragment shaders:    " << QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Fragment);
+			qDebug() << "OpenGL geometry shaders:    " << QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Geometry);
+		}
 	}
 #endif
 
