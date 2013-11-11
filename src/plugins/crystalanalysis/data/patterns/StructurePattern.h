@@ -52,17 +52,17 @@ public:
 	/// \brief Default constructor.
 	Q_INVOKABLE StructurePattern();
 
+	/// Returns the long name of this pattern.
+	const QString& longName() const { return name(); }
+
+	/// Assigns a long name to this pattern.
+	void setLongName(const QString& name) { setName(name); }
+
 	/// Returns the short name of this pattern.
 	const QString& shortName() const { return _shortName; }
 
-	/// Assigns a short name to this pattern.
+	/// Sets the short name to this pattern.
 	void setShortName(const QString& name) { _shortName = name; }
-
-	/// Returns the long name of this pattern.
-	const QString& longName() const { return _longName; }
-
-	/// Assigns a long name to this pattern.
-	void setLongName(const QString& name) { _longName = name; }
 
 	/// Returns the list of Burgers vector families defined for this lattice pattern.
 	const QVector<BurgersVectorFamily*>& burgersVectorFamilies() const { return _burgersVectorFamilies; }
@@ -71,19 +71,16 @@ public:
 	/// don't belong to any family.
 	BurgersVectorFamily* defaultBurgersVectorFamily() const { return _burgersVectorFamilies.front(); }
 
-	/// The type of structure described by this pattern.
+	/// Returns the type of structure described by this pattern.
 	StructureType structureType() const { return _structureType; }
 
-	/// Returns the title of this object.
-	virtual QString objectTitle() override { return shortName(); }
+	/// Changes the type of structure described by this pattern.
+	void setStructureType(StructureType type) { _structureType = type; }
 
 private:
 
 	/// The short name of this pattern.
-	PropertyField<QString, QString, ReferenceEvent::TitleChanged> _shortName;
-
-	/// The long name of this pattern.
-	PropertyField<QString> _longName;
+	PropertyField<QString> _shortName;
 
 	/// The type of structure described by this pattern.
 	PropertyField<StructureType, int> _structureType;
@@ -95,7 +92,6 @@ private:
 	OVITO_OBJECT
 
 	DECLARE_PROPERTY_FIELD(_shortName);
-	DECLARE_PROPERTY_FIELD(_longName);
 	DECLARE_PROPERTY_FIELD(_structureType);
 	DECLARE_VECTOR_REFERENCE_FIELD(_burgersVectorFamilies);
 };

@@ -22,6 +22,7 @@
 #include <plugins/crystalanalysis/CrystalAnalysis.h>
 #include <plugins/crystalanalysis/data/surface/DefectSurface.h>
 #include <core/gui/properties/IntegerParameterUI.h>
+#include <core/utilities/concurrent/ParallelFor.h>
 #include <plugins/particles/data/SimulationCell.h>
 #include "SmoothSurfaceModifier.h"
 
@@ -36,7 +37,7 @@ SET_PROPERTY_FIELD_LABEL(SmoothSurfaceModifier, _smoothingLevel, "Smoothing leve
 /******************************************************************************
 * Constructs the modifier object.
 ******************************************************************************/
-SmoothSurfaceModifier::SmoothSurfaceModifier() : _smoothingLevel(10)
+SmoothSurfaceModifier::SmoothSurfaceModifier() : _smoothingLevel(8)
 {
 	INIT_PROPERTY_FIELD(SmoothSurfaceModifier::_smoothingLevel);
 }
@@ -93,29 +94,28 @@ void SmoothSurfaceModifier::smoothMesh(HalfEdgeMesh& mesh, FloatType prefactor, 
 
 	// Compute displacement for each vertex.
 	std::vector<Vector3> displacements(mesh.vertices().size());
-	auto d = displacements.begin();
-	for(HalfEdgeMesh::Vertex* vertex : mesh.vertices()) {
-		(*d) = Vector3::Zero();
+	parallelFor(mesh.vertices().size(), [&mesh, &displacements, prefactor, cell, absoluteToReduced](int index) {
+		HalfEdgeMesh::Vertex* vertex = mesh.vertices()[index];
+		Vector3& d = displacements[index];
+		d = Vector3::Zero();
 		for(HalfEdgeMesh::Edge* edge = vertex->edges(); edge != nullptr; edge = edge->nextVertexEdge()) {
-			Vector3 delta = absoluteToReduced * (edge->vertex2()->pos() - vertex->pos());
-			for(size_t d = 0; d < 3; d++) {
-				if(cell.pbcFlags()[d]) {
-					FloatType& c = delta[d];
-					while(c < FloatType(0.5)) c += FloatType(1);
-					while(c > FloatType(0.5)) c -= FloatType(1);
+			Vector3 delta = edge->vertex2()->pos() - vertex->pos();
+			Vector3 delta_r = absoluteToReduced * delta;
+			for(size_t dim = 0; dim < 3; dim++) {
+				if(cell.pbcFlags()[dim]) {
+					while(delta_r[dim] > FloatType(0.5)) { delta_r[dim] -= FloatType(1); delta -= cell.matrix().column(dim); }
+					while(delta_r[dim] < FloatType(-0.5)) { delta_r[dim] += FloatType(1); delta += cell.matrix().column(dim); }
 				}
 			}
-			(*d) += delta;
+			d += delta;
 		}
-		(*d) *= (prefactor / vertex->numEdges());
-		++d;
-	}
+		d *= (prefactor / vertex->numEdges());
+	});
 
 	// Apply displacements.
-	d = displacements.begin();
-	for(HalfEdgeMesh::Vertex* vertex : mesh.vertices()) {
-		vertex->pos() += reducedToAbsolute * (*d++);
-	}
+	auto d = displacements.cbegin();
+	for(HalfEdgeMesh::Vertex* vertex : mesh.vertices())
+		vertex->pos() += *d++;
 }
 
 /******************************************************************************

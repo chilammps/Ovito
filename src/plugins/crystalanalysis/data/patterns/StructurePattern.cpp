@@ -30,11 +30,9 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(CrystalAnalysis, StructurePattern, ParticleT
 IMPLEMENT_OVITO_OBJECT(CrystalAnalysis, StructurePatternEditor, PropertiesEditor)
 SET_OVITO_OBJECT_EDITOR(StructurePattern, StructurePatternEditor)
 DEFINE_PROPERTY_FIELD(StructurePattern, _shortName, "ShortName")
-DEFINE_PROPERTY_FIELD(StructurePattern, _longName, "LongName")
 DEFINE_PROPERTY_FIELD(StructurePattern, _structureType, "StructureType")
 DEFINE_VECTOR_REFERENCE_FIELD(StructurePattern, _burgersVectorFamilies, "BurgersVectorFamilies", BurgersVectorFamily)
 SET_PROPERTY_FIELD_LABEL(StructurePattern, _shortName, "Short name")
-SET_PROPERTY_FIELD_LABEL(StructurePattern, _longName, "Long name")
 SET_PROPERTY_FIELD_LABEL(StructurePattern, _structureType, "Structure type")
 SET_PROPERTY_FIELD_LABEL(StructurePattern, _burgersVectorFamilies, "Burgers vector families")
 
@@ -44,7 +42,6 @@ SET_PROPERTY_FIELD_LABEL(StructurePattern, _burgersVectorFamilies, "Burgers vect
 StructurePattern::StructurePattern() : _structureType(Lattice)
 {
 	INIT_PROPERTY_FIELD(StructurePattern::_shortName);
-	INIT_PROPERTY_FIELD(StructurePattern::_longName);
 	INIT_PROPERTY_FIELD(StructurePattern::_structureType);
 	INIT_PROPERTY_FIELD(StructurePattern::_burgersVectorFamilies);
 }

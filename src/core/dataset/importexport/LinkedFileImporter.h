@@ -98,6 +98,9 @@ public:
 		/// Sets the informational text.
 		void setInfoText(const QString& text) { _infoText = text; }
 
+		/// Returns the informational text.
+		const QString& infoText() const { return _infoText; }
+
 	private:
 
 		/// The source file information.

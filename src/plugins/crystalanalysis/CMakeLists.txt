@@ -26,6 +26,10 @@ SET(OVITO_CRYSTALANALYSIS_SOURCE_FILES
 	data/patterns/PatternCatalog.cpp
 	data/surface/DefectSurface.cpp
 	data/surface/DefectSurfaceDisplay.cpp
+	data/clusters/Cluster.cpp
+	data/clusters/ClusterGraph.cpp
+	data/dislocations/DislocationSegment.cpp
+	data/dislocations/DislocationNetwork.cpp
 	modifier/ShiftModifier.cpp
 	modifier/SmoothSurfaceModifier.cpp
 )

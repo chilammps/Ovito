@@ -254,9 +254,11 @@ void FutureInterfaceBase::setProgressValue(int value)
         return;
 
     _progressValue = value;
-    if(_progressTime.isValid() && _progressValue != _progressMaximum)
-    	if(_progressTime.elapsed() < (1000 / MaxProgressEmitsPerSecond))
+    if(_progressTime.isValid() && _progressValue != _progressMaximum) {
+    	if(_progressTime.elapsed() < (1000 / MaxProgressEmitsPerSecond)) {
             return;
+    	}
+    }
 
     _progressTime.start();
     sendCallOut(FutureWatcher::CallOutEvent::ProgressValue, _progressValue);

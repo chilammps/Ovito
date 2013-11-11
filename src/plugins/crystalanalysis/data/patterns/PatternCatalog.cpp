@@ -51,7 +51,7 @@ PatternCatalog::PatternCatalog()
 void PatternCatalogEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
 	// Create a rollout.
-	QWidget* rollout = createRollout(tr("Lattice structure catalog"), rolloutParams);
+	QWidget* rollout = createRollout(tr("Atomic structure catalog"), rolloutParams);
 
     // Create the rollout contents.
 	QVBoxLayout* layout = new QVBoxLayout(rollout);

@@ -69,7 +69,7 @@ public:
 	/// property mapping.
 	void showEditColumnMappingDialog(QWidget* parent = nullptr);
 
-protected:
+public:
 
 	/// The format-specific task object that is responsible for reading an input file in the background.
 	class LAMMPSTextDumpImportTask : public ParticleImportTask

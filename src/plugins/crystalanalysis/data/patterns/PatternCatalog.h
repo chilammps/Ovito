@@ -44,8 +44,14 @@ public:
 	/// Returns the list of structure patterns in this catalog.
 	const QVector<StructurePattern*>& patterns() const { return _patterns; }
 
+	/// Adds a new patterns to the catalog.
+	void addPattern(StructurePattern* pattern) { _patterns.push_back(pattern); }
+
+	/// Removes a pattern from the catalog.
+	void removePattern(int index) { _patterns.remove(index); }
+
 	/// Returns the title of this object.
-	virtual QString objectTitle() override { return tr("Structure types"); }
+	virtual QString objectTitle() override { return tr("Pattern catalog"); }
 
 private:
 

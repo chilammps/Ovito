@@ -23,13 +23,34 @@
 #include <core/utilities/concurrent/Future.h>
 #include <core/dataset/importexport/LinkedFileObject.h>
 #include <core/scene/ObjectNode.h>
+#include <core/gui/properties/BooleanParameterUI.h>
 #include <plugins/crystalanalysis/data/surface/DefectSurface.h>
+#include <plugins/crystalanalysis/data/dislocations/DislocationNetwork.h>
+#include <plugins/crystalanalysis/data/dislocations/DislocationSegment.h>
+#include <plugins/crystalanalysis/data/clusters/ClusterGraph.h>
+#include <plugins/crystalanalysis/data/patterns/PatternCatalog.h>
 #include <plugins/crystalanalysis/modifier/SmoothSurfaceModifier.h>
+#include <plugins/particles/importer/lammps/LAMMPSTextDumpImporter.h>
 #include "CAImporter.h"
 
 namespace CrystalAnalysis {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(CrystalAnalysis, CAImporter, LinkedFileImporter)
+IMPLEMENT_OVITO_OBJECT(CrystalAnalysis, CAImporterEditor, PropertiesEditor)
+SET_OVITO_OBJECT_EDITOR(CAImporter, CAImporterEditor)
+DEFINE_PROPERTY_FIELD(CAImporter, _loadParticles, "LoadParticles")
+SET_PROPERTY_FIELD_LABEL(CAImporter, _loadParticles, "Load particles")
+
+/******************************************************************************
+* Is called when the value of a property of this object has changed.
+******************************************************************************/
+void CAImporter::propertyChanged(const PropertyFieldDescriptor& field)
+{
+	if(field == PROPERTY_FIELD(CAImporter::_loadParticles)) {
+		requestReload();
+	}
+	LinkedFileImporter::propertyChanged(field);
+}
 
 /******************************************************************************
 * Checks if the given file has format that can be read by this importer.
@@ -56,9 +77,6 @@ void CAImporter::CrystalAnalysisImportTask::parseFile(FutureInterfaceBase& futur
 {
 	futureInterface.setProgressText(tr("Reading crystal analysis file %1").arg(frame().sourceFile.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
 
-	// Regular expression for whitespace characters.
-	QRegularExpression ws_re(QStringLiteral("\\s+"));
-
 	// Read file header.
 	stream.readLine();
 	if(!stream.lineStartsWith("CA_FILE_VERSION "))
@@ -72,44 +90,49 @@ void CAImporter::CrystalAnalysisImportTask::parseFile(FutureInterfaceBase& futur
 	if(!stream.lineStartsWith("CA_LIB_VERSION"))
 		throw Exception(tr("Failed to parse file. This is not a proper file written by the Crystal Analysis Tool."));
 
-	// Skip file path information.
+	// Read file path information.
 	stream.readLine();
+	QString caFilename = stream.lineString().mid(12).trimmed();
 	stream.readLine();
+	QString atomsFilename = stream.lineString().mid(11).trimmed();
 
 	// Read pattern catalog.
 	int numPatterns;
 	if(sscanf(stream.readLine(), "STRUCTURE_PATTERNS %i", &numPatterns) != 1 || numPatterns <= 0)
 		throw Exception(tr("Failed to parse file. Invalid number of structure patterns in line %1.").arg(stream.lineNumber()));
 	for(int index = 0; index < numPatterns; index++) {
-		int patternId;
-		if(sscanf(stream.readLine(), "PATTERN ID %i", &patternId) != 1)
+		PatternInfo pattern;
+		if(sscanf(stream.readLine(), "PATTERN ID %i", &pattern.id) != 1)
 			throw Exception(tr("Failed to parse file. Invalid pattern ID in line %1.").arg(stream.lineNumber()));
 		stream.readLine();
-		QString shortPatternName = stream.lineString().mid(5).trimmed();
+		pattern.shortName = stream.lineString().mid(5).trimmed();
 		stream.readLine();
-		QString longPatternName = stream.lineString().mid(9).trimmed();
+		pattern.longName = stream.lineString().mid(9).trimmed();
 		stream.readLine();
-		QString patternType = stream.lineString().mid(5).trimmed();
-		Color color;
-		if(sscanf(stream.readLine(), "COLOR " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING, &color.r(), &color.g(), &color.b()) != 3)
+		QString patternTypeString = stream.lineString().mid(5).trimmed();
+		if(patternTypeString == QStringLiteral("LATTICE")) pattern.type = StructurePattern::Lattice;
+		else if(patternTypeString == QStringLiteral("INTERFACE")) pattern.type = StructurePattern::Interface;
+		else if(patternTypeString == QStringLiteral("POINTDEFECT")) pattern.type = StructurePattern::PointDefect;
+		else throw Exception(tr("Failed to parse file. Invalid pattern type in line %1: %2").arg(stream.lineNumber()).arg(patternTypeString));
+		if(sscanf(stream.readLine(), "COLOR " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING, &pattern.color.r(), &pattern.color.g(), &pattern.color.b()) != 3)
 			throw Exception(tr("Failed to parse file. Invalid pattern color in line %1.").arg(stream.lineNumber()));
 		int numFamilies;
 		if(sscanf(stream.readLine(), "BURGERS_VECTOR_FAMILIES %i", &numFamilies) != 1 || numFamilies < 0)
 			throw Exception(tr("Failed to parse file. Invalid number of Burgers vectors families in line %1.").arg(stream.lineNumber()));
 		for(int familyIndex = 0; familyIndex < numFamilies; familyIndex++) {
-			int familyId;
-			if(sscanf(stream.readLine(), "BURGERS_VECTOR_FAMILY ID %i", &familyId) != 1)
+			BurgersVectorFamilyInfo family;
+			if(sscanf(stream.readLine(), "BURGERS_VECTOR_FAMILY ID %i", &family.id) != 1)
 				throw Exception(tr("Failed to parse file. Invalid Burgers vector family ID in line %1.").arg(stream.lineNumber()));
 			stream.readLine();
-			QString familyName = stream.lineString().trimmed();
-			Vector3 burgersVector;
-			if(sscanf(stream.readLine(), FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING, &burgersVector.x(), &burgersVector.y(), &burgersVector.z()) != 3)
+			family.name = stream.lineString().trimmed();
+			if(sscanf(stream.readLine(), FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING, &family.burgersVector.x(), &family.burgersVector.y(), &family.burgersVector.z()) != 3)
 				throw Exception(tr("Failed to parse file. Invalid Burgers vector in line %1.").arg(stream.lineNumber()));
-			Color familyColor;
-			if(sscanf(stream.readLine(), FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING, &familyColor.r(), &familyColor.g(), &familyColor.b()) != 3)
+			if(sscanf(stream.readLine(), FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING, &family.color.r(), &family.color.g(), &family.color.b()) != 3)
 				throw Exception(tr("Failed to parse file. Invalid color in line %1.").arg(stream.lineNumber()));
+			pattern.burgersVectorFamilies.push_back(family);
 		}
 		stream.readLine();
+		_patterns.push_back(pattern);
 	}
 
 	// Read simulation cell geometry.
@@ -131,72 +154,82 @@ void CAImporter::CrystalAnalysisImportTask::parseFile(FutureInterfaceBase& futur
 	int numClusters;
 	if(sscanf(stream.readLine(), "CLUSTERS %i", &numClusters) != 1)
 		throw Exception(tr("Failed to parse file. Invalid number of clusters in line %1.").arg(stream.lineNumber()));
+	futureInterface.setProgressText(tr("Reading clusters"));
+	futureInterface.setProgressRange(numClusters);
 	for(int index = 0; index < numClusters; index++) {
+		futureInterface.setProgressValue(index);
+		ClusterInfo cluster;
 		stream.readLine();
-		int clusterId, clusterProc, patternIndex, atomCount;
-		if(sscanf(stream.readLine(), "%i %i", &clusterId, &clusterProc) != 2)
+		if(sscanf(stream.readLine(), "%i %i", &cluster.id, &cluster.proc) != 2)
 			throw Exception(tr("Failed to parse file. Invalid cluster ID in line %1.").arg(stream.lineNumber()));
-		if(sscanf(stream.readLine(), "%i", &patternIndex) != 1)
+		if(sscanf(stream.readLine(), "%i", &cluster.patternIndex) != 1)
 			throw Exception(tr("Failed to parse file. Invalid cluster pattern index in line %1.").arg(stream.lineNumber()));
-		if(sscanf(stream.readLine(), "%i", &atomCount) != 1)
+		if(sscanf(stream.readLine(), "%i", &cluster.atomCount) != 1)
 			throw Exception(tr("Failed to parse file. Invalid cluster atom count in line %1.").arg(stream.lineNumber()));
-		Point3 centerOfMass;
-		if(sscanf(stream.readLine(), FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING, &centerOfMass.x(), &centerOfMass.y(), &centerOfMass.z()) != 3)
+		if(sscanf(stream.readLine(), FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING, &cluster.centerOfMass.x(), &cluster.centerOfMass.y(), &cluster.centerOfMass.z()) != 3)
 			throw Exception(tr("Failed to parse file. Invalid cluster center of mass in line %1.").arg(stream.lineNumber()));
-		Matrix3 orientation;
 		if(sscanf(stream.readLine(), FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING
 				" " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING
 				" " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING,
-				&orientation(0,0), &orientation(0,1), &orientation(0,2), &orientation(1,0), &orientation(1,1), &orientation(1,2), &orientation(2,0), &orientation(2,1), &orientation(2,2)) != 9)
+				&cluster.orientation(0,0), &cluster.orientation(0,1), &cluster.orientation(0,2),
+				&cluster.orientation(1,0), &cluster.orientation(1,1), &cluster.orientation(1,2),
+				&cluster.orientation(2,0), &cluster.orientation(2,1), &cluster.orientation(2,2)) != 9)
 			throw Exception(tr("Failed to parse file. Invalid cluster orientation matrix in line %1.").arg(stream.lineNumber()));
+		_clusters.push_back(cluster);
 	}
 
 	// Read cluster transition list.
 	int numClusterTransitions;
 	if(sscanf(stream.readLine(), "CLUSTER_TRANSITIONS %i", &numClusterTransitions) != 1)
 		throw Exception(tr("Failed to parse file. Invalid number of cluster transitions in line %1.").arg(stream.lineNumber()));
+	futureInterface.setProgressText(tr("Reading cluster transitions"));
+	futureInterface.setProgressRange(numClusterTransitions);
 	for(int index = 0; index < numClusterTransitions; index++) {
-		int clusterIndex1, clusterIndex2;
-		if(sscanf(stream.readLine(), "TRANSITION %i %i", &clusterIndex1, &clusterIndex2) != 2 || clusterIndex1 >= numClusters || clusterIndex2 >= numClusters)
+		futureInterface.setProgressValue(index);
+		ClusterTransitionInfo transition;
+		if(sscanf(stream.readLine(), "TRANSITION %i %i", &transition.cluster1, &transition.cluster2) != 2 || transition.cluster1 >= numClusters || transition.cluster2 >= numClusters)
 			throw Exception(tr("Failed to parse file. Invalid cluster transition in line %1.").arg(stream.lineNumber()));
-		Matrix3 tm;
 		if(sscanf(stream.readLine(), FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING
 				" " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING
 				" " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING,
-				&tm(0,0), &tm(0,1), &tm(0,2), &tm(1,0), &tm(1,1), &tm(1,2), &tm(2,0), &tm(2,1), &tm(2,2)) != 9)
+				&transition.tm(0,0), &transition.tm(0,1), &transition.tm(0,2),
+				&transition.tm(1,0), &transition.tm(1,1), &transition.tm(1,2),
+				&transition.tm(2,0), &transition.tm(2,1), &transition.tm(2,2)) != 9)
 			throw Exception(tr("Failed to parse file. Invalid cluster transition matrix in line %1.").arg(stream.lineNumber()));
+		_clusterTransitions.push_back(transition);
 	}
 
 	// Read dislocations list.
 	int numDislocationSegments;
 	if(sscanf(stream.readLine(), "DISLOCATIONS %i", &numDislocationSegments) != 1)
 		throw Exception(tr("Failed to parse file. Invalid number of dislocation segments in line %1.").arg(stream.lineNumber()));
+	futureInterface.setProgressText(tr("Reading dislocations"));
+	futureInterface.setProgressRange(numDislocationSegments);
 	for(int index = 0; index < numDislocationSegments; index++) {
-		int segmentId;
-		if(sscanf(stream.readLine(), "%i", &segmentId) != 1)
+		futureInterface.setProgressValue(index);
+		DislocationSegmentInfo segment;
+		if(sscanf(stream.readLine(), "%i", &segment.id) != 1)
 			throw Exception(tr("Failed to parse file. Invalid segment ID in line %1.").arg(stream.lineNumber()));
 
-		Vector3 burgersVector;
-		if(sscanf(stream.readLine(), FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING, &burgersVector.x(), &burgersVector.y(), &burgersVector.z()) != 3)
+		if(sscanf(stream.readLine(), FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING, &segment.burgersVector.x(), &segment.burgersVector.y(), &segment.burgersVector.z()) != 3)
 			throw Exception(tr("Failed to parse file. Invalid Burgers vector in line %1.").arg(stream.lineNumber()));
 
-		int clusterIndex;
-		if(sscanf(stream.readLine(), "%i", &clusterIndex) != 1 || clusterIndex < 0 || clusterIndex >= numClusters)
+		if(sscanf(stream.readLine(), "%i", &segment.clusterIndex) != 1 || segment.clusterIndex < 0 || segment.clusterIndex >= numClusters)
 			throw Exception(tr("Failed to parse file. Invalid segment cluster ID in line %1.").arg(stream.lineNumber()));
 
 		// Read polyline.
 		int numPoints;
 		if(sscanf(stream.readLine(), "%i", &numPoints) != 1 || numPoints <= 1)
 			throw Exception(tr("Failed to parse file. Invalid segment number of points in line %1.").arg(stream.lineNumber()));
-		for(int pindex = 0; pindex < numPoints; pindex++) {
-			Point3 p;
+		segment.line.resize(numPoints);
+		for(Point3& p : segment.line) {
 			if(sscanf(stream.readLine(), FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING, &p.x(), &p.y(), &p.z()) != 3)
 				throw Exception(tr("Failed to parse file. Invalid point in line %1.").arg(stream.lineNumber()));
 		}
 
 		// Read dislocation core size.
-		for(int pindex = 0; pindex < numPoints; pindex++) {
-			int coreSize;
+		segment.coreSize.resize(numPoints);
+		for(int& coreSize : segment.coreSize) {
 			if(sscanf(stream.readLine(), "%i", &coreSize) != 1)
 				throw Exception(tr("Failed to parse file. Invalid core size in line %1.").arg(stream.lineNumber()));
 		}
@@ -216,8 +249,11 @@ void CAImporter::CrystalAnalysisImportTask::parseFile(FutureInterfaceBase& futur
 	int numDefectMeshVertices;
 	if(sscanf(stream.readLine(), "DEFECT_MESH_VERTICES %i", &numDefectMeshVertices) != 1)
 		throw Exception(tr("Failed to parse file. Invalid number of defect mesh vertices in line %1.").arg(stream.lineNumber()));
+	futureInterface.setProgressText(tr("Reading defect surface"));
+	futureInterface.setProgressRange(numDefectMeshVertices);
 	_defectSurface.reserveVertices(numDefectMeshVertices);
 	for(int index = 0; index < numDefectMeshVertices; index++) {
+		if((index % 4096) == 0) futureInterface.setProgressValue(index);
 		Point3 p;
 		if(sscanf(stream.readLine(), FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING, &p.x(), &p.y(), &p.z()) != 3)
 			throw Exception(tr("Failed to parse file. Invalid point in line %1.").arg(stream.lineNumber()));
@@ -228,8 +264,10 @@ void CAImporter::CrystalAnalysisImportTask::parseFile(FutureInterfaceBase& futur
 	int numDefectMeshFacets;
 	if(sscanf(stream.readLine(), "DEFECT_MESH_FACETS %i", &numDefectMeshFacets) != 1)
 		throw Exception(tr("Failed to parse file. Invalid number of defect mesh facets in line %1.").arg(stream.lineNumber()));
+	futureInterface.setProgressRange(numDefectMeshFacets * 2);
 	_defectSurface.reserveFaces(numDefectMeshFacets);
 	for(int index = 0; index < numDefectMeshFacets; index++) {
+		if((index % 4096) == 0) futureInterface.setProgressValue(index);
 		int v[3];
 		if(sscanf(stream.readLine(), "%i %i %i", &v[0], &v[1], &v[2]) != 3)
 			throw Exception(tr("Failed to parse file. Invalid triangle facet in line %1.").arg(stream.lineNumber()));
@@ -238,6 +276,7 @@ void CAImporter::CrystalAnalysisImportTask::parseFile(FutureInterfaceBase& futur
 
 	// Read facet adjacency information.
 	for(int index = 0; index < numDefectMeshFacets; index++) {
+		if((index % 4096) == 0) futureInterface.setProgressValue(index + numDefectMeshFacets);
 		int v[3];
 		if(sscanf(stream.readLine(), "%i %i %i", &v[0], &v[1], &v[2]) != 3)
 			throw Exception(tr("Failed to parse file. Invalid triangle adjacency info in line %1.").arg(stream.lineNumber()));
@@ -260,7 +299,39 @@ void CAImporter::CrystalAnalysisImportTask::parseFile(FutureInterfaceBase& futur
 		}
 	}
 
-	setInfoText(tr("Number of segments: %1").arg(numDislocationSegments));
+	// Load particles if requested by the user.
+	if(_loadParticles) {
+		LinkedFileImporter::FrameSourceInformation particleFileInfo;
+		particleFileInfo.byteOffset = 0;
+		particleFileInfo.lineNumber = 0;
+
+		// Resolve relative path to atoms file.
+		QFileInfo caFileInfo(caFilename);
+		QFileInfo atomsFileInfo(atomsFilename);
+		if(!atomsFileInfo.isAbsolute()) {
+			QDir baseDir = caFileInfo.absoluteDir();
+			QString relativePath = baseDir.relativeFilePath(atomsFileInfo.absoluteFilePath());
+			if(frame().sourceFile.isLocalFile()) {
+				particleFileInfo.sourceFile = QUrl::fromLocalFile(QFileInfo(frame().sourceFile.toLocalFile()).dir().filePath(relativePath));
+			}
+			else {
+				particleFileInfo.sourceFile = frame().sourceFile;
+				particleFileInfo.sourceFile.setPath(QFileInfo(frame().sourceFile.path()).dir().filePath(relativePath));
+			}
+		}
+		else particleFileInfo.sourceFile = QUrl::fromLocalFile(atomsFilename);
+
+		// Create and execute the import sub-task.
+		_particleLoadTask = std::make_shared<LAMMPSTextDumpImporter::LAMMPSTextDumpImportTask>(particleFileInfo, false, InputColumnMapping());
+		_particleLoadTask->load(futureInterface);
+		if(futureInterface.isCanceled())
+			return;
+
+		setInfoText(tr("Number of segments: %1\n%2").arg(numDislocationSegments).arg(_particleLoadTask->infoText()));
+	}
+	else {
+		setInfoText(tr("Number of segments: %1").arg(numDislocationSegments));
+	}
 }
 
 /******************************************************************************
@@ -271,6 +342,15 @@ QSet<SceneObject*> CAImporter::CrystalAnalysisImportTask::insertIntoScene(Linked
 {
 	QSet<SceneObject*> activeObjects = ParticleImportTask::insertIntoScene(destination);
 
+	// Insert dislocations.
+	OORef<DislocationNetwork> dislocationsObj = destination->findSceneObject<DislocationNetwork>();
+	if(!dislocationsObj) {
+		dislocationsObj = new DislocationNetwork();
+		destination->addSceneObject(dislocationsObj.get());
+	}
+	activeObjects.insert(dislocationsObj.get());
+
+	// Insert defect surface.
 	OORef<DefectSurface> defectSurfaceObj = destination->findSceneObject<DefectSurface>();
 	if(!defectSurfaceObj) {
 		defectSurfaceObj = new DefectSurface();
@@ -279,6 +359,46 @@ QSet<SceneObject*> CAImporter::CrystalAnalysisImportTask::insertIntoScene(Linked
 	defectSurfaceObj->mesh().swap(_defectSurface);
 	defectSurfaceObj->notifyDependents(ReferenceEvent::TargetChanged);
 	activeObjects.insert(defectSurfaceObj.get());
+
+	// Insert pattern catalog.
+	OORef<PatternCatalog> patternCatalog = destination->findSceneObject<PatternCatalog>();
+	if(!patternCatalog) {
+		patternCatalog = new PatternCatalog();
+		destination->addSceneObject(patternCatalog.get());
+	}
+	activeObjects.insert(patternCatalog.get());
+
+	// Update pattern catalog.
+	for(int i = 0; i < _patterns.size(); i++) {
+		OORef<StructurePattern> pattern;
+		if(patternCatalog->patterns().size() > i+1) {
+			pattern = patternCatalog->patterns()[i+1];
+		}
+		else {
+			pattern.reset(new StructurePattern());
+			patternCatalog->addPattern(pattern.get());
+		}
+		if(pattern->shortName() != _patterns[i].shortName)
+			pattern->setColor(_patterns[i].color);
+		pattern->setShortName(_patterns[i].shortName);
+		pattern->setLongName(_patterns[i].longName);
+		pattern->setStructureType(_patterns[i].type);
+	}
+	// Remove excess patterns from the catalog.
+	for(int i = patternCatalog->patterns().size() - 1; i > _patterns.size(); i--)
+		patternCatalog->removePattern(i);
+
+	// Insert cluster graph.
+	OORef<ClusterGraph> clusterGraph = destination->findSceneObject<ClusterGraph>();
+	if(!clusterGraph) {
+		clusterGraph = new ClusterGraph();
+		destination->addSceneObject(clusterGraph.get());
+	}
+	activeObjects.insert(clusterGraph.get());
+
+	// Insert particles.
+	if(_particleLoadTask)
+		activeObjects.unite(_particleLoadTask->insertIntoScene(destination));
 
 	return activeObjects;
 }
@@ -290,8 +410,25 @@ void CAImporter::prepareSceneNode(ObjectNode* node, LinkedFileObject* importObj)
 {
 	LinkedFileImporter::prepareSceneNode(node, importObj);
 
+	// Add a modifier to smooth the defect surface mesh.
 	node->applyModifier(new SmoothSurfaceModifier());
 }
 
+/******************************************************************************
+* Sets up the UI widgets of the editor.
+******************************************************************************/
+void CAImporterEditor::createUI(const RolloutInsertionParameters& rolloutParams)
+{
+	// Create a rollout.
+	QWidget* rollout = createRollout(tr("Crystal analysis file"), rolloutParams);
+
+    // Create the rollout contents.
+	QVBoxLayout* layout = new QVBoxLayout(rollout);
+	layout->setContentsMargins(4,4,4,4);
+	layout->setSpacing(4);
+
+	BooleanParameterUI* loadParticlesUI = new BooleanParameterUI(this, PROPERTY_FIELD(CAImporter::_loadParticles));
+	layout->addWidget(loadParticlesUI->checkBox());
+}
 
 };

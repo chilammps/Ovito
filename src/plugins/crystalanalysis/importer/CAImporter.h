@@ -25,7 +25,9 @@
 #include <plugins/crystalanalysis/CrystalAnalysis.h>
 #include <core/dataset/importexport/LinkedFileImporter.h>
 #include <core/scene/objects/geometry/HalfEdgeMesh.h>
+#include <core/gui/properties/PropertiesEditor.h>
 #include <plugins/particles/importer/ParticleImportData.h>
+#include <plugins/crystalanalysis/data/patterns/StructurePattern.h>
 
 namespace CrystalAnalysis {
 
@@ -40,7 +42,9 @@ class OVITO_CRYSTALANALYSIS_EXPORT CAImporter : public LinkedFileImporter
 public:
 
 	/// \brief Constructs a new instance of this class.
-	Q_INVOKABLE CAImporter() {}
+	Q_INVOKABLE CAImporter() : _loadParticles(false) {
+		INIT_PROPERTY_FIELD(CAImporter::_loadParticles);
+	}
 
 	/// \brief Returns the file filter that specifies the files that can be imported by this service.
 	virtual QString fileFilter() override { return QString("*"); }
@@ -62,7 +66,7 @@ protected:
 	public:
 
 		/// Normal constructor.
-		CrystalAnalysisImportTask(const LinkedFileImporter::FrameSourceInformation& frame) : ParticleImportTask(frame) {}
+		CrystalAnalysisImportTask(const LinkedFileImporter::FrameSourceInformation& frame, bool loadParticles) : ParticleImportTask(frame), _loadParticles(loadParticles) {}
 
 		/// Lets the data container insert the data it holds into the scene by creating
 		/// appropriate scene objects.
@@ -73,17 +77,102 @@ protected:
 		/// Parses the given input file and stores the data in this container object.
 		virtual void parseFile(FutureInterfaceBase& futureInterface, CompressedTextParserStream& stream) override;
 
+		struct BurgersVectorFamilyInfo {
+			int id;
+			QString name;
+			Vector3 burgersVector;
+			Color color;
+		};
+
+		struct PatternInfo {
+			int id;
+			StructurePattern::StructureType type;
+			QString shortName;
+			QString longName;
+			Color color;
+			QVector<BurgersVectorFamilyInfo> burgersVectorFamilies;
+		};
+
+		struct ClusterInfo {
+			int id;
+			int proc;
+			int patternIndex;
+			int atomCount;
+			Point3 centerOfMass;
+			Matrix3 orientation;
+		};
+
+		struct ClusterTransitionInfo {
+			int cluster1, cluster2;
+			Matrix3 tm;
+		};
+
+		struct DislocationSegmentInfo {
+			int id;
+			Vector3 burgersVector;
+			int clusterIndex;
+			QVector<Point3> line;
+			QVector<int> coreSize;
+		};
+
 		/// The triangle mesh of the defect surface.
 		HalfEdgeMesh _defectSurface;
+
+		/// The structure pattern catalog.
+		QVector<PatternInfo> _patterns;
+
+		/// The cluster list.
+		QVector<ClusterInfo> _clusters;
+
+		/// The cluster transition list.
+		QVector<ClusterTransitionInfo> _clusterTransitions;
+
+		/// The dislocation segments.
+		QVector<DislocationSegmentInfo> _dislocations;
+
+		/// Controls whether particles should be loaded too.
+		bool _loadParticles;
+
+		/// This is the sub-task task that loads the particles.
+		LinkedFileImporter::ImportTaskPtr _particleLoadTask;
 	};
 
 	/// \brief Creates an import task object to read the given frame.
 	virtual ImportTaskPtr createImportTask(const FrameSourceInformation& frame) override {
-		return std::make_shared<CrystalAnalysisImportTask>(frame);
+		return std::make_shared<CrystalAnalysisImportTask>(frame, _loadParticles);
 	}
 
 	/// This method is called when the scene node for the LinkedFileObject is created.
 	virtual void prepareSceneNode(ObjectNode* node, LinkedFileObject* importObj) override;
+
+	/// \brief Is called when the value of a property of this object has changed.
+	virtual void propertyChanged(const PropertyFieldDescriptor& field) override;
+
+private:
+
+	/// Controls whether the associated particle file should be loaded too.
+	PropertyField<bool> _loadParticles;
+
+	Q_OBJECT
+	OVITO_OBJECT
+
+	DECLARE_PROPERTY_FIELD(_loadParticles);
+};
+
+/**
+ * \brief A properties editor for the CAImporter class.
+ */
+class CAImporterEditor : public PropertiesEditor
+{
+public:
+
+	/// Constructor.
+	Q_INVOKABLE CAImporterEditor() {}
+
+protected:
+
+	/// Creates the user interface controls for the editor.
+	virtual void createUI(const RolloutInsertionParameters& rolloutParams) override;
 
 private:
 

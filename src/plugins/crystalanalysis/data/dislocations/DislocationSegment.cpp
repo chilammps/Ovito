@@ -1,0 +1,95 @@
+///////////////////////////////////////////////////////////////////////////////
+//
+//  Copyright (2013) Alexander Stukowski
+//
+//  This file is part of OVITO (Open Visualization Tool).
+//
+//  OVITO is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation; either version 2 of the License, or
+//  (at your option) any later version.
+//
+//  OVITO is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+///////////////////////////////////////////////////////////////////////////////
+
+#include <plugins/crystalanalysis/CrystalAnalysis.h>
+#include "DislocationSegment.h"
+
+namespace CrystalAnalysis {
+
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(CrystalAnalysis, DislocationSegment, RefTarget)
+DEFINE_REFERENCE_FIELD(DislocationSegment, _cluster, "Cluster", Cluster)
+DEFINE_REFERENCE_FIELD(DislocationSegment, _burgersVectorFamily, "BurgersVectorFamily", BurgersVectorFamily)
+DEFINE_PROPERTY_FIELD(DislocationSegment, _burgersVector, "BurgersVector")
+DEFINE_PROPERTY_FIELD(DislocationSegment, _isVisible, "IsVisible")
+
+/******************************************************************************
+* Constructs a new dislocation segment.
+******************************************************************************/
+DislocationSegment::DislocationSegment() : _isClosedLoop(false), _isInfiniteLine(false),
+	_burgersVector(Vector3::Zero()), _length(0), _isVisible(true)
+{
+	INIT_PROPERTY_FIELD(DislocationSegment::_cluster);
+	INIT_PROPERTY_FIELD(DislocationSegment::_burgersVectorFamily);
+	INIT_PROPERTY_FIELD(DislocationSegment::_burgersVector);
+	INIT_PROPERTY_FIELD(DislocationSegment::_isVisible);
+}
+
+/******************************************************************************
+* Checks if the given floating point number is integer.
+******************************************************************************/
+static bool isInteger(FloatType v, int& intPart)
+{
+	static const FloatType epsilon = 1e-2f;
+	FloatType ip;
+	FloatType frac = std::modf(v, &ip);
+	if(frac >= -epsilon && frac <= epsilon) intPart = (int)ip;
+	else if(frac >= FloatType(1)-epsilon) intPart = (int)ip + 1;
+	else if(frac <= FloatType(-1)+epsilon) intPart = (int)ip - 1;
+	else return false;
+	return true;
+}
+
+/******************************************************************************
+* Generates a pretty string representation of the Burgers vector.
+******************************************************************************/
+QString DislocationSegment::formatBurgersVector(const Vector3& b)
+{
+	FloatType smallestCompnt = FLOATTYPE_MAX;
+	for(int i = 0; i < 3; i++) {
+		FloatType c = std::abs(b[i]);
+		if(c < smallestCompnt && c > 1e-3)
+			smallestCompnt = c;
+	}
+	if(smallestCompnt != FLOATTYPE_MAX) {
+		FloatType m = FloatType(1) / smallestCompnt;
+		for(int f = 1; f <= 8; f++) {
+			int multiplier;
+			if(!isInteger(m*f, multiplier)) continue;
+			if(multiplier < 80) {
+				Vector3 bm = b * (FloatType)multiplier;
+				Vector3I bmi;
+				if(isInteger(bm.x(),bmi.x()) && isInteger(bm.y(),bmi.y()) && isInteger(bm.z(),bmi.z())) {
+					return QString("1/%1[%2 %3 %4]")
+							.arg(multiplier)
+							.arg(bmi.x()).arg(bmi.y()).arg(bmi.z());
+				}
+			}
+		}
+	}
+
+	return QString("%1 %2 %3")
+			.arg(QLocale::c().toString(b.x(), 'f'), 7)
+			.arg(QLocale::c().toString(b.y(), 'f'), 7)
+			.arg(QLocale::c().toString(b.z(), 'f'), 7);
+}
+
+
+};	// End of namespace
