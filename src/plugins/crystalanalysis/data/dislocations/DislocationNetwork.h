@@ -46,6 +46,12 @@ public:
 	/// Returns the list of dislocation segments.
 	const QVector<DislocationSegment*>& segments() const { return _segments; }
 
+	/// Discards all existing dislocation segments.
+	void clear() { _segments.clear(); }
+
+	/// Adds a dislocation segment to this container.
+	void addSegment(DislocationSegment* segment) { _segments.push_back(segment); }
+
 protected:
 
 	/// Stores the list of dislocation segments.

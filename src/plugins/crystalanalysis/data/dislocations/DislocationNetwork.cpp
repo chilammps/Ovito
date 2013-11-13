@@ -21,6 +21,7 @@
 
 #include <plugins/crystalanalysis/CrystalAnalysis.h>
 #include "DislocationNetwork.h"
+#include "DislocationDisplay.h"
 
 namespace CrystalAnalysis {
 
@@ -34,6 +35,7 @@ SET_PROPERTY_FIELD_LABEL(DislocationNetwork, _segments, "Dislocation segments")
 DislocationNetwork::DislocationNetwork()
 {
 	INIT_PROPERTY_FIELD(DislocationNetwork::_segments);
+	addDisplayObject(new DislocationDisplay());
 }
 
 };	// End of namespace

@@ -27,22 +27,22 @@ uniform vec3 cubeVerts[14];
 uniform mat4 projection_matrix;
 
 // Inputs from vertex shader
-in vec4 particle_color_in[1];
-in float particle_radius_in[1];
+in vec4 particle_color_gs[1];
+in float particle_radius_gs[1];
 
 // Outputs to fragment shader
-flat out vec4 particle_color;
-flat out float particle_radius_squared;
-flat out vec3 particle_view_pos;
+flat out vec4 particle_color_fs;
+flat out float particle_radius_squared_fs;
+flat out vec3 particle_view_pos_fs;
 
 void main()
 {
-	particle_view_pos = vec3(gl_in[0].gl_Position); 
-	particle_color = particle_color_in[0];
-	particle_radius_squared = particle_radius_in[0] * particle_radius_in[0];
+	particle_view_pos_fs = vec3(gl_in[0].gl_Position); 
+	particle_color_fs = particle_color_gs[0];
+	particle_radius_squared_fs = particle_radius_gs[0] * particle_radius_gs[0];
 	
 	for(int vertex = 0; vertex < 14; vertex++) {
-		gl_Position = projection_matrix * vec4(particle_view_pos + cubeVerts[vertex] * particle_radius_in[0], 1);
+		gl_Position = projection_matrix * vec4(particle_view_pos_fs + cubeVerts[vertex] * particle_radius_gs[0], 1);
 		EmitVertex();
 	}
 }

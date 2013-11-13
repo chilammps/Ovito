@@ -49,15 +49,30 @@ ViewportArrowGeometryBuffer::ViewportArrowGeometryBuffer(ViewportSceneRenderer* 
 			":/core/glsl/arrows/shaded.vs",
 			":/core/glsl/arrows/shaded.fs");
 
+	_shadedPickingShader = renderer->loadShaderProgram(
+			"arrow_shaded_picking",
+			":/core/glsl/arrows/picking/shaded.vs",
+			":/core/glsl/arrows/picking/shaded.fs");
+
 	_flatShader = renderer->loadShaderProgram(
 			"arrow_flat",
 			":/core/glsl/arrows/flat.vs",
 			":/core/glsl/arrows/flat.fs");
 
+	_flatPickingShader = renderer->loadShaderProgram(
+			"arrow_flat_picking",
+			":/core/glsl/arrows/picking/flat.vs",
+			":/core/glsl/arrows/picking/flat.fs");
+
 	_raytracedCylinderShader = renderer->loadShaderProgram(
 			"cylinder_raytraced",
 			":/core/glsl/cylinder/cylinder_raytraced.vs",
 			":/core/glsl/cylinder/cylinder_raytraced.fs");
+
+	_raytracedCylinderPickingShader = renderer->loadShaderProgram(
+			"cylinder_raytraced_picking",
+			":/core/glsl/cylinder/picking/cylinder_raytraced.vs",
+			":/core/glsl/cylinder/picking/cylinder_raytraced.fs");
 }
 
 /******************************************************************************
@@ -139,11 +154,12 @@ void ViewportArrowGeometryBuffer::startSetElements(int elementCount)
 	_glGeometryBuffer.allocate(_elementRenderCount * _verticesPerElement * bytesPerVertex);
 	if(_elementRenderCount) {
 		_mappedBuffer = _glGeometryBuffer.map(QOpenGLBuffer::WriteOnly);
+		OVITO_CHECK_POINTER(_mappedBuffer);
 		if(!_mappedBuffer)
 			throw Exception(tr("Failed to map OpenGL vertex buffer to memory."));
 	}
 
-	// Precompute cosine and sine functions.
+	// Precompute cos() and sin() functions.
 	if(shadingMode() == NormalShading) {
 		_cosTable.resize(_cylinderSegments+1);
 		_sinTable.resize(_cylinderSegments+1);
@@ -153,6 +169,7 @@ void ViewportArrowGeometryBuffer::startSetElements(int elementCount)
 			_sinTable[i] = std::sin(angle);
 		}
 	}
+	OVITO_CHECK_OPENGL();
 }
 
 /******************************************************************************
@@ -434,6 +451,7 @@ void ViewportArrowGeometryBuffer::endSetElements()
 		_glGeometryBuffer.unmap();
 	_glGeometryBuffer.release();
 	_mappedBuffer = nullptr;
+	OVITO_CHECK_OPENGL();
 }
 
 /******************************************************************************
@@ -461,7 +479,7 @@ void ViewportArrowGeometryBuffer::render(SceneRenderer* renderer, quint32 pickin
 
 	ViewportSceneRenderer* vpRenderer = dynamic_object_cast<ViewportSceneRenderer>(renderer);
 
-	if(_elementCount <= 0 || !vpRenderer || vpRenderer->isPicking())
+	if(_elementCount <= 0 || !vpRenderer)
 		return;
 
 	if(shadingMode() == NormalShading) {
@@ -473,6 +491,7 @@ void ViewportArrowGeometryBuffer::render(SceneRenderer* renderer, quint32 pickin
 	else if(shadingMode() == FlatShading) {
 		renderFlat(vpRenderer, pickingBaseID);
 	}
+	OVITO_CHECK_OPENGL();
 }
 
 /******************************************************************************
@@ -480,33 +499,59 @@ void ViewportArrowGeometryBuffer::render(SceneRenderer* renderer, quint32 pickin
 ******************************************************************************/
 void ViewportArrowGeometryBuffer::renderShadedTriangles(ViewportSceneRenderer* renderer, quint32 pickingBaseID)
 {
+	QOpenGLShaderProgram* shader;
+	if(!renderer->isPicking())
+		shader = _shadedShader;
+	else {
+		if(renderer->glformat().majorVersion() < 3)
+			return;
+		shader = _shadedPickingShader;
+	}
+
 	glEnable(GL_CULL_FACE);
 
-	if(!_shadedShader->bind())
+	if(!shader->bind())
 		throw Exception(tr("Failed to bind OpenGL shader."));
 
-	_shadedShader->setUniformValue("modelview_projection_matrix",
+	shader->setUniformValue("modelview_projection_matrix",
 			(QMatrix4x4)(renderer->projParams().projectionMatrix * renderer->modelViewTM()));
-
-	_shadedShader->setUniformValue("normal_matrix", (QMatrix3x3)(renderer->modelViewTM().linear().inverse().transposed()));
+	if(!renderer->isPicking())
+		shader->setUniformValue("normal_matrix", (QMatrix3x3)(renderer->modelViewTM().linear().inverse().transposed()));
+	else
+		shader->setUniformValue("pickingBaseID", (GLint)pickingBaseID);
 
 	_glGeometryBuffer.bind();
-	_shadedShader->enableAttributeArray("vertex_pos");
-	_shadedShader->setAttributeBuffer("vertex_pos", GL_FLOAT, offsetof(ColoredVertexWithNormal, pos), 3, sizeof(ColoredVertexWithNormal));
-	_shadedShader->enableAttributeArray("vertex_normal");
-	_shadedShader->setAttributeBuffer("vertex_normal", GL_FLOAT, offsetof(ColoredVertexWithNormal, normal), 3, sizeof(ColoredVertexWithNormal));
-	_shadedShader->enableAttributeArray("vertex_color");
-	_shadedShader->setAttributeBuffer("vertex_color", GL_FLOAT, offsetof(ColoredVertexWithNormal, color), 4, sizeof(ColoredVertexWithNormal));
+	shader->enableAttributeArray("vertex_pos");
+	shader->setAttributeBuffer("vertex_pos", GL_FLOAT, offsetof(ColoredVertexWithNormal, pos), 3, sizeof(ColoredVertexWithNormal));
+	if(!renderer->isPicking()) {
+		shader->enableAttributeArray("vertex_normal");
+		shader->setAttributeBuffer("vertex_normal", GL_FLOAT, offsetof(ColoredVertexWithNormal, normal), 3, sizeof(ColoredVertexWithNormal));
+		shader->enableAttributeArray("vertex_color");
+		shader->setAttributeBuffer("vertex_color", GL_FLOAT, offsetof(ColoredVertexWithNormal, color), 4, sizeof(ColoredVertexWithNormal));
+	}
 	_glGeometryBuffer.release();
 
+	if(renderer->isPicking()) {
+		int primitivesPerElement = _stripPrimitiveVertexCounts.size() / _elementCount;
+		int stripVerticesPerElement = std::accumulate(_stripPrimitiveVertexCounts.begin(), _stripPrimitiveVertexCounts.begin() + primitivesPerElement, 0);
+		OVITO_CHECK_OPENGL(shader->setUniformValue("verticesPerElement", (GLint)stripVerticesPerElement));
+	}
 	OVITO_CHECK_OPENGL(renderer->glMultiDrawArrays(GL_TRIANGLE_STRIP, _stripPrimitiveVertexStarts.data(), _stripPrimitiveVertexCounts.data(), _stripPrimitiveVertexStarts.size()));
+
+	if(renderer->isPicking()) {
+		int primitivesPerElement = _fanPrimitiveVertexCounts.size() / _elementCount;
+		int fanVerticesPerElement = std::accumulate(_fanPrimitiveVertexCounts.begin(), _fanPrimitiveVertexCounts.begin() + primitivesPerElement, 0);
+		OVITO_CHECK_OPENGL(shader->setUniformValue("verticesPerElement", (GLint)fanVerticesPerElement));
+	}
 	OVITO_CHECK_OPENGL(renderer->glMultiDrawArrays(GL_TRIANGLE_FAN, _fanPrimitiveVertexStarts.data(), _fanPrimitiveVertexCounts.data(), _fanPrimitiveVertexStarts.size()));
 
-	_shadedShader->disableAttributeArray("vertex_pos");
-	_shadedShader->disableAttributeArray("vertex_normal");
-	_shadedShader->disableAttributeArray("vertex_color");
+	shader->disableAttributeArray("vertex_pos");
+	if(!renderer->isPicking()) {
+		shader->disableAttributeArray("vertex_normal");
+		shader->disableAttributeArray("vertex_color");
+	}
 
-	_shadedShader->release();
+	shader->release();
 }
 
 /******************************************************************************
@@ -514,47 +559,63 @@ void ViewportArrowGeometryBuffer::renderShadedTriangles(ViewportSceneRenderer* r
 ******************************************************************************/
 void ViewportArrowGeometryBuffer::renderRaytracedCylinders(ViewportSceneRenderer* renderer, quint32 pickingBaseID)
 {
+	QOpenGLShaderProgram* shader;
+	if(!renderer->isPicking())
+		shader = _raytracedCylinderShader;
+	else {
+		if(renderer->glformat().majorVersion() < 3)
+			return;
+		shader = _raytracedCylinderPickingShader;
+	}
+
 	glEnable(GL_CULL_FACE);
 
-	if(!_raytracedCylinderShader->bind())
+	if(!shader->bind())
 		throw Exception(tr("Failed to bind OpenGL shader."));
 
-	_raytracedCylinderShader->setUniformValue("modelview_matrix",
+	shader->setUniformValue("modelview_matrix",
 			(QMatrix4x4)renderer->modelViewTM());
-	_raytracedCylinderShader->setUniformValue("modelview_uniform_scale", (float)pow(std::abs(renderer->modelViewTM().determinant()), (FloatType(1.0/3.0))));
-	_raytracedCylinderShader->setUniformValue("modelview_projection_matrix",
+	shader->setUniformValue("modelview_uniform_scale", (float)pow(std::abs(renderer->modelViewTM().determinant()), (FloatType(1.0/3.0))));
+	shader->setUniformValue("modelview_projection_matrix",
 			(QMatrix4x4)(renderer->projParams().projectionMatrix * renderer->modelViewTM()));
-	_raytracedCylinderShader->setUniformValue("projection_matrix", (QMatrix4x4)renderer->projParams().projectionMatrix);
-	_raytracedCylinderShader->setUniformValue("inverse_projection_matrix", (QMatrix4x4)renderer->projParams().inverseProjectionMatrix);
-	_raytracedCylinderShader->setUniformValue("is_perspective", renderer->projParams().isPerspective);
+	shader->setUniformValue("projection_matrix", (QMatrix4x4)renderer->projParams().projectionMatrix);
+	shader->setUniformValue("inverse_projection_matrix", (QMatrix4x4)renderer->projParams().inverseProjectionMatrix);
+	shader->setUniformValue("is_perspective", renderer->projParams().isPerspective);
+	if(renderer->isPicking()) {
+		OVITO_CHECK_OPENGL(shader->setUniformValue("pickingBaseID", (GLint)pickingBaseID));
+		OVITO_CHECK_OPENGL(shader->setUniformValue("verticesPerElement", (GLint)_verticesPerElement));
+	}
 
 	GLint viewportCoords[4];
 	glGetIntegerv(GL_VIEWPORT, viewportCoords);
-	_raytracedCylinderShader->setUniformValue("viewport_origin", (float)viewportCoords[0], (float)viewportCoords[1]);
-	_raytracedCylinderShader->setUniformValue("inverse_viewport_size", 2.0f / (float)viewportCoords[2], 2.0f / (float)viewportCoords[3]);
+	shader->setUniformValue("viewport_origin", (float)viewportCoords[0], (float)viewportCoords[1]);
+	shader->setUniformValue("inverse_viewport_size", 2.0f / (float)viewportCoords[2], 2.0f / (float)viewportCoords[3]);
 
 	_glGeometryBuffer.bind();
-	_raytracedCylinderShader->enableAttributeArray("vertex_pos");
-	_raytracedCylinderShader->setAttributeBuffer("vertex_pos", GL_FLOAT, offsetof(ColoredVertexWithElementInfo, pos), 3, sizeof(ColoredVertexWithElementInfo));
-	_raytracedCylinderShader->enableAttributeArray("cylinder_color");
-	_raytracedCylinderShader->setAttributeBuffer("cylinder_color", GL_FLOAT, offsetof(ColoredVertexWithElementInfo, color), 4, sizeof(ColoredVertexWithElementInfo));
-	_raytracedCylinderShader->enableAttributeArray("cylinder_base");
-	_raytracedCylinderShader->setAttributeBuffer("cylinder_base", GL_FLOAT, offsetof(ColoredVertexWithElementInfo, base), 3, sizeof(ColoredVertexWithElementInfo));
-	_raytracedCylinderShader->enableAttributeArray("cylinder_axis");
-	_raytracedCylinderShader->setAttributeBuffer("cylinder_axis", GL_FLOAT, offsetof(ColoredVertexWithElementInfo, dir), 3, sizeof(ColoredVertexWithElementInfo));
-	_raytracedCylinderShader->enableAttributeArray("cylinder_radius");
-	_raytracedCylinderShader->setAttributeBuffer("cylinder_radius", GL_FLOAT, offsetof(ColoredVertexWithElementInfo, radius), 1, sizeof(ColoredVertexWithElementInfo));
+	shader->enableAttributeArray("vertex_pos");
+	shader->setAttributeBuffer("vertex_pos", GL_FLOAT, offsetof(ColoredVertexWithElementInfo, pos), 3, sizeof(ColoredVertexWithElementInfo));
+	if(!renderer->isPicking()) {
+		shader->enableAttributeArray("cylinder_color");
+		shader->setAttributeBuffer("cylinder_color", GL_FLOAT, offsetof(ColoredVertexWithElementInfo, color), 4, sizeof(ColoredVertexWithElementInfo));
+	}
+	shader->enableAttributeArray("cylinder_base");
+	shader->setAttributeBuffer("cylinder_base", GL_FLOAT, offsetof(ColoredVertexWithElementInfo, base), 3, sizeof(ColoredVertexWithElementInfo));
+	shader->enableAttributeArray("cylinder_axis");
+	shader->setAttributeBuffer("cylinder_axis", GL_FLOAT, offsetof(ColoredVertexWithElementInfo, dir), 3, sizeof(ColoredVertexWithElementInfo));
+	shader->enableAttributeArray("cylinder_radius");
+	shader->setAttributeBuffer("cylinder_radius", GL_FLOAT, offsetof(ColoredVertexWithElementInfo, radius), 1, sizeof(ColoredVertexWithElementInfo));
 	_glGeometryBuffer.release();
 
 	OVITO_CHECK_OPENGL(renderer->glMultiDrawArrays(GL_TRIANGLE_STRIP, _stripPrimitiveVertexStarts.data(), _stripPrimitiveVertexCounts.data(), _stripPrimitiveVertexStarts.size()));
 
-	_raytracedCylinderShader->disableAttributeArray("vertex_pos");
-	_raytracedCylinderShader->disableAttributeArray("cylinder_color");
-	_raytracedCylinderShader->disableAttributeArray("cylinder_base");
-	_raytracedCylinderShader->disableAttributeArray("cylinder_axis");
-	_raytracedCylinderShader->disableAttributeArray("cylinder_radius");
+	shader->disableAttributeArray("vertex_pos");
+	if(!renderer->isPicking())
+		shader->disableAttributeArray("cylinder_color");
+	shader->disableAttributeArray("cylinder_base");
+	shader->disableAttributeArray("cylinder_axis");
+	shader->disableAttributeArray("cylinder_radius");
 
-	_raytracedCylinderShader->release();
+	shader->release();
 }
 
 /******************************************************************************
@@ -562,37 +623,54 @@ void ViewportArrowGeometryBuffer::renderRaytracedCylinders(ViewportSceneRenderer
 ******************************************************************************/
 void ViewportArrowGeometryBuffer::renderFlat(ViewportSceneRenderer* renderer, quint32 pickingBaseID)
 {
-	if(!_flatShader->bind())
+	QOpenGLShaderProgram* shader;
+	if(!renderer->isPicking())
+		shader = _flatShader;
+	else {
+		if(renderer->glformat().majorVersion() < 3)
+			return;
+		shader = _flatPickingShader;
+	}
+
+	if(!shader->bind())
 		throw Exception(tr("Failed to bind OpenGL shader."));
 
-	_flatShader->setUniformValue("modelview_projection_matrix",
+	shader->setUniformValue("modelview_projection_matrix",
 			(QMatrix4x4)(renderer->projParams().projectionMatrix * renderer->modelViewTM()));
-	_flatShader->setUniformValue("is_perspective", renderer->projParams().isPerspective);
+	shader->setUniformValue("is_perspective", renderer->projParams().isPerspective);
 	AffineTransformation viewModelTM = renderer->modelViewTM().inverse();
 	Vector3 eye_pos = viewModelTM.translation();
-	_flatShader->setUniformValue("eye_pos", eye_pos.x(), eye_pos.y(), eye_pos.z());
+	shader->setUniformValue("eye_pos", eye_pos.x(), eye_pos.y(), eye_pos.z());
 	Vector3 viewDir = viewModelTM * Vector3(0,0,1);
-	_flatShader->setUniformValue("parallel_view_dir", viewDir.x(), viewDir.y(), viewDir.z());
+	shader->setUniformValue("parallel_view_dir", viewDir.x(), viewDir.y(), viewDir.z());
+
+	if(renderer->isPicking()) {
+		OVITO_CHECK_OPENGL(shader->setUniformValue("pickingBaseID", (GLint)pickingBaseID));
+		OVITO_CHECK_OPENGL(shader->setUniformValue("verticesPerElement", (GLint)_verticesPerElement));
+	}
 
 	_glGeometryBuffer.bind();
-	_flatShader->enableAttributeArray("vertex_pos");
-	_flatShader->setAttributeBuffer("vertex_pos", GL_FLOAT, offsetof(ColoredVertexWithVector, pos), 3, sizeof(ColoredVertexWithVector));
-	_flatShader->enableAttributeArray("vector_base");
-	_flatShader->setAttributeBuffer("vector_base", GL_FLOAT, offsetof(ColoredVertexWithVector, base), 3, sizeof(ColoredVertexWithVector));
-	_flatShader->enableAttributeArray("vector_dir");
-	_flatShader->setAttributeBuffer("vector_dir", GL_FLOAT, offsetof(ColoredVertexWithVector, dir), 3, sizeof(ColoredVertexWithVector));
-	_flatShader->enableAttributeArray("vertex_color");
-	_flatShader->setAttributeBuffer("vertex_color", GL_FLOAT, offsetof(ColoredVertexWithVector, color), 4, sizeof(ColoredVertexWithVector));
+	shader->enableAttributeArray("vertex_pos");
+	shader->setAttributeBuffer("vertex_pos", GL_FLOAT, offsetof(ColoredVertexWithVector, pos), 3, sizeof(ColoredVertexWithVector));
+	shader->enableAttributeArray("vector_base");
+	shader->setAttributeBuffer("vector_base", GL_FLOAT, offsetof(ColoredVertexWithVector, base), 3, sizeof(ColoredVertexWithVector));
+	shader->enableAttributeArray("vector_dir");
+	shader->setAttributeBuffer("vector_dir", GL_FLOAT, offsetof(ColoredVertexWithVector, dir), 3, sizeof(ColoredVertexWithVector));
+	if(!renderer->isPicking()) {
+		shader->enableAttributeArray("vertex_color");
+		shader->setAttributeBuffer("vertex_color", GL_FLOAT, offsetof(ColoredVertexWithVector, color), 4, sizeof(ColoredVertexWithVector));
+	}
 	_glGeometryBuffer.release();
 
 	OVITO_CHECK_OPENGL(renderer->glMultiDrawArrays(GL_TRIANGLE_FAN, _fanPrimitiveVertexStarts.data(), _fanPrimitiveVertexCounts.data(), _fanPrimitiveVertexStarts.size()));
 
-	_flatShader->disableAttributeArray("vertex_pos");
-	_flatShader->disableAttributeArray("vector_base");
-	_flatShader->disableAttributeArray("vector_dir");
-	_flatShader->disableAttributeArray("vertex_color");
+	shader->disableAttributeArray("vertex_pos");
+	shader->disableAttributeArray("vector_base");
+	shader->disableAttributeArray("vector_dir");
+	if(!renderer->isPicking())
+		shader->disableAttributeArray("vertex_color");
 
-	_flatShader->release();
+	shader->release();
 }
 
 };

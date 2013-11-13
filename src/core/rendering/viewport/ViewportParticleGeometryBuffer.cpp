@@ -79,6 +79,14 @@ ViewportParticleGeometryBuffer::ViewportParticleGeometryBuffer(ViewportSceneRend
 			"particle_cube_tristrip_picking",
 			":/core/glsl/particles/geometry/cube/picking/cube_tristrip.vs",
 			":/core/glsl/particles/geometry/cube/picking/cube.fs");
+	_raytracedSphereTristripShader = renderer->loadShaderProgram(
+			"particle_sphere_tristrip",
+			":/core/glsl/particles/geometry/sphere/sphere_tristrip.vs",
+			":/core/glsl/particles/geometry/sphere/sphere.fs");
+	_raytracedSphereTristripPickingShader = renderer->loadShaderProgram(
+			"particle_sphere_tristrip_picking",
+			":/core/glsl/particles/geometry/sphere/picking/sphere_tristrip.vs",
+			":/core/glsl/particles/geometry/sphere/picking/sphere.fs");
 	if(QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Geometry)) {
 		_raytracedSphereShader = renderer->loadShaderProgram(
 				"particle_raytraced_sphere",
@@ -149,8 +157,11 @@ void ViewportParticleGeometryBuffer::setSize(int particleCount)
 		_glIndexBuffer.destroy();
 
 	// Determine the required number of vertices per particles.
-	if(renderingQuality() < HighQuality || shadingMode() == FlatShading || !hasGeometryShaders()) {
-		if(particleShape() == SphericalShape || shadingMode() == FlatShading)
+	if(shadingMode() == FlatShading) {
+		_verticesPerParticle = 1;
+	}
+	else {
+		if(renderingQuality() < HighQuality)
 			_verticesPerParticle = 1;
 		else {
 			if(hasGeometryShaders())
@@ -158,9 +169,6 @@ void ViewportParticleGeometryBuffer::setSize(int particleCount)
 			else
 				_verticesPerParticle = 14;
 		}
-	}
-	else {
-		_verticesPerParticle = 1;
 	}
 }
 
@@ -182,6 +190,7 @@ void fillOpenGLBuffer(QOpenGLBuffer& buffer, const T* data, int particleCount, i
 		buffer.allocate(particleCount * verticesPerParticle * sizeof(T));
 		if(particleCount) {
 			T* bufferData = static_cast<T*>(buffer.map(QOpenGLBuffer::WriteOnly));
+			OVITO_CHECK_POINTER(bufferData);
 			if(!bufferData)
 				throw Exception(ViewportParticleGeometryBuffer::tr("Failed to map OpenGL vertex buffer to memory."));
 			for(; particleCount != 0; particleCount--, ++data) {
@@ -193,6 +202,7 @@ void fillOpenGLBuffer(QOpenGLBuffer& buffer, const T* data, int particleCount, i
 		}
 	}
 	buffer.release();
+	OVITO_CHECK_OPENGL();
 }
 
 /******************************************************************************
@@ -210,12 +220,14 @@ void fillOpenGLBuffer(QOpenGLBuffer& buffer, T value, int particleCount, int ver
 	buffer.allocate(particleCount * verticesPerParticle * sizeof(T));
 	if(particleCount) {
 		T* bufferData = static_cast<T*>(buffer.map(QOpenGLBuffer::WriteOnly));
+		OVITO_CHECK_POINTER(bufferData);
 		if(!bufferData)
 			throw Exception(ViewportParticleGeometryBuffer::tr("Failed to map OpenGL vertex buffer to memory."));
 		std::fill(bufferData, bufferData + particleCount * verticesPerParticle, value);
 		buffer.unmap();
 	}
 	buffer.release();
+	OVITO_CHECK_OPENGL();
 }
 
 /******************************************************************************
@@ -293,15 +305,14 @@ void ViewportParticleGeometryBuffer::render(SceneRenderer* renderer, quint32 pic
 	if(_particleCount <= 0 || !vpRenderer)
 		return;
 
-	if(renderingQuality() < HighQuality || shadingMode() == FlatShading || !hasGeometryShaders()) {
-		if(particleShape() == SphericalShape || shadingMode() == FlatShading)
-			renderPointSprites(vpRenderer, pickingBaseID);
-		else {
-			renderCubes(vpRenderer, pickingBaseID);
-		}
+	if(shadingMode() == FlatShading) {
+		renderPointSprites(vpRenderer, pickingBaseID);
 	}
 	else {
-		renderCubes(vpRenderer, pickingBaseID);
+		if(renderingQuality() < HighQuality)
+			renderPointSprites(vpRenderer, pickingBaseID);
+		else
+			renderCubes(vpRenderer, pickingBaseID);
 	}
 }
 
@@ -369,9 +380,9 @@ void ViewportParticleGeometryBuffer::renderPointSprites(ViewportSceneRenderer* r
 		// This is a fallback if GL_VERTEX_PROGRAM_POINT_SIZE is not supported.
 		std::array<float,3> distanceAttenuation;
 		if(renderer->projParams().isPerspective)
-			distanceAttenuation = std::array<float,3>{ 0.0f, 0.0f, 1.0f / (param * param) };
+			distanceAttenuation = std::array<float,3>{{ 0.0f, 0.0f, 1.0f / (param * param) }};
 		else
-			distanceAttenuation = std::array<float,3>{ 1.0f / param, 0.0f, 0.0f };
+			distanceAttenuation = std::array<float,3>{{ 1.0f / param, 0.0f, 0.0f }};
 		OVITO_CHECK_OPENGL(glPointSize(1));
 		OVITO_CHECK_OPENGL(renderer->glPointParameterfv(GL_POINT_DISTANCE_ATTENUATION, distanceAttenuation.data()));
 	}
@@ -423,10 +434,18 @@ void ViewportParticleGeometryBuffer::renderCubes(ViewportSceneRenderer* renderer
 	}
 	else {
 		OVITO_ASSERT(_verticesPerParticle == 14);
-		if(!renderer->isPicking())
-			shader = _cubeTristripShader;
-		else
-			shader = _cubeTristripPickingShader;
+		if(!renderer->isPicking()) {
+			if(particleShape() == SphericalShape)
+				shader = _raytracedSphereTristripShader;
+			else
+				shader = _cubeTristripShader;
+		}
+		else {
+			if(particleShape() == SphericalShape)
+				shader = _raytracedSphereTristripPickingShader;
+			else
+				shader = _cubeTristripPickingShader;
+		}
 	}
 	if(!shader->bind())
 		throw Exception(tr("Failed to bind OpenGL shader program."));

@@ -113,6 +113,7 @@ protected:
 			int clusterIndex;
 			QVector<Point3> line;
 			QVector<int> coreSize;
+			bool isClosedLoop;
 		};
 
 		/// The triangle mesh of the defect surface.

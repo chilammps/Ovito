@@ -19,30 +19,40 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-layout(points) in;
-layout(triangle_strip, max_vertices=14) out;
+uniform mat4 modelview_projection_matrix;
+uniform int pickingBaseID;
+uniform int verticesPerElement;
 
-// Inputs from calling program:
-uniform mat4 projection_matrix;
-uniform vec3 cubeVerts[14];
+#if __VERSION__ < 130
+	#define in attribute
+	#define out varying
+	#define flat
 
-// Inputs from vertex shader
-in vec4 particle_color_gs[1];
-in float particle_radius_gs[1];
+	attribute float vertexID;
+	#define gl_VertexID int(vertexID)
+#endif
 
-// Outputs to fragment shader
-flat out vec4 particle_color_fs;
-flat out float particle_radius_squared_fs;
-flat out vec3 particle_view_pos_fs;
+in vec3 vertex_pos;
+
+flat out vec4 vertex_color_out;
 
 void main()
 {
-	particle_view_pos_fs = vec3(gl_in[0].gl_Position); 
-	particle_color_fs = particle_color_gs[0];
-	particle_radius_squared_fs = particle_radius_gs[0] * particle_radius_gs[0];
-
-	for(int vertex = 0; vertex < 14; vertex++) {
-		gl_Position = projection_matrix * vec4(particle_view_pos_fs + cubeVerts[vertex] * particle_radius_gs[0], 1);
-		EmitVertex();
-	}
+	// Compute color from object ID.
+	int objectID = pickingBaseID + (gl_VertexID / verticesPerElement);
+#if __VERSION__ >= 130
+	vertex_color_out = vec4(
+		float(objectID & 0xFF) / 255.0, 
+		float((objectID >> 8) & 0xFF) / 255.0, 
+		float((objectID >> 16) & 0xFF) / 255.0, 
+		float((objectID >> 24) & 0xFF) / 255.0);
+#else
+	vertex_color_out = vec4(
+		float(mod(objectID, 0x100)) / 255.0, 
+		float(mod(objectID / 0x100, 0x100)) / 255.0, 
+		float(mod(objectID / 0x10000, 0x100)) / 255.0, 
+		float(mod(objectID / 0x1000000, 0x100)) / 255.0);		
+#endif	
+	
+	gl_Position = modelview_projection_matrix * vec4(vertex_pos, 1.0);
 }

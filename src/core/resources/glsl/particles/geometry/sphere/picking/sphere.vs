@@ -28,21 +28,21 @@ in vec3 particle_pos;
 in float particle_radius;
 
 // Output to geometry shader.
-out vec4 particle_color_in;
-out float particle_radius_in;
+out vec4 particle_color_gs;
+out float particle_radius_gs;
 
 void main()
 {
 	// Compute color from object ID.
 	int objectID = pickingBaseID + gl_VertexID;
-	particle_color_in = vec4(
+	particle_color_gs = vec4(
 		float(objectID & 0xFF) / 255.0, 
 		float((objectID >> 8) & 0xFF) / 255.0, 
 		float((objectID >> 16) & 0xFF) / 255.0, 
 		float((objectID >> 24) & 0xFF) / 255.0);	
 		
 	// Pass radius to geometry shader.
-	particle_radius_in = particle_radius;
+	particle_radius_gs = particle_radius;
 
 	// Transform particle center to eye coordinates.
 	gl_Position = modelview_matrix * vec4(particle_pos, 1);

@@ -77,9 +77,12 @@ void ImportFileDialog::onFileSelected(const QString& file)
 ******************************************************************************/
 QString ImportFileDialog::fileToImport() const
 {
-	QStringList filesToImport = selectedFiles();
-	if(filesToImport.isEmpty()) return QString();
-	return filesToImport.front();
+	if(_selectedFile.isEmpty()) {
+		QStringList filesToImport = selectedFiles();
+		if(filesToImport.isEmpty()) return QString();
+		return filesToImport.front();
+	}
+	else return _selectedFile;
 }
 
 /******************************************************************************
@@ -87,7 +90,7 @@ QString ImportFileDialog::fileToImport() const
 ******************************************************************************/
 const FileImporterDescription* ImportFileDialog::selectedFileImporter() const
 {
-	int importFilterIndex = _filterStrings.indexOf(selectedNameFilter()) - 1;
+	int importFilterIndex = _filterStrings.indexOf(_selectedFilter.isEmpty() ? selectedNameFilter() : _selectedFilter) - 1;
 	OVITO_ASSERT(importFilterIndex >= -1 && importFilterIndex < _filterStrings.size());
 
 	if(importFilterIndex >= 0)
@@ -103,28 +106,25 @@ const FileImporterDescription* ImportFileDialog::selectedFileImporter() const
 ******************************************************************************/
 int ImportFileDialog::exec()
 {
-#if 1
-
-	return QFileDialog::exec();
-
-#else
 	// On Mac OS X, use the native dialog box (by calling QFileDialog::getOpenFileName) instead of QFileDialog,
 	// because it provides easier access to external drives.
 
 	QString filterString;
-	Q_FOREACH(QString f, nameFilters())
+	for(const QString& f : _filterStrings)
 		filterString += f + ";;";
+	filterString.chop(2);
 
-	QString selFilter = selectedNameFilter();
-	QString filename = QFileDialog::getOpenFileName(parentWidget(), windowTitle(), directory().path(), filterString, &selFilter);
-	if(filename.isEmpty()) return 0;
+	QSettings settings;
+	settings.beginGroup("file/import");
 
-	selectNameFilter(selFilter);
-	onFileSelected(filename);
-	selectFile(filename);
+	_selectedFilter = settings.value("last_import_filter", _filterStrings.front()).toString();
+	_selectedFile = QFileDialog::getOpenFileName(parentWidget(), windowTitle(), directory().path(), filterString, &_selectedFilter);
+	if(_selectedFile.isEmpty()) return 0;
+
+	// Remember selected import filter for the next time...
+	settings.setValue("last_import_filter", _selectedFilter);
 
 	return 1;
-#endif
 }
 
 #endif

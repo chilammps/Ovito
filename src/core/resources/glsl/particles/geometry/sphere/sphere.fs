@@ -26,9 +26,9 @@ uniform bool is_perspective;
 uniform vec2 viewport_origin;		// Specifies the transformation from screen coordinates to viewport coordinates.
 uniform vec2 inverse_viewport_size;	// Specifies the transformation from screen coordinates to viewport coordinates.
 
-flat in vec4 particle_color;
-flat in float particle_radius_squared;
-flat in vec3 particle_view_pos;
+flat in vec4 particle_color_fs;
+flat in float particle_radius_squared_fs;
+flat in vec3 particle_view_pos_fs;
 
 out vec4 FragColor;
 
@@ -54,12 +54,12 @@ void main()
 		ray_dir = vec3(0.0, 0.0, -1.0);
 	}
 
-	vec3 sphere_dir = particle_view_pos - ray_origin;
+	vec3 sphere_dir = particle_view_pos_fs - ray_origin;
 	
 	// Perform ray-sphere intersection test.
 	float b = dot(ray_dir, sphere_dir);
 	float temp = dot(sphere_dir, sphere_dir);
-	float disc = b*b + particle_radius_squared - temp;
+	float disc = b*b + particle_radius_squared_fs - temp;
 		
 	// Only calculate the intersection closest to the viewer.
 	if(disc <= 0.0)
@@ -83,11 +83,11 @@ void main()
 	gl_FragDepth = (projected_intersection.z / projected_intersection.w + 1.0) * 0.5;
 
 	// Calculate surface normal in view coordinate system.
-	vec3 surface_normal = normalize(view_intersection_pnt - particle_view_pos);
+	vec3 surface_normal = normalize(view_intersection_pnt - particle_view_pos_fs);
 	
 	float diffuse = abs(surface_normal.z) * diffuse_strength;
 	
 	float specular = pow(max(0.0, dot(reflect(specular_lightdir, surface_normal), ray_dir)), shininess) * 0.25;
 	
-	FragColor = vec4(particle_color.rgb * (diffuse + ambient) + vec3(specular), particle_color.a);
+	FragColor = vec4(particle_color_fs.rgb * (diffuse + ambient) + vec3(specular), particle_color_fs.a);
 }

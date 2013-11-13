@@ -30,6 +30,7 @@ SET(OVITO_CRYSTALANALYSIS_SOURCE_FILES
 	data/clusters/ClusterGraph.cpp
 	data/dislocations/DislocationSegment.cpp
 	data/dislocations/DislocationNetwork.cpp
+	data/dislocations/DislocationDisplay.cpp
 	modifier/ShiftModifier.cpp
 	modifier/SmoothSurfaceModifier.cpp
 )

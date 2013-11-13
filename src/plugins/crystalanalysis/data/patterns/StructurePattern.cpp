@@ -44,6 +44,13 @@ StructurePattern::StructurePattern() : _structureType(Lattice)
 	INIT_PROPERTY_FIELD(StructurePattern::_shortName);
 	INIT_PROPERTY_FIELD(StructurePattern::_structureType);
 	INIT_PROPERTY_FIELD(StructurePattern::_burgersVectorFamilies);
+
+	// Create "unknown" Burgers vector family.
+	BurgersVectorFamily* family = new BurgersVectorFamily();
+	family->setColor(Color(0.7f, 0.7f, 0.7f));
+	family->setName(tr("Other"));
+	family->setBurgersVector(Vector3::Zero());
+	addBurgersVectorFamily(family);
 }
 
 /******************************************************************************

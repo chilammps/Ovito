@@ -67,6 +67,12 @@ public:
 	/// Returns the list of Burgers vector families defined for this lattice pattern.
 	const QVector<BurgersVectorFamily*>& burgersVectorFamilies() const { return _burgersVectorFamilies; }
 
+	/// Adds a new family to this lattice pattern's list of Burgers vector families.
+	void addBurgersVectorFamily(BurgersVectorFamily* family) { _burgersVectorFamilies.push_back(family); }
+
+	/// Removes a family from this lattice pattern's list of Burgers vector families.
+	void removeBurgersVectorFamily(int index) { _burgersVectorFamilies.remove(index); }
+
 	/// Returns the default Burgers vector family, which is assigned to dislocation segments that
 	/// don't belong to any family.
 	BurgersVectorFamily* defaultBurgersVectorFamily() const { return _burgersVectorFamilies.front(); }

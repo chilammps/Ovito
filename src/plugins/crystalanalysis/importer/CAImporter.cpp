@@ -100,10 +100,14 @@ void CAImporter::CrystalAnalysisImportTask::parseFile(FutureInterfaceBase& futur
 	int numPatterns;
 	if(sscanf(stream.readLine(), "STRUCTURE_PATTERNS %i", &numPatterns) != 1 || numPatterns <= 0)
 		throw Exception(tr("Failed to parse file. Invalid number of structure patterns in line %1.").arg(stream.lineNumber()));
+	std::vector<int> patternId2Index;
 	for(int index = 0; index < numPatterns; index++) {
 		PatternInfo pattern;
 		if(sscanf(stream.readLine(), "PATTERN ID %i", &pattern.id) != 1)
 			throw Exception(tr("Failed to parse file. Invalid pattern ID in line %1.").arg(stream.lineNumber()));
+		if(patternId2Index.size() <= pattern.id)
+			patternId2Index.resize(pattern.id+1);
+		patternId2Index[pattern.id] = index;
 		stream.readLine();
 		pattern.shortName = stream.lineString().mid(5).trimmed();
 		stream.readLine();
@@ -159,11 +163,13 @@ void CAImporter::CrystalAnalysisImportTask::parseFile(FutureInterfaceBase& futur
 	for(int index = 0; index < numClusters; index++) {
 		futureInterface.setProgressValue(index);
 		ClusterInfo cluster;
+		int patternId;
 		stream.readLine();
 		if(sscanf(stream.readLine(), "%i %i", &cluster.id, &cluster.proc) != 2)
 			throw Exception(tr("Failed to parse file. Invalid cluster ID in line %1.").arg(stream.lineNumber()));
-		if(sscanf(stream.readLine(), "%i", &cluster.patternIndex) != 1)
+		if(sscanf(stream.readLine(), "%i", &patternId) != 1)
 			throw Exception(tr("Failed to parse file. Invalid cluster pattern index in line %1.").arg(stream.lineNumber()));
+		cluster.patternIndex = patternId2Index[patternId];
 		if(sscanf(stream.readLine(), "%i", &cluster.atomCount) != 1)
 			throw Exception(tr("Failed to parse file. Invalid cluster atom count in line %1.").arg(stream.lineNumber()));
 		if(sscanf(stream.readLine(), FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING, &cluster.centerOfMass.x(), &cluster.centerOfMass.y(), &cluster.centerOfMass.z()) != 3)
@@ -233,15 +239,19 @@ void CAImporter::CrystalAnalysisImportTask::parseFile(FutureInterfaceBase& futur
 			if(sscanf(stream.readLine(), "%i", &coreSize) != 1)
 				throw Exception(tr("Failed to parse file. Invalid core size in line %1.").arg(stream.lineNumber()));
 		}
+
+		_dislocations.push_back(segment);
 	}
 
 	// Read dislocation junctions.
 	stream.readLine();
 	for(int index = 0; index < numDislocationSegments; index++) {
+		DislocationSegmentInfo& segment = _dislocations[index];
 		for(int nodeIndex = 0; nodeIndex < 2; nodeIndex++) {
 			int isForward, otherSegmentId;
-			if(sscanf(stream.readLine(), "%i %i", &isForward, &otherSegmentId) != 2)
+			if(sscanf(stream.readLine(), "%i %i", &isForward, &otherSegmentId) != 2 || otherSegmentId < 0 || otherSegmentId >= numDislocationSegments)
 				throw Exception(tr("Failed to parse file. Invalid dislocation junction record in line %1.").arg(stream.lineNumber()));
+			segment.isClosedLoop = (otherSegmentId == index && isForward != index);
 		}
 	}
 
@@ -383,6 +393,24 @@ QSet<SceneObject*> CAImporter::CrystalAnalysisImportTask::insertIntoScene(Linked
 		pattern->setShortName(_patterns[i].shortName);
 		pattern->setLongName(_patterns[i].longName);
 		pattern->setStructureType(_patterns[i].type);
+
+		// Update Burgers vector families.
+		for(int j = 0; j < _patterns[i].burgersVectorFamilies.size(); j++) {
+			OORef<BurgersVectorFamily> family;
+			if(pattern->burgersVectorFamilies().size() > j+1) {
+				family = pattern->burgersVectorFamilies()[j+1];
+			}
+			else {
+				family.reset(new BurgersVectorFamily());
+				pattern->addBurgersVectorFamily(family.get());
+			}
+			family->setColor(_patterns[i].burgersVectorFamilies[j].color);
+			family->setName(_patterns[i].burgersVectorFamilies[j].name);
+			family->setBurgersVector(_patterns[i].burgersVectorFamilies[j].burgersVector);
+		}
+		// Remove excess families.
+		for(int j = pattern->burgersVectorFamilies().size() - 1; j > _patterns[i].burgersVectorFamilies.size(); j--)
+			pattern->removeBurgersVectorFamily(j);
 	}
 	// Remove excess patterns from the catalog.
 	for(int i = patternCatalog->patterns().size() - 1; i > _patterns.size(); i--)
@@ -395,6 +423,38 @@ QSet<SceneObject*> CAImporter::CrystalAnalysisImportTask::insertIntoScene(Linked
 		destination->addSceneObject(clusterGraph.get());
 	}
 	activeObjects.insert(clusterGraph.get());
+	clusterGraph->clear();
+	for(const ClusterInfo& icluster : _clusters) {
+		OORef<Cluster> cluster(new Cluster());
+		cluster->setPattern(patternCatalog->patterns()[icluster.patternIndex+1]);
+		cluster->setId(icluster.id);
+		cluster->setAtomCount(icluster.atomCount);
+		cluster->setOrientation(icluster.orientation);
+		clusterGraph->addCluster(cluster.get());
+	}
+
+	// Convert cluster transitions.
+	for(const ClusterTransitionInfo& t : _clusterTransitions) {
+		Cluster* cluster1 = clusterGraph->clusters()[t.cluster1];
+		Cluster* cluster2 = clusterGraph->clusters()[t.cluster2];
+		cluster1->addTransition(cluster2, t.tm);
+	}
+
+	// Insert dislocations.
+	OORef<DislocationNetwork> dislocationNetwork = destination->findSceneObject<DislocationNetwork>();
+	if(!dislocationNetwork) {
+		dislocationNetwork = new DislocationNetwork();
+		destination->addSceneObject(dislocationNetwork.get());
+	}
+	activeObjects.insert(dislocationNetwork.get());
+	dislocationNetwork->clear();
+	for(const DislocationSegmentInfo& s : _dislocations) {
+		OORef<DislocationSegment> segment(new DislocationSegment());
+		segment->setLine(s.line, s.coreSize);
+		segment->setIsClosedLoop(s.isClosedLoop);
+		segment->setBurgersVector(s.burgersVector, clusterGraph->clusters()[s.clusterIndex]);
+		dislocationNetwork->addSegment(segment.get());
+	}
 
 	// Insert particles.
 	if(_particleLoadTask)

@@ -33,7 +33,7 @@ DEFINE_PROPERTY_FIELD(DislocationSegment, _isVisible, "IsVisible")
 /******************************************************************************
 * Constructs a new dislocation segment.
 ******************************************************************************/
-DislocationSegment::DislocationSegment() : _isClosedLoop(false), _isInfiniteLine(false),
+DislocationSegment::DislocationSegment() : _isClosedLoop(false),
 	_burgersVector(Vector3::Zero()), _length(0), _isVisible(true)
 {
 	INIT_PROPERTY_FIELD(DislocationSegment::_cluster);

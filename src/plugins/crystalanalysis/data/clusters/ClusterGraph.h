@@ -44,7 +44,13 @@ public:
 	virtual QString objectTitle() override { return tr("Clusters"); }
 
 	/// Returns the list of clusters.
-	const QVector<Cluster*>& cluster() const { return _clusters; }
+	const QVector<Cluster*>& clusters() const { return _clusters; }
+
+	/// Discards all existing clusters and transitions.
+	void clear() { _clusters.clear(); }
+
+	/// Adds a cluster to this graph.
+	void addCluster(Cluster* cluster) { _clusters.push_back(cluster); }
 
 protected:
 

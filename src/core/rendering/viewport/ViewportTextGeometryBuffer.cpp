@@ -118,9 +118,8 @@ void ViewportTextGeometryBuffer::renderWindow(SceneRenderer* renderer, const Poi
 	OVITO_CHECK_OPENGL(vpRenderer->glfuncs()->glActiveTexture(GL_TEXTURE0));
 
 	// Enable texturing when using compatibility OpenGL. In the core profile, this is enabled by default.
-	if(vpRenderer->isCoreProfile() == false) {
+	if(vpRenderer->isCoreProfile() == false)
 		OVITO_CHECK_OPENGL(glEnable(GL_TEXTURE_2D));
-	}
 
 	if(_needTextureUpdate) {
 		_needTextureUpdate = false;

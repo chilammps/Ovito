@@ -56,11 +56,11 @@ public:
 	/// Marks this segment as a closed loop.
 	void setIsClosedLoop(bool isLoop) { _isClosedLoop = isLoop; }
 
-	/// Returns true if this segment is an infinite line.
-	bool isInfiniteLine() const { return _isInfiniteLine; }
-
-	/// Marks this segment as an infinite line.
-	void setIsInfiniteLine(bool isInfiniteLine) { _isInfiniteLine = isInfiniteLine; }
+	/// Returns true if this segment is an infinite dislocation line passing through a periodic boundary.
+	/// A segment is considered infinite if it is a closed loop but its start and end points do not coincide.
+	bool isInfiniteLine() const {
+		return isClosedLoop() && !(_line.back() - _line.front()).isZero();
+	}
 
 	/// Returns the cluster the segment is embedded in.
 	Cluster* cluster() const { return _cluster; }
@@ -116,9 +116,6 @@ protected:
 
 	/// Indicates if this segment is a closed loop.
 	bool _isClosedLoop;
-
-	/// Indicates if this segment is an infinite line.
-	bool _isInfiniteLine;
 
 	/// The Burgers vector of the dislocation segment. It is expressed in the coordinate system of
 	/// the crystal cluster which the segment is embedded in.

@@ -28,14 +28,14 @@ in vec3 particle_color;
 in float particle_radius;
 
 // Output to geometry shader.
-out vec4 particle_color_in;
-out float particle_radius_in;
+out vec4 particle_color_gs;
+out float particle_radius_gs;
 
 void main()
 {
 	// Forward color and radius to geometry shader.
-	particle_color_in = vec4(particle_color, 1);
-	particle_radius_in = particle_radius;
+	particle_color_gs = vec4(particle_color, 1);
+	particle_radius_gs = particle_radius;
 
 	// Transform particle center to eye coordinates.
 	gl_Position = modelview_matrix * vec4(particle_pos, 1);

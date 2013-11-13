@@ -101,9 +101,11 @@
 	<file>glsl/particles/geometry/sphere/sphere.fs</file>
 	<file>glsl/particles/geometry/sphere/sphere.vs</file>
 	<file>glsl/particles/geometry/sphere/sphere.gs</file>
+	<file>glsl/particles/geometry/sphere/sphere_tristrip.vs</file>
 	<file>glsl/particles/geometry/sphere/picking/sphere.fs</file>
 	<file>glsl/particles/geometry/sphere/picking/sphere.vs</file>
 	<file>glsl/particles/geometry/sphere/picking/sphere.gs</file>
+	<file>glsl/particles/geometry/sphere/picking/sphere_tristrip.vs</file>
 	<file>glsl/particles/geometry/cube/cube.fs</file>
 	<file>glsl/particles/geometry/cube/cube.vs</file>
 	<file>glsl/particles/geometry/cube/cube.gs</file>
@@ -117,8 +119,16 @@
 	<file>glsl/arrows/flat.vs</file>
 	<file>glsl/arrows/shaded.fs</file>
 	<file>glsl/arrows/shaded.vs</file>
+	<file>glsl/arrows/picking/flat.fs</file>
+	<file>glsl/arrows/picking/flat.vs</file>
+	<file>glsl/arrows/picking/shaded.fs</file>
+	<file>glsl/arrows/picking/shaded.vs</file>
+	
 	<file>glsl/cylinder/cylinder_raytraced.vs</file>
 	<file>glsl/cylinder/cylinder_raytraced.fs</file>
+	<file>glsl/cylinder/picking/cylinder_raytraced.vs</file>
+	<file>glsl/cylinder/picking/cylinder_raytraced.fs</file>
+
 	<file>glsl/mesh/mesh.fs</file>
 	<file>glsl/mesh/mesh.vs</file>
 	<file>glsl/mesh/picking/mesh.fs</file>

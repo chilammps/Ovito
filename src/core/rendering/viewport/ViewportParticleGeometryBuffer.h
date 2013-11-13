@@ -181,6 +181,8 @@ private:
 	QPointer<QOpenGLShaderProgram> _shadedImposterShaderWithoutDepth;
 	QPointer<QOpenGLShaderProgram> _shadedImposterShaderWithDepth;
 	QPointer<QOpenGLShaderProgram> _raytracedSphereShader;
+	QPointer<QOpenGLShaderProgram> _raytracedSphereTristripShader;
+	QPointer<QOpenGLShaderProgram> _raytracedSphereTristripPickingShader;
 	QPointer<QOpenGLShaderProgram> _cubeShader;
 	QPointer<QOpenGLShaderProgram> _cubePickingShader;
 	QPointer<QOpenGLShaderProgram> _cubeTristripShader;

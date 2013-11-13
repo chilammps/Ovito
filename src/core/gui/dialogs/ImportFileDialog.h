@@ -64,6 +64,8 @@ private Q_SLOTS:
 private:
 
 	QStringList _filterStrings;
+	QString _selectedFile;
+	QString _selectedFilter;
 };
 
 };
