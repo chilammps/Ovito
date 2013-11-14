@@ -74,13 +74,10 @@ void ViewportSceneRenderer::beginFrame(TimePoint time, const ViewProjectionParam
 
 	// Check if this context implements the core profile.
 	_isCoreProfile = (_glformat.profile() == QSurfaceFormat::CoreProfile);
-	// Qt reports the core profile only for OpenGL >= 3.2. Some implementations of OpenGL 3.1
-	// may also follow the core profile. The only way to detect this seems to be inspecting the 
-	// version string.
+
+	// Qt reports the core profile only for OpenGL >= 3.2. Assume core profiel also for 3.1 contexts.
 	if(glformat().majorVersion() == 3 && glformat().minorVersion() == 1) {
-		const char* versionString = (const char*)glGetString(GL_VERSION);
-		if(QByteArray::fromRawData(versionString, qstrlen(versionString)).indexOf("Core Profile") >= 0)
-			_isCoreProfile = true;
+		_isCoreProfile = true;
 	}
 
 	// Get pointers to some required OpenGL functions.
