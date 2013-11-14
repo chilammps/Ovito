@@ -27,20 +27,21 @@ uniform int pickingBaseID;
 
 #if __VERSION__ >= 130
 
-// The input particle data:
-in vec3 particle_pos;
-in float particle_radius;
-
-// Output passed to fragment shader.
-flat out vec4 particle_color_out;
+	// The input particle data:
+	in vec3 particle_pos;
+	in float particle_radius;
+	
+	// Output passed to fragment shader.
+	flat out vec4 particle_color_fs;
 
 #else
 
-// The input particle data:
-attribute float particle_radius;
-attribute float vertexID;
-#define gl_VertexID int(vertexID)
+	// The input particle data:
+	attribute float particle_radius;
+	attribute float vertexID;
+	#define gl_VertexID int(vertexID)
 
+	#define particle_color_fs gl_FrontColor
 #endif
 
 void main()
@@ -48,7 +49,7 @@ void main()
 	// Compute color from object ID.
 	int objectID = pickingBaseID + gl_VertexID;
 #if __VERSION__ >= 130
-	particle_color_out = vec4(
+	particle_color_fs = vec4(
 		float(objectID & 0xFF) / 255.0, 
 		float((objectID >> 8) & 0xFF) / 255.0, 
 		float((objectID >> 16) & 0xFF) / 255.0, 
@@ -58,7 +59,7 @@ void main()
 	vec4 eye_position = modelview_matrix * vec4(particle_pos, 1);
 				
 #else
-	gl_FrontColor = vec4(
+	particle_color_fs = vec4(
 		float(mod(objectID, 0x100)) / 255.0, 
 		float(mod(objectID / 0x100, 0x100)) / 255.0, 
 		float(mod(objectID / 0x10000, 0x100)) / 255.0, 

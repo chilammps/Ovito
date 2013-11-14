@@ -27,21 +27,25 @@ uniform int pickingBaseID;
 
 #if __VERSION__ >= 130
 
-// The particle data:
-in vec3 particle_pos;
-in float particle_radius;
-
-// Output to fragment shader:
-flat out vec4 particle_color_out;
-flat out float depth_radius;		// The particle's radius.
-flat out float ze0;					// The particle's Z coordinate in eye coordinates.
+	// The particle data:
+	in vec3 particle_pos;
+	in float particle_radius;
+	
+	// Output to fragment shader:
+	flat out vec4 particle_color_fs;
+	flat out float particle_radius_fs;		// The particle's radius.
+	flat out float ze0;					// The particle's Z coordinate in eye coordinates.
 
 #else
 
-// The particle data:
-attribute float particle_radius;
-attribute float vertexID;
-#define gl_VertexID int(vertexID)
+	varying float particle_radius_fs;
+	varying float ze0;
+	#define particle_color_fs gl_FrontColor
+	
+	// The particle data:
+	attribute float particle_radius;
+	attribute float vertexID;
+	#define gl_VertexID int(vertexID)
 
 #endif
 
@@ -49,8 +53,9 @@ void main()
 {
 	// Compute color from object ID.
 	int objectID = pickingBaseID + gl_VertexID;
+	
 #if __VERSION__ >= 130
-	particle_color_out = vec4(
+	particle_color_fs = vec4(
 		float(objectID & 0xFF) / 255.0, 
 		float((objectID >> 8) & 0xFF) / 255.0, 
 		float((objectID >> 16) & 0xFF) / 255.0, 
@@ -60,7 +65,7 @@ void main()
 	vec4 eye_position = modelview_matrix * vec4(particle_pos, 1);
 		
 #else
-	gl_FrontColor = vec4(
+	particle_color_fs = vec4(
 		float(mod(objectID, 0x100)) / 255.0, 
 		float(mod(objectID / 0x100, 0x100)) / 255.0, 
 		float(mod(objectID / 0x10000, 0x100)) / 255.0, 
@@ -75,22 +80,10 @@ void main()
 
 	// Compute sprite size.		
 	gl_PointSize = basePointSize * particle_radius / (eye_position.z * projection_matrix[2][3] + projection_matrix[3][3]);
-	
-#if __VERSION__ >= 130
 
 	// Forward particle radius to fragment shader.
-	depth_radius = particle_radius;
+	particle_radius_fs = particle_radius;
 	
 	// Pass particle position in eye coordinates to fragment shader.
 	ze0 = eye_position.z;
-
-#else
-
-	// Forward particle radius to fragment shader.
-	gl_FogFragCoord = particle_radius;
-	
-	// Pass particle position in eye coordinates to fragment shader.
-	gl_FrontColor.a = eye_position.z;
-
-#endif
 }

@@ -26,10 +26,15 @@ uniform bool is_perspective;
 uniform vec2 viewport_origin;		// Specifies the transformation from screen coordinates to viewport coordinates.
 uniform vec2 inverse_viewport_size;	// Specifies the transformation from screen coordinates to viewport coordinates.
 
-flat in vec4 particle_color_fs;
-flat in vec3 surface_normal_fs;
-
-out vec4 FragColor;
+#if __VERSION__ >= 130
+	flat in vec4 particle_color_fs;
+	flat in vec3 surface_normal_fs;
+	out vec4 FragColor;
+#else
+	#define particle_color_fs gl_Color
+	varying vec3 surface_normal_fs;
+	#define FragColor gl_FragColor
+#endif
 
 const float ambient = 0.4;
 const float diffuse_strength = 1.0 - ambient;

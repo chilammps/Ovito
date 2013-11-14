@@ -19,8 +19,13 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-flat in vec4 particle_color_fs;
-out vec4 FragColor;
+#if __VERSION__ >= 130
+	flat in vec4 particle_color_fs;
+	out vec4 FragColor;
+#else
+	#define particle_color_fs gl_Color
+	#define FragColor gl_FragColor
+#endif
 
 void main() 
 {

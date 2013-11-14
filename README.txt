@@ -26,11 +26,11 @@ Release 2.1.0 (xx-Nov-13):
    to move one of the datasets to a different location such that multiple
    objects do not overlap.
  - A new VTK file importer allows reading triangle meshes into OVITO to visualize
-   geometric objects such as indentor tips etc. The VTK format is the native format
+   geometric objects such as an indentor tip. The VTK format is the native format
    used by the ParaView software and can, for instance, be written by LIGGGHTS/LAMMPS.
  - Camera objects can be created through the viewport context menu. A viewport can be 
    linked to a camera object to show the the corresponding view. Camera objects can
-   be animated (experimemtal feature).
+   be animated (that's still an experimemtal and incomplete feature).
  - When importing a sequence of simulation snapshots into OVITO, one can now configure
    the mapping of input frames to OVITO's animation frames. This allows to generate output
    movies with less (or more) frames than the imported snapshot sequence. 
@@ -39,7 +39,7 @@ Release 2.1.0 (xx-Nov-13):
    modifier to set this property for certain particles. The transparency values can range
    from 0 (=fully opaque) to 1 (=not visible).
  - Fixed saving/loading of the selected gradient type in the Color Coding modifier.
- - Fixed program deadlock when when dragging the time slider after loading a file sequence.
+ - Fixed a program deadlock when when dragging the time slider after loading a file sequence.
    from a remote location.
 
 Release 2.0.3 (22-Oct-13):

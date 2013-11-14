@@ -63,9 +63,9 @@ void ParticleInformationApplet::openUtility(RolloutContainer* container, const R
 	_infoDisplay->setReadOnly(true);
 	_infoDisplay->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 #ifndef Q_OS_MACX
-	_infoDisplay->setText(tr("Pick a particle in the viewports. Hold down CONTROL key to select multiple particles."));
+	_infoDisplay->setText(tr("Pick a particle in the viewports. Hold down the CONTROL key to select multiple particles."));
 #else
-	_infoDisplay->setText(tr("Pick a particle in the viewports. Hold down COMMAND key to select multiple particles."));
+	_infoDisplay->setText(tr("Pick a particle in the viewports. Hold down the COMMAND key to select multiple particles."));
 #endif
 	layout->addWidget(_infoDisplay, 1);
 

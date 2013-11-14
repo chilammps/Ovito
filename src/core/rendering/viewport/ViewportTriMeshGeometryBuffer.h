@@ -57,6 +57,14 @@ public:
 	/// \brief Renders the geometry.
 	virtual void render(SceneRenderer* renderer, quint32 pickingBaseID) override;
 
+protected:
+
+	/// Makes vertex IDs available to the shader.
+	void activateVertexIDs(ViewportSceneRenderer* renderer, QOpenGLShaderProgram* shader);
+
+	/// Disables vertex IDs.
+	void deactivateVertexIDs(ViewportSceneRenderer* renderer, QOpenGLShaderProgram* shader);
+
 private:
 
 	/// Stores data of a single vertex passed to the OpenGL implementation.
@@ -69,11 +77,11 @@ private:
 	/// The internal OpenGL vertex buffer that stores the vertex data.
 	QOpenGLBuffer _glVertexBuffer;
 
+	/// The internal OpenGL vertex buffer that stores the vertex indices.
+	QOpenGLBuffer _glIndexBuffer;
+
 	/// The number of vertices stored in the OpenGL buffer.
 	int _renderVertexCount;
-
-	/// The internal OpenGL vertex buffer that stores the vertex indices used for picking.
-	QOpenGLBuffer _glIndexBuffer;
 
 	/// The GL context group under which the GL vertex buffer has been created.
 	QOpenGLContextGroup* _contextGroup;

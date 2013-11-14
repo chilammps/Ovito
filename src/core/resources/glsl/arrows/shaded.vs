@@ -22,22 +22,29 @@
 uniform mat4 modelview_projection_matrix;
 uniform mat3 normal_matrix;
 
-#if __VERSION__ < 130
-	#define in attribute
-	#define out varying
-	#define flat
+#if __VERSION__ >= 130
+
+	in vec3 vertex_pos;
+	in vec3 vertex_normal;
+	in vec4 vertex_color;
+	
+	flat out vec4 vertex_color_fs;
+	out vec3 vertex_normal_fs;
+
+#else
+
+	attribute vec3 vertex_pos;
+	attribute vec3 vertex_normal;
+	attribute vec4 vertex_color;
+	
+	#define vertex_color_fs gl_FrontColor
+	varying vec3 vertex_normal_fs;
+
 #endif
-
-in vec3 vertex_pos;
-in vec3 vertex_normal;
-in vec4 vertex_color;
-
-flat out vec4 vertex_color_out;
-out vec3 vertex_normal_out;
 
 void main()
 {
-	vertex_color_out = vertex_color;
+	vertex_color_fs = vertex_color;
 	gl_Position = modelview_projection_matrix * vec4(vertex_pos, 1.0);
-	vertex_normal_out = normalize(normal_matrix * vertex_normal);
+	vertex_normal_fs = normalize(normal_matrix * vertex_normal);
 }

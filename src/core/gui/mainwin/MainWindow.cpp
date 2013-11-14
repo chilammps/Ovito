@@ -90,8 +90,11 @@ MainWindow::MainWindow(const QString& title) :
 	animationControlBar1->addAction(ActionManager::instance().getAction(ACTION_GOTO_END_OF_ANIMATION));
 	animationControlBar1->setStyleSheet("QToolBar { padding: 0px; margin: 0px; border: 0px none black; } QToolButton { padding: 0px; margin: 0px }");
 	QToolBar* animationControlBar2 = new QToolBar();
+#if 0
 	animationControlBar2->addAction(ActionManager::instance().getAction(ACTION_AUTO_KEY_MODE_TOGGLE));
-	//animationControlBar2->addWidget(new AnimationFramesToolButton());
+#else
+	animationControlBar2->addWidget(new AnimationFramesToolButton());
+#endif
 	class TimeEditBox : public QLineEdit {
 	public:
 		virtual QSize sizeHint() const { return minimumSizeHint(); }

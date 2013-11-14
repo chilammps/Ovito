@@ -473,7 +473,7 @@ template<typename T>
 inline SaveStream& operator<<(SaveStream& stream, const Matrix_3<T>& m)
 {
 	for(typename Matrix_3<T>::size_type col = 0; col < m.col_count(); col++)
-		stream << m.col(col);
+		stream << m.column(col);
 	return stream;
 }
 
@@ -482,7 +482,7 @@ template<typename T>
 inline LoadStream& operator>>(LoadStream& stream, Matrix_3<T>& m)
 {
 	for(typename Matrix_3<T>::size_type col = 0; col < m.col_count(); col++)
-		stream >> m.col(col);
+		stream >> m.column(col);
 	return stream;
 }
 

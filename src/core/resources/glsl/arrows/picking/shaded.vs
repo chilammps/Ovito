@@ -23,31 +23,34 @@ uniform mat4 modelview_projection_matrix;
 uniform int pickingBaseID;
 uniform int verticesPerElement;
 
-#if __VERSION__ < 130
-	#define in attribute
-	#define out varying
-	#define flat
+#if __VERSION__ >= 130
 
+	in vec3 vertex_pos;
+	flat out vec4 vertex_color_fs;
+
+#else
+
+	attribute vec3 vertex_pos;
 	attribute float vertexID;
 	#define gl_VertexID int(vertexID)
+
+	#define vertex_color_fs gl_FrontColor
+
 #endif
-
-in vec3 vertex_pos;
-
-flat out vec4 vertex_color_out;
 
 void main()
 {
 	// Compute color from object ID.
 	int objectID = pickingBaseID + (gl_VertexID / verticesPerElement);
+
 #if __VERSION__ >= 130
-	vertex_color_out = vec4(
+	vertex_color_fs = vec4(
 		float(objectID & 0xFF) / 255.0, 
 		float((objectID >> 8) & 0xFF) / 255.0, 
 		float((objectID >> 16) & 0xFF) / 255.0, 
 		float((objectID >> 24) & 0xFF) / 255.0);
 #else
-	vertex_color_out = vec4(
+	vertex_color_fs = vec4(
 		float(mod(objectID, 0x100)) / 255.0, 
 		float(mod(objectID / 0x100, 0x100)) / 255.0, 
 		float(mod(objectID / 0x10000, 0x100)) / 255.0, 

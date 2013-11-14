@@ -43,6 +43,50 @@ DislocationSegment::DislocationSegment() : _isClosedLoop(false),
 }
 
 /******************************************************************************
+* Saves the class' contents to the given stream.
+******************************************************************************/
+void DislocationSegment::saveToStream(ObjectSaveStream& stream)
+{
+	RefTarget::saveToStream(stream);
+	stream.beginChunk(0x01);
+	stream << _isClosedLoop;
+	stream << _line;
+	stream << _coreSize;
+	stream << _length;
+	stream.endChunk();
+}
+
+/******************************************************************************
+* Loads the class' contents from the given stream.
+******************************************************************************/
+void DislocationSegment::loadFromStream(ObjectLoadStream& stream)
+{
+	RefTarget::loadFromStream(stream);
+	stream.expectChunk(0x01);
+	stream >> _isClosedLoop;
+	stream >> _line;
+	stream >> _coreSize;
+	stream >> _length;
+	stream.closeChunk();
+}
+
+/******************************************************************************
+* Creates a copy of this object.
+******************************************************************************/
+OORef<RefTarget> DislocationSegment::clone(bool deepCopy, CloneHelper& cloneHelper)
+{
+	// Let the base class create an instance of this class.
+	OORef<DislocationSegment> clone = static_object_cast<DislocationSegment>(RefTarget::clone(deepCopy, cloneHelper));
+
+	clone->_isClosedLoop = this->_isClosedLoop;
+	clone->_line = this->_line;
+	clone->_coreSize = this->_coreSize;
+	clone->_length = this->_length;
+
+	return clone;
+}
+
+/******************************************************************************
 * Checks if the given floating point number is integer.
 ******************************************************************************/
 static bool isInteger(FloatType v, int& intPart)

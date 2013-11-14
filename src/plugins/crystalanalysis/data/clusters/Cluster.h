@@ -52,7 +52,7 @@ public:
 	const Matrix3& tm() const { return _tm; }
 
 	/// Returns the destination cluster.
-	Cluster* cluster2() const { return _cluster2.get(); }
+	Cluster* cluster2() const { return _cluster2; }
 
 private:
 
@@ -60,7 +60,7 @@ private:
 	Matrix3 _tm;
 
 	/// The cluster to whose coordinate system vectors are transformed into by this transition matrix.
-	OORef<Cluster> _cluster2;
+	QPointer<Cluster> _cluster2;
 };
 
 /**
@@ -111,13 +111,13 @@ protected:
 	ReferenceField<StructurePattern> _pattern;
 
 	/// The internal identifier of the cluster.
-	int _id;
+	PropertyField<int> _id;
 
 	/// Number of atoms that are part of the cluster.
-	int _atomCount;
+	PropertyField<int> _atomCount;
 
 	/// Matrix that transforms local lattice vectors to the simulation coordinate system.
-	Matrix3 _orientation;
+	PropertyField<Matrix3> _orientation;
 
 	/// The list of transitions from this cluster to adjacent clusters.
 	QVector<ClusterTransition> _transitions;
@@ -128,6 +128,9 @@ private:
 	OVITO_OBJECT
 
 	DECLARE_REFERENCE_FIELD(_pattern);
+	DECLARE_PROPERTY_FIELD(_id);
+	DECLARE_PROPERTY_FIELD(_atomCount);
+	DECLARE_PROPERTY_FIELD(_orientation);
 };
 
 };	// End of namespace

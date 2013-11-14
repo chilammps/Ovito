@@ -28,18 +28,18 @@ uniform sampler2D tex;			// The imposter texture.
 
 #if __VERSION__ >= 130
 
-flat in vec4 particle_color_out;
-out vec4 FragColor;
+	flat in vec4 particle_color_fs;
+	out vec4 FragColor;
 
 #else
 
-#define particle_color_out gl_Color
-#define FragColor gl_FragColor
-#define texture texture2D
-
-#if __VERSION__ < 120
-#define gl_PointCoord gl_TexCoord[0].xy
-#endif
+	#define particle_color_fs gl_Color
+	#define FragColor gl_FragColor
+	#define texture texture2D
+	
+	#if __VERSION__ < 120
+		#define gl_PointCoord gl_TexCoord[0].xy
+	#endif
 
 #endif
 
@@ -51,5 +51,5 @@ void main()
 	
 	// Specular highlights are stored in the green channel of the texture. 
 	// Modulate diffuse color with brightness value stored in the red channel of the texture.
-	FragColor = vec4(texValue.r * particle_color_out.rgb + texValue.g, particle_color_out.a);
+	FragColor = vec4(texValue.r * particle_color_fs.rgb + texValue.g, particle_color_fs.a);
 }

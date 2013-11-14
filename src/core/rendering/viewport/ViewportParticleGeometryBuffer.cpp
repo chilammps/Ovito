@@ -161,7 +161,7 @@ void ViewportParticleGeometryBuffer::setSize(int particleCount)
 		_verticesPerParticle = 1;
 	}
 	else {
-		if(renderingQuality() < HighQuality)
+		if(particleShape() == SphericalShape && renderingQuality() < HighQuality)
 			_verticesPerParticle = 1;
 		else {
 			if(hasGeometryShaders())
@@ -309,7 +309,7 @@ void ViewportParticleGeometryBuffer::render(SceneRenderer* renderer, quint32 pic
 		renderPointSprites(vpRenderer, pickingBaseID);
 	}
 	else {
-		if(renderingQuality() < HighQuality)
+		if(particleShape() == SphericalShape && renderingQuality() < HighQuality)
 			renderPointSprites(vpRenderer, pickingBaseID);
 		else
 			renderCubes(vpRenderer, pickingBaseID);
@@ -323,8 +323,6 @@ void ViewportParticleGeometryBuffer::renderPointSprites(ViewportSceneRenderer* r
 {
 	OVITO_ASSERT(_verticesPerParticle == 1);
 
-	activateBillboardTexture(renderer);
-
 	// Let the vertex shader compute the point size.
 	OVITO_CHECK_OPENGL(glEnable(GL_VERTEX_PROGRAM_POINT_SIZE));
 
@@ -337,10 +335,13 @@ void ViewportParticleGeometryBuffer::renderPointSprites(ViewportSceneRenderer* r
 		glTexEnvf(GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE);
 	}
 
+	if(particleShape() == SphericalShape)
+		activateBillboardTexture(renderer);
+
 	// Pick the right OpenGL shader program.
 	QOpenGLShaderProgram* shader;
 	if(!renderer->isPicking()) {
-		if(shadingMode() == FlatShading) {
+		if(shadingMode() == FlatShading || particleShape() != SphericalShape) {
 			if(particleShape() == SphericalShape)
 				shader = _flatImposterShader;
 			else
@@ -354,7 +355,7 @@ void ViewportParticleGeometryBuffer::renderPointSprites(ViewportSceneRenderer* r
 		}
 	}
 	else {
-		if(shadingMode() == FlatShading) {
+		if(shadingMode() == FlatShading || particleShape() != SphericalShape) {
 			if(particleShape() == SphericalShape)
 				shader = _imposterPickingShaderWithoutDepth;
 			else
@@ -407,7 +408,8 @@ void ViewportParticleGeometryBuffer::renderPointSprites(ViewportSceneRenderer* r
 	if(renderer->isCoreProfile() == false)
 		OVITO_CHECK_OPENGL(glDisable(GL_POINT_SPRITE));
 
-	deactivateBillboardTexture(renderer);
+	if(particleShape() == SphericalShape)
+		deactivateBillboardTexture(renderer);
 }
 
 /******************************************************************************
@@ -525,6 +527,7 @@ void ViewportParticleGeometryBuffer::renderCubes(ViewportSceneRenderer* renderer
 			}
 			std::fill(_primitiveVertexCounts.begin(), _primitiveVertexCounts.end(), _verticesPerParticle);
 		}
+		OVITO_ASSERT(_verticesPerParticle == 14);
 
 		activateVertexIDs(renderer, shader);
 
@@ -588,13 +591,13 @@ void ViewportParticleGeometryBuffer::initializeBillboardTexture(ViewportSceneRen
 		}
 	}
 
+	renderer->glfuncs()->glActiveTexture(GL_TEXTURE0);
+
 	// Create OpenGL texture.
 	glGenTextures(1, &_billboardTexture);
 
 	// Make sure texture gets deleted again when this object is destroyed.
 	attachOpenGLResources();
-
-	renderer->glfuncs()->glActiveTexture(GL_TEXTURE0);
 
 	// Transfer pixel data to OpenGL texture.
 	OVITO_CHECK_OPENGL(glBindTexture(GL_TEXTURE_2D, _billboardTexture));
@@ -626,20 +629,21 @@ void ViewportParticleGeometryBuffer::activateBillboardTexture(ViewportSceneRende
 	if(renderer->isPicking()) return;
 	if(particleShape() != SphericalShape) return;
 
-	OVITO_ASSERT(_billboardTexture != 0);
-
-	glBindTexture(GL_TEXTURE_2D, _billboardTexture);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-	OVITO_ASSERT(BILLBOARD_TEXTURE_LEVELS >= 3);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LOD, BILLBOARD_TEXTURE_LEVELS - 3);
-
 	// Enable texture mapping when using compatibility OpenGL.
 	// In the core profile, this is already enabled by default.
 	if(renderer->isCoreProfile() == false)
 		OVITO_CHECK_OPENGL(glEnable(GL_TEXTURE_2D));
+
+	OVITO_ASSERT(_billboardTexture != 0);
+
+	OVITO_CHECK_OPENGL(renderer->glfuncs()->glActiveTexture(GL_TEXTURE0));
+	OVITO_CHECK_OPENGL(glBindTexture(GL_TEXTURE_2D, _billboardTexture));
+
+	OVITO_CHECK_OPENGL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST));
+	OVITO_CHECK_OPENGL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+
+	OVITO_ASSERT(BILLBOARD_TEXTURE_LEVELS >= 3);
+	OVITO_CHECK_OPENGL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LOD, BILLBOARD_TEXTURE_LEVELS - 3));
 }
 
 /******************************************************************************
@@ -728,7 +732,7 @@ void ViewportParticleGeometryBuffer::detachParticleColorBuffer(ViewportSceneRend
 		if(renderer->glformat().majorVersion() >= 3)
 			shader->disableAttributeArray("particle_color");
 		else
-			OVITO_CHECK_OPENGL(glEnableClientState(GL_COLOR_ARRAY));
+			OVITO_CHECK_OPENGL(glDisableClientState(GL_COLOR_ARRAY));
 	}
 	else {
 		deactivateVertexIDs(renderer, shader);
@@ -774,12 +778,12 @@ void ViewportParticleGeometryBuffer::activateVertexIDs(ViewportSceneRenderer* re
 			_glIndexBuffer.setUsagePattern(QOpenGLBuffer::StaticDraw);
 			if(!_glIndexBuffer.bind())
 				throw Exception(tr("Failed to bind OpenGL vertex ID buffer."));
-			_glIndexBuffer.allocate(_particleCount * _verticesPerParticle * sizeof(GLint));
+			_glIndexBuffer.allocate(_particleCount * _verticesPerParticle * sizeof(GLfloat));
 			OVITO_ASSERT(_particleCount > 0);
-			GLint* bufferData = static_cast<GLint*>(_glIndexBuffer.map(QOpenGLBuffer::WriteOnly));
+			GLfloat* bufferData = static_cast<GLfloat*>(_glIndexBuffer.map(QOpenGLBuffer::WriteOnly));
 			if(!bufferData)
 				throw Exception(tr("Failed to map OpenGL vertex ID buffer to memory."));
-			GLint* bufferDataEnd = bufferData + _particleCount * _verticesPerParticle;
+			GLfloat* bufferDataEnd = bufferData + _particleCount * _verticesPerParticle;
 			for(GLint index = 0; bufferData != bufferDataEnd; ++index, ++bufferData)
 				*bufferData = index;
 			_glIndexBuffer.unmap();
@@ -791,7 +795,7 @@ void ViewportParticleGeometryBuffer::activateVertexIDs(ViewportSceneRenderer* re
 
 		// This vertex attribute will be mapped to the gl_VertexID variable.
 		shader->enableAttributeArray("vertexID");
-		shader->setAttributeBuffer("vertexID", GL_INT, 0, 1);
+		shader->setAttributeBuffer("vertexID", GL_FLOAT, 0, 1);
 		_glIndexBuffer.release();
 	}
 }

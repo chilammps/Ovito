@@ -30,7 +30,7 @@ uniform vec3 cubeVerts[14];
 	// The particle data:
 	in vec3 particle_pos;
 	in float particle_radius;
-
+	
 	// Outputs to fragment shader
 	flat out vec4 particle_color_fs;
 	flat out float particle_radius_squared_fs;
@@ -38,23 +38,25 @@ uniform vec3 cubeVerts[14];
 
 #else
 
-	// The input particle data:
+	// The particle data:
 	attribute float particle_radius;
 	attribute float vertexID;
-	#define gl_VertexID int(vertexID)
 
+	// Outputs to fragment shader
+	varying float particle_radius_squared_fs;
+	varying vec3 particle_view_pos_fs;
+	
 #endif
 
 void main()
 {
-	int objectID = pickingBaseID + (gl_VertexID / 14);
-
 #if __VERSION__ >= 130
 
 	particle_radius_squared_fs = particle_radius * particle_radius;
 	particle_view_pos_fs = vec3(modelview_matrix * vec4(particle_pos, 1));
 
 	// Compute color from object ID.
+	int objectID = pickingBaseID + (gl_VertexID / 14);
 	particle_color_fs = vec4(
 		float(objectID & 0xFF) / 255.0, 
 		float((objectID >> 8) & 0xFF) / 255.0, 
@@ -67,17 +69,19 @@ void main()
 #else
 
 	particle_radius_squared_fs = particle_radius * particle_radius;
-	particle_view_pos_fs = vec3(modelview_matrix * vec4(particle_pos, 1));
+	particle_view_pos_fs = vec3(modelview_matrix * gl_Vertex);
 
 	// Compute color from object ID.
-	particle_color_fs = vec4(
-		float(mod(objectID, 0x100)) / 255.0, 
-		float(mod(objectID / 0x100, 0x100)) / 255.0, 
-		float(mod(objectID / 0x10000, 0x100)) / 255.0, 
-		float(mod(objectID / 0x1000000, 0x100)) / 255.0);	
+	int objectID = pickingBaseID + int(vertexID) / 14;
+	gl_FrontColor = vec4(
+		mod(objectID, 0x100) / 255.0, 
+		mod(objectID / 0x100, 0x100) / 255.0, 
+		mod(objectID / 0x10000, 0x100) / 255.0, 
+		mod(objectID / 0x1000000, 0x100) / 255.0);	
 		
 	// Transform and project vertex.
-	gl_Position = projection_matrix * modelview_matrix * (gl_Vertex + vec4(cubeVerts[gl_VertexID % 14] * particle_radius, 0));
+	int cubeCorner = int(floor(int(vertexID) - 14 * floor(int(vertexID) / 14 + 0.5) + 0.5));
+	gl_Position = projection_matrix * modelview_matrix * (gl_Vertex + vec4(cubeVerts[cubeCorner] * particle_radius, 0));
 	
 #endif
 }

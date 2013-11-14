@@ -95,7 +95,7 @@ private:
 	/// The viewport input mode.
 	OORef<ParticleInformationInputMode> _inputMode;
 
-	Q_CLASSINFO("DisplayName", "Inspect particle");
+	Q_CLASSINFO("DisplayName", "Inspect particles");
 
 	Q_OBJECT
 	OVITO_OBJECT

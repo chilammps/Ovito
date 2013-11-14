@@ -215,6 +215,7 @@ void ViewportWindow::renderNow()
 		}
 #endif
 
+#ifdef OVITO_DEBUG
 		static bool firstTime = true;
 		if(!shareContext && firstTime) {
 			firstTime = false;
@@ -233,6 +234,7 @@ void ViewportWindow::renderNow()
 			qDebug() << "OpenGL geometry shaders:    " << QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Geometry);
 			qDebug() << "OpenGL debug logger:        " << (_oglDebugLogger != nullptr);
 		}
+#endif
 
 		if(_context->format().majorVersion() < OVITO_OPENGL_MINIMUM_VERSION_MAJOR || _context->format().minorVersion() < OVITO_OPENGL_MINIMUM_VERSION_MINOR) {
 			Exception ex(tr(

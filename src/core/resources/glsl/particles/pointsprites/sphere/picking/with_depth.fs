@@ -24,24 +24,26 @@ uniform mat4 projection_matrix;
 
 #if __VERSION__ >= 130
 
-// Input from vertex shader:
-flat in vec4 particle_color_out;
-flat in float depth_radius;		// The particle radius.
-flat in float ze0;				// The particle's Z coordinate in eye coordinates.
-
-out vec4 FragColor;
+	// Input from vertex shader:
+	flat in vec4 particle_color_fs;
+	flat in float particle_radius_fs;
+	flat in float ze0;				// The particle's Z coordinate in eye coordinates.
+	
+	out vec4 FragColor;
 
 #else
 
-// Input from vertex shader:
-#define particle_color_out gl_Color
-
-#define FragColor gl_FragColor
-#define texture texture2D
-
-#if __VERSION__ < 120
-#define gl_PointCoord gl_TexCoord[0].xy
-#endif
+	// Input from vertex shader:
+	varying float particle_radius_fs;
+	varying float ze0;
+	#define particle_color_fs gl_Color
+	
+	#define FragColor gl_FragColor
+	#define texture texture2D
+	
+	#if __VERSION__ < 120
+		#define gl_PointCoord gl_TexCoord[0].xy
+	#endif
 
 #endif
 
@@ -51,15 +53,10 @@ void main()
 	float rsq = dot(shifted_coords, shifted_coords);
 	if(rsq >= 0.25) discard;
 	
-	FragColor = particle_color_out;
-
-#if __VERSION__ < 130
-	float depth_radius = gl_FogFragCoord;
-	float ze0 = gl_Color.a;
-#endif
+	FragColor = particle_color_fs;
 
 	// Vary the depth value across the imposter to obtain proper intersections between particles.	
-	float dz = sqrt(1.0 - 4.0 * rsq) * depth_radius;
+	float dz = sqrt(1.0 - 4.0 * rsq) * particle_radius_fs;
 	float ze = ze0 + dz;
 	float zn = (projection_matrix[2][2] * ze + projection_matrix[3][2]) / (projection_matrix[2][3] * ze + projection_matrix[3][3]);
 	gl_FragDepth = 0.5 * (zn * gl_DepthRange.diff + (gl_DepthRange.far + gl_DepthRange.near));

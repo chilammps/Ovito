@@ -113,13 +113,13 @@ void ViewportTextGeometryBuffer::renderWindow(SceneRenderer* renderer, const Poi
 	if(text().isEmpty() || !vpRenderer || renderer->isPicking())
 		return;
 
-	// Prepare texture.
-	OVITO_CHECK_OPENGL(glBindTexture(GL_TEXTURE_2D, _texture));
-	OVITO_CHECK_OPENGL(vpRenderer->glfuncs()->glActiveTexture(GL_TEXTURE0));
-
 	// Enable texturing when using compatibility OpenGL. In the core profile, this is enabled by default.
 	if(vpRenderer->isCoreProfile() == false)
 		OVITO_CHECK_OPENGL(glEnable(GL_TEXTURE_2D));
+
+	// Prepare texture.
+	OVITO_CHECK_OPENGL(vpRenderer->glfuncs()->glActiveTexture(GL_TEXTURE0));
+	OVITO_CHECK_OPENGL(glBindTexture(GL_TEXTURE_2D, _texture));
 
 	if(_needTextureUpdate) {
 		_needTextureUpdate = false;

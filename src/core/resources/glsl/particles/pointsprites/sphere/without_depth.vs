@@ -31,26 +31,28 @@ uniform mat4 projection_matrix;
 	in float particle_radius;
 
 	// Output passed to fragment shader.
-	flat out vec4 particle_color_out;
+	flat out vec4 particle_color_fs;
 #else
 	attribute float particle_radius;
+	#define particle_color_fs gl_FrontColor
 #endif
 
 void main()
 {
 #if __VERSION__ >= 130
 	// Pass color to fragment shader.
-	particle_color_out = vec4(particle_color, 1);
+	particle_color_fs = vec4(particle_color, 1);
 
 	// Transform and project particle position.
 	vec4 eye_position = modelview_matrix * vec4(particle_pos, 1);
 #else
 	// Pass color to fragment shader.
-	gl_FrontColor = gl_Color;
+	particle_color_fs = gl_Color;
 
 	// Transform and project particle position.
 	vec4 eye_position = modelview_matrix * gl_Vertex;
 #endif
+
 	gl_Position = projection_matrix * eye_position;
 
 	// Compute sprite size.		

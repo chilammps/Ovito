@@ -124,7 +124,7 @@ void PickingSceneRenderer::reset()
 	_currentObjectID = 1;
 #else
 	// This can be enabled during debugging to avoid alpha!=1 pixels in the picking render buffer.
-	_currentObjectID = 0xFF000000;
+	_currentObjectID = 0xEF000000;
 #endif
 	_image = QImage();
 }
@@ -134,10 +134,12 @@ void PickingSceneRenderer::reset()
 ******************************************************************************/
 quint32 PickingSceneRenderer::registerPickObject(ObjectNode* objNode, SceneObject* sceneObj, quint32 subObjectCount)
 {
+	OVITO_ASSERT(subObjectCount >= 0);
+
 	quint32 objId = _currentObjectID;
 	ObjectRecord record = { objId, objNode, sceneObj };
 	_objects.push_back(std::move(record));
-	_currentObjectID += subObjectCount;
+	_currentObjectID += subObjectCount + 1;
 	return objId;
 }
 

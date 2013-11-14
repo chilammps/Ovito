@@ -32,14 +32,17 @@ uniform mat4 projection_matrix;
 	in float particle_radius;
 
 	// Output to fragment shader:
-	flat out vec4 particle_color_out;
-	flat out float depth_radius;		// The particle's radius.
+	flat out vec4 particle_color_fs;
+	flat out float particle_radius_fs;	// The particle's radius.
 	flat out float ze0;					// The particle's Z coordinate in eye coordinates.
 
 #else
 
 	attribute float particle_radius;
-
+	
+	varying float particle_radius_fs;
+	varying float ze0;
+	#define particle_color_fs gl_FrontColor
 #endif
 
 void main()
@@ -47,7 +50,7 @@ void main()
 #if __VERSION__ >= 130
 
 	// Forward color to fragment shader.
-	particle_color_out = vec4(particle_color, 1);
+	particle_color_fs = vec4(particle_color, 1);
 
 	// Transform and project particle position.
 	vec4 eye_position = modelview_matrix * vec4(particle_pos, 1);
@@ -55,7 +58,7 @@ void main()
 #else
 
 	// Pass color to fragment shader.
-	gl_FrontColor = gl_Color;
+	particle_color_fs = gl_Color;
 
 	// Transform and project particle position.
 	vec4 eye_position = modelview_matrix * gl_Vertex;
@@ -67,22 +70,10 @@ void main()
 	// Compute sprite size.		
 	gl_PointSize = basePointSize * particle_radius / (eye_position.z * projection_matrix[2][3] + projection_matrix[3][3]);
 
-#if __VERSION__ >= 130
-
 	// Forward particle radius to fragment shader.
-	depth_radius = particle_radius;
+	particle_radius_fs = particle_radius;
 	
 	// Pass particle position in eye coordinates to fragment shader.
 	ze0 = eye_position.z;
-
-#else
-
-	// Forward particle radius to fragment shader.
-	gl_FogFragCoord = particle_radius;
-	
-	// Pass particle position in eye coordinates to fragment shader.
-	gl_FrontColor.a = eye_position.z;
-
-#endif
 }
 

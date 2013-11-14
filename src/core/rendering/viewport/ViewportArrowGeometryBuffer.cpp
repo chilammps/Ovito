@@ -85,6 +85,10 @@ void ViewportArrowGeometryBuffer::startSetElements(int elementCount)
 	OVITO_ASSERT(QOpenGLContextGroup::currentContextGroup() == _contextGroup);
 	OVITO_ASSERT(_mappedBuffer == nullptr);
 
+	// Reset index buffer.
+	if(_glIndexBuffer.isCreated())
+		_glIndexBuffer.destroy();
+
 	if(!_glGeometryBuffer.bind())
 		throw Exception(tr("Failed to bind OpenGL vertex buffer."));
 
@@ -502,11 +506,8 @@ void ViewportArrowGeometryBuffer::renderShadedTriangles(ViewportSceneRenderer* r
 	QOpenGLShaderProgram* shader;
 	if(!renderer->isPicking())
 		shader = _shadedShader;
-	else {
-		if(renderer->glformat().majorVersion() < 3)
-			return;
+	else
 		shader = _shadedPickingShader;
-	}
 
 	glEnable(GL_CULL_FACE);
 
@@ -531,6 +532,9 @@ void ViewportArrowGeometryBuffer::renderShadedTriangles(ViewportSceneRenderer* r
 	}
 	_glGeometryBuffer.release();
 
+	if(renderer->isPicking())
+		activateVertexIDs(renderer, shader);
+
 	if(renderer->isPicking()) {
 		int primitivesPerElement = _stripPrimitiveVertexCounts.size() / _elementCount;
 		int stripVerticesPerElement = std::accumulate(_stripPrimitiveVertexCounts.begin(), _stripPrimitiveVertexCounts.begin() + primitivesPerElement, 0);
@@ -550,6 +554,9 @@ void ViewportArrowGeometryBuffer::renderShadedTriangles(ViewportSceneRenderer* r
 		shader->disableAttributeArray("vertex_normal");
 		shader->disableAttributeArray("vertex_color");
 	}
+	else {
+		deactivateVertexIDs(renderer, shader);
+	}
 
 	shader->release();
 }
@@ -562,11 +569,8 @@ void ViewportArrowGeometryBuffer::renderRaytracedCylinders(ViewportSceneRenderer
 	QOpenGLShaderProgram* shader;
 	if(!renderer->isPicking())
 		shader = _raytracedCylinderShader;
-	else {
-		if(renderer->glformat().majorVersion() < 3)
-			return;
+	else
 		shader = _raytracedCylinderPickingShader;
-	}
 
 	glEnable(GL_CULL_FACE);
 
@@ -606,11 +610,16 @@ void ViewportArrowGeometryBuffer::renderRaytracedCylinders(ViewportSceneRenderer
 	shader->setAttributeBuffer("cylinder_radius", GL_FLOAT, offsetof(ColoredVertexWithElementInfo, radius), 1, sizeof(ColoredVertexWithElementInfo));
 	_glGeometryBuffer.release();
 
+	if(renderer->isPicking())
+		activateVertexIDs(renderer, shader);
+
 	OVITO_CHECK_OPENGL(renderer->glMultiDrawArrays(GL_TRIANGLE_STRIP, _stripPrimitiveVertexStarts.data(), _stripPrimitiveVertexCounts.data(), _stripPrimitiveVertexStarts.size()));
 
 	shader->disableAttributeArray("vertex_pos");
 	if(!renderer->isPicking())
 		shader->disableAttributeArray("cylinder_color");
+	else
+		deactivateVertexIDs(renderer, shader);
 	shader->disableAttributeArray("cylinder_base");
 	shader->disableAttributeArray("cylinder_axis");
 	shader->disableAttributeArray("cylinder_radius");
@@ -626,11 +635,8 @@ void ViewportArrowGeometryBuffer::renderFlat(ViewportSceneRenderer* renderer, qu
 	QOpenGLShaderProgram* shader;
 	if(!renderer->isPicking())
 		shader = _flatShader;
-	else {
-		if(renderer->glformat().majorVersion() < 3)
-			return;
+	else
 		shader = _flatPickingShader;
-	}
 
 	if(!shader->bind())
 		throw Exception(tr("Failed to bind OpenGL shader."));
@@ -662,6 +668,9 @@ void ViewportArrowGeometryBuffer::renderFlat(ViewportSceneRenderer* renderer, qu
 	}
 	_glGeometryBuffer.release();
 
+	if(renderer->isPicking())
+		activateVertexIDs(renderer, shader);
+
 	OVITO_CHECK_OPENGL(renderer->glMultiDrawArrays(GL_TRIANGLE_FAN, _fanPrimitiveVertexStarts.data(), _fanPrimitiveVertexCounts.data(), _fanPrimitiveVertexStarts.size()));
 
 	shader->disableAttributeArray("vertex_pos");
@@ -669,8 +678,56 @@ void ViewportArrowGeometryBuffer::renderFlat(ViewportSceneRenderer* renderer, qu
 	shader->disableAttributeArray("vector_dir");
 	if(!renderer->isPicking())
 		shader->disableAttributeArray("vertex_color");
+	else
+		deactivateVertexIDs(renderer, shader);
 
 	shader->release();
+}
+
+/******************************************************************************
+* Makes vertex IDs available to the shader.
+******************************************************************************/
+void ViewportArrowGeometryBuffer::activateVertexIDs(ViewportSceneRenderer* renderer, QOpenGLShaderProgram* shader)
+{
+	// Older OpenGL implementations do not provide the built-in gl_VertexID shader
+	// variable. Therefore we have to provide the IDs in a vertex buffer.
+	if(renderer->glformat().majorVersion() < 3) {
+		if(!_glIndexBuffer.isCreated()) {
+			// Create the ID buffer only once and keep it until the number of particles changes.
+			if(!_glIndexBuffer.create())
+				throw Exception(tr("Failed to create OpenGL vertex ID buffer."));
+			_glIndexBuffer.setUsagePattern(QOpenGLBuffer::StaticDraw);
+			if(!_glIndexBuffer.bind())
+				throw Exception(tr("Failed to bind OpenGL vertex ID buffer."));
+			_glIndexBuffer.allocate(_elementCount * _verticesPerElement * sizeof(GLfloat));
+			OVITO_ASSERT(_elementCount > 0);
+			GLfloat* bufferData = static_cast<GLfloat*>(_glIndexBuffer.map(QOpenGLBuffer::WriteOnly));
+			if(!bufferData)
+				throw Exception(tr("Failed to map OpenGL vertex ID buffer to memory."));
+			GLfloat* bufferDataEnd = bufferData + _elementCount * _verticesPerElement;
+			for(GLint index = 0; bufferData != bufferDataEnd; ++index, ++bufferData)
+				*bufferData = index;
+			_glIndexBuffer.unmap();
+		}
+		else {
+			if(!_glIndexBuffer.bind())
+				throw Exception(tr("Failed to bind OpenGL vertex ID buffer."));
+		}
+
+		// This vertex attribute will be mapped to the gl_VertexID variable.
+		shader->enableAttributeArray("vertexID");
+		shader->setAttributeBuffer("vertexID", GL_FLOAT, 0, 1);
+		_glIndexBuffer.release();
+	}
+}
+
+/******************************************************************************
+* Disables vertex IDs.
+******************************************************************************/
+void ViewportArrowGeometryBuffer::deactivateVertexIDs(ViewportSceneRenderer* renderer, QOpenGLShaderProgram* shader)
+{
+	if(renderer->glformat().majorVersion() < 3)
+		shader->disableAttributeArray("vertexID");
 }
 
 };

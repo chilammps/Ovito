@@ -108,6 +108,17 @@ public:
 
 protected:
 
+	/// Saves the class' contents to the given stream.
+	virtual void saveToStream(ObjectSaveStream& stream) override;
+
+	/// Loads the class' contents from the given stream.
+	virtual void loadFromStream(ObjectLoadStream& stream) override;
+
+	/// Creates a copy of this object.
+	virtual OORef<RefTarget> clone(bool deepCopy, CloneHelper& cloneHelper) override;
+
+protected:
+
 	/// The piecewise linear curve in space.
 	QVector<Point3> _line;
 

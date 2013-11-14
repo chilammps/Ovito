@@ -26,11 +26,17 @@ uniform bool is_perspective;
 uniform vec2 viewport_origin;		// Specifies the transformation from screen coordinates to viewport coordinates.
 uniform vec2 inverse_viewport_size;	// Specifies the transformation from screen coordinates to viewport coordinates.
 
-flat in vec4 particle_color_fs;
-flat in float particle_radius_squared_fs;
-flat in vec3 particle_view_pos_fs;
-
-out vec4 FragColor;
+#if __VERSION__ >= 130
+	flat in vec4 particle_color_fs;
+	flat in float particle_radius_squared_fs;
+	flat in vec3 particle_view_pos_fs;
+	out vec4 FragColor;
+#else
+	#define particle_color_fs gl_Color
+	varying float particle_radius_squared_fs;
+	varying vec3 particle_view_pos_fs;
+	#define FragColor gl_FragColor
+#endif
 
 const float ambient = 0.4;
 const float diffuse_strength = 1.0 - ambient;
@@ -62,8 +68,9 @@ void main()
 	float disc = b*b + particle_radius_squared_fs - temp;
 		
 	// Only calculate the intersection closest to the viewer.
-	if(disc <= 0.0)
+	if(disc <= 0.0) {
 		discard; // Ray missed sphere entirely, discard fragment
+	}
 		
 	// Calculate closest intersection position.
 	float tnear = b - sqrt(disc);
@@ -86,8 +93,6 @@ void main()
 	vec3 surface_normal = normalize(view_intersection_pnt - particle_view_pos_fs);
 	
 	float diffuse = abs(surface_normal.z) * diffuse_strength;
-	
 	float specular = pow(max(0.0, dot(reflect(specular_lightdir, surface_normal), ray_dir)), shininess) * 0.25;
-	
 	FragColor = vec4(particle_color_fs.rgb * (diffuse + ambient) + vec3(specular), particle_color_fs.a);
 }

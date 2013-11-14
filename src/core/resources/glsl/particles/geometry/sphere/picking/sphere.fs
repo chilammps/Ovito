@@ -31,11 +31,17 @@ uniform bool is_perspective;
 uniform vec2 viewport_origin;		// Specifies the transformation from screen coordinates to viewport coordinates.
 uniform vec2 inverse_viewport_size;	// Specifies the transformation from screen coordinates to viewport coordinates.
 
-flat in vec4 particle_color_fs;
-flat in float particle_radius_squared_fs;
-flat in vec3 particle_view_pos_fs;
-
-out vec4 FragColor;
+#if __VERSION__ >= 130
+	flat in vec4 particle_color_fs;
+	flat in float particle_radius_squared_fs;
+	flat in vec3 particle_view_pos_fs;
+	out vec4 FragColor;
+#else
+	#define particle_color_fs gl_Color
+	varying float particle_radius_squared_fs;
+	varying vec3 particle_view_pos_fs;
+	#define FragColor gl_FragColor	
+#endif
 
 void main() 
 {

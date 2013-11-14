@@ -21,17 +21,17 @@
 
 #if __VERSION__ >= 130
 
-flat in vec4 particle_color_out;
-out vec4 FragColor;
+	flat in vec4 particle_color_fs;
+	out vec4 FragColor;
 
 #else
 
-#define particle_color_out gl_Color
-#define FragColor gl_FragColor
-
-#if __VERSION__ < 120
-#define gl_PointCoord gl_TexCoord[0].xy
-#endif
+	#define particle_color_fs gl_Color
+	#define FragColor gl_FragColor
+	
+	#if __VERSION__ < 120
+		#define gl_PointCoord gl_TexCoord[0].xy
+	#endif
 
 #endif
 
@@ -39,5 +39,5 @@ void main()
 {
 	vec2 shifted_coords = gl_PointCoord - vec2(0.5, 0.5);
 	if(dot(shifted_coords, shifted_coords) >= 0.25) discard;
-	FragColor = particle_color_out;
+	FragColor = particle_color_fs;
 }
