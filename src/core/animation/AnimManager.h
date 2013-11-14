@@ -214,6 +214,9 @@ private Q_SLOTS:
 	/// \brief Is called when the current animation time has changed.
 	void onTimeChanged(TimePoint newTime);
 
+	/// \brief Is called whenever the active animation interval has changed.
+	void onIntervalChanged(TimeInterval newAnimationInterval);
+
 Q_SIGNALS:
 
 	/// This signal is emitted by the AnimManager when the current animation time has changed.
