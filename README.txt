@@ -18,6 +18,8 @@ Release 2.1.0 (xx-Nov-13):
  - Added the Manual Selection modifier, which allows selecting individual particles
    with the mouse in the viewports. Using its "Fence selection" mode, a group of particles
    can be selected by drawing a closed path around them.
+ - In addition to spherical particles, OVITO can now display particles with cubic and square shape.
+   This can be useful for visualization of large lattice systems, Ising models, etc.
  - OVITO can now import more than one dataset into the scene and display them side by side. 
    Use the "Import Local/Remote File" function multiple times to load 
    several simulation files (or multiple instances of the same file) into the program.
