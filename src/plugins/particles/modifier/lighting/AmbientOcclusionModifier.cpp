@@ -74,7 +74,7 @@ std::shared_ptr<AsynchronousParticleModifier::Engine> AmbientOcclusionModifier::
 			boundingBox.addBox(particleDisplay->particleBoundingBox(posProperty, typeProperty, radiusProperty));
 		}
 	}
-	if(!boundingBox.isEmpty())
+	if(boundingBox.isEmpty())
 		throw Exception(tr("There are no valid particles."));
 
 	// The render buffer resolution.
