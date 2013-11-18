@@ -251,7 +251,7 @@ void AmbientOcclusionModifier::propertyChanged(const PropertyFieldDescriptor& fi
 void AmbientOcclusionModifierEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
 	// Create a rollout.
-	QWidget* rollout = createRollout(tr("Ambient occlusion"), rolloutParams);
+	QWidget* rollout = createRollout(tr("Ambient occlusion"), rolloutParams, "particles.modifiers.ambient_occlusion.html");
 
     // Create the rollout contents.
 	QVBoxLayout* layout1 = new QVBoxLayout(rollout);

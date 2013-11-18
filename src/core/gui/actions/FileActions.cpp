@@ -69,17 +69,7 @@ void ActionManager::on_HelpAbout_triggered()
 ******************************************************************************/
 void ActionManager::on_HelpShowOnlineHelp_triggered()
 {
-	if(!Application::instance().guiMode()) return;
-
-	// Use the web browser to display online help.
-	QString fullURL = QString("http://www.ovito.org/manual_v%1.%2.%3/")
-					.arg(OVITO_VERSION_MAJOR)
-					.arg(OVITO_VERSION_MINOR)
-					.arg(OVITO_VERSION_REVISION);
-
-	if(!QDesktopServices::openUrl(QUrl(fullURL))) {
-		Exception(tr("Could not launch web browser to display online manual. The requested URL is %1").arg(fullURL)).showError();
-	}
+	Application::instance().openHelpTopic(QString());
 }
 
 /******************************************************************************

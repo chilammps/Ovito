@@ -360,7 +360,7 @@ void CreateExpressionPropertyModifier::initializeModifier(PipelineObject* pipeli
 ******************************************************************************/
 void CreateExpressionPropertyModifierEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
-	rollout = createRollout(tr("Create expression property"), rolloutParams);
+	rollout = createRollout(tr("Create expression property"), rolloutParams, "particles.modifiers.compute_property.html");
 
     // Create the rollout contents.
 	QVBoxLayout* mainLayout = new QVBoxLayout(rollout);
@@ -417,7 +417,7 @@ void CreateExpressionPropertyModifierEditor::createUI(const RolloutInsertionPara
 	// Status label.
 	mainLayout->addWidget(statusLabel());
 
-	QWidget* variablesRollout = createRollout(tr("Variables"), rolloutParams.after(rollout));
+	QWidget* variablesRollout = createRollout(tr("Variables"), rolloutParams.after(rollout), "particles.modifiers.compute_property.html");
     QVBoxLayout* variablesLayout = new QVBoxLayout(variablesRollout);
     variablesLayout->setContentsMargins(4,4,4,4);
 	variableNamesList = new QLabel();

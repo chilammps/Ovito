@@ -127,7 +127,7 @@ class OVITO_CORE_EXPORT Rollout : public QWidget
 public:
 
 	/// Constructor.
-	Rollout(QWidget* parent, QWidget* content, const QString& title, const RolloutInsertionParameters& params);
+	Rollout(QWidget* parent, QWidget* content, const QString& title, const RolloutInsertionParameters& params, const char* helpPage = nullptr);
 
 	/// Returns true if this rollout is currently in the collapsed state.
 	bool isCollapsed() const { return visiblePercentage() != 100; }
@@ -167,6 +167,9 @@ public Q_SLOTS:
 		_titleButton->setText(title);
 	}
 
+	/// Is called when the user presses the help button.
+	void onHelpButton();
+
 protected:
 
 	/// Handles the resize events of the rollout widget.
@@ -180,6 +183,9 @@ private:
 	/// The button that allows to collapse the rollout.
 	QPushButton* _titleButton;
 
+	/// The button that opens the help page.
+	QPushButton* _helpButton;
+
 	/// The widget that is inside the rollout.
 	QPointer<QWidget> _content;
 
@@ -191,6 +197,9 @@ private:
 
 	/// Indicates that this rollout should automatically expand to use all available space in the container.
 	bool _useAvailableSpace;
+
+	/// The help page in the user manual for this rollout.
+	const char* _helpPage;
 };
 
 /******************************************************************************
@@ -206,7 +215,7 @@ public:
 	RolloutContainer(QWidget* parent = 0);
 
 	/// Adds a new rollout to the container.
-	Rollout* addRollout(QWidget* content, const QString& title, const RolloutInsertionParameters& param = RolloutInsertionParameters());
+	Rollout* addRollout(QWidget* content, const QString& title, const RolloutInsertionParameters& param = RolloutInsertionParameters(), const char* helpPage = nullptr);
 	
 	virtual QSize minimumSizeHint() const { 
 		return QSize(QFrame::minimumSizeHint().width(), 10); 

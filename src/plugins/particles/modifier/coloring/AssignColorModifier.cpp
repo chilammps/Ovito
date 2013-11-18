@@ -113,7 +113,7 @@ ObjectStatus AssignColorModifier::modifyParticles(TimePoint time, TimeInterval& 
 void AssignColorModifierEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
 	// Create a rollout.
-	QWidget* rollout = createRollout(tr("Assign color"), rolloutParams);
+	QWidget* rollout = createRollout(tr("Assign color"), rolloutParams, "particles.modifiers.assign_color.html");
 
     // Create the rollout contents.
 	QGridLayout* layout = new QGridLayout(rollout);

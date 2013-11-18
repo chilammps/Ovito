@@ -70,7 +70,7 @@ ObjectStatus DeleteParticlesModifier::modifyParticles(TimePoint time, TimeInterv
 void DeleteParticlesModifierEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
 	// Create a rollout.
-	QWidget* rollout = createRollout(tr("Delete selected particles"), rolloutParams);
+	QWidget* rollout = createRollout(tr("Delete selected particles"), rolloutParams, "particles.modifiers.delete_selected_particles.html");
 
     // Create the rollout contents.
 	QVBoxLayout* layout = new QVBoxLayout(rollout);

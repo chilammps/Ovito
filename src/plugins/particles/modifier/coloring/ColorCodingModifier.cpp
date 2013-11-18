@@ -415,7 +415,7 @@ void ColorCodingModifier::render(TimePoint time, ObjectNode* contextNode, Modifi
 void ColorCodingModifierEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
 	// Create a rollout.
-	QWidget* rollout = createRollout(tr("Color coding"), rolloutParams);
+	QWidget* rollout = createRollout(tr("Color coding"), rolloutParams, "particles.modifiers.color_coding.html");
 
     // Create the rollout contents.
 	QVBoxLayout* layout1 = new QVBoxLayout(rollout);

@@ -171,7 +171,7 @@ BondAngleAnalysisModifier::StructureType BondAngleAnalysisModifier::determineStr
 void BondAngleAnalysisModifierEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
 	// Create a rollout.
-	QWidget* rollout = createRollout(tr("Bond-angle analysis"), rolloutParams);
+	QWidget* rollout = createRollout(tr("Bond-angle analysis"), rolloutParams, "particles.modifiers.bond_angle_analysis.html");
 
     // Create the rollout contents.
 	QVBoxLayout* layout1 = new QVBoxLayout(rollout);

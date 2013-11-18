@@ -20,6 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
+#include <core/gui/app/Application.h>
 #include "RolloutContainer.h"
 
 namespace Ovito {
@@ -43,10 +44,10 @@ RolloutContainer::RolloutContainer(QWidget* parent) : QScrollArea(parent)
 /******************************************************************************
 * Inserts a new rollout into the container.
 ******************************************************************************/
-Rollout* RolloutContainer::addRollout(QWidget* content, const QString& title, const RolloutInsertionParameters& params)
+Rollout* RolloutContainer::addRollout(QWidget* content, const QString& title, const RolloutInsertionParameters& params, const char* helpPage)
 {
 	OVITO_CHECK_POINTER(content);
-	Rollout* rollout = new Rollout(widget(), content, title, params);
+	Rollout* rollout = new Rollout(widget(), content, title, params, helpPage);
 	QBoxLayout* layout = static_cast<QBoxLayout*>(widget()->layout());
 	if(params._afterThisRollout) {
 		Rollout* otherRollout = qobject_cast<Rollout*>(params._afterThisRollout->parent());
@@ -83,8 +84,8 @@ void RolloutContainer::updateRollouts()
 /******************************************************************************
 * Constructs a rollout widget.
 ******************************************************************************/
-Rollout::Rollout(QWidget* parent, QWidget* content, const QString& title, const RolloutInsertionParameters& params) :
-	QWidget(parent), _content(content), _collapseAnimation(this, "visiblePercentage"), _useAvailableSpace(params._useAvailableSpace)
+Rollout::Rollout(QWidget* parent, QWidget* content, const QString& title, const RolloutInsertionParameters& params, const char* helpPage) :
+	QWidget(parent), _content(content), _collapseAnimation(this, "visiblePercentage"), _useAvailableSpace(params._useAvailableSpace), _helpPage(helpPage)
 {
 	setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
 	_collapseAnimation.setDuration(350);
@@ -118,6 +119,28 @@ Rollout::Rollout(QWidget* parent, QWidget* content, const QString& title, const 
 							   "  border-color: white; "
 							   "}");
 	connect(_titleButton, SIGNAL(clicked(bool)), this, SLOT(toggleCollapsed()));
+
+	if(helpPage) {
+		_helpButton = new QPushButton(QStringLiteral("?"), this);
+		_helpButton->setAutoFillBackground(true);
+		_helpButton->setFocusPolicy(Qt::NoFocus);
+		_helpButton->setToolTip(tr("Open help topic"));
+		_helpButton->setStyleSheet("QPushButton { "
+								   "  color: white; "
+								   "  border-style: solid; "
+								   "  border-width: 1px; "
+								   "  border-radius: 0px; "
+								   "  border-color: black; "
+								   "  background-color: rgb(80,130,80); "
+								   "  padding: 1px; "
+								   "  min-width: 16px; "
+								   "}"
+								   "QPushButton:pressed { "
+								   "  border-color: white; "
+								   "}");
+		connect(_helpButton, SIGNAL(clicked(bool)), this, SLOT(onHelpButton()));
+	}
+	else _helpButton = nullptr;
 
 	if(params._animateFirstOpening && !params._collapsed)
 		setCollapsed(false);
@@ -171,7 +194,12 @@ void Rollout::resizeEvent(QResizeEvent* event)
 		if(availSpace > contentHeight)
 			contentHeight = availSpace;
 	}
-	_titleButton->setGeometry(0, 0, width(), titleHeight);
+	if(_helpButton) {
+		int helpButtonWidth = titleHeight;
+		_titleButton->setGeometry(0, 0, width() - helpButtonWidth + 1, titleHeight);
+		_helpButton->setGeometry(width() - helpButtonWidth, 0, helpButtonWidth, titleHeight);
+	}
+	else _titleButton->setGeometry(0, 0, width(), titleHeight);
 	if(_content) _content->setGeometry(0, height() - contentHeight, width(), contentHeight);
 }
 
@@ -184,6 +212,14 @@ void Rollout::paintEvent(QPaintEvent* event)
 	int y = _titleButton->height() / 2;
 	if(height()-y+1 > 0)
 		qDrawShadeRect(&painter, 0, y, width()+1, height()-y+1, palette(), true);
+}
+
+/******************************************************************************
+* Is called when the user presses the help button.
+******************************************************************************/
+void Rollout::onHelpButton()
+{
+	Application::instance().openHelpTopic(_helpPage);
 }
 
 };

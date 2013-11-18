@@ -74,8 +74,6 @@ public:
 	/// This can be used to set a debugger breakpoint for the OVITO_ASSERT macros.
 	static void qtMessageOutput(QtMsgType type, const QMessageLogContext& context, const QString& msg);
 
-public:
-
 	/// \brief Return whether the application has been started in graphical mode.
 	/// \return \c true if the application should use a graphical user interface;
 	///         \c false if the application has been started in the non-graphical console mode.
@@ -88,6 +86,9 @@ public:
 
 	/// \brief When in console mode, this specifies the exit code that will be returned by the application on shutdown.
 	void setExitCode(int code) { _exitCode = code; }
+
+	/// \brief Shows the online manual and opens the given help page.
+	void openHelpTopic(const QString& page);
 
 private:
 

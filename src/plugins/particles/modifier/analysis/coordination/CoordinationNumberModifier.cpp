@@ -181,7 +181,7 @@ void CoordinationNumberModifier::propertyChanged(const PropertyFieldDescriptor& 
 void CoordinationNumberModifierEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
 	// Create a rollout.
-	QWidget* rollout = createRollout(tr("Coordination analysis"), rolloutParams);
+	QWidget* rollout = createRollout(tr("Coordination analysis"), rolloutParams, "particles.modifiers.coordination_analysis.html");
 
     // Create the rollout contents.
 	QVBoxLayout* layout = new QVBoxLayout(rollout);

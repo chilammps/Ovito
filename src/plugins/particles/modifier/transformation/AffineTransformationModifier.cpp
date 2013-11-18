@@ -147,7 +147,7 @@ ObjectStatus AffineTransformationModifier::modifyParticles(TimePoint time, TimeI
 void AffineTransformationModifierEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
 	// Create the first rollout.
-	QWidget* rollout = createRollout(tr("Affine transformation"), rolloutParams);
+	QWidget* rollout = createRollout(tr("Affine transformation"), rolloutParams, "particles.modifiers.affine_transformation.html");
 
     QGridLayout* layout = new QGridLayout(rollout);
 	layout->setContentsMargins(4,4,4,4);
@@ -174,7 +174,7 @@ void AffineTransformationModifierEditor::createUI(const RolloutInsertionParamete
 	connect(applyToParticlesUI->checkBox(), SIGNAL(toggled(bool)), selectionUI->buttonTrue(), SLOT(setEnabled(bool)));
 
 	// Create the second rollout.
-	rollout = createRollout(tr("Transformation"), rolloutParams.after(rollout));
+	rollout = createRollout(tr("Transformation"), rolloutParams.after(rollout), "particles.modifiers.affine_transformation.html");
 
 	QVBoxLayout* topLayout = new QVBoxLayout(rollout);
 	topLayout->setContentsMargins(8,8,8,8);

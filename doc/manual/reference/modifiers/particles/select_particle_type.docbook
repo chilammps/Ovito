@@ -1,40 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <section version="5.0"
          xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
-         xml:id="viz.modifiers.coordination_analysis"
+         xml:id="particles.modifiers.select_particle_type"
          xmlns="http://docbook.org/ns/docbook"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xmlns:xs="http://www.w3.org/2001/XMLSchema"
          xmlns:xlink="http://www.w3.org/1999/xlink"
          xmlns:xi="http://www.w3.org/2001/XInclude"
          xmlns:ns="http://docbook.org/ns/docbook">
-  <title>Coordination analysis</title>
+  <title>Select particle type</title>
 
   <para>
-  
+ 
     <informalfigure><screenshot><mediaobject><imageobject>
-       <imagedata fileref="images/modifiers/coordination_analysis_panel.png" format="PNG" />
+       <imagedata fileref="images/modifiers/select_particle_type_panel.png" format="PNG" />
     </imageobject></mediaobject></screenshot></informalfigure>
-  
-  This modifier determines the number of nearest neighbors
-  of each particle within a given cutoff radius (the <emphasis>coordination number</emphasis>).
-  </para>
-  
-  <para>
-  The modifier stores its results in the <literal>Coordination</literal> particle property.
-  </para>
+
+  This modifier selects particles of a certain type.</para>
 
   <simplesect>
     <title>Parameters</title>
 
     <variablelist>
       <varlistentry>
-        <term>Cutoff radius</term>
+        <term>Property</term>
         <listitem>
-          <para>The maximum distance between pairs of particles to be considered neighbors.</para>
+          <para>Controls what input property, for instance the chemical type or the structural type, 
+          should be used to select particles. The drop-down box lists all available source properties
+          that store type information.</para>
         </listitem>
       </varlistentry>
 
+      <varlistentry>
+        <term>Types</term>
+        <listitem>
+          <para>The list of types defined in the source property. 
+          Check one or multiple types to let the modifier select the corresponding particles.</para>
+        </listitem>
+      </varlistentry>
     </variablelist>
   </simplesect>
 </section>

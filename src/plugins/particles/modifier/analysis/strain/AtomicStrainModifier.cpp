@@ -393,7 +393,7 @@ void AtomicStrainModifier::propertyChanged(const PropertyFieldDescriptor& field)
 void AtomicStrainModifierEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
 	// Create a rollout.
-	QWidget* rollout = createRollout(tr("Atomic strain"), rolloutParams);
+	QWidget* rollout = createRollout(tr("Atomic strain"), rolloutParams, "particles.modifiers.atomic_strain.html");
 
     // Create the rollout contents.
 	QVBoxLayout* layout = new QVBoxLayout(rollout);

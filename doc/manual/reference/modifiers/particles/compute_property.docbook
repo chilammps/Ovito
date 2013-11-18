@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <section version="5.0"
          xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
-         xml:id="viz.modifiers.compute_property"
+         xml:id="particles.modifiers.compute_property"
          xmlns="http://docbook.org/ns/docbook"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xmlns:xs="http://www.w3.org/2001/XMLSchema"
@@ -318,7 +318,7 @@
     <literal>Velocity</literal> particle property, which must be present in the
     input data set. The computed linear velocity property can 
     subsequently be used to color particle with the <emphasis><link
-    linkend="viz.modifiers.color_coding">Color Coding</link></emphasis>
+    linkend="particles.modifiers.color_coding">Color Coding</link></emphasis>
     modifier.</para>
   </simplesect>
 

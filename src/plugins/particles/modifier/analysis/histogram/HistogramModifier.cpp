@@ -297,7 +297,7 @@ ParticlePropertyObject* HistogramModifier::lookupInputProperty(const PipelineFlo
 void HistogramModifierEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
 	// Create a rollout.
-	QWidget* rollout = createRollout(tr("Histogram"), rolloutParams);
+	QWidget* rollout = createRollout(tr("Histogram"), rolloutParams, "particles.modifiers.histogram.html");
 
     // Create the rollout contents.
 	QVBoxLayout* layout = new QVBoxLayout(rollout);

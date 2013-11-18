@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <section version="5.0"
          xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
-         xml:id="viz.modifiers.freeze_selection"
+         xml:id="particles.modifiers.freeze_selection"
          xmlns="http://docbook.org/ns/docbook"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xmlns:xs="http://www.w3.org/2001/XMLSchema"
@@ -23,7 +23,7 @@
 	  <para>A typical application of this modifier is to make 
 	  the motion of particles (i.e. tracers) visible. For this, one first selects
 	  a group of particles in a confined region of space (for instance using the <link
-	  linkend="viz.modifiers.slice">Slice modifier</link> to select a thin slab), which will become the tracer particles. 
+	  linkend="particles.modifiers.slice">Slice modifier</link> to select a thin slab), which will become the tracer particles. 
 	  This selection is defined at the first frame of the simulation. One then applies the <emphasis>Freeze selection</emphasis> 
 	  modifier to preserve this selection for all times. When jumping to a different simulation frame,
 	  the same set of particles remains selected, independent of where the tracer particles have moved.

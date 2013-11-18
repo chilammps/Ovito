@@ -164,7 +164,7 @@ void CentroSymmetryModifier::propertyChanged(const PropertyFieldDescriptor& fiel
 void CentroSymmetryModifierEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
 	// Create a rollout.
-	QWidget* rollout = createRollout(tr("Centrosymmetry parameter"), rolloutParams);
+	QWidget* rollout = createRollout(tr("Centrosymmetry parameter"), rolloutParams, "particles.modifiers.centrosymmetry.html");
 
     // Create the rollout contents.
 	QVBoxLayout* layout1 = new QVBoxLayout(rollout);

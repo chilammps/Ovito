@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <section version="5.0"
          xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
-         xml:id="viz.modifiers.displacement_vectors"
+         xml:id="particles.modifiers.displacement_vectors"
          xmlns="http://docbook.org/ns/docbook"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xmlns:xs="http://www.w3.org/2001/XMLSchema"
@@ -30,7 +30,7 @@
   current configuration. The calculated vectors are stored in the <literal>Displacement</literal>
   particle property and can optionally be visualized as arrows.
   Alternatively, one can use the <link
-  linkend="viz.modifiers.color_coding">Color coding modifier</link> to
+  linkend="particles.modifiers.color_coding">Color coding modifier</link> to
   visualize the displacement magnitudes through a color scheme.</para>
 
   <para>Use the <emphasis>Reference configuration</emphasis> panel to pick the
