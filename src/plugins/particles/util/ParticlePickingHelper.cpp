@@ -136,13 +136,14 @@ void ParticlePickingHelper::renderSelectionMarker(Viewport* vp, ViewportSceneRen
 	const AffineTransformation& nodeTM = pickRecord.objNode->getWorldTransform(AnimManager::instance().time(), iv);
 
 	// Prepare marker geometry buffer.
+	ParticleGeometryBuffer::RenderingQuality renderQuality = particleDisplay->effectiveRenderingQuality(renderer, posProperty);
 	if(!_markerBuffer2 || !_markerBuffer2->isValid(renderer)
 			|| !_markerBuffer2->setShadingMode(particleDisplay->shadingMode())
-			|| !_markerBuffer2->setRenderingQuality(particleDisplay->renderingQuality())) {
+			|| !_markerBuffer2->setRenderingQuality(renderQuality)) {
 		Color markerColor(1.0, 0.0, 0.0);
 		_markerBuffer2 = renderer->createParticleGeometryBuffer(
 				particleDisplay->shadingMode(),
-				particleDisplay->renderingQuality(),
+				renderQuality,
 				particleDisplay->particleShape());
 		_markerBuffer2->setSize(1);
 		_markerBuffer2->setParticleColor(markerColor);

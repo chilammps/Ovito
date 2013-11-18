@@ -73,6 +73,9 @@ public:
 	/// \brief Returns the selected rendering quality mode for particles.
 	ParticleGeometryBuffer::RenderingQuality renderingQuality() const { return _renderingQuality; }
 
+	/// \brief Returns the actual rendering quality used to render the given particles.
+	ParticleGeometryBuffer::RenderingQuality effectiveRenderingQuality(SceneRenderer* renderer, ParticlePropertyObject* positionProperty) const;
+
 	/// \brief Sets the rendering quality mode for particles.
 	void setRenderingQuality(ParticleGeometryBuffer::RenderingQuality quality) { _renderingQuality = quality; }
 
