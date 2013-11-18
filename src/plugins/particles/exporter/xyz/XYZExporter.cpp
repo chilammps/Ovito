@@ -97,7 +97,7 @@ bool XYZExporter::exportParticles(const PipelineFlowState& state, int frameNumbe
 	if(mapping.columnCount() <= 0)
 		throw Exception(tr("No particle properties have been selected for export to the XYZ file. Cannot write file with zero columns."));
 
-	OutputColumnWriter columnWriter(mapping, state);
+	OutputColumnWriter columnWriter(mapping, state, true);
 	for(size_t i = 0; i < atomsCount; i++) {
 		columnWriter.writeParticle(i, textStream());
 		textStream() << endl;

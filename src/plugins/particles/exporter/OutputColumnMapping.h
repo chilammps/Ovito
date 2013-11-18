@@ -106,7 +106,7 @@ public:
 	///
 	/// This constructor checks that all necessary particle properties referenced in the OutputColumnMapping
 	/// are present in the source object.
-	OutputColumnWriter(const OutputColumnMapping& mapping, const PipelineFlowState& source);
+	OutputColumnWriter(const OutputColumnMapping& mapping, const PipelineFlowState& source, bool writeTypeNames = false);
 
 	/// \brief Writes the output line for a single particle to the output stream.
 	/// \param particleIndex The index of the particle to write (starting at 0).
@@ -132,6 +132,9 @@ private:
 
 	/// Internal buffer used for number -> string conversion.
 	QByteArray _buffer;
+
+	/// Controls whether type names are output in the particle type column instead of type numbers.
+	bool _writeTypeNames;
 };
 
 };	// End of namespace
