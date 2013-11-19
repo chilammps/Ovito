@@ -21,6 +21,8 @@
 
 #include <core/Core.h>
 #include <core/viewport/ViewportSettings.h>
+#include <core/viewport/ViewportManager.h>
+#include <core/viewport/Viewport.h>
 
 namespace Ovito {
 
@@ -56,6 +58,10 @@ void ViewportSettings::setSettings(const ViewportSettings& settings)
 	settingsStore.beginGroup("core/viewport/");
 	_currentSettings.save(settingsStore);
 	settingsStore.endGroup();
+
+	// Inform viewports about settings change.
+	for(Viewport* viewport : ViewportManager::instance().viewports())
+		viewport->viewportSettingsChanged(_currentSettings);
 }
 
 /******************************************************************************
@@ -64,6 +70,7 @@ void ViewportSettings::setSettings(const ViewportSettings& settings)
 ViewportSettings::ViewportSettings()
 {
 	_upDirection = Z_AXIS;
+	_restrictVerticalRotation = true;
 	restoreDefaultViewportColors();
 }
 
@@ -143,6 +150,7 @@ Matrix3 ViewportSettings::coordinateSystemOrientation() const
 void ViewportSettings::load(QSettings& store)
 {
 	_upDirection = (UpDirection)store.value("UpDirection", qVariantFromValue((int)_upDirection)).toInt();
+	_restrictVerticalRotation = store.value("RestrictVerticalRotation", qVariantFromValue(_restrictVerticalRotation)).toBool();
 	int arraySize = store.beginReadArray("colors");
 	for(int i = 0; i < NUMBER_OF_COLORS && i < arraySize; i++) {
 		store.setArrayIndex(i);
@@ -159,6 +167,7 @@ void ViewportSettings::load(QSettings& store)
 void ViewportSettings::save(QSettings& store) const
 {
 	store.setValue("UpDirection", (int)_upDirection);
+	store.setValue("RestrictVerticalRotation", _restrictVerticalRotation);
 	store.beginWriteArray("colors");
 	for(int i = 0; i < NUMBER_OF_COLORS; i++) {
 		store.setArrayIndex(i);

@@ -103,8 +103,7 @@ OORef<ViewportConfiguration> DataSetManager::defaultViewportConfiguration()
 
 		OORef<Viewport> perspectiveView = new Viewport();
 		perspectiveView->setViewType(Viewport::VIEW_PERSPECTIVE);
-		perspectiveView->setCameraPosition({90, -120, 100});
-		perspectiveView->setCameraDirection({-90, 120, -100});
+		perspectiveView->setCameraTransformation(ViewportSettings::getSettings().coordinateSystemOrientation() * AffineTransformation::lookAlong({90, -120, 100}, {-90, 120, -100}, {0,0,1}).inverse());
 		_defaultViewportConfig->addViewport(perspectiveView);
 
 		_defaultViewportConfig->setActiveViewport(topView.get());

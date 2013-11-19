@@ -46,37 +46,38 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, Viewport, RefTarget);
 DEFINE_FLAGS_REFERENCE_FIELD(Viewport, _viewNode, "ViewNode", ObjectNode, PROPERTY_FIELD_NEVER_CLONE_TARGET)
 DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _viewType, "ViewType", PROPERTY_FIELD_NO_UNDO)
 DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _shadingMode, "ShadingMode", PROPERTY_FIELD_NO_UNDO)
-DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _showGrid, "ShowGrid", PROPERTY_FIELD_NO_UNDO)
 DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _gridMatrix, "GridMatrix", PROPERTY_FIELD_NO_UNDO)
 DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _fieldOfView, "FieldOfView", PROPERTY_FIELD_NO_UNDO)
 DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _cameraPosition, "CameraPosition", PROPERTY_FIELD_NO_UNDO)
 DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _cameraDirection, "CameraDirection", PROPERTY_FIELD_NO_UNDO)
 DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _showRenderFrame, "ShowRenderFrame", PROPERTY_FIELD_NO_UNDO)
 DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _viewportTitle, "Title", PROPERTY_FIELD_NO_UNDO)
+DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _cameraTM, "CameraTransformation", PROPERTY_FIELD_NO_UNDO)
 
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
 Viewport::Viewport() :
 		_widget(nullptr), _viewportWindow(nullptr),
-		_viewType(VIEW_NONE), _shadingMode(SHADING_WIREFRAME), _showGrid(false),
+		_viewType(VIEW_NONE), _shadingMode(SHADING_WIREFRAME),
 		_fieldOfView(100),
 		_showRenderFrame(false),
 		_isRendering(false),
-		_cameraPosition(Point3::Origin()), _cameraDirection(0,0,-1),
+		_cameraPosition(Point3::Origin()), _cameraDirection(Vector3::Zero()),
 		_renderDebugCounter(0),
-		_pickingRenderer(new PickingSceneRenderer())
+		_pickingRenderer(new PickingSceneRenderer()),
+		_cameraTM(AffineTransformation::Identity())
 {
 	INIT_PROPERTY_FIELD(Viewport::_viewNode);
 	INIT_PROPERTY_FIELD(Viewport::_viewType);
 	INIT_PROPERTY_FIELD(Viewport::_shadingMode);
-	INIT_PROPERTY_FIELD(Viewport::_showGrid);
 	INIT_PROPERTY_FIELD(Viewport::_gridMatrix);
 	INIT_PROPERTY_FIELD(Viewport::_fieldOfView);
 	INIT_PROPERTY_FIELD(Viewport::_cameraPosition);
 	INIT_PROPERTY_FIELD(Viewport::_cameraDirection);
 	INIT_PROPERTY_FIELD(Viewport::_showRenderFrame);
 	INIT_PROPERTY_FIELD(Viewport::_viewportTitle);
+	INIT_PROPERTY_FIELD(Viewport::_cameraTM);
 }
 
 /******************************************************************************
@@ -118,36 +119,31 @@ void Viewport::setViewType(ViewType type, bool keepCurrentView)
 		setViewNode(nullptr);
 
 	// Setup default view.
+	Matrix3 coordSys = ViewportSettings::getSettings().coordinateSystemOrientation();
 	switch(type) {
 		case VIEW_TOP:
-			setCameraPosition(Point3::Origin());
-			setCameraDirection(-ViewportSettings::getSettings().coordinateSystemOrientation().column(2));
+			setCameraTransformation(AffineTransformation(coordSys));
 			break;
 		case VIEW_BOTTOM:
-			setCameraPosition(Point3::Origin());
-			setCameraDirection(ViewportSettings::getSettings().coordinateSystemOrientation().column(2));
+			setCameraTransformation(AffineTransformation(coordSys * Matrix3(1,0,0, 0,-1,0, 0,0,-1)));
 			break;
 		case VIEW_LEFT:
-			setCameraPosition(Point3::Origin());
-			setCameraDirection(ViewportSettings::getSettings().coordinateSystemOrientation().column(0));
+			setCameraTransformation(AffineTransformation(coordSys * Matrix3(0,0,-1, -1,0,0, 0,1,0)));
 			break;
 		case VIEW_RIGHT:
-			setCameraPosition(Point3::Origin());
-			setCameraDirection(-ViewportSettings::getSettings().coordinateSystemOrientation().column(0));
+			setCameraTransformation(AffineTransformation(coordSys * Matrix3(0,0,1, 1,0,0, 0,1,0)));
 			break;
 		case VIEW_FRONT:
-			setCameraPosition(Point3::Origin());
-			setCameraDirection(ViewportSettings::getSettings().coordinateSystemOrientation().column(1));
+			setCameraTransformation(AffineTransformation(coordSys * Matrix3(1,0,0, 0,0,-1, 0,1,0)));
 			break;
 		case VIEW_BACK:
-			setCameraPosition(Point3::Origin());
-			setCameraDirection(-ViewportSettings::getSettings().coordinateSystemOrientation().column(1));
+			setCameraTransformation(AffineTransformation(coordSys * Matrix3(-1,0,0, 0,0,1, 0,1,0)));
 			break;
 		case VIEW_ORTHO:
 			if(!keepCurrentView) {
 				setCameraPosition(Point3::Origin());
 				if(viewType() == VIEW_NONE)
-					setCameraDirection(-ViewportSettings::getSettings().coordinateSystemOrientation().column(2));
+					setCameraTransformation(AffineTransformation(coordSys));
 			}
 			break;
 		case VIEW_PERSPECTIVE:
@@ -197,6 +193,21 @@ bool Viewport::isPerspectiveProjection() const
 }
 
 /******************************************************************************
+* Changes the viewing direction of the camera.
+******************************************************************************/
+void Viewport::setCameraDirection(const Vector3& newDir)
+{
+	if(newDir != Vector3::Zero()) {
+		Vector3 upVector = ViewportSettings::getSettings().upVector();
+		if(!ViewportSettings::getSettings().restrictVerticalRotation()) {
+			if(upVector.dot(cameraTransformation().column(1)) < 0)
+				upVector = -upVector;
+		}
+		setCameraTransformation(AffineTransformation::lookAlong(cameraPosition(), newDir, upVector).inverse());
+	}
+}
+
+/******************************************************************************
 * Computes the projection matrix and other parameters.
 ******************************************************************************/
 ViewProjectionParameters Viewport::projectionParameters(TimePoint time, FloatType aspectRatio, const Box3& sceneBoundingBox)
@@ -223,8 +234,8 @@ ViewProjectionParameters Viewport::projectionParameters(TimePoint time, FloatTyp
 		}
 	}
 	else {
-		params.viewMatrix = AffineTransformation::lookAlong(cameraPosition(), cameraDirection(), ViewportSettings::getSettings().upVector());
-		params.inverseViewMatrix = params.viewMatrix.inverse();
+		params.inverseViewMatrix = cameraTransformation();
+		params.viewMatrix = params.inverseViewMatrix.inverse();
 		params.fieldOfView = fieldOfView();
 		params.isPerspective = (viewType() == VIEW_PERSPECTIVE);
 	}
@@ -296,7 +307,7 @@ void Viewport::zoomToBox(const Box3& box)
 		return;
 
 	if(viewType() == VIEW_SCENENODE)
-		return;	// Cannot reposition the view node.
+		return;	// Do not reposition the camera node.
 
 	if(isPerspectiveProjection()) {
 		FloatType dist = box.size().length() * 0.5 / tan(fieldOfView() * 0.5);
@@ -360,8 +371,7 @@ void Viewport::referenceReplaced(const PropertyFieldDescriptor& field, RefTarget
 			// If the camera node has been deleted, switch to Ortho or Perspective view mode.
 			// Keep current camera orientation.
 			setFieldOfView(_projParams.fieldOfView);
-			setCameraPosition(Point3::Origin() + _projParams.inverseViewMatrix.translation());
-			setCameraDirection(_projParams.inverseViewMatrix * Vector3(0,0,-1));
+			setCameraTransformation(_projParams.inverseViewMatrix);
 			setViewType(isPerspectiveProjection() ? VIEW_PERSPECTIVE : VIEW_ORTHO, true);
 		}
 		else if(viewType() != VIEW_SCENENODE && newTarget != nullptr) {
@@ -375,6 +385,27 @@ void Viewport::referenceReplaced(const PropertyFieldDescriptor& field, RefTarget
 }
 
 /******************************************************************************
+* Loads the class' contents from an input stream.
+******************************************************************************/
+void Viewport::loadFromStream(ObjectLoadStream& stream)
+{
+	RefTarget::loadFromStream(stream);
+
+	// The old OVITO versions stored the camera transformation not as a matrix but
+	// as a position and a direction vector. After loading an old OVITO file, we
+	// have to convert the position/direction representation to a matrix representation.
+	if(_cameraDirection.value() != Vector3::Zero()) {
+		setCameraPosition(_cameraPosition);
+		setCameraDirection(_cameraDirection);
+		_cameraDirection = Vector3(Vector3::Zero());
+	}
+
+	// The global viewport settings may have changed.
+	// Adjust camera orientation according to new settings.
+	setCameraDirection(cameraDirection());
+}
+
+/******************************************************************************
 * Is called when the value of a property field of this object has changed.
 ******************************************************************************/
 void Viewport::propertyChanged(const PropertyFieldDescriptor& field)
@@ -383,6 +414,18 @@ void Viewport::propertyChanged(const PropertyFieldDescriptor& field)
 	if(field == PROPERTY_FIELD(Viewport::_viewType)) {
 		updateViewportTitle();
 	}
+	updateViewport();
+}
+
+/******************************************************************************
+* This is called when the global viewport settings have changed.
+******************************************************************************/
+void Viewport::viewportSettingsChanged(const ViewportSettings& newSettings)
+{
+	// Update camera TM if up axis ha changed.
+	setCameraDirection(cameraDirection());
+
+	// Redraw viewport.
 	updateViewport();
 }
 
@@ -757,7 +800,7 @@ FloatType Viewport::nonScalingSize(const Point3& worldPosition)
 	else {
 		int height = size().height();
 		if(height == 0) return 1.0f;
-		return fieldOfView() / (FloatType)height * 60.0f;
+		return _projParams.fieldOfView / (FloatType)height * 60.0f;
 	}
 }
 

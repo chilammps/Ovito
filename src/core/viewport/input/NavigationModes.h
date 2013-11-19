@@ -104,6 +104,9 @@ protected:
 	/// The saved camera direction.
 	Vector3 _oldCameraDirection;
 
+	/// The saved camera transformation.
+	AffineTransformation _oldCameraTM;
+
 	/// The saved zoom factor.
 	FloatType _oldFieldOfView;
 	

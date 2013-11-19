@@ -206,22 +206,6 @@ public:
 	///       It causes the viewport to be updated.
 	void setShadingMode(ShadingMode mode) { _shadingMode = mode; }
 
-	/// \brief Returns whether the grid display is currently enabled.
-	/// \return \c true if the grid is displayed in the viewport; \c false otherwise.
-	bool isGridShown() const { return _showGrid; }
-
-	/// \brief Turns the grid display on or off.
-	/// \param visible Controls the display of the construction grid.
-	void setGridShown(bool visible) { _showGrid = visible; }
-
-	/// \brief Returns the orientation of the grid plane.
-	const AffineTransformation& gridMatrix() const { return _gridMatrix; }
-
-	/// \brief Sets the orientation of the grid plane.
-	/// \param tm The transformation matrix that defines the grid orientation.
-	///           It transforms from grid coordinates to world coordinates.
-	void setGridMatrix(const AffineTransformation& tm) { _gridMatrix = tm; }
-
 	/// \brief Returns the field of view value of the viewport.
 	/// \return Vertical camera angle in radians if the viewport uses a perspective projection or
 	///         the field of view in the vertical direction in world units if the viewport
@@ -239,21 +223,34 @@ public:
 		_fieldOfView = fov;
 	}
 
-	/// \brief Returns the position of the viewport's camera in space.
+	/// \brief Returns the orientation of the viewport's camera in space.
 	/// \note This is only used when viewNode() == NULL.
-	const Point3& cameraPosition() const { return _cameraPosition; }
+	const AffineTransformation& cameraTransformation() const { return _cameraTM; }
 
-	/// \brief Sets the position of the viewport's camera in space.
+	/// \brief Sets the position and orientation of the viewport's camera in space.
 	/// \note This only has effect when viewNode() == NULL.
-	void setCameraPosition(const Point3& p) { _cameraPosition = p; }
+	void setCameraTransformation(const AffineTransformation& tm) { _cameraTM = tm; }
 
-	/// \brief Returns the viewing direction of the viewport's camera.
-	/// \note This is only used when viewNode() == NULL.
-	const Vector3& cameraDirection() const { return _cameraDirection; }
+	/// \brief Returns the viewing direction of the camera.
+	Vector3 cameraDirection() const {
+		if(cameraTransformation().column(2) == Vector3::Zero()) return Vector3(0,0,1);
+		else return -cameraTransformation().column(2);
+	}
 
-	/// \brief Sets the viewing direction of the viewport's camera.
-	/// \note This only has effect when viewNode() == NULL.
-	void setCameraDirection(const Vector3& d) { _cameraDirection = d; }
+	/// \brief Changes the viewing direction of the camera.
+	void setCameraDirection(const Vector3& newDir);
+
+	/// \brief Returns the position of the camera.
+	Point3 cameraPosition() const {
+		return Point3::Origin() + cameraTransformation().translation();
+	}
+
+	/// \brief Sets the position of the camera.
+	void setCameraPosition(const Point3& p) {
+		AffineTransformation tm = cameraTransformation();
+		tm.translation() = p - Point3::Origin();
+		setCameraTransformation(tm);
+	}
 
 	/// \brief Returns the current world to camera transformation matrix.
 	const AffineTransformation& viewMatrix() const { return _projParams.viewMatrix; }
@@ -345,6 +342,9 @@ protected:
 	/// Is called when the value of a reference field of this RefMaker changes.
 	virtual void referenceReplaced(const PropertyFieldDescriptor& field, RefTarget* oldTarget, RefTarget* newTarget) override;
 
+	/// Loads the class' contents from an input stream.
+	virtual void loadFromStream(ObjectLoadStream& stream) override;
+
 protected:
 
 	/// Updates the title text of the viewport based on the current view type.
@@ -364,6 +364,9 @@ protected:
 	/// matches the true visible area.
 	void adjustProjectionForRenderFrame(ViewProjectionParameters& params);
 
+	/// This is called when the global viewport settings have changed.
+	void viewportSettingsChanged(const ViewportSettings& newSettings);
+
 private:
 
 	/// The type of the viewport (top, left, perspective, etc.)
@@ -372,9 +375,6 @@ private:
 	/// Shading mode of viewport (shaded, wireframe, etc..)
 	PropertyField<ShadingMode> _shadingMode;
 
-	/// Indicates whether the grid is activated.
-	PropertyField<bool> _showGrid;
-
 	/// The orientation of the grid.
 	PropertyField<AffineTransformation> _gridMatrix;
 
@@ -382,10 +382,15 @@ private:
 	PropertyField<FloatType> _fieldOfView;
 
 	/// The position of the camera in world space.
+	/// Note: This property field is obsolete and no longer used. We only keep it for file compatibility.
 	PropertyField<Point3> _cameraPosition;
 
 	/// The viewing direction of the camera in world space.
+	/// Note: This property field is obsolete and no longer used. We only keep it for file compatibility.
 	PropertyField<Vector3> _cameraDirection;
+
+	/// The orientation of the camera.
+	PropertyField<AffineTransformation> _cameraTM;
 
 	/// Indicates whether the rendering frame is shown.
 	PropertyField<bool> _showRenderFrame;
@@ -438,22 +443,23 @@ private:
 	DECLARE_REFERENCE_FIELD(_viewNode);
 	DECLARE_PROPERTY_FIELD(_viewType);
 	DECLARE_PROPERTY_FIELD(_shadingMode);
-	DECLARE_PROPERTY_FIELD(_showGrid);
 	DECLARE_PROPERTY_FIELD(_gridMatrix);
 	DECLARE_PROPERTY_FIELD(_fieldOfView);
 	DECLARE_PROPERTY_FIELD(_cameraPosition);
 	DECLARE_PROPERTY_FIELD(_cameraDirection);
 	DECLARE_PROPERTY_FIELD(_showRenderFrame);
 	DECLARE_PROPERTY_FIELD(_viewportTitle);
+	DECLARE_PROPERTY_FIELD(_cameraTM);
 
 	friend class ViewportWindow;
 	friend class ViewportMenu;
+	friend class ViewportSettings;
 };
 
 };
 
-Q_DECLARE_METATYPE(Ovito::Viewport::ViewType)
-Q_DECLARE_METATYPE(Ovito::Viewport::ShadingMode)
+Q_DECLARE_METATYPE(Ovito::Viewport::ViewType);
+Q_DECLARE_METATYPE(Ovito::Viewport::ShadingMode);
 Q_DECLARE_TYPEINFO(Ovito::Viewport::ViewType, Q_PRIMITIVE_TYPE);
 Q_DECLARE_TYPEINFO(Ovito::Viewport::ShadingMode, Q_PRIMITIVE_TYPE);
 

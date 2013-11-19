@@ -43,7 +43,7 @@ void ViewportSettingsPage::insertSettingsDialogPage(ApplicationSettingsDialog* s
 	layout1->addWidget(upDirectionGroupBox, 0, 0);
 	QGridLayout* layout2 = new QGridLayout(upDirectionGroupBox);
 
-	QLabel* label1 = new QLabel(tr("<html><p>Selects the 'up' direction, which is used for rotating the camera:</p></html>"));
+	QLabel* label1 = new QLabel(tr("<html><p>Selects the direction to stay vertical when rotating the camera:</p></html>"));
 	label1->setWordWrap(true);
 	layout2->addWidget(label1, 0, 0, 1, 4);
 
@@ -56,6 +56,10 @@ void ViewportSettingsPage::insertSettingsDialogPage(ApplicationSettingsDialog* s
 	layout2->addWidget(_upDirectionGroup->button(ViewportSettings::Z_AXIS), 1, 2, 1, 1);
 	_upDirectionGroup->button(_settings.upDirection())->setChecked(true);
 	layout2->setColumnStretch(3, 1);
+
+	_restrictVerticalRotationBox = new QCheckBox(tr("Restrict rotation to keep axis pointing upward"));
+	_restrictVerticalRotationBox->setChecked(_settings.restrictVerticalRotation());
+	layout2->addWidget(_restrictVerticalRotationBox, 2, 0, 1, 3);
 
 	QGroupBox* colorsGroupBox = new QGroupBox(tr("Colors"), page);
 	layout1->addWidget(colorsGroupBox, 1, 0);
@@ -130,12 +134,11 @@ bool ViewportSettingsPage::saveValues(ApplicationSettingsDialog* settingsDialog,
 {
 	// Update settings.
 	_settings.setUpDirection((ViewportSettings::UpDirection)_upDirectionGroup->checkedId());
+	_settings.setRestrictVerticalRotation(_restrictVerticalRotationBox->isChecked());
 
 	// Store current settings.
 	ViewportSettings::setSettings(_settings);
 
-	// Update all viewports.
-	ViewportManager::instance().updateViewports();
 
 	return true;
 }

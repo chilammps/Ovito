@@ -70,8 +70,7 @@ private:
 
 	Viewport* _viewport;
 	Viewport::ViewType _oldViewType;
-	Point3 _oldCameraPos;
-	Vector3 _oldCameraDir;
+	AffineTransformation _oldCameraTM;
 	FloatType _oldFOV;
 };
 

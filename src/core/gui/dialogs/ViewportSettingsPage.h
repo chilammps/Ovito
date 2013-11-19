@@ -66,6 +66,7 @@ private:
 	QButtonGroup* _upDirectionGroup;
 	QListWidget* _colorList;
 	ColorPickerWidget* _colorPicker;
+	QCheckBox* _restrictVerticalRotationBox;
 
 	Q_OBJECT
 	OVITO_OBJECT
