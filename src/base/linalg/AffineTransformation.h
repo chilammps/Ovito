@@ -71,7 +71,7 @@ public:
 		_m{Vector_3<T>(m11,m21,m31),
 			Vector_3<T>(m12,m22,m32),
 			Vector_3<T>(m13,m23,m33),
-			Vector_3<T>::Zero()} {}
+			typename Vector_3<T>::Zero()} {}
 
 	/// \brief Constructor that initializes all elements of the matrix to the given values.
 	/// \note Values are given in row-major order, i.e. row by row.
