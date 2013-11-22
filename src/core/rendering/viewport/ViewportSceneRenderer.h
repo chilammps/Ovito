@@ -161,13 +161,25 @@ public:
 	QOpenGLShaderProgram* loadShaderProgram(const QString& id, const QString& vertexShaderFile, const QString& fragmentShaderFile, const QString& geometryShaderFile = QString());
 
 	/// The OpenGL glPointParameterf() function.
-	void (*glPointParameterf)(GLenum pname, GLfloat param);
+	void glPointParameterf(GLenum pname, GLfloat param) {
+		if(glfuncs32()) glfuncs32()->glPointParameterf(pname, param);
+		else if(glfuncs30()) glfuncs30()->glPointParameterf(pname, param);
+		else if(glfuncs20()) glfuncs20()->glPointParameterf(pname, param);
+	}
 
 	/// The OpenGL glPointParameterfv() function.
-	void (*glPointParameterfv)(GLenum pname, const GLfloat* params);
+	void glPointParameterfv(GLenum pname, const GLfloat* params) {
+		if(glfuncs32()) glfuncs32()->glPointParameterfv(pname, params);
+		else if(glfuncs30()) glfuncs30()->glPointParameterfv(pname, params);
+		else if(glfuncs20()) glfuncs20()->glPointParameterfv(pname, params);
+	}
 
 	/// The OpenGL glMultiDrawArrays() function.
-	void (*glMultiDrawArrays)(GLenum mode, const GLint* first, const GLsizei* count, GLsizei drawcount);
+	void glMultiDrawArrays(GLenum mode, const GLint* first, const GLsizei* count, GLsizei drawcount) {
+		if(glfuncs32()) glfuncs32()->glMultiDrawArrays(mode, first, count, drawcount);
+		else if(glfuncs30()) glfuncs30()->glMultiDrawArrays(mode, first, count, drawcount);
+		else if(glfuncs20()) glfuncs20()->glMultiDrawArrays(mode, first, count, drawcount);
+	}
 
 protected:
 

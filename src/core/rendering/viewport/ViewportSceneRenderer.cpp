@@ -80,20 +80,6 @@ void ViewportSceneRenderer::beginFrame(TimePoint time, const ViewProjectionParam
 		_isCoreProfile = true;
 	}
 
-	// Get pointers to some required OpenGL functions.
-#ifdef Q_OS_MACX
-	this->glPointParameterf = ::glPointParameterf;
-	this->glPointParameterfv = ::glPointParameterfv;
-	this->glMultiDrawArrays = ::glMultiDrawArrays;
-#else
-	this->glPointParameterf = reinterpret_cast<void (*)(GLenum pname, GLfloat param)>(_glcontext->getProcAddress("glPointParameterf"));
-	this->glPointParameterfv = reinterpret_cast<void (*)(GLenum, const GLfloat*)>(_glcontext->getProcAddress("glPointParameterfv"));
-	this->glMultiDrawArrays = reinterpret_cast<void (*)(GLenum, const GLint*, const GLsizei*, GLsizei)>(_glcontext->getProcAddress("glMultiDrawArrays"));
-	OVITO_ASSERT(this->glPointParameterf);
-	OVITO_ASSERT(this->glPointParameterfv);
-	OVITO_ASSERT(this->glMultiDrawArrays);
-#endif
-
 	// Set up a vertex array object. This is only required when using OpenGL Core Profile.
 	if(isCoreProfile()) {
 		_vertexArrayObject.reset(new QOpenGLVertexArrayObject());
