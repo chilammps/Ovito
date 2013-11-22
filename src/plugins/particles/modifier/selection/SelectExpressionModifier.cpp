@@ -300,7 +300,7 @@ void SelectExpressionModifier::initializeModifier(PipelineObject* pipeline, Modi
 ******************************************************************************/
 void SelectExpressionModifierEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
-	QWidget* rollout = createRollout(tr("Expression select"), rolloutParams);
+	QWidget* rollout = createRollout(tr("Expression select"), rolloutParams, "particles.modifiers.expression_select.html");
 
     // Create the rollout contents.
 	QVBoxLayout* layout = new QVBoxLayout(rollout);
@@ -317,7 +317,7 @@ void SelectExpressionModifierEditor::createUI(const RolloutInsertionParameters& 
 	layout->addSpacing(12);
 	layout->addWidget(statusLabel());
 
-	QWidget* variablesRollout = createRollout(tr("Variables"), rolloutParams.after(rollout));
+	QWidget* variablesRollout = createRollout(tr("Variables"), rolloutParams.after(rollout), "particles.modifiers.expression_select.html");
     QVBoxLayout* variablesLayout = new QVBoxLayout(variablesRollout);
     variablesLayout->setContentsMargins(4,4,4,4);
 	variableNamesList = new QLabel();

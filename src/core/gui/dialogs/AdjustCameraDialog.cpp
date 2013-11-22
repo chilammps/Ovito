@@ -36,8 +36,7 @@ AdjustCameraDialog::AdjustCameraDialog(Viewport* viewport, QWidget* parent) :
 	setWindowTitle(tr("Adjust Camera"));
 	
 	_oldViewType = viewport->viewType();
-	_oldCameraPos = viewport->cameraPosition();
-	_oldCameraDir = viewport->cameraDirection();
+	_oldCameraTM = viewport->cameraTransformation();
 	_oldFOV = viewport->fieldOfView();
 
 	QVBoxLayout* mainLayout = new QVBoxLayout(this);
@@ -164,12 +163,15 @@ AdjustCameraDialog::AdjustCameraDialog(Viewport* viewport, QWidget* parent) :
 void AdjustCameraDialog::updateGUI()
 {
 	_camPerspective->setChecked(_viewport->isPerspectiveProjection());
-	_camPosXSpinner->setFloatValue(_viewport->cameraPosition().x());
-	_camPosYSpinner->setFloatValue(_viewport->cameraPosition().y());
-	_camPosZSpinner->setFloatValue(_viewport->cameraPosition().z());
-	_camDirXSpinner->setFloatValue(_viewport->cameraDirection().x());
-	_camDirYSpinner->setFloatValue(_viewport->cameraDirection().y());
-	_camDirZSpinner->setFloatValue(_viewport->cameraDirection().z());
+	Point3 cameraPos = _viewport->cameraPosition();
+	Vector3 cameraDir = _viewport->cameraDirection();
+	_camPosXSpinner->setFloatValue(cameraPos.x());
+	_camPosYSpinner->setFloatValue(cameraPos.y());
+	_camPosZSpinner->setFloatValue(cameraPos.z());
+	_camDirXSpinner->setFloatValue(cameraDir.x());
+	_camDirYSpinner->setFloatValue(cameraDir.y());
+	_camDirZSpinner->setFloatValue(cameraDir.z());
+
 	if(_viewport->isPerspectiveProjection()) {
 		_camFOVSpinner->setUnit(UnitsManager::instance().angleUnit());
 		_camFOVLabel->setText(tr("View angle:"));
@@ -212,8 +214,7 @@ void AdjustCameraDialog::onAdjustCamera()
 void AdjustCameraDialog::onCancel()
 {
 	_viewport->setViewType(_oldViewType);
-	_viewport->setCameraPosition(_oldCameraPos);
-	_viewport->setCameraDirection(_oldCameraDir);
+	_viewport->setCameraTransformation(_oldCameraTM);
 	_viewport->setFieldOfView(_oldFOV);
 
 	reject();

@@ -54,7 +54,7 @@ static const int imageSizePresets[][2] = {
 void RenderSettingsEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
 	// Create the rollout.
-	QWidget* rollout = createRollout(tr("Render settings"), rolloutParams);
+	QWidget* rollout = createRollout(tr("Render settings"), rolloutParams, "core.render_settings.html");
 	
 	QVBoxLayout* layout = new QVBoxLayout(rollout);
 	layout->setContentsMargins(4,4,4,4);

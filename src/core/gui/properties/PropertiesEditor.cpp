@@ -41,7 +41,7 @@ PropertiesEditor::PropertiesEditor() : _container(nullptr)
 * the empty widget that can then be filled with UI controls.
 * The rollout is automatically deleted when the editor is deleted.
 ******************************************************************************/
-QWidget* PropertiesEditor::createRollout(const QString& title, const RolloutInsertionParameters& params)
+QWidget* PropertiesEditor::createRollout(const QString& title, const RolloutInsertionParameters& params, const char* helpPage)
 {
 	OVITO_ASSERT_MSG(container(), "PropertiesEditor::createRollout()", "Editor has not been properly initialized.");
 	QWidget* panel = new QWidget(params.container());
@@ -54,7 +54,7 @@ QWidget* PropertiesEditor::createRollout(const QString& title, const RolloutInse
 			titlePrefix = QString("%1: ").arg(params.title());
 
 		// Create a new rollout in the rollout container.
-		QPointer<Rollout> rollout = container()->addRollout(panel, titlePrefix + title, params);
+		QPointer<Rollout> rollout = container()->addRollout(panel, titlePrefix + title, params, helpPage);
 
 		// Check if a title for the rollout has been specified. If not,
 		// automatically set the rollout title to the title of the object being edited.

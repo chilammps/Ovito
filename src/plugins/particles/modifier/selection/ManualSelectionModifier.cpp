@@ -246,7 +246,7 @@ private:
 ******************************************************************************/
 void ManualSelectionModifierEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
-	QWidget* rollout = createRollout(tr("Manual particle selection"), rolloutParams);
+	QWidget* rollout = createRollout(tr("Manual particle selection"), rolloutParams, "particles.modifiers.manual_selection.html");
 
     // Create the rollout contents.
 	QVBoxLayout* layout = new QVBoxLayout(rollout);

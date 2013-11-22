@@ -51,8 +51,7 @@ void NavigationMode::deactivated()
 {
 	if(_viewport) {
 		// Restore old settings.
-		_viewport->setCameraPosition(_oldCameraPosition);
-		_viewport->setCameraDirection(_oldCameraDirection);
+		_viewport->setCameraTransformation(_oldCameraTM);
 		_viewport->setFieldOfView(_oldFieldOfView);
 		_viewport = nullptr;
 
@@ -76,6 +75,7 @@ void NavigationMode::mousePressEvent(Viewport* vp, QMouseEvent* event)
 	if(_viewport == nullptr) {
 		_viewport = vp;
 		_startPoint = event->localPos();
+		_oldCameraTM = vp->cameraTransformation();
 		_oldCameraPosition = vp->cameraPosition();
 		_oldCameraDirection = vp->cameraDirection();
 		_oldFieldOfView = vp->fieldOfView();
@@ -366,7 +366,7 @@ void FOVMode::modifyView(Viewport* vp, QPointF delta)
 void OrbitMode::modifyView(Viewport* vp, QPointF delta)
 {
 	if(vp->viewType() < Viewport::VIEW_ORTHO)
-		vp->setViewType(Viewport::VIEW_ORTHO);
+		vp->setViewType(Viewport::VIEW_ORTHO, true);
 
 	Matrix3 coordSys = ViewportSettings::getSettings().coordinateSystemOrientation();
 	Vector3 v = coordSys.inverse() * _oldViewMatrix * Vector3(0,0,1);
@@ -381,10 +381,13 @@ void OrbitMode::modifyView(Viewport* vp, QPointF delta)
 	FloatType speed = 4.0 / vp->size().height();
 	FloatType deltaTheta = speed * delta.x();
 	FloatType deltaPhi = -speed * delta.y();
-	if(phi + deltaPhi < FLOATTYPE_EPSILON)
-		deltaPhi = -phi + FLOATTYPE_EPSILON;
-	else if(phi + deltaPhi > FLOATTYPE_PI - FLOATTYPE_EPSILON)
-		deltaPhi = FLOATTYPE_PI - FLOATTYPE_EPSILON - phi;
+
+	if(ViewportSettings::getSettings().restrictVerticalRotation()) {
+		if(phi + deltaPhi < FLOATTYPE_EPSILON)
+			deltaPhi = -phi + FLOATTYPE_EPSILON;
+		else if(phi + deltaPhi > FLOATTYPE_PI - FLOATTYPE_EPSILON)
+			deltaPhi = FLOATTYPE_PI - FLOATTYPE_EPSILON - phi;
+	}
 
 	Vector3 t1 = _currentOrbitCenter - Point3::Origin();
 	Vector3 t2 = (_oldViewMatrix * _currentOrbitCenter) - Point3::Origin();
@@ -398,8 +401,7 @@ void OrbitMode::modifyView(Viewport* vp, QPointF delta)
 	newTM.orthonormalize();
 
 	if(vp->viewNode() == nullptr || vp->viewType() != Viewport::VIEW_SCENENODE) {
-		vp->setCameraDirection(newTM * Vector3(0,0,-1));
-		vp->setCameraPosition(Point3::Origin() + newTM.translation());
+		vp->setCameraTransformation(newTM);
 	}
 	else {
 		vp->viewNode()->transformationController()->setValue(AnimManager::instance().time(), newTM);

@@ -295,7 +295,7 @@ ObjectStatus CreateBondsModifier::applyModifierResults(TimePoint time, TimeInter
 void CreateBondsModifierEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
 	// Create a rollout.
-	QWidget* rollout = createRollout(tr("Create bonds"), rolloutParams);
+	QWidget* rollout = createRollout(tr("Create bonds"), rolloutParams, "particles.modifiers.create_bonds.html");
 
     // Create the rollout contents.
 	QVBoxLayout* layout1 = new QVBoxLayout(rollout);

@@ -66,7 +66,7 @@ set       toc
 
   <xsl:if test="$suppress.navigation = '0' and $suppress.header.navigation = '0'">
     <div class="navheader">
-    	<a href="/"><img src="images/ovito_logo.png" border="0" /></a>
+    	<a href="http://www.ovito.org/"><img src="images/ovito_logo.png" border="0" /></a>
       <xsl:if test="$row1 or $row2">
         <table width="100%" summary="Navigation header">
           <xsl:if test="$row1">

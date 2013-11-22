@@ -137,14 +137,6 @@ void ViewportMenu::onShowViewTypeMenu()
 /******************************************************************************
 * Handles the menu item event.
 ******************************************************************************/
-void ViewportMenu::onShowGrid(bool checked)
-{
-	_viewport->setGridShown(checked);
-}
-
-/******************************************************************************
-* Handles the menu item event.
-******************************************************************************/
 void ViewportMenu::onShowRenderFrame(bool checked)
 {
 	_viewport->setRenderFrameShown(checked);

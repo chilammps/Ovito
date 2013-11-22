@@ -59,7 +59,7 @@ public:
 
 		NUMBER_OF_COLORS
 	};
-	Q_ENUMS(ViewportColor)
+	Q_ENUMS(ViewportColor);
 
 	/// Specifies the "up" direction in the viewports.
 	enum UpDirection {
@@ -67,7 +67,7 @@ public:
 		Y_AXIS, //< Rotate around Y axis
 		Z_AXIS, //< Rotate around Z axis (the default)
 	};
-	Q_ENUMS(UpDirection)
+	Q_ENUMS(UpDirection);
 
 public:
 
@@ -100,6 +100,12 @@ public:
 	/// Sets the "up" direction.
 	void setUpDirection(UpDirection t) { _upDirection = t; }
 
+	/// Returns whether to restrict the vertical rotation such that the up axis never points downward.
+	bool restrictVerticalRotation() const { return _restrictVerticalRotation; }
+
+	/// Sets whether to restrict the vertical rotation such that the up axis never points downward.
+	void setRestrictVerticalRotation(bool active) { _restrictVerticalRotation = active; }
+
 	/// Loads the settings from the given settings store.
 	void load(QSettings& store);
 
@@ -120,6 +126,9 @@ private:
 	/// The selected rotation axis type for orbit mode.
 	UpDirection _upDirection;
 
+	/// Restricts the vertical rotation such that the up axis never points downward.
+	bool _restrictVerticalRotation;
+
 	/// The current settings record.
 	static ViewportSettings _currentSettings;
 
@@ -129,8 +138,8 @@ private:
 
 };
 
-Q_DECLARE_METATYPE(Ovito::ViewportSettings::ViewportColor)
-Q_DECLARE_METATYPE(Ovito::ViewportSettings::UpDirection)
+Q_DECLARE_METATYPE(Ovito::ViewportSettings::ViewportColor);
+Q_DECLARE_METATYPE(Ovito::ViewportSettings::UpDirection);
 Q_DECLARE_TYPEINFO(Ovito::ViewportSettings::ViewportColor, Q_PRIMITIVE_TYPE);
 Q_DECLARE_TYPEINFO(Ovito::ViewportSettings::UpDirection, Q_PRIMITIVE_TYPE);
 

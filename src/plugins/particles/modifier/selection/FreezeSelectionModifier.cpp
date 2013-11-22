@@ -79,7 +79,7 @@ void FreezeSelectionModifier::takeSelectionSnapshot(ModifierApplication* modApp,
 ******************************************************************************/
 void FreezeSelectionModifierEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
-	QWidget* rollout = createRollout(tr("Freeze selection"), rolloutParams);
+	QWidget* rollout = createRollout(tr("Freeze selection"), rolloutParams, "particles.modifiers.freeze_selection.html");
 
     // Create the rollout contents.
 	QVBoxLayout* layout = new QVBoxLayout(rollout);

@@ -38,7 +38,7 @@ ImportFileDialog::ImportFileDialog(QWidget* parent, const QString& caption) :
 		_filterStrings << QString("%1 (%2)").arg(descriptor.fileFilterDescription(), descriptor.fileFilter());
 	}
 	if(_filterStrings.isEmpty())
-		throw Exception(tr("There are no import plugins installed."));
+		throw Exception(tr("There are no importer plugins installed."));
 
 	_filterStrings.prepend(tr("<Auto-detect file format> (*)"));
 

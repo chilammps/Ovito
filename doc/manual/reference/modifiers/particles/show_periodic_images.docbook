@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <section version="5.0"
          xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
-         xml:id="viz.modifiers.show_periodic_images"
+         xml:id="particles.modifiers.show_periodic_images"
          xmlns="http://docbook.org/ns/docbook"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xmlns:xs="http://www.w3.org/2001/XMLSchema"
@@ -48,7 +48,7 @@
       When duplicating each particle, the modifier also copies all assigned properties including the particle's identifier.
       Thus, applying this modifier will lead to duplicate identifiers. Keep in mind that this may cause problems with 
       other modifiers (e.g. the <link
-	  linkend="viz.modifiers.manual_selection">Manual selection</link> modifier) that rely on the uniqueness of particle 
+	  linkend="particles.modifiers.manual_selection">Manual selection</link> modifier) that rely on the uniqueness of particle 
 	  identifiers, and which following in the modification pipeline.
     </para>
   </simplesect>

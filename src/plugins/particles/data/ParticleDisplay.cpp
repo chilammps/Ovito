@@ -235,6 +235,25 @@ FloatType ParticleDisplay::particleRadius(size_t particleIndex, ParticleProperty
 }
 
 /******************************************************************************
+* Returns the actual rendering quality used to render the given particles.
+******************************************************************************/
+ParticleGeometryBuffer::RenderingQuality ParticleDisplay::effectiveRenderingQuality(SceneRenderer* renderer, ParticlePropertyObject* positionProperty) const
+{
+	ParticleGeometryBuffer::RenderingQuality renderQuality = renderingQuality();
+	if(renderQuality == ParticleGeometryBuffer::AutoQuality) {
+		if(!positionProperty) return ParticleGeometryBuffer::HighQuality;
+		int particleCount = positionProperty->size();
+		if(particleCount < 2000 || renderer->isInteractive() == false)
+			renderQuality = ParticleGeometryBuffer::HighQuality;
+		else if(particleCount < 100000)
+			renderQuality = ParticleGeometryBuffer::MediumQuality;
+		else
+			renderQuality = ParticleGeometryBuffer::LowQuality;
+	}
+	return renderQuality;
+}
+
+/******************************************************************************
 * Lets the display object render a scene object.
 ******************************************************************************/
 void ParticleDisplay::render(TimePoint time, SceneObject* sceneObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode)
@@ -253,17 +272,8 @@ void ParticleDisplay::render(TimePoint time, SceneObject* sceneObject, const Pip
 	// Do we have to re-create the geometry buffer from scratch?
 	bool recreateBuffer = !_particleBuffer || !_particleBuffer->isValid(renderer);
 
-	// If set to automatic, pick rendering quality based on number of particles.
-	ParticleGeometryBuffer::RenderingQuality renderQuality = renderingQuality();
-	if(renderQuality == ParticleGeometryBuffer::AutoQuality) {
-		// Always use highest quality for non-interactive output.
-		if(particleCount < 2000 || renderer->isInteractive() == false)
-			renderQuality = ParticleGeometryBuffer::HighQuality;
-		else if(particleCount < 100000)
-			renderQuality = ParticleGeometryBuffer::MediumQuality;
-		else
-			renderQuality = ParticleGeometryBuffer::LowQuality;
-	}
+	// If rendering quality is set to automatic, pick quality level based on number of particles.
+	ParticleGeometryBuffer::RenderingQuality renderQuality = effectiveRenderingQuality(renderer, positionProperty);
 
 	// Set shading mode and rendering quality.
 	if(!recreateBuffer) {

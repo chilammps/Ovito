@@ -337,7 +337,7 @@ void SliceModifier::initializeModifier(PipelineObject* pipeline, ModifierApplica
 void SliceModifierEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
 	// Create a rollout.
-	QWidget* rollout = createRollout(tr("Slice"), rolloutParams);
+	QWidget* rollout = createRollout(tr("Slice"), rolloutParams, "particles.modifiers.slice.html");
 
     // Create the rollout contents.
 	QVBoxLayout* layout = new QVBoxLayout(rollout);

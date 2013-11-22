@@ -20,6 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <plugins/particles/Particles.h>
+#include <plugins/particles/data/ParticleTypeProperty.h>
 #include "OutputColumnMapping.h"
 
 namespace Particles {
@@ -114,8 +115,8 @@ void OutputColumnMapping::fromByteArray(const QByteArray& array)
 /******************************************************************************
  * Initializes the helper object.
  *****************************************************************************/
-OutputColumnWriter::OutputColumnWriter(const OutputColumnMapping& mapping, const PipelineFlowState& source)
-	: _mapping(mapping), _source(source)
+OutputColumnWriter::OutputColumnWriter(const OutputColumnMapping& mapping, const PipelineFlowState& source, bool writeTypeNames)
+	: _mapping(mapping), _source(source), _writeTypeNames(writeTypeNames)
 {
 	// Gather the source properties.
 	for(int i = 0; i < mapping.columnCount(); i++) {
@@ -160,10 +161,27 @@ void OutputColumnWriter::writeParticle(size_t particleIndex, QTextStream& stream
 	for(; property != _properties.constEnd(); ++property, ++vcomp) {
 		if(property != _properties.constBegin()) stream << QStringLiteral(" ");
 		if(*property) {
-			if((*property)->dataType() == qMetaTypeId<int>())
-				stream << (*property)->getIntComponent(particleIndex, *vcomp);
-			else if((*property)->dataType() == qMetaTypeId<FloatType>())
+			if((*property)->dataType() == qMetaTypeId<int>()) {
+				if(!_writeTypeNames || (*property)->type() != ParticleProperty::ParticleTypeProperty) {
+					stream << (*property)->getIntComponent(particleIndex, *vcomp);
+				}
+				else {
+					// Write type name instead of type number.
+					// Replace spaces in the name with underscores.
+					ParticleTypeProperty* typeProperty = static_object_cast<ParticleTypeProperty>(*property);
+					int particleTypeId = typeProperty->getIntComponent(particleIndex, *vcomp);
+					ParticleType* type = typeProperty->particleType(particleTypeId);
+					if(type && !type->name().isEmpty()) {
+						QString s = type->name();
+						stream << s.replace(QChar(' '), QChar('_'));
+					}
+					else
+						stream << particleTypeId;
+				}
+			}
+			else if((*property)->dataType() == qMetaTypeId<FloatType>()) {
 				stream << (*property)->getFloatComponent(particleIndex, *vcomp);
+			}
 		}
 		else {
 			stream << (particleIndex + 1);

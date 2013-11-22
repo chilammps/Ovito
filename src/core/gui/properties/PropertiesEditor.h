@@ -75,9 +75,10 @@ public:
 	///        the empty widget that can then be filled with UI controls.
 	/// \param title The title of the rollout.
 	/// \param rolloutParams Specifies how the rollout should be created.
+	/// \param helpPage The help page or topic in the user manual that describes this rollout.
 	///
 	/// \note The rollout is automatically deleted when the editor is deleted.
-	QWidget* createRollout(const QString& title, const RolloutInsertionParameters& rolloutParams);
+	QWidget* createRollout(const QString& title, const RolloutInsertionParameters& rolloutParams, const char* helpPage = nullptr);
 	
 	/// \brief Returns the object currently being edited in this properties editor.
 	/// \return The RefTarget derived object which is being edited in this editor.

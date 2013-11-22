@@ -195,7 +195,7 @@ OORef<RefTarget> SelectParticleTypeModifier::clone(bool deepCopy, CloneHelper& c
 ******************************************************************************/
 void SelectParticleTypeModifierEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
-	QWidget* rollout = createRollout(tr("Select particle type"), rolloutParams);
+	QWidget* rollout = createRollout(tr("Select particle type"), rolloutParams, "particles.modifiers.select_particle_type.html");
 
     // Create the rollout contents.
 	QVBoxLayout* layout = new QVBoxLayout(rollout);

@@ -140,7 +140,7 @@ ObjectStatus ShowPeriodicImagesModifier::modifyParticles(TimePoint time, TimeInt
 ******************************************************************************/
 void ShowPeriodicImagesModifierEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
-	QWidget* panel = createRollout(tr("Show periodic images"), rolloutParams);
+	QWidget* panel = createRollout(tr("Show periodic images"), rolloutParams, "particles.modifiers.show_periodic_images.html");
 
     // Create the rollout contents.
 	QGridLayout* layout = new QGridLayout(panel);
