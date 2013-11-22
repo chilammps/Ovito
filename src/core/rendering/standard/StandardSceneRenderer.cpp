@@ -50,7 +50,6 @@ bool StandardSceneRenderer::startRender(DataSet* dataset, RenderSettings* settin
 	format.setMajorVersion(OVITO_OPENGL_REQUESTED_VERSION_MAJOR);
 	format.setMinorVersion(OVITO_OPENGL_REQUESTED_VERSION_MINOR);
 	format.setProfile(QSurfaceFormat::CoreProfile);
-	format.setSwapBehavior(QSurfaceFormat::SingleBuffer);
 
 	// Look for other viewport windows that we can share the OpenGL context with.
 	QOpenGLContext* shareContext = nullptr;
@@ -93,6 +92,7 @@ bool StandardSceneRenderer::startRender(DataSet* dataset, RenderSettings* settin
 			qDebug() << "OpenGL renderer:            " << QString((const char*)glGetString(GL_RENDERER));
 			qDebug() << "OpenGL version string:      " << QString((const char*)glGetString(GL_VERSION));
 			qDebug() << "OpenGL shading language:    " << QString((const char*)glGetString(GL_SHADING_LANGUAGE_VERSION));
+			qDebug() << "OpenGL swap behavior:       " << (format.swapBehavior() == QSurfaceFormat::SingleBuffer ? QStringLiteral("single buffer") : (format.swapBehavior() == QSurfaceFormat::DoubleBuffer ? QStringLiteral("double buffer") : (format.swapBehavior() == QSurfaceFormat::TripleBuffer ? QStringLiteral("triple buffer") : QStringLiteral("other"))));
 			qDebug() << "OpenGL framebuffer objects: " << QOpenGLFramebufferObject::hasOpenGLFramebufferObjects();
 			qDebug() << "OpenGL shader programs:     " << QOpenGLShaderProgram::hasOpenGLShaderPrograms();
 			qDebug() << "OpenGL vertex shaders:      " << QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Vertex);
@@ -172,6 +172,7 @@ bool StandardSceneRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialo
 
 	// Flush the contents to the FBO before extracting image.
 	glFlush();
+	//_offscreenContext->swapBuffers(&_offscreenSurface);
 
 	// Fetch rendered image from OpenGL framebuffer.
 	// Scale it down to the output size.

@@ -235,6 +235,7 @@ void ViewportWindow::renderNow()
 			qDebug() << "OpenGL fragment shaders:    " << QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Fragment);
 			qDebug() << "OpenGL geometry shaders:    " << QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Geometry);
 			qDebug() << "OpenGL debug logger:        " << (_oglDebugLogger != nullptr);
+			qDebug() << "OpenGL swap behavior:       " << (format.swapBehavior() == QSurfaceFormat::SingleBuffer ? QStringLiteral("single buffer") : (format.swapBehavior() == QSurfaceFormat::DoubleBuffer ? QStringLiteral("double buffer") : (format.swapBehavior() == QSurfaceFormat::TripleBuffer ? QStringLiteral("triple buffer") : QStringLiteral("other"))));
 		}
 #endif
 
@@ -266,10 +267,12 @@ void ViewportWindow::renderNow()
 		qWarning() << "Failed to make OpenGL context current.";
 		return;
 	}
+	OVITO_CHECK_OPENGL();
 
 	_viewport->render(_context);
 	_context->swapBuffers(this);
 
+	OVITO_CHECK_OPENGL();
 	_context->doneCurrent();
 }
 
