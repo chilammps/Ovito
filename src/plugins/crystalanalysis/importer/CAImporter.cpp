@@ -30,6 +30,7 @@
 #include <plugins/crystalanalysis/data/clusters/ClusterGraph.h>
 #include <plugins/crystalanalysis/data/patterns/PatternCatalog.h>
 #include <plugins/crystalanalysis/modifier/SmoothSurfaceModifier.h>
+#include <plugins/crystalanalysis/modifier/SmoothDislocationsModifier.h>
 #include <plugins/particles/importer/lammps/LAMMPSTextDumpImporter.h>
 #include "CAImporter.h"
 
@@ -251,7 +252,7 @@ void CAImporter::CrystalAnalysisImportTask::parseFile(FutureInterfaceBase& futur
 			int isForward, otherSegmentId;
 			if(sscanf(stream.readLine(), "%i %i", &isForward, &otherSegmentId) != 2 || otherSegmentId < 0 || otherSegmentId >= numDislocationSegments)
 				throw Exception(tr("Failed to parse file. Invalid dislocation junction record in line %1.").arg(stream.lineNumber()));
-			segment.isClosedLoop = (otherSegmentId == index && isForward != index);
+			segment.isClosedLoop = (otherSegmentId == index && isForward == nodeIndex);
 		}
 	}
 
@@ -472,6 +473,9 @@ void CAImporter::prepareSceneNode(ObjectNode* node, LinkedFileObject* importObj)
 
 	// Add a modifier to smooth the defect surface mesh.
 	node->applyModifier(new SmoothSurfaceModifier());
+
+	// Add a modifier to smooth the dislocation lines.
+	node->applyModifier(new SmoothDislocationsModifier());
 }
 
 /******************************************************************************

@@ -21,6 +21,7 @@
 
 #include <plugins/crystalanalysis/CrystalAnalysis.h>
 #include <plugins/crystalanalysis/data/surface/DefectSurface.h>
+#include <plugins/crystalanalysis/data/dislocations/DislocationNetwork.h>
 #include <core/animation/controller/StandardControllers.h>
 #include <core/gui/properties/Vector3ParameterUI.h>
 #include "ShiftModifier.h"
@@ -67,21 +68,31 @@ ObjectStatus ShiftModifier::modifyObject(TimePoint time, ModifierApplication* mo
 	if(t == Vector3::Zero())
 		return ObjectStatus::Success;
 
-	// Apply translation to vertices of mesh.
-
-	DefectSurface* inputSurface = state.findObject<DefectSurface>();
-	if(!inputSurface)
-		return ObjectStatus::Success;	// Nothing to shift in the modifier's input.
-
 	CloneHelper cloneHelper;
-	OORef<DefectSurface> outputSurface = cloneHelper.cloneObject(inputSurface, false);
 
-	// Apply translation to vertices of mesh.
-	for(HalfEdgeMesh::Vertex* vertex : outputSurface->mesh().vertices())
-		vertex->pos() += t;
-	outputSurface->notifyDependents(ReferenceEvent::TargetChanged);
+	// Apply translation to vertices of defect mesh.
+	DefectSurface* inputSurface = state.findObject<DefectSurface>();
+	if(inputSurface) {
+		OORef<DefectSurface> outputSurface = cloneHelper.cloneObject(inputSurface, false);
+		for(HalfEdgeMesh::Vertex* vertex : outputSurface->mesh().vertices())
+			vertex->pos() += t;
+		outputSurface->notifyDependents(ReferenceEvent::TargetChanged);
+		state.replaceObject(inputSurface, outputSurface);
+	}
 
-	state.replaceObject(inputSurface, outputSurface);
+	// Apply translation to dislocation lines.
+	DislocationNetwork* inputDislocations = state.findObject<DislocationNetwork>();
+	if(inputDislocations) {
+		OORef<DislocationNetwork> outputDislocations = cloneHelper.cloneObject(inputDislocations, false);
+		for(DislocationSegment* segment : outputDislocations->segments()) {
+			QVector<Point3> line = segment->line();
+			for(Point3& p : line)
+				p += t;
+			segment->setLine(line, segment->coreSize());
+		}
+		outputDislocations->notifyDependents(ReferenceEvent::TargetChanged);
+		state.replaceObject(inputDislocations, outputDislocations);
+	}
 
 	return ObjectStatus::Success;
 }

@@ -48,6 +48,8 @@ DislocationSegment::DislocationSegment() : _isClosedLoop(false),
 void DislocationSegment::saveToStream(ObjectSaveStream& stream)
 {
 	RefTarget::saveToStream(stream);
+
+	OVITO_ASSERT(_line.size() == _coreSize.size());
 	stream.beginChunk(0x01);
 	stream << _isClosedLoop;
 	stream << _line;

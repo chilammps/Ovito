@@ -33,6 +33,7 @@ SET(OVITO_CRYSTALANALYSIS_SOURCE_FILES
 	data/dislocations/DislocationDisplay.cpp
 	modifier/ShiftModifier.cpp
 	modifier/SmoothSurfaceModifier.cpp
+	modifier/SmoothDislocationsModifier.cpp
 )
 
 # List of source files of the GLU library used for polygon tessellation.
