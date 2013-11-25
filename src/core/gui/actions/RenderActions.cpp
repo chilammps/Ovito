@@ -42,6 +42,10 @@ namespace Ovito {
 void ActionManager::on_RenderActiveViewport_triggered()
 {
 	try {
+		// Set focus to main window.
+		// This will process any pending user inputs in QLineEdit fields.
+		MainWindow::instance().setFocus();
+
 		// Get the selected scene renderer.
 		RenderSettings* settings = DataSetManager::instance().currentSet()->renderSettings();
 		if(!settings || !settings->renderer()) throw Exception(tr("No renderer has been selected."));

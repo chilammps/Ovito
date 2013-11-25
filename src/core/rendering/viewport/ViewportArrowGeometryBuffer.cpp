@@ -522,6 +522,10 @@ void ViewportArrowGeometryBuffer::renderShadedTriangles(ViewportSceneRenderer* r
 		shader->setUniformValue("pickingBaseID", (GLint)pickingBaseID);
 
 	_glGeometryBuffer.bind();
+	if(renderer->glformat().majorVersion() < 3) {
+		OVITO_CHECK_OPENGL(glEnableClientState(GL_VERTEX_ARRAY));
+		OVITO_CHECK_OPENGL(glVertexPointer(3, GL_FLOAT, sizeof(ColoredVertexWithVector), reinterpret_cast<const GLvoid*>(offsetof(ColoredVertexWithVector, pos))));
+	}
 	shader->enableAttributeArray("vertex_pos");
 	shader->setAttributeBuffer("vertex_pos", GL_FLOAT, offsetof(ColoredVertexWithNormal, pos), 3, sizeof(ColoredVertexWithNormal));
 	if(!renderer->isPicking()) {
@@ -557,6 +561,8 @@ void ViewportArrowGeometryBuffer::renderShadedTriangles(ViewportSceneRenderer* r
 	else {
 		deactivateVertexIDs(renderer, shader);
 	}
+	if(renderer->glformat().majorVersion() < 3)
+		OVITO_CHECK_OPENGL(glDisableClientState(GL_VERTEX_ARRAY));
 
 	shader->release();
 }
@@ -598,7 +604,7 @@ void ViewportArrowGeometryBuffer::renderRaytracedCylinders(ViewportSceneRenderer
 	_glGeometryBuffer.bind();
 	if(renderer->glformat().majorVersion() < 3) {
 		OVITO_CHECK_OPENGL(glEnableClientState(GL_VERTEX_ARRAY));
-		OVITO_CHECK_OPENGL(glVertexPointer(3, GL_FLOAT, sizeof(ColoredVertexWithElementInfo), offsetof(ColoredVertexWithElementInfo, pos)));
+		OVITO_CHECK_OPENGL(glVertexPointer(3, GL_FLOAT, sizeof(ColoredVertexWithElementInfo), reinterpret_cast<const GLvoid*>(offsetof(ColoredVertexWithElementInfo, pos))));
 	}
 	shader->enableAttributeArray("vertex_pos");
 	shader->setAttributeBuffer("vertex_pos", GL_FLOAT, offsetof(ColoredVertexWithElementInfo, pos), 3, sizeof(ColoredVertexWithElementInfo));
@@ -617,19 +623,8 @@ void ViewportArrowGeometryBuffer::renderRaytracedCylinders(ViewportSceneRenderer
 	if(renderer->isPicking())
 		activateVertexIDs(renderer, shader);
 
-		#if 1
-	if(renderer->glfuncs32()) {
-		OVITO_CHECK_OPENGL(renderer->glfuncs32()->glMultiDrawArrays(GL_TRIANGLE_STRIP, _stripPrimitiveVertexStarts.data(), _stripPrimitiveVertexCounts.data(), _stripPrimitiveVertexStarts.size()));
-	}
-	else if(renderer->glfuncs30()) {
-		OVITO_CHECK_OPENGL(renderer->glfuncs30()->glMultiDrawArrays(GL_TRIANGLE_STRIP, _stripPrimitiveVertexStarts.data(), _stripPrimitiveVertexCounts.data(), _stripPrimitiveVertexStarts.size()));
-	}
-	else if(renderer->glfuncs20()) {
-		OVITO_CHECK_OPENGL(renderer->glfuncs20()->glMultiDrawArrays(GL_TRIANGLE_STRIP, _stripPrimitiveVertexStarts.data(), _stripPrimitiveVertexCounts.data(), _stripPrimitiveVertexStarts.size()));
-	}
-	
-	//OVITO_CHECK_OPENGL(renderer->glMultiDrawArrays(GL_TRIANGLE_STRIP, _stripPrimitiveVertexStarts.data(), _stripPrimitiveVertexCounts.data(), _stripPrimitiveVertexStarts.size()));
-#endif
+	OVITO_CHECK_OPENGL(renderer->glMultiDrawArrays(GL_TRIANGLE_STRIP, _stripPrimitiveVertexStarts.data(), _stripPrimitiveVertexCounts.data(), _stripPrimitiveVertexStarts.size()));
+
 	shader->disableAttributeArray("vertex_pos");
 	if(!renderer->isPicking())
 		shader->disableAttributeArray("cylinder_color");
@@ -638,9 +633,8 @@ void ViewportArrowGeometryBuffer::renderRaytracedCylinders(ViewportSceneRenderer
 	shader->disableAttributeArray("cylinder_base");
 	shader->disableAttributeArray("cylinder_axis");
 	shader->disableAttributeArray("cylinder_radius");
-	if(renderer->glformat().majorVersion() < 3) {
+	if(renderer->glformat().majorVersion() < 3)
 		OVITO_CHECK_OPENGL(glDisableClientState(GL_VERTEX_ARRAY));
-	}
 
 	shader->release();
 }
@@ -674,6 +668,10 @@ void ViewportArrowGeometryBuffer::renderFlat(ViewportSceneRenderer* renderer, qu
 	}
 
 	_glGeometryBuffer.bind();
+	if(renderer->glformat().majorVersion() < 3) {
+		OVITO_CHECK_OPENGL(glEnableClientState(GL_VERTEX_ARRAY));
+		OVITO_CHECK_OPENGL(glVertexPointer(3, GL_FLOAT, sizeof(ColoredVertexWithVector), reinterpret_cast<const GLvoid*>(offsetof(ColoredVertexWithVector, pos))));
+	}
 	shader->enableAttributeArray("vertex_pos");
 	shader->setAttributeBuffer("vertex_pos", GL_FLOAT, offsetof(ColoredVertexWithVector, pos), 3, sizeof(ColoredVertexWithVector));
 	shader->enableAttributeArray("vector_base");
@@ -698,6 +696,8 @@ void ViewportArrowGeometryBuffer::renderFlat(ViewportSceneRenderer* renderer, qu
 		shader->disableAttributeArray("vertex_color");
 	else
 		deactivateVertexIDs(renderer, shader);
+	if(renderer->glformat().majorVersion() < 3)
+		OVITO_CHECK_OPENGL(glDisableClientState(GL_VERTEX_ARRAY));
 
 	shader->release();
 }

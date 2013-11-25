@@ -82,23 +82,21 @@ bool StandardSceneRenderer::startRender(DataSet* dataset, RenderSettings* settin
 	static bool firstTime = true;
 	if(firstTime) {
 		firstTime = false;
-		if(shareContext == nullptr || _offscreenContext->shareContext() != shareContext) {
-			QSurfaceFormat format = _offscreenContext->format();
-			qDebug() << "OpenGL depth buffer size:  " << format.depthBufferSize();
-			(qDebug() << "OpenGL version:            ").nospace() << format.majorVersion() << "." << format.minorVersion();
-			qDebug() << "OpenGL profile:            " << (format.profile() == QSurfaceFormat::CoreProfile ? "core" : (format.profile() == QSurfaceFormat::CompatibilityProfile ? "compatibility" : "none"));
-			qDebug() << "OpenGL has alpha:           " << format.hasAlpha();
-			qDebug() << "OpenGL vendor:              " << QString((const char*)glGetString(GL_VENDOR));
-			qDebug() << "OpenGL renderer:            " << QString((const char*)glGetString(GL_RENDERER));
-			qDebug() << "OpenGL version string:      " << QString((const char*)glGetString(GL_VERSION));
-			qDebug() << "OpenGL shading language:    " << QString((const char*)glGetString(GL_SHADING_LANGUAGE_VERSION));
-			qDebug() << "OpenGL swap behavior:       " << (format.swapBehavior() == QSurfaceFormat::SingleBuffer ? QStringLiteral("single buffer") : (format.swapBehavior() == QSurfaceFormat::DoubleBuffer ? QStringLiteral("double buffer") : (format.swapBehavior() == QSurfaceFormat::TripleBuffer ? QStringLiteral("triple buffer") : QStringLiteral("other"))));
-			qDebug() << "OpenGL framebuffer objects: " << QOpenGLFramebufferObject::hasOpenGLFramebufferObjects();
-			qDebug() << "OpenGL shader programs:     " << QOpenGLShaderProgram::hasOpenGLShaderPrograms();
-			qDebug() << "OpenGL vertex shaders:      " << QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Vertex);
-			qDebug() << "OpenGL fragment shaders:    " << QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Fragment);
-			qDebug() << "OpenGL geometry shaders:    " << QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Geometry);
-		}
+		QSurfaceFormat format = _offscreenContext->format();
+		qDebug() << "OpenGL depth buffer size:  " << format.depthBufferSize();
+		(qDebug() << "OpenGL version:            ").nospace() << format.majorVersion() << "." << format.minorVersion();
+		qDebug() << "OpenGL profile:            " << (format.profile() == QSurfaceFormat::CoreProfile ? "core" : (format.profile() == QSurfaceFormat::CompatibilityProfile ? "compatibility" : "none"));
+		qDebug() << "OpenGL has alpha:           " << format.hasAlpha();
+		qDebug() << "OpenGL vendor:              " << QString((const char*)glGetString(GL_VENDOR));
+		qDebug() << "OpenGL renderer:            " << QString((const char*)glGetString(GL_RENDERER));
+		qDebug() << "OpenGL version string:      " << QString((const char*)glGetString(GL_VERSION));
+		qDebug() << "OpenGL shading language:    " << QString((const char*)glGetString(GL_SHADING_LANGUAGE_VERSION));
+		qDebug() << "OpenGL swap behavior:       " << (format.swapBehavior() == QSurfaceFormat::SingleBuffer ? QStringLiteral("single buffer") : (format.swapBehavior() == QSurfaceFormat::DoubleBuffer ? QStringLiteral("double buffer") : (format.swapBehavior() == QSurfaceFormat::TripleBuffer ? QStringLiteral("triple buffer") : QStringLiteral("default"))));
+		qDebug() << "OpenGL framebuffer objects: " << QOpenGLFramebufferObject::hasOpenGLFramebufferObjects();
+		qDebug() << "OpenGL shader programs:     " << QOpenGLShaderProgram::hasOpenGLShaderPrograms();
+		qDebug() << "OpenGL vertex shaders:      " << QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Vertex);
+		qDebug() << "OpenGL fragment shaders:    " << QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Fragment);
+		qDebug() << "OpenGL geometry shaders:    " << QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Geometry);
 	}
 #endif
 
@@ -171,8 +169,7 @@ bool StandardSceneRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialo
 		return false;
 
 	// Flush the contents to the FBO before extracting image.
-	glFlush();
-	//_offscreenContext->swapBuffers(&_offscreenSurface);
+	_offscreenContext->swapBuffers(&_offscreenSurface);
 
 	// Fetch rendered image from OpenGL framebuffer.
 	// Scale it down to the output size.

@@ -41,10 +41,9 @@ bool AmbientOcclusionRenderer::startRender(DataSet* dataset, RenderSettings* set
 	// Set up surface format with a depth buffer.
 	QSurfaceFormat format;
 	format.setDepthBufferSize(24);
-	format.setMajorVersion(3);
-	format.setMinorVersion(2);
+	format.setMajorVersion(OVITO_OPENGL_REQUESTED_VERSION_MAJOR);
+	format.setMinorVersion(OVITO_OPENGL_REQUESTED_VERSION_MINOR);
 	format.setProfile(QSurfaceFormat::CoreProfile);
-	format.setSwapBehavior(QSurfaceFormat::SingleBuffer);
 
 	_offscreenContext.reset(new QOpenGLContext());
 	_offscreenContext->setFormat(format);
@@ -117,7 +116,7 @@ void AmbientOcclusionRenderer::beginFrame(TimePoint time, const ViewProjectionPa
 void AmbientOcclusionRenderer::endFrame()
 {
 	// Flush the contents to the FBO before extracting image.
-	glFlush();
+	_offscreenContext->swapBuffers(&_offscreenSurface);
 
 	// Fetch rendered image from OpenGL framebuffer.
 	QSize size = _framebufferObject->size();
