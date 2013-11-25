@@ -35,6 +35,13 @@ INCLUDE(${OVITO_SOURCE_BASE_DIR}/cmake/Version.cmake)
 INCLUDE(${OVITO_SOURCE_BASE_DIR}/cmake/Plugins.cmake)
 INCLUDE(${OVITO_SOURCE_BASE_DIR}/cmake/CompileQtResource.cmake)
 
+# Add options that control the building of plugins.
+OPTION(OVITO_BUILD_PLUGIN_PARTICLES "Build the Particles plugin." "ON")
+OPTION(OVITO_BUILD_PLUGIN_MESH "Build the Mesh plugin." "ON")
+OPTION(OVITO_BUILD_PLUGIN_TACHYON "Build the Tachyon plugin." "ON")
+OPTION(OVITO_BUILD_PLUGIN_CRYSTALANALYSIS "Build the CrystalAnalysis plugin." "OFF")
+OPTION(OVITO_BUILD_PLUGIN_SCRIPTING "Build the Scripting plugin." "OFF")
+
 # Tell CMake to run Qt moc when necessary:
 SET(CMAKE_AUTOMOC ON)
 # As moc files are generated in the binary dir, tell CMake to always look for includes there:
@@ -42,6 +49,9 @@ SET(CMAKE_INCLUDE_CURRENT_DIR ON)
   
 # Find and setup Qt5 libraries.
 SET(OVITO_REQUIRED_QT_MODULES Core Gui Widgets Xml OpenGL Concurrent Network PrintSupport)
+IF(OVITO_BUILD_PLUGIN_SCRIPTING)
+	LIST(APPEND OVITO_REQUIRED_QT_MODULES Qml)
+ENDIF()
 FOREACH(COMPONENT ${OVITO_REQUIRED_QT_MODULES})
 	FIND_PACKAGE(Qt5${COMPONENT} REQUIRED)
 ENDFOREACH()
@@ -172,12 +182,6 @@ OPTION(OVITO_VIDEO_OUTPUT_SUPPORT "Build the video encoding module." "OFF")
 IF(OVITO_VIDEO_OUTPUT_SUPPORT)
 	ADD_DEFINITIONS(-DOVITO_VIDEO_OUTPUT_SUPPORT)
 ENDIF()
-
-# Add options that control the building of plugins.
-OPTION(OVITO_BUILD_PLUGIN_PARTICLES "Build the Particles plugin." "ON")
-OPTION(OVITO_BUILD_PLUGIN_MESH "Build the Mesh plugin." "ON")
-OPTION(OVITO_BUILD_PLUGIN_TACHYON "Build the Tachyon plugin." "ON")
-OPTION(OVITO_BUILD_PLUGIN_CRYSTALANALYSIS "Build the CrystalAnalysis plugin." "OFF")
 
 # Build program.
 ADD_SUBDIRECTORY(src)
