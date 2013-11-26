@@ -26,7 +26,7 @@
 namespace CrystalAnalysis {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(CrystalAnalysis, DislocationNetwork, SceneObject)
-DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(DislocationNetwork, _segments, "DislocationSegments", DislocationSegment, PROPERTY_FIELD_ALWAYS_DEEP_COPY)
+DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(DislocationNetwork, _segments, "DislocationSegments", DislocationSegment, PROPERTY_FIELD_ALWAYS_CLONE)
 SET_PROPERTY_FIELD_LABEL(DislocationNetwork, _segments, "Dislocation segments")
 
 /******************************************************************************

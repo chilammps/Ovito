@@ -43,6 +43,14 @@ SmoothSurfaceModifier::SmoothSurfaceModifier() : _smoothingLevel(8)
 }
 
 /******************************************************************************
+* Asks the modifier whether it can be applied to the given input data.
+******************************************************************************/
+bool SmoothSurfaceModifier::isApplicableTo(const PipelineFlowState& input)
+{
+	return (input.findObject<DefectSurface>() != nullptr);
+}
+
+/******************************************************************************
 * This modifies the input object.
 ******************************************************************************/
 ObjectStatus SmoothSurfaceModifier::modifyObject(TimePoint time, ModifierApplication* modApp, PipelineFlowState& state)

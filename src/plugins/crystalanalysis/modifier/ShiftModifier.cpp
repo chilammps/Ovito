@@ -44,6 +44,15 @@ ShiftModifier::ShiftModifier()
 }
 
 /******************************************************************************
+* Asks the modifier whether it can be applied to the given input data.
+******************************************************************************/
+bool ShiftModifier::isApplicableTo(const PipelineFlowState& input)
+{
+	return (input.findObject<DefectSurface>() != nullptr)
+			|| (input.findObject<DislocationNetwork>() != nullptr);
+}
+
+/******************************************************************************
 * Asks the modifier for its validity interval at the given time.
 ******************************************************************************/
 TimeInterval ShiftModifier::modifierValidity(TimePoint time)

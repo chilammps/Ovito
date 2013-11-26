@@ -116,8 +116,8 @@ void ModifierListBox::updateAvailableModifiers()
 	if(currentItem == nullptr)
 		return;
 
-#if 0
-	// Get the input state to which the modifier would be applied.
+	// Retrieve the input state which a newly inserted modifier would be applied to.
+	// This is used to filter the list of available modifiers.
 	PipelineFlowState inputState;
 	if(dynamic_object_cast<Modifier>(currentItem->object())) {
 		for(ModifierApplication* modApp : currentItem->modifierApplications()) {
@@ -138,23 +138,41 @@ void ModifierListBox::updateAvailableModifiers()
 			break;
 		}
 	}
-#endif
 
 	for(const ModifierCategory& category : _modifierCategories) {
+		QList<QStandardItem*> categoryItems;
+		for(const OvitoObjectType* descriptor : category.modifierClasses) {
+			// Create an instance of the modifier to call its isApplicableTo() method.
+			OORef<Modifier> modifier = static_object_cast<Modifier>(descriptor->createInstance());
+			OVITO_CHECK_OBJECT_POINTER(modifier);
+			if(modifier && modifier->isApplicableTo(inputState)) {
+				QStandardItem* modifierItem = new QStandardItem("   " + descriptor->displayName());
+				modifierItem->setData(qVariantFromValue((void*)descriptor), Qt::UserRole);
+				categoryItems.push_back(modifierItem);
+			}
+		}
 
-		QStandardItem* categoryItem = new QStandardItem(category.name);
+		if(!categoryItems.empty()) {
+			QStandardItem* categoryItem = new QStandardItem(category.name);
+			categoryItem->setFont(_categoryFont);
+			categoryItem->setBackground(_categoryBackgroundBrush);
+			categoryItem->setForeground(_categoryForegroundBrush);
+			categoryItem->setFlags(Qt::ItemIsEnabled);
+			categoryItem->setTextAlignment(Qt::AlignCenter);
+			model->appendRow(categoryItem);
+			for(QStandardItem* item : categoryItems)
+				model->appendRow(item);
+		}
+	}
+
+	if(count() <= 1) {
+		QStandardItem* categoryItem = new QStandardItem(tr("No modifiers applicable to this object"));
 		categoryItem->setFont(_categoryFont);
 		categoryItem->setBackground(_categoryBackgroundBrush);
 		categoryItem->setForeground(_categoryForegroundBrush);
 		categoryItem->setFlags(Qt::ItemIsEnabled);
 		categoryItem->setTextAlignment(Qt::AlignCenter);
 		model->appendRow(categoryItem);
-
-		for(const OvitoObjectType* descriptor : category.modifierClasses) {
-			QStandardItem* modifierItem = new QStandardItem("   " + descriptor->displayName());
-			modifierItem->setData(qVariantFromValue((void*)descriptor), Qt::UserRole);
-			model->appendRow(modifierItem);
-		}
 	}
 
     setMaxVisibleItems(count());

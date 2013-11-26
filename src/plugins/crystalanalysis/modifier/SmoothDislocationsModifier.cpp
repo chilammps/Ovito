@@ -55,6 +55,14 @@ SmoothDislocationsModifier::SmoothDislocationsModifier()
 }
 
 /******************************************************************************
+* Asks the modifier whether it can be applied to the given input data.
+******************************************************************************/
+bool SmoothDislocationsModifier::isApplicableTo(const PipelineFlowState& input)
+{
+	return (input.findObject<DislocationNetwork>() != nullptr);
+}
+
+/******************************************************************************
 * This modifies the input object.
 ******************************************************************************/
 ObjectStatus SmoothDislocationsModifier::modifyObject(TimePoint time, ModifierApplication* modApp, PipelineFlowState& state)
