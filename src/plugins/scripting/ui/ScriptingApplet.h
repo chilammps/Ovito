@@ -30,6 +30,27 @@ namespace Scripting {
 using namespace Ovito;
 
 /**
+ * \brief A QTextEdit that captures ctrl+enter.
+ */
+class CodeEdit : public QTextEdit {
+public:
+  CodeEdit(QWidget * parent = 0) : QTextEdit(parent) {}
+protected:
+  void keyPressEvent(QKeyEvent* event) {
+	if (event->key() == Qt::Key_Return && event->modifiers().testFlag(Qt::ControlModifier))
+	  ctrlEnterPressed();
+	else
+	  QTextEdit::keyPressEvent(event);
+  }
+
+Q_SIGNALS:
+  void ctrlEnterPressed();
+
+private:
+  Q_OBJECT
+};
+
+/**
  * \brief The utility applet that integrates scripting into Ovito's user interface.
  */
 class OVITO_SCRIPTING_EXPORT ScriptingApplet : public UtilityApplet
@@ -40,7 +61,9 @@ public:
 	Q_INVOKABLE ScriptingApplet();
 
 	/// Shows the UI of the utility in the given RolloutContainer.
-	virtual void openUtility(RolloutContainer* container, const RolloutInsertionParameters& rolloutParams = RolloutInsertionParameters()) override;
+	virtual void openUtility(RolloutContainer* container,
+							 const RolloutInsertionParameters& rolloutParams = RolloutInsertionParameters()
+							 ) override;
 
 	/// Removes the UI of the utility from the RolloutContainer.
 	virtual void closeUtility(RolloutContainer* container) override;
@@ -56,7 +79,10 @@ private:
 	QWidget* _panel;
 
 	/// The script editor widget.
-	QTextEdit* _editor;
+	CodeEdit* _editor;
+
+	/// The output of the script.
+	QLabel* _output;
 
 	Q_CLASSINFO("DisplayName", "Scripting");
 
@@ -67,3 +93,11 @@ private:
 };
 
 #endif
+
+
+// Local variables:
+// mode: c++
+// indent-tabs-mode: t
+// tab-width: 4
+// c-basic-offset: 4
+// End:

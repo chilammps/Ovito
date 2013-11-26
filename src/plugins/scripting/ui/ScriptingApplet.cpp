@@ -43,22 +43,31 @@ void ScriptingApplet::openUtility(RolloutContainer* container, const RolloutInse
 {
 	// Create main panel widget.
 	_panel = new QWidget();
-    QVBoxLayout* layout = new QVBoxLayout(_panel);
+	QVBoxLayout* layout = new QVBoxLayout(_panel);
 	layout->setContentsMargins(4,4,4,4);
 	layout->setSpacing(4);
 
 	// Create code editor widget.
-	_editor = new QTextEdit(_panel);
-	_editor->setPlainText(QStringLiteral("console.log(\"Hello world!\")"));
+	_editor = new CodeEdit(_panel);
+	_editor->setPlainText(QStringLiteral("1+2"));
+	connect(_editor, &CodeEdit::ctrlEnterPressed,
+			this, &ScriptingApplet::runScript);
 	layout->addWidget(_editor, 1);
+
+	// Create output widget.
+	_output = new QLabel(_panel);
+	_output->setText("<output goes here>");
+	layout->addWidget(_output, 1);
 
 	// Create run button.
 	QPushButton* runScriptBtn = new QPushButton(tr("Run"), _panel);
-	connect(runScriptBtn, &QPushButton::clicked, this, &ScriptingApplet::runScript);
+	connect(runScriptBtn, &QPushButton::clicked, this,
+			&ScriptingApplet::runScript);
 	layout->addWidget(runScriptBtn);
 
 	// Create rollout around panel widget.
-	container->addRollout(_panel, tr("Scripting"), rolloutParams.useAvailableSpace());
+	container->addRollout(_panel, tr("Scripting"),
+						  rolloutParams.useAvailableSpace());
 }
 
 /******************************************************************************
@@ -74,11 +83,20 @@ void ScriptingApplet::closeUtility(RolloutContainer* container)
 ******************************************************************************/
 void ScriptingApplet::runScript()
 {
-	QQmlEngine engine;
+	QJSEngine engine;
 	QJSValue result = engine.evaluate(_editor->toPlainText());
 	if(result.isError()) {
 		Exception(result.toString()).showError();
+	} else {
+		_output->setText(result.toString());
 	}
 }
 
 };
+
+
+// Local variables:
+// indent-tabs-mode: t
+// tab-width: 4
+// c-basic-offset: 4
+// End:
