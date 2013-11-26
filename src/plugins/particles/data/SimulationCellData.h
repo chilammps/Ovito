@@ -42,7 +42,11 @@ public:
 	const AffineTransformation& matrix() const { return _simulationCell; }
 
 	/// Sets the simulation cell matrix.
-	void setMatrix(const AffineTransformation& cellMatrix) { _simulationCell = cellMatrix; }
+	void setMatrix(const AffineTransformation& cellMatrix) {
+		_simulationCell = cellMatrix;
+		if(!cellMatrix.inverse(_reciprocalSimulationCell))
+			_reciprocalSimulationCell.setIdentity();
+	}
 
 	/// Returns the PBC flags.
 	const std::array<bool,3>& pbcFlags() const { return _pbcFlags; }
@@ -63,10 +67,25 @@ public:
 		return (_simulationCell == other._simulationCell && _pbcFlags == other._pbcFlags);
 	}
 
+	/// Converts a point given in reduced cell coordinates to a point in absolute coordinates.
+	Point3 reducedToAbsolute(const Point3& reducedPoint) const { return _simulationCell * reducedPoint; }
+
+	/// Converts a point given in absolute coordinates to a point in reduced cell coordinates.
+	Point3 absoluteToReduced(const Point3& absPoint) const { return _reciprocalSimulationCell * absPoint; }
+
+	/// Converts a vector given in reduced cell coordinates to a vector in absolute coordinates.
+	Vector3 reducedToAbsolute(const Vector3& reducedVec) const { return _simulationCell * reducedVec; }
+
+	/// Converts a vector given in absolute coordinates to a point in vector cell coordinates.
+	Vector3 absoluteToReduced(const Vector3& absVec) const { return _reciprocalSimulationCell * absVec; }
+
 private:
 
 	/// The geometry of the cell.
 	AffineTransformation _simulationCell = AffineTransformation::Zero();
+
+	/// The reciprocal cell matrix.
+	AffineTransformation _reciprocalSimulationCell = AffineTransformation::Zero();
 
 	/// PBC flags.
 	std::array<bool,3> _pbcFlags = {{ true, true, true }};

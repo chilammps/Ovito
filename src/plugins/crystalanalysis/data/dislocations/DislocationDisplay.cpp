@@ -80,7 +80,6 @@ void DislocationDisplay::render(TimePoint time, SceneObject* sceneObject, const 
 	bool recreateBuffers = !_segmentBuffer || !_segmentBuffer->isValid(renderer)
 						|| !_cornerBuffer || !_cornerBuffer->isValid(renderer);
 
-
 	// Set up shading mode.
 	ParticleGeometryBuffer::ShadingMode cornerShadingMode = (shadingMode() == ArrowGeometryBuffer::NormalShading)
 			? ParticleGeometryBuffer::NormalShading : ParticleGeometryBuffer::FlatShading;
@@ -102,33 +101,37 @@ void DislocationDisplay::render(TimePoint time, SceneObject* sceneObject, const 
 
 	// Update buffer contents.
 	if(updateContents) {
+		SimulationCellData cellData = cellObject->data();
 		if(OORef<DislocationNetwork> dislocationObj = sceneObject->convertTo<DislocationNetwork>(time)) {
-			int lineSegmentCount = 0;
+			int lineSegmentCount = 0, cornerCount = 0;
 			for(DislocationSegment* segment : dislocationObj->segments()) {
-				if(segment->line().size() >= 2)
-					lineSegmentCount += (segment->line().size() - 1);
+				clipDislocationLine(segment->line(), cellData, [&lineSegmentCount, &cornerCount](const Point3&, const Point3&, bool isInitialSegment) {
+					lineSegmentCount++;
+					if(!isInitialSegment) cornerCount++;
+				});
 			}
 			_segmentBuffer->startSetElements(lineSegmentCount);
 			int lineSegmentIndex = 0;
 			FloatType lineRadius = std::max(lineWidth() / 2, FloatType(0));
-			ColorA lineColor(1,0,0,1);
 			QVector<Point3> cornerPoints;
-			cornerPoints.reserve(lineSegmentCount);
+			QVector<Color> cornerColors;
+			cornerPoints.reserve(cornerCount);
+			cornerColors.reserve(cornerCount);
 			for(DislocationSegment* segment : dislocationObj->segments()) {
-				if(segment->line().size() >= 2) {
-					auto v1 = segment->line().cbegin();
-					for(auto v2 = v1+1; v2 != segment->line().cend(); v1 = v2++) {
-						_segmentBuffer->setElement(lineSegmentIndex++, *v1, *v2 - *v1, lineColor, lineRadius);
-						if(v2 != segment->line().cend() - 1)
-							cornerPoints.push_back(*v2);
+				Color lineColor = segment->burgersVectorFamily()->color();
+				clipDislocationLine(segment->line(), cellData, [this, &lineSegmentIndex, &cornerPoints, &cornerColors, lineColor, lineRadius](const Point3& v1, const Point3& v2, bool isInitialSegment) {
+					_segmentBuffer->setElement(lineSegmentIndex++, v1, v2 - v1, ColorA(lineColor), lineRadius);
+					if(!isInitialSegment) {
+						cornerPoints.push_back(v1);
+						cornerColors.push_back(lineColor);
 					}
-				}
+				});
 			}
 			_segmentBuffer->endSetElements();
 			_cornerBuffer->setSize(cornerPoints.size());
 			_cornerBuffer->setParticlePositions(cornerPoints.empty() ? nullptr : cornerPoints.data());
+			_cornerBuffer->setParticleColors(cornerColors.empty() ? nullptr : cornerColors.data());
 			_cornerBuffer->setParticleRadius(lineRadius);
-			_cornerBuffer->setParticleColor(Color(lineColor));
 		}
 		else {
 			_cornerBuffer = nullptr;
@@ -147,6 +150,63 @@ void DislocationDisplay::render(TimePoint time, SceneObject* sceneObject, const 
 		if(renderer->isPicking())
 			pickingBaseID = renderer->registerPickObject(contextNode, sceneObject, _segmentBuffer->elementCount());
 		_segmentBuffer->render(renderer, pickingBaseID);
+	}
+}
+
+/******************************************************************************
+* Clips a dislocation line at the periodic box boundaries.
+******************************************************************************/
+void DislocationDisplay::clipDislocationLine(const QVector<Point3>& line, const SimulationCellData& simulationCell, const std::function<void(const Point3&, const Point3&, bool)>& segmentCallback)
+{
+	auto v1 = line.cbegin();
+	Point3 rp1 = simulationCell.absoluteToReduced(*v1);
+	Vector3 shiftVector = Vector3::Zero();
+	for(size_t dim = 0; dim < 3; dim++) {
+		if(simulationCell.pbcFlags()[dim]) {
+			while(rp1[dim] > 0) { rp1[dim] -= 1; shiftVector[dim] -= 1; }
+			while(rp1[dim] < 0) { rp1[dim] += 1; shiftVector[dim] += 1; }
+		}
+	}
+	bool isInitialSegment = true;
+	for(auto v2 = v1 + 1; v2 != line.cend(); v1 = v2, ++v2) {
+		Point3 rp2 = simulationCell.absoluteToReduced(*v2) + shiftVector;
+		FloatType smallestT;
+		do {
+			size_t crossDim;
+			FloatType crossDir;
+			smallestT = FLOATTYPE_MAX;
+			for(size_t dim = 0; dim < 3; dim++) {
+				if(simulationCell.pbcFlags()[dim]) {
+					int d = (int)floor(rp2[dim]) - (int)floor(rp1[dim]);
+					if(d == 0) continue;
+					FloatType t;
+					if(d > 0)
+						t = (ceil(rp1[dim]) - rp1[dim]) / (rp2[dim] - rp1[dim]);
+					else
+						t = (floor(rp1[dim]) - rp1[dim]) / (rp2[dim] - rp1[dim]);
+					if(t > 0 && t < smallestT) {
+						smallestT = t;
+						crossDim = dim;
+						crossDir = (d > 0) ? 1 : -1;
+					}
+				}
+			}
+			if(smallestT != FLOATTYPE_MAX) {
+				Point3 intersection = rp1 + smallestT * (rp2 - rp1);
+				intersection[crossDim] = floor(intersection[crossDim] + FloatType(0.5));
+				segmentCallback(simulationCell.reducedToAbsolute(rp1), simulationCell.reducedToAbsolute(intersection), isInitialSegment);
+				shiftVector[crossDim] -= crossDir;
+				rp1 = intersection;
+				rp1[crossDim] -= crossDir;
+				rp2[crossDim] -= crossDir;
+				isInitialSegment = true;
+			}
+		}
+		while(smallestT != FLOATTYPE_MAX);
+
+		segmentCallback(simulationCell.reducedToAbsolute(rp1), simulationCell.reducedToAbsolute(rp2), isInitialSegment);
+		isInitialSegment = false;
+		rp1 = rp2;
 	}
 }
 

@@ -27,7 +27,7 @@
 #include <core/rendering/ParticleGeometryBuffer.h>
 #include <core/rendering/ArrowGeometryBuffer.h>
 #include <core/gui/properties/PropertiesEditor.h>
-#include <plugins/particles/data/SimulationCellData.h>
+#include <plugins/particles/data/SimulationCell.h>
 
 namespace CrystalAnalysis {
 
@@ -69,6 +69,11 @@ public:
 
 	Q_PROPERTY(FloatType lineWidth READ lineWidth WRITE setLineWidth)
 	Q_PROPERTY(Ovito::ArrowGeometryBuffer::ShadingMode shadingMode READ shadingMode WRITE setShadingMode)
+
+protected:
+
+	/// Clips a dislocation line at the periodic box boundaries.
+	void clipDislocationLine(const QVector<Point3>& line, const SimulationCellData& simulationCell, const std::function<void(const Point3&, const Point3&, bool)>& segmentCallback);
 
 protected:
 
