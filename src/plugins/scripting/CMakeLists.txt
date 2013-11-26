@@ -21,6 +21,7 @@
 
 SET(OVITO_SCRIPTING_SOURCE_FILES 
 	ui/ScriptingApplet.cpp
+	bindings/ScriptBindings.cpp
 )
 
 # Generate plugin module.

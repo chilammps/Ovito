@@ -22,8 +22,10 @@
 #include <plugins/scripting/Scripting.h>
 #include "ScriptingApplet.h"
 
+#include <QString>
 #include <QJSEngine>
-#include <QQmlEngine>
+
+#include "../bindings/ScriptBindings.h"
 
 namespace Scripting {
 
@@ -84,7 +86,34 @@ void ScriptingApplet::closeUtility(RolloutContainer* container)
 ******************************************************************************/
 void ScriptingApplet::runScript()
 {
+	// Set up engine.
 	QJSEngine engine;
+
+	// Set up namespace.
+
+	/*
+	Viewport* activeViewport = ViewportManager::instance().activeViewport();
+	ViewportBinding avp(activeViewport);
+	QJSValue avp_val = engine.newQObject(&avp);
+	engine.globalObject().setProperty("activeViewport", avp_val);
+	*/
+	ActiveViewportBinding avp;
+	QJSValue avp_val = engine.newQObject(&avp);
+	engine.globalObject().setProperty("activeViewport", avp_val);
+
+	const QVector<Viewport*>& all_viewports = ViewportManager::instance().viewports();
+	QJSValue all_vp = engine.newArray(all_viewports.size());
+	for (int i = 0; i != all_viewports.size(); ++i) {
+		QJSValue v = engine.newQObject(new ViewportBinding(all_viewports[i], &avp));
+		all_vp.setProperty(i, v);
+	}
+	engine.globalObject().setProperty("viewport", all_vp);
+
+	OvitoBinding o;
+	QJSValue o_val = engine.newQObject(&o);
+	engine.globalObject().setProperty("Ovito", o_val);
+
+	// Evaluate.
 	QJSValue result = engine.evaluate(_editor->toPlainText());
 	if(result.isError()) {
 		_output->setStyleSheet("QLabel { color: red; }");
@@ -93,6 +122,15 @@ void ScriptingApplet::runScript()
 	} else {
 		_output->setStyleSheet("QLabel { }");
 		_output->setText(result.toString());
+		if (result.isArray()) {
+			QString s;
+			s += "ARRAY: [";
+			int length = result.property("length").toInt();
+			for (int i = 0; i != length; ++i)
+				s += result.property(i).toString() + ", ";
+			s += "]";
+			_output->setText(s);
+		}
 	}
 }
 
