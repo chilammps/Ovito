@@ -56,6 +56,7 @@ void ScriptingApplet::openUtility(RolloutContainer* container, const RolloutInse
 
 	// Create output widget.
 	_output = new QLabel(_panel);
+	_output->setTextFormat(Qt::PlainText);
 	_output->setText("<output goes here>");
 	layout->addWidget(_output, 1);
 
@@ -86,8 +87,11 @@ void ScriptingApplet::runScript()
 	QJSEngine engine;
 	QJSValue result = engine.evaluate(_editor->toPlainText());
 	if(result.isError()) {
-		Exception(result.toString()).showError();
+		_output->setStyleSheet("QLabel { color: red; }");
+		_output->setText(result.toString());
+		//Exception(result.toString()).showError();
 	} else {
+		_output->setStyleSheet("QLabel { }");
 		_output->setText(result.toString());
 	}
 }
