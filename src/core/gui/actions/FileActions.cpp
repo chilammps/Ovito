@@ -77,9 +77,14 @@ void ActionManager::on_HelpShowOnlineHelp_triggered()
 ******************************************************************************/
 void ActionManager::on_FileNew_triggered()
 {
-	if(DataSetManager::instance().askForSaveChanges()) {
-		OORef<DataSet> newSet(new DataSet());
-		DataSetManager::instance().setCurrentSet(newSet);
+	try {
+		if(DataSetManager::instance().askForSaveChanges()) {
+			OORef<DataSet> newSet(new DataSet());
+			DataSetManager::instance().setCurrentSet(newSet);
+		}
+	}
+	catch(const Exception& ex) {
+		ex.showError();
 	}
 }
 
@@ -88,29 +93,34 @@ void ActionManager::on_FileNew_triggered()
 ******************************************************************************/
 void ActionManager::on_FileOpen_triggered()
 {
-	if(!DataSetManager::instance().askForSaveChanges())
-		return;
+	try {
+		if(!DataSetManager::instance().askForSaveChanges())
+			return;
 
-	QSettings settings;
-	settings.beginGroup("file/scene");
+		QSettings settings;
+		settings.beginGroup("file/scene");
 
-	// Go the last directory used.
-	QString defaultPath;
-	OORef<DataSet> dataSet = DataSetManager::instance().currentSet();
-	if(dataSet == NULL || dataSet->filePath().isEmpty())
-		defaultPath = settings.value("last_directory").toString();
-	else
-		defaultPath = dataSet->filePath();
+		// Go the last directory used.
+		QString defaultPath;
+		OORef<DataSet> dataSet = DataSetManager::instance().currentSet();
+		if(dataSet == NULL || dataSet->filePath().isEmpty())
+			defaultPath = settings.value("last_directory").toString();
+		else
+			defaultPath = dataSet->filePath();
 
-	QString filename = QFileDialog::getOpenFileName(&MainWindow::instance(), tr("Load Scene"),
-			defaultPath, tr("Scene Files (*.ovito);;All Files (*)"));
-    if(filename.isEmpty())
-		return;
+		QString filename = QFileDialog::getOpenFileName(&MainWindow::instance(), tr("Load Scene"),
+				defaultPath, tr("Scene Files (*.ovito);;All Files (*)"));
+		if(filename.isEmpty())
+			return;
 
-	// Remember directory for the next time...
-	settings.setValue("last_directory", QFileInfo(filename).absolutePath());
+		// Remember directory for the next time...
+		settings.setValue("last_directory", QFileInfo(filename).absolutePath());
 
-	DataSetManager::instance().fileLoad(filename);
+		DataSetManager::instance().fileLoad(filename);
+	}
+	catch(const Exception& ex) {
+		ex.showError();
+	}
 }
 
 /******************************************************************************
@@ -122,7 +132,12 @@ void ActionManager::on_FileSave_triggered()
 	// This will process any pending user inputs in QLineEdit fields.
 	MainWindow::instance().setFocus();
 
-	DataSetManager::instance().fileSave();
+	try {
+		DataSetManager::instance().fileSave();
+	}
+	catch(const Exception& ex) {
+		ex.showError();
+	}
 }
 
 /******************************************************************************
@@ -130,7 +145,12 @@ void ActionManager::on_FileSave_triggered()
 ******************************************************************************/
 void ActionManager::on_FileSaveAs_triggered()
 {
-	DataSetManager::instance().fileSaveAs();
+	try {
+		DataSetManager::instance().fileSaveAs();
+	}
+	catch(const Exception& ex) {
+		ex.showError();
+	}
 }
 
 /******************************************************************************
@@ -154,8 +174,13 @@ void ActionManager::on_FileImport_triggered()
 	if(dialog.exec() != QDialog::Accepted)
 		return;
 
-	// Import file.
-	DataSetManager::instance().importFile(QUrl::fromLocalFile(dialog.fileToImport()), dialog.selectedFileImporter());
+	try {
+		// Import file.
+		DataSetManager::instance().importFile(QUrl::fromLocalFile(dialog.fileToImport()), dialog.selectedFileImporter());
+	}
+	catch(const Exception& ex) {
+		ex.showError();
+	}
 }
 
 /******************************************************************************
@@ -168,8 +193,13 @@ void ActionManager::on_FileRemoteImport_triggered()
 	if(dialog.exec() != QDialog::Accepted)
 		return;
 
-	// Import URL.
-	DataSetManager::instance().importFile(dialog.fileToImport(), dialog.selectedFileImporter());
+	try {
+		// Import URL.
+		DataSetManager::instance().importFile(dialog.fileToImport(), dialog.selectedFileImporter());
+	}
+	catch(const Exception& ex) {
+		ex.showError();
+	}
 }
 
 /******************************************************************************

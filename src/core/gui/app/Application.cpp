@@ -150,7 +150,7 @@ bool Application::initialize()
 			MainWindow::instance().restoreLayout();
 		}
 
-		// Enable the viewports now. Viewport updates are suspended by default.
+		// Enable the viewports now. Viewport updates are initially suspended.
 		ViewportManager::instance().resumeViewportUpdates();
 
 		// Import file specified on the command line.

@@ -275,21 +275,27 @@ bool MainWindow::event(QEvent* event)
 ******************************************************************************/
 void MainWindow::closeEvent(QCloseEvent* event)
 {
-	// Save changes.
-	if(!DataSetManager::instance().askForSaveChanges()) {
-		event->ignore();
-		return;
+	try {
+		// Save changes.
+		if(!DataSetManager::instance().askForSaveChanges()) {
+			event->ignore();
+			return;
+		}
+
+		// Close current scene file.
+		ViewportManager::instance().suspendViewportUpdates();
+		DataSetManager::instance().setCurrentSet(new DataSet());
+
+		// Save window layout.
+		saveLayout();
+
+		// Destroy main window.
+		event->accept();
 	}
-
-	// Close current scene file.
-	ViewportManager::instance().suspendViewportUpdates();
-	DataSetManager::instance().setCurrentSet(new DataSet());
-
-	// Save window layout.
-	saveLayout();
-
-	// Destroy main window.
-	event->accept();
+	catch(const Exception& ex) {
+		event->ignore();
+		ex.showError();
+	}
 }
 
 };

@@ -31,10 +31,9 @@
 #include <core/viewport/ViewportConfiguration.h>
 #include "DataSet.h"
 #include "CurrentSelectionProxy.h"
+#include "importexport/FileImporter.h"
 
 namespace Ovito {
-
-class FileImporterDescription;		// Defined in FileImporter.h
 
 /**
  * \brief Manages the current DataSet.
@@ -77,42 +76,41 @@ public:
 	/// \brief Imports a given file into the scene.
 	/// \param url The location of the file to import.
 	/// \param importerType The type of importer to use. If NULL, the file format will be automatically detected.
-	/// \return true if the file was successfully imported; false otherwise.
-	bool importFile(const QUrl& url, const FileImporterDescription* importerType = nullptr);
+	/// \return true if the file was successfully imported; false if operation has been canceled by the user.
+	/// \throw Exception on error.
+	bool importFile(const QUrl& url, const FileImporterDescription* importerType = nullptr, FileImporter::ImportMode importMode = FileImporter::AskUser);
 
-public Q_SLOTS:
-	
-	/// \brief Replaces the current data set with a new one and resets the 
-	///        application to its initial state.
-	void fileReset();
+	/// \brief Loads the given scene file.
+	/// \return \c true if the file has been successfully loaded; \c false if the operation has been canceled by the user.
+	/// \throw Exception on error.
+	bool fileLoad(const QString& filename);
 
 	/// \brief Save the current scene. 
 	/// \return \c true, if the scene has been saved; \c false if the operation has been canceled by the user.
+	/// \throw Exception on error.
 	/// 
-	/// If the current scene has not been assigned a file path than this method
-	/// shows a file dialog to let the user select a destination path for the scene file.
-	/// \sa fileSaveAs()
+	/// If the current scene has not been assigned a file path, then this method
+	/// displays a file selector dialog by calling fileSaveAs() to let the user select a file path.
 	bool fileSave();
 
-	/// \brief Lets the user select a new destination filename for the current scene and then saves the scene.
+	/// \brief Lets the user select a new destination filename for the current scene. Then saves the scene by calling fileSave().
 	/// \param filename If \a filename is an empty string that this method asks the user for a filename. Otherwise
-	///                 The provided filename will be used.
+	///                 the provided filename is used.
 	/// \return \c true, if the scene has been saved; \c false if the operation has been canceled by the user.
-	/// \sa fileSave()
+	/// \throw Exception on error.
 	bool fileSaveAs(const QString& filename = QString());
 
-	/// \brief Asks the user if any changes made to the scene should be saved.
-	/// 
-	/// If the current dataset has been changed this method will ask the user if he wants
-	/// to save the changes. If he answers yes then the scene is saved.
-	///
-	/// \return \c false if the operation has been canceled by the user; \c true on success.
-	bool askForSaveChanges();
+	/// \brief Replaces the current data set with a new one and resets the
+	///        application to its initial state.
+	void fileReset();
 
-	/// \brief Loads the given scene file.
-	/// \return \c true if the file has been successfully loaded; \c false if an error has occurred
-	///         or the operation has been canceled by the user.
-	bool fileLoad(const QString& filename);
+	/// \brief Asks the user if changes made to the scene should be saved.
+	/// \return \c false if the operation has been canceled by the user; \c true on success.
+	/// \throw Exception on error.
+	/// 
+	/// If the current dataset has been changed, this method asks the user if he/she wants
+	/// to save the changes. If yes, then the scene is saved by calling fileSave().
+	bool askForSaveChanges();
 
 	/// \brief Returns the default ViewportConfiguration used for new scene files.
 	/// \return Pointer to the default viewport configuration stored by the DataSetManager.
