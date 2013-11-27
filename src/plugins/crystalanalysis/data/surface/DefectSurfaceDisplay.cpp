@@ -814,7 +814,7 @@ void DefectSurfaceDisplayEditor::createUI(const RolloutInsertionParameters& roll
 	sublayout->addWidget(surfaceColorUI->colorPicker(), 0, 1);
 
 	FloatParameterUI* surfaceTransparencyUI = new FloatParameterUI(this, PROPERTY_FIELD(DefectSurfaceDisplay::_surfaceTransparency));
-	sublayout->addWidget(new QLabel(tr("Transparency:")), 1, 0);
+	sublayout->addWidget(new QLabel(tr("Transparency (%):")), 1, 0);
 	sublayout->addLayout(surfaceTransparencyUI->createFieldLayout(), 1, 1);
 	surfaceTransparencyUI->setMinValue(0);
 	surfaceTransparencyUI->setMaxValue(1);
@@ -835,7 +835,7 @@ void DefectSurfaceDisplayEditor::createUI(const RolloutInsertionParameters& roll
 	sublayout->addWidget(capColorUI->colorPicker(), 0, 1);
 
 	FloatParameterUI* capTransparencyUI = new FloatParameterUI(this, PROPERTY_FIELD(DefectSurfaceDisplay::_capTransparency));
-	sublayout->addWidget(new QLabel(tr("Transparency:")), 1, 0);
+	sublayout->addWidget(new QLabel(tr("Transparency (%):")), 1, 0);
 	sublayout->addLayout(capTransparencyUI->createFieldLayout(), 1, 1);
 	capTransparencyUI->setMinValue(0);
 	capTransparencyUI->setMaxValue(1);

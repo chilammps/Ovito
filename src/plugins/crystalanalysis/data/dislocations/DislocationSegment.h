@@ -48,7 +48,11 @@ public:
 	const QVector<int>& coreSize() const { return _coreSize; }
 
 	/// Sets the sequence of space points that make up the dislocation segment.
-	void setLine(const QVector<Point3>& line, const QVector<int>& coreSize) { _line = line; _coreSize = coreSize; }
+	void setLine(const QVector<Point3>& line, const QVector<int>& coreSize) {
+		_line = line;
+		_coreSize = coreSize;
+		_length = 0;
+	}
 
 	/// Returns true if this segment is a closed loop.
 	bool isClosedLoop() const { return _isClosedLoop; }
@@ -69,33 +73,16 @@ public:
 	const Vector3& burgersVector() const { return _burgersVector; }
 
 	/// Sets the Burgers vector of the segment and the cluster the segment is embedded in.
-	void setBurgersVector(const Vector3& burgersVector, Cluster* cluster) {
-		_burgersVector = burgersVector;
-		_cluster = cluster;
-		// Determine the Burgers vector family the segment belongs to.
-		BurgersVectorFamily* newFamily = NULL;
-		Q_FOREACH(BurgersVectorFamily* family, cluster->pattern()->burgersVectorFamilies()) {
-			if(family->isMember(burgersVector)) {
-				newFamily = family;
-				break;
-			}
-		}
-		if(newFamily == NULL)
-			newFamily = cluster->pattern()->defaultBurgersVectorFamily();
-		setBurgersVectorFamily(newFamily);
-	}
+	void setBurgersVector(const Vector3& burgersVector, Cluster* cluster);
 
-	/// Returns the Burgers vector family this segment belongs to (may be NULL).
+	/// Returns the Burgers vector family this segment belongs to.
 	BurgersVectorFamily* burgersVectorFamily() const { return _burgersVectorFamily; }
 
 	/// Changes the Burgers vector family this segment belongs to.
 	void setBurgersVectorFamily(BurgersVectorFamily* family) { _burgersVectorFamily = family; }
 
-	/// Returns the length of the dislocation segment (after coarsening/smoothing).
-	FloatType length() const { return _length; }
-
-	/// Sets the length of the dislocation segment (after coarsening/smoothing).
-	void setLength(FloatType length) { _length = length; }
+	/// Returns the length of the dislocation segment.
+	FloatType length();
 
 	/// Returns whether this dislocation segment is shown.
 	bool isVisible() const { return _isVisible; }

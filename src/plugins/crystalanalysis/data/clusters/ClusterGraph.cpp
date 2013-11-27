@@ -56,7 +56,7 @@ void ClusterGraphEditor::createUI(const RolloutInsertionParameters& rolloutParam
 	class CustomRefTargetListParameterUI : public RefTargetListParameterUI {
 	public:
 		CustomRefTargetListParameterUI(PropertiesEditor* parentEditor, const PropertyFieldDescriptor& refField)
-			: RefTargetListParameterUI(parentEditor, refField, RolloutInsertionParameters(), NULL) {}
+			: RefTargetListParameterUI(parentEditor, refField) {}
 	protected:
 		virtual QVariant getItemData(RefTarget* target, const QModelIndex& index, int role) override {
 			if(target != NULL && role == Qt::DisplayRole) {

@@ -51,7 +51,7 @@ RefTargetListParameterUI::~RefTargetListParameterUI()
 	/// The destructor must clear all references since this UI object
 	/// might have been deleted via the delete operator and not via
 	/// the autoDeleteObject() method which should normally be used for RefMaker derived classes.
-	_subEditor = NULL;
+	_subEditor = nullptr;
 	clearAllReferences();
 	 	
 	// Release GUI controls. 
@@ -305,7 +305,7 @@ bool RefTargetListParameterUI::referenceEvent(RefTarget* source, ReferenceEvent*
 	} 
 	else if(event->type() == ReferenceEvent::TitleChanged || event->type() == ReferenceEvent::TargetChanged) {
 		OVITO_ASSERT(_targetToRow.size() == _targets.size());
-		for(int i=0; i<_targets.size(); i++) {
+		for(int i = 0; i < _targets.size(); i++) {
 			if(_targets[i] == source) {
 				// Update a single item.
 				_model->updateItem(_targetToRow[i]);

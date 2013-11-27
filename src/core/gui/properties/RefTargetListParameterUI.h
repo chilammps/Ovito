@@ -34,6 +34,7 @@ namespace Ovito {
 class OVITO_CORE_EXPORT RefTargetListParameterUI : public ParameterUI
 {
 public:
+
 	/// Constructor.
 	RefTargetListParameterUI(QObject* parentEditor, const PropertyFieldDescriptor& refField,
 			const RolloutInsertionParameters& rolloutParams = RolloutInsertionParameters(), const OvitoObjectType* defaultEditorClass = nullptr);
@@ -65,6 +66,12 @@ public:
 	/// Returns the current sub-editor for the selected sub-object or NULL if there is none.
 	PropertiesEditor* subEditor() const { return _subEditor.get(); }
 
+	/// Informs the parameter UI that the given columns of all items have changed.
+	void updateColumns(int columnStartIndex, int columnEndIndex) { _model->updateColumns(columnStartIndex, columnEndIndex); }
+
+	/// Returns the internal model used to populate the list view or table view widget.
+	QAbstractTableModel* model() const { return _model; }
+
 public:
 	
 	Q_PROPERTY(RefTarget selectedObject READ selectedObject)
@@ -73,6 +80,7 @@ protected:
 
 	class ListViewModel : public QAbstractTableModel {
 	public:
+
 		/// Constructor that takes a pointer to the owning parameter UI object.
 		ListViewModel(RefTargetListParameterUI* owner) : QAbstractTableModel(owner) {}
 
@@ -100,7 +108,7 @@ protected:
 			dataChanged(index(itemIndex, 0), index(itemIndex, columnCount() - 1));
 		}
 
-		/// Notifies the system that the given columns of all items has changed and the display needs to be updated.
+		/// Notifies the system that the given columns of all items have changed and the display needs to be updated.
 		void updateColumns(int columnStartIndex, int columnEndIndex) {
 			// Update the columns of all items.
 			dataChanged(index(0, columnStartIndex), index(rowCount() - 1, columnEndIndex));

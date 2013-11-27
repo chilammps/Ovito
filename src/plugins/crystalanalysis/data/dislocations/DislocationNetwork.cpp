@@ -20,12 +20,17 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <plugins/crystalanalysis/CrystalAnalysis.h>
+#include <core/dataset/DataSetManager.h>
+#include <core/scene/ObjectNode.h>
 #include "DislocationNetwork.h"
 #include "DislocationDisplay.h"
+#include "DislocationInspector.h"
 
 namespace CrystalAnalysis {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(CrystalAnalysis, DislocationNetwork, SceneObject)
+IMPLEMENT_OVITO_OBJECT(CrystalAnalysis, DislocationNetworkEditor, PropertiesEditor)
+SET_OVITO_OBJECT_EDITOR(DislocationNetwork, DislocationNetworkEditor)
 DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(DislocationNetwork, _segments, "DislocationSegments", DislocationSegment, PROPERTY_FIELD_ALWAYS_CLONE)
 SET_PROPERTY_FIELD_LABEL(DislocationNetwork, _segments, "Dislocation segments")
 
@@ -36,6 +41,50 @@ DislocationNetwork::DislocationNetwork()
 {
 	INIT_PROPERTY_FIELD(DislocationNetwork::_segments);
 	addDisplayObject(new DislocationDisplay());
+}
+
+/******************************************************************************
+* Sets up the UI widgets of the editor.
+******************************************************************************/
+void DislocationNetworkEditor::createUI(const RolloutInsertionParameters& rolloutParams)
+{
+	// Create a rollout.
+	QWidget* rollout = createRollout(tr("Dislocations"), rolloutParams);
+	QVBoxLayout* rolloutLayout = new QVBoxLayout(rollout);
+
+	QPushButton* openInspectorButton = new QPushButton(tr("Open inspector window"), rollout);
+	rolloutLayout->addWidget(openInspectorButton);
+	connect(openInspectorButton, SIGNAL(clicked(bool)), this, SLOT(onOpenInspector()));
+}
+
+/******************************************************************************
+* Is called when the user presses the "Open Inspector" button.
+******************************************************************************/
+void DislocationNetworkEditor::onOpenInspector()
+{
+	DislocationNetwork* dislocationsObj = static_object_cast<DislocationNetwork>(editObject());
+	if(!dislocationsObj) return;
+
+	UndoSuspender noUndo;
+	QMainWindow* inspectorWindow = new QMainWindow(container()->window(), (Qt::WindowFlags)(Qt::Tool | Qt::CustomizeWindowHint | Qt::WindowMaximizeButtonHint | Qt::WindowCloseButtonHint));
+	inspectorWindow->setWindowTitle(tr("Dislocation Inspector"));
+	PropertiesPanel* propertiesPanel = new PropertiesPanel(inspectorWindow);
+	propertiesPanel->hide();
+
+	QWidget* mainPanel = new QWidget(inspectorWindow);
+	QVBoxLayout* mainPanelLayout = new QVBoxLayout(mainPanel);
+	mainPanelLayout->setStretch(0,1);
+	mainPanelLayout->setContentsMargins(0,0,0,0);
+	inspectorWindow->setCentralWidget(mainPanel);
+
+	ObjectNode* node = dynamic_object_cast<ObjectNode>(DataSetManager::instance().currentSelection()->firstNode());
+	DislocationInspector* inspector = new DislocationInspector(node);
+	inspector->setParent(propertiesPanel);
+	inspector->initialize(propertiesPanel, RolloutInsertionParameters().insertInto(mainPanel));
+	inspector->setEditObject(dislocationsObj);
+	inspectorWindow->setAttribute(Qt::WA_DeleteOnClose);
+	inspectorWindow->resize(1000, 350);
+	inspectorWindow->show();
 }
 
 };	// End of namespace

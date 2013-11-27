@@ -204,6 +204,20 @@ void Application::shutdown()
 }
 
 /******************************************************************************
+* Executes the functions registered with the runOnceLater() function.
+* This method is called after the events in the event queue have been processed.
+******************************************************************************/
+void Application::processRunOnceList()
+{
+	auto copy = _runOnceList;
+	_runOnceList.clear();
+	for(auto entry = copy.cbegin(); entry != copy.cend(); ++entry) {
+		if(entry.key())
+			entry.value()();
+	}
+}
+
+/******************************************************************************
 * Parses the command line parameters.
 ******************************************************************************/
 bool Application::parseCommandLine()
