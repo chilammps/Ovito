@@ -3,6 +3,8 @@
 #include <base/linalg/Point3.h>
 #include <base/linalg/Vector3.h>
 #include <base/utilities/FloatType.h>
+#include <core/dataset/DataSetManager.h>
+#include <core/dataset/importexport/FileImporter.h>
 
 namespace Scripting {
 
@@ -40,6 +42,37 @@ void ViewportBinding::ortho(double cam_pos_x, double cam_pos_y, double cam_pos_z
   vp->setFieldOfView(fov);
 }
 
+
+void ViewportBinding::maximize() {
+	Viewport* vp = getViewport();
+	ViewportManager::instance().setMaximizedViewport(vp);
+	ViewportManager::instance().setActiveViewport(vp);
+}
+
+void ViewportBinding::restore() {
+	ViewportManager::instance().setMaximizedViewport(nullptr);
+}
+
+
+
+
+void OvitoBinding::loadFile(const QString& path) {
+	// TODO: exception handling!
+	DataSetManager::instance().importFile(QUrl::fromLocalFile(path),
+										  nullptr,
+										  FileImporter::AddToScene);
+}
+
+QString OvitoBinding::pwd() const {
+	return QDir::currentPath();
+}
+
+void OvitoBinding::cd(QString newdir) {
+	const bool success = QDir::setCurrent(newdir);
+	if (!success)
+		// TODO: JS exception
+		throw Exception("Could not cd to " + newdir);
+}
 
 
 }
