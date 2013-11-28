@@ -128,9 +128,11 @@ void ActionManager::on_FileOpen_triggered()
 ******************************************************************************/
 void ActionManager::on_FileSave_triggered()
 {
-	// Set focus to main window.
-	// This will process any pending user inputs in QLineEdit fields.
-	MainWindow::instance().setFocus();
+	if(Application::instance().guiMode()) {
+		// Set focus to main window.
+		// This will process any pending user inputs in QLineEdit fields.
+		MainWindow::instance().setFocus();
+	}
 
 	try {
 		DataSetManager::instance().fileSave();

@@ -37,6 +37,10 @@ class ViewportConfiguration;	// defined in ViewportConfiguration.h
 class AnimationSettings;		// defined in AnimationSettings.h
 class SelectionSet;				// defined in SelectionSet.h
 class RenderSettings;			// defined in RenderSettings.h
+class SceneRenderer;			// defined in SceneRenderer.h
+class FrameBuffer;				// defined in FrameBuffer.h
+class FrameBufferWindow;		// defined in FrameBufferWindow.h
+class VideoEncoder;				// defined in VideoEncoder.h
 
 /**
  * \brief This class stores everything that belongs to a scene.
@@ -106,10 +110,26 @@ public:
 	/// \undoable
 	void rescaleTime(const TimeInterval& oldAnimationInterval, const TimeInterval& newAnimationInterval);
 
+	/// \brief This is the high-level rendering function, which invokes the renderer to generate one or more
+	///        output images of the scene. All rendering parameters are specified in the RenderSettings object.
+	/// \param settings A RenderSettings object that specifies output image size, animation range to render etc.
+	/// \param viewport The viewport to render. This determines the camera orientation.
+	/// \param frameBuffer The frame buffer that will receive the rendered image. When rendering an animation
+	///        sequence, the buffer will contain only the last rendered frame when the function returns.
+	/// \param frameBufferWindow An optional pointer to a frame buffer window displaying the output frame buffer.
+	///        The method will update the title and the size of the window while rendering the image.
+	/// \return true on success; false if operation has been canceled by the user.
+	/// \throw Exception on error.
+	bool renderScene(RenderSettings* settings, Viewport* viewport, QSharedPointer<FrameBuffer> frameBuffer, FrameBufferWindow* frameBufferWindow = nullptr);
+
 protected:
 
 	/// Is called when a RefTarget referenced by this object has generated an event.
 	virtual bool referenceEvent(RefTarget* source, ReferenceEvent* event) override;
+
+	/// Renders a single frame and saves the output file. This is part of the implementation of the renderScene() method.
+	void renderFrame(TimePoint renderTime, int frameNumber, RenderSettings* settings, SceneRenderer* renderer,
+			Viewport* viewport, FrameBuffer* frameBuffer, VideoEncoder* videoEncoder, QProgressDialog& progressDialog);
 
 private:
 
