@@ -21,18 +21,12 @@
 
 #include <core/Core.h>
 #include <core/gui/actions/ActionManager.h>
-#include <core/viewport/Viewport.h>
 #include <core/viewport/ViewportManager.h>
-#include <core/rendering/RenderSettings.h>
-#include <core/rendering/FrameBuffer.h>
-#include <core/rendering/SceneRenderer.h>
-#include <core/gui/widgets/rendering/FrameBufferWindow.h>
 #include <core/gui/mainwin/MainWindow.h>
 #include <core/gui/app/Application.h>
+#include <core/gui/widgets/rendering/FrameBufferWindow.h>
 #include <core/dataset/DataSetManager.h>
-#ifdef OVITO_VIDEO_OUTPUT_SUPPORT
-#include <3rdparty/video/VideoEncoder.h>
-#endif
+#include <core/rendering/RenderSettings.h>
 
 namespace Ovito {
 
@@ -42,211 +36,37 @@ namespace Ovito {
 void ActionManager::on_RenderActiveViewport_triggered()
 {
 	try {
-		// Set focus to main window.
-		// This will process any pending user inputs in QLineEdit fields.
-		MainWindow::instance().setFocus();
 
-		// Get the selected scene renderer.
+		if(Application::instance().guiMode()) {
+			// Set input focus to main window.
+			// This will process any pending user inputs in QLineEdit fields that haven't been processed yet.
+			MainWindow::instance().setFocus();
+		}
+
+		// Get the current render settings.
 		RenderSettings* settings = DataSetManager::instance().currentSet()->renderSettings();
-		if(!settings || !settings->renderer()) throw Exception(tr("No renderer has been selected."));
-		SceneRenderer* renderer = settings->renderer();
 
-		// Do not update the viewports while rendering.
-		ViewportSuspender noVPUpdates;
-
-		// Get active viewport.
+		// Get viewport to be rendered.
 		Viewport* viewport = ViewportManager::instance().activeViewport();
 		if(!viewport)
 			throw Exception(tr("There is no active viewport to render."));
 
-		// Show progress dialog.
-		QProgressDialog progressDialog(&MainWindow::instance());
-		progressDialog.setWindowModality(Qt::WindowModal);
-		progressDialog.setAutoClose(false);
-		progressDialog.setAutoReset(false);
-		progressDialog.setMinimumDuration(0);
-		progressDialog.setValue(0);
-
-		try {
-
-			// Initialize the renderer.
-			if(renderer->startRender(DataSetManager::instance().currentSet(), settings)) {
-
-				VideoEncoder* videoEncoder = nullptr;
-#ifdef OVITO_VIDEO_OUTPUT_SUPPORT
-				QScopedPointer<VideoEncoder> videoEncoderPtr;
-				// Initialize video encoder.
-				if(settings->saveToFile() && settings->imageInfo().isMovie()) {
-
-					if(settings->imageFilename().isEmpty())
-						throw Exception(tr("Cannot save rendered images to movie file. Output filename has not been specified."));
-
-					videoEncoderPtr.reset(new VideoEncoder());
-					videoEncoder = videoEncoderPtr.data();
-					videoEncoder->openFile(settings->imageFilename(), settings->outputImageWidth(), settings->outputImageHeight(), AnimManager::instance().framesPerSecond());
-				}
-#endif
-
-				// Create the frame buffer for the output image.
-				FrameBufferWindow* frameBufferWindow = nullptr;
-				QSharedPointer<FrameBuffer> frameBuffer;
-				if(Application::instance().guiMode()) {
-					frameBufferWindow = MainWindow::instance().frameBufferWindow();
-					frameBuffer = frameBufferWindow->frameBuffer();
-				}
-				if(!frameBuffer) {
-					frameBuffer.reset(new FrameBuffer(settings->outputImageWidth(), settings->outputImageHeight()));
-					if(frameBufferWindow) {
-						frameBufferWindow->setFrameBuffer(frameBuffer);
-						frameBufferWindow->resize(frameBufferWindow->sizeHint());
-					}
-				}
-				else if(frameBuffer->size() != QSize(settings->outputImageWidth(), settings->outputImageHeight())) {
-					frameBuffer->setSize(QSize(settings->outputImageWidth(), settings->outputImageHeight()));
-					frameBuffer->clear();
-					if(frameBufferWindow)
-						frameBufferWindow->resize(frameBufferWindow->sizeHint());
-				}
-				if(frameBufferWindow) {
-					frameBufferWindow->show();
-					frameBufferWindow->activateWindow();
-				}
-
-				if(settings->renderingRangeType() == RenderSettings::CURRENT_FRAME) {
-					// Render a single frame.
-					TimePoint renderTime = AnimManager::instance().time();
-					int frameNumber = AnimManager::instance().timeToFrame(renderTime);
-					if(frameBufferWindow)
-						frameBufferWindow->setWindowTitle(tr("Frame %1").arg(frameNumber));
-					renderFrame(renderTime, frameNumber, settings, renderer, viewport, frameBuffer.data(), videoEncoder, progressDialog);
-				}
-				else if(settings->renderingRangeType() == RenderSettings::ANIMATION_INTERVAL || settings->renderingRangeType() == RenderSettings::CUSTOM_INTERVAL) {
-					// Render an animation interval.
-					TimePoint renderTime;
-					int firstFrameNumber, numberOfFrames;
-					if(settings->renderingRangeType() == RenderSettings::ANIMATION_INTERVAL) {
-						renderTime = AnimManager::instance().animationInterval().start();
-						firstFrameNumber = AnimManager::instance().timeToFrame(AnimManager::instance().animationInterval().start());
-						numberOfFrames = (AnimManager::instance().timeToFrame(AnimManager::instance().animationInterval().end()) - firstFrameNumber + 1);
-					}
-					else {
-						firstFrameNumber = settings->customRangeStart();
-						renderTime = AnimManager::instance().frameToTime(firstFrameNumber);
-						numberOfFrames = (settings->customRangeEnd() - firstFrameNumber + 1);
-					}
-					numberOfFrames = (numberOfFrames + settings->everyNthFrame() - 1) / settings->everyNthFrame();
-					if(numberOfFrames < 1)
-						throw Exception(tr("Invalid rendering range: Frame %1 to %2").arg(settings->customRangeStart()).arg(settings->customRangeEnd()));
-					progressDialog.setMaximum(numberOfFrames);
-
-					// Render frames, one by one.
-					for(int frameIndex = 0; frameIndex < numberOfFrames; frameIndex++) {
-						progressDialog.setValue(frameIndex);
-
-						int frameNumber = firstFrameNumber + frameIndex * settings->everyNthFrame() + settings->fileNumberBase();
-						if(frameBufferWindow)
-							frameBufferWindow->setWindowTitle(tr("Frame %1").arg(AnimManager::instance().timeToFrame(renderTime)));
-						renderFrame(renderTime, frameNumber, settings, renderer, viewport, frameBuffer.data(), videoEncoder, progressDialog);
-
-						if(progressDialog.wasCanceled())
-							break;
-
-						// Go to next animation frame.
-						renderTime += AnimManager::instance().ticksPerFrame() * settings->everyNthFrame();
-					}
-				}
-
-#ifdef OVITO_VIDEO_OUTPUT_SUPPORT
-				// Finalize movie file.
-				if(videoEncoder)
-					videoEncoder->closeFile();
-#endif
-			}
-
-			// Shutdown renderer.
-			renderer->endRender();
+		// Get the frame buffer for the output image, or create one if necessary.
+		FrameBufferWindow* frameBufferWindow = nullptr;
+		QSharedPointer<FrameBuffer> frameBuffer;
+		if(Application::instance().guiMode()) {
+			frameBufferWindow = MainWindow::instance().frameBufferWindow();
+			frameBuffer = frameBufferWindow->frameBuffer();
 		}
-		catch(...) {
-			// Shutdown renderer.
-			renderer->endRender();
-			throw;
-		}
+		if(!frameBuffer)
+			frameBuffer.reset(new FrameBuffer(settings->outputImageWidth(), settings->outputImageHeight()));
+
+		// Call high-level rendering function, which will take care of the rest.
+		DataSetManager::instance().currentSet()->renderScene(settings, viewport, frameBuffer, frameBufferWindow);
 	}
 	catch(const Exception& ex) {
 		ex.showError();
 	}
-}
-
-/******************************************************************************
-* Renders a single frame and saves the output file.
-******************************************************************************/
-bool ActionManager::renderFrame(TimePoint renderTime, int frameNumber, RenderSettings* settings, SceneRenderer* renderer, Viewport* viewport,
-		FrameBuffer* frameBuffer, VideoEncoder* videoEncoder, QProgressDialog& progressDialog)
-{
-	// Generate output filename.
-	QString imageFilename;
-	if(settings->saveToFile() && !videoEncoder) {
-		imageFilename = settings->imageFilename();
-		if(imageFilename.isEmpty())
-			throw Exception(tr("Cannot save rendered image to file. Output filename has not been specified."));
-
-		if(settings->renderingRangeType() != RenderSettings::CURRENT_FRAME) {
-			// Append frame number to file name if rendering an animation.
-			QFileInfo fileInfo(imageFilename);
-			imageFilename = fileInfo.path() + QChar('/') + fileInfo.baseName() + QString("%1.").arg(frameNumber, 4, 10, QChar('0')) + fileInfo.completeSuffix();
-
-			// Check for existing image file and skip.
-			if(settings->skipExistingImages() && QFileInfo(imageFilename).isFile())
-				return false;
-		}
-	}
-
-	// Jump to animation time.
-	AnimManager::instance().setTime(renderTime);
-
-	// Wait until the scene is ready.
-	volatile bool sceneIsReady = false;
-	DataSetManager::instance().runWhenSceneIsReady( [&sceneIsReady]() { sceneIsReady = true; } );
-	if(!sceneIsReady) {
-		progressDialog.setLabelText(tr("Rendering frame %1. Preparing scene...").arg(frameNumber));
-		while(!sceneIsReady) {
-			if(progressDialog.wasCanceled())
-				return false;
-			QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents, 200);
-		}
-	}
-	progressDialog.setLabelText(tr("Rendering frame %1.").arg(frameNumber));
-
-	// Request scene bounding box.
-	Box3 boundingBox = renderer->sceneBoundingBox(renderTime);
-
-	// Setup projection.
-	ViewProjectionParameters projParams = viewport->projectionParameters(renderTime, settings->outputImageAspectRatio(), boundingBox);
-
-	// Render one frame.
-	frameBuffer->clear();
-	renderer->beginFrame(renderTime, projParams, viewport);
-	if(!renderer->renderFrame(frameBuffer, &progressDialog) || progressDialog.wasCanceled()) {
-		progressDialog.cancel();
-		renderer->endFrame();
-		return false;
-	}
-	renderer->endFrame();
-
-	// Save rendered image to disk.
-	if(settings->saveToFile()) {
-		if(!videoEncoder) {
-			if(!frameBuffer->image().save(imageFilename, settings->imageInfo().format()))
-				throw Exception(tr("Failed to save rendered image to image file '%1'.").arg(imageFilename));
-		}
-		else {
-#ifdef OVITO_VIDEO_OUTPUT_SUPPORT
-			videoEncoder->writeFrame(frameBuffer->image());
-#endif
-		}
-	}
-
-	return !progressDialog.wasCanceled();
 }
 
 };

@@ -405,7 +405,8 @@ QSet<SceneObject*> CAImporter::CrystalAnalysisImportTask::insertIntoScene(Linked
 				family.reset(new BurgersVectorFamily());
 				pattern->addBurgersVectorFamily(family.get());
 			}
-			family->setColor(_patterns[i].burgersVectorFamilies[j].color);
+			if(family->name() != _patterns[i].burgersVectorFamilies[j].name)
+				family->setColor(_patterns[i].burgersVectorFamilies[j].color);
 			family->setName(_patterns[i].burgersVectorFamilies[j].name);
 			family->setBurgersVector(_patterns[i].burgersVectorFamilies[j].burgersVector);
 		}

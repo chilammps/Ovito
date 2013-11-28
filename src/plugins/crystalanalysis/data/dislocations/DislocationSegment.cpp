@@ -54,7 +54,6 @@ void DislocationSegment::saveToStream(ObjectSaveStream& stream)
 	stream << _isClosedLoop;
 	stream << _line;
 	stream << _coreSize;
-	stream << _length;
 	stream.endChunk();
 }
 
@@ -68,7 +67,6 @@ void DislocationSegment::loadFromStream(ObjectLoadStream& stream)
 	stream >> _isClosedLoop;
 	stream >> _line;
 	stream >> _coreSize;
-	stream >> _length;
 	stream.closeChunk();
 }
 
@@ -86,6 +84,39 @@ OORef<RefTarget> DislocationSegment::clone(bool deepCopy, CloneHelper& cloneHelp
 	clone->_length = this->_length;
 
 	return clone;
+}
+
+/******************************************************************************
+* Sets the Burgers vector of the segment and the cluster the segment is embedded in.
+******************************************************************************/
+void DislocationSegment::setBurgersVector(const Vector3& burgersVector, Cluster* cluster)
+{
+	OVITO_CHECK_POINTER(cluster);
+	_burgersVector = burgersVector;
+	_cluster = cluster;
+	// Determine the Burgers vector family the segment belongs to.
+	BurgersVectorFamily* newFamily = NULL;
+	Q_FOREACH(BurgersVectorFamily* family, cluster->pattern()->burgersVectorFamilies()) {
+		if(family->isMember(burgersVector)) {
+			newFamily = family;
+			break;
+		}
+	}
+	if(newFamily == NULL)
+		newFamily = cluster->pattern()->defaultBurgersVectorFamily();
+	setBurgersVectorFamily(newFamily);
+}
+
+/******************************************************************************
+* Returns the length of the dislocation segment.
+******************************************************************************/
+FloatType DislocationSegment::length()
+{
+	if(_length == 0) {
+		for(auto v1 = _line.cbegin(), v2 = v1 + 1; v2 != _line.cend(); v1 = v2, ++v2)
+			_length += (*v2 - *v1).length();
+	}
+	return _length;
 }
 
 /******************************************************************************

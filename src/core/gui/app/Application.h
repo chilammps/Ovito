@@ -90,10 +90,26 @@ public:
 	/// \brief Shows the online manual and opens the given help page.
 	void openHelpTopic(const QString& page);
 
+	/// This registers a functor object to be called after all events in the UI event queue have been processed and
+	/// before control returns to the event loop. For a given target object, only one functor can be registered at a
+	/// time. Subsequent calls to runOnceLater() with the same target, before control returns to the event loop, will do nothing.
+	template<class F>
+	void runOnceLater(QObject* target, F&& func) {
+		if(_runOnceList.isEmpty())
+			metaObject()->invokeMethod(this, "processRunOnceList", Qt::QueuedConnection);
+		else if(_runOnceList.contains(target))
+			return;
+		_runOnceList.insert(target, std::forward<F>(func));
+	}
+
 private:
 
 	/// Parses the command line parameters.
 	bool parseCommandLine();
+
+	/// Executes the functions registered with the runOnceLater() function.
+	/// This method is called after the events in the event queue have been processed.
+	Q_INVOKABLE void processRunOnceList();
 
 private:
 
@@ -108,6 +124,9 @@ private:
 
 	/// In console mode, this is the exit code returned by the application on shutdown.
 	int _exitCode;
+
+	/// The list of functor objects registered with runOnceLater(), which are to be executed as soon as control returns to the event loop.
+	QMap<QPointer<QObject>,std::function<void()>> _runOnceList;
 
 	/// The default message handler method of Qt.
 	static QtMessageHandler defaultQtMessageHandler;

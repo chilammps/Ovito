@@ -91,6 +91,14 @@ void ParticleModifier::setStatus(const ObjectStatus& status)
 }
 
 /******************************************************************************
+* Asks the modifier whether it can be applied to the given input data.
+******************************************************************************/
+bool ParticleModifier::isApplicableTo(const PipelineFlowState& input)
+{
+	return (input.findObject<ParticlePropertyObject>() != nullptr);
+}
+
+/******************************************************************************
 * Returns a standard particle property from the input state.
 ******************************************************************************/
 ParticlePropertyObject* ParticleModifier::inputStandardProperty(ParticleProperty::Type which) const

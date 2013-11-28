@@ -24,6 +24,7 @@
 
 #include <core/Core.h>
 #include <core/scene/objects/SceneObject.h>
+#include <core/gui/properties/PropertiesEditor.h>
 #include "DislocationSegment.h"
 
 namespace CrystalAnalysis {
@@ -63,6 +64,32 @@ private:
 	OVITO_OBJECT
 
 	DECLARE_VECTOR_REFERENCE_FIELD(_segments);
+};
+
+/******************************************************************************
+* A properties editor for the DislocationNetwork class.
+******************************************************************************/
+class OVITO_CRYSTALANALYSIS_EXPORT DislocationNetworkEditor : public PropertiesEditor
+{
+public:
+
+	/// Default constructor.
+	Q_INVOKABLE DislocationNetworkEditor() {}
+
+protected:
+
+	/// Creates the user interface controls for the editor.
+	virtual void createUI(const RolloutInsertionParameters& rolloutParams) override;
+
+protected Q_SLOTS:
+
+	/// Is called when the user presses the "Open Inspector" button.
+	void onOpenInspector();
+
+private:
+
+	Q_OBJECT
+	OVITO_OBJECT
 };
 
 };	// End of namespace

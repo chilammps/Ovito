@@ -168,6 +168,13 @@ public:
 	/// \undoable
 	void setEnabled(bool enabled) { _isEnabled = enabled; }
 
+	/// \brief Asks the modifier whether it can be applied to the given input data.
+	/// \param input The pipeline state at the point of the pipeline where the modifier is going to be inserted.
+	/// \return true if the modifier can operate on the provided input data; false otherwise.
+	///
+	/// This method is used to filter the list of available modifiers. The default implementation returns false.
+	virtual bool isApplicableTo(const PipelineFlowState& input) { return false; }
+
 public:
 
 	Q_PROPERTY(bool isEnabled READ isEnabled WRITE setEnabled)

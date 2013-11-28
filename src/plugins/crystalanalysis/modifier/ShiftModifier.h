@@ -42,6 +42,9 @@ public:
 	/// Constructor.
 	Q_INVOKABLE ShiftModifier();
 
+	/// Asks the modifier whether it can be applied to the given input data.
+	virtual bool isApplicableTo(const PipelineFlowState& input) override;
+
 	/// Asks the modifier for its validity interval at the given time.
 	virtual TimeInterval modifierValidity(TimePoint time) override;
 
@@ -57,7 +60,7 @@ private:
 	OVITO_OBJECT
 
 	Q_CLASSINFO("DisplayName", "Shift");
-	Q_CLASSINFO("ModifierCategory", "Modification");
+	Q_CLASSINFO("ModifierCategory", "Crystal analysis");
 
 	DECLARE_REFERENCE_FIELD(_translation);
 };

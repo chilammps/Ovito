@@ -43,6 +43,9 @@ public:
 	/// Constructor.
 	Q_INVOKABLE SmoothSurfaceModifier();
 
+	/// Asks the modifier whether it can be applied to the given input data.
+	virtual bool isApplicableTo(const PipelineFlowState& input) override;
+
 	/// This modifies the input object.
 	virtual ObjectStatus modifyObject(TimePoint time, ModifierApplication* modApp, PipelineFlowState& state) override;
 
@@ -60,7 +63,7 @@ private:
 	OVITO_OBJECT
 
 	Q_CLASSINFO("DisplayName", "Smooth surface");
-	Q_CLASSINFO("ModifierCategory", "Modification");
+	Q_CLASSINFO("ModifierCategory", "Crystal analysis");
 
 	DECLARE_PROPERTY_FIELD(_smoothingLevel);
 };

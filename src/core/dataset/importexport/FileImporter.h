@@ -38,12 +38,17 @@ namespace Ovito {
  */
 class OVITO_CORE_EXPORT FileImporter : public RefTarget
 {
-protected:
-	
-	/// \brief The default constructor.
-	FileImporter() {}
-
 public:
+
+	/// Import modes that control the behavior of the importFile() method.
+	enum ImportMode {
+		AskUser,				///< Let the user decide how to insert the imported data into the scene.
+		AddToScene,				///< Add the imported data as a new object to the scene.
+		ReplaceSelected,		///< Replace existing dataset with newly imported data if possible. Add to scene otherwise.
+								///  In any case, keep all other scene objects as they are.
+		ResetScene				///< Clear the contents of the current scene first before importing the data.
+	};
+	Q_ENUMS(ImportMode);
 
 	/// \brief Returns the file filter that specifies the files that can be imported by this service.
 	/// \return A wild-card pattern that specifies the file types that can be handled by this import class.
@@ -55,10 +60,11 @@ public:
 
 	/// \brief Imports a file into the scene.
 	/// \param sourceUrl The location of the file to import.
+	/// \param importMode Controls how the imported data is inserted into the scene.
 	/// \return \c true if the file has been successfully imported.
-	//	        \c false if the import has been aborted by the user.
-	/// \throw Exception when the import has failed.
-	virtual bool importFile(const QUrl& sourceUrl)  = 0;
+	//	        \c false if the operation has been canceled by the user.
+	/// \throw Exception when the import operation has failed.
+	virtual bool importFile(const QUrl& sourceUrl, ImportMode importMode = AskUser) = 0;
 
 	/// \brief Checks if the given file has format that can be read by this importer.
 	/// \param input The I/O device that contains the file data to check.
@@ -115,5 +121,8 @@ private:
 };
 
 };
+
+Q_DECLARE_METATYPE(Ovito::FileImporter::ImportMode);
+Q_DECLARE_TYPEINFO(Ovito::FileImporter::ImportMode, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_FILE_IMPORTER_H

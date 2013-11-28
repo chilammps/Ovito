@@ -19,7 +19,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <core/Core.h>
+#include <plugins/crystalanalysis/CrystalAnalysis.h>
 #include <core/rendering/SceneRenderer.h>
 #include <core/gui/properties/VariantComboBoxParameterUI.h>
 #include <core/gui/properties/FloatParameterUI.h>
@@ -105,10 +105,12 @@ void DislocationDisplay::render(TimePoint time, SceneObject* sceneObject, const 
 		if(OORef<DislocationNetwork> dislocationObj = sceneObject->convertTo<DislocationNetwork>(time)) {
 			int lineSegmentCount = 0, cornerCount = 0;
 			for(DislocationSegment* segment : dislocationObj->segments()) {
-				clipDislocationLine(segment->line(), cellData, [&lineSegmentCount, &cornerCount](const Point3&, const Point3&, bool isInitialSegment) {
-					lineSegmentCount++;
-					if(!isInitialSegment) cornerCount++;
-				});
+				if(segment->isVisible() && segment->burgersVectorFamily()->isVisible()) {
+					clipDislocationLine(segment->line(), cellData, [&lineSegmentCount, &cornerCount](const Point3&, const Point3&, bool isInitialSegment) {
+						lineSegmentCount++;
+						if(!isInitialSegment) cornerCount++;
+					});
+				}
 			}
 			_segmentBuffer->startSetElements(lineSegmentCount);
 			int lineSegmentIndex = 0;
@@ -118,14 +120,16 @@ void DislocationDisplay::render(TimePoint time, SceneObject* sceneObject, const 
 			cornerPoints.reserve(cornerCount);
 			cornerColors.reserve(cornerCount);
 			for(DislocationSegment* segment : dislocationObj->segments()) {
-				Color lineColor = segment->burgersVectorFamily()->color();
-				clipDislocationLine(segment->line(), cellData, [this, &lineSegmentIndex, &cornerPoints, &cornerColors, lineColor, lineRadius](const Point3& v1, const Point3& v2, bool isInitialSegment) {
-					_segmentBuffer->setElement(lineSegmentIndex++, v1, v2 - v1, ColorA(lineColor), lineRadius);
-					if(!isInitialSegment) {
-						cornerPoints.push_back(v1);
-						cornerColors.push_back(lineColor);
-					}
-				});
+				if(segment->isVisible() && segment->burgersVectorFamily()->isVisible()) {
+					Color lineColor = segment->burgersVectorFamily()->color();
+					clipDislocationLine(segment->line(), cellData, [this, &lineSegmentIndex, &cornerPoints, &cornerColors, lineColor, lineRadius](const Point3& v1, const Point3& v2, bool isInitialSegment) {
+						_segmentBuffer->setElement(lineSegmentIndex++, v1, v2 - v1, ColorA(lineColor), lineRadius);
+						if(!isInitialSegment) {
+							cornerPoints.push_back(v1);
+							cornerColors.push_back(lineColor);
+						}
+					});
+				}
 			}
 			_segmentBuffer->endSetElements();
 			_cornerBuffer->setSize(cornerPoints.size());

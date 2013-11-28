@@ -150,7 +150,7 @@ bool Application::initialize()
 			MainWindow::instance().restoreLayout();
 		}
 
-		// Enable the viewports now. Viewport updates are suspended by default.
+		// Enable the viewports now. Viewport updates are initially suspended.
 		ViewportManager::instance().resumeViewportUpdates();
 
 		// Import file specified on the command line.
@@ -201,6 +201,20 @@ void Application::shutdown()
 	ControllerManager::shutdown();
 	PluginManager::shutdown();
 	UndoManager::shutdown();
+}
+
+/******************************************************************************
+* Executes the functions registered with the runOnceLater() function.
+* This method is called after the events in the event queue have been processed.
+******************************************************************************/
+void Application::processRunOnceList()
+{
+	auto copy = _runOnceList;
+	_runOnceList.clear();
+	for(auto entry = copy.cbegin(); entry != copy.cend(); ++entry) {
+		if(entry.key())
+			entry.value()();
+	}
 }
 
 /******************************************************************************

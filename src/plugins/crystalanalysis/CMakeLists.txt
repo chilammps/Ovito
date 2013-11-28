@@ -31,6 +31,7 @@ SET(OVITO_CRYSTALANALYSIS_SOURCE_FILES
 	data/dislocations/DislocationSegment.cpp
 	data/dislocations/DislocationNetwork.cpp
 	data/dislocations/DislocationDisplay.cpp
+	data/dislocations/DislocationInspector.cpp
 	modifier/ShiftModifier.cpp
 	modifier/SmoothSurfaceModifier.cpp
 	modifier/SmoothDislocationsModifier.cpp

@@ -55,6 +55,9 @@ public:
 	/// \brief Returns a structure that describes the current status of the modifier.
 	virtual ObjectStatus status() const override { return _modifierStatus; }
 
+	/// \brief Asks the modifier whether it can be applied to the given input data.
+	virtual bool isApplicableTo(const PipelineFlowState& input) override;
+
 protected:
 
 	/// Saves the class' contents to the given stream.

@@ -166,10 +166,13 @@ bool DataSetManager::fileSave()
 ******************************************************************************/
 bool DataSetManager::fileSaveAs(const QString& filename)
 {
-	if(currentSet() == NULL)
+	if(currentSet() == nullptr)
 		return false;
 
 	if(filename.isEmpty()) {
+		if(Application::instance().guiMode() == false)
+			throw Exception(tr("Cannot save scene. No filename has been set."));
+
 		QFileDialog dialog(&MainWindow::instance(), tr("Save Scene As"));
 		dialog.setNameFilter(tr("Scene Files (*.ovito);;All Files (*)"));
 		dialog.setAcceptMode(QFileDialog::AcceptSave);
@@ -237,77 +240,63 @@ bool DataSetManager::askForSaveChanges()
 bool DataSetManager::fileLoad(const QString& filename)
 {
 	// Load dataset from file.
-	try {
-		OORef<DataSet> dataSet;
-		{
-			QFile fileStream(filename);
-		    if(!fileStream.open(QIODevice::ReadOnly))
-				throw Exception(tr("Failed to open input file '%1' for reading.").arg(filename));
+	OORef<DataSet> dataSet;
+	{
+		QFile fileStream(filename);
+		if(!fileStream.open(QIODevice::ReadOnly))
+			throw Exception(tr("Failed to open file '%1' for reading.").arg(filename));
 
-			QDataStream dataStream(&fileStream);
-			ObjectLoadStream stream(dataStream);
+		QDataStream dataStream(&fileStream);
+		ObjectLoadStream stream(dataStream);
 
-			// Issue a warning when the floating-point precision of the input file does not match
-			// the precision used in this build.
-			if(stream.floatingPointPrecision() > sizeof(FloatType)) {
-				if(Application::instance().guiMode()) {
-					QString msg = tr("The scene file has been written with a version of this application that uses %1-bit floating-point precision. "
-						   "The version of this application that you are using at this moment only supports %2-bit precision numbers. "
-						   "The precision of all numbers stored in the input file will be truncated during loading.").arg(stream.floatingPointPrecision()*8).arg(sizeof(FloatType)*8);
-					QMessageBox::warning(NULL, tr("Floating-point precision mismatch"), msg);
-				}
+		// Issue a warning when the floating-point precision of the input file does not match
+		// the precision used in this build.
+		if(stream.floatingPointPrecision() > sizeof(FloatType)) {
+			if(Application::instance().guiMode()) {
+				QString msg = tr("The scene file has been written with a version of this application that uses %1-bit floating-point precision. "
+					   "The version of this application that you are using at this moment only supports %2-bit precision numbers. "
+					   "The precision of all numbers stored in the input file will be truncated during loading.").arg(stream.floatingPointPrecision()*8).arg(sizeof(FloatType)*8);
+				QMessageBox::warning(NULL, tr("Floating-point precision mismatch"), msg);
 			}
-
-			dataSet = stream.loadObject<DataSet>();
-			stream.close();
 		}
-		OVITO_CHECK_OBJECT_POINTER(dataSet);
-		dataSet->setFilePath(filename);
-		setCurrentSet(dataSet);
+
+		dataSet = stream.loadObject<DataSet>();
+		stream.close();
 	}
-	catch(const Exception& ex) {
-		ex.showError();
-		return false;
-	}
+	OVITO_CHECK_OBJECT_POINTER(dataSet);
+	dataSet->setFilePath(filename);
+	setCurrentSet(dataSet);
 	return true;
 }
 
 /******************************************************************************
 * Imports a given file into the scene.
 ******************************************************************************/
-bool DataSetManager::importFile(const QUrl& url, const FileImporterDescription* importerType)
+bool DataSetManager::importFile(const QUrl& url, const FileImporterDescription* importerType, FileImporter::ImportMode importMode)
 {
-	try {
+	if(!url.isValid())
+		throw Exception(tr("Failed to import file. URL is not valid: %1").arg(url.toString()));
 
-		if(!url.isValid())
-			throw Exception(tr("URL is not valid: %1").arg(url.toString()));
+	OORef<FileImporter> importer;
+	if(!importerType) {
 
-		OORef<FileImporter> importer;
-		if(!importerType) {
+		// Download file so we can determine its format.
+		Future<QString> fetchFileFuture = FileManager::instance().fetchUrl(url);
+		if(!ProgressManager::instance().waitForTask(fetchFileFuture))
+			return false;
 
-			// Download file so we can determine its format.
-			Future<QString> fetchFileFuture = FileManager::instance().fetchUrl(url);
-			if(!ProgressManager::instance().waitForTask(fetchFileFuture))
-				return false;
-
-			// Detect file format.
-			importer = ImportExportManager::instance().autodetectFileFormat(fetchFileFuture.result(), url.path());
-			if(!importer)
-				throw Exception(tr("Could not detect the format of the file to be imported. The format might not be supported."));
-		}
-		else {
-			importer = importerType->createService();
-			if(!importer)
-				return false;
-		}
-
-		if(importer->importFile(url))
-			return true;
+		// Detect file format.
+		importer = ImportExportManager::instance().autodetectFileFormat(fetchFileFuture.result(), url.path());
+		if(!importer)
+			throw Exception(tr("Could not detect the format of the file to be imported. The format might not be supported."));
 	}
-	catch(const Exception& ex) {
-		ex.showError();
+	else {
+		importer = importerType->createService();
+		if(!importer)
+			throw Exception(tr("Failed to import file. Could not initialize import service."));
 	}
-	return false;
+
+	return importer->importFile(url, importMode);
 }
 
 /******************************************************************************
