@@ -113,7 +113,9 @@ void DislocationDisplay::render(TimePoint time, SceneObject* sceneObject, const 
 				}
 			}
 			_segmentBuffer->startSetElements(lineSegmentCount);
+			_subobjToSegmentMap.resize(lineSegmentCount + cornerCount);
 			int lineSegmentIndex = 0;
+			int dislocationIndex = 0;
 			FloatType lineRadius = std::max(lineWidth() / 2, FloatType(0));
 			QVector<Point3> cornerPoints;
 			QVector<Color> cornerColors;
@@ -122,14 +124,17 @@ void DislocationDisplay::render(TimePoint time, SceneObject* sceneObject, const 
 			for(DislocationSegment* segment : dislocationObj->segments()) {
 				if(segment->isVisible() && segment->burgersVectorFamily()->isVisible()) {
 					Color lineColor = segment->burgersVectorFamily()->color();
-					clipDislocationLine(segment->line(), cellData, [this, &lineSegmentIndex, &cornerPoints, &cornerColors, lineColor, lineRadius](const Point3& v1, const Point3& v2, bool isInitialSegment) {
+					clipDislocationLine(segment->line(), cellData, [this, &lineSegmentIndex, &cornerPoints, &cornerColors, lineColor, lineRadius, &dislocationIndex, lineSegmentCount](const Point3& v1, const Point3& v2, bool isInitialSegment) {
+						_subobjToSegmentMap[lineSegmentIndex] = dislocationIndex;
 						_segmentBuffer->setElement(lineSegmentIndex++, v1, v2 - v1, ColorA(lineColor), lineRadius);
 						if(!isInitialSegment) {
+							_subobjToSegmentMap[cornerPoints.size() + lineSegmentCount] = dislocationIndex;
 							cornerPoints.push_back(v1);
 							cornerColors.push_back(lineColor);
 						}
 					});
 				}
+				dislocationIndex++;
 			}
 			_segmentBuffer->endSetElements();
 			_cornerBuffer->setSize(cornerPoints.size());
@@ -144,17 +149,83 @@ void DislocationDisplay::render(TimePoint time, SceneObject* sceneObject, const 
 	}
 
 	// Render segments.
-	quint32 pickingBaseID = 0;
-	if(_cornerBuffer) {
+	if(_cornerBuffer && _segmentBuffer) {
+		quint32 pickingBaseID = 0;
 		if(renderer->isPicking())
-			pickingBaseID = renderer->registerPickObject(contextNode, sceneObject, _cornerBuffer->particleCount());
+			pickingBaseID = renderer->registerPickObject(contextNode, sceneObject, this, _segmentBuffer->elementCount() + _cornerBuffer->particleCount());
+		_segmentBuffer->render(renderer, pickingBaseID);
+		pickingBaseID += _segmentBuffer->elementCount();
 		_cornerBuffer->render(renderer, pickingBaseID);
 	}
-	if(_segmentBuffer) {
-		if(renderer->isPicking())
-			pickingBaseID = renderer->registerPickObject(contextNode, sceneObject, _segmentBuffer->elementCount());
-		_segmentBuffer->render(renderer, pickingBaseID);
+}
+
+/******************************************************************************
+* Renders an overlay marker for a single dislocation segment.
+******************************************************************************/
+void DislocationDisplay::renderOverlayMarker(TimePoint time, SceneObject* sceneObject, const PipelineFlowState& flowState, int segmentIndex, SceneRenderer* renderer, ObjectNode* contextNode)
+{
+	if(renderer->isPicking())
+		return;
+
+	// Get the simulation cell.
+	SimulationCell* cellObject = flowState.findObject<SimulationCell>();
+	if(!cellObject)
+		return;
+	SimulationCellData cellData = cellObject->data();
+
+	// Get the dislocations.
+	OORef<DislocationNetwork> dislocationObj = sceneObject->convertTo<DislocationNetwork>(time);
+	if(!dislocationObj)
+		return;
+
+	if(segmentIndex < 0 || segmentIndex >= dislocationObj->segments().size())
+		return;
+
+	DislocationSegment* segment = dislocationObj->segments()[segmentIndex];
+
+	// Generate the polyline segments to render.
+	QVector<std::pair<Point3,Point3>> lineSegments;
+	QVector<Point3> cornerVertices;
+	clipDislocationLine(segment->line(), cellData, [&lineSegments, &cornerVertices](const Point3& v1, const Point3& v2, bool isInitialSegment) {
+		lineSegments.push_back({v1,v2});
+		if(!isInitialSegment)
+			cornerVertices.push_back(v1);
+	});
+
+	// Set up transformation.
+	TimeInterval iv;
+	const AffineTransformation& nodeTM = contextNode->getWorldTransform(time, iv);
+	renderer->setWorldTransform(nodeTM);
+
+	glDisable(GL_DEPTH_TEST);
+
+	FloatType lineRadius = std::max(lineWidth() / 4, FloatType(0));
+	OORef<ArrowGeometryBuffer> segmentBuffer = renderer->createArrowGeometryBuffer(ArrowGeometryBuffer::CylinderShape, ArrowGeometryBuffer::FlatShading, ArrowGeometryBuffer::HighQuality);
+	segmentBuffer->startSetElements(lineSegments.size());
+	int index = 0;
+	for(const auto& seg : lineSegments)
+		segmentBuffer->setElement(index++, seg.first, seg.second - seg.first, ColorA(1,1,1), lineRadius);
+	segmentBuffer->endSetElements();
+	segmentBuffer->render(renderer);
+
+	OORef<ParticleGeometryBuffer> cornerBuffer = renderer->createParticleGeometryBuffer(ParticleGeometryBuffer::FlatShading, ParticleGeometryBuffer::HighQuality);
+	cornerBuffer->setSize(cornerVertices.size());
+	cornerBuffer->setParticlePositions(cornerVertices.constData());
+	cornerBuffer->setParticleColor(Color(1,1,1));
+	cornerBuffer->setParticleRadius(lineRadius);
+	cornerBuffer->render(renderer);
+
+	if(!segment->line().empty()) {
+		Point3 wrappedHeadPos = cellData.wrapPoint(segment->line().front());
+		OORef<ParticleGeometryBuffer> headBuffer = renderer->createParticleGeometryBuffer(ParticleGeometryBuffer::FlatShading, ParticleGeometryBuffer::HighQuality);
+		headBuffer->setSize(1);
+		headBuffer->setParticlePositions(&wrappedHeadPos);
+		headBuffer->setParticleColor(Color(1,1,1));
+		headBuffer->setParticleRadius(lineRadius * 3);
+		headBuffer->render(renderer);
 	}
+
+	glEnable(GL_DEPTH_TEST);
 }
 
 /******************************************************************************

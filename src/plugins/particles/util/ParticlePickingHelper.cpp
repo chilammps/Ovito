@@ -39,9 +39,10 @@ namespace Particles {
 bool ParticlePickingHelper::pickParticle(Viewport* vp, const QPoint& clickPoint, PickResult& result)
 {
 	ViewportPickResult vpPickResult = vp->pick(clickPoint);
+	// Check if user has clicked on something.
 	if(vpPickResult.valid) {
 
-		// Check if user has really clicked on a particle.
+		// Check if that was a particle.
 		OORef<ParticlePropertyObject> posProperty = dynamic_object_cast<ParticlePropertyObject>(vpPickResult.sceneObject);
 		if(posProperty && posProperty->type() == ParticleProperty::PositionProperty && vpPickResult.subobjectId < posProperty->size()) {
 

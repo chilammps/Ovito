@@ -22,13 +22,18 @@
 #include <plugins/crystalanalysis/CrystalAnalysis.h>
 #include <core/gui/undo/UndoManager.h>
 #include <core/gui/app/Application.h>
+#include <core/viewport/Viewport.h>
+#include <core/viewport/ViewportManager.h>
+#include <core/rendering/viewport/ViewportSceneRenderer.h>
 #include "DislocationInspector.h"
 #include "DislocationSegment.h"
 #include "DislocationNetwork.h"
+#include "DislocationDisplay.h"
 
 namespace CrystalAnalysis {
 
 IMPLEMENT_OVITO_OBJECT(CrystalAnalysis, DislocationInspector, PropertiesEditor);
+IMPLEMENT_OVITO_OBJECT(CrystalAnalysis, DislocationPickMode, ViewportInputHandler);
 DEFINE_FLAGS_REFERENCE_FIELD(DislocationInspector, _sceneNode, "SceneNode", ObjectNode, PROPERTY_FIELD_NO_UNDO);
 
 /// List of column indices used by the table.
@@ -58,6 +63,9 @@ void DislocationInspector::createUI(const RolloutInsertionParameters& rolloutPar
 	toolbar->setToolButtonStyle(Qt::ToolButtonTextOnly);
 	toolbar->addAction(tr("Hide unselected"), this, SLOT(onHideUnselected()));
 	toolbar->addAction(tr("Show all"), this, SLOT(onShowAll()));
+	_pickDislocationHandler = new DislocationPickMode(this);
+	_pickDislocationAction = new ViewportModeAction(tr("Pick dislocation"), this, _pickDislocationHandler);
+	toolbar->addAction(_pickDislocationAction);
 	for(QToolButton* button : toolbar->findChildren<QToolButton*>())
 		button->setAutoRaise(false);
 	rolloutLayout->addWidget(toolbar);
@@ -108,8 +116,8 @@ void DislocationInspector::createUI(const RolloutInsertionParameters& rolloutPar
 				}
 			}
 			else if(role == Qt::EditRole && index.column() == CLUSTER_COLUMN && segment != NULL) {
-				//SegmentCluster data = { segment, NULL, IDENTITY };
-				//return QVariant::fromValue(data);
+				SegmentCluster data = { segment, nullptr, Matrix3::Identity() };
+				return QVariant::fromValue(data);
 			}
 			else if(role == Qt::CheckStateRole) {
 				if(index.column() == VISIBLE_COLUMN) {
@@ -122,17 +130,15 @@ void DislocationInspector::createUI(const RolloutInsertionParameters& rolloutPar
 		/// Sets the role data for the item at index to value.
 		virtual bool setItemData(RefTarget* target, const QModelIndex& index, const QVariant& value, int role) override {
 			if(index.isValid() && index.column() == CLUSTER_COLUMN) {
-#if 0
 				SegmentCluster data = qvariant_cast<SegmentCluster>(value);
 				DislocationSegment* segment = data.segment;
 				OVITO_ASSERT(segment == target);
-				if(data.cluster != NULL) {
-					UNDO_MANAGER.beginCompoundOperation(tr("Change dislocation cluster"));
-					segment->setBurgersVector(data.transitionTM * segment->burgersVector(), data.cluster);
-					UNDO_MANAGER.endCompoundOperation();
+				if(data.cluster) {
+					UndoableTransaction::handleExceptions(tr("Change dislocation cluster"), [segment, &data]() {
+						segment->setBurgersVector(data.transitionTM * segment->burgersVector(), data.cluster);
+					});
 				}
 				return true;
-#endif
 			}
 			else if(index.isValid() && index.column() == VISIBLE_COLUMN) {
 				UndoableTransaction::handleExceptions(tr("Show/hide dislocation segment"), [&value, target]() {
@@ -150,8 +156,8 @@ void DislocationInspector::createUI(const RolloutInsertionParameters& rolloutPar
 		virtual Qt::ItemFlags getItemFlags(RefTarget* target, const QModelIndex& index) override {
 			if(index.column() == VISIBLE_COLUMN)
 				return RefTargetListParameterUI::getItemFlags(target, index) | Qt::ItemIsUserCheckable;
-			//else if(index.column() == CLUSTER_COLUMN)
-			//	return RefTargetListParameterUI::getItemFlags(target, index) | Qt::ItemIsEditable;
+			else if(index.column() == CLUSTER_COLUMN)
+				return RefTargetListParameterUI::getItemFlags(target, index) | Qt::ItemIsEditable;
 			else
 				return RefTargetListParameterUI::getItemFlags(target, index);
 		}
@@ -188,7 +194,7 @@ void DislocationInspector::createUI(const RolloutInsertionParameters& rolloutPar
 	_dislocationListUI->tableWidget()->horizontalHeader()->resizeSection(BURGERS_VECTOR_FAMILY_COLUMN, 210);
 	_dislocationListUI->tableWidget()->horizontalHeader()->resizeSection(CLUSTER_COLUMN, 200);
 	_dislocationListUI->tableWidget()->horizontalHeader()->resizeSection(LENGTH_COLUMN, 80);
-	//_dislocationListUI->tableWidget()->setItemDelegateForColumn(CLUSTER_COLUMN, new ClusterItemDelegate(this));
+	_dislocationListUI->tableWidget()->setItemDelegateForColumn(CLUSTER_COLUMN, new ClusterItemDelegate(this));
 	_dislocationListUI->tableWidget()->setEditTriggers(QAbstractItemView::AllEditTriggers);
 	_dislocationListUI->tableWidget()->setSelectionBehavior(QAbstractItemView::SelectRows);
 	_dislocationListUI->tableWidget()->setSelectionMode(QAbstractItemView::ExtendedSelection);
@@ -303,6 +309,157 @@ void DislocationInspector::onShowSelected()
 				segment->setVisible(true);
 		}
 	});
+}
+
+/******************************************************************************
+* Finds the dislocation segment under the mouse cursor.
+******************************************************************************/
+bool DislocationPickMode::pickDislocationSegment(Viewport* vp, const QPoint& pos, DislocationPickResult& result) const
+{
+	result.segment = nullptr;
+	result.objNode = nullptr;
+	result.displayObj = nullptr;
+
+	ViewportPickResult vpPickResult = vp->pick(pos);
+	// Check if user has clicked on something.
+	if(vpPickResult.valid) {
+
+		// Check if that was a dislocation.
+		DislocationNetwork* dislocationObj = dynamic_object_cast<DislocationNetwork>(vpPickResult.sceneObject.get());
+		DislocationDisplay* displayObj = dynamic_object_cast<DislocationDisplay>(vpPickResult.displayObject.get());
+		if(dislocationObj && displayObj) {
+			int segmentIndex = displayObj->segmentIndexFromSubObjectID(vpPickResult.subobjectId);
+			if(segmentIndex >= 0 && segmentIndex < dislocationObj->segments().size()) {
+
+				// Save reference to the picked segment.
+				result.objNode = vpPickResult.objectNode;
+				result.segmentIndex = segmentIndex;
+				result.segment = dislocationObj->segments()[segmentIndex];
+				result.displayObj = displayObj;
+
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+/******************************************************************************
+* Handles the mouse button up events for a Viewport.
+******************************************************************************/
+void DislocationPickMode::mouseReleaseEvent(Viewport* vp, QMouseEvent* event)
+{
+	if(event->button() == Qt::LeftButton && temporaryNavigationMode() == nullptr) {
+		DislocationPickResult pickResult;
+		if(pickDislocationSegment(vp, event->pos(), pickResult)) {
+			OVITO_ASSERT(pickResult.segmentIndex < _inspector->dislocationListUI()->model()->rowCount());
+			QModelIndex index = _inspector->dislocationListUI()->model()->index(pickResult.segmentIndex, 0);
+			QModelIndex sortedIndex = _inspector->sortedModel()->mapFromSource(index);
+			_inspector->dislocationListUI()->tableWidget()->selectRow(sortedIndex.row());
+			_inspector->dislocationListUI()->tableWidget()->scrollTo(sortedIndex, QAbstractItemView::EnsureVisible);
+		}
+	}
+	ViewportInputHandler::mouseReleaseEvent(vp, event);
+}
+
+/******************************************************************************
+* Handles the mouse move events for a Viewport.
+******************************************************************************/
+void DislocationPickMode::mouseMoveEvent(Viewport* vp, QMouseEvent* event)
+{
+	DislocationPickResult pickResult;
+	pickDislocationSegment(vp, event->pos(), pickResult);
+	if(pickResult.segment || _hoverSegment.segment) {
+		_hoverSegment = pickResult;
+		ViewportManager::instance().updateViewports();
+	}
+	ViewportInputHandler::mouseMoveEvent(vp, event);
+}
+
+/******************************************************************************
+* Renders the overlay content in a viewport.
+******************************************************************************/
+void DislocationPickMode::renderOverlay3D(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive)
+{
+	ViewportInputHandler::renderOverlay3D(vp, renderer, isActive);
+
+	if(!_hoverSegment.segment || !_hoverSegment.objNode || !_hoverSegment.displayObj)
+		return;
+
+	if(!renderer->isInteractive() || renderer->isPicking())
+		return;
+
+	const PipelineFlowState& flowState = _hoverSegment.objNode->evalPipeline(AnimManager::instance().time());
+	DislocationNetwork* dislocationObj = flowState.findObject<DislocationNetwork>();
+	if(!dislocationObj)
+		return;
+
+	_hoverSegment.displayObj->renderOverlayMarker(AnimManager::instance().time(), dislocationObj, flowState, _hoverSegment.segmentIndex, renderer, _hoverSegment.objNode.get());
+
+	// Render Burgers vector next to the mouse cursor.
+	OORef<TextGeometryBuffer> textBuffer = renderer->createTextGeometryBuffer();
+	QFont font(vp->widget()->font());
+	font.setPointSize(font.pointSize() * 3 / 2);
+	textBuffer->setFont(font);
+	textBuffer->setColor(ColorA(1.0f, 1.0f, 1.0f));
+	textBuffer->setBackgroundColor(ColorA(0.0f, 0.0f, 0.0f, 0.5f));
+	textBuffer->setText(DislocationSegment::formatBurgersVector(_hoverSegment.segment->burgersVector()));
+	QPoint mousePos = vp->viewportWindow()->mapFromGlobal(QCursor::pos());
+	textBuffer->renderWindow(renderer, Point2(mousePos.x(), mousePos.y()), Qt::AlignLeft | Qt::AlignBottom);
+}
+
+/******************************************************************************
+*
+******************************************************************************/
+void ClusterItemDelegate::setEditorData(QWidget* editor, const QModelIndex& index) const
+{
+	if(index.data(Qt::EditRole).canConvert<SegmentCluster>()) {
+		SegmentCluster data = qvariant_cast<SegmentCluster>(index.data(Qt::EditRole));
+		OVITO_CHECK_OBJECT_POINTER(data.segment);
+		OVITO_CHECK_OBJECT_POINTER(data.segment->cluster());
+		QComboBox* combobox = qobject_cast<QComboBox*>(editor);
+		combobox->clear();
+		combobox->addItem(QString("%1 (%2 atoms, id:%3) -> %4")
+				.arg(data.segment->cluster()->pattern()->shortName())
+				.arg(data.segment->cluster()->atomCount())
+				.arg(data.segment->cluster()->id())
+				.arg(DislocationSegment::formatBurgersVector(data.segment->burgersVector())),
+				QVariant::fromValue(data));
+
+		std::set<SegmentCluster> entries;
+		for(const ClusterTransition& transition : data.segment->cluster()->transitions()) {
+			OVITO_CHECK_OBJECT_POINTER(transition.cluster2());
+			StructurePattern* pattern = transition.cluster2()->pattern();
+			OVITO_CHECK_OBJECT_POINTER(pattern);
+			if(pattern->structureType() == StructurePattern::Lattice) {
+				SegmentCluster entry = { data.segment, transition.cluster2(), transition.tm() };
+				entries.insert(entry);
+			}
+		}
+
+		for(const SegmentCluster& entry : entries) {
+			combobox->addItem(QString("%1 (%2 atoms, id:%3) -> %4")
+					.arg(entry.cluster->pattern()->shortName())
+					.arg(entry.cluster->atomCount())
+					.arg(entry.cluster->id())
+					.arg(DislocationSegment::formatBurgersVector(entry.transitionTM * entry.segment->burgersVector())),
+					QVariant::fromValue(entry));
+		}
+		combobox->setCurrentIndex(0);
+	}
+	else QStyledItemDelegate::setEditorData(editor, index);
+}
+
+/******************************************************************************
+*
+******************************************************************************/
+void ClusterItemDelegate::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const
+{
+	if(index.data(Qt::EditRole).canConvert<SegmentCluster>()) {
+		QComboBox* combobox = qobject_cast<QComboBox*>(editor);
+		model->setData(index, combobox->itemData(combobox->currentIndex()),  Qt::EditRole);
+	}
+	else QStyledItemDelegate::setModelData(editor, model, index);
 }
 
 };

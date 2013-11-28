@@ -42,7 +42,7 @@ class OVITO_CORE_EXPORT TextGeometryBuffer : public OvitoObject
 public:
 
 	/// \brief Default constructor.
-	TextGeometryBuffer() : _color(ColorA(1,1,1,1)) {}
+	TextGeometryBuffer() : _color(1,1,1,1), _backgroundColor(0,0,0,0) {}
 
 	/// \brief Sets the text to be rendered.
 	virtual void setText(const QString& text) { _text = text; }
@@ -55,6 +55,12 @@ public:
 
 	/// \brief Returns the text color.
 	const ColorA& color() const { return _color; }
+
+	/// \brief Sets the text background color.
+	virtual void setBackgroundColor(const ColorA& color) { _backgroundColor = color; }
+
+	/// \brief Returns the text background color.
+	const ColorA& backgroundColor() const { return _backgroundColor; }
 
 	/// Sets the text font.
 	virtual void setFont(const QFont& font) { _font = font; }
@@ -78,6 +84,9 @@ private:
 
 	/// The text color.
 	ColorA _color;
+
+	/// The text background color.
+	ColorA _backgroundColor;
 
 	/// The text font.
 	QFont _font;

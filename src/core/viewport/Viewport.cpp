@@ -787,6 +787,11 @@ void Viewport::renderRenderFrame()
 ******************************************************************************/
 FloatType Viewport::nonScalingSize(const Point3& worldPosition)
 {
+	int height = size().height();
+	if(height == 0) return 1.0f;
+
+	const FloatType baseSize = 60.0f;
+
 	if(isPerspectiveProjection()) {
 
 		Point3 p = viewMatrix() * worldPosition;
@@ -795,12 +800,10 @@ FloatType Viewport::nonScalingSize(const Point3& worldPosition)
         Point3 p1 = projectionMatrix() * p;
 		Point3 p2 = projectionMatrix() * (p + Vector3(1,0,0));
 
-		return 0.1f / (p1 - p2).length();
+		return baseSize / (p1 - p2).length() / (FloatType)height;
 	}
 	else {
-		int height = size().height();
-		if(height == 0) return 1.0f;
-		return _projParams.fieldOfView / (FloatType)height * 60.0f;
+		return _projParams.fieldOfView / (FloatType)height * baseSize;
 	}
 }
 
@@ -871,6 +874,7 @@ ViewportPickResult Viewport::pick(const QPointF& pos)
 		if(objInfo) {
 			result.objectNode = objInfo->objectNode;
 			result.sceneObject = objInfo->sceneObject;
+			result.displayObject = objInfo->displayObject;
 			result.worldPosition = _pickingRenderer->worldPositionFromLocation((pos * viewportWindow()->devicePixelRatio()).toPoint());
 		}
 		_pickingRenderer->reset();

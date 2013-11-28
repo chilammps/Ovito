@@ -44,6 +44,7 @@ class DataSet;			// defined in DataSet.h
 class SceneNode;		// defined in SceneNode.h
 class RenderSettings;	// defined in RenderSettings.h
 class FrameBuffer;		// defined in FrameBuffer.h
+class DisplayObject;	// defined in DisplayObject.h
 
 /**
  * \brief This is the base class for scene renderers.
@@ -140,7 +141,7 @@ public:
 	virtual bool isInteractive() const { return false; }
 
 	/// When picking mode is active, this registers an object being rendered.
-	virtual quint32 registerPickObject(ObjectNode* objNode, SceneObject* sceneObj, quint32 subObjectCount = 1) { return 0; }
+	virtual quint32 registerPickObject(ObjectNode* objNode, SceneObject* sceneObj, DisplayObject* displayObj, quint32 subObjectCount = 1) { return 0; }
 
 protected:
 

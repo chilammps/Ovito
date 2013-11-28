@@ -42,6 +42,7 @@ public:
 		quint32 baseObjectID;
 		OORef<ObjectNode> objectNode;
 		OORef<SceneObject> sceneObject;
+		OORef<DisplayObject> displayObject;
 	};
 
 public:
@@ -61,7 +62,7 @@ public:
 	virtual void endFrame() override;
 
 	/// When picking mode is active, this registers an object being rendered.
-	virtual quint32 registerPickObject(ObjectNode* objNode, SceneObject* sceneObj, quint32 subObjectCount) override;
+	virtual quint32 registerPickObject(ObjectNode* objNode, SceneObject* sceneObj, DisplayObject* displayObj, quint32 subObjectCount) override;
 
 	/// Returns the object record and the sub-object ID for the object at the given pixel coordinates.
 	std::tuple<const ObjectRecord*, quint32> objectAtLocation(const QPoint& pos) const;

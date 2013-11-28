@@ -440,6 +440,7 @@ QSet<SceneObject*> CAImporter::CrystalAnalysisImportTask::insertIntoScene(Linked
 		Cluster* cluster1 = clusterGraph->clusters()[t.cluster1];
 		Cluster* cluster2 = clusterGraph->clusters()[t.cluster2];
 		cluster1->addTransition(cluster2, t.tm);
+		cluster2->addTransition(cluster1, t.tm.inverse());
 	}
 
 	// Insert dislocations.

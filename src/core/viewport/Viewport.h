@@ -99,6 +99,9 @@ struct ViewportPickResult
 	/// The scene object that was picked.
 	OORef<SceneObject> sceneObject;
 
+	/// The display object that has rendered the picked scene object.
+	OORef<DisplayObject> displayObject;
+
 	/// The subobject that was picked.
 	quint32 subobjectId;
 };

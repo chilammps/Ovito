@@ -62,6 +62,20 @@ public:
 		TextGeometryBuffer::setFont(font);
 	}
 
+	/// Sets the text color.
+	virtual void setColor(const ColorA& color) override {
+		if(color != this->color())
+			_needTextureUpdate = true;
+		TextGeometryBuffer::setColor(color);
+	}
+
+	/// Sets the text background color.
+	virtual void setBackgroundColor(const ColorA& color) override {
+		if(color != this->backgroundColor())
+			_needTextureUpdate = true;
+		TextGeometryBuffer::setBackgroundColor(color);
+	}
+
 	/// \brief Returns true if the geometry buffer is filled and can be rendered with the given renderer.
 	virtual bool isValid(SceneRenderer* renderer) override;
 

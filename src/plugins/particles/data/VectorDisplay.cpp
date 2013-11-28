@@ -199,7 +199,7 @@ void VectorDisplay::render(TimePoint time, SceneObject* sceneObject, const Pipel
 	// Support picking of arrows.
 	quint32 pickingBaseID = 0;
 	if(renderer->isPicking())
-		pickingBaseID = renderer->registerPickObject(contextNode, sceneObject, vectorCount);
+		pickingBaseID = renderer->registerPickObject(contextNode, sceneObject, this, vectorCount);
 
 	_buffer->render(renderer, pickingBaseID);
 }

@@ -366,7 +366,7 @@ void ParticleDisplay::render(TimePoint time, SceneObject* sceneObject, const Pip
 	// Handle picking of particles.
 	quint32 pickingBaseID = 0;
 	if(renderer->isPicking())
-		pickingBaseID = renderer->registerPickObject(contextNode, sceneObject, particleCount);
+		pickingBaseID = renderer->registerPickObject(contextNode, sceneObject, this, particleCount);
 
 	// Actually render the particles.
 	_particleBuffer->render(renderer, pickingBaseID);
