@@ -32,6 +32,7 @@
 #include <plugins/crystalanalysis/modifier/SmoothSurfaceModifier.h>
 #include <plugins/crystalanalysis/modifier/SmoothDislocationsModifier.h>
 #include <plugins/particles/importer/lammps/LAMMPSTextDumpImporter.h>
+#include <plugins/particles/data/ParticleTypeProperty.h>
 #include "CAImporter.h"
 
 namespace CrystalAnalysis {
@@ -394,6 +395,7 @@ QSet<SceneObject*> CAImporter::CrystalAnalysisImportTask::insertIntoScene(Linked
 		pattern->setShortName(_patterns[i].shortName);
 		pattern->setLongName(_patterns[i].longName);
 		pattern->setStructureType(_patterns[i].type);
+		pattern->setId(_patterns[i].id);
 
 		// Update Burgers vector families.
 		for(int j = 0; j < _patterns[i].burgersVectorFamilies.size(); j++) {
@@ -460,8 +462,20 @@ QSet<SceneObject*> CAImporter::CrystalAnalysisImportTask::insertIntoScene(Linked
 	}
 
 	// Insert particles.
-	if(_particleLoadTask)
+	if(_particleLoadTask) {
 		activeObjects.unite(_particleLoadTask->insertIntoScene(destination));
+
+		// Copy structure patterns into StructureType particle property.
+		for(SceneObject* sceneObj : activeObjects) {
+			ParticleTypeProperty* structureTypeProperty = dynamic_object_cast<ParticleTypeProperty>(sceneObj);
+			if(structureTypeProperty && structureTypeProperty->type() == ParticleProperty::StructureTypeProperty) {
+				structureTypeProperty->clearParticleTypes();
+				for(StructurePattern* pattern : patternCatalog->patterns()) {
+					structureTypeProperty->insertParticleType(pattern);
+				}
+			}
+		}
+	}
 
 	return activeObjects;
 }

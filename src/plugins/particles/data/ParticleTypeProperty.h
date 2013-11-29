@@ -46,7 +46,12 @@ public:
 	//////////////////////////////////// Specific methods //////////////////////////////////
 
 	/// Inserts a particle type into the list of types.
-	void insertParticleType(const OORef<ParticleType>& ptype);
+	void insertParticleType(ParticleType* ptype);
+
+	/// Inserts a particle type into the list of types.
+	void insertParticleType(const OORef<ParticleType>& ptype) {
+		insertParticleType(ptype.get());
+	}
 
 	/// Returns the list of particle types.
 	const ParticleTypeList& particleTypes() const { return _particleTypes; }
@@ -71,7 +76,14 @@ public:
 	}
 
 	/// Removes a single particle type from this object.
-	void removeParticleType(int index);
+	void removeParticleType(int index) {
+		_particleTypes.remove(index);
+	}
+
+	/// Removes all particle types from this object.
+	void clearParticleTypes() {
+		_particleTypes.clear();
+	}
 
 	/// Returns a map from type identifier to color.
 	std::map<int,Color> colorMap() const {

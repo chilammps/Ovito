@@ -52,7 +52,7 @@ void DislocationNetworkEditor::createUI(const RolloutInsertionParameters& rollou
 	QWidget* rollout = createRollout(tr("Dislocations"), rolloutParams);
 	QVBoxLayout* rolloutLayout = new QVBoxLayout(rollout);
 
-	QPushButton* openInspectorButton = new QPushButton(tr("Open inspector window"), rollout);
+	QPushButton* openInspectorButton = new QPushButton(tr("Open Dislocation Inspector"), rollout);
 	rolloutLayout->addWidget(openInspectorButton);
 	connect(openInspectorButton, SIGNAL(clicked(bool)), this, SLOT(onOpenInspector()));
 }
