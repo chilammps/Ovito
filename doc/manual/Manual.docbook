@@ -41,6 +41,8 @@
 
   <xi:include href="Chapter_Reference.docbook"/>
 
+  <xi:include href="development/Chapter_Development.docbook"/>
+
   <xi:include href="Chapter_Credits.docbook"/>
 
   <xi:include href="Appendix_License_gpl.docbook"/>

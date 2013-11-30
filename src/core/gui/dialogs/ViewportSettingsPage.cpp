@@ -39,11 +39,11 @@ void ViewportSettingsPage::insertSettingsDialogPage(ApplicationSettingsDialog* s
 	tabWidget->addTab(page, tr("Viewports"));
 	QGridLayout* layout1 = new QGridLayout(page);
 
-	QGroupBox* upDirectionGroupBox = new QGroupBox(tr("Up direction"), page);
+	QGroupBox* upDirectionGroupBox = new QGroupBox(tr("Camera"), page);
 	layout1->addWidget(upDirectionGroupBox, 0, 0);
 	QGridLayout* layout2 = new QGridLayout(upDirectionGroupBox);
 
-	QLabel* label1 = new QLabel(tr("<html><p>Selects the direction to stay vertical when rotating the camera:</p></html>"));
+	QLabel* label1 = new QLabel(tr("<html><p>Vertical viewpoint rotation axis:</p></html>"));
 	label1->setWordWrap(true);
 	layout2->addWidget(label1, 0, 0, 1, 4);
 

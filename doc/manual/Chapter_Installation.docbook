@@ -38,7 +38,7 @@
     </simplesect>
 
     <simplesect xml:id="installation.runovito.macos">
-      <title>Mac</title>
+      <title>Mac OS X</title>
 
       <para>Extract the <filename>.zip</filename> archive to a 
       directory of your choice. Then start OVITO by double-clicking the
