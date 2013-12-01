@@ -60,7 +60,7 @@ SET_PROPERTY_FIELD_LABEL(RenderSettings, _fileNumberBase, "File number base")
 * Creates an instance of the default renderer class which can be 
 * accessed via the renderer() method.
 ******************************************************************************/
-RenderSettings::RenderSettings() :
+RenderSettings::RenderSettings(DataSet* dataset) : RefTarget(dataset),
 	_outputImageWidth(640), _outputImageHeight(480), _generateAlphaChannel(false),
 	_saveToFile(false), _skipExistingImages(false), _renderingRangeType(CURRENT_FRAME),
 	_customRangeStart(0), _customRangeEnd(100), _everyNthFrame(1), _fileNumberBase(0)

@@ -20,7 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <plugins/crystalanalysis/CrystalAnalysis.h>
-#include <core/gui/undo/UndoManager.h>
+#include <core/dataset/UndoStack.h>
 #include <core/gui/app/Application.h>
 #include <core/viewport/Viewport.h>
 #include <core/viewport/ViewportManager.h>

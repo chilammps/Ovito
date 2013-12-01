@@ -29,18 +29,22 @@
 
 #include <core/Core.h>
 #include <core/reference/RefTarget.h>
-#include <core/scene/SceneRoot.h>
+#include <core/animation/TimeInterval.h>
+#include "UndoStack.h"
 
 namespace Ovito {
 
+class SceneRoot;				// defined in SceneRoot.h
 class ViewportConfiguration;	// defined in ViewportConfiguration.h
 class AnimationSettings;		// defined in AnimationSettings.h
 class SelectionSet;				// defined in SelectionSet.h
 class RenderSettings;			// defined in RenderSettings.h
 class SceneRenderer;			// defined in SceneRenderer.h
+class Viewport;					// defined in Viewport.h
 class FrameBuffer;				// defined in FrameBuffer.h
 class FrameBufferWindow;		// defined in FrameBufferWindow.h
 class VideoEncoder;				// defined in VideoEncoder.h
+class MainWindow;				// defined in MainWindow.h
 
 /**
  * \brief This class stores everything that belongs to a scene.
@@ -53,17 +57,15 @@ class OVITO_CORE_EXPORT DataSet : public RefTarget
 public:
 
 	/// \brief Constructs an empty dataset.
-	Q_INVOKABLE DataSet();
+	Q_INVOKABLE DataSet(DataSet* self = nullptr);
 
 	/// \brief Returns a reference to the viewport configuration associated with this dataset.
-	/// \return The internal object that contains the configuration of the viewports. This object is saved
-	///         to the scene file and is used to restore the original viewport configuration
-	///         when the scene file is loaded.
+	/// \return The internal object managing the viewports.
 	ViewportConfiguration* viewportConfig() const { return _viewportConfig; }
 
 	/// \brief Returns the animation settings.
-	/// \return The internal object that stores the animation settings for the scene.
-	AnimationSettings* animationSettings() const { return _animSettings; }
+	/// \return The internal object storing the animation settings for the scene.
+	AnimationSettings* animationSettings() { return _animSettings; }
 
 	/// \brief Returns this dataset's root scene node.
 	/// \return The root node of the scene tree.
@@ -73,14 +75,14 @@ public:
 	/// \param newScene The new scene tree. It will completely replace the old
 	///                 scene object tree.
 	/// \undoable
-	void setSceneRoot(const OORef<SceneRoot>& newScene) { _sceneRoot = newScene; }
+	void setSceneRoot(const OORef<SceneRoot>& newScene);
 
 	/// \brief Returns the selection set.
-	/// \return The internal selection set used to store the set of selected scene nodes.
+	/// \return The current selection set storing the list of selected scene nodes.
 	SelectionSet* selection() const { return _selection; }
 
-	/// \brief Returns the general rendering settings for this scene.
-	/// \return The internal object that stores the rendering settings.
+	/// \brief Returns the rendering settings for this scene.
+	/// \return The current rendering settings.
 	RenderSettings* renderSettings() const { return _renderSettings; }
 
 	/// \brief Returns the path where this dataset is stored on disk.
@@ -90,6 +92,13 @@ public:
 	/// \brief Sets the path where this dataset is stored.
 	/// \param path The new path (should be absolute) where the dataset will be stored.
 	void setFilePath(const QString& path) { _filePath = path; }
+
+	/// \brief Returns the undo stack that keeps track of changes made to this dataset.
+	UndoStack& undoStack() { return _undoStack; }
+
+	/// \brief Returns a pointer to the main window in which this dataset is being edited.
+	/// \return The main window, or NULL if this data set is not being edited in any window.
+	MainWindow* mainWindow() const;
 
 	/// \brief Deletes all nodes from the scene.
 	/// \undoable
@@ -121,14 +130,47 @@ public:
 	/// \throw Exception on error.
 	bool renderScene(RenderSettings* settings, Viewport* viewport, QSharedPointer<FrameBuffer> frameBuffer, FrameBufferWindow* frameBufferWindow = nullptr);
 
+	/// \brief Checks all scene nodes if their geometry pipeline is fully evaluated at the given animation time.
+	bool isSceneReady(TimePoint time) const;
+
+	/// \brief Calls the given slot as soon as the geometry pipelines of all scene nodes has been
+	///        completely evaluated.
+	void runWhenSceneIsReady(const std::function<void()>& fn);
+
+Q_SIGNALS:
+
+	/// \brief This signal is emitted whenever the current viewport configuration of this dataset
+	///        has been replaced by a new one.
+	/// \note This signal is NOT emitted when parameters of the current viewport configuration change.
+	void viewportConfigChanged(ViewportConfiguration* newViewportConfiguration);
+
+	/// \brief This signal is emitted whenever the current animation settings of this dataset
+	///        have been replaced by new ones.
+	/// \note This signal is NOT emitted when parameters of the current animation settings object change.
+	void animationSettingsChanged(AnimationSettings* newAnimationSettings);
+
+	/// \brief This signal is emitted whenever the current render settings of this dataset
+	///        have been replaced by new ones.
+	/// \note This signal is NOT emitted when parameters of the current render settings object change.
+	void renderSettingsChanged(RenderSettings* newRenderSettings);
+
 protected:
 
 	/// Is called when a RefTarget referenced by this object has generated an event.
 	virtual bool referenceEvent(RefTarget* source, ReferenceEvent* event) override;
 
+	/// Is called when the value of a reference field of this RefMaker changes.
+	virtual void referenceReplaced(const PropertyFieldDescriptor& field, RefTarget* oldTarget, RefTarget* newTarget) override;
+
 	/// Renders a single frame and saves the output file. This is part of the implementation of the renderScene() method.
 	void renderFrame(TimePoint renderTime, int frameNumber, RenderSettings* settings, SceneRenderer* renderer,
 			Viewport* viewport, FrameBuffer* frameBuffer, VideoEncoder* videoEncoder, QProgressDialog& progressDialog);
+
+	/// Returns a viewport configuration that is used as template for new scenes.
+	OORef<ViewportConfiguration> createDefaultViewportConfiguration();
+
+	/// Checks if the scene is ready and calls all registered listeners.
+	void notifySceneReadyListeners();
 
 private:
 
@@ -149,6 +191,12 @@ private:
 
 	/// The file where this DataSet is stored.
 	QString _filePath;
+
+	/// The undo stack that keeps track of changes made to this dataset.
+	UndoStack _undoStack;
+
+	/// List of listener objects that want to get notified when the scene is ready.
+	QVector<std::function<void()>> _sceneReadyListeners;
 
 	Q_OBJECT
 	OVITO_OBJECT

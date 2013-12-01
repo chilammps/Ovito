@@ -42,7 +42,7 @@ class OVITO_CORE_EXPORT ViewportConfiguration : public RefTarget
 public:
 
 	/// Constructor.
-	Q_INVOKABLE ViewportConfiguration() {
+	Q_INVOKABLE ViewportConfiguration(DataSet* dataset) : RefTarget(dataset) {
 		INIT_PROPERTY_FIELD(ViewportConfiguration::_viewports);
 		INIT_PROPERTY_FIELD(ViewportConfiguration::_activeViewport);
 		INIT_PROPERTY_FIELD(ViewportConfiguration::_maximizedViewport);
@@ -77,6 +77,57 @@ public:
 		_maximizedViewport = vp;
 	}
 
+
+	/// \brief This will flag all viewports for redrawing.
+	///
+	/// This function does not cause an immediate repaint of the viewports; instead it schedules a
+	/// paint event for processing when Qt returns to the main event loop. You can call this method as often
+	/// as you want; it will return immediately and will cause only one viewport repaint when Qt returns to the
+	/// main event loop.
+	///
+	/// To update only a single viewport, Viewport::updateViewport() should be used.
+	///
+	/// To redraw all viewports immediately without waiting for the paint event to be processed,
+	/// call processViewportUpdates() subsequently.
+	///
+	/// \sa Viewport::updateViewport(), processViewportUpdates()
+	void updateViewports();
+
+	/// \brief Immediately repaints all viewport that have been flagged for
+	///        an update using updateViewports().
+	/// \sa updateViewports()
+	void processViewportUpdates();
+
+	/// \brief A call to this method suspends redrawing of the viewports.
+	///
+	/// To resume redrawing of viewports call resumeViewportUpdates().
+	///
+	/// Calling updateViewports() while redrawing is suspended will update the
+	/// viewports as soon as redrawing is resumed.
+	///
+	/// Normally you should use the ViewportSuspender helper class to suspend viewport update.
+	/// It has the advantage of being exception-safe.
+	///
+	/// \sa resumeViewportUpdates(), isSuspended(), ViewportSuspender
+	void suspendViewportUpdates() { _viewportSuspendCount++; }
+
+	/// \brief This will resume redrawing of the viewports after a call to suspendViewportUpdates().
+	/// \sa suspendViewportUpdates(), isSuspended()
+	void resumeViewportUpdates();
+
+	/// \brief Returns whether viewport updates are suspended.
+	/// \return \c true if suspendViewportUpdates() has been called to suspend any viewport updates.
+	/// \sa suspendViewportUpdates(), resumeViewportUpdates()
+	bool isSuspended() const { return _viewportSuspendCount > 0; }
+
+	/// \brief Returns whether any of the viewports in the main viewport panel
+	///        is currently being updated.
+	/// \return \c true if there is currently a rendering operation going on.
+	///
+	/// No windows or dialogs should be opened during this phase
+	/// to prevent an infinite update loop.
+	bool isRendering() const;
+
 protected:
 
 	/// Is called when the value of a reference field of this RefMaker changes.
@@ -101,12 +152,37 @@ private:
 	/// The maximized viewport or NULL.
 	ReferenceField<Viewport> _maximizedViewport;
 
+	/// This counter is for suspending the viewport updates.
+	int _viewportSuspendCount;
+
+	/// Indicates that the viewports have been invalidated while updates were suspended.
+	bool _viewportsNeedUpdate;
+
 	Q_OBJECT
 	OVITO_OBJECT
 
-	DECLARE_VECTOR_REFERENCE_FIELD(_viewports)
-	DECLARE_REFERENCE_FIELD(_activeViewport)
-	DECLARE_REFERENCE_FIELD(_maximizedViewport)
+	DECLARE_VECTOR_REFERENCE_FIELD(_viewports);
+	DECLARE_REFERENCE_FIELD(_activeViewport);
+	DECLARE_REFERENCE_FIELD(_maximizedViewport);
+};
+
+
+/**
+ * \brief Small helper class that suspends viewport redrawing while it
+ * exists. It can be used to make your code exception-safe.
+ *
+ * The constructor of this class calls ViewportConfiguration::suspendViewportUpdates() and
+ * the destructor calls ViewportConfiguration::resumeViewportUpdates().
+ *
+ * Just create an instance of this class on the stack to suspend viewport updates
+ * during the lifetime of the class instance.
+ */
+class ViewportSuspender {
+public:
+	ViewportSuspender(ViewportConfiguration* vpconf) : _vpconf(*vpconf) { _vpconf.suspendViewportUpdates(); }
+	~ViewportSuspender() { _vpconf.resumeViewportUpdates(); }
+private:
+	ViewportConfiguration& _vpconf;
 };
 
 };

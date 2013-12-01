@@ -22,13 +22,10 @@
 #include <core/Core.h>
 #include <core/gui/app/Application.h>
 #include <core/gui/mainwin/MainWindow.h>
-#include <core/gui/undo/UndoManager.h>
+#include <core/dataset/UndoStack.h>
 #include <core/gui/actions/ActionManager.h>
-#include <core/dataset/DataSetManager.h>
 #include <core/dataset/importexport/ImportExportManager.h>
-#include <core/animation/AnimManager.h>
 #include <core/animation/controller/Controller.h>
-#include <core/viewport/ViewportManager.h>
 #include <core/viewport/input/ViewportInputManager.h>
 #include <core/plugins/PluginManager.h>
 #include <core/utilities/units/UnitsManager.h>
@@ -94,19 +91,16 @@ bool Application::initialize()
 		std::setlocale(LC_NUMERIC, "C");
 
 		// Initialize global manager objects in the right order.
-		UndoManager::initialize();
 		PluginManager::initialize();
 		ControllerManager::initialize();
 		FileManager::initialize();
-		DataSetManager::initialize();
-		ViewportManager::initialize();
 		ViewportInputManager::initialize();
-		AnimManager::initialize();
 		UnitsManager::initialize();
 		ActionManager::initialize();
 		ImportExportManager::initialize();
 
 		// Create the main application window.
+		MainWindow* mainWin = nullptr;
 		if(guiMode()) {
 
 			// Set the application icon.
@@ -119,17 +113,18 @@ bool Application::initialize()
 			setWindowIcon(mainWindowIcon);
 
 			// Create the main window.
-			MainWindow* mainWin = new MainWindow(tr("Ovito (Open Visualization Tool)"));
+			mainWin = new MainWindow(tr("Ovito (Open Visualization Tool)"));
 
 			// Quit application when main window is closed.
 			connect(mainWin, SIGNAL(destroyed(QObject*)), this, SLOT(quit()));
 		}
 
-		// Initialize progress manager, who will insert some widgets into the main window.
+		// Initialize progress manager, which will insert some widgets into the main window.
 		ProgressManager::initialize();
 
+#if 0
 		if(!_startupSceneFile.isEmpty()) {
-			// Load scene file specified on the command line.
+			// Load scene file specified at the command line.
 			QFileInfo startupFile(_startupSceneFile);
 			if(!DataSetManager::instance().fileLoad(startupFile.absoluteFilePath()))
 				DataSetManager::instance().fileReset();
@@ -138,26 +133,31 @@ bool Application::initialize()
 			// Create an empty data set.
 			DataSetManager::instance().fileReset();
 		}
+#endif
 
 		// Create the main application window.
 		if(guiMode()) {
 			// Show the main window.
 #ifndef OVITO_DEBUG
-			MainWindow::instance().showMaximized();
+			mainWin->showMaximized();
 #else
-			MainWindow::instance().show();
+			mainWin->show();
 #endif
-			MainWindow::instance().restoreLayout();
+			mainWin->restoreLayout();
 		}
 
+#if 0
 		// Enable the viewports now. Viewport updates are initially suspended.
 		ViewportManager::instance().resumeViewportUpdates();
+#endif
 
+#if 0
 		// Import file specified on the command line.
 		if(_startupImportFile.isEmpty() == false) {
 			QUrl importURL = QUrl::fromUserInput(_startupImportFile);
 			DataSetManager::instance().importFile(importURL);
 		}
+#endif
 	}
 	catch(const Exception& ex) {
 		ex.showError();
@@ -193,14 +193,10 @@ void Application::shutdown()
 	ImportExportManager::shutdown();
 	ActionManager::shutdown();
 	UnitsManager::shutdown();
-	AnimManager::shutdown();
 	ViewportInputManager::shutdown();
-	ViewportManager::shutdown();
-	DataSetManager::shutdown();
 	FileManager::shutdown();
 	ControllerManager::shutdown();
 	PluginManager::shutdown();
-	UndoManager::shutdown();
 }
 
 /******************************************************************************

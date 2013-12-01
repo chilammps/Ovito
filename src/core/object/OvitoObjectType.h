@@ -38,6 +38,7 @@ class PropertyFieldDescriptor;		// defined in PropertyFieldDescriptor.h
 class ObjectSaveStream;				// defined in ObjectSaveStream.h
 class ObjectLoadStream;				// defined in ObjectLoadStream.h
 class Plugin;						// defined in Plugin.h
+class DataSet;						// defined in DataSet.h
 
 /**
  * \brief Stores meta-information about a class in Ovito's object system.
@@ -91,9 +92,10 @@ public:
 	}
 
 	/// \brief Creates an instance of the OvitoObject-derived class.
+	/// \param dataset The dataset the newly created object will belong to.
 	/// \return The new instance of the class. The pointer can safely be cast to the appropriate C++ class type.
 	/// \throw Exception if a plugin failed to load or the instantiation failed for some other reason.
-	OORef<OvitoObject> createInstance() const;
+	OORef<OvitoObject> createInstance(DataSet* dataset) const;
 
 	/// \brief Returns the first element of the linked list of reference fields defined for this class if it is a RefMaker derived class.
 	const PropertyFieldDescriptor* firstPropertyField() const { return _firstPropertyField; }
@@ -147,9 +149,10 @@ protected:
 	OvitoObjectType(const QString& name, const OvitoObjectType* superClass, bool isAbstract, bool serializable);
 
 	/// \brief Creates an instance of the class described by this meta object.
+	/// \param dataset The dataset the newly created object will belong to.
 	/// \return The new instance of the class. The pointer can safely be cast to the C++ class type.
 	/// \throw Exception if the instance could not be created.
-	virtual OORef<OvitoObject> createInstanceImpl() const = 0;
+	virtual OORef<OvitoObject> createInstanceImpl(DataSet* dataset) const = 0;
 
 protected:
 

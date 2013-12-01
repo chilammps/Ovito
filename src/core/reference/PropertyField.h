@@ -24,15 +24,15 @@
 
 #include <core/Core.h>
 #include <core/object/OvitoObject.h>
-#include <core/gui/undo/UndoManager.h>
+#include <core/dataset/UndoStack.h>
 #include <core/reference/PropertyFieldDescriptor.h>
 #include <core/reference/ReferenceEvent.h>
 #include <core/plugins/Plugin.h>
 
 namespace Ovito {
 
-class RefTarget;					// defined in RefTarget.h
 class RefMaker;						// defined in RefMaker.h
+class RefTarget;					// defined in RefTarget.h
 
 /******************************************************************************
 * RefMaker derived classes use this helper class to store their properties.
@@ -42,27 +42,27 @@ class OVITO_CORE_EXPORT PropertyFieldBase
 public:
 
 	/// One has to call init() once to fully setup this property field.
-	PropertyFieldBase() : _owner(NULL), _descriptor(NULL) {}
+	PropertyFieldBase() : _owner(nullptr), _descriptor(nullptr) {}
 
 	/// Connects the property field to its owning RefMaker derived class.
 	/// This function must be called in the constructor of the RefMaker derived class for each of its property fields.
 	inline void init(RefMaker* owner, PropertyFieldDescriptor* descriptor) {
-		OVITO_ASSERT_MSG(owner != NULL, "PropertyFieldBase::init()", "The PropertyField must be initialized with a non-NULL owner.");
-		OVITO_ASSERT_MSG(descriptor != NULL, "PropertyFieldBase::init()", "The PropertyField must be initialized with a non-NULL descriptor.");
-		OVITO_ASSERT_MSG(this->_owner == NULL, "PropertyFieldBase::init()", "The PropertyField has already been initialized.");
+		OVITO_ASSERT_MSG(owner != nullptr, "PropertyFieldBase::init()", "The PropertyField must be initialized with a non-NULL owner.");
+		OVITO_ASSERT_MSG(descriptor != nullptr, "PropertyFieldBase::init()", "The PropertyField must be initialized with a non-NULL descriptor.");
+		OVITO_ASSERT_MSG(this->_owner == nullptr, "PropertyFieldBase::init()", "The PropertyField has already been initialized.");
 		this->_owner = owner;
 		this->_descriptor = descriptor;
 	}
 
 	/// Returns the owner of this property field.
 	inline RefMaker* owner() const {
-		OVITO_ASSERT_MSG(_owner != NULL, "PropertyFieldBase", "The PropertyField object has not been initialized yet.");
+		OVITO_ASSERT_MSG(_owner != nullptr, "PropertyFieldBase", "The PropertyField object has not been initialized yet.");
 		return _owner;
 	}
 
 	/// Returns descriptor of this property field.
 	inline PropertyFieldDescriptor* descriptor() const {
-		OVITO_ASSERT_MSG(_descriptor != NULL, "PropertyFieldBase", "The PropertyField object has not been initialized yet.");
+		OVITO_ASSERT_MSG(_descriptor != nullptr, "PropertyFieldBase", "The PropertyField object has not been initialized yet.");
 		return _descriptor;
 	}
 
@@ -110,10 +110,10 @@ public:
 	inline operator const property_type&() const { return _value; }
 
 	/// Changes the value of the property. Handles undo and sends a notification message.
-	inline PropertyField& operator=(const property_type& newValue) {
+	PropertyField& operator=(const property_type& newValue) {
 		if(_value == newValue) return *this;
-		if(UndoManager::instance().isRecording() && descriptor()->automaticUndo())
-			UndoManager::instance().push(new PropertyChangeOperation(*this));
+		if(descriptor()->automaticUndo() && owner()->dataSet()->undoStack().isRecording())
+			owner()->dataSet()->undoStack().push(new PropertyChangeOperation(*this));
 		setPropertyValue(newValue);
 		if(descriptor()->flags().testFlag(PROPERTY_FIELD_MEMORIZE))
 			memorizePropertyValue();
@@ -121,7 +121,7 @@ public:
 	}
 
 	/// Changes the value of the property. Handles undo and sends a notification message.
-	inline PropertyField& operator=(const QVariant& newValue) {
+	PropertyField& operator=(const QVariant& newValue) {
 		if(newValue.canConvert<qvariant_type>())
 			return ((*this) = static_cast<property_type>(newValue.value<qvariant_type>()));
 		OVITO_ASSERT_MSG(false, "PropertyField assignment", "The assigned QVariant value cannot be converted to the data type of the property field.");
@@ -213,20 +213,14 @@ public:
 
 	/// Default constructor that initializes the internal pointer to NULL.
 	/// One has to call init() once to fully setup this reference field.
-	SingleReferenceFieldBase() : PropertyFieldBase() {}
+	SingleReferenceFieldBase() {}
 
 	/// Destructor that resets the reference before the object dies.
-	~SingleReferenceFieldBase() {
-		OVITO_ASSERT(UndoManager::instance().isRecording() == false);
-		// The internal intrusive pointer must be cleared first before the reference count
-		// to the target goes to zero to prevent infinite recursion.
-		OORef<RefTarget> a_null_ptr;
-		swapReference(a_null_ptr, false);
-	}
+	~SingleReferenceFieldBase();
 
 	/// Returns the RefTarget pointer.
 	inline operator RefTarget*() const {
-		OVITO_ASSERT_MSG(owner() != NULL, "ReferenceField pointer operator", "The ReferenceField object has not been initialized yet.");
+		OVITO_ASSERT_MSG(owner() != nullptr, "ReferenceField pointer operator", "The ReferenceField object has not been initialized yet.");
 		return _pointer.get();
 	}
 
@@ -534,5 +528,7 @@ public:
 };
 
 };	// End of namespace
+
+#include <core/dataset/DataSet.h>
 
 #endif // __OVITO_PROPERTY_FIELD_H

@@ -20,18 +20,15 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include <core/gui/undo/UndoManager.h>
 #include <core/gui/actions/ActionManager.h>
+#include "UndoStack.h"
 
 namespace Ovito {
-
-/// The singleton instance of the class.
-UndoManager* UndoManager::_instance = nullptr;
 
 /******************************************************************************
 * Initializes the undo manager.
 ******************************************************************************/
-UndoManager::UndoManager() : _suspendCount(0), _index(-1), _cleanIndex(-1),
+UndoStack::UndoStack() : _suspendCount(0), _index(-1), _cleanIndex(-1),
 		_isUndoing(false), _isRedoing(false), _undoLimit(20)
 {
 }
@@ -40,87 +37,88 @@ UndoManager::UndoManager() : _suspendCount(0), _index(-1), _cleanIndex(-1),
 * Registers a single undoable operation.
 * This object will be put onto the undo stack.
 ******************************************************************************/
-void UndoManager::push(UndoableOperation* operation)
+void UndoStack::push(UndoableOperation* operation)
 {
 	OVITO_CHECK_POINTER(operation);
-	OVITO_ASSERT_MSG(isUndoingOrRedoing() == false, "UndoManager::push()", "Cannot record an operation while undoing or redoing another operation.");
-	OVITO_ASSERT_MSG(isRecording(), "UndoManager::push()", "Not in recording state.");
-	if(_suspendCount > 0 || _compoundStack.empty()) {
-		delete operation;
-		return;
+	OVITO_ASSERT_MSG(isUndoingOrRedoing() == false, "UndoStack::push()", "Cannot record an operation while undoing or redoing another operation.");
+	OVITO_ASSERT_MSG(isRecording(), "UndoStack::push()", "Not in recording state.");
+
+	// Discard previously undone operations.
+	_operations.resize(index() + 1);
+	if(cleanIndex() > index()) _cleanIndex = -1;
+
+	if(_compoundStack.empty()) {
+		_operations.emplace_back(operation);
+		_index++;
+		OVITO_ASSERT(index() == count() - 1);
+		limitUndoStack();
+		indexChanged(index());
+		cleanChanged(false);
+		canUndoChanged(true);
+		undoTextChanged(operation->displayName());
+		canRedoChanged(false);
+		redoTextChanged(QString());
 	}
-	_compoundStack.back()->addOperation(operation);
+	else {
+		_compoundStack.back()->addOperation(operation);
+	}
 }
 
 /******************************************************************************
 * Opens a new compound operation and assigns it the given display name.
 ******************************************************************************/
-CompoundOperation* UndoManager::beginCompoundOperation(const QString& displayName)
+void UndoStack::beginCompoundOperation(const QString& displayName)
 {
-	OVITO_ASSERT_MSG(isUndoingOrRedoing() == false, "UndoManager::beginCompoundOperation()", "Cannot record an operation while undoing or redoing another operation.");
-	CompoundOperation* cop = new CompoundOperation(displayName);
-	_compoundStack.push_back(cop);
-	return cop;
+	OVITO_ASSERT_MSG(isUndoingOrRedoing() == false, "UndoStack::beginCompoundOperation()", "Cannot record an operation while undoing or redoing another operation.");
+	_compoundStack.emplace_back(new CompoundOperation(displayName));
 }
 
 /******************************************************************************
 * Closes the current compound operation.
 ******************************************************************************/
-void UndoManager::endCompoundOperation()
+void UndoStack::endCompoundOperation(bool commit)
 {
-	OVITO_ASSERT_MSG(isUndoingOrRedoing() == false, "UndoManager::endCompoundOperation()", "Cannot record an operation while undoing or redoing another operation.");
-	OVITO_ASSERT_MSG(!_compoundStack.empty(), "UndoManager::endCompoundOperation()", "Missing call to beginCompoundOperation().");
+	OVITO_ASSERT_MSG(isUndoingOrRedoing() == false, "UndoStack::endCompoundOperation()", "Cannot record an operation while undoing or redoing another operation.");
+	OVITO_ASSERT_MSG(!_compoundStack.empty(), "UndoStack::endCompoundOperation()", "Missing call to beginCompoundOperation().");
 
-	// Take current compound operation from the stack.
-	CompoundOperation* cop = currentCompoundOperation();
-	if(!cop)
-		throw Exception("Invalid operation.");
+	// Take current compound operation from the macro stack.
+	std::unique_ptr<CompoundOperation> cop = std::move(_compoundStack.back());
 	_compoundStack.pop_back();
 
-	// Check if the operation should be kept.
-	if(_suspendCount > 0 || !cop->isSignificant()) {
-		delete cop;	// Discard operation.
-		return;
+	if(!commit) {
+		// Undo operations.
+		_isUndoing = true;
+		suspend();
+		try {
+			cop->undo();
+		}
+		catch(const Exception& ex) {
+			ex.showError();
+		}
+		_isUndoing = false;
+		resume();
 	}
+	else {
 
-	// Nest compound operations.
-	CompoundOperation* parentOp = currentCompoundOperation();
-	if(parentOp) {
-		parentOp->addOperation(cop);
-		return;
+		// Check if the operation should be kept.
+		if(_suspendCount > 0 || !cop->isSignificant())
+			return; // Discard operation.
+
+		// Put new operation on stack.
+		push(cop.release());
 	}
-
-	// Discard already undone operations.
-	for(int i = index() + 1; i < count(); i++)
-		delete _operations[i];
-	_operations.resize(index() + 1);
-	if(cleanIndex() > index()) _cleanIndex = -1;
-
-	// Insert new operation.
-	_operations.push_back(cop);
-	_index++;
-	OVITO_ASSERT(index() == count() - 1);
-	limitUndoStack();
-	indexChanged(index());
-	cleanChanged(false);
-	canUndoChanged(true);
-	undoTextChanged(cop->displayName());
-	canRedoChanged(false);
-	redoTextChanged(QString());
 }
 
 /******************************************************************************
 * Shrinks the undo stack to maximum number of undo steps.
 ******************************************************************************/
-void UndoManager::limitUndoStack()
+void UndoStack::limitUndoStack()
 {
 	if(_undoLimit < 0) return;
 	int n = count() - _undoLimit;
 	if(n > 0) {
 		if(index() >= n) {
-			for(int i = 0; i < n; i++)
-				delete _operations[i];
-			_operations.remove(0, n);
+			_operations.erase(_operations.begin(), _operations.begin() + n);
 			_index -= n;
 			indexChanged(index());
 		}
@@ -130,13 +128,9 @@ void UndoManager::limitUndoStack()
 /******************************************************************************
 * Resets the undo system. The undo stack will be cleared.
 ******************************************************************************/
-void UndoManager::clear()
+void UndoStack::clear()
 {
-	for(UndoableOperation* op : _operations)
-		delete op;
 	_operations.clear();
-	for(CompoundOperation* op : _compoundStack)
-		delete op;
 	_compoundStack.clear();
 	_index = -1;
 	_cleanIndex = -1;
@@ -151,7 +145,7 @@ void UndoManager::clear()
 /******************************************************************************
 * Marks the stack as clean and emits cleanChanged() if the stack was not already clean.
 ******************************************************************************/
-void UndoManager::setClean()
+void UndoStack::setClean()
 {
 	if(!isClean()) {
 		_cleanIndex = index();
@@ -162,7 +156,7 @@ void UndoManager::setClean()
 /******************************************************************************
 * Marks the stack as dirty and emits cleanChanged() if the stack was not already dirty.
 ******************************************************************************/
-void UndoManager::setDirty()
+void UndoStack::setDirty()
 {
 	bool signal = isClean();
 	_cleanIndex = -2;
@@ -172,17 +166,17 @@ void UndoManager::setDirty()
 /******************************************************************************
 * Undoes the last operation in the undo stack.
 ******************************************************************************/
-void UndoManager::undo()
+void UndoStack::undo()
 {
 	OVITO_ASSERT(isRecording() == false);
-	OVITO_ASSERT_MSG(_compoundStack.empty(), "UndoManager::undo()", "Cannot undo last operation while a compound operation is open.");
+	OVITO_ASSERT(isUndoingOrRedoing() == false);
+	OVITO_ASSERT_MSG(_compoundStack.empty(), "UndoStack::undo()", "Cannot undo last operation while a compound operation is open.");
 	if(canUndo() == false) return;
 
-	UndoSuspender noUndoRecording;
-
-	UndoableOperation* curOp = _operations[index()];
+	UndoableOperation* curOp = _operations[index()].get();
 	OVITO_CHECK_POINTER(curOp);
 	_isUndoing = true;
+	suspend();
 	try {
 		curOp->undo();
 	}
@@ -190,6 +184,7 @@ void UndoManager::undo()
 		ex.showError();
 	}
 	_isUndoing = false;
+	resume();
 	_index--;
 	indexChanged(index());
 	cleanChanged(isClean());
@@ -202,17 +197,17 @@ void UndoManager::undo()
 /******************************************************************************
 * Redoes the last undone operation in the undo stack.
 ******************************************************************************/
-void UndoManager::redo()
+void UndoStack::redo()
 {
 	OVITO_ASSERT(isRecording() == false);
-	OVITO_ASSERT_MSG(_compoundStack.empty(), "UndoManager::redo()", "Cannot redo operation while a compound operation is open.");
+	OVITO_ASSERT(isUndoingOrRedoing() == false);
+	OVITO_ASSERT_MSG(_compoundStack.empty(), "UndoStack::redo()", "Cannot redo operation while a compound operation is open.");
 	if(canRedo() == false) return;
 
-	UndoSuspender noUndoRecording;
-
-	UndoableOperation* nextOp = _operations[index() + 1];
+	UndoableOperation* nextOp = _operations[index() + 1].get();
 	OVITO_CHECK_POINTER(nextOp);
 	_isRedoing = true;
+	suspend();
 	try {
 		nextOp->redo();
 	}
@@ -220,6 +215,7 @@ void UndoManager::redo()
 		ex.showError();
 	}
 	_isRedoing = false;
+	resume();
 	_index++;
 	indexChanged(index());
 	cleanChanged(isClean());
@@ -241,12 +237,12 @@ private:
 };
 
 // Required for Automoc
-#include "UndoManager.moc"
+#include "UndoStack.moc"
 
 /******************************************************************************
 * Creates an undo QAction object with the given parent.
 ******************************************************************************/
-QAction* UndoManager::createUndoAction(QObject* parent)
+QAction* UndoStack::createUndoAction(QObject* parent)
 {
     UndoAction* action = new UndoAction(parent, tr("Undo"));
     action->setEnabled(canUndo());
@@ -260,7 +256,7 @@ QAction* UndoManager::createUndoAction(QObject* parent)
 /******************************************************************************
 * Creates a redo QAction object with the given parent.
 ******************************************************************************/
-QAction* UndoManager::createRedoAction(QObject* parent)
+QAction* UndoStack::createRedoAction(QObject* parent)
 {
     UndoAction* action = new UndoAction(parent, tr("Redo"));
     action->setEnabled(canRedo());
@@ -274,9 +270,8 @@ QAction* UndoManager::createRedoAction(QObject* parent)
 /******************************************************************************
 * Undo the compound edit operation that was made.
 ******************************************************************************/
-void CompoundOperation::undo()
+void UndoStack::CompoundOperation::undo()
 {
-	UndoSuspender noUndoRecording;
 	for(int i = _subOperations.size() - 1; i >= 0; --i) {
 		OVITO_CHECK_POINTER(_subOperations[i]);
 		_subOperations[i]->undo();
@@ -286,9 +281,8 @@ void CompoundOperation::undo()
 /******************************************************************************
 * Re-apply the compound change, assuming that it has been undone.
 ******************************************************************************/
-void CompoundOperation::redo()
+void UndoStack::CompoundOperation::redo()
 {
-	UndoSuspender noUndoRecording;
 	for(int i = 0; i < _subOperations.size(); i++) {
 		OVITO_CHECK_POINTER(_subOperations[i]);
 		_subOperations[i]->redo();

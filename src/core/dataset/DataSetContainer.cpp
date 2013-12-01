@@ -20,14 +20,13 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include <core/dataset/DataSetManager.h>
+#include <core/dataset/DataSetContainer.h>
 #include <core/dataset/importexport/FileImporter.h>
 #include <core/dataset/importexport/ImportExportManager.h>
-#include <core/viewport/ViewportManager.h>
-#include <core/gui/undo/UndoManager.h>
+#include <core/dataset/UndoStack.h>
+#include <core/scene/SceneRoot.h>
 #include <core/gui/app/Application.h>
 #include <core/gui/mainwin/MainWindow.h>
-#include <core/animation/AnimManager.h>
 #include <core/utilities/io/ObjectSaveStream.h>
 #include <core/utilities/io/ObjectLoadStream.h>
 #include <core/utilities/io/FileManager.h>
@@ -35,100 +34,45 @@
 
 namespace Ovito {
 
-IMPLEMENT_OVITO_OBJECT(Core, DataSetManager, RefMaker)
-DEFINE_FLAGS_REFERENCE_FIELD(DataSetManager, _currentSet, "CurrentSet", DataSet, PROPERTY_FIELD_NO_UNDO)
-DEFINE_FLAGS_REFERENCE_FIELD(DataSetManager, _selectionSetProxy, "SelectionSetProxy", CurrentSelectionProxy, PROPERTY_FIELD_NO_UNDO)
-
-/// The singleton instance of the class.
-DataSetManager* DataSetManager::_instance = nullptr;
+IMPLEMENT_OVITO_OBJECT(Core, DataSetContainer, RefMaker)
+DEFINE_FLAGS_REFERENCE_FIELD(DataSetContainer, _currentSet, "CurrentSet", DataSet, PROPERTY_FIELD_NO_UNDO)
+DEFINE_FLAGS_REFERENCE_FIELD(DataSetContainer, _selectionSetProxy, "SelectionSetProxy", CurrentSelectionProxy, PROPERTY_FIELD_NO_UNDO)
 
 /******************************************************************************
 * Initializes the dataset manager.
 ******************************************************************************/
-DataSetManager::DataSetManager()
+DataSetContainer::DataSetContainer() : RefMaker(nullptr)
 {
-	OVITO_ASSERT_MSG(!_instance, "DataSetManager constructor", "Multiple instances of this singleton class have been created.");
-	INIT_PROPERTY_FIELD(DataSetManager::_currentSet);
-	INIT_PROPERTY_FIELD(DataSetManager::_selectionSetProxy);
+	INIT_PROPERTY_FIELD(DataSetContainer::_currentSet);
+	INIT_PROPERTY_FIELD(DataSetContainer::_selectionSetProxy);
 
 	// Create internal selection proxy object.
 	_selectionSetProxy = new CurrentSelectionProxy();
-
-	// Reset the undo stack when a new scene has been loaded.
-	connect(this, SIGNAL(dataSetReset(DataSet*)), &UndoManager::instance(), SLOT(clear()));
+	connect(_selectionSetProxy, SIGNAL(selectionChanged(SelectionSet*)), this, SIGNAL(selectionChanged(SelectionSet*)));
+	connect(_selectionSetProxy, SIGNAL(selectionChangeComplete(SelectionSet*)), this, SIGNAL(selectionChangeComplete(SelectionSet*)));
 }
 
 /******************************************************************************
 * Sets the current data set being edited by the user.
 ******************************************************************************/
-void DataSetManager::setCurrentSet(const OORef<DataSet>& set)
+void DataSetContainer::setCurrentSet(const OORef<DataSet>& set)
 {
-	OVITO_ASSERT_MSG(!UndoManager::instance().isRecording(), "DataSetManager::setCurrentSet", "The replacement of the current dataset cannot be undone.");
-
-	// Do not record any operations while resetting the application.
-	UndoSuspender noUndo;
-
 	_currentSet = set;
 
 	// Reset selection set
 	_selectionSetProxy->setCurrentSelectionSet(set ? set->selection() : nullptr);
 
 	// Inform listeners.
-	dataSetReset(currentSet());
-
-	// Update viewports to show the new scene.
-	ViewportManager::instance().updateViewports();
-}
-
-/******************************************************************************
-* Returns a viewport configuration that should be used as template for new scene files.
-******************************************************************************/
-OORef<ViewportConfiguration> DataSetManager::defaultViewportConfiguration()
-{
-	// Make sure the default configuration is initialized.
-	if(!_defaultViewportConfig) {
-		_defaultViewportConfig = new ViewportConfiguration();
-
-		OORef<Viewport> topView = new Viewport();
-		topView->setViewType(Viewport::VIEW_TOP);
-		_defaultViewportConfig->addViewport(topView);
-
-		OORef<Viewport> frontView = new Viewport();
-		frontView->setViewType(Viewport::VIEW_FRONT);
-		_defaultViewportConfig->addViewport(frontView);
-
-		OORef<Viewport> leftView = new Viewport();
-		leftView->setViewType(Viewport::VIEW_LEFT);
-		_defaultViewportConfig->addViewport(leftView);
-
-		OORef<Viewport> perspectiveView = new Viewport();
-		perspectiveView->setViewType(Viewport::VIEW_PERSPECTIVE);
-		perspectiveView->setCameraTransformation(ViewportSettings::getSettings().coordinateSystemOrientation() * AffineTransformation::lookAlong({90, -120, 100}, {-90, 120, -100}, {0,0,1}).inverse());
-		_defaultViewportConfig->addViewport(perspectiveView);
-
-		_defaultViewportConfig->setActiveViewport(topView.get());
-		_defaultViewportConfig->setMaximizedViewport(NULL);
-	}
-
-	return _defaultViewportConfig;
-}
-
-/******************************************************************************
-* Replaces the current data set with a new one and resets the
-* application to its initial state.
-******************************************************************************/
-void DataSetManager::fileReset()
-{
-	setCurrentSet(new DataSet());
+	Q_EMIT dataSetChanged(currentSet());
 }
 
 /******************************************************************************
 * This is the implementation of the "Save" action.
 * Returns true, if the scene has been saved.
 ******************************************************************************/
-bool DataSetManager::fileSave()
+bool DataSetContainer::fileSave()
 {
-	if(currentSet() == NULL)
+	if(currentSet() == nullptr)
 		return false;
 
 	// Ask the user for a filename if there is no one set.
@@ -149,13 +93,13 @@ bool DataSetManager::fileSave()
 		if(fileStream.error() != QFile::NoError)
 			throw Exception(tr("Failed to write output file '%1'.").arg(currentSet()->filePath()));
 		fileStream.close();
+
+		currentSet()->undoStack().setClean();
 	}
 	catch(const Exception& ex) {
 		ex.showError();
 		return false;
 	}
-
-	UndoManager::instance().setClean();
 
 	return true;
 }
@@ -164,7 +108,7 @@ bool DataSetManager::fileSave()
 * This is the implementation of the "Save As" action.
 * Returns true, if the scene has been saved.
 ******************************************************************************/
-bool DataSetManager::fileSaveAs(const QString& filename)
+bool DataSetContainer::fileSaveAs(const QString& filename)
 {
 	if(currentSet() == nullptr)
 		return false;
@@ -173,7 +117,7 @@ bool DataSetManager::fileSaveAs(const QString& filename)
 		if(Application::instance().guiMode() == false)
 			throw Exception(tr("Cannot save scene. No filename has been set."));
 
-		QFileDialog dialog(&MainWindow::instance(), tr("Save Scene As"));
+		QFileDialog dialog(currentSet()->mainWindow(), tr("Save Scene As"));
 		dialog.setNameFilter(tr("Scene Files (*.ovito);;All Files (*)"));
 		dialog.setAcceptMode(QFileDialog::AcceptSave);
 		dialog.setFileMode(QFileDialog::AnyFile);
@@ -215,12 +159,12 @@ bool DataSetManager::fileSaveAs(const QString& filename)
 * to save the changes.
 * Returns false if the operation has been canceled by the user.
 ******************************************************************************/
-bool DataSetManager::askForSaveChanges()
+bool DataSetContainer::askForSaveChanges()
 {
-	if(!currentSet() || UndoManager::instance().isClean() || Application::instance().consoleMode())
+	if(!currentSet() || currentSet()->undoStack().isClean() || Application::instance().consoleMode())
 		return true;
 
-	QMessageBox::StandardButton result = QMessageBox::question(&MainWindow::instance(), tr("Save changes"),
+	QMessageBox::StandardButton result = QMessageBox::question(currentSet()->mainWindow(), tr("Save changes"),
 		tr("The current scene has been modified. Do you want to save the changes?"),
 		QMessageBox::Yes|QMessageBox::No|QMessageBox::Cancel, QMessageBox::Cancel);
 	if(result == QMessageBox::Cancel)
@@ -237,7 +181,7 @@ bool DataSetManager::askForSaveChanges()
 * Loads the given scene file.
 * Returns true if the file has been successfully loaded.
 ******************************************************************************/
-bool DataSetManager::fileLoad(const QString& filename)
+bool DataSetContainer::fileLoad(const QString& filename)
 {
 	// Load dataset from file.
 	OORef<DataSet> dataSet;
@@ -272,7 +216,7 @@ bool DataSetManager::fileLoad(const QString& filename)
 /******************************************************************************
 * Imports a given file into the scene.
 ******************************************************************************/
-bool DataSetManager::importFile(const QUrl& url, const FileImporterDescription* importerType, FileImporter::ImportMode importMode)
+bool DataSetContainer::importFile(const QUrl& url, const FileImporterDescription* importerType, FileImporter::ImportMode importMode)
 {
 	if(!url.isValid())
 		throw Exception(tr("Failed to import file. URL is not valid: %1").arg(url.toString()));
@@ -286,85 +230,17 @@ bool DataSetManager::importFile(const QUrl& url, const FileImporterDescription* 
 			return false;
 
 		// Detect file format.
-		importer = ImportExportManager::instance().autodetectFileFormat(fetchFileFuture.result(), url.path());
+		importer = ImportExportManager::instance().autodetectFileFormat(currentSet(), fetchFileFuture.result(), url.path());
 		if(!importer)
 			throw Exception(tr("Could not detect the format of the file to be imported. The format might not be supported."));
 	}
 	else {
-		importer = importerType->createService();
+		importer = importerType->createService(currentSet());
 		if(!importer)
 			throw Exception(tr("Failed to import file. Could not initialize import service."));
 	}
 
 	return importer->importFile(url, importMode);
-}
-
-/******************************************************************************
-* Checks all scene nodes if their geometry pipeline is fully evaluated at the
-* given animation time.
-******************************************************************************/
-bool DataSetManager::isSceneReady(TimePoint time) const
-{
-	OVITO_ASSERT_MSG(QThread::currentThread() == QApplication::instance()->thread(), "DataSetManager::isSceneReady", "This function may only be called from the GUI thread.");
-	OVITO_CHECK_OBJECT_POINTER(currentSet());
-	OVITO_CHECK_OBJECT_POINTER(currentSet()->sceneRoot());
-
-	// Iterate over all object nodes and request an evaluation of their geometry pipeline.
-	bool isReady = currentSet()->sceneRoot()->visitObjectNodes([time](ObjectNode* node) {
-		return (node->evalPipeline(time).status().type() != ObjectStatus::Pending);
-	});
-
-	return isReady;
-}
-
-/******************************************************************************
-* Calls the given slot as soon as the geometry pipelines of all scene nodes has been
-* completely evaluated.
-******************************************************************************/
-void DataSetManager::runWhenSceneIsReady(std::function<void ()> fn)
-{
-	OVITO_ASSERT_MSG(QThread::currentThread() == QApplication::instance()->thread(), "DataSetManager::runWhenSceneIsReady", "This function may only be called from the GUI thread.");
-	OVITO_CHECK_OBJECT_POINTER(currentSet());
-	OVITO_CHECK_OBJECT_POINTER(currentSet()->sceneRoot());
-
-	TimePoint time = currentSet()->animationSettings()->time();
-
-	// Iterate over all object nodes and request an evaluation of their geometry pipeline.
-	bool isReady = currentSet()->sceneRoot()->visitObjectNodes([time](ObjectNode* node) {
-		return (node->evalPipeline(time).status().type() != ObjectStatus::Pending);
-	});
-
-	if(isReady)
-		fn();
-	else
-		_sceneReadyListeners.push_back(fn);
-}
-
-/******************************************************************************
-* Checks if the scene is ready and calls all registered listeners.
-******************************************************************************/
-void DataSetManager::notifySceneReadyListeners()
-{
-	if(!_sceneReadyListeners.empty() && isSceneReady(currentSet()->animationSettings()->time())) {
-		auto oldListenerList = _sceneReadyListeners;
-		_sceneReadyListeners.clear();
-		for(const auto& listener : oldListenerList) {
-			listener();
-		}
-	}
-}
-
-/******************************************************************************
-* Is called when a target referenced by this object generated an event.
-******************************************************************************/
-bool DataSetManager::referenceEvent(RefTarget* source, ReferenceEvent* event)
-{
-	OVITO_ASSERT_MSG(QThread::currentThread() == QApplication::instance()->thread(), "DataSetManager::referenceEvent", "Reference events may only be processed in the GUI thread.");
-
-	if(source == currentSet() && event->type() == ReferenceEvent::PendingStateChanged) {
-		notifySceneReadyListeners();
-	}
-	return RefMaker::referenceEvent(source, event);
 }
 
 };

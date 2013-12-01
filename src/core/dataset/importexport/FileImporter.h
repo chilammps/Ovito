@@ -38,6 +38,11 @@ namespace Ovito {
  */
 class OVITO_CORE_EXPORT FileImporter : public RefTarget
 {
+protected:
+
+	/// \brief The constructor.
+	FileImporter(DataSet* dataset) : RefTarget(dataset) {}
+
 public:
 
 	/// Import modes that control the behavior of the importFile() method.
@@ -105,8 +110,9 @@ public:
 	const QString& fileFilterDescription() const { return _fileFilterDescription; }
 
 	/// \brief Creates an instance of the file importer class.
-	OORef<FileImporter> createService() const {
-		return static_object_cast<FileImporter>(pluginClass()->createInstance());
+	/// \param The dataset within which the importer object is to be created.
+	OORef<FileImporter> createService(DataSet* dataset) const {
+		return static_object_cast<FileImporter>(pluginClass()->createInstance(dataset));
 	}
 
 	/// \brief Returns the class descriptor for the file importer service.

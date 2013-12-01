@@ -30,8 +30,8 @@
 
 #include <core/Core.h>
 #include "Controller.h"
-#include <core/gui/undo/UndoManager.h>
-#include <core/animation/AnimManager.h>
+#include <core/dataset/UndoStack.h>
+#include <core/animation/AnimationSettings.h>
 #include <core/utilities/io/ObjectLoadStream.h>
 #include <core/utilities/io/ObjectSaveStream.h>
 
@@ -69,8 +69,8 @@ protected:
 
 public:
 
-    // Default constructor.
-	StandardKeyedController() {}
+    /// constructor.
+	StandardKeyedController(DataSet* dataset) : BaseControllerClass(dataset) {}
 
 	/// Queries the controller for its absolute value at a certain time.
 	virtual void getValue(TimePoint time, ValueType& result, TimeInterval& validityInterval) override {
@@ -121,10 +121,10 @@ public:
 	virtual void setValue(TimePoint time, const ValueType& newValue, bool isAbsoluteValue) override {
 		if(_keys.empty()) {
 			// Handle undo.
-			if(UndoManager::instance().isRecording())
-				UndoManager::instance().push(new KeyChangeOperation(this));
+			if(this->dataSet()->undoStack().isRecording())
+				this->dataSet()->undoStack().push(new KeyChangeOperation(this));
 			// Automatically create a key at time 0 if the controller still has its default value (i.e. no keys).
-			if(time != 0 && AnimManager::instance().isAnimating() && newValue != NullValue())
+			if(time != 0 && this->dataSet()->animationSettings()->isAnimating() && newValue != NullValue())
 				_keys[0] = NullValue();
 			// Set initial value.
 			_keys[time] = newValue;
@@ -143,10 +143,10 @@ public:
 		else if(deltaValue == NullValue()) return;	// Nothing to do.
 
 		// Handle undo.
-		if(UndoManager::instance().isRecording())
-			UndoManager::instance().push(new KeyChangeOperation(this));
+		if(this->dataSet()->undoStack().isRecording())
+			this->dataSet()->undoStack().push(new KeyChangeOperation(this));
 
-		if(!AnimManager::instance().isAnimating()) {
+		if(!this->dataSet()->animationSettings()->isAnimating()) {
 			if(_keys.size() == 1 && isAbsoluteValue) {
 				_keys.begin()->second = newValue;
 			}
@@ -174,8 +174,8 @@ public:
 		OVITO_ASSERT(!newAnimationInterval.isInfinite());
 		if(oldAnimationInterval.duration() == 0 && oldAnimationInterval.start() == newAnimationInterval.start()) return;
 		// Handle undo.
-		if(UndoManager::instance().isRecording())
-			UndoManager::instance().push(new KeyChangeOperation(this));
+		if(this->dataSet()->undoStack().isRecording())
+			this->dataSet()->undoStack().push(new KeyChangeOperation(this));
 		KeyArray newKeys;
 		if(oldAnimationInterval.duration() != 0) {
 			for(auto key = _keys.begin(); key != _keys.end(); ++key) {
@@ -209,8 +209,8 @@ public:
 		}
 
 		// Handle undo.
-		if(UndoManager::instance().isRecording())
-			UndoManager::instance().push(new KeyChangeOperation(this));
+		if(this->dataSet()->undoStack().isRecording())
+			this->dataSet()->undoStack().push(new KeyChangeOperation(this));
 
 		if(key == _keys.end())	// Create a new key.
 			key = _keys.insert(std::make_pair(time, value)).first;
@@ -369,6 +369,10 @@ struct SplineValueInterpolator<Scaling> {
 template<typename KeyType, class KeyInterpolator>
 class KeyedFloatController : public StandardKeyedController<FloatController, FloatType, KeyType, FloatType, KeyInterpolator>
 {
+public:
+
+	/// Constructor.
+	KeyedFloatController(DataSet* dataset) : StandardKeyedController<FloatController, FloatType, KeyType, FloatType, KeyInterpolator>(dataset) {}
 };
 
 /**
@@ -377,6 +381,10 @@ class KeyedFloatController : public StandardKeyedController<FloatController, Flo
 template<typename KeyType, class KeyInterpolator>
 class KeyedVectorController : public StandardKeyedController<VectorController, Vector3, KeyType, Vector3::Zero, KeyInterpolator>
 {
+public:
+
+	/// Constructor.
+	KeyedVectorController(DataSet* dataset) : StandardKeyedController<VectorController, Vector3, KeyType, Vector3::Zero, KeyInterpolator>(dataset) {}
 };
 
 /**
@@ -386,16 +394,20 @@ template<typename KeyType, class KeyInterpolator>
 class KeyedPositionController : public StandardKeyedController<PositionController, Vector3, KeyType, Vector3::Zero, KeyInterpolator>
 {
 public:
+
+	/// Constructor.
+	KeyedPositionController(DataSet* dataset) : StandardKeyedController<PositionController, Vector3, KeyType, Vector3::Zero, KeyInterpolator>(dataset) {}
+
 	virtual void changeParent(TimePoint time, const AffineTransformation& oldParentTM, const AffineTransformation& newParentTM, SceneNode* contextNode) override {
 		if(this->_keys.empty()) return;
 		AffineTransformation rel = oldParentTM * newParentTM.inverse();
 
 		// Handle undo.
 		typedef StandardKeyedController<PositionController, Vector3, KeyType, Vector3::Zero, KeyInterpolator> BaseClassType;
-		if(UndoManager::instance().isRecording())
-			UndoManager::instance().push(new typename BaseClassType::KeyChangeOperation(this));
+		if(this->dataSet()->undoStack().isRecording())
+			this->dataSet()->undoStack().push(new typename BaseClassType::KeyChangeOperation(this));
 
-		if(!AnimManager::instance().isAnimating()) {
+		if(!this->dataSet()->animationSettings()->isAnimating()) {
 			// Apply delta value to all keys.
 			for(auto key = this->_keys.begin(); key != this->_keys.end(); ++key)
 				key->second = (rel * (Point3::Origin() + (Vector3)key->second)) - Point3::Origin();
@@ -417,6 +429,10 @@ template<typename KeyType, class KeyInterpolator>
 class KeyedRotationController : public StandardKeyedController<RotationController, Rotation, KeyType, Rotation::Identity, KeyInterpolator>
 {
 public:
+
+	/// Constructor.
+	KeyedRotationController(DataSet* dataset) : StandardKeyedController<RotationController, Rotation, KeyType, Rotation::Identity, KeyInterpolator>(dataset) {}
+
 	virtual void changeParent(TimePoint time, const AffineTransformation& oldParentTM, const AffineTransformation& newParentTM, SceneNode* contextNode) override {
 		// to be implemented.
 		OVITO_ASSERT_MSG(false, "KeyedRotationController::changeParent", "Method not implemented.");
@@ -431,6 +447,10 @@ template<typename KeyType, class KeyInterpolator>
 class KeyedScalingController : public StandardKeyedController<ScalingController, Scaling, KeyType, Scaling::Identity, KeyInterpolator>
 {
 public:
+
+	/// Constructor.
+	KeyedScalingController(DataSet* dataset) : StandardKeyedController<ScalingController, Scaling, KeyType, Scaling::Identity, KeyInterpolator>(dataset) {}
+
 	virtual void changeParent(TimePoint time, const AffineTransformation& oldParentTM, const AffineTransformation& newParentTM, SceneNode* contextNode) override {
 		// to be implemented.
 		OVITO_ASSERT_MSG(false, "KeyedScalingController::changeParent", "Method not implemented.");

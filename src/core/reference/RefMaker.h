@@ -36,6 +36,7 @@ class RefTarget;					// defined in RefTarget.h
 class PropertyFieldDescriptor;		// defined in PropertyFieldDescriptor.h
 class SingleReferenceFieldBase;		// defined in PropertyFieldDescriptor.h
 class VectorReferenceFieldBase;		// defined in PropertyFieldDescriptor.h
+class DataSet;						// defined in DataSet.h
 
 /**
  * \brief Exception that is thrown when trying to create a cyclic reference.
@@ -49,7 +50,7 @@ class OVITO_CORE_EXPORT CyclicReferenceError : public Exception
 public:
 
 	/// \brief Default constructor.
-	CyclicReferenceError() : Exception("Cyclic reference error") {}
+	CyclicReferenceError() : Exception(QStringLiteral("Cyclic reference error")) {}
 };
 
 /**
@@ -57,14 +58,11 @@ public:
  */
 class OVITO_CORE_EXPORT RefMaker : public OvitoObject
 {
-	Q_OBJECT
-
 protected:
 
-	/// \brief The default constructor.
-	/// Subclasses should initialize their reference fields in the constructor using
-	/// the \c INIT_PROPERTY_FIELD macro.
-	RefMaker() : OvitoObject() {}
+	/// \brief Constructor.
+	/// \param dataset The dataset this object will belong to.
+	RefMaker(DataSet* dataset) : _dataSet(dataset) {}
 
 	/////////////////////////////// Reference field events ///////////////////////////////////
 
@@ -282,7 +280,12 @@ public:
 	/// \note The returned list is gathered recursively.
 	QSet<RefTarget*> getAllDependencies() const;
 
-	///////////////////////////// from PluginClass ///////////////////////////////
+	///////////////////////////// DataSet access ///////////////////////////////
+
+	/// \brief Returns the dataset this object belongs to.
+	DataSet* dataSet() const { return _dataSet; }
+
+	///////////////////////////// from OvitoObject ///////////////////////////////
 
 	/// \brief Deletes this object.
 	///
@@ -294,13 +297,15 @@ private:
 	/// \brief Recursive gathering function used by getAllDependencies().
 	static void walkNode(QSet<RefTarget*>& nodes, const RefMaker* node);
 
-private:
+	/// The dataset this object belongs to.
+	DataSet* _dataSet;
 
 	friend class RefTarget;
 	friend class SingleReferenceFieldBase;
 	friend class VectorReferenceFieldBase;
 	friend class PropertyFieldBase;
 
+	Q_OBJECT
 	OVITO_OBJECT
 };
 

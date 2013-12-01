@@ -44,5 +44,62 @@ void ViewportConfiguration::referenceReplaced(const PropertyFieldDescriptor& fie
 	RefTarget::referenceReplaced(field, oldTarget, newTarget);
 }
 
+/******************************************************************************
+* This flags all viewports for redrawing.
+******************************************************************************/
+void ViewportConfiguration::updateViewports()
+{
+	// Ignore update request that are made during an update.
+	if(isRendering())
+		return;
+
+	// Check if viewport updates are suppressed.
+	if(_viewportSuspendCount > 0) {
+		_viewportsNeedUpdate = true;
+		return;
+	}
+	_viewportsNeedUpdate = false;
+
+	for(Viewport* vp : viewports())
+		vp->updateViewport();
+}
+
+/******************************************************************************
+* This immediately redraws the viewports reflecting all
+* changes made to the scene.
+******************************************************************************/
+void ViewportConfiguration::processViewportUpdates()
+{
+	if(isSuspended())
+		return;
+
+	for(Viewport* vp : viewports())
+		vp->processUpdateRequest();
+}
+
+/******************************************************************************
+* Return true if there is currently a rendering operation going on.
+* No new windows or dialogs should be shown during this phase
+* to prevent an infinite update loop.
+******************************************************************************/
+bool ViewportConfiguration::isRendering() const
+{
+	// Check if any of the viewport windows is rendering.
+	for(Viewport* vp : viewports())
+		if(vp->isRendering()) return true;
+
+	return false;
+}
+
+/******************************************************************************
+* This will resume redrawing of the viewports after a call to suspendViewportUpdates().
+******************************************************************************/
+void ViewportConfiguration::resumeViewportUpdates()
+{
+	OVITO_ASSERT(_viewportSuspendCount > 0);
+	_viewportSuspendCount--;
+	if(_viewportSuspendCount == 0 && _viewportsNeedUpdate)
+		updateViewports();
+}
 
 };

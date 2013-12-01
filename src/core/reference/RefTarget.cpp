@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include <core/reference/RefTarget.h>
 #include <core/reference/CloneHelper.h>
-#include <core/gui/undo/UndoManager.h>
+#include <core/dataset/UndoStack.h>
 #include <core/gui/properties/PropertiesEditor.h>
 
 namespace Ovito {
@@ -129,7 +129,7 @@ bool RefTarget::isReferencedBy(const RefMaker* obj) const
 OORef<RefTarget> RefTarget::clone(bool deepCopy, CloneHelper& cloneHelper)
 {
 	// Create a new instance of the object's class.
-	OORef<RefTarget> clone = static_object_cast<RefTarget>(getOOType().createInstance());
+	OORef<RefTarget> clone = static_object_cast<RefTarget>(getOOType().createInstance(dataSet()));
 	if(!clone || !clone->getOOType().isDerivedFrom(getOOType()))
 		throw Exception(tr("Failed to create clone instance of class %1.").arg(getOOType().name()));
 
@@ -205,7 +205,7 @@ OORef<PropertiesEditor> RefTarget::createPropertiesEditor()
 			if(editorClass) {
 				if(!editorClass->isDerivedFrom(PropertiesEditor::OOType))
 					throw Exception(tr("The editor class %1 assigned to the RefTarget-derived class %2 is not derived from PropertiesEditor.").arg(editorClass->name(), clazz->name()));
-				return dynamic_object_cast<PropertiesEditor>(editorClass->createInstance());
+				return dynamic_object_cast<PropertiesEditor>(editorClass->createInstance(dataSet()));
 			}
 		}
 	}

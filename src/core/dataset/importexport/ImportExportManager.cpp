@@ -44,7 +44,7 @@ ImportExportManager::ImportExportManager()
 	Q_FOREACH(const OvitoObjectType* clazz, PluginManager::instance().listClasses(FileImporter::OOType)) {
 		try {
 			// Create a temporary instance to get the supported file formats.
-			OORef<FileImporter> obj = static_object_cast<FileImporter>(clazz->createInstance());
+			OORef<FileImporter> obj = static_object_cast<FileImporter>(clazz->createInstance(nullptr));
 			if(obj)
 				_fileImporters.push_back(FileImporterDescription(obj.get()));
 		}
@@ -57,7 +57,7 @@ ImportExportManager::ImportExportManager()
 	Q_FOREACH(const OvitoObjectType* clazz, PluginManager::instance().listClasses(FileExporter::OOType)) {
 		try {
 			// Create a temporary instance to get the supported file formats.
-			OORef<FileExporter> obj = static_object_cast<FileExporter>(clazz->createInstance());
+			OORef<FileExporter> obj = static_object_cast<FileExporter>(clazz->createInstance(nullptr));
 			if(obj)
 				_fileExporters.push_back(FileExporterDescription(obj.get()));
 		}
@@ -70,11 +70,11 @@ ImportExportManager::ImportExportManager()
 /******************************************************************************
 * Tries to detect the format of the given file.
 ******************************************************************************/
-OORef<FileImporter> ImportExportManager::autodetectFileFormat(const QString& localFile, const QUrl& sourceLocation)
+OORef<FileImporter> ImportExportManager::autodetectFileFormat(DataSet* dataset, const QString& localFile, const QUrl& sourceLocation)
 {
 	for(const FileImporterDescription& importerType : fileImporters()) {
 		try {
-			OORef<FileImporter> importer = importerType.createService();
+			OORef<FileImporter> importer = importerType.createService(dataset);
 			QFile file(localFile);
 			if(importer && importer->checkFileFormat(file, sourceLocation)) {
 				return importer;

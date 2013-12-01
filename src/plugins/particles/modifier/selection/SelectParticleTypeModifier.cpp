@@ -20,7 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <plugins/particles/Particles.h>
-#include <core/gui/undo/UndoManager.h>
+#include <core/dataset/UndoStack.h>
 #include <core/scene/pipeline/PipelineObject.h>
 #include <plugins/particles/util/ParticlePropertyComboBox.h>
 #include <plugins/particles/data/ParticleTypeProperty.h>

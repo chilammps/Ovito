@@ -45,7 +45,7 @@ class OVITO_CORE_EXPORT RefTargetListener : public RefMaker
 public:
 
 	/// \brief The default constructor.
-	RefTargetListener() {
+	RefTargetListener() : RefMaker(nullptr) {
 		INIT_PROPERTY_FIELD(RefTargetListener::_target);
 	}
 
@@ -105,7 +105,7 @@ class VectorRefTargetListener : public RefMaker
 public:
 
 	/// \brief The default constructor.
-	VectorRefTargetListener() {
+	VectorRefTargetListener() : RefMaker(nullptr) {
 		INIT_PROPERTY_FIELD(VectorRefTargetListener::_targets);
 	}
 

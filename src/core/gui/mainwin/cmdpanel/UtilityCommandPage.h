@@ -28,14 +28,14 @@ namespace Ovito {
 /******************************************************************************
 * The utility page lets the user invoke utility plugins.
 ******************************************************************************/
-class OVITO_CORE_EXPORT UtilityCommandPage : public CommandPanelPage
+class OVITO_CORE_EXPORT UtilityCommandPage : public QWidget
 {
 	Q_OBJECT
 
 public:
 
 	/// Initializes the utility page.
-    UtilityCommandPage();
+    UtilityCommandPage(QWidget* parent);
 
 	/// Resets the utility panel to the initial state.
 	virtual void reset() override;

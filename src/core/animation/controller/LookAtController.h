@@ -43,8 +43,8 @@ class OVITO_CORE_EXPORT LookAtController : public RotationController
 {
 public:
 	
-	/// \brief Default constructor.
-	Q_INVOKABLE LookAtController();
+	/// \brief Constructor.
+	Q_INVOKABLE LookAtController(DataSet* dataset);
 
 	/// Queries the controller for its absolute value at a certain time.
 	virtual void getValue(TimePoint time, Rotation& result, TimeInterval& validityInterval) override;

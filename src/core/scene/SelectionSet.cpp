@@ -31,7 +31,7 @@ SET_PROPERTY_FIELD_LABEL(SelectionSet, _selection, "Nodes")
 /******************************************************************************
 * Default constructor.
 ******************************************************************************/
-SelectionSet::SelectionSet()
+SelectionSet::SelectionSet(DataSet* dataset) : RefTarget(dataset)
 {
 	INIT_PROPERTY_FIELD(SelectionSet::_selection);
 }

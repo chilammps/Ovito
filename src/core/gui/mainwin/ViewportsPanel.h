@@ -26,8 +26,10 @@
 
 namespace Ovito {
 
-class DataSet;		// defined in DataSet.h
-class Viewport;		// defined in Viewport.h
+class DataSet;					// defined in DataSet.h
+class MainWindow;				// defined in MainWindow.h
+class ViewportConfiguration;	// defined in ViewportConfiguration.h
+class AnimationSettings;		// defined in AnimationSettings.h
 
 /**
  * \brief The container for the viewports in the application's main window.
@@ -39,7 +41,7 @@ class ViewportsPanel : public QWidget
 public:
 
 	/// \brief Constructs the viewport panel.
-	ViewportsPanel(QWidget* parent);
+	ViewportsPanel(MainWindow* parent);
 
 public Q_SLOTS:
 
@@ -57,8 +59,23 @@ protected:
 private Q_SLOTS:
 
 	/// This is called when a new dataset has been loaded.
-	void onDataSetReset(DataSet* newDataSet);
+	void onDataSetChanged(DataSet* newDataSet);
 
+	/// This is called when a new viewport configuration has been loaded.
+	void onViewportConfigurationChanged(ViewportConfiguration* newViewportConfiguration);
+
+	/// This is called when new animation settings have been loaded.
+	void onAnimationSettingsChanged(AnimationSettings* newAnimationSettings);
+
+private:
+
+	QMetaObject::Connection _viewportConfigurationChangedConnection;
+	QMetaObject::Connection _animationSettingsChangedConnection;
+	QMetaObject::Connection _activeViewportChangedConnection;
+	QMetaObject::Connection _maximizedViewportChangedConnection;
+	QMetaObject::Connection _autoKeyModeChangedConnection;
+	OORef<ViewportConfiguration> _viewportConfig;
+	OORef<AnimationSettings> _animSettings;
 };
 
 

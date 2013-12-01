@@ -21,7 +21,7 @@
 
 #include <core/Core.h>
 #include <core/gui/properties/BooleanParameterUI.h>
-#include <core/gui/undo/UndoManager.h>
+#include <core/dataset/UndoStack.h>
 #include <core/viewport/ViewportManager.h>
 
 namespace Ovito {

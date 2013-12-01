@@ -23,7 +23,7 @@
 #include <core/gui/properties/BooleanParameterUI.h>
 #include <core/gui/properties/BooleanRadioButtonParameterUI.h>
 #include <core/gui/properties/AffineTransformationParameterUI.h>
-#include <core/gui/undo/UndoManager.h>
+#include <core/dataset/UndoStack.h>
 #include <core/viewport/ViewportManager.h>
 #include <core/scene/pipeline/PipelineObject.h>
 #include "AffineTransformationModifier.h"

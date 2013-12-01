@@ -40,8 +40,8 @@ class OVITO_CORE_EXPORT CameraDisplayObject : public DisplayObject
 {
 public:
 
-	/// \brief Default constructor.
-	Q_INVOKABLE CameraDisplayObject() {}
+	/// \brief Constructor.
+	Q_INVOKABLE CameraDisplayObject(DataSet* dataset) : DisplayObject(dataset) {}
 
 	/// \brief Lets the display object render a scene object.
 	virtual void render(TimePoint time, SceneObject* sceneObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode) override;

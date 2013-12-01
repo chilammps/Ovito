@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include <core/reference/RefMaker.h>
 #include <core/reference/RefTarget.h>
-#include <core/gui/undo/UndoManager.h>
+#include <core/dataset/UndoStack.h>
 #include <core/plugins/Plugin.h>
 #include <core/utilities/io/ObjectSaveStream.h>
 #include <core/utilities/io/ObjectLoadStream.h>
@@ -60,7 +60,7 @@ void RefMaker::autoDeleteObject()
 
 	clearAllReferences();
 
-	if(UndoManager::instance().isRecording() == false)
+	if(dataSet()->undoStack().isRecording() == false)
 		OvitoObject::autoDeleteObject();
 }
 
@@ -307,7 +307,7 @@ void RefMaker::saveToStream(ObjectSaveStream& stream)
 void RefMaker::loadFromStream(ObjectLoadStream& stream)
 {
 	OvitoObject::loadFromStream(stream);
-	OVITO_ASSERT(!UndoManager::instance().isRecording());
+	OVITO_ASSERT(!dataSet()->undoStack().isRecording());
 	OVITO_ASSERT(stream._currentObject && stream._currentObject->object.get() == this);
 
 #if 0

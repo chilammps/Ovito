@@ -25,6 +25,7 @@
 #include <core/gui/properties/BooleanActionParameterUI.h>
 #include <core/gui/properties/IntegerParameterUI.h>
 #include <core/gui/properties/SubObjectParameterUI.h>
+#include <core/animation/AnimationSettings.h>
 #include "LinkedFileObjectEditor.h"
 
 namespace Ovito {
@@ -220,7 +221,7 @@ void LinkedFileObjectEditor::onWildcardPatternEntered()
 	LinkedFileObject* obj = static_object_cast<LinkedFileObject>(editObject());
 	OVITO_CHECK_OBJECT_POINTER(obj);
 
-	UndoableTransaction::handleExceptions(tr("Change wildcard pattern"), [this, obj]() {
+	UndoableTransaction::handleExceptions(dataSet()->undoStack(), tr("Change wildcard pattern"), [this, obj]() {
 		if(!obj->importer())
 			return;
 
@@ -314,7 +315,7 @@ void LinkedFileObjectEditor::onFrameSelected(int index)
 	LinkedFileObject* obj = static_object_cast<LinkedFileObject>(editObject());
 	if(!obj) return;
 
-	AnimManager::instance().setTime(obj->inputFrameToAnimationTime(index));
+	dataSet()->animationSettings()->setTime(obj->inputFrameToAnimationTime(index));
 }
 
 /******************************************************************************

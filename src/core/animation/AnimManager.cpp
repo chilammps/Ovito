@@ -21,7 +21,7 @@
 
 #include <core/Core.h>
 #include <core/animation/AnimManager.h>
-#include <core/dataset/DataSetManager.h>
+#include <core/dataset/DataSetContainer.h>
 #include <core/viewport/ViewportManager.h>
 #include <core/gui/actions/ActionManager.h>
 
@@ -30,20 +30,6 @@ namespace Ovito {
 /// The singleton instance of the class.
 AnimManager* AnimManager::_instance = nullptr;
 
-/******************************************************************************
-* Initializes the animation manager.
-******************************************************************************/
-AnimManager::AnimManager() : _animSuspendCount(0),  _autoKeyMode(false), _timeIsChanging(0)
-{
-	OVITO_ASSERT_MSG(!_instance, "AnimManager constructor", "Multiple instances of this singleton class have been created.");
-
-	// Reset the animation manager when a new scene has been loaded.
-	connect(&DataSetManager::instance(), SIGNAL(dataSetReset(DataSet*)), this, SLOT(reset()));
-
-	// Call our own listener when the current animation time changes.
-	connect(this, SIGNAL(timeChanged(TimePoint)), this, SLOT(onTimeChanged(TimePoint)));
-	connect(this, SIGNAL(intervalChanged(TimeInterval)), this, SLOT(onIntervalChanged(TimeInterval)));
-}
 
 /******************************************************************************
 * Resets the animation manager.
@@ -71,65 +57,6 @@ void AnimManager::reset()
 	}
 }
 
-/******************************************************************************
-* Is called when the current animation time has changed.
-******************************************************************************/
-void AnimManager::onTimeChanged(TimePoint newTime)
-{
-	// Wait until scene is ready, then repaint viewports.
 
-	_timeIsChanging++;
-	DataSetManager::instance().runWhenSceneIsReady([this] () {
-		_timeIsChanging--;
-		ViewportManager::instance().updateViewports();
-	});
-}
-
-/******************************************************************************
-* Is called whenever the active animation interval has changed.
-******************************************************************************/
-void AnimManager::onIntervalChanged(TimeInterval newAnimationInterval)
-{
-	bool isAnimationInterval = newAnimationInterval.duration() != 0;
-	ActionManager::instance().getAction(ACTION_GOTO_START_OF_ANIMATION)->setEnabled(isAnimationInterval);
-	ActionManager::instance().getAction(ACTION_GOTO_PREVIOUS_FRAME)->setEnabled(isAnimationInterval);
-	ActionManager::instance().getAction(ACTION_TOGGLE_ANIMATION_PLAYBACK)->setEnabled(isAnimationInterval);
-	ActionManager::instance().getAction(ACTION_GOTO_NEXT_FRAME)->setEnabled(isAnimationInterval);
-	ActionManager::instance().getAction(ACTION_GOTO_END_OF_ANIMATION)->setEnabled(isAnimationInterval);
-}
-
-/******************************************************************************
-* Converts a time value to its string representation.
-******************************************************************************/
-QString AnimManager::timeToString(TimePoint time)
-{
-	return QString::number(timeToFrame(time));
-}
-
-/******************************************************************************
-* Converts a string to a time value.
-* Throws an exception when a parsing error occurs.
-******************************************************************************/
-TimePoint AnimManager::stringToTime(const QString& stringValue)
-{
-	TimePoint value;
-	bool ok;
-	value = (TimePoint)stringValue.toInt(&ok);
-	if(!ok)
-		throw Exception(tr("Invalid frame number format: %1").arg(stringValue));
-	return frameToTime(value);
-}
-
-/******************************************************************************
-* Enables or disables auto key generation mode.
-******************************************************************************/
-void AnimManager::setAutoKeyMode(bool on)
-{
-	if(_autoKeyMode == on)
-		return;
-	
-	_autoKeyMode = on;
-	Q_EMIT autoKeyModeChanged(_autoKeyMode);
-}
 
 };

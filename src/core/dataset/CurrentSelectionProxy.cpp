@@ -21,7 +21,6 @@
 
 #include <core/Core.h>
 #include <core/dataset/CurrentSelectionProxy.h>
-#include <core/dataset/DataSetManager.h>
 
 namespace Ovito {
 
@@ -31,11 +30,9 @@ DEFINE_FLAGS_REFERENCE_FIELD(CurrentSelectionProxy, _selectionSet, "SelectionSet
 /******************************************************************************
 * Default constructor.
 ******************************************************************************/
-CurrentSelectionProxy::CurrentSelectionProxy() : _changeEventInQueue(false)
+CurrentSelectionProxy::CurrentSelectionProxy() : SelectionSet(nullptr), _changeEventInQueue(false)
 {
 	INIT_PROPERTY_FIELD(CurrentSelectionProxy::_selectionSet);
-
-	connect(this, SIGNAL(internalSelectionChanged()), this, SLOT(onInternalSelectionChanged()), Qt::QueuedConnection);
 }
 
 /******************************************************************************
@@ -161,12 +158,12 @@ bool CurrentSelectionProxy::referenceEvent(RefTarget* source, ReferenceEvent* ev
 void CurrentSelectionProxy::onChanged()
 {
 	// Raise event.
-	DataSetManager::instance().emitSelectionChanged(this);
+	Q_EMIT selectionChanged(this);
 
 	// Raise delayed event.
 	if(!_changeEventInQueue) {
 		_changeEventInQueue = true;
-		internalSelectionChanged(); 
+		QMetaObject::invokeMethod(this, "onInternalSelectionChanged", Qt::QueuedConnection);
 	}	
 }
 
@@ -177,7 +174,7 @@ void CurrentSelectionProxy::onChanged()
 void CurrentSelectionProxy::onInternalSelectionChanged() 
 {
 	_changeEventInQueue = false;
-	DataSetManager::instance().emitSelectionChangeComplete(this);
+	Q_EMIT selectionChangeComplete(this);
 }
 
 };

@@ -41,8 +41,8 @@ class OVITO_CORE_EXPORT TriMeshDisplay : public DisplayObject
 {
 public:
 
-	/// \brief Default constructor.
-	Q_INVOKABLE TriMeshDisplay();
+	/// \brief Constructor.
+	Q_INVOKABLE TriMeshDisplay(DataSet* dataset);
 
 	/// \brief Lets the display object render a scene object.
 	virtual void render(TimePoint time, SceneObject* sceneObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode) override;

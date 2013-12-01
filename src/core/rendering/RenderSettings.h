@@ -26,6 +26,7 @@
 #include <core/reference/RefTarget.h>
 #include <core/animation/TimeInterval.h>
 #include <core/animation/controller/Controller.h>
+#include <core/animation/AnimationSettings.h>
 
 #include "FrameBuffer.h"
 
@@ -52,7 +53,7 @@ public:
 
 	/// Constructor.
 	/// Creates an instance of the default renderer class which can be accessed via the renderer() method.
-	Q_INVOKABLE RenderSettings();
+	Q_INVOKABLE RenderSettings(DataSet* dataset);
 	
 	/// Returns the class of the current renderer or NULL if there is no current renderer.
 	const OvitoObjectType* rendererClass() const;

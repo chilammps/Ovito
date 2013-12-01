@@ -23,7 +23,7 @@
 #define __OVITO_ANIM_SETTINGS_DIALOG_H
 
 #include <core/animation/AnimManager.h>
-#include <core/gui/undo/UndoManager.h>
+#include <core/dataset/UndoStack.h>
 #include <core/gui/widgets/general/SpinnerWidget.h>
 
 namespace Ovito {

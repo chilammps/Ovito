@@ -20,7 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include <core/gui/undo/UndoManager.h>
+#include <core/dataset/UndoStack.h>
 #include <core/dataset/DataSetManager.h>
 #include <core/utilities/units/UnitsManager.h>
 #include "AnimationSettingsDialog.h"

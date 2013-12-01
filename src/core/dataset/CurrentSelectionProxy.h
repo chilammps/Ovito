@@ -45,7 +45,7 @@ class OVITO_CORE_EXPORT CurrentSelectionProxy : public SelectionSet
 {
 public:
 
-	/// Default constructor.
+	/// Constructor.
 	CurrentSelectionProxy();
 
 	/// Returns the number of scene nodes in the selection set.
@@ -95,17 +95,30 @@ protected:
 	/// Is called when the selection set has changed.
 	/// Raises the relectionChanged signal of the DataSetManager.
 	void onChanged();
-	
-Q_SIGNALS:
-
-	/// This is only an internal signal.
-	void internalSelectionChanged();
-	
-protected Q_SLOTS:
 
 	/// Is called after the selection set has changed multiple times.
-	void onInternalSelectionChanged();
+	Q_INVOKABLE void onInternalSelectionChanged();
 	
+Q_SIGNALS:
+	
+	/// \brief Is emitted when nodes have been added or removed from the current selection set.
+	/// \param newSelection The current selection set.
+	/// \note This signal is NOT emitted when a node in the selection set has changed.
+	/// \note In contrast to the selectionChangeComplete() signal, this signal is emitted
+	///       for every node that is added to or removed from the selection set. That means
+	///       a call to SelectionSet::addAll() for example will generate multiple selectionChanged()
+	///       events but only one final selectionChangeComplete() event.
+	void selectionChanged(SelectionSet* newSelection);
+
+	/// \brief This signal is emitted after all changes to the selection set have been completed.
+	/// \param newSelection The current selection set.
+	/// \note This signal is NOT emitted when a node in the selection set has changed.
+	/// \note In contrast to the selectionChange() signal this signal is emitted
+	///       only once after the selection set has been changed. That is,
+	///       a call to SelectionSet::addAll() for example will generate multiple selectionChanged()
+	///       events but only one final selectionChangeComplete() event.
+	void selectionChangeComplete(SelectionSet* newSelection);
+
 private:
 
 	/// Holds the references to the current selection set in the current data set.

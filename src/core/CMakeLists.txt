@@ -32,7 +32,6 @@ SET(OVITO_CORE_SOURCE_FILES
 	reference/RefMaker.cpp
 	reference/RefTarget.cpp
 	reference/RefTargetListener.cpp
-	animation/AnimManager.cpp
 	animation/AnimationSettings.cpp
 	animation/controller/Controller.cpp
 	animation/controller/StandardConstControllers.cpp
@@ -40,8 +39,9 @@ SET(OVITO_CORE_SOURCE_FILES
 	animation/controller/LookAtController.cpp
 	animation/controller/TransformationController.cpp
 	dataset/DataSet.cpp
-	dataset/DataSetManager.cpp
+	dataset/DataSetContainer.cpp
 	dataset/CurrentSelectionProxy.cpp
+	dataset/UndoStack.cpp
 	dataset/importexport/ImportExportManager.cpp
 	dataset/importexport/LinkedFileImporter.cpp
 	dataset/importexport/LinkedFileObject.cpp
@@ -89,7 +89,6 @@ SET(OVITO_CORE_SOURCE_FILES
 	gui/actions/AnimationActions.cpp
 	gui/actions/RenderActions.cpp
 	gui/actions/ViewportModeAction.cpp
-	gui/undo/UndoManager.cpp
 	gui/widgets/general/RolloutContainer.cpp
 	gui/widgets/general/SpinnerWidget.cpp
 	gui/widgets/general/ColorPickerWidget.cpp
@@ -156,7 +155,6 @@ SET(OVITO_CORE_SOURCE_FILES
 	viewport/ViewportMenu.cpp
 	viewport/ViewportConfiguration.cpp
 	viewport/ViewportSettings.cpp
-	viewport/ViewportManager.cpp
 	viewport/input/ViewportInputManager.cpp
 	viewport/input/ViewportInputHandler.cpp
 	viewport/input/NavigationModes.cpp

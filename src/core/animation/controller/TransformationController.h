@@ -48,8 +48,8 @@ class OVITO_CORE_EXPORT TransformationController : public TypedController<Affine
 {
 protected:
 	
-	/// \brief The default constructor.
-	TransformationController() {}
+	/// \brief The constructor.
+	TransformationController(DataSet* dataset) : TypedController<AffineTransformation, AffineTransformation>(dataset) {}
 	
 public:
 
@@ -118,7 +118,7 @@ class OVITO_CORE_EXPORT PRSTransformationController : public TransformationContr
 public:
 
 	/// Default constructor.
-	Q_INVOKABLE PRSTransformationController();
+	Q_INVOKABLE PRSTransformationController(DataSet* dataset);
 
 	/// \brief Let the controller apply its value at a certain time to some input variable.
 	/// \param[in] time The animation time for which the controller's value should be applied.

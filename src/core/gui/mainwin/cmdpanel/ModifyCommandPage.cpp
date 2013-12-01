@@ -24,7 +24,7 @@
 #include <core/scene/pipeline/PipelineObject.h>
 #include <core/scene/pipeline/Modifier.h>
 #include <core/scene/ObjectNode.h>
-#include <core/gui/undo/UndoManager.h>
+#include <core/dataset/UndoStack.h>
 #include <core/gui/actions/ActionManager.h>
 #include <core/gui/widgets/selection/SceneNodeSelectionBox.h>
 #include <core/viewport/ViewportManager.h>
@@ -115,36 +115,6 @@ ModifyCommandPage::ModifyCommandPage()
 
 	// Create About panel.
 	createAboutPanel();
-}
-
-/******************************************************************************
-* Resets the modify page to the initial state.
-******************************************************************************/
-void ModifyCommandPage::reset()
-{
-	CommandPanelPage::reset();
-}
-
-/******************************************************************************
-* Is called when the user selects the page.
-******************************************************************************/
-void ModifyCommandPage::onEnter()
-{
-	CommandPanelPage::onEnter();
-
-	// Update everything.
-	updateActions(nullptr);
-	onSelectionChangeComplete(DataSetManager::instance().currentSelection());
-}
-
-/******************************************************************************
-* Is called when the user selects another page.
-******************************************************************************/
-void ModifyCommandPage::onLeave()
-{
-	CommandPanelPage::onLeave();
-	_modificationListModel->clear();
-	_selectionSetListener.setTarget(nullptr);
 }
 
 /******************************************************************************

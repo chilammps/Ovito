@@ -77,8 +77,9 @@ public:
 
 protected:
 
-	/// The default constructor.
-	RefTarget() : RefMaker() {}
+	/// \brief Constructor.
+	/// \param dataset The dataset this object will belong to.
+	RefTarget(DataSet* dataset) : RefMaker(dataset) {}
 
 	/// \brief The virtual destructor.
 	virtual ~RefTarget();

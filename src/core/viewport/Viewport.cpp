@@ -57,7 +57,7 @@ DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _cameraTM, "CameraTransformation", PROPERT
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-Viewport::Viewport() :
+Viewport::Viewport(DataSet* dataset) : RefTarget(dataset),
 		_widget(nullptr), _viewportWindow(nullptr),
 		_viewType(VIEW_NONE), _shadingMode(SHADING_WIREFRAME),
 		_fieldOfView(100),

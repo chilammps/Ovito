@@ -115,7 +115,7 @@ public:
 public:
 
 	/// \brief Constructs a new instance of this class.
-	LinkedFileImporter() {}
+	LinkedFileImporter(DataSet* dataset) : FileImporter(dataset) {}
 
 	///////////////////////////// from FileImporter /////////////////////////////
 

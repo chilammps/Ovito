@@ -23,7 +23,7 @@
 #include <core/gui/actions/ActionManager.h>
 #include <core/gui/actions/ViewportModeAction.h>
 #include <core/gui/app/Application.h>
-#include <core/gui/undo/UndoManager.h>
+#include <core/dataset/UndoStack.h>
 #include <core/viewport/input/NavigationModes.h>
 #include <core/animation/AnimManager.h>
 #include <core/dataset/DataSetManager.h>

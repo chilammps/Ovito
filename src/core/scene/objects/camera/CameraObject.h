@@ -36,8 +36,8 @@ class OVITO_CORE_EXPORT CameraObject : public AbstractCameraObject
 {
 public:
 
-	/// Default constructor.
-	Q_INVOKABLE CameraObject();
+	/// Constructor.
+	Q_INVOKABLE CameraObject(DataSet* dataset);
 
 	/// \brief Returns the title of this object.
 	virtual QString objectTitle() override { return tr("Camera"); }

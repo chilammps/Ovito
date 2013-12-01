@@ -21,8 +21,6 @@
 
 #include <core/Core.h>
 #include <core/dataset/DataSet.h>
-#include <core/dataset/DataSetManager.h>
-#include <core/viewport/ViewportManager.h>
 #include <core/viewport/Viewport.h>
 #include <core/viewport/ViewportConfiguration.h>
 #include <core/reference/CloneHelper.h>
@@ -55,7 +53,7 @@ SET_PROPERTY_FIELD_LABEL(DataSet, _renderSettings, "Render Settings")
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-DataSet::DataSet()
+DataSet::DataSet(DataSet* self) : RefTarget(this)
 {
 	INIT_PROPERTY_FIELD(DataSet::_viewportConfig);
 	INIT_PROPERTY_FIELD(DataSet::_animSettings);
@@ -63,13 +61,49 @@ DataSet::DataSet()
 	INIT_PROPERTY_FIELD(DataSet::_selection);
 	INIT_PROPERTY_FIELD(DataSet::_renderSettings);
 
-	// Create a new viewport configuration by copying the default template.
-	_viewportConfig = CloneHelper().cloneObject(DataSetManager::instance().defaultViewportConfiguration(), true);
+	_viewportConfig = createDefaultViewportConfiguration();
+	_animSettings = new AnimationSettings(dataSet());
+	_sceneRoot = new SceneRoot(dataSet());
+	_selection = new SelectionSet(dataSet());
+	_renderSettings = new RenderSettings(dataSet());
+}
 
-	_animSettings = new AnimationSettings();
-	_sceneRoot = new SceneRoot();
-	_selection = new SelectionSet();
-	_renderSettings = new RenderSettings();
+/******************************************************************************
+* Sets the dataset's root scene node.
+******************************************************************************/
+void DataSet::setSceneRoot(const OORef<SceneRoot>& newScene)
+{
+	_sceneRoot = newScene;
+}
+
+/******************************************************************************
+* Returns a viewport configuration that is used as template for new scenes.
+******************************************************************************/
+OORef<ViewportConfiguration> DataSet::createDefaultViewportConfiguration()
+{
+	OORef<ViewportConfiguration> defaultViewportConfig = new ViewportConfiguration(dataSet());
+
+	OORef<Viewport> topView = new Viewport(this);
+	topView->setViewType(Viewport::VIEW_TOP);
+	defaultViewportConfig->addViewport(topView);
+
+	OORef<Viewport> frontView = new Viewport(this);
+	frontView->setViewType(Viewport::VIEW_FRONT);
+	defaultViewportConfig->addViewport(frontView);
+
+	OORef<Viewport> leftView = new Viewport(this);
+	leftView->setViewType(Viewport::VIEW_LEFT);
+	defaultViewportConfig->addViewport(leftView);
+
+	OORef<Viewport> perspectiveView = new Viewport(this);
+	perspectiveView->setViewType(Viewport::VIEW_PERSPECTIVE);
+	perspectiveView->setCameraTransformation(ViewportSettings::getSettings().coordinateSystemOrientation() * AffineTransformation::lookAlong({90, -120, 100}, {-90, 120, -100}, {0,0,1}).inverse());
+	defaultViewportConfig->addViewport(perspectiveView);
+
+	defaultViewportConfig->setActiveViewport(topView.get());
+	defaultViewportConfig->setMaximizedViewport(nullptr);
+
+	return defaultViewportConfig;
 }
 
 /******************************************************************************
@@ -77,16 +111,51 @@ DataSet::DataSet()
 ******************************************************************************/
 bool DataSet::referenceEvent(RefTarget* source, ReferenceEvent* event)
 {
+	OVITO_ASSERT_MSG(QThread::currentThread() == QApplication::instance()->thread(), "DataSet::referenceEvent", "Reference events may only be processed in the GUI thread.");
+
 	if(event->type() == ReferenceEvent::TargetChanged || event->type() == ReferenceEvent::PendingStateChanged) {
 
 		// Update the viewports whenever something has changed in the current data set.
-		if(this == DataSetManager::instance().currentSet() && source != viewportConfig() && source != animationSettings()) {
+		if(source != viewportConfig() && source != animationSettings()) {
 			// Do not automatically update while in the process of jumping to a new animation frame.
-			if(!AnimManager::instance().isTimeChanging())
-				ViewportManager::instance().updateViewports();
+			if(!animationSettings()->isTimeChanging())
+				viewportConfig()->updateViewports();
+
+			if(source == sceneRoot() && event->type() == ReferenceEvent::PendingStateChanged) {
+				notifySceneReadyListeners();
+			}
 		}
 	}
 	return RefTarget::referenceEvent(source, event);
+}
+
+/******************************************************************************
+* Is called when the value of a reference field of this RefMaker changes.
+******************************************************************************/
+void DataSet::referenceReplaced(const PropertyFieldDescriptor& field, RefTarget* oldTarget, RefTarget* newTarget)
+{
+	if(field == PROPERTY_FIELD(DataSet::_viewportConfig))
+		Q_EMIT viewportConfigChanged(viewportConfig());
+	else if(field == PROPERTY_FIELD(DataSet::_animSettings))
+		Q_EMIT animationSettingsChanged(animationSettings());
+	else if(field == PROPERTY_FIELD(DataSet::_renderSettings))
+		Q_EMIT renderSettingsChanged(renderSettings());
+
+	RefTarget::referenceReplaced(field, oldTarget, newTarget);
+}
+
+/******************************************************************************
+* Returns a pointer to the main window in which this dataset is being edited.
+******************************************************************************/
+MainWindow* DataSet::mainWindow() const
+{
+	for(QWidget* widget : QApplication::topLevelWidgets()) {
+		if(MainWindow* mainWin = qobject_cast<MainWindow*>(widget)) {
+			if(mainWin->datasetContainer().currentSet() == this)
+				return mainWin;
+		}
+	}
+	return nullptr;
 }
 
 /******************************************************************************
@@ -113,6 +182,59 @@ void DataSet::rescaleTime(const TimeInterval& oldAnimationInterval, const TimeIn
 }
 
 /******************************************************************************
+* Checks all scene nodes if their geometry pipeline is fully evaluated at the
+* given animation time.
+******************************************************************************/
+bool DataSet::isSceneReady(TimePoint time) const
+{
+	OVITO_ASSERT_MSG(QThread::currentThread() == QApplication::instance()->thread(), "DataSet::isSceneReady", "This function may only be called from the GUI thread.");
+	OVITO_CHECK_OBJECT_POINTER(sceneRoot());
+
+	// Iterate over all object nodes and request an evaluation of their geometry pipeline.
+	bool isReady = sceneRoot()->visitObjectNodes([time](ObjectNode* node) {
+		return (node->evalPipeline(time).status().type() != ObjectStatus::Pending);
+	});
+
+	return isReady;
+}
+
+/******************************************************************************
+* Calls the given slot as soon as the geometry pipelines of all scene nodes has been
+* completely evaluated.
+******************************************************************************/
+void DataSet::runWhenSceneIsReady(const std::function<void()>& fn)
+{
+	OVITO_ASSERT_MSG(QThread::currentThread() == QApplication::instance()->thread(), "DataSet::runWhenSceneIsReady", "This function may only be called from the GUI thread.");
+	OVITO_CHECK_OBJECT_POINTER(sceneRoot());
+
+	TimePoint time = animationSettings()->time();
+
+	// Iterate over all object nodes and request an evaluation of their geometry pipeline.
+	bool isReady = sceneRoot()->visitObjectNodes([time](ObjectNode* node) {
+		return (node->evalPipeline(time).status().type() != ObjectStatus::Pending);
+	});
+
+	if(isReady)
+		fn();
+	else
+		_sceneReadyListeners.push_back(fn);
+}
+
+/******************************************************************************
+* Checks if the scene is ready and calls all registered listeners.
+******************************************************************************/
+void DataSet::notifySceneReadyListeners()
+{
+	if(!_sceneReadyListeners.empty() && isSceneReady(animationSettings()->time())) {
+		auto oldListenerList = _sceneReadyListeners;
+		_sceneReadyListeners.clear();
+		for(const auto& listener : oldListenerList) {
+			listener();
+		}
+	}
+}
+
+/******************************************************************************
 * This is the high-level rendering function, which invokes the renderer to generate one or more
 * output images of the scene. All rendering parameters are specified in the RenderSettings object.
 ******************************************************************************/
@@ -127,10 +249,10 @@ bool DataSet::renderScene(RenderSettings* settings, Viewport* viewport, QSharedP
 	if(!renderer) throw Exception(tr("No renderer has been selected."));
 
 	// Do not update the viewports while rendering.
-	ViewportSuspender noVPUpdates;
+	ViewportSuspender noVPUpdates(viewportConfig());
 
 	// Show progress dialog.
-	QProgressDialog progressDialog(&MainWindow::instance());
+	QProgressDialog progressDialog(mainWindow());
 	progressDialog.setWindowModality(Qt::WindowModal);
 	progressDialog.setAutoClose(false);
 	progressDialog.setAutoReset(false);
@@ -153,7 +275,7 @@ bool DataSet::renderScene(RenderSettings* settings, Viewport* viewport, QSharedP
 
 				videoEncoderPtr.reset(new VideoEncoder());
 				videoEncoder = videoEncoderPtr.data();
-				videoEncoder->openFile(settings->imageFilename(), settings->outputImageWidth(), settings->outputImageHeight(), AnimManager::instance().framesPerSecond());
+				videoEncoder->openFile(settings->imageFilename(), settings->outputImageWidth(), settings->outputImageHeight(), animationSettings()->framesPerSecond());
 			}
 #endif
 
@@ -265,7 +387,7 @@ void DataSet::renderFrame(TimePoint renderTime, int frameNumber, RenderSettings*
 
 	// Wait until the scene is ready.
 	volatile bool sceneIsReady = false;
-	DataSetManager::instance().runWhenSceneIsReady( [&sceneIsReady]() { sceneIsReady = true; } );
+	runWhenSceneIsReady( [&sceneIsReady]() { sceneIsReady = true; } );
 	if(!sceneIsReady) {
 		progressDialog.setLabelText(tr("Rendering frame %1. Preparing scene...").arg(frameNumber));
 		while(!sceneIsReady) {

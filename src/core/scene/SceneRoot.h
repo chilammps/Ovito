@@ -41,7 +41,7 @@ class OVITO_CORE_EXPORT SceneRoot : public SceneNode
 public:
 
 	/// \brief Creates a root node without children.
-	Q_INVOKABLE SceneRoot();
+	Q_INVOKABLE SceneRoot(DataSet* dataset);
 
 	/// \brief Finds a scene with the given name.
 	/// \param nodeName The name to look for. 

@@ -33,14 +33,18 @@ DEFINE_PROPERTY_FIELD(AnimationSettings, _playbackSpeed, "PlaybackSpeed");
 /******************************************************************************
 * Default constructor. Assigns default values.
 ******************************************************************************/
-AnimationSettings::AnimationSettings() :
+AnimationSettings::AnimationSettings(DataSet* dataset) : RefTarget(dataset),
 		_ticksPerFrame(TICKS_PER_SECOND/10), _playbackSpeed(1),
-		_animationInterval(0, 0), _time(0)
+		_animationInterval(0, 0), _time(0), _animSuspendCount(0),  _autoKeyMode(false), _timeIsChanging(0)
 {
 	INIT_PROPERTY_FIELD(AnimationSettings::_time);
 	INIT_PROPERTY_FIELD(AnimationSettings::_animationInterval);
 	INIT_PROPERTY_FIELD(AnimationSettings::_ticksPerFrame);
 	INIT_PROPERTY_FIELD(AnimationSettings::_playbackSpeed);
+
+	// Call our own listener when the current animation time changes.
+	connect(this, SIGNAL(timeChanged(TimePoint)), this, SLOT(onTimeChanged(TimePoint)));
+	connect(this, SIGNAL(intervalChanged(TimeInterval)), this, SLOT(onIntervalChanged(TimeInterval)));
 }
 
 /******************************************************************************
@@ -90,6 +94,71 @@ OORef<RefTarget> AnimationSettings::clone(bool deepCopy, CloneHelper& cloneHelpe
 	clone->_namedFrames = this->_namedFrames;
 
 	return clone;
+}
+
+/******************************************************************************
+* Is called when the current animation time has changed.
+******************************************************************************/
+void AnimationSettings::onTimeChanged(TimePoint newTime)
+{
+	// Wait until scene is ready, then repaint viewports.
+
+	_timeIsChanging++;
+	dataSet()->runWhenSceneIsReady([this] () {
+		_timeIsChanging--;
+#if 0
+		ViewportManager::instance().updateViewports();
+#endif
+	});
+}
+
+/******************************************************************************
+* Is called whenever the active animation interval has changed.
+******************************************************************************/
+void AnimationSettings::onIntervalChanged(TimeInterval newAnimationInterval)
+{
+	bool isAnimationInterval = newAnimationInterval.duration() != 0;
+#if 0
+	ActionManager::instance().getAction(ACTION_GOTO_START_OF_ANIMATION)->setEnabled(isAnimationInterval);
+	ActionManager::instance().getAction(ACTION_GOTO_PREVIOUS_FRAME)->setEnabled(isAnimationInterval);
+	ActionManager::instance().getAction(ACTION_TOGGLE_ANIMATION_PLAYBACK)->setEnabled(isAnimationInterval);
+	ActionManager::instance().getAction(ACTION_GOTO_NEXT_FRAME)->setEnabled(isAnimationInterval);
+	ActionManager::instance().getAction(ACTION_GOTO_END_OF_ANIMATION)->setEnabled(isAnimationInterval);
+#endif
+}
+
+/******************************************************************************
+* Converts a time value to its string representation.
+******************************************************************************/
+QString AnimationSettings::timeToString(TimePoint time)
+{
+	return QString::number(timeToFrame(time));
+}
+
+/******************************************************************************
+* Converts a string to a time value.
+* Throws an exception when a parsing error occurs.
+******************************************************************************/
+TimePoint AnimationSettings::stringToTime(const QString& stringValue)
+{
+	TimePoint value;
+	bool ok;
+	value = (TimePoint)stringValue.toInt(&ok);
+	if(!ok)
+		throw Exception(tr("Invalid frame number format: %1").arg(stringValue));
+	return frameToTime(value);
+}
+
+/******************************************************************************
+* Enables or disables auto key generation mode.
+******************************************************************************/
+void AnimationSettings::setAutoKeyMode(bool on)
+{
+	if(_autoKeyMode == on)
+		return;
+
+	_autoKeyMode = on;
+	Q_EMIT autoKeyModeChanged(_autoKeyMode);
 }
 
 };

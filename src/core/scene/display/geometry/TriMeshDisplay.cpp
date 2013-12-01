@@ -36,7 +36,7 @@ SET_PROPERTY_FIELD_LABEL(TriMeshDisplay, _color, "Display color")
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-TriMeshDisplay::TriMeshDisplay() :
+TriMeshDisplay::TriMeshDisplay(DataSet* dataset) : DisplayObject(dataset),
 	_color(0.85, 0.85, 1)
 {
 	INIT_PROPERTY_FIELD(TriMeshDisplay::_color);

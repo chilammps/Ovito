@@ -29,8 +29,8 @@ namespace Ovito {
 /******************************************************************************
 * Initializes the utility panel.
 ******************************************************************************/
-UtilityCommandPage::UtilityCommandPage() : CommandPanelPage(),
-	utilitiesButtonGroup(NULL)
+UtilityCommandPage::UtilityCommandPage(QWidget* parent) : QWidget(parent),
+	utilitiesButtonGroup(nullptr)
 {
 	scanInstalledPlugins();
 
@@ -59,15 +59,6 @@ UtilityCommandPage::UtilityCommandPage() : CommandPanelPage(),
 
 	setLayout(layout);
 	rebuildUtilityList();
-}
-
-
-/******************************************************************************
-* Resets the panel to the initial state.
-******************************************************************************/
-void UtilityCommandPage::reset()
-{
-	CommandPanelPage::reset();
 }
 
 /******************************************************************************

@@ -47,8 +47,8 @@ class OVITO_CORE_EXPORT DisplayObject : public RefTarget
 {
 protected:
 
-	/// \brief Default constructor.
-	DisplayObject();
+	/// \brief Constructor.
+	DisplayObject(DataSet* dataset);
 
 public:
 

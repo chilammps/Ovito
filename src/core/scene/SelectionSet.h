@@ -46,7 +46,7 @@ class OVITO_CORE_EXPORT SelectionSet : public RefTarget
 public:
 
 	/// \brief Creates an empty selection set.
-	Q_INVOKABLE SelectionSet();
+	Q_INVOKABLE SelectionSet(DataSet* dataset);
 
 	/// \brief Returns the number of scene nodes in the selection set.
 	/// \return The number of selected objects.

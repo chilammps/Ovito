@@ -32,7 +32,7 @@ SET_PROPERTY_FIELD_LABEL(DisplayObject, _isEnabled, "Enabled")
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-DisplayObject::DisplayObject() : _isEnabled(true)
+DisplayObject::DisplayObject(DataSet* dataset) : RefTarget(dataset), _isEnabled(true)
 {
 	INIT_PROPERTY_FIELD(DisplayObject::_isEnabled);
 }

@@ -40,8 +40,8 @@ class OVITO_CORE_EXPORT FileExporter : public RefTarget
 {
 protected:
 	
-	/// \brief The default constructor.
-	FileExporter() {}
+	/// \brief The constructor.
+	FileExporter(DataSet* dataset) : RefTarget(dataset) {}
 
 public:
 
@@ -92,8 +92,9 @@ public:
 	const QString& fileFilterDescription() const { return _fileFilterDescription; }
 
 	/// \brief Creates an instance of the file exporter class.
-	OORef<FileExporter> createService() const {
-		return static_object_cast<FileExporter>(pluginClass()->createInstance());
+	/// \param The dataset within which the exporter object is to be created.
+	OORef<FileExporter> createService(DataSet* dataset) const {
+		return static_object_cast<FileExporter>(pluginClass()->createInstance(dataset));
 	}
 
 	/// \brief Returns the class descriptor for the file exporter service.

@@ -41,8 +41,8 @@ class OVITO_CORE_EXPORT AbstractCameraObject : public SceneObject
 {
 public:
 	
-	/// \brief Default constructor.
-	AbstractCameraObject() {}
+	/// \brief Constructor.
+	AbstractCameraObject(DataSet* dataset) : SceneObject(dataset) {}
 
 	/// \brief Returns a structure describing the camera's projection.
 	/// \param[in] time The animation time for which the camera's projection parameters should be determined.

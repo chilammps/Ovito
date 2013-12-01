@@ -25,21 +25,16 @@
 #include <core/gui/widgets/animation/AnimationFramesToolButton.h>
 #include <core/gui/widgets/animation/AnimationTimeSlider.h>
 #include <core/gui/widgets/rendering/FrameBufferWindow.h>
-#include <core/viewport/ViewportManager.h>
 #include "MainWindow.h"
 #include "ViewportsPanel.h"
 #include "cmdpanel/CommandPanel.h"
 
 namespace Ovito {
 
-/// The global instance of this window class.
-MainWindow* MainWindow::_instance = NULL;
-
 /******************************************************************************
 * The constructor of the main window class.
 ******************************************************************************/
-MainWindow::MainWindow(const QString& title) :
-	QMainWindow()
+MainWindow::MainWindow(const QString& title) : QMainWindow()
 {
 	OVITO_ASSERT_MSG(_instance == NULL, "MainWindow constructor", "Only one main window should be created.");
 	_instance = this;
@@ -226,7 +221,6 @@ void MainWindow::createMainMenu()
 	helpMenu->addAction(ActionManager::instance().getAction(ACTION_HELP_SHOW_ONLINE_HELP));
 	helpMenu->addSeparator();
 	helpMenu->addAction(ActionManager::instance().getAction(ACTION_HELP_ABOUT));
-	//helpMenu->addAction(tr("About Qt"), QApplication::instance(), SLOT(aboutQt()));
 
 	setMenuBar(menuBar);
 }

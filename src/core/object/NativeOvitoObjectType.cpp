@@ -23,7 +23,7 @@
 #include "NativeOvitoObjectType.h"
 #include "OvitoObject.h"
 #include <core/reference/PropertyFieldDescriptor.h>
-#include <core/gui/undo/UndoManager.h>
+#include <core/dataset/DataSet.h>
 #include <core/plugins/Plugin.h>
 
 namespace Ovito {
@@ -32,14 +32,22 @@ namespace Ovito {
 NativeOvitoObjectType* NativeOvitoObjectType::_firstInfo = nullptr;
 
 /******************************************************************************
-* Creates an object of the appropriate kind.
+* Creates an object of the requested kind.
 * Throws an exception if the containing plugin failed to load.
 ******************************************************************************/
-OORef<OvitoObject> NativeOvitoObjectType::createInstanceImpl() const
+OORef<OvitoObject> NativeOvitoObjectType::createInstanceImpl(DataSet* dataset) const
 {
-	UndoSuspender noUndo;
+	OvitoObject* obj;
 
-	OvitoObject* obj = qobject_cast<OvitoObject*>(_qtClassInfo->newInstance());
+	if(dataset) {
+		OVITO_CHECK_OBJECT_POINTER(dataset);
+		UndoSuspender noUndo(dataset->undoStack());
+		obj = qobject_cast<OvitoObject*>(_qtClassInfo->newInstance(Q_ARG(DataSet*, dataset)));
+	}
+	else {
+		obj = qobject_cast<OvitoObject*>(_qtClassInfo->newInstance());
+	}
+
 	if(!obj)
 		throw Exception(Plugin::tr("Failed to instantiate class '%1'.").arg(name()));
 

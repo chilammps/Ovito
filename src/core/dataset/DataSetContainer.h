@@ -20,15 +20,14 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /** 
- * \file DataSetManager.h 
- * \brief Contains the definition of the Ovito::DataSetManager class.
+ * \file DataSetContainer.h
+ * \brief Contains the definition of the Ovito::DataSetContainer class.
  */
 
 #ifndef __OVITO_DATASET_MANAGER_H
 #define __OVITO_DATASET_MANAGER_H
 
 #include <core/Core.h>
-#include <core/viewport/ViewportConfiguration.h>
 #include "DataSet.h"
 #include "CurrentSelectionProxy.h"
 #include "importexport/FileImporter.h"
@@ -37,19 +36,13 @@ namespace Ovito {
 
 /**
  * \brief Manages the current DataSet.
- * 
- * This is a singleton class with only one predefined instance of this class. 
  */
-class OVITO_CORE_EXPORT DataSetManager : public RefMaker
+class OVITO_CORE_EXPORT DataSetContainer : public RefMaker
 {
 public:
 
-	/// \brief Returns the one and only instance of this class.
-	/// \return The predefined instance of the DataSetManager singleton class.
-	inline static DataSetManager& instance() {
-		OVITO_ASSERT_MSG(_instance != nullptr, "DataSetManager::instance", "Singleton object is not initialized yet.");
-		return *_instance;
-	}
+	/// \brief Constructor.
+	DataSetContainer();
 
 	/// \brief Returns the current dataset being edited by the user.
 	/// \return The active dataset.
@@ -65,13 +58,6 @@ public:
 	///       set of the current DataSet. The proxy makes it possible to reference it during the whole session even when
 	///       a new DataSet becomes active.
 	SelectionSet* currentSelection() const { return _selectionSetProxy; }
-
-	/// \brief Checks all scene nodes if their geometry pipeline is fully evaluated at the given animation time.
-	bool isSceneReady(TimePoint time) const;
-
-	/// \brief Calls the given slot as soon as the geometry pipelines of all scene nodes has been
-	///        completely evaluated.
-	void runWhenSceneIsReady(std::function<void ()> fn);
 
 	/// \brief Imports a given file into the scene.
 	/// \param url The location of the file to import.
@@ -100,30 +86,18 @@ public:
 	/// \throw Exception on error.
 	bool fileSaveAs(const QString& filename = QString());
 
-	/// \brief Replaces the current data set with a new one and resets the
-	///        application to its initial state.
-	void fileReset();
-
 	/// \brief Asks the user if changes made to the scene should be saved.
 	/// \return \c false if the operation has been canceled by the user; \c true on success.
 	/// \throw Exception on error.
 	/// 
-	/// If the current dataset has been changed, this method asks the user if he/she wants
-	/// to save the changes. If yes, then the scene is saved by calling fileSave().
+	/// If the current dataset has been changed, this method asks the user if changes should be saved.
+	/// If yes, then the scene is saved by calling fileSave().
 	bool askForSaveChanges();
-
-	/// \brief Returns the default ViewportConfiguration used for new scene files.
-	/// \return Pointer to the default viewport configuration stored by the DataSetManager.
-	/// \note You may change the returned ViewportConfiguration object to modify the
-	///       default configuration used for new scene files.
-	/// \note Instead of using the returned object in a scene file you should make a copy of it first
-	///       and leave the original object untouched.
-	OORef<ViewportConfiguration> defaultViewportConfiguration();
 
 Q_SIGNALS:
 
 	/// Is emitted when a new dataset has become the active dataset.
-	void dataSetReset(DataSet* newDataSet);
+	void dataSetChanged(DataSet* newDataSet);
 	
 	/// \brief Is emitted when nodes have been added or removed from the current selection set.
 	/// \param newSelection The current selection set.
@@ -143,11 +117,6 @@ Q_SIGNALS:
 	///       events but only a single selectionChangeComplete() event.
 	void selectionChangeComplete(SelectionSet* newSelection);
 
-protected:
-
-	/// Is called when a target referenced by this object generated an event.
-	bool referenceEvent(RefTarget* source, ReferenceEvent* event) override;
-
 private:
 
 	/// Emits a selectionChanged signal.
@@ -156,9 +125,6 @@ private:
 	/// Emits a selectionChangeComplete signal.
 	void emitSelectionChangeComplete(SelectionSet* newSelection) { Q_EMIT selectionChangeComplete(newSelection); }
 
-	/// Checks if the scene is ready and calls all registered listeners.
-	void notifySceneReadyListeners();
-
 private:
 
 	/// The current data set being edited by the user.
@@ -166,12 +132,6 @@ private:
 
 	/// This proxy object is used to make the current node selection always available.
 	ReferenceField<CurrentSelectionProxy> _selectionSetProxy;
-	
-	/// This holds the default configuration of viewports to use.
-	OORef<ViewportConfiguration> _defaultViewportConfig;
-
-	/// List of listener objects that want to get notified when the scene is ready.
-	QVector<std::function<void ()>> _sceneReadyListeners;
 
 private:
 
@@ -182,23 +142,6 @@ private:
 	DECLARE_REFERENCE_FIELD(_selectionSetProxy);
 
 	friend class CurrentSelectionProxy;
-
-private:
-
-	/// Private constructor.
-	/// This is a singleton class; no public instances are allowed.
-	DataSetManager();
-
-	/// Create the singleton instance of this class.
-	static void initialize() { _instance = new DataSetManager(); }
-
-	/// Deletes the singleton instance of this class.
-	static void shutdown() { delete _instance; _instance = nullptr; }
-
-	/// The singleton instance of this class.
-	static DataSetManager* _instance;
-
-	friend class Application;
 };
 
 };

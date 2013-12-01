@@ -21,7 +21,7 @@
 
 #include <core/Core.h>
 #include <core/gui/properties/BooleanGroupBoxParameterUI.h>
-#include <core/gui/undo/UndoManager.h>
+#include <core/dataset/UndoStack.h>
 #include <core/animation/controller/Controller.h>
 #include <core/animation/AnimManager.h>
 

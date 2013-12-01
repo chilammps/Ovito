@@ -28,7 +28,6 @@
 #define __OVITO_UNITS_MANAGER_H
 
 #include <core/Core.h>
-#include <core/animation/AnimManager.h>
 
 namespace Ovito {
 
@@ -306,6 +305,7 @@ public:
 	virtual FloatType userToNative(FloatType userValue) override { return userValue / FloatType(100); }
 };
 
+#if 0
 /**
  * \brief This ParameterUnit is used by parameter values that specify a time value.
  */
@@ -355,9 +355,10 @@ public:
 
 	/// \brief Given an arbitrary value, which is potentially invalid, rounds it to the closest valid value.
 	virtual FloatType roundValue(FloatType value) override {
-		return floor(value / AnimManager::instance().ticksPerFrame() + (FloatType)0.5) * AnimManager::instance().ticksPerFrame();
+		return floor(value / AnimManager::instance().ticksPerFrame() + FloatType(0.5)) * AnimManager::instance().ticksPerFrame();
 	}
 };
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -391,8 +392,10 @@ public:
 	///        formats values as integer.
 	IntegerParameterUnit* integerIdentityUnit() { return _integerIdentityUnit; }
 
+#if 0
 	/// \brief Returns the instance of a parameter unit service for time values.
 	TimeParameterUnit* timeUnit() { return _timeUnit; }
+#endif
 
 	/// \brief Returns the instance of a parameter unit service for percentage values.
 	PercentParameterUnit* percentUnit() { return _percentUnit; }
@@ -414,8 +417,10 @@ private:
 	/// The special integer identity unit.
 	IntegerParameterUnit* _integerIdentityUnit;
 
+#if 0
 	/// A parameter unit service for time values.
 	TimeParameterUnit* _timeUnit;
+#endif
 
 	/// A parameter unit service for percentage values.
 	PercentParameterUnit* _percentUnit;

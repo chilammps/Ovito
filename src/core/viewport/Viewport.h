@@ -139,7 +139,7 @@ public:
 public:
 
 	/// \brief Constructs a new viewport.
-	Q_INVOKABLE Viewport();
+	Q_INVOKABLE Viewport(DataSet* dataset);
 
 	/// \brief Destructor.
 	~Viewport();

@@ -45,19 +45,7 @@ class ObjectLoadStream;		// defined in ObjectLoadStream.h
 #endif
 
 /**
- * \brief Universal base class for all core and plug-in classes.
- *
- * Almost all classes are derived from this base class.
- * The OvitoObject class provides several services:
- *
- * \li Every OvitoObject-derived class has a descriptor associated with it that
- *     uniquely identifies it. This associated OvitoObjectType allows the developer to
- *     create instances of the class at runtime without using the \c new operator.
- * \li A reference counting mechanism.
- * \li Serialization and deserialization.
- *
- * \author Alexander Stukowski
- * \sa OvitoObjectType
+ * \brief Universal base class for most core and plug-in classes.
  */
 class OVITO_CORE_EXPORT OvitoObject : public QObject
 {

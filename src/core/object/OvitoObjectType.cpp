@@ -46,7 +46,7 @@ OvitoObjectType::OvitoObjectType(const QString& name, const OvitoObjectType* sup
 * Creates an object of the appropriate kind.
 * Throws an exception if the containing plugin failed to load.
 ******************************************************************************/
-OORef<OvitoObject> OvitoObjectType::createInstance() const
+OORef<OvitoObject> OvitoObjectType::createInstance(DataSet* dataset) const
 {
 	if(plugin()) {
 		OVITO_CHECK_POINTER(plugin());
@@ -63,7 +63,7 @@ OORef<OvitoObject> OvitoObjectType::createInstance() const
 	if(isAbstract())
 		throw Exception(Plugin::tr("Cannot instantiate abstract class '%1'.").arg(name()));
 
-	return createInstanceImpl();
+	return createInstanceImpl(dataset);
 }
 
 /******************************************************************************

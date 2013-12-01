@@ -30,7 +30,7 @@
 #include <core/rendering/viewport/ViewportSceneRenderer.h>
 #include <core/scene/objects/camera/AbstractCameraObject.h>
 #include <core/gui/mainwin/MainWindow.h>
-#include <core/gui/undo/UndoManager.h>
+#include <core/dataset/UndoStack.h>
 
 namespace Ovito {
 

@@ -50,8 +50,8 @@ class OVITO_CORE_EXPORT UtilityApplet : public RefMaker
 {
 protected:
 	
-	/// \brief The default constructor.
-	UtilityApplet() {}
+	/// \brief Constructor.
+	UtilityApplet(DataSet* dataset) : RefMaker(dataset) {}
 
 public:
 
