@@ -23,10 +23,10 @@
 #include "ScriptingApplet.h"
 
 #include <QString>
-#include <QJSEngine>
+//#include <QJSEngine>
 #include <QtScript>
 
-#include <plugins/particles/modifier/slice/SliceModifier.h>  
+//#include <plugins/particles/modifier/slice/SliceModifier.h>
 #include "../bindings/ScriptBindings.h"
 
 namespace Scripting {
@@ -89,33 +89,40 @@ void ScriptingApplet::closeUtility(RolloutContainer* container)
 void ScriptingApplet::runScript()
 {
 	// Set up engine.
-	QJSEngine engine;
-	QScriptEngine engine2;
+	QScriptEngine engine;
 
 	// Set up namespace.
 
 	ActiveViewportBinding avp;
-	QJSValue avp_val = engine.newQObject(&avp);
+	QScriptValue avp_val = engine.newQObject(&avp);
 	engine.globalObject().setProperty("activeViewport", avp_val);
 
 	const QVector<Viewport*>& all_viewports = ViewportManager::instance().viewports();
-	QJSValue all_vp = engine.newArray(all_viewports.size());
+	QScriptValue all_vp = engine.newArray(all_viewports.size());
 	for (int i = 0; i != all_viewports.size(); ++i) {
-		QJSValue v = engine.newQObject(new ViewportBinding(all_viewports[i], &avp));
+		QScriptValue v = engine.newQObject(new ViewportBinding(all_viewports[i], &avp));
 		all_vp.setProperty(i, v);
 	}
 	engine.globalObject().setProperty("viewport", all_vp);
 
 	OvitoBinding o;
-	QJSValue o_val = engine.newQObject(&o);
+	QScriptValue o_val = engine.newQObject(&o);
 	engine.globalObject().setProperty("Ovito", o_val);
 
+	/*
 	Particles::SliceModifier s;
-	QJSValue s_val = engine.newQObject(&s);
+	QScriptValue s_val = engine.newQObject(&s);
 	engine.globalObject().setProperty("_slice", s_val);
+	*/
+
+	QScriptValue lm_val = engine.newFunction(listModifiers, 0);
+	engine.globalObject().setProperty("listModifiers", lm_val);
+
+	QScriptValue m_val = engine.newFunction(modifier, 1);
+	engine.globalObject().setProperty("modifier", m_val);
 
 	// Evaluate.
-	QJSValue result = engine.evaluate(_editor->toPlainText());
+	QScriptValue result = engine.evaluate(_editor->toPlainText());
 	if(result.isError()) {
 		_output->setStyleSheet("QLabel { color: red; }");
 		_output->setText(result.toString());
@@ -126,9 +133,9 @@ void ScriptingApplet::runScript()
 		if (result.isArray()) {
 			QString s;
 			s += "ARRAY: [";
-			int length = result.property("length").toInt();
+			int length = result.property("length").toInteger();
 			for (int i = 0; i != length; ++i)
-				s += result.property(i).toString() + ", ";
+				s += result.property(i).toString() + ",\n";
 			s += "]";
 			_output->setText(s);
 		}

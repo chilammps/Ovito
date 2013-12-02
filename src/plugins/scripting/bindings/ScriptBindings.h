@@ -2,6 +2,9 @@
 #define __OVITO_SCRIPTING_BINDINGS_SCRIPTBINDINGS_H
 
 #include <plugins/scripting/Scripting.h>
+
+#include <QtScript>
+
 #include <core/viewport/Viewport.h>
 #include <core/gui/actions/ActionManager.h>
 #include <core/viewport/ViewportManager.h>
@@ -10,6 +13,23 @@
 namespace Scripting {
 
 using namespace Ovito;
+
+/**
+ * \brief QObject based wrapper around OORef.
+ *
+ * Will expose all properties of the pointee.
+ */
+template<typename T>
+class ScriptRef : public QObject {
+public:
+	ScriptRef(OORef<T> ref) : ref_(ref) {
+		// Export all properties of the pointee.
+		//GEHT NICHT
+	}
+
+private:
+	OORef<T> ref_;
+};
 
 /**
  * \brief Scripting interface to the viewports.
@@ -114,6 +134,11 @@ public Q_SLOTS:
 private:
 	Q_OBJECT
 };
+
+
+QScriptValue listModifiers(QScriptContext* context, QScriptEngine* engine);
+
+QScriptValue modifier(QScriptContext* context, QScriptEngine* engine);
 
 
 }

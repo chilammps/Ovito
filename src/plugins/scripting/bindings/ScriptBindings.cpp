@@ -1,5 +1,7 @@
 #include "ScriptBindings.h"
 
+#include <vector>
+
 #include <base/linalg/Point3.h>
 #include <base/linalg/Vector3.h>
 #include <base/utilities/FloatType.h>
@@ -132,6 +134,52 @@ Modifier* OvitoBinding::modifierFactory(const QString& name) const {
 		Modifier* retval;
 		ref.reset(retval);
 		return retval;
+	}
+}
+
+QScriptValue listModifiers(QScriptContext* context, QScriptEngine* engine) {
+	// Process arguments.
+	if (context->argumentCount() != 0)
+		return context->throwError("This function takes no arguments.");
+
+	// Build array of modifier names.
+	std::vector<QString> names;
+	Q_FOREACH(const OvitoObjectType* clazz,
+			  PluginManager::instance().listClasses(Modifier::OOType)) {
+		names.push_back(clazz->name());
+	}
+	QScriptValue retval = engine->newArray(names.size());
+	for (int i = 0; i != names.size(); ++i)
+		retval.setProperty(i, QScriptValue(names[i]));
+	return retval;
+}
+
+QScriptValue modifier(QScriptContext* context, QScriptEngine* engine) {
+	// Process arguments.
+	if (context->argumentCount() != 1)
+		return context->throwError("This function takes one argument.");
+	QString name = context->argument(0).toString();
+
+	// Search modifier.
+	const OvitoObjectType* searchResultClass = nullptr;
+	Q_FOREACH(const OvitoObjectType* clazz,
+			  PluginManager::instance().listClasses(Modifier::OOType)) {
+		if (clazz->name() == name) {
+			searchResultClass = clazz;
+			break;
+		}
+	}
+
+	// Return.
+	if (searchResultClass == nullptr)
+		return context->throwError("Modifier " + name + " not found.");
+	else {
+		// TODO: this doesn't work because the API returns OORef which
+		// is something like a shared_ptr instead of something
+		// resembling unique_ptr!
+		Modifier* retval =
+			static_cast<Modifier*>(searchResultClass->createInstancePtr());
+		engine->newQObject(retval);
 	}
 }
 

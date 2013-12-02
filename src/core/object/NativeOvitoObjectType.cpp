@@ -35,7 +35,7 @@ NativeOvitoObjectType* NativeOvitoObjectType::_firstInfo = nullptr;
 * Creates an object of the appropriate kind.
 * Throws an exception if the containing plugin failed to load.
 ******************************************************************************/
-OORef<OvitoObject> NativeOvitoObjectType::createInstanceImpl() const
+OvitoObject* NativeOvitoObjectType::createInstanceImpl() const
 {
 	UndoSuspender noUndo;
 

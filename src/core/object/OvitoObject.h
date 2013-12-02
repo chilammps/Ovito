@@ -31,6 +31,9 @@
 #include "OvitoObjectReference.h"
 #include "NativeOvitoObjectType.h"
 
+/**
+ * \brief The main OVITO namespace.
+ */
 namespace Ovito {
 
 class ObjectSaveStream;		// defined in ObjectSaveStream.h
