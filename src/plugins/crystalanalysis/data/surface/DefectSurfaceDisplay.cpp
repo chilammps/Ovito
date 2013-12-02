@@ -143,13 +143,13 @@ void DefectSurfaceDisplay::render(TimePoint time, SceneObject* sceneObject, cons
 	// Handle picking of triangles.
 	quint32 pickingBaseID = 0;
 	if(renderer->isPicking())
-		pickingBaseID = renderer->registerPickObject(contextNode, sceneObject, _surfaceBuffer->faceCount());
+		pickingBaseID = renderer->registerPickObject(contextNode, sceneObject, this, _surfaceBuffer->faceCount());
 
 	_surfaceBuffer->render(renderer, pickingBaseID);
 
 	if(_showCap) {
 		if(renderer->isPicking())
-			pickingBaseID = renderer->registerPickObject(contextNode, sceneObject, _capBuffer->faceCount());
+			pickingBaseID = renderer->registerPickObject(contextNode, sceneObject, this, _capBuffer->faceCount());
 
 		_capBuffer->render(renderer, pickingBaseID);
 	}

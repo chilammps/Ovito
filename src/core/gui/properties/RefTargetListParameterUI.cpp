@@ -121,7 +121,7 @@ void RefTargetListParameterUI::resetUI()
 	ParameterUI::resetUI();	
 	
 	if(_viewWidget) {
-		_viewWidget->setEnabled(editObject() != NULL);
+		_viewWidget->setEnabled(editObject() != nullptr);
 	
 		_targets.clear();
 		_targetToRow.clear();
@@ -132,7 +132,7 @@ void RefTargetListParameterUI::resetUI()
 			const QVector<RefTarget*>& reflist = editObject()->getVectorReferenceField(referenceField());
 			Q_FOREACH(RefTarget* t, reflist) {
 				_targetToRow.push_back(_rowToTarget.size());
-				if(t != NULL)
+				if(t != nullptr)
 					_rowToTarget.push_back(_targets.size());
 				_targets.push_back(t);
 			}
@@ -161,11 +161,11 @@ void RefTargetListParameterUI::openSubEditor()
 
 		if(subEditor()) {
 			// Close old editor if it is no longer needed.
-			if(!selection || subEditor()->editObject() == NULL ||
+			if(!selection || subEditor()->editObject() == nullptr ||
 					subEditor()->editObject()->getOOType() != selection->getOOType()) {
 
 				if(selection || &subEditor()->getOOType() != _defaultEditorClass)
-					_subEditor = NULL;
+					_subEditor = nullptr;
 			}
 		}
 		if(!subEditor()) {
@@ -195,10 +195,10 @@ void RefTargetListParameterUI::openSubEditor()
 ******************************************************************************/
 RefTarget* RefTargetListParameterUI::selectedObject() const
 {
-	if(!_viewWidget) return NULL;
+	if(!_viewWidget) return nullptr;
 	QModelIndexList selection = _viewWidget->selectionModel()->selectedRows();
-	if(selection.empty()) return NULL;
-	if(selection.front().row() >= _rowToTarget.size()) return NULL;
+	if(selection.empty()) return nullptr;
+	if(selection.front().row() >= _rowToTarget.size()) return nullptr;
 	int targetIndex = _rowToTarget[selection.front().row()];
 	OVITO_ASSERT(targetIndex < _targets.size());
 	OVITO_CHECK_OBJECT_POINTER(_targets[targetIndex]);
@@ -212,7 +212,7 @@ int RefTargetListParameterUI::setSelectedObject(RefTarget* selObj)
 {
 	if(!_viewWidget) return -1;
 	OVITO_ASSERT(_targetToRow.size() == _targets.size());
-	if(selObj != NULL) {
+	if(selObj != nullptr) {
 		for(int i=0; i<_targets.size(); i++) {
 			if(_targets[i] == selObj) {
 				int rowIndex = _targetToRow[i];
@@ -239,7 +239,7 @@ bool RefTargetListParameterUI::referenceEvent(RefTarget* source, ReferenceEvent*
 					rowIndex = _targetToRow[refevent->index()];
 				else
 					rowIndex = _rowToTarget.size();
-				if(refevent->newTarget() != NULL)
+				if(refevent->newTarget() != nullptr)
 					_model->beginInsert(rowIndex);
 				_targets.insert(refevent->index(), refevent->newTarget());
 				_targetToRow.insert(refevent->index(), rowIndex);
@@ -259,7 +259,7 @@ bool RefTargetListParameterUI::referenceEvent(RefTarget* source, ReferenceEvent*
 				Q_FOREACH(RefTarget* t, reflist) {
 					OVITO_ASSERT(_targets[numTargets] == t);
 					OVITO_ASSERT(_targetToRow[numTargets] == numRows);
-					if(t != NULL) {
+					if(t != nullptr) {
 						OVITO_ASSERT(_rowToTarget[numRows] == numTargets);
 						numRows++;
 					}
@@ -394,7 +394,7 @@ bool RefTargetListParameterUI::ListViewModel::setData(const QModelIndex& index, 
 QVariant RefTargetListParameterUI::getItemData(RefTarget* target, const QModelIndex& index, int role)
 {
 	if(role == Qt::DisplayRole) {
-		if(target == NULL) return "";
+		if(target == nullptr) return QVariant();
 		return target->objectTitle();
 	}
 	else return QVariant();

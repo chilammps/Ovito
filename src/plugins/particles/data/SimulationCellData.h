@@ -79,6 +79,18 @@ public:
 	/// Converts a vector given in absolute coordinates to a point in vector cell coordinates.
 	Vector3 absoluteToReduced(const Vector3& absVec) const { return _reciprocalSimulationCell * absVec; }
 
+	/// Wraps a point at the periodic boundaries of the cell.
+	Point3 wrapPoint(const Point3& p) const {
+		Point3 pout = p;
+		for(size_t dim = 0; dim < 3; dim++) {
+			if(_pbcFlags[dim]) {
+				if(FloatType s = floor(_reciprocalSimulationCell.prodrow(p, dim)))
+					pout -= s * _simulationCell.column(dim);
+			}
+		}
+		return pout;
+	}
+
 private:
 
 	/// The geometry of the cell.

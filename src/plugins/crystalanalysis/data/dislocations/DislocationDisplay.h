@@ -65,6 +65,18 @@ public:
 	/// \brief Sets the shading mode for dislocation lines.
 	void setShadingMode(ArrowGeometryBuffer::ShadingMode mode) { _shadingMode = mode; }
 
+	/// \brief Given an sub-object ID returned by the Viewport::pick() method, looks up the
+	/// corresponding dislocation segment.
+	int segmentIndexFromSubObjectID(quint32 subobjID) const {
+		if(subobjID < _subobjToSegmentMap.size())
+			return _subobjToSegmentMap[subobjID];
+		else
+			return -1;
+	}
+
+	/// \brief Renders an overlay marker for a single dislocation segment.
+	void renderOverlayMarker(TimePoint time, SceneObject* sceneObject, const PipelineFlowState& flowState, int segmentIndex, SceneRenderer* renderer, ObjectNode* contextNode);
+
 public:
 
 	Q_PROPERTY(FloatType lineWidth READ lineWidth WRITE setLineWidth)
@@ -90,6 +102,9 @@ protected:
 		SimulationCellData,							// Simulation cell geometry
 		FloatType									// Line width
 		> _geometryCacheHelper;
+
+	/// This array is used to map sub-object picking IDs back to dislocation segments.
+	std::vector<int> _subobjToSegmentMap;
 
 	/// The cached bounding box.
 	Box3 _cachedBoundingBox;

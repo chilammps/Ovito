@@ -147,7 +147,7 @@ QString DislocationSegment::formatBurgersVector(const Vector3& b)
 	}
 	if(smallestCompnt != FLOATTYPE_MAX) {
 		FloatType m = FloatType(1) / smallestCompnt;
-		for(int f = 1; f <= 8; f++) {
+		for(int f = 1; f <= 11; f++) {
 			int multiplier;
 			if(!isInteger(m*f, multiplier)) continue;
 			if(multiplier < 80) {

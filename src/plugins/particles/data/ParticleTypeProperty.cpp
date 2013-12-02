@@ -43,20 +43,12 @@ ParticleTypeProperty::ParticleTypeProperty(ParticleProperty* storage)
 /******************************************************************************
 * Inserts a particle type.
 ******************************************************************************/
-void ParticleTypeProperty::insertParticleType(const OORef<ParticleType>& ptype)
+void ParticleTypeProperty::insertParticleType(ParticleType* ptype)
 {
 	OVITO_ASSERT_MSG(dataType() == qMetaTypeId<int>(), "ParticleTypeProperty::insertParticleType()", "The particle property should be have the data type integer.");
 
 	// Insert into array.
 	_particleTypes.push_back(ptype);
-}
-
-/******************************************************************************
-* Removes a particle type from this object.
-******************************************************************************/
-void ParticleTypeProperty::removeParticleType(int index)
-{
-	_particleTypes.remove(index);
 }
 
 /******************************************************************************

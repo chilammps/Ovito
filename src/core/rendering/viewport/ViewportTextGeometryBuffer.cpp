@@ -144,13 +144,13 @@ void ViewportTextGeometryBuffer::renderWindow(SceneRenderer* renderer, const Poi
 		}
 
 		// Generate texture image.
-		_textureImage = QImage((rect.width() * devicePixelRatio)+1, (rect.height() * devicePixelRatio)+1, QImage::Format_RGB32);
+		_textureImage = QImage((rect.width() * devicePixelRatio)+1, (rect.height() * devicePixelRatio)+1, QImage::Format_ARGB32);
 		_textureImage.setDevicePixelRatio(devicePixelRatio);
-		_textureImage.fill(0);
+		_textureImage.fill((QColor)backgroundColor());
 		{
 			QPainter painter(&_textureImage);
 			painter.setFont(font());
-			painter.setPen(Qt::white);
+			painter.setPen((QColor)color());
 			painter.drawText(rect, Qt::AlignLeft | Qt::AlignTop, text());
 		}
 		_textOffset = rect.topLeft();
@@ -191,7 +191,6 @@ void ViewportTextGeometryBuffer::renderWindow(SceneRenderer* renderer, const Poi
 
 	if(!_shader->bind())
 		throw Exception(tr("Failed to bind OpenGL shader."));
-	OVITO_CHECK_OPENGL(_shader->setUniformValue("text_color", color().r(), color().g(), color().b(), color().a()));
 
 	if(vpRenderer->glformat().majorVersion() >= 3) {
 

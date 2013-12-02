@@ -89,7 +89,6 @@ public:
 
 	/// \brief Sets the path where this dataset is stored.
 	/// \param path The new path (should be absolute) where the dataset will be stored.
-	/// \sa fielPath()
 	void setFilePath(const QString& path) { _filePath = path; }
 
 	/// \brief Deletes all nodes from the scene.

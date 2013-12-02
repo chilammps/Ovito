@@ -32,7 +32,7 @@ class TriMesh;		// defined in TriMesh.h
 /**
  * Stores a polygonal mesh using a half-edge data structure.
  */
-class HalfEdgeMesh
+class OVITO_CORE_EXPORT HalfEdgeMesh
 {
 public:
 

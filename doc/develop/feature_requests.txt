@@ -28,3 +28,7 @@ Wolfgang Verestek:
 Tobias:
 
 - "User-defined" modifiers (i.e. saving/loading often-needed sequences of modifiers)
+
+Taojun:
+
+- Plotting the value of a certain property of a certain particle versus simulation time. For that all simulation frames need to be kept in memory.

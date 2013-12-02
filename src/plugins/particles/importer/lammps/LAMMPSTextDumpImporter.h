@@ -72,7 +72,7 @@ public:
 public:
 
 	/// The format-specific task object that is responsible for reading an input file in the background.
-	class LAMMPSTextDumpImportTask : public ParticleImportTask
+	class OVITO_PARTICLES_EXPORT LAMMPSTextDumpImportTask : public ParticleImportTask
 	{
 	public:
 
@@ -141,7 +141,7 @@ private:
 /**
  * \brief A properties editor for the LAMMPSTextDumpImporter class.
  */
-class LAMMPSTextDumpImporterEditor : public PropertiesEditor
+class OVITO_PARTICLES_EXPORT LAMMPSTextDumpImporterEditor : public PropertiesEditor
 {
 public:
 
