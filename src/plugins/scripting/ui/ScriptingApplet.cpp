@@ -24,6 +24,7 @@
 
 #include <QString>
 #include <QJSEngine>
+#include <QtScript>
 
 #include <plugins/particles/modifier/slice/SliceModifier.h>  
 #include "../bindings/ScriptBindings.h"
@@ -89,6 +90,7 @@ void ScriptingApplet::runScript()
 {
 	// Set up engine.
 	QJSEngine engine;
+	QScriptEngine engine2;
 
 	// Set up namespace.
 

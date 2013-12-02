@@ -115,7 +115,7 @@ void OvitoBinding::cd(QString newdir) {
 		throw Exception("Could not cd to " + newdir);
 }
 
-OORef<Modifier> OvitoBinding::modifierFactory(const QString& name) {
+Modifier* OvitoBinding::modifierFactory(const QString& name) const {
 	const OvitoObjectType* searchResultClass = nullptr;
 	Q_FOREACH(const OvitoObjectType* clazz,
 			  PluginManager::instance().listClasses(Modifier::OOType)) {
@@ -127,10 +127,10 @@ OORef<Modifier> OvitoBinding::modifierFactory(const QString& name) {
 	if (searchResultClass == nullptr)
 		return nullptr;
 	else {
-		//return static_cast< OORef<Modifier> >(searchResultClass->createInstance());
-		OORef<OvitoObject> instance = searchResultClass->createInstance();
-		OORef<Modifier> retval;
-		retval.swap(instance);
+		OORef<Modifier> ref =
+			static_object_cast<Modifier>(searchResultClass->createInstance());
+		Modifier* retval;
+		ref.reset(retval);
 		return retval;
 	}
 }

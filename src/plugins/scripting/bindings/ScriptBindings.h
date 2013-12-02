@@ -109,7 +109,7 @@ public Q_SLOTS:
 	 * \todo Take an optional argument that is a JavaScript object, to
 	 *       set the properties of the modifier before returning it.
 	 */
-	OORef<Modifier> modifierFactory(const QString& name);
+	Modifier* modifierFactory(const QString& name) const;
 
 private:
 	Q_OBJECT

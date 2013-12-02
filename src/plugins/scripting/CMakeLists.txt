@@ -19,13 +19,15 @@
 #
 ###############################################################################
 
-SET(OVITO_SCRIPTING_SOURCE_FILES 
+SET(OVITO_SCRIPTING_SOURCE_FILES
 	ui/ScriptingApplet.cpp
 	bindings/ScriptBindings.cpp
 )
 
+LIST(APPEND OVITO_REQUIRED_QT_MODULES Script)
+
 # Generate plugin module.
 OVITO_PLUGIN(Scripting
 	SOURCES ${OVITO_SCRIPTING_SOURCE_FILES}
-	PLUGIN_DEPENDENCIES Particles
+	PLUGIN_DEPENDENCIES Particles    
 )
