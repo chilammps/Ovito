@@ -29,9 +29,6 @@
 
 namespace Ovito {
 
-class LinkedFileObject;		// defined in LinkedFileObject.h
-class SceneObject;			// defined in SceneObject.h
-
 /**
  * \brief Base class for file parsers that can reload a file that has been imported into the scene.
  */

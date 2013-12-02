@@ -23,22 +23,50 @@
 #include <core/gui/actions/ActionManager.h>
 #include <core/gui/actions/ViewportModeAction.h>
 #include <core/gui/app/Application.h>
+#include <core/gui/mainwin/MainWindow.h>
 #include <core/dataset/UndoStack.h>
+#include <core/dataset/DataSetContainer.h>
 #include <core/viewport/input/NavigationModes.h>
-#include <core/animation/AnimManager.h>
-#include <core/dataset/DataSetManager.h>
+#include <core/viewport/input/ViewportInputHandler.h>
+#include <core/animation/AnimationSettings.h>
 
 namespace Ovito {
 
-/// The singleton instance of the class.
-ActionManager* ActionManager::_instance = nullptr;
+/******************************************************************************
+* This viewport mode plays the animation while it is active.
+******************************************************************************/
+class AnimationPlaybackViewportMode : public ViewportInputHandler
+{
+public:
+
+	/// Constructor.
+	AnimationPlaybackViewportMode(ActionManager* actionManager) : _actionManager(actionManager) {}
+
+	/// Returns the activation behavior of this input handler.
+	virtual InputHandlerType handlerType() override { return ViewportInputHandler::TEMPORARY; }
+
+protected:
+
+	/// This is called by the system after the input handler has become active.
+	virtual void activated() override {
+		_actionManager->_dataset->animationSettings()->startAnimationPlayback();
+	}
+
+	/// This is called by the system after the input handler has been deactivated.
+	virtual void deactivated() override {
+		_actionManager->_dataset->animationSettings()->stopAnimationPlayback();
+	}
+
+	ActionManager* _actionManager;
+};
 
 /******************************************************************************
 * Initializes the ActionManager.
 ******************************************************************************/
-ActionManager::ActionManager()
+ActionManager::ActionManager(MainWindow* mainWindow) : QObject(mainWindow)
 {
-	OVITO_ASSERT_MSG(!_instance, "ActionManager constructor", "Multiple instances of this singleton class have been created.");
+	// Update actions whenever a new dataset has been loaded.
+	connect(&mainWindow->datasetContainer(), &DataSetContainer::dataSetChanged, this, &ActionManager::onDataSetChanged);
 
 	createCommandAction(ACTION_QUIT, tr("Exit"), ":/core/actions/file/file_quit.png", tr("Quit the application."), QKeySequence::Quit);
 	createCommandAction(ACTION_FILE_NEW, tr("Reset State"), ":/core/actions/file/file_new.png", tr("Resets the program to its initial state."), QKeySequence::New);
@@ -49,8 +77,10 @@ ActionManager::ActionManager()
 	createCommandAction(ACTION_FILE_REMOTE_IMPORT, tr("Open Remote File"), ":/core/actions/file/file_import_remote.png", tr("Import a file from a remote location."), Qt::CTRL + Qt::SHIFT + Qt::Key_I);
 	createCommandAction(ACTION_FILE_EXPORT, tr("Export File"), ":/core/actions/file/file_export.png", tr("Export data to a file."), Qt::CTRL + Qt::Key_E);
 	createCommandAction(ACTION_HELP_ABOUT, tr("About Ovito"), NULL, tr("Show information about the application."));
-	createCommandAction(ACTION_HELP_SHOW_ONLINE_HELP, tr("Manual"), NULL, tr("Open the online manual."));
+	createCommandAction(ACTION_HELP_SHOW_ONLINE_HELP, tr("Manual"), NULL, tr("Open the online manual."), QKeySequence::HelpContents);
 
+	createCommandAction(ACTION_EDIT_UNDO, tr("Undo"), ":/core/actions/edit/edit_undo.png", tr("Reverse a user action."), QKeySequence::Undo);
+	createCommandAction(ACTION_EDIT_REDO, tr("Redo"), ":/core/actions/edit/edit_redo.png", tr("Redo the previously undone user action."), QKeySequence::Redo);
 	createCommandAction(ACTION_EDIT_DELETE, tr("Delete"), ":/core/actions/edit/edit_delete.png", tr("Deletes the selected objects."), QKeySequence::Delete);
 
 	createCommandAction(ACTION_SETTINGS_DIALOG, tr("&Settings..."));
@@ -75,28 +105,62 @@ ActionManager::ActionManager()
 	createCommandAction(ACTION_START_ANIMATION_PLAYBACK, tr("Start Animation Playback"), ":/core/actions/animation/play_animation.png");
 	createCommandAction(ACTION_STOP_ANIMATION_PLAYBACK, tr("Stop Animation Playback"), ":/core/actions/animation/stop_animation.png");
 	createCommandAction(ACTION_ANIMATION_SETTINGS, tr("Animation Settings"), ":/core/actions/animation/animation_settings.png");
-	createViewportModeAction(ACTION_TOGGLE_ANIMATION_PLAYBACK, createAnimationPlaybackViewportMode(), tr("Play Animation"), ":/core/actions/animation/play_animation.png");
-
-	// Create action that toggles Auto Key mode on or off.
-	QAction* autoKeyModeAction = createCommandAction(ACTION_AUTO_KEY_MODE_TOGGLE, tr("Auto Key Mode"), ":/core/actions/animation/animation_mode.png");
-	autoKeyModeAction->setCheckable(true);
-	autoKeyModeAction->setChecked(AnimManager::instance().autoKeyMode());
-	connect(autoKeyModeAction, SIGNAL(toggled(bool)), &AnimManager::instance(), SLOT(setAutoKeyMode(bool)));
-	connect(&AnimManager::instance(), SIGNAL(autoKeyModeChanged(bool)), autoKeyModeAction, SLOT(setChecked(bool)));
-
-	// Create Edit->Undo action.
-	QAction* undoAction = UndoManager::instance().createUndoAction(this);
-	undoAction->setObjectName(ACTION_EDIT_UNDO);
-	if(Application::instance().guiMode()) undoAction->setIcon(QIcon(QString(":/core/actions/edit/edit_undo.png")));
-	addAction(undoAction);
-
-	// Create Edit->Redo action.
-	QAction* redoAction = UndoManager::instance().createRedoAction(this);
-	redoAction->setObjectName(ACTION_EDIT_REDO);
-	if(Application::instance().guiMode()) redoAction->setIcon(QIcon(QString(":/core/actions/edit/edit_redo.png")));
-	addAction(redoAction);
+	createViewportModeAction(ACTION_TOGGLE_ANIMATION_PLAYBACK, new AnimationPlaybackViewportMode(this), tr("Play Animation"), ":/core/actions/animation/play_animation.png");
+	createCommandAction(ACTION_AUTO_KEY_MODE_TOGGLE, tr("Auto Key Mode"), ":/core/actions/animation/animation_mode.png")->setCheckable(true);
 
 	QMetaObject::connectSlotsByName(this);
+}
+
+/******************************************************************************
+* This is called when a new dataset has been loaded.
+******************************************************************************/
+void ActionManager::onDataSetChanged(DataSet* newDataSet)
+{
+	OVITO_CHECK_OBJECT_POINTER(newDataSet);
+	disconnect(_animationSettingsChangedConnection);
+	disconnect(_canUndoChangedConnection);
+	disconnect(_canRedoChangedConnection);
+	disconnect(_undoTextChangedConnection);
+	disconnect(_redoTextChangedConnection);
+	disconnect(_undoTriggeredConnection);
+	disconnect(_redoTriggeredConnection);
+
+	_dataset = newDataSet;
+
+	_animationSettingsChangedConnection = connect(newDataSet, &DataSet::animationSettingsChanged, this, &ActionManager::onAnimationSettingsChanged);
+
+	QAction* undoAction = getAction(ACTION_EDIT_UNDO);
+	QAction* redoAction = getAction(ACTION_EDIT_REDO);
+	undoAction->setEnabled(newDataSet->undoStack().canUndo());
+	redoAction->setEnabled(newDataSet->undoStack().canRedo());
+	undoAction->setText(tr("Undo %1").arg(newDataSet->undoStack().undoText()));
+	redoAction->setText(tr("Redo %1").arg(newDataSet->undoStack().redoText()));
+	_canUndoChangedConnection = connect(&newDataSet->undoStack(), &UndoStack::canUndoChanged, undoAction, &QAction::setEnabled);
+	_canRedoChangedConnection = connect(&newDataSet->undoStack(), &UndoStack::canRedoChanged, redoAction, &QAction::setEnabled);
+	_undoTextChangedConnection = connect(&newDataSet->undoStack(), &UndoStack::undoTextChanged, [this,undoAction](const QString& undoText) {
+		undoAction->setText(tr("Undo %1").arg(undoText));
+	});
+	_redoTextChangedConnection = connect(&newDataSet->undoStack(), &UndoStack::redoTextChanged, [this,redoAction](const QString& redoText) {
+		redoAction->setText(tr("Redo %1").arg(redoText));
+	});
+	_undoTriggeredConnection = connect(undoAction, &QAction::triggered, &newDataSet->undoStack(), &UndoStack::undo);
+	_redoTriggeredConnection = connect(redoAction, &QAction::triggered, &newDataSet->undoStack(), &UndoStack::redo);
+
+	onAnimationSettingsChanged(newDataSet->animationSettings());
+}
+
+/******************************************************************************
+* This is called when new animation settings have been loaded.
+******************************************************************************/
+void ActionManager::onAnimationSettingsChanged(AnimationSettings* newAnimationSettings)
+{
+	OVITO_CHECK_OBJECT_POINTER(newAnimationSettings);
+	disconnect(_autoKeyModeChangedConnection);
+	disconnect(_autoKeyModeToggledConnection);
+	QAction* autoKeyModeAction = getAction(ACTION_AUTO_KEY_MODE_TOGGLE);
+	autoKeyModeAction->setChecked(newAnimationSettings->autoKeyMode());
+	_autoKeyModeChangedConnection = connect(newAnimationSettings, &AnimationSettings::autoKeyModeChanged, autoKeyModeAction, &QAction::setChecked);
+	_autoKeyModeToggledConnection = connect(autoKeyModeAction, &QAction::toggled, newAnimationSettings, &AnimationSettings::setAutoKeyMode);
 }
 
 /******************************************************************************
@@ -156,9 +220,9 @@ QAction* ActionManager::createViewportModeAction(const QString& id, const OORef<
 ******************************************************************************/
 void ActionManager::on_EditDelete_triggered()
 {
-	UndoableTransaction::handleExceptions(tr("Delete"), []() {
+	UndoableTransaction::handleExceptions(_dataset->undoStack(), tr("Delete"), [this]() {
 		// Delete all nodes in selection set.
-		for(SceneNode* node : DataSetManager::instance().currentSelection()->nodes())
+		for(SceneNode* node : _dataset->selection()->nodes())
 			node->deleteNode();
 	});
 }

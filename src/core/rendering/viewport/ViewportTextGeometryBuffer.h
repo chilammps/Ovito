@@ -33,8 +33,6 @@
 
 namespace Ovito {
 
-class ViewportSceneRenderer;
-
 /**
  * \brief Buffer object that stores a text string to be rendered in the viewports.
  */

@@ -21,24 +21,23 @@
 
 #include <core/Core.h>
 #include <core/gui/properties/PropertiesPanel.h>
-#include <core/gui/mainwin/cmdpanel/CommandPanel.h>
 
 namespace Ovito {
+
+class DataSetContainer;		// defined in DataSetContainer.h
+class MainWindow;			// defined in MainWindow.h
 
 /******************************************************************************
 * The command panel page lets user render the scene.
 ******************************************************************************/
-class OVITO_CORE_EXPORT RenderCommandPage : public CommandPanelPage
+class OVITO_CORE_EXPORT RenderCommandPage : public QWidget
 {
 	Q_OBJECT
 
 public:
 
 	/// Initializes the render page.
-    RenderCommandPage();
-
-	/// Resets the command panel page to its initial state.
-	virtual void reset() override;
+    RenderCommandPage(MainWindow* mainWindow, QWidget* parent);
 
 private:
 

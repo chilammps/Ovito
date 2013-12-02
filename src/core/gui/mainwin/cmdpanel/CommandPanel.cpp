@@ -30,7 +30,7 @@ namespace Ovito {
 /******************************************************************************
 * The constructor of the command panel class.
 ******************************************************************************/
-CommandPanel::CommandPanel(QWidget* parent) : QWidget(parent)
+CommandPanel::CommandPanel(MainWindow* mainWindow, QWidget* parent) : QWidget(parent)
 {
 	QVBoxLayout* layout = new QVBoxLayout(this);
 	layout->setContentsMargins(0,0,0,0);
@@ -41,9 +41,9 @@ CommandPanel::CommandPanel(QWidget* parent) : QWidget(parent)
 
 	// Create the tabs.
 	_tabWidget->setDocumentMode(true);
-	_tabWidget->addTab(_modifyPage = new ModifyCommandPage(), QIcon(":/core/mainwin/command_panel/tab_modify.png"), QString());
-	_tabWidget->addTab(_renderPage = new RenderCommandPage(), QIcon(":/core/mainwin/command_panel/tab_render.png"), QString());
-	_tabWidget->addTab(_utilityPage = new UtilityCommandPage(), QIcon(":/core/mainwin/command_panel/tab_utilities.png"), QString());
+	_tabWidget->addTab(_modifyPage = new ModifyCommandPage(mainWindow, _tabWidget), QIcon(":/core/mainwin/command_panel/tab_modify.png"), QString());
+	_tabWidget->addTab(_renderPage = new RenderCommandPage(mainWindow, _tabWidget), QIcon(":/core/mainwin/command_panel/tab_render.png"), QString());
+	_tabWidget->addTab(_utilityPage = new UtilityCommandPage(mainWindow, _tabWidget), QIcon(":/core/mainwin/command_panel/tab_utilities.png"), QString());
 	_tabWidget->setTabToolTip(0, tr("Modify"));
 	_tabWidget->setTabToolTip(1, tr("Render"));
 	_tabWidget->setTabToolTip(2, tr("Utilities"));

@@ -48,10 +48,12 @@ public:
 	
 	/// Constructs the spinner control.
 	AnimationTimeSpinner(QWidget* parent = 0) : SpinnerWidget(parent) {
+#if 0
 		setUnit(UnitsManager::instance().timeUnit());
 		connect(&AnimManager::instance(), SIGNAL(timeChanged(TimePoint)), SLOT(onTimeChanged(TimePoint)));
 		connect(&AnimManager::instance(), SIGNAL(intervalChanged(TimeInterval)), SLOT(onIntervalChanged(TimeInterval)));
 		connect(this, SIGNAL(spinnerValueChanged()), SLOT(onSpinnerValueChanged()));
+#endif
 	}
 
 protected Q_SLOTS:
@@ -72,8 +74,10 @@ protected Q_SLOTS:
 	
 	/// Is called when the spinner value has been changed by the user.
 	void onSpinnerValueChanged() {
+#if 0
 		// Set a new animation time.
 		AnimManager::instance().setTime(intValue());
+#endif
 	}
 };
 

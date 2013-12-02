@@ -32,8 +32,6 @@
 
 namespace Ovito {
 
-class PipelineObject;	// defined in PipelineObject.h
-
 /**
  * \brief Stores information about a particular application of a Modifier
  *        instance in a geometry pipeline.

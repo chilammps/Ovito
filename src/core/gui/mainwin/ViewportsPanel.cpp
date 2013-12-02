@@ -24,6 +24,7 @@
 #include <core/viewport/ViewportConfiguration.h>
 #include <core/animation/AnimationSettings.h>
 #include <core/dataset/DataSet.h>
+#include <core/dataset/DataSetContainer.h>
 #include <core/gui/mainwin/MainWindow.h>
 #include "ViewportsPanel.h"
 
@@ -79,7 +80,7 @@ void ViewportsPanel::onViewportConfigurationChanged(ViewportConfiguration* newVi
 	_activeViewportChangedConnection = connect(newViewportConfiguration, &ViewportConfiguration::activeViewportChanged, this, (void (ViewportsPanel::*)())&ViewportsPanel::update);
 
 	// Update layout when a viewport has been maximized.
-	_maximizedViewportChangedConnection = connect(newViewportConfiguration, &ViewportConfiguration::maximizedViewportChanged, &ViewportsPanel::layoutViewports);
+	_maximizedViewportChangedConnection = connect(newViewportConfiguration, &ViewportConfiguration::maximizedViewportChanged, this, &ViewportsPanel::layoutViewports);
 
 	// Layout viewport widgets.
 	layoutViewports();

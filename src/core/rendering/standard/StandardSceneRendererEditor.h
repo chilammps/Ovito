@@ -27,8 +27,6 @@
 #include <core/reference/RefTarget.h>
 
 namespace Ovito {
-	
-class ViewportSceneRenderer;		// defined in ViewportSceneRenderer.h
 
 /******************************************************************************
 * The editor component for the StandardSceneRenderer class.

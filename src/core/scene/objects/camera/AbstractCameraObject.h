@@ -33,7 +33,7 @@
 namespace Ovito {
 	
 struct ViewProjectionParameters;	// defined in Viewport.h
-	
+
 /**
  * \brief Abstract base class for camera scene objects.
  */

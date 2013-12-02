@@ -20,9 +20,10 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include <core/animation/AnimManager.h>
-#include <core/viewport/ViewportManager.h>
-#include <core/dataset/DataSetManager.h>
+#include <core/animation/AnimationSettings.h>
+#include <core/viewport/ViewportConfiguration.h>
+#include <core/dataset/DataSetContainer.h>
+#include <core/gui/mainwin/MainWindow.h>
 #include "AnimationTimeSlider.h"
 
 namespace Ovito {
@@ -32,8 +33,8 @@ using namespace std;
 /******************************************************************************
 * The constructor of the AnimationTimeSlider class.
 ******************************************************************************/
-AnimationTimeSlider::AnimationTimeSlider(QWidget* parent) :
-	QFrame(parent), _dragPos(-1)
+AnimationTimeSlider::AnimationTimeSlider(MainWindow* mainWindow, QWidget* parent) :
+	QFrame(parent), _mainWindow(mainWindow), _dragPos(-1)
 {
 	_normalPalette = palette();
 	_autoKeyModePalette = _normalPalette;
@@ -44,11 +45,40 @@ AnimationTimeSlider::AnimationTimeSlider(QWidget* parent) :
 	setAutoFillBackground(true);
 	setMouseTracking(true);
 
-	// Repaint slider if the current animation settings have changed.
-	connect(&AnimManager::instance(), SIGNAL(timeChanged(TimePoint)), SLOT(repaint()));
-	connect(&AnimManager::instance(), SIGNAL(timeFormatChanged()), SLOT(update()));
-	connect(&AnimManager::instance(), SIGNAL(intervalChanged(TimeInterval)), SLOT(update()));
-	connect(&AnimManager::instance(), SIGNAL(autoKeyModeChanged(bool)), SLOT(onAutoKeyModeChanged(bool)));
+	connect(&mainWindow->datasetContainer(), &DataSetContainer::dataSetChanged, this, &AnimationTimeSlider::onDataSetChanged);
+}
+
+/******************************************************************************
+* This is called when a new dataset has been loaded.
+******************************************************************************/
+void AnimationTimeSlider::onDataSetChanged(DataSet* newDataSet)
+{
+	OVITO_CHECK_OBJECT_POINTER(newDataSet);
+	disconnect(_animationSettingsChangedConnection);
+	_animationSettingsChangedConnection = connect(newDataSet, &DataSet::animationSettingsChanged, this, &AnimationTimeSlider::onAnimationSettingsChanged);
+	onAnimationSettingsChanged(newDataSet->animationSettings());
+}
+
+/******************************************************************************
+* This is called when new animation settings have been loaded.
+******************************************************************************/
+void AnimationTimeSlider::onAnimationSettingsChanged(AnimationSettings* newAnimationSettings)
+{
+	OVITO_CHECK_OBJECT_POINTER(newAnimationSettings);
+	disconnect(_autoKeyModeChangedConnection);
+	disconnect(_animIntervalChangedConnection);
+	disconnect(_timeFormatChangedConnection);
+	disconnect(_timeChangedConnection);
+
+	_animSettings = newAnimationSettings;
+
+	_autoKeyModeChangedConnection = connect(newAnimationSettings, &AnimationSettings::autoKeyModeChanged, this, &AnimationTimeSlider::onAutoKeyModeChanged);
+	_animIntervalChangedConnection = connect(newAnimationSettings, &AnimationSettings::intervalChanged, this, (void (AnimationTimeSlider::*)())&AnimationTimeSlider::update);
+	_timeFormatChangedConnection = connect(newAnimationSettings, &AnimationSettings::timeFormatChanged, this, (void (AnimationTimeSlider::*)())&AnimationTimeSlider::update);
+	_timeChangedConnection = connect(newAnimationSettings, &AnimationSettings::timeChanged, this, (void (AnimationTimeSlider::*)())&AnimationTimeSlider::repaint);
+
+	onAutoKeyModeChanged(_animSettings->autoKeyMode());
+	update();
 }
 
 /******************************************************************************
@@ -59,7 +89,7 @@ void AnimationTimeSlider::paintEvent(QPaintEvent* event)
 	QFrame::paintEvent(event);
 
 	// Show slider only if there is more than one animation frame.
-	int numFrames = (int)(AnimManager::instance().animationInterval().duration() / AnimManager::instance().ticksPerFrame()) + 1;
+	int numFrames = (int)(_animSettings->animationInterval().duration() / _animSettings->ticksPerFrame()) + 1;
 	if(numFrames > 1) {
 		QStylePainter painter(this);
 
@@ -67,8 +97,8 @@ void AnimationTimeSlider::paintEvent(QPaintEvent* event)
 		clientRect.adjust(frameWidth(), frameWidth(), -frameWidth(), -frameWidth());
 		int thumbWidth = this->thumbWidth();
 		int clientWidth = clientRect.width() - thumbWidth;
-		int firstFrame = AnimManager::instance().timeToFrame(AnimManager::instance().animationInterval().start());
-		int lastFrame = AnimManager::instance().timeToFrame(AnimManager::instance().animationInterval().end());
+		int firstFrame = _animSettings->timeToFrame(_animSettings->animationInterval().start());
+		int lastFrame = _animSettings->timeToFrame(_animSettings->animationInterval().end());
 		int labelWidth = painter.fontMetrics().boundingRect(QString::number(lastFrame)).width();
 		int nticks = std::min(clientWidth / (labelWidth + 20), numFrames);
 		int ticksevery = numFrames / std::max(nticks, 1);
@@ -83,8 +113,8 @@ void AnimationTimeSlider::paintEvent(QPaintEvent* event)
 		if(ticksevery > 0) {
 			painter.setPen(QPen(QColor(180,180,220)));
 			for(int frame = firstFrame; frame <= lastFrame; frame += ticksevery) {
-				TimePoint time = AnimManager::instance().frameToTime(frame);
-				FloatType percentage = (FloatType)(time - AnimManager::instance().animationInterval().start()) / (FloatType)(AnimManager::instance().animationInterval().duration() + 1);
+				TimePoint time = _animSettings->frameToTime(frame);
+				FloatType percentage = (FloatType)(time - _animSettings->animationInterval().start()) / (FloatType)(_animSettings->animationInterval().duration() + 1);
 				int pos = clientRect.x() + (int)(percentage * clientWidth) + thumbWidth / 2;
 				QString labelText = QString::number(frame);
 				QRect labelRect = painter.fontMetrics().boundingRect(labelText);
@@ -95,9 +125,9 @@ void AnimationTimeSlider::paintEvent(QPaintEvent* event)
 		QStyleOptionButton btnOption;
 		btnOption.initFrom(this);
 		btnOption.rect = thumbRectangle();
-		btnOption.text = AnimManager::instance().timeToString(AnimManager::instance().time());
-		if(AnimManager::instance().animationInterval().start() == 0)
-			btnOption.text += " / " + AnimManager::instance().timeToString(AnimManager::instance().animationInterval().end());
+		btnOption.text = _animSettings->timeToString(_animSettings->time());
+		if(_animSettings->animationInterval().start() == 0)
+			btnOption.text += " / " + _animSettings->timeToString(_animSettings->animationInterval().end());
 		btnOption.state = ((_dragPos >= 0) ? QStyle::State_Sunken : QStyle::State_Raised) | QStyle::State_Enabled;
 		painter.drawPrimitive(QStyle::PE_PanelButtonCommand, btnOption);
 		painter.drawControl(QStyle::CE_PushButtonLabel, btnOption);
@@ -158,7 +188,7 @@ void AnimationTimeSlider::mouseMoveEvent(QMouseEvent* event)
 		newPos = event->x() - _dragPos;
 
 	int rectWidth = frameRect().width() - 2*frameWidth();
-	TimeInterval interval = AnimManager::instance().animationInterval();
+	TimeInterval interval = _animSettings->animationInterval();
 	TimePoint newTime = (TimePoint)((qint64)newPos * (qint64)(interval.duration() + 1) / (qint64)(rectWidth - thumbSize)) + interval.start();
 
 	// Clamp new time to animation interval.
@@ -166,23 +196,23 @@ void AnimationTimeSlider::mouseMoveEvent(QMouseEvent* event)
 	newTime = std::min(newTime, interval.end());
 
 	// Snap to frames
-	int newFrame = AnimManager::instance().timeToFrame(newTime + AnimManager::instance().ticksPerFrame()/2);
+	int newFrame = _animSettings->timeToFrame(newTime + _animSettings->ticksPerFrame()/2);
 	if(_dragPos >= 0) {
 
-		TimePoint newTime = AnimManager::instance().frameToTime(newFrame);
-		if(newTime == AnimManager::instance().time()) return;
+		TimePoint newTime = _animSettings->frameToTime(newFrame);
+		if(newTime == _animSettings->time()) return;
 
 		// Set new time
-		AnimManager::instance().setTime(newTime);
+		_animSettings->setTime(newTime);
 
 		// Force immediate viewport update.
-		ViewportManager::instance().processViewportUpdates();
+		_mainWindow->processViewportUpdates();
 	}
 	else if(interval.duration() > 0) {
 		if(thumbRectangle().contains(event->pos()) == false) {
-			QString frameName = DataSetManager::instance().currentSet()->animationSettings()->namedFrames()[newFrame];
-			FloatType percentage = (FloatType)(AnimManager::instance().frameToTime(newFrame) - AnimManager::instance().animationInterval().start())
-					/ (FloatType)(AnimManager::instance().animationInterval().duration() + 1);
+			QString frameName = _animSettings->namedFrames()[newFrame];
+			FloatType percentage = (FloatType)(_animSettings->frameToTime(newFrame) - _animSettings->animationInterval().start())
+					/ (FloatType)(_animSettings->animationInterval().duration() + 1);
 			QRect clientRect = frameRect();
 			clientRect.adjust(frameWidth(), frameWidth(), -frameWidth(), -frameWidth());
 			int clientWidth = clientRect.width() - thumbWidth();
@@ -207,11 +237,11 @@ int AnimationTimeSlider::thumbWidth() const
 ******************************************************************************/
 QRect AnimationTimeSlider::thumbRectangle()
 {
-	if(DataSetManager::instance().currentSet() == nullptr)
+	if(!_animSettings)
 		return QRect(0,0,0,0);
 
-	TimeInterval interval = AnimManager::instance().animationInterval();
-	TimePoint value = std::min(std::max(AnimManager::instance().time(), interval.start()), interval.end());
+	TimeInterval interval = _animSettings->animationInterval();
+	TimePoint value = std::min(std::max(_animSettings->time(), interval.start()), interval.end());
 	FloatType percentage = (FloatType)(value - interval.start()) / (FloatType)(interval.duration() + 1);
 
 	QRect clientRect = frameRect();

@@ -55,11 +55,10 @@ public:
 
 	/// \brief Exports the scene to a file.
 	/// \param filePath The path of the file to export to.
-	/// \param scene The scene that should be exported.
 	/// \return \c true if the file has been successfully written.
 	///         \c false if the export operation has been aborted by the user.
 	/// \throw Exception when the export has failed or an error has occurred.
-	virtual bool exportToFile(const QString& filePath, DataSet* scene) = 0;
+	virtual bool exportToFile(const QString& filePath) = 0;
 
 private:
 

@@ -33,8 +33,6 @@
 
 namespace Ovito {
 
-class SceneNode;		// define in SceneNode.h
-
 /**
  * \brief Base class for all transformation controller implementations.
  * 

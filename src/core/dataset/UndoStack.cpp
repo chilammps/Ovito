@@ -81,24 +81,17 @@ void UndoStack::endCompoundOperation(bool commit)
 	OVITO_ASSERT_MSG(isUndoingOrRedoing() == false, "UndoStack::endCompoundOperation()", "Cannot record an operation while undoing or redoing another operation.");
 	OVITO_ASSERT_MSG(!_compoundStack.empty(), "UndoStack::endCompoundOperation()", "Missing call to beginCompoundOperation().");
 
-	// Take current compound operation from the macro stack.
-	std::unique_ptr<CompoundOperation> cop = std::move(_compoundStack.back());
-	_compoundStack.pop_back();
-
 	if(!commit) {
-		// Undo operations.
-		_isUndoing = true;
-		suspend();
-		try {
-			cop->undo();
-		}
-		catch(const Exception& ex) {
-			ex.showError();
-		}
-		_isUndoing = false;
-		resume();
+		// Undo operations in current compound operation first.
+		resetCurrentCompoundOperation();
+		// Then discard compound operation.
+		_compoundStack.pop_back();
 	}
 	else {
+
+		// Take current compound operation from the macro stack.
+		std::unique_ptr<CompoundOperation> cop = std::move(_compoundStack.back());
+		_compoundStack.pop_back();
 
 		// Check if the operation should be kept.
 		if(_suspendCount > 0 || !cop->isSignificant())
@@ -107,6 +100,29 @@ void UndoStack::endCompoundOperation(bool commit)
 		// Put new operation on stack.
 		push(cop.release());
 	}
+}
+
+/******************************************************************************
+* Undoes all actions of the current compound operation.
+******************************************************************************/
+void UndoStack::resetCurrentCompoundOperation()
+{
+	OVITO_ASSERT_MSG(isUndoingOrRedoing() == false, "UndoStack::resetCurrentCompoundOperation()", "Cannot reset operation while undoing or redoing another operation.");
+	OVITO_ASSERT_MSG(!_compoundStack.empty(), "UndoStack::resetCurrentCompoundOperation()", "Missing call to beginCompoundOperation().");
+
+	CompoundOperation* cop = _compoundStack.back().get();
+	// Undo operations.
+	_isUndoing = true;
+	suspend();
+	try {
+		cop->undo();
+		cop->clear();
+	}
+	catch(const Exception& ex) {
+		ex.showError();
+	}
+	_isUndoing = false;
+	resume();
 }
 
 /******************************************************************************
@@ -223,48 +239,6 @@ void UndoStack::redo()
 	undoTextChanged(undoText());
 	canRedoChanged(canRedo());
 	redoTextChanged(redoText());
-}
-
-class UndoAction : public QAction
-{
-	Q_OBJECT
-public:
-	UndoAction(QObject* parent, const QString& prefix) : QAction(parent), _prefix(prefix) {}
-public Q_SLOTS:
-	void setPrefixedText(const QString& text) { setText(tr("%1 %2").arg(_prefix).arg(text)); }
-private:
-	QString _prefix;
-};
-
-// Required for Automoc
-#include "UndoStack.moc"
-
-/******************************************************************************
-* Creates an undo QAction object with the given parent.
-******************************************************************************/
-QAction* UndoStack::createUndoAction(QObject* parent)
-{
-    UndoAction* action = new UndoAction(parent, tr("Undo"));
-    action->setEnabled(canUndo());
-    action->setPrefixedText(undoText());
-    connect(this, SIGNAL(canUndoChanged(bool)), action, SLOT(setEnabled(bool)));
-    connect(this, SIGNAL(undoTextChanged(QString)), action, SLOT(setPrefixedText(QString)));
-    connect(action, SIGNAL(triggered()), this, SLOT(undo()));
-    return action;
-}
-
-/******************************************************************************
-* Creates a redo QAction object with the given parent.
-******************************************************************************/
-QAction* UndoStack::createRedoAction(QObject* parent)
-{
-    UndoAction* action = new UndoAction(parent, tr("Redo"));
-    action->setEnabled(canRedo());
-    action->setPrefixedText(redoText());
-    connect(this, SIGNAL(canRedoChanged(bool)), action, SLOT(setEnabled(bool)));
-    connect(this, SIGNAL(redoTextChanged(QString)), action, SLOT(setPrefixedText(QString)));
-    connect(action, SIGNAL(triggered()), this, SLOT(redo()));
-    return action;
 }
 
 /******************************************************************************

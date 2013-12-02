@@ -44,7 +44,7 @@ class SceneNodeSelectionBox : public QComboBox
 public:
 	
 	/// Constructs the widget.
-	SceneNodeSelectionBox(QWidget* parent = 0);
+	SceneNodeSelectionBox(DataSetContainer& datasetContainer, QWidget* parent = 0);
 
 protected Q_SLOTS:
 
@@ -54,6 +54,10 @@ protected Q_SLOTS:
 	/// Is called when the user selected an item in the list box.
 	void onItemActivated(int index);
 
+private:
+
+	/// The container of the dataset.
+	DataSetContainer& _datasetContainer;
 };
 
 };

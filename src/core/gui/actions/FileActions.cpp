@@ -25,7 +25,7 @@
 #include <core/gui/dialogs/ApplicationSettingsDialog.h>
 #include <core/gui/dialogs/ImportFileDialog.h>
 #include <core/gui/dialogs/ImportRemoteFileDialog.h>
-#include <core/dataset/DataSetManager.h>
+#include <core/dataset/DataSetContainer.h>
 #include <core/dataset/importexport/ImportExportManager.h>
 
 namespace Ovito {
@@ -35,8 +35,7 @@ namespace Ovito {
 ******************************************************************************/
 void ActionManager::on_Quit_triggered()
 {
-	if(!Application::instance().guiMode()) return;
-	MainWindow::instance().close();
+	mainWindow()->close();
 }
 
 /******************************************************************************
@@ -44,12 +43,10 @@ void ActionManager::on_Quit_triggered()
 ******************************************************************************/
 void ActionManager::on_HelpAbout_triggered()
 {
-	if(!Application::instance().guiMode()) return;
-
 	QMessageBox msgBox(QMessageBox::NoIcon, QCoreApplication::applicationName(),
 			tr("<h3>Ovito (Open Visualization Tool)</h3>"
 				"<p>Version %1</p>").arg(QCoreApplication::applicationVersion()),
-			QMessageBox::Ok);
+			QMessageBox::Ok, mainWindow());
 	msgBox.setInformativeText(tr(
 			"<p>A visualization and analysis software for atomistic simulation data.</p>"
 			"<p>Copyright (C) 2013, Alexander Stukowski</p>"
@@ -78,9 +75,9 @@ void ActionManager::on_HelpShowOnlineHelp_triggered()
 void ActionManager::on_FileNew_triggered()
 {
 	try {
-		if(DataSetManager::instance().askForSaveChanges()) {
+		if(mainWindow()->datasetContainer().askForSaveChanges()) {
 			OORef<DataSet> newSet(new DataSet());
-			DataSetManager::instance().setCurrentSet(newSet);
+			mainWindow()->datasetContainer().setCurrentSet(newSet);
 		}
 	}
 	catch(const Exception& ex) {
@@ -94,7 +91,7 @@ void ActionManager::on_FileNew_triggered()
 void ActionManager::on_FileOpen_triggered()
 {
 	try {
-		if(!DataSetManager::instance().askForSaveChanges())
+		if(!mainWindow()->datasetContainer().askForSaveChanges())
 			return;
 
 		QSettings settings;
@@ -102,13 +99,13 @@ void ActionManager::on_FileOpen_triggered()
 
 		// Go the last directory used.
 		QString defaultPath;
-		OORef<DataSet> dataSet = DataSetManager::instance().currentSet();
+		OORef<DataSet> dataSet = mainWindow()->datasetContainer().currentSet();
 		if(dataSet == NULL || dataSet->filePath().isEmpty())
 			defaultPath = settings.value("last_directory").toString();
 		else
 			defaultPath = dataSet->filePath();
 
-		QString filename = QFileDialog::getOpenFileName(&MainWindow::instance(), tr("Load Scene"),
+		QString filename = QFileDialog::getOpenFileName(mainWindow(), tr("Load Scene"),
 				defaultPath, tr("Scene Files (*.ovito);;All Files (*)"));
 		if(filename.isEmpty())
 			return;
@@ -116,7 +113,7 @@ void ActionManager::on_FileOpen_triggered()
 		// Remember directory for the next time...
 		settings.setValue("last_directory", QFileInfo(filename).absolutePath());
 
-		DataSetManager::instance().fileLoad(filename);
+		mainWindow()->datasetContainer().fileLoad(filename);
 	}
 	catch(const Exception& ex) {
 		ex.showError();
@@ -131,11 +128,11 @@ void ActionManager::on_FileSave_triggered()
 	if(Application::instance().guiMode()) {
 		// Set focus to main window.
 		// This will process any pending user inputs in QLineEdit fields.
-		MainWindow::instance().setFocus();
+		mainWindow()->setFocus();
 	}
 
 	try {
-		DataSetManager::instance().fileSave();
+		mainWindow()->datasetContainer().fileSave();
 	}
 	catch(const Exception& ex) {
 		ex.showError();
@@ -148,7 +145,7 @@ void ActionManager::on_FileSave_triggered()
 void ActionManager::on_FileSaveAs_triggered()
 {
 	try {
-		DataSetManager::instance().fileSaveAs();
+		mainWindow()->datasetContainer().fileSaveAs();
 	}
 	catch(const Exception& ex) {
 		ex.showError();
@@ -161,7 +158,7 @@ void ActionManager::on_FileSaveAs_triggered()
 void ActionManager::on_Settings_triggered()
 {
 	if(Application::instance().guiMode()) {
-		ApplicationSettingsDialog dlg(&MainWindow::instance());
+		ApplicationSettingsDialog dlg(mainWindow());
 		dlg.exec();
 	}
 }
@@ -172,13 +169,13 @@ void ActionManager::on_Settings_triggered()
 void ActionManager::on_FileImport_triggered()
 {
 	// Let the user select a file.
-	ImportFileDialog dialog(&MainWindow::instance(), tr("Import Data"));
+	ImportFileDialog dialog(mainWindow(), tr("Import Data"));
 	if(dialog.exec() != QDialog::Accepted)
 		return;
 
 	try {
 		// Import file.
-		DataSetManager::instance().importFile(QUrl::fromLocalFile(dialog.fileToImport()), dialog.selectedFileImporter());
+		mainWindow()->datasetContainer().importFile(QUrl::fromLocalFile(dialog.fileToImport()), dialog.selectedFileImporter());
 	}
 	catch(const Exception& ex) {
 		ex.showError();
@@ -191,13 +188,13 @@ void ActionManager::on_FileImport_triggered()
 void ActionManager::on_FileRemoteImport_triggered()
 {
 	// Let the user enter the URL of the remote file.
-	ImportRemoteFileDialog dialog(&MainWindow::instance(), tr("Import Remote File"));
+	ImportRemoteFileDialog dialog(mainWindow(), tr("Import Remote File"));
 	if(dialog.exec() != QDialog::Accepted)
 		return;
 
 	try {
 		// Import URL.
-		DataSetManager::instance().importFile(dialog.fileToImport(), dialog.selectedFileImporter());
+		mainWindow()->datasetContainer().importFile(dialog.fileToImport(), dialog.selectedFileImporter());
 	}
 	catch(const Exception& ex) {
 		ex.showError();
@@ -223,7 +220,7 @@ void ActionManager::on_FileExport_triggered()
 	settings.beginGroup("file/export");
 
 	// Let the user select a destination file.
-	HistoryFileDialog dialog("export", &MainWindow::instance(), tr("Export Data"));
+	HistoryFileDialog dialog("export", mainWindow(), tr("Export Data"));
 	dialog.setNameFilters(filterStrings);
 	dialog.setAcceptMode(QFileDialog::AcceptSave);
 	dialog.setFileMode(QFileDialog::AnyFile);
@@ -256,8 +253,8 @@ void ActionManager::on_FileExport_triggered()
 		int exportFilterIndex = filterStrings.indexOf(dialog.selectedNameFilter());
 		OVITO_ASSERT(exportFilterIndex >= 0 && exportFilterIndex < filterStrings.size());
 
-		OORef<FileExporter> exporter = ImportExportManager::instance().fileExporters()[exportFilterIndex].createService();
-		exporter->exportToFile(exportFile, DataSetManager::instance().currentSet());
+		OORef<FileExporter> exporter = ImportExportManager::instance().fileExporters()[exportFilterIndex].createService(mainWindow()->datasetContainer().currentSet());
+		exporter->exportToFile(exportFile);
 	}
 	catch(const Exception& ex) {
 		ex.showError();

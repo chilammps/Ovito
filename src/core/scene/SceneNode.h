@@ -36,12 +36,6 @@
 
 namespace Ovito {
 
-class Viewport;				// defined in Viewport.h
-class LookAtController;		// defined in LookAtController.h
-class GroupNode;			// defined in GroupNode.h
-class DataSet;				// defined in DataSet.h
-class SceneNode;			// defined below
-class ObjectNode;			// defined in ObjectNode.h
 
 /**
  * \brief Tree node in the scene hierarchy.

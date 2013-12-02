@@ -48,8 +48,6 @@ void PropertiesPanel::setEditObject(RefTarget* newEditObject)
 	if(newEditObject == editObject())
 		return;
 
-	UndoSuspender noUndo;
-
 	if(editor()) {
 		OVITO_CHECK_OBJECT_POINTER(editor());
 		

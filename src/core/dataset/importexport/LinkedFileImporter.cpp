@@ -25,7 +25,7 @@
 #include <core/scene/objects/SceneObject.h>
 #include <core/scene/SelectionSet.h>
 #include <core/animation/AnimationSettings.h>
-#include <core/gui/actions/ActionManager.h>
+#include <core/viewport/ViewportConfiguration.h>
 #include <core/gui/mainwin/MainWindow.h>
 #include <core/utilities/concurrent/Task.h>
 #include <core/utilities/concurrent/ProgressManager.h>
@@ -256,9 +256,10 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl, ImportMode importMode
 	// Adjust the animation length number to match the number of frames in the input data source.
 	obj->adjustAnimationInterval(jumpToFrame);
 
-	// Adjust views to show the newly imported object.
-	dataSet()->runWhenSceneIsReady([]() {
-		ActionManager::instance().getAction(ACTION_VIEWPORT_ZOOM_SELECTION_EXTENTS_ALL)->trigger();
+	// Adjust views to completely show the newly imported object.
+	OORef<DataSet> ds(dataSet());
+	ds->runWhenSceneIsReady([ds]() {
+		ds->viewportConfig()->zoomToSelectionExtents();
 	});
 
 	transaction.commit();

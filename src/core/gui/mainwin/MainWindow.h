@@ -35,6 +35,7 @@ namespace Ovito {
 
 class CommandPanel;			// defined in CommandPanel.h
 class FrameBufferWindow;	// defined in FrameBufferWindow.h
+class ActionManager;		// defined in ActionManager.h
 
 /**
  * \brief The main window of the application.
@@ -66,8 +67,14 @@ public:
 	/// \brief Saves the layout of the docked widgets to the settings store.
 	void saveLayout();
 
+	/// \brief Immediately repaints all viewports that are flagged for an update.
+	void processViewportUpdates();
+
 	/// Returns the container that keeps a reference to the current dataset.
 	DataSetContainer& datasetContainer() { return _datasetContainer; }
+
+	/// Returns the associated GUI action manager.
+	ActionManager* actionManager() const { return _actionManager; }
 
 protected:
 
@@ -104,6 +111,9 @@ private:
 
 	/// Container that keeps a reference to the current dataset.
 	DataSetContainer _datasetContainer;
+
+	/// The associated GUI action manager.
+	ActionManager* _actionManager;
 };
 
 };

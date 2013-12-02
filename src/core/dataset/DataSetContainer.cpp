@@ -24,6 +24,7 @@
 #include <core/dataset/importexport/FileImporter.h>
 #include <core/dataset/importexport/ImportExportManager.h>
 #include <core/dataset/UndoStack.h>
+#include <core/animation/AnimationSettings.h>
 #include <core/scene/SceneRoot.h>
 #include <core/gui/app/Application.h>
 #include <core/gui/mainwin/MainWindow.h>
@@ -57,6 +58,10 @@ DataSetContainer::DataSetContainer() : RefMaker(nullptr)
 ******************************************************************************/
 void DataSetContainer::setCurrentSet(const OORef<DataSet>& set)
 {
+	if(_currentSet) {
+		_currentSet->animationSettings()->stopAnimationPlayback();
+	}
+
 	_currentSet = set;
 
 	// Reset selection set

@@ -305,7 +305,6 @@ public:
 	virtual FloatType userToNative(FloatType userValue) override { return userValue / FloatType(100); }
 };
 
-#if 0
 /**
  * \brief This ParameterUnit is used by parameter values that specify a time value.
  */
@@ -318,10 +317,12 @@ public:
 	
 	/// \brief Default constructor.
 	Q_INVOKABLE TimeParameterUnit() : IntegerParameterUnit() {
+#if 0
 		// If the animation speed changes or the time format has been changed then
 		// this parameter unit will send a signal to the UI controls.
 		connect(&AnimManager::instance(), SIGNAL(speedChanged(int)), SIGNAL(formatChanged()));
 		connect(&AnimManager::instance(), SIGNAL(timeFormatChanged()), SIGNAL(formatChanged()));
+#endif
 	}
 
 	/// \brief Converts the given string to a time value.
@@ -331,7 +332,16 @@ public:
 	/// \throw Exception when the value could not be parsed.
 	/// \sa formatValue()
 	virtual FloatType parseString(const QString& valueString) override {
+#if 0
 		return AnimManager::instance().stringToTime(valueString);
+#else
+		int value;
+		bool ok;
+		value = valueString.toInt(&ok);
+		if(!ok)
+			throw Exception(tr("Invalid integer value: %1").arg(valueString));
+		return (FloatType)value;
+#endif
 	}
 		
 	/// \brief Converts a time value to a string.
@@ -339,7 +349,11 @@ public:
 	/// \return The string representation of the value. This can be converted back using parseString().
 	/// \sa parseString()
 	virtual QString formatValue(FloatType value) override {
+#if 0
 		return AnimManager::instance().timeToString((TimePoint)value);
+#else
+		return QString::number((int)value);
+#endif
 	}
 
 	/// \brief Returns the (positive) step size used by spinner widgets for this parameter unit type.
@@ -347,18 +361,25 @@ public:
 	/// \param upDirection Specifies whether the spinner is dragged in the positive or the negative direction.
 	/// \return The numeric step size used by SpinnerWidget for this parameter type. This is in TimeTicks units.
 	virtual FloatType stepSize(FloatType currentValue, bool upDirection) override {
+#if 0
 		if(upDirection)
 			return ceil((currentValue + FloatType(1)) / AnimManager::instance().ticksPerFrame()) * AnimManager::instance().ticksPerFrame() - currentValue;
 		else
 			return currentValue - floor((currentValue - FloatType(1)) / AnimManager::instance().ticksPerFrame()) * AnimManager::instance().ticksPerFrame();
+#else
+		return 1;
+#endif
 	}
 
 	/// \brief Given an arbitrary value, which is potentially invalid, rounds it to the closest valid value.
 	virtual FloatType roundValue(FloatType value) override {
+#if 0
 		return floor(value / AnimManager::instance().ticksPerFrame() + FloatType(0.5)) * AnimManager::instance().ticksPerFrame();
+#else
+		return floor(value + (FloatType)0.5);
+#endif
 	}
 };
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -392,10 +413,8 @@ public:
 	///        formats values as integer.
 	IntegerParameterUnit* integerIdentityUnit() { return _integerIdentityUnit; }
 
-#if 0
 	/// \brief Returns the instance of a parameter unit service for time values.
 	TimeParameterUnit* timeUnit() { return _timeUnit; }
-#endif
 
 	/// \brief Returns the instance of a parameter unit service for percentage values.
 	PercentParameterUnit* percentUnit() { return _percentUnit; }
@@ -417,10 +436,8 @@ private:
 	/// The special integer identity unit.
 	IntegerParameterUnit* _integerIdentityUnit;
 
-#if 0
 	/// A parameter unit service for time values.
 	TimeParameterUnit* _timeUnit;
-#endif
 
 	/// A parameter unit service for percentage values.
 	PercentParameterUnit* _percentUnit;

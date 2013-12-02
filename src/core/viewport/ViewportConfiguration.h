@@ -93,8 +93,7 @@ public:
 	/// \sa Viewport::updateViewport(), processViewportUpdates()
 	void updateViewports();
 
-	/// \brief Immediately repaints all viewport that have been flagged for
-	///        an update using updateViewports().
+	/// \brief Immediately repaints all viewports that have been scheduled for an update using updateViewports().
 	/// \sa updateViewports()
 	void processViewportUpdates();
 
@@ -127,6 +126,18 @@ public:
 	/// No windows or dialogs should be opened during this phase
 	/// to prevent an infinite update loop.
 	bool isRendering() const;
+
+	/// \brief Zooms all viewports to the extents of the currently selected nodes.
+	void zoomToSelectionExtents() {
+		for(Viewport* vp : viewports())
+			vp->zoomToSelectionExtents();
+	}
+
+	/// \brief Zooms to the extents of the scene.
+	void zoomToSceneExtents() {
+		for(Viewport* vp : viewports())
+			vp->zoomToSceneExtents();
+	}
 
 protected:
 

@@ -22,7 +22,7 @@
 #ifndef __OVITO_ANIM_SETTINGS_DIALOG_H
 #define __OVITO_ANIM_SETTINGS_DIALOG_H
 
-#include <core/animation/AnimManager.h>
+#include <core/animation/AnimationSettings.h>
 #include <core/dataset/UndoStack.h>
 #include <core/gui/widgets/general/SpinnerWidget.h>
 
@@ -36,8 +36,9 @@ class OVITO_CORE_EXPORT AnimationSettingsDialog : public QDialog, private Undoab
 	Q_OBJECT
 	
 public:
+
 	/// Constructor.
-	AnimationSettingsDialog(QWidget* parentWindow = nullptr);
+	AnimationSettingsDialog(AnimationSettings* animSettings, QWidget* parentWindow = nullptr);
 	
 	/// Destructor.
 	virtual ~AnimationSettingsDialog() {}
@@ -60,6 +61,9 @@ private:
 	
 	/// Updates the values shown in the dialog.
 	void updateValues();
+
+	/// The animation settings being edited.
+	OORef<AnimationSettings> _animSettings;
 
 	QComboBox* fpsBox;
 	SpinnerWidget* animStartSpinner;

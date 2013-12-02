@@ -201,6 +201,24 @@ public Q_SLOTS:
 	///       they have to generate a key when their value is changed.
 	void setAutoKeyMode(bool on);
 
+	/// \brief  Sets the current animation time to the start of the animation interval.
+	void jumpToAnimationStart();
+
+	//// \brief Sets the current animation time to the end of the animation interval.
+	void jumpToAnimationEnd();
+
+	/// \brief Jumps to the next animation frame.
+	void jumpToNextFrame();
+
+	/// \brief Jumps to the previous animation frame.
+	void jumpToPreviousFrame();
+
+	/// \brief Starts playback of the animation in the viewports.
+	void startAnimationPlayback();
+
+	/// \brief Stops playback of the animation in the viewports.
+	void stopAnimationPlayback();
+
 private Q_SLOTS:
 
 	/// \brief Is called when the current animation time has changed.
@@ -208,6 +226,9 @@ private Q_SLOTS:
 
 	/// \brief Is called whenever the active animation interval has changed.
 	void onIntervalChanged(TimeInterval newAnimationInterval);
+
+	/// \brief Timer callback used during animation playback.
+	void onPlaybackTimer();
 
 protected:
 
@@ -269,6 +290,9 @@ private:
 
 	/// Indicates that the animation has been changed, and the scene is still being prepared for display of the new frame.
 	int _timeIsChanging;
+
+	/// Indicates that the animation is currently being played back in the viewports.
+	bool _isPlaybackActive;
 
 private:
 

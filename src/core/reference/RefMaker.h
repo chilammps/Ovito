@@ -32,11 +32,9 @@
 
 namespace Ovito {
 
-class RefTarget;					// defined in RefTarget.h
 class PropertyFieldDescriptor;		// defined in PropertyFieldDescriptor.h
 class SingleReferenceFieldBase;		// defined in PropertyFieldDescriptor.h
 class VectorReferenceFieldBase;		// defined in PropertyFieldDescriptor.h
-class DataSet;						// defined in DataSet.h
 
 /**
  * \brief Exception that is thrown when trying to create a cyclic reference.

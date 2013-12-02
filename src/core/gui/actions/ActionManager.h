@@ -27,9 +27,6 @@
 
 namespace Ovito {
 
-class Viewport;					// defined in Viewport.h
-class ViewportInputHandler;		// defined in ViewportInputHandler.h
-
 //////////////////////// Action identifiers ///////////////////////////
 
 /// This action closes the main window and exits the application.
@@ -127,12 +124,11 @@ class OVITO_CORE_EXPORT ActionManager : public QObject
 
 public:
 
-	/// \brief Returns the one and only instance of this class.
-	/// \return The predefined instance of the ActionManager singleton class.
-	inline static ActionManager& instance() {
-		OVITO_ASSERT_MSG(_instance != nullptr, "ActionManager::instance", "Singleton object is not initialized yet.");
-		return *_instance;
-	}
+	/// Constructor.
+	ActionManager(MainWindow* mainWindow);
+
+	/// Returns the associated main window.
+	MainWindow* mainWindow() const { return reinterpret_cast<MainWindow*>(parent()); }
 
 	/// \brief Returns the action with the given ID or NULL.
 	/// \param actionId The identifier string of the action to return.
@@ -174,6 +170,12 @@ public:
 
 private Q_SLOTS:
 
+	/// This is called when a new dataset has been loaded.
+	void onDataSetChanged(DataSet* newDataSet);
+
+	/// This is called when new animation settings have been loaded.
+	void onAnimationSettingsChanged(AnimationSettings* newAnimationSettings);
+
 	void on_Quit_triggered();
 	void on_HelpAbout_triggered();
 	void on_HelpShowOnlineHelp_triggered();
@@ -202,21 +204,21 @@ private Q_SLOTS:
 
 private:
 
-	OORef<ViewportInputHandler> createAnimationPlaybackViewportMode();
+	QMetaObject::Connection _viewportConfigurationChangedConnection;
+	QMetaObject::Connection _animationSettingsChangedConnection;
+	QMetaObject::Connection _canUndoChangedConnection;
+	QMetaObject::Connection _canRedoChangedConnection;
+	QMetaObject::Connection _undoTextChangedConnection;
+	QMetaObject::Connection _redoTextChangedConnection;
+	QMetaObject::Connection _undoTriggeredConnection;
+	QMetaObject::Connection _redoTriggeredConnection;
+	QMetaObject::Connection _autoKeyModeChangedConnection;
+	QMetaObject::Connection _autoKeyModeToggledConnection;
 
-	/// Constructor.
-	ActionManager();
+	/// The current dataset being edited in the main window.
+	OORef<DataSet> _dataset;
 
-	/// Create the singleton instance of this class.
-	static void initialize() { _instance = new ActionManager(); }
-
-	/// Deletes the singleton instance of this class.
-	static void shutdown() { delete _instance; _instance = nullptr; }
-
-	/// The singleton instance of this class.
-	static ActionManager* _instance;
-
-	friend class Application;
+	friend class AnimationPlaybackViewportMode;
 };
 
 };

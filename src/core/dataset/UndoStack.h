@@ -195,6 +195,9 @@ public:
 	///        all actions of the macro operation are undone, and nothing is put on the undo stack.
 	void endCompoundOperation(bool commit = true);
 
+	/// \brief Undoes all actions of the current compound operation.
+	void resetCurrentCompoundOperation();
+
 	/// \brief Returns whether the manager is currently recording undoable operations.
 	/// \return \c true if the UndoStack currently records any changes made to the scene on its stack.
 	///         \c false if changes to the scene are ignored by the UndoStack.
@@ -294,12 +297,6 @@ public:
 	/// from the bottom of the stack are removed.
 	void limitUndoStack();
 
-	/// Creates an undo QAction object with the given parent. Triggering this action will cause a call to undo().
-	QAction* createUndoAction(QObject* parent);
-
-	/// Creates a redo QAction object with the given parent. Triggering this action will cause a call to redo().
-	QAction* createRedoAction(QObject* parent);
-
 	/// Registers an undo record for changing a property of an object.
 	///
 	/// The setter method for a property of an object should call this function
@@ -394,6 +391,9 @@ private:
 		/// \brief Indicates whether this UndoableOperation is significant or can be ignored.
 		/// \return \c true if the CompoundOperation contains at least one sub-operation; \c false it is empty.
 		bool isSignificant() const { return _subOperations.empty() == false; }
+
+		/// \brief Removes all sub-operations from this compound operation.
+		void clear() { _subOperations.clear(); }
 
 	private:
 

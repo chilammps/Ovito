@@ -99,7 +99,7 @@ class CameraObjectEditor : public PropertiesEditor
 {
 public:
 
-	/// Default constructor.
+	/// Constructor.
 	Q_INVOKABLE CameraObjectEditor() {}
 
 protected:

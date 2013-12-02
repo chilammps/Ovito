@@ -31,9 +31,6 @@
 
 namespace Ovito {
 
-class Viewport;					// defined in Viewport.h
-class ViewportSceneRenderer;	// defined in ViewportSceneRenderer.h
-
 /**
  * \brief Abstract base class for viewport input handlers that process mouse events
  *        in the viewport windows.

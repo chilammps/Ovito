@@ -20,7 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include <core/viewport/ViewportManager.h>
+#include <core/gui/mainwin/MainWindow.h>
 #include "SpinnerWidget.h"
 
 namespace Ovito {
@@ -316,7 +316,8 @@ void SpinnerWidget::mouseMoveEvent(QMouseEvent* event)
 					setFloatValue(newVal, true);
 
 					// Repaint viewports for immediate visual feedback when changing a parameter.
-					ViewportManager::instance().processViewportUpdates();
+					if(MainWindow* mainWindow = qobject_cast<MainWindow*>(window()))
+						mainWindow->processViewportUpdates();
 
 					// Also repaint text box for immediate visual updates.
 					if(textBox())

@@ -21,12 +21,11 @@
 
 #include <core/Core.h>
 #include <core/gui/actions/ActionManager.h>
-#include <core/viewport/ViewportManager.h>
 #include <core/gui/mainwin/MainWindow.h>
 #include <core/gui/app/Application.h>
 #include <core/gui/widgets/rendering/FrameBufferWindow.h>
-#include <core/dataset/DataSetManager.h>
 #include <core/rendering/RenderSettings.h>
+#include <core/viewport/ViewportConfiguration.h>
 
 namespace Ovito {
 
@@ -37,17 +36,15 @@ void ActionManager::on_RenderActiveViewport_triggered()
 {
 	try {
 
-		if(Application::instance().guiMode()) {
-			// Set input focus to main window.
-			// This will process any pending user inputs in QLineEdit fields that haven't been processed yet.
-			MainWindow::instance().setFocus();
-		}
+		// Set input focus to main window.
+		// This will process any pending user inputs in QLineEdit fields that haven't been processed yet.
+		mainWindow()->setFocus();
 
 		// Get the current render settings.
-		RenderSettings* settings = DataSetManager::instance().currentSet()->renderSettings();
+		RenderSettings* settings = _dataset->renderSettings();
 
 		// Get viewport to be rendered.
-		Viewport* viewport = ViewportManager::instance().activeViewport();
+		Viewport* viewport = _dataset->viewportConfig()->activeViewport();
 		if(!viewport)
 			throw Exception(tr("There is no active viewport to render."));
 
@@ -55,14 +52,14 @@ void ActionManager::on_RenderActiveViewport_triggered()
 		FrameBufferWindow* frameBufferWindow = nullptr;
 		QSharedPointer<FrameBuffer> frameBuffer;
 		if(Application::instance().guiMode()) {
-			frameBufferWindow = MainWindow::instance().frameBufferWindow();
+			frameBufferWindow = mainWindow()->frameBufferWindow();
 			frameBuffer = frameBufferWindow->frameBuffer();
 		}
 		if(!frameBuffer)
 			frameBuffer.reset(new FrameBuffer(settings->outputImageWidth(), settings->outputImageHeight()));
 
 		// Call high-level rendering function, which will take care of the rest.
-		DataSetManager::instance().currentSet()->renderScene(settings, viewport, frameBuffer, frameBufferWindow);
+		_dataset->renderScene(settings, viewport, frameBuffer, frameBufferWindow);
 	}
 	catch(const Exception& ex) {
 		ex.showError();

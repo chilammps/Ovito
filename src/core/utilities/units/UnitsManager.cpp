@@ -64,7 +64,7 @@ ParameterUnit* UnitsManager::getUnit(const OvitoObjectType& parameterUnitClass)
 		return iter->second.get();
 
 	// Create an instance of this class.
-	OORef<ParameterUnit> unit = static_object_cast<ParameterUnit>(parameterUnitClass.createInstance());
+	OORef<ParameterUnit> unit = static_object_cast<ParameterUnit>(parameterUnitClass.createInstance(nullptr));
 	_units.insert(std::make_pair(&parameterUnitClass, unit));
 
 	return unit.get();

@@ -42,8 +42,6 @@
 
 namespace Ovito {
 
-class PipelineObject;		// defined in PipelineObject.h
-
 // The minimum OpenGL version required by Ovito:
 #define OVITO_OPENGL_MINIMUM_VERSION_MAJOR 			2
 #define OVITO_OPENGL_MINIMUM_VERSION_MINOR			0

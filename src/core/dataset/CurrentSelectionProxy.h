@@ -32,7 +32,6 @@
 
 namespace Ovito {
 
-
 /**
  * \brief Proxy for the current SelectionSet in the current DataSet.
  * 

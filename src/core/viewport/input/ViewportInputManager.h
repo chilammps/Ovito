@@ -32,8 +32,6 @@
 
 namespace Ovito {
 
-class Viewport; // defined in Viewport.h
-
 /**
  * \brief Manages a stack of viewport input handlers.
  *

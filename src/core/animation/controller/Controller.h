@@ -34,8 +34,6 @@
 
 namespace Ovito {
 
-class SceneNode;		// defined in SceneNode.h
-
 /**
  * \brief Base class for all animation controllers.
  * 

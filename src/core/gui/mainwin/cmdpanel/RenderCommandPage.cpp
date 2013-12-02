@@ -22,6 +22,7 @@
 #include <core/Core.h>
 #include <core/plugins/PluginManager.h>
 #include <core/gui/actions/ActionManager.h>
+#include <core/gui/mainwin/MainWindow.h>
 #include <core/rendering/RenderSettings.h>
 #include "RenderCommandPage.h"
 
@@ -30,7 +31,7 @@ namespace Ovito {
 /******************************************************************************
 * Initializes the command panel page.
 ******************************************************************************/
-RenderCommandPage::RenderCommandPage()
+RenderCommandPage::RenderCommandPage(MainWindow* mainWindow, QWidget* parent) : QWidget(parent)
 {
 	QVBoxLayout* layout = new QVBoxLayout(this);
 	layout->setContentsMargins(2,2,2,2);
@@ -39,7 +40,7 @@ RenderCommandPage::RenderCommandPage()
 	toolbar->setStyleSheet("QToolBar { padding: 0px; margin: 0px; border: 0px none black; }");
 	toolbar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
 	layout->addWidget(toolbar);
-	toolbar->addAction(ActionManager::instance().getAction(ACTION_RENDER_ACTIVE_VIEWPORT));
+	toolbar->addAction(mainWindow->actionManager()->getAction(ACTION_RENDER_ACTIVE_VIEWPORT));
 
 	// Create the properties panel.
 	propertiesPanel = new PropertiesPanel(this);
@@ -47,6 +48,7 @@ RenderCommandPage::RenderCommandPage()
 	layout->addWidget(propertiesPanel, 1);
 }
 
+#if 0
 /******************************************************************************
 * Resets the command panel page to the initial state.
 ******************************************************************************/
@@ -57,5 +59,6 @@ void RenderCommandPage::reset()
 	if(dataset)
 		propertiesPanel->setEditObject(dataset->renderSettings());
 }
+#endif
 
 };

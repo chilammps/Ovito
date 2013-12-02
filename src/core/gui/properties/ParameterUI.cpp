@@ -36,7 +36,7 @@ DEFINE_FLAGS_REFERENCE_FIELD(PropertyParameterUI, _parameterObject, "ParameterOb
 /******************************************************************************
 * The constructor.
 ******************************************************************************/
-ParameterUI::ParameterUI(QObject* parent) : _enabled(true)
+ParameterUI::ParameterUI(QObject* parent) : RefMaker(nullptr), _enabled(true)
 {
 	INIT_PROPERTY_FIELD(ParameterUI::_editObject);
 	

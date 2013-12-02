@@ -47,7 +47,7 @@ class OVITO_CORE_EXPORT PropertiesEditor : public RefMaker
 	
 protected:
 
-	/// \brief The default constructor.
+	/// \brief The constructor.
 	PropertiesEditor();
 
 public:

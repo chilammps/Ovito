@@ -26,11 +26,6 @@
 
 namespace Ovito {
 
-class DataSet;					// defined in DataSet.h
-class MainWindow;				// defined in MainWindow.h
-class ViewportConfiguration;	// defined in ViewportConfiguration.h
-class AnimationSettings;		// defined in AnimationSettings.h
-
 /**
  * \brief The container for the viewports in the application's main window.
  */

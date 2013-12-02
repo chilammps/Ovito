@@ -21,6 +21,8 @@
 
 #include <core/Core.h>
 #include <core/plugins/PluginManager.h>
+#include <core/gui/mainwin/MainWindow.h>
+#include <core/dataset/DataSetContainer.h>
 #include "UtilityApplet.h"
 #include "UtilityCommandPage.h"
 
@@ -29,8 +31,8 @@ namespace Ovito {
 /******************************************************************************
 * Initializes the utility panel.
 ******************************************************************************/
-UtilityCommandPage::UtilityCommandPage(QWidget* parent) : QWidget(parent),
-	utilitiesButtonGroup(nullptr)
+UtilityCommandPage::UtilityCommandPage(MainWindow* mainWindow, QWidget* parent) : QWidget(parent),
+		_datasetContainer(mainWindow->datasetContainer()), utilitiesButtonGroup(nullptr)
 {
 	scanInstalledPlugins();
 
@@ -59,15 +61,9 @@ UtilityCommandPage::UtilityCommandPage(QWidget* parent) : QWidget(parent),
 
 	setLayout(layout);
 	rebuildUtilityList();
-}
 
-/******************************************************************************
-* Is called when the user selects another page.
-******************************************************************************/
-void UtilityCommandPage::onLeave()
-{
-	CommandPanelPage::onLeave();
-	closeUtility();
+	// Close open utility when loading a new data set.
+	connect(&_datasetContainer, &DataSetContainer::dataSetChanged, this, &UtilityCommandPage::closeUtility);
 }
 
 /******************************************************************************
@@ -136,7 +132,7 @@ void UtilityCommandPage::onUtilityButton(QAbstractButton* button)
 
 	try {
 		// Create an instance of the utility plugin.
-		currentUtility = static_object_cast<UtilityApplet>(descriptor->createInstance());
+		currentUtility = static_object_cast<UtilityApplet>(descriptor->createInstance(_datasetContainer.currentSet()));
 		currentButton = button;
 		currentButton->setChecked(true);
 
@@ -163,9 +159,9 @@ void UtilityCommandPage::closeUtility()
 	// Deactivate the button.
 	currentButton->setChecked(false);
 
-	currentButton = NULL;
+	currentButton = nullptr;
 	OVITO_CHECK_OBJECT_POINTER(currentUtility.get());
-	currentUtility = NULL;
+	currentUtility = nullptr;
 }
 
 };

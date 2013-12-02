@@ -27,9 +27,11 @@
 namespace Ovito {
 
 class RefTarget;			// defined in RefTarget.h
+class DataSetContainer;		// defined in DataSetContainer.h
 class ModifyCommandPage;	// defined in ModifyCommandPage.h
 class RenderCommandPage;	// defined in RenderCommandPage.h
 class UtilityCommandPage;	// defined in UtilityCommandPage.h
+class MainWindow;			// defined in MainWindow.h
 
 /******************************************************************************
 * The command panel in the main window.
@@ -48,8 +50,7 @@ public:
 	};
 
 	/// \brief Creates the command panel.
-	/// \param parent The parent widget.
-	CommandPanel(QWidget* parent);
+	CommandPanel(MainWindow* mainWindow, QWidget* parent);
 
 	/// \brief Activate one of the command pages.
 	/// \param newPage The identifier of the page to activate.
@@ -86,8 +87,6 @@ private:
 	ModifyCommandPage* _modifyPage;
 	RenderCommandPage* _renderPage;
 	UtilityCommandPage* _utilityPage;
-
-	friend class MainFrame;
 };
 
 };

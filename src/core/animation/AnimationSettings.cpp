@@ -35,7 +35,8 @@ DEFINE_PROPERTY_FIELD(AnimationSettings, _playbackSpeed, "PlaybackSpeed");
 ******************************************************************************/
 AnimationSettings::AnimationSettings(DataSet* dataset) : RefTarget(dataset),
 		_ticksPerFrame(TICKS_PER_SECOND/10), _playbackSpeed(1),
-		_animationInterval(0, 0), _time(0), _animSuspendCount(0),  _autoKeyMode(false), _timeIsChanging(0)
+		_animationInterval(0, 0), _time(0), _animSuspendCount(0),  _autoKeyMode(false), _timeIsChanging(0),
+		_isPlaybackActive(false)
 {
 	INIT_PROPERTY_FIELD(AnimationSettings::_time);
 	INIT_PROPERTY_FIELD(AnimationSettings::_animationInterval);
@@ -159,6 +160,99 @@ void AnimationSettings::setAutoKeyMode(bool on)
 
 	_autoKeyMode = on;
 	Q_EMIT autoKeyModeChanged(_autoKeyMode);
+}
+
+/******************************************************************************
+* Sets the current animation time to the start of the animation interval.
+******************************************************************************/
+void AnimationSettings::jumpToAnimationStart()
+{
+	setTime(animationInterval().start());
+}
+
+/******************************************************************************
+* Sets the current animation time to the end of the animation interval.
+******************************************************************************/
+void AnimationSettings::jumpToAnimationEnd()
+{
+	setTime(animationInterval().end());
+}
+
+/******************************************************************************
+* Jumps to the previous animation frame.
+******************************************************************************/
+void AnimationSettings::jumpToPreviousFrame()
+{
+	// Subtract one frame from current time.
+	TimePoint newTime = frameToTime(timeToFrame(time()) - 1);
+	// Clamp new time
+	newTime = std::max(newTime, animationInterval().start());
+	// Set new time.
+	setTime(newTime);
+}
+
+/******************************************************************************
+* Jumps to the previous animation frame.
+******************************************************************************/
+void AnimationSettings::jumpToNextFrame()
+{
+	// Subtract one frame from current time.
+	TimePoint newTime = frameToTime(timeToFrame(time()) + 1);
+	// Clamp new time
+	newTime = std::min(newTime, animationInterval().end());
+	// Set new time.
+	setTime(newTime);
+}
+
+/******************************************************************************
+* Starts playback of the animation in the viewports.
+******************************************************************************/
+void AnimationSettings::startAnimationPlayback()
+{
+	if(!_isPlaybackActive) {
+		int timerSpeed = 1000;
+		if(playbackSpeed() > 1) timerSpeed /= playbackSpeed();
+		else if(playbackSpeed() < -1) timerSpeed *= -playbackSpeed();
+		_isPlaybackActive = true;
+		QTimer::singleShot(timerSpeed / framesPerSecond(), this, SLOT(onPlaybackTimer()));
+	}
+}
+
+/******************************************************************************
+* Stops playback of the animation in the viewports.
+******************************************************************************/
+void AnimationSettings::stopAnimationPlayback()
+{
+	_isPlaybackActive = false;
+}
+
+/******************************************************************************
+* Timer callback used during animation playback.
+******************************************************************************/
+void AnimationSettings::onPlaybackTimer()
+{
+	// Check if the animation playback has been deactivated in the meantime.
+	if(!_isPlaybackActive)
+		return;
+
+	// Add one frame to current time
+	int newFrame = timeToFrame(time()) + 1;
+	TimePoint newTime = frameToTime(newFrame);
+
+	// Loop back to first frame if end has been reached.
+	if(newTime > animationInterval().end())
+		newTime = animationInterval().start();
+
+	// Set new time.
+	setTime(newTime);
+
+	// Wait until the scene is ready. Then jump to the next frame.
+	dataSet()->runWhenSceneIsReady([this]() {
+		if(_isPlaybackActive) {
+			_isPlaybackActive = false;
+			startAnimationPlayback();
+		}
+	});
 }
 
 };

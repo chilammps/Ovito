@@ -34,18 +34,6 @@
 
 namespace Ovito {
 
-class SceneRoot;				// defined in SceneRoot.h
-class ViewportConfiguration;	// defined in ViewportConfiguration.h
-class AnimationSettings;		// defined in AnimationSettings.h
-class SelectionSet;				// defined in SelectionSet.h
-class RenderSettings;			// defined in RenderSettings.h
-class SceneRenderer;			// defined in SceneRenderer.h
-class Viewport;					// defined in Viewport.h
-class FrameBuffer;				// defined in FrameBuffer.h
-class FrameBufferWindow;		// defined in FrameBufferWindow.h
-class VideoEncoder;				// defined in VideoEncoder.h
-class MainWindow;				// defined in MainWindow.h
-
 /**
  * \brief This class stores everything that belongs to a scene.
  *

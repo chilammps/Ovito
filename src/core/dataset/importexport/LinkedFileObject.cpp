@@ -33,7 +33,6 @@
 #include <core/gui/dialogs/ImportFileDialog.h>
 #include <core/gui/dialogs/ImportRemoteFileDialog.h>
 #include <core/dataset/importexport/ImportExportManager.h>
-#include <core/gui/actions/ActionManager.h>
 #include "LinkedFileObject.h"
 #include "LinkedFileObjectEditor.h"
 
@@ -196,10 +195,10 @@ bool LinkedFileObject::setSource(QUrl sourceUrl, const OORef<LinkedFileImporter>
 			return false;
 
 		if(_adjustAnimationIntervalEnabled) {
-
 			// Adjust views to completely show the new object.
-			dataSet()->runWhenSceneIsReady([]() {
-				ActionManager::instance().getAction(ACTION_VIEWPORT_ZOOM_SELECTION_EXTENTS_ALL)->trigger();
+			OORef<DataSet> ds(dataSet());
+			ds->runWhenSceneIsReady([ds]() {
+				ds->viewportConfig()->zoomToSelectionExtents();
 			});
 		}
 

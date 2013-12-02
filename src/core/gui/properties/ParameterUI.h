@@ -74,6 +74,12 @@ public:
 	/// \sa isEnabled()
 	bool isDisabled() const { return !isEnabled(); }
 
+	/// \brief Returns the dataset currently being edited.
+	DataSet* dataSet() const {
+		OVITO_ASSERT_MSG(editObject() != nullptr, "ParameterUI::dataSet()", "Can access dataset only while editing an object.");
+		return editObject()->dataSet();
+	}
+
 public:	
 	
 	Q_PROPERTY(RefTarget editObject READ editObject)		

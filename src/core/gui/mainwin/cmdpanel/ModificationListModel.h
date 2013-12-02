@@ -27,13 +27,13 @@
 #include <core/reference/RefTargetListener.h>
 #include <core/scene/pipeline/ModifierApplication.h>
 #include <core/scene/SceneNode.h>
-
 #include "ModificationListItem.h"
 
 namespace Ovito {
 
 class SceneObject;			// defined in SceneObject.h
 class Modifier;				// defined in Modifier.h
+class DataSetContainer;		// defined in DataSetContainer.h
 
 /*
  * This Qt model class is used to populate the QListView widget.
@@ -45,7 +45,7 @@ class ModificationListModel : public QAbstractListModel
 public:
 
 	/// Constructor.
-	ModificationListModel(QObject* parent);
+	ModificationListModel(DataSetContainer& datasetContainer, QObject* parent);
 
 	/// Returns the number of list items.
 	virtual int rowCount(const QModelIndex& parent = QModelIndex()) const override { return _items.size(); }
@@ -92,6 +92,9 @@ public:
 
 	/// The list of currently selected ObjectNode instances.
 	const QVector<RefTarget*>& selectedNodes() const { return _selectedNodes.targets(); }
+
+	/// Returns the container of the dataset being edited.
+	DataSetContainer& datasetContainer() { return _datasetContainer; }
 
 Q_SIGNALS:
 
@@ -155,6 +158,9 @@ private:
 
 	/// The font used for section headers.
 	QFont _sectionHeaderFont;
+
+	/// The container of the dataset being edited.
+	DataSetContainer& _datasetContainer;
 };
 
 };

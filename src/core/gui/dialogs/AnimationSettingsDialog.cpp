@@ -21,7 +21,6 @@
 
 #include <core/Core.h>
 #include <core/dataset/UndoStack.h>
-#include <core/dataset/DataSetManager.h>
 #include <core/utilities/units/UnitsManager.h>
 #include "AnimationSettingsDialog.h"
 
@@ -30,8 +29,8 @@ namespace Ovito {
 /******************************************************************************
 * The constructor of the animation settings dialog.
 ******************************************************************************/
-AnimationSettingsDialog::AnimationSettingsDialog(QWidget* parent) : 
-	QDialog(parent), UndoableTransaction(tr("Change animation settings"))
+AnimationSettingsDialog::AnimationSettingsDialog(AnimationSettings* animSettings, QWidget* parent) :
+		QDialog(parent), _animSettings(animSettings), UndoableTransaction(animSettings->dataSet()->undoStack(), tr("Change animation settings"))
 {
 	setWindowTitle(tr("Animation Settings"));
 	
@@ -124,10 +123,10 @@ void AnimationSettingsDialog::onOk()
 ******************************************************************************/
 void AnimationSettingsDialog::updateValues()
 {
-	fpsBox->setCurrentIndex(fpsBox->findData(AnimManager::instance().ticksPerFrame()));
-	playbackSpeedBox->setCurrentIndex(playbackSpeedBox->findData(AnimManager::instance().playbackSpeed()));
-	animStartSpinner->setIntValue(AnimManager::instance().animationInterval().start());
-	animEndSpinner->setIntValue(AnimManager::instance().animationInterval().end());
+	fpsBox->setCurrentIndex(fpsBox->findData(_animSettings->ticksPerFrame()));
+	playbackSpeedBox->setCurrentIndex(playbackSpeedBox->findData(_animSettings->playbackSpeed()));
+	animStartSpinner->setIntValue(_animSettings->animationInterval().start());
+	animEndSpinner->setIntValue(_animSettings->animationInterval().end());
 }
 
 /******************************************************************************
@@ -139,17 +138,17 @@ void AnimationSettingsDialog::onFramesPerSecondChanged(int index)
 	OVITO_ASSERT(newTicksPerFrame != 0);
 	
 	// Change the animation speed.
-	int oldTicksPerFrame = AnimManager::instance().ticksPerFrame();
-	AnimManager::instance().setTicksPerFrame(newTicksPerFrame);
+	int oldTicksPerFrame = _animSettings->ticksPerFrame();
+	_animSettings->setTicksPerFrame(newTicksPerFrame);
 
 	// Rescale animation interval and animation keys.
-	TimeInterval oldInterval = AnimManager::instance().animationInterval();
+	TimeInterval oldInterval = _animSettings->animationInterval();
 	TimeInterval newInterval;
 	newInterval.setStart(oldInterval.start() * newTicksPerFrame / oldTicksPerFrame);
 	newInterval.setEnd(oldInterval.end() * newTicksPerFrame / oldTicksPerFrame);
-	AnimManager::instance().setAnimationInterval(newInterval);
+	_animSettings->setAnimationInterval(newInterval);
 
-	DataSetManager::instance().currentSet()->rescaleTime(oldInterval, newInterval);
+	_animSettings->dataSet()->rescaleTime(oldInterval, newInterval);
 	
 	// Update dialog controls to reflect new values.
 	updateValues();
@@ -164,7 +163,7 @@ void AnimationSettingsDialog::onPlaybackSpeedChanged(int index)
 	OVITO_ASSERT(newPlaybackSpeed != 0);
 	
 	// Change the animation speed.
-	AnimManager::instance().setPlaybackSpeed(newPlaybackSpeed);
+	_animSettings->setPlaybackSpeed(newPlaybackSpeed);
 	
 	// Update dialog controls to reflect new values.
 	updateValues();
@@ -179,11 +178,11 @@ void AnimationSettingsDialog::onAnimationIntervalChanged()
 	if(interval.end() < interval.start())
 		interval.setEnd(interval.start());
 
-	AnimManager::instance().setAnimationInterval(interval);
-	if(AnimManager::instance().time() < interval.start())
-		AnimManager::instance().setTime(interval.start());
-	else if(AnimManager::instance().time() > interval.end())
-		AnimManager::instance().setTime(interval.end());
+	_animSettings->setAnimationInterval(interval);
+	if(_animSettings->time() < interval.start())
+		_animSettings->setTime(interval.start());
+	else if(_animSettings->time() > interval.end())
+		_animSettings->setTime(interval.end());
 
 	// Update dialog controls to reflect new values.
 	updateValues();

@@ -31,9 +31,6 @@
 
 namespace Ovito {
 
-class RefMaker;						// defined in RefMaker.h
-class RefTarget;					// defined in RefTarget.h
-
 /******************************************************************************
 * RefMaker derived classes use this helper class to store their properties.
 ******************************************************************************/

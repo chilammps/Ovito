@@ -23,7 +23,6 @@
 #include <core/gui/app/Application.h>
 #include <core/gui/mainwin/MainWindow.h>
 #include <core/dataset/UndoStack.h>
-#include <core/gui/actions/ActionManager.h>
 #include <core/dataset/importexport/ImportExportManager.h>
 #include <core/animation/controller/Controller.h>
 #include <core/viewport/input/ViewportInputManager.h>
@@ -96,7 +95,6 @@ bool Application::initialize()
 		FileManager::initialize();
 		ViewportInputManager::initialize();
 		UnitsManager::initialize();
-		ActionManager::initialize();
 		ImportExportManager::initialize();
 
 		// Create the main application window.
@@ -191,7 +189,6 @@ void Application::shutdown()
 	// Shutdown global manager objects in reverse order they were initialized.
 	ProgressManager::shutdown();
 	ImportExportManager::shutdown();
-	ActionManager::shutdown();
 	UnitsManager::shutdown();
 	ViewportInputManager::shutdown();
 	FileManager::shutdown();

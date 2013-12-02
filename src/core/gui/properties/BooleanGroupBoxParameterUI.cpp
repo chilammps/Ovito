@@ -23,7 +23,6 @@
 #include <core/gui/properties/BooleanGroupBoxParameterUI.h>
 #include <core/dataset/UndoStack.h>
 #include <core/animation/controller/Controller.h>
-#include <core/animation/AnimManager.h>
 
 namespace Ovito {
 
@@ -52,11 +51,6 @@ BooleanGroupBoxParameterUI::BooleanGroupBoxParameterUI(QObject* parentEditor, co
 	_groupBox = new QGroupBox(propField.displayName());
 	_groupBox->setCheckable(true);
 	connect(_groupBox, SIGNAL(clicked(bool)), this, SLOT(updatePropertyValue()));
-
-	if(isReferenceFieldUI()) {
-		// Update the displayed value when the animation time has changed.
-		connect(&AnimManager::instance(), SIGNAL(timeChanged(TimePoint)), this, SLOT(updateUI()));
-	}
 }
 
 /******************************************************************************

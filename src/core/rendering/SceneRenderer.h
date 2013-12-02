@@ -40,12 +40,6 @@
 
 namespace Ovito {
 
-class DataSet;			// defined in DataSet.h
-class SceneNode;		// defined in SceneNode.h
-class RenderSettings;	// defined in RenderSettings.h
-class FrameBuffer;		// defined in FrameBuffer.h
-class DisplayObject;	// defined in DisplayObject.h
-
 /**
  * \brief This is the base class for scene renderers.
  */

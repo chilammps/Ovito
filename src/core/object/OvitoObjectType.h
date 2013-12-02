@@ -37,8 +37,6 @@ class OvitoObject;					// defined in OvitoObject.h
 class PropertyFieldDescriptor;		// defined in PropertyFieldDescriptor.h
 class ObjectSaveStream;				// defined in ObjectSaveStream.h
 class ObjectLoadStream;				// defined in ObjectLoadStream.h
-class Plugin;						// defined in Plugin.h
-class DataSet;						// defined in DataSet.h
 
 /**
  * \brief Stores meta-information about a class in Ovito's object system.

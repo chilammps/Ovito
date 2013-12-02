@@ -31,8 +31,6 @@
 
 namespace Ovito {
 
-class Viewport;			// defined in Viewport.h
-
 /**
  * \brief An internal render window class used by Viewport.
  */

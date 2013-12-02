@@ -20,7 +20,10 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include <core/dataset/DataSetManager.h>
+#include <core/scene/SceneNode.h>
+#include <core/scene/SceneRoot.h>
+#include <core/dataset/DataSetContainer.h>
+#include <core/dataset/DataSet.h>
 #include "SceneNodesListModel.h"
 
 namespace Ovito {
@@ -28,10 +31,11 @@ namespace Ovito {
 /******************************************************************************
 * Constructs the model.
 ******************************************************************************/
-SceneNodesListModel::SceneNodesListModel(QWidget* parent) : QAbstractListModel(parent)
+SceneNodesListModel::SceneNodesListModel(DataSetContainer& datasetContainer, QWidget* parent) : QAbstractListModel(parent),
+		_datasetContainer(datasetContainer)
 {
 	// Listen for changes of the data set.
-	connect(&DataSetManager::instance(), SIGNAL(dataSetReset(DataSet*)), this, SLOT(onDataSetReset(DataSet*)));
+	connect(&datasetContainer, &DataSetContainer::dataSetChanged, this, &SceneNodesListModel::onDataSetChanged);
 
 	// Listen for events of the root node.
 	connect(&_rootNodeListener, SIGNAL(notificationEvent(ReferenceEvent*)), this, SLOT(onRootNodeNotificationEvent(ReferenceEvent*)));
@@ -68,7 +72,7 @@ QVariant SceneNodesListModel::data(const QModelIndex& index, int role) const
 /******************************************************************************
 * This is called when a new dataset has been loaded.
 ******************************************************************************/
-void SceneNodesListModel::onDataSetReset(DataSet* newDataSet)
+void SceneNodesListModel::onDataSetChanged(DataSet* newDataSet)
 {
 	beginResetModel();
 	_nodeListener.clear();
@@ -88,7 +92,7 @@ void SceneNodesListModel::onDataSetReset(DataSet* newDataSet)
 ******************************************************************************/
 void SceneNodesListModel::onRootNodeNotificationEvent(ReferenceEvent* event)
 {
-	onNodeNotificationEvent(DataSetManager::instance().currentSet()->sceneRoot(), event);
+	onNodeNotificationEvent(_rootNodeListener.target(), event);
 }
 
 /******************************************************************************
@@ -117,8 +121,8 @@ void SceneNodesListModel::onNodeNotificationEvent(RefTarget* source, ReferenceEv
 
 	// If a node is being removed from the scene, remove it from our internal list.
 	if(event->type() == ReferenceEvent::ReferenceRemoved) {
-		// Don't know how else to do this in a safe manner. To be sure, rebuild the entire model from scratch.
-		onDataSetReset(DataSetManager::instance().currentSet());
+		// Don't know how else to do this in a safe manner. Rebuild the entire model from scratch.
+		onDataSetChanged(_datasetContainer.currentSet());
 	}
 
 	// If a node is being renamed, let the model emit an update signal.

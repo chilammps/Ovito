@@ -27,9 +27,6 @@
 
 namespace Ovito {
 
-class RefMaker;						// defined in RefMaker.h
-class RefTarget;					// defined in RefTarget.h
-class ParameterUnit;				// defined in ParameterUnit.h
 class SingleReferenceFieldBase;		// defined in PropertyField.h
 class VectorReferenceFieldBase;		// defined in PropertyField.h
 

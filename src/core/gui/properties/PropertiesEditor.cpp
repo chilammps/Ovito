@@ -31,7 +31,7 @@ DEFINE_FLAGS_REFERENCE_FIELD(PropertiesEditor, _editObject, "EditObject", RefTar
 /******************************************************************************
 * The constructor.
 ******************************************************************************/
-PropertiesEditor::PropertiesEditor() : _container(nullptr)
+PropertiesEditor::PropertiesEditor() : RefMaker(nullptr), _container(nullptr)
 {
 	INIT_PROPERTY_FIELD(PropertiesEditor::_editObject);
 }

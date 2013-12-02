@@ -32,10 +32,6 @@
 
 namespace Ovito {
 
-class PropertiesEditor;		// defined in PropertiesEditor.h
-class PropertiesPanel;		// defined in PropertiesPanel.h
-class CloneHelper;			// defined in CloneHelper.h
-
 /**
  * \brief Base class for objects that are referenced by RefMaker objects.
  */

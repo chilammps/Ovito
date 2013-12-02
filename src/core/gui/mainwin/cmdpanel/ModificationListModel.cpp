@@ -24,8 +24,8 @@
 #include <core/scene/pipeline/PipelineObject.h>
 #include <core/scene/pipeline/Modifier.h>
 #include <core/scene/ObjectNode.h>
-#include <core/viewport/ViewportManager.h>
 #include <core/gui/actions/ActionManager.h>
+#include <core/dataset/DataSetContainer.h>
 #include "ModificationListModel.h"
 #include "ModifyCommandPage.h"
 
@@ -34,7 +34,8 @@ namespace Ovito {
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-ModificationListModel::ModificationListModel(QObject* parent) : QAbstractListModel(parent),
+ModificationListModel::ModificationListModel(DataSetContainer& datasetContainer, QObject* parent) : QAbstractListModel(parent),
+	_datasetContainer(datasetContainer),
 	_nextToSelectObject(nullptr), _needListUpdate(false),
 	_statusInfoIcon(":/core/mainwin/status/status_info.png"),
 	_statusWarningIcon(":/core/mainwin/status/status_warning.png"),
@@ -43,10 +44,10 @@ ModificationListModel::ModificationListModel(QObject* parent) : QAbstractListMod
 	_statusPendingIcon(":/core/mainwin/status/status_pending.gif"),
 	_sectionHeaderFont(QGuiApplication::font())
 {
-	connect(&_statusPendingIcon, SIGNAL(frameChanged(int)), this, SLOT(iconAnimationFrameChanged()));
+	connect(&_statusPendingIcon, &QMovie::frameChanged, this, &ModificationListModel::iconAnimationFrameChanged);
 	_selectionModel = new QItemSelectionModel(this);
-	connect(_selectionModel, SIGNAL(selectionChanged(const QItemSelection&, const QItemSelection&)), this, SIGNAL(selectedItemChanged()));
-	connect(&_selectedNodes, SIGNAL(notificationEvent(RefTarget*, ReferenceEvent*)), this, SLOT(onNodeEvent(RefTarget*, ReferenceEvent*)));
+	connect(_selectionModel, &QItemSelectionModel::selectionChanged, this, &ModificationListModel::selectedItemChanged);
+	connect(&_selectedNodes, &VectorRefTargetListener::notificationEvent, this, &ModificationListModel::onNodeEvent);
 	if(_sectionHeaderFont.pixelSize() < 0)
 		_sectionHeaderFont.setPointSize(_sectionHeaderFont.pointSize() * 4 / 5);
 	else
@@ -90,7 +91,6 @@ ModificationListItem* ModificationListModel::selectedItem() const
 void ModificationListModel::refreshList()
 {
 	_needListUpdate = false;
-	UndoSuspender noUndo;
 
 	// Determine the currently selected object and
 	// select it again after the list has been rebuilt (and it is still there).
@@ -107,7 +107,7 @@ void ModificationListModel::refreshList()
 	// Also check if all selected object nodes reference the same scene object.
 	_selectedNodes.clear();
     SceneObject* cmnObject = nullptr;
-	for(SceneNode* node : DataSetManager::instance().currentSelection()->nodes()) {
+	for(SceneNode* node : _datasetContainer.currentSelection()->nodes()) {
 		if(node->isObjectNode()) {
 			ObjectNode* objNode = static_object_cast<ObjectNode>(node);
 			_selectedNodes.push_back(objNode);
@@ -398,14 +398,14 @@ bool ModificationListModel::setData(const QModelIndex& index, const QVariant& va
 		ModificationListItem* item = this->item(index.row());
 		DisplayObject* displayObj = dynamic_object_cast<DisplayObject>(item->object());
 		if(displayObj) {
-			UndoableTransaction::handleExceptions(tr("Enable/disable display"), [displayObj, &value]() {
+			UndoableTransaction::handleExceptions(_datasetContainer.currentSet()->undoStack(), tr("Enable/disable display"), [displayObj, &value]() {
 				displayObj->setEnabled(value == Qt::Checked);
 			});
 		}
 		else {
 			Modifier* modifier = dynamic_object_cast<Modifier>(item->object());
 			if(modifier) {
-				UndoableTransaction::handleExceptions(tr("Enable/disable modifier"), [modifier, &value]() {
+				UndoableTransaction::handleExceptions(_datasetContainer.currentSet()->undoStack(), tr("Enable/disable modifier"), [modifier, &value]() {
 					modifier->setEnabled(value == Qt::Checked);
 				});
 			}
