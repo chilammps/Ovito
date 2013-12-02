@@ -5,6 +5,7 @@
 #include <core/viewport/Viewport.h>
 #include <core/gui/actions/ActionManager.h>
 #include <core/viewport/ViewportManager.h>
+#include <core/scene/pipeline/Modifier.h>
 
 namespace Scripting {
 
@@ -91,13 +92,25 @@ public Q_SLOTS:
 	QString pwd() const;
 
 	/**
-	 * \biref Set the working directory.
+	 * \brief Set the working directory.
 	 */
 	void cd(QString newdir);
 
+	/**
+	 * \brief Quit OVITO without asking.
+	 * \todo It's still asking.
+	 */
 	void quit() {
 		ActionManager::instance().invokeAction(ACTION_QUIT);
 	}
+
+	/**
+	 * \brief Create new modifier.
+	 * \todo Take an optional argument that is a JavaScript object, to
+	 *       set the properties of the modifier before returning it.
+	 */
+	OORef<Modifier> modifierFactory(const QString& name);
+
 private:
 	Q_OBJECT
 };

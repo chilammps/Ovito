@@ -25,6 +25,7 @@
 #include <QString>
 #include <QJSEngine>
 
+#include <plugins/particles/modifier/slice/SliceModifier.h>  
 #include "../bindings/ScriptBindings.h"
 
 namespace Scripting {
@@ -91,12 +92,6 @@ void ScriptingApplet::runScript()
 
 	// Set up namespace.
 
-	/*
-	Viewport* activeViewport = ViewportManager::instance().activeViewport();
-	ViewportBinding avp(activeViewport);
-	QJSValue avp_val = engine.newQObject(&avp);
-	engine.globalObject().setProperty("activeViewport", avp_val);
-	*/
 	ActiveViewportBinding avp;
 	QJSValue avp_val = engine.newQObject(&avp);
 	engine.globalObject().setProperty("activeViewport", avp_val);
@@ -112,6 +107,10 @@ void ScriptingApplet::runScript()
 	OvitoBinding o;
 	QJSValue o_val = engine.newQObject(&o);
 	engine.globalObject().setProperty("Ovito", o_val);
+
+	Particles::SliceModifier s;
+	QJSValue s_val = engine.newQObject(&s);
+	engine.globalObject().setProperty("_slice", s_val);
 
 	// Evaluate.
 	QJSValue result = engine.evaluate(_editor->toPlainText());
