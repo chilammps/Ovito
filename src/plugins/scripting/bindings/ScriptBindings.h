@@ -35,8 +35,18 @@ public Q_SLOTS:
 	 */
 	void restore();
 
+	/**
+	 * \brief Set as active viewport.
+	 */
+	void setActive() const;
+
+	/**
+	 * \brief Render this viewport.
+	 */
+	void render(const QString& filename) const;
+
 protected:
-	virtual Viewport* getViewport() { return viewport_; };
+	virtual Viewport* getViewport() const { return viewport_; };
 private:
 	Viewport* viewport_;
 
@@ -51,7 +61,7 @@ public:
 	{}
 
 private:
-	Viewport* getViewport() override {
+	Viewport* getViewport() const override {
 		return ViewportManager::instance().activeViewport();
 	}
 };

@@ -5,6 +5,11 @@
 #include <base/utilities/FloatType.h>
 #include <core/dataset/DataSetManager.h>
 #include <core/dataset/importexport/FileImporter.h>
+#include <core/gui/app/Application.h>
+#include <core/gui/mainwin/MainWindow.h>
+#include <core/gui/widgets/rendering/FrameBufferWindow.h>
+#include <core/rendering/RenderSettings.h>
+#include <core/rendering/standard/StandardSceneRenderer.h>
 
 namespace Scripting {
 
@@ -53,6 +58,41 @@ void ViewportBinding::restore() {
 	ViewportManager::instance().setMaximizedViewport(nullptr);
 }
 
+void ViewportBinding::setActive() const {
+	ViewportManager::instance().setActiveViewport(getViewport());
+}
+
+
+void ViewportBinding::render(const QString& filename) const {
+	// TODO: exception handling!
+
+	// Prepare settings.
+	RenderSettings settings;
+	settings.setRendererClass(&StandardSceneRenderer::OOType);
+	settings.setRenderingRangeType(RenderSettings::CURRENT_FRAME);
+	settings.setOutputImageWidth(800);
+	settings.setOutputImageHeight(600);
+	settings.setImageFilename(filename);
+	settings.setSaveToFile(true);
+	settings.setSkipExistingImages(false);
+
+	// Prepare framebuffer.
+	FrameBufferWindow* frameBufferWindow = nullptr;
+	QSharedPointer<FrameBuffer> frameBuffer;
+	if(Application::instance().guiMode()) {
+		frameBufferWindow = MainWindow::instance().frameBufferWindow();
+		frameBuffer = frameBufferWindow->frameBuffer();
+	}
+	if(!frameBuffer)
+		frameBuffer.reset(new FrameBuffer(settings.outputImageWidth(),
+										  settings.outputImageHeight()));
+
+	// Render.
+	DataSetManager::instance().currentSet()->renderScene(&settings,
+														 getViewport(),
+														 frameBuffer,
+														 frameBufferWindow);
+}
 
 
 
