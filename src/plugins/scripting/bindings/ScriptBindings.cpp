@@ -98,44 +98,81 @@ void ViewportBinding::render(const QString& filename) const {
 }
 
 
+DataSetBinding::DataSetBinding(SelectionSet* dataSet, QObject* parent)
+	: QObject(parent), dataSet_(dataSet),
+	  object_(static_cast<ObjectNode*>(dataSet->firstNode()))
+	  // TODO ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ good way to do it??????   
+{}
 
-void OvitoBinding::loadFile(const QString& path) {
-	// TODO: exception handling!
-	DataSetManager::instance().importFile(QUrl::fromLocalFile(path),
-										  nullptr,
-										  FileImporter::AddToScene);
-}
-
-QString OvitoBinding::pwd() const {
-	return QDir::currentPath();
-}
-
-void OvitoBinding::cd(QString newdir) {
-	const bool success = QDir::setCurrent(newdir);
-	if (!success)
-		// TODO: JS exception
-		throw Exception("Could not cd to " + newdir);
-}
-
-Modifier* OvitoBinding::modifierFactory(const QString& name) const {
-	const OvitoObjectType* searchResultClass = nullptr;
-	Q_FOREACH(const OvitoObjectType* clazz,
-			  PluginManager::instance().listClasses(Modifier::OOType)) {
-		if (clazz->name() == name) {
-			searchResultClass = clazz;
-			break;
+#include <iostream>
+void DataSetBinding::appendModifier(const QScriptValue& modifier) {
+	QScriptEngine* engine = modifier.engine();
+	QScriptContext* context = engine->currentContext();
+	try {
+		QObject* data = modifier.data().toQObject();
+		if (data == nullptr) {
+			context->throwError("Not a valid modifier");
+			return;
 		}
-	}
-	if (searchResultClass == nullptr)
-		return nullptr;
-	else {
-		OORef<Modifier> ref =
-			static_object_cast<Modifier>(searchResultClass->createInstance());
-		Modifier* retval;
-		ref.reset(retval);
-		return retval;
+		// TODO: this cast is not necessarily safe.   
+		ScriptRef<Modifier> modWrapper = *dynamic_cast<ScriptRef<Modifier>*>(data);
+		OORef<Modifier> mod = modWrapper.getReference();
+		// TODO: object_ doesn't take ownership of the OORef for some reason!?    
+		object_->applyModifier(mod);
+	} catch (const Exception& e) {
+		context->throwError(QString("Not a valid modifier (error: ") + e.what() + ")");
 	}
 }
+
+
+QScriptValue pwd(QScriptContext* context, QScriptEngine* engine) {
+	// Process arguments.
+	if (context->argumentCount() != 0)
+		return context->throwError("This function takes no arguments.");
+	// Return.
+	return QScriptValue(QDir::currentPath());
+}
+
+QScriptValue cd(QScriptContext* context, QScriptEngine* engine) {
+	// Process arguments.
+	if (context->argumentCount() != 1)
+		return context->throwError("This function takes one argument.");
+	const QString newdir = context->argument(0).toString();
+
+	// Change dir.
+	const bool success = QDir::setCurrent(newdir);
+	if (success)
+		return QScriptValue(QDir::currentPath());
+	else
+		return context->throwError("Can't change directory to " + newdir);
+}
+
+QScriptValue loadFile(QScriptContext* context, QScriptEngine* engine) {
+	// Process arguments.
+	if (context->argumentCount() != 1)
+		return context->throwError("This function takes one argument.");
+	const QString path = context->argument(0).toString();
+
+	// Load it.
+	try {
+		DataSetManager::instance().importFile(QUrl::fromLocalFile(path),
+											  nullptr,
+											  FileImporter::AddToScene);
+	} catch (const Exception& e) {
+		return context->throwError(e.what());
+	}
+
+	// Return wrapper around the dataset representing the current file.
+	// TODO: this is racy, perhaps? Is the new file guaranteed to be     
+ 	// the active selection?                                             
+	SelectionSet* dataSet = DataSetManager::instance().currentSelection();
+	return engine->newQObject(new DataSetBinding(dataSet),
+							  QScriptEngine::ScriptOwnership);
+}
+
+
+
+
 
 QScriptValue listModifiers(QScriptContext* context, QScriptEngine* engine) {
 	// Process arguments.
@@ -206,6 +243,18 @@ QScriptEngine* prepareEngine(QObject* parent) {
 	QScriptValue ovito = engine->newQObject(new OvitoBinding(),
 										   QScriptEngine::ScriptOwnership);
 	engine->globalObject().setProperty("ovito", ovito);
+
+	// pwd function.
+	engine->globalObject().setProperty("pwd",
+									   engine->newFunction(pwd, 0));
+
+	// cd function.
+	engine->globalObject().setProperty("cd",
+									   engine->newFunction(cd, 0));
+
+	// loadFile function.
+	engine->globalObject().setProperty("loadFile",
+									   engine->newFunction(loadFile, 0));
 
 	// listModifiers function.
 	engine->globalObject().setProperty("listModifiers",

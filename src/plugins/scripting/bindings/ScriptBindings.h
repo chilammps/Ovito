@@ -9,6 +9,7 @@
 #include <core/gui/actions/ActionManager.h>
 #include <core/viewport/ViewportManager.h>
 #include <core/scene/pipeline/Modifier.h>
+#include <core/dataset/DataSet.h>
 
 namespace Scripting {
 
@@ -20,7 +21,9 @@ using namespace Ovito;
 template<typename T>
 class ScriptRef : public QObject {
 public:
-	ScriptRef(OORef<T> ref) : ref_(ref) {}
+	explicit ScriptRef(const OORef<T>& ref) : ref_(ref) {}
+	ScriptRef(const ScriptRef<T>& ref) : ref_(ref.ref_) {}
+	OORef<T> getReference() { return ref_; }
 
 private:
 	OORef<T> ref_;
@@ -99,6 +102,21 @@ private:
 };
 
 
+class DataSetBinding : public QObject {
+public:
+	DataSetBinding(SelectionSet* dataSet, QObject* parent = 0);
+
+public Q_SLOTS:
+	void appendModifier(const QScriptValue& modifier);
+
+private:
+	SelectionSet* dataSet_;
+	ObjectNode* object_;
+
+	Q_OBJECT
+};
+
+
 /**
  * \brief Main interface.
  */
@@ -108,44 +126,24 @@ public:
 
 public Q_SLOTS:
 	/**
-	 * \brief Import file.
-	 *
-	 * \todo Return a data object wrapper that can be used to add
-	 * modifiers etc.
-	 *
-	 * \todo Optionally allow giving the file type.
-	 */
-	void loadFile(const QString& path);
-
-	/**
-	 * \brief Return current working directory.
-	 */
-	QString pwd() const;
-
-	/**
-	 * \brief Set the working directory.
-	 */
-	void cd(QString newdir);
-
-	/**
 	 * \brief Quit OVITO without asking.
 	 * \todo It's still asking.
 	 */
 	void quit() {
 		ActionManager::instance().invokeAction(ACTION_QUIT);
 	}
-
-	/**
-	 * \brief Create new modifier.
-	 * \todo Take an optional argument that is a JavaScript object, to
-	 *       set the properties of the modifier before returning it.
-	 */
-	Modifier* modifierFactory(const QString& name) const;
-
 private:
 	Q_OBJECT
 };
 
+/// Return current working directory.
+QScriptValue pwd(QScriptContext* context, QScriptEngine* engine);
+
+/// Change current working directory and return it.
+QScriptValue cd(QScriptContext* context, QScriptEngine* engine);
+
+/// Import file.
+QScriptValue loadFile(QScriptContext* context, QScriptEngine* engine);
 
 QScriptValue listModifiers(QScriptContext* context, QScriptEngine* engine);
 

@@ -53,7 +53,7 @@ void ScriptingApplet::openUtility(RolloutContainer* container, const RolloutInse
 
 	// Create code editor widget.
 	_editor = new CodeEdit(_panel);
-	_editor->setPlainText(QStringLiteral("1+2"));
+	_editor->setPlainText(QStringLiteral("box=loadFile(\"foo.data\"); m=modifier(\"SliceModifier\"); box.appendModifier(\"m\");"));
 	connect(_editor, &CodeEdit::ctrlEnterPressed,
 			this, &ScriptingApplet::runScript);
 	layout->addWidget(_editor, 1);
