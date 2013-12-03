@@ -244,6 +244,9 @@ inline OORef<T> static_object_cast(const OORef<U>& obj) {
 
 };	// End of namespace Ovito
 
+Q_DECLARE_METATYPE(Ovito::OORef<Ovito::OvitoObject>);
+Q_DECLARE_TYPEINFO(Ovito::OORef<Ovito::OvitoObject>, Q_MOVABLE_TYPE);
+
 #include <core/utilities/io/ObjectSaveStream.h>
 #include <core/utilities/io/ObjectLoadStream.h>
 
