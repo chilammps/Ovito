@@ -212,7 +212,7 @@ inline T* static_object_cast(U* obj) {
 	return static_cast<T*>(obj);
 }
 
-/// \brief Static casting function for PluginClass derived object.
+/// \brief Static casting function for OvitoObject derived object.
 ///
 /// Returns the given object cast to type \c T.
 /// Performs a runtime check of the object type in debug build.
@@ -232,7 +232,7 @@ inline OORef<T> dynamic_object_cast(const OORef<U>& obj) {
 	return OORef<T>(qobject_cast<T*>(obj.get()));
 }
 
-/// \brief Static casting function for smart pointers to PluginClass derived objects.
+/// \brief Static casting function for smart pointers to OvitoObject derived objects.
 ///
 /// Returns the given object cast to type \c T.
 /// Performs a runtime check of the object type in debug build.

@@ -50,7 +50,7 @@ public:
 	/// \brief Destructor.
 	/// \note The destructor must clear all references since this UI object
 	///       might have been deleted via the delete operator and not via
-	///       the OvitoObject::autoDeleteObject() method which should normally be used for PluginClass derived classes.
+	///       the OvitoObject::autoDeleteObject() method which should normally be used for OvitoObject derived classes.
 	virtual ~ParameterUI() { clearAllReferences(); }	
 	
 	/// \brief Gets the object whose parameter is being edited/shown in this parameter UI.

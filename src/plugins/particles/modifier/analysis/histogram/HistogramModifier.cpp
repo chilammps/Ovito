@@ -379,7 +379,7 @@ void HistogramModifierEditor::createUI(const RolloutInsertionParameters& rollout
 	connect(selectInRangeUI->checkBox(), SIGNAL(toggled(bool)), selRangeEndPUI, SLOT(setEnabled(bool)));
 
 	// Axes.
-	QGroupBox* axesBox = new QGroupBox(tr("Axes"), rollout);
+	QGroupBox* axesBox = new QGroupBox(tr("Plot axes"), rollout);
 	QVBoxLayout* axesSublayout = new QVBoxLayout(axesBox);
 	axesSublayout->setContentsMargins(4,4,4,4);
 	layout->addWidget(axesBox);

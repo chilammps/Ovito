@@ -231,15 +231,15 @@ public:
 	/// \brief Returns the value stored in a non-animatable property field of this RefMaker object.
 	/// \param field The descriptor of a property field defined by this RefMaker derived class.
 	/// \return The current value of the property field.
-	/// \sa PluginClassDescriptor::firstPropertyField()
-	/// \sa PluginClassDescriptor::findPropertyField()
+	/// \sa OvitoObjectType::firstPropertyField()
+	/// \sa OvitoObjectType::findPropertyField()
 	QVariant getPropertyFieldValue(const PropertyFieldDescriptor& field) const;
 
 	/// \brief Sets the value stored in a non-animatable property field of this RefMaker object.
 	/// \param field The descriptor of a property field defined by this RefMaker derived class.
 	/// \param newValue The value to be assigned to the property. The QVariant data type must match the property data type.
-	/// \sa PluginClassDescriptor::firstPropertyField()
-	/// \sa PluginClassDescriptor::findPropertyField()
+	/// \sa OvitoObjectType::firstPropertyField()
+	/// \sa OvitoObjectType::findPropertyField()
 	void setPropertyFieldValue(const PropertyFieldDescriptor& field, const QVariant& newValue);
 
 	/////////////////////////// Runtime reference field access //////////////////////////////
@@ -248,16 +248,16 @@ public:
 	/// \param field The descriptor of a reference field defined in this RefMaker derived class.
 	/// \return The field object for this RefMaker instance and the specified field.
 	/// \sa getVectorReferenceField()
-	/// \sa PluginClassDescriptor::firstPropertyField()
-	/// \sa PluginClassDescriptor::findPropertyField()
+	/// \sa OvitoObjectType::firstPropertyField()
+	/// \sa OvitoObjectType::findPropertyField()
 	const SingleReferenceFieldBase& getReferenceField(const PropertyFieldDescriptor& field) const;
 
 	/// \brief Looks up a vector reference field.
 	/// \param field The descriptor of a vector reference field defined in this RefMaker derived class.
 	/// \return The field object for this RefMaker instance and the specified vector field.
 	/// \sa getReferenceField()
-	/// \sa PluginClassDescriptor::firstPropertyField()
-	/// \sa PluginClassDescriptor::findPropertyField()
+	/// \sa OvitoObjectType::firstPropertyField()
+	/// \sa OvitoObjectType::findPropertyField()
 	const VectorReferenceFieldBase& getVectorReferenceField(const PropertyFieldDescriptor& field) const;
 
 	////////////////////////////// Dependencies //////////////////////////////////
@@ -282,7 +282,7 @@ public:
 	/// \note The returned list is gathered recursively.
 	QSet<RefTarget*> getAllDependencies() const;
 
-	///////////////////////////// from PluginClass ///////////////////////////////
+	///////////////////////////// from OvitoObject ///////////////////////////////
 
 	/// \brief Deletes this object.
 	///
