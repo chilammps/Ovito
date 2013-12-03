@@ -66,26 +66,6 @@ OORef<OvitoObject> OvitoObjectType::createInstance() const
 	return createInstanceImpl();
 }
 
-OvitoObject* OvitoObjectType::createInstancePtr() const
-{
-	if(plugin()) {
-		OVITO_CHECK_POINTER(plugin());
-		if(!plugin()->isLoaded()) {
-			// Load plugin first.
-			try {
-				plugin()->loadPlugin();
-			}
-			catch(Exception& ex) {
-				throw ex.prependGeneralMessage(Plugin::tr("Could not create instance of class %1. Failed to load plugin '%2'").arg(name()).arg(plugin()->pluginId()));
-			}
-		}
-	}
-	if(isAbstract())
-		throw Exception(Plugin::tr("Cannot instantiate abstract class '%1'.").arg(name()));
-
-	return createInstanceImpl();
-}
-
 /******************************************************************************
 * Writes a class descriptor to the stream. This is for internal use of the core only.
 ******************************************************************************/

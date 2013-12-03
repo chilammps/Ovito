@@ -174,13 +174,49 @@ QScriptValue modifier(QScriptContext* context, QScriptEngine* engine) {
 	if (searchResultClass == nullptr)
 		return context->throwError("Modifier " + name + " not found.");
 	else {
-		// TODO: this doesn't work because the API returns OORef which
-		// is something like a shared_ptr instead of something
-		// resembling unique_ptr!
-		Modifier* retval =
-			static_cast<Modifier*>(searchResultClass->createInstancePtr());
-		engine->newQObject(retval);
+		// Get instance of modifier.
+		OORef<Modifier> ptr =
+			static_object_cast<Modifier>(searchResultClass->createInstance());
+		return wrapOORef<Modifier>(ptr, engine);
 	}
+}
+
+QScriptEngine* prepareEngine(QObject* parent) {
+	// Set up engine.
+	QScriptEngine* engine = new QScriptEngine(parent);
+
+	// Set up namespace. ///////////////////////////////////////////////
+
+	// Active viewport
+	QScriptValue activeViewport =
+		engine->newQObject(new ActiveViewportBinding(),
+						   QScriptEngine::ScriptOwnership);
+	engine->globalObject().setProperty("activeViewport", activeViewport);
+
+	// All viewports.
+	const QVector<Viewport*>& allViewports =
+		ViewportManager::instance().viewports();
+	QScriptValue viewport = engine->newArray(allViewports.size());
+	for (int i = 0; i != allViewports.size(); ++i)
+		viewport.setProperty(i, engine->newQObject(new ViewportBinding(allViewports[i]),
+												   QScriptEngine::ScriptOwnership));
+	engine->globalObject().setProperty("viewport", viewport);
+
+	// The global Ovito object.
+	QScriptValue ovito = engine->newQObject(new OvitoBinding(),
+										   QScriptEngine::ScriptOwnership);
+	engine->globalObject().setProperty("ovito", ovito);
+
+	// listModifiers function.
+	engine->globalObject().setProperty("listModifiers",
+									   engine->newFunction(listModifiers, 0));
+
+	// modifiers function.
+	engine->globalObject().setProperty("modifier",
+									   engine->newFunction(modifier, 1));
+
+	// Done.
+	return engine;
 }
 
 

@@ -16,20 +16,31 @@ using namespace Ovito;
 
 /**
  * \brief QObject based wrapper around OORef.
- *
- * Will expose all properties of the pointee.
  */
 template<typename T>
 class ScriptRef : public QObject {
 public:
-	ScriptRef(OORef<T> ref) : ref_(ref) {
-		// Export all properties of the pointee.
-		//GEHT NICHT
-	}
+	ScriptRef(OORef<T> ref) : ref_(ref) {}
 
 private:
 	OORef<T> ref_;
 };
+
+template<typename T>
+QScriptValue wrapOORef(OORef<T> ptr, QScriptEngine* engine) {
+	// Create script value that will never be deleted, because
+	// memory is managed by the smart pointer "ptr".
+	QScriptValue retval = engine->newQObject(ptr.get(),
+											 QScriptEngine::QtOwnership);
+	// Add the smart pointer in 'data', it will be deleted when
+	// the script doesn't need it anymore, so that we don't leak
+	// memory.
+	QScriptValue ref = engine->newQObject(new ScriptRef<T>(ptr),
+										  QScriptEngine::ScriptOwnership);
+	retval.setData(ref);
+	// Done.
+	return retval;
+}
 
 /**
  * \brief Scripting interface to the viewports.
@@ -139,6 +150,13 @@ private:
 QScriptValue listModifiers(QScriptContext* context, QScriptEngine* engine);
 
 QScriptValue modifier(QScriptContext* context, QScriptEngine* engine);
+
+
+
+/**
+ * \brief Create a script engine that is already filled with global objects.
+ */
+QScriptEngine* prepareEngine(QObject* parent = 0);
 
 
 }

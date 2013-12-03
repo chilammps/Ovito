@@ -88,7 +88,7 @@ protected:
 	/// \brief Creates an instance of the class described by this descriptor.
 	/// \return The new instance of the class. The pointer can safely be cast to the appropriate C++ class type.
 	/// \throw Exception if the instance could not be created.
-	virtual OvitoObject* createInstanceImpl() const override;
+	virtual OORef<OvitoObject> createInstanceImpl() const override;
 
 private:
 

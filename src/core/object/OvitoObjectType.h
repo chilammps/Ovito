@@ -95,13 +95,6 @@ public:
 	/// \throw Exception if a plugin failed to load or the instantiation failed for some other reason.
 	OORef<OvitoObject> createInstance() const;
 
-	/// \brief Creates an instance of the OvitoObject-derived class.
-        /// This returns a vanilla C++ pointer.
-        /// \todo This is not very nice, rather use something like C++11's unique_ptr!
-	/// \return The new instance of the class. The pointer can safely be cast to the appropriate C++ class type.
-	/// \throw Exception if a plugin failed to load or the instantiation failed for some other reason.
-	OvitoObject* createInstancePtr() const;
-
 	/// \brief Returns the first element of the linked list of reference fields defined for this class if it is a RefMaker derived class.
 	const PropertyFieldDescriptor* firstPropertyField() const { return _firstPropertyField; }
 
@@ -156,7 +149,7 @@ protected:
 	/// \brief Creates an instance of the class described by this meta object.
 	/// \return The new instance of the class. The pointer can safely be cast to the C++ class type.
 	/// \throw Exception if the instance could not be created.
-	virtual OvitoObject* createInstanceImpl() const = 0;
+	virtual OORef<OvitoObject> createInstanceImpl() const = 0;
 
 protected:
 

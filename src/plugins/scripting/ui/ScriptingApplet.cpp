@@ -89,44 +89,14 @@ void ScriptingApplet::closeUtility(RolloutContainer* container)
 void ScriptingApplet::runScript()
 {
 	// Set up engine.
-	QScriptEngine engine;
-
-	// Set up namespace.
-
-	ActiveViewportBinding avp;
-	QScriptValue avp_val = engine.newQObject(&avp);
-	engine.globalObject().setProperty("activeViewport", avp_val);
-
-	const QVector<Viewport*>& all_viewports = ViewportManager::instance().viewports();
-	QScriptValue all_vp = engine.newArray(all_viewports.size());
-	for (int i = 0; i != all_viewports.size(); ++i) {
-		QScriptValue v = engine.newQObject(new ViewportBinding(all_viewports[i], &avp));
-		all_vp.setProperty(i, v);
-	}
-	engine.globalObject().setProperty("viewport", all_vp);
-
-	OvitoBinding o;
-	QScriptValue o_val = engine.newQObject(&o);
-	engine.globalObject().setProperty("Ovito", o_val);
-
-	/*
-	Particles::SliceModifier s;
-	QScriptValue s_val = engine.newQObject(&s);
-	engine.globalObject().setProperty("_slice", s_val);
-	*/
-
-	QScriptValue lm_val = engine.newFunction(listModifiers, 0);
-	engine.globalObject().setProperty("listModifiers", lm_val);
-
-	QScriptValue m_val = engine.newFunction(modifier, 1);
-	engine.globalObject().setProperty("modifier", m_val);
+	QObject parent; // <- for memory management.
+	QScriptEngine* engine = prepareEngine(&parent);
 
 	// Evaluate.
-	QScriptValue result = engine.evaluate(_editor->toPlainText());
+	QScriptValue result = engine->evaluate(_editor->toPlainText());
 	if(result.isError()) {
 		_output->setStyleSheet("QLabel { color: red; }");
 		_output->setText(result.toString());
-		//Exception(result.toString()).showError();
 	} else {
 		_output->setStyleSheet("QLabel { }");
 		_output->setText(result.toString());
