@@ -27,8 +27,6 @@
 #include <core/animation/AnimationSettings.h>
 #include <core/viewport/ViewportConfiguration.h>
 #include <core/gui/mainwin/MainWindow.h>
-#include <core/utilities/concurrent/Task.h>
-#include <core/utilities/concurrent/ProgressManager.h>
 #include <core/utilities/io/FileManager.h>
 #include "LinkedFileImporter.h"
 #include "LinkedFileObject.h"
@@ -311,7 +309,7 @@ Future<QVector<LinkedFileImporter::FrameSourceInformation>> LinkedFileImporter::
 
 			// Retrieve list of files in remote directory.
 			Future<QStringList> fileListFuture = FileManager::instance().listDirectoryContents(directoryUrl);
-			if(!ProgressManager::instance().waitForTask(fileListFuture))
+			if(!dataSet()->container()->taskManager().waitForTask(fileListFuture))
 				return Future<QVector<FrameSourceInformation>>::createCanceled();
 
 			// Filter file names.
@@ -393,17 +391,17 @@ bool LinkedFileImporter::matchesWildcardPattern(const QString& pattern, const QS
 Future<LinkedFileImporter::ImportTaskPtr> LinkedFileImporter::load(const LinkedFileImporter::FrameSourceInformation& frame)
 {
 	ImportTaskPtr importTask = createImportTask(frame);
+	DataSetContainer& container = *dataSet()->container();
 
-	return runInBackground<ImportTaskPtr>(
-			[importTask] (FutureInterface<LinkedFileImporter::ImportTaskPtr>& futureInterface) {
+	return container.taskManager().runInBackground<ImportTaskPtr>(
+			[importTask, &container] (FutureInterface<LinkedFileImporter::ImportTaskPtr>& futureInterface) {
 
 		// Run the task
-		importTask->load(futureInterface);
+		importTask->load(container, futureInterface);
 
 		// Return the importer task object as the result.
 		if(!futureInterface.isCanceled())
 			futureInterface.setResult(importTask);
-
 	});
 }
 

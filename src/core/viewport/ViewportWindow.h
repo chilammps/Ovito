@@ -102,6 +102,9 @@ private:
 	/// The OpenGL debug logger that receives log messages from the OpenGL server.
 	QOpenGLDebugLogger* _oglDebugLogger;
 
+	/// The parent window of this viewport window.
+	MainWindow* _mainWindow;
+
 private:
 
 	Q_OBJECT

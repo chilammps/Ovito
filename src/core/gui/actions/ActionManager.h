@@ -140,7 +140,7 @@ public:
 	/// \param actionId The unique identifier string of the action to return.
 	QAction* getAction(const QString& actionId) const {
 		QAction* action = findAction(actionId);
-		OVITO_ASSERT_MSG(action != NULL, "ActionManager::getAction()", "Action does not exist.");
+		OVITO_ASSERT_MSG(action != nullptr, "ActionManager::getAction()", "Action does not exist.");
 		return action;
 	}
 
@@ -156,15 +156,15 @@ public:
 	/// \brief Creates and registers a new command action with the ActionManager.
 	QAction* createCommandAction(const QString& id,
 						const QString& title,
-						const char* iconPath = NULL,
+						const char* iconPath = nullptr,
 						const QString& statusTip = QString(),
 						const QKeySequence& shortcut = QKeySequence());
 
 	/// \brief Creates and registers a new action with the ActionManager.
 	QAction* createViewportModeAction(const QString& id,
-						const OORef<ViewportInputHandler>& inputHandler,
+						ViewportInputMode* inputHandler,
 						const QString& title,
-						const char* iconPath = NULL,
+						const char* iconPath = nullptr,
 						const QString& statusTip = QString(),
 						const QKeySequence& shortcut = QKeySequence());
 

@@ -44,7 +44,6 @@ SubObjectParameterUI::SubObjectParameterUI(QObject* parentEditor, const Property
 void SubObjectParameterUI::resetUI()
 {
 	PropertyParameterUI::resetUI();
-	UndoSuspender noUndo;
 	
 	try {
 

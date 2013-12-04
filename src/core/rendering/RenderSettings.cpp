@@ -79,7 +79,7 @@ RenderSettings::RenderSettings(DataSet* dataset) : RefTarget(dataset),
 	INIT_PROPERTY_FIELD(RenderSettings::_fileNumberBase);
 
 	// Setup default background color.
-	_backgroundColor = ControllerManager::instance().createDefaultController<VectorController>();
+	_backgroundColor = ControllerManager::instance().createDefaultController<VectorController>(dataset);
 	setBackgroundColor(Color(1,1,1));
 
 	// Create an instance of the default renderer class.
@@ -105,10 +105,7 @@ void RenderSettings::setRendererClass(const OvitoObjectType* rendererClass)
 	OVITO_ASSERT(rendererClass->isDerivedFrom(SceneRenderer::OOType));
 	
 	// Create a new instance of the specified class.
-	OORef<SceneRenderer> newRenderer = static_object_cast<SceneRenderer>(rendererClass->createInstance());
-	
-	// Make the new renderer the current renderer.
-	_renderer = newRenderer;
+	_renderer = static_object_cast<SceneRenderer>(rendererClass->createInstance(dataSet()));
 }
 
 /******************************************************************************

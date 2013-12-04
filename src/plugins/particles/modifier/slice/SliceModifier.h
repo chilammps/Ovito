@@ -24,7 +24,7 @@
 
 #include <plugins/particles/Particles.h>
 #include <core/animation/controller/Controller.h>
-#include <core/viewport/input/ViewportInputHandler.h>
+#include <core/viewport/input/ViewportInputMode.h>
 #include <core/viewport/input/ViewportInputManager.h>
 #include <core/gui/actions/ViewportModeAction.h>
 #include <plugins/particles/util/ParticlePickingHelper.h>
@@ -181,7 +181,7 @@ class SliceModifierEditor;
 * The viewport input mode that lets the user select three particles
 * to define the slicing plane.
 ******************************************************************************/
-class PickParticlePlaneInputMode : public ViewportInputHandler, ParticlePickingHelper
+class PickParticlePlaneInputMode : public ViewportInputMode, ParticlePickingHelper
 {
 public:
 
@@ -189,7 +189,7 @@ public:
 	PickParticlePlaneInputMode(SliceModifierEditor* editor) : _editor(editor) {}
 
 	/// Returns the activation behavior of this input handler.
-	virtual InputHandlerType handlerType() override { return ViewportInputHandler::NORMAL; }
+	virtual InputHandlerType handlerType() override { return ViewportInputMode::NORMAL; }
 
 	/// Handles the mouse events for a Viewport.
 	virtual void mouseReleaseEvent(Viewport* vp, QMouseEvent* event) override;

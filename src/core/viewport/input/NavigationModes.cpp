@@ -21,14 +21,13 @@
 
 #include <core/Core.h>
 #include <core/viewport/Viewport.h>
-#include <core/viewport/ViewportManager.h>
 #include <core/viewport/input/ViewportInputManager.h>
 #include <core/viewport/input/NavigationModes.h>
 #include <core/viewport/ViewportSettings.h>
-#include <core/dataset/DataSetManager.h>
-#include <core/animation/AnimManager.h>
+#include <core/animation/AnimationSettings.h>
 #include <core/rendering/viewport/ViewportSceneRenderer.h>
 #include <core/scene/objects/camera/AbstractCameraObject.h>
+#include <core/scene/SceneRoot.h>
 #include <core/gui/mainwin/MainWindow.h>
 #include <core/dataset/UndoStack.h>
 
@@ -40,9 +39,6 @@ NavigationMode::OrbitCenterMode NavigationMode::_orbitCenterMode = NavigationMod
 // The user-defined orbiting center.
 Point3 NavigationMode::_userOrbitCenter = Point3::Origin();
 
-// The geometry buffer used to render the orbit center.
-OORef<ArrowGeometryBuffer> NavigationMode::_orbitCenterMarker;
-
 /******************************************************************************
 * This is called by the system after the input handler is
 * no longer the active handler.
@@ -53,13 +49,10 @@ void NavigationMode::deactivated()
 		// Restore old settings.
 		_viewport->setCameraTransformation(_oldCameraTM);
 		_viewport->setFieldOfView(_oldFieldOfView);
+		_viewport->dataSet()->undoStack().endCompoundOperation(false);
 		_viewport = nullptr;
-
-		OVITO_ASSERT(UndoManager::instance().isRecording());
-		UndoManager::instance().currentCompoundOperation()->clear();
-		UndoManager::instance().endCompoundOperation();
 	}
-	ViewportInputHandler::deactivated();
+	ViewportInputMode::deactivated();
 }
 
 /******************************************************************************
@@ -67,8 +60,8 @@ void NavigationMode::deactivated()
 ******************************************************************************/
 void NavigationMode::mousePressEvent(Viewport* vp, QMouseEvent* event)
 {
-	if(event->button() == Qt::RightButton && ViewportInputManager::instance().currentHandler() == this) {
-		ViewportInputHandler::mousePressEvent(vp, event);
+	if(event->button() == Qt::RightButton && isActive()) {
+		ViewportInputMode::mousePressEvent(vp, event);
 		return;
 	}
 
@@ -82,7 +75,7 @@ void NavigationMode::mousePressEvent(Viewport* vp, QMouseEvent* event)
 		_oldViewMatrix = vp->viewMatrix();
 		_oldInverseViewMatrix = vp->inverseViewMatrix();
 		_currentOrbitCenter = orbitCenter();
-		UndoManager::instance().beginCompoundOperation(tr("Modify camera"));
+		_viewport->dataSet()->undoStack().beginCompoundOperation(tr("Modify camera"));
 	}
 }
 
@@ -92,9 +85,8 @@ void NavigationMode::mousePressEvent(Viewport* vp, QMouseEvent* event)
 void NavigationMode::mouseReleaseEvent(Viewport* vp, QMouseEvent* event)
 {
 	if(_viewport) {
+		_viewport->dataSet()->undoStack().endCompoundOperation();
 		_viewport = nullptr;
-		OVITO_ASSERT(UndoManager::instance().isRecording());
-		UndoManager::instance().endCompoundOperation();
 	}
 }
 
@@ -113,11 +105,11 @@ void NavigationMode::mouseMoveEvent(Viewport* vp, QMouseEvent* event)
 		QPointF pos = event->localPos();
 #endif
 
-		UndoManager::instance().currentCompoundOperation()->clear();
+		vp->dataSet()->undoStack().resetCurrentCompoundOperation();
 		modifyView(vp, pos - _startPoint);
 
-		// Force immediate viewport update.
-		ViewportManager::instance().processViewportUpdates();
+		// Force immediate viewport repaint.
+		vp->dataSet()->mainWindow()->processViewportUpdates();
 	}
 }
 
@@ -128,7 +120,6 @@ void NavigationMode::setOrbitCenterMode(NavigationMode::OrbitCenterMode mode)
 {
 	if(_orbitCenterMode == mode) return;
 	_orbitCenterMode = mode;
-	ViewportManager::instance().updateViewports();
 }
 
 /******************************************************************************
@@ -138,7 +129,6 @@ void NavigationMode::setUserOrbitCenter(const Point3& center)
 {
 	if(_userOrbitCenter == center) return;
 	_userOrbitCenter = center;
-	ViewportManager::instance().updateViewports();
 }
 
 /******************************************************************************
@@ -146,16 +136,18 @@ void NavigationMode::setUserOrbitCenter(const Point3& center)
 ******************************************************************************/
 Point3 NavigationMode::orbitCenter()
 {
+	OVITO_CHECK_OBJECT_POINTER(_viewport);
+
 	// Update orbiting center.
 	if(orbitCenterMode() == ORBIT_SELECTION_CENTER) {
 		Box3 selectionBoundingBox;
-		for(SceneNode* node : DataSetManager::instance().currentSelection()->nodes()) {
-			selectionBoundingBox.addBox(node->worldBoundingBox(AnimManager::instance().time()));
+		for(SceneNode* node : _viewport->dataSet()->selection()->nodes()) {
+			selectionBoundingBox.addBox(node->worldBoundingBox(_viewport->dataSet()->animationSettings()->time()));
 		}
 		if(!selectionBoundingBox.isEmpty())
 			return selectionBoundingBox.center();
 		else {
-			Box3 sceneBoundingBox = DataSetManager::instance().currentSet()->sceneRoot()->worldBoundingBox(AnimManager::instance().time());
+			Box3 sceneBoundingBox = _viewport->dataSet()->sceneRoot()->worldBoundingBox(_viewport->dataSet()->animationSettings()->time());
 			if(!sceneBoundingBox.isEmpty())
 				return sceneBoundingBox.center();
 		}
@@ -169,7 +161,7 @@ Point3 NavigationMode::orbitCenter()
 /******************************************************************************
 * Lets the input mode render its overlay content in a viewport.
 ******************************************************************************/
-void NavigationMode::renderOverlay3D(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive)
+void NavigationMode::renderOverlay3D(Viewport* vp, ViewportSceneRenderer* renderer)
 {
 	if(renderer->isPicking())
 		return;
@@ -194,7 +186,7 @@ void NavigationMode::renderOverlay3D(Viewport* vp, ViewportSceneRenderer* render
 /******************************************************************************
 * Computes the bounding box of the visual viewport overlay rendered by the input mode.
 ******************************************************************************/
-Box3 NavigationMode::overlayBoundingBox(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive)
+Box3 NavigationMode::overlayBoundingBox(Viewport* vp, ViewportSceneRenderer* renderer)
 {
 	Point3 center = orbitCenter();
 	FloatType symbolSize = vp->nonScalingSize(center);
@@ -224,11 +216,11 @@ void PanMode::modifyView(Viewport* vp, QPointF delta)
 		// Get parent's system.
 		TimeInterval iv;
 		const AffineTransformation& parentSys =
-				vp->viewNode()->parentNode()->getWorldTransform(AnimManager::instance().time(), iv);
+				vp->viewNode()->parentNode()->getWorldTransform(vp->dataSet()->animationSettings()->time(), iv);
 
 		// Move node in parent's system.
 		vp->viewNode()->transformationController()->translate(
-				AnimManager::instance().time(), displacement, parentSys.inverse());
+				vp->dataSet()->animationSettings()->time(), displacement, parentSys.inverse());
 	}
 }
 
@@ -247,9 +239,9 @@ void ZoomMode::modifyView(Viewport* vp, QPointF delta)
 		}
 		else {
 			TimeInterval iv;
-			const AffineTransformation& sys = vp->viewNode()->getWorldTransform(AnimManager::instance().time(), iv);
+			const AffineTransformation& sys = vp->viewNode()->getWorldTransform(vp->dataSet()->animationSettings()->time(), iv);
 			vp->viewNode()->transformationController()->translate(
-					AnimManager::instance().time(), Vector3(0,0,-amount), sys);
+					vp->dataSet()->animationSettings()->time(), Vector3(0,0,-amount), sys);
 		}
 	}
 	else {
@@ -260,7 +252,7 @@ void ZoomMode::modifyView(Viewport* vp, QPointF delta)
 			cameraObj = dynamic_object_cast<AbstractCameraObject>(vp->viewNode()->sceneObject());
 			if(cameraObj) {
 				TimeInterval iv;
-				oldFOV = cameraObj->fieldOfView(AnimManager::instance().time(), iv);
+				oldFOV = cameraObj->fieldOfView(vp->dataSet()->animationSettings()->time(), iv);
 			}
 		}
 
@@ -270,7 +262,7 @@ void ZoomMode::modifyView(Viewport* vp, QPointF delta)
 			vp->setFieldOfView(newFOV);
 		}
 		else if(cameraObj) {
-			cameraObj->setFieldOfView(AnimManager::instance().time(), newFOV);
+			cameraObj->setFieldOfView(vp->dataSet()->animationSettings()->time(), newFOV);
 		}
 	}
 }
@@ -281,7 +273,8 @@ void ZoomMode::modifyView(Viewport* vp, QPointF delta)
 ******************************************************************************/
 FloatType ZoomMode::sceneSizeFactor()
 {
-	Box3 sceneBoundingBox = DataSetManager::instance().currentSet()->sceneRoot()->worldBoundingBox(AnimManager::instance().time());
+	OVITO_CHECK_OBJECT_POINTER(_viewport);
+	Box3 sceneBoundingBox = _viewport->dataSet()->sceneRoot()->worldBoundingBox(_viewport->dataSet()->animationSettings()->time());
 	if(!sceneBoundingBox.isEmpty())
 		return sceneBoundingBox.size().length() * 5e-4;
 	else
@@ -302,19 +295,19 @@ void ZoomMode::zoom(Viewport* vp, FloatType steps)
 		}
 	}
 	else {
-		UndoableTransaction::handleExceptions(tr("Zoom viewport"), [this, steps, vp]() {
+		UndoableTransaction::handleExceptions(vp->dataSet()->undoStack(), tr("Zoom viewport"), [this, steps, vp]() {
 			if(vp->isPerspectiveProjection()) {
 				FloatType amount = sceneSizeFactor() * steps;
 				TimeInterval iv;
-				const AffineTransformation& sys = vp->viewNode()->getWorldTransform(AnimManager::instance().time(), iv);
-				vp->viewNode()->transformationController()->translate(AnimManager::instance().time(), Vector3(0,0,-amount), sys);
+				const AffineTransformation& sys = vp->viewNode()->getWorldTransform(vp->dataSet()->animationSettings()->time(), iv);
+				vp->viewNode()->transformationController()->translate(vp->dataSet()->animationSettings()->time(), Vector3(0,0,-amount), sys);
 			}
 			else {
 				AbstractCameraObject* cameraObj = dynamic_object_cast<AbstractCameraObject>(vp->viewNode()->sceneObject());
 				if(cameraObj) {
 					TimeInterval iv;
-					FloatType oldFOV = cameraObj->fieldOfView(AnimManager::instance().time(), iv);
-					cameraObj->setFieldOfView(AnimManager::instance().time(), oldFOV * exp(-steps * 0.001));
+					FloatType oldFOV = cameraObj->fieldOfView(vp->dataSet()->animationSettings()->time(), iv);
+					cameraObj->setFieldOfView(vp->dataSet()->animationSettings()->time(), oldFOV * exp(-steps * 0.001));
 				}
 			}
 		});
@@ -335,7 +328,7 @@ void FOVMode::modifyView(Viewport* vp, QPointF delta)
 		cameraObj = dynamic_object_cast<AbstractCameraObject>(vp->viewNode()->sceneObject());
 		if(cameraObj) {
 			TimeInterval iv;
-			oldFOV = cameraObj->fieldOfView(AnimManager::instance().time(), iv);
+			oldFOV = cameraObj->fieldOfView(vp->dataSet()->animationSettings()->time(), iv);
 		}
 	}
 
@@ -353,7 +346,7 @@ void FOVMode::modifyView(Viewport* vp, QPointF delta)
 		vp->setFieldOfView(newFOV);
 	}
 	else if(cameraObj) {
-		cameraObj->setFieldOfView(AnimManager::instance().time(), newFOV);
+		cameraObj->setFieldOfView(vp->dataSet()->animationSettings()->time(), newFOV);
 	}
 }
 
@@ -404,7 +397,7 @@ void OrbitMode::modifyView(Viewport* vp, QPointF delta)
 		vp->setCameraTransformation(newTM);
 	}
 	else {
-		vp->viewNode()->transformationController()->setValue(AnimManager::instance().time(), newTM);
+		vp->viewNode()->transformationController()->setValue(vp->dataSet()->animationSettings()->time(), newTM);
 	}
 }
 
@@ -425,7 +418,8 @@ bool PickOrbitCenterMode::pickOrbitCenter(Viewport* vp, const QPointF& pos)
 	else {
 		NavigationMode::setOrbitCenterMode(NavigationMode::ORBIT_SELECTION_CENTER);
 		NavigationMode::setUserOrbitCenter(Point3::Origin());
-		MainWindow::instance().statusBar()->showMessage(tr("No object has been picked. Resetting orbit center to default position."), 1200);
+		if(MainWindow* mainWindow = vp->dataSet()->mainWindow())
+			mainWindow->statusBar()->showMessage(tr("No object has been picked. Resetting orbit center to default position."), 1200);
 		return false;
 	}
 }
@@ -439,7 +433,7 @@ void PickOrbitCenterMode::mousePressEvent(Viewport* vp, QMouseEvent* event)
 		if(pickOrbitCenter(vp, event->localPos()))
 			return;
 	}
-	ViewportInputHandler::mousePressEvent(vp, event);
+	ViewportInputMode::mousePressEvent(vp, event);
 }
 
 /******************************************************************************
@@ -447,7 +441,7 @@ void PickOrbitCenterMode::mousePressEvent(Viewport* vp, QMouseEvent* event)
 ******************************************************************************/
 void PickOrbitCenterMode::mouseMoveEvent(Viewport* vp, QMouseEvent* event)
 {
-	ViewportInputHandler::mouseMoveEvent(vp, event);
+	ViewportInputMode::mouseMoveEvent(vp, event);
 
 	Point3 p;
 	bool isOverObject = findIntersection(vp, event->localPos(), p);
@@ -474,6 +468,22 @@ bool PickOrbitCenterMode::findIntersection(Viewport* vp, const QPointF& mousePos
 
 	intersectionPoint = pickResults.worldPosition;
 	return true;
+}
+
+/******************************************************************************
+* Lets the input mode render its overlay content in a viewport.
+******************************************************************************/
+void PickOrbitCenterMode::renderOverlay3D(Viewport* vp, ViewportSceneRenderer* renderer)
+{
+	inputManager()->orbitMode()->renderOverlay3D(vp, renderer);
+}
+
+/******************************************************************************
+* Computes the bounding box of the visual viewport overlay rendered by the input mode.
+******************************************************************************/
+Box3 PickOrbitCenterMode::overlayBoundingBox(Viewport* vp, ViewportSceneRenderer* renderer)
+{
+	return inputManager()->orbitMode()->overlayBoundingBox(vp, renderer);
 }
 
 };

@@ -175,7 +175,7 @@ void RefTargetListParameterUI::openSubEditor()
 					_subEditor->initialize(editor()->container(), _rolloutParams);
 			}
 			else if(_defaultEditorClass) {
-				_subEditor = dynamic_object_cast<PropertiesEditor>(_defaultEditorClass->createInstance());
+				_subEditor = dynamic_object_cast<PropertiesEditor>(_defaultEditorClass->createInstance(nullptr));
 				if(_subEditor)
 					_subEditor->initialize(editor()->container(), _rolloutParams);
 			}

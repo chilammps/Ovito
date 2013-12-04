@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include <core/gui/properties/IntegerParameterUI.h>
 #include <core/animation/controller/Controller.h>
-#include <core/animation/AnimManager.h>
+#include <core/animation/AnimationSettings.h>
 #include <core/utilities/units/UnitsManager.h>
 
 namespace Ovito {

@@ -21,107 +21,99 @@
 
 #include <core/Core.h>
 #include <core/viewport/input/ViewportInputManager.h>
-#include <core/viewport/input/ViewportInputHandler.h>
-#include <core/viewport/ViewportManager.h>
-#include <core/dataset/DataSetManager.h>
-#include <core/gui/app/Application.h>
+#include <core/viewport/input/ViewportInputMode.h>
+#include <core/gui/mainwin/MainWindow.h>
 
 namespace Ovito {
-
-/// The singleton instance of the class.
-ViewportInputManager* ViewportInputManager::_instance = nullptr;
 
 /******************************************************************************
 * Initializes the viewport input manager.
 ******************************************************************************/
-ViewportInputManager::ViewportInputManager()
+ViewportInputManager::ViewportInputManager(MainWindow* mainWindow) : QObject(mainWindow)
 {
-	// Reset the viewport input manager when a new scene has been loaded.
-	connect(&DataSetManager::instance(), SIGNAL(dataSetReset(DataSet*)), this, SLOT(reset()));
+	class DefaultInputMode : public ViewportInputMode {
+	public:
+		DefaultInputMode(QObject* parent) : ViewportInputMode(parent) {}
+		InputModeType modeType() override { return ExclusiveMode; }
+	};
+	_defaultMode = new DefaultInputMode(this);
+	_zoomMode = new ZoomMode(this);
+	_panMode = new PanMode(this);
+	_orbitMode = new OrbitMode(this);
+	_fovMode = new FOVMode(this);
+	_pickOrbitCenterMode = new PickOrbitCenterMode(this);
 
-	// Update mouse cursor whenever input mode changes.
-	connect(this, SIGNAL(inputModeChanged(ViewportInputHandler*,ViewportInputHandler*)), this, SLOT(updateViewportCursor()));
+	// Reset the viewport input manager when a new scene has been loaded.
+	connect(&mainWindow->datasetContainer(), &DataSetContainer::dataSetChanged, this, &ViewportInputManager::reset);
 }
 
 /******************************************************************************
-* Returns the currently active ViewportInputHandler that
-* handles the mouse events in viewports.
+* Returns the currently active ViewportInputMode that handles the mouse events in viewports.
 ******************************************************************************/
-ViewportInputHandler* ViewportInputManager::currentHandler()
+ViewportInputMode* ViewportInputManager::activeMode()
 {
-	if(_inputHandlerStack.empty()) return NULL;
-	return _inputHandlerStack.back().get();
+	if(_inputModeStack.empty()) return nullptr;
+	return _inputModeStack.back();
 }
 
 /******************************************************************************
 * Pushes a handler onto the stack and makes it active.
 ******************************************************************************/
-void ViewportInputManager::pushInputHandler(const OORef<ViewportInputHandler>& handler)
+void ViewportInputManager::pushInputMode(ViewportInputMode* newMode)
 {
-    OVITO_CHECK_OBJECT_POINTER(handler);
+    OVITO_CHECK_POINTER(newMode);
 
-    OORef<ViewportInputHandler> oldHandler = currentHandler();
-	if(handler == oldHandler) return;
+    ViewportInputMode* oldMode = activeMode();
+	if(newMode == oldMode) return;
 
-	if(oldHandler != NULL) {
-		if(handler->handlerType() == ViewportInputHandler::EXCLUSIVE) {
+	if(oldMode) {
+		if(newMode->modeType() == ViewportInputMode::ExclusiveMode) {
 			// Remove all handlers from the stack
-			_inputHandlerStack.clear();
+			_inputModeStack.clear();
 		}
-		else if(handler->handlerType() == ViewportInputHandler::NORMAL) {
+		else if(newMode->modeType() == ViewportInputMode::NormalMode) {
 			// Remove all non-exclusive handlers from the stack
-			for(int i = _inputHandlerStack.size(); i--; ) {
-				OVITO_CHECK_OBJECT_POINTER(_inputHandlerStack[i]);
-				if(_inputHandlerStack[i]->handlerType() != ViewportInputHandler::EXCLUSIVE) {
-					_inputHandlerStack.remove(i);
+			for(int i = _inputModeStack.size(); i--; ) {
+				if(_inputModeStack[i]->modeType() != ViewportInputMode::ExclusiveMode) {
+					_inputModeStack.remove(i);
 				}
 			}
 		}
-		else if(handler->handlerType() == ViewportInputHandler::TEMPORARY) {
+		else if(newMode->modeType() == ViewportInputMode::TemporaryMode) {
 			// Remove all temporary handlers from the stack.
-			if(oldHandler->handlerType() == ViewportInputHandler::TEMPORARY)
-				_inputHandlerStack.pop_back();
+			if(oldMode->modeType() == ViewportInputMode::TemporaryMode)
+				_inputModeStack.pop_back();
 		}
 	}
 
 	// Put new handler on the stack.
-	_inputHandlerStack.push_back(handler);
-	if(oldHandler != NULL) oldHandler->deactivated();
-	handler->activated();
-	inputModeChanged(oldHandler.get(), handler.get());
+	_inputModeStack.push_back(newMode);
+	if(oldMode) oldMode->deactivated();
+	newMode->activated();
 
-	// Redraw viewports if the old or the new handler uses overlays.
-	if((oldHandler && oldHandler->hasOverlay()) || (handler && handler->hasOverlay()))
-		ViewportManager::instance().updateViewports();
+	Q_EMIT inputModeChanged(oldMode, newMode);
 }
 
 /******************************************************************************
 * Removes a handler from the stack and deactivates it if
 * it is currently active.
 ******************************************************************************/
-void ViewportInputManager::removeInputHandler(ViewportInputHandler* handler)
+void ViewportInputManager::removeInputMode(ViewportInputMode* mode)
 {
-	int index = _inputHandlerStack.indexOf(handler);
-	if(index < 0) return;
-	OVITO_CHECK_OBJECT_POINTER(handler);
-	if(index == _inputHandlerStack.size() - 1) {
-		OORef<ViewportInputHandler> oldHandler = handler;
-		_inputHandlerStack.remove(index);
-		handler->deactivated();
-		if(!_inputHandlerStack.empty())
-			currentHandler()->activated();
-		inputModeChanged(handler, currentHandler());
+	OVITO_CHECK_POINTER(mode);
 
-		// Redraw viewports if the old or the new handler uses overlays.
-		if((oldHandler && oldHandler->hasOverlay()) || (currentHandler() && currentHandler()->hasOverlay()))
-			ViewportManager::instance().updateViewports();
+	int index = _inputModeStack.indexOf(mode);
+	if(index < 0) return;
+
+	if(index == _inputModeStack.size() - 1) {
+		_inputModeStack.remove(index);
+		mode->deactivated();
+		if(!_inputModeStack.empty())
+			activeMode()->activated();
+		Q_EMIT inputModeChanged(mode, activeMode());
 	}
 	else {
-		// Redraw viewports if the removed handler used overlays.
-		if(handler->hasOverlay())
-			ViewportManager::instance().updateViewports();
-
-		_inputHandlerStack.remove(index);
+		_inputModeStack.remove(index);
 	}
 }
 
@@ -131,40 +123,11 @@ void ViewportInputManager::removeInputHandler(ViewportInputHandler* handler)
 void ViewportInputManager::reset()
 {
 	// Remove all input modes from the stack
-	while(currentHandler() != NULL)
-		removeInputHandler(currentHandler());
-
-	class DefaultInputMode : public ViewportInputHandler {
-	public:
-		InputHandlerType handlerType() override { return EXCLUSIVE; }
-	};
+	while(activeMode())
+		removeInputMode(activeMode());
 
 	// Activate default mode
-	pushInputHandler(new DefaultInputMode());
-}
-
-/******************************************************************************
-* Updates the mouse cursor displayed in the viewports.
-******************************************************************************/
-void ViewportInputManager::updateViewportCursor()
-{
-	if(!Application::instance().guiMode())
-		return;
-	if(!ViewportManager::isInitialized())
-		return;
-
-	ViewportInputHandler* handler = currentHandler();
-	QCursor cursor;
-	if(handler) {
-		if(handler->temporaryNavigationMode())
-			handler = handler->temporaryNavigationMode();
-		cursor = handler->cursor();
-	}
-
-	for(Viewport* vp : ViewportManager::instance().viewports()) {
-		if(vp->viewportWindow())
-			vp->viewportWindow()->setCursor(cursor);
-	}
+	pushInputMode(_defaultMode);
 }
 
 };

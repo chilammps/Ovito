@@ -27,7 +27,8 @@
 #include <core/dataset/UndoStack.h>
 #include <core/dataset/DataSetContainer.h>
 #include <core/viewport/input/NavigationModes.h>
-#include <core/viewport/input/ViewportInputHandler.h>
+#include <core/viewport/input/ViewportInputMode.h>
+#include <core/viewport/input/ViewportInputManager.h>
 #include <core/animation/AnimationSettings.h>
 
 namespace Ovito {
@@ -35,29 +36,30 @@ namespace Ovito {
 /******************************************************************************
 * This viewport mode plays the animation while it is active.
 ******************************************************************************/
-class AnimationPlaybackViewportMode : public ViewportInputHandler
+class AnimationPlaybackViewportMode : public ViewportInputMode
 {
 public:
 
 	/// Constructor.
-	AnimationPlaybackViewportMode(ActionManager* actionManager) : _actionManager(actionManager) {}
+	AnimationPlaybackViewportMode(ActionManager* actionManager) : ViewportInputMode(actionManager) {}
 
-	/// Returns the activation behavior of this input handler.
-	virtual InputHandlerType handlerType() override { return ViewportInputHandler::TEMPORARY; }
+	/// Returns the activation behavior of this input mode.
+	virtual InputModeType modeType() override { return TemporaryMode; }
+
+	/// Returns the action manager, which owns this mode.
+	ActionManager* actionManager() const { return static_cast<ActionManager*>(parent()); }
 
 protected:
 
 	/// This is called by the system after the input handler has become active.
 	virtual void activated() override {
-		_actionManager->_dataset->animationSettings()->startAnimationPlayback();
+		actionManager()->_dataset->animationSettings()->startAnimationPlayback();
 	}
 
 	/// This is called by the system after the input handler has been deactivated.
 	virtual void deactivated() override {
-		_actionManager->_dataset->animationSettings()->stopAnimationPlayback();
+		actionManager()->_dataset->animationSettings()->stopAnimationPlayback();
 	}
-
-	ActionManager* _actionManager;
 };
 
 /******************************************************************************
@@ -92,11 +94,13 @@ ActionManager::ActionManager(MainWindow* mainWindow) : QObject(mainWindow)
 	createCommandAction(ACTION_VIEWPORT_ZOOM_SCENE_EXTENTS_ALL, tr("Zoom Scene Extents All"), ":/core/actions/viewport/zoom_scene_extents.png", tr("Zoom all viewports to show everything."));
 	createCommandAction(ACTION_VIEWPORT_ZOOM_SELECTION_EXTENTS, tr("Zoom Selection Extents"), ":/core/actions/viewport/zoom_selection_extents.png", tr("Zoom to show the selected objects."));
 	createCommandAction(ACTION_VIEWPORT_ZOOM_SELECTION_EXTENTS_ALL, tr("Zoom Selection Extents All"), ":/core/actions/viewport/zoom_selection_extents.png", tr("Zoom all viewports to show the selected objects."));
-	createViewportModeAction(ACTION_VIEWPORT_ZOOM, ZoomMode::instance(), tr("Zoom"), ":/core/actions/viewport/mode_zoom.png", tr("Activate zoom mode."));
-	createViewportModeAction(ACTION_VIEWPORT_PAN, PanMode::instance(), tr("Pan"), ":/core/actions/viewport/mode_pan.png", tr("Activate pan mode to shift the region visible in the viewports."));
-	createViewportModeAction(ACTION_VIEWPORT_ORBIT, OrbitMode::instance(), tr("Orbit"), ":/core/actions/viewport/mode_orbit.png", tr("Activate orbit mode to rotate the camera around the scene."));
-	createViewportModeAction(ACTION_VIEWPORT_FOV, FOVMode::instance(), tr("Field Of View"), ":/core/actions/viewport/mode_fov.png", tr("Activate field of view mode to change the perspective projection."));
-	createViewportModeAction(ACTION_VIEWPORT_PICK_ORBIT_CENTER, PickOrbitCenterMode::instance(), tr("Set Orbit Center"), ":/core/actions/viewport/mode_set_orbit_center.png", tr("Set the center of rotation."));
+
+	ViewportInputManager* vpInputManager = mainWindow->viewportInputManager();
+	createViewportModeAction(ACTION_VIEWPORT_ZOOM, vpInputManager->zoomMode(), tr("Zoom"), ":/core/actions/viewport/mode_zoom.png", tr("Activate zoom mode."));
+	createViewportModeAction(ACTION_VIEWPORT_PAN, vpInputManager->panMode(), tr("Pan"), ":/core/actions/viewport/mode_pan.png", tr("Activate pan mode to shift the region visible in the viewports."));
+	createViewportModeAction(ACTION_VIEWPORT_ORBIT, vpInputManager->orbitMode(), tr("Orbit"), ":/core/actions/viewport/mode_orbit.png", tr("Activate orbit mode to rotate the camera around the scene."));
+	createViewportModeAction(ACTION_VIEWPORT_FOV, vpInputManager->fovMode(), tr("Field Of View"), ":/core/actions/viewport/mode_fov.png", tr("Activate field of view mode to change the perspective projection."));
+	createViewportModeAction(ACTION_VIEWPORT_PICK_ORBIT_CENTER, vpInputManager->pickOrbitCenterMode(), tr("Set Orbit Center"), ":/core/actions/viewport/mode_set_orbit_center.png", tr("Set the center of rotation."));
 
 	createCommandAction(ACTION_GOTO_START_OF_ANIMATION, tr("Goto Start of Animation"), ":/core/actions/animation/goto_animation_start.png", QString(), Qt::Key_Home);
 	createCommandAction(ACTION_GOTO_END_OF_ANIMATION, tr("Goto End of Animation"), ":/core/actions/animation/goto_animation_end.png", QString(), Qt::Key_End);
@@ -203,9 +207,9 @@ QAction* ActionManager::createCommandAction(const QString& id, const QString& ti
 /******************************************************************************
 * Creates and registers a new viewport mode action with the ActionManager.
 ******************************************************************************/
-QAction* ActionManager::createViewportModeAction(const QString& id, const OORef<ViewportInputHandler>& inputHandler, const QString& title, const char* iconPath, const QString& statusTip, const QKeySequence& shortcut)
+QAction* ActionManager::createViewportModeAction(const QString& id, ViewportInputMode* inputHandler, const QString& title, const char* iconPath, const QString& statusTip, const QKeySequence& shortcut)
 {
-	QAction* action = new ViewportModeAction(title, this, inputHandler);
+	QAction* action = new ViewportModeAction(mainWindow(), title, this, inputHandler);
 	action->setObjectName(id);
 	if(!shortcut.isEmpty()) action->setShortcut(shortcut);
 	action->setStatusTip(statusTip);

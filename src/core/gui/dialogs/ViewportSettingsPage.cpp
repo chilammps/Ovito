@@ -32,7 +32,7 @@ IMPLEMENT_OVITO_OBJECT(Core, ViewportSettingsPage, ApplicationSettingsPage)
 void ViewportSettingsPage::insertSettingsDialogPage(ApplicationSettingsDialog* settingsDialog, QTabWidget* tabWidget)
 {
 	// Retrieve current settings.
-	_settings = ViewportSettings::getSettings();
+	_settings.assign(ViewportSettings::getSettings());
 
 	QWidget* page = new QWidget();
 	tabWidget->addTab(page, tr("Viewports"));

@@ -20,24 +20,20 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include <core/utilities/concurrent/ProgressManager.h>
+#include <core/utilities/concurrent/TaskManager.h>
 #include <core/gui/mainwin/MainWindow.h>
 #include <core/gui/app/Application.h>
 
 namespace Ovito {
 
-/// The singleton instance of the class.
-ProgressManager* ProgressManager::_instance = nullptr;
-
 /******************************************************************************
 * Initializes the progress manager.
 ******************************************************************************/
-ProgressManager::ProgressManager()
+TaskManager::TaskManager(MainWindow* mainWindow) : QObject(mainWindow), _mainWindow(mainWindow)
 {
-	OVITO_ASSERT_MSG(!_instance, "ProgressManager constructor", "Multiple instances of this singleton class have been created.");
 	qRegisterMetaType<FutureInterfacePointer>("FutureInterfacePointer");
 
-	if(Application::instance().guiMode()) {
+	if(mainWindow) {
 		// Create progress display widget.
 		_progressTextDisplay = new QLabel();
 		_progressWidget = new QWidget();
@@ -64,7 +60,7 @@ ProgressManager::ProgressManager()
 /******************************************************************************
 * Registers a future with the progress manager.
 ******************************************************************************/
-void ProgressManager::addTaskInternal(FutureInterfacePointer futureInterface)
+void TaskManager::addTaskInternal(FutureInterfacePointer futureInterface)
 {
 	FutureWatcher* watcher = new FutureWatcher(this);
 	connect(watcher, SIGNAL(started()), &_taskStartedSignalMapper, SLOT(map()));
@@ -84,12 +80,12 @@ void ProgressManager::addTaskInternal(FutureInterfacePointer futureInterface)
 /******************************************************************************
 * Is called when a task has started to run.
 ******************************************************************************/
-void ProgressManager::taskStarted(QObject* object)
+void TaskManager::taskStarted(QObject* object)
 {
 	FutureWatcher* watcher = static_cast<FutureWatcher*>(object);
 
 	// Show progress indicator only if the task doesn't finish within 300 milliseconds.
-	if(_taskStack.isEmpty() && Application::instance().guiMode())
+	if(_taskStack.isEmpty() && _mainWindow)
 		QTimer::singleShot(200, this, SLOT(showIndicator()));
 
 	_taskStack.push(watcher);
@@ -98,7 +94,7 @@ void ProgressManager::taskStarted(QObject* object)
 /******************************************************************************
 * Is called when a task has finished.
 ******************************************************************************/
-void ProgressManager::taskFinished(QObject* object)
+void TaskManager::taskFinished(QObject* object)
 {
 	FutureWatcher* watcher = static_cast<FutureWatcher*>(object);
 	OVITO_ASSERT(_taskStack.contains(watcher));
@@ -110,7 +106,7 @@ void ProgressManager::taskFinished(QObject* object)
 /******************************************************************************
 * Is called when the progress of a task has changed
 ******************************************************************************/
-void ProgressManager::taskProgressValueChanged(QObject* object)
+void TaskManager::taskProgressValueChanged(QObject* object)
 {
 	OVITO_ASSERT(_taskStack.contains(static_cast<FutureWatcher*>(object)));
 	if(_taskStack.top() == object)
@@ -120,7 +116,7 @@ void ProgressManager::taskProgressValueChanged(QObject* object)
 /******************************************************************************
 * Is called when the status text of a task has changed.
 ******************************************************************************/
-void ProgressManager::taskProgressTextChanged(QObject* object)
+void TaskManager::taskProgressTextChanged(QObject* object)
 {
 	OVITO_ASSERT(_taskStack.contains(static_cast<FutureWatcher*>(object)));
 	if(_taskStack.top() == object)
@@ -130,10 +126,10 @@ void ProgressManager::taskProgressTextChanged(QObject* object)
 /******************************************************************************
 * Shows the progress indicator widget.
 ******************************************************************************/
-void ProgressManager::showIndicator()
+void TaskManager::showIndicator()
 {
 	if(_indicatorVisible == false && _taskStack.isEmpty() == false) {
-		QStatusBar* statusBar = MainWindow::instance().statusBar();
+		QStatusBar* statusBar = _mainWindow->statusBar();
 		statusBar->addWidget(_progressTextDisplay, 1);
 		statusBar->addPermanentWidget(_progressWidget);
 		_progressTextDisplay->show();
@@ -146,13 +142,13 @@ void ProgressManager::showIndicator()
 /******************************************************************************
 * Shows or hides the progress indicator widgets and updates the displayed information.
 ******************************************************************************/
-void ProgressManager::updateIndicator()
+void TaskManager::updateIndicator()
 {
 	if(_indicatorVisible == false)
 		return;
 
 	if(_taskStack.isEmpty() == true) {
-		QStatusBar* statusBar = MainWindow::instance().statusBar();
+		QStatusBar* statusBar = _mainWindow->statusBar();
 		statusBar->removeWidget(_progressWidget);
 		statusBar->removeWidget(_progressTextDisplay);
 		_indicatorVisible = false;
@@ -168,7 +164,7 @@ void ProgressManager::updateIndicator()
 /******************************************************************************
 * Cancels all running background tasks.
 ******************************************************************************/
-void ProgressManager::cancelAll()
+void TaskManager::cancelAll()
 {
 	for(FutureWatcher* watcher : _taskStack)
 		watcher->cancel();
@@ -177,7 +173,7 @@ void ProgressManager::cancelAll()
 /******************************************************************************
 * Cancels all running background tasks and waits for them to finish.
 ******************************************************************************/
-void ProgressManager::cancelAllAndWait()
+void TaskManager::cancelAllAndWait()
 {
 	cancelAll();
 	for(FutureWatcher* watcher : _taskStack) {
@@ -192,9 +188,9 @@ void ProgressManager::cancelAllAndWait()
 * Waits for the given task to finish and displays a modal progress dialog
 * to show the task's progress.
 ******************************************************************************/
-bool ProgressManager::waitForTask(const FutureInterfacePointer& futureInterface)
+bool TaskManager::waitForTask(const FutureInterfacePointer& futureInterface)
 {
-	OVITO_ASSERT_MSG(QThread::currentThread() == QApplication::instance()->thread(), "ProgressManager::waitForTask", "Function can only be called from the GUI thread.");
+	OVITO_ASSERT_MSG(QThread::currentThread() == QApplication::instance()->thread(), "TaskManager::waitForTask", "Function can only be called from the GUI thread.");
 
 	// Before showing any progress dialog, check if task has already finished.
 	if(futureInterface->isFinished())
@@ -210,7 +206,7 @@ bool ProgressManager::waitForTask(const FutureInterfacePointer& futureInterface)
 	}
 
 	// Show progress dialog.
-	QProgressDialog progressDialog(&MainWindow::instance());
+	QProgressDialog progressDialog(_mainWindow);
 	progressDialog.setWindowModality(Qt::WindowModal);
 	progressDialog.setAutoClose(false);
 	progressDialog.setAutoReset(false);

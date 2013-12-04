@@ -145,17 +145,25 @@ void DataSet::referenceReplaced(const PropertyFieldDescriptor& field, RefTarget*
 }
 
 /******************************************************************************
+* Returns the container to which this dataset belongs.
+******************************************************************************/
+DataSetContainer* DataSet::container() const
+{
+	for(RefMaker* refmaker : dependents()) {
+		if(DataSetContainer* c = dynamic_object_cast<DataSetContainer>(refmaker)) {
+			return c;
+		}
+	}
+	OVITO_ASSERT_MSG(false, "DataSet::container()", "DataSet is not in a DataSetContainer.");
+	return nullptr;
+}
+
+/******************************************************************************
 * Returns a pointer to the main window in which this dataset is being edited.
 ******************************************************************************/
 MainWindow* DataSet::mainWindow() const
 {
-	for(QWidget* widget : QApplication::topLevelWidgets()) {
-		if(MainWindow* mainWin = qobject_cast<MainWindow*>(widget)) {
-			if(mainWin->datasetContainer().currentSet() == this)
-				return mainWin;
-		}
-	}
-	return nullptr;
+	return container()->mainWindow();
 }
 
 /******************************************************************************

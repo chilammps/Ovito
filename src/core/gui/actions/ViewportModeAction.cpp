@@ -21,22 +21,24 @@
 
 #include <core/Core.h>
 #include <core/gui/actions/ViewportModeAction.h>
+#include <core/gui/mainwin/MainWindow.h>
+#include <core/viewport/input/ViewportInputManager.h>
 
 namespace Ovito {
 
 /******************************************************************************
 * Initializes the action object.
 ******************************************************************************/
-ViewportModeAction::ViewportModeAction(const QString& text, QObject* parent, const OORef<ViewportInputHandler>& inputHandler, const QColor& highlightColor)
-	: QAction(text, parent), _inputHandler(inputHandler), _highlightColor(highlightColor)
+ViewportModeAction::ViewportModeAction(MainWindow* mainWindow, const QString& text, QObject* parent, ViewportInputMode* inputMode, const QColor& highlightColor)
+	: QAction(text, parent), _inputMode(inputMode), _highlightColor(highlightColor), _viewportInputManager(*mainWindow->viewportInputManager())
 {
-	OVITO_CHECK_OBJECT_POINTER(inputHandler);
+	OVITO_CHECK_POINTER(inputMode);
 
 	setCheckable(true);
-	setChecked(ViewportInputManager::instance().currentHandler() == inputHandler);
+	setChecked(inputMode->isActive());
 
-	connect(&ViewportInputManager::instance(), SIGNAL(inputModeChanged(ViewportInputHandler*, ViewportInputHandler*)), this, SLOT(onInputModeChanged(ViewportInputHandler*, ViewportInputHandler*)));
-	connect(this, SIGNAL(triggered(bool)), this, SLOT(onActionTriggered(bool)));
+	connect(inputMode, &ViewportInputMode::statusChanged, this, &ViewportModeAction::setChecked);
+	connect(this, &ViewportModeAction::triggered, this, &ViewportModeAction::onActionTriggered);
 }
 
 /******************************************************************************
@@ -45,26 +47,15 @@ ViewportModeAction::ViewportModeAction(const QString& text, QObject* parent, con
 void ViewportModeAction::onActionTriggered(bool checked)
 {
 	// Activate/deactivate the input mode.
-	OVITO_CHECK_OBJECT_POINTER(_inputHandler);
-	if(checked && ViewportInputManager::instance().currentHandler() != _inputHandler) {
-		ViewportInputManager::instance().pushInputHandler(_inputHandler);
+	if(checked && !_inputMode->isActive()) {
+		_viewportInputManager.pushInputMode(_inputMode);
 	}
 	else if(!checked) {
-		if(_inputHandler->handlerType() != ViewportInputHandler::EXCLUSIVE)
-			ViewportInputManager::instance().removeInputHandler(_inputHandler.get());
+		if(_inputMode->modeType() != ViewportInputMode::ExclusiveMode)
+			_viewportInputManager.removeInputMode(_inputMode);
 		else
 			// Make sure that an exclusive input mode cannot be deactivated by the user.
 			setChecked(true);
-	}
-}
-
-/******************************************************************************
-* Is called when the active viewport input handler has changed.
-******************************************************************************/
-void ViewportModeAction::onInputModeChanged(ViewportInputHandler* oldMode, ViewportInputHandler* newMode)
-{
-	if(oldMode == _inputHandler || newMode == _inputHandler) {
-		setChecked(ViewportInputManager::instance().currentHandler() == _inputHandler);
 	}
 }
 

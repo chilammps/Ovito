@@ -29,6 +29,7 @@
 #include <core/scene/display/DisplayObject.h>
 #include <core/dataset/DataSet.h>
 #include <core/viewport/input/ViewportInputManager.h>
+#include <core/gui/mainwin/MainWindow.h>
 #include "ViewportSceneRenderer.h"
 
 namespace Ovito {
@@ -125,9 +126,12 @@ bool ViewportSceneRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialo
 
 	// Render input mode 3D overlays.
 	if(isInteractive()) {
-		for(const auto& handler : ViewportInputManager::instance().stack()) {
-			if(handler->hasOverlay())
-				handler->renderOverlay3D(viewport(), this, handler == ViewportInputManager::instance().currentHandler());
+		MainWindow* mainWindow = renderDataset()->mainWindow();
+		if(mainWindow) {
+			for(const auto& handler : mainWindow->viewportInputManager()->stack()) {
+				if(handler->hasOverlay())
+					handler->renderOverlay3D(viewport(), this);
+			}
 		}
 	}
 
@@ -136,9 +140,12 @@ bool ViewportSceneRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialo
 
 	// Render input mode 2D overlays.
 	if(isInteractive()) {
-		for(const auto& handler : ViewportInputManager::instance().stack()) {
-			if(handler->hasOverlay())
-				handler->renderOverlay2D(viewport(), this, handler == ViewportInputManager::instance().currentHandler());
+		MainWindow* mainWindow = renderDataset()->mainWindow();
+		if(mainWindow) {
+			for(const auto& handler : mainWindow->viewportInputManager()->stack()) {
+				if(handler->hasOverlay())
+					handler->renderOverlay2D(viewport(), this);
+			}
 		}
 	}
 
@@ -178,7 +185,7 @@ const char* ViewportSceneRenderer::openglErrorString(GLenum errorCode)
 void ViewportSceneRenderer::renderModifiers(bool renderOverlay)
 {
 	// Visit all pipeline objects in the scene.
-	dataset()->sceneRoot()->visitChildren([this, renderOverlay](SceneNode* node) -> bool {
+	renderDataset()->sceneRoot()->visitChildren([this, renderOverlay](SceneNode* node) -> bool {
 		if(node->isObjectNode()) {
 			ObjectNode* objNode = static_object_cast<ObjectNode>(node);
 			PipelineObject* pipelineObj = dynamic_object_cast<PipelineObject>(objNode->sceneObject());
@@ -250,7 +257,7 @@ Box3 ViewportSceneRenderer::boundingBoxInteractive(TimePoint time, Viewport* vie
 	Box3 bb;
 
 	// Visit all pipeline objects in the scene.
-	dataset()->sceneRoot()->visitObjectNodes([this, viewport, time, &bb](ObjectNode* node) -> bool {
+	renderDataset()->sceneRoot()->visitObjectNodes([this, viewport, time, &bb](ObjectNode* node) -> bool {
 
 		// Ignore node if it is the view node of the viewport or if it is the target of the view node.
 		if(viewport->viewNode()) {
@@ -276,10 +283,13 @@ Box3 ViewportSceneRenderer::boundingBoxInteractive(TimePoint time, Viewport* vie
 		return true;
 	});
 
-	// Include input mode overlays.
-	for(const auto& handler : ViewportInputManager::instance().stack()) {
-		if(handler->hasOverlay())
-			bb.addBox(handler->overlayBoundingBox(viewport, this, handler == ViewportInputManager::instance().currentHandler()));
+	// Include visual geometry of input mode overlays in bounding box.
+	MainWindow* mainWindow = viewport->dataSet()->mainWindow();
+	if(mainWindow) {
+		for(const auto& handler : mainWindow->viewportInputManager()->stack()) {
+			if(handler->hasOverlay())
+				bb.addBox(handler->overlayBoundingBox(viewport, this));
+		}
 	}
 
 	return bb;

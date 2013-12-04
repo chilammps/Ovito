@@ -79,6 +79,9 @@ protected:
 
 private:
 
+	/// The signal/slot connection that informs the parameter UI about animation time changes.
+	QMetaObject::Connection _animationTimeChangedConnection;
+
 	Q_OBJECT
 	OVITO_OBJECT
 };

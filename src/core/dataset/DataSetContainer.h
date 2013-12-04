@@ -24,10 +24,11 @@
  * \brief Contains the definition of the Ovito::DataSetContainer class.
  */
 
-#ifndef __OVITO_DATASET_MANAGER_H
-#define __OVITO_DATASET_MANAGER_H
+#ifndef __OVITO_DATASET_CONTAINER_H
+#define __OVITO_DATASET_CONTAINER_H
 
 #include <core/Core.h>
+#include <core/utilities/concurrent/TaskManager.h>
 #include "DataSet.h"
 #include "CurrentSelectionProxy.h"
 #include "importexport/FileImporter.h"
@@ -35,22 +36,21 @@
 namespace Ovito {
 
 /**
- * \brief Manages the current DataSet.
+ * \brief Manages the DataSet being edited.
  */
 class OVITO_CORE_EXPORT DataSetContainer : public RefMaker
 {
 public:
 
 	/// \brief Constructor.
-	DataSetContainer();
+	DataSetContainer(MainWindow* mainWindow = nullptr);
 
 	/// \brief Returns the current dataset being edited by the user.
 	/// \return The active dataset.
 	DataSet* currentSet() const { return _currentSet; }
 	
 	/// \brief Sets the current dataset being edited by the user.
-	/// \param set The new dataset that should be shown in the main window.
-	/// \note This operation cannot be undone. Make sure that the UndoManager is not recording operations.
+	/// \param set The dataset that should be shown in the main window.
 	void setCurrentSet(const OORef<DataSet>& set);
 
 	/// \brief Returns the current selection set. 
@@ -59,44 +59,53 @@ public:
 	///       a new DataSet becomes active.
 	SelectionSet* currentSelection() const { return _selectionSetProxy; }
 
-	/// \brief Imports a given file into the scene.
+	/// Returns the window this dataset container is linked to (may be NULL).
+	MainWindow* mainWindow() const { return _mainWindow; }
+
+	/// \brief Returns the manager of background tasks.
+	/// \return Reference to the task manager, which is part of this dataset manager.
+	///
+	/// Use the task manager to start and control background jobs.
+	TaskManager& taskManager() { return _taskManager; }
+
+	/// \brief Imports a given file into the current dataset.
 	/// \param url The location of the file to import.
 	/// \param importerType The type of importer to use. If NULL, the file format will be automatically detected.
 	/// \return true if the file was successfully imported; false if operation has been canceled by the user.
 	/// \throw Exception on error.
 	bool importFile(const QUrl& url, const FileImporterDescription* importerType = nullptr, FileImporter::ImportMode importMode = FileImporter::AskUser);
 
-	/// \brief Loads the given scene file.
+	/// \brief Loads the given file and makes it the current dataset.
 	/// \return \c true if the file has been successfully loaded; \c false if the operation has been canceled by the user.
 	/// \throw Exception on error.
 	bool fileLoad(const QString& filename);
 
-	/// \brief Save the current scene. 
-	/// \return \c true, if the scene has been saved; \c false if the operation has been canceled by the user.
+	/// \brief Save the current dataset.
+	/// \return \c true, if the dataset has been saved; \c false if the operation has been canceled by the user.
 	/// \throw Exception on error.
 	/// 
-	/// If the current scene has not been assigned a file path, then this method
+	/// If the current dataset has not been assigned a file path, then this method
 	/// displays a file selector dialog by calling fileSaveAs() to let the user select a file path.
 	bool fileSave();
 
-	/// \brief Lets the user select a new destination filename for the current scene. Then saves the scene by calling fileSave().
+	/// \brief Lets the user select a new destination filename for the current dataset. Then saves the dataset by calling fileSave().
 	/// \param filename If \a filename is an empty string that this method asks the user for a filename. Otherwise
 	///                 the provided filename is used.
-	/// \return \c true, if the scene has been saved; \c false if the operation has been canceled by the user.
+	/// \return \c true, if the dataset has been saved; \c false if the operation has been canceled by the user.
 	/// \throw Exception on error.
 	bool fileSaveAs(const QString& filename = QString());
 
-	/// \brief Asks the user if changes made to the scene should be saved.
+	/// \brief Asks the user if changes made to the dataset should be saved.
 	/// \return \c false if the operation has been canceled by the user; \c true on success.
 	/// \throw Exception on error.
 	/// 
 	/// If the current dataset has been changed, this method asks the user if changes should be saved.
-	/// If yes, then the scene is saved by calling fileSave().
+	/// If yes, then the dataset is saved by calling fileSave().
 	bool askForSaveChanges();
 
 Q_SIGNALS:
 
-	/// Is emitted when a new dataset has become the active dataset.
+	/// Is emitted when a another dataset has become the active dataset.
 	void dataSetChanged(DataSet* newDataSet);
 	
 	/// \brief Is emitted when nodes have been added or removed from the current selection set.
@@ -127,11 +136,17 @@ private:
 
 private:
 
-	/// The current data set being edited by the user.
+	/// The window this dataset container is linked to (may be NULL).
+	MainWindow* _mainWindow;
+
+	/// The current dataset being edited by the user.
     ReferenceField<DataSet> _currentSet;
 
-	/// This proxy object is used to make the current node selection always available.
+	/// Proxy object for the selection set of the current dataset.
 	ReferenceField<CurrentSelectionProxy> _selectionSetProxy;
+
+	/// The container for background tasks.
+	TaskManager _taskManager;
 
 private:
 
@@ -146,4 +161,4 @@ private:
 
 };
 
-#endif // __OVITO_DATASET_MANAGER_H
+#endif // __OVITO_DATASET_CONTAINER_H

@@ -25,14 +25,14 @@
 #include <core/Core.h>
 #include <core/gui/app/Application.h>
 #include <core/rendering/ArrowGeometryBuffer.h>
-#include "ViewportInputHandler.h"
+#include "ViewportInputMode.h"
 
 namespace Ovito {
 
 /**
  * \brief Base class for viewport navigation modes likes zoom, pan and orbit.
  */
-class OVITO_CORE_EXPORT NavigationMode : public ViewportInputHandler
+class OVITO_CORE_EXPORT NavigationMode : public ViewportInputMode
 {
 	Q_OBJECT
 
@@ -46,10 +46,8 @@ public:
 	
 public:
 
-	/// \brief Returns the activation behavior of this input handler.
-	///
-	/// Viewport navigation modes are temporary.
-	virtual InputHandlerType handlerType() override { return TEMPORARY; }
+	/// \brief Returns the activation behavior of this input mode.
+	virtual InputModeType modeType() override { return TemporaryMode; }
 
 	/// \brief Handles the mouse down event for the given viewport.
 	virtual void mousePressEvent(Viewport* vp, QMouseEvent* event) override;
@@ -61,10 +59,10 @@ public:
 	virtual void mouseMoveEvent(Viewport* vp, QMouseEvent* event) override;
 
 	/// \brief Lets the input mode render its overlay content in a viewport.
-	virtual void renderOverlay3D(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive) override;
+	virtual void renderOverlay3D(Viewport* vp, ViewportSceneRenderer* renderer) override;
 
 	/// \brief Computes the bounding box of the visual viewport overlay rendered by the input mode.
-	virtual Box3 overlayBoundingBox(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive) override;
+	virtual Box3 overlayBoundingBox(Viewport* vp, ViewportSceneRenderer* renderer) override;
 
 	/// \brief Indicates whether this input mode renders into the viewports.
 	virtual bool hasOverlay() override { return true; }
@@ -79,12 +77,12 @@ public:
 	static void setUserOrbitCenter(const Point3& center);
 
 	/// Returns the world space point around which the camera orbits.
-	static Point3 orbitCenter();
+	Point3 orbitCenter();
 
 protected:
 
 	/// Protected constructor.
-	NavigationMode() : _viewport(nullptr) {}
+	NavigationMode(QObject* parent) : ViewportInputMode(parent), _viewport(nullptr) {}
 
 	/// Computes the new view based on the new mouse position.
 	virtual void modifyView(Viewport* vp, QPointF delta) {}
@@ -129,7 +127,7 @@ protected:
 	static Point3 _userOrbitCenter;
 
 	/// The geometry buffer used to render the orbit center.
-	static OORef<ArrowGeometryBuffer> _orbitCenterMarker;
+	OORef<ArrowGeometryBuffer> _orbitCenterMarker;
 };
 
 /******************************************************************************
@@ -139,24 +137,17 @@ class OVITO_CORE_EXPORT OrbitMode : public NavigationMode
 {
 	Q_OBJECT
 
-protected:
+public:
 
-	/// \brief Protected constructor to prevent the creation of second instances.
-	OrbitMode() {
+	/// \brief Constructor.
+	OrbitMode(QObject* parent) : NavigationMode(parent) {
 		setCursor(QCursor(QPixmap(":/core/cursor/viewport/cursor_orbit.png")));
 	}
 
+protected:
+
 	/// Computes the new view based on the new mouse position.
 	virtual void modifyView(Viewport* vp, QPointF delta) override;
-
-public:
-
-	/// \brief Returns the instance of this class.
-	/// \return A pointer to the global instance of this singleton class.
-	static OrbitMode* instance() {
-		static OORef<OrbitMode> instance(new OrbitMode());
-		return instance.get();
-	}
 };
 
 /******************************************************************************
@@ -166,24 +157,17 @@ class OVITO_CORE_EXPORT PanMode : public NavigationMode
 {
 	Q_OBJECT
 	
-protected:
+public:
 	
-	/// \brief Protected constructor to prevent the creation of multiple instances.
-	PanMode() : NavigationMode() {
+	/// \brief Constructor.
+	PanMode(QObject* parent) : NavigationMode(parent) {
 		setCursor(QCursor(QPixmap(":/core/cursor/viewport/cursor_pan.png")));
 	}
 
+protected:
+
 	/// Computes the new view based on the new mouse position.
 	virtual void modifyView(Viewport* vp, QPointF delta) override;
-
-public:
-
-	/// \brief Returns the instance of this class.
-	/// \return A pointer to the global instance of this singleton class.
-	static PanMode* instance() {
-		static OORef<PanMode> instance(new PanMode());
-		return instance.get();
-	}
 };
 
 
@@ -194,31 +178,24 @@ class OVITO_CORE_EXPORT ZoomMode : public NavigationMode
 {
 	Q_OBJECT
 
-protected:
+public:
 
-	/// \brief Protected constructor to prevent the creation of second instances.
-	ZoomMode() : NavigationMode() {
+	/// \brief Constructor.
+	ZoomMode(QObject* parent) : NavigationMode(parent) {
 		setCursor(QCursor(QPixmap(":/core/cursor/viewport/cursor_zoom.png")));
 	}
+
+	/// Zooms the given viewport in or out.
+	void zoom(Viewport* vp, FloatType steps);
+
+protected:
 
 	/// Computes the new view based on the new mouse position.
 	virtual void modifyView(Viewport* vp, QPointF delta) override;
 
 	/// Computes a scaling factor that depends on the total size of the scene which is used to
 	/// control the zoom sensitivity in perspective mode.
-	static FloatType sceneSizeFactor();
-
-public:
-
-	/// Zooms the viewport in or out.
-	void zoom(Viewport* vp, FloatType steps);
-
-	/// \brief Returns the instance of this class.
-	/// \return A pointer to the global instance of this singleton class.
-	static ZoomMode* instance() { 
-		static OORef<ZoomMode> instance(new ZoomMode());
-		return instance.get(); 
-	}
+	FloatType sceneSizeFactor();
 };
 
 /******************************************************************************
@@ -228,41 +205,32 @@ class OVITO_CORE_EXPORT FOVMode : public NavigationMode
 {
 	Q_OBJECT
 
-protected:
+public:
 
 	/// \brief Protected constructor to prevent the creation of second instances.
-	FOVMode() : NavigationMode() {
+	FOVMode(QObject* parent) : NavigationMode(parent) {
 		setCursor(QCursor(QPixmap(":/core/cursor/viewport/cursor_fov.png")));
 	}
 
+protected:
+
 	/// Computes the new view based on the new mouse position.
 	virtual void modifyView(Viewport* vp, QPointF delta) override;
-
-public:
-
-	/// \brief Returns the instance of this class.
-	/// \return A pointer to the global instance of this singleton class.
-	static FOVMode* instance() {
-		static OORef<FOVMode> instance(new FOVMode());
-		return instance.get();
-	}
 };
 
 /******************************************************************************
 * This input mode lets the user pick the center of rotation for the orbit mode.
 ******************************************************************************/
-class OVITO_CORE_EXPORT PickOrbitCenterMode : public ViewportInputHandler
+class OVITO_CORE_EXPORT PickOrbitCenterMode : public ViewportInputMode
 {
+	Q_OBJECT
+
 public:
 
 	/// Constructor.
-	PickOrbitCenterMode() : _showCursor(false) {
-		if(Application::instance().guiMode())
-			_hoverCursor = QCursor(QPixmap(":/core/cursor/editing/cursor_mode_select.png"));
+	PickOrbitCenterMode(QObject* parent) : ViewportInputMode(parent), _showCursor(false) {
+		_hoverCursor = QCursor(QPixmap(":/core/cursor/editing/cursor_mode_select.png"));
 	}
-
-	/// Returns the activation behavior of this input handler.
-	virtual InputHandlerType handlerType() override { return ViewportInputHandler::NORMAL; }
 
 	/// Handles the mouse click event for a Viewport.
 	virtual void mousePressEvent(Viewport* vp, QMouseEvent* event) override;
@@ -271,14 +239,10 @@ public:
 	virtual void mouseMoveEvent(Viewport* vp, QMouseEvent* event) override;
 
 	/// \brief Lets the input mode render its overlay content in a viewport.
-	virtual void renderOverlay3D(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive) override {
-		OrbitMode::instance()->renderOverlay3D(vp, renderer, isActive);
-	}
+	virtual void renderOverlay3D(Viewport* vp, ViewportSceneRenderer* renderer) override;
 
 	/// \brief Computes the bounding box of the visual viewport overlay rendered by the input mode.
-	virtual Box3 overlayBoundingBox(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive) override {
-		return OrbitMode::instance()->overlayBoundingBox(vp, renderer, isActive);
-	}
+	virtual Box3 overlayBoundingBox(Viewport* vp, ViewportSceneRenderer* renderer) override;
 
 	/// \brief Indicates whether this input mode renders into the viewports.
 	virtual bool hasOverlay() override { return true; }
@@ -296,15 +260,6 @@ private:
 
 	/// Indicates that the mouse cursor is over an object.
 	bool _showCursor;
-
-public:
-
-	/// \brief Returns the instance of this class.
-	/// \return A pointer to the global instance of this singleton class.
-	static PickOrbitCenterMode* instance() {
-		static OORef<PickOrbitCenterMode> instance(new PickOrbitCenterMode());
-		return instance.get();
-	}
 };
 
 };

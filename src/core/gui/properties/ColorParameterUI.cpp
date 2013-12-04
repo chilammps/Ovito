@@ -22,8 +22,8 @@
 #include <core/Core.h>
 #include <core/gui/properties/ColorParameterUI.h>
 #include <core/dataset/UndoStack.h>
-#include <core/viewport/ViewportManager.h>
-#include <core/animation/AnimManager.h>
+#include <core/animation/controller/Controller.h>
+#include <core/animation/AnimationSettings.h>
 
 namespace Ovito {
 
@@ -40,11 +40,6 @@ ColorParameterUI::ColorParameterUI(QObject* parentEditor, const PropertyFieldDes
 	_colorPicker = new ColorPickerWidget();
 	_colorPicker->setObjectName("colorButton");
 	connect(_colorPicker, SIGNAL(colorChanged()), this, SLOT(onColorPickerChanged()));
-
-	if(isReferenceFieldUI()) {
-		// Update the displayed color when the animation time has changed.
-		connect(&AnimManager::instance(), SIGNAL(timeChanged(TimePoint)), this, SLOT(updateUI()));
-	}
 }
 
 /******************************************************************************
@@ -73,6 +68,13 @@ void ColorParameterUI::resetUI()
 			colorPicker()->setEnabled(false);
 			colorPicker()->setColor(Color(1,1,1));
 		}
+	}
+
+	if(isReferenceFieldUI()) {
+		// Update the displayed value when the animation time has changed.
+		disconnect(_animationTimeChangedConnection);
+		if(editObject())
+			_animationTimeChangedConnection = connect(dataSet()->animationSettings(), &AnimationSettings::timeChanged, this, &ColorParameterUI::updateUI);
 	}
 }
 
@@ -123,8 +125,7 @@ void ColorParameterUI::setEnabled(bool enabled)
 void ColorParameterUI::onColorPickerChanged()
 {
 	if(colorPicker() && editObject()) {
-		ViewportSuspender noVPUpdate;
-		UndoableTransaction::handleExceptions(tr("Change color"), [this]() {
+		UndoableTransaction::handleExceptions(dataSet()->undoStack(), tr("Change color"), [this]() {
 			if(isReferenceFieldUI()) {
 				VectorController* ctrl = dynamic_object_cast<VectorController>(parameterObject());
 				if(ctrl)

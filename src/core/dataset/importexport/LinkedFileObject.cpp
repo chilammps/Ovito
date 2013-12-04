@@ -20,19 +20,19 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include <core/dataset/UndoStack.h>
 #include <core/animation/AnimationSettings.h>
 #include <core/utilities/io/ObjectLoadStream.h>
 #include <core/utilities/io/ObjectSaveStream.h>
 #include <core/utilities/io/FileManager.h>
 #include <core/utilities/concurrent/Task.h>
-#include <core/utilities/concurrent/ProgressManager.h>
 #include <core/viewport/Viewport.h>
 #include <core/viewport/ViewportConfiguration.h>
 #include <core/scene/ObjectNode.h>
 #include <core/gui/dialogs/ImportFileDialog.h>
 #include <core/gui/dialogs/ImportRemoteFileDialog.h>
 #include <core/dataset/importexport/ImportExportManager.h>
+#include <core/dataset/DatasetContainer.h>
+#include <core/dataset/UndoStack.h>
 #include "LinkedFileObject.h"
 #include "LinkedFileObjectEditor.h"
 
@@ -87,8 +87,8 @@ bool LinkedFileObject::setSource(const QUrl& newSourceUrl, const FileImporterDes
 	if(!importerType) {
 
 		// Download file so we can determine its format.
-		Future<QString> fetchFileFuture = FileManager::instance().fetchUrl(newSourceUrl);
-		if(!ProgressManager::instance().waitForTask(fetchFileFuture))
+		Future<QString> fetchFileFuture = FileManager::instance().fetchUrl(*dataSet()->container(), newSourceUrl);
+		if(!dataSet()->container()->taskManager().waitForTask(fetchFileFuture))
 			return false;
 
 		// Detect file format.
@@ -227,7 +227,7 @@ bool LinkedFileObject::updateFrames()
 	}
 
 	Future<QVector<LinkedFileImporter::FrameSourceInformation>> framesFuture = importer()->findFrames(sourceUrl());
-	if(!ProgressManager::instance().waitForTask(framesFuture))
+	if(!dataSet()->container()->taskManager().waitForTask(framesFuture))
 		return false;
 
 	QVector<LinkedFileImporter::FrameSourceInformation> newFrames = framesFuture.result();
