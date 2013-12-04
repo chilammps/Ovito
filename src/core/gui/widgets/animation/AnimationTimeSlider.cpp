@@ -53,10 +53,14 @@ AnimationTimeSlider::AnimationTimeSlider(MainWindow* mainWindow, QWidget* parent
 ******************************************************************************/
 void AnimationTimeSlider::onDataSetChanged(DataSet* newDataSet)
 {
-	OVITO_CHECK_OBJECT_POINTER(newDataSet);
 	disconnect(_animationSettingsChangedConnection);
-	_animationSettingsChangedConnection = connect(newDataSet, &DataSet::animationSettingsChanged, this, &AnimationTimeSlider::onAnimationSettingsChanged);
-	onAnimationSettingsChanged(newDataSet->animationSettings());
+	if(newDataSet) {
+		_animationSettingsChangedConnection = connect(newDataSet, &DataSet::animationSettingsChanged, this, &AnimationTimeSlider::onAnimationSettingsChanged);
+		onAnimationSettingsChanged(newDataSet->animationSettings());
+	}
+	else {
+		onAnimationSettingsChanged(nullptr);
+	}
 }
 
 /******************************************************************************
@@ -64,20 +68,18 @@ void AnimationTimeSlider::onDataSetChanged(DataSet* newDataSet)
 ******************************************************************************/
 void AnimationTimeSlider::onAnimationSettingsChanged(AnimationSettings* newAnimationSettings)
 {
-	OVITO_CHECK_OBJECT_POINTER(newAnimationSettings);
 	disconnect(_autoKeyModeChangedConnection);
 	disconnect(_animIntervalChangedConnection);
 	disconnect(_timeFormatChangedConnection);
 	disconnect(_timeChangedConnection);
-
 	_animSettings = newAnimationSettings;
-
-	_autoKeyModeChangedConnection = connect(newAnimationSettings, &AnimationSettings::autoKeyModeChanged, this, &AnimationTimeSlider::onAutoKeyModeChanged);
-	_animIntervalChangedConnection = connect(newAnimationSettings, &AnimationSettings::intervalChanged, this, (void (AnimationTimeSlider::*)())&AnimationTimeSlider::update);
-	_timeFormatChangedConnection = connect(newAnimationSettings, &AnimationSettings::timeFormatChanged, this, (void (AnimationTimeSlider::*)())&AnimationTimeSlider::update);
-	_timeChangedConnection = connect(newAnimationSettings, &AnimationSettings::timeChanged, this, (void (AnimationTimeSlider::*)())&AnimationTimeSlider::repaint);
-
-	onAutoKeyModeChanged(_animSettings->autoKeyMode());
+	if(newAnimationSettings) {
+		_autoKeyModeChangedConnection = connect(newAnimationSettings, &AnimationSettings::autoKeyModeChanged, this, &AnimationTimeSlider::onAutoKeyModeChanged);
+		_animIntervalChangedConnection = connect(newAnimationSettings, &AnimationSettings::intervalChanged, this, (void (AnimationTimeSlider::*)())&AnimationTimeSlider::update);
+		_timeFormatChangedConnection = connect(newAnimationSettings, &AnimationSettings::timeFormatChanged, this, (void (AnimationTimeSlider::*)())&AnimationTimeSlider::update);
+		_timeChangedConnection = connect(newAnimationSettings, &AnimationSettings::timeChanged, this, (void (AnimationTimeSlider::*)())&AnimationTimeSlider::repaint);
+		onAutoKeyModeChanged(_animSettings->autoKeyMode());
+	}
 	update();
 }
 
@@ -87,6 +89,7 @@ void AnimationTimeSlider::onAnimationSettingsChanged(AnimationSettings* newAnima
 void AnimationTimeSlider::paintEvent(QPaintEvent* event)
 {
 	QFrame::paintEvent(event);
+	if(!_animSettings) return;
 
 	// Show slider only if there is more than one animation frame.
 	int numFrames = (int)(_animSettings->animationInterval().duration() / _animSettings->ticksPerFrame()) + 1;

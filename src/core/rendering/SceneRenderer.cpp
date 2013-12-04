@@ -45,7 +45,7 @@ IMPLEMENT_OVITO_OBJECT(Core, TriMeshGeometryBuffer, OvitoObject);
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-SceneRenderer::SceneRenderer() : RefTarget(nullptr),
+SceneRenderer::SceneRenderer(DataSet* dataset) : RefTarget(dataset),
 		_renderDataset(nullptr), _settings(nullptr),
 		_viewport(nullptr), _isPicking(false)
 {

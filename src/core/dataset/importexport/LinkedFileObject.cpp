@@ -31,7 +31,7 @@
 #include <core/gui/dialogs/ImportFileDialog.h>
 #include <core/gui/dialogs/ImportRemoteFileDialog.h>
 #include <core/dataset/importexport/ImportExportManager.h>
-#include <core/dataset/DatasetContainer.h>
+#include <core/dataset/DataSetContainer.h>
 #include <core/dataset/UndoStack.h>
 #include "LinkedFileObject.h"
 #include "LinkedFileObjectEditor.h"

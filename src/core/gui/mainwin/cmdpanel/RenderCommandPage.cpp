@@ -46,19 +46,31 @@ RenderCommandPage::RenderCommandPage(MainWindow* mainWindow, QWidget* parent) : 
 	propertiesPanel = new PropertiesPanel(this);
 	propertiesPanel->setFrameStyle(QFrame::NoFrame | QFrame::Plain);
 	layout->addWidget(propertiesPanel, 1);
+
+	connect(&mainWindow->datasetContainer(), &DataSetContainer::dataSetChanged, this, &RenderCommandPage::onDataSetChanged);
 }
 
-#if 0
 /******************************************************************************
-* Resets the command panel page to the initial state.
+* This is called when a new dataset has been loaded.
 ******************************************************************************/
-void RenderCommandPage::reset()
+void RenderCommandPage::onDataSetChanged(DataSet* newDataSet)
 {
-	CommandPanelPage::reset();
-	DataSet* dataset = DataSetManager::instance().currentSet();
-	if(dataset)
-		propertiesPanel->setEditObject(dataset->renderSettings());
+	disconnect(_renderSettingsChangedConnection);
+	if(newDataSet) {
+		_renderSettingsChangedConnection = connect(newDataSet, &DataSet::renderSettingsChanged, this, &RenderCommandPage::onRenderSettingsChanged);
+		onRenderSettingsChanged(newDataSet->renderSettings());
+	}
+	else {
+		onRenderSettingsChanged(nullptr);
+	}
 }
-#endif
+
+/******************************************************************************
+* This is called when new render settings have been loaded.
+******************************************************************************/
+void RenderCommandPage::onRenderSettingsChanged(RenderSettings* newRenderSettings)
+{
+	propertiesPanel->setEditObject(newRenderSettings);
+}
 
 };

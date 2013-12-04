@@ -211,12 +211,8 @@ class CreateExpressionPropertyModifierEditor : public ParticleModifierEditor
 public:
 
 	/// Default constructor.
-	Q_INVOKABLE CreateExpressionPropertyModifierEditor() {}
-
-	/// Sets the object being edited in this editor.
-	virtual void setEditObject(RefTarget* newObject) override {
-		ParticleModifierEditor::setEditObject(newObject);
-		updateEditorFields();
+	Q_INVOKABLE CreateExpressionPropertyModifierEditor() {
+		connect(this, &PropertiesEditor::contentsReplaced, this, &CreateExpressionPropertyModifierEditor::updateEditorFields);
 	}
 
 protected:
@@ -232,10 +228,10 @@ protected Q_SLOTS:
 	/// Is called when the user has typed in an expression.
 	void onExpressionEditingFinished();
 
-private:
-
 	/// Updates the enabled/disabled status of the editor's controls.
 	void updateEditorFields();
+
+private:
 
 	StringParameterUI* propertyNameUI;
 	VariantComboBoxParameterUI* propertyDataTypeUI;

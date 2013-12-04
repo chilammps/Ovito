@@ -25,9 +25,6 @@
 
 namespace Ovito {
 
-class DataSetContainer;		// defined in DataSetContainer.h
-class MainWindow;			// defined in MainWindow.h
-
 /******************************************************************************
 * The utility page lets the user invoke utility plugins.
 ******************************************************************************/
@@ -64,12 +61,6 @@ private:
 	/// This panel shows the utility plugin UI.
 	RolloutContainer* rolloutContainer;
 
-	/// Displays the available utility plugins.
-    QWidget* utilityListPanel;
-
-	/// The list of installed utility plugin classes.
-	QVector<const OvitoObjectType*> classes;
-
 	/// The utility that is currently active or NULL.
 	OORef<UtilityApplet> currentUtility;
 
@@ -78,12 +69,6 @@ private:
 
 	/// Contains one button per utility.
 	QButtonGroup* utilitiesButtonGroup;
-
-	/// Finds all utility classes provided by the installed plugins.
-	void scanInstalledPlugins();
-
-	/// Updates the displayed button in the utility selection panel.
-	void rebuildUtilityList();
 };
 
 

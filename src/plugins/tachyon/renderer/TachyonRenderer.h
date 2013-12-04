@@ -38,8 +38,8 @@ class TachyonRenderer : public NonInteractiveSceneRenderer
 {
 public:
 
-	/// Default constructor.
-	Q_INVOKABLE TachyonRenderer();
+	/// Constructor.
+	Q_INVOKABLE TachyonRenderer(DataSet* dataset);
 
 	///	Prepares the renderer for rendering of the given scene.
 	/// Throws an exception on error. Returns false when the operation has been aborted by the user.

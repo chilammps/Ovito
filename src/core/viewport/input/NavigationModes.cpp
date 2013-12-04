@@ -24,6 +24,7 @@
 #include <core/viewport/input/ViewportInputManager.h>
 #include <core/viewport/input/NavigationModes.h>
 #include <core/viewport/ViewportSettings.h>
+#include <core/viewport/ViewportConfiguration.h>
 #include <core/animation/AnimationSettings.h>
 #include <core/rendering/viewport/ViewportSceneRenderer.h>
 #include <core/scene/objects/camera/AbstractCameraObject.h>
@@ -33,11 +34,15 @@
 
 namespace Ovito {
 
-// Indicates around which point the camera should orbit.
-NavigationMode::OrbitCenterMode NavigationMode::_orbitCenterMode = NavigationMode::ORBIT_SELECTION_CENTER;
-
-// The user-defined orbiting center.
-Point3 NavigationMode::_userOrbitCenter = Point3::Origin();
+/******************************************************************************
+* This is called by the system after the input handler has
+* become the active handler.
+******************************************************************************/
+void NavigationMode::activated(bool temporaryActivation)
+{
+	_temporaryActivation = temporaryActivation;
+	ViewportInputMode::activated(temporaryActivation);
+}
 
 /******************************************************************************
 * This is called by the system after the input handler is
@@ -46,7 +51,7 @@ Point3 NavigationMode::_userOrbitCenter = Point3::Origin();
 void NavigationMode::deactivated()
 {
 	if(_viewport) {
-		// Restore old settings.
+		// Restore old settings if view change has not been committed.
 		_viewport->setCameraTransformation(_oldCameraTM);
 		_viewport->setFieldOfView(_oldFieldOfView);
 		_viewport->dataSet()->undoStack().endCompoundOperation(false);
@@ -60,7 +65,7 @@ void NavigationMode::deactivated()
 ******************************************************************************/
 void NavigationMode::mousePressEvent(Viewport* vp, QMouseEvent* event)
 {
-	if(event->button() == Qt::RightButton && isActive()) {
+	if(event->button() == Qt::RightButton) {
 		ViewportInputMode::mousePressEvent(vp, event);
 		return;
 	}
@@ -74,7 +79,7 @@ void NavigationMode::mousePressEvent(Viewport* vp, QMouseEvent* event)
 		_oldFieldOfView = vp->fieldOfView();
 		_oldViewMatrix = vp->viewMatrix();
 		_oldInverseViewMatrix = vp->inverseViewMatrix();
-		_currentOrbitCenter = orbitCenter();
+		_currentOrbitCenter = _viewport->dataSet()->viewportConfig()->orbitCenter();
 		_viewport->dataSet()->undoStack().beginCompoundOperation(tr("Modify camera"));
 	}
 }
@@ -85,8 +90,12 @@ void NavigationMode::mousePressEvent(Viewport* vp, QMouseEvent* event)
 void NavigationMode::mouseReleaseEvent(Viewport* vp, QMouseEvent* event)
 {
 	if(_viewport) {
+		// Commit view change.
 		_viewport->dataSet()->undoStack().endCompoundOperation();
 		_viewport = nullptr;
+
+		if(_temporaryActivation)
+			inputManager()->removeInputMode(this);
 	}
 }
 
@@ -114,51 +123,6 @@ void NavigationMode::mouseMoveEvent(Viewport* vp, QMouseEvent* event)
 }
 
 /******************************************************************************
-* Changes the way the center of rotation is chosen.
-******************************************************************************/
-void NavigationMode::setOrbitCenterMode(NavigationMode::OrbitCenterMode mode)
-{
-	if(_orbitCenterMode == mode) return;
-	_orbitCenterMode = mode;
-}
-
-/******************************************************************************
-* Sets the world space point around which the camera orbits.
-******************************************************************************/
-void NavigationMode::setUserOrbitCenter(const Point3& center)
-{
-	if(_userOrbitCenter == center) return;
-	_userOrbitCenter = center;
-}
-
-/******************************************************************************
-* Returns the world space point around which the camera orbits.
-******************************************************************************/
-Point3 NavigationMode::orbitCenter()
-{
-	OVITO_CHECK_OBJECT_POINTER(_viewport);
-
-	// Update orbiting center.
-	if(orbitCenterMode() == ORBIT_SELECTION_CENTER) {
-		Box3 selectionBoundingBox;
-		for(SceneNode* node : _viewport->dataSet()->selection()->nodes()) {
-			selectionBoundingBox.addBox(node->worldBoundingBox(_viewport->dataSet()->animationSettings()->time()));
-		}
-		if(!selectionBoundingBox.isEmpty())
-			return selectionBoundingBox.center();
-		else {
-			Box3 sceneBoundingBox = _viewport->dataSet()->sceneRoot()->worldBoundingBox(_viewport->dataSet()->animationSettings()->time());
-			if(!sceneBoundingBox.isEmpty())
-				return sceneBoundingBox.center();
-		}
-	}
-	else if(orbitCenterMode() == ORBIT_USER_DEFINED) {
-		return _userOrbitCenter;
-	}
-	return Point3::Origin();
-}
-
-/******************************************************************************
 * Lets the input mode render its overlay content in a viewport.
 ******************************************************************************/
 void NavigationMode::renderOverlay3D(Viewport* vp, ViewportSceneRenderer* renderer)
@@ -167,7 +131,7 @@ void NavigationMode::renderOverlay3D(Viewport* vp, ViewportSceneRenderer* render
 		return;
 
 	// Render center of rotation.
-	Point3 center = orbitCenter();
+	Point3 center = vp->dataSet()->viewportConfig()->orbitCenter();
 	FloatType symbolSize = vp->nonScalingSize(center);
 	renderer->setWorldTransform(AffineTransformation::translation(center - Point3::Origin()) * AffineTransformation::scaling(symbolSize));
 
@@ -188,7 +152,7 @@ void NavigationMode::renderOverlay3D(Viewport* vp, ViewportSceneRenderer* render
 ******************************************************************************/
 Box3 NavigationMode::overlayBoundingBox(Viewport* vp, ViewportSceneRenderer* renderer)
 {
-	Point3 center = orbitCenter();
+	Point3 center = vp->dataSet()->viewportConfig()->orbitCenter();
 	FloatType symbolSize = vp->nonScalingSize(center);
 	return Box3(center, symbolSize);
 }
@@ -233,7 +197,7 @@ void PanMode::modifyView(Viewport* vp, QPointF delta)
 void ZoomMode::modifyView(Viewport* vp, QPointF delta)
 {
 	if(vp->isPerspectiveProjection()) {
-		FloatType amount =  -5.0 * sceneSizeFactor() * delta.y();
+		FloatType amount =  -5.0 * sceneSizeFactor(vp) * delta.y();
 		if(vp->viewNode() == nullptr || vp->viewType() != Viewport::VIEW_SCENENODE) {
 			vp->setCameraPosition(_oldCameraPosition + _oldCameraDirection.resized(amount));
 		}
@@ -271,10 +235,10 @@ void ZoomMode::modifyView(Viewport* vp, QPointF delta)
 * Computes a scaling factor that depends on the total size of the scene which is used to
 * control the zoom sensitivity in perspective mode.
 ******************************************************************************/
-FloatType ZoomMode::sceneSizeFactor()
+FloatType ZoomMode::sceneSizeFactor(Viewport* vp)
 {
-	OVITO_CHECK_OBJECT_POINTER(_viewport);
-	Box3 sceneBoundingBox = _viewport->dataSet()->sceneRoot()->worldBoundingBox(_viewport->dataSet()->animationSettings()->time());
+	OVITO_CHECK_OBJECT_POINTER(vp);
+	Box3 sceneBoundingBox = vp->dataSet()->sceneRoot()->worldBoundingBox(vp->dataSet()->animationSettings()->time());
 	if(!sceneBoundingBox.isEmpty())
 		return sceneBoundingBox.size().length() * 5e-4;
 	else
@@ -288,7 +252,7 @@ void ZoomMode::zoom(Viewport* vp, FloatType steps)
 {
 	if(vp->viewNode() == nullptr || vp->viewType() != Viewport::VIEW_SCENENODE) {
 		if(vp->isPerspectiveProjection()) {
-			vp->setCameraPosition(vp->cameraPosition() + vp->cameraDirection().resized(sceneSizeFactor() * steps));
+			vp->setCameraPosition(vp->cameraPosition() + vp->cameraDirection().resized(sceneSizeFactor(vp) * steps));
 		}
 		else {
 			vp->setFieldOfView(vp->fieldOfView() * exp(-steps * 0.001));
@@ -297,7 +261,7 @@ void ZoomMode::zoom(Viewport* vp, FloatType steps)
 	else {
 		UndoableTransaction::handleExceptions(vp->dataSet()->undoStack(), tr("Zoom viewport"), [this, steps, vp]() {
 			if(vp->isPerspectiveProjection()) {
-				FloatType amount = sceneSizeFactor() * steps;
+				FloatType amount = sceneSizeFactor(vp) * steps;
 				TimeInterval iv;
 				const AffineTransformation& sys = vp->viewNode()->getWorldTransform(vp->dataSet()->animationSettings()->time(), iv);
 				vp->viewNode()->transformationController()->translate(vp->dataSet()->animationSettings()->time(), Vector3(0,0,-amount), sys);
@@ -411,13 +375,13 @@ bool PickOrbitCenterMode::pickOrbitCenter(Viewport* vp, const QPointF& pos)
 {
 	Point3 p;
 	if(findIntersection(vp, pos, p)) {
-		NavigationMode::setOrbitCenterMode(NavigationMode::ORBIT_USER_DEFINED);
-		NavigationMode::setUserOrbitCenter(p);
+		vp->dataSet()->viewportConfig()->setOrbitCenterMode(ViewportConfiguration::ORBIT_USER_DEFINED);
+		vp->dataSet()->viewportConfig()->setUserOrbitCenter(p);
 		return true;
 	}
 	else {
-		NavigationMode::setOrbitCenterMode(NavigationMode::ORBIT_SELECTION_CENTER);
-		NavigationMode::setUserOrbitCenter(Point3::Origin());
+		vp->dataSet()->viewportConfig()->setOrbitCenterMode(ViewportConfiguration::ORBIT_SELECTION_CENTER);
+		vp->dataSet()->viewportConfig()->setUserOrbitCenter(Point3::Origin());
 		if(MainWindow* mainWindow = vp->dataSet()->mainWindow())
 			mainWindow->statusBar()->showMessage(tr("No object has been picked. Resetting orbit center to default position."), 1200);
 		return false;

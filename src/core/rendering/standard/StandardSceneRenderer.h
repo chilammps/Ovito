@@ -39,7 +39,7 @@ class OVITO_CORE_EXPORT StandardSceneRenderer : public ViewportSceneRenderer
 public:
 
 	/// Default constructor.
-	Q_INVOKABLE StandardSceneRenderer() : ViewportSceneRenderer(), _antialiasingLevel(3) {
+	Q_INVOKABLE StandardSceneRenderer(DataSet* dataset) : ViewportSceneRenderer(dataset), _antialiasingLevel(3) {
 		INIT_PROPERTY_FIELD(StandardSceneRenderer::_antialiasingLevel)
 	}
 

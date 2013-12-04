@@ -431,24 +431,33 @@ private:
 
 	/// Indicates if we are currently redoing an operation.
 	bool _isRedoing;
+
+	friend class UndoSuspender;
 };
 
 /**
  * \brief A small helper object that suspends recording of undoable operations while it
- *        exists. It can be used to make your code exception-safe.
+ *        exists.
  * 
  * The constructor of this class calls UndoStack::suspend() and
  * the destructor calls UndoStack::resume().
  * 
+ * Use this to make your code exception-safe.
  * Create an instance of this class on the stack to suspend recording of operations
  * during the lifetime of the class instance.
  */
 class UndoSuspender {
 public:
-	UndoSuspender(UndoStack& undoStack) : _undoStack(undoStack) { _undoStack.suspend(); }
-	~UndoSuspender() { _undoStack.resume(); }
+	UndoSuspender(UndoStack& undoStack) : _suspendCount(&undoStack._suspendCount) { ++(*_suspendCount); }
+	UndoSuspender(RefMaker* object);
+	~UndoSuspender() {
+		if(_suspendCount) {
+			OVITO_ASSERT_MSG((*_suspendCount) > 0, "UndoStack::resume()", "resume() has been called more often than suspend().");
+			--(*_suspendCount);
+		}
+	}
 private:
-	UndoStack& _undoStack;
+	int* _suspendCount;
 };
 
 /**

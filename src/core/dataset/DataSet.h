@@ -84,7 +84,10 @@ public:
 	void setFilePath(const QString& path) { _filePath = path; }
 
 	/// \brief Returns the undo stack that keeps track of changes made to this dataset.
-	UndoStack& undoStack() { return _undoStack; }
+	UndoStack& undoStack() {
+		OVITO_CHECK_OBJECT_POINTER(this);
+		return _undoStack;
+	}
 
 	/// \brief Returns a pointer to the main window in which this dataset is being edited.
 	/// \return The main window, or NULL if this data set is not being edited in any window.

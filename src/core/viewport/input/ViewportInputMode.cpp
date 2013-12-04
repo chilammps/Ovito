@@ -30,8 +30,9 @@ namespace Ovito {
 /******************************************************************************
 * This is called by the system after the input handler has become the active handler.
 ******************************************************************************/
-void ViewportInputMode::activated()
+void ViewportInputMode::activated(bool temporaryActivation)
 {
+	_showOrbitCenter = false;
 	Q_EMIT statusChanged(true);
 }
 
@@ -57,7 +58,7 @@ bool ViewportInputMode::isActive() const
 ******************************************************************************/
 void ViewportInputMode::activateTemporaryNavigationMode(ViewportInputMode* mode)
 {
-	inputManager()->pushInputMode(mode);
+	inputManager()->pushInputMode(mode, true);
 }
 
 /******************************************************************************
@@ -82,8 +83,10 @@ void ViewportInputMode::mousePressEvent(Viewport* vp, QMouseEvent* event)
 		}
 		else {
 			activateTemporaryNavigationMode(inputManager()->panMode());
-			if(inputManager()->activeMode() == inputManager()->panMode())
-				inputManager()->activeMode()->mousePressEvent(vp, event);
+			if(inputManager()->activeMode() == inputManager()->panMode()) {
+				QMouseEvent leftMouseEvent(event->type(), event->localPos(), event->windowPos(), event->screenPos(), Qt::LeftButton, Qt::LeftButton, event->modifiers());
+				inputManager()->activeMode()->mousePressEvent(vp, &leftMouseEvent);
+			}
 		}
 		event->accept();
 	}
@@ -140,6 +143,7 @@ void ViewportInputMode::mouseDoubleClickEvent(Viewport* vp, QMouseEvent* event)
 	_lastMousePressEvent.reset();
 	if(event->button() == Qt::LeftButton) {
 		inputManager()->pickOrbitCenterMode()->pickOrbitCenter(vp, event->pos());
+		_showOrbitCenter = true;
 		event->accept();
 	}
 }
@@ -149,8 +153,8 @@ void ViewportInputMode::mouseDoubleClickEvent(Viewport* vp, QMouseEvent* event)
 ******************************************************************************/
 void ViewportInputMode::renderOverlay3D(Viewport* vp, ViewportSceneRenderer* renderer)
 {
-//	if(_showOrbitCenter && isActive())
-//		OrbitMode::instance()->renderOverlay3D(vp, renderer, isActive);
+	if(_showOrbitCenter && isActive())
+		inputManager()->orbitMode()->renderOverlay3D(vp, renderer);
 }
 
 /******************************************************************************
@@ -159,8 +163,8 @@ void ViewportInputMode::renderOverlay3D(Viewport* vp, ViewportSceneRenderer* ren
 Box3 ViewportInputMode::overlayBoundingBox(Viewport* vp, ViewportSceneRenderer* renderer)
 {
 	Box3 bb;
-//	if(_showOrbitCenter && isActive())
-//		bb.addBox(OrbitMode::instance()->overlayBoundingBox(vp, renderer, isActive));
+	if(_showOrbitCenter && isActive())
+		bb.addBox(inputManager()->orbitMode()->overlayBoundingBox(vp, renderer));
 	return bb;
 }
 

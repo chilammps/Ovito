@@ -95,19 +95,12 @@ public Q_SLOTS:
 	/// \brief Sets the object being edited in this editor.
 	/// \param newObject The new object to load into the editor. This must be of the same class
 	///                  as the previous object. 
-	/// This will update the UI controls to reflect the new contents. Derived editor classes
-	/// must override this method and update the values shown in the UI controls. 
-	/// New implementations of this method must call this base implementation.
 	///
 	/// This method generates a contentsReplaced() and a contentsChanged() signal.
-	///
-	/// \sa editObject()
-	virtual void setEditObject(RefTarget* newObject) {
+	void setEditObject(RefTarget* newObject) {
 		OVITO_ASSERT_MSG(!editObject() || !newObject || newObject->getOOType().isDerivedFrom(editObject()->getOOType()),
 				"PropertiesEditor::setEditObject()", "This properties editor was not made for this object class.");
 		_editObject = newObject;
-		contentsReplaced(newObject);
-		contentsChanged(newObject);
 	}
 
 Q_SIGNALS:
@@ -130,6 +123,9 @@ protected:
 	
 	/// This method is called when a reference target changes.
 	virtual bool referenceEvent(RefTarget* source, ReferenceEvent* event) override;
+
+	/// Is called when the value of a reference field of this RefMaker changes.
+	virtual void referenceReplaced(const PropertyFieldDescriptor& field, RefTarget* oldTarget, RefTarget* newTarget) override;
 
 private:
 	

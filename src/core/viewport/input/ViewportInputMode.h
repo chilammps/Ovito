@@ -50,7 +50,7 @@ public:
 	};
 
 	/// \brief Constructor.
-	ViewportInputMode(QObject* parent = nullptr) : QObject(parent), _manager(nullptr) {}
+	ViewportInputMode(QObject* parent = nullptr) : QObject(parent), _manager(nullptr), _showOrbitCenter(false) {}
 
 	/// \brief Returns a pointer to the viewport input manager that has a reference to this mode.
 	ViewportInputManager* inputManager() const {
@@ -127,7 +127,7 @@ public:
 	///
 	/// Subclasses should override this method to return \c true if they also override the renderOverlay3D() method.
 	/// The default implementation returns \c false.
-	virtual bool hasOverlay() { return false; }
+	virtual bool hasOverlay() { return _showOrbitCenter; }
 
 	/// \brief Lets the input mode render its 3d overlay content in a viewport.
 	/// \param vp The viewport into which the mode should render its specific overlay content.
@@ -169,7 +169,7 @@ protected:
 	///        become the active handler.
 	///
 	/// Implementations of this virtual method in sub-classes should call the base implementation.
-	virtual void activated();
+	virtual void activated(bool temporaryActivation);
 
 	/// \brief This is called by the system after the input handler is
 	///        no longer the active handler.
@@ -187,6 +187,9 @@ private:
 
 	/// The viewport input manager that has a reference to this mode.
 	ViewportInputManager* _manager;
+
+	/// This flag indicates that the current camera orbit should be shown in the viewports.
+	bool _showOrbitCenter;
 
 	Q_OBJECT
 

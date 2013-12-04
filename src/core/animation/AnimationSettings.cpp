@@ -102,30 +102,11 @@ OORef<RefTarget> AnimationSettings::clone(bool deepCopy, CloneHelper& cloneHelpe
 ******************************************************************************/
 void AnimationSettings::onTimeChanged(TimePoint newTime)
 {
-	// Wait until scene is ready, then repaint viewports.
-
 	_timeIsChanging++;
 	dataSet()->runWhenSceneIsReady([this] () {
 		_timeIsChanging--;
-#if 0
-		ViewportManager::instance().updateViewports();
-#endif
+		Q_EMIT timeChangeComplete();
 	});
-}
-
-/******************************************************************************
-* Is called whenever the active animation interval has changed.
-******************************************************************************/
-void AnimationSettings::onIntervalChanged(TimeInterval newAnimationInterval)
-{
-	bool isAnimationInterval = newAnimationInterval.duration() != 0;
-#if 0
-	ActionManager::instance().getAction(ACTION_GOTO_START_OF_ANIMATION)->setEnabled(isAnimationInterval);
-	ActionManager::instance().getAction(ACTION_GOTO_PREVIOUS_FRAME)->setEnabled(isAnimationInterval);
-	ActionManager::instance().getAction(ACTION_TOGGLE_ANIMATION_PLAYBACK)->setEnabled(isAnimationInterval);
-	ActionManager::instance().getAction(ACTION_GOTO_NEXT_FRAME)->setEnabled(isAnimationInterval);
-	ActionManager::instance().getAction(ACTION_GOTO_END_OF_ANIMATION)->setEnabled(isAnimationInterval);
-#endif
 }
 
 /******************************************************************************

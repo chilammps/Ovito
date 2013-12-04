@@ -23,6 +23,7 @@
 #include <core/utilities/io/ObjectSaveStream.h>
 #include <core/object/OvitoObject.h>
 #include <core/reference/PropertyFieldDescriptor.h>
+#include <core/dataset/DataSet.h>
 
 namespace Ovito {
 
@@ -46,7 +47,7 @@ ObjectSaveStream::~ObjectSaveStream()
 ******************************************************************************/
 void ObjectSaveStream::saveObject(OvitoObject* object)
 {
-	if(object == NULL) *this << (quint32)0;
+	if(object == nullptr) *this << (quint32)0;
 	else {
 		OVITO_CHECK_OBJECT_POINTER(object);
 		OVITO_ASSERT(_objects.size() == _objectMap.size());
@@ -54,6 +55,12 @@ void ObjectSaveStream::saveObject(OvitoObject* object)
 		if(id == 0) {
 			_objects.push_back(object);
 			id = (quint32)_objects.size();
+
+			if(object->getOOType() == DataSet::OOType)
+				_dataSet = static_object_cast<DataSet>(object);
+
+			OVITO_ASSERT(!object->getOOType().isDerivedFrom(RefMaker::OOType)
+					|| static_object_cast<RefMaker>(object)->dataSet() == _dataSet);
 		}
 		*this << id;
 	}

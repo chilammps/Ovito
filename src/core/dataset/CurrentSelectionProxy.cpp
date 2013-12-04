@@ -143,7 +143,7 @@ const QVector<SceneNode*>& CurrentSelectionProxy::nodes() const
 bool CurrentSelectionProxy::referenceEvent(RefTarget* source, ReferenceEvent* event)
 {
 	if(event->type() == ReferenceEvent::TargetChanged) {
-        onChanged();        
+		emitSelectionChangedSignals();
 	}
 	else if(event->type() == ReferenceEvent::TitleChanged && source == currentSelectionSet()) {
 		return false;
@@ -152,15 +152,13 @@ bool CurrentSelectionProxy::referenceEvent(RefTarget* source, ReferenceEvent* ev
 }
 
 /******************************************************************************
-* Is called when the selection set has changed.
-* Raises the selectionChanged event for the DataSetManager.
+* Emits the selectionChanged() signal, followed by a selectionChangedComplete()
+* signal.
 ******************************************************************************/
-void CurrentSelectionProxy::onChanged()
+void CurrentSelectionProxy::emitSelectionChangedSignals()
 {
-	// Raise event.
 	Q_EMIT selectionChanged(this);
 
-	// Raise delayed event.
 	if(!_changeEventInQueue) {
 		_changeEventInQueue = true;
 		QMetaObject::invokeMethod(this, "onInternalSelectionChanged", Qt::QueuedConnection);

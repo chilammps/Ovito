@@ -54,26 +54,25 @@ DataSetContainer::DataSetContainer(MainWindow* mainWindow) : RefMaker(nullptr),
 }
 
 /******************************************************************************
-* Sets the current data set being edited by the user.
+* Is called when the value of a reference field of this RefMaker changes.
 ******************************************************************************/
-void DataSetContainer::setCurrentSet(const OORef<DataSet>& set)
+void DataSetContainer::referenceReplaced(const PropertyFieldDescriptor& field, RefTarget* oldTarget, RefTarget* newTarget)
 {
-	if(_currentSet) {
-		_currentSet->animationSettings()->stopAnimationPlayback();
+	if(field == PROPERTY_FIELD(DataSetContainer::_currentSet)) {
+		if(oldTarget)
+			static_object_cast<DataSet>(oldTarget)->animationSettings()->stopAnimationPlayback();
+
+		// Update proxy selection set to track the selection of the new current dataset.
+		if(_selectionSetProxy)
+			_selectionSetProxy->setCurrentSelectionSet(currentSet() ? currentSet()->selection() : nullptr);
+
+		Q_EMIT dataSetChanged(currentSet());
 	}
-
-	_currentSet = set;
-
-	// Reset selection set
-	_selectionSetProxy->setCurrentSelectionSet(set ? set->selection() : nullptr);
-
-	// Inform listeners.
-	Q_EMIT dataSetChanged(currentSet());
+	RefMaker::referenceReplaced(field, oldTarget, newTarget);
 }
 
 /******************************************************************************
-* This is the implementation of the "Save" action.
-* Returns true, if the scene has been saved.
+* Save the current dataset.
 ******************************************************************************/
 bool DataSetContainer::fileSave()
 {
@@ -184,8 +183,16 @@ bool DataSetContainer::askForSaveChanges()
 }
 
 /******************************************************************************
+* Creates an empty dataset and makes it the current dataset.
+******************************************************************************/
+bool DataSetContainer::fileNew()
+{
+	setCurrentSet(new DataSet());
+	return true;
+}
+
+/******************************************************************************
 * Loads the given scene file.
-* Returns true if the file has been successfully loaded.
 ******************************************************************************/
 bool DataSetContainer::fileLoad(const QString& filename)
 {

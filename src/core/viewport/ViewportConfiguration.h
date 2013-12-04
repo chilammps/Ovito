@@ -39,6 +39,16 @@ namespace Ovito {
  */
 class OVITO_CORE_EXPORT ViewportConfiguration : public RefTarget
 {
+
+public:
+
+	enum OrbitCenterMode {
+		ORBIT_SELECTION_CENTER,		/// Take the center of mass of the current selection as orbit center.
+									/// If there is no selection, use scene bounding box.
+		ORBIT_USER_DEFINED			/// Use the orbit center set by the user.
+	};
+	Q_ENUMS(OrbitCenterMode);
+
 public:
 
 	/// Constructor.
@@ -54,39 +64,9 @@ public:
 	/// \return The active Viewport or \c NULL if no viewport is currently active.
 	Viewport* activeViewport() { return _activeViewport; }
 
-	/// \brief Sets the active viewport.
-	/// \param vp The viewport to be made active.
-	void setActiveViewport(Viewport* vp) {
-		OVITO_ASSERT_MSG(vp == NULL || _viewports.contains(vp), "ViewportConfiguration::setActiveViewport", "Viewport is not in current configuration.");
-		_activeViewport = vp;
-	}
-
 	/// \brief Returns the maximized viewport.
 	/// \return The maximized viewport or \c NULL if no one is currently maximized.
 	Viewport* maximizedViewport() { return _maximizedViewport; }
-
-	/// \brief Maximizes a viewport.
-	/// \param vp The viewport to be maximized or \c NULL to restore the currently maximized viewport to
-	///           its original state.
-	void setMaximizedViewport(Viewport* vp) {
-		OVITO_ASSERT_MSG(vp == NULL || _viewports.contains(vp), "ViewportConfiguration::setMaximizedViewport", "Viewport is not in current configuration.");
-		_maximizedViewport = vp;
-	}
-
-	/// \brief This will flag all viewports for redrawing.
-	///
-	/// This function does not cause an immediate repaint of the viewports; instead it schedules a
-	/// paint event for processing when Qt returns to the main event loop. You can call this method as often
-	/// as you want; it will return immediately and will cause only one viewport repaint when Qt returns to the
-	/// main event loop.
-	///
-	/// To update only a single viewport, Viewport::updateViewport() should be used.
-	///
-	/// To redraw all viewports immediately without waiting for the paint event to be processed,
-	/// call processViewportUpdates() subsequently.
-	///
-	/// \sa Viewport::updateViewport(), processViewportUpdates()
-	void updateViewports();
 
 	/// \brief Immediately repaints all viewports that have been scheduled for an update using updateViewports().
 	/// \sa updateViewports()
@@ -119,6 +99,41 @@ public:
 	/// \return \c true if there is currently a rendering operation going on.
 	bool isRendering() const;
 
+	/// Returns the renderer to be used for rendering the interactive viewports.
+	ViewportSceneRenderer* viewportRenderer();
+
+	/// Changes the way the center of rotation is chosen.
+	void setOrbitCenterMode(OrbitCenterMode mode) { _orbitCenterMode = mode; }
+
+	/// Returns the current center of orbit mode.
+	OrbitCenterMode orbitCenterMode() { return _orbitCenterMode; }
+
+	/// Sets the user-defined location around which the camera orbits.
+	void setUserOrbitCenter(const Point3& center) { _userOrbitCenter = center; }
+
+	/// Returns the user-defined location around which the camera orbits.
+	const Point3& userOrbitCenter() const { return _userOrbitCenter; }
+
+	/// Returns the current location around which the viewport camera orbits.
+	Point3 orbitCenter();
+
+public Q_SLOTS:
+
+	/// \brief Sets the active viewport.
+	/// \param vp The viewport to be made active.
+	void setActiveViewport(Viewport* vp) {
+		OVITO_ASSERT_MSG(vp == NULL || _viewports.contains(vp), "ViewportConfiguration::setActiveViewport", "Viewport is not in current configuration.");
+		_activeViewport = vp;
+	}
+
+	/// \brief Maximizes a viewport.
+	/// \param vp The viewport to be maximized or \c NULL to restore the currently maximized viewport to
+	///           its original state.
+	void setMaximizedViewport(Viewport* vp) {
+		OVITO_ASSERT_MSG(vp == NULL || _viewports.contains(vp), "ViewportConfiguration::setMaximizedViewport", "Viewport is not in current configuration.");
+		_maximizedViewport = vp;
+	}
+
 	/// \brief Zooms all viewports to the extents of the currently selected nodes.
 	void zoomToSelectionExtents() {
 		for(Viewport* vp : viewports())
@@ -131,13 +146,26 @@ public:
 			vp->zoomToSceneExtents();
 	}
 
-	/// Returns the renderer to be used for rendering the interactive viewports.
-	ViewportSceneRenderer* viewportRenderer();
+	/// \brief This will flag all viewports for redrawing.
+	///
+	/// This function does not cause an immediate repaint of the viewports; instead it schedules a
+	/// paint event for processing when Qt returns to the main event loop. You can call this method as often
+	/// as you want; it will return immediately and will cause only one viewport repaint when Qt returns to the
+	/// main event loop.
+	///
+	/// To update only a single viewport, Viewport::updateViewport() should be used.
+	///
+	/// To redraw all viewports immediately without waiting for the paint event to be processed,
+	/// call processViewportUpdates() subsequently.
+	void updateViewports();
 
 protected:
 
 	/// Is called when the value of a reference field of this RefMaker changes.
 	virtual void referenceReplaced(const PropertyFieldDescriptor& field, RefTarget* oldTarget, RefTarget* newTarget) override;
+
+	/// Is called when the value of a property of this object has changed.
+	virtual void propertyChanged(const PropertyFieldDescriptor& field) override;
 
 Q_SIGNALS:
 
@@ -146,6 +174,9 @@ Q_SIGNALS:
 
 	/// This signal is emitted when one of the viewports has been maximized.
 	void maximizedViewportChanged(Viewport* maximizedViewport);
+
+	/// This signal is emitted when the camera orbit center haa changed.
+	void cameraOrbitCenterChanged();
 
 private:
 
@@ -167,28 +198,38 @@ private:
 	/// The renderer for the interactive viewports.
 	OORef<ViewportSceneRenderer> _viewportRenderer;
 
+	/// Controls around which point the viewport camera should orbit.
+	PropertyField<OrbitCenterMode, int> _orbitCenterMode;
+
+	/// Position of the orbiting center picked by the user.
+	PropertyField<Point3> _userOrbitCenter;
+
 	Q_OBJECT
 	OVITO_OBJECT
 
 	DECLARE_VECTOR_REFERENCE_FIELD(_viewports);
 	DECLARE_REFERENCE_FIELD(_activeViewport);
 	DECLARE_REFERENCE_FIELD(_maximizedViewport);
+	DECLARE_PROPERTY_FIELD(_orbitCenterMode);
+	DECLARE_PROPERTY_FIELD(_userOrbitCenter);
 };
 
 
 /**
  * \brief Small helper class that suspends viewport redrawing while it
- * exists. It can be used to make your code exception-safe.
+ * exists.
  *
  * The constructor of this class calls ViewportConfiguration::suspendViewportUpdates() and
  * the destructor calls ViewportConfiguration::resumeViewportUpdates().
  *
+ * Use this to make your code exception-safe.
  * Just create an instance of this class on the stack to suspend viewport updates
  * during the lifetime of the class instance.
  */
 class ViewportSuspender {
 public:
 	ViewportSuspender(ViewportConfiguration* vpconf) : _vpconf(*vpconf) { _vpconf.suspendViewportUpdates(); }
+	ViewportSuspender(RefMaker* object) : _vpconf(*object->dataSet()->viewportConfig()) { _vpconf.suspendViewportUpdates(); }
 	~ViewportSuspender() { _vpconf.resumeViewportUpdates(); }
 private:
 	ViewportConfiguration& _vpconf;

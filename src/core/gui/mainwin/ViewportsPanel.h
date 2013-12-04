@@ -69,6 +69,8 @@ private:
 	QMetaObject::Connection _activeViewportChangedConnection;
 	QMetaObject::Connection _maximizedViewportChangedConnection;
 	QMetaObject::Connection _autoKeyModeChangedConnection;
+	QMetaObject::Connection _timeChangeCompleteConnection;
+
 	OORef<ViewportConfiguration> _viewportConfig;
 	OORef<AnimationSettings> _animSettings;
 };

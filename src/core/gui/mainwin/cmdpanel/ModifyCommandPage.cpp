@@ -114,7 +114,6 @@ ModifyCommandPage::ModifyCommandPage(MainWindow* mainWindow, QWidget* parent) : 
 	splitter->setStretchFactor(1,1);
 
 	connect(&_datasetContainer, &DataSetContainer::selectionChangeComplete, this, &ModifyCommandPage::onSelectionChangeComplete);
-	connect(&_selectionSetListener, &RefTargetListener::notificationEvent, this, &ModifyCommandPage::onSelectionSetEvent);
 	updateActions(nullptr);
 
 	// Create About panel.
@@ -127,16 +126,7 @@ ModifyCommandPage::ModifyCommandPage(MainWindow* mainWindow, QWidget* parent) : 
 void ModifyCommandPage::onSelectionChangeComplete(SelectionSet* newSelection)
 {
 	// Make sure we get informed about any future changes of the selection set.
-	_selectionSetListener.setTarget(newSelection);
 	_modificationListModel->refreshList();
-}
-
-/******************************************************************************
-* This is called by the RefTargetListener that listens to notification messages sent by the
-* current selection set.
-******************************************************************************/
-void ModifyCommandPage::onSelectionSetEvent(ReferenceEvent* event)
-{
 }
 
 /******************************************************************************
@@ -153,7 +143,8 @@ void ModifyCommandPage::onSelectedItemChanged()
 
 	if(object != _propertiesPanel->editObject()) {
 		_propertiesPanel->setEditObject(object);
-		_datasetContainer.currentSet()->viewportConfig()->updateViewports();
+		if(_datasetContainer.currentSet())
+			_datasetContainer.currentSet()->viewportConfig()->updateViewports();
 	}
 	updateActions(currentItem);
 
