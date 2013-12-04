@@ -23,6 +23,7 @@
 #include <core/utilities/io/ObjectLoadStream.h>
 #include <core/reference/PropertyFieldDescriptor.h>
 #include <core/plugins/Plugin.h>
+#include <core/dataset/DataSet.h>
 #include <core/object/OvitoObject.h>
 #include <core/object/OvitoObjectReference.h>
 
@@ -31,7 +32,7 @@ namespace Ovito {
 /******************************************************************************
 * Opens the stream for reading.
 ******************************************************************************/
-ObjectLoadStream::ObjectLoadStream(QDataStream& source) : LoadStream(source), _currentObject(NULL)
+ObjectLoadStream::ObjectLoadStream(QDataStream& source) : LoadStream(source), _currentObject(nullptr), _dataSet(nullptr)
 {
 	qint64 oldPos = filePosition();
 
@@ -128,12 +129,14 @@ OORef<OvitoObject> ObjectLoadStream::loadObject()
 	*this >> id;
 	if(id == 0) return nullptr;
 	else {
-		ObjectEntry& entry = _objects[id-1];
-		if(entry.object != NULL) return entry.object;
+		ObjectEntry& entry = _objects[id - 1];
+		if(entry.object != nullptr) return entry.object;
 		else {
 			// Create an instance of the object class.
-			entry.object = entry.pluginClass->descriptor->createInstance();
-			_objectsToLoad.push_back(id-1);
+			entry.object = entry.pluginClass->descriptor->createInstance(_dataSet);
+			if(entry.pluginClass->descriptor == &DataSet::OOType)
+				_dataSet = static_object_cast<DataSet>(entry.object.get());
+			_objectsToLoad.push_back(id - 1);
 			return entry.object;
 		}
 	}

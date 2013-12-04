@@ -25,7 +25,6 @@
 #include <core/Core.h>
 #include "FutureInterface.h"
 #include "Future.h"
-#include "ProgressManager.h"
 
 namespace Ovito {
 
@@ -78,15 +77,6 @@ private:
 	Function _function;
 	std::shared_ptr<FutureInterface<R>> _p;
 };
-
-template<typename R, typename Function>
-Future<R> runInBackground(Function f, bool registerWithProgressManager = true)
-{
-	Future<R> future = (new Task<R,Function>(f))->start();
-	if(registerWithProgressManager)
-		ProgressManager::instance().addTask(future);
-	return future;
-}
 
 };
 

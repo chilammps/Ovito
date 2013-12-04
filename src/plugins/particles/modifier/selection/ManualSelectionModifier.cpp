@@ -123,7 +123,7 @@ void ManualSelectionModifier::setParticleSelection(ModifierApplication* modApp, 
  * Viewport input mode that allows to pick individual particles and add and remove them
  * from the selection set.
  */
-class SelectParticleInputMode : public ViewportInputHandler, ParticlePickingHelper
+class SelectParticleInputMode : public ViewportInputMode, ParticlePickingHelper
 {
 public:
 
@@ -131,7 +131,7 @@ public:
 	SelectParticleInputMode(ManualSelectionModifierEditor* editor) : _editor(editor) {}
 
 	/// Returns the activation behavior of this input handler.
-	virtual InputHandlerType handlerType() override { return ViewportInputHandler::NORMAL; }
+	virtual InputHandlerType handlerType() override { return ViewportInputMode::NORMAL; }
 
 	/// Handles the mouse up events for a Viewport.
 	virtual void mouseReleaseEvent(Viewport* vp, QMouseEvent* event) override {
@@ -145,7 +145,7 @@ public:
 				MainWindow::instance().statusBar()->showMessage(tr("You did not click on a particle."), 1000);
 			}
 		}
-		ViewportInputHandler::mouseReleaseEvent(vp, event);
+		ViewportInputMode::mouseReleaseEvent(vp, event);
 	}
 
 	ManualSelectionModifierEditor* _editor;
@@ -155,7 +155,7 @@ public:
  * Viewport input mode that allows to select a group of particles
  * by drawing a fence around them.
  */
-class FenceParticleInputMode : public ViewportInputHandler
+class FenceParticleInputMode : public ViewportInputMode
 {
 public:
 
@@ -163,7 +163,7 @@ public:
 	FenceParticleInputMode(ManualSelectionModifierEditor* editor) : _editor(editor) {}
 
 	/// Returns the activation behavior of this input handler.
-	virtual InputHandlerType handlerType() override { return ViewportInputHandler::NORMAL; }
+	virtual InputHandlerType handlerType() override { return ViewportInputMode::NORMAL; }
 
 	/// Handles the mouse down events for a Viewport.
 	virtual void mousePressEvent(Viewport* vp, QMouseEvent* event) override {
@@ -173,7 +173,7 @@ public:
 					* (FloatType)vp->viewportWindow()->devicePixelRatio());
 			vp->updateViewport();
 		}
-		else ViewportInputHandler::mousePressEvent(vp, event);
+		else ViewportInputMode::mousePressEvent(vp, event);
 	}
 
 	/// Handles the mouse move events for a Viewport.
@@ -183,7 +183,7 @@ public:
 					* (FloatType)vp->viewportWindow()->devicePixelRatio());
 			vp->updateViewport();
 		}
-		ViewportInputHandler::mouseMoveEvent(vp, event);
+		ViewportInputMode::mouseMoveEvent(vp, event);
 	}
 
 	/// Handles the mouse up events for a Viewport.
@@ -200,7 +200,7 @@ public:
 			_fence.clear();
 			vp->updateViewport();
 		}
-		ViewportInputHandler::mouseReleaseEvent(vp, event);
+		ViewportInputMode::mouseReleaseEvent(vp, event);
 	}
 
 	/// Indicates whether this input mode renders 3d geometry into the viewports.
@@ -211,14 +211,14 @@ public:
 		if(isActive && vp == ViewportManager::instance().activeViewport() && _fence.size() >= 2) {
 			renderer->render2DPolyline(_fence.constData(), _fence.size(), ColorA(1,1,1,1), true);
 		}
-		ViewportInputHandler::renderOverlay2D(vp, renderer, isActive);
+		ViewportInputMode::renderOverlay2D(vp, renderer, isActive);
 	}
 
 protected:
 
 	/// This is called by the system when the input handler has become active.
 	virtual void activated() override {
-		ViewportInputHandler::activated();
+		ViewportInputMode::activated();
 #ifndef Q_OS_MACX
 		MainWindow::instance().statusBar()->showMessage(
 				tr("Draw a fence around a group of particles. Use CONTROL and ALT keys to extend and reduce existing selection."));
@@ -232,7 +232,7 @@ protected:
 	virtual void deactivated() override {
 		_fence.clear();
 		MainWindow::instance().statusBar()->clearMessage();
-		ViewportInputHandler::deactivated();
+		ViewportInputMode::deactivated();
 	}
 
 private:

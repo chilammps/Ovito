@@ -23,7 +23,7 @@
 #define __OVITO_MANUAL_SELECTION_MODIFIER_H
 
 #include <plugins/particles/Particles.h>
-#include <core/viewport/input/ViewportInputHandler.h>
+#include <core/viewport/input/ViewportInputMode.h>
 #include <plugins/particles/util/ParticlePickingHelper.h>
 #include "../ParticleModifier.h"
 
@@ -121,8 +121,8 @@ protected Q_SLOTS:
 
 private:
 
-	OORef<ViewportInputHandler> _selectParticleMode;
-	OORef<ViewportInputHandler> _fenceParticleMode;
+	OORef<ViewportInputMode> _selectParticleMode;
+	OORef<ViewportInputMode> _fenceParticleMode;
 
 	Q_OBJECT
 	OVITO_OBJECT

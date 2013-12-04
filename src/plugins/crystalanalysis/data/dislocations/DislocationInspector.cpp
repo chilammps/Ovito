@@ -33,7 +33,7 @@
 namespace CrystalAnalysis {
 
 IMPLEMENT_OVITO_OBJECT(CrystalAnalysis, DislocationInspector, PropertiesEditor);
-IMPLEMENT_OVITO_OBJECT(CrystalAnalysis, DislocationPickMode, ViewportInputHandler);
+IMPLEMENT_OVITO_OBJECT(CrystalAnalysis, DislocationPickMode, ViewportInputMode);
 DEFINE_FLAGS_REFERENCE_FIELD(DislocationInspector, _sceneNode, "SceneNode", ObjectNode, PROPERTY_FIELD_NO_UNDO);
 
 /// List of column indices used by the table.
@@ -359,7 +359,7 @@ void DislocationPickMode::mouseReleaseEvent(Viewport* vp, QMouseEvent* event)
 			_inspector->dislocationListUI()->tableWidget()->scrollTo(sortedIndex, QAbstractItemView::EnsureVisible);
 		}
 	}
-	ViewportInputHandler::mouseReleaseEvent(vp, event);
+	ViewportInputMode::mouseReleaseEvent(vp, event);
 }
 
 /******************************************************************************
@@ -373,7 +373,7 @@ void DislocationPickMode::mouseMoveEvent(Viewport* vp, QMouseEvent* event)
 		_hoverSegment = pickResult;
 		ViewportManager::instance().updateViewports();
 	}
-	ViewportInputHandler::mouseMoveEvent(vp, event);
+	ViewportInputMode::mouseMoveEvent(vp, event);
 }
 
 /******************************************************************************
@@ -381,7 +381,7 @@ void DislocationPickMode::mouseMoveEvent(Viewport* vp, QMouseEvent* event)
 ******************************************************************************/
 void DislocationPickMode::renderOverlay3D(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive)
 {
-	ViewportInputHandler::renderOverlay3D(vp, renderer, isActive);
+	ViewportInputMode::renderOverlay3D(vp, renderer, isActive);
 
 	if(!_hoverSegment.segment || !_hoverSegment.objNode || !_hoverSegment.displayObj)
 		return;

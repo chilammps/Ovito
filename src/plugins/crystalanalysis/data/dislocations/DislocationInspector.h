@@ -23,7 +23,7 @@
 #define __OVITO_CA_DISLOCATION_INSPECTOR_H
 
 #include <plugins/crystalanalysis/CrystalAnalysis.h>
-#include <core/viewport/input/ViewportInputHandler.h>
+#include <core/viewport/input/ViewportInputMode.h>
 #include <core/viewport/input/ViewportInputManager.h>
 #include <core/gui/actions/ViewportModeAction.h>
 #include <core/gui/properties/RefTargetListParameterUI.h>
@@ -76,7 +76,7 @@ private:
 
 	RefTargetListParameterUI* _dislocationListUI;
 	QSortFilterProxyModel* _sortedModel;
-	OORef<ViewportInputHandler> _pickDislocationHandler;
+	OORef<ViewportInputMode> _pickDislocationHandler;
 	ViewportModeAction* _pickDislocationAction;
 
 	/// The scene node being loaded in the editor.
@@ -92,7 +92,7 @@ private:
 * This class belongs to the DislocationInspector and allows the user to pick
 * a dislocation segment in the viewports.
 ******************************************************************************/
-class OVITO_CRYSTALANALYSIS_EXPORT DislocationPickMode : public ViewportInputHandler
+class OVITO_CRYSTALANALYSIS_EXPORT DislocationPickMode : public ViewportInputMode
 {
 public:
 
@@ -102,7 +102,7 @@ public:
 	}
 
 	/// Returns the activation behavior of this input handler.
-	virtual InputHandlerType handlerType() override { return ViewportInputHandler::NORMAL; }
+	virtual InputHandlerType handlerType() override { return ViewportInputMode::NORMAL; }
 
 	/// Handles the mouse button up events for a Viewport.
 	virtual void mouseReleaseEvent(Viewport* vp, QMouseEvent* event) override;

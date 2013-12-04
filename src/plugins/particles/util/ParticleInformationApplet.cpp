@@ -208,7 +208,7 @@ void ParticleInformationInputMode::mouseReleaseEvent(Viewport* vp, QMouseEvent* 
 		_applet->updateInformationDisplay();
 		ViewportManager::instance().updateViewports();
 	}
-	ViewportInputHandler::mouseReleaseEvent(vp, event);
+	ViewportInputMode::mouseReleaseEvent(vp, event);
 }
 
 /******************************************************************************
@@ -216,7 +216,7 @@ void ParticleInformationInputMode::mouseReleaseEvent(Viewport* vp, QMouseEvent* 
 ******************************************************************************/
 void ParticleInformationInputMode::renderOverlay3D(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive)
 {
-	ViewportInputHandler::renderOverlay3D(vp, renderer, isActive);
+	ViewportInputMode::renderOverlay3D(vp, renderer, isActive);
 	for(const auto& pickedParticle : _pickedParticles)
 		renderSelectionMarker(vp, renderer, pickedParticle);
 }

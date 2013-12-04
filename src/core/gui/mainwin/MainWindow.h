@@ -73,8 +73,11 @@ public:
 	/// Returns the container that keeps a reference to the current dataset.
 	DataSetContainer& datasetContainer() { return _datasetContainer; }
 
-	/// Returns the associated GUI action manager.
+	/// Returns the window's action manager.
 	ActionManager* actionManager() const { return _actionManager; }
+
+	/// Returns the window's viewport input manager.
+	ViewportInputManager* viewportInputManager() const { return _viewportInputManager; }
 
 protected:
 
@@ -114,6 +117,9 @@ private:
 
 	/// The associated GUI action manager.
 	ActionManager* _actionManager;
+
+	/// The associated viewport input manager.
+	ViewportInputManager* _viewportInputManager;
 };
 
 };

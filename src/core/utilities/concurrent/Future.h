@@ -29,9 +29,6 @@ namespace Ovito {
 
 class FutureBase {
 public:
-	FutureBase() {}
-
-	explicit FutureBase(const std::shared_ptr<FutureInterfaceBase>& p) : _interface(p) {}
 
 	bool isCanceled() const { return interface()->isCanceled(); }
 	bool isFinished() const { return interface()->isFinished(); }
@@ -49,6 +46,10 @@ public:
 
 protected:
 
+	FutureBase() {}
+
+	explicit FutureBase(const std::shared_ptr<FutureInterfaceBase>& p) : _interface(p) {}
+
 	std::shared_ptr<FutureInterfaceBase>& interface() {
 		OVITO_ASSERT(isValid());
 		return _interface;
@@ -63,7 +64,7 @@ protected:
 	template<typename R2> friend class FutureInterface;
 	friend class FutureInterfaceBase;
 	friend class FutureWatcher;
-	friend class ProgressManager;
+	friend class TaskManager;
 };
 
 template<typename R>

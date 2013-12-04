@@ -128,7 +128,7 @@ SET(OVITO_CORE_SOURCE_FILES
 	utilities/io/SftpJob.cpp
 	utilities/io/CompressedTextParserStream.cpp
 	utilities/concurrent/Future.cpp
-	utilities/concurrent/ProgressManager.cpp
+	utilities/concurrent/TaskManager.cpp
 	utilities/opengl/SharedOpenGLResource.cpp
 	rendering/SceneRenderer.cpp
 	rendering/viewport/ViewportSceneRenderer.cpp
@@ -156,7 +156,7 @@ SET(OVITO_CORE_SOURCE_FILES
 	viewport/ViewportConfiguration.cpp
 	viewport/ViewportSettings.cpp
 	viewport/input/ViewportInputManager.cpp
-	viewport/input/ViewportInputHandler.cpp
+	viewport/input/ViewportInputMode.cpp
 	viewport/input/NavigationModes.cpp
 	viewport/picking/PickingSceneRenderer.cpp
 )

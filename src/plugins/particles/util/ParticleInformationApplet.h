@@ -24,7 +24,7 @@
 
 #include <plugins/particles/Particles.h>
 #include <core/gui/mainwin/cmdpanel/UtilityApplet.h>
-#include <core/viewport/input/ViewportInputHandler.h>
+#include <core/viewport/input/ViewportInputMode.h>
 #include <core/viewport/input/ViewportInputManager.h>
 #include <plugins/particles/util/ParticlePickingHelper.h>
 
@@ -34,7 +34,7 @@ using namespace Ovito;
 
 class ParticleInformationApplet;
 
-class ParticleInformationInputMode : public ViewportInputHandler, ParticlePickingHelper
+class ParticleInformationInputMode : public ViewportInputMode, ParticlePickingHelper
 {
 public:
 
@@ -43,7 +43,7 @@ public:
 		_applet(applet) {}
 
 	/// Returns the activation behavior of this input handler.
-	virtual InputHandlerType handlerType() override { return ViewportInputHandler::NORMAL; }
+	virtual InputHandlerType handlerType() override { return ViewportInputMode::NORMAL; }
 
 	/// Handles the mouse up events for a Viewport.
 	virtual void mouseReleaseEvent(Viewport* vp, QMouseEvent* event) override;

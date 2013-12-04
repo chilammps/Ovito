@@ -45,6 +45,8 @@ class OVITO_CORE_EXPORT DataSet : public RefTarget
 public:
 
 	/// \brief Constructs an empty dataset.
+	/// \param self This parameter is not used and is there to provide a constructor signature that is compatible
+	///             with the RefMaker class.
 	Q_INVOKABLE DataSet(DataSet* self = nullptr);
 
 	/// \brief Returns a reference to the viewport configuration associated with this dataset.
@@ -87,6 +89,9 @@ public:
 	/// \brief Returns a pointer to the main window in which this dataset is being edited.
 	/// \return The main window, or NULL if this data set is not being edited in any window.
 	MainWindow* mainWindow() const;
+
+	/// \brief Returns the container to which this dataset belongs.
+	DataSetContainer* container() const;
 
 	/// \brief Deletes all nodes from the scene.
 	/// \undoable

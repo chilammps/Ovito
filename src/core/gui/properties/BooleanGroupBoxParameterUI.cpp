@@ -23,6 +23,7 @@
 #include <core/gui/properties/BooleanGroupBoxParameterUI.h>
 #include <core/dataset/UndoStack.h>
 #include <core/animation/controller/Controller.h>
+#include <core/animation/AnimationSettings.h>
 
 namespace Ovito {
 
@@ -134,8 +135,7 @@ void BooleanGroupBoxParameterUI::setEnabled(bool enabled)
 void BooleanGroupBoxParameterUI::updatePropertyValue()
 {
 	if(groupBox() && editObject()) {
-
-		UndoableTransaction::handleExceptions(tr("Change parameter"), [this]() {
+		UndoableTransaction::handleExceptions(dataSet()->undoStack(), tr("Change parameter"), [this]() {
 			if(isReferenceFieldUI()) {
 				BooleanController* ctrl = dynamic_object_cast<BooleanController>(parameterObject());
 				if(ctrl) {

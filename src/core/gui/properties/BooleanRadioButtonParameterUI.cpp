@@ -31,7 +31,7 @@ IMPLEMENT_OVITO_OBJECT(Core, BooleanRadioButtonParameterUI, PropertyParameterUI)
 /******************************************************************************
 * Constructor for a Qt property.
 ******************************************************************************/
-		BooleanRadioButtonParameterUI::BooleanRadioButtonParameterUI(QObject* parentEditor, const char* propertyName) :
+BooleanRadioButtonParameterUI::BooleanRadioButtonParameterUI(QObject* parentEditor, const char* propertyName) :
 	PropertyParameterUI(parentEditor, propertyName)
 {
 	_buttonGroup = new QButtonGroup(this);
@@ -131,7 +131,7 @@ void BooleanRadioButtonParameterUI::setEnabled(bool enabled)
 void BooleanRadioButtonParameterUI::updatePropertyValue()
 {
 	if(buttonGroup() && editObject()) {
-		UndoableTransaction::handleExceptions(tr("Change parameter"), [this]() {
+		UndoableTransaction::handleExceptions(dataSet()->undoStack(), tr("Change parameter"), [this]() {
 			int id = buttonGroup()->checkedId();
 			if(id != -1) {
 				if(propertyName()) {

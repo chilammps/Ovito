@@ -27,6 +27,7 @@
 #include <core/gui/widgets/animation/AnimationTimeSlider.h>
 #include <core/gui/widgets/rendering/FrameBufferWindow.h>
 #include <core/viewport/ViewportConfiguration.h>
+#include <core/viewport/input/ViewportInputManager.h>
 #include "MainWindow.h"
 #include "ViewportsPanel.h"
 #include "cmdpanel/CommandPanel.h"
@@ -36,7 +37,8 @@ namespace Ovito {
 /******************************************************************************
 * The constructor of the main window class.
 ******************************************************************************/
-MainWindow::MainWindow(const QString& title) : QMainWindow()
+MainWindow::MainWindow(const QString& title) :
+		_datasetContainer(this)
 {
 	setWindowTitle(title);
 	setAttribute(Qt::WA_DeleteOnClose);
@@ -44,6 +46,9 @@ MainWindow::MainWindow(const QString& title) : QMainWindow()
 	// Setup the layout of docking widgets.
 	setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
 	setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
+
+	// Create input manager.
+	_viewportInputManager = new ViewportInputManager(this);
 
 	// Create actions.
 	_actionManager = new ActionManager(this);

@@ -367,8 +367,10 @@ protected:
 	/// matches the true visible area.
 	void adjustProjectionForRenderFrame(ViewProjectionParameters& params);
 
+private Q_SLOTS:
+
 	/// This is called when the global viewport settings have changed.
-	void viewportSettingsChanged(const ViewportSettings& newSettings);
+	void viewportSettingsChanged(ViewportSettings* newSettings);
 
 private:
 
@@ -456,7 +458,6 @@ private:
 
 	friend class ViewportWindow;
 	friend class ViewportMenu;
-	friend class ViewportSettings;
 };
 
 };

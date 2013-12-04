@@ -43,6 +43,7 @@ namespace Ovito {
 class AnimationSettings;		// defined in AnimationSettings.h
 class CloneHelper;				// defined in CloneHelper.h
 class DataSet;					// defined in DataSet.h
+class DataSetContainer;			// defined in DataSetContainer.h
 class DisplayObject;			// defined in DisplayObject.h
 class FrameBuffer;				// defined in FrameBuffer.h
 class FrameBufferWindow;		// defined in FrameBufferWindow.h
@@ -70,9 +71,11 @@ class SceneRoot;				// defined in SceneRoot.h
 class SelectionSet;				// defined in SelectionSet.h
 class TriMesh;					// defined in TriMesh.h
 class Viewport;					// defined in Viewport.h
-class ViewportInputHandler;		// defined in ViewportInputHandler.h
 class ViewportConfiguration;	// defined in ViewportConfiguration.h
+class ViewportInputManager;		// defined in ViewportInputManager.h
+class ViewportInputMode;		// defined in ViewportInputMode.h
 class ViewportSceneRenderer;	// defined in ViewportSceneRenderer.h
+class ViewportSettings;			// defined in ViewportSettings.h
 class VideoEncoder;				// defined in VideoEncoder.h
 
 };

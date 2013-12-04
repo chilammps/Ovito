@@ -42,11 +42,7 @@ class OVITO_CORE_EXPORT ViewportConfiguration : public RefTarget
 public:
 
 	/// Constructor.
-	Q_INVOKABLE ViewportConfiguration(DataSet* dataset) : RefTarget(dataset) {
-		INIT_PROPERTY_FIELD(ViewportConfiguration::_viewports);
-		INIT_PROPERTY_FIELD(ViewportConfiguration::_activeViewport);
-		INIT_PROPERTY_FIELD(ViewportConfiguration::_maximizedViewport);
-	}
+	Q_INVOKABLE ViewportConfiguration(DataSet* dataset);
 
 	/// Returns the list of viewports.
 	const QVector<Viewport*>& viewports() const { return _viewports; }
@@ -76,7 +72,6 @@ public:
 		OVITO_ASSERT_MSG(vp == NULL || _viewports.contains(vp), "ViewportConfiguration::setMaximizedViewport", "Viewport is not in current configuration.");
 		_maximizedViewport = vp;
 	}
-
 
 	/// \brief This will flag all viewports for redrawing.
 	///
@@ -119,12 +114,9 @@ public:
 	/// \sa suspendViewportUpdates(), resumeViewportUpdates()
 	bool isSuspended() const { return _viewportSuspendCount > 0; }
 
-	/// \brief Returns whether any of the viewports in the main viewport panel
+	/// \brief Returns whether any of the viewports
 	///        is currently being updated.
 	/// \return \c true if there is currently a rendering operation going on.
-	///
-	/// No windows or dialogs should be opened during this phase
-	/// to prevent an infinite update loop.
 	bool isRendering() const;
 
 	/// \brief Zooms all viewports to the extents of the currently selected nodes.
@@ -138,6 +130,9 @@ public:
 		for(Viewport* vp : viewports())
 			vp->zoomToSceneExtents();
 	}
+
+	/// Returns the renderer to be used for rendering the interactive viewports.
+	ViewportSceneRenderer* viewportRenderer();
 
 protected:
 
@@ -168,6 +163,9 @@ private:
 
 	/// Indicates that the viewports have been invalidated while updates were suspended.
 	bool _viewportsNeedUpdate;
+
+	/// The renderer for the interactive viewports.
+	OORef<ViewportSceneRenderer> _viewportRenderer;
 
 	Q_OBJECT
 	OVITO_OBJECT

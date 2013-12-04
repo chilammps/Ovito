@@ -42,7 +42,7 @@ public:
 	TriMeshImportData(const LinkedFileImporter::FrameSourceInformation& frame) : LinkedFileImporter::ImportTask(frame) {}
 
 	/// Is called in the background thread to perform the data file import.
-	virtual void load(FutureInterfaceBase& futureInterface) override;
+	virtual void load(DataSetContainer& container, FutureInterfaceBase& futureInterface) override;
 
 	/// Lets the data container insert the data it holds into the scene by creating
 	/// appropriate scene objects.

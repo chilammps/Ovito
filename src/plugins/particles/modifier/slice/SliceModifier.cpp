@@ -577,7 +577,7 @@ void PickParticlePlaneInputMode::mouseReleaseEvent(Viewport* vp, QMouseEvent* ev
 		}
 	}
 
-	ViewportInputHandler::mouseReleaseEvent(vp, event);
+	ViewportInputMode::mouseReleaseEvent(vp, event);
 }
 
 /******************************************************************************
@@ -620,7 +620,7 @@ void PickParticlePlaneInputMode::alignPlane(SliceModifier* mod)
 ******************************************************************************/
 void PickParticlePlaneInputMode::renderOverlay3D(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive)
 {
-	ViewportInputHandler::renderOverlay3D(vp, renderer, isActive);
+	ViewportInputMode::renderOverlay3D(vp, renderer, isActive);
 
 	Q_FOREACH(const PickResult& pa, _pickedParticles) {
 		renderSelectionMarker(vp, renderer, pa);

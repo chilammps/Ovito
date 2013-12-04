@@ -25,11 +25,9 @@
 #include <core/dataset/UndoStack.h>
 #include <core/dataset/importexport/ImportExportManager.h>
 #include <core/animation/controller/Controller.h>
-#include <core/viewport/input/ViewportInputManager.h>
 #include <core/plugins/PluginManager.h>
 #include <core/utilities/units/UnitsManager.h>
 #include <core/utilities/io/FileManager.h>
-#include <core/utilities/concurrent/ProgressManager.h>
 
 namespace Ovito {
 
@@ -93,7 +91,6 @@ bool Application::initialize()
 		PluginManager::initialize();
 		ControllerManager::initialize();
 		FileManager::initialize();
-		ViewportInputManager::initialize();
 		UnitsManager::initialize();
 		ImportExportManager::initialize();
 
@@ -116,9 +113,6 @@ bool Application::initialize()
 			// Quit application when main window is closed.
 			connect(mainWin, SIGNAL(destroyed(QObject*)), this, SLOT(quit()));
 		}
-
-		// Initialize progress manager, which will insert some widgets into the main window.
-		ProgressManager::initialize();
 
 #if 0
 		if(!_startupSceneFile.isEmpty()) {
@@ -187,10 +181,8 @@ int Application::runApplication()
 void Application::shutdown()
 {
 	// Shutdown global manager objects in reverse order they were initialized.
-	ProgressManager::shutdown();
 	ImportExportManager::shutdown();
 	UnitsManager::shutdown();
-	ViewportInputManager::shutdown();
 	FileManager::shutdown();
 	ControllerManager::shutdown();
 	PluginManager::shutdown();

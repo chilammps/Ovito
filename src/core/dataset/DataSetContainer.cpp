@@ -31,7 +31,6 @@
 #include <core/utilities/io/ObjectSaveStream.h>
 #include <core/utilities/io/ObjectLoadStream.h>
 #include <core/utilities/io/FileManager.h>
-#include <core/utilities/concurrent/ProgressManager.h>
 
 namespace Ovito {
 
@@ -42,7 +41,8 @@ DEFINE_FLAGS_REFERENCE_FIELD(DataSetContainer, _selectionSetProxy, "SelectionSet
 /******************************************************************************
 * Initializes the dataset manager.
 ******************************************************************************/
-DataSetContainer::DataSetContainer() : RefMaker(nullptr)
+DataSetContainer::DataSetContainer(MainWindow* mainWindow) : RefMaker(nullptr),
+	_mainWindow(mainWindow), _taskManager(mainWindow)
 {
 	INIT_PROPERTY_FIELD(DataSetContainer::_currentSet);
 	INIT_PROPERTY_FIELD(DataSetContainer::_selectionSetProxy);
@@ -119,10 +119,11 @@ bool DataSetContainer::fileSaveAs(const QString& filename)
 		return false;
 
 	if(filename.isEmpty()) {
-		if(Application::instance().guiMode() == false)
+
+		if(!mainWindow())
 			throw Exception(tr("Cannot save scene. No filename has been set."));
 
-		QFileDialog dialog(currentSet()->mainWindow(), tr("Save Scene As"));
+		QFileDialog dialog(mainWindow(), tr("Save Scene As"));
 		dialog.setNameFilter(tr("Scene Files (*.ovito);;All Files (*)"));
 		dialog.setAcceptMode(QFileDialog::AcceptSave);
 		dialog.setFileMode(QFileDialog::AnyFile);
@@ -166,10 +167,10 @@ bool DataSetContainer::fileSaveAs(const QString& filename)
 ******************************************************************************/
 bool DataSetContainer::askForSaveChanges()
 {
-	if(!currentSet() || currentSet()->undoStack().isClean() || Application::instance().consoleMode())
+	if(!currentSet() || currentSet()->undoStack().isClean() || !mainWindow())
 		return true;
 
-	QMessageBox::StandardButton result = QMessageBox::question(currentSet()->mainWindow(), tr("Save changes"),
+	QMessageBox::StandardButton result = QMessageBox::question(mainWindow(), tr("Save changes"),
 		tr("The current scene has been modified. Do you want to save the changes?"),
 		QMessageBox::Yes|QMessageBox::No|QMessageBox::Cancel, QMessageBox::Cancel);
 	if(result == QMessageBox::Cancel)
@@ -201,11 +202,11 @@ bool DataSetContainer::fileLoad(const QString& filename)
 		// Issue a warning when the floating-point precision of the input file does not match
 		// the precision used in this build.
 		if(stream.floatingPointPrecision() > sizeof(FloatType)) {
-			if(Application::instance().guiMode()) {
+			if(mainWindow()) {
 				QString msg = tr("The scene file has been written with a version of this application that uses %1-bit floating-point precision. "
 					   "The version of this application that you are using at this moment only supports %2-bit precision numbers. "
 					   "The precision of all numbers stored in the input file will be truncated during loading.").arg(stream.floatingPointPrecision()*8).arg(sizeof(FloatType)*8);
-				QMessageBox::warning(NULL, tr("Floating-point precision mismatch"), msg);
+				QMessageBox::warning(mainWindow(), tr("Floating-point precision mismatch"), msg);
 			}
 		}
 
@@ -230,8 +231,8 @@ bool DataSetContainer::importFile(const QUrl& url, const FileImporterDescription
 	if(!importerType) {
 
 		// Download file so we can determine its format.
-		Future<QString> fetchFileFuture = FileManager::instance().fetchUrl(url);
-		if(!ProgressManager::instance().waitForTask(fetchFileFuture))
+		Future<QString> fetchFileFuture = FileManager::instance().fetchUrl(*this, url);
+		if(!taskManager().waitForTask(fetchFileFuture))
 			return false;
 
 		// Detect file format.

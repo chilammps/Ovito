@@ -21,7 +21,6 @@
 
 #include <core/Core.h>
 #include <core/dataset/importexport/ImportExportManager.h>
-#include <core/utilities/concurrent/ProgressManager.h>
 #include <core/utilities/io/FileManager.h>
 #include "ImportRemoteFileDialog.h"
 

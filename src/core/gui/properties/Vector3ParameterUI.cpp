@@ -22,6 +22,7 @@
 #include <core/Core.h>
 #include <core/gui/properties/Vector3ParameterUI.h>
 #include <core/animation/controller/Controller.h>
+#include <core/animation/AnimationSettings.h>
 
 namespace Ovito {
 

@@ -22,6 +22,7 @@
 #include <core/Core.h>
 #include <core/viewport/ViewportConfiguration.h>
 #include <core/viewport/Viewport.h>
+#include <core/rendering/viewport/ViewportSceneRenderer.h>
 
 namespace Ovito {
 
@@ -29,6 +30,16 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, ViewportConfiguration, RefTarget);
 DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(ViewportConfiguration, _viewports, "Viewports", Viewport, PROPERTY_FIELD_NO_UNDO|PROPERTY_FIELD_ALWAYS_CLONE)
 DEFINE_FLAGS_REFERENCE_FIELD(ViewportConfiguration, _activeViewport, "ActiveViewport", Viewport, PROPERTY_FIELD_NO_UNDO)
 DEFINE_FLAGS_REFERENCE_FIELD(ViewportConfiguration, _maximizedViewport, "MaximizedViewport", Viewport, PROPERTY_FIELD_NO_UNDO)
+
+/******************************************************************************
+* Constructor.
+******************************************************************************/
+ViewportConfiguration::ViewportConfiguration(DataSet* dataset) : RefTarget(dataset)
+{
+	INIT_PROPERTY_FIELD(ViewportConfiguration::_viewports);
+	INIT_PROPERTY_FIELD(ViewportConfiguration::_activeViewport);
+	INIT_PROPERTY_FIELD(ViewportConfiguration::_maximizedViewport);
+}
 
 /******************************************************************************
 * Is called when the value of a reference field of this RefMaker changes.
@@ -101,5 +112,16 @@ void ViewportConfiguration::resumeViewportUpdates()
 	if(_viewportSuspendCount == 0 && _viewportsNeedUpdate)
 		updateViewports();
 }
+
+/******************************************************************************
+* Returns the renderer to be used for rendering the interactive viewports.
+******************************************************************************/
+ViewportSceneRenderer* ViewportConfiguration::viewportRenderer()
+{
+	if(!_viewportRenderer)
+		_viewportRenderer = new ViewportSceneRenderer();
+	return _viewportRenderer.get();
+}
+
 
 };
