@@ -187,9 +187,9 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl, ImportMode importMode
 	if(importMode == ResetScene) {
 		existingObj = nullptr;
 		existingNode = nullptr;
-#if 0
-		DataSetManager::instance().fileReset();
-#endif
+		dataSet()->clearScene();
+		if(!dataSet()->undoStack().isRecording())
+			dataSet()->undoStack().clear();
 	}
 	else if(importMode == AddToScene) {
 		existingObj = nullptr;
@@ -199,7 +199,7 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl, ImportMode importMode
 	UndoableTransaction transaction(dataSet()->undoStack(), tr("Import '%1'").arg(QFileInfo(sourceUrl.path()).fileName()));
 
 	// Do not create any animation keys during import.
-	AnimationSuspender animSuspender(dataSet()->animationSettings());
+	AnimationSuspender animSuspender(this);
 
 	OORef<LinkedFileObject> obj;
 
@@ -225,7 +225,7 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl, ImportMode importMode
 	OORef<ObjectNode> node;
 	if(existingNode == nullptr) {
 		{
-			UndoSuspender unsoSuspender(dataSet()->undoStack());	// Do not create undo records for this part.
+			UndoSuspender unsoSuspender(this);	// Do not create undo records for this part.
 
 			// Add object to scene.
 			node = new ObjectNode(dataSet(), obj.get());

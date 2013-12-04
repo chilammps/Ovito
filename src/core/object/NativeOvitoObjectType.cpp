@@ -42,10 +42,16 @@ OORef<OvitoObject> NativeOvitoObjectType::createInstanceImpl(DataSet* dataset) c
 	if(dataset) {
 		OVITO_CHECK_OBJECT_POINTER(dataset);
 		UndoSuspender noUndo(dataset->undoStack());
-		obj = qobject_cast<OvitoObject*>(_qtClassInfo->newInstance(Q_ARG(DataSet*, dataset)));
+		if(isDerivedFrom(RefTarget::OOType))
+			obj = qobject_cast<OvitoObject*>(_qtClassInfo->newInstance(Q_ARG(DataSet*, dataset)));
+		else
+			obj = qobject_cast<OvitoObject*>(_qtClassInfo->newInstance());
 	}
 	else {
-		obj = qobject_cast<OvitoObject*>(_qtClassInfo->newInstance());
+		if(isDerivedFrom(RefTarget::OOType))
+			obj = qobject_cast<OvitoObject*>(_qtClassInfo->newInstance(Q_ARG(DataSet*, nullptr)));
+		else
+			obj = qobject_cast<OvitoObject*>(_qtClassInfo->newInstance());
 	}
 
 	if(!obj)

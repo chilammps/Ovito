@@ -145,7 +145,7 @@ public:
 protected:
 
 	/// Constructor.
-	SceneRenderer();
+	SceneRenderer(DataSet* dataset);
 
 	/// \brief Renders all nodes in the scene.
 	virtual void renderScene();

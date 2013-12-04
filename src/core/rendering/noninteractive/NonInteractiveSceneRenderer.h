@@ -44,8 +44,8 @@ class OVITO_CORE_EXPORT NonInteractiveSceneRenderer : public SceneRenderer
 {
 public:
 
-	/// Default constructor.
-	NonInteractiveSceneRenderer() : _modelTM(AffineTransformation::Identity()) {}
+	/// Constructor.
+	NonInteractiveSceneRenderer(DataSet* dataset) : SceneRenderer(dataset), _modelTM(AffineTransformation::Identity()) {}
 
 	/// This method is called just before renderFrame() is called.
 	virtual void beginFrame(TimePoint time, const ViewProjectionParameters& params, Viewport* vp) override;

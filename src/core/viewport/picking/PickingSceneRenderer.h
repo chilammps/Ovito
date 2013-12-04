@@ -48,7 +48,7 @@ public:
 public:
 
 	/// Default constructor.
-	PickingSceneRenderer() {
+	PickingSceneRenderer() : ViewportSceneRenderer(nullptr) {
 		setPicking(true);
 	}
 

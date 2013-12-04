@@ -219,13 +219,30 @@ public Q_SLOTS:
 	/// \brief Stops playback of the animation in the viewports.
 	void stopAnimationPlayback();
 
+Q_SIGNALS:
+
+	/// This signal is emitted when the current animation time has changed.
+	void timeChanged(TimePoint newTime);
+
+	/// This signal is emitted when the scene becomes ready after the current animation time has changed.
+	void timeChangeComplete();
+
+	/// This signal is emitted when the active animation interval has changed.
+	void intervalChanged(TimeInterval newAnimationInterval);
+
+	/// This signal is emitted when the animation speed has changed.
+	void speedChanged(int ticksPerFrame);
+
+	/// This signal is emitted when the time to string conversion format has changed.
+	void timeFormatChanged();
+
+	/// This signal is emitted when the Auto Key mode has been activated or deactivated.
+	void autoKeyModeChanged(bool active);
+
 private Q_SLOTS:
 
 	/// \brief Is called when the current animation time has changed.
 	void onTimeChanged(TimePoint newTime);
-
-	/// \brief Is called whenever the active animation interval has changed.
-	void onIntervalChanged(TimeInterval newAnimationInterval);
 
 	/// \brief Timer callback used during animation playback.
 	void onPlaybackTimer();
@@ -243,23 +260,6 @@ protected:
 
 	/// \brief Creates a copy of this object.
 	virtual OORef<RefTarget> clone(bool deepCopy, CloneHelper& cloneHelper) override;
-
-Q_SIGNALS:
-
-	/// This signal is emitted by this object when its current animation time has changed.
-	void timeChanged(TimePoint newTime);
-	
-	/// This signal is emitted by this object when its animation interval has changed.
-	void intervalChanged(TimeInterval newAnimationInterval);
-	
-	/// This signal is emitted by this object when its animation speed has changed.
-	void speedChanged(int ticksPerFrame);
-	
-	/// This signal is emitted by the AnimManager when the time to string conversion format has changed.
-	void timeFormatChanged();
-
-	/// This signal is emitted when the Auto Key mode has been activated or deactivated.
-	void autoKeyModeChanged(bool active);
 
 private:
 
@@ -307,7 +307,9 @@ private:
 
 /**
  * \brief A small helper object that suspends generation of animation keys while it
- *        exists. It can be used to make your code exception-safe.
+ *        exists.
+ *
+ * Use this to make your code exception-safe.
  *
  * The constructor of this class calls AnimationSettings::suspendAnim() and
  * the destructor calls AnimationSettings::resumeAnim().
@@ -315,6 +317,7 @@ private:
 class AnimationSuspender {
 public:
 	AnimationSuspender(AnimationSettings* animSettings) : _animSettings(*animSettings) { _animSettings.suspendAnim(); }
+	AnimationSuspender(RefMaker* object) : _animSettings(*object->dataSet()->animationSettings()) { _animSettings.suspendAnim(); }
 	~AnimationSuspender() { _animSettings.resumeAnim(); }
 private:
 	AnimationSettings& _animSettings;

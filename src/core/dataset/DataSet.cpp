@@ -81,6 +81,8 @@ void DataSet::setSceneRoot(const OORef<SceneRoot>& newScene)
 ******************************************************************************/
 OORef<ViewportConfiguration> DataSet::createDefaultViewportConfiguration()
 {
+	UndoSuspender noUndo(undoStack());
+
 	OORef<ViewportConfiguration> defaultViewportConfig = new ViewportConfiguration(dataSet());
 
 	OORef<Viewport> topView = new Viewport(this);
@@ -435,6 +437,5 @@ void DataSet::renderFrame(TimePoint renderTime, int frameNumber, RenderSettings*
 		}
 	}
 }
-
 
 };

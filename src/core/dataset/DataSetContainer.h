@@ -45,13 +45,19 @@ public:
 	/// \brief Constructor.
 	DataSetContainer(MainWindow* mainWindow = nullptr);
 
+	/// \brief Destructor.
+	virtual ~DataSetContainer() {
+		setCurrentSet(nullptr);
+		clearAllReferences();
+	}
+
 	/// \brief Returns the current dataset being edited by the user.
 	/// \return The active dataset.
 	DataSet* currentSet() const { return _currentSet; }
 	
 	/// \brief Sets the current dataset being edited by the user.
 	/// \param set The dataset that should be shown in the main window.
-	void setCurrentSet(const OORef<DataSet>& set);
+	void setCurrentSet(const OORef<DataSet>& set) { _currentSet = set.get(); }
 
 	/// \brief Returns the current selection set. 
 	/// \note The object returned by this method is a special proxy object (CurrentSelectionProxy) that mirrors the selection 
@@ -74,6 +80,11 @@ public:
 	/// \return true if the file was successfully imported; false if operation has been canceled by the user.
 	/// \throw Exception on error.
 	bool importFile(const QUrl& url, const FileImporterDescription* importerType = nullptr, FileImporter::ImportMode importMode = FileImporter::AskUser);
+
+	/// \brief Creates an empty dataset and makes it the current dataset.
+	/// \return \c true if the operation was completed; \c false if the operation has been canceled by the user.
+	/// \throw Exception on error.
+	bool fileNew();
 
 	/// \brief Loads the given file and makes it the current dataset.
 	/// \return \c true if the file has been successfully loaded; \c false if the operation has been canceled by the user.
@@ -125,6 +136,11 @@ Q_SIGNALS:
 	///       a call to SelectionSet::addAll() for example will generate multiple selectionChanged()
 	///       events but only a single selectionChangeComplete() event.
 	void selectionChangeComplete(SelectionSet* newSelection);
+
+protected:
+
+	/// Is called when the value of a reference field of this RefMaker changes.
+	virtual void referenceReplaced(const PropertyFieldDescriptor& field, RefTarget* oldTarget, RefTarget* newTarget) override;
 
 private:
 

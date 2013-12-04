@@ -85,10 +85,22 @@ QWidget* PropertiesEditor::createRollout(const QString& title, const RolloutInse
 bool PropertiesEditor::referenceEvent(RefTarget* source, ReferenceEvent* event)
 {
 	if(source == editObject() && event->type() == ReferenceEvent::TargetChanged) {
-		// Generate signal.
-		contentsChanged(source);
+		Q_EMIT contentsChanged(source);
 	}
 	return RefMaker::referenceEvent(source, event);
+}
+
+/******************************************************************************
+* Is called when the value of a reference field of this RefMaker changes.
+******************************************************************************/
+void PropertiesEditor::referenceReplaced(const PropertyFieldDescriptor& field, RefTarget* oldTarget, RefTarget* newTarget)
+{
+	if(field == PROPERTY_FIELD(PropertiesEditor::_editObject)) {
+		setDataSet(editObject() ? editObject()->dataSet() : nullptr);
+		Q_EMIT contentsReplaced(editObject());
+		Q_EMIT contentsChanged(editObject());
+	}
+	RefMaker::referenceReplaced(field, oldTarget, newTarget);
 }
 
 };

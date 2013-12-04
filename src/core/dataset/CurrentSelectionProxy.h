@@ -84,16 +84,19 @@ public:
 	SelectionSet* currentSelectionSet() const { return _selectionSet; }
 
 	/// Sets the selection set which this proxy encapsulates.
-	void setCurrentSelectionSet(SelectionSet* set) { _selectionSet = set; onChanged(); }
+	void setCurrentSelectionSet(SelectionSet* set) {
+		_selectionSet = set;
+		Q_EMIT selectionChanged(this);
+		Q_EMIT selectionChangeComplete(this);
+	}
 
 protected:
 
 	/// From RefMaker.
 	virtual bool referenceEvent(RefTarget* source, ReferenceEvent* event) override;
 
-	/// Is called when the selection set has changed.
-	/// Raises the relectionChanged signal of the DataSetManager.
-	void onChanged();
+	/// Emits the selectionChanged() signal, followed by a selectionChangedComplete() signal.
+	void emitSelectionChangedSignals();
 
 	/// Is called after the selection set has changed multiple times.
 	Q_INVOKABLE void onInternalSelectionChanged();

@@ -52,13 +52,15 @@ public:
 protected:
 
 	/// This is called by the system after the input handler has become active.
-	virtual void activated() override {
+	virtual void activated(bool temporaryActivation) override {
+		ViewportInputMode::activated(temporaryActivation);
 		actionManager()->_dataset->animationSettings()->startAnimationPlayback();
 	}
 
 	/// This is called by the system after the input handler has been deactivated.
 	virtual void deactivated() override {
 		actionManager()->_dataset->animationSettings()->stopAnimationPlayback();
+		ViewportInputMode::deactivated();
 	}
 };
 
@@ -120,7 +122,6 @@ ActionManager::ActionManager(MainWindow* mainWindow) : QObject(mainWindow)
 ******************************************************************************/
 void ActionManager::onDataSetChanged(DataSet* newDataSet)
 {
-	OVITO_CHECK_OBJECT_POINTER(newDataSet);
 	disconnect(_animationSettingsChangedConnection);
 	disconnect(_canUndoChangedConnection);
 	disconnect(_canRedoChangedConnection);
@@ -128,29 +129,32 @@ void ActionManager::onDataSetChanged(DataSet* newDataSet)
 	disconnect(_redoTextChangedConnection);
 	disconnect(_undoTriggeredConnection);
 	disconnect(_redoTriggeredConnection);
-
 	_dataset = newDataSet;
-
-	_animationSettingsChangedConnection = connect(newDataSet, &DataSet::animationSettingsChanged, this, &ActionManager::onAnimationSettingsChanged);
-
 	QAction* undoAction = getAction(ACTION_EDIT_UNDO);
 	QAction* redoAction = getAction(ACTION_EDIT_REDO);
-	undoAction->setEnabled(newDataSet->undoStack().canUndo());
-	redoAction->setEnabled(newDataSet->undoStack().canRedo());
-	undoAction->setText(tr("Undo %1").arg(newDataSet->undoStack().undoText()));
-	redoAction->setText(tr("Redo %1").arg(newDataSet->undoStack().redoText()));
-	_canUndoChangedConnection = connect(&newDataSet->undoStack(), &UndoStack::canUndoChanged, undoAction, &QAction::setEnabled);
-	_canRedoChangedConnection = connect(&newDataSet->undoStack(), &UndoStack::canRedoChanged, redoAction, &QAction::setEnabled);
-	_undoTextChangedConnection = connect(&newDataSet->undoStack(), &UndoStack::undoTextChanged, [this,undoAction](const QString& undoText) {
-		undoAction->setText(tr("Undo %1").arg(undoText));
-	});
-	_redoTextChangedConnection = connect(&newDataSet->undoStack(), &UndoStack::redoTextChanged, [this,redoAction](const QString& redoText) {
-		redoAction->setText(tr("Redo %1").arg(redoText));
-	});
-	_undoTriggeredConnection = connect(undoAction, &QAction::triggered, &newDataSet->undoStack(), &UndoStack::undo);
-	_redoTriggeredConnection = connect(redoAction, &QAction::triggered, &newDataSet->undoStack(), &UndoStack::redo);
-
-	onAnimationSettingsChanged(newDataSet->animationSettings());
+	if(newDataSet) {
+		_animationSettingsChangedConnection = connect(newDataSet, &DataSet::animationSettingsChanged, this, &ActionManager::onAnimationSettingsChanged);
+		undoAction->setEnabled(newDataSet->undoStack().canUndo());
+		redoAction->setEnabled(newDataSet->undoStack().canRedo());
+		undoAction->setText(tr("Undo %1").arg(newDataSet->undoStack().undoText()));
+		redoAction->setText(tr("Redo %1").arg(newDataSet->undoStack().redoText()));
+		_canUndoChangedConnection = connect(&newDataSet->undoStack(), &UndoStack::canUndoChanged, undoAction, &QAction::setEnabled);
+		_canRedoChangedConnection = connect(&newDataSet->undoStack(), &UndoStack::canRedoChanged, redoAction, &QAction::setEnabled);
+		_undoTextChangedConnection = connect(&newDataSet->undoStack(), &UndoStack::undoTextChanged, [this,undoAction](const QString& undoText) {
+			undoAction->setText(tr("Undo %1").arg(undoText));
+		});
+		_redoTextChangedConnection = connect(&newDataSet->undoStack(), &UndoStack::redoTextChanged, [this,redoAction](const QString& redoText) {
+			redoAction->setText(tr("Redo %1").arg(redoText));
+		});
+		_undoTriggeredConnection = connect(undoAction, &QAction::triggered, &newDataSet->undoStack(), &UndoStack::undo);
+		_redoTriggeredConnection = connect(redoAction, &QAction::triggered, &newDataSet->undoStack(), &UndoStack::redo);
+		onAnimationSettingsChanged(newDataSet->animationSettings());
+	}
+	else {
+		undoAction->setEnabled(false);
+		redoAction->setEnabled(false);
+		onAnimationSettingsChanged(nullptr);
+	}
 }
 
 /******************************************************************************
@@ -158,13 +162,34 @@ void ActionManager::onDataSetChanged(DataSet* newDataSet)
 ******************************************************************************/
 void ActionManager::onAnimationSettingsChanged(AnimationSettings* newAnimationSettings)
 {
-	OVITO_CHECK_OBJECT_POINTER(newAnimationSettings);
 	disconnect(_autoKeyModeChangedConnection);
 	disconnect(_autoKeyModeToggledConnection);
+	disconnect(_animationIntervalChangedConnection);
 	QAction* autoKeyModeAction = getAction(ACTION_AUTO_KEY_MODE_TOGGLE);
-	autoKeyModeAction->setChecked(newAnimationSettings->autoKeyMode());
-	_autoKeyModeChangedConnection = connect(newAnimationSettings, &AnimationSettings::autoKeyModeChanged, autoKeyModeAction, &QAction::setChecked);
-	_autoKeyModeToggledConnection = connect(autoKeyModeAction, &QAction::toggled, newAnimationSettings, &AnimationSettings::setAutoKeyMode);
+	if(newAnimationSettings) {
+		autoKeyModeAction->setEnabled(true);
+		autoKeyModeAction->setChecked(newAnimationSettings->autoKeyMode());
+		_autoKeyModeChangedConnection = connect(newAnimationSettings, &AnimationSettings::autoKeyModeChanged, autoKeyModeAction, &QAction::setChecked);
+		_autoKeyModeToggledConnection = connect(autoKeyModeAction, &QAction::toggled, newAnimationSettings, &AnimationSettings::setAutoKeyMode);
+		_animationIntervalChangedConnection = connect(newAnimationSettings, &AnimationSettings::intervalChanged, this, &ActionManager::onAnimationIntervalChanged);
+	}
+	else {
+		autoKeyModeAction->setEnabled(false);
+		onAnimationIntervalChanged(TimeInterval(0));
+	}
+}
+
+/******************************************************************************
+* This is called when the active animation interval has changed.
+******************************************************************************/
+void ActionManager::onAnimationIntervalChanged(TimeInterval newAnimationInterval)
+{
+	bool isAnimationInterval = newAnimationInterval.duration() != 0;
+	getAction(ACTION_GOTO_START_OF_ANIMATION)->setEnabled(isAnimationInterval);
+	getAction(ACTION_GOTO_PREVIOUS_FRAME)->setEnabled(isAnimationInterval);
+	getAction(ACTION_TOGGLE_ANIMATION_PLAYBACK)->setEnabled(isAnimationInterval);
+	getAction(ACTION_GOTO_NEXT_FRAME)->setEnabled(isAnimationInterval);
+	getAction(ACTION_GOTO_END_OF_ANIMATION)->setEnabled(isAnimationInterval);
 }
 
 /******************************************************************************

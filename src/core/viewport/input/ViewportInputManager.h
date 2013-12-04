@@ -45,6 +45,9 @@ public:
 	/// \brief Constructor.
 	ViewportInputManager(MainWindow* mainWindow);
 
+	/// Returns the associated main window.
+	MainWindow* mainWindow() const { return reinterpret_cast<MainWindow*>(parent()); }
+
 	/// \brief Returns the currently active ViewportInputMode that handles the mouse events in viewports.
 	/// \return The mode that is responsible for mouse event handling. Can be \c NULL when the stack is empty.
 	ViewportInputMode* activeMode();
@@ -55,7 +58,8 @@ public:
 
 	/// \brief Pushes an input mode onto the stack and makes it active.
 	/// \param mode The mode to be made active.
-	void pushInputMode(ViewportInputMode* mode);
+	/// \param temporary A flag passed to the input mode that indicates whether the activation is only temporary.
+	void pushInputMode(ViewportInputMode* mode, bool temporary = false);
 
 	/// \brief Removes an input mode from the stack and deactivates it if it is currently active.
 	/// \param mode The mode to remove from the stack.

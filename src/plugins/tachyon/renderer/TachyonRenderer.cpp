@@ -64,7 +64,7 @@ SET_PROPERTY_FIELD_LABEL(TachyonRenderer, _ambientOcclusionBrightness, "Ambient 
 /******************************************************************************
 * Default constructor.
 ******************************************************************************/
-TachyonRenderer::TachyonRenderer() :
+TachyonRenderer::TachyonRenderer(DataSet* dataset) : NonInteractiveSceneRenderer(dataset),
 	  _enableAntialiasing(true), _enableDirectLightSource(true), _enableShadows(true),
 	  _antialiasingSamples(12), _enableAmbientOcclusion(true), _ambientOcclusionSamples(12),
 	  _defaultLightSourceIntensity(0.90f), _ambientOcclusionBrightness(0.80f)

@@ -150,18 +150,16 @@ void LinkedFileObjectEditor::createUI(const RolloutInsertionParameters& rolloutP
 }
 
 /******************************************************************************
-* Is called when the editor gets associated with an object.
+* Is called when a new object has been loaded into the editor.
 ******************************************************************************/
-void LinkedFileObjectEditor::setEditObject(RefTarget* newObject)
+void LinkedFileObjectEditor::onEditorContentsReplaced(RefTarget* newObject)
 {
-	PropertiesEditor::setEditObject(newObject);
-
 	updateInformationLabel();
 
 	// Close old sub-editors.
 	_subEditors.clear();
-	LinkedFileObject* obj = static_object_cast<LinkedFileObject>(newObject);
-	if(obj) {
+	if(newObject) {
+		LinkedFileObject* obj = static_object_cast<LinkedFileObject>(newObject);
 		// Open new sub-editors.
 		for(SceneObject* sceneObj : obj->sceneObjects()) {
 			OORef<PropertiesEditor> subEditor = sceneObj->createPropertiesEditor();

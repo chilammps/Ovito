@@ -283,9 +283,6 @@ void MainWindow::closeEvent(QCloseEvent* event)
 			return;
 		}
 
-		// Close current scene file.
-		datasetContainer().setCurrentSet(new DataSet());
-
 		// Save window layout.
 		saveLayout();
 

@@ -35,14 +35,6 @@ namespace Ovito {
 class OVITO_CORE_EXPORT NavigationMode : public ViewportInputMode
 {
 	Q_OBJECT
-
-public:
-
-	enum OrbitCenterMode {
-		ORBIT_SELECTION_CENTER,		/// Take the center of mass of the current selection as orbit center.
-									/// If there is no selection, use scene bounding box.
-		ORBIT_USER_DEFINED			/// Use the orbit center set by the user.
-	};
 	
 public:
 
@@ -67,18 +59,6 @@ public:
 	/// \brief Indicates whether this input mode renders into the viewports.
 	virtual bool hasOverlay() override { return true; }
 
-	/// Changes the way the center of rotation is chosen.
-	static void setOrbitCenterMode(OrbitCenterMode mode);
-
-	/// Returns the current center of orbit mode.
-	static OrbitCenterMode orbitCenterMode() { return _orbitCenterMode; }
-
-	/// Sets the world space point around which the camera orbits.
-	static void setUserOrbitCenter(const Point3& center);
-
-	/// Returns the world space point around which the camera orbits.
-	Point3 orbitCenter();
-
 protected:
 
 	/// Protected constructor.
@@ -86,6 +66,10 @@ protected:
 
 	/// Computes the new view based on the new mouse position.
 	virtual void modifyView(Viewport* vp, QPointF delta) {}
+
+	/// \brief This is called by the system after the input handler has
+	///        become the active handler.
+	virtual void activated(bool temporaryActivation) override;
 
 	/// \brief This is called by the system after the input handler is
 	///        no longer the active handler.
@@ -117,14 +101,11 @@ protected:
 	/// The current viewport we are working in.
 	Viewport* _viewport;
 
+	/// Indicates whether this navigation mode is only temporarily activated.
+	bool _temporaryActivation;
+
 	/// The cached orbit center as determined when the navigation mode was activated.
 	Point3 _currentOrbitCenter;
-
-	/// Indicates around which point the camera should orbit.
-	static OrbitCenterMode _orbitCenterMode;
-
-	/// The user-defined orbiting center.
-	static Point3 _userOrbitCenter;
 
 	/// The geometry buffer used to render the orbit center.
 	OORef<ArrowGeometryBuffer> _orbitCenterMarker;
@@ -195,7 +176,7 @@ protected:
 
 	/// Computes a scaling factor that depends on the total size of the scene which is used to
 	/// control the zoom sensitivity in perspective mode.
-	FloatType sceneSizeFactor();
+	FloatType sceneSizeFactor(Viewport* vp);
 };
 
 /******************************************************************************

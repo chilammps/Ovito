@@ -112,23 +112,18 @@ bool Application::initialize()
 
 			// Quit application when main window is closed.
 			connect(mainWin, SIGNAL(destroyed(QObject*)), this, SLOT(quit()));
-		}
 
-#if 0
-		if(!_startupSceneFile.isEmpty()) {
-			// Load scene file specified at the command line.
-			QFileInfo startupFile(_startupSceneFile);
-			if(!DataSetManager::instance().fileLoad(startupFile.absoluteFilePath()))
-				DataSetManager::instance().fileReset();
-		}
-		else {
-			// Create an empty data set.
-			DataSetManager::instance().fileReset();
-		}
-#endif
+			if(!_startupSceneFile.isEmpty()) {
+				// Load scene file specified at the command line.
+				QFileInfo startupFile(_startupSceneFile);
+				if(!mainWin->datasetContainer().fileLoad(startupFile.absoluteFilePath()))
+					mainWin->datasetContainer().fileNew();
+			}
+			else {
+				// Create an empty data set.
+				mainWin->datasetContainer().fileNew();
+			}
 
-		// Create the main application window.
-		if(guiMode()) {
 			// Show the main window.
 #ifndef OVITO_DEBUG
 			mainWin->showMaximized();
@@ -136,20 +131,13 @@ bool Application::initialize()
 			mainWin->show();
 #endif
 			mainWin->restoreLayout();
-		}
 
-#if 0
-		// Enable the viewports now. Viewport updates are initially suspended.
-		ViewportManager::instance().resumeViewportUpdates();
-#endif
-
-#if 0
-		// Import file specified on the command line.
-		if(_startupImportFile.isEmpty() == false) {
-			QUrl importURL = QUrl::fromUserInput(_startupImportFile);
-			DataSetManager::instance().importFile(importURL);
+			// Import file specified on the command line.
+			if(_startupImportFile.isEmpty() == false) {
+				QUrl importURL = QUrl::fromUserInput(_startupImportFile);
+				mainWin->datasetContainer().importFile(importURL);
+			}
 		}
-#endif
 	}
 	catch(const Exception& ex) {
 		ex.showError();

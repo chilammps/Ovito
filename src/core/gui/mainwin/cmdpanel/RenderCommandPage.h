@@ -39,10 +39,20 @@ public:
 	/// Initializes the render page.
     RenderCommandPage(MainWindow* mainWindow, QWidget* parent);
 
+private Q_SLOTS:
+
+	/// This is called when a new dataset has been loaded.
+	void onDataSetChanged(DataSet* newDataSet);
+
+	/// This is called when new render settings have been loaded.
+	void onRenderSettingsChanged(RenderSettings* newRenderSettings);
+
 private:
 
 	/// This panel shows the properties of the render settings object.
 	PropertiesPanel* propertiesPanel;
+
+	QMetaObject::Connection _renderSettingsChangedConnection;
 };
 
 

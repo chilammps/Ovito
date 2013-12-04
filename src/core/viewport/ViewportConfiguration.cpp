@@ -22,6 +22,9 @@
 #include <core/Core.h>
 #include <core/viewport/ViewportConfiguration.h>
 #include <core/viewport/Viewport.h>
+#include <core/scene/SelectionSet.h>
+#include <core/scene/SceneRoot.h>
+#include <core/animation/AnimationSettings.h>
 #include <core/rendering/viewport/ViewportSceneRenderer.h>
 
 namespace Ovito {
@@ -30,15 +33,23 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, ViewportConfiguration, RefTarget);
 DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(ViewportConfiguration, _viewports, "Viewports", Viewport, PROPERTY_FIELD_NO_UNDO|PROPERTY_FIELD_ALWAYS_CLONE)
 DEFINE_FLAGS_REFERENCE_FIELD(ViewportConfiguration, _activeViewport, "ActiveViewport", Viewport, PROPERTY_FIELD_NO_UNDO)
 DEFINE_FLAGS_REFERENCE_FIELD(ViewportConfiguration, _maximizedViewport, "MaximizedViewport", Viewport, PROPERTY_FIELD_NO_UNDO)
+DEFINE_FLAGS_PROPERTY_FIELD(ViewportConfiguration, _orbitCenterMode, "OrbitCenterMode", PROPERTY_FIELD_NO_UNDO)
+DEFINE_FLAGS_PROPERTY_FIELD(ViewportConfiguration, _userOrbitCenter, "UserOrbitCenter", PROPERTY_FIELD_NO_UNDO)
 
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-ViewportConfiguration::ViewportConfiguration(DataSet* dataset) : RefTarget(dataset)
+ViewportConfiguration::ViewportConfiguration(DataSet* dataset) : RefTarget(dataset),
+	_orbitCenterMode(ORBIT_SELECTION_CENTER), _userOrbitCenter(Point3::Origin()), _viewportSuspendCount(0)
 {
 	INIT_PROPERTY_FIELD(ViewportConfiguration::_viewports);
 	INIT_PROPERTY_FIELD(ViewportConfiguration::_activeViewport);
 	INIT_PROPERTY_FIELD(ViewportConfiguration::_maximizedViewport);
+	INIT_PROPERTY_FIELD(ViewportConfiguration::_orbitCenterMode);
+	INIT_PROPERTY_FIELD(ViewportConfiguration::_userOrbitCenter);
+
+	// Repaint viewports when the camera orbit center changed.
+	connect(this, &ViewportConfiguration::cameraOrbitCenterChanged, this, &ViewportConfiguration::updateViewports);
 }
 
 /******************************************************************************
@@ -47,12 +58,23 @@ ViewportConfiguration::ViewportConfiguration(DataSet* dataset) : RefTarget(datas
 void ViewportConfiguration::referenceReplaced(const PropertyFieldDescriptor& field, RefTarget* oldTarget, RefTarget* newTarget)
 {
 	if(field == PROPERTY_FIELD(ViewportConfiguration::_activeViewport)) {
-		activeViewportChanged(_activeViewport);
+		Q_EMIT activeViewportChanged(_activeViewport);
 	}
 	else if(field == PROPERTY_FIELD(ViewportConfiguration::_maximizedViewport)) {
-		maximizedViewportChanged(_maximizedViewport);
+		Q_EMIT maximizedViewportChanged(_maximizedViewport);
 	}
 	RefTarget::referenceReplaced(field, oldTarget, newTarget);
+}
+
+/******************************************************************************
+* Is called when the value of a property of this object has changed.
+******************************************************************************/
+void ViewportConfiguration::propertyChanged(const PropertyFieldDescriptor& field)
+{
+	if(field == PROPERTY_FIELD(ViewportConfiguration::_orbitCenterMode) || field == PROPERTY_FIELD(ViewportConfiguration::_userOrbitCenter)) {
+		Q_EMIT cameraOrbitCenterChanged();
+	}
+	RefTarget::propertyChanged(field);
 }
 
 /******************************************************************************
@@ -119,9 +141,33 @@ void ViewportConfiguration::resumeViewportUpdates()
 ViewportSceneRenderer* ViewportConfiguration::viewportRenderer()
 {
 	if(!_viewportRenderer)
-		_viewportRenderer = new ViewportSceneRenderer();
+		_viewportRenderer = new ViewportSceneRenderer(dataSet());
 	return _viewportRenderer.get();
 }
 
+/******************************************************************************
+* Returns the world space point around which the viewport camera orbits.
+******************************************************************************/
+Point3 ViewportConfiguration::orbitCenter()
+{
+	// Update orbiting center.
+	if(orbitCenterMode() == ORBIT_SELECTION_CENTER) {
+		Box3 selectionBoundingBox;
+		for(SceneNode* node : dataSet()->selection()->nodes()) {
+			selectionBoundingBox.addBox(node->worldBoundingBox(dataSet()->animationSettings()->time()));
+		}
+		if(!selectionBoundingBox.isEmpty())
+			return selectionBoundingBox.center();
+		else {
+			Box3 sceneBoundingBox = dataSet()->sceneRoot()->worldBoundingBox(dataSet()->animationSettings()->time());
+			if(!sceneBoundingBox.isEmpty())
+				return sceneBoundingBox.center();
+		}
+	}
+	else if(orbitCenterMode() == ORBIT_USER_DEFINED) {
+		return _userOrbitCenter;
+	}
+	return Point3::Origin();
+}
 
 };

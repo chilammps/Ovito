@@ -60,7 +60,7 @@ void RefMaker::autoDeleteObject()
 
 	clearAllReferences();
 
-	if(dataSet()->undoStack().isRecording() == false)
+	if(!dataSet() || dataSet()->undoStack().isRecording() == false)
 		OvitoObject::autoDeleteObject();
 }
 

@@ -59,7 +59,7 @@ class OVITO_CORE_EXPORT ViewportSceneRenderer : public SceneRenderer
 public:
 
 	/// Default constructor.
-	ViewportSceneRenderer() : _glcontext(nullptr), _modelViewTM(AffineTransformation::Identity()) {}
+	ViewportSceneRenderer(DataSet* dataset) : SceneRenderer(dataset), _glcontext(nullptr), _modelViewTM(AffineTransformation::Identity()) {}
 
 	/// Renders the current animation frame.
 	virtual bool renderFrame(FrameBuffer* frameBuffer, QProgressDialog* progress) override;

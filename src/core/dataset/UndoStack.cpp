@@ -20,10 +20,24 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include <core/gui/actions/ActionManager.h>
+#include <core/reference/RefMaker.h>
 #include "UndoStack.h"
 
 namespace Ovito {
+
+/******************************************************************************
+* Increments the suspend count of the undo stack associated with the given
+* object.
+******************************************************************************/
+UndoSuspender::UndoSuspender(RefMaker* object)
+{
+	OVITO_CHECK_OBJECT_POINTER(object);
+	if(object->dataSet()) {
+		_suspendCount = &object->dataSet()->undoStack()._suspendCount;
+		++(*_suspendCount);
+	}
+	else _suspendCount = nullptr;
+}
 
 /******************************************************************************
 * Initializes the undo manager.
@@ -41,7 +55,7 @@ void UndoStack::push(UndoableOperation* operation)
 {
 	OVITO_CHECK_POINTER(operation);
 	OVITO_ASSERT_MSG(isUndoingOrRedoing() == false, "UndoStack::push()", "Cannot record an operation while undoing or redoing another operation.");
-	OVITO_ASSERT_MSG(isRecording(), "UndoStack::push()", "Not in recording state.");
+	OVITO_ASSERT_MSG(!isSuspended(), "UndoStack::push()", "Not in recording state.");
 
 	// Discard previously undone operations.
 	_operations.resize(index() + 1);

@@ -218,6 +218,9 @@ void ModificationListModel::refreshList()
 		}
 		_selectionModel->select(index(selIndex), QItemSelectionModel::SelectCurrent | QItemSelectionModel::Clear);
 	}
+	else {
+		Q_EMIT selectedItemChanged();
+	}
 }
 
 /******************************************************************************

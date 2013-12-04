@@ -283,6 +283,9 @@ public:
 	/// \brief Returns the dataset this object belongs to.
 	DataSet* dataSet() const { return _dataSet; }
 
+	/// \brief Changes the dataset this object belongs to.
+	void setDataSet(DataSet* dataset) { _dataSet = dataset; }
+
 	///////////////////////////// from OvitoObject ///////////////////////////////
 
 	/// \brief Deletes this object.

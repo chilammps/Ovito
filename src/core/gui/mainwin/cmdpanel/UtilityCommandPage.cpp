@@ -34,9 +34,7 @@ namespace Ovito {
 UtilityCommandPage::UtilityCommandPage(MainWindow* mainWindow, QWidget* parent) : QWidget(parent),
 		_datasetContainer(mainWindow->datasetContainer()), utilitiesButtonGroup(nullptr)
 {
-	scanInstalledPlugins();
-
-	QVBoxLayout* layout = new QVBoxLayout();
+	QVBoxLayout* layout = new QVBoxLayout(this);
 	layout->setContentsMargins(2,2,2,2);
 
 	// Create the rollout container.
@@ -44,13 +42,10 @@ UtilityCommandPage::UtilityCommandPage(MainWindow* mainWindow, QWidget* parent) 
 	rolloutContainer->setFrameStyle(QFrame::NoFrame | QFrame::Plain);
 	layout->addWidget(rolloutContainer, 1);
 
-	// Create rollout that displays the list of installed utility plugins.
-	utilityListPanel = new QWidget();
-	QGridLayout* gridLayout = new QGridLayout();
-#ifndef Q_OS_MACX
+	// Create a rollout that displays the list of installed utility plugins.
+	QWidget* utilityListPanel = new QWidget();
+	QGridLayout* gridLayout = new QGridLayout(utilityListPanel);
 	gridLayout->setContentsMargins(4,4,4,4);
-#endif
-	utilityListPanel->setLayout(gridLayout);
 	rolloutContainer->addRollout(utilityListPanel, tr("Utilities"));
 
 #ifndef Q_OS_MACX
@@ -59,41 +54,13 @@ UtilityCommandPage::UtilityCommandPage(MainWindow* mainWindow, QWidget* parent) 
 							   		"}");
 #endif
 
-	setLayout(layout);
-	rebuildUtilityList();
-
 	// Close open utility when loading a new data set.
 	connect(&_datasetContainer, &DataSetContainer::dataSetChanged, this, &UtilityCommandPage::closeUtility);
-}
-
-/******************************************************************************
-* Finds all utility classes provided by the installed plugins.
-******************************************************************************/
-void UtilityCommandPage::scanInstalledPlugins()
-{
-	Q_FOREACH(const OvitoObjectType* clazz, PluginManager::instance().listClasses(UtilityApplet::OOType)) {
-		classes.push_back(clazz);
-	}
-}
-
-/******************************************************************************
-*Updates the displayed button in the utility selection panel.
-******************************************************************************/
-void UtilityCommandPage::rebuildUtilityList()
-{
-	Q_FOREACH(QObject* w, utilityListPanel->children())
-		if(w->isWidgetType()) delete w;
-
-	if(utilitiesButtonGroup) {
-		delete utilitiesButtonGroup;
-		utilitiesButtonGroup = NULL;
-	}
 
 	utilitiesButtonGroup = new QButtonGroup(utilityListPanel);
 	utilitiesButtonGroup->setExclusive(false);
 
-	Q_FOREACH(const OvitoObjectType* descriptor, classes) {
-
+	for(const OvitoObjectType* descriptor : PluginManager::instance().listClasses(UtilityApplet::OOType)) {
    		QString displayName = descriptor->displayName();
 
 		// Create a button that activates the utility.
@@ -108,9 +75,6 @@ void UtilityCommandPage::rebuildUtilityList()
 
 	// Listen for events.
 	connect(utilitiesButtonGroup, SIGNAL(buttonClicked(QAbstractButton*)), this, SLOT(onUtilityButton(QAbstractButton*)));
-
-	// Resize the rollout panel.
-	utilityListPanel->layout()->update();
 }
 
 /******************************************************************************

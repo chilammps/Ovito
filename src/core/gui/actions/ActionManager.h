@@ -176,6 +176,9 @@ private Q_SLOTS:
 	/// This is called when new animation settings have been loaded.
 	void onAnimationSettingsChanged(AnimationSettings* newAnimationSettings);
 
+	/// This is called when the active animation interval has changed.
+	void onAnimationIntervalChanged(TimeInterval newAnimationInterval);
+
 	void on_Quit_triggered();
 	void on_HelpAbout_triggered();
 	void on_HelpShowOnlineHelp_triggered();
@@ -214,6 +217,7 @@ private:
 	QMetaObject::Connection _redoTriggeredConnection;
 	QMetaObject::Connection _autoKeyModeChangedConnection;
 	QMetaObject::Connection _autoKeyModeToggledConnection;
+	QMetaObject::Connection _animationIntervalChangedConnection;
 
 	/// The current dataset being edited in the main window.
 	OORef<DataSet> _dataset;
