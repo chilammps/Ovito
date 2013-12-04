@@ -218,9 +218,29 @@ QScriptValue modifier(QScriptContext* context, QScriptEngine* engine) {
 	}
 }
 
+
+// Helpers to convert values between JS and C++.
+
+QScriptValue fromFloatType(QScriptEngine *engine, const FloatType& x) {
+	double xx = x;
+	return QScriptValue(xx);
+}
+
+void toFloatType(const QScriptValue& obj, FloatType& x) {
+	x = obj.toNumber();
+}
+
+
+
+
+
 QScriptEngine* prepareEngine(QObject* parent) {
 	// Set up engine.
 	QScriptEngine* engine = new QScriptEngine(parent);
+
+	// Register automatic conversions.
+	const int FloatTypeTypeId = qRegisterMetaType<FloatType>("FloatType");
+	qScriptRegisterMetaType<FloatType>(engine, fromFloatType, toFloatType);
 
 	// Set up namespace. ///////////////////////////////////////////////
 
