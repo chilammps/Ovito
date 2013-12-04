@@ -160,6 +160,9 @@ protected Q_SLOTS:
 	/// Replots the RDF computed by the modifier.
 	void plotRDF();
 
+	/// This is called when the user has clicked the "Save Data" button.
+	void onSaveData();
+
 private:
 
 	/// The graph widget to display the RDF.
