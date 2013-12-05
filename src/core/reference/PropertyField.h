@@ -38,18 +38,14 @@ class OVITO_CORE_EXPORT PropertyFieldBase
 {
 public:
 
+#ifdef OVITO_DEBUG
 	/// One has to call init() once to fully setup this property field.
 	PropertyFieldBase() : _owner(nullptr), _descriptor(nullptr) {}
+#endif
 
 	/// Connects the property field to its owning RefMaker derived class.
 	/// This function must be called in the constructor of the RefMaker derived class for each of its property fields.
-	inline void init(RefMaker* owner, PropertyFieldDescriptor* descriptor) {
-		OVITO_ASSERT_MSG(owner != nullptr, "PropertyFieldBase::init()", "The PropertyField must be initialized with a non-NULL owner.");
-		OVITO_ASSERT_MSG(descriptor != nullptr, "PropertyFieldBase::init()", "The PropertyField must be initialized with a non-NULL descriptor.");
-		OVITO_ASSERT_MSG(this->_owner == nullptr, "PropertyFieldBase::init()", "The PropertyField has already been initialized.");
-		this->_owner = owner;
-		this->_descriptor = descriptor;
-	}
+	void init(RefMaker* owner, PropertyFieldDescriptor* descriptor);
 
 	/// Returns the owner of this property field.
 	inline RefMaker* owner() const {
@@ -208,9 +204,8 @@ class OVITO_CORE_EXPORT SingleReferenceFieldBase : public PropertyFieldBase
 {
 public:
 
-	/// Default constructor that initializes the internal pointer to NULL.
-	/// One has to call init() once to fully setup this reference field.
-	SingleReferenceFieldBase() {}
+	/// Default constructor.
+	SingleReferenceFieldBase() : _pointer(nullptr) {}
 
 	/// Destructor that resets the reference before the object dies.
 	~SingleReferenceFieldBase();
@@ -218,7 +213,7 @@ public:
 	/// Returns the RefTarget pointer.
 	inline operator RefTarget*() const {
 		OVITO_ASSERT_MSG(owner() != nullptr, "ReferenceField pointer operator", "The ReferenceField object has not been initialized yet.");
-		return _pointer.get();
+		return _pointer;
 	}
 
 protected:
@@ -230,7 +225,7 @@ protected:
 	void swapReference(OORef<RefTarget>& inactiveTarget, bool generateNotificationEvents = true);
 
 	/// The actual pointer to the reference target.
-	OORef<RefTarget> _pointer;
+	RefTarget* _pointer;
 
 	friend class RefMaker;
 	friend class RefTarget;
@@ -261,11 +256,8 @@ class ReferenceField : public SingleReferenceFieldBase
 {
 public:
 
-	/// Constructor that initializes the internal pointer to NULL.
-	ReferenceField() : SingleReferenceFieldBase() {}
-
 	/// Read access to the RefTarget derived pointer.
-	operator RefTargetType*() const { return (RefTargetType*)_pointer.get(); }
+	operator RefTargetType*() const { return reinterpret_cast<RefTargetType*>(_pointer); }
 
 	/// Write access to the RefTarget pointer. Changes the value of the reference field.
 	/// The old reference target will be released and the new reference target
@@ -273,8 +265,7 @@ public:
 	/// This operator automatically handles undo so the value change can be undone.
 	RefTargetType* operator=(RefTargetType* newPointer) {
 		setValue(newPointer);
-		OVITO_ASSERT(_pointer.get() == newPointer);
-		return (RefTargetType*)_pointer.get();
+		return newPointer;
 	}
 
 	/// Write access to the RefTarget pointer. Changes the value of the reference field.
@@ -284,25 +275,25 @@ public:
 	RefTargetType* operator=(const OORef<RefTargetType>& newPointer) {
 		setValue(newPointer.get());
 		OVITO_ASSERT(_pointer == newPointer);
-		return (RefTargetType*)_pointer.get();
+		return newPointer.get();
 	}
 
 	/// Overloaded arrow operator; implements pointer semantics.
 	/// Just use this operator as you would with a normal C++ pointer.
 	RefTargetType* operator->() const {
 		OVITO_ASSERT_MSG(_pointer, "ReferenceField operator->", QString("Tried to make a call to a NULL pointer. Reference field '%1' of class %2").arg(QString(descriptor()->identifier()), descriptor()->definingClass()->name()).toLocal8Bit().constData());
-		return (RefTargetType*)_pointer.get();
+		return reinterpret_cast<RefTargetType*>(_pointer);
 	}
 
 	/// Dereference operator; implements pointer semantics.
 	/// Just use this operator as you would with a normal C++ pointer.
 	RefTargetType& operator*() const {
 		OVITO_ASSERT_MSG(_pointer, "ReferenceField operator*", QString("Tried to dereference a NULL pointer. Reference field '%1' of class %2").arg(QString(descriptor()->identifier()), descriptor()->definingClass()->name()).toLocal8Bit().constData());
-		return *(RefTargetType*)_pointer.get();
+		return *reinterpret_cast<RefTargetType*>(_pointer);
 	}
 
-	/// Returns true if the internal is non-NULL.
-	operator bool() const { return _pointer; }
+	/// Returns true if the internal pointer is non-NULL.
+	operator bool() const { return _pointer != nullptr; }
 };
 
 
@@ -312,7 +303,7 @@ public:
 /// (or of a subclass); otherwise returns \c NULL.
 template<class T, class U>
 inline T* dynamic_object_cast(const ReferenceField<U>& field) {
-	return dynamic_object_cast<T,U>((U*)field);
+	return dynamic_object_cast<T,U>(field.value());
 }
 
 /******************************************************************************
@@ -323,10 +314,6 @@ inline T* dynamic_object_cast(const ReferenceField<U>& field) {
 class OVITO_CORE_EXPORT VectorReferenceFieldBase : public PropertyFieldBase
 {
 public:
-
-	/// Default constructor that initializes the internal pointer list to an empty list.
-	/// One has to call init() once to fully setup this reference field.
-	VectorReferenceFieldBase() : PropertyFieldBase() {}
 
 	/// Destructor that releases all referenced objects.
 	~VectorReferenceFieldBase();
@@ -441,9 +428,6 @@ public:
 	typedef typename RefTargetVector::difference_type difference_type;
 	typedef typename RefTargetVector::size_type size_type;
 	typedef typename RefTargetVector::value_type value_type;
-
-	/// Constructor that initializes the internal pointer to NULL.
-	VectorReferenceField() : VectorReferenceFieldBase() {}
 
 	/// Returns the stored references as a QVector.
 	operator const RefTargetVector&() const { return targets(); }

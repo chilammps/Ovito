@@ -29,14 +29,38 @@
 namespace Ovito {
 
 /******************************************************************************
+* Connects the property field to its owning RefMaker derived class.
+* This function must be called in the constructor of the RefMaker derived
+* class for each of its property fields.
+******************************************************************************/
+void PropertyFieldBase::init(RefMaker* owner, PropertyFieldDescriptor* descriptor)
+{
+	OVITO_ASSERT_MSG(owner != nullptr, "PropertyFieldBase::init()", "The PropertyField must be initialized with a non-NULL owner.");
+	OVITO_ASSERT_MSG(descriptor != nullptr, "PropertyFieldBase::init()", "The PropertyField must be initialized with a non-NULL descriptor.");
+	OVITO_ASSERT_MSG(this->_owner == nullptr, "PropertyFieldBase::init()", "The PropertyField has already been initialized.");
+	this->_owner = owner;
+	this->_descriptor = descriptor;
+
+	// Make sure automatic undo recording is disabled for a property field of a class that is not derived from RefTarget.
+	OVITO_ASSERT_MSG(descriptor->automaticUndo() == false || owner->isRefTarget(), "PropertyFieldBase::init()",
+			"PROPERTY_FIELD_NO_UNDO flag has not been set for property or reference field of non-RefTarget derived class.");
+
+	// Automatic undo recording is not supported for weak reference fields.
+	OVITO_ASSERT_MSG(descriptor->automaticUndo() == false || descriptor->isWeakReference() == false, "PropertyFieldBase::init()",
+			"PROPERTY_FIELD_NO_UNDO flag must be used as well when PROPERTY_FIELD_WEAK_REF flag is set for a reference field.");
+}
+
+/******************************************************************************
 * Generates a notification event to inform the dependents of the field's owner
 * that it has changed.
 ******************************************************************************/
 void PropertyFieldBase::generateTargetChangedEvent(ReferenceEvent::Type messageType)
 {
+	if(!descriptor()->shouldGenerateChangeEvent())
+		return;
+
 	// Send change message.
-	RefTarget* thisTarget = dynamic_object_cast<RefTarget>(owner());
-	if(thisTarget && descriptor()->shouldGenerateChangeEvent())
+	if(RefTarget* thisTarget = dynamic_object_cast<RefTarget>(owner()))
 		thisTarget->notifyDependents(messageType);
 }
 
@@ -54,10 +78,7 @@ void PropertyFieldBase::generatePropertyChangedEvent() const
 ******************************************************************************/
 VectorReferenceFieldBase::~VectorReferenceFieldBase()
 {
-	OVITO_ASSERT(!owner()->getOOType().isDerivedFrom(RefTarget::OOType) || owner()->dataset()->undoStack().isRecording() == false);
-	while(!pointers.empty()) {
-		removeReference(pointers.size() - 1, false);
-	}
+	OVITO_ASSERT_MSG(pointers.empty(), "~VectorReferenceFieldBase()", "Owner object of this vector reference field has not been deleted correctly. The vector reference field is not empty.");
 }
 
 /******************************************************************************
@@ -65,11 +86,7 @@ VectorReferenceFieldBase::~VectorReferenceFieldBase()
 ******************************************************************************/
 SingleReferenceFieldBase::~SingleReferenceFieldBase()
 {
-	OVITO_ASSERT(!owner()->getOOType().isDerivedFrom(RefTarget::OOType) || owner()->dataset()->undoStack().isRecording() == false);
-	// The internal intrusive pointer must be cleared first before the reference count
-	// to the target goes to zero to prevent infinite recursion.
-	OORef<RefTarget> a_null_ptr;
-	swapReference(a_null_ptr, false);
+	OVITO_ASSERT_MSG(!_pointer, "~SingleReferenceFieldBase()", "Owner object of this reference field has not been deleted correctly. The reference field is not empty.");
 }
 
 /******************************************************************************
@@ -85,18 +102,26 @@ void SingleReferenceFieldBase::swapReference(OORef<RefTarget>& inactiveTarget, b
 
 	// Check for cyclic references.
 	if(inactiveTarget && refmaker->isReferencedBy(inactiveTarget.get())) {
-		OVITO_ASSERT(!owner()->getOOType().isDerivedFrom(RefTarget::OOType) || !owner()->dataset()->undoStack().isUndoingOrRedoing());
+		OVITO_ASSERT(!owner()->isRefTarget() || !owner()->dataset()->undoStack().isUndoingOrRedoing());
 		throw CyclicReferenceError();
 	}
 
-	_pointer.swap(inactiveTarget);
+	OORef<RefTarget> oldTarget(_pointer);
+
+	if(inactiveTarget && !descriptor()->isWeakReference())
+		inactiveTarget->incrementReferenceCount();
+
+	if(_pointer && !descriptor()->isWeakReference())
+		_pointer->decrementReferenceCount();
+
+	_pointer = inactiveTarget.get();
 
 	// Remove the RefMaker from the old target's list of dependents if it has no
 	// more references to it.
-	if(inactiveTarget) {
-		OVITO_ASSERT(inactiveTarget->_dependents.contains(refmaker));
-		if(!refmaker->hasReferenceTo(inactiveTarget.get())) {
-			inactiveTarget->_dependents.remove(refmaker);
+	if(oldTarget) {
+		OVITO_ASSERT(oldTarget->_dependents.contains(refmaker));
+		if(!refmaker->hasReferenceTo(oldTarget.get())) {
+			oldTarget->_dependents.remove(refmaker);
 		}
 	}
 
@@ -109,12 +134,13 @@ void SingleReferenceFieldBase::swapReference(OORef<RefTarget>& inactiveTarget, b
 	if(generateNotificationEvents) {
 
 		// Inform derived classes.
-		refmaker->referenceReplaced(*descriptor(), inactiveTarget.get(), _pointer.get());
+		refmaker->referenceReplaced(*descriptor(), oldTarget.get(), _pointer);
 
 		// Send auto change message.
 		generateTargetChangedEvent();
-
 	}
+
+	oldTarget.swap(inactiveTarget);
 }
 
 /******************************************************************************
@@ -132,19 +158,19 @@ void SingleReferenceFieldBase::setValue(RefTarget* newTarget)
 	}
 
 	// Make sure automatic undo is disabled for a reference field of a class that is not derived from RefTarget.
-	OVITO_ASSERT_MSG(descriptor()->automaticUndo() == false || owner()->getOOType().isDerivedFrom(RefTarget::OOType), "SingleReferenceFieldBase::setValue()",
+	OVITO_ASSERT_MSG(descriptor()->automaticUndo() == false || owner()->isRefTarget(), "SingleReferenceFieldBase::setValue()",
 			"PROPERTY_FIELD_NO_UNDO flag has not been set for reference field of non-RefTarget derived class.");
 
 	if(descriptor()->automaticUndo() && owner()->dataset()->undoStack().isRecording()) {
 		SetReferenceOperation* op = new SetReferenceOperation(newTarget, *this);
 		owner()->dataset()->undoStack().push(op);
 		op->redo();
-		OVITO_ASSERT(_pointer.get() == newTarget);
+		OVITO_ASSERT(_pointer == newTarget);
 	}
 	else {
 		OORef<RefTarget> newTargetRef(newTarget);
 		swapReference(newTargetRef);
-		OVITO_ASSERT(_pointer.get() == newTarget);
+		OVITO_ASSERT(_pointer == newTarget);
 	}
 }
 
@@ -166,7 +192,8 @@ OORef<RefTarget> VectorReferenceFieldBase::removeReference(int index, bool gener
 
 	// Release old reference target if there are no more references to it.
 	if(target) {
-		target->decrementReferenceCount();
+		if(!descriptor()->isWeakReference())
+			target->decrementReferenceCount();
 
 		// Remove the refmaker from the old target's list of dependents.
 		OVITO_CHECK_OBJECT_POINTER(target);
@@ -185,7 +212,7 @@ OORef<RefTarget> VectorReferenceFieldBase::removeReference(int index, bool gener
 			generateTargetChangedEvent();
 		}
 		catch(...) {
-			if(!owner()->getOOType().isDerivedFrom(RefTarget::OOType) || !owner()->dataset()->undoStack().isUndoingOrRedoing())
+			if(!owner()->isRefTarget() || !owner()->dataset()->undoStack().isUndoingOrRedoing())
 				throw;
 			qDebug() << "Caught exception in VectorReferenceFieldBase::removeReference(). RefMaker is" << owner() << ". RefTarget is" << target;
 		}
@@ -207,7 +234,7 @@ int VectorReferenceFieldBase::addReference(const OORef<RefTarget>& target, int i
 
 	// Check for cyclic references.
 	if(target && refmaker->isReferencedBy(target.get())) {
-		OVITO_ASSERT(!owner()->getOOType().isDerivedFrom(RefTarget::OOType) || !owner()->dataset()->undoStack().isUndoingOrRedoing());
+		OVITO_ASSERT(!owner()->isRefTarget() || !owner()->dataset()->undoStack().isUndoingOrRedoing());
 		throw CyclicReferenceError();
 	}
 
@@ -220,7 +247,7 @@ int VectorReferenceFieldBase::addReference(const OORef<RefTarget>& target, int i
 		OVITO_ASSERT(index >= 0 && index <= pointers.size());
 		pointers.insert(index, target.get());
 	}
-	if(target)
+	if(target && !descriptor()->isWeakReference())
 		target->incrementReferenceCount();
 
 	// Add the RefMaker to the list of dependents of the new target.
@@ -235,7 +262,7 @@ int VectorReferenceFieldBase::addReference(const OORef<RefTarget>& target, int i
 		generateTargetChangedEvent();
 	}
 	catch(...) {
-		if(!owner()->getOOType().isDerivedFrom(RefTarget::OOType) || !owner()->dataset()->undoStack().isUndoingOrRedoing())
+		if(!owner()->isRefTarget() || !owner()->dataset()->undoStack().isUndoingOrRedoing())
 			throw;
 		qDebug() << "Caught exception in VectorReferenceFieldBase::addReference(). RefMaker is" << refmaker << ". RefTarget is" << target.get();
 	}
@@ -256,7 +283,7 @@ int VectorReferenceFieldBase::insertInternal(RefTarget* newTarget, int index)
 	}
 
 	// Make sure automatic undo is disabled for a reference field of a class that is not derived from RefTarget.
-	OVITO_ASSERT_MSG(descriptor()->automaticUndo() == false || owner()->getOOType().isDerivedFrom(RefTarget::OOType), "VectorReferenceFieldBase::insertInternal()",
+	OVITO_ASSERT_MSG(descriptor()->automaticUndo() == false || owner()->isRefTarget(), "VectorReferenceFieldBase::insertInternal()",
 			"PROPERTY_FIELD_NO_UNDO flag has not been set for reference field of non-RefTarget derived class.");
 
 	if(descriptor()->automaticUndo() && owner()->dataset()->undoStack().isRecording()) {
@@ -279,7 +306,7 @@ void VectorReferenceFieldBase::remove(int i)
 	OVITO_ASSERT(i >= 0 && i < size());
 
 	// Make sure automatic undo is disabled for a reference field of a class that is not derived from RefTarget.
-	OVITO_ASSERT_MSG(descriptor()->automaticUndo() == false || owner()->getOOType().isDerivedFrom(RefTarget::OOType), "VectorReferenceFieldBase::remove()",
+	OVITO_ASSERT_MSG(descriptor()->automaticUndo() == false || owner()->isRefTarget(), "VectorReferenceFieldBase::remove()",
 			"PROPERTY_FIELD_NO_UNDO flag has not been set for reference field of non-RefTarget derived class.");
 
 	if(descriptor()->automaticUndo() && owner()->dataset()->undoStack().isRecording()) {

@@ -37,10 +37,10 @@ namespace Ovito {
 /******************************************************************************
 * The constructor of the main window class.
 ******************************************************************************/
-MainWindow::MainWindow(const QString& title) :
+MainWindow::MainWindow() :
 		_datasetContainer(this)
 {
-	setWindowTitle(title);
+	setWindowTitle(tr("Ovito (Open Visualization Tool)"));
 	setAttribute(Qt::WA_DeleteOnClose);
 
 	// Setup the layout of docking widgets.
@@ -202,6 +202,7 @@ void MainWindow::createMainMenu()
 
 	// Build the file menu.
 	QMenu* fileMenu = menuBar->addMenu(tr("&File"));
+	fileMenu->addAction(actionManager()->getAction(ACTION_FILE_NEW_WINDOW));
 	fileMenu->addAction(actionManager()->getAction(ACTION_FILE_IMPORT));
 	fileMenu->addAction(actionManager()->getAction(ACTION_FILE_REMOTE_IMPORT));
 	fileMenu->addAction(actionManager()->getAction(ACTION_FILE_EXPORT));

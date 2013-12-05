@@ -47,8 +47,8 @@ public:
 
 public:
 
-	/// Default constructor.
-	PickingSceneRenderer() : ViewportSceneRenderer(nullptr) {
+	/// Constructor.
+	PickingSceneRenderer(DataSet* dataset) : ViewportSceneRenderer(dataset) {
 		setPicking(true);
 	}
 

@@ -93,8 +93,12 @@ void AmbientOcclusionModifier::AmbientOcclusionEngine::compute(FutureInterfaceBa
 {
 	futureInterface.setProgressText(tr("Computing ambient occlusion"));
 
-	AmbientOcclusionRenderer renderer(QSize(_resolution, _resolution));
-	renderer.startRender(nullptr, nullptr);
+	// Create a temporary dataset, which is needed to host an instance of AmbientOcclusionRenderer.
+	OORef<DataSet> dataset(new DataSet());
+	// Create the AmbientOcclusionRenderer instance.
+	OORef<AmbientOcclusionRenderer> renderer(new AmbientOcclusionRenderer(dataset.get(), QSize(_resolution, _resolution)));
+
+	renderer->startRender(nullptr, nullptr);
 	try {
 		OVITO_ASSERT(!_boundingBox.isEmpty());
 
@@ -131,26 +135,26 @@ void AmbientOcclusionModifier::AmbientOcclusionEngine::compute(FutureInterfaceBa
 			projParams.inverseProjectionMatrix = projParams.projectionMatrix.inverse();
 			projParams.validityInterval = TimeInterval::forever();
 
-			renderer.beginFrame(0, projParams, nullptr);
-			renderer.setWorldTransform(AffineTransformation::Identity());
+			renderer->beginFrame(0, projParams, nullptr);
+			renderer->setWorldTransform(AffineTransformation::Identity());
 			try {
 				// Create particle buffer.
-				if(!particleBuffer || !particleBuffer->isValid(&renderer)) {
-					particleBuffer = renderer.createParticleGeometryBuffer(ParticleGeometryBuffer::FlatShading, ParticleGeometryBuffer::LowQuality, ParticleGeometryBuffer::SphericalShape);
+				if(!particleBuffer || !particleBuffer->isValid(renderer.get())) {
+					particleBuffer = renderer->createParticleGeometryBuffer(ParticleGeometryBuffer::FlatShading, ParticleGeometryBuffer::LowQuality, ParticleGeometryBuffer::SphericalShape);
 					particleBuffer->setSize(positions()->size());
 					particleBuffer->setParticlePositions(positions()->constDataPoint3());
 					particleBuffer->setParticleRadii(_particleRadii.data());
 				}
-				particleBuffer->render(&renderer, 1);
+				particleBuffer->render(renderer.get(), 1);
 			}
 			catch(...) {
-				renderer.endFrame();
+				renderer->endFrame();
 				throw;
 			}
-			renderer.endFrame();
+			renderer->endFrame();
 
 			// Extract brightness values from rendered image.
-			const QImage image = renderer.image();
+			const QImage image = renderer->image();
 			FloatType* brightnessValues = brightness()->dataFloat();
 			for(int y = 0; y < _resolution; y++) {
 				const QRgb* pixel = reinterpret_cast<const QRgb*>(image.scanLine(y));
@@ -170,10 +174,10 @@ void AmbientOcclusionModifier::AmbientOcclusionEngine::compute(FutureInterfaceBa
 		}
 	}
 	catch(...) {
-		renderer.endRender();
+		renderer->endRender();
 		throw;
 	}
-	renderer.endRender();
+	renderer->endRender();
 
 	if(!futureInterface.isCanceled()) {
 		futureInterface.setProgressValue(_samplingCount);

@@ -41,7 +41,7 @@ class OVITO_PARTICLES_EXPORT AmbientOcclusionRenderer : public ViewportSceneRend
 public:
 
 	/// Constructor.
-	AmbientOcclusionRenderer(QSize resolution) : ViewportSceneRenderer(nullptr), _resolution(resolution) {
+	AmbientOcclusionRenderer(DataSet* dataset, QSize resolution) : ViewportSceneRenderer(dataset), _resolution(resolution) {
 		setPicking(true);
 	}
 

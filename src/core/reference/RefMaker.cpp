@@ -36,19 +36,17 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, RefMaker, OvitoObject);
 * This method is called when the reference counter of this OvitoObject
 * has reached zero.
 ******************************************************************************/
-void RefMaker::deleteThis()
+void RefMaker::aboutToBeDeleted()
 {
 	OVITO_CHECK_OBJECT_POINTER(this);
-	//qDebug() << "Deleting" << this << "from memory (dataset=" << _dataset << ")";
 
 	// Make sure undo recording is not active.
-	OVITO_ASSERT_MSG(!_dataset || _dataset->undoStack().isRecording() == false, "RefMaker::deleteThis()", "Cannot delete object from memory while undo recording is active.");
+	OVITO_ASSERT_MSG(!_dataset || _dataset->undoStack().isRecording() == false, "RefMaker::aboutToBeDeleted()", "Cannot delete object from memory while undo recording is active.");
 
 	// Clear all references this object has to other objects.
 	clearAllReferences();
 
-	// Delete object from memory.
-	OvitoObject::deleteThis();
+	OvitoObject::aboutToBeDeleted();
 }
 
 /******************************************************************************

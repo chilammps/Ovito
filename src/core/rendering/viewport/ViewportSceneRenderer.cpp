@@ -349,7 +349,7 @@ void ViewportSceneRenderer::loadShader(QOpenGLShaderProgram* program, QOpenGLSha
 
 	// Insert GLSL version string at the top.
 	// Pick GLSL language version based on current OpenGL version.
-	if(glformat().majorVersion() >= 3 && glformat().minorVersion() >= 2)
+	if((glformat().majorVersion() >= 3 && glformat().minorVersion() >= 2) || glformat().majorVersion() > 3)
 		shaderSource.prepend("#version 150\n");
 	else if(glformat().majorVersion() >= 3)
 		shaderSource.prepend("#version 130\n");

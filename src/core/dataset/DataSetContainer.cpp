@@ -37,8 +37,8 @@
 
 namespace Ovito {
 
-IMPLEMENT_OVITO_OBJECT(Core, DataSetContainer, RefMaker)
-DEFINE_FLAGS_REFERENCE_FIELD(DataSetContainer, _currentSet, "CurrentSet", DataSet, PROPERTY_FIELD_NO_UNDO)
+IMPLEMENT_OVITO_OBJECT(Core, DataSetContainer, RefMaker);
+DEFINE_FLAGS_REFERENCE_FIELD(DataSetContainer, _currentSet, "CurrentSet", DataSet, PROPERTY_FIELD_NO_UNDO);
 
 /******************************************************************************
 * Initializes the dataset manager.

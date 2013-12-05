@@ -31,12 +31,22 @@ namespace Ovito {
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, RefTarget, RefMaker);
 
 /******************************************************************************
-* The virtual destructor.
+* This method is called when the reference counter of this OvitoObject
+* has reached zero.
 ******************************************************************************/
-RefTarget::~RefTarget()
+void RefTarget::aboutToBeDeleted()
 {
-	// Make sure there are no more dependents left.
-	OVITO_ASSERT_MSG(dependents().empty(), "RefTarget destructor", "RefTarget object has not been deleted via deleteReferenceObject().");
+	OVITO_CHECK_OBJECT_POINTER(this);
+	OVITO_CHECK_OBJECT_POINTER(dataset());
+
+	// Make sure undo recording is not active while deleting the object from memory.
+	UndoSuspender noUndo(dataset()->undoStack());
+
+	// This will remove all references to this target object.
+	notifyDependents(ReferenceEvent::TargetDeleted);
+
+	// Delete object from memory.
+	RefMaker::aboutToBeDeleted();
 }
 
 /******************************************************************************
@@ -45,16 +55,12 @@ RefTarget::~RefTarget()
 void RefTarget::deleteReferenceObject()
 {
 	OVITO_CHECK_OBJECT_POINTER(this);
-	//qDebug() << "Deleting reference object" << this;
-
-	// Clear all references held by the object to other objects.
-	clearAllReferences();
 
 	// This will remove all references to this target object.
 	notifyDependents(ReferenceEvent::TargetDeleted);
 
 	// At this point, the object might have been deleted from memory if its
-	// reference counter has reached zero. If undo recording was enabled,
+	// reference counter has reached zero. If undo recording was enabled, however,
 	// the undo record still holds a reference to this object and it will still be alive.
 }
 
@@ -109,7 +115,6 @@ bool RefTarget::handleReferenceEvent(RefTarget* source, ReferenceEvent* event)
 
 	return true;
 }
-
 
 /******************************************************************************
 * Checks if this object is directly or indirectly referenced by the given RefMaker.

@@ -26,7 +26,7 @@ namespace Ovito {
 
 // Gives the class run-time type information.
 IMPLEMENT_OVITO_OBJECT(Core, PropertiesEditor, RefMaker)
-DEFINE_FLAGS_REFERENCE_FIELD(PropertiesEditor, _editObject, "EditObject", RefTarget, PROPERTY_FIELD_NO_UNDO | PROPERTY_FIELD_NO_CHANGE_MESSAGE)
+DEFINE_FLAGS_REFERENCE_FIELD(PropertiesEditor, _editObject, "EditObject", RefTarget, PROPERTY_FIELD_NO_UNDO | PROPERTY_FIELD_WEAK_REF | PROPERTY_FIELD_NO_CHANGE_MESSAGE)
 
 /******************************************************************************
 * The constructor.

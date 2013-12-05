@@ -67,7 +67,7 @@ Viewport::Viewport(DataSet* dataset) : RefTarget(dataset),
 		_isRendering(false),
 		_cameraPosition(Point3::Origin()), _cameraDirection(Vector3::Zero()),
 		_renderDebugCounter(0),
-		_pickingRenderer(new PickingSceneRenderer()),
+		_pickingRenderer(new PickingSceneRenderer(dataset)),
 		_cameraTM(AffineTransformation::Identity())
 {
 	INIT_PROPERTY_FIELD(Viewport::_viewNode);

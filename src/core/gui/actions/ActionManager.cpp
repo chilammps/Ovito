@@ -82,6 +82,7 @@ ActionManager::ActionManager(MainWindow* mainWindow) : QObject(mainWindow)
 	createCommandAction(ACTION_FILE_IMPORT, tr("Open Local File"), ":/core/actions/file/file_import.png", tr("Import data from a file on this computer."), Qt::CTRL + Qt::Key_I);
 	createCommandAction(ACTION_FILE_REMOTE_IMPORT, tr("Open Remote File"), ":/core/actions/file/file_import_remote.png", tr("Import a file from a remote location."), Qt::CTRL + Qt::SHIFT + Qt::Key_I);
 	createCommandAction(ACTION_FILE_EXPORT, tr("Export File"), ":/core/actions/file/file_export.png", tr("Export data to a file."), Qt::CTRL + Qt::Key_E);
+	createCommandAction(ACTION_FILE_NEW_WINDOW, tr("New Window"), ":/core/actions/file/file_new.png", tr("Opens a new OVITO window."));
 	createCommandAction(ACTION_HELP_ABOUT, tr("About Ovito"), NULL, tr("Show information about the application."));
 	createCommandAction(ACTION_HELP_SHOW_ONLINE_HELP, tr("Manual"), NULL, tr("Open the online manual."), QKeySequence::HelpContents);
 

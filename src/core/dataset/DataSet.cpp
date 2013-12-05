@@ -68,23 +68,6 @@ DataSet::DataSet(DataSet* self) : RefTarget(this), _unitsManager(this)
 }
 
 /******************************************************************************
-* This method is called when the reference counter of this OvitoObject
-* has reached zero.
-******************************************************************************/
-void DataSet::deleteThis()
-{
-	// Make sure undo recording is not active.
-	OVITO_ASSERT(undoStack().isRecording() == false);
-
-	// Delete scene nodes and everything else that belongs to this dataset.
-	if(sceneRoot())
-		sceneRoot()->deleteNode();
-
-	// Delete object from memory.
-	RefTarget::deleteThis();
-}
-
-/******************************************************************************
 * Sets the dataset's root scene node.
 ******************************************************************************/
 void DataSet::setSceneRoot(const OORef<SceneRoot>& newScene)

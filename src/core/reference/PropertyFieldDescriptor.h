@@ -33,24 +33,26 @@ class VectorReferenceFieldBase;		// defined in PropertyField.h
 /// Bit-flags that control the behavior of a property field.
 enum PropertyFieldFlag
 {
-	/// Default behavior.
+	/// Selects the default behavior.
 	PROPERTY_FIELD_NO_FLAGS				= 0,
 	/// Indicates that a reference field is a vector of references.
 	PROPERTY_FIELD_VECTOR				= (1<<1),
-	/// With this flag set no undo records are created when the property value is changed.
+	/// Do not create automatic undo records when the value of the property or reference field changes.
 	PROPERTY_FIELD_NO_UNDO				= (1<<2),
+	/// Create a weak reference to the reference target.
+	PROPERTY_FIELD_WEAK_REF				= (1<<3),
 	/// Controls whether or not a ReferenceField::TargetChanged event should
 	/// be generated each time the property value changes.
-	PROPERTY_FIELD_NO_CHANGE_MESSAGE	= (1<<3),
-	/// The target of the reference field is never cloned when the owning RefMaker is cloned.
-	PROPERTY_FIELD_NEVER_CLONE_TARGET	= (1<<4),
-	/// The target of the reference field is shallow/deep copied depending on the mode when the owning RefMaker is cloned.
-	PROPERTY_FIELD_ALWAYS_CLONE         = (1<<5),
-	/// The target of the reference field is always deep-copied completely when the owning RefMaker is cloned.
-	PROPERTY_FIELD_ALWAYS_DEEP_COPY		= (1<<6),
+	PROPERTY_FIELD_NO_CHANGE_MESSAGE	= (1<<4),
+	/// The target of the reference field is never cloned when the owning object is cloned.
+	PROPERTY_FIELD_NEVER_CLONE_TARGET	= (1<<5),
+	/// The target of the reference field is shallow/deep copied depending on the mode when the owning object is cloned.
+	PROPERTY_FIELD_ALWAYS_CLONE         = (1<<6),
+	/// The target of the reference field is always deep-copied completely when the owning object is cloned.
+	PROPERTY_FIELD_ALWAYS_DEEP_COPY		= (1<<7),
 	/// Save the last value of the property in the application's settings store and use it to initialize
-	/// the property when a new object is created.
-	PROPERTY_FIELD_MEMORIZE				= (1<<7),
+	/// the property when a new object instance is created.
+	PROPERTY_FIELD_MEMORIZE				= (1<<8)
 };
 Q_DECLARE_FLAGS(PropertyFieldFlags, PropertyFieldFlag);
 Q_DECLARE_OPERATORS_FOR_FLAGS(PropertyFieldFlags);
@@ -67,14 +69,14 @@ public:
 	PropertyFieldDescriptor(const NativeOvitoObjectType* definingClass, const char* identifier, PropertyFieldFlags flags,
 			QVariant (*_propertyStorageReadFunc)(RefMaker*), void (*_propertyStorageWriteFunc)(RefMaker*, const QVariant&),
 			void (*_propertyStorageSaveFunc)(RefMaker*, SaveStream&), void (*_propertyStorageLoadFunc)(RefMaker*, LoadStream&))
-		: _definingClassDescriptor(definingClass), _targetClassDescriptor(NULL), _identifier(identifier), _flags(flags), singleStorageAccessFunc(NULL), vectorStorageAccessFunc(NULL),
+		: _definingClassDescriptor(definingClass), _targetClassDescriptor(nullptr), _identifier(identifier), _flags(flags), singleStorageAccessFunc(nullptr), vectorStorageAccessFunc(nullptr),
 			propertyStorageReadFunc(_propertyStorageReadFunc), propertyStorageWriteFunc(_propertyStorageWriteFunc),
 			propertyStorageSaveFunc(_propertyStorageSaveFunc), propertyStorageLoadFunc(_propertyStorageLoadFunc) {
-		OVITO_ASSERT(_identifier != NULL);
+		OVITO_ASSERT(_identifier != nullptr);
 		OVITO_ASSERT(!_flags.testFlag(PROPERTY_FIELD_VECTOR));
-		OVITO_ASSERT(definingClass != NULL);
+		OVITO_ASSERT(definingClass != nullptr);
 		// Make sure that there is no other reference field with the same identifier in the defining class.
-		OVITO_ASSERT_MSG(definingClass->findPropertyField(identifier) == NULL, "PropertyFieldDescriptor", "Property field identifier is not unique.");
+		OVITO_ASSERT_MSG(definingClass->findPropertyField(identifier) == nullptr, "PropertyFieldDescriptor", "Property field identifier is not unique.");
 		// Insert into linked list of reference fields stored in the defining class' descriptor.
 		this->_next = definingClass->_firstPropertyField;
 		const_cast<NativeOvitoObjectType*>(definingClass)->_firstPropertyField = this;
@@ -82,15 +84,15 @@ public:
 
 	/// Constructor	for a property field that stores a single reference to a RefTarget.
 	PropertyFieldDescriptor(const NativeOvitoObjectType* definingClass, const OvitoObjectType* targetClass, const char* identifier, PropertyFieldFlags flags, SingleReferenceFieldBase& (*_storageAccessFunc)(RefMaker*))
-		: _definingClassDescriptor(definingClass), _targetClassDescriptor(targetClass), _identifier(identifier), _flags(flags), singleStorageAccessFunc(_storageAccessFunc), vectorStorageAccessFunc(NULL),
-			propertyStorageReadFunc(NULL), propertyStorageWriteFunc(NULL), propertyStorageSaveFunc(NULL), propertyStorageLoadFunc(NULL) {
-		OVITO_ASSERT(_identifier != NULL);
-		OVITO_ASSERT(singleStorageAccessFunc != NULL);
+		: _definingClassDescriptor(definingClass), _targetClassDescriptor(targetClass), _identifier(identifier), _flags(flags), singleStorageAccessFunc(_storageAccessFunc), vectorStorageAccessFunc(nullptr),
+			propertyStorageReadFunc(nullptr), propertyStorageWriteFunc(nullptr), propertyStorageSaveFunc(nullptr), propertyStorageLoadFunc(nullptr) {
+		OVITO_ASSERT(_identifier != nullptr);
+		OVITO_ASSERT(singleStorageAccessFunc != nullptr);
 		OVITO_ASSERT(!_flags.testFlag(PROPERTY_FIELD_VECTOR));
-		OVITO_ASSERT(definingClass != NULL);
-		OVITO_ASSERT(targetClass != NULL);
+		OVITO_ASSERT(definingClass != nullptr);
+		OVITO_ASSERT(targetClass != nullptr);
 		// Make sure that there is no other reference field with the same identifier in the defining class.
-		OVITO_ASSERT_MSG(definingClass->findPropertyField(identifier) == NULL, "PropertyFieldDescriptor", "Property field identifier is not unique.");
+		OVITO_ASSERT_MSG(definingClass->findPropertyField(identifier) == nullptr, "PropertyFieldDescriptor", "Property field identifier is not unique.");
 		// Insert into linked list of reference fields stored in the defining class' descriptor.
 		this->_next = definingClass->_firstPropertyField;
 		const_cast<NativeOvitoObjectType*>(definingClass)->_firstPropertyField = this;
@@ -98,15 +100,15 @@ public:
 
 	/// Constructor	for a property field that stores a vector of references to RefTarget objects.
 	PropertyFieldDescriptor(const NativeOvitoObjectType* definingClass, const OvitoObjectType* targetClass, const char* identifier, PropertyFieldFlags flags, VectorReferenceFieldBase& (*_storageAccessFunc)(RefMaker*))
-		: _definingClassDescriptor(definingClass), _targetClassDescriptor(targetClass), _identifier(identifier), _flags(flags), singleStorageAccessFunc(NULL), vectorStorageAccessFunc(_storageAccessFunc),
-			propertyStorageReadFunc(NULL), propertyStorageWriteFunc(NULL), propertyStorageSaveFunc(NULL), propertyStorageLoadFunc(NULL) {
-		OVITO_ASSERT(_identifier != NULL);
-		OVITO_ASSERT(vectorStorageAccessFunc != NULL);
+		: _definingClassDescriptor(definingClass), _targetClassDescriptor(targetClass), _identifier(identifier), _flags(flags), singleStorageAccessFunc(nullptr), vectorStorageAccessFunc(_storageAccessFunc),
+			propertyStorageReadFunc(nullptr), propertyStorageWriteFunc(nullptr), propertyStorageSaveFunc(nullptr), propertyStorageLoadFunc(nullptr) {
+		OVITO_ASSERT(_identifier != nullptr);
+		OVITO_ASSERT(vectorStorageAccessFunc != nullptr);
 		OVITO_ASSERT(_flags.testFlag(PROPERTY_FIELD_VECTOR));
 		OVITO_ASSERT(definingClass != NULL);
 		OVITO_ASSERT(targetClass != NULL);
 		// Make sure that there is no other reference field with the same identifier in the defining class.
-		OVITO_ASSERT_MSG(definingClass->findPropertyField(identifier) == NULL, "PropertyFieldDescriptor", "Property field identifier is not unique.");
+		OVITO_ASSERT_MSG(definingClass->findPropertyField(identifier) == nullptr, "PropertyFieldDescriptor", "Property field identifier is not unique.");
 		// Insert into linked list of reference fields stored in the defining class' descriptor.
 		this->_next = definingClass->_firstPropertyField;
 		const_cast<NativeOvitoObjectType*>(definingClass)->_firstPropertyField = this;
@@ -122,7 +124,10 @@ public:
 	const OvitoObjectType* targetClass() const { return _targetClassDescriptor; }
 
 	/// Returns whether this is a reference field that stores a pointer to a RefTarget derived class.
-	bool isReferenceField() const { return _targetClassDescriptor != NULL; }
+	bool isReferenceField() const { return _targetClassDescriptor != nullptr; }
+
+	/// Returns whether this reference field stores weak references.
+	bool isWeakReference() const { return _flags.testFlag(PROPERTY_FIELD_WEAK_REF); }
 
 	/// Returns true if this reference field stores a vector of objects.
 	bool isVector() const { return _flags.testFlag(PROPERTY_FIELD_VECTOR); }

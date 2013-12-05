@@ -35,7 +35,7 @@
 namespace CrystalAnalysis {
 
 IMPLEMENT_OVITO_OBJECT(CrystalAnalysis, DislocationInspector, PropertiesEditor);
-DEFINE_FLAGS_REFERENCE_FIELD(DislocationInspector, _sceneNode, "SceneNode", ObjectNode, PROPERTY_FIELD_NO_UNDO);
+DEFINE_FLAGS_REFERENCE_FIELD(DislocationInspector, _sceneNode, "SceneNode", ObjectNode, PROPERTY_FIELD_NO_UNDO | PROPERTY_FIELD_WEAK_REF);
 
 /// List of column indices used by the table.
 enum DislocationInspectorColumns {

@@ -45,6 +45,8 @@ namespace Ovito {
 #define ACTION_FILE_REMOTE_IMPORT "FileRemoteImport"
 /// This action shows the file export dialog.
 #define ACTION_FILE_EXPORT		"FileExport"
+/// This action opens another main window.
+#define ACTION_FILE_NEW_WINDOW	"FileNewWindow"
 
 /// This action shows the about dialog.
 #define ACTION_HELP_ABOUT				"HelpAbout"
@@ -189,6 +191,7 @@ private Q_SLOTS:
 	void on_FileImport_triggered();
 	void on_FileRemoteImport_triggered();
 	void on_FileExport_triggered();
+	void on_FileNewWindow_triggered();
 	void on_ViewportMaximize_triggered();
 	void on_ViewportZoomSceneExtents_triggered();
 	void on_ViewportZoomSelectionExtents_triggered();

@@ -47,7 +47,7 @@ class OVITO_CORE_EXPORT MainWindow : public QMainWindow
 public:
 
 	/// Constructor of the main window class.
-	MainWindow(const QString& title);
+	MainWindow();
 
 	/// Returns the main toolbar of the window.
 	QToolBar* mainToolbar() const { return _mainToolbar; }

@@ -111,8 +111,12 @@ void ViewportInputManager::pushInputMode(ViewportInputMode* newMode, bool tempor
 	newMode->activated(temporary);
 
 	// Update viewports if the old or the new mode displays overlays.
-	if((oldMode && oldMode->hasOverlay()) || newMode->hasOverlay())
-		mainWindow()->datasetContainer().currentSet()->viewportConfig()->updateViewports();
+	if((oldMode && oldMode->hasOverlay()) || newMode->hasOverlay()) {
+		DataSet* dataset = mainWindow()->datasetContainer().currentSet();
+		if(dataset && dataset->viewportConfig()) {
+			dataset->viewportConfig()->updateViewports();
+		}
+	}
 
 	Q_EMIT inputModeChanged(oldMode, newMode);
 }
@@ -137,8 +141,12 @@ void ViewportInputManager::removeInputMode(ViewportInputMode* mode)
 			activeMode()->activated(false);
 
 		// Update viewports if the old or the new mode displays overlays.
-		if((!_inputModeStack.empty() && _inputModeStack.back()->hasOverlay()) || mode->hasOverlay())
-			mainWindow()->datasetContainer().currentSet()->viewportConfig()->updateViewports();
+		if((!_inputModeStack.empty() && _inputModeStack.back()->hasOverlay()) || mode->hasOverlay()) {
+			DataSet* dataset = mainWindow()->datasetContainer().currentSet();
+			if(dataset && dataset->viewportConfig()) {
+				dataset->viewportConfig()->updateViewports();
+			}
+		}
 
 		Q_EMIT inputModeChanged(mode, activeMode());
 	}

@@ -70,6 +70,22 @@ void ActionManager::on_HelpShowOnlineHelp_triggered()
 }
 
 /******************************************************************************
+* Handles the ACTION_FILE_NEW_WINDOW command.
+******************************************************************************/
+void ActionManager::on_FileNewWindow_triggered()
+{
+	try {
+		MainWindow* mainWin = new MainWindow();
+		mainWin->show();
+		mainWin->restoreLayout();
+		mainWin->datasetContainer().fileNew();
+	}
+	catch(const Exception& ex) {
+		ex.showError();
+	}
+}
+
+/******************************************************************************
 * Handles the ACTION_FILE_NEW command.
 ******************************************************************************/
 void ActionManager::on_FileNew_triggered()

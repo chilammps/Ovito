@@ -31,7 +31,7 @@
 namespace Ovito {
 
 /// Stores a pointer to the original Qt message handler function, which has been replaced with our own handler.
-QtMessageHandler Application::defaultQtMessageHandler = NULL;
+QtMessageHandler Application::defaultQtMessageHandler = nullptr;
 
 /******************************************************************************
 * Handler method for Qt error messages.
@@ -39,11 +39,6 @@ QtMessageHandler Application::defaultQtMessageHandler = NULL;
 ******************************************************************************/
 void Application::qtMessageOutput(QtMsgType type, const QMessageLogContext& context, const QString& msg)
 {
-	if(type == QtFatalMsg) {
-		// This code line can be used to set a breakpoint to debug OVITO_ASSERT() macro exceptions.
-		int a = 1;
-	}
-
 	// Pass message on to default handler.
 	if(defaultQtMessageHandler) defaultQtMessageHandler(type, context, msg);
 	else std::cerr << msg.toLocal8Bit().constData() << std::endl;
@@ -106,10 +101,9 @@ bool Application::initialize()
 			setWindowIcon(mainWindowIcon);
 
 			// Create the main window.
-			mainWin = new MainWindow(tr("Ovito (Open Visualization Tool)"));
+			mainWin = new MainWindow();
 
-			// Quit application when main window is closed.
-			connect(mainWin, SIGNAL(destroyed(QObject*)), this, SLOT(quit()));
+			setQuitOnLastWindowClosed(true);
 
 			if(!_startupSceneFile.isEmpty()) {
 				// Load scene file specified at the command line.

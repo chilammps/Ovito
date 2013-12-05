@@ -161,9 +161,6 @@ Q_SIGNALS:
 
 protected:
 
-	/// This method is called when the reference counter of this object has reached zero.
-	virtual void deleteThis() override;
-
 	/// Is called when a RefTarget referenced by this object has generated an event.
 	virtual bool referenceEvent(RefTarget* source, ReferenceEvent* event) override;
 

@@ -221,6 +221,9 @@ protected:
 
 public:
 
+	/// \brief Returns true if this object is an instance of a RefTarget derived class.
+	virtual bool isRefTarget() const { return false; }
+
 	/////////////////////////// Runtime property field access ///////////////////////////////
 
 	/// \brief Returns the value stored in a non-animatable property field of this RefMaker object.
@@ -290,8 +293,9 @@ public:
 
 protected:
 
-	/// This method is called when the reference counter of this object has reached zero.
-	virtual void deleteThis() override;
+	/// \brief This method is called after the reference counter of this object has reached zero
+	///        and before the object is being deleted.
+	virtual void aboutToBeDeleted() override;
 
 private:
 

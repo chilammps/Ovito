@@ -122,12 +122,10 @@ public:
 
 protected:
 
-	/// \brief Calls "delete this" on this object.
-	///
-	/// This method is called when the reference counter of this object has reached zero.
-	virtual void deleteThis() {
+	/// \brief This method is called after the reference counter of this object has reached zero
+	///        and before the object is being deleted.
+	virtual void aboutToBeDeleted() {
 		OVITO_CHECK_OBJECT_POINTER(this);
-		delete this;
 	}
 
 private:
@@ -152,7 +150,12 @@ private:
 		OVITO_CHECK_OBJECT_POINTER(this);
 		OVITO_ASSERT_MSG(_referenceCount > 0, "OvitoObject::decrementReferenceCount()", "Reference count became negative.");
 		if(--_referenceCount == 0) {
-			deleteThis();
+			// Set the reference counter to a positive value to prevent the object
+			// from being deleted a second time.
+			_referenceCount = 1;
+			aboutToBeDeleted();
+			OVITO_ASSERT(_referenceCount == 1);
+			delete this;
 		}
 	}
 
@@ -168,8 +171,9 @@ private:
 	Q_OBJECT
 	OVITO_OBJECT
 
-	template<class T> friend class OORef;	// Give OORef smart pointer access to the inernal reference count.
+	template<class T> friend class OORef;	// Give OORef smart pointer access to the internal reference count.
 	friend class VectorReferenceFieldBase;
+	friend class SingleReferenceFieldBase;
 };
 
 /// \brief Dynamic casting function for OvitoObject derived classes.
