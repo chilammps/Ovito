@@ -127,8 +127,8 @@ void ViewportInputManager::removeInputMode(ViewportInputMode* mode)
 	int index = _inputModeStack.indexOf(mode);
 	if(index < 0) return;
 
-	OVITO_ASSERT(_inputModeStack[index]->_manager == this);
-	_inputModeStack[index]->_manager = nullptr;
+	OVITO_ASSERT(mode->_manager == this);
+	mode->_manager = nullptr;
 
 	if(index == _inputModeStack.size() - 1) {
 		_inputModeStack.remove(index);

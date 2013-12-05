@@ -26,6 +26,7 @@
 #include <core/gui/mainwin/MainWindow.h>
 #include <core/dataset/UndoStack.h>
 #include <core/dataset/DataSetContainer.h>
+#include <core/scene/SelectionSet.h>
 #include <core/viewport/input/NavigationModes.h>
 #include <core/viewport/input/ViewportInputMode.h>
 #include <core/viewport/input/ViewportInputManager.h>
@@ -71,6 +72,7 @@ ActionManager::ActionManager(MainWindow* mainWindow) : QObject(mainWindow)
 {
 	// Update actions whenever a new dataset has been loaded.
 	connect(&mainWindow->datasetContainer(), &DataSetContainer::dataSetChanged, this, &ActionManager::onDataSetChanged);
+	connect(&mainWindow->datasetContainer(), &DataSetContainer::animationSettingsReplaced, this, &ActionManager::onAnimationSettingsReplaced);
 
 	createCommandAction(ACTION_QUIT, tr("Exit"), ":/core/actions/file/file_quit.png", tr("Quit the application."), QKeySequence::Quit);
 	createCommandAction(ACTION_FILE_NEW, tr("Reset State"), ":/core/actions/file/file_new.png", tr("Resets the program to its initial state."), QKeySequence::New);
@@ -122,7 +124,6 @@ ActionManager::ActionManager(MainWindow* mainWindow) : QObject(mainWindow)
 ******************************************************************************/
 void ActionManager::onDataSetChanged(DataSet* newDataSet)
 {
-	disconnect(_animationSettingsChangedConnection);
 	disconnect(_canUndoChangedConnection);
 	disconnect(_canRedoChangedConnection);
 	disconnect(_undoTextChangedConnection);
@@ -133,7 +134,6 @@ void ActionManager::onDataSetChanged(DataSet* newDataSet)
 	QAction* undoAction = getAction(ACTION_EDIT_UNDO);
 	QAction* redoAction = getAction(ACTION_EDIT_REDO);
 	if(newDataSet) {
-		_animationSettingsChangedConnection = connect(newDataSet, &DataSet::animationSettingsChanged, this, &ActionManager::onAnimationSettingsChanged);
 		undoAction->setEnabled(newDataSet->undoStack().canUndo());
 		redoAction->setEnabled(newDataSet->undoStack().canRedo());
 		undoAction->setText(tr("Undo %1").arg(newDataSet->undoStack().undoText()));
@@ -148,19 +148,17 @@ void ActionManager::onDataSetChanged(DataSet* newDataSet)
 		});
 		_undoTriggeredConnection = connect(undoAction, &QAction::triggered, &newDataSet->undoStack(), &UndoStack::undo);
 		_redoTriggeredConnection = connect(redoAction, &QAction::triggered, &newDataSet->undoStack(), &UndoStack::redo);
-		onAnimationSettingsChanged(newDataSet->animationSettings());
 	}
 	else {
 		undoAction->setEnabled(false);
 		redoAction->setEnabled(false);
-		onAnimationSettingsChanged(nullptr);
 	}
 }
 
 /******************************************************************************
 * This is called when new animation settings have been loaded.
 ******************************************************************************/
-void ActionManager::onAnimationSettingsChanged(AnimationSettings* newAnimationSettings)
+void ActionManager::onAnimationSettingsReplaced(AnimationSettings* newAnimationSettings)
 {
 	disconnect(_autoKeyModeChangedConnection);
 	disconnect(_autoKeyModeToggledConnection);
@@ -172,6 +170,7 @@ void ActionManager::onAnimationSettingsChanged(AnimationSettings* newAnimationSe
 		_autoKeyModeChangedConnection = connect(newAnimationSettings, &AnimationSettings::autoKeyModeChanged, autoKeyModeAction, &QAction::setChecked);
 		_autoKeyModeToggledConnection = connect(autoKeyModeAction, &QAction::toggled, newAnimationSettings, &AnimationSettings::setAutoKeyMode);
 		_animationIntervalChangedConnection = connect(newAnimationSettings, &AnimationSettings::intervalChanged, this, &ActionManager::onAnimationIntervalChanged);
+		onAnimationIntervalChanged(newAnimationSettings->animationInterval());
 	}
 	else {
 		autoKeyModeAction->setEnabled(false);

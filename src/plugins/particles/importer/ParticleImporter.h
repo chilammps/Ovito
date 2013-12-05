@@ -26,7 +26,7 @@
 #include <core/dataset/importexport/LinkedFileImporter.h>
 #include <core/utilities/io/CompressedTextParserStream.h>
 #include <plugins/particles/data/ParticleProperty.h>
-#include "ParticleImportData.h"
+#include "ParticleImportTask.h"
 
 namespace Particles {
 

@@ -28,6 +28,16 @@
 namespace Ovito {
 
 /******************************************************************************
+* Destructor.
+******************************************************************************/
+ViewportInputMode::~ViewportInputMode()
+{
+	// Remove input mode from stack if it gets destroyed.
+	if(_manager)
+		_manager->removeInputMode(this);
+}
+
+/******************************************************************************
 * This is called by the system after the input handler has become the active handler.
 ******************************************************************************/
 void ViewportInputMode::activated(bool temporaryActivation)

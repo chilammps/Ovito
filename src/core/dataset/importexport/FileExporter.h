@@ -69,15 +69,12 @@ private:
 /**
  * \brief This descriptor contains information about an installed FileExporter service.
  */
-class OVITO_CORE_EXPORT FileExporterDescription
+class OVITO_CORE_EXPORT FileExporterDescription : public QObject
 {
 public:
 
-	/// \brief Default constructor (required by QVector container).
-	FileExporterDescription() {}
-
 	/// \brief Initializes this descriptor from a file exporter instance.
-	FileExporterDescription(FileExporter* exporter) :
+	FileExporterDescription(QObject* parent, FileExporter* exporter) : QObject(parent),
 		_fileFilter(exporter->fileFilter()),
 		_fileFilterDescription(exporter->fileFilterDescription()),
 		_pluginClass(&exporter->getOOType()) {}
@@ -105,6 +102,8 @@ private:
 	QString _fileFilter;
 	QString _fileFilterDescription;
 	const OvitoObjectType* _pluginClass;
+
+	Q_OBJECT
 };
 
 };

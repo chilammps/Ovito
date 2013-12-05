@@ -171,8 +171,8 @@ void CameraObjectEditor::createUI(const RolloutInsertionParameters& rolloutParam
 	FloatParameterUI* fovPUI = new FloatParameterUI(this, PROPERTY_FIELD(CameraObject::_fov));
 	sublayout->addWidget(fovPUI->label(), 0, 0);
 	sublayout->addLayout(fovPUI->createFieldLayout(), 0, 1);
-	fovPUI->setMinValue(fovPUI->parameterUnit()->userToNative(0.01f));
-	fovPUI->setMaxValue(fovPUI->parameterUnit()->userToNative(179.99f));
+	fovPUI->setMinValue(1e-3f);
+	fovPUI->setMaxValue(FLOATTYPE_PI - 1e-2f);
 
 	QGroupBox* parallelProjBox = new QGroupBox(tr("Parallel camera"), rollout);
 	parallelProjBox->setEnabled(false);

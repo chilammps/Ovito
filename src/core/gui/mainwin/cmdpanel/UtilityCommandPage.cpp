@@ -96,7 +96,7 @@ void UtilityCommandPage::onUtilityButton(QAbstractButton* button)
 
 	try {
 		// Create an instance of the utility plugin.
-		currentUtility = static_object_cast<UtilityApplet>(descriptor->createInstance(_datasetContainer.currentSet()));
+		currentUtility = static_object_cast<UtilityApplet>(descriptor->createInstance(nullptr));
 		currentButton = button;
 		currentButton->setChecked(true);
 

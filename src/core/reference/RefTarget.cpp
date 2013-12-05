@@ -36,20 +36,26 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, RefTarget, RefMaker);
 RefTarget::~RefTarget()
 {
 	// Make sure there are no more dependents left.
-	// This should be the case if this RefTarget has been deleted using autoDeleteObject().
-	OVITO_ASSERT_MSG(dependents().empty(), "RefTarget destructor", "Object has not been deleted via autoDeleteObject() method.");
+	OVITO_ASSERT_MSG(dependents().empty(), "RefTarget destructor", "RefTarget object has not been deleted via deleteReferenceObject().");
 }
 
 /******************************************************************************
-* Deletes this target object.
+* Asks this object to delete itself.
 ******************************************************************************/
-void RefTarget::autoDeleteObject()
+void RefTarget::deleteReferenceObject()
 {
+	OVITO_CHECK_OBJECT_POINTER(this);
+	//qDebug() << "Deleting reference object" << this;
+
+	// Clear all references held by the object to other objects.
+	clearAllReferences();
+
 	// This will remove all references to this target object.
 	notifyDependents(ReferenceEvent::TargetDeleted);
 
-	// This will remove all reference held by the object itself.
-	RefMaker::autoDeleteObject();
+	// At this point, the object might have been deleted from memory if its
+	// reference counter has reached zero. If undo recording was enabled,
+	// the undo record still holds a reference to this object and it will still be alive.
 }
 
 /******************************************************************************
@@ -205,7 +211,7 @@ OORef<PropertiesEditor> RefTarget::createPropertiesEditor()
 			if(editorClass) {
 				if(!editorClass->isDerivedFrom(PropertiesEditor::OOType))
 					throw Exception(tr("The editor class %1 assigned to the RefTarget-derived class %2 is not derived from PropertiesEditor.").arg(editorClass->name(), clazz->name()));
-				return dynamic_object_cast<PropertiesEditor>(editorClass->createInstance(dataset()));
+				return dynamic_object_cast<PropertiesEditor>(editorClass->createInstance(nullptr));
 			}
 		}
 	}

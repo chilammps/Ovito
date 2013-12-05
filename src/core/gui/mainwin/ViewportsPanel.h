@@ -53,19 +53,14 @@ protected:
 
 private Q_SLOTS:
 
-	/// This is called when a new dataset has been loaded.
-	void onDataSetChanged(DataSet* newDataSet);
-
 	/// This is called when a new viewport configuration has been loaded.
-	void onViewportConfigurationChanged(ViewportConfiguration* newViewportConfiguration);
+	void onViewportConfigurationReplaced(ViewportConfiguration* newViewportConfiguration);
 
 	/// This is called when new animation settings have been loaded.
-	void onAnimationSettingsChanged(AnimationSettings* newAnimationSettings);
+	void onAnimationSettingsReplaced(AnimationSettings* newAnimationSettings);
 
 private:
 
-	QMetaObject::Connection _viewportConfigurationChangedConnection;
-	QMetaObject::Connection _animationSettingsChangedConnection;
 	QMetaObject::Connection _activeViewportChangedConnection;
 	QMetaObject::Connection _maximizedViewportChangedConnection;
 	QMetaObject::Connection _autoKeyModeChangedConnection;

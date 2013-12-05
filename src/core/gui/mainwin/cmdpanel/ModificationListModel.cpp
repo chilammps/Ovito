@@ -24,6 +24,7 @@
 #include <core/scene/pipeline/PipelineObject.h>
 #include <core/scene/pipeline/Modifier.h>
 #include <core/scene/ObjectNode.h>
+#include <core/scene/SelectionSet.h>
 #include <core/gui/actions/ActionManager.h>
 #include <core/dataset/DataSetContainer.h>
 #include "ModificationListModel.h"
@@ -107,18 +108,21 @@ void ModificationListModel::refreshList()
 	// Also check if all selected object nodes reference the same scene object.
 	_selectedNodes.clear();
     SceneObject* cmnObject = nullptr;
-	for(SceneNode* node : _datasetContainer.currentSelection()->nodes()) {
-		if(node->isObjectNode()) {
-			ObjectNode* objNode = static_object_cast<ObjectNode>(node);
-			_selectedNodes.push_back(objNode);
 
-			if(cmnObject == nullptr) cmnObject = objNode->sceneObject();
-			else if(cmnObject != objNode->sceneObject()) {
-				cmnObject = nullptr;
-				break;	// The scene nodes are not compatible.
+    if(_datasetContainer.currentSet()) {
+		for(SceneNode* node : _datasetContainer.currentSet()->selection()->nodes()) {
+			if(node->isObjectNode()) {
+				ObjectNode* objNode = static_object_cast<ObjectNode>(node);
+				_selectedNodes.push_back(objNode);
+
+				if(cmnObject == nullptr) cmnObject = objNode->sceneObject();
+				else if(cmnObject != objNode->sceneObject()) {
+					cmnObject = nullptr;
+					break;	// The scene nodes are not compatible.
+				}
 			}
 		}
-	}
+    }
 
 	QList<OORef<ModificationListItem>> items;
 	QList<OORef<ModificationListItem>> hiddenItems;

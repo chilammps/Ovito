@@ -223,13 +223,11 @@ public:
 		return results;
 	}
 
-	///////////////////////////// from OvitoObject ///////////////////////////////
-
-	/// \brief Deletes this object.
+	/// \brief Asks this object to delete itself.
 	///
-	/// This function is automatically called on a reference target when it has no more dependents.
-	/// First generates a ReferenceEvent::TargetDeleted notification event.
-	virtual void autoDeleteObject() override;
+	/// If undo recording is active, the object instance is kept alive such that
+	/// the deletion can be undone.
+	void deleteReferenceObject();
 
 	/////////////////////////////// Editor interface /////////////////////////////
 

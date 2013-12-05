@@ -177,11 +177,6 @@ void BondAngleAnalysisModifierEditor::createUI(const RolloutInsertionParameters&
 	layout1->setContentsMargins(4,4,4,4);
 	layout1->setSpacing(4);
 
-#if 0
-	BooleanParameterUI* autoUpdateUI = new BooleanParameterUI(this, PROPERTY_FIELD(AsynchronousParticleModifier::_autoUpdate));
-	layout1->addWidget(autoUpdateUI->checkBox());
-#endif
-
 	// Status label.
 	layout1->addSpacing(10);
 	layout1->addWidget(statusLabel());

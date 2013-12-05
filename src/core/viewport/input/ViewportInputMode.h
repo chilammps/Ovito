@@ -52,6 +52,9 @@ public:
 	/// \brief Constructor.
 	ViewportInputMode(QObject* parent = nullptr) : QObject(parent), _manager(nullptr), _showOrbitCenter(false) {}
 
+	/// \brief Destructor.
+	virtual ~ViewportInputMode();
+
 	/// \brief Returns a pointer to the viewport input manager that has a reference to this mode.
 	ViewportInputManager* inputManager() const {
 		OVITO_ASSERT_MSG(_manager != nullptr, "ViewportInputMode::inputManager()", "Cannot access input manager while mode is not on the input stack.");

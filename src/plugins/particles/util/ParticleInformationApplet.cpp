@@ -40,6 +40,7 @@ IMPLEMENT_OVITO_OBJECT(Particles, ParticleInformationApplet, UtilityApplet);
 void ParticleInformationApplet::openUtility(MainWindow* mainWindow, RolloutContainer* container, const RolloutInsertionParameters& rolloutParams)
 {
 	OVITO_ASSERT(_panel == nullptr);
+	_mainWindow = mainWindow;
 
 	// Create a rollout.
 	_panel = new QWidget();
@@ -51,7 +52,7 @@ void ParticleInformationApplet::openUtility(MainWindow* mainWindow, RolloutConta
 	layout->setSpacing(4);
 
 	_inputMode = new ParticleInformationInputMode(this);
-	ViewportModeAction* pickModeAction = new ViewportModeAction(mainWindow, tr("Selection mode"), this, _inputMode);
+	ViewportModeAction* pickModeAction = new ViewportModeAction(_mainWindow, tr("Selection mode"), this, _inputMode);
 	layout->addWidget(pickModeAction->createPushButton());
 
 	_infoDisplay = new QTextEdit(_panel);
@@ -64,8 +65,8 @@ void ParticleInformationApplet::openUtility(MainWindow* mainWindow, RolloutConta
 #endif
 	layout->addWidget(_infoDisplay, 1);
 
-	connect(dataset()->animationSettings(), &AnimationSettings::timeChangeComplete, this, &ParticleInformationApplet::updateInformationDisplay);
-	mainWindow->viewportInputManager()->pushInputMode(_inputMode);
+	connect(&_mainWindow->datasetContainer(), &DataSetContainer::animationSettingsReplaced, this, &ParticleInformationApplet::onAnimationSettingsReplaced);
+	_mainWindow->viewportInputManager()->pushInputMode(_inputMode);
 }
 
 /******************************************************************************
@@ -77,15 +78,30 @@ void ParticleInformationApplet::closeUtility(RolloutContainer* container)
 }
 
 /******************************************************************************
+* This is called when new animation settings have been loaded.
+******************************************************************************/
+void ParticleInformationApplet::onAnimationSettingsReplaced(AnimationSettings* newAnimationSettings)
+{
+	disconnect(_timeChangeCompleteConnection);
+	if(newAnimationSettings) {
+		_timeChangeCompleteConnection = connect(newAnimationSettings, &AnimationSettings::timeChangeComplete, this, &ParticleInformationApplet::updateInformationDisplay);
+	}
+	updateInformationDisplay();
+}
+
+/******************************************************************************
 * Updates the display of atom properties.
 ******************************************************************************/
 void ParticleInformationApplet::updateInformationDisplay()
 {
+	DataSet* dataset = _mainWindow->datasetContainer().currentSet();
+	if(!dataset) return;
+
 	QString infoText;
 	QTextStream stream(&infoText, QIODevice::WriteOnly);
 	for(auto& pickedParticle : _inputMode->_pickedParticles) {
 		OVITO_ASSERT(pickedParticle.objNode);
-		const PipelineFlowState& flowState = pickedParticle.objNode->evalPipeline(dataset()->animationSettings()->time());
+		const PipelineFlowState& flowState = pickedParticle.objNode->evalPipeline(dataset->animationSettings()->time());
 
 		if(pickedParticle.particleId >= 0) {
 			for(const auto& sceneObj : flowState.objects()) {

@@ -115,8 +115,7 @@ void SimulationCellEditor::createUI(const RolloutInsertionParameters& rolloutPar
 		for(int i = 0; i < 3; i++) {
 			QLineEdit* textBox = new QLineEdit(rollout);
 			simCellSizeSpinners[i] = new SpinnerWidget(rollout, textBox);
-			simCellSizeSpinners[i]->setUnit(UnitsManager::instance().worldUnit());
-			simCellSizeSpinners[i]->setMinValue(0.0);
+			simCellSizeSpinners[i]->setMinValue(0);
 			layout2->addWidget(textBox, i, 1);
 			layout2->addWidget(simCellSizeSpinners[i], i, 2);
 
@@ -241,8 +240,10 @@ void SimulationCellEditor::updateSimulationBoxSize()
 
 	AffineTransformation cellTM = cell->cellMatrix();
 	for(int dim = 0; dim < 3; dim++) {
-		if(simCellSizeSpinners[dim]->isDragging() == false)
+		if(simCellSizeSpinners[dim]->isDragging() == false) {
+			simCellSizeSpinners[dim]->setUnit(dataset()->unitsManager().worldUnit());
 			simCellSizeSpinners[dim]->setFloatValue(cellTM(dim,dim));
+		}
 	}
 }
 

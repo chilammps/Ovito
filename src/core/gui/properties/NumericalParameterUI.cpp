@@ -34,31 +34,21 @@ IMPLEMENT_OVITO_OBJECT(Core, NumericalParameterUI, PropertyParameterUI)
 /******************************************************************************
 * Constructor for a Qt property.
 ******************************************************************************/
-NumericalParameterUI::NumericalParameterUI(QObject* parentEditor, const char* propertyName, ParameterUnit* defaultParameterUnit, const QString& labelText) :
-	PropertyParameterUI(parentEditor, propertyName), _parameterUnit(defaultParameterUnit)
+NumericalParameterUI::NumericalParameterUI(QObject* parentEditor, const char* propertyName, const QMetaObject* defaultParameterUnitType, const QString& labelText) :
+	PropertyParameterUI(parentEditor, propertyName), _parameterUnitType(defaultParameterUnitType)
 {
 	initUIControls(labelText);	
-
-	OVITO_CHECK_OBJECT_POINTER(_parameterUnit);
-	_spinner->setUnit(_parameterUnit);
 }
 
 /******************************************************************************
 * Constructor for a PropertyField or ReferenceField property.
 ******************************************************************************/
-NumericalParameterUI::NumericalParameterUI(QObject* parentEditor, const PropertyFieldDescriptor& propField, ParameterUnit* defaultParameterUnit) :
-	PropertyParameterUI(parentEditor, propField), _parameterUnit(defaultParameterUnit)
+NumericalParameterUI::NumericalParameterUI(QObject* parentEditor, const PropertyFieldDescriptor& propField, const QMetaObject* defaultParameterUnitType) :
+	PropertyParameterUI(parentEditor, propField), _parameterUnitType(defaultParameterUnitType)
 {
-	OVITO_CHECK_OBJECT_POINTER(_parameterUnit);
-	
-	// Look up the ParameterUnit for this parameter.
-	try {
-		ParameterUnit* customUnit = propField.parameterUnit();
-		if(customUnit != NULL) _parameterUnit = customUnit;
-	}
-	catch(const Exception& ex) {		
-		ex.showError();
-	}
+	// Look up the ParameterUnit type for this parameter.
+	if(propField.parameterUnitType())
+		_parameterUnitType = propField.parameterUnitType();
 	
 	initUIControls(propField.displayName() + ":");
 }
@@ -77,9 +67,6 @@ void NumericalParameterUI::initUIControls(const QString& labelText)
 	connect(_spinner, SIGNAL(spinnerDragStop()), this, SLOT(onSpinnerDragStop()));
 	connect(_spinner, SIGNAL(spinnerDragAbort()), this, SLOT(onSpinnerDragAbort()));
 	_spinner->setTextBox(_textBox);
-
-	OVITO_CHECK_OBJECT_POINTER(_parameterUnit);
-	_spinner->setUnit(_parameterUnit);
 }
 
 /******************************************************************************
@@ -99,10 +86,21 @@ NumericalParameterUI::~NumericalParameterUI()
 ******************************************************************************/
 void NumericalParameterUI::resetUI()
 {
-	PropertyParameterUI::resetUI();	
-	
-	if(spinner()) 
+	if(spinner()) {
 		spinner()->setEnabled(editObject() != NULL && isEnabled());
+		if(editObject() != NULL) {
+			ParameterUnit* unit;
+			if(parameterUnitType())
+				unit = dataset()->unitsManager().getUnit(parameterUnitType());
+			else
+				unit = nullptr;
+			spinner()->setUnit(unit);
+		}
+		else {
+			spinner()->setUnit(nullptr);
+			spinner()->setFloatValue(0);
+		}
+	}
 
 	if(isReferenceFieldUI()) {
 		// Update the displayed value when the animation time has changed.
@@ -110,6 +108,8 @@ void NumericalParameterUI::resetUI()
 		if(editObject())
 			_animationTimeChangedConnection = connect(dataset()->animationSettings(), &AnimationSettings::timeChanged, this, &NumericalParameterUI::updateUI);
 	}
+
+	PropertyParameterUI::resetUI();
 }
 
 /******************************************************************************

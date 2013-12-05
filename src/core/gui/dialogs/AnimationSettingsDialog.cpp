@@ -73,7 +73,7 @@ AnimationSettingsDialog::AnimationSettingsDialog(AnimationSettings* animSettings
 	contentLayout->addWidget(animStartBox, 1, 1);
 	animStartSpinner = new SpinnerWidget(this);
 	animStartSpinner->setTextBox(animStartBox);
-	animStartSpinner->setUnit(UnitsManager::instance().timeUnit());
+	animStartSpinner->setUnit(animSettings->dataset()->unitsManager().timeUnit());
 	contentLayout->addWidget(animStartSpinner, 1, 2);
 	connect(animStartSpinner, SIGNAL(spinnerValueChanged()), this, SLOT(onAnimationIntervalChanged()));
 
@@ -82,7 +82,7 @@ AnimationSettingsDialog::AnimationSettingsDialog(AnimationSettings* animSettings
 	contentLayout->addWidget(animEndBox, 2, 1);
 	animEndSpinner = new SpinnerWidget(this);
 	animEndSpinner->setTextBox(animEndBox);
-	animEndSpinner->setUnit(UnitsManager::instance().timeUnit());
+	animEndSpinner->setUnit(animSettings->dataset()->unitsManager().timeUnit());
 	contentLayout->addWidget(animEndSpinner, 2, 2);
 	connect(animEndSpinner, SIGNAL(spinnerValueChanged()), this, SLOT(onAnimationIntervalChanged()));
 	

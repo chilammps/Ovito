@@ -40,7 +40,6 @@ SET(OVITO_CORE_SOURCE_FILES
 	animation/controller/TransformationController.cpp
 	dataset/DataSet.cpp
 	dataset/DataSetContainer.cpp
-	dataset/CurrentSelectionProxy.cpp
 	dataset/UndoStack.cpp
 	dataset/importexport/ImportExportManager.cpp
 	dataset/importexport/LinkedFileImporter.cpp

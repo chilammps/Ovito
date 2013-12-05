@@ -37,7 +37,7 @@ namespace Ovito {
 /**
  * \brief Manages the installed data import and export services.
  */
-class OVITO_CORE_EXPORT ImportExportManager
+class OVITO_CORE_EXPORT ImportExportManager : public QObject
 {
 public:
 
@@ -49,10 +49,10 @@ public:
 	}
 
 	/// Return the list of available import services.
-	const QVector<FileImporterDescription>& fileImporters() const { return _fileImporters; }
+	const QVector<FileImporterDescription*>& fileImporters(DataSet* dataset);
 
 	/// Return the list of available export services.
-	const QVector<FileExporterDescription>& fileExporters() const { return _fileExporters; }
+	const QVector<FileExporterDescription*>& fileExporters(DataSet* dataset);
 
 	/// \brief Tries to detect the format of the given file.
 	/// \return The importer class that can handle the given file. If the file format could not be recognized then NULL is returned.
@@ -61,10 +61,10 @@ public:
 private:
 
 	/// List of data import plugins.
-	QVector<FileImporterDescription> _fileImporters;
+	QVector<FileImporterDescription*> _fileImporters;
 
 	/// List of data export plugins.
-	QVector<FileExporterDescription> _fileExporters;
+	QVector<FileExporterDescription*> _fileExporters;
 
 private:
 
@@ -80,6 +80,8 @@ private:
 
 	/// The singleton instance of this class.
 	static ImportExportManager* _instance;
+
+	Q_OBJECT
 
 	friend class Application;
 };

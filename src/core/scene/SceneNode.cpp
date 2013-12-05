@@ -132,7 +132,7 @@ void SceneNode::deleteNode()
 	OVITO_ASSERT(children().empty());
 
 	// Delete node itself.
-	autoDeleteObject();
+	deleteReferenceObject();
 }
 
 /******************************************************************************

@@ -33,7 +33,6 @@ SpinnerWidget::SpinnerWidget(QWidget* parent, QLineEdit* textBox) : QWidget(pare
 	_upperBtnPressed(false), _lowerBtnPressed(false), _unit(nullptr)
 {
 	setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Maximum, QSizePolicy::SpinBox));
-	setUnit(UnitsManager::instance().floatIdentityUnit());
 	setTextBox(textBox);
 }
 
@@ -74,12 +73,12 @@ void SpinnerWidget::setTextBox(QLineEdit* box)
 {
 	if(box == textBox()) return;
 	if(_textBox.isNull() == false) {
-		disconnect(_textBox, SIGNAL(editingFinished()), this, SLOT(onTextChanged()));
+		disconnect(_textBox.data(), &QLineEdit::editingFinished, this, &SpinnerWidget::onTextChanged);
 	}
 	_textBox = box;
 	if(_textBox.isNull() == false) {
-		connect(_textBox, SIGNAL(editingFinished()), this, SLOT(onTextChanged()));
-		_textBox->setEnabled(isEnabled());
+		connect(box, &QLineEdit::editingFinished, this, &SpinnerWidget::onTextChanged);
+		box->setEnabled(isEnabled());
 		updateTextBox();
 	}
 }
@@ -91,19 +90,26 @@ void SpinnerWidget::setTextBox(QLineEdit* box)
 void SpinnerWidget::onTextChanged()
 {
 	OVITO_ASSERT(textBox());
-	OVITO_CHECK_POINTER(unit());
     
 	FloatType newValue;
 	try {
 		if(textBox()->text() == _originalText) return;
-		newValue = unit()->parseString(textBox()->text());
+		if(unit()) {
+			newValue = unit()->parseString(textBox()->text());
+			setFloatValue(unit()->userToNative(newValue), true);
+		}
+		else {
+			bool ok;
+			newValue = textBox()->text().toDouble(&ok);
+			if(!ok)
+				throw Exception(tr("Invalid floating-point value: %1").arg(textBox()->text()));
+			setFloatValue(newValue, true);
+		}
 	}
 	catch(const Exception&) {
 		// Ignore invalid value and restore old text content.
 		updateTextBox();
-		return;
 	}	
-	setFloatValue(unit()->userToNative(newValue), true);
 }
 
 /******************************************************************************
@@ -112,8 +118,10 @@ void SpinnerWidget::onTextChanged()
 void SpinnerWidget::updateTextBox()
 {
 	if(textBox()) {
-		OVITO_CHECK_POINTER(unit());
-		_originalText = unit()->formatValue(unit()->nativeToUser(floatValue()));
+		if(unit())
+			_originalText = unit()->formatValue(unit()->nativeToUser(floatValue()));
+		else
+			_originalText = QString::number(floatValue());
 		textBox()->setText(_originalText);
 	}
 }
@@ -179,16 +187,16 @@ void SpinnerWidget::setMaxValue(FloatType maxValue)
 ******************************************************************************/
 void SpinnerWidget::setUnit(ParameterUnit* unit) 
 { 
-	OVITO_CHECK_POINTER(unit);
-	if(unit == _unit) return;
+	if(unit == _unit)
+		return;
 
 	if(_unit)
-		disconnect(_unit, SIGNAL(formatChanged()), this, SLOT(updateTextBox()));
+		disconnect(_unit, &ParameterUnit::formatChanged, this, &SpinnerWidget::updateTextBox);
 	
 	_unit = unit; 
 	
 	if(_unit)
-		connect(_unit, SIGNAL(formatChanged()), this, SLOT(updateTextBox()));
+		connect(_unit, &ParameterUnit::formatChanged, this, &SpinnerWidget::updateTextBox);
 
 	updateTextBox(); 
 }
@@ -200,7 +208,8 @@ void SpinnerWidget::changeEvent(QEvent* event)
 {
 	QWidget::changeEvent(event);
 	if(event->type() == QEvent::EnabledChange) {
-		if(textBox()) textBox()->setEnabled(isEnabled());
+		if(textBox())
+			textBox()->setEnabled(isEnabled());
 	}
 }
 

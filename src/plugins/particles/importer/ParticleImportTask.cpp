@@ -29,7 +29,7 @@
 #include <plugins/particles/data/ParticleTypeProperty.h>
 #include <plugins/particles/data/ParticleDisplay.h>
 #include <plugins/particles/data/ParticleType.h>
-#include "ParticleImportData.h"
+#include "ParticleImportTask.h"
 #include "ParticleImporter.h"
 
 namespace Particles {
@@ -39,6 +39,7 @@ namespace Particles {
 ******************************************************************************/
 void ParticleImportTask::load(DataSetContainer& container, FutureInterfaceBase& futureInterface)
 {
+	_datasetContainer = &container;
 	futureInterface.setProgressText(ParticleImporter::tr("Reading file %1").arg(frame().sourceFile.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
 
 	// Fetch file.

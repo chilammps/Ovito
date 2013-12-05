@@ -24,9 +24,6 @@
 
 namespace Ovito {
 
-class DataSetContainer;		// defined in DataSetContainer.h
-class MainWindow;			// defined in MainWindow.h
-
 /******************************************************************************
 * The command panel page lets user render the scene.
 ******************************************************************************/
@@ -45,14 +42,14 @@ private Q_SLOTS:
 	void onDataSetChanged(DataSet* newDataSet);
 
 	/// This is called when new render settings have been loaded.
-	void onRenderSettingsChanged(RenderSettings* newRenderSettings);
+	void onRenderSettingsReplaced(RenderSettings* newRenderSettings);
 
 private:
 
 	/// This panel shows the properties of the render settings object.
 	PropertiesPanel* propertiesPanel;
 
-	QMetaObject::Connection _renderSettingsChangedConnection;
+	QMetaObject::Connection _renderSettingsReplacedConnection;
 };
 
 

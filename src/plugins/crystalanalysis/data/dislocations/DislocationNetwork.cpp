@@ -20,8 +20,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <plugins/crystalanalysis/CrystalAnalysis.h>
-#include <core/dataset/DataSetManager.h>
 #include <core/scene/ObjectNode.h>
+#include <core/scene/SelectionSet.h>
 #include "DislocationNetwork.h"
 #include "DislocationDisplay.h"
 #include "DislocationInspector.h"
@@ -65,7 +65,6 @@ void DislocationNetworkEditor::onOpenInspector()
 	DislocationNetwork* dislocationsObj = static_object_cast<DislocationNetwork>(editObject());
 	if(!dislocationsObj) return;
 
-	UndoSuspender noUndo;
 	QMainWindow* inspectorWindow = new QMainWindow(container()->window(), (Qt::WindowFlags)(Qt::Tool | Qt::CustomizeWindowHint | Qt::WindowMaximizeButtonHint | Qt::WindowCloseButtonHint));
 	inspectorWindow->setWindowTitle(tr("Dislocation Inspector"));
 	PropertiesPanel* propertiesPanel = new PropertiesPanel(inspectorWindow);
@@ -77,10 +76,11 @@ void DislocationNetworkEditor::onOpenInspector()
 	mainPanelLayout->setContentsMargins(0,0,0,0);
 	inspectorWindow->setCentralWidget(mainPanel);
 
-	ObjectNode* node = dynamic_object_cast<ObjectNode>(DataSetManager::instance().currentSelection()->firstNode());
+	ObjectNode* node = dynamic_object_cast<ObjectNode>(dataset()->selection()->firstNode());
 	DislocationInspector* inspector = new DislocationInspector(node);
+	connect(inspector, &QObject::destroyed, inspectorWindow, &QMainWindow::close);
 	inspector->setParent(propertiesPanel);
-	inspector->initialize(propertiesPanel, RolloutInsertionParameters().insertInto(mainPanel));
+	inspector->initialize(propertiesPanel, mainWindow(), RolloutInsertionParameters().insertInto(mainPanel));
 	inspector->setEditObject(dislocationsObj);
 	inspectorWindow->setAttribute(Qt::WA_DeleteOnClose);
 	inspectorWindow->resize(1000, 350);

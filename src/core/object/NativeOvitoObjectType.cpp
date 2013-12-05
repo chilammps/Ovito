@@ -32,26 +32,18 @@ namespace Ovito {
 NativeOvitoObjectType* NativeOvitoObjectType::_firstInfo = nullptr;
 
 /******************************************************************************
-* Creates an object of the requested kind.
-* Throws an exception if the containing plugin failed to load.
+* Creates an instance of this object class.
 ******************************************************************************/
 OORef<OvitoObject> NativeOvitoObjectType::createInstanceImpl(DataSet* dataset) const
 {
 	OvitoObject* obj;
 
-	if(dataset) {
-		OVITO_CHECK_OBJECT_POINTER(dataset);
+	if(isDerivedFrom(RefTarget::OOType) && *this != DataSet::OOType) {
 		UndoSuspender noUndo(dataset->undoStack());
-		if(isDerivedFrom(RefTarget::OOType))
-			obj = qobject_cast<OvitoObject*>(_qtClassInfo->newInstance(Q_ARG(DataSet*, dataset)));
-		else
-			obj = qobject_cast<OvitoObject*>(_qtClassInfo->newInstance());
+		obj = qobject_cast<OvitoObject*>(_qtClassInfo->newInstance(Q_ARG(DataSet*, dataset)));
 	}
 	else {
-		if(isDerivedFrom(RefTarget::OOType))
-			obj = qobject_cast<OvitoObject*>(_qtClassInfo->newInstance(Q_ARG(DataSet*, nullptr)));
-		else
-			obj = qobject_cast<OvitoObject*>(_qtClassInfo->newInstance());
+		obj = qobject_cast<OvitoObject*>(_qtClassInfo->newInstance());
 	}
 
 	if(!obj)

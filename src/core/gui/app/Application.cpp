@@ -26,7 +26,6 @@
 #include <core/dataset/importexport/ImportExportManager.h>
 #include <core/animation/controller/Controller.h>
 #include <core/plugins/PluginManager.h>
-#include <core/utilities/units/UnitsManager.h>
 #include <core/utilities/io/FileManager.h>
 
 namespace Ovito {
@@ -91,7 +90,6 @@ bool Application::initialize()
 		PluginManager::initialize();
 		ControllerManager::initialize();
 		FileManager::initialize();
-		UnitsManager::initialize();
 		ImportExportManager::initialize();
 
 		// Create the main application window.
@@ -170,7 +168,6 @@ void Application::shutdown()
 {
 	// Shutdown global manager objects in reverse order they were initialized.
 	ImportExportManager::shutdown();
-	UnitsManager::shutdown();
 	FileManager::shutdown();
 	ControllerManager::shutdown();
 	PluginManager::shutdown();

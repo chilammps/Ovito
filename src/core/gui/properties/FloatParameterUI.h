@@ -35,7 +35,7 @@ class OVITO_CORE_EXPORT FloatParameterUI : public NumericalParameterUI
 public:
 
 	/// Constructor for a Qt property.
-	FloatParameterUI(QObject* parentEditor, const char* propertyName, const QString& labelText = QString(), ParameterUnit* parameterUnit = NULL);
+	FloatParameterUI(QObject* parentEditor, const char* propertyName, const QString& labelText = QString(), const QMetaObject* parameterUnitType = nullptr);
 
 	/// Constructor for a PropertyField property.
 	FloatParameterUI(QObject* parentEditor, const PropertyFieldDescriptor& propField);

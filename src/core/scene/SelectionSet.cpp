@@ -31,7 +31,7 @@ SET_PROPERTY_FIELD_LABEL(SelectionSet, _selection, "Nodes")
 /******************************************************************************
 * Default constructor.
 ******************************************************************************/
-SelectionSet::SelectionSet(DataSet* dataset) : RefTarget(dataset)
+SelectionSet::SelectionSet(DataSet* dataset) : RefTarget(dataset), _selectionChangeInProgress(false)
 {
 	INIT_PROPERTY_FIELD(SelectionSet::_selection);
 }
@@ -110,7 +110,7 @@ void SelectionSet::clear()
 }
 
 /******************************************************************************
-* From RefMaker.
+* Is called when a RefTarget referenced by this object has generated an event.
 ******************************************************************************/
 bool SelectionSet::referenceEvent(RefTarget* source, ReferenceEvent* event)
 {
@@ -125,6 +125,47 @@ bool SelectionSet::referenceEvent(RefTarget* source, ReferenceEvent* event)
 	}
 	// Do not propagate events from selected nodes.
 	return false;
+}
+
+/******************************************************************************
+* Is called when a RefTarget has been added to a VectorReferenceField of this RefMaker.
+******************************************************************************/
+void SelectionSet::referenceInserted(const PropertyFieldDescriptor& field, RefTarget* newTarget, int listIndex)
+{
+	if(field == PROPERTY_FIELD(SelectionSet::_selection)) {
+		Q_EMIT selectionChanged(this);
+		if(!_selectionChangeInProgress) {
+			_selectionChangeInProgress = true;
+			QMetaObject::invokeMethod(this, "onSelectionChangeCompleted", Qt::QueuedConnection);
+		}
+	}
+	RefTarget::referenceInserted(field, newTarget, listIndex);
+}
+
+/******************************************************************************
+* Is called when a RefTarget has been removed from a VectorReferenceField of this RefMaker.
+******************************************************************************/
+void SelectionSet::referenceRemoved(const PropertyFieldDescriptor& field, RefTarget* oldTarget, int listIndex)
+{
+	if(field == PROPERTY_FIELD(SelectionSet::_selection)) {
+		Q_EMIT selectionChanged(this);
+		if(!_selectionChangeInProgress) {
+			_selectionChangeInProgress = true;
+			QMetaObject::invokeMethod(this, "onSelectionChangeCompleted", Qt::QueuedConnection);
+		}
+	}
+	RefTarget::referenceRemoved(field, oldTarget, listIndex);
+}
+
+/******************************************************************************
+* This method is invoked after the change of the selection set is complete.
+* It emits the selectionChangeComplete() signal.
+******************************************************************************/
+void SelectionSet::onSelectionChangeCompleted()
+{
+	OVITO_ASSERT(_selectionChangeInProgress);
+	_selectionChangeInProgress = false;
+	Q_EMIT selectionChangeComplete(this);
 }
 
 /******************************************************************************

@@ -48,9 +48,6 @@ RefTargetListParameterUI::RefTargetListParameterUI(QObject* parentEditor, const 
 ******************************************************************************/
 RefTargetListParameterUI::~RefTargetListParameterUI()
 {
-	/// The destructor must clear all references since this UI object
-	/// might have been deleted via the delete operator and not via
-	/// the autoDeleteObject() method which should normally be used for RefMaker derived classes.
 	_subEditor = nullptr;
 	clearAllReferences();
 	 	

@@ -335,7 +335,7 @@ void CAImporter::CrystalAnalysisImportTask::parseFile(FutureInterfaceBase& futur
 
 		// Create and execute the import sub-task.
 		_particleLoadTask = std::make_shared<LAMMPSTextDumpImporter::LAMMPSTextDumpImportTask>(particleFileInfo, false, InputColumnMapping());
-		_particleLoadTask->load(futureInterface);
+		_particleLoadTask->load(datasetContainer(), futureInterface);
 		if(futureInterface.isCanceled())
 			return;
 
@@ -357,7 +357,7 @@ QSet<SceneObject*> CAImporter::CrystalAnalysisImportTask::insertIntoScene(Linked
 	// Insert dislocations.
 	OORef<DislocationNetwork> dislocationsObj = destination->findSceneObject<DislocationNetwork>();
 	if(!dislocationsObj) {
-		dislocationsObj = new DislocationNetwork();
+		dislocationsObj = new DislocationNetwork(destination->dataset());
 		destination->addSceneObject(dislocationsObj.get());
 	}
 	activeObjects.insert(dislocationsObj.get());
@@ -365,7 +365,7 @@ QSet<SceneObject*> CAImporter::CrystalAnalysisImportTask::insertIntoScene(Linked
 	// Insert defect surface.
 	OORef<DefectSurface> defectSurfaceObj = destination->findSceneObject<DefectSurface>();
 	if(!defectSurfaceObj) {
-		defectSurfaceObj = new DefectSurface();
+		defectSurfaceObj = new DefectSurface(destination->dataset());
 		destination->addSceneObject(defectSurfaceObj.get());
 	}
 	defectSurfaceObj->mesh().swap(_defectSurface);
@@ -375,7 +375,7 @@ QSet<SceneObject*> CAImporter::CrystalAnalysisImportTask::insertIntoScene(Linked
 	// Insert pattern catalog.
 	OORef<PatternCatalog> patternCatalog = destination->findSceneObject<PatternCatalog>();
 	if(!patternCatalog) {
-		patternCatalog = new PatternCatalog();
+		patternCatalog = new PatternCatalog(destination->dataset());
 		destination->addSceneObject(patternCatalog.get());
 	}
 	activeObjects.insert(patternCatalog.get());
@@ -387,7 +387,7 @@ QSet<SceneObject*> CAImporter::CrystalAnalysisImportTask::insertIntoScene(Linked
 			pattern = patternCatalog->patterns()[i+1];
 		}
 		else {
-			pattern.reset(new StructurePattern());
+			pattern.reset(new StructurePattern(patternCatalog->dataset()));
 			patternCatalog->addPattern(pattern.get());
 		}
 		if(pattern->shortName() != _patterns[i].shortName)
@@ -404,7 +404,7 @@ QSet<SceneObject*> CAImporter::CrystalAnalysisImportTask::insertIntoScene(Linked
 				family = pattern->burgersVectorFamilies()[j+1];
 			}
 			else {
-				family.reset(new BurgersVectorFamily());
+				family.reset(new BurgersVectorFamily(pattern->dataset()));
 				pattern->addBurgersVectorFamily(family.get());
 			}
 			if(family->name() != _patterns[i].burgersVectorFamilies[j].name)
@@ -423,13 +423,13 @@ QSet<SceneObject*> CAImporter::CrystalAnalysisImportTask::insertIntoScene(Linked
 	// Insert cluster graph.
 	OORef<ClusterGraph> clusterGraph = destination->findSceneObject<ClusterGraph>();
 	if(!clusterGraph) {
-		clusterGraph = new ClusterGraph();
+		clusterGraph = new ClusterGraph(destination->dataset());
 		destination->addSceneObject(clusterGraph.get());
 	}
 	activeObjects.insert(clusterGraph.get());
 	clusterGraph->clear();
 	for(const ClusterInfo& icluster : _clusters) {
-		OORef<Cluster> cluster(new Cluster());
+		OORef<Cluster> cluster(new Cluster(clusterGraph->dataset()));
 		cluster->setPattern(patternCatalog->patterns()[icluster.patternIndex+1]);
 		cluster->setId(icluster.id);
 		cluster->setAtomCount(icluster.atomCount);
@@ -448,13 +448,13 @@ QSet<SceneObject*> CAImporter::CrystalAnalysisImportTask::insertIntoScene(Linked
 	// Insert dislocations.
 	OORef<DislocationNetwork> dislocationNetwork = destination->findSceneObject<DislocationNetwork>();
 	if(!dislocationNetwork) {
-		dislocationNetwork = new DislocationNetwork();
+		dislocationNetwork = new DislocationNetwork(destination->dataset());
 		destination->addSceneObject(dislocationNetwork.get());
 	}
 	activeObjects.insert(dislocationNetwork.get());
 	dislocationNetwork->clear();
 	for(const DislocationSegmentInfo& s : _dislocations) {
-		OORef<DislocationSegment> segment(new DislocationSegment());
+		OORef<DislocationSegment> segment(new DislocationSegment(dislocationNetwork->dataset()));
 		segment->setLine(s.line, s.coreSize);
 		segment->setIsClosedLoop(s.isClosedLoop);
 		segment->setBurgersVector(s.burgersVector, clusterGraph->clusters()[s.clusterIndex]);
@@ -488,10 +488,10 @@ void CAImporter::prepareSceneNode(ObjectNode* node, LinkedFileObject* importObj)
 	LinkedFileImporter::prepareSceneNode(node, importObj);
 
 	// Add a modifier to smooth the defect surface mesh.
-	node->applyModifier(new SmoothSurfaceModifier());
+	node->applyModifier(new SmoothSurfaceModifier(node->dataset()));
 
 	// Add a modifier to smooth the dislocation lines.
-	node->applyModifier(new SmoothDislocationsModifier());
+	node->applyModifier(new SmoothDislocationsModifier(node->dataset()));
 }
 
 /******************************************************************************

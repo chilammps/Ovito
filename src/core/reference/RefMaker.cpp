@@ -33,35 +33,22 @@ namespace Ovito {
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, RefMaker, OvitoObject);
 
 /******************************************************************************
-* Deletes this object. 
-* It releases all references held by this RefMaker by calling clearAllReferences().
-* It then calls the base implementation to delete the object physically.
+* This method is called when the reference counter of this OvitoObject
+* has reached zero.
 ******************************************************************************/
-void RefMaker::autoDeleteObject()
+void RefMaker::deleteThis()
 {
-#if 0
-	qDebug() << "auto deleting " << this << " isrecording=" << UndoManager::instance().isRecording();
-	for(const OvitoObjectType* clazz = &getOOType(); clazz; clazz = clazz->superClass()) {
-		for(const PropertyFieldDescriptor* field = clazz->firstPropertyField(); field; field = field->next()) {
-			if(field->isReferenceField()) {
-				if(field->isVector() == false) {
-					qDebug() << " " << field->displayName() << "=" << getReferenceField(*field);
-				}
-				else {
-					qDebug() << " " << field->displayName() << ":";
-					const QVector<RefTarget*>& list = getVectorReferenceField(*field);
-					Q_FOREACH(RefTarget* target, list)
-						qDebug() << "    " << target;
-				}
-			}
-		}
-	}
-#endif
+	OVITO_CHECK_OBJECT_POINTER(this);
+	//qDebug() << "Deleting" << this << "from memory (dataset=" << _dataset << ")";
 
+	// Make sure undo recording is not active.
+	OVITO_ASSERT_MSG(!_dataset || _dataset->undoStack().isRecording() == false, "RefMaker::deleteThis()", "Cannot delete object from memory while undo recording is active.");
+
+	// Clear all references this object has to other objects.
 	clearAllReferences();
 
-	if(!dataset() || dataset()->undoStack().isRecording() == false)
-		OvitoObject::autoDeleteObject();
+	// Delete object from memory.
+	OvitoObject::deleteThis();
 }
 
 /******************************************************************************
@@ -121,6 +108,7 @@ bool RefMaker::handleReferenceEvent(RefTarget* source, ReferenceEvent* event)
 	if(event->type() ==  ReferenceEvent::TargetDeleted) {
 		OVITO_ASSERT(source == event->sender());
 		referenceEvent(source, event);
+		OVITO_CHECK_OBJECT_POINTER(this);
 		clearReferencesTo(event->sender());
 		return false;
 	}
@@ -225,7 +213,7 @@ void RefMaker::clearReferencesTo(RefTarget* target)
 void RefMaker::clearAllReferences()
 {
 	OVITO_CHECK_OBJECT_POINTER(this);
-	OVITO_ASSERT_MSG(getOOType() != RefMaker::OOType, "RefMaker::clearAllReferences", "clearAllReferences() must not be called from the RefMaker destructor. Use autoDeleteObject() instead.");
+	OVITO_ASSERT_MSG(getOOType() != RefMaker::OOType, "RefMaker::clearAllReferences", "clearAllReferences() must not be called from the RefMaker destructor.");
 
 	// Iterate over all reference fields in the class hierarchy.
 	for(const OvitoObjectType* clazz = &getOOType(); clazz; clazz = clazz->superClass()) {
@@ -247,7 +235,7 @@ void RefMaker::clearReferenceField(const PropertyFieldDescriptor& field)
 	OVITO_ASSERT_MSG(getOOType().isDerivedFrom(*field.definingClass()), "RefMaker::clearReferenceField()", "The reference field has not been defined in this class or its base classes.");
 
 	if(field.isVector() == false)
-		field.singleStorageAccessFunc(this).setValue(NULL);
+		field.singleStorageAccessFunc(this).setValue(nullptr);
 	else
 		field.vectorStorageAccessFunc(this).clear();
 }
@@ -260,8 +248,8 @@ void RefMaker::saveToStream(ObjectSaveStream& stream)
 	OvitoObject::saveToStream(stream);
 
 	// Iterate over all property fields in the class hierarchy.
-	for(const OvitoObjectType* clazz = &getOOType(); clazz; clazz = clazz->superClass()) {
-		for(const PropertyFieldDescriptor* field = clazz->firstPropertyField(); field; field = field->next()) {
+	for(const OvitoObjectType* clazz = &getOOType(); clazz != nullptr; clazz = clazz->superClass()) {
+		for(const PropertyFieldDescriptor* field = clazz->firstPropertyField(); field != nullptr; field = field->next()) {
 
 			if(field->isReferenceField()) {
 				// Write the object pointed to by the reference field to the stream.
@@ -292,7 +280,7 @@ void RefMaker::saveToStream(ObjectSaveStream& stream)
 			}
 			else {
 				// Write the primitive value stored in the property field to the stream.
-				OVITO_ASSERT(field->propertyStorageSaveFunc != NULL);
+				OVITO_ASSERT(field->propertyStorageSaveFunc != nullptr);
 				stream.beginChunk(0x04);
 				field->propertyStorageSaveFunc(this, stream);
 				stream.endChunk();
@@ -317,7 +305,7 @@ void RefMaker::loadFromStream(ObjectLoadStream& stream)
 	// Read property field from the stream.
 	Q_FOREACH(const ObjectLoadStream::PropertyFieldEntry& fieldEntry, stream._currentObject->pluginClass->propertyFields) {
 		if(fieldEntry.isReferenceField) {
-			OVITO_ASSERT(fieldEntry.targetClass != NULL);
+			OVITO_ASSERT(fieldEntry.targetClass != nullptr);
 	
 			// Parse target object(s).
 			int chunkId = stream.openChunk();
@@ -382,10 +370,10 @@ void RefMaker::loadFromStream(ObjectLoadStream& stream)
 		}
 		else {
 			// Read the primitive value of the property field from the stream.
-			OVITO_ASSERT(fieldEntry.targetClass == NULL);
+			OVITO_ASSERT(fieldEntry.targetClass == nullptr);
 			stream.expectChunk(0x04);
 			if(fieldEntry.field) {
-				OVITO_ASSERT(fieldEntry.field->propertyStorageLoadFunc != NULL);
+				OVITO_ASSERT(fieldEntry.field->propertyStorageLoadFunc != nullptr);
 				fieldEntry.field->propertyStorageLoadFunc(this, stream);
 			}
 			else {
@@ -420,12 +408,12 @@ void RefMaker::walkNode(QSet<RefTarget*>& nodes, const RefMaker* node)
 	OVITO_CHECK_OBJECT_POINTER(node);
 	
 	// Iterate over all reference fields in the class hierarchy.
-	for(const OvitoObjectType* clazz = &node->getOOType(); clazz; clazz = clazz->superClass()) {
-		for(const PropertyFieldDescriptor* field = clazz->firstPropertyField(); field; field = field->next()) {
+	for(const OvitoObjectType* clazz = &node->getOOType(); clazz != nullptr; clazz = clazz->superClass()) {
+		for(const PropertyFieldDescriptor* field = clazz->firstPropertyField(); field != nullptr; field = field->next()) {
 			if(!field->isReferenceField()) continue;
 			if(field->isVector() == false) {
 				RefTarget* target = node->getReferenceField(*field);
-				if(target != NULL && !nodes.contains(target)) {
+				if(target != nullptr && !nodes.contains(target)) {
 					nodes.insert(target);
 					walkNode(nodes, target);
 				}
@@ -433,7 +421,7 @@ void RefMaker::walkNode(QSet<RefTarget*>& nodes, const RefMaker* node)
 			else {
 				const QVector<RefTarget*>& list = node->getVectorReferenceField(*field);
 				Q_FOREACH(RefTarget* target, list) {
-					if(target != NULL && !nodes.contains(target)) {
+					if(target != nullptr && !nodes.contains(target)) {
 						nodes.insert(target);
 						walkNode(nodes, target);
 					}

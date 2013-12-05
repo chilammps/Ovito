@@ -24,6 +24,7 @@
 #include <core/scene/pipeline/PipelineObject.h>
 #include <core/scene/pipeline/Modifier.h>
 #include <core/scene/ObjectNode.h>
+#include <core/scene/SelectionSet.h>
 #include <core/viewport/ViewportConfiguration.h>
 #include <core/dataset/UndoStack.h>
 #include <core/dataset/DataSetContainer.h>
@@ -232,7 +233,7 @@ void ModifyCommandPage::onDeleteModifier()
 
 	UndoableTransaction::handleExceptions(_datasetContainer.currentSet()->undoStack(), tr("Delete modifier"), [selectedItem, modifier]() {
 
-		// Remove each ModifierApplication from the ModifiedObject it belongs to.
+		// Remove each ModifierApplication from the corresponding PipelineObject.
 		Q_FOREACH(ModifierApplication* modApp, selectedItem->modifierApplications()) {
 			OVITO_ASSERT(modApp->modifier() == modifier);
 			OVITO_CHECK_OBJECT_POINTER(modApp->pipelineObject());
@@ -284,9 +285,9 @@ void ModifyCommandPage::onModifierMoveUp()
 	UndoableTransaction::handleExceptions(_datasetContainer.currentSet()->undoStack(), tr("Move modifier up"), [pipelineObj, modApp]() {
 		// Determine old position in stack.
 		int index = pipelineObj->modifierApplications().indexOf(modApp.get());
-		// Remove ModifierApplication from the ModifiedObject.
+		// Remove ModifierApplication from the PipelineObject.
 		pipelineObj->removeModifier(modApp.get());
-		// Re-insert ModifierApplication into the ModifiedObject.
+		// Re-insert ModifierApplication into the PipelineObject.
 		pipelineObj->insertModifierApplication(modApp.get(), index+1);
 	});
 }
@@ -315,9 +316,9 @@ void ModifyCommandPage::onModifierMoveDown()
 	UndoableTransaction::handleExceptions(_datasetContainer.currentSet()->undoStack(), tr("Move modifier down"), [pipelineObj, modApp]() {
 		// Determine old position in stack.
 		int index = pipelineObj->modifierApplications().indexOf(modApp.get());
-		// Remove ModifierApplication from the ModifiedObject.
+		// Remove ModifierApplication from the PipelineObject.
 		pipelineObj->removeModifier(modApp.get());
-		// Re-insert ModifierApplication into the ModifiedObject.
+		// Re-insert ModifierApplication into the PipelineObject.
 		pipelineObj->insertModifierApplication(modApp.get(), index-1);
 	});
 }

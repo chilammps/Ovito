@@ -68,17 +68,6 @@ public:
 #endif
 	}
 
-	/// \brief Deletes this object.
-	///
-	/// The default implementation of this method calls "delete this" to delete the object from memory.
-	virtual void autoDeleteObject() {
-		OVITO_CHECK_OBJECT_POINTER(this);
-		// Delete myself.
-		delete this;
-	}
-
-public:
-
 	/// \brief Saves the class' contents to an output stream.
 	/// \param stream The destination stream.
 	///
@@ -131,6 +120,16 @@ public:
 	bool __isObjectAlive() const { return _magicAliveCode == 0x87ABCDEF; }
 #endif
 
+protected:
+
+	/// \brief Calls "delete this" on this object.
+	///
+	/// This method is called when the reference counter of this object has reached zero.
+	virtual void deleteThis() {
+		OVITO_CHECK_OBJECT_POINTER(this);
+		delete this;
+	}
+
 private:
 
 	/// The number of references to this object.
@@ -152,8 +151,9 @@ private:
 	void decrementReferenceCount() {
 		OVITO_CHECK_OBJECT_POINTER(this);
 		OVITO_ASSERT_MSG(_referenceCount > 0, "OvitoObject::decrementReferenceCount()", "Reference count became negative.");
-		if(--_referenceCount == 0)
-			autoDeleteObject();
+		if(--_referenceCount == 0) {
+			deleteThis();
+		}
 	}
 
 #ifdef OVITO_DEBUG

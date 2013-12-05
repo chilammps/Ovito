@@ -23,7 +23,6 @@
 #include <core/dataset/DataSet.h>
 #include <core/viewport/Viewport.h>
 #include <core/viewport/ViewportConfiguration.h>
-#include <core/reference/CloneHelper.h>
 #include <core/animation/AnimationSettings.h>
 #include <core/scene/SceneRoot.h>
 #include <core/scene/SelectionSet.h>
@@ -53,7 +52,7 @@ SET_PROPERTY_FIELD_LABEL(DataSet, _renderSettings, "Render Settings")
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-DataSet::DataSet(DataSet* self) : RefTarget(this)
+DataSet::DataSet(DataSet* self) : RefTarget(this), _unitsManager(this)
 {
 	INIT_PROPERTY_FIELD(DataSet::_viewportConfig);
 	INIT_PROPERTY_FIELD(DataSet::_animSettings);
@@ -66,6 +65,23 @@ DataSet::DataSet(DataSet* self) : RefTarget(this)
 	_sceneRoot = new SceneRoot(this);
 	_selection = new SelectionSet(this);
 	_renderSettings = new RenderSettings(this);
+}
+
+/******************************************************************************
+* This method is called when the reference counter of this OvitoObject
+* has reached zero.
+******************************************************************************/
+void DataSet::deleteThis()
+{
+	// Make sure undo recording is not active.
+	OVITO_ASSERT(undoStack().isRecording() == false);
+
+	// Delete scene nodes and everything else that belongs to this dataset.
+	if(sceneRoot())
+		sceneRoot()->deleteNode();
+
+	// Delete object from memory.
+	RefTarget::deleteThis();
 }
 
 /******************************************************************************
@@ -137,11 +153,22 @@ bool DataSet::referenceEvent(RefTarget* source, ReferenceEvent* event)
 void DataSet::referenceReplaced(const PropertyFieldDescriptor& field, RefTarget* oldTarget, RefTarget* newTarget)
 {
 	if(field == PROPERTY_FIELD(DataSet::_viewportConfig))
-		Q_EMIT viewportConfigChanged(viewportConfig());
+		Q_EMIT viewportConfigReplaced(viewportConfig());
 	else if(field == PROPERTY_FIELD(DataSet::_animSettings))
-		Q_EMIT animationSettingsChanged(animationSettings());
+		Q_EMIT animationSettingsReplaced(animationSettings());
 	else if(field == PROPERTY_FIELD(DataSet::_renderSettings))
-		Q_EMIT renderSettingsChanged(renderSettings());
+		Q_EMIT renderSettingsReplaced(renderSettings());
+	else if(field == PROPERTY_FIELD(DataSet::_selection))
+		Q_EMIT selectionSetReplaced(selection());
+
+	// Install a signal/slot connection that updates the viewports every time the animation time changes.
+	if(field == PROPERTY_FIELD(DataSet::_viewportConfig) || field == PROPERTY_FIELD(DataSet::_animSettings)) {
+		disconnect(_updateViewportOnTimeChangeConnection);
+		if(animationSettings() && viewportConfig()) {
+			_updateViewportOnTimeChangeConnection = connect(animationSettings(), &AnimationSettings::timeChangeComplete, viewportConfig(), &ViewportConfiguration::updateViewports);
+			viewportConfig()->updateViewports();
+		}
+	}
 
 	RefTarget::referenceReplaced(field, oldTarget, newTarget);
 }

@@ -36,7 +36,7 @@ class OVITO_CORE_EXPORT AffineTransformationParameterUI : public FloatParameterU
 public:
 
 	/// Constructor for a Qt property.
-	AffineTransformationParameterUI(QObject* parentEditor, const char* propertyName, size_t row, size_t column, const QString& labelText = QString(), ParameterUnit* parameterUnit = NULL);
+	AffineTransformationParameterUI(QObject* parentEditor, const char* propertyName, size_t row, size_t column, const QString& labelText = QString(), const QMetaObject* parameterUnitType = nullptr);
 
 	/// Constructor for a PropertyField property.
 	AffineTransformationParameterUI(QObject* parentEditor, const PropertyFieldDescriptor& propField, size_t row, size_t column);

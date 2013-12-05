@@ -45,8 +45,8 @@ SET_PROPERTY_FIELD_LABEL(SmoothDislocationsModifier, _linePointInterval, "Point 
 * Constructs the modifier object.
 ******************************************************************************/
 SmoothDislocationsModifier::SmoothDislocationsModifier(DataSet* dataset) : Modifier(dataset),
-	: _smoothingEnabled(true), _coarseningEnabled(true),
-	  _smoothingLevel(4), _linePointInterval(2)
+	_smoothingEnabled(true), _coarseningEnabled(true),
+	_smoothingLevel(4), _linePointInterval(2)
 {
 	INIT_PROPERTY_FIELD(SmoothDislocationsModifier::_smoothingEnabled);
 	INIT_PROPERTY_FIELD(SmoothDislocationsModifier::_smoothingLevel);

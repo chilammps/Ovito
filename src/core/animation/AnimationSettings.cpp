@@ -44,8 +44,7 @@ AnimationSettings::AnimationSettings(DataSet* dataset) : RefTarget(dataset),
 	INIT_PROPERTY_FIELD(AnimationSettings::_playbackSpeed);
 
 	// Call our own listener when the current animation time changes.
-	connect(this, SIGNAL(timeChanged(TimePoint)), this, SLOT(onTimeChanged(TimePoint)));
-	connect(this, SIGNAL(intervalChanged(TimeInterval)), this, SLOT(onIntervalChanged(TimeInterval)));
+	connect(this, &AnimationSettings::timeChanged, this, &AnimationSettings::onTimeChanged);
 }
 
 /******************************************************************************

@@ -45,28 +45,13 @@ AnimationTimeSlider::AnimationTimeSlider(MainWindow* mainWindow, QWidget* parent
 	setAutoFillBackground(true);
 	setMouseTracking(true);
 
-	connect(&mainWindow->datasetContainer(), &DataSetContainer::dataSetChanged, this, &AnimationTimeSlider::onDataSetChanged);
-}
-
-/******************************************************************************
-* This is called when a new dataset has been loaded.
-******************************************************************************/
-void AnimationTimeSlider::onDataSetChanged(DataSet* newDataSet)
-{
-	disconnect(_animationSettingsChangedConnection);
-	if(newDataSet) {
-		_animationSettingsChangedConnection = connect(newDataSet, &DataSet::animationSettingsChanged, this, &AnimationTimeSlider::onAnimationSettingsChanged);
-		onAnimationSettingsChanged(newDataSet->animationSettings());
-	}
-	else {
-		onAnimationSettingsChanged(nullptr);
-	}
+	connect(&mainWindow->datasetContainer(), &DataSetContainer::animationSettingsReplaced, this, &AnimationTimeSlider::onAnimationSettingsReplaced);
 }
 
 /******************************************************************************
 * This is called when new animation settings have been loaded.
 ******************************************************************************/
-void AnimationTimeSlider::onAnimationSettingsChanged(AnimationSettings* newAnimationSettings)
+void AnimationTimeSlider::onAnimationSettingsReplaced(AnimationSettings* newAnimationSettings)
 {
 	disconnect(_autoKeyModeChangedConnection);
 	disconnect(_animIntervalChangedConnection);
@@ -80,6 +65,7 @@ void AnimationTimeSlider::onAnimationSettingsChanged(AnimationSettings* newAnima
 		_timeChangedConnection = connect(newAnimationSettings, &AnimationSettings::timeChanged, this, (void (AnimationTimeSlider::*)())&AnimationTimeSlider::repaint);
 		onAutoKeyModeChanged(_animSettings->autoKeyMode());
 	}
+	else onAutoKeyModeChanged(false);
 	update();
 }
 

@@ -63,7 +63,7 @@ ParticleExporterSettingsDialog::ParticleExporterSettingsDialog(QWidget* parent, 
 	frameRangeLayout->setSpacing(0);
 	frameRangeLayout->addWidget(new QLabel(tr("From:")));
 	_startTimeSpinner = new SpinnerWidget();
-	_startTimeSpinner->setUnit(UnitsManager::instance().timeUnit());
+	_startTimeSpinner->setUnit(exporter->dataset()->unitsManager().timeUnit());
 	_startTimeSpinner->setIntValue(exporter->dataset()->animationSettings()->frameToTime(_exporter->startFrame()));
 	_startTimeSpinner->setTextBox(new QLineEdit());
 	_startTimeSpinner->setMinValue(exporter->dataset()->animationSettings()->animationInterval().start());
@@ -73,7 +73,7 @@ ParticleExporterSettingsDialog::ParticleExporterSettingsDialog(QWidget* parent, 
 	frameRangeLayout->addSpacing(8);
 	frameRangeLayout->addWidget(new QLabel(tr("To:")));
 	_endTimeSpinner = new SpinnerWidget();
-	_endTimeSpinner->setUnit(UnitsManager::instance().timeUnit());
+	_endTimeSpinner->setUnit(exporter->dataset()->unitsManager().timeUnit());
 	_endTimeSpinner->setIntValue(exporter->dataset()->animationSettings()->frameToTime(_exporter->endFrame()));
 	_endTimeSpinner->setTextBox(new QLineEdit());
 	_endTimeSpinner->setMinValue(exporter->dataset()->animationSettings()->animationInterval().start());
@@ -83,7 +83,7 @@ ParticleExporterSettingsDialog::ParticleExporterSettingsDialog(QWidget* parent, 
 	frameRangeLayout->addSpacing(8);
 	frameRangeLayout->addWidget(new QLabel(tr("Every Nth frame:")));
 	_nthFrameSpinner = new SpinnerWidget();
-	_nthFrameSpinner->setUnit(UnitsManager::instance().integerIdentityUnit());
+	_nthFrameSpinner->setUnit(exporter->dataset()->unitsManager().integerIdentityUnit());
 	_nthFrameSpinner->setIntValue(_exporter->everyNthFrame());
 	_nthFrameSpinner->setTextBox(new QLineEdit());
 	_nthFrameSpinner->setMinValue(1);
@@ -93,9 +93,9 @@ ParticleExporterSettingsDialog::ParticleExporterSettingsDialog(QWidget* parent, 
 	_startTimeSpinner->setEnabled(radioBtn->isChecked());
 	_endTimeSpinner->setEnabled(radioBtn->isChecked());
 	_nthFrameSpinner->setEnabled(radioBtn->isChecked());
-	connect(radioBtn, SIGNAL(toggled(bool)), _startTimeSpinner, SLOT(setEnabled(bool)));
-	connect(radioBtn, SIGNAL(toggled(bool)), _endTimeSpinner, SLOT(setEnabled(bool)));
-	connect(radioBtn, SIGNAL(toggled(bool)), _nthFrameSpinner, SLOT(setEnabled(bool)));
+	connect(radioBtn, &QRadioButton::toggled, _startTimeSpinner, &SpinnerWidget::setEnabled);
+	connect(radioBtn, &QRadioButton::toggled, _endTimeSpinner, &SpinnerWidget::setEnabled);
+	connect(radioBtn, &QRadioButton::toggled, _nthFrameSpinner, &SpinnerWidget::setEnabled);
 
 	QGroupBox* fileGroupBox = new QGroupBox(tr("Output"), this);
 	layout1->addWidget(fileGroupBox);

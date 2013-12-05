@@ -21,6 +21,7 @@
 
 #include <core/Core.h>
 #include <core/dataset/DataSetContainer.h>
+#include <core/scene/SelectionSet.h>
 #include "SceneNodeSelectionBox.h"
 #include "SceneNodesListModel.h"
 
@@ -53,7 +54,7 @@ SceneNodeSelectionBox::SceneNodeSelectionBox(DataSetContainer& datasetContainer,
 ******************************************************************************/
 void SceneNodeSelectionBox::onSceneSelectionChanged()
 {
-	SelectionSet* selection = _datasetContainer.currentSelection();
+	SelectionSet* selection = _datasetContainer.currentSet() ? _datasetContainer.currentSet()->selection() : nullptr;
 	if(!selection || selection->empty()) {
 		setCurrentText(tr("No selection"));
 	}
@@ -72,13 +73,15 @@ void SceneNodeSelectionBox::onSceneSelectionChanged()
 void SceneNodeSelectionBox::onItemActivated(int index)
 {
 	SceneNode* node = qobject_cast<SceneNode*>(itemData(index).value<QObject*>());
-	SelectionSet* selection = _datasetContainer.currentSet()->selection();
-	UndoableTransaction::handleExceptions(_datasetContainer.currentSet()->undoStack(), tr("Select object"), [node, selection]() {
-		if(node)
-			selection->setNode(node);
-		else
-			selection->clear();
-	});
+	if(_datasetContainer.currentSet()) {
+		SelectionSet* selection = _datasetContainer.currentSet()->selection();
+		UndoableTransaction::handleExceptions(_datasetContainer.currentSet()->undoStack(), tr("Select object"), [node, selection]() {
+			if(node)
+				selection->setNode(node);
+			else
+				selection->clear();
+		});
+	}
 }
 
 };

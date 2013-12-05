@@ -27,14 +27,14 @@
 
 namespace Ovito {
 
-IMPLEMENT_OVITO_OBJECT(Core, ModificationListItem, RefTarget)
+IMPLEMENT_OVITO_OBJECT(Core, ModificationListItem, RefMaker)
 DEFINE_FLAGS_REFERENCE_FIELD(ModificationListItem, _object, "Object", RefTarget, PROPERTY_FIELD_NO_UNDO)
 DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(ModificationListItem, _modApps, "ModifierApplications", ModifierApplication, PROPERTY_FIELD_NO_UNDO)
 
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-ModificationListItem::ModificationListItem(RefTarget* object, bool isSubObject, const QString& title) : RefTarget(nullptr),
+ModificationListItem::ModificationListItem(RefTarget* object, bool isSubObject, const QString& title) :
 	_isSubObject(isSubObject), _title(title)
 {
 	INIT_PROPERTY_FIELD(ModificationListItem::_object);
@@ -70,7 +70,7 @@ bool ModificationListItem::referenceEvent(RefTarget* source, ReferenceEvent* eve
 		Q_EMIT subitemsChanged(this);
 	}
 
-	return RefTarget::referenceEvent(source, event);
+	return RefMaker::referenceEvent(source, event);
 }
 
 /******************************************************************************

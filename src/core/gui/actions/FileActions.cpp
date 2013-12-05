@@ -169,13 +169,13 @@ void ActionManager::on_Settings_triggered()
 void ActionManager::on_FileImport_triggered()
 {
 	// Let the user select a file.
-	ImportFileDialog dialog(mainWindow(), tr("Import Data"));
+	ImportFileDialog dialog(ImportExportManager::instance().fileImporters(_dataset.get()), mainWindow(), tr("Import Data"));
 	if(dialog.exec() != QDialog::Accepted)
 		return;
 
 	try {
 		// Import file.
-		mainWindow()->datasetContainer().importFile(QUrl::fromLocalFile(dialog.fileToImport()), dialog.selectedFileImporter());
+		mainWindow()->datasetContainer().importFile(QUrl::fromLocalFile(dialog.fileToImport()), dialog.selectedFileImporterType());
 	}
 	catch(const Exception& ex) {
 		ex.showError();
@@ -188,13 +188,13 @@ void ActionManager::on_FileImport_triggered()
 void ActionManager::on_FileRemoteImport_triggered()
 {
 	// Let the user enter the URL of the remote file.
-	ImportRemoteFileDialog dialog(mainWindow(), tr("Import Remote File"));
+	ImportRemoteFileDialog dialog(ImportExportManager::instance().fileImporters(_dataset.get()), mainWindow(), tr("Import Remote File"));
 	if(dialog.exec() != QDialog::Accepted)
 		return;
 
 	try {
 		// Import URL.
-		mainWindow()->datasetContainer().importFile(dialog.fileToImport(), dialog.selectedFileImporter());
+		mainWindow()->datasetContainer().importFile(dialog.fileToImport(), dialog.selectedFileImporterType());
 	}
 	catch(const Exception& ex) {
 		ex.showError();
@@ -208,8 +208,9 @@ void ActionManager::on_FileExport_triggered()
 {
 	// Build filter string.
 	QStringList filterStrings;
-	for(const auto& descriptor : ImportExportManager::instance().fileExporters()) {
-		filterStrings << QString("%1 (%2)").arg(descriptor.fileFilterDescription(), descriptor.fileFilter());
+	const auto& exporterTypes = ImportExportManager::instance().fileExporters(_dataset.get());
+	for(FileExporterDescription* descriptor : exporterTypes) {
+		filterStrings << QString("%1 (%2)").arg(descriptor->fileFilterDescription(), descriptor->fileFilter());
 	}
 	if(filterStrings.isEmpty()) {
 		Exception(tr("This function is disabled, because there are no export services available.")).showError();
@@ -251,9 +252,9 @@ void ActionManager::on_FileExport_triggered()
 	// Export to selected file.
 	try {
 		int exportFilterIndex = filterStrings.indexOf(dialog.selectedNameFilter());
-		OVITO_ASSERT(exportFilterIndex >= 0 && exportFilterIndex < filterStrings.size());
+		OVITO_ASSERT(exportFilterIndex >= 0 && exportFilterIndex < exporterTypes.size());
 
-		OORef<FileExporter> exporter = ImportExportManager::instance().fileExporters()[exportFilterIndex].createService(mainWindow()->datasetContainer().currentSet());
+		OORef<FileExporter> exporter = exporterTypes[exportFilterIndex]->createService(_dataset.get());
 		exporter->exportToFile(exportFile);
 	}
 	catch(const Exception& ex) {

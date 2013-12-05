@@ -52,8 +52,8 @@ enum PropertyFieldFlag
 	/// the property when a new object is created.
 	PROPERTY_FIELD_MEMORIZE				= (1<<7),
 };
-Q_DECLARE_FLAGS(PropertyFieldFlags, PropertyFieldFlag)
-Q_DECLARE_OPERATORS_FOR_FLAGS(PropertyFieldFlags)
+Q_DECLARE_FLAGS(PropertyFieldFlags, PropertyFieldFlag);
+Q_DECLARE_OPERATORS_FOR_FLAGS(PropertyFieldFlags);
 
 /******************************************************************************
 * This class describes one member field of a RefMaker that stores
@@ -141,10 +141,8 @@ public:
 	/// Returns the next property field in the linked list (of the RefMaker derived class defining this property field).
 	const PropertyFieldDescriptor* next() const { return _next; }
 
-	/// If this reference field contains a reference to a controller than
-	/// this method returns the unit that is associated with the controller.
-	/// This method is used by the NumericalParameterUI class.
-	ParameterUnit* parameterUnit() const;
+	/// Returns the ParameterUnit-derived class assigned to a numerical property or controller field.
+	const QMetaObject* parameterUnitType() const { return _parameterUnitType; }
 
 	/// Returns the flags that control the behavior of the property field.
 	PropertyFieldFlags flags() const { return _flags; }
@@ -201,9 +199,8 @@ protected:
 	/// as label text in the user interface.
 	QString _displayName;
 
-	/// The ParameterUnit derived class that describes the units of the parameter
-	/// if this property field stores numerical controller object.
-	const OvitoObjectType* _parameterUnitClassDescriptor;
+	/// A ParameterUnit-derived class which is assigned to a numerical property or controller.
+	const QMetaObject* _parameterUnitType;
 
 	friend class RefMaker;
 	friend class RefTarget;

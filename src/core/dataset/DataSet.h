@@ -30,6 +30,7 @@
 #include <core/Core.h>
 #include <core/reference/RefTarget.h>
 #include <core/animation/TimeInterval.h>
+#include <core/utilities/units/UnitsManager.h>
 #include "UndoStack.h"
 
 namespace Ovito {
@@ -89,6 +90,9 @@ public:
 		return _undoStack;
 	}
 
+	/// \brief Returns the manager of ParameterUnit objects.
+	UnitsManager& unitsManager() { return _unitsManager; }
+
 	/// \brief Returns a pointer to the main window in which this dataset is being edited.
 	/// \return The main window, or NULL if this data set is not being edited in any window.
 	MainWindow* mainWindow() const;
@@ -138,19 +142,27 @@ Q_SIGNALS:
 	/// \brief This signal is emitted whenever the current viewport configuration of this dataset
 	///        has been replaced by a new one.
 	/// \note This signal is NOT emitted when parameters of the current viewport configuration change.
-	void viewportConfigChanged(ViewportConfiguration* newViewportConfiguration);
+	void viewportConfigReplaced(ViewportConfiguration* newViewportConfiguration);
 
 	/// \brief This signal is emitted whenever the current animation settings of this dataset
 	///        have been replaced by new ones.
 	/// \note This signal is NOT emitted when parameters of the current animation settings object change.
-	void animationSettingsChanged(AnimationSettings* newAnimationSettings);
+	void animationSettingsReplaced(AnimationSettings* newAnimationSettings);
 
 	/// \brief This signal is emitted whenever the current render settings of this dataset
 	///        have been replaced by new ones.
 	/// \note This signal is NOT emitted when parameters of the current render settings object change.
-	void renderSettingsChanged(RenderSettings* newRenderSettings);
+	void renderSettingsReplaced(RenderSettings* newRenderSettings);
+
+	/// \brief This signal is emitted whenever the current selection set of this dataset
+	///        has been replaced by another one.
+	/// \note This signal is NOT emitted when nodes are added or removed from the current selection set.
+	void selectionSetReplaced(SelectionSet* newSelectionSet);
 
 protected:
+
+	/// This method is called when the reference counter of this object has reached zero.
+	virtual void deleteThis() override;
 
 	/// Is called when a RefTarget referenced by this object has generated an event.
 	virtual bool referenceEvent(RefTarget* source, ReferenceEvent* event) override;
@@ -191,8 +203,14 @@ private:
 	/// The undo stack that keeps track of changes made to this dataset.
 	UndoStack _undoStack;
 
+	/// The manager of ParameterUnit objects.
+	UnitsManager _unitsManager;
+
 	/// List of listener objects that want to get notified when the scene is ready.
 	QVector<std::function<void()>> _sceneReadyListeners;
+
+	/// This signal/slot connection updates the viewports when the animation time changes.
+	QMetaObject::Connection _updateViewportOnTimeChangeConnection;
 
 	Q_OBJECT
 	OVITO_OBJECT

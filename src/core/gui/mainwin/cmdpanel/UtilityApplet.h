@@ -28,42 +28,32 @@
 #define __OVITO_UTILITY_APPLET_H
 
 #include <core/Core.h>
-#include <core/reference/RefTarget.h>
+#include <core/reference/RefMaker.h>
 #include <core/gui/widgets/general/RolloutContainer.h>
 
 namespace Ovito {
 
 /**
  * \brief Abstract base class for utility applets.
- * 
- * Utility applets are activated and shown on the utility page of the command panel.
- * 
- * For each installed UtilityApplet-derived class
- * a button is shown on the utilities page of the command panel. When the
- * user presses a button, an instance of the corresponding UtilityApplet class
- * is created and its openUtility() method is called.
- * 
- * When the utilities page of the command panel is closed, the current applet is
- * also closed by calling its closeUtility() method.
  */
 class OVITO_CORE_EXPORT UtilityApplet : public RefMaker
 {
 protected:
 	
 	/// \brief Constructor.
-	UtilityApplet(DataSet* dataset) : RefMaker(dataset) {}
+	UtilityApplet() {}
 
 public:
 
 	/// \brief Shows the user interface of the utility in the given RolloutContainer.
 	/// \param mainWindow The main window that hosts the utility.
-	/// \param container The widget container into which the utility should put its user interface controls.
+	/// \param container The widget container into which the utility should insert its user interface
 	/// \param rolloutParams Specifies how the utility should insert its rollouts into the container.
 	/// \throw Exception if an error occurs.
 	virtual void openUtility(MainWindow* mainWindow, RolloutContainer* container, const RolloutInsertionParameters& rolloutParams = RolloutInsertionParameters()) = 0;
 
 	/// \brief Closes the user interface of the utility.
-	/// \param container The widget container from which the utility should remove its user interface controls.
+	/// \param container The widget container from which the utility should remove its user interface.
 	virtual void closeUtility(RolloutContainer* container) = 0;
 
 private:

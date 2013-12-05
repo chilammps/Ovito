@@ -30,7 +30,6 @@
 #include <core/Core.h>
 #include <core/utilities/concurrent/TaskManager.h>
 #include "DataSet.h"
-#include "CurrentSelectionProxy.h"
 #include "importexport/FileImporter.h"
 
 namespace Ovito {
@@ -58,12 +57,6 @@ public:
 	/// \brief Sets the current dataset being edited by the user.
 	/// \param set The dataset that should be shown in the main window.
 	void setCurrentSet(const OORef<DataSet>& set) { _currentSet = set.get(); }
-
-	/// \brief Returns the current selection set. 
-	/// \note The object returned by this method is a special proxy object (CurrentSelectionProxy) that mirrors the selection 
-	///       set of the current DataSet. The proxy makes it possible to reference it during the whole session even when
-	///       a new DataSet becomes active.
-	SelectionSet* currentSelection() const { return _selectionSetProxy; }
 
 	/// Returns the window this dataset container is linked to (may be NULL).
 	MainWindow* mainWindow() const { return _mainWindow; }
@@ -120,35 +113,60 @@ Q_SIGNALS:
 	void dataSetChanged(DataSet* newDataSet);
 	
 	/// \brief Is emitted when nodes have been added or removed from the current selection set.
-	/// \param newSelection The current selection set.
+	/// \param selection The current selection set.
 	/// \note This signal is NOT emitted when a node in the selection set has changed.
 	/// \note In contrast to the selectionChangeComplete() signal this signal is emitted
 	///       for every node that is added to or removed from the selection set. That is,
 	///       a call to SelectionSet::addAll() for example will generate multiple selectionChanged()
 	///       events but only a single selectionChangeComplete() event.
-	void selectionChanged(SelectionSet* newSelection);
+	void selectionChanged(SelectionSet* selection);
 	
 	/// \brief This signal is emitted after all changes to the selection set have been completed.
-	/// \param newSelection The current selection set.
+	/// \param selection The current selection set.
 	/// \note This signal is NOT emitted when a node in the selection set has changed.
 	/// \note In contrast to the selectionChange() signal this signal is emitted
 	///       only once after the selection set has been changed. That is,
 	///       a call to SelectionSet::addAll() for example will generate multiple selectionChanged()
 	///       events but only a single selectionChangeComplete() event.
-	void selectionChangeComplete(SelectionSet* newSelection);
+	void selectionChangeComplete(SelectionSet* selection);
+
+	/// \brief This signal is emitted whenever the current selection set has been replaced by another one.
+	/// \note This signal is NOT emitted when nodes are added or removed from the current selection set.
+	void selectionSetReplaced(SelectionSet* newSelectionSet);
+
+	/// \brief This signal is emitted whenever the current viewport configuration of current dataset has been replaced by a new one.
+	/// \note This signal is NOT emitted when the parameters of the current viewport configuration change.
+	void viewportConfigReplaced(ViewportConfiguration* newViewportConfiguration);
+
+	/// \brief This signal is emitted whenever the current animation settings of the current dataset have been replaced by new ones.
+	/// \note This signal is NOT emitted when the parameters of the current animation settings object change.
+	void animationSettingsReplaced(AnimationSettings* newAnimationSettings);
+
+	/// \brief This signal is emitted whenever the current render settings of this dataset
+	///        have been replaced by new ones.
+	/// \note This signal is NOT emitted when parameters of the current render settings object change.
+	void renderSettingsReplaced(RenderSettings* newRenderSettings);
 
 protected:
 
 	/// Is called when the value of a reference field of this RefMaker changes.
 	virtual void referenceReplaced(const PropertyFieldDescriptor& field, RefTarget* oldTarget, RefTarget* newTarget) override;
 
-private:
+protected Q_SLOTS:
 
-	/// Emits a selectionChanged signal.
-	void emitSelectionChanged(SelectionSet* newSelection) { Q_EMIT selectionChanged(newSelection); }
+	/// This handler is invoked when the current selection set of the current dataset has been replaced.
+	void onSelectionSetReplaced(SelectionSet* newSelectionSet);
 
-	/// Emits a selectionChangeComplete signal.
-	void emitSelectionChangeComplete(SelectionSet* newSelection) { Q_EMIT selectionChangeComplete(newSelection); }
+#if 0
+	/// This handler is invoked when the current viewport configuration of the current dataset has been replaced.
+	void onViewportConfigReplaced(ViewportConfiguration* newViewportConfiguration);
+
+	/// This handler is invoked when the current animation settings of the current dataset have been replaced.
+	void onAnimationSettingsReplaced(AnimationSettings* newAnimationSettings);
+
+	/// This handler is invoked when the current render settings of the current dataset have been replaced.
+	void onRenderSettingsReplaced(RenderSettings* newRenderSettings);
+#endif
 
 private:
 
@@ -158,21 +176,20 @@ private:
 	/// The current dataset being edited by the user.
     ReferenceField<DataSet> _currentSet;
 
-	/// Proxy object for the selection set of the current dataset.
-	ReferenceField<CurrentSelectionProxy> _selectionSetProxy;
-
 	/// The container for background tasks.
 	TaskManager _taskManager;
 
-private:
+	QMetaObject::Connection _selectionSetReplacedConnection;
+	QMetaObject::Connection _selectionSetChangedConnection;
+	QMetaObject::Connection _selectionSetChangeCompleteConnection;
+	QMetaObject::Connection _viewportConfigReplacedConnection;
+	QMetaObject::Connection _animationSettingsReplacedConnection;
+	QMetaObject::Connection _renderSettingsReplacedConnection;
 
 	Q_OBJECT
 	OVITO_OBJECT
 
 	DECLARE_REFERENCE_FIELD(_currentSet);
-	DECLARE_REFERENCE_FIELD(_selectionSetProxy);
-
-	friend class CurrentSelectionProxy;
 };
 
 };

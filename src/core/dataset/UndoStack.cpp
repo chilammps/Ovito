@@ -57,6 +57,8 @@ void UndoStack::push(UndoableOperation* operation)
 	OVITO_ASSERT_MSG(isUndoingOrRedoing() == false, "UndoStack::push()", "Cannot record an operation while undoing or redoing another operation.");
 	OVITO_ASSERT_MSG(!isSuspended(), "UndoStack::push()", "Not in recording state.");
 
+	UndoSuspender noUndo(*this);
+
 	// Discard previously undone operations.
 	_operations.resize(index() + 1);
 	if(cleanIndex() > index()) _cleanIndex = -1;
@@ -96,6 +98,8 @@ void UndoStack::endCompoundOperation(bool commit)
 	OVITO_ASSERT_MSG(!_compoundStack.empty(), "UndoStack::endCompoundOperation()", "Missing call to beginCompoundOperation().");
 
 	if(!commit) {
+		UndoSuspender noUndo(*this);
+
 		// Undo operations in current compound operation first.
 		resetCurrentCompoundOperation();
 		// Then discard compound operation.
@@ -108,8 +112,12 @@ void UndoStack::endCompoundOperation(bool commit)
 		_compoundStack.pop_back();
 
 		// Check if the operation should be kept.
-		if(_suspendCount > 0 || !cop->isSignificant())
-			return; // Discard operation.
+		if(_suspendCount > 0 || !cop->isSignificant()) {
+			// Discard operation.
+			UndoSuspender noUndo(*this);
+			cop.reset();
+			return;
+		}
 
 		// Put new operation on stack.
 		push(cop.release());
@@ -126,8 +134,8 @@ void UndoStack::resetCurrentCompoundOperation()
 
 	CompoundOperation* cop = _compoundStack.back().get();
 	// Undo operations.
+	UndoSuspender noUndo(*this);
 	_isUndoing = true;
-	suspend();
 	try {
 		cop->undo();
 		cop->clear();
@@ -136,7 +144,6 @@ void UndoStack::resetCurrentCompoundOperation()
 		ex.showError();
 	}
 	_isUndoing = false;
-	resume();
 }
 
 /******************************************************************************
@@ -148,6 +155,7 @@ void UndoStack::limitUndoStack()
 	int n = count() - _undoLimit;
 	if(n > 0) {
 		if(index() >= n) {
+			UndoSuspender noUndo(*this);
 			_operations.erase(_operations.begin(), _operations.begin() + n);
 			_index -= n;
 			indexChanged(index());

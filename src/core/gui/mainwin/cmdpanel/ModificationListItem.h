@@ -34,7 +34,7 @@ namespace Ovito {
  *
  * Holds a reference to an object/modifier.
  */
-class ModificationListItem : public RefTarget
+class ModificationListItem : public RefMaker
 {
 public:
 

@@ -37,17 +37,4 @@ QString PropertyFieldDescriptor::displayName() const
 		return _displayName;
 }
 
-/******************************************************************************
-* If this reference field contains a reference to a controller than
-* this method returns the unit that is associated with the controller.
-* This method is used by the NumericalParameterUI class.
-******************************************************************************/
-ParameterUnit* PropertyFieldDescriptor::parameterUnit() const
-{
-	if(_parameterUnitClassDescriptor) {
-		return UnitsManager::instance().getUnit(*_parameterUnitClassDescriptor);
-	}
-	return NULL;
-}
-
 };

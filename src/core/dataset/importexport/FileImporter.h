@@ -88,15 +88,12 @@ private:
 /**
  * \brief This descriptor contains information about an installed FileImporter service.
  */
-class OVITO_CORE_EXPORT FileImporterDescription
+class OVITO_CORE_EXPORT FileImporterDescription : public QObject
 {
 public:
 
-	/// \brief Default constructor (required by QVector container).
-	FileImporterDescription() {}
-
 	/// \brief Initializes this descriptor from a file importer instance.
-	FileImporterDescription(FileImporter* importer) :
+	FileImporterDescription(QObject* parent, FileImporter* importer) : QObject(parent),
 		_fileFilter(importer->fileFilter()),
 		_fileFilterDescription(importer->fileFilterDescription()),
 		_pluginClass(&importer->getOOType()) {}
@@ -124,6 +121,8 @@ private:
 	QString _fileFilter;
 	QString _fileFilterDescription;
 	const OvitoObjectType* _pluginClass;
+
+	Q_OBJECT
 };
 
 };

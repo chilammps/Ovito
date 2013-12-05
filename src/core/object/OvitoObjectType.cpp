@@ -29,6 +29,7 @@
 #include <core/utilities/io/ObjectSaveStream.h>
 #include <core/utilities/io/ObjectLoadStream.h>
 #include <core/reference/PropertyFieldDescriptor.h>
+#include <core/reference/RefTarget.h>
 
 namespace Ovito {
 
@@ -43,7 +44,7 @@ OvitoObjectType::OvitoObjectType(const QString& name, const OvitoObjectType* sup
 }
 
 /******************************************************************************
-* Creates an object of the appropriate kind.
+* Creates an instance of this object class.
 * Throws an exception if the containing plugin failed to load.
 ******************************************************************************/
 OORef<OvitoObject> OvitoObjectType::createInstance(DataSet* dataset) const
@@ -62,6 +63,9 @@ OORef<OvitoObject> OvitoObjectType::createInstance(DataSet* dataset) const
 	}
 	if(isAbstract())
 		throw Exception(Plugin::tr("Cannot instantiate abstract class '%1'.").arg(name()));
+
+	OVITO_ASSERT_MSG(!isDerivedFrom(RefTarget::OOType) || dataset != nullptr || *this == DataSet::OOType, "OvitoObjectType::createInstance()", "Tried to create instance of RefTarget derived class without passing a DatSet.");
+	OVITO_ASSERT_MSG(isDerivedFrom(RefTarget::OOType) || dataset == nullptr, "OvitoObjectType::createInstance()", "Passed a DatSet to the constructor of a class that is not derived from RefTarget.");
 
 	return createInstanceImpl(dataset);
 }

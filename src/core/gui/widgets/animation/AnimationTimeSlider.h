@@ -60,11 +60,8 @@ protected:
 	
 protected Q_SLOTS:
 
-	/// This is called when a new dataset has been loaded.
-	void onDataSetChanged(DataSet* newDataSet);
-
 	/// This is called when new animation settings have been loaded.
-	void onAnimationSettingsChanged(AnimationSettings* newAnimationSettings);
+	void onAnimationSettingsReplaced(AnimationSettings* newAnimationSettings);
 
 	/// Is called whenever the Auto Key mode is activated or deactivated.
 	void onAutoKeyModeChanged(bool active);
@@ -92,7 +89,6 @@ private:
 	/// The current animation settings object.
 	OORef<AnimationSettings> _animSettings;
 
-	QMetaObject::Connection _animationSettingsChangedConnection;
 	QMetaObject::Connection _autoKeyModeChangedConnection;
 	QMetaObject::Connection _animIntervalChangedConnection;
 	QMetaObject::Connection _timeFormatChangedConnection;

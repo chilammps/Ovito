@@ -55,20 +55,20 @@ RenderCommandPage::RenderCommandPage(MainWindow* mainWindow, QWidget* parent) : 
 ******************************************************************************/
 void RenderCommandPage::onDataSetChanged(DataSet* newDataSet)
 {
-	disconnect(_renderSettingsChangedConnection);
+	disconnect(_renderSettingsReplacedConnection);
 	if(newDataSet) {
-		_renderSettingsChangedConnection = connect(newDataSet, &DataSet::renderSettingsChanged, this, &RenderCommandPage::onRenderSettingsChanged);
-		onRenderSettingsChanged(newDataSet->renderSettings());
+		_renderSettingsReplacedConnection = connect(newDataSet, &DataSet::renderSettingsReplaced, this, &RenderCommandPage::onRenderSettingsReplaced);
+		onRenderSettingsReplaced(newDataSet->renderSettings());
 	}
 	else {
-		onRenderSettingsChanged(nullptr);
+		onRenderSettingsReplaced(nullptr);
 	}
 }
 
 /******************************************************************************
 * This is called when new render settings have been loaded.
 ******************************************************************************/
-void RenderCommandPage::onRenderSettingsChanged(RenderSettings* newRenderSettings)
+void RenderCommandPage::onRenderSettingsReplaced(RenderSettings* newRenderSettings)
 {
 	propertiesPanel->setEditObject(newRenderSettings);
 }

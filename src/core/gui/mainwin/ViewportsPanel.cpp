@@ -36,32 +36,14 @@ namespace Ovito {
 ViewportsPanel::ViewportsPanel(MainWindow* parent) : QWidget(parent)
 {
 	// Activate the new viewport layout as soon as a new scene file is loaded.
-	connect(&parent->datasetContainer(), &DataSetContainer::dataSetChanged, this, &ViewportsPanel::onDataSetChanged);
-}
-
-/******************************************************************************
-* This is called when a new dataset has been loaded.
-******************************************************************************/
-void ViewportsPanel::onDataSetChanged(DataSet* newDataSet)
-{
-	disconnect(_viewportConfigurationChangedConnection);
-	disconnect(_animationSettingsChangedConnection);
-	if(newDataSet) {
-		_viewportConfigurationChangedConnection = connect(newDataSet, &DataSet::viewportConfigChanged, this, &ViewportsPanel::onViewportConfigurationChanged);
-		_animationSettingsChangedConnection = connect(newDataSet, &DataSet::animationSettingsChanged, this, &ViewportsPanel::onAnimationSettingsChanged);
-		onViewportConfigurationChanged(newDataSet->viewportConfig());
-		onAnimationSettingsChanged(newDataSet->animationSettings());
-	}
-	else {
-		onViewportConfigurationChanged(nullptr);
-		onAnimationSettingsChanged(nullptr);
-	}
+	connect(&parent->datasetContainer(), &DataSetContainer::viewportConfigReplaced, this, &ViewportsPanel::onViewportConfigurationReplaced);
+	connect(&parent->datasetContainer(), &DataSetContainer::animationSettingsReplaced, this, &ViewportsPanel::onAnimationSettingsReplaced);
 }
 
 /******************************************************************************
 * This is called when a new viewport configuration has been loaded.
 ******************************************************************************/
-void ViewportsPanel::onViewportConfigurationChanged(ViewportConfiguration* newViewportConfiguration)
+void ViewportsPanel::onViewportConfigurationReplaced(ViewportConfiguration* newViewportConfiguration)
 {
 	disconnect(_activeViewportChangedConnection);
 	disconnect(_maximizedViewportChangedConnection);
@@ -94,7 +76,7 @@ void ViewportsPanel::onViewportConfigurationChanged(ViewportConfiguration* newVi
 /******************************************************************************
 * This is called when new animation settings have been loaded.
 ******************************************************************************/
-void ViewportsPanel::onAnimationSettingsChanged(AnimationSettings* newAnimationSettings)
+void ViewportsPanel::onAnimationSettingsReplaced(AnimationSettings* newAnimationSettings)
 {
 	disconnect(_autoKeyModeChangedConnection);
 	_animSettings = newAnimationSettings;

@@ -21,9 +21,11 @@
 
 #include <plugins/crystalanalysis/CrystalAnalysis.h>
 #include <core/dataset/UndoStack.h>
+#include <core/gui/actions/ViewportModeAction.h>
+#include <core/animation/AnimationSettings.h>
 #include <core/gui/app/Application.h>
 #include <core/viewport/Viewport.h>
-#include <core/viewport/ViewportManager.h>
+#include <core/viewport/ViewportConfiguration.h>
 #include <core/rendering/viewport/ViewportSceneRenderer.h>
 #include "DislocationInspector.h"
 #include "DislocationSegment.h"
@@ -33,7 +35,6 @@
 namespace CrystalAnalysis {
 
 IMPLEMENT_OVITO_OBJECT(CrystalAnalysis, DislocationInspector, PropertiesEditor);
-IMPLEMENT_OVITO_OBJECT(CrystalAnalysis, DislocationPickMode, ViewportInputMode);
 DEFINE_FLAGS_REFERENCE_FIELD(DislocationInspector, _sceneNode, "SceneNode", ObjectNode, PROPERTY_FIELD_NO_UNDO);
 
 /// List of column indices used by the table.
@@ -63,8 +64,8 @@ void DislocationInspector::createUI(const RolloutInsertionParameters& rolloutPar
 	toolbar->setToolButtonStyle(Qt::ToolButtonTextOnly);
 	toolbar->addAction(tr("Hide unselected"), this, SLOT(onHideUnselected()));
 	toolbar->addAction(tr("Show all"), this, SLOT(onShowAll()));
-	_pickDislocationHandler = new DislocationPickMode(this);
-	_pickDislocationAction = new ViewportModeAction(tr("Pick dislocation"), this, _pickDislocationHandler);
+	_pickDislocationMode = new DislocationPickMode(this);
+	_pickDislocationAction = new ViewportModeAction(mainWindow(), tr("Pick dislocation"), this, _pickDislocationMode);
 	toolbar->addAction(_pickDislocationAction);
 	for(QToolButton* button : toolbar->findChildren<QToolButton*>())
 		button->setAutoRaise(false);
@@ -105,7 +106,7 @@ void DislocationInspector::createUI(const RolloutInsertionParameters& rolloutPar
 					DislocationInspector* inspector = static_object_cast<DislocationInspector>(editor());
 					if(!inspector->_sceneNode)
 						return tr("N/A");
-					const PipelineFlowState& state = inspector->_sceneNode->evalPipeline(AnimManager::instance().time());
+					const PipelineFlowState& state = inspector->_sceneNode->evalPipeline(dataset()->animationSettings()->time());
 					DislocationNetwork* dislocations = state.findObject<DislocationNetwork>();
 					if(!dislocations || dislocations->segments().size() != _model->rowCount())
 						return tr("N/A");
@@ -134,14 +135,14 @@ void DislocationInspector::createUI(const RolloutInsertionParameters& rolloutPar
 				DislocationSegment* segment = data.segment;
 				OVITO_ASSERT(segment == target);
 				if(data.cluster) {
-					UndoableTransaction::handleExceptions(tr("Change dislocation cluster"), [segment, &data]() {
+					editor()->undoableTransaction(tr("Change dislocation cluster"), [segment, &data]() {
 						segment->setBurgersVector(data.transitionTM * segment->burgersVector(), data.cluster);
 					});
 				}
 				return true;
 			}
 			else if(index.isValid() && index.column() == VISIBLE_COLUMN) {
-				UndoableTransaction::handleExceptions(tr("Show/hide dislocation segment"), [&value, target]() {
+				editor()->undoableTransaction(tr("Show/hide dislocation segment"), [&value, target]() {
 					static_object_cast<DislocationSegment>(target)->setVisible(value.value<int>() == Qt::Checked);
 				});
 				return true;
@@ -219,6 +220,11 @@ bool DislocationInspector::referenceEvent(RefTarget* source, ReferenceEvent* eve
 		Application::instance().runOnceLater(this, [this]() {
 			_dislocationListUI->updateColumns(LENGTH_COLUMN, LENGTH_COLUMN);
 		});
+	}
+	else if(source == _sceneNode && event->type() == ReferenceEvent::TargetDeleted) {
+		setEditObject(nullptr);
+		// Close inspector when scene node is being deleted.
+		deleteLater();
 	}
 	return PropertiesEditor::referenceEvent(source, event);
 }
@@ -371,7 +377,7 @@ void DislocationPickMode::mouseMoveEvent(Viewport* vp, QMouseEvent* event)
 	pickDislocationSegment(vp, event->pos(), pickResult);
 	if(pickResult.segment || _hoverSegment.segment) {
 		_hoverSegment = pickResult;
-		ViewportManager::instance().updateViewports();
+		vp->dataset()->viewportConfig()->updateViewports();
 	}
 	ViewportInputMode::mouseMoveEvent(vp, event);
 }
@@ -389,12 +395,12 @@ void DislocationPickMode::renderOverlay3D(Viewport* vp, ViewportSceneRenderer* r
 	if(!renderer->isInteractive() || renderer->isPicking())
 		return;
 
-	const PipelineFlowState& flowState = _hoverSegment.objNode->evalPipeline(AnimManager::instance().time());
+	const PipelineFlowState& flowState = _hoverSegment.objNode->evalPipeline(vp->dataset()->animationSettings()->time());
 	DislocationNetwork* dislocationObj = flowState.findObject<DislocationNetwork>();
 	if(!dislocationObj)
 		return;
 
-	_hoverSegment.displayObj->renderOverlayMarker(AnimManager::instance().time(), dislocationObj, flowState, _hoverSegment.segmentIndex, renderer, _hoverSegment.objNode.get());
+	_hoverSegment.displayObj->renderOverlayMarker(vp->dataset()->animationSettings()->time(), dislocationObj, flowState, _hoverSegment.segmentIndex, renderer, _hoverSegment.objNode.get());
 
 	// Render Burgers vector next to the mouse cursor.
 	OORef<TextGeometryBuffer> textBuffer = renderer->createTextGeometryBuffer();

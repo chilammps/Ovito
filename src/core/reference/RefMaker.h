@@ -59,8 +59,7 @@ class OVITO_CORE_EXPORT RefMaker : public OvitoObject
 protected:
 
 	/// \brief Constructor.
-	/// \param dataset The dataset this object will belong to.
-	RefMaker(DataSet* dataset) : _dataset(dataset) {}
+	RefMaker(DataSet* dataset = nullptr) : _dataset(dataset) {}
 
 	/////////////////////////////// Reference field events ///////////////////////////////////
 
@@ -281,17 +280,18 @@ public:
 	///////////////////////////// DataSet access ///////////////////////////////
 
 	/// \brief Returns the dataset this object belongs to.
-	DataSet* dataset() const { return _dataset; }
+	DataSet* dataset() const {
+		OVITO_ASSERT_MSG(_dataset != nullptr, "RefMaker::dataset()", "Tried to access non-existing parent dataset of RefMaker.");
+		return _dataset;
+	}
 
 	/// \brief Changes the dataset this object belongs to.
 	void setDataset(DataSet* dataset) { _dataset = dataset; }
 
-	///////////////////////////// from OvitoObject ///////////////////////////////
+protected:
 
-	/// \brief Deletes this object.
-	///
-	/// This implementation releases all references held by this RefMaker before deleting the object.
-	virtual void autoDeleteObject() override;
+	/// This method is called when the reference counter of this object has reached zero.
+	virtual void deleteThis() override;
 
 private:
 

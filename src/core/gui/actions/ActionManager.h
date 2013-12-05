@@ -174,7 +174,7 @@ private Q_SLOTS:
 	void onDataSetChanged(DataSet* newDataSet);
 
 	/// This is called when new animation settings have been loaded.
-	void onAnimationSettingsChanged(AnimationSettings* newAnimationSettings);
+	void onAnimationSettingsReplaced(AnimationSettings* newAnimationSettings);
 
 	/// This is called when the active animation interval has changed.
 	void onAnimationIntervalChanged(TimeInterval newAnimationInterval);
@@ -207,8 +207,6 @@ private Q_SLOTS:
 
 private:
 
-	QMetaObject::Connection _viewportConfigurationChangedConnection;
-	QMetaObject::Connection _animationSettingsChangedConnection;
 	QMetaObject::Connection _canUndoChangedConnection;
 	QMetaObject::Connection _canRedoChangedConnection;
 	QMetaObject::Connection _undoTextChangedConnection;

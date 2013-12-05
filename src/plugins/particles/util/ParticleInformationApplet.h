@@ -71,7 +71,7 @@ class OVITO_PARTICLES_EXPORT ParticleInformationApplet : public UtilityApplet
 public:
 
 	/// Constructor.
-	Q_INVOKABLE ParticleInformationApplet(DataSet* dataset) : UtilityApplet(dataset), _panel(nullptr) {}
+	Q_INVOKABLE ParticleInformationApplet() : UtilityApplet(), _panel(nullptr) {}
 
 	/// Shows the UI of the utility in the given RolloutContainer.
 	virtual void openUtility(MainWindow* mainWindow, RolloutContainer* container, const RolloutInsertionParameters& rolloutParams = RolloutInsertionParameters()) override;
@@ -81,16 +81,22 @@ public:
 
 public Q_SLOTS:
 
+	/// This is called when new animation settings have been loaded.
+	void onAnimationSettingsReplaced(AnimationSettings* newAnimationSettings);
+
 	/// Updates the display of particle properties.
 	void updateInformationDisplay();
 
 private:
 
+	MainWindow* _mainWindow;
 	QTextEdit* _infoDisplay;
 	QWidget* _panel;
 
 	/// The viewport input mode.
 	ParticleInformationInputMode* _inputMode;
+
+	QMetaObject::Connection _timeChangeCompleteConnection;
 
 	Q_CLASSINFO("DisplayName", "Inspect particles");
 

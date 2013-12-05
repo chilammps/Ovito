@@ -59,9 +59,9 @@ AdjustCameraDialog::AdjustCameraDialog(Viewport* viewport, QWidget* parent) :
 	_camPosXSpinner = new SpinnerWidget();
 	_camPosYSpinner = new SpinnerWidget();
 	_camPosZSpinner = new SpinnerWidget();
-	_camPosXSpinner->setUnit(UnitsManager::instance().worldUnit());
-	_camPosYSpinner->setUnit(UnitsManager::instance().worldUnit());
-	_camPosZSpinner->setUnit(UnitsManager::instance().worldUnit());
+	_camPosXSpinner->setUnit(viewport->dataset()->unitsManager().worldUnit());
+	_camPosYSpinner->setUnit(viewport->dataset()->unitsManager().worldUnit());
+	_camPosZSpinner->setUnit(viewport->dataset()->unitsManager().worldUnit());
 
 	fieldLayout = new QHBoxLayout();
 	fieldLayout->setContentsMargins(0,0,0,0);
@@ -98,9 +98,9 @@ AdjustCameraDialog::AdjustCameraDialog(Viewport* viewport, QWidget* parent) :
 	_camDirXSpinner = new SpinnerWidget();
 	_camDirYSpinner = new SpinnerWidget();
 	_camDirZSpinner = new SpinnerWidget();
-	_camDirXSpinner->setUnit(UnitsManager::instance().worldUnit());
-	_camDirYSpinner->setUnit(UnitsManager::instance().worldUnit());
-	_camDirZSpinner->setUnit(UnitsManager::instance().worldUnit());
+	_camDirXSpinner->setUnit(viewport->dataset()->unitsManager().worldUnit());
+	_camDirYSpinner->setUnit(viewport->dataset()->unitsManager().worldUnit());
+	_camDirZSpinner->setUnit(viewport->dataset()->unitsManager().worldUnit());
 
 	fieldLayout = new QHBoxLayout();
 	fieldLayout->setContentsMargins(0,0,0,0);
@@ -173,12 +173,12 @@ void AdjustCameraDialog::updateGUI()
 	_camDirZSpinner->setFloatValue(cameraDir.z());
 
 	if(_viewport->isPerspectiveProjection()) {
-		_camFOVSpinner->setUnit(UnitsManager::instance().angleUnit());
+		_camFOVSpinner->setUnit(_viewport->dataset()->unitsManager().angleUnit());
 		_camFOVLabel->setText(tr("View angle:"));
 		_camFOVSpinner->setMaxValue(FLOATTYPE_PI - 1e-2);
 	}
 	else {
-		_camFOVSpinner->setUnit(UnitsManager::instance().worldUnit());
+		_camFOVSpinner->setUnit(_viewport->dataset()->unitsManager().worldUnit());
 		_camFOVLabel->setText(tr("Field of view:"));
 		_camFOVSpinner->setMaxValue(FLOATTYPE_MAX);
 	}

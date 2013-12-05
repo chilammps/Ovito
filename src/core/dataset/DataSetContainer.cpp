@@ -26,6 +26,9 @@
 #include <core/dataset/UndoStack.h>
 #include <core/animation/AnimationSettings.h>
 #include <core/scene/SceneRoot.h>
+#include <core/scene/SelectionSet.h>
+#include <core/viewport/ViewportConfiguration.h>
+#include <core/rendering/RenderSettings.h>
 #include <core/gui/app/Application.h>
 #include <core/gui/mainwin/MainWindow.h>
 #include <core/utilities/io/ObjectSaveStream.h>
@@ -36,7 +39,6 @@ namespace Ovito {
 
 IMPLEMENT_OVITO_OBJECT(Core, DataSetContainer, RefMaker)
 DEFINE_FLAGS_REFERENCE_FIELD(DataSetContainer, _currentSet, "CurrentSet", DataSet, PROPERTY_FIELD_NO_UNDO)
-DEFINE_FLAGS_REFERENCE_FIELD(DataSetContainer, _selectionSetProxy, "SelectionSetProxy", CurrentSelectionProxy, PROPERTY_FIELD_NO_UNDO)
 
 /******************************************************************************
 * Initializes the dataset manager.
@@ -45,12 +47,6 @@ DataSetContainer::DataSetContainer(MainWindow* mainWindow) : RefMaker(nullptr),
 	_mainWindow(mainWindow), _taskManager(mainWindow)
 {
 	INIT_PROPERTY_FIELD(DataSetContainer::_currentSet);
-	INIT_PROPERTY_FIELD(DataSetContainer::_selectionSetProxy);
-
-	// Create internal selection proxy object.
-	_selectionSetProxy = new CurrentSelectionProxy();
-	connect(_selectionSetProxy, SIGNAL(selectionChanged(SelectionSet*)), this, SIGNAL(selectionChanged(SelectionSet*)));
-	connect(_selectionSetProxy, SIGNAL(selectionChangeComplete(SelectionSet*)), this, SIGNAL(selectionChangeComplete(SelectionSet*)));
 }
 
 /******************************************************************************
@@ -62,13 +58,49 @@ void DataSetContainer::referenceReplaced(const PropertyFieldDescriptor& field, R
 		if(oldTarget)
 			static_object_cast<DataSet>(oldTarget)->animationSettings()->stopAnimationPlayback();
 
-		// Update proxy selection set to track the selection of the new current dataset.
-		if(_selectionSetProxy)
-			_selectionSetProxy->setCurrentSelectionSet(currentSet() ? currentSet()->selection() : nullptr);
+		// Forward signals from the current dataset.
+		disconnect(_selectionSetReplacedConnection);
+		disconnect(_viewportConfigReplacedConnection);
+		disconnect(_animationSettingsReplacedConnection);
+		disconnect(_renderSettingsReplacedConnection);
+		if(currentSet()) {
+			_selectionSetReplacedConnection = connect(currentSet(), &DataSet::selectionSetReplaced, this, &DataSetContainer::onSelectionSetReplaced);
+			_viewportConfigReplacedConnection = connect(currentSet(), &DataSet::viewportConfigReplaced, this, &DataSetContainer::viewportConfigReplaced);
+			_animationSettingsReplacedConnection = connect(currentSet(), &DataSet::animationSettingsReplaced, this, &DataSetContainer::animationSettingsReplaced);
+			_renderSettingsReplacedConnection = connect(currentSet(), &DataSet::renderSettingsReplaced, this, &DataSetContainer::renderSettingsReplaced);
+			onSelectionSetReplaced(currentSet()->selection());
+			Q_EMIT viewportConfigReplaced(currentSet()->viewportConfig());
+			Q_EMIT animationSettingsReplaced(currentSet()->animationSettings());
+			Q_EMIT renderSettingsReplaced(currentSet()->renderSettings());
+		}
+		else {
+			onSelectionSetReplaced(nullptr);
+			Q_EMIT viewportConfigReplaced(nullptr);
+			Q_EMIT animationSettingsReplaced(nullptr);
+			Q_EMIT renderSettingsReplaced(nullptr);
+		}
 
 		Q_EMIT dataSetChanged(currentSet());
 	}
 	RefMaker::referenceReplaced(field, oldTarget, newTarget);
+}
+
+/******************************************************************************
+* This handler is invoked when the current selection set of the current dataset
+* has been replaced.
+******************************************************************************/
+void DataSetContainer::onSelectionSetReplaced(SelectionSet* newSelectionSet)
+{
+	// Forward signals from the current selection set.
+	disconnect(_selectionSetChangedConnection);
+	disconnect(_selectionSetChangeCompleteConnection);
+	if(newSelectionSet) {
+		_selectionSetChangedConnection = connect(newSelectionSet, &SelectionSet::selectionChanged, this, &DataSetContainer::selectionChanged);
+		_selectionSetChangeCompleteConnection = connect(newSelectionSet, &SelectionSet::selectionChangeComplete, this, &DataSetContainer::selectionChangeComplete);
+	}
+	Q_EMIT selectionSetReplaced(newSelectionSet);
+	Q_EMIT selectionChanged(newSelectionSet);
+	Q_EMIT selectionChangeComplete(newSelectionSet);
 }
 
 /******************************************************************************

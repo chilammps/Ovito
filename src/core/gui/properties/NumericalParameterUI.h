@@ -39,10 +39,10 @@ class OVITO_CORE_EXPORT NumericalParameterUI : public PropertyParameterUI
 public:
 
 	/// Constructor for a Qt property.
-	NumericalParameterUI(QObject* parentEditor, const char* propertyName, ParameterUnit* defaultParameterUnit, const QString& labelText = QString());
+	NumericalParameterUI(QObject* parentEditor, const char* propertyName, const QMetaObject* defaultParameterUnitType, const QString& labelText = QString());
 
 	/// Constructor for a PropertyField or ReferenceField property.
-	NumericalParameterUI(QObject* parentEditor, const PropertyFieldDescriptor& propField, ParameterUnit* defaultParameterUnit);
+	NumericalParameterUI(QObject* parentEditor, const PropertyFieldDescriptor& propField, const QMetaObject* defaultParameterUnitType);
 	
 	/// Destructor, that releases all GUI controls.
 	virtual ~NumericalParameterUI();
@@ -59,10 +59,9 @@ public:
 	/// Creates a QLayout that contains the text box and the spinner widget.
 	QLayout* createFieldLayout() const;
 
-	/// Returns the unit conversion service that is used to
-	/// display the parameter unit in the text box.
-	ParameterUnit* parameterUnit() const { return _parameterUnit; }
-	
+	/// Returns the type of unit conversion service, which is used to format the parameter value as a text string.
+	const QMetaObject* parameterUnitType() const { return _parameterUnitType; }
+
 	/// This method is called when a new editable object has been assigned to the properties owner this
 	/// parameter UI belongs to.  
 	virtual void resetUI() override;
@@ -120,8 +119,8 @@ protected:
 	/// The label of the UI component.
 	QPointer<QLabel> _label;
 
-	/// The unit conversion service to use for the displayed value.
-	ParameterUnit* _parameterUnit;
+	/// The type of unit conversion service, which is used to format the parameter value as a text string.
+	const QMetaObject* _parameterUnitType;
 
 private:
 

@@ -29,7 +29,8 @@ namespace Ovito {
 /******************************************************************************
 * Constructs the dialog window.
 ******************************************************************************/
-ImportRemoteFileDialog::ImportRemoteFileDialog(QWidget* parent, const QString& caption) : QDialog(parent)
+ImportRemoteFileDialog::ImportRemoteFileDialog(const QVector<FileImporterDescription*>& importerTypes, QWidget* parent, const QString& caption) : QDialog(parent),
+		_importerTypes(importerTypes)
 {
 	setWindowTitle(caption);
 
@@ -74,9 +75,8 @@ ImportRemoteFileDialog::ImportRemoteFileDialog(QWidget* parent, const QString& c
 	_formatSelector = new QComboBox(this);
 
 	_formatSelector->addItem(tr("<Auto-detect format>"));
-	for(const auto& descriptor : ImportExportManager::instance().fileImporters()) {
-		_formatSelector->addItem(descriptor.fileFilterDescription());
-	}
+	for(FileImporterDescription* descriptor : importerTypes)
+		_formatSelector->addItem(descriptor->fileFilterDescription());
 
 	layout1->addWidget(_formatSelector);
 	layout1->addSpacing(10);
@@ -138,15 +138,15 @@ QUrl ImportRemoteFileDialog::fileToImport() const
 }
 
 /******************************************************************************
-* Returns the selected importer or NULL if auto-detection is requested.
+* Returns the selected importer type or NULL if auto-detection is requested.
 ******************************************************************************/
-const FileImporterDescription* ImportRemoteFileDialog::selectedFileImporter() const
+const FileImporterDescription* ImportRemoteFileDialog::selectedFileImporterType() const
 {
 	int importFilterIndex = _formatSelector->currentIndex() - 1;
-	OVITO_ASSERT(importFilterIndex >= -1 && importFilterIndex < ImportExportManager::instance().fileImporters().size());
+	OVITO_ASSERT(importFilterIndex >= -1 && importFilterIndex < _importerTypes.size());
 
 	if(importFilterIndex >= 0)
-		return &ImportExportManager::instance().fileImporters()[importFilterIndex];
+		return _importerTypes[importFilterIndex];
 	else
 		return nullptr;
 }

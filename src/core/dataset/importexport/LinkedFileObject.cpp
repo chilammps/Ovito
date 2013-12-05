@@ -572,14 +572,14 @@ void LinkedFileObject::showFileSelectionDialog(QWidget* parent)
 		// Put code in a block: Need to release dialog before loading new input file.
 		{
 			// Let the user select a file.
-			ImportFileDialog dialog(parent, tr("Pick input file"));
+			ImportFileDialog dialog(ImportExportManager::instance().fileImporters(dataset()), parent, tr("Pick input file"));
 			if(sourceUrl().isLocalFile())
 				dialog.selectFile(sourceUrl().toLocalFile());
 			if(dialog.exec() != QDialog::Accepted)
 				return;
 
 			newSourceUrl = QUrl::fromLocalFile(dialog.fileToImport());
-			importerType = dialog.selectedFileImporter();
+			importerType = dialog.selectedFileImporterType();
 		}
 
 		// Set the new input location.
@@ -602,13 +602,13 @@ void LinkedFileObject::showURLSelectionDialog(QWidget* parent)
 		// Put code in a block: Need to release dialog before loading new input file.
 		{
 			// Let the user select a new URL.
-			ImportRemoteFileDialog dialog(parent, tr("Pick source"));
+			ImportRemoteFileDialog dialog(ImportExportManager::instance().fileImporters(dataset()), parent, tr("Pick source"));
 			dialog.selectFile(sourceUrl());
 			if(dialog.exec() != QDialog::Accepted)
 				return;
 
 			newSourceUrl = dialog.fileToImport();
-			importerType = dialog.selectedFileImporter();
+			importerType = dialog.selectedFileImporterType();
 		}
 
 		// Set the new input location.
