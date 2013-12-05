@@ -47,8 +47,9 @@ SET_PROPERTY_FIELD_LABEL(ShowPeriodicImagesModifier, _adjustBoxSize, "Adjust sim
 /******************************************************************************
 * Constructs the modifier object.
 ******************************************************************************/
-ShowPeriodicImagesModifier::ShowPeriodicImagesModifier() :
-	_showImageX(false), _showImageY(false), _showImageZ(false), _numImagesX(3), _numImagesY(3), _numImagesZ(3), _adjustBoxSize(false)
+ShowPeriodicImagesModifier::ShowPeriodicImagesModifier(DataSet* dataset) : ParticleModifier(dataset),
+	_showImageX(false), _showImageY(false), _showImageZ(false),
+	_numImagesX(3), _numImagesY(3), _numImagesZ(3), _adjustBoxSize(false)
 {
 	INIT_PROPERTY_FIELD(ShowPeriodicImagesModifier::_showImageX);
 	INIT_PROPERTY_FIELD(ShowPeriodicImagesModifier::_showImageY);

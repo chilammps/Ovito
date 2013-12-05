@@ -50,7 +50,7 @@ PipelineObject::PipelineObject(DataSet* dataset) : SceneObject(dataset), _cacheI
 ******************************************************************************/
 PipelineFlowState PipelineObject::evaluatePipeline(TimePoint time, ModifierApplication* upToHere, bool including)
 {
-	UndoSuspender undoSuspender(dataSet()->undoStack());	// Do not create undo records while evaluating the pipeline.
+	UndoSuspender undoSuspender(dataset()->undoStack());	// Do not create undo records while evaluating the pipeline.
 
 	if(!inputObject())
 		return PipelineFlowState();	// Cannot evaluate pipeline if there is no input.
@@ -176,9 +176,10 @@ PipelineFlowState PipelineObject::evaluatePipeline(TimePoint time, ModifierAppli
 ModifierApplication* PipelineObject::insertModifier(Modifier* modifier, int atIndex)
 {
 	OVITO_CHECK_OBJECT_POINTER(modifier);
+	OVITO_ASSERT(modifier->dataset() == this->dataset());
 
 	// Create a modifier application object.
-	OORef<ModifierApplication> modApp(new ModifierApplication(dataSet(), modifier));
+	OORef<ModifierApplication> modApp(new ModifierApplication(dataset(), modifier));
 	insertModifierApplication(modApp.get(), atIndex);
 	return modApp.get();
 }

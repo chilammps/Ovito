@@ -34,7 +34,7 @@ SET_PROPERTY_FIELD_LABEL(ClusterGraph, _clusters, "Clusters")
 /******************************************************************************
 * Constructs a cluster graph object.
 ******************************************************************************/
-ClusterGraph::ClusterGraph()
+ClusterGraph::ClusterGraph(DataSet* dataset) : SceneObject(dataset)
 {
 	INIT_PROPERTY_FIELD(ClusterGraph::_clusters);
 }

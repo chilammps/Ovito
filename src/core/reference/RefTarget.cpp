@@ -129,7 +129,7 @@ bool RefTarget::isReferencedBy(const RefMaker* obj) const
 OORef<RefTarget> RefTarget::clone(bool deepCopy, CloneHelper& cloneHelper)
 {
 	// Create a new instance of the object's class.
-	OORef<RefTarget> clone = static_object_cast<RefTarget>(getOOType().createInstance(dataSet()));
+	OORef<RefTarget> clone = static_object_cast<RefTarget>(getOOType().createInstance(dataset()));
 	if(!clone || !clone->getOOType().isDerivedFrom(getOOType()))
 		throw Exception(tr("Failed to create clone instance of class %1.").arg(getOOType().name()));
 
@@ -205,7 +205,7 @@ OORef<PropertiesEditor> RefTarget::createPropertiesEditor()
 			if(editorClass) {
 				if(!editorClass->isDerivedFrom(PropertiesEditor::OOType))
 					throw Exception(tr("The editor class %1 assigned to the RefTarget-derived class %2 is not derived from PropertiesEditor.").arg(editorClass->name(), clazz->name()));
-				return dynamic_object_cast<PropertiesEditor>(editorClass->createInstance(dataSet()));
+				return dynamic_object_cast<PropertiesEditor>(editorClass->createInstance(dataset()));
 			}
 		}
 	}

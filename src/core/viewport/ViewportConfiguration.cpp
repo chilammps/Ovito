@@ -141,7 +141,7 @@ void ViewportConfiguration::resumeViewportUpdates()
 ViewportSceneRenderer* ViewportConfiguration::viewportRenderer()
 {
 	if(!_viewportRenderer)
-		_viewportRenderer = new ViewportSceneRenderer(dataSet());
+		_viewportRenderer = new ViewportSceneRenderer(dataset());
 	return _viewportRenderer.get();
 }
 
@@ -153,13 +153,13 @@ Point3 ViewportConfiguration::orbitCenter()
 	// Update orbiting center.
 	if(orbitCenterMode() == ORBIT_SELECTION_CENTER) {
 		Box3 selectionBoundingBox;
-		for(SceneNode* node : dataSet()->selection()->nodes()) {
-			selectionBoundingBox.addBox(node->worldBoundingBox(dataSet()->animationSettings()->time()));
+		for(SceneNode* node : dataset()->selection()->nodes()) {
+			selectionBoundingBox.addBox(node->worldBoundingBox(dataset()->animationSettings()->time()));
 		}
 		if(!selectionBoundingBox.isEmpty())
 			return selectionBoundingBox.center();
 		else {
-			Box3 sceneBoundingBox = dataSet()->sceneRoot()->worldBoundingBox(dataSet()->animationSettings()->time());
+			Box3 sceneBoundingBox = dataset()->sceneRoot()->worldBoundingBox(dataset()->animationSettings()->time());
 			if(!sceneBoundingBox.isEmpty())
 				return sceneBoundingBox.center();
 		}

@@ -23,11 +23,11 @@
 #include <core/utilities/io/FileManager.h>
 #include <core/utilities/concurrent/Future.h>
 #include <core/utilities/concurrent/Task.h>
-#include <core/utilities/concurrent/ProgressManager.h>
+#include <core/dataset/DataSetContainer.h>
 #include <core/dataset/importexport/LinkedFileObject.h>
+#include <core/gui/mainwin/MainWindow.h>
 #include <core/gui/properties/BooleanParameterUI.h>
 #include <core/gui/properties/BooleanRadioButtonParameterUI.h>
-
 #include <plugins/particles/importer/InputColumnMappingDialog.h>
 #include "LAMMPSTextDumpImporter.h"
 
@@ -434,8 +434,10 @@ void LAMMPSTextDumpImporter::showEditColumnMappingDialog(QWidget* parent)
 
 	// Start task that inspects the file header to determine the number of data columns.
 	std::unique_ptr<LAMMPSTextDumpImportTask> inspectionTask(new LAMMPSTextDumpImportTask(obj->frames().front()));
-	Future<void> future = runInBackground<void>(std::bind(&LAMMPSTextDumpImportTask::load, inspectionTask.get(), std::placeholders::_1));
-	if(!ProgressManager::instance().waitForTask(future))
+	DataSetContainer& datasetContainer = *dataset()->container();
+	Future<void> future = datasetContainer.taskManager().runInBackground<void>(std::bind(&LAMMPSTextDumpImportTask::load,
+			inspectionTask.get(), std::ref(datasetContainer), std::placeholders::_1));
+	if(!datasetContainer.taskManager().waitForTask(future))
 		return;
 
 	try {
@@ -508,10 +510,8 @@ void LAMMPSTextDumpImporterEditor::createUI(const RolloutInsertionParameters& ro
 ******************************************************************************/
 void LAMMPSTextDumpImporterEditor::onEditColumnMapping()
 {
-	LAMMPSTextDumpImporter* importer = static_object_cast<LAMMPSTextDumpImporter>(editObject());
-	if(importer) {
-		importer->showEditColumnMappingDialog();
-	}
+	if(LAMMPSTextDumpImporter* importer = static_object_cast<LAMMPSTextDumpImporter>(editObject()))
+		importer->showEditColumnMappingDialog(mainWindow());
 }
 
 };

@@ -85,7 +85,7 @@ void IntegerRadioButtonParameterUI::resetUI()
 		// Update the displayed value when the animation time has changed.
 		disconnect(_animationTimeChangedConnection);
 		if(editObject())
-			_animationTimeChangedConnection = connect(dataSet()->animationSettings(), &AnimationSettings::timeChanged, this, &IntegerRadioButtonParameterUI::updateUI);
+			_animationTimeChangedConnection = connect(dataset()->animationSettings(), &AnimationSettings::timeChanged, this, &IntegerRadioButtonParameterUI::updateUI);
 	}
 }
 
@@ -156,10 +156,9 @@ void IntegerRadioButtonParameterUI::updatePropertyValue()
 	if(buttonGroup() && editObject()) {
 		int id = buttonGroup()->checkedId();
 		if(id != -1) {
-			UndoableTransaction::handleExceptions(dataSet()->undoStack(), tr("Change parameter"), [this, id]() {
+			undoableTransaction(tr("Change parameter"), [this, id]() {
 				if(isReferenceFieldUI()) {
-					IntegerController* ctrl = dynamic_object_cast<IntegerController>(parameterObject());
-					if(ctrl) {
+					if(IntegerController* ctrl = dynamic_object_cast<IntegerController>(parameterObject())) {
 						ctrl->setCurrentValue(id);
 						updateUI();
 					}

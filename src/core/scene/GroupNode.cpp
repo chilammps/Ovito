@@ -62,7 +62,7 @@ void GroupNode::referenceRemoved(const PropertyFieldDescriptor& field, RefTarget
 {
 	SceneNode::referenceRemoved(field, oldTarget, listIndex);
 	// Delete this group node if all child nodes have been removed from it.
-	if(children().empty() && !dataSet()->undoStack().isUndoingOrRedoing()) {
+	if(children().empty() && !dataset()->undoStack().isUndoingOrRedoing()) {
 		deleteNode();
 	}
 }

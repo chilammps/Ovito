@@ -52,7 +52,7 @@ SET_PROPERTY_FIELD_UNITS(BondsDisplay, _bondWidth, WorldParameterUnit)
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-BondsDisplay::BondsDisplay() :
+BondsDisplay::BondsDisplay(DataSet* dataset) : DisplayObject(dataset),
 	_bondWidth(0.4), _bondColor(0.6, 0.6, 0.6), _useParticleColors(true),
 	_shadingMode(ArrowGeometryBuffer::NormalShading),
 	_renderingQuality(ArrowGeometryBuffer::HighQuality)

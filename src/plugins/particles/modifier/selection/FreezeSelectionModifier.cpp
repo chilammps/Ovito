@@ -20,7 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <plugins/particles/Particles.h>
-#include <core/dataset/UndoStack.h>
+#include <core/animation/AnimationSettings.h>
 #include <core/scene/pipeline/PipelineObject.h>
 #include <plugins/particles/data/ParticleSelectionSet.h>
 #include "FreezeSelectionModifier.h"
@@ -56,7 +56,7 @@ void FreezeSelectionModifier::initializeModifier(PipelineObject* pipeline, Modif
 
 	// Take a snapshot of the existing selection state at the time the modifier is created.
 	if(dynamic_object_cast<ParticleSelectionSet>(modApp->modifierData()) == nullptr) {
-		PipelineFlowState input = pipeline->evaluatePipeline(AnimManager::instance().time(), modApp, false);
+		PipelineFlowState input = pipeline->evaluatePipeline(dataset()->animationSettings()->time(), modApp, false);
 		takeSelectionSnapshot(modApp, input);
 	}
 }
@@ -68,7 +68,7 @@ void FreezeSelectionModifier::takeSelectionSnapshot(ModifierApplication* modApp,
 {
 	OORef<ParticleSelectionSet> selectionSet = dynamic_object_cast<ParticleSelectionSet>(modApp->modifierData());
 	if(!selectionSet) {
-		selectionSet = new ParticleSelectionSet();
+		selectionSet = new ParticleSelectionSet(dataset());
 		modApp->setModifierData(selectionSet.get());
 	}
 	selectionSet->resetSelection(state);
@@ -103,7 +103,7 @@ void FreezeSelectionModifierEditor::takeSelectionSnapshot()
 	FreezeSelectionModifier* mod = static_object_cast<FreezeSelectionModifier>(editObject());
 	if(!mod) return;
 
-	UndoableTransaction::handleExceptions(tr("Take selection snapshot"), [mod]() {
+	undoableTransaction(tr("Take selection snapshot"), [mod]() {
 		for(const auto& modInput : mod->getModifierInputs())
 			mod->takeSelectionSnapshot(modInput.first, modInput.second);
 	});

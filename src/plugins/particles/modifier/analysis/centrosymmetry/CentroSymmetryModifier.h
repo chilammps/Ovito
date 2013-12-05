@@ -44,8 +44,8 @@ class OVITO_PARTICLES_EXPORT CentroSymmetryModifier : public AsynchronousParticl
 {
 public:
 
-	/// Default constructor.
-	Q_INVOKABLE CentroSymmetryModifier();
+	/// Constructor.
+	Q_INVOKABLE CentroSymmetryModifier(DataSet* dataset);
 
 	/// Returns the computed per-particle CSP values.
 	const ParticleProperty& cspValues() const { OVITO_CHECK_POINTER(_cspValues.constData()); return *_cspValues; }

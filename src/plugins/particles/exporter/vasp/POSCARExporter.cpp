@@ -33,9 +33,9 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, POSCARExporter, ParticleExporter)
 /******************************************************************************
 * Opens the export settings dialog for this exporter service.
 ******************************************************************************/
-bool POSCARExporter::showSettingsDialog(DataSet* dataset, const PipelineFlowState& state, QWidget* parent)
+bool POSCARExporter::showSettingsDialog(const PipelineFlowState& state, QWidget* parent)
 {
-	ParticleExporterSettingsDialog dialog(parent, this, dataset, state);
+	ParticleExporterSettingsDialog dialog(parent, this, state);
 	return (dialog.exec() == QDialog::Accepted);
 }
 

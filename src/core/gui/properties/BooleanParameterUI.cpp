@@ -80,7 +80,7 @@ void BooleanParameterUI::resetUI()
 		// Update the displayed value when the animation time has changed.
 		disconnect(_animationTimeChangedConnection);
 		if(editObject())
-			_animationTimeChangedConnection = connect(dataSet()->animationSettings(), &AnimationSettings::timeChanged, this, &BooleanParameterUI::updateUI);
+			_animationTimeChangedConnection = connect(dataset()->animationSettings(), &AnimationSettings::timeChanged, this, &BooleanParameterUI::updateUI);
 	}
 }
 
@@ -140,10 +140,9 @@ void BooleanParameterUI::setEnabled(bool enabled)
 void BooleanParameterUI::updatePropertyValue()
 {
 	if(checkBox() && editObject()) {
-		UndoableTransaction::handleExceptions(dataSet()->undoStack(), tr("Change parameter"), [this]() {
+		undoableTransaction(tr("Change parameter"), [this]() {
 			if(isReferenceFieldUI()) {
-				BooleanController* ctrl = dynamic_object_cast<BooleanController>(parameterObject());
-				if(ctrl) {
+				if(BooleanController* ctrl = dynamic_object_cast<BooleanController>(parameterObject())) {
 					ctrl->setCurrentValue(checkBox()->isChecked());
 					updateUI();
 				}

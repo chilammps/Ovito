@@ -494,7 +494,7 @@ public:
 	/// so far will be undone, the error message is shown to the user, and this function returns false.
 	/// If no exception is thrown, the operations are committed and this function returns true.
 	template<typename Function>
-	static bool handleExceptions(UndoStack& undoStack, const QString& operationLabel, Function func) {
+	static bool handleExceptions(UndoStack& undoStack, const QString& operationLabel, Function&& func) {
 		try {
 			UndoableTransaction transaction(undoStack, operationLabel);
 			func();

@@ -39,8 +39,8 @@ class OVITO_PARTICLES_EXPORT HistogramModifier : public ParticleModifier
 {
 public:
 
-	/// Default constructor.
-	Q_INVOKABLE HistogramModifier();
+	/// Constructor.
+	Q_INVOKABLE HistogramModifier(DataSet* dataset);
 
 	/// This virtual method is called by the system when the modifier has been inserted into a PipelineObject.
 	virtual void initializeModifier(PipelineObject* pipelineObject, ModifierApplication* modApp) override;

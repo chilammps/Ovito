@@ -37,10 +37,10 @@ SET_PROPERTY_FIELD_LABEL(ShiftModifier, _translation, "Translation")
 /******************************************************************************
 * Constructs the modifier object.
 ******************************************************************************/
-ShiftModifier::ShiftModifier()
+ShiftModifier::ShiftModifier(DataSet* dataset) : Modifier(dataset)
 {
 	INIT_PROPERTY_FIELD(ShiftModifier::_translation);
-	_translation = ControllerManager::instance().createDefaultController<VectorController>();
+	_translation = ControllerManager::instance().createDefaultController<VectorController>(dataset);
 }
 
 /******************************************************************************

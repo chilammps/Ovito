@@ -42,14 +42,14 @@ class OVITO_PARTICLES_EXPORT ParticleExporter : public FileExporter
 protected:
 
 	/// \brief Constructs a new instance of this class.
-	ParticleExporter();
+	ParticleExporter(DataSet* dataset);
 
 public:
 
 	/////////////////////////// from FileExporter /////////////////////////////
 
 	/// \brief Exports the scene to the given file.
-	virtual bool exportToFile(const QString& filePath, DataSet* scene) override;
+	virtual bool exportToFile(const QString& filePath) override;
 
 	/////////////////////////// Specific methods //////////////////////////////
 
@@ -61,7 +61,6 @@ public:
 
 	/// \brief Opens the export settings dialog for this exporter service.
 	///
-	/// \param dataset The data set to be exported.
 	/// \param state The result of the pipeline evaluation. Contains the particle data to be exported.
 	/// \param parent The widget to be used as parent for the settings dialog.
 	/// \return \a true if the dialog has been approved by the user; \a false when the user has canceled the operation.
@@ -69,13 +68,12 @@ public:
 	/// The default implementation of this method does not show any dialog and always returns \a true.
 	///
 	/// \note The output file name has to be set via setOutputFile() before this method may be called.
-	virtual bool showSettingsDialog(DataSet* dataset, const PipelineFlowState& state, QWidget* parent) { return true; }
+	virtual bool showSettingsDialog(const PipelineFlowState& state, QWidget* parent) { return true; }
 
 	/// \brief Exports the particles contained in the scene to the output file(s).
-	/// \param dataset The scene that contains the data to be exported.
 	/// \throws Exception on error.
 	/// \return \a false when the operation has been canceled by the user; \a true on success.
-	virtual bool writeOutputFiles(DataSet* dataset);
+	virtual bool writeOutputFiles();
 
 	/// Returns whether only the current animation frame or an entire animation interval should be exported.
 	bool exportAnimation() const { return _exportAnimation; }
@@ -131,11 +129,10 @@ protected:
 	};
 
 	/// \brief Retrieves the particles to be exported by evaluating the modification pipeline.
-	/// \param dataset The scene to be exported.
 	/// \param time The animation time at which to request the particles.
 	/// \return The pipeline result containing the particles to be exported.
 	///         The returned PipelineFlowState might be empty if there is no particle  object in the scene.
-	PipelineFlowState getParticles(DataSet* dataset, TimePoint time);
+	PipelineFlowState getParticles(TimePoint time);
 
 	/// \brief This is called once for every output file to be written and before exportParticles() is called.
 	virtual bool openOutputFile(const QString& filePath, int numberOfFrames);
@@ -144,7 +141,7 @@ protected:
 	virtual void closeOutputFile(bool exportCompleted);
 
 	/// \brief Exports a single animation frame to the current output file.
-	virtual bool exportFrame(DataSet* dataset, int frameNumber, TimePoint time, const QString& filePath, QProgressDialog& progressDialog);
+	virtual bool exportFrame(int frameNumber, TimePoint time, const QString& filePath, QProgressDialog& progressDialog);
 
 	/// \brief Writes the particles of one animation frame to the current output file.
 	/// \param state The pipeline results containing the particles to be exported.

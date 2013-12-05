@@ -21,9 +21,10 @@
 
 #include <plugins/particles/Particles.h>
 #include <core/gui/actions/ViewportModeAction.h>
-#include <core/animation/AnimManager.h>
+#include <core/gui/mainwin/MainWindow.h>
+#include <core/animation/AnimationSettings.h>
 #include <core/viewport/Viewport.h>
-#include <core/viewport/ViewportManager.h>
+#include <core/viewport/ViewportConfiguration.h>
 #include <core/rendering/viewport/ViewportSceneRenderer.h>
 #include <plugins/particles/data/ParticlePropertyObject.h>
 #include <plugins/particles/data/ParticleTypeProperty.h>
@@ -34,18 +35,12 @@ namespace Particles {
 IMPLEMENT_OVITO_OBJECT(Particles, ParticleInformationApplet, UtilityApplet);
 
 /******************************************************************************
-* Initializes the utility applet.
-******************************************************************************/
-ParticleInformationApplet::ParticleInformationApplet() : _panel(nullptr)
-{
-	connect(&AnimManager::instance(), SIGNAL(timeChanged(TimePoint)), this, SLOT(updateInformationDisplay()));
-}
-
-/******************************************************************************
 * Shows the UI of the utility in the given RolloutContainer.
 ******************************************************************************/
-void ParticleInformationApplet::openUtility(RolloutContainer* container, const RolloutInsertionParameters& rolloutParams)
+void ParticleInformationApplet::openUtility(MainWindow* mainWindow, RolloutContainer* container, const RolloutInsertionParameters& rolloutParams)
 {
+	OVITO_ASSERT(_panel == nullptr);
+
 	// Create a rollout.
 	_panel = new QWidget();
 	container->addRollout(_panel, tr("Particle information"), rolloutParams.useAvailableSpace());
@@ -56,7 +51,7 @@ void ParticleInformationApplet::openUtility(RolloutContainer* container, const R
 	layout->setSpacing(4);
 
 	_inputMode = new ParticleInformationInputMode(this);
-	ViewportModeAction* pickModeAction = new ViewportModeAction(tr("Selection mode"), this, _inputMode);
+	ViewportModeAction* pickModeAction = new ViewportModeAction(mainWindow, tr("Selection mode"), this, _inputMode);
 	layout->addWidget(pickModeAction->createPushButton());
 
 	_infoDisplay = new QTextEdit(_panel);
@@ -69,7 +64,8 @@ void ParticleInformationApplet::openUtility(RolloutContainer* container, const R
 #endif
 	layout->addWidget(_infoDisplay, 1);
 
-	ViewportInputManager::instance().pushInputHandler(_inputMode);
+	connect(dataset()->animationSettings(), &AnimationSettings::timeChangeComplete, this, &ParticleInformationApplet::updateInformationDisplay);
+	mainWindow->viewportInputManager()->pushInputMode(_inputMode);
 }
 
 /******************************************************************************
@@ -77,10 +73,7 @@ void ParticleInformationApplet::openUtility(RolloutContainer* container, const R
 ******************************************************************************/
 void ParticleInformationApplet::closeUtility(RolloutContainer* container)
 {
-	ViewportInputManager::instance().removeInputHandler(_inputMode.get());
-	_inputMode = nullptr;
 	delete _panel;
-	_panel = nullptr;
 }
 
 /******************************************************************************
@@ -92,7 +85,7 @@ void ParticleInformationApplet::updateInformationDisplay()
 	QTextStream stream(&infoText, QIODevice::WriteOnly);
 	for(auto& pickedParticle : _inputMode->_pickedParticles) {
 		OVITO_ASSERT(pickedParticle.objNode);
-		const PipelineFlowState& flowState = pickedParticle.objNode->evalPipeline(AnimManager::instance().time());
+		const PipelineFlowState& flowState = pickedParticle.objNode->evalPipeline(dataset()->animationSettings()->time());
 
 		if(pickedParticle.particleId >= 0) {
 			for(const auto& sceneObj : flowState.objects()) {
@@ -187,7 +180,7 @@ void ParticleInformationApplet::updateInformationDisplay()
 ******************************************************************************/
 void ParticleInformationInputMode::mouseReleaseEvent(Viewport* vp, QMouseEvent* event)
 {
-	if(event->button() == Qt::LeftButton && temporaryNavigationMode() == nullptr) {
+	if(event->button() == Qt::LeftButton) {
 		PickResult pickResult;
 		pickParticle(vp, event->pos(), pickResult);
 		if(!event->modifiers().testFlag(Qt::ControlModifier))
@@ -206,7 +199,7 @@ void ParticleInformationInputMode::mouseReleaseEvent(Viewport* vp, QMouseEvent* 
 				_pickedParticles.push_back(pickResult);
 		}
 		_applet->updateInformationDisplay();
-		ViewportManager::instance().updateViewports();
+		vp->dataset()->viewportConfig()->updateViewports();
 	}
 	ViewportInputMode::mouseReleaseEvent(vp, event);
 }
@@ -214,9 +207,9 @@ void ParticleInformationInputMode::mouseReleaseEvent(Viewport* vp, QMouseEvent* 
 /******************************************************************************
 * Lets the input mode render its overlay content in a viewport.
 ******************************************************************************/
-void ParticleInformationInputMode::renderOverlay3D(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive)
+void ParticleInformationInputMode::renderOverlay3D(Viewport* vp, ViewportSceneRenderer* renderer)
 {
-	ViewportInputMode::renderOverlay3D(vp, renderer, isActive);
+	ViewportInputMode::renderOverlay3D(vp, renderer);
 	for(const auto& pickedParticle : _pickedParticles)
 		renderSelectionMarker(vp, renderer, pickedParticle);
 }

@@ -72,8 +72,8 @@ public:
 
 public:
 
-	/// Default constructor.
-	Q_INVOKABLE BondAngleAnalysisModifier();
+	/// Constructor.
+	Q_INVOKABLE BondAngleAnalysisModifier(DataSet* dataset);
 
 protected:
 

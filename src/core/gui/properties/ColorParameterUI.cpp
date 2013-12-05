@@ -74,7 +74,7 @@ void ColorParameterUI::resetUI()
 		// Update the displayed value when the animation time has changed.
 		disconnect(_animationTimeChangedConnection);
 		if(editObject())
-			_animationTimeChangedConnection = connect(dataSet()->animationSettings(), &AnimationSettings::timeChanged, this, &ColorParameterUI::updateUI);
+			_animationTimeChangedConnection = connect(dataset()->animationSettings(), &AnimationSettings::timeChanged, this, &ColorParameterUI::updateUI);
 	}
 }
 
@@ -125,10 +125,9 @@ void ColorParameterUI::setEnabled(bool enabled)
 void ColorParameterUI::onColorPickerChanged()
 {
 	if(colorPicker() && editObject()) {
-		UndoableTransaction::handleExceptions(dataSet()->undoStack(), tr("Change color"), [this]() {
+		undoableTransaction(tr("Change color"), [this]() {
 			if(isReferenceFieldUI()) {
-				VectorController* ctrl = dynamic_object_cast<VectorController>(parameterObject());
-				if(ctrl)
+				if(VectorController* ctrl = dynamic_object_cast<VectorController>(parameterObject()))
 					ctrl->setCurrentValue((Vector3)colorPicker()->color());
 			}
 			else if(isPropertyFieldUI()) {

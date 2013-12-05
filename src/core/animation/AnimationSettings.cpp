@@ -103,7 +103,7 @@ OORef<RefTarget> AnimationSettings::clone(bool deepCopy, CloneHelper& cloneHelpe
 void AnimationSettings::onTimeChanged(TimePoint newTime)
 {
 	_timeIsChanging++;
-	dataSet()->runWhenSceneIsReady([this] () {
+	dataset()->runWhenSceneIsReady([this] () {
 		_timeIsChanging--;
 		Q_EMIT timeChangeComplete();
 	});
@@ -228,7 +228,7 @@ void AnimationSettings::onPlaybackTimer()
 	setTime(newTime);
 
 	// Wait until the scene is ready. Then jump to the next frame.
-	dataSet()->runWhenSceneIsReady([this]() {
+	dataset()->runWhenSceneIsReady([this]() {
 		if(_isPlaybackActive) {
 			_isPlaybackActive = false;
 			startAnimationPlayback();

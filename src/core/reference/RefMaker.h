@@ -60,7 +60,7 @@ protected:
 
 	/// \brief Constructor.
 	/// \param dataset The dataset this object will belong to.
-	RefMaker(DataSet* dataset) : _dataSet(dataset) {}
+	RefMaker(DataSet* dataset) : _dataset(dataset) {}
 
 	/////////////////////////////// Reference field events ///////////////////////////////////
 
@@ -281,10 +281,10 @@ public:
 	///////////////////////////// DataSet access ///////////////////////////////
 
 	/// \brief Returns the dataset this object belongs to.
-	DataSet* dataSet() const { return _dataSet; }
+	DataSet* dataset() const { return _dataset; }
 
 	/// \brief Changes the dataset this object belongs to.
-	void setDataSet(DataSet* dataset) { _dataSet = dataset; }
+	void setDataset(DataSet* dataset) { _dataset = dataset; }
 
 	///////////////////////////// from OvitoObject ///////////////////////////////
 
@@ -299,7 +299,7 @@ private:
 	static void walkNode(QSet<RefTarget*>& nodes, const RefMaker* node);
 
 	/// The dataset this object belongs to.
-	DataSet* _dataSet;
+	DataSet* _dataset;
 
 	friend class RefTarget;
 	friend class SingleReferenceFieldBase;

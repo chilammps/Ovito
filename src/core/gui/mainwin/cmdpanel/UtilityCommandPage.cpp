@@ -100,7 +100,7 @@ void UtilityCommandPage::onUtilityButton(QAbstractButton* button)
 		currentButton = button;
 		currentButton->setChecked(true);
 
-		currentUtility->openUtility(rolloutContainer, RolloutInsertionParameters().animate());
+		currentUtility->openUtility(_datasetContainer.mainWindow(), rolloutContainer, RolloutInsertionParameters().animate());
 	}
 	catch(const Exception& ex) {
 		ex.showError();

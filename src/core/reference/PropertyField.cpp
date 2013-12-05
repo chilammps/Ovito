@@ -54,7 +54,7 @@ void PropertyFieldBase::generatePropertyChangedEvent() const
 ******************************************************************************/
 VectorReferenceFieldBase::~VectorReferenceFieldBase()
 {
-	OVITO_ASSERT(!owner()->dataSet() || owner()->dataSet()->undoStack().isRecording() == false);
+	OVITO_ASSERT(!owner()->dataset() || owner()->dataset()->undoStack().isRecording() == false);
 	while(!pointers.empty()) {
 		removeReference(pointers.size() - 1, false);
 	}
@@ -65,7 +65,7 @@ VectorReferenceFieldBase::~VectorReferenceFieldBase()
 ******************************************************************************/
 SingleReferenceFieldBase::~SingleReferenceFieldBase()
 {
-	OVITO_ASSERT(!owner()->dataSet() || owner()->dataSet()->undoStack().isRecording() == false);
+	OVITO_ASSERT(!owner()->dataset() || owner()->dataset()->undoStack().isRecording() == false);
 	// The internal intrusive pointer must be cleared first before the reference count
 	// to the target goes to zero to prevent infinite recursion.
 	OORef<RefTarget> a_null_ptr;
@@ -85,7 +85,7 @@ void SingleReferenceFieldBase::swapReference(OORef<RefTarget>& inactiveTarget, b
 
 	// Check for cyclic references.
 	if(inactiveTarget && refmaker->isReferencedBy(inactiveTarget.get())) {
-		OVITO_ASSERT(!owner()->dataSet() || !owner()->dataSet()->undoStack().isUndoingOrRedoing());
+		OVITO_ASSERT(!owner()->dataset() || !owner()->dataset()->undoStack().isUndoingOrRedoing());
 		throw CyclicReferenceError();
 	}
 
@@ -131,9 +131,9 @@ void SingleReferenceFieldBase::setValue(RefTarget* newTarget)
 		throw Exception(QString("Cannot set a reference field of type %1 to an incompatible object of type %2.").arg(descriptor()->targetClass()->name(), newTarget->getOOType().name()));
 	}
 
-	if(descriptor()->automaticUndo() && owner()->dataSet() && owner()->dataSet()->undoStack().isRecording()) {
+	if(descriptor()->automaticUndo() && owner()->dataset() && owner()->dataset()->undoStack().isRecording()) {
 		SetReferenceOperation* op = new SetReferenceOperation(newTarget, *this);
-		owner()->dataSet()->undoStack().push(op);
+		owner()->dataset()->undoStack().push(op);
 		op->redo();
 		OVITO_ASSERT(_pointer.get() == newTarget);
 	}
@@ -182,7 +182,7 @@ OORef<RefTarget> VectorReferenceFieldBase::removeReference(int index, bool gener
 			generateTargetChangedEvent();
 		}
 		catch(...) {
-			if(!owner()->dataSet() || !owner()->dataSet()->undoStack().isUndoingOrRedoing())
+			if(!owner()->dataset() || !owner()->dataset()->undoStack().isUndoingOrRedoing())
 				throw;
 			qDebug() << "Caught exception in VectorReferenceFieldBase::removeReference(). RefMaker is" << owner() << ". RefTarget is" << target;
 		}
@@ -204,7 +204,7 @@ int VectorReferenceFieldBase::addReference(const OORef<RefTarget>& target, int i
 
 	// Check for cyclic references.
 	if(target && refmaker->isReferencedBy(target.get())) {
-		OVITO_ASSERT(!owner()->dataSet() || !owner()->dataSet()->undoStack().isUndoingOrRedoing());
+		OVITO_ASSERT(!owner()->dataset() || !owner()->dataset()->undoStack().isUndoingOrRedoing());
 		throw CyclicReferenceError();
 	}
 
@@ -232,7 +232,7 @@ int VectorReferenceFieldBase::addReference(const OORef<RefTarget>& target, int i
 		generateTargetChangedEvent();
 	}
 	catch(...) {
-		if(!owner()->dataSet() || !owner()->dataSet()->undoStack().isUndoingOrRedoing())
+		if(!owner()->dataset() || !owner()->dataset()->undoStack().isUndoingOrRedoing())
 			throw;
 		qDebug() << "Caught exception in VectorReferenceFieldBase::addReference(). RefMaker is" << refmaker << ". RefTarget is" << target.get();
 	}
@@ -252,9 +252,9 @@ int VectorReferenceFieldBase::insertInternal(RefTarget* newTarget, int index)
 		throw Exception(QString("Cannot add an object to a reference field of type %1 that has the incompatible type %2.").arg(descriptor()->targetClass()->name(), newTarget->getOOType().name()));
 	}
 
-	if(descriptor()->automaticUndo() && owner()->dataSet() && owner()->dataSet()->undoStack().isRecording()) {
+	if(descriptor()->automaticUndo() && owner()->dataset() && owner()->dataset()->undoStack().isRecording()) {
 		InsertReferenceOperation* op = new InsertReferenceOperation(newTarget, *this, index);
-		owner()->dataSet()->undoStack().push(op);
+		owner()->dataset()->undoStack().push(op);
 		op->redo();
 		return op->getInsertionIndex();
 	}
@@ -274,9 +274,9 @@ void VectorReferenceFieldBase::remove(int i)
 {
 	OVITO_ASSERT(i >= 0 && i < size());
 
-	if(descriptor()->automaticUndo() && owner()->dataSet() && owner()->dataSet()->undoStack().isRecording()) {
+	if(descriptor()->automaticUndo() && owner()->dataset() && owner()->dataset()->undoStack().isRecording()) {
 		RemoveReferenceOperation* op = new RemoveReferenceOperation(*this, i);
-		owner()->dataSet()->undoStack().push(op);
+		owner()->dataset()->undoStack().push(op);
 		op->redo();
 	}
 	else {

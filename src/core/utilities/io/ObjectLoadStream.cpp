@@ -32,7 +32,7 @@ namespace Ovito {
 /******************************************************************************
 * Opens the stream for reading.
 ******************************************************************************/
-ObjectLoadStream::ObjectLoadStream(QDataStream& source) : LoadStream(source), _currentObject(nullptr), _dataSet(nullptr)
+ObjectLoadStream::ObjectLoadStream(QDataStream& source) : LoadStream(source), _currentObject(nullptr), _dataset(nullptr)
 {
 	qint64 oldPos = filePosition();
 
@@ -133,12 +133,12 @@ OORef<OvitoObject> ObjectLoadStream::loadObject()
 		if(entry.object != nullptr) return entry.object;
 		else {
 			// Create an instance of the object class.
-			entry.object = entry.pluginClass->descriptor->createInstance(_dataSet);
+			entry.object = entry.pluginClass->descriptor->createInstance(_dataset);
 			if(entry.pluginClass->descriptor == &DataSet::OOType)
-				_dataSet = static_object_cast<DataSet>(entry.object.get());
+				_dataset = static_object_cast<DataSet>(entry.object.get());
 
 			OVITO_ASSERT(!entry.pluginClass->descriptor->isDerivedFrom(RefMaker::OOType)
-					|| _dataSet != nullptr);
+					|| _dataset != nullptr);
 
 			_objectsToLoad.push_back(id - 1);
 			return entry.object;

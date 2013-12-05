@@ -32,8 +32,8 @@ namespace Ovito {
 UndoSuspender::UndoSuspender(RefMaker* object)
 {
 	OVITO_CHECK_OBJECT_POINTER(object);
-	if(object->dataSet()) {
-		_suspendCount = &object->dataSet()->undoStack()._suspendCount;
+	if(object->dataset()) {
+		_suspendCount = &object->dataset()->undoStack()._suspendCount;
 		++(*_suspendCount);
 	}
 	else _suspendCount = nullptr;

@@ -62,10 +62,10 @@ DataSet::DataSet(DataSet* self) : RefTarget(this)
 	INIT_PROPERTY_FIELD(DataSet::_renderSettings);
 
 	_viewportConfig = createDefaultViewportConfiguration();
-	_animSettings = new AnimationSettings(dataSet());
-	_sceneRoot = new SceneRoot(dataSet());
-	_selection = new SelectionSet(dataSet());
-	_renderSettings = new RenderSettings(dataSet());
+	_animSettings = new AnimationSettings(this);
+	_sceneRoot = new SceneRoot(this);
+	_selection = new SelectionSet(this);
+	_renderSettings = new RenderSettings(this);
 }
 
 /******************************************************************************
@@ -83,7 +83,7 @@ OORef<ViewportConfiguration> DataSet::createDefaultViewportConfiguration()
 {
 	UndoSuspender noUndo(undoStack());
 
-	OORef<ViewportConfiguration> defaultViewportConfig = new ViewportConfiguration(dataSet());
+	OORef<ViewportConfiguration> defaultViewportConfig = new ViewportConfiguration(this);
 
 	OORef<Viewport> topView = new Viewport(this);
 	topView->setViewType(Viewport::VIEW_TOP);

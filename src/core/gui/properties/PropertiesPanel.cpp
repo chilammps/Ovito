@@ -68,7 +68,7 @@ void PropertiesPanel::setEditObject(RefTarget* newEditObject)
 		// Open new properties editor.
 		_editor = newEditObject->createPropertiesEditor();
 		if(editor()) {
-			editor()->initialize(this, RolloutInsertionParameters());
+			editor()->initialize(this, newEditObject->dataset()->mainWindow(), RolloutInsertionParameters());
 			editor()->setEditObject(newEditObject);
 		}
 	}

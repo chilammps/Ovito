@@ -54,8 +54,8 @@ public:
 
 public:
 
-	/// Default constructor.
-	Q_INVOKABLE ParticleSelectionSet() : _useIdentifiers(true) {
+	/// Constructor.
+	Q_INVOKABLE ParticleSelectionSet(DataSet* dataset) : RefTarget(dataset), _useIdentifiers(true) {
 		INIT_PROPERTY_FIELD(ParticleSelectionSet::_useIdentifiers);
 	}
 

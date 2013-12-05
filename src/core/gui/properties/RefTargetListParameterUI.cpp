@@ -172,12 +172,12 @@ void RefTargetListParameterUI::openSubEditor()
 			if(selection) {
 				_subEditor = selection->createPropertiesEditor();
 				if(_subEditor)
-					_subEditor->initialize(editor()->container(), _rolloutParams);
+					_subEditor->initialize(editor()->container(), editor()->mainWindow(), _rolloutParams);
 			}
 			else if(_defaultEditorClass) {
 				_subEditor = dynamic_object_cast<PropertiesEditor>(_defaultEditorClass->createInstance(nullptr));
 				if(_subEditor)
-					_subEditor->initialize(editor()->container(), _rolloutParams);
+					_subEditor->initialize(editor()->container(), editor()->mainWindow(), _rolloutParams);
 			}
 			else return;
 		}

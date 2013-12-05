@@ -40,7 +40,7 @@ class OVITO_PARTICLES_EXPORT ShowPeriodicImagesModifier : public ParticleModifie
 public:
 
 	/// \brief Constructs a new instance of this class.
-	Q_INVOKABLE ShowPeriodicImagesModifier();
+	Q_INVOKABLE ShowPeriodicImagesModifier(DataSet* dataset);
 
 protected:
 

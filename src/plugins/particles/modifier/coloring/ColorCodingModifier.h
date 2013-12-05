@@ -41,8 +41,8 @@ class OVITO_PARTICLES_EXPORT ColorCodingGradient : public RefTarget
 {
 protected:
 
-	/// Default constructor.
-	ColorCodingGradient() {}
+	/// Constructor.
+	ColorCodingGradient(DataSet* dataset) : RefTarget(dataset) {}
 
 public:
 
@@ -64,8 +64,8 @@ class ColorCodingHSVGradient : public ColorCodingGradient
 {
 public:
 
-	/// Default constructor.
-	Q_INVOKABLE ColorCodingHSVGradient() {}
+	/// Constructor.
+	Q_INVOKABLE ColorCodingHSVGradient(DataSet* dataset) : ColorCodingGradient(dataset) {}
 
 	/// \brief Converts a scalar value to a color value.
 	/// \param t A value between 0 and 1.
@@ -86,8 +86,8 @@ class ColorCodingGrayscaleGradient : public ColorCodingGradient
 {
 public:
 
-	/// Default constructor.
-	Q_INVOKABLE ColorCodingGrayscaleGradient() {}
+	/// Constructor.
+	Q_INVOKABLE ColorCodingGrayscaleGradient(DataSet* dataset) : ColorCodingGradient(dataset) {}
 
 	/// \brief Converts a scalar value to a color value.
 	/// \param t A value between 0 and 1.
@@ -108,8 +108,8 @@ class ColorCodingHotGradient : public ColorCodingGradient
 {
 public:
 
-	/// Default constructor.
-	Q_INVOKABLE ColorCodingHotGradient() {}
+	/// Constructor.
+	Q_INVOKABLE ColorCodingHotGradient(DataSet* dataset) : ColorCodingGradient(dataset) {}
 
 	/// \brief Converts a scalar value to a color value.
 	/// \param t A value between 0 and 1.
@@ -134,8 +134,8 @@ class ColorCodingJetGradient : public ColorCodingGradient
 {
 public:
 
-	/// Default constructor.
-	Q_INVOKABLE ColorCodingJetGradient() {}
+	/// Constructor.
+	Q_INVOKABLE ColorCodingJetGradient(DataSet* dataset) : ColorCodingGradient(dataset) {}
 
 	/// \brief Converts a scalar value to a color value.
 	/// \param t A value between 0 and 1.
@@ -164,8 +164,8 @@ class ColorCodingModifier : public ParticleModifier
 {
 public:
 
-	/// Default constructor.
-	Q_INVOKABLE ColorCodingModifier();
+	/// Constructor.
+	Q_INVOKABLE ColorCodingModifier(DataSet* dataset);
 
 	/// Asks the modifier for its validity interval at the given time.
 	virtual TimeInterval modifierValidity(TimePoint time) override;

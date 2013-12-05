@@ -43,8 +43,8 @@ class OVITO_CRYSTALANALYSIS_EXPORT DefectSurfaceDisplay : public DisplayObject
 {
 public:
 
-	/// \brief Default constructor.
-	Q_INVOKABLE DefectSurfaceDisplay();
+	/// \brief Constructor.
+	Q_INVOKABLE DefectSurfaceDisplay(DataSet* dataset);
 
 	/// \brief Lets the display object render a scene object.
 	virtual void render(TimePoint time, SceneObject* sceneObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode) override;

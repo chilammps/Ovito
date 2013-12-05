@@ -42,7 +42,7 @@ LookAtController::LookAtController(DataSet* dataset) : RotationController(datase
 	INIT_PROPERTY_FIELD(LookAtController::_targetNode);
 
 	// Create sub-controller.
-	_rollCtrl = ControllerManager::instance().createDefaultController<FloatController>(dataSet());
+	_rollCtrl = ControllerManager::instance().createDefaultController<FloatController>(dataset);
 }
 
 /******************************************************************************

@@ -229,7 +229,7 @@ private:
 class ViewportSuspender {
 public:
 	ViewportSuspender(ViewportConfiguration* vpconf) : _vpconf(*vpconf) { _vpconf.suspendViewportUpdates(); }
-	ViewportSuspender(RefMaker* object) : _vpconf(*object->dataSet()->viewportConfig()) { _vpconf.suspendViewportUpdates(); }
+	ViewportSuspender(RefMaker* object) : _vpconf(*object->dataset()->viewportConfig()) { _vpconf.suspendViewportUpdates(); }
 	~ViewportSuspender() { _vpconf.resumeViewportUpdates(); }
 private:
 	ViewportConfiguration& _vpconf;

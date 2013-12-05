@@ -35,7 +35,7 @@ namespace Ovito {
 ViewportWindow::ViewportWindow(Viewport* owner) :
 		_viewport(owner), _updateRequested(false), _updatePending(false),
 		_context(nullptr), _oglDebugLogger(nullptr),
-		_mainWindow(owner->dataSet()->mainWindow())
+		_mainWindow(owner->dataset()->mainWindow())
 {
 	OVITO_CHECK_POINTER(_mainWindow);
 
@@ -129,7 +129,7 @@ void ViewportWindow::mouseDoubleClickEvent(QMouseEvent* event)
 ******************************************************************************/
 void ViewportWindow::mousePressEvent(QMouseEvent* event)
 {
-	_viewport->dataSet()->viewportConfig()->setActiveViewport(_viewport);
+	_viewport->dataset()->viewportConfig()->setActiveViewport(_viewport);
 
 	// Intercept mouse clicks on the viewport caption.
 	if(_viewport->_contextMenuArea.contains(event->pos())) {
@@ -188,7 +188,7 @@ void ViewportWindow::renderNow()
 
 		// Look for other existing viewport windows that we can share the OpenGL context with.
 		QOpenGLContext* shareContext = nullptr;
-		for(Viewport* vp : _viewport->dataSet()->viewportConfig()->viewports()) {
+		for(Viewport* vp : _viewport->dataset()->viewportConfig()->viewports()) {
 			if(vp != _viewport && vp->_viewportWindow) {
 				shareContext = vp->_viewportWindow->glcontext();
 				if(shareContext) break;
@@ -256,7 +256,7 @@ void ViewportWindow::renderNow()
 					.arg(OVITO_OPENGL_MINIMUM_VERSION_MAJOR)
 					.arg(OVITO_OPENGL_MINIMUM_VERSION_MINOR)
 					);
-			_viewport->dataSet()->viewportConfig()->suspendViewportUpdates();
+			_viewport->dataset()->viewportConfig()->suspendViewportUpdates();
 			QCoreApplication::removePostedEvents(nullptr, 0);
 			ex.showError();
 			QCoreApplication::instance()->quit();
@@ -270,14 +270,14 @@ void ViewportWindow::renderNow()
 	}
 	OVITO_CHECK_OPENGL();
 
-	if(!_viewport->dataSet()->viewportConfig()->isSuspended()) {
+	if(!_viewport->dataset()->viewportConfig()->isSuspended()) {
 		_viewport->render(_context);
 	}
 	else {
 		Color backgroundColor = Viewport::viewportColor(ViewportSettings::COLOR_VIEWPORT_BKG);
 		OVITO_CHECK_OPENGL(glClearColor(backgroundColor.r(), backgroundColor.g(), backgroundColor.b(), 1));
 		OVITO_CHECK_OPENGL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
-		_viewport->dataSet()->viewportConfig()->updateViewports();
+		_viewport->dataset()->viewportConfig()->updateViewports();
 	}
 	_context->swapBuffers(this);
 

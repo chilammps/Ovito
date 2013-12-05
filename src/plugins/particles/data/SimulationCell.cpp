@@ -23,7 +23,7 @@
 #include <core/utilities/units/UnitsManager.h>
 #include <core/gui/properties/Vector3ParameterUI.h>
 #include <core/gui/properties/BooleanParameterUI.h>
-#include <core/viewport/ViewportManager.h>
+#include <core/viewport/ViewportConfiguration.h>
 
 #include "SimulationCell.h"
 
@@ -251,14 +251,14 @@ void SimulationCellEditor::updateSimulationBoxSize()
 ******************************************************************************/
 void SimulationCellEditor::onSizeSpinnerValueChanged(int dim)
 {
-	ViewportSuspender noVPUpdate;
-	if(!UndoManager::instance().isRecording()) {
-		UndoableTransaction::handleExceptions(tr("Change simulation cell size"), [this, dim]() {
+	ViewportSuspender noVPUpdate(dataset());
+	if(!dataset()->undoStack().isRecording()) {
+		undoableTransaction(tr("Change simulation cell size"), [this, dim]() {
 			changeSimulationBoxSize(dim);
 		});
 	}
 	else {
-		UndoManager::instance().currentCompoundOperation()->clear();
+		dataset()->undoStack().resetCurrentCompoundOperation();
 		changeSimulationBoxSize(dim);
 	}
 }
@@ -268,8 +268,8 @@ void SimulationCellEditor::onSizeSpinnerValueChanged(int dim)
 ******************************************************************************/
 void SimulationCellEditor::onSizeSpinnerDragStart(int dim)
 {
-	OVITO_ASSERT(!UndoManager::instance().isRecording());
-	UndoManager::instance().beginCompoundOperation(tr("Change simulation cell size"));
+	OVITO_ASSERT(!dataset()->undoStack().isRecording());
+	dataset()->undoStack().beginCompoundOperation(tr("Change simulation cell size"));
 }
 
 /******************************************************************************
@@ -277,8 +277,8 @@ void SimulationCellEditor::onSizeSpinnerDragStart(int dim)
 ******************************************************************************/
 void SimulationCellEditor::onSizeSpinnerDragStop(int dim)
 {
-	OVITO_ASSERT(UndoManager::instance().isRecording());
-	UndoManager::instance().endCompoundOperation();
+	OVITO_ASSERT(dataset()->undoStack().isRecording());
+	dataset()->undoStack().endCompoundOperation();
 }
 
 /******************************************************************************
@@ -286,9 +286,8 @@ void SimulationCellEditor::onSizeSpinnerDragStop(int dim)
 ******************************************************************************/
 void SimulationCellEditor::onSizeSpinnerDragAbort(int dim)
 {
-	OVITO_ASSERT(UndoManager::instance().isRecording());
-	UndoManager::instance().currentCompoundOperation()->clear();
-	UndoManager::instance().endCompoundOperation();
+	OVITO_ASSERT(dataset()->undoStack().isRecording());
+	dataset()->undoStack().endCompoundOperation(false);
 }
 
 };

@@ -38,7 +38,7 @@ SET_PROPERTY_FIELD_LABEL(ObjectNode, _sceneObject, "Object")
 ******************************************************************************/
 ObjectNode::ObjectNode(DataSet* dataset, SceneObject* object) : SceneNode(dataset)
 {
-	OVITO_ASSERT(object == nullptr || object->dataSet() == this->dataSet());
+	OVITO_ASSERT(object == nullptr || object->dataset() == dataset);
 	INIT_PROPERTY_FIELD(ObjectNode::_sceneObject);
 	INIT_PROPERTY_FIELD(ObjectNode::_displayObjects);
 	setSceneObject(object);
@@ -54,7 +54,7 @@ const PipelineFlowState& ObjectNode::evalPipeline(TimePoint time)
 		if(sceneObject()) {
 
 			// Do not record any object creation operations while evaluating the pipeline.
-			UndoSuspender noUndo(dataSet()->undoStack());
+			UndoSuspender noUndo(dataset()->undoStack());
 
 			// Evaluate object and save result in local cache.
 			_pipelineCache = sceneObject()->evaluate(time);
@@ -131,7 +131,7 @@ bool ObjectNode::referenceEvent(RefTarget* source, ReferenceEvent* event)
 		}
 		else if(event->type() == ReferenceEvent::TargetDeleted) {
 			// Object has been deleted -> delete node too.
-			if(!dataSet()->undoStack().isUndoingOrRedoing())
+			if(!dataset()->undoStack().isUndoingOrRedoing())
 				deleteNode();
 		}
 		else if(event->type() == ReferenceEvent::TitleChanged) {
@@ -232,7 +232,7 @@ void ObjectNode::applyModifier(Modifier* modifier)
 
 	PipelineObject* pipelineObj = dynamic_object_cast<PipelineObject>(sceneObject());
 	if(!pipelineObj) {
-		OORef<PipelineObject> p = new PipelineObject(dataSet());
+		OORef<PipelineObject> p = new PipelineObject(dataset());
 		p->setInputObject(sceneObject());
 		setSceneObject(p);
 		pipelineObj = p.get();

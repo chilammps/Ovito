@@ -39,7 +39,7 @@ SET_PROPERTY_FIELD_LABEL(CentroSymmetryModifier, _numNeighbors, "Number of neigh
 /******************************************************************************
 * Constructs the modifier object.
 ******************************************************************************/
-CentroSymmetryModifier::CentroSymmetryModifier() :
+CentroSymmetryModifier::CentroSymmetryModifier(DataSet* dataset) : AsynchronousParticleModifier(dataset),
 	_cspValues(new ParticleProperty(0, ParticleProperty::CentroSymmetryProperty)),
 	_numNeighbors(12)
 {

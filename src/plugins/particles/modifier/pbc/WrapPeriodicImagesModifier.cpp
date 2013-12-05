@@ -31,7 +31,7 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, WrapPeriodicImagesModifier, Parti
 /******************************************************************************
 * Constructs the modifier object.
 ******************************************************************************/
-WrapPeriodicImagesModifier::WrapPeriodicImagesModifier()
+WrapPeriodicImagesModifier::WrapPeriodicImagesModifier(DataSet* dataset) : ParticleModifier(dataset)
 {
 }
 

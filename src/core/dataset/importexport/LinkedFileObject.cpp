@@ -87,17 +87,17 @@ bool LinkedFileObject::setSource(const QUrl& newSourceUrl, const FileImporterDes
 	if(!importerType) {
 
 		// Download file so we can determine its format.
-		Future<QString> fetchFileFuture = FileManager::instance().fetchUrl(*dataSet()->container(), newSourceUrl);
-		if(!dataSet()->container()->taskManager().waitForTask(fetchFileFuture))
+		Future<QString> fetchFileFuture = FileManager::instance().fetchUrl(*dataset()->container(), newSourceUrl);
+		if(!dataset()->container()->taskManager().waitForTask(fetchFileFuture))
 			return false;
 
 		// Detect file format.
-		fileimporter = ImportExportManager::instance().autodetectFileFormat(dataSet(), fetchFileFuture.result(), newSourceUrl.path());
+		fileimporter = ImportExportManager::instance().autodetectFileFormat(dataset(), fetchFileFuture.result(), newSourceUrl.path());
 		if(!fileimporter)
 			throw Exception(tr("Could not detect the format of the file to be imported. The format might not be supported."));
 	}
 	else {
-		fileimporter = importerType->createService(dataSet());
+		fileimporter = importerType->createService(dataset());
 		if(!fileimporter)
 			return false;
 	}
@@ -105,7 +105,7 @@ bool LinkedFileObject::setSource(const QUrl& newSourceUrl, const FileImporterDes
 	if(!newImporter)
 		throw Exception(tr("You did not select a compatible file."));
 
-	ViewportSuspender noVPUpdate(dataSet()->viewportConfig());
+	ViewportSuspender noVPUpdate(dataset()->viewportConfig());
 
 	// Re-use the old importer if possible.
 	if(importer() && importer()->getOOType() == newImporter->getOOType())
@@ -148,7 +148,7 @@ bool LinkedFileObject::setSource(QUrl sourceUrl, const OORef<LinkedFileImporter>
 	}
 
 	// Make the import process reversible.
-	UndoableTransaction transaction(dataSet()->undoStack(), tr("Set input file"));
+	UndoableTransaction transaction(dataset()->undoStack(), tr("Set input file"));
 
 	// Make the call to setSource() undoable.
 	class SetSourceOperation : public UndoableOperation {
@@ -167,8 +167,8 @@ bool LinkedFileObject::setSource(QUrl sourceUrl, const OORef<LinkedFileImporter>
 		OORef<LinkedFileImporter> _oldImporter;
 		OORef<LinkedFileObject> _obj;
 	};
-	if(dataSet()->undoStack().isRecording())
-		dataSet()->undoStack().push(new SetSourceOperation(this));
+	if(dataset()->undoStack().isRecording())
+		dataset()->undoStack().push(new SetSourceOperation(this));
 
 	_sourceUrl = sourceUrl;
 	_importer = importer;
@@ -196,7 +196,7 @@ bool LinkedFileObject::setSource(QUrl sourceUrl, const OORef<LinkedFileImporter>
 
 		if(_adjustAnimationIntervalEnabled) {
 			// Adjust views to completely show the new object.
-			OORef<DataSet> ds(dataSet());
+			OORef<DataSet> ds(dataset());
 			ds->runWhenSceneIsReady([ds]() {
 				ds->viewportConfig()->zoomToSelectionExtents();
 			});
@@ -227,7 +227,7 @@ bool LinkedFileObject::updateFrames()
 	}
 
 	Future<QVector<LinkedFileImporter::FrameSourceInformation>> framesFuture = importer()->findFrames(sourceUrl());
-	if(!dataSet()->container()->taskManager().waitForTask(framesFuture))
+	if(!dataset()->container()->taskManager().waitForTask(framesFuture))
 		return false;
 
 	QVector<LinkedFileImporter::FrameSourceInformation> newFrames = framesFuture.result();
@@ -266,7 +266,7 @@ void LinkedFileObject::cancelLoadOperation()
 ******************************************************************************/
 int LinkedFileObject::animationTimeToInputFrame(TimePoint time) const
 {
-	int animFrame = dataSet()->animationSettings()->timeToFrame(time);
+	int animFrame = dataset()->animationSettings()->timeToFrame(time);
 	return (animFrame - _playbackStartTime) *
 			std::max(1, (int)_playbackSpeedNumerator) /
 			std::max(1, (int)_playbackSpeedDenominator);
@@ -281,7 +281,7 @@ TimePoint LinkedFileObject::inputFrameToAnimationTime(int frame) const
 			std::max(1, (int)_playbackSpeedDenominator) /
 			std::max(1, (int)_playbackSpeedNumerator) +
 			_playbackStartTime;
-	return dataSet()->animationSettings()->frameToTime(animFrame);
+	return dataset()->animationSettings()->frameToTime(animFrame);
 }
 
 /******************************************************************************
@@ -442,7 +442,7 @@ void LinkedFileObject::adjustAnimationInterval(int gotoFrameIndex)
 	if(!_adjustAnimationIntervalEnabled)
 		return;
 
-	AnimationSettings* animSettings = dataSet()->animationSettings();
+	AnimationSettings* animSettings = dataset()->animationSettings();
 
 	int numFrames = std::max(1, numberOfFrames());
 	TimeInterval interval(inputFrameToAnimationTime(0), inputFrameToAnimationTime(numberOfFrames()-1));

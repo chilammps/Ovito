@@ -36,8 +36,8 @@ class OVITO_PARTICLES_EXPORT FreezeSelectionModifier : public ParticleModifier
 {
 public:
 
-	/// Default constructor.
-	Q_INVOKABLE FreezeSelectionModifier() {}
+	/// Constructor.
+	Q_INVOKABLE FreezeSelectionModifier(DataSet* dataset) : ParticleModifier(dataset) {}
 
 	/// This virtual method is called by the modification system when the modifier has been inserted into a PipelineObject.
 	virtual void initializeModifier(PipelineObject* pipelineObject, ModifierApplication* modApp) override;

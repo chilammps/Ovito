@@ -56,10 +56,11 @@ protected:
 public:
 
 	/// \brief Shows the user interface of the utility in the given RolloutContainer.
+	/// \param mainWindow The main window that hosts the utility.
 	/// \param container The widget container into which the utility should put its user interface controls.
 	/// \param rolloutParams Specifies how the utility should insert its rollouts into the container.
 	/// \throw Exception if an error occurs.
-	virtual void openUtility(RolloutContainer* container, const RolloutInsertionParameters& rolloutParams = RolloutInsertionParameters()) = 0;
+	virtual void openUtility(MainWindow* mainWindow, RolloutContainer* container, const RolloutInsertionParameters& rolloutParams = RolloutInsertionParameters()) = 0;
 
 	/// \brief Closes the user interface of the utility.
 	/// \param container The widget container from which the utility should remove its user interface controls.

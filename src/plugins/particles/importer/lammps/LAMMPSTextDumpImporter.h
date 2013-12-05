@@ -39,7 +39,7 @@ class OVITO_PARTICLES_EXPORT LAMMPSTextDumpImporter : public ParticleImporter
 public:
 
 	/// \brief Constructs a new instance of this class.
-	Q_INVOKABLE LAMMPSTextDumpImporter() : _useCustomColumnMapping(false) {
+	Q_INVOKABLE LAMMPSTextDumpImporter(DataSet* dataset) : ParticleImporter(dataset), _useCustomColumnMapping(false) {
 		INIT_PROPERTY_FIELD(LAMMPSTextDumpImporter::_useCustomColumnMapping);
 	}
 
@@ -67,7 +67,7 @@ public:
 
 	/// Displays a dialog box that allows the user to edit the custom file column to particle
 	/// property mapping.
-	void showEditColumnMappingDialog(QWidget* parent = nullptr);
+	void showEditColumnMappingDialog(QWidget* parent);
 
 public:
 

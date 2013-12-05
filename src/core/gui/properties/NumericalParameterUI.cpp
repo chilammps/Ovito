@@ -108,7 +108,7 @@ void NumericalParameterUI::resetUI()
 		// Update the displayed value when the animation time has changed.
 		disconnect(_animationTimeChangedConnection);
 		if(editObject())
-			_animationTimeChangedConnection = connect(dataSet()->animationSettings(), &AnimationSettings::timeChanged, this, &NumericalParameterUI::updateUI);
+			_animationTimeChangedConnection = connect(dataset()->animationSettings(), &AnimationSettings::timeChanged, this, &NumericalParameterUI::updateUI);
 	}
 }
 
@@ -134,14 +134,14 @@ void NumericalParameterUI::setEnabled(bool enabled)
 ******************************************************************************/
 void NumericalParameterUI::onSpinnerValueChanged()
 {
-	ViewportSuspender noVPUpdate(dataSet()->viewportConfig());
-	if(!dataSet()->undoStack().isRecording()) {
-		UndoableTransaction transaction(dataSet()->undoStack(), tr("Change parameter"));
+	ViewportSuspender noVPUpdate(dataset()->viewportConfig());
+	if(!dataset()->undoStack().isRecording()) {
+		UndoableTransaction transaction(dataset()->undoStack(), tr("Change parameter"));
 		updatePropertyValue();
 		transaction.commit();
 	}
 	else {
-		dataSet()->undoStack().resetCurrentCompoundOperation();
+		dataset()->undoStack().resetCurrentCompoundOperation();
 		updatePropertyValue();
 	}
 }
@@ -151,8 +151,8 @@ void NumericalParameterUI::onSpinnerValueChanged()
 ******************************************************************************/
 void NumericalParameterUI::onSpinnerDragStart()
 {
-	OVITO_ASSERT(!dataSet()->undoStack().isRecording());
-	dataSet()->undoStack().beginCompoundOperation(tr("Change parameter"));
+	OVITO_ASSERT(!dataset()->undoStack().isRecording());
+	dataset()->undoStack().beginCompoundOperation(tr("Change parameter"));
 }
 
 /******************************************************************************
@@ -160,8 +160,8 @@ void NumericalParameterUI::onSpinnerDragStart()
 ******************************************************************************/
 void NumericalParameterUI::onSpinnerDragStop()
 {
-	OVITO_ASSERT(dataSet()->undoStack().isRecording());
-	dataSet()->undoStack().endCompoundOperation();
+	OVITO_ASSERT(dataset()->undoStack().isRecording());
+	dataset()->undoStack().endCompoundOperation();
 }
 
 /******************************************************************************
@@ -169,8 +169,8 @@ void NumericalParameterUI::onSpinnerDragStop()
 ******************************************************************************/
 void NumericalParameterUI::onSpinnerDragAbort()
 {
-	OVITO_ASSERT(dataSet()->undoStack().isRecording());
-	dataSet()->undoStack().endCompoundOperation(false);
+	OVITO_ASSERT(dataset()->undoStack().isRecording());
+	dataset()->undoStack().endCompoundOperation(false);
 }
 
 /******************************************************************************

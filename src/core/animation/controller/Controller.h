@@ -140,7 +140,7 @@ public:
 	/// \sa getValueAtTime()
 	/// \sa setCurrentValue()
 	ValueType currentValue() {
-		return getValueAtTime(dataSet()->animationSettings()->time());
+		return getValueAtTime(dataset()->animationSettings()->time());
 	}
 
 	/// \brief Sets the controller's value at the specified time.
@@ -161,7 +161,7 @@ public:
 	/// \sa setValue()
 	/// \sa getCurrentValue()
 	void setCurrentValue(const ValueType& newValue) { 
-		setValue(dataSet()->animationSettings()->time(), newValue, true);
+		setValue(dataset()->animationSettings()->time(), newValue, true);
 	}
 
 	/// \brief Calculates the largest time interval containing the given time during which the

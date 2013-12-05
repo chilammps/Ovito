@@ -109,9 +109,9 @@ void ViewportMenu::onShowViewTypeMenu()
 	connect(viewNodeGroup, SIGNAL(triggered(QAction*)), this, SLOT(onViewNode(QAction*)));
 
 	// Find all camera nodes in the scene.
-	_viewport->dataSet()->sceneRoot()->visitObjectNodes([this, viewNodeGroup](ObjectNode* node) -> bool {
-		PipelineFlowState state = node->evalPipeline(_viewport->dataSet()->animationSettings()->time());
-		OORef<AbstractCameraObject> camera = state.convertObject<AbstractCameraObject>(_viewport->dataSet()->animationSettings()->time());
+	_viewport->dataset()->sceneRoot()->visitObjectNodes([this, viewNodeGroup](ObjectNode* node) -> bool {
+		PipelineFlowState state = node->evalPipeline(_viewport->dataset()->animationSettings()->time());
+		OORef<AbstractCameraObject> camera = state.convertObject<AbstractCameraObject>(_viewport->dataset()->animationSettings()->time());
 		if(camera) {
 			// Add a menu entry for this camera node.
 			QAction* action = viewNodeGroup->addAction(node->name());
@@ -155,7 +155,7 @@ void ViewportMenu::onViewType(QAction* action)
 ******************************************************************************/
 void ViewportMenu::onAdjustView()
 {
-	AdjustCameraDialog dialog(_viewport, _viewport->dataSet()->mainWindow());
+	AdjustCameraDialog dialog(_viewport, _viewport->dataset()->mainWindow());
 	dialog.exec();
 }
 
@@ -167,7 +167,7 @@ void ViewportMenu::onViewNode(QAction* action)
 	ObjectNode* viewNode = static_cast<ObjectNode*>(action->data().value<void*>());
 	OVITO_CHECK_OBJECT_POINTER(viewNode);
 
-	UndoableTransaction::handleExceptions(_viewport->dataSet()->undoStack(), tr("Set camera"), [this, viewNode]() {
+	UndoableTransaction::handleExceptions(_viewport->dataset()->undoStack(), tr("Set camera"), [this, viewNode]() {
 		_viewport->setViewType(Viewport::VIEW_SCENENODE);
 		_viewport->setViewNode(viewNode);
 	});
@@ -178,16 +178,16 @@ void ViewportMenu::onViewNode(QAction* action)
 ******************************************************************************/
 void ViewportMenu::onCreateCamera()
 {
-	UndoableTransaction::handleExceptions(_viewport->dataSet()->undoStack(), tr("Create camera"), [this]() {
-		SceneRoot* scene = _viewport->dataSet()->sceneRoot();
-		AnimationSuspender animSuspender(_viewport->dataSet()->animationSettings());
+	UndoableTransaction::handleExceptions(_viewport->dataset()->undoStack(), tr("Create camera"), [this]() {
+		SceneRoot* scene = _viewport->dataset()->sceneRoot();
+		AnimationSuspender animSuspender(_viewport->dataset()->animationSettings());
 
 		// Create and initialize the camera object.
 		OORef<CameraObject> cameraObj;
 		OORef<ObjectNode> cameraNode;
 		{
-			UndoSuspender noUndo(_viewport->dataSet()->undoStack());
-			cameraObj = new CameraObject(_viewport->dataSet());
+			UndoSuspender noUndo(_viewport->dataset()->undoStack());
+			cameraObj = new CameraObject(_viewport->dataset());
 			cameraObj->setIsPerspective(_viewport->isPerspectiveProjection());
 			if(_viewport->isPerspectiveProjection())
 				cameraObj->fovController()->setValue(0, _viewport->fieldOfView());
@@ -195,7 +195,7 @@ void ViewportMenu::onCreateCamera()
 				cameraObj->zoomController()->setValue(0, _viewport->fieldOfView());
 
 			// Create an object node to insert camera object into scene.
-			cameraNode = new ObjectNode(_viewport->dataSet(), cameraObj.get());
+			cameraNode = new ObjectNode(_viewport->dataset(), cameraObj.get());
 
 			// Give the new node a name.
 			cameraNode->setName(scene->makeNameUnique(tr("Camera")));

@@ -40,7 +40,7 @@ class OVITO_PARTICLES_EXPORT CreateExpressionPropertyModifier : public ParticleM
 public:
 
 	/// \brief Constructs a new instance of this class.
-	Q_INVOKABLE CreateExpressionPropertyModifier() :
+	Q_INVOKABLE CreateExpressionPropertyModifier(DataSet* dataset) : ParticleModifier(dataset),
 		_propertyType(ParticleProperty::UserProperty),
 		_propertyDataType(qMetaTypeId<FloatType>()), _propertyName(tr("Custom property 1")), _expressions(QStringList("0")),
 		_onlySelectedParticles(false)

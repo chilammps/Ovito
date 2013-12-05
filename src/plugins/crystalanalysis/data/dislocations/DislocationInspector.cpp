@@ -231,7 +231,7 @@ void DislocationInspector::onHideAll()
 	DislocationNetwork* dislocationsObj = static_object_cast<DislocationNetwork>(editObject());
 	if(!dislocationsObj) return;
 
-	UndoableTransaction::handleExceptions(tr("Hide all dislocations"), [dislocationsObj]() {
+	undoableTransaction(tr("Hide all dislocations"), [dislocationsObj]() {
 		for(DislocationSegment* segment : dislocationsObj->segments())
 			segment->setVisible(false);
 	});
@@ -245,7 +245,7 @@ void DislocationInspector::onShowAll()
 	DislocationNetwork* dislocationsObj = static_object_cast<DislocationNetwork>(editObject());
 	if(!dislocationsObj) return;
 
-	UndoableTransaction::handleExceptions(tr("Show all dislocations"), [dislocationsObj]() {
+	undoableTransaction(tr("Show all dislocations"), [dislocationsObj]() {
 		for(DislocationSegment* segment : dislocationsObj->segments())
 			segment->setVisible(true);
 	});
@@ -260,7 +260,7 @@ void DislocationInspector::onHideSelected()
 	if(!dislocationsObj) return;
 
 	QItemSelectionModel* selectionModel = _dislocationListUI->tableWidget()->selectionModel();
-	UndoableTransaction::handleExceptions(tr("Hide selected dislocations"), [dislocationsObj, selectionModel]() {
+	undoableTransaction(tr("Hide selected dislocations"), [dislocationsObj, selectionModel]() {
 		int row = 0;
 		for(DislocationSegment* segment : dislocationsObj->segments()) {
 			if(selectionModel->isRowSelected(row++, QModelIndex()))
@@ -277,7 +277,7 @@ void DislocationInspector::onHideUnselected()
 	DislocationNetwork* dislocationsObj = static_object_cast<DislocationNetwork>(editObject());
 	if(!dislocationsObj) return;
 
-	UndoableTransaction::handleExceptions(tr("Hide unselected dislocations"), [this, dislocationsObj]() {
+	undoableTransaction(tr("Hide unselected dislocations"), [this, dislocationsObj]() {
 		QItemSelectionModel* selectionModel = _dislocationListUI->tableWidget()->selectionModel();
 		QBitArray segmentSelection(dislocationsObj->segments().size());
 		for(const QModelIndex& index : selectionModel->selectedRows())
@@ -298,7 +298,7 @@ void DislocationInspector::onShowSelected()
 	DislocationNetwork* dislocationsObj = static_object_cast<DislocationNetwork>(editObject());
 	if(!dislocationsObj) return;
 
-	UndoableTransaction::handleExceptions(tr("Show selected dislocations"), [this, dislocationsObj]() {
+	undoableTransaction(tr("Show selected dislocations"), [this, dislocationsObj]() {
 		QItemSelectionModel* selectionModel = _dislocationListUI->tableWidget()->selectionModel();
 		QBitArray segmentSelection(dislocationsObj->segments().size());
 		for(const QModelIndex& index : selectionModel->selectedRows())
@@ -349,7 +349,7 @@ bool DislocationPickMode::pickDislocationSegment(Viewport* vp, const QPoint& pos
 ******************************************************************************/
 void DislocationPickMode::mouseReleaseEvent(Viewport* vp, QMouseEvent* event)
 {
-	if(event->button() == Qt::LeftButton && temporaryNavigationMode() == nullptr) {
+	if(event->button() == Qt::LeftButton) {
 		DislocationPickResult pickResult;
 		if(pickDislocationSegment(vp, event->pos(), pickResult)) {
 			OVITO_ASSERT(pickResult.segmentIndex < _inspector->dislocationListUI()->model()->rowCount());
@@ -379,9 +379,9 @@ void DislocationPickMode::mouseMoveEvent(Viewport* vp, QMouseEvent* event)
 /******************************************************************************
 * Renders the overlay content in a viewport.
 ******************************************************************************/
-void DislocationPickMode::renderOverlay3D(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive)
+void DislocationPickMode::renderOverlay3D(Viewport* vp, ViewportSceneRenderer* renderer)
 {
-	ViewportInputMode::renderOverlay3D(vp, renderer, isActive);
+	ViewportInputMode::renderOverlay3D(vp, renderer);
 
 	if(!_hoverSegment.segment || !_hoverSegment.objNode || !_hoverSegment.displayObj)
 		return;

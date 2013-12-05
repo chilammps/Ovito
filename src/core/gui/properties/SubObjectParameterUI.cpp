@@ -60,7 +60,7 @@ void SubObjectParameterUI::resetUI()
 		if(!subEditor()) {
 			_subEditor = parameterObject()->createPropertiesEditor();
 			if(_subEditor)
-				_subEditor->initialize(editor()->container(), _rolloutParams);
+				_subEditor->initialize(editor()->container(), editor()->mainWindow(), _rolloutParams);
 		}
 
 		if(subEditor())

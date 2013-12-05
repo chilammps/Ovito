@@ -42,14 +42,11 @@ public:
 	ParticleInformationInputMode(ParticleInformationApplet* applet) :
 		_applet(applet) {}
 
-	/// Returns the activation behavior of this input handler.
-	virtual InputHandlerType handlerType() override { return ViewportInputMode::NORMAL; }
-
 	/// Handles the mouse up events for a Viewport.
 	virtual void mouseReleaseEvent(Viewport* vp, QMouseEvent* event) override;
 
 	/// \brief Lets the input mode render its overlay content in a viewport.
-	virtual void renderOverlay3D(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive) override;
+	virtual void renderOverlay3D(Viewport* vp, ViewportSceneRenderer* renderer) override;
 
 	/// \brief Indicates whether this input mode renders into the viewports.
 	virtual bool hasOverlay() override { return true; }
@@ -73,11 +70,11 @@ class OVITO_PARTICLES_EXPORT ParticleInformationApplet : public UtilityApplet
 {
 public:
 
-	/// Default constructor.
-	Q_INVOKABLE ParticleInformationApplet();
+	/// Constructor.
+	Q_INVOKABLE ParticleInformationApplet(DataSet* dataset) : UtilityApplet(dataset), _panel(nullptr) {}
 
 	/// Shows the UI of the utility in the given RolloutContainer.
-	virtual void openUtility(RolloutContainer* container, const RolloutInsertionParameters& rolloutParams = RolloutInsertionParameters()) override;
+	virtual void openUtility(MainWindow* mainWindow, RolloutContainer* container, const RolloutInsertionParameters& rolloutParams = RolloutInsertionParameters()) override;
 
 	/// Removes the UI of the utility from the RolloutContainer.
 	virtual void closeUtility(RolloutContainer* container) override;
@@ -93,7 +90,7 @@ private:
 	QWidget* _panel;
 
 	/// The viewport input mode.
-	OORef<ParticleInformationInputMode> _inputMode;
+	ParticleInformationInputMode* _inputMode;
 
 	Q_CLASSINFO("DisplayName", "Inspect particles");
 

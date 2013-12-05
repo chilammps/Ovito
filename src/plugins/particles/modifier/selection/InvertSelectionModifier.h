@@ -37,7 +37,7 @@ class OVITO_PARTICLES_EXPORT InvertSelectionModifier : public ParticleModifier
 public:
 
 	/// \brief Constructs a new instance of this class.
-	Q_INVOKABLE InvertSelectionModifier() {}
+	Q_INVOKABLE InvertSelectionModifier(DataSet* dataset) : ParticleModifier(dataset) {}
 
 	/// \brief Asks the modifier for its validity interval at the given time.
 	virtual TimeInterval modifierValidity(TimePoint time) override { return TimeInterval::forever(); }

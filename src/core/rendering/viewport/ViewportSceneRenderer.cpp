@@ -284,7 +284,7 @@ Box3 ViewportSceneRenderer::boundingBoxInteractive(TimePoint time, Viewport* vie
 	});
 
 	// Include visual geometry of input mode overlays in bounding box.
-	MainWindow* mainWindow = viewport->dataSet()->mainWindow();
+	MainWindow* mainWindow = viewport->dataset()->mainWindow();
 	if(mainWindow) {
 		for(const auto& handler : mainWindow->viewportInputManager()->stack()) {
 			if(handler->hasOverlay())

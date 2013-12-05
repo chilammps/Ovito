@@ -317,7 +317,7 @@ private:
 class AnimationSuspender {
 public:
 	AnimationSuspender(AnimationSettings* animSettings) : _animSettings(*animSettings) { _animSettings.suspendAnim(); }
-	AnimationSuspender(RefMaker* object) : _animSettings(*object->dataSet()->animationSettings()) { _animSettings.suspendAnim(); }
+	AnimationSuspender(RefMaker* object) : _animSettings(*object->dataset()->animationSettings()) { _animSettings.suspendAnim(); }
 	~AnimationSuspender() { _animSettings.resumeAnim(); }
 private:
 	AnimationSettings& _animSettings;

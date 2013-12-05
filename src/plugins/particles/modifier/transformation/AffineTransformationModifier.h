@@ -45,8 +45,8 @@ class OVITO_PARTICLES_EXPORT AffineTransformationModifier : public ParticleModif
 {
 public:
 
-	/// \brief Constructs a new instance of this class.
-	Q_INVOKABLE AffineTransformationModifier();
+	/// \brief Constructor.
+	Q_INVOKABLE AffineTransformationModifier(DataSet* dataset);
 
 	/// \brief This virtual method is called by the system when the modifier has been inserted into a PipelineObject.
 	virtual void initializeModifier(PipelineObject* pipeline, ModifierApplication* modApp) override;

@@ -47,9 +47,9 @@ PRSTransformationController::PRSTransformationController(DataSet* dataset) : Tra
 	INIT_PROPERTY_FIELD(PRSTransformationController::_position);
 	INIT_PROPERTY_FIELD(PRSTransformationController::_rotation);
 	INIT_PROPERTY_FIELD(PRSTransformationController::_scaling);
-	_position = ControllerManager::instance().createDefaultController<PositionController>(dataSet());
-	_rotation = ControllerManager::instance().createDefaultController<RotationController>(dataSet());
-	_scaling = ControllerManager::instance().createDefaultController<ScalingController>(dataSet());
+	_position = ControllerManager::instance().createDefaultController<PositionController>(dataset);
+	_rotation = ControllerManager::instance().createDefaultController<RotationController>(dataset);
+	_scaling = ControllerManager::instance().createDefaultController<ScalingController>(dataset);
 }
 
 /******************************************************************************

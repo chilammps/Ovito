@@ -57,10 +57,10 @@ void ObjectSaveStream::saveObject(OvitoObject* object)
 			id = (quint32)_objects.size();
 
 			if(object->getOOType() == DataSet::OOType)
-				_dataSet = static_object_cast<DataSet>(object);
+				_dataset = static_object_cast<DataSet>(object);
 
 			OVITO_ASSERT(!object->getOOType().isDerivedFrom(RefMaker::OOType)
-					|| static_object_cast<RefMaker>(object)->dataSet() == _dataSet);
+					|| static_object_cast<RefMaker>(object)->dataset() == _dataset);
 		}
 		*this << id;
 	}

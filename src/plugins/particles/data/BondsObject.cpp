@@ -24,13 +24,13 @@
 
 namespace Particles {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, BondsObject, SceneObject)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, BondsObject, SceneObject);
 
 /******************************************************************************
 * Default constructor.
 ******************************************************************************/
-BondsObject::BondsObject(BondsStorage* storage)
-	: _storage(storage ? storage : new BondsStorage())
+BondsObject::BondsObject(DataSet* dataset, BondsStorage* storage) : SceneObject(dataset),
+	_storage(storage ? storage : new BondsStorage())
 {
 }
 

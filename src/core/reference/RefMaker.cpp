@@ -60,7 +60,7 @@ void RefMaker::autoDeleteObject()
 
 	clearAllReferences();
 
-	if(!dataSet() || dataSet()->undoStack().isRecording() == false)
+	if(!dataset() || dataset()->undoStack().isRecording() == false)
 		OvitoObject::autoDeleteObject();
 }
 
@@ -307,7 +307,7 @@ void RefMaker::saveToStream(ObjectSaveStream& stream)
 void RefMaker::loadFromStream(ObjectLoadStream& stream)
 {
 	OvitoObject::loadFromStream(stream);
-	OVITO_ASSERT(!dataSet()->undoStack().isRecording());
+	OVITO_ASSERT(!dataset()->undoStack().isRecording());
 	OVITO_ASSERT(stream._currentObject && stream._currentObject->object.get() == this);
 
 #if 0

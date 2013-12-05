@@ -41,7 +41,7 @@ class OVITO_CRYSTALANALYSIS_EXPORT SmoothSurfaceModifier : public Modifier
 public:
 
 	/// Constructor.
-	Q_INVOKABLE SmoothSurfaceModifier();
+	Q_INVOKABLE SmoothSurfaceModifier(DataSet* dataset);
 
 	/// Asks the modifier whether it can be applied to the given input data.
 	virtual bool isApplicableTo(const PipelineFlowState& input) override;

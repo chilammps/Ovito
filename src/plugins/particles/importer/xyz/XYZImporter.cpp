@@ -23,10 +23,10 @@
 #include <core/utilities/io/FileManager.h>
 #include <core/utilities/concurrent/Future.h>
 #include <core/utilities/concurrent/Task.h>
-#include <core/utilities/concurrent/ProgressManager.h>
+#include <core/dataset/DataSetContainer.h>
 #include <core/dataset/importexport/LinkedFileObject.h>
+#include <core/gui/mainwin/MainWindow.h>
 #include <core/gui/properties/BooleanParameterUI.h>
-
 #include <plugins/particles/importer/InputColumnMappingDialog.h>
 #include "XYZImporter.h"
 
@@ -98,8 +98,10 @@ bool XYZImporter::inspectNewFile(LinkedFileObject* obj)
 
 	// Start task that inspects the file header to determine the number of data columns.
 	std::unique_ptr<XYZImportTask> inspectionTask(new XYZImportTask(obj->frames().front()));
-	Future<void> future = runInBackground<void>(std::bind(&XYZImportTask::load, inspectionTask.get(), std::placeholders::_1));
-	if(!ProgressManager::instance().waitForTask(future))
+	DataSetContainer& datasetContainer = *dataset()->container();
+	Future<void> future = datasetContainer.taskManager().runInBackground<void>(std::bind(&XYZImportTask::load,
+			inspectionTask.get(), std::ref(datasetContainer), std::placeholders::_1));
+	if(!datasetContainer.taskManager().waitForTask(future))
 		return false;
 
 	// This is to throw an exception if an error has occurred.
@@ -416,10 +418,8 @@ void XYZImporterEditor::createUI(const RolloutInsertionParameters& rolloutParams
 ******************************************************************************/
 void XYZImporterEditor::onEditColumnMapping()
 {
-	XYZImporter* importer = static_object_cast<XYZImporter>(editObject());
-	if(importer) {
-		importer->showEditColumnMappingDialog();
-	}
+	if(XYZImporter* importer = static_object_cast<XYZImporter>(editObject()))
+		importer->showEditColumnMappingDialog(mainWindow());
 }
 
 };

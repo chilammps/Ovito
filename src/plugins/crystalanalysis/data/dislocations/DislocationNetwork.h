@@ -38,8 +38,8 @@ class OVITO_CRYSTALANALYSIS_EXPORT DislocationNetwork : public SceneObject
 {
 public:
 
-	/// \brief Default constructor that creates an empty object.
-	Q_INVOKABLE DislocationNetwork();
+	/// \brief Constructor that creates an empty object.
+	Q_INVOKABLE DislocationNetwork(DataSet* dataset);
 
 	/// Returns the title of this object.
 	virtual QString objectTitle() override { return tr("Dislocations"); }

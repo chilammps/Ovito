@@ -32,47 +32,47 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ParticlePropertyObject, SceneObje
 /******************************************************************************
 * Default constructor.
 ******************************************************************************/
-ParticlePropertyObject::ParticlePropertyObject(ParticleProperty* storage)
-	: _storage(storage ? storage : new ParticleProperty())
+ParticlePropertyObject::ParticlePropertyObject(DataSet* dataset, ParticleProperty* storage)
+	: SceneObject(dataset), _storage(storage ? storage : new ParticleProperty())
 {
 }
 
 /******************************************************************************
 * Factory function that creates a user-defined property object.
 ******************************************************************************/
-OORef<ParticlePropertyObject> ParticlePropertyObject::create(size_t particleCount, int dataType, size_t dataTypeSize, size_t componentCount, const QString& name)
+OORef<ParticlePropertyObject> ParticlePropertyObject::create(DataSet* dataset, size_t particleCount, int dataType, size_t dataTypeSize, size_t componentCount, const QString& name)
 {
-	return create(new ParticleProperty(particleCount, dataType, dataTypeSize, componentCount, name));
+	return create(dataset, new ParticleProperty(particleCount, dataType, dataTypeSize, componentCount, name));
 }
 
 /******************************************************************************
 * Factory function that creates a standard property object.
 ******************************************************************************/
-OORef<ParticlePropertyObject> ParticlePropertyObject::create(size_t particleCount, ParticleProperty::Type which, size_t componentCount)
+OORef<ParticlePropertyObject> ParticlePropertyObject::create(DataSet* dataset, size_t particleCount, ParticleProperty::Type which, size_t componentCount)
 {
-	return create(new ParticleProperty(particleCount, which, componentCount));
+	return create(dataset, new ParticleProperty(particleCount, which, componentCount));
 }
 
 /******************************************************************************
 * Factory function that creates a property object based on an existing storage.
 ******************************************************************************/
-OORef<ParticlePropertyObject> ParticlePropertyObject::create(ParticleProperty* storage)
+OORef<ParticlePropertyObject> ParticlePropertyObject::create(DataSet* dataset, ParticleProperty* storage)
 {
 	OORef<ParticlePropertyObject> propertyObj;
 
 	switch(storage->type()) {
 	case ParticleProperty::ParticleTypeProperty:
 	case ParticleProperty::StructureTypeProperty:
-		propertyObj = new ParticleTypeProperty(storage);
+		propertyObj = new ParticleTypeProperty(dataset, storage);
 		break;
 	default:
-		propertyObj = new ParticlePropertyObject(storage);
+		propertyObj = new ParticlePropertyObject(dataset, storage);
 	}
 
 	if(storage->type() == ParticleProperty::PositionProperty)
-		propertyObj->addDisplayObject(new ParticleDisplay());
+		propertyObj->addDisplayObject(new ParticleDisplay(dataset));
 	else if(storage->type() == ParticleProperty::DisplacementProperty)
-		propertyObj->addDisplayObject(new VectorDisplay());
+		propertyObj->addDisplayObject(new VectorDisplay(dataset));
 
 	return propertyObj;
 }
@@ -96,8 +96,8 @@ void ParticlePropertyObject::setName(const QString& newName)
 		return;
 
 	// Make the property change undoable.
-	if(UndoManager::instance().isRecording())
-		UndoManager::instance().push(new SimplePropertyChangeOperation(this, "name"));
+	if(dataset()->undoStack().isRecording())
+		dataset()->undoStack().push(new SimplePropertyChangeOperation(this, "name"));
 
 	_storage.detach();
 	_storage->setName(newName);

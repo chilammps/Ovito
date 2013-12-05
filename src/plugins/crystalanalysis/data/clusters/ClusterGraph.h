@@ -37,8 +37,8 @@ class OVITO_CRYSTALANALYSIS_EXPORT ClusterGraph : public SceneObject
 {
 public:
 
-	/// \brief Default constructor that creates an empty ClusterGraph object.
-	Q_INVOKABLE ClusterGraph();
+	/// \brief Constructor that creates an empty ClusterGraph object.
+	Q_INVOKABLE ClusterGraph(DataSet* dataset);
 
 	/// Returns the title of this object.
 	virtual QString objectTitle() override { return tr("Clusters"); }

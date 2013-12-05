@@ -37,10 +37,10 @@ SET_PROPERTY_FIELD_LABEL(DislocationNetwork, _segments, "Dislocation segments")
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-DislocationNetwork::DislocationNetwork()
+DislocationNetwork::DislocationNetwork(DataSet* dataset) : SceneObject(dataset)
 {
 	INIT_PROPERTY_FIELD(DislocationNetwork::_segments);
-	addDisplayObject(new DislocationDisplay());
+	addDisplayObject(new DislocationDisplay(dataset));
 }
 
 /******************************************************************************

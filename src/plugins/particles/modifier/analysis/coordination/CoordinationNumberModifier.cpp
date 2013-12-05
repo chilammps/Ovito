@@ -38,7 +38,7 @@ SET_PROPERTY_FIELD_UNITS(CoordinationNumberModifier, _cutoff, WorldParameterUnit
 /******************************************************************************
 * Constructs the modifier object.
 ******************************************************************************/
-CoordinationNumberModifier::CoordinationNumberModifier() :
+CoordinationNumberModifier::CoordinationNumberModifier(DataSet* dataset) : AsynchronousParticleModifier(dataset),
 	_cutoff(3.2),
 	_coordinationNumbers(new ParticleProperty(0, ParticleProperty::CoordinationProperty))
 {
@@ -260,7 +260,7 @@ void CoordinationNumberModifierEditor::onSaveData()
 	if(modifier->rdfX().empty())
 		return;
 
-	QString fileName = QFileDialog::getSaveFileName(&MainWindow::instance(),
+	QString fileName = QFileDialog::getSaveFileName(mainWindow(),
 	    tr("Save RDF Data"), QString(), tr("Text files (*.txt);;All files (*)"));
 	if(fileName.isEmpty())
 		return;

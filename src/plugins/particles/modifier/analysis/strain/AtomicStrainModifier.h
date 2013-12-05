@@ -37,8 +37,8 @@ class OVITO_PARTICLES_EXPORT AtomicStrainModifier : public AsynchronousParticleM
 {
 public:
 
-	/// Default constructor.
-	Q_INVOKABLE AtomicStrainModifier();
+	/// Constructor.
+	Q_INVOKABLE AtomicStrainModifier(DataSet* dataset);
 
 	/// Returns the object that contains the reference configuration of the particles
 	/// used for calculating the displacement vectors.

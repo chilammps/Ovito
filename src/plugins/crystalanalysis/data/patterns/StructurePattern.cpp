@@ -39,14 +39,14 @@ SET_PROPERTY_FIELD_LABEL(StructurePattern, _burgersVectorFamilies, "Burgers vect
 /******************************************************************************
 * Constructs the StructurePattern object.
 ******************************************************************************/
-StructurePattern::StructurePattern() : _structureType(Lattice)
+StructurePattern::StructurePattern(DataSet* dataset) : ParticleType(dataset), _structureType(Lattice)
 {
 	INIT_PROPERTY_FIELD(StructurePattern::_shortName);
 	INIT_PROPERTY_FIELD(StructurePattern::_structureType);
 	INIT_PROPERTY_FIELD(StructurePattern::_burgersVectorFamilies);
 
 	// Create "unknown" Burgers vector family.
-	BurgersVectorFamily* family = new BurgersVectorFamily();
+	BurgersVectorFamily* family = new BurgersVectorFamily(dataset);
 	family->setColor(Color(0.7f, 0.7f, 0.7f));
 	family->setName(tr("Other"));
 	family->setBurgersVector(Vector3::Zero());

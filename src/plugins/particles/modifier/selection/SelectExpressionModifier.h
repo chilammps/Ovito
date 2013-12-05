@@ -39,8 +39,8 @@ class OVITO_PARTICLES_EXPORT SelectExpressionModifier : public ParticleModifier
 {
 public:
 
-	/// Default constructor.
-	Q_INVOKABLE SelectExpressionModifier() {
+	/// Constructor.
+	Q_INVOKABLE SelectExpressionModifier(DataSet* dataset) : ParticleModifier(dataset) {
 		INIT_PROPERTY_FIELD(SelectExpressionModifier::_expression);
 	}
 

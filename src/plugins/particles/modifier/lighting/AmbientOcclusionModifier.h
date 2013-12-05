@@ -77,8 +77,8 @@ public:
 
 public:
 
-	/// Default constructor.
-	Q_INVOKABLE AmbientOcclusionModifier();
+	/// Constructor.
+	Q_INVOKABLE AmbientOcclusionModifier(DataSet* dataset);
 
 	/// Returns the computed per-particle brightness values.
 	const ParticleProperty& brightnessValues() const { OVITO_CHECK_POINTER(_brightnessValues.constData()); return *_brightnessValues; }

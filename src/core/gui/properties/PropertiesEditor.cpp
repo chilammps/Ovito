@@ -31,7 +31,7 @@ DEFINE_FLAGS_REFERENCE_FIELD(PropertiesEditor, _editObject, "EditObject", RefTar
 /******************************************************************************
 * The constructor.
 ******************************************************************************/
-PropertiesEditor::PropertiesEditor() : RefMaker(nullptr), _container(nullptr)
+PropertiesEditor::PropertiesEditor() : RefMaker(nullptr), _container(nullptr), _mainWindow(nullptr)
 {
 	INIT_PROPERTY_FIELD(PropertiesEditor::_editObject);
 }
@@ -96,7 +96,7 @@ bool PropertiesEditor::referenceEvent(RefTarget* source, ReferenceEvent* event)
 void PropertiesEditor::referenceReplaced(const PropertyFieldDescriptor& field, RefTarget* oldTarget, RefTarget* newTarget)
 {
 	if(field == PROPERTY_FIELD(PropertiesEditor::_editObject)) {
-		setDataSet(editObject() ? editObject()->dataSet() : nullptr);
+		setDataset(editObject() ? editObject()->dataset() : nullptr);
 		Q_EMIT contentsReplaced(editObject());
 		Q_EMIT contentsChanged(editObject());
 	}

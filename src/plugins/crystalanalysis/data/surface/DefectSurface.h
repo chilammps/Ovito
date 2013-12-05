@@ -37,8 +37,8 @@ class OVITO_CRYSTALANALYSIS_EXPORT DefectSurface : public SceneObject
 {
 public:
 
-	/// \brief Default constructor that creates an empty DefectSurface object.
-	Q_INVOKABLE DefectSurface();
+	/// \brief Constructor that creates an empty DefectSurface object.
+	Q_INVOKABLE DefectSurface(DataSet* dataset);
 
 	/// Returns the title of this object.
 	virtual QString objectTitle() override { return tr("Defect surface"); }

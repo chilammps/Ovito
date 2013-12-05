@@ -105,7 +105,7 @@ void RenderSettings::setRendererClass(const OvitoObjectType* rendererClass)
 	OVITO_ASSERT(rendererClass->isDerivedFrom(SceneRenderer::OOType));
 	
 	// Create a new instance of the specified class.
-	_renderer = static_object_cast<SceneRenderer>(rendererClass->createInstance(dataSet()));
+	_renderer = static_object_cast<SceneRenderer>(rendererClass->createInstance(dataset()));
 }
 
 /******************************************************************************

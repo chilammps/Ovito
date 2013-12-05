@@ -32,7 +32,7 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, XYZExporter, ParticleExporter)
 /******************************************************************************
 * Constructs a new instance of this class.
 ******************************************************************************/
-XYZExporter::XYZExporter()
+XYZExporter::XYZExporter(DataSet* dataset) : ParticleExporter(dataset)
 {
 	// Use the last mapping by default.
 	QSettings settings;
@@ -52,9 +52,9 @@ XYZExporter::XYZExporter()
 /******************************************************************************
 * Opens the export settings dialog for this exporter service.
 ******************************************************************************/
-bool XYZExporter::showSettingsDialog(DataSet* dataset, const PipelineFlowState& state, QWidget* parent)
+bool XYZExporter::showSettingsDialog(const PipelineFlowState& state, QWidget* parent)
 {
-	ParticleExporterSettingsDialog dialog(parent, this, dataset, state, &_columnMapping);
+	ParticleExporterSettingsDialog dialog(parent, this, state, &_columnMapping);
 	if(dialog.exec() == QDialog::Accepted) {
 
 		// Remember the output column mapping for the next time.

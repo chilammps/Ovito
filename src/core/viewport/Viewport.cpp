@@ -283,7 +283,7 @@ ViewProjectionParameters Viewport::projectionParameters(TimePoint time, FloatTyp
 ******************************************************************************/
 void Viewport::zoomToSceneExtents()
 {
-	Box3 sceneBoundingBox = dataSet()->sceneRoot()->worldBoundingBox(dataSet()->animationSettings()->time());
+	Box3 sceneBoundingBox = dataset()->sceneRoot()->worldBoundingBox(dataset()->animationSettings()->time());
 	zoomToBox(sceneBoundingBox);
 }
 
@@ -293,8 +293,8 @@ void Viewport::zoomToSceneExtents()
 void Viewport::zoomToSelectionExtents()
 {
 	Box3 selectionBoundingBox;
-	for(SceneNode* node : dataSet()->selection()->nodes()) {
-		selectionBoundingBox.addBox(node->worldBoundingBox(dataSet()->animationSettings()->time()));
+	for(SceneNode* node : dataset()->selection()->nodes()) {
+		selectionBoundingBox.addBox(node->worldBoundingBox(dataset()->animationSettings()->time()));
 	}
 	if(selectionBoundingBox.isEmpty() == false)
 		zoomToBox(selectionBoundingBox);
@@ -322,10 +322,10 @@ void Viewport::zoomToBox(const Box3& box)
 		// Setup projection.
 		FloatType aspectRatio = (FloatType)size().height() / size().width();
 		if(renderFrameShown()) {
-			if(RenderSettings* renderSettings = dataSet()->renderSettings())
+			if(RenderSettings* renderSettings = dataset()->renderSettings())
 				aspectRatio = renderSettings->outputImageAspectRatio();
 		}
-		ViewProjectionParameters projParams = projectionParameters(dataSet()->animationSettings()->time(), aspectRatio, box);
+		ViewProjectionParameters projParams = projectionParameters(dataset()->animationSettings()->time(), aspectRatio, box);
 
 		FloatType minX =  FLOATTYPE_MAX, minY =  FLOATTYPE_MAX;
 		FloatType maxX = -FLOATTYPE_MAX, maxY = -FLOATTYPE_MAX;
@@ -509,14 +509,14 @@ void Viewport::render(QOpenGLContext* context)
 
 	try {
 		_isRendering = true;
-		TimePoint time = dataSet()->animationSettings()->time();
-		ViewportSceneRenderer* renderer = dataSet()->viewportConfig()->viewportRenderer();
+		TimePoint time = dataset()->animationSettings()->time();
+		ViewportSceneRenderer* renderer = dataset()->viewportConfig()->viewportRenderer();
 
 		QSize vpSize = size();
 		glViewport(0, 0, vpSize.width(), vpSize.height());
 
 		// Set up the viewport renderer.
-		renderer->startRender(dataSet(), dataSet()->renderSettings());
+		renderer->startRender(dataset(), dataset()->renderSettings());
 
 		// Request scene bounding box.
 		Box3 boundingBox = renderer->sceneBoundingBox(time);
@@ -565,7 +565,7 @@ void Viewport::render(QOpenGLContext* context)
 	}
 	catch(Exception& ex) {
 		ex.prependGeneralMessage(tr("An unexpected error occurred while rendering the viewport contents. The program will quit."));
-		dataSet()->viewportConfig()->suspendViewportUpdates();
+		dataset()->viewportConfig()->suspendViewportUpdates();
 		QCoreApplication::removePostedEvents(nullptr, 0);
 		ex.showError();
 		QCoreApplication::instance()->quit();
@@ -578,7 +578,7 @@ void Viewport::render(QOpenGLContext* context)
 void Viewport::renderViewportTitle()
 {
 	// Create a rendering buffer that is responsible for rendering the viewport's caption text.
-	ViewportSceneRenderer* renderer = dataSet()->viewportConfig()->viewportRenderer();
+	ViewportSceneRenderer* renderer = dataset()->viewportConfig()->viewportRenderer();
 	if(!_captionBuffer || !_captionBuffer->isValid(renderer)) {
 		_captionBuffer = renderer->createTextGeometryBuffer();
 		_captionBuffer->setFont(ViewportSettings::getSettings().viewportFont());
@@ -634,7 +634,7 @@ void Viewport::renderOrientationIndicator()
 {
 	const FloatType tripodSize = 60.0f * viewportWindow()->devicePixelRatio();			// pixels
 	const FloatType tripodArrowSize = 0.17f; 	// percentage of the above value.
-	ViewportSceneRenderer* renderer = dataSet()->viewportConfig()->viewportRenderer();
+	ViewportSceneRenderer* renderer = dataset()->viewportConfig()->viewportRenderer();
 
 	// Turn off depth-testing.
 	OVITO_CHECK_OPENGL(glDisable(GL_DEPTH_TEST));
@@ -707,7 +707,7 @@ void Viewport::renderOrientationIndicator()
 void Viewport::adjustProjectionForRenderFrame(ViewProjectionParameters& params)
 {
 	QSize vpSize = size();
-	RenderSettings* renderSettings = dataSet()->renderSettings();
+	RenderSettings* renderSettings = dataset()->renderSettings();
 	if(!renderSettings || vpSize.width() == 0 || vpSize.height() == 0)
 		return;
 
@@ -741,7 +741,7 @@ void Viewport::adjustProjectionForRenderFrame(ViewProjectionParameters& params)
 Box2 Viewport::renderFrameRect() const
 {
 	QSize vpSize = size();
-	RenderSettings* renderSettings = dataSet()->renderSettings();
+	RenderSettings* renderSettings = dataset()->renderSettings();
 	if(!renderSettings || vpSize.width() == 0 || vpSize.height() == 0)
 		return Box2(Point2(-1), Point2(+1));
 
@@ -770,7 +770,7 @@ void Viewport::renderRenderFrame()
 		return;
 
 	// Create a rendering buffer that is responsible for rendering the frame.
-	ViewportSceneRenderer* renderer = dataSet()->viewportConfig()->viewportRenderer();
+	ViewportSceneRenderer* renderer = dataset()->viewportConfig()->viewportRenderer();
 	if(!_renderFrameOverlay || !_renderFrameOverlay->isValid(renderer)) {
 		_renderFrameOverlay = renderer->createImageGeometryBuffer();
 		QImage image(1, 1, QImage::Format_ARGB32_Premultiplied);
@@ -821,10 +821,10 @@ ViewportPickResult Viewport::pick(const QPointF& pos)
 	OVITO_ASSERT_MSG(!isRendering(), "Viewport::pick", "Object picking is not possible while rendering viewport contents.");
 	
 	try {
-		TimePoint time = dataSet()->animationSettings()->time();
+		TimePoint time = dataset()->animationSettings()->time();
 
 		// Set up the picking renderer.
-		_pickingRenderer->startRender(dataSet(), dataSet()->renderSettings());
+		_pickingRenderer->startRender(dataset(), dataset()->renderSettings());
 
 		try {
 			// Request scene bounding box.

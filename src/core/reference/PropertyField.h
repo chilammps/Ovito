@@ -109,8 +109,8 @@ public:
 	/// Changes the value of the property. Handles undo and sends a notification message.
 	PropertyField& operator=(const property_type& newValue) {
 		if(_value == newValue) return *this;
-		if(descriptor()->automaticUndo() && owner()->dataSet()->undoStack().isRecording())
-			owner()->dataSet()->undoStack().push(new PropertyChangeOperation(*this));
+		if(descriptor()->automaticUndo() && owner()->dataset()->undoStack().isRecording())
+			owner()->dataset()->undoStack().push(new PropertyChangeOperation(*this));
 		setPropertyValue(newValue);
 		if(descriptor()->flags().testFlag(PROPERTY_FIELD_MEMORIZE))
 			memorizePropertyValue();

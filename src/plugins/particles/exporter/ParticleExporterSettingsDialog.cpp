@@ -20,6 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <plugins/particles/Particles.h>
+#include <core/animation/AnimationSettings.h>
 #include "ParticleExporterSettingsDialog.h"
 #include "OutputColumnMapping.h"
 
@@ -28,7 +29,7 @@ namespace Particles {
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-ParticleExporterSettingsDialog::ParticleExporterSettingsDialog(QWidget* parent, ParticleExporter* exporter, DataSet* dataset, const PipelineFlowState& state, OutputColumnMapping* columnMapping)
+ParticleExporterSettingsDialog::ParticleExporterSettingsDialog(QWidget* parent, ParticleExporter* exporter, const PipelineFlowState& state, OutputColumnMapping* columnMapping)
 	: QDialog(parent), _exporter(exporter), _columnMapping(columnMapping)
 {
 	setWindowTitle(tr("Export Settings"));
@@ -54,7 +55,7 @@ ParticleExporterSettingsDialog::ParticleExporterSettingsDialog(QWidget* parent, 
 	_rangeButtonGroup->addButton(radioBtn, 1);
 	rangeGroupLayout->addWidget(radioBtn, 1, 0, 1, 2);
 	radioBtn->setChecked(exportAnim);
-	radioBtn->setEnabled(dataset->animationSettings()->animationInterval().duration() != 0);
+	radioBtn->setEnabled(exporter->dataset()->animationSettings()->animationInterval().duration() != 0);
 
 	QHBoxLayout* frameRangeLayout = new QHBoxLayout();
 	rangeGroupLayout->addLayout(frameRangeLayout, 2, 1, 1, 1);
@@ -62,21 +63,21 @@ ParticleExporterSettingsDialog::ParticleExporterSettingsDialog(QWidget* parent, 
 	frameRangeLayout->setSpacing(0);
 	frameRangeLayout->addWidget(new QLabel(tr("From:")));
 	_startTimeSpinner = new SpinnerWidget();
-	_startTimeSpinner->setUnit(UnitsManager::instance().integerIdentityUnit());
-	_startTimeSpinner->setIntValue(_exporter->startFrame());
+	_startTimeSpinner->setUnit(UnitsManager::instance().timeUnit());
+	_startTimeSpinner->setIntValue(exporter->dataset()->animationSettings()->frameToTime(_exporter->startFrame()));
 	_startTimeSpinner->setTextBox(new QLineEdit());
-	_startTimeSpinner->setMinValue(dataset->animationSettings()->animationInterval().start() / dataset->animationSettings()->ticksPerFrame());
-	_startTimeSpinner->setMaxValue(dataset->animationSettings()->animationInterval().end() / dataset->animationSettings()->ticksPerFrame());
+	_startTimeSpinner->setMinValue(exporter->dataset()->animationSettings()->animationInterval().start());
+	_startTimeSpinner->setMaxValue(exporter->dataset()->animationSettings()->animationInterval().end());
 	frameRangeLayout->addWidget(_startTimeSpinner->textBox());
 	frameRangeLayout->addWidget(_startTimeSpinner);
 	frameRangeLayout->addSpacing(8);
 	frameRangeLayout->addWidget(new QLabel(tr("To:")));
 	_endTimeSpinner = new SpinnerWidget();
-	_endTimeSpinner->setUnit(UnitsManager::instance().integerIdentityUnit());
-	_endTimeSpinner->setIntValue(_exporter->endFrame());
+	_endTimeSpinner->setUnit(UnitsManager::instance().timeUnit());
+	_endTimeSpinner->setIntValue(exporter->dataset()->animationSettings()->frameToTime(_exporter->endFrame()));
 	_endTimeSpinner->setTextBox(new QLineEdit());
-	_endTimeSpinner->setMinValue(dataset->animationSettings()->animationInterval().start() / dataset->animationSettings()->ticksPerFrame());
-	_endTimeSpinner->setMaxValue(dataset->animationSettings()->animationInterval().end() / dataset->animationSettings()->ticksPerFrame());
+	_endTimeSpinner->setMinValue(exporter->dataset()->animationSettings()->animationInterval().start());
+	_endTimeSpinner->setMaxValue(exporter->dataset()->animationSettings()->animationInterval().end());
 	frameRangeLayout->addWidget(_endTimeSpinner->textBox());
 	frameRangeLayout->addWidget(_endTimeSpinner);
 	frameRangeLayout->addSpacing(8);
@@ -221,8 +222,8 @@ void ParticleExporterSettingsDialog::onOk()
 		_exporter->setExportAnimation(_rangeButtonGroup->checkedId() == 1);
 		_exporter->setUseWildcardFilename(_fileGroupButtonGroup->checkedId() == 1);
 		_exporter->setWildcardFilename(_wildcardTextbox->text());
-		_exporter->setStartFrame(_startTimeSpinner->intValue());
-		_exporter->setEndFrame(std::max(_endTimeSpinner->intValue(), _startTimeSpinner->intValue()));
+		_exporter->setStartFrame(_exporter->dataset()->animationSettings()->timeToFrame(_startTimeSpinner->intValue()));
+		_exporter->setEndFrame(_exporter->dataset()->animationSettings()->timeToFrame(std::max(_endTimeSpinner->intValue(), _startTimeSpinner->intValue())));
 		_exporter->setEveryNthFrame(_nthFrameSpinner->intValue());
 
 		if(_columnMapping) {

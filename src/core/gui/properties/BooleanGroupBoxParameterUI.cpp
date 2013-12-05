@@ -135,10 +135,9 @@ void BooleanGroupBoxParameterUI::setEnabled(bool enabled)
 void BooleanGroupBoxParameterUI::updatePropertyValue()
 {
 	if(groupBox() && editObject()) {
-		UndoableTransaction::handleExceptions(dataSet()->undoStack(), tr("Change parameter"), [this]() {
+		undoableTransaction(tr("Change parameter"), [this]() {
 			if(isReferenceFieldUI()) {
-				BooleanController* ctrl = dynamic_object_cast<BooleanController>(parameterObject());
-				if(ctrl) {
+				if(BooleanController* ctrl = dynamic_object_cast<BooleanController>(parameterObject())) {
 					ctrl->setCurrentValue(groupBox()->isChecked());
 					updateUI();
 				}

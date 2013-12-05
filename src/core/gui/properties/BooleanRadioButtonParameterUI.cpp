@@ -131,7 +131,7 @@ void BooleanRadioButtonParameterUI::setEnabled(bool enabled)
 void BooleanRadioButtonParameterUI::updatePropertyValue()
 {
 	if(buttonGroup() && editObject()) {
-		UndoableTransaction::handleExceptions(dataSet()->undoStack(), tr("Change parameter"), [this]() {
+		undoableTransaction(tr("Change parameter"), [this]() {
 			int id = buttonGroup()->checkedId();
 			if(id != -1) {
 				if(propertyName()) {

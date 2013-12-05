@@ -121,10 +121,10 @@ public:
 	virtual void setValue(TimePoint time, const ValueType& newValue, bool isAbsoluteValue) override {
 		if(_keys.empty()) {
 			// Handle undo.
-			if(this->dataSet()->undoStack().isRecording())
-				this->dataSet()->undoStack().push(new KeyChangeOperation(this));
+			if(this->dataset()->undoStack().isRecording())
+				this->dataset()->undoStack().push(new KeyChangeOperation(this));
 			// Automatically create a key at time 0 if the controller still has its default value (i.e. no keys).
-			if(time != 0 && this->dataSet()->animationSettings()->isAnimating() && newValue != NullValue())
+			if(time != 0 && this->dataset()->animationSettings()->isAnimating() && newValue != NullValue())
 				_keys[0] = NullValue();
 			// Set initial value.
 			_keys[time] = newValue;
@@ -143,10 +143,10 @@ public:
 		else if(deltaValue == NullValue()) return;	// Nothing to do.
 
 		// Handle undo.
-		if(this->dataSet()->undoStack().isRecording())
-			this->dataSet()->undoStack().push(new KeyChangeOperation(this));
+		if(this->dataset()->undoStack().isRecording())
+			this->dataset()->undoStack().push(new KeyChangeOperation(this));
 
-		if(!this->dataSet()->animationSettings()->isAnimating()) {
+		if(!this->dataset()->animationSettings()->isAnimating()) {
 			if(_keys.size() == 1 && isAbsoluteValue) {
 				_keys.begin()->second = newValue;
 			}
@@ -174,8 +174,8 @@ public:
 		OVITO_ASSERT(!newAnimationInterval.isInfinite());
 		if(oldAnimationInterval.duration() == 0 && oldAnimationInterval.start() == newAnimationInterval.start()) return;
 		// Handle undo.
-		if(this->dataSet()->undoStack().isRecording())
-			this->dataSet()->undoStack().push(new KeyChangeOperation(this));
+		if(this->dataset()->undoStack().isRecording())
+			this->dataset()->undoStack().push(new KeyChangeOperation(this));
 		KeyArray newKeys;
 		if(oldAnimationInterval.duration() != 0) {
 			for(auto key = _keys.begin(); key != _keys.end(); ++key) {
@@ -209,8 +209,8 @@ public:
 		}
 
 		// Handle undo.
-		if(this->dataSet()->undoStack().isRecording())
-			this->dataSet()->undoStack().push(new KeyChangeOperation(this));
+		if(this->dataset()->undoStack().isRecording())
+			this->dataset()->undoStack().push(new KeyChangeOperation(this));
 
 		if(key == _keys.end())	// Create a new key.
 			key = _keys.insert(std::make_pair(time, value)).first;
@@ -404,10 +404,10 @@ public:
 
 		// Handle undo.
 		typedef StandardKeyedController<PositionController, Vector3, KeyType, Vector3::Zero, KeyInterpolator> BaseClassType;
-		if(this->dataSet()->undoStack().isRecording())
-			this->dataSet()->undoStack().push(new typename BaseClassType::KeyChangeOperation(this));
+		if(this->dataset()->undoStack().isRecording())
+			this->dataset()->undoStack().push(new typename BaseClassType::KeyChangeOperation(this));
 
-		if(!this->dataSet()->animationSettings()->isAnimating()) {
+		if(!this->dataset()->animationSettings()->isAnimating()) {
 			// Apply delta value to all keys.
 			for(auto key = this->_keys.begin(); key != this->_keys.end(); ++key)
 				key->second = (rel * (Point3::Origin() + (Vector3)key->second)) - Point3::Origin();

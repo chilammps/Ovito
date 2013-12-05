@@ -215,7 +215,7 @@ void RenderSettingsEditor::onChooseImageFilename()
 
 	SaveImageFileDialog fileDialog(container(), tr("Output image file"), true, settings->imageInfo());
 	if(fileDialog.exec()) {
-		UndoableTransaction::handleExceptions(dataSet()->undoStack(), tr("Change output file"), [settings, &fileDialog]() {
+		undoableTransaction(tr("Change output file"), [settings, &fileDialog]() {
 			settings->setImageInfo(fileDialog.imageInfo());
 			settings->setSaveToFile(true);
 		});
@@ -229,7 +229,7 @@ void RenderSettingsEditor::onSizePresetActivated(int index)
 {
 	RenderSettings* settings = static_object_cast<RenderSettings>(editObject());
 	if(settings && index >= 1 && index <= sizeof(imageSizePresets)/sizeof(imageSizePresets[0])) {
-		UndoableTransaction::handleExceptions(dataSet()->undoStack(), tr("Change output dimensions"), [settings, index]() {
+		undoableTransaction(tr("Change output dimensions"), [settings, index]() {
 			settings->setOutputImageWidth(imageSizePresets[index-1][0]);
 			settings->setOutputImageHeight(imageSizePresets[index-1][1]);
 		});
@@ -260,7 +260,7 @@ void RenderSettingsEditor::onChangeRenderer()
 
 	int newIndex = itemList.indexOf(selectedClass);
 	if(newIndex != currentIndex && newIndex >= 0) {
-		UndoableTransaction::handleExceptions(dataSet()->undoStack(), tr("Change renderer"), [settings, newIndex, &rendererClasses]() {
+		undoableTransaction(tr("Change renderer"), [settings, newIndex, &rendererClasses]() {
 			settings->setRendererClass(rendererClasses[newIndex]);
 		});
 	}

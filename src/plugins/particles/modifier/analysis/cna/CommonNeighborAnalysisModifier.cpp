@@ -21,8 +21,7 @@
 
 #include <plugins/particles/Particles.h>
 #include <core/viewport/Viewport.h>
-#include <core/viewport/ViewportManager.h>
-#include <core/animation/AnimManager.h>
+#include <core/animation/AnimationSettings.h>
 #include <core/gui/properties/BooleanParameterUI.h>
 #include <core/gui/properties/BooleanRadioButtonParameterUI.h>
 #include <core/utilities/concurrent/ParallelFor.h>
@@ -49,7 +48,7 @@ SET_PROPERTY_FIELD_UNITS(CommonNeighborAnalysisModifier, _cutoff, WorldParameter
 /******************************************************************************
 * Constructs the modifier object.
 ******************************************************************************/
-CommonNeighborAnalysisModifier::CommonNeighborAnalysisModifier() :
+CommonNeighborAnalysisModifier::CommonNeighborAnalysisModifier(DataSet* dataset) : StructureIdentificationModifier(dataset),
 	_cutoff(3.2), _adaptiveMode(true)
 {
 	INIT_PROPERTY_FIELD(CommonNeighborAnalysisModifier::_cutoff);

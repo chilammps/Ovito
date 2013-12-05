@@ -23,9 +23,8 @@
 #include <core/gui/properties/BooleanParameterUI.h>
 #include <core/gui/properties/BooleanRadioButtonParameterUI.h>
 #include <core/gui/properties/AffineTransformationParameterUI.h>
-#include <core/dataset/UndoStack.h>
-#include <core/viewport/ViewportManager.h>
 #include <core/scene/pipeline/PipelineObject.h>
+#include <core/animation/AnimationSettings.h>
 #include "AffineTransformationModifier.h"
 
 #include <QtConcurrent>
@@ -51,7 +50,7 @@ SET_PROPERTY_FIELD_LABEL(AffineTransformationModifier, _relativeMode, "Relative 
 /******************************************************************************
 * Constructs the modifier object.
 ******************************************************************************/
-AffineTransformationModifier::AffineTransformationModifier() :
+AffineTransformationModifier::AffineTransformationModifier(DataSet* dataset) : ParticleModifier(dataset),
 	_applyToParticles(true), _toSelectionOnly(false), _applyToSimulationBox(false),
 	_transformationTM(AffineTransformation::Identity()), _destinationCell(AffineTransformation::Zero()),
 	_relativeMode(true)
@@ -74,7 +73,7 @@ void AffineTransformationModifier::initializeModifier(PipelineObject* pipeline, 
 
 	// Take the simulation cell from the input object as the default destination cell geometry for absolute scaling.
 	if((AffineTransformation)_destinationCell == AffineTransformation::Zero()) {
-		PipelineFlowState input = pipeline->evaluatePipeline(AnimManager::instance().time(), modApp, false);
+		PipelineFlowState input = pipeline->evaluatePipeline(dataset()->animationSettings()->time(), modApp, false);
 		SimulationCell* cell = input.findObject<SimulationCell>();
 		if(cell)
 			_destinationCell = cell->cellMatrix();
@@ -262,10 +261,7 @@ void AffineTransformationModifierEditor::createUI(const RolloutInsertionParamete
 	}
 
 	// Update spinner values when a new object has been loaded into the editor.
-	connect(this, SIGNAL(contentsChanged(RefTarget*)), this, SLOT(updateUI()));
-
-	// Also update the displayed values when the animation time has changed.
-	connect(&AnimManager::instance(), SIGNAL(timeChanged(TimePoint)), this, SLOT(updateUI()));
+	connect(this, &PropertiesEditor::contentsChanged, this, &AffineTransformationModifierEditor::updateUI);
 }
 
 /******************************************************************************
@@ -291,14 +287,13 @@ void AffineTransformationModifierEditor::updateUI()
 ******************************************************************************/
 void AffineTransformationModifierEditor::onSpinnerValueChanged()
 {
-	ViewportSuspender noVPUpdate;
-	if(!UndoManager::instance().isRecording()) {
-		UndoableTransaction transaction(tr("Change parameter"));
+	if(!dataset()->undoStack().isRecording()) {
+		UndoableTransaction transaction(dataset()->undoStack(), tr("Change parameter"));
 		updateParameterValue();
 		transaction.commit();
 	}
 	else {
-		UndoManager::instance().currentCompoundOperation()->clear();
+		dataset()->undoStack().resetCurrentCompoundOperation();
 		updateParameterValue();
 	}
 }
@@ -329,8 +324,8 @@ void AffineTransformationModifierEditor::updateParameterValue()
 ******************************************************************************/
 void AffineTransformationModifierEditor::onSpinnerDragStart()
 {
-	OVITO_ASSERT(!UndoManager::instance().isRecording());
-	UndoManager::instance().beginCompoundOperation(tr("Change parameter"));
+	OVITO_ASSERT(!dataset()->undoStack().isRecording());
+	dataset()->undoStack().beginCompoundOperation(tr("Change parameter"));
 }
 
 /******************************************************************************
@@ -338,8 +333,8 @@ void AffineTransformationModifierEditor::onSpinnerDragStart()
 ******************************************************************************/
 void AffineTransformationModifierEditor::onSpinnerDragStop()
 {
-	OVITO_ASSERT(UndoManager::instance().isRecording());
-	UndoManager::instance().endCompoundOperation();
+	OVITO_ASSERT(dataset()->undoStack().isRecording());
+	dataset()->undoStack().endCompoundOperation();
 }
 
 /******************************************************************************
@@ -347,9 +342,8 @@ void AffineTransformationModifierEditor::onSpinnerDragStop()
 ******************************************************************************/
 void AffineTransformationModifierEditor::onSpinnerDragAbort()
 {
-	OVITO_ASSERT(UndoManager::instance().isRecording());
-	UndoManager::instance().currentCompoundOperation()->clear();
-	UndoManager::instance().endCompoundOperation();
+	OVITO_ASSERT(dataset()->undoStack().isRecording());
+	dataset()->undoStack().endCompoundOperation(false);
 }
 
 };	// End of namespace

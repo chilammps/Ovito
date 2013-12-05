@@ -60,7 +60,8 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ColorCodingJetGradient, ColorCodi
 /******************************************************************************
 * Constructs the modifier object.
 ******************************************************************************/
-ColorCodingModifier::ColorCodingModifier() : _onlySelected(false), _keepSelection(false), _renderLegend(false)
+ColorCodingModifier::ColorCodingModifier(DataSet* dataset) : ParticleModifier(dataset),
+	_onlySelected(false), _keepSelection(false), _renderLegend(false)
 {
 	INIT_PROPERTY_FIELD(ColorCodingModifier::_startValueCtrl);
 	INIT_PROPERTY_FIELD(ColorCodingModifier::_endValueCtrl);
@@ -69,9 +70,9 @@ ColorCodingModifier::ColorCodingModifier() : _onlySelected(false), _keepSelectio
 	INIT_PROPERTY_FIELD(ColorCodingModifier::_keepSelection);
 	INIT_PROPERTY_FIELD(ColorCodingModifier::_renderLegend);
 
-	_colorGradient = new ColorCodingHSVGradient();
-	_startValueCtrl = ControllerManager::instance().createDefaultController<FloatController>();
-	_endValueCtrl = ControllerManager::instance().createDefaultController<FloatController>();
+	_colorGradient = new ColorCodingHSVGradient(dataset);
+	_startValueCtrl = ControllerManager::instance().createDefaultController<FloatController>(dataset);
+	_endValueCtrl = ControllerManager::instance().createDefaultController<FloatController>(dataset);
 }
 
 /******************************************************************************
@@ -94,8 +95,8 @@ void ColorCodingModifier::setSourceProperty(const ParticlePropertyReference& pro
 
 	// Make this change undoable.
 	qRegisterMetaType<ParticlePropertyReference>();
-	if(UndoManager::instance().isRecording())
-		UndoManager::instance().push(new SimplePropertyChangeOperation(this, "sourceProperty"));
+	if(dataset()->undoStack().isRecording())
+		dataset()->undoStack().push(new SimplePropertyChangeOperation(this, "sourceProperty"));
 
 	_sourcePropertyRef = prop;
 	notifyDependents(ReferenceEvent::TargetChanged);
@@ -127,7 +128,7 @@ void ColorCodingModifier::initializeModifier(PipelineObject* pipeline, ModifierA
 	ParticleModifier::initializeModifier(pipeline, modApp);
 	if(sourceProperty().isNull()) {
 		// Select the first available particle property from the input.
-		PipelineFlowState input = pipeline->evaluatePipeline(AnimManager::instance().time(), modApp, false);
+		PipelineFlowState input = pipeline->evaluatePipeline(dataset()->animationSettings()->time(), modApp, false);
 		ParticlePropertyReference bestProperty;
 		for(const auto& o : input.objects()) {
 			ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o.get());
@@ -594,13 +595,11 @@ bool ColorCodingModifierEditor::referenceEvent(RefTarget* source, ReferenceEvent
 ******************************************************************************/
 void ColorCodingModifierEditor::onPropertySelected(int index)
 {
-	OVITO_ASSERT(!UndoManager::instance().isRecording());
-
 	if(index < 0) return;
 	ColorCodingModifier* mod = static_object_cast<ColorCodingModifier>(editObject());
 	OVITO_CHECK_OBJECT_POINTER(mod);
 
-	UndoableTransaction::handleExceptions(tr("Select property"), [this, mod, index]() {
+	undoableTransaction(tr("Select property"), [this, mod, index]() {
 		mod->setSourceProperty(propertyListBox->property(index));
 	});
 }
@@ -610,7 +609,6 @@ void ColorCodingModifierEditor::onPropertySelected(int index)
 ******************************************************************************/
 void ColorCodingModifierEditor::onColorGradientSelected(int index)
 {
-	OVITO_ASSERT(!UndoManager::instance().isRecording());
 	if(index < 0) return;
 	ColorCodingModifier* mod = static_object_cast<ColorCodingModifier>(editObject());
 	OVITO_CHECK_OBJECT_POINTER(mod);
@@ -618,9 +616,9 @@ void ColorCodingModifierEditor::onColorGradientSelected(int index)
 	const OvitoObjectType* descriptor = static_cast<const OvitoObjectType*>(colorGradientList->itemData(index).value<void*>());
 	if(!descriptor) return;
 
-	UndoableTransaction::handleExceptions(tr("Change color gradient"), [descriptor, mod]() {
+	undoableTransaction(tr("Change color gradient"), [descriptor, mod]() {
 		// Create an instance of the selected color gradient class.
-		OORef<ColorCodingGradient> gradient = static_object_cast<ColorCodingGradient>(descriptor->createInstance());
+		OORef<ColorCodingGradient> gradient = static_object_cast<ColorCodingGradient>(descriptor->createInstance(mod->dataset()));
 		if(gradient)
 	        mod->setColorGradient(gradient);
 	});
@@ -631,11 +629,10 @@ void ColorCodingModifierEditor::onColorGradientSelected(int index)
 ******************************************************************************/
 void ColorCodingModifierEditor::onAdjustRange()
 {
-	OVITO_ASSERT(!UndoManager::instance().isRecording());
 	ColorCodingModifier* mod = static_object_cast<ColorCodingModifier>(editObject());
 	OVITO_CHECK_OBJECT_POINTER(mod);
 
-	UndoableTransaction::handleExceptions(tr("Adjust range"), [mod]() {
+	undoableTransaction(tr("Adjust range"), [mod]() {
 		mod->adjustRange();
 	});
 }
@@ -648,7 +645,7 @@ void ColorCodingModifierEditor::onReverseRange()
 	ColorCodingModifier* mod = static_object_cast<ColorCodingModifier>(editObject());
 
 	if(mod->startValueController() && mod->endValueController()) {
-		UndoableTransaction::handleExceptions(tr("Reverse range"), [mod]() {
+		undoableTransaction(tr("Reverse range"), [mod]() {
 
 			// Swap controllers for start and end value.
 			OORef<FloatController> oldStartValue = mod->startValueController();

@@ -63,7 +63,7 @@ SceneNode::SceneNode(DataSet* dataset) : RefTarget(dataset), _parentNode(nullptr
 	_displayColor = Color::fromHSV(std::uniform_real_distribution<FloatType>()(rng), 1, 1);
 
 	// Create a transformation controller for the node.
-	_transformation = ControllerManager::instance().createDefaultController<TransformationController>(dataSet());
+	_transformation = ControllerManager::instance().createDefaultController<TransformationController>(dataset);
 }
 
 /******************************************************************************
@@ -154,7 +154,7 @@ LookAtController* SceneNode::bindToTarget(SceneNode* targetNode)
 			// Create a look at controller.
 			OORef<LookAtController> lookAtCtrl = dynamic_object_cast<LookAtController>(prs->rotationController());
 			if(!lookAtCtrl)
-				lookAtCtrl = new LookAtController(dataSet());
+				lookAtCtrl = new LookAtController(dataset());
 			lookAtCtrl->setTargetNode(targetNode);
 
 			// Assign it as rotation sub-controller.
@@ -164,7 +164,7 @@ LookAtController* SceneNode::bindToTarget(SceneNode* targetNode)
 		}
 		else {
 			// Reset to default rotation controller.
-			prs->setRotationController(ControllerManager::instance().createDefaultController<RotationController>(dataSet()));
+			prs->setRotationController(ControllerManager::instance().createDefaultController<RotationController>(dataset()));
 		}
 	}
 
@@ -199,7 +199,7 @@ bool SceneNode::referenceEvent(RefTarget* source, ReferenceEvent* event)
 	}
 	else if(event->type() == ReferenceEvent::TargetDeleted && source == targetNode()) {
 		// Target node has been deleted -> delete this node too.
-		if(!dataSet()->undoStack().isUndoingOrRedoing())
+		if(!dataset()->undoStack().isUndoingOrRedoing())
 			deleteNode();
 	}
 	return RefTarget::referenceEvent(source, event);
@@ -269,9 +269,9 @@ void SceneNode::addChild(SceneNode* newChild)
 
 	// Adjust transformation to preserve world position.
 	TimeInterval iv = TimeInterval::forever();
-	const AffineTransformation& newParentTM = getWorldTransform(dataSet()->animationSettings()->time(), iv);
+	const AffineTransformation& newParentTM = getWorldTransform(dataset()->animationSettings()->time(), iv);
 	if(newParentTM != AffineTransformation::Identity())
-		newChild->transformationController()->changeParent(dataSet()->animationSettings()->time(), AffineTransformation::Identity(), newParentTM, newChild);
+		newChild->transformationController()->changeParent(dataset()->animationSettings()->time(), AffineTransformation::Identity(), newParentTM, newChild);
 	newChild->invalidateWorldTransformation();
 }
 
@@ -293,9 +293,9 @@ void SceneNode::removeChild(SceneNode* child)
 
 	// Update child node.
 	TimeInterval iv = TimeInterval::forever();
-	AffineTransformation oldParentTM = getWorldTransform(dataSet()->animationSettings()->time(), iv);
+	AffineTransformation oldParentTM = getWorldTransform(dataset()->animationSettings()->time(), iv);
 	if(oldParentTM != AffineTransformation::Identity())
-		child->transformationController()->changeParent(dataSet()->animationSettings()->time(), oldParentTM, AffineTransformation::Identity(), child);
+		child->transformationController()->changeParent(dataset()->animationSettings()->time(), oldParentTM, AffineTransformation::Identity(), child);
 	child->invalidateWorldTransformation();
 }
 
@@ -334,7 +334,7 @@ const Box3& SceneNode::worldBoundingBox(TimePoint time)
 ******************************************************************************/
 bool SceneNode::isSelected() const
 {
-	if(dataSet()->selection()->contains(const_cast<SceneNode*>(this)))
+	if(dataset()->selection()->contains(const_cast<SceneNode*>(this)))
 		return true;
 
 	GroupNode* gn = closedParentGroup();
@@ -348,9 +348,9 @@ bool SceneNode::isSelected() const
 void SceneNode::setSelected(bool selected)
 {
 	if(selected)
-		dataSet()->selection()->add(this);
+		dataset()->selection()->add(this);
 	else
-		dataSet()->selection()->remove(this);
+		dataset()->selection()->remove(this);
 }
 
 /******************************************************************************

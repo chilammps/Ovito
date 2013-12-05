@@ -41,6 +41,18 @@ public:
 	/// \brief Create a push button that activates this action.
 	QPushButton* createPushButton(QWidget* parent = nullptr);
 
+public Q_SLOTS:
+
+	/// \brief Activates the viewport input mode.
+	void activateMode() {
+		onActionTriggered(true);
+	}
+
+	/// \brief Deactivates the viewport input mode.
+	void deactivateMode() {
+		onActionTriggered(false);
+	}
+
 protected Q_SLOTS:
 
 	/// Is called when the user has triggered the action's state.

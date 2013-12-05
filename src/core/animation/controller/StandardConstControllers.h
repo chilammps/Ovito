@@ -79,8 +79,8 @@ public:
 		else newValue2 = newValue;
 		if(newValue2 == _value) return;	// No value change.
 
-		if(this->dataSet()->undoStack().isRecording())
-			this->dataSet()->undoStack().push(new ChangeValueOperation(this));
+		if(this->dataset()->undoStack().isRecording())
+			this->dataset()->undoStack().push(new ChangeValueOperation(this));
 		_value = newValue2;
 		this->notifyDependents(ReferenceEvent::TargetChanged);
 	}

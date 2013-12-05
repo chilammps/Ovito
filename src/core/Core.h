@@ -74,6 +74,7 @@ class Viewport;					// defined in Viewport.h
 class ViewportConfiguration;	// defined in ViewportConfiguration.h
 class ViewportInputManager;		// defined in ViewportInputManager.h
 class ViewportInputMode;		// defined in ViewportInputMode.h
+class ViewportModeAction;		// defined in ViewportModeAction.h
 class ViewportSceneRenderer;	// defined in ViewportSceneRenderer.h
 class ViewportSettings;			// defined in ViewportSettings.h
 class VideoEncoder;				// defined in VideoEncoder.h

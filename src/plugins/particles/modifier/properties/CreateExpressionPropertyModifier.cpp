@@ -20,8 +20,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <plugins/particles/Particles.h>
-#include <core/dataset/UndoStack.h>
 #include <core/gui/widgets/general/AutocompleteLineEdit.h>
+#include <core/animation/AnimationSettings.h>
 #include <core/scene/pipeline/PipelineObject.h>
 #include <3rdparty/muparser/muParser.h>
 #include "CreateExpressionPropertyModifier.h"
@@ -271,7 +271,7 @@ ObjectStatus CreateExpressionPropertyModifier::modifyParticles(TimePoint time, T
 	_variableNames = getVariableNames(input());
 
 	// The current animation frame number.
-	int currentFrame = AnimManager::instance().timeToFrame(time);
+	int currentFrame = dataset()->animationSettings()->timeToFrame(time);
 
 	// Create and initialize the worker threads.
 	int nthreads = std::max(QThread::idealThreadCount(), 1);
@@ -351,7 +351,7 @@ void CreateExpressionPropertyModifier::initializeModifier(PipelineObject* pipeli
 	ParticleModifier::initializeModifier(pipeline, modApp);
 
 	// Build list of available input variables.
-	PipelineFlowState input = pipeline->evaluatePipeline(AnimManager::instance().time(), modApp, false);
+	PipelineFlowState input = pipeline->evaluatePipeline(dataset()->animationSettings()->time(), modApp, false);
 	_variableNames = getVariableNames(input);
 }
 
@@ -503,7 +503,7 @@ void CreateExpressionPropertyModifierEditor::onExpressionEditingFinished()
 
 	CreateExpressionPropertyModifier* mod = static_object_cast<CreateExpressionPropertyModifier>(editObject());
 
-	UndoableTransaction::handleExceptions(tr("Change expression"), [mod, edit, index]() {
+	undoableTransaction(tr("Change expression"), [mod, edit, index]() {
 		QStringList expr = mod->expressions();
 		expr[index] = edit->text();
 		mod->setExpressions(expr);

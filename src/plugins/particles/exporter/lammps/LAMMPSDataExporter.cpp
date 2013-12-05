@@ -33,9 +33,9 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, LAMMPSDataExporter, ParticleExpor
 /******************************************************************************
 * Opens the export settings dialog for this exporter service.
 ******************************************************************************/
-bool LAMMPSDataExporter::showSettingsDialog(DataSet* dataset, const PipelineFlowState& state, QWidget* parent)
+bool LAMMPSDataExporter::showSettingsDialog(const PipelineFlowState& state, QWidget* parent)
 {
-	ParticleExporterSettingsDialog dialog(parent, this, dataset, state);
+	ParticleExporterSettingsDialog dialog(parent, this, state);
 	return (dialog.exec() == QDialog::Accepted);
 }
 

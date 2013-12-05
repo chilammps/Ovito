@@ -38,8 +38,8 @@ class OVITO_PARTICLES_EXPORT CoordinationNumberModifier : public AsynchronousPar
 {
 public:
 
-	/// Default constructor.
-	Q_INVOKABLE CoordinationNumberModifier();
+	/// Constructor.
+	Q_INVOKABLE CoordinationNumberModifier(DataSet* dataset);
 
 	/// Returns the cutoff radius used to build the neighbor lists for the analysis.
 	FloatType cutoff() const { return _cutoff; }

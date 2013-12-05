@@ -30,7 +30,7 @@ namespace Ovito {
 * The constructor of the animation settings dialog.
 ******************************************************************************/
 AnimationSettingsDialog::AnimationSettingsDialog(AnimationSettings* animSettings, QWidget* parent) :
-		QDialog(parent), _animSettings(animSettings), UndoableTransaction(animSettings->dataSet()->undoStack(), tr("Change animation settings"))
+		QDialog(parent), _animSettings(animSettings), UndoableTransaction(animSettings->dataset()->undoStack(), tr("Change animation settings"))
 {
 	setWindowTitle(tr("Animation Settings"));
 	
@@ -148,7 +148,7 @@ void AnimationSettingsDialog::onFramesPerSecondChanged(int index)
 	newInterval.setEnd(oldInterval.end() * newTicksPerFrame / oldTicksPerFrame);
 	_animSettings->setAnimationInterval(newInterval);
 
-	_animSettings->dataSet()->rescaleTime(oldInterval, newInterval);
+	_animSettings->dataset()->rescaleTime(oldInterval, newInterval);
 	
 	// Update dialog controls to reflect new values.
 	updateValues();

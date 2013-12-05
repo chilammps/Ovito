@@ -112,7 +112,7 @@ private:
 	ObjectEntry* _currentObject;
 	
 	/// The current dataset being loaded.
-	DataSet* _dataSet;
+	DataSet* _dataset;
 
 	friend class RefMaker;
 };

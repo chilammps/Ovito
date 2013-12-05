@@ -61,7 +61,7 @@ QVector<ModifierApplication*> Modifier::modifierApplications() const
 ******************************************************************************/
 QVector<QPair<ModifierApplication*, PipelineFlowState>> Modifier::getModifierInputs() const
 {
-	TimePoint time = dataSet()->animationSettings()->time();
+	TimePoint time = dataset()->animationSettings()->time();
 	QVector<QPair<ModifierApplication*, PipelineFlowState>> results;
 	Q_FOREACH(RefMaker* dependent, dependents()) {
         ModifierApplication* modApp = dynamic_object_cast<ModifierApplication>(dependent);
@@ -85,7 +85,7 @@ PipelineFlowState Modifier::getModifierInput() const
         ModifierApplication* modApp = dynamic_object_cast<ModifierApplication>(dependent);
 		if(modApp != NULL && modApp->modifier() == this) {
 			if(PipelineObject* pipelineObj = modApp->pipelineObject()) {
-				return pipelineObj->evaluatePipeline(dataSet()->animationSettings()->time(), modApp, false);
+				return pipelineObj->evaluatePipeline(dataset()->animationSettings()->time(), modApp, false);
 			}
 		}
 	}
