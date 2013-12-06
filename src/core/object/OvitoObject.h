@@ -45,19 +45,7 @@ class ObjectLoadStream;		// defined in ObjectLoadStream.h
 #endif
 
 /**
- * \brief Universal base class for all core and plug-in classes.
- *
- * Almost all classes are derived from this base class.
- * The OvitoObject class provides several services:
- *
- * \li Every OvitoObject-derived class has a descriptor associated with it that
- *     uniquely identifies it. This associated OvitoObjectType allows the developer to
- *     create instances of the class at runtime without using the \c new operator.
- * \li A reference counting mechanism.
- * \li Serialization and deserialization.
- *
- * \author Alexander Stukowski
- * \sa OvitoObjectType
+ * \brief Universal base class for most core and plug-in classes.
  */
 class OVITO_CORE_EXPORT OvitoObject : public QObject
 {
@@ -79,17 +67,6 @@ public:
 		_magicAliveCode = 0xFEDCBA87;
 #endif
 	}
-
-	/// \brief Deletes this object.
-	///
-	/// The default implementation of this method calls "delete this" to delete the object from memory.
-	virtual void autoDeleteObject() {
-		OVITO_CHECK_OBJECT_POINTER(this);
-		// Delete myself.
-		delete this;
-	}
-
-public:
 
 	/// \brief Saves the class' contents to an output stream.
 	/// \param stream The destination stream.
@@ -143,6 +120,14 @@ public:
 	bool __isObjectAlive() const { return _magicAliveCode == 0x87ABCDEF; }
 #endif
 
+protected:
+
+	/// \brief This method is called after the reference counter of this object has reached zero
+	///        and before the object is being deleted.
+	virtual void aboutToBeDeleted() {
+		OVITO_CHECK_OBJECT_POINTER(this);
+	}
+
 private:
 
 	/// The number of references to this object.
@@ -164,8 +149,14 @@ private:
 	void decrementReferenceCount() {
 		OVITO_CHECK_OBJECT_POINTER(this);
 		OVITO_ASSERT_MSG(_referenceCount > 0, "OvitoObject::decrementReferenceCount()", "Reference count became negative.");
-		if(--_referenceCount == 0)
-			autoDeleteObject();
+		if(--_referenceCount == 0) {
+			// Set the reference counter to a positive value to prevent the object
+			// from being deleted a second time.
+			_referenceCount = 1;
+			aboutToBeDeleted();
+			OVITO_ASSERT(_referenceCount == 1);
+			delete this;
+		}
 	}
 
 #ifdef OVITO_DEBUG
@@ -180,8 +171,9 @@ private:
 	Q_OBJECT
 	OVITO_OBJECT
 
-	template<class T> friend class OORef;	// Give OORef smart pointer access to the inernal reference count.
+	template<class T> friend class OORef;	// Give OORef smart pointer access to the internal reference count.
 	friend class VectorReferenceFieldBase;
+	friend class SingleReferenceFieldBase;
 };
 
 /// \brief Dynamic casting function for OvitoObject derived classes.
@@ -212,7 +204,7 @@ inline T* static_object_cast(U* obj) {
 	return static_cast<T*>(obj);
 }
 
-/// \brief Static casting function for PluginClass derived object.
+/// \brief Static casting function for OvitoObject derived object.
 ///
 /// Returns the given object cast to type \c T.
 /// Performs a runtime check of the object type in debug build.
@@ -232,7 +224,7 @@ inline OORef<T> dynamic_object_cast(const OORef<U>& obj) {
 	return OORef<T>(qobject_cast<T*>(obj.get()));
 }
 
-/// \brief Static casting function for smart pointers to PluginClass derived objects.
+/// \brief Static casting function for smart pointers to OvitoObject derived objects.
 ///
 /// Returns the given object cast to type \c T.
 /// Performs a runtime check of the object type in debug build.
@@ -243,6 +235,9 @@ inline OORef<T> static_object_cast(const OORef<U>& obj) {
 }
 
 };	// End of namespace Ovito
+
+Q_DECLARE_METATYPE(Ovito::OORef<Ovito::OvitoObject>);
+Q_DECLARE_TYPEINFO(Ovito::OORef<Ovito::OvitoObject>, Q_MOVABLE_TYPE);
 
 #include <core/utilities/io/ObjectSaveStream.h>
 #include <core/utilities/io/ObjectLoadStream.h>

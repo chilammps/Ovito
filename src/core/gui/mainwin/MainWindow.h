@@ -29,16 +29,16 @@
 
 #include <core/Core.h>
 #include <core/gui/app/Application.h>
+#include <core/dataset/DataSetContainer.h>
 
 namespace Ovito {
 
 class CommandPanel;			// defined in CommandPanel.h
 class FrameBufferWindow;	// defined in FrameBufferWindow.h
+class ActionManager;		// defined in ActionManager.h
 
 /**
  * \brief The main window of the application.
- * 
- * Please not that in console mode no instance of the main window class is created.
  */
 class OVITO_CORE_EXPORT MainWindow : public QMainWindow
 {
@@ -46,13 +46,8 @@ class OVITO_CORE_EXPORT MainWindow : public QMainWindow
 	
 public:
 
-	/// \brief Returns the one and only instance of this class.
-	/// \return The global instance of the MainWindow class.
-	inline static MainWindow& instance() {
-		OVITO_ASSERT_MSG(Application::instance().guiMode(), "MainWindow::instance()", "No main window available in non-gui mode.");
-		OVITO_ASSERT_MSG(_instance, "MainWindow::MainWindow()", "Main window has not been created yet.");
-		return *_instance;
-	}
+	/// Constructor of the main window class.
+	MainWindow();
 
 	/// Returns the main toolbar of the window.
 	QToolBar* mainToolbar() const { return _mainToolbar; }
@@ -72,10 +67,27 @@ public:
 	/// \brief Saves the layout of the docked widgets to the settings store.
 	void saveLayout();
 
-private:
+	/// \brief Immediately repaints all viewports that are flagged for an update.
+	void processViewportUpdates();
 
-	/// Constructor for the main window.
-	MainWindow(const QString& title);
+	/// Returns the container that keeps a reference to the current dataset.
+	DataSetContainer& datasetContainer() { return _datasetContainer; }
+
+	/// Returns the window's action manager.
+	ActionManager* actionManager() const { return _actionManager; }
+
+	/// Returns the window's viewport input manager.
+	ViewportInputManager* viewportInputManager() const { return _viewportInputManager; }
+
+protected:
+
+	/// Is called when the user closes the window.
+	virtual void closeEvent(QCloseEvent* event) override;
+
+	/// Is called when the window receives an event.
+	virtual bool event(QEvent *event) override;
+
+private:
 
 	/// Creates the main menu.
 	void createMainMenu();
@@ -99,20 +111,15 @@ private:
 
 	/// The command panel.
 	CommandPanel* _commandPanel;
-	
-	/// The global instance of this class.
-	static MainWindow* _instance;
 
-protected:
+	/// Container that keeps a reference to the current dataset.
+	DataSetContainer _datasetContainer;
 
-	/// Is called when the user closes the window.
-	virtual void closeEvent(QCloseEvent* event) override;
-	
-	/// Is called when the window receives an event.
-	virtual bool event(QEvent *event) override;
+	/// The associated GUI action manager.
+	ActionManager* _actionManager;
 
-	/// Give the Application class access to the main window's private constructor.
-	friend class Application;
+	/// The associated viewport input manager.
+	ViewportInputManager* _viewportInputManager;
 };
 
 };

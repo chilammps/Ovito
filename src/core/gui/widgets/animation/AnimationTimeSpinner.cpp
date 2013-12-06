@@ -20,4 +20,88 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
+#include <core/animation/AnimationSettings.h>
+#include <core/utilities/units/UnitsManager.h>
+#include <core/gui/mainwin/MainWindow.h>
 #include "AnimationTimeSpinner.h"
+
+namespace Ovito {
+
+using namespace std;
+
+/******************************************************************************
+* Constructs the spinner control.
+******************************************************************************/
+AnimationTimeSpinner::AnimationTimeSpinner(MainWindow* mainWindow, QWidget* parent) : SpinnerWidget(parent),
+		_animSettings(nullptr)
+{
+	connect(this, &SpinnerWidget::spinnerValueChanged, this, &AnimationTimeSpinner::onSpinnerValueChanged);
+	connect(&mainWindow->datasetContainer(), &DataSetContainer::dataSetChanged, this, &AnimationTimeSpinner::onDataSetReplaced);
+	connect(&mainWindow->datasetContainer(), &DataSetContainer::animationSettingsReplaced, this, &AnimationTimeSpinner::onAnimationSettingsReplaced);
+
+	onDataSetReplaced(mainWindow->datasetContainer().currentSet());
+	onAnimationSettingsReplaced(mainWindow->datasetContainer().currentSet() ? mainWindow->datasetContainer().currentSet()->animationSettings() : nullptr);
+}
+
+/******************************************************************************
+* Is called when a another dataset has become the active dataset.
+******************************************************************************/
+void AnimationTimeSpinner::onDataSetReplaced(DataSet* newDataSet)
+{
+	if(newDataSet)
+		setUnit(newDataSet->unitsManager().timeUnit());
+	else
+		setUnit(nullptr);
+}
+
+/******************************************************************************
+* This is called when new animation settings have been loaded.
+******************************************************************************/
+void AnimationTimeSpinner::onAnimationSettingsReplaced(AnimationSettings* newAnimationSettings)
+{
+	disconnect(_animIntervalChangedConnection);
+	disconnect(_timeChangedConnection);
+	_animSettings = newAnimationSettings;
+	if(newAnimationSettings) {
+		_animIntervalChangedConnection = connect(newAnimationSettings, &AnimationSettings::intervalChanged, this, &AnimationTimeSpinner::onIntervalChanged);
+		_timeChangedConnection = connect(newAnimationSettings, &AnimationSettings::timeChanged, this, &AnimationTimeSpinner::onTimeChanged);
+		onTimeChanged(newAnimationSettings->time());
+		onIntervalChanged(newAnimationSettings->animationInterval());
+	}
+	else {
+		onTimeChanged(0);
+		onIntervalChanged(TimeInterval(0));
+	}
+}
+
+/******************************************************************************
+* This is called whenever the current animation time has changed.
+******************************************************************************/
+void AnimationTimeSpinner::onTimeChanged(TimePoint newTime)
+{
+	// Set the value of the spinner to the new animation time.
+	setIntValue(newTime);
+}
+
+/******************************************************************************
+* This is called whenever the active animation interval has changed.
+******************************************************************************/
+void AnimationTimeSpinner::onIntervalChanged(TimeInterval newAnimationInterval)
+{
+	// Set the limits of the spinner to the new animation time interval.
+	setMinValue(newAnimationInterval.start());
+	setMaxValue(newAnimationInterval.end());
+	setEnabled(newAnimationInterval.duration() != 0);
+}
+
+/******************************************************************************
+* Is called when the spinner value has been changed by the user.
+******************************************************************************/
+void AnimationTimeSpinner::onSpinnerValueChanged()
+{
+	// Set a new animation time.
+	if(_animSettings)
+		_animSettings->setTime(intValue());
+}
+
+};

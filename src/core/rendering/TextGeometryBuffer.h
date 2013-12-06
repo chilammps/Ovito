@@ -32,8 +32,6 @@
 
 namespace Ovito {
 
-class SceneRenderer;			// defined in SceneRenderer.h
-
 /**
  * \brief Abstract base class for buffer objects that store text strings.
  */

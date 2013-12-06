@@ -38,12 +38,12 @@ SET_PROPERTY_FIELD_LABEL(AssignColorModifier, _keepSelection, "Keep selection")
 /******************************************************************************
 * Constructs the modifier object.
 ******************************************************************************/
-AssignColorModifier::AssignColorModifier() : _keepSelection(false)
+AssignColorModifier::AssignColorModifier(DataSet* dataset) : ParticleModifier(dataset), _keepSelection(false)
 {
 	INIT_PROPERTY_FIELD(AssignColorModifier::_colorCtrl);
 	INIT_PROPERTY_FIELD(AssignColorModifier::_keepSelection);
 
-	_colorCtrl = ControllerManager::instance().createDefaultController<VectorController>();
+	_colorCtrl = ControllerManager::instance().createDefaultController<VectorController>(dataset);
 	_colorCtrl->setValue(0, Vector3(0.3,0.3,1));
 }
 

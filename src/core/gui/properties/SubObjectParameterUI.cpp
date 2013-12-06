@@ -21,7 +21,7 @@
 
 #include <core/Core.h>
 #include <core/gui/properties/SubObjectParameterUI.h>
-#include <core/gui/undo/UndoManager.h>
+#include <core/dataset/UndoStack.h>
 
 namespace Ovito {
 
@@ -44,7 +44,6 @@ SubObjectParameterUI::SubObjectParameterUI(QObject* parentEditor, const Property
 void SubObjectParameterUI::resetUI()
 {
 	PropertyParameterUI::resetUI();
-	UndoSuspender noUndo;
 	
 	try {
 
@@ -61,7 +60,7 @@ void SubObjectParameterUI::resetUI()
 		if(!subEditor()) {
 			_subEditor = parameterObject()->createPropertiesEditor();
 			if(_subEditor)
-				_subEditor->initialize(editor()->container(), _rolloutParams);
+				_subEditor->initialize(editor()->container(), editor()->mainWindow(), _rolloutParams);
 		}
 
 		if(subEditor())

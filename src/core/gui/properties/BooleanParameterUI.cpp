@@ -21,8 +21,9 @@
 
 #include <core/Core.h>
 #include <core/gui/properties/BooleanParameterUI.h>
-#include <core/gui/undo/UndoManager.h>
-#include <core/viewport/ViewportManager.h>
+#include <core/dataset/UndoStack.h>
+#include <core/animation/AnimationSettings.h>
+#include <core/animation/controller/Controller.h>
 
 namespace Ovito {
 
@@ -49,11 +50,6 @@ BooleanParameterUI::BooleanParameterUI(QObject* parentEditor, const PropertyFiel
 	// Create UI widget.
 	_checkBox = new QCheckBox(propField.displayName());
 	connect(_checkBox, SIGNAL(clicked(bool)), this, SLOT(updatePropertyValue()));	
-
-	if(isReferenceFieldUI()) {
-		// Update the displayed value when the animation time has changed.
-		connect(&AnimManager::instance(), SIGNAL(timeChanged(TimePoint)), this, SLOT(updateUI()));
-	}
 }
 
 /******************************************************************************
@@ -78,6 +74,13 @@ void BooleanParameterUI::resetUI()
 			checkBox()->setEnabled(parameterObject() != NULL && isEnabled());
 		else
 			checkBox()->setEnabled(editObject() != NULL && isEnabled());
+	}
+
+	if(isReferenceFieldUI()) {
+		// Update the displayed value when the animation time has changed.
+		disconnect(_animationTimeChangedConnection);
+		if(editObject())
+			_animationTimeChangedConnection = connect(dataset()->animationSettings(), &AnimationSettings::timeChanged, this, &BooleanParameterUI::updateUI);
 	}
 }
 
@@ -137,11 +140,9 @@ void BooleanParameterUI::setEnabled(bool enabled)
 void BooleanParameterUI::updatePropertyValue()
 {
 	if(checkBox() && editObject()) {
-		
-		UndoableTransaction::handleExceptions(tr("Change parameter"), [this]() {
+		undoableTransaction(tr("Change parameter"), [this]() {
 			if(isReferenceFieldUI()) {
-				BooleanController* ctrl = dynamic_object_cast<BooleanController>(parameterObject());
-				if(ctrl) {
+				if(BooleanController* ctrl = dynamic_object_cast<BooleanController>(parameterObject())) {
 					ctrl->setCurrentValue(checkBox()->isChecked());
 					updateUI();
 				}

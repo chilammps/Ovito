@@ -40,12 +40,6 @@
 
 namespace Ovito {
 
-class DataSet;			// defined in DataSet.h
-class SceneNode;		// defined in SceneNode.h
-class RenderSettings;	// defined in RenderSettings.h
-class FrameBuffer;		// defined in FrameBuffer.h
-class DisplayObject;	// defined in DisplayObject.h
-
 /**
  * \brief This is the base class for scene renderers.
  */
@@ -53,21 +47,26 @@ class OVITO_CORE_EXPORT SceneRenderer : public RefTarget
 {
 public:
 
-	/// Returns the data set that is being rendered.
-	DataSet* dataset() const { OVITO_CHECK_POINTER(_dataset); return _dataset; }
-
-	/// Returns the general rendering settings.
-	RenderSettings* renderSettings() const { OVITO_CHECK_POINTER(_settings); return _settings; }
-
-	/// Prepares the renderer for rendering and sets the data set that is being rendered.
+	/// Prepares the renderer for rendering and sets the data set to be rendered.
 	virtual bool startRender(DataSet* dataset, RenderSettings* settings) {
-		_dataset = dataset;
+		_renderDataset = dataset;
 		_settings = settings;
 		return true;
 	}
 
-	/// Is called after rendering is finished.
-	virtual void endRender() { _dataset = nullptr; _settings = nullptr; }
+	/// Returns the dataset being rendered.
+	/// This information is only available between calls to startRender() and endRender().
+	DataSet* renderDataset() const {
+		OVITO_CHECK_POINTER(_renderDataset); // Make sure startRender() has been called to set the data set.
+		return _renderDataset;
+	}
+
+	/// Returns the general rendering settings.
+	/// This information is only available between calls to startRender() and endRender().
+	RenderSettings* renderSettings() const { OVITO_CHECK_POINTER(_settings); return _settings; }
+
+	/// Is called after rendering has finished.
+	virtual void endRender() { _renderDataset = nullptr; _settings = nullptr; }
 
 	/// Returns the view projection parameters.
 	const ViewProjectionParameters& projParams() const { return _projParams; }
@@ -93,8 +92,8 @@ public:
 	/// and the viewport whose being rendered.
 	virtual void beginFrame(TimePoint time, const ViewProjectionParameters& params, Viewport* vp) {
 		_time = time;
-		setProjParams(params);
 		_viewport = vp;
+		setProjParams(params);
 	}
 
 	/// Renders the current animation frame.
@@ -146,7 +145,7 @@ public:
 protected:
 
 	/// Constructor.
-	SceneRenderer();
+	SceneRenderer(DataSet* dataset);
 
 	/// \brief Renders all nodes in the scene.
 	virtual void renderScene();
@@ -159,10 +158,10 @@ protected:
 
 private:
 
-	/// The data set that is being rendered.
-	DataSet* _dataset;
+	/// The data set being rendered.
+	DataSet* _renderDataset;
 
-	/// The general render settings.
+	/// The current render settings.
 	RenderSettings* _settings;
 
 	/// The viewport whose contents are currently being rendered.

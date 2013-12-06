@@ -20,7 +20,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include <core/dataset/DataSetManager.h>
+#include <core/dataset/DataSetContainer.h>
+#include <core/scene/SelectionSet.h>
 #include "SceneNodeSelectionBox.h"
 #include "SceneNodesListModel.h"
 
@@ -29,10 +30,11 @@ namespace Ovito {
 /******************************************************************************
 * Constructs the widget.
 ******************************************************************************/
-SceneNodeSelectionBox::SceneNodeSelectionBox(QWidget* parent) : QComboBox(parent)
+SceneNodeSelectionBox::SceneNodeSelectionBox(DataSetContainer& datasetContainer, QWidget* parent) : QComboBox(parent),
+		_datasetContainer(datasetContainer)
 {
 	// Set the list model, which tracks the scene nodes.
-	setModel(new SceneNodesListModel(this));
+	setModel(new SceneNodesListModel(datasetContainer, this));
 
 	setInsertPolicy(QComboBox::NoInsert);
 	setEditable(false);
@@ -41,8 +43,8 @@ SceneNodeSelectionBox::SceneNodeSelectionBox(QWidget* parent) : QComboBox(parent
 	setToolTip(tr("Object Selector"));
 
 	// Listen for selection changes.
-	connect(&DataSetManager::instance(), SIGNAL(selectionChangeComplete(SelectionSet*)), this, SLOT(onSceneSelectionChanged()));
-	connect(model(), SIGNAL(modelReset()), this, SLOT(onSceneSelectionChanged()));
+	connect(&datasetContainer, &DataSetContainer::selectionChangeComplete, this, &SceneNodeSelectionBox::onSceneSelectionChanged);
+	connect(model(), &SceneNodesListModel::modelReset, this, &SceneNodeSelectionBox::onSceneSelectionChanged);
 
 	connect(this, SIGNAL(activated(int)), this, SLOT(onItemActivated(int)));
 }
@@ -52,7 +54,7 @@ SceneNodeSelectionBox::SceneNodeSelectionBox(QWidget* parent) : QComboBox(parent
 ******************************************************************************/
 void SceneNodeSelectionBox::onSceneSelectionChanged()
 {
-	SelectionSet* selection = DataSetManager::instance().currentSelection();
+	SelectionSet* selection = _datasetContainer.currentSet() ? _datasetContainer.currentSet()->selection() : nullptr;
 	if(!selection || selection->empty()) {
 		setCurrentText(tr("No selection"));
 	}
@@ -71,13 +73,15 @@ void SceneNodeSelectionBox::onSceneSelectionChanged()
 void SceneNodeSelectionBox::onItemActivated(int index)
 {
 	SceneNode* node = qobject_cast<SceneNode*>(itemData(index).value<QObject*>());
-	SelectionSet* selection = DataSetManager::instance().currentSelection();
-	UndoableTransaction::handleExceptions(tr("Select object"), [node, selection]() {
-		if(node)
-			selection->setNode(node);
-		else
-			selection->clear();
-	});
+	if(_datasetContainer.currentSet()) {
+		SelectionSet* selection = _datasetContainer.currentSet()->selection();
+		UndoableTransaction::handleExceptions(_datasetContainer.currentSet()->undoStack(), tr("Select object"), [node, selection]() {
+			if(node)
+				selection->setNode(node);
+			else
+				selection->clear();
+		});
+	}
 }
 
 };

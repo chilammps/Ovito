@@ -47,7 +47,7 @@ class OVITO_CORE_EXPORT PropertiesEditor : public RefMaker
 	
 protected:
 
-	/// \brief The default constructor.
+	/// \brief The constructor.
 	PropertiesEditor();
 
 public:
@@ -57,19 +57,24 @@ public:
 
 	/// \brief This will bind the editor to the given container.
 	/// \param container The properties panel that's the host of the editor.
+	/// \param mainWindow The main window that hosts the editor.
 	/// \param rolloutParams Specifies how the editor's rollouts should be created.
 	///
-	/// This method is called by the PropertiesPanel class to initialize the editor and to create the GUI controls. 
-	void initialize(PropertiesPanel* container, const RolloutInsertionParameters& rolloutParams) {		
+	/// This method is called by the PropertiesPanel class to initialize the editor and to create the UI.
+	void initialize(PropertiesPanel* container, MainWindow* mainWindow, const RolloutInsertionParameters& rolloutParams) {
 		OVITO_CHECK_POINTER(container);
+		OVITO_CHECK_POINTER(mainWindow);
 		OVITO_ASSERT_MSG(_container == NULL, "PropertiesEditor::initialize()", "Editor can only be initialized once.");
 		_container = container;
+		_mainWindow = mainWindow;
 		createUI(rolloutParams);
 	}
 	
 	/// \brief Returns the rollout container widget this editor is placed in.
-	/// \return The host of the editor.
 	PropertiesPanel* container() const { return _container; }
+
+	/// \brief Returns the main window that hosts the editor.
+	MainWindow* mainWindow() const { return _mainWindow; }
 
 	/// \brief Creates a new rollout in the rollout container and returns
 	///        the empty widget that can then be filled with UI controls.
@@ -90,24 +95,25 @@ public:
 	/// \sa setEditObject()
 	RefTarget* editObject() const { return _editObject; }
 
+	/// \brief Executes the passed functor and catches any exceptions thrown during its execution.
+	/// If an exception is thrown by the functor, all changes done by the functor
+	/// so far will be undone and an error message is shown to the user.
+	template<typename Function>
+	void undoableTransaction(const QString& operationLabel, Function&& func) {
+		UndoableTransaction::handleExceptions(dataset()->undoStack(), operationLabel, std::forward<Function>(func));
+	}
+
 public Q_SLOTS:
 
 	/// \brief Sets the object being edited in this editor.
 	/// \param newObject The new object to load into the editor. This must be of the same class
 	///                  as the previous object. 
-	/// This will update the UI controls to reflect the new contents. Derived editor classes
-	/// must override this method and update the values shown in the UI controls. 
-	/// New implementations of this method must call this base implementation.
 	///
 	/// This method generates a contentsReplaced() and a contentsChanged() signal.
-	///
-	/// \sa editObject()
-	virtual void setEditObject(RefTarget* newObject) {
+	void setEditObject(RefTarget* newObject) {
 		OVITO_ASSERT_MSG(!editObject() || !newObject || newObject->getOOType().isDerivedFrom(editObject()->getOOType()),
 				"PropertiesEditor::setEditObject()", "This properties editor was not made for this object class.");
 		_editObject = newObject;
-		contentsReplaced(newObject);
-		contentsChanged(newObject);
 	}
 
 Q_SIGNALS:
@@ -131,10 +137,16 @@ protected:
 	/// This method is called when a reference target changes.
 	virtual bool referenceEvent(RefTarget* source, ReferenceEvent* event) override;
 
+	/// Is called when the value of a reference field of this RefMaker changes.
+	virtual void referenceReplaced(const PropertyFieldDescriptor& field, RefTarget* oldTarget, RefTarget* newTarget) override;
+
 private:
 	
 	/// The container widget the editor is shown in.
 	PropertiesPanel* _container;
+
+	/// The main window that hosts the editor.
+	MainWindow* _mainWindow;
 
 	/// The object being edited in this editor.
 	ReferenceField<RefTarget> _editObject;

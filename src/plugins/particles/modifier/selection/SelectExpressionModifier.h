@@ -39,8 +39,8 @@ class OVITO_PARTICLES_EXPORT SelectExpressionModifier : public ParticleModifier
 {
 public:
 
-	/// Default constructor.
-	Q_INVOKABLE SelectExpressionModifier() {
+	/// Constructor.
+	Q_INVOKABLE SelectExpressionModifier(DataSet* dataset) : ParticleModifier(dataset) {
 		INIT_PROPERTY_FIELD(SelectExpressionModifier::_expression);
 	}
 
@@ -100,12 +100,8 @@ class SelectExpressionModifierEditor : public ParticleModifierEditor
 public:
 
 	/// Default constructor.
-	Q_INVOKABLE SelectExpressionModifierEditor() {}
-
-	/// Sets the object being edited in this editor.
-	virtual void setEditObject(RefTarget* newObject) override {
-		ParticleModifierEditor::setEditObject(newObject);
-		updateEditorFields();
+	Q_INVOKABLE SelectExpressionModifierEditor() {
+		connect(this, &PropertiesEditor::contentsReplaced, this, &SelectExpressionModifierEditor::updateEditorFields);
 	}
 
 protected:
@@ -116,10 +112,12 @@ protected:
 	/// This method is called when a reference target changes.
 	virtual bool referenceEvent(RefTarget* source, ReferenceEvent* event) override;
 
-private:
+protected Q_SLOTS:
 
 	/// Updates the enabled/disabled status of the editor's controls.
 	void updateEditorFields();
+
+private:
 
 	QLabel* variableNamesList;
 	AutocompleteLineEdit* expressionLineEdit;

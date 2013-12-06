@@ -41,7 +41,7 @@ SET_PROPERTY_FIELD_LABEL(BurgersVectorFamily, _burgersVector, "Burgers vector")
 /******************************************************************************
 * Constructs a new BurgersVectorFamily.
 ******************************************************************************/
-BurgersVectorFamily::BurgersVectorFamily() : _isVisible(true)
+BurgersVectorFamily::BurgersVectorFamily(DataSet* dataset) : RefTarget(dataset), _isVisible(true)
 {
 	INIT_PROPERTY_FIELD(BurgersVectorFamily::_name);
 	INIT_PROPERTY_FIELD(BurgersVectorFamily::_color);

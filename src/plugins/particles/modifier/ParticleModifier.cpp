@@ -174,7 +174,7 @@ ParticlePropertyObject* ParticleModifier::outputStandardProperty(ParticlePropert
 	}
 	else {
 		// Create a new particle property in the output.
-		outputProperty = ParticlePropertyObject::create(_outputParticleCount, which);
+		outputProperty = ParticlePropertyObject::create(dataset(), _outputParticleCount, which);
 		_output.addObject(outputProperty.get());
 	}
 
@@ -223,7 +223,7 @@ ParticlePropertyObject* ParticleModifier::outputCustomProperty(const QString& na
 	}
 	else {
 		// Create a new particle property in the output.
-		outputProperty = ParticlePropertyObject::create(_outputParticleCount, dataType, dataTypeSize, componentCount, name);
+		outputProperty = ParticlePropertyObject::create(dataset(), _outputParticleCount, dataType, dataTypeSize, componentCount, name);
 		_output.addObject(outputProperty.get());
 	}
 
@@ -258,7 +258,7 @@ SimulationCell* ParticleModifier::outputSimulationCell()
 	}
 	else {
 		// Create a new particle property in the output.
-		outputCell = new SimulationCell();
+		outputCell = new SimulationCell(dataset());
 		_output.addObject(outputCell.get());
 	}
 

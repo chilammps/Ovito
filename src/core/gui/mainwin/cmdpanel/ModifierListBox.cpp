@@ -24,6 +24,8 @@
 #include <core/scene/pipeline/Modifier.h>
 #include <core/scene/pipeline/PipelineObject.h>
 #include <core/scene/ObjectNode.h>
+#include <core/dataset/DataSetContainer.h>
+#include <core/animation/AnimationSettings.h>
 #include "ModifierListBox.h"
 #include "ModificationListModel.h"
 
@@ -119,22 +121,23 @@ void ModifierListBox::updateAvailableModifiers()
 	// Retrieve the input state which a newly inserted modifier would be applied to.
 	// This is used to filter the list of available modifiers.
 	PipelineFlowState inputState;
+	DataSet* dataset = _modificationList->datasetContainer().currentSet();
 	if(dynamic_object_cast<Modifier>(currentItem->object())) {
 		for(ModifierApplication* modApp : currentItem->modifierApplications()) {
 			PipelineObject* pipelineObj = modApp->pipelineObject();
 			OVITO_CHECK_OBJECT_POINTER(pipelineObj);
-			inputState = pipelineObj->evaluatePipeline(AnimManager::instance().time(), modApp, true);
+			inputState = pipelineObj->evaluatePipeline(dataset->animationSettings()->time(), modApp, true);
 			break;
 		}
 	}
 	else if(dynamic_object_cast<PipelineObject>(currentItem->object())) {
 		PipelineObject* pipelineObj = static_object_cast<PipelineObject>(currentItem->object());
 		OVITO_CHECK_OBJECT_POINTER(pipelineObj);
-		inputState = pipelineObj->evaluate(AnimManager::instance().time());
+		inputState = pipelineObj->evaluate(dataset->animationSettings()->time());
 	}
 	else {
 		for(RefTarget* objNode : _modificationList->selectedNodes()) {
-			inputState = static_object_cast<ObjectNode>(objNode)->evalPipeline(AnimManager::instance().time());
+			inputState = static_object_cast<ObjectNode>(objNode)->evalPipeline(dataset->animationSettings()->time());
 			break;
 		}
 	}
@@ -143,7 +146,7 @@ void ModifierListBox::updateAvailableModifiers()
 		QList<QStandardItem*> categoryItems;
 		for(const OvitoObjectType* descriptor : category.modifierClasses) {
 			// Create an instance of the modifier to call its isApplicableTo() method.
-			OORef<Modifier> modifier = static_object_cast<Modifier>(descriptor->createInstance());
+			OORef<Modifier> modifier = static_object_cast<Modifier>(descriptor->createInstance(dataset));
 			OVITO_CHECK_OBJECT_POINTER(modifier);
 			if(modifier && modifier->isApplicableTo(inputState)) {
 				QStandardItem* modifierItem = new QStandardItem("   " + descriptor->displayName());

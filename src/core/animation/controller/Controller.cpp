@@ -23,7 +23,7 @@
 #include <core/animation/controller/Controller.h>
 #include <core/animation/controller/StandardControllers.h>
 #include <core/animation/controller/TransformationController.h>
-#include <core/gui/undo/UndoManager.h>
+#include <core/dataset/UndoStack.h>
 
 namespace Ovito {
 
@@ -59,7 +59,7 @@ ControllerManager::ControllerManager()
 }
 
 /// Creates a new instance of the default implementation for the given base controller type.
-OORef<Controller> ControllerManager::createDefaultController(const OvitoObjectType& controllerBaseClass)
+OORef<Controller> ControllerManager::createDefaultController(const OvitoObjectType& controllerBaseClass, DataSet* dataset)
 {
 	auto iter = _defaultMap.find(&controllerBaseClass);
 	if(iter == _defaultMap.end()) {
@@ -67,7 +67,7 @@ OORef<Controller> ControllerManager::createDefaultController(const OvitoObjectTy
 		return nullptr;
 	}
 	OVITO_ASSERT_MSG(iter->second != NULL, "ControllerManager::createDefaultController", "No default controller implementation available.");
-	return static_object_cast<Controller>(iter->second->createInstance());
+	return static_object_cast<Controller>(iter->second->createInstance(dataset));
 }
 
 };

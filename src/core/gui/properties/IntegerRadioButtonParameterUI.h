@@ -34,6 +34,7 @@ namespace Ovito {
 class OVITO_CORE_EXPORT IntegerRadioButtonParameterUI : public PropertyParameterUI
 {
 public:
+
 	/// Constructor.
 	IntegerRadioButtonParameterUI(QObject* parentEditor, const char* propertyName);
 
@@ -89,6 +90,9 @@ protected:
 	QPointer<QButtonGroup> _buttonGroup;
 
 private:
+
+	/// The signal/slot connection that informs the parameter UI about animation time changes.
+	QMetaObject::Connection _animationTimeChangedConnection;
 
 	Q_OBJECT
 	OVITO_OBJECT

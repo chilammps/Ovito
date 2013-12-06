@@ -27,9 +27,6 @@
 
 namespace Ovito {
 
-class Viewport;					// defined in Viewport.h
-class ViewportInputHandler;		// defined in ViewportInputHandler.h
-
 //////////////////////// Action identifiers ///////////////////////////
 
 /// This action closes the main window and exits the application.
@@ -48,6 +45,8 @@ class ViewportInputHandler;		// defined in ViewportInputHandler.h
 #define ACTION_FILE_REMOTE_IMPORT "FileRemoteImport"
 /// This action shows the file export dialog.
 #define ACTION_FILE_EXPORT		"FileExport"
+/// This action opens another main window.
+#define ACTION_FILE_NEW_WINDOW	"FileNewWindow"
 
 /// This action shows the about dialog.
 #define ACTION_HELP_ABOUT				"HelpAbout"
@@ -127,12 +126,11 @@ class OVITO_CORE_EXPORT ActionManager : public QObject
 
 public:
 
-	/// \brief Returns the one and only instance of this class.
-	/// \return The predefined instance of the ActionManager singleton class.
-	inline static ActionManager& instance() {
-		OVITO_ASSERT_MSG(_instance != nullptr, "ActionManager::instance", "Singleton object is not initialized yet.");
-		return *_instance;
-	}
+	/// Constructor.
+	ActionManager(MainWindow* mainWindow);
+
+	/// Returns the associated main window.
+	MainWindow* mainWindow() const { return reinterpret_cast<MainWindow*>(parent()); }
 
 	/// \brief Returns the action with the given ID or NULL.
 	/// \param actionId The identifier string of the action to return.
@@ -144,7 +142,7 @@ public:
 	/// \param actionId The unique identifier string of the action to return.
 	QAction* getAction(const QString& actionId) const {
 		QAction* action = findAction(actionId);
-		OVITO_ASSERT_MSG(action != NULL, "ActionManager::getAction()", "Action does not exist.");
+		OVITO_ASSERT_MSG(action != nullptr, "ActionManager::getAction()", "Action does not exist.");
 		return action;
 	}
 
@@ -160,19 +158,28 @@ public:
 	/// \brief Creates and registers a new command action with the ActionManager.
 	QAction* createCommandAction(const QString& id,
 						const QString& title,
-						const char* iconPath = NULL,
+						const char* iconPath = nullptr,
 						const QString& statusTip = QString(),
 						const QKeySequence& shortcut = QKeySequence());
 
 	/// \brief Creates and registers a new action with the ActionManager.
 	QAction* createViewportModeAction(const QString& id,
-						const OORef<ViewportInputHandler>& inputHandler,
+						ViewportInputMode* inputHandler,
 						const QString& title,
-						const char* iconPath = NULL,
+						const char* iconPath = nullptr,
 						const QString& statusTip = QString(),
 						const QKeySequence& shortcut = QKeySequence());
 
 private Q_SLOTS:
+
+	/// This is called when a new dataset has been loaded.
+	void onDataSetChanged(DataSet* newDataSet);
+
+	/// This is called when new animation settings have been loaded.
+	void onAnimationSettingsReplaced(AnimationSettings* newAnimationSettings);
+
+	/// This is called when the active animation interval has changed.
+	void onAnimationIntervalChanged(TimeInterval newAnimationInterval);
 
 	void on_Quit_triggered();
 	void on_HelpAbout_triggered();
@@ -184,6 +191,7 @@ private Q_SLOTS:
 	void on_FileImport_triggered();
 	void on_FileRemoteImport_triggered();
 	void on_FileExport_triggered();
+	void on_FileNewWindow_triggered();
 	void on_ViewportMaximize_triggered();
 	void on_ViewportZoomSceneExtents_triggered();
 	void on_ViewportZoomSelectionExtents_triggered();
@@ -202,21 +210,20 @@ private Q_SLOTS:
 
 private:
 
-	OORef<ViewportInputHandler> createAnimationPlaybackViewportMode();
+	QMetaObject::Connection _canUndoChangedConnection;
+	QMetaObject::Connection _canRedoChangedConnection;
+	QMetaObject::Connection _undoTextChangedConnection;
+	QMetaObject::Connection _redoTextChangedConnection;
+	QMetaObject::Connection _undoTriggeredConnection;
+	QMetaObject::Connection _redoTriggeredConnection;
+	QMetaObject::Connection _autoKeyModeChangedConnection;
+	QMetaObject::Connection _autoKeyModeToggledConnection;
+	QMetaObject::Connection _animationIntervalChangedConnection;
 
-	/// Constructor.
-	ActionManager();
+	/// The current dataset being edited in the main window.
+	OORef<DataSet> _dataset;
 
-	/// Create the singleton instance of this class.
-	static void initialize() { _instance = new ActionManager(); }
-
-	/// Deletes the singleton instance of this class.
-	static void shutdown() { delete _instance; _instance = nullptr; }
-
-	/// The singleton instance of this class.
-	static ActionManager* _instance;
-
-	friend class Application;
+	friend class AnimationPlaybackViewportMode;
 };
 
 };

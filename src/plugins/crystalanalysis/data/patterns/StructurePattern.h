@@ -49,8 +49,8 @@ public:
 
 public:
 
-	/// \brief Default constructor.
-	Q_INVOKABLE StructurePattern();
+	/// \brief Constructor.
+	Q_INVOKABLE StructurePattern(DataSet* dataset);
 
 	/// Returns the long name of this pattern.
 	const QString& longName() const { return name(); }

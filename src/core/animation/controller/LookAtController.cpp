@@ -34,15 +34,15 @@ SET_PROPERTY_FIELD_LABEL(LookAtController, _targetNode, "Target")
 SET_PROPERTY_FIELD_UNITS(LookAtController, _rollCtrl, AngleParameterUnit)
 
 /******************************************************************************
-* Default constructor.
+* Constructor.
 ******************************************************************************/
-LookAtController::LookAtController()
+LookAtController::LookAtController(DataSet* dataset) : RotationController(dataset)
 {
 	INIT_PROPERTY_FIELD(LookAtController::_rollCtrl);
 	INIT_PROPERTY_FIELD(LookAtController::_targetNode);
 
 	// Create sub-controller.
-	_rollCtrl = ControllerManager::instance().createDefaultController<FloatController>();
+	_rollCtrl = ControllerManager::instance().createDefaultController<FloatController>(dataset);
 }
 
 /******************************************************************************

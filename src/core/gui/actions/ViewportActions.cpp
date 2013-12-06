@@ -21,7 +21,7 @@
 
 #include <core/Core.h>
 #include <core/gui/actions/ActionManager.h>
-#include <core/viewport/ViewportManager.h>
+#include <core/viewport/ViewportConfiguration.h>
 
 namespace Ovito {
 
@@ -30,10 +30,11 @@ namespace Ovito {
 ******************************************************************************/
 void ActionManager::on_ViewportMaximize_triggered()
 {
-	if(ViewportManager::instance().maximizedViewport())
-		ViewportManager::instance().setMaximizedViewport(nullptr);
-	else if(ViewportManager::instance().activeViewport())
-		ViewportManager::instance().setMaximizedViewport(ViewportManager::instance().activeViewport());
+	ViewportConfiguration* vpconf = _dataset->viewportConfig();
+	if(vpconf->maximizedViewport())
+		vpconf->setMaximizedViewport(nullptr);
+	else if(vpconf->activeViewport())
+		vpconf->setMaximizedViewport(vpconf->activeViewport());
 }
 
 /******************************************************************************
@@ -41,8 +42,9 @@ void ActionManager::on_ViewportMaximize_triggered()
 ******************************************************************************/
 void ActionManager::on_ViewportZoomSceneExtents_triggered()
 {
-	if(ViewportManager::instance().activeViewport())
-		ViewportManager::instance().activeViewport()->zoomToSceneExtents();
+	ViewportConfiguration* vpconf = _dataset->viewportConfig();
+	if(vpconf->activeViewport())
+		vpconf->activeViewport()->zoomToSceneExtents();
 }
 
 /******************************************************************************
@@ -50,8 +52,7 @@ void ActionManager::on_ViewportZoomSceneExtents_triggered()
 ******************************************************************************/
 void ActionManager::on_ViewportZoomSceneExtentsAll_triggered()
 {
-	for(Viewport* viewport : ViewportManager::instance().viewports())
-		viewport->zoomToSceneExtents();
+	_dataset->viewportConfig()->zoomToSceneExtents();
 }
 
 /******************************************************************************
@@ -59,8 +60,9 @@ void ActionManager::on_ViewportZoomSceneExtentsAll_triggered()
 ******************************************************************************/
 void ActionManager::on_ViewportZoomSelectionExtents_triggered()
 {
-	if(ViewportManager::instance().activeViewport())
-		ViewportManager::instance().activeViewport()->zoomToSelectionExtents();
+	ViewportConfiguration* vpconf = _dataset->viewportConfig();
+	if(vpconf->activeViewport())
+		vpconf->activeViewport()->zoomToSelectionExtents();
 }
 
 /******************************************************************************
@@ -68,8 +70,7 @@ void ActionManager::on_ViewportZoomSelectionExtents_triggered()
 ******************************************************************************/
 void ActionManager::on_ViewportZoomSelectionExtentsAll_triggered()
 {
-	for(Viewport* viewport : ViewportManager::instance().viewports())
-		viewport->zoomToSelectionExtents();
+	_dataset->viewportConfig()->zoomToSelectionExtents();
 }
 
 };

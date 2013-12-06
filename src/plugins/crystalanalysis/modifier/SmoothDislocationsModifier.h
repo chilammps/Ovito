@@ -39,7 +39,7 @@ class OVITO_CRYSTALANALYSIS_EXPORT SmoothDislocationsModifier : public Modifier
 public:
 
 	/// Constructor.
-	Q_INVOKABLE SmoothDislocationsModifier();
+	Q_INVOKABLE SmoothDislocationsModifier(DataSet* dataset);
 
 	/// Asks the modifier whether it can be applied to the given input data.
 	virtual bool isApplicableTo(const PipelineFlowState& input) override;

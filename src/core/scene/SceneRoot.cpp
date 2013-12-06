@@ -21,7 +21,7 @@
 
 #include <core/Core.h>
 #include <core/scene/SceneRoot.h>
-#include <core/gui/undo/UndoManager.h>
+#include <core/dataset/UndoStack.h>
 #include <core/viewport/Viewport.h>
 
 namespace Ovito {
@@ -31,7 +31,7 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, SceneRoot, SceneNode)
 /******************************************************************************
 * Default constructor.
 ******************************************************************************/
-SceneRoot::SceneRoot()
+SceneRoot::SceneRoot(DataSet* dataset) : SceneNode(dataset)
 {
 	setName("Scene Root");
 

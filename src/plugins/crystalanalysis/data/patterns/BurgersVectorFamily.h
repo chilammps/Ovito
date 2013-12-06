@@ -38,7 +38,7 @@ class OVITO_CRYSTALANALYSIS_EXPORT BurgersVectorFamily : public RefTarget
 public:
 
 	/// \brief Constructs a new BurgersVectorFamily.
-	Q_INVOKABLE BurgersVectorFamily();
+	Q_INVOKABLE BurgersVectorFamily(DataSet* dataset);
 
 	/// Returns the family's display name.
 	const QString& name() const { return _name; }

@@ -32,8 +32,6 @@
 
 namespace Ovito {
 
-class ViewportSceneRenderer;
-
 /**
  * \brief Buffer object that stores line geometry to be rendered in the viewports.
  */

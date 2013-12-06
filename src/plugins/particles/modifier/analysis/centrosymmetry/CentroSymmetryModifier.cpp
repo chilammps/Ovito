@@ -39,7 +39,7 @@ SET_PROPERTY_FIELD_LABEL(CentroSymmetryModifier, _numNeighbors, "Number of neigh
 /******************************************************************************
 * Constructs the modifier object.
 ******************************************************************************/
-CentroSymmetryModifier::CentroSymmetryModifier() :
+CentroSymmetryModifier::CentroSymmetryModifier(DataSet* dataset) : AsynchronousParticleModifier(dataset),
 	_cspValues(new ParticleProperty(0, ParticleProperty::CentroSymmetryProperty)),
 	_numNeighbors(12)
 {
@@ -170,11 +170,6 @@ void CentroSymmetryModifierEditor::createUI(const RolloutInsertionParameters& ro
 	QVBoxLayout* layout1 = new QVBoxLayout(rollout);
 	layout1->setContentsMargins(4,4,4,4);
 	layout1->setSpacing(4);
-
-#if 0
-	BooleanParameterUI* autoUpdateUI = new BooleanParameterUI(this, PROPERTY_FIELD(AsynchronousParticleModifier::_autoUpdate));
-	layout1->addWidget(autoUpdateUI->checkBox());
-#endif
 
 	QGridLayout* layout2 = new QGridLayout();
 	layout2->setContentsMargins(0,0,0,0);

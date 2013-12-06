@@ -19,7 +19,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <core/gui/mainwin/cmdpanel/CommandPanel.h>
+#include <core/Core.h>
 #include <core/gui/widgets/general/RolloutContainer.h>
 #include "UtilityApplet.h"
 
@@ -28,39 +28,38 @@ namespace Ovito {
 /******************************************************************************
 * The utility page lets the user invoke utility plugins.
 ******************************************************************************/
-class OVITO_CORE_EXPORT UtilityCommandPage : public CommandPanelPage
+class OVITO_CORE_EXPORT UtilityCommandPage : public QWidget
 {
 	Q_OBJECT
 
 public:
 
 	/// Initializes the utility page.
-    UtilityCommandPage();
+    UtilityCommandPage(MainWindow* mainWindow, QWidget* parent);
 
-	/// Resets the utility panel to the initial state.
-	virtual void reset() override;
+protected:
 
-	/// Is called when the user selects another page.
-	virtual void onLeave() override;
-
-	/// Closes the current utility.
-	void closeUtility();
+	/// This event handler is called when the page is hidden.
+	void hideEvent(QHideEvent* event) override {
+		QWidget::hideEvent(event);
+		closeUtility();
+	}
 
 protected Q_SLOTS:
 
 	/// Is called when the user invokes one of the utility plugins.
 	void onUtilityButton(QAbstractButton* button);
 
+	/// Closes the current utility.
+	void closeUtility();
+
 private:
+
+	/// The container of the current dataset.
+	DataSetContainer& _datasetContainer;
 
 	/// This panel shows the utility plugin UI.
 	RolloutContainer* rolloutContainer;
-
-	/// Displays the available utility plugins.
-    QWidget* utilityListPanel;
-
-	/// The list of installed utility plugin classes.
-	QVector<const OvitoObjectType*> classes;
 
 	/// The utility that is currently active or NULL.
 	OORef<UtilityApplet> currentUtility;
@@ -70,12 +69,6 @@ private:
 
 	/// Contains one button per utility.
 	QButtonGroup* utilitiesButtonGroup;
-
-	/// Finds all utility classes provided by the installed plugins.
-	void scanInstalledPlugins();
-
-	/// Updates the displayed button in the utility selection panel.
-	void rebuildUtilityList();
 };
 
 

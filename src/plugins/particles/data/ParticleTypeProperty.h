@@ -40,8 +40,8 @@ class OVITO_PARTICLES_EXPORT ParticleTypeProperty : public ParticlePropertyObjec
 {
 public:
 
-	/// \brief Standard constructor.
-	Q_INVOKABLE ParticleTypeProperty(ParticleProperty* storage = nullptr);
+	/// \brief Constructor.
+	Q_INVOKABLE ParticleTypeProperty(DataSet* dataset, ParticleProperty* storage = nullptr);
 
 	//////////////////////////////////// Specific methods //////////////////////////////////
 

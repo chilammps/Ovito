@@ -19,29 +19,30 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef __OVITO_CA_DEFECT_SURFACE_H
-#define __OVITO_CA_DEFECT_SURFACE_H
+#ifndef __OVITO_SURFACE_MESH_H
+#define __OVITO_SURFACE_MESH_H
 
-#include <plugins/crystalanalysis/CrystalAnalysis.h>
+#include <plugins/particles/Particles.h>
 #include <core/scene/objects/SceneObject.h>
 #include <core/scene/objects/geometry/HalfEdgeMesh.h>
+#include <plugins/particles/data/SimulationCellData.h>
 
-namespace CrystalAnalysis {
+namespace Particles {
 
 using namespace Ovito;
 
 /**
- * \brief Wraps the defect surface mesh of the CALib.
+ * \brief A closed triangle mesh representing a surface.
  */
-class OVITO_CRYSTALANALYSIS_EXPORT DefectSurface : public SceneObject
+class OVITO_PARTICLES_EXPORT SurfaceMesh : public SceneObject
 {
 public:
 
-	/// \brief Default constructor that creates an empty DefectSurface object.
-	Q_INVOKABLE DefectSurface();
+	/// \brief Constructor that creates an empty SurfaceMesh object.
+	Q_INVOKABLE SurfaceMesh(DataSet* dataset);
 
 	/// Returns the title of this object.
-	virtual QString objectTitle() override { return tr("Defect surface"); }
+	virtual QString objectTitle() override { return tr("Surface mesh"); }
 
 	/// \brief Returns whether this object, when returned as an editable sub-object by another object,
 	///        should be displayed in the modification stack.
@@ -54,18 +55,30 @@ public:
 
 	/// Returns a reference to the mesh encapsulated by this scene object.
 	/// The reference can be used to modify the mesh. However, each time the mesh has been modified,
-	/// this->notifyDependents(ReferenceEvent::TargetChanged) must be called to increment
+	/// notifyDependents(ReferenceEvent::TargetChanged) must be called to increment
 	/// the scene object's revision number.
 	HalfEdgeMesh& mesh() { return _mesh; }
+
+	/// Fairs the triangle mesh stored in this object.
+	void smoothMesh(const SimulationCellData& cell, int numIterations, FloatType k_PB = 0.1f, FloatType lambda = 0.5f) {
+		smoothMesh(mesh(), cell, numIterations, k_PB, lambda);
+		notifyDependents(ReferenceEvent::TargetChanged);
+	}
+
+	/// Fairs a triangle mesh.
+	static void smoothMesh(HalfEdgeMesh& mesh, const SimulationCellData& cell, int numIterations, FloatType k_PB = 0.1f, FloatType lambda = 0.5f);
 
 protected:
 
 	/// Creates a copy of this object.
 	virtual OORef<RefTarget> clone(bool deepCopy, CloneHelper& cloneHelper) override;
 
+	/// Performs one iteration of the smoothing algorithm.
+	static void smoothMeshIteration(HalfEdgeMesh& mesh, FloatType prefactor, const SimulationCellData& cell);
+
 private:
 
-	/// The triangle mesh.
+	/// The internal triangle mesh.
 	HalfEdgeMesh _mesh;
 
 	Q_OBJECT
@@ -74,4 +87,4 @@ private:
 
 };	// End of namespace
 
-#endif // __OVITO_CA_DEFECT_SURFACE_H
+#endif // __OVITO_SURFACE_MESH_H

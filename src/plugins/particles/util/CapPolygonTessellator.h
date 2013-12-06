@@ -19,14 +19,14 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef __OVITO_CA_CAP_POLY_TESSELLATOR_H
-#define __OVITO_CA_CAP_POLY_TESSELLATOR_H
+#ifndef __OVITO_CAP_POLY_TESSELLATOR_H
+#define __OVITO_CAP_POLY_TESSELLATOR_H
 
-#include <plugins/crystalanalysis/CrystalAnalysis.h>
+#include <plugins/particles/Particles.h>
 #include <core/scene/objects/geometry/TriMesh.h>
 #include "polytess/glu.h"
 
-namespace CrystalAnalysis {
+namespace Particles {
 
 using namespace Ovito;
 
@@ -168,4 +168,4 @@ private:
 
 };	// End of namespace
 
-#endif // __OVITO_CA_CAP_POLY_TESSELLATOR_H
+#endif // __OVITO_CAP_POLY_TESSELLATOR_H

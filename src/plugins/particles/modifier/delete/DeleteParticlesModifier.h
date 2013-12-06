@@ -36,8 +36,8 @@ class OVITO_PARTICLES_EXPORT DeleteParticlesModifier : public ParticleModifier
 {
 public:
 
-	/// Default constructor.
-	Q_INVOKABLE DeleteParticlesModifier() {}
+	/// Constructor.
+	Q_INVOKABLE DeleteParticlesModifier(DataSet* dataset) : ParticleModifier(dataset) {}
 
 	/// Asks the modifier for its validity interval at the given time.
 	virtual TimeInterval modifierValidity(TimePoint time) override { return TimeInterval::forever(); }

@@ -36,7 +36,7 @@ class AnimationTimeSlider : public QFrame
 public:
 
 	/// Constructor.
-	AnimationTimeSlider(QWidget* parentWindow = nullptr);
+	AnimationTimeSlider(MainWindow* mainWindow, QWidget* parentWindow = nullptr);
 
 protected:
 
@@ -60,6 +60,9 @@ protected:
 	
 protected Q_SLOTS:
 
+	/// This is called when new animation settings have been loaded.
+	void onAnimationSettingsReplaced(AnimationSettings* newAnimationSettings);
+
 	/// Is called whenever the Auto Key mode is activated or deactivated.
 	void onAutoKeyModeChanged(bool active);
 
@@ -79,6 +82,17 @@ private:
 
 	/// The color palette used to the draw the time slide background when Auto Key mode is active.
 	QPalette _autoKeyModePalette;
+
+	/// The main window.
+	MainWindow* _mainWindow;
+
+	/// The current animation settings object.
+	AnimationSettings* _animSettings;
+
+	QMetaObject::Connection _autoKeyModeChangedConnection;
+	QMetaObject::Connection _animIntervalChangedConnection;
+	QMetaObject::Connection _timeFormatChangedConnection;
+	QMetaObject::Connection _timeChangedConnection;
 };
 
 };

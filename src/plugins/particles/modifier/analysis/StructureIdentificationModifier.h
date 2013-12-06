@@ -73,8 +73,8 @@ public:
 
 public:
 
-	/// Default constructor.
-	StructureIdentificationModifier();
+	/// Constructor.
+	StructureIdentificationModifier(DataSet* dataset);
 
 	/// Returns the array of structure types that are assigned to the particles by this modifier.
 	const ParticleTypeList& structureTypes() const { return _structureTypes; }

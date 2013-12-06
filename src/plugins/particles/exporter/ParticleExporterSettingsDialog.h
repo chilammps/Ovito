@@ -41,7 +41,7 @@ class OVITO_PARTICLES_EXPORT ParticleExporterSettingsDialog : public QDialog
 public:
 
 	/// Constructor.
-	ParticleExporterSettingsDialog(QWidget* parent, ParticleExporter* exporter, DataSet* dataset, const PipelineFlowState& state, OutputColumnMapping* columnMapping = nullptr);
+	ParticleExporterSettingsDialog(QWidget* parent, ParticleExporter* exporter, const PipelineFlowState& state, OutputColumnMapping* columnMapping = nullptr);
 
 protected Q_SLOTS:
 

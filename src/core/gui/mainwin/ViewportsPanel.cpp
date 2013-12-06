@@ -20,50 +20,71 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include "ViewportsPanel.h"
-#include <core/viewport/ViewportManager.h>
 #include <core/viewport/ViewportSettings.h>
-#include <core/dataset/DataSetManager.h>
-#include <core/animation/AnimManager.h>
+#include <core/viewport/ViewportConfiguration.h>
+#include <core/animation/AnimationSettings.h>
+#include <core/dataset/DataSet.h>
+#include <core/dataset/DataSetContainer.h>
+#include <core/gui/mainwin/MainWindow.h>
+#include "ViewportsPanel.h"
 
 namespace Ovito {
 
 /******************************************************************************
 * The constructor of the viewports panel class.
 ******************************************************************************/
-ViewportsPanel::ViewportsPanel(QWidget* parent) : QWidget(parent)
+ViewportsPanel::ViewportsPanel(MainWindow* parent) : QWidget(parent)
 {
-	// Repaint the viewport borders whenever the Auto Key mode has been activated.
-	connect(&AnimManager::instance(), SIGNAL(autoKeyModeChanged(bool)), SLOT(update()));
-
-	// Repaint the viewport borders when another viewport has been activated.
-	connect(&ViewportManager::instance(), SIGNAL(activeViewportChanged(Viewport*)), SLOT(update()));
-
-	// Update layout when a viewport has been maximized.
-	connect(&ViewportManager::instance(), SIGNAL(maximizedViewportChanged(Viewport*)), SLOT(layoutViewports()));
-
-	// Active the new viewport layout as soon as a new scene file is loaded.
-	connect(&DataSetManager::instance(), SIGNAL(dataSetReset(DataSet*)), this, SLOT(onDataSetReset(DataSet*)));
+	// Activate the new viewport layout as soon as a new scene file is loaded.
+	connect(&parent->datasetContainer(), &DataSetContainer::viewportConfigReplaced, this, &ViewportsPanel::onViewportConfigurationReplaced);
+	connect(&parent->datasetContainer(), &DataSetContainer::animationSettingsReplaced, this, &ViewportsPanel::onAnimationSettingsReplaced);
 }
 
 /******************************************************************************
-* This is called when a new dataset has been loaded.
+* This is called when a new viewport configuration has been loaded.
 ******************************************************************************/
-void ViewportsPanel::onDataSetReset(DataSet* newDataSet)
+void ViewportsPanel::onViewportConfigurationReplaced(ViewportConfiguration* newViewportConfiguration)
 {
+	disconnect(_activeViewportChangedConnection);
+	disconnect(_maximizedViewportChangedConnection);
+
 	// Delete all existing viewport widgets first.
 	for(QWidget* widget : findChildren<QWidget*>()) {
 		delete widget;
 	}
 
-	// Create widgets for new viewports.
-	const QVector<Viewport*>& viewports = ViewportManager::instance().viewports();
-	for(Viewport* vp : viewports) {
-		vp->createWidget(this);
-	}
+	_viewportConfig = newViewportConfiguration;
 
-	// Layout viewport widgets.
-	layoutViewports();
+	if(newViewportConfiguration) {
+
+		// Create widgets for new viewports.
+		for(Viewport* vp : newViewportConfiguration->viewports()) {
+			vp->createWidget(this);
+		}
+
+		// Repaint the viewport borders when another viewport has been activated.
+		_activeViewportChangedConnection = connect(newViewportConfiguration, &ViewportConfiguration::activeViewportChanged, this, (void (ViewportsPanel::*)())&ViewportsPanel::update);
+
+		// Update layout when a viewport has been maximized.
+		_maximizedViewportChangedConnection = connect(newViewportConfiguration, &ViewportConfiguration::maximizedViewportChanged, this, &ViewportsPanel::layoutViewports);
+
+		// Layout viewport widgets.
+		layoutViewports();
+	}
+}
+
+/******************************************************************************
+* This is called when new animation settings have been loaded.
+******************************************************************************/
+void ViewportsPanel::onAnimationSettingsReplaced(AnimationSettings* newAnimationSettings)
+{
+	disconnect(_autoKeyModeChangedConnection);
+	_animSettings = newAnimationSettings;
+
+	if(newAnimationSettings) {
+		_autoKeyModeChangedConnection = connect(newAnimationSettings, &AnimationSettings::autoKeyModeChanged, this, (void (ViewportsPanel::*)())&ViewportsPanel::update);
+		_timeChangeCompleteConnection = connect(newAnimationSettings, &AnimationSettings::timeChangeComplete, this, (void (ViewportsPanel::*)())&ViewportsPanel::update);
+	}
 }
 
 /******************************************************************************
@@ -71,8 +92,10 @@ void ViewportsPanel::onDataSetReset(DataSet* newDataSet)
 ******************************************************************************/
 void ViewportsPanel::paintEvent(QPaintEvent* event)
 {
+	if(!_viewportConfig || !_animSettings) return;
+
 	// Render border around active viewport.
-	Viewport* vp = ViewportManager::instance().activeViewport();
+	Viewport* vp = _viewportConfig->activeViewport();
 	if(!vp) return;
 	QWidget* vpWidget = vp->widget();
 	if(!vpWidget || vpWidget->isHidden()) return;
@@ -81,7 +104,7 @@ void ViewportsPanel::paintEvent(QPaintEvent* event)
 
 	// Choose a color for the viewport border.
 	Color borderColor;
-	if(AnimManager::instance().autoKeyMode())
+	if(_animSettings->autoKeyMode())
 		borderColor = Viewport::viewportColor(ViewportSettings::COLOR_ANIMATION_MODE);
 	else
 		borderColor = Viewport::viewportColor(ViewportSettings::COLOR_ACTIVE_VIEWPORT_BORDER);
@@ -104,13 +127,13 @@ void ViewportsPanel::resizeEvent(QResizeEvent* event)
 }
 
 /******************************************************************************
-* Performs the layout of the viewports.
-* Does the actual calculation of its children's positions and sizes.
+* Performs the layout of the viewport windows.
 ******************************************************************************/
 void ViewportsPanel::layoutViewports()
 {
-	const QVector<Viewport*>& viewports = ViewportManager::instance().viewports();
-	Viewport* maximizedViewport = ViewportManager::instance().maximizedViewport();
+	if(!_viewportConfig) return;
+	const QVector<Viewport*>& viewports = _viewportConfig->viewports();
+	Viewport* maximizedViewport = _viewportConfig->maximizedViewport();
 	OVITO_ASSERT(viewports.size() == findChildren<QWidget*>().size());
 
 	// Count the number of visible window.

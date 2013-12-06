@@ -55,7 +55,7 @@ SET_PROPERTY_FIELD_UNITS(VectorDisplay, _arrowWidth, WorldParameterUnit)
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-VectorDisplay::VectorDisplay() :
+VectorDisplay::VectorDisplay(DataSet* dataset) : DisplayObject(dataset),
 	_reverseArrowDirection(false), _flipVectors(false), _arrowColor(1, 1, 0), _arrowWidth(0.5), _scalingFactor(1),
 	_shadingMode(ArrowGeometryBuffer::FlatShading),
 	_renderingQuality(ArrowGeometryBuffer::LowQuality)

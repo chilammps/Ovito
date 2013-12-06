@@ -45,7 +45,7 @@ class OVITO_CORE_EXPORT RefTargetListener : public RefMaker
 public:
 
 	/// \brief The default constructor.
-	RefTargetListener() {
+	RefTargetListener() : RefMaker(nullptr) {
 		INIT_PROPERTY_FIELD(RefTargetListener::_target);
 	}
 
@@ -73,9 +73,10 @@ Q_SIGNALS:
 
 protected:
 
-	/// \brief Deletes this object when it is no longer needed.
-	virtual void autoDeleteObject() override {
-		OVITO_ASSERT_MSG(false, "RefTargetListener::autoDeleteObject()", "Invalid use of this class. A RefTargetListener should not be used with smart pointers.");
+	/// \brief This method is called after the reference counter of this object has reached zero
+	///        and before the object is being deleted.
+	virtual void aboutToBeDeleted() override {
+		OVITO_ASSERT_MSG(false, "RefTargetListener::aboutToBeDeleted()", "Invalid use of this class. A RefTargetListener should not be used with reference counting pointers.");
 	}
 
 	/// \brief Is called when the RefTarget referenced by this listener has generated an event.
@@ -105,7 +106,7 @@ class VectorRefTargetListener : public RefMaker
 public:
 
 	/// \brief The default constructor.
-	VectorRefTargetListener() {
+	VectorRefTargetListener() : RefMaker(nullptr) {
 		INIT_PROPERTY_FIELD(VectorRefTargetListener::_targets);
 	}
 
@@ -153,9 +154,10 @@ Q_SIGNALS:
 
 protected:
 
-	/// \brief Deletes this object when it is no longer needed.
-	virtual void autoDeleteObject() override {
-		OVITO_ASSERT_MSG(false, "VectorRefTargetListener::autoDeleteObject()", "Invalid use of this class. A VectorRefTargetListener should not be used with smart pointers.");
+	/// \brief This method is called after the reference counter of this object has reached zero
+	///        and before the object is being deleted.
+	virtual void aboutToBeDeleted() override {
+		OVITO_ASSERT_MSG(false, "VectorRefTargetListener::aboutToBeDeleted()", "Invalid use of this class. A VectorRefTargetListener should not be used with reference counting pointers.");
 	}
 
 	/// \brief Is called when a RefTarget referenced by this listener has generated an event.

@@ -33,7 +33,7 @@ DEFINE_PROPERTY_FIELD(Cluster, _orientation, "Orientation")
 /******************************************************************************
 * Constructs a new Cluster.
 ******************************************************************************/
-Cluster::Cluster() : _id(-1), _atomCount(0), _orientation(Matrix3::Zero())
+Cluster::Cluster(DataSet* dataset) : RefTarget(dataset), _id(-1), _atomCount(0), _orientation(Matrix3::Zero())
 {
 	INIT_PROPERTY_FIELD(Cluster::_pattern);
 	INIT_PROPERTY_FIELD(Cluster::_id);

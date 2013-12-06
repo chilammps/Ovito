@@ -26,7 +26,7 @@
 #include <core/dataset/importexport/LinkedFileImporter.h>
 #include <core/scene/objects/geometry/HalfEdgeMesh.h>
 #include <core/gui/properties/PropertiesEditor.h>
-#include <plugins/particles/importer/ParticleImportData.h>
+#include <plugins/particles/importer/ParticleImportTask.h>
 #include <plugins/crystalanalysis/data/patterns/StructurePattern.h>
 
 namespace CrystalAnalysis {
@@ -42,7 +42,7 @@ class OVITO_CRYSTALANALYSIS_EXPORT CAImporter : public LinkedFileImporter
 public:
 
 	/// \brief Constructs a new instance of this class.
-	Q_INVOKABLE CAImporter() : _loadParticles(false) {
+	Q_INVOKABLE CAImporter(DataSet* dataset) : LinkedFileImporter(dataset), _loadParticles(false) {
 		INIT_PROPERTY_FIELD(CAImporter::_loadParticles);
 	}
 

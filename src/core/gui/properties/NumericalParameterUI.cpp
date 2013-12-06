@@ -21,8 +21,9 @@
 
 #include <core/Core.h>
 #include <core/gui/properties/NumericalParameterUI.h>
-#include <core/gui/undo/UndoManager.h>
-#include <core/viewport/ViewportManager.h>
+#include <core/dataset/UndoStack.h>
+#include <core/viewport/ViewportConfiguration.h>
+#include <core/animation/AnimationSettings.h>
 #include <core/utilities/units/UnitsManager.h>
 
 namespace Ovito {
@@ -33,38 +34,23 @@ IMPLEMENT_OVITO_OBJECT(Core, NumericalParameterUI, PropertyParameterUI)
 /******************************************************************************
 * Constructor for a Qt property.
 ******************************************************************************/
-NumericalParameterUI::NumericalParameterUI(QObject* parentEditor, const char* propertyName, ParameterUnit* defaultParameterUnit, const QString& labelText) :
-	PropertyParameterUI(parentEditor, propertyName), _parameterUnit(defaultParameterUnit)
+NumericalParameterUI::NumericalParameterUI(QObject* parentEditor, const char* propertyName, const QMetaObject* defaultParameterUnitType, const QString& labelText) :
+	PropertyParameterUI(parentEditor, propertyName), _parameterUnitType(defaultParameterUnitType)
 {
 	initUIControls(labelText);	
-
-	OVITO_CHECK_OBJECT_POINTER(_parameterUnit);
-	_spinner->setUnit(_parameterUnit);
 }
 
 /******************************************************************************
 * Constructor for a PropertyField or ReferenceField property.
 ******************************************************************************/
-NumericalParameterUI::NumericalParameterUI(QObject* parentEditor, const PropertyFieldDescriptor& propField, ParameterUnit* defaultParameterUnit) :
-	PropertyParameterUI(parentEditor, propField), _parameterUnit(defaultParameterUnit)
+NumericalParameterUI::NumericalParameterUI(QObject* parentEditor, const PropertyFieldDescriptor& propField, const QMetaObject* defaultParameterUnitType) :
+	PropertyParameterUI(parentEditor, propField), _parameterUnitType(defaultParameterUnitType)
 {
-	OVITO_CHECK_OBJECT_POINTER(_parameterUnit);
-	
-	// Look up the ParameterUnit for this parameter.
-	try {
-		ParameterUnit* customUnit = propField.parameterUnit();
-		if(customUnit != NULL) _parameterUnit = customUnit;
-	}
-	catch(const Exception& ex) {		
-		ex.showError();
-	}
+	// Look up the ParameterUnit type for this parameter.
+	if(propField.parameterUnitType())
+		_parameterUnitType = propField.parameterUnitType();
 	
 	initUIControls(propField.displayName() + ":");
-
-	if(isReferenceFieldUI()) {
-		// Update the displayed value when the animation time has changed.
-		connect(&AnimManager::instance(), SIGNAL(timeChanged(TimePoint)), this, SLOT(updateUI()));
-	}
 }
 
 /******************************************************************************
@@ -81,9 +67,6 @@ void NumericalParameterUI::initUIControls(const QString& labelText)
 	connect(_spinner, SIGNAL(spinnerDragStop()), this, SLOT(onSpinnerDragStop()));
 	connect(_spinner, SIGNAL(spinnerDragAbort()), this, SLOT(onSpinnerDragAbort()));
 	_spinner->setTextBox(_textBox);
-
-	OVITO_CHECK_OBJECT_POINTER(_parameterUnit);
-	_spinner->setUnit(_parameterUnit);
 }
 
 /******************************************************************************
@@ -103,10 +86,30 @@ NumericalParameterUI::~NumericalParameterUI()
 ******************************************************************************/
 void NumericalParameterUI::resetUI()
 {
-	PropertyParameterUI::resetUI();	
-	
-	if(spinner()) 
+	if(spinner()) {
 		spinner()->setEnabled(editObject() != NULL && isEnabled());
+		if(editObject() != NULL) {
+			ParameterUnit* unit;
+			if(parameterUnitType())
+				unit = dataset()->unitsManager().getUnit(parameterUnitType());
+			else
+				unit = nullptr;
+			spinner()->setUnit(unit);
+		}
+		else {
+			spinner()->setUnit(nullptr);
+			spinner()->setFloatValue(0);
+		}
+	}
+
+	if(isReferenceFieldUI()) {
+		// Update the displayed value when the animation time has changed.
+		disconnect(_animationTimeChangedConnection);
+		if(editObject())
+			_animationTimeChangedConnection = connect(dataset()->animationSettings(), &AnimationSettings::timeChanged, this, &NumericalParameterUI::updateUI);
+	}
+
+	PropertyParameterUI::resetUI();
 }
 
 /******************************************************************************
@@ -131,14 +134,14 @@ void NumericalParameterUI::setEnabled(bool enabled)
 ******************************************************************************/
 void NumericalParameterUI::onSpinnerValueChanged()
 {
-	ViewportSuspender noVPUpdate;
-	if(!UndoManager::instance().isRecording()) {
-		UndoableTransaction transaction(tr("Change parameter"));
+	ViewportSuspender noVPUpdate(dataset()->viewportConfig());
+	if(!dataset()->undoStack().isRecording()) {
+		UndoableTransaction transaction(dataset()->undoStack(), tr("Change parameter"));
 		updatePropertyValue();
 		transaction.commit();
 	}
 	else {
-		UndoManager::instance().currentCompoundOperation()->clear();
+		dataset()->undoStack().resetCurrentCompoundOperation();
 		updatePropertyValue();
 	}
 }
@@ -148,8 +151,8 @@ void NumericalParameterUI::onSpinnerValueChanged()
 ******************************************************************************/
 void NumericalParameterUI::onSpinnerDragStart()
 {
-	OVITO_ASSERT(!UndoManager::instance().isRecording());
-	UndoManager::instance().beginCompoundOperation(tr("Change parameter"));
+	OVITO_ASSERT(!dataset()->undoStack().isRecording());
+	dataset()->undoStack().beginCompoundOperation(tr("Change parameter"));
 }
 
 /******************************************************************************
@@ -157,8 +160,8 @@ void NumericalParameterUI::onSpinnerDragStart()
 ******************************************************************************/
 void NumericalParameterUI::onSpinnerDragStop()
 {
-	OVITO_ASSERT(UndoManager::instance().isRecording());
-	UndoManager::instance().endCompoundOperation();
+	OVITO_ASSERT(dataset()->undoStack().isRecording());
+	dataset()->undoStack().endCompoundOperation();
 }
 
 /******************************************************************************
@@ -166,9 +169,8 @@ void NumericalParameterUI::onSpinnerDragStop()
 ******************************************************************************/
 void NumericalParameterUI::onSpinnerDragAbort()
 {
-	OVITO_ASSERT(UndoManager::instance().isRecording());
-	UndoManager::instance().currentCompoundOperation()->clear();
-	UndoManager::instance().endCompoundOperation();
+	OVITO_ASSERT(dataset()->undoStack().isRecording());
+	dataset()->undoStack().endCompoundOperation(false);
 }
 
 /******************************************************************************

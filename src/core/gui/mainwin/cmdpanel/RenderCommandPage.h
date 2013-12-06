@@ -21,29 +21,35 @@
 
 #include <core/Core.h>
 #include <core/gui/properties/PropertiesPanel.h>
-#include <core/gui/mainwin/cmdpanel/CommandPanel.h>
 
 namespace Ovito {
 
 /******************************************************************************
 * The command panel page lets user render the scene.
 ******************************************************************************/
-class OVITO_CORE_EXPORT RenderCommandPage : public CommandPanelPage
+class OVITO_CORE_EXPORT RenderCommandPage : public QWidget
 {
 	Q_OBJECT
 
 public:
 
 	/// Initializes the render page.
-    RenderCommandPage();
+    RenderCommandPage(MainWindow* mainWindow, QWidget* parent);
 
-	/// Resets the command panel page to its initial state.
-	virtual void reset() override;
+private Q_SLOTS:
+
+	/// This is called when a new dataset has been loaded.
+	void onDataSetChanged(DataSet* newDataSet);
+
+	/// This is called when new render settings have been loaded.
+	void onRenderSettingsReplaced(RenderSettings* newRenderSettings);
 
 private:
 
 	/// This panel shows the properties of the render settings object.
 	PropertiesPanel* propertiesPanel;
+
+	QMetaObject::Connection _renderSettingsReplacedConnection;
 };
 
 

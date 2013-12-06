@@ -24,8 +24,6 @@ SET(OVITO_CRYSTALANALYSIS_SOURCE_FILES
 	data/patterns/BurgersVectorFamily.cpp
 	data/patterns/StructurePattern.cpp
 	data/patterns/PatternCatalog.cpp
-	data/surface/DefectSurface.cpp
-	data/surface/DefectSurfaceDisplay.cpp
 	data/clusters/Cluster.cpp
 	data/clusters/ClusterGraph.cpp
 	data/dislocations/DislocationSegment.cpp
@@ -37,22 +35,8 @@ SET(OVITO_CRYSTALANALYSIS_SOURCE_FILES
 	modifier/SmoothDislocationsModifier.cpp
 )
 
-# List of source files of the GLU library used for polygon tessellation.
-SET(GLUSourceFiles
-	data/surface/polytess/dict.c
-	data/surface/polytess/geom.c
-	data/surface/polytess/memalloc.c
-	data/surface/polytess/mesh.c
-	data/surface/polytess/normal.c
-	data/surface/polytess/priorityq.c
-	data/surface/polytess/render.c
-	data/surface/polytess/sweep.c
-	data/surface/polytess/tess.c
-	data/surface/polytess/tessmono.c
-)
-
 # Generate plugin module.
 OVITO_PLUGIN(CrystalAnalysis
-	SOURCES ${OVITO_CRYSTALANALYSIS_SOURCE_FILES} ${GLUSourceFiles}
+	SOURCES ${OVITO_CRYSTALANALYSIS_SOURCE_FILES}
 	PLUGIN_DEPENDENCIES Particles
 )

@@ -33,12 +33,6 @@
 
 namespace Ovito {
 
-class ObjectNode;				// defined in ObjectNode.h
-class SceneRenderer;			// defined in SceneRenderer.h
-class SceneObject;				// defined in SceneObject.h
-class PipelineFlowState;		// defined in PipelineFlowState.h
-class Viewport;					// defined in Viewport.h
-
 /**
  * \brief Abstract base class for display object that are responsible
  *        for rendering SceneObject-derived classes in the viewports.
@@ -47,8 +41,8 @@ class OVITO_CORE_EXPORT DisplayObject : public RefTarget
 {
 protected:
 
-	/// \brief Default constructor.
-	DisplayObject();
+	/// \brief Constructor.
+	DisplayObject(DataSet* dataset);
 
 public:
 

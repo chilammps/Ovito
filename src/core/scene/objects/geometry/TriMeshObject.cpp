@@ -29,7 +29,7 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, TriMeshObject, SceneObject)
 /******************************************************************************
 * Default constructor.
 ******************************************************************************/
-TriMeshObject::TriMeshObject()
+TriMeshObject::TriMeshObject(DataSet* dataset) : SceneObject(dataset)
 {
 }
 

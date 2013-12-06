@@ -45,7 +45,7 @@ class OVITO_PARTICLES_EXPORT ParticleModifier : public Modifier
 protected:
 
 	/// Constructor.
-	ParticleModifier() {}
+	ParticleModifier(DataSet* dataset) : Modifier(dataset) {}
 
 public:
 

@@ -28,7 +28,6 @@
 #define __OVITO_UNITS_MANAGER_H
 
 #include <core/Core.h>
-#include <core/animation/AnimManager.h>
 
 namespace Ovito {
 
@@ -39,15 +38,14 @@ namespace Ovito {
  * another unit presented to the user and vice versa. One example for
  * a ParameterUnit is the AngleUnit class which converts between radians and degrees.
  */
-class OVITO_CORE_EXPORT ParameterUnit : public OvitoObject
+class OVITO_CORE_EXPORT ParameterUnit : public QObject
 {
 	Q_OBJECT
-	OVITO_OBJECT
 
 protected:
 	
-	/// \brief Default constructor.
-	ParameterUnit() {}
+	/// \brief Constructor.
+	ParameterUnit(QObject* parent, DataSet* dataset) : QObject(parent) {}
     
 public:
 
@@ -107,12 +105,11 @@ Q_SIGNALS:
 class OVITO_CORE_EXPORT FloatParameterUnit : public ParameterUnit
 {
 	Q_OBJECT
-	OVITO_OBJECT
 
 public:
 	
 	/// \brief Default constructor.
-	Q_INVOKABLE FloatParameterUnit() : ParameterUnit() {}
+	Q_INVOKABLE FloatParameterUnit(QObject* parent, DataSet* dataset) : ParameterUnit(parent, dataset) {}
 
 	/// \brief Converts a value from native units to the units presented to the user.
 	/// \param nativeValue The value in internal units to be converted.
@@ -179,12 +176,11 @@ public:
 class OVITO_CORE_EXPORT IntegerParameterUnit : public ParameterUnit
 {
 	Q_OBJECT
-	OVITO_OBJECT
 
 public:
 	
 	/// \brief Default constructor.
-	Q_INVOKABLE IntegerParameterUnit() : ParameterUnit() {}
+	Q_INVOKABLE IntegerParameterUnit(QObject* parent, DataSet* dataset) : ParameterUnit(parent, dataset) {}
 
 	/// \brief Converts a value from native units to the units presented to the user.
 	/// \param nativeValue The value in internal units to be converted.
@@ -238,12 +234,11 @@ public:
 class OVITO_CORE_EXPORT WorldParameterUnit : public FloatParameterUnit
 {
 	Q_OBJECT
-	OVITO_OBJECT
 
 public:
 
 	/// \brief Default constructor.
-	Q_INVOKABLE WorldParameterUnit() : FloatParameterUnit() {}
+	Q_INVOKABLE WorldParameterUnit(QObject* parent, DataSet* dataset) : FloatParameterUnit(parent, dataset) {}
 };
 
 /**
@@ -252,12 +247,11 @@ public:
 class OVITO_CORE_EXPORT AngleParameterUnit : public FloatParameterUnit
 {
 	Q_OBJECT
-	OVITO_OBJECT
 
 public:
 	
 	/// \brief Default constructor.
-	Q_INVOKABLE AngleParameterUnit() : FloatParameterUnit() {}
+	Q_INVOKABLE AngleParameterUnit(QObject* parent, DataSet* dataset) : FloatParameterUnit(parent, dataset) {}
 
 	/// \brief Converts a value from native units to the units presented to the user.
 	/// \param nativeValue The value in internal units to be converted.
@@ -282,12 +276,11 @@ public:
 class OVITO_CORE_EXPORT PercentParameterUnit : public FloatParameterUnit
 {
 	Q_OBJECT
-	OVITO_OBJECT
 
 public:
 	
 	/// \brief Default constructor.
-	Q_INVOKABLE PercentParameterUnit() : FloatParameterUnit() {}
+	Q_INVOKABLE PercentParameterUnit(QObject* parent, DataSet* dataset) : FloatParameterUnit(parent, dataset) {}
 
 	/// \brief Converts a value from native units to the units presented to the user.
 	/// \param nativeValue The value in internal units to be converted.
@@ -312,17 +305,11 @@ public:
 class OVITO_CORE_EXPORT TimeParameterUnit : public IntegerParameterUnit
 {
 	Q_OBJECT
-	OVITO_OBJECT
 
 public:
 	
-	/// \brief Default constructor.
-	Q_INVOKABLE TimeParameterUnit() : IntegerParameterUnit() {
-		// If the animation speed changes or the time format has been changed then
-		// this parameter unit will send a signal to the UI controls.
-		connect(&AnimManager::instance(), SIGNAL(speedChanged(int)), SIGNAL(formatChanged()));
-		connect(&AnimManager::instance(), SIGNAL(timeFormatChanged()), SIGNAL(formatChanged()));
-	}
+	/// \brief Constructor.
+	Q_INVOKABLE TimeParameterUnit(QObject* parent, DataSet* dataset);
 
 	/// \brief Converts the given string to a time value.
 	/// \param valueString This is a string representation of a value as it might have
@@ -330,33 +317,35 @@ public:
 	/// \return The parsed value in TimeTicks.
 	/// \throw Exception when the value could not be parsed.
 	/// \sa formatValue()
-	virtual FloatType parseString(const QString& valueString) override {
-		return AnimManager::instance().stringToTime(valueString);
-	}
+	virtual FloatType parseString(const QString& valueString) override;
 		
 	/// \brief Converts a time value to a string.
 	/// \param value The time value to be converted. This is in TimeTicks units.
 	/// \return The string representation of the value. This can be converted back using parseString().
 	/// \sa parseString()
-	virtual QString formatValue(FloatType value) override {
-		return AnimManager::instance().timeToString((TimePoint)value);
-	}
+	virtual QString formatValue(FloatType value) override;
 
 	/// \brief Returns the (positive) step size used by spinner widgets for this parameter unit type.
 	/// \param currentValue The current value of the spinner. This can be used to make the step size value dependent.
 	/// \param upDirection Specifies whether the spinner is dragged in the positive or the negative direction.
 	/// \return The numeric step size used by SpinnerWidget for this parameter type. This is in TimeTicks units.
-	virtual FloatType stepSize(FloatType currentValue, bool upDirection) override {
-		if(upDirection)
-			return ceil((currentValue + FloatType(1)) / AnimManager::instance().ticksPerFrame()) * AnimManager::instance().ticksPerFrame() - currentValue;
-		else
-			return currentValue - floor((currentValue - FloatType(1)) / AnimManager::instance().ticksPerFrame()) * AnimManager::instance().ticksPerFrame();
-	}
+	virtual FloatType stepSize(FloatType currentValue, bool upDirection) override;
 
 	/// \brief Given an arbitrary value, which is potentially invalid, rounds it to the closest valid value.
-	virtual FloatType roundValue(FloatType value) override {
-		return floor(value / AnimManager::instance().ticksPerFrame() + (FloatType)0.5) * AnimManager::instance().ticksPerFrame();
-	}
+	virtual FloatType roundValue(FloatType value) override;
+
+private Q_SLOTS:
+
+	/// \brief This is called whenever the current animation settings of the dataset have been replaced by new ones.
+	void onAnimationSettingsReplaced(AnimationSettings* newAnimationSettings);
+
+private:
+
+	QMetaObject::Connection _speedChangedConnection;
+	QMetaObject::Connection _timeFormatChangedConnection;
+
+	// The current animation settings.
+	AnimationSettings* _animSettings;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -370,18 +359,14 @@ class OVITO_CORE_EXPORT UnitsManager : public QObject
 
 public:
 
-	/// \brief Returns the one and only instance of this class.
-	/// \return The predefined instance of the UnitsManager singleton class.
-	inline static UnitsManager& instance() {
-		OVITO_ASSERT_MSG(_instance != nullptr, "UnitsManager::instance", "Singleton object is not initialized yet.");
-		return *_instance;
-	}
+	/// Constructor.
+	UnitsManager(DataSet* dataset);
 
 	/// \brief Returns the instance of a parameter unit service.
 	/// \param parameterUnitClass Specifies the unit type. This must a ParameterUnit derived class.
 	/// \return The global instance of the requested class. The UnitsManager will always return
 	///         the same instance of a ParameterUnit class.
-	ParameterUnit* getUnit(const OvitoObjectType& parameterUnitClass);
+	ParameterUnit* getUnit(const QMetaObject* parameterUnitClass);
 
 	/// \brief Returns the special identity parameter unit that does no unit conversion at all and that
 	///        formats values as floating-point.
@@ -405,8 +390,11 @@ public:
 
 private:
 
+	/// The dataset this units manager belongs to.
+	DataSet* _dataset;
+
 	/// The list of unit types.
-	std::map<const OvitoObjectType*, OORef<ParameterUnit>> _units;
+	std::map<const QMetaObject*, ParameterUnit*> _units;
 
 	/// The special float identity unit.
 	FloatParameterUnit* _floatIdentityUnit;
@@ -425,24 +413,7 @@ private:
 
 	/// A parameter unit service for world space distances.
 	WorldParameterUnit* _worldUnit;
-
-private:
-    
-	/// This is a singleton class. No public instances allowed.
-	UnitsManager();
-
-	/// Create the singleton instance of this class.
-	static void initialize() { _instance = new UnitsManager(); }
-
-	/// Deletes the singleton instance of this class.
-	static void shutdown() { delete _instance; _instance = nullptr; }
-
-	/// The singleton instance of this class.
-	static UnitsManager* _instance;
-
-	friend class Application;
 };
-
 
 };
 

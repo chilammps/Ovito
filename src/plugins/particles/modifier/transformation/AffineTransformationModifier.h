@@ -45,18 +45,18 @@ class OVITO_PARTICLES_EXPORT AffineTransformationModifier : public ParticleModif
 {
 public:
 
-	/// \brief Constructs a new instance of this class.
-	Q_INVOKABLE AffineTransformationModifier();
+	/// \brief Constructor.
+	Q_INVOKABLE AffineTransformationModifier(DataSet* dataset);
 
 	/// \brief This virtual method is called by the system when the modifier has been inserted into a PipelineObject.
 	virtual void initializeModifier(PipelineObject* pipeline, ModifierApplication* modApp) override;
 
 	// Property access functions:
 
-	/// Returns the affine transformation matrix at the current animation time.
+	/// Returns the affine transformation matrix.
 	const AffineTransformation& transformation() const { return _transformationTM; }
 
-	/// Sets the affine transformation at the current animation time.
+	/// Sets the affine transformation.
 	void setTransformation(const AffineTransformation& tm) { _transformationTM = tm; }
 
 	/// Returns whether the transformation is applied to the particles.
@@ -77,11 +77,26 @@ public:
 	/// Sets whether the transformation is applied to the simulation box.
 	void setApplyToSimulationBox(bool apply) { _applyToSimulationBox = apply; }
 
+	/// Returns the target cell matrix matrix for absolute transformation mode.
+	const AffineTransformation& destinationCell() const { return _destinationCell; }
+
+	/// Sets the target cell matrix for absolute transformation mode.
+	void setDestinationCell(const AffineTransformation& cell) { _destinationCell = cell; }
+
+	/// Returns true if relative transformation mode is selected; returns false if absolute transformation mode is active.
+	bool relativeMode() const { return _relativeMode; }
+
+	/// Switches between relative and absolute transformation mode.
+	void setRelativeMode(bool relative) { _relativeMode = relative; }
+
 public:
 
+	Q_PROPERTY(AffineTransformation transformation READ transformation WRITE setTransformation)
+	Q_PROPERTY(AffineTransformation destinationCell READ destinationCell WRITE setDestinationCell)
 	Q_PROPERTY(bool toSelectionOnly READ toSelectionOnly WRITE setToSelectionOnly)
 	Q_PROPERTY(bool applyToSimulationBox READ applyToSimulationBox WRITE setApplyToSimulationBox)
 	Q_PROPERTY(bool applyToParticles READ applyToParticles WRITE setApplyToParticles)
+	Q_PROPERTY(bool relativeMode READ relativeMode WRITE setRelativeMode)
 
 protected:
 

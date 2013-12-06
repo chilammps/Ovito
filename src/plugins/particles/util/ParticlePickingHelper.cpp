@@ -21,10 +21,8 @@
 
 #include <plugins/particles/Particles.h>
 #include <core/viewport/Viewport.h>
-#include <core/viewport/ViewportManager.h>
-#include <core/dataset/DataSetManager.h>
 #include <core/scene/ObjectNode.h>
-#include <core/animation/AnimManager.h>
+#include <core/animation/AnimationSettings.h>
 
 #include <plugins/particles/data/ParticlePropertyObject.h>
 #include <plugins/particles/data/ParticleTypeProperty.h>
@@ -51,11 +49,11 @@ bool ParticlePickingHelper::pickParticle(Viewport* vp, const QPoint& clickPoint,
 			result.objNode = vpPickResult.objectNode;
 			result.particleIndex = vpPickResult.subobjectId;
 			result.localPos = posProperty->getPoint3(result.particleIndex);
-			result.worldPos = result.objNode->getWorldTransform(AnimManager::instance().time(), iv) * result.localPos;
+			result.worldPos = result.objNode->getWorldTransform(vp->dataset()->animationSettings()->time(), iv) * result.localPos;
 
 			// Determine particle ID.
 			result.particleId = -1;
-			const PipelineFlowState& state = result.objNode->evalPipeline(AnimManager::instance().time());
+			const PipelineFlowState& state = result.objNode->evalPipeline(vp->dataset()->animationSettings()->time());
 			for(const auto& sceneObj : state.objects()) {
 				ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(sceneObj.get());
 				if(property && property->type() == ParticleProperty::IdentifierProperty && result.particleIndex < property->size()) {
@@ -82,7 +80,7 @@ void ParticlePickingHelper::renderSelectionMarker(Viewport* vp, ViewportSceneRen
 	if(!renderer->isInteractive() || renderer->isPicking())
 		return;
 
-	const PipelineFlowState& flowState = pickRecord.objNode->evalPipeline(AnimManager::instance().time());
+	const PipelineFlowState& flowState = pickRecord.objNode->evalPipeline(vp->dataset()->animationSettings()->time());
 
 	// If particle selection is based on ID, find particle with the given ID.
 	size_t particleIndex = pickRecord.particleIndex;
@@ -134,7 +132,7 @@ void ParticlePickingHelper::renderSelectionMarker(Viewport* vp, ViewportSceneRen
 		return;
 
 	TimeInterval iv;
-	const AffineTransformation& nodeTM = pickRecord.objNode->getWorldTransform(AnimManager::instance().time(), iv);
+	const AffineTransformation& nodeTM = pickRecord.objNode->getWorldTransform(vp->dataset()->animationSettings()->time(), iv);
 
 	// Prepare marker geometry buffer.
 	ParticleGeometryBuffer::RenderingQuality renderQuality = particleDisplay->effectiveRenderingQuality(renderer, posProperty);

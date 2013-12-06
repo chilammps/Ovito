@@ -21,7 +21,6 @@
 
 #include <core/Core.h>
 #include <core/viewport/Viewport.h>
-#include <core/viewport/ViewportManager.h>
 #include <core/scene/ObjectNode.h>
 #include <core/gui/properties/FloatParameterUI.h>
 #include <core/gui/properties/BooleanParameterUI.h>
@@ -48,18 +47,18 @@ SET_PROPERTY_FIELD_UNITS(CameraObject, _zoom, WorldParameterUnit)
 /******************************************************************************
 * Constructs a camera object.
 ******************************************************************************/
-CameraObject::CameraObject() : _isPerspective(true)
+CameraObject::CameraObject(DataSet* dataset) : AbstractCameraObject(dataset), _isPerspective(true)
 {
 	INIT_PROPERTY_FIELD(CameraObject::_isPerspective);
 	INIT_PROPERTY_FIELD(CameraObject::_fov);
 	INIT_PROPERTY_FIELD(CameraObject::_zoom);
 
-	_fov = ControllerManager::instance().createDefaultController<FloatController>();
+	_fov = ControllerManager::instance().createDefaultController<FloatController>(dataset);
 	_fov->setValue(0, FLOATTYPE_PI/4.0);
-	_zoom = ControllerManager::instance().createDefaultController<FloatController>();
+	_zoom = ControllerManager::instance().createDefaultController<FloatController>(dataset);
 	_zoom->setValue(0, 200);
 
-	addDisplayObject(new CameraDisplayObject());
+	addDisplayObject(new CameraDisplayObject(dataset));
 }
 
 /******************************************************************************
@@ -172,8 +171,8 @@ void CameraObjectEditor::createUI(const RolloutInsertionParameters& rolloutParam
 	FloatParameterUI* fovPUI = new FloatParameterUI(this, PROPERTY_FIELD(CameraObject::_fov));
 	sublayout->addWidget(fovPUI->label(), 0, 0);
 	sublayout->addLayout(fovPUI->createFieldLayout(), 0, 1);
-	fovPUI->setMinValue(fovPUI->parameterUnit()->userToNative(0.01f));
-	fovPUI->setMaxValue(fovPUI->parameterUnit()->userToNative(179.99f));
+	fovPUI->setMinValue(1e-3f);
+	fovPUI->setMaxValue(FLOATTYPE_PI - 1e-2f);
 
 	QGroupBox* parallelProjBox = new QGroupBox(tr("Parallel camera"), rollout);
 	parallelProjBox->setEnabled(false);

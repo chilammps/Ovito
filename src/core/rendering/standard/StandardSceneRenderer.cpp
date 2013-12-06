@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include <core/viewport/ViewportWindow.h>
 #include <core/viewport/Viewport.h>
-#include <core/viewport/ViewportManager.h>
+#include <core/viewport/ViewportConfiguration.h>
 #include <core/rendering/RenderSettings.h>
 #include "StandardSceneRenderer.h"
 #include "StandardSceneRendererEditor.h"
@@ -53,8 +53,8 @@ bool StandardSceneRenderer::startRender(DataSet* dataset, RenderSettings* settin
 
 	// Look for other viewport windows that we can share the OpenGL context with.
 	QOpenGLContext* shareContext = nullptr;
-	for(Viewport* vp : ViewportManager::instance().viewports()) {
-		if(vp->viewportWindow() != nullptr) {
+	for(Viewport* vp : dataset->viewportConfig()->viewports()) {
+		if(vp->viewportWindow()) {
 			shareContext = vp->viewportWindow()->glcontext();
 			if(shareContext) break;
 		}

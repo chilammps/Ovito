@@ -44,8 +44,8 @@ class OVITO_CORE_EXPORT SceneObject : public RefTarget
 {
 protected:
 
-	/// \brief Default constructor.
-	SceneObject();
+	/// \brief Constructor.
+	SceneObject(DataSet* dataset);
 
 public:
 

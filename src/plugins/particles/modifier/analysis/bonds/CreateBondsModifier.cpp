@@ -46,7 +46,8 @@ SET_PROPERTY_FIELD_UNITS(CreateBondsModifier, _uniformCutoff, WorldParameterUnit
 /******************************************************************************
 * Constructs the modifier object.
 ******************************************************************************/
-CreateBondsModifier::CreateBondsModifier() : _cutoffMode(UniformCutoff), _uniformCutoff(3.2)
+CreateBondsModifier::CreateBondsModifier(DataSet* dataset) : AsynchronousParticleModifier(dataset),
+	_cutoffMode(UniformCutoff), _uniformCutoff(3.2)
 {
 	INIT_PROPERTY_FIELD(CreateBondsModifier::_cutoffMode);
 	INIT_PROPERTY_FIELD(CreateBondsModifier::_uniformCutoff);
@@ -54,11 +55,11 @@ CreateBondsModifier::CreateBondsModifier() : _cutoffMode(UniformCutoff), _unifor
 	INIT_PROPERTY_FIELD(CreateBondsModifier::_bondsObj);
 
 	// Create the output object.
-	_bondsObj = new BondsObject();
+	_bondsObj = new BondsObject(dataset);
 	_bondsObj->setSaveWithScene(storeResultsWithScene());
 
 	// Create the display object for bonds rendering and assign it to the scene object.
-	_bondsDisplay = new BondsDisplay();
+	_bondsDisplay = new BondsDisplay(dataset);
 	_bondsObj->addDisplayObject(_bondsDisplay);
 }
 
@@ -88,7 +89,7 @@ void CreateBondsModifier::propertyChanged(const PropertyFieldDescriptor& field)
 void CreateBondsModifier::setPairCutoffs(const PairCutoffsList& pairCutoffs)
 {
 	// Make the property change undoable.
-	UndoManager::instance().undoablePropertyChange<PairCutoffsList>(this,
+	dataset()->undoStack().undoablePropertyChange<PairCutoffsList>(this,
 			&CreateBondsModifier::pairCutoffs, &CreateBondsModifier::setPairCutoffs);
 
 	_pairCutoffs = pairCutoffs;
@@ -403,7 +404,7 @@ bool CreateBondsModifierEditor::PairCutoffTableModel::setData(const QModelIndex&
 		CreateBondsModifier::PairCutoffsList pairCutoffs = _modifier->pairCutoffs();
 		pairCutoffs[_data[index.row()]] = cutoff;
 
-		UndoableTransaction::handleExceptions(tr("Change cutoff"), [&pairCutoffs, this]() {
+		UndoableTransaction::handleExceptions(_modifier->dataset()->undoStack(), tr("Change cutoff"), [&pairCutoffs, this]() {
 			_modifier->setPairCutoffs(pairCutoffs);
 		});
 		return true;

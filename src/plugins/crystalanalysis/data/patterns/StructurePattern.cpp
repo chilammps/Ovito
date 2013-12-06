@@ -39,14 +39,14 @@ SET_PROPERTY_FIELD_LABEL(StructurePattern, _burgersVectorFamilies, "Burgers vect
 /******************************************************************************
 * Constructs the StructurePattern object.
 ******************************************************************************/
-StructurePattern::StructurePattern() : _structureType(Lattice)
+StructurePattern::StructurePattern(DataSet* dataset) : ParticleType(dataset), _structureType(Lattice)
 {
 	INIT_PROPERTY_FIELD(StructurePattern::_shortName);
 	INIT_PROPERTY_FIELD(StructurePattern::_structureType);
 	INIT_PROPERTY_FIELD(StructurePattern::_burgersVectorFamilies);
 
 	// Create "unknown" Burgers vector family.
-	BurgersVectorFamily* family = new BurgersVectorFamily();
+	BurgersVectorFamily* family = new BurgersVectorFamily(dataset);
 	family->setColor(Color(0.7f, 0.7f, 0.7f));
 	family->setName(tr("Other"));
 	family->setBurgersVector(Vector3::Zero());
@@ -118,7 +118,7 @@ void StructurePatternEditor::createUI(const RolloutInsertionParameters& rolloutP
 		/// Sets the role data for the item at index to value.
 		virtual bool setItemData(RefTarget* target, const QModelIndex& index, const QVariant& value, int role) override {
 			if(index.isValid() && index.column() == 0 && role == Qt::CheckStateRole) {
-				UndoableTransaction::handleExceptions(tr("Show/hide Burgers vector family"), [target, &value]() {
+				UndoableTransaction::handleExceptions(dataset()->undoStack(), tr("Show/hide Burgers vector family"), [target, &value]() {
 					static_object_cast<BurgersVectorFamily>(target)->setVisible(value.value<int>() == Qt::Checked);
 				});
 				return true;
@@ -152,7 +152,7 @@ void StructurePatternEditor::onDoubleClickBurgersFamily(const QModelIndex& index
 	if(!newColor.isValid() || newColor == oldColor)
 		return;
 
-	UndoableTransaction::handleExceptions(tr("Change Burgers vector family color"), [family, &newColor]() {
+	undoableTransaction(tr("Change Burgers vector family color"), [family, &newColor]() {
 		family->setColor(Color(newColor));
 	});
 }

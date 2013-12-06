@@ -38,8 +38,9 @@ class OVITO_PARTICLES_EXPORT SelectParticleTypeModifier : public ParticleModifie
 {
 public:
 
-	/// Default constructor.
-	Q_INVOKABLE SelectParticleTypeModifier() : _inputPropertyRef(ParticleProperty::ParticleTypeProperty) {}
+	/// Constructor.
+	Q_INVOKABLE SelectParticleTypeModifier(DataSet* dataset) : ParticleModifier(dataset),
+		_inputPropertyRef(ParticleProperty::ParticleTypeProperty) {}
 
 	/// This virtual method is called by the system when the modifier has been inserted into a PipelineObject.
 	virtual void initializeModifier(PipelineObject* pipelineObject, ModifierApplication* modApp) override;

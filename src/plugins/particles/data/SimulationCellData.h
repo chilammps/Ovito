@@ -91,6 +91,18 @@ public:
 		return pout;
 	}
 
+	/// Wraps a vector at the periodic boundaries of the cell using minimum image convention.
+	Vector3 wrapVector(const Vector3& v) const {
+		Vector3 vout = v;
+		for(size_t dim = 0; dim < 3; dim++) {
+			if(_pbcFlags[dim]) {
+				if(FloatType s = floor(_reciprocalSimulationCell.prodrow(v, dim) + FloatType(0.5)))
+					vout -= s * _simulationCell.column(dim);
+			}
+		}
+		return vout;
+	}
+
 private:
 
 	/// The geometry of the cell.

@@ -22,6 +22,7 @@
 #include <plugins/particles/Particles.h>
 #include <core/scene/objects/SceneObject.h>
 #include <core/dataset/importexport/LinkedFileObject.h>
+#include <core/gui/mainwin/MainWindow.h>
 #include <3rdparty/qcustomplot/qcustomplot.h>
 #include "CoordinationNumberModifier.h"
 
@@ -37,7 +38,7 @@ SET_PROPERTY_FIELD_UNITS(CoordinationNumberModifier, _cutoff, WorldParameterUnit
 /******************************************************************************
 * Constructs the modifier object.
 ******************************************************************************/
-CoordinationNumberModifier::CoordinationNumberModifier() :
+CoordinationNumberModifier::CoordinationNumberModifier(DataSet* dataset) : AsynchronousParticleModifier(dataset),
 	_cutoff(3.2),
 	_coordinationNumbers(new ParticleProperty(0, ParticleProperty::CoordinationProperty))
 {
@@ -143,7 +144,7 @@ void CoordinationNumberModifier::retrieveModifierResults(Engine* engine)
 	for(int i = 0; i < _rdfX.size(); i++) {
 		double r = stepSize * i;
 		double r2 = r + stepSize;
-		_rdfX[i] = r;
+		_rdfX[i] = r + 0.5 * stepSize;
 		_rdfY[i] = eng->rdfHistogram()[i] / (constant * (r2*r2*r2 - r*r*r));
 	}
 }
@@ -210,6 +211,10 @@ void CoordinationNumberModifierEditor::createUI(const RolloutInsertionParameters
 	layout->addWidget(_rdfPlot);
 	connect(this, SIGNAL(contentsReplaced(RefTarget*)), this, SLOT(plotRDF()));
 
+	QPushButton* saveDataButton = new QPushButton(tr("Export data to file"));
+	layout->addWidget(saveDataButton);
+	connect(saveDataButton, SIGNAL(clicked(bool)), this, SLOT(onSaveData()));
+
 	// Status label.
 	layout->addSpacing(6);
 	layout->addWidget(statusLabel());
@@ -242,6 +247,44 @@ void CoordinationNumberModifierEditor::plotRDF()
 	_rdfPlot->graph()->rescaleAxes();
 	_rdfPlot->replot();
 }
+
+/******************************************************************************
+* This is called when the user has clicked the "Save Data" button.
+******************************************************************************/
+void CoordinationNumberModifierEditor::onSaveData()
+{
+	CoordinationNumberModifier* modifier = static_object_cast<CoordinationNumberModifier>(editObject());
+	if(!modifier)
+		return;
+
+	if(modifier->rdfX().empty())
+		return;
+
+	QString fileName = QFileDialog::getSaveFileName(mainWindow(),
+	    tr("Save RDF Data"), QString(), tr("Text files (*.txt);;All files (*)"));
+	if(fileName.isEmpty())
+		return;
+
+	try {
+
+		QFile file(fileName);
+		if(!file.open(QIODevice::WriteOnly | QIODevice::Text))
+			throw Exception(tr("Could not open file for writing: %1").arg(file.errorString()));
+
+		QTextStream stream(&file);
+
+		stream << "# 1: Bin number" << endl;
+		stream << "# 2: r" << endl;
+		stream << "# 3: g(r)" << endl;
+		for(int i = 0; i < modifier->rdfX().size(); i++) {
+			stream << i << "\t" << modifier->rdfX()[i] << "\t" << modifier->rdfY()[i] << endl;
+		}
+	}
+	catch(const Exception& ex) {
+		ex.showError();
+	}
+}
+
 
 
 };	// End of namespace

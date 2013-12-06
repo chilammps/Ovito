@@ -22,8 +22,8 @@
 #include <core/Core.h>
 #include <core/utilities/concurrent/Future.h>
 #include <core/utilities/concurrent/Task.h>
-#include <core/utilities/concurrent/ProgressManager.h>
 #include <core/gui/dialogs/RemoteAuthenticationDialog.h>
+#include <core/dataset/DataSetContainer.h>
 
 #include "FileManager.h"
 #include "SftpJob.h"
@@ -44,7 +44,7 @@ FileManager::FileManager() : _mutex(QMutex::Recursive)
 /******************************************************************************
 * Makes a file available on this computer.
 ******************************************************************************/
-Future<QString> FileManager::fetchUrl(const QUrl& url)
+Future<QString> FileManager::fetchUrl(DataSetContainer& container, const QUrl& url)
 {
 	if(url.isLocalFile()) {
 		// Nothing to do to fetch local files. Simply return a finished Future object.
@@ -72,6 +72,7 @@ Future<QString> FileManager::fetchUrl(const QUrl& url)
 		Future<QString> future(futureInterface);
 		_pendingFiles.insert(normalizedUrl, future);
 		new SftpDownloadJob(url, futureInterface);
+		container.taskManager().addTask(future);
 		return future;
 	}
 	else throw Exception(tr("URL scheme not supported. The program supports only the sftp:// scheme and loading of local files."));

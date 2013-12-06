@@ -20,36 +20,38 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
+#include <core/dataset/DataSetContainer.h>
 #include <core/gui/actions/ActionManager.h>
 #include <core/gui/widgets/animation/AnimationTimeSpinner.h>
 #include <core/gui/widgets/animation/AnimationFramesToolButton.h>
 #include <core/gui/widgets/animation/AnimationTimeSlider.h>
 #include <core/gui/widgets/rendering/FrameBufferWindow.h>
-#include <core/viewport/ViewportManager.h>
+#include <core/viewport/ViewportConfiguration.h>
+#include <core/viewport/input/ViewportInputManager.h>
 #include "MainWindow.h"
 #include "ViewportsPanel.h"
 #include "cmdpanel/CommandPanel.h"
 
 namespace Ovito {
 
-/// The global instance of this window class.
-MainWindow* MainWindow::_instance = NULL;
-
 /******************************************************************************
 * The constructor of the main window class.
 ******************************************************************************/
-MainWindow::MainWindow(const QString& title) :
-	QMainWindow()
+MainWindow::MainWindow() :
+		_datasetContainer(this)
 {
-	OVITO_ASSERT_MSG(_instance == NULL, "MainWindow constructor", "Only one main window should be created.");
-	_instance = this;
-
-	setWindowTitle(title);
+	setWindowTitle(tr("Ovito (Open Visualization Tool)"));
 	setAttribute(Qt::WA_DeleteOnClose);
 
 	// Setup the layout of docking widgets.
 	setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
 	setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
+
+	// Create input manager.
+	_viewportInputManager = new ViewportInputManager(this);
+
+	// Create actions.
+	_actionManager = new ActionManager(this);
 
 	// Create the main menu
 	createMainMenu();
@@ -68,7 +70,7 @@ MainWindow::MainWindow(const QString& title) :
 	animationPanel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 
 	// Create animation time slider
-	AnimationTimeSlider* timeSlider = new AnimationTimeSlider();
+	AnimationTimeSlider* timeSlider = new AnimationTimeSlider(this);
 	timeSlider->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 	animationPanelLayout->addWidget(timeSlider);
 
@@ -81,19 +83,19 @@ MainWindow::MainWindow(const QString& title) :
 
 	// Create the animation control toolbar.
 	QToolBar* animationControlBar1 = new QToolBar();
-	animationControlBar1->addAction(ActionManager::instance().getAction(ACTION_GOTO_START_OF_ANIMATION));
+	animationControlBar1->addAction(actionManager()->getAction(ACTION_GOTO_START_OF_ANIMATION));
 	animationControlBar1->addSeparator();
-	animationControlBar1->addAction(ActionManager::instance().getAction(ACTION_GOTO_PREVIOUS_FRAME));
-	animationControlBar1->addAction(ActionManager::instance().getAction(ACTION_TOGGLE_ANIMATION_PLAYBACK));
-	animationControlBar1->addAction(ActionManager::instance().getAction(ACTION_GOTO_NEXT_FRAME));
+	animationControlBar1->addAction(actionManager()->getAction(ACTION_GOTO_PREVIOUS_FRAME));
+	animationControlBar1->addAction(actionManager()->getAction(ACTION_TOGGLE_ANIMATION_PLAYBACK));
+	animationControlBar1->addAction(actionManager()->getAction(ACTION_GOTO_NEXT_FRAME));
 	animationControlBar1->addSeparator();
-	animationControlBar1->addAction(ActionManager::instance().getAction(ACTION_GOTO_END_OF_ANIMATION));
+	animationControlBar1->addAction(actionManager()->getAction(ACTION_GOTO_END_OF_ANIMATION));
 	animationControlBar1->setStyleSheet("QToolBar { padding: 0px; margin: 0px; border: 0px none black; } QToolButton { padding: 0px; margin: 0px }");
 	QToolBar* animationControlBar2 = new QToolBar();
 #if 0
-	animationControlBar2->addAction(ActionManager::instance().getAction(ACTION_AUTO_KEY_MODE_TOGGLE));
+	animationControlBar2->addAction(actionManager()->getAction(ACTION_AUTO_KEY_MODE_TOGGLE));
 #else
-	animationControlBar2->addWidget(new AnimationFramesToolButton());
+	animationControlBar2->addWidget(new AnimationFramesToolButton(datasetContainer()));
 #endif
 	class TimeEditBox : public QLineEdit {
 	public:
@@ -101,11 +103,11 @@ MainWindow::MainWindow(const QString& title) :
 	};
 	QLineEdit* timeEditBox = new TimeEditBox();
 	timeEditBox->setToolTip(tr("Current Animation Time"));
-	AnimationTimeSpinner* currentTimeSpinner = new AnimationTimeSpinner();
+	AnimationTimeSpinner* currentTimeSpinner = new AnimationTimeSpinner(this);
 	currentTimeSpinner->setTextBox(timeEditBox);
 	animationControlBar2->addWidget(timeEditBox);
 	animationControlBar2->addWidget(currentTimeSpinner);
-	animationControlBar2->addAction(ActionManager::instance().getAction(ACTION_ANIMATION_SETTINGS));
+	animationControlBar2->addAction(actionManager()->getAction(ACTION_ANIMATION_SETTINGS));
 	animationControlBar2->addWidget(new QWidget());
 	animationControlBar2->setStyleSheet("QToolBar { padding: 0px; margin: 0px; border: 0px none black; } QToolButton { padding: 0px; margin: 0px }");
 
@@ -120,16 +122,16 @@ MainWindow::MainWindow(const QString& title) :
 
 	// Create the viewport control toolbar.
 	QToolBar* viewportControlBar1 = new QToolBar();
-	viewportControlBar1->addAction(ActionManager::instance().getAction(ACTION_VIEWPORT_ZOOM));
-	viewportControlBar1->addAction(ActionManager::instance().getAction(ACTION_VIEWPORT_PAN));
-	viewportControlBar1->addAction(ActionManager::instance().getAction(ACTION_VIEWPORT_ORBIT));
-	viewportControlBar1->addAction(ActionManager::instance().getAction(ACTION_VIEWPORT_PICK_ORBIT_CENTER));
+	viewportControlBar1->addAction(actionManager()->getAction(ACTION_VIEWPORT_ZOOM));
+	viewportControlBar1->addAction(actionManager()->getAction(ACTION_VIEWPORT_PAN));
+	viewportControlBar1->addAction(actionManager()->getAction(ACTION_VIEWPORT_ORBIT));
+	viewportControlBar1->addAction(actionManager()->getAction(ACTION_VIEWPORT_PICK_ORBIT_CENTER));
 	viewportControlBar1->setStyleSheet("QToolBar { padding: 0px; margin: 0px; border: 0px none black; } QToolButton { padding: 0px; margin: 0px }");
 	QToolBar* viewportControlBar2 = new QToolBar();
-	viewportControlBar2->addAction(ActionManager::instance().getAction(ACTION_VIEWPORT_ZOOM_SCENE_EXTENTS));
-	viewportControlBar2->addAction(ActionManager::instance().getAction(ACTION_VIEWPORT_ZOOM_SELECTION_EXTENTS));
-	viewportControlBar2->addAction(ActionManager::instance().getAction(ACTION_VIEWPORT_FOV));
-	viewportControlBar2->addAction(ActionManager::instance().getAction(ACTION_VIEWPORT_MAXIMIZE));
+	viewportControlBar2->addAction(actionManager()->getAction(ACTION_VIEWPORT_ZOOM_SCENE_EXTENTS));
+	viewportControlBar2->addAction(actionManager()->getAction(ACTION_VIEWPORT_ZOOM_SELECTION_EXTENTS));
+	viewportControlBar2->addAction(actionManager()->getAction(ACTION_VIEWPORT_FOV));
+	viewportControlBar2->addAction(actionManager()->getAction(ACTION_VIEWPORT_MAXIMIZE));
 	viewportControlBar2->setStyleSheet("QToolBar { padding: 0px; margin: 0px; border: 0px none black; } QToolButton { padding: 0px; margin: 0px }");
 	QWidget* viewportControlPanel = new QWidget();
 	QVBoxLayout* viewportControlPanelLayout = new QVBoxLayout(viewportControlPanel);
@@ -144,7 +146,7 @@ MainWindow::MainWindow(const QString& title) :
 	viewportControlPanel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
 
 	// Create the command panel.
-	_commandPanel = new CommandPanel();
+	_commandPanel = new CommandPanel(this, this);
 
 	createDockPanel(tr("Animation Panel"), "AnimationPanel", Qt::BottomDockWidgetArea, Qt::BottomDockWidgetArea, animationPanel);
 	createDockPanel(tr("Animation Control Panel"), "AnimationControlPanel", Qt::BottomDockWidgetArea, Qt::BottomDockWidgetArea, animationControlPanel);
@@ -200,33 +202,33 @@ void MainWindow::createMainMenu()
 
 	// Build the file menu.
 	QMenu* fileMenu = menuBar->addMenu(tr("&File"));
-	fileMenu->addAction(ActionManager::instance().getAction(ACTION_FILE_IMPORT));
-	fileMenu->addAction(ActionManager::instance().getAction(ACTION_FILE_REMOTE_IMPORT));
-	fileMenu->addAction(ActionManager::instance().getAction(ACTION_FILE_EXPORT));
+	fileMenu->addAction(actionManager()->getAction(ACTION_FILE_NEW_WINDOW));
+	fileMenu->addAction(actionManager()->getAction(ACTION_FILE_IMPORT));
+	fileMenu->addAction(actionManager()->getAction(ACTION_FILE_REMOTE_IMPORT));
+	fileMenu->addAction(actionManager()->getAction(ACTION_FILE_EXPORT));
 	fileMenu->addSeparator();
-	fileMenu->addAction(ActionManager::instance().getAction(ACTION_FILE_OPEN));
-	fileMenu->addAction(ActionManager::instance().getAction(ACTION_FILE_SAVE));
-	fileMenu->addAction(ActionManager::instance().getAction(ACTION_FILE_SAVEAS));
+	fileMenu->addAction(actionManager()->getAction(ACTION_FILE_OPEN));
+	fileMenu->addAction(actionManager()->getAction(ACTION_FILE_SAVE));
+	fileMenu->addAction(actionManager()->getAction(ACTION_FILE_SAVEAS));
 	fileMenu->addSeparator();
-	fileMenu->addAction(ActionManager::instance().getAction(ACTION_QUIT));
+	fileMenu->addAction(actionManager()->getAction(ACTION_QUIT));
 
 	// Build the edit menu.
 	QMenu* editMenu = menuBar->addMenu(tr("&Edit"));
-	editMenu->addAction(ActionManager::instance().getAction(ACTION_EDIT_UNDO));
-	editMenu->addAction(ActionManager::instance().getAction(ACTION_EDIT_REDO));
+	editMenu->addAction(actionManager()->getAction(ACTION_EDIT_UNDO));
+	editMenu->addAction(actionManager()->getAction(ACTION_EDIT_REDO));
 	editMenu->addSeparator();
-	editMenu->addAction(ActionManager::instance().getAction(ACTION_EDIT_DELETE));
+	editMenu->addAction(actionManager()->getAction(ACTION_EDIT_DELETE));
 
 	// Build the options menu.
 	QMenu* optionsMenu = menuBar->addMenu(tr("&Options"));
-	optionsMenu->addAction(ActionManager::instance().getAction(ACTION_SETTINGS_DIALOG));
+	optionsMenu->addAction(actionManager()->getAction(ACTION_SETTINGS_DIALOG));
 
 	// Build the help menu.
 	QMenu* helpMenu = menuBar->addMenu(tr("&Help"));
-	helpMenu->addAction(ActionManager::instance().getAction(ACTION_HELP_SHOW_ONLINE_HELP));
+	helpMenu->addAction(actionManager()->getAction(ACTION_HELP_SHOW_ONLINE_HELP));
 	helpMenu->addSeparator();
-	helpMenu->addAction(ActionManager::instance().getAction(ACTION_HELP_ABOUT));
-	//helpMenu->addAction(tr("About Qt"), QApplication::instance(), SLOT(aboutQt()));
+	helpMenu->addAction(actionManager()->getAction(ACTION_HELP_ABOUT));
 
 	setMenuBar(menuBar);
 }
@@ -239,23 +241,23 @@ void MainWindow::createMainToolbar()
 	_mainToolbar = addToolBar(tr("Main Toolbar"));
 	_mainToolbar->setObjectName("MainToolbar");
 
-	_mainToolbar->addAction(ActionManager::instance().getAction(ACTION_FILE_IMPORT));
-	_mainToolbar->addAction(ActionManager::instance().getAction(ACTION_FILE_REMOTE_IMPORT));
-	_mainToolbar->addAction(ActionManager::instance().getAction(ACTION_FILE_EXPORT));
+	_mainToolbar->addAction(actionManager()->getAction(ACTION_FILE_IMPORT));
+	_mainToolbar->addAction(actionManager()->getAction(ACTION_FILE_REMOTE_IMPORT));
+	_mainToolbar->addAction(actionManager()->getAction(ACTION_FILE_EXPORT));
 
 	_mainToolbar->addSeparator();
 
-	_mainToolbar->addAction(ActionManager::instance().getAction(ACTION_FILE_OPEN));
-	_mainToolbar->addAction(ActionManager::instance().getAction(ACTION_FILE_SAVE));
+	_mainToolbar->addAction(actionManager()->getAction(ACTION_FILE_OPEN));
+	_mainToolbar->addAction(actionManager()->getAction(ACTION_FILE_SAVE));
 
 	_mainToolbar->addSeparator();
 
-	_mainToolbar->addAction(ActionManager::instance().getAction(ACTION_EDIT_UNDO));
-	_mainToolbar->addAction(ActionManager::instance().getAction(ACTION_EDIT_REDO));
+	_mainToolbar->addAction(actionManager()->getAction(ACTION_EDIT_UNDO));
+	_mainToolbar->addAction(actionManager()->getAction(ACTION_EDIT_REDO));
 
 	_mainToolbar->addSeparator();
 
-	_mainToolbar->addAction(ActionManager::instance().getAction(ACTION_RENDER_ACTIVE_VIEWPORT));
+	_mainToolbar->addAction(actionManager()->getAction(ACTION_RENDER_ACTIVE_VIEWPORT));
 }
 
 /******************************************************************************
@@ -277,14 +279,10 @@ void MainWindow::closeEvent(QCloseEvent* event)
 {
 	try {
 		// Save changes.
-		if(!DataSetManager::instance().askForSaveChanges()) {
+		if(!datasetContainer().askForSaveChanges()) {
 			event->ignore();
 			return;
 		}
-
-		// Close current scene file.
-		ViewportManager::instance().suspendViewportUpdates();
-		DataSetManager::instance().setCurrentSet(new DataSet());
 
 		// Save window layout.
 		saveLayout();
@@ -296,6 +294,14 @@ void MainWindow::closeEvent(QCloseEvent* event)
 		event->ignore();
 		ex.showError();
 	}
+}
+
+/******************************************************************************
+* Immediately repaints all viewports that are flagged for an update.
+******************************************************************************/
+void MainWindow::processViewportUpdates()
+{
+	datasetContainer().currentSet()->viewportConfig()->processViewportUpdates();
 }
 
 };

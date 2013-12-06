@@ -31,11 +31,8 @@
 #include <core/Core.h>
 #include <core/reference/RefTarget.h>
 #include <core/animation/TimeInterval.h>
-#include <core/animation/AnimManager.h>
 
 namespace Ovito {
-
-class SceneNode;		// defined in SceneNode.h
 
 /**
  * \brief Base class for all animation controllers.
@@ -49,8 +46,9 @@ class OVITO_CORE_EXPORT Controller : public RefTarget
 {
 protected:
 	
-	/// \brief Default constructor.
-	Controller() {}
+	/// \brief Constructor.
+	/// \param dataset The context dataset.
+	Controller(DataSet* dataset) : RefTarget(dataset) {}
 
 public:
 	
@@ -98,8 +96,9 @@ class TypedController : public Controller
 {
 protected:
 	
-    /// \brief Default constructor.
-	TypedController() {}
+    /// \brief Constructor.
+	/// \param dataset The context dataset.
+	TypedController(DataSet* dataset) : Controller(dataset) {}
 
 public:
 	
@@ -137,11 +136,11 @@ public:
 	}
 
 	/// \brief Queries the controller for its absolute value at the current animation time.
-	/// \return The controller's value at the current animation time given by AnimManager::time().
+	/// \return The controller's value at the current animation time.
 	/// \sa getValueAtTime()
 	/// \sa setCurrentValue()
 	ValueType currentValue() {
-		return getValueAtTime(AnimManager::instance().time());
+		return getValueAtTime(dataset()->animationSettings()->time());
 	}
 
 	/// \brief Sets the controller's value at the specified time.
@@ -156,13 +155,13 @@ public:
 
 	/// \brief Sets the controller's value at the current animation time.
 	/// \param newValue The new absolute value assigned to the controller at the current
-	///                 animation time given by AnimManager::time().
+	///                 animation time.
 	///
 	/// \undoable
 	/// \sa setValue()
 	/// \sa getCurrentValue()
 	void setCurrentValue(const ValueType& newValue) { 
-		setValue(AnimManager::instance().time(), newValue, true);
+		setValue(dataset()->animationSettings()->time(), newValue, true);
 	}
 
 	/// \brief Calculates the largest time interval containing the given time during which the
@@ -200,8 +199,8 @@ class OVITO_CORE_EXPORT FloatController : public TypedController<FloatType, Floa
 { 
 protected:
 
-	/// The default constructor.
-	FloatController() {}
+	/// The constructor.
+	FloatController(DataSet* dataset) : TypedController<FloatType, FloatType>(dataset) {}
 	
 public:
 	
@@ -227,8 +226,8 @@ class OVITO_CORE_EXPORT IntegerController : public TypedController<int, int>
 {
 protected: 
 
-	/// The default constructor.
-	IntegerController() {}
+	/// The constructor.
+	IntegerController(DataSet* dataset) : TypedController<int, int>(dataset) {}
 	
 public:
 
@@ -254,8 +253,8 @@ class OVITO_CORE_EXPORT BooleanController : public TypedController<bool, bool>
 {
 protected:
 
-	/// The default constructor.
-	BooleanController() {}
+	/// The constructor.
+	BooleanController(DataSet* dataset) : TypedController<bool, bool>(dataset) {}
 	
 public:	
 
@@ -281,8 +280,8 @@ class OVITO_CORE_EXPORT VectorController : public TypedController<Vector3, Vecto
 {
 protected:
 
-	/// The default constructor.
-	VectorController() {}
+	/// The constructor.
+	VectorController(DataSet* dataset) : TypedController<Vector3, Vector3>(dataset) {}
 	
 public:
 	
@@ -319,8 +318,8 @@ class OVITO_CORE_EXPORT PositionController : public TypedController<Vector3, Aff
 {
 protected:
 
-	/// The default constructor.
-	PositionController() {}
+	/// The constructor.
+	PositionController(DataSet* dataset) : TypedController<Vector3, AffineTransformation>(dataset) {}
 	
 public:
 
@@ -356,8 +355,8 @@ class OVITO_CORE_EXPORT RotationController : public TypedController<Rotation, Af
 {
 protected:
 
-	/// The default constructor.
-	RotationController() {}
+	/// The constructor.
+	RotationController(DataSet* dataset) : TypedController<Rotation, AffineTransformation>(dataset) {}
 	
 public:
 
@@ -393,8 +392,8 @@ class OVITO_CORE_EXPORT ScalingController : public TypedController<Scaling, Affi
 { 
 protected:
 
-	/// The default constructor.
-	ScalingController() {}
+	/// The constructor.
+	ScalingController(DataSet* dataset) : TypedController<Scaling, AffineTransformation>(dataset) {}
 	
 public:
 
@@ -440,17 +439,19 @@ public:
 	/// \brief Creates a new instance of the default implementation for the given base Controller type.
 	/// \param controllerBaseClass The type of controller to create. This must be one of the base Controller derived
 	///                            classes like IntegerController or FloatController.
+	/// \param dataset The context dataset.
 	/// \return The newly created instance of the controller class set as default for the requested base controller class.
 	///         If no default is set for the given base class than \c NULL is returned.
-	OORef<Controller> createDefaultController(const OvitoObjectType& controllerBaseClass);
+	OORef<Controller> createDefaultController(const OvitoObjectType& controllerBaseClass, DataSet* dataset);
 
 	/// \brief Creates a new instance of the default implementation for the given base controller type.
+	/// \param dataset The context dataset.
 	/// \return The newly created instance of the controller class set as default for the requested base controller class.
 	///         If no default is set for the given base class than \c NULL is returned.
 	/// 
 	/// This is the template version of the above method. The function parameter is replaced with a template parameter.
 	template<typename T>
-	OORef<T> createDefaultController() { return static_object_cast<T>(createDefaultController(T::OOType)); }
+	OORef<T> createDefaultController(DataSet* dataset) { return static_object_cast<T>(createDefaultController(T::OOType, dataset)); }
 
 private:
 

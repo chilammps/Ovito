@@ -41,8 +41,8 @@ class OVITO_PARTICLES_EXPORT ColorCodingGradient : public RefTarget
 {
 protected:
 
-	/// Default constructor.
-	ColorCodingGradient() {}
+	/// Constructor.
+	ColorCodingGradient(DataSet* dataset) : RefTarget(dataset) {}
 
 public:
 
@@ -64,8 +64,8 @@ class ColorCodingHSVGradient : public ColorCodingGradient
 {
 public:
 
-	/// Default constructor.
-	Q_INVOKABLE ColorCodingHSVGradient() {}
+	/// Constructor.
+	Q_INVOKABLE ColorCodingHSVGradient(DataSet* dataset) : ColorCodingGradient(dataset) {}
 
 	/// \brief Converts a scalar value to a color value.
 	/// \param t A value between 0 and 1.
@@ -86,8 +86,8 @@ class ColorCodingGrayscaleGradient : public ColorCodingGradient
 {
 public:
 
-	/// Default constructor.
-	Q_INVOKABLE ColorCodingGrayscaleGradient() {}
+	/// Constructor.
+	Q_INVOKABLE ColorCodingGrayscaleGradient(DataSet* dataset) : ColorCodingGradient(dataset) {}
 
 	/// \brief Converts a scalar value to a color value.
 	/// \param t A value between 0 and 1.
@@ -108,8 +108,8 @@ class ColorCodingHotGradient : public ColorCodingGradient
 {
 public:
 
-	/// Default constructor.
-	Q_INVOKABLE ColorCodingHotGradient() {}
+	/// Constructor.
+	Q_INVOKABLE ColorCodingHotGradient(DataSet* dataset) : ColorCodingGradient(dataset) {}
 
 	/// \brief Converts a scalar value to a color value.
 	/// \param t A value between 0 and 1.
@@ -134,8 +134,8 @@ class ColorCodingJetGradient : public ColorCodingGradient
 {
 public:
 
-	/// Default constructor.
-	Q_INVOKABLE ColorCodingJetGradient() {}
+	/// Constructor.
+	Q_INVOKABLE ColorCodingJetGradient(DataSet* dataset) : ColorCodingGradient(dataset) {}
 
 	/// \brief Converts a scalar value to a color value.
 	/// \param t A value between 0 and 1.
@@ -164,8 +164,8 @@ class ColorCodingModifier : public ParticleModifier
 {
 public:
 
-	/// Default constructor.
-	Q_INVOKABLE ColorCodingModifier();
+	/// Constructor.
+	Q_INVOKABLE ColorCodingModifier(DataSet* dataset);
 
 	/// Asks the modifier for its validity interval at the given time.
 	virtual TimeInterval modifierValidity(TimePoint time) override;
@@ -210,19 +210,25 @@ public:
 	ColorCodingGradient* colorGradient() const { return _colorGradient; }
 
 	/// Sets the color gradient for the modifier to convert scalar atom properties to colors.
-	void setColorGradient(const OORef<ColorCodingGradient>& gradient) { _colorGradient = gradient; }
+	void setColorGradient(const OORef<ColorCodingGradient>& gradient) { setColorGradient(gradient.get()); }
 
-	/// Sets the start and end value to the minimum and maximum value in the selected data channel.
-	bool adjustRange();
+	/// Sets the color gradient for the modifier to convert scalar atom properties to colors.
+	void setColorGradient(ColorCodingGradient* gradient) { _colorGradient = gradient; }
 
 	/// Retrieves the selected input particle property from the given modifier input state.
 	ParticlePropertyObject* lookupInputProperty(const PipelineFlowState& inputState) const;
+
+public Q_SLOTS:
+
+	/// Sets the start and end value to the minimum and maximum value in the selected data channel.
+	bool adjustRange();
 
 public:
 
 	Q_PROPERTY(FloatType startValue READ startValue WRITE setStartValue)
 	Q_PROPERTY(FloatType endValue READ endValue WRITE setEndValue)
 	Q_PROPERTY(Particles::ParticlePropertyReference sourceProperty READ sourceProperty WRITE setSourceProperty)
+	Q_PROPERTY(ColorCodingGradient* colorGradient READ colorGradient WRITE setColorGradient)
 
 protected:
 

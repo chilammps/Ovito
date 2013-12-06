@@ -42,8 +42,6 @@
 
 namespace Ovito {
 
-class PipelineObject;		// defined in PipelineObject.h
-
 // The minimum OpenGL version required by Ovito:
 #define OVITO_OPENGL_MINIMUM_VERSION_MAJOR 			2
 #define OVITO_OPENGL_MINIMUM_VERSION_MINOR			0
@@ -61,7 +59,7 @@ class OVITO_CORE_EXPORT ViewportSceneRenderer : public SceneRenderer
 public:
 
 	/// Default constructor.
-	ViewportSceneRenderer() : _glcontext(nullptr), _modelViewTM(AffineTransformation::Identity()) {}
+	ViewportSceneRenderer(DataSet* dataset) : SceneRenderer(dataset), _glcontext(nullptr), _modelViewTM(AffineTransformation::Identity()) {}
 
 	/// Renders the current animation frame.
 	virtual bool renderFrame(FrameBuffer* frameBuffer, QProgressDialog* progress) override;

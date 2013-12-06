@@ -31,7 +31,6 @@
 
 namespace Ovito {
 
-class RefTarget;						// defined in RefTarget.h
 class PropertyFieldDescriptor;			// defined in PropertyFieldDescriptor.h
 
 /**

@@ -34,9 +34,9 @@ enum {
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-InputColumnMappingDialog::InputColumnMappingDialog(const InputColumnMapping& mapping, QWidget* parent)
-	: QDialog(parent ? parent : &MainWindow::instance())
+InputColumnMappingDialog::InputColumnMappingDialog(const InputColumnMapping& mapping, QWidget* parent) : QDialog(parent)
 {
+	OVITO_CHECK_POINTER(parent);
 	setWindowTitle(tr("File column mapping"));
 
 	_vectorCmpntSignalMapper = new QSignalMapper(this);

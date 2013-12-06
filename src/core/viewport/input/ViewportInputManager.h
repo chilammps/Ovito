@@ -28,20 +28,13 @@
 #define __OVITO_VIEWPORT_INPUT_MANAGER_H
 
 #include <core/Core.h>
-#include "ViewportInputHandler.h"
+#include "ViewportInputMode.h"
+#include "NavigationModes.h"
 
 namespace Ovito {
 
-class Viewport; // defined in Viewport.h
-
 /**
  * \brief Manages a stack of viewport input handlers.
- *
- * This is a singleton class with only one predefined instance of this class.
- * You can access the instance of this class using the VIEWPORT_INPUT_MANAGER macro.
- *
- * \author Alexander Stukowski
- * \sa ViewportInputHandler
  */
 class OVITO_CORE_EXPORT ViewportInputManager : public QObject
 {
@@ -49,73 +42,81 @@ class OVITO_CORE_EXPORT ViewportInputManager : public QObject
 
 public:
 
-	/// \brief Returns the one and only instance of this class.
-	/// \return The predefined instance of the ViewportInputManager singleton class.
-	inline static ViewportInputManager& instance() {
-		OVITO_ASSERT_MSG(_instance != nullptr, "ViewportInputManager::instance", "Singleton object is not initialized yet.");
-		return *_instance;
-	}
+	/// \brief Constructor.
+	ViewportInputManager(MainWindow* mainWindow);
 
-	/// \brief Returns the currently active ViewportInputHandler that handles the mouse events in viewports.
-	/// \return The handler implementation that is responsible for mouse event processing. Can be \c NULL when the handler stack is empty.
-	ViewportInputHandler* currentHandler();
+	/// Returns the associated main window.
+	MainWindow* mainWindow() const { return reinterpret_cast<MainWindow*>(parent()); }
 
-	/// \brief Returns the current stack of input handlers.
-	/// \return The stack of input handlers. The topmost handler is the active one.
-	const QVector<OORef<ViewportInputHandler>>& stack() { return _inputHandlerStack; }
+	/// \brief Returns the currently active ViewportInputMode that handles the mouse events in viewports.
+	/// \return The mode that is responsible for mouse event handling. Can be \c NULL when the stack is empty.
+	ViewportInputMode* activeMode();
 
-	/// \brief Pushes a handler onto the stack and makes it active.
-	/// \param handler The handler to be made active.
-	/// \sa removeInputHandler()
-	void pushInputHandler(const OORef<ViewportInputHandler>& handler);
+	/// \brief Returns the stack of input modes.
+	/// \return The stack of input modes. The topmost mode is the active one.
+	const QVector<ViewportInputMode*>& stack() { return _inputModeStack; }
 
-	/// \brief Removes a handler from the stack and deactivates it if it is currently active.
-	/// \param handler The handler to remove from the stack. It is not deleted by this method.
-	/// \sa pushInputHandler()
-	void removeInputHandler(ViewportInputHandler* handler);
+	/// \brief Pushes an input mode onto the stack and makes it active.
+	/// \param mode The mode to be made active.
+	/// \param temporary A flag passed to the input mode that indicates whether the activation is only temporary.
+	void pushInputMode(ViewportInputMode* mode, bool temporary = false);
 
-	/// Returns true if the singleton instance of this class has been created and initialized.
-	static bool isInitialized() { return _instance != nullptr; }
+	/// \brief Removes an input mode from the stack and deactivates it if it is currently active.
+	/// \param mode The mode to remove from the stack.
+	void removeInputMode(ViewportInputMode* mode);
+
+	/// \brief Returns the zoom input mode.
+	ZoomMode* zoomMode() const { return _zoomMode; }
+
+	/// \brief Returns the pan input mode.
+	PanMode* panMode() const { return _panMode; }
+
+	/// \brief Returns the orbit input mode.
+	OrbitMode* orbitMode() const { return _orbitMode; }
+
+	/// \brief Returns the FOV input mode.
+	FOVMode* fovMode() const { return _fovMode; }
+
+	/// \brief Returns the pick orbit center input mode.
+	PickOrbitCenterMode* pickOrbitCenterMode() const { return _pickOrbitCenterMode; }
 
 public Q_SLOTS:
 
-	/// \brief Resets the input mode stack to its initial state on application startup.
+	/// \brief Resets the input mode stack to its default state.
 	///
-	/// All input handlers are removed from the handler stack and a default input handler
+	/// All input mode are removed from the stack and a default input mode
 	/// is activated.
 	void reset();
-
-	/// \brief Updates the mouse cursor displayed in the viewports.
-	void updateViewportCursor();
 
 Q_SIGNALS:
 
 	/// \brief This signal is sent when the active viewport input mode has changed.
 	/// \param oldMode The previous input handler (can be \c NULL).
 	/// \param newMode The new input handler that is now active (can be \c NULL).
-	void inputModeChanged(ViewportInputHandler* oldMode, ViewportInputHandler* newMode);
+	void inputModeChanged(ViewportInputMode* oldMode, ViewportInputMode* newMode);
 
 private:
 
-	/// Stack of input handlers. The topmost entry is the active one.
-	QVector<OORef<ViewportInputHandler>> _inputHandlerStack;
+	/// Stack of input modes. The topmost entry is the active one.
+	QVector<ViewportInputMode*> _inputModeStack;
 
-private:
+	/// The default viewport input mode.
+	ViewportInputMode* _defaultMode;
 
-	/// Private constructor.
-	/// This is a singleton class; no public instances are allowed.
-	ViewportInputManager();
+	/// The zoom input mode.
+	ZoomMode* _zoomMode;
 
-	/// Create the singleton instance of this class.
-	static void initialize() { _instance = new ViewportInputManager(); }
+	/// The pan input mode.
+	PanMode* _panMode;
 
-	/// Deletes the singleton instance of this class.
-	static void shutdown() { delete _instance; _instance = nullptr; }
+	/// The orbit input mode.
+	OrbitMode* _orbitMode;
 
-	/// The singleton instance of this class.
-	static ViewportInputManager* _instance;
+	/// The FOV input mode.
+	FOVMode* _fovMode;
 
-	friend class Application;
+	/// The pick orbit center input mode.
+	PickOrbitCenterMode* _pickOrbitCenterMode;
 };
 
 };

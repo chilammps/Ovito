@@ -25,6 +25,7 @@
 #include <core/gui/properties/BooleanActionParameterUI.h>
 #include <core/gui/properties/IntegerParameterUI.h>
 #include <core/gui/properties/SubObjectParameterUI.h>
+#include <core/animation/AnimationSettings.h>
 #include "LinkedFileObjectEditor.h"
 
 namespace Ovito {
@@ -149,23 +150,21 @@ void LinkedFileObjectEditor::createUI(const RolloutInsertionParameters& rolloutP
 }
 
 /******************************************************************************
-* Is called when the editor gets associated with an object.
+* Is called when a new object has been loaded into the editor.
 ******************************************************************************/
-void LinkedFileObjectEditor::setEditObject(RefTarget* newObject)
+void LinkedFileObjectEditor::onEditorContentsReplaced(RefTarget* newObject)
 {
-	PropertiesEditor::setEditObject(newObject);
-
 	updateInformationLabel();
 
 	// Close old sub-editors.
 	_subEditors.clear();
-	LinkedFileObject* obj = static_object_cast<LinkedFileObject>(newObject);
-	if(obj) {
+	if(newObject) {
+		LinkedFileObject* obj = static_object_cast<LinkedFileObject>(newObject);
 		// Open new sub-editors.
 		for(SceneObject* sceneObj : obj->sceneObjects()) {
 			OORef<PropertiesEditor> subEditor = sceneObj->createPropertiesEditor();
 			if(subEditor) {
-				subEditor->initialize(container(), _subEditorRolloutParams);
+				subEditor->initialize(container(), mainWindow(), _subEditorRolloutParams);
 				subEditor->setEditObject(sceneObj);
 				_subEditors.push_back(subEditor);
 			}
@@ -220,7 +219,7 @@ void LinkedFileObjectEditor::onWildcardPatternEntered()
 	LinkedFileObject* obj = static_object_cast<LinkedFileObject>(editObject());
 	OVITO_CHECK_OBJECT_POINTER(obj);
 
-	UndoableTransaction::handleExceptions(tr("Change wildcard pattern"), [this, obj]() {
+	undoableTransaction(tr("Change wildcard pattern"), [this, obj]() {
 		if(!obj->importer())
 			return;
 
@@ -314,7 +313,7 @@ void LinkedFileObjectEditor::onFrameSelected(int index)
 	LinkedFileObject* obj = static_object_cast<LinkedFileObject>(editObject());
 	if(!obj) return;
 
-	AnimManager::instance().setTime(obj->inputFrameToAnimationTime(index));
+	dataset()->animationSettings()->setTime(obj->inputFrameToAnimationTime(index));
 }
 
 /******************************************************************************
@@ -335,7 +334,7 @@ bool LinkedFileObjectEditor::referenceEvent(RefTarget* source, ReferenceEvent* e
 						// Open a new sub-editor.
 						OORef<PropertiesEditor> subEditor = sceneObj->createPropertiesEditor();
 						if(subEditor) {
-							subEditor->initialize(container(), _subEditorRolloutParams);
+							subEditor->initialize(container(), mainWindow(), _subEditorRolloutParams);
 							subEditor->setEditObject(sceneObj);
 							_subEditors.push_back(subEditor);
 						}

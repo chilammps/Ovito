@@ -40,8 +40,8 @@ class OVITO_CORE_EXPORT PipelineObject : public SceneObject
 {
 public:
 
-	/// \brief Default constructor that creates an empty object without input.
-	Q_INVOKABLE PipelineObject();
+	/// \brief Constructor that creates an empty pipeline object without input.
+	Q_INVOKABLE PipelineObject(DataSet* dataset);
 
 	/// \brief Asks the object for the result of the geometry pipeline at the given time
 	///        up to a given point in the modifier stack.

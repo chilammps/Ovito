@@ -42,14 +42,14 @@ SET_PROPERTY_FIELD_UNITS(PRSTransformationController, _scaling, PercentParameter
 /******************************************************************************
 * Default constructor.
 ******************************************************************************/
-PRSTransformationController::PRSTransformationController()
+PRSTransformationController::PRSTransformationController(DataSet* dataset) : TransformationController(dataset)
 {
 	INIT_PROPERTY_FIELD(PRSTransformationController::_position);
 	INIT_PROPERTY_FIELD(PRSTransformationController::_rotation);
 	INIT_PROPERTY_FIELD(PRSTransformationController::_scaling);
-	_position = ControllerManager::instance().createDefaultController<PositionController>();
-	_rotation = ControllerManager::instance().createDefaultController<RotationController>();
-	_scaling = ControllerManager::instance().createDefaultController<ScalingController>();
+	_position = ControllerManager::instance().createDefaultController<PositionController>(dataset);
+	_rotation = ControllerManager::instance().createDefaultController<RotationController>(dataset);
+	_scaling = ControllerManager::instance().createDefaultController<ScalingController>(dataset);
 }
 
 /******************************************************************************

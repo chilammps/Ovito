@@ -22,8 +22,8 @@
 #include <core/Core.h>
 #include <core/gui/properties/IntegerRadioButtonParameterUI.h>
 #include <core/animation/controller/Controller.h>
-#include <core/gui/undo/UndoManager.h>
-#include <core/animation/AnimManager.h>
+#include <core/animation/AnimationSettings.h>
+#include <core/dataset/UndoStack.h>
 
 namespace Ovito {
 
@@ -48,11 +48,6 @@ IntegerRadioButtonParameterUI::IntegerRadioButtonParameterUI(QObject* parentEdit
 {
 	_buttonGroup = new QButtonGroup(this);
 	connect(_buttonGroup, SIGNAL(buttonClicked(int)), this, SLOT(updatePropertyValue()));
-
-	if(isReferenceFieldUI()) {
-		// Update the displayed value when the animation time has changed.
-		connect(&AnimManager::instance(), SIGNAL(timeChanged(TimePoint)), this, SLOT(updateUI()));
-	}
 }
 
 /******************************************************************************
@@ -84,6 +79,13 @@ void IntegerRadioButtonParameterUI::resetUI()
 			else
 				button->setEnabled(editObject() != NULL && isEnabled());
 		}
+	}
+
+	if(isReferenceFieldUI()) {
+		// Update the displayed value when the animation time has changed.
+		disconnect(_animationTimeChangedConnection);
+		if(editObject())
+			_animationTimeChangedConnection = connect(dataset()->animationSettings(), &AnimationSettings::timeChanged, this, &IntegerRadioButtonParameterUI::updateUI);
 	}
 }
 
@@ -154,10 +156,9 @@ void IntegerRadioButtonParameterUI::updatePropertyValue()
 	if(buttonGroup() && editObject()) {
 		int id = buttonGroup()->checkedId();
 		if(id != -1) {
-			UndoableTransaction::handleExceptions(tr("Change parameter"), [this, id]() {
+			undoableTransaction(tr("Change parameter"), [this, id]() {
 				if(isReferenceFieldUI()) {
-					IntegerController* ctrl = dynamic_object_cast<IntegerController>(parameterObject());
-					if(ctrl) {
+					if(IntegerController* ctrl = dynamic_object_cast<IntegerController>(parameterObject())) {
 						ctrl->setCurrentValue(id);
 						updateUI();
 					}

@@ -45,7 +45,7 @@ SET_PROPERTY_FIELD_UNITS(SimulationCellDisplay, _simulationCellLineWidth, WorldP
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-SimulationCellDisplay::SimulationCellDisplay() :
+SimulationCellDisplay::SimulationCellDisplay(DataSet* dataset) : DisplayObject(dataset),
 	_renderSimulationCell(true),
 	_simulationCellLineWidth(0.5),
 	_simulationCellColor(0, 0, 0)

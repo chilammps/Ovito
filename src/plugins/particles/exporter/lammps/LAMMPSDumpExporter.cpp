@@ -32,7 +32,7 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, LAMMPSDumpExporter, ParticleExpor
 /******************************************************************************
 * Constructs a new instance of this class.
 ******************************************************************************/
-LAMMPSDumpExporter::LAMMPSDumpExporter()
+LAMMPSDumpExporter::LAMMPSDumpExporter(DataSet* dataset) : ParticleExporter(dataset)
 {
 	// Use the last mapping by default.
 	QSettings settings;
@@ -52,9 +52,9 @@ LAMMPSDumpExporter::LAMMPSDumpExporter()
 /******************************************************************************
 * Opens the export settings dialog for this exporter service.
 ******************************************************************************/
-bool LAMMPSDumpExporter::showSettingsDialog(DataSet* dataset, const PipelineFlowState& state, QWidget* parent)
+bool LAMMPSDumpExporter::showSettingsDialog(const PipelineFlowState& state, QWidget* parent)
 {
-	ParticleExporterSettingsDialog dialog(parent, this, dataset, state, &_columnMapping);
+	ParticleExporterSettingsDialog dialog(parent, this, state, &_columnMapping);
 	if(dialog.exec() == QDialog::Accepted) {
 
 		// Remember the output column mapping for the next time.

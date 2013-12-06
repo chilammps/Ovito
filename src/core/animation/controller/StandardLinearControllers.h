@@ -56,9 +56,10 @@ struct LinearKeyInterpolator {
  * \brief A keyed controller that interpolates between float values using
  *        a linear interpolation scheme.
  */
-class OVITO_CORE_EXPORT LinearFloatController : public StandardKeyedController<FloatController, FloatType, FloatType, FloatType, LinearKeyInterpolator<FloatType> > {
+class OVITO_CORE_EXPORT LinearFloatController : public StandardKeyedController<FloatController, FloatType, FloatType, FloatType, LinearKeyInterpolator<FloatType>> {
 public:
-	Q_INVOKABLE LinearFloatController() {}
+	Q_INVOKABLE LinearFloatController(DataSet* dataset)
+		: StandardKeyedController<FloatController, FloatType, FloatType, FloatType, LinearKeyInterpolator<FloatType>>(dataset) {}
 private:
 	Q_OBJECT
 	OVITO_OBJECT
@@ -68,9 +69,10 @@ private:
  * \brief A keyed controller that interpolates between integer values using
  *        a linear interpolation scheme.
  */
-class OVITO_CORE_EXPORT LinearIntegerController : public StandardKeyedController<IntegerController, int, int, int, LinearKeyInterpolator<int> > {
+class OVITO_CORE_EXPORT LinearIntegerController : public StandardKeyedController<IntegerController, int, int, int, LinearKeyInterpolator<int>> {
 public:
-	Q_INVOKABLE LinearIntegerController() {}
+	Q_INVOKABLE LinearIntegerController(DataSet* dataset)
+		: StandardKeyedController<IntegerController, int, int, int, LinearKeyInterpolator<int>>(dataset) {}
 private:
 	Q_OBJECT
 	OVITO_OBJECT
@@ -80,9 +82,10 @@ private:
  * \brief A keyed controller that interpolates between Vector3 values using
  *        a linear interpolation scheme.
  */
-class OVITO_CORE_EXPORT LinearVectorController : public StandardKeyedController<VectorController, Vector3, Vector3, Vector3::Zero, LinearKeyInterpolator<Vector3> > {
+class OVITO_CORE_EXPORT LinearVectorController : public StandardKeyedController<VectorController, Vector3, Vector3, Vector3::Zero, LinearKeyInterpolator<Vector3>> {
 public:
-	Q_INVOKABLE LinearVectorController() {}
+	Q_INVOKABLE LinearVectorController(DataSet* dataset)
+		: StandardKeyedController<VectorController, Vector3, Vector3, Vector3::Zero, LinearKeyInterpolator<Vector3>>(dataset) {}
 
 private:
 	Q_OBJECT
@@ -93,9 +96,10 @@ private:
  * \brief A keyed controller that interpolates between position values using
  *        a linear interpolation scheme.
  */
-class OVITO_CORE_EXPORT LinearPositionController : public KeyedPositionController<Vector3, LinearKeyInterpolator<Vector3> > {
+class OVITO_CORE_EXPORT LinearPositionController : public KeyedPositionController<Vector3, LinearKeyInterpolator<Vector3>> {
 public:
-	Q_INVOKABLE LinearPositionController() {}
+	Q_INVOKABLE LinearPositionController(DataSet* dataset)
+		: KeyedPositionController<Vector3, LinearKeyInterpolator<Vector3>>(dataset) {}
 private:
 	Q_OBJECT
 	OVITO_OBJECT
@@ -105,9 +109,10 @@ private:
  * \brief A keyed controller that interpolates between Base::Rotation values using
  *        a linear interpolation scheme.
  */
-class OVITO_CORE_EXPORT LinearRotationController : public KeyedRotationController<Rotation, LinearKeyInterpolator<Rotation> > {
+class OVITO_CORE_EXPORT LinearRotationController : public KeyedRotationController<Rotation, LinearKeyInterpolator<Rotation>> {
 public:
-	Q_INVOKABLE LinearRotationController() {}
+	Q_INVOKABLE LinearRotationController(DataSet* dataset)
+		: KeyedRotationController<Rotation, LinearKeyInterpolator<Rotation>>(dataset) {}
 private:
 	Q_OBJECT
 	OVITO_OBJECT
@@ -119,7 +124,8 @@ private:
  */
 class OVITO_CORE_EXPORT LinearScalingController : public KeyedScalingController<Scaling, LinearKeyInterpolator<Scaling> > {
 public:
-	Q_INVOKABLE LinearScalingController() {}
+	Q_INVOKABLE LinearScalingController(DataSet* dataset)
+		: KeyedScalingController<Scaling, LinearKeyInterpolator<Scaling>>(dataset) {}
 private:
 	Q_OBJECT
 	OVITO_OBJECT

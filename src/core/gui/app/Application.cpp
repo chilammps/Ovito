@@ -22,23 +22,16 @@
 #include <core/Core.h>
 #include <core/gui/app/Application.h>
 #include <core/gui/mainwin/MainWindow.h>
-#include <core/gui/undo/UndoManager.h>
-#include <core/gui/actions/ActionManager.h>
-#include <core/dataset/DataSetManager.h>
+#include <core/dataset/UndoStack.h>
 #include <core/dataset/importexport/ImportExportManager.h>
-#include <core/animation/AnimManager.h>
 #include <core/animation/controller/Controller.h>
-#include <core/viewport/ViewportManager.h>
-#include <core/viewport/input/ViewportInputManager.h>
 #include <core/plugins/PluginManager.h>
-#include <core/utilities/units/UnitsManager.h>
 #include <core/utilities/io/FileManager.h>
-#include <core/utilities/concurrent/ProgressManager.h>
 
 namespace Ovito {
 
 /// Stores a pointer to the original Qt message handler function, which has been replaced with our own handler.
-QtMessageHandler Application::defaultQtMessageHandler = NULL;
+QtMessageHandler Application::defaultQtMessageHandler = nullptr;
 
 /******************************************************************************
 * Handler method for Qt error messages.
@@ -46,11 +39,6 @@ QtMessageHandler Application::defaultQtMessageHandler = NULL;
 ******************************************************************************/
 void Application::qtMessageOutput(QtMsgType type, const QMessageLogContext& context, const QString& msg)
 {
-	if(type == QtFatalMsg) {
-		// This code line can be used to set a breakpoint to debug OVITO_ASSERT() macro exceptions.
-		int a = 1;
-	}
-
 	// Pass message on to default handler.
 	if(defaultQtMessageHandler) defaultQtMessageHandler(type, context, msg);
 	else std::cerr << msg.toLocal8Bit().constData() << std::endl;
@@ -94,19 +82,13 @@ bool Application::initialize()
 		std::setlocale(LC_NUMERIC, "C");
 
 		// Initialize global manager objects in the right order.
-		UndoManager::initialize();
 		PluginManager::initialize();
 		ControllerManager::initialize();
 		FileManager::initialize();
-		DataSetManager::initialize();
-		ViewportManager::initialize();
-		ViewportInputManager::initialize();
-		AnimManager::initialize();
-		UnitsManager::initialize();
-		ActionManager::initialize();
 		ImportExportManager::initialize();
 
 		// Create the main application window.
+		MainWindow* mainWin = nullptr;
 		if(guiMode()) {
 
 			// Set the application icon.
@@ -119,44 +101,34 @@ bool Application::initialize()
 			setWindowIcon(mainWindowIcon);
 
 			// Create the main window.
-			MainWindow* mainWin = new MainWindow(tr("Ovito (Open Visualization Tool)"));
+			mainWin = new MainWindow();
 
-			// Quit application when main window is closed.
-			connect(mainWin, SIGNAL(destroyed(QObject*)), this, SLOT(quit()));
-		}
+			setQuitOnLastWindowClosed(true);
 
-		// Initialize progress manager, who will insert some widgets into the main window.
-		ProgressManager::initialize();
+			if(!_startupSceneFile.isEmpty()) {
+				// Load scene file specified at the command line.
+				QFileInfo startupFile(_startupSceneFile);
+				if(!mainWin->datasetContainer().fileLoad(startupFile.absoluteFilePath()))
+					mainWin->datasetContainer().fileNew();
+			}
+			else {
+				// Create an empty data set.
+				mainWin->datasetContainer().fileNew();
+			}
 
-		if(!_startupSceneFile.isEmpty()) {
-			// Load scene file specified on the command line.
-			QFileInfo startupFile(_startupSceneFile);
-			if(!DataSetManager::instance().fileLoad(startupFile.absoluteFilePath()))
-				DataSetManager::instance().fileReset();
-		}
-		else {
-			// Create an empty data set.
-			DataSetManager::instance().fileReset();
-		}
-
-		// Create the main application window.
-		if(guiMode()) {
 			// Show the main window.
 #ifndef OVITO_DEBUG
-			MainWindow::instance().showMaximized();
+			mainWin->showMaximized();
 #else
-			MainWindow::instance().show();
+			mainWin->show();
 #endif
-			MainWindow::instance().restoreLayout();
-		}
+			mainWin->restoreLayout();
 
-		// Enable the viewports now. Viewport updates are initially suspended.
-		ViewportManager::instance().resumeViewportUpdates();
-
-		// Import file specified on the command line.
-		if(_startupImportFile.isEmpty() == false) {
-			QUrl importURL = QUrl::fromUserInput(_startupImportFile);
-			DataSetManager::instance().importFile(importURL);
+			// Import file specified on the command line.
+			if(_startupImportFile.isEmpty() == false) {
+				QUrl importURL = QUrl::fromUserInput(_startupImportFile);
+				mainWin->datasetContainer().importFile(importURL);
+			}
 		}
 	}
 	catch(const Exception& ex) {
@@ -189,18 +161,10 @@ int Application::runApplication()
 void Application::shutdown()
 {
 	// Shutdown global manager objects in reverse order they were initialized.
-	ProgressManager::shutdown();
 	ImportExportManager::shutdown();
-	ActionManager::shutdown();
-	UnitsManager::shutdown();
-	AnimManager::shutdown();
-	ViewportInputManager::shutdown();
-	ViewportManager::shutdown();
-	DataSetManager::shutdown();
 	FileManager::shutdown();
 	ControllerManager::shutdown();
 	PluginManager::shutdown();
-	UndoManager::shutdown();
 }
 
 /******************************************************************************

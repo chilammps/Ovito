@@ -19,10 +19,10 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef __OVITO_CA_DEFECT_SURFACE_DISPLAY_H
-#define __OVITO_CA_DEFECT_SURFACE_DISPLAY_H
+#ifndef __OVITO_SURFACE_MESH_DISPLAY_H
+#define __OVITO_SURFACE_MESH_DISPLAY_H
 
-#include <plugins/crystalanalysis/CrystalAnalysis.h>
+#include <plugins/particles/Particles.h>
 #include <core/scene/display/DisplayObject.h>
 #include <core/scene/objects/geometry/TriMesh.h>
 #include <core/scene/objects/geometry/HalfEdgeMesh.h>
@@ -31,20 +31,19 @@
 #include <core/animation/controller/Controller.h>
 #include <plugins/particles/data/SimulationCellData.h>
 
-namespace CrystalAnalysis {
+namespace Particles {
 
 using namespace Ovito;
-using namespace Particles;
 
 /**
- * \brief A display object for the defect surface.
+ * \brief A display object for the SurfaceMesh scene object class.
  */
-class OVITO_CRYSTALANALYSIS_EXPORT DefectSurfaceDisplay : public DisplayObject
+class OVITO_PARTICLES_EXPORT SurfaceMeshDisplay : public DisplayObject
 {
 public:
 
-	/// \brief Default constructor.
-	Q_INVOKABLE DefectSurfaceDisplay();
+	/// \brief Constructor.
+	Q_INVOKABLE SurfaceMeshDisplay(DataSet* dataset);
 
 	/// \brief Lets the display object render a scene object.
 	virtual void render(TimePoint time, SceneObject* sceneObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode) override;
@@ -53,7 +52,7 @@ public:
 	virtual Box3 boundingBox(TimePoint time, SceneObject* sceneObject, ObjectNode* contextNode, const PipelineFlowState& flowState) override;
 
 	/// \brief Returns the title of this object.
-	virtual QString objectTitle() override { return tr("Defect surface"); }
+	virtual QString objectTitle() override { return tr("Surface mesh"); }
 
 	/// Returns the color of the defect surface.
 	const Color& surfaceColor() const { return _surfaceColor; }
@@ -156,14 +155,14 @@ private:
 };
 
 /**
- * \brief A properties editor for the DefectSurfaceDisplay class.
+ * \brief A properties editor for the SurfaceMeshDisplay class.
  */
-class OVITO_CRYSTALANALYSIS_EXPORT DefectSurfaceDisplayEditor : public PropertiesEditor
+class OVITO_PARTICLES_EXPORT SurfaceMeshDisplayEditor : public PropertiesEditor
 {
 public:
 
 	/// Constructor.
-	Q_INVOKABLE DefectSurfaceDisplayEditor() {}
+	Q_INVOKABLE SurfaceMeshDisplayEditor() {}
 
 protected:
 
@@ -176,4 +175,4 @@ protected:
 
 };	// End of namespace
 
-#endif // __OVITO_CA_DEFECT_SURFACE_DISPLAY_H
+#endif // __OVITO_SURFACE_MESH_DISPLAY_H

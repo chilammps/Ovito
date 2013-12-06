@@ -25,6 +25,7 @@
 #include <core/gui/properties/BooleanParameterUI.h>
 #include <core/gui/mainwin/MainWindow.h>
 #include <core/scene/pipeline/PipelineObject.h>
+#include <core/animation/AnimationSettings.h>
 #include <3rdparty/qcustomplot/qcustomplot.h>
 #include "HistogramModifier.h"
 
@@ -57,7 +58,8 @@ SET_PROPERTY_FIELD_LABEL(HistogramModifier, _yAxisRangeEnd, "Y-axis range end")
 /******************************************************************************
 * Constructs the modifier object.
 ******************************************************************************/
-HistogramModifier::HistogramModifier() : _numberOfBins(200), _selectInRange(false),
+HistogramModifier::HistogramModifier(DataSet* dataset) : ParticleModifier(dataset),
+	_numberOfBins(200), _selectInRange(false),
 	_selectionRangeStart(0), _selectionRangeEnd(1), _fixXAxisRange(false), _xAxisRangeStart(0),
 	_xAxisRangeEnd(0), _fixYAxisRange(false), _yAxisRangeStart(0), _yAxisRangeEnd(0)
 {
@@ -82,7 +84,7 @@ void HistogramModifier::initializeModifier(PipelineObject* pipeline, ModifierApp
 	ParticleModifier::initializeModifier(pipeline, modApp);
 	if(sourceProperty().isNull()) {
 		// Select the first available particle property from the input state.
-		PipelineFlowState input = pipeline->evaluatePipeline(AnimManager::instance().time(), modApp, false);
+		PipelineFlowState input = pipeline->evaluatePipeline(dataset()->animationSettings()->time(), modApp, false);
 		ParticlePropertyReference bestProperty;
 		for(const auto& o : input.objects()) {
 			ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o.get());
@@ -105,8 +107,8 @@ void HistogramModifier::setSourceProperty(const ParticlePropertyReference& prop)
 
 	// Make this change undoable.
 	qRegisterMetaType<ParticlePropertyReference>();
-	if(UndoManager::instance().isRecording())
-		UndoManager::instance().push(new SimplePropertyChangeOperation(this, "sourceProperty"));
+	if(dataset()->undoStack().isRecording())
+		dataset()->undoStack().push(new SimplePropertyChangeOperation(this, "sourceProperty"));
 
 	_sourcePropertyRef = prop;
 	notifyDependents(ReferenceEvent::TargetChanged);
@@ -379,7 +381,7 @@ void HistogramModifierEditor::createUI(const RolloutInsertionParameters& rollout
 	connect(selectInRangeUI->checkBox(), SIGNAL(toggled(bool)), selRangeEndPUI, SLOT(setEnabled(bool)));
 
 	// Axes.
-	QGroupBox* axesBox = new QGroupBox(tr("Axes"), rollout);
+	QGroupBox* axesBox = new QGroupBox(tr("Plot axes"), rollout);
 	QVBoxLayout* axesSublayout = new QVBoxLayout(axesBox);
 	axesSublayout->setContentsMargins(4,4,4,4);
 	layout->addWidget(axesBox);
@@ -480,13 +482,11 @@ void HistogramModifierEditor::updatePropertyList()
 ******************************************************************************/
 void HistogramModifierEditor::onPropertySelected(int index)
 {
-	OVITO_ASSERT(!UndoManager::instance().isRecording());
-
 	if(index < 0) return;
 	HistogramModifier* mod = static_object_cast<HistogramModifier>(editObject());
 	OVITO_CHECK_OBJECT_POINTER(mod);
 
-	UndoableTransaction::handleExceptions(tr("Select property"), [this, mod, index]() {
+	undoableTransaction(tr("Select property"), [this, mod, index]() {
 		mod->setSourceProperty(_propertyListBox->property(index));
 	});
 }
@@ -563,7 +563,7 @@ void HistogramModifierEditor::onSaveData()
 	if(modifier->histogramData().empty())
 		return;
 
-	QString fileName = QFileDialog::getSaveFileName(&MainWindow::instance(),
+	QString fileName = QFileDialog::getSaveFileName(mainWindow(),
 	    tr("Save Histogram"), QString(), tr("Text files (*.txt);;All files (*)"));
 	if(fileName.isEmpty())
 		return;

@@ -26,7 +26,7 @@ namespace Ovito {
 
 // Gives the class run-time type information.
 IMPLEMENT_OVITO_OBJECT(Core, RefTargetListParameterUI, ParameterUI)
-DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(RefTargetListParameterUI, _targets, "Targets", RefTarget, PROPERTY_FIELD_NO_UNDO | PROPERTY_FIELD_NO_CHANGE_MESSAGE)
+DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(RefTargetListParameterUI, _targets, "Targets", RefTarget, PROPERTY_FIELD_NO_UNDO | PROPERTY_FIELD_WEAK_REF | PROPERTY_FIELD_NO_CHANGE_MESSAGE)
 
 /******************************************************************************
 * The constructor.
@@ -48,9 +48,6 @@ RefTargetListParameterUI::RefTargetListParameterUI(QObject* parentEditor, const 
 ******************************************************************************/
 RefTargetListParameterUI::~RefTargetListParameterUI()
 {
-	/// The destructor must clear all references since this UI object
-	/// might have been deleted via the delete operator and not via
-	/// the autoDeleteObject() method which should normally be used for RefMaker derived classes.
 	_subEditor = nullptr;
 	clearAllReferences();
 	 	
@@ -172,12 +169,12 @@ void RefTargetListParameterUI::openSubEditor()
 			if(selection) {
 				_subEditor = selection->createPropertiesEditor();
 				if(_subEditor)
-					_subEditor->initialize(editor()->container(), _rolloutParams);
+					_subEditor->initialize(editor()->container(), editor()->mainWindow(), _rolloutParams);
 			}
 			else if(_defaultEditorClass) {
-				_subEditor = dynamic_object_cast<PropertiesEditor>(_defaultEditorClass->createInstance());
+				_subEditor = dynamic_object_cast<PropertiesEditor>(_defaultEditorClass->createInstance(nullptr));
 				if(_subEditor)
-					_subEditor->initialize(editor()->container(), _rolloutParams);
+					_subEditor->initialize(editor()->container(), editor()->mainWindow(), _rolloutParams);
 			}
 			else return;
 		}

@@ -48,9 +48,6 @@ public:
 	ParameterUI(QObject* parent);
 
 	/// \brief Destructor.
-	/// \note The destructor must clear all references since this UI object
-	///       might have been deleted via the delete operator and not via
-	///       the OvitoObject::autoDeleteObject() method which should normally be used for PluginClass derived classes.
 	virtual ~ParameterUI() { clearAllReferences(); }	
 	
 	/// \brief Gets the object whose parameter is being edited/shown in this parameter UI.
@@ -73,6 +70,20 @@ public:
 	///         \c true otherwise.
 	/// \sa isEnabled()
 	bool isDisabled() const { return !isEnabled(); }
+
+	/// \brief Returns the dataset currently being edited.
+	DataSet* dataset() const {
+		OVITO_ASSERT_MSG(editObject() != nullptr, "ParameterUI::dataset()", "Can access dataset only while editing an object.");
+		return editObject()->dataset();
+	}
+
+	/// \brief Executes the passed functor and catches any exceptions thrown during its execution.
+	/// If an exception is thrown by the functor, all changes done by the functor
+	/// so far will be undone and an error message is shown to the user.
+	template<typename Function>
+	void undoableTransaction(const QString& operationLabel, Function&& func) {
+		UndoableTransaction::handleExceptions(dataset()->undoStack(), operationLabel, std::forward<Function>(func));
+	}
 
 public:	
 	
@@ -154,9 +165,6 @@ public:
 	PropertyParameterUI(QObject* parent, const PropertyFieldDescriptor& propField);
 	
 	/// \brief Destructor.
-	/// \note The destructor must clear all references since this UI object
-	///       might have been deleted via the delete operator and not via
-	///       the OvitoObject::autoDeleteObject() method which should normally be used for OvitoObject-derived classes.
 	virtual ~PropertyParameterUI() { clearAllReferences(); }
 
 	/// \brief Returns the property being edited in this parameter UI.

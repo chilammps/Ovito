@@ -32,7 +32,6 @@
 
 namespace Ovito {
 
-class RefTarget;					// defined in RefTarget.h
 class PropertyFieldDescriptor;		// defined in PropertyFieldDescriptor.h
 class SingleReferenceFieldBase;		// defined in PropertyFieldDescriptor.h
 class VectorReferenceFieldBase;		// defined in PropertyFieldDescriptor.h
@@ -49,7 +48,7 @@ class OVITO_CORE_EXPORT CyclicReferenceError : public Exception
 public:
 
 	/// \brief Default constructor.
-	CyclicReferenceError() : Exception("Cyclic reference error") {}
+	CyclicReferenceError() : Exception(QStringLiteral("Cyclic reference error")) {}
 };
 
 /**
@@ -57,14 +56,10 @@ public:
  */
 class OVITO_CORE_EXPORT RefMaker : public OvitoObject
 {
-	Q_OBJECT
-
 protected:
 
-	/// \brief The default constructor.
-	/// Subclasses should initialize their reference fields in the constructor using
-	/// the \c INIT_PROPERTY_FIELD macro.
-	RefMaker() : OvitoObject() {}
+	/// \brief Constructor.
+	RefMaker(DataSet* dataset = nullptr) : _dataset(dataset) {}
 
 	/////////////////////////////// Reference field events ///////////////////////////////////
 
@@ -226,20 +221,23 @@ protected:
 
 public:
 
+	/// \brief Returns true if this object is an instance of a RefTarget derived class.
+	virtual bool isRefTarget() const { return false; }
+
 	/////////////////////////// Runtime property field access ///////////////////////////////
 
 	/// \brief Returns the value stored in a non-animatable property field of this RefMaker object.
 	/// \param field The descriptor of a property field defined by this RefMaker derived class.
 	/// \return The current value of the property field.
-	/// \sa PluginClassDescriptor::firstPropertyField()
-	/// \sa PluginClassDescriptor::findPropertyField()
+	/// \sa OvitoObjectType::firstPropertyField()
+	/// \sa OvitoObjectType::findPropertyField()
 	QVariant getPropertyFieldValue(const PropertyFieldDescriptor& field) const;
 
 	/// \brief Sets the value stored in a non-animatable property field of this RefMaker object.
 	/// \param field The descriptor of a property field defined by this RefMaker derived class.
 	/// \param newValue The value to be assigned to the property. The QVariant data type must match the property data type.
-	/// \sa PluginClassDescriptor::firstPropertyField()
-	/// \sa PluginClassDescriptor::findPropertyField()
+	/// \sa OvitoObjectType::firstPropertyField()
+	/// \sa OvitoObjectType::findPropertyField()
 	void setPropertyFieldValue(const PropertyFieldDescriptor& field, const QVariant& newValue);
 
 	/////////////////////////// Runtime reference field access //////////////////////////////
@@ -248,16 +246,16 @@ public:
 	/// \param field The descriptor of a reference field defined in this RefMaker derived class.
 	/// \return The field object for this RefMaker instance and the specified field.
 	/// \sa getVectorReferenceField()
-	/// \sa PluginClassDescriptor::firstPropertyField()
-	/// \sa PluginClassDescriptor::findPropertyField()
+	/// \sa OvitoObjectType::firstPropertyField()
+	/// \sa OvitoObjectType::findPropertyField()
 	const SingleReferenceFieldBase& getReferenceField(const PropertyFieldDescriptor& field) const;
 
 	/// \brief Looks up a vector reference field.
 	/// \param field The descriptor of a vector reference field defined in this RefMaker derived class.
 	/// \return The field object for this RefMaker instance and the specified vector field.
 	/// \sa getReferenceField()
-	/// \sa PluginClassDescriptor::firstPropertyField()
-	/// \sa PluginClassDescriptor::findPropertyField()
+	/// \sa OvitoObjectType::firstPropertyField()
+	/// \sa OvitoObjectType::findPropertyField()
 	const VectorReferenceFieldBase& getVectorReferenceField(const PropertyFieldDescriptor& field) const;
 
 	////////////////////////////// Dependencies //////////////////////////////////
@@ -282,25 +280,37 @@ public:
 	/// \note The returned list is gathered recursively.
 	QSet<RefTarget*> getAllDependencies() const;
 
-	///////////////////////////// from PluginClass ///////////////////////////////
+	///////////////////////////// DataSet access ///////////////////////////////
 
-	/// \brief Deletes this object.
-	///
-	/// This implementation releases all references held by this RefMaker before deleting the object.
-	virtual void autoDeleteObject() override;
+	/// \brief Returns the dataset this object belongs to.
+	DataSet* dataset() const {
+		OVITO_ASSERT_MSG(_dataset != nullptr, "RefMaker::dataset()", "Tried to access non-existing parent dataset of RefMaker.");
+		return _dataset;
+	}
+
+	/// \brief Changes the dataset this object belongs to.
+	void setDataset(DataSet* dataset) { _dataset = dataset; }
+
+protected:
+
+	/// \brief This method is called after the reference counter of this object has reached zero
+	///        and before the object is being deleted.
+	virtual void aboutToBeDeleted() override;
 
 private:
 
 	/// \brief Recursive gathering function used by getAllDependencies().
 	static void walkNode(QSet<RefTarget*>& nodes, const RefMaker* node);
 
-private:
+	/// The dataset this object belongs to.
+	DataSet* _dataset;
 
 	friend class RefTarget;
 	friend class SingleReferenceFieldBase;
 	friend class VectorReferenceFieldBase;
 	friend class PropertyFieldBase;
 
+	Q_OBJECT
 	OVITO_OBJECT
 };
 

@@ -20,15 +20,13 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include <core/animation/AnimManager.h>
 #include <core/scene/ObjectNode.h>
 #include <core/scene/SceneRoot.h>
 #include <core/scene/objects/SceneObject.h>
-#include <core/dataset/DataSetManager.h>
-#include <core/gui/actions/ActionManager.h>
+#include <core/scene/SelectionSet.h>
+#include <core/animation/AnimationSettings.h>
+#include <core/viewport/ViewportConfiguration.h>
 #include <core/gui/mainwin/MainWindow.h>
-#include <core/utilities/concurrent/Task.h>
-#include <core/utilities/concurrent/ProgressManager.h>
 #include <core/utilities/io/FileManager.h>
 #include "LinkedFileImporter.h"
 #include "LinkedFileObject.h"
@@ -107,12 +105,12 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl, ImportMode importMode
 	OORef<LinkedFileObject> existingObj;
 	ObjectNode* existingNode = nullptr;
 
-	if(DataSetManager::instance().currentSet()->sceneRoot()->children().empty() == false) {
+	if(dataset()->sceneRoot()->children().empty() == false) {
 
 		if(importMode != AddToScene) {
 			// Look for an existing LinkedFileObject in the scene whose
 			// data source we can replace with the newly imported file.
-			for(SceneNode* node : DataSetManager::instance().currentSet()->selection()->nodes()) {
+			for(SceneNode* node : dataset()->selection()->nodes()) {
 				if(ObjectNode* objNode = dynamic_object_cast<ObjectNode>(node)) {
 					SceneObject* sceneObj = objNode->sceneObject();
 					while(sceneObj) {
@@ -132,7 +130,7 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl, ImportMode importMode
 				// Ask user if the current import node including any applied modifiers should be kept.
 				QMessageBox msgBox(QMessageBox::Question, tr("Import file"),
 						tr("When importing the selected file, do you want to keep the existing objects?"),
-						QMessageBox::NoButton, &MainWindow::instance());
+						QMessageBox::NoButton, dataset()->mainWindow());
 
 				QPushButton* cancelButton = msgBox.addButton(QMessageBox::Cancel);
 				QPushButton* resetSceneButton = msgBox.addButton(tr("No"), QMessageBox::NoRole);
@@ -148,7 +146,7 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl, ImportMode importMode
 					importMode = ResetScene;
 
 					// Ask user if current scene should be saved before it is replaced by the imported data.
-					if(!DataSetManager::instance().askForSaveChanges())
+					if(!dataset()->container()->askForSaveChanges())
 						return false;
 				}
 				else if(msgBox.clickedButton() == addToSceneButton) {
@@ -162,7 +160,7 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl, ImportMode importMode
 		else {
 			if(importMode == AskUser) {
 				// Ask user if the current scene should be completely replaced by the imported data.
-				QMessageBox::StandardButton result = QMessageBox::question(&MainWindow::instance(), tr("Import file"),
+				QMessageBox::StandardButton result = QMessageBox::question(dataset()->mainWindow(), tr("Import file"),
 					tr("Do you want to keep the existing objects in the current scene?"),
 					QMessageBox::Yes|QMessageBox::No|QMessageBox::Cancel, QMessageBox::Cancel);
 
@@ -172,7 +170,7 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl, ImportMode importMode
 					importMode = ResetScene;
 
 					// Ask user if current scene should be saved before it is replaced by the imported data.
-					if(!DataSetManager::instance().askForSaveChanges())
+					if(!dataset()->container()->askForSaveChanges())
 						return false;
 				}
 				else {
@@ -185,23 +183,25 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl, ImportMode importMode
 	if(importMode == ResetScene) {
 		existingObj = nullptr;
 		existingNode = nullptr;
-		DataSetManager::instance().fileReset();
+		dataset()->clearScene();
+		if(!dataset()->undoStack().isRecording())
+			dataset()->undoStack().clear();
 	}
 	else if(importMode == AddToScene) {
 		existingObj = nullptr;
 		existingNode = nullptr;
 	}
 
-	UndoableTransaction transaction(tr("Import '%1'").arg(QFileInfo(sourceUrl.path()).fileName()));
+	UndoableTransaction transaction(dataset()->undoStack(), tr("Import '%1'").arg(QFileInfo(sourceUrl.path()).fileName()));
 
 	// Do not create any animation keys during import.
-	AnimationSuspender animSuspender;
+	AnimationSuspender animSuspender(this);
 
 	OORef<LinkedFileObject> obj;
 
 	// Create the object that will insert the imported data into the scene.
 	if(existingObj == nullptr) {
-		obj = new LinkedFileObject();
+		obj = new LinkedFileObject(dataset());
 
 		// When adding the imported data to an existing scene,
 		// do not auto-adjust animation interval.
@@ -217,15 +217,14 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl, ImportMode importMode
 	}
 
 	// Create a new object node in the scene for the linked data.
-	SceneRoot* scene = DataSetManager::instance().currentSet()->sceneRoot();
+	SceneRoot* scene = dataset()->sceneRoot();
 	OORef<ObjectNode> node;
 	if(existingNode == nullptr) {
 		{
-			UndoSuspender unsoSuspender;	// Do not create undo records for this part.
+			UndoSuspender unsoSuspender(this);	// Do not create undo records for this part.
 
 			// Add object to scene.
-			node = new ObjectNode();
-			node->setSceneObject(obj);
+			node = new ObjectNode(dataset(), obj.get());
 
 			// Let the import subclass customize the node.
 			prepareSceneNode(node.get(), obj.get());
@@ -237,7 +236,7 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl, ImportMode importMode
 	else node = existingNode;
 
 	// Select import node.
-	DataSetManager::instance().currentSet()->selection()->setNode(node.get());
+	dataset()->selection()->setNode(node.get());
 
 	// Jump to the right frame to show the originally selected file.
 	int jumpToFrame = -1;
@@ -251,9 +250,10 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl, ImportMode importMode
 	// Adjust the animation length number to match the number of frames in the input data source.
 	obj->adjustAnimationInterval(jumpToFrame);
 
-	// Adjust views to show the newly imported object.
-	DataSetManager::instance().runWhenSceneIsReady([]() {
-		ActionManager::instance().getAction(ACTION_VIEWPORT_ZOOM_SELECTION_EXTENTS_ALL)->trigger();
+	// Adjust views to completely show the newly imported object.
+	OORef<DataSet> ds(dataset());
+	ds->runWhenSceneIsReady([ds]() {
+		ds->viewportConfig()->zoomToSelectionExtents();
 	});
 
 	transaction.commit();
@@ -305,7 +305,7 @@ Future<QVector<LinkedFileImporter::FrameSourceInformation>> LinkedFileImporter::
 
 			// Retrieve list of files in remote directory.
 			Future<QStringList> fileListFuture = FileManager::instance().listDirectoryContents(directoryUrl);
-			if(!ProgressManager::instance().waitForTask(fileListFuture))
+			if(!dataset()->container()->taskManager().waitForTask(fileListFuture))
 				return Future<QVector<FrameSourceInformation>>::createCanceled();
 
 			// Filter file names.
@@ -387,17 +387,17 @@ bool LinkedFileImporter::matchesWildcardPattern(const QString& pattern, const QS
 Future<LinkedFileImporter::ImportTaskPtr> LinkedFileImporter::load(const LinkedFileImporter::FrameSourceInformation& frame)
 {
 	ImportTaskPtr importTask = createImportTask(frame);
+	DataSetContainer& container = *dataset()->container();
 
-	return runInBackground<ImportTaskPtr>(
-			[importTask] (FutureInterface<LinkedFileImporter::ImportTaskPtr>& futureInterface) {
+	return container.taskManager().runInBackground<ImportTaskPtr>(
+			[importTask, &container] (FutureInterface<LinkedFileImporter::ImportTaskPtr>& futureInterface) {
 
 		// Run the task
-		importTask->load(futureInterface);
+		importTask->load(container, futureInterface);
 
 		// Return the importer task object as the result.
 		if(!futureInterface.isCanceled())
 			futureInterface.setResult(importTask);
-
 	});
 }
 

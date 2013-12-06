@@ -21,7 +21,7 @@
 
 #include <core/Core.h>
 #include <core/scene/GroupNode.h>
-#include <core/gui/undo/UndoManager.h>
+#include <core/dataset/UndoStack.h>
 
 namespace Ovito {
 
@@ -32,7 +32,7 @@ SET_PROPERTY_FIELD_LABEL(GroupNode, _isGroupOpen, "Open group")
 /******************************************************************************
 * Default constructor.
 ******************************************************************************/
-GroupNode::GroupNode() : _isGroupOpen(false)
+GroupNode::GroupNode(DataSet* dataset) : SceneNode(dataset), _isGroupOpen(false)
 {
 	INIT_PROPERTY_FIELD(GroupNode::_isGroupOpen);
 }
@@ -62,7 +62,7 @@ void GroupNode::referenceRemoved(const PropertyFieldDescriptor& field, RefTarget
 {
 	SceneNode::referenceRemoved(field, oldTarget, listIndex);
 	// Delete this group node if all child nodes have been removed from it.
-	if(children().empty() && !UndoManager::instance().isUndoingOrRedoing()) {
+	if(children().empty() && !dataset()->undoStack().isUndoingOrRedoing()) {
 		deleteNode();
 	}
 }

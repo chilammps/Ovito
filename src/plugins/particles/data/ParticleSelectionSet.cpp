@@ -20,7 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <plugins/particles/Particles.h>
-#include <core/gui/undo/UndoManager.h>
+#include <core/dataset/UndoStack.h>
 #include <plugins/particles/data/ParticlePropertyObject.h>
 #include "ParticleSelectionSet.h"
 
@@ -125,8 +125,8 @@ void ParticleSelectionSet::resetSelection(const PipelineFlowState& state)
 	if(selProperty) {
 
 		// Make a backup of the old snapshot so it may be restored.
-		if(UndoManager::instance().isRecording())
-			UndoManager::instance().push(new ReplaceSelectionOperation(this));
+		if(dataset()->undoStack().isRecording())
+			dataset()->undoStack().push(new ReplaceSelectionOperation(this));
 
 		ParticlePropertyObject* identifierProperty = ParticlePropertyObject::findInState(state, ParticleProperty::IdentifierProperty);
 		if(identifierProperty && useIdentifiers()) {
@@ -164,8 +164,8 @@ void ParticleSelectionSet::resetSelection(const PipelineFlowState& state)
 void ParticleSelectionSet::clearSelection(const PipelineFlowState& state)
 {
 	// Make a backup of the old selection state so it may be restored.
-	if(UndoManager::instance().isRecording())
-		UndoManager::instance().push(new ReplaceSelectionOperation(this));
+	if(dataset()->undoStack().isRecording())
+		dataset()->undoStack().push(new ReplaceSelectionOperation(this));
 
 	if(useIdentifiers() && ParticlePropertyObject::findInState(state, ParticleProperty::IdentifierProperty)) {
 		_selection.clear();
@@ -184,8 +184,8 @@ void ParticleSelectionSet::clearSelection(const PipelineFlowState& state)
 void ParticleSelectionSet::setParticleSelection(const PipelineFlowState& state, const QBitArray& selection, SelectionMode mode)
 {
 	// Make a backup of the old snapshot so it may be restored.
-	if(UndoManager::instance().isRecording())
-		UndoManager::instance().push(new ReplaceSelectionOperation(this));
+	if(dataset()->undoStack().isRecording())
+		dataset()->undoStack().push(new ReplaceSelectionOperation(this));
 
 	ParticlePropertyObject* identifierProperty = ParticlePropertyObject::findInState(state, ParticleProperty::IdentifierProperty);
 	if(identifierProperty && useIdentifiers()) {
@@ -254,8 +254,8 @@ void ParticleSelectionSet::toggleParticle(const PipelineFlowState& state, size_t
 void ParticleSelectionSet::toggleParticleIdentifier(int particleId)
 {
 	// Make a backup of the old selection state so it may be restored.
-	if(UndoManager::instance().isRecording())
-		UndoManager::instance().push(new ToggleSelectionOperation(this, particleId));
+	if(dataset()->undoStack().isRecording())
+		dataset()->undoStack().push(new ToggleSelectionOperation(this, particleId));
 
 	if(useIdentifiers()) {
 		if(_selectedIdentifiers.contains(particleId))
@@ -272,8 +272,8 @@ void ParticleSelectionSet::toggleParticleIdentifier(int particleId)
 void ParticleSelectionSet::toggleParticleIndex(size_t particleIndex)
 {
 	// Make a backup of the old selection state so it may be restored.
-	if(UndoManager::instance().isRecording())
-		UndoManager::instance().push(new ToggleSelectionOperation(this, -1, particleIndex));
+	if(dataset()->undoStack().isRecording())
+		dataset()->undoStack().push(new ToggleSelectionOperation(this, -1, particleIndex));
 
 	if(particleIndex < _selection.size())
 		_selection.toggleBit(particleIndex);
@@ -286,8 +286,8 @@ void ParticleSelectionSet::toggleParticleIndex(size_t particleIndex)
 void ParticleSelectionSet::selectAll(const PipelineFlowState& state)
 {
 	// Make a backup of the old selection state so it may be restored.
-	if(UndoManager::instance().isRecording())
-		UndoManager::instance().push(new ReplaceSelectionOperation(this));
+	if(dataset()->undoStack().isRecording())
+		dataset()->undoStack().push(new ReplaceSelectionOperation(this));
 
 	ParticlePropertyObject* identifiers = ParticlePropertyObject::findInState(state, ParticleProperty::IdentifierProperty);
 	if(useIdentifiers() && identifiers != nullptr) {

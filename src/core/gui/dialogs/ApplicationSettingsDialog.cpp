@@ -43,7 +43,7 @@ ApplicationSettingsDialog::ApplicationSettingsDialog(QWidget* parent) : QDialog(
 	// Create an iterator that retrieves all ApplicationSettingsPage derived classes.
 	Q_FOREACH(OvitoObjectType* clazz, PluginManager::instance().listClasses(ApplicationSettingsPage::OOType)) {
 		try {
-			OORef<ApplicationSettingsPage> page = static_object_cast<ApplicationSettingsPage>(clazz->createInstance());
+			OORef<ApplicationSettingsPage> page = static_object_cast<ApplicationSettingsPage>(clazz->createInstance(nullptr));
 			_pages.push_back(page);
 			page->insertSettingsDialogPage(this, _tabWidget);
 		}

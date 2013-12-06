@@ -20,46 +20,56 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
- * \file ViewportInputHandler.h
- * \brief Contains the definition of the Ovito::ViewportInputHandler.
+ * \file ViewportInputMode.h
+ * \brief Contains the definition of the Ovito::ViewportInputMode.
  */
 
-#ifndef __OVITO_VIEWPORT_INPUT_HANDLER_H
-#define __OVITO_VIEWPORT_INPUT_HANDLER_H
+#ifndef __OVITO_VIEWPORT_INPUT_MODE_H
+#define __OVITO_VIEWPORT_INPUT_MODE_H
 
 #include <core/Core.h>
 
 namespace Ovito {
 
-class Viewport;					// defined in Viewport.h
-class ViewportSceneRenderer;	// defined in ViewportSceneRenderer.h
-
 /**
- * \brief Abstract base class for viewport input handlers that process mouse events
- *        in the viewport windows.
+ * \brief Abstract base class for viewport input modes that handle mouse input
+ *        in the viewports.
  *
- * The ViewportInputManager holds a stack of ViewportInputHandler derived objects.
- * The topmost handler on the stack handles the mouse messages for the viewport
- * windows.
+ * The ViewportInputManager keeps a stack of ViewportInputMode objects.
+ * The topmost handler is the active one and handles all mouse events for the viewports.
  */
-class OVITO_CORE_EXPORT ViewportInputHandler : public OvitoObject
+class OVITO_CORE_EXPORT ViewportInputMode : public QObject
 {
 public:
 
-	/// \brief These are the activation behavior types for input handlers.
-	enum InputHandlerType {
-		NORMAL,				///< The handler is temporarily suspended when another handler becomes active.
-		TEMPORARY,			///< The handler is completely removed from the stack when another handler becomes active.
-		EXCLUSIVE			///< The stack is cleared before the handler becomes active.
+	/// \brief These are the activation behavior types for input modes.
+	enum InputModeType {
+		NormalMode,				///< The mode is temporarily suspended when another mode becomes active.
+		TemporaryMode,			///< The mode is completely removed from the stack when another mode becomes active.
+		ExclusiveMode			///< The stack is cleared before the mode becomes active.
 	};
 
-	/// \brief Default constructor.
-	ViewportInputHandler() : _temporaryNavMode(nullptr), _showOrbitCenter(false) {}
+	/// \brief Constructor.
+	ViewportInputMode(QObject* parent = nullptr) : QObject(parent), _manager(nullptr), _showOrbitCenter(false) {}
 
-	/// \brief Returns the activation behavior of this input handler.
-	/// \return The activation type controls what happens when the handler is activated and deactivated.
-	///         The returned value is interpreted by the ViewportInputManager.
-	virtual InputHandlerType handlerType() = 0;
+	/// \brief Destructor.
+	virtual ~ViewportInputMode();
+
+	/// \brief Returns a pointer to the viewport input manager that has a reference to this mode.
+	ViewportInputManager* inputManager() const {
+		OVITO_ASSERT_MSG(_manager != nullptr, "ViewportInputMode::inputManager()", "Cannot access input manager while mode is not on the input stack.");
+		return _manager;
+	}
+
+	/// \brief Checks whether this mode is currently active.
+	bool isActive() const;
+
+	/// \brief Returns the activation behavior of this input mode.
+	/// \return The activation type controls what happens when the mode is activated and deactivated.
+	///         The returned value is used by the ViewportInputManager when managing the stack of modes.
+	///
+	/// The default implementation returns InputModeType::NormalMode.
+	virtual InputModeType modeType() { return NormalMode; }
 
 	/// \brief Handles mouse press events for a Viewport.
 	/// \param vp The viewport in which the mouse event occurred.
@@ -110,63 +120,51 @@ public:
 	///        while this input handler is active.
 	void setCursor(const QCursor& cursor);
 
-	/// \brief Return the temporary navigation mode if the user is currently using the
-	///        middle button or the mouse wheel.
-	/// \return The viewport navigation mode that temporarily overrides this
-	///         input mode or \c NULL if it is not active.
-	///
-	/// The default implementation of the onMouseDown() event handler method activates
-	/// a temporary navigation mode like zoom, pan or orbit on special mouse/key combinations.
-	/// This temporary navigation mode then handles all mouse events instead of this
-	/// input handler as long as it is active.
-	ViewportInputHandler* temporaryNavigationMode() const { return _temporaryNavMode; }
-
 	/// \brief Activates the given temporary navigation mode.
-	void activateTemporaryNavigationMode(ViewportInputHandler* mode);
-
-	/// \brief Deactivates the temporary navigation mode if active.
-	void deactivateTemporaryNavigationMode();
+	///
+	/// This method can be overridden by subclasses to prevent the activation of temporary navigation modes.
+	virtual void activateTemporaryNavigationMode(ViewportInputMode* navigationMode);
 
 	/// \brief Indicates whether this input mode renders 3d geometry into the viewports.
 	/// \return \c true if the renderOverlay3D() method has been overridden for this class; \c false otherwise.
 	///
 	/// Subclasses should override this method to return \c true if they also override the renderOverlay3D() method.
 	/// The default implementation returns \c false.
-	virtual bool hasOverlay() {
-		return (_temporaryNavMode != nullptr) ? _temporaryNavMode->hasOverlay() : _showOrbitCenter;
-	}
+	virtual bool hasOverlay() { return _showOrbitCenter; }
 
 	/// \brief Lets the input mode render its 3d overlay content in a viewport.
 	/// \param vp The viewport into which the mode should render its specific overlay content.
 	/// \param renderer The renderer that should be used to display the overlay.
-	/// \param isActive Indicates whether this input is currently active. The renderOverlay3D()
-	///                 method is also called for an inactive input mode if it is suspended due to
-	///                 one or more modes on top of it on the mode stack.
 	///
 	/// This method is called by the system every time the viewports are redrawn and this input
 	/// mode is on the input mode stack.
 	///
 	/// The default implementation of this method does nothing. If a subclasses implements this
 	/// method then it should also override the hasOverlay() function.
-	virtual void renderOverlay3D(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive);
+	virtual void renderOverlay3D(Viewport* vp, ViewportSceneRenderer* renderer);
 
 	/// \brief Computes the bounding box of the 3d visual viewport overlay rendered by the input mode.
 	/// \return The bounding box of the geometry in world coordinates.
-	virtual Box3 overlayBoundingBox(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive);
+	virtual Box3 overlayBoundingBox(Viewport* vp, ViewportSceneRenderer* renderer);
 
 	/// \brief Lets the input mode render its 2d overlay content in a viewport.
 	/// \param vp The viewport into which the mode should render its specific overlay content.
 	/// \param renderer The renderer that should be used to display the overlay.
-	/// \param isActive Indicates whether this input is currently active. The renderOverlay2D()
-	///                 method is also called for an inactive input mode if it is suspended due to
-	///                 one or more modes on top of it on the mode stack.
 	///
 	/// This method is called by the system every time the viewports are redrawn and this input
 	/// mode is on the input mode stack.
 	///
 	/// The default implementation of this method does nothing. If a subclasses implements this
 	/// method then it should also override the hasOverlay() function.
-	virtual void renderOverlay2D(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive);
+	virtual void renderOverlay2D(Viewport* vp, ViewportSceneRenderer* renderer) {}
+
+Q_SIGNALS:
+
+	/// \brief This signal is emitted when the input mode has become the active mode or is no longer the active mode.
+	void statusChanged(bool isActive);
+
+	/// \brief This signal is emitted when the current curser of this mode has changed.
+	void curserChanged();
 
 protected:
 
@@ -174,39 +172,33 @@ protected:
 	///        become the active handler.
 	///
 	/// Implementations of this virtual method in sub-classes should call the base implementation.
-	///
-	/// \sa ViewportInputManager::pushInputHandler()
-	virtual void activated();
+	virtual void activated(bool temporaryActivation);
 
 	/// \brief This is called by the system after the input handler is
 	///        no longer the active handler.
 	///
 	/// Implementations of this virtual method in sub-classes should call the base implementation.
-	///
-	/// \sa ViewportInputManager::removeInputHandler()
-	virtual void deactivated();
+	virtual void deactivated(bool temporary);
 
 private:
-
-	/// Contains one of the temporary navigation modes if the user is using the
-	/// middle button or the mouse wheel.
-	ViewportInputHandler* _temporaryNavMode;
 
 	/// Stores a copy of the last mouse-press event.
 	std::unique_ptr<QMouseEvent> _lastMousePressEvent;
 
-	/// Indicates that the orbit center of rotation should be shown.
-	bool _showOrbitCenter;
-
 	/// The cursor shown while this mode is active.
 	QCursor _cursor;
 
+	/// The viewport input manager that has a reference to this mode.
+	ViewportInputManager* _manager;
+
+	/// This flag indicates that the current camera orbit should be shown in the viewports.
+	bool _showOrbitCenter;
+
 	Q_OBJECT
-	OVITO_OBJECT
 
 	friend class ViewportInputManager;
 };
 
 };
 
-#endif // __OVITO_VIEWPORT_INPUT_HANDLER_H
+#endif // __OVITO_VIEWPORT_INPUT_MODE_H

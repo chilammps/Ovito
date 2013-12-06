@@ -32,8 +32,6 @@
 
 namespace Ovito {
 
-class ViewportSceneRenderer;
-
 /**
  * \brief Buffer object that stores a set of arrows to be rendered in the viewports.
  */

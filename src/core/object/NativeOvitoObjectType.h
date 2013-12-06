@@ -86,9 +86,10 @@ public:
 protected:
 
 	/// \brief Creates an instance of the class described by this descriptor.
+	/// \param dataset The dataset the newly created object will belong to.
 	/// \return The new instance of the class. The pointer can safely be cast to the appropriate C++ class type.
 	/// \throw Exception if the instance could not be created.
-	virtual OORef<OvitoObject> createInstanceImpl() const override;
+	virtual OORef<OvitoObject> createInstanceImpl(DataSet* dataset) const override;
 
 private:
 

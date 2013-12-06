@@ -35,7 +35,7 @@ SET_PROPERTY_FIELD_LABEL(ModifierApplication, _modifierData, "Modifier data")
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-ModifierApplication::ModifierApplication(Modifier* mod)
+ModifierApplication::ModifierApplication(DataSet* dataset, Modifier* mod) : RefTarget(dataset)
 {
 	INIT_PROPERTY_FIELD(ModifierApplication::_modifier);
 	INIT_PROPERTY_FIELD(ModifierApplication::_modifierData);

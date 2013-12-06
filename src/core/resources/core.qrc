@@ -16,6 +16,7 @@
 	<file>actions/edit/edit_clear.png</file>
 	<file>actions/edit/edit_delete.png</file>
 	
+	<file>actions/file/file_new.png</file>
 	<file>actions/file/file_open.png</file>
 	<file>actions/file/file_quit.png</file>
 	<file>actions/file/file_reset.png</file>

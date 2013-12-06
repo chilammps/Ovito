@@ -34,7 +34,7 @@ namespace Ovito {
 /**
  * \brief Stores general settings related to the viewports.
  */
-class OVITO_CORE_EXPORT ViewportSettings
+class OVITO_CORE_EXPORT ViewportSettings : public QObject
 {
 public:
 
@@ -75,13 +75,13 @@ public:
 	ViewportSettings();
 
 	/// \brief Returns a color value for drawing something in the viewports.
-	/// \param which The enum constant that specifies what to draw.
-	/// \return The color that should be used for the given element.
+	/// \param which The constant specifying what type of element to draw.
+	/// \return The color that should be used for the given type of element.
 	const Color& viewportColor(ViewportColor which) const;
 
 	/// \brief Sets the color for drawing something in the viewports.
-	/// \param which The enum constant that specifies what to draw.
-	/// \param color The color that should be used for the given element.
+	/// \param which The constant specifying what type of element to draw.
+	/// \return The color that should be used for the given type of element.
 	void setViewportColor(ViewportColor which, const Color& color);
 
 	/// \brief Sets all viewport colors to their default values.
@@ -106,22 +106,33 @@ public:
 	/// Sets whether to restrict the vertical rotation such that the up axis never points downward.
 	void setRestrictVerticalRotation(bool active) { _restrictVerticalRotation = active; }
 
+	/// Returns the font to be used for rendering text in the viewports.
+	const QFont& viewportFont() const { return _viewportFont; }
+
 	/// Loads the settings from the given settings store.
 	void load(QSettings& store);
 
 	/// Saves the settings to the given settings store.
 	void save(QSettings& store) const;
 
+	/// Assignment.
+	void assign(const ViewportSettings& other);
+
 	/// Returns a (read-only) reference to the current global settings object.
-	static const ViewportSettings& getSettings();
+	static ViewportSettings& getSettings();
 
 	/// Replaces the current global settings with new values.
 	static void setSettings(const ViewportSettings& settings);
 
+Q_SIGNALS:
+
+	/// This signal is emitted when the active viewport settings have changed.
+	void settingsChanged(ViewportSettings* newSettings);
+
 private:
 
 	/// The colors for viewport drawing.
-	Color _viewportColors[NUMBER_OF_COLORS];
+	std::array<Color, NUMBER_OF_COLORS> _viewportColors;
 
 	/// The selected rotation axis type for orbit mode.
 	UpDirection _upDirection;
@@ -129,11 +140,13 @@ private:
 	/// Restricts the vertical rotation such that the up axis never points downward.
 	bool _restrictVerticalRotation;
 
+	/// The font used for rendering text in the viewports.
+	QFont _viewportFont;
+
 	/// The current settings record.
 	static ViewportSettings _currentSettings;
 
-	/// Indicates whether the settings have already been loaded from the application's settings store.
-	static bool _settingsLoaded;
+	Q_OBJECT
 };
 
 };

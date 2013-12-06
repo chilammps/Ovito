@@ -43,7 +43,7 @@ class OVITO_PARTICLES_EXPORT ParticleType : public RefTarget
 public:
 
 	/// \brief Constructs a new particle type.
-	Q_INVOKABLE ParticleType();
+	Q_INVOKABLE ParticleType(DataSet* dataset);
 
 	/// \brief Returns the identifier of the particle type.
 	/// \return The type identifier.

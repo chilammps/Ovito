@@ -59,7 +59,7 @@ public:
 
 	/// \brief Returns the special built-in core plugin.
 	/// \return The core plugin. This is not a real plugin but the core of the
-	///         application which provides several PluginClass derived classes
+	///         application which provides several OvitoObject derived classes
 	///         as ordinary plugins do.
 	/// \sa Plugin::isCore()
 	Plugin* corePlugin() { return _corePlugin; }

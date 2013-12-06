@@ -34,12 +34,12 @@ SET_PROPERTY_FIELD_LABEL(PatternCatalog, _patterns, "Structure patterns")
 /******************************************************************************
 * Constructs the PatternCatalog object.
 ******************************************************************************/
-PatternCatalog::PatternCatalog()
+PatternCatalog::PatternCatalog(DataSet* dataset) : SceneObject(dataset)
 {
 	INIT_PROPERTY_FIELD(PatternCatalog::_patterns);
 
 	// Create the "undefined" structure.
-	OORef<StructurePattern> undefinedAtomType(new StructurePattern());
+	OORef<StructurePattern> undefinedAtomType(new StructurePattern(dataset));
 	undefinedAtomType->setName(tr("Unidentified structure"));
 	undefinedAtomType->setColor(Color(1,1,1));
 	_patterns.push_back(undefinedAtomType);
@@ -123,7 +123,7 @@ void PatternCatalogEditor::onDoubleClickPattern(const QModelIndex& index)
 	if(!newColor.isValid() || newColor == oldColor)
 		return;
 
-	UndoableTransaction::handleExceptions(tr("Change structure type color"), [pattern, &newColor]() {
+	undoableTransaction(tr("Change structure type color"), [pattern, &newColor]() {
 		pattern->setColor(Color(newColor));
 	});
 }

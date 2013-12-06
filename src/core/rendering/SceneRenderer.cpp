@@ -22,16 +22,15 @@
 #include <core/Core.h>
 #include <core/rendering/SceneRenderer.h>
 #include <core/scene/SceneNode.h>
+#include <core/scene/SceneRoot.h>
+#include <core/scene/objects/geometry/TriMesh.h>
 #include <core/dataset/DataSet.h>
-#include <core/dataset/DataSetManager.h>
 #include "moc_LineGeometryBuffer.cpp"
 #include "moc_ParticleGeometryBuffer.cpp"
 #include "moc_TextGeometryBuffer.cpp"
 #include "moc_ImageGeometryBuffer.cpp"
 #include "moc_ArrowGeometryBuffer.cpp"
 #include "moc_TriMeshGeometryBuffer.cpp"
-
-#include <core/scene/objects/geometry/TriMesh.h>
 
 namespace Ovito {
 
@@ -46,7 +45,9 @@ IMPLEMENT_OVITO_OBJECT(Core, TriMeshGeometryBuffer, OvitoObject);
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-SceneRenderer::SceneRenderer() : _dataset(nullptr), _settings(nullptr), _viewport(nullptr), _isPicking(false)
+SceneRenderer::SceneRenderer(DataSet* dataset) : RefTarget(dataset),
+		_renderDataset(nullptr), _settings(nullptr),
+		_viewport(nullptr), _isPicking(false)
 {
 }
 
@@ -55,8 +56,8 @@ SceneRenderer::SceneRenderer() : _dataset(nullptr), _settings(nullptr), _viewpor
 ******************************************************************************/
 Box3 SceneRenderer::sceneBoundingBox(TimePoint time)
 {
-	OVITO_CHECK_OBJECT_POINTER(dataset());
-	Box3 bb = dataset()->sceneRoot()->worldBoundingBox(time);
+	OVITO_CHECK_OBJECT_POINTER(renderDataset());
+	Box3 bb = renderDataset()->sceneRoot()->worldBoundingBox(time);
 	if(!bb.isEmpty())
 		return bb;
 	else
@@ -68,11 +69,8 @@ Box3 SceneRenderer::sceneBoundingBox(TimePoint time)
 ******************************************************************************/
 void SceneRenderer::renderScene()
 {
-	OVITO_CHECK_OBJECT_POINTER(dataset());
-
-	SceneRoot* rootNode = dataset()->sceneRoot();
-	if(rootNode) {
-
+	OVITO_CHECK_OBJECT_POINTER(renderDataset());
+	if(SceneRoot* rootNode = renderDataset()->sceneRoot()) {
 		// Recursively render all nodes.
 		renderNode(rootNode);
 	}

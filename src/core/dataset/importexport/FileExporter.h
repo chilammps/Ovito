@@ -40,8 +40,8 @@ class OVITO_CORE_EXPORT FileExporter : public RefTarget
 {
 protected:
 	
-	/// \brief The default constructor.
-	FileExporter() {}
+	/// \brief The constructor.
+	FileExporter(DataSet* dataset) : RefTarget(dataset) {}
 
 public:
 
@@ -55,11 +55,10 @@ public:
 
 	/// \brief Exports the scene to a file.
 	/// \param filePath The path of the file to export to.
-	/// \param scene The scene that should be exported.
 	/// \return \c true if the file has been successfully written.
 	///         \c false if the export operation has been aborted by the user.
 	/// \throw Exception when the export has failed or an error has occurred.
-	virtual bool exportToFile(const QString& filePath, DataSet* scene) = 0;
+	virtual bool exportToFile(const QString& filePath) = 0;
 
 private:
 
@@ -70,15 +69,12 @@ private:
 /**
  * \brief This descriptor contains information about an installed FileExporter service.
  */
-class OVITO_CORE_EXPORT FileExporterDescription
+class OVITO_CORE_EXPORT FileExporterDescription : public QObject
 {
 public:
 
-	/// \brief Default constructor (required by QVector container).
-	FileExporterDescription() {}
-
 	/// \brief Initializes this descriptor from a file exporter instance.
-	FileExporterDescription(FileExporter* exporter) :
+	FileExporterDescription(QObject* parent, FileExporter* exporter) : QObject(parent),
 		_fileFilter(exporter->fileFilter()),
 		_fileFilterDescription(exporter->fileFilterDescription()),
 		_pluginClass(&exporter->getOOType()) {}
@@ -92,8 +88,9 @@ public:
 	const QString& fileFilterDescription() const { return _fileFilterDescription; }
 
 	/// \brief Creates an instance of the file exporter class.
-	OORef<FileExporter> createService() const {
-		return static_object_cast<FileExporter>(pluginClass()->createInstance());
+	/// \param The dataset within which the exporter object is to be created.
+	OORef<FileExporter> createService(DataSet* dataset) const {
+		return static_object_cast<FileExporter>(pluginClass()->createInstance(dataset));
 	}
 
 	/// \brief Returns the class descriptor for the file exporter service.
@@ -105,6 +102,8 @@ private:
 	QString _fileFilter;
 	QString _fileFilterDescription;
 	const OvitoObjectType* _pluginClass;
+
+	Q_OBJECT
 };
 
 };

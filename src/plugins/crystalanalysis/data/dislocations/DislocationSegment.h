@@ -39,7 +39,7 @@ class OVITO_CRYSTALANALYSIS_EXPORT DislocationSegment : public RefTarget
 public:
 
 	/// \brief Constructs a new dislocation segment.
-	Q_INVOKABLE DislocationSegment();
+	Q_INVOKABLE DislocationSegment(DataSet* dataset);
 
 	/// Returns the sequence of space points that make up the dislocation segment.
 	const QVector<Point3>& line() const { return _line; }
