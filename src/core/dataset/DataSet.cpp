@@ -311,7 +311,14 @@ bool DataSet::renderScene(RenderSettings* settings, Viewport* viewport, QSharedP
 					frameBufferWindow->resize(frameBufferWindow->sizeHint());
 			}
 			if(frameBufferWindow) {
-				frameBufferWindow->show();
+				if(frameBufferWindow->isHidden()) {
+					// Center frame buffer window in main window.
+					if(frameBufferWindow->parentWidget()) {
+						QSize s = frameBufferWindow->frameGeometry().size();
+						frameBufferWindow->move(frameBufferWindow->parentWidget()->geometry().center() - QPoint(s.width() / 2, s.height() / 2));
+					}
+					frameBufferWindow->show();
+				}
 				frameBufferWindow->activateWindow();
 			}
 
