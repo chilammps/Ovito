@@ -210,19 +210,25 @@ public:
 	ColorCodingGradient* colorGradient() const { return _colorGradient; }
 
 	/// Sets the color gradient for the modifier to convert scalar atom properties to colors.
-	void setColorGradient(const OORef<ColorCodingGradient>& gradient) { _colorGradient = gradient; }
+	void setColorGradient(const OORef<ColorCodingGradient>& gradient) { setColorGradient(gradient.get()); }
 
-	/// Sets the start and end value to the minimum and maximum value in the selected data channel.
-	bool adjustRange();
+	/// Sets the color gradient for the modifier to convert scalar atom properties to colors.
+	void setColorGradient(ColorCodingGradient* gradient) { _colorGradient = gradient; }
 
 	/// Retrieves the selected input particle property from the given modifier input state.
 	ParticlePropertyObject* lookupInputProperty(const PipelineFlowState& inputState) const;
+
+public Q_SLOTS:
+
+	/// Sets the start and end value to the minimum and maximum value in the selected data channel.
+	bool adjustRange();
 
 public:
 
 	Q_PROPERTY(FloatType startValue READ startValue WRITE setStartValue)
 	Q_PROPERTY(FloatType endValue READ endValue WRITE setEndValue)
 	Q_PROPERTY(Particles::ParticlePropertyReference sourceProperty READ sourceProperty WRITE setSourceProperty)
+	Q_PROPERTY(ColorCodingGradient* colorGradient READ colorGradient WRITE setColorGradient)
 
 protected:
 

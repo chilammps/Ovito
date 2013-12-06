@@ -44,9 +44,6 @@ public:
 	/// Constructor.
 	AnimationPlaybackViewportMode(ActionManager* actionManager) : ViewportInputMode(actionManager) {}
 
-	/// Returns the activation behavior of this input mode.
-	virtual InputModeType modeType() override { return TemporaryMode; }
-
 	/// Returns the action manager, which owns this mode.
 	ActionManager* actionManager() const { return static_cast<ActionManager*>(parent()); }
 
@@ -59,9 +56,9 @@ protected:
 	}
 
 	/// This is called by the system after the input handler has been deactivated.
-	virtual void deactivated() override {
+	virtual void deactivated(bool temporary) override {
 		actionManager()->_dataset->animationSettings()->stopAnimationPlayback();
-		ViewportInputMode::deactivated();
+		ViewportInputMode::deactivated(temporary);
 	}
 };
 

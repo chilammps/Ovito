@@ -66,6 +66,9 @@ public:
 	/// Returns whether particles within the specified range should be selected.
 	bool selectInRange() const { return _selectInRange; }
 
+	/// Sets whether particles within the specified range should be selected.
+	void setSelectInRange(bool select) { _selectInRange = select; }
+
 	/// Returns the start value of the selection interval.
 	FloatType selectionRangeStart() const { return _selectionRangeStart; }
 
@@ -94,6 +97,7 @@ public:
 
 	Q_PROPERTY(Particles::ParticlePropertyReference sourceProperty READ sourceProperty WRITE setSourceProperty)
 	Q_PROPERTY(int numberOfBins READ numberOfBins WRITE setNumberOfBins)
+	Q_PROPERTY(bool selectInRange READ selectInRange WRITE setSelectInRange)
 	Q_PROPERTY(FloatType selectionRangeStart READ selectionRangeStart)
 	Q_PROPERTY(FloatType selectionRangeEnd READ selectionRangeEnd)
 

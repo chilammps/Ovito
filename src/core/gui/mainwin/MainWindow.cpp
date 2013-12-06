@@ -103,7 +103,7 @@ MainWindow::MainWindow() :
 	};
 	QLineEdit* timeEditBox = new TimeEditBox();
 	timeEditBox->setToolTip(tr("Current Animation Time"));
-	AnimationTimeSpinner* currentTimeSpinner = new AnimationTimeSpinner();
+	AnimationTimeSpinner* currentTimeSpinner = new AnimationTimeSpinner(this);
 	currentTimeSpinner->setTextBox(timeEditBox);
 	animationControlBar2->addWidget(timeEditBox);
 	animationControlBar2->addWidget(currentTimeSpinner);

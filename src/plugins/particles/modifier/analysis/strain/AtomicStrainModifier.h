@@ -98,7 +98,6 @@ public:
 
 public:
 
-	Q_PROPERTY(bool referenceShown READ referenceShown WRITE setReferenceShown)
 	Q_PROPERTY(bool eliminateCellDeformation READ eliminateCellDeformation WRITE setEliminateCellDeformation)
 	Q_PROPERTY(bool assumeUnwrappedCoordinates READ assumeUnwrappedCoordinates WRITE setAssumeUnwrappedCoordinates)
 	Q_PROPERTY(FloatType cutoff READ cutoff WRITE setCutoff)

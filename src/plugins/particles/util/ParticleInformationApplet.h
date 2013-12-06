@@ -32,35 +32,7 @@ namespace Particles {
 
 using namespace Ovito;
 
-class ParticleInformationApplet;
-
-class ParticleInformationInputMode : public ViewportInputMode, ParticlePickingHelper
-{
-public:
-
-	/// Constructor.
-	ParticleInformationInputMode(ParticleInformationApplet* applet) :
-		_applet(applet) {}
-
-	/// Handles the mouse up events for a Viewport.
-	virtual void mouseReleaseEvent(Viewport* vp, QMouseEvent* event) override;
-
-	/// \brief Lets the input mode render its overlay content in a viewport.
-	virtual void renderOverlay3D(Viewport* vp, ViewportSceneRenderer* renderer) override;
-
-	/// \brief Indicates whether this input mode renders into the viewports.
-	virtual bool hasOverlay() override { return true; }
-
-private:
-
-	/// The particle information applet.
-	ParticleInformationApplet* _applet;
-
-	/// The selected particles whose properties are being displayed.
-	std::deque<PickResult> _pickedParticles;
-
-	friend class ParticleInformationApplet;
-};
+class ParticleInformationInputMode;
 
 /**
  * \brief This utility applet lets the user select a particle in the viewports
@@ -102,6 +74,37 @@ private:
 
 	Q_OBJECT
 	OVITO_OBJECT
+};
+
+class ParticleInformationInputMode : public ViewportInputMode, ParticlePickingHelper
+{
+public:
+
+	/// Constructor.
+	ParticleInformationInputMode(ParticleInformationApplet* applet) : ViewportInputMode(applet),
+		_applet(applet) {}
+
+	/// Returns the activation behavior of this input mode.
+	virtual InputModeType modeType() override { return ExclusiveMode; }
+
+	/// Handles the mouse up events for a Viewport.
+	virtual void mouseReleaseEvent(Viewport* vp, QMouseEvent* event) override;
+
+	/// \brief Lets the input mode render its overlay content in a viewport.
+	virtual void renderOverlay3D(Viewport* vp, ViewportSceneRenderer* renderer) override;
+
+	/// \brief Indicates whether this input mode renders into the viewports.
+	virtual bool hasOverlay() override { return true; }
+
+private:
+
+	/// The particle information applet.
+	ParticleInformationApplet* _applet;
+
+	/// The selected particles whose properties are being displayed.
+	std::deque<PickResult> _pickedParticles;
+
+	friend class ParticleInformationApplet;
 };
 
 };

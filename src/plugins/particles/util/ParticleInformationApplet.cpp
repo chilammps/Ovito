@@ -66,6 +66,7 @@ void ParticleInformationApplet::openUtility(MainWindow* mainWindow, RolloutConta
 	layout->addWidget(_infoDisplay, 1);
 
 	connect(&_mainWindow->datasetContainer(), &DataSetContainer::animationSettingsReplaced, this, &ParticleInformationApplet::onAnimationSettingsReplaced);
+	_timeChangeCompleteConnection = connect(_mainWindow->datasetContainer().currentSet()->animationSettings(), &AnimationSettings::timeChangeComplete, this, &ParticleInformationApplet::updateInformationDisplay);
 	_mainWindow->viewportInputManager()->pushInputMode(_inputMode);
 }
 

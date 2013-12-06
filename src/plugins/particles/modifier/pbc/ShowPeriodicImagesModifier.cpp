@@ -65,18 +65,18 @@ ShowPeriodicImagesModifier::ShowPeriodicImagesModifier(DataSet* dataset) : Parti
 ******************************************************************************/
 ObjectStatus ShowPeriodicImagesModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
 {
+	int nPBCx = showImageX() ? std::max(numImagesX(),1) : 1;
+	int nPBCy = showImageY() ? std::max(numImagesY(),1) : 1;
+	int nPBCz = showImageZ() ? std::max(numImagesZ(),1) : 1;
+
 	// Calculate new number of atoms.
-	size_t numCopies = (_showImageX ? (int)_numImagesX : 1) * (_showImageY ? (int)_numImagesY : 1) * (_showImageZ ? (int)_numImagesZ : 1);
+	size_t numCopies = nPBCx * nPBCy * nPBCz;
 	if(numCopies <= 1 || inputParticleCount() == 0)
 		return ObjectStatus::Success;
 
 	// Enlarge particle property arrays.
 	size_t oldParticleCount = inputParticleCount();
 	size_t newParticleCount = oldParticleCount * numCopies;
-
-	int nPBCx = _showImageX ? std::max((int)_numImagesX,1) : 1;
-	int nPBCy = _showImageY ? std::max((int)_numImagesY,1) : 1;
-	int nPBCz = _showImageZ ? std::max((int)_numImagesZ,1) : 1;
 
 	_outputParticleCount = newParticleCount;
 	AffineTransformation simCell = expectSimulationCell()->cellMatrix();
@@ -123,7 +123,7 @@ ObjectStatus ShowPeriodicImagesModifier::modifyParticles(TimePoint time, TimeInt
 		}
 	}
 
-	if(_adjustBoxSize) {
+	if(adjustBoxSize()) {
 		simCell.column(3) -= (FloatType)((nPBCx-1)/2) * simCell.column(0);
 		simCell.column(3) -= (FloatType)((nPBCy-1)/2) * simCell.column(1);
 		simCell.column(3) -= (FloatType)((nPBCz-1)/2) * simCell.column(2);

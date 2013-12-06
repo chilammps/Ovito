@@ -96,11 +96,9 @@ public:
 	void setSamplingCount(int count) { _samplingCount = count; }
 
 	/// Returns the buffer resolution level.
-	/// This must be an integer value between 0 and 5.
 	int bufferResolution() const { return _bufferResolution; }
 
 	/// Sets the buffer resolution level.
-	/// This must be an integer value between 0 and 5.
 	void setBufferResolution(int res) { _bufferResolution = res; }
 
 public:

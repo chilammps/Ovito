@@ -29,16 +29,11 @@
 
 #include <core/Core.h>
 #include <core/gui/widgets/general/SpinnerWidget.h>
-#include <core/animation/AnimationSettings.h>
-#include <core/utilities/units/UnitsManager.h>
 
 namespace Ovito {
 
 /**
- * \brief A spinner control for changing the current animation time.
- * 
- * It displays the current animation time given by AnimManager::time() and changes
- * it when the user enters a new time value.
+ * \brief A spinner control for the current animation time.
  */
 class OVITO_CORE_EXPORT AnimationTimeSpinner : public SpinnerWidget
 {
@@ -47,38 +42,32 @@ class OVITO_CORE_EXPORT AnimationTimeSpinner : public SpinnerWidget
 public:
 	
 	/// Constructs the spinner control.
-	AnimationTimeSpinner(QWidget* parent = 0) : SpinnerWidget(parent) {
-#if 0
-		setUnit(UnitsManager::instance().timeUnit());
-		connect(&AnimManager::instance(), SIGNAL(timeChanged(TimePoint)), SLOT(onTimeChanged(TimePoint)));
-		connect(&AnimManager::instance(), SIGNAL(intervalChanged(TimeInterval)), SLOT(onIntervalChanged(TimeInterval)));
-		connect(this, SIGNAL(spinnerValueChanged()), SLOT(onSpinnerValueChanged()));
-#endif
-	}
+	AnimationTimeSpinner(MainWindow* mainWindow, QWidget* parent = 0);
 
 protected Q_SLOTS:
 
+	/// Is called when a another dataset has become the active dataset.
+	void onDataSetReplaced(DataSet* newDataSet);
+
+	/// This is called when new animation settings have been loaded.
+	void onAnimationSettingsReplaced(AnimationSettings* newAnimationSettings);
+
 	/// This is called by the AnimManager when the current animation time has changed.
-	void onTimeChanged(TimePoint newTime) {
-		// Set the value of the spinner to the new animation time.
-		setIntValue(newTime);
-	}
+	void onTimeChanged(TimePoint newTime);
 
 	/// This is called by the AnimManager when the animation interval has changed.
-	void onIntervalChanged(TimeInterval newAnimationInterval) {
-		// Set the limits of the spinner to the new animation time interval.
-		setMinValue(newAnimationInterval.start());
-		setMaxValue(newAnimationInterval.end());
-		setEnabled(newAnimationInterval.duration() != 0);
-	}
+	void onIntervalChanged(TimeInterval newAnimationInterval);
 	
 	/// Is called when the spinner value has been changed by the user.
-	void onSpinnerValueChanged() {
-#if 0
-		// Set a new animation time.
-		AnimManager::instance().setTime(intValue());
-#endif
-	}
+	void onSpinnerValueChanged();
+
+private:
+
+	/// The current animation settings object.
+	AnimationSettings* _animSettings;
+
+	QMetaObject::Connection _animIntervalChangedConnection;
+	QMetaObject::Connection _timeChangedConnection;
 };
 
 };

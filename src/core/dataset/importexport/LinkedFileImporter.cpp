@@ -145,11 +145,9 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl, ImportMode importMode
 				else if(msgBox.clickedButton() == resetSceneButton) {
 					importMode = ResetScene;
 
-#if 0
 					// Ask user if current scene should be saved before it is replaced by the imported data.
-					if(!DataSetManager::instance().askForSaveChanges())
+					if(!dataset()->container()->askForSaveChanges())
 						return false;
-#endif
 				}
 				else if(msgBox.clickedButton() == addToSceneButton) {
 					importMode = AddToScene;
@@ -171,11 +169,9 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl, ImportMode importMode
 				else if(result == QMessageBox::No) {
 					importMode = ResetScene;
 
-#if 0
 					// Ask user if current scene should be saved before it is replaced by the imported data.
-					if(!DataSetManager::instance().askForSaveChanges())
+					if(!dataset()->container()->askForSaveChanges())
 						return false;
-#endif
 				}
 				else {
 					importMode = AddToScene;

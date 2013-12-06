@@ -226,10 +226,10 @@ protected:
 	}
 
 	/// This is called by the system after the input handler is no longer the active handler.
-	virtual void deactivated() override {
+	virtual void deactivated(bool temporary) override {
 		_fence.clear();
 		inputManager()->mainWindow()->statusBar()->clearMessage();
-		ViewportInputMode::deactivated();
+		ViewportInputMode::deactivated(temporary);
 	}
 
 private:

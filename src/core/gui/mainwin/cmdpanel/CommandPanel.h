@@ -72,12 +72,6 @@ public:
 	/// \brief Returns the utility page contained in the command panel.
 	UtilityCommandPage* utilityPage() const { return _utilityPage; }
 
-#if 0
-	/// \brief Returns the object that is currently being edited in the command panel.
-	/// \return The object being edited in the command panel or \c NULL if no object is selected.
-	RefTarget* editObject() const;
-#endif
-
 	/// \brief Returns the default size for the command panel.
 	virtual QSize sizeHint() const { return QSize(336, 300); }
 

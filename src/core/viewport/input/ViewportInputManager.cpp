@@ -68,6 +68,7 @@ void ViewportInputManager::pushInputMode(ViewportInputMode* newMode, bool tempor
     ViewportInputMode* oldMode = activeMode();
 	if(newMode == oldMode) return;
 
+	bool oldModeRemoved = false;
 	if(oldMode) {
 		if(newMode->modeType() == ViewportInputMode::ExclusiveMode) {
 			// Remove all existing input modes from the stack before activating the exclusive mode.
@@ -75,8 +76,7 @@ void ViewportInputManager::pushInputMode(ViewportInputMode* newMode, bool tempor
 				removeInputMode(activeMode());
 			oldMode = activeMode();
 			if(oldMode == newMode) return;
-			OVITO_ASSERT(oldMode->_manager == this);
-			oldMode->_manager = nullptr;
+			oldModeRemoved = true;
 			_inputModeStack.clear();
 		}
 		else if(newMode->modeType() == ViewportInputMode::NormalMode) {
@@ -87,16 +87,14 @@ void ViewportInputManager::pushInputMode(ViewportInputMode* newMode, bool tempor
 			if(oldMode == newMode) return;
 			if(oldMode->modeType() != ViewportInputMode::ExclusiveMode) {
 				_inputModeStack.pop_back();
-				OVITO_ASSERT(oldMode->_manager == this);
-				oldMode->_manager = nullptr;
+				oldModeRemoved = true;
 			}
 		}
 		else if(newMode->modeType() == ViewportInputMode::TemporaryMode) {
 			// Remove all temporary handlers from the stack before activating the new mode.
 			if(oldMode->modeType() == ViewportInputMode::TemporaryMode) {
 				_inputModeStack.pop_back();
-				OVITO_ASSERT(oldMode->_manager == this);
-				oldMode->_manager = nullptr;
+				oldModeRemoved = true;
 			}
 		}
 	}
@@ -106,8 +104,12 @@ void ViewportInputManager::pushInputMode(ViewportInputMode* newMode, bool tempor
 	newMode->_manager = this;
 	_inputModeStack.push_back(newMode);
 
-	if(oldMode)
-		oldMode->deactivated();
+	if(oldMode) {
+		OVITO_ASSERT(oldMode->_manager == this);
+		oldMode->deactivated(!oldModeRemoved);
+		if(oldModeRemoved)
+			oldMode->_manager = nullptr;
+	}
 	newMode->activated(temporary);
 
 	// Update viewports if the old or the new mode displays overlays.
@@ -132,26 +134,30 @@ void ViewportInputManager::removeInputMode(ViewportInputMode* mode)
 	if(index < 0) return;
 
 	OVITO_ASSERT(mode->_manager == this);
-	mode->_manager = nullptr;
 
 	if(index == _inputModeStack.size() - 1) {
 		_inputModeStack.remove(index);
-		mode->deactivated();
+		mode->deactivated(false);
 		if(!_inputModeStack.empty())
 			activeMode()->activated(false);
-
-		// Update viewports if the old or the new mode displays overlays.
-		if((!_inputModeStack.empty() && _inputModeStack.back()->hasOverlay()) || mode->hasOverlay()) {
-			DataSet* dataset = mainWindow()->datasetContainer().currentSet();
-			if(dataset && dataset->viewportConfig()) {
-				dataset->viewportConfig()->updateViewports();
-			}
-		}
+		mode->_manager = nullptr;
 
 		Q_EMIT inputModeChanged(mode, activeMode());
+
+		// Activate default mode when stack becomes empty.
+		if(_inputModeStack.empty())
+			pushInputMode(_defaultMode);
 	}
 	else {
 		_inputModeStack.remove(index);
+		mode->deactivated(false);
+		mode->_manager = nullptr;
+	}
+
+	// Update viewports to show displays overlays.
+	DataSet* dataset = mainWindow()->datasetContainer().currentSet();
+	if(dataset && dataset->viewportConfig()) {
+		dataset->viewportConfig()->updateViewports();
 	}
 }
 
@@ -161,11 +167,12 @@ void ViewportInputManager::removeInputMode(ViewportInputMode* mode)
 void ViewportInputManager::reset()
 {
 	// Remove all input modes from the stack.
-	while(activeMode())
-		removeInputMode(activeMode());
+	for(int i = _inputModeStack.size() - 1; i >= 0; i--)
+		removeInputMode(_inputModeStack[i]);
 
-	// Activate default mode
-	pushInputMode(_defaultMode);
+	// Activate default mode when stack is empty.
+	if(_inputModeStack.empty())
+		pushInputMode(_defaultMode);
 }
 
 };

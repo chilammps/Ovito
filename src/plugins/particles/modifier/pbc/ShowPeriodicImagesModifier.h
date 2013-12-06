@@ -42,6 +42,60 @@ public:
 	/// \brief Constructs a new instance of this class.
 	Q_INVOKABLE ShowPeriodicImagesModifier(DataSet* dataset);
 
+	/// Returns whether periodic images are created in the X direction.
+	bool showImageX() const { return _showImageX; }
+
+	/// Returns whether periodic images are created in the Y direction.
+	bool showImageY() const { return _showImageY; }
+
+	/// Returns whether periodic images are created in the Z direction.
+	bool showImageZ() const { return _showImageZ; }
+
+	/// Controls whether periodic images should be created in the X direction.
+	void setShowImageX(bool createImages) { _showImageX = createImages; }
+
+	/// Controls whether periodic images should be created in the Y direction.
+	void setShowImageY(bool createImages) { _showImageY = createImages; }
+
+	/// Controls whether periodic images should be created in the Z direction.
+	void setShowImageZ(bool createImages) { _showImageZ = createImages; }
+
+	/// Returns the number of periodic images to be created in the X direction.
+	int numImagesX() const { return _numImagesX; }
+
+	/// Returns the number of periodic images to be created in the Y direction.
+	int numImagesY() const { return _numImagesY; }
+
+	/// Returns the number of periodic images to be created in the Z direction.
+	int numImagesZ() const { return _numImagesZ; }
+
+	/// Sets the number of periodic images to be created in the X direction.
+	void setNumImagesX(int n) { _numImagesX = n; }
+
+	/// Sets the number of periodic images to be created in the Y direction.
+	void setNumImagesY(int n) { _numImagesY = n; }
+
+	/// Sets the number of periodic images to be created in the Z direction.
+	void setNumImagesZ(int n) { _numImagesZ = n; }
+
+	/// Returns whether the size of the simulation box is adjusted.
+	bool adjustBoxSize() const { return _adjustBoxSize; }
+
+	/// Sets whether the size of the simulation box should be adjusted.
+	void setAdjustBoxSize(bool adjust) { _adjustBoxSize = adjust; }
+
+public:
+
+	Q_PROPERTY(bool showImageX READ showImageX WRITE setShowImageX)
+	Q_PROPERTY(bool showImageY READ showImageY WRITE setShowImageY)
+	Q_PROPERTY(bool showImageZ READ showImageZ WRITE setShowImageZ)
+
+	Q_PROPERTY(int numImagesX READ numImagesX WRITE setNumImagesX)
+	Q_PROPERTY(int numImagesY READ numImagesY WRITE setNumImagesY)
+	Q_PROPERTY(int numImagesZ READ numImagesZ WRITE setNumImagesZ)
+
+	Q_PROPERTY(bool adjustBoxSize READ adjustBoxSize WRITE setAdjustBoxSize)
+
 protected:
 
 	/// Modifies the particle object. The time interval passed

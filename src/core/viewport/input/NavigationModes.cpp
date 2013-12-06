@@ -48,7 +48,7 @@ void NavigationMode::activated(bool temporaryActivation)
 * This is called by the system after the input handler is
 * no longer the active handler.
 ******************************************************************************/
-void NavigationMode::deactivated()
+void NavigationMode::deactivated(bool temporary)
 {
 	if(_viewport) {
 		// Restore old settings if view change has not been committed.
@@ -57,7 +57,7 @@ void NavigationMode::deactivated()
 		_viewport->dataset()->undoStack().endCompoundOperation(false);
 		_viewport = nullptr;
 	}
-	ViewportInputMode::deactivated();
+	ViewportInputMode::deactivated(temporary);
 }
 
 /******************************************************************************

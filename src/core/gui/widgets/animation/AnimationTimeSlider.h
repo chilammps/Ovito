@@ -87,7 +87,7 @@ private:
 	MainWindow* _mainWindow;
 
 	/// The current animation settings object.
-	OORef<AnimationSettings> _animSettings;
+	AnimationSettings* _animSettings;
 
 	QMetaObject::Connection _autoKeyModeChangedConnection;
 	QMetaObject::Connection _animIntervalChangedConnection;

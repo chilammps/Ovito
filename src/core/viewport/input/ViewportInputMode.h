@@ -178,7 +178,7 @@ protected:
 	///        no longer the active handler.
 	///
 	/// Implementations of this virtual method in sub-classes should call the base implementation.
-	virtual void deactivated();
+	virtual void deactivated(bool temporary);
 
 private:
 

@@ -49,7 +49,7 @@ void ViewportInputMode::activated(bool temporaryActivation)
 /******************************************************************************
 * This is called by the system after the input handler is no longer the active handler.
 ******************************************************************************/
-void ViewportInputMode::deactivated()
+void ViewportInputMode::deactivated(bool temporary)
 {
 	Q_EMIT statusChanged(false);
 }
@@ -87,15 +87,16 @@ void ViewportInputMode::setCursor(const QCursor& cursor)
 void ViewportInputMode::mousePressEvent(Viewport* vp, QMouseEvent* event)
 {
 	_lastMousePressEvent.reset();
+	ViewportInputManager* manager = inputManager();
 	if(event->button() == Qt::RightButton) {
 		if(modeType() != ExclusiveMode) {
-			inputManager()->removeInputMode(this);
+			manager->removeInputMode(this);
 		}
 		else {
-			activateTemporaryNavigationMode(inputManager()->panMode());
-			if(inputManager()->activeMode() == inputManager()->panMode()) {
+			activateTemporaryNavigationMode(manager->panMode());
+			if(manager->activeMode() == manager->panMode()) {
 				QMouseEvent leftMouseEvent(event->type(), event->localPos(), event->windowPos(), event->screenPos(), Qt::LeftButton, Qt::LeftButton, event->modifiers());
-				inputManager()->activeMode()->mousePressEvent(vp, &leftMouseEvent);
+				manager->activeMode()->mousePressEvent(vp, &leftMouseEvent);
 			}
 		}
 		event->accept();
@@ -105,9 +106,9 @@ void ViewportInputMode::mousePressEvent(Viewport* vp, QMouseEvent* event)
 		event->accept();
 	}
 	else if(event->button() == Qt::MidButton) {
-		activateTemporaryNavigationMode(inputManager()->panMode());
-		if(inputManager()->activeMode() == inputManager()->panMode())
-			inputManager()->activeMode()->mousePressEvent(vp, event);
+		activateTemporaryNavigationMode(manager->panMode());
+		if(manager->activeMode() == manager->panMode())
+			manager->activeMode()->mousePressEvent(vp, event);
 		event->accept();
 	}
 }
@@ -127,9 +128,10 @@ void ViewportInputMode::mouseMoveEvent(Viewport* vp, QMouseEvent* event)
 {
 	if(_lastMousePressEvent && (event->pos() - _lastMousePressEvent->pos()).manhattanLength() > 2) {
 		if(this != inputManager()->orbitMode()) {
+			ViewportInputManager* manager = inputManager();
 			activateTemporaryNavigationMode(inputManager()->orbitMode());
-			if(inputManager()->activeMode() == inputManager()->orbitMode())
-				inputManager()->activeMode()->mousePressEvent(vp, _lastMousePressEvent.get());
+			if(manager->activeMode() == manager->orbitMode())
+				manager->activeMode()->mousePressEvent(vp, _lastMousePressEvent.get());
 		}
 		_lastMousePressEvent.reset();
 	}
