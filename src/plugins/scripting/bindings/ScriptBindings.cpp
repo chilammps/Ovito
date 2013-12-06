@@ -18,8 +18,9 @@ namespace Scripting {
 
 using namespace Ovito;
 
-ViewportBinding::ViewportBinding(Viewport* viewport, QObject* parent)
-  : QObject(parent), viewport_(viewport)
+ViewportBinding::ViewportBinding(Viewport* viewport, QScriptEngine* engine,
+								 QObject* parent)
+	: QObject(parent), viewport_(viewport), engine_(engine)
 {}
 
 void ViewportBinding::perspective(double cam_pos_x, double cam_pos_y, double cam_pos_z,
@@ -66,10 +67,10 @@ void ViewportBinding::setActive() const {
 }
 
 
-void ViewportBinding::render(const QString& filename) const {
-	// TODO: exception handling!
-
+void ViewportBinding::render(const QString& filename,
+							 const QScriptValue& options) const {
 	// Prepare settings.
+	// TODO: set these from settings...
 	RenderSettings settings;
 	settings.setRendererClass(&StandardSceneRenderer::OOType);
 	settings.setRenderingRangeType(RenderSettings::CURRENT_FRAME);
@@ -79,22 +80,27 @@ void ViewportBinding::render(const QString& filename) const {
 	settings.setSaveToFile(true);
 	settings.setSkipExistingImages(false);
 
-	// Prepare framebuffer.
-	FrameBufferWindow* frameBufferWindow = nullptr;
-	QSharedPointer<FrameBuffer> frameBuffer;
-	if(Application::instance().guiMode()) {
-		frameBufferWindow = MainWindow::instance().frameBufferWindow();
-		frameBuffer = frameBufferWindow->frameBuffer();
-	}
-	if(!frameBuffer)
-		frameBuffer.reset(new FrameBuffer(settings.outputImageWidth(),
-										  settings.outputImageHeight()));
+	try {
+		// Prepare framebuffer.
+		FrameBufferWindow* frameBufferWindow = nullptr;
+		QSharedPointer<FrameBuffer> frameBuffer;
+		if(Application::instance().guiMode()) {
+			frameBufferWindow = MainWindow::instance().frameBufferWindow();
+			frameBuffer = frameBufferWindow->frameBuffer();
+		}
+		if(!frameBuffer)
+			frameBuffer.reset(new FrameBuffer(settings.outputImageWidth(),
+											  settings.outputImageHeight()));
 
-	// Render.
-	DataSetManager::instance().currentSet()->renderScene(&settings,
-														 getViewport(),
-														 frameBuffer,
-														 frameBufferWindow);
+		// Render.
+		DataSetManager::instance().currentSet()->renderScene(&settings,
+															 getViewport(),
+															 frameBuffer,
+															 frameBufferWindow);
+	} catch (const Exception& e) {
+		QScriptContext* context = engine_->currentContext();
+		context->throwError(QString("Exception while rendering: ") + e.what());
+	}
 }
 
 
@@ -246,7 +252,7 @@ QScriptEngine* prepareEngine(QObject* parent) {
 
 	// Active viewport
 	QScriptValue activeViewport =
-		engine->newQObject(new ActiveViewportBinding(),
+		engine->newQObject(new ActiveViewportBinding(engine),
 						   QScriptEngine::ScriptOwnership);
 	engine->globalObject().setProperty("activeViewport", activeViewport);
 
@@ -255,7 +261,8 @@ QScriptEngine* prepareEngine(QObject* parent) {
 		ViewportManager::instance().viewports();
 	QScriptValue viewport = engine->newArray(allViewports.size());
 	for (int i = 0; i != allViewports.size(); ++i)
-		viewport.setProperty(i, engine->newQObject(new ViewportBinding(allViewports[i]),
+		viewport.setProperty(i, engine->newQObject(new ViewportBinding(allViewports[i],
+																	   engine),
 												   QScriptEngine::ScriptOwnership));
 	engine->globalObject().setProperty("viewport", viewport);
 

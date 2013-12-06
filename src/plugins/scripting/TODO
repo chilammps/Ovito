@@ -1,0 +1,20 @@
+* merge multi-dataset code
+
+* clean up existing JS API
+
+* document existing JS API
+
+* add
+** access to box and particle properties
+** exportFile()
+** ...
+
+* command line scripting:
+
+      ovito --script foo.js # No GUI will open, ovito closes afterwards
+
+* GUI script interface:
+** notebook (like sage etc.)
+** load/save file
+*** for notebook, save every cell, perhaps separate by some magical comment
+** access to files/modifiers loaded/created with GUI

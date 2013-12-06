@@ -50,7 +50,9 @@ QScriptValue wrapOORef(OORef<T> ptr, QScriptEngine* engine) {
  */
 class ViewportBinding : public QObject {
 public:
-	ViewportBinding(Viewport* viewport, QObject* parent = 0);
+	ViewportBinding(Viewport* viewport,
+					QScriptEngine* engine,
+					QObject* parent = 0);
 
 public Q_SLOTS:
 	void perspective(double cam_pos_x, double cam_pos_y, double cam_pos_z,
@@ -78,12 +80,15 @@ public Q_SLOTS:
 	/**
 	 * \brief Render this viewport.
 	 */
-	void render(const QString& filename) const;
+	void render(const QString& filename,
+				const QScriptValue& options = QScriptValue::UndefinedValue
+				) const;
 
 protected:
 	virtual Viewport* getViewport() const { return viewport_; };
 private:
 	Viewport* viewport_;
+	QScriptEngine* engine_;
 
 	Q_OBJECT
 };
@@ -91,8 +96,8 @@ private:
 
 class ActiveViewportBinding : public ViewportBinding {
 public:
-	ActiveViewportBinding(QObject* parent = 0)
-		: ViewportBinding(nullptr, parent)
+	ActiveViewportBinding(QScriptEngine* engine, QObject* parent = 0)
+		: ViewportBinding(nullptr, engine, parent)
 	{}
 
 private:
