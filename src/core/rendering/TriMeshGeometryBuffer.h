@@ -32,9 +32,6 @@
 
 namespace Ovito {
 
-class SceneRenderer;			// defined in SceneRenderer.h
-class TriMesh;					// defined in TriMesh.h
-
 /**
  * \brief Abstract base class for scene render buffers that store triangle meshes.
  */

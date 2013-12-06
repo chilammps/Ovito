@@ -21,9 +21,6 @@
 
 #include <plugins/particles/Particles.h>
 #include <core/viewport/Viewport.h>
-#include <core/viewport/ViewportManager.h>
-#include <core/animation/AnimManager.h>
-
 #include "StructureIdentificationModifier.h"
 
 namespace Particles {
@@ -35,7 +32,8 @@ SET_PROPERTY_FIELD_LABEL(StructureIdentificationModifier, _structureTypes, "Stru
 /******************************************************************************
 * Constructs the modifier object.
 ******************************************************************************/
-StructureIdentificationModifier::StructureIdentificationModifier() :
+StructureIdentificationModifier::StructureIdentificationModifier(DataSet* dataset) :
+	AsynchronousParticleModifier(dataset),
 	_structureProperty(new ParticleProperty(0, ParticleProperty::StructureTypeProperty))
 {
 	INIT_PROPERTY_FIELD(StructureIdentificationModifier::_structureTypes);
@@ -46,7 +44,7 @@ StructureIdentificationModifier::StructureIdentificationModifier() :
 ******************************************************************************/
 void StructureIdentificationModifier::createStructureType(int id, const QString& name, const Color& color)
 {
-	OORef<ParticleType> stype(new ParticleType());
+	OORef<ParticleType> stype(new ParticleType(dataset()));
 	stype->setId(id);
 	stype->setName(name);
 	stype->setColor(color);
@@ -201,7 +199,7 @@ void StructureListParameterUI::onDoubleClickStructureType(const QModelIndex& ind
 	QColor newColor = QColorDialog::getColor(oldColor, editor()->container());
 	if(!newColor.isValid() || newColor == oldColor) return;
 
-	UndoableTransaction::handleExceptions(tr("Change structure type color"), [stype, newColor]() {
+	undoableTransaction(tr("Change structure type color"), [stype, newColor]() {
 		stype->setColor(Color(newColor));
 	});
 }

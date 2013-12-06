@@ -21,7 +21,6 @@
 
 #include <core/Core.h>
 #include "ViewportSettingsPage.h"
-#include <core/viewport/ViewportManager.h>
 
 namespace Ovito {
 
@@ -33,7 +32,7 @@ IMPLEMENT_OVITO_OBJECT(Core, ViewportSettingsPage, ApplicationSettingsPage)
 void ViewportSettingsPage::insertSettingsDialogPage(ApplicationSettingsDialog* settingsDialog, QTabWidget* tabWidget)
 {
 	// Retrieve current settings.
-	_settings = ViewportSettings::getSettings();
+	_settings.assign(ViewportSettings::getSettings());
 
 	QWidget* page = new QWidget();
 	tabWidget->addTab(page, tr("Viewports"));
@@ -88,7 +87,7 @@ void ViewportSettingsPage::insertSettingsDialogPage(ApplicationSettingsDialog* s
 	_colorPicker = new ColorPickerWidget(colorsGroupBox);
 	connect(_colorPicker, SIGNAL(colorChanged()), this, SLOT(onColorChanged()));
 	QHBoxLayout* boxLayout = new QHBoxLayout();
-	layout2->addLayout(boxLayout, 0, 1, (Qt::AlignmentFlag)(Qt::AlignLeft | Qt::AlignTop));
+	layout2->addLayout(boxLayout, 0, 1, Qt::AlignLeft | Qt::AlignTop);
 	boxLayout->addWidget(new QLabel(tr("Color:")));
 	boxLayout->addWidget(_colorPicker, 1);
 	layout2->setColumnStretch(1, 1);
@@ -96,7 +95,7 @@ void ViewportSettingsPage::insertSettingsDialogPage(ApplicationSettingsDialog* s
 	_colorList->setCurrentRow(0);
 
 	QPushButton* restoreDefaultButton = new QPushButton(tr("Restore default colors"));
-	layout2->addWidget(restoreDefaultButton, 1, 1, (Qt::AlignmentFlag)(Qt::AlignLeft | Qt::AlignBottom));
+	layout2->addWidget(restoreDefaultButton, 1, 1, Qt::AlignLeft | Qt::AlignBottom);
 	connect(restoreDefaultButton, SIGNAL(clicked(bool)), this, SLOT(onRestoreDefaultColors()));
 
 	layout1->setRowStretch(2, 1);
@@ -138,7 +137,6 @@ bool ViewportSettingsPage::saveValues(ApplicationSettingsDialog* settingsDialog,
 
 	// Store current settings.
 	ViewportSettings::setSettings(_settings);
-
 
 	return true;
 }

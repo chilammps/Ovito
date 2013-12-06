@@ -50,7 +50,7 @@ public:
 
 	/// \brief Makes a file available on this computer.
 	/// \return A QFuture that will provide the local file name of the downloaded file.
-	Future<QString> fetchUrl(const QUrl& url);
+	Future<QString> fetchUrl(DataSetContainer& container, const QUrl& url);
 
 	/// \brief Removes a cached remote file so that it will be downloaded again next
 	///        time it is requested.

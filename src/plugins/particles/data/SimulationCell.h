@@ -47,15 +47,15 @@ class OVITO_PARTICLES_EXPORT SimulationCell : public SceneObject
 {
 public:
 
-	/// \brief Default constructor. Creates an empty simulation cell.
-	Q_INVOKABLE SimulationCell() :
+	/// \brief Constructor. Creates an empty simulation cell.
+	Q_INVOKABLE SimulationCell(DataSet* dataset) : SceneObject(dataset),
 		_cellVector1(Vector3::Zero()), _cellVector2(Vector3::Zero()), _cellVector3(Vector3::Zero()),
 		_cellOrigin(Point3::Origin()), _pbcX(false), _pbcY(false), _pbcZ(false) {
 		init();
 	}
 
 	/// \brief Constructs a cell from the given cell data structure.
-	explicit SimulationCell(const SimulationCellData& data) :
+	explicit SimulationCell(DataSet* dataset, const SimulationCellData& data) : SceneObject(dataset),
 			_cellVector1(data.matrix().column(0)), _cellVector2(data.matrix().column(1)), _cellVector3(data.matrix().column(2)),
 			_cellOrigin(Point3::Origin() + data.matrix().column(3)), _pbcX(data.pbcFlags()[0]), _pbcY(data.pbcFlags()[1]), _pbcZ(data.pbcFlags()[2]) {
 		init();
@@ -66,8 +66,9 @@ public:
 	/// \param a2 The second edge vector.
 	/// \param a3 The third edge vector.
 	/// \param origin The origin position.
-	SimulationCell(const Vector3& a1, const Vector3& a2, const Vector3& a3,
+	SimulationCell(DataSet* dataset, const Vector3& a1, const Vector3& a2, const Vector3& a3,
 			const Point3& origin = Point3::Origin(), bool pbcX = false, bool pbcY = false, bool pbcZ = false) :
+		SceneObject(dataset),
 		_cellVector1(a1), _cellVector2(a2), _cellVector3(a3),
 		_cellOrigin(origin), _pbcX(pbcX), _pbcY(pbcY), _pbcZ(pbcZ) {
 		init();
@@ -75,7 +76,8 @@ public:
 
 	/// \brief Constructs a cell from a matrix that specifies its shape and position in space.
 	/// \param cellMatrix The matrix
-	SimulationCell(const AffineTransformation& cellMatrix, bool pbcX = false, bool pbcY = false, bool pbcZ = false) :
+	SimulationCell(DataSet* dataset, const AffineTransformation& cellMatrix, bool pbcX = false, bool pbcY = false, bool pbcZ = false) :
+		SceneObject(dataset),
 		_cellVector1(cellMatrix.column(0)), _cellVector2(cellMatrix.column(1)), _cellVector3(cellMatrix.column(2)),
 		_cellOrigin(Point3::Origin() + cellMatrix.column(3)), _pbcX(pbcX), _pbcY(pbcY), _pbcZ(pbcZ) {
 		init();
@@ -86,7 +88,8 @@ public:
 	/// \param pbcX Specifies whether periodic boundary conditions are enabled in the X direction.
 	/// \param pbcY Specifies whether periodic boundary conditions are enabled in the Y direction.
 	/// \param pbcZ Specifies whether periodic boundary conditions are enabled in the Z direction.
-	SimulationCell(const Box3& box, bool pbcX = false, bool pbcY = false, bool pbcZ = false) :
+	SimulationCell(DataSet* dataset, const Box3& box, bool pbcX = false, bool pbcY = false, bool pbcZ = false) :
+		SceneObject(dataset),
 		_cellVector1(box.sizeX(), 0, 0), _cellVector2(0, box.sizeY(), 0), _cellVector3(0, 0, box.sizeZ()),
 		_cellOrigin(box.minc), _pbcX(pbcX), _pbcY(pbcY), _pbcZ(pbcZ) {
 		init();

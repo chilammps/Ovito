@@ -32,8 +32,6 @@
 
 namespace Ovito {
 
-class PipelineObject;	// defined in PipelineObject.h
-
 /**
  * \brief Stores information about a particular application of a Modifier
  *        instance in a geometry pipeline.
@@ -44,7 +42,7 @@ public:
 
 	/// \brief Constructs an application object for a given Modifier instance.
 	/// \param modifier The modifier that is going to be applied in a geometry pipeline.
-	Q_INVOKABLE ModifierApplication(Modifier* modifier = nullptr);
+	Q_INVOKABLE ModifierApplication(DataSet* dataset, Modifier* modifier = nullptr);
 
 	/// \brief Returns the modifier instance that is applied in a particular geometry pipeline.
 	/// \return The modifier instance.

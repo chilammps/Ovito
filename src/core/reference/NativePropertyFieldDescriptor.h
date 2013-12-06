@@ -56,10 +56,10 @@ public:
 	// property field. Do not use this class directly but use the
 	// SET_PROPERTY_FIELD_UNITS macro instead.
 	struct PropertyFieldUnitsSetter {
-		PropertyFieldUnitsSetter(NativePropertyFieldDescriptor& propfield, const OvitoObjectType* parameterUnitClass) {
-			OVITO_ASSERT(parameterUnitClass != NULL);
-			OVITO_ASSERT(propfield._parameterUnitClassDescriptor == NULL);
-			propfield._parameterUnitClassDescriptor = parameterUnitClass;
+		PropertyFieldUnitsSetter(NativePropertyFieldDescriptor& propfield, const QMetaObject* parameterUnitType) {
+			OVITO_ASSERT(parameterUnitType != nullptr);
+			OVITO_ASSERT(propfield._parameterUnitType == nullptr);
+			propfield._parameterUnitType = parameterUnitType;
 		}
 	};
 
@@ -119,7 +119,7 @@ public:
 	RefMakerClassPlusStorageFieldName.init(this, &PROPERTY_FIELD(RefMakerClassPlusStorageFieldName));
 
 #define SET_PROPERTY_FIELD_UNITS(RefMakerClass, storageFieldName, ParameterUnitClass)								\
-	static Ovito::NativePropertyFieldDescriptor::PropertyFieldUnitsSetter __unitsSetter##RefMakerClass##storageFieldName(RefMakerClass::storageFieldName##__propFieldInstance, &ParameterUnitClass::OOType);
+	static Ovito::NativePropertyFieldDescriptor::PropertyFieldUnitsSetter __unitsSetter##RefMakerClass##storageFieldName(RefMakerClass::storageFieldName##__propFieldInstance, &ParameterUnitClass::staticMetaObject);
 
 #define SET_PROPERTY_FIELD_LABEL(RefMakerClass, storageFieldName, labelText)										\
 	static Ovito::NativePropertyFieldDescriptor::PropertyFieldDisplayNameSetter __displayNameSetter##RefMakerClass##storageFieldName(RefMakerClass::storageFieldName##__propFieldInstance, labelText);

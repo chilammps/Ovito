@@ -26,12 +26,12 @@ namespace Ovito {
 
 // Gives the class run-time type information.
 IMPLEMENT_OVITO_OBJECT(Core, PropertiesEditor, RefMaker)
-DEFINE_FLAGS_REFERENCE_FIELD(PropertiesEditor, _editObject, "EditObject", RefTarget, PROPERTY_FIELD_NO_UNDO | PROPERTY_FIELD_NO_CHANGE_MESSAGE)
+DEFINE_FLAGS_REFERENCE_FIELD(PropertiesEditor, _editObject, "EditObject", RefTarget, PROPERTY_FIELD_NO_UNDO | PROPERTY_FIELD_WEAK_REF | PROPERTY_FIELD_NO_CHANGE_MESSAGE)
 
 /******************************************************************************
 * The constructor.
 ******************************************************************************/
-PropertiesEditor::PropertiesEditor() : _container(nullptr)
+PropertiesEditor::PropertiesEditor() : RefMaker(nullptr), _container(nullptr), _mainWindow(nullptr)
 {
 	INIT_PROPERTY_FIELD(PropertiesEditor::_editObject);
 }
@@ -85,10 +85,22 @@ QWidget* PropertiesEditor::createRollout(const QString& title, const RolloutInse
 bool PropertiesEditor::referenceEvent(RefTarget* source, ReferenceEvent* event)
 {
 	if(source == editObject() && event->type() == ReferenceEvent::TargetChanged) {
-		// Generate signal.
-		contentsChanged(source);
+		Q_EMIT contentsChanged(source);
 	}
 	return RefMaker::referenceEvent(source, event);
+}
+
+/******************************************************************************
+* Is called when the value of a reference field of this RefMaker changes.
+******************************************************************************/
+void PropertiesEditor::referenceReplaced(const PropertyFieldDescriptor& field, RefTarget* oldTarget, RefTarget* newTarget)
+{
+	if(field == PROPERTY_FIELD(PropertiesEditor::_editObject)) {
+		setDataset(editObject() ? editObject()->dataset() : nullptr);
+		Q_EMIT contentsReplaced(editObject());
+		Q_EMIT contentsChanged(editObject());
+	}
+	RefMaker::referenceReplaced(field, oldTarget, newTarget);
 }
 
 };

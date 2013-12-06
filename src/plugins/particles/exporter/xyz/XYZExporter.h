@@ -38,16 +38,16 @@ class OVITO_PARTICLES_EXPORT XYZExporter : public ParticleExporter
 public:
 
 	/// \brief Constructs a new instance of this class.
-	Q_INVOKABLE XYZExporter();
+	Q_INVOKABLE XYZExporter(DataSet* dataset);
 
 	/// \brief Returns the file filter that specifies the files that can be exported by this service.
-	virtual QString fileFilter() override { return "*"; }
+	virtual QString fileFilter() override { return QStringLiteral("*"); }
 
 	/// \brief Returns the filter description that is displayed in the drop-down box of the file dialog.
 	virtual QString fileFilterDescription() override { return tr("XYZ File"); }
 
 	/// \brief Opens the export settings dialog for this exporter service.
-	virtual bool showSettingsDialog(DataSet* dataset, const PipelineFlowState& state, QWidget* parent) override;
+	virtual bool showSettingsDialog(const PipelineFlowState& state, QWidget* parent) override;
 
 	/// \brief Returns the mapping particle properties to output file columns.
 	const OutputColumnMapping& columnMapping() const { return _columnMapping; }

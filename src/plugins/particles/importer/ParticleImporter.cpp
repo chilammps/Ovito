@@ -23,6 +23,7 @@
 #include <core/utilities/io/FileManager.h>
 #include <core/utilities/concurrent/Future.h>
 #include <core/utilities/concurrent/Task.h>
+#include <core/dataset/DataSetContainer.h>
 #include <core/dataset/importexport/LinkedFileObject.h>
 #include "ParticleImporter.h"
 
@@ -39,8 +40,9 @@ SET_PROPERTY_FIELD_LABEL(ParticleImporter, _isMultiTimestepFile, "File contains 
 Future<QVector<LinkedFileImporter::FrameSourceInformation>> ParticleImporter::findFrames(const QUrl& sourceUrl)
 {
 	if(isMultiTimestepFile()) {
-		return runInBackground<QVector<LinkedFileImporter::FrameSourceInformation>>(
-				std::bind(&ParticleImporter::scanMultiTimestepFile, this, std::placeholders::_1, sourceUrl));
+		DataSetContainer& datasetContainer = *dataset()->container();
+		return datasetContainer.taskManager().runInBackground<QVector<LinkedFileImporter::FrameSourceInformation>>(
+				std::bind(&ParticleImporter::scanMultiTimestepFile, this, std::placeholders::_1, std::ref(datasetContainer), sourceUrl));
 	}
 	else {
 		return LinkedFileImporter::findFrames(sourceUrl);
@@ -50,13 +52,12 @@ Future<QVector<LinkedFileImporter::FrameSourceInformation>> ParticleImporter::fi
 /******************************************************************************
 * Scans the input file for simulation timesteps.
 ******************************************************************************/
-void ParticleImporter::scanMultiTimestepFile(FutureInterface<QVector<LinkedFileImporter::FrameSourceInformation>>& futureInterface, const QUrl sourceUrl)
+void ParticleImporter::scanMultiTimestepFile(FutureInterface<QVector<LinkedFileImporter::FrameSourceInformation>>& futureInterface, DataSetContainer& datasetContainer, const QUrl sourceUrl)
 {
 	futureInterface.setProgressText(tr("Scanning file %1").arg(sourceUrl.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
 
 	// Fetch file.
-	Future<QString> fetchFileFuture = FileManager::instance().fetchUrl(sourceUrl);
-	ProgressManager::instance().addTask(fetchFileFuture);
+	Future<QString> fetchFileFuture = FileManager::instance().fetchUrl(datasetContainer, sourceUrl);
 	if(!futureInterface.waitForSubTask(fetchFileFuture))
 		return;
 

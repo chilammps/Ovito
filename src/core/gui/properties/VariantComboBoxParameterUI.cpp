@@ -21,7 +21,7 @@
 
 #include <core/Core.h>
 #include <core/gui/properties/VariantComboBoxParameterUI.h>
-#include <core/gui/undo/UndoManager.h>
+#include <core/dataset/UndoStack.h>
 
 namespace Ovito {
 
@@ -95,7 +95,7 @@ void VariantComboBoxParameterUI::setEnabled(bool enabled)
 void VariantComboBoxParameterUI::updatePropertyValue()
 {
 	if(comboBox() && editObject() && comboBox()->currentIndex() >= 0) {
-		UndoableTransaction::handleExceptions(tr("Change parameter"), [this]() {
+		undoableTransaction(tr("Change parameter"), [this]() {
 			QVariant newValue;
 			if(comboBox()->isEditable())
 				newValue = comboBox()->currentText();

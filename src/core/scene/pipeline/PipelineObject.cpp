@@ -21,7 +21,7 @@
 
 #include <core/Core.h>
 #include <core/scene/pipeline/PipelineObject.h>
-#include <core/gui/undo/UndoManager.h>
+#include <core/dataset/UndoStack.h>
 
 namespace Ovito {
 
@@ -34,7 +34,7 @@ SET_PROPERTY_FIELD_LABEL(PipelineObject, _modApps, "Modifier Applications")
 /******************************************************************************
 * Default constructor.
 ******************************************************************************/
-PipelineObject::PipelineObject() : _cacheIndex(-1)
+PipelineObject::PipelineObject(DataSet* dataset) : SceneObject(dataset), _cacheIndex(-1)
 {
 	INIT_PROPERTY_FIELD(PipelineObject::_inputObject);
 	INIT_PROPERTY_FIELD(PipelineObject::_modApps);
@@ -50,7 +50,7 @@ PipelineObject::PipelineObject() : _cacheIndex(-1)
 ******************************************************************************/
 PipelineFlowState PipelineObject::evaluatePipeline(TimePoint time, ModifierApplication* upToHere, bool including)
 {
-	UndoSuspender undoSuspender;	// Do not create undo records for any of this.
+	UndoSuspender undoSuspender(dataset()->undoStack());	// Do not create undo records while evaluating the pipeline.
 
 	if(!inputObject())
 		return PipelineFlowState();	// Cannot evaluate pipeline if there is no input.
@@ -176,9 +176,10 @@ PipelineFlowState PipelineObject::evaluatePipeline(TimePoint time, ModifierAppli
 ModifierApplication* PipelineObject::insertModifier(Modifier* modifier, int atIndex)
 {
 	OVITO_CHECK_OBJECT_POINTER(modifier);
+	OVITO_ASSERT(modifier->dataset() == this->dataset());
 
 	// Create a modifier application object.
-	OORef<ModifierApplication> modApp(new ModifierApplication(modifier));
+	OORef<ModifierApplication> modApp(new ModifierApplication(dataset(), modifier));
 	insertModifierApplication(modApp.get(), atIndex);
 	return modApp.get();
 }

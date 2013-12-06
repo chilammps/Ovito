@@ -41,8 +41,8 @@ class OVITO_CRYSTALANALYSIS_EXPORT DislocationDisplay : public DisplayObject
 {
 public:
 
-	/// \brief Default constructor.
-	Q_INVOKABLE DislocationDisplay();
+	/// \brief Constructor.
+	Q_INVOKABLE DislocationDisplay(DataSet* dataset);
 
 	/// \brief Lets the display object render a scene object.
 	virtual void render(TimePoint time, SceneObject* sceneObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode) override;

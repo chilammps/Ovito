@@ -24,6 +24,7 @@
 
 #include <plugins/particles/Particles.h>
 #include <core/animation/controller/Controller.h>
+#include <core/animation/AnimationSettings.h>
 #include "../ParticleModifier.h"
 
 namespace Particles {
@@ -37,8 +38,8 @@ class OVITO_PARTICLES_EXPORT AssignColorModifier : public ParticleModifier
 {
 public:
 
-	/// Default constructor.
-	Q_INVOKABLE AssignColorModifier();
+	/// Constructor.
+	Q_INVOKABLE AssignColorModifier(DataSet* dataset);
 
 	/// Asks the modifier for its validity interval at the given time.
 	virtual TimeInterval modifierValidity(TimePoint time) override;

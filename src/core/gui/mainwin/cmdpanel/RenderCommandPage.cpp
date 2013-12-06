@@ -22,6 +22,7 @@
 #include <core/Core.h>
 #include <core/plugins/PluginManager.h>
 #include <core/gui/actions/ActionManager.h>
+#include <core/gui/mainwin/MainWindow.h>
 #include <core/rendering/RenderSettings.h>
 #include "RenderCommandPage.h"
 
@@ -30,7 +31,7 @@ namespace Ovito {
 /******************************************************************************
 * Initializes the command panel page.
 ******************************************************************************/
-RenderCommandPage::RenderCommandPage()
+RenderCommandPage::RenderCommandPage(MainWindow* mainWindow, QWidget* parent) : QWidget(parent)
 {
 	QVBoxLayout* layout = new QVBoxLayout(this);
 	layout->setContentsMargins(2,2,2,2);
@@ -39,23 +40,37 @@ RenderCommandPage::RenderCommandPage()
 	toolbar->setStyleSheet("QToolBar { padding: 0px; margin: 0px; border: 0px none black; }");
 	toolbar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
 	layout->addWidget(toolbar);
-	toolbar->addAction(ActionManager::instance().getAction(ACTION_RENDER_ACTIVE_VIEWPORT));
+	toolbar->addAction(mainWindow->actionManager()->getAction(ACTION_RENDER_ACTIVE_VIEWPORT));
 
 	// Create the properties panel.
 	propertiesPanel = new PropertiesPanel(this);
 	propertiesPanel->setFrameStyle(QFrame::NoFrame | QFrame::Plain);
 	layout->addWidget(propertiesPanel, 1);
+
+	connect(&mainWindow->datasetContainer(), &DataSetContainer::dataSetChanged, this, &RenderCommandPage::onDataSetChanged);
 }
 
 /******************************************************************************
-* Resets the command panel page to the initial state.
+* This is called when a new dataset has been loaded.
 ******************************************************************************/
-void RenderCommandPage::reset()
+void RenderCommandPage::onDataSetChanged(DataSet* newDataSet)
 {
-	CommandPanelPage::reset();
-	DataSet* dataset = DataSetManager::instance().currentSet();
-	if(dataset)
-		propertiesPanel->setEditObject(dataset->renderSettings());
+	disconnect(_renderSettingsReplacedConnection);
+	if(newDataSet) {
+		_renderSettingsReplacedConnection = connect(newDataSet, &DataSet::renderSettingsReplaced, this, &RenderCommandPage::onRenderSettingsReplaced);
+		onRenderSettingsReplaced(newDataSet->renderSettings());
+	}
+	else {
+		onRenderSettingsReplaced(nullptr);
+	}
+}
+
+/******************************************************************************
+* This is called when new render settings have been loaded.
+******************************************************************************/
+void RenderCommandPage::onRenderSettingsReplaced(RenderSettings* newRenderSettings)
+{
+	propertiesPanel->setEditObject(newRenderSettings);
 }
 
 };

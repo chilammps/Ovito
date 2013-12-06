@@ -89,8 +89,8 @@ public:
 
 public:
 
-	/// Default constructor.
-	Q_INVOKABLE CreateBondsModifier();
+	/// Constructor.
+	Q_INVOKABLE CreateBondsModifier(DataSet* dataset);
 
 	/// Returns the mode of choosing the cutoff radius.
 	CutoffMode cutoffMode() const { return _cutoffMode; }

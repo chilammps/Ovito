@@ -60,7 +60,7 @@ SET(OVITO_PARTICLES_SOURCE_FILES
 	modifier/selection/ClearSelectionModifier.cpp
 	modifier/properties/CreateExpressionPropertyModifier.cpp
 	importer/ParticleImporter.cpp
-	importer/ParticleImportData.cpp
+	importer/ParticleImportTask.cpp
 	importer/InputColumnMapping.cpp
 	importer/InputColumnMappingDialog.cpp
 	importer/lammps/LAMMPSTextDumpImporter.cpp

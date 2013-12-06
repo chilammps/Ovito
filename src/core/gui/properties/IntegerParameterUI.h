@@ -35,7 +35,7 @@ class OVITO_CORE_EXPORT IntegerParameterUI : public NumericalParameterUI
 public:
 
 	/// Constructor for a Qt property.
-	IntegerParameterUI(QObject* parentEditor, const char* propertyName, const QString& labelText = QString(), ParameterUnit* parameterUnit = NULL);
+	IntegerParameterUI(QObject* parentEditor, const char* propertyName, const QString& labelText = QString(), const QMetaObject* parameterUnitType = nullptr);
 
 	/// Constructor for a PropertyField property.
 	IntegerParameterUI(QObject* parentEditor, const PropertyFieldDescriptor& propField);

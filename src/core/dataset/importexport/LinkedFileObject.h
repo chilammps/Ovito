@@ -38,7 +38,7 @@ class OVITO_CORE_EXPORT LinkedFileObject : public SceneObject
 public:
 
 	/// \brief Constructs a new instance of this class.
-	Q_INVOKABLE LinkedFileObject();
+	Q_INVOKABLE LinkedFileObject(DataSet* dataset);
 
 	/// \brief Returns the parser that loads the input file.
 	LinkedFileImporter* importer() const { return _importer; }

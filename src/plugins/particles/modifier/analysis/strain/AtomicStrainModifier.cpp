@@ -21,6 +21,7 @@
 
 #include <plugins/particles/Particles.h>
 #include <core/scene/objects/SceneObject.h>
+#include <core/animation/AnimationSettings.h>
 #include <core/dataset/importexport/LinkedFileObject.h>
 #include <core/gui/properties/BooleanParameterUI.h>
 #include <core/gui/properties/SubObjectParameterUI.h>
@@ -29,7 +30,7 @@
 
 namespace Particles {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, AtomicStrainModifier, ParticleModifier)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, AtomicStrainModifier, AsynchronousParticleModifier)
 IMPLEMENT_OVITO_OBJECT(Particles, AtomicStrainModifierEditor, ParticleModifierEditor)
 SET_OVITO_OBJECT_EDITOR(AtomicStrainModifier, AtomicStrainModifierEditor)
 DEFINE_REFERENCE_FIELD(AtomicStrainModifier, _referenceObject, "Reference Configuration", SceneObject)
@@ -53,7 +54,7 @@ SET_PROPERTY_FIELD_UNITS(AtomicStrainModifier, _cutoff, WorldParameterUnit)
 /******************************************************************************
 * Constructs the modifier object.
 ******************************************************************************/
-AtomicStrainModifier::AtomicStrainModifier() :
+AtomicStrainModifier::AtomicStrainModifier(DataSet* dataset) : AsynchronousParticleModifier(dataset),
 	_referenceShown(false), _eliminateCellDeformation(false), _assumeUnwrappedCoordinates(false),
 	_cutoff(3), _calculateDeformationGradients(false), _calculateStrainTensors(false), _selectInvalidParticles(true),
 	_shearStrainValues(new ParticleProperty(0, qMetaTypeId<FloatType>(), sizeof(FloatType), 1, tr("Shear Strain"))),
@@ -71,7 +72,7 @@ AtomicStrainModifier::AtomicStrainModifier() :
 	INIT_PROPERTY_FIELD(AtomicStrainModifier::_calculateStrainTensors);
 	INIT_PROPERTY_FIELD(AtomicStrainModifier::_selectInvalidParticles);
 
-	OORef<LinkedFileObject> importObj(new LinkedFileObject());
+	OORef<LinkedFileObject> importObj(new LinkedFileObject(dataset));
 	importObj->setAdjustAnimationIntervalEnabled(false);
 	_referenceObject = importObj;
 }
@@ -103,7 +104,7 @@ std::shared_ptr<AsynchronousParticleModifier::Engine> AtomicStrainModifier::crea
 			refState = linkedFileObj->requestFrame(referenceFrame);
 		}
 	}
-	else refState = referenceConfiguration()->evaluate(referenceFrame * AnimManager::instance().ticksPerFrame());
+	else refState = referenceConfiguration()->evaluate(dataset()->animationSettings()->frameToTime(referenceFrame));
 
 	// Make sure the obtained reference configuration is valid and ready to use.
 	if(refState.status().type() == ObjectStatus::Error)

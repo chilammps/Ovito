@@ -27,8 +27,8 @@
 
 namespace Ovito {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, FileImporter, RefTarget)
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, FileExporter, RefTarget)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, FileImporter, RefTarget);
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, FileExporter, RefTarget);
 
 /// The singleton instance of the class.
 ImportExportManager* ImportExportManager::_instance = nullptr;
@@ -39,42 +39,65 @@ ImportExportManager* ImportExportManager::_instance = nullptr;
 ImportExportManager::ImportExportManager()
 {
 	OVITO_ASSERT_MSG(!_instance, "ImportExportManager constructor", "Multiple instances of this singleton class have been created.");
+}
 
-	// Scan the class list for file import services.
-	Q_FOREACH(const OvitoObjectType* clazz, PluginManager::instance().listClasses(FileImporter::OOType)) {
-		try {
-			// Create a temporary instance to get the supported file formats.
-			OORef<FileImporter> obj = static_object_cast<FileImporter>(clazz->createInstance());
-			if(obj)
-				_fileImporters.push_back(FileImporterDescription(obj.get()));
-		}
-		catch(const Exception& ex) {
-			ex.showError();
+/******************************************************************************
+* Return the list of available import services.
+******************************************************************************/
+const QVector<FileImporterDescription*>& ImportExportManager::fileImporters(DataSet* dataset)
+{
+	if(_fileImporters.empty()) {
+		UndoSuspender noUnder(dataset);
+
+		// Scan the class list for file import services.
+		Q_FOREACH(const OvitoObjectType* clazz, PluginManager::instance().listClasses(FileImporter::OOType)) {
+			try {
+				// Create a temporary instance to get the supported file formats.
+				OORef<FileImporter> obj = static_object_cast<FileImporter>(clazz->createInstance(dataset));
+				if(obj)
+					_fileImporters.push_back(new FileImporterDescription(this, obj.get()));
+			}
+			catch(const Exception& ex) {
+				ex.showError();
+			}
 		}
 	}
+	return _fileImporters;
+}
 
-	// Scan the class list for file export services.
-	Q_FOREACH(const OvitoObjectType* clazz, PluginManager::instance().listClasses(FileExporter::OOType)) {
-		try {
-			// Create a temporary instance to get the supported file formats.
-			OORef<FileExporter> obj = static_object_cast<FileExporter>(clazz->createInstance());
-			if(obj)
-				_fileExporters.push_back(FileExporterDescription(obj.get()));
-		}
-		catch(const Exception& ex) {
-			ex.showError();
+/******************************************************************************
+* Return the list of available export services.
+******************************************************************************/
+const QVector<FileExporterDescription*>& ImportExportManager::fileExporters(DataSet* dataset)
+{
+	if(_fileExporters.empty()) {
+		UndoSuspender noUnder(dataset);
+
+		// Scan the class list for file export services.
+		Q_FOREACH(const OvitoObjectType* clazz, PluginManager::instance().listClasses(FileExporter::OOType)) {
+			try {
+				// Create a temporary instance to get the supported file formats.
+				OORef<FileExporter> obj = static_object_cast<FileExporter>(clazz->createInstance(dataset));
+				if(obj)
+					_fileExporters.push_back(new FileExporterDescription(this, obj.get()));
+			}
+			catch(const Exception& ex) {
+				ex.showError();
+			}
 		}
 	}
+	return _fileExporters;
 }
 
 /******************************************************************************
 * Tries to detect the format of the given file.
 ******************************************************************************/
-OORef<FileImporter> ImportExportManager::autodetectFileFormat(const QString& localFile, const QUrl& sourceLocation)
+OORef<FileImporter> ImportExportManager::autodetectFileFormat(DataSet* dataset, const QString& localFile, const QUrl& sourceLocation)
 {
-	for(const FileImporterDescription& importerType : fileImporters()) {
+	UndoSuspender noUnder(dataset);
+	for(FileImporterDescription* importerType : fileImporters(dataset)) {
 		try {
-			OORef<FileImporter> importer = importerType.createService();
+			OORef<FileImporter> importer = importerType->createService(dataset);
 			QFile file(localFile);
 			if(importer && importer->checkFileFormat(file, sourceLocation)) {
 				return importer;

@@ -91,8 +91,8 @@ public:
 
 public:
 
-	/// Default constructor.
-	Q_INVOKABLE CommonNeighborAnalysisModifier();
+	/// Constructor.
+	Q_INVOKABLE CommonNeighborAnalysisModifier(DataSet* dataset);
 
 	/// \brief Returns the cutoff radius used in the conventional common neighbor analysis.
 	/// \return The cutoff radius in world units.

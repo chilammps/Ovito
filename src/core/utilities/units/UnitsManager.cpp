@@ -20,54 +20,109 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
+#include <core/dataset/DataSet.h>
+#include <core/animation/AnimationSettings.h>
 #include "UnitsManager.h"
 
 namespace Ovito {
 
-IMPLEMENT_OVITO_OBJECT(Core, ParameterUnit, OvitoObject);
-IMPLEMENT_OVITO_OBJECT(Core, FloatParameterUnit, ParameterUnit);
-IMPLEMENT_OVITO_OBJECT(Core, IntegerParameterUnit, ParameterUnit);
-IMPLEMENT_OVITO_OBJECT(Core, WorldParameterUnit, FloatParameterUnit);
-IMPLEMENT_OVITO_OBJECT(Core, AngleParameterUnit, FloatParameterUnit);
-IMPLEMENT_OVITO_OBJECT(Core, PercentParameterUnit, FloatParameterUnit);
-IMPLEMENT_OVITO_OBJECT(Core, TimeParameterUnit, IntegerParameterUnit);
-
-/// The singleton instance of the class.
-UnitsManager* UnitsManager::_instance = nullptr;
-
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-UnitsManager::UnitsManager()
+UnitsManager::UnitsManager(DataSet* dataset) : _dataset(dataset)
 {
-	OVITO_ASSERT_MSG(!_instance, "UnitsManager constructor", "Multiple instances of this singleton class have been created.");
-
 	// Create standard unit objects.
-	_units[&FloatParameterUnit::OOType] = _floatIdentityUnit = new FloatParameterUnit();
-	_units[&IntegerParameterUnit::OOType] = _integerIdentityUnit = new IntegerParameterUnit();
-	_units[&TimeParameterUnit::OOType] = _timeUnit = new TimeParameterUnit();
-	_units[&PercentParameterUnit::OOType] = _percentUnit = new PercentParameterUnit();
-	_units[&AngleParameterUnit::OOType] = _angleUnit = new AngleParameterUnit();
-	_units[&WorldParameterUnit::OOType] = _worldUnit = new WorldParameterUnit();
+	_units[&FloatParameterUnit::staticMetaObject] = _floatIdentityUnit = new FloatParameterUnit(this, dataset);
+	_units[&IntegerParameterUnit::staticMetaObject] = _integerIdentityUnit = new IntegerParameterUnit(this, dataset);
+	_units[&TimeParameterUnit::staticMetaObject] = _timeUnit = new TimeParameterUnit(this, dataset);
+	_units[&PercentParameterUnit::staticMetaObject] = _percentUnit = new PercentParameterUnit(this, dataset);
+	_units[&AngleParameterUnit::staticMetaObject] = _angleUnit = new AngleParameterUnit(this, dataset);
+	_units[&WorldParameterUnit::staticMetaObject] = _worldUnit = new WorldParameterUnit(this, dataset);
 }
 
 /******************************************************************************
 * Returns the global instance of the given parameter unit service.
 ******************************************************************************/
-ParameterUnit* UnitsManager::getUnit(const OvitoObjectType& parameterUnitClass)
+ParameterUnit* UnitsManager::getUnit(const QMetaObject* parameterUnitClass)
 {
-	OVITO_CHECK_POINTER(&parameterUnitClass);
-	OVITO_ASSERT_MSG(parameterUnitClass.isDerivedFrom(ParameterUnit::OOType), "UnitsManager::getUnit()", "A ParameterUnit derived must be specified.");
+	OVITO_CHECK_POINTER(parameterUnitClass);
 
-	auto iter = _units.find(&parameterUnitClass);
+	auto iter = _units.find(parameterUnitClass);
 	if(iter != _units.end())
-		return iter->second.get();
+		return iter->second;
 
 	// Create an instance of this class.
-	OORef<ParameterUnit> unit = static_object_cast<ParameterUnit>(parameterUnitClass.createInstance());
-	_units.insert(std::make_pair(&parameterUnitClass, unit));
+	ParameterUnit* unit = qobject_cast<ParameterUnit*>(parameterUnitClass->newInstance(Q_ARG(QObject*, this), Q_ARG(DataSet*, _dataset)));
+	OVITO_ASSERT_MSG(unit != nullptr, "UnitsManager::getUnit()", "Failed to create instance of requested parameter unit type.");
+	_units.insert({ parameterUnitClass, unit });
 
-	return unit.get();
+	return unit;
+}
+
+/******************************************************************************
+* Constructor.
+******************************************************************************/
+TimeParameterUnit::TimeParameterUnit(QObject* parent, DataSet* dataset) : IntegerParameterUnit(parent, dataset)
+{
+	connect(dataset, &DataSet::animationSettingsReplaced, this, &TimeParameterUnit::onAnimationSettingsReplaced);
+	_animSettings = dataset->animationSettings();
+}
+
+/******************************************************************************
+* Converts the given string to a time value.
+******************************************************************************/
+FloatType TimeParameterUnit::parseString(const QString& valueString)
+{
+	if(!_animSettings) return 0;
+	return _animSettings->stringToTime(valueString);
+}
+
+/******************************************************************************
+* Converts a time value to a string.
+******************************************************************************/
+QString TimeParameterUnit::formatValue(FloatType value)
+{
+	if(!_animSettings) return QString();
+	return _animSettings->timeToString((TimePoint)value);
+}
+
+/******************************************************************************
+* Returns the (positive) step size used by spinner widgets for this
+* parameter unit type.
+******************************************************************************/
+FloatType TimeParameterUnit::stepSize(FloatType currentValue, bool upDirection)
+{
+	if(!_animSettings) return 0;
+	if(upDirection)
+		return ceil((currentValue + FloatType(1)) / _animSettings->ticksPerFrame()) * _animSettings->ticksPerFrame() - currentValue;
+	else
+		return currentValue - floor((currentValue - FloatType(1)) / _animSettings->ticksPerFrame()) * _animSettings->ticksPerFrame();
+}
+
+/******************************************************************************
+* Given an arbitrary value, which is potentially invalid, rounds it to the
+* closest valid value.
+******************************************************************************/
+FloatType TimeParameterUnit::roundValue(FloatType value)
+{
+	if(!_animSettings) return value;
+	return floor(value / _animSettings->ticksPerFrame() + FloatType(0.5)) * _animSettings->ticksPerFrame();
+}
+
+/******************************************************************************
+* This is called whenever the current animation settings of the dataset have
+* been replaced by new ones.
+******************************************************************************/
+void TimeParameterUnit::onAnimationSettingsReplaced(AnimationSettings* newAnimationSettings)
+{
+	disconnect(_speedChangedConnection);
+	disconnect(_timeFormatChangedConnection);
+	_animSettings = newAnimationSettings;
+	if(newAnimationSettings) {
+		_speedChangedConnection = connect(newAnimationSettings, &AnimationSettings::speedChanged, this, &TimeParameterUnit::formatChanged);
+		_timeFormatChangedConnection = connect(newAnimationSettings, &AnimationSettings::timeFormatChanged, this, &TimeParameterUnit::formatChanged);
+	}
+	Q_EMIT formatChanged();
 }
 
 };

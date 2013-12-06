@@ -71,7 +71,7 @@ class OVITO_CRYSTALANALYSIS_EXPORT Cluster : public RefTarget
 public:
 
 	/// \brief Constructs a new cluster.
-	Q_INVOKABLE Cluster();
+	Q_INVOKABLE Cluster(DataSet* dataset);
 
 	/// Returns the structure type of the cluster
 	StructurePattern* pattern() const { return _pattern; }

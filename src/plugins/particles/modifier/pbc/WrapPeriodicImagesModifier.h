@@ -38,7 +38,7 @@ class OVITO_PARTICLES_EXPORT WrapPeriodicImagesModifier : public ParticleModifie
 public:
 
 	/// \brief Constructs a new instance of this class.
-	Q_INVOKABLE WrapPeriodicImagesModifier();
+	Q_INVOKABLE WrapPeriodicImagesModifier(DataSet* dataset);
 
 	/// \brief Asks the modifier for its validity interval at the given time.
 	virtual TimeInterval modifierValidity(TimePoint time) override { return TimeInterval::forever(); }

@@ -28,15 +28,15 @@ namespace Ovito {
 // Gives the class run-time type information.
 IMPLEMENT_OVITO_OBJECT(Core, ParameterUI, RefMaker)
 IMPLEMENT_OVITO_OBJECT(Core, PropertyParameterUI, ParameterUI)
-DEFINE_FLAGS_REFERENCE_FIELD(ParameterUI, _editObject, "EditObject", RefTarget, PROPERTY_FIELD_NO_UNDO | PROPERTY_FIELD_NO_CHANGE_MESSAGE)
-DEFINE_FLAGS_REFERENCE_FIELD(PropertyParameterUI, _parameterObject, "ParameterObject", RefTarget, PROPERTY_FIELD_NO_UNDO | PROPERTY_FIELD_NO_CHANGE_MESSAGE)
+DEFINE_FLAGS_REFERENCE_FIELD(ParameterUI, _editObject, "EditObject", RefTarget, PROPERTY_FIELD_NO_UNDO | PROPERTY_FIELD_WEAK_REF | PROPERTY_FIELD_NO_CHANGE_MESSAGE)
+DEFINE_FLAGS_REFERENCE_FIELD(PropertyParameterUI, _parameterObject, "ParameterObject", RefTarget, PROPERTY_FIELD_NO_UNDO | PROPERTY_FIELD_WEAK_REF | PROPERTY_FIELD_NO_CHANGE_MESSAGE)
 
 ///////////////////////////////////// ParameterUI /////////////////////////////////////////
 
 /******************************************************************************
 * The constructor.
 ******************************************************************************/
-ParameterUI::ParameterUI(QObject* parent) : _enabled(true)
+ParameterUI::ParameterUI(QObject* parent) : RefMaker(nullptr), _enabled(true)
 {
 	INIT_PROPERTY_FIELD(ParameterUI::_editObject);
 	

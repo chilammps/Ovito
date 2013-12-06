@@ -21,11 +21,10 @@
 
 #include <plugins/particles/Particles.h>
 #include <core/viewport/Viewport.h>
-#include <core/viewport/ViewportManager.h>
-#include <core/animation/AnimManager.h>
+#include <core/animation/AnimationSettings.h>
+#include <core/dataset/DataSetContainer.h>
 #include <core/utilities/concurrent/Task.h>
-#include <core/utilities/concurrent/ProgressManager.h>
-
+#include <core/utilities/concurrent/TaskManager.h>
 #include "AsynchronousParticleModifier.h"
 
 namespace Particles {
@@ -39,7 +38,8 @@ SET_PROPERTY_FIELD_LABEL(AsynchronousParticleModifier, _saveResults, "Save resul
 /******************************************************************************
 * Constructs the modifier object.
 ******************************************************************************/
-AsynchronousParticleModifier::AsynchronousParticleModifier() : _autoUpdate(true), _saveResults(false),
+AsynchronousParticleModifier::AsynchronousParticleModifier(DataSet* dataset) : ParticleModifier(dataset),
+	_autoUpdate(true), _saveResults(false),
 	_cacheValidity(TimeInterval::empty()), _computationValidity(TimeInterval::empty()), _needsUpdate(true)
 {
 	INIT_PROPERTY_FIELD(AsynchronousParticleModifier::_autoUpdate);
@@ -118,7 +118,7 @@ ObjectStatus AsynchronousParticleModifier::modifyParticles(TimePoint time, TimeI
 
 				// Start a background job that runs the engine to compute the modifier's results.
 				_computationValidity.setInstant(time);
-				_backgroundOperation = runInBackground<std::shared_ptr<Engine>>(std::bind(&AsynchronousParticleModifier::runEngine, this, std::placeholders::_1, engine));
+				_backgroundOperation = dataset()->container()->taskManager().runInBackground<std::shared_ptr<Engine>>(std::bind(&AsynchronousParticleModifier::runEngine, this, std::placeholders::_1, engine));
 				_backgroundOperationWatcher.setFuture(_backgroundOperation);
 			}
 			catch(const ObjectStatus& status) {

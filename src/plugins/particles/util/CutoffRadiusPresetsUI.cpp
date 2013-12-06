@@ -194,7 +194,7 @@ void CutoffRadiusPresetsUI::onSelect(int index)
 	FloatType r = comboBox()->itemData(index).value<FloatType>();
 	if(r != 0) {
 		if(editObject() && propertyField()) {
-			UndoableTransaction::handleExceptions(tr("Change cutoff radius"), [this, r]() {
+			undoableTransaction(tr("Change cutoff radius"), [this, r]() {
 				editObject()->setPropertyFieldValue(*propertyField(), r);
 			});
 			Q_EMIT valueEntered();

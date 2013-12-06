@@ -21,8 +21,7 @@
 
 #include <plugins/particles/Particles.h>
 #include <core/viewport/Viewport.h>
-#include <core/viewport/ViewportManager.h>
-#include <core/animation/AnimManager.h>
+#include <core/animation/AnimationSettings.h>
 #include <core/gui/properties/BooleanParameterUI.h>
 #include <core/utilities/concurrent/ParallelFor.h>
 #include <plugins/particles/util/TreeNeighborListBuilder.h>
@@ -38,7 +37,7 @@ SET_OVITO_OBJECT_EDITOR(BondAngleAnalysisModifier, BondAngleAnalysisModifierEdit
 /******************************************************************************
 * Constructs the modifier object.
 ******************************************************************************/
-BondAngleAnalysisModifier::BondAngleAnalysisModifier()
+BondAngleAnalysisModifier::BondAngleAnalysisModifier(DataSet* dataset) : StructureIdentificationModifier(dataset)
 {
 	// Create the structure types.
 	createStructureType(OTHER, tr("Other"), Color(0.95f, 0.95f, 0.95f));
@@ -177,11 +176,6 @@ void BondAngleAnalysisModifierEditor::createUI(const RolloutInsertionParameters&
 	QVBoxLayout* layout1 = new QVBoxLayout(rollout);
 	layout1->setContentsMargins(4,4,4,4);
 	layout1->setSpacing(4);
-
-#if 0
-	BooleanParameterUI* autoUpdateUI = new BooleanParameterUI(this, PROPERTY_FIELD(AsynchronousParticleModifier::_autoUpdate));
-	layout1->addWidget(autoUpdateUI->checkBox());
-#endif
 
 	// Status label.
 	layout1->addSpacing(10);

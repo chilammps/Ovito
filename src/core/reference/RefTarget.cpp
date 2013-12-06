@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include <core/reference/RefTarget.h>
 #include <core/reference/CloneHelper.h>
-#include <core/gui/undo/UndoManager.h>
+#include <core/dataset/UndoStack.h>
 #include <core/gui/properties/PropertiesEditor.h>
 
 namespace Ovito {
@@ -31,25 +31,37 @@ namespace Ovito {
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, RefTarget, RefMaker);
 
 /******************************************************************************
-* The virtual destructor.
+* This method is called when the reference counter of this OvitoObject
+* has reached zero.
 ******************************************************************************/
-RefTarget::~RefTarget()
+void RefTarget::aboutToBeDeleted()
 {
-	// Make sure there are no more dependents left.
-	// This should be the case if this RefTarget has been deleted using autoDeleteObject().
-	OVITO_ASSERT_MSG(dependents().empty(), "RefTarget destructor", "Object has not been deleted via autoDeleteObject() method.");
-}
+	OVITO_CHECK_OBJECT_POINTER(this);
+	OVITO_CHECK_OBJECT_POINTER(dataset());
 
-/******************************************************************************
-* Deletes this target object.
-******************************************************************************/
-void RefTarget::autoDeleteObject()
-{
+	// Make sure undo recording is not active while deleting the object from memory.
+	UndoSuspender noUndo(dataset()->undoStack());
+
 	// This will remove all references to this target object.
 	notifyDependents(ReferenceEvent::TargetDeleted);
 
-	// This will remove all reference held by the object itself.
-	RefMaker::autoDeleteObject();
+	// Delete object from memory.
+	RefMaker::aboutToBeDeleted();
+}
+
+/******************************************************************************
+* Asks this object to delete itself.
+******************************************************************************/
+void RefTarget::deleteReferenceObject()
+{
+	OVITO_CHECK_OBJECT_POINTER(this);
+
+	// This will remove all references to this target object.
+	notifyDependents(ReferenceEvent::TargetDeleted);
+
+	// At this point, the object might have been deleted from memory if its
+	// reference counter has reached zero. If undo recording was enabled, however,
+	// the undo record still holds a reference to this object and it will still be alive.
 }
 
 /******************************************************************************
@@ -104,7 +116,6 @@ bool RefTarget::handleReferenceEvent(RefTarget* source, ReferenceEvent* event)
 	return true;
 }
 
-
 /******************************************************************************
 * Checks if this object is directly or indirectly referenced by the given RefMaker.
 ******************************************************************************/
@@ -129,7 +140,7 @@ bool RefTarget::isReferencedBy(const RefMaker* obj) const
 OORef<RefTarget> RefTarget::clone(bool deepCopy, CloneHelper& cloneHelper)
 {
 	// Create a new instance of the object's class.
-	OORef<RefTarget> clone = static_object_cast<RefTarget>(getOOType().createInstance());
+	OORef<RefTarget> clone = static_object_cast<RefTarget>(getOOType().createInstance(dataset()));
 	if(!clone || !clone->getOOType().isDerivedFrom(getOOType()))
 		throw Exception(tr("Failed to create clone instance of class %1.").arg(getOOType().name()));
 
@@ -205,7 +216,7 @@ OORef<PropertiesEditor> RefTarget::createPropertiesEditor()
 			if(editorClass) {
 				if(!editorClass->isDerivedFrom(PropertiesEditor::OOType))
 					throw Exception(tr("The editor class %1 assigned to the RefTarget-derived class %2 is not derived from PropertiesEditor.").arg(editorClass->name(), clazz->name()));
-				return dynamic_object_cast<PropertiesEditor>(editorClass->createInstance());
+				return dynamic_object_cast<PropertiesEditor>(editorClass->createInstance(nullptr));
 			}
 		}
 	}

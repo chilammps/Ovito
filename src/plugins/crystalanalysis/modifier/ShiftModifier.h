@@ -40,7 +40,7 @@ class OVITO_CRYSTALANALYSIS_EXPORT ShiftModifier : public Modifier
 public:
 
 	/// Constructor.
-	Q_INVOKABLE ShiftModifier();
+	Q_INVOKABLE ShiftModifier(DataSet* dataset);
 
 	/// Asks the modifier whether it can be applied to the given input data.
 	virtual bool isApplicableTo(const PipelineFlowState& input) override;

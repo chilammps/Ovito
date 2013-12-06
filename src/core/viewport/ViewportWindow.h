@@ -31,8 +31,6 @@
 
 namespace Ovito {
 
-class Viewport;			// defined in Viewport.h
-
 /**
  * \brief An internal render window class used by Viewport.
  */
@@ -103,6 +101,9 @@ private:
 
 	/// The OpenGL debug logger that receives log messages from the OpenGL server.
 	QOpenGLDebugLogger* _oglDebugLogger;
+
+	/// The parent window of this viewport window.
+	MainWindow* _mainWindow;
 
 private:
 

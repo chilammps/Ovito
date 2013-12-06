@@ -21,6 +21,8 @@
 
 #include <core/Core.h>
 #include <core/plugins/PluginManager.h>
+#include <core/gui/mainwin/MainWindow.h>
+#include <core/dataset/DataSetContainer.h>
 #include "UtilityApplet.h"
 #include "UtilityCommandPage.h"
 
@@ -29,12 +31,10 @@ namespace Ovito {
 /******************************************************************************
 * Initializes the utility panel.
 ******************************************************************************/
-UtilityCommandPage::UtilityCommandPage() : CommandPanelPage(),
-	utilitiesButtonGroup(NULL)
+UtilityCommandPage::UtilityCommandPage(MainWindow* mainWindow, QWidget* parent) : QWidget(parent),
+		_datasetContainer(mainWindow->datasetContainer()), utilitiesButtonGroup(nullptr)
 {
-	scanInstalledPlugins();
-
-	QVBoxLayout* layout = new QVBoxLayout();
+	QVBoxLayout* layout = new QVBoxLayout(this);
 	layout->setContentsMargins(2,2,2,2);
 
 	// Create the rollout container.
@@ -42,13 +42,10 @@ UtilityCommandPage::UtilityCommandPage() : CommandPanelPage(),
 	rolloutContainer->setFrameStyle(QFrame::NoFrame | QFrame::Plain);
 	layout->addWidget(rolloutContainer, 1);
 
-	// Create rollout that displays the list of installed utility plugins.
-	utilityListPanel = new QWidget();
-	QGridLayout* gridLayout = new QGridLayout();
-#ifndef Q_OS_MACX
+	// Create a rollout that displays the list of installed utility plugins.
+	QWidget* utilityListPanel = new QWidget();
+	QGridLayout* gridLayout = new QGridLayout(utilityListPanel);
 	gridLayout->setContentsMargins(4,4,4,4);
-#endif
-	utilityListPanel->setLayout(gridLayout);
 	rolloutContainer->addRollout(utilityListPanel, tr("Utilities"));
 
 #ifndef Q_OS_MACX
@@ -57,56 +54,13 @@ UtilityCommandPage::UtilityCommandPage() : CommandPanelPage(),
 							   		"}");
 #endif
 
-	setLayout(layout);
-	rebuildUtilityList();
-}
-
-
-/******************************************************************************
-* Resets the panel to the initial state.
-******************************************************************************/
-void UtilityCommandPage::reset()
-{
-	CommandPanelPage::reset();
-}
-
-/******************************************************************************
-* Is called when the user selects another page.
-******************************************************************************/
-void UtilityCommandPage::onLeave()
-{
-	CommandPanelPage::onLeave();
-	closeUtility();
-}
-
-/******************************************************************************
-* Finds all utility classes provided by the installed plugins.
-******************************************************************************/
-void UtilityCommandPage::scanInstalledPlugins()
-{
-	Q_FOREACH(const OvitoObjectType* clazz, PluginManager::instance().listClasses(UtilityApplet::OOType)) {
-		classes.push_back(clazz);
-	}
-}
-
-/******************************************************************************
-*Updates the displayed button in the utility selection panel.
-******************************************************************************/
-void UtilityCommandPage::rebuildUtilityList()
-{
-	Q_FOREACH(QObject* w, utilityListPanel->children())
-		if(w->isWidgetType()) delete w;
-
-	if(utilitiesButtonGroup) {
-		delete utilitiesButtonGroup;
-		utilitiesButtonGroup = NULL;
-	}
+	// Close open utility when loading a new data set.
+	connect(&_datasetContainer, &DataSetContainer::dataSetChanged, this, &UtilityCommandPage::closeUtility);
 
 	utilitiesButtonGroup = new QButtonGroup(utilityListPanel);
 	utilitiesButtonGroup->setExclusive(false);
 
-	Q_FOREACH(const OvitoObjectType* descriptor, classes) {
-
+	for(const OvitoObjectType* descriptor : PluginManager::instance().listClasses(UtilityApplet::OOType)) {
    		QString displayName = descriptor->displayName();
 
 		// Create a button that activates the utility.
@@ -121,9 +75,6 @@ void UtilityCommandPage::rebuildUtilityList()
 
 	// Listen for events.
 	connect(utilitiesButtonGroup, SIGNAL(buttonClicked(QAbstractButton*)), this, SLOT(onUtilityButton(QAbstractButton*)));
-
-	// Resize the rollout panel.
-	utilityListPanel->layout()->update();
 }
 
 /******************************************************************************
@@ -145,11 +96,11 @@ void UtilityCommandPage::onUtilityButton(QAbstractButton* button)
 
 	try {
 		// Create an instance of the utility plugin.
-		currentUtility = static_object_cast<UtilityApplet>(descriptor->createInstance());
+		currentUtility = static_object_cast<UtilityApplet>(descriptor->createInstance(nullptr));
 		currentButton = button;
 		currentButton->setChecked(true);
 
-		currentUtility->openUtility(rolloutContainer, RolloutInsertionParameters().animate());
+		currentUtility->openUtility(_datasetContainer.mainWindow(), rolloutContainer, RolloutInsertionParameters().animate());
 	}
 	catch(const Exception& ex) {
 		ex.showError();
@@ -172,9 +123,9 @@ void UtilityCommandPage::closeUtility()
 	// Deactivate the button.
 	currentButton->setChecked(false);
 
-	currentButton = NULL;
+	currentButton = nullptr;
 	OVITO_CHECK_OBJECT_POINTER(currentUtility.get());
-	currentUtility = NULL;
+	currentUtility = nullptr;
 }
 
 };

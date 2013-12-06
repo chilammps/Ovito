@@ -30,8 +30,7 @@
 
 #include <core/Core.h>
 #include "Controller.h"
-#include <core/gui/undo/UndoManager.h>
-#include <core/animation/AnimManager.h>
+#include <core/dataset/UndoStack.h>
 
 namespace Ovito {
 
@@ -62,8 +61,8 @@ protected:
 
 public:
 
-    // Default constructor.
-	StandardConstController() : _value(NullValue()) {}
+    /// Constructor.
+	StandardConstController(DataSet* dataset) : BaseControllerClass(dataset), _value(NullValue()) {}
 
 	/// Queries the controller for its absolute value.
 	virtual void getValue(TimePoint time, ValueType& result, TimeInterval& validityInterval) override {
@@ -80,8 +79,8 @@ public:
 		else newValue2 = newValue;
 		if(newValue2 == _value) return;	// No value change.
 
-		if(UndoManager::instance().isRecording())
-			UndoManager::instance().push(new ChangeValueOperation(this));
+		if(this->dataset()->undoStack().isRecording())
+			this->dataset()->undoStack().push(new ChangeValueOperation(this));
 		_value = newValue2;
 		this->notifyDependents(ReferenceEvent::TargetChanged);
 	}
@@ -119,7 +118,7 @@ protected:
 // Define some standard constant controllers.
 class OVITO_CORE_EXPORT ConstFloatController : public StandardConstController<FloatController, FloatType, FloatType> {
 public:
-	Q_INVOKABLE ConstFloatController() {}
+	Q_INVOKABLE ConstFloatController(DataSet* dataset) : StandardConstController<FloatController, FloatType, FloatType>(dataset) {}
 private:
 	Q_OBJECT
 	OVITO_OBJECT
@@ -127,7 +126,7 @@ private:
 
 class OVITO_CORE_EXPORT ConstIntegerController : public StandardConstController<IntegerController, int, int> {
 public:
-	Q_INVOKABLE ConstIntegerController() {}
+	Q_INVOKABLE ConstIntegerController(DataSet* dataset) : StandardConstController<IntegerController, int, int>(dataset) {}
 private:
 	Q_OBJECT
 	OVITO_OBJECT
@@ -135,7 +134,7 @@ private:
 
 class OVITO_CORE_EXPORT ConstVectorController : public StandardConstController<VectorController, Vector3, Vector3::Zero> {
 public:
-	Q_INVOKABLE ConstVectorController() {}
+	Q_INVOKABLE ConstVectorController(DataSet* dataset) : StandardConstController<VectorController, Vector3, Vector3::Zero>(dataset) {}
 private:
 	Q_OBJECT
 	OVITO_OBJECT
@@ -146,7 +145,7 @@ struct _BooleanValueAddFunction : public std::binary_function<bool, bool, bool> 
 };
 class OVITO_CORE_EXPORT ConstBooleanController : public StandardConstController<BooleanController, bool, bool, _BooleanValueAddFunction> {
 public:
-	Q_INVOKABLE ConstBooleanController() {}
+	Q_INVOKABLE ConstBooleanController(DataSet* dataset) : StandardConstController<BooleanController, bool, bool, _BooleanValueAddFunction>(dataset) {}
 private:
 	Q_OBJECT
 	OVITO_OBJECT

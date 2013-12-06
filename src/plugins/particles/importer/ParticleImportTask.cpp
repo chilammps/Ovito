@@ -22,7 +22,6 @@
 #include <plugins/particles/Particles.h>
 #include <core/dataset/importexport/LinkedFileObject.h>
 #include <core/utilities/io/FileManager.h>
-#include <core/utilities/concurrent/ProgressManager.h>
 #include <plugins/particles/data/SimulationCell.h>
 #include <plugins/particles/data/SimulationCellDisplay.h>
 #include <plugins/particles/data/ParticleProperty.h>
@@ -30,7 +29,7 @@
 #include <plugins/particles/data/ParticleTypeProperty.h>
 #include <plugins/particles/data/ParticleDisplay.h>
 #include <plugins/particles/data/ParticleType.h>
-#include "ParticleImportData.h"
+#include "ParticleImportTask.h"
 #include "ParticleImporter.h"
 
 namespace Particles {
@@ -38,13 +37,13 @@ namespace Particles {
 /******************************************************************************
 * Reads the data from the input file(s).
 ******************************************************************************/
-void ParticleImportTask::load(FutureInterfaceBase& futureInterface)
+void ParticleImportTask::load(DataSetContainer& container, FutureInterfaceBase& futureInterface)
 {
+	_datasetContainer = &container;
 	futureInterface.setProgressText(ParticleImporter::tr("Reading file %1").arg(frame().sourceFile.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
 
 	// Fetch file.
-	Future<QString> fetchFileFuture = FileManager::instance().fetchUrl(frame().sourceFile);
-	ProgressManager::instance().addTask(fetchFileFuture);
+	Future<QString> fetchFileFuture = FileManager::instance().fetchUrl(container, frame().sourceFile);
 	if(!futureInterface.waitForSubTask(fetchFileFuture)) {
 		return;
 	}
@@ -73,10 +72,10 @@ QSet<SceneObject*> ParticleImportTask::insertIntoScene(LinkedFileObject* destina
 	// Adopt simulation cell.
 	OORef<SimulationCell> cell = destination->findSceneObject<SimulationCell>();
 	if(!cell) {
-		cell = new SimulationCell(simulationCell());
+		cell = new SimulationCell(destination->dataset(), simulationCell());
 
 		// Create a display object for the simulation cell.
-		OORef<SimulationCellDisplay> cellDisplay = new SimulationCellDisplay();
+		OORef<SimulationCellDisplay> cellDisplay = new SimulationCellDisplay(destination->dataset());
 		cell->addDisplayObject(cellDisplay.get());
 
 		// Choose an appropriate simulation cell line rendering width for the given cell dimensions.
@@ -106,7 +105,7 @@ QSet<SceneObject*> ParticleImportTask::insertIntoScene(LinkedFileObject* destina
 		if(propertyObj)
 			propertyObj->setStorage(QSharedDataPointer<ParticleProperty>(property.release()));
 		else {
-			propertyObj = ParticlePropertyObject::create(QSharedDataPointer<ParticleProperty>(property.release()));
+			propertyObj = ParticlePropertyObject::create(destination->dataset(), QSharedDataPointer<ParticleProperty>(property.release()));
 			destination->addSceneObject(propertyObj.get());
 		}
 		if(propertyObj->type() == ParticleProperty::ParticleTypeProperty)
@@ -130,7 +129,7 @@ void ParticleImportTask::insertParticleTypes(ParticlePropertyObject* propertyObj
 	for(const auto& mapitem : _particleTypes) {
 		OORef<ParticleType> ptype = typeProperty->particleType(mapitem.second.id);
 		if(ptype == nullptr) {
-			ptype = new ParticleType();
+			ptype = new ParticleType(typeProperty->dataset());
 			ptype->setId(mapitem.second.id);
 
 			// Assign initial standard color to new particle types.

@@ -21,7 +21,6 @@
 
 #include <core/Core.h>
 #include <core/viewport/ViewportSettings.h>
-#include <core/viewport/ViewportManager.h>
 #include <core/viewport/Viewport.h>
 
 namespace Ovito {
@@ -29,20 +28,33 @@ namespace Ovito {
 /// The current settings record.
 ViewportSettings ViewportSettings::_currentSettings;
 
-/// Indicates whether the settings have already been loaded from the application's settings store.
-bool ViewportSettings::_settingsLoaded = false;
+/******************************************************************************
+* Assignment.
+******************************************************************************/
+void ViewportSettings::assign(const ViewportSettings& other)
+{
+	_viewportColors = other._viewportColors;
+	_upDirection = other._upDirection;
+	_restrictVerticalRotation = other._restrictVerticalRotation;
+	_viewportFont = other._viewportFont;
+
+	Q_EMIT settingsChanged(this);
+}
 
 /******************************************************************************
 * Returns a reference to the current global settings object.
 ******************************************************************************/
-const ViewportSettings& ViewportSettings::getSettings()
+ViewportSettings& ViewportSettings::getSettings()
 {
-	if(!_settingsLoaded) {
+	/// Indicates whether the settings have already been loaded from the application's settings store.
+	static bool settingsLoaded = false;
+
+	if(!settingsLoaded) {
 		QSettings settingsStore;
 		settingsStore.beginGroup("core/viewport/");
 		_currentSettings.load(settingsStore);
 		settingsStore.endGroup();
-		_settingsLoaded = true;
+		settingsLoaded = true;
 	}
 	return _currentSettings;
 }
@@ -52,22 +64,19 @@ const ViewportSettings& ViewportSettings::getSettings()
 ******************************************************************************/
 void ViewportSettings::setSettings(const ViewportSettings& settings)
 {
-	_currentSettings = settings;
+	_currentSettings.assign(settings);
 
 	QSettings settingsStore;
 	settingsStore.beginGroup("core/viewport/");
 	_currentSettings.save(settingsStore);
 	settingsStore.endGroup();
-
-	// Inform viewports about settings change.
-	for(Viewport* viewport : ViewportManager::instance().viewports())
-		viewport->viewportSettingsChanged(_currentSettings);
 }
 
 /******************************************************************************
 * Default constructor.
 ******************************************************************************/
-ViewportSettings::ViewportSettings()
+ViewportSettings::ViewportSettings() :
+	_viewportFont("Helvetica")
 {
 	_upDirection = Z_AXIS;
 	_restrictVerticalRotation = true;
@@ -102,7 +111,7 @@ void ViewportSettings::restoreDefaultViewportColors()
 ******************************************************************************/
 const Color& ViewportSettings::viewportColor(ViewportColor which) const
 {
-	OVITO_ASSERT(which >= 0 && which < sizeof(_viewportColors)/sizeof(_viewportColors[0]));
+	OVITO_ASSERT(which >= 0 && which < _viewportColors.size());
 	return _viewportColors[which];
 }
 
@@ -111,7 +120,7 @@ const Color& ViewportSettings::viewportColor(ViewportColor which) const
 ******************************************************************************/
 void ViewportSettings::setViewportColor(ViewportColor which, const Color& clr)
 {
-	OVITO_ASSERT(which >= 0 && which < sizeof(_viewportColors)/sizeof(_viewportColors[0]));
+	OVITO_ASSERT(which >= 0 && which < _viewportColors.size());
 	_viewportColors[which] = clr;
 }
 
@@ -152,7 +161,7 @@ void ViewportSettings::load(QSettings& store)
 	_upDirection = (UpDirection)store.value("UpDirection", qVariantFromValue((int)_upDirection)).toInt();
 	_restrictVerticalRotation = store.value("RestrictVerticalRotation", qVariantFromValue(_restrictVerticalRotation)).toBool();
 	int arraySize = store.beginReadArray("colors");
-	for(int i = 0; i < NUMBER_OF_COLORS && i < arraySize; i++) {
+	for(int i = 0; i < _viewportColors.size() && i < arraySize; i++) {
 		store.setArrayIndex(i);
 		_viewportColors[i].r() = store.value("R").value<FloatType>();
 		_viewportColors[i].g() = store.value("G").value<FloatType>();
@@ -169,7 +178,7 @@ void ViewportSettings::save(QSettings& store) const
 	store.setValue("UpDirection", (int)_upDirection);
 	store.setValue("RestrictVerticalRotation", _restrictVerticalRotation);
 	store.beginWriteArray("colors");
-	for(int i = 0; i < NUMBER_OF_COLORS; i++) {
+	for(int i = 0; i < _viewportColors.size(); i++) {
 		store.setArrayIndex(i);
 		store.setValue("R", _viewportColors[i].r());
 		store.setValue("G", _viewportColors[i].g());

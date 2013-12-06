@@ -23,7 +23,7 @@
 #define __OVITO_MANUAL_SELECTION_MODIFIER_H
 
 #include <plugins/particles/Particles.h>
-#include <core/viewport/input/ViewportInputHandler.h>
+#include <core/viewport/input/ViewportInputMode.h>
 #include <plugins/particles/util/ParticlePickingHelper.h>
 #include "../ParticleModifier.h"
 
@@ -40,8 +40,8 @@ class OVITO_PARTICLES_EXPORT ManualSelectionModifier : public ParticleModifier
 {
 public:
 
-	/// Default constructor.
-	Q_INVOKABLE ManualSelectionModifier() {}
+	/// Constructor.
+	Q_INVOKABLE ManualSelectionModifier(DataSet* dataset) : ParticleModifier(dataset) {}
 
 	/// This virtual method is called by the system when the modifier has been inserted into a PipelineObject.
 	virtual void initializeModifier(PipelineObject* pipelineObject, ModifierApplication* modApp) override;
@@ -91,9 +91,6 @@ public:
 	/// Default constructor
 	Q_INVOKABLE ManualSelectionModifierEditor() {}
 
-	/// Destructor.
-	virtual ~ManualSelectionModifierEditor() { deactivateInputModes(); }
-
 	/// This is called when the user has selected a particle.
 	void onParticlePicked(const ParticlePickingHelper::PickResult& pickResult);
 
@@ -116,13 +113,10 @@ protected Q_SLOTS:
 	/// Clears the selection.
 	void clearSelection();
 
-	/// Deactivates all active viewport input modes used by this editor.
-	void deactivateInputModes();
-
 private:
 
-	OORef<ViewportInputHandler> _selectParticleMode;
-	OORef<ViewportInputHandler> _fenceParticleMode;
+	ViewportInputMode* _selectParticleMode;
+	ViewportInputMode* _fenceParticleMode;
 
 	Q_OBJECT
 	OVITO_OBJECT

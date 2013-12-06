@@ -38,8 +38,8 @@ class OVITO_CRYSTALANALYSIS_EXPORT PatternCatalog : public SceneObject
 {
 public:
 
-	/// \brief Default constructor.
-	Q_INVOKABLE PatternCatalog();
+	/// \brief Constructor.
+	Q_INVOKABLE PatternCatalog(DataSet* dataset);
 
 	/// Returns the list of structure patterns in this catalog.
 	const QVector<StructurePattern*>& patterns() const { return _patterns; }

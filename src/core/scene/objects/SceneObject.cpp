@@ -33,7 +33,7 @@ SET_PROPERTY_FIELD_LABEL(SceneObject, _displayObjects, "Display objects")
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-SceneObject::SceneObject() : _revisionNumber(0), _saveWithScene(true)
+SceneObject::SceneObject(DataSet* dataset) : RefTarget(dataset), _revisionNumber(0), _saveWithScene(true)
 {
 	INIT_PROPERTY_FIELD(SceneObject::_saveWithScene);
 	INIT_PROPERTY_FIELD(SceneObject::_displayObjects);

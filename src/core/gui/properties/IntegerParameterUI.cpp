@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include <core/gui/properties/IntegerParameterUI.h>
 #include <core/animation/controller/Controller.h>
-#include <core/animation/AnimManager.h>
+#include <core/animation/AnimationSettings.h>
 #include <core/utilities/units/UnitsManager.h>
 
 namespace Ovito {
@@ -33,8 +33,8 @@ IMPLEMENT_OVITO_OBJECT(Core, IntegerParameterUI, NumericalParameterUI)
 /******************************************************************************
 * Constructor for a Qt property.
 ******************************************************************************/
-IntegerParameterUI::IntegerParameterUI(QObject* parentEditor, const char* propertyName, const QString& labelText, ParameterUnit* parameterUnit) :
-	NumericalParameterUI(parentEditor, propertyName, parameterUnit ? parameterUnit : UnitsManager::instance().integerIdentityUnit(), labelText)
+IntegerParameterUI::IntegerParameterUI(QObject* parentEditor, const char* propertyName, const QString& labelText, const QMetaObject* parameterUnitType) :
+	NumericalParameterUI(parentEditor, propertyName, parameterUnitType ? parameterUnitType : &IntegerParameterUnit::staticMetaObject, labelText)
 {
 }
 
@@ -42,7 +42,7 @@ IntegerParameterUI::IntegerParameterUI(QObject* parentEditor, const char* proper
 * Constructor for a PropertyField property.
 ******************************************************************************/
 IntegerParameterUI::IntegerParameterUI(QObject* parentEditor, const PropertyFieldDescriptor& propField) :
-		NumericalParameterUI(parentEditor, propField, UnitsManager::instance().integerIdentityUnit())
+		NumericalParameterUI(parentEditor, propField, &IntegerParameterUnit::staticMetaObject)
 {
 }
 

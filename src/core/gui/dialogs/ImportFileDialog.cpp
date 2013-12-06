@@ -28,14 +28,14 @@ namespace Ovito {
 /******************************************************************************
 * Constructs the dialog window.
 ******************************************************************************/
-ImportFileDialog::ImportFileDialog(QWidget* parent, const QString& caption) :
-	HistoryFileDialog("import", parent, caption)
+ImportFileDialog::ImportFileDialog(const QVector<FileImporterDescription*>& importerTypes, QWidget* parent, const QString& caption) :
+	HistoryFileDialog("import", parent, caption), _importerTypes(importerTypes)
 {
 	connect(this, SIGNAL(fileSelected(const QString&)), this, SLOT(onFileSelected(const QString&)));
 
 	// Build filter string.
-	for(const auto& descriptor : ImportExportManager::instance().fileImporters()) {
-		_filterStrings << QString("%1 (%2)").arg(descriptor.fileFilterDescription(), descriptor.fileFilter());
+	for(FileImporterDescription* descriptor : _importerTypes) {
+		_filterStrings << QString("%1 (%2)").arg(descriptor->fileFilterDescription(), descriptor->fileFilter());
 	}
 	if(_filterStrings.isEmpty())
 		throw Exception(tr("There are no importer plugins installed."));
@@ -86,15 +86,15 @@ QString ImportFileDialog::fileToImport() const
 }
 
 /******************************************************************************
-* Returns the selected importer or NULL if auto-detection is requested.
+* Returns the selected importer type or NULL if auto-detection is requested.
 ******************************************************************************/
-const FileImporterDescription* ImportFileDialog::selectedFileImporter() const
+const FileImporterDescription* ImportFileDialog::selectedFileImporterType() const
 {
 	int importFilterIndex = _filterStrings.indexOf(_selectedFilter.isEmpty() ? selectedNameFilter() : _selectedFilter) - 1;
-	OVITO_ASSERT(importFilterIndex >= -1 && importFilterIndex < _filterStrings.size());
+	OVITO_ASSERT(importFilterIndex >= -1 && importFilterIndex < _importerTypes.size());
 
 	if(importFilterIndex >= 0)
-		return &ImportExportManager::instance().fileImporters()[importFilterIndex];
+		return _importerTypes[importFilterIndex];
 	else
 		return nullptr;
 }

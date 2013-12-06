@@ -28,8 +28,8 @@
 #define __OVITO_ANIMATION_FRAMES_TOOL_BUTTON_H
 
 #include <core/Core.h>
-#include <core/animation/AnimManager.h>
-#include <core/dataset/DataSetManager.h>
+#include <core/animation/AnimationSettings.h>
+#include <core/dataset/DataSetContainer.h>
 
 namespace Ovito {
 
@@ -43,11 +43,11 @@ class AnimationFramesToolButton : public QToolButton
 public:
 	
 	/// Constructs the widget.
-	AnimationFramesToolButton(QWidget* parent = 0) : QToolButton(parent) {
+	AnimationFramesToolButton(DataSetContainer& datasetContainer, QWidget* parent = 0) : QToolButton(parent), _datasetContainer(datasetContainer) {
 		setIcon(QIcon(QString(":/core/actions/animation/named_frames.png")));
 		setToolTip(tr("Jump to animation frame"));
 		setFocusPolicy(Qt::NoFocus);
-		connect(this, SIGNAL(clicked(bool)), this, SLOT(onClicked()));
+		connect(this, &QToolButton::clicked, this, &AnimationFramesToolButton::onClicked);
 	}
 
 protected Q_SLOTS:
@@ -55,7 +55,7 @@ protected Q_SLOTS:
 	void onClicked() {
 		QMenu menu;
 
-		AnimationSettings* animSettings = DataSetManager::instance().currentSet()->animationSettings();
+		AnimationSettings* animSettings = _datasetContainer.currentSet()->animationSettings();
 		int currentFrame = animSettings->time() / animSettings->ticksPerFrame();
 		for(auto entry = animSettings->namedFrames().cbegin(); entry != animSettings->namedFrames().cend(); ++entry) {
 			QAction* action = menu.addAction(entry.value());
@@ -78,9 +78,14 @@ protected Q_SLOTS:
 	void onActionTriggered(QAction* action) {
 		if(action->data().isValid()) {
 			int frameIndex = action->data().value<int>();
-			AnimManager::instance().setTime(AnimManager::instance().frameToTime(frameIndex));
+			AnimationSettings* animSettings = _datasetContainer.currentSet()->animationSettings();
+			animSettings->setTime(animSettings->frameToTime(frameIndex));
 		}
 	}
+
+private:
+
+	DataSetContainer& _datasetContainer;
 };
 
 };

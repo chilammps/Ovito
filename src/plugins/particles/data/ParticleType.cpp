@@ -44,7 +44,7 @@ SET_PROPERTY_FIELD_UNITS(ParticleType, _radius, WorldParameterUnit)
 /******************************************************************************
 * Constructs a new ParticleType.
 ******************************************************************************/
-ParticleType::ParticleType() : _color(1,1,1), _radius(0), _id(0)
+ParticleType::ParticleType(DataSet* dataset) : RefTarget(dataset), _color(1,1,1), _radius(0), _id(0)
 {
 	INIT_PROPERTY_FIELD(ParticleType::_id);
 	INIT_PROPERTY_FIELD(ParticleType::_color);

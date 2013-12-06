@@ -21,7 +21,7 @@
 
 #include <core/Core.h>
 #include <core/gui/properties/BooleanActionParameterUI.h>
-#include <core/gui/undo/UndoManager.h>
+#include <core/dataset/UndoStack.h>
 
 namespace Ovito {
 
@@ -105,8 +105,7 @@ void BooleanActionParameterUI::setEnabled(bool enabled)
 void BooleanActionParameterUI::updatePropertyValue()
 {
 	if(action() && editObject()) {
-		
-		UndoableTransaction::handleExceptions(tr("Change parameter"), [this]() {
+		undoableTransaction(tr("Change parameter"), [this]() {
 			if(isQtPropertyUI()) {
 				if(!editObject()->setProperty(propertyName(), action()->isChecked())) {
 					OVITO_ASSERT_MSG(false, "BooleanActionParameterUI::updatePropertyValue()", QString("The value of property %1 of object class %2 could not be set.").arg(QString(propertyName()), editObject()->metaObject()->className()).toLocal8Bit().constData());

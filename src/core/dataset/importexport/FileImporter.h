@@ -38,6 +38,11 @@ namespace Ovito {
  */
 class OVITO_CORE_EXPORT FileImporter : public RefTarget
 {
+protected:
+
+	/// \brief The constructor.
+	FileImporter(DataSet* dataset) : RefTarget(dataset) {}
+
 public:
 
 	/// Import modes that control the behavior of the importFile() method.
@@ -83,15 +88,12 @@ private:
 /**
  * \brief This descriptor contains information about an installed FileImporter service.
  */
-class OVITO_CORE_EXPORT FileImporterDescription
+class OVITO_CORE_EXPORT FileImporterDescription : public QObject
 {
 public:
 
-	/// \brief Default constructor (required by QVector container).
-	FileImporterDescription() {}
-
 	/// \brief Initializes this descriptor from a file importer instance.
-	FileImporterDescription(FileImporter* importer) :
+	FileImporterDescription(QObject* parent, FileImporter* importer) : QObject(parent),
 		_fileFilter(importer->fileFilter()),
 		_fileFilterDescription(importer->fileFilterDescription()),
 		_pluginClass(&importer->getOOType()) {}
@@ -105,8 +107,9 @@ public:
 	const QString& fileFilterDescription() const { return _fileFilterDescription; }
 
 	/// \brief Creates an instance of the file importer class.
-	OORef<FileImporter> createService() const {
-		return static_object_cast<FileImporter>(pluginClass()->createInstance());
+	/// \param The dataset within which the importer object is to be created.
+	OORef<FileImporter> createService(DataSet* dataset) const {
+		return static_object_cast<FileImporter>(pluginClass()->createInstance(dataset));
 	}
 
 	/// \brief Returns the class descriptor for the file importer service.
@@ -118,6 +121,8 @@ private:
 	QString _fileFilter;
 	QString _fileFilterDescription;
 	const OvitoObjectType* _pluginClass;
+
+	Q_OBJECT
 };
 
 };

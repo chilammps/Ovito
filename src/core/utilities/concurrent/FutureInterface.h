@@ -131,7 +131,7 @@ protected:
     QElapsedTimer _progressTime;
 
 	friend class FutureWatcher;
-	friend class ProgressManager;
+	friend class TaskManager;
 	friend class FutureBase;
 	template<typename R2> friend class Future;
 };

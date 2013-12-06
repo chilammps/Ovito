@@ -29,9 +29,6 @@
 
 namespace Ovito {
 
-class LinkedFileObject;		// defined in LinkedFileObject.h
-class SceneObject;			// defined in SceneObject.h
-
 /**
  * \brief Base class for file parsers that can reload a file that has been imported into the scene.
  */
@@ -80,7 +77,7 @@ public:
 		virtual ~ImportTask() {}
 
 		/// \brief Is called in the background thread to perform the actual loading.
-		virtual void load(FutureInterfaceBase& futureInterface) = 0;
+		virtual void load(DataSetContainer& container, FutureInterfaceBase& futureInterface) = 0;
 
 		/// \brief Lets the data container insert the data it holds into the scene by
 		///        creating appropriate scene objects.
@@ -115,7 +112,7 @@ public:
 public:
 
 	/// \brief Constructs a new instance of this class.
-	LinkedFileImporter() {}
+	LinkedFileImporter(DataSet* dataset) : FileImporter(dataset) {}
 
 	///////////////////////////// from FileImporter /////////////////////////////
 

@@ -46,8 +46,8 @@ class OVITO_PARTICLES_EXPORT ParticleDisplay : public DisplayObject
 {
 public:
 
-	/// \brief Default constructor.
-	Q_INVOKABLE ParticleDisplay();
+	/// \brief Constructor.
+	Q_INVOKABLE ParticleDisplay(DataSet* dataset);
 
 	/// \brief Lets the display object render a scene object.
 	virtual void render(TimePoint time, SceneObject* sceneObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode) override;

@@ -20,6 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <plugins/particles/Particles.h>
+#include <core/animation/AnimationSettings.h>
 #include <core/viewport/Viewport.h>
 #include <core/scene/ObjectNode.h>
 #include <core/scene/pipeline/PipelineObject.h>
@@ -217,7 +218,7 @@ ObjectStatus SelectExpressionModifier::modifyParticles(TimePoint time, TimeInter
 	_variableNames = getVariableNames(input());
 
 	// The current animation frame number.
-	int currentFrame = AnimManager::instance().timeToFrame(time);
+	int currentFrame = dataset()->animationSettings()->timeToFrame(time);
 
 	// If the user has not yet entered an expression let him know which
 	// data channels can be used in the expression.
@@ -291,7 +292,7 @@ void SelectExpressionModifier::initializeModifier(PipelineObject* pipeline, Modi
 	ParticleModifier::initializeModifier(pipeline, modApp);
 
 	// Build list of available input variables.
-	PipelineFlowState input = pipeline->evaluatePipeline(AnimManager::instance().time(), modApp, false);
+	PipelineFlowState input = pipeline->evaluatePipeline(dataset()->animationSettings()->time(), modApp, false);
 	_variableNames = getVariableNames(input);
 }
 

@@ -22,7 +22,6 @@
 #include <core/Core.h>
 #include <core/viewport/ViewportWindow.h>
 #include <core/viewport/Viewport.h>
-#include <core/viewport/ViewportManager.h>
 #include <core/rendering/RenderSettings.h>
 #include "PickingSceneRenderer.h"
 

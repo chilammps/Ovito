@@ -23,9 +23,8 @@
 #define __OVITO_CA_DISLOCATION_INSPECTOR_H
 
 #include <plugins/crystalanalysis/CrystalAnalysis.h>
-#include <core/viewport/input/ViewportInputHandler.h>
+#include <core/viewport/input/ViewportInputMode.h>
 #include <core/viewport/input/ViewportInputManager.h>
-#include <core/gui/actions/ViewportModeAction.h>
 #include <core/gui/properties/RefTargetListParameterUI.h>
 #include <core/scene/ObjectNode.h>
 #include "DislocationSegment.h"
@@ -42,16 +41,14 @@ class OVITO_CRYSTALANALYSIS_EXPORT DislocationInspector : public PropertiesEdito
 {
 public:
 
-	/// Default constructor.
+	/// Constructor.
 	Q_INVOKABLE DislocationInspector(ObjectNode* sceneNode) {
 		INIT_PROPERTY_FIELD(DislocationInspector::_sceneNode);
 		_sceneNode = sceneNode;
 	}
 
-	virtual ~DislocationInspector() {
-		if(_pickDislocationHandler)
-			ViewportInputManager::instance().removeInputHandler(_pickDislocationHandler.get());
-	}
+	/// Destructor.
+	virtual ~DislocationInspector() { clearAllReferences(); }
 
 	RefTargetListParameterUI* dislocationListUI() const { return _dislocationListUI; }
 	QSortFilterProxyModel* sortedModel() const { return _sortedModel; }
@@ -76,7 +73,7 @@ private:
 
 	RefTargetListParameterUI* _dislocationListUI;
 	QSortFilterProxyModel* _sortedModel;
-	OORef<ViewportInputHandler> _pickDislocationHandler;
+	ViewportInputMode* _pickDislocationMode;
 	ViewportModeAction* _pickDislocationAction;
 
 	/// The scene node being loaded in the editor.
@@ -92,17 +89,14 @@ private:
 * This class belongs to the DislocationInspector and allows the user to pick
 * a dislocation segment in the viewports.
 ******************************************************************************/
-class OVITO_CRYSTALANALYSIS_EXPORT DislocationPickMode : public ViewportInputHandler
+class OVITO_CRYSTALANALYSIS_EXPORT DislocationPickMode : public ViewportInputMode
 {
 public:
 
 	/// Constructor.
-	DislocationPickMode(DislocationInspector* inspector) : _inspector(inspector) {
+	DislocationPickMode(DislocationInspector* inspector) : ViewportInputMode(inspector), _inspector(inspector) {
 		_hoverSegment.segmentIndex = -1;
 	}
-
-	/// Returns the activation behavior of this input handler.
-	virtual InputHandlerType handlerType() override { return ViewportInputHandler::NORMAL; }
 
 	/// Handles the mouse button up events for a Viewport.
 	virtual void mouseReleaseEvent(Viewport* vp, QMouseEvent* event) override;
@@ -111,7 +105,7 @@ public:
 	virtual void mouseMoveEvent(Viewport* vp, QMouseEvent* event) override;
 
 	/// \brief Lets the input mode render its overlay content in a viewport.
-	virtual void renderOverlay3D(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive) override;
+	virtual void renderOverlay3D(Viewport* vp, ViewportSceneRenderer* renderer) override;
 
 	/// \brief Indicates whether this input mode renders into the viewports.
 	virtual bool hasOverlay() override { return true; }
@@ -135,11 +129,10 @@ private:
 
 	bool pickDislocationSegment(Viewport* vp, const QPoint& pos, DislocationPickResult& result) const;
 
-	QPointer<DislocationInspector> _inspector;
+	DislocationInspector* _inspector;
 	DislocationPickResult _hoverSegment;
 
 	Q_OBJECT
-	OVITO_OBJECT
 };
 
 /******************************************************************************

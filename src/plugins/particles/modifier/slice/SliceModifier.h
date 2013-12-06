@@ -24,9 +24,8 @@
 
 #include <plugins/particles/Particles.h>
 #include <core/animation/controller/Controller.h>
-#include <core/viewport/input/ViewportInputHandler.h>
+#include <core/viewport/input/ViewportInputMode.h>
 #include <core/viewport/input/ViewportInputManager.h>
-#include <core/gui/actions/ViewportModeAction.h>
 #include <plugins/particles/util/ParticlePickingHelper.h>
 #include "../ParticleModifier.h"
 
@@ -41,8 +40,8 @@ class OVITO_PARTICLES_EXPORT SliceModifier : public ParticleModifier
 {
 public:
 
-	/// Default constructor.
-	Q_INVOKABLE SliceModifier();
+	/// Constructor.
+	Q_INVOKABLE SliceModifier(DataSet* dataset);
 
 	/// Asks the modifier for its validity interval at the given time.
 	virtual TimeInterval modifierValidity(TimePoint time) override;
@@ -181,21 +180,18 @@ class SliceModifierEditor;
 * The viewport input mode that lets the user select three particles
 * to define the slicing plane.
 ******************************************************************************/
-class PickParticlePlaneInputMode : public ViewportInputHandler, ParticlePickingHelper
+class PickParticlePlaneInputMode : public ViewportInputMode, ParticlePickingHelper
 {
 public:
 
 	/// Constructor.
 	PickParticlePlaneInputMode(SliceModifierEditor* editor) : _editor(editor) {}
 
-	/// Returns the activation behavior of this input handler.
-	virtual InputHandlerType handlerType() override { return ViewportInputHandler::NORMAL; }
-
 	/// Handles the mouse events for a Viewport.
 	virtual void mouseReleaseEvent(Viewport* vp, QMouseEvent* event) override;
 
 	/// Lets the input mode render its overlay content in a viewport.
-	virtual void renderOverlay3D(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive) override;
+	virtual void renderOverlay3D(Viewport* vp, ViewportSceneRenderer* renderer) override;
 
 	/// Indicates whether this input mode renders into the viewports.
 	virtual bool hasOverlay() override { return true; }
@@ -203,10 +199,10 @@ public:
 protected:
 
 	/// This is called by the system after the input handler has become the active handler.
-	virtual void activated() override;
+	virtual void activated(bool temporary) override;
 
 	/// This is called by the system after the input handler is no longer the active handler.
-	virtual void deactivated() override;
+	virtual void deactivated(bool temporary) override;
 
 private:
 
@@ -231,12 +227,6 @@ public:
 	/// Default constructor.
 	Q_INVOKABLE SliceModifierEditor() {}
 
-	/// Destructor.
-	virtual ~SliceModifierEditor() {
-		// Deactivate the input mode when editor is closed.
-		ViewportInputManager::instance().removeInputHandler(_pickParticlePlaneInputMode.get());
-	}
-
 protected:
 
 	/// Creates the user interface controls for the editor.
@@ -258,7 +248,7 @@ protected Q_SLOTS:
 
 private:
 
-	OORef<PickParticlePlaneInputMode> _pickParticlePlaneInputMode;
+	PickParticlePlaneInputMode* _pickParticlePlaneInputMode;
 	ViewportModeAction* _pickParticlePlaneInputModeAction;
 
 	Q_OBJECT

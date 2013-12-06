@@ -42,8 +42,8 @@ class OVITO_PARTICLES_EXPORT BondsObject : public SceneObject
 {
 public:
 
-	/// \brief Default constructor.
-	Q_INVOKABLE BondsObject(BondsStorage* storage = nullptr);
+	/// \brief Constructor.
+	Q_INVOKABLE BondsObject(DataSet* dataset, BondsStorage* storage = nullptr);
 
 	/// \brief Returns the title of this object.
 	virtual QString objectTitle() override { return tr("Bonds"); }

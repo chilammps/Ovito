@@ -34,11 +34,6 @@
 
 namespace Ovito {
 
-class ModifierApplication;		// defined in ModifierApplication.h
-class PipelineObject;			// defined in PipelineObject.h
-class ViewportSceneRenderer;	// defined in ViewportSceneRenderer.h
-class ObjectNode;				// defined in ObjectNode.h
-
 /**
  * \brief Modifies an input object in some way.
  *
@@ -52,8 +47,8 @@ class OVITO_CORE_EXPORT Modifier : public RefTarget
 {
 protected:
 
-	/// \brief Default constructor.
-	Modifier();
+	/// \brief Constructor.
+	Modifier(DataSet* dataset);
 
 public:
 

@@ -48,8 +48,8 @@ class OVITO_PARTICLES_EXPORT SimulationCellDisplay : public DisplayObject
 {
 public:
 
-	/// \brief Default constructor.
-	Q_INVOKABLE SimulationCellDisplay();
+	/// \brief Constructor.
+	Q_INVOKABLE SimulationCellDisplay(DataSet* dataset);
 
 	/// \brief Lets the display object render a scene object.
 	virtual void render(TimePoint time, SceneObject* sceneObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode) override;

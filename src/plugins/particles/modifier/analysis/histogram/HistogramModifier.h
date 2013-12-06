@@ -39,8 +39,8 @@ class OVITO_PARTICLES_EXPORT HistogramModifier : public ParticleModifier
 {
 public:
 
-	/// Default constructor.
-	Q_INVOKABLE HistogramModifier();
+	/// Constructor.
+	Q_INVOKABLE HistogramModifier(DataSet* dataset);
 
 	/// This virtual method is called by the system when the modifier has been inserted into a PipelineObject.
 	virtual void initializeModifier(PipelineObject* pipelineObject, ModifierApplication* modApp) override;
@@ -65,6 +65,9 @@ public:
 
 	/// Returns whether particles within the specified range should be selected.
 	bool selectInRange() const { return _selectInRange; }
+
+	/// Sets whether particles within the specified range should be selected.
+	void setSelectInRange(bool select) { _selectInRange = select; }
 
 	/// Returns the start value of the selection interval.
 	FloatType selectionRangeStart() const { return _selectionRangeStart; }
@@ -94,6 +97,7 @@ public:
 
 	Q_PROPERTY(Particles::ParticlePropertyReference sourceProperty READ sourceProperty WRITE setSourceProperty)
 	Q_PROPERTY(int numberOfBins READ numberOfBins WRITE setNumberOfBins)
+	Q_PROPERTY(bool selectInRange READ selectInRange WRITE setSelectInRange)
 	Q_PROPERTY(FloatType selectionRangeStart READ selectionRangeStart)
 	Q_PROPERTY(FloatType selectionRangeEnd READ selectionRangeEnd)
 

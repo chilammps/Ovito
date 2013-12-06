@@ -20,8 +20,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /** 
- * \file ProgressManager.h
- * \brief Contains the definition of the Ovito::ProgressManager class.
+ * \file TaskManager.h
+ * \brief Contains the definition of the Ovito::TaskManager class.
  */
  
 #ifndef __OVITO_PROGRESS_MANAGER_H
@@ -29,33 +29,40 @@
 
 #include <core/Core.h>
 #include "Future.h"
+#include "Task.h"
 
 namespace Ovito {
 
 typedef std::shared_ptr<Ovito::FutureInterfaceBase> FutureInterfacePointer;
 
 /**
- * \brief Manages the running background tasks.
+ * \brief Manages the background tasks.
  */
-class OVITO_CORE_EXPORT ProgressManager : public QObject
+class OVITO_CORE_EXPORT TaskManager : public QObject
 {
 	Q_OBJECT
 
 public:
 
+	/// \brief Constructor.
+	TaskManager(MainWindow* mainWindow);
+
 	/// Destructor.
-	~ProgressManager() {
+	~TaskManager() {
 		cancelAllAndWait();
 	}
 
-	/// \brief Returns the one and only instance of this class.
-	/// \return The predefined instance of the ProgressManager singleton class.
-	inline static ProgressManager& instance() {
-		OVITO_ASSERT_MSG(_instance != nullptr, "ProgressManager::instance", "Singleton object is not initialized yet.");
-		return *_instance;
+	/// \brief Runs a function in a background thread.
+	///
+	/// This function is thread-safe.
+	template<typename R, typename Function>
+	Future<R> runInBackground(Function f) {
+		Future<R> future = (new Task<R,Function>(f))->start();
+		addTask(future);
+		return future;
 	}
 
-	/// \brief Registers a future with the progress manager, who will display the progress of the background task
+	/// \brief Registers a future with the progress manager, which will display the progress of the background task
 	///        in the main window.
 	///
 	/// This function is thread-safe.
@@ -121,6 +128,9 @@ private:
 
 	QStack<FutureWatcher*> _taskStack;
 
+	/// The window this progress manager is associated with.
+	MainWindow* _mainWindow;
+
 	/// The progress bar widget.
 	QProgressBar* _progressBar;
 
@@ -138,23 +148,6 @@ private:
 
 	/// True if the indicator widget is currently visible.
 	bool _indicatorVisible;
-
-private:
-    
-	/// Private constructor.
-	/// This is a singleton class; no public instances are allowed.
-	ProgressManager();
-
-	/// Create the singleton instance of this class.
-	static void initialize() { _instance = new ProgressManager(); }
-
-	/// Deletes the singleton instance of this class.
-	static void shutdown() { delete _instance; _instance = nullptr; }
-
-	/// The singleton instance of this class.
-	static ProgressManager* _instance;
-
-	friend class Application;
 };
 
 };

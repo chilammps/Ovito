@@ -111,6 +111,9 @@ private:
 	/// This points to the current object while the objects are being loaded from the stream.
 	ObjectEntry* _currentObject;
 	
+	/// The current dataset being loaded.
+	DataSet* _dataset;
+
 	friend class RefMaker;
 };
 

@@ -55,7 +55,7 @@ SET_PROPERTY_FIELD_UNITS(DefectSurfaceDisplay, _capTransparency, PercentParamete
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-DefectSurfaceDisplay::DefectSurfaceDisplay() :
+DefectSurfaceDisplay::DefectSurfaceDisplay(DataSet* dataset) : DisplayObject(dataset),
 	_surfaceColor(1, 1, 1), _capColor(0.8, 0.8, 1.0), _showCap(true), _smoothShading(true)
 {
 	INIT_PROPERTY_FIELD(DefectSurfaceDisplay::_surfaceColor);
@@ -65,8 +65,8 @@ DefectSurfaceDisplay::DefectSurfaceDisplay() :
 	INIT_PROPERTY_FIELD(DefectSurfaceDisplay::_surfaceTransparency);
 	INIT_PROPERTY_FIELD(DefectSurfaceDisplay::_capTransparency);
 
-	_surfaceTransparency = ControllerManager::instance().createDefaultController<FloatController>();
-	_capTransparency = ControllerManager::instance().createDefaultController<FloatController>();
+	_surfaceTransparency = ControllerManager::instance().createDefaultController<FloatController>(dataset);
+	_capTransparency = ControllerManager::instance().createDefaultController<FloatController>(dataset);
 }
 
 /******************************************************************************

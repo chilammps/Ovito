@@ -41,7 +41,7 @@ SET_PROPERTY_FIELD_UNITS(DislocationDisplay, _lineWidth, WorldParameterUnit)
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-DislocationDisplay::DislocationDisplay() :
+DislocationDisplay::DislocationDisplay(DataSet* dataset) : DisplayObject(dataset),
 	_lineWidth(1.0f), _shadingMode(ArrowGeometryBuffer::NormalShading)
 {
 	INIT_PROPERTY_FIELD(DislocationDisplay::_lineWidth);

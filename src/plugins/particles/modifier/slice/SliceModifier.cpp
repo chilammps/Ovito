@@ -21,13 +21,14 @@
 
 #include <plugins/particles/Particles.h>
 #include <core/viewport/Viewport.h>
-#include <core/viewport/ViewportManager.h>
-#include <core/dataset/DataSetManager.h>
+#include <core/viewport/ViewportConfiguration.h>
 #include <core/scene/ObjectNode.h>
-#include <core/animation/AnimManager.h>
+#include <core/scene/SelectionSet.h>
 #include <core/animation/controller/StandardControllers.h>
+#include <core/animation/AnimationSettings.h>
 #include <core/scene/pipeline/PipelineObject.h>
 #include <core/gui/actions/ActionManager.h>
+#include <core/gui/actions/ViewportModeAction.h>
 #include <core/gui/mainwin/MainWindow.h>
 #include <core/gui/properties/FloatParameterUI.h>
 #include <core/gui/properties/Vector3ParameterUI.h>
@@ -59,8 +60,8 @@ SET_PROPERTY_FIELD_UNITS(SliceModifier, _widthCtrl, WorldParameterUnit)
 
 /******************************************************************************
 * Constructs the modifier object.
-******************************************************qDebug() << "Rendering color scale " << renderer->viewport();************************/
-SliceModifier::SliceModifier() :
+******************************************************************************/
+SliceModifier::SliceModifier(DataSet* dataset) : ParticleModifier(dataset),
 	_createSelection(false),
 	_inverse(false),
 	_applyToSelection(false)
@@ -72,9 +73,9 @@ SliceModifier::SliceModifier() :
 	INIT_PROPERTY_FIELD(SliceModifier::_inverse);
 	INIT_PROPERTY_FIELD(SliceModifier::_applyToSelection);
 
-	_normalCtrl = ControllerManager::instance().createDefaultController<VectorController>();
-	_distanceCtrl = ControllerManager::instance().createDefaultController<FloatController>();
-	_widthCtrl = ControllerManager::instance().createDefaultController<FloatController>();
+	_normalCtrl = ControllerManager::instance().createDefaultController<VectorController>(dataset);
+	_distanceCtrl = ControllerManager::instance().createDefaultController<FloatController>(dataset);
+	_widthCtrl = ControllerManager::instance().createDefaultController<FloatController>(dataset);
 	setNormal(Vector3(1,0,0));
 }
 
@@ -321,7 +322,7 @@ void SliceModifier::initializeModifier(PipelineObject* pipeline, ModifierApplica
 
 	// Get the input simulation cell to initially place the slicing plane in
 	// the center of the cell.
-	PipelineFlowState input = pipeline->evaluatePipeline(AnimManager::instance().time(), modApp, false);
+	PipelineFlowState input = pipeline->evaluatePipeline(dataset()->animationSettings()->time(), modApp, false);
 	SimulationCell* cell = input.findObject<SimulationCell>();
 	if(cell) {
 		Point3 centerPoint = cell->cellMatrix() * Point3(0.5, 0.5, 0.5);
@@ -399,8 +400,11 @@ void SliceModifierEditor::createUI(const RolloutInsertionParameters& rolloutPara
 	layout->addWidget(alignPlaneToViewBtn);
 
 	_pickParticlePlaneInputMode = new PickParticlePlaneInputMode(this);
-	_pickParticlePlaneInputModeAction = new ViewportModeAction(tr("Pick three particles"), this, _pickParticlePlaneInputMode);
+	_pickParticlePlaneInputModeAction = new ViewportModeAction(mainWindow(), tr("Pick three particles"), this, _pickParticlePlaneInputMode);
 	layout->addWidget(_pickParticlePlaneInputModeAction->createPushButton());
+
+	// Deactivate input mode when editor is reset.
+	connect(this, &PropertiesEditor::contentsReplaced, _pickParticlePlaneInputModeAction, &ViewportModeAction::deactivateMode);
 
 	// Status label.
 	layout->addSpacing(12);
@@ -415,7 +419,7 @@ void SliceModifierEditor::onXYZNormal(const QString& link)
 	SliceModifier* mod = static_object_cast<SliceModifier>(editObject());
 	if(!mod) return;
 
-	UndoableTransaction::handleExceptions(tr("Set plane normal"), [mod, &link]() {
+	undoableTransaction(tr("Set plane normal"), [mod, &link]() {
 		if(link == "0")
 			mod->setNormal(Vector3(1,0,0));
 		else if(link == "1")
@@ -432,18 +436,18 @@ void SliceModifierEditor::onAlignPlaneToView()
 {
 	TimeInterval interval;
 
-	Viewport* vp = ViewportManager::instance().activeViewport();
+	Viewport* vp = dataset()->viewportConfig()->activeViewport();
 	if(!vp) return;
 
 	// Get the object to world transformation for the currently selected object.
-	ObjectNode* node = dynamic_object_cast<ObjectNode>(DataSetManager::instance().currentSet()->selection()->firstNode());
+	ObjectNode* node = dynamic_object_cast<ObjectNode>(dataset()->selection()->firstNode());
 	if(!node) return;
-	const AffineTransformation& nodeTM = node->getWorldTransform(AnimManager::instance().time(), interval);
+	const AffineTransformation& nodeTM = node->getWorldTransform(dataset()->animationSettings()->time(), interval);
 
 	// Get the base point of the current slicing plane in local coordinates.
 	SliceModifier* mod = static_object_cast<SliceModifier>(editObject());
 	if(!mod) return;
-	Plane3 oldPlaneLocal = mod->slicingPlane(AnimManager::instance().time(), interval);
+	Plane3 oldPlaneLocal = mod->slicingPlane(dataset()->animationSettings()->time(), interval);
 	Point3 basePoint = Point3::Origin() + oldPlaneLocal.normal * oldPlaneLocal.dist;
 
 	// Get the orientation of the projection plane of the current viewport.
@@ -453,7 +457,7 @@ void SliceModifierEditor::onAlignPlaneToView()
 	if(std::abs(newPlaneLocal.normal.y()) < FLOATTYPE_EPSILON) newPlaneLocal.normal.y() = 0;
 	if(std::abs(newPlaneLocal.normal.z()) < FLOATTYPE_EPSILON) newPlaneLocal.normal.z() = 0;
 
-	UndoableTransaction::handleExceptions(tr("Align plane to view"), [mod, &newPlaneLocal]() {
+	undoableTransaction(tr("Align plane to view"), [mod, &newPlaneLocal]() {
 		mod->setNormal(newPlaneLocal.normal.normalized());
 		mod->setDistance(newPlaneLocal.dist);
 	});
@@ -466,18 +470,18 @@ void SliceModifierEditor::onAlignViewToPlane()
 {
 	TimeInterval interval;
 
-	Viewport* vp = ViewportManager::instance().activeViewport();
+	Viewport* vp = dataset()->viewportConfig()->activeViewport();
 	if(!vp) return;
 
 	// Get the object to world transformation for the currently selected object.
-	ObjectNode* node = dynamic_object_cast<ObjectNode>(DataSetManager::instance().currentSet()->selection()->firstNode());
+	ObjectNode* node = dynamic_object_cast<ObjectNode>(dataset()->selection()->firstNode());
 	if(!node) return;
-	const AffineTransformation& nodeTM = node->getWorldTransform(AnimManager::instance().time(), interval);
+	const AffineTransformation& nodeTM = node->getWorldTransform(dataset()->animationSettings()->time(), interval);
 
 	// Transform the current slicing plane to the world coordinate system.
 	SliceModifier* mod = static_object_cast<SliceModifier>(editObject());
 	if(!mod) return;
-	Plane3 planeLocal = mod->slicingPlane(AnimManager::instance().time(), interval);
+	Plane3 planeLocal = mod->slicingPlane(dataset()->animationSettings()->time(), interval);
 	Plane3 planeWorld = nodeTM * planeLocal;
 
 	// Calculate the intersection point of the current viewing direction with the current slicing plane.
@@ -499,7 +503,8 @@ void SliceModifierEditor::onAlignViewToPlane()
 		vp->setViewType(Viewport::VIEW_ORTHO);
 		vp->setCameraDirection(-planeWorld.normal);
 	}
-	ActionManager::instance().invokeAction(ACTION_VIEWPORT_ZOOM_SELECTION_EXTENTS);
+
+	vp->zoomToSelectionExtents();
 }
 
 /******************************************************************************
@@ -519,7 +524,7 @@ void SliceModifierEditor::onCenterOfBox()
 	Point3 centerPoint = cell->cellMatrix() * Point3(0.5, 0.5, 0.5);
 	FloatType centerDistance = mod->normal().dot(centerPoint - Point3::Origin());
 
-	UndoableTransaction::handleExceptions(tr("Set plane position"), [mod, centerDistance]() {
+	undoableTransaction(tr("Set plane position"), [mod, centerDistance]() {
 		mod->setDistance(centerDistance);
 	});
 }
@@ -527,18 +532,21 @@ void SliceModifierEditor::onCenterOfBox()
 /******************************************************************************
 * This is called by the system after the input handler has become the active handler.
 ******************************************************************************/
-void PickParticlePlaneInputMode::activated()
+void PickParticlePlaneInputMode::activated(bool temporary)
 {
-	MainWindow::instance().statusBar()->showMessage(tr("Pick three particles to define a new slicing plane."));
+	ViewportInputMode::activated(temporary);
+	inputManager()->mainWindow()->statusBar()->showMessage(tr("Pick three particles to define a new slicing plane."));
 }
 
 /******************************************************************************
 * This is called by the system after the input handler is no longer the active handler.
 ******************************************************************************/
-void PickParticlePlaneInputMode::deactivated()
+void PickParticlePlaneInputMode::deactivated(bool temporary)
 {
-	_pickedParticles.clear();
-	MainWindow::instance().statusBar()->clearMessage();
+	if(!temporary)
+		_pickedParticles.clear();
+	inputManager()->mainWindow()->statusBar()->clearMessage();
+	ViewportInputMode::deactivated(temporary);
 }
 
 /******************************************************************************
@@ -546,11 +554,11 @@ void PickParticlePlaneInputMode::deactivated()
 ******************************************************************************/
 void PickParticlePlaneInputMode::mouseReleaseEvent(Viewport* vp, QMouseEvent* event)
 {
-	if(event->button() == Qt::LeftButton && temporaryNavigationMode() == nullptr) {
+	if(event->button() == Qt::LeftButton) {
 
 		if(_pickedParticles.size() >= 3) {
 			_pickedParticles.clear();
-			ViewportManager::instance().updateViewports();
+			vp->dataset()->viewportConfig()->updateViewports();
 		}
 
 		PickResult pickResult;
@@ -563,7 +571,7 @@ void PickParticlePlaneInputMode::mouseReleaseEvent(Viewport* vp, QMouseEvent* ev
 
 			if(!ignore) {
 				_pickedParticles.push_back(pickResult);
-				ViewportManager::instance().updateViewports();
+				vp->dataset()->viewportConfig()->updateViewports();
 
 				if(_pickedParticles.size() == 3) {
 
@@ -577,7 +585,7 @@ void PickParticlePlaneInputMode::mouseReleaseEvent(Viewport* vp, QMouseEvent* ev
 		}
 	}
 
-	ViewportInputHandler::mouseReleaseEvent(vp, event);
+	ViewportInputMode::mouseReleaseEvent(vp, event);
 }
 
 /******************************************************************************
@@ -595,7 +603,7 @@ void PickParticlePlaneInputMode::alignPlane(SliceModifier* mod)
 		// Get the object to world transformation for the currently selected node.
 		ObjectNode* node = _pickedParticles[0].objNode.get();
 		TimeInterval interval;
-		const AffineTransformation& nodeTM = node->getWorldTransform(AnimManager::instance().time(), interval);
+		const AffineTransformation& nodeTM = node->getWorldTransform(mod->dataset()->animationSettings()->time(), interval);
 
 		// Transform new plane from world to object space.
 		Plane3 localPlane = nodeTM.inverse() * worldPlane;
@@ -605,7 +613,7 @@ void PickParticlePlaneInputMode::alignPlane(SliceModifier* mod)
 			localPlane = -localPlane;
 
 		localPlane.normalizePlane();
-		UndoableTransaction::handleExceptions(tr("Align plane to particles"), [mod, &localPlane]() {
+		UndoableTransaction::handleExceptions(mod->dataset()->undoStack(), tr("Align plane to particles"), [mod, &localPlane]() {
 			mod->setNormal(localPlane.normal);
 			mod->setDistance(localPlane.dist);
 		});
@@ -618,9 +626,9 @@ void PickParticlePlaneInputMode::alignPlane(SliceModifier* mod)
 /******************************************************************************
 * Lets the input mode render its overlay content in a viewport.
 ******************************************************************************/
-void PickParticlePlaneInputMode::renderOverlay3D(Viewport* vp, ViewportSceneRenderer* renderer, bool isActive)
+void PickParticlePlaneInputMode::renderOverlay3D(Viewport* vp, ViewportSceneRenderer* renderer)
 {
-	ViewportInputHandler::renderOverlay3D(vp, renderer, isActive);
+	ViewportInputMode::renderOverlay3D(vp, renderer);
 
 	Q_FOREACH(const PickResult& pa, _pickedParticles) {
 		renderSelectionMarker(vp, renderer, pa);

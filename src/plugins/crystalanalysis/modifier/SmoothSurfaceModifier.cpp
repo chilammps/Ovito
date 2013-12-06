@@ -37,7 +37,7 @@ SET_PROPERTY_FIELD_LABEL(SmoothSurfaceModifier, _smoothingLevel, "Smoothing leve
 /******************************************************************************
 * Constructs the modifier object.
 ******************************************************************************/
-SmoothSurfaceModifier::SmoothSurfaceModifier() : _smoothingLevel(8)
+SmoothSurfaceModifier::SmoothSurfaceModifier(DataSet* dataset) : Modifier(dataset), _smoothingLevel(8)
 {
 	INIT_PROPERTY_FIELD(SmoothSurfaceModifier::_smoothingLevel);
 }

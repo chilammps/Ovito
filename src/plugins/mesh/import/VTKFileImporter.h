@@ -38,7 +38,7 @@ class OVITO_MESH_EXPORT VTKFileImporter : public LinkedFileImporter
 public:
 
 	/// \brief Constructs a new instance of this class.
-	Q_INVOKABLE VTKFileImporter() {}
+	Q_INVOKABLE VTKFileImporter(DataSet* dataset) : LinkedFileImporter(dataset) {}
 
 	/// \brief Returns the file filter that specifies the files that can be imported by this service.
 	/// \return A wild-card pattern that specifies the file types that can be handled by this import class.

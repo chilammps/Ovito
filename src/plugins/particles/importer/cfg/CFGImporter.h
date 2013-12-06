@@ -38,7 +38,7 @@ class OVITO_PARTICLES_EXPORT CFGImporter : public ParticleImporter
 public:
 
 	/// \brief Constructs a new instance of this class.
-	Q_INVOKABLE CFGImporter() {}
+	Q_INVOKABLE CFGImporter(DataSet* dataset) : ParticleImporter(dataset) {}
 
 	/// \brief Returns the file filter that specifies the files that can be imported by this service.
 	/// \return A wild-card pattern that specifies the file types that can be handled by this import class.

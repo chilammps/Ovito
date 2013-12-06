@@ -26,7 +26,7 @@
 #include <core/dataset/importexport/LinkedFileImporter.h>
 #include <core/utilities/io/CompressedTextParserStream.h>
 #include <plugins/particles/data/ParticleProperty.h>
-#include "ParticleImportData.h"
+#include "ParticleImportTask.h"
 
 namespace Particles {
 
@@ -40,7 +40,7 @@ class OVITO_PARTICLES_EXPORT ParticleImporter : public LinkedFileImporter
 public:
 
 	/// \brief Constructs a new instance of this class.
-	ParticleImporter() : _isMultiTimestepFile(false) {
+	ParticleImporter(DataSet* dataset) : LinkedFileImporter(dataset), _isMultiTimestepFile(false) {
 		INIT_PROPERTY_FIELD(ParticleImporter::_isMultiTimestepFile);
 	}
 
@@ -66,7 +66,7 @@ protected:
 	virtual void scanFileForTimesteps(FutureInterfaceBase& futureInterface, QVector<LinkedFileImporter::FrameSourceInformation>& frames, const QUrl& sourceUrl, CompressedTextParserStream& stream);
 
 	/// Retrieves the given file in the background and scans it for simulation timesteps.
-	virtual void scanMultiTimestepFile(FutureInterface<QVector<LinkedFileImporter::FrameSourceInformation>>& futureInterface, const QUrl sourceUrl);
+	virtual void scanMultiTimestepFile(FutureInterface<QVector<LinkedFileImporter::FrameSourceInformation>>& futureInterface, DataSetContainer& datasetContainer, const QUrl sourceUrl);
 
 private:
 

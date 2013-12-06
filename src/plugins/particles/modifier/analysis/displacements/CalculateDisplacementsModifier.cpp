@@ -22,6 +22,7 @@
 #include <plugins/particles/Particles.h>
 #include <core/scene/objects/SceneObject.h>
 #include <core/dataset/importexport/LinkedFileObject.h>
+#include <core/animation/AnimationSettings.h>
 #include <core/gui/properties/BooleanParameterUI.h>
 #include <core/gui/properties/BooleanRadioButtonParameterUI.h>
 #include <core/gui/properties/IntegerParameterUI.h>
@@ -54,7 +55,7 @@ SET_PROPERTY_FIELD_LABEL(CalculateDisplacementsModifier, _vectorDisplay, "Vector
 /******************************************************************************
 * Constructs the modifier object.
 ******************************************************************************/
-CalculateDisplacementsModifier::CalculateDisplacementsModifier() :
+CalculateDisplacementsModifier::CalculateDisplacementsModifier(DataSet* dataset) : ParticleModifier(dataset),
     _referenceShown(false), _eliminateCellDeformation(false),
     _useReferenceFrameOffset(false), _referenceFrameNumber(0), _referenceFrameOffset(-1),
     _assumeUnwrappedCoordinates(false)
@@ -70,7 +71,7 @@ CalculateDisplacementsModifier::CalculateDisplacementsModifier() :
 
 	// Create the scene object, which will be responsible for loading
 	// and storing the reference configuration.
-	OORef<LinkedFileObject> importObj(new LinkedFileObject());
+	OORef<LinkedFileObject> importObj(new LinkedFileObject(dataset));
 	_referenceObject = importObj;
 
 	// Disable automatic adjustment of animation length for the reference object.
@@ -79,7 +80,7 @@ CalculateDisplacementsModifier::CalculateDisplacementsModifier() :
 	importObj->setAdjustAnimationIntervalEnabled(false);
 
 	// Create display object for vectors.
-	_vectorDisplay = new VectorDisplay();
+	_vectorDisplay = new VectorDisplay(dataset);
 
 	// Don't show vectors by default, because too many vectors could make the
 	// program hang.
@@ -113,7 +114,7 @@ ObjectStatus CalculateDisplacementsModifier::modifyParticles(TimePoint time, Tim
 		// Determine the current frame, preferably from the attributes stored with the pipeline flow state.
 		// If the "Frame" attribute is not present, infer it from the current animation time.
 		int currentFrame = input().attributes().value(QStringLiteral("Frame"),
-				AnimManager::instance().timeToFrame(time)).toInt();
+				dataset()->animationSettings()->timeToFrame(time)).toInt();
 
 		// Use frame offset relative to current configuration.
 		referenceFrame = currentFrame + _referenceFrameOffset;
@@ -132,7 +133,7 @@ ObjectStatus CalculateDisplacementsModifier::modifyParticles(TimePoint time, Tim
 			refState = linkedFileObj->requestFrame(referenceFrame);
 		}
 	}
-	else refState = referenceConfiguration()->evaluate(referenceFrame * AnimManager::instance().ticksPerFrame());
+	else refState = referenceConfiguration()->evaluate(dataset()->animationSettings()->frameToTime(referenceFrame));
 
 	// Make sure the obtained reference configuration is valid and ready to use.
 	if(refState.status().type() == ObjectStatus::Error)

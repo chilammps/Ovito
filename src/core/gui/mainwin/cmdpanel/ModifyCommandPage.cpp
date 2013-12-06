@@ -24,10 +24,13 @@
 #include <core/scene/pipeline/PipelineObject.h>
 #include <core/scene/pipeline/Modifier.h>
 #include <core/scene/ObjectNode.h>
-#include <core/gui/undo/UndoManager.h>
+#include <core/scene/SelectionSet.h>
+#include <core/viewport/ViewportConfiguration.h>
+#include <core/dataset/UndoStack.h>
+#include <core/dataset/DataSetContainer.h>
 #include <core/gui/actions/ActionManager.h>
+#include <core/gui/mainwin/MainWindow.h>
 #include <core/gui/widgets/selection/SceneNodeSelectionBox.h>
-#include <core/viewport/ViewportManager.h>
 #include "ModifyCommandPage.h"
 #include "ModificationListModel.h"
 #include "ModifierListBox.h"
@@ -37,17 +40,18 @@ namespace Ovito {
 /******************************************************************************
 * Initializes the modify page.
 ******************************************************************************/
-ModifyCommandPage::ModifyCommandPage()
+ModifyCommandPage::ModifyCommandPage(MainWindow* mainWindow, QWidget* parent) : QWidget(parent),
+		_datasetContainer(mainWindow->datasetContainer()), _actionManager(mainWindow->actionManager())
 {
 	QGridLayout* layout = new QGridLayout(this);
 	layout->setContentsMargins(2,2,2,2);
 	layout->setSpacing(4);
 	layout->setColumnStretch(1,1);
 
-	SceneNodeSelectionBox* nodeSelBox = new SceneNodeSelectionBox(this);
+	SceneNodeSelectionBox* nodeSelBox = new SceneNodeSelectionBox(_datasetContainer, this);
 	layout->addWidget(nodeSelBox, 0, 0, 1, 2);
 
-	_modificationListModel = new ModificationListModel(this);
+	_modificationListModel = new ModificationListModel(_datasetContainer, this);
 	_modifierSelector = new ModifierListBox(this, _modificationListModel);
     layout->addWidget(_modifierSelector, 1, 0, 1, 2);
     connect(_modifierSelector, SIGNAL(activated(int)), this, SLOT(onModifierAdd(int)));
@@ -81,20 +85,20 @@ ModifyCommandPage::ModifyCommandPage()
 #endif
 	subLayout->addWidget(editToolbar);
 
-	QAction* deleteModifierAction = ActionManager::instance().createCommandAction(ACTION_MODIFIER_DELETE, tr("Delete Modifier"), ":/core/actions/modify/delete_modifier.png");
+	QAction* deleteModifierAction = _actionManager->createCommandAction(ACTION_MODIFIER_DELETE, tr("Delete Modifier"), ":/core/actions/modify/delete_modifier.png");
 	connect(deleteModifierAction, SIGNAL(triggered(bool)), this, SLOT(onDeleteModifier()));
 	editToolbar->addAction(deleteModifierAction);
 
 	editToolbar->addSeparator();
 
-	QAction* moveModifierUpAction = ActionManager::instance().createCommandAction(ACTION_MODIFIER_MOVE_UP, tr("Move Modifier Up"), ":/core/actions/modify/modifier_move_up.png");
+	QAction* moveModifierUpAction = _actionManager->createCommandAction(ACTION_MODIFIER_MOVE_UP, tr("Move Modifier Up"), ":/core/actions/modify/modifier_move_up.png");
 	connect(moveModifierUpAction, SIGNAL(triggered(bool)), this, SLOT(onModifierMoveUp()));
 	editToolbar->addAction(moveModifierUpAction);
-	QAction* moveModifierDownAction = ActionManager::instance().createCommandAction(ACTION_MODIFIER_MOVE_DOWN, tr("Move Modifier Down"), ":/core/actions/modify/modifier_move_down.png");
+	QAction* moveModifierDownAction = mainWindow->actionManager()->createCommandAction(ACTION_MODIFIER_MOVE_DOWN, tr("Move Modifier Down"), ":/core/actions/modify/modifier_move_down.png");
 	connect(moveModifierDownAction, SIGNAL(triggered(bool)), this, SLOT(onModifierMoveDown()));
 	editToolbar->addAction(moveModifierDownAction);
 
-	QAction* toggleModifierStateAction = ActionManager::instance().createCommandAction(ACTION_MODIFIER_TOGGLE_STATE, tr("Enable/Disable Modifier"));
+	QAction* toggleModifierStateAction = _actionManager->createCommandAction(ACTION_MODIFIER_TOGGLE_STATE, tr("Enable/Disable Modifier"));
 	toggleModifierStateAction->setCheckable(true);
 	QIcon toggleStateActionIcon(QString(":/core/actions/modify/modifier_enabled_large.png"));
 	toggleStateActionIcon.addFile(QString(":/core/actions/modify/modifier_disabled_large.png"), QSize(), QIcon::Normal, QIcon::On);
@@ -110,41 +114,11 @@ ModifyCommandPage::ModifyCommandPage()
 	splitter->addWidget(_propertiesPanel);
 	splitter->setStretchFactor(1,1);
 
-	connect(&_selectionSetListener, SIGNAL(notificationEvent(ReferenceEvent*)), this, SLOT(onSelectionSetEvent(ReferenceEvent*)));
+	connect(&_datasetContainer, &DataSetContainer::selectionChangeComplete, this, &ModifyCommandPage::onSelectionChangeComplete);
 	updateActions(nullptr);
 
 	// Create About panel.
 	createAboutPanel();
-}
-
-/******************************************************************************
-* Resets the modify page to the initial state.
-******************************************************************************/
-void ModifyCommandPage::reset()
-{
-	CommandPanelPage::reset();
-}
-
-/******************************************************************************
-* Is called when the user selects the page.
-******************************************************************************/
-void ModifyCommandPage::onEnter()
-{
-	CommandPanelPage::onEnter();
-
-	// Update everything.
-	updateActions(nullptr);
-	onSelectionChangeComplete(DataSetManager::instance().currentSelection());
-}
-
-/******************************************************************************
-* Is called when the user selects another page.
-******************************************************************************/
-void ModifyCommandPage::onLeave()
-{
-	CommandPanelPage::onLeave();
-	_modificationListModel->clear();
-	_selectionSetListener.setTarget(nullptr);
 }
 
 /******************************************************************************
@@ -153,17 +127,7 @@ void ModifyCommandPage::onLeave()
 void ModifyCommandPage::onSelectionChangeComplete(SelectionSet* newSelection)
 {
 	// Make sure we get informed about any future changes of the selection set.
-	_selectionSetListener.setTarget(newSelection);
-
 	_modificationListModel->refreshList();
-}
-
-/******************************************************************************
-* This is called by the RefTargetListener that listens to notification messages sent by the
-* current selection set.
-******************************************************************************/
-void ModifyCommandPage::onSelectionSetEvent(ReferenceEvent* event)
-{
 }
 
 /******************************************************************************
@@ -180,7 +144,8 @@ void ModifyCommandPage::onSelectedItemChanged()
 
 	if(object != _propertiesPanel->editObject()) {
 		_propertiesPanel->setEditObject(object);
-		ViewportManager::instance().updateViewports();
+		if(_datasetContainer.currentSet())
+			_datasetContainer.currentSet()->viewportConfig()->updateViewports();
 	}
 	updateActions(currentItem);
 
@@ -194,10 +159,10 @@ void ModifyCommandPage::onSelectedItemChanged()
 ******************************************************************************/
 void ModifyCommandPage::updateActions(ModificationListItem* currentItem)
 {
-	QAction* deleteModifierAction = ActionManager::instance().getAction(ACTION_MODIFIER_DELETE);
-	QAction* moveModifierUpAction = ActionManager::instance().getAction(ACTION_MODIFIER_MOVE_UP);
-	QAction* moveModifierDownAction = ActionManager::instance().getAction(ACTION_MODIFIER_MOVE_DOWN);
-	QAction* toggleModifierStateAction = ActionManager::instance().getAction(ACTION_MODIFIER_TOGGLE_STATE);
+	QAction* deleteModifierAction = _actionManager->getAction(ACTION_MODIFIER_DELETE);
+	QAction* moveModifierUpAction = _actionManager->getAction(ACTION_MODIFIER_MOVE_UP);
+	QAction* moveModifierDownAction = _actionManager->getAction(ACTION_MODIFIER_MOVE_DOWN);
+	QAction* toggleModifierStateAction = _actionManager->getAction(ACTION_MODIFIER_TOGGLE_STATE);
 
 	Modifier* modifier = currentItem ? dynamic_object_cast<Modifier>(currentItem->object()) : nullptr;
 	if(modifier) {
@@ -241,9 +206,9 @@ void ModifyCommandPage::onModifierAdd(int index)
 	if(index >= 0 && _modificationListModel->isUpToDate()) {
 		const OvitoObjectType* descriptor = static_cast<const OvitoObjectType*>(_modifierSelector->itemData(index).value<void*>());
 		if(descriptor) {
-			UndoableTransaction::handleExceptions(tr("Apply modifier"), [descriptor, this]() {
+			UndoableTransaction::handleExceptions(_datasetContainer.currentSet()->undoStack(), tr("Apply modifier"), [descriptor, this]() {
 				// Create an instance of the modifier...
-				OORef<Modifier> modifier = static_object_cast<Modifier>(descriptor->createInstance());
+				OORef<Modifier> modifier = static_object_cast<Modifier>(descriptor->createInstance(_datasetContainer.currentSet()));
 				OVITO_CHECK_OBJECT_POINTER(modifier);
 				// .. and apply it.
 				_modificationListModel->applyModifier(modifier.get());
@@ -266,9 +231,9 @@ void ModifyCommandPage::onDeleteModifier()
 	Modifier* modifier = dynamic_object_cast<Modifier>(selectedItem->object());
 	if(!modifier) return;
 
-	UndoableTransaction::handleExceptions(tr("Delete modifier"), [selectedItem, modifier]() {
+	UndoableTransaction::handleExceptions(_datasetContainer.currentSet()->undoStack(), tr("Delete modifier"), [selectedItem, modifier]() {
 
-		// Remove each ModifierApplication from the ModifiedObject it belongs to.
+		// Remove each ModifierApplication from the corresponding PipelineObject.
 		Q_FOREACH(ModifierApplication* modApp, selectedItem->modifierApplications()) {
 			OVITO_ASSERT(modApp->modifier() == modifier);
 			OVITO_CHECK_OBJECT_POINTER(modApp->pipelineObject());
@@ -289,7 +254,7 @@ void ModifyCommandPage::onModifierStackDoubleClicked(const QModelIndex& index)
 	Modifier* modifier = dynamic_object_cast<Modifier>(item->object());
 	if(modifier) {
 		// Toggle enabled state of modifier.
-		UndoableTransaction::handleExceptions(tr("Toggle modifier state"), [modifier]() {
+		UndoableTransaction::handleExceptions(_datasetContainer.currentSet()->undoStack(), tr("Toggle modifier state"), [modifier]() {
 			modifier->setEnabled(!modifier->isEnabled());
 		});
 	}
@@ -317,12 +282,12 @@ void ModifyCommandPage::onModifierMoveUp()
 	if(modApp == pipelineObj->modifierApplications().back())
 		return;
 
-	UndoableTransaction::handleExceptions(tr("Move modifier up"), [pipelineObj, modApp]() {
+	UndoableTransaction::handleExceptions(_datasetContainer.currentSet()->undoStack(), tr("Move modifier up"), [pipelineObj, modApp]() {
 		// Determine old position in stack.
 		int index = pipelineObj->modifierApplications().indexOf(modApp.get());
-		// Remove ModifierApplication from the ModifiedObject.
+		// Remove ModifierApplication from the PipelineObject.
 		pipelineObj->removeModifier(modApp.get());
-		// Re-insert ModifierApplication into the ModifiedObject.
+		// Re-insert ModifierApplication into the PipelineObject.
 		pipelineObj->insertModifierApplication(modApp.get(), index+1);
 	});
 }
@@ -348,12 +313,12 @@ void ModifyCommandPage::onModifierMoveDown()
 	if(modApp == pipelineObj->modifierApplications().front())
 		return;
 
-	UndoableTransaction::handleExceptions(tr("Move modifier down"), [pipelineObj, modApp]() {
+	UndoableTransaction::handleExceptions(_datasetContainer.currentSet()->undoStack(), tr("Move modifier down"), [pipelineObj, modApp]() {
 		// Determine old position in stack.
 		int index = pipelineObj->modifierApplications().indexOf(modApp.get());
-		// Remove ModifierApplication from the ModifiedObject.
+		// Remove ModifierApplication from the PipelineObject.
 		pipelineObj->removeModifier(modApp.get());
-		// Re-insert ModifierApplication into the ModifiedObject.
+		// Re-insert ModifierApplication into the PipelineObject.
 		pipelineObj->insertModifierApplication(modApp.get(), index-1);
 	});
 }

@@ -36,8 +36,8 @@ class OVITO_PARTICLES_EXPORT CalculateDisplacementsModifier : public ParticleMod
 {
 public:
 
-	/// Default constructor.
-	Q_INVOKABLE CalculateDisplacementsModifier();
+	/// Constructor.
+	Q_INVOKABLE CalculateDisplacementsModifier(DataSet* dataset);
 
 	/// Returns the object that contains the reference configuration of the particles
 	/// used for calculating the displacement vectors.

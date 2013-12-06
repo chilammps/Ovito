@@ -21,7 +21,7 @@
 
 #include <core/Core.h>
 #include <core/gui/properties/PropertiesPanel.h>
-#include <core/gui/undo/UndoManager.h>
+#include <core/dataset/UndoStack.h>
 
 namespace Ovito {
 
@@ -48,8 +48,6 @@ void PropertiesPanel::setEditObject(RefTarget* newEditObject)
 	if(newEditObject == editObject())
 		return;
 
-	UndoSuspender noUndo;
-
 	if(editor()) {
 		OVITO_CHECK_OBJECT_POINTER(editor());
 		
@@ -70,7 +68,7 @@ void PropertiesPanel::setEditObject(RefTarget* newEditObject)
 		// Open new properties editor.
 		_editor = newEditObject->createPropertiesEditor();
 		if(editor()) {
-			editor()->initialize(this, RolloutInsertionParameters());
+			editor()->initialize(this, newEditObject->dataset()->mainWindow(), RolloutInsertionParameters());
 			editor()->setEditObject(newEditObject);
 		}
 	}

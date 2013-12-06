@@ -21,10 +21,9 @@
 
 #include <plugins/mesh/Mesh.h>
 #include <core/dataset/importexport/LinkedFileObject.h>
-#include <core/utilities/io/FileManager.h>
-#include <core/utilities/concurrent/ProgressManager.h>
 #include <core/scene/objects/geometry/TriMeshObject.h>
 #include <core/scene/display/geometry/TriMeshDisplay.h>
+#include <core/utilities/io/FileManager.h>
 #include "TriMeshImportData.h"
 
 namespace Mesh {
@@ -32,23 +31,20 @@ namespace Mesh {
 /******************************************************************************
 * Reads the data from the input file(s).
 ******************************************************************************/
-void TriMeshImportData::load(FutureInterfaceBase& futureInterface)
+void TriMeshImportData::load(DataSetContainer& container, FutureInterfaceBase& futureInterface)
 {
 	futureInterface.setProgressText(QString("Reading file %1").arg(frame().sourceFile.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
 
 	// Fetch file.
-	Future<QString> fetchFileFuture = FileManager::instance().fetchUrl(frame().sourceFile);
-	ProgressManager::instance().addTask(fetchFileFuture);
-	if(!futureInterface.waitForSubTask(fetchFileFuture)) {
+	Future<QString> fetchFileFuture = FileManager::instance().fetchUrl(container, frame().sourceFile);
+	if(!futureInterface.waitForSubTask(fetchFileFuture))
 		return;
-	}
-	OVITO_ASSERT(fetchFileFuture.isCanceled() == false);
 
-	// Open file.s
+	// Open file for reading.
 	QFile file(fetchFileFuture.result());
 	CompressedTextParserStream stream(file, frame().sourceFile.path());
 
-	// Jump to requested file byte offset.
+	// Jump to requested byte offset.
 	if(frame().byteOffset != 0)
 		stream.seek(frame().byteOffset);
 
@@ -64,10 +60,10 @@ QSet<SceneObject*> TriMeshImportData::insertIntoScene(LinkedFileObject* destinat
 {
 	OORef<TriMeshObject> triMeshObj = destination->findSceneObject<TriMeshObject>();
 	if(!triMeshObj) {
-		triMeshObj = new TriMeshObject();
+		triMeshObj = new TriMeshObject(destination->dataset());
 
 		// Create a display object for the scene object.
-		OORef<TriMeshDisplay> triMeshDisplay = new TriMeshDisplay();
+		OORef<TriMeshDisplay> triMeshDisplay = new TriMeshDisplay(destination->dataset());
 		triMeshObj->addDisplayObject(triMeshDisplay.get());
 
 		destination->addSceneObject(triMeshObj.get());

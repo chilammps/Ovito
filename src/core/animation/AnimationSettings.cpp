@@ -33,14 +33,18 @@ DEFINE_PROPERTY_FIELD(AnimationSettings, _playbackSpeed, "PlaybackSpeed");
 /******************************************************************************
 * Default constructor. Assigns default values.
 ******************************************************************************/
-AnimationSettings::AnimationSettings() :
+AnimationSettings::AnimationSettings(DataSet* dataset) : RefTarget(dataset),
 		_ticksPerFrame(TICKS_PER_SECOND/10), _playbackSpeed(1),
-		_animationInterval(0, 0), _time(0)
+		_animationInterval(0, 0), _time(0), _animSuspendCount(0),  _autoKeyMode(false), _timeIsChanging(0),
+		_isPlaybackActive(false)
 {
 	INIT_PROPERTY_FIELD(AnimationSettings::_time);
 	INIT_PROPERTY_FIELD(AnimationSettings::_animationInterval);
 	INIT_PROPERTY_FIELD(AnimationSettings::_ticksPerFrame);
 	INIT_PROPERTY_FIELD(AnimationSettings::_playbackSpeed);
+
+	// Call our own listener when the current animation time changes.
+	connect(this, &AnimationSettings::timeChanged, this, &AnimationSettings::onTimeChanged);
 }
 
 /******************************************************************************
@@ -90,6 +94,145 @@ OORef<RefTarget> AnimationSettings::clone(bool deepCopy, CloneHelper& cloneHelpe
 	clone->_namedFrames = this->_namedFrames;
 
 	return clone;
+}
+
+/******************************************************************************
+* Is called when the current animation time has changed.
+******************************************************************************/
+void AnimationSettings::onTimeChanged(TimePoint newTime)
+{
+	_timeIsChanging++;
+	dataset()->runWhenSceneIsReady([this] () {
+		_timeIsChanging--;
+		Q_EMIT timeChangeComplete();
+	});
+}
+
+/******************************************************************************
+* Converts a time value to its string representation.
+******************************************************************************/
+QString AnimationSettings::timeToString(TimePoint time)
+{
+	return QString::number(timeToFrame(time));
+}
+
+/******************************************************************************
+* Converts a string to a time value.
+* Throws an exception when a parsing error occurs.
+******************************************************************************/
+TimePoint AnimationSettings::stringToTime(const QString& stringValue)
+{
+	TimePoint value;
+	bool ok;
+	value = (TimePoint)stringValue.toInt(&ok);
+	if(!ok)
+		throw Exception(tr("Invalid frame number format: %1").arg(stringValue));
+	return frameToTime(value);
+}
+
+/******************************************************************************
+* Enables or disables auto key generation mode.
+******************************************************************************/
+void AnimationSettings::setAutoKeyMode(bool on)
+{
+	if(_autoKeyMode == on)
+		return;
+
+	_autoKeyMode = on;
+	Q_EMIT autoKeyModeChanged(_autoKeyMode);
+}
+
+/******************************************************************************
+* Sets the current animation time to the start of the animation interval.
+******************************************************************************/
+void AnimationSettings::jumpToAnimationStart()
+{
+	setTime(animationInterval().start());
+}
+
+/******************************************************************************
+* Sets the current animation time to the end of the animation interval.
+******************************************************************************/
+void AnimationSettings::jumpToAnimationEnd()
+{
+	setTime(animationInterval().end());
+}
+
+/******************************************************************************
+* Jumps to the previous animation frame.
+******************************************************************************/
+void AnimationSettings::jumpToPreviousFrame()
+{
+	// Subtract one frame from current time.
+	TimePoint newTime = frameToTime(timeToFrame(time()) - 1);
+	// Clamp new time
+	newTime = std::max(newTime, animationInterval().start());
+	// Set new time.
+	setTime(newTime);
+}
+
+/******************************************************************************
+* Jumps to the previous animation frame.
+******************************************************************************/
+void AnimationSettings::jumpToNextFrame()
+{
+	// Subtract one frame from current time.
+	TimePoint newTime = frameToTime(timeToFrame(time()) + 1);
+	// Clamp new time
+	newTime = std::min(newTime, animationInterval().end());
+	// Set new time.
+	setTime(newTime);
+}
+
+/******************************************************************************
+* Starts playback of the animation in the viewports.
+******************************************************************************/
+void AnimationSettings::startAnimationPlayback()
+{
+	if(!_isPlaybackActive) {
+		int timerSpeed = 1000;
+		if(playbackSpeed() > 1) timerSpeed /= playbackSpeed();
+		else if(playbackSpeed() < -1) timerSpeed *= -playbackSpeed();
+		_isPlaybackActive = true;
+		QTimer::singleShot(timerSpeed / framesPerSecond(), this, SLOT(onPlaybackTimer()));
+	}
+}
+
+/******************************************************************************
+* Stops playback of the animation in the viewports.
+******************************************************************************/
+void AnimationSettings::stopAnimationPlayback()
+{
+	_isPlaybackActive = false;
+}
+
+/******************************************************************************
+* Timer callback used during animation playback.
+******************************************************************************/
+void AnimationSettings::onPlaybackTimer()
+{
+	// Check if the animation playback has been deactivated in the meantime.
+	if(!_isPlaybackActive)
+		return;
+
+	// Add one frame to current time
+	int newFrame = timeToFrame(time()) + 1;
+	TimePoint newTime = frameToTime(newFrame);
+
+	// Loop back to first frame if end has been reached.
+	if(newTime > animationInterval().end())
+		newTime = animationInterval().start();
+
+	// Set new time.
+	setTime(newTime);
+
+	// Wait until the scene is ready. Then jump to the next frame.
+	dataset()->runWhenSceneIsReady([this]() {
+		if(_isPlaybackActive) {
+			_isPlaybackActive = false;
+			startAnimationPlayback();
+		}
+	});
 }
 
 };

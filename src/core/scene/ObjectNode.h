@@ -45,7 +45,7 @@ public:
 
 	/// \brief Constructs an object node that is associated with the given SceneObject.
 	/// \param object The scene object that should be placed into the scene.
-	Q_INVOKABLE ObjectNode(SceneObject* object = NULL);
+	Q_INVOKABLE ObjectNode(DataSet* dataset, SceneObject* object = nullptr);
 
 	/// \brief Returns whether this is an instance of the ObjectNode class.
 	/// \return Always returns \c true.

@@ -47,7 +47,7 @@ public:
 	/// \param destination The data stream to which the binary data is written. This must be 
 	///                    stream that supports random access.
 	/// \throw Exception when the given data stream does only support sequential access. 
-	ObjectSaveStream(QDataStream& destination) : SaveStream(destination) {}
+	ObjectSaveStream(QDataStream& destination) : SaveStream(destination), _dataset(nullptr) {}
 
 	/// \brief The destructor closes the stream.
 	virtual ~ObjectSaveStream();
@@ -66,6 +66,9 @@ protected:
 
 	/// Contains all objects ordered by ID.
 	QVector<OvitoObject*> _objects;
+
+	/// The current dataset being saved.
+	DataSet* _dataset;
 };
 
 };

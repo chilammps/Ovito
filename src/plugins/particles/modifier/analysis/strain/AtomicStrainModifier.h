@@ -37,8 +37,8 @@ class OVITO_PARTICLES_EXPORT AtomicStrainModifier : public AsynchronousParticleM
 {
 public:
 
-	/// Default constructor.
-	Q_INVOKABLE AtomicStrainModifier();
+	/// Constructor.
+	Q_INVOKABLE AtomicStrainModifier(DataSet* dataset);
 
 	/// Returns the object that contains the reference configuration of the particles
 	/// used for calculating the displacement vectors.
@@ -98,7 +98,6 @@ public:
 
 public:
 
-	Q_PROPERTY(bool referenceShown READ referenceShown WRITE setReferenceShown)
 	Q_PROPERTY(bool eliminateCellDeformation READ eliminateCellDeformation WRITE setEliminateCellDeformation)
 	Q_PROPERTY(bool assumeUnwrappedCoordinates READ assumeUnwrappedCoordinates WRITE setAssumeUnwrappedCoordinates)
 	Q_PROPERTY(FloatType cutoff READ cutoff WRITE setCutoff)

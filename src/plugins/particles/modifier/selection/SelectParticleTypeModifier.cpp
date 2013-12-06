@@ -20,7 +20,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <plugins/particles/Particles.h>
-#include <core/gui/undo/UndoManager.h>
+#include <core/dataset/UndoStack.h>
+#include <core/animation/AnimationSettings.h>
 #include <core/scene/pipeline/PipelineObject.h>
 #include <plugins/particles/util/ParticlePropertyComboBox.h>
 #include <plugins/particles/data/ParticleTypeProperty.h>
@@ -41,8 +42,8 @@ void SelectParticleTypeModifier::setSourceProperty(const ParticlePropertyReferen
 
 	// Make this change undoable.
 	qRegisterMetaType<ParticlePropertyReference>();
-	if(UndoManager::instance().isRecording())
-		UndoManager::instance().push(new SimplePropertyChangeOperation(this, "sourceProperty"));
+	if(dataset()->undoStack().isRecording())
+		dataset()->undoStack().push(new SimplePropertyChangeOperation(this, "sourceProperty"));
 
 	_inputPropertyRef = prop;
 	notifyDependents(ReferenceEvent::TargetChanged);
@@ -71,8 +72,8 @@ void SelectParticleTypeModifier::setSelectedParticleTypes(const QSet<int>& types
 		QSet<int> oldTypes;
 	};
 
-	if(UndoManager::instance().isRecording())
-		UndoManager::instance().push(new SelectParticleTypesOperation(this));
+	if(dataset()->undoStack().isRecording())
+		dataset()->undoStack().push(new SelectParticleTypesOperation(this));
 
 	_selectedParticleTypes = types;
 	notifyDependents(ReferenceEvent::TargetChanged);
@@ -138,7 +139,7 @@ void SelectParticleTypeModifier::initializeModifier(PipelineObject* pipeline, Mo
 	ParticleModifier::initializeModifier(pipeline, modApp);
 
 	// Select the first particle type property from the input with more than one particle type.
-	PipelineFlowState input = pipeline->evaluatePipeline(AnimManager::instance().time(), modApp, false);
+	PipelineFlowState input = pipeline->evaluatePipeline(dataset()->animationSettings()->time(), modApp, false);
 	ParticleTypeProperty* bestProperty = nullptr;
 	for(const auto& o : input.objects()) {
 		ParticleTypeProperty* ptypeProp = dynamic_object_cast<ParticleTypeProperty>(o.get());
@@ -300,7 +301,7 @@ void SelectParticleTypeModifierEditor::onPropertySelected(int index)
 	SelectParticleTypeModifier* mod = static_object_cast<SelectParticleTypeModifier>(editObject());
 	if(!mod) return;
 
-	UndoableTransaction::handleExceptions(tr("Select property"), [this, mod]() {
+	undoableTransaction(tr("Select property"), [this, mod]() {
 		mod->setSourceProperty(propertyListBox->currentProperty());
 	});
 }
@@ -319,7 +320,7 @@ void SelectParticleTypeModifierEditor::onParticleTypeSelected(QListWidgetItem* i
 	else
 		types.remove(item->data(Qt::UserRole).toInt());
 
-	UndoableTransaction::handleExceptions(tr("Select type"), [mod, &types]() {
+	undoableTransaction(tr("Select type"), [mod, &types]() {
 		mod->setSelectedParticleTypes(types);
 	});
 }

@@ -23,7 +23,7 @@
 #include <core/scene/pipeline/Modifier.h>
 #include <core/scene/pipeline/ModifierApplication.h>
 #include <core/scene/pipeline/PipelineObject.h>
-#include <core/animation/AnimManager.h>
+#include <core/animation/AnimationSettings.h>
 
 namespace Ovito {
 
@@ -34,7 +34,7 @@ SET_PROPERTY_FIELD_LABEL(Modifier, _isEnabled, "Enabled")
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-Modifier::Modifier() : _isEnabled(true)
+Modifier::Modifier(DataSet* dataset) : RefTarget(dataset), _isEnabled(true)
 {
 	INIT_PROPERTY_FIELD(Modifier::_isEnabled);
 }
@@ -61,9 +61,7 @@ QVector<ModifierApplication*> Modifier::modifierApplications() const
 ******************************************************************************/
 QVector<QPair<ModifierApplication*, PipelineFlowState>> Modifier::getModifierInputs() const
 {
-	UndoSuspender noUndo;
-		
-	TimePoint time = AnimManager::instance().time();
+	TimePoint time = dataset()->animationSettings()->time();
 	QVector<QPair<ModifierApplication*, PipelineFlowState>> results;
 	Q_FOREACH(RefMaker* dependent, dependents()) {
         ModifierApplication* modApp = dynamic_object_cast<ModifierApplication>(dependent);
@@ -83,13 +81,12 @@ QVector<QPair<ModifierApplication*, PipelineFlowState>> Modifier::getModifierInp
 ******************************************************************************/
 PipelineFlowState Modifier::getModifierInput() const 
 {
-	UndoSuspender noUndo;
-
 	Q_FOREACH(RefMaker* dependent, dependents()) {
         ModifierApplication* modApp = dynamic_object_cast<ModifierApplication>(dependent);
 		if(modApp != NULL && modApp->modifier() == this) {
-			if(PipelineObject* pipelineObj = modApp->pipelineObject())
-				return pipelineObj->evaluatePipeline(AnimManager::instance().time(), modApp, false);
+			if(PipelineObject* pipelineObj = modApp->pipelineObject()) {
+				return pipelineObj->evaluatePipeline(dataset()->animationSettings()->time(), modApp, false);
+			}
 		}
 	}
 

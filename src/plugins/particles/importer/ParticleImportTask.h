@@ -19,8 +19,8 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef __OVITO_PARTICLE_IMPORT_DATA_H
-#define __OVITO_PARTICLE_IMPORT_DATA_H
+#ifndef __OVITO_PARTICLE_IMPORT_TASK_H
+#define __OVITO_PARTICLE_IMPORT_TASK_H
 
 #include <plugins/particles/Particles.h>
 #include <core/dataset/importexport/LinkedFileImporter.h>
@@ -34,7 +34,7 @@ namespace Particles {
 using namespace Ovito;
 
 /**
- * Container structure for data imported by a ParticleImporter.
+ * Background loading task and data container used by a ParticleImporter derived class.
  */
 class OVITO_PARTICLES_EXPORT ParticleImportTask : public LinkedFileImporter::ImportTask
 {
@@ -50,10 +50,13 @@ public:
 public:
 
 	/// Constructor.
-	ParticleImportTask(const LinkedFileImporter::FrameSourceInformation& frame) : LinkedFileImporter::ImportTask(frame) {}
+	ParticleImportTask(const LinkedFileImporter::FrameSourceInformation& frame) : LinkedFileImporter::ImportTask(frame), _datasetContainer(nullptr) {}
 
 	/// Is called in the background thread to perform the data file import.
-	virtual void load(FutureInterfaceBase& futureInterface) override;
+	virtual void load(DataSetContainer& container, FutureInterfaceBase& futureInterface) override;
+
+	/// Returns the current dataset container.
+	DataSetContainer& datasetContainer() const { OVITO_CHECK_POINTER(_datasetContainer); return *_datasetContainer; }
 
 	/// Lets the data container insert the data it holds into the scene by creating
 	/// appropriate scene objects.
@@ -123,8 +126,11 @@ private:
 
 	/// The list of particle types.
 	std::map<int, ParticleTypeDefinition> _particleTypes;
+
+	/// The current dataset container.
+	DataSetContainer* _datasetContainer;
 };
 
 };
 
-#endif // __OVITO_PARTICLE_IMPORT_DATA_H
+#endif // __OVITO_PARTICLE_IMPORT_TASK_H

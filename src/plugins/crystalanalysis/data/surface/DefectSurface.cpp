@@ -30,9 +30,9 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(CrystalAnalysis, DefectSurface, SceneObject)
 /******************************************************************************
 * Constructs an empty defect surface object.
 ******************************************************************************/
-DefectSurface::DefectSurface()
+DefectSurface::DefectSurface(DataSet* dataset) : SceneObject(dataset)
 {
-	addDisplayObject(new DefectSurfaceDisplay());
+	addDisplayObject(new DefectSurfaceDisplay(dataset));
 }
 
 /******************************************************************************

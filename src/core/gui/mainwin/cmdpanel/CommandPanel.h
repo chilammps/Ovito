@@ -23,17 +23,15 @@
 #define __OVITO_COMMAND_PANEL_H
 
 #include <core/Core.h>
-#include <core/gui/widgets/general/RolloutContainer.h>
-#include <core/dataset/DataSetManager.h>
 
 namespace Ovito {
 
 class RefTarget;			// defined in RefTarget.h
-class CommandPanelPage;		// defined below
+class DataSetContainer;		// defined in DataSetContainer.h
 class ModifyCommandPage;	// defined in ModifyCommandPage.h
-class CreationCommandPage;	// defined in CreationCommandPage.h
 class RenderCommandPage;	// defined in RenderCommandPage.h
 class UtilityCommandPage;	// defined in UtilityCommandPage.h
+class MainWindow;			// defined in MainWindow.h
 
 /******************************************************************************
 * The command panel in the main window.
@@ -48,25 +46,22 @@ public:
 	enum Page {
 		MODIFY_PAGE		= 0,
 		RENDER_PAGE		= 1,
-		UTILITIES_PAGE	= 2,
-		CREATION_PAGE	= 3,
+		UTILITIES_PAGE	= 2
 	};
 
 	/// \brief Creates the command panel.
-	/// \param parent The parent widget.
-	CommandPanel(QWidget* parent = nullptr);
+	CommandPanel(MainWindow* mainWindow, QWidget* parent);
 
 	/// \brief Activate one of the command pages.
 	/// \param newPage The identifier of the page to activate.
-	/// \sa currentPage()
-	void setCurrentPage(Page newPage);
+	void setCurrentPage(Page newPage) {
+		OVITO_ASSERT(newPage < _tabWidget->count());
+		_tabWidget->setCurrentIndex((int)newPage);
+	}
 
 	/// \brief Returns the active command page.
 	/// \return The identifier of the page that is currently active.
-	Page currentPage() const { return (Page)tabWidget->currentIndex(); }
-
-	/// \brief Returns the object creation page contained in the command panel.
-	CreationCommandPage* creationPage() const { return _creationPage; }
+	Page currentPage() const { return (Page)_tabWidget->currentIndex(); }
 
 	/// \brief Returns the modification page contained in the command panel.
 	ModifyCommandPage* modifyPage() const { return _modifyPage; }
@@ -77,60 +72,15 @@ public:
 	/// \brief Returns the utility page contained in the command panel.
 	UtilityCommandPage* utilityPage() const { return _utilityPage; }
 
-	/// \brief Returns the object that is currently being edited in the command panel.
-	/// \return The object being edited in the command panel or \c NULL if no object is selected.
-	RefTarget* editObject() const;
-
 	/// \brief Returns the default size for the command panel.
-	virtual QSize sizeHint() const { return QSize(336,300); }
-
-protected Q_SLOTS:
-
-	/// This is called after all changes to the selection set have been completed.
-	void onSelectionChangeComplete(SelectionSet* newSelection);
-
-	/// Is called when the user has switched to another tab in the command panel.
-	void onTabSwitched();
-
-	/// Resets the command panel to the initial state.
-	void reset();
+	virtual QSize sizeHint() const { return QSize(336, 300); }
 
 private:
 
-	QTabWidget* tabWidget;
-	int lastPage;
-
+	QTabWidget* _tabWidget;
 	ModifyCommandPage* _modifyPage;
-	CreationCommandPage* _creationPage;
 	RenderCommandPage* _renderPage;
 	UtilityCommandPage* _utilityPage;
-
-	friend class MainFrame;
-};
-
-/******************************************************************************
-* Base class for all pages in the command panel.
-******************************************************************************/
-class CommandPanelPage : public QWidget
-{
-	Q_OBJECT
-
-public:
-
-	/// Constructor.
-	CommandPanelPage() : QWidget() {}
-
-	/// Resets the page to its initial state.
-	virtual void reset() {}
-
-	/// Is called when the user selects the page.
-	virtual void onEnter() {}
-
-	/// Is called when the user selects another page.
-	virtual void onLeave() {}
-
-	/// This is called after all changes to the selection set have been completed.
-	virtual void onSelectionChangeComplete(SelectionSet* newSelection) {}
 };
 
 };

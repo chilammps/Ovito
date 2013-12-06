@@ -32,10 +32,6 @@
 
 namespace Ovito {
 
-class PropertiesEditor;		// defined in PropertiesEditor.h
-class PropertiesPanel;		// defined in PropertiesPanel.h
-class CloneHelper;			// defined in CloneHelper.h
-
 /**
  * \brief Base class for objects that are referenced by RefMaker objects.
  */
@@ -77,11 +73,19 @@ public:
 
 protected:
 
-	/// The default constructor.
-	RefTarget() : RefMaker() {}
+	/// \brief Constructor.
+	/// \param dataset The dataset this object will belong to.
+	RefTarget(DataSet* dataset) : RefMaker(dataset) {
+		OVITO_CHECK_POINTER(dataset);
+	}
 
+#ifdef OVITO_DEBUG
 	/// \brief The virtual destructor.
-	virtual ~RefTarget();
+	virtual ~RefTarget() {
+		// Make sure there are no more dependents left.
+		OVITO_ASSERT_MSG(dependents().empty(), "RefTarget destructor", "RefTarget object has not been correctly deleted.");
+	}
+#endif
 
 	//////////////////////////// Reference event handling ////////////////////////////////
 
@@ -170,7 +174,16 @@ protected:
 	/// \sa CloneHelper::cloneObject()
 	virtual OORef<RefTarget> clone(bool deepCopy, CloneHelper& cloneHelper);
 
+	//////////////////////////////// from OvitoObject //////////////////////////////////////
+
+	/// \brief This method is called after the reference counter of this object has reached zero
+	///        and before the object is being deleted.
+	virtual void aboutToBeDeleted() override;
+
 public:
+
+	/// \brief Returns true if this object is an instance of a RefTarget derived class.
+	virtual bool isRefTarget() const override { return true; }
 
 	//////////////////////////////// Notification events ////////////////////////////////////
 
@@ -208,9 +221,8 @@ public:
 	void visitDependents(Function fn) const {
 		for(RefMaker* dependent : dependents()) {
 			fn(dependent);
-			RefTarget* target = dynamic_object_cast<RefTarget>(dependent);
-			if(target)
-				target->visitDependents(fn);
+			if(dependent->isRefTarget())
+				static_object_cast<RefTarget>(dependent)->visitDependents(fn);
 		}
 	}
 
@@ -226,13 +238,11 @@ public:
 		return results;
 	}
 
-	///////////////////////////// from PluginClass ///////////////////////////////
-
-	/// \brief Deletes this object.
+	/// \brief Asks this object to delete itself.
 	///
-	/// This function is automatically called on a reference target when it has no more dependents.
-	/// First generates a ReferenceEvent::TargetDeleted notification event.
-	virtual void autoDeleteObject() override;
+	/// If undo recording is active, the object instance is kept alive such that
+	/// the deletion can be undone.
+	void deleteReferenceObject();
 
 	/////////////////////////////// Editor interface /////////////////////////////
 

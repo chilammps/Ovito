@@ -30,81 +30,24 @@ namespace Ovito {
 /******************************************************************************
 * The constructor of the command panel class.
 ******************************************************************************/
-CommandPanel::CommandPanel(QWidget* parent) : QWidget(parent), lastPage(0)
+CommandPanel::CommandPanel(MainWindow* mainWindow, QWidget* parent) : QWidget(parent)
 {
-	QVBoxLayout* layout = new QVBoxLayout();
+	QVBoxLayout* layout = new QVBoxLayout(this);
 	layout->setContentsMargins(0,0,0,0);
 
 	// Create tab widget
-	tabWidget = new QTabWidget(this);
-	layout->addWidget(tabWidget, 1);
+	_tabWidget = new QTabWidget(this);
+	layout->addWidget(_tabWidget, 1);
 
 	// Create the tabs.
-	tabWidget->setDocumentMode(true);
-	tabWidget->addTab(_modifyPage = new ModifyCommandPage(), QIcon(":/core/mainwin/command_panel/tab_modify.png"), QString());
-	tabWidget->addTab(_renderPage = new RenderCommandPage(), QIcon(":/core/mainwin/command_panel/tab_render.png"), QString());
-	tabWidget->addTab(_utilityPage = new UtilityCommandPage(), QIcon(":/core/mainwin/command_panel/tab_utilities.png"), QString());
-	tabWidget->setTabToolTip(0, tr("Modify"));
-	tabWidget->setTabToolTip(1, tr("Render"));
-	tabWidget->setTabToolTip(2, tr("Utilities"));
-	connect(tabWidget, SIGNAL(currentChanged(int)), this, SLOT(onTabSwitched()));
-
-	setLayout(layout);
-
-	connect(&DataSetManager::instance(), SIGNAL(selectionChangeComplete(SelectionSet*)), this, SLOT(onSelectionChangeComplete(SelectionSet*)));
-
-	// Update the command panel when a new scene file has been loaded.
-	connect(&DataSetManager::instance(), SIGNAL(dataSetReset(DataSet*)), this, SLOT(reset()));
-
-	reset();
+	_tabWidget->setDocumentMode(true);
+	_tabWidget->addTab(_modifyPage = new ModifyCommandPage(mainWindow, _tabWidget), QIcon(":/core/mainwin/command_panel/tab_modify.png"), QString());
+	_tabWidget->addTab(_renderPage = new RenderCommandPage(mainWindow, _tabWidget), QIcon(":/core/mainwin/command_panel/tab_render.png"), QString());
+	_tabWidget->addTab(_utilityPage = new UtilityCommandPage(mainWindow, _tabWidget), QIcon(":/core/mainwin/command_panel/tab_utilities.png"), QString());
+	_tabWidget->setTabToolTip(0, tr("Modify"));
+	_tabWidget->setTabToolTip(1, tr("Render"));
+	_tabWidget->setTabToolTip(2, tr("Utilities"));
 	setCurrentPage(MODIFY_PAGE);
 }
 
-/******************************************************************************
-* Resets the command panel to the initial state.
-******************************************************************************/
-void CommandPanel::reset()
-{
-	// Reset each page.
-	for(int i=0; i<tabWidget->count(); i++)
-		((CommandPanelPage*)tabWidget->widget(i))->reset();
-}
-
-/******************************************************************************
-* Activate one of the command pages.
-******************************************************************************/
-void CommandPanel::setCurrentPage(Page page)
-{
-	OVITO_ASSERT(page < tabWidget->count());
-	tabWidget->setCurrentIndex((int)page);
-}
-
-/******************************************************************************
-* Is called when the user has switched to another tab in the command panel.
-******************************************************************************/
-void CommandPanel::onTabSwitched()
-{
-	if(lastPage >= 0) {
-		CommandPanelPage* page = qobject_cast<CommandPanelPage*>(tabWidget->widget(lastPage));
-		OVITO_CHECK_POINTER(page);
-		page->onLeave();
-	}
-	lastPage = tabWidget->currentIndex();
-	if(lastPage >= 0) {
-		CommandPanelPage* page = qobject_cast<CommandPanelPage*>(tabWidget->widget(lastPage));
-		OVITO_CHECK_POINTER(page);
-		page->onEnter();
-	}
-}
-
-/******************************************************************************
-* This is called after all changes to the selection set have been completed.
-******************************************************************************/
-void CommandPanel::onSelectionChangeComplete(SelectionSet* newSelection)
-{
-	CommandPanelPage* page = qobject_cast<CommandPanelPage*>(tabWidget->currentWidget());
-	// Pass message on to current page.
-	if(page != NULL)
-		page->onSelectionChangeComplete(newSelection);
-}
 };

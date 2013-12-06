@@ -46,7 +46,7 @@ class OVITO_CORE_EXPORT SelectionSet : public RefTarget
 public:
 
 	/// \brief Creates an empty selection set.
-	Q_INVOKABLE SelectionSet();
+	Q_INVOKABLE SelectionSet(DataSet* dataset);
 
 	/// \brief Returns the number of scene nodes in the selection set.
 	/// \return The number of selected objects.
@@ -125,20 +125,52 @@ public:
 	/// The selection set is cleared before the single node is added to it.
 	virtual void setNode(SceneNode* node);
 
+Q_SIGNALS:
+
+	/// \brief Is emitted when nodes have been added or removed from the selection set.
+	/// \param selection This selection set.
+	/// \note This signal is NOT emitted when a node in the selection set has changed.
+	/// \note In contrast to the selectionChangeComplete() signal, this signal is emitted
+	///       for every node that is added to or removed from the selection set. That means
+	///       a call to SelectionSet::addAll() for example will generate multiple selectionChanged()
+	///       events but only one final selectionChangeComplete() event.
+	void selectionChanged(SelectionSet* selection);
+
+	/// \brief This signal is emitted after all changes to the selection set have been completed.
+	/// \param selection This selection set.
+	/// \note This signal is NOT emitted when a node in the selection set has changed.
+	/// \note In contrast to the selectionChange() signal this signal is emitted
+	///       only once after the selection set has been changed. That is,
+	///       a call to SelectionSet::addAll() for example will generate multiple selectionChanged()
+	///       events but only one final selectionChangeComplete() event.
+	void selectionChangeComplete(SelectionSet* selection);
+
 protected:
 
-	/// From RefMaker.
+	/// Is called when a RefTarget referenced by this object has generated an event.
 	virtual bool referenceEvent(RefTarget* source, ReferenceEvent* event) override;
+
+	/// Is called when a RefTarget has been added to a VectorReferenceField of this RefMaker.
+	virtual void referenceInserted(const PropertyFieldDescriptor& field, RefTarget* newTarget, int listIndex) override;
+
+	/// Is called when a RefTarget has been removed from a VectorReferenceField of this RefMaker.
+	virtual void referenceRemoved(const PropertyFieldDescriptor& field, RefTarget* oldTarget, int listIndex) override;
+
+	/// This method is invoked after the change of the selection set is complete. It emits the selectionChangeComplete() signal.
+	Q_INVOKABLE void onSelectionChangeCompleted();
 
 private:
 
 	/// Holds the references to the selected scene nodes.
 	VectorReferenceField<SceneNode> _selection;
 
+	/// Indicates that there is a pending change event in the event queue.
+	bool _selectionChangeInProgress;
+
 	Q_OBJECT
 	OVITO_OBJECT
 
-	DECLARE_VECTOR_REFERENCE_FIELD(_selection)
+	DECLARE_VECTOR_REFERENCE_FIELD(_selection);
 };
 
 /**
@@ -150,6 +182,7 @@ private:
 class NodeInSelectionSetChangedEvent : public ReferenceEvent
 {
 public:
+
 	/// Constructor.
 	NodeInSelectionSetChangedEvent(SelectionSet* sender, SceneNode* node, ReferenceEvent* originalEvent) :
 		ReferenceEvent(ReferenceEvent::NodeInSelectionSetChanged, sender), _sceneNode(node), _originalEvent(originalEvent) {}

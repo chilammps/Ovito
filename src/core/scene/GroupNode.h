@@ -40,7 +40,7 @@ class OVITO_CORE_EXPORT GroupNode : public SceneNode
 public:
 
 	/// \brief Constructs an empty group node that is in the closed state.
-	Q_INVOKABLE GroupNode();
+	Q_INVOKABLE GroupNode(DataSet* dataset);
 
 	/// \brief Returns whether this is an instance of the GroupNode class.
 	/// \return Returns always \c true.

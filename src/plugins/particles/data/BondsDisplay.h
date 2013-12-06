@@ -46,8 +46,8 @@ class OVITO_PARTICLES_EXPORT BondsDisplay : public DisplayObject
 {
 public:
 
-	/// \brief Default constructor.
-	Q_INVOKABLE BondsDisplay();
+	/// \brief Constructor.
+	Q_INVOKABLE BondsDisplay(DataSet* dataset);
 
 	/// \brief Renders the associated scene object.
 	virtual void render(TimePoint time, SceneObject* sceneObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode) override;

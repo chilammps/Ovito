@@ -46,7 +46,7 @@ SET_PROPERTY_FIELD_UNITS(ParticleDisplay, _defaultParticleRadius, WorldParameter
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-ParticleDisplay::ParticleDisplay() :
+ParticleDisplay::ParticleDisplay(DataSet* dataset) : DisplayObject(dataset),
 	_defaultParticleRadius(1.2),
 	_shadingMode(ParticleGeometryBuffer::NormalShading),
 	_renderingQuality(ParticleGeometryBuffer::AutoQuality),
