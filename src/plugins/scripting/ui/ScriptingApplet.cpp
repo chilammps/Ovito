@@ -43,8 +43,12 @@ ScriptingApplet::ScriptingApplet() : _panel(nullptr)
 /******************************************************************************
 * Shows the UI of the utility in the given RolloutContainer.
 ******************************************************************************/
-void ScriptingApplet::openUtility(RolloutContainer* container, const RolloutInsertionParameters& rolloutParams)
+void ScriptingApplet::openUtility(MainWindow* mainWindow,
+								  RolloutContainer* container,
+								  const RolloutInsertionParameters& rolloutParams)
 {
+	mainWindow_ = mainWindow;
+
 	// Create main panel widget.
 	_panel = new QWidget();
 	QVBoxLayout* layout = new QVBoxLayout(_panel);
@@ -78,8 +82,7 @@ void ScriptingApplet::openUtility(RolloutContainer* container, const RolloutInse
 /******************************************************************************
 * Removes the UI of the utility from the rollout container.
 ******************************************************************************/
-void ScriptingApplet::closeUtility(RolloutContainer* container)
-{
+void ScriptingApplet::closeUtility(RolloutContainer* container) {
 	delete _panel;
 }
 

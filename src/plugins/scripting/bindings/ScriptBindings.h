@@ -7,7 +7,7 @@
 
 #include <core/viewport/Viewport.h>
 #include <core/gui/actions/ActionManager.h>
-#include <core/viewport/ViewportManager.h>
+#include <core/viewport/ViewportConfiguration.h>
 #include <core/scene/pipeline/Modifier.h>
 #include <core/dataset/DataSet.h>
 
@@ -96,14 +96,16 @@ private:
 
 class ActiveViewportBinding : public ViewportBinding {
 public:
-	ActiveViewportBinding(QScriptEngine* engine, QObject* parent = 0)
+	ActiveViewportBinding(QScriptEngine* engine, ViewportConfiguration* viewportConf, QObject* parent = 0)
 		: ViewportBinding(nullptr, engine, parent)
 	{}
 
 private:
 	Viewport* getViewport() const override {
-		return ViewportManager::instance().activeViewport();
+		return viewportConf_->activeViewport();
 	}
+
+	ViewportConfiguration* viewportConf_;
 };
 
 
@@ -135,7 +137,8 @@ public Q_SLOTS:
 	 * \todo It's still asking.
 	 */
 	void quit() {
-		ActionManager::instance().invokeAction(ACTION_QUIT);
+		throw Exception("TODO: quitting");
+		//ActionManager::instance().invokeAction(ACTION_QUIT);
 	}
 private:
 	Q_OBJECT

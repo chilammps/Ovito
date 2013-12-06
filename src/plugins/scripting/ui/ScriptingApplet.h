@@ -61,7 +61,8 @@ public:
 	Q_INVOKABLE ScriptingApplet();
 
 	/// Shows the UI of the utility in the given RolloutContainer.
-	virtual void openUtility(RolloutContainer* container,
+	virtual void openUtility(MainWindow* mainWindow,
+							 RolloutContainer* container,
 							 const RolloutInsertionParameters& rolloutParams = RolloutInsertionParameters()
 							 ) override;
 
@@ -83,6 +84,9 @@ private:
 
 	/// The output of the script.
 	QLabel* _output;
+
+	/// Reference to the main window.
+	MainWindow* mainWindow_;
 
 	Q_CLASSINFO("DisplayName", "Scripting");
 

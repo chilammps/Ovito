@@ -5,7 +5,7 @@
 #include <base/linalg/Point3.h>
 #include <base/linalg/Vector3.h>
 #include <base/utilities/FloatType.h>
-#include <core/dataset/DataSetManager.h>
+#include <core/dataset/DataSetContainer.h>
 #include <core/dataset/importexport/FileImporter.h>
 #include <core/gui/app/Application.h>
 #include <core/gui/mainwin/MainWindow.h>
