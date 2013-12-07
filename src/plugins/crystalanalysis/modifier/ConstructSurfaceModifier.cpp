@@ -164,10 +164,21 @@ void ConstructSurfaceModifier::ConstructSurfaceEngine::compute(FutureInterfaceBa
 		inputCount = selectedParticles.size();
 	}
 
+	FloatType ghostLayerSize = std::abs(_radius) * 3.0f;
+
+	// Check if combination of radius parameter and simulation cell size is valid.
+	for(size_t dim = 0; dim < 3; dim++) {
+		if(_simCell.pbcFlags()[dim]) {
+			int stencilCount = (int)ceil(ghostLayerSize / _simCell.matrix().column(dim).dot(_simCell.cellNormalVector(dim)));
+			if(stencilCount > 1)
+				throw Exception(tr("Cannot generate Delaunay tessellation. Simulation cell is too small, or radius parameter is too large."));
+		}
+	}
+
 	// Generate Delaunay tessellation.
 	futureInterface.setProgressText(tr("Constructing surface mesh (Delaunay tessellation step)"));
 	DelaunayTessellation tessellation;
-	tessellation.generateTessellation(_simCell, inputPositions, inputCount, std::abs(_radius) * 1.25f * sqrt(6.0f));
+	tessellation.generateTessellation(_simCell, inputPositions, inputCount, ghostLayerSize);
 	if(futureInterface.isCanceled())
 		return;
 
@@ -270,7 +281,7 @@ void ConstructSurfaceModifier::ConstructSurfaceEngine::compute(FutureInterfaceBa
 		return;
 
 	// Links half-edges to opposite half-edges.
-	futureInterface.setProgressText(tr("Constructing surface mesh (facet connection step)"));
+	futureInterface.setProgressText(tr("Constructing surface mesh (facet linking step)"));
 	for(DelaunayTessellation::CellIterator cell = tessellation.begin_cells(); cell != tessellation.end_cells(); ++cell) {
 		if(cell->info().index == -1)
 			continue;
