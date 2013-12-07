@@ -103,6 +103,16 @@ public:
 		return vout;
 	}
 
+	/// Calculates the normal vector of the given simulation cell side.
+	Vector3 cellNormalVector(size_t dim) const {
+		Vector3 normal = _simulationCell.column((dim+1)%3).cross(_simulationCell.column((dim+2)%3));
+		// Flip normal if necessary.
+		if(normal.dot(_simulationCell.column(dim)) < 0.0f)
+			return normal / (-normal.length());
+		else
+			return normal.normalized();
+	}
+
 private:
 
 	/// The geometry of the cell.

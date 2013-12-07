@@ -43,23 +43,19 @@ bool OnTheFlyNeighborListBuilder::prepare(ParticleProperty* posProperty, const S
 		throw Exception("Invalid parameter: Neighbor cutoff radius must be positive.");
 
 	simCell = cellData.matrix();
-	if(fabs(simCell.determinant()) <= FLOATTYPE_EPSILON)
+	if(std::fabs(simCell.determinant()) <= FLOATTYPE_EPSILON)
 		throw Exception("Simulation cell is degenerate.");
 
 	simCellInverse = simCell.inverse();
 	pbc = cellData.pbcFlags();
 
-	// Compute normal vectors of simulation cell faces.
-	Vector3 planeNormals[3];
-	planeNormals[0] = simCell.column(1).cross(simCell.column(2)).normalized();
-	planeNormals[1] = simCell.column(2).cross(simCell.column(0)).normalized();
-	planeNormals[2] = simCell.column(0).cross(simCell.column(1)).normalized();
-
 	// Calculate the number of bins required in each spatial direction.
 	AffineTransformation binCell;
 	binCell.translation() = simCell.translation();
+	Vector3 planeNormals[3];
 	for(size_t i = 0; i < 3; i++) {
-		binDim[i] = (int)floor(fabs(simCell.column(i).dot(planeNormals[i])) / _cutoffRadius);
+		planeNormals[i] = cellData.cellNormalVector(i);
+		binDim[i] = (int)floor(simCell.column(i).dot(planeNormals[i]) / _cutoffRadius);
 		binDim[i] = std::min(binDim[i], 60);
 		binDim[i] = std::max(binDim[i], 1);
 		binCell.column(i) = simCell.column(i) / binDim[i];
@@ -72,7 +68,7 @@ bool OnTheFlyNeighborListBuilder::prepare(ParticleProperty* posProperty, const S
 	// Calculate size of stencil.
 	Vector3I stencilCount;
 	for(size_t dim = 0; dim < 3; dim++) {
-		stencilCount[dim] = (int)floor(fabs(binCell.column(dim).dot(planeNormals[dim])) / _cutoffRadius);
+		stencilCount[dim] = (int)floor(binCell.column(dim).dot(planeNormals[dim]) / _cutoffRadius);
 		stencilCount[dim] = std::min(stencilCount[dim], 50);
 		stencilCount[dim] = std::max(stencilCount[dim], 1);
 	}
