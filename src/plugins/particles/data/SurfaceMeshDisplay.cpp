@@ -127,11 +127,17 @@ void SurfaceMeshDisplay::render(TimePoint time, SceneObject* sceneObject, const 
 		if(defectSurfaceObj) {
 			TriMesh surfaceMesh;
 			TriMesh capMesh;
-			buildSurfaceMesh(defectSurfaceObj->mesh(), cellObject->data(), surfaceMesh);
-			_surfaceBuffer->setMesh(surfaceMesh, color_surface);
-			if(_showCap) {
-				buildCapMesh(defectSurfaceObj->mesh(), cellObject->data(), capMesh);
-				_capBuffer->setMesh(capMesh, color_cap);
+			if(buildSurfaceMesh(defectSurfaceObj->mesh(), cellObject->data(), surfaceMesh)) {
+				_surfaceBuffer->setMesh(surfaceMesh, color_surface);
+				if(_showCap) {
+					buildCapMesh(defectSurfaceObj->mesh(), cellObject->data(), capMesh);
+					_capBuffer->setMesh(capMesh, color_cap);
+				}
+			}
+			else {
+				// Render empty meshes if they could not be generated.
+				_surfaceBuffer->setMesh(TriMesh(), color_surface);
+				if(_showCap) _capBuffer->setMesh(TriMesh(), color_cap);
 			}
 		}
 		else {
@@ -159,15 +165,14 @@ void SurfaceMeshDisplay::render(TimePoint time, SceneObject* sceneObject, const 
 /******************************************************************************
 * Generates the final triangle mesh, which will be rendered.
 ******************************************************************************/
-void SurfaceMeshDisplay::buildSurfaceMesh(const HalfEdgeMesh& input, const SimulationCellData& cell, TriMesh& output)
+bool SurfaceMeshDisplay::buildSurfaceMesh(const HalfEdgeMesh& input, const SimulationCellData& cell, TriMesh& output)
 {
 	// Convert half-edge mesh to triangle mesh.
 	input.convertToTriMesh(output);
 
 	// Convert vertex positions to reduced coordinates.
-	AffineTransformation inverseCellMatrix = cell.matrix().inverse();
 	for(Point3& p : output.vertices())
-		p = inverseCellMatrix * p;
+		p = cell.absoluteToReduced(p);
 
 	// Wrap mesh at periodic boundaries.
 	for(size_t dim = 0; dim < 3; dim++) {
@@ -187,7 +192,8 @@ void SurfaceMeshDisplay::buildSurfaceMesh(const HalfEdgeMesh& input, const Simul
 		std::vector<Point3> newVertices;
 		std::map<std::pair<int,int>,std::pair<int,int>> newVertexLookupMap;
 		for(int findex = 0; findex < oldFaceCount; findex++) {
-			splitFace(output, output.face(findex), oldVertexCount, newVertices, newVertexLookupMap, cell, dim);
+			if(!splitFace(output, output.face(findex), oldVertexCount, newVertices, newVertexLookupMap, cell, dim))
+				return false;
 		}
 
 		// Insert newly created vertices into mesh.
@@ -208,12 +214,14 @@ void SurfaceMeshDisplay::buildSurfaceMesh(const HalfEdgeMesh& input, const Simul
 
 	output.invalidateVertices();
 	output.invalidateFaces();
+
+	return true;
 }
 
 /******************************************************************************
 * Splits a triangle face at a periodic boundary.
 ******************************************************************************/
-void SurfaceMeshDisplay::splitFace(TriMesh& output, TriMeshFace& face, int oldVertexCount, std::vector<Point3>& newVertices,
+bool SurfaceMeshDisplay::splitFace(TriMesh& output, TriMeshFace& face, int oldVertexCount, std::vector<Point3>& newVertices,
 		std::map<std::pair<int,int>,std::pair<int,int>>& newVertexLookupMap, const SimulationCellData& cell, size_t dim)
 {
 	OVITO_ASSERT(face.vertex(0) != face.vertex(1));
@@ -230,14 +238,15 @@ void SurfaceMeshDisplay::splitFace(TriMesh& output, TriMeshFace& face, int oldVe
 	OVITO_ASSERT(z[0] - z[2] == -(z[2] - z[0]));
 
 	if(std::abs(zd[0]) < 0.5f && std::abs(zd[1]) < 0.5f && std::abs(zd[2]) < 0.5f)
-		return;	// Face is not crossing the periodic boundary.
+		return true;	// Face is not crossing the periodic boundary.
 
 	// Create four new vertices (or use existing ones created during splitting of adjacent faces).
 	int properEdge = -1;
 	int newVertexIndices[3][2];
 	for(int i = 0; i < 3; i++) {
 		if(std::abs(zd[i]) < 0.5f) {
-			OVITO_ASSERT(properEdge == -1);
+			if(properEdge != -1)
+				return false;		// The simulation box may be too small or invalid.
 			properEdge = i;
 			continue;
 		}
@@ -287,6 +296,8 @@ void SurfaceMeshDisplay::splitFace(TriMesh& output, TriMeshFace& face, int oldVe
 	TriMeshFace& newFace2 = output.face(output.faceCount() - 1);
 	newFace1.setVertices(originalVertices[(properEdge+1)%3], newVertexIndices[(properEdge+1)%3][0], newVertexIndices[(properEdge+2)%3][1]);
 	newFace2.setVertices(newVertexIndices[(properEdge+1)%3][1], originalVertices[(properEdge+2)%3], newVertexIndices[(properEdge+2)%3][0]);
+
+	return true;
 }
 
 /******************************************************************************
@@ -295,11 +306,10 @@ void SurfaceMeshDisplay::splitFace(TriMesh& output, TriMeshFace& face, int oldVe
 void SurfaceMeshDisplay::buildCapMesh(const HalfEdgeMesh& input, const SimulationCellData& cell, TriMesh& output)
 {
 	// Convert vertex positions to reduced coordinates.
-	AffineTransformation inverseCellMatrix = cell.matrix().inverse();
 	std::vector<Point3> reducedPos(input.vertexCount());
 	auto inputVertex = input.vertices().begin();
 	for(Point3& p : reducedPos)
-		p = inverseCellMatrix * (*inputVertex++)->pos();
+		p = cell.absoluteToReduced((*inputVertex++)->pos());
 
 	int isBoxCornerInside3DRegion = -1;
 

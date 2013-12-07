@@ -113,6 +113,17 @@ public:
 			return normal.normalized();
 	}
 
+	/// Tests if a vector so long that it would be wrapped at a periodic boundary when using the minimum image convention.
+	bool isWrappedVector(const Vector3& v) const {
+		for(size_t dim = 0; dim < 3; dim++) {
+			if(_pbcFlags[dim]) {
+				if(std::abs(_reciprocalSimulationCell.prodrow(v, dim)) >= 0.5f)
+					return true;
+			}
+		}
+		return false;
+	}
+
 private:
 
 	/// The geometry of the cell.

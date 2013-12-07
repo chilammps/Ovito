@@ -74,10 +74,10 @@ public:
 protected:
 
 	/// Generates the final triangle mesh, which will be rendered.
-	void buildSurfaceMesh(const HalfEdgeMesh& input, const SimulationCellData& cell, TriMesh& output);
+	bool buildSurfaceMesh(const HalfEdgeMesh& input, const SimulationCellData& cell, TriMesh& output);
 
 	/// Splits a triangle face at a periodic boundary.
-	void splitFace(TriMesh& output, TriMeshFace& face, int oldVertexCount, std::vector<Point3>& newVertices, std::map<std::pair<int,int>,std::pair<int,int>>& newVertexLookupMap, const SimulationCellData& cell, size_t dim);
+	bool splitFace(TriMesh& output, TriMeshFace& face, int oldVertexCount, std::vector<Point3>& newVertices, std::map<std::pair<int,int>,std::pair<int,int>>& newVertexLookupMap, const SimulationCellData& cell, size_t dim);
 
 	/// Generates the triangle mesh for the PBC cap.
 	void buildCapMesh(const HalfEdgeMesh& input, const SimulationCellData& cell, TriMesh& output);

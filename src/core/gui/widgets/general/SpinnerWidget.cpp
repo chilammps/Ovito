@@ -62,7 +62,7 @@ void SpinnerWidget::paintEvent(QPaintEvent* event)
 ******************************************************************************/
 QSize SpinnerWidget::sizeHint() const
 {
-	if(textBox() == NULL) return QSize(16, 30);
+	if(textBox() == nullptr) return QSize(16, 30);
 	else return QSize(16, textBox()->sizeHint().height());	
 }
 
@@ -89,7 +89,7 @@ void SpinnerWidget::setTextBox(QLineEdit* box)
 ******************************************************************************/
 void SpinnerWidget::onTextChanged()
 {
-	OVITO_ASSERT(textBox());
+	OVITO_CHECK_POINTER(textBox());
     
 	FloatType newValue;
 	try {
@@ -218,8 +218,6 @@ void SpinnerWidget::changeEvent(QEvent* event)
 ******************************************************************************/
 void SpinnerWidget::mousePressEvent(QMouseEvent* event)
 {
-	OVITO_CHECK_POINTER(unit());
-	
 	if(event->button() == Qt::LeftButton && !_upperBtnPressed && !_lowerBtnPressed) {
 		// Backup current value.
 		_oldValue = floatValue();
@@ -231,7 +229,7 @@ void SpinnerWidget::mousePressEvent(QMouseEvent* event)
 		else
 			_lowerBtnPressed = true;
 
-		_currentStepSize = unit()->stepSize(floatValue(), _upperBtnPressed);
+		_currentStepSize = unit() ? unit()->stepSize(floatValue(), _upperBtnPressed) : 1;
 		if(textBox()) textBox()->setFocus(Qt::OtherFocusReason);
 		
 		grabMouse();
@@ -263,10 +261,22 @@ void SpinnerWidget::mouseReleaseEvent(QMouseEvent* event)
 		if(_upperBtnPressed == _lowerBtnPressed) {
 			spinnerDragStop();
 		}
-		else if(_upperBtnPressed)
-			setFloatValue(unit()->roundValue(floatValue() + unit()->stepSize(floatValue(), true)), true);
-		else
-			setFloatValue(unit()->roundValue(floatValue() - unit()->stepSize(floatValue(), false)), true);
+		else {
+			FloatType newValue;
+			if(_upperBtnPressed) {
+				if(unit())
+					newValue = unit()->roundValue(floatValue() + unit()->stepSize(floatValue(), true));
+				else
+					newValue = floatValue() + 1.0f;
+			}
+			else {
+				if(unit())
+					newValue = unit()->roundValue(floatValue() - unit()->stepSize(floatValue(), false));
+				else
+					newValue = floatValue() - 1.0f;
+			}
+			setFloatValue(newValue, true);
+		}
 
 		_upperBtnPressed = false;
 		_lowerBtnPressed = false;
@@ -307,7 +317,9 @@ void SpinnerWidget::mouseMoveEvent(QMouseEvent* event)
 				if(screenY <= 5 && _lastMouseY == screenHeight-1) return;
 				if(screenY >= screenHeight - 5 && _lastMouseY == 0) return;
 				
-				FloatType newVal = unit()->roundValue(_oldValue + _currentStepSize * (FloatType)(_startMouseY - screenY) * 0.1f);
+				FloatType newVal = _oldValue + _currentStepSize * (FloatType)(_startMouseY - screenY) * 0.1f;
+				if(unit())
+					newVal = unit()->roundValue(newVal);
 	
 				if(screenY < _lastMouseY && screenY <= 5) {
 					_lastMouseY = screenHeight-1;

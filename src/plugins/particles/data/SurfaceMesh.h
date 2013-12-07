@@ -59,6 +59,12 @@ public:
 	/// the scene object's revision number.
 	HalfEdgeMesh& mesh() { return _mesh; }
 
+	/// \brief Clears the triangle mesh by deleting all vertices and faces.
+	void clearMesh() {
+		mesh().clear();
+		notifyDependents(ReferenceEvent::TargetChanged);
+	}
+
 	/// Fairs the triangle mesh stored in this object.
 	void smoothMesh(const SimulationCellData& cell, int numIterations, FloatType k_PB = 0.1f, FloatType lambda = 0.5f) {
 		smoothMesh(mesh(), cell, numIterations, k_PB, lambda);

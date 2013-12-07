@@ -19,6 +19,16 @@
 #
 ###############################################################################
 
+# Locate CGAL library.
+FIND_PACKAGE(CGAL REQUIRED)
+IF(NOT CGAL_FOUND)
+	MESSAGE(FATAL_ERROR "CGAL library, which is required by the CrystalAnalysis plugin, not found.")
+ENDIF()
+INCLUDE(${CGAL_USE_FILE})
+IF(NOT CMAKE_COMPILER_IS_GNUCXX)
+	ADD_DEFINITIONS(-DCGAL_CFG_ARRAY_MEMBER_INITIALIZATION_BUG)
+ENDIF()
+
 SET(OVITO_CRYSTALANALYSIS_SOURCE_FILES
 	importer/CAImporter.cpp
 	data/patterns/BurgersVectorFamily.cpp
@@ -33,6 +43,8 @@ SET(OVITO_CRYSTALANALYSIS_SOURCE_FILES
 	modifier/ShiftModifier.cpp
 	modifier/SmoothSurfaceModifier.cpp
 	modifier/SmoothDislocationsModifier.cpp
+	modifier/ConstructSurfaceModifier.cpp
+	util/DelaunayTessellation.cpp
 )
 
 # Generate plugin module.
