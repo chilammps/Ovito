@@ -1,4 +1,10 @@
-* merge multi-dataset code
+* Why is importFile a member of DataSetContainer and not DataSet?
+  So for now we have to store a global DataSetContainer.
+  This means we can not be sure if DataSetContainer.currentSet()
+  gives the same result from one call to the next. We assume this
+  for now but it would be better not to store a DataSetContainer at
+  all and use only DataSet instead (especially given that the
+  DataSet gives the pointer to the ViewportConfiguration).
 
 * clean up existing JS API
 

@@ -13,14 +13,20 @@
 #include <core/rendering/RenderSettings.h>
 #include <core/rendering/standard/StandardSceneRenderer.h>
 #include <core/plugins/PluginManager.h>
+#include <core/scene/SelectionSet.h>
 
 namespace Scripting {
 
 using namespace Ovito;
 
 ViewportBinding::ViewportBinding(Viewport* viewport, QScriptEngine* engine,
+								 DataSet* dataSet,
 								 QObject* parent)
-	: QObject(parent), viewport_(viewport), engine_(engine)
+	: QObject(parent),
+	  viewportConf_(dataSet->viewportConfig()),
+	  dataSet_(dataSet),
+	  viewport_(viewport),
+	  engine_(engine)
 {}
 
 void ViewportBinding::perspective(double cam_pos_x, double cam_pos_y, double cam_pos_z,
@@ -54,16 +60,16 @@ void ViewportBinding::ortho(double cam_pos_x, double cam_pos_y, double cam_pos_z
 
 void ViewportBinding::maximize() {
 	Viewport* vp = getViewport();
-	ViewportManager::instance().setMaximizedViewport(vp);
-	ViewportManager::instance().setActiveViewport(vp);
+	viewportConf_->setMaximizedViewport(vp);
+	viewportConf_->setActiveViewport(vp);
 }
 
 void ViewportBinding::restore() {
-	ViewportManager::instance().setMaximizedViewport(nullptr);
+	viewportConf_->setMaximizedViewport(nullptr);
 }
 
 void ViewportBinding::setActive() const {
-	ViewportManager::instance().setActiveViewport(getViewport());
+	viewportConf_->setActiveViewport(getViewport());
 }
 
 
@@ -71,7 +77,7 @@ void ViewportBinding::render(const QString& filename,
 							 const QScriptValue& options) const {
 	// Prepare settings.
 	// TODO: set these from settings...
-	RenderSettings settings;
+	RenderSettings settings(dataSet_);
 	settings.setRendererClass(&StandardSceneRenderer::OOType);
 	settings.setRenderingRangeType(RenderSettings::CURRENT_FRAME);
 	settings.setOutputImageWidth(800);
@@ -85,7 +91,8 @@ void ViewportBinding::render(const QString& filename,
 		FrameBufferWindow* frameBufferWindow = nullptr;
 		QSharedPointer<FrameBuffer> frameBuffer;
 		if(Application::instance().guiMode()) {
-			frameBufferWindow = MainWindow::instance().frameBufferWindow();
+			MainWindow* mainWindow = dataSet_->mainWindow();
+			frameBufferWindow = mainWindow->frameBufferWindow();
 			frameBuffer = frameBufferWindow->frameBuffer();
 		}
 		if(!frameBuffer)
@@ -93,10 +100,10 @@ void ViewportBinding::render(const QString& filename,
 											  settings.outputImageHeight()));
 
 		// Render.
-		DataSetManager::instance().currentSet()->renderScene(&settings,
-															 getViewport(),
-															 frameBuffer,
-															 frameBufferWindow);
+		dataSet_->renderScene(&settings,
+							  getViewport(),
+							  frameBuffer,
+							  frameBufferWindow);
 	} catch (const Exception& e) {
 		QScriptContext* context = engine_->currentContext();
 		context->throwError(QString("Exception while rendering: ") + e.what());
@@ -110,7 +117,6 @@ DataSetBinding::DataSetBinding(SelectionSet* dataSet, QObject* parent)
 	  // TODO ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ good way to do it??????   
 {}
 
-#include <iostream>
 void DataSetBinding::appendModifier(const QScriptValue& modifier) {
 	QScriptEngine* engine = modifier.engine();
 	QScriptContext* context = engine->currentContext();
@@ -160,10 +166,13 @@ QScriptValue loadFile(QScriptContext* context, QScriptEngine* engine) {
 	const QString path = context->argument(0).toString();
 
 	// Load it.
+	QScriptValue container_ = engine->globalObject().data();
+	DataSetContainer* container =
+		static_cast<DataSetContainer*>(container_.toQObject());
 	try {
-		DataSetManager::instance().importFile(QUrl::fromLocalFile(path),
-											  nullptr,
-											  FileImporter::AddToScene);
+		container->importFile(QUrl::fromLocalFile(path),
+							  nullptr,
+							  FileImporter::AddToScene);
 	} catch (const Exception& e) {
 		return context->throwError(e.what());
 	}
@@ -171,7 +180,7 @@ QScriptValue loadFile(QScriptContext* context, QScriptEngine* engine) {
 	// Return wrapper around the dataset representing the current file.
 	// TODO: this is racy, perhaps? Is the new file guaranteed to be     
  	// the active selection?                                             
-	SelectionSet* dataSet = DataSetManager::instance().currentSelection();
+	SelectionSet* dataSet = container->currentSet()->selection();
 	return engine->newQObject(new DataSetBinding(dataSet),
 							  QScriptEngine::ScriptOwnership);
 }
@@ -217,9 +226,12 @@ QScriptValue modifier(QScriptContext* context, QScriptEngine* engine) {
 	if (searchResultClass == nullptr)
 		return context->throwError("Modifier " + name + " not found.");
 	else {
+		// Get DataSetContainer.
+		DataSetContainer* container =
+			static_cast<DataSetContainer*>(engine->globalObject().data().toQObject());
 		// Get instance of modifier.
 		OORef<Modifier> ptr =
-			static_object_cast<Modifier>(searchResultClass->createInstance());
+			static_object_cast<Modifier>(searchResultClass->createInstance(container->currentSet()));
 		return wrapOORef<Modifier>(ptr, engine);
 	}
 }
@@ -240,9 +252,13 @@ void toFloatType(const QScriptValue& obj, FloatType& x) {
 
 
 
-QScriptEngine* prepareEngine(QObject* parent) {
+QScriptEngine* prepareEngine(DataSetContainer* container,
+							 QObject* parent) {
 	// Set up engine.
 	QScriptEngine* engine = new QScriptEngine(parent);
+
+	// Store global DataSetContainer.
+	engine->globalObject().setData(engine->newQObject(container));
 
 	// Register automatic conversions.
 	const int FloatTypeTypeId = qRegisterMetaType<FloatType>("FloatType");
@@ -250,26 +266,28 @@ QScriptEngine* prepareEngine(QObject* parent) {
 
 	// Set up namespace. ///////////////////////////////////////////////
 
-	// Active viewport
-	QScriptValue activeViewport =
-		engine->newQObject(new ActiveViewportBinding(engine),
-						   QScriptEngine::ScriptOwnership);
-	engine->globalObject().setProperty("activeViewport", activeViewport);
+	DataSet* dataSet = container->currentSet();
+	ViewportConfiguration* viewportConf = dataSet->viewportConfig();
 
 	// All viewports.
-	const QVector<Viewport*>& allViewports =
-		ViewportManager::instance().viewports();
+	const QVector<Viewport*>& allViewports = viewportConf->viewports();
 	QScriptValue viewport = engine->newArray(allViewports.size());
 	for (int i = 0; i != allViewports.size(); ++i)
 		viewport.setProperty(i, engine->newQObject(new ViewportBinding(allViewports[i],
-																	   engine),
+																	   engine,
+																	   dataSet),
 												   QScriptEngine::ScriptOwnership));
 	engine->globalObject().setProperty("viewport", viewport);
 
-	// The global Ovito object.
-	QScriptValue ovito = engine->newQObject(new OvitoBinding(),
-										   QScriptEngine::ScriptOwnership);
-	engine->globalObject().setProperty("ovito", ovito);
+	// Active viewport
+	QScriptValue activeViewport =
+		engine->newQObject(new ActiveViewportBinding(engine, dataSet),
+						   QScriptEngine::ScriptOwnership);
+	engine->globalObject().setProperty("activeViewport", activeViewport);
+
+	// quit function.
+	engine->globalObject().setProperty("quit",
+									   engine->newFunction(quit, 0));
 
 	// pwd function.
 	engine->globalObject().setProperty("pwd",
@@ -287,7 +305,7 @@ QScriptEngine* prepareEngine(QObject* parent) {
 	engine->globalObject().setProperty("listModifiers",
 									   engine->newFunction(listModifiers, 0));
 
-	// modifiers function.
+	// modifier function.
 	engine->globalObject().setProperty("modifier",
 									   engine->newFunction(modifier, 1));
 

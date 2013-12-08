@@ -26,8 +26,9 @@
 //#include <QJSEngine>
 #include <QtScript>
 
-//#include <plugins/particles/modifier/slice/SliceModifier.h>
+#include <core/gui/mainwin/MainWindow.h>
 #include "../bindings/ScriptBindings.h"
+
 
 namespace Scripting {
 
@@ -93,7 +94,8 @@ void ScriptingApplet::runScript()
 {
 	// Set up engine.
 	QObject parent; // <- for memory management.
-	QScriptEngine* engine = prepareEngine(&parent);
+	DataSetContainer& container = mainWindow_->datasetContainer();
+	QScriptEngine* engine = prepareEngine(&container, &parent);
 
 	// Evaluate.
 	QScriptValue result = engine->evaluate(_editor->toPlainText());

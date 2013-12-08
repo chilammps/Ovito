@@ -10,6 +10,7 @@
 #include <core/viewport/ViewportConfiguration.h>
 #include <core/scene/pipeline/Modifier.h>
 #include <core/dataset/DataSet.h>
+#include <core/dataset/DataSetContainer.h>
 
 namespace Scripting {
 
@@ -52,6 +53,7 @@ class ViewportBinding : public QObject {
 public:
 	ViewportBinding(Viewport* viewport,
 					QScriptEngine* engine,
+					DataSet* dataSet,
 					QObject* parent = 0);
 
 public Q_SLOTS:
@@ -86,6 +88,8 @@ public Q_SLOTS:
 
 protected:
 	virtual Viewport* getViewport() const { return viewport_; };
+	ViewportConfiguration* viewportConf_;
+	DataSet* dataSet_;
 private:
 	Viewport* viewport_;
 	QScriptEngine* engine_;
@@ -96,8 +100,10 @@ private:
 
 class ActiveViewportBinding : public ViewportBinding {
 public:
-	ActiveViewportBinding(QScriptEngine* engine, ViewportConfiguration* viewportConf, QObject* parent = 0)
-		: ViewportBinding(nullptr, engine, parent)
+	ActiveViewportBinding(QScriptEngine* engine,
+						  DataSet* dataSet,
+						  QObject* parent = 0)
+		: ViewportBinding(nullptr, engine, dataSet, parent)
 	{}
 
 private:
@@ -105,7 +111,7 @@ private:
 		return viewportConf_->activeViewport();
 	}
 
-	ViewportConfiguration* viewportConf_;
+	Q_OBJECT
 };
 
 
@@ -124,25 +130,11 @@ private:
 };
 
 
-/**
- * \brief Main interface.
- */
-class OvitoBinding : public QObject {
-public:
-	OvitoBinding(QObject* parent = 0) : QObject(parent) {}
-
-public Q_SLOTS:
-	/**
-	 * \brief Quit OVITO without asking.
-	 * \todo It's still asking.
-	 */
-	void quit() {
-		throw Exception("TODO: quitting");
-		//ActionManager::instance().invokeAction(ACTION_QUIT);
-	}
-private:
-	Q_OBJECT
-};
+/// Quit Ovito.
+inline
+QScriptValue quit(QScriptContext* context, QScriptEngine* engine) {   
+	throw Exception("Not implemented");
+}
 
 /// Return current working directory.
 QScriptValue pwd(QScriptContext* context, QScriptEngine* engine);
@@ -161,8 +153,10 @@ QScriptValue modifier(QScriptContext* context, QScriptEngine* engine);
 
 /**
  * \brief Create a script engine that is already filled with global objects.
+ * Needs a global DataSetContainer.
  */
-QScriptEngine* prepareEngine(QObject* parent = 0);
+QScriptEngine* prepareEngine(DataSetContainer* container,
+							 QObject* parent = 0);
 
 
 }
