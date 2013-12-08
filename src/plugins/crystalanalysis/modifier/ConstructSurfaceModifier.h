@@ -175,7 +175,7 @@ private:
 	OVITO_OBJECT
 
 	Q_CLASSINFO("DisplayName", "Construct surface mesh");
-	Q_CLASSINFO("ModifierCategory", "Crystal analysis");
+	Q_CLASSINFO("ModifierCategory", "Analysis");
 
 	DECLARE_PROPERTY_FIELD(_radius);
 	DECLARE_PROPERTY_FIELD(_smoothingLevel);

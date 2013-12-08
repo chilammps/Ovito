@@ -45,7 +45,7 @@ DEFINE_REFERENCE_FIELD(SurfaceMeshDisplay, _surfaceTransparency, "SurfaceTranspa
 DEFINE_REFERENCE_FIELD(SurfaceMeshDisplay, _capTransparency, "CapTransparency", FloatController)
 SET_PROPERTY_FIELD_LABEL(SurfaceMeshDisplay, _surfaceColor, "Surface color")
 SET_PROPERTY_FIELD_LABEL(SurfaceMeshDisplay, _capColor, "Cap color")
-SET_PROPERTY_FIELD_LABEL(SurfaceMeshDisplay, _showCap, "Show cap")
+SET_PROPERTY_FIELD_LABEL(SurfaceMeshDisplay, _showCap, "Show cap polygons")
 SET_PROPERTY_FIELD_LABEL(SurfaceMeshDisplay, _smoothShading, "Smooth shading")
 SET_PROPERTY_FIELD_LABEL(SurfaceMeshDisplay, _surfaceTransparency, "Surface transparency")
 SET_PROPERTY_FIELD_LABEL(SurfaceMeshDisplay, _capTransparency, "Cap transparency")
@@ -805,7 +805,7 @@ bool SurfaceMeshDisplay::isCornerInside3DRegion(const HalfEdgeMesh& mesh, const 
 void SurfaceMeshDisplayEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
 	// Create a rollout.
-	QWidget* rollout = createRollout(tr("Surface display"), rolloutParams);
+	QWidget* rollout = createRollout(tr("Surface display"), rolloutParams, "display_objects.surface_mesh.html");
 
     // Create the rollout contents.
 	QVBoxLayout* layout = new QVBoxLayout(rollout);
@@ -833,7 +833,7 @@ void SurfaceMeshDisplayEditor::createUI(const RolloutInsertionParameters& rollou
 	sublayout->addWidget(smoothShadingUI->checkBox(), 2, 0, 1, 2);
 
 	BooleanGroupBoxParameterUI* capGroupUI = new BooleanGroupBoxParameterUI(this, PROPERTY_FIELD(SurfaceMeshDisplay::_showCap));
-	capGroupUI->groupBox()->setTitle(tr("Cap"));
+	capGroupUI->groupBox()->setTitle(tr("Cap polygons"));
 	sublayout = new QGridLayout(capGroupUI->groupBox());
 	sublayout->setContentsMargins(4,4,4,4);
 	sublayout->setSpacing(4);

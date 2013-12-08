@@ -24,6 +24,7 @@
 #include <core/gui/properties/IntegerParameterUI.h>
 #include <core/gui/properties/FloatParameterUI.h>
 #include <core/gui/properties/BooleanParameterUI.h>
+#include <core/gui/properties/SubObjectParameterUI.h>
 #include <plugins/particles/data/SimulationCell.h>
 #include <plugins/crystalanalysis/util/DelaunayTessellation.h>
 #include "ConstructSurfaceModifier.h"
@@ -390,7 +391,7 @@ void ConstructSurfaceModifier::ConstructSurfaceEngine::compute(FutureInterfaceBa
 void ConstructSurfaceModifierEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
 	// Create the rollout.
-	QWidget* rollout = createRollout(tr("Construct surface mesh"), rolloutParams);
+	QWidget* rollout = createRollout(tr("Construct surface mesh"), rolloutParams, "particles.modifiers.construct_surface_mesh.html");
 
     QGridLayout* layout = new QGridLayout(rollout);
 	layout->setContentsMargins(4,4,4,4);
@@ -414,6 +415,9 @@ void ConstructSurfaceModifierEditor::createUI(const RolloutInsertionParameters& 
 	layout->setRowMinimumHeight(3, 10);
 	layout->addWidget(statusLabel(), 4, 0, 1, 2);
 	statusLabel()->setMinimumHeight(100);
+
+	// Open a sub-editor for the mesh display object.
+	new SubObjectParameterUI(this, PROPERTY_FIELD(ConstructSurfaceModifier::_surfaceMeshDisplay), rolloutParams.after(rollout));
 }
 
 };	// End of namespace

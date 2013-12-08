@@ -33,18 +33,29 @@
         </tgroup>
       </informaltable>
     </informalfigure>
-  Performs a lighting calculation to shade particles based on their
+  Performs a fast lighting calculation to shade particles based on their
   occlusion by other particles. The ambient occlusion shading model has the nice property of offering 
-  a better perception of the three-dimensional shape of the structure. The ambient occlusion algorithm 
-  simulates the shading produced by a spherical light source enclosing the structure (similar to an overcast sky).
+  a better perception of the three-dimensional shape of the structure. The algorithm 
+  simulates the shading produced by a spherical light source enclosing the entire structure (similar to an overcast sky).
   OVITO uses the graphics card to quickly perform this illumination calculation.
   </para>
 
   <para>
-  Note that the modifier outputs the shading results to the <literal>Color</literal> particle property,
-  and assigning a new color to particles after this modifier would  overwrite
-  its results. Therefore the modifier should always be placed at the end of the processing pipeline.
+  Use the ambient occlusion modifier to improve the perception of large three-dimensional structures 
+  with many particles as shown in the example on the right. For even better results, and for small structures with
+  only few particles, use the <link linkend="rendering.tachyon_renderer">Tachyon renderer</link> instead. Unlike 
+  the ambient occlusion modifier, which computes a per-particle illumination factor, the Tachyon 
+  renderer performs an ambient occlusion calculation for every output image pixel. However, only the ambient occlusion
+  modifier works in near-realtime and can be used to improve the display in the interactive viewports.
   </para>
+
+  <para>
+  Note that the modifier takes the input particle colors, multiplies them with the computed illumination factors,
+  and writes the modulated colors back to the <literal>Color</literal> particle property.
+  Assigning new colors to particles after this modifier would overwrite
+  the shading results. Therefore the ambient occlusion modifier should always be placed at the 
+  very end of the modification pipeline.
+  </para>  
 
   <simplesect>
     <title>Parameters</title>
@@ -57,9 +68,8 @@
         <term>Shading intensity</term>
 
         <listitem>
-          <para>Percentage value controlling the strength of the shading. The
-          higher the shading intensity the larger the effect, and the darker
-          the particles will appear.</para>
+          <para>Percentage value controlling the strength of the shading effect. The
+          higher the shading intensity, the darker the occluded particles will appear.</para>
         </listitem>
       </varlistentry>
 
@@ -67,8 +77,9 @@
         <term>Number of exposure samples</term>
         <listitem>
           <para>The uniform lighting produced by an overcast sky is approximated by a finite number
-            of parallel light sources, which are placed evenly around the particle structure. This parameter
-            controls the number of light sources to compute the ambient occlusion shading.
+            of parallel light sources, which are placed evenly around the input structure. This parameter
+            controls the number of light sources to compute the ambient occlusion shading. A small number of
+            exposure samples reduces computation time, but can lead to cast shadow artifacts.
           </para>
         </listitem>
       </varlistentry>
@@ -79,7 +90,7 @@
           <para>
           To compute the illumination produced by a single light source from one direction, the modifier
           renders the particles as seen from that light source. All visible particles will receive 
-          a certain amount of light while the covered particles do not. This parameter controls 
+          a certain amount of light while the occluded particles do not. This parameter controls 
           the resolution of the internal rendering buffer. For systems with a large number of particles it
           might be necessary to increase this value such that every particles occupies at least one
           pixel in the rendering buffer.</para>
@@ -87,4 +98,17 @@
       </varlistentry>
     </variablelist>
   </simplesect>
+  
+ <simplesect>
+    <title>Technical background information</title>
+ 	<para>OVITO uses the following <link xlink:href="http://en.wikipedia.org/wiki/Ambient_occlusion">ambient occlusion</link>	 algorithm to determine an illumination factor for
+ 	each particle, which is used to modulate its original particle color. The illumination of a sky sphere
+ 	enclosing the input structure is approximated by a large number of parallel light sources directed
+ 	at the structure. The amount of light received by a particle from one such light surface is determined
+ 	by rendering a projected image of the structure from the point of view of the light source to an offscreen frame buffer. 
+ 	All particles appearing in that image, which are not occluded by other particles, receive an amount of light 
+ 	that is proportional to their exposed area (i.e. the number of pixels they cover in the image). Finally, the 
+ 	light contributions from all light sources are added up to compute the per-particle illumination factors.</para>
+  </simplesect>
+  
 </section>

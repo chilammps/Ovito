@@ -67,4 +67,26 @@ void ObjectStatusWidget::setStatus(const ObjectStatus& status)
 		_iconLabel->clear();
 }
 
+/******************************************************************************
+* Returns the minimum size of the widget.
+******************************************************************************/
+QSize ObjectStatusWidget::minimumSizeHint() const
+{
+	int widgetHeight = widget()->minimumSizeHint().height();
+	if(widgetHeight < 20) widgetHeight *= 2;
+	return QSize(QScrollArea::minimumSizeHint().width(),
+			frameWidth()*2 + widgetHeight);
+}
+
+/******************************************************************************
+* Returns the preferred size of the widget.
+******************************************************************************/
+QSize ObjectStatusWidget::sizeHint() const
+{
+	int widgetHeight = widget()->minimumSizeHint().height();
+	if(widgetHeight < 20) widgetHeight *= 2;
+	return QSize(QScrollArea::sizeHint().width(),
+			frameWidth()*2 + widgetHeight);
+}
+
 };

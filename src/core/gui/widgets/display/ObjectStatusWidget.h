@@ -56,13 +56,11 @@ public:
 		setStatus(ObjectStatus());
 	}
 
-	virtual QSize minimumSizeHint() const override {
-		return QSize(QScrollArea::minimumSizeHint().width(), frameWidth()*2 + widget()->minimumSizeHint().height()*2);
-	}
+	/// Returns the minimum size of the widget.
+	virtual QSize minimumSizeHint() const override;
 
-	virtual QSize sizeHint() const override {
-		return QSize(QScrollArea::sizeHint().width(), frameWidth()*2 + widget()->minimumSizeHint().height()*2);
-	}
+	/// Returns the preferred size of the widget.
+	virtual QSize sizeHint() const override;
 
 private:
 	

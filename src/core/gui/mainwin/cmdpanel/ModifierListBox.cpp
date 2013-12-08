@@ -130,10 +130,10 @@ void ModifierListBox::updateAvailableModifiers()
 			break;
 		}
 	}
-	else if(dynamic_object_cast<PipelineObject>(currentItem->object())) {
-		PipelineObject* pipelineObj = static_object_cast<PipelineObject>(currentItem->object());
-		OVITO_CHECK_OBJECT_POINTER(pipelineObj);
-		inputState = pipelineObj->evaluate(dataset->animationSettings()->time());
+	else if(dynamic_object_cast<SceneObject>(currentItem->object())) {
+		SceneObject* sceneObj = static_object_cast<SceneObject>(currentItem->object());
+		OVITO_CHECK_OBJECT_POINTER(sceneObj);
+		inputState = sceneObj->evaluate(dataset->animationSettings()->time());
 	}
 	else {
 		for(RefTarget* objNode : _modificationList->selectedNodes()) {

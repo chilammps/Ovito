@@ -37,7 +37,7 @@ IMPLEMENT_OVITO_OBJECT(Tachyon, TachyonRendererEditor, PropertiesEditor)
 void TachyonRendererEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
 	// Create the rollout.
-	QWidget* rollout = createRollout(tr("Tachyon settings"), rolloutParams);
+	QWidget* rollout = createRollout(tr("Tachyon renderer settings"), rolloutParams, "rendering.tachyon_renderer.html");
 
 	QVBoxLayout* mainLayout = new QVBoxLayout(rollout);
 	mainLayout->setContentsMargins(4,4,4,4);
@@ -107,7 +107,7 @@ void TachyonRendererEditor::createUI(const RolloutInsertionParameters& rolloutPa
 	QWidget* copyrightRollout = createRollout(tr("About"), rolloutParams.collapse().after(rollout));
 	mainLayout = new QVBoxLayout(copyrightRollout);
 	mainLayout->setContentsMargins(4,4,4,4);
-	QLabel* label = new QLabel(tr("This rendering plugin is based on:<br>Tachyon Parallel / Multiprocessor Ray Tracing System<br>Copyright (c) 1994-2011 John E. Stone<br><a href=\"http://jedi.ks.uiuc.edu/~johns/raytracer\">Tachyon website</a>"));
+	QLabel* label = new QLabel(tr("This rendering plugin is based on:<br>Tachyon Parallel / Multiprocessor Ray Tracing System<br>Copyright 1994-2011 John E. Stone<br><a href=\"http://jedi.ks.uiuc.edu/~johns/raytracer\">See Tachyon website</a>"));
 	label->setWordWrap(true);
 	label->setOpenExternalLinks(true);
 	mainLayout->addWidget(label);
