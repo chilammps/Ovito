@@ -26,7 +26,7 @@
 namespace Ovito {
 
 /// The current settings record.
-ViewportSettings ViewportSettings::_currentSettings;
+Q_GLOBAL_STATIC(ViewportSettings, _currentViewportSettings);
 
 /******************************************************************************
 * Assignment.
@@ -52,11 +52,11 @@ ViewportSettings& ViewportSettings::getSettings()
 	if(!settingsLoaded) {
 		QSettings settingsStore;
 		settingsStore.beginGroup("core/viewport/");
-		_currentSettings.load(settingsStore);
+		_currentViewportSettings->load(settingsStore);
 		settingsStore.endGroup();
 		settingsLoaded = true;
 	}
-	return _currentSettings;
+	return *_currentViewportSettings;
 }
 
 /******************************************************************************
@@ -64,11 +64,11 @@ ViewportSettings& ViewportSettings::getSettings()
 ******************************************************************************/
 void ViewportSettings::setSettings(const ViewportSettings& settings)
 {
-	_currentSettings.assign(settings);
+	_currentViewportSettings->assign(settings);
 
 	QSettings settingsStore;
 	settingsStore.beginGroup("core/viewport/");
-	_currentSettings.save(settingsStore);
+	_currentViewportSettings->save(settingsStore);
 	settingsStore.endGroup();
 }
 
