@@ -218,10 +218,11 @@ void ConstructSurfaceModifier::ConstructSurfaceEngine::compute(FutureInterfaceBa
 	struct Tetrahedron {
 		/// Pointers to the mesh facets associated with the four faces of the tetrahedron.
 		std::array<HalfEdgeMesh::Face*, 4> meshFacets;
-		std::array<int,4> vertexIndices;
-		int minVertexIndex, maxVertexIndex;
+		DelaunayTessellation::CellHandle cell;
 	};
-	std::vector<Tetrahedron> tetrahedra(solidCellCount);
+	std::map<std::array<int,4>, Tetrahedron> tetrahedra;
+	std::vector<std::map<std::array<int,4>, Tetrahedron>::const_iterator> tetrahedraList;
+	tetrahedraList.reserve(solidCellCount);
 
 	futureInterface.setProgressRange(solidCellCount);
 	futureInterface.setProgressText(tr("Constructing surface mesh (facet construction step)"));
@@ -234,16 +235,21 @@ void ConstructSurfaceModifier::ConstructSurfaceEngine::compute(FutureInterfaceBa
 		if(cell->info().index == -1)
 			continue;
 		OVITO_ASSERT(cell->info().flag);
-		futureInterface.setProgressValue(cell->info().index);
 
-		Tetrahedron& tet = tetrahedra[cell->info().index];
+		if((cell->info().index % 1000) == 0) {
+			futureInterface.setProgressValue(cell->info().index);
+			if(futureInterface.isCanceled())
+				return;
+		}
+
+		Tetrahedron tet;
+		tet.cell = cell;
 		Point3 unwrappedVerts[4];
+		std::array<int,4> vertexIndices;
 		for(size_t i = 0; i < 4; i++) {
-			tet.vertexIndices[i] = cell->vertex(i)->point().index();
+			vertexIndices[i] = cell->vertex(i)->point().index();
 			unwrappedVerts[i] = cell->vertex(i)->point();
 		}
-		tet.minVertexIndex = *std::min_element(tet.vertexIndices.begin(), tet.vertexIndices.end());
-		tet.maxVertexIndex = *std::max_element(tet.vertexIndices.begin(), tet.vertexIndices.end());
 
 		// Compute cell volume.
 		Vector3 ad = unwrappedVerts[0] - unwrappedVerts[3];
@@ -277,22 +283,24 @@ void ConstructSurfaceModifier::ConstructSurfaceEngine::compute(FutureInterfaceBa
 			// Create a new triangle facet.
 			tet.meshFacets[f] = _mesh.createFace(facetVertices.begin(), facetVertices.end());
 		}
+
+		std::sort(vertexIndices.begin(), vertexIndices.end());
+		tetrahedraList.push_back(tetrahedra.insert(std::make_pair(vertexIndices, tet)).first);
 	}
 	if(futureInterface.isCanceled())
 		return;
 
 	// Links half-edges to opposite half-edges.
 	futureInterface.setProgressText(tr("Constructing surface mesh (facet linking step)"));
-	for(DelaunayTessellation::CellIterator cell = tessellation.begin_cells(); cell != tessellation.end_cells(); ++cell) {
-		if(cell->info().index == -1)
-			continue;
-		OVITO_ASSERT(cell->info().flag);
+	for(auto tetIter = tetrahedra.cbegin(); tetIter != tetrahedra.cend(); ++tetIter) {
 
-		futureInterface.setProgressValue(cell->info().index);
-		if(futureInterface.isCanceled())
-			return;
+		const Tetrahedron& tet = tetIter->second;
+		if((tet.cell->info().index % 1000) == 0) {
+			futureInterface.setProgressValue(tet.cell->info().index);
+			if(futureInterface.isCanceled())
+				return;
+		}
 
-		Tetrahedron& tet = tetrahedra[cell->info().index];
 		for(int f = 0; f < 4; f++) {
 			HalfEdgeMesh::Face* facet = tet.meshFacets[f];
 			if(facet == nullptr) continue;
@@ -303,9 +311,9 @@ void ConstructSurfaceModifier::ConstructSurfaceEngine::compute(FutureInterfaceBa
 				if(edge->oppositeEdge() != nullptr) continue;
 				int vertexIndex1 = DelaunayTessellation::cellFacetVertexIndex(f, 2-e);
 				int vertexIndex2 = DelaunayTessellation::cellFacetVertexIndex(f, (4-e)%3);
-				DelaunayTessellation::FacetCirculator circulator_start = tessellation.incident_facets(cell, vertexIndex1, vertexIndex2, cell, f);
+				DelaunayTessellation::FacetCirculator circulator_start = tessellation.incident_facets(tet.cell, vertexIndex1, vertexIndex2, tet.cell, f);
 				DelaunayTessellation::FacetCirculator circulator = circulator_start;
-				OVITO_ASSERT(circulator->first == cell);
+				OVITO_ASSERT(circulator->first == tet.cell);
 				OVITO_ASSERT(circulator->second == f);
 				--circulator;
 				OVITO_ASSERT(circulator != circulator_start);
@@ -325,33 +333,33 @@ void ConstructSurfaceModifier::ConstructSurfaceEngine::compute(FutureInterfaceBa
 				// If the cell is a ghost cell, find the corresponding real cell.
 				if(mirrorFacet.first->info().isGhost) {
 					OVITO_ASSERT(mirrorFacet.first->info().index == -1);
+					std::array<int,4> cellVerts;
+					for(size_t i = 0; i < 4; i++) {
+						cellVerts[i] = mirrorFacet.first->vertex(i)->point().index();
+						OVITO_ASSERT(cellVerts[i] != -1);
+					}
 					std::array<int,3> faceVerts;
 					for(size_t i = 0; i < 3; i++) {
-						faceVerts[i] = mirrorFacet.first->vertex(DelaunayTessellation::cellFacetVertexIndex(mirrorFacet.second, i))->point().index();
+						faceVerts[i] = cellVerts[DelaunayTessellation::cellFacetVertexIndex(mirrorFacet.second, i)];
 						OVITO_ASSERT(faceVerts[i] != -1);
 					}
-					std::sort(faceVerts.begin(), faceVerts.end());
-					for(const Tetrahedron& realTet : tetrahedra) {
-						if(realTet.minVertexIndex != faceVerts.front() && realTet.maxVertexIndex != faceVerts.back()) continue;
-						bool found = false;
-						for(int fi = 0; fi < 4; fi++) {
-							if(realTet.meshFacets[fi] == nullptr) continue;
-							std::array<int,3> faceVerts2;
-							for(size_t i = 0; i < 3; i++) {
-								faceVerts2[i] = realTet.vertexIndices[DelaunayTessellation::cellFacetVertexIndex(fi, i)];
-								OVITO_ASSERT(faceVerts2[i] != -1);
-							}
-							if(std::is_permutation(faceVerts.begin(), faceVerts.end(), faceVerts2.begin())) {
-								oppositeFace = realTet.meshFacets[fi];
-								found = true;
-								break;
-							}
+					std::sort(cellVerts.begin(), cellVerts.end());
+					const Tetrahedron& realTet = tetrahedra[cellVerts];
+					for(int fi = 0; fi < 4; fi++) {
+						if(realTet.meshFacets[fi] == nullptr) continue;
+						std::array<int,3> faceVerts2;
+						for(size_t i = 0; i < 3; i++) {
+							faceVerts2[i] = realTet.cell->vertex(DelaunayTessellation::cellFacetVertexIndex(fi, i))->point().index();
+							OVITO_ASSERT(faceVerts2[i] != -1);
 						}
-						if(found) break;
+						if(std::is_permutation(faceVerts.begin(), faceVerts.end(), faceVerts2.begin())) {
+							oppositeFace = realTet.meshFacets[fi];
+							break;
+						}
 					}
 				}
 				else {
-					const Tetrahedron& mirrorTet = tetrahedra[mirrorFacet.first->info().index];
+					const Tetrahedron& mirrorTet = tetrahedraList[mirrorFacet.first->info().index]->second;
 					oppositeFace = mirrorTet.meshFacets[mirrorFacet.second];
 				}
 				OVITO_ASSERT(oppositeFace != nullptr);
@@ -359,7 +367,7 @@ void ConstructSurfaceModifier::ConstructSurfaceEngine::compute(FutureInterfaceBa
 				HalfEdgeMesh::Edge* oppositeEdge = oppositeFace->edges();
 				do {
 					OVITO_CHECK_POINTER(oppositeEdge);
-					if(oppositeEdge->vertex1() == edge->vertex2() && oppositeEdge->vertex2() == edge->vertex1()) {
+					if(oppositeEdge->vertex1() == edge->vertex2()) {
 						edge->linkToOppositeEdge(oppositeEdge);
 						break;
 					}

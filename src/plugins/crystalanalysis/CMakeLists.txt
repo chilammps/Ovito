@@ -19,7 +19,7 @@
 #
 ###############################################################################
 
-# Locate CGAL library.
+# Find CGAL library.
 FIND_PACKAGE(CGAL REQUIRED)
 IF(NOT CGAL_FOUND)
 	MESSAGE(FATAL_ERROR "CGAL library, which is required by the CrystalAnalysis plugin, not found.")
@@ -51,4 +51,5 @@ SET(OVITO_CRYSTALANALYSIS_SOURCE_FILES
 OVITO_PLUGIN(CrystalAnalysis
 	SOURCES ${OVITO_CRYSTALANALYSIS_SOURCE_FILES}
 	PLUGIN_DEPENDENCIES Particles
+	LIB_DEPENDENCIES ${CGAL_LIBRARIES} ${CGAL_3RD_PARTY_LIBRARIES}
 )

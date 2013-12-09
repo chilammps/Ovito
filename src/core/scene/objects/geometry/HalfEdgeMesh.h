@@ -72,6 +72,8 @@ public:
 		void linkToOppositeEdge(Edge* oppositeEdge) {
 			OVITO_ASSERT(_oppositeEdge == nullptr);
 			OVITO_ASSERT(oppositeEdge->_oppositeEdge == nullptr);
+			OVITO_ASSERT(vertex1() == oppositeEdge->vertex2());
+			OVITO_ASSERT(vertex2() == oppositeEdge->vertex1());
 			_oppositeEdge = oppositeEdge;
 			oppositeEdge->_oppositeEdge = this;
 		}
