@@ -40,8 +40,8 @@ void RefMaker::aboutToBeDeleted()
 {
 	OVITO_CHECK_OBJECT_POINTER(this);
 
-	// Make sure undo recording is not active.
-	OVITO_ASSERT_MSG(!_dataset || _dataset->undoStack().isRecording() == false, "RefMaker::aboutToBeDeleted()", "Cannot delete object from memory while undo recording is active.");
+	// Make sure undo recording is not active while deleting a RefTarget.
+	OVITO_ASSERT_MSG(!isRefTarget() || dataset()->undoStack().isRecording() == false, "RefMaker::aboutToBeDeleted()", "Cannot delete object from memory while undo recording is active.");
 
 	// Clear all references this object has to other objects.
 	clearAllReferences();

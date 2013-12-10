@@ -11,38 +11,57 @@
   <title>Tachyon renderer</title>
 
   <para>
-  <!-- 
-  <figure xml:id="core.rendering.preview_renderer.parameter_panel">
-      <title>The <emphasis>settings panel of the built-in OpenGL
-      renderer</emphasis></title>
+     <informalfigure><screenshot><mediaobject><imageobject>
+       <imagedata fileref="images/rendering/tachyon_renderer_panel.png" format="PNG" />
+     </imageobject></mediaobject></screenshot></informalfigure>  
+     
+    One of the advanced features provided by the Tachyon ray tracer is the ability to render scenes with ambient occlusion lighting and semi-transparent objects.
+    </para>
+    
+  <simplesect>
+    <title>Parameters</title>
 
-      <screenshot>
-        <mediaobject>
-          <imageobject>
-            <imagedata fileref="images/rendering/preview_renderer_settings_panel.png"
-                       format="PNG" xml:base="../../../"/>
-          </imageobject>
-        </mediaobject>
-      </screenshot>
-    </figure> 
-     -->
-    Documentation for the Tachyon renderer is still missing.
-  <!-- 
     <variablelist>
       <varlistentry>
-        <term>Antialiasing level</term>
-
+        <term>Anti-aliasing samples</term>
         <listitem>
-          <para>To reduce <link
-          xlink:href="http://en.wikipedia.org/wiki/Aliasing">aliasing
-          effects</link>, the scene can be rendered with a higher resolution
-          than the final image. This factor controls how much larger this
-          resolution is. A factor of 1 means no anti-aliasing. Higher values
-          lead to a better quality. Note, however, that higher resolutions
-          require more graphics card memory.</para>
+          <para>To reduce <link xlink:href="http://en.wikipedia.org/wiki/Aliasing">aliasing
+          effects</link>, the Tachyon raytracer can perform <emphasis>supersampling</emphasis> by 
+          computing multiple rays per output pixel. This parameter controls the number of rays.</para>
         </listitem>
       </varlistentry>
+
+      <varlistentry>
+        <term>Direct light</term>
+        <listitem>
+          <para>Enables the parallel light source, which is directed from an angle behind the camera.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Shadows</term>
+        <listitem>
+          <para>Enables cast shadows for the directional light. Not that, with the current Tachyon version, you cannot turn off
+          shadows when ambient occlusion shading is enabled. In this case, you can only turn off the directional light source completely.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Ambient occlusion</term>
+        <listitem>
+          <para>Enabling this lighting technique mimicks some of the effects that occur under conditions of omnidirectional diffuse illumination, 
+          e.g. outdoors on an overcast day.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Sample count</term>
+        <listitem>
+          <para>Ambient occlusion is implemented using a Monte Carlo technique. This parameters controls the number of samples to compute. 
+          A higher sample number leads to a more even shading, but requires more computation time.</para>
+        </listitem>
+      </varlistentry>
+
     </variablelist>
-     -->
-    </para>
+  </simplesect>
 </section>

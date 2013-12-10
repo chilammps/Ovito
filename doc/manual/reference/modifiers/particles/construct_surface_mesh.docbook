@@ -53,8 +53,9 @@
   </para>
   
   <para>
-    Note that the surface construction algorithm requires considerable memory, typically up to 1 kilobyte 
-    per input particle.
+    The surface construction algorithm requires considerable memory, typically up to 1 kilobyte 
+    per input particle. So make sure your system has enough RAM available when processing a large simulation set, and keep in mind 
+    that 32-bit program versions of OVITO cannot access more than 2 GB of memory.
   </para>
   
   <para>    

@@ -34,7 +34,7 @@ IMPLEMENT_OVITO_OBJECT(Core, StandardSceneRendererEditor, PropertiesEditor)
 void StandardSceneRendererEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
 	// Create the rollout.
-	QWidget* rollout = createRollout(tr("OpenGL renderer settings"), rolloutParams);
+	QWidget* rollout = createRollout(tr("OpenGL renderer settings"), rolloutParams, "rendering.opengl_renderer.html");
 	
 	QGridLayout* layout = new QGridLayout(rollout);
 	layout->setContentsMargins(4,4,4,4);

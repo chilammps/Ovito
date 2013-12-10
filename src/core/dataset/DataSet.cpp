@@ -271,15 +271,39 @@ bool DataSet::renderScene(RenderSettings* settings, Viewport* viewport, QSharedP
 	// Do not update the viewports while rendering.
 	ViewportSuspender noVPUpdates(viewportConfig());
 
-	// Show progress dialog.
-	QProgressDialog progressDialog(mainWindow());
-	progressDialog.setWindowModality(Qt::WindowModal);
-	progressDialog.setAutoClose(false);
-	progressDialog.setAutoReset(false);
-	progressDialog.setMinimumDuration(0);
-	progressDialog.setValue(0);
-
+	bool wasCanceled = false;
 	try {
+
+		// Set up the frame buffer for the output image.
+		if(frameBufferWindow && frameBufferWindow->frameBuffer() != frameBuffer) {
+			frameBufferWindow->setFrameBuffer(frameBuffer);
+			frameBufferWindow->resize(frameBufferWindow->sizeHint());
+		}
+		if(frameBuffer->size() != QSize(settings->outputImageWidth(), settings->outputImageHeight())) {
+			frameBuffer->setSize(QSize(settings->outputImageWidth(), settings->outputImageHeight()));
+			frameBuffer->clear();
+			if(frameBufferWindow)
+				frameBufferWindow->resize(frameBufferWindow->sizeHint());
+		}
+		if(frameBufferWindow) {
+			if(frameBufferWindow->isHidden()) {
+				// Center frame buffer window in main window.
+				if(frameBufferWindow->parentWidget()) {
+					QSize s = frameBufferWindow->frameGeometry().size();
+					frameBufferWindow->move(frameBufferWindow->parentWidget()->geometry().center() - QPoint(s.width() / 2, s.height() / 2));
+				}
+				frameBufferWindow->show();
+			}
+			frameBufferWindow->activateWindow();
+		}
+
+		// Show progress dialog.
+		QProgressDialog progressDialog(frameBufferWindow ? (QWidget*)frameBufferWindow : (QWidget*)mainWindow());
+		progressDialog.setWindowModality(Qt::WindowModal);
+		progressDialog.setAutoClose(false);
+		progressDialog.setAutoReset(false);
+		progressDialog.setMinimumDuration(0);
+		progressDialog.setValue(0);
 
 		// Initialize the renderer.
 		if(renderer->startRender(this, settings)) {
@@ -298,29 +322,6 @@ bool DataSet::renderScene(RenderSettings* settings, Viewport* viewport, QSharedP
 				videoEncoder->openFile(settings->imageFilename(), settings->outputImageWidth(), settings->outputImageHeight(), animationSettings()->framesPerSecond());
 			}
 #endif
-
-			// Set up the frame buffer for the output image.
-			if(frameBufferWindow && frameBufferWindow->frameBuffer() != frameBuffer) {
-				frameBufferWindow->setFrameBuffer(frameBuffer);
-				frameBufferWindow->resize(frameBufferWindow->sizeHint());
-			}
-			if(frameBuffer->size() != QSize(settings->outputImageWidth(), settings->outputImageHeight())) {
-				frameBuffer->setSize(QSize(settings->outputImageWidth(), settings->outputImageHeight()));
-				frameBuffer->clear();
-				if(frameBufferWindow)
-					frameBufferWindow->resize(frameBufferWindow->sizeHint());
-			}
-			if(frameBufferWindow) {
-				if(frameBufferWindow->isHidden()) {
-					// Center frame buffer window in main window.
-					if(frameBufferWindow->parentWidget()) {
-						QSize s = frameBufferWindow->frameGeometry().size();
-						frameBufferWindow->move(frameBufferWindow->parentWidget()->geometry().center() - QPoint(s.width() / 2, s.height() / 2));
-					}
-					frameBufferWindow->show();
-				}
-				frameBufferWindow->activateWindow();
-			}
 
 			if(settings->renderingRangeType() == RenderSettings::CURRENT_FRAME) {
 				// Render a single frame.
@@ -375,6 +376,8 @@ bool DataSet::renderScene(RenderSettings* settings, Viewport* viewport, QSharedP
 
 		// Shutdown renderer.
 		renderer->endRender();
+
+		wasCanceled = progressDialog.wasCanceled();
 	}
 	catch(...) {
 		// Shutdown renderer.
@@ -382,7 +385,7 @@ bool DataSet::renderScene(RenderSettings* settings, Viewport* viewport, QSharedP
 		throw;
 	}
 
-	return !progressDialog.wasCanceled();
+	return !wasCanceled;
 }
 
 /******************************************************************************
