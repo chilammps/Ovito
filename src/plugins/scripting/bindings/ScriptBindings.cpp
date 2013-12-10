@@ -14,6 +14,7 @@
 #include <core/rendering/standard/StandardSceneRenderer.h>
 #include <core/plugins/PluginManager.h>
 #include <core/scene/SelectionSet.h>
+#include <plugins/particles/modifier/coloring/ColorCodingModifier.h>
 
 namespace Scripting {
 
@@ -254,6 +255,7 @@ QScriptValue modifier(QScriptContext* context, QScriptEngine* engine) {
 
 
 // Helpers to convert values between JS and C++. ///////////////////////
+// TODO: memory management of the returned QScriptValue's!  
 
 QScriptValue fromFloatType(QScriptEngine *engine, const FloatType& x) {
 	double xx = x;
@@ -262,6 +264,96 @@ QScriptValue fromFloatType(QScriptEngine *engine, const FloatType& x) {
 
 void toFloatType(const QScriptValue& obj, FloatType& x) {
 	x = obj.toNumber();
+}
+
+
+
+QScriptValue fromVector3(QScriptEngine *engine, const Vector3& x) {
+	QScriptValue retval = engine->newArray(3);
+	retval.setProperty(0, x.x());
+	retval.setProperty(1, x.y());
+	retval.setProperty(2, x.z());
+	return retval;
+}
+
+void toVector3(const QScriptValue& obj, Vector3& x) {
+	QScriptEngine* engine = obj.engine();
+	QScriptContext* context = engine->currentContext();
+	if (!obj.isArray()) {
+		context->throwError("object must be an array");
+		return;
+	}
+	const unsigned length = obj.property("length").toInteger();
+	if (length != 3) {
+		context->throwError("array must have a length of 3");
+		return;
+	}
+	x.x() = obj.property(0).toNumber();
+	x.y() = obj.property(1).toNumber();
+	x.z() = obj.property(2).toNumber();
+}
+
+
+
+
+QScriptValue fromColor(QScriptEngine *engine, const Color& x) {
+	QScriptValue retval = engine->newArray(3);
+	retval.setProperty(0, x.r());
+	retval.setProperty(1, x.g());
+	retval.setProperty(2, x.b());
+	return retval;
+}
+
+void toColor(const QScriptValue& obj, Color& x) {
+	QScriptEngine* engine = obj.engine();
+	QScriptContext* context = engine->currentContext();
+	if (!obj.isArray()) {
+		context->throwError("object must be an array");
+		return;
+	}
+	const unsigned length = obj.property("length").toInteger();
+	if (length != 3) {
+		context->throwError("array must have a length of 3");
+		return;
+	}
+	x.r() = obj.property(0).toNumber();
+	x.g() = obj.property(1).toNumber();
+	x.b() = obj.property(2).toNumber();
+}
+
+
+
+QScriptValue fromColorCodingGradientPtr(QScriptEngine *engine, Particles::ColorCodingGradient* const& x) {
+	return x->getOOType().name();
+}
+
+void toColorCodingGradientPtr(const QScriptValue& obj, Particles::ColorCodingGradient*& x) {
+	QScriptEngine* engine = obj.engine();
+	QScriptContext* context = engine->currentContext();
+	QString gradientName = obj.toString();
+	// Find the correct class.
+	const OvitoObjectType* searchResultClass = nullptr;
+	Q_FOREACH(const OvitoObjectType* clazz,
+			  PluginManager::instance().listClasses(Particles::ColorCodingGradient::OOType)) {
+		if (clazz->name() == gradientName) {
+			searchResultClass = clazz;
+			break;
+		}
+	}
+	// Output it.
+	if (searchResultClass == nullptr)
+		context->throwError("Color gradient " + gradientName + " not found.");
+	else {
+		// Get DataSet.
+		DataSet* dataSet = unwrapGlobalDataSet(engine);
+		// Get instance of modifier.
+		// TODO: here we create a memory leak by choice. We must find a way to destroy this one again.       
+		OORef<Particles::ColorCodingGradient>* ptr =
+			new OORef<Particles::ColorCodingGradient>(
+				static_object_cast<Particles::ColorCodingGradient>(searchResultClass->createInstance(dataSet)).get()
+				);
+		x = ptr->get();
+	}
 }
 
 
@@ -278,6 +370,18 @@ QScriptEngine* prepareEngine(DataSet* dataSet, QObject* parent) {
 	// Register automatic conversions.
 	const int FloatTypeTypeId = qRegisterMetaType<FloatType>("FloatType");
 	qScriptRegisterMetaType<FloatType>(engine, fromFloatType, toFloatType);
+
+	const int Vector3TypeId = qRegisterMetaType<Vector3>("Vector3");
+	qScriptRegisterMetaType<Vector3>(engine, fromVector3, toVector3);
+
+	const int ColorTypeId = qRegisterMetaType<Color>("Color");
+	qScriptRegisterMetaType<Color>(engine, fromColor, toColor);
+
+	const int ColorCodingGradientPtrTypeId =
+		qRegisterMetaType<Particles::ColorCodingGradient*>("ColorCodingGradient*");
+	qScriptRegisterMetaType<Particles::ColorCodingGradient*>(engine,
+															 fromColorCodingGradientPtr,
+															 toColorCodingGradientPtr);
 
 	// Set up namespace. ///////////////////////////////////////////////
 
