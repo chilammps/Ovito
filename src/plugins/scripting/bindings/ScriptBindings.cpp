@@ -143,14 +143,11 @@ void DataSetBinding::appendModifier(const QScriptValue& modifier) {
 	QScriptEngine* engine = modifier.engine();
 	QScriptContext* context = engine->currentContext();
 	try {
-		QObject* data = modifier.data().toQObject();
-		if (data == nullptr) {
+		Modifier* mod = qobject_cast<Modifier*>(modifier.toQObject());
+		if (mod == nullptr) {
 			context->throwError("Not a valid modifier");
 			return;
 		}
-		// TODO: this cast is not necessarily safe.   
-		ScriptRef<Modifier> modWrapper = *dynamic_cast<ScriptRef<Modifier>*>(data);
-		OORef<Modifier> mod = modWrapper.getReference();
 		object_->applyModifier(mod);
 	} catch (const Exception& e) {
 		context->throwError(QString("Not a valid modifier (error: ") + e.what() + ")");
