@@ -22,18 +22,15 @@ using namespace Ovito;
 
 // Wrapping DataSet ////////////////////////////////////////////////////
 
-/// Class to wrap a DataSet without exposing its methods/properties.
-class DataSetWrapper : public QObject {
-public:
-	DataSetWrapper(DataSet* data_, QObject* parent = nullptr)
-		: QObject(parent), data(data_)
-	{}
-	DataSet* data;
-};
-
-
 DataSet* unwrapGlobalDataSet(QScriptEngine* engine) {
-	return dynamic_cast<DataSetWrapper*>(engine->globalObject().property("__internal").toQObject())->data;
+	QVariant ds = engine->property("_ovito_dataset");
+	if (ds.canConvert< OORef<OvitoObject> >()) {
+		DataSet* data = dynamic_object_cast<DataSet>(ds.value< OORef<OvitoObject> >()).get();
+		if (data == nullptr)
+			throw std::runtime_error("global DataSet is not a DataSet (but is an OvitoObject)!");
+		return data;
+	} else
+		throw std::runtime_error("global DataSet is not a DataSet!");
 }
 
 
@@ -277,8 +274,7 @@ QScriptEngine* prepareEngine(DataSet* dataSet, QObject* parent) {
 	QScriptEngine* engine = new QScriptEngine(parent);
 
 	// Store global DataSet.
-	engine->globalObject().setProperty("__internal",
-									   engine->newQObject(new DataSetWrapper(dataSet, parent)));
+	engine->setProperty("_ovito_dataset", QVariant::fromValue(OORef<OvitoObject>(dataSet)));
 
 	// Register automatic conversions.
 	const int FloatTypeTypeId = qRegisterMetaType<FloatType>("FloatType");
