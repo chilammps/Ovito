@@ -189,17 +189,16 @@ QScriptValue loadFile(QScriptContext* context, QScriptEngine* engine) {
 	DataSet* dataSet = unwrapGlobalDataSet(engine);
 	DataSetContainer* container = dataSet->container();
 	try {
+		// TODO: check return value     
+		// TODO: guess remote URL  
 		container->importFile(QUrl::fromLocalFile(path),
 							  nullptr,
-							  FileImporter::AddToScene);
+							  FileImporter::AddToScene); // <- TODO configurable
 	} catch (const Exception& e) {
 		return context->throwError(e.what());
 	}
 
 	// Return wrapper around the dataset representing the current file.
-	// TODO: this is racy, perhaps? Is the new file guaranteed to be     
- 	// the active selection?                                             
-	// Is this a good way to do it?                                      
 	ObjectNode* root = static_cast<ObjectNode*>(dataSet->selection()->firstNode());
 	return engine->newQObject(new DataSetBinding(root),
 							  QScriptEngine::ScriptOwnership);

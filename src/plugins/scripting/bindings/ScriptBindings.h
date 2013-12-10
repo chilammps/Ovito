@@ -18,6 +18,8 @@ using namespace Ovito;
 
 /**
  * \brief QObject based wrapper around OORef.
+ *
+ * \todo This could probalby be replaced by QVariant!!   
  */
 template<typename T>
 class ScriptRef : public QObject {
@@ -58,6 +60,11 @@ QScriptValue wrapOORef(OORef<T> ptr, QScriptEngine* engine) {
 
 /**
  * \brief Scripting interface to the viewports.
+ *
+ * \todo Viewports can be created and deleted, we cannot just store
+ * the initial viewports in an array and be done!  
+ * \todo Pointer to ViewportConfiguration and Viewport should be OORef!  
+ * \todo Viewport has a method to get DataSet, do not store DataSet!  
  */
 class ViewportBinding : public QObject {
 public:
@@ -91,6 +98,9 @@ public Q_SLOTS:
 
 	/**
 	 * \brief Render this viewport.
+	 *
+	 * \todo Check return value of renderScene and either return
+	 * boolean or throw error
 	 */
 	void render(const QString& filename,
 				const QScriptValue& options = QScriptValue::UndefinedValue
@@ -113,6 +123,8 @@ private:
  *
  * This is similar to ViewportBinding but always references the ative
  * viewport.
+ *
+ * \todo Always take ViewportConfiguration 
  */
 class ActiveViewportBinding : public ViewportBinding {
 public:
@@ -135,6 +147,14 @@ private:
  * \brief Wrapper for an object in a DataSet.
  *
  * \ŧodo better name
+ *
+ * \todo use RefTargetListener so that we can see when the pointee is
+ * deleted, in this case this object is invalid (throw exception on
+ * use or something).
+ *
+ * \todo close/delete method
+ *
+ * \todo Method to access Pipeline
  */
 class DataSetBinding : public QObject {
 public:
@@ -179,7 +199,11 @@ QScriptValue modifier(QScriptContext* context, QScriptEngine* engine);
 
 /**
  * \brief Create a script engine that is already filled with global objects.
- * Needs a global DataSetContainer.
+ *
+ * \param dataSet The DataSet which is the context for this script
+ * engine. Keeps a hard reference (OORef) in the engine.
+ *
+ * \param parent QObject memory management of the engine.
  */
 QScriptEngine* prepareEngine(DataSet* dataSet, QObject* parent = 0);
 
