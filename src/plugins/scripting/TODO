@@ -13,6 +13,8 @@
 
       ovito --script foo.js # No GUI will open, ovito closes afterwards
 
+* clean up #included headers
+
 * GUI script interface:
 ** notebook (like sage etc.)
 ** load/save file

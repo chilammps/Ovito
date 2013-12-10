@@ -92,16 +92,19 @@ void ViewportBinding::setActive() const {
 
 void ViewportBinding::render(const QString& filename,
 							 const QScriptValue& options) const {
-	// Prepare settings.
-	// TODO: set these from settings...                                               
-	RenderSettings settings(dataSet_);
-	settings.setRendererClass(&StandardSceneRenderer::OOType);
-	settings.setRenderingRangeType(RenderSettings::CURRENT_FRAME);
-	settings.setOutputImageWidth(800);
-	settings.setOutputImageHeight(600);
-	settings.setImageFilename(filename);
-	settings.setSaveToFile(true);
-	settings.setSkipExistingImages(false);
+	// Clone current render settings of the data set.
+	CloneHelper cloner;
+	OORef<RenderSettings> settings = cloner.cloneObject(dataSet_->renderSettings(), true);
+	// Output settings.
+	settings->setImageFilename(filename);
+	settings->setSaveToFile(true);
+	/* TODO: override these from 'options'       
+	settings->setRendererClass(&StandardSceneRenderer::OOType);
+	settings->setRenderingRangeType(RenderSettings::CURRENT_FRAME);
+	settings->setOutputImageWidth(800);
+	settings->setOutputImageHeight(600);
+	settings->setSkipExistingImages(false);
+	*/
 
 	try {
 		// Prepare framebuffer.
@@ -115,11 +118,11 @@ void ViewportBinding::render(const QString& filename,
 		}
 		*/
 		if(!frameBuffer)
-			frameBuffer.reset(new FrameBuffer(settings.outputImageWidth(),
-											  settings.outputImageHeight()));
+			frameBuffer.reset(new FrameBuffer(settings->outputImageWidth(),
+											  settings->outputImageHeight()));
 
 		// Render.
-		dataSet_->renderScene(&settings,
+		dataSet_->renderScene(settings.get(),
 							  getViewport(),
 							  frameBuffer,
 							  frameBufferWindow);
