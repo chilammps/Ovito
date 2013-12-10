@@ -1,11 +1,15 @@
+**************************************************************************
+Install indirect dependencies on Ubuntu 10.04:
+**************************************************************************
+
+sudo apt-get install libx11-xcb-dev libpcre3-dev libxi-dev libgmp-dev libmpfr-dev
 
 **************************************************************************
 Build static Qt libraries (version 5.1.1) on Ubuntu 10.04:
 
 Edit file qtbase/mkspecs/common/g++-base.conf and specify absolute
 paths to newest gcc and g++ compilers.
-
-sudo apt-get install libx11-xcb-dev libpcre3-dev libxi-dev
+**************************************************************************
 
 ./configure \
 	-opensource \
@@ -32,7 +36,33 @@ cd ../../../../../..
 make install
 
 **************************************************************************
+Build static versions of Boost libraries (release 1.55):
+**************************************************************************
+
+./bootstrap.sh \
+	--with-libraries=system,thread \
+	--prefix=$HOME/progs/booststatic
+
+./b2 release link=static install
+
+**************************************************************************
+Build static CGAL library (release 4.3):
+**************************************************************************
+
+cmake -DBOOST_ROOT=$HOME/progs/booststatic \
+	-DBUILD_SHARED_LIBS=OFF \
+	-DGMP_LIBRARIES=/usr/lib/libgmp.a \
+	-DMPFR_LIBRARIES=/usr/lib/libmpfr.a \
+	-DWITH_CGAL_Qt3=OFF \
+	-DWITH_CGAL_Qt4=OFF \
+	-DWITH_CGAL_ImageIO=OFF \
+	.
+
+make
+
+**************************************************************************
 Build static libav (release 0.8.8) on Ubuntu 10.04:
+**************************************************************************
 
 sudo apt-get install yasm
 wget http://libav.org/releases/libav-0.8.8.tar.gz
