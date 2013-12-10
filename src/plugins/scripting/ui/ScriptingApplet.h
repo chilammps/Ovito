@@ -34,7 +34,7 @@ using namespace Ovito;
  */
 class CodeEdit : public QTextEdit {
 public:
-  CodeEdit(QWidget * parent = 0) : QTextEdit(parent) {}
+  CodeEdit(QWidget* parent = 0) : QTextEdit(parent) {}
 protected:
   void keyPressEvent(QKeyEvent* event) {
 	if (event->key() == Qt::Key_Return && event->modifiers().testFlag(Qt::ControlModifier))
@@ -49,6 +49,7 @@ Q_SIGNALS:
 private:
   Q_OBJECT
 };
+
 
 /**
  * \brief The utility applet that integrates scripting into Ovito's user interface.
@@ -77,13 +78,13 @@ public Q_SLOTS:
 private:
 
 	/// The main widget of the applet.
-	QWidget* _panel;
+	QWidget* panel_;
 
 	/// The script editor widget.
-	CodeEdit* _editor;
+	CodeEdit* editor_;
 
 	/// The output of the script.
-	QLabel* _output;
+	QLabel* output_;
 
 	/// Reference to the main window.
 	MainWindow* mainWindow_;

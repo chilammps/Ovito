@@ -30,6 +30,15 @@ private:
 	OORef<T> ref_;
 };
 
+
+/**
+ * \brief Helper to wrap OORef'd object in QScriptValue.
+ *
+ * The "data" property of the script value will contain an OORef that
+ * will be deleted when the script no longer needs it.  This
+ * guarantees correct memory management for reference counted Ovito
+ * objects.
+ */
 template<typename T>
 QScriptValue wrapOORef(OORef<T> ptr, QScriptEngine* engine) {
 	// Create script value that will never be deleted, because
@@ -45,6 +54,7 @@ QScriptValue wrapOORef(OORef<T> ptr, QScriptEngine* engine) {
 	// Done.
 	return retval;
 }
+
 
 /**
  * \brief Scripting interface to the viewports.
@@ -98,6 +108,12 @@ private:
 };
 
 
+/**
+ * \brief Scripting interface to the active viewport.
+ *
+ * This is similar to ViewportBinding but always references the ative
+ * viewport.
+ */
 class ActiveViewportBinding : public ViewportBinding {
 public:
 	ActiveViewportBinding(QScriptEngine* engine,
@@ -115,15 +131,19 @@ private:
 };
 
 
+/**
+ * \brief Wrapper for an object in a DataSet.
+ *
+ * \ŧodo better name
+ */
 class DataSetBinding : public QObject {
 public:
-	DataSetBinding(SelectionSet* dataSet, QObject* parent = 0);
+	DataSetBinding(ObjectNode* object, QObject* parent = 0);
 
 public Q_SLOTS:
 	void appendModifier(const QScriptValue& modifier);
 
 private:
-	SelectionSet* dataSet_;
 	ObjectNode* object_;
 
 	Q_OBJECT
@@ -136,27 +156,32 @@ QScriptValue quit(QScriptContext* context, QScriptEngine* engine) {
 	throw Exception("Not implemented");
 }
 
+
 /// Return current working directory.
 QScriptValue pwd(QScriptContext* context, QScriptEngine* engine);
+
 
 /// Change current working directory and return it.
 QScriptValue cd(QScriptContext* context, QScriptEngine* engine);
 
+
 /// Import file.
 QScriptValue loadFile(QScriptContext* context, QScriptEngine* engine);
 
+
+/// Return array of names of available modifiers.
 QScriptValue listModifiers(QScriptContext* context, QScriptEngine* engine);
 
-QScriptValue modifier(QScriptContext* context, QScriptEngine* engine);
 
+/// Create a modifier.
+QScriptValue modifier(QScriptContext* context, QScriptEngine* engine);
 
 
 /**
  * \brief Create a script engine that is already filled with global objects.
  * Needs a global DataSetContainer.
  */
-QScriptEngine* prepareEngine(DataSetContainer* container,
-							 QObject* parent = 0);
+QScriptEngine* prepareEngine(DataSet* dataSet, QObject* parent = 0);
 
 
 }

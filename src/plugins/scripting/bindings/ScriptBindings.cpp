@@ -19,15 +19,25 @@ namespace Scripting {
 
 using namespace Ovito;
 
+
+// Wrapping DataSet ////////////////////////////////////////////////////
+
 /// Class to wrap a DataSet without exposing its methods/properties.
 class DataSetWrapper : public QObject {
 public:
-	DataSetWrapper(DataSetContainer* container_, QObject* parent = nullptr)
-		: QObject(parent), container(container_)
+	DataSetWrapper(DataSet* data_, QObject* parent = nullptr)
+		: QObject(parent), data(data_)
 	{}
-	DataSetContainer* container;
+	DataSet* data;
 };
 
+
+DataSet* unwrapGlobalDataSet(QScriptEngine* engine) {
+	return dynamic_cast<DataSetWrapper*>(engine->globalObject().property("__internal").toQObject())->data;
+}
+
+
+// ViewportBinding /////////////////////////////////////////////////////
 
 ViewportBinding::ViewportBinding(Viewport* viewport, QScriptEngine* engine,
 								 DataSet* dataSet,
@@ -86,7 +96,7 @@ void ViewportBinding::setActive() const {
 void ViewportBinding::render(const QString& filename,
 							 const QScriptValue& options) const {
 	// Prepare settings.
-	// TODO: set these from settings...
+	// TODO: set these from settings...                                               
 	RenderSettings settings(dataSet_);
 	settings.setRendererClass(&StandardSceneRenderer::OOType);
 	settings.setRenderingRangeType(RenderSettings::CURRENT_FRAME);
@@ -98,13 +108,15 @@ void ViewportBinding::render(const QString& filename,
 
 	try {
 		// Prepare framebuffer.
-		FrameBufferWindow* frameBufferWindow = nullptr;
+		FrameBufferWindow* frameBufferWindow = nullptr; // TODO: remove this variable
 		QSharedPointer<FrameBuffer> frameBuffer;
+		/* not needed.
 		if(Application::instance().guiMode()) {
 			MainWindow* mainWindow = dataSet_->mainWindow();
 			frameBufferWindow = mainWindow->frameBufferWindow();
 			frameBuffer = frameBufferWindow->frameBuffer();
 		}
+		*/
 		if(!frameBuffer)
 			frameBuffer.reset(new FrameBuffer(settings.outputImageWidth(),
 											  settings.outputImageHeight()));
@@ -121,10 +133,10 @@ void ViewportBinding::render(const QString& filename,
 }
 
 
-DataSetBinding::DataSetBinding(SelectionSet* dataSet, QObject* parent)
-	: QObject(parent), dataSet_(dataSet),
-	  object_(static_cast<ObjectNode*>(dataSet->firstNode()))
-	  // TODO ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ good way to do it??????   
+// DataSetBinding //////////////////////////////////////////////////////
+
+DataSetBinding::DataSetBinding(ObjectNode* object, QObject* parent)
+	: QObject(parent), object_(object)
 {}
 
 void DataSetBinding::appendModifier(const QScriptValue& modifier) {
@@ -139,13 +151,14 @@ void DataSetBinding::appendModifier(const QScriptValue& modifier) {
 		// TODO: this cast is not necessarily safe.   
 		ScriptRef<Modifier> modWrapper = *dynamic_cast<ScriptRef<Modifier>*>(data);
 		OORef<Modifier> mod = modWrapper.getReference();
-		// TODO: object_ doesn't take ownership of the OORef for some reason!?    
 		object_->applyModifier(mod);
 	} catch (const Exception& e) {
 		context->throwError(QString("Not a valid modifier (error: ") + e.what() + ")");
 	}
 }
 
+
+// Helper functions ////////////////////////////////////////////////////
 
 QScriptValue pwd(QScriptContext* context, QScriptEngine* engine) {
 	// Process arguments.
@@ -176,9 +189,8 @@ QScriptValue loadFile(QScriptContext* context, QScriptEngine* engine) {
 	const QString path = context->argument(0).toString();
 
 	// Load it.
-	QScriptValue container_ = engine->globalObject().property("__internal");
-	DataSetContainer* container =
-		static_cast<DataSetWrapper*>(container_.toQObject())->container;
+	DataSet* dataSet = unwrapGlobalDataSet(engine);
+	DataSetContainer* container = dataSet->container();
 	try {
 		container->importFile(QUrl::fromLocalFile(path),
 							  nullptr,
@@ -190,13 +202,11 @@ QScriptValue loadFile(QScriptContext* context, QScriptEngine* engine) {
 	// Return wrapper around the dataset representing the current file.
 	// TODO: this is racy, perhaps? Is the new file guaranteed to be     
  	// the active selection?                                             
-	SelectionSet* dataSet = container->currentSet()->selection();
-	return engine->newQObject(new DataSetBinding(dataSet),
+	// Is this a good way to do it?                                      
+	ObjectNode* root = static_cast<ObjectNode*>(dataSet->selection()->firstNode());
+	return engine->newQObject(new DataSetBinding(root),
 							  QScriptEngine::ScriptOwnership);
 }
-
-
-
 
 
 QScriptValue listModifiers(QScriptContext* context, QScriptEngine* engine) {
@@ -215,6 +225,7 @@ QScriptValue listModifiers(QScriptContext* context, QScriptEngine* engine) {
 		retval.setProperty(i, QScriptValue(names[i]));
 	return retval;
 }
+
 
 QScriptValue modifier(QScriptContext* context, QScriptEngine* engine) {
 	// Process arguments.
@@ -236,18 +247,17 @@ QScriptValue modifier(QScriptContext* context, QScriptEngine* engine) {
 	if (searchResultClass == nullptr)
 		return context->throwError("Modifier " + name + " not found.");
 	else {
-		// Get DataSetContainer.
-		DataSetContainer* container =
-			static_cast<DataSetWrapper*>(engine->globalObject().property("__internal").toQObject())->container;
+		// Get DataSet.
+		DataSet* dataSet = unwrapGlobalDataSet(engine);
 		// Get instance of modifier.
 		OORef<Modifier> ptr =
-			static_object_cast<Modifier>(searchResultClass->createInstance(container->currentSet()));
+			static_object_cast<Modifier>(searchResultClass->createInstance(dataSet));
 		return wrapOORef<Modifier>(ptr, engine);
 	}
 }
 
 
-// Helpers to convert values between JS and C++.
+// Helpers to convert values between JS and C++. ///////////////////////
 
 QScriptValue fromFloatType(QScriptEngine *engine, const FloatType& x) {
 	double xx = x;
@@ -260,15 +270,15 @@ void toFloatType(const QScriptValue& obj, FloatType& x) {
 
 
 
+// Factory function for script engine //////////////////////////////////
 
-QScriptEngine* prepareEngine(DataSetContainer* container,
-							 QObject* parent) {
+QScriptEngine* prepareEngine(DataSet* dataSet, QObject* parent) {
 	// Set up engine.
 	QScriptEngine* engine = new QScriptEngine(parent);
 
-	// Store global DataSetContainer.
+	// Store global DataSet.
 	engine->globalObject().setProperty("__internal",
-									   engine->newQObject(new DataSetWrapper(container, parent)));
+									   engine->newQObject(new DataSetWrapper(dataSet, parent)));
 
 	// Register automatic conversions.
 	const int FloatTypeTypeId = qRegisterMetaType<FloatType>("FloatType");
@@ -276,7 +286,6 @@ QScriptEngine* prepareEngine(DataSetContainer* container,
 
 	// Set up namespace. ///////////////////////////////////////////////
 
-	DataSet* dataSet = container->currentSet();
 	ViewportConfiguration* viewportConf = dataSet->viewportConfig();
 
 	// All viewports.

@@ -37,8 +37,7 @@ IMPLEMENT_OVITO_OBJECT(Scripting, ScriptingApplet, UtilityApplet);
 /******************************************************************************
 * Initializes the utility applet.
 ******************************************************************************/
-ScriptingApplet::ScriptingApplet() : _panel(nullptr)
-{
+ScriptingApplet::ScriptingApplet() : panel_(nullptr) {
 }
 
 /******************************************************************************
@@ -46,37 +45,36 @@ ScriptingApplet::ScriptingApplet() : _panel(nullptr)
 ******************************************************************************/
 void ScriptingApplet::openUtility(MainWindow* mainWindow,
 								  RolloutContainer* container,
-								  const RolloutInsertionParameters& rolloutParams)
-{
+								  const RolloutInsertionParameters& rolloutParams) {
 	mainWindow_ = mainWindow;
 
 	// Create main panel widget.
-	_panel = new QWidget();
-	QVBoxLayout* layout = new QVBoxLayout(_panel);
+	panel_ = new QWidget();
+	QVBoxLayout* layout = new QVBoxLayout(panel_);
 	layout->setContentsMargins(4,4,4,4);
 	layout->setSpacing(4);
 
 	// Create code editor widget.
-	_editor = new CodeEdit(_panel);
-	_editor->setPlainText(QStringLiteral("box=loadFile(\"foo.data\");\nm=modifier(\"SliceModifier\");\nm.distance=25.0;\nbox.appendModifier(m);"));
-	connect(_editor, &CodeEdit::ctrlEnterPressed,
+	editor_ = new CodeEdit(panel_);
+	editor_->setPlainText(QStringLiteral("box=loadFile(\"foo.data\");\nm=modifier(\"SliceModifier\");\nm.distance=25.0;\nbox.appendModifier(m);"));
+	connect(editor_, &CodeEdit::ctrlEnterPressed,
 			this, &ScriptingApplet::runScript);
-	layout->addWidget(_editor, 1);
+	layout->addWidget(editor_, 1);
 
 	// Create output widget.
-	_output = new QLabel(_panel);
-	_output->setTextFormat(Qt::PlainText);
-	_output->setText("<output goes here>");
-	layout->addWidget(_output, 1);
+	output_ = new QLabel(panel_);
+	output_->setTextFormat(Qt::PlainText);
+	output_->setText("<output goes here>");
+	layout->addWidget(output_, 1);
 
 	// Create run button.
-	QPushButton* runScriptBtn = new QPushButton(tr("Run"), _panel);
+	QPushButton* runScriptBtn = new QPushButton(tr("Run"), panel_);
 	connect(runScriptBtn, &QPushButton::clicked, this,
 			&ScriptingApplet::runScript);
 	layout->addWidget(runScriptBtn);
 
 	// Create rollout around panel widget.
-	container->addRollout(_panel, tr("Scripting"),
+	container->addRollout(panel_, tr("Scripting"),
 						  rolloutParams.useAvailableSpace());
 }
 
@@ -84,27 +82,27 @@ void ScriptingApplet::openUtility(MainWindow* mainWindow,
 * Removes the UI of the utility from the rollout container.
 ******************************************************************************/
 void ScriptingApplet::closeUtility(RolloutContainer* container) {
-	delete _panel;
+	delete panel_;
 }
 
 /******************************************************************************
 * Runs the current script in the editor.
 ******************************************************************************/
-void ScriptingApplet::runScript()
-{
+void ScriptingApplet::runScript() {
 	// Set up engine.
 	QObject parent; // <- for memory management.
 	DataSetContainer& container = mainWindow_->datasetContainer();
-	QScriptEngine* engine = prepareEngine(&container, &parent);
+	DataSet* data = container.currentSet();
+	QScriptEngine* engine = prepareEngine(data, &parent);
 
 	// Evaluate.
-	QScriptValue result = engine->evaluate(_editor->toPlainText());
+	QScriptValue result = engine->evaluate(editor_->toPlainText());
 	if(result.isError()) {
-		_output->setStyleSheet("QLabel { color: red; }");
-		_output->setText(result.toString());
+		output_->setStyleSheet("QLabel { color: red; }");
+		output_->setText(result.toString());
 	} else {
-		_output->setStyleSheet("QLabel { }");
-		_output->setText(result.toString());
+		output_->setStyleSheet("QLabel { }");
+		output_->setText(result.toString());
 		if (result.isArray()) {
 			QString s;
 			s += "ARRAY: [";
@@ -112,7 +110,7 @@ void ScriptingApplet::runScript()
 			for (int i = 0; i != length; ++i)
 				s += result.property(i).toString() + ",\n";
 			s += "]";
-			_output->setText(s);
+			output_->setText(s);
 		}
 	}
 }
