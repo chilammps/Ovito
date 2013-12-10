@@ -19,6 +19,16 @@ namespace Scripting {
 
 using namespace Ovito;
 
+/// Class to wrap a DataSet without exposing its methods/properties.
+class DataSetWrapper : public QObject {
+public:
+	DataSetWrapper(DataSetContainer* container_, QObject* parent = nullptr)
+		: QObject(parent), container(container_)
+	{}
+	DataSetContainer* container;
+};
+
+
 ViewportBinding::ViewportBinding(Viewport* viewport, QScriptEngine* engine,
 								 DataSet* dataSet,
 								 QObject* parent)
@@ -166,9 +176,9 @@ QScriptValue loadFile(QScriptContext* context, QScriptEngine* engine) {
 	const QString path = context->argument(0).toString();
 
 	// Load it.
-	QScriptValue container_ = engine->globalObject().data();
+	QScriptValue container_ = engine->globalObject().property("__internal");
 	DataSetContainer* container =
-		static_cast<DataSetContainer*>(container_.toQObject());
+		static_cast<DataSetWrapper*>(container_.toQObject())->container;
 	try {
 		container->importFile(QUrl::fromLocalFile(path),
 							  nullptr,
@@ -228,7 +238,7 @@ QScriptValue modifier(QScriptContext* context, QScriptEngine* engine) {
 	else {
 		// Get DataSetContainer.
 		DataSetContainer* container =
-			static_cast<DataSetContainer*>(engine->globalObject().data().toQObject());
+			static_cast<DataSetWrapper*>(engine->globalObject().property("__internal").toQObject())->container;
 		// Get instance of modifier.
 		OORef<Modifier> ptr =
 			static_object_cast<Modifier>(searchResultClass->createInstance(container->currentSet()));
@@ -251,14 +261,14 @@ void toFloatType(const QScriptValue& obj, FloatType& x) {
 
 
 
-
 QScriptEngine* prepareEngine(DataSetContainer* container,
 							 QObject* parent) {
 	// Set up engine.
 	QScriptEngine* engine = new QScriptEngine(parent);
 
 	// Store global DataSetContainer.
-	engine->globalObject().setData(engine->newQObject(container));
+	engine->globalObject().setProperty("__internal",
+									   engine->newQObject(new DataSetWrapper(container, parent)));
 
 	// Register automatic conversions.
 	const int FloatTypeTypeId = qRegisterMetaType<FloatType>("FloatType");
