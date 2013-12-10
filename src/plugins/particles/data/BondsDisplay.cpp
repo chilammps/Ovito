@@ -204,7 +204,7 @@ void BondsDisplay::render(TimePoint time, SceneObject* sceneObject, const Pipeli
 void BondsDisplayEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
 	// Create a rollout.
-	QWidget* rollout = createRollout(tr("Bonds display"), rolloutParams);
+	QWidget* rollout = createRollout(tr("Bonds display"), rolloutParams, "display_objects.bonds.html");
 
     // Create the rollout contents.
 	QGridLayout* layout = new QGridLayout(rollout);

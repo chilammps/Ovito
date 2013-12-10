@@ -43,9 +43,8 @@
   </para>
   
   <para>
-    The appearance of bonds is controlled by a separate bonds
-    <emphasis>display object</emphasis>, which is attached to the modifier.
-    Its parameters are shown in the lower panel when the modifier is selected in the
+    The appearance of bonds is controlled by an attached <link linkend="display_objects.bonds">bonds
+    display object</link>. Its parameters are shown in the lower panel while the modifier is selected in the
     pipeline editor, or when selecting the display object itself.
   </para>
   

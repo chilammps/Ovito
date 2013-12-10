@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<section version="5.0"
+         xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xml:id="display_objects.bonds"
+         xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title>Bonds display</title>
+
+  <para>
+      
+    <informalfigure><screenshot><mediaobject><imageobject>
+       <imagedata fileref="images/display_objects/bonds_panel.png" format="PNG" />
+    </imageobject></mediaobject></screenshot></informalfigure>
+    
+    This display object is responsible for rendering bonds that connect particles.
+    Bonds can be created with the <link linkend="particles.modifiers.create_bonds">Create bonds</link> modifier.
+  </para>
+
+   <simplesect>
+    <title>Parameters</title>
+
+    <variablelist>
+      <varlistentry>
+        <term>Shading mode</term>
+        <listitem>
+          <para>Switches between a three-dimensional display mode, where bonds are rendered as cylinders, and a flat
+          representation, where bonds are rendered as lines.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>Rendering quality</term>
+        <listitem>
+          <para>This parameter controls the method used to render the bonds. The following modes are available and affect only the rendering of cylindrical bonds:
+		    <variablelist>
+		      <varlistentry>
+		        <term>Low</term>
+		        <listitem><para>Bonds are rendered using triangular facets.</para></listitem>
+		      </varlistentry>
+		      <varlistentry>
+		        <term>Medium</term>
+		        <listitem><para>Same as <emphasis>Low</emphasis> quality.</para></listitem>
+		      </varlistentry>
+		      <varlistentry>
+		        <term>High</term>
+		        <listitem><para>Bonds are rendered as true cylinders using a ray-tracing algorithm, which is implemented as a OpenGL fragment shader.</para></listitem>
+		      </varlistentry>
+		    </variablelist>
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>Bond width</term>
+        <listitem>
+          <para>Controls the display width of bonds (both cylinders and lines).</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>Bond color</term>
+        <listitem>
+          <para>The rendering color of bonds. This color parameter is only used if <emphasis>Use particle colors</emphasis> is not selected.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>Use particle colors</term>
+        <listitem>
+          <para>If selected, bonds are rendered in the same colors as the particles they connect.</para>
+        </listitem>
+      </varlistentry>
+	</variablelist>
+    </simplesect>
+    
+</section>

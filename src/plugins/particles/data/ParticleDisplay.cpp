@@ -378,7 +378,7 @@ void ParticleDisplay::render(TimePoint time, SceneObject* sceneObject, const Pip
 void ParticleDisplayEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
 	// Create a rollout.
-	QWidget* rollout = createRollout(tr("Particle display"), rolloutParams);
+	QWidget* rollout = createRollout(tr("Particle display"), rolloutParams, "display_objects.particles.html");
 
     // Create the rollout contents.
 	QGridLayout* layout = new QGridLayout(rollout);
