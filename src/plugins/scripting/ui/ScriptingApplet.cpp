@@ -56,7 +56,7 @@ void ScriptingApplet::openUtility(MainWindow* mainWindow,
 
 	// Create code editor widget.
 	editor_ = new CodeEdit(panel_);
-	editor_->setPlainText(QStringLiteral("box=loadFile(\"foo.data\");\nm=modifier(\"SliceModifier\");\nm.distance=25.0;\nbox.appendModifier(m);"));
+	editor_->setPlainText(QStringLiteral("m=modifier(\"ColorCodingModifier\");\nm.colorGradient = \"ColorCodingHotGradient\";\nm.colorGradient;\n"));
 	connect(editor_, &CodeEdit::ctrlEnterPressed,
 			this, &ScriptingApplet::runScript);
 	layout->addWidget(editor_, 1);

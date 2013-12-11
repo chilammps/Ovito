@@ -347,12 +347,7 @@ void toColorCodingGradientPtr(const QScriptValue& obj, Particles::ColorCodingGra
 		// Get DataSet.
 		DataSet* dataSet = unwrapGlobalDataSet(engine);
 		// Get instance of modifier.
-		// TODO: here we create a memory leak by choice. We must find a way to destroy this one again.       
-		OORef<Particles::ColorCodingGradient>* ptr =
-			new OORef<Particles::ColorCodingGradient>(
-				static_object_cast<Particles::ColorCodingGradient>(searchResultClass->createInstance(dataSet)).get()
-				);
-		x = ptr->get();
+		x = static_cast<Particles::ColorCodingGradient*>(searchResultClass->createNonRefInstance(dataSet));
 	}
 }
 

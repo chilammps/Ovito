@@ -1,3 +1,5 @@
+* Wrap script execution with undo transaction
+
 * clean up existing JS API
 
 * document existing JS API
