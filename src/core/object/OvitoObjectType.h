@@ -32,14 +32,13 @@
 
 namespace Ovito {
 
-class OvitoObjectType;				// defined below
 class OvitoObject;					// defined in OvitoObject.h
 class PropertyFieldDescriptor;		// defined in PropertyFieldDescriptor.h
 class ObjectSaveStream;				// defined in ObjectSaveStream.h
 class ObjectLoadStream;				// defined in ObjectLoadStream.h
 
 /**
- * \brief Stores meta-information about a class in Ovito's object system.
+ * \brief Stores meta-information about a class in OVITO's object system.
  */
 class OVITO_CORE_EXPORT OvitoObjectType
 {
@@ -91,9 +90,26 @@ public:
 
 	/// \brief Creates an instance of the OvitoObject-derived class.
 	/// \param dataset The dataset the newly created object will belong to.
-	/// \return The new instance of the class. The pointer can safely be cast to the appropriate C++ class type.
-	/// \throw Exception if a plugin failed to load or the instantiation failed for some other reason.
-	OORef<OvitoObject> createInstance(DataSet* dataset) const;
+	///                This may only be NULL when creating an instance of a class that is not derived from RefTarget.
+	/// \return The new instance of the class. The pointer can be safely cast to the corresponding C++ class type.
+	/// \throw Exception if a required plugin failed to load, or if the instantiation failed for some other reason.
+	OORef<OvitoObject> createInstance(DataSet* dataset) const {
+		return createNonRefInstance(dataset);
+	}
+
+	/// \brief Creates an instance of the OvitoObject-derived class, which is not (yet) part of the reference counting system.
+	/// \param dataset The dataset the newly created object will belong to.
+	///                This may only be NULL when creating an instance of a class that is not derived from RefTarget.
+	/// \return Pointer to the new instance of the class.
+	///         The pointer can be safely cast to the corresponding C++ class type.
+	/// \throw Exception if a required plugin failed to load, or if the instantiation failed for some other reason.
+	///
+	/// This method returns an object whose reference counter is zero. The caller is responsible for
+	/// deleting the object explicitly or incrementing its reference counter.
+	/// Note that using this method to create an instance is potentially dangerous. To avoid memory
+	/// leaks, use createInstance() instead, which returns a OORef smart pointer.
+	/// Use createNonRefInstance() only when you know what your are doing.
+	OvitoObject* createNonRefInstance(DataSet* dataset) const;
 
 	/// \brief Returns the first element of the linked list of reference fields defined for this class if it is a RefMaker derived class.
 	const PropertyFieldDescriptor* firstPropertyField() const { return _firstPropertyField; }
@@ -148,9 +164,9 @@ protected:
 
 	/// \brief Creates an instance of the class described by this meta object.
 	/// \param dataset The dataset the newly created object will belong to.
-	/// \return The new instance of the class. The pointer can safely be cast to the C++ class type.
+	/// \return The new instance of the class. The pointer can be safely cast to the corresponding C++ class type.
 	/// \throw Exception if the instance could not be created.
-	virtual OORef<OvitoObject> createInstanceImpl(DataSet* dataset) const = 0;
+	virtual OvitoObject* createInstanceImpl(DataSet* dataset) const = 0;
 
 protected:
 
