@@ -20,9 +20,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <plugins/crystalanalysis/CrystalAnalysis.h>
-#include <plugins/crystalanalysis/data/surface/DefectSurface.h>
+#include <plugins/particles/data/SurfaceMesh.h>
 #include <core/gui/properties/IntegerParameterUI.h>
-#include <core/utilities/concurrent/ParallelFor.h>
 #include <plugins/particles/data/SimulationCell.h>
 #include "SmoothSurfaceModifier.h"
 
@@ -47,7 +46,7 @@ SmoothSurfaceModifier::SmoothSurfaceModifier(DataSet* dataset) : Modifier(datase
 ******************************************************************************/
 bool SmoothSurfaceModifier::isApplicableTo(const PipelineFlowState& input)
 {
-	return (input.findObject<DefectSurface>() != nullptr);
+	return (input.findObject<SurfaceMesh>() != nullptr);
 }
 
 /******************************************************************************
@@ -58,10 +57,6 @@ ObjectStatus SmoothSurfaceModifier::modifyObject(TimePoint time, ModifierApplica
 	if(_smoothingLevel <= 0)
 		return ObjectStatus::Success;
 
-	DefectSurface* inputSurface = state.findObject<DefectSurface>();
-	if(!inputSurface)
-		return ObjectStatus::Success;	// Nothing to smooth in the modifier's input.
-
 	// Get simulation cell geometry and periodic boundary flags.
 	SimulationCellData cell;
 	if(SimulationCell* simulationCellObj = state.findObject<SimulationCell>())
@@ -70,60 +65,14 @@ ObjectStatus SmoothSurfaceModifier::modifyObject(TimePoint time, ModifierApplica
 		cell.setPbcFlags(false, false, false);
 
 	CloneHelper cloneHelper;
-	OORef<DefectSurface> outputSurface = cloneHelper.cloneObject(inputSurface, false);
-
-	// This is the implementation of the mesh smoothing algorithm:
-	//
-	// Gabriel Taubin
-	// A Signal Processing Approach To Fair Surface Design
-	// In SIGGRAPH 95 Conference Proceedings, pages 351-358 (1995)
-
-	FloatType k_PB = 0.1f;
-	FloatType lambda = 0.5f;
-	FloatType mu = 1.0f / (k_PB - 1.0f/lambda);
-
-	for(int iteration = 0; iteration < _smoothingLevel; iteration++) {
-		smoothMesh(outputSurface->mesh(), lambda, cell, false);
-		smoothMesh(outputSurface->mesh(), mu, cell, false);
-	}
-
-	outputSurface->notifyDependents(ReferenceEvent::TargetChanged);
-	state.replaceObject(inputSurface, outputSurface);
-	return ObjectStatus::Success;
-}
-
-/******************************************************************************
-* Performs one iteration of the smoothing algorithm.
-******************************************************************************/
-void SmoothSurfaceModifier::smoothMesh(HalfEdgeMesh& mesh, FloatType prefactor, const SimulationCellData& cell, bool projectToNormals)
-{
-	const AffineTransformation absoluteToReduced = cell.matrix().inverse();
-	const AffineTransformation reducedToAbsolute = cell.matrix();
-
-	// Compute displacement for each vertex.
-	std::vector<Vector3> displacements(mesh.vertices().size());
-	parallelFor(mesh.vertices().size(), [&mesh, &displacements, prefactor, cell, absoluteToReduced](int index) {
-		HalfEdgeMesh::Vertex* vertex = mesh.vertices()[index];
-		Vector3& d = displacements[index];
-		d = Vector3::Zero();
-		for(HalfEdgeMesh::Edge* edge = vertex->edges(); edge != nullptr; edge = edge->nextVertexEdge()) {
-			Vector3 delta = edge->vertex2()->pos() - vertex->pos();
-			Vector3 delta_r = absoluteToReduced * delta;
-			for(size_t dim = 0; dim < 3; dim++) {
-				if(cell.pbcFlags()[dim]) {
-					while(delta_r[dim] > FloatType(0.5)) { delta_r[dim] -= FloatType(1); delta -= cell.matrix().column(dim); }
-					while(delta_r[dim] < FloatType(-0.5)) { delta_r[dim] += FloatType(1); delta += cell.matrix().column(dim); }
-				}
-			}
-			d += delta;
+	for(int index = 0; index < state.objects().size(); index++) {
+		if(SurfaceMesh* inputSurface = dynamic_object_cast<SurfaceMesh>(state.objects()[index].get())) {
+			OORef<SurfaceMesh> outputSurface = cloneHelper.cloneObject(inputSurface, false);
+			outputSurface->smoothMesh(cell, _smoothingLevel);
+			state.replaceObject(inputSurface, outputSurface);
 		}
-		d *= (prefactor / vertex->numEdges());
-	});
-
-	// Apply displacements.
-	auto d = displacements.cbegin();
-	for(HalfEdgeMesh::Vertex* vertex : mesh.vertices())
-		vertex->pos() += *d++;
+	}
+	return ObjectStatus::Success;
 }
 
 /******************************************************************************

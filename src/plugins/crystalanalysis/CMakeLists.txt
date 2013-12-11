@@ -19,13 +19,21 @@
 #
 ###############################################################################
 
+# Find CGAL library.
+FIND_PACKAGE(CGAL REQUIRED)
+IF(NOT CGAL_FOUND)
+	MESSAGE(FATAL_ERROR "CGAL library, which is required by the CrystalAnalysis plugin, not found.")
+ENDIF()
+INCLUDE(${CGAL_USE_FILE})
+IF(NOT CMAKE_COMPILER_IS_GNUCXX)
+	ADD_DEFINITIONS(-DCGAL_CFG_ARRAY_MEMBER_INITIALIZATION_BUG)
+ENDIF()
+
 SET(OVITO_CRYSTALANALYSIS_SOURCE_FILES
 	importer/CAImporter.cpp
 	data/patterns/BurgersVectorFamily.cpp
 	data/patterns/StructurePattern.cpp
 	data/patterns/PatternCatalog.cpp
-	data/surface/DefectSurface.cpp
-	data/surface/DefectSurfaceDisplay.cpp
 	data/clusters/Cluster.cpp
 	data/clusters/ClusterGraph.cpp
 	data/dislocations/DislocationSegment.cpp
@@ -35,24 +43,13 @@ SET(OVITO_CRYSTALANALYSIS_SOURCE_FILES
 	modifier/ShiftModifier.cpp
 	modifier/SmoothSurfaceModifier.cpp
 	modifier/SmoothDislocationsModifier.cpp
-)
-
-# List of source files of the GLU library used for polygon tessellation.
-SET(GLUSourceFiles
-	data/surface/polytess/dict.c
-	data/surface/polytess/geom.c
-	data/surface/polytess/memalloc.c
-	data/surface/polytess/mesh.c
-	data/surface/polytess/normal.c
-	data/surface/polytess/priorityq.c
-	data/surface/polytess/render.c
-	data/surface/polytess/sweep.c
-	data/surface/polytess/tess.c
-	data/surface/polytess/tessmono.c
+	modifier/ConstructSurfaceModifier.cpp
+	util/DelaunayTessellation.cpp
 )
 
 # Generate plugin module.
 OVITO_PLUGIN(CrystalAnalysis
-	SOURCES ${OVITO_CRYSTALANALYSIS_SOURCE_FILES} ${GLUSourceFiles}
+	SOURCES ${OVITO_CRYSTALANALYSIS_SOURCE_FILES}
 	PLUGIN_DEPENDENCIES Particles
+	LIB_DEPENDENCIES ${CGAL_LIBRARIES} ${CGAL_3RD_PARTY_LIBRARIES}
 )

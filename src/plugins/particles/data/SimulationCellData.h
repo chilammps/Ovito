@@ -91,6 +91,39 @@ public:
 		return pout;
 	}
 
+	/// Wraps a vector at the periodic boundaries of the cell using minimum image convention.
+	Vector3 wrapVector(const Vector3& v) const {
+		Vector3 vout = v;
+		for(size_t dim = 0; dim < 3; dim++) {
+			if(_pbcFlags[dim]) {
+				if(FloatType s = floor(_reciprocalSimulationCell.prodrow(v, dim) + FloatType(0.5)))
+					vout -= s * _simulationCell.column(dim);
+			}
+		}
+		return vout;
+	}
+
+	/// Calculates the normal vector of the given simulation cell side.
+	Vector3 cellNormalVector(size_t dim) const {
+		Vector3 normal = _simulationCell.column((dim+1)%3).cross(_simulationCell.column((dim+2)%3));
+		// Flip normal if necessary.
+		if(normal.dot(_simulationCell.column(dim)) < 0.0f)
+			return normal / (-normal.length());
+		else
+			return normal.normalized();
+	}
+
+	/// Tests if a vector so long that it would be wrapped at a periodic boundary when using the minimum image convention.
+	bool isWrappedVector(const Vector3& v) const {
+		for(size_t dim = 0; dim < 3; dim++) {
+			if(_pbcFlags[dim]) {
+				if(std::abs(_reciprocalSimulationCell.prodrow(v, dim)) >= 0.5f)
+					return true;
+			}
+		}
+		return false;
+	}
+
 private:
 
 	/// The geometry of the cell.

@@ -38,7 +38,7 @@ IMPLEMENT_OVITO_OBJECT(Core, LinkedFileObjectEditor, PropertiesEditor)
 void LinkedFileObjectEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
 	// Create a rollout.
-	QWidget* rollout = createRollout(tr("External source"), rolloutParams);
+	QWidget* rollout = createRollout(tr("External data source"), rolloutParams);
 
 	// Create the rollout contents.
 	QVBoxLayout* layout = new QVBoxLayout(rollout);
@@ -76,7 +76,7 @@ void LinkedFileObjectEditor::createUI(const RolloutInsertionParameters& rolloutP
 	_sourcePathLabel = new QLineEdit();
 	_sourcePathLabel->setReadOnly(true);
 	_sourcePathLabel->setFrame(false);
-	gridlayout->addWidget(new QLabel(tr("Dir:")), 1, 0);
+	gridlayout->addWidget(new QLabel(tr("Path:")), 1, 0);
 	gridlayout->addWidget(_sourcePathLabel, 1, 1);
 
 	QGroupBox* statusBox = new QGroupBox(tr("Status"), rollout);

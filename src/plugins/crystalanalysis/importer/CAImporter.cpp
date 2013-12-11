@@ -24,7 +24,6 @@
 #include <core/dataset/importexport/LinkedFileObject.h>
 #include <core/scene/ObjectNode.h>
 #include <core/gui/properties/BooleanParameterUI.h>
-#include <plugins/crystalanalysis/data/surface/DefectSurface.h>
 #include <plugins/crystalanalysis/data/dislocations/DislocationNetwork.h>
 #include <plugins/crystalanalysis/data/dislocations/DislocationSegment.h>
 #include <plugins/crystalanalysis/data/clusters/ClusterGraph.h>
@@ -33,6 +32,7 @@
 #include <plugins/crystalanalysis/modifier/SmoothDislocationsModifier.h>
 #include <plugins/particles/importer/lammps/LAMMPSTextDumpImporter.h>
 #include <plugins/particles/data/ParticleTypeProperty.h>
+#include <plugins/particles/data/SurfaceMesh.h>
 #include "CAImporter.h"
 
 namespace CrystalAnalysis {
@@ -363,9 +363,9 @@ QSet<SceneObject*> CAImporter::CrystalAnalysisImportTask::insertIntoScene(Linked
 	activeObjects.insert(dislocationsObj.get());
 
 	// Insert defect surface.
-	OORef<DefectSurface> defectSurfaceObj = destination->findSceneObject<DefectSurface>();
+	OORef<SurfaceMesh> defectSurfaceObj = destination->findSceneObject<SurfaceMesh>();
 	if(!defectSurfaceObj) {
-		defectSurfaceObj = new DefectSurface(destination->dataset());
+		defectSurfaceObj = new SurfaceMesh(destination->dataset());
 		destination->addSceneObject(defectSurfaceObj.get());
 	}
 	defectSurfaceObj->mesh().swap(_defectSurface);

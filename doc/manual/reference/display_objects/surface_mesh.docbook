@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<section version="5.0"
+         xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xml:id="display_objects.surface_mesh"
+         xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title>Surface mesh display</title>
+
+  <para>
+      
+    <informalfigure><screenshot><mediaobject><imageobject>
+       <imagedata fileref="images/display_objects/surface_mesh_panel.png" format="PNG" />
+    </imageobject></mediaobject></screenshot></informalfigure>
+    
+    This display object is responsible for rendering the polyhedral mesh that is 
+    produced by a <link linkend="particles.modifiers.construct_surface_mesh">Construct surface mesh</link> modifier.    
+  </para>
+
+   <simplesect>
+    <title>Parameters</title>
+
+    <variablelist>
+      <varlistentry>
+        <term>Surface color</term>
+        <listitem>
+          <para>The rendering color of the surface.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>Transparency</term>
+        <listitem>
+          <para>The degree of transparency of the surface. Note that the default OpenGL renderer does not support 
+          semi-transparent objects yet. Thus, this parameter is currently used only by the 
+          <link linkend="rendering.tachyon_renderer">Tachyon software renderer</link>.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>Smooth shading</term>
+        <listitem>
+          <para>Enables the interpolation of normal vectors between vertices of the polygonal mesh 
+          (also known as <emphasis>Gouraud shading</emphasis>).</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>Cap polygons</term>
+        <listitem>
+          <para>OVITO computes the intersection of the surface with the periodic boundaries of the simulation cell.
+          Cap polygons are created to close the cut mesh again. This option enables or disables the display of the cap polygons.</para>
+        </listitem>
+      </varlistentry>
+	</variablelist>
+    </simplesect>
+    
+</section>

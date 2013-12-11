@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<section version="5.0"
+         xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xml:id="display_objects.particles"
+         xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title>Particle display</title>
+
+  <para>
+      
+    <informalfigure><screenshot><mediaobject><imageobject>
+       <imagedata fileref="images/display_objects/particles_panel.png" format="PNG" />
+    </imageobject></mediaobject></screenshot></informalfigure>
+    
+    This display object is responsible for rendering particles.    
+  </para>
+
+   <simplesect>
+    <title>Parameters</title>
+
+    <variablelist>
+      <varlistentry>
+        <term>Shading mode</term>
+        <listitem>
+          <para>Switches between a three-dimensional particles shape (<emphasis>normal shading</emphasis>) and a two-dimensional
+          representation (<emphasis>flat shading</emphasis>).</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>Rendering quality</term>
+        <listitem>
+          <para>This parameter controls the method used to render the particles. The following modes are available and affect only the rendering of spherical particles:
+		    <variablelist>
+		      <varlistentry>
+		        <term>Low</term>
+		        <listitem><para>Particles are rendered as texture-mapped imposters facing the viewer. Particles do not have depth in this mode, 
+		        and intersections between spherical particles will not be displayed correctly. This mode is the fastest.</para></listitem>
+		      </varlistentry>
+		      <varlistentry>
+		        <term>Medium</term>
+		        <listitem><para>Particles are rendered as texture-mapped imposters facing the viewer. An OpenGL fragment shader is used
+		        to compute depth information for each rendered pixel to produce reasonable looking sphere-sphere intersections for overlapping particles.</para></listitem>
+		      </varlistentry>
+		      <varlistentry>
+		        <term>High</term>
+		        <listitem><para>Particles are rendered as true spheres using an OpenGL fragment shader, which computes the ray-sphere intersection for every
+		        rendered pixel.</para></listitem>
+		      </varlistentry>
+		      <varlistentry>
+		        <term>Automatic</term>
+		        <listitem><para>OVITO automatically switches between the three quality levels above depending on the number of particles to render in the interactive viewports. For
+		        less than 2,000 particles, the high-quality method is used. For more than 100,000 particles, the lowest quality mode is used. Irrespective of the
+		        particle number, high-quality mode is always used to produce a final output image.</para></listitem>
+		      </varlistentry>
+		    </variablelist>
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>Shape</term>
+        <listitem>
+          <para>Selects the shape of particles. OVITO currently supports spherical and cubic particles. When flat shading mode is selected,
+          they will be rendered as discs and squares, respectively.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>Default particle radius</term>
+        <listitem>
+          <para>Sets the particle size. This size parameter is only used if particles don't have a <literal>Radius</literal> property, and if no specific size
+          has been set for individual particle types.</para>
+        </listitem>
+      </varlistentry>
+	</variablelist>
+    </simplesect>
+    
+</section>

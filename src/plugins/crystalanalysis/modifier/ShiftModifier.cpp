@@ -20,7 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <plugins/crystalanalysis/CrystalAnalysis.h>
-#include <plugins/crystalanalysis/data/surface/DefectSurface.h>
+#include <plugins/particles/data/SurfaceMesh.h>
 #include <plugins/crystalanalysis/data/dislocations/DislocationNetwork.h>
 #include <core/animation/controller/StandardControllers.h>
 #include <core/gui/properties/Vector3ParameterUI.h>
@@ -48,7 +48,7 @@ ShiftModifier::ShiftModifier(DataSet* dataset) : Modifier(dataset)
 ******************************************************************************/
 bool ShiftModifier::isApplicableTo(const PipelineFlowState& input)
 {
-	return (input.findObject<DefectSurface>() != nullptr)
+	return (input.findObject<SurfaceMesh>() != nullptr)
 			|| (input.findObject<DislocationNetwork>() != nullptr);
 }
 
@@ -79,28 +79,29 @@ ObjectStatus ShiftModifier::modifyObject(TimePoint time, ModifierApplication* mo
 
 	CloneHelper cloneHelper;
 
-	// Apply translation to vertices of defect mesh.
-	DefectSurface* inputSurface = state.findObject<DefectSurface>();
-	if(inputSurface) {
-		OORef<DefectSurface> outputSurface = cloneHelper.cloneObject(inputSurface, false);
-		for(HalfEdgeMesh::Vertex* vertex : outputSurface->mesh().vertices())
-			vertex->pos() += t;
-		outputSurface->notifyDependents(ReferenceEvent::TargetChanged);
-		state.replaceObject(inputSurface, outputSurface);
-	}
+	for(int index = 0; index < state.objects().size(); index++) {
 
-	// Apply translation to dislocation lines.
-	DislocationNetwork* inputDislocations = state.findObject<DislocationNetwork>();
-	if(inputDislocations) {
-		OORef<DislocationNetwork> outputDislocations = cloneHelper.cloneObject(inputDislocations, false);
-		for(DislocationSegment* segment : outputDislocations->segments()) {
-			QVector<Point3> line = segment->line();
-			for(Point3& p : line)
-				p += t;
-			segment->setLine(line, segment->coreSize());
+		// Apply translation to vertices of surface mesh.
+		if(SurfaceMesh* inputSurface = dynamic_object_cast<SurfaceMesh>(state.objects()[index].get())) {
+			OORef<SurfaceMesh> outputSurface = cloneHelper.cloneObject(inputSurface, false);
+			for(HalfEdgeMesh::Vertex* vertex : outputSurface->mesh().vertices())
+				vertex->pos() += t;
+			outputSurface->notifyDependents(ReferenceEvent::TargetChanged);
+			state.replaceObject(inputSurface, outputSurface);
 		}
-		outputDislocations->notifyDependents(ReferenceEvent::TargetChanged);
-		state.replaceObject(inputDislocations, outputDislocations);
+
+		// Apply translation to dislocation lines.
+		else if(DislocationNetwork* inputDislocations = dynamic_object_cast<DislocationNetwork>(state.objects()[index].get())) {
+			OORef<DislocationNetwork> outputDislocations = cloneHelper.cloneObject(inputDislocations, false);
+			for(DislocationSegment* segment : outputDislocations->segments()) {
+				QVector<Point3> line = segment->line();
+				for(Point3& p : line)
+					p += t;
+				segment->setLine(line, segment->coreSize());
+			}
+			outputDislocations->notifyDependents(ReferenceEvent::TargetChanged);
+			state.replaceObject(inputDislocations, outputDislocations);
+		}
 	}
 
 	return ObjectStatus::Success;

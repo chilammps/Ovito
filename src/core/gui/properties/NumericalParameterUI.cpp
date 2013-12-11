@@ -151,7 +151,6 @@ void NumericalParameterUI::onSpinnerValueChanged()
 ******************************************************************************/
 void NumericalParameterUI::onSpinnerDragStart()
 {
-	OVITO_ASSERT(!dataset()->undoStack().isRecording());
 	dataset()->undoStack().beginCompoundOperation(tr("Change parameter"));
 }
 
@@ -160,7 +159,6 @@ void NumericalParameterUI::onSpinnerDragStart()
 ******************************************************************************/
 void NumericalParameterUI::onSpinnerDragStop()
 {
-	OVITO_ASSERT(dataset()->undoStack().isRecording());
 	dataset()->undoStack().endCompoundOperation();
 }
 
@@ -169,7 +167,6 @@ void NumericalParameterUI::onSpinnerDragStop()
 ******************************************************************************/
 void NumericalParameterUI::onSpinnerDragAbort()
 {
-	OVITO_ASSERT(dataset()->undoStack().isRecording());
 	dataset()->undoStack().endCompoundOperation(false);
 }
 

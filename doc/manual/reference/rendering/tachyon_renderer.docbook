@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<section version="5.0"
+         xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xml:id="rendering.tachyon_renderer"
+         xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title>Tachyon renderer</title>
+
+  <para>
+     <informalfigure><screenshot><mediaobject><imageobject>
+       <imagedata fileref="images/rendering/tachyon_renderer_panel.png" format="PNG" />
+     </imageobject></mediaobject></screenshot></informalfigure>  
+     
+    One of the advanced features provided by the Tachyon ray tracer is the ability to render scenes with ambient occlusion lighting and semi-transparent objects.
+    </para>
+    
+  <simplesect>
+    <title>Parameters</title>
+
+    <variablelist>
+      <varlistentry>
+        <term>Anti-aliasing samples</term>
+        <listitem>
+          <para>To reduce <link xlink:href="http://en.wikipedia.org/wiki/Aliasing">aliasing
+          effects</link>, the Tachyon raytracer can perform <emphasis>supersampling</emphasis> by 
+          computing multiple rays per output pixel. This parameter controls the number of rays.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Direct light</term>
+        <listitem>
+          <para>Enables the parallel light source, which is directed from an angle behind the camera.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Shadows</term>
+        <listitem>
+          <para>Enables cast shadows for the directional light. Not that, with the current Tachyon version, you cannot turn off
+          shadows when ambient occlusion shading is enabled. In this case, you can only turn off the directional light source completely.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Ambient occlusion</term>
+        <listitem>
+          <para>Enabling this lighting technique mimicks some of the effects that occur under conditions of omnidirectional diffuse illumination, 
+          e.g. outdoors on an overcast day.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Sample count</term>
+        <listitem>
+          <para>Ambient occlusion is implemented using a Monte Carlo technique. This parameters controls the number of samples to compute. 
+          A higher sample number leads to a more even shading, but requires more computation time.</para>
+        </listitem>
+      </varlistentry>
+
+    </variablelist>
+  </simplesect>
+</section>

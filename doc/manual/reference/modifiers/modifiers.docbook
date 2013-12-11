@@ -34,15 +34,19 @@
             </row>
             <row>
               <entry><link linkend="particles.modifiers.atomic_strain">Atomic strain</link></entry>
-              <entry>Calculates the atomic-level strain tensor based on an initial and the deformed configuration of the system. </entry>
+              <entry>Calculates the atomic-level strain tensors based on an initial reference and a deformed configuration. </entry>
             </row>
             <row>
               <entry><link linkend="particles.modifiers.bond_angle_analysis">Bond-angle analysis</link></entry>
               <entry>Performs the bond-angle analysis of Ackland and Jones to determine the local crystal structure.</entry>
             </row>          
             <row>
+              <entry><link linkend="particles.modifiers.construct_surface_mesh">Construct surface mesh</link></entry>
+              <entry>Constructs a polyhedral mesh representing the surface of an atomistic solid.</entry>
+            </row>          
+            <row>
               <entry><link linkend="particles.modifiers.displacement_vectors">Displacement vectors</link></entry>
-              <entry>Calculates displacement vectors of atoms based on an initial and the deformed configuration of the system.</entry>
+              <entry>Calculates the displacements of particles based on an initial and a deformed configuration.</entry>
             </row>
             <row>
               <entry><link linkend="particles.modifiers.centrosymmetry">Centrosymmetry parameter</link></entry>
@@ -54,11 +58,11 @@
             </row>
             <row>
               <entry><link linkend="particles.modifiers.coordination_analysis">Coordination analysis</link></entry>
-              <entry>Determines the number of near neighbors of each atom.</entry>
+              <entry>Determines the number of near neighbors of each particle and computes the radial distribution function.</entry>
             </row>
             <row>
               <entry><link linkend="particles.modifiers.histogram">Histogram</link></entry>
-              <entry>Computes a histogram for a particle property.</entry>
+              <entry>Computes the histogram of a particle property.</entry>
             </row>
 
 		<!-- COLORING -->
@@ -67,7 +71,7 @@
             </row>
             <row>
               <entry><link linkend="particles.modifiers.ambient_occlusion">Ambient occlusion</link></entry>
-              <entry>Uses the ambient occlusion method to shade particles.</entry>
+              <entry>Performs an ambient occlusion calculation to shade particles.</entry>
             </row>
             <row>
               <entry><link linkend="particles.modifiers.assign_color">Assign color</link></entry>
@@ -75,7 +79,7 @@
             </row>
             <row>
               <entry><link linkend="particles.modifiers.color_coding">Color coding</link></entry>
-              <entry>Assigns a color to each particle based on a property.</entry>
+              <entry>Colors particles based on a certain particle property.</entry>
             </row>
 
 		<!-- MODIFICATION -->
@@ -92,15 +96,15 @@
             </row>
             <row>
               <entry><link linkend="particles.modifiers.compute_property">Compute property</link></entry>
-              <entry>Computes a new property for each particle from a user-defined expression.</entry>
+              <entry>Computes a new property for each particle based a user-defined formula.</entry>
             </row>
             <row>
               <entry><link linkend="particles.modifiers.delete_selected_particles">Delete selected particles</link></entry>
-              <entry>Deletes all currently selected atoms.</entry>
+              <entry>Deletes all selected particles.</entry>
             </row>
             <row>
               <entry><link linkend="particles.modifiers.show_periodic_images">Show periodic images</link></entry>
-              <entry>Displays the periodic images of particles.</entry>
+              <entry>Duplicates particles to display the periodic images of particles.</entry>
             </row>
             <row>
               <entry><link linkend="particles.modifiers.slice">Slice</link></entry>
@@ -117,7 +121,7 @@
             </row>
             <row>
               <entry><link linkend="particles.modifiers.clear_selection">Clear selection</link></entry>
-              <entry>Clears the selection state of all particles.</entry>
+              <entry>Resets the selection state of all particles.</entry>
             </row>
             <row>
               <entry><link linkend="particles.modifiers.freeze_selection">Freeze selection</link></entry>
@@ -163,6 +167,8 @@
   <xi:include href="particles/common_neighbor_analysis.docbook"/>
 
   <xi:include href="particles/compute_property.docbook"/>
+
+  <xi:include href="particles/construct_surface_mesh.docbook"/>
 
   <xi:include href="particles/coordination_analysis.docbook"/>
 

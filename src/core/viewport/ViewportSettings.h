@@ -143,9 +143,6 @@ private:
 	/// The font used for rendering text in the viewports.
 	QFont _viewportFont;
 
-	/// The current settings record.
-	static ViewportSettings _currentSettings;
-
 	Q_OBJECT
 };
 

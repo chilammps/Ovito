@@ -56,7 +56,7 @@ public:
 	virtual bool checkFileFormat(QIODevice& input, const QUrl& sourceLocation) override;
 
 	/// Returns the title of this object.
-	virtual QString objectTitle() override { return tr("Crystal Analysis"); }
+	virtual QString objectTitle() override { return tr("CAT Output"); }
 
 protected:
 

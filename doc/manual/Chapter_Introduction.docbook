@@ -12,32 +12,26 @@
   <para>OVITO is a scientific data visualization and analysis software for
   large-scale atomistic simulations in materials science. 
   OVITO is freely available under an open-source license for
-  Windows, Linux and MacOS platforms. It is being developed by Alexander
-  Stukowski at the <link xlink:href="http://www.mm.mw.tu-darmstadt.de/">
+  Windows, Linux and Mac OS X platforms. It is being developed and maintained by Alexander
+  Stukowski, a postdoctoral researcher at the <link xlink:href="http://www.mm.mw.tu-darmstadt.de/">
   Institute of Materials Science at Darmstadt University of Technology,
   Germany</link>.
   </para>
   
   <para>
-  The first version of OVITO was released in December 2009.
-  Since that time, several software updates have been made available to the community, 
-  which today comprises several hundred active users from the materials science field. 
-  Development of the software began at the end of 2007, the author's first year as a PhD student. 
-  When he started doing multi-million atom molecular dynamics simulations of nanocrystalline materials 
-  at that time, he realized that the existing, freely available visualization tools wouldn't 
-  fully suit his own needs. Luckily, the author's job as a research assistant left enough spare time to work on 
-  a new solution: a flexible visualization tool for atomistic simulation data that 
-  integrates several common analysis functions. Two years later, the code had become mature enough to 
-  share it with the general public. To further advertise OVITO an <link xlink:href="http://stacks.iop.org/0965-0393/18/015012">article was published 
-  in the MSMSE journal</link> in 2010.
+  The first openly available version of OVITO was released in December 2009, after one and a half years of
+  (part-time) development by the author, who, at that time, has been a PhD student doing molecular dynamics simulations of nanocrystalline materials. 
+  Since that time, the software has further evolved, and its user base today comprises several hundred researchers from the materials science field. 
+  To introduce it to the community, an <link xlink:href="http://stacks.iop.org/0965-0393/18/015012">article about OVITO</link> was published in the MSMSE journal in 2010.
   </para>
 
-  <para>OVITO is a software tool to visualize and analyze output from molecular
+  <para>OVITO is a software tool allowing to visualize and analyze output from molecular
   dynamics simulations of particles, in particular atomistic simulations of solid-state materials.
-  Key program features: <itemizedlist>
+  Some noteworthy program features are: <itemizedlist>
 
       <listitem>
-        <para>Reading and writing file formats used by various MD simulation codes including LAMMPS, XYZ, CFG, IMD, and POSCAR.</para>
+        <para><link linkend="usage.import">Input</link> and <link linkend="usage.export">output</link> of various file formats used by 
+        MD simulation codes including LAMMPS, XYZ, CFG, IMD, and POSCAR.</para>
       </listitem>
 
       <listitem>
@@ -45,100 +39,103 @@
       </listitem>
 
       <listitem>
-        <para>Flexible data model, which allows associating an arbitrary number of properties with each particle.</para>
+        <para>Import and visualization of polyhedral meshes.</para>
       </listitem>
 
       <listitem>
-        <para>Flexible processing model: Data modification and analysis steps can be performed in any order; parameters can be altered at 
-        any time with immediate update of the results.
-        Functions include <itemizedlist>
+        <para>Flexible data model that allows for an arbitrary number of particle properties.</para>
+      </listitem>
+
+      <listitem>
+        <para>Flexible processing model: Data modification and analysis steps are arranged in a processing pipeline; parameters can be altered at 
+        any time with immediate recalculation of the results. <link linkend="particles.modifiers">Data modification functions</link>:<itemizedlist>
         
             <listitem>
-              <para>Slicing</para>
+              <para><link linkend="particles.modifiers.slice">Slicing</link></para>
             </listitem>
 
             <listitem>
-              <para>Selection of particles based on user-definable criteria</para>
+              <para><link linkend="particles.modifiers.expression_select">Selection of particles based on user criteria (Boolean expressions)</link></para>
             </listitem>
 
             <listitem>
-              <para>Color coding</para>
+              <para><link linkend="particles.modifiers.color_coding">Color coding</link></para>
             </listitem>
 
             <listitem>
-              <para>Transformation of particle coordinates</para>
+              <para><link linkend="particles.modifiers.affine_transformation">Transformation of particle coordinates</link></para>
             </listitem>
 
             <listitem>
-              <para>Calculation of derived particle properties from existing properties </para>
+              <para><link linkend="particles.modifiers.compute_property">Calculation of derived particle properties using math formulas</link></para>
             </listitem>
 
             <listitem>
-              <para>Display of periodic images; wrapping of particles at periodic boundaries</para>
+              <para><link linkend="particles.modifiers.show_periodic_images">Display of periodic images</link> &amp; <link linkend="particles.modifiers.wrap_at_periodic_boundaries">wrapping of particles at periodic boundaries</link></para>
             </listitem>
             
             <listitem>
-              <para>Generation and display of atomic bonds</para>
+              <para><link linkend="particles.modifiers.create_bonds">Creation of atomic bonds</link></para>
+            </listitem>
+
+            <listitem>
+              <para><link linkend="particles.modifiers.manual_selection">Manual selection of particles</link> and display of particle properties</para>
             </listitem>
             
-          </itemizedlist> </para>
+          </itemizedlist> 
+        </para>
       </listitem>
 
       <listitem>
-        <para> Unlimited undo functionality </para>
+        <para><link linkend="usage.rendering">High-quality image and movie output for publication</link></para>
       </listitem>
 
       <listitem>
-        <para> Generation of high-quality images for publication </para>
-      </listitem>
-
-      <listitem>
-        <para> Simulation time series (realtime playback and movie file generation) </para>
-      </listitem>
-
-      <listitem>
-        <para> Useful analysis functions including </para>
+        <para>Useful analysis functions:</para>
 
         <itemizedlist>
           <listitem>
-            <para>Common neighbor analysis (CNA)</para>
+            <para><link linkend="particles.modifiers.common_neighbor_analysis">Common neighbor analysis (CNA)</link></para>
           </listitem>
 
           <listitem>
-            <para>Bond-angle analysis (BAA)</para>
+            <para><link linkend="particles.modifiers.bond_angle_analysis">Bond-angle analysis</link></para>
           </listitem>
 
           <listitem>
-            <para>Centro-symmetry parameter</para>
+            <para><link linkend="particles.modifiers.centrosymmetry">Centro-symmetry parameter</link></para>
           </listitem>
 
           <listitem>
-            <para>Coordination number analysis and radial distribution function</para>
+            <para><link linkend="particles.modifiers.coordination_analysis">Coordination number analysis and radial distribution function</link></para>
           </listitem>
 
           <listitem>
-            <para>Displacement vector calculation</para>
+            <para><link linkend="particles.modifiers.displacement_vectors">Displacement vector calculation</link></para>
           </listitem>
 
           <listitem>
-            <para>Calculation of atomic strain tensors</para>
+            <para><link linkend="particles.modifiers.atomic_strain">Calculation of atomic strain tensors</link></para>
           </listitem>
           
           <listitem>
-            <para>Histogram function</para>
+            <para><link linkend="particles.modifiers.histogram">Histogram function</link></para>
+          </listitem>
+
+          <listitem>
+            <para><link linkend="particles.modifiers.construct_surface_mesh">Construction of surfaces from atomistics</link></para>
           </listitem>
           
         </itemizedlist>
-
          
       </listitem>
 
       <listitem>
-        <para> A modular software design makes it easy to extend OVITO through plugins written in C++ </para>
+        <para>Unlimited undo functionality</para>
       </listitem>
 
       <listitem>
-        <para> Open source license </para>
+        <para>A modular software design that makes it easy to extend OVITO through plugins</para>
       </listitem>
       
     </itemizedlist></para>

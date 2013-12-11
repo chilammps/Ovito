@@ -89,6 +89,12 @@ public:
 	/// Switches between relative and absolute transformation mode.
 	void setRelativeMode(bool relative) { _relativeMode = relative; }
 
+	/// Returns whether the transformation is applied to a surface mesh.
+	bool applyToSurfaceMesh() const { return _applyToSurfaceMesh; }
+
+	/// Sets whether the transformation is applied to a surface mesh.
+	void setApplyToSurfaceMesh(bool apply) { _applyToSurfaceMesh = apply; }
+
 public:
 
 	Q_PROPERTY(AffineTransformation transformation READ transformation WRITE setTransformation)
@@ -96,6 +102,7 @@ public:
 	Q_PROPERTY(bool toSelectionOnly READ toSelectionOnly WRITE setToSelectionOnly)
 	Q_PROPERTY(bool applyToSimulationBox READ applyToSimulationBox WRITE setApplyToSimulationBox)
 	Q_PROPERTY(bool applyToParticles READ applyToParticles WRITE setApplyToParticles)
+	Q_PROPERTY(bool applyToSurfaceMesh READ applyToSurfaceMesh WRITE setApplyToSurfaceMesh)
 	Q_PROPERTY(bool relativeMode READ relativeMode WRITE setRelativeMode)
 
 protected:
@@ -122,6 +129,9 @@ protected:
 	/// the absolute cell geometry has been specified.
 	PropertyField<bool> _relativeMode;
 
+	/// This controls whether the transformation is applied to surface meshes.
+	PropertyField<bool> _applyToSurfaceMesh;
+
 private:
 
 	Q_OBJECT
@@ -136,6 +146,7 @@ private:
 	DECLARE_PROPERTY_FIELD(_applyToSimulationBox);
 	DECLARE_PROPERTY_FIELD(_destinationCell);
 	DECLARE_PROPERTY_FIELD(_relativeMode);
+	DECLARE_PROPERTY_FIELD(_applyToSurfaceMesh);
 };
 
 /**

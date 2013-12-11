@@ -25,6 +25,7 @@
 #include <core/gui/properties/AffineTransformationParameterUI.h>
 #include <core/scene/pipeline/PipelineObject.h>
 #include <core/animation/AnimationSettings.h>
+#include <plugins/particles/data/SurfaceMesh.h>
 #include "AffineTransformationModifier.h"
 
 #include <QtConcurrent>
@@ -40,12 +41,14 @@ DEFINE_PROPERTY_FIELD(AffineTransformationModifier, _toSelectionOnly, "Selection
 DEFINE_PROPERTY_FIELD(AffineTransformationModifier, _applyToSimulationBox, "ApplyToSimulationBox")
 DEFINE_PROPERTY_FIELD(AffineTransformationModifier, _destinationCell, "DestinationCell")
 DEFINE_PROPERTY_FIELD(AffineTransformationModifier, _relativeMode, "RelativeMode")
+DEFINE_PROPERTY_FIELD(AffineTransformationModifier, _applyToSurfaceMesh, "ApplyToSurfaceMesh")
 SET_PROPERTY_FIELD_LABEL(AffineTransformationModifier, _transformationTM, "Transformation")
 SET_PROPERTY_FIELD_LABEL(AffineTransformationModifier, _applyToParticles, "Transform particles")
 SET_PROPERTY_FIELD_LABEL(AffineTransformationModifier, _toSelectionOnly, "Selected particles only")
 SET_PROPERTY_FIELD_LABEL(AffineTransformationModifier, _applyToSimulationBox, "Transform simulation cell")
 SET_PROPERTY_FIELD_LABEL(AffineTransformationModifier, _destinationCell, "Destination cell geometry")
 SET_PROPERTY_FIELD_LABEL(AffineTransformationModifier, _relativeMode, "Relative transformation")
+SET_PROPERTY_FIELD_LABEL(AffineTransformationModifier, _applyToSurfaceMesh, "Transform surface mesh")
 
 /******************************************************************************
 * Constructs the modifier object.
@@ -53,7 +56,7 @@ SET_PROPERTY_FIELD_LABEL(AffineTransformationModifier, _relativeMode, "Relative 
 AffineTransformationModifier::AffineTransformationModifier(DataSet* dataset) : ParticleModifier(dataset),
 	_applyToParticles(true), _toSelectionOnly(false), _applyToSimulationBox(false),
 	_transformationTM(AffineTransformation::Identity()), _destinationCell(AffineTransformation::Zero()),
-	_relativeMode(true)
+	_relativeMode(true), _applyToSurfaceMesh(true)
 {
 	INIT_PROPERTY_FIELD(AffineTransformationModifier::_transformationTM);
 	INIT_PROPERTY_FIELD(AffineTransformationModifier::_applyToParticles);
@@ -61,6 +64,7 @@ AffineTransformationModifier::AffineTransformationModifier(DataSet* dataset) : P
 	INIT_PROPERTY_FIELD(AffineTransformationModifier::_applyToSimulationBox);
 	INIT_PROPERTY_FIELD(AffineTransformationModifier::_destinationCell);
 	INIT_PROPERTY_FIELD(AffineTransformationModifier::_relativeMode);
+	INIT_PROPERTY_FIELD(AffineTransformationModifier::_applyToSurfaceMesh);
 }
 
 /******************************************************************************
@@ -137,6 +141,19 @@ ObjectStatus AffineTransformationModifier::modifyParticles(TimePoint time, TimeI
 		posProperty->changed();
 	}
 
+	if(applyToSurfaceMesh()) {
+		for(int index = 0; index < input().objects().size(); index++) {
+			// Apply transformation to vertices of surface mesh.
+			if(SurfaceMesh* inputSurface = dynamic_object_cast<SurfaceMesh>(input().objects()[index].get())) {
+				OORef<SurfaceMesh> outputSurface = cloneHelper()->cloneObject(inputSurface, false);
+				for(HalfEdgeMesh::Vertex* vertex : outputSurface->mesh().vertices())
+					vertex->pos() = tm * vertex->pos();
+				outputSurface->notifyDependents(ReferenceEvent::TargetChanged);
+				output().replaceObject(inputSurface, outputSurface);
+			}
+		}
+	}
+
 	return ObjectStatus::Success;
 }
 
@@ -171,6 +188,9 @@ void AffineTransformationModifierEditor::createUI(const RolloutInsertionParamete
 	selectionUI->buttonTrue()->setEnabled(false);
 	layout->addWidget(selectionUI->buttonTrue(), 3, 1);
 	connect(applyToParticlesUI->checkBox(), SIGNAL(toggled(bool)), selectionUI->buttonTrue(), SLOT(setEnabled(bool)));
+
+	BooleanParameterUI* applyToSurfaceMeshUI = new BooleanParameterUI(this, PROPERTY_FIELD(AffineTransformationModifier::_applyToSurfaceMesh));
+	layout->addWidget(applyToSurfaceMeshUI->checkBox(), 4, 0, 1, 2);
 
 	// Create the second rollout.
 	rollout = createRollout(tr("Transformation"), rolloutParams.after(rollout), "particles.modifiers.affine_transformation.html");

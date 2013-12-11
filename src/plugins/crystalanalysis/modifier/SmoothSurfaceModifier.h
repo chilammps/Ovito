@@ -26,7 +26,6 @@
 #include <core/scene/pipeline/Modifier.h>
 #include <core/scene/objects/geometry/HalfEdgeMesh.h>
 #include <core/gui/properties/PropertiesEditor.h>
-#include <plugins/particles/data/SimulationCellData.h>
 
 namespace CrystalAnalysis {
 
@@ -48,11 +47,6 @@ public:
 
 	/// This modifies the input object.
 	virtual ObjectStatus modifyObject(TimePoint time, ModifierApplication* modApp, PipelineFlowState& state) override;
-
-protected:
-
-	/// Performs one iteration of the smoothing algorithm.
-	void smoothMesh(HalfEdgeMesh& mesh, FloatType prefactor, const SimulationCellData& cell, bool projectToNormals);
 
 private:
 

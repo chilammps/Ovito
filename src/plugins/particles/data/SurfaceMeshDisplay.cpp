@@ -19,7 +19,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <core/Core.h>
+#include <plugins/particles/Particles.h>
 #include <core/rendering/SceneRenderer.h>
 #include <core/gui/properties/ColorParameterUI.h>
 #include <core/gui/properties/BooleanParameterUI.h>
@@ -28,42 +28,42 @@
 #include <core/scene/objects/geometry/TriMesh.h>
 #include <core/animation/controller/StandardControllers.h>
 #include <plugins/particles/data/SimulationCell.h>
-#include "DefectSurfaceDisplay.h"
-#include "DefectSurface.h"
-#include "CapPolygonTessellator.h"
+#include <plugins/particles/util/CapPolygonTessellator.h>
+#include "SurfaceMeshDisplay.h"
+#include "SurfaceMesh.h"
 
-namespace CrystalAnalysis {
+namespace Particles {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(CrystalAnalysis, DefectSurfaceDisplay, DisplayObject)
-IMPLEMENT_OVITO_OBJECT(CrystalAnalysis, DefectSurfaceDisplayEditor, PropertiesEditor)
-SET_OVITO_OBJECT_EDITOR(DefectSurfaceDisplay, DefectSurfaceDisplayEditor)
-DEFINE_FLAGS_PROPERTY_FIELD(DefectSurfaceDisplay, _surfaceColor, "SurfaceColor", PROPERTY_FIELD_MEMORIZE)
-DEFINE_FLAGS_PROPERTY_FIELD(DefectSurfaceDisplay, _capColor, "CapColor", PROPERTY_FIELD_MEMORIZE)
-DEFINE_PROPERTY_FIELD(DefectSurfaceDisplay, _showCap, "ShowCap")
-DEFINE_PROPERTY_FIELD(DefectSurfaceDisplay, _smoothShading, "SmoothShading")
-DEFINE_REFERENCE_FIELD(DefectSurfaceDisplay, _surfaceTransparency, "SurfaceTransparency", FloatController)
-DEFINE_REFERENCE_FIELD(DefectSurfaceDisplay, _capTransparency, "CapTransparency", FloatController)
-SET_PROPERTY_FIELD_LABEL(DefectSurfaceDisplay, _surfaceColor, "Surface color")
-SET_PROPERTY_FIELD_LABEL(DefectSurfaceDisplay, _capColor, "Cap color")
-SET_PROPERTY_FIELD_LABEL(DefectSurfaceDisplay, _showCap, "Show cap")
-SET_PROPERTY_FIELD_LABEL(DefectSurfaceDisplay, _smoothShading, "Smooth shading")
-SET_PROPERTY_FIELD_LABEL(DefectSurfaceDisplay, _surfaceTransparency, "Surface transparency")
-SET_PROPERTY_FIELD_LABEL(DefectSurfaceDisplay, _capTransparency, "Cap transparency")
-SET_PROPERTY_FIELD_UNITS(DefectSurfaceDisplay, _surfaceTransparency, PercentParameterUnit)
-SET_PROPERTY_FIELD_UNITS(DefectSurfaceDisplay, _capTransparency, PercentParameterUnit)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, SurfaceMeshDisplay, DisplayObject)
+IMPLEMENT_OVITO_OBJECT(Particles, SurfaceMeshDisplayEditor, PropertiesEditor)
+SET_OVITO_OBJECT_EDITOR(SurfaceMeshDisplay, SurfaceMeshDisplayEditor)
+DEFINE_FLAGS_PROPERTY_FIELD(SurfaceMeshDisplay, _surfaceColor, "SurfaceColor", PROPERTY_FIELD_MEMORIZE)
+DEFINE_FLAGS_PROPERTY_FIELD(SurfaceMeshDisplay, _capColor, "CapColor", PROPERTY_FIELD_MEMORIZE)
+DEFINE_FLAGS_PROPERTY_FIELD(SurfaceMeshDisplay, _showCap, "ShowCap", PROPERTY_FIELD_MEMORIZE)
+DEFINE_PROPERTY_FIELD(SurfaceMeshDisplay, _smoothShading, "SmoothShading")
+DEFINE_REFERENCE_FIELD(SurfaceMeshDisplay, _surfaceTransparency, "SurfaceTransparency", FloatController)
+DEFINE_REFERENCE_FIELD(SurfaceMeshDisplay, _capTransparency, "CapTransparency", FloatController)
+SET_PROPERTY_FIELD_LABEL(SurfaceMeshDisplay, _surfaceColor, "Surface color")
+SET_PROPERTY_FIELD_LABEL(SurfaceMeshDisplay, _capColor, "Cap color")
+SET_PROPERTY_FIELD_LABEL(SurfaceMeshDisplay, _showCap, "Show cap polygons")
+SET_PROPERTY_FIELD_LABEL(SurfaceMeshDisplay, _smoothShading, "Smooth shading")
+SET_PROPERTY_FIELD_LABEL(SurfaceMeshDisplay, _surfaceTransparency, "Surface transparency")
+SET_PROPERTY_FIELD_LABEL(SurfaceMeshDisplay, _capTransparency, "Cap transparency")
+SET_PROPERTY_FIELD_UNITS(SurfaceMeshDisplay, _surfaceTransparency, PercentParameterUnit)
+SET_PROPERTY_FIELD_UNITS(SurfaceMeshDisplay, _capTransparency, PercentParameterUnit)
 
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-DefectSurfaceDisplay::DefectSurfaceDisplay(DataSet* dataset) : DisplayObject(dataset),
+SurfaceMeshDisplay::SurfaceMeshDisplay(DataSet* dataset) : DisplayObject(dataset),
 	_surfaceColor(1, 1, 1), _capColor(0.8, 0.8, 1.0), _showCap(true), _smoothShading(true)
 {
-	INIT_PROPERTY_FIELD(DefectSurfaceDisplay::_surfaceColor);
-	INIT_PROPERTY_FIELD(DefectSurfaceDisplay::_capColor);
-	INIT_PROPERTY_FIELD(DefectSurfaceDisplay::_showCap);
-	INIT_PROPERTY_FIELD(DefectSurfaceDisplay::_smoothShading);
-	INIT_PROPERTY_FIELD(DefectSurfaceDisplay::_surfaceTransparency);
-	INIT_PROPERTY_FIELD(DefectSurfaceDisplay::_capTransparency);
+	INIT_PROPERTY_FIELD(SurfaceMeshDisplay::_surfaceColor);
+	INIT_PROPERTY_FIELD(SurfaceMeshDisplay::_capColor);
+	INIT_PROPERTY_FIELD(SurfaceMeshDisplay::_showCap);
+	INIT_PROPERTY_FIELD(SurfaceMeshDisplay::_smoothShading);
+	INIT_PROPERTY_FIELD(SurfaceMeshDisplay::_surfaceTransparency);
+	INIT_PROPERTY_FIELD(SurfaceMeshDisplay::_capTransparency);
 
 	_surfaceTransparency = ControllerManager::instance().createDefaultController<FloatController>(dataset);
 	_capTransparency = ControllerManager::instance().createDefaultController<FloatController>(dataset);
@@ -72,7 +72,7 @@ DefectSurfaceDisplay::DefectSurfaceDisplay(DataSet* dataset) : DisplayObject(dat
 /******************************************************************************
 * Computes the bounding box of the object.
 ******************************************************************************/
-Box3 DefectSurfaceDisplay::boundingBox(TimePoint time, SceneObject* sceneObject, ObjectNode* contextNode, const PipelineFlowState& flowState)
+Box3 SurfaceMeshDisplay::boundingBox(TimePoint time, SceneObject* sceneObject, ObjectNode* contextNode, const PipelineFlowState& flowState)
 {
 	SimulationCell* cellObject = flowState.findObject<SimulationCell>();
 	if(!cellObject)
@@ -89,7 +89,7 @@ Box3 DefectSurfaceDisplay::boundingBox(TimePoint time, SceneObject* sceneObject,
 /******************************************************************************
 * Lets the display object render a scene object.
 ******************************************************************************/
-void DefectSurfaceDisplay::render(TimePoint time, SceneObject* sceneObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode)
+void SurfaceMeshDisplay::render(TimePoint time, SceneObject* sceneObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode)
 {
 	// Get the simulation cell.
 	SimulationCell* cellObject = flowState.findObject<SimulationCell>();
@@ -123,15 +123,21 @@ void DefectSurfaceDisplay::render(TimePoint time, SceneObject* sceneObject, cons
 
 	// Update buffer contents.
 	if(updateContents) {
-		OORef<DefectSurface> defectSurfaceObj = sceneObject->convertTo<DefectSurface>(time);
+		OORef<SurfaceMesh> defectSurfaceObj = sceneObject->convertTo<SurfaceMesh>(time);
 		if(defectSurfaceObj) {
 			TriMesh surfaceMesh;
 			TriMesh capMesh;
-			buildSurfaceMesh(defectSurfaceObj->mesh(), cellObject->data(), surfaceMesh);
-			_surfaceBuffer->setMesh(surfaceMesh, color_surface);
-			if(_showCap) {
-				buildCapMesh(defectSurfaceObj->mesh(), cellObject->data(), capMesh);
-				_capBuffer->setMesh(capMesh, color_cap);
+			if(buildSurfaceMesh(defectSurfaceObj->mesh(), cellObject->data(), surfaceMesh)) {
+				_surfaceBuffer->setMesh(surfaceMesh, color_surface);
+				if(_showCap) {
+					buildCapMesh(defectSurfaceObj->mesh(), cellObject->data(), capMesh);
+					_capBuffer->setMesh(capMesh, color_cap);
+				}
+			}
+			else {
+				// Render empty meshes if they could not be generated.
+				_surfaceBuffer->setMesh(TriMesh(), color_surface);
+				if(_showCap) _capBuffer->setMesh(TriMesh(), color_cap);
 			}
 		}
 		else {
@@ -159,15 +165,14 @@ void DefectSurfaceDisplay::render(TimePoint time, SceneObject* sceneObject, cons
 /******************************************************************************
 * Generates the final triangle mesh, which will be rendered.
 ******************************************************************************/
-void DefectSurfaceDisplay::buildSurfaceMesh(const HalfEdgeMesh& input, const SimulationCellData& cell, TriMesh& output)
+bool SurfaceMeshDisplay::buildSurfaceMesh(const HalfEdgeMesh& input, const SimulationCellData& cell, TriMesh& output)
 {
 	// Convert half-edge mesh to triangle mesh.
 	input.convertToTriMesh(output);
 
 	// Convert vertex positions to reduced coordinates.
-	AffineTransformation inverseCellMatrix = cell.matrix().inverse();
 	for(Point3& p : output.vertices())
-		p = inverseCellMatrix * p;
+		p = cell.absoluteToReduced(p);
 
 	// Wrap mesh at periodic boundaries.
 	for(size_t dim = 0; dim < 3; dim++) {
@@ -187,7 +192,8 @@ void DefectSurfaceDisplay::buildSurfaceMesh(const HalfEdgeMesh& input, const Sim
 		std::vector<Point3> newVertices;
 		std::map<std::pair<int,int>,std::pair<int,int>> newVertexLookupMap;
 		for(int findex = 0; findex < oldFaceCount; findex++) {
-			splitFace(output, output.face(findex), oldVertexCount, newVertices, newVertexLookupMap, cell, dim);
+			if(!splitFace(output, output.face(findex), oldVertexCount, newVertices, newVertexLookupMap, cell, dim))
+				return false;
 		}
 
 		// Insert newly created vertices into mesh.
@@ -208,12 +214,14 @@ void DefectSurfaceDisplay::buildSurfaceMesh(const HalfEdgeMesh& input, const Sim
 
 	output.invalidateVertices();
 	output.invalidateFaces();
+
+	return true;
 }
 
 /******************************************************************************
 * Splits a triangle face at a periodic boundary.
 ******************************************************************************/
-void DefectSurfaceDisplay::splitFace(TriMesh& output, TriMeshFace& face, int oldVertexCount, std::vector<Point3>& newVertices,
+bool SurfaceMeshDisplay::splitFace(TriMesh& output, TriMeshFace& face, int oldVertexCount, std::vector<Point3>& newVertices,
 		std::map<std::pair<int,int>,std::pair<int,int>>& newVertexLookupMap, const SimulationCellData& cell, size_t dim)
 {
 	OVITO_ASSERT(face.vertex(0) != face.vertex(1));
@@ -230,14 +238,15 @@ void DefectSurfaceDisplay::splitFace(TriMesh& output, TriMeshFace& face, int old
 	OVITO_ASSERT(z[0] - z[2] == -(z[2] - z[0]));
 
 	if(std::abs(zd[0]) < 0.5f && std::abs(zd[1]) < 0.5f && std::abs(zd[2]) < 0.5f)
-		return;	// Face is not crossing the periodic boundary.
+		return true;	// Face is not crossing the periodic boundary.
 
 	// Create four new vertices (or use existing ones created during splitting of adjacent faces).
 	int properEdge = -1;
 	int newVertexIndices[3][2];
 	for(int i = 0; i < 3; i++) {
 		if(std::abs(zd[i]) < 0.5f) {
-			OVITO_ASSERT(properEdge == -1);
+			if(properEdge != -1)
+				return false;		// The simulation box may be too small or invalid.
 			properEdge = i;
 			continue;
 		}
@@ -287,19 +296,20 @@ void DefectSurfaceDisplay::splitFace(TriMesh& output, TriMeshFace& face, int old
 	TriMeshFace& newFace2 = output.face(output.faceCount() - 1);
 	newFace1.setVertices(originalVertices[(properEdge+1)%3], newVertexIndices[(properEdge+1)%3][0], newVertexIndices[(properEdge+2)%3][1]);
 	newFace2.setVertices(newVertexIndices[(properEdge+1)%3][1], originalVertices[(properEdge+2)%3], newVertexIndices[(properEdge+2)%3][0]);
+
+	return true;
 }
 
 /******************************************************************************
 * Generates the triangle mesh for the PBC caps.
 ******************************************************************************/
-void DefectSurfaceDisplay::buildCapMesh(const HalfEdgeMesh& input, const SimulationCellData& cell, TriMesh& output)
+void SurfaceMeshDisplay::buildCapMesh(const HalfEdgeMesh& input, const SimulationCellData& cell, TriMesh& output)
 {
 	// Convert vertex positions to reduced coordinates.
-	AffineTransformation inverseCellMatrix = cell.matrix().inverse();
 	std::vector<Point3> reducedPos(input.vertexCount());
 	auto inputVertex = input.vertices().begin();
 	for(Point3& p : reducedPos)
-		p = inverseCellMatrix * (*inputVertex++)->pos();
+		p = cell.absoluteToReduced((*inputVertex++)->pos());
 
 	int isBoxCornerInside3DRegion = -1;
 
@@ -431,7 +441,7 @@ void DefectSurfaceDisplay::buildCapMesh(const HalfEdgeMesh& input, const Simulat
 /******************************************************************************
 * Traces the closed contour of the surface-boundary intersection.
 ******************************************************************************/
-std::vector<Point2> DefectSurfaceDisplay::traceContour(HalfEdgeMesh::Edge* firstEdge, const std::vector<Point3>& reducedPos, const SimulationCellData& cell, size_t dim)
+std::vector<Point2> SurfaceMeshDisplay::traceContour(HalfEdgeMesh::Edge* firstEdge, const std::vector<Point3>& reducedPos, const SimulationCellData& cell, size_t dim)
 {
 	size_t dim1 = (dim + 1) % 3;
 	size_t dim2 = (dim + 2) % 3;
@@ -484,7 +494,7 @@ std::vector<Point2> DefectSurfaceDisplay::traceContour(HalfEdgeMesh::Edge* first
 /******************************************************************************
 * Clips a 2d contour at a periodic boundary.
 ******************************************************************************/
-void DefectSurfaceDisplay::clipContour(std::vector<Point2>& input, std::array<bool,2> pbcFlags, std::vector<std::vector<Point2>>& openContours, std::vector<std::vector<Point2>>& closedContours)
+void SurfaceMeshDisplay::clipContour(std::vector<Point2>& input, std::array<bool,2> pbcFlags, std::vector<std::vector<Point2>>& openContours, std::vector<std::vector<Point2>>& closedContours)
 {
 	if(!pbcFlags[0] && !pbcFlags[1]) {
 		closedContours.push_back(std::move(input));
@@ -562,7 +572,7 @@ void DefectSurfaceDisplay::clipContour(std::vector<Point2>& input, std::array<bo
 * Computes the intersection point of a 2d contour segment crossing a
 * periodic boundary.
 ******************************************************************************/
-void DefectSurfaceDisplay::computeContourIntersection(size_t dim, FloatType t, Point2& base, Vector2& delta, int crossDir, std::vector<std::vector<Point2>>& contours)
+void SurfaceMeshDisplay::computeContourIntersection(size_t dim, FloatType t, Point2& base, Vector2& delta, int crossDir, std::vector<std::vector<Point2>>& contours)
 {
 	Point2 intersection = base + t * delta;
 	intersection[dim] = (crossDir == -1) ? 0.0f : 1.0f;
@@ -583,7 +593,7 @@ void DefectSurfaceDisplay::computeContourIntersection(size_t dim, FloatType t, P
 * Signed Distance Computation Using the Angle Weighted Pseudonormal
 * IEEE Transactions on Visualization and Computer Graphics 11 (2005), Page 243
 ******************************************************************************/
-bool DefectSurfaceDisplay::isCornerInside2DRegion(const std::vector<std::vector<Point2>>& contours)
+bool SurfaceMeshDisplay::isCornerInside2DRegion(const std::vector<std::vector<Point2>>& contours)
 {
 	OVITO_ASSERT(!contours.empty());
 	bool isInside = true;
@@ -639,7 +649,7 @@ bool DefectSurfaceDisplay::isCornerInside2DRegion(const std::vector<std::vector<
 * Signed Distance Computation Using the Angle Weighted Pseudonormal
 * IEEE Transactions on Visualization and Computer Graphics 11 (2005), Page 243
 ******************************************************************************/
-bool DefectSurfaceDisplay::isCornerInside3DRegion(const HalfEdgeMesh& mesh, const std::vector<Point3>& reducedPos, const std::array<bool,3> pbcFlags)
+bool SurfaceMeshDisplay::isCornerInside3DRegion(const HalfEdgeMesh& mesh, const std::vector<Point3>& reducedPos, const std::array<bool,3> pbcFlags)
 {
 	if(mesh.vertices().empty())
 		return true;
@@ -792,10 +802,10 @@ bool DefectSurfaceDisplay::isCornerInside3DRegion(const HalfEdgeMesh& mesh, cons
 /******************************************************************************
 * Sets up the UI widgets of the editor.
 ******************************************************************************/
-void DefectSurfaceDisplayEditor::createUI(const RolloutInsertionParameters& rolloutParams)
+void SurfaceMeshDisplayEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
 	// Create a rollout.
-	QWidget* rollout = createRollout(tr("Surface display"), rolloutParams);
+	QWidget* rollout = createRollout(tr("Surface display"), rolloutParams, "display_objects.surface_mesh.html");
 
     // Create the rollout contents.
 	QVBoxLayout* layout = new QVBoxLayout(rollout);
@@ -809,32 +819,32 @@ void DefectSurfaceDisplayEditor::createUI(const RolloutInsertionParameters& roll
 	sublayout->setColumnStretch(1, 1);
 	layout->addWidget(surfaceGroupBox);
 
-	ColorParameterUI* surfaceColorUI = new ColorParameterUI(this, PROPERTY_FIELD(DefectSurfaceDisplay::_surfaceColor));
+	ColorParameterUI* surfaceColorUI = new ColorParameterUI(this, PROPERTY_FIELD(SurfaceMeshDisplay::_surfaceColor));
 	sublayout->addWidget(surfaceColorUI->label(), 0, 0);
 	sublayout->addWidget(surfaceColorUI->colorPicker(), 0, 1);
 
-	FloatParameterUI* surfaceTransparencyUI = new FloatParameterUI(this, PROPERTY_FIELD(DefectSurfaceDisplay::_surfaceTransparency));
+	FloatParameterUI* surfaceTransparencyUI = new FloatParameterUI(this, PROPERTY_FIELD(SurfaceMeshDisplay::_surfaceTransparency));
 	sublayout->addWidget(new QLabel(tr("Transparency (%):")), 1, 0);
 	sublayout->addLayout(surfaceTransparencyUI->createFieldLayout(), 1, 1);
 	surfaceTransparencyUI->setMinValue(0);
 	surfaceTransparencyUI->setMaxValue(1);
 
-	BooleanParameterUI* smoothShadingUI = new BooleanParameterUI(this, PROPERTY_FIELD(DefectSurfaceDisplay::_smoothShading));
+	BooleanParameterUI* smoothShadingUI = new BooleanParameterUI(this, PROPERTY_FIELD(SurfaceMeshDisplay::_smoothShading));
 	sublayout->addWidget(smoothShadingUI->checkBox(), 2, 0, 1, 2);
 
-	BooleanGroupBoxParameterUI* capGroupUI = new BooleanGroupBoxParameterUI(this, PROPERTY_FIELD(DefectSurfaceDisplay::_showCap));
-	capGroupUI->groupBox()->setTitle(tr("Cap"));
+	BooleanGroupBoxParameterUI* capGroupUI = new BooleanGroupBoxParameterUI(this, PROPERTY_FIELD(SurfaceMeshDisplay::_showCap));
+	capGroupUI->groupBox()->setTitle(tr("Cap polygons"));
 	sublayout = new QGridLayout(capGroupUI->groupBox());
 	sublayout->setContentsMargins(4,4,4,4);
 	sublayout->setSpacing(4);
 	sublayout->setColumnStretch(1, 1);
 	layout->addWidget(capGroupUI->groupBox());
 
-	ColorParameterUI* capColorUI = new ColorParameterUI(this, PROPERTY_FIELD(DefectSurfaceDisplay::_capColor));
+	ColorParameterUI* capColorUI = new ColorParameterUI(this, PROPERTY_FIELD(SurfaceMeshDisplay::_capColor));
 	sublayout->addWidget(capColorUI->label(), 0, 0);
 	sublayout->addWidget(capColorUI->colorPicker(), 0, 1);
 
-	FloatParameterUI* capTransparencyUI = new FloatParameterUI(this, PROPERTY_FIELD(DefectSurfaceDisplay::_capTransparency));
+	FloatParameterUI* capTransparencyUI = new FloatParameterUI(this, PROPERTY_FIELD(SurfaceMeshDisplay::_capTransparency));
 	sublayout->addWidget(new QLabel(tr("Transparency (%):")), 1, 0);
 	sublayout->addLayout(capTransparencyUI->createFieldLayout(), 1, 1);
 	capTransparencyUI->setMinValue(0);

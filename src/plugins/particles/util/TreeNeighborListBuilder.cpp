@@ -37,16 +37,16 @@ bool TreeNeighborListBuilder::prepare(ParticleProperty* posProperty, const Simul
 	OVITO_CHECK_POINTER(posProperty);
 
 	simCell = cellData.matrix();
-	if(fabs(simCell.determinant()) <= FLOATTYPE_EPSILON)
+	if(std::fabs(simCell.determinant()) <= FLOATTYPE_EPSILON)
 		throw Exception("Simulation cell is degenerate.");
 
 	simCellInverse = simCell.inverse();
 	pbc = cellData.pbcFlags();
 
 	// Compute normal vectors of simulation cell faces.
-	planeNormals[0] = simCell.column(1).cross(simCell.column(2)).normalized();
-	planeNormals[1] = simCell.column(2).cross(simCell.column(0)).normalized();
-	planeNormals[2] = simCell.column(0).cross(simCell.column(1)).normalized();
+	planeNormals[0] = cellData.cellNormalVector(0);
+	planeNormals[1] = cellData.cellNormalVector(1);
+	planeNormals[2] = cellData.cellNormalVector(2);
 
 	// Create list of periodic image shift vectors.
 	int nx = pbc[0] ? 1 : 0;

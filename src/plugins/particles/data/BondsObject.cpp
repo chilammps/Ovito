@@ -109,7 +109,7 @@ void BondsObject::particlesDeleted(const std::vector<bool>& deletedParticlesMask
 		if(deletedParticlesMask[bond->index1] || deletedParticlesMask[bond->index2])
 			continue;
 
-		// Keep but, remap particle indices.
+		// Keep but remap particle indices.
 		result->pbcShift = bond->pbcShift;
 		result->index1 = indexMap[bond->index1];
 		result->index2 = indexMap[bond->index2];

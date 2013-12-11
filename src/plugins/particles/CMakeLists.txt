@@ -32,6 +32,8 @@ SET(OVITO_PARTICLES_SOURCE_FILES
 	data/BondsStorage.cpp
 	data/BondsDisplay.cpp
 	data/ParticleSelectionSet.cpp
+	data/SurfaceMesh.cpp
+	data/SurfaceMeshDisplay.cpp
 	modifier/ParticleModifier.cpp
 	modifier/AsynchronousParticleModifier.cpp
 	modifier/coloring/AssignColorModifier.cpp
@@ -47,6 +49,7 @@ SET(OVITO_PARTICLES_SOURCE_FILES
 	modifier/analysis/bonds/CreateBondsModifier.cpp
 	modifier/analysis/coordination/CoordinationNumberModifier.cpp
 	modifier/analysis/histogram/HistogramModifier.cpp
+	modifier/analysis/cluster/ClusterAnalysisModifier.cpp
 	modifier/lighting/AmbientOcclusionModifier.cpp
 	modifier/lighting/AmbientOcclusionRenderer.cpp
 	modifier/transformation/AffineTransformationModifier.cpp
@@ -86,9 +89,23 @@ SET(OVITO_PARTICLES_SOURCE_FILES
 	util/ParticlePickingHelper.cpp
 )
 
+# List of source files of the GLU library used for polygon tessellation.
+SET(GLUSourceFiles
+	util/polytess/dict.c
+	util/polytess/geom.c
+	util/polytess/memalloc.c
+	util/polytess/mesh.c
+	util/polytess/normal.c
+	util/polytess/priorityq.c
+	util/polytess/render.c
+	util/polytess/sweep.c
+	util/polytess/tess.c
+	util/polytess/tessmono.c
+)
+
 # Generate plugin module.
 OVITO_PLUGIN(Particles
-	SOURCES ${OVITO_PARTICLES_SOURCE_FILES}
+	SOURCES ${OVITO_PARTICLES_SOURCE_FILES} ${GLUSourceFiles}
 	RESOURCE particles.rcc resources/particles.qrc
 	LIB_DEPENDENCIES muParser qcustomplot
 )

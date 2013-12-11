@@ -49,7 +49,7 @@
   </para>
 
   <para>
-    The modifier requires access to the complete set of particles. It should therefore be placed at the 
+    Note that this modifier requires access to the complete set of particles to perform the analysis. It should therefore be placed at the 
     beginning of the processing pipeline, preceding any modifiers that delete particles.
   </para>
   

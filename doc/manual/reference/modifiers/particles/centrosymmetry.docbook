@@ -11,6 +11,10 @@
   <title>Centrosymmetry parameter</title>
 
   <para>
+    <informalfigure><screenshot><mediaobject><imageobject>
+       <imagedata fileref="images/modifiers/centrosymmetry_panel.png" format="PNG" />
+    </imageobject></mediaobject></screenshot></informalfigure>
+      
   This modifier calculates the centro-symmetry parameter of each particle [<link
   xlink:href="http://link.aps.org/doi/10.1103/PhysRevB.58.11085">Kelchner, Plimpton, Hamilton, Phys Rev B, 58, 11085 (1998)</link>].
   In solid-state systems the centro-symmetry parameter is a useful measure of the local 
@@ -20,25 +24,24 @@
   
   <para>
     The centro-symmetry parameter is calculated by OVITO using 
-    the <link xlink:href="http://lammps.sandia.gov/doc/compute_centro_atom.html">algorithm implemented in LAMMPS</link>.
+    an <link xlink:href="http://lammps.sandia.gov/doc/compute_centro_atom.html">algorithm also implemented in LAMMPS</link>.
   </para>
   
   <para>
-    The modifier expects a parameter that specifies the number of neighbors to take into account.
+    The modifier needs to know the number of neighbors that should be taken into account for the computation of the centrosymmetry value.
     It should correspond to the number of nearest neighbors in the underlying lattice of atoms. 
-    For fcc and bcc lattices, it should be set to 12 and 8 respectively. 
-    More generally, the parameter can be set to a positive, even integer.
+    For fcc and bcc lattices, it should be set to 12 and 8 respectively. More generally, the parameter can be set to a positive, even integer.
   </para>
   
   <para>
     For an atom on a lattice site, surrounded by atoms on a perfect lattice, 
-    the centro-symmetry parameter will be 0. It will be near 0 for small thermal perturbations 
-    of a perfect lattice. If a point defect exists, the symmetry is broken, and the parameter 
-    will be a larger positive value. An atom at a surface will have a large positive parameter.
+    the centro-symmetry parameter will be zero. It will be near zero for small thermal perturbations 
+    of a perfect lattice. At a point defect the symmetry is broken, and the parameter 
+    will be a larger positive value. An atom at a surface will have a large positive parameter too.
   </para>
   
   <para>
-    The modifier requires access to the complete set of particles. It should therefore be placed at the 
+    Note that this modifier requires access to the complete set of particles to perform the analysis. It should therefore be placed at the 
     beginning of the processing pipeline, preceding any modifiers that delete particles.
   </para>
   

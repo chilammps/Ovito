@@ -53,7 +53,7 @@ void SubObjectParameterUI::resetUI()
 					subEditor()->editObject()->getOOType() != parameterObject()->getOOType() ||
 					!isEnabled()) {
 
-				_subEditor = NULL;
+				_subEditor = nullptr;
 			}
 		}
 		if(!parameterObject() || !isEnabled()) return;

@@ -10,7 +10,14 @@
   <title>Reference</title>
 
   <xi:include href="reference/modifiers/modifiers.docbook"/>
+  <xi:include href="reference/display_objects/display_objects.docbook"/>
   
-  <xi:include href="reference/rendering/render_settings.docbook"/>
+  
+  <section xml:id="rendering">
+    <title>Renderering</title>
+      <xi:include href="reference/rendering/render_settings.docbook"/>
+      <xi:include href="reference/rendering/opengl_renderer.docbook"/>
+      <xi:include href="reference/rendering/tachyon_renderer.docbook"/>
+  </section>
 
 </chapter>

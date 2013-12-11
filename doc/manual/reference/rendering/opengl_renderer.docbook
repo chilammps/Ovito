@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<section version="5.0"
+         xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xml:id="rendering.opengl_renderer"
+         xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title>OpenGL renderer</title>
+
+  <para>
+     <informalfigure><screenshot><mediaobject><imageobject>
+       <imagedata fileref="images/rendering/opengl_renderer_panel.png" format="PNG" />
+     </imageobject></mediaobject></screenshot></informalfigure>  
+     
+	 This is the default built-in <link linkend="usage.rendering">rendering engine</link>, which is also used by OVITO to render the contents of the interactive viewports.
+	 Since it is hardware-accelerated, it is very fast. Unlike the <link linkend="rendering.tachyon_renderer">Tachyon renderer</link>, the 
+	 OpenGL rendering engine does not support the display of semi-transparent objects at the moment.
+    </para>
+    
+  <simplesect>
+    <title>Parameters</title>
+
+    <variablelist>
+       <varlistentry>
+        <term>Antialiasing level</term>
+
+        <listitem>
+          <para>To reduce <link
+          xlink:href="http://en.wikipedia.org/wiki/Aliasing">aliasing
+          effects</link>, the output image is usually rendered at a higher resolution
+          than the final image (<emphasis>supersampling</emphasis>). This factor controls how much larger this
+          resolution is. A factor of 1 turns anti-aliasing off. Higher values
+          lead to better quality.</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </simplesect>
+</section>
