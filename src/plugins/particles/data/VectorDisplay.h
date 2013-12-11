@@ -71,8 +71,14 @@ public:
 	/// Returns whether the arrow pointing direction is reversed.
 	bool reverseArrowDirection() const { return _reverseArrowDirection; }
 
+	/// Sets whether the arrow pointing direction should be reversed.
+	void setReverseArrowDirection(bool reverse) { _reverseArrowDirection = reverse; }
+
 	/// Returns whether vectors are flipped.
 	bool flipVectors() const { return _flipVectors; }
+
+	/// Sets whether vectors should be flipped.
+	void setFlipVectors(bool flip) { _flipVectors = flip; }
 
 	/// Returns the display color of the arrows.
 	const Color& arrowColor() const { return _arrowColor; }
@@ -94,11 +100,13 @@ public:
 
 public:
 
-	Q_PROPERTY(Ovito::ArrowGeometryBuffer::ShadingMode shadingMode READ shadingMode WRITE setShadingMode)
-	Q_PROPERTY(Ovito::ArrowGeometryBuffer::RenderingQuality renderingQuality READ renderingQuality WRITE setRenderingQuality)
-	Q_PROPERTY(Ovito::Color arrowColor READ arrowColor WRITE setArrowColor)
-	Q_PROPERTY(FloatType arrowWidth READ arrowWidth WRITE setArrowWidth)
-	Q_PROPERTY(FloatType scalingFactor READ scalingFactor WRITE setScalingFactor)
+	Q_PROPERTY(Ovito::ArrowGeometryBuffer::ShadingMode shadingMode READ shadingMode WRITE setShadingMode);
+	Q_PROPERTY(Ovito::ArrowGeometryBuffer::RenderingQuality renderingQuality READ renderingQuality WRITE setRenderingQuality);
+	Q_PROPERTY(Ovito::Color arrowColor READ arrowColor WRITE setArrowColor);
+	Q_PROPERTY(FloatType arrowWidth READ arrowWidth WRITE setArrowWidth);
+	Q_PROPERTY(FloatType scalingFactor READ scalingFactor WRITE setScalingFactor);
+	Q_PROPERTY(bool flipVectors READ flipVectors WRITE setFlipVectors);
+	Q_PROPERTY(bool reverseArrowDirection READ reverseArrowDirection WRITE setReverseArrowDirection);
 
 protected:
 

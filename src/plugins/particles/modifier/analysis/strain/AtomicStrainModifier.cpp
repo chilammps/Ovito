@@ -72,9 +72,40 @@ AtomicStrainModifier::AtomicStrainModifier(DataSet* dataset) : AsynchronousParti
 	INIT_PROPERTY_FIELD(AtomicStrainModifier::_calculateStrainTensors);
 	INIT_PROPERTY_FIELD(AtomicStrainModifier::_selectInvalidParticles);
 
-	OORef<LinkedFileObject> importObj(new LinkedFileObject(dataset));
-	importObj->setAdjustAnimationIntervalEnabled(false);
-	_referenceObject = importObj;
+	// Create the scene object, which will be responsible for loading
+	// and storing the reference configuration.
+	OORef<LinkedFileObject> linkedFileObj(new LinkedFileObject(dataset));
+	// Disable automatic adjustment of animation length for the reference object.
+	// We don't want the scene's animation interval to be affected by an animation
+	// loaded into the reference configuration object.
+	linkedFileObj->setAdjustAnimationIntervalEnabled(false);
+	_referenceObject = linkedFileObj;
+}
+
+/******************************************************************************
+* Returns the source URL of the reference configuration.
+******************************************************************************/
+QUrl AtomicStrainModifier::referenceSource() const
+{
+	if(LinkedFileObject* linkedFileObj = dynamic_object_cast<LinkedFileObject>(referenceConfiguration()))
+		return linkedFileObj->sourceUrl();
+	else
+		return QUrl();
+}
+
+/******************************************************************************
+* Sets the source URL of the reference configuration.
+******************************************************************************/
+void AtomicStrainModifier::setReferenceSource(const QUrl& sourceUrl, const FileImporterDescription* importerType)
+{
+	if(LinkedFileObject* linkedFileObj = dynamic_object_cast<LinkedFileObject>(referenceConfiguration())) {
+		linkedFileObj->setSource(sourceUrl, importerType);
+	}
+	else {
+		OORef<LinkedFileObject> newObj(new LinkedFileObject(dataset()));
+		newObj->setSource(sourceUrl, importerType);
+		setReferenceConfiguration(newObj.get());
+	}
 }
 
 /******************************************************************************

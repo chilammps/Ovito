@@ -154,7 +154,7 @@ void ClusterAnalysisModifier::propertyChanged(const PropertyFieldDescriptor& fie
 void ClusterAnalysisModifierEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
 	// Create a rollout.
-	QWidget* rollout = createRollout(tr("Cluster analysis"), rolloutParams);
+	QWidget* rollout = createRollout(tr("Cluster analysis"), rolloutParams, "particles.modifiers.cluster_analysis.html");
 
     // Create the rollout contents.
 	QVBoxLayout* layout = new QVBoxLayout(rollout);

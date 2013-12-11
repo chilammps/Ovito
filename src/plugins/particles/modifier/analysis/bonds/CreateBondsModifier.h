@@ -120,8 +120,8 @@ public:
 
 public:
 
-	Q_PROPERTY(FloatType uniformCutoff READ uniformCutoff WRITE setUniformCutoff)
-	Q_PROPERTY(Particles::CreateBondsModifier::CutoffMode cutoffMode READ cutoffMode WRITE setCutoffMode)
+	Q_PROPERTY(FloatType uniformCutoff READ uniformCutoff WRITE setUniformCutoff);
+	Q_PROPERTY(Particles::CreateBondsModifier::CutoffMode cutoffMode READ cutoffMode WRITE setCutoffMode);
 
 protected:
 
