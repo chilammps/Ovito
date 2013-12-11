@@ -45,7 +45,13 @@ public:
 
 	/// Sets the object that contains the reference configuration of the particles
 	/// used for calculating the displacement vectors.
-	void setReferenceConfiguration(const OORef<SceneObject>& refConf) { _referenceObject = refConf; }
+	void setReferenceConfiguration(SceneObject* refConf) { _referenceObject = refConf; }
+
+	/// Returns the source URL of the reference configuration.
+	QUrl referenceSource() const;
+
+	/// Sets the source URL of the reference configuration.
+	void setReferenceSource(const QUrl& sourceUrl, const FileImporterDescription* importerType = nullptr);
 
 	/// Returns true if the homogeneous deformation of the simulation cell is eliminated from the calculated displacement vectors.
 	bool eliminateCellDeformation() const { return _eliminateCellDeformation; }
@@ -59,10 +65,37 @@ public:
 	/// Sets we assume the particle coordinates are unwrapped when calculating the displacement vectors.
 	void setAssumeUnwrappedCoordinates(bool enable) { _assumeUnwrappedCoordinates = enable; }
 
+	/// Returns whether to use a reference frame relative to current frame.
+	bool useReferenceFrameOffset() const { return _useReferenceFrameOffset; }
+
+	/// Sets whether to use a reference frame relative to current frame.
+	void setUseReferenceFrameOffset(bool useOffset) { _useReferenceFrameOffset = useOffset; }
+
+	/// Returns the absolute frame number from reference file to use when calculating displacement vectors.
+	int referenceFrameNumber() const { return _referenceFrameNumber; }
+
+	/// Sets the absolute frame number from reference file to use when calculating displacement vectors.
+	void setReferenceFrameNumber(int frame) { _referenceFrameNumber = frame; }
+
+	/// Returns the relative frame offset to use.
+	int referenceFrameOffset() const { return _referenceFrameOffset; }
+
+	/// Sets the relative frame offset to use.
+	void setReferenceFrameOffset(int frameOffset) { _referenceFrameOffset = frameOffset; }
+
+	/// Returns the vector display object, which is responsible for rendering the computed displacement vectors.
+	VectorDisplay* vectorDisplay() const { return _vectorDisplay; }
+
 public:
 
-	Q_PROPERTY(bool eliminateCellDeformation READ eliminateCellDeformation WRITE setEliminateCellDeformation)
-	Q_PROPERTY(bool assumeUnwrappedCoordinates READ assumeUnwrappedCoordinates WRITE setAssumeUnwrappedCoordinates)
+	Q_PROPERTY(bool eliminateCellDeformation READ eliminateCellDeformation WRITE setEliminateCellDeformation);
+	Q_PROPERTY(bool assumeUnwrappedCoordinates READ assumeUnwrappedCoordinates WRITE setAssumeUnwrappedCoordinates);
+	Q_PROPERTY(bool useReferenceFrameOffset READ useReferenceFrameOffset WRITE setUseReferenceFrameOffset);
+	Q_PROPERTY(int referenceFrameNumber READ referenceFrameNumber WRITE setReferenceFrameNumber);
+	Q_PROPERTY(int referenceFrameOffset READ referenceFrameOffset WRITE setReferenceFrameOffset);
+	Q_PROPERTY(VectorDisplay* vectorDisplay READ vectorDisplay);
+	Q_PROPERTY(SceneObject* referenceConfiguration READ referenceConfiguration WRITE setReferenceConfiguration);
+	Q_PROPERTY(QUrl referenceSource READ referenceSource WRITE setReferenceSource);
 
 protected:
 

@@ -53,6 +53,10 @@
               <entry>Calculates the centrosymmetry parameter for every particle.</entry>
             </row>
             <row>
+              <entry><link linkend="particles.modifiers.cluster_analysis">Cluster analysis</link></entry>
+              <entry>Decomposes a particle system into clusters of particles.</entry>
+            </row>
+            <row>
               <entry><link linkend="particles.modifiers.common_neighbor_analysis">Common neighbor analysis</link></entry>
               <entry>Performs the common neighbor analysis (CNA) to determine the local crystal structure.</entry>
             </row>
@@ -161,6 +165,8 @@
   <xi:include href="particles/centrosymmetry.docbook"/>
 
   <xi:include href="particles/clear_selection.docbook"/>
+
+  <xi:include href="particles/cluster_analysis.docbook"/>
   
   <xi:include href="particles/color_coding.docbook"/>
 

@@ -71,13 +71,12 @@ CalculateDisplacementsModifier::CalculateDisplacementsModifier(DataSet* dataset)
 
 	// Create the scene object, which will be responsible for loading
 	// and storing the reference configuration.
-	OORef<LinkedFileObject> importObj(new LinkedFileObject(dataset));
-	_referenceObject = importObj;
-
+	OORef<LinkedFileObject> linkedFileObj(new LinkedFileObject(dataset));
 	// Disable automatic adjustment of animation length for the reference object.
 	// We don't want the scene's animation interval to be affected by an animation
 	// loaded into the reference configuration object.
-	importObj->setAdjustAnimationIntervalEnabled(false);
+	linkedFileObj->setAdjustAnimationIntervalEnabled(false);
+	_referenceObject = linkedFileObj;
 
 	// Create display object for vectors.
 	_vectorDisplay = new VectorDisplay(dataset);
@@ -85,6 +84,32 @@ CalculateDisplacementsModifier::CalculateDisplacementsModifier(DataSet* dataset)
 	// Don't show vectors by default, because too many vectors could make the
 	// program hang.
 	_vectorDisplay->setEnabled(false);
+}
+
+/******************************************************************************
+* Returns the source URL of the reference configuration.
+******************************************************************************/
+QUrl CalculateDisplacementsModifier::referenceSource() const
+{
+	if(LinkedFileObject* linkedFileObj = dynamic_object_cast<LinkedFileObject>(referenceConfiguration()))
+		return linkedFileObj->sourceUrl();
+	else
+		return QUrl();
+}
+
+/******************************************************************************
+* Sets the source URL of the reference configuration.
+******************************************************************************/
+void CalculateDisplacementsModifier::setReferenceSource(const QUrl& sourceUrl, const FileImporterDescription* importerType)
+{
+	if(LinkedFileObject* linkedFileObj = dynamic_object_cast<LinkedFileObject>(referenceConfiguration())) {
+		linkedFileObj->setSource(sourceUrl, importerType);
+	}
+	else {
+		OORef<LinkedFileObject> newObj(new LinkedFileObject(dataset()));
+		newObj->setSource(sourceUrl, importerType);
+		setReferenceConfiguration(newObj.get());
+	}
 }
 
 /******************************************************************************

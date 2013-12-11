@@ -95,11 +95,11 @@ public:
 
 public:
 
-	Q_PROPERTY(Particles::ParticlePropertyReference sourceProperty READ sourceProperty WRITE setSourceProperty)
-	Q_PROPERTY(int numberOfBins READ numberOfBins WRITE setNumberOfBins)
-	Q_PROPERTY(bool selectInRange READ selectInRange WRITE setSelectInRange)
-	Q_PROPERTY(FloatType selectionRangeStart READ selectionRangeStart)
-	Q_PROPERTY(FloatType selectionRangeEnd READ selectionRangeEnd)
+	Q_PROPERTY(Particles::ParticlePropertyReference sourceProperty READ sourceProperty WRITE setSourceProperty);
+	Q_PROPERTY(int numberOfBins READ numberOfBins WRITE setNumberOfBins);
+	Q_PROPERTY(bool selectInRange READ selectInRange WRITE setSelectInRange);
+	Q_PROPERTY(FloatType selectionRangeStart READ selectionRangeStart);
+	Q_PROPERTY(FloatType selectionRangeEnd READ selectionRangeEnd);
 
 protected:
 

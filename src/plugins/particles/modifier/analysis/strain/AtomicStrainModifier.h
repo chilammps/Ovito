@@ -46,7 +46,13 @@ public:
 
 	/// Sets the object that contains the reference configuration of the particles
 	/// used for calculating the displacement vectors.
-	void setReferenceConfiguration(const OORef<SceneObject>& refConf) { _referenceObject = refConf; }
+	void setReferenceConfiguration(SceneObject* refConf) { _referenceObject = refConf; }
+
+	/// Returns the source URL of the reference configuration.
+	QUrl referenceSource() const;
+
+	/// Sets the source URL of the reference configuration.
+	void setReferenceSource(const QUrl& sourceUrl, const FileImporterDescription* importerType = nullptr);
 
 	/// Returns whether the reference configuration is shown instead of the current configuration.
 	bool referenceShown() const { return _referenceShown; }
@@ -75,11 +81,20 @@ public:
 	/// Returns whether atomic deformation gradient tensors should be computed and stored.
 	bool calculateDeformationGradients() const { return _calculateDeformationGradients; }
 
+	/// Sets whether atomic deformation gradient tensors should be computed and stored.
+	void setCalculateDeformationGradients(bool enableCalculation) { _calculateDeformationGradients = enableCalculation; }
+
 	/// Returns whether atomic strain tensors should be computed and stored.
 	bool calculateStrainTensors() const { return _calculateStrainTensors; }
 
+	/// Sets whether atomic strain tensors should be computed and stored.
+	void setCalculateStrainTensors(bool enableCalculation) { _calculateStrainTensors = enableCalculation; }
+
 	/// Returns whether particles, for which the strain tensor could not be computed, are selected.
 	bool selectInvalidParticles() const { return _selectInvalidParticles; }
+
+	/// Sets whether particles, for which the strain tensor could not be computed, are selected.
+	void setSelectInvalidParticles(bool enableSelection) { _selectInvalidParticles = enableSelection; }
 
 	/// Returns the computed von Mises shear strain values.
 	const ParticleProperty& shearStrainValues() const { OVITO_CHECK_POINTER(_shearStrainValues.constData()); return *_shearStrainValues; }
@@ -96,11 +111,21 @@ public:
 	/// Returns the selection of invalid particles.
 	const ParticleProperty& invalidParticles() const { OVITO_CHECK_POINTER(_invalidParticles.constData()); return *_invalidParticles; }
 
+	/// After a successful evaluation of the modifier, this returns the number of invalid particles for which
+	/// the strain tensor could not be computed.
+	size_t invalidParticleCount() const { return _numInvalidParticles; }
+
 public:
 
 	Q_PROPERTY(bool eliminateCellDeformation READ eliminateCellDeformation WRITE setEliminateCellDeformation)
 	Q_PROPERTY(bool assumeUnwrappedCoordinates READ assumeUnwrappedCoordinates WRITE setAssumeUnwrappedCoordinates)
+	Q_PROPERTY(bool calculateDeformationGradients READ calculateDeformationGradients WRITE setCalculateDeformationGradients)
+	Q_PROPERTY(bool calculateStrainTensors READ calculateStrainTensors WRITE setCalculateStrainTensors)
+	Q_PROPERTY(bool selectInvalidParticles READ selectInvalidParticles WRITE setSelectInvalidParticles)
 	Q_PROPERTY(FloatType cutoff READ cutoff WRITE setCutoff)
+	Q_PROPERTY(SceneObject* referenceConfiguration READ referenceConfiguration WRITE setReferenceConfiguration);
+	Q_PROPERTY(QUrl referenceSource READ referenceSource WRITE setReferenceSource);
+	Q_PROPERTY(int invalidParticleCount READ invalidParticleCount);
 
 private:
 

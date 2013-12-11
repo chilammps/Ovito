@@ -215,6 +215,24 @@ public:
 	/// Sets the color gradient for the modifier to convert scalar atom properties to colors.
 	void setColorGradient(ColorCodingGradient* gradient) { _colorGradient = gradient; }
 
+	/// Returns whether the modifier assigns a color only to selected particles.
+	bool colorOnlySelected() const { return _colorOnlySelected; }
+
+	/// Sets whether the modifier should assign a color only to selected particles.
+	void setColorOnlySelected(bool colorOnlySelected) { _colorOnlySelected = colorOnlySelected; }
+
+	/// Returns whether the input particle selection is preserved by the modifier.
+	bool keepSelection() const { return _keepSelection; }
+
+	/// Sets whether the input particle selection should be preserved by the modifier.
+	void setKeepSelection(bool keepSel) { _keepSelection = keepSel; }
+
+	/// Returns whether the color legend is displayed in the rendered image.
+	bool renderLegend() const { return _renderLegend; }
+
+	/// Sets whether the color legend is displayed in the rendered image.
+	void setRenderLegend(bool render) { _renderLegend = render; }
+
 	/// Retrieves the selected input particle property from the given modifier input state.
 	ParticlePropertyObject* lookupInputProperty(const PipelineFlowState& inputState) const;
 
@@ -225,10 +243,13 @@ public Q_SLOTS:
 
 public:
 
-	Q_PROPERTY(FloatType startValue READ startValue WRITE setStartValue)
-	Q_PROPERTY(FloatType endValue READ endValue WRITE setEndValue)
-	Q_PROPERTY(Particles::ParticlePropertyReference sourceProperty READ sourceProperty WRITE setSourceProperty)
-	Q_PROPERTY(ColorCodingGradient* colorGradient READ colorGradient WRITE setColorGradient)
+	Q_PROPERTY(FloatType startValue READ startValue WRITE setStartValue);
+	Q_PROPERTY(FloatType endValue READ endValue WRITE setEndValue);
+	Q_PROPERTY(Particles::ParticlePropertyReference sourceProperty READ sourceProperty WRITE setSourceProperty);
+	Q_PROPERTY(ColorCodingGradient* colorGradient READ colorGradient WRITE setColorGradient);
+	Q_PROPERTY(bool colorOnlySelected READ colorOnlySelected WRITE setColorOnlySelected);
+	Q_PROPERTY(bool keepSelection READ keepSelection WRITE setKeepSelection);
+	Q_PROPERTY(bool renderLegend READ renderLegend WRITE setRenderLegend);
 
 protected:
 
@@ -257,7 +278,7 @@ protected:
 	ParticlePropertyReference _sourcePropertyRef;
 
 	/// Controls whether the modifier assigns a color only to selected particles.
-	PropertyField<bool> _onlySelected;
+	PropertyField<bool> _colorOnlySelected;
 
 	/// Controls whether the input particle selection is preserved.
 	/// If false, the selection is cleared by the modifier.
@@ -297,7 +318,7 @@ private:
 	DECLARE_REFERENCE_FIELD(_startValueCtrl);
 	DECLARE_REFERENCE_FIELD(_endValueCtrl);
 	DECLARE_REFERENCE_FIELD(_colorGradient);
-	DECLARE_PROPERTY_FIELD(_onlySelected);
+	DECLARE_PROPERTY_FIELD(_colorOnlySelected);
 	DECLARE_PROPERTY_FIELD(_keepSelection);
 	DECLARE_PROPERTY_FIELD(_renderLegend);
 };

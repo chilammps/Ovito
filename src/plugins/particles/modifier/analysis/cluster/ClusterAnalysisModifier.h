@@ -48,9 +48,13 @@ public:
 	/// Returns the cluster numbers assigned to particles.
 	const ParticleProperty& particleClusters() const { OVITO_CHECK_POINTER(_particleClusters.constData()); return *_particleClusters; }
 
+	/// Returns the number of clusters found during the last successful evaluation of the modifier.
+	size_t clusterCount() const { return _numClusters; }
+
 public:
 
-	Q_PROPERTY(FloatType cutoff READ cutoff WRITE setCutoff)
+	Q_PROPERTY(FloatType cutoff READ cutoff WRITE setCutoff);
+	Q_PROPERTY(int clusterCount READ clusterCount);
 
 private:
 

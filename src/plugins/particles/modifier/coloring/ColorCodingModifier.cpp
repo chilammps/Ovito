@@ -41,13 +41,13 @@ SET_OVITO_OBJECT_EDITOR(ColorCodingModifier, ColorCodingModifierEditor)
 DEFINE_REFERENCE_FIELD(ColorCodingModifier, _startValueCtrl, "StartValue", FloatController)
 DEFINE_REFERENCE_FIELD(ColorCodingModifier, _endValueCtrl, "EndValue", FloatController)
 DEFINE_REFERENCE_FIELD(ColorCodingModifier, _colorGradient, "ColorGradient", ColorCodingGradient)
-DEFINE_PROPERTY_FIELD(ColorCodingModifier, _onlySelected, "SelectedOnly")
+DEFINE_PROPERTY_FIELD(ColorCodingModifier, _colorOnlySelected, "SelectedOnly")
 DEFINE_PROPERTY_FIELD(ColorCodingModifier, _keepSelection, "KeepSelection")
 DEFINE_PROPERTY_FIELD(ColorCodingModifier, _renderLegend, "RenderLegend")
 SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _startValueCtrl, "Start value")
 SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _endValueCtrl, "End value")
 SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _colorGradient, "Color gradient")
-SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _onlySelected, "Color only selected particles")
+SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _colorOnlySelected, "Color only selected particles")
 SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _keepSelection, "Keep selection")
 SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _renderLegend, "Render color legend (experimental)")
 
@@ -61,12 +61,12 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ColorCodingJetGradient, ColorCodi
 * Constructs the modifier object.
 ******************************************************************************/
 ColorCodingModifier::ColorCodingModifier(DataSet* dataset) : ParticleModifier(dataset),
-	_onlySelected(false), _keepSelection(false), _renderLegend(false)
+	_colorOnlySelected(false), _keepSelection(false), _renderLegend(false)
 {
 	INIT_PROPERTY_FIELD(ColorCodingModifier::_startValueCtrl);
 	INIT_PROPERTY_FIELD(ColorCodingModifier::_endValueCtrl);
 	INIT_PROPERTY_FIELD(ColorCodingModifier::_colorGradient);
-	INIT_PROPERTY_FIELD(ColorCodingModifier::_onlySelected);
+	INIT_PROPERTY_FIELD(ColorCodingModifier::_colorOnlySelected);
 	INIT_PROPERTY_FIELD(ColorCodingModifier::_keepSelection);
 	INIT_PROPERTY_FIELD(ColorCodingModifier::_renderLegend);
 
@@ -170,7 +170,7 @@ ObjectStatus ColorCodingModifier::modifyParticles(TimePoint time, TimeInterval& 
 
 	// Get the particle selection property if enabled by the user.
 	ParticlePropertyObject* selProperty = nullptr;
-	if(_onlySelected)
+	if(colorOnlySelected())
 		selProperty = inputStandardProperty(ParticleProperty::SelectionProperty);
 
 	// Get the deep copy of the color output property.
@@ -242,7 +242,7 @@ ObjectStatus ColorCodingModifier::modifyParticles(TimePoint time, TimeInterval& 
 		throw Exception(tr("The particle property '%1' has an invalid or non-numeric data type.").arg(property->name()));
 
 	// Clear particle selection if requested.
-	if(selProperty && !_keepSelection)
+	if(selProperty && !keepSelection())
 		output().removeObject(selProperty);
 
 	colorProperty->changed();
@@ -484,7 +484,7 @@ void ColorCodingModifierEditor::createUI(const RolloutInsertionParameters& rollo
 	layout1->addSpacing(8);
 
 	// Only selected particles.
-	BooleanParameterUI* onlySelectedPUI = new BooleanParameterUI(this, PROPERTY_FIELD(ColorCodingModifier::_onlySelected));
+	BooleanParameterUI* onlySelectedPUI = new BooleanParameterUI(this, PROPERTY_FIELD(ColorCodingModifier::_colorOnlySelected));
 	layout1->addWidget(onlySelectedPUI->checkBox());
 
 	// Keep selection
