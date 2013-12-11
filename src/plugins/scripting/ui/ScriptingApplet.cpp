@@ -89,10 +89,15 @@ void ScriptingApplet::closeUtility(RolloutContainer* container) {
 * Runs the current script in the editor.
 ******************************************************************************/
 void ScriptingApplet::runScript() {
-	// Set up engine.
 	QObject parent; // <- for memory management.
 	DataSetContainer& container = mainWindow_->datasetContainer();
 	DataSet* data = container.currentSet();
+
+	// Start recording for undo stack.
+	UndoStack& undo = data->undoStack();
+	UndoableTransaction transaction(undo, tr("Script execution"));
+
+	// Set up engine.
 	QScriptEngine* engine = prepareEngine(data, &parent);
 
 	// Evaluate.
@@ -113,6 +118,9 @@ void ScriptingApplet::runScript() {
 			output_->setText(s);
 		}
 	}
+
+	// If no C++ exceptions reach to here, commit the transaction.
+	transaction.commit();
 }
 
 };
