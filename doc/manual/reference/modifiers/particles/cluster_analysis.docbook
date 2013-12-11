@@ -17,24 +17,31 @@
     </imageobject></mediaobject></screenshot></informalfigure>
   
     This modifier decomposes a particle system into clusters by grouping particles into disconnected sets.
+    Each particle is assigned a cluster ID by this modifier.
   </para>
   
   <para>
+    A cluster is defined as a set of particles, each of which is within the cutoff distance from one or more 
+    other particles in the cluster. If a particle has no neighbors within the cutoff distance, then it forms 
+    a 1-particle cluster.
+  </para>
+
+  <para>
      The modifier writes its results to the <literal>Cluster</literal> particle property, which stores the
-     identifier of the cluster each particle has been assigned to.
+     cluster ID assigned to each particle. Clusters have identifiers 1 to N, where N 
+     is the number of clusters found by the modifier.
   </para>
 
   <simplesect>
     <title>Parameters</title>
-
     <variablelist>
       <varlistentry>
         <term>Cutoff radius</term>
         <listitem>
-          <para>The maximum distance between pairs of particles to be considered neighbors.</para>
+          <para>The maximum distance of particles up to which they are considered neighbors 
+          that belong to the same cluster.</para>
         </listitem>
       </varlistentry>
-
     </variablelist>
   </simplesect>
 </section>

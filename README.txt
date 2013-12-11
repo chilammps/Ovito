@@ -13,7 +13,22 @@ http://www.ovito.org/
 Change Log 
 ****************************************************************************************
 
-Release 2.1.0 (xx-Nov-13):
+Release 2.2.0 (xx-Dec-13):
+
+ - Added the Cluster Analysis modifier.
+ - Added the Construct Surface Mesh modifier.
+ - Added possibility to open multiple application windows (useful on Mac OS X platform).
+ - Added user option to the viewport settings dialog that allows to turn off the restriction of 
+   the vertical camera rotation. 
+ - Added first version of the CrystalAnalysis plugin, which allows working with data 
+   produced by the Crystal Analysis Tool.
+ - The XYZ file exporter now writes particle type names instead of numeric type IDs.
+ - Extended user documentation.
+ - The user manual is now distributed with the program. An Internet connection is no longer
+   necessary to access it.
+ - A few bug fixes and OpenGL compatibility improvements.
+
+Release 2.1.0 (15-Nov-13):
 
  - Added the Manual Selection modifier, which allows selecting individual particles
    with the mouse in the viewports. Using its "Fence selection" mode, a group of particles

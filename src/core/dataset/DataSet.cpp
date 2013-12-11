@@ -68,14 +68,6 @@ DataSet::DataSet(DataSet* self) : RefTarget(this), _unitsManager(this)
 }
 
 /******************************************************************************
-* Sets the dataset's root scene node.
-******************************************************************************/
-void DataSet::setSceneRoot(const OORef<SceneRoot>& newScene)
-{
-	_sceneRoot = newScene;
-}
-
-/******************************************************************************
 * Returns a viewport configuration that is used as template for new scenes.
 ******************************************************************************/
 OORef<ViewportConfiguration> DataSet::createDefaultViewportConfiguration()
@@ -267,9 +259,6 @@ bool DataSet::renderScene(RenderSettings* settings, Viewport* viewport, QSharedP
 	// Get the selected scene renderer.
 	SceneRenderer* renderer = settings->renderer();
 	if(!renderer) throw Exception(tr("No renderer has been selected."));
-
-	// Do not update the viewports while rendering.
-	ViewportSuspender noVPUpdates(viewportConfig());
 
 	bool wasCanceled = false;
 	try {
