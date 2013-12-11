@@ -353,6 +353,67 @@ void toColorCodingGradientPtr(const QScriptValue& obj, Particles::ColorCodingGra
 
 
 
+QScriptValue fromQUrl(QScriptEngine *engine, const QUrl& x) {
+	return x.toDisplayString();
+}
+
+void toQUrl(const QScriptValue& obj, QUrl& x) {
+	x = QUrl::fromLocalFile(obj.toString());
+}
+
+
+
+
+/*
+QScriptValue fromParticlePropertyReference(QScriptEngine *engine,
+										   const Particles::ParticlePropertyReference& x) {
+	return x.name() + "." + QString::number(x.vectorComponent());
+}
+
+void toParticlePropertyReference(const QScriptValue& obj,
+								 Particles::ParticlePropertyReference& x) {
+	QScriptEngine* engine = obj.engine();
+	QScriptContext* context = engine->currentContext();
+	//
+	QStringList parts = obj.toString().split(".");
+	switch (parts.length()) {
+	case 1:
+		// No vector component given.
+		x = Particles::ParticlePropertyReference(parts[0]);
+		break;
+	case 2:
+		{
+			// Vector component is given. Try to parse it (special casing for x/y/z, r/g/b).
+			// TODO: get the special casing from the relevant object (?????)
+			bool ok;
+			int component = parts[1].toInt(&ok);
+			if (!ok) {
+				if (parts[1].toLower() == "x")
+					component = 0;
+				else if (parts[1].toLower() == "y")
+					component = 1;
+				else if (parts[2].toLower() == "z")
+					component = 2;
+				else {
+					context->throwError("unknown vector component.");
+					return;
+				}
+			} else if (component < 0) {
+				context->throwError("vector component may not be negative.");
+				return;
+			}
+			x = Particles::ParticlePropertyReference(parts[0], component);
+		}
+		break;
+	default:
+		context->throwError("too many dots in property...");
+		return;
+	}
+}
+*/
+
+
+
 // Factory function for script engine //////////////////////////////////
 
 QScriptEngine* prepareEngine(DataSet* dataSet, QObject* parent) {
@@ -377,6 +438,17 @@ QScriptEngine* prepareEngine(DataSet* dataSet, QObject* parent) {
 	qScriptRegisterMetaType<Particles::ColorCodingGradient*>(engine,
 															 fromColorCodingGradientPtr,
 															 toColorCodingGradientPtr);
+
+	const int QUrlId = qRegisterMetaType<QUrl>("QUrl");
+	qScriptRegisterMetaType<QUrl>(engine, fromQUrl, toQUrl);
+
+	/*
+	const int ParticlePropertyReferenceTypeId =
+		qRegisterMetaType<Particles::ParticlePropertyReference>("ParticlePropertyReference");
+	qScriptRegisterMetaType<Particles::ParticlePropertyReference>(engine,
+																  fromParticlePropertyReference,
+																  toParticlePropertyReference);
+	*/
 
 	// Set up namespace. ///////////////////////////////////////////////
 
