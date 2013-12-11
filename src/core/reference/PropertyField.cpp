@@ -50,7 +50,7 @@ void PropertyFieldBase::init(RefMaker* owner, PropertyFieldDescriptor* descripto
 			"PROPERTY_FIELD_NO_UNDO flag must be used as well when PROPERTY_FIELD_WEAK_REF flag is set for a reference field.");
 }
 
-/******************************************************************************
+/********************************************************************	**********
 * Generates a notification event to inform the dependents of the field's owner
 * that it has changed.
 ******************************************************************************/
@@ -175,6 +175,16 @@ void SingleReferenceFieldBase::setValue(RefTarget* newTarget)
 }
 
 /******************************************************************************
+* Constructor of the undo record.
+******************************************************************************/
+SingleReferenceFieldBase::SetReferenceOperation::SetReferenceOperation(RefTarget* oldTarget, SingleReferenceFieldBase& reffield)
+	: _inactiveTarget(oldTarget), _reffield(reffield), _owner(reffield.owner() != reffield.owner()->dataset() ? reffield.owner() : nullptr)
+{
+	// Make sure we are not keeping a reference to the DataSet. That would be an invalid circular reference.
+	OVITO_ASSERT(oldTarget != reffield.owner()->dataset());
+}
+
+/******************************************************************************
 * Removes a target from the list reference field.
 ******************************************************************************/
 OORef<RefTarget> VectorReferenceFieldBase::removeReference(int index, bool generateNotificationEvents)
@@ -195,7 +205,7 @@ OORef<RefTarget> VectorReferenceFieldBase::removeReference(int index, bool gener
 		if(!descriptor()->isWeakReference())
 			target->decrementReferenceCount();
 
-		// Remove the refmaker from the old target's list of dependents.
+		// Remove the RefmMker from the old target's list of dependents.
 		OVITO_CHECK_OBJECT_POINTER(target);
 		OVITO_ASSERT(target->_dependents.contains(refmaker));
 		if(!refmaker->hasReferenceTo(target.get())) {
@@ -290,7 +300,7 @@ int VectorReferenceFieldBase::insertInternal(RefTarget* newTarget, int index)
 		InsertReferenceOperation* op = new InsertReferenceOperation(newTarget, *this, index);
 		owner()->dataset()->undoStack().push(op);
 		op->redo();
-		return op->getInsertionIndex();
+		return op->insertionIndex();
 	}
 	else {
 		return addReference(newTarget, index);
@@ -319,11 +329,34 @@ void VectorReferenceFieldBase::remove(int i)
 	}
 }
 
-/// Clears all references at sets the vector size to zero.
+/******************************************************************************
+* Clears all references at sets the vector size to zero.
+******************************************************************************/
 void VectorReferenceFieldBase::clear()
 {
 	while(!pointers.empty())
 		remove(pointers.size() - 1);
+}
+
+/******************************************************************************
+* Constructor of the undo record.
+******************************************************************************/
+VectorReferenceFieldBase::InsertReferenceOperation::InsertReferenceOperation(RefTarget* target, VectorReferenceFieldBase& reffield, int index)
+: _target(target), _reffield(reffield), _owner(reffield.owner() != reffield.owner()->dataset() ? reffield.owner() : nullptr),
+  _index(index)
+{
+	// Make sure we are not keeping a reference to the DataSet. That would be an invalid circular reference.
+	OVITO_ASSERT(!_target || _target != _reffield.owner()->dataset());
+}
+
+/******************************************************************************
+* Constructor of the undo record.
+******************************************************************************/
+VectorReferenceFieldBase::RemoveReferenceOperation::RemoveReferenceOperation(VectorReferenceFieldBase& reffield, int index)
+	: _reffield(reffield), _index(index), _owner(reffield.owner() != reffield.owner()->dataset() ? reffield.owner() : nullptr)
+{
+	// Make sure we are not keeping a reference to the DataSet. That would be an invalid circular reference.
+	OVITO_ASSERT(_reffield[index] != _reffield.owner()->dataset());
 }
 
 };

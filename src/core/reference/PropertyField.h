@@ -170,7 +170,7 @@ private:
 	/// This undo class records a change to the property value.
 	class PropertyChangeOperation : public UndoableOperation {
 	public:
-		PropertyChangeOperation(PropertyField& field) : _field(field), _object(field.owner()) {
+		PropertyChangeOperation(PropertyField& field) : _field(field), _owner(field.owner() != field.owner()->dataset() ? field.owner() : nullptr) {
 			// Make a copy of the current property value.
 			_oldValue = field;
 		}
@@ -185,8 +185,11 @@ private:
 		virtual void redo() override { PropertyChangeOperation::undo(); }
 
 	private:
+
 		/// The object whose property has been changed.
-		OORef<OvitoObject> _object;
+		/// This OORef is needed to keep the owner object alive as long as this undo record is on the undo stack.
+		/// This is only used if the owner is not a DataSet, because that would create a circular reference.
+		OORef<OvitoObject> _owner;
 		/// The property field that has been changed.
 		PropertyField& _field;
 		/// The old value of the property.
@@ -235,14 +238,18 @@ protected:
 	class SetReferenceOperation : public UndoableOperation
 	{
 	private:
-		OORef<RefTarget> inactiveTarget;
-		SingleReferenceFieldBase& reffield;
+		/// The reference target that is currently not assigned to the reference field.
+		/// This is stored here so that we can restore it on a call to undo().
+		OORef<RefTarget> _inactiveTarget;
+		/// The reference field whose value has changed.
+		SingleReferenceFieldBase& _reffield;
+		/// This reference is needed to keep the owner object alive as long as this undo record is on the stack.
+		/// This is only used if the owner is not a DataSet, because that would create a circular reference.
+		OORef<RefMaker> _owner;
 	public:
-		SetReferenceOperation(RefTarget* _oldTarget, SingleReferenceFieldBase& _reffield)
-			: inactiveTarget(_oldTarget), reffield(_reffield) {}
-
-		virtual void undo() override { reffield.swapReference(inactiveTarget); }
-		virtual void redo() override { reffield.swapReference(inactiveTarget); }
+		SetReferenceOperation(RefTarget* oldTarget, SingleReferenceFieldBase& reffield);
+		virtual void undo() override { _reffield.swapReference(_inactiveTarget); }
+		virtual void redo() override { _reffield.swapReference(_inactiveTarget); }
 	};
 };
 
@@ -364,46 +371,56 @@ protected:
 
 	class InsertReferenceOperation : public UndoableOperation
 	{
-	private:
-	    OORef<RefTarget> target;
-		VectorReferenceFieldBase& reffield;
-		int index;
 	public:
-    	InsertReferenceOperation(RefTarget* _target, VectorReferenceFieldBase& _reffield, int _index)
-			: target(_target), reffield(_reffield), index(_index) {}
+    	InsertReferenceOperation(RefTarget* target, VectorReferenceFieldBase& reffield, int index);
 
 		virtual void undo() override {
-			OVITO_ASSERT(!target);
-			target = reffield.removeReference(index);
+			OVITO_ASSERT(!_target);
+			_target = _reffield.removeReference(_index);
 		}
 
 		virtual void redo() override {
-			index = reffield.addReference(target, index);
-			target = nullptr;
+			_index = _reffield.addReference(_target, _index);
+			_target.reset();
 		}
 
-		int getInsertionIndex() const { return index; }
+		int insertionIndex() const { return _index; }
+	private:
+		/// The target that has been added into the vector reference field.
+	    OORef<RefTarget> _target;
+		/// The vector reference field to which the reference has been added.
+		VectorReferenceFieldBase& _reffield;
+		/// This reference is needed to keep the owner object alive as long as this undo record is on the stack.
+		/// This is only used if the owner is not a DataSet, because that would create a circular reference.
+		OORef<RefMaker> _owner;
+		/// The position at which the target has been inserted into the vector reference field.
+		int _index;
 	};
 
 	class RemoveReferenceOperation : public UndoableOperation
 	{
-	private:
-	    OORef<RefTarget> target;
-		VectorReferenceFieldBase& reffield;
-		int index;
 	public:
-    	RemoveReferenceOperation(VectorReferenceFieldBase& _reffield, int _index)
-			: reffield(_reffield), index(_index) {}
+    	RemoveReferenceOperation(VectorReferenceFieldBase& reffield, int index);
 
 		virtual void undo() override {
-			index = reffield.addReference(target, index);
-			target = nullptr;
+			_index = _reffield.addReference(_target, _index);
+			_target.reset();
 		}
 
 		virtual void redo() override {
-			OVITO_ASSERT(!target);
-			target = reffield.removeReference(index);
+			OVITO_ASSERT(!_target);
+			_target = _reffield.removeReference(_index);
 		}
+	private:
+		/// The target that has been removed from the vector reference field.
+	    OORef<RefTarget> _target;
+		/// The vector reference field from which the reference has been removed.
+		VectorReferenceFieldBase& _reffield;
+		/// This reference is needed to keep the owner object alive as long as this undo record is on the stack.
+		/// This is only used if the owner is not a DataSet, because that would create a circular reference.
+		OORef<RefMaker> _owner;
+		/// The position at which the target has been removed from the vector reference field.
+		int _index;
 	};
 
 	friend class RefMaker;
