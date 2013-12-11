@@ -210,7 +210,7 @@ void VectorDisplay::render(TimePoint time, SceneObject* sceneObject, const Pipel
 void VectorDisplayEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
 	// Create a rollout.
-	QWidget* rollout = createRollout(tr("Vector display"), rolloutParams);
+	QWidget* rollout = createRollout(tr("Vector display"), rolloutParams, "display_objects.vectors.html");
 
     // Create the rollout contents.
 	QGridLayout* layout = new QGridLayout(rollout);

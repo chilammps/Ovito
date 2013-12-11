@@ -13,7 +13,7 @@
   <para>
   
   Display objects are responsible for generating the visual representation of data that leave OVITO's <link
-  linkend="usage.modification_pipeline">processing pipeline</link>. The following table
+  linkend="usage.modification_pipeline">modification pipeline</link>. The following table
   lists the types of display objects. 
   
   <informaltable>
@@ -28,14 +28,29 @@
           </thead>
           <tbody>          
             <row>
+              <entry><link linkend="display_objects.bonds">Bonds</link></entry>
+              <entry>Displays the bonds between particles.</entry>
+            </row>
+            <row>
+              <entry><link linkend="display_objects.particles">Particles</link></entry>
+              <entry>Displays a set of particles.</entry>
+            </row>
+            <row>
               <entry><link linkend="display_objects.surface_mesh">Surface mesh</link></entry>
               <entry>Displays a closed polygonal mesh.</entry>
+            </row>
+            <row>
+              <entry><link linkend="display_objects.vectors">Particles</link></entry>
+              <entry>Displays vectors associated with particles, e.g. displacement vectors.</entry>
             </row>
           </tbody>
         </tgroup>
       </informaltable>
    </para>
 
+  <xi:include href="bonds.docbook"/>
+  <xi:include href="particles.docbook"/>
   <xi:include href="surface_mesh.docbook"/>
+  <xi:include href="vectors.docbook"/>
   
 </section>

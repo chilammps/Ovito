@@ -8,7 +8,7 @@
          xmlns:xlink="http://www.w3.org/1999/xlink"
          xmlns:xi="http://www.w3.org/2001/XInclude"
          xmlns:ns="http://docbook.org/ns/docbook">
-  <title>Surface mesh</title>
+  <title>Surface mesh display</title>
 
   <para>
       
@@ -17,7 +17,7 @@
     </imageobject></mediaobject></screenshot></informalfigure>
     
     This display object is responsible for rendering the polyhedral mesh that is 
-    produced by a <link linkend="particles.modifiers.construct_surface_mesh"><emphasis>Construct surface mesh</emphasis></link> modifier.    
+    produced by a <link linkend="particles.modifiers.construct_surface_mesh">Construct surface mesh</link> modifier.    
   </para>
 
    <simplesect>
@@ -31,7 +31,7 @@
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term>Surface transparency</term>
+        <term>Transparency</term>
         <listitem>
           <para>The degree of transparency of the surface. Note that the default OpenGL renderer does not support 
           semi-transparent objects yet. Thus, this parameter is currently used only by the 
@@ -43,6 +43,13 @@
         <listitem>
           <para>Enables the interpolation of normal vectors between vertices of the polygonal mesh 
           (also known as <emphasis>Gouraud shading</emphasis>).</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>Cap polygons</term>
+        <listitem>
+          <para>OVITO computes the intersection of the surface with the periodic boundaries of the simulation cell.
+          Cap polygons are created to close the cut mesh again. This option enables or disables the display of the cap polygons.</para>
         </listitem>
       </varlistentry>
 	</variablelist>

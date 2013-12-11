@@ -53,6 +53,11 @@
   which allows rendering the displacement vectors as arrows. By default, the
   display object is disabled. You have to enable it in the pipeline editor first to show the arrows in the viewports. 
   </para>
+  
+  <para>    
+    The visual appearance of the vectors computed by this modifier is controlled through the attached 
+    <link linkend="display_objects.vectors">vector display object</link>. 
+  </para>  
 
   <simplesect>
     <title>Parameters</title>
