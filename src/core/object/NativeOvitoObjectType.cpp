@@ -34,7 +34,7 @@ NativeOvitoObjectType* NativeOvitoObjectType::_firstInfo = nullptr;
 /******************************************************************************
 * Creates an instance of this object class.
 ******************************************************************************/
-OORef<OvitoObject> NativeOvitoObjectType::createInstanceImpl(DataSet* dataset) const
+OvitoObject* NativeOvitoObjectType::createInstanceImpl(DataSet* dataset) const
 {
 	OvitoObject* obj;
 
