@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<section version="5.0"
+         xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xml:id="particles.modifiers.cluster_analysis"
+         xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title>Cluster analysis</title>
+
+  <para>
+  
+    <informalfigure><screenshot><mediaobject><imageobject>
+       <imagedata fileref="images/modifiers/cluster_analysis_panel.png" format="PNG" />
+    </imageobject></mediaobject></screenshot></informalfigure>
+  
+    This modifier decomposes a particle system into clusters by grouping particles into disconnected sets.
+  </para>
+  
+  <para>
+     The modifier writes its results to the <literal>Cluster</literal> particle property, which stores the
+     identifier of the cluster each particle has been assigned to.
+  </para>
+
+  <simplesect>
+    <title>Parameters</title>
+
+    <variablelist>
+      <varlistentry>
+        <term>Cutoff radius</term>
+        <listitem>
+          <para>The maximum distance between pairs of particles to be considered neighbors.</para>
+        </listitem>
+      </varlistentry>
+
+    </variablelist>
+  </simplesect>
+</section>

@@ -55,8 +55,13 @@ DataSetContainer::DataSetContainer(MainWindow* mainWindow) : RefMaker(nullptr),
 void DataSetContainer::referenceReplaced(const PropertyFieldDescriptor& field, RefTarget* oldTarget, RefTarget* newTarget)
 {
 	if(field == PROPERTY_FIELD(DataSetContainer::_currentSet)) {
-		if(oldTarget)
-			static_object_cast<DataSet>(oldTarget)->animationSettings()->stopAnimationPlayback();
+
+		if(oldTarget) {
+			DataSet* oldDataSet = static_object_cast<DataSet>(oldTarget);
+
+			// Stop animation playback for the old dataset.
+			oldDataSet->animationSettings()->stopAnimationPlayback();
+		}
 
 		// Forward signals from the current dataset.
 		disconnect(_selectionSetReplacedConnection);
