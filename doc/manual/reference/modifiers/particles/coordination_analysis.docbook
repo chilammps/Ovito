@@ -21,7 +21,12 @@
   </para>
   
   <para>
-  The modifier stores its results in the <literal>Coordination</literal> particle property.
+  The modifier stores its results, i.e. the number of neighbors each particle haa, in the <literal>Coordination</literal> particle property.
+  </para>
+
+  <para>
+  In addition to determining the number of neighbors of particles, the modifier also computes and displays the 
+  radial pair distribution function (RDF) up to the given cutoff distance.
   </para>
 
   <simplesect>
