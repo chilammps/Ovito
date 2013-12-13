@@ -32,20 +32,14 @@ namespace Ovito {
 HistoryFileDialog::HistoryFileDialog(const QString& dialogClass, QWidget* parent, const QString& caption, const QString& directory, const QString& filter) :
 	QFileDialog(parent, caption, directory, filter), _dialogClass(dialogClass)
 {
-#ifndef Q_OS_MACX
-	connect(this, SIGNAL(fileSelected(const QString&)), this, SLOT(onFileSelected(const QString&)));
+	connect(this, &QFileDialog::fileSelected, this, &HistoryFileDialog::onFileSelected);
 
-	QStringList history = loadDirHistory();
-	if(history.isEmpty() == false)
-		setDirectory(history.front());
-
-#if 0
-	QList<QUrl> urlList = sidebarUrls();
-	Q_FOREACH(const QString& dir, history)
-		urlList.push_back(QUrl::fromLocalFile(dir));
-	setSidebarUrls(urlList);
-#endif
-#endif
+	if(directory.isEmpty()) {
+		QStringList history = loadDirHistory();
+		if(history.isEmpty() == false) {
+			setDirectory(history.front());
+		}
+	}
 }
 
 /******************************************************************************
