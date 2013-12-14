@@ -13,7 +13,7 @@ http://www.ovito.org/
 Change Log 
 ****************************************************************************************
 
-Release 2.2.0 (xx-Dec-13):
+Release 2.2.0 (15-Dec-13):
 
  - Added the Cluster Analysis modifier.
  - Added the Construct Surface Mesh modifier.
