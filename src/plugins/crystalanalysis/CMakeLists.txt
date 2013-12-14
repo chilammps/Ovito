@@ -19,11 +19,7 @@
 #
 ###############################################################################
 
-# Find CGAL library.
-FIND_PACKAGE(CGAL REQUIRED)
-IF(NOT CGAL_FOUND)
-	MESSAGE(FATAL_ERROR "CGAL library, which is required by the CrystalAnalysis plugin, not found.")
-ENDIF()
+# Link CGAL library.
 INCLUDE(${CGAL_USE_FILE})
 IF(NOT CMAKE_COMPILER_IS_GNUCXX)
 	ADD_DEFINITIONS(-DCGAL_CFG_ARRAY_MEMBER_INITIALIZATION_BUG)
