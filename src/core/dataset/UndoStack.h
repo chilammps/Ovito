@@ -68,7 +68,9 @@ public:
 	/// \brief Re-apply the change, assuming that it had been undone before.
 	///
 	/// This method is called by the UndoStack to re-do the operation.
-	virtual void redo() = 0;
+	/// The default implementation calls undo(). That means, undo() must be implemented such
+	/// that it works both ways.
+	virtual void redo() { undo(); }
 };
 
 /**
@@ -98,9 +100,6 @@ public:
 		(_obj.get()->*_setterFunc)(_oldValue);
 		_oldValue = temp;
 	}
-
-	/// \brief Re-apply the change, assuming that it has been undone.
-	virtual void redo() override { undo(); }
 
 private:
 
@@ -149,9 +148,6 @@ public:
 		_object->setProperty(_propertyName, _oldValue);
 		_oldValue = temp;
 	}
-
-	/// \brief Re-apply the change, assuming that it has been undone. 
-	virtual void redo() override { undo(); }
 	
 private:
 

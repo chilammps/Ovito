@@ -40,7 +40,6 @@ public:
 		_selectedIdentifiers.swap(_owner->_selectedIdentifiers);
 		_owner->notifyDependents(ReferenceEvent::TargetChanged);
 	}
-	virtual void redo() override { undo(); }
 private:
 	OORef<ParticleSelectionSet> _owner;
 	QBitArray _selection;
@@ -59,7 +58,6 @@ public:
 		else
 			_owner->toggleParticleIdentifier(_particleId);
 	}
-	virtual void redo() override { undo(); }
 private:
 	OORef<ParticleSelectionSet> _owner;
 	int _particleId;

@@ -67,6 +67,7 @@ SET(OVITO_PARTICLES_SOURCE_FILES
 	importer/InputColumnMapping.cpp
 	importer/InputColumnMappingDialog.cpp
 	importer/lammps/LAMMPSTextDumpImporter.cpp
+	importer/lammps/LAMMPSBinaryDumpImporter.cpp
 	importer/lammps/LAMMPSDataImporter.cpp
 	importer/vasp/POSCARImporter.cpp
 	importer/xyz/XYZImporter.cpp

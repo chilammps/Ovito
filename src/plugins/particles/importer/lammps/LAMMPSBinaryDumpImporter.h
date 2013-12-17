@@ -19,8 +19,8 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef __OVITO_XYZ_IMPORTER_H
-#define __OVITO_XYZ_IMPORTER_H
+#ifndef __OVITO_LAMMPS_BINARY_DUMP_IMPORTER_H
+#define __OVITO_LAMMPS_BINARY_DUMP_IMPORTER_H
 
 #include <plugins/particles/Particles.h>
 #include <core/gui/properties/PropertiesEditor.h>
@@ -32,14 +32,14 @@ namespace Particles {
 using namespace Ovito;
 
 /**
- * \brief File parser for the text-based XYZ file format.
+ * \brief File parser for binary LAMMPS dump files.
  */
-class OVITO_PARTICLES_EXPORT XYZImporter : public ParticleImporter
+class OVITO_PARTICLES_EXPORT LAMMPSBinaryDumpImporter : public ParticleImporter
 {
 public:
 
 	/// \brief Constructs a new instance of this class.
-	Q_INVOKABLE XYZImporter(DataSet* dataset) : ParticleImporter(dataset) {}
+	Q_INVOKABLE LAMMPSBinaryDumpImporter(DataSet* dataset) : ParticleImporter(dataset) {}
 
 	/// \brief Returns the file filter that specifies the files that can be imported by this service.
 	/// \return A wild-card pattern that specifies the file types that can be handled by this import class.
@@ -47,13 +47,13 @@ public:
 
 	/// \brief Returns the filter description that is displayed in the drop-down box of the file dialog.
 	/// \return A string that describes the file format.
-	virtual QString fileFilterDescription() override { return tr("XYZ Files"); }
+	virtual QString fileFilterDescription() override { return tr("LAMMPS Binary Dump Files"); }
 
 	/// \brief Checks if the given file has format that can be read by this importer.
 	virtual bool checkFileFormat(QIODevice& input, const QUrl& sourceLocation) override;
 
 	/// Returns the title of this object.
-	virtual QString objectTitle() override { return tr("XYZ File"); }
+	virtual QString objectTitle() override { return tr("LAMMPS Dump File"); }
 
 	/// This method is called by the LinkedFileObject each time a new source
 	/// file has been selected by the user.
@@ -74,16 +74,16 @@ public:
 protected:
 
 	/// The format-specific task object that is responsible for reading an input file in the background.
-	class XYZImportTask : public ParticleImportTask
+	class LAMMPSBinaryDumpImportTask : public ParticleImportTask
 	{
 	public:
 
 		/// Normal constructor.
-		XYZImportTask(const LinkedFileImporter::FrameSourceInformation& frame, const InputColumnMapping& columnMapping)
+		LAMMPSBinaryDumpImportTask(const LinkedFileImporter::FrameSourceInformation& frame, const InputColumnMapping& columnMapping)
 			: ParticleImportTask(frame), _parseFileHeaderOnly(false), _columnMapping(columnMapping) {}
 
 		/// Constructor used when reading only the file header information.
-		XYZImportTask(const LinkedFileImporter::FrameSourceInformation& frame)
+		LAMMPSBinaryDumpImportTask(const LinkedFileImporter::FrameSourceInformation& frame)
 			: ParticleImportTask(frame), _parseFileHeaderOnly(true) {}
 
 		/// Returns the file column mapping used to load the file.
@@ -113,7 +113,7 @@ protected:
 
 	/// \brief Creates an import task object to read the given frame.
 	virtual ImportTaskPtr createImportTask(const FrameSourceInformation& frame) override {
-		return std::make_shared<XYZImportTask>(frame, _columnMapping);
+		return std::make_shared<LAMMPSBinaryDumpImportTask>(frame, _columnMapping);
 	}
 
 	/// \brief Scans the given input file to find all contained simulation frames.
@@ -130,14 +130,14 @@ private:
 };
 
 /**
- * \brief A properties editor for the XYZImporter class.
+ * \brief A properties editor for the LAMMPSBinaryDumpImporter class.
  */
-class XYZImporterEditor : public PropertiesEditor
+class LAMMPSBinaryDumpImporterEditor : public PropertiesEditor
 {
 public:
 
 	/// Constructor.
-	Q_INVOKABLE XYZImporterEditor() {}
+	Q_INVOKABLE LAMMPSBinaryDumpImporterEditor() {}
 
 protected:
 
@@ -158,4 +158,4 @@ private:
 
 };
 
-#endif // __OVITO_XYZ_IMPORTER_H
+#endif // __OVITO_LAMMPS_BINARY_DUMP_IMPORTER_H

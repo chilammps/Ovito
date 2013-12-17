@@ -161,7 +161,6 @@ bool LinkedFileObject::setSource(QUrl sourceUrl, const OORef<LinkedFileImporter>
 			_oldUrl = url;
 			_oldImporter = importer;
 		}
-		virtual void redo() override { undo(); }
 	private:
 		QUrl _oldUrl;
 		OORef<LinkedFileImporter> _oldImporter;
@@ -196,9 +195,9 @@ bool LinkedFileObject::setSource(QUrl sourceUrl, const OORef<LinkedFileImporter>
 
 		if(_adjustAnimationIntervalEnabled) {
 			// Adjust views to completely show the new object.
-			OORef<DataSet> ds(dataset());
+			QPointer<DataSet> ds(dataset());
 			ds->runWhenSceneIsReady([ds]() {
-				ds->viewportConfig()->zoomToSelectionExtents();
+				if(ds) ds->viewportConfig()->zoomToSelectionExtents();
 			});
 		}
 
@@ -445,7 +444,7 @@ void LinkedFileObject::adjustAnimationInterval(int gotoFrameIndex)
 	AnimationSettings* animSettings = dataset()->animationSettings();
 
 	int numFrames = std::max(1, numberOfFrames());
-	TimeInterval interval(inputFrameToAnimationTime(0), inputFrameToAnimationTime(numberOfFrames()-1));
+	TimeInterval interval(inputFrameToAnimationTime(0), inputFrameToAnimationTime(std::max(numberOfFrames()-1,0)));
 	animSettings->setAnimationInterval(interval);
 	if(gotoFrameIndex >= 0 && gotoFrameIndex < numberOfFrames()) {
 		animSettings->setTime(inputFrameToAnimationTime(gotoFrameIndex));

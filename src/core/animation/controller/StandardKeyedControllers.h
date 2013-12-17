@@ -51,9 +51,8 @@ protected:
 	typedef std::map<TimePoint, KeyType> KeyArray;
 	typedef typename KeyArray::iterator Key;
 	typedef typename KeyArray::const_iterator ConstKey;
-	typedef StandardKeyedController<BaseControllerClass, ValueType, KeyType, NullValue, KeyInterpolator> ThisClassType;
 
-	// This class stores the previous key values before the have been changed.
+	// This class stores the old key values of the controller so that they can be restored on undo.
 	class KeyChangeOperation : public UndoableOperation {
 	public:
 		KeyChangeOperation(StandardKeyedController* ctrl) : _controller(ctrl), _storedKeys(ctrl->_keys) {}
@@ -61,7 +60,6 @@ protected:
 			_storedKeys.swap(_controller->_keys);
 			_controller->notifyDependents(ReferenceEvent::TargetChanged);
 		}
-		virtual void redo() override { undo(); }
 	private:
 		OORef<StandardKeyedController> _controller;
 		KeyArray _storedKeys;
@@ -199,7 +197,8 @@ public:
 	/// \brief Creates a new key at the given time with the specified value.
 	/// \param time The animation where a key should be created.
 	/// \param value The absolute value of the new animation key.
-	/// Any existing key at that time is replaced with the new key.
+	///
+	/// If there is an existing key at that same animation time, it is replaced with the new key.
 	virtual void createKey(TimePoint time, const ValueType& value) override {
 		// Get existing key if there is one.
 		Key key = _keys.find(time);
@@ -255,7 +254,7 @@ protected:
 	/// Creates a copy of this object.
 	virtual OORef<RefTarget> clone(bool deepCopy, CloneHelper& cloneHelper) override {
 		// Let the base class create an instance of this class.
-		OORef<ThisClassType> clone = static_object_cast<ThisClassType>(BaseControllerClass::clone(deepCopy, cloneHelper));
+		OORef<StandardKeyedController> clone = static_object_cast<StandardKeyedController>(BaseControllerClass::clone(deepCopy, cloneHelper));
 		clone->_keys = this->_keys;
 		return clone;
 	}
@@ -290,7 +289,7 @@ protected:
 template<typename ValueType>
 struct LinearValueInterpolator {
 	ValueType operator()(FloatType t, const ValueType& value1, const ValueType& value2) const {
-		return (ValueType)(value1 + (t * (value2 - value1)));
+		return static_cast<ValueType>(value1 + (t * (value2 - value1)));
 	}
 };
 
@@ -330,10 +329,10 @@ struct LinearValueInterpolator<Scaling> {
 template<typename ValueType>
 struct SplineValueInterpolator {
 	ValueType operator()(FloatType t, const ValueType& value1, const ValueType& value2, const ValueType& outPoint1, const ValueType& inPoint2) const {
-		FloatType Ti = 1.0 - t;
-		FloatType U2 = t*t, T2 = Ti*Ti;
+		FloatType Ti = FloatType(1) - t;
+		FloatType U2 = t * t, T2 = Ti * Ti;
 		FloatType U3 = U2 * t, T3 = T2 * Ti;
-		return value1 * T3 + outPoint1 * (3.0 * t * T2) + inPoint2 * (3.0 * U2 * Ti) + value2 * U3;
+		return value1 * T3 + outPoint1 * (FloatType(3) * t * T2) + inPoint2 * (FloatType(3) * U2 * Ti) + value2 * U3;
 	}
 };
 

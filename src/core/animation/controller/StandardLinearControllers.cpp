@@ -26,11 +26,11 @@
 
 namespace Ovito {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LinearFloatController, FloatController)
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LinearIntegerController, IntegerController)
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LinearVectorController, VectorController)
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LinearPositionController, PositionController)
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LinearRotationController, RotationController)
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LinearScalingController, ScalingController)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LinearFloatController, FloatController);
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LinearIntegerController, IntegerController);
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LinearVectorController, VectorController);
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LinearPositionController, PositionController);
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LinearRotationController, RotationController);
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LinearScalingController, ScalingController);
 
 };

@@ -42,7 +42,7 @@ namespace Ovito {
  */
 template<typename ValueType>
 struct LinearKeyInterpolator {
-	ValueType operator()(const TimePoint& time,
+	ValueType operator()(TimePoint time,
 						 const std::pair<TimePoint, ValueType>& key1,
 						 const std::pair<TimePoint, ValueType>& key2) const {
 		OVITO_ASSERT(key2.first > key1.first);
