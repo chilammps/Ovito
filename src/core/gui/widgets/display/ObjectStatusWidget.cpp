@@ -73,7 +73,8 @@ void ObjectStatusWidget::setStatus(const ObjectStatus& status)
 QSize ObjectStatusWidget::minimumSizeHint() const
 {
 	int widgetHeight = widget()->minimumSizeHint().height();
-	if(widgetHeight < 20) widgetHeight *= 2;
+	if(widgetHeight < 20) widgetHeight = 40;
+	else if(widgetHeight < 30) widgetHeight *= 2;
 	return QSize(QScrollArea::minimumSizeHint().width(),
 			frameWidth()*2 + widgetHeight);
 }
@@ -84,7 +85,8 @@ QSize ObjectStatusWidget::minimumSizeHint() const
 QSize ObjectStatusWidget::sizeHint() const
 {
 	int widgetHeight = widget()->minimumSizeHint().height();
-	if(widgetHeight < 20) widgetHeight *= 2;
+	if(widgetHeight < 20) widgetHeight = 40;
+	else if(widgetHeight < 30) widgetHeight *= 2;
 	return QSize(QScrollArea::sizeHint().width(),
 			frameWidth()*2 + widgetHeight);
 }
