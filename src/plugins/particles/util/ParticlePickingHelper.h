@@ -84,10 +84,10 @@ protected:
 	void renderSelectionMarker(Viewport* vp, ViewportSceneRenderer* renderer, const PickResult& pickRecord);
 
 	/// Used to render the marker for a selected particle.
-	OORef<LineGeometryBuffer> _markerBuffer;
+	std::unique_ptr<LineGeometryBuffer> _markerBuffer;
 
 	/// Used to render the marker for a selected particle.
-	OORef<ParticleGeometryBuffer> _markerBuffer2;
+	std::unique_ptr<ParticleGeometryBuffer> _markerBuffer2;
 };
 
 };	// End of namespace

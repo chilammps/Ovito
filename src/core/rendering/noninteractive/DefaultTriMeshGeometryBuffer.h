@@ -57,7 +57,7 @@ public:
 	virtual bool isValid(SceneRenderer* renderer) override;
 
 	/// \brief Renders the geometry.
-	virtual void render(SceneRenderer* renderer, quint32 pickingBaseID) override;
+	virtual void render(SceneRenderer* renderer) override;
 
 	/// Returns a internal triangle mesh.
 	const TriMesh& mesh() const { return _mesh; }
@@ -72,9 +72,6 @@ private:
 
 	/// The rendering color to be used if the mesh doesn't have per-vertex colors.
 	ColorA _meshColor;
-
-	Q_OBJECT
-	OVITO_OBJECT
 };
 
 };

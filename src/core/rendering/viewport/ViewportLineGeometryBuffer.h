@@ -63,6 +63,14 @@ public:
 	/// \brief Renders the geometry.
 	virtual void render(SceneRenderer* renderer) override;
 
+protected:
+
+	/// Makes vertex IDs available to the shader.
+	void activateVertexIDs(ViewportSceneRenderer* renderer, QOpenGLShaderProgram* shader);
+
+	/// Disables vertex IDs.
+	void deactivateVertexIDs(ViewportSceneRenderer* renderer, QOpenGLShaderProgram* shader);
+
 private:
 
 	/// The internal OpenGL vertex buffer that stores the vertex positions.
@@ -71,17 +79,20 @@ private:
 	/// The internal OpenGL vertex buffer that stores the vertex colors.
 	QOpenGLBuffer _glColorsBuffer;
 
+	/// The internal OpenGL vertex buffer that stores the vertex indices.
+	QOpenGLBuffer _glIndexBuffer;
+
 	/// The GL context group under which the GL vertex buffer has been created.
 	QOpenGLContextGroup* _contextGroup;
 
 	/// The OpenGL shader program used to render the lines.
 	QOpenGLShaderProgram* _shader;
 
+	/// The OpenGL shader program used to render the lines in picking mode.
+	QOpenGLShaderProgram* _pickingShader;
+
 	/// The number of vertices stored in the buffer.
 	int _vertexCount;
-
-	Q_OBJECT
-	OVITO_OBJECT
 };
 
 };

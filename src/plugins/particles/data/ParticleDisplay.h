@@ -124,7 +124,7 @@ protected:
 	PropertyField<ParticleGeometryBuffer::ParticleShape, int> _particleShape;
 
 	/// The buffered particle geometry used to render the particles.
-	OORef<ParticleGeometryBuffer> _particleBuffer;
+	std::unique_ptr<ParticleGeometryBuffer> _particleBuffer;
 
 	/// This helper structure is used to detect any changes in the particle positions
 	/// that require updating the particle position buffer.

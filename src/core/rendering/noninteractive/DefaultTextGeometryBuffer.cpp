@@ -25,8 +25,6 @@
 
 namespace Ovito {
 
-IMPLEMENT_OVITO_OBJECT(Core, DefaultTextGeometryBuffer, TextGeometryBuffer);
-
 /******************************************************************************
 * Returns true if the buffer is filled and can be rendered with the given renderer.
 ******************************************************************************/

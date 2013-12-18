@@ -146,7 +146,7 @@ void CFGHeader::parse(CompressedTextParserStream& stream)
 		}
 	}
 	if(numParticles < 0)
-		throw Exception(CFGImporter::tr("Invalid CFG file header."));
+		throw Exception(CFGImporter::tr("Invalid file header. This is not a valid CFG file."));
 }
 
 /******************************************************************************

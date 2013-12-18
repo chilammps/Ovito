@@ -158,6 +158,7 @@ SET(OVITO_CORE_SOURCE_FILES
 	viewport/input/ViewportInputManager.cpp
 	viewport/input/ViewportInputMode.cpp
 	viewport/input/NavigationModes.cpp
+	viewport/input/XFormModes.cpp
 	viewport/picking/PickingSceneRenderer.cpp
 )
 

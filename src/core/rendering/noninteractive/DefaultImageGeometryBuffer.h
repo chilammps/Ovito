@@ -51,10 +51,6 @@ public:
 	/// \brief Renders the image in a rectangle given in viewport coordinates.
 	virtual void renderViewport(SceneRenderer* renderer, const Point2& pos, const Vector2& size) override;
 
-private:
-
-	Q_OBJECT
-	OVITO_OBJECT
 };
 
 };

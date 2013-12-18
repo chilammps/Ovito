@@ -25,8 +25,6 @@
 
 namespace Ovito {
 
-IMPLEMENT_OVITO_OBJECT(Core, DefaultTriMeshGeometryBuffer, TriMeshGeometryBuffer);
-
 /******************************************************************************
 * Returns true if the geometry buffer is filled and can be rendered with the given renderer.
 ******************************************************************************/
@@ -39,7 +37,7 @@ bool DefaultTriMeshGeometryBuffer::isValid(SceneRenderer* renderer)
 /******************************************************************************
 * Renders the geometry.
 ******************************************************************************/
-void DefaultTriMeshGeometryBuffer::render(SceneRenderer* renderer, quint32 pickingBaseID)
+void DefaultTriMeshGeometryBuffer::render(SceneRenderer* renderer)
 {
 	NonInteractiveSceneRenderer* niRenderer = dynamic_object_cast<NonInteractiveSceneRenderer>(renderer);
 	if(_mesh.faceCount() <= 0 || !niRenderer || renderer->isPicking())

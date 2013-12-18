@@ -28,16 +28,18 @@
 #define __OVITO_LINE_GEOMETRY_BUFFER_H
 
 #include <core/Core.h>
-#include <core/object/OvitoObject.h>
 
 namespace Ovito {
 
 /**
  * \brief Abstract base class for buffer objects that store line geometry.
  */
-class OVITO_CORE_EXPORT LineGeometryBuffer : public OvitoObject
+class OVITO_CORE_EXPORT LineGeometryBuffer
 {
 public:
+
+	/// \brief Virtual base constructor.
+	virtual ~LineGeometryBuffer() {}
 
 	/// \brief Allocates a geometry buffer with the given number of vertices.
 	virtual void setSize(int vertexCount) = 0;
@@ -59,11 +61,6 @@ public:
 
 	/// \brief Renders the geometry.
 	virtual void render(SceneRenderer* renderer) = 0;
-
-private:
-
-	Q_OBJECT
-	OVITO_OBJECT
 };
 
 };

@@ -78,7 +78,7 @@ public:
 	virtual bool isValid(SceneRenderer* renderer) override;
 
 	/// \brief Renders the geometry.
-	virtual void render(SceneRenderer* renderer, quint32 pickingBaseID = 0) override;
+	virtual void render(SceneRenderer* renderer) override;
 
 	/// \brief Changes the shading mode for particles.
 	virtual bool setShadingMode(ShadingMode mode) override { return (mode == shadingMode()); }
@@ -109,7 +109,7 @@ protected:
 
 	/// Binds the vertex buffer containing the particle colors to the corresponding
 	/// shader input attribute.
-	void bindParticleColorBuffer(ViewportSceneRenderer* renderer, QOpenGLShaderProgram* shader, quint32 pickingBaseID);
+	void bindParticleColorBuffer(ViewportSceneRenderer* renderer, QOpenGLShaderProgram* shader);
 
 	/// Binds the vertex buffer containing the particle radii to the corresponding
 	/// shader input attribute.
@@ -134,10 +134,10 @@ protected:
 	void deactivateVertexIDs(ViewportSceneRenderer* renderer, QOpenGLShaderProgram* shader);
 
 	/// Renders the particles using OpenGL point sprites.
-	void renderPointSprites(ViewportSceneRenderer* renderer, quint32 pickingBaseID);
+	void renderPointSprites(ViewportSceneRenderer* renderer);
 
 	/// Renders a cube for each particle using triangle strips.
-	void renderCubes(ViewportSceneRenderer* renderer, quint32 pickingBaseID);
+	void renderCubes(ViewportSceneRenderer* renderer);
 
 	/// Returns true if the OpenGL implementation supports geometry shaders.
 	bool hasGeometryShaders() const { return _raytracedSphereShader != nullptr; }
@@ -191,9 +191,6 @@ private:
 	QPointer<QOpenGLShaderProgram> _imposterPickingShaderWithDepth;
 	QPointer<QOpenGLShaderProgram> _raytracedPickingSphereShader;
 	QPointer<QOpenGLShaderProgram> _imposterSquarePickingShaderWithoutDepth;
-
-	Q_OBJECT
-	OVITO_OBJECT
 };
 
 };

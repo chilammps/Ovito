@@ -164,7 +164,7 @@ Q_SIGNALS:
 	void statusChanged(bool isActive);
 
 	/// \brief This signal is emitted when the current curser of this mode has changed.
-	void curserChanged();
+	void curserChanged(const QCursor& cursor);
 
 protected:
 

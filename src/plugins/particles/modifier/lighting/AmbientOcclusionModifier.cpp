@@ -103,7 +103,7 @@ void AmbientOcclusionModifier::AmbientOcclusionEngine::compute(FutureInterfaceBa
 		OVITO_ASSERT(!_boundingBox.isEmpty());
 
 		// The buffered particle geometry used to render the particles.
-		OORef<ParticleGeometryBuffer> particleBuffer;
+		std::unique_ptr<ParticleGeometryBuffer> particleBuffer;
 
 		futureInterface.setProgressRange(_samplingCount);
 		for(int sample = 0; sample < _samplingCount && !futureInterface.isCanceled(); sample++) {
@@ -145,7 +145,7 @@ void AmbientOcclusionModifier::AmbientOcclusionEngine::compute(FutureInterfaceBa
 					particleBuffer->setParticlePositions(positions()->constDataPoint3());
 					particleBuffer->setParticleRadii(_particleRadii.data());
 				}
-				particleBuffer->render(renderer.get(), 1);
+				particleBuffer->render(renderer.get());
 			}
 			catch(...) {
 				renderer->endFrame();

@@ -116,10 +116,10 @@ protected:
 	ReferenceField<FloatController> _capTransparency;
 
 	/// The buffered geometry used to render the surface mesh.
-	OORef<TriMeshGeometryBuffer> _surfaceBuffer;
+	std::unique_ptr<TriMeshGeometryBuffer> _surfaceBuffer;
 
 	/// The buffered geometry used to render the surface cap.
-	OORef<TriMeshGeometryBuffer> _capBuffer;
+	std::unique_ptr<TriMeshGeometryBuffer> _capBuffer;
 
 	/// This helper structure is used to detect any changes in the input data
 	/// that require updating the geometry buffer.

@@ -60,39 +60,39 @@ public:
 	const AffineTransformation& modelTM() const { return _modelTM; }
 
 	/// Requests a new line geometry buffer from the renderer.
-	virtual OORef<LineGeometryBuffer> createLineGeometryBuffer() override {
-		return new DefaultLineGeometryBuffer();
+	virtual std::unique_ptr<LineGeometryBuffer> createLineGeometryBuffer() override {
+		return std::unique_ptr<LineGeometryBuffer>{ new DefaultLineGeometryBuffer() };
 	}
 
 	/// Requests a new particle geometry buffer from the renderer.
-	virtual OORef<ParticleGeometryBuffer> createParticleGeometryBuffer(
+	virtual std::unique_ptr<ParticleGeometryBuffer> createParticleGeometryBuffer(
 			ParticleGeometryBuffer::ShadingMode shadingMode,
 			ParticleGeometryBuffer::RenderingQuality renderingQuality,
 			ParticleGeometryBuffer::ParticleShape shape) override {
-		return new DefaultParticleGeometryBuffer(shadingMode, renderingQuality, shape);
+		return std::unique_ptr<ParticleGeometryBuffer>{ new DefaultParticleGeometryBuffer(shadingMode, renderingQuality, shape) };
 	}
 
 	/// Requests a new text geometry buffer from the renderer.
-	virtual OORef<TextGeometryBuffer> createTextGeometryBuffer() override {
-		return new DefaultTextGeometryBuffer();
+	virtual std::unique_ptr<TextGeometryBuffer> createTextGeometryBuffer() override {
+		return std::unique_ptr<TextGeometryBuffer>{ new DefaultTextGeometryBuffer() };
 	}
 
 	/// Requests a new image geometry buffer from the renderer.
-	virtual OORef<ImageGeometryBuffer> createImageGeometryBuffer() override {
-		return new DefaultImageGeometryBuffer();
+	virtual std::unique_ptr<ImageGeometryBuffer> createImageGeometryBuffer() override {
+		return std::unique_ptr<ImageGeometryBuffer>{ new DefaultImageGeometryBuffer() };
 	}
 
 	/// Requests a new arrow geometry buffer from the renderer.
-	virtual OORef<ArrowGeometryBuffer> createArrowGeometryBuffer(
+	virtual std::unique_ptr<ArrowGeometryBuffer> createArrowGeometryBuffer(
 			ArrowGeometryBuffer::Shape shape,
 			ArrowGeometryBuffer::ShadingMode shadingMode,
 			ArrowGeometryBuffer::RenderingQuality renderingQuality) override {
-		return new DefaultArrowGeometryBuffer(shape, shadingMode, renderingQuality);
+		return std::unique_ptr<ArrowGeometryBuffer>{ new DefaultArrowGeometryBuffer(shape, shadingMode, renderingQuality) };
 	}
 
 	/// Requests a new triangle mesh buffer from the renderer.
-	virtual OORef<TriMeshGeometryBuffer> createTriMeshGeometryBuffer() override {
-		return new DefaultTriMeshGeometryBuffer();
+	virtual std::unique_ptr<TriMeshGeometryBuffer> createTriMeshGeometryBuffer() override {
+		return std::unique_ptr<TriMeshGeometryBuffer>{ new DefaultTriMeshGeometryBuffer() };
 	}
 
 	/// Renders the line geometry stored in the given buffer.

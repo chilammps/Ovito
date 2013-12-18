@@ -58,7 +58,7 @@ public:
 protected:
 
 	/// The buffered geometry used to render the icon.
-	OORef<LineGeometryBuffer> _buffer;
+	std::unique_ptr<LineGeometryBuffer> _buffer;
 
 	/// This helper structure is used to detect any changes in the input data
 	/// that require updating the geometry buffer.

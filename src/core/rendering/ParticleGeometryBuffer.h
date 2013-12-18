@@ -28,14 +28,13 @@
 #define __OVITO_PARTICLE_GEOMETRY_BUFFER_H
 
 #include <core/Core.h>
-#include <core/object/OvitoObject.h>
 
 namespace Ovito {
 
 /**
  * \brief Abstract base class for buffer objects that store point-like particles.
  */
-class OVITO_CORE_EXPORT ParticleGeometryBuffer : public OvitoObject
+class OVITO_CORE_EXPORT ParticleGeometryBuffer
 {
 public:
 
@@ -64,6 +63,9 @@ public:
 	/// Constructor.
 	ParticleGeometryBuffer(ShadingMode shadingMode, RenderingQuality renderingQuality, ParticleShape shape = SphericalShape)
 		: _shadingMode(shadingMode), _renderingQuality(renderingQuality), _particleShape(shape) {}
+
+	/// \brief Virtual base constructor.
+	virtual ~ParticleGeometryBuffer() {}
 
 	/// \brief Allocates a geometry buffer with the given number of particles.
 	virtual void setSize(int particleCount) = 0;
@@ -96,7 +98,7 @@ public:
 	virtual bool isValid(SceneRenderer* renderer) = 0;
 
 	/// \brief Renders the geometry.
-	virtual void render(SceneRenderer* renderer, quint32 pickingBaseID = 0) = 0;
+	virtual void render(SceneRenderer* renderer) = 0;
 
 	/// \brief Returns the shading mode for particles.
 	ShadingMode shadingMode() const { return _shadingMode; }
@@ -129,9 +131,6 @@ private:
 
 	/// Controls the shape of particles.
 	ParticleShape _particleShape;
-
-	Q_OBJECT
-	OVITO_OBJECT
 };
 
 };

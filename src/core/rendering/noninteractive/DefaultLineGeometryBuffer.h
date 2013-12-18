@@ -87,8 +87,6 @@ private:
 	/// The buffer that stores the vertex colors.
 	std::vector<ColorA> _colorsBuffer;
 
-	Q_OBJECT
-	OVITO_OBJECT
 };
 
 };

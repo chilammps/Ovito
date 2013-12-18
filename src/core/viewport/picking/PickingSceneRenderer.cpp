@@ -119,11 +119,12 @@ void PickingSceneRenderer::endFrame()
 void PickingSceneRenderer::reset()
 {
 	_objects.clear();
+	endPickObject();
 #if 1
-	_currentObjectID = 1;
+	_currentObject.baseObjectID = 1;
 #else
 	// This can be enabled during debugging to avoid alpha!=1 pixels in the picking render buffer.
-	_currentObjectID = 0xEF000000;
+	_currentObject.baseObjectID = 0xEF000000;
 #endif
 	_image = QImage();
 }
@@ -131,15 +132,38 @@ void PickingSceneRenderer::reset()
 /******************************************************************************
 * When picking mode is active, this registers an object being rendered.
 ******************************************************************************/
-quint32 PickingSceneRenderer::registerPickObject(ObjectNode* objNode, SceneObject* sceneObj, DisplayObject* displayObj, quint32 subObjectCount)
+quint32 PickingSceneRenderer::beginPickObject(ObjectNode* objNode, SceneObject* sceneObj, DisplayObject* displayObj)
 {
-	OVITO_ASSERT(subObjectCount >= 0);
+	OVITO_ASSERT(objNode != nullptr);
+	OVITO_ASSERT(isPicking());
 
-	quint32 objId = _currentObjectID;
-	ObjectRecord record = { objId, objNode, sceneObj, displayObj };
-	_objects.push_back(std::move(record));
-	_currentObjectID += subObjectCount + 1;
-	return objId;
+	_currentObject.objectNode = objNode;
+	_currentObject.sceneObject = sceneObj;
+	_currentObject.displayObject = displayObj;
+	return _currentObject.baseObjectID;
+}
+
+/******************************************************************************
+* Registers a range of sub-IDs belonging to the current object being rendered.
+******************************************************************************/
+quint32 PickingSceneRenderer::registerSubObjectIDs(quint32 subObjectCount)
+{
+	OVITO_ASSERT_MSG(_currentObject.objectNode, "PickingSceneRenderer::registerSubObjectIDs()", "You forgot to register the current object via beginPickObject().");
+
+	quint32 baseObjectID = _currentObject.baseObjectID;
+	_objects.push_back(_currentObject);
+	_currentObject.baseObjectID += subObjectCount;
+	return baseObjectID;
+}
+
+/******************************************************************************
+* Call this when rendering of a pickable object is finished.
+******************************************************************************/
+void PickingSceneRenderer::endPickObject()
+{
+	_currentObject.objectNode = nullptr;
+	_currentObject.sceneObject = nullptr;
+	_currentObject.displayObject = nullptr;
 }
 
 /******************************************************************************

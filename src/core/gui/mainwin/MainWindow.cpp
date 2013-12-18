@@ -255,6 +255,14 @@ void MainWindow::createMainToolbar()
 	_mainToolbar->addAction(actionManager()->getAction(ACTION_EDIT_UNDO));
 	_mainToolbar->addAction(actionManager()->getAction(ACTION_EDIT_REDO));
 
+#if 0
+	_mainToolbar->addSeparator();
+
+	_mainToolbar->addAction(actionManager()->getAction(ACTION_SELECTION_MODE));
+	_mainToolbar->addAction(actionManager()->getAction(ACTION_XFORM_MOVE_MODE));
+	_mainToolbar->addAction(actionManager()->getAction(ACTION_XFORM_ROTATE_MODE));
+#endif
+
 	_mainToolbar->addSeparator();
 
 	_mainToolbar->addAction(actionManager()->getAction(ACTION_RENDER_ACTIVE_VIEWPORT));

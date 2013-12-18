@@ -53,7 +53,7 @@ public:
 	virtual bool isValid(SceneRenderer* renderer) override;
 
 	/// \brief Renders the geometry.
-	virtual void render(SceneRenderer* renderer, quint32 pickingBaseID) override;
+	virtual void render(SceneRenderer* renderer) override;
 
 protected:
 
@@ -89,9 +89,6 @@ private:
 
 	/// The OpenGL shader program used to render the triangles in picking mode.
 	QOpenGLShaderProgram* _pickingShader;
-
-	Q_OBJECT
-	OVITO_OBJECT
 };
 
 };

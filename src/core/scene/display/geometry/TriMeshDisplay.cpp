@@ -85,12 +85,9 @@ void TriMeshDisplay::render(TimePoint time, SceneObject* sceneObject, const Pipe
 			_buffer->setMesh(TriMesh(), ColorA(1,1,1,1));
 	}
 
-	// Handle picking of triangles.
-	quint32 pickingBaseID = 0;
-	if(renderer->isPicking())
-		pickingBaseID = renderer->registerPickObject(contextNode, sceneObject, this, _buffer->faceCount());
-
-	_buffer->render(renderer, pickingBaseID);
+	renderer->beginPickObject(contextNode, sceneObject, this);
+	_buffer->render(renderer);
+	renderer->endPickObject();
 }
 
 /******************************************************************************

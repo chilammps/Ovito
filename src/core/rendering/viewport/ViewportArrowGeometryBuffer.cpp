@@ -25,8 +25,6 @@
 
 namespace Ovito {
 
-IMPLEMENT_OVITO_OBJECT(Core, ViewportArrowGeometryBuffer, ArrowGeometryBuffer);
-
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
@@ -473,7 +471,7 @@ bool ViewportArrowGeometryBuffer::isValid(SceneRenderer* renderer)
 /******************************************************************************
 * Renders the geometry.
 ******************************************************************************/
-void ViewportArrowGeometryBuffer::render(SceneRenderer* renderer, quint32 pickingBaseID)
+void ViewportArrowGeometryBuffer::render(SceneRenderer* renderer)
 {
 	OVITO_CHECK_OPENGL();
 	OVITO_ASSERT(_glGeometryBuffer.isCreated());
@@ -488,12 +486,12 @@ void ViewportArrowGeometryBuffer::render(SceneRenderer* renderer, quint32 pickin
 
 	if(shadingMode() == NormalShading) {
 		if(renderingQuality() == HighQuality && shape() == CylinderShape)
-			renderRaytracedCylinders(vpRenderer, pickingBaseID);
+			renderRaytracedCylinders(vpRenderer);
 		else
-			renderShadedTriangles(vpRenderer, pickingBaseID);
+			renderShadedTriangles(vpRenderer);
 	}
 	else if(shadingMode() == FlatShading) {
-		renderFlat(vpRenderer, pickingBaseID);
+		renderFlat(vpRenderer);
 	}
 	OVITO_CHECK_OPENGL();
 }
@@ -501,7 +499,7 @@ void ViewportArrowGeometryBuffer::render(SceneRenderer* renderer, quint32 pickin
 /******************************************************************************
 * Renders the arrows in shaded mode.
 ******************************************************************************/
-void ViewportArrowGeometryBuffer::renderShadedTriangles(ViewportSceneRenderer* renderer, quint32 pickingBaseID)
+void ViewportArrowGeometryBuffer::renderShadedTriangles(ViewportSceneRenderer* renderer)
 {
 	QOpenGLShaderProgram* shader;
 	if(!renderer->isPicking())
@@ -519,7 +517,7 @@ void ViewportArrowGeometryBuffer::renderShadedTriangles(ViewportSceneRenderer* r
 	if(!renderer->isPicking())
 		shader->setUniformValue("normal_matrix", (QMatrix3x3)(renderer->modelViewTM().linear().inverse().transposed()));
 	else
-		shader->setUniformValue("pickingBaseID", (GLint)pickingBaseID);
+		shader->setUniformValue("pickingBaseID", (GLint)renderer->registerSubObjectIDs(elementCount()));
 
 	_glGeometryBuffer.bind();
 	if(renderer->glformat().majorVersion() < 3) {
@@ -570,7 +568,7 @@ void ViewportArrowGeometryBuffer::renderShadedTriangles(ViewportSceneRenderer* r
 /******************************************************************************
 * Renders the cylinder elements in using a raytracing hardware shader.
 ******************************************************************************/
-void ViewportArrowGeometryBuffer::renderRaytracedCylinders(ViewportSceneRenderer* renderer, quint32 pickingBaseID)
+void ViewportArrowGeometryBuffer::renderRaytracedCylinders(ViewportSceneRenderer* renderer)
 {
 	QOpenGLShaderProgram* shader;
 	if(!renderer->isPicking())
@@ -592,7 +590,7 @@ void ViewportArrowGeometryBuffer::renderRaytracedCylinders(ViewportSceneRenderer
 	shader->setUniformValue("inverse_projection_matrix", (QMatrix4x4)renderer->projParams().inverseProjectionMatrix);
 	shader->setUniformValue("is_perspective", renderer->projParams().isPerspective);
 	if(renderer->isPicking()) {
-		OVITO_CHECK_OPENGL(shader->setUniformValue("pickingBaseID", (GLint)pickingBaseID));
+		OVITO_CHECK_OPENGL(shader->setUniformValue("pickingBaseID", (GLint)renderer->registerSubObjectIDs(elementCount())));
 		OVITO_CHECK_OPENGL(shader->setUniformValue("verticesPerElement", (GLint)_verticesPerElement));
 	}
 
@@ -642,7 +640,7 @@ void ViewportArrowGeometryBuffer::renderRaytracedCylinders(ViewportSceneRenderer
 /******************************************************************************
 * Renders the arrows in flat mode.
 ******************************************************************************/
-void ViewportArrowGeometryBuffer::renderFlat(ViewportSceneRenderer* renderer, quint32 pickingBaseID)
+void ViewportArrowGeometryBuffer::renderFlat(ViewportSceneRenderer* renderer)
 {
 	QOpenGLShaderProgram* shader;
 	if(!renderer->isPicking())
@@ -663,7 +661,7 @@ void ViewportArrowGeometryBuffer::renderFlat(ViewportSceneRenderer* renderer, qu
 	shader->setUniformValue("parallel_view_dir", viewDir.x(), viewDir.y(), viewDir.z());
 
 	if(renderer->isPicking()) {
-		OVITO_CHECK_OPENGL(shader->setUniformValue("pickingBaseID", (GLint)pickingBaseID));
+		OVITO_CHECK_OPENGL(shader->setUniformValue("pickingBaseID", (GLint)renderer->registerSubObjectIDs(elementCount())));
 		OVITO_CHECK_OPENGL(shader->setUniformValue("verticesPerElement", (GLint)_verticesPerElement));
 	}
 

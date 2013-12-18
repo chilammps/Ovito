@@ -28,16 +28,18 @@
 #define __OVITO_TRIMESH_GEOMETRY_BUFFER_H
 
 #include <core/Core.h>
-#include <core/object/OvitoObject.h>
 
 namespace Ovito {
 
 /**
  * \brief Abstract base class for scene render buffers that store triangle meshes.
  */
-class OVITO_CORE_EXPORT TriMeshGeometryBuffer : public OvitoObject
+class OVITO_CORE_EXPORT TriMeshGeometryBuffer
 {
 public:
+
+	/// \brief Virtual base constructor.
+	virtual ~TriMeshGeometryBuffer() {}
 
 	/// Sets the mesh to be stored in this buffer object.
 	virtual void setMesh(const TriMesh& mesh, const ColorA& meshColor) = 0;
@@ -49,12 +51,7 @@ public:
 	virtual bool isValid(SceneRenderer* renderer) = 0;
 
 	/// \brief Renders the geometry.
-	virtual void render(SceneRenderer* renderer, quint32 pickingBaseID = 0) = 0;
-
-private:
-
-	Q_OBJECT
-	OVITO_OBJECT
+	virtual void render(SceneRenderer* renderer) = 0;
 };
 
 };

@@ -119,7 +119,7 @@ protected:
 	PropertyField<ArrowGeometryBuffer::RenderingQuality, int> _renderingQuality;
 
 	/// The buffered geometry used to render the bonds.
-	OORef<ArrowGeometryBuffer> _buffer;
+	std::unique_ptr<ArrowGeometryBuffer> _buffer;
 
 	/// This helper structure is used to detect any changes in the input data
 	/// that require updating the geometry buffer.

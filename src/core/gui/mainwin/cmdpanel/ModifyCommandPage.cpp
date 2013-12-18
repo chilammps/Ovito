@@ -164,6 +164,8 @@ void ModifyCommandPage::updateActions(ModificationListItem* currentItem)
 	QAction* moveModifierDownAction = _actionManager->getAction(ACTION_MODIFIER_MOVE_DOWN);
 	QAction* toggleModifierStateAction = _actionManager->getAction(ACTION_MODIFIER_TOGGLE_STATE);
 
+	_modifierSelector->setEnabled(currentItem != nullptr);
+
 	Modifier* modifier = currentItem ? dynamic_object_cast<Modifier>(currentItem->object()) : nullptr;
 	if(modifier) {
 		deleteModifierAction->setEnabled(true);

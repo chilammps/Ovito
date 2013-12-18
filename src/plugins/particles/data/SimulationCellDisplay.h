@@ -116,17 +116,17 @@ protected:
 	PropertyField<Color, QColor> _simulationCellColor;
 
 	/// The geometry buffer used to render the simulation cell in wireframe mode.
-	OORef<LineGeometryBuffer> _wireframeGeometry;
+	std::unique_ptr<LineGeometryBuffer> _wireframeGeometry;
 
 	/// This helper structure is used to detect any changes in the input simulation cell
 	/// that require updating the display geometry buffer for wireframe rendering.
 	SceneObjectCacheHelper<QPointer<SimulationCell>, unsigned int, ColorA> _wireframeGeometryCacheHelper;
 
 	/// The geometry buffer used to render the edges of the cell.
-	OORef<ArrowGeometryBuffer> _edgeGeometry;
+	std::unique_ptr<ArrowGeometryBuffer> _edgeGeometry;
 
 	/// The geometry buffer used to render the corners of the cell.
-	OORef<ParticleGeometryBuffer> _cornerGeometry;
+	std::unique_ptr<ParticleGeometryBuffer> _cornerGeometry;
 
 	/// This helper structure is used to detect any changes in the input simulation cell
 	/// that require updating the display geometry buffer for solid rendering mode.

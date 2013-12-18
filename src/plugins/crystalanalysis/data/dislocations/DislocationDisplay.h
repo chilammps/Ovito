@@ -90,10 +90,10 @@ protected:
 protected:
 
 	/// The geometry buffer used to render the dislocation segments.
-	OORef<ArrowGeometryBuffer> _segmentBuffer;
+	std::unique_ptr<ArrowGeometryBuffer> _segmentBuffer;
 
 	/// The geometry buffer used to render the segment corners.
-	OORef<ParticleGeometryBuffer> _cornerBuffer;
+	std::unique_ptr<ParticleGeometryBuffer> _cornerBuffer;
 
 	/// This helper structure is used to detect any changes in the input data
 	/// that require updating the geometry buffers.

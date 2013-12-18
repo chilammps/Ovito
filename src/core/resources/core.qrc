@@ -15,6 +15,10 @@
 	<file>actions/edit/edit_redo.png</file>
 	<file>actions/edit/edit_clear.png</file>
 	<file>actions/edit/edit_delete.png</file>
+	<file>actions/edit/mode_select.png</file>
+	<file>actions/edit/mode_move.png</file>
+	<file>actions/edit/mode_rotate.png</file>
+	<file>actions/edit/mode_scale.png</file>
 	
 	<file>actions/file/file_new.png</file>
 	<file>actions/file/file_open.png</file>
@@ -135,8 +139,10 @@
 	<file>glsl/mesh/picking/mesh.fs</file>
 	<file>glsl/mesh/picking/mesh.vs</file>
 
-	<file>glsl/line.vertex.glsl</file>
-	<file>glsl/line.fragment.glsl</file>
+	<file>glsl/lines/line.vs</file>
+	<file>glsl/lines/line.fs</file>
+	<file>glsl/lines/picking/line.vs</file>
+	<file>glsl/lines/picking/line.fs</file>
 	<file>glsl/text.vertex.glsl</file>
 	<file>glsl/text.fragment.glsl</file>
 	<file>glsl/image.vertex.glsl</file>

@@ -27,8 +27,6 @@
 
 namespace Ovito {
 
-IMPLEMENT_OVITO_OBJECT(Core, ViewportImageGeometryBuffer, ImageGeometryBuffer);
-
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
@@ -44,10 +42,10 @@ ViewportImageGeometryBuffer::ViewportImageGeometryBuffer(ViewportSceneRenderer* 
 
 	// Create vertex buffer
 	if(!_vertexBuffer.create())
-		throw Exception(tr("Failed to create OpenGL vertex buffer."));
+		throw Exception(QStringLiteral("Failed to create OpenGL vertex buffer."));
 	_vertexBuffer.setUsagePattern(QOpenGLBuffer::DynamicDraw);
 	if(!_vertexBuffer.bind())
-			throw Exception(tr("Failed to bind OpenGL vertex buffer."));
+		throw Exception(QStringLiteral("Failed to bind OpenGL vertex buffer."));
 	_vertexBuffer.allocate(4 * sizeof(Point2));
 	_vertexBuffer.release();
 
@@ -161,11 +159,11 @@ void ViewportImageGeometryBuffer::renderWindow(SceneRenderer* renderer, const Po
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	if(!_shader->bind())
-		throw Exception(tr("Failed to bind OpenGL shader."));
+		throw Exception(QStringLiteral("Failed to bind OpenGL shader."));
 
 	if(vpRenderer->glformat().majorVersion() >= 3) {
 		if(!_vertexBuffer.bind())
-				throw Exception(tr("Failed to bind OpenGL vertex buffer."));
+				throw Exception(QStringLiteral("Failed to bind OpenGL vertex buffer."));
 
 		// Set up look-up table for texture coordinates.
 		const GLfloat uvcoords[] { 0,0,  1,0,  0,1,  1,1 };

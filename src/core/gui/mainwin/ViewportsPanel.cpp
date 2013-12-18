@@ -22,6 +22,8 @@
 #include <core/Core.h>
 #include <core/viewport/ViewportSettings.h>
 #include <core/viewport/ViewportConfiguration.h>
+#include <core/viewport/input/ViewportInputMode.h>
+#include <core/viewport/input/ViewportInputManager.h>
 #include <core/animation/AnimationSettings.h>
 #include <core/dataset/DataSet.h>
 #include <core/dataset/DataSetContainer.h>
@@ -38,6 +40,9 @@ ViewportsPanel::ViewportsPanel(MainWindow* parent) : QWidget(parent)
 	// Activate the new viewport layout as soon as a new scene file is loaded.
 	connect(&parent->datasetContainer(), &DataSetContainer::viewportConfigReplaced, this, &ViewportsPanel::onViewportConfigurationReplaced);
 	connect(&parent->datasetContainer(), &DataSetContainer::animationSettingsReplaced, this, &ViewportsPanel::onAnimationSettingsReplaced);
+
+	// Track viewport input changes.
+	connect(parent->viewportInputManager(), &ViewportInputManager::inputModeChanged, this, &ViewportsPanel::onInputModeChanged);
 }
 
 /******************************************************************************
@@ -84,6 +89,30 @@ void ViewportsPanel::onAnimationSettingsReplaced(AnimationSettings* newAnimation
 	if(newAnimationSettings) {
 		_autoKeyModeChangedConnection = connect(newAnimationSettings, &AnimationSettings::autoKeyModeChanged, this, (void (ViewportsPanel::*)())&ViewportsPanel::update);
 		_timeChangeCompleteConnection = connect(newAnimationSettings, &AnimationSettings::timeChangeComplete, this, (void (ViewportsPanel::*)())&ViewportsPanel::update);
+	}
+}
+
+/******************************************************************************
+* This is called when the current viewport input mode has changed.
+******************************************************************************/
+void ViewportsPanel::onInputModeChanged(ViewportInputMode* oldMode, ViewportInputMode* newMode)
+{
+	disconnect(_activeModeCursorChangedConnection);
+	if(newMode) {
+		_activeModeCursorChangedConnection = connect(newMode, &ViewportInputMode::curserChanged, this, &ViewportsPanel::viewportModeCursorChanged);
+		viewportModeCursorChanged(newMode->cursor());
+	}
+	else viewportModeCursorChanged(cursor());
+}
+
+/******************************************************************************
+* This is called when the mouse cursor of the active input mode has changed.
+******************************************************************************/
+void ViewportsPanel::viewportModeCursorChanged(const QCursor& cursor)
+{
+	if(_viewportConfig) {
+		for(Viewport* vp : _viewportConfig->viewports())
+			vp->setCursor(cursor);
 	}
 }
 

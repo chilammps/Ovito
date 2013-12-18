@@ -110,9 +110,6 @@ private:
 
 	/// Indicates that the texture needs to be updated.
 	bool _needTextureUpdate;
-
-	Q_OBJECT
-	OVITO_OBJECT
 };
 
 };

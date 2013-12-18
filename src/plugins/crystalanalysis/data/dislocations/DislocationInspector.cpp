@@ -403,7 +403,7 @@ void DislocationPickMode::renderOverlay3D(Viewport* vp, ViewportSceneRenderer* r
 	_hoverSegment.displayObj->renderOverlayMarker(vp->dataset()->animationSettings()->time(), dislocationObj, flowState, _hoverSegment.segmentIndex, renderer, _hoverSegment.objNode.get());
 
 	// Render Burgers vector next to the mouse cursor.
-	OORef<TextGeometryBuffer> textBuffer = renderer->createTextGeometryBuffer();
+	std::unique_ptr<TextGeometryBuffer> textBuffer = renderer->createTextGeometryBuffer();
 	QFont font(vp->widget()->font());
 	font.setPointSize(font.pointSize() * 3 / 2);
 	textBuffer->setFont(font);

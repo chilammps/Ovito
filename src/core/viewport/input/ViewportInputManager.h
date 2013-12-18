@@ -30,6 +30,7 @@
 #include <core/Core.h>
 #include "ViewportInputMode.h"
 #include "NavigationModes.h"
+#include "XFormModes.h"
 
 namespace Ovito {
 
@@ -80,6 +81,15 @@ public:
 	/// \brief Returns the pick orbit center input mode.
 	PickOrbitCenterMode* pickOrbitCenterMode() const { return _pickOrbitCenterMode; }
 
+	/// \brief Returns the scene node selection mode.
+	SelectionMode* selectionMode() const { return _selectionMode; }
+
+	/// \brief Returns the scene node translation mode.
+	MoveMode* moveMode() const { return _moveMode; }
+
+	/// \brief Returns the scene node rotation mode.
+	RotateMode* rotateMode() const { return _rotateMode; }
+
 public Q_SLOTS:
 
 	/// \brief Resets the input mode stack to its default state.
@@ -117,6 +127,15 @@ private:
 
 	/// The pick orbit center input mode.
 	PickOrbitCenterMode* _pickOrbitCenterMode;
+
+	/// The default scene node selection mode.
+	SelectionMode* _selectionMode;
+
+	/// The scene node translation mode.
+	MoveMode* _moveMode;
+
+	/// The scene node rotation mode.
+	RotateMode* _rotateMode;
 };
 
 };

@@ -89,36 +89,36 @@ public:
 	Box3 boundingBoxInteractive(TimePoint time, Viewport* viewport);
 
 	/// Requests a new line geometry buffer from the renderer.
-	virtual OORef<LineGeometryBuffer> createLineGeometryBuffer() override {
-		return new ViewportLineGeometryBuffer(this);
+	virtual std::unique_ptr<LineGeometryBuffer> createLineGeometryBuffer() override {
+		return std::unique_ptr<LineGeometryBuffer>{ new ViewportLineGeometryBuffer(this) };
 	}
 
 	/// Requests a new particle geometry buffer from the renderer.
-	virtual OORef<ParticleGeometryBuffer> createParticleGeometryBuffer(ParticleGeometryBuffer::ShadingMode shadingMode,
+	virtual std::unique_ptr<ParticleGeometryBuffer> createParticleGeometryBuffer(ParticleGeometryBuffer::ShadingMode shadingMode,
 			ParticleGeometryBuffer::RenderingQuality renderingQuality, ParticleGeometryBuffer::ParticleShape shape) override {
-		return new ViewportParticleGeometryBuffer(this, shadingMode, renderingQuality, shape);
+		return std::unique_ptr<ParticleGeometryBuffer>{ new ViewportParticleGeometryBuffer(this, shadingMode, renderingQuality, shape) };
 	}
 
 	/// Requests a new text geometry buffer from the renderer.
-	virtual OORef<TextGeometryBuffer> createTextGeometryBuffer() override {
-		return new ViewportTextGeometryBuffer(this);
+	virtual std::unique_ptr<TextGeometryBuffer> createTextGeometryBuffer() override {
+		return std::unique_ptr<TextGeometryBuffer>{ new ViewportTextGeometryBuffer(this) };
 	}
 
 	/// Requests a new image geometry buffer from the renderer.
-	virtual OORef<ImageGeometryBuffer> createImageGeometryBuffer() override {
-		return new ViewportImageGeometryBuffer(this);
+	virtual std::unique_ptr<ImageGeometryBuffer> createImageGeometryBuffer() override {
+		return std::unique_ptr<ImageGeometryBuffer>{ new ViewportImageGeometryBuffer(this) };
 	}
 
 	/// Requests a new arrow geometry buffer from the renderer.
-	virtual OORef<ArrowGeometryBuffer> createArrowGeometryBuffer(ArrowGeometryBuffer::Shape shape,
+	virtual std::unique_ptr<ArrowGeometryBuffer> createArrowGeometryBuffer(ArrowGeometryBuffer::Shape shape,
 			ArrowGeometryBuffer::ShadingMode shadingMode,
 			ArrowGeometryBuffer::RenderingQuality renderingQuality) override {
-		return new ViewportArrowGeometryBuffer(this, shape, shadingMode, renderingQuality);
+		return std::unique_ptr<ArrowGeometryBuffer>{ new ViewportArrowGeometryBuffer(this, shape, shadingMode, renderingQuality) };
 	}
 
 	/// Requests a new triangle mesh buffer from the renderer.
-	virtual OORef<TriMeshGeometryBuffer> createTriMeshGeometryBuffer() override {
-		return new ViewportTriMeshGeometryBuffer(this);
+	virtual std::unique_ptr<TriMeshGeometryBuffer> createTriMeshGeometryBuffer() override {
+		return std::unique_ptr<TriMeshGeometryBuffer>{ new ViewportTriMeshGeometryBuffer(this) };
 	}
 
 	/// Renders a 2d polyline in the viewport.
@@ -178,6 +178,10 @@ public:
 		else if(glfuncs30()) glfuncs30()->glMultiDrawArrays(mode, first, count, drawcount);
 		else if(glfuncs20()) glfuncs20()->glMultiDrawArrays(mode, first, count, drawcount);
 	}
+
+	/// Registers a range of sub-IDs belonging to the current object being rendered.
+	/// This is an internal method used by the PickingSceneRenderer class to implement the picking mechanism.
+	virtual quint32 registerSubObjectIDs(quint32 subObjectCount) {}
 
 protected:
 

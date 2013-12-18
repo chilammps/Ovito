@@ -117,6 +117,13 @@ namespace Ovito {
 /// This actions open the application's "Settings" dialog.
 #define ACTION_SETTINGS_DIALOG				"Settings"
 
+/// This actions activates the scene node selection mode.
+#define ACTION_SELECTION_MODE				"SelectionMode"
+/// This actions activates the scene node translation mode.
+#define ACTION_XFORM_MOVE_MODE				"XFormMoveMode"
+/// This actions activates the scene node rotation mode.
+#define ACTION_XFORM_ROTATE_MODE			"XFormRotateMode"
+
 /**
  * \brief Manages the application's actions.
  */

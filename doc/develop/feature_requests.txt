@@ -1,4 +1,7 @@
 
+
+- OpenGL rendering support for more than 12 million particles.
+
 - Create Bonds modifier: Add 'lower bound' parameter such that, when using the modifier several times, bonds with different lengths can be assigned different colors.
 - Compute Property modifier: Add variables for simulation box size etc.
 - Import file should keep a history of visited directories like the old Ovito version did.

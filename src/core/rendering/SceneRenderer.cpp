@@ -25,22 +25,10 @@
 #include <core/scene/SceneRoot.h>
 #include <core/scene/objects/geometry/TriMesh.h>
 #include <core/dataset/DataSet.h>
-#include "moc_LineGeometryBuffer.cpp"
-#include "moc_ParticleGeometryBuffer.cpp"
-#include "moc_TextGeometryBuffer.cpp"
-#include "moc_ImageGeometryBuffer.cpp"
-#include "moc_ArrowGeometryBuffer.cpp"
-#include "moc_TriMeshGeometryBuffer.cpp"
 
 namespace Ovito {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, SceneRenderer, RefTarget);
-IMPLEMENT_OVITO_OBJECT(Core, LineGeometryBuffer, OvitoObject);
-IMPLEMENT_OVITO_OBJECT(Core, ParticleGeometryBuffer, OvitoObject);
-IMPLEMENT_OVITO_OBJECT(Core, TextGeometryBuffer, OvitoObject);
-IMPLEMENT_OVITO_OBJECT(Core, ImageGeometryBuffer, OvitoObject);
-IMPLEMENT_OVITO_OBJECT(Core, ArrowGeometryBuffer, OvitoObject);
-IMPLEMENT_OVITO_OBJECT(Core, TriMeshGeometryBuffer, OvitoObject);
 
 /******************************************************************************
 * Constructor.

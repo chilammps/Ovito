@@ -62,7 +62,13 @@ public:
 	virtual void endFrame() override;
 
 	/// When picking mode is active, this registers an object being rendered.
-	virtual quint32 registerPickObject(ObjectNode* objNode, SceneObject* sceneObj, DisplayObject* displayObj, quint32 subObjectCount) override;
+	virtual quint32 beginPickObject(ObjectNode* objNode, SceneObject* sceneObj, DisplayObject* displayObj) override;
+
+	/// Registers a range of sub-IDs belonging to the current object being rendered.
+	virtual quint32 registerSubObjectIDs(quint32 subObjectCount) override;
+
+	/// Call this when rendering of a pickable object is finished.
+	virtual void endPickObject() override;
 
 	/// Returns the object record and the sub-object ID for the object at the given pixel coordinates.
 	std::tuple<const ObjectRecord*, quint32> objectAtLocation(const QPoint& pos) const;
@@ -82,7 +88,7 @@ private:
 	QScopedPointer<QOpenGLFramebufferObject> _framebufferObject;
 
 	/// The next available object ID.
-	quint32 _currentObjectID;
+	ObjectRecord _currentObject;
 
 	/// The list of registered objects.
 	std::vector<ObjectRecord> _objects;

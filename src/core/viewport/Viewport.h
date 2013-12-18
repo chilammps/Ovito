@@ -416,9 +416,6 @@ private:
 	/// the context menu can be activated by the user.
 	QRect _contextMenuArea;
 
-	/// The rendering buffer maintained to render the viewport's caption text.
-	OORef<TextGeometryBuffer> _captionBuffer;
-
 	/// This flag is true during the rendering phase.
 	bool _isRendering;
 
@@ -428,14 +425,17 @@ private:
 	/// Counts how often this viewport has been rendered.
 	int _renderDebugCounter;
 
+	/// The rendering buffer maintained to render the viewport's caption text.
+	std::unique_ptr<TextGeometryBuffer> _captionBuffer;
+
 	/// The geometry buffer used to render the viewport's orientation indicator.
-	OORef<LineGeometryBuffer> _orientationTripodGeometry;
+	std::unique_ptr<LineGeometryBuffer> _orientationTripodGeometry;
 
 	/// The rendering buffer used to render the viewport's orientation indicator labels.
-	OORef<TextGeometryBuffer> _orientationTripodLabels[3];
+	std::unique_ptr<TextGeometryBuffer> _orientationTripodLabels[3];
 
 	/// This is used to render the render frame around the viewport.
-	OORef<ImageGeometryBuffer> _renderFrameOverlay;
+	std::unique_ptr<ImageGeometryBuffer> _renderFrameOverlay;
 
 	/// This renderer generates an offscreen rendering of the scene that allows picking of objects.
 	OORef<PickingSceneRenderer> _pickingRenderer;

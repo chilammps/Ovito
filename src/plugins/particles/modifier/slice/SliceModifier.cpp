@@ -195,7 +195,7 @@ size_t SliceModifier::filterParticles(std::vector<bool>& mask, TimePoint time, T
 ******************************************************************************/
 void SliceModifier::render(TimePoint time, ObjectNode* contextNode, ModifierApplication* modApp, SceneRenderer* renderer, bool renderOverlay)
 {
-	if(!renderOverlay && isBeingEdited() && renderer->isInteractive())
+	if(!renderOverlay && isBeingEdited() && renderer->isInteractive() && !renderer->isPicking())
 		renderVisual(time, contextNode, renderer);
 }
 
@@ -273,7 +273,7 @@ Box3 SliceModifier::renderPlane(SceneRenderer* renderer, const Plane3& plane, co
 
 	if(renderer) {
 		// Render plane-box intersection lines.
-		OORef<LineGeometryBuffer> buffer = renderer->createLineGeometryBuffer();
+		std::unique_ptr<LineGeometryBuffer> buffer = renderer->createLineGeometryBuffer();
 		buffer->setSize(vertices.size());
 		buffer->setVertexPositions(vertices.constData());
 		buffer->setVertexColor(color);

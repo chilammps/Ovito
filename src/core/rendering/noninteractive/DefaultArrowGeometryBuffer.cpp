@@ -25,8 +25,6 @@
 
 namespace Ovito {
 
-IMPLEMENT_OVITO_OBJECT(Core, DefaultArrowGeometryBuffer, ArrowGeometryBuffer);
-
 /******************************************************************************
 * Sets the properties of a single element.
 ******************************************************************************/
@@ -53,7 +51,7 @@ bool DefaultArrowGeometryBuffer::isValid(SceneRenderer* renderer)
 /******************************************************************************
 * Renders the geometry.
 ******************************************************************************/
-void DefaultArrowGeometryBuffer::render(SceneRenderer* renderer, quint32 pickingBaseID)
+void DefaultArrowGeometryBuffer::render(SceneRenderer* renderer)
 {
 	NonInteractiveSceneRenderer* niRenderer = dynamic_object_cast<NonInteractiveSceneRenderer>(renderer);
 	if(_elements.empty() || !niRenderer || renderer->isPicking())
