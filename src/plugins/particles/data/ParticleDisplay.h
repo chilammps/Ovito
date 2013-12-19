@@ -58,8 +58,14 @@ public:
 	/// \brief Returns the title of this object.
 	virtual QString objectTitle() override { return tr("Particles"); }
 
-	/// \brief Returns the default display radius of atomic particles.
+	/// \brief Returns the default display radius of particles.
 	FloatType defaultParticleRadius() const { return _defaultParticleRadius; }
+
+	/// \brief Returns the default display color for particles.
+	Color defaultParticleColor() const { return Color(1,1,1); }
+
+	/// \brief Returns the display color used for selected particles.
+	Color selectionParticleColor() const { return Color(1,0,0); }
 
 	/// \brief Sets the default display radius of atomic particles.
 	void setDefaultParticleRadius(FloatType newRadius) { _defaultParticleRadius = newRadius; }
@@ -93,6 +99,9 @@ public:
 
 	/// \brief Determines the display radius of a single particle.
 	FloatType particleRadius(size_t particleIndex, ParticlePropertyObject* radiusProperty, ParticleTypeProperty* typeProperty);
+
+	/// \brief Determines the display color of a single particle.
+	Color particleColor(size_t particleIndex, ParticlePropertyObject* colorProperty, ParticleTypeProperty* typeProperty, ParticlePropertyObject* selectionProperty);
 
 	/// \brief Computes the bounding box of the particles.
 	Box3 particleBoundingBox(ParticlePropertyObject* positionProperty, ParticleTypeProperty* typeProperty, ParticlePropertyObject* radiusProperty, bool includeParticleRadius = true);

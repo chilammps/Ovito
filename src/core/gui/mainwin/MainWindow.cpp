@@ -97,6 +97,10 @@ MainWindow::MainWindow() :
 #else
 	animationControlBar2->addWidget(new AnimationFramesToolButton(datasetContainer()));
 #endif
+	QWidget* animationTimeSpinnerContainer = new QWidget();
+	QHBoxLayout* animationTimeSpinnerLayout = new QHBoxLayout(animationTimeSpinnerContainer);
+	animationTimeSpinnerLayout->setContentsMargins(0,0,0,0);
+	animationTimeSpinnerLayout->setSpacing(0);
 	class TimeEditBox : public QLineEdit {
 	public:
 		virtual QSize sizeHint() const { return minimumSizeHint(); }
@@ -105,8 +109,9 @@ MainWindow::MainWindow() :
 	timeEditBox->setToolTip(tr("Current Animation Time"));
 	AnimationTimeSpinner* currentTimeSpinner = new AnimationTimeSpinner(this);
 	currentTimeSpinner->setTextBox(timeEditBox);
-	animationControlBar2->addWidget(timeEditBox);
-	animationControlBar2->addWidget(currentTimeSpinner);
+	animationTimeSpinnerLayout->addWidget(timeEditBox, 1);
+	animationTimeSpinnerLayout->addWidget(currentTimeSpinner);
+	animationControlBar2->addWidget(animationTimeSpinnerContainer);
 	animationControlBar2->addAction(actionManager()->getAction(ACTION_ANIMATION_SETTINGS));
 	animationControlBar2->addWidget(new QWidget());
 	animationControlBar2->setStyleSheet("QToolBar { padding: 0px; margin: 0px; border: 0px none black; } QToolButton { padding: 0px; margin: 0px }");

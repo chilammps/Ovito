@@ -133,6 +133,7 @@ void ParticleDisplay::particleColors(std::vector<Color>& output, ParticlePropert
 	OVITO_ASSERT(typeProperty == nullptr || typeProperty->type() == ParticleProperty::ParticleTypeProperty);
 	OVITO_ASSERT(selectionProperty == nullptr || selectionProperty->type() == ParticleProperty::SelectionProperty);
 
+	Color defaultColor = defaultParticleColor();
 	if(colorProperty) {
 		// Take particle colors directly from the color property.
 		OVITO_ASSERT(colorProperty->size() == output.size());
@@ -150,18 +151,18 @@ void ParticleDisplay::particleColors(std::vector<Color>& output, ParticlePropert
 			if(it != colorMap.end())
 				*c = it->second;
 			else
-				c->setWhite();
+				*c = defaultColor;
 		}
 	}
 	else {
 		// Assign a constant color to all particles.
-		std::fill(output.begin(), output.end(), Color(1,1,1));
+		std::fill(output.begin(), output.end(), defaultColor);
 	}
 
 	// Highlight selected particles.
 	if(selectionProperty) {
 		OVITO_ASSERT(selectionProperty->size() == output.size());
-		const Color selColor(1,0,0);
+		const Color selColor = selectionParticleColor();
 		const int* t = selectionProperty->constDataInt();
 		for(auto c = output.begin(); c != output.end(); ++c, ++t) {
 			if(*t)
@@ -232,6 +233,38 @@ FloatType ParticleDisplay::particleRadius(size_t particleIndex, ParticleProperty
 	}
 
 	return defaultParticleRadius();
+}
+
+/******************************************************************************
+* Determines the display color of a single particle.
+******************************************************************************/
+Color ParticleDisplay::particleColor(size_t particleIndex, ParticlePropertyObject* colorProperty, ParticleTypeProperty* typeProperty, ParticlePropertyObject* selectionProperty)
+{
+	OVITO_ASSERT(colorProperty == nullptr || colorProperty->type() == ParticleProperty::ColorProperty);
+	OVITO_ASSERT(typeProperty == nullptr || typeProperty->type() == ParticleProperty::ParticleTypeProperty);
+	OVITO_ASSERT(selectionProperty == nullptr || selectionProperty->type() == ParticleProperty::SelectionProperty);
+
+	// Check if particle is selected.
+	if(selectionProperty) {
+		OVITO_ASSERT(particleIndex < selectionProperty->size());
+		if(selectionProperty->getInt(particleIndex))
+			return selectionParticleColor();
+	}
+
+	if(colorProperty) {
+		// Take particle color directly from the color property.
+		OVITO_ASSERT(particleIndex < colorProperty->size());
+		return colorProperty->getColor(particleIndex);
+	}
+	else if(typeProperty) {
+		// Return color based on particle types.
+		OVITO_ASSERT(particleIndex < typeProperty->size());
+		ParticleType* ptype = typeProperty->particleType(typeProperty->getInt(particleIndex));
+		if(ptype)
+			return ptype->color();
+	}
+
+	return defaultParticleColor();
 }
 
 /******************************************************************************

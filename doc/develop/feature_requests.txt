@@ -1,12 +1,11 @@
 
-
 - OpenGL rendering support for more than 12 million particles.
 
+- Import bond information from LAMMPS.
 - Create Bonds modifier: Add 'lower bound' parameter such that, when using the modifier several times, bonds with different lengths can be assigned different colors.
 - Compute Property modifier: Add variables for simulation box size etc.
 - Import file should keep a history of visited directories like the old Ovito version did.
 - Color Coding modifier: Display of color legend in rendered image.
-- Coordination Analysis modifier: Export of the RDF data.
 - Export of general triclinic cells to LAMMPS data/dump formats. See http://lammps.sandia.gov/doc/Section_howto.html#howto_12
 - POV-Ray rendering and file export.
 - Affine Transformation: Add "Duplicate particles" option.
@@ -26,7 +25,6 @@ zoom with the arrows and a modifier).
 Wolfgang Verestek:
 
 - uU könnte es hilfreich sein, eigene ColorMaps einzubinden.
-- Vermutlich schwer zu realisieren, aber verschiedene Pipelinebrowser für die Fenster, so dass z.B. in einem Fenster eine CNA-Analyse und in einem anderen Displacement oder Spannung dargestellt werden kann.
 
 Tobias:
 
@@ -34,4 +32,6 @@ Tobias:
 
 Taojun:
 
-- Plotting the value of a certain property of a certain particle versus simulation time. For that all simulation frames need to be kept in memory.
+- Plotting the value of a certain property of a certain particle versus simulation time. To make this work, 
+  all simulation frames need to be kept in memory.
+  

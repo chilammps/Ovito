@@ -32,6 +32,8 @@ uniform int pickingBaseID;
 
 	#define vertex_color gl_Color
 	#define vertex_color_fs gl_FrontColor
+	attribute float vertexID;
+	#define gl_VertexID int(vertexID)
 
 #endif
 

@@ -84,10 +84,10 @@ protected:
 	void renderSelectionMarker(Viewport* vp, ViewportSceneRenderer* renderer, const PickResult& pickRecord);
 
 	/// Used to render the marker for a selected particle.
-	std::unique_ptr<LineGeometryBuffer> _markerBuffer;
+	std::unique_ptr<ParticleGeometryBuffer> _highlightBuffer;
 
-	/// Used to render the marker for a selected particle.
-	std::unique_ptr<ParticleGeometryBuffer> _markerBuffer2;
+	/// Used to render the selected particle itself.
+	std::unique_ptr<ParticleGeometryBuffer> _particleBuffer;
 };
 
 };	// End of namespace

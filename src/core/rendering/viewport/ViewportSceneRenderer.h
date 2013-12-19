@@ -153,7 +153,13 @@ public:
 	bool isCoreProfile() const { return _isCoreProfile; }
 
 	/// Returns whether the application should use the OpenGL core profile; or compatibility profile otherwise.
-	static bool useCoreProfile() { return false; }
+	static bool useCoreProfile() {
+#ifndef Q_OS_MACX
+		return false;	// Prefer OpenGL compatibility profile.
+#else
+		return true;	// Always use OpenGL core profile on Mac OS X platform.
+#endif
+	}
 
 	/// Translates an OpenGL error code to a human-readable message string.
 	static const char* openglErrorString(GLenum errorCode);
@@ -190,7 +196,7 @@ public:
 
 	/// Registers a range of sub-IDs belonging to the current object being rendered.
 	/// This is an internal method used by the PickingSceneRenderer class to implement the picking mechanism.
-	virtual quint32 registerSubObjectIDs(quint32 subObjectCount) {}
+	virtual quint32 registerSubObjectIDs(quint32 subObjectCount) { return 0; }
 
 protected:
 

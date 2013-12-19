@@ -100,7 +100,9 @@ void ParticlePickingHelper::renderSelectionMarker(Viewport* vp, ViewportSceneRen
 	// Fetch properties of selected particle needed to render the overlay.
 	ParticlePropertyObject* posProperty = nullptr;
 	ParticlePropertyObject* radiusProperty = nullptr;
-	ParticlePropertyObject* typeProperty = nullptr;
+	ParticlePropertyObject* colorProperty = nullptr;
+	ParticlePropertyObject* selectionProperty = nullptr;
+	ParticleTypeProperty* typeProperty = nullptr;
 	for(const auto& sceneObj : flowState.objects()) {
 		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(sceneObj.get());
 		if(!property) continue;
@@ -108,8 +110,12 @@ void ParticlePickingHelper::renderSelectionMarker(Viewport* vp, ViewportSceneRen
 			posProperty = property;
 		else if(property->type() == ParticleProperty::RadiusProperty && property->size() >= particleIndex)
 			radiusProperty = property;
-		if(property->type() == ParticleProperty::ParticleTypeProperty && property->size() >= particleIndex)
-			typeProperty = property;
+		else if(property->type() == ParticleProperty::ParticleTypeProperty && property->size() >= particleIndex)
+			typeProperty = dynamic_object_cast<ParticleTypeProperty>(property);
+		else if(property->type() == ParticleProperty::ColorProperty && property->size() >= particleIndex)
+			colorProperty = property;
+		else if(property->type() == ParticleProperty::SelectionProperty && property->size() >= particleIndex)
+			selectionProperty = property;
 	}
 	if(!posProperty)
 		return;
@@ -127,71 +133,64 @@ void ParticlePickingHelper::renderSelectionMarker(Viewport* vp, ViewportSceneRen
 	Point3 pos = posProperty->getPoint3(particleIndex);
 
 	// Determine radius of selected particle.
-	FloatType radius = particleDisplay->particleRadius(particleIndex, radiusProperty, dynamic_object_cast<ParticleTypeProperty>(typeProperty));
+	FloatType radius = particleDisplay->particleRadius(particleIndex, radiusProperty, typeProperty);
 	if(radius <= 0)
 		return;
+
+	// Determine the display color of selected particle.
+	Color color = particleDisplay->particleColor(particleIndex, colorProperty, typeProperty, selectionProperty);
+	Color highlightColor = particleDisplay->selectionParticleColor();
+
+	// Determine rendering quality used to render the particles.
+	ParticleGeometryBuffer::RenderingQuality renderQuality = particleDisplay->effectiveRenderingQuality(renderer, posProperty);
 
 	TimeInterval iv;
 	const AffineTransformation& nodeTM = pickRecord.objNode->getWorldTransform(vp->dataset()->animationSettings()->time(), iv);
 
-	// Prepare marker geometry buffer.
-	ParticleGeometryBuffer::RenderingQuality renderQuality = particleDisplay->effectiveRenderingQuality(renderer, posProperty);
-	if(!_markerBuffer2 || !_markerBuffer2->isValid(renderer)
-			|| !_markerBuffer2->setShadingMode(particleDisplay->shadingMode())
-			|| !_markerBuffer2->setRenderingQuality(renderQuality)) {
-		Color markerColor(1.0, 0.0, 0.0);
-		_markerBuffer2 = renderer->createParticleGeometryBuffer(
+	if(!_particleBuffer || !_particleBuffer->isValid(renderer)
+			|| !_particleBuffer->setShadingMode(particleDisplay->shadingMode())
+			|| !_particleBuffer->setRenderingQuality(renderQuality)) {
+		_particleBuffer = renderer->createParticleGeometryBuffer(
 				particleDisplay->shadingMode(),
 				renderQuality,
 				particleDisplay->particleShape());
-		_markerBuffer2->setSize(1);
-		_markerBuffer2->setParticleColor(markerColor);
+		_particleBuffer->setSize(1);
 	}
-	_markerBuffer2->setParticlePositions(&pos);
-	_markerBuffer2->setParticleRadius(radius);
-
-	renderer->setWorldTransform(nodeTM);
-	int oldDepthFunc;
-	glGetIntegerv(GL_DEPTH_FUNC, &oldDepthFunc);
-	glDepthFunc(GL_LEQUAL);
-	_markerBuffer2->render(renderer);
-	glDepthFunc(oldDepthFunc);
+	_particleBuffer->setParticleColor(color * 0.5f + highlightColor * 0.5f);
+	_particleBuffer->setParticlePositions(&pos);
+	_particleBuffer->setParticleRadius(radius);
 
 	// Prepare marker geometry buffer.
-	if(!_markerBuffer || !_markerBuffer->isValid(renderer)) {
-		ColorA markerColor(1.0, 1.0, 1.0);
-		_markerBuffer = renderer->createLineGeometryBuffer();
-		Point3 vertices[64];
-		for(int i = 0; i < sizeof(vertices)/sizeof(vertices[0])/2; i++) {
-			FloatType angle = (FloatType)i * 2.0 * FLOATTYPE_PI / (sizeof(vertices)/sizeof(vertices[0])/2);
-			vertices[i*2] = Point3(0, cos(angle), sin(angle));
-		}
-		for(int i = 0; i < sizeof(vertices)/sizeof(vertices[0])/2; i++) {
-			vertices[i*2+1] = vertices[(i*2+2)%(sizeof(vertices)/sizeof(vertices[0]))];
-		}
-		_markerBuffer->setSize(sizeof(vertices)/sizeof(vertices[0]));
-		_markerBuffer->setVertexPositions(vertices);
-		_markerBuffer->setVertexColor(markerColor);
+	if(!_highlightBuffer || !_highlightBuffer->isValid(renderer)
+			|| !_highlightBuffer->setShadingMode(particleDisplay->shadingMode())
+			|| !_highlightBuffer->setRenderingQuality(renderQuality)) {
+		_highlightBuffer = renderer->createParticleGeometryBuffer(
+				particleDisplay->shadingMode(),
+				renderQuality,
+				particleDisplay->particleShape());
+		_highlightBuffer->setSize(1);
+		_highlightBuffer->setParticleColor(highlightColor);
 	}
-	AffineTransformation particleTM = nodeTM * AffineTransformation::translation(pos - Point3::Origin()) * AffineTransformation::scaling(radius);
-	glDisable(GL_DEPTH_TEST);
-	for(int i = 0; i < 6; i++) {
-		renderer->setWorldTransform(particleTM * AffineTransformation::rotationZ(FLOATTYPE_PI/6 * i));
-		_markerBuffer->render(renderer);
-	}
-#if 0
-	ViewProjectionParameters vparams = renderer->projParams();
-	AffineTransformation oldViewMatrix = vparams.viewMatrix;
-	vparams.viewMatrix = nodeTM * AffineTransformation::translation(oldViewMatrix * pos - Point3::Origin()) * AffineTransformation::scaling(radius);
-	vparams.inverseViewMatrix = vparams.viewMatrix.inverse();
-	renderer->setProjParams(vparams);
-	renderer->setWorldTransform(AffineTransformation::Identity());
-	_markerBuffer->render(renderer);
-	vparams.viewMatrix = oldViewMatrix;
-	vparams.inverseViewMatrix = oldViewMatrix.inverse();
-	renderer->setProjParams(vparams);
-#endif
+	_highlightBuffer->setParticlePositions(&pos);
+	_highlightBuffer->setParticleRadius(radius + vp->nonScalingSize(nodeTM * pos) * 1e-1f);
+
+	renderer->setWorldTransform(nodeTM);
 	glEnable(GL_DEPTH_TEST);
+	glClearStencil(0);
+	glClear(GL_STENCIL_BUFFER_BIT);
+	glEnable(GL_STENCIL_TEST);
+	glStencilFunc(GL_ALWAYS, 0x1, 0x1);
+	glStencilMask(0x1);
+	glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
+	glDepthFunc(GL_LEQUAL);
+	_particleBuffer->render(renderer);
+	glDisable(GL_DEPTH_TEST);
+	glStencilFunc(GL_NOTEQUAL, 0x1, 0x1);
+	glStencilMask(0x1);
+	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+	_highlightBuffer->render(renderer);
+	glEnable(GL_DEPTH_TEST);
+	glDisable(GL_STENCIL_TEST);
 }
 
 };	// End of namespace
