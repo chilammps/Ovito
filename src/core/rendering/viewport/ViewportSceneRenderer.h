@@ -59,7 +59,7 @@ class OVITO_CORE_EXPORT ViewportSceneRenderer : public SceneRenderer
 public:
 
 	/// Default constructor.
-	ViewportSceneRenderer(DataSet* dataset) : SceneRenderer(dataset), _glcontext(nullptr), _modelViewTM(AffineTransformation::Identity()) {}
+	ViewportSceneRenderer(DataSet* dataset) : SceneRenderer(dataset), _glcontext(nullptr), _modelViewTM(AffineTransformation::Identity()), _glVertexIDBufferSize(-1) {}
 
 	/// Renders the current animation frame.
 	virtual bool renderFrame(FrameBuffer* frameBuffer, QProgressDialog* progress) override;
@@ -179,6 +179,12 @@ public:
 		else if(glfuncs20()) glfuncs20()->glMultiDrawArrays(mode, first, count, drawcount);
 	}
 
+	/// Make sure vertex IDs are available to use by the OpenGL shader.
+	void activateVertexIDs(QOpenGLShaderProgram* shader, GLint vertexCount);
+
+	/// This needs to be called to deactivate vertex IDs, which were activated by a call to activateVertexIDs().
+	void deactivateVertexIDs(QOpenGLShaderProgram* shader);
+
 	/// Registers a range of sub-IDs belonging to the current object being rendered.
 	/// This is an internal method used by the PickingSceneRenderer class to implement the picking mechanism.
 	virtual quint32 registerSubObjectIDs(quint32 subObjectCount) {}
@@ -228,6 +234,12 @@ private:
 
 	/// The current model-to-view transformation matrix.
 	AffineTransformation _modelViewTM;
+
+	/// The internal OpenGL vertex buffer that stores vertex IDs.
+	QOpenGLBuffer _glVertexIDBuffer;
+
+	/// The number of IDs stored in the OpenGL buffer.
+	GLint _glVertexIDBufferSize;
 
 	Q_OBJECT
 	OVITO_OBJECT

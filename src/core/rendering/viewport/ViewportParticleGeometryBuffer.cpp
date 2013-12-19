@@ -149,10 +149,6 @@ void ViewportParticleGeometryBuffer::setSize(int particleCount)
 
 	_particleCount = particleCount;
 
-	// Reset index buffer.
-	if(_glIndexBuffer.isCreated())
-		_glIndexBuffer.destroy();
-
 	// Determine the required number of vertices per particles.
 	if(shadingMode() == FlatShading) {
 		_verticesPerParticle = 1;
@@ -528,14 +524,14 @@ void ViewportParticleGeometryBuffer::renderCubes(ViewportSceneRenderer* renderer
 		}
 		OVITO_ASSERT(_verticesPerParticle == 14);
 
-		activateVertexIDs(renderer, shader);
+		renderer->activateVertexIDs(shader, _verticesPerParticle * _particleCount);
 
 		OVITO_CHECK_OPENGL(renderer->glMultiDrawArrays(GL_TRIANGLE_STRIP,
 				_primitiveStartIndices.data(),
 				_primitiveVertexCounts.data(),
 				_primitiveStartIndices.size()));
 
-		deactivateVertexIDs(renderer, shader);
+		renderer->deactivateVertexIDs(shader);
 	}
 
 	detachParticlePositionBuffer(renderer, shader);
@@ -715,9 +711,8 @@ void ViewportParticleGeometryBuffer::bindParticleColorBuffer(ViewportSceneRender
 
 		OVITO_CHECK_OPENGL(shader->setUniformValue("pickingBaseID", (GLint)renderer->registerSubObjectIDs(_particleCount)));
 
-		// In picking mode, the OpenGL vertex shader needs particle IDs to compute the
-		// particle colors.
-		activateVertexIDs(renderer, shader);
+		// In picking mode, the OpenGL vertex shader needs particle IDs to compute the particle colors.
+		renderer->activateVertexIDs(shader, _particleCount * _verticesPerParticle);
 	}
 }
 
@@ -734,7 +729,7 @@ void ViewportParticleGeometryBuffer::detachParticleColorBuffer(ViewportSceneRend
 			OVITO_CHECK_OPENGL(glDisableClientState(GL_COLOR_ARRAY));
 	}
 	else {
-		deactivateVertexIDs(renderer, shader);
+		renderer->deactivateVertexIDs(shader);
 	}
 }
 
@@ -760,52 +755,6 @@ void ViewportParticleGeometryBuffer::bindParticleRadiusBuffer(ViewportSceneRende
 void ViewportParticleGeometryBuffer::detachParticleRadiusBuffer(ViewportSceneRenderer* renderer, QOpenGLShaderProgram* shader)
 {
 	shader->disableAttributeArray("particle_radius");
-}
-
-/******************************************************************************
-* Makes vertex IDs available to the shader.
-******************************************************************************/
-void ViewportParticleGeometryBuffer::activateVertexIDs(ViewportSceneRenderer* renderer, QOpenGLShaderProgram* shader)
-{
-	// Older OpenGL implementations do not provide the built-in gl_VertexID shader
-	// variable. Therefore we have to provide the IDs in a vertex buffer.
-	if(renderer->glformat().majorVersion() < 3) {
-		if(!_glIndexBuffer.isCreated()) {
-			// Create the ID buffer only once and keep it until the number of particles changes.
-			if(!_glIndexBuffer.create())
-				throw Exception(QStringLiteral("Failed to create OpenGL vertex ID buffer."));
-			_glIndexBuffer.setUsagePattern(QOpenGLBuffer::StaticDraw);
-			if(!_glIndexBuffer.bind())
-				throw Exception(QStringLiteral("Failed to bind OpenGL vertex ID buffer."));
-			_glIndexBuffer.allocate(_particleCount * _verticesPerParticle * sizeof(GLfloat));
-			OVITO_ASSERT(_particleCount > 0);
-			GLfloat* bufferData = static_cast<GLfloat*>(_glIndexBuffer.map(QOpenGLBuffer::WriteOnly));
-			if(!bufferData)
-				throw Exception(QStringLiteral("Failed to map OpenGL vertex ID buffer to memory."));
-			GLfloat* bufferDataEnd = bufferData + _particleCount * _verticesPerParticle;
-			for(GLint index = 0; bufferData != bufferDataEnd; ++index, ++bufferData)
-				*bufferData = index;
-			_glIndexBuffer.unmap();
-		}
-		else {
-			if(!_glIndexBuffer.bind())
-				throw Exception(QStringLiteral("Failed to bind OpenGL vertex ID buffer."));
-		}
-
-		// This vertex attribute will be mapped to the gl_VertexID variable.
-		shader->enableAttributeArray("vertexID");
-		shader->setAttributeBuffer("vertexID", GL_FLOAT, 0, 1);
-		_glIndexBuffer.release();
-	}
-}
-
-/******************************************************************************
-* Disables vertex IDs.
-******************************************************************************/
-void ViewportParticleGeometryBuffer::deactivateVertexIDs(ViewportSceneRenderer* renderer, QOpenGLShaderProgram* shader)
-{
-	if(renderer->glformat().majorVersion() < 3)
-		shader->disableAttributeArray("vertexID");
 }
 
 };

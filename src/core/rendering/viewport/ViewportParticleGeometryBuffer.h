@@ -127,12 +127,6 @@ protected:
 	/// shader input attribute.
 	void detachParticleRadiusBuffer(ViewportSceneRenderer* renderer, QOpenGLShaderProgram* shader);
 
-	/// Makes vertex IDs available to the shader.
-	void activateVertexIDs(ViewportSceneRenderer* renderer, QOpenGLShaderProgram* shader);
-
-	/// Disables vertex IDs.
-	void deactivateVertexIDs(ViewportSceneRenderer* renderer, QOpenGLShaderProgram* shader);
-
 	/// Renders the particles using OpenGL point sprites.
 	void renderPointSprites(ViewportSceneRenderer* renderer);
 
@@ -152,9 +146,6 @@ private:
 
 	/// The internal OpenGL vertex buffer that stores the particle colors.
 	QOpenGLBuffer _glColorsBuffer;
-
-	/// The internal OpenGL vertex buffer that stores the particle indices.
-	QOpenGLBuffer _glIndexBuffer;
 
 	/// The GL context group under which the GL vertex buffers have been created.
 	QPointer<QOpenGLContextGroup> _contextGroup;
