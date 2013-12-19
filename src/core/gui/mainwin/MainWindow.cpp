@@ -229,6 +229,7 @@ void MainWindow::createMainMenu()
 	helpMenu->addAction(actionManager()->getAction(ACTION_HELP_SHOW_ONLINE_HELP));
 	helpMenu->addSeparator();
 	helpMenu->addAction(actionManager()->getAction(ACTION_HELP_ABOUT));
+	helpMenu->addAction(actionManager()->getAction(ACTION_HELP_OPENGL_INFO));
 
 	setMenuBar(menuBar);
 }

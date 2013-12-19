@@ -27,6 +27,9 @@
 #include <core/gui/dialogs/ImportRemoteFileDialog.h>
 #include <core/dataset/DataSetContainer.h>
 #include <core/dataset/importexport/ImportExportManager.h>
+#include <core/viewport/ViewportConfiguration.h>
+#include <core/viewport/Viewport.h>
+#include <core/viewport/ViewportWindow.h>
 
 namespace Ovito {
 
@@ -67,6 +70,79 @@ void ActionManager::on_HelpAbout_triggered()
 void ActionManager::on_HelpShowOnlineHelp_triggered()
 {
 	Application::instance().openHelpTopic(QString());
+}
+
+/******************************************************************************
+* Handles the ACTION_HELP_OPENGL_INFO command.
+******************************************************************************/
+void ActionManager::on_HelpOpenGLInfo_triggered()
+{
+	QDialog dlg(mainWindow());
+	dlg.setWindowTitle(tr("OpenGL Information"));
+	QVBoxLayout* layout = new QVBoxLayout(&dlg);
+	QTextEdit* textEdit = new QTextEdit(&dlg);
+	textEdit->setReadOnly(true);
+	QString text;
+	if(mainWindow()->datasetContainer().currentSet()) {
+		if(!mainWindow()->datasetContainer().currentSet()->viewportConfig()->viewports().empty()) {
+			Viewport* vp = mainWindow()->datasetContainer().currentSet()->viewportConfig()->viewports().front();
+			if(vp->viewportWindow() && vp->viewportWindow()->glcontext()) {
+				vp->viewportWindow()->glcontext()->makeCurrent(vp->viewportWindow());
+				QSurfaceFormat format = vp->viewportWindow()->glcontext()->format();
+				QTextStream stream(&text, QIODevice::WriteOnly | QIODevice::Text);
+				stream << "======= System info =======" << endl;
+				stream << "Date: " << QDateTime::currentDateTime().toString() << endl;
+				stream << "Application: " << QApplication::applicationName() << " " << QApplication::applicationVersion() << endl;
+#if defined(Q_OS_MAC)
+				stream << "OS: Mac OS X (" << QSysInfo::macVersion() << ")" << endl;
+#elif defined(Q_OS_WIN)
+				stream << "OS: Windows (" << QSysInfo::windowsVersion() << ")" << endl;
+#elif defined(Q_OS_LINUX)
+				stream << "OS: Linux" << endl;
+				// Get 'uname' output.
+				QProcess unameProcess;
+				unameProcess.start("uname -m -i -o -r -v", QIODevice::ReadOnly);
+				unameProcess.waitForFinished();
+				QByteArray unameOutput = unameProcess.readAllStandardOutput();
+				unameOutput.replace('\n', ' ');
+				stream << "uname output: " << unameOutput << endl;
+				// Get 'lsb_release' output.
+				QProcess lsbProcess;
+				lsbProcess.start("lsb_release -s -i -d -r", QIODevice::ReadOnly);
+				lsbProcess.waitForFinished();
+				QByteArray lsbOutput = lsbProcess.readAllStandardOutput();
+				lsbOutput.replace('\n', ' ');
+				stream << "LSB output: " << lsbOutput << endl;
+#endif
+				stream << "======= OpenGL info =======" << endl;
+				stream << "Depth buffer size: " << format.depthBufferSize() << endl;
+				stream << "Version: " << format.majorVersion() << QStringLiteral(".") << format.minorVersion() << endl;
+				stream << "Profile: " << (format.profile() == QSurfaceFormat::CoreProfile ? "core" : (format.profile() == QSurfaceFormat::CompatibilityProfile ? "compatibility" : "none")) << endl;
+				stream << "Alpha: " << format.hasAlpha() << endl;
+				stream << "Vendor: " << QString((const char*)glGetString(GL_VENDOR)) << endl;
+				stream << "Renderer: " << QString((const char*)glGetString(GL_RENDERER)) << endl;
+				stream << "Version string: " << QString((const char*)glGetString(GL_VERSION)) << endl;
+				stream << "Shading language: " << QString((const char*)glGetString(GL_SHADING_LANGUAGE_VERSION)) << endl;
+				stream << "Shader programs: " << QOpenGLShaderProgram::hasOpenGLShaderPrograms() << endl;
+				stream << "Vertex shaders: " << QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Vertex) << endl;
+				stream << "Fragment shaders: " << QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Fragment) << endl;
+				stream << "Geometry shaders: " << QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Geometry) << endl;
+				stream << "Swap behavior: " << (format.swapBehavior() == QSurfaceFormat::SingleBuffer ? QStringLiteral("single buffer") : (format.swapBehavior() == QSurfaceFormat::DoubleBuffer ? QStringLiteral("double buffer") : (format.swapBehavior() == QSurfaceFormat::TripleBuffer ? QStringLiteral("triple buffer") : QStringLiteral("other")))) << endl;
+				vp->viewportWindow()->glcontext()->doneCurrent();
+			}
+		}
+	}
+	if(!text.isEmpty())
+		textEdit->setPlainText(text);
+	else
+		textEdit->setPlainText(tr("Could not obtain OpenGL information."));
+	textEdit->setMinimumSize(QSize(600, 400));
+	layout->addWidget(textEdit);
+	QDialogButtonBox* buttonBox = new QDialogButtonBox(QDialogButtonBox::Close, Qt::Horizontal, &dlg);
+	connect(buttonBox, &QDialogButtonBox::rejected, &dlg, &QDialog::accept);
+	connect(buttonBox->addButton(tr("Copy to clipboard"), QDialogButtonBox::ActionRole), &QPushButton::clicked, [text]() { QApplication::clipboard()->setText(text); });
+	layout->addWidget(buttonBox);
+	dlg.exec();
 }
 
 /******************************************************************************

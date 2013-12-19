@@ -82,6 +82,7 @@ ActionManager::ActionManager(MainWindow* mainWindow) : QObject(mainWindow)
 	createCommandAction(ACTION_FILE_NEW_WINDOW, tr("New Window"), ":/core/actions/file/file_new.png", tr("Opens a new OVITO window."));
 	createCommandAction(ACTION_HELP_ABOUT, tr("About Ovito"), NULL, tr("Show information about the application."));
 	createCommandAction(ACTION_HELP_SHOW_ONLINE_HELP, tr("Manual"), NULL, tr("Open the online manual."), QKeySequence::HelpContents);
+	createCommandAction(ACTION_HELP_OPENGL_INFO, tr("About OpenGL"), NULL, tr("Display OpenGL driver information."));
 
 	createCommandAction(ACTION_EDIT_UNDO, tr("Undo"), ":/core/actions/edit/edit_undo.png", tr("Reverse a user action."), QKeySequence::Undo);
 	createCommandAction(ACTION_EDIT_REDO, tr("Redo"), ":/core/actions/edit/edit_redo.png", tr("Redo the previously undone user action."), QKeySequence::Redo);
