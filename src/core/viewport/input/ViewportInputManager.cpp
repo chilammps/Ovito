@@ -116,7 +116,10 @@ void ViewportInputManager::pushInputMode(ViewportInputMode* newMode, bool tempor
 	if((oldMode && oldMode->hasOverlay()) || newMode->hasOverlay()) {
 		DataSet* dataset = mainWindow()->datasetContainer().currentSet();
 		if(dataset && dataset->viewportConfig()) {
-			dataset->viewportConfig()->updateViewports();
+			if(temporary && dataset->viewportConfig()->activeViewport())
+				dataset->viewportConfig()->activeViewport()->updateViewport();
+			else
+				dataset->viewportConfig()->updateViewports();
 		}
 	}
 

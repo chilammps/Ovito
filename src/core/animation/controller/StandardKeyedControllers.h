@@ -128,6 +128,7 @@ public:
 			_keys[time] = newValue;
 			this->updateKeys();
 			this->notifyDependents(ReferenceEvent::TargetChanged);
+			return;
 		}
 
 		ValueType deltaValue(newValue);

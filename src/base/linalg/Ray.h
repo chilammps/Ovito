@@ -108,7 +108,14 @@ inline Ray_3<T> operator*(const Matrix_34<T>& tm, const Ray_3<T>& ray) {
 /// \return The output stream \a os.
 template<typename T>
 inline std::ostream& operator<<(std::ostream &os, const Ray_3<T> &r) {
-	return os << '[' << r.base.X << ' ' << r.base.Y  << ' ' << r.base.Z << "], (" << r.dir.X << ' ' << r.dir.Y  << ' ' << r.dir.Z << ')';
+	return os << '[' << r.base.x() << ' ' << r.base.y()  << ' ' << r.base.z() << "], (" << r.dir.x() << ' ' << r.dir.y()  << ' ' << r.dir.z() << ')';
+}
+
+/// \brief Writes the ray to the Qt debug stream.
+template<typename T>
+inline QDebug operator<<(QDebug dbg, const Ray_3<T>& r) {
+    dbg.nospace() << "[" << r.base.x() << " " << r.base.y() << " " << r.base.z() << "], (" << r.dir.x() << " " << r.dir.y()  << " " << r.dir.z() << ')';
+    return dbg.space();
 }
 
 /// \brief Writes the ray to a binary output stream.

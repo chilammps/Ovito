@@ -165,9 +165,6 @@ public:
 	/// Returns the widget that contains the viewport's rendering window.
 	QWidget* widget() { return _widget; }
 
-	/// Renders the contents of the viewport into the surface associated with the given context.
-	void render(QOpenGLContext* context);
-
 	/// Indicates whether the rendering of the viewport contents is currently in progress.
 	bool isRendering() const { return _isRendering; }
 
@@ -284,9 +281,36 @@ public:
 	///             to enable the camera tracking mode for this viewport.
 	void setViewNode(ObjectNode* node) { _viewNode = node; }
 
-	/// Computes the world size of an object that should appear always in the
-	/// same size on the screen.
+	/// \brief Computes the scaling factor of an object that should always appear in the same size on the screen, independent of its
+	///        position with respect to the camera.
 	FloatType nonScalingSize(const Point3& worldPosition);
+
+	/// \brief Computes a point in the given coordinate system based on the given screen position and the current snapping settings.
+	/// \param[in] screenPoint A screen point relative to the upper left corner of the viewport.
+	/// \param[out] snapPoint The resulting point in the coordinate system specified by \a snapSystem. If the method returned
+	///                       \c false then the value of this output variable is undefined.
+	/// \param[in] snapSystem Specifies the coordinate system in which the snapping point should be determined.
+	/// \return \c true if a snapping point has been found; \c false if no snapping point was found for the given screen position.
+	bool snapPoint(const QPointF& screenPoint, Point3& snapPoint, const AffineTransformation& snapSystem);
+
+	/// \brief Computes a point in the grid coordinate system based on a screen position and the current snap settings.
+	/// \param[in] screenPoint A screen point relative to the upper left corner of the 3d window.
+	/// \param[out] snapPoint The resulting snap point in the viewport's grid coordinate system. If the method returned
+	///                       \c false then the value of this output variable is undefined.
+	/// \return \c true if a snapping point has been found; \c false if no snapping point was found for the given screen position.
+	bool snapPoint(const QPointF& screenPoint, Point3& snapPoint) {
+		return this->snapPoint(screenPoint, snapPoint, gridMatrix());
+	}
+
+	/// \brief Computes a ray in world space going through a pixel of the viewport window.
+	/// \param screenPoint A screen point relative to the upper left corner of the viewport window.
+	/// \return The ray that goes from the camera point through the specified pixel of the viewport window.
+	Ray3 screenRay(const QPointF& screenPoint);
+
+	/// \brief Computes a ray in world space going through a viewport pixel.
+	/// \param viewportPoint Viewport coordinates of the point in the range [-1,+1].
+	/// \return The ray that goes from the viewpoint through the specified position in the viewport.
+	Ray3 viewportRay(const Point2& viewportPoint);
 
 	/// Returns the geometry of the render frame, i.e., the region of the viewport that
 	/// will be visible in a rendered image.
@@ -304,6 +328,12 @@ public:
 
 	/// \brief Zooms to the extents of the given bounding box.
 	void zoomToBox(const Box3& box);
+
+	/// \brief Returns the transformation matrix that defines the orientation of the viewport grid in world space.
+	const AffineTransformation& gridMatrix() const { return _gridMatrix; }
+
+	/// \brief Sets the orientation of the viewport grid in world space.
+	void setGridMatrix(const AffineTransformation& tm) { _gridMatrix = tm; }
 
 	/// \brief Returns the caption of the viewport.
 	/// \return The title of the viewport.
@@ -349,6 +379,9 @@ protected:
 	virtual void loadFromStream(ObjectLoadStream& stream) override;
 
 protected:
+
+	/// Renders the contents of the viewport into the surface associated with the given context.
+	void render(QOpenGLContext* context);
 
 	/// Updates the title text of the viewport based on the current view type.
 	void updateViewportTitle();
