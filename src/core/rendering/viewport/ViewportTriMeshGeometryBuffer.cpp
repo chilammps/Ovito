@@ -51,10 +51,6 @@ void ViewportTriMeshGeometryBuffer::setMesh(const TriMesh& mesh, const ColorA& m
 	OVITO_ASSERT(_glVertexBuffer.isCreated());
 	OVITO_ASSERT(QOpenGLContextGroup::currentContextGroup() == _contextGroup);
 
-	// Reset index buffer.
-	if(_glIndexBuffer.isCreated())
-		_glIndexBuffer.destroy();
-
 	// Allocate render vertex buffer.
 	if(!_glVertexBuffer.bind())
 		throw Exception(QStringLiteral("Failed to bind OpenGL vertex buffer."));
@@ -102,10 +98,8 @@ void ViewportTriMeshGeometryBuffer::setMesh(const TriMesh& mesh, const ColorA& m
 				rv->color = defaultVertexColor;
 			else
 				rv->color = mesh.vertexColor(face->vertex(v));
-#if 1
-			// There is not support for semi-transparent meshes yet.
+			// There is no support for semi-transparent meshes yet.
 			rv->color.a() = 1;
-#endif
 		}
 	}
 
@@ -229,7 +223,7 @@ void ViewportTriMeshGeometryBuffer::render(SceneRenderer* renderer)
 			OVITO_CHECK_OPENGL(glVertexPointer(3, GL_FLOAT, sizeof(ColoredVertexWithNormal), reinterpret_cast<const GLvoid*>(offsetof(ColoredVertexWithNormal, pos))));
 		}
 		_glVertexBuffer.release();
-		activateVertexIDs(vpRenderer, _pickingShader);
+		vpRenderer->activateVertexIDs(_pickingShader, _renderVertexCount);
 
 		OVITO_CHECK_OPENGL(glDrawArrays(GL_TRIANGLES, 0, _renderVertexCount));
 
@@ -239,57 +233,11 @@ void ViewportTriMeshGeometryBuffer::render(SceneRenderer* renderer)
 		else {
 			OVITO_CHECK_OPENGL(glDisableClientState(GL_VERTEX_ARRAY));
 		}
-		deactivateVertexIDs(vpRenderer, _pickingShader);
+		vpRenderer->deactivateVertexIDs(_pickingShader);
 		_pickingShader->release();
 	}
 
 	OVITO_CHECK_OPENGL();
-}
-
-/******************************************************************************
-* Makes vertex IDs available to the shader.
-******************************************************************************/
-void ViewportTriMeshGeometryBuffer::activateVertexIDs(ViewportSceneRenderer* renderer, QOpenGLShaderProgram* shader)
-{
-	// Older OpenGL implementations do not provide the built-in gl_VertexID shader
-	// variable. Therefore we have to provide the IDs in a vertex buffer.
-	if(renderer->glformat().majorVersion() < 3) {
-		if(!_glIndexBuffer.isCreated()) {
-			// Create the ID buffer only once and keep it until the number of particles changes.
-			if(!_glIndexBuffer.create())
-				throw Exception(QStringLiteral("Failed to create OpenGL vertex ID buffer."));
-			_glIndexBuffer.setUsagePattern(QOpenGLBuffer::StaticDraw);
-			if(!_glIndexBuffer.bind())
-				throw Exception(QStringLiteral("Failed to bind OpenGL vertex ID buffer."));
-			_glIndexBuffer.allocate(_renderVertexCount * sizeof(GLfloat));
-			OVITO_ASSERT(_renderVertexCount > 0);
-			GLfloat* bufferData = static_cast<GLfloat*>(_glIndexBuffer.map(QOpenGLBuffer::WriteOnly));
-			if(!bufferData)
-				throw Exception(QStringLiteral("Failed to map OpenGL vertex ID buffer to memory."));
-			GLfloat* bufferDataEnd = bufferData + _renderVertexCount;
-			for(GLint index = 0; bufferData != bufferDataEnd; ++index, ++bufferData)
-				*bufferData = index;
-			_glIndexBuffer.unmap();
-		}
-		else {
-			if(!_glIndexBuffer.bind())
-				throw Exception(QStringLiteral("Failed to bind OpenGL vertex ID buffer."));
-		}
-
-		// This vertex attribute will be mapped to the gl_VertexID variable.
-		shader->enableAttributeArray("vertexID");
-		shader->setAttributeBuffer("vertexID", GL_FLOAT, 0, 1);
-		_glIndexBuffer.release();
-	}
-}
-
-/******************************************************************************
-* Disables vertex IDs.
-******************************************************************************/
-void ViewportTriMeshGeometryBuffer::deactivateVertexIDs(ViewportSceneRenderer* renderer, QOpenGLShaderProgram* shader)
-{
-	if(renderer->glformat().majorVersion() < 3)
-		shader->disableAttributeArray("vertexID");
 }
 
 };

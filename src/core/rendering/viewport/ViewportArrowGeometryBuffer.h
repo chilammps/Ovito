@@ -104,19 +104,10 @@ private:
 	/// \brief Renders the arrows in flat mode.
 	void renderFlat(ViewportSceneRenderer* renderer);
 
-	/// Makes vertex IDs available to the shader.
-	void activateVertexIDs(ViewportSceneRenderer* renderer, QOpenGLShaderProgram* shader);
-
-	/// Disables vertex IDs.
-	void deactivateVertexIDs(ViewportSceneRenderer* renderer, QOpenGLShaderProgram* shader);
-
 private:
 
 	/// The internal OpenGL vertex buffer that stores the vertices and colors.
 	QOpenGLBuffer _glGeometryBuffer;
-
-	/// The internal OpenGL vertex buffer that stores the vertex indices.
-	QOpenGLBuffer _glIndexBuffer;
 
 	/// The GL context group under which the GL vertex buffers have been created.
 	QPointer<QOpenGLContextGroup> _contextGroup;

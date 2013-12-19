@@ -58,13 +58,7 @@ void ViewportLineGeometryBuffer::setSize(int vertexCount)
 	OVITO_ASSERT(vertexCount < std::numeric_limits<int>::max() / sizeof(ColorA));
 	OVITO_ASSERT(QOpenGLContextGroup::currentContextGroup() == _contextGroup);
 
-	if(_vertexCount != vertexCount) {
-		_vertexCount = vertexCount;
-
-		// Reset index buffer.
-		if(_glIndexBuffer.isCreated())
-			_glIndexBuffer.destroy();
-	}
+	_vertexCount = vertexCount;
 }
 
 /******************************************************************************
@@ -185,7 +179,7 @@ void ViewportLineGeometryBuffer::render(SceneRenderer* renderer)
 		_glColorsBuffer.release();
 	}
 	else {
-		activateVertexIDs(vpRenderer, shader);
+		vpRenderer->activateVertexIDs(shader, _vertexCount);
 	}
 
 	OVITO_CHECK_OPENGL(glDrawArrays(GL_LINES, 0, _vertexCount));
@@ -207,57 +201,11 @@ void ViewportLineGeometryBuffer::render(SceneRenderer* renderer)
 		else {
 			OVITO_CHECK_OPENGL(glDisableClientState(GL_VERTEX_ARRAY));
 		}
-		deactivateVertexIDs(vpRenderer, shader);
+		vpRenderer->deactivateVertexIDs(shader);
 	}
 	shader->release();
 
 	OVITO_CHECK_OPENGL();
-}
-
-/******************************************************************************
-* Makes vertex IDs available to the shader.
-******************************************************************************/
-void ViewportLineGeometryBuffer::activateVertexIDs(ViewportSceneRenderer* renderer, QOpenGLShaderProgram* shader)
-{
-	// Older OpenGL implementations do not provide the built-in gl_VertexID shader
-	// variable. Therefore we have to provide the IDs in a vertex buffer.
-	if(renderer->glformat().majorVersion() < 3) {
-		if(!_glIndexBuffer.isCreated()) {
-			// Create the ID buffer only once and keep it until the number of particles changes.
-			if(!_glIndexBuffer.create())
-				throw Exception(QStringLiteral("Failed to create OpenGL vertex ID buffer."));
-			_glIndexBuffer.setUsagePattern(QOpenGLBuffer::StaticDraw);
-			if(!_glIndexBuffer.bind())
-				throw Exception(QStringLiteral("Failed to bind OpenGL vertex ID buffer."));
-			_glIndexBuffer.allocate(_vertexCount * sizeof(GLfloat));
-			OVITO_ASSERT(_vertexCount > 0);
-			GLfloat* bufferData = static_cast<GLfloat*>(_glIndexBuffer.map(QOpenGLBuffer::WriteOnly));
-			if(!bufferData)
-				throw Exception(QStringLiteral("Failed to map OpenGL vertex ID buffer to memory."));
-			GLfloat* bufferDataEnd = bufferData + _vertexCount;
-			for(GLint index = 0; bufferData != bufferDataEnd; ++index, ++bufferData)
-				*bufferData = index;
-			_glIndexBuffer.unmap();
-		}
-		else {
-			if(!_glIndexBuffer.bind())
-				throw Exception(QStringLiteral("Failed to bind OpenGL vertex ID buffer."));
-		}
-
-		// This vertex attribute will be mapped to the gl_VertexID variable.
-		shader->enableAttributeArray("vertexID");
-		shader->setAttributeBuffer("vertexID", GL_FLOAT, 0, 1);
-		_glIndexBuffer.release();
-	}
-}
-
-/******************************************************************************
-* Disables vertex IDs.
-******************************************************************************/
-void ViewportLineGeometryBuffer::deactivateVertexIDs(ViewportSceneRenderer* renderer, QOpenGLShaderProgram* shader)
-{
-	if(renderer->glformat().majorVersion() < 3)
-		shader->disableAttributeArray("vertexID");
 }
 
 };

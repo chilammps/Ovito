@@ -47,7 +47,7 @@ ViewportWindow::ViewportWindow(Viewport* owner) :
 	format.setDepthBufferSize(24);
 	format.setMajorVersion(OVITO_OPENGL_REQUESTED_VERSION_MAJOR);
 	format.setMinorVersion(OVITO_OPENGL_REQUESTED_VERSION_MINOR);
-	format.setProfile(QSurfaceFormat::CoreProfile);
+	format.setProfile(ViewportSceneRenderer::useCoreProfile() ? QSurfaceFormat::CoreProfile : QSurfaceFormat::CompatibilityProfile);
 #if 0
 #ifdef OVITO_DEBUG
 	format.setOption(QSurfaceFormat::DebugContext);

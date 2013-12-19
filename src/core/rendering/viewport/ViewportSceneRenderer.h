@@ -152,6 +152,9 @@ public:
 	/// Indicates whether the current OpenGL implementation is according to the core profile.
 	bool isCoreProfile() const { return _isCoreProfile; }
 
+	/// Returns whether the application should use the OpenGL core profile; or compatibility profile otherwise.
+	static bool useCoreProfile() { return false; }
+
 	/// Translates an OpenGL error code to a human-readable message string.
 	static const char* openglErrorString(GLenum errorCode);
 
