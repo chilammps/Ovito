@@ -1,3 +1,6 @@
+* Some sort of wrapper to catch C++ exceptions on accessing
+  properties, calling slots, ... (use QScriptClass)
+
 * clean up existing JS API
 
 * document existing JS API

@@ -364,53 +364,86 @@ void toQUrl(const QScriptValue& obj, QUrl& x) {
 
 
 
-/*
 QScriptValue fromParticlePropertyReference(QScriptEngine *engine,
 										   const Particles::ParticlePropertyReference& x) {
-	return x.name() + "." + QString::number(x.vectorComponent());
+	if (x.type() == Particles::ParticleProperty::UserProperty) {
+		int component = x.vectorComponent();
+		if (component < 0)
+			return x.name();
+		else
+			return x.name() + "." + QString::number(component);
+	} else {
+		QString name = Particles::ParticleProperty::standardPropertyName(x.type());
+		if (x.vectorComponent() < 0)
+			return name;
+		else {
+			QStringList components = Particles::ParticleProperty::standardPropertyComponentNames(x.type());
+			if (x.vectorComponent() >= components.length())
+				return name + "." + QString::number(x.vectorComponent());
+			else
+				return name + "." + components[x.vectorComponent()];
+		}
+	}
 }
 
 void toParticlePropertyReference(const QScriptValue& obj,
 								 Particles::ParticlePropertyReference& x) {
 	QScriptEngine* engine = obj.engine();
 	QScriptContext* context = engine->currentContext();
-	//
+	// Parse
 	QStringList parts = obj.toString().split(".");
-	switch (parts.length()) {
-	case 1:
-		// No vector component given.
-		x = Particles::ParticlePropertyReference(parts[0]);
-		break;
-	case 2:
-		{
-			// Vector component is given. Try to parse it (special casing for x/y/z, r/g/b).
-			// TODO: get the special casing from the relevant object (?????)
-			bool ok;
-			int component = parts[1].toInt(&ok);
-			if (!ok) {
-				if (parts[1].toLower() == "x")
-					component = 0;
-				else if (parts[1].toLower() == "y")
-					component = 1;
-				else if (parts[2].toLower() == "z")
-					component = 2;
-				else {
-					context->throwError("unknown vector component.");
-					return;
-				}
-			} else if (component < 0) {
-				context->throwError("vector component may not be negative.");
-				return;
-			}
-			x = Particles::ParticlePropertyReference(parts[0], component);
-		}
-		break;
-	default:
-		context->throwError("too many dots in property...");
+	if (parts.length() > 2) {
+		context->throwError("too many dots in property string...");
 		return;
 	}
+	// Get property type.
+	Particles::ParticleProperty::Type type;
+	QString name = parts[0];
+	const QMap<QString, Particles::ParticleProperty::Type> m = Particles::ParticleProperty::standardPropertyList();
+	const auto i = m.find(name);
+	if (i == m.end()) {
+		// User property.
+		type = Particles::ParticleProperty::UserProperty;
+	} else {
+		// Standard property.
+		type = *i;
+	}
+
+	// Possibly get component.
+	int component = -1;
+	if (parts.length() == 2) {
+		// We have a component given. First try to convert to integer.
+		bool ok;
+		component = parts[1].toInt(&ok);
+		if (!ok) {
+			// Perhaps the name was used instead of an integer.
+			const QStringList l = Particles::ParticleProperty::standardPropertyComponentNames(type);
+			const QString componentName = parts[1].toUpper();
+			component = -1;
+			for (int i = 0; i != l.length(); ++i)
+				if (parts[1] == l[i]) {
+					component = i;
+					break;
+				}
+			if (component < 0) {
+				context->throwError("unknown component name: " + parts[1]);
+				return;
+			}
+		}
+	}
+
+	// Construct object.
+	if (type == Particles::ParticleProperty::UserProperty)
+		if (component < 0)
+			x = Particles::ParticlePropertyReference(name);
+		else
+			x = Particles::ParticlePropertyReference(name, component);
+	else
+		if (component < 0)
+			x = Particles::ParticlePropertyReference(type);
+		else
+			x = Particles::ParticlePropertyReference(type, component);
 }
-*/
 
 
 
@@ -442,13 +475,11 @@ QScriptEngine* prepareEngine(DataSet* dataSet, QObject* parent) {
 	const int QUrlId = qRegisterMetaType<QUrl>("QUrl");
 	qScriptRegisterMetaType<QUrl>(engine, fromQUrl, toQUrl);
 
-	/*
 	const int ParticlePropertyReferenceTypeId =
 		qRegisterMetaType<Particles::ParticlePropertyReference>("ParticlePropertyReference");
 	qScriptRegisterMetaType<Particles::ParticlePropertyReference>(engine,
 																  fromParticlePropertyReference,
 																  toParticlePropertyReference);
-	*/
 
 	// Set up namespace. ///////////////////////////////////////////////
 
