@@ -28,19 +28,21 @@
 #define __OVITO_TEXT_GEOMETRY_BUFFER_H
 
 #include <core/Core.h>
-#include <core/object/OvitoObject.h>
 
 namespace Ovito {
 
 /**
  * \brief Abstract base class for buffer objects that store text strings.
  */
-class OVITO_CORE_EXPORT TextGeometryBuffer : public OvitoObject
+class OVITO_CORE_EXPORT TextGeometryBuffer
 {
 public:
 
 	/// \brief Default constructor.
 	TextGeometryBuffer() : _color(1,1,1,1), _backgroundColor(0,0,0,0) {}
+
+	/// \brief Virtual base constructor.
+	virtual ~TextGeometryBuffer() {}
 
 	/// \brief Sets the text to be rendered.
 	virtual void setText(const QString& text) { _text = text; }
@@ -88,9 +90,6 @@ private:
 
 	/// The text font.
 	QFont _font;
-
-	Q_OBJECT
-	OVITO_OBJECT
 };
 
 };

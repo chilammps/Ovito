@@ -80,7 +80,7 @@ public:
 	virtual bool isValid(SceneRenderer* renderer) = 0;
 
 	/// \brief Renders the geometry.
-	virtual void render(SceneRenderer* renderer, quint32 pickingBaseID = 0) = 0;
+	virtual void render(SceneRenderer* renderer) = 0;
 
 	/// \brief Returns the shading mode for elements.
 	ShadingMode shadingMode() const { return _shadingMode; }
@@ -110,8 +110,6 @@ private:
 	/// The shape of the elements.
 	Shape _shape;
 
-	Q_OBJECT
-	OVITO_OBJECT
 };
 
 };

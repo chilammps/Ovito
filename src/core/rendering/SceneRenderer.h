@@ -110,37 +110,40 @@ public:
 	virtual const AffineTransformation& worldTransform() const = 0;
 
 	/// Requests a new line geometry buffer from the renderer.
-	virtual OORef<LineGeometryBuffer> createLineGeometryBuffer() = 0;
+	virtual std::unique_ptr<LineGeometryBuffer> createLineGeometryBuffer() = 0;
 
 	/// Requests a new particle geometry buffer from the renderer.
-	virtual OORef<ParticleGeometryBuffer> createParticleGeometryBuffer(ParticleGeometryBuffer::ShadingMode shadingMode = ParticleGeometryBuffer::NormalShading,
+	virtual std::unique_ptr<ParticleGeometryBuffer> createParticleGeometryBuffer(ParticleGeometryBuffer::ShadingMode shadingMode = ParticleGeometryBuffer::NormalShading,
 			ParticleGeometryBuffer::RenderingQuality renderingQuality = ParticleGeometryBuffer::MediumQuality,
 			ParticleGeometryBuffer::ParticleShape shape = ParticleGeometryBuffer::SphericalShape) = 0;
 
 	/// Requests a new text geometry buffer from the renderer.
-	virtual OORef<TextGeometryBuffer> createTextGeometryBuffer() = 0;
+	virtual std::unique_ptr<TextGeometryBuffer> createTextGeometryBuffer() = 0;
 
 	/// Requests a new image geometry buffer from the renderer.
-	virtual OORef<ImageGeometryBuffer> createImageGeometryBuffer() = 0;
+	virtual std::unique_ptr<ImageGeometryBuffer> createImageGeometryBuffer() = 0;
 
 	/// Requests a new arrow geometry buffer from the renderer.
-	virtual OORef<ArrowGeometryBuffer> createArrowGeometryBuffer(ArrowGeometryBuffer::Shape shape,
+	virtual std::unique_ptr<ArrowGeometryBuffer> createArrowGeometryBuffer(ArrowGeometryBuffer::Shape shape,
 			ArrowGeometryBuffer::ShadingMode shadingMode = ArrowGeometryBuffer::NormalShading,
 			ArrowGeometryBuffer::RenderingQuality renderingQuality = ArrowGeometryBuffer::MediumQuality) = 0;
 
 	/// Requests a new triangle mesh geometry buffer from the renderer.
-	virtual OORef<TriMeshGeometryBuffer> createTriMeshGeometryBuffer() = 0;
-
-	/// Returns whether object picking mode is active.
-	bool isPicking() const { return _isPicking; }
+	virtual std::unique_ptr<TriMeshGeometryBuffer> createTriMeshGeometryBuffer() = 0;
 
 	/// Returns whether this renderer is rendering an interactive viewport.
 	/// \return true if rendering a real-time viewport; false if rendering an output image.
 	/// The default implementation returns false.
 	virtual bool isInteractive() const { return false; }
 
+	/// Returns whether object picking mode is active.
+	bool isPicking() const { return _isPicking; }
+
 	/// When picking mode is active, this registers an object being rendered.
-	virtual quint32 registerPickObject(ObjectNode* objNode, SceneObject* sceneObj, DisplayObject* displayObj, quint32 subObjectCount = 1) { return 0; }
+	virtual quint32 beginPickObject(ObjectNode* objNode, SceneObject* sceneObj, DisplayObject* displayObj) { return 0; }
+
+	/// Call this when rendering of a pickable object is finished.
+	virtual void endPickObject() {}
 
 protected:
 

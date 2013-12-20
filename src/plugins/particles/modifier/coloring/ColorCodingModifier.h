@@ -288,16 +288,16 @@ protected:
 	PropertyField<bool> _renderLegend;
 
 	/// Used to render the color scale legend on top the scene.
-	OORef<ImageGeometryBuffer> _colorScaleImageBuffer;
+	std::unique_ptr<ImageGeometryBuffer> _colorScaleImageBuffer;
 
 	/// Used to render the color scale labels.
-	OORef<TextGeometryBuffer> _colorScaleTopLabel;
+	std::unique_ptr<TextGeometryBuffer> _colorScaleTopLabel;
 
 	/// Used to render the color scale labels.
-	OORef<TextGeometryBuffer> _colorScaleBottomLabel;
+	std::unique_ptr<TextGeometryBuffer> _colorScaleBottomLabel;
 
 	/// Used to render the color scale title.
-	OORef<TextGeometryBuffer> _colorScaleTitleLabel;
+	std::unique_ptr<TextGeometryBuffer> _colorScaleTitleLabel;
 
 	/// This helper object is used to detect changes in the settings that required
 	/// updating the render buffers used to display the color scale legend.

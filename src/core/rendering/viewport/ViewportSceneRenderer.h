@@ -59,7 +59,7 @@ class OVITO_CORE_EXPORT ViewportSceneRenderer : public SceneRenderer
 public:
 
 	/// Default constructor.
-	ViewportSceneRenderer(DataSet* dataset) : SceneRenderer(dataset), _glcontext(nullptr), _modelViewTM(AffineTransformation::Identity()) {}
+	ViewportSceneRenderer(DataSet* dataset) : SceneRenderer(dataset), _glcontext(nullptr), _modelViewTM(AffineTransformation::Identity()), _glVertexIDBufferSize(-1) {}
 
 	/// Renders the current animation frame.
 	virtual bool renderFrame(FrameBuffer* frameBuffer, QProgressDialog* progress) override;
@@ -89,36 +89,36 @@ public:
 	Box3 boundingBoxInteractive(TimePoint time, Viewport* viewport);
 
 	/// Requests a new line geometry buffer from the renderer.
-	virtual OORef<LineGeometryBuffer> createLineGeometryBuffer() override {
-		return new ViewportLineGeometryBuffer(this);
+	virtual std::unique_ptr<LineGeometryBuffer> createLineGeometryBuffer() override {
+		return std::unique_ptr<LineGeometryBuffer>{ new ViewportLineGeometryBuffer(this) };
 	}
 
 	/// Requests a new particle geometry buffer from the renderer.
-	virtual OORef<ParticleGeometryBuffer> createParticleGeometryBuffer(ParticleGeometryBuffer::ShadingMode shadingMode,
+	virtual std::unique_ptr<ParticleGeometryBuffer> createParticleGeometryBuffer(ParticleGeometryBuffer::ShadingMode shadingMode,
 			ParticleGeometryBuffer::RenderingQuality renderingQuality, ParticleGeometryBuffer::ParticleShape shape) override {
-		return new ViewportParticleGeometryBuffer(this, shadingMode, renderingQuality, shape);
+		return std::unique_ptr<ParticleGeometryBuffer>{ new ViewportParticleGeometryBuffer(this, shadingMode, renderingQuality, shape) };
 	}
 
 	/// Requests a new text geometry buffer from the renderer.
-	virtual OORef<TextGeometryBuffer> createTextGeometryBuffer() override {
-		return new ViewportTextGeometryBuffer(this);
+	virtual std::unique_ptr<TextGeometryBuffer> createTextGeometryBuffer() override {
+		return std::unique_ptr<TextGeometryBuffer>{ new ViewportTextGeometryBuffer(this) };
 	}
 
 	/// Requests a new image geometry buffer from the renderer.
-	virtual OORef<ImageGeometryBuffer> createImageGeometryBuffer() override {
-		return new ViewportImageGeometryBuffer(this);
+	virtual std::unique_ptr<ImageGeometryBuffer> createImageGeometryBuffer() override {
+		return std::unique_ptr<ImageGeometryBuffer>{ new ViewportImageGeometryBuffer(this) };
 	}
 
 	/// Requests a new arrow geometry buffer from the renderer.
-	virtual OORef<ArrowGeometryBuffer> createArrowGeometryBuffer(ArrowGeometryBuffer::Shape shape,
+	virtual std::unique_ptr<ArrowGeometryBuffer> createArrowGeometryBuffer(ArrowGeometryBuffer::Shape shape,
 			ArrowGeometryBuffer::ShadingMode shadingMode,
 			ArrowGeometryBuffer::RenderingQuality renderingQuality) override {
-		return new ViewportArrowGeometryBuffer(this, shape, shadingMode, renderingQuality);
+		return std::unique_ptr<ArrowGeometryBuffer>{ new ViewportArrowGeometryBuffer(this, shape, shadingMode, renderingQuality) };
 	}
 
 	/// Requests a new triangle mesh buffer from the renderer.
-	virtual OORef<TriMeshGeometryBuffer> createTriMeshGeometryBuffer() override {
-		return new ViewportTriMeshGeometryBuffer(this);
+	virtual std::unique_ptr<TriMeshGeometryBuffer> createTriMeshGeometryBuffer() override {
+		return std::unique_ptr<TriMeshGeometryBuffer>{ new ViewportTriMeshGeometryBuffer(this) };
 	}
 
 	/// Renders a 2d polyline in the viewport.
@@ -152,6 +152,15 @@ public:
 	/// Indicates whether the current OpenGL implementation is according to the core profile.
 	bool isCoreProfile() const { return _isCoreProfile; }
 
+	/// Returns whether the application should use the OpenGL core profile; or compatibility profile otherwise.
+	static bool useCoreProfile() {
+#ifndef Q_OS_MACX
+		return false;	// Prefer OpenGL compatibility profile.
+#else
+		return true;	// Always use OpenGL core profile on Mac OS X platform.
+#endif
+	}
+
 	/// Translates an OpenGL error code to a human-readable message string.
 	static const char* openglErrorString(GLenum errorCode);
 
@@ -178,6 +187,16 @@ public:
 		else if(glfuncs30()) glfuncs30()->glMultiDrawArrays(mode, first, count, drawcount);
 		else if(glfuncs20()) glfuncs20()->glMultiDrawArrays(mode, first, count, drawcount);
 	}
+
+	/// Make sure vertex IDs are available to use by the OpenGL shader.
+	void activateVertexIDs(QOpenGLShaderProgram* shader, GLint vertexCount);
+
+	/// This needs to be called to deactivate vertex IDs, which were activated by a call to activateVertexIDs().
+	void deactivateVertexIDs(QOpenGLShaderProgram* shader);
+
+	/// Registers a range of sub-IDs belonging to the current object being rendered.
+	/// This is an internal method used by the PickingSceneRenderer class to implement the picking mechanism.
+	virtual quint32 registerSubObjectIDs(quint32 subObjectCount) { return 0; }
 
 protected:
 
@@ -224,6 +243,12 @@ private:
 
 	/// The current model-to-view transformation matrix.
 	AffineTransformation _modelViewTM;
+
+	/// The internal OpenGL vertex buffer that stores vertex IDs.
+	QOpenGLBuffer _glVertexIDBuffer;
+
+	/// The number of IDs stored in the OpenGL buffer.
+	GLint _glVertexIDBufferSize;
 
 	Q_OBJECT
 	OVITO_OBJECT

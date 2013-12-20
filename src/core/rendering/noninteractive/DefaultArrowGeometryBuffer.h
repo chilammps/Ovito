@@ -72,7 +72,7 @@ public:
 	virtual bool isValid(SceneRenderer* renderer) override;
 
 	/// \brief Renders the geometry.
-	virtual void render(SceneRenderer* renderer, quint32 pickingBaseID = 0) override;
+	virtual void render(SceneRenderer* renderer) override;
 
 	/// Returns a reference to the internal buffer that stores the arrow geometry.
 	const std::vector<ArrowElement>& elements() const { return _elements; }
@@ -82,8 +82,6 @@ private:
 	/// The internal memory buffer for arrow elements.
 	std::vector<ArrowElement> _elements;
 
-	Q_OBJECT
-	OVITO_OBJECT
 };
 
 };

@@ -42,12 +42,12 @@ ViewportWindow::ViewportWindow(Viewport* owner) :
 	// Indicate that the window is to be used for OpenGL rendering.
 	setSurfaceType(QWindow::OpenGLSurface);
 
-	// Indicate that we want a depth buffer.
 	QSurfaceFormat format;
 	format.setDepthBufferSize(24);
 	format.setMajorVersion(OVITO_OPENGL_REQUESTED_VERSION_MAJOR);
 	format.setMinorVersion(OVITO_OPENGL_REQUESTED_VERSION_MINOR);
-	format.setProfile(QSurfaceFormat::CoreProfile);
+	format.setProfile(ViewportSceneRenderer::useCoreProfile() ? QSurfaceFormat::CoreProfile : QSurfaceFormat::CompatibilityProfile);
+	format.setStencilBufferSize(1);
 #if 0
 #ifdef OVITO_DEBUG
 	format.setOption(QSurfaceFormat::DebugContext);
@@ -237,14 +237,15 @@ void ViewportWindow::renderNow()
 			qDebug() << "OpenGL geometry shaders:    " << QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Geometry);
 			qDebug() << "OpenGL debug logger:        " << (_oglDebugLogger != nullptr);
 			qDebug() << "OpenGL swap behavior:       " << (format.swapBehavior() == QSurfaceFormat::SingleBuffer ? QStringLiteral("single buffer") : (format.swapBehavior() == QSurfaceFormat::DoubleBuffer ? QStringLiteral("double buffer") : (format.swapBehavior() == QSurfaceFormat::TripleBuffer ? QStringLiteral("triple buffer") : QStringLiteral("other"))));
+			qDebug() << "OpenGL stencil buffer size: " << format.stencilBufferSize();
 		}
 #endif
 
 		if(_context->format().majorVersion() < OVITO_OPENGL_MINIMUM_VERSION_MAJOR || _context->format().minorVersion() < OVITO_OPENGL_MINIMUM_VERSION_MINOR) {
 			Exception ex(tr(
 					"The OpenGL implementation available on this system does not support OpenGL version %4.%5 or newer.\n\n"
-					"Ovito requires modern graphics hardware and up-to-date graphics drivers to display 3D content. Your current system configuration is not compatible with Ovito and the application will quit now.\n\n"
-					"To avoid this error message, please install the newest graphics driver, or upgrade your graphics card.\n\n"
+					"Ovito requires modern graphics hardware and up-to-date graphics drivers to display 3D content. Your current system configuration is not compatible with Ovito and the application will now quit.\n\n"
+					"To avoid this error message, please install the newest graphics driver of the hardware vendor, or upgrade your graphics card.\n\n"
 					"The installed OpenGL graphics driver reports the following information:\n\n"
 					"OpenGL Vendor: %1\n"
 					"OpenGL Renderer: %2\n"

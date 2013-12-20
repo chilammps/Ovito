@@ -147,19 +147,13 @@ void SurfaceMeshDisplay::render(TimePoint time, SceneObject* sceneObject, const 
 	}
 
 	// Handle picking of triangles.
-	quint32 pickingBaseID = 0;
-	if(renderer->isPicking())
-		pickingBaseID = renderer->registerPickObject(contextNode, sceneObject, this, _surfaceBuffer->faceCount());
-
-	_surfaceBuffer->render(renderer, pickingBaseID);
-
-	if(_showCap) {
-		if(renderer->isPicking())
-			pickingBaseID = renderer->registerPickObject(contextNode, sceneObject, this, _capBuffer->faceCount());
-
-		_capBuffer->render(renderer, pickingBaseID);
-	}
-	else _capBuffer.reset();
+	renderer->beginPickObject(contextNode, sceneObject, this);
+	_surfaceBuffer->render(renderer);
+	if(_showCap)
+		_capBuffer->render(renderer);
+	else
+		_capBuffer.reset();
+	renderer->endPickObject();
 }
 
 /******************************************************************************

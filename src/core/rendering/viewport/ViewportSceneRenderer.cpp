@@ -76,8 +76,8 @@ void ViewportSceneRenderer::beginFrame(TimePoint time, const ViewProjectionParam
 	// Check if this context implements the core profile.
 	_isCoreProfile = (_glformat.profile() == QSurfaceFormat::CoreProfile);
 
-	// Qt reports the core profile only for OpenGL >= 3.2. Assume core profiel also for 3.1 contexts.
-	if(glformat().majorVersion() == 3 && glformat().minorVersion() == 1) {
+	// Qt reports the core profile only for OpenGL >= 3.2. Assume core profile also for 3.1 contexts.
+	if(glformat().majorVersion() == 3 && glformat().minorVersion() == 1 && _glformat.profile() != QSurfaceFormat::CompatibilityProfile) {
 		_isCoreProfile = true;
 	}
 
@@ -420,6 +420,56 @@ void ViewportSceneRenderer::render2DPolyline(const Point2* points, int count, co
 	}
 	shader->release();
 	if(wasDepthTestEnabled) glEnable(GL_DEPTH_TEST);
+}
+
+/******************************************************************************
+* Makes vertex IDs available to the shader.
+******************************************************************************/
+void ViewportSceneRenderer::activateVertexIDs(QOpenGLShaderProgram* shader, GLint vertexCount)
+{
+	// Older OpenGL implementations do not provide the built-in gl_VertexID shader
+	// variable. Therefore we have to provide the IDs in a vertex buffer.
+	if(glformat().majorVersion() < 3) {
+		if(!_glVertexIDBuffer.isCreated() || _glVertexIDBufferSize < vertexCount) {
+			if(!_glVertexIDBuffer.isCreated()) {
+				// Create the ID buffer only once and keep it until the number of particles changes.
+				if(!_glVertexIDBuffer.create())
+					throw Exception(QStringLiteral("Failed to create OpenGL vertex ID buffer."));
+				_glVertexIDBuffer.setUsagePattern(QOpenGLBuffer::StaticDraw);
+			}
+			if(!_glVertexIDBuffer.bind())
+				throw Exception(QStringLiteral("Failed to bind OpenGL vertex ID buffer."));
+			_glVertexIDBuffer.allocate(vertexCount * sizeof(GLfloat));
+			_glVertexIDBufferSize = vertexCount;
+			if(vertexCount > 0) {
+				GLfloat* bufferData = static_cast<GLfloat*>(_glVertexIDBuffer.map(QOpenGLBuffer::WriteOnly));
+				if(!bufferData)
+					throw Exception(QStringLiteral("Failed to map OpenGL vertex ID buffer to memory."));
+				GLfloat* bufferDataEnd = bufferData + vertexCount;
+				for(GLint index = 0; bufferData != bufferDataEnd; ++index, ++bufferData)
+					*bufferData = index;
+				_glVertexIDBuffer.unmap();
+			}
+		}
+		else {
+			if(!_glVertexIDBuffer.bind())
+				throw Exception(QStringLiteral("Failed to bind OpenGL vertex ID buffer."));
+		}
+
+		// This vertex attribute will be mapped to the gl_VertexID variable.
+		shader->enableAttributeArray("vertexID");
+		shader->setAttributeBuffer("vertexID", GL_FLOAT, 0, 1);
+		_glVertexIDBuffer.release();
+	}
+}
+
+/******************************************************************************
+* Disables vertex IDs.
+******************************************************************************/
+void ViewportSceneRenderer::deactivateVertexIDs(QOpenGLShaderProgram* shader)
+{
+	if(glformat().majorVersion() < 3)
+		shader->disableAttributeArray("vertexID");
 }
 
 };

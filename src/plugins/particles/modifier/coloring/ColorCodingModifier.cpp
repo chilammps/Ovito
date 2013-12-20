@@ -339,7 +339,7 @@ OORef<RefTarget> ColorCodingModifier::clone(bool deepCopy, CloneHelper& cloneHel
 ******************************************************************************/
 void ColorCodingModifier::render(TimePoint time, ObjectNode* contextNode, ModifierApplication* modApp, SceneRenderer* renderer, bool renderOverlay)
 {
-	if(!renderOverlay || !isEnabled() || !_renderLegend)
+	if(!renderOverlay || !isEnabled() || !_renderLegend || renderer->isPicking())
 		return;
 
 	// Show color legend in the viewports only if the render frame has been activated.

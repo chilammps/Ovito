@@ -96,6 +96,7 @@ SET(OVITO_CORE_SOURCE_FILES
 	gui/widgets/animation/AnimationTimeSpinner.cpp
 	gui/widgets/animation/AnimationFramesToolButton.cpp
 	gui/widgets/animation/AnimationTimeSlider.cpp
+	gui/widgets/animation/AnimationTrackBar.cpp
 	gui/widgets/rendering/FrameBufferWidget.cpp
 	gui/widgets/rendering/FrameBufferWindow.cpp
 	gui/widgets/selection/SceneNodesListModel.cpp
@@ -157,6 +158,7 @@ SET(OVITO_CORE_SOURCE_FILES
 	viewport/input/ViewportInputManager.cpp
 	viewport/input/ViewportInputMode.cpp
 	viewport/input/NavigationModes.cpp
+	viewport/input/XFormModes.cpp
 	viewport/picking/PickingSceneRenderer.cpp
 )
 

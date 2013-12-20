@@ -28,8 +28,16 @@ namespace Ovito {
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-FrameBufferWindow::FrameBufferWindow(QWidget* parent) : QMainWindow(parent, (Qt::WindowFlags)(Qt::Tool | Qt::CustomizeWindowHint | Qt::WindowMaximizeButtonHint | Qt::WindowCloseButtonHint))
+FrameBufferWindow::FrameBufferWindow(QWidget* parent) :
+#ifndef Q_OS_MAC
+	QMainWindow(parent, (Qt::WindowFlags)(Qt::Tool | Qt::CustomizeWindowHint | Qt::WindowMaximizeButtonHint | Qt::WindowCloseButtonHint))
+#else
+	QMainWindow(parent, (Qt::WindowFlags)(Qt::Window | Qt::CustomizeWindowHint | Qt::WindowMaximizeButtonHint | Qt::WindowCloseButtonHint))
+#endif
 {
+#ifdef Q_OS_MAC
+	setWindowModality(Qt::ApplicationModal);
+#endif
 	_frameBufferWidget = new FrameBufferWidget();
 
 	class MyScrollArea : public QScrollArea {

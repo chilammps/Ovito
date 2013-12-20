@@ -49,7 +49,7 @@ bool StandardSceneRenderer::startRender(DataSet* dataset, RenderSettings* settin
 	format.setDepthBufferSize(24);
 	format.setMajorVersion(OVITO_OPENGL_REQUESTED_VERSION_MAJOR);
 	format.setMinorVersion(OVITO_OPENGL_REQUESTED_VERSION_MINOR);
-	format.setProfile(QSurfaceFormat::CoreProfile);
+	format.setProfile(ViewportSceneRenderer::useCoreProfile() ? QSurfaceFormat::CoreProfile : QSurfaceFormat::CompatibilityProfile);
 
 	// Look for other viewport windows that we can share the OpenGL context with.
 	QOpenGLContext* shareContext = nullptr;

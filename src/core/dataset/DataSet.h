@@ -47,7 +47,7 @@ public:
 
 	/// \brief Constructs an empty dataset.
 	/// \param self This parameter is not used and is there to provide a constructor signature that is compatible
-	///             with the RefMaker class.
+	///             with the RefTarget class.
 	Q_INVOKABLE DataSet(DataSet* self = nullptr);
 
 	/// \brief Returns a reference to the viewport configuration associated with this dataset.
@@ -55,18 +55,12 @@ public:
 	ViewportConfiguration* viewportConfig() const { return _viewportConfig; }
 
 	/// \brief Returns the animation settings.
-	/// \return The internal object storing the animation settings for the scene.
+	/// \return The internal object storing the animation settings of the scene.
 	AnimationSettings* animationSettings() { return _animSettings; }
 
 	/// \brief Returns this dataset's root scene node.
 	/// \return The root node of the scene tree.
 	SceneRoot* sceneRoot() const { return _sceneRoot; }
-
-	/// \brief Sets the dataset's root scene node.
-	/// \param newScene The new scene tree. It will completely replace the old
-	///                 scene object tree.
-	/// \undoable
-	void setSceneRoot(const OORef<SceneRoot>& newScene);
 
 	/// \brief Returns the selection set.
 	/// \return The current selection set storing the list of selected scene nodes.
@@ -182,10 +176,10 @@ private:
 	/// The configuration of the viewports.
 	ReferenceField<ViewportConfiguration> _viewportConfig;
 
-	/// Animation settings.
+	/// Current animation settings.
 	ReferenceField<AnimationSettings> _animSettings;
 
-	/// Scene node tree.
+	/// Root node of the scene node tree.
 	ReferenceField<SceneRoot> _sceneRoot;
 
 	/// The current node selection set.
@@ -194,7 +188,7 @@ private:
 	/// The settings used when rendering the scene.
 	ReferenceField<RenderSettings> _renderSettings;
 
-	/// The file where this DataSet is stored.
+	/// The file path this DataSet has been saved to.
 	QString _filePath;
 
 	/// The undo stack that keeps track of changes made to this dataset.

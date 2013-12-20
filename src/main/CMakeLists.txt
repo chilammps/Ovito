@@ -65,12 +65,12 @@ IF(OVITO_MONOLITHIC_BUILD)
 		# The static Qt plugins must be linked into the executable.
 		TARGET_LINK_LIBRARIES(${PROJECT_NAME} "${_qt5Core_install_prefix}/plugins/platforms/libqxcb.a")
 		TARGET_LINK_LIBRARIES(${PROJECT_NAME} "${_qt5Core_install_prefix}/plugins/platforms/libqminimal.a")
-		TARGET_LINK_LIBRARIES(${PROJECT_NAME} "/home/stuko/progs/qt-everywhere-opensource-src-5.1.1/qtbase/src/plugins/platforms/xcb/xcb-static/libxcb-static.a")
+		TARGET_LINK_LIBRARIES(${PROJECT_NAME} "/home/stuko/progs/qt-everywhere-opensource-src-5.2.0/qtbase/src/plugins/platforms/xcb/xcb-static/libxcb-static.a")
 		TARGET_LINK_LIBRARIES(${PROJECT_NAME} "${_qt5Core_install_prefix}/lib/libQt5PlatformSupport.a")
 
 		# Some additional system libraries are required.
 		TARGET_LINK_LIBRARIES(${PROJECT_NAME} "pthread" "dl" "rt" "Xext" "X11" "Xrender" "X11-xcb" "xcb" "GL" 
-				"freetype" "libfontconfig.a" "libexpat.a" "libpcre.a" "libpcreposix.a" "Xi")
+				"freetype" "libfontconfig.a" "libexpat.a" "libpcre.a" "libpcreposix.a" "Xi" "libSM.a" "libICE.a")
 
 		SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "\$ORIGIN/../lib/ovito")
 		SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES BUILD_WITH_INSTALL_RPATH "1")

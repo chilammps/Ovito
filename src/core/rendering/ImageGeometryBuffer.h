@@ -28,16 +28,18 @@
 #define __OVITO_IMAGE_GEOMETRY_BUFFER_H
 
 #include <core/Core.h>
-#include <core/object/OvitoObject.h>
 
 namespace Ovito {
 
 /**
  * \brief Abstract base class for buffer objects that store images.
  */
-class OVITO_CORE_EXPORT ImageGeometryBuffer : public OvitoObject
+class OVITO_CORE_EXPORT ImageGeometryBuffer
 {
 public:
+
+	/// \brief Virtual base constructor.
+	virtual ~ImageGeometryBuffer() {}
 
 	/// \brief Sets the text to be rendered.
 	virtual void setImage(const QImage& image) { _image = image; }
@@ -58,9 +60,6 @@ private:
 
 	/// The image to be rendered.
 	QImage _image;
-
-	Q_OBJECT
-	OVITO_OBJECT
 };
 
 };

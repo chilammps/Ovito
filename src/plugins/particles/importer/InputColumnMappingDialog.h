@@ -38,7 +38,7 @@ class OVITO_PARTICLES_EXPORT InputColumnMappingDialog : public QDialog
 public:
 
 	/// Constructor.
-	InputColumnMappingDialog(const InputColumnMapping& mapping, QWidget* parent = 0);
+	InputColumnMappingDialog(const InputColumnMapping& mapping, QWidget* parent);
 
 	/// Fills the editor with the given mapping.
 	void setMapping(const InputColumnMapping& mapping);

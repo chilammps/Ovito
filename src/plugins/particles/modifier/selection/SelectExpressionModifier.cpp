@@ -47,6 +47,7 @@ QStringList SelectExpressionModifier::getVariableNames(const PipelineFlowState& 
 	QRegExp regExp("[^A-Za-z\\d_]");
 
 	QStringList variableNames;
+	int index = 1;
 	for(const auto& o : inputState.objects()) {
 		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o.get());
 		if(!property) continue;
@@ -57,6 +58,13 @@ QStringList SelectExpressionModifier::getVariableNames(const PipelineFlowState& 
 		// Alter the property name to make it a valid variable name for the parser.
 		QString variableName = property->name();
 		variableName.remove(regExp);
+		// If the name is empty, generate one.
+		if(variableName.isEmpty())
+			variableName = QString("Property%1").arg(index);
+		// If the name starts with a number, prepend and underscore.
+		else if(variableName[0].isDigit())
+			variableName.prepend(QChar('_'));
+
 		if(property->componentNames().empty()) {
 			OVITO_ASSERT(property->componentCount() == 1);
 			variableNames << variableName;
@@ -67,6 +75,7 @@ QStringList SelectExpressionModifier::getVariableNames(const PipelineFlowState& 
 				variableNames << (variableName + "." + componentName);
 			}
 		}
+		index++;
 	}
 
 	// The particle index is always available in the expression as an input variable.

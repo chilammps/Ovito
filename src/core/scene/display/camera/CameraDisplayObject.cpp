@@ -56,10 +56,6 @@ void CameraDisplayObject::render(TimePoint time, SceneObject* sceneObject, const
 	if(renderer->isInteractive() == false || renderer->viewport() == nullptr)
 		return;
 
-	// No support for picking at the moment.
-	if(renderer->isPicking())
-		return;
-
 	// Do we have to re-create the geometry buffer from scratch?
 	bool recreateBuffer = !_buffer || !_buffer->isValid(renderer);
 
@@ -137,7 +133,10 @@ void CameraDisplayObject::render(TimePoint time, SceneObject* sceneObject, const
 	FloatType scaling = 2.0f * renderer->viewport()->nonScalingSize(cameraPos);
 	renderer->setWorldTransform(renderer->worldTransform() * AffineTransformation::scaling(scaling));
 
+	// Handle picking.
+	renderer->beginPickObject(contextNode, sceneObject, this);
 	_buffer->render(renderer);
+	renderer->endPickObject();
 }
 
 };

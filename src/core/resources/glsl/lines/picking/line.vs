@@ -20,23 +20,41 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 uniform mat4 modelview_projection_matrix;
+uniform int pickingBaseID;
 
 #if __VERSION__ >= 130
 
-in vec3 vertex_pos;
-in vec4 vertex_color;
-out vec4 vertex_color_out;
+	in vec3 vertex_pos;
+	in vec4 vertex_color;
+	out vec4 vertex_color_fs;
 
 #else
 
-#define vertex_color gl_Color
-#define vertex_color_out gl_FrontColor
+	#define vertex_color gl_Color
+	#define vertex_color_fs gl_FrontColor
+	attribute float vertexID;
+	#define gl_VertexID int(vertexID)
 
 #endif
 
 void main()
 {
-	vertex_color_out = vertex_color;
+	// Compute color from object ID.
+	int objectID = pickingBaseID + gl_VertexID / 2;
+#if __VERSION__ >= 130
+	vertex_color_fs = vec4(
+		float(objectID & 0xFF) / 255.0, 
+		float((objectID >> 8) & 0xFF) / 255.0, 
+		float((objectID >> 16) & 0xFF) / 255.0, 
+		float((objectID >> 24) & 0xFF) / 255.0);		
+#else
+	vertex_color_fs = vec4(
+		float(mod(objectID, 0x100)) / 255.0, 
+		float(mod(objectID / 0x100, 0x100)) / 255.0, 
+		float(mod(objectID / 0x10000, 0x100)) / 255.0, 
+		float(mod(objectID / 0x1000000, 0x100)) / 255.0);		
+#endif
+
 #if __VERSION__ >= 130
 	gl_Position = modelview_projection_matrix * vec4(vertex_pos, 1.0);
 #else

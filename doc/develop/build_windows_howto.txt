@@ -1,0 +1,23 @@
+
+**************************************************************************
+Build Boost libraries (release 1.55):
+**************************************************************************
+
+bootstrap.bar
+
+b2 --prefix=C:\Users\stuko\ovito\boost32 toolset=gcc link=shared threading=multi --ignore-python --ignore-mpi --layout=tagged --with-system --with-thread install
+
+**************************************************************************
+Build static CGAL library (release 4.3):
+**************************************************************************
+
+cmake -DBOOST_ROOT=$HOME/progs/booststatic \
+	-DBUILD_SHARED_LIBS=OFF \
+	-DGMP_LIBRARIES=/usr/lib/libgmp.a \
+	-DMPFR_LIBRARIES=/usr/lib/libmpfr.a \
+	-DWITH_CGAL_Qt3=OFF \
+	-DWITH_CGAL_Qt4=OFF \
+	-DWITH_CGAL_ImageIO=OFF \
+	.
+
+make

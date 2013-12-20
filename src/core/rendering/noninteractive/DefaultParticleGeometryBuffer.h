@@ -97,7 +97,7 @@ public:
 	virtual bool isValid(SceneRenderer* renderer) override;
 
 	/// \brief Renders the geometry.
-	virtual void render(SceneRenderer* renderer, quint32 pickingBaseID = 0) override;
+	virtual void render(SceneRenderer* renderer) override;
 
 	/// Returns a reference to the internal buffer that stores the particle positions.
 	const std::vector<Point3>& positions() const { return _positionsBuffer; }
@@ -124,9 +124,6 @@ private:
 
 	/// The internal buffer that stores the particle transparencies.
 	std::vector<FloatType> _transparenciesBuffer;
-
-	Q_OBJECT
-	OVITO_OBJECT
 };
 
 };

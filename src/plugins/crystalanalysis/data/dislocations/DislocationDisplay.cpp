@@ -150,12 +150,10 @@ void DislocationDisplay::render(TimePoint time, SceneObject* sceneObject, const 
 
 	// Render segments.
 	if(_cornerBuffer && _segmentBuffer) {
-		quint32 pickingBaseID = 0;
-		if(renderer->isPicking())
-			pickingBaseID = renderer->registerPickObject(contextNode, sceneObject, this, _segmentBuffer->elementCount() + _cornerBuffer->particleCount());
-		_segmentBuffer->render(renderer, pickingBaseID);
-		pickingBaseID += _segmentBuffer->elementCount();
-		_cornerBuffer->render(renderer, pickingBaseID);
+		renderer->beginPickObject(contextNode, sceneObject, this);
+		_segmentBuffer->render(renderer);
+		_cornerBuffer->render(renderer);
+		renderer->endPickObject();
 	}
 }
 
@@ -200,7 +198,7 @@ void DislocationDisplay::renderOverlayMarker(TimePoint time, SceneObject* sceneO
 	glDisable(GL_DEPTH_TEST);
 
 	FloatType lineRadius = std::max(lineWidth() / 4, FloatType(0));
-	OORef<ArrowGeometryBuffer> segmentBuffer = renderer->createArrowGeometryBuffer(ArrowGeometryBuffer::CylinderShape, ArrowGeometryBuffer::FlatShading, ArrowGeometryBuffer::HighQuality);
+	std::unique_ptr<ArrowGeometryBuffer> segmentBuffer = renderer->createArrowGeometryBuffer(ArrowGeometryBuffer::CylinderShape, ArrowGeometryBuffer::FlatShading, ArrowGeometryBuffer::HighQuality);
 	segmentBuffer->startSetElements(lineSegments.size());
 	int index = 0;
 	for(const auto& seg : lineSegments)
@@ -208,7 +206,7 @@ void DislocationDisplay::renderOverlayMarker(TimePoint time, SceneObject* sceneO
 	segmentBuffer->endSetElements();
 	segmentBuffer->render(renderer);
 
-	OORef<ParticleGeometryBuffer> cornerBuffer = renderer->createParticleGeometryBuffer(ParticleGeometryBuffer::FlatShading, ParticleGeometryBuffer::HighQuality);
+	std::unique_ptr<ParticleGeometryBuffer> cornerBuffer = renderer->createParticleGeometryBuffer(ParticleGeometryBuffer::FlatShading, ParticleGeometryBuffer::HighQuality);
 	cornerBuffer->setSize(cornerVertices.size());
 	cornerBuffer->setParticlePositions(cornerVertices.constData());
 	cornerBuffer->setParticleColor(Color(1,1,1));
@@ -217,7 +215,7 @@ void DislocationDisplay::renderOverlayMarker(TimePoint time, SceneObject* sceneO
 
 	if(!segment->line().empty()) {
 		Point3 wrappedHeadPos = cellData.wrapPoint(segment->line().front());
-		OORef<ParticleGeometryBuffer> headBuffer = renderer->createParticleGeometryBuffer(ParticleGeometryBuffer::FlatShading, ParticleGeometryBuffer::HighQuality);
+		std::unique_ptr<ParticleGeometryBuffer> headBuffer = renderer->createParticleGeometryBuffer(ParticleGeometryBuffer::FlatShading, ParticleGeometryBuffer::HighQuality);
 		headBuffer->setSize(1);
 		headBuffer->setParticlePositions(&wrappedHeadPos);
 		headBuffer->setParticleColor(Color(1,1,1));

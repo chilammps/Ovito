@@ -25,8 +25,6 @@
 
 namespace Ovito {
 
-IMPLEMENT_OVITO_OBJECT(Core, DefaultParticleGeometryBuffer, ParticleGeometryBuffer);
-
 /******************************************************************************
 * Returns true if the geometry buffer is filled and can be rendered with the given renderer.
 ******************************************************************************/
@@ -39,7 +37,7 @@ bool DefaultParticleGeometryBuffer::isValid(SceneRenderer* renderer)
 /******************************************************************************
 * Renders the geometry.
 ******************************************************************************/
-void DefaultParticleGeometryBuffer::render(SceneRenderer* renderer, quint32 pickingBaseID)
+void DefaultParticleGeometryBuffer::render(SceneRenderer* renderer)
 {
 	NonInteractiveSceneRenderer* niRenderer = dynamic_object_cast<NonInteractiveSceneRenderer>(renderer);
 	if(particleCount() <= 0 || !niRenderer || renderer->isPicking())

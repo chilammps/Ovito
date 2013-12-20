@@ -69,7 +69,7 @@ protected:
 	PropertyField<Color, QColor> _color;
 
 	/// The buffered geometry used to render the mesh.
-	OORef<TriMeshGeometryBuffer> _buffer;
+	std::unique_ptr<TriMeshGeometryBuffer> _buffer;
 
 	/// This helper structure is used to detect any changes in the input data
 	/// that require updating the geometry buffer.

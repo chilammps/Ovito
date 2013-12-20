@@ -64,7 +64,7 @@ bool XYZImporter::checkFileFormat(QIODevice& input, const QUrl& sourceLocation)
 	// Read first line.
 	stream.readLine(20);
 	if(stream.line()[0] == '\0')
-		return true;
+		return false;
 
 	// Skip initial whitespace.
 	const char* p = stream.line();
@@ -79,12 +79,15 @@ bool XYZImporter::checkFileFormat(QIODevice& input, const QUrl& sourceLocation)
 		++p;
 	}
 	// Check trailing whitespace.
+	bool foundNewline = false;
 	while(*p != '\0') {
 		if(!isspace(*p)) return false;
+		if(*p == '\n' || *p == '\r')
+			foundNewline = true;
 		++p;
 	}
 
-	return true;
+	return foundNewline;
 }
 
 /******************************************************************************
@@ -131,7 +134,7 @@ bool XYZImporter::inspectNewFile(LinkedFileObject* obj)
 			mapping.mapCustomColumn(i, tr("Custom property %1").arg(i+1), qMetaTypeId<FloatType>());
 	}
 
-	InputColumnMappingDialog dialog(mapping);
+	InputColumnMappingDialog dialog(mapping, datasetContainer.mainWindow());
 	if(dialog.exec() == QDialog::Accepted) {
 		setColumnMapping(dialog.mapping());
 		return true;
@@ -314,18 +317,14 @@ void XYZImporter::XYZImportTask::parseFile(FutureInterfaceBase& futureInterface,
 			if(Box3(Point3(-0.01f), Point3(1.01f)).containsBox(boundingBox)) {
 				// Convert all atom coordinates from reduced to absolute (Cartesian) format.
 				const AffineTransformation simCell = simulationCell().matrix();
-				Point3* p = posProperty->dataPoint3();
-				Point3* p_end = p + posProperty->size();
-				for(; p != p_end; ++p)
-					*p = simCell * (*p);
+				for(Point3& p : posProperty->point3Range())
+					p = simCell * p;
 			}
 			else if(Box3(Point3(-0.51f), Point3(0.51f)).containsBox(boundingBox)) {
 				// Convert all atom coordinates from reduced to absolute (Cartesian) format.
 				const AffineTransformation simCell = simulationCell().matrix();
-				Point3* p = posProperty->dataPoint3();
-				Point3* p_end = p + posProperty->size();
-				for(; p != p_end; ++p)
-					*p = simCell * ((*p) + Vector3(0.5,0.5,0.5));
+				for(Point3& p : posProperty->point3Range())
+					p = simCell * (p + Vector3(FloatType(0.5)));
 			}
 		}
 	}

@@ -42,12 +42,12 @@ namespace Ovito {
  * Each SceneNode has a transformation controller that can be accessed via
  * the SceneNode::transformationController() method.
  */
-class OVITO_CORE_EXPORT TransformationController : public TypedController<AffineTransformation, AffineTransformation>
+class OVITO_CORE_EXPORT TransformationController : public TypedControllerBase<AffineTransformation, AffineTransformation>
 {
 protected:
 	
 	/// \brief The constructor.
-	TransformationController(DataSet* dataset) : TypedController<AffineTransformation, AffineTransformation>(dataset) {}
+	TransformationController(DataSet* dataset) : TypedControllerBase<AffineTransformation, AffineTransformation>(dataset) {}
 	
 public:
 

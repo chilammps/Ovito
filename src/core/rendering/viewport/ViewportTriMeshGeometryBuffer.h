@@ -53,15 +53,7 @@ public:
 	virtual bool isValid(SceneRenderer* renderer) override;
 
 	/// \brief Renders the geometry.
-	virtual void render(SceneRenderer* renderer, quint32 pickingBaseID) override;
-
-protected:
-
-	/// Makes vertex IDs available to the shader.
-	void activateVertexIDs(ViewportSceneRenderer* renderer, QOpenGLShaderProgram* shader);
-
-	/// Disables vertex IDs.
-	void deactivateVertexIDs(ViewportSceneRenderer* renderer, QOpenGLShaderProgram* shader);
+	virtual void render(SceneRenderer* renderer) override;
 
 private:
 
@@ -75,9 +67,6 @@ private:
 	/// The internal OpenGL vertex buffer that stores the vertex data.
 	QOpenGLBuffer _glVertexBuffer;
 
-	/// The internal OpenGL vertex buffer that stores the vertex indices.
-	QOpenGLBuffer _glIndexBuffer;
-
 	/// The number of vertices stored in the OpenGL buffer.
 	int _renderVertexCount;
 
@@ -89,9 +78,6 @@ private:
 
 	/// The OpenGL shader program used to render the triangles in picking mode.
 	QOpenGLShaderProgram* _pickingShader;
-
-	Q_OBJECT
-	OVITO_OBJECT
 };
 
 };

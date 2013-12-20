@@ -78,7 +78,7 @@ void ViewportInputMode::activateTemporaryNavigationMode(ViewportInputMode* mode)
 void ViewportInputMode::setCursor(const QCursor& cursor)
 {
 	_cursor = cursor;
-	Q_EMIT curserChanged();
+	Q_EMIT curserChanged(_cursor);
 }
 
 /******************************************************************************
@@ -99,17 +99,14 @@ void ViewportInputMode::mousePressEvent(Viewport* vp, QMouseEvent* event)
 				manager->activeMode()->mousePressEvent(vp, &leftMouseEvent);
 			}
 		}
-		event->accept();
 	}
 	else if(event->button() == Qt::LeftButton) {
 		_lastMousePressEvent.reset(new QMouseEvent(event->type(), event->localPos(), event->windowPos(), event->screenPos(), event->button(), event->buttons(), event->modifiers()));
-		event->accept();
 	}
 	else if(event->button() == Qt::MidButton) {
 		activateTemporaryNavigationMode(manager->panMode());
 		if(manager->activeMode() == manager->panMode())
 			manager->activeMode()->mousePressEvent(vp, event);
-		event->accept();
 	}
 }
 

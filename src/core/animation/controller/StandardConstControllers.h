@@ -40,8 +40,6 @@ namespace Ovito {
 template<class BaseControllerClass, typename ValueType, typename NullValue, class AddFunction = std::plus<ValueType>>
 class StandardConstController : public BaseControllerClass
 {
-	typedef StandardConstController<BaseControllerClass, ValueType, NullValue, AddFunction> ThisClassType;
-	
 protected:
 
 	// An undo stack record that restores the old controller value.
@@ -53,7 +51,6 @@ protected:
 			std::swap(_controller->_value, _storedValue);
 			_controller->notifyDependents(ReferenceEvent::TargetChanged);
 		}
-		virtual void redo() override { undo(); }
 	private:
 		OORef<StandardConstController> _controller;
 		ValueType _storedValue;
@@ -106,7 +103,7 @@ protected:
 	/// Creates a copy of this object. 
 	virtual OORef<RefTarget> clone(bool deepCopy, CloneHelper& cloneHelper) override {
 		// Let the base class create an instance of this class.
-		OORef<ThisClassType> clone = static_object_cast<ThisClassType>(BaseControllerClass::clone(deepCopy, cloneHelper));
+		OORef<StandardConstController> clone = static_object_cast<StandardConstController>(BaseControllerClass::clone(deepCopy, cloneHelper));
 		clone->_value = this->_value;
 		return clone;
 	}

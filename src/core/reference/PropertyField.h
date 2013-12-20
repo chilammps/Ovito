@@ -181,8 +181,6 @@ private:
 			_field.setPropertyValue(_oldValue);
 			_oldValue = temp;
 		}
-		/// Re-apply the change, assuming that it has been undone.
-		virtual void redo() override { PropertyChangeOperation::undo(); }
 
 	private:
 
@@ -249,7 +247,6 @@ protected:
 	public:
 		SetReferenceOperation(RefTarget* oldTarget, SingleReferenceFieldBase& reffield);
 		virtual void undo() override { _reffield.swapReference(_inactiveTarget); }
-		virtual void redo() override { _reffield.swapReference(_inactiveTarget); }
 	};
 };
 

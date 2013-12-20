@@ -173,6 +173,9 @@ public:
 	/// \param tokens The list of parsed tokens.
 	void readParticle(size_t particleIndex, int ntokens, const char* tokens[]);
 
+	/// \brief Processes the values from one line of the input file and stores them in the particle properties.
+	void readParticle(size_t particleIndex, const double* values, int nvalues);
+
 private:
 
 	/// Determines which input data columns are stored in what properties.

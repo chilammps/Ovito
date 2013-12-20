@@ -50,11 +50,6 @@ public:
 
 	/// \brief Renders the text string at the given 2D normalized viewport coordinates ([-1,+1] range).
 	virtual void renderViewport(SceneRenderer* renderer, const Point2& pos, int alignment = Qt::AlignLeft | Qt::AlignTop) override;
-
-private:
-
-	Q_OBJECT
-	OVITO_OBJECT
 };
 
 };

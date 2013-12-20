@@ -57,28 +57,13 @@ void SelectParticleTypeModifier::setSelectedParticleTypes(const QSet<int>& types
 	if(_selectedParticleTypes == types)
 		return;		// Nothing has changed
 
-	class SelectParticleTypesOperation : public UndoableOperation {
-	public:
-		SelectParticleTypesOperation(SelectParticleTypeModifier* _mod) : mod(_mod), oldTypes(_mod->selectedParticleTypes()) {}
-		virtual void undo() override {
-			QSet<int> temp = mod->selectedParticleTypes();
-			mod->setSelectedParticleTypes(oldTypes);
-			oldTypes = temp;
-		}
-		virtual void redo() override { undo(); }
-		virtual QString displayName() const override { return "Select Atom Type"; }
-	private:
-		OORef<SelectParticleTypeModifier> mod;
-		QSet<int> oldTypes;
-	};
-
-	if(dataset()->undoStack().isRecording())
-		dataset()->undoStack().push(new SelectParticleTypesOperation(this));
+	// Make the property change undoable.
+	dataset()->undoStack().undoablePropertyChange<QSet<int>>(this,
+			&SelectParticleTypeModifier::selectedParticleTypes, &SelectParticleTypeModifier::setSelectedParticleTypes);
 
 	_selectedParticleTypes = types;
 	notifyDependents(ReferenceEvent::TargetChanged);
 }
-
 
 /******************************************************************************
 * Retrieves the input type property from the given modifier input state.

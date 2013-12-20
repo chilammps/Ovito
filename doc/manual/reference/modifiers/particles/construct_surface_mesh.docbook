@@ -49,7 +49,7 @@
     After constructing the surface, OVITO computes the total surface area and the solid volume. The modifier also reports 
     derived quantities such as the specific surface area. If you are using this modifier, in particular to perform 
     quantitative analyses, you should cite the following article, which describes the algorithm implemented in OVITO: 
-    <link xlink:href="http://dx.doi.org/10.1007/s11837-013-0827-5">A. Stukowski, JOM, DOI: 10.1007/s11837-013-0827-5</link>. 
+    <link xlink:href="http://dx.doi.org/10.1007/s11837-013-0827-5">A. Stukowski, JOM, 2013, DOI: 10.1007/s11837-013-0827-5</link>. 
   </para>
   
   <para>

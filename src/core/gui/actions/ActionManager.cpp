@@ -82,6 +82,7 @@ ActionManager::ActionManager(MainWindow* mainWindow) : QObject(mainWindow)
 	createCommandAction(ACTION_FILE_NEW_WINDOW, tr("New Window"), ":/core/actions/file/file_new.png", tr("Opens a new OVITO window."));
 	createCommandAction(ACTION_HELP_ABOUT, tr("About Ovito"), NULL, tr("Show information about the application."));
 	createCommandAction(ACTION_HELP_SHOW_ONLINE_HELP, tr("Manual"), NULL, tr("Open the online manual."), QKeySequence::HelpContents);
+	createCommandAction(ACTION_HELP_OPENGL_INFO, tr("OpenGL Information"), NULL, tr("Display OpenGL graphics driver information."));
 
 	createCommandAction(ACTION_EDIT_UNDO, tr("Undo"), ":/core/actions/edit/edit_undo.png", tr("Reverse a user action."), QKeySequence::Undo);
 	createCommandAction(ACTION_EDIT_REDO, tr("Redo"), ":/core/actions/edit/edit_redo.png", tr("Redo the previously undone user action."), QKeySequence::Redo);
@@ -103,6 +104,10 @@ ActionManager::ActionManager(MainWindow* mainWindow) : QObject(mainWindow)
 	createViewportModeAction(ACTION_VIEWPORT_ORBIT, vpInputManager->orbitMode(), tr("Orbit"), ":/core/actions/viewport/mode_orbit.png", tr("Activate orbit mode to rotate the camera around the scene."));
 	createViewportModeAction(ACTION_VIEWPORT_FOV, vpInputManager->fovMode(), tr("Field Of View"), ":/core/actions/viewport/mode_fov.png", tr("Activate field of view mode to change the perspective projection."));
 	createViewportModeAction(ACTION_VIEWPORT_PICK_ORBIT_CENTER, vpInputManager->pickOrbitCenterMode(), tr("Set Orbit Center"), ":/core/actions/viewport/mode_set_orbit_center.png", tr("Set the center of rotation."));
+
+	createViewportModeAction(ACTION_SELECTION_MODE, vpInputManager->selectionMode(), tr("Select"), ":/core/actions/edit/mode_select.png", tr("Select objects in the viewports."));
+	createViewportModeAction(ACTION_XFORM_MOVE_MODE, vpInputManager->moveMode(), tr("Move"), ":/core/actions/edit/mode_move.png", tr("Move objects."));
+	createViewportModeAction(ACTION_XFORM_ROTATE_MODE, vpInputManager->rotateMode(), tr("Rotate"), ":/core/actions/edit/mode_rotate.png", tr("Rotate objects."));
 
 	createCommandAction(ACTION_GOTO_START_OF_ANIMATION, tr("Goto Start of Animation"), ":/core/actions/animation/goto_animation_start.png", QString(), Qt::Key_Home);
 	createCommandAction(ACTION_GOTO_END_OF_ANIMATION, tr("Goto End of Animation"), ":/core/actions/animation/goto_animation_end.png", QString(), Qt::Key_End);

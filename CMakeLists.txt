@@ -66,6 +66,14 @@ FIND_PACKAGE(OpenGL REQUIRED)
 FIND_PACKAGE(ZLIB REQUIRED)
 INCLUDE_DIRECTORIES(${ZLIB_INCLUDE_DIRS})
 
+# Find the CGAL library.
+IF(OVITO_BUILD_PLUGIN_CRYSTALANALYSIS)
+	FIND_PACKAGE(CGAL REQUIRED)
+	IF(NOT CGAL_FOUND)
+		MESSAGE(FATAL_ERROR "CGAL library, which is required by the CrystalAnalysis plugin, not found.")
+	ENDIF()
+ENDIF()
+
 # Define the OVITO_DEBUG macro in debug builds.
 SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DOVITO_DEBUG")
 
@@ -82,12 +90,12 @@ IF(APPLE)
 ENDIF()
 
 # Enable additional optimizations for release builds.
-IF(CMAKE_COMPILER_IS_GNUCXX)
-	# Use -flto flag to enable GCC's link-time optimization.
-	SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto -fuse-linker-plugin")
-	SET(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -flto -fuse-linker-plugin")
-	SET(CMAKE_MODULE_LINKER_FLAGS_RELEASE "${CMAKE_MODULE_LINKER_FLAGS_RELEASE} -flto -fuse-linker-plugin")
-ENDIF()
+#IF(CMAKE_COMPILER_IS_GNUCXX)
+#	# Use -flto flag to enable GCC's link-time optimization.
+#	SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto -fuse-linker-plugin")
+#	SET(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -flto -fuse-linker-plugin")
+#	SET(CMAKE_MODULE_LINKER_FLAGS_RELEASE "${CMAKE_MODULE_LINKER_FLAGS_RELEASE} -flto -fuse-linker-plugin")
+#ENDIF()
 
 # This is the base directory for all included header files.
 INCLUDE_DIRECTORIES("${OVITO_SOURCE_BASE_DIR}/src")
@@ -234,6 +242,15 @@ IF(WIN32)
 		FOREACH(dll ${LIBAV_DLLS})
 			LIST(APPEND REQUIRED_DLLS "${FFMPEG_LIBRARY_DIR}/../bin/${dll}")
 		ENDFOREACH()
+	ENDIF()
+	
+	# Install CGAL, GMP, MPFR, and Boost DLLs.
+	IF(OVITO_BUILD_PLUGIN_CRYSTALANALYSIS)
+		LIST(APPEND REQUIRED_DLLS ${CGAL_LIBRARY})
+		LIST(APPEND REQUIRED_DLLS ${GMP_LIBRARIES})
+		LIST(APPEND REQUIRED_DLLS ${MPFR_LIBRARIES})
+		LIST(APPEND REQUIRED_DLLS "${CGAL_3RD_PARTY_LIBRARIES_DIRS}/libboost_thread-mt.dll")
+		LIST(APPEND REQUIRED_DLLS "${CGAL_3RD_PARTY_LIBRARIES_DIRS}/libboost_system-mt.dll")
 	ENDIF()
 	
 	# Copy library DLLs to output directory.

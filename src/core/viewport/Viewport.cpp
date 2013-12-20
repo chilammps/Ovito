@@ -68,7 +68,8 @@ Viewport::Viewport(DataSet* dataset) : RefTarget(dataset),
 		_cameraPosition(Point3::Origin()), _cameraDirection(Vector3::Zero()),
 		_renderDebugCounter(0),
 		_pickingRenderer(new PickingSceneRenderer(dataset)),
-		_cameraTM(AffineTransformation::Identity())
+		_cameraTM(AffineTransformation::Identity()),
+		_gridMatrix(AffineTransformation::Identity())
 {
 	INIT_PROPERTY_FIELD(Viewport::_viewNode);
 	INIT_PROPERTY_FIELD(Viewport::_viewType);
@@ -127,21 +128,27 @@ void Viewport::setViewType(ViewType type, bool keepCurrentView)
 	switch(type) {
 		case VIEW_TOP:
 			setCameraTransformation(AffineTransformation(coordSys));
+			setGridMatrix(cameraTransformation());
 			break;
 		case VIEW_BOTTOM:
 			setCameraTransformation(AffineTransformation(coordSys * Matrix3(1,0,0, 0,-1,0, 0,0,-1)));
+			setGridMatrix(cameraTransformation());
 			break;
 		case VIEW_LEFT:
 			setCameraTransformation(AffineTransformation(coordSys * Matrix3(0,0,-1, -1,0,0, 0,1,0)));
+			setGridMatrix(cameraTransformation());
 			break;
 		case VIEW_RIGHT:
 			setCameraTransformation(AffineTransformation(coordSys * Matrix3(0,0,1, 1,0,0, 0,1,0)));
+			setGridMatrix(cameraTransformation());
 			break;
 		case VIEW_FRONT:
 			setCameraTransformation(AffineTransformation(coordSys * Matrix3(1,0,0, 0,0,-1, 0,1,0)));
+			setGridMatrix(cameraTransformation());
 			break;
 		case VIEW_BACK:
 			setCameraTransformation(AffineTransformation(coordSys * Matrix3(-1,0,0, 0,0,1, 0,1,0)));
+			setGridMatrix(cameraTransformation());
 			break;
 		case VIEW_ORTHO:
 			if(!keepCurrentView) {
@@ -149,6 +156,7 @@ void Viewport::setViewType(ViewType type, bool keepCurrentView)
 				if(viewType() == VIEW_NONE)
 					setCameraTransformation(AffineTransformation(coordSys));
 			}
+			setGridMatrix(AffineTransformation(coordSys));
 			break;
 		case VIEW_PERSPECTIVE:
 			if(!keepCurrentView) {
@@ -160,10 +168,13 @@ void Viewport::setViewType(ViewType type, bool keepCurrentView)
 					setCameraDirection(ViewportSettings::getSettings().coordinateSystemOrientation() * Vector3(0,0,1));
 				}
 			}
+			setGridMatrix(AffineTransformation(coordSys));
 			break;
 		case VIEW_SCENENODE:
+			setGridMatrix(AffineTransformation(coordSys));
 			break;
 		case VIEW_NONE:
+			setGridMatrix(AffineTransformation(coordSys));
 			break;
 	}
 
@@ -892,6 +903,54 @@ ViewportPickResult Viewport::pick(const QPointF& pos)
 		ViewportPickResult result;
 		result.valid = false;
 		return result;
+	}
+}
+
+/******************************************************************************
+* Computes a point in the given coordinate system based on the given screen
+* position and the current snapping settings.
+******************************************************************************/
+bool Viewport::snapPoint(const QPointF& screenPoint, Point3& snapPoint, const AffineTransformation& snapSystem)
+{
+	// Compute the intersection point of the ray with the X-Y plane of the snapping coordinate system.
+    Ray3 ray = snapSystem.inverse() * screenRay(screenPoint);
+
+    Plane3 plane(Vector3(0,0,1), 0);
+	FloatType t = plane.intersectionT(ray, FloatType(1e-3));
+	if(t == FLOATTYPE_MAX) return false;
+	if(isPerspectiveProjection() && t <= 0) return false;
+
+	snapPoint = ray.point(t);
+	snapPoint.z() = 0;
+
+	return true;
+}
+
+/******************************************************************************
+* Computes a ray in world space going through a pixel of the viewport window.
+******************************************************************************/
+Ray3 Viewport::screenRay(const QPointF& screenPoint)
+{
+	return viewportRay(Point2(
+			(FloatType)screenPoint.x() / _widget->width() * 2.0f - 1.0f,
+			1.0f - (FloatType)screenPoint.y() / _widget->height() * 2.0f));
+}
+
+/******************************************************************************
+* Computes a ray in world space going through a viewport pixel.
+******************************************************************************/
+Ray3 Viewport::viewportRay(const Point2& viewportPoint)
+{
+	if(_projParams.isPerspective) {
+		Point3 ndc1(viewportPoint.x(), viewportPoint.y(), 1);
+		Point3 ndc2(viewportPoint.x(), viewportPoint.y(), 0);
+		Point3 p1 = _projParams.inverseViewMatrix * (_projParams.inverseProjectionMatrix * ndc1);
+		Point3 p2 = _projParams.inverseViewMatrix * (_projParams.inverseProjectionMatrix * ndc2);
+		return Ray3(Point3::Origin() + _projParams.inverseViewMatrix.translation(), p1 - p2);
+	}
+	else {
+		Point3 ndc(viewportPoint.x(), viewportPoint.y(), -1);
+		return Ray3(_projParams.inverseViewMatrix * (_projParams.inverseProjectionMatrix * ndc), _projParams.inverseViewMatrix * Vector3(0,0,-1));
 	}
 }
 

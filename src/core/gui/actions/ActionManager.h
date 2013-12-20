@@ -52,6 +52,8 @@ namespace Ovito {
 #define ACTION_HELP_ABOUT				"HelpAbout"
 /// This action shows the online help.
 #define ACTION_HELP_SHOW_ONLINE_HELP	"HelpShowOnlineHelp"
+/// This action displays OpenGL diagnostics.
+#define ACTION_HELP_OPENGL_INFO			"HelpOpenGLInfo"
 
 /// This action undoes the last operation.
 #define ACTION_EDIT_UNDO		"EditUndo"
@@ -116,6 +118,13 @@ namespace Ovito {
 
 /// This actions open the application's "Settings" dialog.
 #define ACTION_SETTINGS_DIALOG				"Settings"
+
+/// This actions activates the scene node selection mode.
+#define ACTION_SELECTION_MODE				"SelectionMode"
+/// This actions activates the scene node translation mode.
+#define ACTION_XFORM_MOVE_MODE				"XFormMoveMode"
+/// This actions activates the scene node rotation mode.
+#define ACTION_XFORM_ROTATE_MODE			"XFormRotateMode"
 
 /**
  * \brief Manages the application's actions.
@@ -183,6 +192,7 @@ private Q_SLOTS:
 
 	void on_Quit_triggered();
 	void on_HelpAbout_triggered();
+	void on_HelpOpenGLInfo_triggered();
 	void on_HelpShowOnlineHelp_triggered();
 	void on_FileNew_triggered();
 	void on_FileOpen_triggered();

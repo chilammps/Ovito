@@ -32,7 +32,7 @@ namespace Particles {
 using namespace Ovito;
 
 /**
- * \brief File parser for text-based LAMMPS dump simulation files.
+ * \brief File parser for the text-based XYZ file format.
  */
 class OVITO_PARTICLES_EXPORT XYZImporter : public ParticleImporter
 {

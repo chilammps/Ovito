@@ -64,7 +64,7 @@ public:
 	virtual bool isValid(SceneRenderer* renderer) override;
 
 	/// \brief Renders the geometry.
-	virtual void render(SceneRenderer* renderer, quint32 pickingBaseID = 0) override;
+	virtual void render(SceneRenderer* renderer) override;
 
 private:
 
@@ -96,27 +96,18 @@ private:
 	void createArrowElement(int index, const Point3& pos, const Vector3& dir, const ColorA& color, FloatType width);
 
 	/// \brief Renders the elements in shaded mode.
-	void renderShadedTriangles(ViewportSceneRenderer* renderer, quint32 pickingBaseID);
+	void renderShadedTriangles(ViewportSceneRenderer* renderer);
 
 	/// \brief Renders the cylinder elements in using a raytracing hardware shader.
-	void renderRaytracedCylinders(ViewportSceneRenderer* renderer, quint32 pickingBaseID);
+	void renderRaytracedCylinders(ViewportSceneRenderer* renderer);
 
 	/// \brief Renders the arrows in flat mode.
-	void renderFlat(ViewportSceneRenderer* renderer, quint32 pickingBaseID);
-
-	/// Makes vertex IDs available to the shader.
-	void activateVertexIDs(ViewportSceneRenderer* renderer, QOpenGLShaderProgram* shader);
-
-	/// Disables vertex IDs.
-	void deactivateVertexIDs(ViewportSceneRenderer* renderer, QOpenGLShaderProgram* shader);
+	void renderFlat(ViewportSceneRenderer* renderer);
 
 private:
 
 	/// The internal OpenGL vertex buffer that stores the vertices and colors.
 	QOpenGLBuffer _glGeometryBuffer;
-
-	/// The internal OpenGL vertex buffer that stores the vertex indices.
-	QOpenGLBuffer _glIndexBuffer;
 
 	/// The GL context group under which the GL vertex buffers have been created.
 	QPointer<QOpenGLContextGroup> _contextGroup;
@@ -161,9 +152,6 @@ private:
 
 	/// Primitive vertex counts passed to glMultiDrawArrays() using GL_TRIANGLE_FAN primitives.
 	std::vector<GLsizei> _fanPrimitiveVertexCounts;
-
-	Q_OBJECT
-	OVITO_OBJECT
 };
 
 };

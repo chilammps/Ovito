@@ -25,8 +25,6 @@
 
 namespace Ovito {
 
-IMPLEMENT_OVITO_OBJECT(Core, DefaultLineGeometryBuffer, LineGeometryBuffer);
-
 /******************************************************************************
 * Returns true if the geometry buffer is filled and can be rendered with the given renderer.
 ******************************************************************************/

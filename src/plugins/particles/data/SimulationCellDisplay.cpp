@@ -122,7 +122,10 @@ void SimulationCellDisplay::renderWireframe(SimulationCell* cell, SceneRenderer*
 		_wireframeGeometry->setVertexPositions(vertices);
 		_wireframeGeometry->setVertexColor(color);
 	}
+
+	renderer->beginPickObject(contextNode, cell, this);
 	_wireframeGeometry->render(renderer);
+	renderer->endPickObject();
 }
 
 /******************************************************************************

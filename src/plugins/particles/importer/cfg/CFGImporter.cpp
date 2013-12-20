@@ -65,7 +65,7 @@ void CFGHeader::parse(CompressedTextParserStream& stream)
 {
 	using namespace std;
 
-	numParticles = 0;
+	numParticles = -1;
 	unitMultiplier = 1;
 	H0.setIdentity();
 	transform.setIdentity();
@@ -145,6 +145,8 @@ void CFGHeader::parse(CompressedTextParserStream& stream)
 			throw Exception(CFGImporter::tr("Unknown key in CFG file header at line %1: %2").arg(stream.lineNumber()).arg(QString::fromStdString(line)));
 		}
 	}
+	if(numParticles < 0)
+		throw Exception(CFGImporter::tr("Invalid file header. This is not a valid CFG file."));
 }
 
 /******************************************************************************

@@ -370,4 +370,40 @@ void InputColumnReader::readParticle(size_t particleIndex, int ntokens, const ch
 	}
 }
 
+/******************************************************************************
+ * Processes the values from one line of the input file and stores them
+ * in the particle properties.
+ *****************************************************************************/
+void InputColumnReader::readParticle(size_t particleIndex, const double* values, int nvalues)
+{
+	OVITO_ASSERT(_properties.size() == _mapping.columnCount());
+	if(nvalues < _properties.size())
+		throw Exception(tr("Data record in input file contains not enough columns. Expected %1 file columns but found only %2.").arg(_properties.size()).arg(nvalues));
+
+	auto propertyIterator = _properties.cbegin();
+	const double* token = values;
+
+	int d;
+	for(int columnIndex = 0; propertyIterator != _properties.cend(); ++columnIndex, ++token, ++propertyIterator) {
+		ParticleProperty* property = *propertyIterator;
+		if(!property) continue;
+
+		if(particleIndex >= property->size())
+			throw Exception(tr("Too many data lines in input file. Expected only %1 lines.").arg(property->size()));
+		OVITO_ASSERT_MSG(_mapping.vectorComponent(columnIndex) < property->componentCount(), "InputColumnReader::readParticle", "Component index is out of range.");
+
+		if(property->dataType() == _floatMetaTypeId) {
+			property->setFloatComponent(particleIndex, _mapping.vectorComponent(columnIndex), *token);
+		}
+		else if(property->dataType() == _intMetaTypeId) {
+			int ival = (int)*token;
+			if(property->type() == ParticleProperty::ParticleTypeProperty) {
+				// Automatically register a new particle type if a new type identifier is encountered.
+				_destination.addParticleType(ival);
+			}
+			property->setIntComponent(particleIndex, _mapping.vectorComponent(columnIndex), ival);
+		}
+	}
+}
+
 };	// End of namespace

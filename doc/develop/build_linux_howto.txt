@@ -2,12 +2,13 @@
 Install indirect dependencies on Ubuntu 10.04:
 **************************************************************************
 
-sudo apt-get install libx11-xcb-dev libpcre3-dev libxi-dev libgmp-dev libmpfr-dev
+sudo apt-get install libx11-xcb-dev libpcre3-dev libxi-dev libgmp-dev \
+                     libmpfr-dev libsm-dev libice-dev
 
 **************************************************************************
-Build static Qt libraries (version 5.1.1) on Ubuntu 10.04:
+Build static Qt libraries (version 5.2.0) on Ubuntu 10.04:
 
-Edit file qtbase/mkspecs/common/g++-base.conf and specify absolute
+Edit file qtbase/mkspecs/common/g++-base.conf and specify
 paths to newest gcc and g++ compilers.
 **************************************************************************
 

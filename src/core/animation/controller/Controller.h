@@ -65,12 +65,18 @@ public:
 	/// For keyed controllers this will rescale the key times of all keys from the 
 	/// old animation interval to the new interval using a linear mapping.
 	///
-	/// Keys that lie outside the old animation interval will also be scaled using linear extrapolation.
+	/// Keys that lie outside of the old animation interval will also be scaled using linear extrapolation.
 	///
 	/// The default implementation does nothing. 
 	///
 	/// \undoable
 	virtual void rescaleTime(const TimeInterval& oldAnimationInterval, const TimeInterval& newAnimationInterval) {}
+
+	/// \brief Returns the number of animation keys stored by this animation controller.
+	/// \return The current number of keys.
+	///
+	/// The default implementation returns 0. This method should be overridden by controllers that use animation keys.
+	virtual int numberOfKeys() { return 0; }
 
 private:
 	
@@ -80,25 +86,26 @@ private:
 
 
 /**
- * \brief This template class is used to Controller types.
+ * \brief This template class is used to define Controller types.
  * 
  * This template class is used to define Controller classes for
- * various data types. It defines getter and setter methods for the controller's value.
+ * different value types. It defines getter and setter methods for the controller value.
+ * It is not meant for public use.
  * 
- * The template parameter \c ValueType specifies the data type of the controller's value.
- * 
- * The template parameter \c ApplicationType specifies the data type to which the 
- * controller's value can be applied. This is only meaningful for position, rotation and scale
+ * The template parameter \c ValueType specifies the data type of the controller value.
+ *
+ * The template parameter \c ApplicationType specifies the data type to which the
+ * controller value can be applied. This is only meaningful for position, rotation and scale
  * controllers, which can apply their values to an AffineTransformation.
  */
 template<typename ValueType, typename ApplicationType>
-class TypedController : public Controller 
+class TypedControllerBase : public Controller
 {
 protected:
 	
     /// \brief Constructor.
 	/// \param dataset The context dataset.
-	TypedController(DataSet* dataset) : Controller(dataset) {}
+	TypedControllerBase(DataSet* dataset) : Controller(dataset) {}
 
 public:
 	
@@ -121,10 +128,10 @@ public:
 	///                       in the same reference variable. How the value is applied is data type dependent.
 	/// \param[in,out] validityInterval This interval is reduced such that it contains only those times
 	///                                 during which the controller's value does not change.
-	/// 
+	///
 	/// \sa getValue()
 	virtual void applyValue(TimePoint time, ApplicationType& result, TimeInterval& validityInterval) = 0;
-	
+
 	/// \brief Queries the controller for its absolute value at the given animation time.
 	/// \param time The animation time for which the controller's value should be returned.
 	/// \return The controller's value at the animation time \a time.
@@ -195,12 +202,12 @@ public:
  * 
  * This controller class is used for object parameters with the FloatType data type.
  */
-class OVITO_CORE_EXPORT FloatController : public TypedController<FloatType, FloatType>
+class OVITO_CORE_EXPORT FloatController : public TypedControllerBase<FloatType, FloatType>
 { 
 protected:
 
 	/// The constructor.
-	FloatController(DataSet* dataset) : TypedController<FloatType, FloatType>(dataset) {}
+	FloatController(DataSet* dataset) : TypedControllerBase<FloatType, FloatType>(dataset) {}
 	
 public:
 	
@@ -222,12 +229,12 @@ private:
  * 
  * This controller class is used for object parameters with the \c int data type.
  */
-class OVITO_CORE_EXPORT IntegerController : public TypedController<int, int>
+class OVITO_CORE_EXPORT IntegerController : public TypedControllerBase<int, int>
 {
 protected: 
 
 	/// The constructor.
-	IntegerController(DataSet* dataset) : TypedController<int, int>(dataset) {}
+	IntegerController(DataSet* dataset) : TypedControllerBase<int, int>(dataset) {}
 	
 public:
 
@@ -249,12 +256,12 @@ private:
  * 
  * This controller class is used for object parameters with the \c bool data type.
  */
-class OVITO_CORE_EXPORT BooleanController : public TypedController<bool, bool>
+class OVITO_CORE_EXPORT BooleanController : public TypedControllerBase<bool, bool>
 {
 protected:
 
 	/// The constructor.
-	BooleanController(DataSet* dataset) : TypedController<bool, bool>(dataset) {}
+	BooleanController(DataSet* dataset) : TypedControllerBase<bool, bool>(dataset) {}
 	
 public:	
 
@@ -276,12 +283,12 @@ private:
  * 
  * This controller class is used for object parameters with the Vector3 data type.
  */
-class OVITO_CORE_EXPORT VectorController : public TypedController<Vector3, Vector3>
+class OVITO_CORE_EXPORT VectorController : public TypedControllerBase<Vector3, Vector3>
 {
 protected:
 
 	/// The constructor.
-	VectorController(DataSet* dataset) : TypedController<Vector3, Vector3>(dataset) {}
+	VectorController(DataSet* dataset) : TypedControllerBase<Vector3, Vector3>(dataset) {}
 	
 public:
 	
@@ -314,12 +321,12 @@ private:
  * 
  * A position controller is used to animate the position of an object.
  */
-class OVITO_CORE_EXPORT PositionController : public TypedController<Vector3, AffineTransformation>
+class OVITO_CORE_EXPORT PositionController : public TypedControllerBase<Vector3, AffineTransformation>
 {
 protected:
 
 	/// The constructor.
-	PositionController(DataSet* dataset) : TypedController<Vector3, AffineTransformation>(dataset) {}
+	PositionController(DataSet* dataset) : TypedControllerBase<Vector3, AffineTransformation>(dataset) {}
 	
 public:
 
@@ -351,12 +358,12 @@ private:
  * 
  * A position controller is used to animate the orientation of an object.
  */
-class OVITO_CORE_EXPORT RotationController : public TypedController<Rotation, AffineTransformation>
+class OVITO_CORE_EXPORT RotationController : public TypedControllerBase<Rotation, AffineTransformation>
 {
 protected:
 
 	/// The constructor.
-	RotationController(DataSet* dataset) : TypedController<Rotation, AffineTransformation>(dataset) {}
+	RotationController(DataSet* dataset) : TypedControllerBase<Rotation, AffineTransformation>(dataset) {}
 	
 public:
 
@@ -388,12 +395,12 @@ private:
  * 
  * A position controller is used to animate the scaling of an object.
  */
-class OVITO_CORE_EXPORT ScalingController : public TypedController<Scaling, AffineTransformation>
+class OVITO_CORE_EXPORT ScalingController : public TypedControllerBase<Scaling, AffineTransformation>
 { 
 protected:
 
 	/// The constructor.
-	ScalingController(DataSet* dataset) : TypedController<Scaling, AffineTransformation>(dataset) {}
+	ScalingController(DataSet* dataset) : TypedControllerBase<Scaling, AffineTransformation>(dataset) {}
 	
 public:
 

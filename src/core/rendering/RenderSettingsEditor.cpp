@@ -66,14 +66,10 @@ void RenderSettingsEditor::createUI(const RolloutInsertionParameters& rolloutPar
 
 		QVBoxLayout* layout2 = new QVBoxLayout(groupBox);
 		layout2->setContentsMargins(4,4,4,4);
-#ifndef Q_OS_MACX
 		layout2->setSpacing(2);
-#endif
 		QGridLayout* layout2c = new QGridLayout();
 		layout2c->setContentsMargins(0,0,0,0);
-#ifndef Q_OS_MACX
 		layout2c->setSpacing(2);
-#endif
 		layout2->addLayout(layout2c);
 
 		IntegerRadioButtonParameterUI* renderingRangeTypeUI = new IntegerRadioButtonParameterUI(this, PROPERTY_FIELD(RenderSettings::_renderingRangeType));
@@ -101,9 +97,7 @@ void RenderSettingsEditor::createUI(const RolloutInsertionParameters& rolloutPar
 
 		QGridLayout* layout2a = new QGridLayout();
 		layout2a->setContentsMargins(0,6,0,0);
-#ifndef Q_OS_MACX
 		layout2a->setSpacing(2);
-#endif
 		layout2->addLayout(layout2a);
 		IntegerParameterUI* everyNthFrameUI = new IntegerParameterUI(this, PROPERTY_FIELD(RenderSettings::_everyNthFrame));
 		layout2a->addWidget(everyNthFrameUI->label(), 0, 0);
@@ -123,9 +117,7 @@ void RenderSettingsEditor::createUI(const RolloutInsertionParameters& rolloutPar
 		layout->addWidget(groupBox);
 		QGridLayout* layout2 = new QGridLayout(groupBox);
 		layout2->setContentsMargins(4,4,4,4);
-#ifndef Q_OS_MACX
 		layout2->setSpacing(2);
-#endif
 		layout2->setColumnStretch(1, 1);
 
 		// Image width parameter.
@@ -154,9 +146,8 @@ void RenderSettingsEditor::createUI(const RolloutInsertionParameters& rolloutPar
 		layout->addWidget(groupBox);
 		QGridLayout* layout2 = new QGridLayout(groupBox);
 		layout2->setContentsMargins(4,4,4,4);
-#ifndef Q_OS_MACX
 		layout2->setSpacing(2);
-#endif
+
 		// Background color parameter.
 		ColorParameterUI* backgroundColorPUI = new ColorParameterUI(this, PROPERTY_FIELD(RenderSettings::_backgroundColor));
 		layout2->addWidget(backgroundColorPUI->label(), 2, 0);
@@ -178,9 +169,7 @@ void RenderSettingsEditor::createUI(const RolloutInsertionParameters& rolloutPar
 		layout->addWidget(groupBox);
 		QGridLayout* layout2 = new QGridLayout(groupBox);
 		layout2->setContentsMargins(4,4,4,4);
-#ifndef Q_OS_MACX
 		layout2->setSpacing(2);
-#endif
 		layout2->setColumnStretch(0, 1);
 
 		BooleanParameterUI* saveFileUI = new BooleanParameterUI(this, PROPERTY_FIELD(RenderSettings::_saveToFile));

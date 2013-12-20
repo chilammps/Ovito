@@ -33,17 +33,17 @@ namespace Ovito {
 ******************************************************************************/
 ViewportInputManager::ViewportInputManager(MainWindow* mainWindow) : QObject(mainWindow)
 {
-	class DefaultInputMode : public ViewportInputMode {
-	public:
-		DefaultInputMode(QObject* parent) : ViewportInputMode(parent) {}
-		InputModeType modeType() override { return ExclusiveMode; }
-	};
-	_defaultMode = new DefaultInputMode(this);
 	_zoomMode = new ZoomMode(this);
 	_panMode = new PanMode(this);
 	_orbitMode = new OrbitMode(this);
 	_fovMode = new FOVMode(this);
 	_pickOrbitCenterMode = new PickOrbitCenterMode(this);
+	_selectionMode = new SelectionMode(this);
+	_moveMode = new MoveMode(this);
+	_rotateMode = new RotateMode(this);
+
+	// Set the scene node selection mode as the default.
+	_defaultMode = _selectionMode;
 
 	// Reset the viewport input manager when a new scene has been loaded.
 	connect(&mainWindow->datasetContainer(), &DataSetContainer::dataSetChanged, this, &ViewportInputManager::reset);
@@ -116,7 +116,10 @@ void ViewportInputManager::pushInputMode(ViewportInputMode* newMode, bool tempor
 	if((oldMode && oldMode->hasOverlay()) || newMode->hasOverlay()) {
 		DataSet* dataset = mainWindow()->datasetContainer().currentSet();
 		if(dataset && dataset->viewportConfig()) {
-			dataset->viewportConfig()->updateViewports();
+			if(temporary && dataset->viewportConfig()->activeViewport())
+				dataset->viewportConfig()->activeViewport()->updateViewport();
+			else
+				dataset->viewportConfig()->updateViewports();
 		}
 	}
 

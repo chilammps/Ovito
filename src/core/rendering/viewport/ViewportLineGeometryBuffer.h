@@ -77,11 +77,11 @@ private:
 	/// The OpenGL shader program used to render the lines.
 	QOpenGLShaderProgram* _shader;
 
+	/// The OpenGL shader program used to render the lines in picking mode.
+	QOpenGLShaderProgram* _pickingShader;
+
 	/// The number of vertices stored in the buffer.
 	int _vertexCount;
-
-	Q_OBJECT
-	OVITO_OBJECT
 };
 
 };
