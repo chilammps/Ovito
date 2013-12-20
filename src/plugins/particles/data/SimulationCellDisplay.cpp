@@ -96,7 +96,7 @@ void SimulationCellDisplay::renderWireframe(SimulationCell* cell, SceneRenderer*
 			|| !_wireframeGeometry
 			|| !_wireframeGeometry->isValid(renderer)) {
 		_wireframeGeometry = renderer->createLineGeometryBuffer();
-		_wireframeGeometry->setSize(24);
+		_wireframeGeometry->setVertexCount(24, 2);
 		Point3 corners[8];
 		corners[0] = cell->origin();
 		corners[1] = corners[0] + cell->edgeVector1();

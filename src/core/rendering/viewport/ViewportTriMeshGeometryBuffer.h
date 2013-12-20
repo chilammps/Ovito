@@ -30,6 +30,7 @@
 #include <core/Core.h>
 #include <core/rendering/TriMeshGeometryBuffer.h>
 #include <core/scene/objects/geometry/TriMesh.h>
+#include "OpenGLBuffer.h"
 
 namespace Ovito {
 
@@ -47,7 +48,7 @@ public:
 	virtual void setMesh(const TriMesh& mesh, const ColorA& meshColor) override;
 
 	/// \brief Returns the number of triangle faces stored in the buffer.
-	virtual int faceCount() override { return _renderVertexCount / 3; }
+	virtual int faceCount() override { return _vertexBuffer.elementCount(); }
 
 	/// \brief Returns true if the geometry buffer is filled and can be rendered with the given renderer.
 	virtual bool isValid(SceneRenderer* renderer) override;
@@ -65,10 +66,7 @@ private:
 	};
 
 	/// The internal OpenGL vertex buffer that stores the vertex data.
-	QOpenGLBuffer _glVertexBuffer;
-
-	/// The number of vertices stored in the OpenGL buffer.
-	int _renderVertexCount;
+	OpenGLBuffer<ColoredVertexWithNormal> _vertexBuffer;
 
 	/// The GL context group under which the GL vertex buffer has been created.
 	QOpenGLContextGroup* _contextGroup;

@@ -23,15 +23,15 @@ uniform mat4 modelview_projection_matrix;
 uniform mat3 normal_matrix;
 
 #if __VERSION__ >= 130
-	in vec3 vertex_pos;
-	in vec3 vertex_normal;
-	in vec4 vertex_color;
+	in vec3 position;
+	in vec3 normal;
+	in vec4 color;
 	
 	flat out vec4 vertex_color_fs;
 	out vec3 vertex_normal_fs;
 #else
-	#define vertex_normal gl_Normal
-	#define vertex_color gl_Color
+	#define normal gl_Normal
+	#define color gl_Color
 	
 	#define vertex_color_fs gl_FrontColor
 	varying vec3 vertex_normal_fs;
@@ -39,11 +39,11 @@ uniform mat3 normal_matrix;
 
 void main()
 {
-	vertex_color_fs = vertex_color;
+	vertex_color_fs = color;
 #if __VERSION__ >= 130
-	gl_Position = modelview_projection_matrix * vec4(vertex_pos, 1.0);
+	gl_Position = modelview_projection_matrix * vec4(position, 1.0);
 #else
 	gl_Position = modelview_projection_matrix * gl_Vertex;
 #endif
-	vertex_normal_fs = normalize(normal_matrix * vertex_normal);
+	vertex_normal_fs = normalize(normal_matrix * normal);
 }

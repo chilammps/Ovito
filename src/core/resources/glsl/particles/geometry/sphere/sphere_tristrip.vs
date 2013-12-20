@@ -27,8 +27,8 @@ uniform vec3 cubeVerts[14];
 #if __VERSION__ >= 130
 
 	// The particle data:
-	in vec3 particle_pos;
-	in vec3 particle_color;
+	in vec3 position;
+	in vec3 color;
 	in float particle_radius;
 	
 	// Outputs to fragment shader
@@ -52,12 +52,12 @@ void main()
 {
 #if __VERSION__ >= 130
 	// Forward color to fragment shader.
-	particle_color_fs = vec4(particle_color, 1);
+	particle_color_fs = vec4(color, 1);
 	particle_radius_squared_fs = particle_radius * particle_radius;
-	particle_view_pos_fs = vec3(modelview_matrix * vec4(particle_pos, 1));
+	particle_view_pos_fs = vec3(modelview_matrix * vec4(position, 1));
 
 	// Transform and project vertex.
-	gl_Position = projection_matrix * modelview_matrix * vec4(particle_pos + cubeVerts[gl_VertexID % 14] * particle_radius, 1);
+	gl_Position = projection_matrix * modelview_matrix * vec4(position + cubeVerts[gl_VertexID % 14] * particle_radius, 1);
 #else
 	// Forward color to fragment shader.
 	gl_FrontColor = gl_Color;

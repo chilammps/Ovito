@@ -29,6 +29,7 @@
 
 #include <core/Core.h>
 #include <core/rendering/ArrowGeometryBuffer.h>
+#include "OpenGLBuffer.h"
 
 namespace Ovito {
 

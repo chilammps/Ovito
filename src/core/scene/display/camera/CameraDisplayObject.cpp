@@ -123,7 +123,7 @@ void CameraDisplayObject::render(TimePoint time, SceneObject* sceneObject, const
 				vertices[15], vertices[12]
 		};
 
-		_buffer->setSize(48);
+		_buffer->setVertexCount(48);
 		_buffer->setVertexPositions(linePoints);
 		_buffer->setVertexColor(ColorA(color));
 	}

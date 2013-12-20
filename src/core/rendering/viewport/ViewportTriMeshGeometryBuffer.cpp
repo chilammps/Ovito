@@ -29,14 +29,9 @@ namespace Ovito {
 * Constructor.
 ******************************************************************************/
 ViewportTriMeshGeometryBuffer::ViewportTriMeshGeometryBuffer(ViewportSceneRenderer* renderer) :
-	_contextGroup(QOpenGLContextGroup::currentContextGroup()),
-	_renderVertexCount(-1)
+	_contextGroup(QOpenGLContextGroup::currentContextGroup())
 {
 	OVITO_ASSERT(renderer->glcontext()->shareGroup() == _contextGroup);
-
-	if(!_glVertexBuffer.create())
-		throw Exception(QStringLiteral("Failed to create OpenGL vertex buffer."));
-	_glVertexBuffer.setUsagePattern(QOpenGLBuffer::StaticDraw);
 
 	// Initialize OpenGL shader.
 	_shader = renderer->loadShaderProgram("mesh", ":/core/glsl/mesh/mesh.vs", ":/core/glsl/mesh/mesh.fs");
@@ -48,22 +43,15 @@ ViewportTriMeshGeometryBuffer::ViewportTriMeshGeometryBuffer(ViewportSceneRender
 ******************************************************************************/
 void ViewportTriMeshGeometryBuffer::setMesh(const TriMesh& mesh, const ColorA& meshColor)
 {
-	OVITO_ASSERT(_glVertexBuffer.isCreated());
 	OVITO_ASSERT(QOpenGLContextGroup::currentContextGroup() == _contextGroup);
 
 	// Allocate render vertex buffer.
-	if(!_glVertexBuffer.bind())
-		throw Exception(QStringLiteral("Failed to bind OpenGL vertex buffer."));
-	_renderVertexCount = mesh.faceCount() * 3;
-	_glVertexBuffer.allocate(_renderVertexCount * sizeof(ColoredVertexWithNormal));
-	if(_renderVertexCount == 0) {
-		_glVertexBuffer.release();
-		return;
-	}
+	_vertexBuffer.create(QOpenGLBuffer::StaticDraw, mesh.faceCount(), 3);
 
-	ColoredVertexWithNormal* renderVertices = static_cast<ColoredVertexWithNormal*>(_glVertexBuffer.map(QOpenGLBuffer::ReadWrite));
-	if(!renderVertices)
-		throw Exception(QStringLiteral("Failed to map OpenGL vertex buffer to memory."));
+	if(mesh.faceCount() == 0)
+		return;
+
+	ColoredVertexWithNormal* renderVertices = _vertexBuffer.map(QOpenGLBuffer::ReadWrite);
 
 	quint32 allMask = 0;
 
@@ -136,8 +124,7 @@ void ViewportTriMeshGeometryBuffer::setMesh(const TriMesh& mesh, const ColorA& m
 		}
 	}
 
-	_glVertexBuffer.unmap();
-	_glVertexBuffer.release();
+	_vertexBuffer.unmap();
 }
 
 /******************************************************************************
@@ -147,9 +134,7 @@ bool ViewportTriMeshGeometryBuffer::isValid(SceneRenderer* renderer)
 {
 	ViewportSceneRenderer* vpRenderer = qobject_cast<ViewportSceneRenderer*>(renderer);
 	if(!vpRenderer) return false;
-	return _glVertexBuffer.isCreated()
-			&& _renderVertexCount >= 0
-			&& (_contextGroup == vpRenderer->glcontext()->shareGroup());
+	return _vertexBuffer.isCreated() && (_contextGroup == vpRenderer->glcontext()->shareGroup());
 }
 
 /******************************************************************************
@@ -157,85 +142,47 @@ bool ViewportTriMeshGeometryBuffer::isValid(SceneRenderer* renderer)
 ******************************************************************************/
 void ViewportTriMeshGeometryBuffer::render(SceneRenderer* renderer)
 {
-	OVITO_ASSERT(_glVertexBuffer.isCreated());
 	OVITO_ASSERT(_contextGroup == QOpenGLContextGroup::currentContextGroup());
 	ViewportSceneRenderer* vpRenderer = dynamic_object_cast<ViewportSceneRenderer>(renderer);
 
-	if(_renderVertexCount <= 0 || !vpRenderer)
+	if(faceCount() <= 0 || !vpRenderer)
 		return;
 
 	glDisable(GL_CULL_FACE);
 
+	QOpenGLShaderProgram* shader;
+	if(!renderer->isPicking())
+		shader = _shader;
+	else
+		shader = _pickingShader;
+
+	if(!shader->bind())
+		throw Exception(QStringLiteral("Failed to bind OpenGL shader."));
+
+	shader->setUniformValue("modelview_projection_matrix", (QMatrix4x4)(vpRenderer->projParams().projectionMatrix * vpRenderer->modelViewTM()));
+
+	_vertexBuffer.bindPositions(vpRenderer, shader, offsetof(ColoredVertexWithNormal, pos));
 	if(!renderer->isPicking()) {
-		if(!_shader->bind())
-			throw Exception(QStringLiteral("Failed to bind OpenGL shader."));
-
-		_shader->setUniformValue("modelview_projection_matrix", (QMatrix4x4)(vpRenderer->projParams().projectionMatrix * vpRenderer->modelViewTM()));
-		_shader->setUniformValue("normal_matrix", (QMatrix3x3)(vpRenderer->modelViewTM().linear().inverse().transposed()));
-
-		OVITO_CHECK_OPENGL(_glVertexBuffer.bind());
-		if(vpRenderer->glformat().majorVersion() >= 3) {
-			OVITO_CHECK_OPENGL(_shader->enableAttributeArray("vertex_pos"));
-			OVITO_CHECK_OPENGL(_shader->setAttributeBuffer("vertex_pos", GL_FLOAT, offsetof(ColoredVertexWithNormal, pos), 3, sizeof(ColoredVertexWithNormal)));
-			OVITO_CHECK_OPENGL(_shader->enableAttributeArray("vertex_normal"));
-			OVITO_CHECK_OPENGL(_shader->setAttributeBuffer("vertex_normal", GL_FLOAT, offsetof(ColoredVertexWithNormal, normal), 3, sizeof(ColoredVertexWithNormal)));
-			OVITO_CHECK_OPENGL(_shader->enableAttributeArray("vertex_color"));
-			OVITO_CHECK_OPENGL(_shader->setAttributeBuffer("vertex_color", GL_FLOAT, offsetof(ColoredVertexWithNormal, color), 4, sizeof(ColoredVertexWithNormal)));
-		}
-		else {
-			OVITO_CHECK_OPENGL(glEnableClientState(GL_VERTEX_ARRAY));
-			OVITO_CHECK_OPENGL(glVertexPointer(3, GL_FLOAT, sizeof(ColoredVertexWithNormal), reinterpret_cast<const GLvoid*>(offsetof(ColoredVertexWithNormal, pos))));
-			OVITO_CHECK_OPENGL(glEnableClientState(GL_NORMAL_ARRAY));
-			OVITO_CHECK_OPENGL(glNormalPointer(GL_FLOAT, sizeof(ColoredVertexWithNormal), reinterpret_cast<const GLvoid*>(offsetof(ColoredVertexWithNormal, normal))));
-			OVITO_CHECK_OPENGL(glEnableClientState(GL_COLOR_ARRAY));
-			OVITO_CHECK_OPENGL(glColorPointer(4, GL_FLOAT, sizeof(ColoredVertexWithNormal), reinterpret_cast<const GLvoid*>(offsetof(ColoredVertexWithNormal, color))));
-		}
-		_glVertexBuffer.release();
-
-		OVITO_CHECK_OPENGL(glDrawArrays(GL_TRIANGLES, 0, _renderVertexCount));
-
-		if(vpRenderer->glformat().majorVersion() >= 3) {
-			_shader->disableAttributeArray("vertex_pos");
-			_shader->disableAttributeArray("vertex_normal");
-			_shader->disableAttributeArray("vertex_color");
-		}
-		else {
-			OVITO_CHECK_OPENGL(glDisableClientState(GL_VERTEX_ARRAY));
-			OVITO_CHECK_OPENGL(glDisableClientState(GL_NORMAL_ARRAY));
-			OVITO_CHECK_OPENGL(glDisableClientState(GL_COLOR_ARRAY));
-		}
-		_shader->release();
+		shader->setUniformValue("normal_matrix", (QMatrix3x3)(vpRenderer->modelViewTM().linear().inverse().transposed()));
+		_vertexBuffer.bindColors(vpRenderer, shader, 4, offsetof(ColoredVertexWithNormal, color));
+		_vertexBuffer.bindNormals(vpRenderer, shader, offsetof(ColoredVertexWithNormal, normal));
 	}
 	else {
-		if(!_pickingShader->bind())
-			throw Exception(QStringLiteral("Failed to bind OpenGL shader."));
-
-		_pickingShader->setUniformValue("modelview_projection_matrix", (QMatrix4x4)(vpRenderer->projParams().projectionMatrix * vpRenderer->modelViewTM()));
 		_pickingShader->setUniformValue("pickingBaseID", (GLint)vpRenderer->registerSubObjectIDs(faceCount()));
-
-		OVITO_CHECK_OPENGL(_glVertexBuffer.bind());
-		if(vpRenderer->glformat().majorVersion() >= 3) {
-			OVITO_CHECK_OPENGL(_pickingShader->enableAttributeArray("vertex_pos"));
-			OVITO_CHECK_OPENGL(_pickingShader->setAttributeBuffer("vertex_pos", GL_FLOAT, offsetof(ColoredVertexWithNormal, pos), 3, sizeof(ColoredVertexWithNormal)));
-		}
-		else {
-			OVITO_CHECK_OPENGL(glEnableClientState(GL_VERTEX_ARRAY));
-			OVITO_CHECK_OPENGL(glVertexPointer(3, GL_FLOAT, sizeof(ColoredVertexWithNormal), reinterpret_cast<const GLvoid*>(offsetof(ColoredVertexWithNormal, pos))));
-		}
-		_glVertexBuffer.release();
-		vpRenderer->activateVertexIDs(_pickingShader, _renderVertexCount);
-
-		OVITO_CHECK_OPENGL(glDrawArrays(GL_TRIANGLES, 0, _renderVertexCount));
-
-		if(vpRenderer->glformat().majorVersion() >= 3) {
-			_pickingShader->disableAttributeArray("vertex_pos");
-		}
-		else {
-			OVITO_CHECK_OPENGL(glDisableClientState(GL_VERTEX_ARRAY));
-		}
-		vpRenderer->deactivateVertexIDs(_pickingShader);
-		_pickingShader->release();
+		vpRenderer->activateVertexIDs(_pickingShader, _vertexBuffer.elementCount() * _vertexBuffer.verticesPerElement());
 	}
+
+	OVITO_CHECK_OPENGL(glDrawArrays(GL_TRIANGLES, 0, _vertexBuffer.elementCount() * _vertexBuffer.verticesPerElement()));
+
+	_vertexBuffer.detachPositions(vpRenderer, shader);
+	if(!renderer->isPicking()) {
+		_vertexBuffer.detachColors(vpRenderer, shader);
+		_vertexBuffer.detachNormals(vpRenderer, shader);
+	}
+	else {
+		vpRenderer->deactivateVertexIDs(_pickingShader);
+	}
+	shader->release();
 
 	OVITO_CHECK_OPENGL();
 }

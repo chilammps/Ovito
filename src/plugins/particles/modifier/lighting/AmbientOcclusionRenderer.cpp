@@ -42,6 +42,7 @@ bool AmbientOcclusionRenderer::startRender(DataSet* dataset, RenderSettings* set
 	format.setDepthBufferSize(24);
 	format.setMajorVersion(OVITO_OPENGL_REQUESTED_VERSION_MAJOR);
 	format.setMinorVersion(OVITO_OPENGL_REQUESTED_VERSION_MINOR);
+	format.setOption(QSurfaceFormat::DeprecatedFunctions);
 	format.setProfile(ViewportSceneRenderer::useCoreProfile() ? QSurfaceFormat::CoreProfile : QSurfaceFormat::CompatibilityProfile);
 
 	_offscreenContext.reset(new QOpenGLContext());

@@ -668,7 +668,7 @@ void Viewport::renderOrientationIndicator()
 	// Create line buffer.
 	if(!_orientationTripodGeometry || !_orientationTripodGeometry->isValid(renderer)) {
 		_orientationTripodGeometry = renderer->createLineGeometryBuffer();
-		_orientationTripodGeometry->setSize(18);
+		_orientationTripodGeometry->setVertexCount(18);
 		ColorA vertexColors[18];
 		for(int i = 0; i < 18; i++)
 			vertexColors[i] = axisColors[i / 6];

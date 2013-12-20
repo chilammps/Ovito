@@ -19,31 +19,41 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-// Inputs from calling program:
-uniform mat4 modelview_matrix;
-uniform int pickingBaseID;
+uniform mat4 modelview_projection_matrix;
+uniform bool is_perspective;
+uniform vec3 parallel_view_dir;
+uniform vec3 eye_pos;
+uniform float line_width;
 
-// The particle data:
-in vec3 position;
-in float particle_radius;
+#if __VERSION__ >= 130
 
-// Output to geometry shader.
-out vec4 particle_color_gs;
-out float particle_radius_gs;
+	in vec3 position;
+	in vec4 color;
+	in vec3 vector;
+	out vec4 vertex_color_fs;
+
+#endif
 
 void main()
 {
-	// Compute color from object ID.
-	int objectID = pickingBaseID + gl_VertexID;
-	particle_color_gs = vec4(
-		float(objectID & 0xFF) / 255.0, 
-		float((objectID >> 8) & 0xFF) / 255.0, 
-		float((objectID >> 16) & 0xFF) / 255.0, 
-		float((objectID >> 24) & 0xFF) / 255.0);	
-		
-	// Pass radius to geometry shader.
-	particle_radius_gs = particle_radius;
-
-	// Transform particle center to eye coordinates.
-	gl_Position = modelview_matrix * vec4(position, 1);
+	vertex_color_fs = color;
+	
+	if(vector != vec3(0)) {
+	
+		// Get view direction.
+		vec3 view_dir;
+		if(!is_perspective)
+			view_dir = parallel_view_dir;
+		else
+			view_dir = eye_pos - position;
+	
+		// Build local coordinate system.
+		vec3 u = normalize(cross(view_dir, vector));
+		float w = (modelview_projection_matrix * vec4(position, 1.0)).w;
+		gl_Position = modelview_projection_matrix * vec4(position + (w * line_width * 10e-3) * u, 1.0);
+	}
+	else {
+		gl_Position = vec4(0);
+	}
+	
 }

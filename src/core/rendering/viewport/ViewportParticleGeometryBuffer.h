@@ -30,6 +30,7 @@
 #include <core/Core.h>
 #include <core/rendering/ParticleGeometryBuffer.h>
 #include <core/utilities/opengl/SharedOpenGLResource.h>
+#include "OpenGLBuffer.h"
 
 namespace Ovito {
 
@@ -51,7 +52,7 @@ public:
 	virtual void setSize(int particleCount) override;
 
 	/// \brief Returns the number of particles stored in the buffer.
-	virtual int particleCount() const override { return _particleCount; }
+	virtual int particleCount() const override { return _positionsBuffer.elementCount(); }
 
 	/// \brief Sets the coordinates of the particles.
 	virtual void setParticlePositions(const Point3* coordinates) override;
@@ -103,30 +104,6 @@ protected:
 	/// Deactivates the texture used for billboard rendering of spherical particles.
 	void deactivateBillboardTexture(ViewportSceneRenderer* renderer);
 
-	/// Binds the vertex buffer containing the particle positions to the corresponding
-	/// shader input attribute.
-	void bindParticlePositionBuffer(ViewportSceneRenderer* renderer, QOpenGLShaderProgram* shader);
-
-	/// Binds the vertex buffer containing the particle colors to the corresponding
-	/// shader input attribute.
-	void bindParticleColorBuffer(ViewportSceneRenderer* renderer, QOpenGLShaderProgram* shader);
-
-	/// Binds the vertex buffer containing the particle radii to the corresponding
-	/// shader input attribute.
-	void bindParticleRadiusBuffer(ViewportSceneRenderer* renderer, QOpenGLShaderProgram* shader);
-
-	/// Detaches the vertex buffer containing the particle positions from the corresponding
-	/// shader input attribute.
-	void detachParticlePositionBuffer(ViewportSceneRenderer* renderer, QOpenGLShaderProgram* shader);
-
-	/// Detaches the vertex buffer containing the particle colors from the corresponding
-	/// shader input attribute.
-	void detachParticleColorBuffer(ViewportSceneRenderer* renderer, QOpenGLShaderProgram* shader);
-
-	/// Detaches the vertex buffer containing the particle radii from the corresponding
-	/// shader input attribute.
-	void detachParticleRadiusBuffer(ViewportSceneRenderer* renderer, QOpenGLShaderProgram* shader);
-
 	/// Renders the particles using OpenGL point sprites.
 	void renderPointSprites(ViewportSceneRenderer* renderer);
 
@@ -139,22 +116,16 @@ protected:
 private:
 
 	/// The internal OpenGL vertex buffer that stores the particle positions.
-	QOpenGLBuffer _glPositionsBuffer;
+	OpenGLBuffer<Point3> _positionsBuffer;
 
 	/// The internal OpenGL vertex buffer that stores the particle radii.
-	QOpenGLBuffer _glRadiiBuffer;
+	OpenGLBuffer<FloatType> _radiiBuffer;
 
 	/// The internal OpenGL vertex buffer that stores the particle colors.
-	QOpenGLBuffer _glColorsBuffer;
+	OpenGLBuffer<Color> _colorsBuffer;
 
 	/// The GL context group under which the GL vertex buffers have been created.
 	QPointer<QOpenGLContextGroup> _contextGroup;
-
-	/// The number of particles stored in the buffers.
-	int _particleCount;
-
-	/// The number of vertices per particles stored in the buffers.
-	int _verticesPerParticle;
 
 	/// Resource identifier of the OpenGL texture that is used for billboard rendering of particles.
 	GLuint _billboardTexture;

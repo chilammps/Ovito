@@ -43,7 +43,7 @@ public:
 	DefaultLineGeometryBuffer() {}
 
 	/// \brief Allocates a geometry buffer with the given number of vertices.
-	virtual void setSize(int vertexCount) override {
+	virtual void setVertexCount(int vertexCount, FloatType lineWidth) override {
 		OVITO_ASSERT(vertexCount >= 0);
 		_positionsBuffer.resize(vertexCount);
 		_colorsBuffer.resize(vertexCount);

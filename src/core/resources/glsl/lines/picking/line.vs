@@ -24,14 +24,11 @@ uniform int pickingBaseID;
 
 #if __VERSION__ >= 130
 
-	in vec3 vertex_pos;
-	in vec4 vertex_color;
+	in vec3 position;
 	out vec4 vertex_color_fs;
 
 #else
 
-	#define vertex_color gl_Color
-	#define vertex_color_fs gl_FrontColor
 	attribute float vertexID;
 	#define gl_VertexID int(vertexID)
 
@@ -48,7 +45,7 @@ void main()
 		float((objectID >> 16) & 0xFF) / 255.0, 
 		float((objectID >> 24) & 0xFF) / 255.0);		
 #else
-	vertex_color_fs = vec4(
+	gl_FrontColor = vec4(
 		float(mod(objectID, 0x100)) / 255.0, 
 		float(mod(objectID / 0x100, 0x100)) / 255.0, 
 		float(mod(objectID / 0x10000, 0x100)) / 255.0, 
@@ -56,7 +53,7 @@ void main()
 #endif
 
 #if __VERSION__ >= 130
-	gl_Position = modelview_projection_matrix * vec4(vertex_pos, 1.0);
+	gl_Position = modelview_projection_matrix * vec4(position, 1.0);
 #else
 	gl_Position = modelview_projection_matrix * gl_Vertex;
 #endif

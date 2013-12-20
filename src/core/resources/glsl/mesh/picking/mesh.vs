@@ -25,7 +25,7 @@ uniform int pickingBaseID;
 #if __VERSION__ >= 130
 
 	// The input data:
-	in vec3 vertex_pos;
+	in vec3 position;
 	
 	// Output passed to fragment shader.
 	flat out vec4 vertex_color_fs;
@@ -33,7 +33,6 @@ uniform int pickingBaseID;
 #else
 
 	// The input data:
-	attribute vec3 vertex_pos;
 	attribute float vertexID;
 	#define gl_VertexID int(vertexID)
 	
@@ -53,7 +52,7 @@ void main()
 		float((objectID >> 16) & 0xFF) / 255.0, 
 		float((objectID >> 24) & 0xFF) / 255.0);		
 
-	gl_Position = modelview_projection_matrix * vec4(vertex_pos, 1.0);
+	gl_Position = modelview_projection_matrix * vec4(position, 1.0);
 #else
 	vertex_color_fs = vec4(
 		float(mod(objectID, 0x100)) / 255.0, 

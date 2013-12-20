@@ -128,6 +128,7 @@ void ActionManager::on_HelpOpenGLInfo_triggered()
 			stream << "Geometry shaders: " << QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Geometry) << endl;
 			stream << "Swap behavior: " << (format.swapBehavior() == QSurfaceFormat::SingleBuffer ? QStringLiteral("single buffer") : (format.swapBehavior() == QSurfaceFormat::DoubleBuffer ? QStringLiteral("double buffer") : (format.swapBehavior() == QSurfaceFormat::TripleBuffer ? QStringLiteral("triple buffer") : QStringLiteral("other")))) << endl;
 			stream << "Stencil buffer size: " << format.stencilBufferSize() << endl;
+			stream << "Deprecated functions: " << format.testOption(QSurfaceFormat::DeprecatedFunctions) << endl;
 			vp->viewportWindow()->glcontext()->doneCurrent();
 		}
 	}

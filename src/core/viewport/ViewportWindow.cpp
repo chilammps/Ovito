@@ -46,6 +46,7 @@ ViewportWindow::ViewportWindow(Viewport* owner) :
 	format.setDepthBufferSize(24);
 	format.setMajorVersion(OVITO_OPENGL_REQUESTED_VERSION_MAJOR);
 	format.setMinorVersion(OVITO_OPENGL_REQUESTED_VERSION_MINOR);
+	format.setOption(QSurfaceFormat::DeprecatedFunctions);
 	format.setProfile(ViewportSceneRenderer::useCoreProfile() ? QSurfaceFormat::CoreProfile : QSurfaceFormat::CompatibilityProfile);
 	format.setStencilBufferSize(1);
 #if 0
@@ -238,6 +239,7 @@ void ViewportWindow::renderNow()
 			qDebug() << "OpenGL debug logger:        " << (_oglDebugLogger != nullptr);
 			qDebug() << "OpenGL swap behavior:       " << (format.swapBehavior() == QSurfaceFormat::SingleBuffer ? QStringLiteral("single buffer") : (format.swapBehavior() == QSurfaceFormat::DoubleBuffer ? QStringLiteral("double buffer") : (format.swapBehavior() == QSurfaceFormat::TripleBuffer ? QStringLiteral("triple buffer") : QStringLiteral("other"))));
 			qDebug() << "OpenGL stencil buffer size: " << format.stencilBufferSize();
+			qDebug() << "OpenGL deprecated func:     " << format.testOption(QSurfaceFormat::DeprecatedFunctions);
 		}
 #endif
 

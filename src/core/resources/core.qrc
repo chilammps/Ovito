@@ -141,6 +141,7 @@
 
 	<file>glsl/lines/line.vs</file>
 	<file>glsl/lines/line.fs</file>
+	<file>glsl/lines/thick_line.vs</file>
 	<file>glsl/lines/picking/line.vs</file>
 	<file>glsl/lines/picking/line.fs</file>
 	<file>glsl/text.vertex.glsl</file>

@@ -42,7 +42,7 @@ public:
 	virtual ~LineGeometryBuffer() {}
 
 	/// \brief Allocates a geometry buffer with the given number of vertices.
-	virtual void setSize(int vertexCount) = 0;
+	virtual void setVertexCount(int vertexCount, FloatType lineWidth = FloatType(1)) = 0;
 
 	/// \brief Returns the number of vertices stored in the buffer.
 	virtual int vertexCount() const = 0;
