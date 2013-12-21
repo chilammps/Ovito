@@ -29,7 +29,8 @@ namespace Ovito {
 * Constructor.
 ******************************************************************************/
 ViewportLineGeometryBuffer::ViewportLineGeometryBuffer(ViewportSceneRenderer* renderer) :
-	_contextGroup(QOpenGLContextGroup::currentContextGroup())
+	_contextGroup(QOpenGLContextGroup::currentContextGroup()),
+	_indicesBuffer(QOpenGLBuffer::IndexBuffer)
 {
 	OVITO_ASSERT(renderer->glcontext()->shareGroup() == _contextGroup);
 
@@ -37,6 +38,7 @@ ViewportLineGeometryBuffer::ViewportLineGeometryBuffer(ViewportSceneRenderer* re
 	_shader = renderer->loadShaderProgram("line", ":/core/glsl/lines/line.vs", ":/core/glsl/lines/line.fs");
 	_pickingShader = renderer->loadShaderProgram("line.picking", ":/core/glsl/lines/picking/line.vs", ":/core/glsl/lines/picking/line.fs");
 	_thickLineShader = renderer->loadShaderProgram("thick_line", ":/core/glsl/lines/thick_line.vs", ":/core/glsl/lines/line.fs");
+	_thickLinePickingShader = renderer->loadShaderProgram("thick_line.picking", ":/core/glsl/lines/picking/thick_line.vs", ":/core/glsl/lines/picking/line.fs");
 }
 
 /******************************************************************************
@@ -60,6 +62,18 @@ void ViewportLineGeometryBuffer::setVertexCount(int vertexCount, FloatType lineW
 		_positionsBuffer.create(QOpenGLBuffer::StaticDraw, vertexCount, 2);
 		_colorsBuffer.create(QOpenGLBuffer::StaticDraw, vertexCount, 2);
 		_vectorsBuffer.create(QOpenGLBuffer::StaticDraw, vertexCount, 2);
+		if(_indicesBuffer.create(QOpenGLBuffer::StaticDraw, vertexCount * 6 / 2)) {
+			GLuint* indices = _indicesBuffer.map(QOpenGLBuffer::WriteOnly);
+			for(int i = 0; i < vertexCount; i += 2, indices += 6) {
+				indices[0] = i * 2;
+				indices[1] = i * 2 + 1;
+				indices[2] = i * 2 + 2;
+				indices[3] = i * 2;
+				indices[4] = i * 2 + 2;
+				indices[5] = i * 2 + 3;
+			}
+			_indicesBuffer.unmap();
+		}
 	}
 }
 
@@ -94,7 +108,7 @@ void ViewportLineGeometryBuffer::setVertexColors(const ColorA* colors)
 /******************************************************************************
 * Sets the color of all vertices to the given value.
 ******************************************************************************/
-void ViewportLineGeometryBuffer::setVertexColor(const ColorA color)
+void ViewportLineGeometryBuffer::setLineColor(const ColorA color)
 {
 	OVITO_ASSERT(QOpenGLContextGroup::currentContextGroup() == _contextGroup);
 	_colorsBuffer.fillConstant(color);
@@ -122,63 +136,101 @@ void ViewportLineGeometryBuffer::render(SceneRenderer* renderer)
 	if(vertexCount() <= 0 || !vpRenderer)
 		return;
 
+	if(_lineWidth == 1)
+		renderLines(vpRenderer);
+	else
+		renderThickLines(vpRenderer);
+}
+
+/******************************************************************************
+* Renders the lines using GL_LINES mode.
+******************************************************************************/
+void ViewportLineGeometryBuffer::renderLines(ViewportSceneRenderer* renderer)
+{
 	QOpenGLShaderProgram* shader;
-	if(_lineWidth == 1) {
-		if(!renderer->isPicking())
-			shader = _shader;
-		else
-			shader = _pickingShader;
-	}
-	else {
-		if(!renderer->isPicking())
-			shader = _thickLineShader;
-		else
-			return;
-	}
+	if(!renderer->isPicking())
+		shader = _shader;
+	else
+		shader = _pickingShader;
 
 	if(!shader->bind())
 		throw Exception(QStringLiteral("Failed to bind OpenGL shader."));
 
 	OVITO_CHECK_OPENGL(shader->setUniformValue("modelview_projection_matrix",
-			(QMatrix4x4)(vpRenderer->projParams().projectionMatrix * vpRenderer->modelViewTM())));
+			(QMatrix4x4)(renderer->projParams().projectionMatrix * renderer->modelViewTM())));
 
-	_positionsBuffer.bindPositions(vpRenderer, shader);
+	_positionsBuffer.bindPositions(renderer, shader);
 	if(!renderer->isPicking()) {
-		_colorsBuffer.bindColors(vpRenderer, shader, 4);
+		_colorsBuffer.bindColors(renderer, shader, 4);
 	}
 	else {
-		shader->setUniformValue("pickingBaseID", (GLint)vpRenderer->registerSubObjectIDs(vertexCount() / 2));
-		vpRenderer->activateVertexIDs(shader, _positionsBuffer.elementCount() * _positionsBuffer.verticesPerElement());
+		shader->setUniformValue("pickingBaseID", (GLint)renderer->registerSubObjectIDs(vertexCount() / 2));
+		renderer->activateVertexIDs(shader, _positionsBuffer.elementCount() * _positionsBuffer.verticesPerElement());
 	}
 
-	if(_lineWidth != 1) {
-		shader->setUniformValue("is_perspective", renderer->projParams().isPerspective);
-		shader->setUniformValue("line_width", _lineWidth);
-		AffineTransformation viewModelTM = vpRenderer->modelViewTM().inverse();
-		Vector3 eye_pos = viewModelTM.translation();
-		shader->setUniformValue("eye_pos", eye_pos.x(), eye_pos.y(), eye_pos.z());
-		Vector3 viewDir = viewModelTM * Vector3(0,0,1);
-		shader->setUniformValue("parallel_view_dir", viewDir.x(), viewDir.y(), viewDir.z());
-		_vectorsBuffer.bind(vpRenderer, shader, "vector", GL_FLOAT, 0, 3);
-		OVITO_CHECK_OPENGL(glDrawArrays(GL_QUADS, 0, _positionsBuffer.elementCount() * _positionsBuffer.verticesPerElement()));
-	}
-	else {
-		OVITO_CHECK_OPENGL(glDrawArrays(GL_LINES, 0, _positionsBuffer.elementCount() * _positionsBuffer.verticesPerElement()));
-	}
+	OVITO_CHECK_OPENGL(glDrawArrays(GL_LINES, 0, _positionsBuffer.elementCount() * _positionsBuffer.verticesPerElement()));
 
-	_positionsBuffer.detachPositions(vpRenderer, shader);
+	_positionsBuffer.detachPositions(renderer, shader);
 	if(!renderer->isPicking()) {
-		_colorsBuffer.detachColors(vpRenderer, shader);
+		_colorsBuffer.detachColors(renderer, shader);
 	}
 	else {
-		vpRenderer->deactivateVertexIDs(shader);
-	}
-	if(_lineWidth != 1) {
-		_vectorsBuffer.detach(vpRenderer, shader, "vector");
+		renderer->deactivateVertexIDs(shader);
 	}
 	shader->release();
 
 	OVITO_CHECK_OPENGL();
 }
+
+/******************************************************************************
+* Renders the lines using polygons.
+******************************************************************************/
+void ViewportLineGeometryBuffer::renderThickLines(ViewportSceneRenderer* renderer)
+{
+	QOpenGLShaderProgram* shader;
+	if(!renderer->isPicking())
+		shader = _thickLineShader;
+	else
+		shader = _thickLinePickingShader;
+
+	if(!shader->bind())
+		throw Exception(QStringLiteral("Failed to bind OpenGL shader."));
+
+	OVITO_CHECK_OPENGL(shader->setUniformValue("modelview_matrix", (QMatrix4x4)renderer->modelViewTM()));
+	OVITO_CHECK_OPENGL(shader->setUniformValue("projection_matrix", (QMatrix4x4)renderer->projParams().projectionMatrix));
+
+	_positionsBuffer.bindPositions(renderer, shader);
+	if(!renderer->isPicking()) {
+		_colorsBuffer.bindColors(renderer, shader, 4);
+	}
+	else {
+		shader->setUniformValue("pickingBaseID", (GLint)renderer->registerSubObjectIDs(vertexCount() / 2));
+		renderer->activateVertexIDs(shader, _positionsBuffer.elementCount() * _positionsBuffer.verticesPerElement());
+	}
+
+	GLint viewportCoords[4];
+	glGetIntegerv(GL_VIEWPORT, viewportCoords);
+	FloatType param = renderer->projParams().projectionMatrix(1,1) * viewportCoords[3];
+	shader->setUniformValue("line_width", 0.5f * _lineWidth / param);
+	shader->setUniformValue("is_perspective", renderer->projParams().isPerspective);
+	_vectorsBuffer.bind(renderer, shader, "vector", GL_FLOAT, 0, 3);
+
+	_indicesBuffer.oglBuffer().bind();
+	OVITO_CHECK_OPENGL(glDrawElements(GL_TRIANGLES, _indicesBuffer.elementCount(), GL_UNSIGNED_INT, NULL));
+	_indicesBuffer.oglBuffer().release();
+
+	_positionsBuffer.detachPositions(renderer, shader);
+	if(!renderer->isPicking()) {
+		_colorsBuffer.detachColors(renderer, shader);
+	}
+	else {
+		renderer->deactivateVertexIDs(shader);
+	}
+	_vectorsBuffer.detach(renderer, shader, "vector");
+	shader->release();
+
+	OVITO_CHECK_OPENGL();
+}
+
 
 };

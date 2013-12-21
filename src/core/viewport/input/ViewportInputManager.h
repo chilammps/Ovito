@@ -46,6 +46,9 @@ public:
 	/// \brief Constructor.
 	ViewportInputManager(MainWindow* mainWindow);
 
+	/// Destructor.
+	virtual ~ViewportInputManager();
+
 	/// Returns the associated main window.
 	MainWindow* mainWindow() const { return reinterpret_cast<MainWindow*>(parent()); }
 

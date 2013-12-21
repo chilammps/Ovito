@@ -19,10 +19,9 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-uniform mat4 modelview_projection_matrix;
+uniform mat4 modelview_matrix;
+uniform mat4 projection_matrix;
 uniform bool is_perspective;
-uniform vec3 parallel_view_dir;
-uniform vec3 eye_pos;
 uniform float line_width;
 
 #if __VERSION__ >= 130
@@ -31,26 +30,36 @@ uniform float line_width;
 	in vec4 color;
 	in vec3 vector;
 	out vec4 vertex_color_fs;
+	
+#else
+
+	attribute vec3 vector;
 
 #endif
 
 void main()
 {
+#if __VERSION__ >= 130
 	vertex_color_fs = color;
+#else
+	gl_FrontColor = gl_Color;
+#endif
 	
-	if(vector != vec3(0)) {
-	
-		// Get view direction.
-		vec3 view_dir;
-		if(!is_perspective)
-			view_dir = parallel_view_dir;
-		else
-			view_dir = eye_pos - position;
-	
-		// Build local coordinate system.
-		vec3 u = normalize(cross(view_dir, vector));
-		float w = (modelview_projection_matrix * vec4(position, 1.0)).w;
-		gl_Position = modelview_projection_matrix * vec4(position + (w * line_width * 10e-3) * u, 1.0);
+#if __VERSION__ >= 130
+	vec4 view_position = modelview_matrix * vec4(position, 1.0);
+#else
+	vec4 view_position = modelview_matrix * gl_Vertex;
+#endif
+	vec3 view_dir;
+	if(is_perspective)
+		view_dir = view_position.xyz;
+	else
+		view_dir = vec3(0,0,-1);
+	vec3 u = cross(view_dir, (modelview_matrix * vec4(vector,0.0)).xyz);
+	if(u != vec3(0)) {
+		float w = projection_matrix[0][3] * view_position.x + projection_matrix[1][3] * view_position.y
+			+ projection_matrix[2][3] * view_position.z + projection_matrix[3][3];
+		gl_Position = projection_matrix * (view_position - vec4((w * line_width / length(u)) * u, 0.0));
 	}
 	else {
 		gl_Position = vec4(0);

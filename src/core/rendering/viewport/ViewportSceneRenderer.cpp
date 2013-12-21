@@ -541,4 +541,16 @@ void ViewportSceneRenderer::deactivateVertexIDs(QOpenGLShaderProgram* shader)
 		shader->disableAttributeArray("vertexID");
 }
 
+/******************************************************************************
+* Returns the line rendering width to use in object picking mode.
+******************************************************************************/
+FloatType ViewportSceneRenderer::defaultLinePickingWidth()
+{
+	FloatType devicePixelRatio = 1;
+	if(glcontext() && glcontext()->screen())
+		devicePixelRatio = glcontext()->screen()->devicePixelRatio();
+	return 12.0f * devicePixelRatio;
+}
+
+
 };

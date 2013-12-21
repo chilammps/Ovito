@@ -63,7 +63,7 @@ public:
 	}
 
 	/// \brief Sets the color of all vertices to the given value.
-	virtual void setVertexColor(const ColorA color) override {
+	virtual void setLineColor(const ColorA color) override {
 		std::fill(_colorsBuffer.begin(), _colorsBuffer.end(), color);
 	}
 

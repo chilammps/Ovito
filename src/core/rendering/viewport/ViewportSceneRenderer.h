@@ -173,6 +173,9 @@ public:
 	/// This is an internal method used by the PickingSceneRenderer class to implement the picking mechanism.
 	virtual quint32 registerSubObjectIDs(quint32 subObjectCount) { return 0; }
 
+	/// Returns the line rendering width to use in object picking mode.
+	virtual FloatType defaultLinePickingWidth() override;
+
 protected:
 
 	/// \brief Renders the visual representation of the modifiers.

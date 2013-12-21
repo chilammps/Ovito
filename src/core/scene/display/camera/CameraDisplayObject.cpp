@@ -33,6 +33,7 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, CameraDisplayObject, DisplayObject)
 ******************************************************************************/
 Box3 CameraDisplayObject::boundingBox(TimePoint time, SceneObject* sceneObject, ObjectNode* contextNode, const PipelineFlowState& flowState)
 {
+	// This is not a physical object. It doesn't have a size.
 	return Box3(Point3::Origin(), Point3::Origin());
 }
 
@@ -57,7 +58,8 @@ void CameraDisplayObject::render(TimePoint time, SceneObject* sceneObject, const
 		return;
 
 	// Do we have to re-create the geometry buffer from scratch?
-	bool recreateBuffer = !_buffer || !_buffer->isValid(renderer);
+	bool recreateBuffer = !_cameraIcon || !_cameraIcon->isValid(renderer)
+			|| !_pickingCameraIcon || !_pickingCameraIcon->isValid(renderer);
 
 	// Determine icon color depending on selection status.
 	Color color = ViewportSettings::getSettings().viewportColor(contextNode->isSelected() ? ViewportSettings::COLOR_SELECTION : ViewportSettings::COLOR_CAMERAS);
@@ -68,8 +70,10 @@ void CameraDisplayObject::render(TimePoint time, SceneObject* sceneObject, const
 			color) || recreateBuffer;
 
 	// Re-create the geometry buffer if necessary.
-	if(recreateBuffer)
-		_buffer = renderer->createLineGeometryBuffer();
+	if(recreateBuffer) {
+		_cameraIcon = renderer->createLineGeometryBuffer();
+		_pickingCameraIcon = renderer->createLineGeometryBuffer();
+	}
 
 	// Update buffer contents.
 	if(updateContents) {
@@ -123,19 +127,25 @@ void CameraDisplayObject::render(TimePoint time, SceneObject* sceneObject, const
 				vertices[15], vertices[12]
 		};
 
-		_buffer->setVertexCount(48);
-		_buffer->setVertexPositions(linePoints);
-		_buffer->setVertexColor(ColorA(color));
+		_cameraIcon->setVertexCount(48);
+		_cameraIcon->setVertexPositions(linePoints);
+		_cameraIcon->setLineColor(ColorA(color));
+
+		_pickingCameraIcon->setVertexCount(48, renderer->defaultLinePickingWidth());
+		_pickingCameraIcon->setVertexPositions(linePoints);
+		_pickingCameraIcon->setLineColor(ColorA(color));
 	}
 
-	// Setup transformation matrix.
+	// Setup transformation matrix to always show the camera at the same size.
 	Point3 cameraPos = Point3::Origin() + renderer->worldTransform().translation();
 	FloatType scaling = 2.0f * renderer->viewport()->nonScalingSize(cameraPos);
 	renderer->setWorldTransform(renderer->worldTransform() * AffineTransformation::scaling(scaling));
 
-	// Handle picking.
 	renderer->beginPickObject(contextNode, sceneObject, this);
-	_buffer->render(renderer);
+	if(!renderer->isPicking())
+		_cameraIcon->render(renderer);
+	else
+		_pickingCameraIcon->render(renderer);
 	renderer->endPickObject();
 }
 

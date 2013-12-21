@@ -102,7 +102,7 @@ protected:
 	void renderWireframe(SimulationCell* cell, SceneRenderer* renderer, ObjectNode* contextNode);
 
 	/// Renders the given simulation using solid shading mode.
-	void renderSolid(SimulationCell* cell, SceneRenderer* renderer);
+	void renderSolid(SimulationCell* cell, SceneRenderer* renderer, ObjectNode* contextNode);
 
 protected:
 
@@ -117,6 +117,9 @@ protected:
 
 	/// The geometry buffer used to render the simulation cell in wireframe mode.
 	std::unique_ptr<LineGeometryBuffer> _wireframeGeometry;
+
+	/// The geometry buffer used to render the wireframe simulation cell in object picking mode.
+	std::unique_ptr<LineGeometryBuffer> _wireframePickingGeometry;
 
 	/// This helper structure is used to detect any changes in the input simulation cell
 	/// that require updating the display geometry buffer for wireframe rendering.

@@ -145,6 +145,9 @@ public:
 	/// Call this when rendering of a pickable object is finished.
 	virtual void endPickObject() {}
 
+	/// Returns the line rendering width to use in object picking mode.
+	virtual FloatType defaultLinePickingWidth() { return 1; }
+
 protected:
 
 	/// Constructor.

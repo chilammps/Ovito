@@ -54,7 +54,7 @@ public:
 	virtual void setVertexColors(const ColorA* colors) = 0;
 
 	/// \brief Sets the color of all vertices to the given value.
-	virtual void setVertexColor(const ColorA color) = 0;
+	virtual void setLineColor(const ColorA color) = 0;
 
 	/// \brief Returns true if the geometry buffer is filled and can be rendered with the given renderer.
 	virtual bool isValid(SceneRenderer* renderer) = 0;

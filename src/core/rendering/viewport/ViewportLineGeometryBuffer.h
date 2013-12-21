@@ -56,13 +56,21 @@ public:
 	virtual void setVertexColors(const ColorA* colors) override;
 
 	/// \brief Sets the color of all vertices to the given value.
-	virtual void setVertexColor(const ColorA color) override;
+	virtual void setLineColor(const ColorA color) override;
 
 	/// \brief Returns true if the geometry buffer is filled and can be rendered with the given renderer.
 	virtual bool isValid(SceneRenderer* renderer) override;
 
 	/// \brief Renders the geometry.
 	virtual void render(SceneRenderer* renderer) override;
+
+protected:
+
+	/// \brief Renders the lines using GL_LINES mode.
+	void renderLines(ViewportSceneRenderer* renderer);
+
+	/// \brief Renders the lines using polygons.
+	void renderThickLines(ViewportSceneRenderer* renderer);
 
 private:
 
@@ -75,6 +83,9 @@ private:
 	/// The internal OpenGL vertex buffer that stores the line segment vectors.
 	OpenGLBuffer<Vector3> _vectorsBuffer;
 
+	/// The internal OpenGL vertex buffer that stores the indices for a call to glDrawElements().
+	OpenGLBuffer<GLuint> _indicesBuffer;
+
 	/// The GL context group under which the GL vertex buffer has been created.
 	QOpenGLContextGroup* _contextGroup;
 
@@ -86,6 +97,9 @@ private:
 
 	/// The OpenGL shader program used to render thick lines.
 	QOpenGLShaderProgram* _thickLineShader;
+
+	/// The OpenGL shader program used to render thick lines in picking mode.
+	QOpenGLShaderProgram* _thickLinePickingShader;
 
 	/// The width of lines in screen space.
 	FloatType _lineWidth;

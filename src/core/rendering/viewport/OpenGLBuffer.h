@@ -42,26 +42,33 @@ class OVITO_CORE_EXPORT OpenGLBuffer
 public:
 
 	/// Constructor.
-	OpenGLBuffer() : _elementCount(0), _verticesPerElement(0) {}
+	OpenGLBuffer(QOpenGLBuffer::Type type = QOpenGLBuffer::VertexBuffer) : _elementCount(0), _verticesPerElement(0), _buffer(type) {}
 
 	/// Creates the buffer object in the OpenGL server. This function must be called with a current QOpenGLContext.
 	/// The buffer will be bound to and can only be used in that context (or any other context that is shared with it).
-	void create(QOpenGLBuffer::UsagePattern usagePattern, int elementCount, int verticesPerElement = 1) {
+	bool create(QOpenGLBuffer::UsagePattern usagePattern, int elementCount, int verticesPerElement = 1) {
 		OVITO_ASSERT(verticesPerElement >= 1);
 		OVITO_ASSERT(elementCount >= 0);
 		OVITO_ASSERT(elementCount < std::numeric_limits<int>::max() / sizeof(T) / verticesPerElement);
-		_elementCount = elementCount;
-		_verticesPerElement = verticesPerElement;
-		if(!_buffer.isCreated()) {
-			if(!_buffer.create())
-				throw Exception(QStringLiteral("Failed to create OpenGL vertex buffer."));
-			_buffer.setUsagePattern(usagePattern);
+		if(_elementCount != elementCount || _verticesPerElement != verticesPerElement) {
+			_elementCount = elementCount;
+			_verticesPerElement = verticesPerElement;
+			if(!_buffer.isCreated()) {
+				if(!_buffer.create())
+					throw Exception(QStringLiteral("Failed to create OpenGL vertex buffer."));
+				_buffer.setUsagePattern(usagePattern);
+			}
+			if(!_buffer.bind())
+				throw Exception(QStringLiteral("Failed to bind OpenGL vertex buffer."));
+			_buffer.allocate(sizeof(T) * _elementCount * _verticesPerElement);
+			OVITO_CHECK_OPENGL();
+			_buffer.release();
+			return true;
 		}
-		if(!_buffer.bind())
-			throw Exception(QStringLiteral("Failed to bind OpenGL vertex buffer."));
-		_buffer.allocate(sizeof(T) * _elementCount * _verticesPerElement);
-		OVITO_CHECK_OPENGL();
-		_buffer.release();
+		else {
+			OVITO_ASSERT(isCreated());
+			return false;
+		}
 	}
 
 	/// Returns true if this buffer has been created; false otherwise.
@@ -72,6 +79,9 @@ public:
 
 	/// Returns the number of vertices rendered per element.
 	int verticesPerElement() const { return _verticesPerElement; }
+
+	/// Provides access to the internal OpenGL vertex buffer object.
+	QOpenGLBuffer& oglBuffer() { return _buffer; }
 
 	/// Maps the contents of this buffer into the application's memory space and returns a pointer to it.
 	T* map(QOpenGLBuffer::Access access) {

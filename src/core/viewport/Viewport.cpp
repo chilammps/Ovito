@@ -624,8 +624,10 @@ bool Viewport::setMouseGrabEnabled(bool grab)
 ******************************************************************************/
 void Viewport::setCursor(const QCursor& cursor)
 {
+#ifndef Q_OS_MACX
 	if(_viewportWindow)
 		_viewportWindow->setCursor(cursor);
+#endif
 }
 
 /******************************************************************************
@@ -633,8 +635,10 @@ void Viewport::setCursor(const QCursor& cursor)
 ******************************************************************************/
 void Viewport::unsetCursor()
 {
+#ifndef Q_OS_MACX
 	if(_viewportWindow)
 		_viewportWindow->unsetCursor();
+#endif
 }
 
 /******************************************************************************
