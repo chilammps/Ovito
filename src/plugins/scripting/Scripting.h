@@ -23,6 +23,7 @@
 #define __OVITO_SCRIPTING_H
 
 #include <core/Core.h>
+#include <QtScript>
 
 #ifdef MAKING_MODULE_SCRIPTING
 #  define OVITO_SCRIPTING_EXPORT Q_DECL_EXPORT

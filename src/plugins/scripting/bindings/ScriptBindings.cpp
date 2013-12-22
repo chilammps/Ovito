@@ -19,13 +19,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "ScriptBindings.h"
-
-#include <vector>
-
-#include <base/linalg/Point3.h>
-#include <base/linalg/Vector3.h>
-#include <base/utilities/FloatType.h>
+#include <plugins/scripting/Scripting.h>
 #include <core/dataset/DataSetContainer.h>
 #include <core/dataset/importexport/FileImporter.h>
 #include <core/gui/app/Application.h>
@@ -36,6 +30,7 @@
 #include <core/plugins/PluginManager.h>
 #include <core/scene/SelectionSet.h>
 #include <plugins/particles/modifier/coloring/ColorCodingModifier.h>
+#include "ScriptBindings.h"
 
 namespace Scripting {
 

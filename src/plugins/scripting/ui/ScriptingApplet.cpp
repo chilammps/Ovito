@@ -20,15 +20,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <plugins/scripting/Scripting.h>
-#include "ScriptingApplet.h"
-
-#include <QString>
-//#include <QJSEngine>
-#include <QtScript>
-
 #include <core/gui/mainwin/MainWindow.h>
-#include "../bindings/ScriptBindings.h"
-
+#include <plugins/scripting/bindings/ScriptBindings.h>
+#include "ScriptingApplet.h"
 
 namespace Scripting {
 

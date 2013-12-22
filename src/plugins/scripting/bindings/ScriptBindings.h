@@ -23,15 +23,7 @@
 #define __OVITO_SCRIPTING_BINDINGS_SCRIPTBINDINGS_H
 
 #include <plugins/scripting/Scripting.h>
-
-#include <QtScript>
-
-#include <core/viewport/Viewport.h>
-#include <core/gui/actions/ActionManager.h>
 #include <core/viewport/ViewportConfiguration.h>
-#include <core/scene/pipeline/Modifier.h>
-#include <core/dataset/DataSet.h>
-#include <core/dataset/DataSetContainer.h>
 
 namespace Scripting {
 
@@ -229,9 +221,7 @@ QScriptValue modifier(QScriptContext* context, QScriptEngine* engine);
 QScriptEngine* prepareEngine(DataSet* dataSet, QObject* parent = 0);
 
 
-}
-
-
+};	// End of namespace
 
 #endif
 
