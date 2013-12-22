@@ -30,43 +30,23 @@ namespace Scripting {
 using namespace Ovito;
 
 /**
- * \brief QObject based wrapper around OORef.
+ * \brief Helper to wrap OORef'd object in a QScriptValue.
  *
- * \todo This could probalby be replaced by QVariant!!   
+ * The "data" property of the QScriptValue stores an additional
+ * OORef smart pointer to the OvitoObject to keep it alive as long as the
+ * QScriptValue exists.
  */
 template<typename T>
-class ScriptRef : public QObject {
-public:
-	explicit ScriptRef(const OORef<T>& ref) : ref_(ref) {}
-	ScriptRef(const ScriptRef<T>& ref) : ref_(ref.ref_) {}
-	OORef<T> getReference() { return ref_; }
-
-private:
-	OORef<T> ref_;
-};
-
-
-/**
- * \brief Helper to wrap OORef'd object in QScriptValue.
- *
- * The "data" property of the script value will contain an OORef that
- * will be deleted when the script no longer needs it.  This
- * guarantees correct memory management for reference counted Ovito
- * objects.
- */
-template<typename T>
-QScriptValue wrapOORef(OORef<T> ptr, QScriptEngine* engine) {
-	// Create script value that will never be deleted, because
-	// memory is managed by the smart pointer "ptr".
+QScriptValue wrapOORef(const OORef<T>& ptr, QScriptEngine* engine) {
+	// Create script value that stores the raw pointer to the Ovito object.
 	QScriptValue retval = engine->newQObject(ptr.get(),
 											 QScriptEngine::QtOwnership);
-	// Add the smart pointer in 'data', it will be deleted when
-	// the script doesn't need it anymore, so that we don't leak
-	// memory.
-	QScriptValue ref = engine->newQObject(new ScriptRef<T>(ptr),
-										  QScriptEngine::ScriptOwnership);
-	retval.setData(ref);
-	// Done.
+
+	// Store an additional OORef<OvitoObject> smart pointer in the 'data' field of the first QScriptValue.
+	// It will be deleted together with the raw pointer when the script value is garbage-collected.
+	// The OORef smart pointer is encapsulated in a QVariant to make it acceptable by the QScriptValue class.
+	retval.setData(engine->newVariant(qVariantFromValue(static_object_cast<OvitoObject>(ptr))));
+
 	return retval;
 }
 
