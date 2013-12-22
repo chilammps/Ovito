@@ -56,7 +56,7 @@ Future<QString> FileManager::fetchUrl(DataSetContainer& container, const QUrl& u
 
 		return Future<QString>::createImmediate(filePath, tr("Loading file %1").arg(filePath));
 	}
-	else if(url.scheme() == "sftp") {
+	else if(url.scheme() == QStringLiteral("sftp")) {
 		QMutexLocker lock(&_mutex);
 
 		QUrl normalizedUrl = normalizeUrl(url);
@@ -81,7 +81,7 @@ Future<QString> FileManager::fetchUrl(DataSetContainer& container, const QUrl& u
 		container.taskManager().addTask(future);
 		return future;
 	}
-	else throw Exception(tr("URL scheme not supported. The program supports only the sftp:// scheme and loading of local files."));
+	else throw Exception(tr("URL scheme not supported. The program supports only the sftp:// scheme and local file paths."));
 }
 
 /******************************************************************************
@@ -89,12 +89,12 @@ Future<QString> FileManager::fetchUrl(DataSetContainer& container, const QUrl& u
 ******************************************************************************/
 Future<QStringList> FileManager::listDirectoryContents(const QUrl& url)
 {
-	if(url.scheme() == "sftp") {
+	if(url.scheme() == QStringLiteral("sftp")) {
 		std::shared_ptr<FutureInterface<QStringList>> futureInterface = std::make_shared<FutureInterface<QStringList>>();
 		new SftpListDirectoryJob(url, futureInterface);
 		return Future<QStringList>(futureInterface);
 	}
-	else throw Exception(tr("URL scheme not supported. The program supports only the sftp:// scheme and loading of local files."));
+	else throw Exception(tr("URL scheme not supported. The program supports only the sftp:// scheme and local file paths."));
 }
 
 /******************************************************************************
@@ -159,5 +159,17 @@ void FileManager::cacheCredentials(const QString& host, const QString& username,
 	QMutexLocker lock(&_mutex);
 	_credentialCache.insert(host, qMakePair(username, password));
 }
+
+/******************************************************************************
+* Constructs a URL from a path entered by the user.
+******************************************************************************/
+QUrl FileManager::urlFromUserInput(const QString& path)
+{
+	if(path.startsWith(QStringLiteral("sftp://")))
+		return QUrl(path);
+	else
+		return QUrl::fromLocalFile(path);
+}
+
 
 };

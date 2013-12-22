@@ -66,6 +66,9 @@ public:
 	/// \brief Saves the login name and password for the given host in the credential cache.
 	void cacheCredentials(const QString& host, const QString& username, const QString& password);
 
+	/// \brief Constructs a URL from a path entered by the user.
+	QUrl urlFromUserInput(const QString& path);
+
 private:
 
 	/// Is called when a remote file has been fetched.

@@ -196,42 +196,53 @@ bool TaskManager::waitForTask(const FutureInterfacePointer& futureInterface)
 	if(futureInterface->isFinished())
 		return !futureInterface->isCanceled();
 
-	// Poll the task for a few milliseconds to give it a chance to finish
-	// before showing the progress dialog.
-	for(int i = 0; i < 10; i++) {
-		QThread::msleep(10);
-		QThread::yieldCurrentThread();
-		if(futureInterface->isFinished())
-			return !futureInterface->isCanceled();
+	if(Application::instance().guiMode()) {
+		OVITO_ASSERT(_mainWindow != nullptr);
+
+		// Poll the task for a few milliseconds to give it a chance to finish
+		// before showing the progress dialog.
+		for(int i = 0; i < 10; i++) {
+			QThread::msleep(10);
+			QThread::yieldCurrentThread();
+			if(futureInterface->isFinished())
+				return !futureInterface->isCanceled();
+		}
+
+		// Show progress dialog.
+		QProgressDialog progressDialog(_mainWindow);
+		progressDialog.setWindowModality(Qt::WindowModal);
+		progressDialog.setAutoClose(false);
+		progressDialog.setAutoReset(false);
+		progressDialog.setMinimumDuration(0);
+		QLabel* label = new QLabel();
+		label->setWordWrap(true);
+		label->setMinimumWidth(500);
+		progressDialog.setLabel(label);
+
+		FutureWatcher watcher;
+		connect(&watcher, SIGNAL(progressRangeChanged(int)), &progressDialog, SLOT(setMaximum(int)));
+		connect(&watcher, SIGNAL(progressValueChanged(int)), &progressDialog, SLOT(setValue(int)));
+		connect(&watcher, SIGNAL(progressTextChanged(const QString&)), &progressDialog, SLOT(setLabelText(const QString&)));
+		connect(&progressDialog, SIGNAL(canceled()), &watcher, SLOT(cancel()));
+		watcher.setFutureInterface(futureInterface);
+
+		progressDialog.setLabelText(futureInterface->progressText());
+		progressDialog.setMaximum(futureInterface->progressMaximum());
+		progressDialog.setValue(futureInterface->progressValue());
+
+		progressDialog.open();
+		while(!watcher.isFinished()) {
+			QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents, 100);
+		}
+
 	}
-
-	// Show progress dialog.
-	QProgressDialog progressDialog(_mainWindow);
-	progressDialog.setWindowModality(Qt::WindowModal);
-	progressDialog.setAutoClose(false);
-	progressDialog.setAutoReset(false);
-	progressDialog.setMinimumDuration(0);
-	QLabel* label = new QLabel();
-	label->setWordWrap(true);
-	label->setMinimumWidth(500);
-	progressDialog.setLabel(label);
-
-	FutureWatcher watcher;
-	connect(&watcher, SIGNAL(progressRangeChanged(int)), &progressDialog, SLOT(setMaximum(int)));
-	connect(&watcher, SIGNAL(progressValueChanged(int)), &progressDialog, SLOT(setValue(int)));
-	connect(&watcher, SIGNAL(progressTextChanged(const QString&)), &progressDialog, SLOT(setLabelText(const QString&)));
-	connect(&progressDialog, SIGNAL(canceled()), &watcher, SLOT(cancel()));
-	watcher.setFutureInterface(futureInterface);
-
-	progressDialog.setLabelText(futureInterface->progressText());
-	progressDialog.setMaximum(futureInterface->progressMaximum());
-	progressDialog.setValue(futureInterface->progressValue());
-
-	progressDialog.open();
-	while(!watcher.isFinished()) {
-		QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents, 100);
+	else {
+		FutureWatcher watcher;
+		watcher.setFutureInterface(futureInterface);
+		while(!watcher.isFinished()) {
+			QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents, 100);
+		}
 	}
-
 	return !futureInterface->isCanceled();
 }
 

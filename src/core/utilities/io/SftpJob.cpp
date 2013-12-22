@@ -23,6 +23,7 @@
 #include <core/utilities/concurrent/Future.h>
 #include <core/utilities/io/FileManager.h>
 #include <core/gui/dialogs/RemoteAuthenticationDialog.h>
+#include <core/gui/app/Application.h>
 
 #include "SftpJob.h"
 
@@ -152,7 +153,7 @@ void SftpJob::shutdown(bool success)
 void SftpJob::onSshConnectionError(QSsh::SshError error)
 {
 	// If authentication failed, ask the user to re-enter username/password.
-	if(error == QSsh::SshAuthenticationError && !_futureInterface->isCanceled()) {
+	if(error == QSsh::SshAuthenticationError && Application::instance().guiMode() && !_futureInterface->isCanceled()) {
 		OVITO_ASSERT(!_sftpChannel);
 
 		// Ask for new username/password.

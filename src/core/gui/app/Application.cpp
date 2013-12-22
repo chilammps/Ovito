@@ -168,7 +168,7 @@ bool Application::initialize(int& argc, char** argv)
 		if(cmdLineParser().positionalArguments().empty() == false) {
 			QString importFilename = cmdLineParser().positionalArguments().front();
 			if(!importFilename.endsWith(".ovito", Qt::CaseInsensitive)) {
-				QUrl importURL = QUrl::fromUserInput(importFilename);
+				QUrl importURL = FileManager::instance().urlFromUserInput(importFilename);
 				datasetContainer()->importFile(importURL);
 				datasetContainer()->currentSet()->undoStack().setClean();
 			}
