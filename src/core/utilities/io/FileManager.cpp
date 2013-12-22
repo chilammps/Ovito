@@ -48,7 +48,13 @@ Future<QString> FileManager::fetchUrl(DataSetContainer& container, const QUrl& u
 {
 	if(url.isLocalFile()) {
 		// Nothing to do to fetch local files. Simply return a finished Future object.
-		return Future<QString>::createImmediate(url.toLocalFile(), tr("Loading file %1").arg(url.toLocalFile()));
+
+		// But first check if the file exists.
+		QString filePath = url.toLocalFile();
+		if(QFileInfo::exists(url.toLocalFile()) == false)
+			return Future<QString>::createFailed(Exception(tr("File does not exist: %1").arg(filePath)));
+
+		return Future<QString>::createImmediate(filePath, tr("Loading file %1").arg(filePath));
 	}
 	else if(url.scheme() == "sftp") {
 		QMutexLocker lock(&_mutex);

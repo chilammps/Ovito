@@ -94,7 +94,12 @@ void FutureInterfaceBase::reportException()
 	if(isCanceled() || isFinished())
 		return;
 
-	_exceptionStore = std::current_exception();
+	reportException(std::current_exception());
+}
+
+void FutureInterfaceBase::reportException(std::exception_ptr ex)
+{
+	_exceptionStore = ex;
 	_state = State(_state | ResultSet);
 	_waitCondition.wakeAll();
 	sendCallOut(FutureWatcher::CallOutEvent::ResultReady);

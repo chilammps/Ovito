@@ -87,6 +87,15 @@ public:
 		return Future(interface);
 	}
 
+	/// Create a Future with a thrown exception.
+	static Future createFailed(const Exception& ex) {
+		auto interface = std::make_shared<Interface>();
+		interface->reportStarted();
+		interface->reportException(std::make_exception_ptr(ex));
+		interface->reportFinished();
+		return Future(interface);
+	}
+
 	/// Create a Future without results that is in the canceled state.
 	static Future createCanceled() {
 		auto interface = std::make_shared<Interface>();

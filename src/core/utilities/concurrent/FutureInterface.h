@@ -69,6 +69,7 @@ public:
     void reportFinished();
 
     void reportException();
+    void reportException(std::exception_ptr ex);
 
 protected:
 
