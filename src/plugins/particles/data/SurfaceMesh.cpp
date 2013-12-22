@@ -78,19 +78,19 @@ void SurfaceMesh::smoothMeshIteration(HalfEdgeMesh& mesh, FloatType prefactor, c
 	const AffineTransformation reducedToAbsolute = cell.matrix();
 
 	// Compute displacement for each vertex.
-	std::vector<Vector3> displacements(mesh.vertices().size());
-	parallelFor(mesh.vertices().size(), [&mesh, &displacements, prefactor, cell, absoluteToReduced](int index) {
-		HalfEdgeMesh::Vertex* vertex = mesh.vertices()[index];
-		Vector3& d = displacements[index];
-		d.setZero();
+	std::vector<Vector3> displacements(mesh.vertexCount());
+	parallelFor(mesh.vertexCount(), [&mesh, &displacements, prefactor, cell, absoluteToReduced](int index) {
+		HalfEdgeMesh::Vertex* vertex = mesh.vertex(index);
+		Vector3 d = Vector3::Zero();
 		for(HalfEdgeMesh::Edge* edge = vertex->edges(); edge != nullptr; edge = edge->nextVertexEdge()) {
 			d += cell.wrapVector(edge->vertex2()->pos() - vertex->pos());
 		}
 		if(vertex->edges() != nullptr)
 			d *= (prefactor / vertex->numEdges());
+		displacements[index] = d;
 	});
 
-	// Apply displacements.
+	// Apply computed displacements.
 	auto d = displacements.cbegin();
 	for(HalfEdgeMesh::Vertex* vertex : mesh.vertices())
 		vertex->pos() += *d++;

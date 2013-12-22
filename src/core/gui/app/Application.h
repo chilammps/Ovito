@@ -29,13 +29,16 @@
 
 #include <core/Core.h>
 #include <base/utilities/Exception.h>
+#include "CommandLineParser.h"
 
 namespace Ovito {
+
+class AutoStartObject;		// defined in AutoStartObject.h
 
 /**
  * \brief The main application.
  */
-class OVITO_CORE_EXPORT Application : public QApplication
+class OVITO_CORE_EXPORT Application : public QObject
 {
 	Q_OBJECT
 
@@ -43,20 +46,23 @@ public:
 
 	/// \brief Returns the one and only instance of this class.
 	inline static Application& instance() {
-		return *static_cast<Application*>(QCoreApplication::instance());
+		return _instance;
 	}
 
 	/// \brief Constructor.
-	/// \param argc The number of command line arguments.
-	/// \param argv The command line arguments.
-	Application(int& argc, char** argv) : QApplication(argc, argv), _exitCode(0), _consoleMode(false) {}
+	Application();
+
+	/// \brief Destructor.
+	~Application();
 
 	/// \brief Initializes the application.
+	/// \param argc The number of command line arguments.
+	/// \param argv The command line arguments.
 	/// \return \c true if the application was initialized successfully;
 	///         \c false if an error occurred and the program should be terminated.
 	///
 	/// This is called on program startup. The method creates all other global objects and the main window.
-	bool initialize();
+	bool initialize(int& argc, char** argv);
 
 	/// \brief Enters the main event loop.
 	/// \return The program exit code.
@@ -87,8 +93,13 @@ public:
 	/// \brief When in console mode, this specifies the exit code that will be returned by the application on shutdown.
 	void setExitCode(int code) { _exitCode = code; }
 
-	/// \brief Shows the online manual and opens the given help page.
-	void openHelpTopic(const QString& page);
+	/// \brief Returns a pointer to the main dataset container.
+	/// \return The dataset container of the first main window when running in GUI mode;
+	///         or the global dataset container when running in console mode.
+	DataSetContainer* datasetContainer() const;
+
+	/// \brief Returns the command line options passed to the program.
+	const CommandLineParser& cmdLineParser() const { return _cmdLineParser; }
 
 	/// This registers a functor object to be called after all events in the UI event queue have been processed and
 	/// before control returns to the event loop. For a given target object, only one functor can be registered at a
@@ -105,7 +116,10 @@ public:
 private:
 
 	/// Parses the command line parameters.
-	bool parseCommandLine();
+	bool parseCommandLine(int argc, char** argv);
+
+	/// Initializes the graphical user interface of the application.
+	void initializeGUI();
 
 	/// Executes the functions registered with the runOnceLater() function.
 	/// This method is called after the events in the event queue have been processed.
@@ -113,11 +127,11 @@ private:
 
 private:
 
-	/// The path to the startup scene file to load.
-	QString _startupSceneFile;
+	/// The Qt application object.
+	QScopedPointer<QCoreApplication> _app;
 
-	/// The path to the data file to be imported after startup.
-	QString _startupImportFile;
+	/// The parser for the command line options passed to the program.
+	CommandLineParser _cmdLineParser;
 
 	/// Indicates that the application is running in console mode.
 	bool _consoleMode;
@@ -128,6 +142,12 @@ private:
 	/// The list of functor objects registered with runOnceLater(), which are to be executed as soon as control returns to the event loop.
 	QMap<QPointer<QObject>,std::function<void()>> _runOnceList;
 
+	/// The main dataset container.
+	QPointer<DataSetContainer> _datasetContainer;
+
+	/// The auto-start objects created at application startup.
+	std::vector<OORef<AutoStartObject>> _autostartObjects;
+
 	/// The default message handler method of Qt.
 	static QtMessageHandler defaultQtMessageHandler;
 
@@ -136,6 +156,9 @@ private:
 
 	/// Handler function for exceptions used in console mode.
 	static void consoleExceptionHandler(const Exception& exception);
+
+	/// The one and only instance of this class.
+	static Application _instance;
 };
 
 };

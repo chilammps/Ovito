@@ -58,8 +58,8 @@ void ActionManager::on_HelpAbout_triggered()
 			"it under certain conditions. See the source for copying conditions.</p>"
 			"<p><a href=\"http://www.ovito.org/\">http://www.ovito.org/</a></p>"));
 	msgBox.setDefaultButton(QMessageBox::Ok);
-	QPixmap icon = QApplication::windowIcon().pixmap(64 * Application::instance().devicePixelRatio());
-	icon.setDevicePixelRatio(Application::instance().devicePixelRatio());
+	QPixmap icon = QApplication::windowIcon().pixmap(64 * mainWindow()->devicePixelRatio());
+	icon.setDevicePixelRatio(mainWindow()->devicePixelRatio());
 	msgBox.setIconPixmap(icon);
 	msgBox.exec();
 }
@@ -69,7 +69,7 @@ void ActionManager::on_HelpAbout_triggered()
 ******************************************************************************/
 void ActionManager::on_HelpShowOnlineHelp_triggered()
 {
-	Application::instance().openHelpTopic(QString());
+	mainWindow()->openHelpTopic(QString());
 }
 
 /******************************************************************************

@@ -176,6 +176,14 @@ void ConstructSurfaceModifier::ConstructSurfaceEngine::compute(FutureInterfaceBa
 		}
 	}
 
+	_solidVolume = 0;
+	_surfaceArea = 0;
+
+	// If there are too few particles, don't build Delaunay tessellation.
+	// It is going to be invalid anyway.
+	if(inputCount <= 3)
+		return;
+
 	// Generate Delaunay tessellation.
 	futureInterface.setProgressText(tr("Constructing surface mesh (Delaunay tessellation step)"));
 	DelaunayTessellation tessellation;
@@ -190,7 +198,6 @@ void ConstructSurfaceModifier::ConstructSurfaceEngine::compute(FutureInterfaceBa
 	// Classify cells into solid and open tetrahedra.
 	int nghost = 0, ntotal = 0;
 	int solidCellCount = 0;
-	_solidVolume = 0;
 	for(DelaunayTessellation::CellIterator cell = tessellation.begin_cells(); cell != tessellation.end_cells(); ++cell) {
 		// This determines whether a Delaunay tetrahedron is part of the solid region.
 		bool isSolid = tessellation.isValidCell(cell) &&
@@ -384,7 +391,6 @@ void ConstructSurfaceModifier::ConstructSurfaceEngine::compute(FutureInterfaceBa
 	SurfaceMesh::smoothMesh(_mesh, _simCell, _smoothingLevel);
 
 	// Compute surface area.
-	_surfaceArea = 0;
 	for(const HalfEdgeMesh::Face* facet : _mesh.faces()) {
 		Vector3 e1 = _simCell.wrapVector(facet->edges()->vertex1()->pos() - facet->edges()->vertex2()->pos());
 		Vector3 e2 = _simCell.wrapVector(facet->edges()->prevFaceEdge()->vertex1()->pos() - facet->edges()->vertex2()->pos());
