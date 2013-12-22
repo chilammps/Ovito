@@ -79,6 +79,9 @@ public:
 	/// Returns the window's viewport input manager.
 	ViewportInputManager* viewportInputManager() const { return _viewportInputManager; }
 
+	/// \brief Shows the online manual and opens the given help page.
+	void openHelpTopic(const QString& page);
+
 protected:
 
 	/// Is called when the user closes the window.

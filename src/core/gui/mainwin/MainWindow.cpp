@@ -318,4 +318,27 @@ void MainWindow::processViewportUpdates()
 	datasetContainer().currentSet()->viewportConfig()->processViewportUpdates();
 }
 
+/******************************************************************************
+* Shows the online manual and opens the given help page.
+******************************************************************************/
+void MainWindow::openHelpTopic(const QString& page)
+{
+	QDir prefixDir(QCoreApplication::applicationDirPath());
+#if defined(Q_OS_WIN)
+	QDir helpDir = QDir(prefixDir.absolutePath() + "/doc/manual/html/");
+#elif defined(Q_OS_MAC)
+	prefixDir.cdUp();
+	QDir helpDir = QDir(prefixDir.absolutePath() + "/Resources/doc/manual/html/");
+#else
+	prefixDir.cdUp();
+	QDir helpDir = QDir(prefixDir.absolutePath() + "/share/ovito/doc/manual/html/");
+#endif
+
+	// Use the web browser to display online help.
+	QString fullPath = helpDir.absoluteFilePath(page.isEmpty() ? QStringLiteral("index.html") : page);
+	if(!QDesktopServices::openUrl(QUrl::fromLocalFile(fullPath))) {
+		Exception(tr("Could not launch web browser to display online manual. The requested file path is %1").arg(fullPath)).showError();
+	}
+}
+
 };

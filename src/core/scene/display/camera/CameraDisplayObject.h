@@ -58,12 +58,15 @@ public:
 protected:
 
 	/// The buffered geometry used to render the icon.
-	std::unique_ptr<LineGeometryBuffer> _buffer;
+	std::unique_ptr<LineGeometryBuffer> _cameraIcon;
+
+	/// The icon geometry to be rendered in object picking mode.
+	std::unique_ptr<LineGeometryBuffer> _pickingCameraIcon;
 
 	/// This helper structure is used to detect any changes in the input data
 	/// that require updating the geometry buffer.
 	SceneObjectCacheHelper<
-		QPointer<SceneObject>, unsigned int,		// Mesh object + revision number
+		QPointer<SceneObject>, unsigned int,		// Camera object + revision number
 		Color										// Display color
 		> _geometryCacheHelper;
 

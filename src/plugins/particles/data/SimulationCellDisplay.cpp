@@ -81,7 +81,7 @@ void SimulationCellDisplay::render(TimePoint time, SceneObject* sceneObject, con
 		if(!renderSimulationCell())
 			return;		// Do nothing if rendering has been disabled by the user.
 
-		renderSolid(cell, renderer);
+		renderSolid(cell, renderer, contextNode);
 	}
 }
 
@@ -94,9 +94,13 @@ void SimulationCellDisplay::renderWireframe(SimulationCell* cell, SceneRenderer*
 
 	if(_wireframeGeometryCacheHelper.updateState(cell, cell->revisionNumber(), color)
 			|| !_wireframeGeometry
-			|| !_wireframeGeometry->isValid(renderer)) {
+			|| !_wireframeGeometry->isValid(renderer)
+			|| !_wireframePickingGeometry
+			|| !_wireframePickingGeometry->isValid(renderer)) {
 		_wireframeGeometry = renderer->createLineGeometryBuffer();
-		_wireframeGeometry->setSize(24);
+		_wireframePickingGeometry = renderer->createLineGeometryBuffer();
+		_wireframeGeometry->setVertexCount(24);
+		_wireframePickingGeometry->setVertexCount(24, renderer->defaultLinePickingWidth());
 		Point3 corners[8];
 		corners[0] = cell->origin();
 		corners[1] = corners[0] + cell->edgeVector1();
@@ -120,18 +124,23 @@ void SimulationCellDisplay::renderWireframe(SimulationCell* cell, SceneRenderer*
 			corners[2], corners[6],
 			corners[3], corners[7]};
 		_wireframeGeometry->setVertexPositions(vertices);
-		_wireframeGeometry->setVertexColor(color);
+		_wireframeGeometry->setLineColor(color);
+		_wireframePickingGeometry->setVertexPositions(vertices);
+		_wireframePickingGeometry->setLineColor(color);
 	}
 
 	renderer->beginPickObject(contextNode, cell, this);
-	_wireframeGeometry->render(renderer);
+	if(!renderer->isPicking())
+		_wireframeGeometry->render(renderer);
+	else
+		_wireframePickingGeometry->render(renderer);
 	renderer->endPickObject();
 }
 
 /******************************************************************************
 * Renders the given simulation using solid shading mode.
 ******************************************************************************/
-void SimulationCellDisplay::renderSolid(SimulationCell* cell, SceneRenderer* renderer)
+void SimulationCellDisplay::renderSolid(SimulationCell* cell, SceneRenderer* renderer, ObjectNode* contextNode)
 {
 	if(_solidGeometryCacheHelper.updateState(cell, cell->revisionNumber(), simulationCellLineWidth(), simulationCellRenderingColor())
 			|| !_edgeGeometry || !_cornerGeometry
@@ -168,8 +177,10 @@ void SimulationCellDisplay::renderSolid(SimulationCell* cell, SceneRenderer* ren
 		_cornerGeometry->setParticleRadius(simulationCellLineWidth());
 		_cornerGeometry->setParticleColor(simulationCellRenderingColor());
 	}
+	renderer->beginPickObject(contextNode, cell, this);
 	_edgeGeometry->render(renderer);
 	_cornerGeometry->render(renderer);
+	renderer->endPickObject();
 }
 
 /******************************************************************************

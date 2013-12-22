@@ -19,47 +19,50 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-uniform mat4 modelview_projection_matrix;
-uniform int pickingBaseID;
+uniform mat4 modelview_matrix;
+uniform mat4 projection_matrix;
+uniform bool is_perspective;
+uniform float line_width;
 
 #if __VERSION__ >= 130
 
-	// The input data:
 	in vec3 position;
+	in vec4 color;
+	in vec3 vector;
+	out vec4 vertex_color_fs;
 	
-	// Output passed to fragment shader.
-	flat out vec4 vertex_color_fs;
-
 #else
 
-	// The input data:
-	attribute float vertexID;
-	#define gl_VertexID int(vertexID)
-	
-	// Output passed to fragment shader.
-	#define vertex_color_fs gl_FrontColor
+	attribute vec3 vector;
 
 #endif
 
 void main()
 {
-	// Compute color from object ID.
-	int objectID = pickingBaseID + gl_VertexID / 3;
 #if __VERSION__ >= 130
-	vertex_color_fs = vec4(
-		float(objectID & 0xFF) / 255.0, 
-		float((objectID >> 8) & 0xFF) / 255.0, 
-		float((objectID >> 16) & 0xFF) / 255.0, 
-		float((objectID >> 24) & 0xFF) / 255.0);		
-
-	gl_Position = modelview_projection_matrix * vec4(position, 1.0);
+	vertex_color_fs = color;
 #else
-	vertex_color_fs = vec4(
-		float(mod(objectID, 0x100)) / 255.0, 
-		float(mod(objectID / 0x100, 0x100)) / 255.0, 
-		float(mod(objectID / 0x10000, 0x100)) / 255.0, 
-		float(mod(objectID / 0x1000000, 0x100)) / 255.0);		
-
-	gl_Position = modelview_projection_matrix * gl_Vertex;
+	gl_FrontColor = gl_Color;
 #endif
+	
+#if __VERSION__ >= 130
+	vec4 view_position = modelview_matrix * vec4(position, 1.0);
+#else
+	vec4 view_position = modelview_matrix * gl_Vertex;
+#endif
+	vec3 view_dir;
+	if(is_perspective)
+		view_dir = view_position.xyz;
+	else
+		view_dir = vec3(0,0,-1);
+	vec3 u = cross(view_dir, (modelview_matrix * vec4(vector,0.0)).xyz);
+	if(u != vec3(0)) {
+		float w = projection_matrix[0][3] * view_position.x + projection_matrix[1][3] * view_position.y
+			+ projection_matrix[2][3] * view_position.z + projection_matrix[3][3];
+		gl_Position = projection_matrix * (view_position - vec4((w * line_width / length(u)) * u, 0.0));
+	}
+	else {
+		gl_Position = vec4(0);
+	}
+	
 }

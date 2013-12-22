@@ -26,6 +26,7 @@ SET(OVITO_CORE_SOURCE_FILES
 	plugins/Plugin.cpp
 	plugins/NativePlugin.cpp
 	plugins/PluginManager.cpp
+	plugins/autostart/AutoStartObject.cpp
 	reference/CloneHelper.cpp
 	reference/PropertyFieldDescriptor.cpp
 	reference/PropertyField.cpp
@@ -63,6 +64,7 @@ SET(OVITO_CORE_SOURCE_FILES
 	scene/display/geometry/TriMeshDisplay.cpp
 	scene/display/camera/CameraDisplayObject.cpp
 	gui/app/Application.cpp
+	gui/app/CommandLineParser.cpp
 	gui/mainwin/MainWindow.cpp
 	gui/mainwin/ViewportsPanel.cpp
 	gui/mainwin/cmdpanel/CommandPanel.cpp

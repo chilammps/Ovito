@@ -23,12 +23,17 @@
 #include <core/gui/app/Application.h>
 #include <core/gui/mainwin/MainWindow.h>
 #include <core/dataset/UndoStack.h>
+#include <core/dataset/DataSetContainer.h>
 #include <core/dataset/importexport/ImportExportManager.h>
 #include <core/animation/controller/Controller.h>
 #include <core/plugins/PluginManager.h>
+#include <core/plugins/autostart/AutoStartObject.h>
 #include <core/utilities/io/FileManager.h>
 
 namespace Ovito {
+
+/// The one and only instance of this class.
+Application Application::_instance;
 
 /// Stores a pointer to the original Qt message handler function, which has been replaced with our own handler.
 QtMessageHandler Application::defaultQtMessageHandler = nullptr;
@@ -45,91 +50,131 @@ void Application::qtMessageOutput(QtMsgType type, const QMessageLogContext& cont
 }
 
 /******************************************************************************
+* Constructor.
+******************************************************************************/
+Application::Application() : _exitCode(0), _consoleMode(false)
+{
+}
+
+/******************************************************************************
+* Destructor.
+******************************************************************************/
+Application::~Application()
+{
+}
+
+/******************************************************************************
 * This is called on program startup.
 ******************************************************************************/
-bool Application::initialize()
+bool Application::initialize(int& argc, char** argv)
 {
 	// Install custom Qt error message handler to catch fatal errors in debug mode.
 	defaultQtMessageHandler = qInstallMessageHandler(qtMessageOutput);
 
+	// Set the application name provided by the active branding class.
+	QCoreApplication::setApplicationName(tr("Ovito"));
+	QCoreApplication::setOrganizationName(tr("Alexander Stukowski"));
+	QCoreApplication::setOrganizationDomain("ovito.org");
+	QCoreApplication::setApplicationVersion(QStringLiteral(OVITO_VERSION_STRING));
+
+	// Activate default "C" locale, which will be used to parse numbers in strings.
+	std::setlocale(LC_NUMERIC, "C");
+
+	// Register command line arguments.
+	_cmdLineParser.addOption(CommandLineOption(QStringList{{"v", "version"}}, tr("Prints the program version and exits.")));
+	_cmdLineParser.addOption(CommandLineOption(QStringList{{"nogui"}}, tr("Run in console mode without showing the graphical user interface.")));
+
+	// Parse command line arguments.
+	if(!parseCommandLine(argc, argv)) {
+		_consoleMode = true;
+		return false;
+	}
+
+	// Output program version if requested.
+	if(_cmdLineParser.isSet("version")) {
+		std::cout << qPrintable(QCoreApplication::applicationName()) << " " << qPrintable(QCoreApplication::applicationVersion()) << std::endl;
+		_consoleMode = true;
+		return true;
+	}
+
+	// Check if started in console mode.
+	if(_cmdLineParser.isSet("nogui"))
+		_consoleMode = true;
+
+	// Create Qt application object.
+	if(guiMode())
+		_app.reset(new QApplication(argc, argv));
+	else
+		_app.reset(new QCoreApplication(argc, argv));
+
+	// Reactivate default "C" locale, which, in the meantime, might have been changed by QCoreApplication.
+	std::setlocale(LC_NUMERIC, "C");
+
 	// Install global exception handler.
 	// The GUI exception handler shows a message box with the error message.
-	// The console mode exception handlers just prints the error message to stderr.
+	// The console mode exception handler prints the error message to stderr.
 	if(guiMode())
 		Exception::setExceptionHandler(guiExceptionHandler);
 	else
 		Exception::setExceptionHandler(consoleExceptionHandler);
 
 	try {
-		// Parse command line arguments.
-		if(!parseCommandLine())
-			return false;
-	}
-	catch(const Exception& ex) {
-		ex.showError();
-		return false;
-	}
 
-	try {
-
-		// Set the application name provided by the active branding class.
-		setApplicationName(tr("Ovito"));
-		setOrganizationName(tr("Alexander Stukowski"));
-		setOrganizationDomain("ovito.org");
-		setApplicationVersion(QStringLiteral(OVITO_VERSION_STRING));
-
-		// Activate default "C" locale, which will be used to parse numbers in strings.
-		std::setlocale(LC_NUMERIC, "C");
-
-		// Initialize global manager objects in the right order.
+		// Initialize global objects in the right order.
 		PluginManager::initialize();
 		ControllerManager::initialize();
 		FileManager::initialize();
 		ImportExportManager::initialize();
 
-		// Create the main application window.
-		MainWindow* mainWin = nullptr;
+		// Load auto-start objects and let them register their custom command line options.
+		for(const OvitoObjectType* clazz : PluginManager::instance().listClasses(AutoStartObject::OOType)) {
+			OORef<AutoStartObject> obj = static_object_cast<AutoStartObject>(clazz->createInstance(nullptr));
+			_autostartObjects.push_back(obj);
+			obj->registerCommandLineOptions(_cmdLineParser);
+		}
+
+		// Parse the command line parameters again after the plugins have registered their options.
+		if(!parseCommandLine(argc, argv)) {
+			_consoleMode = true;
+			shutdown();
+			return false;
+		}
+
 		if(guiMode()) {
+			// Set up graphical user interface.
+			initializeGUI();
+		}
+		else {
+			// Create a dataset container.
+			_datasetContainer = new DataSetContainer();
+			_datasetContainer->setParent(this);
+		}
 
-			// Set the application icon.
-			QIcon mainWindowIcon;
-			mainWindowIcon.addFile(":/core/mainwin/window_icon_256.png");
-			mainWindowIcon.addFile(":/core/mainwin/window_icon_128.png");
-			mainWindowIcon.addFile(":/core/mainwin/window_icon_48.png");
-			mainWindowIcon.addFile(":/core/mainwin/window_icon_32.png");
-			mainWindowIcon.addFile(":/core/mainwin/window_icon_16.png");
-			setWindowIcon(mainWindowIcon);
+		// Load scene file specified at the command line.
+		if(_cmdLineParser.positionalArguments().empty() == false) {
+			QString startupFilename = _cmdLineParser.positionalArguments().front();
+			if(startupFilename.endsWith(".ovito", Qt::CaseInsensitive))
+				datasetContainer()->fileLoad(startupFilename);
+		}
 
-			// Create the main window.
-			mainWin = new MainWindow();
+		// Create an empty dataset if nothing has been loaded.
+		if(datasetContainer()->currentSet() == nullptr)
+			datasetContainer()->fileNew();
 
-			setQuitOnLastWindowClosed(true);
-
-			if(!_startupSceneFile.isEmpty()) {
-				// Load scene file specified at the command line.
-				QFileInfo startupFile(_startupSceneFile);
-				if(!mainWin->datasetContainer().fileLoad(startupFile.absoluteFilePath()))
-					mainWin->datasetContainer().fileNew();
-			}
-			else {
-				// Create an empty data set.
-				mainWin->datasetContainer().fileNew();
-			}
-
-			// Show the main window.
-#ifndef OVITO_DEBUG
-			mainWin->showMaximized();
-#else
-			mainWin->show();
-#endif
-			mainWin->restoreLayout();
-
-			// Import file specified on the command line.
-			if(_startupImportFile.isEmpty() == false) {
-				QUrl importURL = QUrl::fromUserInput(_startupImportFile);
-				mainWin->datasetContainer().importFile(importURL);
+		// Import data file specified at the command line.
+		if(_cmdLineParser.positionalArguments().empty() == false) {
+			QString importFilename = _cmdLineParser.positionalArguments().front();
+			if(!importFilename.endsWith(".ovito", Qt::CaseInsensitive)) {
+				QUrl importURL = QUrl::fromUserInput(importFilename);
+				datasetContainer()->importFile(importURL);
+				datasetContainer()->currentSet()->undoStack().setClean();
 			}
 		}
+
+		// Invoke auto-start objects.
+		for(const auto& obj : _autostartObjects)
+			obj->applicationStarted();
+
 	}
 	catch(const Exception& ex) {
 		ex.showError();
@@ -146,13 +191,43 @@ int Application::runApplication()
 {
 	if(guiMode()) {
 		// Enter the main event loop.
-		return exec();
+		return QApplication::exec();
 	}
 	else {
 		// No event processing needed in console mode.
-		// Just exit the application.
+		// Just quit the application.
 		return _exitCode;
 	}
+}
+
+/******************************************************************************
+* Initializes the graphical user interface of the application.
+******************************************************************************/
+void Application::initializeGUI()
+{
+	// Set the application icon.
+	QIcon mainWindowIcon;
+	mainWindowIcon.addFile(":/core/mainwin/window_icon_256.png");
+	mainWindowIcon.addFile(":/core/mainwin/window_icon_128.png");
+	mainWindowIcon.addFile(":/core/mainwin/window_icon_48.png");
+	mainWindowIcon.addFile(":/core/mainwin/window_icon_32.png");
+	mainWindowIcon.addFile(":/core/mainwin/window_icon_16.png");
+	QApplication::setWindowIcon(mainWindowIcon);
+
+	// Create the main window.
+	MainWindow* mainWin = new MainWindow();
+	_datasetContainer = &mainWin->datasetContainer();
+
+	// Make the application shutdown as soon as the last main window has been closed.
+	QGuiApplication::setQuitOnLastWindowClosed(true);
+
+	// Show the main window.
+#ifndef OVITO_DEBUG
+	mainWin->showMaximized();
+#else
+	mainWin->show();
+#endif
+	mainWin->restoreLayout();
 }
 
 /******************************************************************************
@@ -160,11 +235,26 @@ int Application::runApplication()
 ******************************************************************************/
 void Application::shutdown()
 {
-	// Shutdown global manager objects in reverse order they were initialized.
+	// Destroy auto-start objects.
+	_autostartObjects.clear();
+
+	// Shutdown global objects in reverse order they were initialized.
 	ImportExportManager::shutdown();
 	FileManager::shutdown();
 	ControllerManager::shutdown();
 	PluginManager::shutdown();
+
+	// Destroy Qt application object.
+	_app.reset();
+}
+
+/******************************************************************************
+* Returns a pointer to the main dataset container.
+******************************************************************************/
+DataSetContainer* Application::datasetContainer() const
+{
+	OVITO_ASSERT_MSG(!_datasetContainer.isNull(), "Application::datasetContainer()", "There is no global dataset container.");
+	return _datasetContainer;
 }
 
 /******************************************************************************
@@ -184,14 +274,11 @@ void Application::processRunOnceList()
 /******************************************************************************
 * Parses the command line parameters.
 ******************************************************************************/
-bool Application::parseCommandLine()
+bool Application::parseCommandLine(int argc, char** argv)
 {
-	QStringList params = QCoreApplication::arguments();
-	if(params.size() >= 2) {
-		if(params[1].endsWith(".ovito", Qt::CaseInsensitive))
-			_startupSceneFile = params[1];
-		else
-			_startupImportFile = params[1];
+	if(!_cmdLineParser.parse(argc, argv)) {
+        std::cerr << "Error: " << qPrintable(_cmdLineParser.errorText()) << std::endl;
+		return false;
 	}
 	return true;
 }
@@ -226,32 +313,6 @@ void Application::consoleExceptionHandler(const Exception& exception)
 		std::cerr << exception.messages()[i].toLocal8Bit().constData() << std::endl;
 	}
 	std::cerr << std::flush;
-}
-
-/******************************************************************************
-* Shows the online manual and opens the given help page.
-******************************************************************************/
-void Application::openHelpTopic(const QString& page)
-{
-	if(!Application::instance().guiMode())
-		return;
-
-	QDir prefixDir(QCoreApplication::applicationDirPath());
-#if defined(Q_OS_WIN)
-	QDir helpDir = QDir(prefixDir.absolutePath() + "/doc/manual/html/");
-#elif defined(Q_OS_MAC)
-	prefixDir.cdUp();
-	QDir helpDir = QDir(prefixDir.absolutePath() + "/Resources/doc/manual/html/");
-#else
-	prefixDir.cdUp();
-	QDir helpDir = QDir(prefixDir.absolutePath() + "/share/ovito/doc/manual/html/");
-#endif
-
-	// Use the web browser to display online help.
-	QString fullPath = helpDir.absoluteFilePath(page.isEmpty() ? QStringLiteral("index.html") : page);
-	if(!QDesktopServices::openUrl(QUrl::fromLocalFile(fullPath))) {
-		Exception(tr("Could not launch web browser to display online manual. The requested file path is %1").arg(fullPath)).showError();
-	}
 }
 
 };

@@ -24,7 +24,7 @@ uniform mat4 modelview_matrix;
 uniform int pickingBaseID;
 
 // The particle data:
-in vec3 particle_pos;
+in vec3 position;
 in float particle_radius;
 
 // Output to geometry shader.
@@ -45,5 +45,5 @@ void main()
 	particle_radius_gs = particle_radius;
 
 	// Transform particle center to eye coordinates.
-	gl_Position = modelview_matrix * vec4(particle_pos, 1);
+	gl_Position = modelview_matrix * vec4(position, 1);
 }

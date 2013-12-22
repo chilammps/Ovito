@@ -34,7 +34,7 @@ using namespace std;
 * The constructor of the AnimationTrackBar class.
 ******************************************************************************/
 AnimationTrackBar::AnimationTrackBar(MainWindow* mainWindow, QWidget* parent) :
-	QFrame(parent)
+	QFrame(parent), _animSettings(nullptr)
 {
 	setFrameShape(QFrame::Panel);
 	setFrameShadow(QFrame::Sunken);

@@ -110,12 +110,10 @@ void ViewportsPanel::onInputModeChanged(ViewportInputMode* oldMode, ViewportInpu
 ******************************************************************************/
 void ViewportsPanel::viewportModeCursorChanged(const QCursor& cursor)
 {
-#ifndef Q_OS_MACX
 	if(_viewportConfig) {
 		for(Viewport* vp : _viewportConfig->viewports())
 			vp->setCursor(cursor);
 	}
-#endif
 }
 
 /******************************************************************************

@@ -34,7 +34,7 @@ using namespace std;
 * The constructor of the AnimationTimeSlider class.
 ******************************************************************************/
 AnimationTimeSlider::AnimationTimeSlider(MainWindow* mainWindow, QWidget* parent) :
-	QFrame(parent), _mainWindow(mainWindow), _dragPos(-1)
+	QFrame(parent), _mainWindow(mainWindow), _dragPos(-1), _animSettings(nullptr)
 {
 	_normalPalette = palette();
 	_autoKeyModePalette = _normalPalette;
@@ -199,14 +199,19 @@ void AnimationTimeSlider::mouseMoveEvent(QMouseEvent* event)
 	}
 	else if(interval.duration() > 0) {
 		if(thumbRectangle().contains(event->pos()) == false) {
-			QString frameName = _animSettings->namedFrames()[newFrame];
 			FloatType percentage = (FloatType)(_animSettings->frameToTime(newFrame) - _animSettings->animationInterval().start())
 					/ (FloatType)(_animSettings->animationInterval().duration() + 1);
 			QRect clientRect = frameRect();
 			clientRect.adjust(frameWidth(), frameWidth(), -frameWidth(), -frameWidth());
 			int clientWidth = clientRect.width() - thumbWidth();
 			QPoint pos(clientRect.x() + (int)(percentage * clientWidth) + thumbWidth() / 2, clientRect.height() / 2);
-			QToolTip::showText(mapToGlobal(pos), QString("%1 - %2").arg(newFrame).arg(frameName), this);
+			QString frameName = _animSettings->namedFrames()[newFrame];
+			QString tooltipText;
+			if(!frameName.isEmpty())
+				tooltipText = QString("%1 - %2").arg(newFrame).arg(frameName);
+			else
+				tooltipText = QString("%1").arg(newFrame);
+			QToolTip::showText(mapToGlobal(pos), tooltipText, this);
 		}
 		else QToolTip::hideText();
 	}

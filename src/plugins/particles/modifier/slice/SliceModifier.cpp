@@ -274,9 +274,9 @@ Box3 SliceModifier::renderPlane(SceneRenderer* renderer, const Plane3& plane, co
 	if(renderer) {
 		// Render plane-box intersection lines.
 		std::unique_ptr<LineGeometryBuffer> buffer = renderer->createLineGeometryBuffer();
-		buffer->setSize(vertices.size());
+		buffer->setVertexCount(vertices.size());
 		buffer->setVertexPositions(vertices.constData());
-		buffer->setVertexColor(color);
+		buffer->setLineColor(color);
 		buffer->render(renderer);
 	}
 

@@ -31,6 +31,12 @@
 #include <core/viewport/input/ViewportInputManager.h>
 #include <core/gui/mainwin/MainWindow.h>
 #include "ViewportSceneRenderer.h"
+#include "ViewportLineGeometryBuffer.h"
+#include "ViewportParticleGeometryBuffer.h"
+#include "ViewportTextGeometryBuffer.h"
+#include "ViewportImageGeometryBuffer.h"
+#include "ViewportArrowGeometryBuffer.h"
+#include "ViewportTriMeshGeometryBuffer.h"
 
 namespace Ovito {
 
@@ -162,6 +168,19 @@ void ViewportSceneRenderer::setWorldTransform(const AffineTransformation& tm)
 }
 
 /******************************************************************************
+* Reports OpenGL error status codes.
+******************************************************************************/
+void checkOpenGLErrorStatus(const char* command, const char* sourceFile, int sourceLine)
+{
+	GLenum error;
+	while((error = ::glGetError()) != GL_NO_ERROR) {
+		qDebug() << "WARNING: OpenGL call" << command << "failed "
+				"in line" << sourceLine << "of file" << sourceFile
+				<< "with error" << ViewportSceneRenderer::openglErrorString(error);
+	}
+}
+
+/******************************************************************************
 * Translates an OpenGL error code to a human-readable message string.
 ******************************************************************************/
 const char* ViewportSceneRenderer::openglErrorString(GLenum errorCode)
@@ -177,6 +196,56 @@ const char* ViewportSceneRenderer::openglErrorString(GLenum errorCode)
 	case GL_TABLE_TOO_LARGE: return "GL_TABLE_TOO_LARGE - The specified table exceeds the implementation's maximum supported table size.";
 	default: return "Unknown OpenGL error code.";
 	}
+}
+
+/******************************************************************************
+* Requests a new line geometry buffer from the renderer.
+******************************************************************************/
+std::unique_ptr<LineGeometryBuffer> ViewportSceneRenderer::createLineGeometryBuffer()
+{
+	return std::unique_ptr<LineGeometryBuffer>{ new ViewportLineGeometryBuffer(this) };
+}
+
+/******************************************************************************
+* Requests a new particle geometry buffer from the renderer.
+******************************************************************************/
+std::unique_ptr<ParticleGeometryBuffer> ViewportSceneRenderer::createParticleGeometryBuffer(ParticleGeometryBuffer::ShadingMode shadingMode,
+		ParticleGeometryBuffer::RenderingQuality renderingQuality, ParticleGeometryBuffer::ParticleShape shape) {
+	return std::unique_ptr<ParticleGeometryBuffer>{ new ViewportParticleGeometryBuffer(this, shadingMode, renderingQuality, shape) };
+}
+
+/******************************************************************************
+* Requests a new text geometry buffer from the renderer.
+******************************************************************************/
+std::unique_ptr<TextGeometryBuffer> ViewportSceneRenderer::createTextGeometryBuffer()
+{
+	return std::unique_ptr<TextGeometryBuffer>{ new ViewportTextGeometryBuffer(this) };
+}
+
+/******************************************************************************
+* Requests a new image geometry buffer from the renderer.
+******************************************************************************/
+std::unique_ptr<ImageGeometryBuffer> ViewportSceneRenderer::createImageGeometryBuffer()
+{
+	return std::unique_ptr<ImageGeometryBuffer>{ new ViewportImageGeometryBuffer(this) };
+}
+
+/******************************************************************************
+* Requests a new arrow geometry buffer from the renderer.
+******************************************************************************/
+std::unique_ptr<ArrowGeometryBuffer> ViewportSceneRenderer::createArrowGeometryBuffer(ArrowGeometryBuffer::Shape shape,
+		ArrowGeometryBuffer::ShadingMode shadingMode,
+		ArrowGeometryBuffer::RenderingQuality renderingQuality)
+{
+	return std::unique_ptr<ArrowGeometryBuffer>{ new ViewportArrowGeometryBuffer(this, shape, shadingMode, renderingQuality) };
+}
+
+/******************************************************************************
+* Requests a new triangle mesh buffer from the renderer.
+******************************************************************************/
+std::unique_ptr<TriMeshGeometryBuffer> ViewportSceneRenderer::createTriMeshGeometryBuffer()
+{
+	return std::unique_ptr<TriMeshGeometryBuffer>{ new ViewportTriMeshGeometryBuffer(this) };
 }
 
 /******************************************************************************
@@ -471,5 +540,17 @@ void ViewportSceneRenderer::deactivateVertexIDs(QOpenGLShaderProgram* shader)
 	if(glformat().majorVersion() < 3)
 		shader->disableAttributeArray("vertexID");
 }
+
+/******************************************************************************
+* Returns the line rendering width to use in object picking mode.
+******************************************************************************/
+FloatType ViewportSceneRenderer::defaultLinePickingWidth()
+{
+	FloatType devicePixelRatio = 1;
+	if(glcontext() && glcontext()->screen())
+		devicePixelRatio = glcontext()->screen()->devicePixelRatio();
+	return 12.0f * devicePixelRatio;
+}
+
 
 };

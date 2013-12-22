@@ -76,18 +76,25 @@ template<class Function, typename T>
 void parallelFor(T loopCount, Function kernel)
 {
 	std::vector<std::thread> workers;
-	int num_threads = std::max(1, QThread::idealThreadCount());
+	int num_threads = QThread::idealThreadCount();
+	if(num_threads < 1) num_threads = 1;
+	else if(num_threads > loopCount) {
+		if(loopCount <= 0) return;
+		num_threads = loopCount;
+	}
 	T chunkSize = loopCount / num_threads;
 	T startIndex = 0;
 	T endIndex = chunkSize;
 	for(int t = 0; t < num_threads; t++) {
 		if(t == num_threads - 1) {
-			endIndex += loopCount % num_threads;
+			OVITO_ASSERT(endIndex + (loopCount % num_threads) == loopCount);
+			endIndex = loopCount;
 			for(T i = startIndex; i < endIndex; ++i) {
 				kernel(i);
 			}
 		}
 		else {
+			OVITO_ASSERT(endIndex <= loopCount);
 			workers.push_back(std::thread([&kernel, startIndex, endIndex]() {
 				for(T i = startIndex; i < endIndex; ++i) {
 					kernel(i);
@@ -106,12 +113,18 @@ template<class Function>
 void parallelForChunks(size_t loopCount, Function kernel)
 {
 	std::vector<std::thread> workers;
-	int num_threads = std::max(1, QThread::idealThreadCount());
+	int num_threads = QThread::idealThreadCount();
+	if(num_threads < 1) num_threads = 1;
+	else if(num_threads > loopCount) {
+		if(loopCount <= 0) return;
+		num_threads = loopCount;
+	}
 	size_t chunkSize = loopCount / num_threads;
 	size_t startIndex = 0;
 	for(int t = 0; t < num_threads; t++) {
 		if(t == num_threads - 1) {
 			chunkSize += loopCount % num_threads;
+			OVITO_ASSERT(startIndex + chunkSize == loopCount);
 			kernel(startIndex, chunkSize);
 		}
 		else {

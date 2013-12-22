@@ -50,6 +50,16 @@ ViewportInputManager::ViewportInputManager(MainWindow* mainWindow) : QObject(mai
 }
 
 /******************************************************************************
+* Destructor
+******************************************************************************/
+ViewportInputManager::~ViewportInputManager()
+{
+	for(ViewportInputMode* mode : _inputModeStack)
+		mode->_manager = nullptr;
+	_inputModeStack.clear();
+}
+
+/******************************************************************************
 * Returns the currently active ViewportInputMode that handles the mouse events in viewports.
 ******************************************************************************/
 ViewportInputMode* ViewportInputManager::activeMode()

@@ -29,26 +29,13 @@
 #include <core/Core.h>
 #include <core/rendering/SceneRenderer.h>
 #include <base/utilities/Color.h>
-#include "ViewportLineGeometryBuffer.h"
-#include "ViewportParticleGeometryBuffer.h"
-#include "ViewportTextGeometryBuffer.h"
-#include "ViewportImageGeometryBuffer.h"
-#include "ViewportArrowGeometryBuffer.h"
-#include "ViewportTriMeshGeometryBuffer.h"
+#include "OpenGLHelpers.h"
 
 #include <QOpenGLFunctions_2_0>
 #include <QOpenGLFunctions_3_0>
 #include <QOpenGLFunctions_3_2_Core>
 
 namespace Ovito {
-
-// The minimum OpenGL version required by Ovito:
-#define OVITO_OPENGL_MINIMUM_VERSION_MAJOR 			2
-#define OVITO_OPENGL_MINIMUM_VERSION_MINOR			0
-
-// The standard OpenGL version used by Ovito:
-#define OVITO_OPENGL_REQUESTED_VERSION_MAJOR 		3
-#define OVITO_OPENGL_REQUESTED_VERSION_MINOR		2
 
 /**
  * \brief This is the default scene renderer used to render the contents
@@ -89,37 +76,25 @@ public:
 	Box3 boundingBoxInteractive(TimePoint time, Viewport* viewport);
 
 	/// Requests a new line geometry buffer from the renderer.
-	virtual std::unique_ptr<LineGeometryBuffer> createLineGeometryBuffer() override {
-		return std::unique_ptr<LineGeometryBuffer>{ new ViewportLineGeometryBuffer(this) };
-	}
+	virtual std::unique_ptr<LineGeometryBuffer> createLineGeometryBuffer() override;
 
 	/// Requests a new particle geometry buffer from the renderer.
 	virtual std::unique_ptr<ParticleGeometryBuffer> createParticleGeometryBuffer(ParticleGeometryBuffer::ShadingMode shadingMode,
-			ParticleGeometryBuffer::RenderingQuality renderingQuality, ParticleGeometryBuffer::ParticleShape shape) override {
-		return std::unique_ptr<ParticleGeometryBuffer>{ new ViewportParticleGeometryBuffer(this, shadingMode, renderingQuality, shape) };
-	}
+			ParticleGeometryBuffer::RenderingQuality renderingQuality, ParticleGeometryBuffer::ParticleShape shape) override;
 
 	/// Requests a new text geometry buffer from the renderer.
-	virtual std::unique_ptr<TextGeometryBuffer> createTextGeometryBuffer() override {
-		return std::unique_ptr<TextGeometryBuffer>{ new ViewportTextGeometryBuffer(this) };
-	}
+	virtual std::unique_ptr<TextGeometryBuffer> createTextGeometryBuffer() override;
 
 	/// Requests a new image geometry buffer from the renderer.
-	virtual std::unique_ptr<ImageGeometryBuffer> createImageGeometryBuffer() override {
-		return std::unique_ptr<ImageGeometryBuffer>{ new ViewportImageGeometryBuffer(this) };
-	}
+	virtual std::unique_ptr<ImageGeometryBuffer> createImageGeometryBuffer() override;
 
 	/// Requests a new arrow geometry buffer from the renderer.
 	virtual std::unique_ptr<ArrowGeometryBuffer> createArrowGeometryBuffer(ArrowGeometryBuffer::Shape shape,
 			ArrowGeometryBuffer::ShadingMode shadingMode,
-			ArrowGeometryBuffer::RenderingQuality renderingQuality) override {
-		return std::unique_ptr<ArrowGeometryBuffer>{ new ViewportArrowGeometryBuffer(this, shape, shadingMode, renderingQuality) };
-	}
+			ArrowGeometryBuffer::RenderingQuality renderingQuality) override;
 
 	/// Requests a new triangle mesh buffer from the renderer.
-	virtual std::unique_ptr<TriMeshGeometryBuffer> createTriMeshGeometryBuffer() override {
-		return std::unique_ptr<TriMeshGeometryBuffer>{ new ViewportTriMeshGeometryBuffer(this) };
-	}
+	virtual std::unique_ptr<TriMeshGeometryBuffer> createTriMeshGeometryBuffer() override;
 
 	/// Renders a 2d polyline in the viewport.
 	void render2DPolyline(const Point2* points, int count, const ColorA& color, bool closed);
@@ -198,6 +173,9 @@ public:
 	/// This is an internal method used by the PickingSceneRenderer class to implement the picking mechanism.
 	virtual quint32 registerSubObjectIDs(quint32 subObjectCount) { return 0; }
 
+	/// Returns the line rendering width to use in object picking mode.
+	virtual FloatType defaultLinePickingWidth() override;
+
 protected:
 
 	/// \brief Renders the visual representation of the modifiers.
@@ -253,22 +231,6 @@ private:
 	Q_OBJECT
 	OVITO_OBJECT
 };
-
-// OpenGL function call debugging macro
-#ifdef OVITO_DEBUG
-	#define OVITO_CHECK_OPENGL(cmd)									\
-	{																\
-		cmd;														\
-		GLenum error;												\
-		while((error = ::glGetError()) != GL_NO_ERROR) {			\
-			qDebug() << "WARNING: OpenGL call" << #cmd << "failed "	\
-			"in line" << __LINE__ << "of file" << __FILE__ 			\
-			<< "with error" << Ovito::ViewportSceneRenderer::openglErrorString(error);			\
-		}															\
-	}
-#else
-	#define OVITO_CHECK_OPENGL(cmd)			cmd
-#endif
 
 };
 

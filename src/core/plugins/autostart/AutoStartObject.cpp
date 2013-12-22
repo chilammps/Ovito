@@ -20,33 +20,10 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include <core/gui/app/Application.h>
+#include "AutoStartObject.h"
 
-#ifdef OVITO_MONOLITHIC_BUILD
-	#ifdef Q_OS_LINUX
-		Q_IMPORT_PLUGIN(QXcbIntegrationPlugin)
-	#endif
-#endif
+namespace Ovito {
 
-int main(int argc, char** argv)
-{
+IMPLEMENT_OVITO_OBJECT(Core, AutoStartObject, OvitoObject);
 
-#ifdef OVITO_MONOLITHIC_BUILD
-	// If we build a monolithic executable with static libraries then
-	// the core's resources are not automatically initialized. Therefore
-	// it needs to be explicitely done here.
-	Q_INIT_RESOURCE(core);
-#endif
-
-	// Initialize the application.
-	if(!Ovito::Application().instance().initialize(argc, argv))
-		return 1;
-
-	// Enter event loop.
-	int result = Ovito::Application().instance().runApplication();
-
-	// Shutdown application.
-	Ovito::Application().instance().shutdown();
-
-	return result;
-}
+};

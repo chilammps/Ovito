@@ -20,7 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include <core/gui/app/Application.h>
+#include <core/gui/mainwin/MainWindow.h>
 #include "RolloutContainer.h"
 
 namespace Ovito {
@@ -219,7 +219,9 @@ void Rollout::paintEvent(QPaintEvent* event)
 ******************************************************************************/
 void Rollout::onHelpButton()
 {
-	Application::instance().openHelpTopic(_helpPage);
+	MainWindow* mainWindow = qobject_cast<MainWindow*>(window());
+	if(mainWindow)
+		mainWindow->openHelpTopic(_helpPage);
 }
 
 };

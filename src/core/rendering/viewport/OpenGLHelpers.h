@@ -19,34 +19,35 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+#ifndef __OVITO_OPENGL_HELPERS_H
+#define __OVITO_OPENGL_HELPERS_H
+
 #include <core/Core.h>
-#include <core/gui/app/Application.h>
 
-#ifdef OVITO_MONOLITHIC_BUILD
-	#ifdef Q_OS_LINUX
-		Q_IMPORT_PLUGIN(QXcbIntegrationPlugin)
-	#endif
+namespace Ovito {
+
+// The minimum OpenGL version required by Ovito:
+#define OVITO_OPENGL_MINIMUM_VERSION_MAJOR 			2
+#define OVITO_OPENGL_MINIMUM_VERSION_MINOR			0
+
+// The standard OpenGL version used by Ovito:
+#define OVITO_OPENGL_REQUESTED_VERSION_MAJOR 		3
+#define OVITO_OPENGL_REQUESTED_VERSION_MINOR		2
+
+/// Reports OpenGL error status codes.
+extern OVITO_CORE_EXPORT void checkOpenGLErrorStatus(const char* command, const char* sourceFile, int sourceLine);
+
+// OpenGL debugging macro:
+#ifdef OVITO_DEBUG
+	#define OVITO_CHECK_OPENGL(cmd)									\
+	{																\
+		cmd;														\
+		Ovito::checkOpenGLErrorStatus(#cmd, __FILE__, __LINE__);	\
+	}
+#else
+	#define OVITO_CHECK_OPENGL(cmd)			cmd
 #endif
 
-int main(int argc, char** argv)
-{
+};
 
-#ifdef OVITO_MONOLITHIC_BUILD
-	// If we build a monolithic executable with static libraries then
-	// the core's resources are not automatically initialized. Therefore
-	// it needs to be explicitely done here.
-	Q_INIT_RESOURCE(core);
-#endif
-
-	// Initialize the application.
-	if(!Ovito::Application().instance().initialize(argc, argv))
-		return 1;
-
-	// Enter event loop.
-	int result = Ovito::Application().instance().runApplication();
-
-	// Shutdown application.
-	Ovito::Application().instance().shutdown();
-
-	return result;
-}
+#endif // __OVITO_OPENGL_HELPERS_H

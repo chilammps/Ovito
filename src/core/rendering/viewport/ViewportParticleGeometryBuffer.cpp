@@ -34,9 +34,7 @@ namespace Ovito {
 ViewportParticleGeometryBuffer::ViewportParticleGeometryBuffer(ViewportSceneRenderer* renderer, ShadingMode shadingMode, RenderingQuality renderingQuality, ParticleShape shape) :
 	ParticleGeometryBuffer(shadingMode, renderingQuality, shape),
 	_contextGroup(QOpenGLContextGroup::currentContextGroup()),
-	_particleCount(-1),
-	_billboardTexture(0),
-	_verticesPerParticle(1)
+	_billboardTexture(0)
 {
 	OVITO_ASSERT(renderer->glcontext()->shareGroup() == _contextGroup);
 
@@ -114,18 +112,6 @@ ViewportParticleGeometryBuffer::ViewportParticleGeometryBuffer(ViewportSceneRend
 		_cubePickingShader = nullptr;
 		OVITO_ASSERT(!hasGeometryShaders());
 	}
-	
-	if(!_glPositionsBuffer.create())
-		throw Exception(QStringLiteral("Failed to create OpenGL vertex buffer."));
-	_glPositionsBuffer.setUsagePattern(QOpenGLBuffer::StaticDraw);
-
-	if(!_glRadiiBuffer.create())
-		throw Exception(QStringLiteral("Failed to create OpenGL vertex buffer."));
-	_glRadiiBuffer.setUsagePattern(QOpenGLBuffer::StaticDraw);
-
-	if(!_glColorsBuffer.create())
-		throw Exception(QStringLiteral("Failed to create OpenGL vertex buffer."));
-	_glColorsBuffer.setUsagePattern(QOpenGLBuffer::DynamicDraw);
 
 	initializeBillboardTexture(renderer);
 }
@@ -143,86 +129,27 @@ ViewportParticleGeometryBuffer::~ViewportParticleGeometryBuffer()
 ******************************************************************************/
 void ViewportParticleGeometryBuffer::setSize(int particleCount)
 {
-	OVITO_ASSERT(_glPositionsBuffer.isCreated());
-	OVITO_ASSERT(particleCount >= 0);
 	OVITO_ASSERT(QOpenGLContextGroup::currentContextGroup() == _contextGroup);
 
-	_particleCount = particleCount;
-
 	// Determine the required number of vertices per particles.
+	int verticesPerParticle;
 	if(shadingMode() == FlatShading) {
-		_verticesPerParticle = 1;
+		verticesPerParticle = 1;
 	}
 	else {
 		if(particleShape() == SphericalShape && renderingQuality() < HighQuality)
-			_verticesPerParticle = 1;
+			verticesPerParticle = 1;
 		else {
 			if(hasGeometryShaders())
-				_verticesPerParticle = 1;
+				verticesPerParticle = 1;
 			else
-				_verticesPerParticle = 14;
+				verticesPerParticle = 14;
 		}
 	}
 
-	OVITO_ASSERT(particleCount < std::numeric_limits<int>::max() / sizeof(Point3) / _verticesPerParticle);
-}
-
-/******************************************************************************
-* Helper method that fills a vertex data with the given data.
-******************************************************************************/
-template<typename T>
-void fillOpenGLBuffer(QOpenGLBuffer& buffer, const T* data, int particleCount, int verticesPerParticle)
-{
-	OVITO_ASSERT(buffer.isCreated());
-	OVITO_ASSERT(particleCount >= 0);
-
-	if(!buffer.bind())
-		throw Exception(QStringLiteral("Failed to bind OpenGL vertex buffer."));
-	if(verticesPerParticle == 1) {
-		buffer.allocate(data, particleCount * sizeof(T));
-	}
-	else {
-		buffer.allocate(particleCount * verticesPerParticle * sizeof(T));
-		if(particleCount) {
-			T* bufferData = static_cast<T*>(buffer.map(QOpenGLBuffer::WriteOnly));
-			OVITO_CHECK_POINTER(bufferData);
-			if(!bufferData)
-				throw Exception(QStringLiteral("Failed to map OpenGL vertex buffer to memory."));
-			for(; particleCount != 0; particleCount--, ++data) {
-				for(int i = 0; i < verticesPerParticle; i++, ++bufferData) {
-					*bufferData = *data;
-				}
-			}
-			buffer.unmap();
-		}
-	}
-	buffer.release();
-	OVITO_CHECK_OPENGL();
-}
-
-/******************************************************************************
-* Helper method that fills a vertex data with the give constant value.
-******************************************************************************/
-template<typename T>
-void fillOpenGLBuffer(QOpenGLBuffer& buffer, T value, int particleCount, int verticesPerParticle)
-{
-	OVITO_ASSERT(buffer.isCreated());
-	OVITO_ASSERT(particleCount >= 0);
-	OVITO_ASSERT(verticesPerParticle >= 1);
-
-	if(!buffer.bind())
-		throw Exception(QStringLiteral("Failed to bind OpenGL vertex buffer."));
-	buffer.allocate(particleCount * verticesPerParticle * sizeof(T));
-	if(particleCount) {
-		T* bufferData = static_cast<T*>(buffer.map(QOpenGLBuffer::WriteOnly));
-		OVITO_CHECK_POINTER(bufferData);
-		if(!bufferData)
-			throw Exception(QStringLiteral("Failed to map OpenGL vertex buffer to memory."));
-		std::fill(bufferData, bufferData + particleCount * verticesPerParticle, value);
-		buffer.unmap();
-	}
-	buffer.release();
-	OVITO_CHECK_OPENGL();
+	_positionsBuffer.create(QOpenGLBuffer::StaticDraw, particleCount, verticesPerParticle);
+	_radiiBuffer.create(QOpenGLBuffer::StaticDraw, particleCount, verticesPerParticle);
+	_colorsBuffer.create(QOpenGLBuffer::DynamicDraw, particleCount, verticesPerParticle);
 }
 
 /******************************************************************************
@@ -231,7 +158,7 @@ void fillOpenGLBuffer(QOpenGLBuffer& buffer, T value, int particleCount, int ver
 void ViewportParticleGeometryBuffer::setParticlePositions(const Point3* coordinates)
 {
 	OVITO_ASSERT(QOpenGLContextGroup::currentContextGroup() == _contextGroup);
-	fillOpenGLBuffer(_glPositionsBuffer, coordinates, _particleCount, _verticesPerParticle);
+	_positionsBuffer.fill(coordinates);
 }
 
 /******************************************************************************
@@ -240,7 +167,7 @@ void ViewportParticleGeometryBuffer::setParticlePositions(const Point3* coordina
 void ViewportParticleGeometryBuffer::setParticleRadii(const FloatType* radii)
 {
 	OVITO_ASSERT(QOpenGLContextGroup::currentContextGroup() == _contextGroup);
-	fillOpenGLBuffer(_glRadiiBuffer, radii, _particleCount, _verticesPerParticle);
+	_radiiBuffer.fill(radii);
 }
 
 /******************************************************************************
@@ -249,7 +176,7 @@ void ViewportParticleGeometryBuffer::setParticleRadii(const FloatType* radii)
 void ViewportParticleGeometryBuffer::setParticleRadius(FloatType radius)
 {
 	OVITO_ASSERT(QOpenGLContextGroup::currentContextGroup() == _contextGroup);
-	fillOpenGLBuffer(_glRadiiBuffer, radius, _particleCount, _verticesPerParticle);
+	_radiiBuffer.fillConstant(radius);
 }
 
 /******************************************************************************
@@ -258,7 +185,7 @@ void ViewportParticleGeometryBuffer::setParticleRadius(FloatType radius)
 void ViewportParticleGeometryBuffer::setParticleColors(const Color* colors)
 {
 	OVITO_ASSERT(QOpenGLContextGroup::currentContextGroup() == _contextGroup);
-	fillOpenGLBuffer(_glColorsBuffer, colors, _particleCount, _verticesPerParticle);
+	_colorsBuffer.fill(colors);
 }
 
 /******************************************************************************
@@ -267,7 +194,7 @@ void ViewportParticleGeometryBuffer::setParticleColors(const Color* colors)
 void ViewportParticleGeometryBuffer::setParticleColor(const Color color)
 {
 	OVITO_ASSERT(QOpenGLContextGroup::currentContextGroup() == _contextGroup);
-	fillOpenGLBuffer(_glColorsBuffer, color, _particleCount, _verticesPerParticle);
+	_colorsBuffer.fillConstant(color);
 }
 
 /******************************************************************************
@@ -277,9 +204,7 @@ bool ViewportParticleGeometryBuffer::isValid(SceneRenderer* renderer)
 {
 	ViewportSceneRenderer* vpRenderer = dynamic_object_cast<ViewportSceneRenderer>(renderer);
 	if(!vpRenderer) return false;
-	return _glPositionsBuffer.isCreated()
-			&& _particleCount >= 0
-			&& (_contextGroup == vpRenderer->glcontext()->shareGroup());
+	return _positionsBuffer.isCreated() && (_contextGroup == vpRenderer->glcontext()->shareGroup());
 }
 
 /******************************************************************************
@@ -288,16 +213,14 @@ bool ViewportParticleGeometryBuffer::isValid(SceneRenderer* renderer)
 void ViewportParticleGeometryBuffer::render(SceneRenderer* renderer)
 {
 	OVITO_CHECK_OPENGL();
-	OVITO_ASSERT(_glPositionsBuffer.isCreated());
 	OVITO_ASSERT(_contextGroup == QOpenGLContextGroup::currentContextGroup());
-	OVITO_ASSERT(_particleCount >= 0);
 	OVITO_STATIC_ASSERT(sizeof(FloatType) == 4);
 	OVITO_STATIC_ASSERT(sizeof(Color) == 12);
 	OVITO_STATIC_ASSERT(sizeof(Point3) == 12);
 
 	ViewportSceneRenderer* vpRenderer = dynamic_object_cast<ViewportSceneRenderer>(renderer);
 
-	if(_particleCount <= 0 || !vpRenderer)
+	if(particleCount() <= 0 || !vpRenderer)
 		return;
 
 	if(shadingMode() == FlatShading) {
@@ -316,7 +239,7 @@ void ViewportParticleGeometryBuffer::render(SceneRenderer* renderer)
 ******************************************************************************/
 void ViewportParticleGeometryBuffer::renderPointSprites(ViewportSceneRenderer* renderer)
 {
-	OVITO_ASSERT(_verticesPerParticle == 1);
+	OVITO_ASSERT(_positionsBuffer.verticesPerElement() == 1);
 
 	// Let the vertex shader compute the point size.
 	OVITO_CHECK_OPENGL(glEnable(GL_VERTEX_PROGRAM_POINT_SIZE));
@@ -387,16 +310,25 @@ void ViewportParticleGeometryBuffer::renderPointSprites(ViewportSceneRenderer* r
 	shader->setUniformValue("projection_matrix", (QMatrix4x4)renderer->projParams().projectionMatrix);
 	shader->setUniformValue("modelview_matrix", (QMatrix4x4)renderer->modelViewTM());
 
-	bindParticlePositionBuffer(renderer, shader);
-	bindParticleColorBuffer(renderer, shader);
-	bindParticleRadiusBuffer(renderer, shader);
+	_positionsBuffer.bindPositions(renderer, shader);
+	_radiiBuffer.bind(renderer, shader, "particle_radius", GL_FLOAT, 0, 1);
+	if(!renderer->isPicking()) {
+		_colorsBuffer.bindColors(renderer, shader, 3);
+	}
+	else {
+		OVITO_CHECK_OPENGL(shader->setUniformValue("pickingBaseID", (GLint)renderer->registerSubObjectIDs(particleCount())));
+		renderer->activateVertexIDs(shader, particleCount());
+	}
 
-	OVITO_CHECK_OPENGL(glDrawArrays(GL_POINTS, 0, _particleCount));
+	OVITO_CHECK_OPENGL(glDrawArrays(GL_POINTS, 0, particleCount()));
 
 	OVITO_CHECK_OPENGL(glDisable(GL_VERTEX_PROGRAM_POINT_SIZE));
-	detachParticlePositionBuffer(renderer, shader);
-	detachParticleColorBuffer(renderer, shader);
-	detachParticleRadiusBuffer(renderer, shader);
+	_positionsBuffer.detachPositions(renderer, shader);
+	_radiiBuffer.detach(renderer, shader, "particle_radius");
+	if(!renderer->isPicking())
+		_colorsBuffer.detachPositions(renderer, shader);
+	else
+		renderer->deactivateVertexIDs(shader);
 	shader->release();
 
 	// Disable point sprites.
@@ -415,7 +347,7 @@ void ViewportParticleGeometryBuffer::renderCubes(ViewportSceneRenderer* renderer
 	// Pick the right OpenGL shader program.
 	QOpenGLShaderProgram* shader;
 	if(hasGeometryShaders()) {
-		OVITO_ASSERT(_verticesPerParticle == 1);
+		OVITO_ASSERT(_positionsBuffer.verticesPerElement() == 1);
 		if(!renderer->isPicking()) {
 			if(particleShape() == SphericalShape)
 				shader = _raytracedSphereShader;
@@ -430,7 +362,7 @@ void ViewportParticleGeometryBuffer::renderCubes(ViewportSceneRenderer* renderer
 		}
 	}
 	else {
-		OVITO_ASSERT(_verticesPerParticle == 14);
+		OVITO_ASSERT(_positionsBuffer.verticesPerElement() == 14);
 		if(!renderer->isPicking()) {
 			if(particleShape() == SphericalShape)
 				shader = _raytracedSphereTristripShader;
@@ -503,28 +435,33 @@ void ViewportParticleGeometryBuffer::renderCubes(ViewportSceneRenderer* renderer
 	shader->setUniformValue("viewport_origin", (float)viewportCoords[0], (float)viewportCoords[1]);
 	shader->setUniformValue("inverse_viewport_size", 2.0f / (float)viewportCoords[2], 2.0f / (float)viewportCoords[3]);
 
-	bindParticlePositionBuffer(renderer, shader);
-	bindParticleColorBuffer(renderer, shader);
-	bindParticleRadiusBuffer(renderer, shader);
+	_positionsBuffer.bindPositions(renderer, shader);
+	_radiiBuffer.bind(renderer, shader, "particle_radius", GL_FLOAT, 0, 1);
+	if(!renderer->isPicking()) {
+		_colorsBuffer.bindColors(renderer, shader, 3);
+	}
+	else {
+		OVITO_CHECK_OPENGL(shader->setUniformValue("pickingBaseID", (GLint)renderer->registerSubObjectIDs(particleCount())));
+		renderer->activateVertexIDs(shader, particleCount() * _positionsBuffer.verticesPerElement());
+	}
 
 	if(hasGeometryShaders()) {
-		OVITO_CHECK_OPENGL(glDrawArrays(GL_POINTS, 0, _particleCount));
+		OVITO_CHECK_OPENGL(glDrawArrays(GL_POINTS, 0, particleCount()));
 	}
 	else {
 		// Prepare arrays required for glMultiDrawArrays().
-		if(_primitiveStartIndices.size() != _particleCount) {
-			_primitiveStartIndices.resize(_particleCount);
-			_primitiveVertexCounts.resize(_particleCount);
+		if(_primitiveStartIndices.size() != particleCount()) {
+			_primitiveStartIndices.resize(particleCount());
+			_primitiveVertexCounts.resize(particleCount());
 			GLint index = 0;
 			for(GLint& s : _primitiveStartIndices) {
 				s = index;
-				index += _verticesPerParticle;
+				index += _positionsBuffer.verticesPerElement();
 			}
-			std::fill(_primitiveVertexCounts.begin(), _primitiveVertexCounts.end(), _verticesPerParticle);
+			std::fill(_primitiveVertexCounts.begin(), _primitiveVertexCounts.end(), _positionsBuffer.verticesPerElement());
 		}
-		OVITO_ASSERT(_verticesPerParticle == 14);
 
-		renderer->activateVertexIDs(shader, _verticesPerParticle * _particleCount);
+		renderer->activateVertexIDs(shader, particleCount() * _positionsBuffer.verticesPerElement());
 
 		OVITO_CHECK_OPENGL(renderer->glMultiDrawArrays(GL_TRIANGLE_STRIP,
 				_primitiveStartIndices.data(),
@@ -534,9 +471,12 @@ void ViewportParticleGeometryBuffer::renderCubes(ViewportSceneRenderer* renderer
 		renderer->deactivateVertexIDs(shader);
 	}
 
-	detachParticlePositionBuffer(renderer, shader);
-	detachParticleColorBuffer(renderer, shader);
-	detachParticleRadiusBuffer(renderer, shader);
+	_positionsBuffer.detachPositions(renderer, shader);
+	_radiiBuffer.detach(renderer, shader, "particle_radius");
+	if(!renderer->isPicking())
+		_colorsBuffer.detachPositions(renderer, shader);
+	else
+		renderer->deactivateVertexIDs(shader);
 
 	shader->release();
 }
@@ -649,112 +589,6 @@ void ViewportParticleGeometryBuffer::deactivateBillboardTexture(ViewportSceneRen
 	// Disable texture mapping again when not using core profile.
 	if(renderer->isCoreProfile() == false)
 		OVITO_CHECK_OPENGL(glDisable(GL_TEXTURE_2D));
-}
-
-/******************************************************************************
-* Binds the vertex buffer containing the particle positions to the corresponding
-* shader input attribute.
-******************************************************************************/
-void ViewportParticleGeometryBuffer::bindParticlePositionBuffer(ViewportSceneRenderer* renderer, QOpenGLShaderProgram* shader)
-{
-	OVITO_ASSERT(_glPositionsBuffer.isCreated());
-
-	if(!_glPositionsBuffer.bind())
-		throw Exception(QStringLiteral("Failed to bind OpenGL vertex positions buffer."));
-
-	if(renderer->glformat().majorVersion() >= 3) {
-		shader->enableAttributeArray("particle_pos");
-		shader->setAttributeBuffer("particle_pos", GL_FLOAT, 0, 3);
-	}
-	else {
-		// Older OpenGL implementations cannot take vertex coordinates
-		// through a custom shader attribute.
-		OVITO_CHECK_OPENGL(glEnableClientState(GL_VERTEX_ARRAY));
-		OVITO_CHECK_OPENGL(glVertexPointer(3, GL_FLOAT, 0, 0));
-	}
-	_glPositionsBuffer.release();
-}
-
-/******************************************************************************
-* Detaches the vertex buffer containing the particle positions from the corresponding
-* shader input attribute.
-******************************************************************************/
-void ViewportParticleGeometryBuffer::detachParticlePositionBuffer(ViewportSceneRenderer* renderer, QOpenGLShaderProgram* shader)
-{
-	if(renderer->glformat().majorVersion() >= 3)
-		shader->disableAttributeArray("particle_pos");
-	else
-		OVITO_CHECK_OPENGL(glDisableClientState(GL_VERTEX_ARRAY));
-}
-
-/******************************************************************************
-* Binds the vertex buffer containing the particle colors to the corresponding
-* shader input attribute.
-******************************************************************************/
-void ViewportParticleGeometryBuffer::bindParticleColorBuffer(ViewportSceneRenderer* renderer, QOpenGLShaderProgram* shader)
-{
-	if(!renderer->isPicking()) {
-		OVITO_ASSERT(_glColorsBuffer.isCreated());
-		if(!_glColorsBuffer.bind())
-			throw Exception(QStringLiteral("Failed to bind OpenGL vertex color buffer."));
-		if(renderer->glformat().majorVersion() >= 3) {
-			shader->enableAttributeArray("particle_color");
-			shader->setAttributeBuffer("particle_color", GL_FLOAT, 0, 3);
-		}
-		else {
-			OVITO_CHECK_OPENGL(glEnableClientState(GL_COLOR_ARRAY));
-			OVITO_CHECK_OPENGL(glColorPointer(3, GL_FLOAT, 0, 0));
-		}
-		_glColorsBuffer.release();
-	}
-	else {
-
-		OVITO_CHECK_OPENGL(shader->setUniformValue("pickingBaseID", (GLint)renderer->registerSubObjectIDs(_particleCount)));
-
-		// In picking mode, the OpenGL vertex shader needs particle IDs to compute the particle colors.
-		renderer->activateVertexIDs(shader, _particleCount * _verticesPerParticle);
-	}
-}
-
-/******************************************************************************
-* Detaches the vertex buffer containing the particle colors from the corresponding
-* shader input attribute.
-******************************************************************************/
-void ViewportParticleGeometryBuffer::detachParticleColorBuffer(ViewportSceneRenderer* renderer, QOpenGLShaderProgram* shader)
-{
-	if(!renderer->isPicking()) {
-		if(renderer->glformat().majorVersion() >= 3)
-			shader->disableAttributeArray("particle_color");
-		else
-			OVITO_CHECK_OPENGL(glDisableClientState(GL_COLOR_ARRAY));
-	}
-	else {
-		renderer->deactivateVertexIDs(shader);
-	}
-}
-
-/******************************************************************************
-* Binds the vertex buffer containing the particle radii to the corresponding
-* shader input attribute.
-******************************************************************************/
-void ViewportParticleGeometryBuffer::bindParticleRadiusBuffer(ViewportSceneRenderer* renderer, QOpenGLShaderProgram* shader)
-{
-	OVITO_ASSERT(_glRadiiBuffer.isCreated());
-
-	if(!_glRadiiBuffer.bind())
-		throw Exception(QStringLiteral("Failed to bind OpenGL vertex radius buffer."));
-	shader->enableAttributeArray("particle_radius");
-	shader->setAttributeBuffer("particle_radius", GL_FLOAT, 0, 1);
-	_glRadiiBuffer.release();
-}
-
-/******************************************************************************
-* Detaches the vertex buffer containing the particle radii from the corresponding
-* shader input attribute.
-******************************************************************************/
-void ViewportParticleGeometryBuffer::detachParticleRadiusBuffer(ViewportSceneRenderer* renderer, QOpenGLShaderProgram* shader)
-{
-	shader->disableAttributeArray("particle_radius");
 }
 
 };

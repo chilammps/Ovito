@@ -28,7 +28,7 @@ uniform int pickingBaseID;
 #if __VERSION__ >= 130
 
 	// The input particle data:
-	in vec3 particle_pos;
+	in vec3 position;
 	in float particle_radius;
 	
 	// Output passed to fragment shader.
@@ -56,7 +56,7 @@ void main()
 		float((objectID >> 24) & 0xFF) / 255.0);
 		
 	// Transform and project particle position.
-	vec4 eye_position = modelview_matrix * vec4(particle_pos, 1);
+	vec4 eye_position = modelview_matrix * vec4(position, 1);
 				
 #else
 	particle_color_fs = vec4(

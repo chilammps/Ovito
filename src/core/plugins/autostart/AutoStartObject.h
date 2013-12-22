@@ -19,34 +19,46 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+/**
+ * \file AutoStartObject.h
+ * \brief Contains the definition of the Ovito::AutoStartObject class.
+ */
+
+#ifndef __OVITO_AUTO_START_OBJECT_H
+#define __OVITO_AUTO_START_OBJECT_H
+
 #include <core/Core.h>
-#include <core/gui/app/Application.h>
 
-#ifdef OVITO_MONOLITHIC_BUILD
-	#ifdef Q_OS_LINUX
-		Q_IMPORT_PLUGIN(QXcbIntegrationPlugin)
-	#endif
-#endif
+namespace Ovito {
 
-int main(int argc, char** argv)
+class CommandLineParser;		// defined in CommandLineParser.h
+
+/**
+ * \brief Base class that allows plugins to execute code on application startup.
+ *
+ * Derive a sub-class from this class if you want to perform something on application startup.
+ */
+class OVITO_CORE_EXPORT AutoStartObject : public OvitoObject
 {
+protected:
 
-#ifdef OVITO_MONOLITHIC_BUILD
-	// If we build a monolithic executable with static libraries then
-	// the core's resources are not automatically initialized. Therefore
-	// it needs to be explicitely done here.
-	Q_INIT_RESOURCE(core);
-#endif
+	/// \brief The default constructor.
+	AutoStartObject() {}
 
-	// Initialize the application.
-	if(!Ovito::Application().instance().initialize(argc, argv))
-		return 1;
+public:
 
-	// Enter event loop.
-	int result = Ovito::Application().instance().runApplication();
+	/// \brief Registers plugin-specific command line options.
+	virtual void registerCommandLineOptions(CommandLineParser& cmdLineParser) {}
 
-	// Shutdown application.
-	Ovito::Application().instance().shutdown();
+	/// \brief Is called after the application has been completely initialized.
+	virtual void applicationStarted() {}
 
-	return result;
-}
+private:
+
+	Q_OBJECT
+	OVITO_OBJECT
+};
+
+};
+
+#endif // __OVITO_AUTO_START_OBJECT_H

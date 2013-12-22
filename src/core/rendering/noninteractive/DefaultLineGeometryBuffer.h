@@ -43,7 +43,7 @@ public:
 	DefaultLineGeometryBuffer() {}
 
 	/// \brief Allocates a geometry buffer with the given number of vertices.
-	virtual void setSize(int vertexCount) override {
+	virtual void setVertexCount(int vertexCount, FloatType lineWidth) override {
 		OVITO_ASSERT(vertexCount >= 0);
 		_positionsBuffer.resize(vertexCount);
 		_colorsBuffer.resize(vertexCount);
@@ -63,7 +63,7 @@ public:
 	}
 
 	/// \brief Sets the color of all vertices to the given value.
-	virtual void setVertexColor(const ColorA color) override {
+	virtual void setLineColor(const ColorA color) override {
 		std::fill(_colorsBuffer.begin(), _colorsBuffer.end(), color);
 	}
 

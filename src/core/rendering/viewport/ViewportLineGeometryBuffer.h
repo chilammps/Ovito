@@ -29,6 +29,7 @@
 
 #include <core/Core.h>
 #include <core/rendering/LineGeometryBuffer.h>
+#include "OpenGLBuffer.h"
 
 namespace Ovito {
 
@@ -43,10 +44,10 @@ public:
 	ViewportLineGeometryBuffer(ViewportSceneRenderer* renderer);
 
 	/// \brief Allocates a geometry buffer with the given number of vertices.
-	virtual void setSize(int vertexCount) override;
+	virtual void setVertexCount(int vertexCount, FloatType lineWidth) override;
 
 	/// \brief Returns the number of vertices stored in the buffer.
-	virtual int vertexCount() const override { return _vertexCount; }
+	virtual int vertexCount() const override { return _positionsBuffer.elementCount(); }
 
 	/// \brief Sets the coordinates of the vertices.
 	virtual void setVertexPositions(const Point3* coordinates) override;
@@ -55,7 +56,7 @@ public:
 	virtual void setVertexColors(const ColorA* colors) override;
 
 	/// \brief Sets the color of all vertices to the given value.
-	virtual void setVertexColor(const ColorA color) override;
+	virtual void setLineColor(const ColorA color) override;
 
 	/// \brief Returns true if the geometry buffer is filled and can be rendered with the given renderer.
 	virtual bool isValid(SceneRenderer* renderer) override;
@@ -63,13 +64,27 @@ public:
 	/// \brief Renders the geometry.
 	virtual void render(SceneRenderer* renderer) override;
 
+protected:
+
+	/// \brief Renders the lines using GL_LINES mode.
+	void renderLines(ViewportSceneRenderer* renderer);
+
+	/// \brief Renders the lines using polygons.
+	void renderThickLines(ViewportSceneRenderer* renderer);
+
 private:
 
 	/// The internal OpenGL vertex buffer that stores the vertex positions.
-	QOpenGLBuffer _glPositionsBuffer;
+	OpenGLBuffer<Point3> _positionsBuffer;
 
 	/// The internal OpenGL vertex buffer that stores the vertex colors.
-	QOpenGLBuffer _glColorsBuffer;
+	OpenGLBuffer<ColorA> _colorsBuffer;
+
+	/// The internal OpenGL vertex buffer that stores the line segment vectors.
+	OpenGLBuffer<Vector3> _vectorsBuffer;
+
+	/// The internal OpenGL vertex buffer that stores the indices for a call to glDrawElements().
+	OpenGLBuffer<GLuint> _indicesBuffer;
 
 	/// The GL context group under which the GL vertex buffer has been created.
 	QOpenGLContextGroup* _contextGroup;
@@ -80,8 +95,14 @@ private:
 	/// The OpenGL shader program used to render the lines in picking mode.
 	QOpenGLShaderProgram* _pickingShader;
 
-	/// The number of vertices stored in the buffer.
-	int _vertexCount;
+	/// The OpenGL shader program used to render thick lines.
+	QOpenGLShaderProgram* _thickLineShader;
+
+	/// The OpenGL shader program used to render thick lines in picking mode.
+	QOpenGLShaderProgram* _thickLinePickingShader;
+
+	/// The width of lines in screen space.
+	FloatType _lineWidth;
 };
 
 };

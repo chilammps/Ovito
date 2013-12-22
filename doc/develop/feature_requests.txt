@@ -9,6 +9,7 @@
 - Export of general triclinic cells to LAMMPS data/dump formats. See http://lammps.sandia.gov/doc/Section_howto.html#howto_12
 - POV-Ray rendering and file export.
 - Affine Transformation: Add "Duplicate particles" option.
+- Surface mesh for an empty simulation box should not display cap polygons.
 
 Sha Zhendong:
 
