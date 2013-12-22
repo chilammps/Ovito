@@ -47,6 +47,7 @@ TaskManager::TaskManager(MainWindow* mainWindow) : QObject(mainWindow), _mainWin
 		_progressWidget->setMaximumWidth(_progressWidget->minimumSizeHint().width());
 		_widgetCleanupHandler.add(_progressWidget);
 		_widgetCleanupHandler.add(_progressTextDisplay);
+		connect(_cancelTaskButton, SIGNAL(clicked(bool)), this, SLOT(cancelAll()));
 	}
 	_indicatorVisible = false;
 
@@ -54,7 +55,6 @@ TaskManager::TaskManager(MainWindow* mainWindow) : QObject(mainWindow), _mainWin
 	connect(&_taskFinishedSignalMapper, SIGNAL(mapped(QObject*)), this, SLOT(taskFinished(QObject*)));
 	connect(&_taskProgressValueChangedSignalMapper, SIGNAL(mapped(QObject*)), this, SLOT(taskProgressValueChanged(QObject*)));
 	connect(&_taskProgressTextChangedSignalMapper, SIGNAL(mapped(QObject*)), this, SLOT(taskProgressTextChanged(QObject*)));
-	connect(_cancelTaskButton, SIGNAL(clicked(bool)), this, SLOT(cancelAll()));
 }
 
 /******************************************************************************

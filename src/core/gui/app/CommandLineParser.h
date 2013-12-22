@@ -113,11 +113,11 @@ public:
 
 	/// Parses the command line arguments.
 	/// Returns false in case of a parse error (unknown option or missing value); returns true otherwise.
-	bool parse(int argc, char** argv);
+	bool parse(int argc, char** argv, bool ignoreUnknownOptions = false);
 
 	/// Parses the command line arguments.
 	/// Returns false in case of a parse error (unknown option or missing value); returns true otherwise.
-	bool parse(const QStringList& arguments);
+	bool parse(const QStringList& arguments, bool ignoreUnknownOptions = false);
 
 	/// Returns an error text for the user. This should only be called when parse() has returned false.
 	QString errorText() const { return _errorText; }

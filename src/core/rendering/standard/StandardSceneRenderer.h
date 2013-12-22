@@ -40,7 +40,7 @@ public:
 
 	/// Default constructor.
 	Q_INVOKABLE StandardSceneRenderer(DataSet* dataset) : ViewportSceneRenderer(dataset), _antialiasingLevel(3) {
-		INIT_PROPERTY_FIELD(StandardSceneRenderer::_antialiasingLevel)
+		INIT_PROPERTY_FIELD(StandardSceneRenderer::_antialiasingLevel);
 	}
 
 	/// Returns the number of sub-pixels to render.
@@ -75,7 +75,7 @@ private:
 	PropertyField<int> _antialiasingLevel;
 
 	/// The offscreen surface used to render into an image buffer using OpenGL.
-	QOffscreenSurface _offscreenSurface;
+	QScopedPointer<QOffscreenSurface> _offscreenSurface;
 
 	/// The OpenGL rendering context.
 	QScopedPointer<QOpenGLContext> _offscreenContext;

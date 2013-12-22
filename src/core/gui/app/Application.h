@@ -115,9 +115,6 @@ public:
 
 private:
 
-	/// Parses the command line parameters.
-	bool parseCommandLine(int argc, char** argv);
-
 	/// Initializes the graphical user interface of the application.
 	void initializeGUI();
 

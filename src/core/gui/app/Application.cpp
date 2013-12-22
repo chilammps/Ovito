@@ -85,7 +85,9 @@ bool Application::initialize(int& argc, char** argv)
 	_cmdLineParser.addOption(CommandLineOption(QStringList{{"nogui"}}, tr("Run in console mode without showing the graphical user interface.")));
 
 	// Parse command line arguments.
-	if(!parseCommandLine(argc, argv)) {
+	// Ignore unknown command line options for now.
+	if(!_cmdLineParser.parse(argc, argv, true)) {
+        std::cerr << "Error: " << qPrintable(_cmdLineParser.errorText()) << std::endl;
 		_consoleMode = true;
 		return false;
 	}
@@ -134,7 +136,8 @@ bool Application::initialize(int& argc, char** argv)
 		}
 
 		// Parse the command line parameters again after the plugins have registered their options.
-		if(!parseCommandLine(argc, argv)) {
+		if(!_cmdLineParser.parse(argc, argv)) {
+	        std::cerr << "Error: " << qPrintable(_cmdLineParser.errorText()) << std::endl;
 			_consoleMode = true;
 			shutdown();
 			return false;
@@ -151,8 +154,8 @@ bool Application::initialize(int& argc, char** argv)
 		}
 
 		// Load scene file specified at the command line.
-		if(_cmdLineParser.positionalArguments().empty() == false) {
-			QString startupFilename = _cmdLineParser.positionalArguments().front();
+		if(cmdLineParser().positionalArguments().empty() == false) {
+			QString startupFilename = cmdLineParser().positionalArguments().front();
 			if(startupFilename.endsWith(".ovito", Qt::CaseInsensitive))
 				datasetContainer()->fileLoad(startupFilename);
 		}
@@ -162,8 +165,8 @@ bool Application::initialize(int& argc, char** argv)
 			datasetContainer()->fileNew();
 
 		// Import data file specified at the command line.
-		if(_cmdLineParser.positionalArguments().empty() == false) {
-			QString importFilename = _cmdLineParser.positionalArguments().front();
+		if(cmdLineParser().positionalArguments().empty() == false) {
+			QString importFilename = cmdLineParser().positionalArguments().front();
 			if(!importFilename.endsWith(".ovito", Qt::CaseInsensitive)) {
 				QUrl importURL = QUrl::fromUserInput(importFilename);
 				datasetContainer()->importFile(importURL);
@@ -269,18 +272,6 @@ void Application::processRunOnceList()
 		if(entry.key())
 			entry.value()();
 	}
-}
-
-/******************************************************************************
-* Parses the command line parameters.
-******************************************************************************/
-bool Application::parseCommandLine(int argc, char** argv)
-{
-	if(!_cmdLineParser.parse(argc, argv)) {
-        std::cerr << "Error: " << qPrintable(_cmdLineParser.errorText()) << std::endl;
-		return false;
-	}
-	return true;
 }
 
 /******************************************************************************

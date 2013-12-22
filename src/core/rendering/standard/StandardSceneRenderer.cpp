@@ -69,13 +69,15 @@ bool StandardSceneRenderer::startRender(DataSet* dataset, RenderSettings* settin
 		qWarning() << "Offscreen OpenGL context cannot share resources with viewport contexts.";
 
 	// Create offscreen buffer.
-	_offscreenSurface.setFormat(_offscreenContext->format());
-	_offscreenSurface.create();
-	if(!_offscreenSurface.isValid())
+	if(_offscreenSurface.isNull())
+		_offscreenSurface.reset(new QOffscreenSurface());
+	_offscreenSurface->setFormat(_offscreenContext->format());
+	_offscreenSurface->create();
+	if(!_offscreenSurface->isValid())
 		throw Exception(tr("Failed to create offscreen rendering surface."));
 
 	// Make the context current.
-	if(!_offscreenContext->makeCurrent(&_offscreenSurface))
+	if(!_offscreenContext->makeCurrent(_offscreenSurface.data()))
 		throw Exception(tr("Failed to make OpenGL context current."));
 	OVITO_CHECK_OPENGL();
 
@@ -143,7 +145,7 @@ bool StandardSceneRenderer::startRender(DataSet* dataset, RenderSettings* settin
 void StandardSceneRenderer::beginFrame(TimePoint time, const ViewProjectionParameters& params, Viewport* vp)
 {
 	// Make GL context current.
-	if(!_offscreenContext->makeCurrent(&_offscreenSurface))
+	if(!_offscreenContext->makeCurrent(_offscreenSurface.data()))
 		throw Exception(tr("Failed to make OpenGL context current."));
 	OVITO_CHECK_OPENGL();
 
@@ -170,7 +172,7 @@ bool StandardSceneRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialo
 		return false;
 
 	// Flush the contents to the FBO before extracting image.
-	_offscreenContext->swapBuffers(&_offscreenSurface);
+	_offscreenContext->swapBuffers(_offscreenSurface.data());
 
 	// Fetch rendered image from OpenGL framebuffer.
 	// Scale it down to the output size.
@@ -194,7 +196,7 @@ void StandardSceneRenderer::endRender()
 {
 	_framebufferObject.reset();
 	_offscreenContext.reset();
-	_offscreenSurface.destroy();
+	_offscreenSurface.reset();
 	ViewportSceneRenderer::endRender();
 }
 

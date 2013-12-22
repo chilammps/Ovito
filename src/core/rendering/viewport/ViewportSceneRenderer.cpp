@@ -30,6 +30,7 @@
 #include <core/dataset/DataSet.h>
 #include <core/viewport/input/ViewportInputManager.h>
 #include <core/gui/mainwin/MainWindow.h>
+#include <core/gui/app/Application.h>
 #include "ViewportSceneRenderer.h"
 #include "ViewportLineGeometryBuffer.h"
 #include "ViewportParticleGeometryBuffer.h"
@@ -48,6 +49,9 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, ViewportSceneRenderer, SceneRenderer);
 void ViewportSceneRenderer::beginFrame(TimePoint time, const ViewProjectionParameters& params, Viewport* vp)
 {
 	SceneRenderer::beginFrame(time, params, vp);
+
+	if(Application::instance().guiMode() == false)
+		throw Exception(tr("Cannot use OpenGL renderer in console mode."));
 
 	_glcontext = QOpenGLContext::currentContext();
 	if(!_glcontext)
