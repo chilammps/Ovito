@@ -82,8 +82,12 @@ public:
 	/// Returns the computed per-particle structure types.
 	const ParticleProperty& particleStructures() const { OVITO_CHECK_POINTER(_structureProperty.constData()); return *_structureProperty; }
 
-	/// Returns a map that contains the number of matching particles for each structure type.
-	const std::map<int,size_t>& structureCounts() const { return _structureCounts; }
+	/// Returns an array that contains the number of matching particles for each structure type.
+	const QList<int>& structureCounts() const { return _structureCounts; }
+
+public:
+
+	Q_PROPERTY(QList<int> structureCounts READ structureCounts);
 
 protected:
 
@@ -111,7 +115,7 @@ private:
 	VectorReferenceField<ParticleType> _structureTypes;
 
 	/// The number of matching particles for each structure type.
-	std::map<int,size_t> _structureCounts;
+	QList<int> _structureCounts;
 
 private:
 

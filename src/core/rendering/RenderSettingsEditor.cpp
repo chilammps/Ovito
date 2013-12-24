@@ -180,7 +180,7 @@ void RenderSettingsEditor::createUI(const RolloutInsertionParameters& rolloutPar
 		layout2->addWidget(chooseFilenameBtn, 0, 1);
 
 		// Output filename parameter.
-		StringParameterUI* imageFilenameUI = new StringParameterUI(this, "imageFilename");
+		StringParameterUI* imageFilenameUI = new StringParameterUI(this, "filename");
 		imageFilenameUI->setEnabled(false);
 		layout2->addWidget(imageFilenameUI->textBox(), 1, 0, 1, 2);
 

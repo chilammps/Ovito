@@ -97,7 +97,7 @@ bool TachyonRenderer::startRender(DataSet* dataset, RenderSettings* settings)
 ******************************************************************************/
 bool TachyonRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialog* progress)
 {
-	progress->setLabelText(tr("Preparing scene"));
+	if(progress) progress->setLabelText(tr("Preparing scene"));
 
 	// Create new scene and set up parameters.
 	_rtscene = rt_newscene();
@@ -188,8 +188,10 @@ bool TachyonRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialog* pro
 	renderScene();
 
 	// Render scene.
-	progress->setMaximum(renderSettings()->outputImageWidth() * renderSettings()->outputImageHeight());
-	progress->setLabelText(tr("Rendering scene"));
+	if(progress) {
+		progress->setMaximum(renderSettings()->outputImageWidth() * renderSettings()->outputImageHeight());
+		progress->setLabelText(tr("Rendering scene"));
+	}
 
 	scenedef * scene = (scenedef *)_rtscene;
 
@@ -203,8 +205,8 @@ bool TachyonRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialog* pro
 	camera_init(scene);      /* Initialize all aspects of camera system  */
 
 	int tileSize = scene->numthreads * 8;
-	for(int ystart = 0; ystart < scene->vres && !progress->wasCanceled(); ystart += tileSize) {
-		for(int xstart = 0; xstart < scene->hres && !progress->wasCanceled(); xstart += tileSize) {
+	for(int ystart = 0; ystart < scene->vres; ystart += tileSize) {
+		for(int xstart = 0; xstart < scene->hres; xstart += tileSize) {
 			int xstop = std::min(scene->hres, xstart + tileSize);
 			int ystop = std::min(scene->vres, ystart + tileSize);
 			for(int thr = 0; thr < scene->numthreads; thr++) {
@@ -239,14 +241,21 @@ bool TachyonRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialog* pro
 			}
 			frameBuffer->update(QRect(xstart, frameBuffer->image().height() - ystop, xstop - xstart, ystop - ystart));
 
-			progress->setValue(progress->value() + (xstop - xstart) * (ystop - ystart));
+			if(progress) {
+				progress->setValue(progress->value() + (xstop - xstart) * (ystop - ystart));
+				if(progress->wasCanceled())
+					break;
+			}
 		}
+
+		if(progress && progress->wasCanceled())
+			break;
 	}
 
 	// Clean up.
 	rt_deletescene(_rtscene);
 
-	return (progress->wasCanceled() == false);
+	return (!progress || progress->wasCanceled() == false);
 }
 
 /******************************************************************************

@@ -20,12 +20,16 @@
 ###############################################################################
 
 SET(OVITO_SCRIPTING_SOURCE_FILES
+	engine/ScriptEngine.cpp
+	engine/ScriptAutostarter.cpp
 	ui/ScriptingApplet.cpp
-	bindings/ScriptBindings.cpp
+	bindings/BasicTypesBinding.cpp
+	bindings/InputOutputBinding.cpp
+	bindings/ObjectNodeBinding.cpp
+	bindings/ViewportBinding.cpp
 )
 
 # Generate plugin module.
 OVITO_PLUGIN(Scripting
 	SOURCES ${OVITO_SCRIPTING_SOURCE_FILES}
-	PLUGIN_DEPENDENCIES Particles    
 )

@@ -28,6 +28,7 @@
 #include <core/animation/controller/Controller.h>
 #include <core/animation/AnimationSettings.h>
 #include "FrameBuffer.h"
+#include "SceneRenderer.h"
 
 namespace Ovito {
 
@@ -61,9 +62,10 @@ public:
 	/// \undoable
 	void setRendererClass(const OvitoObjectType* rendererClass);
 	
-	/// Returns the instance of the renderer class. This method will return NULL if no renderer class has been selected
-	/// using the setRendererClass() method.
+	/// Returns the active renderer.
 	SceneRenderer* renderer() const { return _renderer; }
+	/// Sets the active renderer.
+	void setRenderer(SceneRenderer* renderer) { _renderer = renderer; }
 	
 	/// Returns whether only the current frame or the whole animation will be rendered.
 	RenderingRangeType renderingRangeType() const { return _renderingRangeType; }
@@ -139,13 +141,14 @@ public:
 
 public:	
 	
-	Q_PROPERTY(int outputImageWidth READ outputImageWidth WRITE setOutputImageWidth)
-	Q_PROPERTY(int outputImageHeight READ outputImageHeight WRITE setOutputImageHeight)
-	Q_PROPERTY(FloatType outputImageAspectRatio READ outputImageAspectRatio)
-	Q_PROPERTY(QString imageFilename READ imageFilename WRITE setImageFilename)
+	Q_PROPERTY(int imageWidth READ outputImageWidth WRITE setOutputImageWidth)
+	Q_PROPERTY(int imageHeight READ outputImageHeight WRITE setOutputImageHeight)
+	Q_PROPERTY(FloatType imageAspectRatio READ outputImageAspectRatio)
+	Q_PROPERTY(QString filename READ imageFilename WRITE setImageFilename)
 	Q_PROPERTY(bool generateAlphaChannel READ generateAlphaChannel WRITE setGenerateAlphaChannel)
 	Q_PROPERTY(bool saveToFile READ saveToFile WRITE setSaveToFile)
 	Q_PROPERTY(bool skipExistingImages READ skipExistingImages WRITE setSkipExistingImages)
+	Q_PROPERTY(SceneRenderer* renderer READ renderer WRITE setRenderer)
 	Q_PROPERTY(RenderingRangeType renderingRangeType READ renderingRangeType WRITE setRenderingRangeType)
 	Q_PROPERTY(int customRangeStart READ customRangeStart WRITE setCustomRangeStart)
 	Q_PROPERTY(int customRangeEnd READ customRangeEnd WRITE setCustomRangeEnd)

@@ -57,6 +57,7 @@ public:
 
 		NUM_STRUCTURE_TYPES 	//< This just counts the number of defined structure types.
 	};
+	Q_ENUMS(StructureType);
 
 	/// Analysis engine that performs the conventional common neighbor analysis.
 	class FixedCommonNeighborAnalysisEngine : public StructureIdentificationModifier::StructureIdentificationEngine

@@ -24,6 +24,7 @@
 
 #include <plugins/particles/Particles.h>
 #include <core/animation/controller/Controller.h>
+#include <core/animation/AnimationSettings.h>
 #include <core/rendering/ImageGeometryBuffer.h>
 #include <core/rendering/TextGeometryBuffer.h>
 #include <plugins/particles/util/ParticlePropertyComboBox.h>

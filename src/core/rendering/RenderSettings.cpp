@@ -25,6 +25,8 @@
 #include <core/rendering/SceneRenderer.h>
 #include <core/rendering/standard/StandardSceneRenderer.h>
 #include <core/viewport/Viewport.h>
+#include <core/gui/app/Application.h>
+#include <core/plugins/PluginManager.h>
 
 namespace Ovito {
 
@@ -62,7 +64,7 @@ SET_PROPERTY_FIELD_LABEL(RenderSettings, _fileNumberBase, "File number base")
 ******************************************************************************/
 RenderSettings::RenderSettings(DataSet* dataset) : RefTarget(dataset),
 	_outputImageWidth(640), _outputImageHeight(480), _generateAlphaChannel(false),
-	_saveToFile(false), _skipExistingImages(false), _renderingRangeType(CURRENT_FRAME),
+	_saveToFile(Application::instance().consoleMode()), _skipExistingImages(false), _renderingRangeType(CURRENT_FRAME),
 	_customRangeStart(0), _customRangeEnd(100), _everyNthFrame(1), _fileNumberBase(0)
 {
 	INIT_PROPERTY_FIELD(RenderSettings::_renderer);
@@ -84,6 +86,16 @@ RenderSettings::RenderSettings(DataSet* dataset) : RefTarget(dataset),
 
 	// Create an instance of the default renderer class.
 	setRendererClass(&StandardSceneRenderer::OOType);
+
+	// In console mode, use a software-based renderer instead of the OpenGL-based one.
+	if(Application::instance().guiMode() == false) {
+		for(const OvitoObjectType* rendererClass : PluginManager::instance().listClasses(SceneRenderer::OOType)) {
+			if(rendererClass != &StandardSceneRenderer::OOType) {
+				setRendererClass(rendererClass);
+				break;
+			}
+		}
+	}
 }
 
 /******************************************************************************

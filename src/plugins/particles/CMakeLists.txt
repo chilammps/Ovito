@@ -90,6 +90,12 @@ SET(OVITO_PARTICLES_SOURCE_FILES
 	util/ParticlePickingHelper.cpp
 )
 
+IF(OVITO_BUILD_PLUGIN_SCRIPTING)
+	LIST(APPEND OVITO_PARTICLES_SOURCE_FILES
+		scripting/ParticlesBinding.cpp
+	)
+ENDIF()
+
 # List of source files of the GLU library used for polygon tessellation.
 SET(GLUSourceFiles
 	util/polytess/dict.c
@@ -109,4 +115,5 @@ OVITO_PLUGIN(Particles
 	SOURCES ${OVITO_PARTICLES_SOURCE_FILES} ${GLUSourceFiles}
 	RESOURCE particles.rcc resources/particles.qrc
 	LIB_DEPENDENCIES muParser qcustomplot
+	OPTIONAL_PLUGIN_DEPENDENCIES Scripting
 )

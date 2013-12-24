@@ -112,7 +112,7 @@ public:
 	/// This will also deletes all child nodes.
 	///
 	/// \undoable
-	virtual void deleteNode();
+	Q_INVOKABLE virtual void deleteNode();
 
 	/// \brief Adds a child scene node to this node.
 	/// \param newChild The node that becomes a child of this node. If \a newChild is already a child
@@ -281,6 +281,7 @@ public:
 	Q_PROPERTY(SceneNode* targetNode READ targetNode WRITE bindToTarget)
 	Q_PROPERTY(QString name READ name WRITE setName)
 	Q_PROPERTY(Color displayColor READ displayColor WRITE setDisplayColor)
+	Q_PROPERTY(TransformationController* transformationController READ transformationController WRITE setTransformationController)
 
 protected:
 

@@ -287,12 +287,15 @@ bool DataSet::renderScene(RenderSettings* settings, Viewport* viewport, QSharedP
 		}
 
 		// Show progress dialog.
-		QProgressDialog progressDialog(frameBufferWindow ? (QWidget*)frameBufferWindow : (QWidget*)mainWindow());
-		progressDialog.setWindowModality(Qt::WindowModal);
-		progressDialog.setAutoClose(false);
-		progressDialog.setAutoReset(false);
-		progressDialog.setMinimumDuration(0);
-		progressDialog.setValue(0);
+		std::unique_ptr<QProgressDialog> progressDialog;
+		if(Application::instance().guiMode()) {
+			progressDialog.reset(new QProgressDialog(frameBufferWindow ? (QWidget*)frameBufferWindow : (QWidget*)mainWindow()));
+			progressDialog->setWindowModality(Qt::WindowModal);
+			progressDialog->setAutoClose(false);
+			progressDialog->setAutoReset(false);
+			progressDialog->setMinimumDuration(0);
+			progressDialog->setValue(0);
+		}
 
 		// Initialize the renderer.
 		if(renderer->startRender(this, settings)) {
@@ -318,7 +321,7 @@ bool DataSet::renderScene(RenderSettings* settings, Viewport* viewport, QSharedP
 				int frameNumber = animationSettings()->timeToFrame(renderTime);
 				if(frameBufferWindow)
 					frameBufferWindow->setWindowTitle(tr("Frame %1").arg(frameNumber));
-				renderFrame(renderTime, frameNumber, settings, renderer, viewport, frameBuffer.data(), videoEncoder, progressDialog);
+				renderFrame(renderTime, frameNumber, settings, renderer, viewport, frameBuffer.data(), videoEncoder, progressDialog.get());
 			}
 			else if(settings->renderingRangeType() == RenderSettings::ANIMATION_INTERVAL || settings->renderingRangeType() == RenderSettings::CUSTOM_INTERVAL) {
 				// Render an animation interval.
@@ -337,18 +340,20 @@ bool DataSet::renderScene(RenderSettings* settings, Viewport* viewport, QSharedP
 				numberOfFrames = (numberOfFrames + settings->everyNthFrame() - 1) / settings->everyNthFrame();
 				if(numberOfFrames < 1)
 					throw Exception(tr("Invalid rendering range: Frame %1 to %2").arg(settings->customRangeStart()).arg(settings->customRangeEnd()));
-				progressDialog.setMaximum(numberOfFrames);
+				if(progressDialog)
+					progressDialog->setMaximum(numberOfFrames);
 
 				// Render frames, one by one.
 				for(int frameIndex = 0; frameIndex < numberOfFrames; frameIndex++) {
-					progressDialog.setValue(frameIndex);
+					if(progressDialog)
+						progressDialog->setValue(frameIndex);
 
 					int frameNumber = firstFrameNumber + frameIndex * settings->everyNthFrame() + settings->fileNumberBase();
 					if(frameBufferWindow)
 						frameBufferWindow->setWindowTitle(tr("Frame %1").arg(animationSettings()->timeToFrame(renderTime)));
-					renderFrame(renderTime, frameNumber, settings, renderer, viewport, frameBuffer.data(), videoEncoder, progressDialog);
+					renderFrame(renderTime, frameNumber, settings, renderer, viewport, frameBuffer.data(), videoEncoder, progressDialog.get());
 
-					if(progressDialog.wasCanceled())
+					if(progressDialog && progressDialog->wasCanceled())
 						break;
 
 					// Go to next animation frame.
@@ -366,7 +371,7 @@ bool DataSet::renderScene(RenderSettings* settings, Viewport* viewport, QSharedP
 		// Shutdown renderer.
 		renderer->endRender();
 
-		wasCanceled = progressDialog.wasCanceled();
+		wasCanceled = (progressDialog && progressDialog->wasCanceled());
 	}
 	catch(...) {
 		// Shutdown renderer.
@@ -381,7 +386,7 @@ bool DataSet::renderScene(RenderSettings* settings, Viewport* viewport, QSharedP
 * Renders a single frame and saves the output file.
 ******************************************************************************/
 void DataSet::renderFrame(TimePoint renderTime, int frameNumber, RenderSettings* settings, SceneRenderer* renderer, Viewport* viewport,
-		FrameBuffer* frameBuffer, VideoEncoder* videoEncoder, QProgressDialog& progressDialog)
+		FrameBuffer* frameBuffer, VideoEncoder* videoEncoder, QProgressDialog* progressDialog)
 {
 	// Generate output filename.
 	QString imageFilename;
@@ -408,14 +413,16 @@ void DataSet::renderFrame(TimePoint renderTime, int frameNumber, RenderSettings*
 	volatile bool sceneIsReady = false;
 	runWhenSceneIsReady( [&sceneIsReady]() { sceneIsReady = true; } );
 	if(!sceneIsReady) {
-		progressDialog.setLabelText(tr("Rendering frame %1. Preparing scene...").arg(frameNumber));
+		if(progressDialog)
+			progressDialog->setLabelText(tr("Rendering frame %1. Preparing scene...").arg(frameNumber));
 		while(!sceneIsReady) {
-			if(progressDialog.wasCanceled())
+			if(progressDialog && progressDialog->wasCanceled())
 				return;
 			QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents, 200);
 		}
 	}
-	progressDialog.setLabelText(tr("Rendering frame %1.").arg(frameNumber));
+	if(progressDialog)
+		progressDialog->setLabelText(tr("Rendering frame %1.").arg(frameNumber));
 
 	// Request scene bounding box.
 	Box3 boundingBox = renderer->sceneBoundingBox(renderTime);
@@ -426,15 +433,16 @@ void DataSet::renderFrame(TimePoint renderTime, int frameNumber, RenderSettings*
 	// Render one frame.
 	frameBuffer->clear();
 	renderer->beginFrame(renderTime, projParams, viewport);
-	if(!renderer->renderFrame(frameBuffer, &progressDialog) || progressDialog.wasCanceled()) {
-		progressDialog.cancel();
+	if(!renderer->renderFrame(frameBuffer, progressDialog) || (progressDialog && progressDialog->wasCanceled())) {
+		if(progressDialog)
+			progressDialog->cancel();
 		renderer->endFrame();
 		return;
 	}
 	renderer->endFrame();
 
 	// Save rendered image to disk.
-	if(settings->saveToFile()) {
+	if(settings->saveToFile() && !imageFilename.isEmpty()) {
 		if(!videoEncoder) {
 			if(!frameBuffer->image().save(imageFilename, settings->imageInfo().format()))
 				throw Exception(tr("Failed to save rendered image to image file '%1'.").arg(imageFilename));

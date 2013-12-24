@@ -185,7 +185,9 @@ private:
 	DECLARE_PROPERTY_FIELD(_isEnabled);
 };
 
-
 };
+
+Q_DECLARE_METATYPE(Ovito::Modifier*);
+Q_DECLARE_TYPEINFO(Ovito::Modifier*, Q_MOVABLE_TYPE);
 
 #endif // __OVITO_MODIFIER_H

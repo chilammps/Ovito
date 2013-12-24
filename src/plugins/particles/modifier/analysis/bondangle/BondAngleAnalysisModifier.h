@@ -56,6 +56,7 @@ public:
 
 		NUM_STRUCTURE_TYPES 	//< This just counts the number of defined structure types.
 	};
+	Q_ENUMS(StructureType);
 
 	/// Computes the modifier's results.
 	class BondAngleAnalysisEngine : public StructureIdentificationModifier::StructureIdentificationEngine

@@ -92,7 +92,7 @@ public:
 	///
 	/// The modifier is inserted into the geometry pipeline where it is put on top of the modifier stack.
 	/// \undoable
-	void applyModifier(Modifier* mod);
+	Q_INVOKABLE void applyModifier(Modifier* mod);
 
 	/// \brief Applies a modifier to the object node.
 	/// \param mod The modifier to be applied.

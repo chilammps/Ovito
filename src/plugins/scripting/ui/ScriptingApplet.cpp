@@ -20,8 +20,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <plugins/scripting/Scripting.h>
+#include <plugins/scripting/engine/ScriptEngine.h>
 #include <core/gui/mainwin/MainWindow.h>
-#include <plugins/scripting/bindings/ScriptBindings.h>
 #include "ScriptingApplet.h"
 
 namespace Scripting {
@@ -50,7 +50,12 @@ void ScriptingApplet::openUtility(MainWindow* mainWindow,
 
 	// Create code editor widget.
 	editor_ = new CodeEdit(panel_);
-	editor_->setPlainText(QStringLiteral("m=modifier(\"ColorCodingModifier\");\nm.colorGradient = \"ColorCodingHotGradient\";\nm.colorGradient;\n"));
+	editor_->setPlainText(QStringLiteral(
+			"m = new ColorCodingModifier();\n"
+			"m.colorGradient = ColorCodingHotGradient();\n"
+			"m.sourceProperty = \"Position.X\";\n"
+			"selectedNode.applyModifier(m);\n"
+			"m.adjustRange();\n"));
 	connect(editor_, &CodeEdit::ctrlEnterPressed,
 			this, &ScriptingApplet::runScript);
 	layout->addWidget(editor_, 1);
@@ -83,19 +88,17 @@ void ScriptingApplet::closeUtility(RolloutContainer* container) {
 * Runs the current script in the editor.
 ******************************************************************************/
 void ScriptingApplet::runScript() {
-	QObject parent; // <- for memory management.
 	DataSetContainer& container = mainWindow_->datasetContainer();
-	DataSet* data = container.currentSet();
+	DataSet* dataset = container.currentSet();
 
 	// Start recording for undo stack.
-	UndoStack& undo = data->undoStack();
-	UndoableTransaction transaction(undo, tr("Script execution"));
+	UndoableTransaction transaction(dataset->undoStack(), tr("Script execution"));
 
 	// Set up engine.
-	QScriptEngine* engine = prepareEngine(data, &parent);
+	ScriptEngine engine(dataset);
 
 	// Evaluate.
-	QScriptValue result = engine->evaluate(editor_->toPlainText());
+	QScriptValue result = engine.evaluate(editor_->toPlainText());
 	if(result.isError()) {
 		output_->setStyleSheet("QLabel { color: red; }");
 		output_->setText(result.toString());

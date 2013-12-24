@@ -156,7 +156,7 @@ protected:
 
 	/// \brief Creates a copy of this RefTarget object.
 	/// \param deepCopy If \c true, then all objects referenced by this RefTarget should also be copied.
-	///                 If \c false, then the new object clone should just take over the references of the orginal object
+	///                 If \c false, then the new object clone should just take over the references of the original object
 	///                 and no copying of sub-objects takes place.
 	/// \param cloneHelper Copying of sub-objects should be done using the passed CloneHelper instance.
 	///                    It makes sure that only one copy per object is made through the whole object graph.
@@ -165,7 +165,7 @@ protected:
 	/// a new instance of the original object class.
 	///
 	/// Sub-classes should override this method and must always call the base class' version of this method
-	/// to create the new instance. The returned smart pointer can safely be cast to the class type of the orginal
+	/// to create the new instance. The returned smart pointer can safely be cast to the class type of the original
 	/// object.
 	///
 	/// Every sub-class that has reference fields or other internal data fields should override this

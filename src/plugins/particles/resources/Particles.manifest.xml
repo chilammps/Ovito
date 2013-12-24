@@ -33,4 +33,8 @@
 	
 	<Resource-File Path="particles.rcc" />
 	
+	<Plugin-Dependencies>
+		<Plugin-Dependency Plugin-Id="Scripting" />
+	</Plugin-Dependencies>
+	
 </Plugin-Manifest>

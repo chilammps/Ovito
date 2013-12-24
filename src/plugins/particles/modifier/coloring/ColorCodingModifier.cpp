@@ -136,11 +136,12 @@ void ColorCodingModifier::initializeModifier(PipelineObject* pipeline, ModifierA
 				bestProperty = ParticlePropertyReference(property, (property->componentCount() > 1) ? 0 : -1);
 			}
 		}
-		if(!bestProperty.isNull()) {
+		if(!bestProperty.isNull())
 			setSourceProperty(bestProperty);
-			adjustRange();
-		}
 	}
+	// Automatically adjust value range.
+	if(startValue() == 0 && endValue() == 0)
+		adjustRange();
 }
 
 /******************************************************************************

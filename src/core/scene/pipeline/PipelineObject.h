@@ -110,6 +110,10 @@ public:
 	/// Returns the input object of this scene object.
 	virtual SceneObject* inputObject(int index) override { return _inputObject; }
 
+public:
+
+	Q_PROPERTY(SceneObject* inputObject READ inputObject WRITE setInputObject)
+
 protected:
 
 	/// This method is called when a reference target changes.

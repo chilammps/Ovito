@@ -321,13 +321,13 @@ public:
 	ViewportPickResult pick(const QPointF& pos);
 
 	/// \brief Zooms to the extents of the scene.
-	void zoomToSceneExtents();
+	Q_INVOKABLE void zoomToSceneExtents();
 
 	/// \brief Zooms to the extents of the currently selected nodes.
-	void zoomToSelectionExtents();
+	Q_INVOKABLE void zoomToSelectionExtents();
 
 	/// \brief Zooms to the extents of the given bounding box.
-	void zoomToBox(const Box3& box);
+	Q_INVOKABLE void zoomToBox(const Box3& box);
 
 	/// \brief Returns the transformation matrix that defines the orientation of the viewport grid in world space.
 	const AffineTransformation& gridMatrix() const { return _gridMatrix; }
@@ -363,6 +363,16 @@ public:
 
 	/// Returns a pointer to the internal OpenGL rendering window.
 	ViewportWindow* viewportWindow() const { return _viewportWindow.data(); }
+
+public:
+
+	Q_PROPERTY(QString title READ viewportTitle);
+	Q_PROPERTY(ObjectNode* viewNode READ viewNode WRITE setViewNode);
+	Q_PROPERTY(Point3 cameraPosition READ cameraPosition WRITE setCameraPosition);
+	Q_PROPERTY(Vector3 cameraDirection READ cameraDirection WRITE setCameraDirection);
+	Q_PROPERTY(AffineTransformation cameraTransformation READ cameraTransformation WRITE setCameraTransformation);
+	Q_PROPERTY(FloatType fov READ fieldOfView WRITE setFieldOfView);
+	Q_PROPERTY(ViewType type READ viewType WRITE setViewType);
 
 protected:
 

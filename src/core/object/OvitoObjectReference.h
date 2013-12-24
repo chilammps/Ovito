@@ -218,7 +218,8 @@ template<class T, class U> OORef<T> dynamic_pointer_cast(OORef<U> const & p)
     return dynamic_cast<T*>(p.get());
 }
 
-
 };	// End of namespace Ovito
+
+Q_DECLARE_SMART_POINTER_METATYPE(Ovito::OORef);
 
 #endif // __OVITO_OBJECT_REFERENCE_H

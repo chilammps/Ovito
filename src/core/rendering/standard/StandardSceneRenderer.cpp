@@ -24,6 +24,7 @@
 #include <core/viewport/Viewport.h>
 #include <core/viewport/ViewportConfiguration.h>
 #include <core/rendering/RenderSettings.h>
+#include <core/gui/app/Application.h>
 #include "StandardSceneRenderer.h"
 #include "StandardSceneRendererEditor.h"
 
@@ -39,6 +40,9 @@ SET_PROPERTY_FIELD_LABEL(StandardSceneRenderer, _antialiasingLevel, "Antialiasin
 ******************************************************************************/
 bool StandardSceneRenderer::startRender(DataSet* dataset, RenderSettings* settings)
 {
+	if(Application::instance().guiMode() == false)
+		throw Exception(tr("Cannot use OpenGL-based renderer in console mode. Please use a different rendering engine."));
+
 	if(!ViewportSceneRenderer::startRender(dataset, settings))
 		return false;
 
