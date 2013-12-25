@@ -65,9 +65,22 @@ public:
 	///        the internal particle properties.
 	void setCustomColumnMapping(const InputColumnMapping& mapping);
 
+	/// Returns whether the mapping between input file columns and particle
+	/// properties is done automatically or by the user.
+	bool useCustomColumnMapping() const { return _useCustomColumnMapping; }
+
+	/// Sets whether the mapping between input file columns and particle
+	/// properties is done automatically or by the user.
+	void setUseCustomColumnMapping(bool useCustomMapping) { _useCustomColumnMapping = useCustomMapping; }
+
 	/// Displays a dialog box that allows the user to edit the custom file column to particle
 	/// property mapping.
 	void showEditColumnMappingDialog(QWidget* parent);
+
+public:
+
+	Q_PROPERTY(Particles::InputColumnMapping columnMapping READ customColumnMapping WRITE setCustomColumnMapping);
+	Q_PROPERTY(bool useCustomColumnMapping READ useCustomColumnMapping WRITE setUseCustomColumnMapping);
 
 public:
 

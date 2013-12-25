@@ -26,6 +26,7 @@
 #include <core/dataset/DataSetContainer.h>
 #include <core/dataset/importexport/LinkedFileObject.h>
 #include <core/gui/mainwin/MainWindow.h>
+#include <core/gui/app/Application.h>
 #include <core/gui/properties/BooleanParameterUI.h>
 #include <core/gui/properties/BooleanRadioButtonParameterUI.h>
 #include <plugins/particles/importer/InputColumnMappingDialog.h>
@@ -48,12 +49,14 @@ void LAMMPSTextDumpImporter::setCustomColumnMapping(const InputColumnMapping& ma
 	_customColumnMapping = mapping;
 
 #if 0
-	// Remember the mapping for the next time.
-	QSettings settings;
-	settings.beginGroup("atomviz/io/columnmapping/");
-	settings.setValue(pluginClassDescriptor()->name(), mapping.toByteArray());
-	OVITO_ASSERT(settings.contains(pluginClassDescriptor()->name()));
-	settings.endGroup();
+	if(Application::instance().guiMode()) {
+		// Remember the mapping for the next time.
+		QSettings settings;
+		settings.beginGroup("atomviz/io/columnmapping/");
+		settings.setValue(pluginClassDescriptor()->name(), mapping.toByteArray());
+		OVITO_ASSERT(settings.contains(pluginClassDescriptor()->name()));
+		settings.endGroup();
+	}
 #endif
 
 	notifyDependents(ReferenceEvent::TargetChanged);

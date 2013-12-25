@@ -26,6 +26,7 @@
 #include <core/dataset/DataSetContainer.h>
 #include <core/dataset/importexport/LinkedFileObject.h>
 #include <core/gui/mainwin/MainWindow.h>
+#include <core/gui/app/Application.h>
 #include <core/gui/properties/BooleanParameterUI.h>
 #include <plugins/particles/importer/InputColumnMappingDialog.h>
 #include "LAMMPSBinaryDumpImporter.h"
@@ -78,11 +79,13 @@ void LAMMPSBinaryDumpImporter::setColumnMapping(const InputColumnMapping& mappin
 {
 	_columnMapping = mapping;
 
-	// Remember the mapping for the next time.
-	QSettings settings;
-	settings.beginGroup("viz/importer/lammps_binary_dump/");
-	settings.setValue("columnmapping", mapping.toByteArray());
-	settings.endGroup();
+	if(Application::instance().guiMode()) {
+		// Remember the mapping for the next time.
+		QSettings settings;
+		settings.beginGroup("viz/importer/lammps_binary_dump/");
+		settings.setValue("columnmapping", mapping.toByteArray());
+		settings.endGroup();
+	}
 
 	notifyDependents(ReferenceEvent::TargetChanged);
 }
@@ -109,6 +112,10 @@ bool LAMMPSBinaryDumpImporter::inspectNewFile(LinkedFileObject* obj)
 	if(obj->frames().empty())
 		return false;
 
+	// Don't show column mapping dialog in console mode.
+	if(Application::instance().consoleMode())
+		return true;
+
 	// Start task that inspects the file header to determine the number of data columns.
 	std::unique_ptr<LAMMPSBinaryDumpImportTask> inspectionTask(new LAMMPSBinaryDumpImportTask(obj->frames().front()));
 	DataSetContainer& datasetContainer = *dataset()->container();
@@ -122,32 +129,35 @@ bool LAMMPSBinaryDumpImporter::inspectNewFile(LinkedFileObject* obj)
 
 	InputColumnMapping mapping(_columnMapping);
 	mapping.setColumnCount(inspectionTask->columnMapping().columnCount());
-	if(_columnMapping.columnCount() == 0) {
-		int oldCount = 0;
+	if(_columnMapping.columnCount() != mapping.columnCount()) {
+		if(_columnMapping.columnCount() == 0) {
+			int oldCount = 0;
 
-		// Load last mapping from settings store.
-		QSettings settings;
-		settings.beginGroup("viz/importer/lammps_binary_dump/");
-		if(settings.contains("columnmapping")) {
-			try {
-				mapping.fromByteArray(settings.value("columnmapping").toByteArray());
-				oldCount = mapping.columnCount();
+			// Load last mapping from settings store.
+			QSettings settings;
+			settings.beginGroup("viz/importer/lammps_binary_dump/");
+			if(settings.contains("columnmapping")) {
+				try {
+					mapping.fromByteArray(settings.value("columnmapping").toByteArray());
+					oldCount = mapping.columnCount();
+				}
+				catch(Exception& ex) {
+					ex.prependGeneralMessage(tr("Failed to load last used column-to-property mapping from application settings store."));
+					ex.logError();
+				}
 			}
-			catch(Exception& ex) {
-				ex.prependGeneralMessage(tr("Failed to load last used column-to-property mapping from application settings store."));
-				ex.logError();
-			}
+
+			mapping.setColumnCount(inspectionTask->columnMapping().columnCount());
 		}
 
-		mapping.setColumnCount(inspectionTask->columnMapping().columnCount());
+		InputColumnMappingDialog dialog(mapping, datasetContainer.mainWindow());
+		if(dialog.exec() == QDialog::Accepted) {
+			setColumnMapping(dialog.mapping());
+			return true;
+		}
+		return false;
 	}
-
-	InputColumnMappingDialog dialog(mapping, datasetContainer.mainWindow());
-	if(dialog.exec() == QDialog::Accepted) {
-		setColumnMapping(dialog.mapping());
-		return true;
-	}
-	return false;
+	else return true;
 }
 
 /******************************************************************************

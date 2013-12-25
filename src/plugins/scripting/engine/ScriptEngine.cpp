@@ -89,7 +89,7 @@ ScriptEngine::ScriptEngine(DataSet* dataset, QObject* parent)
 	registerOvitoObjectType<LinkedFileObject>();
 	registerOvitoObjectType<LinkedFileImporter>();
 
-	// Create script bindings and let them set up the script environment.
+	// Create script binding objects and let them set up the script environment.
 	for(const OvitoObjectType* bindingClass : PluginManager::instance().listClasses(ScriptBinding::OOType)) {
 		OORef<ScriptBinding> binding = static_object_cast<ScriptBinding>(bindingClass->createInstance(nullptr));
 		_bindings.push_back(binding);

@@ -179,6 +179,10 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl, ImportMode importMode
 			}
 		}
 	}
+	else {
+		if(importMode == AddToScene)
+			importMode = ResetScene;
+	}
 
 	if(importMode == ResetScene) {
 		existingObj = nullptr;

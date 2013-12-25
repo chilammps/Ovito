@@ -57,6 +57,10 @@ public:
 	/// when the user picks a new input filename.
 	virtual bool autoGenerateWildcardPattern() override { return !isMultiTimestepFile(); }
 
+public:
+
+	Q_PROPERTY(bool isMultiTimestepFile READ isMultiTimestepFile WRITE setMultiTimestepFile);
+
 protected:
 
 	/// \brief Is called when the value of a property of this object has changed.

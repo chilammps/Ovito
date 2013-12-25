@@ -38,6 +38,9 @@ void ParticlesBinding::setupBinding(ScriptEngine& engine)
 	// Register marshaling functions for ParticlePropertyReference.
 	qScriptRegisterMetaType<ParticlePropertyReference>(&engine, fromParticlePropertyReference, toParticlePropertyReference);
 
+	// Register marshaling functions for InputColumnMapping.
+	qScriptRegisterMetaType<InputColumnMapping>(&engine, fromInputColumnMapping, toInputColumnMapping);
+
 	// Register important plugin classes.
 	engine.registerOvitoObjectType<ParticleImporter>();
 	engine.registerOvitoObjectType<ParticleModifier>();
@@ -50,7 +53,9 @@ void ParticlesBinding::setupBinding(ScriptEngine& engine)
 ******************************************************************************/
 QScriptValue ParticlesBinding::fromParticlePropertyReference(QScriptEngine* engine, const ParticlePropertyReference& pref)
 {
-	if(pref.type() == ParticleProperty::UserProperty) {
+	if(pref.isNull())
+		return QScriptValue(QScriptValue::NullValue);
+	else if(pref.type() == ParticleProperty::UserProperty) {
 		int component = pref.vectorComponent();
 		if(component < 0)
 			return pref.name();
@@ -77,6 +82,10 @@ QScriptValue ParticlesBinding::fromParticlePropertyReference(QScriptEngine* engi
 void ParticlesBinding::toParticlePropertyReference(const QScriptValue& obj, ParticlePropertyReference& pref)
 {
 	QScriptContext* context = obj.engine()->currentContext();
+	if(obj.isNull()) {
+		pref = ParticlePropertyReference();
+		return;
+	}
 	QStringList parts = obj.toString().split(QChar('.'));
 	if(parts.length() > 2) {
 		context->throwError("Too many dots in particle property name string.");
@@ -99,9 +108,10 @@ void ParticlesBinding::toParticlePropertyReference(const QScriptValue& obj, Part
 		if(!ok) {
 			// Perhaps the name was used instead of an integer.
 			const QString componentName = parts[1].toUpper();
-			component = ParticleProperty::standardPropertyComponentNames(type).indexOf(componentName);
+			QStringList standardNames = ParticleProperty::standardPropertyComponentNames(type);
+			component = standardNames.indexOf(componentName);
 			if(component < 0) {
-				context->throwError("Unknown property component name: " + parts[1]);
+				context->throwError(tr("Unknown component name '%1' for particle property '%2'. Possible components are: %3").arg(parts[1]).arg(parts[0]).arg(standardNames.join(',')));
 				return;
 			}
 		}
@@ -112,6 +122,44 @@ void ParticlesBinding::toParticlePropertyReference(const QScriptValue& obj, Part
 		pref = ParticlePropertyReference(name, component);
 	else
 		pref = ParticlePropertyReference(type, component);
+}
+
+/******************************************************************************
+* Creates a QScriptValue from a InputColumnMapping.
+******************************************************************************/
+QScriptValue ParticlesBinding::fromInputColumnMapping(QScriptEngine* engine, const InputColumnMapping& mapping)
+{
+	QScriptValue result = engine->newArray(mapping.columnCount());
+	for(int i = 0; i < mapping.columnCount(); i++) {
+		ParticlePropertyReference pref(mapping.propertyType(i), mapping.propertyName(i), mapping.vectorComponent(i));
+		result.setProperty(i, engine->toScriptValue(pref));
+	}
+	return result;
+}
+
+/******************************************************************************
+* Converts a QScriptValue to a InputColumnMapping.
+******************************************************************************/
+void ParticlesBinding::toInputColumnMapping(const QScriptValue& obj, InputColumnMapping& mapping)
+{
+	QScriptContext* context = obj.engine()->currentContext();
+	if(obj.isArray() == false) {
+		context->throwError("Column mapping must be specified as an array of strings.");
+		return;
+	}
+
+	int columnCount = obj.property("length").toInt32();
+	mapping.setColumnCount(columnCount);
+	for(int i = 0; i < columnCount; i++) {
+		ParticlePropertyReference pref;
+		toParticlePropertyReference(obj.property(i), pref);
+		if(!pref.isNull()) {
+			if(pref.type() != ParticleProperty::UserProperty)
+				mapping.mapStandardColumn(i, pref.type(), pref.vectorComponent());
+			else
+				mapping.mapCustomColumn(i, pref.name(), qMetaTypeId<FloatType>(), pref.vectorComponent());
+		}
+	}
 }
 
 };

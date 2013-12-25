@@ -25,6 +25,7 @@
 #include <plugins/particles/Particles.h>
 #include <plugins/scripting/engine/ScriptBinding.h>
 #include <plugins/particles/data/ParticlePropertyObject.h>
+#include <plugins/particles/importer/InputColumnMapping.h>
 
 namespace Particles {
 
@@ -49,6 +50,12 @@ public:
 
 	/// Converts a QScriptValue to a ParticlePropertyReference.
 	static void toParticlePropertyReference(const QScriptValue& obj, ParticlePropertyReference& pref);
+
+	/// Creates a QScriptValue from a InputColumnMapping.
+	static QScriptValue fromInputColumnMapping(QScriptEngine* engine, const InputColumnMapping& mapping);
+
+	/// Converts a QScriptValue to a InputColumnMapping.
+	static void toInputColumnMapping(const QScriptValue& obj, InputColumnMapping& mapping);
 
 private:
 

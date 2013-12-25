@@ -22,6 +22,8 @@
 #include <plugins/scripting/Scripting.h>
 #include <plugins/scripting/engine/ScriptEngine.h>
 #include <core/dataset/DataSetContainer.h>
+#include <core/dataset/importexport/ImportExportManager.h>
+#include <core/dataset/importexport/FileImporter.h>
 #include <core/scene/SelectionSet.h>
 #include <core/scene/ObjectNode.h>
 #include <core/gui/app/Application.h>
@@ -61,23 +63,38 @@ void InputOutputBinding::setupBinding(ScriptEngine& engine)
 QScriptValue InputOutputBinding::load(QScriptContext* context, ScriptEngine* engine)
 {
 	// Process function arguments.
-	if(context->argumentCount() != 1)
-		return context->throwError("load() takes one argument.");
+	if(context->argumentCount() < 1 || context->argumentCount() > 2)
+		return context->throwError("load() takes 1 or 2 arguments.");
 	const QString urlString = context->argument(0).toString();
 	QUrl importURL = FileManager::instance().urlFromUserInput(urlString);
 	if(!importURL.isValid())
 		return context->throwError("Invalid path or URL.");
 
-	// Import file.
-	DataSetContainer* container = engine->dataset()->container();
-	if(!container->importFile(importURL,
-						  nullptr,
-						  FileImporter::AddToScene)) { // <- TODO Make this configurable
+	// Download file so we can determine its format.
+	DataSet* dataset = engine->dataset();
+	DataSetContainer* container = dataset->container();
+	Future<QString> fetchFileFuture = FileManager::instance().fetchUrl(*container, importURL);
+	if(!container->taskManager().waitForTask(fetchFileFuture))
+		return context->throwError(tr("Operation has been canceled by the user."));
 
-		// Operation has been canceled by the user.
-		engine->abortEvaluation();
-		return QScriptValue();
+	// Detect file format.
+	OORef<FileImporter> importer = ImportExportManager::instance().autodetectFileFormat(dataset, fetchFileFuture.result(), importURL.path());
+	if(!importer)
+		return context->throwError(tr("Could not detect the file format. The format might not be supported."));
+
+	// Set import parameters passed as second argument to the load() function.
+	if(context->argumentCount() >= 2) {
+		QScriptValue importerScriptValue = engine->wrapOvitoObject(importer);
+		QScriptValueIterator it(context->argument(1));
+		while(it.hasNext()) {
+			it.next();
+			importerScriptValue.setProperty(it.name(), it.value());
+		}
 	}
+
+	// Import data.
+	if(!importer->importFile(importURL, FileImporter::AddToScene))
+		return context->throwError(tr("Operation has been canceled by the user."));
 
 	// Return the newly created ObjectNode.
 	ObjectNode* objNode = dynamic_object_cast<ObjectNode>(engine->dataset()->selection()->firstNode());

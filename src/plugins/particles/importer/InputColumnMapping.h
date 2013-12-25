@@ -110,7 +110,7 @@ public:
 	void fromByteArray(const QByteArray& array);
 
 	/// \brief Checks if the mapping is valid; throws an exception if not.
-	void validate();
+	void validate() const;
 
 private:
 
@@ -126,7 +126,8 @@ private:
 		/// The name of the particle property the column is mapped to.
 		QString propertyName;
 
-		/// The data type of the particle property if this is a user-defined property. If this is QMetaType::Void, the column will be ignored completely.
+		/// The data type of the particle property if this is a user-defined property.
+		/// If this is QMetaType::Void, the column will be ignored completely.
 		int dataType;
 
 		/// The component for vector properties.
@@ -195,5 +196,7 @@ private:
 };
 
 };	// End of namespace
+
+Q_DECLARE_METATYPE(Particles::InputColumnMapping);
 
 #endif // __OVITO_INPUT_COLUMN_MAPPING_H
