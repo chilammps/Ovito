@@ -41,6 +41,9 @@ class OVITO_CORE_EXPORT Plugin : public QObject
 
 public:
 
+	/// \brief Destructor
+	virtual ~Plugin();
+
 	/// \brief Gets the path of the plugin's manifest file.
 	/// \return The full path to the plugin's manifest file.
 	/// \sa libraryFilename()
@@ -171,6 +174,9 @@ private:
 	/// Indicates that the manifest has been completely parsed.
 	/// This is need to avoid re-entrance into parseManifest().
 	bool _isManifestParsed;
+
+	/// List of external resource files loaded by the plugin.
+	QStringList _resourceFiles;
 
 	friend class PluginManager;
 };
