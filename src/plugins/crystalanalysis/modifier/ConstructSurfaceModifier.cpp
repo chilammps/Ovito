@@ -336,7 +336,7 @@ void ConstructSurfaceModifier::ConstructSurfaceEngine::compute(FutureInterfaceBa
 				// Get the adjacent cell, which must be solid.
 				std::pair<DelaunayTessellation::CellHandle,int> mirrorFacet = tessellation.mirrorFacet(circulator);
 				OVITO_ASSERT(mirrorFacet.first->info().flag == true);
-				HalfEdgeMesh::Face* oppositeFace;
+				HalfEdgeMesh::Face* oppositeFace = nullptr;
 				// If the cell is a ghost cell, find the corresponding real cell.
 				if(mirrorFacet.first->info().isGhost) {
 					OVITO_ASSERT(mirrorFacet.first->info().index == -1);
@@ -369,7 +369,8 @@ void ConstructSurfaceModifier::ConstructSurfaceEngine::compute(FutureInterfaceBa
 					const Tetrahedron& mirrorTet = tetrahedraList[mirrorFacet.first->info().index]->second;
 					oppositeFace = mirrorTet.meshFacets[mirrorFacet.second];
 				}
-				OVITO_ASSERT(oppositeFace != nullptr);
+				if(oppositeFace == nullptr)
+					throw Exception(tr("Cannot construct surface mesh for this input dataset. Opposite cell face not found."));
 				OVITO_ASSERT(oppositeFace != facet);
 				HalfEdgeMesh::Edge* oppositeEdge = oppositeFace->edges();
 				do {
@@ -381,7 +382,8 @@ void ConstructSurfaceModifier::ConstructSurfaceEngine::compute(FutureInterfaceBa
 					oppositeEdge = oppositeEdge->nextFaceEdge();
 				}
 				while(oppositeEdge != oppositeFace->edges());
-				OVITO_ASSERT(edge->oppositeEdge());
+				if(edge->oppositeEdge() == nullptr)
+					throw Exception(tr("Cannot construct surface mesh for this input dataset. Opposite half-edge not found."));
 			}
 		}
 	}

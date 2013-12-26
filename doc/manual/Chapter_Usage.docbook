@@ -16,10 +16,9 @@
   <xi:include href="usage/modification_pipeline.docbook"/>
   <xi:include href="usage/rendering.docbook"/>
   <xi:include href="usage/miscellaneous.docbook"/>
-
+  
   <!-- 
-  <xi:include href="usage/atomviz.data_model.docbook"/>
-  <xi:include href="usage/atomviz.modifiers_usage.docbook"/>
-  <xi:include href="usage/atomviz.rendering.docbook"/>
-   -->
+  <xi:include href="usage/scripting.docbook"/>
+  -->
+ 
 </chapter>

@@ -31,10 +31,24 @@ void DelaunayTessellation::generateTessellation(const SimulationCellData& simCel
 {
 	std::vector<Point3WithIndex> cgalPoints;
 
+	// Set up random number generator to generate random perturbations.
+	std::mt19937 rng;
+	rng.seed(1);
+	std::uniform_real_distribution<double> displacement(-1e-8, +1e-8);
+
 	// Insert the original points first.
 	cgalPoints.reserve(numPoints);
-	for(size_t i = 0; i < numPoints; i++) {
-		cgalPoints.emplace_back(simCell.wrapPoint(*positions++), i, false);
+	for(size_t i = 0; i < numPoints; i++, ++positions) {
+
+		// Add a small random perturbation to the particle positions to make the Delaunay triangulation more robust
+		// against singular input data, e.g. particles forming an ideal crystal lattice.
+		Point3 wp = simCell.wrapPoint(*positions);
+		double coords[3];
+		coords[0] = (double)wp.x() + displacement(rng);
+		coords[1] = (double)wp.y() + displacement(rng);
+		coords[2] = (double)wp.z() + displacement(rng);
+
+		cgalPoints.emplace_back(coords[0], coords[1], coords[2], i, false);
 	}
 
 	int vertexCount = numPoints;
@@ -65,6 +79,7 @@ void DelaunayTessellation::generateTessellation(const SimulationCellData& simCel
 			for(int iz = -stencilCount[2]; iz <= +stencilCount[2]; iz++) {
 				if(ix == 0 && iy == 0 && iz == 0) continue;
 				Vector3 shift = simCell.reducedToAbsolute(Vector3(ix,iy,iz));
+				Vector_3<double> shiftd = (Vector_3<double>)shift;
 				for(int vertexIndex = 0; vertexIndex < vertexCount; vertexIndex++) {
 					Point3 pimage = (Point3)cgalPoints[vertexIndex] + shift;
 					bool isClipped = false;
@@ -76,36 +91,12 @@ void DelaunayTessellation::generateTessellation(const SimulationCellData& simCel
 						}
 					}
 					if(!isClipped)
-						cgalPoints.emplace_back(pimage, vertexIndex, true);
+						cgalPoints.emplace_back(cgalPoints[vertexIndex].x() + shift.x(),
+								cgalPoints[vertexIndex].y() + shift.y(), cgalPoints[vertexIndex].z() + shift.z(), vertexIndex, true);
 				}
 			}
 		}
 	}
-
-/*
-	int numAtoms = structure().numLocalAtoms() + structure().numGhostAtoms() + structure().numHelperAtoms();
-	CALIB_ASSERT(structure().atomPositions().size() == numAtoms);
-
-	cgalPoints.reserve(numAtoms);
-
-	vector<Vector3>::const_iterator pos = structure().atomPositions().begin();
-	vector<Vector3>::const_iterator pos_end = pos + numAtoms;
-
-	// Set up random number generator to generate displacement vectors.
-	std::random::mt19937 rng;
-	std::random::uniform_real_distribution displacement(-1e-6, +1e-6);
-
-	vector<AtomInteger>::const_iterator tag = structure().atomTags().begin();
-	for(; pos != pos_end; ++pos, ++tag) {
-		// Add a perturbation to the atomic positions to make the Delaunay triangulation more robust for perfect lattices,
-		// which can lead to singular cases.
-		// The random perturbation vector for an atom depends on the atom's ID.
-		// This ensures that displacements are consistent across processors for an atom and all its ghost images.
-		CALIB_ASSERT(*tag >= 1);
-		rng.seed(*tag);
-		cgalPoints.push_back(DT::Point(pos->x() + displacement(rng), pos->y() + displacement(rng), pos->z() + displacement(rng)));
-	}
-	*/
 
 	_dt.insert(cgalPoints.begin(), cgalPoints.end());
 

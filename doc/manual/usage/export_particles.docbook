@@ -30,7 +30,7 @@
           <tbody>
             <row>
               <entry>LAMMPS dump</entry>
-              <entry><para>File format produced and read by the <link xlink:href="http://lammps.sandia.gov">LAMMPS molecular dynamics code</link>.</para></entry>
+              <entry><para>Text-based file format produced and read by the <link xlink:href="http://lammps.sandia.gov">LAMMPS molecular dynamics code</link>.</para></entry>
             </row>
             <row>
               <entry>LAMMPS data</entry>

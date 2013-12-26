@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<section version="5.0"
+         xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xml:id="usage.scripting" xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title>Scripting</title>
+
+  <simplesect>
+  <title>Introduction</title>
+    <para>
+       OVITO provides a scripting interface that allows users to automate certain tasks and to batch-process
+       a large number of input files. The program's built-in script interpreter is based on the 
+       <link xlink:href="http://www.ecma-international.org/publications/standards/Ecma-262.htm">ECMAScript scripting language</link>,
+       which forms also the basis for the popular <link xlink:href="http://en.wikipedia.org/wiki/JavaScript">JavaScript language</link> used in web browsers. 
+       If you are not familiar with JavaScript or the ECMAScript language, you can find several existing tutorials and books online that cover this subject. 
+    </para>
+    <para>
+       OVITO's scripting interface enables programmatic access to various functions of the program such as import of data files,
+       modifiers, and rendering of output images and movies.
+    </para>
+  </simplesect>
+  
+  <simplesect>
+  <title>Running scripts</title>
+    <para>
+       OVITO scripts are normal text files that can be created with any text editor. To execute a script, use the following
+       syntax when starting OVITO from the command line. Optional arguments are shown in brackets:
+       <screen><command>ovito [--nogui] --script myscript.js [datafile]</command></screen>
+       This will run the script file <command>myscript.js</command> immediately after program startup. The optional
+       argument <command>datafile</command> specifies the path or URL of a simulation file that should be loaded into OVITO
+       before the script is executed. You can also provide an OVITO scene file here to load a complete program state
+       including modifiers etc. The optional <command>--nogui</command> option switches to a non-graphical console
+       mode. In this mode, no graphical user interface is shown, which is useful when running OVITO scripts on remote machines
+       that don't have a graphics terminal.
+    </para>
+  </simplesect>
+  
+  <simplesect>
+  <title>Script example</title>
+    <para>
+      The following example program demonstrates various things that can be done with OVITO's scripting interface.
+      <programlisting language="javascript">
+      <![CDATA[
+// Check program version.
+print("This is Ovito " + version());
+
+// Import a simulation file.
+node = load("simulation.dump");
+
+// Block execution of the script until the scene is ready, that is, until 
+// the input file has been completely loaded.
+// This is an optional step, but it ensures that the modifier we are going to create 
+// has access to the input data at the time it is inserted into the modification pipeline.
+// Then the Color Coding modifier will automatically adjust its interval to the range of 
+// values present in the input data.
+wait();
+
+// Apply a modifier to the dataset.
+node.applyModifier(new ColorCodingModifier({ 
+	sourceProperty : "potentialenergy",
+	colorGradient  : new ColorCodingHotGradient()
+}));
+
+// Apply two more modifiers to delete some particles.
+node.applyModifier(new SelectExpressionModifier({ expression : "potentialenergy < -3.9" }));
+node.applyModifier(new DeleteParticlesModifier());
+
+// Set up view.
+activeViewport.type = Viewport.VIEW_PERSPECTIVE;
+activeViewport.cameraDirection = Vector(1, 0.5, -0.5);
+activeViewport.zoomToSceneExtents();
+
+// Render a picture of the dataset.
+activeViewport.render(new RenderSettings({
+	filename    : "test_image.png",
+	imageWidth  : 100,
+	imageHeight : 100
+}));
+
+// Print the modification pipeline of the selected node to the console.
+for(var i = 0; i < selectedNode.modifiers.length; i++)
+	print(selectedNode.modifiers[i]);  
+	
+// Perform some analysis.
+cna = new CommonNeighborAnalysisModifier({ cutoff : 3.2, adaptiveMode : false });
+node.applyModifier(cna);
+
+// Wait until computation has been completed.
+wait();
+
+// Read out analysis results.
+print("Number of FCC atoms: " + cna.structureCounts[CommonNeighborAnalysisModifier.FCC]);
+      ]]>
+      </programlisting>
+    </para>
+  </simplesect>
+  
+</section>

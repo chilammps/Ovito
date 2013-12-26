@@ -32,9 +32,9 @@
     </para>
     <para>
        Some file formats can store more than one simulation frame in a single file, for instance the LAMMPS dump format.
-       By default, OVITO imports only the first frame from the selected file. You have to explicitly tell OVITO to look 
+       By default, OVITO imports only the first frame from the file. You have to explicitly tell OVITO to look 
        for extra frames by checking the <emphasis>File contains multiple timesteps</emphasis> option
-       in the import settings panel. This will let OVITO scan the entire file for the contained animation frames.
+       in the import settings panel. This will let OVITO scan the entire file for contained animation frames.
     </para>
   </simplesect>
   
@@ -82,7 +82,7 @@
           <tbody>
             <row>
               <entry>LAMMPS dump</entry>
-              <entry><para>Text-based file format produced by the <link xlink:href="http://lammps.sandia.gov">LAMMPS molecular dynamics code</link>.</para></entry>
+              <entry><para>File format used by the <link xlink:href="http://lammps.sandia.gov">LAMMPS molecular dynamics code</link>. OVITO supports both text-based and binary dump files.</para></entry>
             </row>
             <row>
               <entry>LAMMPS data</entry>
@@ -92,7 +92,7 @@
             <row>
               <entry>XYZ</entry>
               <entry><para>A simple column-based text format, which is documented <link xlink:href="http://en.wikipedia.org/wiki/XYZ_file_format">here</link>.</para>
-			    <para>This format does not store simulation box dimensions. OVITO will take the axis-aligned bounding box of all particles as the simulation box.</para>
+			    <para>This format does not store simulation box dimensions. OVITO takes the axis-aligned bounding box of all particles as the simulation box.</para>
                 </entry>
             </row>
             <row>
