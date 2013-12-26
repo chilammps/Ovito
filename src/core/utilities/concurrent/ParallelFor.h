@@ -105,8 +105,9 @@ void parallelFor(T loopCount, Function kernel)
 		endIndex += chunkSize;
 	}
 
-	for(auto& t : workers)
+	for(auto& t : workers) {
 		t.join();
+	}
 }
 
 template<class Function>

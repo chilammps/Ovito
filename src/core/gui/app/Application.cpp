@@ -44,7 +44,7 @@ QtMessageHandler Application::defaultQtMessageHandler = nullptr;
 ******************************************************************************/
 void Application::qtMessageOutput(QtMsgType type, const QMessageLogContext& context, const QString& msg)
 {
-	// Pass message on to default handler.
+	// Forward message to default handler.
 	if(defaultQtMessageHandler) defaultQtMessageHandler(type, context, msg);
 	else std::cerr << msg.toLocal8Bit().constData() << std::endl;
 }
@@ -136,7 +136,7 @@ bool Application::initialize(int& argc, char** argv)
 		}
 
 		// Parse the command line parameters again after the plugins have registered their options.
-		if(!_cmdLineParser.parse(argc, argv)) {
+		if(!_cmdLineParser.parse(QCoreApplication::arguments())) {
 	        std::cerr << "Error: " << qPrintable(_cmdLineParser.errorText()) << std::endl;
 			_consoleMode = true;
 			shutdown();

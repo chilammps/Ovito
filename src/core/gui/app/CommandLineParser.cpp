@@ -52,18 +52,9 @@ bool CommandLineParser::addOption(const CommandLineOption& option)
 bool CommandLineParser::parse(int argc, char** argv, bool ignoreUnknownOptions)
 {
 	QStringList arguments;
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
-	// On Windows, it is possible to pass Unicode arguments on
-	// the command line. To restore those, we split the command line
-	// and filter out arguments that were deleted by derived application
-	// classes by index.
-	QString cmdline = QString::fromWCharArray(GetCommandLine());
-	arguments = qWinCmdArgs(cmdline);
-#else
 	arguments.reserve(argc);
 	for(int i = 0; i < argc; i++)
 		arguments << QString::fromLocal8Bit(argv[i]);
-#endif
 	return parse(arguments, ignoreUnknownOptions);
 }
 

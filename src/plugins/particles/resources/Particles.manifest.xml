@@ -34,7 +34,7 @@
 	<Resource-File Path="particles.rcc" />
 	
 	<Plugin-Dependencies>
-		<Plugin-Dependency Plugin-Id="Scripting" />
+		<Plugin-Dependency Plugin-Id="Scripting" Enabled="${OVITO_BUILD_PLUGIN_SCRIPTING}" />
 	</Plugin-Dependencies>
 	
 </Plugin-Manifest>

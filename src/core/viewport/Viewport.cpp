@@ -835,6 +835,13 @@ ViewportPickResult Viewport::pick(const QPointF& pos)
 {
 	OVITO_ASSERT_MSG(!isRendering(), "Viewport::pick", "Object picking is not possible while rendering viewport contents.");
 	
+	// Cannot perform picking while viewport is not visible.
+	if(!viewportWindow() || !viewportWindow()->isExposed()) {
+		ViewportPickResult result;
+		result.valid = false;
+		return result;
+	}
+	
 	try {
 		TimePoint time = dataset()->animationSettings()->time();
 
