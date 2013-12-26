@@ -48,6 +48,16 @@ Plugin::Plugin(const QString& manifestFile) :
 }
 
 /******************************************************************************
+* Destructor
+******************************************************************************/
+Plugin::~Plugin()
+{
+	// Unload resource files.
+	for(const QString& path : _resourceFiles)
+		QResource::unregisterResource(path);
+}
+
+/******************************************************************************
 * Loads the plugin into memory.
 ******************************************************************************/
 void Plugin::loadPlugin()
@@ -150,6 +160,8 @@ void Plugin::parseResourceFileReference(const QDomElement& element)
 	// Load resource file into memory.
 	if(!QResource::registerResource(fullPath))
 		throw Exception(QString("Could not load plugin resource file %1").arg(fullPath));
+
+	_resourceFiles.push_back(fullPath);
 }
 
 /******************************************************************************
