@@ -3,7 +3,7 @@
 
 SET(OVITO_VERSION_MAJOR 		"2")
 SET(OVITO_VERSION_MINOR 		"2")
-SET(OVITO_VERSION_REVISION		"0")
+SET(OVITO_VERSION_REVISION		"1")
 SET(OVITO_FILE_FORMAT_VERSION	"20003")
 
 # Make the version information available to the source code.
