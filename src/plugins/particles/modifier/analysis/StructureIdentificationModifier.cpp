@@ -125,12 +125,16 @@ ObjectStatus StructureIdentificationModifier::applyModifierResults(TimePoint tim
 	}
 	colorProperty->changed();
 
-	_structureCounts.clear();
+	QList<int> structureCounts;
 	for(ParticleType* stype : structureTypes()) {
 		OVITO_ASSERT(stype->id() >= 0);
-		while(_structureCounts.size() <= stype->id())
-			_structureCounts.push_back(0);
-		_structureCounts[stype->id()] = typeCounters[stype->id()];
+		while(structureCounts.size() <= stype->id())
+			structureCounts.push_back(0);
+		structureCounts[stype->id()] = typeCounters[stype->id()];
+	}
+	if(_structureCounts != structureCounts) {
+		_structureCounts.swap(structureCounts);
+		notifyDependents(ReferenceEvent::ObjectStatusChanged);
 	}
 
 	return ObjectStatus::Success;
@@ -149,13 +153,20 @@ QVariant StructureListParameterUI::getItemData(RefTarget* target, const QModelIn
 			if(index.column() == 1)
 				return stype->name();
 			else if(index.column() == 2) {
-				return modifier->structureCounts()[stype->id()];
+				if(stype->id() >= 0 && stype->id() < modifier->structureCounts().size())
+					return modifier->structureCounts()[stype->id()];
+				else
+					return QString();
 			}
 			else if(index.column() == 3) {
-				size_t totalCount = 0;
-				for(int c : modifier->structureCounts())
-					totalCount += c;
-				return QString("%1%").arg((double)modifier->structureCounts()[stype->id()] * 100.0 / std::max((size_t)1, totalCount), 0, 'f', 1);
+				if(stype->id() >= 0 && stype->id() < modifier->structureCounts().size()) {
+					size_t totalCount = 0;
+					for(int c : modifier->structureCounts())
+						totalCount += c;
+					return QString("%1%").arg((double)modifier->structureCounts()[stype->id()] * 100.0 / std::max((size_t)1, totalCount), 0, 'f', 1);
+				}
+				else
+					return QString();
 			}
 		}
 		else if(role == Qt::DecorationRole) {
