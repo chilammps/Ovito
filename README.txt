@@ -13,6 +13,14 @@ http://www.ovito.org/
 Change Log 
 ****************************************************************************************
 
+Release 2.2.1 (26-Dec-13):
+
+ - Added a file parser for binary LAMMPS dump files.
+ - Added a dialog window that displays information about the system's OpenGL graphics driver. This dialog can be accessed via the Help menu.
+ - Fixed bug in the Expression Select and Compute Property modifiers, which couldn't handle particle property names that start with a number.
+ - The OpenGL compatibility profile is now used instead of the core profile on Windows and Linux platforms.
+ - Fixed an issue in the Construct Surface Mesh modifier, which sometimes led to a program crash on Windows.
+
 Release 2.2.0 (15-Dec-13):
 
  - Added the Cluster Analysis modifier.
