@@ -39,9 +39,10 @@ AnimationTimeSlider::AnimationTimeSlider(MainWindow* mainWindow, QWidget* parent
 	_normalPalette = palette();
 	_autoKeyModePalette = _normalPalette;
 	_autoKeyModePalette.setColor(QPalette::Window, QColor(240, 60, 60));
+	_sliderPalette = _normalPalette;
+	_sliderPalette.setColor(QPalette::Button, _sliderPalette.color(QPalette::Button).darker(110));
 
-	setFrameShape(QFrame::Panel);
-	setFrameShadow(QFrame::Sunken);
+	setFrameShape(QFrame::NoFrame);
 	setAutoFillBackground(true);
 	setMouseTracking(true);
 
@@ -85,30 +86,13 @@ void AnimationTimeSlider::paintEvent(QPaintEvent* event)
 		QRect clientRect = frameRect();
 		clientRect.adjust(frameWidth(), frameWidth(), -frameWidth(), -frameWidth());
 		int thumbWidth = this->thumbWidth();
-		int clientWidth = clientRect.width() - thumbWidth;
-		int firstFrame = _animSettings->timeToFrame(_animSettings->animationInterval().start());
-		int lastFrame = _animSettings->timeToFrame(_animSettings->animationInterval().end());
-		int labelWidth = painter.fontMetrics().boundingRect(QString::number(lastFrame)).width();
-		int nticks = std::min(clientWidth / (labelWidth + 20), numFrames);
-		int ticksevery = numFrames / std::max(nticks, 1);
-		if(ticksevery <= 1) ticksevery = ticksevery;
-		else if(ticksevery <= 5) ticksevery = 5;
-		else if(ticksevery <= 10) ticksevery = 10;
-		else if(ticksevery <= 20) ticksevery = 20;
-		else if(ticksevery <= 50) ticksevery = 50;
-		else if(ticksevery <= 100) ticksevery = 100;
-		else if(ticksevery <= 500) ticksevery = 500;
-		int labelypos = clientRect.y() + (clientRect.height() + painter.fontMetrics().height())/2 - painter.fontMetrics().descent();
-		if(ticksevery > 0) {
-			painter.setPen(QPen(QColor(180,180,220)));
-			for(int frame = firstFrame; frame <= lastFrame; frame += ticksevery) {
-				TimePoint time = _animSettings->frameToTime(frame);
-				FloatType percentage = (FloatType)(time - _animSettings->animationInterval().start()) / (FloatType)(_animSettings->animationInterval().duration() + 1);
-				int pos = clientRect.x() + (int)(percentage * clientWidth) + thumbWidth / 2;
-				QString labelText = QString::number(frame);
-				QRect labelRect = painter.fontMetrics().boundingRect(labelText);
-				painter.drawText(pos - labelRect.width()/2, labelypos, labelText);
-			}
+		TimePoint startTime, timeStep, endTime;
+		std::tie(startTime, timeStep, endTime) = tickRange(maxTickLabelWidth());
+
+		painter.setPen(QPen(QColor(180,180,220)));
+		for(TimePoint time = startTime; time <= endTime; time += timeStep) {
+			QString labelText = QString::number(_animSettings->timeToFrame(time));
+			painter.drawText(timeToPos(time) - thumbWidth/2, clientRect.y(), thumbWidth, clientRect.height(), Qt::AlignCenter, labelText);
 		}
 
 		QStyleOptionButton btnOption;
@@ -118,9 +102,64 @@ void AnimationTimeSlider::paintEvent(QPaintEvent* event)
 		if(_animSettings->animationInterval().start() == 0)
 			btnOption.text += " / " + _animSettings->timeToString(_animSettings->animationInterval().end());
 		btnOption.state = ((_dragPos >= 0) ? QStyle::State_Sunken : QStyle::State_Raised) | QStyle::State_Enabled;
+		btnOption.palette = _sliderPalette;
 		painter.drawPrimitive(QStyle::PE_PanelButtonCommand, btnOption);
+		btnOption.palette = _normalPalette;
 		painter.drawControl(QStyle::CE_PushButtonLabel, btnOption);
 	}
+}
+
+/******************************************************************************
+* Computes the maximum width of a frame tick label.
+******************************************************************************/
+int AnimationTimeSlider::maxTickLabelWidth()
+{
+	QString label = QString::number(_animSettings->timeToFrame(_animSettings->animationInterval().end()));
+	return fontMetrics().boundingRect(label).width() + 20;
+}
+
+/******************************************************************************
+* Computes the time ticks to draw.
+******************************************************************************/
+std::tuple<TimePoint,TimePoint,TimePoint> AnimationTimeSlider::tickRange(int tickWidth)
+{
+	QRect clientRect = frameRect();
+	clientRect.adjust(frameWidth(), frameWidth(), -frameWidth(), -frameWidth());
+	int thumbWidth = this->thumbWidth();
+	int clientWidth = clientRect.width() - thumbWidth;
+	int firstFrame = _animSettings->timeToFrame(_animSettings->animationInterval().start());
+	int lastFrame = _animSettings->timeToFrame(_animSettings->animationInterval().end());
+	int numFrames = lastFrame - firstFrame + 1;
+	int nticks = std::min(clientWidth / tickWidth, numFrames);
+	int ticksevery = numFrames / std::max(nticks, 1);
+	if(ticksevery <= 1) ticksevery = ticksevery;
+	else if(ticksevery <= 5) ticksevery = 5;
+	else if(ticksevery <= 10) ticksevery = 10;
+	else if(ticksevery <= 20) ticksevery = 20;
+	else if(ticksevery <= 50) ticksevery = 50;
+	else if(ticksevery <= 100) ticksevery = 100;
+	else if(ticksevery <= 500) ticksevery = 500;
+	if(ticksevery > 0) {
+		return std::make_tuple(
+				_animSettings->frameToTime(firstFrame),
+				_animSettings->ticksPerFrame() * ticksevery,
+				_animSettings->frameToTime(lastFrame));
+	}
+	else {
+		return { 0, 1, 0 };
+	}
+}
+
+/******************************************************************************
+* Computes the x position within the widget corresponding to the given animation time.
+******************************************************************************/
+int AnimationTimeSlider::timeToPos(TimePoint time)
+{
+	FloatType percentage = (FloatType)(time - _animSettings->animationInterval().start()) / (FloatType)(_animSettings->animationInterval().duration() + 1);
+	QRect clientRect = frameRect();
+	int tw = thumbWidth();
+	int space = clientRect.width() - 2*frameWidth() - tw;
+	return clientRect.x() + frameWidth() + (int)(percentage * space) + tw / 2;
 }
 
 /******************************************************************************
@@ -128,14 +167,7 @@ void AnimationTimeSlider::paintEvent(QPaintEvent* event)
 ******************************************************************************/
 QSize AnimationTimeSlider::sizeHint() const
 {
-#ifndef Q_OS_MACX
-	QStyleOptionButton btnOption;
-	btnOption.initFrom(this);
-	QSize sz = fontMetrics().size(Qt::TextSingleLine, "XXXXXXXXXX");
-	return style()->sizeFromContents(QStyle::CT_PushButton, &btnOption, sz, this).expandedTo(QApplication::globalStrut());
-#else
-	return QPushButton(QString("XXXXXXXXXX")).sizeHint();
-#endif
+	return QSize(QFrame::sizeHint().width(), fontMetrics().height() + frameWidth() * 2 + 6);
 }
 
 /******************************************************************************

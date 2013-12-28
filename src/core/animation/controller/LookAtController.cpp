@@ -28,7 +28,7 @@ namespace Ovito {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LookAtController, RotationController)
 DEFINE_REFERENCE_FIELD(LookAtController, _rollCtrl, "Roll", FloatController)
-DEFINE_FLAGS_REFERENCE_FIELD(LookAtController, _targetNode, "Target", SceneNode, PROPERTY_FIELD_NEVER_CLONE_TARGET)
+DEFINE_FLAGS_REFERENCE_FIELD(LookAtController, _targetNode, "Target", SceneNode, PROPERTY_FIELD_NEVER_CLONE_TARGET | PROPERTY_FIELD_NO_SUB_ANIM)
 SET_PROPERTY_FIELD_LABEL(LookAtController, _rollCtrl, "Roll")
 SET_PROPERTY_FIELD_LABEL(LookAtController, _targetNode, "Target")
 SET_PROPERTY_FIELD_UNITS(LookAtController, _rollCtrl, AngleParameterUnit)
@@ -62,7 +62,7 @@ void LookAtController::getValue(TimePoint time, Rotation& result, TimeInterval& 
 	else
 		validityInterval.intersect(TimeInterval(time));
 
-	// Get rolling.
+	// Get rolling angle.
 	FloatType rollAngle = 0.0;
 	if(rollController())
 		rollController()->getValue(time, rollAngle, validityInterval);

@@ -23,6 +23,9 @@
 #define __OVITO_ANIMATION_TRACK_BAR_H
 
 #include <core/Core.h>
+#include <core/reference/RefTargetListener.h>
+#include <core/animation/controller/Controller.h>
+#include "AnimationTimeSlider.h"
 
 namespace Ovito {
 
@@ -36,7 +39,7 @@ class AnimationTrackBar : public QFrame
 public:
 
 	/// Constructor.
-	AnimationTrackBar(MainWindow* mainWindow, QWidget* parentWindow = nullptr);
+	AnimationTrackBar(MainWindow* mainWindow, AnimationTimeSlider* timeSlider, QWidget* parentWindow = nullptr);
 
 protected:
 
@@ -49,15 +52,33 @@ protected:
 	/// Returns the minimum size of the widget.
 	virtual QSize minimumSizeHint() const override { return sizeHint(); }
 	
+	/// Recursive function that finds all controllers in the object graph.
+	void findControllers(RefTarget* target);
+
 protected Q_SLOTS:
 
 	/// This is called when new animation settings have been loaded.
 	void onAnimationSettingsReplaced(AnimationSettings* newAnimationSettings);
 
+	/// This is called when the current scene node selection has changed.
+	void onRebuildControllerList();
+
+	/// is called whenever one of the objects being monitored sends a notification signal.
+	void onObjectNotificationEvent(RefTarget* source, ReferenceEvent* event);
+
 private:
+
+	/// Pointer to the animation time slider widget.
+	AnimationTimeSlider* _timeSlider;
 
 	/// The current animation settings object.
 	AnimationSettings* _animSettings;
+
+	/// This list of animation controllers that are shown in the track bar.
+	VectorRefTargetListener<Controller> _controllers;
+
+	/// List of all reference targets in the selected object reference tree.
+	VectorRefTargetListener<RefTarget> _objects;
 
 	QMetaObject::Connection _animIntervalChangedConnection;
 	QMetaObject::Connection _timeFormatChangedConnection;

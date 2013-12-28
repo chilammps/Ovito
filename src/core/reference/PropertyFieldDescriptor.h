@@ -52,7 +52,9 @@ enum PropertyFieldFlag
 	PROPERTY_FIELD_ALWAYS_DEEP_COPY		= (1<<7),
 	/// Save the last value of the property in the application's settings store and use it to initialize
 	/// the property when a new object instance is created.
-	PROPERTY_FIELD_MEMORIZE				= (1<<8)
+	PROPERTY_FIELD_MEMORIZE				= (1<<8),
+	/// Indicates that the reference field is NOT an animatable parameter owned by the RefMaker object.
+	PROPERTY_FIELD_NO_SUB_ANIM			= (1<<9)
 };
 Q_DECLARE_FLAGS(PropertyFieldFlags, PropertyFieldFlag);
 Q_DECLARE_OPERATORS_FOR_FLAGS(PropertyFieldFlags);

@@ -38,7 +38,7 @@ TaskManager::TaskManager(MainWindow* mainWindow) : QObject(mainWindow), _mainWin
 		_progressTextDisplay = new QLabel();
 		_progressWidget = new QWidget();
 		QHBoxLayout* progressWidgetLayout = new QHBoxLayout(_progressWidget);
-		progressWidgetLayout->setContentsMargins(QMargins());
+		progressWidgetLayout->setContentsMargins(0,0,0,0);
 		progressWidgetLayout->setSpacing(0);
 		_progressBar = new QProgressBar(_progressWidget);
 		_cancelTaskButton = new QPushButton(tr("Cancel"), _progressWidget);

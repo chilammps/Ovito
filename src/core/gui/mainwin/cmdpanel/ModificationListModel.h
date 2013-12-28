@@ -91,7 +91,7 @@ public:
 	PipelineObject* hiddenPipelineObject();
 
 	/// The list of currently selected ObjectNode instances.
-	const QVector<RefTarget*>& selectedNodes() const { return _selectedNodes.targets(); }
+	const QVector<ObjectNode*>& selectedNodes() const { return _selectedNodes.targets(); }
 
 	/// Returns the container of the dataset being edited.
 	DataSetContainer& datasetContainer() { return _datasetContainer; }
@@ -138,7 +138,7 @@ private:
 	QList<OORef<ModificationListItem>> _hiddenItems;
 
 	/// Holds references to the currently selected ObjectNode instances.
-	VectorRefTargetListener _selectedNodes;
+	VectorRefTargetListener<ObjectNode> _selectedNodes;
 
 	/// The item in the modification list that should be selected on the next list update.
 	RefTarget* _nextToSelectObject;

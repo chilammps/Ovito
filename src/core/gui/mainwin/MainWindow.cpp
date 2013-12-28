@@ -25,6 +25,7 @@
 #include <core/gui/widgets/animation/AnimationTimeSpinner.h>
 #include <core/gui/widgets/animation/AnimationFramesToolButton.h>
 #include <core/gui/widgets/animation/AnimationTimeSlider.h>
+#include <core/gui/widgets/animation/AnimationTrackBar.h>
 #include <core/gui/widgets/rendering/FrameBufferWindow.h>
 #include <core/viewport/ViewportConfiguration.h>
 #include <core/viewport/input/ViewportInputManager.h>
@@ -73,6 +74,9 @@ MainWindow::MainWindow() :
 	AnimationTimeSlider* timeSlider = new AnimationTimeSlider(this);
 	timeSlider->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 	animationPanelLayout->addWidget(timeSlider);
+	AnimationTrackBar* trackBar = new AnimationTrackBar(this, timeSlider);
+	trackBar->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+	animationPanelLayout->addWidget(trackBar);
 
 	// Create status bar.
 	_statusBar = new QStatusBar(animationPanel);
@@ -90,9 +94,8 @@ MainWindow::MainWindow() :
 	animationControlBar1->addAction(actionManager()->getAction(ACTION_GOTO_NEXT_FRAME));
 	animationControlBar1->addSeparator();
 	animationControlBar1->addAction(actionManager()->getAction(ACTION_GOTO_END_OF_ANIMATION));
-	animationControlBar1->setStyleSheet("QToolBar { padding: 0px; margin: 0px; border: 0px none black; } QToolButton { padding: 0px; margin: 0px }");
 	QToolBar* animationControlBar2 = new QToolBar();
-#if 0
+#if 1
 	animationControlBar2->addAction(actionManager()->getAction(ACTION_AUTO_KEY_MODE_TOGGLE));
 #else
 	animationControlBar2->addWidget(new AnimationFramesToolButton(datasetContainer()));
@@ -114,7 +117,6 @@ MainWindow::MainWindow() :
 	animationControlBar2->addWidget(animationTimeSpinnerContainer);
 	animationControlBar2->addAction(actionManager()->getAction(ACTION_ANIMATION_SETTINGS));
 	animationControlBar2->addWidget(new QWidget());
-	animationControlBar2->setStyleSheet("QToolBar { padding: 0px; margin: 0px; border: 0px none black; } QToolButton { padding: 0px; margin: 0px }");
 
 	QWidget* animationControlPanel = new QWidget();
 	QVBoxLayout* animationControlPanelLayout = new QVBoxLayout(animationControlPanel);
@@ -123,6 +125,7 @@ MainWindow::MainWindow() :
 	animationControlPanelLayout->addWidget(animationControlBar1);
 	animationControlPanelLayout->addWidget(animationControlBar2);
 	animationControlPanelLayout->addStretch(1);
+	animationControlPanel->setStyleSheet("QToolBar { padding: 0px; margin: 0px; border: 0px none black; } QToolButton { padding: 0px; margin: 0px }");
 	animationControlPanel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
 
 	// Create the viewport control toolbar.
@@ -131,13 +134,11 @@ MainWindow::MainWindow() :
 	viewportControlBar1->addAction(actionManager()->getAction(ACTION_VIEWPORT_PAN));
 	viewportControlBar1->addAction(actionManager()->getAction(ACTION_VIEWPORT_ORBIT));
 	viewportControlBar1->addAction(actionManager()->getAction(ACTION_VIEWPORT_PICK_ORBIT_CENTER));
-	viewportControlBar1->setStyleSheet("QToolBar { padding: 0px; margin: 0px; border: 0px none black; } QToolButton { padding: 0px; margin: 0px }");
 	QToolBar* viewportControlBar2 = new QToolBar();
 	viewportControlBar2->addAction(actionManager()->getAction(ACTION_VIEWPORT_ZOOM_SCENE_EXTENTS));
 	viewportControlBar2->addAction(actionManager()->getAction(ACTION_VIEWPORT_ZOOM_SELECTION_EXTENTS));
 	viewportControlBar2->addAction(actionManager()->getAction(ACTION_VIEWPORT_FOV));
 	viewportControlBar2->addAction(actionManager()->getAction(ACTION_VIEWPORT_MAXIMIZE));
-	viewportControlBar2->setStyleSheet("QToolBar { padding: 0px; margin: 0px; border: 0px none black; } QToolButton { padding: 0px; margin: 0px }");
 	QWidget* viewportControlPanel = new QWidget();
 	QVBoxLayout* viewportControlPanelLayout = new QVBoxLayout(viewportControlPanel);
 	viewportControlPanelLayout->setSpacing(0);
@@ -149,6 +150,7 @@ MainWindow::MainWindow() :
 	viewportControlPanelLayout->addLayout(sublayout);
 	viewportControlPanelLayout->addStretch(1);
 	viewportControlPanel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
+	viewportControlPanel->setStyleSheet("QToolBar { padding: 0px; margin: 0px; border: 0px none black; } QToolButton { padding: 0px; margin: 0px }");
 
 	// Create the command panel.
 	_commandPanel = new CommandPanel(this, this);
@@ -261,13 +263,11 @@ void MainWindow::createMainToolbar()
 	_mainToolbar->addAction(actionManager()->getAction(ACTION_EDIT_UNDO));
 	_mainToolbar->addAction(actionManager()->getAction(ACTION_EDIT_REDO));
 
-#if 0
 	_mainToolbar->addSeparator();
 
 	_mainToolbar->addAction(actionManager()->getAction(ACTION_SELECTION_MODE));
 	_mainToolbar->addAction(actionManager()->getAction(ACTION_XFORM_MOVE_MODE));
 	_mainToolbar->addAction(actionManager()->getAction(ACTION_XFORM_ROTATE_MODE));
-#endif
 
 	_mainToolbar->addSeparator();
 
