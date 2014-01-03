@@ -57,7 +57,7 @@ ObjectLoadStream::ObjectLoadStream(QDataStream& source) : LoadStream(source), _c
 		expectChunk(0x201);
 		classEntry.descriptor = OvitoObjectType::deserializeRTTI(*this);
 		if(classEntry.descriptor->isSerializable() == false)
-			throw Exception(tr("Failed to load class %1 because it is marked as non-serializable.").arg(classEntry.descriptor->name()));
+			throw Exception(tr("Failed to load class %1, because it is flagged as non-serializable.").arg(classEntry.descriptor->name()));
 		closeChunk();
 
 		// Load the plugin containing the class now.
@@ -72,7 +72,7 @@ ObjectLoadStream::ObjectLoadStream(QDataStream& source) : LoadStream(source), _c
 				break;	// end of list
 			}
 			if(chunkId != 0x00000001)
-				throw Exception(tr("File format cannot be read."));
+				throw Exception(tr("File format is invalid. Failed to load property fields of class %1.").arg(classEntry.descriptor->name()));
 
 			PropertyFieldEntry propFieldEntry;
 			*this >> propFieldEntry.identifier;
@@ -84,7 +84,7 @@ ObjectLoadStream::ObjectLoadStream(QDataStream& source) : LoadStream(source), _c
 			if(propFieldEntry.isReferenceField)
 				propFieldEntry.targetClass = OvitoObjectType::deserializeRTTI(*this);
 			else
-				propFieldEntry.targetClass = NULL;
+				propFieldEntry.targetClass = nullptr;
 			closeChunk();
 
 			propFieldEntry.field = propFieldEntry.definingClass->findPropertyField(propFieldEntry.identifier.constData());

@@ -229,6 +229,24 @@ protected:
 		}
 		updateKeys();
 	}
+
+	/// Loads the object from a file stream.
+	/// This method is here to support reading old files written by Ovito 2.2 or older.
+	virtual void loadFromStream(ObjectLoadStream& stream) override {
+		KeyframeController::loadFromStream(stream);
+		if(stream.formatVersion() == 20003) {
+			stream.expectChunk(0x01);
+			quint32 nkeys;
+			stream >> nkeys;
+			for(quint32 i = 0; i < nkeys; i++) {
+				TimePoint time;
+				value_type value;
+				stream >> time >> value;
+				setAbsoluteValue(time, value);
+			}
+			stream.closeChunk();
+		}
+	}
 };
 
 };
