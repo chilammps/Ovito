@@ -444,9 +444,8 @@ void ViewportSceneRenderer::render2DPolyline(const Point2* points, int count, co
 {
 	OVITO_STATIC_ASSERT(sizeof(points[0]) == 2*sizeof(GLfloat));
 
-	// Initialize OpenGL shader.
-	QOpenGLShaderProgram* shader = loadShaderProgram("line", ":/core/glsl/line.vertex.glsl", ":/core/glsl/line.fragment.glsl");
-
+	// Load OpenGL shader.
+	QOpenGLShaderProgram* shader = loadShaderProgram("line", ":/core/glsl/lines/line.vs", ":/core/glsl/lines/line.fs");
 	if(!shader->bind())
 		throw Exception(tr("Failed to bind OpenGL shader."));
 
@@ -466,8 +465,8 @@ void ViewportSceneRenderer::render2DPolyline(const Point2* points, int count, co
 		if(!vertexBuffer.bind())
 				throw Exception(tr("Failed to bind OpenGL vertex buffer."));
 		vertexBuffer.allocate(points, 2 * sizeof(GLfloat) * count);
-		OVITO_CHECK_OPENGL(shader->enableAttributeArray("vertex_pos"));
-		OVITO_CHECK_OPENGL(shader->setAttributeBuffer("vertex_pos", GL_FLOAT, 0, 2));
+		OVITO_CHECK_OPENGL(shader->enableAttributeArray("position"));
+		OVITO_CHECK_OPENGL(shader->setAttributeBuffer("position", GL_FLOAT, 0, 2));
 		vertexBuffer.release();
 	}
 	else {
@@ -476,8 +475,8 @@ void ViewportSceneRenderer::render2DPolyline(const Point2* points, int count, co
 	}
 
 	if(glformat().majorVersion() >= 3) {
-		OVITO_CHECK_OPENGL(shader->disableAttributeArray("vertex_color"));
-		OVITO_CHECK_OPENGL(shader->setAttributeValue("vertex_color", color.r(), color.g(), color.b(), color.a()));
+		OVITO_CHECK_OPENGL(shader->disableAttributeArray("color"));
+		OVITO_CHECK_OPENGL(shader->setAttributeValue("color", color.r(), color.g(), color.b(), color.a()));
 	}
 	else {
 		OVITO_CHECK_OPENGL(glColor4(color));
@@ -486,7 +485,7 @@ void ViewportSceneRenderer::render2DPolyline(const Point2* points, int count, co
 	OVITO_CHECK_OPENGL(glDrawArrays(closed ? GL_LINE_LOOP : GL_LINE_STRIP, 0, count));
 
 	if(glformat().majorVersion() >= 3) {
-		shader->disableAttributeArray("vertex_pos");
+		shader->disableAttributeArray("position");
 	}
 	else {
 		OVITO_CHECK_OPENGL(glDisableClientState(GL_VERTEX_ARRAY));
