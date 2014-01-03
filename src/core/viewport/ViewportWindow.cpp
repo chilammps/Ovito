@@ -41,20 +41,7 @@ ViewportWindow::ViewportWindow(Viewport* owner) :
 
 	// Indicate that the window is to be used for OpenGL rendering.
 	setSurfaceType(QWindow::OpenGLSurface);
-
-	QSurfaceFormat format;
-	format.setDepthBufferSize(24);
-	format.setMajorVersion(OVITO_OPENGL_REQUESTED_VERSION_MAJOR);
-	format.setMinorVersion(OVITO_OPENGL_REQUESTED_VERSION_MINOR);
-	format.setOption(QSurfaceFormat::DeprecatedFunctions);
-	format.setProfile(ViewportSceneRenderer::useCoreProfile() ? QSurfaceFormat::CoreProfile : QSurfaceFormat::CompatibilityProfile);
-	format.setStencilBufferSize(1);
-#if 0
-#ifdef OVITO_DEBUG
-	format.setOption(QSurfaceFormat::DebugContext);
-#endif
-#endif
-	setFormat(format);
+	setFormat(ViewportSceneRenderer::getDefaultSurfaceFormat());
 }
 
 /******************************************************************************

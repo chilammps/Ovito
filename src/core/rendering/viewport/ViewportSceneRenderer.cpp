@@ -44,6 +44,38 @@ namespace Ovito {
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, ViewportSceneRenderer, SceneRenderer);
 
 /******************************************************************************
+* Returns the default OpenGL surface format requested by OVITO when creating
+* OpenGL contexts.
+******************************************************************************/
+QSurfaceFormat ViewportSceneRenderer::getDefaultSurfaceFormat()
+{
+	QSurfaceFormat format;
+	format.setDepthBufferSize(24);
+	format.setMajorVersion(OVITO_OPENGL_REQUESTED_VERSION_MAJOR);
+	format.setMinorVersion(OVITO_OPENGL_REQUESTED_VERSION_MINOR);
+	if(Application::instance().cmdLineParser().isSet(QStringLiteral("glversion"))) {
+		QStringList tokens = Application::instance().cmdLineParser().value(QStringLiteral("glversion")).split(QChar('.'));
+		if(tokens.size() == 2) {
+			int majorVersion = tokens[0].toInt();
+			int minorVersion = tokens[1].toInt();
+			if(majorVersion >= 1) {
+				format.setMajorVersion(majorVersion);
+				format.setMinorVersion(minorVersion);
+			}
+		}
+	}
+	format.setOption(QSurfaceFormat::DeprecatedFunctions);
+	format.setProfile(ViewportSceneRenderer::useCoreProfile() ? QSurfaceFormat::CoreProfile : QSurfaceFormat::CompatibilityProfile);
+	format.setStencilBufferSize(1);
+#if 0
+#ifdef OVITO_DEBUG
+	format.setOption(QSurfaceFormat::DebugContext);
+#endif
+#endif
+	return format;
+}
+
+/******************************************************************************
 * This method is called just before renderFrame() is called.
 ******************************************************************************/
 void ViewportSceneRenderer::beginFrame(TimePoint time, const ViewProjectionParameters& params, Viewport* vp)
