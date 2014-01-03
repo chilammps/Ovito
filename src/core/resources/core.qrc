@@ -150,6 +150,8 @@
 	<file>glsl/image.vertex.glsl</file>
 	<file>glsl/image.fragment.glsl</file>
 	
+	<file>3dicons/camera.ply</file>
+
 </qresource>
 
 </RCC>

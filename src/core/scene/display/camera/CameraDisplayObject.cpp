@@ -78,67 +78,51 @@ void CameraDisplayObject::render(TimePoint time, SceneObject* sceneObject, const
 	// Update buffer contents.
 	if(updateContents) {
 
-		// Initialize vertices.
-		static const Point3 vertices[16] = {
-			{-0.15f, -0.15f, 0.3f},
-			{ 0.15f, -0.15f, 0.3f},
-			{ 0.15f,  0.15f, 0.3f},
-			{-0.15f,  0.15f, 0.3f},
-			{-0.15f, -0.15f, -0.2f},
-			{ 0.15f, -0.15f, -0.2f},
-			{ 0.15f,  0.15f, -0.2f},
-			{-0.15f,  0.15f, -0.2f},
-			{-0.02f, -0.02f, -0.2f},
-			{ 0.02f, -0.02f, -0.2f},
-			{ 0.02f,  0.02f, -0.2f},
-			{-0.02f,  0.02f, -0.2f},
-			{-0.10f, -0.10f, -0.5f},
-			{ 0.10f, -0.10f, -0.5f},
-			{ 0.10f,  0.10f, -0.5f},
-			{-0.10f,  0.10f, -0.5f}
-		};
-
 		// Initialize lines.
-		static const Point3 linePoints[] = {
-				vertices[0], vertices[1],
-				vertices[1], vertices[2],
-				vertices[2], vertices[3],
-				vertices[3], vertices[0],
-				vertices[0], vertices[4],
-				vertices[1], vertices[5],
-				vertices[2], vertices[6],
-				vertices[3], vertices[7],
-				vertices[4], vertices[5],
-				vertices[5], vertices[6],
-				vertices[6], vertices[7],
-				vertices[7], vertices[4],
+		static std::vector<Point3> linePoints;
+		if(linePoints.empty()) {
+			// Load and parse PLY file that contains the camera icon.
+			QFile meshFile(QStringLiteral(":/core/3dicons/camera.ply"));
+			meshFile.open(QIODevice::ReadOnly | QIODevice::Text);
+			QTextStream stream(&meshFile);
+			for(int i = 0; i < 3; i++) stream.readLine();
+			int numVertices = stream.readLine().section(' ', 2, 2).toInt();
+			OVITO_ASSERT(numVertices > 0);
+			for(int i = 0; i < 3; i++) stream.readLine();
+			int numFaces = stream.readLine().section(' ', 2, 2).toInt();
+			for(int i = 0; i < 2; i++) stream.readLine();
+			std::vector<Point3> vertices(numVertices);
+			for(int i = 0; i < numVertices; i++)
+				stream >> vertices[i].x() >> vertices[i].y() >> vertices[i].z();
+			for(int i = 0; i < numFaces; i++) {
+				int numEdges, vindex, lastvindex, firstvindex;
+				stream >> numEdges;
+				for(int j = 0; j < numEdges; j++) {
+					stream >> vindex;
+					if(j != 0) {
+						linePoints.push_back(vertices[lastvindex]);
+						linePoints.push_back(vertices[vindex]);
+					}
+					else firstvindex = vindex;
+					lastvindex = vindex;
+				}
+				linePoints.push_back(vertices[lastvindex]);
+				linePoints.push_back(vertices[firstvindex]);
+			}
+		}
 
-				vertices[8], vertices[9],
-				vertices[9], vertices[10],
-				vertices[10], vertices[11],
-				vertices[11], vertices[8],
-				vertices[8], vertices[12],
-				vertices[9], vertices[13],
-				vertices[10], vertices[14],
-				vertices[11], vertices[15],
-				vertices[12], vertices[13],
-				vertices[13], vertices[14],
-				vertices[14], vertices[15],
-				vertices[15], vertices[12]
-		};
-
-		_cameraIcon->setVertexCount(48);
-		_cameraIcon->setVertexPositions(linePoints);
+		_cameraIcon->setVertexCount(linePoints.size());
+		_cameraIcon->setVertexPositions(linePoints.data());
 		_cameraIcon->setLineColor(ColorA(color));
 
-		_pickingCameraIcon->setVertexCount(48, renderer->defaultLinePickingWidth());
-		_pickingCameraIcon->setVertexPositions(linePoints);
+		_pickingCameraIcon->setVertexCount(linePoints.size(), renderer->defaultLinePickingWidth());
+		_pickingCameraIcon->setVertexPositions(linePoints.data());
 		_pickingCameraIcon->setLineColor(ColorA(color));
 	}
 
 	// Setup transformation matrix to always show the camera at the same size.
 	Point3 cameraPos = Point3::Origin() + renderer->worldTransform().translation();
-	FloatType scaling = 2.0f * renderer->viewport()->nonScalingSize(cameraPos);
+	FloatType scaling = 0.3f * renderer->viewport()->nonScalingSize(cameraPos);
 	renderer->setWorldTransform(renderer->worldTransform() * AffineTransformation::scaling(scaling));
 
 	renderer->beginPickObject(contextNode, sceneObject, this);
