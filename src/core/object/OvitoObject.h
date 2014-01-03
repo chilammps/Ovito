@@ -160,9 +160,9 @@ private:
 	}
 
 #ifdef OVITO_DEBUG
-	/// This field is initialized with a special value in the constructor to indicate that
-	/// the object is alive and has not been deleted. When the object is deleted, the
-	/// destructor sets the field to another value indicate that the object is no longer alive.
+	/// This field is initialized with a special value by the class constructor to indicate that
+	/// the object is still alive and has not been deleted. When the object is deleted, the
+	/// destructor sets the field to a different value to indicate that the object is no longer alive.
 	quint32 _magicAliveCode;
 #endif
 
@@ -235,6 +235,12 @@ inline OORef<T> static_object_cast(const OORef<U>& obj) {
 }
 
 };	// End of namespace Ovito
+
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 2, 0))
+	Q_DECLARE_SMART_POINTER_METATYPE(Ovito::OORef);
+#else
+	Q_DECLARE_METATYPE(Ovito::OORef<Ovito::OvitoObject>);
+#endif
 
 #include <core/utilities/io/ObjectSaveStream.h>
 #include <core/utilities/io/ObjectLoadStream.h>
