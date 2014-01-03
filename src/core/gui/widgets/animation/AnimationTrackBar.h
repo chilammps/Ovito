@@ -65,10 +65,10 @@ protected:
 	void findControllers(RefTarget* target);
 
 	/// Paints the symbol for a single animation key.
-	void paintKey(QPainter& painter, AnimationKey* key) const;
+	void paintKey(QPainter& painter, AnimationKey* key, KeyframeController* ctrl) const;
 
 	/// Computes the display rectangle of an animation key.
-	QRect keyRect(AnimationKey* key) const;
+	QRect keyRect(AnimationKey* key, bool forDisplay) const;
 
 	/// Finds all keys under the mouse cursor.
 	QVector<AnimationKey*> hitTestKeys(QPoint pos) const;
@@ -81,6 +81,9 @@ protected:
 
 	/// Checks if the given ref target is a controller, and, if yes, add it to our list of controllers.
 	void addController(RefTarget* target, RefTarget* owner, const PropertyFieldDescriptor* field);
+
+	/// Displays the context menu.
+	void showKeyContextMenu(const QPoint& pos, const QVector<AnimationKey*>& clickedKeys);
 
 protected Q_SLOTS:
 
@@ -95,6 +98,9 @@ protected Q_SLOTS:
 
 	/// Is called whenever one of the controller being monitored sends a notification signal.
 	void onControllerNotificationEvent(RefTarget* source, ReferenceEvent* event);
+
+	/// Deletes the selected animation keys.
+	void onDeleteSelectedKeys();
 
 private:
 
@@ -116,8 +122,8 @@ private:
 	/// The names of the animated parameters that are controlled by the keyframe controllers.
 	QStringList _parameterNames;
 
-	/// The brush used to paint animation keys.
-	QBrush _keyBrush;
+	/// The brushes used to paint animation keys.
+	std::array<QBrush,7> _keyBrushes;
 
 	/// The pen used to paint animation keys.
 	QPen _keyPen;

@@ -36,7 +36,16 @@ using namespace std;
 ******************************************************************************/
 AnimationTrackBar::AnimationTrackBar(MainWindow* mainWindow, AnimationTimeSlider* timeSlider, QWidget* parent) :
 	QFrame(parent), _timeSlider(timeSlider), _animSettings(nullptr),
-	_keyBrush(QColor(150,150,200)), _keyPen(Qt::black), _selectedKeyPen(Qt::cyan), _selectionCursor(Qt::CrossCursor),
+	_keyBrushes{{
+		QColor(150,150,200),	// Color for float controller keys
+		QColor(150,150,200),	// Color for integer controller keys
+		QColor(150,200,150),	// Color for vector controller keys
+		QColor(200,150,150),	// Color for position controller keys
+		QColor(200,200,150),	// Color for rotation controller keys
+		QColor(150,200,200),	// Color for scaling controller keys
+		QColor(150,150,150),	// Color for transformation controller keys
+	}},
+	_keyPen(Qt::black), _selectedKeyPen(QColor(255,255,255)), _selectionCursor(Qt::CrossCursor),
 	_isDragging(false), _dragStartPos(-1)
 {
 	setFrameShape(QFrame::NoFrame);
@@ -102,7 +111,7 @@ void AnimationTrackBar::paintEvent(QPaintEvent* event)
 		// Draw keys only if there are more two or more of them.
 		if(ctrl->keys().size() >= 2) {
 			for(AnimationKey* key : ctrl->keys()) {
-				paintKey(painter, key);
+				paintKey(painter, key, ctrl);
 			}
 		}
 	}
@@ -121,7 +130,7 @@ void AnimationTrackBar::paintEvent(QPaintEvent* event)
 /******************************************************************************
 * Computes the display rectangle of an animation key.
 ******************************************************************************/
-QRect AnimationTrackBar::keyRect(AnimationKey* key) const
+QRect AnimationTrackBar::keyRect(AnimationKey* key, bool forDisplay) const
 {
 	// Don't draw keys that are not within the active animation interval.
 	if(key->time() < _animSettings->animationInterval().start() ||
@@ -132,19 +141,35 @@ QRect AnimationTrackBar::keyRect(AnimationKey* key) const
 
 	int width = 6;
 	int pos = _timeSlider->timeToPos(key->time());
-	return QRect(pos - width / 2, clientRect.top() + 4, width, clientRect.height() - 4);
+	int offset = 0;
+
+	bool done = false;
+	for(KeyframeController* ctrl : _controllers.targets()) {
+		// Draw keys only if there are more two or more of them.
+		if(ctrl->keys().size() >= 2) {
+			for(AnimationKey* key2 : ctrl->keys()) {
+				if(key2 == key) done = true;
+				else if(key->time() == key2->time()) offset++;
+			}
+		}
+		if(done && forDisplay) break;
+	}
+	if(forDisplay)
+		return QRect(pos - width / 2 + offset*2, clientRect.top() + 4 - offset*2, width, clientRect.height() - 5);
+	else
+		return QRect(pos - width / 2, clientRect.top() + 4 - offset*2, width + offset*2, clientRect.height() - 5 + offset*2);
 }
 
 /******************************************************************************
 * Paints the symbol for a single animation key.
 ******************************************************************************/
-void AnimationTrackBar::paintKey(QPainter& painter, AnimationKey* key) const
+void AnimationTrackBar::paintKey(QPainter& painter, AnimationKey* key, KeyframeController* ctrl) const
 {
-	QRect rect = keyRect(key);
+	QRect rect = keyRect(key, true);
 	if(!rect.isValid())
 		return;
 
-	painter.setBrush(_keyBrush);
+	painter.setBrush(_keyBrushes[ctrl->controllerType() % _keyBrushes.size()]);
 	painter.setPen(_selectedKeys.targets().contains(key) ? _selectedKeyPen : _keyPen);
 	painter.drawRect(rect);
 }
@@ -276,7 +301,7 @@ QVector<AnimationKey*> AnimationTrackBar::hitTestKeys(QPoint pos) const
 		if(ctrl->keys().size() >= 2) {
 			for(int index = ctrl->keys().size() - 1; index >= 0; index--) {
 				AnimationKey* key = ctrl->keys()[index];
-				if((result.empty() && keyRect(key).contains(pos)) || (!result.empty() && result.front()->time() == key->time())) {
+				if((result.empty() && keyRect(key, false).contains(pos)) || (!result.empty() && result.front()->time() == key->time())) {
 					result.push_back(key);
 				}
 			}
@@ -305,8 +330,21 @@ void AnimationTrackBar::mousePressEvent(QMouseEvent* event)
 {
 	_dragStartPos = -1;
 	if(event->button() == Qt::LeftButton) {
-		_selectedKeys.setTargets(hitTestKeys(event->pos()));
-		if(!_selectedKeys.targets().empty())
+		QVector<AnimationKey*> clickedKeys = hitTestKeys(event->pos());
+		if(!event->modifiers().testFlag(Qt::ControlModifier)) {
+			if(clickedKeys.empty() ||
+					std::find_first_of(clickedKeys.begin(), clickedKeys.end(), _selectedKeys.targets().begin(), _selectedKeys.targets().end()) == clickedKeys.end())
+				_selectedKeys.setTargets(clickedKeys);
+		}
+		else {
+			for(AnimationKey* key : clickedKeys) {
+				if(!_selectedKeys.targets().contains(key))
+					_selectedKeys.push_back(key);
+				else
+					_selectedKeys.remove(key);
+			}
+		}
+		if(!clickedKeys.empty())
 			_dragStartPos = event->pos().x();
 		_isDragging = false;
 		update();
@@ -315,6 +353,16 @@ void AnimationTrackBar::mousePressEvent(QMouseEvent* event)
 		if(_isDragging) {
 			_isDragging = false;
 			_animSettings->dataset()->undoStack().endCompoundOperation(false);
+		}
+		else {
+			_isDragging = false;
+			QVector<AnimationKey*> clickedKeys = hitTestKeys(event->pos());
+			if(clickedKeys.empty() ||
+					std::find_first_of(clickedKeys.begin(), clickedKeys.end(), _selectedKeys.targets().begin(), _selectedKeys.targets().end()) == clickedKeys.end()) {
+				_selectedKeys.setTargets(clickedKeys);
+				update();
+			}
+			showKeyContextMenu(event->pos(), clickedKeys);
 		}
 	}
 }
@@ -332,9 +380,9 @@ void AnimationTrackBar::mouseMoveEvent(QMouseEvent* event)
 		}
 		else {
 			setCursor(_selectionCursor);
-			QString tooltipText = tr("<p style='white-space:pre'>Animation key(s) at time %1:").arg(_animSettings->timeToString(keys.front()->time()));
+			QString tooltipText = tr("<p style='white-space:pre'>Time %1:").arg(_animSettings->timeToString(keys.front()->time()));
 			for(AnimationKey* key : keys) {
-				tooltipText += QStringLiteral("<br>%1: %2")
+				tooltipText += QStringLiteral("<br>  %1: %2")
 						.arg(_parameterNames[controllerIndexFromKey(key)])
 						.arg(keyValueString(key));
 			}
@@ -389,14 +437,72 @@ QString AnimationTrackBar::keyValueString(AnimationKey* key) const
 		return QString::number(value.value<FloatType>());
 	else if(value.userType() == qMetaTypeId<int>())
 		return QString::number(value.value<int>());
-	else if(value.userType() == qMetaTypeId<Vector3>())
-		return value.value<Vector3>().toString();
-	else if(value.userType() == qMetaTypeId<Rotation>())
-		return value.value<Rotation>().toString();
-	else if(value.userType() == qMetaTypeId<Scaling>())
-		return value.value<Scaling>().toString();
+	else if(value.userType() == qMetaTypeId<Vector3>()) {
+		Vector3 vec = value.value<Vector3>();
+		return QString("(%1, %2, %3)").arg(vec.x()).arg(vec.y()).arg(vec.z());
+	}
+	else if(value.userType() == qMetaTypeId<Rotation>()) {
+		Rotation rot = value.value<Rotation>();
+		return QString("axis (%1, %2, %3), angle: %4").arg(rot.axis().x()).arg(rot.axis().y()).arg(rot.axis().z()).arg(rot.angle() * FloatType(180) / FLOATTYPE_PI);
+	}
+	else if(value.userType() == qMetaTypeId<Scaling>()) {
+		Scaling s = value.value<Scaling>();
+		return QString("(%1, %2, %3)]").arg(s.S.x()).arg(s.S.y()).arg(s.S.z());
+	}
 	else
 		return value.toString();
 }
+
+/******************************************************************************
+* Displays the context menu.
+******************************************************************************/
+void AnimationTrackBar::showKeyContextMenu(const QPoint& pos, const QVector<AnimationKey*>& clickedKeys)
+{
+	QMenu contextMenu(this);
+
+	// Action: Unselect key.
+	QMenu* unselectKeyMenu = contextMenu.addMenu(tr("Unselect key"));
+	unselectKeyMenu->setEnabled(!_selectedKeys.targets().empty());
+	for(AnimationKey* key : _selectedKeys.targets()) {
+		QString label = QStringLiteral("%1: %2")
+				.arg(_parameterNames[controllerIndexFromKey(key)])
+				.arg(keyValueString(key));
+		QAction* unselectAction = unselectKeyMenu->addAction(label);
+		connect(unselectAction, &QAction::triggered, [this, key]() {
+			_selectedKeys.remove(key);
+			update();
+		});
+	}
+
+	// Action: Delete selected keys
+	contextMenu.addSeparator();
+	contextMenu.addAction(tr("Deleted selected keys"), this, SLOT(onDeleteSelectedKeys()))->setEnabled(_selectedKeys.targets().empty() == false);
+
+	// Action: Jump to key
+	contextMenu.addSeparator();
+	QAction* jumpToTimeAction = contextMenu.addAction(tr("Jump to key"));
+	if(clickedKeys.empty() == false) {
+		TimePoint time = clickedKeys.front()->time();
+		connect(jumpToTimeAction, &QAction::triggered, [this, time]() {
+			_animSettings->setTime(time);
+		});
+	}
+	else jumpToTimeAction->setEnabled(false);
+
+	contextMenu.exec(mapToGlobal(pos));
+}
+
+/******************************************************************************
+* Deletes the selected animation keys.
+******************************************************************************/
+void AnimationTrackBar::onDeleteSelectedKeys()
+{
+	UndoableTransaction::handleExceptions(_animSettings->dataset()->undoStack(), tr("Delete animation keys"), [this]() {
+		for(KeyframeController* ctrl : _controllers.targets()) {
+			ctrl->deleteKeys(_selectedKeys.targets());
+		}
+	});
+}
+
 
 };

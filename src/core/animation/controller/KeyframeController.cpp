@@ -28,45 +28,6 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, KeyframeController, Controller);
 DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(KeyframeController, _keys, "Keys", AnimationKey, PROPERTY_FIELD_ALWAYS_CLONE | PROPERTY_FIELD_NO_SUB_ANIM);
 SET_PROPERTY_FIELD_LABEL(KeyframeController, _keys, "Keys");
 
-#if 0
-/******************************************************************************
-* Gets called by an animation key of this controller when the key's time has changed.
-******************************************************************************/
-void KeyframeController::keyTimeChanged(AnimationKey* key)
-{
-	int oldIndex = keys().indexOf(key);
-	OVITO_ASSERT(oldIndex >= 0);
-
-	// Determine the new list position to keep the keys sorted.
-	int index;
-	for(index = 0; index < keys().size(); index++) {
-		if(keys()[index] == key) continue;
-		if(keys()[index]->time() >= key->time()) {
-			if(index == oldIndex) break;
-			_keys.insert(index, key);
-			if(index > oldIndex) {
-				OVITO_ASSERT(keys()[oldIndex] == key);
-				_keys.remove(oldIndex);
-			}
-			else {
-				OVITO_ASSERT(keys()[oldIndex + 1] == key);
-				_keys.remove(oldIndex + 1);
-			}
-			break;
-		}
-	}
-
-	// Move key to the end of the list.
-	if(index == keys().size() && oldIndex != keys().size() - 1) {
-		_keys.push_back(key);
-		_keys.remove(oldIndex);
-	}
-	OVITO_ASSERT(areKeysSorted());
-
-	updateKeys();
-}
-#endif
-
 /******************************************************************************
 * Maps all keys from the old animation interval to the new interval.
 ******************************************************************************/
@@ -181,5 +142,14 @@ void KeyframeController::moveKeys(const QVector<AnimationKey*> keysToMove, TimeP
 	updateKeys();
 }
 
+/******************************************************************************
+* Deletes the given set of keys from the controller.
+******************************************************************************/
+void KeyframeController::deleteKeys(const QVector<AnimationKey*> keysToDelete)
+{
+	for(AnimationKey* key : keysToDelete)
+		key->deleteReferenceObject();
+	updateKeys();
+}
 
 };

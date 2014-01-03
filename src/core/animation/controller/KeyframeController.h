@@ -57,6 +57,9 @@ public:
 	/// Moves the keys in the given set by the given time shift.
 	void moveKeys(const QVector<AnimationKey*> keysToMove, TimePoint shift);
 
+	/// Deletes the given set of keys from the controller.
+	void deleteKeys(const QVector<AnimationKey*> keysToDelete);
+
 protected:
 
 	/// Inserts a new animation key into this controller's list of keys.
