@@ -361,7 +361,7 @@ void OrbitMode::modifyView(Viewport* vp, QPointF delta)
 		vp->setCameraTransformation(newTM);
 	}
 	else {
-		vp->viewNode()->transformationController()->setValue(vp->dataset()->animationSettings()->time(), newTM);
+		vp->viewNode()->transformationController()->setTransformationValue(vp->dataset()->animationSettings()->time(), newTM, true);
 	}
 }
 

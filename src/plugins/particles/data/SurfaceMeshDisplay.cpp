@@ -26,7 +26,7 @@
 #include <core/gui/properties/FloatParameterUI.h>
 #include <core/gui/properties/BooleanGroupBoxParameterUI.h>
 #include <core/scene/objects/geometry/TriMesh.h>
-#include <core/animation/controller/StandardControllers.h>
+#include <core/animation/controller/Controller.h>
 #include <plugins/particles/data/SimulationCell.h>
 #include <plugins/particles/util/CapPolygonTessellator.h>
 #include "SurfaceMeshDisplay.h"
@@ -41,8 +41,8 @@ DEFINE_FLAGS_PROPERTY_FIELD(SurfaceMeshDisplay, _surfaceColor, "SurfaceColor", P
 DEFINE_FLAGS_PROPERTY_FIELD(SurfaceMeshDisplay, _capColor, "CapColor", PROPERTY_FIELD_MEMORIZE)
 DEFINE_FLAGS_PROPERTY_FIELD(SurfaceMeshDisplay, _showCap, "ShowCap", PROPERTY_FIELD_MEMORIZE)
 DEFINE_PROPERTY_FIELD(SurfaceMeshDisplay, _smoothShading, "SmoothShading")
-DEFINE_REFERENCE_FIELD(SurfaceMeshDisplay, _surfaceTransparency, "SurfaceTransparency", FloatController)
-DEFINE_REFERENCE_FIELD(SurfaceMeshDisplay, _capTransparency, "CapTransparency", FloatController)
+DEFINE_REFERENCE_FIELD(SurfaceMeshDisplay, _surfaceTransparency, "SurfaceTransparency", Controller)
+DEFINE_REFERENCE_FIELD(SurfaceMeshDisplay, _capTransparency, "CapTransparency", Controller)
 SET_PROPERTY_FIELD_LABEL(SurfaceMeshDisplay, _surfaceColor, "Surface color")
 SET_PROPERTY_FIELD_LABEL(SurfaceMeshDisplay, _capColor, "Cap color")
 SET_PROPERTY_FIELD_LABEL(SurfaceMeshDisplay, _showCap, "Show cap polygons")
@@ -65,8 +65,8 @@ SurfaceMeshDisplay::SurfaceMeshDisplay(DataSet* dataset) : DisplayObject(dataset
 	INIT_PROPERTY_FIELD(SurfaceMeshDisplay::_surfaceTransparency);
 	INIT_PROPERTY_FIELD(SurfaceMeshDisplay::_capTransparency);
 
-	_surfaceTransparency = ControllerManager::instance().createDefaultController<FloatController>(dataset);
-	_capTransparency = ControllerManager::instance().createDefaultController<FloatController>(dataset);
+	_surfaceTransparency = ControllerManager::instance().createFloatController(dataset);
+	_capTransparency = ControllerManager::instance().createFloatController(dataset);
 }
 
 /******************************************************************************
@@ -104,8 +104,8 @@ void SurfaceMeshDisplay::render(TimePoint time, SceneObject* sceneObject, const 
 	FloatType transp_surface = 0;
 	FloatType transp_cap = 0;
 	TimeInterval iv;
-	if(_surfaceTransparency) _surfaceTransparency->getValue(time, transp_surface, iv);
-	if(_capTransparency) _capTransparency->getValue(time, transp_cap, iv);
+	if(_surfaceTransparency) transp_surface = _surfaceTransparency->getFloatValue(time, iv);
+	if(_capTransparency) transp_cap = _capTransparency->getFloatValue(time, iv);
 	ColorA color_surface(surfaceColor(), 1.0f - transp_surface);
 	ColorA color_cap(capColor(), 1.0f - transp_cap);
 

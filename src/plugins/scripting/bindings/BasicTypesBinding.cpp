@@ -32,8 +32,6 @@ IMPLEMENT_OVITO_OBJECT(Scripting, BasicTypesBinding, ScriptBinding);
 ******************************************************************************/
 void BasicTypesBinding::setupBinding(ScriptEngine& engine)
 {
-	qRegisterMetaType<FloatType>("FloatType");
-
 	// Set prototype for Vector3 script values and register constructor functions.
 	QScriptValue vector3Prototype = engine.newQObject(new Vector3Prototype());
 	engine.setDefaultPrototype(qRegisterMetaType<Vector3>("Vector3"), vector3Prototype);

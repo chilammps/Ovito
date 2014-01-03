@@ -22,7 +22,7 @@
 #include <plugins/particles/Particles.h>
 #include <core/viewport/Viewport.h>
 #include <core/scene/pipeline/PipelineObject.h>
-#include <core/animation/controller/StandardControllers.h>
+#include <core/animation/controller/Controller.h>
 #include <core/reference/CloneHelper.h>
 #include <core/gui/properties/FloatParameterUI.h>
 #include <core/gui/properties/Vector3ParameterUI.h>
@@ -38,8 +38,8 @@ namespace Particles {
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ColorCodingModifier, ParticleModifier)
 IMPLEMENT_OVITO_OBJECT(Particles, ColorCodingModifierEditor, ParticleModifierEditor)
 SET_OVITO_OBJECT_EDITOR(ColorCodingModifier, ColorCodingModifierEditor)
-DEFINE_REFERENCE_FIELD(ColorCodingModifier, _startValueCtrl, "StartValue", FloatController)
-DEFINE_REFERENCE_FIELD(ColorCodingModifier, _endValueCtrl, "EndValue", FloatController)
+DEFINE_REFERENCE_FIELD(ColorCodingModifier, _startValueCtrl, "StartValue", Controller)
+DEFINE_REFERENCE_FIELD(ColorCodingModifier, _endValueCtrl, "EndValue", Controller)
 DEFINE_REFERENCE_FIELD(ColorCodingModifier, _colorGradient, "ColorGradient", ColorCodingGradient)
 DEFINE_PROPERTY_FIELD(ColorCodingModifier, _colorOnlySelected, "SelectedOnly")
 DEFINE_PROPERTY_FIELD(ColorCodingModifier, _keepSelection, "KeepSelection")
@@ -71,8 +71,8 @@ ColorCodingModifier::ColorCodingModifier(DataSet* dataset) : ParticleModifier(da
 	INIT_PROPERTY_FIELD(ColorCodingModifier::_renderLegend);
 
 	_colorGradient = new ColorCodingHSVGradient(dataset);
-	_startValueCtrl = ControllerManager::instance().createDefaultController<FloatController>(dataset);
-	_endValueCtrl = ControllerManager::instance().createDefaultController<FloatController>(dataset);
+	_startValueCtrl = ControllerManager::instance().createFloatController(dataset);
+	_endValueCtrl = ControllerManager::instance().createFloatController(dataset);
 }
 
 /******************************************************************************
@@ -166,8 +166,8 @@ ObjectStatus ColorCodingModifier::modifyParticles(TimePoint time, TimeInterval& 
 
 	// Get modifier's parameter values.
 	FloatType startValue = 0, endValue = 0;
-	if(_startValueCtrl) _startValueCtrl->getValue(time, startValue, validityInterval);
-	if(_endValueCtrl) _endValueCtrl->getValue(time, endValue, validityInterval);
+	if(_startValueCtrl) startValue = _startValueCtrl->getFloatValue(time, validityInterval);
+	if(_endValueCtrl) endValue = _endValueCtrl->getFloatValue(time, validityInterval);
 
 	// Get the particle selection property if enabled by the user.
 	ParticlePropertyObject* selProperty = nullptr;
@@ -292,9 +292,9 @@ bool ColorCodingModifier::adjustRange()
 		return false;
 
 	if(startValueController())
-		startValueController()->setCurrentValue(minValue);
+		startValueController()->setCurrentFloatValue(minValue);
 	if(endValueController())
-		endValueController()->setCurrentValue(maxValue);
+		endValueController()->setCurrentFloatValue(maxValue);
 
 	return true;
 }
@@ -353,8 +353,8 @@ void ColorCodingModifier::render(TimePoint time, ObjectNode* contextNode, Modifi
 	// Get modifier's parameter values.
 	TimeInterval validityInterval;
 	FloatType startValue = 0, endValue = 0;
-	if(_startValueCtrl) _startValueCtrl->getValue(time, startValue, validityInterval);
-	if(_endValueCtrl) _endValueCtrl->getValue(time, endValue, validityInterval);
+	if(_startValueCtrl) startValue = _startValueCtrl->getFloatValue(time, validityInterval);
+	if(_endValueCtrl) endValue = _endValueCtrl->getFloatValue(time, validityInterval);
 
 	QString topLabel = QString::number(endValue);
 	QString bottomLabel = QString::number(startValue);
@@ -649,7 +649,7 @@ void ColorCodingModifierEditor::onReverseRange()
 		undoableTransaction(tr("Reverse range"), [mod]() {
 
 			// Swap controllers for start and end value.
-			OORef<FloatController> oldStartValue = mod->startValueController();
+			OORef<Controller> oldStartValue = mod->startValueController();
 			mod->setStartValueController(mod->endValueController());
 			mod->setEndValueController(oldStartValue);
 

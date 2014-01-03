@@ -85,11 +85,9 @@ void ColorParameterUI::updateUI()
 {
 	if(editObject() && colorPicker()) {
 		if(isReferenceFieldUI()) {
-			VectorController* ctrl = dynamic_object_cast<VectorController>(parameterObject());
-			if(ctrl) {
-				Vector3 val = ctrl->currentValue();
-				colorPicker()->setColor(Color(val));
-			}
+			Controller* ctrl = dynamic_object_cast<Controller>(parameterObject());
+			if(ctrl)
+				colorPicker()->setColor(ctrl->currentColorValue());
 		}
 		else if(isPropertyFieldUI()) {
 			QVariant currentValue = editObject()->getPropertyFieldValue(*propertyField());
@@ -127,8 +125,8 @@ void ColorParameterUI::onColorPickerChanged()
 	if(colorPicker() && editObject()) {
 		undoableTransaction(tr("Change color"), [this]() {
 			if(isReferenceFieldUI()) {
-				if(VectorController* ctrl = dynamic_object_cast<VectorController>(parameterObject()))
-					ctrl->setCurrentValue((Vector3)colorPicker()->color());
+				if(Controller* ctrl = dynamic_object_cast<Controller>(parameterObject()))
+					ctrl->setCurrentColorValue(colorPicker()->color());
 			}
 			else if(isPropertyFieldUI()) {
 				editObject()->setPropertyFieldValue(*propertyField(), qVariantFromValue((QColor)colorPicker()->color()));

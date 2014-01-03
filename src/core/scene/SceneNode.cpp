@@ -22,8 +22,9 @@
 #include <core/Core.h>
 #include <base/utilities/Color.h>
 #include <core/scene/SceneNode.h>
-#include <core/animation/controller/StandardControllers.h>
 #include <core/animation/controller/LookAtController.h>
+#include <core/animation/controller/PRSTransformationController.h>
+#include <core/animation/AnimationSettings.h>
 #include <core/dataset/UndoStack.h>
 #include <core/dataset/DataSet.h>
 #include <core/animation/TimeInterval.h>
@@ -34,7 +35,7 @@
 namespace Ovito {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, SceneNode, RefTarget)
-DEFINE_FLAGS_REFERENCE_FIELD(SceneNode, _transformation, "Transform", TransformationController, PROPERTY_FIELD_ALWAYS_DEEP_COPY);
+DEFINE_FLAGS_REFERENCE_FIELD(SceneNode, _transformation, "Transform", Controller, PROPERTY_FIELD_ALWAYS_DEEP_COPY);
 DEFINE_FLAGS_REFERENCE_FIELD(SceneNode, _targetNode, "TargetNode", SceneNode, PROPERTY_FIELD_ALWAYS_CLONE);
 DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(SceneNode, _children, "Children", SceneNode, PROPERTY_FIELD_ALWAYS_CLONE);
 DEFINE_PROPERTY_FIELD(SceneNode, _nodeName, "NodeName");
@@ -63,7 +64,7 @@ SceneNode::SceneNode(DataSet* dataset) : RefTarget(dataset), _parentNode(nullptr
 	_displayColor = Color::fromHSV(std::uniform_real_distribution<FloatType>()(rng), 1, 1);
 
 	// Create a transformation controller for the node.
-	_transformation = ControllerManager::instance().createDefaultController<TransformationController>(dataset);
+	_transformation = ControllerManager::instance().createTransformationController(dataset);
 }
 
 /******************************************************************************
@@ -81,7 +82,7 @@ const AffineTransformation& SceneNode::getWorldTransform(TimePoint time, TimeInt
 		}
 		// Apply own tm.
 		if(transformationController())
-			transformationController()->applyValue(time, _worldTransform, _worldTransformValidity);
+			transformationController()->applyTransformation(time, _worldTransform, _worldTransformValidity);
 	}
 	validityInterval.intersect(_worldTransformValidity);
 	return _worldTransform;
@@ -96,7 +97,7 @@ AffineTransformation SceneNode::getLocalTransform(TimePoint time, TimeInterval& 
 {
 	AffineTransformation result = AffineTransformation::Identity();
 	if(transformationController())
-		transformationController()->applyValue(time, result, validityInterval);
+		transformationController()->applyTransformation(time, result, validityInterval);
 	return result;
 }
 
@@ -164,7 +165,7 @@ LookAtController* SceneNode::bindToTarget(SceneNode* targetNode)
 		}
 		else {
 			// Reset to default rotation controller.
-			prs->setRotationController(ControllerManager::instance().createDefaultController<RotationController>(dataset()));
+			prs->setRotationController(ControllerManager::instance().createRotationController(dataset()));
 		}
 	}
 

@@ -39,21 +39,24 @@ namespace Ovito {
  * This RotationController computes a rotation matrix for a SceneNode such
  * that it always faces into the direction of another SceneNode.
  */
-class OVITO_CORE_EXPORT LookAtController : public RotationController
+class OVITO_CORE_EXPORT LookAtController : public Controller
 {
 public:
 	
 	/// \brief Constructor.
 	Q_INVOKABLE LookAtController(DataSet* dataset);
 
-	/// Queries the controller for its absolute value at a certain time.
-	virtual void getValue(TimePoint time, Rotation& result, TimeInterval& validityInterval) override;
+	/// \brief Returns the value type of the controller.
+	virtual ControllerType controllerType() const override { return ControllerTypeRotation; }
+
+	/// Queries the controller for its value at a certain time.
+	virtual void getRotationValue(TimePoint time, Rotation& result, TimeInterval& validityInterval) override;
 
 	/// Sets the controller's value at the specified time.
-	virtual void setValue(TimePoint time, const Rotation& newValue, bool isAbsoluteValue) override;
+	virtual void setRotationValue(TimePoint time, const Rotation& newValue, bool isAbsoluteValue) override;
 
-	/// Let the controller add its value at a certain time to the input value.
-	virtual void applyValue(TimePoint time, AffineTransformation& result, TimeInterval& validityInterval) override;
+	/// Lets the rotation controller apply its value to an existing transformation matrix.
+	virtual void applyRotation(TimePoint time, AffineTransformation& result, TimeInterval& validityInterval) override;
 
 	/// Computes the largest time interval containing the given time during which the
 	/// controller's value is constant.
@@ -86,23 +89,23 @@ public:
 	
 	/// \brief Returns the sub-controller that controls the rolling parameter.
 	/// \return The sub-controller for the rolling angle.
-	FloatController* rollController() const { return _rollCtrl; }
+	Controller* rollController() const { return _rollCtrl; }
 
 	/// \brief Sets the sub-controller that controls the rolling parameter.
 	/// \param ctrl The new roll angle controller. 
 	/// \undoable
-	void setRollController(FloatController* ctrl) { _rollCtrl = ctrl; }
+	void setRollController(Controller* ctrl) { _rollCtrl = ctrl; }
 
 	/// \brief Sets the sub-controller that controls the rolling parameter.
 	/// \param ctrl The new roll angle controller. 
 	/// \note This is the same method as above but takes a smart pointer instead of a raw pointer.
 	/// \undoable
-	void setRollController(const OORef<FloatController>& ctrl) { setRollController(ctrl.get()); }
+	void setRollController(const OORef<Controller>& ctrl) { setRollController(ctrl.get()); }
 	
 private:
 
 	/// The sub-controller for rolling.
-	ReferenceField<FloatController> _rollCtrl;
+	ReferenceField<Controller> _rollCtrl;
 
 	/// The target scene node to look at.
 	ReferenceField<SceneNode> _targetNode;
@@ -117,8 +120,9 @@ private:
 
 	Q_OBJECT
 	OVITO_OBJECT
-	DECLARE_REFERENCE_FIELD(_rollCtrl)
-	DECLARE_REFERENCE_FIELD(_targetNode)
+
+	DECLARE_REFERENCE_FIELD(_rollCtrl);
+	DECLARE_REFERENCE_FIELD(_targetNode);
 };
 
 };

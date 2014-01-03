@@ -117,9 +117,9 @@ void XFormMode::mousePressEvent(Viewport* vp, QMouseEvent* event)
 				_viewport->dataset()->selection()->setNode(pickResult.objectNode.get());
 				_viewport->dataset()->undoStack().beginCompoundOperation(undoDisplayName());
 				startXForm();
-				return;
 			}
 		}
+		return;
 	}
 	else if(event->button() == Qt::RightButton) {
 		if(_viewport != nullptr) {

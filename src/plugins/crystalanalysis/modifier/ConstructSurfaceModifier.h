@@ -137,7 +137,7 @@ protected:
 	virtual void propertyChanged(const PropertyFieldDescriptor& field) override;
 
 	/// Creates and initializes a computation engine that will compute the modifier's results.
-	virtual std::shared_ptr<Engine> createEngine(TimePoint time) override;
+	virtual std::shared_ptr<Engine> createEngine(TimePoint time, TimeInterval& validityInterval) override;
 
 	/// Unpacks the computation results stored in the given engine object.
 	virtual void retrieveModifierResults(Engine* engine) override;

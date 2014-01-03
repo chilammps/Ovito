@@ -31,7 +31,7 @@ DEFINE_PROPERTY_FIELD(AnimationSettings, _ticksPerFrame, "TicksPerFrame");
 DEFINE_PROPERTY_FIELD(AnimationSettings, _playbackSpeed, "PlaybackSpeed");
 
 /******************************************************************************
-* Default constructor. Assigns default values.
+* Constructor.
 ******************************************************************************/
 AnimationSettings::AnimationSettings(DataSet* dataset) : RefTarget(dataset),
 		_ticksPerFrame(TICKS_PER_SECOND/10), _playbackSpeed(1),

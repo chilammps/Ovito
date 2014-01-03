@@ -231,7 +231,7 @@ inline QDebug operator<<(QDebug stream, const TimeInterval& iv)
 
 };
 
-Q_DECLARE_METATYPE(Ovito::TimeInterval)
+Q_DECLARE_METATYPE(Ovito::TimeInterval);
 Q_DECLARE_TYPEINFO(Ovito::TimeInterval, Q_MOVABLE_TYPE);
 
 #endif // __OVITO_TIME_INTERVAL_H

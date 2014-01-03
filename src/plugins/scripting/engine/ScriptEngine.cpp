@@ -34,7 +34,7 @@
 #include <core/scene/pipeline/ModifierApplication.h>
 #include <core/animation/AnimationSettings.h>
 #include <core/animation/controller/Controller.h>
-#include <core/animation/controller/TransformationController.h>
+#include <core/animation/controller/PRSTransformationController.h>
 #include <core/animation/controller/LookAtController.h>
 #include <core/viewport/ViewportConfiguration.h>
 #include <core/viewport/Viewport.h>
@@ -77,15 +77,8 @@ ScriptEngine::ScriptEngine(DataSet* dataset, QObject* parent)
 	registerOvitoObjectType<Modifier>();
 	registerOvitoObjectType<SelectionSet>();
 	registerOvitoObjectType<Controller>();
-	registerOvitoObjectType<IntegerController>();
-	registerOvitoObjectType<FloatController>();
-	registerOvitoObjectType<VectorController>();
-	registerOvitoObjectType<BooleanController>();
-	registerOvitoObjectType<PositionController>();
-	registerOvitoObjectType<RotationController>();
-	registerOvitoObjectType<ScalingController>();
-	registerOvitoObjectType<TransformationController>();
 	registerOvitoObjectType<LookAtController>();
+	registerOvitoObjectType<PRSTransformationController>();
 	registerOvitoObjectType<LinkedFileObject>();
 	registerOvitoObjectType<LinkedFileImporter>();
 

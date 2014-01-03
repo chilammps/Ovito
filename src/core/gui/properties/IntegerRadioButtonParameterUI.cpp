@@ -100,10 +100,8 @@ void IntegerRadioButtonParameterUI::updateUI()
 	if(buttonGroup() && editObject()) {
 		int id = buttonGroup()->checkedId();
 		if(isReferenceFieldUI()) {
-			IntegerController* ctrl = dynamic_object_cast<IntegerController>(parameterObject());
-			if(ctrl) {
-				id = ctrl->currentValue();
-			}
+			if(Controller* ctrl = dynamic_object_cast<Controller>(parameterObject()))
+				id = ctrl->currentIntValue();
 		}
 		else {
 			if(isQtPropertyUI()) {
@@ -158,8 +156,8 @@ void IntegerRadioButtonParameterUI::updatePropertyValue()
 		if(id != -1) {
 			undoableTransaction(tr("Change parameter"), [this, id]() {
 				if(isReferenceFieldUI()) {
-					if(IntegerController* ctrl = dynamic_object_cast<IntegerController>(parameterObject())) {
-						ctrl->setCurrentValue(id);
+					if(Controller* ctrl = dynamic_object_cast<Controller>(parameterObject())) {
+						ctrl->setCurrentIntValue(id);
 						updateUI();
 					}
 				}

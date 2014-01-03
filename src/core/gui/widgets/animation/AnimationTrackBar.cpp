@@ -35,7 +35,9 @@ using namespace std;
 * The constructor of the AnimationTrackBar class.
 ******************************************************************************/
 AnimationTrackBar::AnimationTrackBar(MainWindow* mainWindow, AnimationTimeSlider* timeSlider, QWidget* parent) :
-	QFrame(parent), _timeSlider(timeSlider), _animSettings(nullptr)
+	QFrame(parent), _timeSlider(timeSlider), _animSettings(nullptr),
+	_keyBrush(QColor(150,150,200)), _keyPen(Qt::black), _selectedKeyPen(Qt::cyan), _selectionCursor(Qt::CrossCursor),
+	_isDragging(false), _dragStartPos(-1)
 {
 	setFrameShape(QFrame::NoFrame);
 	setAutoFillBackground(true);
@@ -44,6 +46,7 @@ AnimationTrackBar::AnimationTrackBar(MainWindow* mainWindow, AnimationTimeSlider
 	connect(&mainWindow->datasetContainer(), &DataSetContainer::animationSettingsReplaced, this, &AnimationTrackBar::onAnimationSettingsReplaced);
 	connect(&mainWindow->datasetContainer(), &DataSetContainer::selectionChangeComplete, this, &AnimationTrackBar::onRebuildControllerList);
 	connect(&_objects, &VectorRefTargetListener<RefTarget>::notificationEvent, this, &AnimationTrackBar::onObjectNotificationEvent);
+	connect(&_controllers, &VectorRefTargetListener<KeyframeController>::notificationEvent, this, &AnimationTrackBar::onControllerNotificationEvent);
 }
 
 /******************************************************************************
@@ -91,8 +94,59 @@ void AnimationTrackBar::paintEvent(QPaintEvent* event)
 		if((time - startTimeMajor)%timeStepMajor == 0)
 			painter.drawLine(pos, clientRect.top(), pos, clientRect.bottom());
 		else
-			painter.drawLine(pos, clientRect.center().y(), pos, clientRect.bottom());
+			painter.drawLine(pos, clientRect.top(), pos, clientRect.center().y());
 	}
+
+	// Draw the animation keys.
+	for(KeyframeController* ctrl : _controllers.targets()) {
+		// Draw keys only if there are more two or more of them.
+		if(ctrl->keys().size() >= 2) {
+			for(AnimationKey* key : ctrl->keys()) {
+				paintKey(painter, key);
+			}
+		}
+	}
+
+	// Draw the current time marker.
+	int currentTimePos = _timeSlider->timeToPos(_animSettings->time());
+	painter.setBrush(Qt::blue);
+	painter.setPen(Qt::black);
+	QPoint marker[3] = {{ currentTimePos - 3, clientRect.top() },
+						{ currentTimePos + 3, clientRect.top() },
+						{ currentTimePos    , clientRect.top() + 3 }
+	};
+	painter.drawConvexPolygon(marker, 3);
+}
+
+/******************************************************************************
+* Computes the display rectangle of an animation key.
+******************************************************************************/
+QRect AnimationTrackBar::keyRect(AnimationKey* key) const
+{
+	// Don't draw keys that are not within the active animation interval.
+	if(key->time() < _animSettings->animationInterval().start() ||
+		key->time() > _animSettings->animationInterval().end()) return QRect();
+
+	QRect clientRect = frameRect();
+	clientRect.adjust(frameWidth(), frameWidth(), -frameWidth(), -frameWidth());
+
+	int width = 6;
+	int pos = _timeSlider->timeToPos(key->time());
+	return QRect(pos - width / 2, clientRect.top() + 4, width, clientRect.height() - 4);
+}
+
+/******************************************************************************
+* Paints the symbol for a single animation key.
+******************************************************************************/
+void AnimationTrackBar::paintKey(QPainter& painter, AnimationKey* key) const
+{
+	QRect rect = keyRect(key);
+	if(!rect.isValid())
+		return;
+
+	painter.setBrush(_keyBrush);
+	painter.setPen(_selectedKeys.targets().contains(key) ? _selectedKeyPen : _keyPen);
+	painter.drawRect(rect);
 }
 
 /******************************************************************************
@@ -111,6 +165,8 @@ void AnimationTrackBar::onRebuildControllerList()
 	// Rebuild the list of controllers shown in the track bar.
 	_controllers.clear();
 	_objects.clear();
+	_selectedKeys.clear();
+	_parameterNames.clear();
 
 	if(_animSettings) {
 		// Traverse object graphs of selected scene nodes to find all animation controllers.
@@ -120,6 +176,8 @@ void AnimationTrackBar::onRebuildControllerList()
 				findControllers(objNode);
 		}
 	}
+
+	update();
 }
 
 /******************************************************************************
@@ -129,13 +187,6 @@ void AnimationTrackBar::findControllers(RefTarget* target)
 {
 	OVITO_CHECK_OBJECT_POINTER(target);
 
-	// Check if it is an animation controller. If yes, add it to the list.
-	if(Controller* ctrl = dynamic_object_cast<Controller>(target)) {
-		if(_controllers.targets().contains(ctrl) == false) {
-			_controllers.push_back(ctrl);
-		}
-	}
-
 	bool hasSubAnimatables = false;
 
 	// Iterate over all reference fields of the current target.
@@ -144,13 +195,17 @@ void AnimationTrackBar::findControllers(RefTarget* target)
 			if(field->isReferenceField() && field->flags().testFlag(PROPERTY_FIELD_NO_SUB_ANIM) == false) {
 				hasSubAnimatables = true;
 				if(field->isVector() == false) {
-					if(RefTarget* subTarget = target->getReferenceField(*field))
+					if(RefTarget* subTarget = target->getReferenceField(*field)) {
 						findControllers(subTarget);
+						addController(subTarget, target, field);
+					}
 				}
 				else {
 					for(RefTarget* subTarget : target->getVectorReferenceField(*field).targets()) {
-						if(subTarget)
+						if(subTarget) {
 							findControllers(subTarget);
+							addController(subTarget, target, field);
+						}
 					}
 				}
 			}
@@ -159,6 +214,24 @@ void AnimationTrackBar::findControllers(RefTarget* target)
 
 	if(hasSubAnimatables)
 		_objects.push_back(target);
+}
+
+/******************************************************************************
+* Checks if the given ref target is a controller, and, if yes, add it to our
+* list of controllers.
+******************************************************************************/
+void AnimationTrackBar::addController(RefTarget* target, RefTarget* owner, const PropertyFieldDescriptor* field)
+{
+	if(KeyframeController* ctrl = dynamic_object_cast<KeyframeController>(target)) {
+		int ctrlIndex = _controllers.targets().indexOf(ctrl);
+		if(ctrlIndex == -1) {
+			_controllers.push_back(ctrl);
+			_parameterNames.push_back(owner->objectTitle() + QStringLiteral(" - ") + field->displayName());
+		}
+		else {
+			_parameterNames[ctrlIndex] += QStringLiteral(",") + owner->objectTitle() + QStringLiteral(" - ") + field->displayName();
+		}
+	}
 }
 
 /******************************************************************************
@@ -175,6 +248,155 @@ void AnimationTrackBar::onObjectNotificationEvent(RefTarget* source, ReferenceEv
 			QMetaObject::invokeMethod(this, "onRebuildControllerList", Qt::QueuedConnection);
 		}
 	}
+}
+
+/******************************************************************************
+* Is called whenever one of the controllers being monitored sends a notification signal.
+******************************************************************************/
+void AnimationTrackBar::onControllerNotificationEvent(RefTarget* source, ReferenceEvent* event)
+{
+	if(event->type() == ReferenceEvent::TargetChanged ||
+			event->type() == ReferenceEvent::ReferenceChanged
+			|| event->type() == ReferenceEvent::ReferenceAdded || event->type() == ReferenceEvent::ReferenceRemoved) {
+		// Repaint track bar whenever a key has been created, deleted, or moved.
+		update();
+	}
+	else if(event->type() == ReferenceEvent::TargetDeleted) {
+		_parameterNames.removeAt(_controllers.targets().indexOf(static_cast<KeyframeController*>(source)));
+	}
+}
+
+/******************************************************************************
+* Finds all keys under the mouse cursor.
+******************************************************************************/
+QVector<AnimationKey*> AnimationTrackBar::hitTestKeys(QPoint pos) const
+{
+	QVector<AnimationKey*> result;
+	for(KeyframeController* ctrl : _controllers.targets()) {
+		if(ctrl->keys().size() >= 2) {
+			for(int index = ctrl->keys().size() - 1; index >= 0; index--) {
+				AnimationKey* key = ctrl->keys()[index];
+				if((result.empty() && keyRect(key).contains(pos)) || (!result.empty() && result.front()->time() == key->time())) {
+					result.push_back(key);
+				}
+			}
+		}
+	}
+	return result;
+}
+
+/******************************************************************************
+* Returns the list index of the controller that owns the given key.
+******************************************************************************/
+int AnimationTrackBar::controllerIndexFromKey(AnimationKey* key) const
+{
+	for(int index = 0; index < _controllers.targets().size(); index++) {
+		if(_controllers.targets()[index]->keys().contains(key))
+			return index;
+	}
+	OVITO_ASSERT(false);
+	return -1;
+}
+
+/******************************************************************************
+* Handles mouse press events.
+******************************************************************************/
+void AnimationTrackBar::mousePressEvent(QMouseEvent* event)
+{
+	_dragStartPos = -1;
+	if(event->button() == Qt::LeftButton) {
+		_selectedKeys.setTargets(hitTestKeys(event->pos()));
+		if(!_selectedKeys.targets().empty())
+			_dragStartPos = event->pos().x();
+		_isDragging = false;
+		update();
+	}
+	else if(event->button() == Qt::RightButton) {
+		if(_isDragging) {
+			_isDragging = false;
+			_animSettings->dataset()->undoStack().endCompoundOperation(false);
+		}
+	}
+}
+
+/******************************************************************************
+* Handles mouse move events.
+******************************************************************************/
+void AnimationTrackBar::mouseMoveEvent(QMouseEvent* event)
+{
+	if(event->buttons() == Qt::NoButton) {
+		QVector<AnimationKey*> keys = hitTestKeys(event->pos());
+		if(keys.empty()) {
+			unsetCursor();
+			QToolTip::hideText();
+		}
+		else {
+			setCursor(_selectionCursor);
+			QString tooltipText = tr("<p style='white-space:pre'>Animation key(s) at time %1:").arg(_animSettings->timeToString(keys.front()->time()));
+			for(AnimationKey* key : keys) {
+				tooltipText += QStringLiteral("<br>%1: %2")
+						.arg(_parameterNames[controllerIndexFromKey(key)])
+						.arg(keyValueString(key));
+			}
+			tooltipText += QStringLiteral("</p>");
+			QToolTip::showText(mapToGlobal(event->pos()), tooltipText, this);
+		}
+	}
+	else if(_dragStartPos >= 0) {
+		if(!_isDragging && std::abs(_dragStartPos - event->pos().x()) > 4) {
+			_animSettings->dataset()->undoStack().beginCompoundOperation(tr("Move animation keys"));
+			_isDragging = true;
+		}
+		if(_isDragging) {
+			int delta = event->pos().x() - _dragStartPos;
+			TimePoint timeDelta = _timeSlider->distanceToTimeDifference(delta);
+			timeDelta = _animSettings->snapTime(timeDelta);
+			TimeInterval interval = _animSettings->animationInterval();
+			_animSettings->dataset()->undoStack().resetCurrentCompoundOperation();
+			// Clamp to animation interval.
+			for(AnimationKey* key : _selectedKeys.targets()) {
+				TimePoint newTime = key->time() + timeDelta;
+				if(newTime < interval.start()) timeDelta += interval.start() - newTime;
+				if(newTime > interval.end()) timeDelta -= newTime - interval.end();
+			}
+			// Move keys.
+			for(KeyframeController* ctrl : _controllers.targets()) {
+				ctrl->moveKeys(_selectedKeys.targets(), timeDelta);
+			}
+		}
+	}
+}
+
+/******************************************************************************
+* Handles mouse release events.
+******************************************************************************/
+void AnimationTrackBar::mouseReleaseEvent(QMouseEvent* event)
+{
+	if(_isDragging) {
+		_isDragging = false;
+		if(event->button() == Qt::LeftButton)
+			_animSettings->dataset()->undoStack().endCompoundOperation(true);
+	}
+}
+
+/******************************************************************************
+* Returns a text representation of a key's value.
+******************************************************************************/
+QString AnimationTrackBar::keyValueString(AnimationKey* key) const
+{
+	QVariant value = key->property("value");
+	if(value.userType() == qMetaTypeId<FloatType>())
+		return QString::number(value.value<FloatType>());
+	else if(value.userType() == qMetaTypeId<int>())
+		return QString::number(value.value<int>());
+	else if(value.userType() == qMetaTypeId<Vector3>())
+		return value.value<Vector3>().toString();
+	else if(value.userType() == qMetaTypeId<Rotation>())
+		return value.value<Rotation>().toString();
+	else if(value.userType() == qMetaTypeId<Scaling>())
+		return value.value<Scaling>().toString();
+	else
+		return value.toString();
 }
 
 };

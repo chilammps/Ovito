@@ -32,7 +32,6 @@
 #include <core/reference/RefTarget.h>
 #include <core/animation/TimeInterval.h>
 #include <core/animation/controller/Controller.h>
-#include <core/animation/controller/TransformationController.h>
 
 namespace Ovito {
 
@@ -54,17 +53,15 @@ public:
 
 	/// \brief Returns the controller that controls this node's local transformation matrix.
 	/// \return The transformation controller.
-	TransformationController* transformationController() const { return _transformation; }
+	Controller* transformationController() const { return _transformation; }
 
 	/// \brief Sets the controller that controls this node's local transformation.
 	/// \param ctrl The new transformation controller.
-	/// \undoable
-	void setTransformationController(TransformationController* ctrl) { _transformation = ctrl; }
+	void setTransformationController(Controller* ctrl) { _transformation = ctrl; }
 
 	/// \brief Sets the controller that controls this node's local transformation.
 	/// \param ctrl The new transformation controller.
-	/// \undoable
-	void setTransformationController(const OORef<TransformationController>& ctrl) { setTransformationController(ctrl.get()); }
+	void setTransformationController(const OORef<Controller>& ctrl) { setTransformationController(ctrl.get()); }
 
 	/// \brief Returns this node's world transformation matrix.
 	/// \param[in] time The animation for which the transformation matrix should be computed.
@@ -281,7 +278,7 @@ public:
 	Q_PROPERTY(SceneNode* targetNode READ targetNode WRITE bindToTarget)
 	Q_PROPERTY(QString name READ name WRITE setName)
 	Q_PROPERTY(Color displayColor READ displayColor WRITE setDisplayColor)
-	Q_PROPERTY(TransformationController* transformationController READ transformationController WRITE setTransformationController)
+	Q_PROPERTY(Controller* transformationController READ transformationController WRITE setTransformationController)
 
 protected:
 
@@ -315,7 +312,7 @@ protected:
 	SceneNode* _parentNode;
 
 	/// Transformation matrix controller.
-	ReferenceField<TransformationController> _transformation;
+	ReferenceField<Controller> _transformation;
 
 	/// This node's cached world transformation matrix.
 	/// It contains the transformation of the parent node.

@@ -41,6 +41,9 @@ public:
 	/// Computes the x position within the widget corresponding to the given animation time.
 	int timeToPos(TimePoint time);
 
+	/// Converts a distance in pixels to a time difference.
+	TimePoint distanceToTimeDifference(int distance);
+
 	/// Computes the current position of the slider thumb.
 	QRect thumbRectangle();
 

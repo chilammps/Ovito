@@ -44,6 +44,19 @@ namespace Ovito {
  */
 class OVITO_CORE_EXPORT Controller : public RefTarget
 {
+public:
+
+	enum ControllerType {
+		ControllerTypeFloat,
+		ControllerTypeInt,
+		ControllerTypeVector3,
+		ControllerTypePosition,
+		ControllerTypeRotation,
+		ControllerTypeScaling,
+		ControllerTypeTransformation,
+	};
+	Q_ENUMS(ControllerType);
+
 protected:
 	
 	/// \brief Constructor.
@@ -52,12 +65,172 @@ protected:
 
 public:
 	
+	/// \brief Returns the value type of the controller.
+	virtual ControllerType controllerType() const = 0;
+
 	/// \brief Calculates the largest time interval containing the given time during which the
 	///        controller's value does not change.
 	/// \param[in] time The animation time at which the controller's validity interval is requested.
 	/// \return The interval during which the controller's value does not change.
 	virtual TimeInterval validityInterval(TimePoint time) = 0;
 	
+	/// \brief Gets a float controller's value at a certain animation time.
+	/// \param[in] time The animation time at which the controller's value should be computed.
+	/// \param[in,out] validityInterval This interval is reduced to the period during which the controller's value doesn't change.
+	virtual FloatType getFloatValue(TimePoint time, TimeInterval& validityInterval) { OVITO_ASSERT_MSG(false, "Controller::getFloatValue()", "This method should be overridden."); return 0; }
+
+	/// \brief Gets an integer controller's value at a certain animation time.
+	/// \param[in] time The animation time at which the controller's value should be computed.
+	/// \param[in,out] validityInterval This interval is reduced to the period during which the controller's value doesn't change.
+	virtual int getIntValue(TimePoint time, TimeInterval& validityInterval) { OVITO_ASSERT_MSG(false, "Controller::getIntValue()", "This method should be overridden."); return 0; }
+
+	/// \brief Gets a Vector3 controller's value at a certain animation time.
+	/// \param[in] time The animation time at which the controller's value should be computed.
+	/// \param[out] result This output variable takes the controller's values.
+	/// \param[in,out] validityInterval This interval is reduced to the period during which the controller's value doesn't change.
+	virtual void getVector3Value(TimePoint time, Vector3& result, TimeInterval& validityInterval) { result = Vector3::Zero(); OVITO_ASSERT_MSG(false, "Controller::getVector3Value()", "This method should be overridden."); }
+
+	/// \brief Gets a Vector3 controller's value at a certain animation time as a color.
+	/// \param[in] time The animation time at which the controller's value should be computed.
+	/// \param[out] result This output variable takes the controller's values.
+	/// \param[in,out] validityInterval This interval is reduced to the period during which the controller's value doesn't change.
+	void getColorValue(TimePoint time, Color& result, TimeInterval& validityInterval) {
+		OVITO_STATIC_ASSERT(sizeof(Color) == sizeof(Vector3));
+		getVector3Value(time, reinterpret_cast<Vector3&>(result), validityInterval);
+	}
+
+	/// \brief Gets a position controller's value at a certain animation time.
+	/// \param[in] time The animation time at which the controller's value should be computed.
+	/// \param[out] result This output variable takes the controller's values.
+	/// \param[in,out] validityInterval This interval is reduced to the period during which the controller's value doesn't change.
+	virtual void getPositionValue(TimePoint time, Vector3& result, TimeInterval& validityInterval) { result = Vector3::Zero(); OVITO_ASSERT_MSG(false, "Controller::getPositionValue()", "This method should be overridden."); }
+
+	/// \brief Gets a rotation controller's value at a certain animation time.
+	/// \param[in] time The animation time at which the controller's value should be computed.
+	/// \param[out] result This output variable takes the controller's values.
+	/// \param[in,out] validityInterval This interval is reduced to the period during which the controller's value doesn't change.
+	virtual void getRotationValue(TimePoint time, Rotation& result, TimeInterval& validityInterval) { result = Rotation::Identity(); OVITO_ASSERT_MSG(false, "Controller::getRotationValue()", "This method should be overridden."); }
+
+	/// \brief Gets a scaling controller's value at a certain animation time.
+	/// \param[in] time The animation time at which the controller's value should be computed.
+	/// \param[out] result This output variable takes the controller's values.
+	/// \param[in,out] validityInterval This interval is reduced to the period during which the controller's value doesn't change.
+	virtual void getScalingValue(TimePoint time, Scaling& result, TimeInterval& validityInterval) { result = Scaling::Identity(); OVITO_ASSERT_MSG(false, "Controller::getScalingValue()", "This method should be overridden."); }
+
+	/// \brief Lets a position controller apply its value to an existing transformation matrix.
+	/// \param[in] time The animation time.
+	/// \param[in,out] result The controller will apply its transformation to this matrix.
+	/// \param[in,out] validityInterval This interval is reduced to the period during which the controller's value doesn't change.
+	virtual void applyTranslation(TimePoint time, AffineTransformation& result, TimeInterval& validityInterval) {
+		Vector3 t;
+		getPositionValue(time, t, validityInterval);
+		result = result * AffineTransformation::translation(t);
+	}
+
+	/// \brief Lets a rotation controller apply its value to an existing transformation matrix.
+	/// \param[in] time The animation time.
+	/// \param[in,out] result The controller will apply its transformation to this matrix.
+	/// \param[in,out] validityInterval This interval is reduced to the period during which the controller's value doesn't change.
+	virtual void applyRotation(TimePoint time, AffineTransformation& result, TimeInterval& validityInterval) {
+		Rotation r;
+		getRotationValue(time, r, validityInterval);
+		result = result * Matrix3::rotation(r);
+	}
+
+	/// \brief Lets a scaling controller apply its value to an existing transformation matrix.
+	/// \param[in] time The animation time.
+	/// \param[in,out] result The controller will apply its transformation to this matrix.
+	/// \param[in,out] validityInterval This interval is reduced to the period during which the controller's value doesn't change.
+	virtual void applyScaling(TimePoint time, AffineTransformation& result, TimeInterval& validityInterval) {
+		Scaling s;
+		getScalingValue(time, s, validityInterval);
+		result = result * Matrix3::scaling(s);
+	}
+
+	/// \brief Lets a transformation controller apply its value to an existing transformation matrix.
+	/// \param[in] time The animation time.
+	/// \param[in,out] result The controller will apply its transformation to this matrix.
+	/// \param[in,out] validityInterval This interval is reduced to the period during which the controller's value doesn't change.
+	virtual void applyTransformation(TimePoint time, AffineTransformation& result, TimeInterval& validityInterval) { OVITO_ASSERT_MSG(false, "Controller::applyTransformation()", "This method should be overridden."); }
+
+	/// \brief Returns the float controller's value at the current animation time.
+	FloatType currentFloatValue();
+
+	/// \brief Returns the integers controller's value at the current animation time.
+	int currentIntValue();
+
+	/// \brief Returns the Vector3 controller's value at the current animation time.
+	Vector3 currentVector3Value();
+
+	/// \brief Returns the Color controller's value at the current animation time.
+	Color currentColorValue() { return Color(currentVector3Value()); }
+
+	/// \brief Sets a float controller's value at the given animation time.
+	/// \param time The animation time at which to set the controller's value.
+	/// \param newValue The new value to be assigned to the controller.
+	virtual void setFloatValue(TimePoint time, FloatType newValue) { OVITO_ASSERT_MSG(false, "Controller::setFloatValue()", "This method should be overridden."); }
+
+	/// \brief Sets an integer controller's value at the given animation time.
+	/// \param time The animation time at which to set the controller's value.
+	/// \param newValue The new value to be assigned to the controller.
+	virtual void setIntValue(TimePoint time, int newValue) { OVITO_ASSERT_MSG(false, "Controller::setIntValue()", "This method should be overridden."); }
+
+	/// \brief Sets a Vector3 controller's value at the given animation time.
+	/// \param time The animation time at which to set the controller's value.
+	/// \param newValue The new value to be assigned to the controller.
+	virtual void setVector3Value(TimePoint time, const Vector3& newValue) { OVITO_ASSERT_MSG(false, "Controller::setVector3Value()", "This method should be overridden."); }
+
+	/// \brief Sets a color controller's value at the given animation time.
+	/// \param time The animation time at which to set the controller's value.
+	/// \param newValue The new value to be assigned to the controller.
+	void setColorValue(TimePoint time, const Color& newValue) {
+		OVITO_STATIC_ASSERT(sizeof(Color) == sizeof(Vector3));
+		setVector3Value(time, reinterpret_cast<const Vector3&>(newValue));
+	}
+
+	/// \brief Sets a position controller's value at the given animation time.
+	/// \param time The animation time at which to set the controller's value.
+	/// \param newValue The new value to be assigned to the controller.
+	/// \param isAbsolute Specifies whether the value is absolute or should be applied to the existing transformation.
+	virtual void setPositionValue(TimePoint time, const Vector3& newValue, bool isAbsolute) { OVITO_ASSERT_MSG(false, "Controller::setPositionValue()", "This method should be overridden."); }
+
+	/// \brief Sets a rotation controller's value at the given animation time.
+	/// \param time The animation time at which to set the controller's value.
+	/// \param newValue The new value to be assigned to the controller.
+	/// \param isAbsolute Specifies whether the value is absolute or should be applied to the existing transformation.
+	virtual void setRotationValue(TimePoint time, const Rotation& newValue, bool isAbsolute) { OVITO_ASSERT_MSG(false, "Controller::setRotationValue()", "This method should be overridden."); }
+
+	/// \brief Sets a scaling controller's value at the given animation time.
+	/// \param time The animation time at which to set the controller's value.
+	/// \param newValue The new value to be assigned to the controller.
+	/// \param isAbsolute Specifies whether the value is absolute or should be applied to the existing transformation.
+	virtual void setScalingValue(TimePoint time, const Scaling& newValue, bool isAbsolute) { OVITO_ASSERT_MSG(false, "Controller::setScalingValue()", "This method should be overridden."); }
+
+	/// \brief Sets a transformation controller's value at the given animation time.
+	/// \param time The animation time at which to set the controller's value.
+	/// \param newValue The new value to be assigned to the controller.
+	/// \param isAbsolute Specifies whether the transformation is absolute or should be applied to the existing transformation.
+	virtual void setTransformationValue(TimePoint time, const AffineTransformation& newValue, bool isAbsolute) { OVITO_ASSERT_MSG(false, "Controller::setTransformationValue()", "This method should be overridden."); }
+
+	/// \brief Sets the controller's value at the current animation time.
+	/// \param newValue The new value to be assigned to the controller.
+	void setCurrentFloatValue(FloatType newValue);
+
+	/// \brief Sets the controller's value at the current animation time.
+	/// \param newValue The new value to be assigned to the controller.
+	void setCurrentIntValue(int newValue);
+
+	/// \brief Sets the controller's value at the current animation time.
+	/// \param newValue The new value to be assigned to the controller.
+	void setCurrentVector3Value(const Vector3& newValue);
+
+	/// \brief Sets the controller's value at the current animation time.
+	/// \param newValue The new value to be assigned to the controller.
+	void setCurrentColorValue(const Color& newValue) {
+		OVITO_STATIC_ASSERT(sizeof(Color) == sizeof(Vector3));
+		setCurrentVector3Value(reinterpret_cast<const Vector3&>(newValue));
+	}
+
 	/// \brief Rescales the times of all animation keys from the old animation interval to the new interval.
 	/// \param oldAnimationInterval The old animation interval, which should be mapped to the new animation interval.
 	/// \param newAnimationInterval The new animation interval.
@@ -72,360 +245,39 @@ public:
 	/// \undoable
 	virtual void rescaleTime(const TimeInterval& oldAnimationInterval, const TimeInterval& newAnimationInterval) {}
 
-	/// \brief Returns the number of animation keys stored by this animation controller.
-	/// \return The current number of keys.
-	///
-	/// The default implementation returns 0. This method should be overridden by controllers that use animation keys.
-	virtual int numberOfKeys() { return 0; }
-
-private:
-	
-	Q_OBJECT
-	OVITO_OBJECT
-};
-
-
-/**
- * \brief This template class is used to define Controller types.
- * 
- * This template class is used to define Controller classes for
- * different value types. It defines getter and setter methods for the controller value.
- * It is not meant for public use.
- * 
- * The template parameter \c ValueType specifies the data type of the controller value.
- *
- * The template parameter \c ApplicationType specifies the data type to which the
- * controller value can be applied. This is only meaningful for position, rotation and scale
- * controllers, which can apply their values to an AffineTransformation.
- */
-template<typename ValueType, typename ApplicationType>
-class TypedControllerBase : public Controller
-{
-protected:
-	
-    /// \brief Constructor.
-	/// \param dataset The context dataset.
-	TypedControllerBase(DataSet* dataset) : Controller(dataset) {}
-
-public:
-	
-	/// \brief Queries the controller for its absolute value at a certain time.
-	/// \param[in] time The animation time for which the controller's value should be returned.
-	/// \param[out] result Contains the controller's value at the animation time \a time after the method returns.
-	/// \param[in,out] validityInterval This interval is reduced such that it contains only those times
-	///                                 during which the controller's value does not change.
-	///
-	/// If the validity interval is not not important than getValueAtTime() can also be used.
-	///
-	/// \sa applyValue()
-	/// \sa getValueAtTime(), getCurrentValue()
-	/// \sa setValue()
-	virtual void getValue(TimePoint time, ValueType& result, TimeInterval& validityInterval) = 0;
-
-	/// \brief Let the controller apply its value at a certain time to some input variable.
-	/// \param[in] time The animation time for which the controller's value should be applied.
-	/// \param[in,out] result The controller's value at time \a time is applied to the input value and is returned
-	///                       in the same reference variable. How the value is applied is data type dependent.
-	/// \param[in,out] validityInterval This interval is reduced such that it contains only those times
-	///                                 during which the controller's value does not change.
-	///
-	/// \sa getValue()
-	virtual void applyValue(TimePoint time, ApplicationType& result, TimeInterval& validityInterval) = 0;
-
-	/// \brief Queries the controller for its absolute value at the given animation time.
-	/// \param time The animation time for which the controller's value should be returned.
-	/// \return The controller's value at the animation time \a time.
-	/// \sa getValue(), getCurrentValue()
-	ValueType getValueAtTime(TimePoint time) {
-		TimeInterval iv; ValueType v;
-		getValue(time, v, iv);
-		return v;
-	}
-
-	/// \brief Queries the controller for its absolute value at the current animation time.
-	/// \return The controller's value at the current animation time.
-	/// \sa getValueAtTime()
-	/// \sa setCurrentValue()
-	ValueType currentValue() {
-		return getValueAtTime(dataset()->animationSettings()->time());
-	}
-
-	/// \brief Sets the controller's value at the specified time.
-	/// \param time The animation for which the controller's value should be set.
-	/// \param newValue The new value to be assigned to the controller.
-	/// \param isAbsoluteValue Specifies whether the new value should completely replace the 
-	///                        controller's old value or whether it should be added to the old value.
-	///
-	/// \undoable
-	/// \sa getValue()
-	virtual void setValue(TimePoint time, const ValueType& newValue, bool isAbsoluteValue = true) = 0;
-
-	/// \brief Sets the controller's value at the current animation time.
-	/// \param newValue The new absolute value assigned to the controller at the current
-	///                 animation time.
-	///
-	/// \undoable
-	/// \sa setValue()
-	/// \sa getCurrentValue()
-	void setCurrentValue(const ValueType& newValue) { 
-		setValue(dataset()->animationSettings()->time(), newValue, true);
-	}
-
-	/// \brief Calculates the largest time interval containing the given time during which the
-	///        controller's value does not change.
-	/// \param[in] time The animation time at which the controller's validity interval is requested.
-	/// \return The interval during which the controller's value does not change.
-	///
-	/// This implementation returns the interval computed by getValue().
-	virtual TimeInterval validityInterval(TimePoint time) override {
-		ValueType v;
-		TimeInterval iv(TimeInterval::forever());
-		getValue(time, v, iv);
-		return iv;
-	}
-	
-	/// \brief Creates a new key at the given time with the specified value.
-	/// \param time The animation where a key should be created.
-	/// \param value The absolute value of the new animation key.
-	///
-	/// Any existing key at that time is replaced with the new key.
-	///
-	/// The default implementation does nothing. This method should be overridden
-	/// by controller classes that use animation keys.
-	///
-	/// \undoable
-	virtual void createKey(TimePoint time, const ValueType& value) {}
-};
-
-/**
- * \brief Base class for all float value controller implementations.
- * 
- * This controller class is used for object parameters with the FloatType data type.
- */
-class OVITO_CORE_EXPORT FloatController : public TypedControllerBase<FloatType, FloatType>
-{ 
-protected:
-
-	/// The constructor.
-	FloatController(DataSet* dataset) : TypedControllerBase<FloatType, FloatType>(dataset) {}
-	
-public:
-	
-	/// Let the controller add its value at a certain time to the input value.
-	virtual void applyValue(TimePoint time, FloatType& result, TimeInterval& validityInterval) override {
-		FloatType v;
-		getValue(time, v, validityInterval);
-		result += v;
-	}
-	
-private:
-
-	Q_OBJECT
-	OVITO_OBJECT
-};
-
-/**
- * \brief Base class for all integer value controller implementations.
- * 
- * This controller class is used for object parameters with the \c int data type.
- */
-class OVITO_CORE_EXPORT IntegerController : public TypedControllerBase<int, int>
-{
-protected: 
-
-	/// The constructor.
-	IntegerController(DataSet* dataset) : TypedControllerBase<int, int>(dataset) {}
-	
-public:
-
-	/// Let the controller add its value at a certain time to the input value.
-	virtual void applyValue(TimePoint time, int& result, TimeInterval& validityInterval) override {
-		int v;
-		getValue(time, v, validityInterval);
-		result += v;
-	}
-	
-private:
-
-	Q_OBJECT
-	OVITO_OBJECT
-};
-
-/**
- * \brief Base class for all boolean value controller implementations.
- * 
- * This controller class is used for object parameters with the \c bool data type.
- */
-class OVITO_CORE_EXPORT BooleanController : public TypedControllerBase<bool, bool>
-{
-protected:
-
-	/// The constructor.
-	BooleanController(DataSet* dataset) : TypedControllerBase<bool, bool>(dataset) {}
-	
-public:	
-
-	/// Let the controller add its value at a certain time to the input value.
-	virtual void applyValue(TimePoint time, bool& result, TimeInterval& validityInterval) override {
-		bool v;
-		getValue(time, v, validityInterval);
-		result ^= v;
-	}
-	
-private:
-
-	Q_OBJECT
-	OVITO_OBJECT
-};
-
-/**
- * \brief Base class for all vector value controller implementations.
- * 
- * This controller class is used for object parameters with the Vector3 data type.
- */
-class OVITO_CORE_EXPORT VectorController : public TypedControllerBase<Vector3, Vector3>
-{
-protected:
-
-	/// The constructor.
-	VectorController(DataSet* dataset) : TypedControllerBase<Vector3, Vector3>(dataset) {}
-	
-public:
-	
-	/// Let the controller add its value at a certain time to the input value.
-	virtual void applyValue(TimePoint time, Vector3& result, TimeInterval& validityInterval) override {
-		Vector3 v;
-		getValue(time, v, validityInterval);
-		result += v;
-	}
-
-	/// Queries the controller for its absolute value at a certain time and converts the Vector3 to a color value.
-	void getValue(TimePoint time, Color& result, TimeInterval& validityInterval) {
-		Vector3 c;
-		getValue(time, c, validityInterval);
-		result = Color(c);
-	}
-
-	/// Queries the controller for its absolute value at a certain time.
-	virtual void getValue(TimePoint time, Vector3& result, TimeInterval& validityInterval) = 0;
-
-private:
-
-	Q_OBJECT
-	OVITO_OBJECT
-};
-
-
-/**
- * \brief Base class for all position controller implementations.
- * 
- * A position controller is used to animate the position of an object.
- */
-class OVITO_CORE_EXPORT PositionController : public TypedControllerBase<Vector3, AffineTransformation>
-{
-protected:
-
-	/// The constructor.
-	PositionController(DataSet* dataset) : TypedControllerBase<Vector3, AffineTransformation>(dataset) {}
-	
-public:
-
-	/// Let the controller add its value at a certain time to the input value.
-	virtual void applyValue(TimePoint time, AffineTransformation& result, TimeInterval& validityInterval) override {
-		Vector3 t;
-		getValue(time, t, validityInterval);
-		result = result * AffineTransformation::translation(t);
-	}
-
-	/// \brief This asks the controller to adjust its value after a scene node has got a new
-	///        parent node.
-	/// \param time The animation at which to change the controller parent.
+	/// \brief Adjusts the controller's value after a scene node has gotten a new parent node.
+	/// \param time The animation at which to change the controller's parent.
 	/// \param oldParentTM The transformation of the old parent node.
 	/// \param newParentTM The transformation of the new parent node.
 	/// \param contextNode The node to which this controller is assigned to.
 	///
-	/// \undoable
-	virtual void changeParent(TimePoint time, const AffineTransformation& oldParentTM, const AffineTransformation& newParentTM, SceneNode* contextNode) = 0;
+	/// This method is called by the SceneNode that owns the transformation controller when it
+	/// is newly placed into the scene or below a different node in the node hierarchy.
+	virtual void changeParent(TimePoint time, const AffineTransformation& oldParentTM, const AffineTransformation& newParentTM, SceneNode* contextNode) {}
+
+	/// \brief Adds a translation to the current transformation if this is a transformation controller.
+	/// \param time The animation at which the translation should be applied to the transformation.
+	/// \param translation The translation vector to add to the transformation. This is specified in the coordinate system given by \a axisSystem.
+	/// \param axisSystem The coordinate system in which the translation should be performed.
+	virtual void translate(TimePoint time, const Vector3& translation, const AffineTransformation& axisSystem) { OVITO_ASSERT_MSG(false, "Controller::translate()", "This method should be overridden."); }
+
+	/// \brief Adds a rotation to the current transformation if this is a transformation controller.
+	/// \param time The animation at which the rotation should be applied to the transformation.
+	/// \param rot The rotation to add to the transformation. This is specified in the coordinate system given by \a axisSystem.
+	/// \param axisSystem The coordinate system in which the rotation should be performed.
+	virtual void rotate(TimePoint time, const Rotation& rot, const AffineTransformation& axisSystem) { OVITO_ASSERT_MSG(false, "Controller::rotate()", "This method should be overridden."); }
+
+	/// \brief Adds a scaling to the current transformation if this is a transformation controller.
+	/// \param time The animation at which the scaling should be applied to the transformation.
+	/// \param scaling The scaling to add to the transformation.
+	virtual void scale(TimePoint time, const Scaling& scaling) { OVITO_ASSERT_MSG(false, "Controller::scale()", "This method should be overridden."); }
 
 private:
-
-	Q_OBJECT
-	OVITO_OBJECT
-};
-
-/**
- * \brief Base class for all rotation controller implementations.
- * 
- * A position controller is used to animate the orientation of an object.
- */
-class OVITO_CORE_EXPORT RotationController : public TypedControllerBase<Rotation, AffineTransformation>
-{
-protected:
-
-	/// The constructor.
-	RotationController(DataSet* dataset) : TypedControllerBase<Rotation, AffineTransformation>(dataset) {}
 	
-public:
-
-	/// Let the controller add its value at a certain time to the input value.
-	virtual void applyValue(TimePoint time, AffineTransformation& result, TimeInterval& validityInterval) override {
-		Rotation r;
-		getValue(time, r, validityInterval);
-		result = result * Matrix3::rotation(r);
-	}
-
-	/// \brief This asks the controller to adjust its value after a scene node has got a new
-	///        parent node.
-	/// \param time The animation at which to change the controller parent.
-	/// \param oldParentTM The transformation of the old parent node.
-	/// \param newParentTM The transformation of the new parent node.
-	/// \param contextNode The node to which this controller is assigned to.
-	///
-	/// \undoable
-	virtual void changeParent(TimePoint time, const AffineTransformation& oldParentTM, const AffineTransformation& newParentTM, SceneNode* contextNode) = 0;
-
-private:
-
 	Q_OBJECT
 	OVITO_OBJECT
 };
 
-/**
- * \brief Base class for all scaling controller implementations.
- * 
- * A position controller is used to animate the scaling of an object.
- */
-class OVITO_CORE_EXPORT ScalingController : public TypedControllerBase<Scaling, AffineTransformation>
-{ 
-protected:
-
-	/// The constructor.
-	ScalingController(DataSet* dataset) : TypedControllerBase<Scaling, AffineTransformation>(dataset) {}
-	
-public:
-
-	/// Let the controller add its value at a certain time to the input value.
-	virtual void applyValue(TimePoint time, AffineTransformation& result, TimeInterval& validityInterval) override {
-		Scaling sv;
-		getValue(time, sv, validityInterval);
-		result = result * Matrix3::scaling(sv);
-	}
-
-	/// \brief This asks the controller to adjust its value after a scene node has got a new
-	///        parent node.
-	/// \param time The animation at which to change the controller parent.
-	/// \param oldParentTM The transformation of the old parent node.
-	/// \param newParentTM The transformation of the new parent node.
-	/// \param contextNode The node to which this controller is assigned to.
-	///
-	/// \undoable
-	virtual void changeParent(TimePoint time, const AffineTransformation& oldParentTM, const AffineTransformation& newParentTM, SceneNode* contextNode) = 0;
-
-private:
-
-	Q_OBJECT
-	OVITO_OBJECT
-};
 
 ///////////////////////////////// Controller instantiation //////////////////////////////
 
@@ -443,27 +295,31 @@ public:
 		return *_instance;
 	}
 
-	/// \brief Creates a new instance of the default implementation for the given base Controller type.
-	/// \param controllerBaseClass The type of controller to create. This must be one of the base Controller derived
-	///                            classes like IntegerController or FloatController.
-	/// \param dataset The context dataset.
-	/// \return The newly created instance of the controller class set as default for the requested base controller class.
-	///         If no default is set for the given base class than \c NULL is returned.
-	OORef<Controller> createDefaultController(const OvitoObjectType& controllerBaseClass, DataSet* dataset);
+	/// \brief Creates a new float controller.
+	OORef<Controller> createFloatController(DataSet* dataset);
 
-	/// \brief Creates a new instance of the default implementation for the given base controller type.
-	/// \param dataset The context dataset.
-	/// \return The newly created instance of the controller class set as default for the requested base controller class.
-	///         If no default is set for the given base class than \c NULL is returned.
-	/// 
-	/// This is the template version of the above method. The function parameter is replaced with a template parameter.
-	template<typename T>
-	OORef<T> createDefaultController(DataSet* dataset) { return static_object_cast<T>(createDefaultController(T::OOType, dataset)); }
+	/// \brief Creates a new integer controller.
+	OORef<Controller> createIntController(DataSet* dataset);
+
+	/// \brief Creates a new Vector3 controller.
+	OORef<Controller> createVector3Controller(DataSet* dataset);
+
+	/// \brief Creates a new Color controller.
+	OORef<Controller> createColorController(DataSet* dataset) { return createVector3Controller(dataset); }
+
+	/// \brief Creates a new position controller.
+	OORef<Controller> createPositionController(DataSet* dataset);
+
+	/// \brief Creates a new rotation controller.
+	OORef<Controller> createRotationController(DataSet* dataset);
+
+	/// \brief Creates a new scaling controller.
+	OORef<Controller> createScalingController(DataSet* dataset);
+
+	/// \brief Creates a new transformation controller.
+	OORef<Controller> createTransformationController(DataSet* dataset);
 
 private:
-
-	/// Stores the default implementations used for the different controller types.
-	std::map<const OvitoObjectType*, const OvitoObjectType*> _defaultMap;
 
 	/// Private constructor.
 	/// This is a singleton class; no public instances are allowed.

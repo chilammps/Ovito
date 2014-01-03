@@ -40,7 +40,7 @@ SET_PROPERTY_FIELD_LABEL(AsynchronousParticleModifier, _saveResults, "Save resul
 ******************************************************************************/
 AsynchronousParticleModifier::AsynchronousParticleModifier(DataSet* dataset) : ParticleModifier(dataset),
 	_autoUpdate(true), _saveResults(false),
-	_cacheValidity(TimeInterval::empty()), _computationValidity(TimeInterval::empty()), _needsUpdate(true)
+	_cacheValidity(TimeInterval::empty()), _computationValidity(TimeInterval::empty())
 {
 	INIT_PROPERTY_FIELD(AsynchronousParticleModifier::_autoUpdate);
 	INIT_PROPERTY_FIELD(AsynchronousParticleModifier::_saveResults);
@@ -76,8 +76,8 @@ bool AsynchronousParticleModifier::referenceEvent(RefTarget* source, ReferenceEv
 void AsynchronousParticleModifier::invalidateCachedResults()
 {
 	if(autoUpdateEnabled()) {
-		_needsUpdate = true;
 		cancelBackgroundJob();
+		_cacheValidity.setEmpty();
 	}
 }
 
@@ -104,8 +104,7 @@ void AsynchronousParticleModifier::cancelBackgroundJob()
 ******************************************************************************/
 ObjectStatus AsynchronousParticleModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
 {
-	if(autoUpdateEnabled() && _needsUpdate && input().status().type() != ObjectStatus::Pending) {
-
+	if(autoUpdateEnabled() && !_cacheValidity.contains(time) && input().status().type() != ObjectStatus::Pending) {
 		if(!_computationValidity.contains(time)) {
 
 			// Stop running job first.
@@ -113,11 +112,11 @@ ObjectStatus AsynchronousParticleModifier::modifyParticles(TimePoint time, TimeI
 
 			// Create the engine that will compute the results.
 			try {
-				std::shared_ptr<Engine> engine = createEngine(time);
+				_computationValidity = input().stateValidity();
+				std::shared_ptr<Engine> engine = createEngine(time, _computationValidity);
 				OVITO_CHECK_POINTER(engine.get());
 
 				// Start a background job that runs the engine to compute the modifier's results.
-				_computationValidity.setInstant(time);
 				_backgroundOperation = dataset()->container()->taskManager().runInBackground<std::shared_ptr<Engine>>(std::bind(&AsynchronousParticleModifier::runEngine, this, std::placeholders::_1, engine));
 				_backgroundOperationWatcher.setFuture(_backgroundOperation);
 			}
@@ -128,7 +127,7 @@ ObjectStatus AsynchronousParticleModifier::modifyParticles(TimePoint time, TimeI
 	}
 
 	if(!_computationValidity.contains(time)) {
-		if(_needsUpdate) {
+		if(!_cacheValidity.contains(time)) {
 			if(input().status().type() != ObjectStatus::Pending)
 				throw Exception(tr("The modifier results have not been computed yet."));
 			else
@@ -138,7 +137,16 @@ ObjectStatus AsynchronousParticleModifier::modifyParticles(TimePoint time, TimeI
 	else {
 
 		if(_cacheValidity.contains(time)) {
+			validityInterval.intersect(_cacheValidity);
 			applyModifierResults(time, validityInterval);
+		}
+		else {
+			// Try to apply old results even though they are outdated.
+			validityInterval.intersect(time);
+			try {
+				applyModifierResults(time, validityInterval);
+			}
+			catch(const Exception&) { /* Ignore problems. */ }
 		}
 
 		return ObjectStatus(ObjectStatus::Pending, tr("Results are being computed..."));
@@ -147,6 +155,7 @@ ObjectStatus AsynchronousParticleModifier::modifyParticles(TimePoint time, TimeI
 	if(_asyncStatus.type() == ObjectStatus::Error)
 		return _asyncStatus;
 
+	validityInterval.intersect(_cacheValidity);
 	return applyModifierResults(time, validityInterval);
 }
 
@@ -173,7 +182,6 @@ void AsynchronousParticleModifier::backgroundJobFinished()
 
 	if(!wasCanceled) {
 		_cacheValidity = _computationValidity;
-		_needsUpdate = false;
 		try {
 			std::shared_ptr<Engine> engine = _backgroundOperation.result();
 			retrieveModifierResults(engine.get());
@@ -221,7 +229,6 @@ void AsynchronousParticleModifier::loadFromStream(ObjectLoadStream& stream)
 	ParticleModifier::loadFromStream(stream);
 	stream.expectChunk(0x01);
 	stream >> _cacheValidity;
-	_needsUpdate = _cacheValidity.isEmpty();
 	stream.closeChunk();
 }
 

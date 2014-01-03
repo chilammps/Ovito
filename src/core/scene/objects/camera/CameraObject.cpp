@@ -36,8 +36,8 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, CameraObject, AbstractCameraObject)
 IMPLEMENT_OVITO_OBJECT(Core, CameraObjectEditor, PropertiesEditor)
 SET_OVITO_OBJECT_EDITOR(CameraObject, CameraObjectEditor)
 DEFINE_PROPERTY_FIELD(CameraObject, _isPerspective, "IsPerspective")
-DEFINE_REFERENCE_FIELD(CameraObject, _fov, "FOV", FloatController)
-DEFINE_REFERENCE_FIELD(CameraObject, _zoom, "Zoom", FloatController)
+DEFINE_REFERENCE_FIELD(CameraObject, _fov, "FOV", Controller)
+DEFINE_REFERENCE_FIELD(CameraObject, _zoom, "Zoom", Controller)
 SET_PROPERTY_FIELD_LABEL(CameraObject, _isPerspective, "Perspective projection")
 SET_PROPERTY_FIELD_LABEL(CameraObject, _fov, "View angle")
 SET_PROPERTY_FIELD_LABEL(CameraObject, _zoom, "Zoom")
@@ -53,10 +53,10 @@ CameraObject::CameraObject(DataSet* dataset) : AbstractCameraObject(dataset), _i
 	INIT_PROPERTY_FIELD(CameraObject::_fov);
 	INIT_PROPERTY_FIELD(CameraObject::_zoom);
 
-	_fov = ControllerManager::instance().createDefaultController<FloatController>(dataset);
-	_fov->setValue(0, FLOATTYPE_PI/4.0);
-	_zoom = ControllerManager::instance().createDefaultController<FloatController>(dataset);
-	_zoom->setValue(0, 200);
+	_fov = ControllerManager::instance().createFloatController(dataset);
+	_fov->setFloatValue(0, FLOATTYPE_PI/4.0);
+	_zoom = ControllerManager::instance().createFloatController(dataset);
+	_zoom->setFloatValue(0, 200);
 
 	addDisplayObject(new CameraDisplayObject(dataset));
 }
@@ -94,7 +94,7 @@ void CameraObject::projectionParameters(TimePoint time, ViewProjectionParameters
 		params.zfar = std::max(params.zfar, params.znear * 1.01f);
 
 		// Get the camera angle.
-		_fov->getValue(time, params.fieldOfView, params.validityInterval);
+		params.fieldOfView = _fov->getFloatValue(time, params.validityInterval);
 		if(params.fieldOfView < FLOATTYPE_EPSILON) params.fieldOfView = FLOATTYPE_EPSILON;
 		if(params.fieldOfView > FLOATTYPE_PI - FLOATTYPE_EPSILON) params.fieldOfView = FLOATTYPE_PI - FLOATTYPE_EPSILON;
 
@@ -111,7 +111,7 @@ void CameraObject::projectionParameters(TimePoint time, ViewProjectionParameters
 		}
 
 		// Get the camera zoom.
-		_zoom->getValue(time, params.fieldOfView, params.validityInterval);
+		params.fieldOfView = _zoom->getFloatValue(time, params.validityInterval);
 		if(params.fieldOfView < FLOATTYPE_EPSILON) params.fieldOfView = FLOATTYPE_EPSILON;
 
 		params.projectionMatrix = Matrix4::ortho(-params.fieldOfView / params.aspectRatio, params.fieldOfView / params.aspectRatio,
@@ -125,12 +125,10 @@ void CameraObject::projectionParameters(TimePoint time, ViewProjectionParameters
 ******************************************************************************/
 FloatType CameraObject::fieldOfView(TimePoint time, TimeInterval& validityInterval)
 {
-	FloatType fov;
 	if(isPerspective())
-		_fov->getValue(time, fov, validityInterval);
+		return _fov->getFloatValue(time, validityInterval);
 	else
-		_zoom->getValue(time, fov, validityInterval);
-	return fov;
+		return _zoom->getFloatValue(time, validityInterval);
 }
 
 /******************************************************************************
@@ -139,9 +137,9 @@ FloatType CameraObject::fieldOfView(TimePoint time, TimeInterval& validityInterv
 void CameraObject::setFieldOfView(TimePoint time, FloatType newFOV)
 {
 	if(isPerspective())
-		_fov->setValue(time, newFOV);
+		_fov->setFloatValue(time, newFOV);
 	else
-		_zoom->setValue(time, newFOV);
+		_zoom->setFloatValue(time, newFOV);
 }
 
 /******************************************************************************

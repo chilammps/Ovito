@@ -233,7 +233,8 @@ bool PipelineObject::referenceEvent(RefTarget* source, ReferenceEvent* event)
 			// following it in the stack need to be informed.
 			int index = _modApps.indexOf(source);
 			if(index != -1) {
-				modifierChanged(index);
+				if(event->type() == ReferenceEvent::TargetEnabledOrDisabled || modifierApplications()[index]->modifier()->isEnabled())
+					modifierChanged(index);
 				if(event->type() == ReferenceEvent::TargetEnabledOrDisabled)
 					notifyDependents(ReferenceEvent::TargetChanged);
 			}

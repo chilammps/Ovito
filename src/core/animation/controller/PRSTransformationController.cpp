@@ -20,18 +20,17 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include <core/animation/controller/TransformationController.h>
+#include <core/animation/controller/PRSTransformationController.h>
 #include <core/utilities/units/UnitsManager.h>
 #include <core/animation/TimeInterval.h>
 #include <base/linalg/AffineDecomposition.h>
 
 namespace Ovito {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, TransformationController, Controller)
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, PRSTransformationController, TransformationController)
-DEFINE_REFERENCE_FIELD(PRSTransformationController, _position, "Position", PositionController)
-DEFINE_REFERENCE_FIELD(PRSTransformationController, _rotation, "Rotation", RotationController)
-DEFINE_REFERENCE_FIELD(PRSTransformationController, _scaling, "Scaling", ScalingController)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, PRSTransformationController, Controller)
+DEFINE_REFERENCE_FIELD(PRSTransformationController, _position, "Position", Controller)
+DEFINE_REFERENCE_FIELD(PRSTransformationController, _rotation, "Rotation", Controller)
+DEFINE_REFERENCE_FIELD(PRSTransformationController, _scaling, "Scaling", Controller)
 SET_PROPERTY_FIELD_LABEL(PRSTransformationController, _position, "Position")
 SET_PROPERTY_FIELD_LABEL(PRSTransformationController, _rotation, "Rotation")
 SET_PROPERTY_FIELD_LABEL(PRSTransformationController, _scaling, "Scaling")
@@ -42,43 +41,39 @@ SET_PROPERTY_FIELD_UNITS(PRSTransformationController, _scaling, PercentParameter
 /******************************************************************************
 * Default constructor.
 ******************************************************************************/
-PRSTransformationController::PRSTransformationController(DataSet* dataset) : TransformationController(dataset)
+PRSTransformationController::PRSTransformationController(DataSet* dataset) : Controller(dataset)
 {
 	INIT_PROPERTY_FIELD(PRSTransformationController::_position);
 	INIT_PROPERTY_FIELD(PRSTransformationController::_rotation);
 	INIT_PROPERTY_FIELD(PRSTransformationController::_scaling);
-	_position = ControllerManager::instance().createDefaultController<PositionController>(dataset);
-	_rotation = ControllerManager::instance().createDefaultController<RotationController>(dataset);
-	_scaling = ControllerManager::instance().createDefaultController<ScalingController>(dataset);
+	_position = ControllerManager::instance().createPositionController(dataset);
+	_rotation = ControllerManager::instance().createRotationController(dataset);
+	_scaling = ControllerManager::instance().createScalingController(dataset);
 }
 
 /******************************************************************************
 * Let the controller apply its value at a certain time to the input value.
 ******************************************************************************/
-void PRSTransformationController::applyValue(TimePoint time, AffineTransformation& result, TimeInterval& validityInterval)
+void PRSTransformationController::applyTransformation(TimePoint time, AffineTransformation& result, TimeInterval& validityInterval)
 {
-	positionController()->applyValue(time, result, validityInterval);
-	rotationController()->applyValue(time, result, validityInterval);
-	scalingController()->applyValue(time, result, validityInterval);
+	positionController()->applyTranslation(time, result, validityInterval);
+	rotationController()->applyRotation(time, result, validityInterval);
+	scalingController()->applyScaling(time, result, validityInterval);
 }
 
 /******************************************************************************
 * Sets the controller's value at the specified time.
 ******************************************************************************/
-void PRSTransformationController::setValue(TimePoint time, const AffineTransformation& newValue, bool isAbsoluteValue)
+void PRSTransformationController::setTransformationValue(TimePoint time, const AffineTransformation& newValue, bool isAbsolute)
 {
 	AffineDecomposition decomp(newValue);
-	positionController()->setValue(time, decomp.translation, isAbsoluteValue);
-	rotationController()->setValue(time, Rotation(decomp.rotation), isAbsoluteValue);
-	scalingController()->setValue(time, decomp.scaling, isAbsoluteValue);
+	positionController()->setPositionValue(time, decomp.translation, isAbsolute);
+	rotationController()->setRotationValue(time, Rotation(decomp.rotation), isAbsolute);
+	scalingController()->setScalingValue(time, decomp.scaling, isAbsolute);
 }
 
 /******************************************************************************
-* This asks the controller to adjust its value after a scene node has got a new
-* parent node.
-*		oldParentTM - The transformation of the old parent node
-*		newParentTM - The transformation of the new parent node
-*		contextNode - The node to which this controller is assigned to
+* Adjusts the controller's value after a scene node has gotten a new parent node.
 ******************************************************************************/
 void PRSTransformationController::changeParent(TimePoint time, const AffineTransformation& oldParentTM, const AffineTransformation& newParentTM, SceneNode* contextNode)
 {

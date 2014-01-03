@@ -20,15 +20,21 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include <core/animation/controller/StandardControllers.h>
-#include <core/animation/controller/StandardConstControllers.h>
-#include <core/animation/controller/Controller.h>
+#include "ConstantControllers.h"
 
 namespace Ovito {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, ConstFloatController, FloatController)
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, ConstIntegerController, IntegerController)
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, ConstVectorController, VectorController)
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, ConstBooleanController, BooleanController)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, ConstFloatController, Controller);
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, ConstIntegerController, Controller);
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, ConstVectorController, Controller);
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, ConstPositionController, Controller);
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, ConstRotationController, Controller);
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, ConstScalingController, Controller);
+DEFINE_PROPERTY_FIELD(ConstFloatController, _value, "Value");
+DEFINE_PROPERTY_FIELD(ConstIntegerController, _value, "Value");
+DEFINE_PROPERTY_FIELD(ConstVectorController, _value, "Value");
+DEFINE_PROPERTY_FIELD(ConstPositionController, _value, "Value");
+DEFINE_PROPERTY_FIELD(ConstRotationController, _value, "Value");
+DEFINE_PROPERTY_FIELD(ConstScalingController, _value, "Value");
 
 };

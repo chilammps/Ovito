@@ -21,25 +21,71 @@
 
 #include <core/Core.h>
 #include <core/animation/controller/Controller.h>
-#include <core/animation/controller/StandardControllers.h>
-#include <core/animation/controller/TransformationController.h>
-#include <core/dataset/UndoStack.h>
+#include <core/animation/controller/ConstantControllers.h>
+#include <core/animation/controller/LinearInterpolationControllers.h>
+#include <core/animation/controller/SplineInterpolationControllers.h>
+#include <core/animation/controller/PRSTransformationController.h>
+#include <core/animation/AnimationSettings.h>
+#include <core/dataset/DataSet.h>
 
 namespace Ovito {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, Controller, RefTarget)
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, FloatController, Controller)
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, IntegerController, Controller)
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, BooleanController, Controller)
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, VectorController, Controller)
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, PositionController, Controller)
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, RotationController, Controller)
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, ScalingController, Controller)
-
-///////////////////////////// SINGLETON CLASS METHODS ///////////////////////////////
-
-/// The singleton instance of the class.
+/// The singleton instance of the manager class.
 ControllerManager* ControllerManager::_instance = nullptr;
+
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, Controller, RefTarget);
+
+/******************************************************************************
+* Returns the float controller's value at the current animation time.
+******************************************************************************/
+FloatType Controller::currentFloatValue()
+{
+	TimeInterval iv;
+	return getFloatValue(dataset()->animationSettings()->time(), iv);
+}
+
+/******************************************************************************
+* Returns the integers controller's value at the current animation time.
+******************************************************************************/
+int Controller::currentIntValue()
+{
+	TimeInterval iv;
+	return getIntValue(dataset()->animationSettings()->time(), iv);
+}
+
+/******************************************************************************
+* Returns the Vector3 controller's value at the current animation time.
+******************************************************************************/
+Vector3 Controller::currentVector3Value()
+{
+	Vector3 v; TimeInterval iv;
+	getVector3Value(dataset()->animationSettings()->time(), v, iv);
+	return v;
+}
+
+/******************************************************************************
+* Sets the controller's value at the current animation time.
+******************************************************************************/
+void Controller::setCurrentFloatValue(FloatType newValue)
+{
+	setFloatValue(dataset()->animationSettings()->time(), newValue);
+}
+
+/******************************************************************************
+* Sets the controller's value at the current animation time.
+******************************************************************************/
+void Controller::setCurrentIntValue(int newValue)
+{
+	setIntValue(dataset()->animationSettings()->time(), newValue);
+}
+
+/******************************************************************************
+* Sets the controller's value at the current animation time.
+******************************************************************************/
+void Controller::setCurrentVector3Value(const Vector3& newValue)
+{
+	setVector3Value(dataset()->animationSettings()->time(), newValue);
+}
 
 /******************************************************************************
 * Initializes the controller manager.
@@ -47,27 +93,62 @@ ControllerManager* ControllerManager::_instance = nullptr;
 ControllerManager::ControllerManager()
 {
 	OVITO_ASSERT_MSG(!_instance, "ControllerManager constructor", "Multiple instances of this singleton class have been created.");
-
-	_defaultMap[&FloatController::OOType] = &LinearFloatController::OOType;
-	_defaultMap[&IntegerController::OOType] = &ConstIntegerController::OOType;
-	_defaultMap[&BooleanController::OOType] = &ConstBooleanController::OOType;
-	_defaultMap[&VectorController::OOType] = &LinearVectorController::OOType;
-	_defaultMap[&PositionController::OOType] = &LinearPositionController::OOType;
-	_defaultMap[&RotationController::OOType] = &LinearRotationController::OOType;
-	_defaultMap[&ScalingController::OOType] = &LinearScalingController::OOType;
-	_defaultMap[&TransformationController::OOType] = &PRSTransformationController::OOType;
 }
 
-/// Creates a new instance of the default implementation for the given base controller type.
-OORef<Controller> ControllerManager::createDefaultController(const OvitoObjectType& controllerBaseClass, DataSet* dataset)
+/******************************************************************************
+* Creates a new float controller.
+******************************************************************************/
+OORef<Controller> ControllerManager::createFloatController(DataSet* dataset)
 {
-	auto iter = _defaultMap.find(&controllerBaseClass);
-	if(iter == _defaultMap.end()) {
-		OVITO_ASSERT_MSG(false, "ControllerManager::createDefaultController", "Unknown controller base class.");
-		return nullptr;
-	}
-	OVITO_ASSERT_MSG(iter->second != NULL, "ControllerManager::createDefaultController", "No default controller implementation available.");
-	return static_object_cast<Controller>(iter->second->createInstance(dataset));
+	return new LinearFloatController(dataset);
+}
+
+/******************************************************************************
+* Creates a new integer controller.
+******************************************************************************/
+OORef<Controller> ControllerManager::createIntController(DataSet* dataset)
+{
+	return new LinearIntegerController(dataset);
+}
+
+/******************************************************************************
+* Creates a new Vector3 controller.
+******************************************************************************/
+OORef<Controller> ControllerManager::createVector3Controller(DataSet* dataset)
+{
+	return new LinearVectorController(dataset);
+}
+
+/******************************************************************************
+* Creates a new position controller.
+******************************************************************************/
+OORef<Controller> ControllerManager::createPositionController(DataSet* dataset)
+{
+	return new SplinePositionController(dataset);
+}
+
+/******************************************************************************
+* Creates a new rotation controller.
+******************************************************************************/
+OORef<Controller> ControllerManager::createRotationController(DataSet* dataset)
+{
+	return new LinearRotationController(dataset);
+}
+
+/******************************************************************************
+* Creates a new scaling controller.
+******************************************************************************/
+OORef<Controller> ControllerManager::createScalingController(DataSet* dataset)
+{
+	return new LinearScalingController(dataset);
+}
+
+/******************************************************************************
+* Creates a new transformation controller.
+******************************************************************************/
+OORef<Controller> ControllerManager::createTransformationController(DataSet* dataset)
+{
+	return new PRSTransformationController(dataset);
 }
 
 };

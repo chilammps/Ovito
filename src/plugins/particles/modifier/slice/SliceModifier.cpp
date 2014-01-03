@@ -24,7 +24,7 @@
 #include <core/viewport/ViewportConfiguration.h>
 #include <core/scene/ObjectNode.h>
 #include <core/scene/SelectionSet.h>
-#include <core/animation/controller/StandardControllers.h>
+#include <core/animation/controller/Controller.h>
 #include <core/animation/AnimationSettings.h>
 #include <core/scene/pipeline/PipelineObject.h>
 #include <core/gui/actions/ActionManager.h>
@@ -42,9 +42,9 @@ namespace Particles {
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, SliceModifier, ParticleModifier)
 IMPLEMENT_OVITO_OBJECT(Particles, SliceModifierEditor, ParticleModifierEditor)
 SET_OVITO_OBJECT_EDITOR(SliceModifier, SliceModifierEditor)
-DEFINE_REFERENCE_FIELD(SliceModifier, _normalCtrl, "PlaneNormal", VectorController)
-DEFINE_REFERENCE_FIELD(SliceModifier, _distanceCtrl, "PlaneDistance", FloatController)
-DEFINE_REFERENCE_FIELD(SliceModifier, _widthCtrl, "SliceWidth", FloatController)
+DEFINE_REFERENCE_FIELD(SliceModifier, _normalCtrl, "PlaneNormal", Controller)
+DEFINE_REFERENCE_FIELD(SliceModifier, _distanceCtrl, "PlaneDistance", Controller)
+DEFINE_REFERENCE_FIELD(SliceModifier, _widthCtrl, "SliceWidth", Controller)
 DEFINE_PROPERTY_FIELD(SliceModifier, _createSelection, "CreateSelection")
 DEFINE_PROPERTY_FIELD(SliceModifier, _inverse, "Inverse")
 DEFINE_PROPERTY_FIELD(SliceModifier, _applyToSelection, "ApplyToSelection")
@@ -73,9 +73,9 @@ SliceModifier::SliceModifier(DataSet* dataset) : ParticleModifier(dataset),
 	INIT_PROPERTY_FIELD(SliceModifier::_inverse);
 	INIT_PROPERTY_FIELD(SliceModifier::_applyToSelection);
 
-	_normalCtrl = ControllerManager::instance().createDefaultController<VectorController>(dataset);
-	_distanceCtrl = ControllerManager::instance().createDefaultController<FloatController>(dataset);
-	_widthCtrl = ControllerManager::instance().createDefaultController<FloatController>(dataset);
+	_normalCtrl = ControllerManager::instance().createVector3Controller(dataset);
+	_distanceCtrl = ControllerManager::instance().createFloatController(dataset);
+	_widthCtrl = ControllerManager::instance().createFloatController(dataset);
 	setNormal(Vector3(1,0,0));
 }
 
@@ -97,10 +97,10 @@ TimeInterval SliceModifier::modifierValidity(TimePoint time)
 Plane3 SliceModifier::slicingPlane(TimePoint time, TimeInterval& validityInterval)
 {
 	Plane3 plane;
-	_normalCtrl->getValue(time, plane.normal, validityInterval);
+	_normalCtrl->getVector3Value(time, plane.normal, validityInterval);
 	if(plane.normal == Vector3::Zero()) plane.normal = Vector3(0,0,1);
 	else plane.normal.normalize();
-	_distanceCtrl->getValue(time, plane.dist, validityInterval);
+	plane.dist = _distanceCtrl->getFloatValue(time, validityInterval);
 	if(inverse())
 		return -plane;
 	else
@@ -154,7 +154,7 @@ size_t SliceModifier::filterParticles(std::vector<bool>& mask, TimePoint time, T
 	OVITO_ASSERT(posProperty->size() == mask.size());
 
 	FloatType sliceWidth = 0;
-	if(_widthCtrl) _widthCtrl->getValue(time, sliceWidth, validityInterval);
+	if(_widthCtrl) sliceWidth = _widthCtrl->getFloatValue(time, validityInterval);
 	sliceWidth *= 0.5;
 
 	Plane3 plane = slicingPlane(time, validityInterval);
@@ -224,7 +224,7 @@ Box3 SliceModifier::renderVisual(TimePoint time, ObjectNode* contextNode, SceneR
 	Plane3 plane = slicingPlane(time, interval);
 
 	FloatType sliceWidth = 0;
-	if(_widthCtrl) _widthCtrl->getValue(time, sliceWidth, interval);
+	if(_widthCtrl) sliceWidth = _widthCtrl->getFloatValue(time, interval);
 
 	ColorA color(0.8f, 0.3f, 0.3f);
 	if(sliceWidth <= 0) {

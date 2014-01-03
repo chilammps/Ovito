@@ -245,6 +245,10 @@ void RefMaker::saveToStream(ObjectSaveStream& stream)
 {
 	OvitoObject::saveToStream(stream);
 
+#if 0
+	qDebug() << "Saving object" << this;
+#endif
+
 	// Iterate over all property fields in the class hierarchy.
 	for(const OvitoObjectType* clazz = &getOOType(); clazz != nullptr; clazz = clazz->superClass()) {
 		for(const PropertyFieldDescriptor* field = clazz->firstPropertyField(); field != nullptr; field = field->next()) {
@@ -281,6 +285,9 @@ void RefMaker::saveToStream(ObjectSaveStream& stream)
 				OVITO_ASSERT(field->propertyStorageSaveFunc != nullptr);
 				stream.beginChunk(0x04);
 				field->propertyStorageSaveFunc(this, stream);
+#if 0
+				qDebug() << "  Property field" << field->identifier() << " contains" << field->propertyStorageReadFunc(this);
+#endif
 				stream.endChunk();
 			}
 		}
@@ -373,6 +380,9 @@ void RefMaker::loadFromStream(ObjectLoadStream& stream)
 			if(fieldEntry.field) {
 				OVITO_ASSERT(fieldEntry.field->propertyStorageLoadFunc != nullptr);
 				fieldEntry.field->propertyStorageLoadFunc(this, stream);
+#if 0
+				qDebug() << "  Property field" << fieldEntry.identifier << " contains" << fieldEntry.field->propertyStorageReadFunc(this);
+#endif
 			}
 			else {
 				// The property field no longer exists.

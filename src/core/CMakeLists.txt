@@ -35,10 +35,13 @@ SET(OVITO_CORE_SOURCE_FILES
 	reference/RefTargetListener.cpp
 	animation/AnimationSettings.cpp
 	animation/controller/Controller.cpp
-	animation/controller/StandardConstControllers.cpp
-	animation/controller/StandardLinearControllers.cpp
+	animation/controller/ConstantControllers.cpp
+	animation/controller/KeyframeController.cpp
+	animation/controller/LinearInterpolationControllers.cpp
+	animation/controller/SplineInterpolationControllers.cpp
+	animation/controller/AnimationKeys.cpp
 	animation/controller/LookAtController.cpp
-	animation/controller/TransformationController.cpp
+	animation/controller/PRSTransformationController.cpp
 	dataset/DataSet.cpp
 	dataset/DataSetContainer.cpp
 	dataset/UndoStack.cpp

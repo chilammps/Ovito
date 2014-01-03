@@ -110,10 +110,10 @@ protected:
 	PropertyField<bool> _smoothShading;
 
 	/// Controls the transparency of the surface mesh.
-	ReferenceField<FloatController> _surfaceTransparency;
+	ReferenceField<Controller> _surfaceTransparency;
 
 	/// Controls the transparency of the surface cap mesh.
-	ReferenceField<FloatController> _capTransparency;
+	ReferenceField<Controller> _capTransparency;
 
 	/// The buffered geometry used to render the surface mesh.
 	std::unique_ptr<TriMeshGeometryBuffer> _surfaceBuffer;

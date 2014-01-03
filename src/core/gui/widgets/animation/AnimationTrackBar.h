@@ -24,7 +24,7 @@
 
 #include <core/Core.h>
 #include <core/reference/RefTargetListener.h>
-#include <core/animation/controller/Controller.h>
+#include <core/animation/controller/KeyframeController.h>
 #include "AnimationTimeSlider.h"
 
 namespace Ovito {
@@ -52,8 +52,35 @@ protected:
 	/// Returns the minimum size of the widget.
 	virtual QSize minimumSizeHint() const override { return sizeHint(); }
 	
+	/// Handles mouse press events.
+	virtual void mousePressEvent(QMouseEvent * event) override;
+
+	/// Handles mouse move events.
+	virtual void mouseMoveEvent(QMouseEvent * event) override;
+
+	/// Handles mouse release events.
+	virtual void mouseReleaseEvent(QMouseEvent * event) override;
+
 	/// Recursive function that finds all controllers in the object graph.
 	void findControllers(RefTarget* target);
+
+	/// Paints the symbol for a single animation key.
+	void paintKey(QPainter& painter, AnimationKey* key) const;
+
+	/// Computes the display rectangle of an animation key.
+	QRect keyRect(AnimationKey* key) const;
+
+	/// Finds all keys under the mouse cursor.
+	QVector<AnimationKey*> hitTestKeys(QPoint pos) const;
+
+	/// Returns the index of the controller that owns the given key.
+	int controllerIndexFromKey(AnimationKey* key) const;
+
+	/// Returns a text representation of a key's value.
+	QString keyValueString(AnimationKey* key) const;
+
+	/// Checks if the given ref target is a controller, and, if yes, add it to our list of controllers.
+	void addController(RefTarget* target, RefTarget* owner, const PropertyFieldDescriptor* field);
 
 protected Q_SLOTS:
 
@@ -63,8 +90,11 @@ protected Q_SLOTS:
 	/// This is called when the current scene node selection has changed.
 	void onRebuildControllerList();
 
-	/// is called whenever one of the objects being monitored sends a notification signal.
+	/// Is called whenever one of the objects being monitored sends a notification signal.
 	void onObjectNotificationEvent(RefTarget* source, ReferenceEvent* event);
+
+	/// Is called whenever one of the controller being monitored sends a notification signal.
+	void onControllerNotificationEvent(RefTarget* source, ReferenceEvent* event);
 
 private:
 
@@ -75,10 +105,34 @@ private:
 	AnimationSettings* _animSettings;
 
 	/// This list of animation controllers that are shown in the track bar.
-	VectorRefTargetListener<Controller> _controllers;
+	VectorRefTargetListener<KeyframeController> _controllers;
 
 	/// List of all reference targets in the selected object reference tree.
 	VectorRefTargetListener<RefTarget> _objects;
+
+	/// This list of selected animation keys.
+	VectorRefTargetListener<AnimationKey> _selectedKeys;
+
+	/// The names of the animated parameters that are controlled by the keyframe controllers.
+	QStringList _parameterNames;
+
+	/// The brush used to paint animation keys.
+	QBrush _keyBrush;
+
+	/// The pen used to paint animation keys.
+	QPen _keyPen;
+
+	/// The pen used to paint selected animation keys.
+	QPen _selectedKeyPen;
+
+	/// The cursor to show when the mouse is over a key.
+	QCursor _selectionCursor;
+
+	/// The mouse position when starting a key dragging operation.
+	int _dragStartPos;
+
+	/// Indicates that a drag operation is in progress.
+	bool _isDragging;
 
 	QMetaObject::Connection _animIntervalChangedConnection;
 	QMetaObject::Connection _timeFormatChangedConnection;

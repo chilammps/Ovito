@@ -163,6 +163,17 @@ int AnimationTimeSlider::timeToPos(TimePoint time)
 }
 
 /******************************************************************************
+* Converts a distance in pixels to a time difference.
+******************************************************************************/
+TimePoint AnimationTimeSlider::distanceToTimeDifference(int distance)
+{
+	QRect clientRect = frameRect();
+	int tw = thumbWidth();
+	int space = clientRect.width() - 2*frameWidth() - tw;
+	return (int)((qint64)(_animSettings->animationInterval().duration() + 1) * distance / space);
+}
+
+/******************************************************************************
 * Returns the recommended size for the widget.
 ******************************************************************************/
 QSize AnimationTimeSlider::sizeHint() const

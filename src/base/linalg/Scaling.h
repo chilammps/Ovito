@@ -67,7 +67,7 @@ public:
 
 	/// \brief Initializes the object to the identity.
 	/// The Scaling structure is initialized with the scaling factors (1,1,1), i.e. no scaling at all.
-	Q_DECL_CONSTEXPR explicit ScalingT(Identity) : S(T(1)), Q(typename QuaternionT<T>::Identity()) {}
+	Q_DECL_CONSTEXPR ScalingT(Identity) : S(T(1)), Q(typename QuaternionT<T>::Identity()) {}
 
 	/////////////////////////////// Unary operators //////////////////////////////
 

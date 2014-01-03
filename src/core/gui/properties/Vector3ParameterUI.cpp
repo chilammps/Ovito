@@ -62,12 +62,10 @@ void Vector3ParameterUI::updatePropertyValue()
 	if(editObject() && spinner()) {
 		try {
 			if(isReferenceFieldUI()) {
-				VectorController* ctrl = dynamic_object_cast<VectorController>(parameterObject());
-				if(ctrl) {
-					TimeInterval interval;
-					Vector3 val = ctrl->currentValue();
+				if(Controller* ctrl = dynamic_object_cast<Controller>(parameterObject())) {
+					Vector3 val = ctrl->currentVector3Value();
 					val[_component] = spinner()->floatValue();
-					ctrl->setCurrentValue(val);
+					ctrl->setCurrentVector3Value(val);
 				}
 			}
 			else if(isQtPropertyUI()) {
@@ -116,11 +114,8 @@ void Vector3ParameterUI::updateUI()
 {
 	if(editObject() && spinner() && !spinner()->isDragging()) {
 		if(isReferenceFieldUI()) {
-			VectorController* ctrl = dynamic_object_cast<VectorController>(parameterObject());
-			if(ctrl) {
-				TimeInterval interval;
-				Vector3 val = ctrl->currentValue();
-				spinner()->setFloatValue(val[_component]);
+			if(Controller* ctrl = dynamic_object_cast<Controller>(parameterObject())) {
+				spinner()->setFloatValue(ctrl->currentVector3Value()[_component]);
 			}
 		}
 		else {

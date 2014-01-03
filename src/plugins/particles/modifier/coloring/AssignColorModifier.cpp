@@ -20,7 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <plugins/particles/Particles.h>
-#include <core/animation/controller/StandardControllers.h>
+#include <core/animation/controller/Controller.h>
 #include <core/gui/properties/ColorParameterUI.h>
 #include <core/gui/properties/BooleanParameterUI.h>
 #include "AssignColorModifier.h"
@@ -30,7 +30,7 @@ namespace Particles {
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, AssignColorModifier, ParticleModifier)
 IMPLEMENT_OVITO_OBJECT(Particles, AssignColorModifierEditor, ParticleModifierEditor)
 SET_OVITO_OBJECT_EDITOR(AssignColorModifier, AssignColorModifierEditor)
-DEFINE_REFERENCE_FIELD(AssignColorModifier, _colorCtrl, "Color", VectorController)
+DEFINE_REFERENCE_FIELD(AssignColorModifier, _colorCtrl, "Color", Controller)
 DEFINE_PROPERTY_FIELD(AssignColorModifier, _keepSelection, "KeepSelection")
 SET_PROPERTY_FIELD_LABEL(AssignColorModifier, _colorCtrl, "Color")
 SET_PROPERTY_FIELD_LABEL(AssignColorModifier, _keepSelection, "Keep selection")
@@ -43,8 +43,8 @@ AssignColorModifier::AssignColorModifier(DataSet* dataset) : ParticleModifier(da
 	INIT_PROPERTY_FIELD(AssignColorModifier::_colorCtrl);
 	INIT_PROPERTY_FIELD(AssignColorModifier::_keepSelection);
 
-	_colorCtrl = ControllerManager::instance().createDefaultController<VectorController>(dataset);
-	_colorCtrl->setValue(0, Vector3(0.3,0.3,1));
+	_colorCtrl = ControllerManager::instance().createColorController(dataset);
+	_colorCtrl->setColorValue(0, Color(0.3f, 0.3f, 1.0f));
 }
 
 /******************************************************************************
@@ -71,7 +71,7 @@ ObjectStatus AssignColorModifier::modifyParticles(TimePoint time, TimeInterval& 
 	// Get the color to be assigned.
 	Color color(1,1,1);
 	if(_colorCtrl)
-		_colorCtrl->getValue(time, color, validityInterval);
+		_colorCtrl->getColorValue(time, color, validityInterval);
 
 	if(selProperty) {
 		OVITO_ASSERT(colorProperty->size() == selProperty->size());

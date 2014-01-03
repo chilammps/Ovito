@@ -54,7 +54,7 @@ public:
 private:
 
 	/// This property fields stores the translation vector.
-	ReferenceField<VectorController> _translation;
+	ReferenceField<Controller> _translation;
 
 	Q_OBJECT
 	OVITO_OBJECT

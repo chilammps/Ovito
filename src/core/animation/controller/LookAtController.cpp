@@ -26,8 +26,8 @@
 
 namespace Ovito {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LookAtController, RotationController)
-DEFINE_REFERENCE_FIELD(LookAtController, _rollCtrl, "Roll", FloatController)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LookAtController, Controller)
+DEFINE_REFERENCE_FIELD(LookAtController, _rollCtrl, "Roll", Controller)
 DEFINE_FLAGS_REFERENCE_FIELD(LookAtController, _targetNode, "Target", SceneNode, PROPERTY_FIELD_NEVER_CLONE_TARGET | PROPERTY_FIELD_NO_SUB_ANIM)
 SET_PROPERTY_FIELD_LABEL(LookAtController, _rollCtrl, "Roll")
 SET_PROPERTY_FIELD_LABEL(LookAtController, _targetNode, "Target")
@@ -36,19 +36,19 @@ SET_PROPERTY_FIELD_UNITS(LookAtController, _rollCtrl, AngleParameterUnit)
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-LookAtController::LookAtController(DataSet* dataset) : RotationController(dataset)
+LookAtController::LookAtController(DataSet* dataset) : Controller(dataset)
 {
 	INIT_PROPERTY_FIELD(LookAtController::_rollCtrl);
 	INIT_PROPERTY_FIELD(LookAtController::_targetNode);
 
 	// Create sub-controller.
-	_rollCtrl = ControllerManager::instance().createDefaultController<FloatController>(dataset);
+	_rollCtrl = ControllerManager::instance().createFloatController(dataset);
 }
 
 /******************************************************************************
 * Queries the controller for its absolute value at a certain time.
 ******************************************************************************/
-void LookAtController::getValue(TimePoint time, Rotation& result, TimeInterval& validityInterval)
+void LookAtController::getRotationValue(TimePoint time, Rotation& result, TimeInterval& validityInterval)
 {
 	// Get position of target node.
 	Vector3 targetPos = Vector3::Zero();
@@ -65,7 +65,7 @@ void LookAtController::getValue(TimePoint time, Rotation& result, TimeInterval& 
 	// Get rolling angle.
 	FloatType rollAngle = 0.0;
 	if(rollController())
-		rollController()->getValue(time, rollAngle, validityInterval);
+		rollAngle = rollController()->getFloatValue(time, validityInterval);
 
 	if(targetPos == _sourcePos) {
 		result.setIdentity();
@@ -86,21 +86,21 @@ void LookAtController::getValue(TimePoint time, Rotation& result, TimeInterval& 
 /******************************************************************************
 * Sets the controller's value at the specified time.
 ******************************************************************************/
-void LookAtController::setValue(TimePoint time, const Rotation& newValue, bool isAbsoluteValue)
+void LookAtController::setRotationValue(TimePoint time, const Rotation& newValue, bool isAbsoluteValue)
 {
 	// Cannot set value for this controller type.
 }
 
 /******************************************************************************
-* Let the controller add its value at a certain time to the input value.
+* Lets a rotation controller apply its value to an existing transformation matrix.
 ******************************************************************************/
-void LookAtController::applyValue(TimePoint time, AffineTransformation& result, TimeInterval& validityInterval)
+void LookAtController::applyRotation(TimePoint time, AffineTransformation& result, TimeInterval& validityInterval)
 {
 	// Save source position for later use.
 	_sourcePos = result.translation();
 	_sourcePosValidity = validityInterval;
 
-	RotationController::applyValue(time, result, validityInterval);            			
+	Controller::applyRotation(time, result, validityInterval);
 }
 
 /******************************************************************************

@@ -419,13 +419,17 @@ void ModifyCommandPage::onWebRequestFinished(QNetworkReply* reply)
 			settings.beginGroup("news");
 			settings.setValue("cached_webpage", page);
 		}
+#if 0
 		else {
 			qDebug() << "News page fetched from server is invalid.";
 		}
+#endif
 	}
+#if 0
 	else {
 		qDebug() << "Failed to fetch news page from server: " << reply->errorString();
 	}
+#endif
 	reply->deleteLater();
 }
 

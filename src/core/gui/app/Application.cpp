@@ -80,6 +80,9 @@ bool Application::initialize(int& argc, char** argv)
 	// Activate default "C" locale, which will be used to parse numbers in strings.
 	std::setlocale(LC_NUMERIC, "C");
 
+	// Register our floating-point data type with the Qt type system.
+	qRegisterMetaType<FloatType>("FloatType");
+
 	// Register command line arguments.
 	_cmdLineParser.addOption(CommandLineOption(QStringList{{"v", "version"}}, tr("Prints the program version and exits.")));
 	_cmdLineParser.addOption(CommandLineOption(QStringList{{"nogui"}}, tr("Run in console mode without showing the graphical user interface.")));

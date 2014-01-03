@@ -49,10 +49,10 @@ public:
 	void setIsPerspective(bool perspective) { _isPerspective = perspective; }
 
 	/// Returns the controller that controls the field-of-view angle of the camera with perspective projection.
-	FloatController* fovController() const { return _fov; }
+	Controller* fovController() const { return _fov; }
 
 	/// Returns the controller that controls the zoom of the camera with orthogonal projection.
-	FloatController* zoomController() const { return _zoom; }
+	Controller* zoomController() const { return _zoom; }
 
 	/// \brief Returns a structure describing the camera's projection.
 	/// \param[in] time The animation time for which the camera's projection parameters should be determined.
@@ -78,10 +78,10 @@ private:
 	PropertyField<bool> _isPerspective;
 
 	/// This controller stores the field of view of the camera if it uses a perspective projection.
-	ReferenceField<FloatController> _fov;
+	ReferenceField<Controller> _fov;
 
 	/// This controller stores the field of view of the camera if it uses an orthogonal projection.
-	ReferenceField<FloatController> _zoom;
+	ReferenceField<Controller> _zoom;
 
 	Q_OBJECT
 	OVITO_OBJECT
