@@ -73,6 +73,12 @@ ELSE()
 	FILE(REMOVE ${OVITO_PLUGINS_DIRECTORY}/CrystalAnalysis.manifest.xml)
 ENDIF()
 
+IF(OVITO_BUILD_PLUGIN_NETCDF)
+	ADD_SUBDIRECTORY(plugins/netcdf)
+ELSE()
+        FILE(REMOVE ${OVITO_PLUGINS_DIRECTORY}/NetCDF.manifest.xml)
+ENDIF()
+
 ################# Main executable ####################
 
 # Place the executable into the "bin" output directory.
