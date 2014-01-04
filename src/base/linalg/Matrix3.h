@@ -262,8 +262,8 @@ public:
 	/// \brief Converts this matrix to a Qt 3x3 matrix object.
 	operator QMatrix3x3() const {
 		QMatrix3x3 qtm;
-		for(int row = 0; row < 3; row++)
-			for(int col = 0; col < 3; col++)
+		for(size_type row = 0; row < 3; row++)
+			for(size_type col = 0; col < 3; col++)
 				qtm(row,col) = (*this)(row,col);
 		return qtm;
 	}
@@ -417,8 +417,23 @@ Q_DECL_CONSTEXPR inline Point_3<T> operator*(const Matrix_3<T>& m, const Point_3
 
 /// \brief Multiplies a 3x3 matrix with a 3x3 Matrix.
 template<typename T>
-inline Matrix_3<T> operator*(const Matrix_3<T>& a, const Matrix_3<T>& b)
+Q_DECL_CONSTEXPR inline Matrix_3<T> operator*(const Matrix_3<T>& a, const Matrix_3<T>& b)
 {
+#if 1
+	return Matrix_3<T>(
+			a(0,0)*b(0,0) + a(0,1)*b(1,0) + a(0,2)*b(2,0),
+			a(0,0)*b(0,1) + a(0,1)*b(1,1) + a(0,2)*b(2,1),
+			a(0,0)*b(0,2) + a(0,1)*b(1,2) + a(0,2)*b(2,2),
+
+			a(1,0)*b(0,0) + a(1,1)*b(1,0) + a(1,2)*b(2,0),
+			a(1,0)*b(0,1) + a(1,1)*b(1,1) + a(1,2)*b(2,1),
+			a(1,0)*b(0,2) + a(1,1)*b(1,2) + a(1,2)*b(2,2),
+
+			a(2,0)*b(0,0) + a(2,1)*b(1,0) + a(2,2)*b(2,0),
+			a(2,0)*b(0,1) + a(2,1)*b(1,1) + a(2,2)*b(2,1),
+			a(2,0)*b(0,2) + a(2,1)*b(1,2) + a(2,2)*b(2,2)
+	);
+#else
 	Matrix_3<T> m;
 	for(typename Matrix_3<T>::size_type col = 0; col < 3; col++) {
 		for(typename Matrix_3<T>::size_type row = 0; row < 3; row++) {
@@ -429,13 +444,21 @@ inline Matrix_3<T> operator*(const Matrix_3<T>& a, const Matrix_3<T>& b)
 		}
 	}
 	return m;
+#endif
 }
 
 /// \brief Multiplies a 3x3 matrix with a scalar value. 
 /// Each element of the matrix is multiplied by the scalar value.
 template<typename T>
-inline Matrix_3<T> operator*(const Matrix_3<T>& a, T s)
+Q_DECL_CONSTEXPR inline Matrix_3<T> operator*(const Matrix_3<T>& a, T s)
 {
+#if 1
+	return Matrix_3<T>(
+			a(0,0)*s, a(0,1)*s, a(0,2)*s,
+			a(1,0)*s, a(1,1)*s, a(1,2)*s,
+			a(2,0)*s, a(2,1)*s, a(2,2)*s
+	);
+#else
 	Matrix_3<T> m;
 	for(typename Matrix_3<T>::size_type i = 0; i < 3; i++) {
 		for(typename Matrix_3<T>::size_type j = 0; j < 3; j++) {
@@ -443,12 +466,13 @@ inline Matrix_3<T> operator*(const Matrix_3<T>& a, T s)
 		}
 	}
 	return m;
+#endif
 }
 
 /// \brief Multiplies a 3x3 matrix with a scalar value. 
 /// Each element of the matrix is multiplied by the scalar value.
 template<typename T>
-inline Matrix_3<T> operator*(T s, const Matrix_3<T>& a) {
+Q_DECL_CONSTEXPR inline Matrix_3<T> operator*(T s, const Matrix_3<T>& a) {
 	return a * s;
 }
 

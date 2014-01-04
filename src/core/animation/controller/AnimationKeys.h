@@ -261,20 +261,116 @@ struct LinearValueInterpolator {
 /**
  * \brief Implementation of the value interpolator concept for rotations.
  *
- * This class is required because the Base::Rotation class does not support the standard
+ * This class is required because the Rotation class does not support the standard
  * addition, scalar multiplication and subtraction operators.
  */
 template<>
 struct LinearValueInterpolator<Rotation> {
 	Rotation operator()(FloatType t, const Rotation& value1, const Rotation& value2) const {
-		return Rotation(Rotation::interpolate(value1, value2, t));
+#if 1
+		return interpolate(value1, value2, t);
+#else
+		Rotation diff = value2 * value1.inverse();
+		return Rotation(diff.axis(), diff.angle() * t) * value1;
+#endif
+	}
+
+	template<typename T>
+    static RotationT<T> interpolate(const RotationT<T>& rot1, const RotationT<T>& rot2, T t) {
+    	OVITO_ASSERT(t >= 0 && t <= 1);
+
+    	RotationT<T> _rot2;
+    	if(rot1.axis().dot(rot2.axis()) < T(0))
+    		_rot2 = RotationT<T>(-rot2.axis(), -rot2.angle(), false);
+    	else
+    		_rot2 = rot2;
+
+    	// Determine interpolation type, compute extra spins, and adjust angles accordingly.
+		if(rot1.axis().equals(_rot2.axis())) {
+			return RotationT<T>((T(1) - t) * rot1.axis() + t * _rot2.axis(), (T(1) - t) * rot1.angle() + t * _rot2.angle());
+		}
+		else if(rot1.angle() != T(0)) {
+			T fDiff = _rot2.angle() - rot1.angle();
+			T fDiffUnit = fDiff/T(2*M_PI);
+			int extraSpins = (int)floor(fDiffUnit + T(0.5));
+			if(extraSpins * fDiffUnit * (fDiffUnit - extraSpins) < 0)
+				extraSpins = -extraSpins;
+
+	    	QuaternionT<T> q1 = (QuaternionT<T>)rot1;
+	    	QuaternionT<T> q2 = (QuaternionT<T>)_rot2;
+
+	    	// Eliminate any non-acute angles between quaternions. This
+	    	// is done to prevent potential discontinuities that are the result of
+	    	// invalid intermediate value quaternions.
+	    	if(q1.dot(q2) < T(0))
+	    		q2 = -q2;
+
+	    	// Clamp identity quaternions so that |w| <= 1 (avoids problems with
+	    	// call to acos() in slerpExtraSpins).
+	    	if(q1.w() < T(-1)) q1.w() = T(-1); else if(q1.w() > T(1)) q1.w() = T(1);
+	    	if(q2.w() < T(-1)) q2.w() = T(-1); else if(q2.w() > T(1)) q2.w() = T(1);
+
+			RotationT<T> result = RotationT<T>(slerpExtraSpins(t, q1, q2, extraSpins));
+			if(result.axis().dot(interpolateAxis(t, rot1.axis(), _rot2.axis())) < T(0))
+				result = RotationT<T>(-result.axis(), -result.angle(), false);
+			int nrev = floor((t * _rot2.angle() + (T(1) - t) * rot1.angle() - result.angle())/T(2*M_PI) + T(0.5));
+			result.addRevolutions(nrev);
+			return result;
+		}
+		else {
+			return RotationT<T>(interpolateAxis(t, rot1.axis(), _rot2.axis()), (T(1) - t) * rot1.angle() + t * _rot2.angle());
+		}
+    }
+
+    template<typename T>
+	static inline Vector_3<T> interpolateAxis(T time, const Vector_3<T>& axis0, const Vector_3<T>& axis1) {
+		// assert:  axis0 and axis1 are unit length
+		// assert:  axis0.dot(axis1) >= 0
+		// assert:  0 <= time <= 1
+
+		T cos = axis0.dot(axis1);  // >= 0 by assertion
+		OVITO_ASSERT(cos >= T(0));
+		if(cos > T(1)) cos = T(1); // round-off error might create problems in acos call
+
+		T angle = acos(cos);
+		T invSin = T(1) / sin(angle);
+		T timeAngle = time * angle;
+		T coeff0 = sin(angle - timeAngle) * invSin;
+		T coeff1 = sin(timeAngle) * invSin;
+
+		return (coeff0 * axis0 + coeff1 * axis1);
+	}
+
+    template<typename T>
+	static inline QuaternionT<T> slerpExtraSpins(T t, const QuaternionT<T>& p, const QuaternionT<T>& q, int iExtraSpins) {
+		T fCos = p.dot(q);
+		OVITO_ASSERT(fCos >= T(0));
+
+		// Numerical round-off error could create problems in call to acos.
+		if(fCos < T(-1)) fCos = T(-1);
+		else if(fCos > T(1)) fCos = T(1);
+
+		T fAngle = acos(fCos);
+		T fSin = sin(fAngle);  // fSin >= 0 since fCos >= 0
+
+		if(fSin < T(1e-3)) {
+			return p;
+		}
+		else {
+			T fPhase = T(M_PI) * (T)iExtraSpins * t;
+			T fInvSin = T(1) / fSin;
+			T fCoeff0 = sin((T(1) - t) * fAngle - fPhase) * fInvSin;
+			T fCoeff1 = sin(t * fAngle + fPhase) * fInvSin;
+			return QuaternionT<T>(fCoeff0*p.x() + fCoeff1*q.x(), fCoeff0*p.y() + fCoeff1*q.y(),
+			                        fCoeff0*p.z() + fCoeff1*q.z(), fCoeff0*p.w() + fCoeff1*q.w());
+		}
 	}
 };
 
 /**
  * \brief Implementation of the value interpolator concept for scaling values.
  *
- * This class is required because the Base::Scaling class does not support the standard
+ * This class is required because the Scaling class does not support the standard
  * addition, scalar multiplication and subtraction operators.
  */
 template<>

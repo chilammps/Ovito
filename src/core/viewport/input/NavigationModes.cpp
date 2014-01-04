@@ -197,7 +197,7 @@ void PanMode::modifyView(Viewport* vp, QPointF delta)
 void ZoomMode::modifyView(Viewport* vp, QPointF delta)
 {
 	if(vp->isPerspectiveProjection()) {
-		FloatType amount =  -5.0 * sceneSizeFactor(vp) * delta.y();
+		FloatType amount =  -5.0f * sceneSizeFactor(vp) * delta.y();
 		if(vp->viewNode() == nullptr || vp->viewType() != Viewport::VIEW_SCENENODE) {
 			vp->setCameraPosition(_oldCameraPosition + _oldCameraDirection.resized(amount));
 		}
@@ -220,7 +220,7 @@ void ZoomMode::modifyView(Viewport* vp, QPointF delta)
 			}
 		}
 
-		FloatType newFOV = oldFOV * (FloatType)exp(0.003 * delta.y());
+		FloatType newFOV = oldFOV * (FloatType)exp(0.003f * delta.y());
 
 		if(vp->viewNode() == nullptr || vp->viewType() != Viewport::VIEW_SCENENODE) {
 			vp->setFieldOfView(newFOV);
@@ -240,9 +240,9 @@ FloatType ZoomMode::sceneSizeFactor(Viewport* vp)
 	OVITO_CHECK_OBJECT_POINTER(vp);
 	Box3 sceneBoundingBox = vp->dataset()->sceneRoot()->worldBoundingBox(vp->dataset()->animationSettings()->time());
 	if(!sceneBoundingBox.isEmpty())
-		return sceneBoundingBox.size().length() * 5e-4;
+		return sceneBoundingBox.size().length() * 5e-4f;
 	else
-		return 0.1;
+		return 0.1f;
 }
 
 /******************************************************************************
@@ -255,7 +255,7 @@ void ZoomMode::zoom(Viewport* vp, FloatType steps)
 			vp->setCameraPosition(vp->cameraPosition() + vp->cameraDirection().resized(sceneSizeFactor(vp) * steps));
 		}
 		else {
-			vp->setFieldOfView(vp->fieldOfView() * exp(-steps * 0.001));
+			vp->setFieldOfView(vp->fieldOfView() * exp(-steps * 0.001f));
 		}
 	}
 	else {
@@ -298,12 +298,12 @@ void FOVMode::modifyView(Viewport* vp, QPointF delta)
 
 	FloatType newFOV;
 	if(vp->isPerspectiveProjection()) {
-		newFOV = oldFOV + (FloatType)delta.y() * 0.002;
-		newFOV = std::max(newFOV, (FloatType)(5.0 * FLOATTYPE_PI / 180.0));
-		newFOV = std::min(newFOV, (FloatType)(170.0 * FLOATTYPE_PI / 180.0));
+		newFOV = oldFOV + (FloatType)delta.y() * 0.002f;
+		newFOV = std::max(newFOV, (FloatType)(5.0f * FLOATTYPE_PI / 180.0f));
+		newFOV = std::min(newFOV, (FloatType)(170.0f * FLOATTYPE_PI / 180.0f));
 	}
 	else {
-		newFOV = oldFOV * (FloatType)exp(0.006 * delta.y());
+		newFOV = oldFOV * (FloatType)exp(0.006f * delta.y());
 	}
 
 	if(vp->viewNode() == nullptr || vp->viewType() != Viewport::VIEW_SCENENODE) {
@@ -335,7 +335,7 @@ void OrbitMode::modifyView(Viewport* vp, QPointF delta)
 		theta = atan2(v.x(), v.y());
 	phi = atan2(sqrt(v.x() * v.x() + v.y() * v.y()), v.z());
 
-	FloatType speed = 4.0 / vp->size().height();
+	FloatType speed = 4.0f / vp->size().height();
 	FloatType deltaTheta = speed * delta.x();
 	FloatType deltaPhi = -speed * delta.y();
 
@@ -348,20 +348,29 @@ void OrbitMode::modifyView(Viewport* vp, QPointF delta)
 
 	Vector3 t1 = _currentOrbitCenter - Point3::Origin();
 	Vector3 t2 = (_oldViewMatrix * _currentOrbitCenter) - Point3::Origin();
-	AffineTransformation newTM =
-			AffineTransformation::translation(t1) *
-			AffineTransformation::rotation(Rotation(ViewportSettings::getSettings().upVector(), -deltaTheta)) *
-			AffineTransformation::translation(-t1) * _oldInverseViewMatrix *
-			AffineTransformation::translation(t2) *
-			AffineTransformation::rotationX(deltaPhi) *
-			AffineTransformation::translation(-t2);
-	newTM.orthonormalize();
 
 	if(vp->viewNode() == nullptr || vp->viewType() != Viewport::VIEW_SCENENODE) {
+		AffineTransformation newTM =
+				AffineTransformation::translation(t1) *
+				AffineTransformation::rotation(Rotation(ViewportSettings::getSettings().upVector(), -deltaTheta)) *
+				AffineTransformation::translation(-t1) * _oldInverseViewMatrix *
+				AffineTransformation::translation(t2) *
+				AffineTransformation::rotationX(deltaPhi) *
+				AffineTransformation::translation(-t2);
+		newTM.orthonormalize();
 		vp->setCameraTransformation(newTM);
 	}
 	else {
-		vp->viewNode()->transformationController()->setTransformationValue(vp->dataset()->animationSettings()->time(), newTM, true);
+		Controller* ctrl = vp->viewNode()->transformationController();
+		TimePoint time = vp->dataset()->animationSettings()->time();
+		Rotation rotX(Vector3(1,0,0), deltaPhi, false);
+		ctrl->rotate(time, rotX, _oldInverseViewMatrix);
+		Rotation rotZ(ViewportSettings::getSettings().upVector(), -deltaTheta);
+		ctrl->rotate(time, rotZ, AffineTransformation::Identity());
+		Vector3 shiftVector = _oldInverseViewMatrix.translation() - (_currentOrbitCenter - Point3::Origin());
+		Vector3 translationZ = (Matrix3::rotation(rotZ) * shiftVector) - shiftVector;
+		Vector3 translationX = Matrix3::rotation(rotZ) * _oldInverseViewMatrix * ((Matrix3::rotation(rotX) * t2) - t2);
+		ctrl->translate(time, translationZ - translationX, AffineTransformation::Identity());
 	}
 }
 

@@ -178,7 +178,7 @@ public:
     	if(T(1) <= std::abs(cos_t))
     		return q1;
 
-    	// t is now theta
+    	// t is now theta.
     	T theta = std::acos(cos_t);
     	T sin_t = std::sin(theta);
 
@@ -240,9 +240,9 @@ inline QuaternionT<T>::QuaternionT(const Matrix_34<T>& tm)
     // article "Quaternion Calculus and Fast Animation".
     T trace = tm(0,0) + tm(1,1) + tm(2,2);
 	if(trace > 0) {
-		T root = sqrt(trace + 1.0);
-		w() = 0.5 * root;
-		root = 0.5 / root;
+		T root = sqrt(trace + T(1));
+		w() = T(0.5) * root;
+		root = T(0.5) / root;
 		x() = (tm(2,1) - tm(1,2)) * root;
 		y() = (tm(0,2) - tm(2,0)) * root;
 		z() = (tm(1,0) - tm(0,1)) * root;
@@ -255,8 +255,8 @@ inline QuaternionT<T>::QuaternionT(const Matrix_34<T>& tm)
 		typename Matrix_34<T>::size_type j = next[i];
 		typename Matrix_34<T>::size_type k = next[j];
 		T root = sqrt(tm(i,i) - tm(j,j) - tm(k,k) + 1.0);
-		(*this)[i] = 0.5 * root;
-		root = 0.5 / root;
+		(*this)[i] = T(0.5) * root;
+		root = T(0.5) / root;
 		w() = (tm(k,j) - tm(j,k)) * root;
 		(*this)[j] = (tm(j,i) + tm(i,j)) * root;
 		(*this)[k] = (tm(k,i) + tm(i,k)) * root;
@@ -271,7 +271,7 @@ inline QuaternionT<T>::QuaternionT(const Matrix_34<T>& tm)
 /// \param b The second rotation.
 /// \return A new rotation that is equal to first applying rotation \a b and then applying rotation \a a.
 template<typename T>
-inline QuaternionT<T> operator*(const QuaternionT<T>& a, const QuaternionT<T>& b)
+Q_DECL_CONSTEXPR inline QuaternionT<T> operator*(const QuaternionT<T>& a, const QuaternionT<T>& b)
 {
 	return {
 		a.w()*b.x() + a.x()*b.w() + a.y()*b.z() - a.z()*b.y(),
@@ -285,10 +285,13 @@ inline QuaternionT<T> operator*(const QuaternionT<T>& a, const QuaternionT<T>& b
 /// \param v The vector.
 /// \return The rotated vector v.
 template<typename T>
+#ifndef OVITO_DEBUG
+Q_DECL_CONSTEXPR
+#endif
 inline Vector_3<T> operator*(const QuaternionT<T>& q, const Vector_3<T>& v)
 {
-	OVITO_ASSERT_MSG(std::fabs(q.dot(q) - T(1)) <= T(FLOATTYPE_EPSILON), "Vector rotation", "Quaternion must be normalized.");
-	return Matrix3(T(1) - T(2)*(q.y()*q.y() + q.z()*q.z()),        T(2)*(q.x()*q.y() - q.w()*q.z()),        T(2)*(q.x()*q.z() + q.w()*q.y()),
+	OVITO_ASSERT_MSG(std::abs(q.dot(q) - T(1)) <= T(FLOATTYPE_EPSILON), "Vector rotation", "Quaternion must be normalized.");
+	return Matrix_3<T>(T(1) - T(2)*(q.y()*q.y() + q.z()*q.z()),        T(2)*(q.x()*q.y() - q.w()*q.z()),        T(2)*(q.x()*q.z() + q.w()*q.y()),
 						  T(2)*(q.x()*q.y() + q.w()*q.z()), T(1) - T(2)*(q.x()*q.x() + q.z()*q.z()),        T(2)*(q.y()*q.z() - q.w()*q.x()),
 						  T(2)*(q.x()*q.z() - q.w()*q.y()),        T(2)*(q.y()*q.z() + q.w()*q.x()), T(1) - T(2)*(q.x()*q.x() + q.y()*q.y())) * v;
 }

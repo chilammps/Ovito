@@ -42,7 +42,7 @@ namespace Ovito {
  * It is defined by minimum and maximum coordinates in X, Y and Z direction.
  * 
  * There are two predefined instances of this template class: 
- * Box3 which is used for floating-point coordinates and \c Base::Box3I which is used
+ * Box3 which is used for floating-point coordinates and Box3I which is used
  * for integer coordinates. 
  */
 template<typename T>
