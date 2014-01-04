@@ -27,7 +27,7 @@
 #include <plugins/particles/importer/InputColumnMappingDialog.h>
 #include <plugins/particles/importer/ParticleImporter.h>
 
-//#ifdef MAKING_MODULE_NETCDF
+#ifdef MAKING_MODULE_NETCDF
 #  define OVITO_NETCDF_EXPORT Q_DECL_EXPORT
 #else
 #  define OVITO_NETCDF_EXPORT Q_DECL_IMPORT
