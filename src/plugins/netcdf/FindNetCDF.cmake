@@ -1,0 +1,21 @@
+# - Find NetCDF
+# Find the native NetCDF includes and library.
+# Once done this will define
+#
+#  NETCDF_INCLUDE_DIRS   - where to find netcdf.h.
+#  NETCDF_LIBRARIES      - List of libraries when using NetCDF.
+#  NETCDF_FOUND          - True if NetCDF was found.
+
+FIND_PATH(NETCDF_INCLUDE_DIR netcdf.h)
+
+FIND_LIBRARY(NETCDF_LIBRARY NAMES netcdf)
+MARK_AS_ADVANCED(NETCDF_LIBRARY NETCDF_INCLUDE_DIR)
+
+IF(NETCDF_INCLUDE_DIR)
+  IF(NETCDF_LIBRARY)
+    SET(NETCDF_FOUND "YES")
+    SET(NETCDF_INCLUDE_DIRS ${NETCDF_INCLUDE_DIR})
+    SET(NETCDF_LIBRARIES ${NETCDF_LIBRARY})
+  ENDIF(NETCDF_LIBRARY)
+ENDIF(NETCDF_INCLUDE_DIR)
+

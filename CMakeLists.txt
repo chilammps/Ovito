@@ -41,6 +41,7 @@ OPTION(OVITO_BUILD_PLUGIN_MESH "Build the Mesh plugin." "ON")
 OPTION(OVITO_BUILD_PLUGIN_TACHYON "Build the Tachyon plugin." "ON")
 OPTION(OVITO_BUILD_PLUGIN_CRYSTALANALYSIS "Build the CrystalAnalysis plugin." "OFF")
 OPTION(OVITO_BUILD_PLUGIN_SCRIPTING "Build the Scripting plugin." "OFF")
+OPTION(OVITO_BUILD_PLUGIN_NETCDF "Build the NetCDF plugin." "OFF")
 
 # Tell CMake to run Qt moc when necessary:
 SET(CMAKE_AUTOMOC ON)
