@@ -60,7 +60,7 @@ public:
 	virtual QString fileFilterDescription() override { return tr("NetCDF Files"); }
 
 	/// \brief Checks if the given file has format that can be read by this importer.
-	virtual bool checkFileFormat(QIODevice& input, const QUrl& sourceLocation) override;
+	virtual bool checkFileFormat(QFileDevice& input, const QUrl& sourceLocation) override;
 
 	/// Returns the title of this object.
 	virtual QString objectTitle() override { return tr("NetCDF"); }
@@ -96,13 +96,10 @@ protected:
 		/// Returns the file column mapping used to load the file.
 		const InputColumnMapping& columnMapping() const { return _customColumnMapping; }
 
-		/// Is called in the background thread to perform the data file import.
-		virtual void load(DataSetContainer& container, FutureInterfaceBase& futureInterface) override;
-
 	protected:
 
 		/// Parses the given input file and stores the data in this container object.
-		virtual void parseFile(FutureInterfaceBase& futureInterface, CompressedTextParserStream& stream) override { };
+		virtual void parseFile(FutureInterfaceBase& futureInterface, CompressedTextParserStream& stream) override;
 
 	private:
 
@@ -142,8 +139,8 @@ protected:
 		return std::make_shared<NetCDFImportTask>(frame, _useCustomColumnMapping, _customColumnMapping);
 	}
 
-	/// Retrieves the given file in the background and scans it for simulation timesteps.
-	virtual void scanMultiTimestepFile(FutureInterface<QVector<LinkedFileImporter::FrameSourceInformation>>& futureInterface, const QUrl sourceUrl);
+	/// \brief Scans the given input file to find all contained simulation frames.
+	virtual void scanFileForTimesteps(FutureInterfaceBase& futureInterface, QVector<LinkedFileImporter::FrameSourceInformation>& frames, const QUrl& sourceUrl, CompressedTextParserStream& stream) override;
 
 	/// \brief Guesses the mapping of input file columns to internal particle properties.
 	static void mapVariableToColumn(InputColumnMapping &columnMapping, int column, QString name, int dataType);

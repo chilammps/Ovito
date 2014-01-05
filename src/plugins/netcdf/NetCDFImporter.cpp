@@ -50,10 +50,10 @@ SET_PROPERTY_FIELD_LABEL(NetCDFImporter, _useCustomColumnMapping, "Custom file c
 /******************************************************************************
 * Check for NetCDF error and throw exception
 ******************************************************************************/
-void _ncerr(int err, const char *file, int line)
+static void _ncerr(int err, const char *file, int line)
 {
 	if (err != NC_NOERR)
-		throw Exception(QString("NetCDF error in line %1 of source file %2: %3").arg(line).arg(file).arg(QString(nc_strerror(err))));
+		throw Exception(NetCDFImporter::tr("NetCDF error in line %1 of source file %2: %3").arg(line).arg(file).arg(QString(nc_strerror(err))));
 }
 
 /******************************************************************************
@@ -70,14 +70,9 @@ void NetCDFImporter::setCustomColumnMapping(const InputColumnMapping& mapping)
 /******************************************************************************
 * Checks if the given file has format that can be read by this importer.
 ******************************************************************************/
-bool NetCDFImporter::checkFileFormat(QIODevice& input, const QUrl& sourceLocation)
+bool NetCDFImporter::checkFileFormat(QFileDevice& input, const QUrl& sourceLocation)
 {
-	QString filename = sourceLocation.toString();
-	filename = QDir::toNativeSeparators(filename.right(filename.size()-1));
-
-	// NetCDFs can only be loaded locally for now.
-	//	if (!sourceLocation.isLocalFile())
-	//		return false;
+	QString filename = QDir::toNativeSeparators(input.fileName());
 
 	// Check if we can open the input file for reading.
 	int tmp_ncid;
@@ -93,13 +88,9 @@ bool NetCDFImporter::checkFileFormat(QIODevice& input, const QUrl& sourceLocatio
 /******************************************************************************
 * Scans the input file for simulation timesteps.
 ******************************************************************************/
-void NetCDFImporter::scanMultiTimestepFile(FutureInterface<QVector<LinkedFileImporter::FrameSourceInformation>>& futureInterface, const QUrl sourceUrl)
+void NetCDFImporter::scanFileForTimesteps(FutureInterfaceBase& futureInterface, QVector<LinkedFileImporter::FrameSourceInformation>& frames, const QUrl& sourceUrl, CompressedTextParserStream& stream)
 {
-	QString filename = QDir::toNativeSeparators(sourceUrl.toLocalFile());
-	QFileInfo fileInfo(filename);
-	QDateTime lastModified = fileInfo.lastModified();
-
-	futureInterface.setProgressText(tr("Scanning NetCDF file %1").arg(filename));
+	QString filename = QDir::toNativeSeparators(stream.device().fileName());
 
 	// Open the input and read number of frames.
 	int ncid;
@@ -110,24 +101,17 @@ void NetCDFImporter::scanMultiTimestepFile(FutureInterface<QVector<LinkedFileImp
 	NCERR( nc_inq_dimlen(ncid, frame_dim, &nFrames) );
 	NCERR( nc_close(ncid) );
 
-	futureInterface.setProgressRange(nFrames);
-
-	// Store frame information.
-	QVector<LinkedFileImporter::FrameSourceInformation> frames;
-
+	QFileInfo fileInfo(stream.device().fileName());
+	QDateTime lastModified = fileInfo.lastModified();
 	for(int i = 0; i < nFrames; i++) {
 		FrameSourceInformation frame;
 		frame.sourceFile = sourceUrl;
-		frame.byteOffset = i;
+		frame.byteOffset = 0;
 		frame.lineNumber = i;
 		frame.lastModificationTime = lastModified;
-		frame.label = QString("%1 (Frame %2)").arg(filename).arg(i);
+		frame.label = tr("Frame %1").arg(i);
 		frames.push_back(frame);
 	}
-
-	// Return results.
-	if(!futureInterface.isCanceled())
-		futureInterface.setResult(frames);
 }
 
 /******************************************************************************
@@ -199,22 +183,18 @@ void NetCDFImporter::NetCDFImportTask::closeNetCDF()
 }
 
 /******************************************************************************
-* Parses the given input file and stores the data in the given container object.
+* Parses the given input file and stores the data in this container object.
 ******************************************************************************/
-void NetCDFImporter::NetCDFImportTask::load(DataSetContainer& container, FutureInterfaceBase& futureInterface)
+void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInterface, CompressedTextParserStream& stream)
 {
 	futureInterface.setProgressText(tr("Reading NetCDF file %1").arg(frame().sourceFile.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
 
-	// Fetch file.
-	Future<QString> fetchFileFuture = FileManager::instance().fetchUrl(container, frame().sourceFile);
-	container.taskManager().addTask(fetchFileFuture);
-	if(!futureInterface.waitForSubTask(fetchFileFuture)) {
-		return;
-	}
-	OVITO_ASSERT(fetchFileFuture.isCanceled() == false);
+	// First close text stream so we can re-open it in binary mode.
+	QFileDevice& file = stream.device();
+	file.close();
 
 	// Open file.
-	QString filename = fetchFileFuture.result();
+	QString filename = file.fileName();
 
 	openNetCDF(filename);
 
@@ -262,7 +242,7 @@ void NetCDFImporter::NetCDFImportTask::load(DataSetContainer& container, FutureI
 		columnMapping = _customColumnMapping;
 
 	// Get frame number.
-	size_t movieFrame = frame().byteOffset;
+	size_t movieFrame = frame().lineNumber;
 
 	// Total number of particles.
 	size_t particleCount;
@@ -317,7 +297,7 @@ void NetCDFImporter::NetCDFImportTask::load(DataSetContainer& container, FutureI
 			else if(dataType == qMetaTypeId<FloatType>())
 				dataTypeSize = sizeof(FloatType);
 			else
-				throw Exception(tr("Invalid custom particle property (data type %1) for input file column %2").arg(dataType).arg(column+1));
+				throw Exception(tr("Invalid custom particle property (data type %1) for input file column %2 of NetCDF file.").arg(dataType).arg(column+1));
 
 			QString columnName = columnMapping.columnName(column);
 			QString propertyName = columnMapping.propertyName(column);
@@ -408,7 +388,7 @@ void NetCDFImporter::NetCDFImportTask::load(DataSetContainer& container, FutureI
 					property->setName(propertyName);
 
 					if (property->componentCount() != componentCount) {
-						qDebug() << "Warning: Skipping field '" << columnName << "' because internal and NetCDF component counts do not match." << endl;
+						qDebug() << "Warning: Skipping field '" << columnName << "' of NetCDF file because internal and NetCDF component counts do not match." << endl;
 					}
 					else {
 						// Type mangling.
@@ -440,7 +420,7 @@ void NetCDFImporter::NetCDFImportTask::load(DataSetContainer& container, FutureI
 							NCERR( nc_get_vara_float(_ncid, varId, startp, countp, property->dataFloat()) );
 						}
 						else {
-							qDebug() << "Warning: Skipping field '" << columnName << "' because it has an unrecognized data type." << endl;
+							qDebug() << "Warning: Skipping field '" << columnName << "' of NetCDF file because it has an unrecognized data type." << endl;
 						}
 					}
 				}
@@ -566,24 +546,15 @@ void NetCDFImporter::showEditColumnMappingDialog(QWidget* parent)
 void NetCDFImporterEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
 	// Create a rollout.
-	QWidget* rollout = createRollout(tr("NetCDF dump file"), rolloutParams);
+	QWidget* rollout = createRollout(tr("NetCDF file"), rolloutParams);
 
     // Create the rollout contents.
 	QVBoxLayout* layout = new QVBoxLayout(rollout);
 	layout->setContentsMargins(4,4,4,4);
 	layout->setSpacing(4);
 
-	QGroupBox* animFramesBox = new QGroupBox(tr("Timesteps"), rollout);
-	QVBoxLayout* sublayout = new QVBoxLayout(animFramesBox);
-	sublayout->setContentsMargins(4,4,4,4);
-	layout->addWidget(animFramesBox);
-
-	// Multi-timestep file
-	BooleanParameterUI* multitimestepUI = new BooleanParameterUI(this, PROPERTY_FIELD(ParticleImporter::_isMultiTimestepFile));
-	sublayout->addWidget(multitimestepUI->checkBox());
-
 	QGroupBox* columnMappingBox = new QGroupBox(tr("File columns"), rollout);
-	sublayout = new QVBoxLayout(columnMappingBox);
+	QVBoxLayout* sublayout = new QVBoxLayout(columnMappingBox);
 	sublayout->setContentsMargins(4,4,4,4);
 	layout->addWidget(columnMappingBox);
 

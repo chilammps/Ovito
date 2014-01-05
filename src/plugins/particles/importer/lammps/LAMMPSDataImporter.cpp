@@ -32,7 +32,7 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, LAMMPSDataImporter, ParticleImpor
 /******************************************************************************
 * Checks if the given file has format that can be read by this importer.
 ******************************************************************************/
-bool LAMMPSDataImporter::checkFileFormat(QIODevice& input, const QUrl& sourceLocation)
+bool LAMMPSDataImporter::checkFileFormat(QFileDevice& input, const QUrl& sourceLocation)
 {
 	// Open input file.
 	CompressedTextParserStream stream(input, sourceLocation.path());

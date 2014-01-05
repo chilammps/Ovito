@@ -43,7 +43,7 @@ struct CFGHeader {
 /******************************************************************************
 * Checks if the given file has format that can be read by this importer.
 ******************************************************************************/
-bool CFGImporter::checkFileFormat(QIODevice& input, const QUrl& sourceLocation)
+bool CFGImporter::checkFileFormat(QFileDevice& input, const QUrl& sourceLocation)
 {
 	// Open input file.
 	CompressedTextParserStream stream(input, sourceLocation.path());

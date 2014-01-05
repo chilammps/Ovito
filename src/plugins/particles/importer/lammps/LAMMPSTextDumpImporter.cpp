@@ -65,7 +65,7 @@ void LAMMPSTextDumpImporter::setCustomColumnMapping(const InputColumnMapping& ma
 /******************************************************************************
 * Checks if the given file has format that can be read by this importer.
 ******************************************************************************/
-bool LAMMPSTextDumpImporter::checkFileFormat(QIODevice& input, const QUrl& sourceLocation)
+bool LAMMPSTextDumpImporter::checkFileFormat(QFileDevice& input, const QUrl& sourceLocation)
 {
 	// Open input file.
 	CompressedTextParserStream stream(input, sourceLocation.path());
@@ -91,7 +91,7 @@ void LAMMPSTextDumpImporter::scanFileForTimesteps(FutureInterfaceBase& futureInt
 
 	int timestep;
 	size_t numParticles = 0;
-	QFileInfo fileInfo(stream.filename());
+	QFileInfo fileInfo(stream.device().fileName());
 	QString filename = fileInfo.fileName();
 	QDateTime lastModified = fileInfo.lastModified();
 
