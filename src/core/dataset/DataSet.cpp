@@ -442,8 +442,9 @@ void DataSet::renderFrame(TimePoint renderTime, int frameNumber, RenderSettings*
 	renderer->endFrame();
 
 	// Save rendered image to disk.
-	if(settings->saveToFile() && !imageFilename.isEmpty()) {
+	if(settings->saveToFile()) {
 		if(!videoEncoder) {
+			OVITO_ASSERT(!imageFilename.isEmpty());
 			if(!frameBuffer->image().save(imageFilename, settings->imageInfo().format()))
 				throw Exception(tr("Failed to save rendered image to image file '%1'.").arg(imageFilename));
 		}
