@@ -46,7 +46,7 @@ class OVITO_NETCDF_EXPORT NetCDFImporter : public ParticleImporter
 public:
 
 	/// \brief Constructs a new instance of this class.
-	Q_INVOKABLE NetCDFImporter(DataSet *dataset) : ParticleImporter(dataset), _useCustomColumnMapping(true) {
+	Q_INVOKABLE NetCDFImporter(DataSet *dataset) : ParticleImporter(dataset), _useCustomColumnMapping(false) {
 		INIT_PROPERTY_FIELD(NetCDFImporter::_useCustomColumnMapping);
 		setMultiTimestepFile(true);
 	}
@@ -60,7 +60,7 @@ public:
 	virtual QString fileFilterDescription() override { return tr("NetCDF Files"); }
 
 	/// \brief Checks if the given file has format that can be read by this importer.
-	virtual bool checkFileFormat(QIODevice& input, const QUrl& sourceLocation) override;
+	virtual bool checkFileFormat(QFileDevice& input, const QUrl& sourceLocation) override;
 
 	/// Returns the title of this object.
 	virtual QString objectTitle() override { return tr("NetCDF"); }
@@ -73,9 +73,22 @@ public:
 	///        the internal particle properties.
 	void setCustomColumnMapping(const InputColumnMapping& mapping);
 
+	/// Returns whether the mapping between input file columns and particle
+	/// properties is done automatically or by the user.
+	bool useCustomColumnMapping() const { return _useCustomColumnMapping; }
+
+	/// Sets whether the mapping between input file columns and particle
+	/// properties is done automatically or by the user.
+	void setUseCustomColumnMapping(bool useCustomMapping) { _useCustomColumnMapping = useCustomMapping; }
+
 	/// Displays a dialog box that allows the user to edit the custom file column to particle
 	/// property mapping.
 	void showEditColumnMappingDialog(QWidget* parent = nullptr);
+
+public:
+
+	Q_PROPERTY(Particles::InputColumnMapping columnMapping READ customColumnMapping WRITE setCustomColumnMapping);
+	Q_PROPERTY(bool useCustomColumnMapping READ useCustomColumnMapping WRITE setUseCustomColumnMapping);
 
 protected:
 
@@ -96,13 +109,10 @@ protected:
 		/// Returns the file column mapping used to load the file.
 		const InputColumnMapping& columnMapping() const { return _customColumnMapping; }
 
-		/// Is called in the background thread to perform the data file import.
-		virtual void load(DataSetContainer& container, FutureInterfaceBase& futureInterface) override;
-
 	protected:
 
 		/// Parses the given input file and stores the data in this container object.
-		virtual void parseFile(FutureInterfaceBase& futureInterface, CompressedTextParserStream& stream) override { };
+		virtual void parseFile(FutureInterfaceBase& futureInterface, CompressedTextParserStream& stream) override;
 
 	private:
 
@@ -142,8 +152,8 @@ protected:
 		return std::make_shared<NetCDFImportTask>(frame, _useCustomColumnMapping, _customColumnMapping);
 	}
 
-	/// Retrieves the given file in the background and scans it for simulation timesteps.
-	virtual void scanMultiTimestepFile(FutureInterface<QVector<LinkedFileImporter::FrameSourceInformation>>& futureInterface, const QUrl sourceUrl);
+	/// \brief Scans the given input file to find all contained simulation frames.
+	virtual void scanFileForTimesteps(FutureInterfaceBase& futureInterface, QVector<LinkedFileImporter::FrameSourceInformation>& frames, const QUrl& sourceUrl, CompressedTextParserStream& stream) override;
 
 	/// \brief Guesses the mapping of input file columns to internal particle properties.
 	static void mapVariableToColumn(InputColumnMapping &columnMapping, int column, QString name, int dataType);

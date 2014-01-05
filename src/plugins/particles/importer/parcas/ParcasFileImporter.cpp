@@ -99,7 +99,7 @@ private:
 /******************************************************************************
 * Checks if the given file has format that can be read by this importer.
 ******************************************************************************/
-bool ParcasFileImporter::checkFileFormat(QIODevice& input, const QUrl& sourceLocation)
+bool ParcasFileImporter::checkFileFormat(QFileDevice& input, const QUrl& sourceLocation)
 {
 	// Open input file.
 	if(!input.open(QIODevice::ReadOnly))
