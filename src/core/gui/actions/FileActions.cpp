@@ -113,6 +113,7 @@ void ActionManager::on_HelpOpenGLInfo_triggered()
 			lsbOutput.replace('\n', ' ');
 			stream << "LSB output: " << lsbOutput << endl;
 #endif
+			stream << "Command line: " << QCoreApplication::arguments().join(' ') << endl;
 			stream << "======= OpenGL info =======" << endl;
 			stream << "Depth buffer size: " << format.depthBufferSize() << endl;
 			stream << "Version: " << format.majorVersion() << QStringLiteral(".") << format.minorVersion() << endl;

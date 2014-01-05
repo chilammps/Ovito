@@ -13,6 +13,12 @@ http://www.ovito.org/
 Change Log 
 ****************************************************************************************
 
+Release 2.2.2 (05-Jan-14):
+
+ - Fixed regression: Rendering a movie with Ovito 2.2.1 resulted in an empty file.
+ - Fixed display of the selection polygon when using the Fence selection mode of the Manual Selection modifier.
+ - Added --glversion command line option, which allows to request a specific OpenGL standard.
+
 Release 2.2.1 (26-Dec-13):
 
  - Added a file parser for binary LAMMPS dump files.
