@@ -25,6 +25,7 @@
 #include <core/utilities/concurrent/Task.h>
 #include <core/dataset/DataSetContainer.h>
 #include <core/dataset/importexport/LinkedFileObject.h>
+#include <core/gui/mainwin/MainWindow.h>
 #include <core/gui/properties/BooleanParameterUI.h>
 #include <core/gui/properties/BooleanRadioButtonParameterUI.h>
 #include <plugins/particles/importer/InputColumnMappingDialog.h>
@@ -592,7 +593,7 @@ void NetCDFImporterEditor::createUI(const RolloutInsertionParameters& rolloutPar
 	useCustomMappingUI->buttonTrue()->setText(tr("User-defined mapping to particle properties"));
 	sublayout->addWidget(useCustomMappingUI->buttonTrue());
 
-	QPushButton* editMappingButton = new QPushButton(tr("Edit column mapping"));
+	QPushButton* editMappingButton = new QPushButton(tr("Edit column mapping..."));
 	sublayout->addWidget(editMappingButton);
 	connect(editMappingButton, SIGNAL(clicked(bool)), this, SLOT(onEditColumnMapping()));
 }
@@ -602,10 +603,8 @@ void NetCDFImporterEditor::createUI(const RolloutInsertionParameters& rolloutPar
 ******************************************************************************/
 void NetCDFImporterEditor::onEditColumnMapping()
 {
-	NetCDFImporter* importer = static_object_cast<NetCDFImporter>(editObject());
-	if(importer) {
-		importer->showEditColumnMappingDialog();
-	}
+	if(NetCDFImporter* importer = static_object_cast<NetCDFImporter>(editObject()))
+		importer->showEditColumnMappingDialog(mainWindow());
 }
 
 };
