@@ -44,6 +44,38 @@ namespace Ovito {
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, ViewportSceneRenderer, SceneRenderer);
 
 /******************************************************************************
+* Returns the default OpenGL surface format requested by OVITO when creating
+* OpenGL contexts.
+******************************************************************************/
+QSurfaceFormat ViewportSceneRenderer::getDefaultSurfaceFormat()
+{
+	QSurfaceFormat format;
+	format.setDepthBufferSize(24);
+	format.setMajorVersion(OVITO_OPENGL_REQUESTED_VERSION_MAJOR);
+	format.setMinorVersion(OVITO_OPENGL_REQUESTED_VERSION_MINOR);
+	if(Application::instance().cmdLineParser().isSet(QStringLiteral("glversion"))) {
+		QStringList tokens = Application::instance().cmdLineParser().value(QStringLiteral("glversion")).split(QChar('.'));
+		if(tokens.size() == 2) {
+			int majorVersion = tokens[0].toInt();
+			int minorVersion = tokens[1].toInt();
+			if(majorVersion >= 1) {
+				format.setMajorVersion(majorVersion);
+				format.setMinorVersion(minorVersion);
+			}
+		}
+	}
+	format.setOption(QSurfaceFormat::DeprecatedFunctions);
+	format.setProfile(ViewportSceneRenderer::useCoreProfile() ? QSurfaceFormat::CoreProfile : QSurfaceFormat::CompatibilityProfile);
+	format.setStencilBufferSize(1);
+#if 0
+#ifdef OVITO_DEBUG
+	format.setOption(QSurfaceFormat::DebugContext);
+#endif
+#endif
+	return format;
+}
+
+/******************************************************************************
 * This method is called just before renderFrame() is called.
 ******************************************************************************/
 void ViewportSceneRenderer::beginFrame(TimePoint time, const ViewProjectionParameters& params, Viewport* vp)
@@ -444,9 +476,8 @@ void ViewportSceneRenderer::render2DPolyline(const Point2* points, int count, co
 {
 	OVITO_STATIC_ASSERT(sizeof(points[0]) == 2*sizeof(GLfloat));
 
-	// Initialize OpenGL shader.
-	QOpenGLShaderProgram* shader = loadShaderProgram("line", ":/core/glsl/line.vertex.glsl", ":/core/glsl/line.fragment.glsl");
-
+	// Load OpenGL shader.
+	QOpenGLShaderProgram* shader = loadShaderProgram("line", ":/core/glsl/lines/line.vs", ":/core/glsl/lines/line.fs");
 	if(!shader->bind())
 		throw Exception(tr("Failed to bind OpenGL shader."));
 
@@ -466,8 +497,8 @@ void ViewportSceneRenderer::render2DPolyline(const Point2* points, int count, co
 		if(!vertexBuffer.bind())
 				throw Exception(tr("Failed to bind OpenGL vertex buffer."));
 		vertexBuffer.allocate(points, 2 * sizeof(GLfloat) * count);
-		OVITO_CHECK_OPENGL(shader->enableAttributeArray("vertex_pos"));
-		OVITO_CHECK_OPENGL(shader->setAttributeBuffer("vertex_pos", GL_FLOAT, 0, 2));
+		OVITO_CHECK_OPENGL(shader->enableAttributeArray("position"));
+		OVITO_CHECK_OPENGL(shader->setAttributeBuffer("position", GL_FLOAT, 0, 2));
 		vertexBuffer.release();
 	}
 	else {
@@ -476,8 +507,8 @@ void ViewportSceneRenderer::render2DPolyline(const Point2* points, int count, co
 	}
 
 	if(glformat().majorVersion() >= 3) {
-		OVITO_CHECK_OPENGL(shader->disableAttributeArray("vertex_color"));
-		OVITO_CHECK_OPENGL(shader->setAttributeValue("vertex_color", color.r(), color.g(), color.b(), color.a()));
+		OVITO_CHECK_OPENGL(shader->disableAttributeArray("color"));
+		OVITO_CHECK_OPENGL(shader->setAttributeValue("color", color.r(), color.g(), color.b(), color.a()));
 	}
 	else {
 		OVITO_CHECK_OPENGL(glColor4(color));
@@ -486,7 +517,7 @@ void ViewportSceneRenderer::render2DPolyline(const Point2* points, int count, co
 	OVITO_CHECK_OPENGL(glDrawArrays(closed ? GL_LINE_LOOP : GL_LINE_STRIP, 0, count));
 
 	if(glformat().majorVersion() >= 3) {
-		shader->disableAttributeArray("vertex_pos");
+		shader->disableAttributeArray("position");
 	}
 	else {
 		OVITO_CHECK_OPENGL(glDisableClientState(GL_VERTEX_ARRAY));

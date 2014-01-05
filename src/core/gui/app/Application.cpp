@@ -86,6 +86,7 @@ bool Application::initialize(int& argc, char** argv)
 	// Register command line arguments.
 	_cmdLineParser.addOption(CommandLineOption(QStringList{{"v", "version"}}, tr("Prints the program version and exits.")));
 	_cmdLineParser.addOption(CommandLineOption(QStringList{{"nogui"}}, tr("Run in console mode without showing the graphical user interface.")));
+	_cmdLineParser.addOption(CommandLineOption(QStringList{{"glversion"}}, tr("Selects a specific version of the OpenGL standard."), tr("VERSION")));
 
 	// Parse command line arguments.
 	// Ignore unknown command line options for now.

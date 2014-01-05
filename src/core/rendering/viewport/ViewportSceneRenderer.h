@@ -176,6 +176,9 @@ public:
 	/// Returns the line rendering width to use in object picking mode.
 	virtual FloatType defaultLinePickingWidth() override;
 
+	/// Returns the default OpenGL surface format requested by OVITO when creating OpenGL contexts.
+	static QSurfaceFormat getDefaultSurfaceFormat();
+
 protected:
 
 	/// \brief Renders the visual representation of the modifiers.

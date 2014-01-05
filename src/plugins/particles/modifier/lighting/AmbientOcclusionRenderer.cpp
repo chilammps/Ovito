@@ -37,16 +37,8 @@ bool AmbientOcclusionRenderer::startRender(DataSet* dataset, RenderSettings* set
 	if(!ViewportSceneRenderer::startRender(dataset, settings))
 		return false;
 
-	// Set up surface format with a depth buffer.
-	QSurfaceFormat format;
-	format.setDepthBufferSize(24);
-	format.setMajorVersion(OVITO_OPENGL_REQUESTED_VERSION_MAJOR);
-	format.setMinorVersion(OVITO_OPENGL_REQUESTED_VERSION_MINOR);
-	format.setOption(QSurfaceFormat::DeprecatedFunctions);
-	format.setProfile(ViewportSceneRenderer::useCoreProfile() ? QSurfaceFormat::CoreProfile : QSurfaceFormat::CompatibilityProfile);
-
 	_offscreenContext.reset(new QOpenGLContext());
-	_offscreenContext->setFormat(format);
+	_offscreenContext->setFormat(ViewportSceneRenderer::getDefaultSurfaceFormat());
 	if(!_offscreenContext->create())
 		throw Exception(tr("Failed to create OpenGL context."));
 
