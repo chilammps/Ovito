@@ -46,7 +46,7 @@ class OVITO_NETCDF_EXPORT NetCDFImporter : public ParticleImporter
 public:
 
 	/// \brief Constructs a new instance of this class.
-	Q_INVOKABLE NetCDFImporter(DataSet *dataset) : ParticleImporter(dataset), _useCustomColumnMapping(true) {
+	Q_INVOKABLE NetCDFImporter(DataSet *dataset) : ParticleImporter(dataset), _useCustomColumnMapping(false) {
 		INIT_PROPERTY_FIELD(NetCDFImporter::_useCustomColumnMapping);
 		setMultiTimestepFile(true);
 	}
@@ -73,9 +73,22 @@ public:
 	///        the internal particle properties.
 	void setCustomColumnMapping(const InputColumnMapping& mapping);
 
+	/// Returns whether the mapping between input file columns and particle
+	/// properties is done automatically or by the user.
+	bool useCustomColumnMapping() const { return _useCustomColumnMapping; }
+
+	/// Sets whether the mapping between input file columns and particle
+	/// properties is done automatically or by the user.
+	void setUseCustomColumnMapping(bool useCustomMapping) { _useCustomColumnMapping = useCustomMapping; }
+
 	/// Displays a dialog box that allows the user to edit the custom file column to particle
 	/// property mapping.
 	void showEditColumnMappingDialog(QWidget* parent = nullptr);
+
+public:
+
+	Q_PROPERTY(Particles::InputColumnMapping columnMapping READ customColumnMapping WRITE setCustomColumnMapping);
+	Q_PROPERTY(bool useCustomColumnMapping READ useCustomColumnMapping WRITE setUseCustomColumnMapping);
 
 protected:
 

@@ -466,7 +466,7 @@ void LAMMPSTextDumpImporter::showEditColumnMappingDialog(QWidget* parent)
 	InputColumnMappingDialog dialog(mapping, parent);
 	if(dialog.exec() == QDialog::Accepted) {
 		setCustomColumnMapping(dialog.mapping());
-		_useCustomColumnMapping = true;
+		setUseCustomColumnMapping(true);
 		requestReload();
 	}
 }

@@ -63,7 +63,6 @@ static void _ncerr(int err, const char *file, int line)
 void NetCDFImporter::setCustomColumnMapping(const InputColumnMapping& mapping)
 {
 	_customColumnMapping = mapping;
-
 	notifyDependents(ReferenceEvent::TargetChanged);
 }
 
@@ -222,7 +221,7 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 			}
 			else if (type == NC_FLOAT || type == NC_DOUBLE) {
 				mapVariableToColumn(columnMapping, column, name, qMetaTypeId<FloatType>());
-				column++;				
+				column++;
 			}
 			else {
 				qDebug() << "Skipping NetCDF variable " << name << " because type is not known." << endl;
@@ -451,6 +450,7 @@ void NetCDFImporter::mapVariableToColumn(InputColumnMapping &columnMapping, int 
 	else if(loweredName == "c_stress[5]") columnMapping.mapStandardColumn(column, ParticleProperty::StressTensorProperty, 4, name);
 	else if(loweredName == "c_stress[6]") columnMapping.mapStandardColumn(column, ParticleProperty::StressTensorProperty, 5, name);
 	else if(loweredName == "selection") columnMapping.mapStandardColumn(column, ParticleProperty::SelectionProperty, 0, name);
+	else if(loweredName == "forces") columnMapping.mapStandardColumn(column, ParticleProperty::ForceProperty, 0, name);
 	else {
 		columnMapping.mapCustomColumn(column, name, dataType, 0, ParticleProperty::UserProperty, name);
 	}
@@ -535,7 +535,7 @@ void NetCDFImporter::showEditColumnMappingDialog(QWidget* parent)
 	InputColumnMappingDialog dialog(mapping, parent);
 	if(dialog.exec() == QDialog::Accepted) {
 		setCustomColumnMapping(dialog.mapping());
-		_useCustomColumnMapping = true;
+		setUseCustomColumnMapping(true);
 		requestReload();
 	}
 }
