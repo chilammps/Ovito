@@ -468,7 +468,6 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 							if (componentCount == 6 && nativeComponentCount == 9) {
 								// Convert this property to Voigt notation.
 								FloatType *data = new FloatType[9*particleCount];
-								qDebug() << countp[0] << ", " << countp[1] << ", " << countp[2] << ", " << countp[3] << endl;
 #ifdef FLOATTYPE_FLOAT
 								NCERR( nc_get_vara_float(_ncid, varId, startp, countp, data) );
 #else
