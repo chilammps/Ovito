@@ -10,9 +10,9 @@
   <title>Rendering</title>
 
   <para>
-    While OVITO's viewports allow to work with simulation data interactively, one usually needs to
-    produce a final, high-quality image or video of the simulation for publication in a paper or presentation. 
-    Rendering an output image is performed on the 
+    OVITO lets you work with simulation data interactively. However, to share the results with others,
+    one needs to produce a static high-quality image or video of the simulation data for publication in an article or presentation. 
+    Rendering output images or movies is done on the 
     <emphasis>Render</emphasis> tab <inlinemediaobject><imageobject><imagedata fileref="images/command_panel/tab_render.png" format="png" xml:base="../"/>
 	</imageobject></inlinemediaobject> of the command panel.
   </para>
@@ -25,13 +25,13 @@
           <tbody>
             <row>
               <entry>
-                <para>OpenGL renderer:
+                <para>OpenGL renderer output:
 		        <mediaobject><imageobject>
 		        <imagedata fileref="images/rendering/renderer_example_opengl.png" format="PNG" />
 		        </imageobject></mediaobject></para>
               </entry>
               <entry>
-                <para>Tachyon renderer:
+                <para>Tachyon renderer output:
 		        <mediaobject><imageobject>
 		        <imagedata fileref="images/rendering/renderer_example_tachyon.png" format="PNG" />
 		        </imageobject></mediaobject></para>
@@ -44,28 +44,29 @@
         <para>
       The <link linkend="core.render_settings">Render settings</link> panel lets you adjust parameters that control the generation 
       of the output image, for instance the resolution and background color.
-      Pressing the <guibutton>Render Active Viewport</guibutton> <inlinemediaobject><imageobject><imagedata fileref="images/rendering/render_active_viewport.png" format="png" xml:base="../"/>
+      The <guibutton>Render Active Viewport</guibutton> <inlinemediaobject><imageobject><imagedata fileref="images/rendering/render_active_viewport.png" format="png" xml:base="../"/>
       </imageobject></inlinemediaobject> button starts the rendering process and opens a window showing the generated image. 
     </para>
     <para>
-      OVITO provides two different rendering modules. One is the default, hardware-accelerated OpenGL renderer also used in the viewports
+      OVITO provides two different rendering engines. One is the default, hardware-accelerated <link linkend="rendering.opengl_renderer">OpenGL renderer</link> that is also used by the viewports
       for real-time display. Accordingly, this renderer is very fast and produces a picture that is identical to
-      what you see in the viewports. The other renderer is called <emphasis>Tachyon</emphasis> and is a software-based
-      raytracing engine. It supports semi-transparent objects, shadows, and true ambient occlusion shading.
+      what you see in the viewports. The other renderer is the <link linkend="rendering.tachyon_renderer">Tachyon</link> renderer, a software-based
+      raytracing engine. It supports semi-transparent objects, shadows, and ambient occlusion shading.
     </para>
   </simplesect>
 
   <simplesect xml:id="usage.rendering.animation">
     <title>Creating movies</title>     
     <para>
-      If you have imported a simulation sequence that consists of multiple frames, you can let OVITO render a movie. For this, select <guilabel>Complete animation</guilabel>
-      in the <link linkend="core.render_settings">Render settings</link> panel and choose an output filename for the movie. Common video formats such as AVI and MPEG are supported by
-      OVITO's built-in video encoder. Alternatively, you can let the program produce a sequence of image files and convert them to a video file yourself
-      using an external tool.
+      If you have imported a sequence of simulation frames, you can let OVITO render a movie. For this, select <guilabel>Complete animation</guilabel>
+      in the <link linkend="core.render_settings">Render settings</link> panel and choose a filename for the output video. 
+      OVITO's built-in video encoder supports common video formats such as AVI and MPEG. 
+      Alternatively, you can produce a sequence of image files and convert them to a 
+      video file yourself using an external tool.
     </para>
     <para>
-      The playback speed (frames per second) of the generated movie is controlled in the <emphasis>Animation settings</emphasis> dialog, which can be accessed 
-      through the animation toolbar of OVITO.
+      The playback speed (frames per second) of the generated movie can be changed in the <link linkend="animation.animation_settings_dialog">Animation settings dialog</link>, which can be opened 
+      via the animation toolbar of OVITO.
     </para>
   </simplesect>
   
