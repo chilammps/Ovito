@@ -47,7 +47,7 @@
       </listitem>
 
       <listitem>
-        <para>Flexible processing model: Data modification and analysis steps are arranged in a processing pipeline; parameters can be altered at 
+        <para><link linkend="usage.modification_pipeline">Flexible processing model</link>: Data modification and analysis steps are arranged in a processing pipeline; parameters can be altered at 
         any time with immediate recalculation of the results. <link linkend="particles.modifiers">Data modification functions</link>:<itemizedlist>
         
             <listitem>

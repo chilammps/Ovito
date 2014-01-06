@@ -37,7 +37,7 @@
   </para>
 
   <para>Certain standard properties have a special meaning and affect how OVITO displays particles. 
-  The following table lists the most important standard properties and explains their functions:
+  The following table lists the most important standard properties and defines their meaning:
    <informaltable>
         <tgroup cols="2">
           <thead>
@@ -52,7 +52,7 @@
             <row>
               <entry><literal>Position</literal></entry>
               <entry>X, Y, Z</entry>
-              <entry><para>Controls the location of particles in space.</para></entry>
+              <entry><para>Controls the locations of particles in space.</para></entry>
             </row>
             <row>
               <entry><literal>Color</literal></entry>
@@ -89,11 +89,10 @@
     </para>
     
     <para>
-    User-defined particles properties are created by OVITO when reading a simulation file with
-    data columns that cannot be mapped to any of its standard property types. While OVITO itself does 
-    not interpret the data stored in such user-defined properties in any specific way, they can still be 
-    used as input for certain modifiers. For instance, the <emphasis>Color Coding</emphasis> modifier 
-    can also use user-defined properties to color particles.
+    User-defined particles properties are created by OVITO when loading a simulation file with
+    data columns that cannot be mapped to any of the standard property types. While OVITO itself does 
+    not interpret such user-defined properties, they can still be 
+    used as input for modifiers, e.g. the <link linkend="particles.modifiers.color_coding">Color Coding</link> modifier.
     </para>
 
 </section>

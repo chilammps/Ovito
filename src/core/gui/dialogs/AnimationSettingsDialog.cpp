@@ -22,6 +22,7 @@
 #include <core/Core.h>
 #include <core/dataset/UndoStack.h>
 #include <core/utilities/units/UnitsManager.h>
+#include <core/gui/mainwin/MainWindow.h>
 #include "AnimationSettingsDialog.h"
 
 namespace Ovito {
@@ -101,11 +102,17 @@ AnimationSettingsDialog::AnimationSettingsDialog(AnimationSettings* animSettings
 	contentLayout->addWidget(playbackSpeedBox, 3, 1, 1, 2);
 	connect(playbackSpeedBox, SIGNAL(activated(int)), this, SLOT(onPlaybackSpeedChanged(int)));
 	
-	QDialogButtonBox* buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, this);
-	connect(buttonBox, SIGNAL(accepted()), this, SLOT(onOk()));
-	connect(buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
+	QDialogButtonBox* buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel | QDialogButtonBox::Help, Qt::Horizontal, this);
+	connect(buttonBox, &QDialogButtonBox::accepted, this, &AnimationSettingsDialog::onOk);
+	connect(buttonBox, &QDialogButtonBox::rejected, this, &AnimationSettingsDialog::reject);
+
+	// Implement Help button.
+	MainWindow* mainWindow = _animSettings->dataset()->mainWindow();
+	connect(buttonBox, &QDialogButtonBox::helpRequested, [mainWindow]() {
+		mainWindow->openHelpTopic(QStringLiteral("animation.animation_settings_dialog.html"));
+	});
+
 	layout1->addWidget(buttonBox); 
-	
     updateValues();
 }
 

@@ -9,13 +9,15 @@
          xmlns:ns="http://docbook.org/ns/docbook">
   <title>Usage</title>
 
+  <para>This page is intentionally left blank. Please use the "Next" button to go to the next sub-section.</para>
+
   <xi:include href="usage/import_particles.docbook"/>
-  <xi:include href="usage/export_particles.docbook"/>
   <xi:include href="usage/viewports.docbook"/>
   <xi:include href="usage/particle_properties.docbook"/>
   <xi:include href="usage/modification_pipeline.docbook"/>
   <xi:include href="usage/rendering.docbook"/>
   <xi:include href="usage/miscellaneous.docbook"/>
+  <xi:include href="usage/export_particles.docbook"/>
   
   <!-- 
   <xi:include href="usage/scripting.docbook"/>

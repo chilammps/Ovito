@@ -11,21 +11,22 @@
 
     <para>Binary program packages for Linux, Windows, and Mac OS X platforms
     can be downloaded from <link xlink:href="http://www.ovito.org/">http://www.ovito.org/</link>.
-    Installation of OVITO is very simple. No administrator privileges are required.</para>
-    <para>Since OVITO makes use of hardware-accelerated OpenGL rendering to display particles. 
+    Installation of OVITO is very simple and consists only of extracting a file archive.</para>
+    
+    <para>OVITO makes use of hardware-accelerated OpenGL rendering to display particles and other graphical elements.
     Older computers or outdated OpenGL graphics drivers may not be compatible with OVITO. 
-    It is highly recommended to install your hardware vendor's graphics card driver.</para>
+    For best compatibility, it is highly recommended to install the most recent version of your hardware vendor's graphics driver.</para>
 
     <simplesect xml:id="installation.runovito.linux">
       <title>Linux</title>
       <para>Extract the downloaded <filename>.tar.gz</filename> archive using the command: <command>tar xzf ovito-2.0.0-x86_64.tar.gz</command>. Replace
       the filename with the one that you actually downloaded from the
-      website. This will create a new subdirectory that contains the extracted
+      website. This will create a new subdirectory containing the extracted
       program package. Change into that subdirectory and run OVITO by invoking
       the command <command>bin/ovito</command>.
       </para>
       <para>
-      Note that OVITO should only be run on the local computer and not on remote machines.
+      Note that OVITO is designed to be run on the local computer and not on a remote machine.
       </para>
     </simplesect>
 
@@ -33,7 +34,7 @@
       <title>Windows</title>
 
       <para>Extract the <filename>.zip</filename> archive to an
-      empty directory of your choice. Then start OVITO by double-clicking
+      empty directory of your choice. Then start the program by double-clicking
       <command>ovito.exe</command>.</para>
     </simplesect>
 
@@ -44,13 +45,7 @@
       directory of your choice. Then start OVITO by double-clicking the
       extracted application. To run multiple instances of OVITO simultaneously, you can
       invoke the command <command>open -n ./Ovito.app/</command> from the
-      Terminal more than once.</para>
+      Terminal.</para>
     </simplesect>
-    
-    <simplesect xml:id="installation.commandline">
-      <title>Command line options</title>
-      <para>You can pass a local file path or a remote URL to OVITO on the command line. 
-      The data file will be opened after the application starts.</para>
-    </simplesect>  
 
 </chapter>
