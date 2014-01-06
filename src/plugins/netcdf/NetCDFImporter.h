@@ -201,6 +201,18 @@ private:
 };
 
 
+/// Convert full tensor to Voigt tensor
+template<typename T> void fullToVoigt(size_t particleCount, T *full, T *voigt) {
+	for (int i = 0; i < particleCount; i++) {
+		voigt[6*i] = full[9*i];
+		voigt[6*i+1] = full[9*i+4];
+		voigt[6*i+2] = full[9*i+8];
+		voigt[6*i+3] = 0.5*(full[9*i+5]+full[9*i+7]);
+		voigt[6*i+4] = 0.5*(full[9*i+2]+full[9*i+6]);
+		voigt[6*i+5] = 0.5*(full[9*i+1]+full[9*i+3]);
+    }
+}
+
 };
 
 #endif // __OVITO_NETCDF_IMPORTER_H
