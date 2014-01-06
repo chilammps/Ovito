@@ -23,14 +23,5 @@
       <xi:include href="reference/rendering/opengl_renderer.docbook"/>
       <xi:include href="reference/rendering/tachyon_renderer.docbook"/>
   </section>
-  
-  <section xml:id="animation">
-    <title>Animation</title>
-    
-      <para>This page is intentionally left blank. Please use the "Next" button to go to the next sub-section.</para>
-    
-      <xi:include href="reference/animation/animation_settings_dialog.docbook"/>
-  </section>
-
 
 </chapter>

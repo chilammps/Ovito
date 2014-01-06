@@ -12,15 +12,15 @@
   <simplesect>
   <title>Introduction</title>
     <para>
-       OVITO provides a scripting interface that allows users to automate certain tasks and to batch-process
+       OVITO provides a scripting interface that allows users to automate tasks and to batch-process
        a large number of input files. The program's built-in script interpreter is based on the 
        <link xlink:href="http://www.ecma-international.org/publications/standards/Ecma-262.htm">ECMAScript scripting language</link>,
        which forms also the basis for the popular <link xlink:href="http://en.wikipedia.org/wiki/JavaScript">JavaScript language</link> used in web browsers. 
-       If you are not familiar with JavaScript or the ECMAScript language, you can find several existing tutorials and books online that cover this subject. 
+       If you are not familiar with JavaScript or the ECMAScript language, you can find several tutorials and books that cover this subject online. 
     </para>
     <para>
-       OVITO's scripting interface enables programmatic access to various functions of the program such as import of data files,
-       modifiers, and rendering of output images and movies.
+       OVITO's scripting interface enables programmatic access to various functions of the program such as 
+       importing data files, creating modifiers, and rendering output images or movies.
     </para>
   </simplesect>
   
@@ -29,23 +29,27 @@
     <para>
        OVITO scripts are normal text files that can be created with any text editor. To execute a script, use the following
        syntax when starting OVITO from the command line. Optional arguments are shown in brackets:
-       <screen><command>ovito [--nogui] --script myscript.js [datafile]</command></screen>
-       This will run the script file <command>myscript.js</command> immediately after program startup. The optional
-       argument <command>datafile</command> specifies the path or URL of a simulation file that should be loaded into OVITO
+       <screen><command>   ovito --script myscript.js [--nogui] [datafile]</command></screen>
+       This will run the script file <command>myscript.js</command> after program startup. The optional
+       argument <command>[datafile]</command> specifies a path or URL of a simulation file to be loaded by OVITO
        before the script is executed. You can also provide an OVITO scene file here to load a complete program state
        including modifiers etc. The optional <command>--nogui</command> option switches to a non-graphical console
        mode. In this mode, no graphical user interface is shown, which is useful when running OVITO scripts on remote machines
        that don't have a graphics terminal.
     </para>
+    
+    <para>
+       OVITO's scripting interface is documented in the <link linkend="scripting">reference section</link> of this manual.
+    </para>
+    
   </simplesect>
   
   <simplesect>
   <title>Script example</title>
     <para>
-      The following example program demonstrates various things that can be done with OVITO's scripting interface.
+      The following example program demonstrates how various functions of OVITO can be accessed from a script.
       <programlisting language="javascript">
-      <![CDATA[
-// Check program version.
+<![CDATA[// Check program version.
 print("This is Ovito " + version());
 
 // Import a simulation file.
@@ -66,7 +70,7 @@ node.applyModifier(new ColorCodingModifier({
 }));
 
 // Apply two more modifiers to delete some particles.
-node.applyModifier(new SelectExpressionModifier({ expression : "potentialenergy < -3.9" }));
+node.applyModifier(new SelectExpressionModifier({ expression: "potentialenergy < -3.9" }));
 node.applyModifier(new DeleteParticlesModifier());
 
 // Set up view.
@@ -86,15 +90,14 @@ for(var i = 0; i < selectedNode.modifiers.length; i++)
 	print(selectedNode.modifiers[i]);  
 	
 // Perform some analysis.
-cna = new CommonNeighborAnalysisModifier({ cutoff : 3.2, adaptiveMode : false });
+cna = new CommonNeighborAnalysisModifier({ cutoff: 3.2, adaptiveMode: false });
 node.applyModifier(cna);
 
 // Wait until computation has been completed.
 wait();
 
 // Read out analysis results.
-print("Number of FCC atoms: " + cna.structureCounts[CommonNeighborAnalysisModifier.FCC]);
-      ]]>
+print("Number of FCC atoms: " + cna.structureCounts[CommonNeighborAnalysisModifier.FCC]);]]>
       </programlisting>
     </para>
   </simplesect>
