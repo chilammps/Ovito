@@ -313,7 +313,7 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 			countp[2] = 1;
 
 			int nDimsDetected = -1, componentCount = 1;
-			if (nDims > 0 && dimIds[0] == _frame_dim) {
+			if (nDims > 0) {
 				// This is a per frame property
 				startp[0] = movieFrame;
 				countp[0] = 1;
