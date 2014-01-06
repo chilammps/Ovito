@@ -325,6 +325,7 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 					nDimsDetected = 2;
 
 					if (nDims > 2 && dimIds[2] == _spatial_dim) {
+						// This is a vector property
 						startp[2] = 0;
 						countp[2] = 3;
 						componentCount = 3;
@@ -332,12 +333,13 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 					}
 				}
 				else if (nDims > 0 && dimIds[0] == _atom_dim) {
-					// This is a per atom property, but global (not per frame)
+					// This is a per atom property, but global (per-file, not per frame)
 					startp[0] = 0;
 					countp[0] = particleCount;
 					nDimsDetected = 1;
 					
 					if (nDims > 1 && dimIds[1] == _spatial_dim) {
+						// This is a vector property
 						startp[1] = 0;
 						countp[1] = 3;
 						componentCount = 3;
