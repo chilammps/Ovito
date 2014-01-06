@@ -19,6 +19,22 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+///////////////////////////////////////////////////////////////////////////////
+//
+//  This module implements import of AMBER-style NetCDF trajectory files.
+//  For specification documents see <http://ambermd.org/netcdf/>.
+//
+//  Extensions to this specification are supported through OVITO's manual
+//  column mappings.
+//
+//  A LAMMPS dump style for this file format can be found at
+//  <https://github.com/pastewka/lammps-netcdf>.
+//
+//  Please contact Lars Pastewka <lars.pastewka@iwm.fraunhofer.de> for
+//  questions and suggestions.
+//
+///////////////////////////////////////////////////////////////////////////////
+
 #include <core/Core.h>
 #include <core/utilities/io/FileManager.h>
 #include <core/utilities/concurrent/Future.h>
