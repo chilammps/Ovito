@@ -19,6 +19,22 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+///////////////////////////////////////////////////////////////////////////////
+//
+//  This module implements import of AMBER-style NetCDF trajectory files.
+//  For specification documents see <http://ambermd.org/netcdf/>.
+//
+//  Extensions to this specification are supported through OVITO's manual
+//  column mappings.
+//
+//  A LAMMPS dump style for this file format can be found at
+//  <https://github.com/pastewka/lammps-netcdf>.
+//
+//  Please contact Lars Pastewka <lars.pastewka@iwm.fraunhofer.de> for
+//  questions and suggestions.
+//
+///////////////////////////////////////////////////////////////////////////////
+
 #include <core/Core.h>
 #include <core/utilities/io/FileManager.h>
 #include <core/utilities/concurrent/Future.h>
@@ -251,8 +267,8 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 	double o[3] = { 0.0, 0.0, 0.0 };
 	double l[3], a[3];
 	double d[3] = { 0.0, 0.0, 0.0 };
-	size_t startp[3] = { movieFrame, 0, 0 };
-	size_t countp[3] = { 1, 3, 0 };
+	size_t startp[4] = { movieFrame, 0, 0, 0 };
+	size_t countp[4] = { 1, 3, 0, 0 };
 	if (_cell_origin_var != -1)
 		NCERR( nc_get_vara_double(_ncid, _cell_origin_var, startp, countp, o) );
 	NCERR( nc_get_vara_double(_ncid, _cell_lengths_var, startp, countp, l) );
@@ -312,8 +328,8 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 			countp[1] = 1;
 			countp[2] = 1;
 
-			int nDimsDetected = -1, componentCount = 1;
-			if (nDims > 0 && dimIds[0] == _frame_dim) {
+			int nDimsDetected = -1, componentCount = 1, nativeComponentCount = 1;
+			if (nDims > 0) {
 				// This is a per frame property
 				startp[0] = movieFrame;
 				countp[0] = 1;
@@ -325,23 +341,45 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 					nDimsDetected = 2;
 
 					if (nDims > 2 && dimIds[2] == _spatial_dim) {
+						// This is a vector property
 						startp[2] = 0;
 						countp[2] = 3;
 						componentCount = 3;
+						nativeComponentCount = 3;
 						nDimsDetected = 3;
+
+						if (nDims > 3 && dimIds[2] == _spatial_dim) {
+							// This is a tensor property
+							startp[3] = 0;
+							countp[3] = 3;
+							componentCount = 6;
+							nativeComponentCount = 9;
+							nDimsDetected = 4;
+						}
 					}
 				}
 				else if (nDims > 0 && dimIds[0] == _atom_dim) {
-					// This is a per atom property, but global (not per frame)
+					// This is a per atom property, but global (per-file, not per frame)
 					startp[0] = 0;
 					countp[0] = particleCount;
 					nDimsDetected = 1;
 					
 					if (nDims > 1 && dimIds[1] == _spatial_dim) {
+						// This is a vector property
 						startp[1] = 0;
 						countp[1] = 3;
 						componentCount = 3;
+						nativeComponentCount = 3;
 						nDimsDetected = 2;
+
+						if (nDims > 2 && dimIds[2] == _spatial_dim) {
+							// This is a tensor property
+							startp[2] = 0;
+							countp[2] = 3;
+							componentCount = 6;
+							nativeComponentCount = 9;
+							nDimsDetected = 3;
+						}
 					}
 				}
 
@@ -392,10 +430,19 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 					else {
 						// Type mangling.
 						if (property->dataType() == qMetaTypeId<int>()) {
-							// This is an integer data.
+							// This is integer data.
 
-							NCERR( nc_get_vara_int(_ncid, varId, startp, countp, property->dataInt()) );
-
+							if (componentCount == 6 && nativeComponentCount == 9) {
+								// Convert this property to Voigt notation.
+								int *data = new int[9*particleCount];
+								NCERR( nc_get_vara_int(_ncid, varId, startp, countp, data) );
+								fullToVoigt(particleCount, data, property->dataInt());
+								delete [] data;
+							}
+							else {
+								NCERR( nc_get_vara_int(_ncid, varId, startp, countp, property->dataInt()) );
+							}
+							
 							// Create particles types if this is the particle type property.
 							if (propertyType == ParticleProperty::ParticleTypeProperty) {
 								// Find maximum atom type.
@@ -416,7 +463,26 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 							}
 						}
 						else if (property->dataType() == qMetaTypeId<FloatType>()) {
-							NCERR( nc_get_vara_float(_ncid, varId, startp, countp, property->dataFloat()) );
+							// This is floating point data.
+
+							if (componentCount == 6 && nativeComponentCount == 9) {
+								// Convert this property to Voigt notation.
+								FloatType *data = new FloatType[9*particleCount];
+#ifdef FLOATTYPE_FLOAT
+								NCERR( nc_get_vara_float(_ncid, varId, startp, countp, data) );
+#else
+								NCERR( nc_get_vara_double(_ncid, varId, startp, countp, data) );
+#endif
+								fullToVoigt(particleCount, data, property->dataFloat());
+								delete [] data;
+							}
+							else {
+#ifdef FLOATTYPE_FLOAT
+								NCERR( nc_get_vara_float(_ncid, varId, startp, countp, property->dataFloat()) );
+#else
+								NCERR( nc_get_vara_double(_ncid, varId, startp, countp, property->dataFloat()) );
+#endif
+							}
 						}
 						else {
 							qDebug() << "Warning: Skipping field '" << columnName << "' of NetCDF file because it has an unrecognized data type." << endl;
