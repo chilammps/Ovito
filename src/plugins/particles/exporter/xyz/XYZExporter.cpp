@@ -34,19 +34,6 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, XYZExporter, ParticleExporter)
 ******************************************************************************/
 XYZExporter::XYZExporter(DataSet* dataset) : ParticleExporter(dataset)
 {
-	// Use the last mapping by default.
-	QSettings settings;
-	settings.beginGroup("viz/exporter/xyz/");
-	if(settings.contains("columnmapping")) {
-		try {
-			_columnMapping.fromByteArray(settings.value("columnmapping").toByteArray());
-		}
-		catch(Exception& ex) {
-			ex.prependGeneralMessage(tr("Failed to load last output column mapping from application settings store."));
-			ex.logError();
-		}
-	}
-	settings.endGroup();
 }
 
 /******************************************************************************
@@ -54,6 +41,22 @@ XYZExporter::XYZExporter(DataSet* dataset) : ParticleExporter(dataset)
 ******************************************************************************/
 bool XYZExporter::showSettingsDialog(const PipelineFlowState& state, QWidget* parent)
 {
+	// Load last mapping if no new one has been set already.
+	if(_columnMapping.isEmpty()) {
+		QSettings settings;
+		settings.beginGroup("viz/exporter/xyz/");
+		if(settings.contains("columnmapping")) {
+			try {
+				_columnMapping.fromByteArray(settings.value("columnmapping").toByteArray());
+			}
+			catch(Exception& ex) {
+				ex.prependGeneralMessage(tr("Failed to load last output column mapping from application settings store."));
+				ex.logError();
+			}
+		}
+		settings.endGroup();
+	}
+
 	ParticleExporterSettingsDialog dialog(parent, this, state, &_columnMapping);
 	if(dialog.exec() == QDialog::Accepted) {
 
@@ -74,7 +77,7 @@ bool XYZExporter::showSettingsDialog(const PipelineFlowState& state, QWidget* pa
 bool XYZExporter::exportParticles(const PipelineFlowState& state, int frameNumber, TimePoint time, const QString& filePath, ProgressInterface& progress)
 {
 	// Get particle positions.
-	ParticlePropertyObject* posProperty = findStandardProperty(ParticleProperty::PositionProperty, state);
+	ParticlePropertyObject* posProperty = ParticlePropertyObject::findInState(state, ParticleProperty::PositionProperty);
 	if(!posProperty)
 		throw Exception(tr("No particle positions available. Cannot write XYZ file."));
 

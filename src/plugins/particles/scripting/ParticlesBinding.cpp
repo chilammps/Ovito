@@ -23,6 +23,9 @@
 #include <plugins/particles/modifier/ParticleModifier.h>
 #include <plugins/particles/modifier/coloring/ColorCodingModifier.h>
 #include <plugins/particles/importer/ParticleImporter.h>
+#include <plugins/particles/importer/InputColumnMapping.h>
+#include <plugins/particles/exporter/OutputColumnMapping.h>
+#include <plugins/particles/exporter/ParticleExporter.h>
 #include <plugins/scripting/engine/ScriptEngine.h>
 #include "ParticlesBinding.h"
 
@@ -41,8 +44,12 @@ void ParticlesBinding::setupBinding(ScriptEngine& engine)
 	// Register marshaling functions for InputColumnMapping.
 	qScriptRegisterMetaType<InputColumnMapping>(&engine, fromInputColumnMapping, toInputColumnMapping);
 
+	// Register marshaling functions for OutputColumnMapping.
+	qScriptRegisterMetaType<OutputColumnMapping>(&engine, fromOutputColumnMapping, toOutputColumnMapping);
+
 	// Register important plugin classes.
 	engine.registerOvitoObjectType<ParticleImporter>();
+	engine.registerOvitoObjectType<ParticleExporter>();
 	engine.registerOvitoObjectType<ParticleModifier>();
 	engine.registerOvitoObjectType<ColorCodingModifier>();
 	engine.registerOvitoObjectType<ColorCodingGradient>();
@@ -106,6 +113,11 @@ void ParticlesBinding::toParticlePropertyReference(const QScriptValue& obj, Part
 		bool ok;
 		component = parts[1].toInt(&ok);
 		if(!ok) {
+			if(type == ParticleProperty::UserProperty) {
+				context->throwError(tr("Invalid component name or index for particle property '%1': %2").arg(parts[0]).arg(parts[1]));
+				return;
+			}
+
 			// Perhaps the name was used instead of an integer.
 			const QString componentName = parts[1].toUpper();
 			QStringList standardNames = ParticleProperty::standardPropertyComponentNames(type);
@@ -159,6 +171,38 @@ void ParticlesBinding::toInputColumnMapping(const QScriptValue& obj, InputColumn
 			else
 				mapping.mapCustomColumn(i, pref.name(), qMetaTypeId<FloatType>(), pref.vectorComponent());
 		}
+	}
+}
+
+/******************************************************************************
+* Creates a QScriptValue from a OutputColumnMapping.
+******************************************************************************/
+QScriptValue ParticlesBinding::fromOutputColumnMapping(QScriptEngine* engine, const OutputColumnMapping& mapping)
+{
+	QScriptValue result = engine->newArray(mapping.columnCount());
+	for(int i = 0; i < mapping.columnCount(); i++) {
+		ParticlePropertyReference pref(mapping.propertyType(i), mapping.propertyName(i), mapping.vectorComponent(i));
+		result.setProperty(i, engine->toScriptValue(pref));
+	}
+	return result;
+}
+
+/******************************************************************************
+* Converts a QScriptValue to a OutputColumnMapping.
+******************************************************************************/
+void ParticlesBinding::toOutputColumnMapping(const QScriptValue& obj, OutputColumnMapping& mapping)
+{
+	QScriptContext* context = obj.engine()->currentContext();
+	if(obj.isArray() == false) {
+		context->throwError("Column mapping must be specified as an array of strings.");
+		return;
+	}
+
+	int columnCount = obj.property("length").toInt32();
+	for(int i = 0; i < columnCount; i++) {
+		ParticlePropertyReference pref;
+		toParticlePropertyReference(obj.property(i), pref);
+		mapping.insertColumn(i, pref);
 	}
 }
 

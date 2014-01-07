@@ -231,7 +231,7 @@ void ParticleExporterSettingsDialog::onOk()
 			for(int index = 0; index < _columnMappingWidget->count(); index++) {
 				if(_columnMappingWidget->item(index)->checkState() == Qt::Checked) {
 					ParticlePropertyReference propRef = _columnMappingWidget->item(index)->data(Qt::UserRole).value<ParticlePropertyReference>();
-					newMapping.insertColumn(newMapping.columnCount(), propRef.type(), propRef.name(), propRef.vectorComponent());
+					newMapping.insertColumn(newMapping.columnCount(), propRef);
 				}
 			}
 			*_columnMapping = newMapping;

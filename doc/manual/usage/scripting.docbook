@@ -49,7 +49,7 @@
     <para>
       The following example program demonstrates how various functions of OVITO can be accessed from a script.
       <programlisting language="javascript">
-<![CDATA[// Check program version.
+<![CDATA[// Query program version.
 print("This is Ovito " + version());
 
 // Import a simulation file.
@@ -97,7 +97,12 @@ node.applyModifier(cna);
 wait();
 
 // Read out analysis results.
-print("Number of FCC atoms: " + cna.structureCounts[CommonNeighborAnalysisModifier.FCC]);]]>
+print("Number of FCC atoms: " + cna.structureCounts[CommonNeighborAnalysisModifier.FCC]);
+
+// Writes processed atoms back to an output file.
+save("exporteddata.dump", LAMMPSDumpExporter, 
+	{ columnMapping: ["Position.X", "Position.Y", "Position.Z", "Structure Type"] });
+]]>
       </programlisting>
     </para>
   </simplesect>
