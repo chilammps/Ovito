@@ -43,6 +43,9 @@ ViewportMenu::ViewportMenu(Viewport* vp) : QMenu(vp->widget()), _viewport(vp)
 	action = addAction(tr("Show Render Frame"), this, SLOT(onShowRenderFrame(bool)));
 	action->setCheckable(true);
 	action->setChecked(_viewport->renderFrameShown());
+	action = addAction(tr("Show Grid"), this, SLOT(onShowGrid(bool)));
+	action->setCheckable(true);
+	action->setChecked(_viewport->isGridVisible());
 	addSeparator();
 
 	_viewTypeMenu = addMenu(tr("View Type"));
@@ -140,6 +143,14 @@ void ViewportMenu::onShowViewTypeMenu()
 void ViewportMenu::onShowRenderFrame(bool checked)
 {
 	_viewport->setRenderFrameShown(checked);
+}
+
+/******************************************************************************
+* Handles the menu item event.
+******************************************************************************/
+void ViewportMenu::onShowGrid(bool checked)
+{
+	_viewport->setGridVisible(checked);
 }
 
 /******************************************************************************

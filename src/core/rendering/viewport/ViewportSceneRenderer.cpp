@@ -166,8 +166,13 @@ bool ViewportSceneRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialo
 	// Render visual 3D representation of the modifiers.
 	renderModifiers(false);
 
-	// Render input mode 3D overlays.
 	if(isInteractive()) {
+
+		// Render construction grid.
+		if(viewport()->isGridVisible())
+			renderGrid();
+
+		// Render input mode 3D overlays.
 		MainWindow* mainWindow = renderDataset()->mainWindow();
 		if(mainWindow) {
 			for(const auto& handler : mainWindow->viewportInputManager()->stack()) {
@@ -397,6 +402,18 @@ Box3 ViewportSceneRenderer::boundingBoxInteractive(TimePoint time, Viewport* vie
 		}
 	}
 
+	// Include construction grid in bounding box.
+	if(viewport->isGridVisible()) {
+		FloatType gridSpacing;
+		Box2I gridRange;
+		std::tie(gridSpacing, gridRange) = determineGridRange(viewport);
+		if(gridSpacing > 0) {
+			bb.addBox(viewport->gridMatrix() * Box3(
+					Point3(gridRange.minc.x() * gridSpacing, gridRange.minc.y() * gridSpacing, 0),
+					Point3(gridRange.maxc.x() * gridSpacing, gridRange.maxc.y() * gridSpacing, 0)));
+		}
+	}
+
 	return bb;
 }
 
@@ -587,5 +604,116 @@ FloatType ViewportSceneRenderer::defaultLinePickingWidth()
 	return 12.0f * devicePixelRatio;
 }
 
+/******************************************************************************
+* Determines the range of the construction grid to display.
+******************************************************************************/
+std::tuple<FloatType, Box2I> ViewportSceneRenderer::determineGridRange(Viewport* vp)
+{
+	// Determine the area of the construction grid that is visible in the viewport.
+	static const Point2 testPoints[] = {
+		{-1,-1}, {1,-1}, {1, 1}, {-1, 1}, {0,1}, {0,-1}, {1,0}, {-1,0},
+		{0,1}, {0,-1}, {1,0}, {-1,0}, {-1, 0.5}, {-1,-0.5}, {1,-0.5}, {1,0.5}, {0,0}
+	};
+
+	// Compute intersection points of test rays with grid plane.
+	Box2 visibleGridRect;
+	size_t numberOfIntersections = 0;
+	for(size_t i = 0; i < sizeof(testPoints)/sizeof(testPoints[0]); i++) {
+		Point3 p;
+		if(vp->computeConstructionPlaneIntersection(testPoints[i], p, 0.1f)) {
+			numberOfIntersections++;
+			visibleGridRect.addPoint(p.x(), p.y());
+		}
+	}
+
+	if(numberOfIntersections < 2) {
+		// Cannot determine visible parts of the grid.
+		return { 0, Box2I() };
+	}
+
+	// Determine grid spacing adaptively.
+	Point3 gridCenter(visibleGridRect.center().x(), visibleGridRect.center().y(), 0);
+	FloatType gridSpacing = vp->nonScalingSize(vp->gridMatrix() * gridCenter) * 2.0f;
+	// Round to nearest power of 10.
+	gridSpacing = pow((FloatType)10, floor(log10(gridSpacing)));
+
+	// Determine how many grid lines need to be rendered.
+	int xstart = (int)floor(visibleGridRect.minc.x() / (gridSpacing * 10)) * 10;
+	int xend = (int)ceil(visibleGridRect.maxc.x() / (gridSpacing * 10)) * 10;
+	int ystart = (int)floor(visibleGridRect.minc.y() / (gridSpacing * 10)) * 10;
+	int yend = (int)ceil(visibleGridRect.maxc.y() / (gridSpacing * 10)) * 10;
+
+	return { gridSpacing, Box2I(Point2I(xstart, ystart), Point2I(xend, yend)) };
+}
+
+/******************************************************************************
+* Renders the construction grid.
+******************************************************************************/
+void ViewportSceneRenderer::renderGrid()
+{
+	if(isPicking())
+		return;
+
+	FloatType gridSpacing;
+	Box2I gridRange;
+	std::tie(gridSpacing, gridRange) = determineGridRange(viewport());
+	if(gridSpacing <= 0) return;
+
+	// Determine how many grid lines need to be rendered.
+	int xstart = gridRange.minc.x();
+	int ystart = gridRange.minc.y();
+	int numLinesX = gridRange.size(0) + 1;
+	int numLinesY = gridRange.size(1) + 1;
+
+	FloatType xstartF = (FloatType)xstart * gridSpacing;
+	FloatType ystartF = (FloatType)ystart * gridSpacing;
+	FloatType xendF = (FloatType)(xstart + numLinesX - 1) * gridSpacing;
+	FloatType yendF = (FloatType)(ystart + numLinesY - 1) * gridSpacing;
+
+	// Allocate vertex buffer.
+	int numVertices = 2 * (numLinesX + numLinesY);
+	std::unique_ptr<Point3[]> vertexPositions(new Point3[numVertices]);
+	std::unique_ptr<ColorA[]> vertexColors(new ColorA[numVertices]);
+
+	// Build lines array.
+	ColorA color = Viewport::viewportColor(ViewportSettings::COLOR_GRID);
+	ColorA majorColor = Viewport::viewportColor(ViewportSettings::COLOR_GRID_INTENS);
+	ColorA majorMajorColor = Viewport::viewportColor(ViewportSettings::COLOR_GRID_AXIS);
+
+	Point3* v = vertexPositions.get();
+	ColorA* c = vertexColors.get();
+	FloatType x = xstartF;
+	for(int i = xstart; i < xstart + numLinesX; i++, x += gridSpacing, c += 2) {
+		*v++ = Point3(x, ystartF, 0);
+		*v++ = Point3(x, yendF, 0);
+		if((i % 10) != 0)
+			c[0] = c[1] = color;
+		else if(i != 0)
+			c[0] = c[1] = majorColor;
+		else
+			c[0] = c[1] = majorMajorColor;
+	}
+	FloatType y = ystartF;
+	for(int i = ystart; i < ystart + numLinesY; i++, y += gridSpacing, c += 2) {
+		*v++ = Point3(xstartF, y, 0);
+		*v++ = Point3(xendF, y, 0);
+		if((i % 10) != 0)
+			c[0] = c[1] = color;
+		else if(i != 0)
+			c[0] = c[1] = majorColor;
+		else
+			c[0] = c[1] = majorMajorColor;
+	}
+	OVITO_ASSERT(c == vertexColors.get() + numVertices);
+
+	// Render grid lines.
+	setWorldTransform(viewport()->gridMatrix());
+	if(!_constructionGridGeometry || !_constructionGridGeometry->isValid(this))
+		_constructionGridGeometry = createLineGeometryBuffer();
+	_constructionGridGeometry->setVertexCount(numVertices);
+	_constructionGridGeometry->setVertexPositions(vertexPositions.get());
+	_constructionGridGeometry->setVertexColors(vertexColors.get());
+	_constructionGridGeometry->render(this);
+}
 
 };

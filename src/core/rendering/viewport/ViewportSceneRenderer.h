@@ -193,6 +193,12 @@ protected:
 	/// \brief Loads and compiles a GLSL shader and adds it to the given program object.
 	void loadShader(QOpenGLShaderProgram* program, QOpenGLShader::ShaderType shaderType, const QString& filename);
 
+	/// Determines the range of the construction grid to display.
+	std::tuple<FloatType, Box2I> determineGridRange(Viewport* vp);
+
+	/// Renders the construction grid in a viewport.
+	void renderGrid();
+
 private:
 
 	/// The OpenGL context this renderer uses.
@@ -230,6 +236,9 @@ private:
 
 	/// The number of IDs stored in the OpenGL buffer.
 	GLint _glVertexIDBufferSize;
+
+	/// The geometry buffer used to render the construction grid of a viewport.
+	std::unique_ptr<LineGeometryBuffer> _constructionGridGeometry;
 
 	Q_OBJECT
 	OVITO_OBJECT

@@ -268,8 +268,13 @@ public:
 	bool renderFrameShown() const { return _showRenderFrame; }
 
 	/// \brief Sets whether the render frame is shown in the viewport.
-	/// \param show Specifies whether the render frame is shown or not.
 	void setRenderFrameShown(bool show) { _showRenderFrame = show; }
+
+	/// \brief Returns whether the grid is shown in the viewport.
+	bool isGridVisible() const { return _showGrid; }
+
+	/// \brief Sets whether the grid is shown in the viewport.
+	void setGridVisible(bool showGrid) { _showGrid = showGrid; }
 
 	/// \brief Gets the scene node used as camera for the viewport.
 	/// \return The scene node or \c NULL if no scene node has been set.
@@ -311,6 +316,15 @@ public:
 	/// \param viewportPoint Viewport coordinates of the point in the range [-1,+1].
 	/// \return The ray that goes from the viewpoint through the specified position in the viewport.
 	Ray3 viewportRay(const Point2& viewportPoint);
+
+	/// \brief Computes the intersection point of a ray going through a point in the
+	///        viewport plane with the construction grid plane.
+	/// \param[in] viewportPosition A 2d point in viewport coordinates (in the range [-1,+1]).
+	/// \param[out] intersectionPoint The coordinates of the intersection point in grid plane coordinates.
+	///                               The point can be transformed to world coordinates using the gridMatrix() transform.
+	/// \param[in] epsilon This threshold value is used to test whether the ray is parallel to the grid plane.
+	/// \return \c true if an intersection has been found; \c false if not.
+	bool computeConstructionPlaneIntersection(const Point2& viewportPosition, Point3& intersectionPoint, FloatType epsilon = FLOATTYPE_EPSILON);
 
 	/// Returns the geometry of the render frame, i.e., the region of the viewport that
 	/// will be visible in a rendered image.
@@ -373,6 +387,8 @@ public:
 	Q_PROPERTY(AffineTransformation cameraTransformation READ cameraTransformation WRITE setCameraTransformation);
 	Q_PROPERTY(FloatType fov READ fieldOfView WRITE setFieldOfView);
 	Q_PROPERTY(ViewType type READ viewType WRITE setViewType);
+	Q_PROPERTY(bool renderFrameVisible READ renderFrameShown WRITE setRenderFrameShown);
+	Q_PROPERTY(bool gridVisible READ isGridVisible WRITE setGridVisible);
 
 protected:
 
@@ -443,6 +459,9 @@ private:
 	/// Indicates whether the rendering frame is shown.
 	PropertyField<bool> _showRenderFrame;
 
+	/// Indicates whether the grid is shown.
+	PropertyField<bool> _showGrid;
+
 	/// The scene node (camera) that has been selected as the view node.
 	ReferenceField<ObjectNode> _viewNode;
 
@@ -498,6 +517,7 @@ private:
 	DECLARE_PROPERTY_FIELD(_showRenderFrame);
 	DECLARE_PROPERTY_FIELD(_viewportTitle);
 	DECLARE_PROPERTY_FIELD(_cameraTM);
+	DECLARE_PROPERTY_FIELD(_showGrid);
 
 	friend class ViewportWindow;
 	friend class ViewportMenu;
