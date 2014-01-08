@@ -88,6 +88,7 @@ SET(OVITO_PARTICLES_SOURCE_FILES
 	util/CutoffRadiusPresetsUI.cpp
 	util/ParticleInformationApplet.cpp
 	util/ParticlePickingHelper.cpp
+	util/ParticlePropertyParameterUI.cpp
 )
 
 IF(OVITO_BUILD_PLUGIN_SCRIPTING)

@@ -597,6 +597,10 @@ public:
 	/// \brief Returns whether this reference object does not point to a ParticleProperty.
 	bool isNull() const { return type() == ParticleProperty::UserProperty && name().isEmpty(); }
 
+	/// This helper method find the particle property referenced by this ParticlePropertyReference
+	/// in the given pipeline state.
+	ParticlePropertyObject* findInState(const PipelineFlowState& state) const;
+
 private:
 
 	/// The type identifier of the property.

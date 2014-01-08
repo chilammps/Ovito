@@ -22,7 +22,7 @@
 #include <plugins/particles/Particles.h>
 #include <core/viewport/Viewport.h>
 #include <core/scene/pipeline/PipelineObject.h>
-#include <core/animation/controller/StandardControllers.h>
+#include <core/animation/controller/Controller.h>
 #include <core/reference/CloneHelper.h>
 #include <core/gui/properties/FloatParameterUI.h>
 #include <core/gui/properties/Vector3ParameterUI.h>
@@ -31,6 +31,7 @@
 #include <core/plugins/PluginManager.h>
 #include <core/gui/dialogs/SaveImageFileDialog.h>
 #include <core/rendering/SceneRenderer.h>
+#include <plugins/particles/util/ParticlePropertyParameterUI.h>
 #include "ColorCodingModifier.h"
 
 namespace Particles {
@@ -44,12 +45,14 @@ DEFINE_REFERENCE_FIELD(ColorCodingModifier, _colorGradient, "ColorGradient", Col
 DEFINE_PROPERTY_FIELD(ColorCodingModifier, _colorOnlySelected, "SelectedOnly")
 DEFINE_PROPERTY_FIELD(ColorCodingModifier, _keepSelection, "KeepSelection")
 DEFINE_PROPERTY_FIELD(ColorCodingModifier, _renderLegend, "RenderLegend")
+DEFINE_PROPERTY_FIELD(ColorCodingModifier, _sourceProperty, "SourceProperty")
 SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _startValueCtrl, "Start value")
 SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _endValueCtrl, "End value")
 SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _colorGradient, "Color gradient")
 SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _colorOnlySelected, "Color only selected particles")
 SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _keepSelection, "Keep selection")
 SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _renderLegend, "Render color legend (experimental)")
+SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _sourceProperty, "Source property")
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ColorCodingGradient, RefTarget)
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ColorCodingHSVGradient, ColorCodingGradient)
@@ -69,6 +72,7 @@ ColorCodingModifier::ColorCodingModifier(DataSet* dataset) : ParticleModifier(da
 	INIT_PROPERTY_FIELD(ColorCodingModifier::_colorOnlySelected);
 	INIT_PROPERTY_FIELD(ColorCodingModifier::_keepSelection);
 	INIT_PROPERTY_FIELD(ColorCodingModifier::_renderLegend);
+	INIT_PROPERTY_FIELD(ColorCodingModifier::_sourceProperty);
 
 	_colorGradient = new ColorCodingHSVGradient(dataset);
 	_startValueCtrl = ControllerManager::instance().createDefaultController<FloatController>(dataset);
@@ -84,39 +88,6 @@ TimeInterval ColorCodingModifier::modifierValidity(TimePoint time)
 	if(_startValueCtrl) interval.intersect(_startValueCtrl->validityInterval(time));
 	if(_endValueCtrl) interval.intersect(_endValueCtrl->validityInterval(time));
 	return interval;
-}
-
-/******************************************************************************
-* Sets the source particle property that is used for coloring of particles.
-******************************************************************************/
-void ColorCodingModifier::setSourceProperty(const ParticlePropertyReference& prop)
-{
-	if(_sourcePropertyRef == prop) return;
-
-	// Make this change undoable.
-	qRegisterMetaType<ParticlePropertyReference>();
-	if(dataset()->undoStack().isRecording())
-		dataset()->undoStack().push(new SimplePropertyChangeOperation(this, "sourceProperty"));
-
-	_sourcePropertyRef = prop;
-	notifyDependents(ReferenceEvent::TargetChanged);
-}
-
-/******************************************************************************
-* Retrieves the selected input particle property from the given modifier input state.
-******************************************************************************/
-ParticlePropertyObject* ColorCodingModifier::lookupInputProperty(const PipelineFlowState& inputState) const
-{
-	for(const auto& o : inputState.objects()) {
-		ParticlePropertyObject* prop = dynamic_object_cast<ParticlePropertyObject>(o.get());
-		if(prop) {
-			if((sourceProperty().type() == ParticleProperty::UserProperty && prop->name() == sourceProperty().name()) ||
-					(sourceProperty().type() != ParticleProperty::UserProperty && prop->type() == sourceProperty().type())) {
-				return prop;
-			}
-		}
-	}
-	return nullptr;
 }
 
 /******************************************************************************
@@ -152,7 +123,7 @@ ObjectStatus ColorCodingModifier::modifyParticles(TimePoint time, TimeInterval& 
 	// Get the source property.
 	if(sourceProperty().isNull())
 		throw Exception(tr("Select a particle property first."));
-	ParticlePropertyObject* property = lookupInputProperty(input());
+	ParticlePropertyObject* property = sourceProperty().findInState(input());
 	if(!property)
 		throw Exception(tr("The selected particle property with the name '%1' does not exist.").arg(sourceProperty().name()));
 	if(sourceProperty().vectorComponent() >= (int)property->componentCount())
@@ -260,7 +231,7 @@ bool ColorCodingModifier::adjustRange()
 
 	// Get the value data channel from the input object.
 	PipelineFlowState inputState = getModifierInput();
-	ParticlePropertyObject* property = lookupInputProperty(inputState);
+	ParticlePropertyObject* property = sourceProperty().findInState(inputState);
 	if(!property)
 		return false;
 
@@ -306,8 +277,7 @@ void ColorCodingModifier::saveToStream(ObjectSaveStream& stream)
 {
 	ParticleModifier::saveToStream(stream);
 
-	stream.beginChunk(0x01);
-	stream << _sourcePropertyRef;
+	stream.beginChunk(0x02);
 	stream.endChunk();
 }
 
@@ -318,21 +288,13 @@ void ColorCodingModifier::loadFromStream(ObjectLoadStream& stream)
 {
 	ParticleModifier::loadFromStream(stream);
 
-	stream.expectChunk(0x01);
-	stream >> _sourcePropertyRef;
+	int version = stream.expectChunkRange(0, 0x02);
+	if(version == 0x01) {
+		ParticlePropertyReference pref;
+		stream >> pref;
+		setSourceProperty(pref);
+	}
 	stream.closeChunk();
-}
-
-/******************************************************************************
-* Creates a copy of this object.
-******************************************************************************/
-OORef<RefTarget> ColorCodingModifier::clone(bool deepCopy, CloneHelper& cloneHelper)
-{
-	// Let the base class create an instance of this class.
-	OORef<ColorCodingModifier> clone = static_object_cast<ColorCodingModifier>(ParticleModifier::clone(deepCopy, cloneHelper));
-	clone->_sourcePropertyRef = this->_sourcePropertyRef;
-
-	return clone;
 }
 
 /******************************************************************************
@@ -358,7 +320,7 @@ void ColorCodingModifier::render(TimePoint time, ObjectNode* contextNode, Modifi
 
 	QString topLabel = QString::number(endValue);
 	QString bottomLabel = QString::number(startValue);
-	QString titleLabel = _sourcePropertyRef.name();
+	QString titleLabel = sourceProperty().name();
 
 	if(_renderBufferUpdateHelper.updateState(colorGradient())
 			|| !_colorScaleImageBuffer
@@ -424,10 +386,9 @@ void ColorCodingModifierEditor::createUI(const RolloutInsertionParameters& rollo
 	layout1->setContentsMargins(4,4,4,4);
 	layout1->setSpacing(2);
 
-	propertyListBox = new ParticlePropertyComboBox();
+	ParticlePropertyParameterUI* sourcePropertyUI = new ParticlePropertyParameterUI(this, PROPERTY_FIELD(ColorCodingModifier::_sourceProperty));
 	layout1->addWidget(new QLabel(tr("Property:"), rollout));
-	layout1->addWidget(propertyListBox);
-	connect(propertyListBox, SIGNAL(activated(int)), this, SLOT(onPropertySelected(int)));
+	layout1->addWidget(sourcePropertyUI->comboBox());
 
 	colorGradientList = new QComboBox(rollout);
 	layout1->addWidget(new QLabel(tr("Color gradient:"), rollout));
@@ -437,9 +398,7 @@ void ColorCodingModifierEditor::createUI(const RolloutInsertionParameters& rollo
 		colorGradientList->addItem(clazz->displayName(), qVariantFromValue((void*)clazz));
 	}
 
-	// Update property list if another modifier has been loaded into the editor.
-	connect(this, SIGNAL(contentsReplaced(RefTarget*)), this, SLOT(updatePropertyList()));
-	// Do the same for the color legend.
+	// Update color legend if another modifier has been loaded into the editor.
 	connect(this, SIGNAL(contentsReplaced(RefTarget*)), this, SLOT(updateColorGradient()));
 
 	layout1->addSpacing(10);
@@ -503,54 +462,6 @@ void ColorCodingModifierEditor::createUI(const RolloutInsertionParameters& rollo
 }
 
 /******************************************************************************
-* Updates the contents of the combo box.
-******************************************************************************/
-void ColorCodingModifierEditor::updatePropertyList()
-{
-	propertyListBox->clear();
-
-	ColorCodingModifier* mod = static_object_cast<ColorCodingModifier>(editObject());
-	if(!mod) {
-		propertyListBox->setEnabled(false);
-		return;
-	}
-	propertyListBox->setEnabled(true);
-
-	// Obtain the particle property that serves as the input for the color coding modifier.
-	PipelineFlowState inputState = mod->getModifierInput();
-
-	// Populate property list from input object.
-	int initialIndex = -1;
-	for(const auto& o : inputState.objects()) {
-		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o.get());
-		if(!property) continue;
-
-		// Properties with a non-numeric data type cannot be used as source for the color coding.
-		if(property->dataType() != qMetaTypeId<int>() && property->dataType() != qMetaTypeId<FloatType>()) continue;
-
-		if(property->componentNames().empty()) {
-			// Scalar property:
-			propertyListBox->addItem(property);
-		}
-		else {
-			// Vector property:
-			for(int vectorComponent = 0; vectorComponent < (int)property->componentCount(); vectorComponent++) {
-				propertyListBox->addItem(property, vectorComponent);
-			}
-		}
-	}
-
-	// Select the right item in the list box.
-	int selIndex = propertyListBox->propertyIndex(mod->sourceProperty());
-	if(selIndex < 0 && !mod->sourceProperty().isNull()) {
-		// Add a place-holder item if the selected property does not exist anymore.
-		propertyListBox->addItem(mod->sourceProperty(), tr("%1 (no longer available)").arg(mod->sourceProperty().name()));
-		selIndex = propertyListBox->count() - 1;
-	}
-	propertyListBox->setCurrentIndex(selIndex);
-}
-
-/******************************************************************************
 * Updates the display for the color gradient.
 ******************************************************************************/
 void ColorCodingModifierEditor::updateColorGradient()
@@ -580,29 +491,11 @@ void ColorCodingModifierEditor::updateColorGradient()
 ******************************************************************************/
 bool ColorCodingModifierEditor::referenceEvent(RefTarget* source, ReferenceEvent* event)
 {
-	if(source == editObject() && event->type() == ReferenceEvent::TargetChanged) {
-		ColorCodingModifier* mod = static_object_cast<ColorCodingModifier>(editObject());
-		propertyListBox->setCurrentProperty(mod->sourceProperty());
-	}
-	else if(source == editObject() && event->type() == ReferenceEvent::ReferenceChanged &&
+	if(source == editObject() && event->type() == ReferenceEvent::ReferenceChanged &&
 			static_cast<ReferenceFieldEvent*>(event)->field() == PROPERTY_FIELD(ColorCodingModifier::_colorGradient)) {
 		updateColorGradient();
 	}
 	return ParticleModifierEditor::referenceEvent(source, event);
-}
-
-/******************************************************************************
-* Is called when the user selects an input particle property.
-******************************************************************************/
-void ColorCodingModifierEditor::onPropertySelected(int index)
-{
-	if(index < 0) return;
-	ColorCodingModifier* mod = static_object_cast<ColorCodingModifier>(editObject());
-	OVITO_CHECK_OBJECT_POINTER(mod);
-
-	undoableTransaction(tr("Select property"), [this, mod, index]() {
-		mod->setSourceProperty(propertyListBox->property(index));
-	});
 }
 
 /******************************************************************************
