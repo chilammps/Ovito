@@ -31,7 +31,7 @@ namespace Particles {
 /******************************************************************************
 * This UI lets the user select a particle property.
 ******************************************************************************/
-class OVITO_CORE_EXPORT ParticlePropertyParameterUI : public PropertyParameterUI
+class OVITO_PARTICLES_EXPORT ParticlePropertyParameterUI : public PropertyParameterUI
 {
 public:
 
