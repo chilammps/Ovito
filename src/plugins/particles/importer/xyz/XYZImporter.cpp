@@ -59,7 +59,7 @@ void XYZImporter::setColumnMapping(const InputColumnMapping& mapping)
 /******************************************************************************
 * Checks if the given file has format that can be read by this importer.
 ******************************************************************************/
-bool XYZImporter::checkFileFormat(QIODevice& input, const QUrl& sourceLocation)
+bool XYZImporter::checkFileFormat(QFileDevice& input, const QUrl& sourceLocation)
 {
 	// Open input file.
 	CompressedTextParserStream stream(input, sourceLocation.path());
@@ -162,7 +162,7 @@ void XYZImporter::scanFileForTimesteps(FutureInterfaceBase& futureInterface, QVe
 	QRegularExpression ws_re(QStringLiteral("\\s+"));
 
 	int numParticles = 0;
-	QFileInfo fileInfo(stream.filename());
+	QFileInfo fileInfo(stream.device().fileName());
 	QString filename = fileInfo.fileName();
 	QDateTime lastModified = fileInfo.lastModified();
 	int frameNumber = 0;

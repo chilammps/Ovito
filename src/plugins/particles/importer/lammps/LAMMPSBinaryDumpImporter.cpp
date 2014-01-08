@@ -93,7 +93,7 @@ void LAMMPSBinaryDumpImporter::setColumnMapping(const InputColumnMapping& mappin
 /******************************************************************************
 * Checks if the given file has format that can be read by this importer.
 ******************************************************************************/
-bool LAMMPSBinaryDumpImporter::checkFileFormat(QIODevice& input, const QUrl& sourceLocation)
+bool LAMMPSBinaryDumpImporter::checkFileFormat(QFileDevice& input, const QUrl& sourceLocation)
 {
 	// Open input file.
 	if(!input.open(QIODevice::ReadOnly))
@@ -176,7 +176,7 @@ void LAMMPSBinaryDumpImporter::scanFileForTimesteps(FutureInterfaceBase& futureI
 	if(!file.open(QIODevice::ReadOnly))
 		throw Exception(tr("Failed to open binary LAMMPS dump file: %1.").arg(file.errorString()));
 
-	QFileInfo fileInfo(stream.filename());
+	QFileInfo fileInfo(stream.device().fileName());
 	QString filename = fileInfo.fileName();
 	QDateTime lastModified = fileInfo.lastModified();
 

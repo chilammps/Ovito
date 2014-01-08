@@ -157,4 +157,25 @@ ParticlePropertyObject* ParticlePropertyObject::findInState(const PipelineFlowSt
 	return nullptr;
 }
 
+/******************************************************************************
+* This helper method find the particle property referenced by this ParticlePropertyReference
+* in the given pipeline state.
+******************************************************************************/
+ParticlePropertyObject* ParticlePropertyReference::findInState(const PipelineFlowState& state) const
+{
+	if(isNull())
+		return nullptr;
+	for(const auto& o : state.objects()) {
+		ParticlePropertyObject* prop = dynamic_object_cast<ParticlePropertyObject>(o.get());
+		if(prop) {
+			if((this->type() == ParticleProperty::UserProperty && prop->name() == this->name()) ||
+					(this->type() != ParticleProperty::UserProperty && prop->type() == this->type())) {
+				return prop;
+			}
+		}
+	}
+	return nullptr;
+}
+
+
 };	// End of namespace

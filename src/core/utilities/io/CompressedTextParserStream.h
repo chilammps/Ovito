@@ -38,13 +38,13 @@ class OVITO_CORE_EXPORT CompressedTextParserStream : public QObject
 public:
 
 	/// Constructor that opens the input stream.
-	CompressedTextParserStream(QIODevice& input, const QString& originalFilePath);
+	CompressedTextParserStream(QFileDevice& input, const QString& originalFilePath);
 
 	/// Returns the name of the input file (if known).
 	const QString& filename() const { return _filename; }
 
 	/// Returns the underlying I/O device.
-	QIODevice& device() { return _device; }
+	QFileDevice& device() { return _device; }
 
 	/// Reads in the next line.
 	const char* readLine(int maxSize = 0);
@@ -114,7 +114,7 @@ private:
 	qint64 _byteOffset;
 
 	/// The underlying input device.
-	QIODevice& _device;
+	QFileDevice& _device;
 
 	/// The uncompressing filter.
 	QtIOCompressor _uncompressor;

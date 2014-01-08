@@ -27,18 +27,15 @@ namespace Ovito {
 /******************************************************************************
 * Opens the stream for reading.
 ******************************************************************************/
-CompressedTextParserStream::CompressedTextParserStream(QIODevice& input, const QString& originalFilePath) :
+CompressedTextParserStream::CompressedTextParserStream(QFileDevice& input, const QString& originalFilePath) :
 	_device(input), _lineNumber(0), _byteOffset(0), _uncompressor(&input, 6, 0x100000),
 	_lineCapacity(0)
 {
 	// Try to find out what the filename is.
 	if(originalFilePath.isEmpty() == false)
 		_filename = QFileInfo(originalFilePath).fileName();
-	else {
-		QFileDevice* fileDevice = qobject_cast<QFileDevice*>(&input);
-		if(fileDevice)
-			_filename = fileDevice->fileName();
-	}
+	else
+		_filename = input.fileName();
 
 	// Check if file is compressed (i.e. filename ends with .gz).
 	if(_filename.endsWith(".gz", Qt::CaseInsensitive)) {

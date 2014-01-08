@@ -16,18 +16,18 @@
             <imagedata fileref="images/modifiers/pipeline_example.png" format="png" />
        </imageobject></mediaobject></screenshot>
     </figure> 
-    The central concept of OVITO is the so-called <emphasis>modification pipeline</emphasis>. It is a sequence of modification operations (<emphasis>modifiers</emphasis>),
-    which is applied to the simulation data. After the simulation data has undergone these modifications, the final result is shown on the screen.
-    OVITO provides a set of modifier types, each performing a different basic task such as selecting particles, coloring particles, or removing particles. 
+    The central concept of OVITO is the so-called <emphasis>modification pipeline</emphasis>. It is a sequence of operations (<emphasis>modifiers</emphasis>)
+    that act on the simulation data. After the simulation data has undergone these modification steps, the final result is shown on the screen.
+    OVITO provides a <link linkend="particles.modifiers">set of modifier types</link>, each performing a different basic task such as selecting certain particles, coloring particles, or removing particles. 
     By combining and arranging these simple building blocks into a modification pipeline, the user can control the visualization of the simulation data in a 
     very flexible manner.
   </para> 
   <para>
-    Every modifier type provided by OVITO has a certain set of parameters that control its operation. Modifiers allow working non-destructively with the simulation data. 
-    That means, the user can change a modifier's parameters at any time, and OVITO will immediately recalculate the effect of the modifier on the original simulation data and
-    update the display in the viewports. To accomplish this, OVITO basically keeps two data sets in memory: The original particles read from the imported 
-    file and the processed data set that came out of the last evaluation of the modification pipeline. The latter is regenerated every time you change the modifier sequence 
-    in some way. An efficient caching mechanism keeps the amount of data processing at a minimum.
+    Every type of modifier has a certain set of parameters that control its operation. OVITO's modifiers allow working non-destructively with the simulation data. 
+    That means, you can change a modifier's parameters at any time, and OVITO will immediately recalculate the effect of the modifier on the original simulation data and
+    update the display. To accomplish this, OVITO basically keeps two datasets in memory: The original particles read from the imported 
+    file and the processed dataset that came out of the last evaluation of the modification pipeline. The latter is regenerated every time you change the modification pipeline 
+    in some way. An efficient caching mechanism keeps the amount of data processing at a minimum by re-evaluating only those modifiers that are affected by a change.
   </para>
 
   <simplesect xml:id="usage.modification_pipeline.pipeline_listbox">
@@ -36,21 +36,24 @@
 	    <figure><title>The modification pipeline editor</title><screenshot><mediaobject><imageobject>
 	       <imagedata fileref="images/command_panel/pipeline_editor.png" format="PNG" />
 	    </imageobject></mediaobject></screenshot></figure>
-       The pipeline editor is found in the command panel on the right side of the main window and plays a central role in OVITO's user interface. It displays the current 
-       modification pipeline and allows the user to selecting individual modifiers and to adjust their parameters. After you import a simulation file into OVITO, the modification 
-       pipeline is initially empty and does not contains any modifiers. However, the pipeline editor already shows the two sections "Display" and "Input", which are always present.
-       The "Display" section allows controlling the visual display of particles and other elements in the viewports. The "Input" section contains one or more entries
-       that represent the original imported data, i.e. the source of the modification pipeline.
+       The pipeline editor, shown in the figure on the right, plays a central role in OVITO. It displays the current 
+       modification pipeline and lets the user insert new modifiers and change their parameters.
+    </para>
+    <para>   
+       After importing a new simulation file into OVITO, the modification 
+       pipeline is initially empty. However, the pipeline editor already shows two sections labeled "Display" and "Input", which are always present.
+       The "Display" section contains one or more items that control the visual display of particles and other data elements that have been loaded from the file. 
+       The items in the "Input" section represent the original imported data, i.e. the data source that is connected to the modification pipeline.
     </para>
     <para>
-       Above the pipeline editor is a drop-down box labeled "Add modification " that contains a list of available modifier types. Picking an entry from that box will add a   
-       new modifier to the current modification pipeline. It will be inserted <emphasis>right above</emphasis> the
+       Above the pipeline editor is a drop-down box labeled "Add modification...", which contains a list of <link linkend="particles.modifiers">available modifier types</link>. 
+       Pick an entry from that box to insert a new modifier into the modification pipeline. The new modifier will be inserted <emphasis>right above</emphasis> the
        currently selected pipeline item. Note that the processing pipeline is displayed in a bottom-up order. That is, the data source 
        is always at the bottom and modifiers are executed from bottom to top.
     </para>
     <para>
-       You can uncheck individual modifiers in the modification pipeline to temporarily disable them. Use the red "Delete Modifier" tool button on 
-       the right to permanently remove a modifier from the pipeline. 
+       You can uncheck individual modifiers in the modification pipeline to temporarily disable them. To permanently remove a modifier from the pipeline, use the red 
+       "Delete Modifier" tool button on the right.
     </para>
   </simplesect>
 

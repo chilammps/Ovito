@@ -208,7 +208,14 @@ IF(WIN32)
 			LIST(APPEND REQUIRED_DLLS "${QtBinaryPath}/icuin51.dll")		
 			LIST(APPEND REQUIRED_DLLS "${QtBinaryPath}/icuuc51.dll")
 			IF(MINGW)
-				LIST(APPEND REQUIRED_DLLS "${QtBinaryPath}/libgcc_s_dw2-1.dll")
+				# 32-bit and 64-bit MinGW use different exception models and must link different
+				# libgcc_s variants.
+				IF(CMAKE_SIZEOF_VOID_P EQUAL 8)
+					LIST(APPEND REQUIRED_DLLS "${QtBinaryPath}/libgcc_s_seh-1.dll")
+				ELSE()
+					LIST(APPEND REQUIRED_DLLS "${QtBinaryPath}/libgcc_s_dw2-1.dll")
+				ENDIF()
+				LIST(APPEND REQUIRED_DLLS "${QtBinaryPath}/libgcc_s_seh-1.dll")
 				LIST(APPEND REQUIRED_DLLS "${QtBinaryPath}/libstdc++-6.dll")
 				LIST(APPEND REQUIRED_DLLS "${QtBinaryPath}/libwinpthread-1.dll")
 			ENDIF()
@@ -252,6 +259,12 @@ IF(WIN32)
 		LIST(APPEND REQUIRED_DLLS ${MPFR_LIBRARIES})
 		LIST(APPEND REQUIRED_DLLS "${CGAL_3RD_PARTY_LIBRARIES_DIRS}/libboost_thread-mt.dll")
 		LIST(APPEND REQUIRED_DLLS "${CGAL_3RD_PARTY_LIBRARIES_DIRS}/libboost_system-mt.dll")
+	ENDIF()
+
+	# Install NetCDF DLL.
+	IF(OVITO_BUILD_PLUGIN_NETCDF)
+		GET_FILENAME_COMPONENT(NETCDF_LIBRARY_PATH "${NETCDF_LIBRARY}" PATH)
+		LIST(APPEND REQUIRED_DLLS "${NETCDF_LIBRARY_PATH}/../bin/libnetcdf.dll")
 	ENDIF()
 	
 	# Copy library DLLs to output directory.

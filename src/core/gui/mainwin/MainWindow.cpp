@@ -251,7 +251,6 @@ void MainWindow::createMainToolbar()
 
 	_mainToolbar->addAction(actionManager()->getAction(ACTION_FILE_IMPORT));
 	_mainToolbar->addAction(actionManager()->getAction(ACTION_FILE_REMOTE_IMPORT));
-	_mainToolbar->addAction(actionManager()->getAction(ACTION_FILE_EXPORT));
 
 	_mainToolbar->addSeparator();
 

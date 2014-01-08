@@ -49,7 +49,7 @@ public:
 	virtual QString fileFilterDescription() override { return tr("CFG Files"); }
 
 	/// \brief Checks if the given file has format that can be read by this importer.
-	virtual bool checkFileFormat(QIODevice& input, const QUrl& sourceLocation) override;
+	virtual bool checkFileFormat(QFileDevice& input, const QUrl& sourceLocation) override;
 
 	/// Returns the title of this object.
 	virtual QString objectTitle() override { return tr("CFG"); }

@@ -7,13 +7,13 @@
          xmlns:xlink="http://www.w3.org/1999/xlink"
          xmlns:xi="http://www.w3.org/2001/XInclude"
          xmlns:ns="http://docbook.org/ns/docbook">
-  <title>Exporting particles</title>
+  <title>Exporting data</title>
 
-  <para>To export the current particle dataset to a file or a series of files, select the <menuchoice><guimenu>File</guimenu><guimenuitem>Export File</guimenuitem></menuchoice> menu item.
-  After choosing an output filename and a format, the export settings dialog lets you specify the animation frames and the particle properties to export.
+  <para>To export the current dataset to a file (or a series of files), select the <menuchoice><guimenu>File</guimenu><guimenuitem>Export File</guimenuitem></menuchoice> menu item.
+  After choosing an output filename and a format, the export settings dialog lets you specify the animation frames and the particle properties to be exported.
   </para>
   
-  <para>If you pick an output filename that ends with a <filename>.gz</filename> suffix, then the file will automatically be compressed by OVITO.</para>
+  <para>If you pick an output filename that ends with a <filename>.gz</filename> suffix, the file will be compressed by OVITO.</para>
   
   <simplesect xml:id="usage.export.formats">
   <title>Supported output formats</title>

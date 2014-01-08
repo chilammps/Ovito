@@ -29,7 +29,7 @@
 	Plugin-Version="1.0"
 	Plugin-Vendor="Lars Pastewka">
 	
-	<NativePlugin Library="NetCDF" />
+	<NativePlugin Library="NetCDFImporter" />
 	
 	<Plugin-Dependencies>
 		<Plugin-Dependency Plugin-Id="Particles" />

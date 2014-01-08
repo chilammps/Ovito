@@ -72,12 +72,12 @@ public:
 	virtual bool importFile(const QUrl& sourceUrl, ImportMode importMode = AskUser) = 0;
 
 	/// \brief Checks if the given file has format that can be read by this importer.
-	/// \param input The I/O device that contains the file data to check.
+	/// \param input The file that contains the data to check.
 	/// \param sourceLocation The original source location of the file if it was loaded from a remote location.
 	/// \return \c true if the data can be parsed.
 	//	        \c false if the data has some unknown format.
 	/// \throw Exception when the check has failed.
-	virtual bool checkFileFormat(QIODevice& input, const QUrl& sourceLocation) { return false; }
+	virtual bool checkFileFormat(QFileDevice& input, const QUrl& sourceLocation) { return false; }
 
 private:
 

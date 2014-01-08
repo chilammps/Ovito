@@ -3,7 +3,7 @@ Install indirect dependencies on Ubuntu 10.04:
 **************************************************************************
 
 sudo apt-get install libx11-xcb-dev libpcre3-dev libxi-dev libgmp-dev \
-                     libmpfr-dev libsm-dev libice-dev
+                     libmpfr-dev libsm-dev libice-dev libnetcdf-dev
 
 **************************************************************************
 Build static Qt libraries (version 5.2.0) on Ubuntu 10.04:
