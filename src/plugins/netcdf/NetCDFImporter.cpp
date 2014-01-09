@@ -54,6 +54,7 @@
 #include <netcdf.h>
 
 #define NCERR(x)  _ncerr(x, __FILE__, __LINE__)
+#define NCERRI(x, info)  _ncerr_with_info(x, __FILE__, __LINE__, info)
 
 namespace NetCDF {
 
@@ -70,6 +71,16 @@ static void _ncerr(int err, const char *file, int line)
 {
 	if (err != NC_NOERR)
 		throw Exception(NetCDFImporter::tr("NetCDF error in line %1 of source file %2: %3").arg(line).arg(file).arg(QString(nc_strerror(err))));
+}
+
+/******************************************************************************
+* Check for NetCDF error and throw exception (and attach additional information
+* to exception string)
+******************************************************************************/
+static void _ncerr_with_info(int err, const char *file, int line, const QString &info)
+{
+	if (err != NC_NOERR)
+		throw Exception(NetCDFImporter::tr("NetCDF error in line %1 of source file %2: %3 %4").arg(line).arg(file).arg(QString(nc_strerror(err))).arg(info));
 }
 
 /******************************************************************************
@@ -435,12 +446,12 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 							if (componentCount == 6 && nativeComponentCount == 9) {
 								// Convert this property to Voigt notation.
 								int *data = new int[9*particleCount];
-								NCERR( nc_get_vara_int(_ncid, varId, startp, countp, data) );
+								NCERRI( nc_get_vara_int(_ncid, varId, startp, countp, data), tr("(While reading variable '%1'.)").arg(columnName));
 								fullToVoigt(particleCount, data, property->dataInt());
 								delete [] data;
 							}
 							else {
-								NCERR( nc_get_vara_int(_ncid, varId, startp, countp, property->dataInt()) );
+								NCERRI( nc_get_vara_int(_ncid, varId, startp, countp, property->dataInt()), tr("(While reading variable '%1'.)").arg(columnName) );
 							}
 							
 							// Create particles types if this is the particle type property.
@@ -469,18 +480,18 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 								// Convert this property to Voigt notation.
 								FloatType *data = new FloatType[9*particleCount];
 #ifdef FLOATTYPE_FLOAT
-								NCERR( nc_get_vara_float(_ncid, varId, startp, countp, data) );
+								NCERRI( nc_get_vara_float(_ncid, varId, startp, countp, data), tr("(While reading variable '%1'.)").arg(columnName) );
 #else
-								NCERR( nc_get_vara_double(_ncid, varId, startp, countp, data) );
+								NCERRI( nc_get_vara_double(_ncid, varId, startp, countp, data), tr("(While reading variable '%1'.)").arg(columnName) );
 #endif
 								fullToVoigt(particleCount, data, property->dataFloat());
 								delete [] data;
 							}
 							else {
 #ifdef FLOATTYPE_FLOAT
-								NCERR( nc_get_vara_float(_ncid, varId, startp, countp, property->dataFloat()) );
+								NCERRI( nc_get_vara_float(_ncid, varId, startp, countp, property->dataFloat()), tr("(While reading variable '%1'.)").arg(columnName) );
 #else
-								NCERR( nc_get_vara_double(_ncid, varId, startp, countp, property->dataFloat()) );
+								NCERRI( nc_get_vara_double(_ncid, varId, startp, countp, property->dataFloat()), tr("(While reading variable '%1'.)").arg(columnName) );
 #endif
 							}
 						}
