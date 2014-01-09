@@ -35,9 +35,12 @@ namespace Particles {
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ScatterPlotModifier, ParticleModifier)
 IMPLEMENT_OVITO_OBJECT(Particles, ScatterPlotModifierEditor, ParticleModifierEditor)
 SET_OVITO_OBJECT_EDITOR(ScatterPlotModifier, ScatterPlotModifierEditor)
-DEFINE_PROPERTY_FIELD(ScatterPlotModifier, _selectInRange, "SelectInRange")
-DEFINE_FLAGS_PROPERTY_FIELD(ScatterPlotModifier, _selectionRangeStart, "SelectionRangeStart", PROPERTY_FIELD_MEMORIZE)
-DEFINE_FLAGS_PROPERTY_FIELD(ScatterPlotModifier, _selectionRangeEnd, "SelectionRangeEnd", PROPERTY_FIELD_MEMORIZE)
+DEFINE_PROPERTY_FIELD(ScatterPlotModifier, _selectXAxisInRange, "SelectXAxisInRange")
+DEFINE_FLAGS_PROPERTY_FIELD(ScatterPlotModifier, _selectionXAxisRangeStart, "SelectionXAxisRangeStart", PROPERTY_FIELD_MEMORIZE)
+DEFINE_FLAGS_PROPERTY_FIELD(ScatterPlotModifier, _selectionXAxisRangeEnd, "SelectionXAxisRangeEnd", PROPERTY_FIELD_MEMORIZE)
+DEFINE_PROPERTY_FIELD(ScatterPlotModifier, _selectYAxisInRange, "SelectYAxisInRange")
+DEFINE_FLAGS_PROPERTY_FIELD(ScatterPlotModifier, _selectionYAxisRangeStart, "SelectionYAxisRangeStart", PROPERTY_FIELD_MEMORIZE)
+DEFINE_FLAGS_PROPERTY_FIELD(ScatterPlotModifier, _selectionYAxisRangeEnd, "SelectionYAxisRangeEnd", PROPERTY_FIELD_MEMORIZE)
 DEFINE_PROPERTY_FIELD(ScatterPlotModifier, _fixXAxisRange, "FixXAxisRange")
 DEFINE_FLAGS_PROPERTY_FIELD(ScatterPlotModifier, _xAxisRangeStart, "XAxisRangeStart", PROPERTY_FIELD_MEMORIZE)
 DEFINE_FLAGS_PROPERTY_FIELD(ScatterPlotModifier, _xAxisRangeEnd, "XAxisRangeEnd", PROPERTY_FIELD_MEMORIZE)
@@ -46,9 +49,12 @@ DEFINE_FLAGS_PROPERTY_FIELD(ScatterPlotModifier, _yAxisRangeStart, "YAxisRangeSt
 DEFINE_FLAGS_PROPERTY_FIELD(ScatterPlotModifier, _yAxisRangeEnd, "YAxisRangeEnd", PROPERTY_FIELD_MEMORIZE)
 DEFINE_PROPERTY_FIELD(ScatterPlotModifier, _xAxisProperty, "XAxisProperty")
 DEFINE_PROPERTY_FIELD(ScatterPlotModifier, _yAxisProperty, "YAxisProperty")
-SET_PROPERTY_FIELD_LABEL(ScatterPlotModifier, _selectInRange, "Select particles in range")
-SET_PROPERTY_FIELD_LABEL(ScatterPlotModifier, _selectionRangeStart, "Selection range start")
-SET_PROPERTY_FIELD_LABEL(ScatterPlotModifier, _selectionRangeEnd, "Selection range end")
+SET_PROPERTY_FIELD_LABEL(ScatterPlotModifier, _selectXAxisInRange, "Select particles in x-range")
+SET_PROPERTY_FIELD_LABEL(ScatterPlotModifier, _selectionXAxisRangeStart, "Selection x-range start")
+SET_PROPERTY_FIELD_LABEL(ScatterPlotModifier, _selectionXAxisRangeEnd, "Selection x-range end")
+SET_PROPERTY_FIELD_LABEL(ScatterPlotModifier, _selectYAxisInRange, "Select particles in y-range")
+SET_PROPERTY_FIELD_LABEL(ScatterPlotModifier, _selectionYAxisRangeStart, "Selection y-range start")
+SET_PROPERTY_FIELD_LABEL(ScatterPlotModifier, _selectionYAxisRangeEnd, "Selection y-range end")
 SET_PROPERTY_FIELD_LABEL(ScatterPlotModifier, _fixXAxisRange, "Fix x-axis range")
 SET_PROPERTY_FIELD_LABEL(ScatterPlotModifier, _xAxisRangeStart, "X-axis range start")
 SET_PROPERTY_FIELD_LABEL(ScatterPlotModifier, _xAxisRangeEnd, "X-axis range end")
@@ -62,13 +68,17 @@ SET_PROPERTY_FIELD_LABEL(ScatterPlotModifier, _yAxisProperty, "Y-axis property")
 * Constructs the modifier object.
 ******************************************************************************/
 ScatterPlotModifier::ScatterPlotModifier(DataSet* dataset) : ParticleModifier(dataset),
-	_selectInRange(false),
-	_selectionRangeStart(0), _selectionRangeEnd(1), _fixXAxisRange(false), _xAxisRangeStart(0),
-	_xAxisRangeEnd(0), _fixYAxisRange(false), _yAxisRangeStart(0), _yAxisRangeEnd(0)
+	_selectXAxisInRange(false),	_selectionXAxisRangeStart(0), _selectionXAxisRangeEnd(1),
+	_selectYAxisInRange(false),	_selectionYAxisRangeStart(0), _selectionYAxisRangeEnd(1),
+	_fixXAxisRange(false), _xAxisRangeStart(0),	_xAxisRangeEnd(0), _fixYAxisRange(false),
+	_yAxisRangeStart(0), _yAxisRangeEnd(0)
 {
-	INIT_PROPERTY_FIELD(ScatterPlotModifier::_selectInRange);
-	INIT_PROPERTY_FIELD(ScatterPlotModifier::_selectionRangeStart);
-	INIT_PROPERTY_FIELD(ScatterPlotModifier::_selectionRangeEnd);
+	INIT_PROPERTY_FIELD(ScatterPlotModifier::_selectXAxisInRange);
+	INIT_PROPERTY_FIELD(ScatterPlotModifier::_selectionXAxisRangeStart);
+	INIT_PROPERTY_FIELD(ScatterPlotModifier::_selectionXAxisRangeEnd);
+	INIT_PROPERTY_FIELD(ScatterPlotModifier::_selectYAxisInRange);
+	INIT_PROPERTY_FIELD(ScatterPlotModifier::_selectionYAxisRangeStart);
+	INIT_PROPERTY_FIELD(ScatterPlotModifier::_selectionYAxisRangeEnd);
 	INIT_PROPERTY_FIELD(ScatterPlotModifier::_fixXAxisRange);
 	INIT_PROPERTY_FIELD(ScatterPlotModifier::_xAxisRangeStart);
 	INIT_PROPERTY_FIELD(ScatterPlotModifier::_xAxisRangeEnd);
@@ -129,17 +139,29 @@ ObjectStatus ScatterPlotModifier::modifyParticles(TimePoint time, TimeInterval& 
 	size_t yVecComponent = yAxisProperty().vectorComponent() >= 0 ? yAxisProperty().vectorComponent() : 0;
 	size_t yVecComponentCount = yProperty->componentCount();
 
-	/*
 	ParticlePropertyObject* selProperty = nullptr;
-	FloatType selectionRangeStart = _selectionRangeStart;
-	FloatType selectionRangeEnd = _selectionRangeEnd;
+	FloatType selectionXAxisRangeStart = _selectionXAxisRangeStart;
+	FloatType selectionXAxisRangeEnd = _selectionXAxisRangeEnd;
+	FloatType selectionYAxisRangeStart = _selectionYAxisRangeStart;
+	FloatType selectionYAxisRangeEnd = _selectionYAxisRangeEnd;
 	size_t numSelected = 0;
-	if(_selectInRange) {
+	if(_selectXAxisInRange || _selectYAxisInRange) {
 		selProperty = outputStandardProperty(ParticleProperty::SelectionProperty);
-		if(selectionRangeStart > selectionRangeEnd)
-			std::swap(selectionRangeStart, selectionRangeEnd);
+		int* s_begin = selProperty->dataInt();
+		int* s_end = s_begin + selProperty->size();
+		for(auto s = s_begin; s != s_end; ++s) {
+			*s = 1;
+			numSelected++;
+		}
 	}
-	*/
+	if(_selectXAxisInRange) {
+		if(selectionXAxisRangeStart > selectionXAxisRangeEnd)
+			std::swap(selectionXAxisRangeStart, selectionXAxisRangeEnd);
+	}
+	if(_selectYAxisInRange) {
+		if(selectionYAxisRangeStart > selectionYAxisRangeEnd)
+			std::swap(selectionYAxisRangeStart, selectionYAxisRangeEnd);
+	}
 
 	double xIntervalStart = _xAxisRangeStart;
 	double xIntervalEnd = _xAxisRangeEnd;
@@ -165,26 +187,18 @@ ObjectStatus ScatterPlotModifier::modifyParticles(TimePoint time, TimeInterval& 
 					_xData.append(*vx);
 				}
 			}
-			/*
-			else {
-				_scatterPlotData[0] = property->size();
-			}
-			*/
-			/*
-			if(selProperty) {
-				OVITO_ASSERT(selProperty->size() == property->size());
+
+			if(selProperty && _selectXAxisInRange) {
+				OVITO_ASSERT(selProperty->size() == xProperty->size());
 				int* s = selProperty->dataInt();
 				int* s_end = s + selProperty->size();
-				for(auto v = v_begin; v != v_end; v += vecComponentCount, ++s) {
-					if(*v >= selectionRangeStart && *v <= selectionRangeEnd) {
-						*s = 1;
-						numSelected++;
-					}
-					else
+				for(auto vx = vx_begin; vx != vx_end; vx += xVecComponentCount, ++s) {
+					if(*vx < selectionXAxisRangeStart || *vx > selectionXAxisRangeEnd) {
 						*s = 0;
+						numSelected--;
+					}
 				}
 			}
-			*/
 		}
 		else if(xProperty->dataType() == qMetaTypeId<int>()) {
 			const int* vx_begin = xProperty->constDataInt() + xVecComponent;
@@ -201,26 +215,18 @@ ObjectStatus ScatterPlotModifier::modifyParticles(TimePoint time, TimeInterval& 
 					_xData.append(*vx);
 				}
 			}
-			/*
-			else {
-				_scatterPlotData[0] = property->size();
-			}
-			*/
-			/*
-			if(selProperty) {
-				OVITO_ASSERT(selProperty->size() == property->size());
+
+			if(selProperty && _selectXAxisInRange) {
+				OVITO_ASSERT(selProperty->size() == xProperty->size());
 				int* s = selProperty->dataInt();
 				int* s_end = s + selProperty->size();
-				for(auto v = v_begin; v != v_end; v += vecComponentCount, ++s) {
-					if(*v >= selectionRangeStart && *v <= selectionRangeEnd) {
-						*s = 1;
-						numSelected++;
-					}
-					else
+				for(auto vx = vx_begin; vx != vx_end; vx += xVecComponentCount, ++s) {
+					if(*vx < selectionXAxisRangeStart || *vx > selectionXAxisRangeEnd) {
 						*s = 0;
+						numSelected--;
+					}
 				}
 			}
-			*/
 		}
 	}
 	if (yProperty->size() > 0) {
@@ -239,26 +245,18 @@ ObjectStatus ScatterPlotModifier::modifyParticles(TimePoint time, TimeInterval& 
 					_yData.append(*vy);
 				}
 			}
-			/*
-			else {
-				_scatterPlotData[0] = property->size();
-			}
-			*/
-			/*
-			if(selProperty) {
-				OVITO_ASSERT(selProperty->size() == property->size());
+
+			if(selProperty && _selectYAxisInRange) {
+				OVITO_ASSERT(selProperty->size() == yProperty->size());
 				int* s = selProperty->dataInt();
 				int* s_end = s + selProperty->size();
-				for(auto v = v_begin; v != v_end; v += vecComponentCount, ++s) {
-					if(*v >= selectionRangeStart && *v <= selectionRangeEnd) {
-						*s = 1;
-						numSelected++;
-					}
-					else
+				for(auto vy = vy_begin; vy != vy_end; vy += yVecComponentCount, ++s) {
+					if(*vy < selectionYAxisRangeStart || *vy > selectionYAxisRangeEnd) {
 						*s = 0;
+						numSelected--;
+					}
 				}
 			}
-			*/
 		}
 		else if(yProperty->dataType() == qMetaTypeId<int>()) {
 			const int* vy_begin = yProperty->constDataInt() + yVecComponent;
@@ -275,26 +273,18 @@ ObjectStatus ScatterPlotModifier::modifyParticles(TimePoint time, TimeInterval& 
 					_yData.append(*vy);
 				}
 			}
-			/*
-			else {
-				_scatterPlotData[0] = property->size();
-			}
-			*/
-			/*
-			if(selProperty) {
-				OVITO_ASSERT(selProperty->size() == property->size());
+
+			if(selProperty && _selectYAxisInRange) {
+				OVITO_ASSERT(selProperty->size() == yProperty->size());
 				int* s = selProperty->dataInt();
 				int* s_end = s + selProperty->size();
-				for(auto v = v_begin; v != v_end; v += vecComponentCount, ++s) {
-					if(*v >= selectionRangeStart && *v <= selectionRangeEnd) {
-						*s = 1;
-						numSelected++;
-					}
-					else
+				for(auto vy = vy_begin; vy != vy_end; vy += yVecComponentCount, ++s) {
+					if(*vy < selectionYAxisRangeStart || *vy > selectionYAxisRangeEnd) {
 						*s = 0;
+						numSelected--;
+					}
 				}
 			}
-			*/
 		}
 	}
 	else {
@@ -303,12 +293,10 @@ ObjectStatus ScatterPlotModifier::modifyParticles(TimePoint time, TimeInterval& 
 	}
 
 	QString statusMessage;
-	/*
 	if(selProperty) {
 		selProperty->changed();
 		statusMessage += tr("%1 particles selected (%2%)").arg(numSelected).arg((FloatType)numSelected * 100 / std::max(1,(int)selProperty->size()), 0, 'f', 1);
 	}
-	*/
 
 	_xAxisRangeStart = xIntervalStart;
 	_xAxisRangeEnd = xIntervalEnd;
@@ -367,18 +355,26 @@ void ScatterPlotModifierEditor::createUI(const RolloutInsertionParameters& rollo
 	_scatterPlot->graph()->setLineStyle(QCPGraph::lsNone);
 	_scatterPlot->graph()->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 5));
 
-	_selectionRangeStartMarker = new QCPItemStraightLine(_scatterPlot);
-	_selectionRangeEndMarker = new QCPItemStraightLine(_scatterPlot);
-	_selectionRangeStartMarker->setVisible(false);
-	_selectionRangeEndMarker->setVisible(false);
 	QPen markerPen;
 	markerPen.setColor(QColor(255, 40, 30));
 	markerPen.setStyle(Qt::DotLine);
 	markerPen.setWidth(2);
-	_selectionRangeStartMarker->setPen(markerPen);
-	_selectionRangeEndMarker->setPen(markerPen);
-	_scatterPlot->addItem(_selectionRangeStartMarker);
-	_scatterPlot->addItem(_selectionRangeEndMarker);
+	_selectionXAxisRangeStartMarker = new QCPItemStraightLine(_scatterPlot);
+	_selectionXAxisRangeEndMarker = new QCPItemStraightLine(_scatterPlot);
+	_selectionXAxisRangeStartMarker->setVisible(false);
+	_selectionXAxisRangeEndMarker->setVisible(false);
+	_selectionXAxisRangeStartMarker->setPen(markerPen);
+	_selectionXAxisRangeEndMarker->setPen(markerPen);
+	_scatterPlot->addItem(_selectionXAxisRangeStartMarker);
+	_scatterPlot->addItem(_selectionXAxisRangeEndMarker);
+	_selectionYAxisRangeStartMarker = new QCPItemStraightLine(_scatterPlot);
+	_selectionYAxisRangeEndMarker = new QCPItemStraightLine(_scatterPlot);
+	_selectionYAxisRangeStartMarker->setVisible(false);
+	_selectionYAxisRangeEndMarker->setVisible(false);
+	_selectionYAxisRangeStartMarker->setPen(markerPen);
+	_selectionYAxisRangeEndMarker->setPen(markerPen);
+	_scatterPlot->addItem(_selectionYAxisRangeStartMarker);
+	_scatterPlot->addItem(_selectionYAxisRangeEndMarker);
 
 	layout->addWidget(new QLabel(tr("Scatter plot:")));
 	layout->addWidget(_scatterPlot);
@@ -394,13 +390,30 @@ void ScatterPlotModifierEditor::createUI(const RolloutInsertionParameters& rollo
 	sublayout->setContentsMargins(4,4,4,4);
 	layout->addWidget(selectionBox);
 
-	BooleanParameterUI* selectInRangeUI = new BooleanParameterUI(this, PROPERTY_FIELD(ScatterPlotModifier::_selectInRange));
+	BooleanParameterUI* selectInRangeUI = new BooleanParameterUI(this, PROPERTY_FIELD(ScatterPlotModifier::_selectXAxisInRange));
 	sublayout->addWidget(selectInRangeUI->checkBox());
 
 	QHBoxLayout* hlayout = new QHBoxLayout();
 	sublayout->addLayout(hlayout);
-	FloatParameterUI* selRangeStartPUI = new FloatParameterUI(this, PROPERTY_FIELD(ScatterPlotModifier::_selectionRangeStart));
-	FloatParameterUI* selRangeEndPUI = new FloatParameterUI(this, PROPERTY_FIELD(ScatterPlotModifier::_selectionRangeEnd));
+	FloatParameterUI* selRangeStartPUI = new FloatParameterUI(this, PROPERTY_FIELD(ScatterPlotModifier::_selectionXAxisRangeStart));
+	FloatParameterUI* selRangeEndPUI = new FloatParameterUI(this, PROPERTY_FIELD(ScatterPlotModifier::_selectionXAxisRangeEnd));
+	hlayout->addWidget(new QLabel(tr("From:")));
+	hlayout->addLayout(selRangeStartPUI->createFieldLayout());
+	hlayout->addSpacing(12);
+	hlayout->addWidget(new QLabel(tr("To:")));
+	hlayout->addLayout(selRangeEndPUI->createFieldLayout());
+	selRangeStartPUI->setEnabled(false);
+	selRangeEndPUI->setEnabled(false);
+	connect(selectInRangeUI->checkBox(), SIGNAL(toggled(bool)), selRangeStartPUI, SLOT(setEnabled(bool)));
+	connect(selectInRangeUI->checkBox(), SIGNAL(toggled(bool)), selRangeEndPUI, SLOT(setEnabled(bool)));
+
+	selectInRangeUI = new BooleanParameterUI(this, PROPERTY_FIELD(ScatterPlotModifier::_selectYAxisInRange));
+	sublayout->addWidget(selectInRangeUI->checkBox());
+
+	hlayout = new QHBoxLayout();
+	sublayout->addLayout(hlayout);
+	selRangeStartPUI = new FloatParameterUI(this, PROPERTY_FIELD(ScatterPlotModifier::_selectionYAxisRangeStart));
+	selRangeEndPUI = new FloatParameterUI(this, PROPERTY_FIELD(ScatterPlotModifier::_selectionYAxisRangeEnd));
 	hlayout->addWidget(new QLabel(tr("From:")));
 	hlayout->addLayout(selRangeStartPUI->createFieldLayout());
 	hlayout->addSpacing(12);
@@ -491,20 +504,31 @@ void ScatterPlotModifierEditor::plotScatterPlot()
 	_scatterPlot->xAxis->setRange(modifier->xAxisRangeStart(), modifier->xAxisRangeEnd());
 	_scatterPlot->yAxis->setRange(modifier->yAxisRangeStart(), modifier->yAxisRangeEnd());
 
-	/*
-	if(modifier->selectInRange()) {
-		_selectionRangeStartMarker->setVisible(true);
-		_selectionRangeEndMarker->setVisible(true);
-		_selectionRangeStartMarker->point1->setCoords(modifier->selectionRangeStart(), 0);
-		_selectionRangeStartMarker->point2->setCoords(modifier->selectionRangeStart(), 1);
-		_selectionRangeEndMarker->point1->setCoords(modifier->selectionRangeEnd(), 0);
-		_selectionRangeEndMarker->point2->setCoords(modifier->selectionRangeEnd(), 1);
+	if(modifier->selectXAxisInRange()) {
+		_selectionXAxisRangeStartMarker->setVisible(true);
+		_selectionXAxisRangeEndMarker->setVisible(true);
+		_selectionXAxisRangeStartMarker->point1->setCoords(modifier->selectionXAxisRangeStart(), 0);
+		_selectionXAxisRangeStartMarker->point2->setCoords(modifier->selectionXAxisRangeStart(), 1);
+		_selectionXAxisRangeEndMarker->point1->setCoords(modifier->selectionXAxisRangeEnd(), 0);
+		_selectionXAxisRangeEndMarker->point2->setCoords(modifier->selectionXAxisRangeEnd(), 1);
 	}
 	else {
-		_selectionRangeStartMarker->setVisible(false);
-		_selectionRangeEndMarker->setVisible(false);
+		_selectionXAxisRangeStartMarker->setVisible(false);
+		_selectionXAxisRangeEndMarker->setVisible(false);
 	}
-	*/
+
+	if(modifier->selectYAxisInRange()) {
+		_selectionYAxisRangeStartMarker->setVisible(true);
+		_selectionYAxisRangeEndMarker->setVisible(true);
+		_selectionYAxisRangeStartMarker->point1->setCoords(0, modifier->selectionYAxisRangeStart());
+		_selectionYAxisRangeStartMarker->point2->setCoords(1, modifier->selectionYAxisRangeStart());
+		_selectionYAxisRangeEndMarker->point1->setCoords(0, modifier->selectionYAxisRangeEnd());
+		_selectionYAxisRangeEndMarker->point2->setCoords(1, modifier->selectionYAxisRangeEnd());
+	}
+	else {
+		_selectionYAxisRangeStartMarker->setVisible(false);
+		_selectionYAxisRangeEndMarker->setVisible(false);
+	}
 
 	_scatterPlot->replot();
 }

@@ -66,17 +66,29 @@ public:
 	/// Returns the stored scatter plot data (y-axis).
 	const QVector<double>& yData() const { return _yData; }
 
-	/// Returns whether particles within the specified range should be selected.
-	bool selectInRange() const { return _selectInRange; }
+	/// Returns whether particles within the specified range should be selected (x-axis).
+	bool selectXAxisInRange() const { return _selectXAxisInRange; }
 
-	/// Sets whether particles within the specified range should be selected.
-	void setSelectInRange(bool select) { _selectInRange = select; }
+	/// Sets whether particles within the specified range should be selected (x-axis).
+	void setSelectXAxisInRange(bool select) { _selectXAxisInRange = select; }
 
-	/// Returns the start value of the selection interval.
-	FloatType selectionRangeStart() const { return _selectionRangeStart; }
+	/// Returns the start value of the selection interval (x-axis).
+	FloatType selectionXAxisRangeStart() const { return _selectionXAxisRangeStart; }
 
-	/// Returns the end value of the selection interval.
-	FloatType selectionRangeEnd() const { return _selectionRangeEnd; }
+	/// Returns the end value of the selection interval (x-axis).
+	FloatType selectionXAxisRangeEnd() const { return _selectionXAxisRangeEnd; }
+
+	/// Returns whether particles within the specified range should be selected (y-axis).
+	bool selectYAxisInRange() const { return _selectYAxisInRange; }
+
+	/// Sets whether particles within the specified range should be selected (y-axis).
+	void setSelectYAxisInRange(bool select) { _selectYAxisInRange = select; }
+
+	/// Returns the start value of the selection interval (y-axis).
+	FloatType selectionYAxisRangeStart() const { return _selectionYAxisRangeStart; }
+
+	/// Returns the end value of the selection interval (y-axis).
+	FloatType selectionYAxisRangeEnd() const { return _selectionYAxisRangeEnd; }
 
 	/// Returns whether the range of the x-axis of the scatter plot should be fixed.
 	bool fixXAxisRange() const { return _fixXAxisRange; }
@@ -100,9 +112,12 @@ public:
 
 	Q_PROPERTY(Particles::ParticlePropertyReference xAxisProperty READ xAxisProperty WRITE setXAxisProperty);
 	Q_PROPERTY(Particles::ParticlePropertyReference yAxisProperty READ yAxisProperty WRITE setYAxisProperty);
-	Q_PROPERTY(bool selectInRange READ selectInRange WRITE setSelectInRange);
-	Q_PROPERTY(FloatType selectionRangeStart READ selectionRangeStart);
-	Q_PROPERTY(FloatType selectionRangeEnd READ selectionRangeEnd);
+	Q_PROPERTY(bool selectXAxisInRange READ selectXAxisInRange WRITE setSelectXAxisInRange);
+	Q_PROPERTY(FloatType selectionXAxisRangeStart READ selectionXAxisRangeStart);
+	Q_PROPERTY(FloatType selectionXAxisRangeEnd READ selectionXAxisRangeEnd);
+	Q_PROPERTY(bool selectYAxisInRange READ selectYAxisInRange WRITE setSelectYAxisInRange);
+	Q_PROPERTY(FloatType selectionYAxisRangeStart READ selectionYAxisRangeStart);
+	Q_PROPERTY(FloatType selectionYAxisRangeEnd READ selectionYAxisRangeEnd);
 
 protected:
 
@@ -117,14 +132,23 @@ private:
 	/// The particle type property that is used as source for the y-axis.
 	PropertyField<ParticlePropertyReference> _yAxisProperty;
 
-	/// Controls the whether particles within the specified range should be selected.
-	PropertyField<bool> _selectInRange;
+	/// Controls the whether particles within the specified range should be selected (x-axis).
+	PropertyField<bool> _selectXAxisInRange;
 
-	/// Controls the start value of the selection interval.
-	PropertyField<FloatType> _selectionRangeStart;
+	/// Controls the start value of the selection interval (x-axis).
+	PropertyField<FloatType> _selectionXAxisRangeStart;
 
-	/// Controls the end value of the selection interval.
-	PropertyField<FloatType> _selectionRangeEnd;
+	/// Controls the end value of the selection interval (x-axis).
+	PropertyField<FloatType> _selectionXAxisRangeEnd;
+
+	/// Controls the whether particles within the specified range should be selected (y-axis).
+	PropertyField<bool> _selectYAxisInRange;
+
+	/// Controls the start value of the selection interval (y-axis).
+	PropertyField<FloatType> _selectionYAxisRangeStart;
+
+	/// Controls the end value of the selection interval (y-axis).
+	PropertyField<FloatType> _selectionYAxisRangeEnd;
 
 	/// Controls the whether the range of the x-axis of the scatter plot should be fixed.
 	PropertyField<bool> _fixXAxisRange;
@@ -153,9 +177,12 @@ private:
 	Q_CLASSINFO("DisplayName", "Scatter plot");
 	Q_CLASSINFO("ModifierCategory", "Analysis");
 
-	DECLARE_PROPERTY_FIELD(_selectInRange);
-	DECLARE_PROPERTY_FIELD(_selectionRangeStart);
-	DECLARE_PROPERTY_FIELD(_selectionRangeEnd);
+	DECLARE_PROPERTY_FIELD(_selectXAxisInRange);
+	DECLARE_PROPERTY_FIELD(_selectionXAxisRangeStart);
+	DECLARE_PROPERTY_FIELD(_selectionXAxisRangeEnd);
+	DECLARE_PROPERTY_FIELD(_selectYAxisInRange);
+	DECLARE_PROPERTY_FIELD(_selectionYAxisRangeStart);
+	DECLARE_PROPERTY_FIELD(_selectionYAxisRangeEnd);
 	DECLARE_PROPERTY_FIELD(_fixXAxisRange);
 	DECLARE_PROPERTY_FIELD(_xAxisRangeStart);
 	DECLARE_PROPERTY_FIELD(_xAxisRangeEnd);
@@ -203,11 +230,17 @@ private:
 	/// The graph widget to display the scatter plot.
 	QCustomPlot* _scatterPlot;
 
-	/// Marks the selection interval in the scatter plot.
-	QCPItemStraightLine* _selectionRangeStartMarker;
+	/// Marks the selection interval in the scatter plot (x-axis).
+	QCPItemStraightLine* _selectionXAxisRangeStartMarker;
 
-	/// Marks the selection interval in the scatter plot.
-	QCPItemStraightLine* _selectionRangeEndMarker;
+	/// Marks the selection interval in the scatter plot (x-axis).
+	QCPItemStraightLine* _selectionXAxisRangeEndMarker;
+
+	/// Marks the selection interval in the scatter plot (y-axis).
+	QCPItemStraightLine* _selectionYAxisRangeStartMarker;
+
+	/// Marks the selection interval in the scatter plot (y-axis).
+	QCPItemStraightLine* _selectionYAxisRangeEndMarker;
 
 	Q_OBJECT
 	OVITO_OBJECT
