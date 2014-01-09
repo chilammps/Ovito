@@ -628,7 +628,7 @@ std::tuple<FloatType, Box2I> ViewportSceneRenderer::determineGridRange(Viewport*
 
 	if(numberOfIntersections < 2) {
 		// Cannot determine visible parts of the grid.
-		return { 0, Box2I() };
+		return std::tuple<FloatType, Box2I>(0, Box2I());
 	}
 
 	// Determine grid spacing adaptively.
@@ -643,7 +643,7 @@ std::tuple<FloatType, Box2I> ViewportSceneRenderer::determineGridRange(Viewport*
 	int ystart = (int)floor(visibleGridRect.minc.y() / (gridSpacing * 10)) * 10;
 	int yend = (int)ceil(visibleGridRect.maxc.y() / (gridSpacing * 10)) * 10;
 
-	return { gridSpacing, Box2I(Point2I(xstart, ystart), Point2I(xend, yend)) };
+	return std::tuple<FloatType, Box2I>(gridSpacing, Box2I(Point2I(xstart, ystart), Point2I(xend, yend)));
 }
 
 /******************************************************************************

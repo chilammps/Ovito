@@ -42,7 +42,7 @@ ViewportParticleGeometryBuffer::ViewportParticleGeometryBuffer(ViewportSceneRend
 	_usePointSprites = true;
 #ifdef Q_OS_WIN
 	if(renderer->glformat().majorVersion() == 3 && renderer->glformat().minorVersion() == 1
-			&& strstr(glGetString(GL_VENDOR), "Intel") != nullptr)
+			&& strstr((const char*)glGetString(GL_VENDOR), "Intel") != nullptr)
 		_usePointSprites = false;
 #endif
 
