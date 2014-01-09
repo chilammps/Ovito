@@ -26,6 +26,7 @@
 #include <plugins/particles/data/ParticleProperty.h>
 #include <plugins/particles/util/ParticlePropertyComboBox.h>
 #include "../../ParticleModifier.h"
+#include <3rdparty/qcustomplot/qcustomplot.h>
 
 class QCustomPlot;
 class QCPItemStraightLine;
@@ -90,8 +91,14 @@ public:
 	/// Returns the end value of the selection interval (y-axis).
 	FloatType selectionYAxisRangeEnd() const { return _selectionYAxisRangeEnd; }
 
+	/// Set whether the range of the x-axis of the scatter plot should be fixed.
+	void setFixXAxisRange(bool fix) { _fixXAxisRange = fix; }
+
 	/// Returns whether the range of the x-axis of the scatter plot should be fixed.
 	bool fixXAxisRange() const { return _fixXAxisRange; }
+
+	/// Set start and end value of the x-axis.
+	void setXAxisRange(FloatType start, FloatType end) { _xAxisRangeStart = start; _xAxisRangeEnd = end; }
 
 	/// Returns the start value of the x-axis.
 	FloatType xAxisRangeStart() const { return _xAxisRangeStart; }
@@ -99,8 +106,14 @@ public:
 	/// Returns the end value of the x-axis.
 	FloatType xAxisRangeEnd() const { return _xAxisRangeEnd; }
 
+	/// Set whether the range of the y-axis of the scatter plot should be fixed.
+	void setFixYAxisRange(bool fix) { _fixYAxisRange = fix; }
+
 	/// Returns whether the range of the y-axis of the scatter plot should be fixed.
 	bool fixYAxisRange() const { return _fixYAxisRange; }
+
+	/// Set start and end value of the y-axis.
+	void setYAxisRange(FloatType start, FloatType end) { _yAxisRangeStart = start; _yAxisRangeEnd = end; }
 
 	/// Returns the start value of the y-axis.
 	FloatType yAxisRangeStart() const { return _yAxisRangeStart; }
@@ -201,7 +214,7 @@ class ScatterPlotModifierEditor : public ParticleModifierEditor
 public:
 
 	/// Default constructor.
-	Q_INVOKABLE ScatterPlotModifierEditor() {}
+	Q_INVOKABLE ScatterPlotModifierEditor() : _rangeUpdate(true) {}
 
 protected:
 
@@ -215,6 +228,12 @@ protected Q_SLOTS:
 
 	/// Replots the scatter plot computed by the modifier.
 	void plotScatterPlot();
+
+	/// Keep x-axis range updated
+	void updateXAxisRange(const QCPRange &newRange);
+
+	/// Keep y-axis range updated
+	void updateYAxisRange(const QCPRange &newRange);
 
 	/// This is called when the user has clicked the "Save Data" button.
 	void onSaveData();
@@ -241,6 +260,9 @@ private:
 
 	/// Marks the selection interval in the scatter plot (y-axis).
 	QCPItemStraightLine* _selectionYAxisRangeEndMarker;
+
+	/// Update range when plot ranges change?
+	bool _rangeUpdate;
 
 	Q_OBJECT
 	OVITO_OBJECT

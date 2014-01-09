@@ -375,6 +375,8 @@ void ScatterPlotModifierEditor::createUI(const RolloutInsertionParameters& rollo
 	_selectionYAxisRangeEndMarker->setPen(markerPen);
 	_scatterPlot->addItem(_selectionYAxisRangeStartMarker);
 	_scatterPlot->addItem(_selectionYAxisRangeEndMarker);
+	connect(_scatterPlot->xAxis, SIGNAL(rangeChanged(const QCPRange&)), this, SLOT(updateXAxisRange(const QCPRange &)));
+	connect(_scatterPlot->yAxis, SIGNAL(rangeChanged(const QCPRange&)), this, SLOT(updateYAxisRange(const QCPRange &)));
 
 	layout->addWidget(new QLabel(tr("Scatter plot:")));
 	layout->addWidget(_scatterPlot);
@@ -501,8 +503,12 @@ void ScatterPlotModifierEditor::plotScatterPlot()
 
 	_scatterPlot->graph()->setData(modifier->xData(), modifier->yData());
 
+	// Check if range is already correct, because setRange emits the rangeChanged signa
+	// which is to be avoided if the range is not determined automatically.
+	_rangeUpdate = false;
 	_scatterPlot->xAxis->setRange(modifier->xAxisRangeStart(), modifier->xAxisRangeEnd());
 	_scatterPlot->yAxis->setRange(modifier->yAxisRangeStart(), modifier->yAxisRangeEnd());
+	_rangeUpdate = true;
 
 	if(modifier->selectXAxisInRange()) {
 		_selectionXAxisRangeStartMarker->setVisible(true);
@@ -531,6 +537,38 @@ void ScatterPlotModifierEditor::plotScatterPlot()
 	}
 
 	_scatterPlot->replot();
+}
+
+/******************************************************************************
+* Keep x-axis range updated
+******************************************************************************/
+void ScatterPlotModifierEditor::updateXAxisRange(const QCPRange &newRange)
+{
+	if (_rangeUpdate) {
+		ScatterPlotModifier* modifier = static_object_cast<ScatterPlotModifier>(editObject());
+		if(!modifier)
+			return;
+
+		// Fix range if user modifies the range by a mouse action in QCustomPlot
+		modifier->setFixXAxisRange(true);
+		modifier->setXAxisRange(newRange.lower, newRange.upper);
+	}
+}
+
+/******************************************************************************
+* Keep y-axis range updated
+******************************************************************************/
+void ScatterPlotModifierEditor::updateYAxisRange(const QCPRange &newRange)
+{
+	if (_rangeUpdate) {
+		ScatterPlotModifier* modifier = static_object_cast<ScatterPlotModifier>(editObject());
+		if(!modifier)
+			return;
+
+		// Fix range if user modifies the range by a mouse action in QCustomPlot
+		modifier->setFixYAxisRange(true);
+		modifier->setYAxisRange(newRange.lower, newRange.upper);
+	}
 }
 
 /******************************************************************************
