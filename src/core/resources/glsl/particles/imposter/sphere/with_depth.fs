@@ -21,38 +21,43 @@
 
 // Input from calling program:
 uniform mat4 projection_matrix;
+uniform sampler2D tex;			// The imposter texture.
 
 #if __VERSION__ >= 130
 
 	// Input from vertex shader:
 	flat in vec4 particle_color_fs;
-	flat in float particle_radius_fs;
-	flat in float ze0;				// The particle's Z coordinate in eye coordinates.
+	flat in float particle_radius_fs;	// The particle radius.
+	flat in float ze0;					// The particle's Z coordinate in eye coordinates.
+	in vec2 texcoords;
 	
 	out vec4 FragColor;
 
 #else
 
-	// Input from vertex shader:
 	varying float particle_radius_fs;
 	varying float ze0;
-	#define particle_color_fs gl_Color
 	
+	#define particle_color_fs gl_Color
 	#define FragColor gl_FragColor
+	#define texture texture2D
 	
 	#if __VERSION__ < 120
-		#define gl_PointCoord gl_TexCoord[0].xy
+	#define gl_PointCoord gl_TexCoord[0].xy
 	#endif
 
 #endif
 
 void main() 
 {
-	vec2 shifted_coords = gl_PointCoord - vec2(0.5, 0.5);
+	vec2 shifted_coords = texcoords - vec2(0.5, 0.5);
 	float rsq = dot(shifted_coords, shifted_coords);
 	if(rsq >= 0.25) discard;
-	
-	FragColor = particle_color_fs;
+	vec4 texValue = texture(tex, texcoords);
+
+	// Specular highlights are stored in the green channel of the texture. 
+	// Modulate diffuse color with brightness value stored in the red channel of the texture.
+	FragColor = vec4(texValue.r * particle_color_fs.rgb + texValue.g, particle_color_fs.a);
 
 	// Vary the depth value across the imposter to obtain proper intersections between particles.	
 	float dz = sqrt(1.0 - 4.0 * rsq) * particle_radius_fs;
@@ -60,3 +65,4 @@ void main()
 	float zn = (projection_matrix[2][2] * ze + projection_matrix[3][2]) / (projection_matrix[2][3] * ze + projection_matrix[3][3]);
 	gl_FragDepth = 0.5 * (zn * gl_DepthRange.diff + (gl_DepthRange.far + gl_DepthRange.near));
 }
+

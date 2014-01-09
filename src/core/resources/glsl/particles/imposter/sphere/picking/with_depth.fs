@@ -28,6 +28,7 @@ uniform mat4 projection_matrix;
 	flat in vec4 particle_color_fs;
 	flat in float particle_radius_fs;
 	flat in float ze0;				// The particle's Z coordinate in eye coordinates.
+	in vec2 texcoords;
 	
 	out vec4 FragColor;
 
@@ -48,7 +49,7 @@ uniform mat4 projection_matrix;
 
 void main() 
 {
-	vec2 shifted_coords = gl_PointCoord - vec2(0.5, 0.5);
+	vec2 shifted_coords = texcoords - vec2(0.5, 0.5);
 	float rsq = dot(shifted_coords, shifted_coords);
 	if(rsq >= 0.25) discard;
 	
