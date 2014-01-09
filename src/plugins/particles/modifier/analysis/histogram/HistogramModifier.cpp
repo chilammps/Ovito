@@ -280,6 +280,7 @@ void HistogramModifierEditor::createUI(const RolloutInsertionParameters& rollout
 	_selectionRangeEndMarker->setPen(markerPen);
 	_histogramPlot->addItem(_selectionRangeStartMarker);
 	_histogramPlot->addItem(_selectionRangeEndMarker);
+	connect(_histogramPlot->xAxis, SIGNAL(rangeChanged(const QCPRange&)), this, SLOT(updateXAxisRange(const QCPRange &)));
 
 	layout->addWidget(new QLabel(tr("Histogram:")));
 	layout->addWidget(_histogramPlot);
@@ -398,8 +399,12 @@ void HistogramModifierEditor::plotHistogram()
 	_histogramPlot->graph()->setLineStyle(QCPGraph::lsStepCenter);
 	_histogramPlot->graph()->setData(xdata, ydata);
 
+	// Check if range is already correct, because setRange emits the rangeChanged signa
+	// which is to be avoided if the range is not determined automatically.
+	_rangeUpdate = false;
 	_histogramPlot->xAxis->setRange(modifier->xAxisRangeStart(), modifier->xAxisRangeEnd());
 	_histogramPlot->yAxis->setRange(modifier->yAxisRangeStart(), modifier->yAxisRangeEnd());
+	_rangeUpdate = true;
 
 	if(modifier->selectInRange()) {
 		_selectionRangeStartMarker->setVisible(true);
@@ -415,6 +420,22 @@ void HistogramModifierEditor::plotHistogram()
 	}
 
 	_histogramPlot->replot();
+}
+
+/******************************************************************************
+* Keep x-axis range updated
+******************************************************************************/
+void HistogramModifierEditor::updateXAxisRange(const QCPRange &newRange)
+{
+	if (_rangeUpdate) {
+		HistogramModifier* modifier = static_object_cast<HistogramModifier>(editObject());
+		if(!modifier)
+			return;
+
+		// Fix range if user modifies the range by a mouse action in QCustomPlot
+		modifier->setFixXAxisRange(true);
+		modifier->setXAxisRange(newRange.lower, newRange.upper);
+	}
 }
 
 /******************************************************************************
