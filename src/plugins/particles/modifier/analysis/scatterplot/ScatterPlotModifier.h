@@ -240,12 +240,6 @@ protected Q_SLOTS:
 
 private:
 
-	/// The list of particle properties (x-axis).
-	ParticlePropertyComboBox* _xPropertyListBox;
-
-	/// The list of particle properties (y-axis).
-	ParticlePropertyComboBox* _yPropertyListBox;
-
 	/// The graph widget to display the scatter plot.
 	QCustomPlot* _scatterPlot;
 

@@ -331,7 +331,7 @@ ParticlePropertyObject* ScatterPlotModifier::lookupInputProperty(const PipelineF
 void ScatterPlotModifierEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
 	// Create a rollout.
-	QWidget* rollout = createRollout(tr("Scatter plot"), rolloutParams, "particles.modifiers.scatter_plot.html");
+	QWidget* rollout = createRollout(tr("Scatter plot"), rolloutParams/*, "particles.modifiers.scatter_plot.html"*/);
 
     // Create the rollout contents.
 	QVBoxLayout* layout = new QVBoxLayout(rollout);
@@ -584,7 +584,7 @@ void ScatterPlotModifierEditor::onSaveData()
 		return;
 
 	QString fileName = QFileDialog::getSaveFileName(mainWindow(),
-	    tr("Save ScatterPlot"), QString(), tr("Text files (*.txt);;All files (*)"));
+	    tr("Save Scatter Plot"), QString(), tr("Text files (*.txt);;All files (*)"));
 	if(fileName.isEmpty())
 		return;
 

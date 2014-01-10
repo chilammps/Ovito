@@ -130,6 +130,9 @@ void ActionManager::on_HelpOpenGLInfo_triggered()
 			stream << "Swap behavior: " << (format.swapBehavior() == QSurfaceFormat::SingleBuffer ? QStringLiteral("single buffer") : (format.swapBehavior() == QSurfaceFormat::DoubleBuffer ? QStringLiteral("double buffer") : (format.swapBehavior() == QSurfaceFormat::TripleBuffer ? QStringLiteral("triple buffer") : QStringLiteral("other")))) << endl;
 			stream << "Stencil buffer size: " << format.stencilBufferSize() << endl;
 			stream << "Deprecated functions: " << format.testOption(QSurfaceFormat::DeprecatedFunctions) << endl;
+#ifdef Q_OS_WIN
+			stream << "Not using point sprites: " << (renderer->glformat().majorVersion() == 3 && renderer->glformat().minorVersion() == 1 && strstr((const char*)glGetString(GL_VENDOR), "Intel") != nullptr) << endl;
+#endif
 			vp->viewportWindow()->glcontext()->doneCurrent();
 		}
 	}

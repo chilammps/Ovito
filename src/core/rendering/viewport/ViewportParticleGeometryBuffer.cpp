@@ -437,6 +437,7 @@ void ViewportParticleGeometryBuffer::renderCubes(ViewportSceneRenderer* renderer
 		throw Exception(QStringLiteral("Failed to bind OpenGL shader program."));
 
 	// Need to render only the front facing sides of the cubes.
+	glCullFace(GL_BACK);
 	glEnable(GL_CULL_FACE);
 
 	// This is to draw the cube with a single triangle strip.
@@ -581,6 +582,7 @@ void ViewportParticleGeometryBuffer::renderImposters(ViewportSceneRenderer* rend
 		activateBillboardTexture(renderer);
 
 	// Need to render only the front facing sides.
+	glCullFace(GL_BACK);
 	glEnable(GL_CULL_FACE);
 
 	// The texture coordinates of a quad made of two triangles.
