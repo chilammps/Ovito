@@ -1,23 +1,24 @@
+**************************************************************************
+Build MPFR library (using MSYS enviroment):
+**************************************************************************
+./configure --prefix=/c/Users/stuko/ovito/mpfr64_install --host=x86_64-w64-mingw32 --build=x86_64-w64-mingw32 --with-gmp=/c/Users/stuko/ovito/Qt-5.2.0-x86_64
 
 **************************************************************************
 Build Boost libraries (release 1.55):
 **************************************************************************
 
-bootstrap.bar
+bootstrap.bat
 
 b2 --prefix=C:\Users\stuko\ovito\boost32 toolset=gcc link=shared threading=multi --ignore-python --ignore-mpi --layout=tagged --with-system --with-thread install
 
 **************************************************************************
-Build static CGAL library (release 4.3):
+Build CGAL library (release 4.3):
 **************************************************************************
 
-cmake -DBOOST_ROOT=$HOME/progs/booststatic \
-	-DBUILD_SHARED_LIBS=OFF \
-	-DGMP_LIBRARIES=/usr/lib/libgmp.a \
-	-DMPFR_LIBRARIES=/usr/lib/libmpfr.a \
+cmake -DBOOST_INCLUDE_DIR=c:/Users/stuko/ovito/boost64/include \
+	-DGMP_LIBRARIES=c:/Users/stuko/ovito/Qt-5.2.0-x86_64 \
+	-DMPFR_LIBRARIES=c:/Users/stuko/ovito/mpfr64_install \
 	-DWITH_CGAL_Qt3=OFF \
 	-DWITH_CGAL_Qt4=OFF \
 	-DWITH_CGAL_ImageIO=OFF \
 	.
-
-make

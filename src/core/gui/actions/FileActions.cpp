@@ -113,6 +113,7 @@ void ActionManager::on_HelpOpenGLInfo_triggered()
 			lsbOutput.replace('\n', ' ');
 			stream << "LSB output: " << lsbOutput << endl;
 #endif
+			stream << "Architecture: " << (QT_POINTER_SIZE*8) << " bit" << endl;
 			stream << "Command line: " << QCoreApplication::arguments().join(' ') << endl;
 			stream << "======= OpenGL info =======" << endl;
 			stream << "Depth buffer size: " << format.depthBufferSize() << endl;
@@ -131,7 +132,7 @@ void ActionManager::on_HelpOpenGLInfo_triggered()
 			stream << "Stencil buffer size: " << format.stencilBufferSize() << endl;
 			stream << "Deprecated functions: " << format.testOption(QSurfaceFormat::DeprecatedFunctions) << endl;
 #ifdef Q_OS_WIN
-			stream << "Not using point sprites: " << (renderer->glformat().majorVersion() == 3 && renderer->glformat().minorVersion() == 1 && strstr((const char*)glGetString(GL_VENDOR), "Intel") != nullptr) << endl;
+			stream << "Not using point sprites: " << (format.majorVersion() == 3 && format.minorVersion() == 1 && strstr((const char*)glGetString(GL_VENDOR), "Intel") != nullptr) << endl;
 #endif
 			vp->viewportWindow()->glcontext()->doneCurrent();
 		}
