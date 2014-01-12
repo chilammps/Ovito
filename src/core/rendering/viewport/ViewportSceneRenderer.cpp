@@ -124,7 +124,7 @@ void ViewportSceneRenderer::beginFrame(TimePoint time, const ViewProjectionParam
 	}
 
 	// Set up a vertex array object. This is only required when using OpenGL Core Profile.
-	if(isCoreProfile()) {
+	if(glformat().majorVersion() >= 3) {
 		_vertexArrayObject.reset(new QOpenGLVertexArrayObject());
 		OVITO_CHECK_OPENGL(_vertexArrayObject->create());
 		OVITO_CHECK_OPENGL(_vertexArrayObject->bind());
@@ -467,16 +467,64 @@ void ViewportSceneRenderer::loadShader(QOpenGLShaderProgram* program, QOpenGLSha
 	QFile shaderSourceFile(filename);
 	if(!shaderSourceFile.open(QFile::ReadOnly))
 		throw Exception(QString("Unable to open shader source file %1.").arg(filename));
-	QByteArray shaderSource = shaderSourceFile.readAll();
+	QByteArray shaderSource;
 
 	// Insert GLSL version string at the top.
 	// Pick GLSL language version based on current OpenGL version.
 	if((glformat().majorVersion() >= 3 && glformat().minorVersion() >= 2) || glformat().majorVersion() > 3)
-		shaderSource.prepend("#version 150\n");
+		shaderSource.append("#version 150\n");
 	else if(glformat().majorVersion() >= 3)
-		shaderSource.prepend("#version 130\n");
-	else 
-		shaderSource.prepend("#version 120\n");
+		shaderSource.append("#version 130\n");
+	else
+		shaderSource.append("#version 120\n");
+
+	// Preprocess shader source while reading it from the file.
+	//
+	// This is a workaround for some older OpenGL driver, which do not perform the
+	// preprocessing of shader source files correctly (probably the __VERSION__ macro is not working).
+	//
+	// Here, in our own simple preprocessor implementation, we only handle
+	//    #if __VERSION__ >= 130
+	//       ...
+	//    #else
+	//       ...
+	//    #endif
+	// statements, which are used by most shaders to discriminate core and compatibility profiles.
+	bool isFiltered = false;
+	int ifstack = 0;
+	int filterstackpos = 0;
+	while(!shaderSourceFile.atEnd()) {
+		QByteArray line = shaderSourceFile.readLine();
+		if(line.contains("__VERSION__") && line.contains("130")) {
+			OVITO_ASSERT(line.contains("#if"));
+			OVITO_ASSERT(!isFiltered);
+			if(line.contains(">=") && glformat().majorVersion() < 3) isFiltered = true;
+			if(line.contains("<") && glformat().majorVersion() > 3) isFiltered = true;
+			filterstackpos = ifstack;
+			continue;
+		}
+		else if(line.contains("#if")) {
+			ifstack++;
+		}
+		else if(line.contains("#else")) {
+			if(ifstack == filterstackpos) {
+				isFiltered = !isFiltered;
+				continue;
+			}
+		}
+		else if(line.contains("#endif")) {
+			if(ifstack == filterstackpos) {
+				filterstackpos = -1;
+				isFiltered = false;
+				continue;
+			}
+			ifstack--;
+		}
+
+		if(!isFiltered) {
+			shaderSource.append(line);
+		}
+	}
 
 	// Load and compile vertex shader source.
 	if(!program->addShaderFromSourceCode(shaderType, shaderSource)) {
