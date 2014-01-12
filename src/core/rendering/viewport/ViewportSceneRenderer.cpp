@@ -449,9 +449,9 @@ QOpenGLShaderProgram* ViewportSceneRenderer::loadShaderProgram(const QString& id
 	}
 
 	if(!program->link()) {
-		qDebug() << "OpenGL shader log:";
-		qDebug() << program->log();
-		throw Exception(QString("The OpenGL shader program %1 failed to link. See log for details.").arg(id));
+		Exception ex(QString("The OpenGL shader program %1 failed to link.").arg(id));
+		ex.appendDetailMessage(program->log());
+		throw ex;
 	}
 
 	OVITO_ASSERT(contextGroup->findChild<QOpenGLShaderProgram*>(id) == program.data());
@@ -480,9 +480,11 @@ void ViewportSceneRenderer::loadShader(QOpenGLShaderProgram* program, QOpenGLSha
 
 	// Load and compile vertex shader source.
 	if(!program->addShaderFromSourceCode(shaderType, shaderSource)) {
-		qDebug() << "OpenGL shader log:";
-		qDebug() << program->log();
-		throw Exception(QString("The shader source file %1 failed to compile. See log for details.").arg(filename));
+		Exception ex(QString("The shader source file %1 failed to compile.").arg(filename));
+		ex.appendDetailMessage(program->log());
+		ex.appendDetailMessage(QStringLiteral("Problematic shader source:"));
+		ex.appendDetailMessage(shaderSource);
+		throw ex;
 	}
 }
 
