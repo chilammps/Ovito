@@ -53,11 +53,47 @@ public:
 	/// \param[in,out] validityInterval This interval is reduced to the period during which the controller's value doesn't change.
 	virtual void applyTransformation(TimePoint time, AffineTransformation& result, TimeInterval& validityInterval) override;
 
+	/// \brief Gets a position controller's value at a certain animation time.
+	/// \param[in] time The animation time at which the controller's value should be computed.
+	/// \param[out] result This output variable takes the controller's values.
+	/// \param[in,out] validityInterval This interval is reduced to the period during which the controller's value doesn't change.
+	virtual void getPositionValue(TimePoint time, Vector3& result, TimeInterval& validityInterval) override { positionController()->getPositionValue(time, result, validityInterval); }
+
+	/// \brief Gets a rotation controller's value at a certain animation time.
+	/// \param[in] time The animation time at which the controller's value should be computed.
+	/// \param[out] result This output variable takes the controller's values.
+	/// \param[in,out] validityInterval This interval is reduced to the period during which the controller's value doesn't change.
+	virtual void getRotationValue(TimePoint time, Rotation& result, TimeInterval& validityInterval) override { rotationController()->getRotationValue(time, result, validityInterval); }
+
+	/// \brief Gets a scaling controller's value at a certain animation time.
+	/// \param[in] time The animation time at which the controller's value should be computed.
+	/// \param[out] result This output variable takes the controller's values.
+	/// \param[in,out] validityInterval This interval is reduced to the period during which the controller's value doesn't change.
+	virtual void getScalingValue(TimePoint time, Scaling& result, TimeInterval& validityInterval) override { scalingController()->getScalingValue(time, result, validityInterval); }
+
 	/// \brief Sets a transformation controller's value at the given animation time.
 	/// \param time The animation time at which to set the controller's value.
 	/// \param newValue The new value to be assigned to the controller.
 	/// \param isAbsolute Specifies whether the transformation is absolute or should be applied to the existing transformation.
 	virtual void setTransformationValue(TimePoint time, const AffineTransformation& newValue, bool isAbsolute) override;
+
+	/// \brief Sets a position controller's value at the given animation time.
+	/// \param time The animation time at which to set the controller's value.
+	/// \param newValue The new value to be assigned to the controller.
+	/// \param isAbsolute Specifies whether the value is absolute or should be applied to the existing transformation.
+	virtual void setPositionValue(TimePoint time, const Vector3& newValue, bool isAbsolute) override { positionController()->setPositionValue(time, newValue, isAbsolute); }
+
+	/// \brief Sets a rotation controller's value at the given animation time.
+	/// \param time The animation time at which to set the controller's value.
+	/// \param newValue The new value to be assigned to the controller.
+	/// \param isAbsolute Specifies whether the value is absolute or should be applied to the existing transformation.
+	virtual void setRotationValue(TimePoint time, const Rotation& newValue, bool isAbsolute) override { rotationController()->setRotationValue(time, newValue, isAbsolute); }
+
+	/// \brief Sets a scaling controller's value at the given animation time.
+	/// \param time The animation time at which to set the controller's value.
+	/// \param newValue The new value to be assigned to the controller.
+	/// \param isAbsolute Specifies whether the value is absolute or should be applied to the existing transformation.
+	virtual void setScalingValue(TimePoint time, const Scaling& newValue, bool isAbsolute) override { scalingController()->setScalingValue(time, newValue, isAbsolute); }
 
 	/// \brief Adjusts the controller's value after a scene node has gotten a new parent node.
 	/// \param time The animation at which to change the controller parent.

@@ -28,10 +28,12 @@
 #define __OVITO_QUATERNION_H
 
 #include <base/Base.h>
+#include "Vector3.h"
 
 namespace Ovito {
 
 template<typename T> class Matrix_34;
+template<typename T> class Matrix_3;
 
 /**
  * \brief Represents a rotation in 3d space.
@@ -208,6 +210,10 @@ public:
 		return interpolate(slerpP, slerpQ, Ti);
 	}
 
+
+	/// \brief Constructs a quaternion from three Euler angles.
+	static QuaternionT fromEuler(T ai, T aj, T ak, typename Matrix_3<T>::EulerAxisSequence axisSequence);
+
 	////////////////////////////////// Utilities /////////////////////////////////
 
 	/// \brief Returns a string representation of this quaternion.
@@ -294,6 +300,58 @@ inline Vector_3<T> operator*(const QuaternionT<T>& q, const Vector_3<T>& v)
 	return Matrix_3<T>(T(1) - T(2)*(q.y()*q.y() + q.z()*q.z()),        T(2)*(q.x()*q.y() - q.w()*q.z()),        T(2)*(q.x()*q.z() + q.w()*q.y()),
 						  T(2)*(q.x()*q.y() + q.w()*q.z()), T(1) - T(2)*(q.x()*q.x() + q.z()*q.z()),        T(2)*(q.y()*q.z() - q.w()*q.x()),
 						  T(2)*(q.x()*q.z() - q.w()*q.y()),        T(2)*(q.y()*q.z() + q.w()*q.x()), T(1) - T(2)*(q.x()*q.x() + q.y()*q.y())) * v;
+}
+
+/// \brief Constructs a quaternion from three Euler angles.
+template<typename T>
+inline QuaternionT<T> QuaternionT<T>::fromEuler(T ai, T aj, T ak, typename Matrix_3<T>::EulerAxisSequence axisSequence)
+{
+	OVITO_ASSERT(axisSequence == Matrix_3<T>::szyx);
+	int firstaxis = 2;
+	int parity = 1;
+	bool repetition = false;
+	bool frame = false;
+
+	int i = firstaxis;
+	int j = (i + parity + 1) % 3;
+	int k = (i - parity + 2) % 3;
+
+	if(frame)
+		std::swap(ai, ak);
+	if(parity)
+		aj = -aj;
+
+	ai *= T(0.5);
+	aj *= T(0.5);
+	ak *= T(0.5);
+	T ci = std::cos(ai);
+	T si = std::sin(ai);
+	T cj = std::cos(aj);
+	T sj = std::sin(aj);
+	T ck = std::cos(ak);
+	T sk = std::sin(ak);
+	T cc = ci*ck;
+	T cs = ci*sk;
+	T sc = si*ck;
+	T ss = si*sk;
+
+	QuaternionT<T> quaternion;
+	if(repetition) {
+		quaternion[i] = cj*(cs + sc);
+		quaternion[j] = sj*(cc + ss);
+		quaternion[k] = sj*(cs - sc);
+		quaternion[3] = cj*(cc - ss);
+	}
+	else {
+		quaternion[i] = cj*sc - sj*cs;
+		quaternion[j] = cj*ss + sj*cc;
+		quaternion[k] = cj*cs - sj*sc;
+		quaternion[3] = cj*cc + sj*ss;
+	}
+	if(parity)
+		quaternion[j] = -quaternion[j];
+
+	return quaternion;
 }
 
 /// \brief Writes a quaternion to a text output stream.

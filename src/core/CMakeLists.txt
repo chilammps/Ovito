@@ -107,6 +107,7 @@ SET(OVITO_CORE_SOURCE_FILES
 	gui/widgets/selection/SceneNodesListModel.cpp
 	gui/widgets/selection/SceneNodeSelectionBox.cpp
 	gui/widgets/display/ObjectStatusWidget.cpp
+	gui/widgets/display/CoordinateDisplayWidget.cpp
 	gui/properties/PropertiesEditor.cpp
 	gui/properties/PropertiesPanel.cpp
 	gui/properties/ParameterUI.cpp

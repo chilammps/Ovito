@@ -131,7 +131,7 @@ void TaskManager::showIndicator()
 	if(_indicatorVisible == false && _taskStack.isEmpty() == false) {
 		QStatusBar* statusBar = _mainWindow->statusBar();
 		statusBar->addWidget(_progressTextDisplay, 1);
-		statusBar->addPermanentWidget(_progressWidget);
+		statusBar->insertPermanentWidget(1, _progressWidget);
 		_progressTextDisplay->show();
 		_progressWidget->show();
 		_indicatorVisible = true;

@@ -27,6 +27,7 @@
 #include <core/gui/widgets/animation/AnimationTimeSlider.h>
 #include <core/gui/widgets/animation/AnimationTrackBar.h>
 #include <core/gui/widgets/rendering/FrameBufferWindow.h>
+#include <core/gui/widgets/display/CoordinateDisplayWidget.h>
 #include <core/viewport/ViewportConfiguration.h>
 #include <core/viewport/input/ViewportInputManager.h>
 #include "MainWindow.h"
@@ -79,11 +80,20 @@ MainWindow::MainWindow() :
 	animationPanelLayout->addWidget(trackBar);
 
 	// Create status bar.
+	QHBoxLayout* statusBarLayout = new QHBoxLayout();
+	statusBarLayout->setContentsMargins(0,0,0,0);
+	statusBarLayout->setSpacing(0);
+	animationPanelLayout->addLayout(statusBarLayout, 1);
+
 	_statusBar = new QStatusBar(animationPanel);
 	_statusBar->setSizeGripEnabled(false);
 	_statusBar->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
 	setStatusBar(_statusBar);
-	animationPanelLayout->addWidget(_statusBar, 1);
+	statusBarLayout->addWidget(_statusBar, 1);
+
+	_coordinateDisplay = new CoordinateDisplayWidget(datasetContainer(), animationPanel);
+	//statusBarLayout->addWidget(_coordinateDisplay);
+	_statusBar->addPermanentWidget(_coordinateDisplay);
 
 	// Create the animation control toolbar.
 	QToolBar* animationControlBar1 = new QToolBar();

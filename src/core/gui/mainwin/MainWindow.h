@@ -33,9 +33,10 @@
 
 namespace Ovito {
 
-class CommandPanel;			// defined in CommandPanel.h
-class FrameBufferWindow;	// defined in FrameBufferWindow.h
-class ActionManager;		// defined in ActionManager.h
+class CommandPanel;				// defined in CommandPanel.h
+class FrameBufferWindow;		// defined in FrameBufferWindow.h
+class ActionManager;			// defined in ActionManager.h
+class CoordinateDisplayWidget;	// defined in CoordinateDisplayWidget.h
 
 /**
  * \brief The main window of the application.
@@ -78,6 +79,9 @@ public:
 
 	/// Returns the window's viewport input manager.
 	ViewportInputManager* viewportInputManager() const { return _viewportInputManager; }
+
+	/// Returns the widget that numerically displays the transformation.
+	CoordinateDisplayWidget* coordinateDisplay() const { return _coordinateDisplay; }
 
 	/// \brief Shows the online manual and opens the given help page.
 	void openHelpTopic(const QString& page);
@@ -123,6 +127,9 @@ private:
 
 	/// The associated viewport input manager.
 	ViewportInputManager* _viewportInputManager;
+
+	/// The widget that numerically displays the transformation.
+	CoordinateDisplayWidget* _coordinateDisplay;
 };
 
 };

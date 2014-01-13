@@ -30,6 +30,7 @@
 #include <base/Base.h>
 #include "Vector3.h"
 #include "Quaternion.h"
+#include "Matrix3.h"
 
 namespace Ovito {
 
@@ -214,6 +215,17 @@ public:
 	/// \return \c true if the rotation angle is not zero; \c false otherwise.
 	Q_DECL_CONSTEXPR bool operator!=(Identity) const { return (_angle != T(0)); }
 
+	/// \brief Checks whether two rotations are equal within a given tolerance.
+	/// \param r The rotation that should be compared to this rotation.
+	/// \param tolerance A non-negative threshold for the equality test. The two rotations are considered equal when
+	///        the differences in the X, Y, and Z components of the rotation axis and the angle are all smaller than this tolerance value.
+	///        Two rotations with equal but opposite axis and angle are considered equal.
+	/// \return true if this rotation is equal to the given rotation within the given tolerance.
+	Q_DECL_CONSTEXPR bool equals(const RotationT& r, T tolerance = T(FLOATTYPE_EPSILON)) const {
+		return (std::abs(angle() - r.angle()) <= tolerance && axis().equals( r.axis(), tolerance)) ||
+			   (std::abs(angle() + r.angle()) <= tolerance && axis().equals(-r.axis(), tolerance));
+	}
+
 	///////////////////////////////// Interpolation //////////////////////////////
 
 	/// \brief Interpolates between the two rotations using spherical linear interpolation and handles multiple revolutions.
@@ -280,6 +292,49 @@ public:
     	T Ti = T(2) * t * (T(1) - t);
     	return interpolate(slerpP, slerpQ, Ti);
     }
+
+	/// \brief Constructs a rotation from three Euler angles.
+	static RotationT fromEuler(const Vector_3<T>& eulerAngles, typename Matrix_3<T>::EulerAxisSequence axisSequence) {
+		OVITO_ASSERT(axisSequence == Matrix_3<T>::szyx);
+		return RotationT(Vector3(1,0,0), eulerAngles[2]) * RotationT(Vector3(0,1,0), eulerAngles[1]) * RotationT(Vector3(0,0,1), eulerAngles[0]);
+	}
+
+	/// \brief Converts the rotation to three Euler angles.
+	Vector_3<T> toEuler(typename Matrix_3<T>::EulerAxisSequence axisSequence) const {
+		if(*this == Identity()) return typename Vector_3<T>::Zero();
+		Vector_3<T> euler = Matrix_3<T>::rotation(*this).toEuler(axisSequence);
+
+		// Handles rotations with multiple revolutions.
+		// Since the Euler-angle decomposition routine cannot handle this case directly,
+		// we have to determine the correct revolution number for each Euler axis in a trial-and-error
+		// fashion. To this end, we test all possible combinations of revolutions until
+		// we the one that yields the original axis-angle rotation. Multiple equivalent decompositions
+		// are ranked, because we prefer Euler decompositions that rotate only about a single axis.
+		int maxRevolutions = (int)std::floor(std::abs(angle()) / T(M_PI*2) + T(0.5 + FLOATTYPE_EPSILON));
+		if(maxRevolutions == 0) return euler;
+		Vector_3<T> bestDecomposition = euler;
+		int bestDecompositionRanking = -1;
+		for(int xr = -maxRevolutions; xr <= maxRevolutions; xr++) {
+			Vector_3<T> euler2;
+			euler2.x() = euler.x() + T(M_PI*2) * xr;
+			int maxRevolutionsY = maxRevolutions - std::abs(xr);
+			for(int yr = -maxRevolutionsY; yr <= maxRevolutionsY; yr++) {
+				euler2.y() = euler.y() + T(M_PI*2) * yr;
+				int maxRevolutionsZ = maxRevolutionsY - std::abs(yr);
+				for(int zr = -maxRevolutionsZ; zr <= maxRevolutionsZ; zr++) {
+					euler2.z() = euler.z() + T(M_PI*2) * zr;
+					if(equals(fromEuler(euler2, axisSequence))) {
+						int ranking = int(std::abs(euler2.x()) <= T(FLOATTYPE_EPSILON)) + int(std::abs(euler2.y()) <= T(FLOATTYPE_EPSILON)) + int(std::abs(euler2.z()) <= T(FLOATTYPE_EPSILON));
+						if(ranking > bestDecompositionRanking) {
+							bestDecomposition = euler2;
+							bestDecompositionRanking = ranking;
+						}
+					}
+				}
+			}
+		}
+		return bestDecomposition;
+	}
 
     ////////////////////////////////// Utilities /////////////////////////////////
 
@@ -359,6 +414,8 @@ private:
 /// \return A new rotation that is equal to first applying \a r2 and then applying \a r1.
 template<typename T>
 inline RotationT<T> operator*(const RotationT<T>& r1, const RotationT<T>& r2) {
+	if(r1 == typename RotationT<T>::Identity()) return r2;
+	if(r2 == typename RotationT<T>::Identity()) return r1;
 	QuaternionT<T> q1 = (QuaternionT<T>)r1;
 	QuaternionT<T> q2 = (QuaternionT<T>)r2;
 	QuaternionT<T> q = q1 * q2;

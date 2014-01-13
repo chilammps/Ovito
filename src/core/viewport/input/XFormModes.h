@@ -23,9 +23,12 @@
 #define __OVITO_XFORM_VIEWPORT_MODES_H
 
 #include <core/Core.h>
+#include <core/reference/RefTargetListener.h>
 #include "ViewportInputMode.h"
 
 namespace Ovito {
+
+class CoordinateDisplayWidget;	// defined in CoordinateDisplayWidget.h
 
 /******************************************************************************
 * The default input mode for the viewports. This mode lets the user
@@ -97,7 +100,13 @@ public:
 protected:
 
 	/// Protected constructor.
-	XFormMode(QObject* parent, const QString& cursorImagePath) : ViewportInputMode(parent), _viewport(nullptr), _xformCursor(QPixmap(cursorImagePath)) {}
+	XFormMode(QObject* parent, const QString& cursorImagePath) : ViewportInputMode(parent), _viewport(nullptr), _xformCursor(QPixmap(cursorImagePath)) {
+		connect(&_selectedNode, &RefTargetListener<SceneNode>::notificationEvent, this, &XFormMode::onSceneNodeEvent);
+	}
+
+	/// \brief This is called by the system after the input handler has
+	///        become the active handler.
+	virtual void activated(bool temporaryActivation) override;
 
 	/// \brief This is called by the system after the input handler is
 	///        no longer the active handler.
@@ -118,6 +127,21 @@ protected:
 	/// Applies the current transformation to a set of nodes.
 	virtual void applyXForm(const QVector<SceneNode*>& nodeSet, FloatType multiplier) {}
 
+	/// Updates the values displayed in the coordinate display widget.
+	virtual void updateCoordinateDisplay(CoordinateDisplayWidget* coordDisplay) {}
+
+protected Q_SLOT:
+
+	/// Is called when the user has selected a different scene node.
+	void onSelectionChangeComplete(SelectionSet* selection);
+
+	/// Is called when the selected scene node generates a notification event.
+	void onSceneNodeEvent(ReferenceEvent* event);
+
+	/// This signal handler is called by the coordinate display widget when the user
+	/// has changed the value of one of the vector components.
+	virtual void onCoordinateValueEntered(int component, FloatType value) {}
+
 protected:
 
 	/// Mouse position at first click.
@@ -131,6 +155,9 @@ protected:
 
 	/// The cursor shown while the mouse cursor is over an object.
 	QCursor _xformCursor;
+
+	/// This monitors the selected node to update the coordinate display.
+	RefTargetListener<SceneNode> _selectedNode;
 };
 
 /******************************************************************************
@@ -158,6 +185,13 @@ protected:
 
 	/// Applies the current transformation to a set of nodes.
 	virtual void applyXForm(const QVector<SceneNode*>& nodeSet, FloatType multiplier) override;
+
+	/// Updates the values displayed in the coordinate display widget.
+	virtual void updateCoordinateDisplay(CoordinateDisplayWidget* coordDisplay) override;
+
+	/// This signal handler is called by the coordinate display widget when the user
+	/// has changed the value of one of the vector components.
+	virtual void onCoordinateValueEntered(int component, FloatType value) override;
 
 private:
 
@@ -196,6 +230,13 @@ protected:
 
 	/// Applies the current transformation to a set of nodes.
 	virtual void applyXForm(const QVector<SceneNode*>& nodeSet, FloatType multiplier) override;
+
+	/// Updates the values displayed in the coordinate display widget.
+	virtual void updateCoordinateDisplay(CoordinateDisplayWidget* coordDisplay) override;
+
+	/// This signal handler is called by the coordinate display widget when the user
+	/// has changed the value of one of the vector components.
+	virtual void onCoordinateValueEntered(int component, FloatType value) override;
 
 private:
 

@@ -286,6 +286,9 @@ protected:
 	virtual bool referenceEvent(RefTarget* source, ReferenceEvent* event) override;
 
 	/// From RefMaker.
+	virtual void referenceReplaced(const PropertyFieldDescriptor& field, RefTarget* oldTarget, RefTarget* newTarget) override;
+
+	/// From RefMaker.
 	virtual void referenceInserted(const PropertyFieldDescriptor& field, RefTarget* newTarget, int listIndex) override;
 
 	/// From RefMaker.

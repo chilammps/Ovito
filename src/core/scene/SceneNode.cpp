@@ -111,6 +111,7 @@ void SceneNode::invalidateWorldTransformation()
 	invalidateBoundingBox();
 	for(SceneNode* child : children())
 		child->invalidateWorldTransformation();
+	notifyDependents(ReferenceEvent::TransformationChanged);
 }
 
 /******************************************************************************
@@ -204,6 +205,18 @@ bool SceneNode::referenceEvent(RefTarget* source, ReferenceEvent* event)
 			deleteNode();
 	}
 	return RefTarget::referenceEvent(source, event);
+}
+
+/******************************************************************************
+* From RefMaker.
+******************************************************************************/
+void SceneNode::referenceReplaced(const PropertyFieldDescriptor& field, RefTarget* oldTarget, RefTarget* newTarget)
+{
+	if(field == PROPERTY_FIELD(SceneNode::_transformation)) {
+		// TM controller has changed -> rebuild world tm cache.
+		invalidateWorldTransformation();
+	}
+	RefTarget::referenceReplaced(field, oldTarget, newTarget);
 }
 
 /******************************************************************************
