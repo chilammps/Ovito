@@ -1,27 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <section version="5.0"
          xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
-         xml:id="particles.modifiers.histogram"
+         xml:id="particles.modifiers.scatter_plot"
          xmlns="http://docbook.org/ns/docbook"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xmlns:xs="http://www.w3.org/2001/XMLSchema"
          xmlns:xlink="http://www.w3.org/1999/xlink"
          xmlns:xi="http://www.w3.org/2001/XInclude"
          xmlns:ns="http://docbook.org/ns/docbook">
-  <title>Histogram</title>
+  <title>Scatter plot</title>
 
   <para>
   
     <informalfigure><screenshot><mediaobject><imageobject>
-       <imagedata fileref="images/modifiers/histogram_panel.png" format="PNG" />
+       <imagedata fileref="images/modifiers/scatter_plot_panel.png" format="PNG" />
     </imageobject></mediaobject></screenshot></informalfigure>
   
-    This modifier computes and displays a histogram of a particle property. 
+    This modifier computes and displays a scatter plot for two particle properties.
+    A scatter plot consists of one data point per input particle. The first particle property controls
+    the X-coordinates and the second property the Y-coordinates of points.
   </para>
   
   <para>
-  Optionally, the modifier can be used to select particles whose property value
-  is within a certain interval.
+    Optionally, the modifier can be used to select particles within a specified X or Y-range.
   </para>
   
   <simplesect>
@@ -29,24 +30,16 @@
 
     <variablelist>
       <varlistentry>
-        <term>Property</term>
+        <term>X-axis property</term>
         <listitem>
-          <para>The particle property the histogram should be computed for.</para>
+          <para>The per-particle property that serves as data source for the x-coordinates of data points.</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term>Number of histogram bins</term>
+        <term>Y-axis property</term>
         <listitem>
-          <para>Controls the resolution of the generated histogram.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>Select particles in range</term>
-        <listitem>
-          <para>If this option is active, the modifier selects all particles whose property value falls
-          into the specified range.</para>
+          <para>The per-particle property that serves as data source for the y-coordinates of data points.</para>
         </listitem>
       </varlistentry>
       

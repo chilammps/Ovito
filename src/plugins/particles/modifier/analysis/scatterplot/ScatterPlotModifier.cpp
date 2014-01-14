@@ -331,7 +331,7 @@ ParticlePropertyObject* ScatterPlotModifier::lookupInputProperty(const PipelineF
 void ScatterPlotModifierEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
 	// Create a rollout.
-	QWidget* rollout = createRollout(tr("Scatter plot"), rolloutParams/*, "particles.modifiers.scatter_plot.html"*/);
+	QWidget* rollout = createRollout(tr("Scatter plot"), rolloutParams, "particles.modifiers.scatter_plot.html");
 
     // Create the rollout contents.
 	QVBoxLayout* layout = new QVBoxLayout(rollout);

@@ -68,6 +68,10 @@
               <entry><link linkend="particles.modifiers.histogram">Histogram</link></entry>
               <entry>Computes the histogram of a particle property.</entry>
             </row>
+            <row>
+              <entry><link linkend="particles.modifiers.scatter_plot">Scatter plot</link></entry>
+              <entry>Generates a scatter plot of two particle properties.</entry>
+            </row>
 
 		<!-- COLORING -->
             <row>
@@ -193,6 +197,8 @@
   <xi:include href="particles/invert_selection.docbook"/>
 
   <xi:include href="particles/manual_selection.docbook"/>
+
+  <xi:include href="particles/scatter_plot.docbook"/>
 
   <xi:include href="particles/select_particle_type.docbook"/>
 
