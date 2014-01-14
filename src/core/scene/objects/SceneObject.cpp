@@ -21,6 +21,7 @@
 
 #include <core/Core.h>
 #include <core/scene/objects/SceneObject.h>
+#include <core/scene/ObjectNode.h>
 
 namespace Ovito {
 
@@ -94,6 +95,26 @@ void SceneObject::loadFromStream(ObjectLoadStream& stream)
 		}
 	}
 	stream.closeChunk();
+}
+
+/******************************************************************************
+* Generates a list of scene nodes that reference this scene object.
+******************************************************************************/
+QSet<ObjectNode*> SceneObject::findSceneNodes() const
+{
+	QSet<ObjectNode*> nodeList;
+	for(RefMaker* dependent : this->dependents()) {
+		if(ObjectNode* node = dynamic_object_cast<ObjectNode>(dependent))
+			nodeList.insert(node);
+		else if(SceneObject* sceneObj = dynamic_object_cast<SceneObject>(dependent)) {
+			for(int i = 0; i < sceneObj->inputObjectCount(); i++) {
+				if(sceneObj->inputObject(i) == this) {
+					nodeList.unite(sceneObj->findSceneNodes());
+				}
+			}
+		}
+	}
+	return nodeList;
 }
 
 };

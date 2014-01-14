@@ -47,6 +47,7 @@ ViewportLineGeometryBuffer::ViewportLineGeometryBuffer(ViewportSceneRenderer* re
 void ViewportLineGeometryBuffer::setVertexCount(int vertexCount, FloatType lineWidth)
 {
 	OVITO_ASSERT(vertexCount >= 0);
+	OVITO_ASSERT((vertexCount & 1) == 0);
 	OVITO_ASSERT(vertexCount < std::numeric_limits<int>::max() / sizeof(ColorA));
 	OVITO_ASSERT(QOpenGLContextGroup::currentContextGroup() == _contextGroup);
 	OVITO_ASSERT(lineWidth >= 0);

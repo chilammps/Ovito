@@ -79,7 +79,23 @@ void NavigationMode::mousePressEvent(Viewport* vp, QMouseEvent* event)
 		_oldFieldOfView = vp->fieldOfView();
 		_oldViewMatrix = vp->viewMatrix();
 		_oldInverseViewMatrix = vp->inverseViewMatrix();
-		_currentOrbitCenter = _viewport->dataset()->viewportConfig()->orbitCenter();
+
+		// Use the target of a camera as the orbit center.
+		if(vp->viewNode() != nullptr && vp->viewType() == Viewport::VIEW_SCENENODE && vp->viewNode()->targetNode() != nullptr) {
+			TimeInterval iv;
+			TimePoint time = vp->dataset()->animationSettings()->time();
+			_currentOrbitCenter = Point3::Origin() + vp->viewNode()->targetNode()->getWorldTransform(time, iv).translation();
+		}
+		else {
+			_currentOrbitCenter = _viewport->dataset()->viewportConfig()->orbitCenter();
+
+			// If a free camera node is selected, the current orbit center is at the same location as the camera.
+			// In this case, we should shift the orbit center such that it is in front of the camera.
+			Point3 camPos = Point3::Origin() + vp->inverseViewMatrix().translation();
+			if(_currentOrbitCenter.equals(camPos))
+				_currentOrbitCenter = camPos - 50.0f * vp->inverseViewMatrix().column(2);
+		}
+
 		_viewport->dataset()->undoStack().beginCompoundOperation(tr("Modify camera"));
 	}
 }
@@ -185,6 +201,12 @@ void PanMode::modifyView(Viewport* vp, QPointF delta)
 		// Move node in parent's system.
 		vp->viewNode()->transformationController()->translate(
 				vp->dataset()->animationSettings()->time(), displacement, parentSys.inverse());
+
+		// If it's a target camera, move target as well.
+		if(vp->viewNode()->targetNode()) {
+			vp->viewNode()->targetNode()->transformationController()->translate(
+					vp->dataset()->animationSettings()->time(), displacement, parentSys.inverse());
+		}
 	}
 }
 

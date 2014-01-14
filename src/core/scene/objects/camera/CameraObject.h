@@ -26,6 +26,8 @@
 #include <core/scene/objects/camera/AbstractCameraObject.h>
 #include <core/animation/controller/Controller.h>
 #include <core/gui/properties/PropertiesEditor.h>
+#include <core/scene/display/DisplayObject.h>
+#include <core/rendering/LineGeometryBuffer.h>
 
 namespace Ovito {
 
@@ -54,6 +56,15 @@ public:
 	/// Returns the controller that controls the zoom of the camera with orthogonal projection.
 	Controller* zoomController() const { return _zoom; }
 
+	/// Returns whether this camera is a target camera directory at a target object.
+	bool isTargetCamera() const;
+
+	/// Changes the type of the camera to a target camera or a free camera.
+	void setIsTargetCamera(bool enable);
+
+	/// With a target camera, indicates the distance between the camera and its target.
+	FloatType targetDistance() const;
+
 	/// \brief Returns a structure describing the camera's projection.
 	/// \param[in] time The animation time for which the camera's projection parameters should be determined.
 	/// \param[in,out] projParams The structure that is to be filled with the projection parameters.
@@ -71,6 +82,11 @@ public:
 
 	/// Asks the object for its validity interval at the given time.
 	virtual TimeInterval objectValidity(TimePoint time) override;
+
+public:
+
+	Q_PROPERTY(bool isTargetCamera READ isTargetCamera WRITE setIsTargetCamera);
+	Q_PROPERTY(bool isPerspective READ isPerspective WRITE setIsPerspective);
 
 private:
 
@@ -113,6 +129,62 @@ private:
 	OVITO_OBJECT
 };
 
+/**
+ * \brief A scene display object for camera scene objects.
+ */
+class OVITO_CORE_EXPORT CameraDisplayObject : public DisplayObject
+{
+public:
+
+	/// \brief Constructor.
+	Q_INVOKABLE CameraDisplayObject(DataSet* dataset) : DisplayObject(dataset) {}
+
+	/// \brief Lets the display object render a scene object.
+	virtual void render(TimePoint time, SceneObject* sceneObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode) override;
+
+	/// \brief Computes the bounding box of the object.
+	virtual Box3 boundingBox(TimePoint time, SceneObject* sceneObject, ObjectNode* contextNode, const PipelineFlowState& flowState) override;
+
+	/// \brief Computes the view-dependent bounding box of the scene object for interactive rendering in the viewports.
+	virtual Box3 viewDependentBoundingBox(TimePoint time, Viewport* viewport, SceneObject* sceneObject, ObjectNode* contextNode, const PipelineFlowState& flowState) override;
+
+	/// \brief Returns the title of this object.
+	virtual QString objectTitle() override { return tr("Camera icon"); }
+
+protected:
+
+	/// The buffered geometry used to render the icon.
+	std::unique_ptr<LineGeometryBuffer> _cameraIcon;
+
+	/// The icon geometry to be rendered in object picking mode.
+	std::unique_ptr<LineGeometryBuffer> _pickingCameraIcon;
+
+	/// The geometry for the camera's viewing cone and target line.
+	std::unique_ptr<LineGeometryBuffer> _cameraCone;
+
+	/// This helper structure is used to detect any changes in the input data
+	/// that require updating the geometry buffer.
+	SceneObjectCacheHelper<
+		QPointer<SceneObject>, unsigned int,		// Camera object + revision number
+		Color										// Display color
+		> _geometryCacheHelper;
+
+	/// This helper structure is used to detect any changes in the input data
+	/// that require updating the geometry buffer.
+	SceneObjectCacheHelper<
+		Color,						// Display color
+		FloatType,					// Camera target distance
+		bool,						// Target line visible
+		FloatType,					// Cone aspect ratio
+		FloatType					// Cone angle
+		> _coneCacheHelper;
+
+private:
+
+	Q_OBJECT
+	OVITO_OBJECT
 };
 
-#endif // __CAMERA_OBJECT_H
+};
+
+#endif // __OVITO_CAMERA_OBJECT_H

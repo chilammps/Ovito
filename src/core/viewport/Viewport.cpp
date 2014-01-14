@@ -237,15 +237,19 @@ ViewProjectionParameters Viewport::projectionParameters(TimePoint time, FloatTyp
 
 	// Get transformation from view scene node.
 	if(viewType() == VIEW_SCENENODE && viewNode()) {
+		// Get camera transformation.
+		params.inverseViewMatrix = viewNode()->getWorldTransform(time, params.validityInterval);
+		params.viewMatrix = params.inverseViewMatrix.inverse();
+
 		PipelineFlowState state = viewNode()->evalPipeline(time);
 		if(OORef<AbstractCameraObject> camera = state.convertObject<AbstractCameraObject>(time)) {
 
-			// Get camera transformation.
-			params.inverseViewMatrix = viewNode()->getWorldTransform(time, params.validityInterval);
-			params.viewMatrix = params.inverseViewMatrix.inverse();
-
 			// Get remaining parameters from camera object.
 			camera->projectionParameters(time, params);
+		}
+		else {
+			params.fieldOfView = 1;
+			params.isPerspective = false;
 		}
 	}
 	else {
@@ -256,7 +260,7 @@ ViewProjectionParameters Viewport::projectionParameters(TimePoint time, FloatTyp
 	}
 
 	// Transform scene bounding box to camera space.
-	Box3 bb = sceneBoundingBox.transformed(params.viewMatrix).centerScale(1.01);
+	Box3 bb = sceneBoundingBox.transformed(params.viewMatrix).centerScale(1.01f);
 
 	// Compute projection matrix.
 	if(params.isPerspective) {
@@ -269,7 +273,7 @@ ViewProjectionParameters Viewport::projectionParameters(TimePoint time, FloatTyp
 			params.znear = params.zfar * 1e-4f;
 		}
 		params.zfar = std::max(params.zfar, params.znear * 1.01f);
-		params.projectionMatrix = Matrix4::perspective(params.fieldOfView, 1.0 / params.aspectRatio, params.znear, params.zfar);
+		params.projectionMatrix = Matrix4::perspective(params.fieldOfView, 1.0f / params.aspectRatio, params.znear, params.zfar);
 	}
 	else {
 		if(!bb.isEmpty()) {
@@ -383,7 +387,7 @@ void Viewport::referenceReplaced(const PropertyFieldDescriptor& field, RefTarget
 {
 	if(field == PROPERTY_FIELD(Viewport::_viewNode)) {
 		if(viewType() == VIEW_SCENENODE && newTarget == nullptr) {
-			// If the camera node has been deleted, switch to Ortho or Perspective view mode.
+			// If the camera node has been deleted, switch to Orthographic or Perspective view type.
 			// Keep current camera orientation.
 			setFieldOfView(_projParams.fieldOfView);
 			setCameraTransformation(_projParams.inverseViewMatrix);
@@ -731,10 +735,10 @@ void Viewport::adjustProjectionForRenderFrame(ViewProjectionParameters& params)
 
 	if(_projParams.isPerspective) {
 		if(renderAspectRatio < windowAspectRatio)
-			params.fieldOfView = atan(tan(params.fieldOfView*0.5) / (VIEWPORT_RENDER_FRAME_SIZE / windowAspectRatio * renderAspectRatio))*2.0;
+			params.fieldOfView = atan(tan(params.fieldOfView*0.5f) / (VIEWPORT_RENDER_FRAME_SIZE / windowAspectRatio * renderAspectRatio))*2.0f;
 		else
-			params.fieldOfView = atan(tan(params.fieldOfView*0.5) / VIEWPORT_RENDER_FRAME_SIZE)*2.0;
-		params.projectionMatrix = Matrix4::perspective(params.fieldOfView, 1.0 / params.aspectRatio, params.znear, params.zfar);
+			params.fieldOfView = atan(tan(params.fieldOfView*0.5f) / VIEWPORT_RENDER_FRAME_SIZE)*2.0f;
+		params.projectionMatrix = Matrix4::perspective(params.fieldOfView, 1.0f / params.aspectRatio, params.znear, params.zfar);
 	}
 	else {
 		if(renderAspectRatio < windowAspectRatio)
@@ -821,7 +825,7 @@ FloatType Viewport::nonScalingSize(const Point3& worldPosition)
         Point3 p1 = projectionMatrix() * p;
 		Point3 p2 = projectionMatrix() * (p + Vector3(1,0,0));
 
-		return baseSize / (p1 - p2).length() / (FloatType)height;
+		return 0.8f * baseSize / (p1 - p2).length() / (FloatType)height;
 	}
 	else {
 		return _projParams.fieldOfView / (FloatType)height * baseSize;

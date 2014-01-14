@@ -84,6 +84,17 @@ CoordinateDisplayWidget::CoordinateDisplayWidget(DataSetContainer& datasetContai
 }
 
 /******************************************************************************
+* Paints the widget.
+******************************************************************************/
+void CoordinateDisplayWidget::paintEvent(QPaintEvent *)
+{
+    QPainter painter(this);
+	QStyleOption styleOption;
+	styleOption.initFrom(this);
+	style()->drawPrimitive(QStyle::PE_PanelStatusBar, &styleOption, &painter, this);
+}
+
+/******************************************************************************
 * Is called when a spinner value has been changed by the user.
 ******************************************************************************/
 void CoordinateDisplayWidget::onSpinnerValueChanged()

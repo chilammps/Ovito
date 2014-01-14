@@ -36,8 +36,8 @@ namespace Ovito {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, SceneNode, RefTarget)
 DEFINE_FLAGS_REFERENCE_FIELD(SceneNode, _transformation, "Transform", Controller, PROPERTY_FIELD_ALWAYS_DEEP_COPY);
-DEFINE_FLAGS_REFERENCE_FIELD(SceneNode, _targetNode, "TargetNode", SceneNode, PROPERTY_FIELD_ALWAYS_CLONE);
-DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(SceneNode, _children, "Children", SceneNode, PROPERTY_FIELD_ALWAYS_CLONE);
+DEFINE_FLAGS_REFERENCE_FIELD(SceneNode, _targetNode, "TargetNode", SceneNode, PROPERTY_FIELD_ALWAYS_CLONE | PROPERTY_FIELD_NO_SUB_ANIM);
+DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(SceneNode, _children, "Children", SceneNode, PROPERTY_FIELD_ALWAYS_CLONE | PROPERTY_FIELD_NO_SUB_ANIM);
 DEFINE_PROPERTY_FIELD(SceneNode, _nodeName, "NodeName");
 DEFINE_PROPERTY_FIELD(SceneNode, _displayColor, "DisplayColor");
 SET_PROPERTY_FIELD_LABEL(SceneNode, _transformation, "Transformation")
@@ -165,8 +165,16 @@ LookAtController* SceneNode::bindToTarget(SceneNode* targetNode)
 			return lookAtCtrl.get();
 		}
 		else {
+			// Save old rotation.
+			TimePoint time = dataset()->animationSettings()->time();
+			TimeInterval iv;
+			Rotation rotation;
+			prs->rotationController()->getRotationValue(time, rotation, iv);
+
 			// Reset to default rotation controller.
-			prs->setRotationController(ControllerManager::instance().createRotationController(dataset()));
+			OORef<Controller> controller = ControllerManager::instance().createRotationController(dataset());
+			controller->setRotationValue(time, rotation, true);
+			prs->setRotationController(controller);
 		}
 	}
 

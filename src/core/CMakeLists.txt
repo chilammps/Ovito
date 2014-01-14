@@ -59,13 +59,13 @@ SET(OVITO_CORE_SOURCE_FILES
 	scene/objects/geometry/TriMeshObject.cpp
 	scene/objects/geometry/HalfEdgeMesh.cpp
 	scene/objects/camera/CameraObject.cpp
+	scene/objects/helpers/TargetObject.cpp
 	scene/pipeline/PipelineFlowState.cpp
 	scene/pipeline/PipelineObject.cpp
 	scene/pipeline/Modifier.cpp
 	scene/pipeline/ModifierApplication.cpp
 	scene/display/DisplayObject.cpp
 	scene/display/geometry/TriMeshDisplay.cpp
-	scene/display/camera/CameraDisplayObject.cpp
 	gui/app/Application.cpp
 	gui/app/CommandLineParser.cpp
 	gui/mainwin/MainWindow.cpp

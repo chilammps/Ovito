@@ -157,6 +157,9 @@ public:
 		return nullptr;
 	}
 
+	/// \brief Generates a list of scene nodes that reference this scene object.
+	QSet<ObjectNode*> findSceneNodes() const;
+
 	/// \brief Returns the current value of the revision counter of this scene object.
 	/// This counter is increment every time the object changes.
 	unsigned int revisionNumber() const { return _revisionNumber; }

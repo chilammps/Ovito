@@ -66,10 +66,23 @@ MainWindow::MainWindow() :
 
 	// Create the animation panel below the viewports.
 	QWidget* animationPanel = new QWidget();
-	QVBoxLayout* animationPanelLayout = new QVBoxLayout(animationPanel);
+	QVBoxLayout* animationPanelLayout = new QVBoxLayout();
 	animationPanelLayout->setSpacing(0);
 	animationPanelLayout->setContentsMargins(0, 0, 0, 0);
 	animationPanel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+#if defined(Q_OS_LINUX)
+	QHBoxLayout* animationPanelParentLayout = new QHBoxLayout(animationPanel);
+	animationPanelParentLayout->setSpacing(0);
+	animationPanelParentLayout->setContentsMargins(0, 0, 0, 0);
+	animationPanelParentLayout->addLayout(animationPanelLayout, 1);
+	QFrame* verticalRule = new QFrame(animationPanel);
+	verticalRule->setContentsMargins(0,0,0,0);
+	verticalRule->setFrameStyle(QFrame::VLine | QFrame::Sunken);
+	verticalRule->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
+	animationPanelParentLayout->addWidget(verticalRule);
+#else
+	animationPanel->setLayout(animationPanelLayout);
+#endif
 
 	// Create animation time slider
 	AnimationTimeSlider* timeSlider = new AnimationTimeSlider(this);
@@ -92,8 +105,8 @@ MainWindow::MainWindow() :
 	statusBarLayout->addWidget(_statusBar, 1);
 
 	_coordinateDisplay = new CoordinateDisplayWidget(datasetContainer(), animationPanel);
-	//statusBarLayout->addWidget(_coordinateDisplay);
-	_statusBar->addPermanentWidget(_coordinateDisplay);
+	statusBarLayout->addWidget(_coordinateDisplay);
+	//_statusBar->addPermanentWidget(_coordinateDisplay);
 
 	// Create the animation control toolbar.
 	QToolBar* animationControlBar1 = new QToolBar();

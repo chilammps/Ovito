@@ -52,7 +52,14 @@ public:
 	}
 
 	/// \brief Deactivates the coordinate display widget.
-	void deactivate() { setEnabled(false); }
+	void deactivate() {
+		if(isEnabled()) {
+			setEnabled(false);
+			_spinners[0]->setFloatValue(0);
+			_spinners[1]->setFloatValue(0);
+			_spinners[2]->setFloatValue(0);
+		}
+	}
 
 	/// Sets the values displayed by the coordinate display widget.
 	void setValues(const Vector3& xyz) {
@@ -94,6 +101,11 @@ protected Q_SLOT:
 
 	/// Is called when the user has aborted the spinner drag operation.
 	void onSpinnerDragAbort();
+
+protected:
+
+	/// Paints the widget.
+	virtual void paintEvent(QPaintEvent *) override;
 
 private:
 	

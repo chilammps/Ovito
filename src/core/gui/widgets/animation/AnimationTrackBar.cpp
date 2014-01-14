@@ -344,8 +344,10 @@ void AnimationTrackBar::mousePressEvent(QMouseEvent* event)
 					_selectedKeys.remove(key);
 			}
 		}
-		if(!clickedKeys.empty())
+		if(!clickedKeys.empty()) {
 			_dragStartPos = event->pos().x();
+			qDebug() << "pos(time=100):" << _timeSlider->timeToPos(_animSettings->frameToTime(100)) << "_dragStartPos:" << _dragStartPos;
+		}
 		_isDragging = false;
 		update();
 	}

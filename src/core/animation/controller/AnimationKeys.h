@@ -95,8 +95,6 @@ protected:
 	PropertyField<value_type> _value;
 
 	friend class KeyframeController;
-	template<class KeyType, typename KeyInterpolator, Controller::ControllerType ctrlType>
-		friend class KeyframeControllerTemplate;
 };
 
 

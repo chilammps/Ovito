@@ -68,6 +68,11 @@ protected:
 	/// This updates the keys after their times or values have changed.
 	virtual void updateKeys() {}
 
+	/// Changes a key's value.
+	/// This is a wrapper for the protected function TypedAnimationKey::setValue().
+	template<typename KeyType>
+	static void setKeyValueInternal(KeyType* key, const typename KeyType::value_type& newValue) { key->setValue(newValue); }
+
 private:
 
 	/// Stores the list of animation keys.
@@ -153,7 +158,7 @@ protected:
 		int index;
 		for(index = 0; index < keys.size(); index++) {
 			if(keys[index]->time() == time) {
-				keys[index]->setValue(newValue);
+				setKeyValueInternal(keys[index], newValue);
 				return;
 			}
 			else if(keys[index]->time() > time) {
@@ -177,7 +182,7 @@ protected:
 		}
 		else if(!dataset()->animationSettings()->isAnimating()) {
 			if(keys().size() == 1) {
-				typedKeys().front()->setValue(newValue);
+				setKeyValueInternal(typedKeys().front(), newValue);
 			}
 			else {
 				value_type deltaValue(newValue);
@@ -191,7 +196,7 @@ protected:
 				for(KeyType* key : typedKeys()) {
 					value_type v = key->value();
 					v += deltaValue;
-					key->setValue(v);
+					setKeyValueInternal(key, v);
 				}
 			}
 		}
@@ -220,7 +225,7 @@ protected:
 			for(KeyType* key : typedKeys()) {
 				value_type v = key->value();
 				v += deltaValue;
-				key->setValue(v);
+				setKeyValueInternal(key, v);
 			}
 		}
 		else {

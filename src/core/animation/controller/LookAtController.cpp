@@ -26,12 +26,12 @@
 
 namespace Ovito {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LookAtController, Controller)
-DEFINE_REFERENCE_FIELD(LookAtController, _rollCtrl, "Roll", Controller)
-DEFINE_FLAGS_REFERENCE_FIELD(LookAtController, _targetNode, "Target", SceneNode, PROPERTY_FIELD_NEVER_CLONE_TARGET | PROPERTY_FIELD_NO_SUB_ANIM)
-SET_PROPERTY_FIELD_LABEL(LookAtController, _rollCtrl, "Roll")
-SET_PROPERTY_FIELD_LABEL(LookAtController, _targetNode, "Target")
-SET_PROPERTY_FIELD_UNITS(LookAtController, _rollCtrl, AngleParameterUnit)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LookAtController, Controller);
+DEFINE_REFERENCE_FIELD(LookAtController, _rollCtrl, "Roll", Controller);
+DEFINE_FLAGS_REFERENCE_FIELD(LookAtController, _targetNode, "Target", SceneNode, PROPERTY_FIELD_NEVER_CLONE_TARGET | PROPERTY_FIELD_NO_SUB_ANIM);
+SET_PROPERTY_FIELD_LABEL(LookAtController, _rollCtrl, "Roll");
+SET_PROPERTY_FIELD_LABEL(LookAtController, _targetNode, "Target");
+SET_PROPERTY_FIELD_UNITS(LookAtController, _rollCtrl, AngleParameterUnit);
 
 /******************************************************************************
 * Constructor.

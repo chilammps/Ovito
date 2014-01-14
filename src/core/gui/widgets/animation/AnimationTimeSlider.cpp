@@ -146,7 +146,7 @@ std::tuple<TimePoint,TimePoint,TimePoint> AnimationTimeSlider::tickRange(int tic
 				_animSettings->frameToTime(lastFrame));
 	}
 	else {
-		return { 0, 1, 0 };
+		return std::tuple<TimePoint,TimePoint,TimePoint>(0, 1, 0);
 	}
 }
 

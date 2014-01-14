@@ -162,6 +162,46 @@ private:
 };
 
 /**
+ * \brief This undo record simply generates a TargetChanged event for a RefTarget whenever an operation is undone.
+ */
+class OVITO_CORE_EXPORT TargetChangedUndoOperation : public UndoableOperation
+{
+public:
+
+	/// \brief Constructor.
+	/// \param target The object that is being changed.
+	TargetChangedUndoOperation(RefTarget* target) : _target(target) {}
+
+	virtual void undo() override;
+	virtual void redo() override {}
+
+private:
+
+	/// The object that has been changed.
+	OORef<RefTarget> _target;
+};
+
+/**
+ * \brief This undo record simply generates a TargetChanged event for a RefTarget whenever an operation is redone.
+ */
+class OVITO_CORE_EXPORT TargetChangedRedoOperation : public UndoableOperation
+{
+public:
+
+	/// \brief Constructor.
+	/// \param target The object that is being changed.
+	TargetChangedRedoOperation(RefTarget* target) : _target(target) {}
+
+	virtual void undo() override {}
+	virtual void redo() override;
+
+private:
+
+	/// The object that has been changed.
+	OORef<RefTarget> _target;
+};
+
+/**
  * \brief Stores and manages the undo stack.
  * 
  * The UndoStack records all user operations. Operations can be undone or reversed
