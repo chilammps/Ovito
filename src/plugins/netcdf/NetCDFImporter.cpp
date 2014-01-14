@@ -503,6 +503,8 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 			}
 		}
 	}
+
+	setInfoText(tr("%1 particles").arg(particleCount));
 }
 
 /******************************************************************************
