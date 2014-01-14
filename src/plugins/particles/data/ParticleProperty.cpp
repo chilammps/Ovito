@@ -93,6 +93,7 @@ ParticleProperty::ParticleProperty(size_t particleCount, Type type, size_t compo
 	case DipoleMagnitudeProperty:
 	case CentroSymmetryProperty:
 	case DisplacementMagnitudeProperty:
+	case VelocityMagnitudeProperty:
 		_dataType = qMetaTypeId<FloatType>();
 		_dataTypeSize = sizeof(FloatType);
 		_componentCount = 1;
@@ -351,6 +352,7 @@ QString ParticleProperty::standardPropertyName(Type which)
 	case TorqueProperty: return ParticlePropertyObject::tr("Torque");
 	case SpinProperty: return ParticlePropertyObject::tr("Spin");
 	case CentroSymmetryProperty: return ParticlePropertyObject::tr("Centrosymmetry");
+	case VelocityMagnitudeProperty: return ParticlePropertyObject::tr("Velocity Magnitude");
 	default:
 		OVITO_ASSERT_MSG(false, "ParticleProperty::standardPropertyName", "Invalid standard particle property type");
 		throw Exception(ParticlePropertyObject::tr("This is not a valid standard particle property type: %1").arg(which));
@@ -414,6 +416,7 @@ int ParticleProperty::standardPropertyDataType(Type which)
 	case AngularMomentumProperty:
 	case TorqueProperty:
 	case CentroSymmetryProperty:
+	case VelocityMagnitudeProperty:
 		return qMetaTypeId<FloatType>();
 	default:
 		OVITO_ASSERT_MSG(false, "ParticleProperty::standardPropertyDataType", "Invalid standard particle property type");
@@ -459,6 +462,7 @@ QMap<QString, ParticleProperty::Type> ParticleProperty::standardPropertyList()
 		table.insert(standardPropertyName(TorqueProperty), TorqueProperty);
 		table.insert(standardPropertyName(SpinProperty), SpinProperty);
 		table.insert(standardPropertyName(CentroSymmetryProperty), CentroSymmetryProperty);
+		table.insert(standardPropertyName(VelocityMagnitudeProperty), VelocityMagnitudeProperty);
 	}
 	return table;
 }
@@ -486,6 +490,7 @@ size_t ParticleProperty::standardPropertyComponentCount(Type which)
 	case SpinProperty:
 	case CentroSymmetryProperty:
 	case DisplacementMagnitudeProperty:
+	case VelocityMagnitudeProperty:
 		return 1;
 	case PositionProperty:
 	case ColorProperty:
@@ -541,6 +546,7 @@ QStringList ParticleProperty::standardPropertyComponentNames(Type which, size_t 
 	case SpinProperty:
 	case CentroSymmetryProperty:
 	case DisplacementMagnitudeProperty:
+	case VelocityMagnitudeProperty:
 		return emptyList;
 	case PositionProperty:
 	case DisplacementProperty:
