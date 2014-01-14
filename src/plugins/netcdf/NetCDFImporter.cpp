@@ -184,6 +184,8 @@ void NetCDFImporter::NetCDFImportTask::openNetCDF(const QString &filename)
 	NCERR( nc_inq_dimid(_ncid, "frame", &_frame_dim) );
 	NCERR( nc_inq_dimid(_ncid, "atom", &_atom_dim) );
 	NCERR( nc_inq_dimid(_ncid, "spatial", &_spatial_dim) );
+	if (nc_inq_dimid(_ncid, "Voigt", &_Voigt_dim) != NC_NOERR)
+		_Voigt_dim = -1;
 	NCERR( nc_inq_dimid(_ncid, "cell_spatial", &_cell_spatial_dim) );
 	NCERR( nc_inq_dimid(_ncid, "cell_angular", &_cell_angular_dim) );
 
@@ -368,6 +370,14 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 							nDimsDetected = 4;
 						}
 					}
+					else if (nDims == 3 && dimIds[2] == _Voigt_dim) {
+						// This is a tensor property, in Voigt notation
+						startp[2] = 0;
+						countp[2] = 6;
+						componentCount = 6;
+						nativeComponentCount = 6;
+						nDimsDetected = 3;
+					}
 				}
 				else if (nDims > 0 && dimIds[0] == _atom_dim) {
 					// This is a per atom property, but global (per-file, not per frame)
@@ -391,6 +401,14 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 							nativeComponentCount = 9;
 							nDimsDetected = 3;
 						}
+					}
+					else if (nDims == 2 && dimIds[1] == _Voigt_dim) {
+						// This is a tensor property, in Voigt notation
+						startp[1] = 0;
+						countp[1] = 6;
+						componentCount = 6;
+						nativeComponentCount = 6;
+						nDimsDetected = 2;
 					}
 				}
 
