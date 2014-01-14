@@ -13,6 +13,14 @@ http://www.ovito.org/
 Change Log 
 ****************************************************************************************
 
+Release 2.2.3 (xx-Jan-14):
+
+ - Fixed the CFG file importer, which is now able to read CFG files written by newer versions of LAMMPS correctly.
+   Auxiliary file columns are now automatically mapped to OVITO's standard particle properties if possible.
+ - Improved compatibility with some OpenGL implementations (Intel HD graphics on Windows and ATI Mobility Radeon HD 5470).
+ - A 64-bit version of the program for Windows has been built.
+ - A construction grid can now be shown in the viewports (like it was possible with OVITO 1.x). 
+
 Release 2.2.2 (05-Jan-14):
 
  - Fixed regression: Rendering a movie with Ovito 2.2.1 resulted in an empty file.
