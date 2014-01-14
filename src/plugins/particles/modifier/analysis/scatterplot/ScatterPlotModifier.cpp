@@ -252,8 +252,10 @@ ObjectStatus ScatterPlotModifier::modifyParticles(TimePoint time, TimeInterval& 
 				int* s_end = s + selProperty->size();
 				for(auto vy = vy_begin; vy != vy_end; vy += yVecComponentCount, ++s) {
 					if(*vy < selectionYAxisRangeStart || *vy > selectionYAxisRangeEnd) {
-						*s = 0;
-						numSelected--;
+						if(*s) {
+							*s = 0;
+							numSelected--;
+						}
 					}
 				}
 			}
@@ -280,8 +282,10 @@ ObjectStatus ScatterPlotModifier::modifyParticles(TimePoint time, TimeInterval& 
 				int* s_end = s + selProperty->size();
 				for(auto vy = vy_begin; vy != vy_end; vy += yVecComponentCount, ++s) {
 					if(*vy < selectionYAxisRangeStart || *vy > selectionYAxisRangeEnd) {
-						*s = 0;
-						numSelected--;
+						if(*s) {
+							*s = 0;
+							numSelected--;
+						}
 					}
 				}
 			}
