@@ -64,8 +64,11 @@ QSurfaceFormat ViewportSceneRenderer::getDefaultSurfaceFormat()
 			}
 		}
 	}
-	format.setOption(QSurfaceFormat::DeprecatedFunctions);
-	format.setProfile(ViewportSceneRenderer::useCoreProfile() ? QSurfaceFormat::CoreProfile : QSurfaceFormat::CompatibilityProfile);
+	format.setProfile(QSurfaceFormat::CoreProfile);
+	if(Application::instance().cmdLineParser().isSet(QStringLiteral("glcompatprofile"))) {
+		format.setProfile(QSurfaceFormat::CompatibilityProfile);
+		format.setOption(QSurfaceFormat::DeprecatedFunctions);
+	}
 	format.setStencilBufferSize(1);
 #if 0
 #ifdef OVITO_DEBUG
@@ -116,7 +119,9 @@ void ViewportSceneRenderer::beginFrame(TimePoint time, const ViewProjectionParam
 	_glformat = _glcontext->format();
 
 	// Check if this context implements the core profile.
-	_isCoreProfile = (_glformat.profile() == QSurfaceFormat::CoreProfile);
+	_isCoreProfile = (_glformat.profile() == QSurfaceFormat::CoreProfile)
+			|| glformat().majorVersion() > 3
+			|| (glformat().majorVersion() == 3 && glformat().minorVersion() >= 2);
 
 	// Qt reports the core profile only for OpenGL >= 3.2. Assume core profile also for 3.1 contexts.
 	if(glformat().majorVersion() == 3 && glformat().minorVersion() == 1 && _glformat.profile() != QSurfaceFormat::CompatibilityProfile) {
