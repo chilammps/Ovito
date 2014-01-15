@@ -62,6 +62,53 @@ void ParticleImportTask::load(DataSetContainer& container, FutureInterfaceBase& 
 }
 
 /******************************************************************************
+* Sorts the particle types w.r.t. their name. Reassigns the per-particle type IDs.
+* This method is used by file parsers that create particle types on the go while the read the particle data.
+* In such a case, the assignment of IDs to types depends on the storage order of particles in the file, which is not desirable.
+******************************************************************************/
+void ParticleImportTask::sortParticleTypesByName()
+{
+	// Check if type IDs form a consecutive sequence starting at 1.
+	for(int index = 0; index < _particleTypes.size(); index++) {
+		if(_particleTypes[index].id != index + 1)
+			return;
+	}
+
+	// Check if types are already in the correct order.
+	auto compare = [](const ParticleTypeDefinition& a, const ParticleTypeDefinition& b) -> bool { return a.name.compare(b.name) < 0; };
+	if(std::is_sorted(_particleTypes.begin(), _particleTypes.end(), compare))
+		return;
+
+	// Reorder types.
+	std::sort(_particleTypes.begin(), _particleTypes.end(), compare);
+
+	// Build map of IDs.
+	std::vector<int> mapping(_particleTypes.size() + 1);
+	for(int index = 0; index < _particleTypes.size(); index++) {
+		mapping[_particleTypes[index].id] = index + 1;
+		_particleTypes[index].id = index + 1;
+	}
+
+	// Remap particle type IDs.
+	ParticleProperty* typeProperty = particleProperty(ParticleProperty::ParticleTypeProperty);
+	if(typeProperty) {
+		for(int& t : typeProperty->intRange()) {
+			OVITO_ASSERT(t >= 1 && t < mapping.size());
+			t = mapping[t];
+		}
+	}
+}
+
+/******************************************************************************
+* Sorts particle types with ascending identifier.
+******************************************************************************/
+void ParticleImportTask::sortParticleTypesById()
+{
+	auto compare = [](const ParticleTypeDefinition& a, const ParticleTypeDefinition& b) -> bool { return a.id < b.id; };
+	std::sort(_particleTypes.begin(), _particleTypes.end(), compare);
+}
+
+/******************************************************************************
 * Lets the data container insert the data it holds into the scene by creating
 * appropriate scene objects.
 ******************************************************************************/
@@ -126,11 +173,11 @@ void ParticleImportTask::insertParticleTypes(ParticlePropertyObject* propertyObj
 		return;
 
 	QSet<ParticleType*> activeTypes;
-	for(const auto& mapitem : _particleTypes) {
-		OORef<ParticleType> ptype = typeProperty->particleType(mapitem.second.id);
+	for(const auto& item : _particleTypes) {
+		OORef<ParticleType> ptype = typeProperty->particleType(item.id);
 		if(ptype == nullptr) {
 			ptype = new ParticleType(typeProperty->dataset());
-			ptype->setId(mapitem.second.id);
+			ptype->setId(item.id);
 
 			// Assign initial standard color to new particle types.
 			static const Color defaultTypeColors[] = {
@@ -150,16 +197,16 @@ void ParticleImportTask::insertParticleTypes(ParticlePropertyObject* propertyObj
 		}
 		activeTypes.insert(ptype.get());
 
-		if(!mapitem.second.name.isEmpty())
-			ptype->setName(mapitem.second.name);
+		if(!item.name.isEmpty())
+			ptype->setName(item.name);
 		else if(ptype->name().isEmpty())
-			ptype->setName(ParticleImporter::tr("Type %1").arg(mapitem.second.id));
+			ptype->setName(ParticleImporter::tr("Type %1").arg(item.id));
 
-		if(mapitem.second.color != Color(0,0,0))
-			ptype->setColor(mapitem.second.color);
+		if(item.color != Color(0,0,0))
+			ptype->setColor(item.color);
 
-		if(mapitem.second.radius != 0)
-			ptype->setRadius(mapitem.second.radius);
+		if(item.radius != 0)
+			ptype->setRadius(item.radius);
 	}
 
 	// Remove unused particle types.

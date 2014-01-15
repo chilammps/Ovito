@@ -146,7 +146,7 @@ void LAMMPSDataImporter::LAMMPSDataImportTask::parseFile(FutureInterfaceBase& fu
 
 	// Create atom types.
 	for(int i = 1; i <= natomtypes; i++)
-		addParticleType(i);
+		addParticleTypeId(i);
 
 	// Read up to non-blank line plus 1 following line.
 	while(!stream.eof() && string(stream.line()).find_first_not_of(" \t\n\r") == string::npos) {

@@ -383,6 +383,9 @@ void LAMMPSBinaryDumpImporter::LAMMPSBinaryDumpImportTask::parseFile(FutureInter
 		throw ex.prependGeneralMessage(tr("Parsing error at byte offset %1 of binary LAMMPS dump file.").arg(file.pos()));
 	}
 
+	// Sort the particle type list since we created particles on the go and their order depends on the occurrence of types in the file.
+	sortParticleTypesById();
+
 	ParticleProperty* posProperty = particleProperty(ParticleProperty::PositionProperty);
 	if(posProperty && posProperty->size() > 0) {
 		Box3 boundingBox;

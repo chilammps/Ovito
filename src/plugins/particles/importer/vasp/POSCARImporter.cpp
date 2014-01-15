@@ -155,8 +155,7 @@ void POSCARImporter::POSCARImportTask::parseFile(FutureInterfaceBase& futureInte
 	Point3* p = posProperty->dataPoint3();
 	int* a = typeProperty->dataInt();
 	for(int atype = 1; atype <= atomCounts.size(); atype++) {
-		addParticleType(atype,
-				(atomTypeNames.size() == atomCounts.size()) ? atomTypeNames[atype-1] : QString());
+		addParticleTypeId(atype, (atomTypeNames.size() == atomCounts.size()) ? atomTypeNames[atype-1] : QString());
 		for(int i = 0; i < atomCounts[atype-1]; i++, ++p, ++a) {
 			*a = atype;
 			if(sscanf(stream.readLine(), FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING,

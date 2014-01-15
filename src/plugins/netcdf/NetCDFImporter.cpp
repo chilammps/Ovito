@@ -469,7 +469,7 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 								for (int i = 0; i <= maxType; i++) {
 									// Only define atom type if really present.
 									if (typeCount[i] > 0)
-										addParticleType(i);
+										addParticleTypeId(i);
 								}							
 							}
 						}

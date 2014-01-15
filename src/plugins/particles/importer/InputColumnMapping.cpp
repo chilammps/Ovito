@@ -174,7 +174,8 @@ void InputColumnMapping::validate() const
  *****************************************************************************/
 InputColumnReader::InputColumnReader(const InputColumnMapping& mapping, ParticleImportTask& destination, size_t particleCount)
 	: _mapping(mapping), _destination(destination),
-	  _intMetaTypeId(qMetaTypeId<int>()), _floatMetaTypeId(qMetaTypeId<FloatType>())
+	  _intMetaTypeId(qMetaTypeId<int>()), _floatMetaTypeId(qMetaTypeId<FloatType>()),
+	  _usingNamedParticleTypes(false)
 {
 	mapping.validate();
 
@@ -358,14 +359,11 @@ void InputColumnReader::readParticle(size_t particleIndex, int ntokens, const ch
 			else {
 				// Automatically register a new particle type if a new type identifier is encountered.
 				if(ok) {
-					_destination.addParticleType(d);
+					_destination.addParticleTypeId(d);
 				}
 				else {
-					d = _destination.particleTypeFromName(*token);
-					if(d == -1) {
-						d = _destination.particleTypes().size() + 1;
-						_destination.addParticleType(d, *token);
-					}
+					d = _destination.addParticleTypeName(*token);
+					_usingNamedParticleTypes = true;
 				}
 			}
 			property->setIntComponent(particleIndex, _mapping.vectorComponent(columnIndex), d);
@@ -402,7 +400,7 @@ void InputColumnReader::readParticle(size_t particleIndex, const double* values,
 			int ival = (int)*token;
 			if(property->type() == ParticleProperty::ParticleTypeProperty) {
 				// Automatically register a new particle type if a new type identifier is encountered.
-				_destination.addParticleType(ival);
+				_destination.addParticleTypeId(ival);
 			}
 			property->setIntComponent(particleIndex, _mapping.vectorComponent(columnIndex), ival);
 		}

@@ -202,9 +202,6 @@ void CFGImporter::CFGImportTask::parseFile(FutureInterfaceBase& futureInterface,
 		massPointer = massProperty->dataFloat();
 	}
 
-	// The list of particle types created so far.
-	std::vector<std::string> typeNames;
-
 	// Read per-particle data.
 	bool isFirstLine = true;
 	for(int particleIndex = 0; particleIndex < header.numParticles; ) {
@@ -241,16 +238,8 @@ void CFGImporter::CFGImportTask::parseFile(FutureInterfaceBase& futureInterface,
 				while(*line != '\0' && std::isspace(*line)) ++line;
 				const char* line_end = line;
 				while(*line_end != '\0' && !std::isspace(*line_end)) ++line_end;
-				auto iter = std::find_if(typeNames.begin(), typeNames.end(), [line, line_end](const std::string& name) -> bool {
-					return name.length() == (line_end - line) && std::equal(line, line_end, name.begin());
-				});
-				if(iter == typeNames.end()) {
-					currentAtomType = typeNames.size() + 1;
-					std::string particleTypeName(line, line_end);
-					addParticleType(currentAtomType, QString::fromStdString(particleTypeName));
-					typeNames.push_back(std::move(particleTypeName));
-				}
-				else currentAtomType = (iter - typeNames.begin()) + 1;
+				*const_cast<char*>(line_end) = '\0';
+				currentAtomType = addParticleTypeName(line);
 
 				continue;
 			}
@@ -267,6 +256,14 @@ void CFGImporter::CFGImportTask::parseFile(FutureInterfaceBase& futureInterface,
 			throw ex.prependGeneralMessage(tr("Parsing error in line %1 of CFG file.").arg(stream.lineNumber()));
 		}
 	}
+
+	// Since we created particle types on the go while reading the particle, the assigned particle type IDs
+	// depends on the storage order of particles in the file. We rather want a well-defined particle type ordering, that's
+	// why we sort them now.
+	if(header.isExtendedFormat || columnParser.usingNamedParticleTypes())
+		sortParticleTypesByName();
+	else
+		sortParticleTypesById();
 
 	AffineTransformation H(header.transform * header.H0);
 	H.translation() = H * Vector3(-0.5, -0.5, -0.5);
