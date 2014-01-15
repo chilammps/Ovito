@@ -61,14 +61,7 @@ public:
 	/// \param rolloutParams Specifies how the editor's rollouts should be created.
 	///
 	/// This method is called by the PropertiesPanel class to initialize the editor and to create the UI.
-	void initialize(PropertiesPanel* container, MainWindow* mainWindow, const RolloutInsertionParameters& rolloutParams) {
-		OVITO_CHECK_POINTER(container);
-		OVITO_CHECK_POINTER(mainWindow);
-		OVITO_ASSERT_MSG(_container == NULL, "PropertiesEditor::initialize()", "Editor can only be initialized once.");
-		_container = container;
-		_mainWindow = mainWindow;
-		createUI(rolloutParams);
-	}
+	void initialize(PropertiesPanel* container, MainWindow* mainWindow, const RolloutInsertionParameters& rolloutParams);
 	
 	/// \brief Returns the rollout container widget this editor is placed in.
 	PropertiesPanel* container() const { return _container; }
