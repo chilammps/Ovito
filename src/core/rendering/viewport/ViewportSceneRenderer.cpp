@@ -504,7 +504,7 @@ void ViewportSceneRenderer::loadShader(QOpenGLShaderProgram* program, QOpenGLSha
 			OVITO_ASSERT(line.contains("#if"));
 			OVITO_ASSERT(!isFiltered);
 			if(line.contains(">=") && glformat().majorVersion() < 3) isFiltered = true;
-			if(line.contains("<") && glformat().majorVersion() > 3) isFiltered = true;
+			if(line.contains("<") && glformat().majorVersion() >= 3) isFiltered = true;
 			filterstackpos = ifstack;
 			continue;
 		}
