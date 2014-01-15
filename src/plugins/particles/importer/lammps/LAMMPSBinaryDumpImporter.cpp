@@ -403,7 +403,7 @@ void LAMMPSBinaryDumpImporter::LAMMPSBinaryDumpImportTask::parseFile(FutureInter
 		}
 	}
 
-	setInfoText(tr("%1 particles at simulation timestep %2").arg(header.natoms).arg(header.ntimestep));
+	setInfoText(tr("%1 particles at timestep %2").arg(header.natoms).arg(header.ntimestep));
 }
 
 /******************************************************************************

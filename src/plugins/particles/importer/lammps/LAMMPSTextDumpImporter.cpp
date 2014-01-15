@@ -318,7 +318,7 @@ void LAMMPSTextDumpImporter::LAMMPSTextDumpImportTask::parseFile(FutureInterface
 					}
 				}
 
-				setInfoText(tr("%1 particles at simulation timestep %2").arg(numParticles).arg(timestep));
+				setInfoText(tr("%1 particles at timestep %2").arg(numParticles).arg(timestep));
 				return;	// Done!
 			}
 			else {

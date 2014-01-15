@@ -250,7 +250,7 @@ void ManualSelectionModifierEditor::createUI(const RolloutInsertionParameters& r
 	layout->setContentsMargins(4,4,4,4);
 	layout->setSpacing(6);
 
-	QGroupBox* mouseSelectionGroup = new QGroupBox(tr("Viewports"));
+	QGroupBox* mouseSelectionGroup = new QGroupBox(tr("Viewport modes"));
 	QVBoxLayout* sublayout = new QVBoxLayout(mouseSelectionGroup);
 	sublayout->setContentsMargins(4,4,4,4);
 	sublayout->setSpacing(6);
@@ -268,7 +268,7 @@ void ManualSelectionModifierEditor::createUI(const RolloutInsertionParameters& r
 	connect(this, &PropertiesEditor::contentsReplaced, pickModeAction, &ViewportModeAction::deactivateMode);
 	connect(this, &PropertiesEditor::contentsReplaced, fenceModeAction, &ViewportModeAction::deactivateMode);
 
-	QGroupBox* globalSelectionGroup = new QGroupBox(tr("Selection modes"));
+	QGroupBox* globalSelectionGroup = new QGroupBox(tr("Actions"));
 	sublayout = new QVBoxLayout(globalSelectionGroup);
 	sublayout->setContentsMargins(4,4,4,4);
 	sublayout->setSpacing(6);
