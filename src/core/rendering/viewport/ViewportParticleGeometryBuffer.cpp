@@ -38,35 +38,77 @@ ViewportParticleGeometryBuffer::ViewportParticleGeometryBuffer(ViewportSceneRend
 {
 	OVITO_ASSERT(renderer->glcontext()->shareGroup() == _contextGroup);
 
+	// Determine whether we can use point sprites.
+	_usePointSprites = true;
+#ifdef Q_OS_WIN
+	// Point sprites seem not to work on Windows platform and Intel graphics.
+	// Use quads made of two triangles as a workaround.
+	if(renderer->glformat().majorVersion() >= 3
+			&& strstr((const char*)glGetString(GL_VENDOR), "Intel") != nullptr)
+		_usePointSprites = false;
+#endif
+
 	// Initialize OpenGL shaders.
-	_flatImposterShader = renderer->loadShaderProgram(
-			"particle_flat_sphere",
-			":/core/glsl/particles/pointsprites/sphere/without_depth.vs",
-			":/core/glsl/particles/pointsprites/sphere/flat_shading.fs");
-	_shadedImposterShaderWithoutDepth = renderer->loadShaderProgram(
-			"particle_textured_sprite_sphere_without_depth",
-			":/core/glsl/particles/pointsprites/sphere/without_depth.vs",
-			":/core/glsl/particles/pointsprites/sphere/without_depth.fs");
-	_shadedImposterShaderWithDepth = renderer->loadShaderProgram(
-			"particle_textured_sprite_sphere_with_depth",
-			":/core/glsl/particles/pointsprites/sphere/with_depth.vs",
-			":/core/glsl/particles/pointsprites/sphere/with_depth.fs");
-	_imposterPickingShaderWithoutDepth = renderer->loadShaderProgram(
-			"particle_textured_sprite_sphere_without_depth_picking",
-			":/core/glsl/particles/pointsprites/sphere/picking/without_depth.vs",
-			":/core/glsl/particles/pointsprites/sphere/picking/flat_shading.fs");
-	_imposterPickingShaderWithDepth = renderer->loadShaderProgram(
-			"particle_textured_sprite_sphere_with_depth_picking",
-			":/core/glsl/particles/pointsprites/sphere/picking/with_depth.vs",
-			":/core/glsl/particles/pointsprites/sphere/picking/with_depth.fs");
-	_flatSquareImposterShader = renderer->loadShaderProgram(
-			"particle_flat_sprite_square",
-			":/core/glsl/particles/pointsprites/sphere/without_depth.vs",
-			":/core/glsl/particles/pointsprites/square/flat_shading.fs");
-	_imposterSquarePickingShaderWithoutDepth = renderer->loadShaderProgram(
-			"particle_flat_sprite_square_without_depth_picking",
-			":/core/glsl/particles/pointsprites/sphere/picking/without_depth.vs",
-			":/core/glsl/particles/pointsprites/square/picking/flat_shading.fs");
+	if(_usePointSprites) {
+		_flatImposterShader = renderer->loadShaderProgram(
+				"particle_flat_sphere",
+				":/core/glsl/particles/pointsprites/sphere/without_depth.vs",
+				":/core/glsl/particles/pointsprites/sphere/flat_shading.fs");
+		_shadedImposterShaderWithoutDepth = renderer->loadShaderProgram(
+				"particle_textured_sprite_sphere_without_depth",
+				":/core/glsl/particles/pointsprites/sphere/without_depth.vs",
+				":/core/glsl/particles/pointsprites/sphere/without_depth.fs");
+		_shadedImposterShaderWithDepth = renderer->loadShaderProgram(
+				"particle_textured_sprite_sphere_with_depth",
+				":/core/glsl/particles/pointsprites/sphere/with_depth.vs",
+				":/core/glsl/particles/pointsprites/sphere/with_depth.fs");
+		_imposterPickingShaderWithoutDepth = renderer->loadShaderProgram(
+				"particle_textured_sprite_sphere_without_depth_picking",
+				":/core/glsl/particles/pointsprites/sphere/picking/without_depth.vs",
+				":/core/glsl/particles/pointsprites/sphere/picking/flat_shading.fs");
+		_imposterPickingShaderWithDepth = renderer->loadShaderProgram(
+				"particle_textured_sprite_sphere_with_depth_picking",
+				":/core/glsl/particles/pointsprites/sphere/picking/with_depth.vs",
+				":/core/glsl/particles/pointsprites/sphere/picking/with_depth.fs");
+		_flatSquareImposterShader = renderer->loadShaderProgram(
+				"particle_flat_sprite_square",
+				":/core/glsl/particles/pointsprites/sphere/without_depth.vs",
+				":/core/glsl/particles/pointsprites/square/flat_shading.fs");
+		_imposterSquarePickingShaderWithoutDepth = renderer->loadShaderProgram(
+				"particle_flat_sprite_square_without_depth_picking",
+				":/core/glsl/particles/pointsprites/sphere/picking/without_depth.vs",
+				":/core/glsl/particles/pointsprites/square/picking/flat_shading.fs");
+	}
+	else {
+		_flatImposterShader = renderer->loadShaderProgram(
+				"particle_flat_sphere",
+				":/core/glsl/particles/imposter/sphere/without_depth.vs",
+				":/core/glsl/particles/imposter/sphere/flat_shading.fs");
+		_shadedImposterShaderWithoutDepth = renderer->loadShaderProgram(
+				"particle_textured_sprite_sphere_without_depth",
+				":/core/glsl/particles/imposter/sphere/without_depth.vs",
+				":/core/glsl/particles/imposter/sphere/without_depth.fs");
+		_shadedImposterShaderWithDepth = renderer->loadShaderProgram(
+				"particle_textured_sprite_sphere_with_depth",
+				":/core/glsl/particles/imposter/sphere/with_depth.vs",
+				":/core/glsl/particles/imposter/sphere/with_depth.fs");
+		_imposterPickingShaderWithoutDepth = renderer->loadShaderProgram(
+				"particle_textured_sprite_sphere_without_depth_picking",
+				":/core/glsl/particles/imposter/sphere/picking/without_depth.vs",
+				":/core/glsl/particles/imposter/sphere/picking/flat_shading.fs");
+		_imposterPickingShaderWithDepth = renderer->loadShaderProgram(
+				"particle_textured_sprite_sphere_with_depth_picking",
+				":/core/glsl/particles/imposter/sphere/picking/with_depth.vs",
+				":/core/glsl/particles/imposter/sphere/picking/with_depth.fs");
+		_flatSquareImposterShader = renderer->loadShaderProgram(
+				"particle_flat_sprite_square",
+				":/core/glsl/particles/imposter/sphere/without_depth.vs",
+				":/core/glsl/particles/pointsprites/square/flat_shading.fs");
+		_imposterSquarePickingShaderWithoutDepth = renderer->loadShaderProgram(
+				"particle_flat_sprite_square_without_depth_picking",
+				":/core/glsl/particles/imposter/sphere/picking/without_depth.vs",
+				":/core/glsl/particles/pointsprites/square/picking/flat_shading.fs");
+	}
 	_cubeTristripShader = renderer->loadShaderProgram(
 			"particle_cube_tristrip",
 			":/core/glsl/particles/geometry/cube/cube_tristrip.vs",
@@ -134,11 +176,18 @@ void ViewportParticleGeometryBuffer::setSize(int particleCount)
 	// Determine the required number of vertices per particles.
 	int verticesPerParticle;
 	if(shadingMode() == FlatShading) {
-		verticesPerParticle = 1;
+		if(_usePointSprites)
+			verticesPerParticle = 1;
+		else
+			verticesPerParticle = 6;
 	}
 	else {
-		if(particleShape() == SphericalShape && renderingQuality() < HighQuality)
-			verticesPerParticle = 1;
+		if(particleShape() == SphericalShape && renderingQuality() < HighQuality) {
+			if(_usePointSprites)
+				verticesPerParticle = 1;
+			else
+				verticesPerParticle = 6;
+		}
 		else {
 			if(hasGeometryShaders())
 				verticesPerParticle = 1;
@@ -224,13 +273,21 @@ void ViewportParticleGeometryBuffer::render(SceneRenderer* renderer)
 		return;
 
 	if(shadingMode() == FlatShading) {
-		renderPointSprites(vpRenderer);
-	}
-	else {
-		if(particleShape() == SphericalShape && renderingQuality() < HighQuality)
+		if(_usePointSprites)
 			renderPointSprites(vpRenderer);
 		else
+			renderImposters(vpRenderer);
+	}
+	else {
+		if(particleShape() == SphericalShape && renderingQuality() < HighQuality) {
+			if(_usePointSprites)
+				renderPointSprites(vpRenderer);
+			else
+				renderImposters(vpRenderer);
+		}
+		else {
 			renderCubes(vpRenderer);
+		}
 	}
 }
 
@@ -240,6 +297,8 @@ void ViewportParticleGeometryBuffer::render(SceneRenderer* renderer)
 void ViewportParticleGeometryBuffer::renderPointSprites(ViewportSceneRenderer* renderer)
 {
 	OVITO_ASSERT(_positionsBuffer.verticesPerElement() == 1);
+	if(!_usePointSprites)
+		return;
 
 	// Let the vertex shader compute the point size.
 	OVITO_CHECK_OPENGL(glEnable(GL_VERTEX_PROGRAM_POINT_SIZE));
@@ -253,7 +312,7 @@ void ViewportParticleGeometryBuffer::renderPointSprites(ViewportSceneRenderer* r
 		glTexEnvf(GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE);
 	}
 
-	if(particleShape() == SphericalShape)
+	if(particleShape() == SphericalShape && !renderer->isPicking())
 		activateBillboardTexture(renderer);
 
 	// Pick the right OpenGL shader program.
@@ -326,7 +385,7 @@ void ViewportParticleGeometryBuffer::renderPointSprites(ViewportSceneRenderer* r
 	_positionsBuffer.detachPositions(renderer, shader);
 	_radiiBuffer.detach(renderer, shader, "particle_radius");
 	if(!renderer->isPicking())
-		_colorsBuffer.detachPositions(renderer, shader);
+		_colorsBuffer.detachColors(renderer, shader);
 	else
 		renderer->deactivateVertexIDs(shader);
 	shader->release();
@@ -335,7 +394,7 @@ void ViewportParticleGeometryBuffer::renderPointSprites(ViewportSceneRenderer* r
 	if(renderer->isCoreProfile() == false)
 		OVITO_CHECK_OPENGL(glDisable(GL_POINT_SPRITE));
 
-	if(particleShape() == SphericalShape)
+	if(particleShape() == SphericalShape && !renderer->isPicking())
 		deactivateBillboardTexture(renderer);
 }
 
@@ -380,6 +439,7 @@ void ViewportParticleGeometryBuffer::renderCubes(ViewportSceneRenderer* renderer
 		throw Exception(QStringLiteral("Failed to bind OpenGL shader program."));
 
 	// Need to render only the front facing sides of the cubes.
+	glCullFace(GL_BACK);
 	glEnable(GL_CULL_FACE);
 
 	// This is to draw the cube with a single triangle strip.
@@ -474,11 +534,96 @@ void ViewportParticleGeometryBuffer::renderCubes(ViewportSceneRenderer* renderer
 	_positionsBuffer.detachPositions(renderer, shader);
 	_radiiBuffer.detach(renderer, shader, "particle_radius");
 	if(!renderer->isPicking())
-		_colorsBuffer.detachPositions(renderer, shader);
+		_colorsBuffer.detachColors(renderer, shader);
 	else
 		renderer->deactivateVertexIDs(shader);
 
 	shader->release();
+}
+
+/******************************************************************************
+* Renders particles using quads.
+******************************************************************************/
+void ViewportParticleGeometryBuffer::renderImposters(ViewportSceneRenderer* renderer)
+{
+	// Pick the right OpenGL shader program.
+	QOpenGLShaderProgram* shader;
+	OVITO_ASSERT(_positionsBuffer.verticesPerElement() == 6);
+	if(!renderer->isPicking()) {
+		if(shadingMode() == FlatShading || particleShape() != SphericalShape) {
+			if(particleShape() == SphericalShape)
+				shader = _flatImposterShader;
+			else
+				shader = _flatSquareImposterShader;
+		}
+		else {
+			if(renderingQuality() == LowQuality)
+				shader = _shadedImposterShaderWithoutDepth;
+			else
+				shader = _shadedImposterShaderWithDepth;
+		}
+	}
+	else {
+		if(shadingMode() == FlatShading || particleShape() != SphericalShape) {
+			if(particleShape() == SphericalShape)
+				shader = _imposterPickingShaderWithoutDepth;
+			else
+				shader = _imposterSquarePickingShaderWithoutDepth;
+		}
+		else {
+			if(renderingQuality() == LowQuality)
+				shader = _imposterPickingShaderWithoutDepth;
+			else
+				shader = _imposterPickingShaderWithDepth;
+		}
+	}
+	if(!shader->bind())
+		throw Exception(QStringLiteral("Failed to bind OpenGL shader program."));
+
+	if(particleShape() == SphericalShape && !renderer->isPicking())
+		activateBillboardTexture(renderer);
+
+	// Need to render only the front facing sides.
+	glCullFace(GL_BACK);
+	glEnable(GL_CULL_FACE);
+
+	// The texture coordinates of a quad made of two triangles.
+	static const QVector2D texcoords[6] = {{0,1},{1,1},{1,0},{0,1},{1,0},{0,0}};
+	shader->setUniformValueArray("imposter_texcoords", &texcoords[0], 6);
+
+	// The coordinate offsets of the six vertices of a quad made of two triangles.
+	static const QVector4D voffsets[6] = {{-1,-1,0,0},{1,-1,0,0},{1,1,0,0},{-1,-1,0,0},{1,1,0,0},{-1,1,0,0}};
+	shader->setUniformValueArray("imposter_voffsets", &voffsets[0], 6);
+
+	shader->setUniformValue("projection_matrix", (QMatrix4x4)renderer->projParams().projectionMatrix);
+	shader->setUniformValue("modelview_matrix", (QMatrix4x4)renderer->modelViewTM());
+
+	_positionsBuffer.bindPositions(renderer, shader);
+	_radiiBuffer.bind(renderer, shader, "particle_radius", GL_FLOAT, 0, 1);
+	if(!renderer->isPicking()) {
+		_colorsBuffer.bindColors(renderer, shader, 3);
+	}
+	else {
+		OVITO_CHECK_OPENGL(shader->setUniformValue("pickingBaseID", (GLint)renderer->registerSubObjectIDs(particleCount())));
+		renderer->activateVertexIDs(shader, particleCount() * _positionsBuffer.verticesPerElement());
+	}
+
+	renderer->activateVertexIDs(shader, particleCount() * _positionsBuffer.verticesPerElement());
+
+	OVITO_CHECK_OPENGL(glDrawArrays(GL_TRIANGLES, 0, particleCount() * _positionsBuffer.verticesPerElement()));
+
+	renderer->deactivateVertexIDs(shader);
+
+	_positionsBuffer.detachPositions(renderer, shader);
+	_radiiBuffer.detach(renderer, shader, "particle_radius");
+	if(!renderer->isPicking())
+		_colorsBuffer.detachColors(renderer, shader);
+	else
+		renderer->deactivateVertexIDs(shader);
+	shader->release();
+
+	if(particleShape() == SphericalShape && !renderer->isPicking())
+		deactivateBillboardTexture(renderer);
 }
 
 /******************************************************************************

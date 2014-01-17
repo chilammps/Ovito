@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<chapter version="5.0"
+         xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xml:id="scripting" 
+         xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title>Scripting Reference</title>
+  
+  <para>See <link linkend="usage.scripting">this section</link> for an overview of OVITO's scripting interface.</para>
+  
+  <simplesect>
+    <title>Input / output functions</title>
+    
+    <section id="scripting.functions.print"><title>print()</title>
+    <programlisting language="javascript">print(val)</programlisting>
+    <para>Prints the object or value <parameter>val</parameter> to the console (standard output on Linux/Unix). Note that this function will do nothing on Windows since there is
+    no console.</para>
+    </section>
+
+    <section id="scripting.functions.load"><title>load()</title>
+    <programlisting language="javascript">load(path[, params])</programlisting>
+    <para>Imports a data file. The newly imported data is added as new object to the current scene.
+    The string <parameter>path</parameter> specifies the file or remote URL to load. The optional parameter <parameter>params</parameter>
+    contains additional settings passed to the importer.</para>
+    <para>
+      The <function>load()</function> function returns the new object added to the scene.
+      <informalexample>
+      <programlisting>
+cd("/home/user/simulation/");
+obj = load("shear.xyz", { 
+	isMultiTimestepFile : true,
+	columnMapping : ["Particle Identifier", "Particle Type", "Position.X", "Position.Y", "Position.Z"] 
+});
+      </programlisting>
+      </informalexample>
+    </para> 
+    </section>
+    
+    <section id="scripting.functions.cd"><title>cd()</title>
+    <programlisting language="javascript">cd(path)</programlisting>
+    <para>Changes the current working directory to <parameter>path</parameter>.</para>
+    </section>
+
+    <section id="scripting.functions.pwd"><title>pwd()</title>
+    <programlisting language="javascript">pwd()</programlisting>
+    <para>Returns the current working directory.</para>
+    </section>
+    
+  </simplesect>
+</chapter>

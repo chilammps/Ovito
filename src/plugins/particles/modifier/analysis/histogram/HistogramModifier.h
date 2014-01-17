@@ -26,6 +26,7 @@
 #include <plugins/particles/data/ParticleProperty.h>
 #include <plugins/particles/data/ParticlePropertyObject.h>
 #include "../../ParticleModifier.h"
+#include <3rdparty/qcustomplot/qcustomplot.h>
 
 class QCustomPlot;
 class QCPItemStraightLine;
@@ -72,8 +73,14 @@ public:
 	/// Returns the end value of the selection interval.
 	FloatType selectionRangeEnd() const { return _selectionRangeEnd; }
 
+	/// Set whether the range of the x-axis of the scatter plot should be fixed.
+	void setFixXAxisRange(bool fix) { _fixXAxisRange = fix; }
+
 	/// Returns whether the range of the x-axis of the histogram should be fixed.
 	bool fixXAxisRange() const { return _fixXAxisRange; }
+
+	/// Set start and end value of the x-axis.
+	void setXAxisRange(FloatType start, FloatType end) { _xAxisRangeStart = start; _xAxisRangeEnd = end; }
 
 	/// Returns the start value of the x-axis.
 	FloatType xAxisRangeStart() const { return _xAxisRangeStart; }
@@ -168,7 +175,7 @@ class HistogramModifierEditor : public ParticleModifierEditor
 public:
 
 	/// Default constructor.
-	Q_INVOKABLE HistogramModifierEditor() {}
+	Q_INVOKABLE HistogramModifierEditor() : _rangeUpdate(true) {}
 
 protected:
 
@@ -183,6 +190,9 @@ protected Q_SLOTS:
 	/// Replots the histogram computed by the modifier.
 	void plotHistogram();
 
+	/// Keep x-axis range updated
+	void updateXAxisRange(const QCPRange &newRange);
+
 	/// This is called when the user has clicked the "Save Data" button.
 	void onSaveData();
 
@@ -196,6 +206,9 @@ private:
 
 	/// Marks the selection interval in the histogram plot.
 	QCPItemStraightLine* _selectionRangeEndMarker;
+
+	/// Update range when plot ranges change?
+	bool _rangeUpdate;
 
 	Q_OBJECT
 	OVITO_OBJECT

@@ -45,8 +45,8 @@ bool POSCARExporter::showSettingsDialog(const PipelineFlowState& state, QWidget*
 bool POSCARExporter::exportParticles(const PipelineFlowState& state, int frameNumber, TimePoint time, const QString& filePath, ProgressInterface& progress)
 {
 	// Get particle positions.
-	ParticlePropertyObject* posProperty = findStandardProperty(ParticleProperty::PositionProperty, state);
-	ParticlePropertyObject* velocityProperty = findStandardProperty(ParticleProperty::VelocityProperty, state);
+	ParticlePropertyObject* posProperty = ParticlePropertyObject::findInState(state, ParticleProperty::PositionProperty);
+	ParticlePropertyObject* velocityProperty = ParticlePropertyObject::findInState(state, ParticleProperty::VelocityProperty);
 	if(!posProperty)
 		throw Exception(tr("No particle positions available. Cannot write POSCAR file."));
 
@@ -65,7 +65,7 @@ bool POSCARExporter::exportParticles(const PipelineFlowState& state, int frameNu
 
 	// Count number of particles per particle type.
 	QMap<int,int> particleCounts;
-	ParticleTypeProperty* particleTypeProperty = dynamic_object_cast<ParticleTypeProperty>(findStandardProperty(ParticleProperty::ParticleTypeProperty, state));
+	ParticleTypeProperty* particleTypeProperty = dynamic_object_cast<ParticleTypeProperty>(ParticlePropertyObject::findInState(state, ParticleProperty::ParticleTypeProperty));
 	if(particleTypeProperty) {
 		const int* ptype = particleTypeProperty->constDataInt();
 		const int* ptype_end = ptype + particleTypeProperty->size();

@@ -30,6 +30,7 @@
 #include <core/viewport/ViewportConfiguration.h>
 #include <core/viewport/Viewport.h>
 #include <core/viewport/ViewportWindow.h>
+#include <core/scene/SelectionSet.h>
 
 namespace Ovito {
 
@@ -113,6 +114,7 @@ void ActionManager::on_HelpOpenGLInfo_triggered()
 			lsbOutput.replace('\n', ' ');
 			stream << "LSB output: " << lsbOutput << endl;
 #endif
+			stream << "Architecture: " << (QT_POINTER_SIZE*8) << " bit" << endl;
 			stream << "Command line: " << QCoreApplication::arguments().join(' ') << endl;
 			stream << "======= OpenGL info =======" << endl;
 			stream << "Depth buffer size: " << format.depthBufferSize() << endl;
@@ -130,6 +132,9 @@ void ActionManager::on_HelpOpenGLInfo_triggered()
 			stream << "Swap behavior: " << (format.swapBehavior() == QSurfaceFormat::SingleBuffer ? QStringLiteral("single buffer") : (format.swapBehavior() == QSurfaceFormat::DoubleBuffer ? QStringLiteral("double buffer") : (format.swapBehavior() == QSurfaceFormat::TripleBuffer ? QStringLiteral("triple buffer") : QStringLiteral("other")))) << endl;
 			stream << "Stencil buffer size: " << format.stencilBufferSize() << endl;
 			stream << "Deprecated functions: " << format.testOption(QSurfaceFormat::DeprecatedFunctions) << endl;
+#ifdef Q_OS_WIN
+			stream << "Not using point sprites: " << (format.majorVersion() == 3 && format.minorVersion() == 1 && strstr((const char*)glGetString(GL_VENDOR), "Intel") != nullptr) << endl;
+#endif
 			vp->viewportWindow()->glcontext()->doneCurrent();
 		}
 	}
@@ -299,6 +304,13 @@ void ActionManager::on_FileRemoteImport_triggered()
 ******************************************************************************/
 void ActionManager::on_FileExport_triggered()
 {
+	// Create the list of scene nodes to be exported.
+	QVector<SceneNode*> nodes = _dataset->selection()->nodes();
+	if(nodes.empty()) {
+		Exception(tr("Please select an object to be exported first.")).showError();
+		return;
+	}
+
 	// Build filter string.
 	QStringList filterStrings;
 	const auto& exporterTypes = ImportExportManager::instance().fileExporters(_dataset.get());
@@ -348,7 +360,7 @@ void ActionManager::on_FileExport_triggered()
 		OVITO_ASSERT(exportFilterIndex >= 0 && exportFilterIndex < exporterTypes.size());
 
 		OORef<FileExporter> exporter = exporterTypes[exportFilterIndex]->createService(_dataset.get());
-		exporter->exportToFile(exportFile);
+		exporter->exportToFile(nodes, exportFile, false);
 	}
 	catch(const Exception& ex) {
 		ex.showError();

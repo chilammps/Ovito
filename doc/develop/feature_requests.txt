@@ -11,6 +11,9 @@
 - Affine Transformation: Add "Duplicate particles" option.
 - Surface mesh for an empty simulation box should not display cap polygons.
 
+- Let the user configure the default colors and radii assigned to different atom types.
+- Implement modifier for Wigner-Seitz defect analysis.
+
 Sha Zhendong:
 
 - Calculation of the pair correlation function

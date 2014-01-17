@@ -87,6 +87,7 @@ bool Application::initialize(int& argc, char** argv)
 	_cmdLineParser.addOption(CommandLineOption(QStringList{{"v", "version"}}, tr("Prints the program version and exits.")));
 	_cmdLineParser.addOption(CommandLineOption(QStringList{{"nogui"}}, tr("Run in console mode without showing the graphical user interface.")));
 	_cmdLineParser.addOption(CommandLineOption(QStringList{{"glversion"}}, tr("Selects a specific version of the OpenGL standard."), tr("VERSION")));
+	_cmdLineParser.addOption(CommandLineOption(QStringList{{"glcompatprofile"}}, tr("Request the OpenGL compatibility profile instead of the core profile.")));
 
 	// Parse command line arguments.
 	// Ignore unknown command line options for now.

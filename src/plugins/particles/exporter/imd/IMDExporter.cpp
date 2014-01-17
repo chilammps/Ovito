@@ -46,14 +46,14 @@ bool IMDExporter::showSettingsDialog(const PipelineFlowState& state, QWidget* pa
 bool IMDExporter::exportParticles(const PipelineFlowState& state, int frameNumber, TimePoint time, const QString& filePath, ProgressInterface& progress)
 {
 	// Get particle positions.
-	ParticlePropertyObject* posProperty = findStandardProperty(ParticleProperty::PositionProperty, state);
+	ParticlePropertyObject* posProperty = ParticlePropertyObject::findInState(state, ParticleProperty::PositionProperty);
 	if(!posProperty)
 		throw Exception(tr("No particle positions available. Cannot write IMD file."));
-	ParticleTypeProperty* typeProperty = dynamic_object_cast<ParticleTypeProperty>(findStandardProperty(ParticleProperty::ParticleTypeProperty, state));
+	ParticleTypeProperty* typeProperty = dynamic_object_cast<ParticleTypeProperty>(ParticlePropertyObject::findInState(state, ParticleProperty::ParticleTypeProperty));
 	if(typeProperty && typeProperty->particleTypes().empty()) typeProperty = nullptr;
-	ParticlePropertyObject* identifierProperty = findStandardProperty(ParticleProperty::IdentifierProperty, state);
-	ParticlePropertyObject* velocityProperty = findStandardProperty(ParticleProperty::VelocityProperty, state);
-	ParticlePropertyObject* massProperty = findStandardProperty(ParticleProperty::MassProperty, state);
+	ParticlePropertyObject* identifierProperty = ParticlePropertyObject::findInState(state, ParticleProperty::IdentifierProperty);
+	ParticlePropertyObject* velocityProperty = ParticlePropertyObject::findInState(state, ParticleProperty::VelocityProperty);
+	ParticlePropertyObject* massProperty = ParticlePropertyObject::findInState(state, ParticleProperty::MassProperty);
 
 	// Get simulation cell info.
 	SimulationCell* simulationCell = state.findObject<SimulationCell>();

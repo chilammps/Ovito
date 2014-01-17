@@ -40,25 +40,35 @@ public:
 	int columnCount() const { return _columns.size(); }
 
 	/// \brief Inserts a column that will be written to the output file.
-	/// \param columnIndex The column number starting at 0. This specifies the insertion position.
-	/// \param propertyType The particle property to be written into the column.
-	/// \param propertyName Specifies the name of particle property.
-	/// \param vectorComponent The component of the vector if the property contains multiple values per particle.
-	void insertColumn(int columnIndex, ParticleProperty::Type propertyType, const QString& propertyName, int vectorComponent = 0);
+	/// \param columnIndex The file column number (starting at 0).
+	/// \param propertyRef The particle property to be written into the column.
+	void insertColumn(int columnIndex, const ParticlePropertyReference& propertyRef);
+
+	/// \brief Inserts a column that will be written to the output file.
+	/// \param columnIndex The file column number (starting at 0).
+	/// \param type The particle property type to be written into the column.
+	/// \param name The name of the property to be written into the column.
+	/// \param vectorComponent The vector component of the particle property type to be written into the column.
+	void insertColumn(int columnIndex, ParticleProperty::Type type, const QString& name, int vectorComponent = -1) {
+		insertColumn(columnIndex, ParticlePropertyReference(type, name, vectorComponent));
+	}
 
 	/// \brief Removes the definition of a column.
 	/// \param columnIndex The column number starting at 0.
 	void removeColumn(int columnIndex);
 
+	/// \brief Returns the property associated with the given column of the output file.
+	const ParticlePropertyReference& column(int columnIndex) const { OVITO_ASSERT(columnIndex < columnCount()); return _columns[columnIndex]; }
+
 	/// \brief Returns the property type that is associated with the given column of the output file.
-	ParticleProperty::Type propertyType(int columnIndex) const { return (columnIndex < _columns.size()) ? _columns[columnIndex].propertyType : ParticleProperty::UserProperty; }
+	ParticleProperty::Type propertyType(int columnIndex) const { return (columnIndex < _columns.size()) ? _columns[columnIndex].type() : ParticleProperty::UserProperty; }
 
 	/// \brief Returns the name of the particle property that is associated with the given column of the output file.
-	QString propertyName(int columnIndex) const { return (columnIndex < _columns.size()) ? _columns[columnIndex].propertyName : QString(); }
+	QString propertyName(int columnIndex) const { return (columnIndex < _columns.size()) ? _columns[columnIndex].name() : QString(); }
 
 	/// \brief Returns the vector component for particle properties that contain multiple values per atom.
 	/// \return The non-negative vector component index.
-	int vectorComponent(int columnIndex) const { return (columnIndex < _columns.size()) ? _columns[columnIndex].vectorComponent : 0; }
+	int vectorComponent(int columnIndex) const { return (columnIndex < _columns.size() && _columns[columnIndex].vectorComponent() >= 0) ? _columns[columnIndex].vectorComponent() : 0; }
 
 	/// \brief Saves the mapping to the given stream.
 	void saveToStream(SaveStream& stream) const;
@@ -72,23 +82,13 @@ public:
 	/// \brief Loads the mapping from a byte array.
 	void fromByteArray(const QByteArray& array);
 
+	/// \brief Returns true if this column-mapping object is empty.
+	bool isEmpty() const { return columnCount() == 0; }
+
 private:
 
-	/** Stores information about a single column in the output file. */
-	struct Column {
-
-		/// The particle property to be written to the output file.
-		ParticleProperty::Type propertyType;
-
-		/// The name of the particle property if this is a user-defined property.
-		QString propertyName;
-
-		/// The component for vector properties.
-		int vectorComponent;
-	};
-
 	/// Contains one entry for each column of the output file.
-	QVector<Column> _columns;
+	QVector<ParticlePropertyReference> _columns;
 };
 
 /**
@@ -138,5 +138,7 @@ private:
 };
 
 };	// End of namespace
+
+Q_DECLARE_METATYPE(Particles::OutputColumnMapping);
 
 #endif // __OVITO_OUTPUT_COLUMN_MAPPING_H

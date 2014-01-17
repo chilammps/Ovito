@@ -67,11 +67,14 @@ public:
 	/// \param c The Qt color to convert to a floating-point representation.
 	Q_DECL_CONSTEXPR ColorT(const QColor& c) : std::array<T, 3>{{T(c.redF()), T(c.greenF()), T(c.blueF())}} {}
 
+	/// \brief Initializes the color from an array.
+	Q_DECL_CONSTEXPR explicit ColorT(const std::array<T, 3>& c) : std::array<T, 3>(c) {}
+
 	/// \brief Sets all components to zero.
-	void setBlack() { r() = g() = b() = 0; }
+	void setBlack() { r() = g() = b() = T(0); }
 	
 	/// \brief Sets all components to one.
-	void setWhite() { r() = g() = b() = 1; }
+	void setWhite() { r() = g() = b() = T(1); }
 
 	/// \brief Converts this color to a Qt color object.
 	/// \return A Qt color object. All color components are clamped to the [0,1] range before the conversion.
@@ -131,20 +134,20 @@ public:
 	/// 
 	/// If any of the R, G and B components is greater than 1 then it is set to 1.
 	/// \sa clampMin(), clampMinMax()
-	void clampMax() { if(r() > 1.0) r() = 1.0; if(g() > 1.0) g() = 1.0; if(b() > 1.0) b() = 1.0; }
+	void clampMax() { if(r() > T(1)) r() = T(1); if(g() > T(1)) g() = T(1); if(b() > T(1)) b() = T(1); }
 	
 	/// \brief Ensures that all components are not less than zero.
 	/// 
 	/// If any of the R, G and B components is less than 0 then it is set to 0.
 	/// \sa clampMax(), clampMinMax()
-	void clampMin() { if(r() < 0.0) r() = 0.0; if(g() < 0.0) g() = 0.0; if(b() < 0.0) b() = 0.0; }
+	void clampMin() { if(r() < T(0)) r() = T(0); if(g() < T(0)) g() = T(0); if(b() < T(0)) b() = T(0); }
 	
 	/// \brief Ensures that all components are not greater than one and not less than zero.
 	/// \sa clampMin(), clampMax()
 	void clampMinMax() {
 		for(typename std::array<T, 3>::size_type i = 0; i < std::array<T, 3>::size(); i++) {
-			if((*this)[i] > 1.0) (*this)[i] = 1;
-			else if((*this)[i] < 0.0) (*this)[i] = 0;
+			if((*this)[i] > T(1)) (*this)[i] = T(1);
+			else if((*this)[i] < T(0)) (*this)[i] = T(0);
 		}
 	}
 
@@ -154,19 +157,19 @@ public:
 	/// \param value The value of the color between zero and one.
 	/// \return The color in RGB representation.
 	static ColorT fromHSV(T hue, T saturation, T value) {
-		if(saturation == 0.0) {
+		if(saturation == 0) {
 			return ColorT(value, value, value);
 		}
 		else {
 			T f, p, q, t;
 			int i;
-			if(hue >= 1.0 || hue < 0.0) hue = 0.0;
-			hue *= 6.0;
+			if(hue >= 1.0 || hue < T(0)) hue = T(0);
+			hue *= T(6);
 			i = (int)floor(hue);
 			f = hue - (T)i;
-			p = value * (1.0 - saturation);
-			q = value * (1.0 - (saturation * f));
-			t = value * (1.0 - (saturation * (1.0 - f)));
+			p = value * (T(1) - saturation);
+			q = value * (T(1) - (saturation * f));
+			t = value * (T(1) - (saturation * (T(1) - f)));
 			switch(i) {
 				case 0: return ColorT(value, t, p);
 				case 1: return ColorT(q, value, p);
@@ -281,18 +284,21 @@ public:
 
 	/// \brief Converts a RGB color to an RGBA color.
 	/// \param c The RGB color.
-	Q_DECL_CONSTEXPR explicit ColorAT(const ColorT<T>& c) : std::array<T, 4>{{c.r(), c.g(), c.b(), T(1)}} {}
+	Q_DECL_CONSTEXPR ColorAT(const ColorT<T>& c) : std::array<T, 4>{{c.r(), c.g(), c.b(), T(1)}} {}
 
 	/// \brief Converts a RGB color to an RGBA color.
 	/// \param c The RGB color.
 	/// \param alpha The opaqueness.
 	Q_DECL_CONSTEXPR ColorAT(const ColorT<T>& c, T alpha) : std::array<T, 4>{{c.r(), c.g(), c.b(), alpha}} {}
 
+	/// \brief Initializes the color from an array.
+	Q_DECL_CONSTEXPR explicit ColorAT(const std::array<T, 4>& c) : std::array<T, 4>(c) {}
+
 	/// \brief Sets all components to zero.
-	void setBlack() { r() = g() = b() = 0; a() = 1; }
+	void setBlack() { r() = g() = b() = T(0); a() = T(1); }
 
 	/// \brief Sets all components to one.
-	void setWhite() { r() = g() = b() = a() = 1; }
+	void setWhite() { r() = g() = b() = a() = T(1); }
 
 	/// \brief Converts this color to a vector with three components.
 	/// \return A vector.
@@ -359,20 +365,20 @@ public:
 	/// 
 	/// If any of the R, G and B components is greater than 1 then it is set to 1.
 	/// \sa clampMin(), clampMinMax()
-	void clampMax() { if(r() > 1.0) r() = 1.0; if(g() > 1.0) g() = 1.0; if(b() > 1.0) b() = 1.0; if(a() > 1.0) a() = 1.0; }
+	void clampMax() { if(r() > T(1)) r() = T(1); if(g() > T(1)) g() = T(1); if(b() > T(1)) b() = T(1); if(a() > T(1)) a() = T(1); }
 
 	/// \brief Ensures that all components are not less than zero.
 	/// 
 	/// If any of the R, G and B components is less than 0 then it is set to 0.
 	/// \sa clampMax(), clampMinMax()
-	void clampMin() { if(r() < 0.0) r() = 0.0; if(g() < 0.0) g() = 0.0; if(b() < 0.0) b() = 0.0; if(a() < 0.0) a() = 0.0; }
+	void clampMin() { if(r() < T(0)) r() = T(0); if(g() < T(0)) g() = T(0); if(b() < T(0)) b() = T(0); if(a() < T(0)) a() = T(0); }
 
 	/// \brief Ensures that all components are not greater than one and not less than zero.
 	/// \sa clampMin(), clampMax()
 	void clampMinMax() {
 		for(typename std::array<T, 4>::size_type i = 0; i < std::array<T, 4>::size(); i++) {
-			if((*this)[i] > 1.0) (*this)[i] = 1;
-			else if((*this)[i] < 0.0) (*this)[i] = 0;
+			if((*this)[i] > T(1)) (*this)[i] = T(1);
+			else if((*this)[i] < T(0)) (*this)[i] = T(0);
 		}
 	}
 

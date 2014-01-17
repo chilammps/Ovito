@@ -238,7 +238,7 @@ void ParcasFileImporter::ParcasFileImportTask::parseFile(FutureInterfaceBase& fu
     	qDebug() << "Type-" << i << " " << types[i - mintype].data();
 #endif
 
-		addParticleType(i, QString(types[i - mintype].data()).trimmed());
+		addParticleTypeId(i, QString::fromLatin1(types[i - mintype].data()).trimmed());
     }
 
 	// The actual header is now parsed. Check the offsets.

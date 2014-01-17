@@ -57,6 +57,12 @@ public:
 	/// Converts a QScriptValue to a InputColumnMapping.
 	static void toInputColumnMapping(const QScriptValue& obj, InputColumnMapping& mapping);
 
+	/// Creates a QScriptValue from a OutputColumnMapping.
+	static QScriptValue fromOutputColumnMapping(QScriptEngine* engine, const OutputColumnMapping& mapping);
+
+	/// Converts a QScriptValue to a OutputColumnMapping.
+	static void toOutputColumnMapping(const QScriptValue& obj, OutputColumnMapping& mapping);
+
 private:
 
 	Q_OBJECT

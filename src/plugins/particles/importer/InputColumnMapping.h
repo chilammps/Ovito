@@ -177,6 +177,9 @@ public:
 	/// \brief Processes the values from one line of the input file and stores them in the particle properties.
 	void readParticle(size_t particleIndex, const double* values, int nvalues);
 
+	/// Returns whether particle types were specified in the file as strings instead of numeric IDs.
+	bool usingNamedParticleTypes() const { return _usingNamedParticleTypes; }
+
 private:
 
 	/// Determines which input data columns are stored in what properties.
@@ -193,6 +196,9 @@ private:
 
 	/// Array of pointers to the tokens in a text string.
 	std::unique_ptr<const char*[]> _tokens;
+
+	/// Indicates that particle types were specified in the file as strings instead of numeric IDs.
+	bool _usingNamedParticleTypes;
 };
 
 };	// End of namespace

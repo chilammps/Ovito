@@ -45,13 +45,13 @@ bool LAMMPSDataExporter::showSettingsDialog(const PipelineFlowState& state, QWid
 bool LAMMPSDataExporter::exportParticles(const PipelineFlowState& state, int frameNumber, TimePoint time, const QString& filePath, ProgressInterface& progress)
 {
 	// Get particle positions.
-	ParticlePropertyObject* posProperty = findStandardProperty(ParticleProperty::PositionProperty, state);
+	ParticlePropertyObject* posProperty = ParticlePropertyObject::findInState(state, ParticleProperty::PositionProperty);
 	if(!posProperty)
 		throw Exception(tr("No particle positions available. Cannot write LAMMPS file."));
-	ParticlePropertyObject* velocityProperty = findStandardProperty(ParticleProperty::VelocityProperty, state);
-	ParticlePropertyObject* identifierProperty = findStandardProperty(ParticleProperty::IdentifierProperty, state);
-	ParticlePropertyObject* periodicImageProperty = findStandardProperty(ParticleProperty::PeriodicImageProperty, state);
-	ParticleTypeProperty* particleTypeProperty = dynamic_object_cast<ParticleTypeProperty>(findStandardProperty(ParticleProperty::ParticleTypeProperty, state));
+	ParticlePropertyObject* velocityProperty = ParticlePropertyObject::findInState(state, ParticleProperty::VelocityProperty);
+	ParticlePropertyObject* identifierProperty = ParticlePropertyObject::findInState(state, ParticleProperty::IdentifierProperty);
+	ParticlePropertyObject* periodicImageProperty = ParticlePropertyObject::findInState(state, ParticleProperty::PeriodicImageProperty);
+	ParticleTypeProperty* particleTypeProperty = dynamic_object_cast<ParticleTypeProperty>(ParticlePropertyObject::findInState(state, ParticleProperty::ParticleTypeProperty));
 
 	// Get simulation cell info.
 	SimulationCell* simulationCell = state.findObject<SimulationCell>();

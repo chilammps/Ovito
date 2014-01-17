@@ -79,8 +79,15 @@ void StringParameterUI::resetUI()
 {
 	PropertyParameterUI::resetUI();	
 	
-	if(textBox()) 
-		textBox()->setEnabled(editObject() != NULL && isEnabled());
+	if(textBox()) {
+		if(editObject()) {
+			textBox()->setEnabled(isEnabled());
+		}
+		else {
+			textBox()->setEnabled(false);
+			textBox()->clear();
+		}
+	}
 }
 
 /******************************************************************************

@@ -49,8 +49,15 @@ public:
 	/// \brief Opens the export settings dialog for this exporter service.
 	virtual bool showSettingsDialog(const PipelineFlowState& state, QWidget* parent) override;
 
-	/// \brief Returns the mapping particle properties to output file columns.
+	/// \brief Returns the mapping of particle properties to output file columns.
 	const OutputColumnMapping& columnMapping() const { return _columnMapping; }
+
+	/// \brief Sets the mapping of particle properties to output file columns.
+	void setColumnMapping(const OutputColumnMapping& mapping) { _columnMapping = mapping; }
+
+public:
+
+	Q_PROPERTY(Particles::OutputColumnMapping columnMapping READ columnMapping WRITE setColumnMapping);
 
 protected:
 

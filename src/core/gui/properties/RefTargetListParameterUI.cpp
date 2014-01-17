@@ -136,6 +136,9 @@ void RefTargetListParameterUI::resetUI()
 		}
 		
 		_model->resetList();
+
+		if(editObject() && _targets.size() > 0)
+			setSelectedObject(_targets.targets().front());
 	}
 	openSubEditor();
 }

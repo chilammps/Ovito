@@ -42,6 +42,7 @@ public:
 private Q_SLOTS:
 
 	void onShowRenderFrame(bool checked);
+	void onShowGrid(bool checked);
 	void onShowViewTypeMenu();
 	void onViewType(QAction* action);
 	void onAdjustView();

@@ -279,6 +279,9 @@ void LAMMPSTextDumpImporter::LAMMPSTextDumpImportTask::parseFile(FutureInterface
 					throw ex.prependGeneralMessage(tr("Parsing error in line %1 of LAMMPS dump file.").arg(stream.lineNumber()));
 				}
 
+				// Sort the particle type list since we created particles on the go and their order depends on the occurrence of types in the file.
+				sortParticleTypesById();
+
 				// Find out if coordinates are given in reduced format and need to be rescaled to absolute format.
 				bool reducedCoordinates = false;
 				if(!fileColumnNames.empty()) {
@@ -315,7 +318,7 @@ void LAMMPSTextDumpImporter::LAMMPSTextDumpImportTask::parseFile(FutureInterface
 					}
 				}
 
-				setInfoText(tr("%1 particles at simulation timestep %2").arg(numParticles).arg(timestep));
+				setInfoText(tr("%1 particles at timestep %2").arg(numParticles).arg(timestep));
 				return;	// Done!
 			}
 			else {

@@ -41,6 +41,7 @@ IMPLEMENT_OVITO_OBJECT(Scripting, InputOutputBinding, ScriptBinding);
 void InputOutputBinding::setupBinding(ScriptEngine& engine)
 {
 	engine.globalObject().setProperty("load", engine.newStdFunction(&InputOutputBinding::load, 1));
+	engine.globalObject().setProperty("save", engine.newStdFunction(&InputOutputBinding::save, 2));
 	engine.globalObject().setProperty("cd", engine.newStdFunction(&InputOutputBinding::cd, 1));
 	engine.globalObject().setProperty("pwd", engine.newStdFunction(&InputOutputBinding::pwd, 0));
 	engine.globalObject().setProperty("wait", engine.newStdFunction(&InputOutputBinding::wait, 0));
@@ -64,11 +65,11 @@ QScriptValue InputOutputBinding::load(QScriptContext* context, ScriptEngine* eng
 {
 	// Process function arguments.
 	if(context->argumentCount() < 1 || context->argumentCount() > 2)
-		return context->throwError("load() takes 1 or 2 arguments.");
+		return context->throwError(tr("load() takes 1 or 2 arguments."));
 	const QString urlString = context->argument(0).toString();
 	QUrl importURL = FileManager::instance().urlFromUserInput(urlString);
 	if(!importURL.isValid())
-		return context->throwError("Invalid path or URL.");
+		return context->throwError(tr("Invalid path or URL."));
 
 	// Download file so we can determine its format.
 	DataSet* dataset = engine->dataset();
@@ -102,6 +103,54 @@ QScriptValue InputOutputBinding::load(QScriptContext* context, ScriptEngine* eng
 		throw Exception(tr("File import was not successful."));
 
 	return engine->wrapOvitoObject(objNode);
+}
+
+/******************************************************************************
+* Implementation of the 'save' script command.
+*
+* Exports a scene object to an external data file.
+******************************************************************************/
+QScriptValue InputOutputBinding::save(QScriptContext* context, ScriptEngine* engine)
+{
+	// Process function arguments.
+	if(context->argumentCount() < 2 || context->argumentCount() > 4)
+		return context->throwError(tr("save() takes between 2 and 4 arguments."));
+
+	// Get output filename.
+	const QString outputPath = context->argument(0).toString();
+	if(outputPath.isEmpty())
+		return context->throwError(tr("Invalid output path (first argument passed to save() function)."));
+
+	// Create exporter instance. The constructor function is passed as second argument to the save() function.
+	if(!context->argument(1).isFunction())
+		return context->throwError(tr("Invalid exporter type (second argument passed to save() function)."));
+	QScriptValueList constructorArgs;
+	if(context->argumentCount() >= 3)
+		constructorArgs << context->argument(2);
+	// Use the property-value map passed to save() function to initialize the exporter object.
+	QScriptValue exporterObject = context->argument(1).construct(constructorArgs);
+	if(exporterObject.isError() || engine->hasUncaughtException())
+		return exporterObject;
+	FileExporter* exporter = qscriptvalue_cast<FileExporter*>(exporterObject);
+	if(!exporter)
+		return context->throwError(tr("Could not create an instance of the exporter type (second argument passed to save() function)."));
+
+	// Get the scene nodes to be exported.
+	DataSet* dataset = engine->dataset();
+	QVector<SceneNode*> nodes;
+	if(context->argumentCount() >= 4) {
+		SceneNode* node = qscriptvalue_cast<SceneNode*>(context->argument(3));
+		if(!node)
+			return context->throwError(tr("That's not a scene node (fourth argument passed to save() function)."));
+		nodes.push_back(node);
+	}
+	else nodes = dataset->selection()->nodes();
+
+	// Export data.
+	if(!exporter->exportToFile(nodes, outputPath, true))
+		return context->throwError(tr("Operation has been canceled by the user."));
+
+	return QScriptValue();
 }
 
 /******************************************************************************
