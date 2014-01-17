@@ -131,6 +131,9 @@ ScriptEngine::ScriptEngine(DataSet* dataset, QObject* parent)
 			baseClass = baseClass->superClass();
 		}
 	}
+
+	// Make the current dataset accessible to the script.
+	globalObject().setProperty("dataset", wrapOvitoObject(dataset));
 }
 
 /******************************************************************************

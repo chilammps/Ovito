@@ -57,6 +57,10 @@ bool ViewportBinding::render(RenderSettings* settings)
 	ScriptEngine* engine = static_cast<ScriptEngine*>(this->engine());
 	Viewport* viewport = qscriptvalue_cast<Viewport*>(thisObject());
 	OVITO_CHECK_OBJECT_POINTER(viewport);
+
+	// If no RenderSettings object has been passed to the function, use the global settings from the DataSet.
+	if(!settings)
+		settings = viewport->dataset()->renderSettings();
 	OVITO_CHECK_OBJECT_POINTER(settings);
 
 	try {

@@ -45,7 +45,7 @@ public:
 	virtual void setupBinding(ScriptEngine& engine) override;
 
 	/// Renders the viewport contents to an output image or movie file.
-	Q_INVOKABLE bool render(RenderSettings* settings);
+	Q_INVOKABLE bool render(RenderSettings* settings = nullptr);
 
 	/// Sets up a perspective camera for this viewport.
 	Q_INVOKABLE void perspective(const Point3& cameraPos, const Vector3& cameraDir, FloatType fov);
