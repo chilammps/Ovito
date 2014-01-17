@@ -47,6 +47,9 @@ public:
 	/// Implementation of the 'load' script command.
 	static QScriptValue load(QScriptContext* context, ScriptEngine* engine);
 
+	/// Implementation of the 'save' script command.
+	static QScriptValue save(QScriptContext* context, ScriptEngine* engine);
+
 	/// Implementation of the 'cd' script command.
 	static QScriptValue cd(QScriptContext* context, ScriptEngine* engine);
 

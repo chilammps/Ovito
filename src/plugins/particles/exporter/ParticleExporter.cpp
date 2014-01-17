@@ -89,15 +89,10 @@ void ParticleExporter::setOutputFilename(const QString& filename)
 /******************************************************************************
 * Exports the scene to the given file.
 ******************************************************************************/
-bool ParticleExporter::exportToFile(const QString& filePath)
+bool ParticleExporter::exportToFile(const QVector<SceneNode*>& nodes, const QString& filePath, bool noninteractive)
 {
 	// Save the output path.
 	setOutputFilename(filePath);
-
-	// Get the data to be exported.
-	PipelineFlowState flowState = getParticles(dataset()->animationSettings()->time());
-	if(flowState.isEmpty())
-		throw Exception(tr("The scene does not contain any particles that can be exported."));
 
 	// Use the entire animation as default export interval if no interval has been set before.
 	if(startFrame() > endFrame()) {
@@ -106,23 +101,31 @@ bool ParticleExporter::exportToFile(const QString& filePath)
 		setEndFrame(lastFrame);
 	}
 
-	// Show optional export settings dialog.
-	if(!showSettingsDialog(flowState, dataset()->mainWindow()))
-		return false;
+	if(Application::instance().guiMode() && !noninteractive) {
+
+		// Get the data to be exported.
+		PipelineFlowState flowState = getParticles(nodes, dataset()->animationSettings()->time());
+		if(flowState.isEmpty())
+			throw Exception(tr("The selected object does not contain any particles that could be exported."));
+
+		// Show optional export settings dialog.
+		if(!showSettingsDialog(flowState, dataset()->mainWindow()))
+			return false;
+	}
 
 	// Perform the actual export operation.
-	return writeOutputFiles();
+	return writeOutputFiles(nodes);
 }
 
 /******************************************************************************
 * Retrieves the particles to be exported by evaluating the modification pipeline.
 ******************************************************************************/
-PipelineFlowState ParticleExporter::getParticles(TimePoint time)
+PipelineFlowState ParticleExporter::getParticles(const QVector<SceneNode*>& nodes, TimePoint time)
 {
 	// Iterate over all scene nodes.
-	for(SceneNodesIterator iter(dataset()->sceneRoot()); !iter.finished(); iter.next()) {
+	for(SceneNode* sceneNode : nodes) {
 
-		ObjectNode* node = dynamic_object_cast<ObjectNode>(iter.current());
+		ObjectNode* node = dynamic_object_cast<ObjectNode>(sceneNode);
 		if(!node) continue;
 
 		// Check if the node's pipeline evaluates to something that contains particles.
@@ -142,20 +145,23 @@ PipelineFlowState ParticleExporter::getParticles(TimePoint time)
 /******************************************************************************
  * Exports the particles contained in the given scene to the output file(s).
  *****************************************************************************/
-bool ParticleExporter::writeOutputFiles()
+bool ParticleExporter::writeOutputFiles(const QVector<SceneNode*>& nodes)
 {
-	OVITO_ASSERT_MSG(!outputFilename().isEmpty(), "ParticleExporter::exportParticles()", "Output filename has not been set. ParticleExporter::setOutputFilename() must be called first.");
-	OVITO_ASSERT_MSG(startFrame() <= endFrame(), "ParticleExporter::exportParticles()", "Export interval has not been set. ParticleExporter::setStartFrame() and ParticleExporter::setEndFrame() must be called first.");
+	OVITO_ASSERT_MSG(!outputFilename().isEmpty(), "ParticleExporter::writeOutputFiles()", "Output filename has not been set. ParticleExporter::setOutputFilename() must be called first.");
+	OVITO_ASSERT_MSG(startFrame() <= endFrame(), "ParticleExporter::writeOutputFiles()", "Export interval has not been set. ParticleExporter::setStartFrame() and ParticleExporter::setEndFrame() must be called first.");
 
 	if(startFrame() > endFrame())
 		throw Exception(tr("The animation interval to be exported is empty or has not been set."));
 
 	// Show progress dialog.
-	QProgressDialog progressDialog(dataset()->mainWindow());
-	progressDialog.setWindowModality(Qt::WindowModal);
-	progressDialog.setAutoClose(false);
-	progressDialog.setAutoReset(false);
-	progressDialog.setMinimumDuration(0);
+	std::unique_ptr<QProgressDialog> progressDialog;
+	if(Application::instance().guiMode()) {
+		progressDialog.reset(new QProgressDialog(dataset()->mainWindow()));
+		progressDialog->setWindowModality(Qt::WindowModal);
+		progressDialog->setAutoClose(false);
+		progressDialog->setAutoReset(false);
+		progressDialog->setMinimumDuration(0);
+	}
 
 	// Compute the number of frames that need to be exported.
 	TimePoint exportTime;
@@ -176,12 +182,12 @@ bool ParticleExporter::writeOutputFiles()
 	// Validate export settings.
 	if(_exportAnimation && useWildcardFilename()) {
 		if(wildcardFilename().isEmpty())
-			throw Exception(tr("Cannot write animation frame to separate files. No wildcard pattern has been specified."));
+			throw Exception(tr("Cannot write animation frame to separate files. Wildcard pattern has not been specified."));
 		if(wildcardFilename().contains(QChar('*')) == false)
 			throw Exception(tr("Cannot write animation frames to separate files. The filename must contain the '*' wildcard character, which gets replaced by the frame number."));
 	}
 
-	progressDialog.setMaximum(numberOfFrames * 100);
+	if(progressDialog) progressDialog->setMaximum(numberOfFrames * 100);
 	QDir dir = QFileInfo(outputFilename()).dir();
 	QString filename = outputFilename();
 
@@ -195,7 +201,8 @@ bool ParticleExporter::writeOutputFiles()
 
 		// Export animation frames.
 		for(int frameIndex = 0; frameIndex < numberOfFrames; frameIndex++) {
-			progressDialog.setValue(frameIndex * 100);
+			if(progressDialog)
+				progressDialog->setValue(frameIndex * 100);
 
 			int frameNumber = firstFrameNumber + frameIndex * everyNthFrame();
 
@@ -208,13 +215,13 @@ bool ParticleExporter::writeOutputFiles()
 					return false;
 			}
 
-			if(!exportFrame(frameNumber, exportTime, filename, progressDialog))
-				progressDialog.cancel();
+			if(!exportFrame(nodes, frameNumber, exportTime, filename, progressDialog.get()) && progressDialog)
+				progressDialog->cancel();
 
 			if(_exportAnimation && useWildcardFilename())
-				closeOutputFile(!progressDialog.wasCanceled());
+				closeOutputFile(!progressDialog || !progressDialog->wasCanceled());
 
-			if(progressDialog.wasCanceled())
+			if(progressDialog && progressDialog->wasCanceled())
 				break;
 
 			// Go to next animation frame.
@@ -228,10 +235,10 @@ bool ParticleExporter::writeOutputFiles()
 
 	// Close output file.
 	if(!_exportAnimation || !useWildcardFilename()) {
-		closeOutputFile(!progressDialog.wasCanceled());
+		closeOutputFile(!progressDialog || !progressDialog->wasCanceled());
 	}
 
-	return true;
+	return !progressDialog || !progressDialog->wasCanceled();
 }
 
 /******************************************************************************
@@ -281,7 +288,7 @@ void ParticleExporter::closeOutputFile(bool exportCompleted)
 /******************************************************************************
  * Exports a single animation frame to the current output file.
  *****************************************************************************/
-bool ParticleExporter::exportFrame(int frameNumber, TimePoint time, const QString& filePath, QProgressDialog& progressDialog)
+bool ParticleExporter::exportFrame(const QVector<SceneNode*>& nodes, int frameNumber, TimePoint time, const QString& filePath, QProgressDialog* progressDialog)
 {
 	// Jump to animation time.
 	dataset()->animationSettings()->setTime(time);
@@ -290,34 +297,24 @@ bool ParticleExporter::exportFrame(int frameNumber, TimePoint time, const QStrin
 	volatile bool sceneIsReady = false;
 	dataset()->runWhenSceneIsReady( [&sceneIsReady]() { sceneIsReady = true; } );
 	if(!sceneIsReady) {
-		progressDialog.setLabelText(tr("Preparing frame %1 for export...").arg(frameNumber));
+		if(progressDialog)
+			progressDialog->setLabelText(tr("Preparing frame %1 for export...").arg(frameNumber));
 		while(!sceneIsReady) {
-			if(progressDialog.wasCanceled())
+			if(progressDialog && progressDialog->wasCanceled())
 				return false;
 			QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents, 200);
 		}
 	}
-	progressDialog.setLabelText(tr("Exporting frame %1 to file '%2'.").arg(frameNumber).arg(filePath));
+	if(progressDialog)
+		progressDialog->setLabelText(tr("Exporting frame %1 to file '%2'.").arg(frameNumber).arg(filePath));
 
 	// Evaluate modification pipeline to get the particles to be exported.
-	PipelineFlowState state = getParticles(time);
+	PipelineFlowState state = getParticles(nodes, time);
 	if(state.isEmpty())
-		throw Exception(tr("The scene does not contain any particles that can be exported."));
+		throw Exception(tr("The object to be exported does not contain any particles."));
 
 	ProgressInterface progressInterface(progressDialog);
 	return exportParticles(state, frameNumber, time, filePath, progressInterface);
-}
-
-/******************************************************************************
-* Retrieves the given standard particle property from the pipeline flow state.
-******************************************************************************/
-ParticlePropertyObject* ParticleExporter::findStandardProperty(ParticleProperty::Type type, const PipelineFlowState& flowState)
-{
-	for(const auto& sceneObj : flowState.objects()) {
-		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(sceneObj.get());
-		if(property && property->type() == type) return property;
-	}
-	return nullptr;
 }
 
 };

@@ -1,4 +1,4 @@
-// Check program version.
+// Query program version.
 print("This is Ovito " + version());
 
 // Set the working directory and import a data file.
@@ -36,8 +36,9 @@ activeViewport.render(new RenderSettings({
 }));
 
 // Print the modification pipeline of the selected node to the console.
+print("Current modification pipeline:");
 for(var i = 0; i < selectedNode.modifiers.length; i++)
-	print(selectedNode.modifiers[i]);  
+	print("  " + selectedNode.modifiers[i]);  
 	
 // Perform some analysis.
 cna = new CommonNeighborAnalysisModifier({ cutoff : 3.2, adaptiveMode : false });
@@ -49,3 +50,6 @@ wait();
 // Read out analysis results.
 print("Number of FCC atoms: " + cna.structureCounts[CommonNeighborAnalysisModifier.FCC]);
 
+// Writes processed atoms back to an output file.
+save("exporteddata.dump", LAMMPSDumpExporter, 
+	{ columnMapping: ["Position.X", "Position.Y", "Position.Z", "Structure Type"] });

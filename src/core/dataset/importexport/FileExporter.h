@@ -53,12 +53,15 @@ public:
 	/// \return A string that describes the file format.
 	virtual QString fileFilterDescription() = 0;
 
-	/// \brief Exports the scene to a file.
-	/// \param filePath The path of the file to export to.
-	/// \return \c true if the file has been successfully written.
-	///         \c false if the export operation has been aborted by the user.
+	/// \brief Exports scene nodes to a file.
+	/// \param nodes The list of scene nodes to be exported.
+	/// \param filePath The path of the output file.
+	/// \param noninteractive Specifies whether the export operation should be performed non-interactively,
+	///                       i.e. without showing any dialogs etc.
+	/// \return \c true if the output file has been successfully written.
+	///         \c false if the export operation has been canceled by the user.
 	/// \throw Exception when the export has failed or an error has occurred.
-	virtual bool exportToFile(const QString& filePath) = 0;
+	Q_INVOKABLE virtual bool exportToFile(const QVector<SceneNode*>& nodes, const QString& filePath, bool noninteractive = true) = 0;
 
 private:
 

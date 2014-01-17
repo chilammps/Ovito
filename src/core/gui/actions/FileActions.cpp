@@ -30,6 +30,7 @@
 #include <core/viewport/ViewportConfiguration.h>
 #include <core/viewport/Viewport.h>
 #include <core/viewport/ViewportWindow.h>
+#include <core/scene/SelectionSet.h>
 
 namespace Ovito {
 
@@ -303,6 +304,13 @@ void ActionManager::on_FileRemoteImport_triggered()
 ******************************************************************************/
 void ActionManager::on_FileExport_triggered()
 {
+	// Create the list of scene nodes to be exported.
+	QVector<SceneNode*> nodes = _dataset->selection()->nodes();
+	if(nodes.empty()) {
+		Exception(tr("Please select an object to be exported first.")).showError();
+		return;
+	}
+
 	// Build filter string.
 	QStringList filterStrings;
 	const auto& exporterTypes = ImportExportManager::instance().fileExporters(_dataset.get());
@@ -352,7 +360,7 @@ void ActionManager::on_FileExport_triggered()
 		OVITO_ASSERT(exportFilterIndex >= 0 && exportFilterIndex < exporterTypes.size());
 
 		OORef<FileExporter> exporter = exporterTypes[exportFilterIndex]->createService(_dataset.get());
-		exporter->exportToFile(exportFile);
+		exporter->exportToFile(nodes, exportFile, false);
 	}
 	catch(const Exception& ex) {
 		ex.showError();

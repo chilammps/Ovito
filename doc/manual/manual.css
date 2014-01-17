@@ -141,3 +141,12 @@ hr {
 	text-align: right;
 	padding-top: 5px;
 }
+
+.programlisting {
+    background-color: white;
+    padding: 20px;
+}
+
+.comment {
+	color: green;
+}

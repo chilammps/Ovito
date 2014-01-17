@@ -48,8 +48,8 @@ public:
 
 	/////////////////////////// from FileExporter /////////////////////////////
 
-	/// \brief Exports the scene to the given file.
-	virtual bool exportToFile(const QString& filePath) override;
+	/// \brief Exports the scene nodes to the given file.
+	virtual bool exportToFile(const QVector<SceneNode*>& nodes, const QString& filePath, bool noninteractive) override;
 
 	/////////////////////////// Specific methods //////////////////////////////
 
@@ -70,10 +70,11 @@ public:
 	/// \note The output file name has to be set via setOutputFile() before this method may be called.
 	virtual bool showSettingsDialog(const PipelineFlowState& state, QWidget* parent) { return true; }
 
-	/// \brief Exports the particles contained in the scene to the output file(s).
+	/// \brief Exports the particles to the output file(s).
+	/// \param nodes The selected scene nodes to be exported.
 	/// \throws Exception on error.
 	/// \return \a false when the operation has been canceled by the user; \a true on success.
-	virtual bool writeOutputFiles();
+	virtual bool writeOutputFiles(const QVector<SceneNode*>& nodes);
 
 	/// Returns whether only the current animation frame or an entire animation interval should be exported.
 	bool exportAnimation() const { return _exportAnimation; }
@@ -116,23 +117,34 @@ public:
 	/// \brief Sets the interval between exported frames.
 	void setEveryNthFrame(int n) { _everyNthFrame = n; }
 
+public:
+
+	Q_PROPERTY(QString outputFilename READ outputFilename WRITE setOutputFilename);
+	Q_PROPERTY(bool exportAnimation READ exportAnimation WRITE setExportAnimation);
+	Q_PROPERTY(bool useWildcardFilename READ useWildcardFilename WRITE setUseWildcardFilename);
+	Q_PROPERTY(QString wildcardFilename READ wildcardFilename WRITE setWildcardFilename);
+	Q_PROPERTY(int startFrame READ startFrame WRITE setStartFrame);
+	Q_PROPERTY(int endFrame READ endFrame WRITE setEndFrame);
+	Q_PROPERTY(int everyNthFrame READ everyNthFrame WRITE setEveryNthFrame);
+
 protected:
 
 	class ProgressInterface {
 	public:
-		ProgressInterface(QProgressDialog& dialog) : _dialog(dialog), _baseValue(dialog.value()) {}
-		void setPercentage(int progress) { _dialog.setValue(_baseValue + progress); }
-		bool wasCanceled() const { return _dialog.wasCanceled(); }
+		ProgressInterface(QProgressDialog* dialog) : _dialog(dialog), _baseValue(dialog ? dialog->value() : 0) {}
+		void setPercentage(int progress) { if(_dialog) _dialog->setValue(_baseValue + progress); }
+		bool wasCanceled() const { return _dialog ? _dialog->wasCanceled() : false; }
 	protected:
-		QProgressDialog& _dialog;
+		QProgressDialog* _dialog;
 		int _baseValue;
 	};
 
 	/// \brief Retrieves the particles to be exported by evaluating the modification pipeline.
+	/// \param nodes The selection of scene nodes to be exported.
 	/// \param time The animation time at which to request the particles.
 	/// \return The pipeline result containing the particles to be exported.
-	///         The returned PipelineFlowState might be empty if there is no particle  object in the scene.
-	PipelineFlowState getParticles(TimePoint time);
+	///         The returned PipelineFlowState will be empty if the nodes list does not contain a particle object.
+	PipelineFlowState getParticles(const QVector<SceneNode*>& nodes, TimePoint time);
 
 	/// \brief This is called once for every output file to be written and before exportParticles() is called.
 	virtual bool openOutputFile(const QString& filePath, int numberOfFrames);
@@ -141,7 +153,7 @@ protected:
 	virtual void closeOutputFile(bool exportCompleted);
 
 	/// \brief Exports a single animation frame to the current output file.
-	virtual bool exportFrame(int frameNumber, TimePoint time, const QString& filePath, QProgressDialog& progressDialog);
+	virtual bool exportFrame(const QVector<SceneNode*>& nodes, int frameNumber, TimePoint time, const QString& filePath, QProgressDialog* progressDialog);
 
 	/// \brief Writes the particles of one animation frame to the current output file.
 	/// \param state The pipeline results containing the particles to be exported.
@@ -157,9 +169,6 @@ protected:
 
 	/// Returns the text stream writing to the current output file.
 	QTextStream& textStream() { return _textStream; }
-
-	/// Retrieves the given standard particle property from the pipeline flow state.
-	static ParticlePropertyObject* findStandardProperty(ParticleProperty::Type type, const PipelineFlowState& flowState);
 
 private:
 
