@@ -62,10 +62,10 @@ public:
 	void setColor(const Color& color) { _color = color; }
 
 	/// Returns the transparency parameter.
-	FloatType transparency() const { return _transparency->currentValue(); }
+	FloatType transparency() const { return _transparency->currentFloatValue(); }
 
 	/// Sets the transparency parameter.
-	void setTransparency(FloatType t) { _transparency->setCurrentValue(t); }
+	void setTransparency(FloatType t) { _transparency->setCurrentFloatValue(t); }
 
 public:
 
@@ -78,7 +78,7 @@ protected:
 	PropertyField<Color, QColor> _color;
 
 	/// Controls the transparency of the mesh.
-	ReferenceField<FloatController> _transparency;
+	ReferenceField<Controller> _transparency;
 
 	/// The buffered geometry used to render the mesh.
 	std::unique_ptr<TriMeshGeometryBuffer> _buffer;

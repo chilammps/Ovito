@@ -32,7 +32,7 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, TriMeshDisplay, DisplayObject)
 IMPLEMENT_OVITO_OBJECT(Core, TriMeshDisplayEditor, PropertiesEditor)
 SET_OVITO_OBJECT_EDITOR(TriMeshDisplay, TriMeshDisplayEditor)
 DEFINE_FLAGS_PROPERTY_FIELD(TriMeshDisplay, _color, "Color", PROPERTY_FIELD_MEMORIZE)
-DEFINE_REFERENCE_FIELD(TriMeshDisplay, _transparency, "Transparency", FloatController)
+DEFINE_REFERENCE_FIELD(TriMeshDisplay, _transparency, "Transparency", Controller)
 SET_PROPERTY_FIELD_LABEL(TriMeshDisplay, _color, "Display color")
 SET_PROPERTY_FIELD_LABEL(TriMeshDisplay, _transparency, "Transparency")
 SET_PROPERTY_FIELD_UNITS(TriMeshDisplay, _transparency, PercentParameterUnit)
@@ -46,7 +46,7 @@ TriMeshDisplay::TriMeshDisplay(DataSet* dataset) : DisplayObject(dataset),
 	INIT_PROPERTY_FIELD(TriMeshDisplay::_color);
 	INIT_PROPERTY_FIELD(TriMeshDisplay::_transparency);
 
-	_transparency = ControllerManager::instance().createDefaultController<FloatController>(dataset);
+	_transparency = ControllerManager::instance().createFloatController(dataset);
 }
 
 /******************************************************************************
@@ -76,7 +76,7 @@ void TriMeshDisplay::render(TimePoint time, SceneObject* sceneObject, const Pipe
 
 	FloatType transp = 0;
 	TimeInterval iv;
-	if(_transparency) _transparency->getValue(time, transp, iv);
+	if(_transparency) transp = _transparency->getFloatValue(time, iv);
 	ColorA color_mesh(color(), 1.0f - transp);
 
 	// Do we have to update contents of the geometry buffer?
