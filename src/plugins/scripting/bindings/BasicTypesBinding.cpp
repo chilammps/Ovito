@@ -33,6 +33,7 @@ IMPLEMENT_OVITO_OBJECT(Scripting, BasicTypesBinding, ScriptBinding);
 void BasicTypesBinding::setupBinding(ScriptEngine& engine)
 {
 	qRegisterMetaType<FloatType>("FloatType");
+	qRegisterMetaType<TimePoint>("TimePoint");
 
 	// Set prototype for Vector3 script values and register constructor functions.
 	QScriptValue vector3Prototype = engine.newQObject(new Vector3Prototype());
@@ -48,6 +49,11 @@ void BasicTypesBinding::setupBinding(ScriptEngine& engine)
 	QScriptValue colorPrototype = engine.newQObject(new ColorPrototype());
 	engine.setDefaultPrototype(qRegisterMetaType<Color>("Color"), colorPrototype);
 	engine.globalObject().setProperty("Color", engine.newFunction(ColorPrototype::constructor, colorPrototype));
+
+	// Set prototype for TimeInterval script values and register constructor functions.
+	QScriptValue timeIntervalPrototype = engine.newQObject(new TimeIntervalPrototype());
+	engine.setDefaultPrototype(qRegisterMetaType<TimeInterval>("TimeInterval"), timeIntervalPrototype);
+	engine.globalObject().setProperty("TimeInterval", engine.newFunction(TimeIntervalPrototype::constructor, timeIntervalPrototype));
 }
 
 /******************************************************************************
@@ -102,6 +108,24 @@ QScriptValue ColorPrototype::constructor(QScriptContext* context, QScriptEngine*
 		return context->throwError("Color constructor takes 1 or 3 arguments.");
 	}
 	return engine->toScriptValue(c);
+}
+
+/******************************************************************************
+* Constructor function for TimeInterval values.
+******************************************************************************/
+QScriptValue TimeIntervalPrototype::constructor(QScriptContext* context, QScriptEngine* engine)
+{
+	TimeInterval iv;
+	if(context->argumentCount() == 1) {
+		iv.setTime(context->argument(0).toInt32());
+	}
+	else if(context->argumentCount() == 2) {
+		iv = TimeInterval(context->argument(0).toInt32(), context->argument(1).toInt32());
+	}
+	else {
+		return context->throwError("TimeInterval constructor takes 1 or 2.");
+	}
+	return engine->toScriptValue(iv);
 }
 
 };

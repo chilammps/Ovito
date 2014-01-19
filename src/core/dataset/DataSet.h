@@ -96,7 +96,7 @@ public:
 
 	/// \brief Deletes all nodes from the scene.
 	/// \undoable
-	void clearScene();
+	Q_INVOKABLE void clearScene();
 
 	/// \brief Rescales the animation keys of all controllers in the scene.
 	/// \param oldAnimationInterval The old animation interval, which will be mapped to the new animation interval.
@@ -130,6 +130,15 @@ public:
 	/// \brief Calls the given slot as soon as the geometry pipelines of all scene nodes has been
 	///        completely evaluated.
 	void runWhenSceneIsReady(const std::function<void()>& fn);
+
+public:
+
+	Q_PROPERTY(SceneRoot* sceneRoot READ sceneRoot);
+	Q_PROPERTY(RenderSettings* renderSettings READ renderSettings);
+	Q_PROPERTY(SelectionSet* selection READ selection);
+	Q_PROPERTY(ViewportConfiguration* viewportConfig READ viewportConfig);
+	Q_PROPERTY(AnimationSettings* animationSettings READ animationSettings);
+	Q_PROPERTY(QString filePath READ filePath WRITE setFilePath);
 
 Q_SIGNALS:
 

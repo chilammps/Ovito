@@ -24,6 +24,7 @@
 
 #include <plugins/scripting/Scripting.h>
 #include <plugins/scripting/engine/ScriptBinding.h>
+#include <core/animation/TimeInterval.h>
 
 namespace Scripting {
 
@@ -75,7 +76,6 @@ public:
 
 	/// Converts a Vector3 value to a string.
 	Q_INVOKABLE QString toString() { return qscriptvalue_cast<Vector3>(thisObject()).toString(); }
-
 };
 
 /**
@@ -105,7 +105,6 @@ public:
 
 	/// Converts a Point3 value to a string.
 	Q_INVOKABLE QString toString() { return qscriptvalue_cast<Point3>(thisObject()).toString(); }
-
 };
 
 /**
@@ -135,7 +134,35 @@ public:
 
 	/// Converts a Color value to a string.
 	Q_INVOKABLE QString toString() { return qscriptvalue_cast<Color>(thisObject()).toString(); }
+};
 
+/**
+ * \brief Binding for the TimeInterval data type.
+ */
+class TimeIntervalPrototype : public QObject, public QScriptable
+{
+	Q_OBJECT
+
+public:
+
+	/// Constructor function.
+	static QScriptValue constructor(QScriptContext* context, QScriptEngine* engine);
+
+	TimePoint start() { return qscriptvalue_cast<TimeInterval>(thisObject()).start(); }
+	TimePoint end() { return qscriptvalue_cast<TimeInterval>(thisObject()).end(); }
+	TimePoint duration() { return qscriptvalue_cast<TimeInterval>(thisObject()).duration(); }
+	bool isEmpty() { return qscriptvalue_cast<TimeInterval>(thisObject()).isEmpty(); }
+
+	Q_PROPERTY(TimePoint start READ start);
+	Q_PROPERTY(TimePoint end READ end);
+	Q_PROPERTY(TimePoint duration READ duration);
+	Q_PROPERTY(bool isEmpty READ isEmpty);
+
+	/// Converts a TimeInterval value to a string.
+	Q_INVOKABLE QString toString() {
+		TimeInterval interval = qscriptvalue_cast<TimeInterval>(thisObject());
+		return QStringLiteral("[%1,%2]").arg(interval.start()).arg(interval.end());
+	}
 };
 
 };	// End of namespace
