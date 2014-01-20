@@ -294,12 +294,13 @@ bool ParticleExporter::exportFrame(const QVector<SceneNode*>& nodes, int frameNu
 	dataset()->animationSettings()->setTime(time);
 
 	// Wait until the scene is ready.
-	volatile bool sceneIsReady = false;
-	dataset()->runWhenSceneIsReady( [&sceneIsReady]() { sceneIsReady = true; } );
-	if(!sceneIsReady) {
+	std::atomic_flag keepWaiting;
+	keepWaiting.test_and_set();
+	dataset()->runWhenSceneIsReady( [&keepWaiting]() { keepWaiting.clear(); } );
+	if(keepWaiting.test_and_set()) {
 		if(progressDialog)
 			progressDialog->setLabelText(tr("Preparing frame %1 for export...").arg(frameNumber));
-		while(!sceneIsReady) {
+		while(keepWaiting.test_and_set()) {
 			if(progressDialog && progressDialog->wasCanceled())
 				return false;
 			QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents, 200);

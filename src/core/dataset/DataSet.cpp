@@ -410,15 +410,16 @@ void DataSet::renderFrame(TimePoint renderTime, int frameNumber, RenderSettings*
 	animationSettings()->setTime(renderTime);
 
 	// Wait until the scene is ready.
-	volatile bool sceneIsReady = false;
-	runWhenSceneIsReady( [&sceneIsReady]() { sceneIsReady = true; } );
-	if(!sceneIsReady) {
+	std::atomic_flag keepWaiting;
+	keepWaiting.test_and_set();
+	runWhenSceneIsReady( [&keepWaiting]() { keepWaiting.clear(); } );
+	if(keepWaiting.test_and_set()) {
 		if(progressDialog)
-			progressDialog->setLabelText(tr("Rendering frame %1. Preparing scene...").arg(frameNumber));
-		while(!sceneIsReady) {
+			progressDialog->setLabelText(tr("Preparing frame %1.").arg(frameNumber));
+		while(keepWaiting.test_and_set()) {
 			if(progressDialog && progressDialog->wasCanceled())
 				return;
-			QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents, 200);
+			QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents, 100);
 		}
 	}
 	if(progressDialog)
