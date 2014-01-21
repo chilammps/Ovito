@@ -51,6 +51,7 @@ SET(OVITO_PARTICLES_SOURCE_FILES
 	modifier/analysis/histogram/HistogramModifier.cpp
 	modifier/analysis/cluster/ClusterAnalysisModifier.cpp
 	modifier/analysis/scatterplot/ScatterPlotModifier.cpp
+	modifier/analysis/wignerseitz/WignerSeitzAnalysisModifier.cpp
 	modifier/lighting/AmbientOcclusionModifier.cpp
 	modifier/lighting/AmbientOcclusionRenderer.cpp
 	modifier/transformation/AffineTransformationModifier.cpp
