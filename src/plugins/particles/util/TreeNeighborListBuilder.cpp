@@ -207,4 +207,33 @@ void TreeNeighborListBuilder::splitLeafNode(TreeNode* node, int splitDim)
 	numLeafNodes++;
 }
 
+/******************************************************************************
+* Recursive closest particle search function.
+******************************************************************************/
+void TreeNeighborListBuilder::findClosestParticleRecursive(TreeNode* node, const Vector3& shift, const Vector3& rshift, const Point3& q, const Point3& qr, int& closestIndex, FloatType& closestDistanceSq) const
+{
+	if(node->isLeaf()) {
+		Point3 qs = q - shift;
+		for(NeighborListAtom* atom = node->atoms; atom != nullptr; atom = atom->nextInBin) {
+			FloatType distanceSq = (atom->pos - qs).squaredLength();
+			if(distanceSq < closestDistanceSq) {
+				closestDistanceSq = distanceSq;
+				closestIndex = atom->index;
+			}
+		}
+	}
+	else {
+		if(qr[node->splitDim] < node->splitPos + rshift[node->splitDim]) {
+			findClosestParticleRecursive(node->children[0], shift, rshift, q, qr, closestIndex, closestDistanceSq);
+			if(closestDistanceSq > minimumDistance(node->children[1]->bounds, shift, q))
+				findClosestParticleRecursive(node->children[1], shift, rshift, q, qr, closestIndex, closestDistanceSq);
+		}
+		else {
+			findClosestParticleRecursive(node->children[1], shift, rshift, q, qr, closestIndex, closestDistanceSq);
+			if(closestDistanceSq > minimumDistance(node->children[0]->bounds, shift, q))
+				findClosestParticleRecursive(node->children[0], shift, rshift, q, qr, closestIndex, closestDistanceSq);
+		}
+	}
+}
+
 }; // End of namespace

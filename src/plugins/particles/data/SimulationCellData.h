@@ -41,6 +41,9 @@ public:
 	/// Returns the current simulation cell matrix.
 	const AffineTransformation& matrix() const { return _simulationCell; }
 
+	/// Returns the current reciprocal simulation cell matrix.
+	const AffineTransformation& inverseMatrix() const { return _reciprocalSimulationCell; }
+
 	/// Sets the simulation cell matrix.
 	void setMatrix(const AffineTransformation& cellMatrix) {
 		_simulationCell = cellMatrix;

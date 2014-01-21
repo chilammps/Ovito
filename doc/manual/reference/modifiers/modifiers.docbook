@@ -72,6 +72,10 @@
               <entry><link linkend="particles.modifiers.scatter_plot">Scatter plot</link></entry>
               <entry>Generates a scatter plot of two particle properties.</entry>
             </row>
+            <row>
+              <entry><link linkend="particles.modifiers.wigner_seitz_analysis">Wigner-Seitz defect analysis</link></entry>
+              <entry>Identifies point defects (vacancies and interstitials) in a crystal lattice.</entry>
+            </row>
 
 		<!-- COLORING -->
             <row>
@@ -205,6 +209,8 @@
   <xi:include href="particles/show_periodic_images.docbook"/>
 
   <xi:include href="particles/slice.docbook"/>
+
+  <xi:include href="particles/wigner_seitz_analysis.docbook"/>
 
   <xi:include href="particles/wrap_at_periodic_boundaries.docbook"/>
   

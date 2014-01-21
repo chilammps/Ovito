@@ -33,7 +33,7 @@
   linkend="particles.modifiers.color_coding">Color coding modifier</link> to
   visualize the displacement magnitudes through a color scheme.</para>
 
-  <para>Use the <emphasis>Reference configuration</emphasis> panel to pick the
+  <para>Use the <emphasis>"Reference: External data source"</emphasis> panel to pick the
   file containing the initial particle positions. Note
   that this reference file should contain the same set of particles as the
   input configuration seen by the modifier. That implies that you should
@@ -96,7 +96,7 @@
       <varlistentry>
         <term>Relative to current frame</term>
         <listitem>
-          <para>If this option is active, then a variable reference configuration is used to calculate the displacement vectors. 
+          <para>If this option is active, then a changing reference configuration is used to calculate the displacement vectors. 
           This allows computing incremental displacement vectors (similar to discrete velocity vectors).
           The frame offset controls the distance between reference and current frame and can be negative or positive. If it is negative, then the reference frame 
           precedes the current frame in the simulation sequence.

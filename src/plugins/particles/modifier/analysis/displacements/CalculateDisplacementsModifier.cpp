@@ -72,11 +72,12 @@ CalculateDisplacementsModifier::CalculateDisplacementsModifier(DataSet* dataset)
 	// Create the scene object, which will be responsible for loading
 	// and storing the reference configuration.
 	OORef<LinkedFileObject> linkedFileObj(new LinkedFileObject(dataset));
+
 	// Disable automatic adjustment of animation length for the reference object.
 	// We don't want the scene's animation interval to be affected by an animation
 	// loaded into the reference configuration object.
 	linkedFileObj->setAdjustAnimationIntervalEnabled(false);
-	_referenceObject = linkedFileObj;
+	setReferenceConfiguration(linkedFileObj.get());
 
 	// Create display object for vectors.
 	_vectorDisplay = new VectorDisplay(dataset);
@@ -383,7 +384,7 @@ void CalculateDisplacementsModifierEditor::createUI(const RolloutInsertionParame
 	sublayout->addLayout(frameNumberUI->createFieldLayout(), 1, 2, 1, 1);
 	frameNumberUI->setMinValue(0);
 	frameNumberUI->setEnabled(false);
-	connect(useFrameOffsetUI->buttonFalse(), SIGNAL(toggled(bool)), frameNumberUI, SLOT(setEnabled(bool)));
+	connect(useFrameOffsetUI->buttonFalse(), &QRadioButton::toggled, frameNumberUI, &IntegerParameterUI::setEnabled);
 
 	sublayout->addWidget(useFrameOffsetUI->buttonTrue(), 2, 0, 1, 3);
 	IntegerParameterUI* frameOffsetUI = new IntegerParameterUI(this, PROPERTY_FIELD(CalculateDisplacementsModifier::_referenceFrameOffset));
@@ -391,7 +392,7 @@ void CalculateDisplacementsModifierEditor::createUI(const RolloutInsertionParame
 	sublayout->addWidget(frameOffsetUI->label(), 3, 1, 1, 1);
 	sublayout->addLayout(frameOffsetUI->createFieldLayout(), 3, 2, 1, 1);
 	frameOffsetUI->setEnabled(false);
-	connect(useFrameOffsetUI->buttonTrue(), SIGNAL(toggled(bool)), frameOffsetUI, SLOT(setEnabled(bool)));
+	connect(useFrameOffsetUI->buttonTrue(), &QRadioButton::toggled, frameOffsetUI, &IntegerParameterUI::setEnabled);
 
 	// Status label.
 	layout->addSpacing(6);

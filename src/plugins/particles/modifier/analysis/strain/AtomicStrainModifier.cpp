@@ -75,11 +75,12 @@ AtomicStrainModifier::AtomicStrainModifier(DataSet* dataset) : AsynchronousParti
 	// Create the scene object, which will be responsible for loading
 	// and storing the reference configuration.
 	OORef<LinkedFileObject> linkedFileObj(new LinkedFileObject(dataset));
+
 	// Disable automatic adjustment of animation length for the reference object.
 	// We don't want the scene's animation interval to be affected by an animation
 	// loaded into the reference configuration object.
 	linkedFileObj->setAdjustAnimationIntervalEnabled(false);
-	_referenceObject = linkedFileObj;
+	setReferenceConfiguration(linkedFileObj.get());
 }
 
 /******************************************************************************

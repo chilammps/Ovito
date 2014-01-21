@@ -82,7 +82,7 @@ public:
 
 	//// Constructor that builds the binary search tree.
 	TreeNeighborListBuilder(int _numNeighbors) : numNeighbors(_numNeighbors), numLeafNodes(0) {
-		bucketSize = numNeighbors * 2;
+		bucketSize = std::max(numNeighbors * 2, 16);
 		maxTreeDepth = 17;
 	}
 
@@ -100,6 +100,17 @@ public:
 		return atoms[index].pos;
 	}
 
+	/// Returns the index of the particle closest to the given point.
+	int findClosestParticle(const Point3& query_point, FloatType& closestDistanceSq) const {
+		int closestIndex = -1;
+		closestDistanceSq = std::numeric_limits<FloatType>::max();
+		Point3 qr = simCellInverse * query_point;
+		for(auto pbcImage = pbcImages.begin(); pbcImage != pbcImages.end(); ++pbcImage) {
+			findClosestParticleRecursive(root, pbcImage->first, pbcImage->second, query_point, qr, closestIndex, closestDistanceSq);
+		}
+		return closestIndex;
+	}
+
 	struct Neighbor
 	{
 		NeighborListAtom* atom;
@@ -110,7 +121,7 @@ public:
 		bool operator<(const Neighbor& other) const { return distanceSq < other.distanceSq; }
 	};
 
-	template<int MAX_NEIGHBORS_LIMIT = 32>
+	template<int MAX_NEIGHBORS_LIMIT>
 	class Locator
 	{
 	public:
@@ -150,29 +161,15 @@ public:
 			else {
 				if(qr[node->splitDim] < node->splitPos + rshift[node->splitDim]) {
 					visitNode(node->children[0], shift, rshift);
-					if(!queue.full() || queue.top().distanceSq > minimumDistance(node->children[1]->bounds, shift))
+					if(!queue.full() || queue.top().distanceSq > t.minimumDistance(node->children[1]->bounds, shift, q))
 						visitNode(node->children[1], shift, rshift);
 				}
 				else {
 					visitNode(node->children[1], shift, rshift);
-					if(!queue.full() || queue.top().distanceSq > minimumDistance(node->children[0]->bounds, shift))
+					if(!queue.full() || queue.top().distanceSq > t.minimumDistance(node->children[0]->bounds, shift, q))
 						visitNode(node->children[0], shift, rshift);
 				}
 			}
-		}
-
-		/// Computes the minimum distance from the query point to the given bounding box.
-		FloatType minimumDistance(const Box3& box, const Vector3& shift) const {
-			Vector3 p1 = t.simCell * box.minc - q + shift;
-			Vector3 p2 = q - t.simCell * box.maxc - shift;
-			FloatType minDistance = 0.0;
-			for(int dim = 0; dim < 3; dim++) {
-				FloatType t_min = t.planeNormals[dim].dot(p1);
-				if(t_min > minDistance) minDistance = t_min;
-				FloatType t_max = t.planeNormals[dim].dot(p2);
-				if(t_max > minDistance) minDistance = t_max;
-			}
-			return minDistance * minDistance;
 		}
 
 	private:
@@ -191,6 +188,23 @@ private:
 
 	/// Determines in which direction to split the given leaf node.
 	int determineSplitDirection(TreeNode* node);
+
+	/// Computes the minimum distance from the query point to the given bounding box.
+	FloatType minimumDistance(const Box3& box, const Vector3& shift, const Point3& query_point) const {
+		Vector3 p1 = simCell * box.minc - query_point + shift;
+		Vector3 p2 = query_point - simCell * box.maxc - shift;
+		FloatType minDistance = 0;
+		for(size_t dim = 0; dim < 3; dim++) {
+			FloatType t_min = planeNormals[dim].dot(p1);
+			if(t_min > minDistance) minDistance = t_min;
+			FloatType t_max = planeNormals[dim].dot(p2);
+			if(t_max > minDistance) minDistance = t_max;
+		}
+		return minDistance * minDistance;
+	}
+
+	/// Recursive closest particle search function.
+	void findClosestParticleRecursive(TreeNode* node, const Vector3& shift, const Vector3& rshift, const Point3& q, const Point3& qr, int& closestIndex, FloatType& closestDistanceSq) const;
 
 private:
 
