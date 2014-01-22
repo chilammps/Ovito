@@ -1,6 +1,5 @@
 
 - OpenGL rendering support for more than 12 million particles.
-
 - Import bond information from LAMMPS.
 - Create Bonds modifier: Add 'lower bound' parameter such that, when using the modifier several times, bonds with different lengths can be assigned different colors.
 - Compute Property modifier: Add variables for simulation box size etc.
@@ -10,9 +9,7 @@
 - POV-Ray rendering and file export.
 - Affine Transformation: Add "Duplicate particles" option.
 - Surface mesh for an empty simulation box should not display cap polygons.
-
 - Let the user configure the default colors and radii assigned to different atom types.
-- Implement modifier for Wigner-Seitz defect analysis.
 
 Sha Zhendong:
 
