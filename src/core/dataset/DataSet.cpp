@@ -410,18 +410,9 @@ void DataSet::renderFrame(TimePoint renderTime, int frameNumber, RenderSettings*
 	animationSettings()->setTime(renderTime);
 
 	// Wait until the scene is ready.
-	std::atomic_flag keepWaiting;
-	keepWaiting.test_and_set();
-	runWhenSceneIsReady( [&keepWaiting]() { keepWaiting.clear(); } );
-	if(keepWaiting.test_and_set()) {
-		if(progressDialog)
-			progressDialog->setLabelText(tr("Preparing frame %1.").arg(frameNumber));
-		while(keepWaiting.test_and_set()) {
-			if(progressDialog && progressDialog->wasCanceled())
-				return;
-			QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents, 100);
-		}
-	}
+	if(!waitUntilSceneIsReady(tr("Preparing frame %1.").arg(frameNumber), progressDialog))
+		return;
+
 	if(progressDialog)
 		progressDialog->setLabelText(tr("Rendering frame %1.").arg(frameNumber));
 
@@ -455,6 +446,57 @@ void DataSet::renderFrame(TimePoint renderTime, int frameNumber, RenderSettings*
 #endif
 		}
 	}
+}
+
+/******************************************************************************
+* This function blocks until the scene has become ready.
+******************************************************************************/
+bool DataSet::waitUntilSceneIsReady(const QString& message, QProgressDialog* progressDialog)
+{
+	std::atomic_flag keepWaiting;
+	keepWaiting.test_and_set();
+	runWhenSceneIsReady( [&keepWaiting]() { keepWaiting.clear(); } );
+	if(keepWaiting.test_and_set()) {
+		if(Application::instance().guiMode()) {
+
+			// Show a modal progress dialog to block user interface while waiting for the scene to become ready.
+			if(!progressDialog) {
+				QProgressDialog pdlg(mainWindow());
+				pdlg.setWindowModality(Qt::WindowModal);
+				pdlg.setAutoClose(false);
+				pdlg.setAutoReset(false);
+				pdlg.setMinimumDuration(0);
+				pdlg.setValue(0);
+				pdlg.setLabelText(message);
+
+				// Poll the flag that indicates if the scene is ready.
+				while(keepWaiting.test_and_set()) {
+					if(pdlg.wasCanceled())
+						return false;
+					QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents, 50);
+				}
+
+			}
+			else {
+				progressDialog->setLabelText(message);
+
+				// Poll the flag that indicates if the scene is ready.
+				while(keepWaiting.test_and_set()) {
+					if(progressDialog->wasCanceled())
+						return false;
+					QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents, 50);
+				}
+			}
+		}
+		else {
+			// Poll the flag that indicates if the scene is ready.
+			while(keepWaiting.test_and_set()) {
+				QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents, 50);
+			}
+		}
+	}
+
+	return true;
 }
 
 };

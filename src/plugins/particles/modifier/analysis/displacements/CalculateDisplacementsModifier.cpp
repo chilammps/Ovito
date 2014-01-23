@@ -85,6 +85,11 @@ CalculateDisplacementsModifier::CalculateDisplacementsModifier(DataSet* dataset)
 	// Don't show vectors by default, because too many vectors could make the
 	// program hang.
 	_vectorDisplay->setEnabled(false);
+
+	// Configure vector display such that arrows point from the reference particle positions
+	// to the current particle positions.
+	_vectorDisplay->setReverseArrowDirection(true);
+	_vectorDisplay->setFlipVectors(true);
 }
 
 /******************************************************************************

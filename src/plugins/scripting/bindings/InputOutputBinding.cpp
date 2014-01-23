@@ -199,36 +199,8 @@ QScriptValue InputOutputBinding::wait(QScriptContext* context, ScriptEngine* eng
 		return context->throwError("wait() takes no arguments.");
 
 	// Wait until scene is ready.
-	std::atomic_flag keepWaiting;
-	keepWaiting.test_and_set();
-	engine->dataset()->runWhenSceneIsReady( [&keepWaiting]() { keepWaiting.clear(); } );
-	if(keepWaiting.test_and_set()) {
-
-		if(Application::instance().guiMode()) {
-
-			// Show a modal progress dialog to block user interface while waiting for the scene to become ready.
-			QProgressDialog progressDialog(engine->dataset()->mainWindow());
-			progressDialog.setWindowModality(Qt::WindowModal);
-			progressDialog.setAutoClose(false);
-			progressDialog.setAutoReset(false);
-			progressDialog.setMinimumDuration(0);
-			progressDialog.setValue(0);
-			progressDialog.setLabelText(tr("Script is waiting for scene graph to become ready."));
-
-			// Poll the flag that indicates if the scene is ready.
-			while(keepWaiting.test_and_set()) {
-				if(progressDialog.wasCanceled())
-					return QScriptValue(false);
-				QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents, 50);
-			}
-		}
-		else {
-			// Poll the flag that indicates if the scene is ready.
-			while(keepWaiting.test_and_set()) {
-				QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents, 50);
-			}
-		}
-	}
+	if(!engine->dataset()->waitUntilSceneIsReady(tr("Script is waiting for scene graph to become ready.")))
+		return QScriptValue(false);
 
 	return QScriptValue(true);
 }
