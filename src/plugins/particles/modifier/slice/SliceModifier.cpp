@@ -635,4 +635,16 @@ void PickParticlePlaneInputMode::renderOverlay3D(Viewport* vp, ViewportSceneRend
 	}
 }
 
+/******************************************************************************
+* Computes the bounding box of the 3d visual viewport overlay rendered by the input mode.
+******************************************************************************/
+Box3 PickParticlePlaneInputMode::overlayBoundingBox(Viewport* vp, ViewportSceneRenderer* renderer)
+{
+	Box3 bbox = ViewportInputMode::overlayBoundingBox(vp, renderer);
+	Q_FOREACH(const PickResult& pa, _pickedParticles) {
+		bbox.addBox(selectionMarkerBoundingBox(vp, pa));
+	}
+	return bbox;
+}
+
 };	// End of namespace
