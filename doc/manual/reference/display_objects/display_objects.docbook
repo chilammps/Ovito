@@ -36,11 +36,15 @@
               <entry>Displays a set of particles.</entry>
             </row>
             <row>
+              <entry>Simulation cell</entry>
+              <entry>Displays the simulation box.</entry>
+            </row>
+            <row>
               <entry><link linkend="display_objects.surface_mesh">Surface mesh</link></entry>
               <entry>Displays a closed polygonal mesh.</entry>
             </row>
             <row>
-              <entry><link linkend="display_objects.vectors">Particles</link></entry>
+              <entry><link linkend="display_objects.vectors">Vectors</link></entry>
               <entry>Displays vectors associated with particles, e.g. displacement vectors.</entry>
             </row>
           </tbody>

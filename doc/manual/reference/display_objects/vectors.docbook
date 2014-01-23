@@ -16,7 +16,7 @@
        <imagedata fileref="images/display_objects/vectors_panel.png" format="PNG" />
     </imageobject></mediaobject></screenshot></informalfigure>
     
-    This display object is responsible for rendering arrows or vectors that are assigned to particles.
+    This display object is responsible for visualizing vector quantities assigned to particles using arrow glyphs.
     Displacement vectors, for instance, can be computed with the <link linkend="particles.modifiers.displacement_vectors">Displacement vectors</link> modifier.
   </para>
 
