@@ -117,7 +117,7 @@ QScriptValue TimeIntervalPrototype::constructor(QScriptContext* context, QScript
 {
 	TimeInterval iv;
 	if(context->argumentCount() == 1) {
-		iv.setTime(context->argument(0).toInt32());
+		iv.setInstant(context->argument(0).toInt32());
 	}
 	else if(context->argumentCount() == 2) {
 		iv = TimeInterval(context->argument(0).toInt32(), context->argument(1).toInt32());

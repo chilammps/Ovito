@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<section version="5.0"
+         xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xml:id="scripting.input_output" xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title>Input/output functions</title>
+
+  <simplesect xml:id="scripting.input_output.print">
+  	<title>Writing to the console</title> 
+    <para>
+  	    The <code>print()</code> function writes a value or an object to the console (standard output on Linux/Unix). 
+  	    Note that this function will do nothing on Windows since there is no console.
+  	    <informalexample><programlisting language="javascript">
+print("Hello world!")
+print("Result: " + x)</programlisting>          
+        </informalexample>
+    </para> 
+  </simplesect>
+
+  <simplesect xml:id="scripting.input_output.working_directory">
+  	<title>Changing the working directory</title> 
+    <para>
+  	    The <code>cd()</code> and <code>pwd()</code> functions allow to set and query the current working directory:
+  	    <informalexample><programlisting language="javascript">
+print("Current working directory is " + pwd())
+cd("/home/stuko/data/")
+print("New working directory is " + pwd())</programlisting>          
+        </informalexample>
+    </para> 
+  </simplesect>
+
+  <simplesect xml:id="scripting.input_output.load">
+    <title>Loading a data file</title>
+    <para>
+      the <code>load()</code> function imports a data file into OVITO. The imported dataset is added as a new object to the current scene.
+      The function takes a string parameter that specifies the file or remote URL to load:
+  	    <informalexample><programlisting language="javascript">
+load("simulation_data.dump")	                // Loads a file from the current working directory.
+
+load("/home/stuko/data/simulation_data.dump")	// Use this if the file is in another directory.</programlisting>          
+        </informalexample>
+      The <code>load()</code> function auto-detects the format of the file and uses the default import settings.
+      Optionally, an <link xlink:show="new" xlink:href="https://www.google.com/?q=javascript+object+literal#q=javascript+object+literal">object literal</link> can be passed to the <code>load()</code> function to set additional import parameters:
+  	    <informalexample><programlisting language="javascript">
+load("shear.xyz", { 
+	columnMapping : ["Particle Identifier", "Particle Type", "Position.X", "Position.Y", "Position.Z"], 
+	isMultiTimestepFile : true
+});</programlisting>
+      </informalexample>
+      In the above example, <code>load()</code> is used to import an XYZ particle file containing five data columns. 
+      We have to tell the XYZ file parser which particle properties are stored in what file columns. This is done by
+      setting the <code>columnMapping</code> parameter, which is an array of strings specifying the particle property each input column
+      should be mapped to. In addition, the <code>isMultiTimestepFile</code> flag is set to <code>true</code> to let OVITO
+      know that the XYZ file contains multiple timesteps.
+    </para> 
+    <para>
+      The <code>load()</code> function returns a reference to the newly created object in the scene.
+      You can use it to apply modifiers to the input data:
+  	    <informalexample><programlisting language="javascript"><![CDATA[
+simdata = load("simulation_data.dump")
+
+simdata.applyModifier(new SelectExpressionModifier({ expression : "PotentialEnergy < -3.9" }))
+simdata.applyModifier(new DeleteParticlesModifier())]]>
+</programlisting></informalexample>
+    </para>
+  </simplesect>
+
+  <simplesect xml:id="scripting.input_output.save">
+    <title>Exporting data to a file</title>
+    <para>
+      The <code>save()</code> function writes the current dataset to a file. Three different 
+      forms of this function exist:
+  	    <programlisting language="javascript">
+save(path, exportertype)
+save(path, exportertype, params)
+save(path, exportertype, params, object)</programlisting>          
+      The <parameter>path</parameter> parameter specifies the name of the destination file. 
+      The <parameter>exportertype</parameter> parameter specifies the output format,
+      which can be either <code>LAMMPSDataExporter</code>, <code>LAMMPSDumpExporter</code>,
+      <code>XYZExporter</code>, <code>POSCARExporter</code>, or <code>IMDExporter</code>.
+    </para>
+    <para>
+      The <parameter>params</parameter> parameter is an <link xlink:show="new" xlink:href="https://www.google.com/?q=javascript+object+literal#q=javascript+object+literal">object literal</link>
+      that specifies additional parameters to be passed to the exporter. These
+      parameters control format-specific aspects, for example the list of particle properties and the range of animation frames to
+      be exported:
+  	    <informalexample><programlisting language="javascript">
+save("exporteddata.dump", LAMMPSDumpExporter, { columnMapping: ["Position.X", "Position.Y", "Position.Z", "Structure Type"] })</programlisting>          
+        </informalexample>
+      In the above example, the <code>save()</code> function writes the current particle dataset
+      to a LAMMPS dump file. The <code>columnMapping</code> parameter specifies the list of 
+      properties to export. The resulting output file will contain four columns with the X,Y, and Z coordinates
+      as well as the structure types assigned to particles.
+    </para> 
+    <para>
+      The fourth parameter, <parameter>object</parameter>, is optional and specifies the scene object to be exported if there multiple objects in the
+      current scene. You can pass an object reference returned by the <link linkend="scripting.input_output.load"><code>load()</code></link> function here.
+      If no <parameter>object</parameter> parameter is passed to the <code>save()</code> function, it will export the currently active object.
+    </para>
+  </simplesect>
+    
+</section>
