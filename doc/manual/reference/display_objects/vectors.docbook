@@ -16,7 +16,7 @@
        <imagedata fileref="images/display_objects/vectors_panel.png" format="PNG" />
     </imageobject></mediaobject></screenshot></informalfigure>
     
-    This display object is responsible for rendering arrows or vectors that are associated with particles.
+    This display object is responsible for rendering arrows or vectors that are assigned to particles.
     Displacement vectors, for instance, can be computed with the <link linkend="particles.modifiers.displacement_vectors">Displacement vectors</link> modifier.
   </para>
 
@@ -24,6 +24,56 @@
     <title>Parameters</title>
 
     <variablelist>
+      <varlistentry>
+        <term>Shading mode</term>
+        <listitem>
+          <para>Selects between a three-dimensional (<emphasis>normal shading</emphasis>) and a two-dimensional
+          representation (<emphasis>flat shading</emphasis>) of arrows.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Rendering quality</term>
+        <listitem>
+          <para>Selects the OpenGL rendering method used to display the arrows.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Scaling factor</term>
+        <listitem>
+          <para>Vectors are scaled by this factor for display. The default is 1.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Arrow width</term>
+        <listitem>
+          <para>The diameter of arrow lines.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Reverse arrow direction</term>
+        <listitem>
+          <para>Reverses head and tail of the arrows.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Flip vectors</term>
+        <listitem>
+          <para>Toggling this option mirrors the arrows at the particle locations.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Arrow color</term>
+        <listitem>
+          <para>The display color of arrows. OVITO currently supports only uniform coloring.</para>
+        </listitem>
+      </varlistentry>
+
 	</variablelist>
     </simplesect>
     

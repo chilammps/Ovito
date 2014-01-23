@@ -131,6 +131,13 @@ public:
 	///        completely evaluated.
 	void runWhenSceneIsReady(const std::function<void()>& fn);
 
+	/// \brief This function blocks until the scene has become ready.
+	/// \param message The text to be shown to the user while waiting.
+	/// \param progressDialog An existing progress dialog to use to show the message.
+	///                       If NULL, the function will show its own dialog box.
+	/// \return true on success; false if the operation has been canceled by the user.
+	bool waitUntilSceneIsReady(const QString& message, QProgressDialog* progressDialog = nullptr);
+
 Q_SIGNALS:
 
 	/// \brief This signal is emitted whenever the current viewport configuration of this dataset

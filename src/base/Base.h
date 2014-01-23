@@ -46,6 +46,7 @@
 #include <mutex>
 #include <thread>
 #include <clocale>
+#include <atomic>
 
 /******************************************************************************
 * QT Library
