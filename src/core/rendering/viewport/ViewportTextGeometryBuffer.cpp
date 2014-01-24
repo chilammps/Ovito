@@ -142,7 +142,7 @@ void ViewportTextGeometryBuffer::renderWindow(SceneRenderer* renderer, const Poi
 		}
 
 		// Generate texture image.
-		_textureImage = QImage((rect.width() * devicePixelRatio)+1, (rect.height() * devicePixelRatio)+1, QImage::Format_ARGB32);
+		_textureImage = QImage((rect.width() * devicePixelRatio)+1, (rect.height() * devicePixelRatio)+1, QImage::Format_ARGB32_Premultiplied);
 		_textureImage.setDevicePixelRatio(devicePixelRatio);
 		_textureImage.fill((QColor)backgroundColor());
 		{
