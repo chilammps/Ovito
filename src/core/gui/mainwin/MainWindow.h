@@ -82,6 +82,9 @@ public:
 	/// \brief Shows the online manual and opens the given help page.
 	void openHelpTopic(const QString& page);
 
+	/// Returns the window's OpenGL context used for rendering the viewports.
+	QOpenGLContext* getOpenGLContext();
+
 protected:
 
 	/// Is called when the user closes the window.
@@ -123,6 +126,9 @@ private:
 
 	/// The associated viewport input manager.
 	ViewportInputManager* _viewportInputManager;
+
+	/// The OpenGL context used for rendering the viewports.
+	QOpenGLContext* _glcontext;
 };
 
 };

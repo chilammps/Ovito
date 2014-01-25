@@ -46,7 +46,7 @@ void Application::qtMessageOutput(QtMsgType type, const QMessageLogContext& cont
 {
 	// Forward message to default handler.
 	if(defaultQtMessageHandler) defaultQtMessageHandler(type, context, msg);
-	else std::cerr << msg.toLocal8Bit().constData() << std::endl;
+	else std::cerr << qPrintable(msg) << std::endl;
 }
 
 /******************************************************************************
@@ -302,8 +302,7 @@ void Application::guiExceptionHandler(const Exception& exception)
 void Application::consoleExceptionHandler(const Exception& exception)
 {
 	for(int i = exception.messages().size() - 1; i >= 0; i--) {
-		std::cerr << "ERROR: ";
-		std::cerr << exception.messages()[i].toLocal8Bit().constData() << std::endl;
+		std::cerr << "ERROR: " << qPrintable(exception.messages()[i]) << std::endl;
 	}
 	std::cerr << std::flush;
 }
