@@ -28,6 +28,7 @@
 #include <core/gui/widgets/rendering/FrameBufferWindow.h>
 #include <core/viewport/ViewportConfiguration.h>
 #include <core/viewport/input/ViewportInputManager.h>
+#include <core/rendering/viewport/ViewportSceneRenderer.h>
 #include "MainWindow.h"
 #include "ViewportsPanel.h"
 #include "cmdpanel/CommandPanel.h"
@@ -38,7 +39,7 @@ namespace Ovito {
 * The constructor of the main window class.
 ******************************************************************************/
 MainWindow::MainWindow() :
-		_datasetContainer(this)
+		_datasetContainer(this), _glcontext(nullptr)
 {
 	setWindowTitle(tr("Ovito (Open Visualization Tool)"));
 	setAttribute(Qt::WA_DeleteOnClose);
@@ -338,6 +339,22 @@ void MainWindow::openHelpTopic(const QString& page)
 	if(!QDesktopServices::openUrl(QUrl::fromLocalFile(fullPath))) {
 		Exception(tr("Could not launch web browser to display online manual. The requested file path is %1").arg(fullPath)).showError();
 	}
+}
+
+/******************************************************************************
+* Returns the window's OpenGL context used for rendering the viewports.
+******************************************************************************/
+QOpenGLContext* MainWindow::getOpenGLContext()
+{
+	if(_glcontext)
+		return _glcontext;
+
+	_glcontext = new QOpenGLContext(this);
+	_glcontext->setFormat(ViewportSceneRenderer::getDefaultSurfaceFormat());
+	if(!_glcontext->create())
+		throw Exception(tr("Failed to create OpenGL context."));
+
+	return _glcontext;
 }
 
 };

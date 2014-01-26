@@ -49,7 +49,7 @@ uniform int pickingBaseID;
 void main()
 {
 	// Compute color from object ID.
-	int objectID = pickingBaseID + gl_VertexID;
+	int objectID = pickingBaseID + (gl_VertexID / 6);
 #if __VERSION__ >= 130
 	particle_color_fs = vec4(
 		float(objectID & 0xFF) / 255.0, 

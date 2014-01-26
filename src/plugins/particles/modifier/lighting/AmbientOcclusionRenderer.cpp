@@ -22,7 +22,6 @@
 #include <plugins/particles/Particles.h>
 #include <core/viewport/ViewportWindow.h>
 #include <core/viewport/Viewport.h>
-#include <core/rendering/RenderSettings.h>
 #include "AmbientOcclusionRenderer.h"
 
 namespace Particles {
@@ -37,14 +36,14 @@ bool AmbientOcclusionRenderer::startRender(DataSet* dataset, RenderSettings* set
 	if(!ViewportSceneRenderer::startRender(dataset, settings))
 		return false;
 
+	// Create new OpenGL context for rendering in this background thread.
+	OVITO_ASSERT(QOpenGLContext::currentContext() == nullptr);
 	_offscreenContext.reset(new QOpenGLContext());
 	_offscreenContext->setFormat(ViewportSceneRenderer::getDefaultSurfaceFormat());
 	if(!_offscreenContext->create())
 		throw Exception(tr("Failed to create OpenGL context."));
 
-	// Create offscreen buffer.
-	_offscreenSurface.setFormat(_offscreenContext->format());
-	_offscreenSurface.create();
+	// Check offscreen buffer.
 	if(!_offscreenSurface.isValid())
 		throw Exception(tr("Failed to create offscreen rendering surface."));
 
@@ -53,24 +52,27 @@ bool AmbientOcclusionRenderer::startRender(DataSet* dataset, RenderSettings* set
 		throw Exception(tr("Failed to make OpenGL context current."));
 
 	// Check OpenGL version.
-	if(_offscreenContext->format().majorVersion() < 3) {
+	if(_offscreenContext->format().majorVersion() < OVITO_OPENGL_MINIMUM_VERSION_MAJOR || (_offscreenContext->format().majorVersion() == OVITO_OPENGL_MINIMUM_VERSION_MAJOR && _offscreenContext->format().minorVersion() < OVITO_OPENGL_MINIMUM_VERSION_MINOR)) {
 		throw Exception(tr(
-				"The OpenGL implementation available on this system does not support OpenGL version 3.0 or newer.\n\n"
+				"The OpenGL implementation available on this system does not support OpenGL version %4.%5 or newer.\n\n"
 				"Ovito requires modern graphics hardware to accelerate 3d rendering. You current system configuration is not compatible with Ovito.\n\n"
 				"To avoid this error message, please install the newest graphics driver, or upgrade your graphics card.\n\n"
 				"The currently installed OpenGL graphics driver reports the following information:\n\n"
 				"OpenGL Vendor: %1\n"
 				"OpenGL Renderer: %2\n"
-				"OpenGL Version: %3")
+				"OpenGL Version: %3\n\n"
+				"Ovito requires OpenGL version %4.%5 or higher.")
 				.arg(QString((const char*)glGetString(GL_VENDOR)))
 				.arg(QString((const char*)glGetString(GL_RENDERER)))
 				.arg(QString((const char*)glGetString(GL_VERSION)))
+				.arg(OVITO_OPENGL_MINIMUM_VERSION_MAJOR)
+				.arg(OVITO_OPENGL_MINIMUM_VERSION_MINOR)
 				);
 	}
 
 	// Create OpenGL framebuffer.
 	QOpenGLFramebufferObjectFormat framebufferFormat;
-	framebufferFormat.setAttachment(QOpenGLFramebufferObject::Depth);
+	framebufferFormat.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
 	_framebufferObject.reset(new QOpenGLFramebufferObject(_resolution, framebufferFormat));
 	if(!_framebufferObject->isValid())
 		throw Exception(tr("Failed to create OpenGL framebuffer object for offscreen rendering."));
@@ -98,7 +100,7 @@ void AmbientOcclusionRenderer::beginFrame(TimePoint time, const ViewProjectionPa
 	OVITO_CHECK_OPENGL(glClearColor(0, 0, 0, 0));
 
 	// Clear buffer.
-	OVITO_CHECK_OPENGL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+	OVITO_CHECK_OPENGL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT));
 	OVITO_CHECK_OPENGL(glEnable(GL_DEPTH_TEST));
 }
 
@@ -112,9 +114,11 @@ void AmbientOcclusionRenderer::endFrame()
 
 	// Fetch rendered image from OpenGL framebuffer.
 	QSize size = _framebufferObject->size();
-	_image = QImage(size, QImage::Format_ARGB32);
+	if(_image.isNull() || _image.size() != size)
+		_image = QImage(size, QImage::Format_ARGB32);
+	while(glGetError() != GL_NO_ERROR);
 	glReadPixels(0, 0, size.width(), size.height(), GL_BGRA, GL_UNSIGNED_BYTE, _image.bits());
-	if(glGetError()) {
+	if(glGetError() != GL_NO_ERROR) {
 		glReadPixels(0, 0, size.width(), size.height(), GL_RGBA, GL_UNSIGNED_BYTE, _image.bits());
 		_image = _image.rgbSwapped();
 	}
@@ -129,7 +133,6 @@ void AmbientOcclusionRenderer::endRender()
 {
 	_framebufferObject.reset();
 	_offscreenContext.reset();
-	_offscreenSurface.destroy();
 	ViewportSceneRenderer::endRender();
 }
 

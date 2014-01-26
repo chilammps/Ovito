@@ -96,7 +96,7 @@ void AmbientOcclusionModifier::AmbientOcclusionEngine::compute(FutureInterfaceBa
 	// Create a temporary dataset, which is needed to host an instance of AmbientOcclusionRenderer.
 	OORef<DataSet> dataset(new DataSet());
 	// Create the AmbientOcclusionRenderer instance.
-	OORef<AmbientOcclusionRenderer> renderer(new AmbientOcclusionRenderer(dataset.get(), QSize(_resolution, _resolution)));
+	OORef<AmbientOcclusionRenderer> renderer(new AmbientOcclusionRenderer(dataset.get(), QSize(_resolution, _resolution), _offscreenSurface));
 
 	renderer->startRender(nullptr, nullptr);
 	try {
@@ -112,7 +112,7 @@ void AmbientOcclusionModifier::AmbientOcclusionEngine::compute(FutureInterfaceBa
 			// Generate lighting direction on unit sphere.
 			FloatType y = (FloatType)sample * 2 / _samplingCount - FloatType(1) + FloatType(1) / _samplingCount;
 			FloatType r = sqrt(FloatType(1) - y * y);
-			FloatType phi = (FloatType)sample * FLOATTYPE_PI * (3.0 - sqrt(5.0));
+			FloatType phi = (FloatType)sample * FLOATTYPE_PI * (3.0f - sqrt(5.0f));
 			Vector3 dir(cos(phi), y, sin(phi));
 
 			// Set up view projection.
@@ -120,13 +120,13 @@ void AmbientOcclusionModifier::AmbientOcclusionEngine::compute(FutureInterfaceBa
 			projParams.viewMatrix = AffineTransformation::lookAlong(_boundingBox.center(), dir, Vector3(0,0,1));
 
 			// Transform bounding box to camera space.
-			Box3 bb = _boundingBox.transformed(projParams.viewMatrix).centerScale(1.01);
+			Box3 bb = _boundingBox.transformed(projParams.viewMatrix).centerScale(1.01f);
 
 			// Complete projection parameters.
 			projParams.aspectRatio = 1;
 			projParams.isPerspective = false;
 			projParams.inverseViewMatrix = projParams.viewMatrix.inverse();
-			projParams.fieldOfView = 0.5 * _boundingBox.size().length();
+			projParams.fieldOfView = 0.5f * _boundingBox.size().length();
 			projParams.znear = -bb.maxc.z();
 			projParams.zfar  = std::max(-bb.minc.z(), projParams.znear + 1.0f);
 			projParams.projectionMatrix = Matrix4::ortho(-projParams.fieldOfView, projParams.fieldOfView,

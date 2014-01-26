@@ -240,6 +240,8 @@ void ParticlePickingHelper::renderSelectionMarker(Viewport* vp, ViewportSceneRen
 	_highlightBuffer->setParticleRadius(radius + vp->nonScalingSize(nodeTM * pos) * 1e-1f);
 
 	renderer->setWorldTransform(nodeTM);
+	GLint oldDepthFunc;
+	glGetIntegerv(GL_DEPTH_FUNC, &oldDepthFunc);
 	glEnable(GL_DEPTH_TEST);
 	glClearStencil(0);
 	glClear(GL_STENCIL_BUFFER_BIT);
@@ -256,6 +258,7 @@ void ParticlePickingHelper::renderSelectionMarker(Viewport* vp, ViewportSceneRen
 	_highlightBuffer->render(renderer);
 	glEnable(GL_DEPTH_TEST);
 	glDisable(GL_STENCIL_TEST);
+	glDepthFunc(oldDepthFunc);
 }
 
 };	// End of namespace

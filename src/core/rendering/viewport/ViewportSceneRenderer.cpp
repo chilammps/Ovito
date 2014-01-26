@@ -70,11 +70,6 @@ QSurfaceFormat ViewportSceneRenderer::getDefaultSurfaceFormat()
 		format.setOption(QSurfaceFormat::DeprecatedFunctions);
 	}
 	format.setStencilBufferSize(1);
-#if 0
-#ifdef OVITO_DEBUG
-	format.setOption(QSurfaceFormat::DebugContext);
-#endif
-#endif
 	return format;
 }
 
@@ -92,9 +87,12 @@ void ViewportSceneRenderer::beginFrame(TimePoint time, const ViewProjectionParam
 	if(!_glcontext)
 		throw Exception(tr("Cannot render scene: There is no active OpenGL context"));
 
+	// Obtain surface format.
 	OVITO_CHECK_OPENGL();
+	_glformat = _glcontext->format();
 
 	// Obtain a functions object that allows to call basic OpenGL functions in a platform-independent way.
+	OVITO_CHECK_OPENGL();
 	_glFunctions = _glcontext->functions();
 
 	// Obtain a functions object that allows to call OpenGL 2.0 functions in a platform-independent way.
@@ -114,9 +112,6 @@ void ViewportSceneRenderer::beginFrame(TimePoint time, const ViewProjectionParam
 
 	if(!_glFunctions20 && !_glFunctions30 && !_glFunctions32)
 		throw Exception(tr("Could not resolve OpenGL functions. Invalid OpenGL context."));
-
-	// Obtain surface format.
-	_glformat = _glcontext->format();
 
 	// Check if this context implements the core profile.
 	_isCoreProfile = (_glformat.profile() == QSurfaceFormat::CoreProfile)
@@ -138,8 +133,10 @@ void ViewportSceneRenderer::beginFrame(TimePoint time, const ViewProjectionParam
 
 	// Set viewport background color.
 	OVITO_CHECK_OPENGL();
-	Color backgroundColor = Viewport::viewportColor(ViewportSettings::COLOR_VIEWPORT_BKG);
-	OVITO_CHECK_OPENGL(glClearColor(backgroundColor.r(), backgroundColor.g(), backgroundColor.b(), 1));
+	if(isInteractive()) {
+		Color backgroundColor = Viewport::viewportColor(ViewportSettings::COLOR_VIEWPORT_BKG);
+		OVITO_CHECK_OPENGL(glClearColor(backgroundColor.r(), backgroundColor.g(), backgroundColor.b(), 1));
+	}
 }
 
 /******************************************************************************
@@ -161,10 +158,18 @@ bool ViewportSceneRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialo
 {
 	OVITO_ASSERT(_glcontext == QOpenGLContext::currentContext());
 
-	// Clear background.
+	// Set up OpenGL state.
 	OVITO_CHECK_OPENGL();
-	OVITO_CHECK_OPENGL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+	OVITO_CHECK_OPENGL(glDisable(GL_STENCIL_TEST));
 	OVITO_CHECK_OPENGL(glEnable(GL_DEPTH_TEST));
+	OVITO_CHECK_OPENGL(glDepthFunc(GL_LESS));
+	OVITO_CHECK_OPENGL(glDepthRange(0, 1));
+	OVITO_CHECK_OPENGL(glDepthMask(GL_TRUE));
+	OVITO_CHECK_OPENGL(glClearDepth(1));
+	OVITO_CHECK_OPENGL(glDisable(GL_SCISSOR_TEST));
+
+	// Clear background.
+	OVITO_CHECK_OPENGL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT));
 
 	renderScene();
 

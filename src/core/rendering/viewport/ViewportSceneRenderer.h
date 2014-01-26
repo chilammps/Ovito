@@ -112,15 +112,6 @@ public:
 	/// Returns a pointer to the OpenGL functions object.
 	QOpenGLFunctions* glfuncs() const { return _glFunctions; }
 
-	/// Returns a pointer to the OpenGL 2.0 functions object.
-	QOpenGLFunctions_2_0* glfuncs20() const { return _glFunctions20; }
-
-	/// Returns a pointer to the OpenGL 3.0 functions object.
-	QOpenGLFunctions_3_0* glfuncs30() const { return _glFunctions30; }
-
-	/// Returns a pointer to the OpenGL 3.2 core profile functions object.
-	QOpenGLFunctions_3_2_Core* glfuncs32() const { return _glFunctions32; }
-
 	/// Returns the surface format of the current OpenGL context.
 	const QSurfaceFormat& glformat() const { return _glformat; }
 
@@ -135,23 +126,23 @@ public:
 
 	/// The OpenGL glPointParameterf() function.
 	void glPointParameterf(GLenum pname, GLfloat param) {
-		if(glfuncs32()) glfuncs32()->glPointParameterf(pname, param);
-		else if(glfuncs30()) glfuncs30()->glPointParameterf(pname, param);
-		else if(glfuncs20()) glfuncs20()->glPointParameterf(pname, param);
+		if(_glFunctions32) _glFunctions32->glPointParameterf(pname, param);
+		else if(_glFunctions30) _glFunctions30->glPointParameterf(pname, param);
+		else if(_glFunctions20) _glFunctions20->glPointParameterf(pname, param);
 	}
 
 	/// The OpenGL glPointParameterfv() function.
 	void glPointParameterfv(GLenum pname, const GLfloat* params) {
-		if(glfuncs32()) glfuncs32()->glPointParameterfv(pname, params);
-		else if(glfuncs30()) glfuncs30()->glPointParameterfv(pname, params);
-		else if(glfuncs20()) glfuncs20()->glPointParameterfv(pname, params);
+		if(_glFunctions32) _glFunctions32->glPointParameterfv(pname, params);
+		else if(_glFunctions30) _glFunctions30->glPointParameterfv(pname, params);
+		else if(_glFunctions20) _glFunctions20->glPointParameterfv(pname, params);
 	}
 
 	/// The OpenGL glMultiDrawArrays() function.
 	void glMultiDrawArrays(GLenum mode, const GLint* first, const GLsizei* count, GLsizei drawcount) {
-		if(glfuncs32()) glfuncs32()->glMultiDrawArrays(mode, first, count, drawcount);
-		else if(glfuncs30()) glfuncs30()->glMultiDrawArrays(mode, first, count, drawcount);
-		else if(glfuncs20()) glfuncs20()->glMultiDrawArrays(mode, first, count, drawcount);
+		if(_glFunctions32) _glFunctions32->glMultiDrawArrays(mode, first, count, drawcount);
+		else if(_glFunctions30) _glFunctions30->glMultiDrawArrays(mode, first, count, drawcount);
+		else if(_glFunctions20) _glFunctions20->glMultiDrawArrays(mode, first, count, drawcount);
 	}
 
 	/// Make sure vertex IDs are available to use by the OpenGL shader.
