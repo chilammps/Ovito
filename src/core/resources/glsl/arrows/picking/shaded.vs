@@ -26,13 +26,13 @@ uniform int verticesPerElement;
 #if __VERSION__ >= 130
 
 	in vec3 vertex_pos;
+	in float vertexID;
 	flat out vec4 vertex_color_fs;
 
 #else
 
 	attribute vec3 vertex_pos;
 	attribute float vertexID;
-	#define gl_VertexID int(vertexID)
 
 	#define vertex_color_fs gl_FrontColor
 
@@ -41,7 +41,7 @@ uniform int verticesPerElement;
 void main()
 {
 	// Compute color from object ID.
-	int objectID = pickingBaseID + (gl_VertexID / verticesPerElement);
+	int objectID = pickingBaseID + (int(vertexID) / verticesPerElement);
 
 #if __VERSION__ >= 130
 	vertex_color_fs = vec4(

@@ -146,10 +146,10 @@ public:
 	}
 
 	/// Make sure vertex IDs are available to use by the OpenGL shader.
-	void activateVertexIDs(QOpenGLShaderProgram* shader, GLint vertexCount);
+	void activateVertexIDs(QOpenGLShaderProgram* shader, GLint vertexCount, bool alwaysUseVBO = false);
 
 	/// This needs to be called to deactivate vertex IDs, which were activated by a call to activateVertexIDs().
-	void deactivateVertexIDs(QOpenGLShaderProgram* shader);
+	void deactivateVertexIDs(QOpenGLShaderProgram* shader, bool alwaysUseVBO = false);
 
 	/// Registers a range of sub-IDs belonging to the current object being rendered.
 	/// This is an internal method used by the PickingSceneRenderer class to implement the picking mechanism.

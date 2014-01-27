@@ -606,11 +606,11 @@ void ViewportSceneRenderer::render2DPolyline(const Point2* points, int count, co
 /******************************************************************************
 * Makes vertex IDs available to the shader.
 ******************************************************************************/
-void ViewportSceneRenderer::activateVertexIDs(QOpenGLShaderProgram* shader, GLint vertexCount)
+void ViewportSceneRenderer::activateVertexIDs(QOpenGLShaderProgram* shader, GLint vertexCount, bool alwaysUseVBO)
 {
 	// Older OpenGL implementations do not provide the built-in gl_VertexID shader
 	// variable. Therefore we have to provide the IDs in a vertex buffer.
-	if(glformat().majorVersion() < 3) {
+	if(glformat().majorVersion() < 3 || alwaysUseVBO) {
 		if(!_glVertexIDBuffer.isCreated() || _glVertexIDBufferSize < vertexCount) {
 			if(!_glVertexIDBuffer.isCreated()) {
 				// Create the ID buffer only once and keep it until the number of particles changes.
@@ -647,9 +647,9 @@ void ViewportSceneRenderer::activateVertexIDs(QOpenGLShaderProgram* shader, GLin
 /******************************************************************************
 * Disables vertex IDs.
 ******************************************************************************/
-void ViewportSceneRenderer::deactivateVertexIDs(QOpenGLShaderProgram* shader)
+void ViewportSceneRenderer::deactivateVertexIDs(QOpenGLShaderProgram* shader, bool alwaysUseVBO)
 {
-	if(glformat().majorVersion() < 3)
+	if(glformat().majorVersion() < 3 || alwaysUseVBO)
 		shader->disableAttributeArray("vertexID");
 }
 

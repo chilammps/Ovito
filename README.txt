@@ -13,7 +13,7 @@ http://www.ovito.org/
 Change Log 
 ****************************************************************************************
 
-Release 2.2.3 (xx-Jan-14):
+Release 2.2.3 (15-Jan-14):
 
  - Fixed the CFG file importer, which is now able to read CFG files written by newer versions of LAMMPS correctly.
    Auxiliary file columns are now automatically mapped to OVITO's standard particle properties if possible.

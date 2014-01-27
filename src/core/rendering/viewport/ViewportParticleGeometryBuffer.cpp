@@ -521,14 +521,14 @@ void ViewportParticleGeometryBuffer::renderCubes(ViewportSceneRenderer* renderer
 			std::fill(_primitiveVertexCounts.begin(), _primitiveVertexCounts.end(), _positionsBuffer.verticesPerElement());
 		}
 
-		renderer->activateVertexIDs(shader, particleCount() * _positionsBuffer.verticesPerElement());
+		renderer->activateVertexIDs(shader, particleCount() * _positionsBuffer.verticesPerElement(), renderer->isPicking());
 
 		OVITO_CHECK_OPENGL(renderer->glMultiDrawArrays(GL_TRIANGLE_STRIP,
 				_primitiveStartIndices.data(),
 				_primitiveVertexCounts.data(),
 				_primitiveStartIndices.size()));
 
-		renderer->deactivateVertexIDs(shader);
+		renderer->deactivateVertexIDs(shader, renderer->isPicking());
 	}
 
 	_positionsBuffer.detachPositions(renderer, shader);
