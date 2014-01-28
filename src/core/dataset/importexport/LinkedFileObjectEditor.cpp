@@ -51,9 +51,7 @@ void LinkedFileObjectEditor::createUI(const RolloutInsertionParameters& rolloutP
 	toolbar->setStyleSheet("QToolBar { padding: 0px; margin: 0px; border: 0px none black; }");
 	layout->addWidget(toolbar);
 
-	FilenameParameterUI* inputFilePUI = new FilenameParameterUI(this, "sourceUrl", SLOT(showFileSelectionDialog(QWidget*)));
-
-	toolbar->addAction(QIcon(":/core/actions/file/import_object_changefile.png"), tr("Pick new local input file"), inputFilePUI, SLOT(showSelectionDialog()));
+	toolbar->addAction(QIcon(":/core/actions/file/import_object_changefile.png"), tr("Pick new local input file"), this, SLOT(onPickLocalInputFile()));
 	toolbar->addAction(QIcon(":/core/actions/file/file_import_remote.png"), tr("Pick new remote input file"), this, SLOT(onPickRemoteInputFile()));
 	toolbar->addAction(QIcon(":/core/actions/file/import_object_reload.png"), tr("Reload current input file"), this, SLOT(onReloadFrame()));
 	toolbar->addAction(QIcon(":/core/actions/file/import_object_refresh_animation.png"), tr("Reload animation frames"), this, SLOT(onReloadAnimation()));
@@ -173,13 +171,23 @@ void LinkedFileObjectEditor::onEditorContentsReplaced(RefTarget* newObject)
 }
 
 /******************************************************************************
+* Is called when the user presses the "Pick local input file" button.
+******************************************************************************/
+void LinkedFileObjectEditor::onPickLocalInputFile()
+{
+	LinkedFileObject* obj = static_object_cast<LinkedFileObject>(editObject());
+	if(obj)
+		obj->showFileSelectionDialog(container()->window());
+}
+
+/******************************************************************************
 * Is called when the user presses the "Pick remote input file" button.
 ******************************************************************************/
 void LinkedFileObjectEditor::onPickRemoteInputFile()
 {
 	LinkedFileObject* obj = static_object_cast<LinkedFileObject>(editObject());
 	if(obj)
-		obj->showURLSelectionDialog();
+		obj->showURLSelectionDialog(container()->window());
 }
 
 /******************************************************************************
