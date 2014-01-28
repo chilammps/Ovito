@@ -627,7 +627,8 @@ bool Viewport::setMouseGrabEnabled(bool grab)
 ******************************************************************************/
 void Viewport::setCursor(const QCursor& cursor)
 {
-#ifndef Q_OS_MACX
+	// Changing the cursor leads to program crash on MacOS and Qt <= 5.2.0.
+#if !defined(Q_OS_MACX) || (QT_VERSION >= QT_VERSION_CHECK(5, 2, 1))
 	if(_viewportWindow)
 		_viewportWindow->setCursor(cursor);
 #endif
@@ -638,7 +639,7 @@ void Viewport::setCursor(const QCursor& cursor)
 ******************************************************************************/
 void Viewport::unsetCursor()
 {
-#ifndef Q_OS_MACX
+#if !defined(Q_OS_MACX) || (QT_VERSION >= QT_VERSION_CHECK(5, 2, 1))
 	if(_viewportWindow)
 		_viewportWindow->unsetCursor();
 #endif
