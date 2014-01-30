@@ -34,14 +34,14 @@ print("New working directory is " + pwd())</programlisting>
   </simplesect>
 
   <simplesect xml:id="scripting.input_output.load">
-    <title>Loading a data file</title>
+    <title>Loading data files</title>
     <para>
       the <code>load()</code> function imports a data file into OVITO. The imported dataset is added as a new object to the current scene.
       The function takes a string parameter that specifies the file or remote URL to load:
   	    <informalexample><programlisting language="javascript">
-load("simulation_data.dump")	                // Loads a file from the current working directory.
+load("simulation_data.dump")	                // Load a file from the current working directory.
 
-load("/home/stuko/data/simulation_data.dump")	// Use this if the file is in another directory.</programlisting>          
+load("/home/stuko/data/simulation_data.dump")	// If the file is in a different directory.</programlisting>          
         </informalexample>
       The <code>load()</code> function auto-detects the format of the file and uses the default import settings.
       Optionally, an <link xlink:show="new" xlink:href="https://www.google.com/?q=javascript+object+literal#q=javascript+object+literal">object literal</link> can be passed to the <code>load()</code> function to set additional import parameters:
@@ -59,12 +59,12 @@ load("shear.xyz", {
     </para> 
     <para>
       The <code>load()</code> function returns a reference to the newly created object in the scene.
-      You can use it to apply modifiers to the input data:
+      You can use it to <link linkend="scripting.scene_objects.apply_modifier">insert modifiers into the modification pipeline</link>:
   	    <informalexample><programlisting language="javascript"><![CDATA[
-simdata = load("simulation_data.dump")
+obj = load("simulation_data.dump")
 
-simdata.applyModifier(new SelectExpressionModifier({ expression : "PotentialEnergy < -3.9" }))
-simdata.applyModifier(new DeleteParticlesModifier())]]>
+obj.applyModifier(new SelectExpressionModifier({ expression : "PotentialEnergy < -3.9" }))
+obj.applyModifier(new DeleteParticlesModifier())]]>
 </programlisting></informalexample>
     </para>
   </simplesect>
@@ -97,9 +97,9 @@ save("exporteddata.dump", LAMMPSDumpExporter, { columnMapping: ["Position.X", "P
       as well as the structure types assigned to particles.
     </para> 
     <para>
-      The fourth parameter, <parameter>object</parameter>, is optional and specifies the scene object to be exported if there multiple objects in the
+      The fourth parameter, <parameter>object</parameter>, is optional and specifies the object to be exported if there multiple objects in the
       current scene. You can pass an object reference returned by the <link linkend="scripting.input_output.load"><code>load()</code></link> function here.
-      If no <parameter>object</parameter> parameter is passed to the <code>save()</code> function, it will export the currently active object.
+      If you don't pass an <parameter>object</parameter> parameter to the <code>save()</code> function, it will export the currently active object.
     </para>
   </simplesect>
     

@@ -70,6 +70,7 @@ QScriptValue Vector3Prototype::constructor(QScriptContext* context, QScriptEngin
 	else {
 		return context->throwError("Vector constructor takes 3 arguments.");
 	}
+	qDebug() << "script class=" << engine->toScriptValue(v).scriptClass();
 	return engine->toScriptValue(v);
 }
 

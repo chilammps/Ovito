@@ -39,7 +39,7 @@
     </para>
     
     <para>
-       OVITO's scripting interface is documented in the <link linkend="scripting">reference section</link> of this manual.
+       You can find the full documentation of OVITO's scripting interface and more instructions on how to write scripts in the <link linkend="scripting">reference section</link> of this manual.
     </para>
     
   </simplesect>
@@ -47,7 +47,7 @@
   <simplesect>
   <title>Script example</title>
     <para>
-      The following example program demonstrates how various functions of OVITO can be accessed from a script.
+      The following example program demonstrates how various functions of OVITO can be accessed from a script:
       <programlisting language="javascript">
 <![CDATA[// Query program version.
 print("This is Ovito " + version());
