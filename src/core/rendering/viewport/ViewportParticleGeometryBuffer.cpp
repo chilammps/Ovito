@@ -198,7 +198,7 @@ void ViewportParticleGeometryBuffer::setSize(int particleCount)
 
 	_positionsBuffer.create(QOpenGLBuffer::StaticDraw, particleCount, verticesPerParticle);
 	_radiiBuffer.create(QOpenGLBuffer::StaticDraw, particleCount, verticesPerParticle);
-	_colorsBuffer.create(QOpenGLBuffer::DynamicDraw, particleCount, verticesPerParticle);
+	_colorsBuffer.create(QOpenGLBuffer::StaticDraw, particleCount, verticesPerParticle);
 }
 
 /******************************************************************************
@@ -390,7 +390,7 @@ void ViewportParticleGeometryBuffer::renderPointSprites(ViewportSceneRenderer* r
 		renderer->deactivateVertexIDs(shader);
 	shader->release();
 
-	// Disable point sprites.
+	// Disable point sprites again.
 	if(renderer->isCoreProfile() == false)
 		OVITO_CHECK_OPENGL(glDisable(GL_POINT_SPRITE));
 

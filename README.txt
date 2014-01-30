@@ -13,15 +13,15 @@ http://www.ovito.org/
 Change Log 
 ****************************************************************************************
 
-Release 2.2.4 (30-Jan-14):
+Release 2.2.4 (29-Jan-14):
 
- - Modified particle importers to ensure stable ordering of particle types (using 
+ - Modified particle file importers to ensure stable ordering of particle types (using 
    lexicographical ordering when atom types have names, and ID-based ordering otherwise). 
-   The ordering of the particles type is now independent of their first occurrence in the input file.
+   The ordering of named particle types is now independent of their first occurrence in the input file.
  - Fixed particle picking issue on computers with Intel graphics.
  - Fixed OpenGL issues on systems with Intel graphics.
  - Fixed blurred display of viewport captions.
- - Fixed program crash when changing particle radius/color without selecting a particle type first. 
+ - Fixed program crash when changing particle radius/color without having selected a particle type first. 
  - OVITO is now built using version 5.2.1 of the Qt library. 
    This fixes several issues related to the graphical user interface. 
 

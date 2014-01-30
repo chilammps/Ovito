@@ -133,7 +133,7 @@ void ActionManager::on_HelpOpenGLInfo_triggered()
 			stream << "Stencil buffer size: " << format.stencilBufferSize() << endl;
 			stream << "Deprecated functions: " << format.testOption(QSurfaceFormat::DeprecatedFunctions) << endl;
 #ifdef Q_OS_WIN
-			stream << "Not using point sprites: " << (format.majorVersion() == 3 && format.minorVersion() == 1 && strstr((const char*)glGetString(GL_VENDOR), "Intel") != nullptr) << endl;
+			stream << "Not using point sprites: " << (format.majorVersion() >= 3 && strstr((const char*)glGetString(GL_VENDOR), "Intel") != nullptr) << endl;
 #endif
 			vp->viewportWindow()->glcontext()->doneCurrent();
 		}
