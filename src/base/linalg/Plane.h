@@ -270,6 +270,8 @@ typedef Plane_3<FloatType> Plane3;
 };	// End of namespace
 
 Q_DECLARE_METATYPE(Ovito::Plane3);
+Q_DECLARE_METATYPE(Ovito::Plane3*);
 Q_DECLARE_TYPEINFO(Ovito::Plane3, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Plane3*, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_PLANE_H

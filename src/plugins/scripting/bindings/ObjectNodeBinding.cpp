@@ -40,17 +40,6 @@ void ObjectNodeBinding::setupBinding(ScriptEngine& engine)
 
 	// This is required for the 'modifiers' property of the ObjectNode prototype.
 	qScriptRegisterSequenceMetaType<QVector<Modifier*>>(&engine);
-
-	// Create getter function for the 'selectedNode' property, which always returns the currently selected node.
-	engine.globalObject().setProperty("selectedNode", engine.newStdFunction(&ObjectNodeBinding::selectedNode, 0), QScriptValue::PropertyGetter);
-}
-
-/******************************************************************************
-* Implementation of the 'selectedNode' global property.
-******************************************************************************/
-QScriptValue ObjectNodeBinding::selectedNode(QScriptContext* context, ScriptEngine* engine)
-{
-	return engine->toScriptValue(engine->dataset()->selection()->firstNode());
 }
 
 /******************************************************************************

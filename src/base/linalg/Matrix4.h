@@ -451,7 +451,9 @@ inline void glLoadMatrix(const Matrix_4<GLfloat>& tm) { glLoadMatrixf(tm.constDa
 
 };	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Matrix4)
+Q_DECLARE_METATYPE(Ovito::Matrix4);
+Q_DECLARE_METATYPE(Ovito::Matrix4*);
 Q_DECLARE_TYPEINFO(Ovito::Matrix4, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Matrix4*, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_MATRIX4_H

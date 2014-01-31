@@ -244,9 +244,13 @@ inline void glVertex(const Point_2<GLfloat>& v) { glVertex2fv(v.data()); }
 
 };	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Point2)
-Q_DECLARE_METATYPE(Ovito::Point2I)
+Q_DECLARE_METATYPE(Ovito::Point2);
+Q_DECLARE_METATYPE(Ovito::Point2I);
+Q_DECLARE_METATYPE(Ovito::Point2*);
+Q_DECLARE_METATYPE(Ovito::Point2I*);
 Q_DECLARE_TYPEINFO(Ovito::Point2, Q_PRIMITIVE_TYPE);
 Q_DECLARE_TYPEINFO(Ovito::Point2I, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Point2*, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Point2I*, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_POINT2_H

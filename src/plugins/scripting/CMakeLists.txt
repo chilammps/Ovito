@@ -24,6 +24,7 @@ SET(OVITO_SCRIPTING_SOURCE_FILES
 	engine/ScriptAutostarter.cpp
 	ui/ScriptingApplet.cpp
 	bindings/BasicTypesBinding.cpp
+	bindings/DataSetBinding.cpp
 	bindings/InputOutputBinding.cpp
 	bindings/ObjectNodeBinding.cpp
 	bindings/ViewportBinding.cpp

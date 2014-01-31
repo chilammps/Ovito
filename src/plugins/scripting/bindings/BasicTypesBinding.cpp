@@ -34,24 +34,35 @@ void BasicTypesBinding::setupBinding(ScriptEngine& engine)
 {
 	qRegisterMetaType<FloatType>("FloatType");
 	qRegisterMetaType<TimePoint>("TimePoint");
+	qRegisterMetaType<Vector3>("Vector3");
+	qRegisterMetaType<Point3>("Point3");
+	qRegisterMetaType<Color>("Color");
+	qRegisterMetaType<TimeInterval>("TimeInterval");
 
 	// Set prototype for Vector3 script values and register constructor functions.
 	QScriptValue vector3Prototype = engine.newQObject(new Vector3Prototype());
-	engine.setDefaultPrototype(qRegisterMetaType<Vector3>("Vector3"), vector3Prototype);
+	vector3Prototype.setProperty("toString", engine.newFunction(&Vector3Prototype::toString, 0));
+	vector3Prototype.setProperty("toArray", engine.newFunction(&Vector3Prototype::toArray, 0));
 	engine.globalObject().setProperty("Vector", engine.newFunction(Vector3Prototype::constructor, vector3Prototype));
+	qScriptRegisterMetaType<Vector3>(&engine, &Vector3Prototype::toScriptValue, &Vector3Prototype::fromScriptValue, vector3Prototype);
 
 	// Set prototype for Point3 script values and register constructor functions.
 	QScriptValue point3Prototype = engine.newQObject(new Point3Prototype());
-	engine.setDefaultPrototype(qRegisterMetaType<Point3>("Point3"), point3Prototype);
+	point3Prototype.setProperty("toString", engine.newFunction(&Point3Prototype::toString, 0));
+	point3Prototype.setProperty("toArray", engine.newFunction(&Point3Prototype::toArray, 0));
 	engine.globalObject().setProperty("Point", engine.newFunction(Point3Prototype::constructor, point3Prototype));
+	qScriptRegisterMetaType<Point3>(&engine, &Point3Prototype::toScriptValue, &Point3Prototype::fromScriptValue, point3Prototype);
 
 	// Set prototype for Color script values and register constructor functions.
 	QScriptValue colorPrototype = engine.newQObject(new ColorPrototype());
-	engine.setDefaultPrototype(qRegisterMetaType<Color>("Color"), colorPrototype);
+	colorPrototype.setProperty("toString", engine.newFunction(&ColorPrototype::toString, 0));
+	colorPrototype.setProperty("toArray", engine.newFunction(&ColorPrototype::toArray, 0));
 	engine.globalObject().setProperty("Color", engine.newFunction(ColorPrototype::constructor, colorPrototype));
+	qScriptRegisterMetaType<Color>(&engine, &ColorPrototype::toScriptValue, &ColorPrototype::fromScriptValue, colorPrototype);
 
 	// Set prototype for TimeInterval script values and register constructor functions.
 	QScriptValue timeIntervalPrototype = engine.newQObject(new TimeIntervalPrototype());
+	timeIntervalPrototype.setProperty("toString", engine.newFunction(&TimeIntervalPrototype::toString, 0));
 	engine.setDefaultPrototype(qRegisterMetaType<TimeInterval>("TimeInterval"), timeIntervalPrototype);
 	engine.globalObject().setProperty("TimeInterval", engine.newFunction(TimeIntervalPrototype::constructor, timeIntervalPrototype));
 }
@@ -63,14 +74,22 @@ QScriptValue Vector3Prototype::constructor(QScriptContext* context, QScriptEngin
 {
 	Vector3 v;
 	if(context->argumentCount() == 3) {
-		v.x() = context->argument(0).toNumber();
-		v.y() = context->argument(1).toNumber();
-		v.z() = context->argument(2).toNumber();
+		for(quint32 i = 0; i < 3; i++) {
+			if(!context->argument(i).isNumber())
+				return context->throwError(QScriptContext::TypeError, tr("Vector constructor: Argument %1 is not a number.").arg(i+1));
+			v[i] = context->argument(i).toNumber();
+		}
+	}
+	else if(context->argumentCount() == 1 && context->argument(0).isArray() && context->argument(0).property("length").toInt32() == 3) {
+		for(quint32 i = 0; i < 3; i++) {
+			if(!context->argument(0).property(i).isNumber())
+				return context->throwError(QScriptContext::TypeError, tr("Vector constructor: List element %1 is not a number.").arg(i+1));
+			v[i] = context->argument(0).property(i).toNumber();
+		}
 	}
 	else {
-		return context->throwError("Vector constructor takes 3 arguments.");
+		return context->throwError(tr("Vector constructor takes 3 arguments or an array with 3 elements."));
 	}
-	qDebug() << "script class=" << engine->toScriptValue(v).scriptClass();
 	return engine->toScriptValue(v);
 }
 
@@ -81,12 +100,21 @@ QScriptValue Point3Prototype::constructor(QScriptContext* context, QScriptEngine
 {
 	Point3 p;
 	if(context->argumentCount() == 3) {
-		p.x() = context->argument(0).toNumber();
-		p.y() = context->argument(1).toNumber();
-		p.z() = context->argument(2).toNumber();
+		for(quint32 i = 0; i < 3; i++) {
+			if(!context->argument(i).isNumber())
+				return context->throwError(QScriptContext::TypeError, tr("Point constructor: Argument %1 is not a number.").arg(i+1));
+			p[i] = context->argument(i).toNumber();
+		}
+	}
+	else if(context->argumentCount() == 1 && context->argument(0).isArray() && context->argument(0).property("length").toInt32() == 3) {
+		for(quint32 i = 0; i < 3; i++) {
+			if(!context->argument(0).property(i).isNumber())
+				return context->throwError(QScriptContext::TypeError, tr("Point constructor: List element %1 is not a number.").arg(i+1));
+			p[i] = context->argument(0).property(i).toNumber();
+		}
 	}
 	else {
-		return context->throwError("Point constructor takes 3 arguments.");
+		return context->throwError(tr("Point constructor takes 3 arguments or an array with 3 elements."));
 	}
 	return engine->toScriptValue(p);
 }
@@ -97,16 +125,22 @@ QScriptValue Point3Prototype::constructor(QScriptContext* context, QScriptEngine
 QScriptValue ColorPrototype::constructor(QScriptContext* context, QScriptEngine* engine)
 {
 	Color c;
-	if(context->argumentCount() == 1) {
-		c.r() = c.g() = c.b() = context->argument(0).toNumber();
+	if(context->argumentCount() == 3) {
+		for(quint32 i = 0; i < 3; i++) {
+			if(!context->argument(i).isNumber())
+				return context->throwError(QScriptContext::TypeError, tr("Color constructor: Argument %1 is not a number.").arg(i+1));
+			c[i] = context->argument(i).toNumber();
+		}
 	}
-	else if(context->argumentCount() == 3) {
-		c.r() = context->argument(0).toNumber();
-		c.g() = context->argument(1).toNumber();
-		c.b() = context->argument(2).toNumber();
+	else if(context->argumentCount() == 1 && context->argument(0).isArray() && context->argument(0).property("length").toInt32() == 3) {
+		for(quint32 i = 0; i < 3; i++) {
+			if(!context->argument(0).property(i).isNumber())
+				return context->throwError(QScriptContext::TypeError, tr("Color constructor: List element %1 is not a number.").arg(i+1));
+			c[i] = context->argument(0).property(i).toNumber();
+		}
 	}
 	else {
-		return context->throwError("Color constructor takes 1 or 3 arguments.");
+		return context->throwError(tr("Color constructor takes 3 arguments or an array with 3 elements."));
 	}
 	return engine->toScriptValue(c);
 }
@@ -118,13 +152,17 @@ QScriptValue TimeIntervalPrototype::constructor(QScriptContext* context, QScript
 {
 	TimeInterval iv;
 	if(context->argumentCount() == 1) {
+		if(!context->argument(0).isNumber())
+			return context->throwError(QScriptContext::TypeError, tr("TimeInterval constructor: Argument error: not a number."));
 		iv.setInstant(context->argument(0).toInt32());
 	}
 	else if(context->argumentCount() == 2) {
+		if(!context->argument(0).isNumber() || !context->argument(1).isNumber())
+			return context->throwError(QScriptContext::TypeError, tr("TimeInterval constructor: Argument error: not a number."));
 		iv = TimeInterval(context->argument(0).toInt32(), context->argument(1).toInt32());
 	}
 	else {
-		return context->throwError("TimeInterval constructor takes 1 or 2.");
+		return context->throwError(tr("TimeInterval constructor takes 1 or 2 arguments."));
 	}
 	return engine->toScriptValue(iv);
 }

@@ -46,12 +46,6 @@ void InputOutputBinding::setupBinding(ScriptEngine& engine)
 	engine.globalObject().setProperty("pwd", engine.newStdFunction(&InputOutputBinding::pwd, 0));
 	engine.globalObject().setProperty("wait", engine.newStdFunction(&InputOutputBinding::wait, 0));
 
-	// The version() script function returns the version string of the application.
-	engine.globalObject().setProperty("version", engine.newStdFunction(
-			[](QScriptContext* context, ScriptEngine* engine) -> QScriptValue {
-		return QCoreApplication::applicationVersion();
-	}, 0));
-
 	// Marshaling of URLs.
 	qScriptRegisterMetaType<QUrl>(&engine, fromQUrl, toQUrl);
 }

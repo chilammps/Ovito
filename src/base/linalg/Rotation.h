@@ -423,7 +423,9 @@ typedef RotationT<FloatType>		Rotation;
 
 };	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Rotation)
+Q_DECLARE_METATYPE(Ovito::Rotation);
+Q_DECLARE_METATYPE(Ovito::Rotation*);
 Q_DECLARE_TYPEINFO(Ovito::Rotation, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Rotation*, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_ROTATION_H

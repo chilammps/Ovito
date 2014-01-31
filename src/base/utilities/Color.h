@@ -461,9 +461,13 @@ inline void glColor4(const ColorAT<GLfloat>& c) { glColor4fv(c.data()); }
 
 };	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Color)
-Q_DECLARE_METATYPE(Ovito::ColorA)
+Q_DECLARE_METATYPE(Ovito::Color);
+Q_DECLARE_METATYPE(Ovito::ColorA);
+Q_DECLARE_METATYPE(Ovito::Color*);
+Q_DECLARE_METATYPE(Ovito::ColorA*);
 Q_DECLARE_TYPEINFO(Ovito::Color, Q_PRIMITIVE_TYPE);
 Q_DECLARE_TYPEINFO(Ovito::ColorA, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Color*, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::ColorA*, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_COLOR_H
