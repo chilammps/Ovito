@@ -1,26 +1,31 @@
 // Construction
 v1 = new Vector(1,2,3)
-v2 = new Vector([4, 5, 6.0])
+v2 = new Vector([4, 5, 6])
 
 // Printing
 print(v1)
 print(v2.toString())
 
 // Component read access
-print("v1: x=", v1.x, "y=", v1.y, "z=", v1.z)
+assert(v1.x == 1)
+assert(v1.y == 2)
+assert(v1.z == 3.0)
 
 // Component write access
-v1.x = -1; v1.y = 0; v1.z = 23;
-print("v1 = " + v1)
+v3 = new Vector(10,20,30)
+v3.x = -1; v3.y = 0; v3.z = 23.5;
+assert(v3 == Vector(-1,0,23.5))
 
 // Vector algebra
-print("plus: " + v1 + " + " + v2 + " = " + v1.plus(v2))
-print("plus: " + v1 + " + " + [1,1,1] + " = " + v1.plus([1,1,1]))
-print("minus: " + v1 + " - " + [1,2,3] + " = " + v1.minus([1,2,3]))
+assert(v1.plus(v2) == Vector(5,7,9))
+assert(v1.plus([1,1,1]) == Vector(2,3,4))
+assert(v1.minus(v2) == Vector(-3,-3,-3))
 
 // Dot and cross products
-print("dot: " + Vector(1,2,3).dot([0,-2,1]))
-print("cross: " + Vector(1,0,0).cross(Vector(0,1,0)))
+assert(Vector(1,2,3).dot([0,-2,1]) == -1)
+assert(Vector(1,0,0).cross(Vector(0,1,0)) == Vector(0,0,1))
+assert(Vector(1,0,0).cross([0,1,0]) == Vector(0,0,1))
 
 // Conversion to JavaScript array
-print("toArray: " + v1.toArray())
+assert(v1.toArray().length == 3)
+assert(v1.toArray()[2] == 3.0)

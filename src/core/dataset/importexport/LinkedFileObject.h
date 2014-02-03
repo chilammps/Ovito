@@ -45,9 +45,9 @@ public:
 
 	/// \brief Sets the source location for importing data.
 	/// \param sourceUrl The new source location.
-	/// \param importerType The type of importer object that will parse the input file.
+	/// \param importerType The type of importer object that will parse the input file (can be NULL to request auto-detection).
 	/// \return false if the operation has been canceled by the user.
-	bool setSource(const QUrl& sourceUrl, const FileImporterDescription* importerType);
+	bool setSource(const QUrl& sourceUrl, const FileImporterDescription* importerType = nullptr);
 
 	/// \brief Sets the source location for importing data.
 	/// \param sourceUrl The new source location.
@@ -60,13 +60,13 @@ public:
 
 	/// \brief This reloads the input data from the external file.
 	/// \param frame The animation frame to reload from the external file.
-	void refreshFromSource(int frame = -1);
+	Q_INVOKABLE void refreshFromSource(int frame = -1);
 
 	/// \brief Returns the status returned by the file parser on its last invocation.
 	virtual ObjectStatus status() const override { return _importStatus; }
 
 	/// \brief Scans the input source for animation frames and updates the internal list of frames.
-	bool updateFrames();
+	Q_INVOKABLE bool updateFrames();
 
 	/// \brief Returns the number of animation frames that can be loaded from the data source.
 	int numberOfFrames() const { return _frames.size(); }
@@ -78,10 +78,10 @@ public:
 	const QVector<LinkedFileImporter::FrameSourceInformation>& frames() const { return _frames; }
 
 	/// \brief Given an animation time, computes the input frame index to be shown at that time.
-	int animationTimeToInputFrame(TimePoint time) const;
+	Q_INVOKABLE int animationTimeToInputFrame(TimePoint time) const;
 
 	/// \brief Given an input frame index, returns the animation time at which it is shown.
-	TimePoint inputFrameToAnimationTime(int frame) const;
+	Q_INVOKABLE TimePoint inputFrameToAnimationTime(int frame) const;
 
 	/// \brief Returns whether the scene's animation interval is being adjusted to the number of frames reported by the file parser.
 	bool adjustAnimationIntervalEnabled() const { return _adjustAnimationIntervalEnabled; }
@@ -156,7 +156,10 @@ public Q_SLOTS:
 
 public:
 
-	Q_PROPERTY(QUrl sourceUrl READ sourceUrl)
+	Q_PROPERTY(QUrl sourceUrl READ sourceUrl WRITE setSource);
+	Q_PROPERTY(LinkedFileImporter* importer READ importer);
+	Q_PROPERTY(int numberOfFrames READ numberOfFrames);
+	Q_PROPERTY(bool adjustAnimationIntervalEnabled READ adjustAnimationIntervalEnabled WRITE setAdjustAnimationIntervalEnabled);
 
 protected Q_SLOTS:
 

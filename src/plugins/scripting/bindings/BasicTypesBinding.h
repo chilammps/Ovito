@@ -167,6 +167,16 @@ public:
 		}
 	}
 
+	/// Compares two vectors.
+	Q_INVOKABLE bool equals(const Vector3& b) {
+		if(Vector3* vec = qscriptvalue_cast<Vector3*>(thisObject()))
+			return (*vec) == b;
+		else {
+	        context()->throwError(QScriptContext::TypeError, tr("Vector.prototype.equals: this object is not a Vector."));
+	        return false;
+		}
+	}
+
 	Q_PROPERTY(FloatType x READ x WRITE setX);
 	Q_PROPERTY(FloatType y READ y WRITE setY);
 	Q_PROPERTY(FloatType z READ z WRITE setZ);
@@ -248,6 +258,16 @@ public:
 		if(!context->thisObject().isVariant())
 			return context->throwError(QScriptContext::TypeError, tr("Point.prototype.toArray: this object is not a Point."));
 		return qScriptValueFromSequence(engine, qscriptvalue_cast<Point3>(context->thisObject()));
+	}
+
+	/// Compares two points.
+	Q_INVOKABLE bool equals(const Point3& b) {
+		if(Point3* p = qscriptvalue_cast<Point3*>(thisObject()))
+			return (*p) == b;
+		else {
+	        context()->throwError(QScriptContext::TypeError, tr("Point.prototype.equals: this object is not a Point."));
+	        return false;
+		}
 	}
 
 	Q_PROPERTY(FloatType x READ x WRITE setX);

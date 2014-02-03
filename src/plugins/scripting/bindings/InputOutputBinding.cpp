@@ -45,6 +45,7 @@ void InputOutputBinding::setupBinding(ScriptEngine& engine)
 	engine.globalObject().setProperty("cd", engine.newStdFunction(&InputOutputBinding::cd, 1));
 	engine.globalObject().setProperty("pwd", engine.newStdFunction(&InputOutputBinding::pwd, 0));
 	engine.globalObject().setProperty("wait", engine.newStdFunction(&InputOutputBinding::wait, 0));
+	engine.globalObject().setProperty("assert", engine.newStdFunction(&InputOutputBinding::assert, 1));
 
 	// Marshaling of URLs.
 	qScriptRegisterMetaType<QUrl>(&engine, fromQUrl, toQUrl);
@@ -224,6 +225,24 @@ QScriptValue InputOutputBinding::wait(QScriptContext* context, ScriptEngine* eng
 	}
 
 	return QScriptValue(true);
+}
+
+/******************************************************************************
+* Implementation of the 'assert' script function.
+*
+* Throws an error if the argument is not true.
+******************************************************************************/
+QScriptValue InputOutputBinding::assert(QScriptContext* context, ScriptEngine* engine)
+{
+	// Process function arguments.
+	if(context->argumentCount() != 1)
+		return context->throwError("assert() takes one argument.");
+	bool exprResult = context->argument(0).toBool();
+
+	if(exprResult)
+		return context->argument(0);
+	else
+		return context->throwError(tr("Assertion failed."));
 }
 
 /******************************************************************************

@@ -46,14 +46,13 @@ public:
 	/// \brief Returns the list of modifiers that are in the modification pipeline of this ObjectNode.
 	QVector<Modifier*> modifiers();
 
+	/// \brief Returns the SceneObject that is the data source of the modification pipeline.
+	SceneObject* source();
+
 public:
 
 	Q_PROPERTY(QVector<Modifier*> modifiers READ modifiers);
-
-private:
-
-	/// Getter function of the 'selectedNode' global property.
-	static QScriptValue selectedNode(QScriptContext* context, ScriptEngine* engine);
+	Q_PROPERTY(SceneObject* source READ source);
 
 private:
 

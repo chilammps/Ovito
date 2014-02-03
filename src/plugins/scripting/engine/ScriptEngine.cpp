@@ -184,6 +184,12 @@ QScriptValue ScriptEngine::objectConstructor(QScriptContext* context, QScriptEng
 	catch(const Exception& ex) {
 		return context->throwError(ex.message());
 	}
+	catch(const std::exception& ex) {
+		return context->throwError(ex.what());
+	}
+	catch(...) {
+		return context->throwError(tr("Uncaught C++ exception"));
+	}
 }
 
 /******************************************************************************
@@ -210,7 +216,7 @@ QScriptValue ScriptEngine::scriptFunctionHandler(QScriptContext* context, QScrip
 	OVITO_ASSERT(context->callee().data().isVariant());
 	OVITO_ASSERT(qobject_cast<ScriptEngine*>(engine) != nullptr);
 
-	// Extract the stored std::function, which is responsible for taking the function call.
+	// Extract the stored std::function, which is the target of the function call.
 	QVariant variant = context->callee().data().toVariant();
 	if(variant.canConvert<std::function<QScriptValue(QScriptContext*,ScriptEngine*)>>() == false)
 		return context->throwError("Could not extract std::function from callee object. Perhaps the QScriptValue 'data' field has been overwritten.");
@@ -221,6 +227,12 @@ QScriptValue ScriptEngine::scriptFunctionHandler(QScriptContext* context, QScrip
 	}
 	catch(const Exception& ex) {
 		return context->throwError(ex.message());
+	}
+	catch(const std::exception& ex) {
+		return context->throwError(ex.what());
+	}
+	catch(...) {
+		return context->throwError(tr("Uncaught C++ exception"));
 	}
 }
 

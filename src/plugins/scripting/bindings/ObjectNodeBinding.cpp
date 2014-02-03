@@ -49,19 +49,41 @@ QVector<Modifier*> ObjectNodeBinding::modifiers()
 {
 	QVector<Modifier*> result;
 	ObjectNode* objNode = qscriptvalue_cast<ObjectNode*>(thisObject());
-	if(objNode) {
+	if(!objNode) {
+		context()->throwError(QScriptContext::TypeError, tr("ObjectNode.prototype.modifiers: This is not an ObjectNode."));
+		return result;
+	}
 
-		// Go through the modification pipeline and collect all modifiers in a list.
-		PipelineObject* pipelineObj = dynamic_object_cast<PipelineObject>(objNode->sceneObject());
-		while(pipelineObj) {
-			for(ModifierApplication* modApp : pipelineObj->modifierApplications()) {
-				result.push_back(modApp->modifier());
-			}
-			pipelineObj = dynamic_object_cast<PipelineObject>(pipelineObj->inputObject());
+	// Go through the modification pipeline and collect all modifiers in a list.
+	PipelineObject* pipelineObj = dynamic_object_cast<PipelineObject>(objNode->sceneObject());
+	while(pipelineObj) {
+		for(ModifierApplication* modApp : pipelineObj->modifierApplications()) {
+			result.push_back(modApp->modifier());
 		}
+		pipelineObj = dynamic_object_cast<PipelineObject>(pipelineObj->inputObject());
 	}
 	return result;
 }
 
+/******************************************************************************
+* Returns the SceneObject that is the data source of the modification pipeline.
+******************************************************************************/
+SceneObject* ObjectNodeBinding::source()
+{
+	ObjectNode* objNode = qscriptvalue_cast<ObjectNode*>(thisObject());
+	if(!objNode) {
+		context()->throwError(QScriptContext::TypeError, tr("ObjectNode.prototype.modifiers: This is not an ObjectNode."));
+		return nullptr;
+	}
+
+	SceneObject* sceneObj = objNode->sceneObject();
+	while(sceneObj) {
+		if(sceneObj->inputObjectCount() == 0) break;
+		SceneObject* inputObj = sceneObj->inputObject(0);
+		if(!inputObj) break;
+		sceneObj = inputObj;
+	}
+	return sceneObj;
+}
 
 };
