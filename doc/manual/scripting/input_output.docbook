@@ -69,6 +69,22 @@ obj.applyModifier(new DeleteParticlesModifier())]]>
     </para>
   </simplesect>
 
+  <simplesect xml:id="scripting.input_output.source">
+    <title>Replacing input data</title>
+    <para>
+       Given that there already is an existing modification pipeline with an input data source, you can change the 
+       source path to replace the input particle dataset with a new file. 
+       Each scene object with a modification pipeline has a data source,
+       which can be accessed through its <code>source</code> property. The data source, in turn, has a
+       <code>sourceUrl</code> property, which points to the external file from which the input data is read:
+  	    <informalexample><programlisting language="javascript"><![CDATA[
+obj = ovito.selectedNode
+obj.source.sourceUrl = "/home/user/data/newfile.dump"]]>
+</programlisting></informalexample>
+    </para>
+  </simplesect>
+
+
   <simplesect xml:id="scripting.input_output.save">
     <title>Exporting data to a file</title>
     <para>
@@ -89,7 +105,9 @@ save(path, exportertype, params, object)</programlisting>
       parameters control format-specific aspects, for example the list of particle properties and the range of animation frames to
       be exported:
   	    <informalexample><programlisting language="javascript">
-save("exporteddata.dump", LAMMPSDumpExporter, { columnMapping: ["Position.X", "Position.Y", "Position.Z", "Structure Type"] })</programlisting>          
+save("exporteddata.dump", LAMMPSDumpExporter, { 
+	columnMapping: ["Position.X", "Position.Y", "Position.Z", "Structure Type"] 
+})</programlisting>
         </informalexample>
       In the above example, the <code>save()</code> function writes the current particle dataset
       to a LAMMPS dump file. The <code>columnMapping</code> parameter specifies the list of 

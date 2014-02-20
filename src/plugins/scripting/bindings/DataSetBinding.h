@@ -44,10 +44,12 @@ public:
 	virtual void setupBinding(ScriptEngine& engine) override;
 
 	/// Returns the currently selected scene node.
-	static QScriptValue selectedNode(QScriptContext* context, QScriptEngine* engine);
+	SceneNode* selectedNode() const;
 
 	/// Selects a scene node.
-	static QScriptValue setSelectedNode(QScriptContext* context, QScriptEngine* engine);
+	void setSelectedNode(SceneNode* node);
+
+	Q_PROPERTY(SceneNode* selectedNode READ selectedNode WRITE setSelectedNode);
 
 private:
 

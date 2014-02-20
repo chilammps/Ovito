@@ -35,7 +35,7 @@ IMPLEMENT_OVITO_OBJECT(Scripting, ObjectNodeBinding, ScriptBinding);
 ******************************************************************************/
 void ObjectNodeBinding::setupBinding(ScriptEngine& engine)
 {
-	// Install a prototype for ObjectNode values.
+	// Install this prototype for ObjectNode values.
 	engine.setDefaultPrototype(qMetaTypeId<ObjectNode*>(), engine.newQObject(this));
 
 	// This is required for the 'modifiers' property of the ObjectNode prototype.
@@ -48,7 +48,7 @@ void ObjectNodeBinding::setupBinding(ScriptEngine& engine)
 QVector<Modifier*> ObjectNodeBinding::modifiers()
 {
 	QVector<Modifier*> result;
-	ObjectNode* objNode = qscriptvalue_cast<ObjectNode*>(thisObject());
+	ObjectNode* objNode = ScriptEngine::getThisObject<ObjectNode>(context());
 	if(!objNode) {
 		context()->throwError(QScriptContext::TypeError, tr("ObjectNode.prototype.modifiers: This is not an ObjectNode."));
 		return result;
@@ -70,9 +70,9 @@ QVector<Modifier*> ObjectNodeBinding::modifiers()
 ******************************************************************************/
 SceneObject* ObjectNodeBinding::source()
 {
-	ObjectNode* objNode = qscriptvalue_cast<ObjectNode*>(thisObject());
+	ObjectNode* objNode = ScriptEngine::getThisObject<ObjectNode>(context());
 	if(!objNode) {
-		context()->throwError(QScriptContext::TypeError, tr("ObjectNode.prototype.modifiers: This is not an ObjectNode."));
+		context()->throwError(QScriptContext::TypeError, tr("ObjectNode.prototype.source: This is not an ObjectNode."));
 		return nullptr;
 	}
 

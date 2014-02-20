@@ -39,7 +39,7 @@ activeViewport.ortho(Point(0,0,0), Vector(0,-1,0), 30.0))]]>
   </simplesect>
 
   <simplesect xml:id="scripting.rendering.render_pics">
-  	<title>Rendering pictures</title> 
+  	<title>Rendering pictures and movies</title> 
     <para>
        To let OVITO render a picture of the current viewport, use the <code>Viewport.render()</code> function:
  	    <informalexample><programlisting language="javascript"><![CDATA[
@@ -50,18 +50,20 @@ activeViewport.render()]]>
     <para>
        You can modify the current render settings before calling <code>render()</code> by changing the corresponding properties of the <code>renderSettings</code> object, which is part of the global <code>dataset</code> object:
  	    <informalexample><programlisting language="javascript"><![CDATA[
-dataset.renderSettings.imageWidth = 320                // Sets the width in pixels of the output image
-dataset.renderSettings.imageHeight = 240               // Sets the height in pixels of the output image
-dataset.renderSettings.filename = "frame.png"          // Sets the output filename
-dataset.renderSettings.saveToFile = true               // Set this flag, otherwise the generated image will not be saved to disk.
+rs = dataset.renderSettings
 
-// Specify whether to render a single frame or a movie sequence: 
-dataset.renderSettings.renderingRangeType = RenderSettings.CURRENT_FRAME        // Render only the current animation frame
-dataset.renderSettings.renderingRangeType = RenderSettings.ANIMATION_INTERVAL   // Render all frames of the animation interval
-dataset.renderSettings.renderingRangeType = RenderSettings.CUSTOM_INTERVAL      // Render a custom interval of frames
+rs.imageWidth = 320                // Sets the width in pixels of the output image
+rs.imageHeight = 240               // Sets the height in pixels of the output image
+rs.filename = "frame.png"          // Sets the output filename
+rs.saveToFile = true               // Set this flag, otherwise the generated image will not be saved to disk.
+
+// Control which frames should be rendered: 
+rs.renderingRangeType = RenderSettings.CURRENT_FRAME        // Render only the current animation frame (default)
+rs.renderingRangeType = RenderSettings.ANIMATION_INTERVAL   // Render all frames of the animation interval
+rs.renderingRangeType = RenderSettings.CUSTOM_INTERVAL      // Render a custom interval of frames
 ]]>
 </programlisting></informalexample>
-	   As a shortcut, you can directly pass render settings parameters to the <code>render()</code>  function via an object literal. For example:       
+	   As a shortcut, you can directly pass the render settings parameters to the <code>render()</code>  function via an object literal. For example:       
  	    <informalexample><programlisting language="javascript"><![CDATA[
 activeViewport.render({ filename : "output_image.png", imageWidth : 320, imageHeight : 240 })]]>
 </programlisting></informalexample>

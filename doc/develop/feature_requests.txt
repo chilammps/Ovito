@@ -1,5 +1,6 @@
 
 - OpenGL rendering support for more than 12 million particles.
+- Add user documentation for general GUI (using numeric spinners etc.)
 
 - Import bond information from LAMMPS.
 - Create Bonds modifier: Add 'lower bound' parameter such that, when using the modifier several times, bonds with different lengths can be assigned different colors.

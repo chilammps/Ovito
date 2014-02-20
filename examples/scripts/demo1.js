@@ -1,9 +1,8 @@
 // Query program version.
-print("This is Ovito " + version())
+print("This is Ovito " + ovito.version)
 
-// Set the working directory and import a data file.
-cd("/Users/stuko/Documents/temp/")
-node = load("test.dump")
+// Import a data file.
+node = load("../data/NanocrystallinePd.dump.gz")
 
 // Block execution of the script until the scene is ready, that is, until 
 // the input file has been completely loaded.
@@ -15,29 +14,28 @@ wait()
 
 // Apply a modifier to the dataset.
 node.applyModifier(new ColorCodingModifier({ 
-	sourceProperty : "potentialenergy",
+	sourceProperty : "Potential Energy",
 	colorGradient  : new ColorCodingHotGradient()
 }))
 
-// Apply two more modifiers to delete some particles.
-node.applyModifier(new SelectExpressionModifier({ expression : "potentialenergy < -3.9" }))
-node.applyModifier(new DeleteParticlesModifier())
-
-// Set up view.
-activeViewport.perspective(Point3(-100, -50, 50), Vector(1, 0.5, -0.5), 70.0 * Math.PI/180.0)
-activeViewport.zoomToSceneExtents()
+// Set up view, looking along the [2,3,-3] vector.
+activeViewport.perspective(Point(-100, -150, 150), Vector(2, 3, -3), 60.0 * Math.PI/180.0)
 
 // Render a picture of the dataset.
 activeViewport.render({
-	filename    : "test_abc.png",
-	imageWidth  : 100,
-	imageHeight : 100
+	filename    : "rendering.png",
+	imageWidth  : 120,
+	imageHeight : 120
 })
+
+// Apply two more modifiers to delete some particles.
+node.applyModifier(new SelectExpressionModifier({ expression : "PotentialEnergy < -3.9" }))
+node.applyModifier(new DeleteParticlesModifier())
 
 // Print the modification pipeline of the selected node to the console.
 print("Current modification pipeline:")
-for(var i = 0; i < selectedNode.modifiers.length; i++)
-	print("  " + selectedNode.modifiers[i])  
+for(var i = 0; i < node.modifiers.length; i++)
+	print("  " + node.modifiers[i])  
 	
 // Perform some analysis.
 cna = new CommonNeighborAnalysisModifier({ cutoff : 3.2, adaptiveMode : false })

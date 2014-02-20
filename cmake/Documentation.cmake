@@ -29,7 +29,7 @@ FIND_PROGRAM(XSLT_PROCESSOR "xsltproc" DOC "Path to the XSLT processor program u
 IF(NOT XSLT_PROCESSOR)	
 	MESSAGE(FATAL_ERROR "The XSLT processor program (xsltproc) was not found. Please install it and/or specify its location manually.")
 ENDIF(NOT XSLT_PROCESSOR)
-SET(XSLT_PROCESSOR_OPTIONS "--xinclude" CACHE STRING "Additional to pass to the XSLT processor program when building the documentation" )
+SET(XSLT_PROCESSOR_OPTIONS "--xinclude" CACHE STRING "Additional to pass to the XSLT processor program when building the documentation")
 MARK_AS_ADVANCED(XSLT_PROCESSOR_OPTIONS)
 
 # Create destination directories.
@@ -42,7 +42,7 @@ FILE(MAKE_DIRECTORY "${OVITO_SHARE_DIRECTORY}/doc/manual/html")
 ADD_CUSTOM_TARGET(documentation 
 				COMMAND ${CMAKE_COMMAND} "-E" copy_directory "images/" "${OVITO_SHARE_DIRECTORY}/doc/manual/html/images/"
 				COMMAND ${CMAKE_COMMAND} "-E" copy "manual.css" "${OVITO_SHARE_DIRECTORY}/doc/manual/html/"
-				COMMAND ${XSLT_PROCESSOR} ${XSLT_PROCESSOR_OPTIONS} --stringparam base.dir "${OVITO_SHARE_DIRECTORY}/doc/manual/html/" html-customization-layer.xsl Manual.docbook
+				COMMAND ${XSLT_PROCESSOR} "${XSLT_PROCESSOR_OPTIONS}" --stringparam base.dir "${OVITO_SHARE_DIRECTORY}/doc/manual/html/" html-customization-layer.xsl Manual.docbook
 				WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/doc/manual/"
 				COMMENT "Building documentation files")
 

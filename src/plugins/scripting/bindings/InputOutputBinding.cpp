@@ -126,7 +126,7 @@ QScriptValue InputOutputBinding::save(QScriptContext* context, ScriptEngine* eng
 	QScriptValue exporterObject = context->argument(1).construct(constructorArgs);
 	if(exporterObject.isError() || engine->hasUncaughtException())
 		return exporterObject;
-	FileExporter* exporter = qscriptvalue_cast<FileExporter*>(exporterObject);
+	FileExporter* exporter = ScriptEngine::unwrapOvitoObject<FileExporter>(exporterObject);
 	if(!exporter)
 		return context->throwError(tr("Could not create an instance of the exporter type (second argument passed to save() function)."));
 
@@ -134,7 +134,7 @@ QScriptValue InputOutputBinding::save(QScriptContext* context, ScriptEngine* eng
 	DataSet* dataset = engine->dataset();
 	QVector<SceneNode*> nodes;
 	if(context->argumentCount() >= 4) {
-		SceneNode* node = qscriptvalue_cast<SceneNode*>(context->argument(3));
+		SceneNode* node = ScriptEngine::unwrapOvitoObject<SceneNode>(context->argument(3));
 		if(!node)
 			return context->throwError(tr("That's not a scene node (fourth argument passed to save() function)."));
 		nodes.push_back(node);

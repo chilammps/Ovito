@@ -51,7 +51,7 @@ void ViewportBinding::setupBinding(ScriptEngine& engine)
 ******************************************************************************/
 QScriptValue ViewportBinding::activeViewport(QScriptContext* context, ScriptEngine* engine)
 {
-	return engine->toScriptValue(engine->dataset()->viewportConfig()->activeViewport());
+	return engine->wrapOvitoObject(engine->dataset()->viewportConfig()->activeViewport());
 }
 
 /******************************************************************************
@@ -59,9 +59,9 @@ QScriptValue ViewportBinding::activeViewport(QScriptContext* context, ScriptEngi
 ******************************************************************************/
 QScriptValue ViewportBinding::render(QScriptContext* context, ScriptEngine* engine)
 {
-	Viewport* viewport = qscriptvalue_cast<Viewport*>(context->thisObject());
+	Viewport* viewport = ScriptEngine::getThisObject<Viewport>(context);
 	if(!viewport)
-		return context->throwError(tr("render() method must be called for a Viewport object."));
+		return context->throwError(QScriptContext::TypeError, tr("Viewport.prototype.render: This is not a Viewport."));
 
 	// Check if a RenderSettings object has been passed to the function.
 	OORef<RenderSettings> settings;
@@ -88,23 +88,18 @@ QScriptValue ViewportBinding::render(QScriptContext* context, ScriptEngine* engi
 		settings = viewport->dataset()->renderSettings();
 	OVITO_CHECK_OBJECT_POINTER(settings);
 
-	try {
-		// Prepare the frame buffer.
-		QSharedPointer<FrameBuffer> frameBuffer;
-		FrameBufferWindow* frameBufferWindow = nullptr;
-		if(Application::instance().guiMode()) {
-			frameBufferWindow = viewport->dataset()->mainWindow()->frameBufferWindow();
-			frameBuffer = frameBufferWindow->frameBuffer();
-		}
-		if(!frameBuffer)
-			frameBuffer.reset(new FrameBuffer(settings->outputImageWidth(), settings->outputImageHeight()));
+	// Prepare the frame buffer.
+	QSharedPointer<FrameBuffer> frameBuffer;
+	FrameBufferWindow* frameBufferWindow = nullptr;
+	if(Application::instance().guiMode()) {
+		frameBufferWindow = viewport->dataset()->mainWindow()->frameBufferWindow();
+		frameBuffer = frameBufferWindow->frameBuffer();
+	}
+	if(!frameBuffer)
+		frameBuffer.reset(new FrameBuffer(settings->outputImageWidth(), settings->outputImageHeight()));
 
-		// Render.
-		return engine->toScriptValue(engine->dataset()->renderScene(settings.get(), viewport, frameBuffer, frameBufferWindow));
-	}
-	catch(const Exception& ex) {
-		return context->throwError(tr("Rendering failed: %1").arg(ex.message()));
-	}
+	// Render.
+	return engine->toScriptValue(engine->dataset()->renderScene(settings.get(), viewport, frameBuffer, frameBufferWindow));
 }
 
 /******************************************************************************
@@ -112,7 +107,11 @@ QScriptValue ViewportBinding::render(QScriptContext* context, ScriptEngine* engi
 ******************************************************************************/
 void ViewportBinding::perspective(const Point3& cameraPos, const Vector3& cameraDir, FloatType fov)
 {
-	Viewport* vp = qscriptvalue_cast<Viewport*>(thisObject());
+	Viewport* vp = ScriptEngine::getThisObject<Viewport>(context());
+	if(!vp) {
+		context()->throwError(QScriptContext::TypeError, tr("Viewport.prototype.perspective: This is not a Viewport."));
+		return;
+	}
 	OVITO_CHECK_OBJECT_POINTER(vp);
 
 	vp->setViewType(Viewport::VIEW_PERSPECTIVE);
@@ -126,7 +125,11 @@ void ViewportBinding::perspective(const Point3& cameraPos, const Vector3& camera
 ******************************************************************************/
 void ViewportBinding::ortho(const Point3& cameraPos, const Vector3& cameraDir, FloatType fov)
 {
-	Viewport* vp = qscriptvalue_cast<Viewport*>(thisObject());
+	Viewport* vp = ScriptEngine::getThisObject<Viewport>(context());
+	if(!vp) {
+		context()->throwError(QScriptContext::TypeError, tr("Viewport.prototype.ortho: This is not a Viewport."));
+		return;
+	}
 	OVITO_CHECK_OBJECT_POINTER(vp);
 
 	vp->setViewType(Viewport::VIEW_ORTHO);

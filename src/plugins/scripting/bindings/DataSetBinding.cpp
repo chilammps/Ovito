@@ -37,9 +37,8 @@ void DataSetBinding::setupBinding(ScriptEngine& engine)
 	QScriptValue datasetPrototype = engine.newQObject(this);
 	// The 'version' property returns the version string of the application.
 	datasetPrototype.setProperty("version", QCoreApplication::applicationVersion());
-	// The 'selectedNode' property gets/sets the currently selected scene node.
-	datasetPrototype.setProperty("selectedNode", engine.newFunction(&DataSetBinding::selectedNode, 0), QScriptValue::PropertyGetter);
-	datasetPrototype.setProperty("selectedNode", engine.newFunction(&DataSetBinding::setSelectedNode, 1), QScriptValue::PropertySetter);
+	// Add a getter function property to workaround bug in Qt script.
+	datasetPrototype.setProperty("__qtsworksround__", engine.noopFunction(), QScriptValue::PropertyGetter);
 
 	// Install a prototype for DataSet values.
 	engine.setDefaultPrototype(qMetaTypeId<DataSet*>(), datasetPrototype);
@@ -51,36 +50,31 @@ void DataSetBinding::setupBinding(ScriptEngine& engine)
 /******************************************************************************
 * Implementation of the 'selectedNode' property.
 ******************************************************************************/
-QScriptValue DataSetBinding::selectedNode(QScriptContext* context, QScriptEngine* engine)
+SceneNode* DataSetBinding::selectedNode() const
 {
-	DataSet* dataset = qscriptvalue_cast<DataSet*>(context->thisObject());
+	DataSet* dataset = ScriptEngine::getThisObject<DataSet>(context());
 	if(dataset)
-		return engine->toScriptValue(dataset->selection()->firstNode());
-	else
-		return context->throwError(QScriptContext::TypeError, tr("DataSet.prototype.selectedNode: this is not a DataSet."));
+		return dataset->selection()->firstNode();
+	else {
+		context()->throwError(QScriptContext::TypeError, tr("DataSet.prototype.selectedNode: this is not a DataSet."));
+		return nullptr;
+	}
 }
 
 /******************************************************************************
 * Implementation of the 'selectedNode' property.
 ******************************************************************************/
-QScriptValue DataSetBinding::setSelectedNode(QScriptContext* context, QScriptEngine* engine)
+void DataSetBinding::setSelectedNode(SceneNode* node)
 {
-	DataSet* dataset = qscriptvalue_cast<DataSet*>(context->thisObject());
+	DataSet* dataset = ScriptEngine::getThisObject<DataSet>(context());
 	if(dataset) {
-		if(context->argumentCount() != 1)
-			return context->throwError(tr("DataSet.prototype.selectedNode: expected 1 argument."));
-		if(context->argument(0).isNull())
+		if(!node)
 			dataset->selection()->clear();
-		else {
-			SceneNode* node = qscriptvalue_cast<SceneNode*>(context->argument(0));
-			if(!node)
-				return context->throwError(QScriptContext::TypeError, tr("DataSet.prototype.selectedNode: argument is not a SceneNode."));
+		else
 			dataset->selection()->setNode(node);
-		}
-		return engine->undefinedValue();
 	}
 	else
-		return context->throwError(QScriptContext::TypeError, tr("DataSet.prototype.selectedNode: this is not a DataSet."));
+		context()->throwError(QScriptContext::TypeError, tr("DataSet.prototype.selectedNode: this is not a DataSet."));
 }
 
 

@@ -42,7 +42,7 @@
     This modifier constructs a polyhedral mesh around a set of particles. It can be used to generate
     a geometric representation of the outer and inner surfaces of an atomistic solid. In addition to
     visualization purposes, the geometric description of the surface is good for quantitative 
-    measurements of the surface area and the solid volume of an atomistic structure. 
+    measurements of the surface area and the solid volume or porosity of an atomistic structure. 
   </para>
 
   <para>
