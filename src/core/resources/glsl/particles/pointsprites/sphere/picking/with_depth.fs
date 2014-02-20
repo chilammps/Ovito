@@ -39,7 +39,6 @@ uniform mat4 projection_matrix;
 	#define particle_color_fs gl_Color
 	
 	#define FragColor gl_FragColor
-	#define texture texture2D
 	
 	#if __VERSION__ < 120
 		#define gl_PointCoord gl_TexCoord[0].xy

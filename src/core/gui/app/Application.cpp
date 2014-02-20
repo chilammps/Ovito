@@ -46,7 +46,7 @@ void Application::qtMessageOutput(QtMsgType type, const QMessageLogContext& cont
 {
 	// Forward message to default handler.
 	if(defaultQtMessageHandler) defaultQtMessageHandler(type, context, msg);
-	else std::cerr << msg.toLocal8Bit().constData() << std::endl;
+	else std::cerr << qPrintable(msg) << std::endl;
 }
 
 /******************************************************************************
@@ -84,6 +84,7 @@ bool Application::initialize(int& argc, char** argv)
 	_cmdLineParser.addOption(CommandLineOption(QStringList{{"v", "version"}}, tr("Prints the program version and exits.")));
 	_cmdLineParser.addOption(CommandLineOption(QStringList{{"nogui"}}, tr("Run in console mode without showing the graphical user interface.")));
 	_cmdLineParser.addOption(CommandLineOption(QStringList{{"glversion"}}, tr("Selects a specific version of the OpenGL standard."), tr("VERSION")));
+	_cmdLineParser.addOption(CommandLineOption(QStringList{{"glcompatprofile"}}, tr("Request the OpenGL compatibility profile instead of the core profile.")));
 
 	// Parse command line arguments.
 	// Ignore unknown command line options for now.
@@ -301,8 +302,7 @@ void Application::guiExceptionHandler(const Exception& exception)
 void Application::consoleExceptionHandler(const Exception& exception)
 {
 	for(int i = exception.messages().size() - 1; i >= 0; i--) {
-		std::cerr << "ERROR: ";
-		std::cerr << exception.messages()[i].toLocal8Bit().constData() << std::endl;
+		std::cerr << "ERROR: " << qPrintable(exception.messages()[i]) << std::endl;
 	}
 	std::cerr << std::flush;
 }

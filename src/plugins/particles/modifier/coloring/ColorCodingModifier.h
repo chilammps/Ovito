@@ -23,11 +23,11 @@
 #define __OVITO_COLOR_CODING_MODIFIER_H
 
 #include <plugins/particles/Particles.h>
+#include <plugins/particles/data/ParticlePropertyObject.h>
 #include <core/animation/controller/Controller.h>
 #include <core/animation/AnimationSettings.h>
 #include <core/rendering/ImageGeometryBuffer.h>
 #include <core/rendering/TextGeometryBuffer.h>
-#include <plugins/particles/util/ParticlePropertyComboBox.h>
 #include "../ParticleModifier.h"
 
 namespace Particles {
@@ -178,10 +178,10 @@ public:
 	virtual void initializeModifier(PipelineObject* pipelineObject, ModifierApplication* modApp) override;
 
 	/// Sets the source particle property that is used for coloring of particles.
-	void setSourceProperty(const ParticlePropertyReference& prop);
+	void setSourceProperty(const ParticlePropertyReference& prop) { _sourceProperty = prop; }
 
 	/// Returns the source particle property that is used for coloring of particles.
-	const ParticlePropertyReference& sourceProperty() const { return _sourcePropertyRef; }
+	const ParticlePropertyReference& sourceProperty() const { return _sourceProperty; }
 
 	/// Returns the range start value.
 	FloatType startValue() const { return _startValueCtrl ? _startValueCtrl->currentValue() : 0; }
@@ -234,9 +234,6 @@ public:
 	/// Sets whether the color legend is displayed in the rendered image.
 	void setRenderLegend(bool render) { _renderLegend = render; }
 
-	/// Retrieves the selected input particle property from the given modifier input state.
-	ParticlePropertyObject* lookupInputProperty(const PipelineFlowState& inputState) const;
-
 public Q_SLOTS:
 
 	/// Sets the start and end value to the minimum and maximum value in the selected data channel.
@@ -260,9 +257,6 @@ protected:
 	/// Loads the class' contents from the given stream.
 	virtual void loadFromStream(ObjectLoadStream& stream) override;
 
-	/// Creates a copy of this object.
-	virtual OORef<RefTarget> clone(bool deepCopy, CloneHelper& cloneHelper) override;
-
 	/// Modifies the particle object.
 	virtual ObjectStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;
 
@@ -276,7 +270,7 @@ protected:
 	ReferenceField<ColorCodingGradient> _colorGradient;
 
 	/// The particle type property that is used as source for the coloring.
-	ParticlePropertyReference _sourcePropertyRef;
+	PropertyField<ParticlePropertyReference> _sourceProperty;
 
 	/// Controls whether the modifier assigns a color only to selected particles.
 	PropertyField<bool> _colorOnlySelected;
@@ -322,6 +316,7 @@ private:
 	DECLARE_PROPERTY_FIELD(_colorOnlySelected);
 	DECLARE_PROPERTY_FIELD(_keepSelection);
 	DECLARE_PROPERTY_FIELD(_renderLegend);
+	DECLARE_PROPERTY_FIELD(_sourceProperty);
 };
 
 /*
@@ -341,9 +336,6 @@ protected:
 
 private:
 
-	/// The list of particle properties.
-	ParticlePropertyComboBox* propertyListBox;
-
 	/// The list of available color gradients.
 	QComboBox* colorGradientList;
 
@@ -352,14 +344,8 @@ private:
 
 protected Q_SLOTS:
 
-	/// Updates the contents of the property list combo box.
-	void updatePropertyList();
-
 	/// Updates the display for the color gradient.
 	void updateColorGradient();
-
-	/// This is called when the user has selected another item in the particle property list.
-	void onPropertySelected(int index);
 
 	/// Is called when the user selects a color gradient in the list box.
 	void onColorGradientSelected(int index);

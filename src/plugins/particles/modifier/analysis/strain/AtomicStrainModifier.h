@@ -150,7 +150,7 @@ private:
 			_strainTensors(calculateStrainTensors ? new ParticleProperty(positions->size(), ParticleProperty::StrainTensorProperty) : nullptr),
 			_deformationGradients(calculateDeformationGradients ? new ParticleProperty(positions->size(), ParticleProperty::DeformationGradientProperty) : nullptr),
 			_invalidParticles(new ParticleProperty(positions->size(), ParticleProperty::SelectionProperty)),
-			_currentSimCellInv(simCell.matrix().inverse()),
+			_currentSimCellInv(simCell.inverseMatrix()),
 			_reducedToAbsolute(eliminateCellDeformation ? simCellRef.matrix() : simCell.matrix()) {}
 
 		/// Computes the modifier's results and stores them in this object for later retrieval.

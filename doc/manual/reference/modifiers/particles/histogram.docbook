@@ -20,7 +20,7 @@
   </para>
   
   <para>
-  Optionally, the modifier can select all particles whose property value
+  Optionally, the modifier can be used to select particles whose property value
   is within a certain interval.
   </para>
   

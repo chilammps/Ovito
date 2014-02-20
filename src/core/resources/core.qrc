@@ -103,6 +103,17 @@
 	<file>glsl/particles/pointsprites/sphere/picking/without_depth.vs</file>
 	<file>glsl/particles/pointsprites/square/flat_shading.fs</file>
 	<file>glsl/particles/pointsprites/square/picking/flat_shading.fs</file>
+	
+	<file>glsl/particles/imposter/sphere/flat_shading.fs</file>
+	<file>glsl/particles/imposter/sphere/with_depth.fs</file>
+	<file>glsl/particles/imposter/sphere/with_depth.vs</file>
+	<file>glsl/particles/imposter/sphere/without_depth.fs</file>
+	<file>glsl/particles/imposter/sphere/without_depth.vs</file>
+	<file>glsl/particles/imposter/sphere/picking/flat_shading.fs</file>
+	<file>glsl/particles/imposter/sphere/picking/with_depth.fs</file>
+	<file>glsl/particles/imposter/sphere/picking/with_depth.vs</file>
+	<file>glsl/particles/imposter/sphere/picking/without_depth.vs</file>
+	
 	<file>glsl/particles/geometry/sphere/sphere.fs</file>
 	<file>glsl/particles/geometry/sphere/sphere.vs</file>
 	<file>glsl/particles/geometry/sphere/sphere.gs</file>

@@ -70,6 +70,71 @@ bool ParticlePickingHelper::pickParticle(Viewport* vp, const QPoint& clickPoint,
 }
 
 /******************************************************************************
+* Computes the world space bounding box of the particle selection marker.
+******************************************************************************/
+Box3 ParticlePickingHelper::selectionMarkerBoundingBox(Viewport* vp, const PickResult& pickRecord)
+{
+	if(!pickRecord.objNode)
+		return Box3();
+
+	const PipelineFlowState& flowState = pickRecord.objNode->evalPipeline(vp->dataset()->animationSettings()->time());
+
+	// If particle selection is based on ID, find particle with the given ID.
+	size_t particleIndex = pickRecord.particleIndex;
+	if(pickRecord.particleId >= 0) {
+		for(const auto& sceneObj : flowState.objects()) {
+			ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(sceneObj.get());
+			if(property && property->type() == ParticleProperty::IdentifierProperty) {
+				const int* begin = property->constDataInt();
+				const int* end = begin + property->size();
+				const int* iter = std::find(begin, end, pickRecord.particleId);
+				if(iter != end)
+					particleIndex = (iter - begin);
+			}
+		}
+	}
+
+	// Fetch properties of selected particle needed to compute the bounding box.
+	ParticlePropertyObject* posProperty = nullptr;
+	ParticlePropertyObject* radiusProperty = nullptr;
+	ParticleTypeProperty* typeProperty = nullptr;
+	for(const auto& sceneObj : flowState.objects()) {
+		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(sceneObj.get());
+		if(!property) continue;
+		if(property->type() == ParticleProperty::PositionProperty && property->size() >= particleIndex)
+			posProperty = property;
+		else if(property->type() == ParticleProperty::RadiusProperty && property->size() >= particleIndex)
+			radiusProperty = property;
+		else if(property->type() == ParticleProperty::ParticleTypeProperty && property->size() >= particleIndex)
+			typeProperty = dynamic_object_cast<ParticleTypeProperty>(property);
+	}
+	if(!posProperty)
+		return Box3();
+
+	// Get the particle display object, which is attached to the position property object.
+	ParticleDisplay* particleDisplay = nullptr;
+	for(DisplayObject* displayObj : posProperty->displayObjects()) {
+		if((particleDisplay = dynamic_object_cast<ParticleDisplay>(displayObj)) != nullptr)
+			break;
+	}
+	if(!particleDisplay)
+		return Box3();
+
+	// Determine position of selected particle.
+	Point3 pos = posProperty->getPoint3(particleIndex);
+
+	// Determine radius of selected particle.
+	FloatType radius = particleDisplay->particleRadius(particleIndex, radiusProperty, typeProperty);
+	if(radius <= 0)
+		return Box3();
+
+	TimeInterval iv;
+	const AffineTransformation& nodeTM = pickRecord.objNode->getWorldTransform(vp->dataset()->animationSettings()->time(), iv);
+
+	return nodeTM * Box3(pos, radius + vp->nonScalingSize(nodeTM * pos) * 1e-1f);
+}
+
+/******************************************************************************
 * Renders the atom selection overlay in a viewport.
 ******************************************************************************/
 void ParticlePickingHelper::renderSelectionMarker(Viewport* vp, ViewportSceneRenderer* renderer, const PickResult& pickRecord)
@@ -175,6 +240,8 @@ void ParticlePickingHelper::renderSelectionMarker(Viewport* vp, ViewportSceneRen
 	_highlightBuffer->setParticleRadius(radius + vp->nonScalingSize(nodeTM * pos) * 1e-1f);
 
 	renderer->setWorldTransform(nodeTM);
+	GLint oldDepthFunc;
+	glGetIntegerv(GL_DEPTH_FUNC, &oldDepthFunc);
 	glEnable(GL_DEPTH_TEST);
 	glClearStencil(0);
 	glClear(GL_STENCIL_BUFFER_BIT);
@@ -191,6 +258,7 @@ void ParticlePickingHelper::renderSelectionMarker(Viewport* vp, ViewportSceneRen
 	_highlightBuffer->render(renderer);
 	glEnable(GL_DEPTH_TEST);
 	glDisable(GL_STENCIL_TEST);
+	glDepthFunc(oldDepthFunc);
 }
 
 };	// End of namespace

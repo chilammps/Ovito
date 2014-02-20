@@ -54,6 +54,7 @@
 #include <netcdf.h>
 
 #define NCERR(x)  _ncerr(x, __FILE__, __LINE__)
+#define NCERRI(x, info)  _ncerr_with_info(x, __FILE__, __LINE__, info)
 
 namespace NetCDF {
 
@@ -70,6 +71,16 @@ static void _ncerr(int err, const char *file, int line)
 {
 	if (err != NC_NOERR)
 		throw Exception(NetCDFImporter::tr("NetCDF error in line %1 of source file %2: %3").arg(line).arg(file).arg(QString(nc_strerror(err))));
+}
+
+/******************************************************************************
+* Check for NetCDF error and throw exception (and attach additional information
+* to exception string)
+******************************************************************************/
+static void _ncerr_with_info(int err, const char *file, int line, const QString &info)
+{
+	if (err != NC_NOERR)
+		throw Exception(NetCDFImporter::tr("NetCDF error in line %1 of source file %2: %3 %4").arg(line).arg(file).arg(QString(nc_strerror(err))).arg(info));
 }
 
 /******************************************************************************
@@ -173,6 +184,8 @@ void NetCDFImporter::NetCDFImportTask::openNetCDF(const QString &filename)
 	NCERR( nc_inq_dimid(_ncid, "frame", &_frame_dim) );
 	NCERR( nc_inq_dimid(_ncid, "atom", &_atom_dim) );
 	NCERR( nc_inq_dimid(_ncid, "spatial", &_spatial_dim) );
+	if (nc_inq_dimid(_ncid, "Voigt", &_Voigt_dim) != NC_NOERR)
+		_Voigt_dim = -1;
 	NCERR( nc_inq_dimid(_ncid, "cell_spatial", &_cell_spatial_dim) );
 	NCERR( nc_inq_dimid(_ncid, "cell_angular", &_cell_angular_dim) );
 
@@ -357,6 +370,14 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 							nDimsDetected = 4;
 						}
 					}
+					else if (nDims == 3 && dimIds[2] == _Voigt_dim) {
+						// This is a tensor property, in Voigt notation
+						startp[2] = 0;
+						countp[2] = 6;
+						componentCount = 6;
+						nativeComponentCount = 6;
+						nDimsDetected = 3;
+					}
 				}
 				else if (nDims > 0 && dimIds[0] == _atom_dim) {
 					// This is a per atom property, but global (per-file, not per frame)
@@ -380,6 +401,14 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 							nativeComponentCount = 9;
 							nDimsDetected = 3;
 						}
+					}
+					else if (nDims == 2 && dimIds[1] == _Voigt_dim) {
+						// This is a tensor property, in Voigt notation
+						startp[1] = 0;
+						countp[1] = 6;
+						componentCount = 6;
+						nativeComponentCount = 6;
+						nDimsDetected = 2;
 					}
 				}
 
@@ -435,12 +464,12 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 							if (componentCount == 6 && nativeComponentCount == 9) {
 								// Convert this property to Voigt notation.
 								int *data = new int[9*particleCount];
-								NCERR( nc_get_vara_int(_ncid, varId, startp, countp, data) );
+								NCERRI( nc_get_vara_int(_ncid, varId, startp, countp, data), tr("(While reading variable '%1'.)").arg(columnName));
 								fullToVoigt(particleCount, data, property->dataInt());
 								delete [] data;
 							}
 							else {
-								NCERR( nc_get_vara_int(_ncid, varId, startp, countp, property->dataInt()) );
+								NCERRI( nc_get_vara_int(_ncid, varId, startp, countp, property->dataInt()), tr("(While reading variable '%1'.)").arg(columnName) );
 							}
 							
 							// Create particles types if this is the particle type property.
@@ -458,7 +487,7 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 								for (int i = 0; i <= maxType; i++) {
 									// Only define atom type if really present.
 									if (typeCount[i] > 0)
-										addParticleType(i);
+										addParticleTypeId(i);
 								}							
 							}
 						}
@@ -469,18 +498,18 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 								// Convert this property to Voigt notation.
 								FloatType *data = new FloatType[9*particleCount];
 #ifdef FLOATTYPE_FLOAT
-								NCERR( nc_get_vara_float(_ncid, varId, startp, countp, data) );
+								NCERRI( nc_get_vara_float(_ncid, varId, startp, countp, data), tr("(While reading variable '%1'.)").arg(columnName) );
 #else
-								NCERR( nc_get_vara_double(_ncid, varId, startp, countp, data) );
+								NCERRI( nc_get_vara_double(_ncid, varId, startp, countp, data), tr("(While reading variable '%1'.)").arg(columnName) );
 #endif
 								fullToVoigt(particleCount, data, property->dataFloat());
 								delete [] data;
 							}
 							else {
 #ifdef FLOATTYPE_FLOAT
-								NCERR( nc_get_vara_float(_ncid, varId, startp, countp, property->dataFloat()) );
+								NCERRI( nc_get_vara_float(_ncid, varId, startp, countp, property->dataFloat()), tr("(While reading variable '%1'.)").arg(columnName) );
 #else
-								NCERR( nc_get_vara_double(_ncid, varId, startp, countp, property->dataFloat()) );
+								NCERRI( nc_get_vara_double(_ncid, varId, startp, countp, property->dataFloat()), tr("(While reading variable '%1'.)").arg(columnName) );
 #endif
 							}
 						}
@@ -492,6 +521,8 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 			}
 		}
 	}
+
+	setInfoText(tr("%1 particles").arg(particleCount));
 }
 
 /******************************************************************************

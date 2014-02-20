@@ -77,9 +77,6 @@ private:
 	/// The offscreen surface used to render into an image buffer using OpenGL.
 	QScopedPointer<QOffscreenSurface> _offscreenSurface;
 
-	/// The OpenGL rendering context.
-	QScopedPointer<QOpenGLContext> _offscreenContext;
-
 	/// The OpenGL framebuffer.
 	QScopedPointer<QOpenGLFramebufferObject> _framebufferObject;
 

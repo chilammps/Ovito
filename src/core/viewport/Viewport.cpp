@@ -55,6 +55,7 @@ DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _cameraDirection, "CameraDirection", PROPE
 DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _showRenderFrame, "ShowRenderFrame", PROPERTY_FIELD_NO_UNDO)
 DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _viewportTitle, "Title", PROPERTY_FIELD_NO_UNDO)
 DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _cameraTM, "CameraTransformation", PROPERTY_FIELD_NO_UNDO)
+DEFINE_FLAGS_PROPERTY_FIELD(Viewport, _showGrid, "ShowGrid", PROPERTY_FIELD_NO_UNDO)
 
 /******************************************************************************
 * Constructor.
@@ -69,7 +70,8 @@ Viewport::Viewport(DataSet* dataset) : RefTarget(dataset),
 		_renderDebugCounter(0),
 		_pickingRenderer(new PickingSceneRenderer(dataset)),
 		_cameraTM(AffineTransformation::Identity()),
-		_gridMatrix(AffineTransformation::Identity())
+		_gridMatrix(AffineTransformation::Identity()),
+		_showGrid(false)
 {
 	INIT_PROPERTY_FIELD(Viewport::_viewNode);
 	INIT_PROPERTY_FIELD(Viewport::_viewType);
@@ -81,6 +83,7 @@ Viewport::Viewport(DataSet* dataset) : RefTarget(dataset),
 	INIT_PROPERTY_FIELD(Viewport::_showRenderFrame);
 	INIT_PROPERTY_FIELD(Viewport::_viewportTitle);
 	INIT_PROPERTY_FIELD(Viewport::_cameraTM);
+	INIT_PROPERTY_FIELD(Viewport::_showGrid);
 
 	connect(&ViewportSettings::getSettings(), &ViewportSettings::settingsChanged, this, &Viewport::viewportSettingsChanged);
 }
@@ -624,7 +627,8 @@ bool Viewport::setMouseGrabEnabled(bool grab)
 ******************************************************************************/
 void Viewport::setCursor(const QCursor& cursor)
 {
-#ifndef Q_OS_MACX
+	// Changing the cursor leads to program crash on MacOS and Qt <= 5.2.0.
+#if !defined(Q_OS_MACX) || (QT_VERSION >= QT_VERSION_CHECK(5, 2, 1))
 	if(_viewportWindow)
 		_viewportWindow->setCursor(cursor);
 #endif
@@ -635,7 +639,7 @@ void Viewport::setCursor(const QCursor& cursor)
 ******************************************************************************/
 void Viewport::unsetCursor()
 {
-#ifndef Q_OS_MACX
+#if !defined(Q_OS_MACX) || (QT_VERSION >= QT_VERSION_CHECK(5, 2, 1))
 	if(_viewportWindow)
 		_viewportWindow->unsetCursor();
 #endif
@@ -963,6 +967,31 @@ Ray3 Viewport::viewportRay(const Point2& viewportPoint)
 		Point3 ndc(viewportPoint.x(), viewportPoint.y(), -1);
 		return Ray3(_projParams.inverseViewMatrix * (_projParams.inverseProjectionMatrix * ndc), _projParams.inverseViewMatrix * Vector3(0,0,-1));
 	}
+}
+
+/******************************************************************************
+* Computes the intersection of a ray going through a point in the
+* viewport projection plane and the grid plane.
+*
+* Returns true if an intersection has been found.
+******************************************************************************/
+bool Viewport::computeConstructionPlaneIntersection(const Point2& viewportPosition, Point3& intersectionPoint, FloatType epsilon)
+{
+	// The construction plane in grid coordinates.
+	Plane3 gridPlane = Plane3(Vector3(0,0,1), 0);
+
+	// Compute the ray and transform it to the grid coordinate system.
+	Ray3 ray = gridMatrix().inverse() * viewportRay(viewportPosition);
+
+	// Compute intersection point.
+	FloatType t = gridPlane.intersectionT(ray, epsilon);
+    if(t == std::numeric_limits<FloatType>::max()) return false;
+	if(isPerspectiveProjection() && t <= 0.0f) return false;
+
+	intersectionPoint = ray.point(t);
+	intersectionPoint.z() = 0;
+
+	return true;
 }
 
 };

@@ -112,29 +112,11 @@ public:
 	/// Returns a pointer to the OpenGL functions object.
 	QOpenGLFunctions* glfuncs() const { return _glFunctions; }
 
-	/// Returns a pointer to the OpenGL 2.0 functions object.
-	QOpenGLFunctions_2_0* glfuncs20() const { return _glFunctions20; }
-
-	/// Returns a pointer to the OpenGL 3.0 functions object.
-	QOpenGLFunctions_3_0* glfuncs30() const { return _glFunctions30; }
-
-	/// Returns a pointer to the OpenGL 3.2 core profile functions object.
-	QOpenGLFunctions_3_2_Core* glfuncs32() const { return _glFunctions32; }
-
 	/// Returns the surface format of the current OpenGL context.
 	const QSurfaceFormat& glformat() const { return _glformat; }
 
 	/// Indicates whether the current OpenGL implementation is according to the core profile.
 	bool isCoreProfile() const { return _isCoreProfile; }
-
-	/// Returns whether the application should use the OpenGL core profile; or compatibility profile otherwise.
-	static bool useCoreProfile() {
-#ifndef Q_OS_MACX
-		return false;	// Prefer OpenGL compatibility profile.
-#else
-		return true;	// Always use OpenGL core profile on Mac OS X platform.
-#endif
-	}
 
 	/// Translates an OpenGL error code to a human-readable message string.
 	static const char* openglErrorString(GLenum errorCode);
@@ -144,30 +126,30 @@ public:
 
 	/// The OpenGL glPointParameterf() function.
 	void glPointParameterf(GLenum pname, GLfloat param) {
-		if(glfuncs32()) glfuncs32()->glPointParameterf(pname, param);
-		else if(glfuncs30()) glfuncs30()->glPointParameterf(pname, param);
-		else if(glfuncs20()) glfuncs20()->glPointParameterf(pname, param);
+		if(_glFunctions32) _glFunctions32->glPointParameterf(pname, param);
+		else if(_glFunctions30) _glFunctions30->glPointParameterf(pname, param);
+		else if(_glFunctions20) _glFunctions20->glPointParameterf(pname, param);
 	}
 
 	/// The OpenGL glPointParameterfv() function.
 	void glPointParameterfv(GLenum pname, const GLfloat* params) {
-		if(glfuncs32()) glfuncs32()->glPointParameterfv(pname, params);
-		else if(glfuncs30()) glfuncs30()->glPointParameterfv(pname, params);
-		else if(glfuncs20()) glfuncs20()->glPointParameterfv(pname, params);
+		if(_glFunctions32) _glFunctions32->glPointParameterfv(pname, params);
+		else if(_glFunctions30) _glFunctions30->glPointParameterfv(pname, params);
+		else if(_glFunctions20) _glFunctions20->glPointParameterfv(pname, params);
 	}
 
 	/// The OpenGL glMultiDrawArrays() function.
 	void glMultiDrawArrays(GLenum mode, const GLint* first, const GLsizei* count, GLsizei drawcount) {
-		if(glfuncs32()) glfuncs32()->glMultiDrawArrays(mode, first, count, drawcount);
-		else if(glfuncs30()) glfuncs30()->glMultiDrawArrays(mode, first, count, drawcount);
-		else if(glfuncs20()) glfuncs20()->glMultiDrawArrays(mode, first, count, drawcount);
+		if(_glFunctions32) _glFunctions32->glMultiDrawArrays(mode, first, count, drawcount);
+		else if(_glFunctions30) _glFunctions30->glMultiDrawArrays(mode, first, count, drawcount);
+		else if(_glFunctions20) _glFunctions20->glMultiDrawArrays(mode, first, count, drawcount);
 	}
 
 	/// Make sure vertex IDs are available to use by the OpenGL shader.
-	void activateVertexIDs(QOpenGLShaderProgram* shader, GLint vertexCount);
+	void activateVertexIDs(QOpenGLShaderProgram* shader, GLint vertexCount, bool alwaysUseVBO = false);
 
 	/// This needs to be called to deactivate vertex IDs, which were activated by a call to activateVertexIDs().
-	void deactivateVertexIDs(QOpenGLShaderProgram* shader);
+	void deactivateVertexIDs(QOpenGLShaderProgram* shader, bool alwaysUseVBO = false);
 
 	/// Registers a range of sub-IDs belonging to the current object being rendered.
 	/// This is an internal method used by the PickingSceneRenderer class to implement the picking mechanism.
@@ -192,6 +174,12 @@ protected:
 
 	/// \brief Loads and compiles a GLSL shader and adds it to the given program object.
 	void loadShader(QOpenGLShaderProgram* program, QOpenGLShader::ShaderType shaderType, const QString& filename);
+
+	/// Determines the range of the construction grid to display.
+	std::tuple<FloatType, Box2I> determineGridRange(Viewport* vp);
+
+	/// Renders the construction grid in a viewport.
+	void renderGrid();
 
 private:
 
@@ -230,6 +218,9 @@ private:
 
 	/// The number of IDs stored in the OpenGL buffer.
 	GLint _glVertexIDBufferSize;
+
+	/// The geometry buffer used to render the construction grid of a viewport.
+	std::unique_ptr<LineGeometryBuffer> _constructionGridGeometry;
 
 	Q_OBJECT
 	OVITO_OBJECT

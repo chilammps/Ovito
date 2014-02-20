@@ -30,13 +30,11 @@ uniform int verticesPerElement;
 	#define in attribute
 	#define out varying
 	#define flat
-
-	attribute float vertexID;
-	#define gl_VertexID int(vertexID)
 #endif
 
 // The vertex data
 in vec3 vertex_pos;
+in float vertexID;
 
 // The cylinder data:
 in vec3 cylinder_base;				// The position of the cylinder in model coordinates.
@@ -53,7 +51,7 @@ flat out float cylinder_length;			// The length of the cylinder
 void main()
 {
 	// Compute color from object ID.
-	int objectID = pickingBaseID + (gl_VertexID / verticesPerElement);
+	int objectID = pickingBaseID + (int(vertexID) / verticesPerElement);
 #if __VERSION__ >= 130
 	cylinder_color_in = vec4(
 		float(objectID & 0xFF) / 255.0, 

@@ -22,6 +22,7 @@
 #include <core/Core.h>
 #include <core/rendering/SceneRenderer.h>
 #include <core/gui/properties/ColorParameterUI.h>
+#include <core/gui/properties/FloatParameterUI.h>
 #include <core/scene/objects/geometry/TriMeshObject.h>
 #include "TriMeshDisplay.h"
 
@@ -31,7 +32,10 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, TriMeshDisplay, DisplayObject)
 IMPLEMENT_OVITO_OBJECT(Core, TriMeshDisplayEditor, PropertiesEditor)
 SET_OVITO_OBJECT_EDITOR(TriMeshDisplay, TriMeshDisplayEditor)
 DEFINE_FLAGS_PROPERTY_FIELD(TriMeshDisplay, _color, "Color", PROPERTY_FIELD_MEMORIZE)
+DEFINE_REFERENCE_FIELD(TriMeshDisplay, _transparency, "Transparency", FloatController)
 SET_PROPERTY_FIELD_LABEL(TriMeshDisplay, _color, "Display color")
+SET_PROPERTY_FIELD_LABEL(TriMeshDisplay, _transparency, "Transparency")
+SET_PROPERTY_FIELD_UNITS(TriMeshDisplay, _transparency, PercentParameterUnit)
 
 /******************************************************************************
 * Constructor.
@@ -40,6 +44,9 @@ TriMeshDisplay::TriMeshDisplay(DataSet* dataset) : DisplayObject(dataset),
 	_color(0.85, 0.85, 1)
 {
 	INIT_PROPERTY_FIELD(TriMeshDisplay::_color);
+	INIT_PROPERTY_FIELD(TriMeshDisplay::_transparency);
+
+	_transparency = ControllerManager::instance().createDefaultController<FloatController>(dataset);
 }
 
 /******************************************************************************
@@ -67,10 +74,15 @@ void TriMeshDisplay::render(TimePoint time, SceneObject* sceneObject, const Pipe
 	// Do we have to re-create the geometry buffer from scratch?
 	bool recreateBuffer = !_buffer || !_buffer->isValid(renderer);
 
+	FloatType transp = 0;
+	TimeInterval iv;
+	if(_transparency) _transparency->getValue(time, transp, iv);
+	ColorA color_mesh(color(), 1.0f - transp);
+
 	// Do we have to update contents of the geometry buffer?
 	bool updateContents = _geometryCacheHelper.updateState(
 			sceneObject, sceneObject ? sceneObject->revisionNumber() : 0,
-			color()) || recreateBuffer;
+					color_mesh) || recreateBuffer;
 
 	// Re-create the geometry buffer if necessary.
 	if(recreateBuffer)
@@ -80,7 +92,7 @@ void TriMeshDisplay::render(TimePoint time, SceneObject* sceneObject, const Pipe
 	if(updateContents) {
 		OORef<TriMeshObject> triMeshObj = sceneObject->convertTo<TriMeshObject>(time);
 		if(triMeshObj)
-			_buffer->setMesh(triMeshObj->mesh(), ColorA(color()));
+			_buffer->setMesh(triMeshObj->mesh(), color_mesh);
 		else
 			_buffer->setMesh(TriMesh(), ColorA(1,1,1,1));
 	}
@@ -107,6 +119,12 @@ void TriMeshDisplayEditor::createUI(const RolloutInsertionParameters& rolloutPar
 	ColorParameterUI* colorUI = new ColorParameterUI(this, PROPERTY_FIELD(TriMeshDisplay::_color));
 	layout->addWidget(colorUI->label(), 0, 0);
 	layout->addWidget(colorUI->colorPicker(), 0, 1);
+
+	FloatParameterUI* transparencyUI = new FloatParameterUI(this, PROPERTY_FIELD(TriMeshDisplay::_transparency));
+	layout->addWidget(new QLabel(tr("Transparency (%):")), 1, 0);
+	layout->addLayout(transparencyUI->createFieldLayout(), 1, 1);
+	transparencyUI->setMinValue(0);
+	transparencyUI->setMaxValue(1);
 }
 
 };

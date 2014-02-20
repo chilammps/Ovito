@@ -37,6 +37,20 @@ PropertiesEditor::PropertiesEditor() : RefMaker(nullptr), _container(nullptr), _
 }
 
 /******************************************************************************
+* This will bind the editor to the given container.
+******************************************************************************/
+void PropertiesEditor::initialize(PropertiesPanel* container, MainWindow* mainWindow, const RolloutInsertionParameters& rolloutParams)
+{
+	OVITO_CHECK_POINTER(container);
+	OVITO_CHECK_POINTER(mainWindow);
+	OVITO_ASSERT_MSG(_container == nullptr, "PropertiesEditor::initialize()", "Editor can only be initialized once.");
+	_container = container;
+	_mainWindow = mainWindow;
+	createUI(rolloutParams);
+	Q_EMIT contentsReplaced(nullptr);
+}
+
+/******************************************************************************
 * Creates a new rollout in the rollout container and returns
 * the empty widget that can then be filled with UI controls.
 * The rollout is automatically deleted when the editor is deleted.

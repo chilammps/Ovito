@@ -13,6 +13,26 @@ http://www.ovito.org/
 Change Log 
 ****************************************************************************************
 
+Release 2.2.4 (29-Jan-14):
+
+ - Modified particle file importers to ensure stable ordering of particle types (using 
+   lexicographical ordering when atom types have names, and ID-based ordering otherwise). 
+   The ordering of named particle types is now independent of their first occurrence in the input file.
+ - Fixed particle picking issue on computers with Intel graphics.
+ - Fixed OpenGL issues on systems with Intel graphics.
+ - Fixed blurred display of viewport captions.
+ - Fixed program crash when changing particle radius/color without having selected a particle type first. 
+ - OVITO is now built using version 5.2.1 of the Qt library. 
+   This fixes several issues related to the graphical user interface. 
+
+Release 2.2.3 (15-Jan-14):
+
+ - Fixed the CFG file importer, which is now able to read CFG files written by newer versions of LAMMPS correctly.
+   Auxiliary file columns are now automatically mapped to OVITO's standard particle properties if possible.
+ - Improved compatibility with some OpenGL implementations (Intel HD graphics on Windows and ATI Mobility Radeon HD 5470).
+ - A 64-bit version of the program for Windows has been built.
+ - A construction grid can now be shown in the viewports (like it was possible with OVITO 1.x). 
+
 Release 2.2.2 (05-Jan-14):
 
  - Fixed regression: Rendering a movie with Ovito 2.2.1 resulted in an empty file.

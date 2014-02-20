@@ -531,7 +531,7 @@ void ViewportArrowGeometryBuffer::renderShadedTriangles(ViewportSceneRenderer* r
 	_glGeometryBuffer.release();
 
 	if(renderer->isPicking())
-		renderer->activateVertexIDs(shader, _elementCount * _verticesPerElement);
+		renderer->activateVertexIDs(shader, _elementCount * _verticesPerElement, true);
 
 	if(renderer->isPicking()) {
 		int primitivesPerElement = _stripPrimitiveVertexCounts.size() / _elementCount;
@@ -553,7 +553,7 @@ void ViewportArrowGeometryBuffer::renderShadedTriangles(ViewportSceneRenderer* r
 		shader->disableAttributeArray("vertex_color");
 	}
 	else {
-		renderer->deactivateVertexIDs(shader);
+		renderer->deactivateVertexIDs(shader, true);
 	}
 	if(renderer->glformat().majorVersion() < 3)
 		OVITO_CHECK_OPENGL(glDisableClientState(GL_VERTEX_ARRAY));
@@ -615,7 +615,7 @@ void ViewportArrowGeometryBuffer::renderRaytracedCylinders(ViewportSceneRenderer
 	_glGeometryBuffer.release();
 
 	if(renderer->isPicking())
-		renderer->activateVertexIDs(shader, _elementCount * _verticesPerElement);
+		renderer->activateVertexIDs(shader, _elementCount * _verticesPerElement, true);
 
 	OVITO_CHECK_OPENGL(renderer->glMultiDrawArrays(GL_TRIANGLE_STRIP, _stripPrimitiveVertexStarts.data(), _stripPrimitiveVertexCounts.data(), _stripPrimitiveVertexStarts.size()));
 
@@ -623,7 +623,7 @@ void ViewportArrowGeometryBuffer::renderRaytracedCylinders(ViewportSceneRenderer
 	if(!renderer->isPicking())
 		shader->disableAttributeArray("cylinder_color");
 	else
-		renderer->deactivateVertexIDs(shader);
+		renderer->deactivateVertexIDs(shader, true);
 	shader->disableAttributeArray("cylinder_base");
 	shader->disableAttributeArray("cylinder_axis");
 	shader->disableAttributeArray("cylinder_radius");

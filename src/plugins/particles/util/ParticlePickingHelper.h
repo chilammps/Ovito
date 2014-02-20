@@ -83,6 +83,11 @@ protected:
 	/// \param pickRecord Specifies the particle for which the selection marker should be rendered.
 	void renderSelectionMarker(Viewport* vp, ViewportSceneRenderer* renderer, const PickResult& pickRecord);
 
+	/// \brief Computes the world space bounding box of the particle selection marker.
+	/// \param vp The viewport into which the selection will be rendered.
+	/// \param pickRecord Specifies the particle for which the selection marker will be rendered.
+	Box3 selectionMarkerBoundingBox(Viewport* vp, const PickResult& pickRecord);
+
 	/// Used to render the marker for a selected particle.
 	std::unique_ptr<ParticleGeometryBuffer> _highlightBuffer;
 

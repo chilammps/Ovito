@@ -171,7 +171,6 @@ void CFGImporter::CFGImportTask::parseFile(FutureInterfaceBase& futureInterface,
 		cfgMapping.mapStandardColumn(7, ParticleProperty::VelocityProperty, 2);
 	}
 	else {
-		int c = 3;
 		cfgMapping.mapStandardColumn(0, ParticleProperty::PositionProperty, 0);
 		cfgMapping.mapStandardColumn(1, ParticleProperty::PositionProperty, 1);
 		cfgMapping.mapStandardColumn(2, ParticleProperty::PositionProperty, 2);
@@ -179,11 +178,8 @@ void CFGImporter::CFGImportTask::parseFile(FutureInterfaceBase& futureInterface,
 			cfgMapping.mapStandardColumn(3, ParticleProperty::VelocityProperty, 0);
 			cfgMapping.mapStandardColumn(4, ParticleProperty::VelocityProperty, 1);
 			cfgMapping.mapStandardColumn(5, ParticleProperty::VelocityProperty, 2);
-			c = 6;
 		}
-		cfgMapping.setColumnCount(c + header.auxiliaryFields.size());
-		for(int i = 0; i < header.auxiliaryFields.size(); i++, c++)
-			cfgMapping.mapCustomColumn(c, header.auxiliaryFields[i], qMetaTypeId<FloatType>());
+		generateAutomaticColumnMapping(cfgMapping, header.auxiliaryFields);
 	}
 
 	futureInterface.setProgressRange(header.numParticles);
@@ -237,10 +233,14 @@ void CFGImporter::CFGImportTask::parseFile(FutureInterfaceBase& futureInterface,
 			}
 			if(isNewType) {
 				// Parse mass and atom type name.
-				currentAtomType++;
 				currentMass = atof(stream.line());
-				stream.readLine();
-				addParticleType(currentAtomType, stream.lineString().trimmed());
+				const char* line = stream.readLine();
+				while(*line != '\0' && std::isspace(*line)) ++line;
+				const char* line_end = line;
+				while(*line_end != '\0' && !std::isspace(*line_end)) ++line_end;
+				*const_cast<char*>(line_end) = '\0';
+				currentAtomType = addParticleTypeName(line);
+
 				continue;
 			}
 
@@ -257,6 +257,14 @@ void CFGImporter::CFGImportTask::parseFile(FutureInterfaceBase& futureInterface,
 		}
 	}
 
+	// Since we created particle types on the go while reading the particle, the assigned particle type IDs
+	// depends on the storage order of particles in the file. We rather want a well-defined particle type ordering, that's
+	// why we sort them now.
+	if(header.isExtendedFormat || columnParser.usingNamedParticleTypes())
+		sortParticleTypesByName();
+	else
+		sortParticleTypesById();
+
 	AffineTransformation H(header.transform * header.H0);
 	H.translation() = H * Vector3(-0.5, -0.5, -0.5);
 	simulationCell().setMatrix(H);
@@ -266,24 +274,54 @@ void CFGImporter::CFGImportTask::parseFile(FutureInterfaceBase& futureInterface,
 	// However, do this only if no absolute coordinates have been read from the extra data columns in the CFG file.
 	ParticleProperty* posProperty = particleProperty(ParticleProperty::PositionProperty);
 	if(posProperty && header.numParticles > 0) {
-		bool hasAbsoluteCoordinates = false;
-#if 0
-		for(int i = 0; i < columnMapping().columnCount(); i++) {
-			if(columnMapping().propertyType(i) == ParticleProperty::PositionProperty) {
-				hasAbsoluteCoordinates = true;
-				break;
-			}
-		}
-#endif
-		if(!hasAbsoluteCoordinates) {
-			Point3* p = posProperty->dataPoint3();
-			Point3* pend = p + posProperty->size();
-			for(; p != pend; ++p)
-				*p = H * (*p);
-		}
+		Point3* p = posProperty->dataPoint3();
+		Point3* pend = p + posProperty->size();
+		for(; p != pend; ++p)
+			*p = H * (*p);
 	}
 
 	setInfoText(tr("Number of particles: %1").arg(header.numParticles));
+}
+
+/******************************************************************************
+ * Guesses the mapping of input file columns to internal particle properties.
+ *****************************************************************************/
+void CFGImporter::generateAutomaticColumnMapping(InputColumnMapping& columnMapping, const QStringList& columnNames)
+{
+	for(int j = 0; j < columnNames.size(); j++) {
+		QString name = columnNames[j].toLower();
+		int i = columnMapping.columnCount();
+		if(name == "vx" || name == "velocities") columnMapping.mapStandardColumn(i, ParticleProperty::VelocityProperty, 0, name);
+		else if(name == "vy") columnMapping.mapStandardColumn(i, ParticleProperty::VelocityProperty, 1, name);
+		else if(name == "vz") columnMapping.mapStandardColumn(i, ParticleProperty::VelocityProperty, 2, name);
+		else if(name == "v") columnMapping.mapStandardColumn(i, ParticleProperty::VelocityMagnitudeProperty, 0, name);
+		else if(name == "id") columnMapping.mapStandardColumn(i, ParticleProperty::IdentifierProperty, 0, name);
+		else if(name == "radius") columnMapping.mapStandardColumn(i, ParticleProperty::RadiusProperty, 0, name);
+		else if(name == "q") columnMapping.mapStandardColumn(i, ParticleProperty::ChargeProperty, 0, name);
+		else if(name == "ix") columnMapping.mapStandardColumn(i, ParticleProperty::PeriodicImageProperty, 0, name);
+		else if(name == "iy") columnMapping.mapStandardColumn(i, ParticleProperty::PeriodicImageProperty, 1, name);
+		else if(name == "iz") columnMapping.mapStandardColumn(i, ParticleProperty::PeriodicImageProperty, 2, name);
+		else if(name == "fx") columnMapping.mapStandardColumn(i, ParticleProperty::ForceProperty, 0, name);
+		else if(name == "fy") columnMapping.mapStandardColumn(i, ParticleProperty::ForceProperty, 1, name);
+		else if(name == "fz") columnMapping.mapStandardColumn(i, ParticleProperty::ForceProperty, 2, name);
+		else if(name == "mux") columnMapping.mapStandardColumn(i, ParticleProperty::DipoleOrientationProperty, 0, name);
+		else if(name == "muy") columnMapping.mapStandardColumn(i, ParticleProperty::DipoleOrientationProperty, 1, name);
+		else if(name == "muz") columnMapping.mapStandardColumn(i, ParticleProperty::DipoleOrientationProperty, 2, name);
+		else if(name == "mu") columnMapping.mapStandardColumn(i, ParticleProperty::DipoleMagnitudeProperty, 0, name);
+		else if(name == "omegax") columnMapping.mapStandardColumn(i, ParticleProperty::AngularVelocityProperty, 0, name);
+		else if(name == "omegay") columnMapping.mapStandardColumn(i, ParticleProperty::AngularVelocityProperty, 1, name);
+		else if(name == "omegaz") columnMapping.mapStandardColumn(i, ParticleProperty::AngularVelocityProperty, 2, name);
+		else if(name == "angmomx") columnMapping.mapStandardColumn(i, ParticleProperty::AngularMomentumProperty, 0, name);
+		else if(name == "angmomy") columnMapping.mapStandardColumn(i, ParticleProperty::AngularMomentumProperty, 1, name);
+		else if(name == "angmomz") columnMapping.mapStandardColumn(i, ParticleProperty::AngularMomentumProperty, 2, name);
+		else if(name == "tqx") columnMapping.mapStandardColumn(i, ParticleProperty::TorqueProperty, 0, name);
+		else if(name == "tqy") columnMapping.mapStandardColumn(i, ParticleProperty::TorqueProperty, 1, name);
+		else if(name == "tqz") columnMapping.mapStandardColumn(i, ParticleProperty::TorqueProperty, 2, name);
+		else if(name == "spin") columnMapping.mapStandardColumn(i, ParticleProperty::SpinProperty, 0, name);
+		else {
+			columnMapping.mapCustomColumn(i, columnNames[j], qMetaTypeId<FloatType>(), 0, ParticleProperty::UserProperty, columnNames[j]);
+		}
+	}
 }
 
 };

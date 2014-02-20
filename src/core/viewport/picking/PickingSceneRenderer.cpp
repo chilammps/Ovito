@@ -53,7 +53,7 @@ void PickingSceneRenderer::beginFrame(TimePoint time, const ViewProjectionParame
 	// Create OpenGL framebuffer.
 	QSize size = vp->size();
 	QOpenGLFramebufferObjectFormat framebufferFormat;
-	framebufferFormat.setAttachment(QOpenGLFramebufferObject::Depth);
+	framebufferFormat.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
 	_framebufferObject.reset(new QOpenGLFramebufferObject(size.width(), size.height(), framebufferFormat));
 	// Clear OpenGL error state.
 	while(glGetError() != GL_NO_ERROR);
@@ -84,22 +84,45 @@ bool PickingSceneRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialog
 		return false;
 
 	// Flush the contents to the FBO before extracting image.
-	glFlush();
+	glFinish();
 
 	// Fetch rendered image from OpenGL framebuffer.
 	QSize size = _framebufferObject->size();
 	_image = QImage(size, QImage::Format_ARGB32);
+	while(glGetError() != GL_NO_ERROR);
 	glReadPixels(0, 0, size.width(), size.height(), GL_BGRA, GL_UNSIGNED_BYTE, _image.bits());
-	if(glGetError()) {
+	if(glGetError() != GL_NO_ERROR) {
 		glReadPixels(0, 0, size.width(), size.height(), GL_RGBA, GL_UNSIGNED_BYTE, _image.bits());
 		_image = _image.rgbSwapped();
 	}
 	_image = _image.mirrored();
 	//_image.save("picking.png");
+	OVITO_CHECK_OPENGL();
 
 	// Also fetch depth buffer data.
-	_depthBuffer.reset(new GLfloat[size.width() * size.height()]);
-	glReadPixels(0, 0, size.width(), size.height(), GL_DEPTH_COMPONENT, GL_FLOAT, _depthBuffer.get());
+	_depthBufferBits = glformat().depthBufferSize();
+	if(_depthBufferBits == 16) {
+		_depthBuffer.reset(new quint8[size.width() * size.height() * sizeof(GLushort)]);
+		OVITO_CHECK_OPENGL(glReadPixels(0, 0, size.width(), size.height(), GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, _depthBuffer.get()));
+	}
+	else if(_depthBufferBits == 24) {
+		_depthBuffer.reset(new quint8[size.width() * size.height() * sizeof(GLuint)]);
+		while(glGetError() != GL_NO_ERROR);
+		glReadPixels(0, 0, size.width(), size.height(), GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, _depthBuffer.get());
+		if(glGetError() != GL_NO_ERROR) {
+			OVITO_CHECK_OPENGL(glReadPixels(0, 0, size.width(), size.height(), GL_DEPTH_COMPONENT, GL_FLOAT, _depthBuffer.get()));
+			_depthBufferBits = 0;
+		}
+	}
+	else if(_depthBufferBits == 32) {
+		_depthBuffer.reset(new quint8[size.width() * size.height() * sizeof(GLuint)]);
+		OVITO_CHECK_OPENGL(glReadPixels(0, 0, size.width(), size.height(), GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, _depthBuffer.get()));
+	}
+	else {
+		_depthBuffer.reset(new quint8[size.width() * size.height() * sizeof(GLfloat)]);
+		OVITO_CHECK_OPENGL(glReadPixels(0, 0, size.width(), size.height(), GL_DEPTH_COMPONENT, GL_FLOAT, _depthBuffer.get()));
+		_depthBufferBits = 0;
+	}
 
 	return true;
 }
@@ -208,22 +231,49 @@ const PickingSceneRenderer::ObjectRecord* PickingSceneRenderer::lookupObjectReco
 }
 
 /******************************************************************************
+* Returns the Z-value at the given window position.
+******************************************************************************/
+FloatType PickingSceneRenderer::depthAtPixel(const QPoint& pos) const
+{
+	if(!_image.isNull() && _depthBuffer) {
+		int w = _image.width();
+		int h = _image.height();
+		if(pos.x() >= 0 && pos.x() < w && pos.y() >= 0 && pos.y() < h) {
+			if(_image.pixel(pos) != 0) {
+				if(_depthBufferBits == 16) {
+					GLushort bval = reinterpret_cast<const GLushort*>(_depthBuffer.get())[(h - 1 - pos.y()) * w + pos.x()];
+					return (FloatType)bval / 65535.0f;
+				}
+				else if(_depthBufferBits == 24) {
+					GLuint bval = reinterpret_cast<const GLuint*>(_depthBuffer.get())[(h - 1 - pos.y()) * w + pos.x()];
+					return (FloatType)((bval>>8) & 0x00FFFFFF) / 16777215.0f;
+				}
+				else if(_depthBufferBits == 32) {
+					GLuint bval = reinterpret_cast<const GLuint*>(_depthBuffer.get())[(h - 1 - pos.y()) * w + pos.x()];
+					return (FloatType)bval / 4294967295.0f;
+				}
+				else if(_depthBufferBits == 0) {
+					return reinterpret_cast<const GLfloat*>(_depthBuffer.get())[(h - 1 - pos.y()) * w + pos.x()];
+				}
+			}
+		}
+	}
+	return 0;
+}
+
+/******************************************************************************
 * Returns the world space position corresponding to the given screen position.
 ******************************************************************************/
 Point3 PickingSceneRenderer::worldPositionFromLocation(const QPoint& pos) const
 {
-	if(!_image.isNull() && _depthBuffer) {
-		if(pos.x() >= 0 && pos.x() < _image.width() && pos.y() >= 0 && pos.y() < _image.height()) {
-			if(_image.pixel(pos) != 0) {
-				GLfloat zvalue = _depthBuffer[(_image.height() - 1 - pos.y()) * _image.width() + pos.x()];
-				Point3 ndc(
-						(FloatType)pos.x() / _image.width() * 2.0f - 1.0f,
-						1.0f - (FloatType)pos.y() / _image.height() * 2.0f,
-						zvalue * 2.0f - 1.0f);
-				Point3 worldPos = projParams().inverseViewMatrix * (projParams().inverseProjectionMatrix * ndc);
-				return worldPos;
-			}
-		}
+	FloatType zvalue = depthAtPixel(pos);
+	if(zvalue != 0) {
+		Point3 ndc(
+				(FloatType)pos.x() / _image.width() * 2.0f - 1.0f,
+				1.0f - (FloatType)pos.y() / _image.height() * 2.0f,
+				zvalue * 2.0f - 1.0f);
+		Point3 worldPos = projParams().inverseViewMatrix * (projParams().inverseProjectionMatrix * ndc);
+		return worldPos;
 	}
 	return Point3::Origin();
 }

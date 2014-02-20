@@ -30,6 +30,7 @@ uniform vec3 cubeVerts[14];
 	// The particle data:
 	in vec3 position;
 	in float particle_radius;
+	in float vertexID;
 	
 	// Outputs to fragment shader
 	flat out vec4 particle_color_fs;
@@ -45,8 +46,9 @@ uniform vec3 cubeVerts[14];
 void main()
 {
 #if __VERSION__ >= 130	
+	
 	// Compute color from object ID.
-	int objectID = pickingBaseID + (gl_VertexID / 14);
+	int objectID = pickingBaseID + int(vertexID) / 14;
 	
 	particle_color_fs = vec4(
 		float(objectID & 0xFF) / 255.0, 
@@ -56,6 +58,7 @@ void main()
 
 	// Transform and project vertex.
 	gl_Position = projection_matrix * modelview_matrix * vec4(position + cubeVerts[gl_VertexID % 14] * particle_radius, 1);
+	
 #else
 
 	// Compute color from object ID.

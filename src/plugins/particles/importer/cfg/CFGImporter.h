@@ -77,6 +77,9 @@ protected:
 		return std::make_shared<CFGImportTask>(frame);
 	}
 
+	/// Guesses the mapping of input file columns to internal particle properties.
+	static void generateAutomaticColumnMapping(InputColumnMapping& mapping, const QStringList& columnNames);
+
 	Q_OBJECT
 	OVITO_OBJECT
 };

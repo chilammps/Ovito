@@ -110,6 +110,9 @@ protected:
 	/// Renders a cube for each particle using triangle strips.
 	void renderCubes(ViewportSceneRenderer* renderer);
 
+	/// Renders the particles using quads.
+	void renderImposters(ViewportSceneRenderer* renderer);
+
 	/// Returns true if the OpenGL implementation supports geometry shaders.
 	bool hasGeometryShaders() const { return _raytracedSphereShader != nullptr; }
 
@@ -135,6 +138,9 @@ private:
 
 	/// This array contains the vertex counts of primitives and is passed to glMultiDrawArrays().
 	std::vector<GLsizei> _primitiveVertexCounts;
+
+	/// Indicates whether point sprites are supported by the platform.
+	bool _usePointSprites;
 
 	/// The OpenGL shader programs that are used to render the particles.
 	QPointer<QOpenGLShaderProgram> _flatImposterShader;

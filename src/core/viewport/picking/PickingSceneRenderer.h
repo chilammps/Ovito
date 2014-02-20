@@ -82,6 +82,9 @@ public:
 	/// Resets the internal state of the picking renderer and clears the stored object records.
 	void reset();
 
+	/// Returns the Z-value at the given window position.
+	FloatType depthAtPixel(const QPoint& pos) const;
+
 private:
 
 	/// The OpenGL framebuffer.
@@ -97,7 +100,10 @@ private:
 	QImage _image;
 
 	/// The depth buffer data.
-	std::unique_ptr<GLfloat[]> _depthBuffer;
+	std::unique_ptr<quint8[]> _depthBuffer;
+
+	/// The number of depth buffer bits per pixel.
+	int _depthBufferBits;
 
 	Q_OBJECT
 	OVITO_OBJECT

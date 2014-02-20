@@ -231,4 +231,15 @@ void ParticleInformationInputMode::renderOverlay3D(Viewport* vp, ViewportSceneRe
 		renderSelectionMarker(vp, renderer, pickedParticle);
 }
 
+/******************************************************************************
+* Computes the bounding box of the 3d visual viewport overlay rendered by the input mode.
+******************************************************************************/
+Box3 ParticleInformationInputMode::overlayBoundingBox(Viewport* vp, ViewportSceneRenderer* renderer)
+{
+	Box3 bbox = ViewportInputMode::overlayBoundingBox(vp, renderer);
+	for(const auto& pickedParticle : _pickedParticles)
+		bbox.addBox(selectionMarkerBoundingBox(vp, pickedParticle));
+	return bbox;
+}
+
 };

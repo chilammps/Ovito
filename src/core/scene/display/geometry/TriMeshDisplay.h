@@ -30,6 +30,8 @@
 #include <core/Core.h>
 #include <core/scene/display/DisplayObject.h>
 #include <core/rendering/TriMeshGeometryBuffer.h>
+#include <core/animation/controller/Controller.h>
+#include <core/animation/AnimationSettings.h>
 #include <core/gui/properties/PropertiesEditor.h>
 
 namespace Ovito {
@@ -59,14 +61,24 @@ public:
 	/// Sets the display color of the mesh.
 	void setColor(const Color& color) { _color = color; }
 
+	/// Returns the transparency parameter.
+	FloatType transparency() const { return _transparency->currentValue(); }
+
+	/// Sets the transparency parameter.
+	void setTransparency(FloatType t) { _transparency->setCurrentValue(t); }
+
 public:
 
 	Q_PROPERTY(Ovito::Color color READ color WRITE setColor)
+	Q_PROPERTY(FloatType transparency READ transparency WRITE setTransparency)
 
 protected:
 
 	/// Controls the display color of the mesh.
 	PropertyField<Color, QColor> _color;
+
+	/// Controls the transparency of the mesh.
+	ReferenceField<FloatController> _transparency;
 
 	/// The buffered geometry used to render the mesh.
 	std::unique_ptr<TriMeshGeometryBuffer> _buffer;
@@ -75,7 +87,7 @@ protected:
 	/// that require updating the geometry buffer.
 	SceneObjectCacheHelper<
 		QPointer<SceneObject>, unsigned int,		// Mesh object + revision number
-		Color										// Display color
+		ColorA										// Display color
 		> _geometryCacheHelper;
 
 	/// The cached bounding box.
@@ -93,6 +105,7 @@ private:
 	OVITO_OBJECT
 
 	DECLARE_PROPERTY_FIELD(_color);
+	DECLARE_REFERENCE_FIELD(_transparency);
 };
 
 /**

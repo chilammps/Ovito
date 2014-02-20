@@ -50,6 +50,8 @@ SET(OVITO_PARTICLES_SOURCE_FILES
 	modifier/analysis/coordination/CoordinationNumberModifier.cpp
 	modifier/analysis/histogram/HistogramModifier.cpp
 	modifier/analysis/cluster/ClusterAnalysisModifier.cpp
+	modifier/analysis/scatterplot/ScatterPlotModifier.cpp
+	modifier/analysis/wignerseitz/WignerSeitzAnalysisModifier.cpp
 	modifier/lighting/AmbientOcclusionModifier.cpp
 	modifier/lighting/AmbientOcclusionRenderer.cpp
 	modifier/transformation/AffineTransformationModifier.cpp
@@ -88,6 +90,7 @@ SET(OVITO_PARTICLES_SOURCE_FILES
 	util/CutoffRadiusPresetsUI.cpp
 	util/ParticleInformationApplet.cpp
 	util/ParticlePickingHelper.cpp
+	util/ParticlePropertyParameterUI.cpp
 )
 
 IF(OVITO_BUILD_PLUGIN_SCRIPTING)

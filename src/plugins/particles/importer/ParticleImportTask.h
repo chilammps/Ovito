@@ -43,6 +43,7 @@ public:
 	struct ParticleTypeDefinition {
 		int id;
 		QString name;
+		std::string name8bit;
 		Color color;
 		FloatType radius;
 	};
@@ -86,27 +87,69 @@ public:
 	void removeParticleProperty(int index) { _properties.erase(_properties.begin() + index); }
 
 	/// Defines a new particle type with the given id.
-	void addParticleType(int id) {
-		if(_particleTypes.find(id) == _particleTypes.end())
-			_particleTypes[id] = { id, QString(), Color(0,0,0), 0 };
+	void addParticleTypeId(int id) {
+		for(const auto& type : _particleTypes) {
+			if(type.id == id)
+				return;
+		}
+		_particleTypes.push_back({ id, QString(), std::string(), Color(0,0,0), 0 });
 	}
 
 	/// Defines a new particle type with the given id.
-	void addParticleType(int id, const QString& name, const Color& color = Color(0,0,0), FloatType radius = 0) {
-		_particleTypes[id] = { id, name, color, radius };
+	void addParticleTypeId(int id, const QString& name, const Color& color = Color(0,0,0), FloatType radius = 0) {
+		for(const auto& type : _particleTypes) {
+			if(type.id == id)
+				return;
+		}
+		_particleTypes.push_back({ id, name, name.toLocal8Bit().constData(), color, radius });
+	}
+
+	/// Defines a new particle type with the given id.
+	inline int addParticleTypeName(const char* name) {
+		for(const auto& type : _particleTypes) {
+			if(type.name8bit == name)
+				return type.id;
+		}
+		int id = _particleTypes.size() + 1;
+		_particleTypes.push_back({ id, QString::fromLocal8Bit(name), name, Color(0,0,0), 0.0f });
+		return id;
+	}
+
+	/// Defines a new particle type with the given id.
+	int addParticleTypeName(const char* name, const Color& color, FloatType radius = 0) {
+		for(const auto& type : _particleTypes) {
+			if(type.name8bit == name)
+				return type.id;
+		}
+		int id = _particleTypes.size() + 1;
+		_particleTypes.push_back({ id, QString::fromLocal8Bit(name), name, color, radius });
+		return id;
 	}
 
 	/// Returns the list of particle types.
-	const std::map<int, ParticleTypeDefinition>& particleTypes() const { return _particleTypes; }
+	const std::vector<ParticleTypeDefinition>& particleTypes() const { return _particleTypes; }
 
+#if 0
 	/// Returns the identifier of the particle type with the given name.
 	/// Returns -1 if no such type exists.
 	int particleTypeFromName(const QString& name) const {
-		for(const auto& type : _particleTypes)
+		int index = 0;
+		for(const auto& type : _particleTypes) {
 			if(type.second.name == name)
-				return type.first;
+				return index;
+			index++;
+		}
 		return -1;
 	}
+#endif
+
+	/// Sorts the particle types w.r.t. their name. Reassigns the per-particle type IDs.
+	/// This method is used by file parsers that create particle types on the go while the read the particle data.
+	/// In such a case, the assignment of IDs to types depends on the storage order of particles in the file, which is not desirable.
+	void sortParticleTypesByName();
+
+	/// Sorts particle types with ascending identifier.
+	void sortParticleTypesById();
 
 protected:
 
@@ -125,7 +168,7 @@ private:
 	std::vector<std::unique_ptr<ParticleProperty>> _properties;
 
 	/// The list of particle types.
-	std::map<int, ParticleTypeDefinition> _particleTypes;
+	std::vector<ParticleTypeDefinition> _particleTypes;
 
 	/// The current dataset container.
 	DataSetContainer* _datasetContainer;

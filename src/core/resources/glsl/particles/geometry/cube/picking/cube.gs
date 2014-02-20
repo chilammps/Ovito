@@ -36,9 +36,8 @@ flat out vec4 particle_color_fs;
 
 void main()
 {
-	particle_color_fs = particle_color_gs[0];
-	
 	for(int vertex = 0; vertex < 14; vertex++) {
+		particle_color_fs = particle_color_gs[0];
 		gl_Position = projection_matrix * modelview_matrix *
 			(gl_in[0].gl_Position + vec4(cubeVerts[vertex] * particle_radius_gs[0], 0));
 		EmitVertex();

@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include "HistoryFileDialog.h"
 
-#define MAX_DIRECTORY_HISTORY_SIZE	8
+#define MAX_DIRECTORY_HISTORY_SIZE	1
 
 namespace Ovito {
 

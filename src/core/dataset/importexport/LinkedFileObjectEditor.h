@@ -57,6 +57,9 @@ protected Q_SLOTS:
 	/// Is called when a new object has been loaded into the editor.
 	void onEditorContentsReplaced(RefTarget* newObject);
 
+	/// Is called when the user presses the "Pick local input file" button.
+	void onPickLocalInputFile();
+
 	/// Is called when the user presses the "Pick remote input file" button.
 	void onPickRemoteInputFile();
 

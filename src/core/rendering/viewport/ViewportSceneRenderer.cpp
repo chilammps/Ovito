@@ -64,14 +64,12 @@ QSurfaceFormat ViewportSceneRenderer::getDefaultSurfaceFormat()
 			}
 		}
 	}
-	format.setOption(QSurfaceFormat::DeprecatedFunctions);
-	format.setProfile(ViewportSceneRenderer::useCoreProfile() ? QSurfaceFormat::CoreProfile : QSurfaceFormat::CompatibilityProfile);
+	format.setProfile(QSurfaceFormat::CoreProfile);
+	if(Application::instance().cmdLineParser().isSet(QStringLiteral("glcompatprofile"))) {
+		format.setProfile(QSurfaceFormat::CompatibilityProfile);
+		format.setOption(QSurfaceFormat::DeprecatedFunctions);
+	}
 	format.setStencilBufferSize(1);
-#if 0
-#ifdef OVITO_DEBUG
-	format.setOption(QSurfaceFormat::DebugContext);
-#endif
-#endif
 	return format;
 }
 
@@ -89,9 +87,12 @@ void ViewportSceneRenderer::beginFrame(TimePoint time, const ViewProjectionParam
 	if(!_glcontext)
 		throw Exception(tr("Cannot render scene: There is no active OpenGL context"));
 
+	// Obtain surface format.
 	OVITO_CHECK_OPENGL();
+	_glformat = _glcontext->format();
 
 	// Obtain a functions object that allows to call basic OpenGL functions in a platform-independent way.
+	OVITO_CHECK_OPENGL();
 	_glFunctions = _glcontext->functions();
 
 	// Obtain a functions object that allows to call OpenGL 2.0 functions in a platform-independent way.
@@ -112,11 +113,10 @@ void ViewportSceneRenderer::beginFrame(TimePoint time, const ViewProjectionParam
 	if(!_glFunctions20 && !_glFunctions30 && !_glFunctions32)
 		throw Exception(tr("Could not resolve OpenGL functions. Invalid OpenGL context."));
 
-	// Obtain surface format.
-	_glformat = _glcontext->format();
-
 	// Check if this context implements the core profile.
-	_isCoreProfile = (_glformat.profile() == QSurfaceFormat::CoreProfile);
+	_isCoreProfile = (_glformat.profile() == QSurfaceFormat::CoreProfile)
+			|| (glformat().majorVersion() > 3)
+			|| (glformat().majorVersion() == 3 && glformat().minorVersion() >= 2);
 
 	// Qt reports the core profile only for OpenGL >= 3.2. Assume core profile also for 3.1 contexts.
 	if(glformat().majorVersion() == 3 && glformat().minorVersion() == 1 && _glformat.profile() != QSurfaceFormat::CompatibilityProfile) {
@@ -124,7 +124,7 @@ void ViewportSceneRenderer::beginFrame(TimePoint time, const ViewProjectionParam
 	}
 
 	// Set up a vertex array object. This is only required when using OpenGL Core Profile.
-	if(isCoreProfile()) {
+	if(glformat().majorVersion() >= 3) {
 		_vertexArrayObject.reset(new QOpenGLVertexArrayObject());
 		OVITO_CHECK_OPENGL(_vertexArrayObject->create());
 		OVITO_CHECK_OPENGL(_vertexArrayObject->bind());
@@ -133,8 +133,10 @@ void ViewportSceneRenderer::beginFrame(TimePoint time, const ViewProjectionParam
 
 	// Set viewport background color.
 	OVITO_CHECK_OPENGL();
-	Color backgroundColor = Viewport::viewportColor(ViewportSettings::COLOR_VIEWPORT_BKG);
-	OVITO_CHECK_OPENGL(glClearColor(backgroundColor.r(), backgroundColor.g(), backgroundColor.b(), 1));
+	if(isInteractive()) {
+		Color backgroundColor = Viewport::viewportColor(ViewportSettings::COLOR_VIEWPORT_BKG);
+		OVITO_CHECK_OPENGL(glClearColor(backgroundColor.r(), backgroundColor.g(), backgroundColor.b(), 1));
+	}
 }
 
 /******************************************************************************
@@ -156,18 +158,31 @@ bool ViewportSceneRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialo
 {
 	OVITO_ASSERT(_glcontext == QOpenGLContext::currentContext());
 
-	// Clear background.
+	// Set up OpenGL state.
 	OVITO_CHECK_OPENGL();
-	OVITO_CHECK_OPENGL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+	OVITO_CHECK_OPENGL(glDisable(GL_STENCIL_TEST));
 	OVITO_CHECK_OPENGL(glEnable(GL_DEPTH_TEST));
+	OVITO_CHECK_OPENGL(glDepthFunc(GL_LESS));
+	OVITO_CHECK_OPENGL(glDepthRange(0, 1));
+	OVITO_CHECK_OPENGL(glDepthMask(GL_TRUE));
+	OVITO_CHECK_OPENGL(glClearDepth(1));
+	OVITO_CHECK_OPENGL(glDisable(GL_SCISSOR_TEST));
+
+	// Clear background.
+	OVITO_CHECK_OPENGL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT));
 
 	renderScene();
 
 	// Render visual 3D representation of the modifiers.
 	renderModifiers(false);
 
-	// Render input mode 3D overlays.
 	if(isInteractive()) {
+
+		// Render construction grid.
+		if(viewport()->isGridVisible())
+			renderGrid();
+
+		// Render input mode 3D overlays.
 		MainWindow* mainWindow = renderDataset()->mainWindow();
 		if(mainWindow) {
 			for(const auto& handler : mainWindow->viewportInputManager()->stack()) {
@@ -397,6 +412,18 @@ Box3 ViewportSceneRenderer::boundingBoxInteractive(TimePoint time, Viewport* vie
 		}
 	}
 
+	// Include construction grid in bounding box.
+	if(viewport->isGridVisible()) {
+		FloatType gridSpacing;
+		Box2I gridRange;
+		std::tie(gridSpacing, gridRange) = determineGridRange(viewport);
+		if(gridSpacing > 0) {
+			bb.addBox(viewport->gridMatrix() * Box3(
+					Point3(gridRange.minc.x() * gridSpacing, gridRange.minc.y() * gridSpacing, 0),
+					Point3(gridRange.maxc.x() * gridSpacing, gridRange.maxc.y() * gridSpacing, 0)));
+		}
+	}
+
 	return bb;
 }
 
@@ -432,9 +459,9 @@ QOpenGLShaderProgram* ViewportSceneRenderer::loadShaderProgram(const QString& id
 	}
 
 	if(!program->link()) {
-		qDebug() << "OpenGL shader log:";
-		qDebug() << program->log();
-		throw Exception(QString("The OpenGL shader program %1 failed to link. See log for details.").arg(id));
+		Exception ex(QString("The OpenGL shader program %1 failed to link.").arg(id));
+		ex.appendDetailMessage(program->log());
+		throw ex;
 	}
 
 	OVITO_ASSERT(contextGroup->findChild<QOpenGLShaderProgram*>(id) == program.data());
@@ -450,22 +477,72 @@ void ViewportSceneRenderer::loadShader(QOpenGLShaderProgram* program, QOpenGLSha
 	QFile shaderSourceFile(filename);
 	if(!shaderSourceFile.open(QFile::ReadOnly))
 		throw Exception(QString("Unable to open shader source file %1.").arg(filename));
-	QByteArray shaderSource = shaderSourceFile.readAll();
+	QByteArray shaderSource;
 
 	// Insert GLSL version string at the top.
 	// Pick GLSL language version based on current OpenGL version.
 	if((glformat().majorVersion() >= 3 && glformat().minorVersion() >= 2) || glformat().majorVersion() > 3)
-		shaderSource.prepend("#version 150\n");
+		shaderSource.append("#version 150\n");
 	else if(glformat().majorVersion() >= 3)
-		shaderSource.prepend("#version 130\n");
-	else 
-		shaderSource.prepend("#version 120\n");
+		shaderSource.append("#version 130\n");
+	else
+		shaderSource.append("#version 120\n");
+
+	// Preprocess shader source while reading it from the file.
+	//
+	// This is a workaround for some older OpenGL driver, which do not perform the
+	// preprocessing of shader source files correctly (probably the __VERSION__ macro is not working).
+	//
+	// Here, in our own simple preprocessor implementation, we only handle
+	//    #if __VERSION__ >= 130
+	//       ...
+	//    #else
+	//       ...
+	//    #endif
+	// statements, which are used by most shaders to discriminate core and compatibility profiles.
+	bool isFiltered = false;
+	int ifstack = 0;
+	int filterstackpos = 0;
+	while(!shaderSourceFile.atEnd()) {
+		QByteArray line = shaderSourceFile.readLine();
+		if(line.contains("__VERSION__") && line.contains("130")) {
+			OVITO_ASSERT(line.contains("#if"));
+			OVITO_ASSERT(!isFiltered);
+			if(line.contains(">=") && glformat().majorVersion() < 3) isFiltered = true;
+			if(line.contains("<") && glformat().majorVersion() >= 3) isFiltered = true;
+			filterstackpos = ifstack;
+			continue;
+		}
+		else if(line.contains("#if")) {
+			ifstack++;
+		}
+		else if(line.contains("#else")) {
+			if(ifstack == filterstackpos) {
+				isFiltered = !isFiltered;
+				continue;
+			}
+		}
+		else if(line.contains("#endif")) {
+			if(ifstack == filterstackpos) {
+				filterstackpos = -1;
+				isFiltered = false;
+				continue;
+			}
+			ifstack--;
+		}
+
+		if(!isFiltered) {
+			shaderSource.append(line);
+		}
+	}
 
 	// Load and compile vertex shader source.
 	if(!program->addShaderFromSourceCode(shaderType, shaderSource)) {
-		qDebug() << "OpenGL shader log:";
-		qDebug() << program->log();
-		throw Exception(QString("The shader source file %1 failed to compile. See log for details.").arg(filename));
+		Exception ex(QString("The shader source file %1 failed to compile.").arg(filename));
+		ex.appendDetailMessage(program->log());
+		ex.appendDetailMessage(QStringLiteral("Problematic shader source:"));
+		ex.appendDetailMessage(shaderSource);
+		throw ex;
 	}
 }
 
@@ -529,11 +606,11 @@ void ViewportSceneRenderer::render2DPolyline(const Point2* points, int count, co
 /******************************************************************************
 * Makes vertex IDs available to the shader.
 ******************************************************************************/
-void ViewportSceneRenderer::activateVertexIDs(QOpenGLShaderProgram* shader, GLint vertexCount)
+void ViewportSceneRenderer::activateVertexIDs(QOpenGLShaderProgram* shader, GLint vertexCount, bool alwaysUseVBO)
 {
 	// Older OpenGL implementations do not provide the built-in gl_VertexID shader
 	// variable. Therefore we have to provide the IDs in a vertex buffer.
-	if(glformat().majorVersion() < 3) {
+	if(glformat().majorVersion() < 3 || alwaysUseVBO) {
 		if(!_glVertexIDBuffer.isCreated() || _glVertexIDBufferSize < vertexCount) {
 			if(!_glVertexIDBuffer.isCreated()) {
 				// Create the ID buffer only once and keep it until the number of particles changes.
@@ -570,9 +647,9 @@ void ViewportSceneRenderer::activateVertexIDs(QOpenGLShaderProgram* shader, GLin
 /******************************************************************************
 * Disables vertex IDs.
 ******************************************************************************/
-void ViewportSceneRenderer::deactivateVertexIDs(QOpenGLShaderProgram* shader)
+void ViewportSceneRenderer::deactivateVertexIDs(QOpenGLShaderProgram* shader, bool alwaysUseVBO)
 {
-	if(glformat().majorVersion() < 3)
+	if(glformat().majorVersion() < 3 || alwaysUseVBO)
 		shader->disableAttributeArray("vertexID");
 }
 
@@ -587,5 +664,116 @@ FloatType ViewportSceneRenderer::defaultLinePickingWidth()
 	return 12.0f * devicePixelRatio;
 }
 
+/******************************************************************************
+* Determines the range of the construction grid to display.
+******************************************************************************/
+std::tuple<FloatType, Box2I> ViewportSceneRenderer::determineGridRange(Viewport* vp)
+{
+	// Determine the area of the construction grid that is visible in the viewport.
+	static const Point2 testPoints[] = {
+		{-1,-1}, {1,-1}, {1, 1}, {-1, 1}, {0,1}, {0,-1}, {1,0}, {-1,0},
+		{0,1}, {0,-1}, {1,0}, {-1,0}, {-1, 0.5}, {-1,-0.5}, {1,-0.5}, {1,0.5}, {0,0}
+	};
+
+	// Compute intersection points of test rays with grid plane.
+	Box2 visibleGridRect;
+	size_t numberOfIntersections = 0;
+	for(size_t i = 0; i < sizeof(testPoints)/sizeof(testPoints[0]); i++) {
+		Point3 p;
+		if(vp->computeConstructionPlaneIntersection(testPoints[i], p, 0.1f)) {
+			numberOfIntersections++;
+			visibleGridRect.addPoint(p.x(), p.y());
+		}
+	}
+
+	if(numberOfIntersections < 2) {
+		// Cannot determine visible parts of the grid.
+		return std::tuple<FloatType, Box2I>(0, Box2I());
+	}
+
+	// Determine grid spacing adaptively.
+	Point3 gridCenter(visibleGridRect.center().x(), visibleGridRect.center().y(), 0);
+	FloatType gridSpacing = vp->nonScalingSize(vp->gridMatrix() * gridCenter) * 2.0f;
+	// Round to nearest power of 10.
+	gridSpacing = pow((FloatType)10, floor(log10(gridSpacing)));
+
+	// Determine how many grid lines need to be rendered.
+	int xstart = (int)floor(visibleGridRect.minc.x() / (gridSpacing * 10)) * 10;
+	int xend = (int)ceil(visibleGridRect.maxc.x() / (gridSpacing * 10)) * 10;
+	int ystart = (int)floor(visibleGridRect.minc.y() / (gridSpacing * 10)) * 10;
+	int yend = (int)ceil(visibleGridRect.maxc.y() / (gridSpacing * 10)) * 10;
+
+	return std::tuple<FloatType, Box2I>(gridSpacing, Box2I(Point2I(xstart, ystart), Point2I(xend, yend)));
+}
+
+/******************************************************************************
+* Renders the construction grid.
+******************************************************************************/
+void ViewportSceneRenderer::renderGrid()
+{
+	if(isPicking())
+		return;
+
+	FloatType gridSpacing;
+	Box2I gridRange;
+	std::tie(gridSpacing, gridRange) = determineGridRange(viewport());
+	if(gridSpacing <= 0) return;
+
+	// Determine how many grid lines need to be rendered.
+	int xstart = gridRange.minc.x();
+	int ystart = gridRange.minc.y();
+	int numLinesX = gridRange.size(0) + 1;
+	int numLinesY = gridRange.size(1) + 1;
+
+	FloatType xstartF = (FloatType)xstart * gridSpacing;
+	FloatType ystartF = (FloatType)ystart * gridSpacing;
+	FloatType xendF = (FloatType)(xstart + numLinesX - 1) * gridSpacing;
+	FloatType yendF = (FloatType)(ystart + numLinesY - 1) * gridSpacing;
+
+	// Allocate vertex buffer.
+	int numVertices = 2 * (numLinesX + numLinesY);
+	std::unique_ptr<Point3[]> vertexPositions(new Point3[numVertices]);
+	std::unique_ptr<ColorA[]> vertexColors(new ColorA[numVertices]);
+
+	// Build lines array.
+	ColorA color = Viewport::viewportColor(ViewportSettings::COLOR_GRID);
+	ColorA majorColor = Viewport::viewportColor(ViewportSettings::COLOR_GRID_INTENS);
+	ColorA majorMajorColor = Viewport::viewportColor(ViewportSettings::COLOR_GRID_AXIS);
+
+	Point3* v = vertexPositions.get();
+	ColorA* c = vertexColors.get();
+	FloatType x = xstartF;
+	for(int i = xstart; i < xstart + numLinesX; i++, x += gridSpacing, c += 2) {
+		*v++ = Point3(x, ystartF, 0);
+		*v++ = Point3(x, yendF, 0);
+		if((i % 10) != 0)
+			c[0] = c[1] = color;
+		else if(i != 0)
+			c[0] = c[1] = majorColor;
+		else
+			c[0] = c[1] = majorMajorColor;
+	}
+	FloatType y = ystartF;
+	for(int i = ystart; i < ystart + numLinesY; i++, y += gridSpacing, c += 2) {
+		*v++ = Point3(xstartF, y, 0);
+		*v++ = Point3(xendF, y, 0);
+		if((i % 10) != 0)
+			c[0] = c[1] = color;
+		else if(i != 0)
+			c[0] = c[1] = majorColor;
+		else
+			c[0] = c[1] = majorMajorColor;
+	}
+	OVITO_ASSERT(c == vertexColors.get() + numVertices);
+
+	// Render grid lines.
+	setWorldTransform(viewport()->gridMatrix());
+	if(!_constructionGridGeometry || !_constructionGridGeometry->isValid(this))
+		_constructionGridGeometry = createLineGeometryBuffer();
+	_constructionGridGeometry->setVertexCount(numVertices);
+	_constructionGridGeometry->setVertexPositions(vertexPositions.get());
+	_constructionGridGeometry->setVertexColors(vertexColors.get());
+	_constructionGridGeometry->render(this);
+}
 
 };

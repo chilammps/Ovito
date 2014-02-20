@@ -41,7 +41,7 @@
   calculates and outputs the <emphasis>von Mises</emphasis> local shear invariant and the
   volumetric (hydrostatic) part of the strain tensor.</para>
 
-  <para>Use the <emphasis>Reference configuration</emphasis> panel to pick the
+  <para>Use the <emphasis>"Reference: External data source"</emphasis> panel to pick the
   file containing the initial particle positions. Note
   that this reference file must contain the same set of particles as the
   input configuration seen by the modifier. That implies that you should

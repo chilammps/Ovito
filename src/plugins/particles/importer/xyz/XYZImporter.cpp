@@ -303,6 +303,14 @@ void XYZImporter::XYZImportTask::parseFile(FutureInterfaceBase& futureInterface,
 		throw ex.prependGeneralMessage(tr("Parsing error in line %1 of XYZ file.").arg(stream.lineNumber()));
 	}
 
+	// Since we created particle types on the go while reading the particle, the assigned particle type IDs
+	// depends on the storage order of particles in the file. We rather want a well-defined particle type ordering, that's
+	// why we sort them now according to their names.
+	if(columnParser.usingNamedParticleTypes())
+		sortParticleTypesByName();
+	else
+		sortParticleTypesById();
+
 	ParticleProperty* posProperty = particleProperty(ParticleProperty::PositionProperty);
 	if(posProperty && numParticles > 0) {
 		Box3 boundingBox;

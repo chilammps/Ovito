@@ -27,7 +27,7 @@
 #include <plugins/particles/importer/InputColumnMappingDialog.h>
 #include <plugins/particles/importer/ParticleImporter.h>
 
-#ifdef MAKING_MODULE_NETCDF
+#ifdef MAKING_MODULE_NETCDFIMPORTER
 #  define OVITO_NETCDF_EXPORT Q_DECL_EXPORT
 #else
 #  define OVITO_NETCDF_EXPORT Q_DECL_IMPORT
@@ -120,7 +120,7 @@ protected:
 		bool _ncIsOpen;
 
 		/// NetCDF ids.
-		int _ncid, _frame_dim, _atom_dim, _spatial_dim;
+		int _ncid, _frame_dim, _atom_dim, _spatial_dim, _Voigt_dim;
 		int _cell_spatial_dim, _cell_angular_dim;
 		int _cell_origin_var, _cell_lengths_var, _cell_angles_var;
 		int _shear_dx_var;

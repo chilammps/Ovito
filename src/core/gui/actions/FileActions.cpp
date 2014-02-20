@@ -53,7 +53,7 @@ void ActionManager::on_HelpAbout_triggered()
 			QMessageBox::Ok, mainWindow());
 	msgBox.setInformativeText(tr(
 			"<p>A visualization and analysis software for atomistic simulation data.</p>"
-			"<p>Copyright (C) 2013, Alexander Stukowski</p>"
+			"<p>Copyright (C) 2014, Alexander Stukowski</p>"
 			"<p>This program comes with ABSOLUTELY NO WARRANTY.<br>"
 			"This is free software, and you are welcome to redistribute\n"
 			"it under certain conditions. See the source for copying conditions.</p>"
@@ -114,9 +114,9 @@ void ActionManager::on_HelpOpenGLInfo_triggered()
 			lsbOutput.replace('\n', ' ');
 			stream << "LSB output: " << lsbOutput << endl;
 #endif
+			stream << "Architecture: " << (QT_POINTER_SIZE*8) << " bit" << endl;
 			stream << "Command line: " << QCoreApplication::arguments().join(' ') << endl;
 			stream << "======= OpenGL info =======" << endl;
-			stream << "Depth buffer size: " << format.depthBufferSize() << endl;
 			stream << "Version: " << format.majorVersion() << QStringLiteral(".") << format.minorVersion() << endl;
 			stream << "Profile: " << (format.profile() == QSurfaceFormat::CoreProfile ? "core" : (format.profile() == QSurfaceFormat::CompatibilityProfile ? "compatibility" : "none")) << endl;
 			stream << "Alpha: " << format.hasAlpha() << endl;
@@ -129,8 +129,12 @@ void ActionManager::on_HelpOpenGLInfo_triggered()
 			stream << "Fragment shaders: " << QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Fragment) << endl;
 			stream << "Geometry shaders: " << QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Geometry) << endl;
 			stream << "Swap behavior: " << (format.swapBehavior() == QSurfaceFormat::SingleBuffer ? QStringLiteral("single buffer") : (format.swapBehavior() == QSurfaceFormat::DoubleBuffer ? QStringLiteral("double buffer") : (format.swapBehavior() == QSurfaceFormat::TripleBuffer ? QStringLiteral("triple buffer") : QStringLiteral("other")))) << endl;
+			stream << "Depth buffer size: " << format.depthBufferSize() << endl;
 			stream << "Stencil buffer size: " << format.stencilBufferSize() << endl;
 			stream << "Deprecated functions: " << format.testOption(QSurfaceFormat::DeprecatedFunctions) << endl;
+#ifdef Q_OS_WIN
+			stream << "Not using point sprites: " << (format.majorVersion() >= 3 && strstr((const char*)glGetString(GL_VENDOR), "Intel") != nullptr) << endl;
+#endif
 			vp->viewportWindow()->glcontext()->doneCurrent();
 		}
 	}
