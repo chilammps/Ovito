@@ -60,7 +60,7 @@ QScriptValue InputOutputBinding::load(QScriptContext* context, ScriptEngine* eng
 {
 	// Process function arguments.
 	if(context->argumentCount() < 1 || context->argumentCount() > 2)
-		return context->throwError(tr("load() takes 1 or 2 arguments."));
+		return context->throwError(tr("load() function expects 1 or 2 arguments."));
 	const QString urlString = context->argument(0).toString();
 	QUrl importURL = FileManager::instance().urlFromUserInput(urlString);
 	if(!importURL.isValid())
@@ -145,7 +145,7 @@ QScriptValue InputOutputBinding::save(QScriptContext* context, ScriptEngine* eng
 	if(!exporter->exportToFile(nodes, outputPath, true))
 		return context->throwError(tr("Operation has been canceled by the user."));
 
-	return QScriptValue();
+	return engine->undefinedValue();
 }
 
 /******************************************************************************

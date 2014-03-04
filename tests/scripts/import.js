@@ -26,6 +26,8 @@ assert(obj2.source.sourceUrl == "file:nw*.imd.gz")
 
 // Load third file.
 obj2.source.sourceUrl = "SiVacancy.cfg"
+// Test alternative:
+obj2.source.load("shear.void.dump.bin", { columnMapping: ["Particle Identifier", "Particle Type", "Position.X", "Position.Y", "Position.Z"]})
 
 // Delete nodes.
 obj.deleteNode()

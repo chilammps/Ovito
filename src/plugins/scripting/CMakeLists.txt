@@ -28,6 +28,7 @@ SET(OVITO_SCRIPTING_SOURCE_FILES
 	bindings/InputOutputBinding.cpp
 	bindings/ObjectNodeBinding.cpp
 	bindings/ViewportBinding.cpp
+	bindings/LinkedFileObjectBinding.cpp
 )
 
 # Generate plugin module.
