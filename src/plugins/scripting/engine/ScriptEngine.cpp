@@ -186,6 +186,13 @@ QScriptValue ScriptEngine::objectConstructor(QScriptContext* context, QScriptEng
 			}
 		}
 
+		qDebug() << "Created new instance of" << objectClass->name();
+		QScriptValueIterator it(object);
+		while(it.hasNext()) {
+			it.next();
+			qDebug() << " " << it.name();
+		}
+
 		return object;
 	}
 	catch(const Exception& ex) {
@@ -248,9 +255,15 @@ QScriptValue ScriptEngine::scriptFunctionHandler(QScriptContext* context, QScrip
 ******************************************************************************/
 QScriptValue ScriptEngine::RefTarget_toString(QScriptContext* context, ScriptEngine* engine)
 {
+	qDebug() << "RefTarget_toString" << context->argumentCount();
 	QScriptValue thisObject = context->thisObject().data();
 	RefTarget* target = qobject_cast<RefTarget*>(thisObject.toQObject());
-	if(!target) return engine->undefinedValue();
+	if(!target && context->argumentCount() == 1) {
+		thisObject = context->argument(0).data();
+		target = qobject_cast<RefTarget*>(thisObject.toQObject());
+	}
+	if(!target)
+		return engine->undefinedValue();
 	return engine->toScriptValue(QString("%1(%2)").arg(target->getOOType().name()).arg(target->objectTitle()));
 }
 

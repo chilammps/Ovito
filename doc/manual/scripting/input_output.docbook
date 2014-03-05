@@ -10,7 +10,7 @@
   <title>Input/output functions</title>
 
   <simplesect xml:id="scripting.input_output.print">
-  	<title>Writing to the console</title> 
+	<title>Writing to the console</title>
     <para>
   	    The <code>print()</code> function writes a value or an object to the console (standard output on Linux/Unix). 
   	    Note that this function will do nothing on Windows since there is no console.
@@ -36,8 +36,9 @@ print("New working directory is " + pwd())</programlisting>
   <simplesect xml:id="scripting.input_output.load">
     <title>Loading data files</title>
     <para>
-      the <code>load()</code> function imports a data file into OVITO. The imported dataset is added as a new object to the current scene.
-      The function takes a string parameter that specifies the file or remote URL to load:
+      the <code>load()</code> function imports a data file into OVITO. The imported data is added as a new object to the current scene, i.e., this script function
+      acts similar to the "Open Local File" function in OVITO's file menu.
+      The <code>load()</code> function takes a string parameter that specifies the file or remote URL to be loaded:
   	    <informalexample><programlisting language="javascript">
 load("simulation_data.dump")	                // Load a file from the current working directory.
 
@@ -58,13 +59,13 @@ load("shear.xyz", {
       know that the XYZ file contains multiple timesteps.
     </para> 
     <para>
-      The <code>load()</code> function returns a reference to the newly created object in the scene.
-      You can use it to <link linkend="scripting.scene_objects.apply_modifier">insert modifiers into the modification pipeline</link>:
+      The <code>load()</code> function returns a reference to the newly created object in the scene (a so-called <emphasis>scene node</emphasis>).
+      You can use it to <link linkend="scripting.scene_objects.apply_modifier">insert modifiers into the associated modification pipeline</link>:
   	    <informalexample><programlisting language="javascript"><![CDATA[
-obj = load("simulation_data.dump")
+node = load("simulation_data.dump")
 
-obj.applyModifier(new SelectExpressionModifier({ expression : "PotentialEnergy < -3.9" }))
-obj.applyModifier(new DeleteParticlesModifier())]]>
+node.applyModifier(new SelectExpressionModifier({ expression : "PotentialEnergy < -3.9" }))
+node.applyModifier(new DeleteParticlesModifier())]]>
 </programlisting></informalexample>
     </para>
   </simplesect>
@@ -72,14 +73,22 @@ obj.applyModifier(new DeleteParticlesModifier())]]>
   <simplesect xml:id="scripting.input_output.source">
     <title>Replacing input data</title>
     <para>
-       Given that there already is an existing modification pipeline with an input data source, you can change the 
-       source path to replace the input particle dataset with a new file. 
-       Each scene object with a modification pipeline has a data source,
-       which can be accessed through its <code>source</code> property. The data source, in turn, has a
-       <code>sourceUrl</code> property, which points to the external file from which the input data is read:
+       Assuming that there already is an existing modification pipeline with some input file, you can change the 
+       source path to replace the input particle data with a different file. 
+       The data source of a modification pipeline can be accessed through the <code>source</code> property. 
+       The data source, in turn, has a <code>sourceUrl</code> property, which points to the external file from which the input data was read.
+       You can either change this property to load a different file (and keep the existing modification pipeline):
   	    <informalexample><programlisting language="javascript"><![CDATA[
-obj = ovito.selectedNode
-obj.source.sourceUrl = "/home/user/data/newfile.dump"]]>
+node = ovito.selectedNode
+node.source.sourceUrl = "/home/user/data/newfile.dump"]]>
+</programlisting></informalexample>
+       Or you can use the <code>load()</code> function of the source object to load a different file. Use this possibility
+       if additional parameters need to be passed to the file importer, e.g.
+  	    <informalexample><programlisting language="javascript"><![CDATA[
+node.source.load("/home/user/data/newfile.dump", { 
+	columnMapping: ["Particle Identifier", "Particle Type", "Position.X", "Position.Y", "Position.Z"]
+})
+]]>
 </programlisting></informalexample>
     </para>
   </simplesect>
@@ -93,7 +102,7 @@ obj.source.sourceUrl = "/home/user/data/newfile.dump"]]>
   	    <programlisting language="javascript">
 save(path, exportertype)
 save(path, exportertype, params)
-save(path, exportertype, params, object)</programlisting>          
+save(path, exportertype, params, node)</programlisting>          
       The <parameter>path</parameter> parameter specifies the name of the destination file. 
       The <parameter>exportertype</parameter> parameter specifies the output format,
       which can be either <code>LAMMPSDataExporter</code>, <code>LAMMPSDumpExporter</code>,
@@ -115,9 +124,9 @@ save("exporteddata.dump", LAMMPSDumpExporter, {
       as well as the structure types assigned to particles.
     </para> 
     <para>
-      The fourth parameter, <parameter>object</parameter>, is optional and specifies the object to be exported if there multiple objects in the
-      current scene. You can pass an object reference returned by the <link linkend="scripting.input_output.load"><code>load()</code></link> function here.
-      If you don't pass an <parameter>object</parameter> parameter to the <code>save()</code> function, it will export the currently active object.
+      The fourth parameter, <parameter>node</parameter>, is optional and specifies the object to be exported if there multiple objects in the
+      current scene. You can pass a reference returned by the <link linkend="scripting.input_output.load"><code>load()</code></link> function here.
+      If you omit this parameter, the <code>save()</code> function will export the currently active object (given by <code>ovito.selectedNode</code>).
     </para>
   </simplesect>
     

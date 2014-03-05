@@ -12,20 +12,20 @@
   <simplesect xml:id="scripting.scene_objects.apply_modifier">
   	<title>Applying new modifiers</title> 
     <para>
-  	    The <link linkend="scripting.input_output.load"><code>load()</code></link> script function returns a reference to the imported object, which consists of
-  	    the external data source and the modification pipeline, which processes the imported data before it is displayed on screen. You can populate the
-  	    modification pipeline with modifiers from a script as follows:
+  	    The <link linkend="scripting.input_output.load"><code>load()</code></link> script function returns a reference to the imported object, a so-called <emphasis>scene node</emphasis>, 
+  	    which consists of the input data source and the modification pipeline, which processes the input data before it is displayed. You can populate the node's
+  	    modification pipeline with modifiers as follows:
   	    <informalexample><programlisting language="javascript"><![CDATA[
 // Load an external data file. 
 // This creates a new object in OVITO with an attached modification pipeline.
-obj = load("simulation.dump")
+node = load("simulation.dump")
 
 // Insert two new modifiers using the applyModifier() function:
-obj.applyModifier(new SelectExpressionModifier({ expression : "PotentialEnergy < -3.9" }))
-obj.applyModifier(new DeleteParticlesModifier())]]>
+node.applyModifier(new SelectExpressionModifier({ expression : "PotentialEnergy < -3.9" }))
+node.applyModifier(new DeleteParticlesModifier())]]>
 </programlisting></informalexample>
 
-		The <code>applyModifier()</code> method appends a modifier to the modification pipeline. The new modifier is created using the <code>new</code> keyword
+		The <code>applyModifier()</code> method appends a modifier to the modification pipeline. The new modifier instance is created using the <code>new</code> keyword
 		followed by the modifier type name. Note that we are calling a constructor function here, which is the standard way of creating new objects in JavaScript.
 		The following modifier types are available in OVITO:
     </para> 
@@ -49,19 +49,22 @@ obj.applyModifier(new DeleteParticlesModifier())]]>
     	<code>HistogramModifier</code>, 
     	<code>InvertSelectionModifier</code>, 
     	<code>ManualSelectionModifier</code>,
+    	<code>ScatterPlotModifier</code>,
     	<code>SelectExpressionModifier</code>, 
     	<code>SelectParticleTypeModifier</code>, 
     	<code>ShowPeriodicImagesModifier</code>, 
     	<code>SliceModifier</code>, 
+    	<code>WignerSeitzAnalysisModifier</code>,
     	<code>WrapPeriodicImagesModifier</code>
-    </para> 
+    </para>
     <para>
-        A modifier's constructor function accepts an optional object literal, which is used to initialize its parameters as demonstrated in the previous example. 
-        Alternatively, you can set individual parameters after having created the modifier (It doesn't matter if you do that before or after inserting the modifier into the pipeline):
+        A modifier's constructor function accepts an optional object literal, which can be used to initialize its parameters as demonstrated in the previous example for the 
+        <code>SelectExpressionModifier</code> modifier. 
+        Alternatively, you can change individual parameters after having created the modifier (It doesn't matter if you do that before or after inserting the modifier into the pipeline):
   	    <informalexample><programlisting language="javascript"><![CDATA[
-modifier = new SelectExpressionModifier()
-obj.applyModifier(modifier)
-modifier.expression = "PotentialEnergy < -3.9"]]>
+m = new SelectExpressionModifier()
+node.applyModifier(m)
+m.expression = "PotentialEnergy < -3.9"]]>
 </programlisting></informalexample>
     </para> 
   </simplesect>
@@ -69,12 +72,12 @@ modifier.expression = "PotentialEnergy < -3.9"]]>
   <simplesect xml:id="scripting.scene_objects.modifiers">
   	<title>Accessing the modification pipeline</title> 
     <para>
-       Each scene object has a property <code>modifiers</code>, which is the list of modifiers in the current pipeline. This
-       allows you to access existing modifiers, which have not been added to the pipeline by the script:
+       The scene node has a <code>modifiers</code> property, which lists the existing modifiers in the associated modification pipeline:
   	    <informalexample><programlisting language="javascript"><![CDATA[
-// Print the list of modifiers in the current pipeline:
-for(var i = 0; i < obj.modifiers.length; i++)
-    print(obj.modifiers[i])
+// Print the list of modifiers in the modification pipeline of the selected object:
+node = ovito.selectedNode
+for(var i = 0; i < node.modifiers.length; i++)
+    print(node.modifiers[i])
 ]]>
 </programlisting></informalexample>
     </para>
@@ -96,7 +99,7 @@ for(var i = 0; i < obj.modifiers.length; i++)
   	    <informalexample><programlisting language="javascript"><![CDATA[
 // Insert an analysis modifier, which takes long to compute:
 modifier = new CommonNeighborAnalysisModifier({ cutoff : 3.2, adaptiveMode : false })
-object.applyModifier(modifier)
+node.applyModifier(modifier)
 
 // Wait until calculation has been completed. 
 wait()
@@ -123,13 +126,13 @@ the analysis.
        how to explicitly synchronize this using the <code>wait()</code> function:
   	    <informalexample><programlisting language="javascript"><![CDATA[
 // Start loading a data file (asynchronously):
-obj = load("simulation.dump")
+node = load("simulation.dump")
 
 // Block script execution until data has been completely loaded and the simulation cell geometry is known.  
 wait()
 
 // Now insert the Slice modifier using default parameters, which will position the slicing plane in the center of the simulation cell:
-obj.applyModifier(new SliceModifier())]]>
+node.applyModifier(new SliceModifier())]]>
 </programlisting></informalexample>
 	   Note that using the <code>wait()</code> function would not have been necessary here if we had positioned the slicing plane explicitly from the script and independent
 	   from the simulation cell geometry.
