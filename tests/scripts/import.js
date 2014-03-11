@@ -16,7 +16,7 @@ node = ovito.selectedNode
 // Clear selection
 ovito.selectedNode = null
 
-// Change selection
+// Set selection
 ovito.selectedNode = node
 
 // Load second file

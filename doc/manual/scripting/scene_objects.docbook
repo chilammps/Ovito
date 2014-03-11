@@ -87,14 +87,14 @@ for(var i = 0; i < node.modifiers.length; i++)
   	<title>The <code>wait()</code> function</title> 
     <para>
        OVITO uses an asynchronous (and multi-threaded) evaluation model to compute the results of the modification pipeline. This allows the user to continue working
-       with the program while it is still computing the effect of an analysis modifier that takes a long time to evaluate. 
+       with the program while it is still computing the results of modifiers that take a long time to evaluate. 
        Not all modifiers take part in this asynchronous evaluation model: 
-       Simple modifiers that are inexpensive to evaluate, like the <link linkend="particles.modifiers.select_particle_type">Select particle type modifier</link>, 
-       are processed immediately. More expensive analysis modifier such as the <link linkend="particles.modifiers.coordination_analysis">Coordination analysis modifier</link>,
+       Simple and inexpensive modifiers, like the <link linkend="particles.modifiers.select_particle_type">Select particle type modifier</link>, 
+       are processed immediately. Computationally more expensive analysis modifier such as the <link linkend="particles.modifiers.coordination_analysis">Coordination analysis modifier</link>,
        which potentially take a long time to compute for large systems, are evaluated asynchronously.
     </para>
     <para>
-       That means, if you want to access the results of such a modifier from your script, you have to wait until OVITO has finished computing it. This can be achieved with the 
+       That means, if you want to access the results of such a modifier from a script, you have to wait until OVITO has finished computing them. This can be achieved with the 
        <code>wait()</code> script function. For example:
   	    <informalexample><programlisting language="javascript"><![CDATA[
 // Insert an analysis modifier, which takes long to compute:
@@ -108,22 +108,21 @@ wait()
 numFCC = modifier.structureCounts[CommonNeighborAnalysisModifier.FCC]
 print("Number of FCC atoms: " + numFCC)]]>
 </programlisting></informalexample>
-In this example, we read out the <code>structureCounts</code> array of the CNA modifier, which contains the number of particles found for each known structure type.
-If we had accessed this array without calling <code>wait()</code> first, it would contain invalid or old data since the modifier would still be in the process of performing 
-the analysis.
+In this example, we read out the <code>structureCounts</code> array of the CNA modifier, which contains the number of particles identified by the modifier for each known structure type.
+If we had accessed this output array without calling <code>wait()</code> first, it would contain invalid or old data since the analysis would still be in progress.
     </para>  
     <para>
-       Calling the <code>wait()</code> function is only necessary when directly accessing output properties of analysis modifiers. It is <emphasis>not</emphasis> necessary
+       Calling the <code>wait()</code> function is only necessary when accessing output properties of analysis modifiers. It is <emphasis>not</emphasis> necessary
        when <link linkend="scripting.rendering">rendering a picture</link> of the dataset or when exporting the processed particles to an output file using <link linkend="scripting.input_output.save"><code>save()</code></link>. 
        In these cases, OVITO will implicitly call the <code>wait()</code> function to make sure the modification pipeline has been fully evaluated.
     </para>
     <para>
        Loading a dataset from an external file is also an asynchronous operation, similar to evaluating analysis modifiers. Accordingly, you can also use the 
        <code>wait()</code> function to block script execution until a dataset has been fully loaded and is ready to be fed into the modification pipeline.
-       This may be useful in some situations, for instance when inserting the <link linkend="particles.modifiers.slice">Slice modifier</link>. This modifier will automatically
-       position the slicing plane in the center of the simulation cell when it is first inserted into the modification pipeline. This automatic initialization only works
-       if the simulation cell geometry has already been loaded from the file at the time the modifier is inserted into the pipeline. The following example demonstrates
-       how to explicitly synchronize this using the <code>wait()</code> function:
+       This may be useful in some situations, for instance when inserting the <link linkend="particles.modifiers.slice">Slice modifier</link>. This modifier automatically
+       positions the slicing plane in the center of the simulation cell when it is first inserted into the modification pipeline. This automatic initialization only works
+       if the simulation cell has already been loaded from the file at the time the modifier is inserted into the pipeline. The following example demonstrates
+       how to explicitly synchronize these steps using the <code>wait()</code> function:
   	    <informalexample><programlisting language="javascript"><![CDATA[
 // Start loading a data file (asynchronously):
 node = load("simulation.dump")
@@ -131,11 +130,11 @@ node = load("simulation.dump")
 // Block script execution until data has been completely loaded and the simulation cell geometry is known.  
 wait()
 
-// Now insert the Slice modifier using default parameters, which will position the slicing plane in the center of the simulation cell:
+// Now insert the Slice modifier using default parameters, which will position 
+// the slicing plane in the center of the simulation cell:
 node.applyModifier(new SliceModifier())]]>
 </programlisting></informalexample>
-	   Note that using the <code>wait()</code> function would not have been necessary here if we had positioned the slicing plane explicitly from the script and independent
-	   from the simulation cell geometry.
+	   Note that use of the <code>wait()</code> function would not have been necessary here if we had positioned the slicing plane explicitly from our script.
     </para>
   </simplesect>
     
