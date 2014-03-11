@@ -34,18 +34,14 @@ uniform int pickingBaseID;
 
 	// The input data:
 	attribute float vertexID;
-	#define gl_VertexID int(vertexID)
-	
-	// Output passed to fragment shader.
-	#define vertex_color_fs gl_FrontColor
 
 #endif
 
 void main()
 {
 	// Compute color from object ID.
-	int objectID = pickingBaseID + gl_VertexID / 3;
 #if __VERSION__ >= 130
+	int objectID = pickingBaseID + gl_VertexID / 3;
 	vertex_color_fs = vec4(
 		float(objectID & 0xFF) / 255.0, 
 		float((objectID >> 8) & 0xFF) / 255.0, 
@@ -54,12 +50,13 @@ void main()
 
 	gl_Position = modelview_projection_matrix * vec4(position, 1.0);
 #else
-	vertex_color_fs = vec4(
-		float(mod(objectID, 0x100)) / 255.0, 
-		float(mod(objectID / 0x100, 0x100)) / 255.0, 
-		float(mod(objectID / 0x10000, 0x100)) / 255.0, 
-		float(mod(objectID / 0x1000000, 0x100)) / 255.0);		
-
+	float objectID = pickingBaseID + floor(vertexID / 3);
+	gl_FrontColor = vec4(
+		floor(mod(objectID, 256.0)) / 255.0,
+		floor(mod(objectID / 256.0, 256.0)) / 255.0, 
+		floor(mod(objectID / 65536.0, 256.0)) / 255.0, 
+		floor(mod(objectID / 16777216.0, 256.0)) / 255.0);	
+		
 	gl_Position = modelview_projection_matrix * gl_Vertex;
 #endif
 }

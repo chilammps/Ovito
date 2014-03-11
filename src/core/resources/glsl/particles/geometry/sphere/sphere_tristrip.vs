@@ -65,7 +65,7 @@ void main()
 	particle_view_pos_fs = vec3(modelview_matrix * gl_Vertex);
 
 	// Transform and project vertex.
-	int cubeCorner = int(floor(int(vertexID) - 14 * floor(int(vertexID) / 14 + 0.5) + 0.5));
+	int cubeCorner = int(mod(vertexID+0.5, 14.0));
 	gl_Position = projection_matrix * modelview_matrix * (gl_Vertex + vec4(cubeVerts[cubeCorner] * particle_radius, 0));
 #endif
 }

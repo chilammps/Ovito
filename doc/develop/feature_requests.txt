@@ -1,10 +1,9 @@
 
 - OpenGL rendering support for more than 12 million particles.
-- Add user documentation for general GUI (using numeric spinners etc.)
 
 - Import bond information from LAMMPS.
 - Create Bonds modifier: Add 'lower bound' parameter such that, when using the modifier several times, bonds with different lengths can be assigned different colors.
-- Compute Property modifier: Add variables for simulation box size etc.
+- Compute Property modifier: Add variables for simulation box size, reduced particle coordinates, etc.
 - Import file should keep a history of visited directories like the old Ovito version did.
 - Color Coding modifier: Display of color legend in rendered image.
 - Export of general triclinic cells to LAMMPS data/dump formats. See http://lammps.sandia.gov/doc/Section_howto.html#howto_12
