@@ -336,7 +336,9 @@ typedef QuaternionT<FloatType>		Quaternion;
 
 };	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Quaternion)
+Q_DECLARE_METATYPE(Ovito::Quaternion);
+Q_DECLARE_METATYPE(Ovito::Quaternion*);
 Q_DECLARE_TYPEINFO(Ovito::Quaternion, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Quaternion*, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_QUATERNION_H

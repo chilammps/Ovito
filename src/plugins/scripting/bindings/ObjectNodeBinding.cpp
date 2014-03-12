@@ -35,22 +35,11 @@ IMPLEMENT_OVITO_OBJECT(Scripting, ObjectNodeBinding, ScriptBinding);
 ******************************************************************************/
 void ObjectNodeBinding::setupBinding(ScriptEngine& engine)
 {
-	// Install a prototype for ObjectNode values.
+	// Install this prototype for ObjectNode values.
 	engine.setDefaultPrototype(qMetaTypeId<ObjectNode*>(), engine.newQObject(this));
 
 	// This is required for the 'modifiers' property of the ObjectNode prototype.
 	qScriptRegisterSequenceMetaType<QVector<Modifier*>>(&engine);
-
-	// Create getter function for the 'selectedNode' property, which always returns the currently selected node.
-	engine.globalObject().setProperty("selectedNode", engine.newStdFunction(&ObjectNodeBinding::selectedNode, 0), QScriptValue::PropertyGetter);
-}
-
-/******************************************************************************
-* Implementation of the 'selectedNode' global property.
-******************************************************************************/
-QScriptValue ObjectNodeBinding::selectedNode(QScriptContext* context, ScriptEngine* engine)
-{
-	return engine->toScriptValue(engine->dataset()->selection()->firstNode());
 }
 
 /******************************************************************************
@@ -59,20 +48,42 @@ QScriptValue ObjectNodeBinding::selectedNode(QScriptContext* context, ScriptEngi
 QVector<Modifier*> ObjectNodeBinding::modifiers()
 {
 	QVector<Modifier*> result;
-	ObjectNode* objNode = qscriptvalue_cast<ObjectNode*>(thisObject());
-	if(objNode) {
+	ObjectNode* objNode = ScriptEngine::getThisObject<ObjectNode>(context());
+	if(!objNode) {
+		context()->throwError(QScriptContext::TypeError, tr("ObjectNode.prototype.modifiers: This is not an ObjectNode."));
+		return result;
+	}
 
-		// Go through the modification pipeline and collect all modifiers in a list.
-		PipelineObject* pipelineObj = dynamic_object_cast<PipelineObject>(objNode->sceneObject());
-		while(pipelineObj) {
-			for(ModifierApplication* modApp : pipelineObj->modifierApplications()) {
-				result.push_back(modApp->modifier());
-			}
-			pipelineObj = dynamic_object_cast<PipelineObject>(pipelineObj->inputObject());
+	// Go through the modification pipeline and collect all modifiers in a list.
+	PipelineObject* pipelineObj = dynamic_object_cast<PipelineObject>(objNode->sceneObject());
+	while(pipelineObj) {
+		for(ModifierApplication* modApp : pipelineObj->modifierApplications()) {
+			result.push_back(modApp->modifier());
 		}
+		pipelineObj = dynamic_object_cast<PipelineObject>(pipelineObj->inputObject());
 	}
 	return result;
 }
 
+/******************************************************************************
+* Returns the SceneObject that is the data source of the modification pipeline.
+******************************************************************************/
+SceneObject* ObjectNodeBinding::source()
+{
+	ObjectNode* objNode = ScriptEngine::getThisObject<ObjectNode>(context());
+	if(!objNode) {
+		context()->throwError(QScriptContext::TypeError, tr("ObjectNode.prototype.source: This is not an ObjectNode."));
+		return nullptr;
+	}
+
+	SceneObject* sceneObj = objNode->sceneObject();
+	while(sceneObj) {
+		if(sceneObj->inputObjectCount() == 0) break;
+		SceneObject* inputObj = sceneObj->inputObject(0);
+		if(!inputObj) break;
+		sceneObj = inputObj;
+	}
+	return sceneObj;
+}
 
 };

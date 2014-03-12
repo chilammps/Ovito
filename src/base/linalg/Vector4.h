@@ -281,9 +281,13 @@ inline void glVertex(const Vector_4<GLfloat>& v) { glVertex4fv(v.data()); }
 
 };	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Vector4)
-Q_DECLARE_METATYPE(Ovito::Vector4I)
+Q_DECLARE_METATYPE(Ovito::Vector4);
+Q_DECLARE_METATYPE(Ovito::Vector4I);
+Q_DECLARE_METATYPE(Ovito::Vector4*);
+Q_DECLARE_METATYPE(Ovito::Vector4I*);
 Q_DECLARE_TYPEINFO(Ovito::Vector4, Q_PRIMITIVE_TYPE);
 Q_DECLARE_TYPEINFO(Ovito::Vector4I, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Vector4*, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Vector4I*, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_VECTOR4_H

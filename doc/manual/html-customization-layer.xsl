@@ -7,7 +7,7 @@
 	exclude-result-prefixes="exsl db ng">
 
 <!-- ================================================================================== -->
-<!-- Customizations of of the chunked HTML style for the generation of the HTML formatted manual. -->
+<!-- Customizations of the chunked HTML style for the generation of the HTML formatted manual. -->
 <!-- ================================================================================== -->
 	
 <xsl:import href="http://docbook.sourceforge.net/release/xsl/current/html/chunk.xsl"/>
@@ -170,7 +170,7 @@ set       toc
 </xsl:template>
 
 <xsl:template name="user.footer.content">
-  <p class="footer_copyright">&#x00A9; 2013  Alexander Stukowski</p>
+  <p class="footer_copyright">&#x00A9; 2014  Alexander Stukowski</p>
 </xsl:template>
 
 </xsl:stylesheet>

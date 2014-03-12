@@ -81,7 +81,7 @@ Release 2.1.0 (15-Nov-13):
    used by the ParaView software and can, for instance, be written by LIGGGHTS/LAMMPS.
  - Camera objects can be created through the viewport context menu. A viewport can be 
    linked to a camera object to show the the corresponding view. Camera objects can
-   be animated (that's still an experimemtal and incomplete feature).
+   be animated (that's still an experimental and incomplete feature).
  - When importing a sequence of simulation snapshots into OVITO, one can now configure
    the mapping of input frames to OVITO's animation frames. This allows to generate output
    movies with less (or more) frames than the imported snapshot sequence. 

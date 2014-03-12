@@ -32,7 +32,6 @@ uniform int verticesPerElement;
 	#define flat
 
 	attribute float vertexID;
-	#define gl_VertexID int(vertexID)
 #endif
 
 in vec3 vertex_pos;
@@ -44,19 +43,20 @@ out vec4 vertex_color_out;
 void main()
 {
 	// Compute color from object ID.
-	int objectID = pickingBaseID + (gl_VertexID / verticesPerElement);
 #if __VERSION__ >= 130
+	int objectID = pickingBaseID + (gl_VertexID / verticesPerElement);
 	vertex_color_out = vec4(
 		float(objectID & 0xFF) / 255.0, 
 		float((objectID >> 8) & 0xFF) / 255.0, 
 		float((objectID >> 16) & 0xFF) / 255.0, 
 		float((objectID >> 24) & 0xFF) / 255.0);
 #else
+	float objectID = pickingBaseID + floor(vertexID / verticesPerElement);
 	vertex_color_out = vec4(
-		float(mod(objectID, 0x100)) / 255.0, 
-		float(mod(objectID / 0x100, 0x100)) / 255.0, 
-		float(mod(objectID / 0x10000, 0x100)) / 255.0, 
-		float(mod(objectID / 0x1000000, 0x100)) / 255.0);		
+		floor(mod(objectID, 256.0)) / 255.0,
+		floor(mod(objectID / 256.0, 256.0)) / 255.0, 
+		floor(mod(objectID / 65536.0, 256.0)) / 255.0, 
+		floor(mod(objectID / 16777216.0, 256.0)) / 255.0);				
 #endif
 	
 	if(vector_dir != vec3(0)) {

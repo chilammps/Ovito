@@ -42,14 +42,14 @@
     This modifier constructs a polyhedral mesh around a set of particles. It can be used to generate
     a geometric representation of the outer and inner surfaces of an atomistic solid. In addition to
     visualization purposes, the geometric description of the surface is good for quantitative 
-    measurements of the surface area and the solid volume of an atomistic structure. 
+    measurements of the surface area and the solid volume or porosity of an atomistic structure. 
   </para>
 
   <para>
     After constructing the surface, OVITO computes the total surface area and the solid volume. The modifier also reports 
     derived quantities such as the specific surface area. If you are using this modifier, in particular to perform 
     quantitative analyses, you should cite the following article, which describes the algorithm implemented in OVITO: 
-    <link xlink:href="http://dx.doi.org/10.1007/s11837-013-0827-5">A. Stukowski, JOM, 2013, DOI: 10.1007/s11837-013-0827-5</link>. 
+    <link xlink:href="http://dx.doi.org/10.1007/s11837-013-0827-5">A. Stukowski, JOM: Vol. 66, Issue 3 (2014), 399-407</link>. 
   </para>
   
   <para>

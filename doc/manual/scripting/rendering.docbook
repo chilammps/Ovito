@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<section version="5.0"
+         xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xml:id="scripting.rendering" xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title>Rendering</title>
+
+  <simplesect xml:id="scripting.rendering.viewports">
+  	<title>Working with viewports</title>
+    <para>
+      OVITO manages multiple viewports, which show the three-dimensional scene from different directions.
+      There is always one selected viewport, called the <emphasis>active viewport</emphasis>. It can be accessed from
+      a script through the <code>activeViewport</code> variable, which holds a reference to a <code>Viewport</code> object.
+    </para>    
+    <para>
+      A <code>Viewport</code> object provides various properties and functions that allow to set the position, orientation,
+      and projection parameters of the virtual camera. For instance, to set up a camera with perspective projection, 
+      positioned at the xyz coordinates (100, 85, 50), and looking toward the origin, you would call the <code>Viewport.perspective()</code> function:
+ 	    <informalexample><programlisting language="javascript"><![CDATA[
+activeViewport.perspective(
+	Point(100, 85, 50), 			// The camera position in space
+	Vector(-100, -85, -50), 		// The viewing direction
+	70.0 * Math.PI/180.0)			// The field of view angle]]>
+</programlisting></informalexample>
+	  The third parameter specifies the vertical field of view (FOV) of the camera. We have set it to a 70 degree angle, which needs to be converted to radians first.
+	</para>
+	<para>
+      Alternatively, we can set up a camera with parallel projection as follows:
+ 	    <informalexample><programlisting language="javascript"><![CDATA[
+activeViewport.ortho(Point(0,0,0), Vector(0,-1,0), 30.0))]]>
+</programlisting></informalexample>
+	  Here we made the camera look along the negative Y-axis. Note that, for parallel cameras,
+	  the FOV parameter determines the size of the visible region (in this case 30.0 length units in the vertical direction).
+	</para>	
+  </simplesect>
+
+  <simplesect xml:id="scripting.rendering.render_pics">
+  	<title>Rendering pictures and movies</title> 
+    <para>
+       To let OVITO render a picture of the current viewport, use the <code>Viewport.render()</code> function:
+ 	    <informalexample><programlisting language="javascript"><![CDATA[
+activeViewport.render()]]>
+</programlisting></informalexample>
+       This will start the rendering process using the current render settings such as image size, output filename, background color etc.
+    </para>    
+    <para>
+       You can modify the current render settings before calling <code>render()</code> by changing the corresponding properties of the <code>renderSettings</code> object, which is part of the global <code>dataset</code> object:
+ 	    <informalexample><programlisting language="javascript"><![CDATA[
+rs = dataset.renderSettings
+
+rs.imageWidth = 320                // Sets the width in pixels of the output image
+rs.imageHeight = 240               // Sets the height in pixels of the output image
+rs.filename = "frame.png"          // Sets the output filename
+rs.saveToFile = true               // Set this flag, otherwise the generated image will not be saved to disk.
+
+// Control which frames should be rendered: 
+rs.renderingRangeType = RenderSettings.CURRENT_FRAME        // Render only the current animation frame (default)
+rs.renderingRangeType = RenderSettings.ANIMATION_INTERVAL   // Render all frames of the animation interval
+rs.renderingRangeType = RenderSettings.CUSTOM_INTERVAL      // Render a custom interval of frames
+]]>
+</programlisting></informalexample>
+	   As a shortcut, you can directly pass the render settings parameters to the <code>render()</code>  function via an object literal. For example:       
+ 	    <informalexample><programlisting language="javascript"><![CDATA[
+activeViewport.render({ filename : "output_image.png", imageWidth : 320, imageHeight : 240 })]]>
+</programlisting></informalexample>
+    </para>    
+  </simplesect>
+    
+</section>

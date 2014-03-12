@@ -23,6 +23,9 @@
 #include <plugins/scripting/engine/ScriptEngine.h>
 #include <core/rendering/RenderSettings.h>
 #include <core/rendering/FrameBuffer.h>
+#include <core/gui/app/Application.h>
+#include <core/gui/mainwin/MainWindow.h>
+#include <core/gui/widgets/rendering/FrameBufferWindow.h>
 #include "ViewportBinding.h"
 
 namespace Scripting {
@@ -35,7 +38,9 @@ IMPLEMENT_OVITO_OBJECT(Scripting, ViewportBinding, ScriptBinding);
 void ViewportBinding::setupBinding(ScriptEngine& engine)
 {
 	// Install prototype for Viewport class.
-	engine.setDefaultPrototype(qMetaTypeId<Viewport*>(), engine.newQObject(this));
+	QScriptValue viewportProto = engine.newQObject(this);
+	viewportProto.setProperty("render", engine.newStdFunction(&ViewportBinding::render, 0));
+	engine.setDefaultPrototype(qMetaTypeId<Viewport*>(), viewportProto);
 
 	// Create getter function for the 'activeViewport' property, which always returns the active viewport.
 	engine.globalObject().setProperty("activeViewport", engine.newStdFunction(&ViewportBinding::activeViewport, 0), QScriptValue::PropertyGetter);
@@ -46,31 +51,55 @@ void ViewportBinding::setupBinding(ScriptEngine& engine)
 ******************************************************************************/
 QScriptValue ViewportBinding::activeViewport(QScriptContext* context, ScriptEngine* engine)
 {
-	return engine->toScriptValue(engine->dataset()->viewportConfig()->activeViewport());
+	return engine->wrapOvitoObject(engine->dataset()->viewportConfig()->activeViewport());
 }
 
 /******************************************************************************
 * Renders the viewport contents to an output image or movie file.
 ******************************************************************************/
-bool ViewportBinding::render(RenderSettings* settings)
+QScriptValue ViewportBinding::render(QScriptContext* context, ScriptEngine* engine)
 {
-	ScriptEngine* engine = static_cast<ScriptEngine*>(this->engine());
-	Viewport* viewport = qscriptvalue_cast<Viewport*>(thisObject());
-	OVITO_CHECK_OBJECT_POINTER(viewport);
+	Viewport* viewport = ScriptEngine::getThisObject<Viewport>(context);
+	if(!viewport)
+		return context->throwError(QScriptContext::TypeError, tr("Viewport.prototype.render: This is not a Viewport."));
+
+	// Check if a RenderSettings object has been passed to the function.
+	OORef<RenderSettings> settings;
+	if(context->argumentCount() > 0) {
+		settings = qscriptvalue_cast<RenderSettings*>(context->argument(0));
+
+		// Check if an object literal has been passed, which can be used to initialize a new RenderSettings object.
+		if(!settings && context->argument(0).isObject()) {
+			settings = new RenderSettings(engine->dataset());
+			QScriptValue sv = engine->wrapOvitoObject(settings);
+
+			// Iterate over all properties of the object literal and
+			// copy them over to the newly created object.
+			QScriptValueIterator it(context->argument(0));
+			while(it.hasNext()) {
+				it.next();
+				sv.setProperty(it.name(), it.value());
+			}
+		}
+	}
+
+	// If no RenderSettings object has been passed to the function, use the global settings from the DataSet.
+	if(!settings)
+		settings = viewport->dataset()->renderSettings();
 	OVITO_CHECK_OBJECT_POINTER(settings);
 
-	try {
-		// Prepare a frame buffer.
-		QSharedPointer<FrameBuffer> frameBuffer(new FrameBuffer(
-				settings->outputImageWidth(), settings->outputImageHeight()));
+	// Prepare the frame buffer.
+	QSharedPointer<FrameBuffer> frameBuffer;
+	FrameBufferWindow* frameBufferWindow = nullptr;
+	if(Application::instance().guiMode()) {
+		frameBufferWindow = viewport->dataset()->mainWindow()->frameBufferWindow();
+		frameBuffer = frameBufferWindow->frameBuffer();
+	}
+	if(!frameBuffer)
+		frameBuffer.reset(new FrameBuffer(settings->outputImageWidth(), settings->outputImageHeight()));
 
-		// Render.
-		return engine->dataset()->renderScene(settings, viewport, frameBuffer);
-	}
-	catch(const Exception& ex) {
-		context()->throwError(tr("Rendering failed: %1").arg(ex.message()));
-		return false;
-	}
+	// Render.
+	return engine->toScriptValue(engine->dataset()->renderScene(settings.get(), viewport, frameBuffer, frameBufferWindow));
 }
 
 /******************************************************************************
@@ -78,7 +107,11 @@ bool ViewportBinding::render(RenderSettings* settings)
 ******************************************************************************/
 void ViewportBinding::perspective(const Point3& cameraPos, const Vector3& cameraDir, FloatType fov)
 {
-	Viewport* vp = qscriptvalue_cast<Viewport*>(thisObject());
+	Viewport* vp = ScriptEngine::getThisObject<Viewport>(context());
+	if(!vp) {
+		context()->throwError(QScriptContext::TypeError, tr("Viewport.prototype.perspective: This is not a Viewport."));
+		return;
+	}
 	OVITO_CHECK_OBJECT_POINTER(vp);
 
 	vp->setViewType(Viewport::VIEW_PERSPECTIVE);
@@ -92,7 +125,11 @@ void ViewportBinding::perspective(const Point3& cameraPos, const Vector3& camera
 ******************************************************************************/
 void ViewportBinding::ortho(const Point3& cameraPos, const Vector3& cameraDir, FloatType fov)
 {
-	Viewport* vp = qscriptvalue_cast<Viewport*>(thisObject());
+	Viewport* vp = ScriptEngine::getThisObject<Viewport>(context());
+	if(!vp) {
+		context()->throwError(QScriptContext::TypeError, tr("Viewport.prototype.ortho: This is not a Viewport."));
+		return;
+	}
 	OVITO_CHECK_OBJECT_POINTER(vp);
 
 	vp->setViewType(Viewport::VIEW_ORTHO);

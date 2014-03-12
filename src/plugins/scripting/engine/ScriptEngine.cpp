@@ -52,10 +52,12 @@ IMPLEMENT_OVITO_OBJECT(Scripting, ScriptBinding, OvitoObject);
 * Initializes the scripting engine and sets up the environment.
 ******************************************************************************/
 ScriptEngine::ScriptEngine(DataSet* dataset, QObject* parent)
-	: QScriptEngine(parent), _dataset(dataset)
+	: QScriptEngine(parent), _dataset(dataset), _scriptClass(this)
 {
 	using namespace std;
 	using namespace std::placeholders;
+
+	_noopFunction = newStdFunction(&ScriptEngine::noop, 0);
 
 	// Register the most important classes such that they can be used in scripts.
 	// This will install marshaling functions that wrap the corresponding C++ pointers
@@ -106,7 +108,7 @@ ScriptEngine::ScriptEngine(DataSet* dataset, QObject* parent)
 
 	// Set up a prototype for the RefTarget class, which provides the toString() method.
 	QScriptValue refTargetProto = newObject();
-	refTargetProto.setProperty("toString", newFunction(&RefTarget_toString));
+	refTargetProto.setProperty("toString", newStdFunction(&RefTarget_toString));
 	refTargetProto.setPrototype(defaultPrototype(qMetaTypeId<QObject*>()));
 	setDefaultPrototype(qMetaTypeId<RefTarget*>(), refTargetProto);
 
@@ -142,15 +144,20 @@ ScriptEngine::ScriptEngine(DataSet* dataset, QObject* parent)
 ******************************************************************************/
 QScriptValue ScriptEngine::wrapOvitoObject(OvitoObject* obj)
 {
-	// Create script value that stores the raw pointer to the OvitoObject.
-	QScriptValue retval = toScriptValue(obj);
+	if(!obj)
+		return nullValue();
 
-	if(obj) {
-		// Store an additional OORef<OvitoObject> smart pointer in the 'data' field of the first QScriptValue.
-		// It will be deleted together with the raw pointer when the script value is garbage-collected.
-		// The OORef smart pointer is encapsulated in a QVariant such that in can be stored in a QScriptValue.
-		retval.setData(newVariant(QVariant::fromValue(OORef<OvitoObject>(obj))));
-	}
+	// Create internal script value that stores the pointer to the OvitoObject.
+	QScriptValue objectValue = toScriptValue(obj);
+
+	// Store the OORef<OvitoObject> smart pointer in the 'data' field of the first QScriptValue.
+	// It will be deleted together when the script value is garbage-collected.
+	// The OORef smart pointer is encapsulated in a QVariant such that in can be stored in a QScriptValue.
+	objectValue.setData(newVariant(QVariant::fromValue(OORef<OvitoObject>(obj))));
+
+	// Create a wrapper script value that manages access to the OvitoObject.
+	QScriptValue retval = newObject(&_scriptClass, objectValue);
+	retval.setPrototype(objectValue.prototype());
 
 	return retval;
 }
@@ -179,10 +186,23 @@ QScriptValue ScriptEngine::objectConstructor(QScriptContext* context, QScriptEng
 			}
 		}
 
+		qDebug() << "Created new instance of" << objectClass->name();
+		QScriptValueIterator it(object);
+		while(it.hasNext()) {
+			it.next();
+			qDebug() << " " << it.name();
+		}
+
 		return object;
 	}
 	catch(const Exception& ex) {
 		return context->throwError(ex.message());
+	}
+	catch(const std::exception& ex) {
+		return context->throwError(ex.what());
+	}
+	catch(...) {
+		return context->throwError(tr("Uncaught C++ exception"));
 	}
 }
 
@@ -210,7 +230,7 @@ QScriptValue ScriptEngine::scriptFunctionHandler(QScriptContext* context, QScrip
 	OVITO_ASSERT(context->callee().data().isVariant());
 	OVITO_ASSERT(qobject_cast<ScriptEngine*>(engine) != nullptr);
 
-	// Extract the stored std::function, which is responsible for taking the function call.
+	// Extract the stored std::function, which is the target of the function call.
 	QVariant variant = context->callee().data().toVariant();
 	if(variant.canConvert<std::function<QScriptValue(QScriptContext*,ScriptEngine*)>>() == false)
 		return context->throwError("Could not extract std::function from callee object. Perhaps the QScriptValue 'data' field has been overwritten.");
@@ -222,20 +242,72 @@ QScriptValue ScriptEngine::scriptFunctionHandler(QScriptContext* context, QScrip
 	catch(const Exception& ex) {
 		return context->throwError(ex.message());
 	}
+	catch(const std::exception& ex) {
+		return context->throwError(ex.what());
+	}
+	catch(...) {
+		return context->throwError(tr("Uncaught C++ exception"));
+	}
 }
 
 /******************************************************************************
 * Creates a string representation of a RefTarget script value.
 ******************************************************************************/
-QScriptValue ScriptEngine::RefTarget_toString(QScriptContext* context, QScriptEngine* engine)
+QScriptValue ScriptEngine::RefTarget_toString(QScriptContext* context, ScriptEngine* engine)
 {
-	QObject* qobj = context->thisObject().toQObject();
-	if(!qobj)
-		return engine->toScriptValue(QStringLiteral("null"));
-	RefTarget* target = qobject_cast<RefTarget*>(qobj);
+	qDebug() << "RefTarget_toString" << context->argumentCount();
+	QScriptValue thisObject = context->thisObject().data();
+	RefTarget* target = qobject_cast<RefTarget*>(thisObject.toQObject());
+	if(!target && context->argumentCount() == 1) {
+		thisObject = context->argument(0).data();
+		target = qobject_cast<RefTarget*>(thisObject.toQObject());
+	}
 	if(!target)
-		return engine->toScriptValue(QString(qobj->metaObject()->className()));
+		return engine->undefinedValue();
 	return engine->toScriptValue(QString("%1(%2)").arg(target->getOOType().name()).arg(target->objectTitle()));
+}
+
+/******************************************************************************
+* Queries this script class for how access to the property with the given name
+* of the given object should be handled.
+******************************************************************************/
+QScriptClass::QueryFlags ScriptEngine::ScriptClass::queryProperty(const QScriptValue& object, const QScriptString& name, QueryFlags flags, uint* id)
+{
+	return flags;
+}
+
+/******************************************************************************
+* Returns the flags of the property with the given name of the given object.
+******************************************************************************/
+QScriptValue::PropertyFlags ScriptEngine::ScriptClass::propertyFlags(const QScriptValue& object, const QScriptString& name, uint id)
+{
+	return object.data().propertyFlags(name);
+}
+
+/******************************************************************************
+* Returns the value of the property with the given name of the given object.
+******************************************************************************/
+QScriptValue ScriptEngine::ScriptClass::property(const QScriptValue& object, const QScriptString& name, uint id)
+{
+	try {
+		return object.data().property(name);
+	}
+	catch(const Exception& ex) {
+		return engine()->currentContext()->throwError(ex.message());
+	}
+}
+
+/******************************************************************************
+* Sets the property with the given name of the given object to the given value.
+******************************************************************************/
+void ScriptEngine::ScriptClass::setProperty(QScriptValue& object, const QScriptString& name, uint id, const QScriptValue& value)
+{
+	try {
+		return object.data().setProperty(name, value);
+	}
+	catch(const Exception& ex) {
+		engine()->currentContext()->throwError(ex.message());
+	}
 }
 
 };

@@ -39,16 +39,14 @@ uniform int pickingBaseID;
 	// The input particle data:
 	attribute float particle_radius;
 	attribute float vertexID;
-	#define gl_VertexID int(vertexID)
-
-	#define particle_color_fs gl_FrontColor
 #endif
 
 void main()
 {
+#if __VERSION__ >= 130
 	// Compute color from object ID.
 	int objectID = pickingBaseID + gl_VertexID;
-#if __VERSION__ >= 130
+
 	particle_color_fs = vec4(
 		float(objectID & 0xFF) / 255.0, 
 		float((objectID >> 8) & 0xFF) / 255.0, 
@@ -57,13 +55,16 @@ void main()
 		
 	// Transform and project particle position.
 	vec4 eye_position = modelview_matrix * vec4(position, 1);
-				
+
 #else
-	particle_color_fs = vec4(
-		float(mod(objectID, 0x100)) / 255.0, 
-		float(mod(objectID / 0x100, 0x100)) / 255.0, 
-		float(mod(objectID / 0x10000, 0x100)) / 255.0, 
-		float(mod(objectID / 0x1000000, 0x100)) / 255.0);		
+	// Compute color from object ID.
+	float objectID = pickingBaseID + vertexID;
+	
+	gl_FrontColor = vec4(
+		floor(mod(objectID, 256.0)) / 255.0,
+		floor(mod(objectID / 256.0, 256.0)) / 255.0, 
+		floor(mod(objectID / 65536.0, 256.0)) / 255.0, 
+		floor(mod(objectID / 16777216.0, 256.0)) / 255.0);	
 
 	// Transform and project particle position.
 	vec4 eye_position = modelview_matrix * gl_Vertex;
