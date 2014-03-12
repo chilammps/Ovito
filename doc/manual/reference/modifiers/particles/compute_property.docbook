@@ -265,14 +265,19 @@
                 <row>
                   <entry>max(A,B,...)</entry>
 
-                  <entry>Returns the maximum of all values.</entry>
+                  <entry>Returns the maximum of all parameter values.</entry>
                 </row>
 
                 <row>
                   <entry>min(A,B,...)</entry>
 
-                  <entry>Returns the minimum of all values.</entry>
+                  <entry>Returns the minimum of all parameter values.</entry>
                 </row>
+
+                <row>
+                  <entry>sign(A)</entry>
+                  <entry>Returns: 1 if A is positive; -1 if A is negative; 0 if A is zero.</entry>
+                </row>                
 
                 <row>
                   <entry>sin(A)</entry>
@@ -293,6 +298,12 @@
                   <entry>Square root of a value.</entry>
                 </row>
 
+                <row>
+                  <entry>sum(A,B,...)</entry>
+
+                  <entry>Returns the sum of all parameter values.</entry>
+                </row>
+                
                 <row>
                   <entry>tan(A)</entry>
 

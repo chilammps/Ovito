@@ -91,6 +91,7 @@ SET(OVITO_PARTICLES_SOURCE_FILES
 	util/ParticleInformationApplet.cpp
 	util/ParticlePickingHelper.cpp
 	util/ParticlePropertyParameterUI.cpp
+	util/ParticleExpressionEvaluator.cpp
 )
 
 IF(OVITO_BUILD_PLUGIN_SCRIPTING)

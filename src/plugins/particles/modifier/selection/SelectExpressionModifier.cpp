@@ -20,214 +20,37 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <plugins/particles/Particles.h>
+#include <plugins/particles/util/ParticleExpressionEvaluator.h>
 #include <core/animation/AnimationSettings.h>
 #include <core/viewport/Viewport.h>
 #include <core/scene/ObjectNode.h>
 #include <core/scene/pipeline/PipelineObject.h>
 #include <core/gui/properties/StringParameterUI.h>
-#include <3rdparty/muparser/muParser.h>
 #include "SelectExpressionModifier.h"
-
-#include <QtConcurrent>
 
 namespace Particles {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, SelectExpressionModifier, ParticleModifier)
-IMPLEMENT_OVITO_OBJECT(Particles, SelectExpressionModifierEditor, ParticleModifierEditor)
-SET_OVITO_OBJECT_EDITOR(SelectExpressionModifier, SelectExpressionModifierEditor)
-DEFINE_PROPERTY_FIELD(SelectExpressionModifier, _expression, "Expression")
-SET_PROPERTY_FIELD_LABEL(SelectExpressionModifier, _expression, "Boolean expression")
-
-/******************************************************************************
-* Determines the available variable names.
-******************************************************************************/
-QStringList SelectExpressionModifier::getVariableNames(const PipelineFlowState& inputState)
-{
-	// Regular expression used to filter out invalid characters in a expression variable name.
-	QRegExp regExp("[^A-Za-z\\d_]");
-
-	QStringList variableNames;
-	int index = 1;
-	for(const auto& o : inputState.objects()) {
-		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o.get());
-		if(!property) continue;
-
-		// Properties with custom data type are not supported by this modifier.
-		if(property->dataType() != qMetaTypeId<int>() && property->dataType() != qMetaTypeId<FloatType>()) continue;
-
-		// Alter the property name to make it a valid variable name for the parser.
-		QString variableName = property->name();
-		variableName.remove(regExp);
-		// If the name is empty, generate one.
-		if(variableName.isEmpty())
-			variableName = QString("Property%1").arg(index);
-		// If the name starts with a number, prepend and underscore.
-		else if(variableName[0].isDigit())
-			variableName.prepend(QChar('_'));
-
-		if(property->componentNames().empty()) {
-			OVITO_ASSERT(property->componentCount() == 1);
-			variableNames << variableName;
-		}
-		else {
-			Q_FOREACH(QString componentName, property->componentNames()) {
-				componentName.remove(regExp);
-				variableNames << (variableName + "." + componentName);
-			}
-		}
-		index++;
-	}
-
-	// The particle index is always available in the expression as an input variable.
-	variableNames << "ParticleIndex";
-
-	return variableNames;
-}
-
-/**
- * This helper class is needed to enable multi-threaded evaluation of math expressions
- * for all particles. Each instance of this class is assigned a chunk of particles that it processes.
- */
-class SelExpressionEvaluationKernel
-{
-private:
-
-	/// An input variable.
-	struct ExpressionVariable {
-		double value;
-		const char* dataPointer;
-		size_t stride;
-		bool isFloat;
-	};
-
-public:
-
-	/// Initializes the expressions parser.
-	bool initialize(const QString& expression, const QStringList& variableNames, const PipelineFlowState& input, int timestep, int inputParticleCount) {
-		variables.resize(variableNames.size());
-		bool usesTimeInExpression = false;
-		nSelected = 0;
-
-		// Compile the expression string.
-		try {
-			// Configure parser to accept '.' in variable names.
-			parser.DefineNameChars("0123456789_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.");
-
-			// Let the muParser process the math expression.
-			parser.SetExpr(expression.toStdString());
-
-			// Register variables
-			for(int v = 0; v < variableNames.size(); v++)
-				parser.DefineVar(variableNames[v].toStdString(), &variables[v].value);
-
-			// If the current animation time is used in the math expression then we have to
-			// reduce the validity interval to the current time only.
-			mu::varmap_type usedVariables = parser.GetUsedVar();
-			if(usedVariables.find("t") != usedVariables.end())
-				usesTimeInExpression = true;
-
-			// Add constants.
-			parser.DefineConst("pi", 3.1415926535897932);
-			parser.DefineConst("N", inputParticleCount);
-			parser.DefineConst("t", timestep);
-		}
-		catch(mu::Parser::exception_type& ex) {
-			throw Exception(QString::fromStdString(ex.GetMsg()));
-		}
-
-		// Setup input data pointers.
-		size_t vindex = 0;
-		for(const auto& o : input.objects()) {
-			ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o.get());
-			if(!property) continue;
-			if(property->dataType() == qMetaTypeId<FloatType>()) {
-				for(size_t k = 0; k < property->componentCount(); k++) {
-					OVITO_ASSERT((int)vindex < variableNames.size());
-					variables[vindex].dataPointer = reinterpret_cast<const char*>(property->constDataFloat() + k);
-					variables[vindex].stride = property->perParticleSize();
-					variables[vindex].isFloat = true;
-					vindex++;
-				}
-			}
-			else if(property->dataType() == qMetaTypeId<int>()) {
-				for(size_t k = 0; k < property->componentCount(); k++) {
-					OVITO_ASSERT((int)vindex < variableNames.size());
-					variables[vindex].dataPointer = reinterpret_cast<const char*>(property->constDataInt() + k);
-					variables[vindex].stride = property->perParticleSize();
-					variables[vindex].isFloat = false;
-					vindex++;
-				}
-			}
-			else OVITO_ASSERT(false);
-		}
-
-		// Add the special Index variable.
-		variables[vindex].dataPointer = nullptr;
-		variables[vindex].stride = 0;
-		variables[vindex].isFloat = false;
-		vindex++;
-
-		OVITO_ASSERT(vindex == variableNames.size());
-
-		return usesTimeInExpression;
-	}
-
-	void run(size_t startIndex, size_t endIndex, ParticlePropertyObject* outputProperty) {
-		try {
-			// Position pointers.
-			for(auto& v : variables)
-				v.dataPointer += v.stride * startIndex;
-
-			nSelected = 0;
-			for(size_t i = startIndex; i < endIndex; i++) {
-
-				// Update variable values for the current particle.
-				for(auto& v : variables) {
-					if(v.isFloat)
-						v.value = *reinterpret_cast<const FloatType*>(v.dataPointer);
-					else if(v.dataPointer)
-						v.value = *reinterpret_cast<const int*>(v.dataPointer);
-					else
-						v.value = i;
-					v.dataPointer += v.stride;
-				}
-
-				// Evaluate expression for the current particle.
-				double value = parser.Eval();
-
-				// Store computed value in output property.
-				if(value) {
-					outputProperty->setInt(i, 1);
-					nSelected++;
-				}
-				else outputProperty->setInt(i, 0);
-			}
-		}
-		catch(const mu::Parser::exception_type& ex) {
-			errorMsg = QString::fromStdString(ex.GetMsg());
-		}
-	}
-
-	QString errorMsg;
-	size_t nSelected;
-
-private:
-
-	mu::Parser parser;
-	std::vector<ExpressionVariable> variables;
-};
-
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, SelectExpressionModifier, ParticleModifier);
+IMPLEMENT_OVITO_OBJECT(Particles, SelectExpressionModifierEditor, ParticleModifierEditor);
+SET_OVITO_OBJECT_EDITOR(SelectExpressionModifier, SelectExpressionModifierEditor);
+DEFINE_PROPERTY_FIELD(SelectExpressionModifier, _expression, "Expression");
+SET_PROPERTY_FIELD_LABEL(SelectExpressionModifier, _expression, "Boolean expression");
 
 /******************************************************************************
 * This modifies the input object.
 ******************************************************************************/
 ObjectStatus SelectExpressionModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
 {
-	// Get list of available input variables.
-	_variableNames = getVariableNames(input());
-
 	// The current animation frame number.
 	int currentFrame = dataset()->animationSettings()->timeToFrame(time);
+
+	// Initialize the evaluator class.
+	ParticleExpressionEvaluator evaluator;
+	evaluator.initialize(QStringList(expression()), input(), currentFrame);
+
+	// Save list of available input variables, which will be displayed in the modifier's UI.
+	_variableNames = evaluator.inputVariableNames();
+	_variableTable = evaluator.inputVariableTable();
 
 	// If the user has not yet entered an expression let him know which
 	// data channels can be used in the expression.
@@ -235,60 +58,40 @@ ObjectStatus SelectExpressionModifier::modifyParticles(TimePoint time, TimeInter
 		return ObjectStatus(ObjectStatus::Warning, tr("Please enter a boolean expression."));
 
 	// Check if expression contain an assignment ('=' operator).
-	// This is dangerous because the user probably means the comparison operator '=='.
+	// This should be considered an error, because the user is probably referring the comparison operator '=='.
 	if(expression().contains(QRegExp("[^=!><]=(?!=)")))
 		throw Exception("The expression contains the assignment operator '='. Please use the comparison operator '==' instead.");
 
 	// The number of selected particles.
 	size_t nSelected = 0;
 
-	// Create and initialize the worker threads.
-	int nthreads = std::max(QThread::idealThreadCount(), 1);
-	if((size_t)nthreads > inputParticleCount())
-		nthreads = (int)inputParticleCount();
-
-	QVector<SelExpressionEvaluationKernel> workers(nthreads);
-	for(QVector<SelExpressionEvaluationKernel>::iterator worker = workers.begin(); worker != workers.end(); ++worker) {
-		if(worker->initialize(expression(), _variableNames, input(), currentFrame, (int)inputParticleCount()))
-			validityInterval.intersect(TimeInterval(time));
-	}
-
-	// Get the deep copy of the selection property.
+	// Get the deep copy of the output selection property.
 	ParticlePropertyObject* selProperty = outputStandardProperty(ParticleProperty::SelectionProperty);
 
+	std::atomic_size_t nselected(0);
 	if(inputParticleCount() != 0) {
 
 		// Shared memory management is not thread-safe. Make sure the deep copy of the data has been
 		// made before the worker threads are started.
 		selProperty->data();
 
-		// Spawn worker threads.
-		QFutureSynchronizer<void> synchronizer;
-		size_t chunkSize = std::max(inputParticleCount() / workers.size(), (size_t)1);
-		for(int i = 0; i < workers.size(); i++) {
-
-			// Setup data range.
-			size_t startIndex = chunkSize * (size_t)i;
-			size_t endIndex = std::min(startIndex + chunkSize, inputParticleCount());
-			if(i == workers.size() - 1) endIndex = inputParticleCount();
-			if(endIndex <= startIndex) continue;
-
-			synchronizer.addFuture(QtConcurrent::run(&workers[i], &SelExpressionEvaluationKernel::run, startIndex, endIndex, selProperty));
-		}
-		synchronizer.waitForFinished();
-
-		// Check for errors.
-		for(auto& worker : workers) {
-			if(worker.errorMsg.isEmpty() == false)
-				throw Exception(worker.errorMsg);
-
-			nSelected += worker.nSelected;
-		}
+		evaluator.evaluate([selProperty, &nselected](size_t particleIndex, size_t componentIndex, double value) {
+			if(value) {
+				selProperty->setInt(particleIndex, 1);
+				++nselected;
+			}
+			else {
+				selProperty->setInt(particleIndex, 0);
+			}
+		});
 
 		selProperty->changed();
 	}
 
-	QString statusMessage = tr("%1 out of %2 particles selected (%3%)").arg(nSelected).arg(inputParticleCount()).arg((FloatType)nSelected * 100 / std::max(1,(int)inputParticleCount()), 0, 'f', 1);
+	if(evaluator.isTimeDependent())
+		validityInterval.intersect(time);
+
+	QString statusMessage = tr("%1 out of %2 particles selected (%3%)").arg(nselected).arg(inputParticleCount()).arg((FloatType)nselected * 100 / std::max(1,(int)inputParticleCount()), 0, 'f', 1);
 	return ObjectStatus(ObjectStatus::Success, statusMessage);
 }
 
@@ -302,7 +105,10 @@ void SelectExpressionModifier::initializeModifier(PipelineObject* pipeline, Modi
 
 	// Build list of available input variables.
 	PipelineFlowState input = pipeline->evaluatePipeline(dataset()->animationSettings()->time(), modApp, false);
-	_variableNames = getVariableNames(input);
+	ParticleExpressionEvaluator evaluator;
+	evaluator.createInputVariables(input);
+	_variableNames = evaluator.inputVariableNames();
+	_variableTable = evaluator.inputVariableTable();
 }
 
 /******************************************************************************
@@ -355,16 +161,8 @@ void SelectExpressionModifierEditor::updateEditorFields()
 	SelectExpressionModifier* mod = static_object_cast<SelectExpressionModifier>(editObject());
 	if(!mod) return;
 
-	QString labelText(tr("The following variables can be used in the boolean expression:<ul>"));
-	Q_FOREACH(QString s, mod->lastVariableNames()) {
-		labelText.append(QString("<li>%1</li>").arg(s));
-	}
-	labelText.append(QString("<li>N (number of particles)</li>"));
-	labelText.append(QString("<li>t (current animation frame)</li>"));
-	labelText.append("</ul><p></p>");
-	variableNamesList->setText(labelText);
-
-	expressionLineEdit->setWordList(mod->lastVariableNames());
+	variableNamesList->setText(mod->inputVariableTable());
+	expressionLineEdit->setWordList(mod->inputVariableNames());
 }
 
 

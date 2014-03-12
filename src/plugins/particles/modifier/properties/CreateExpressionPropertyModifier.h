@@ -150,25 +150,25 @@ public:
 	/// \sa onlySelectedParticles()
 	void setOnlySelectedParticles(bool enable) { _onlySelectedParticles = enable; }
 
-	/// \brief Returns the list of variables during the last evaluation.
-	const QStringList& lastVariableNames() const { return _variableNames; }
+	/// \brief Returns the list of available input variables.
+	const QStringList& inputVariableNames() const { return _variableNames; }
+
+	/// \brief Returns a human-readable text listing the input variables.
+	const QString& inputVariableTable() const { return _variableTable; }
 
 public:
 
-	Q_PROPERTY(QStringList expressions READ expressions WRITE setExpressions)
-	Q_PROPERTY(Particles::ParticleProperty::Type propertyType READ propertyType WRITE setPropertyType)
-	Q_PROPERTY(QString propertyName READ propertyName WRITE setPropertyName)
-	Q_PROPERTY(int propertyDataType READ propertyDataType WRITE setPropertyDataType)
-	Q_PROPERTY(int propertyComponentCount READ propertyComponentCount WRITE setPropertyComponentCount)
-	Q_PROPERTY(bool onlySelectedParticles READ onlySelectedParticles WRITE setOnlySelectedParticles)
+	Q_PROPERTY(QStringList expressions READ expressions WRITE setExpressions);
+	Q_PROPERTY(Particles::ParticleProperty::Type propertyType READ propertyType WRITE setPropertyType);
+	Q_PROPERTY(QString propertyName READ propertyName WRITE setPropertyName);
+	Q_PROPERTY(int propertyDataType READ propertyDataType WRITE setPropertyDataType);
+	Q_PROPERTY(int propertyComponentCount READ propertyComponentCount WRITE setPropertyComponentCount);
+	Q_PROPERTY(bool onlySelectedParticles READ onlySelectedParticles WRITE setOnlySelectedParticles);
 
 protected:
 
 	/// Modifies the particle object.
 	virtual ObjectStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;
-
-	/// Determines the available variable names.
-	QStringList getVariableNames(const PipelineFlowState& inputState);
 
 	/// The math expressions that are used to calculate the values of the property.
 	PropertyField<QStringList> _expressions;
@@ -185,8 +185,11 @@ protected:
 	/// Controls whether the math expression is evaluated only for selected particles.
 	PropertyField<bool> _onlySelectedParticles;
 
-	/// The list of variables during the last evaluation.
+	/// The list of input variables during the last evaluation.
 	QStringList _variableNames;
+
+	/// Human-readable text listing the input variables during the last evaluation.
+	QString _variableTable;
 
 private:
 
