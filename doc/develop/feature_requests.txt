@@ -37,3 +37,13 @@ Taojun:
 - Plotting the value of a certain property of a certain particle versus simulation time. To make this work, 
   all simulation frames need to be kept in memory.
   
+NirajGupta@my.unt.edu:
+
+I also had a feature request, maybe you can consider adding at some point. Since you have a very quick coordination search implemented, 
+would it be possible to also implement a "Compute Radial Property"? Where in one can define a radius, and define an expression, and produce a 
+new channel that sums or averages over all the atoms within that radius. For instance, if I've outputted the per atom stress tensor and volume in a 
+LAMMPS dump, I can specify a radius  of 10 and write an expression like sum(c_stress1)/sum(c_vol) to get an averaged stress component over all the 
+atoms within a 10 ang radius, and assign that value to that atom (more realistically to that point in space). I've written a little post-processing 
+tool to do this, but perhaps it would useful to other users. 
+ 
+

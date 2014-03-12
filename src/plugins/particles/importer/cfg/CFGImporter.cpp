@@ -265,8 +265,8 @@ void CFGImporter::CFGImportTask::parseFile(FutureInterfaceBase& futureInterface,
 	else
 		sortParticleTypesById();
 
-	AffineTransformation H(header.transform * header.H0);
-	H.translation() = H * Vector3(-0.5, -0.5, -0.5);
+	AffineTransformation H((header.transform * header.H0).transposed());
+	H.translation() = H * Vector3(-0.5f, -0.5f, -0.5f);
 	simulationCell().setMatrix(H);
 
 	// The CFG file stores particle positions in reduced coordinates.
