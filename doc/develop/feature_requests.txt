@@ -1,8 +1,9 @@
 
 - OpenGL rendering support for more than 12 million particles.
+
 - Import bond information from LAMMPS.
 - Create Bonds modifier: Add 'lower bound' parameter such that, when using the modifier several times, bonds with different lengths can be assigned different colors.
-- ParticleExpressionEvaluator: Add variable for timestep number
+- ParticleExpressionEvaluator: Add variable for timestep number and reduced particle coordinates, etc.
 - Import file should keep a history of visited directories like the old Ovito version did.
 - Color Coding modifier: Display of color legend in rendered image.
 - Export of general triclinic cells to LAMMPS data/dump formats. See http://lammps.sandia.gov/doc/Section_howto.html#howto_12
@@ -47,5 +48,3 @@ new channel that sums or averages over all the atoms within that radius. For ins
 LAMMPS dump, I can specify a radius  of 10 and write an expression like sum(c_stress1)/sum(c_vol) to get an averaged stress component over all the 
 atoms within a 10 ang radius, and assign that value to that atom (more realistically to that point in space). I've written a little post-processing 
 tool to do this, but perhaps it would useful to other users. 
- 
-

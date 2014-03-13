@@ -632,7 +632,9 @@ typedef Matrix_34<FloatType>		AffineTransformation;
 
 };	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::AffineTransformation)
+Q_DECLARE_METATYPE(Ovito::AffineTransformation);
+Q_DECLARE_METATYPE(Ovito::AffineTransformation*);
 Q_DECLARE_TYPEINFO(Ovito::AffineTransformation, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::AffineTransformation*, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_AFFINE_TRANSFORMATION_H

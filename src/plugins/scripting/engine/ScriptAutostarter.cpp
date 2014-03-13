@@ -57,6 +57,9 @@ void ScriptAutostarter::applicationStarted()
 		// Get the current dataset.
 		DataSet* dataset = Application::instance().datasetContainer()->currentSet();
 
+		// Suppress undo recording. Actions performed by startup scripts cannot be undone.
+		UndoSuspender noUndo(dataset);
+
 		// Set up script engine.
 		ScriptEngine engine(dataset);
 

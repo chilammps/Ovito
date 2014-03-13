@@ -495,7 +495,9 @@ typedef Matrix_3<FloatType>		Matrix3;
 
 };	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Matrix3)
+Q_DECLARE_METATYPE(Ovito::Matrix3);
+Q_DECLARE_METATYPE(Ovito::Matrix3*);
 Q_DECLARE_TYPEINFO(Ovito::Matrix3, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Matrix3*, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_MATRIX3_H

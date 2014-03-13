@@ -51,14 +51,17 @@ void main()
 
 	// Transform and project particle position.
 	vec4 eye_position = modelview_matrix * vec4(position, 1);
+
+	gl_Position = projection_matrix * (eye_position + particle_radius * imposter_voffsets[gl_VertexID % 6]);
 #else
 	// Pass color to fragment shader.
 	particle_color_fs = gl_Color;
 
 	// Transform and project particle position.
 	vec4 eye_position = modelview_matrix * gl_Vertex;
-#endif
 
-	gl_Position = projection_matrix * (eye_position + particle_radius * imposter_voffsets[gl_VertexID % 6]);
+	int cornerIndex = int(mod(vertexID+0.5, 6.0));
+	gl_Position = projection_matrix * (eye_position + particle_radius * imposter_voffsets[cornerIndex]);
+#endif
 }
 

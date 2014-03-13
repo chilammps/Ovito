@@ -51,11 +51,12 @@ void ScriptingApplet::openUtility(MainWindow* mainWindow,
 	// Create code editor widget.
 	editor_ = new CodeEdit(panel_);
 	editor_->setPlainText(QStringLiteral(
-			"m = new ColorCodingModifier();\n"
-			"m.colorGradient = ColorCodingHotGradient();\n"
-			"m.sourceProperty = \"Position.X\";\n"
-			"selectedNode.applyModifier(m);\n"
-			"m.adjustRange();\n"));
+			"// Example script:\n"
+			"m = new ColorCodingModifier()\n"
+			"m.colorGradient = ColorCodingHotGradient()\n"
+			"m.sourceProperty = \"Position.X\"\n"
+			"ovito.selectedNode.applyModifier(m)\n"
+			"m.adjustRange()\n"));
 	connect(editor_, &CodeEdit::ctrlEnterPressed,
 			this, &ScriptingApplet::runScript);
 	layout->addWidget(editor_, 1);

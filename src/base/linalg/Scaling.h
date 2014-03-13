@@ -213,7 +213,9 @@ typedef ScalingT<FloatType>		Scaling;
 
 };	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Scaling)
+Q_DECLARE_METATYPE(Ovito::Scaling);
+Q_DECLARE_METATYPE(Ovito::Scaling*);
 Q_DECLARE_TYPEINFO(Ovito::Scaling, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Scaling*, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_SCALING_H

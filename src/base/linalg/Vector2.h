@@ -280,9 +280,13 @@ typedef Vector_2<int>			Vector2I;
 
 };	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Vector2)
-Q_DECLARE_METATYPE(Ovito::Vector2I)
+Q_DECLARE_METATYPE(Ovito::Vector2);
+Q_DECLARE_METATYPE(Ovito::Vector2I);
+Q_DECLARE_METATYPE(Ovito::Vector2*);
+Q_DECLARE_METATYPE(Ovito::Vector2I*);
 Q_DECLARE_TYPEINFO(Ovito::Vector2, Q_PRIMITIVE_TYPE);
 Q_DECLARE_TYPEINFO(Ovito::Vector2I, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Vector2*, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Vector2I*, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_VECTOR2_H

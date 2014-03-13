@@ -146,7 +146,9 @@ typedef Ray_3<FloatType> Ray3;
 
 };	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Ray3)
+Q_DECLARE_METATYPE(Ovito::Ray3);
+Q_DECLARE_METATYPE(Ovito::Ray3*);
 Q_DECLARE_TYPEINFO(Ovito::Ray3, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Ray3*, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_RAY_H
