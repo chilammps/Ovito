@@ -37,8 +37,16 @@ ViewportWindow::ViewportWindow(Viewport* owner) :
 		_context(nullptr),
 		_mainWindow(owner->dataset()->mainWindow())
 {
+#ifndef Q_OS_OSX
 	OVITO_CHECK_POINTER(_mainWindow);
 	_context = _mainWindow->getOpenGLContext();
+#else
+	_context = new QOpenGLContext(this);
+	_context->setFormat(ViewportSceneRenderer::getDefaultSurfaceFormat());
+	_context->setShareContext(_mainWindow->getOpenGLContext());
+	if(!_context->create())
+		throw Exception(tr("Failed to create OpenGL context."));
+#endif
 
 	// Indicate that the window is to be used for OpenGL rendering.
 	setSurfaceType(QWindow::OpenGLSurface);
@@ -170,7 +178,7 @@ void ViewportWindow::renderNow()
 		return;
 
 	_updateRequested = false;
-	//return;
+
 	if(!_context->makeCurrent(this)) {
 		qWarning() << "Failed to make OpenGL context current.";
 		return;

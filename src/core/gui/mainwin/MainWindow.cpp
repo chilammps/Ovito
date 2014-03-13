@@ -346,6 +346,7 @@ void MainWindow::openHelpTopic(const QString& page)
 ******************************************************************************/
 QOpenGLContext* MainWindow::getOpenGLContext()
 {
+#ifndef Q_OS_OSX
 	if(_glcontext)
 		return _glcontext;
 
@@ -355,6 +356,15 @@ QOpenGLContext* MainWindow::getOpenGLContext()
 		throw Exception(tr("Failed to create OpenGL context."));
 
 	return _glcontext;
+#else
+
+	if(datasetContainer().currentSet()) {
+		const QVector<Viewport*>& viewports = datasetContainer().currentSet()->viewportConfig()->viewports();
+		if(!viewports.empty() && viewports.front()->viewportWindow())
+			return viewports.front()->viewportWindow()->glcontext();
+	}
+	return nullptr;
+#endif
 }
 
 };
