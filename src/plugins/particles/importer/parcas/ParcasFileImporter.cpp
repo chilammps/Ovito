@@ -303,6 +303,7 @@ void ParcasFileImporter::ParcasFileImportTask::parseFile(FutureInterfaceBase& fu
 		}
 	}
 
+	setTimestep(frame_num);
 	setInfoText(tr("%1 atoms at simulation time %2").arg(numAtoms).arg(simu_time));
 }
 

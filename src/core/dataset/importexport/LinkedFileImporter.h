@@ -36,16 +36,16 @@ class OVITO_CORE_EXPORT LinkedFileImporter : public FileImporter
 {
 public:
 
-	/// \brief This structures stores source information about an imported animation frame.
+	/// \brief This data structure stores source information about an imported animation frame.
 	struct FrameSourceInformation {
 
 		/// The source file that contains the data of the animation frame.
 		QUrl sourceFile;
 
-		/// The byte offset into the source file where the data is stored.
+		/// The byte offset into the source file where the frame's data is stored.
 		qint64 byteOffset;
 
-		/// The line number in the source file where the data is stored, if the file has a text-based format.
+		/// The line number in the source file where the frame data is stored, if the file has a text-based format.
 		int lineNumber;
 
 		/// The last modification time of the source file.
@@ -55,7 +55,7 @@ public:
 		/// The name or label of the source frame.
 		QString label;
 
-		/// Compares two structures.
+		/// Compares two data records.
 		bool operator!=(const FrameSourceInformation& other) const {
 			return (sourceFile != other.sourceFile) ||
 					(byteOffset != other.byteOffset) ||

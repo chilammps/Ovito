@@ -64,7 +64,8 @@ public:
 
 	/// Returns whether the expression results depend on animation time.
 	bool isTimeDependent() const {
-		return _usedVars.find("Frame") != _usedVars.end();
+		return _usedVars.find("Frame") != _usedVars.end() ||
+				_usedVars.find("Timestep") != _usedVars.end();
 	}
 
 protected:
@@ -90,12 +91,10 @@ protected:
 		ExpressionVariableType type;
 		/// The name of the variable.
 		std::string name;
-		/// An optional alternative name of the variable.
-		std::string alternativeName;
 		/// Human-readable description.
 		QString description;
-		/// The function that computes the particle property value.
-		std::function<double(size_t)> functor;
+		/// A function that computes the variable's value for each particle.
+		std::function<double(size_t)> function;
 	};
 
 	/// One instance of this structure is created per worker thread.

@@ -160,6 +160,12 @@ QSet<SceneObject*> ParticleImportTask::insertIntoScene(LinkedFileObject* destina
 		activeObjects.insert(propertyObj.get());
 	}
 
+	// Pass timestep number to modification pipeline system.
+	if(hasTimestep())
+		destination->setAttributes({{ QStringLiteral("Timestep"), QVariant::fromValue(timestep()) }});
+	else
+		destination->clearAttributes();
+
 	return activeObjects;
 }
 

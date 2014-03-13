@@ -317,6 +317,7 @@ void LAMMPSBinaryDumpImporter::LAMMPSBinaryDumpImportTask::parseFile(FutureInter
 	LAMMPSBinaryDumpHeader header;
 	if(!header.parse(file))
 		throw Exception(tr("Failed to read binary LAMMPS dump file: Invalid file header."));
+	setTimestep(header.ntimestep);
 
 	if(_parseFileHeaderOnly) {
 		_columnMapping.setColumnCount(header.size_one);

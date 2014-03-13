@@ -51,7 +51,7 @@ public:
 public:
 
 	/// Constructor.
-	ParticleImportTask(const LinkedFileImporter::FrameSourceInformation& frame) : LinkedFileImporter::ImportTask(frame), _datasetContainer(nullptr) {}
+	ParticleImportTask(const LinkedFileImporter::FrameSourceInformation& frame) : LinkedFileImporter::ImportTask(frame), _datasetContainer(nullptr), _timestep(-1) {}
 
 	/// Is called in the background thread to perform the data file import.
 	virtual void load(DataSetContainer& container, FutureInterfaceBase& futureInterface) override;
@@ -151,6 +151,15 @@ public:
 	/// Sorts particle types with ascending identifier.
 	void sortParticleTypesById();
 
+	/// Returns the simulation timestep number, or -1 if undefined.
+	int timestep() const { return _timestep; }
+
+	/// Sets the simulation timestep number.
+	void setTimestep(int timestep) { _timestep = timestep; }
+
+	/// Returns true if the loaded file format contained information on the simulation timestep.
+	bool hasTimestep() const { return _timestep != -1; }
+
 protected:
 
 	/// Parses the given input file and stores the data in this container object.
@@ -169,6 +178,9 @@ private:
 
 	/// The list of particle types.
 	std::vector<ParticleTypeDefinition> _particleTypes;
+
+	/// The simulation timestep number.
+	int _timestep;
 
 	/// The current dataset container.
 	DataSetContainer* _datasetContainer;

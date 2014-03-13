@@ -137,6 +137,18 @@ public:
 			sceneObj->setSaveWithScene(on);
 	}
 
+	/// Returns the attributes set or loaded by the file importer which are fed into the modification pipeline
+	/// along with the scene objects.
+	const QVariantMap& attributes() const { return _attributes; }
+
+	/// Sets the attributes that will be fed into the modification pipeline
+	/// along with the scene objects.
+	void setAttributes(const QVariantMap& attributes) { _attributes = attributes; }
+
+	/// Resets the attributes that will be fed into the modification pipeline
+	/// along with the scene objects.
+	void clearAttributes() { _attributes.clear(); }
+
 	/// Returns the title of this object.
 	virtual QString objectTitle() override;
 
@@ -229,6 +241,10 @@ private:
 
 	/// The status returned by the parser during its last call.
 	ObjectStatus _importStatus;
+
+	/// Attributes set or loaded by the file importer which will be fed into the modification pipeline
+	/// along with the scene objects.
+	QVariantMap _attributes;
 
 private:
 

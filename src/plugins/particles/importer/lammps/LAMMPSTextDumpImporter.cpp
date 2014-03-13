@@ -173,6 +173,7 @@ void LAMMPSTextDumpImporter::LAMMPSTextDumpImportTask::parseFile(FutureInterface
 			if(stream.lineStartsWith("ITEM: TIMESTEP")) {
 				if(sscanf(stream.readLine(), "%i", &timestep) != 1)
 					throw Exception(tr("LAMMPS dump file parsing error. Invalid timestep number (line %1):\n%2").arg(stream.lineNumber()).arg(QString::fromLocal8Bit(stream.line())));
+				setTimestep(timestep);
 				break;
 			}
 			else if(stream.lineStartsWith("ITEM: NUMBER OF ATOMS")) {

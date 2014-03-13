@@ -64,7 +64,6 @@ void ParticleExpressionEvaluator::createInputVariables(const PipelineFlowState& 
 		else if(propertyName[0].isDigit())
 			propertyName.prepend(QChar('_'));
 
-		v.value = 0;
 		for(size_t k = 0; k < property->componentCount(); k++) {
 
 			QString fullPropertyName = propertyName;
@@ -93,11 +92,35 @@ void ParticleExpressionEvaluator::createInputVariables(const PipelineFlowState& 
 		propertyIndex++;
 	}
 
+	SimulationCell* simCell = inputState.findObject<SimulationCell>();
+
+	// Create variable for reduced particle coordinates.
+	ParticlePropertyObject* posProperty = ParticlePropertyObject::findInState(inputState, ParticleProperty::PositionProperty);
+	if(posProperty && simCell) {
+		SimulationCellData cellData = simCell->data();
+		ExpressionVariable v;
+		v.type = DERIVED_PARTICLE_PROPERTY;
+		v.name = "ReducedPosition.X";
+		v.function = [posProperty,cellData](size_t particleIndex) -> double {
+			return cellData.inverseMatrix().prodrow(posProperty->getPoint3(particleIndex), 0);
+		};
+		addVariable(v);
+		v.name = "ReducedPosition.Y";
+		v.function = [posProperty,cellData](size_t particleIndex) -> double {
+			return cellData.inverseMatrix().prodrow(posProperty->getPoint3(particleIndex), 1);
+		};
+		addVariable(v);
+		v.name = "ReducedPosition.Z";
+		v.function = [posProperty,cellData](size_t particleIndex) -> double {
+			return cellData.inverseMatrix().prodrow(posProperty->getPoint3(particleIndex), 2);
+		};
+		addVariable(v);
+	}
+
 	// Create particle index variable.
 	ExpressionVariable pindexVar;
 	pindexVar.name = "ParticleIndex";
 	pindexVar.type = PARTICLE_INDEX;
-	pindexVar.value = 0;
 	addVariable(pindexVar);
 
 	// Create constant variables.
@@ -117,7 +140,15 @@ void ParticleExpressionEvaluator::createInputVariables(const PipelineFlowState& 
 	constVar.description = tr("Animation frame number");
 	addVariable(constVar);
 
-	SimulationCell* simCell = inputState.findObject<SimulationCell>();
+	// Timestep.
+	if(inputState.attributes().contains(QStringLiteral("Timestep"))) {
+		constVar.name = "Timestep";
+		constVar.type = GLOBAL_PARAMETER;
+		constVar.value = inputState.attributes().value(QStringLiteral("Timestep")).toDouble();
+		constVar.description = tr("Simulation timestep");
+		addVariable(constVar);
+	}
+
 	if(simCell) {
 		// Cell volume
 		constVar.name = "CellVolume";
@@ -311,7 +342,7 @@ void ParticleExpressionEvaluator::WorkerThread::run(size_t startIndex, size_t en
 					v.value = i;
 				}
 				else if(v.type == DERIVED_PARTICLE_PROPERTY) {
-					v.value = v.functor(i);
+					v.value = v.function(i);
 				}
 			}
 
@@ -336,7 +367,7 @@ QString ParticleExpressionEvaluator::inputVariableTable() const
 {
 	QString str(tr("<p>The following input parameters can be used in the expression:</p><p><b>Particle properties:</b><ul>"));
 	for(const ExpressionVariable& v : _inputVariables) {
-		if(v.type == PARTICLE_FLOAT_PROPERTY || v.type == PARTICLE_INT_PROPERTY || v.type == PARTICLE_INDEX) {
+		if(v.type == PARTICLE_FLOAT_PROPERTY || v.type == PARTICLE_INT_PROPERTY || v.type == PARTICLE_INDEX || v.type == DERIVED_PARTICLE_PROPERTY) {
 			if(v.description.isEmpty())
 				str.append(QStringLiteral("<li>%1</li>").arg(QString::fromStdString(v.name)));
 			else

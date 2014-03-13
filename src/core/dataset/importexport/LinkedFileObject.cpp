@@ -307,13 +307,17 @@ PipelineFlowState LinkedFileObject::requestFrame(int frame)
 	if(frame < numberOfFrames() - 1)
 		interval.setEnd(inputFrameToAnimationTime(frame+1)-1);
 
+	// Prepare the attribute map that will be passed to the modification pipeline
+	// along with the scene objects.
+	QVariantMap attrs = attributes();
+	attrs.insert(QStringLiteral("Frame"), QVariant::fromValue(frame));
+
 	bool oldLoadingTaskWasCanceled = false;
 	if(_frameBeingLoaded != -1) {
 		if(_frameBeingLoaded == frame) {
 			// The requested frame is already being loaded at the moment.
 			// Indicate to the caller that the result is pending.
-			return PipelineFlowState(ObjectStatus::Pending, _sceneObjects.targets(), interval,
-					{{ QStringLiteral("Frame"), QVariant::fromValue(frame) }} );
+			return PipelineFlowState(ObjectStatus::Pending, _sceneObjects.targets(), interval, attrs);
 		}
 		else {
 			// Another frame than the requested one is already being loaded.
@@ -329,13 +333,13 @@ PipelineFlowState LinkedFileObject::requestFrame(int frame)
 			oldLoadingTaskWasCanceled = true;
 		}
 	}
+
 	if(frame >= 0 && _loadedFrame == frame) {
 		if(oldLoadingTaskWasCanceled)
 			notifyDependents(ReferenceEvent::PendingStateChanged);
 
 		// The requested frame has already been loaded and is available immediately.
-		return PipelineFlowState(status(), _sceneObjects.targets(), interval,
-				{{ QStringLiteral("Frame"), QVariant::fromValue(frame) }} );
+		return PipelineFlowState(status(), _sceneObjects.targets(), interval, attrs);
 	}
 	else {
 		// The requested frame needs to be loaded first. Start background loading task.
@@ -353,8 +357,7 @@ PipelineFlowState LinkedFileObject::requestFrame(int frame)
 		if(oldLoadingTaskWasCanceled)
 			notifyDependents(ReferenceEvent::PendingStateChanged);
 		// Indicate to the caller that the result is pending.
-		return PipelineFlowState(ObjectStatus::Pending, _sceneObjects.targets(), interval,
-				{{ QStringLiteral("Frame"), QVariant::fromValue(frame) }} );
+		return PipelineFlowState(ObjectStatus::Pending, _sceneObjects.targets(), interval, attrs);
 	}
 }
 
