@@ -64,7 +64,7 @@ public:
 
 	/// Returns whether the expression results depend on animation time.
 	bool isTimeDependent() const {
-		return _usedVars.find("t") != _usedVars.end();
+		return _usedVars.find("Frame") != _usedVars.end();
 	}
 
 protected:
@@ -72,6 +72,7 @@ protected:
 	enum ExpressionVariableType {
 		PARTICLE_FLOAT_PROPERTY,
 		PARTICLE_INT_PROPERTY,
+		DERIVED_PARTICLE_PROPERTY,
 		PARTICLE_INDEX,
 		GLOBAL_PARAMETER,
 		CONSTANT
@@ -89,8 +90,12 @@ protected:
 		ExpressionVariableType type;
 		/// The name of the variable.
 		std::string name;
+		/// An optional alternative name of the variable.
+		std::string alternativeName;
 		/// Human-readable description.
 		QString description;
+		/// The function that computes the particle property value.
+		std::function<double(size_t)> functor;
 	};
 
 	/// One instance of this structure is created per worker thread.

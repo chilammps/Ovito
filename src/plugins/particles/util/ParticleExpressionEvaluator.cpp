@@ -111,7 +111,7 @@ void ParticleExpressionEvaluator::createInputVariables(const PipelineFlowState& 
 	addVariable(constVar);
 
 	// Animation frame
-	constVar.name = "t";
+	constVar.name = "Frame";
 	constVar.type = GLOBAL_PARAMETER;
 	constVar.value = animationFrame;
 	constVar.description = tr("Animation frame number");
@@ -124,6 +124,21 @@ void ParticleExpressionEvaluator::createInputVariables(const PipelineFlowState& 
 		constVar.type = GLOBAL_PARAMETER;
 		constVar.value = simCell->volume();
 		constVar.description = tr("Simulation cell volume");
+		addVariable(constVar);
+
+		// Cell size
+		constVar.type = GLOBAL_PARAMETER;
+		constVar.value = std::abs(simCell->edgeVector1().x());
+		constVar.name = "CellSize.X";
+		constVar.description = tr("Size along X axis");
+		addVariable(constVar);
+		constVar.value = std::abs(simCell->edgeVector2().y());
+		constVar.name = "CellSize.Y";
+		constVar.description = tr("Size along Y axis");
+		addVariable(constVar);
+		constVar.value = std::abs(simCell->edgeVector3().z());
+		constVar.name = "CellSize.Z";
+		constVar.description = tr("Size along Z axis");
 		addVariable(constVar);
 	}
 
@@ -292,8 +307,12 @@ void ParticleExpressionEvaluator::WorkerThread::run(size_t startIndex, size_t en
 					v.value = *reinterpret_cast<const int*>(v.dataPointer);
 					v.dataPointer += v.stride;
 				}
-				else if(v.type == PARTICLE_INDEX)
+				else if(v.type == PARTICLE_INDEX) {
 					v.value = i;
+				}
+				else if(v.type == DERIVED_PARTICLE_PROPERTY) {
+					v.value = v.functor(i);
+				}
 			}
 
 			if(filter && !filter(i))
@@ -317,18 +336,30 @@ QString ParticleExpressionEvaluator::inputVariableTable() const
 {
 	QString str(tr("<p>The following input parameters can be used in the expression:</p><p><b>Particle properties:</b><ul>"));
 	for(const ExpressionVariable& v : _inputVariables) {
-		if(v.type == PARTICLE_FLOAT_PROPERTY || v.type == PARTICLE_INT_PROPERTY || v.type == PARTICLE_INDEX)
-			str.append(QStringLiteral("<li>%1</li>").arg(QString::fromStdString(v.name)));
+		if(v.type == PARTICLE_FLOAT_PROPERTY || v.type == PARTICLE_INT_PROPERTY || v.type == PARTICLE_INDEX) {
+			if(v.description.isEmpty())
+				str.append(QStringLiteral("<li>%1</li>").arg(QString::fromStdString(v.name)));
+			else
+				str.append(QStringLiteral("<li>%1 = %2</li>").arg(QString::fromStdString(v.name)).arg(v.description));
+		}
 	}
 	str.append(QStringLiteral("</ul></p><p><b>Global parameters:</b><ul>"));
 	for(const ExpressionVariable& v : _inputVariables) {
-		if(v.type == GLOBAL_PARAMETER)
-			str.append(QStringLiteral("<li>%1 = %2</li>").arg(QString::fromStdString(v.name)).arg(v.description));
+		if(v.type == GLOBAL_PARAMETER) {
+			if(v.description.isEmpty())
+				str.append(QStringLiteral("<li>%1</li>").arg(QString::fromStdString(v.name)));
+			else
+				str.append(QStringLiteral("<li>%1 = %2</li>").arg(QString::fromStdString(v.name)).arg(v.description));
+		}
 	}
 	str.append(QStringLiteral("</ul></p><p><b>Constants:</b><ul>"));
 	for(const ExpressionVariable& v : _inputVariables) {
-		if(v.type == CONSTANT)
-			str.append(QStringLiteral("<li>%1 = %2</li>").arg(QString::fromStdString(v.name)).arg(v.description));
+		if(v.type == CONSTANT) {
+			if(v.description.isEmpty())
+				str.append(QStringLiteral("<li>%1</li>").arg(QString::fromStdString(v.name)));
+			else
+				str.append(QStringLiteral("<li>%1 = %2</li>").arg(QString::fromStdString(v.name)).arg(v.description));
+		}
 	}
 	str.append(QStringLiteral("</ul></p><p></p>"));
 	return str;
