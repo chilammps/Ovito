@@ -112,7 +112,7 @@ protected:
 
 private:
 
-	/// The particle type property that serves as data source of the histogram.
+	/// The particle property that serves as data source of the histogram.
 	PropertyField<ParticlePropertyReference> _sourceProperty;
 
 	/// Controls the number of histogram bins.

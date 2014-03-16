@@ -87,7 +87,7 @@ void FreezeSelectionModifierEditor::createUI(const RolloutInsertionParameters& r
 	layout->setSpacing(4);
 
 	QPushButton* takeSnapshotBtn = new QPushButton(tr("Take selection snapshot"), rollout);
-	connect(takeSnapshotBtn, SIGNAL(clicked(bool)), this, SLOT(takeSelectionSnapshot()));
+	connect(takeSnapshotBtn, &QPushButton::clicked, this, &FreezeSelectionModifierEditor::takeSelectionSnapshot);
 	layout->addWidget(takeSnapshotBtn);
 
 	// Status label.

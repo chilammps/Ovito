@@ -12,8 +12,6 @@
 - Let the user configure the default colors and radii assigned to different atom types.
 - The particle information applet should allow the user to click on and select bonds directly (instead of picking the two particles).
 
-- Add "Freeze property" modifier.
-
 Sha Zhendong:
 
 - Calculation of the pair correlation function

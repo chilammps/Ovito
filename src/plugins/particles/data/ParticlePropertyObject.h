@@ -105,6 +105,16 @@ public:
 	/// \brief Returns the type of this property.
 	ParticleProperty::Type type() const { return _storage->type(); }
 
+	/// \brief Changes the type of this property.
+	/// \note The type may only be changed if the new property has the same
+	///       data type and component count as the old one.
+	void setType(ParticleProperty::Type newType) {
+		if(newType == type()) return;
+		_storage.detach();
+		_storage->setType(newType);
+		changed();
+	}
+
 	/// \brief Returns the data type of the property.
 	/// \return The identifier of the data type used for the elements stored in
 	///         this property storage according to the Qt meta type system.
@@ -513,8 +523,11 @@ public:
 			return ParticleProperty::standardPropertyTitle(type());
 	}
 
-	/// This helper method returns the particle property (if present) from the given pipeline state with the given type.
+	/// This helper method returns a standard particle property (if present) from the given pipeline state.
 	static ParticlePropertyObject* findInState(const PipelineFlowState& state, ParticleProperty::Type type);
+
+	/// This helper method returns a specific user-defined particle property (if present) from the given pipeline state.
+	static ParticlePropertyObject* findInState(const PipelineFlowState& state, const QString& name);
 
 public:
 
