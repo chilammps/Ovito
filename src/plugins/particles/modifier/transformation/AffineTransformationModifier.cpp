@@ -39,14 +39,14 @@ DEFINE_PROPERTY_FIELD(AffineTransformationModifier, _transformationTM, "Transfor
 DEFINE_PROPERTY_FIELD(AffineTransformationModifier, _applyToParticles, "ApplyToParticles")
 DEFINE_PROPERTY_FIELD(AffineTransformationModifier, _toSelectionOnly, "SelectionOnly")
 DEFINE_PROPERTY_FIELD(AffineTransformationModifier, _applyToSimulationBox, "ApplyToSimulationBox")
-DEFINE_PROPERTY_FIELD(AffineTransformationModifier, _destinationCell, "DestinationCell")
+DEFINE_PROPERTY_FIELD(AffineTransformationModifier, _targetCell, "DestinationCell")
 DEFINE_PROPERTY_FIELD(AffineTransformationModifier, _relativeMode, "RelativeMode")
 DEFINE_PROPERTY_FIELD(AffineTransformationModifier, _applyToSurfaceMesh, "ApplyToSurfaceMesh")
 SET_PROPERTY_FIELD_LABEL(AffineTransformationModifier, _transformationTM, "Transformation")
 SET_PROPERTY_FIELD_LABEL(AffineTransformationModifier, _applyToParticles, "Transform particles")
 SET_PROPERTY_FIELD_LABEL(AffineTransformationModifier, _toSelectionOnly, "Selected particles only")
 SET_PROPERTY_FIELD_LABEL(AffineTransformationModifier, _applyToSimulationBox, "Transform simulation cell")
-SET_PROPERTY_FIELD_LABEL(AffineTransformationModifier, _destinationCell, "Destination cell geometry")
+SET_PROPERTY_FIELD_LABEL(AffineTransformationModifier, _targetCell, "Destination cell geometry")
 SET_PROPERTY_FIELD_LABEL(AffineTransformationModifier, _relativeMode, "Relative transformation")
 SET_PROPERTY_FIELD_LABEL(AffineTransformationModifier, _applyToSurfaceMesh, "Transform surface mesh")
 
@@ -55,14 +55,14 @@ SET_PROPERTY_FIELD_LABEL(AffineTransformationModifier, _applyToSurfaceMesh, "Tra
 ******************************************************************************/
 AffineTransformationModifier::AffineTransformationModifier(DataSet* dataset) : ParticleModifier(dataset),
 	_applyToParticles(true), _toSelectionOnly(false), _applyToSimulationBox(false),
-	_transformationTM(AffineTransformation::Identity()), _destinationCell(AffineTransformation::Zero()),
+	_transformationTM(AffineTransformation::Identity()), _targetCell(AffineTransformation::Zero()),
 	_relativeMode(true), _applyToSurfaceMesh(true)
 {
 	INIT_PROPERTY_FIELD(AffineTransformationModifier::_transformationTM);
 	INIT_PROPERTY_FIELD(AffineTransformationModifier::_applyToParticles);
 	INIT_PROPERTY_FIELD(AffineTransformationModifier::_toSelectionOnly);
 	INIT_PROPERTY_FIELD(AffineTransformationModifier::_applyToSimulationBox);
-	INIT_PROPERTY_FIELD(AffineTransformationModifier::_destinationCell);
+	INIT_PROPERTY_FIELD(AffineTransformationModifier::_targetCell);
 	INIT_PROPERTY_FIELD(AffineTransformationModifier::_relativeMode);
 	INIT_PROPERTY_FIELD(AffineTransformationModifier::_applyToSurfaceMesh);
 }
@@ -76,11 +76,11 @@ void AffineTransformationModifier::initializeModifier(PipelineObject* pipeline, 
 	ParticleModifier::initializeModifier(pipeline, modApp);
 
 	// Take the simulation cell from the input object as the default destination cell geometry for absolute scaling.
-	if((AffineTransformation)_destinationCell == AffineTransformation::Zero()) {
+	if(targetCell() == AffineTransformation::Zero()) {
 		PipelineFlowState input = pipeline->evaluatePipeline(dataset()->animationSettings()->time(), modApp, false);
 		SimulationCell* cell = input.findObject<SimulationCell>();
 		if(cell)
-			_destinationCell = cell->cellMatrix();
+			setTargetCell(cell->cellMatrix());
 	}
 }
 
@@ -90,8 +90,8 @@ void AffineTransformationModifier::initializeModifier(PipelineObject* pipeline, 
 ObjectStatus AffineTransformationModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
 {
 	AffineTransformation tm;
-	if(_relativeMode) {
-		tm = _transformationTM;
+	if(relativeMode()) {
+		tm = transformation();
 		if(applyToSimulationBox()) {
 			AffineTransformation deformedCell = tm * expectSimulationCell()->cellMatrix();
 			outputSimulationCell()->setCellMatrix(deformedCell);
@@ -99,18 +99,18 @@ ObjectStatus AffineTransformationModifier::modifyParticles(TimePoint time, TimeI
 	}
 	else {
 		AffineTransformation oldCell = expectSimulationCell()->cellMatrix();
-		if(oldCell.determinant() == 0.0)
+		if(oldCell.determinant() == 0)
 			throw Exception(tr("Input simulation cell is degenerate."));
-		tm = (AffineTransformation)_destinationCell * oldCell.inverse();
+		tm = targetCell() * oldCell.inverse();
 		if(applyToSimulationBox())
-			outputSimulationCell()->setCellMatrix(_destinationCell);
+			outputSimulationCell()->setCellMatrix(targetCell());
 	}
 
 	if(applyToParticles()) {
 		expectStandardProperty(ParticleProperty::PositionProperty);
 		ParticlePropertyObject* posProperty = outputStandardProperty(ParticleProperty::PositionProperty);
 
-		if(toSelectionOnly()) {
+		if(selectionOnly()) {
 			ParticlePropertyObject* selProperty = inputStandardProperty(ParticleProperty::SelectionProperty);
 			if(selProperty) {
 				const int* sbegin = selProperty->constDataInt();
@@ -263,7 +263,7 @@ void AffineTransformationModifierEditor::createUI(const RolloutInsertionParamete
 	for(size_t v = 0; v < 3; v++) {
 		layout->addWidget(new QLabel(tr("Cell vector %1:").arg(v+1)), v*2, 0, 1, 8);
 		for(size_t r = 0; r < 3; r++) {
-			destinationCellUI = new AffineTransformationParameterUI(this, PROPERTY_FIELD(AffineTransformationModifier::_destinationCell), r, v);
+			destinationCellUI = new AffineTransformationParameterUI(this, PROPERTY_FIELD(AffineTransformationModifier::_targetCell), r, v);
 			destinationCellUI->setEnabled(false);
 			layout->addWidget(destinationCellUI->textBox(), v*2+1, r*3+0);
 			layout->addWidget(destinationCellUI->spinner(), v*2+1, r*3+1);
@@ -273,7 +273,7 @@ void AffineTransformationModifierEditor::createUI(const RolloutInsertionParamete
 
 	layout->addWidget(new QLabel(tr("Cell origin:")), 6, 0, 1, 8);
 	for(size_t r = 0; r < 3; r++) {
-		destinationCellUI = new AffineTransformationParameterUI(this, PROPERTY_FIELD(AffineTransformationModifier::_destinationCell), r, 3);
+		destinationCellUI = new AffineTransformationParameterUI(this, PROPERTY_FIELD(AffineTransformationModifier::_targetCell), r, 3);
 		destinationCellUI->setEnabled(false);
 		layout->addWidget(destinationCellUI->textBox(), 7, r*3+0);
 		layout->addWidget(destinationCellUI->spinner(), 7, r*3+1);

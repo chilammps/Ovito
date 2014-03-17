@@ -10,10 +10,9 @@
          xmlns:ns="http://docbook.org/ns/docbook">
   <title>Scripting Reference</title>
   
-  <para>See <link linkend="usage.scripting">this section</link> for an overview of OVITO's scripting interface and a description of how to run scripts.</para>
-  
-  <para>The following sections cover various areas of the scripting interface in more detail:
+  <para>The following sections cover various topics related to OVITO's scripting interface:
   	<itemizedlist>
+  	  <listitem><link linkend="usage.scripting">How to run scripts</link></listitem>
   	  <listitem><link linkend="scripting.input_output">Input/output functions</link></listitem>
   	  <listitem><link linkend="scripting.scene_objects">Working with modifiers</link></listitem>
   	  <listitem><link linkend="scripting.rendering">Rendering</link></listitem>
@@ -23,5 +22,7 @@
   <xi:include href="input_output.docbook" />
   <xi:include href="scene_objects.docbook" />
   <xi:include href="rendering.docbook" />
+  
+  <xi:include href="reference/modifiers.docbook" />
     
 </chapter>

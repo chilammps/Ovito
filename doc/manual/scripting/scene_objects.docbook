@@ -30,9 +30,9 @@ node.applyModifier(new DeleteParticlesModifier())]]>
 		The following modifier types are available in OVITO:
     </para> 
     <para>
-    	<code>AffineTransformationModifier</code>, 
-    	<code>AmbientOcclusionModifier</code>, 
-    	<code>AssignColorModifier</code>, 
+    	<link linkend="scripting.modifiers.affine_transformation"><code>AffineTransformationModifier</code></link>, 
+    	<link linkend="scripting.modifiers.ambient_occlusion"><code>AmbientOcclusionModifier</code></link>, 
+    	<link linkend="scripting.modifiers.assign_color"><code>AssignColorModifier</code></link>, 
     	<code>AtomicStrainModifier</code>, 
     	<code>BondAngleAnalysisModifier</code>, 
     	<code>CalculateDisplacementsModifier</code>, 

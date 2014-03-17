@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -389,6 +389,97 @@ public:
 			return context->throwError(QScriptContext::TypeError, tr("TimeInterval.prototype.toString: this object is not a TimeInterval."));
 		TimeInterval interval = qscriptvalue_cast<TimeInterval>(obj);
 		return QStringLiteral("[%1,%2]").arg(interval.start()).arg(interval.end());
+	}
+};
+
+/**
+ * \brief Binding for the AffineTransformation data type.
+ */
+class AffineTransformationPrototype : public QObject, public QScriptable
+{
+	Q_OBJECT
+
+public:
+
+	/// Constructor function.
+	static QScriptValue constructor(QScriptContext* context, QScriptEngine* engine);
+
+	/// Conversion function.
+	static QScriptValue toScriptValue(QScriptEngine* engine, const AffineTransformation& tm) {
+		return engine->newVariant(QVariant::fromValue(tm));
+	}
+
+	/// Conversion function.
+	static void fromScriptValue(const QScriptValue& sv, AffineTransformation& tm) {
+		if(sv.isVariant())
+			tm = sv.toVariant().value<AffineTransformation>();
+		else if(sv.isArray() && sv.property("length").toInt32() == 12) {
+			for(int row = 0; row < 3; row++)
+				for(int col = 0; col < 3; col++)
+					tm(row,col) = sv.property(row * 4 + col).toNumber();
+		}
+	}
+
+	/// Converts a Vector3 value to a string.
+	static QScriptValue toString(QScriptContext* context, QScriptEngine* engine) {
+		QScriptValue obj = context->thisObject();
+		if(!obj.isVariant() && context->argumentCount() > 0)
+			obj = context->argument(0);
+		if(!obj.isVariant())
+			return context->throwError(QScriptContext::TypeError, tr("AffineTransformation.prototype.toString: this object is not a AffineTransformation."));
+		AffineTransformation* tm = qscriptvalue_cast<AffineTransformation*>(obj);
+		if(tm) {
+			QString str;
+			for(AffineTransformation::size_type row = 0; row < tm->row_count(); row++)
+				str += QStringLiteral("%1 %2 %3 %4\n").arg((*tm)(row,0)).arg((*tm)(row,1)).arg((*tm)(row,2)).arg((*tm)(row,3));
+			return str;
+		}
+		return engine->undefinedValue();
+	}
+
+	/// Computes the product of two matrices.
+	Q_INVOKABLE AffineTransformation product(const AffineTransformation& b) {
+		if(AffineTransformation* a = qscriptvalue_cast<AffineTransformation*>(thisObject()))
+			return (*a) * b;
+		else {
+	        context()->throwError(QScriptContext::TypeError, tr("AffineTransformation.prototype.product: this object is not a AffineTransformation."));
+	        return AffineTransformation::Zero();
+		}
+	}
+
+	/// Compares two matrices.
+	Q_INVOKABLE bool equals(const AffineTransformation& b) {
+		if(AffineTransformation* a = qscriptvalue_cast<AffineTransformation*>(thisObject()))
+			return (*a) == b;
+		else {
+	        context()->throwError(QScriptContext::TypeError, tr("AffineTransformation.prototype.equals: this object is not a AffineTransformation."));
+	        return false;
+		}
+	}
+
+	/// Returns a matrix element.
+	Q_INVOKABLE FloatType element(int row, int col) {
+        if(row < 0 || row >= 3)
+        	context()->throwError(QScriptContext::TypeError, tr("AffineTransformation.prototype.element: row is out of range."));
+        if(col < 0 || col >= 4)
+        	context()->throwError(QScriptContext::TypeError, tr("AffineTransformation.prototype.element: column is out of range."));
+		if(const AffineTransformation* tm = qscriptvalue_cast<AffineTransformation*>(thisObject()))
+			return (*tm)(row, col);
+		else
+	        context()->throwError(QScriptContext::TypeError, tr("AffineTransformation.prototype.element: this object is not a AffineTransformation."));
+		return 0;
+	}
+
+	/// Sets a matrix element.
+	Q_INVOKABLE void setElement(int row, int col, FloatType value) {
+        if(row < 0 || row >= 3)
+        	context()->throwError(QScriptContext::TypeError, tr("AffineTransformation.prototype.setElement: row is out of range."));
+        if(col < 0 || col >= 4)
+        	context()->throwError(QScriptContext::TypeError, tr("AffineTransformation.prototype.setElement: column is out of range."));
+		if(AffineTransformation* tm = qscriptvalue_cast<AffineTransformation*>(thisObject()))
+			(*tm)(row, col) = value;
+		else
+	        context()->throwError(QScriptContext::TypeError, tr("AffineTransformation.prototype.setElement: this object is not a AffineTransformation."));
 	}
 };
 

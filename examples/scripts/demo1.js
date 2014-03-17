@@ -47,6 +47,6 @@ wait()
 // Read out analysis results.
 print("Number of FCC atoms: " + cna.structureCounts[CommonNeighborAnalysisModifier.FCC])
 
-// Writes processed atoms back to an output file.
+// Write processed atoms back to an output file.
 save("exporteddata.dump", LAMMPSDumpExporter, 
 	{ columnMapping: ["Position.X", "Position.Y", "Position.Z", "Structure Type"] })

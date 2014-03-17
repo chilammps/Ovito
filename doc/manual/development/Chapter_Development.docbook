@@ -21,7 +21,8 @@
       <listitem><para>Apple Mac OS X: Clang compiler included in Apple's Xcode command line tools</para></listitem>
     </itemizedlist>
     </para>
-    <para>OVITO makes use of the Qt cross-platform application framework and requires version 5.1.x or higher of the Qt library. On Mac OS X, version 5.2.x of the library is recommended,
+    <para>OVITO makes use of the Qt cross-platform application framework and requires version 5.1.x or higher of the Qt library. 
+    Especially on Mac OS X, but also on other platforms, at least version 5.2.1 of the library is recommended,
     which fixes a serious input focus bug. Newer Linux distributions already include development packages
     of the Qt library. Users of older Linux distributions, Windows, or Mac OS X should download the <link xlink:href="http://qt-project.org/downloads">offical Qt installer</link>. 
     Windows users should fetch the MinGW/OpenGL variant, because Microsoft's MSVC 2012 compiler does not support the C++11 features that are needed
