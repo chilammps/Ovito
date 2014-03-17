@@ -12,7 +12,7 @@
   <simplesect>
   <title>Introduction</title>
     <para>
-       OVITO provides a scripting interface that allows users to automate tasks and to batch-process
+       OVITO provides a scripting interface that allows users to automate tasks or batch-process
        a large number of input files. The program's built-in script interpreter is based on the 
        <link xlink:href="http://www.ecma-international.org/publications/standards/Ecma-262.htm">ECMAScript scripting language</link>,
        which forms also the basis for the popular <link xlink:href="http://en.wikipedia.org/wiki/JavaScript">JavaScript language</link> used in web browsers. 
@@ -98,7 +98,7 @@ wait()
 // Read out analysis results.
 print("Number of FCC atoms: " + cna.structureCounts[CommonNeighborAnalysisModifier.FCC])
 
-// Writes processed atoms back to an output file.
+// Write processed atoms back to an output file.
 save("exporteddata.dump", LAMMPSDumpExporter, 
 	{ columnMapping: ["Position.X", "Position.Y", "Position.Z", "Structure Type"] })]]>
       </programlisting>

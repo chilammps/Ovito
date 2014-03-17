@@ -22,7 +22,7 @@
   </para>
   
   <para>
-    Optionally, the modifier can be used to select particles within a specified X or Y-range.
+    Optionally, the modifier can be used to select particles within a specified X- or Y-range.
   </para>
   
   <simplesect>
@@ -44,6 +44,15 @@
       </varlistentry>
       
     </variablelist>
+    
   </simplesect>
+
+  <simplesect>
+    <title>Acknowledgment</title>
+    <para>
+      The code for this modifier has been contributed by Lars Pastewka.
+    </para>
+  </simplesect>
+    
     
 </section>

@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<section version="5.0"
+         xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xml:id="scripting.modifiers_reference" xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title>Modifiers</title>
+
+  <simplesect xml:id="scripting.modifiers.affine_transformation"><title>AffineTransformationModifier</title> 
+    <para>
+       Scripting interface of the <link linkend="particles.modifiers.affine_transformation">Affine transformation</link> modifier:
+       <informaltable>
+         <tgroup cols="2">
+          <thead><row><entry>Property</entry><entry>Data type</entry><entry>Default value</entry><entry>Description</entry></row></thead>
+          <tbody>
+            <row>
+              <entry><code>transformation</code></entry>
+              <entry><code>AffineTransformation</code></entry>
+              <entry>Identity matrix</entry>
+              <entry>The 3 x 4 affine transformation matrix. Used only if <code>relativeMode==true</code>. The fourth matrix column specifies the translation vector.</entry>
+            </row>
+            <row>
+              <entry><code>targetCell</code></entry>
+              <entry><code>AffineTransformation</code></entry>
+              <entry>Zero matrix</entry>
+              <entry>The target simulation cell shape. Used only if <code>relativeMode==false</code>. This is a
+              3x4 matrix. The first three columns specify the cell vectors. The fourth column specifies the
+              origin of the simulation box.</entry>
+            </row>
+            <row>
+              <entry><code>relativeMode</code></entry>
+              <entry><code>bool</code></entry>
+              <entry><code>true</code></entry>
+              <entry>If <code>true</code>, the matrix <code>transformation</code> is used to transform particles.
+              If <code>false</code>, the affine transformation is computed by the modifier from the current
+              simulation cell shape and the target shape matrix <code>targetCell</code>.</entry>
+            </row>
+            <row>
+              <entry><code>applyToSimulationBox</code></entry>
+              <entry>Boolean</entry>
+              <entry>false</entry>
+              <entry>Controls whether the simulation cell shape is affected by the modifier.</entry>
+            </row>
+            <row>
+              <entry><code>applyToParticles</code></entry>
+              <entry>Boolean</entry>
+              <entry>true</entry>
+              <entry>Controls whether the particle positions are affected by the modifier.</entry>
+            </row>
+            <row>
+              <entry><code>applyToSurfaceMesh</code></entry>
+              <entry>Boolean</entry>
+              <entry>false</entry>
+              <entry>Controls whether a surface mesh is affected by the modifier.</entry>
+            </row>
+            <row>
+              <entry><code>selectionOnly</code></entry>
+              <entry>Boolean</entry>
+              <entry>false</entry>
+              <entry>Set this to <code>true</code> to transform only selected particles.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </para>
+    <para>
+	  Example:
+  	    <informalexample><programlisting language="javascript">
+// Set up a shear transformation matrix. Start by creating an identity transformation matrix:
+m = new AffineTransformation()
+// Set XZ shear component to 0.1. The XZ element is stored in row 0 and column 2 of the matrix.
+m.setElement(0, 2, 0.1)
+
+// Apply affine transformation modifier:
+ovito.selectedNode.applyModifier(new AffineTransformationModifier({ 
+	applyToSimulationBox : true,
+	transformation : m
+}))
+</programlisting>          
+        </informalexample>
+		WARNING: The following does NOT work, because <code>setElement()</code> acts on a copy of the transformation matrix:
+  	    <informalexample><programlisting language="javascript">
+mod = new AffineTransformationModifier()
+mod.transformation.setElement(0, 2, 0.1)
+</programlisting>          
+        </informalexample>
+            </para>
+  </simplesect>
+
+  <simplesect xml:id="scripting.modifiers.ambient_occlusion"><title>AmbientOcclusionModifier</title> 
+    <para>
+       Scripting interface of the <link linkend="particles.modifiers.ambient_occlusion">Ambient occlusion</link> modifier:
+       <informaltable>
+         <tgroup cols="2">
+          <thead><row><entry>Property</entry><entry>Data type</entry><entry>Default value</entry><entry>Description</entry></row></thead>
+          <tbody>
+            <row>
+              <entry><code>intensity</code></entry>
+              <entry>number</entry>
+              <entry>0.7</entry>
+              <entry>Controls the strength of the shading effect. Valid range: [0.0,1.0]</entry>
+            </row>
+            <row>
+              <entry><code>samplingCount</code></entry>
+              <entry>integer</entry>
+              <entry>20</entry>
+              <entry>Number of exposure samples</entry>
+            </row>
+            <row>
+              <entry><code>bufferResolution</code></entry>
+              <entry>integer</entry>
+              <entry>3</entry>
+              <entry>Render buffer resolution. Valid range: [1,4]</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </para>
+  </simplesect>
+  
+  <simplesect xml:id="scripting.modifiers.assign_color"><title>AssignColorModifier</title> 
+    <para>
+       Scripting interface of the <link linkend="particles.modifiers.assign_color">Assign color</link> modifier:
+       <informaltable>
+         <tgroup cols="2">
+          <thead><row><entry>Property</entry><entry>Data type</entry><entry>Default value</entry><entry>Description</entry></row></thead>
+          <tbody>
+            <row>
+              <entry><code>color</code></entry>
+              <entry><code>Color</code></entry>
+              <entry><code>Color(0.3,0.3,1.0)</code></entry>
+              <entry>The RGB color that will be assigned to selected particles.</entry>
+            </row>
+            <row>
+              <entry><code>keepSelection</code></entry>
+              <entry>Boolean</entry>
+              <entry><code>false</code></entry>
+              <entry>Controls whether the modifier clears the current particle selection or not.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </para>
+  </simplesect>  
+</section>

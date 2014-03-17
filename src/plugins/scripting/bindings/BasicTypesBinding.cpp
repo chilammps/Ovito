@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -37,6 +37,8 @@ void BasicTypesBinding::setupBinding(ScriptEngine& engine)
 	qRegisterMetaType<Vector3>("Vector3");
 	qRegisterMetaType<Point3>("Point3");
 	qRegisterMetaType<Color>("Color");
+	qRegisterMetaType<AffineTransformation>("AffineTransformation");
+	qRegisterMetaType<Matrix3>("Matrix3");
 	qRegisterMetaType<TimeInterval>("TimeInterval");
 
 	// Set prototype for Vector3 script values and register constructor functions.
@@ -65,6 +67,12 @@ void BasicTypesBinding::setupBinding(ScriptEngine& engine)
 	timeIntervalPrototype.setProperty("toString", engine.newFunction(&TimeIntervalPrototype::toString, 0));
 	engine.setDefaultPrototype(qRegisterMetaType<TimeInterval>("TimeInterval"), timeIntervalPrototype);
 	engine.globalObject().setProperty("TimeInterval", engine.newFunction(TimeIntervalPrototype::constructor, timeIntervalPrototype));
+
+	// Set prototype for AffineTransformation script values and register constructor functions.
+	QScriptValue affineTransformationPrototype = engine.newQObject(new AffineTransformationPrototype());
+	affineTransformationPrototype.setProperty("toString", engine.newFunction(&AffineTransformationPrototype::toString, 0));
+	engine.globalObject().setProperty("AffineTransformation", engine.newFunction(AffineTransformationPrototype::constructor, affineTransformationPrototype));
+	qScriptRegisterMetaType<AffineTransformation>(&engine, &AffineTransformationPrototype::toScriptValue, &AffineTransformationPrototype::fromScriptValue, affineTransformationPrototype);
 }
 
 /******************************************************************************
@@ -165,6 +173,15 @@ QScriptValue TimeIntervalPrototype::constructor(QScriptContext* context, QScript
 		return context->throwError(tr("TimeInterval constructor takes 1 or 2 arguments."));
 	}
 	return engine->toScriptValue(iv);
+}
+
+/******************************************************************************
+* Constructor function for AffineTransformation values.
+******************************************************************************/
+QScriptValue AffineTransformationPrototype::constructor(QScriptContext* context, QScriptEngine* engine)
+{
+	AffineTransformation tm = AffineTransformation::Identity();
+	return engine->toScriptValue(tm);
 }
 
 };
