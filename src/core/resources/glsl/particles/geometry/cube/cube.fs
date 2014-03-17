@@ -32,7 +32,8 @@ uniform vec2 inverse_viewport_size;	// Specifies the transformation from screen 
 	out vec4 FragColor;
 #else
 	#define particle_color_fs gl_Color
-	varying vec3 surface_normal_fs;
+	//varying vec3 surface_normal_fs;
+	varying vec3 ec_pos;
 	#define FragColor gl_FragColor
 #endif
 
@@ -43,6 +44,10 @@ const vec3 specular_lightdir = normalize(vec3(-1.8, 1.5, -0.2));
 
 void main() 
 {
+#if __VERSION__ < 130
+	vec3 surface_normal_fs = normalize(cross(dFdx(ec_pos), dFdy(ec_pos)));
+#endif
+
 	// Calculate viewing ray direction in view space
 	vec3 ray_dir;
 	if(is_perspective) {
