@@ -32,7 +32,7 @@
             </row>
             <row>
               <entry><code>relativeMode</code></entry>
-              <entry><code>bool</code></entry>
+              <entry>boolean</entry>
               <entry><code>true</code></entry>
               <entry>If <code>true</code>, the matrix <code>transformation</code> is used to transform particles.
               If <code>false</code>, the affine transformation is computed by the modifier from the current
@@ -40,25 +40,25 @@
             </row>
             <row>
               <entry><code>applyToSimulationBox</code></entry>
-              <entry>Boolean</entry>
+              <entry>boolean</entry>
               <entry>false</entry>
               <entry>Controls whether the simulation cell shape is affected by the modifier.</entry>
             </row>
             <row>
               <entry><code>applyToParticles</code></entry>
-              <entry>Boolean</entry>
+              <entry>boolean</entry>
               <entry>true</entry>
               <entry>Controls whether the particle positions are affected by the modifier.</entry>
             </row>
             <row>
               <entry><code>applyToSurfaceMesh</code></entry>
-              <entry>Boolean</entry>
+              <entry>boolean</entry>
               <entry>false</entry>
               <entry>Controls whether a surface mesh is affected by the modifier.</entry>
             </row>
             <row>
               <entry><code>selectionOnly</code></entry>
-              <entry>Boolean</entry>
+              <entry>boolean</entry>
               <entry>false</entry>
               <entry>Set this to <code>true</code> to transform only selected particles.</entry>
             </row>
@@ -107,7 +107,7 @@ mod.transformation.setElement(0, 2, 0.1)
               <entry><code>samplingCount</code></entry>
               <entry>integer</entry>
               <entry>20</entry>
-              <entry>Number of exposure samples</entry>
+              <entry>Number of exposure samples to compute</entry>
             </row>
             <row>
               <entry><code>bufferResolution</code></entry>
@@ -136,7 +136,7 @@ mod.transformation.setElement(0, 2, 0.1)
             </row>
             <row>
               <entry><code>keepSelection</code></entry>
-              <entry>Boolean</entry>
+              <entry>boolean</entry>
               <entry><code>false</code></entry>
               <entry>Controls whether the modifier clears the current particle selection or not.</entry>
             </row>
@@ -145,4 +145,168 @@ mod.transformation.setElement(0, 2, 0.1)
       </informaltable>
     </para>
   </simplesect>  
+  
+  <simplesect xml:id="scripting.modifiers.atomic_strain"><title>AtomicStrainModifier</title> 
+    <para>
+       Scripting interface of the <link linkend="particles.modifiers.atomic_strain">Atomic strain</link> modifier:
+       <informaltable>
+         <tgroup cols="2">
+          <thead><row><entry>Property</entry><entry>Data type</entry><entry>Default value</entry><entry>Description</entry></row></thead>
+          <tbody>
+            <row>
+              <entry><code>cutoff</code></entry>
+              <entry>number</entry>
+              <entry>3.0</entry>
+              <entry>The range of neighbors.</entry>
+            </row>
+            <row>
+              <entry><code>eliminateCellDeformation</code></entry>
+              <entry>boolean</entry>
+              <entry><code>false</code></entry>
+              <entry>Controls whether the simulation cell is adjusted prior to the strain calculation.</entry>
+            </row>
+            <row>
+              <entry><code>assumeUnwrappedCoordinates</code></entry>
+              <entry>boolean</entry>
+              <entry><code>false</code></entry>
+              <entry>Controls the use of the minimum image convention for particles that have crossed a periodic boundary.</entry>
+            </row>
+            <row>
+              <entry><code>calculateDeformationGradients</code></entry>
+              <entry>boolean</entry>
+              <entry><code>false</code></entry>
+              <entry>Enables the output of all elements of the atomic deformation gradient tensors.</entry>
+            </row>
+            <row>
+              <entry><code>calculateStrainTensors</code></entry>
+              <entry>boolean</entry>
+              <entry><code>false</code></entry>
+              <entry>Enables the output of all elements of the atomic strain tensors.</entry>
+            </row>
+            <row>
+              <entry><code>selectInvalidParticles</code></entry>
+              <entry>boolean</entry>
+              <entry><code>true</code></entry>
+              <entry>Enables the selection of particles for which the atomic strain tensor could not be computed.</entry>
+            </row>
+            <row>
+              <entry><code>invalidParticleCount</code></entry>
+              <entry>integer</entry>
+              <entry>read-only</entry>
+              <entry>Number of particles for which the atomic strain tensor could not be computed.</entry>
+            </row>
+            <row>
+              <entry><code>referenceConfiguration</code></entry>
+              <entry><code>LinkedFileObject</code></entry>
+              <entry></entry>
+              <entry>The reference configuration of the particles.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </para>
+    <para>
+	  Example:
+<informalexample><programlisting language="javascript">
+modifier = new AtomicStrainModifier({ cutoff : 3.4 })
+modifier.referenceConfiguration.load("simulation.0.dump")
+ovito.selectedNode.applyModifier(modifier)
+</programlisting></informalexample>
+    </para>
+  </simplesect>
+  
+  <simplesect xml:id="scripting.modifiers.bond_angle_analysis"><title>BondAngleAnalysisModifier</title> 
+    <para>
+       Scripting interface of the <link linkend="particles.modifiers.bond_angle_analysis">Bond-angle analysis</link> modifier:
+       <informaltable>
+         <tgroup cols="2">
+          <thead><row><entry>Property</entry><entry>Data type</entry><entry>Default value</entry><entry>Description</entry></row></thead>
+          <tbody>
+            <row>
+              <entry><code>structureCounts</code></entry>
+              <entry><code>Array</code></entry>
+              <entry>read-only</entry>
+              <entry>Array with the number of identified particles per structure type. 
+              This array gets filled when the modifier performs the analysis. The following constants can be used 
+              to access the array (see example below): 
+              <code>OTHER</code>, <code>FCC</code>, <code>HCP</code>, <code>BCC</code>, <code>ICO</code>.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </para>
+    <para>
+	  Example:
+<informalexample><programlisting language="javascript">
+ovito.selectedNode.applyModifier(modifier = new BondAngleAnalysisModifier())
+wait()
+print("Number of FCC atoms: " + modifier.structureCounts[BondAngleAnalysisModifier.FCC])
+</programlisting></informalexample>
+    </para>
+  </simplesect> 
+    
+    
+  <simplesect xml:id="scripting.modifiers.displacement_vectors"><title>CalculateDisplacementsModifier</title> 
+    <para>
+       Scripting interface of the <link linkend="particles.modifiers.displacement_vectors">Displacement vectors</link> modifier:
+       <informaltable>
+         <tgroup cols="2">
+          <thead><row><entry>Property</entry><entry>Data type</entry><entry>Default value</entry><entry>Description</entry></row></thead>
+          <tbody>
+            <row>
+              <entry><code>eliminateCellDeformation</code></entry>
+              <entry>boolean</entry>
+              <entry><code>false</code></entry>
+              <entry>Controls whether the simulation cell is adjusted prior to the displacement calculation.</entry>
+            </row>
+            <row>
+              <entry><code>assumeUnwrappedCoordinates</code></entry>
+              <entry>boolean</entry>
+              <entry><code>false</code></entry>
+              <entry>Disables the use of the minimum image convention for particles that have crossed a periodic boundary.</entry>
+            </row>
+            <row>
+              <entry><code>referenceFrameNumber</code></entry>
+              <entry>integer</entry>
+              <entry>0</entry>
+              <entry>The frame to use as reference configuration if the reference file contains multiple timesteps.</entry>
+            </row>
+            <row>
+              <entry><code>useReferenceFrameOffset</code></entry>
+              <entry>boolean</entry>
+              <entry><code>false</code></entry>
+              <entry>Enables a sliding reference frame.</entry>
+            </row>
+            <row>
+              <entry><code>referenceFrameOffset</code></entry>
+              <entry>integer</entry>
+              <entry>-1</entry>
+              <entry>When using a sliding reference frame this sets the offset between the reference frame and the current frame.</entry>
+            </row>
+            <row>
+              <entry><code>vectorDisplay</code></entry>
+              <entry><code>VectorDisplay</code></entry>
+              <entry></entry>
+              <entry>The <link linkend="display_objects.vectors">vector display object</link> controlling the display of displacement arrows.</entry>
+            </row>
+            <row>
+              <entry><code>referenceConfiguration</code></entry>
+              <entry><code>LinkedFileObject</code></entry>
+              <entry></entry>
+              <entry>The reference configuration.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </para>
+    <para>
+	  Example:
+<informalexample><programlisting language="javascript">
+modifier = new CalculateDisplacementsModifier({ eliminateCellDeformation : true })
+modifier.referenceConfiguration.load("simulation.0.dump")
+modifier.vectorDisplay.isEnabled = true
+ovito.selectedNode.applyModifier(modifier)
+</programlisting></informalexample>
+    </para>
+  </simplesect>    
 </section>

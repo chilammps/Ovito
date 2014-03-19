@@ -460,9 +460,9 @@ public:
 	/// Returns a matrix element.
 	Q_INVOKABLE FloatType element(int row, int col) {
         if(row < 0 || row >= 3)
-        	context()->throwError(QScriptContext::TypeError, tr("AffineTransformation.prototype.element: row is out of range."));
+        	context()->throwError(QScriptContext::TypeError, tr("AffineTransformation.prototype.element: row index is out of range."));
         if(col < 0 || col >= 4)
-        	context()->throwError(QScriptContext::TypeError, tr("AffineTransformation.prototype.element: column is out of range."));
+        	context()->throwError(QScriptContext::TypeError, tr("AffineTransformation.prototype.element: column index is out of range."));
 		if(const AffineTransformation* tm = qscriptvalue_cast<AffineTransformation*>(thisObject()))
 			return (*tm)(row, col);
 		else
@@ -473,13 +473,34 @@ public:
 	/// Sets a matrix element.
 	Q_INVOKABLE void setElement(int row, int col, FloatType value) {
         if(row < 0 || row >= 3)
-        	context()->throwError(QScriptContext::TypeError, tr("AffineTransformation.prototype.setElement: row is out of range."));
+        	context()->throwError(QScriptContext::TypeError, tr("AffineTransformation.prototype.setElement: row index is out of range."));
         if(col < 0 || col >= 4)
-        	context()->throwError(QScriptContext::TypeError, tr("AffineTransformation.prototype.setElement: column is out of range."));
+        	context()->throwError(QScriptContext::TypeError, tr("AffineTransformation.prototype.setElement: column index is out of range."));
 		if(AffineTransformation* tm = qscriptvalue_cast<AffineTransformation*>(thisObject()))
 			(*tm)(row, col) = value;
 		else
 	        context()->throwError(QScriptContext::TypeError, tr("AffineTransformation.prototype.setElement: this object is not a AffineTransformation."));
+	}
+
+	/// Returns a matrix column.
+	Q_INVOKABLE Vector3 column(int col) {
+        if(col < 0 || col >= 4)
+        	context()->throwError(QScriptContext::TypeError, tr("AffineTransformation.prototype.column: index is out of range."));
+		if(const AffineTransformation* tm = qscriptvalue_cast<AffineTransformation*>(thisObject()))
+			return tm->column(col);
+		else
+	        context()->throwError(QScriptContext::TypeError, tr("AffineTransformation.prototype.column: this object is not a AffineTransformation."));
+		return Vector3::Zero();
+	}
+
+	/// Sets a matrix column.
+	Q_INVOKABLE void setColumn(int col, const Vector3& v) {
+        if(col < 0 || col >= 4)
+        	context()->throwError(QScriptContext::TypeError, tr("AffineTransformation.prototype.setColumn: index is out of range."));
+		if(AffineTransformation* tm = qscriptvalue_cast<AffineTransformation*>(thisObject()))
+			tm->column(col) = v;
+		else
+	        context()->throwError(QScriptContext::TypeError, tr("AffineTransformation.prototype.setColumn: this object is not a AffineTransformation."));
 	}
 };
 

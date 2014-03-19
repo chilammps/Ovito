@@ -1,14 +1,21 @@
+// Construction
+tm = new AffineTransformation()
 
-// Load test data.
-node = load("../files/SiVacancy.cfg")
+// Printing
+print(tm)
+print(tm.toString())
 
-// Set up shear transformation matrix. Start by creating an identity transformation matrix:
-m = new AffineTransformation()
-// Set XZ shear component to 0.1
-m.setElement(0, 2, 0.1)
+// Element read access
+assert(tm.element(0,0) == 1)
+assert(tm.element(1,0) == 0)
 
-// Create and apply affine transformation modifier.
-ovito.selectedNode.applyModifier(new AffineTransformationModifier({ 
-	applyToSimulationBox : true,
-	transformation : m
-}))
+// Element write access
+tm.setElement(0,2,0.5)
+assert(tm.element(0,2) == 0.5)
+
+// Column access
+print(tm.column(1))
+assert(tm.column(1).equals([0,1,0]))
+tm.setColumn(1, [1,2,3])
+assert(tm.column(1).equals([1,2,3]))
+print(tm)

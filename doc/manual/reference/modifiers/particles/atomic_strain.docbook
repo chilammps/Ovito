@@ -64,11 +64,11 @@
       <varlistentry>
         <term>Cutoff radius</term>
         <listitem>
-          <para>Selects the nearest neighbors that are taken
+          <para>Controls the range of neighbors that are taken
           into account to compute the deformation gradient tensor of a particle.
           This radius must be large enough to include at least three non-coplanar neighbors for
-          every particle in the reference configuration. The larger you choose the cutoff, the larger 
-          the volume will be over which the local deformation gradient tensor is averaged.</para>
+          every particle in the reference configuration. The larger the cutoff, the larger 
+          the volume over which the local deformation gradient tensor is averaged.</para>
         </listitem>
       </varlistentry>
 
