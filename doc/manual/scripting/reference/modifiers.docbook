@@ -245,7 +245,6 @@ print("Number of FCC atoms: " + modifier.structureCounts[BondAngleAnalysisModifi
     </para>
   </simplesect> 
     
-    
   <simplesect xml:id="scripting.modifiers.displacement_vectors"><title>CalculateDisplacementsModifier</title> 
     <para>
        Scripting interface of the <link linkend="particles.modifiers.displacement_vectors">Displacement vectors</link> modifier:
@@ -308,5 +307,459 @@ modifier.vectorDisplay.isEnabled = true
 ovito.selectedNode.applyModifier(modifier)
 </programlisting></informalexample>
     </para>
-  </simplesect>    
+  </simplesect>  
+  
+  <simplesect xml:id="scripting.modifiers.centrosymmetry"><title>CentroSymmetryModifier</title> 
+    <para>
+       Scripting interface of the <link linkend="particles.modifiers.centrosymmetry">Centrosymmetry parameter</link> modifier:
+       <informaltable>
+         <tgroup cols="2">
+          <thead><row><entry>Property</entry><entry>Data type</entry><entry>Default value</entry><entry>Description</entry></row></thead>
+          <tbody>
+            <row>
+              <entry><code>numNeighbors</code></entry>
+              <entry>integer</entry>
+              <entry>12</entry>
+              <entry>Number of particle neighbors taken into account for computing the 
+              centrosymmetry value.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </para>
+  </simplesect>   
+  
+  <simplesect xml:id="scripting.modifiers.cluster_analysis"><title>ClusterAnalysisModifier</title> 
+    <para>
+       Scripting interface of the <link linkend="particles.modifiers.cluster_analysis">Cluster analysis</link> modifier:
+       <informaltable>
+         <tgroup cols="2">
+          <thead><row><entry>Property</entry><entry>Data type</entry><entry>Default value</entry><entry>Description</entry></row></thead>
+          <tbody>
+            <row>
+              <entry><code>cutoff</code></entry>
+              <entry>number</entry>
+              <entry>3.2</entry>
+              <entry>The maximum distance between particles belonging to the same cluster.</entry>
+            </row>
+            <row>
+              <entry><code>clusterCount</code></entry>
+              <entry>integer</entry>
+              <entry>read-only</entry>
+              <entry>After the cluster analysis has been performed, this property field contains the number of
+              identified cluster.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </para>
+  </simplesect>  
+     
+  <simplesect xml:id="scripting.modifiers.color_coding"><title>ColorCodingModifier</title> 
+    <para>
+       Scripting interface of the <link linkend="particles.modifiers.color_coding">Color coding</link> modifier:
+       <informaltable>
+         <tgroup cols="2">
+          <thead><row><entry>Property</entry><entry>Data type</entry><entry>Default value</entry><entry>Description</entry></row></thead>
+          <tbody>
+            <row>
+              <entry><code>sourceProperty</code></entry>
+              <entry>string</entry>
+              <entry></entry>
+              <entry>The particle property to be used for coloring.</entry>
+            </row>
+            <row>
+              <entry><code>startValue</code></entry>
+              <entry>number</entry>
+              <entry></entry>
+              <entry>Start of property value range. Is mapped to the first color.</entry>
+            </row>
+            <row>
+              <entry><code>endValue</code></entry>
+              <entry>number</entry>
+              <entry></entry>
+              <entry>End of property value range. Is mapped to the last color.</entry>
+            </row>
+            <row>
+              <entry><code>colorOnlySelected</code></entry>
+              <entry>boolean</entry>
+              <entry><code>false</code></entry>
+              <entry>If true, colors are only assigned to selected particle while the existing color of other particles
+              is left unchanged.</entry>
+            </row>
+            <row>
+              <entry><code>keepSelection</code></entry>
+              <entry>boolean</entry>
+              <entry><code>false</code></entry>
+              <entry>Normally, the modifier clears the current particle selection. This flag disables this behavior.</entry>
+            </row>
+            <row>
+              <entry><code>colorGradient</code></entry>
+              <entry><code>ColorCodingGradient</code></entry>
+              <entry><code>ColorCodingHSVGradient</code></entry>
+              <entry>The color gradient object that is responsible for mapping property values to colors. 
+              The following gradient types are available: <code>ColorCodingHSVGradient</code>, <code>ColorCodingGrayscaleGradient</code>,
+              <code>ColorCodingHotGradient</code>, <code>ColorCodingJetGradient</code>.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </para>
+    <para>
+	  Example:
+<informalexample><programlisting language="javascript">
+ovito.selectedNode.applyModifier(new ColorCodingModifier({
+	sourceProperty : "Displacement.X",
+	colorGradient : new ColorCodingHotGradient()
+}))
+</programlisting></informalexample>
+    </para>    
+  </simplesect> 
+  
+       
+  <simplesect xml:id="scripting.modifiers.common_neighbor_analysis"><title>CommonNeighborAnalysisModifier</title> 
+    <para>
+       Scripting interface of the <link linkend="particles.modifiers.common_neighbor_analysis">Common neighbor analysis</link> modifier:
+       <informaltable>
+         <tgroup cols="2">
+          <thead><row><entry>Property</entry><entry>Data type</entry><entry>Default value</entry><entry>Description</entry></row></thead>
+          <tbody>
+            <row>
+              <entry><code>adaptiveMode</code></entry>
+              <entry>boolean</entry>
+              <entry><code>true</code></entry>
+              <entry>Activates the adaptive version of the CNA, which determines the cutoff radius for each particle individually.</entry>
+            </row>
+            <row>
+              <entry><code>cutoff</code></entry>
+              <entry>number</entry>
+              <entry>3.2</entry>
+              <entry>The cutoff radius for the conventional CNA. This is ignored if <code>adaptiveMode==true</code></entry>
+            </row>
+            <row>
+              <entry><code>structureCounts</code></entry>
+              <entry><code>Array</code></entry>
+              <entry>read-only</entry>
+              <entry>Array with the number of particles found for each structure type. 
+              This array gets filled when the modifier performs the analysis. The following constants can be used 
+              to access the array (see example below): 
+              <code>OTHER</code>, <code>FCC</code>, <code>HCP</code>, <code>BCC</code>, <code>ICO</code>, <code>DIA</code>.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </para>
+    <para>
+	  Example:
+<informalexample><programlisting language="javascript">
+ovito.selectedNode.applyModifier(modifier = new CommonNeighborAnalysisModifier({
+	adaptiveMode : false,
+	cutoff : 3.411
+}))
+wait()
+print("Number of FCC atoms: " + modifier.structureCounts[CommonNeighborAnalysisModifier.FCC])
+</programlisting></informalexample>
+    </para>
+  </simplesect> 
+
+  <simplesect xml:id="scripting.modifiers.construct_surface_mesh"><title>ConstructSurfaceModifier</title> 
+    <para>
+       Scripting interface of the <link linkend="particles.modifiers.construct_surface_mesh">Construct surface mesh</link> modifier:
+       <informaltable>
+         <tgroup cols="2">
+          <thead><row><entry>Property</entry><entry>Data type</entry><entry>Default value</entry><entry>Description</entry></row></thead>
+          <tbody>
+            <row>
+              <entry><code>radius</code></entry>
+              <entry>number</entry>
+              <entry>4.0</entry>
+              <entry>Radius of the virtual probe sphere</entry>
+            </row>
+            <row>
+              <entry><code>smoothingLevel</code></entry>
+              <entry>integer</entry>
+              <entry>8</entry>
+              <entry>Number of smoothing iterations</entry>
+            </row>
+            <row>
+              <entry><code>onlySelectedParticles</code></entry>
+              <entry>boolean</entry>
+              <entry><code>false</code></entry>
+              <entry>If true, the surface is constructed only from selected particles.</entry>
+            </row>
+            <row>
+              <entry><code>surfaceArea</code></entry>
+              <entry>number</entry>
+              <entry>read-only</entry>
+              <entry>After the modifier has constructed the surface, this output field contains the computed surface area.</entry>
+            </row>
+            <row>
+              <entry><code>solidVolume</code></entry>
+              <entry>number</entry>
+              <entry>read-only</entry>
+              <entry>After the modifier has constructed the surface, this output field contains the computed solid volume.</entry>
+            </row>
+            <row>
+              <entry><code>totalVolume</code></entry>
+              <entry>number</entry>
+              <entry>read-only</entry>
+              <entry>After the modifier has constructed the surface, this output field contains volume of the simulation cell.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </para>
+  </simplesect>  
+          
+  <simplesect xml:id="scripting.modifiers.coordination_analysis"><title>CoordinationNumberModifier</title> 
+    <para>
+       Scripting interface of the <link linkend="particles.modifiers.coordination_analysis">Coordination analysis</link> modifier:
+       <informaltable>
+         <tgroup cols="2">
+          <thead><row><entry>Property</entry><entry>Data type</entry><entry>Default value</entry><entry>Description</entry></row></thead>
+          <tbody>
+            <row>
+              <entry><code>cutoff</code></entry>
+              <entry>number</entry>
+              <entry>3.2</entry>
+              <entry>The maximum distance up to which two particlea are considered neighbors.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </para>
+  </simplesect>  
+          
+  <simplesect xml:id="scripting.modifiers.create_bonds"><title>CreateBondsModifier</title> 
+    <para>
+       Scripting interface of the <link linkend="particles.modifiers.create_bonds">Create bonds</link> modifier:
+       <informaltable>
+         <tgroup cols="2">
+          <thead><row><entry>Property</entry><entry>Data type</entry><entry>Default value</entry><entry>Description</entry></row></thead>
+          <tbody>
+            <row>
+              <entry><code>uniformCutoff</code></entry>
+              <entry>number</entry>
+              <entry>3.2</entry>
+              <entry>Controls which particle are connected by a bond.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </para>
+  </simplesect>
+  
+  <simplesect xml:id="scripting.modifiers.freeze_property"><title>FreezePropertyModifier</title> 
+    <para>
+       Scripting interface of the <link linkend="particles.modifiers.freeze_property">Freeze property</link> modifier:
+       <informaltable>
+         <tgroup cols="2">
+          <thead><row><entry>Property</entry><entry>Data type</entry><entry>Default value</entry><entry>Description</entry></row></thead>
+          <tbody>
+            <row>
+              <entry><code>sourceProperty</code></entry>
+              <entry>string</entry>
+              <entry></entry>
+              <entry>The particle property to be frozen.</entry>
+            </row>
+            <row>
+              <entry><code>destinationProperty</code></entry>
+              <entry>string</entry>
+              <entry></entry>
+              <entry>The name of the output particle property.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </para>
+  </simplesect>
+    
+  <simplesect xml:id="scripting.modifiers.expression_select"><title>SelectExpressionModifier</title> 
+    <para>
+       Scripting interface of the <link linkend="particles.modifiers.expression_select">Expression select</link> modifier:
+       <informaltable>
+         <tgroup cols="2">
+          <thead><row><entry>Property</entry><entry>Data type</entry><entry>Default value</entry><entry>Description</entry></row></thead>
+          <tbody>
+            <row>
+              <entry><code>expression</code></entry>
+              <entry>string</entry>
+              <entry></entry>
+              <entry>The Boolean expression</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </para>
+  </simplesect>  
+     
+  <simplesect xml:id="scripting.modifiers.show_periodic_images"><title>ShowPeriodicImagesModifier</title> 
+    <para>
+       Scripting interface of the <link linkend="particles.modifiers.show_periodic_images">Show periodic images</link> modifier:
+       <informaltable>
+         <tgroup cols="2">
+          <thead><row><entry>Property</entry><entry>Data type</entry><entry>Default value</entry><entry>Description</entry></row></thead>
+          <tbody>
+            <row>
+              <entry><code>showImageX</code></entry>
+              <entry>boolean</entry>
+              <entry><code>false</code></entry>
+              <entry>Enables the generation of copies in the X direction.</entry>
+            </row>
+            <row>
+              <entry><code>showImageY</code></entry>
+              <entry>boolean</entry>
+              <entry><code>false</code></entry>
+              <entry>Enables the generation of copies in the Y direction.</entry>
+            </row>
+            <row>
+              <entry><code>showImageZ</code></entry>
+              <entry>boolean</entry>
+              <entry><code>false</code></entry>
+              <entry>Enables the generation of copies in the Z direction.</entry>
+            </row>
+            <row>
+              <entry><code>numImagesX</code></entry>
+              <entry>integer</entry>
+              <entry>3</entry>
+              <entry>The number of periodic images to generate in the X direction (including the primary image).</entry>
+            </row>
+            <row>
+              <entry><code>numImagesY</code></entry>
+              <entry>integer</entry>
+              <entry>3</entry>
+              <entry>The number of periodic images to generate in the Y direction (including the primary image).</entry>
+            </row>
+            <row>
+              <entry><code>numImagesZ</code></entry>
+              <entry>integer</entry>
+              <entry>3</entry>
+              <entry>The number of periodic images to generate in the Z direction (including the primary image).</entry>
+            </row>
+            <row>
+              <entry><code>adjustBoxSize</code></entry>
+              <entry>boolean</entry>
+              <entry><code>false</code></entry>
+              <entry>This flag controls the resizing of the simulation cell.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </para>
+  </simplesect> 
+  
+  <simplesect xml:id="scripting.modifiers.slice"><title>SliceModifier</title> 
+    <para>
+       Scripting interface of the <link linkend="particles.modifiers.slice">Slice</link> modifier:
+       <informaltable>
+         <tgroup cols="2">
+          <thead><row><entry>Property</entry><entry>Data type</entry><entry>Default value</entry><entry>Description</entry></row></thead>
+          <tbody>
+            <row>
+              <entry><code>normal</code></entry>
+              <entry><code>Vector</code></entry>
+              <entry><code>Vector(1,0,0)</code></entry>
+              <entry>The normal vector of the slicing plane.</entry>
+            </row>
+            <row>
+              <entry><code>distance</code></entry>
+              <entry>number</entry>
+              <entry>0</entry>
+              <entry>The (signed) distance of the slicing plane from the origin along the plane's normal.</entry>
+            </row>
+            <row>
+              <entry><code>sliceWidth</code></entry>
+              <entry>number</entry>
+              <entry>0</entry>
+              <entry>The width of the slice to take.</entry>
+            </row>
+            <row>
+              <entry><code>inverse</code></entry>
+              <entry>boolean</entry>
+              <entry><code>false</code></entry>
+              <entry>This flag flips the orientation of the slicing plane.</entry>
+            </row>
+            <row>
+              <entry><code>createSelection</code></entry>
+              <entry>boolean</entry>
+              <entry><code>false</code></entry>
+              <entry>If true, the modifier selects particles instead of deleting them.</entry>
+            </row>
+            <row>
+              <entry><code>applyToSelection</code></entry>
+              <entry>boolean</entry>
+              <entry><code>false</code></entry>
+              <entry>If true, the modifier removes/selects only particles that are currently selected.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </para>
+  </simplesect> 
+  
+  <simplesect xml:id="scripting.modifiers.wigner_seitz_analysis"><title>WignerSeitzAnalysisModifier</title> 
+    <para>
+       Scripting interface of the <link linkend="particles.modifiers.wigner_seitz_analysis">Wigner-Seitz defect analysis</link> modifier:
+       <informaltable>
+         <tgroup cols="2">
+          <thead><row><entry>Property</entry><entry>Data type</entry><entry>Default value</entry><entry>Description</entry></row></thead>
+          <tbody>
+            <row>
+              <entry><code>eliminateCellDeformation</code></entry>
+              <entry>boolean</entry>
+              <entry><code>false</code></entry>
+              <entry>Controls whether the simulation cell is adjusted to match the reference cell prior to the analysis.</entry>
+            </row>
+            <row>
+              <entry><code>referenceFrameNumber</code></entry>
+              <entry>integer</entry>
+              <entry>0</entry>
+              <entry>The frame to use as reference configuration if the reference file contains multiple timesteps.</entry>
+            </row>
+            <row>
+              <entry><code>useReferenceFrameOffset</code></entry>
+              <entry>boolean</entry>
+              <entry><code>false</code></entry>
+              <entry>Enables a sliding reference frame.</entry>
+            </row>
+            <row>
+              <entry><code>referenceFrameOffset</code></entry>
+              <entry>integer</entry>
+              <entry>-1</entry>
+              <entry>When using a sliding reference frame this sets the offset between the reference frame and the current frame.</entry>
+            </row>
+            <row>
+              <entry><code>referenceConfiguration</code></entry>
+              <entry><code>LinkedFileObject</code></entry>
+              <entry></entry>
+              <entry>The reference configuration.</entry>
+            </row>
+            <row>
+              <entry><code>vacancyCount</code></entry>
+              <entry>integer</entry>
+              <entry>read-only</entry>
+              <entry>This output field contains the number of vacancies identified during the Wigner-Seitz analysis.</entry>
+            </row>
+            <row>
+              <entry><code>interstitialCount</code></entry>
+              <entry>integer</entry>
+              <entry>read-only</entry>
+              <entry>This output field contains the number of interstitials identified during the Wigner-Seitz analysis.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </para>
+    <para>
+	  Example:
+<informalexample><programlisting language="javascript">
+modifier = new WignerSeitzAnalysisModifier({ eliminateCellDeformation : true })
+modifier.referenceConfiguration.load("simulation.0.dump")
+ovito.selectedNode.applyModifier(modifier)
+wait()
+print("Found " + modifier.vacancyCount + " vacancies")
+</programlisting></informalexample>
+    </para>
+  </simplesect>  
+    
 </section>
