@@ -13,6 +13,18 @@ http://www.ovito.org/
 Change Log 
 ****************************************************************************************
 
+Release 2.3.0 (xx-Mar-14):
+
+ - Added the new scripting interface, which allows to automate tasks.
+ - Added the 'Freeze property' modifier, which can prevent a particle property from changing over time.
+ - Added the 'Scatter plot' modifier, which plots one particle property against another. 
+   This modifier has been contributed by Lars Pastewka.
+ - Added the 'Wigner-Seitz analysis' modifier, which can identify vacancies and interstitials in a lattice.
+ - Added a file importer for NetCDF files. Code was contributed by Lars Pastewka.
+ - Added more input variables to the 'Compute property' and 'Expression select' modifiers.
+ - Fixed bug in CFG file importer, which did not read triclinic simulation cells correctly.
+ - Fixed shader compilation error on OpenGL 2.0 systems and some other OpenGL related issues.
+   
 Release 2.2.4 (29-Jan-14):
 
  - Modified particle file importers to ensure stable ordering of particle types (using 
