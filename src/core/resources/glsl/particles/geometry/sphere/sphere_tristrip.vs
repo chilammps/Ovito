@@ -43,8 +43,8 @@ uniform vec3 cubeVerts[14];
 	attribute float vertexID;
 
 	// Output to fragment shader:
-	#define particle_radius_squared_fs gl_FrontSecondaryColor.a
-	#define particle_view_pos_fs gl_FrontSecondaryColor.rgb
+	#define particle_radius_squared_fs gl_TexCoord[1].w
+	#define particle_view_pos_fs gl_TexCoord[1].xyz
 
 #endif
 

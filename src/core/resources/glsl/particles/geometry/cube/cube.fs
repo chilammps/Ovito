@@ -32,7 +32,7 @@ uniform vec2 inverse_viewport_size;	// Specifies the transformation from screen 
 	out vec4 FragColor;
 #else
 	#define particle_color_fs gl_Color
-	#define ec_pos gl_SecondaryColor.rgb
+	#define ec_pos gl_TexCoord[1].xyz
 	#define FragColor gl_FragColor
 #endif
 

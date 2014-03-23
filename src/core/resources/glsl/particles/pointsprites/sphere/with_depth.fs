@@ -34,8 +34,8 @@ uniform sampler2D tex;			// The imposter texture.
 
 #else
 
-	#define particle_radius_fs gl_SecondaryColor.r
-	#define ze0 gl_SecondaryColor.g
+	#define particle_radius_fs gl_TexCoord[1].x
+	#define ze0 gl_TexCoord[1].y
 	
 	#define particle_color_fs gl_Color
 	#define FragColor gl_FragColor
