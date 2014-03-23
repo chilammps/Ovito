@@ -44,7 +44,7 @@ uniform vec3 normals[14];
 	attribute float vertexID;
 
 	// Outputs to fragment shader
-	#define ec_pos gl_FrontSecondaryColor.rgb
+	#define ec_pos gl_TexCoord[1].xyz
 
 #endif
 

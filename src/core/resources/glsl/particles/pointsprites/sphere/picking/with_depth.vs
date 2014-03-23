@@ -43,8 +43,8 @@ uniform int pickingBaseID;
 	attribute float vertexID;
 
 	// Output to fragment shader:
-	#define particle_radius_fs gl_FrontSecondaryColor.r
-	#define ze0 gl_FrontSecondaryColor.g
+	#define particle_radius_fs gl_TexCoord[1].x
+	#define ze0 gl_TexCoord[1].y
 
 #endif
 
