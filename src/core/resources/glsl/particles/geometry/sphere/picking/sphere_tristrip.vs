@@ -43,9 +43,9 @@ uniform vec3 cubeVerts[14];
 	attribute float particle_radius;
 	attribute float vertexID;
 
-	// Outputs to fragment shader
-	varying float particle_radius_squared_fs;
-	varying vec3 particle_view_pos_fs;
+	// Output to fragment shader:
+	#define particle_radius_squared_fs gl_FrontSecondaryColor.a
+	#define particle_view_pos_fs gl_FrontSecondaryColor.rgb
 	
 #endif
 
