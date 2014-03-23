@@ -44,13 +44,14 @@ uniform vec3 normals[14];
 	attribute float vertexID;
 
 	// Outputs to fragment shader
-	varying vec3 ec_pos;
+	#define ec_pos gl_FrontSecondaryColor.rgb
 
 #endif
 
 void main()
 {
 #if __VERSION__ >= 130
+
 	// Forward color to fragment shader.
 	particle_color_fs = vec4(color, 1);
 
@@ -60,7 +61,9 @@ void main()
 
 	// Determine face normal.
 	surface_normal_fs = normal_matrix * normals[cubeCorner];
+
 #else
+
 	// Forward color to fragment shader.
 	gl_FrontColor = gl_Color;
 

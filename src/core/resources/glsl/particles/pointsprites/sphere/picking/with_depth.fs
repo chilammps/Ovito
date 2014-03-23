@@ -34,8 +34,8 @@ uniform mat4 projection_matrix;
 #else
 
 	// Input from vertex shader:
-	varying float particle_radius_fs;
-	varying float ze0;
+	#define particle_radius_fs gl_SecondaryColor.r
+	#define ze0 gl_SecondaryColor.g
 	#define particle_color_fs gl_Color
 	
 	#define FragColor gl_FragColor

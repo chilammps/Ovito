@@ -37,13 +37,14 @@ uniform int pickingBaseID;
 	flat out float ze0;					// The particle's Z coordinate in eye coordinates.
 
 #else
-
-	varying float particle_radius_fs;
-	varying float ze0;
 	
 	// The particle data:
 	attribute float particle_radius;
 	attribute float vertexID;
+
+	// Output to fragment shader:
+	#define particle_radius_fs gl_FrontSecondaryColor.r
+	#define ze0 gl_FrontSecondaryColor.g
 
 #endif
 
