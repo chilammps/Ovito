@@ -41,6 +41,7 @@ uniform vec4 imposter_voffsets[6];
 #else
 
 	attribute float particle_radius;
+	attribute float vertexID;
 	
 	varying float particle_radius_fs;
 	varying float ze0;

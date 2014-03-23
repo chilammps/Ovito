@@ -39,7 +39,7 @@ ViewportTextGeometryBuffer::ViewportTextGeometryBuffer(ViewportSceneRenderer* re
 	OVITO_ASSERT(renderer->glcontext()->shareGroup() == _contextGroup);
 
 	// Initialize OpenGL shader.
-	_shader = renderer->loadShaderProgram("text", ":/core/glsl/text.vertex.glsl", ":/core/glsl/text.fragment.glsl");
+	_shader = renderer->loadShaderProgram("text", ":/core/glsl/text/text.vs", ":/core/glsl/text/text.fs");
 
 	// Create vertex buffer
 	if(!_vertexBuffer.create())
