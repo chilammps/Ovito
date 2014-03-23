@@ -29,10 +29,7 @@
 
 	#define particle_color_fs gl_Color
 	#define FragColor gl_FragColor
-	
-	#if __VERSION__ < 120
-		#define gl_PointCoord gl_TexCoord[0].xy
-	#endif
+	#define texcoords gl_TexCoord[0].xy
 
 #endif
 

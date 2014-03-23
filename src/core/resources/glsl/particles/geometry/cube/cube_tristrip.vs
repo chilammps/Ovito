@@ -44,7 +44,6 @@ uniform vec3 normals[14];
 	attribute float vertexID;
 
 	// Outputs to fragment shader
-	//varying vec3 surface_normal_fs;
 	varying vec3 ec_pos;
 
 #endif

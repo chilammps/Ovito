@@ -37,6 +37,7 @@ uniform vec4 imposter_voffsets[6];
 	
 #else
 	attribute float particle_radius;
+	attribute float vertexID;
 	#define particle_color_fs gl_FrontColor
 #endif
 

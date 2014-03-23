@@ -38,7 +38,7 @@ ViewportImageGeometryBuffer::ViewportImageGeometryBuffer(ViewportSceneRenderer* 
 	OVITO_ASSERT(renderer->glcontext()->shareGroup() == _contextGroup);
 
 	// Initialize OpenGL shader.
-	_shader = renderer->loadShaderProgram("image", ":/core/glsl/image.vertex.glsl", ":/core/glsl/image.fragment.glsl");
+	_shader = renderer->loadShaderProgram("image", ":/core/glsl/image/image.vs", ":/core/glsl/image/image.fs");
 
 	// Create vertex buffer
 	if(!_vertexBuffer.create())

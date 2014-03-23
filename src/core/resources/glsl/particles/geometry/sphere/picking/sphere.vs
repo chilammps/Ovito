@@ -23,6 +23,8 @@
 uniform mat4 modelview_matrix;
 uniform int pickingBaseID;
 
+#if __VERSION__ >= 130
+
 // The particle data:
 in vec3 position;
 in float particle_radius;
@@ -31,8 +33,11 @@ in float particle_radius;
 out vec4 particle_color_gs;
 out float particle_radius_gs;
 
+#endif
+
 void main()
 {
+#if __VERSION__ >= 130
 	// Compute color from object ID.
 	int objectID = pickingBaseID + gl_VertexID;
 	particle_color_gs = vec4(
@@ -46,4 +51,5 @@ void main()
 
 	// Transform particle center to eye coordinates.
 	gl_Position = modelview_matrix * vec4(position, 1);
+#endif
 }
