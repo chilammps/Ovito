@@ -11,6 +11,7 @@
 - Surface mesh for an empty simulation box should not display cap polygons.
 - Let the user configure the default colors and radii assigned to different atom types.
 - The particle information applet should allow the user to click on and select bonds directly (instead of picking the two particles).
+- Remember multiple column mappings, like in OVITO 1.x (useful if you work with many XYZ files with different columns).
 
 Sha Zhendong:
 
