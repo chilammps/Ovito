@@ -93,23 +93,7 @@ public:
 	///                This may only be NULL when creating an instance of a class that is not derived from RefTarget.
 	/// \return The new instance of the class. The pointer can be safely cast to the corresponding C++ class type.
 	/// \throw Exception if a required plugin failed to load, or if the instantiation failed for some other reason.
-	OORef<OvitoObject> createInstance(DataSet* dataset) const {
-		return createNonRefInstance(dataset);
-	}
-
-	/// \brief Creates an instance of the OvitoObject-derived class, which is not (yet) part of the reference counting system.
-	/// \param dataset The dataset the newly created object will belong to.
-	///                This may only be NULL when creating an instance of a class that is not derived from RefTarget.
-	/// \return Pointer to the new instance of the class.
-	///         The pointer can be safely cast to the corresponding C++ class type.
-	/// \throw Exception if a required plugin failed to load, or if the instantiation failed for some other reason.
-	///
-	/// This method returns an object whose reference counter is zero. The caller is responsible for
-	/// deleting the object explicitly or incrementing its reference counter.
-	/// Note that using this method to create an instance is potentially dangerous. To avoid memory
-	/// leaks, use createInstance() instead, which returns a OORef smart pointer.
-	/// Use createNonRefInstance() only when you know what your are doing.
-	OvitoObject* createNonRefInstance(DataSet* dataset) const;
+	OORef<OvitoObject> createInstance(DataSet* dataset) const;
 
 	/// \brief Returns the first element of the linked list of reference fields defined for this class if it is a RefMaker derived class.
 	const PropertyFieldDescriptor* firstPropertyField() const { return _firstPropertyField; }

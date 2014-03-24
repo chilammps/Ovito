@@ -43,8 +43,8 @@ uniform vec4 imposter_voffsets[6];
 	attribute float particle_radius;
 	attribute float vertexID;
 	
-	varying float particle_radius_fs;
-	varying float ze0;
+	#define particle_radius_fs gl_TexCoord[1].x
+	#define ze0 gl_TexCoord[1].y
 	#define particle_color_fs gl_FrontColor
 #endif
 
@@ -71,8 +71,12 @@ void main()
 	// Transform and project particle position.
 	vec4 eye_position = modelview_matrix * gl_Vertex;
 
-	// Transform and project particle position.
 	int cornerIndex = int(mod(vertexID+0.5, 6.0));
+	
+	// Assign texture coordinates. 
+	gl_TexCoord[0].xy = imposter_texcoords[cornerIndex];
+	
+	// Transform and project particle position.
 	gl_Position = projection_matrix * (eye_position + particle_radius * imposter_voffsets[cornerIndex]);
 #endif
 

@@ -54,9 +54,8 @@ void ViewportsPanel::onViewportConfigurationReplaced(ViewportConfiguration* newV
 	disconnect(_maximizedViewportChangedConnection);
 
 	// Delete all existing viewport widgets first.
-	for(QWidget* widget : findChildren<QWidget*>()) {
+	for(QWidget* widget : findChildren<QWidget*>())
 		delete widget;
-	}
 
 	_viewportConfig = newViewportConfiguration;
 

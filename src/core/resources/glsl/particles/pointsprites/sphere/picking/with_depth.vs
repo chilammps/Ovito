@@ -33,7 +33,7 @@ uniform int pickingBaseID;
 	
 	// Output to fragment shader:
 	flat out vec4 particle_color_fs;
-	flat out float particle_radius_fs;		// The particle's radius.
+	flat out float particle_radius_fs;	// The particle's radius.
 	flat out float ze0;					// The particle's Z coordinate in eye coordinates.
 
 #else

@@ -43,8 +43,7 @@ ViewportParticleGeometryBuffer::ViewportParticleGeometryBuffer(ViewportSceneRend
 #ifdef Q_OS_WIN
 	// Point sprites seem not to work on Windows platform and Intel graphics.
 	// Use quads made of two triangles as a workaround.
-	if(renderer->glformat().majorVersion() >= 3
-			&& strstr((const char*)glGetString(GL_VENDOR), "Intel") != nullptr)
+	if(strstr((const char*)glGetString(GL_VENDOR), "Intel") != nullptr)
 		_usePointSprites = false;
 #endif
 

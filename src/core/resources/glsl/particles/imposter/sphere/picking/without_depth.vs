@@ -76,8 +76,12 @@ void main()
 	// Transform and project particle position.
 	vec4 eye_position = modelview_matrix * gl_Vertex;
 
-	// Transform and project particle position.
 	int cornerIndex = int(mod(vertexID+0.5, 6.0));
+	
+	// Assign texture coordinates. 
+	gl_TexCoord[0].xy = imposter_texcoords[cornerIndex];
+	
+	// Transform and project particle position.
 	gl_Position = projection_matrix * (eye_position + particle_radius * imposter_voffsets[cornerIndex]);
 #endif
 }

@@ -93,10 +93,7 @@ Viewport::Viewport(DataSet* dataset) : RefTarget(dataset),
 ******************************************************************************/
 Viewport::~Viewport()
 {
-	delete _widget;
-
-	OVITO_ASSERT(!_widget);
-	OVITO_ASSERT(!_viewportWindow);
+	if(_widget) _widget->deleteLater();
 }
 
 /******************************************************************************

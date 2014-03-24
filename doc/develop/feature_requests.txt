@@ -1,4 +1,6 @@
 
+- Fix JPEG image output on Win 64-bit.
+
 - OpenGL rendering support for more than 12 million particles.
 
 - Import bond information from LAMMPS.
@@ -12,6 +14,7 @@
 - Let the user configure the default colors and radii assigned to different atom types.
 - The particle information applet should allow the user to click on and select bonds directly (instead of picking the two particles).
 - More particle representations (e.g. open circles/rectangles)
+- Initialize the parameters of objects created by a script to their default values (and not the last ones set).
 
 Sha Zhendong:
 
