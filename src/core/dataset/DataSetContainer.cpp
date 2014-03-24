@@ -224,7 +224,9 @@ bool DataSetContainer::askForSaveChanges()
 ******************************************************************************/
 bool DataSetContainer::fileNew()
 {
-	setCurrentSet(new DataSet());
+	OORef<DataSet> newSet = new DataSet();
+	newSet->loadUserDefaults();
+	setCurrentSet(newSet);
 	return true;
 }
 
@@ -289,6 +291,9 @@ bool DataSetContainer::importFile(const QUrl& url, const FileImporterDescription
 		if(!importer)
 			throw Exception(tr("Failed to import file. Could not initialize import service."));
 	}
+
+	// Load user-defined default settings for the importer.
+	importer->loadUserDefaults();
 
 	return importer->importFile(url, importMode);
 }

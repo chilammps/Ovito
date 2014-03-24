@@ -240,6 +240,18 @@ public:
 	/// \sa OvitoObjectType::findPropertyField()
 	void setPropertyFieldValue(const PropertyFieldDescriptor& field, const QVariant& newValue);
 
+	/// \brief Loads the user-defined default values of this object's parameter fields from the
+	///        application's settings store.
+	///
+	/// This function should be called immediately after creation of the object instance.
+	/// It loads the default value for every property field for which the user has set
+	/// a default value. This is usually the case for property fields that have the
+	/// PROPERTY_FIELD_MEMORIZE flag set.
+	///
+	/// This function is recursive, i.e., it also loads default parameter values for
+	/// referenced objects (when the PROPERTY_FIELD_MEMORIZE flag is set for this RefMaker's reference field).
+	virtual void loadUserDefaults();
+
 	/////////////////////////// Runtime reference field access //////////////////////////////
 
 	/// \brief Looks up a reference field.

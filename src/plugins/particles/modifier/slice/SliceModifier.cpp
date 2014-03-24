@@ -39,24 +39,24 @@
 
 namespace Particles {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, SliceModifier, ParticleModifier)
-IMPLEMENT_OVITO_OBJECT(Particles, SliceModifierEditor, ParticleModifierEditor)
-SET_OVITO_OBJECT_EDITOR(SliceModifier, SliceModifierEditor)
-DEFINE_REFERENCE_FIELD(SliceModifier, _normalCtrl, "PlaneNormal", VectorController)
-DEFINE_REFERENCE_FIELD(SliceModifier, _distanceCtrl, "PlaneDistance", FloatController)
-DEFINE_REFERENCE_FIELD(SliceModifier, _widthCtrl, "SliceWidth", FloatController)
-DEFINE_PROPERTY_FIELD(SliceModifier, _createSelection, "CreateSelection")
-DEFINE_PROPERTY_FIELD(SliceModifier, _inverse, "Inverse")
-DEFINE_PROPERTY_FIELD(SliceModifier, _applyToSelection, "ApplyToSelection")
-SET_PROPERTY_FIELD_LABEL(SliceModifier, _normalCtrl, "Normal")
-SET_PROPERTY_FIELD_LABEL(SliceModifier, _distanceCtrl, "Distance")
-SET_PROPERTY_FIELD_LABEL(SliceModifier, _widthCtrl, "Slice width")
-SET_PROPERTY_FIELD_LABEL(SliceModifier, _createSelection, "Select particles (do not delete)")
-SET_PROPERTY_FIELD_LABEL(SliceModifier, _inverse, "Invert")
-SET_PROPERTY_FIELD_LABEL(SliceModifier, _applyToSelection, "Apply to selected particles only")
-SET_PROPERTY_FIELD_UNITS(SliceModifier, _normalCtrl, WorldParameterUnit)
-SET_PROPERTY_FIELD_UNITS(SliceModifier, _distanceCtrl, WorldParameterUnit)
-SET_PROPERTY_FIELD_UNITS(SliceModifier, _widthCtrl, WorldParameterUnit)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, SliceModifier, ParticleModifier);
+IMPLEMENT_OVITO_OBJECT(Particles, SliceModifierEditor, ParticleModifierEditor);
+SET_OVITO_OBJECT_EDITOR(SliceModifier, SliceModifierEditor);
+DEFINE_REFERENCE_FIELD(SliceModifier, _normalCtrl, "PlaneNormal", VectorController);
+DEFINE_REFERENCE_FIELD(SliceModifier, _distanceCtrl, "PlaneDistance", FloatController);
+DEFINE_REFERENCE_FIELD(SliceModifier, _widthCtrl, "SliceWidth", FloatController);
+DEFINE_PROPERTY_FIELD(SliceModifier, _createSelection, "CreateSelection");
+DEFINE_PROPERTY_FIELD(SliceModifier, _inverse, "Inverse");
+DEFINE_PROPERTY_FIELD(SliceModifier, _applyToSelection, "ApplyToSelection");
+SET_PROPERTY_FIELD_LABEL(SliceModifier, _normalCtrl, "Normal");
+SET_PROPERTY_FIELD_LABEL(SliceModifier, _distanceCtrl, "Distance");
+SET_PROPERTY_FIELD_LABEL(SliceModifier, _widthCtrl, "Slice width");
+SET_PROPERTY_FIELD_LABEL(SliceModifier, _createSelection, "Select particles (do not delete)");
+SET_PROPERTY_FIELD_LABEL(SliceModifier, _inverse, "Invert");
+SET_PROPERTY_FIELD_LABEL(SliceModifier, _applyToSelection, "Apply to selected particles only");
+SET_PROPERTY_FIELD_UNITS(SliceModifier, _normalCtrl, WorldParameterUnit);
+SET_PROPERTY_FIELD_UNITS(SliceModifier, _distanceCtrl, WorldParameterUnit);
+SET_PROPERTY_FIELD_UNITS(SliceModifier, _widthCtrl, WorldParameterUnit);
 
 /******************************************************************************
 * Constructs the modifier object.

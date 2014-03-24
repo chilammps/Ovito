@@ -15,6 +15,8 @@
 - The particle information applet should allow the user to click on and select bonds directly (instead of picking the two particles).
 - More particle representations (e.g. open circles/rectangles)
 - Initialize the parameters of objects created by a script to their default values (and not the last ones set).
+- Remember multiple column mappings, like in OVITO 1.x (useful if you work with many XYZ files with different columns).
+- Save more user-defined default settings (e.g. renderer type, render background color).
 
 Sha Zhendong:
 

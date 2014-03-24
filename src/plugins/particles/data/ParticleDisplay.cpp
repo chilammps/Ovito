@@ -30,18 +30,18 @@
 
 namespace Particles {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ParticleDisplay, DisplayObject)
-IMPLEMENT_OVITO_OBJECT(Particles, ParticleDisplayEditor, PropertiesEditor)
-SET_OVITO_OBJECT_EDITOR(ParticleDisplay, ParticleDisplayEditor)
-DEFINE_FLAGS_PROPERTY_FIELD(ParticleDisplay, _defaultParticleRadius, "DefaultParticleRadius", PROPERTY_FIELD_MEMORIZE)
-DEFINE_PROPERTY_FIELD(ParticleDisplay, _shadingMode, "ShadingMode")
-DEFINE_PROPERTY_FIELD(ParticleDisplay, _renderingQuality, "RenderingQuality")
-DEFINE_PROPERTY_FIELD(ParticleDisplay, _particleShape, "ParticleShape")
-SET_PROPERTY_FIELD_LABEL(ParticleDisplay, _defaultParticleRadius, "Default particle radius")
-SET_PROPERTY_FIELD_LABEL(ParticleDisplay, _shadingMode, "Shading mode")
-SET_PROPERTY_FIELD_LABEL(ParticleDisplay, _renderingQuality, "Rendering quality")
-SET_PROPERTY_FIELD_LABEL(ParticleDisplay, _particleShape, "Shape")
-SET_PROPERTY_FIELD_UNITS(ParticleDisplay, _defaultParticleRadius, WorldParameterUnit)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ParticleDisplay, DisplayObject);
+IMPLEMENT_OVITO_OBJECT(Particles, ParticleDisplayEditor, PropertiesEditor);
+SET_OVITO_OBJECT_EDITOR(ParticleDisplay, ParticleDisplayEditor);
+DEFINE_FLAGS_PROPERTY_FIELD(ParticleDisplay, _defaultParticleRadius, "DefaultParticleRadius", PROPERTY_FIELD_MEMORIZE);
+DEFINE_PROPERTY_FIELD(ParticleDisplay, _shadingMode, "ShadingMode");
+DEFINE_PROPERTY_FIELD(ParticleDisplay, _renderingQuality, "RenderingQuality");
+DEFINE_PROPERTY_FIELD(ParticleDisplay, _particleShape, "ParticleShape");
+SET_PROPERTY_FIELD_LABEL(ParticleDisplay, _defaultParticleRadius, "Default particle radius");
+SET_PROPERTY_FIELD_LABEL(ParticleDisplay, _shadingMode, "Shading mode");
+SET_PROPERTY_FIELD_LABEL(ParticleDisplay, _renderingQuality, "Rendering quality");
+SET_PROPERTY_FIELD_LABEL(ParticleDisplay, _particleShape, "Shape");
+SET_PROPERTY_FIELD_UNITS(ParticleDisplay, _defaultParticleRadius, WorldParameterUnit);
 
 /******************************************************************************
 * Constructor.

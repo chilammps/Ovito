@@ -123,9 +123,10 @@ QSet<SceneObject*> ParticleImportTask::insertIntoScene(LinkedFileObject* destina
 
 		// Create a display object for the simulation cell.
 		OORef<SimulationCellDisplay> cellDisplay = new SimulationCellDisplay(destination->dataset());
+		cellDisplay->loadUserDefaults();
 		cell->addDisplayObject(cellDisplay.get());
 
-		// Choose an appropriate simulation cell line rendering width for the given cell dimensions.
+		// Choose an appropriate line width for the cell size.
 		FloatType cellDiameter = (
 				simulationCell().matrix().column(0) +
 				simulationCell().matrix().column(1) +
@@ -149,14 +150,18 @@ QSet<SceneObject*> ParticleImportTask::insertIntoScene(LinkedFileObject* destina
 				break;
 			}
 		}
-		if(propertyObj)
+
+		if(propertyObj) {
 			propertyObj->setStorage(QSharedDataPointer<ParticleProperty>(property.release()));
+		}
 		else {
 			propertyObj = ParticlePropertyObject::create(destination->dataset(), QSharedDataPointer<ParticleProperty>(property.release()));
 			destination->addSceneObject(propertyObj.get());
 		}
-		if(propertyObj->type() == ParticleProperty::ParticleTypeProperty)
+
+		if(propertyObj->type() == ParticleProperty::ParticleTypeProperty) {
 			insertParticleTypes(propertyObj.get());
+		}
 		activeObjects.insert(propertyObj.get());
 	}
 

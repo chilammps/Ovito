@@ -30,8 +30,8 @@
 
 namespace Particles {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ParticleModifier, Modifier)
-IMPLEMENT_OVITO_OBJECT(Particles, ParticleModifierEditor, PropertiesEditor)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ParticleModifier, Modifier);
+IMPLEMENT_OVITO_OBJECT(Particles, ParticleModifierEditor, PropertiesEditor);
 
 /******************************************************************************
 * This modifies the input object.

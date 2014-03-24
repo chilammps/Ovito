@@ -31,16 +31,16 @@ namespace Particles {
 
 enum { MAX_AO_RENDER_BUFFER_RESOLUTION = 4 };
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, AmbientOcclusionModifier, AsynchronousParticleModifier)
-IMPLEMENT_OVITO_OBJECT(Particles, AmbientOcclusionModifierEditor, ParticleModifierEditor)
-SET_OVITO_OBJECT_EDITOR(AmbientOcclusionModifier, AmbientOcclusionModifierEditor)
-DEFINE_PROPERTY_FIELD(AmbientOcclusionModifier, _intensity, "Intensity")
-DEFINE_PROPERTY_FIELD(AmbientOcclusionModifier, _samplingCount, "SamplingCount")
-DEFINE_PROPERTY_FIELD(AmbientOcclusionModifier, _bufferResolution, "BufferResolution")
-SET_PROPERTY_FIELD_LABEL(AmbientOcclusionModifier, _intensity, "Shading intensity")
-SET_PROPERTY_FIELD_LABEL(AmbientOcclusionModifier, _samplingCount, "Number of exposure samples")
-SET_PROPERTY_FIELD_LABEL(AmbientOcclusionModifier, _bufferResolution, "Render buffer resolution")
-SET_PROPERTY_FIELD_UNITS(AmbientOcclusionModifier, _intensity, PercentParameterUnit)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, AmbientOcclusionModifier, AsynchronousParticleModifier);
+IMPLEMENT_OVITO_OBJECT(Particles, AmbientOcclusionModifierEditor, ParticleModifierEditor);
+SET_OVITO_OBJECT_EDITOR(AmbientOcclusionModifier, AmbientOcclusionModifierEditor);
+DEFINE_PROPERTY_FIELD(AmbientOcclusionModifier, _intensity, "Intensity");
+DEFINE_PROPERTY_FIELD(AmbientOcclusionModifier, _samplingCount, "SamplingCount");
+DEFINE_PROPERTY_FIELD(AmbientOcclusionModifier, _bufferResolution, "BufferResolution");
+SET_PROPERTY_FIELD_LABEL(AmbientOcclusionModifier, _intensity, "Shading intensity");
+SET_PROPERTY_FIELD_LABEL(AmbientOcclusionModifier, _samplingCount, "Number of exposure samples");
+SET_PROPERTY_FIELD_LABEL(AmbientOcclusionModifier, _bufferResolution, "Render buffer resolution");
+SET_PROPERTY_FIELD_UNITS(AmbientOcclusionModifier, _intensity, PercentParameterUnit);
 
 /******************************************************************************
 * Constructs the modifier object.

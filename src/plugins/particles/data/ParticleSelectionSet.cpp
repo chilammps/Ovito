@@ -26,8 +26,8 @@
 
 namespace Particles {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ParticleSelectionSet, RefTarget)
-DEFINE_PROPERTY_FIELD(ParticleSelectionSet, _useIdentifiers, "UseIdentifiers")
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ParticleSelectionSet, RefTarget);
+DEFINE_PROPERTY_FIELD(ParticleSelectionSet, _useIdentifiers, "UseIdentifiers");
 
 /* Undo record that can restore an old particle selection state. */
 class ReplaceSelectionOperation : public UndoableOperation

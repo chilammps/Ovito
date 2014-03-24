@@ -24,7 +24,7 @@
 
 namespace Particles {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ClearSelectionModifier, ParticleModifier)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ClearSelectionModifier, ParticleModifier);
 
 /******************************************************************************
 * Modifies the particle object.

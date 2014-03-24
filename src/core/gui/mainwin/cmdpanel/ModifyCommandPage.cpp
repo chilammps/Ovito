@@ -209,10 +209,12 @@ void ModifyCommandPage::onModifierAdd(int index)
 		const OvitoObjectType* descriptor = static_cast<const OvitoObjectType*>(_modifierSelector->itemData(index).value<void*>());
 		if(descriptor) {
 			UndoableTransaction::handleExceptions(_datasetContainer.currentSet()->undoStack(), tr("Apply modifier"), [descriptor, this]() {
-				// Create an instance of the modifier...
+				// Create an instance of the modifier.
 				OORef<Modifier> modifier = static_object_cast<Modifier>(descriptor->createInstance(_datasetContainer.currentSet()));
 				OVITO_CHECK_OBJECT_POINTER(modifier);
-				// .. and apply it.
+				// Load user-defined default parameters.
+				modifier->loadUserDefaults();
+				// Apply it.
 				_modificationListModel->applyModifier(modifier.get());
 			});
 			_modificationListModel->requestUpdate();

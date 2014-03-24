@@ -56,7 +56,7 @@ QVariant RefMaker::getPropertyFieldValue(const PropertyFieldDescriptor& field) c
 {
 	OVITO_ASSERT_MSG(!field.isReferenceField(), "RefMaker::getPropertyFieldValue", "This function may be used only to access property fields and not reference fields."); 
 	OVITO_ASSERT_MSG(getOOType().isDerivedFrom(*field.definingClass()), "RefMaker::getPropertyFieldValue", "The property field has not been defined in this class or its base classes.");
-	OVITO_ASSERT(field.propertyStorageReadFunc != NULL);
+	OVITO_ASSERT(field.propertyStorageReadFunc != nullptr);
 	return field.propertyStorageReadFunc(const_cast<RefMaker*>(this));
 }
 
@@ -67,7 +67,7 @@ void RefMaker::setPropertyFieldValue(const PropertyFieldDescriptor& field, const
 {
 	OVITO_ASSERT_MSG(!field.isReferenceField(), "RefMaker::setPropertyFieldValue", "This function may be used only to access property fields and not reference fields."); 
 	OVITO_ASSERT_MSG(getOOType().isDerivedFrom(*field.definingClass()), "RefMaker::setPropertyFieldValue", "The property field has not been defined in this class or its base classes.");
-	OVITO_ASSERT(field.propertyStorageWriteFunc != NULL);
+	OVITO_ASSERT(field.propertyStorageWriteFunc != nullptr);
 	field.propertyStorageWriteFunc(this, newValue);
 }
 
@@ -79,7 +79,7 @@ const SingleReferenceFieldBase& RefMaker::getReferenceField(const PropertyFieldD
 	OVITO_ASSERT_MSG(field.isReferenceField(), "RefMaker::getReferenceField", "This function may not be used to retrieve property fields."); 
 	OVITO_ASSERT_MSG(field.isVector() == false, "RefMaker::getReferenceField", "This function may not be used to retrieve vector reference fields."); 
 	OVITO_ASSERT_MSG(getOOType().isDerivedFrom(*field.definingClass()), "RefMaker::getReferenceField", "The reference field has not been defined in this class or its base classes.");
-	OVITO_ASSERT(field.singleStorageAccessFunc != NULL);
+	OVITO_ASSERT(field.singleStorageAccessFunc != nullptr);
 	return field.singleStorageAccessFunc(const_cast<RefMaker*>(this));
 }
 
@@ -91,7 +91,7 @@ const VectorReferenceFieldBase& RefMaker::getVectorReferenceField(const Property
 	OVITO_ASSERT_MSG(field.isReferenceField(), "RefMaker::getVectorReferenceField", "This function may not be used to retrieve property fields."); 
 	OVITO_ASSERT_MSG(field.isVector() == true, "RefMaker::getVectorReferenceField", "This function may not be used to retrieve single reference fields."); 
 	OVITO_ASSERT_MSG(getOOType().isDerivedFrom(*field.definingClass()), "RefMaker::getVectorReferenceField", "The reference field has not been defined in this class or its base classes.");
-	OVITO_ASSERT(field.vectorStorageAccessFunc != NULL);
+	OVITO_ASSERT(field.vectorStorageAccessFunc != nullptr);
 	return field.vectorStorageAccessFunc(const_cast<RefMaker*>(this));
 }
 
@@ -423,6 +423,46 @@ void RefMaker::walkNode(QSet<RefTarget*>& nodes, const RefMaker* node)
 						nodes.insert(target);
 						walkNode(nodes, target);
 					}
+				}
+			}
+		}
+	}
+}
+
+/******************************************************************************
+* Loads the user-defined default values of this object's parameter fields from the
+* application's settings store.
+*
+* This function should be called immediately after creation of the object instance.
+* It loads the default value for every property field for which the user has set
+* a default value. This is usually the case for property fields that have the
+* PROPERTY_FIELD_MEMORIZE flag set.
+*
+* This function is recursive, i.e., it also loads default parameter values for
+* referenced objects (when the PROPERTY_FIELD_MEMORIZE flag is set for this RefMaker's reference field).
+******************************************************************************/
+void RefMaker::loadUserDefaults()
+{
+	// Iterate over all property fields in the class hierarchy.
+	for(const OvitoObjectType* clazz = &getOOType(); clazz != nullptr; clazz = clazz->superClass()) {
+		for(const PropertyFieldDescriptor* field = clazz->firstPropertyField(); field != nullptr; field = field->next()) {
+			if(field->flags().testFlag(PROPERTY_FIELD_MEMORIZE)) {
+				if(field->isReferenceField()) {
+					// If it's a reference field, recursively call loadUserDefaults() on the reference object(s).
+					if(field->isVector() == false) {
+						if(RefTarget* target = getReferenceField(*field))
+							target->loadUserDefaults();
+					}
+					else {
+						const QVector<RefTarget*>& list = getVectorReferenceField(*field);
+						for(RefTarget* target : list) {
+							if(target) target->loadUserDefaults();
+						}
+					}
+				}
+				else {
+					// If it's a property field, load the user-defined default value.
+					field->loadDefaultValue(this);
 				}
 			}
 		}

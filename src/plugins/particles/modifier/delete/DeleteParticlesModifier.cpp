@@ -24,9 +24,9 @@
 
 namespace Particles {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, DeleteParticlesModifier, ParticleModifier)
-IMPLEMENT_OVITO_OBJECT(Particles, DeleteParticlesModifierEditor, ParticleModifierEditor)
-SET_OVITO_OBJECT_EDITOR(DeleteParticlesModifier, DeleteParticlesModifierEditor)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, DeleteParticlesModifier, ParticleModifier);
+IMPLEMENT_OVITO_OBJECT(Particles, DeleteParticlesModifierEditor, ParticleModifierEditor);
+SET_OVITO_OBJECT_EDITOR(DeleteParticlesModifier, DeleteParticlesModifierEditor);
 
 /******************************************************************************
 * Modifies the particle object.

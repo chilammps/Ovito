@@ -29,11 +29,11 @@
 
 namespace Particles {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, AsynchronousParticleModifier, ParticleModifier)
-DEFINE_PROPERTY_FIELD(AsynchronousParticleModifier, _autoUpdate, "AutoUpdate")
-DEFINE_PROPERTY_FIELD(AsynchronousParticleModifier, _saveResults, "SaveResults")
-SET_PROPERTY_FIELD_LABEL(AsynchronousParticleModifier, _autoUpdate, "Automatic update")
-SET_PROPERTY_FIELD_LABEL(AsynchronousParticleModifier, _saveResults, "Save results")
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, AsynchronousParticleModifier, ParticleModifier);
+DEFINE_PROPERTY_FIELD(AsynchronousParticleModifier, _autoUpdate, "AutoUpdate");
+DEFINE_PROPERTY_FIELD(AsynchronousParticleModifier, _saveResults, "SaveResults");
+SET_PROPERTY_FIELD_LABEL(AsynchronousParticleModifier, _autoUpdate, "Automatic update");
+SET_PROPERTY_FIELD_LABEL(AsynchronousParticleModifier, _saveResults, "Save results");
 
 /******************************************************************************
 * Constructs the modifier object.

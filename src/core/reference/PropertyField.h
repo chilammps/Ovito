@@ -95,8 +95,6 @@ public:
 	/// Connects the property field to its owning RefMaker derived class.
 	inline void init(RefMaker* owner, PropertyFieldDescriptor* descriptor) {
 		PropertyFieldBase::init(owner, descriptor);
-		if(descriptor->flags().testFlag(PROPERTY_FIELD_MEMORIZE))
-			restoreSavedPropertyValue();
 	}
 
 	/// Cast the property field to the property value.
@@ -108,8 +106,6 @@ public:
 		if(descriptor()->automaticUndo() && owner()->dataset()->undoStack().isRecording())
 			owner()->dataset()->undoStack().push(new PropertyChangeOperation(*this));
 		setPropertyValue(newValue);
-		if(descriptor()->flags().testFlag(PROPERTY_FIELD_MEMORIZE))
-			memorizePropertyValue();
 		return *this;
 	}
 
@@ -137,25 +133,7 @@ public:
 		stream >> _value;
 	}
 
-	/// Saves the current property value in the application's settings store.
-	void memorizePropertyValue() {
-		QSettings settings;
-		settings.beginGroup(descriptor()->definingClass()->plugin()->pluginId());
-		settings.beginGroup(descriptor()->definingClass()->name());
-		settings.setValue(descriptor()->identifier(), qVariantFromValue<qvariant_type>(static_cast<qvariant_type>(_value)));
-	}
-
 private:
-
-	/// Loads the memorized property value from the application's settings store.
-	void restoreSavedPropertyValue() {
-		QSettings settings;
-		settings.beginGroup(descriptor()->definingClass()->plugin()->pluginId());
-		settings.beginGroup(descriptor()->definingClass()->name());
-		QVariant v = settings.value(descriptor()->identifier());
-		if(!v.isNull() && v.canConvert<qvariant_type>())
-			_value = static_cast<property_type>(v.value<qvariant_type>());
-	}
 
 	/// Internal helper function that changes the stored value and
 	/// generates notification events.

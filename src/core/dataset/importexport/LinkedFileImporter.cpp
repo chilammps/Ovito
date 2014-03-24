@@ -33,7 +33,7 @@
 
 namespace Ovito {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LinkedFileImporter, FileImporter)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LinkedFileImporter, FileImporter);
 
 /******************************************************************************
 * Sends a request to the LinkedFileObject owning this importer to reload

@@ -30,9 +30,9 @@
 
 namespace Particles {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, BondAngleAnalysisModifier, StructureIdentificationModifier)
-IMPLEMENT_OVITO_OBJECT(Particles, BondAngleAnalysisModifierEditor, ParticleModifierEditor)
-SET_OVITO_OBJECT_EDITOR(BondAngleAnalysisModifier, BondAngleAnalysisModifierEditor)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, BondAngleAnalysisModifier, StructureIdentificationModifier);
+IMPLEMENT_OVITO_OBJECT(Particles, BondAngleAnalysisModifierEditor, ParticleModifierEditor);
+SET_OVITO_OBJECT_EDITOR(BondAngleAnalysisModifier, BondAngleAnalysisModifierEditor);
 
 /******************************************************************************
 * Constructs the modifier object.

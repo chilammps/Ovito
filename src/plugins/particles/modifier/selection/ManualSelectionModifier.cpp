@@ -33,9 +33,9 @@
 
 namespace Particles {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ManualSelectionModifier, ParticleModifier)
-IMPLEMENT_OVITO_OBJECT(Particles, ManualSelectionModifierEditor, ParticleModifierEditor)
-SET_OVITO_OBJECT_EDITOR(ManualSelectionModifier, ManualSelectionModifierEditor)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ManualSelectionModifier, ParticleModifier);
+IMPLEMENT_OVITO_OBJECT(Particles, ManualSelectionModifierEditor, ParticleModifierEditor);
+SET_OVITO_OBJECT_EDITOR(ManualSelectionModifier, ManualSelectionModifierEditor);
 
 /******************************************************************************
 * This modifies the input object.

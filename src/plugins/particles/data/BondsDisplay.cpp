@@ -34,20 +34,20 @@
 
 namespace Particles {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, BondsDisplay, DisplayObject)
-IMPLEMENT_OVITO_OBJECT(Particles, BondsDisplayEditor, PropertiesEditor)
-SET_OVITO_OBJECT_EDITOR(BondsDisplay, BondsDisplayEditor)
-DEFINE_FLAGS_PROPERTY_FIELD(BondsDisplay, _bondWidth, "BondWidth", PROPERTY_FIELD_MEMORIZE)
-DEFINE_FLAGS_PROPERTY_FIELD(BondsDisplay, _bondColor, "BondColor", PROPERTY_FIELD_MEMORIZE)
-DEFINE_FLAGS_PROPERTY_FIELD(BondsDisplay, _useParticleColors, "UseParticleColors", PROPERTY_FIELD_MEMORIZE)
-DEFINE_FLAGS_PROPERTY_FIELD(BondsDisplay, _shadingMode, "ShadingMode", PROPERTY_FIELD_MEMORIZE)
-DEFINE_PROPERTY_FIELD(BondsDisplay, _renderingQuality, "RenderingQuality")
-SET_PROPERTY_FIELD_LABEL(BondsDisplay, _bondWidth, "Bond width")
-SET_PROPERTY_FIELD_LABEL(BondsDisplay, _bondColor, "Bond color")
-SET_PROPERTY_FIELD_LABEL(BondsDisplay, _useParticleColors, "Use particle colors")
-SET_PROPERTY_FIELD_LABEL(BondsDisplay, _shadingMode, "Shading mode")
-SET_PROPERTY_FIELD_LABEL(BondsDisplay, _renderingQuality, "RenderingQuality")
-SET_PROPERTY_FIELD_UNITS(BondsDisplay, _bondWidth, WorldParameterUnit)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, BondsDisplay, DisplayObject);
+IMPLEMENT_OVITO_OBJECT(Particles, BondsDisplayEditor, PropertiesEditor);
+SET_OVITO_OBJECT_EDITOR(BondsDisplay, BondsDisplayEditor);
+DEFINE_FLAGS_PROPERTY_FIELD(BondsDisplay, _bondWidth, "BondWidth", PROPERTY_FIELD_MEMORIZE);
+DEFINE_FLAGS_PROPERTY_FIELD(BondsDisplay, _bondColor, "BondColor", PROPERTY_FIELD_MEMORIZE);
+DEFINE_FLAGS_PROPERTY_FIELD(BondsDisplay, _useParticleColors, "UseParticleColors", PROPERTY_FIELD_MEMORIZE);
+DEFINE_FLAGS_PROPERTY_FIELD(BondsDisplay, _shadingMode, "ShadingMode", PROPERTY_FIELD_MEMORIZE);
+DEFINE_PROPERTY_FIELD(BondsDisplay, _renderingQuality, "RenderingQuality");
+SET_PROPERTY_FIELD_LABEL(BondsDisplay, _bondWidth, "Bond width");
+SET_PROPERTY_FIELD_LABEL(BondsDisplay, _bondColor, "Bond color");
+SET_PROPERTY_FIELD_LABEL(BondsDisplay, _useParticleColors, "Use particle colors");
+SET_PROPERTY_FIELD_LABEL(BondsDisplay, _shadingMode, "Shading mode");
+SET_PROPERTY_FIELD_LABEL(BondsDisplay, _renderingQuality, "RenderingQuality");
+SET_PROPERTY_FIELD_UNITS(BondsDisplay, _bondWidth, WorldParameterUnit);
 
 /******************************************************************************
 * Constructor.

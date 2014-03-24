@@ -29,9 +29,9 @@
 
 namespace Particles {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ParticleImporter, LinkedFileImporter)
-DEFINE_PROPERTY_FIELD(ParticleImporter, _isMultiTimestepFile, "IsMultiTimestepFile")
-SET_PROPERTY_FIELD_LABEL(ParticleImporter, _isMultiTimestepFile, "File contains multiple timesteps")
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ParticleImporter, LinkedFileImporter);
+DEFINE_PROPERTY_FIELD(ParticleImporter, _isMultiTimestepFile, "IsMultiTimestepFile");
+SET_PROPERTY_FIELD_LABEL(ParticleImporter, _isMultiTimestepFile, "File contains multiple timesteps");
 
 /******************************************************************************
 * Scans the input source (which can be a directory or a single file) to

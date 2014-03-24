@@ -36,29 +36,29 @@
 
 namespace Particles {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ColorCodingModifier, ParticleModifier)
-IMPLEMENT_OVITO_OBJECT(Particles, ColorCodingModifierEditor, ParticleModifierEditor)
-SET_OVITO_OBJECT_EDITOR(ColorCodingModifier, ColorCodingModifierEditor)
-DEFINE_REFERENCE_FIELD(ColorCodingModifier, _startValueCtrl, "StartValue", FloatController)
-DEFINE_REFERENCE_FIELD(ColorCodingModifier, _endValueCtrl, "EndValue", FloatController)
-DEFINE_REFERENCE_FIELD(ColorCodingModifier, _colorGradient, "ColorGradient", ColorCodingGradient)
-DEFINE_PROPERTY_FIELD(ColorCodingModifier, _colorOnlySelected, "SelectedOnly")
-DEFINE_PROPERTY_FIELD(ColorCodingModifier, _keepSelection, "KeepSelection")
-DEFINE_PROPERTY_FIELD(ColorCodingModifier, _renderLegend, "RenderLegend")
-DEFINE_PROPERTY_FIELD(ColorCodingModifier, _sourceProperty, "SourceProperty")
-SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _startValueCtrl, "Start value")
-SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _endValueCtrl, "End value")
-SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _colorGradient, "Color gradient")
-SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _colorOnlySelected, "Color only selected particles")
-SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _keepSelection, "Keep selection")
-SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _renderLegend, "Render color legend (experimental)")
-SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _sourceProperty, "Source property")
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ColorCodingModifier, ParticleModifier);
+IMPLEMENT_OVITO_OBJECT(Particles, ColorCodingModifierEditor, ParticleModifierEditor);
+SET_OVITO_OBJECT_EDITOR(ColorCodingModifier, ColorCodingModifierEditor);
+DEFINE_REFERENCE_FIELD(ColorCodingModifier, _startValueCtrl, "StartValue", FloatController);
+DEFINE_REFERENCE_FIELD(ColorCodingModifier, _endValueCtrl, "EndValue", FloatController);
+DEFINE_REFERENCE_FIELD(ColorCodingModifier, _colorGradient, "ColorGradient", ColorCodingGradient);
+DEFINE_PROPERTY_FIELD(ColorCodingModifier, _colorOnlySelected, "SelectedOnly");
+DEFINE_PROPERTY_FIELD(ColorCodingModifier, _keepSelection, "KeepSelection");
+DEFINE_PROPERTY_FIELD(ColorCodingModifier, _renderLegend, "RenderLegend");
+DEFINE_PROPERTY_FIELD(ColorCodingModifier, _sourceProperty, "SourceProperty");
+SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _startValueCtrl, "Start value");
+SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _endValueCtrl, "End value");
+SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _colorGradient, "Color gradient");
+SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _colorOnlySelected, "Color only selected particles");
+SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _keepSelection, "Keep selection");
+SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _renderLegend, "Render color legend (experimental)");
+SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _sourceProperty, "Source property");
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ColorCodingGradient, RefTarget)
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ColorCodingHSVGradient, ColorCodingGradient)
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ColorCodingGrayscaleGradient, ColorCodingGradient)
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ColorCodingHotGradient, ColorCodingGradient)
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ColorCodingJetGradient, ColorCodingGradient)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ColorCodingGradient, RefTarget);
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ColorCodingHSVGradient, ColorCodingGradient);
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ColorCodingGrayscaleGradient, ColorCodingGradient);
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ColorCodingHotGradient, ColorCodingGradient);
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ColorCodingJetGradient, ColorCodingGradient);
 
 /******************************************************************************
 * Constructs the modifier object.

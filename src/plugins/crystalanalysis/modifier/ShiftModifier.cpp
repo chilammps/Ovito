@@ -28,11 +28,11 @@
 
 namespace CrystalAnalysis {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(CrystalAnalysis, ShiftModifier, Modifier)
-IMPLEMENT_OVITO_OBJECT(CrystalAnalysis, ShiftModifierEditor, PropertiesEditor)
-SET_OVITO_OBJECT_EDITOR(ShiftModifier, ShiftModifierEditor)
-DEFINE_REFERENCE_FIELD(ShiftModifier, _translation, "Translation", VectorController)
-SET_PROPERTY_FIELD_LABEL(ShiftModifier, _translation, "Translation")
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(CrystalAnalysis, ShiftModifier, Modifier);
+IMPLEMENT_OVITO_OBJECT(CrystalAnalysis, ShiftModifierEditor, PropertiesEditor);
+SET_OVITO_OBJECT_EDITOR(ShiftModifier, ShiftModifierEditor);
+DEFINE_REFERENCE_FIELD(ShiftModifier, _translation, "Translation", VectorController);
+SET_PROPERTY_FIELD_LABEL(ShiftModifier, _translation, "Translation");
 
 /******************************************************************************
 * Constructs the modifier object.

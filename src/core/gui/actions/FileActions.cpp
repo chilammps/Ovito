@@ -174,8 +174,7 @@ void ActionManager::on_FileNew_triggered()
 {
 	try {
 		if(mainWindow()->datasetContainer().askForSaveChanges()) {
-			OORef<DataSet> newSet(new DataSet());
-			mainWindow()->datasetContainer().setCurrentSet(newSet);
+			mainWindow()->datasetContainer().fileNew();
 		}
 	}
 	catch(const Exception& ex) {
@@ -359,7 +358,12 @@ void ActionManager::on_FileExport_triggered()
 		int exportFilterIndex = filterStrings.indexOf(dialog.selectedNameFilter());
 		OVITO_ASSERT(exportFilterIndex >= 0 && exportFilterIndex < exporterTypes.size());
 
+		// Create exporter.
 		OORef<FileExporter> exporter = exporterTypes[exportFilterIndex]->createService(_dataset.get());
+
+		// Load user-defined default settings.
+		exporter->loadUserDefaults();
+
 		exporter->exportToFile(nodes, exportFile, false);
 	}
 	catch(const Exception& ex) {

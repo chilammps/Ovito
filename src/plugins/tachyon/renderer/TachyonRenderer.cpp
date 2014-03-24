@@ -37,29 +37,29 @@ extern "C" {
 };
 
 #if TACHYON_MAJOR_VERSION <= 0 && TACHYON_MINOR_VERSION < 99
-	#error "The OVITO Tachyon plugin requires version 0.99 of the Tachyon library or higher."
+	#error "The OVITO Tachyon plugin requires version 0.99 or newer of the Tachyon library."
 #endif
 
 namespace TachyonPlugin {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Tachyon, TachyonRenderer, NonInteractiveSceneRenderer)
-SET_OVITO_OBJECT_EDITOR(TachyonRenderer, TachyonRendererEditor)
-DEFINE_FLAGS_PROPERTY_FIELD(TachyonRenderer, _enableAntialiasing, "EnableAntialiasing", PROPERTY_FIELD_MEMORIZE)
-DEFINE_FLAGS_PROPERTY_FIELD(TachyonRenderer, _enableDirectLightSource, "EnableDirectLightSource", PROPERTY_FIELD_MEMORIZE)
-DEFINE_FLAGS_PROPERTY_FIELD(TachyonRenderer, _enableShadows, "EnableShadows", PROPERTY_FIELD_MEMORIZE)
-DEFINE_FLAGS_PROPERTY_FIELD(TachyonRenderer, _antialiasingSamples, "AntialiasingSamples", PROPERTY_FIELD_MEMORIZE)
-DEFINE_FLAGS_PROPERTY_FIELD(TachyonRenderer, _defaultLightSourceIntensity, "DefaultLightSourceIntensity", PROPERTY_FIELD_MEMORIZE)
-DEFINE_FLAGS_PROPERTY_FIELD(TachyonRenderer, _enableAmbientOcclusion, "EnableAmbientOcclusion", PROPERTY_FIELD_MEMORIZE)
-DEFINE_FLAGS_PROPERTY_FIELD(TachyonRenderer, _ambientOcclusionSamples, "AmbientOcclusionSamples", PROPERTY_FIELD_MEMORIZE)
-DEFINE_FLAGS_PROPERTY_FIELD(TachyonRenderer, _ambientOcclusionBrightness, "AmbientOcclusionBrightness", PROPERTY_FIELD_MEMORIZE)
-SET_PROPERTY_FIELD_LABEL(TachyonRenderer, _enableAntialiasing, "Enable anti-aliasing")
-SET_PROPERTY_FIELD_LABEL(TachyonRenderer, _antialiasingSamples, "Anti-aliasing samples")
-SET_PROPERTY_FIELD_LABEL(TachyonRenderer, _enableDirectLightSource, "Direct light")
-SET_PROPERTY_FIELD_LABEL(TachyonRenderer, _enableShadows, "Shadows")
-SET_PROPERTY_FIELD_LABEL(TachyonRenderer, _defaultLightSourceIntensity, "Direct light intensity")
-SET_PROPERTY_FIELD_LABEL(TachyonRenderer, _enableAmbientOcclusion, "Ambient occlusion")
-SET_PROPERTY_FIELD_LABEL(TachyonRenderer, _ambientOcclusionSamples, "Ambient occlusion samples")
-SET_PROPERTY_FIELD_LABEL(TachyonRenderer, _ambientOcclusionBrightness, "Ambient occlusion brightness")
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Tachyon, TachyonRenderer, NonInteractiveSceneRenderer);
+SET_OVITO_OBJECT_EDITOR(TachyonRenderer, TachyonRendererEditor);
+DEFINE_FLAGS_PROPERTY_FIELD(TachyonRenderer, _enableAntialiasing, "EnableAntialiasing", PROPERTY_FIELD_MEMORIZE);
+DEFINE_FLAGS_PROPERTY_FIELD(TachyonRenderer, _enableDirectLightSource, "EnableDirectLightSource", PROPERTY_FIELD_MEMORIZE);
+DEFINE_FLAGS_PROPERTY_FIELD(TachyonRenderer, _enableShadows, "EnableShadows", PROPERTY_FIELD_MEMORIZE);
+DEFINE_FLAGS_PROPERTY_FIELD(TachyonRenderer, _antialiasingSamples, "AntialiasingSamples", PROPERTY_FIELD_MEMORIZE);
+DEFINE_FLAGS_PROPERTY_FIELD(TachyonRenderer, _defaultLightSourceIntensity, "DefaultLightSourceIntensity", PROPERTY_FIELD_MEMORIZE);
+DEFINE_FLAGS_PROPERTY_FIELD(TachyonRenderer, _enableAmbientOcclusion, "EnableAmbientOcclusion", PROPERTY_FIELD_MEMORIZE);
+DEFINE_FLAGS_PROPERTY_FIELD(TachyonRenderer, _ambientOcclusionSamples, "AmbientOcclusionSamples", PROPERTY_FIELD_MEMORIZE);
+DEFINE_FLAGS_PROPERTY_FIELD(TachyonRenderer, _ambientOcclusionBrightness, "AmbientOcclusionBrightness", PROPERTY_FIELD_MEMORIZE);
+SET_PROPERTY_FIELD_LABEL(TachyonRenderer, _enableAntialiasing, "Enable anti-aliasing");
+SET_PROPERTY_FIELD_LABEL(TachyonRenderer, _antialiasingSamples, "Anti-aliasing samples");
+SET_PROPERTY_FIELD_LABEL(TachyonRenderer, _enableDirectLightSource, "Direct light");
+SET_PROPERTY_FIELD_LABEL(TachyonRenderer, _enableShadows, "Shadows");
+SET_PROPERTY_FIELD_LABEL(TachyonRenderer, _defaultLightSourceIntensity, "Direct light intensity");
+SET_PROPERTY_FIELD_LABEL(TachyonRenderer, _enableAmbientOcclusion, "Ambient occlusion");
+SET_PROPERTY_FIELD_LABEL(TachyonRenderer, _ambientOcclusionSamples, "Ambient occlusion samples");
+SET_PROPERTY_FIELD_LABEL(TachyonRenderer, _ambientOcclusionBrightness, "Ambient occlusion brightness");
 
 /******************************************************************************
 * Default constructor.
@@ -69,14 +69,14 @@ TachyonRenderer::TachyonRenderer(DataSet* dataset) : NonInteractiveSceneRenderer
 	  _antialiasingSamples(12), _enableAmbientOcclusion(true), _ambientOcclusionSamples(12),
 	  _defaultLightSourceIntensity(0.90f), _ambientOcclusionBrightness(0.80f)
 {
-	INIT_PROPERTY_FIELD(TachyonRenderer::_enableAntialiasing)
-	INIT_PROPERTY_FIELD(TachyonRenderer::_antialiasingSamples)
-	INIT_PROPERTY_FIELD(TachyonRenderer::_enableDirectLightSource)
-	INIT_PROPERTY_FIELD(TachyonRenderer::_enableShadows)
-	INIT_PROPERTY_FIELD(TachyonRenderer::_defaultLightSourceIntensity)
-	INIT_PROPERTY_FIELD(TachyonRenderer::_enableAmbientOcclusion)
-	INIT_PROPERTY_FIELD(TachyonRenderer::_ambientOcclusionSamples)
-	INIT_PROPERTY_FIELD(TachyonRenderer::_ambientOcclusionBrightness)
+	INIT_PROPERTY_FIELD(TachyonRenderer::_enableAntialiasing);
+	INIT_PROPERTY_FIELD(TachyonRenderer::_antialiasingSamples);
+	INIT_PROPERTY_FIELD(TachyonRenderer::_enableDirectLightSource);
+	INIT_PROPERTY_FIELD(TachyonRenderer::_enableShadows);
+	INIT_PROPERTY_FIELD(TachyonRenderer::_defaultLightSourceIntensity);
+	INIT_PROPERTY_FIELD(TachyonRenderer::_enableAmbientOcclusion);
+	INIT_PROPERTY_FIELD(TachyonRenderer::_ambientOcclusionSamples);
+	INIT_PROPERTY_FIELD(TachyonRenderer::_ambientOcclusionBrightness);
 }
 
 /******************************************************************************

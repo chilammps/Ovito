@@ -30,11 +30,11 @@ namespace Particles {
 /// The maximum number of neighbors that can be taken into account to compute the CSP.
 enum { MAX_CSP_NEIGHBORS = 32 };
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, CentroSymmetryModifier, AsynchronousParticleModifier)
-IMPLEMENT_OVITO_OBJECT(Particles, CentroSymmetryModifierEditor, ParticleModifierEditor)
-SET_OVITO_OBJECT_EDITOR(CentroSymmetryModifier, CentroSymmetryModifierEditor)
-DEFINE_FLAGS_PROPERTY_FIELD(CentroSymmetryModifier, _numNeighbors, "NumNeighbors", PROPERTY_FIELD_MEMORIZE)
-SET_PROPERTY_FIELD_LABEL(CentroSymmetryModifier, _numNeighbors, "Number of neighbors")
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, CentroSymmetryModifier, AsynchronousParticleModifier);
+IMPLEMENT_OVITO_OBJECT(Particles, CentroSymmetryModifierEditor, ParticleModifierEditor);
+SET_OVITO_OBJECT_EDITOR(CentroSymmetryModifier, CentroSymmetryModifierEditor);
+DEFINE_FLAGS_PROPERTY_FIELD(CentroSymmetryModifier, _numNeighbors, "NumNeighbors", PROPERTY_FIELD_MEMORIZE);
+SET_PROPERTY_FIELD_LABEL(CentroSymmetryModifier, _numNeighbors, "Number of neighbors");
 
 /******************************************************************************
 * Constructs the modifier object.

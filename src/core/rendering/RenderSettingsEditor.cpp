@@ -36,7 +36,7 @@
 
 namespace Ovito {
 
-IMPLEMENT_OVITO_OBJECT(Core, RenderSettingsEditor, PropertiesEditor)
+IMPLEMENT_OVITO_OBJECT(Core, RenderSettingsEditor, PropertiesEditor);
 
 // Predefined output image dimensions.
 static const int imageSizePresets[][2] = {
@@ -44,6 +44,7 @@ static const int imageSizePresets[][2] = {
 		{ 640, 480 },
 		{ 800, 600 },
 		{ 1024, 768 },
+		{ 1600, 1200 },
 		{ 600, 600 },
 		{ 1000, 1000 }
 };
@@ -234,14 +235,14 @@ void RenderSettingsEditor::onChangeRenderer()
 	RenderSettings* settings = static_object_cast<RenderSettings>(editObject());
 	if(!settings) return;
 
-	QVector<OvitoObjectType*> rendererClasses = PluginManager::instance().listClasses(SceneRenderer::OOType);
 	QStringList itemList;
+	QVector<OvitoObjectType*> rendererClasses = PluginManager::instance().listClasses(SceneRenderer::OOType);
 	Q_FOREACH(OvitoObjectType* clazz, rendererClasses)
 		itemList << clazz->displayName();
 
 	int currentIndex = 0;
-	if(settings->rendererClass())
-		currentIndex = itemList.indexOf(settings->rendererClass()->displayName());
+	if(settings->renderer())
+		currentIndex = itemList.indexOf(settings->renderer()->getOOType().displayName());
 
 	bool ok;
 	QString selectedClass = QInputDialog::getItem(NULL, tr("Choose renderer"), tr("Select the rendering engine:"), itemList, currentIndex, false, &ok);
@@ -250,7 +251,9 @@ void RenderSettingsEditor::onChangeRenderer()
 	int newIndex = itemList.indexOf(selectedClass);
 	if(newIndex != currentIndex && newIndex >= 0) {
 		undoableTransaction(tr("Change renderer"), [settings, newIndex, &rendererClasses]() {
-			settings->setRendererClass(rendererClasses[newIndex]);
+			OORef<SceneRenderer> renderer = static_object_cast<SceneRenderer>(rendererClasses[newIndex]->createInstance(settings->dataset()));
+			renderer->loadUserDefaults();
+			settings->setRenderer(renderer.get());
 		});
 	}
 }

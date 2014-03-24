@@ -27,11 +27,11 @@
 
 namespace CrystalAnalysis {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(CrystalAnalysis, SmoothSurfaceModifier, Modifier)
-IMPLEMENT_OVITO_OBJECT(CrystalAnalysis, SmoothSurfaceModifierEditor, PropertiesEditor)
-SET_OVITO_OBJECT_EDITOR(SmoothSurfaceModifier, SmoothSurfaceModifierEditor)
-DEFINE_FLAGS_PROPERTY_FIELD(SmoothSurfaceModifier, _smoothingLevel, "SmoothingLevel", PROPERTY_FIELD_MEMORIZE)
-SET_PROPERTY_FIELD_LABEL(SmoothSurfaceModifier, _smoothingLevel, "Smoothing level")
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(CrystalAnalysis, SmoothSurfaceModifier, Modifier);
+IMPLEMENT_OVITO_OBJECT(CrystalAnalysis, SmoothSurfaceModifierEditor, PropertiesEditor);
+SET_OVITO_OBJECT_EDITOR(SmoothSurfaceModifier, SmoothSurfaceModifierEditor);
+DEFINE_FLAGS_PROPERTY_FIELD(SmoothSurfaceModifier, _smoothingLevel, "SmoothingLevel", PROPERTY_FIELD_MEMORIZE);
+SET_PROPERTY_FIELD_LABEL(SmoothSurfaceModifier, _smoothingLevel, "Smoothing level");
 
 /******************************************************************************
 * Constructs the modifier object.

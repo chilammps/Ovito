@@ -38,22 +38,22 @@
 
 namespace Ovito {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LinkedFileObject, SceneObject)
-SET_OVITO_OBJECT_EDITOR(LinkedFileObject, LinkedFileObjectEditor)
-DEFINE_FLAGS_REFERENCE_FIELD(LinkedFileObject, _importer, "Importer", LinkedFileImporter, PROPERTY_FIELD_ALWAYS_DEEP_COPY|PROPERTY_FIELD_NO_UNDO)
-DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(LinkedFileObject, _sceneObjects, "SceneObjects", SceneObject, PROPERTY_FIELD_ALWAYS_DEEP_COPY)
-DEFINE_PROPERTY_FIELD(LinkedFileObject, _adjustAnimationIntervalEnabled, "AdjustAnimationIntervalEnabled")
-DEFINE_FLAGS_PROPERTY_FIELD(LinkedFileObject, _sourceUrl, "SourceUrl", PROPERTY_FIELD_NO_UNDO)
-DEFINE_PROPERTY_FIELD(LinkedFileObject, _playbackSpeedNumerator, "PlaybackSpeedNumerator")
-DEFINE_PROPERTY_FIELD(LinkedFileObject, _playbackSpeedDenominator, "PlaybackSpeedDenominator")
-DEFINE_PROPERTY_FIELD(LinkedFileObject, _playbackStartTime, "PlaybackStartTime")
-SET_PROPERTY_FIELD_LABEL(LinkedFileObject, _importer, "File Importer")
-SET_PROPERTY_FIELD_LABEL(LinkedFileObject, _sceneObjects, "Objects")
-SET_PROPERTY_FIELD_LABEL(LinkedFileObject, _adjustAnimationIntervalEnabled, "Auto-adjust animation interval")
-SET_PROPERTY_FIELD_LABEL(LinkedFileObject, _sourceUrl, "Source location")
-SET_PROPERTY_FIELD_LABEL(LinkedFileObject, _playbackSpeedNumerator, "Playback speed numerator")
-SET_PROPERTY_FIELD_LABEL(LinkedFileObject, _playbackSpeedDenominator, "Playback speed denominator")
-SET_PROPERTY_FIELD_LABEL(LinkedFileObject, _playbackStartTime, "Playback start time")
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LinkedFileObject, SceneObject);
+SET_OVITO_OBJECT_EDITOR(LinkedFileObject, LinkedFileObjectEditor);
+DEFINE_FLAGS_REFERENCE_FIELD(LinkedFileObject, _importer, "Importer", LinkedFileImporter, PROPERTY_FIELD_ALWAYS_DEEP_COPY|PROPERTY_FIELD_NO_UNDO);
+DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(LinkedFileObject, _sceneObjects, "SceneObjects", SceneObject, PROPERTY_FIELD_ALWAYS_DEEP_COPY);
+DEFINE_PROPERTY_FIELD(LinkedFileObject, _adjustAnimationIntervalEnabled, "AdjustAnimationIntervalEnabled");
+DEFINE_FLAGS_PROPERTY_FIELD(LinkedFileObject, _sourceUrl, "SourceUrl", PROPERTY_FIELD_NO_UNDO);
+DEFINE_PROPERTY_FIELD(LinkedFileObject, _playbackSpeedNumerator, "PlaybackSpeedNumerator");
+DEFINE_PROPERTY_FIELD(LinkedFileObject, _playbackSpeedDenominator, "PlaybackSpeedDenominator");
+DEFINE_PROPERTY_FIELD(LinkedFileObject, _playbackStartTime, "PlaybackStartTime");
+SET_PROPERTY_FIELD_LABEL(LinkedFileObject, _importer, "File Importer");
+SET_PROPERTY_FIELD_LABEL(LinkedFileObject, _sceneObjects, "Objects");
+SET_PROPERTY_FIELD_LABEL(LinkedFileObject, _adjustAnimationIntervalEnabled, "Auto-adjust animation interval");
+SET_PROPERTY_FIELD_LABEL(LinkedFileObject, _sourceUrl, "Source location");
+SET_PROPERTY_FIELD_LABEL(LinkedFileObject, _playbackSpeedNumerator, "Playback speed numerator");
+SET_PROPERTY_FIELD_LABEL(LinkedFileObject, _playbackSpeedDenominator, "Playback speed denominator");
+SET_PROPERTY_FIELD_LABEL(LinkedFileObject, _playbackStartTime, "Playback start time");
 
 /******************************************************************************
 * Constructs the object.
@@ -108,8 +108,13 @@ bool LinkedFileObject::setSource(const QUrl& newSourceUrl, const FileImporterDes
 	ViewportSuspender noVPUpdate(dataset()->viewportConfig());
 
 	// Re-use the old importer if possible.
-	if(importer() && importer()->getOOType() == newImporter->getOOType())
+	if(importer() && importer()->getOOType() == newImporter->getOOType()) {
 		newImporter = importer();
+	}
+	else {
+		// Load user-defined default import settings.
+		newImporter->loadUserDefaults();
+	}
 
 	// Set the new input location.
 	return setSource(newSourceUrl, newImporter, true);

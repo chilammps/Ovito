@@ -27,7 +27,7 @@
 
 namespace Particles {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ParticlePropertyObject, SceneObject)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ParticlePropertyObject, SceneObject);
 
 /******************************************************************************
 * Default constructor.
@@ -69,10 +69,16 @@ OORef<ParticlePropertyObject> ParticlePropertyObject::create(DataSet* dataset, P
 		propertyObj = new ParticlePropertyObject(dataset, storage);
 	}
 
-	if(storage->type() == ParticleProperty::PositionProperty)
-		propertyObj->addDisplayObject(new ParticleDisplay(dataset));
-	else if(storage->type() == ParticleProperty::DisplacementProperty)
-		propertyObj->addDisplayObject(new VectorDisplay(dataset));
+	if(storage->type() == ParticleProperty::PositionProperty) {
+		OORef<ParticleDisplay> displayObj = new ParticleDisplay(dataset);
+		displayObj->loadUserDefaults();
+		propertyObj->addDisplayObject(displayObj.get());
+	}
+	else if(storage->type() == ParticleProperty::DisplacementProperty) {
+		OORef<VectorDisplay> displayObj = new VectorDisplay(dataset);
+		displayObj->loadUserDefaults();
+		propertyObj->addDisplayObject(displayObj.get());
+	}
 
 	return propertyObj;
 }

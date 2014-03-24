@@ -21,6 +21,7 @@
 
 #include <core/Core.h>
 #include <core/utilities/units/UnitsManager.h>
+#include <core/reference/RefMaker.h>
 #include "PropertyFieldDescriptor.h"
 
 namespace Ovito {
@@ -35,6 +36,35 @@ QString PropertyFieldDescriptor::displayName() const
 		return identifier();
 	else
 		return _displayName;
+}
+
+/******************************************************************************
+* Saves the current value of a property field in the application's settings store.
+******************************************************************************/
+void PropertyFieldDescriptor::memorizeDefaultValue(RefMaker* object) const
+{
+	OVITO_CHECK_OBJECT_POINTER(object);
+	QSettings settings;
+	settings.beginGroup(definingClass()->plugin()->pluginId());
+	settings.beginGroup(definingClass()->name());
+	settings.setValue(identifier(), object->getPropertyFieldValue(*this));
+}
+
+/******************************************************************************
+* Loads the default value of a property field from the application's settings store.
+******************************************************************************/
+bool PropertyFieldDescriptor::loadDefaultValue(RefMaker* object) const
+{
+	OVITO_CHECK_OBJECT_POINTER(object);
+	QSettings settings;
+	settings.beginGroup(definingClass()->plugin()->pluginId());
+	settings.beginGroup(definingClass()->name());
+	QVariant v = settings.value(identifier());
+	if(!v.isNull()) {
+		object->setPropertyFieldValue(*this, v);
+		return true;
+	}
+	return false;
 }
 
 };

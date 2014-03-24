@@ -32,23 +32,23 @@
 
 namespace Particles {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, AffineTransformationModifier, ParticleModifier)
-IMPLEMENT_OVITO_OBJECT(Particles, AffineTransformationModifierEditor, ParticleModifierEditor)
-SET_OVITO_OBJECT_EDITOR(AffineTransformationModifier, AffineTransformationModifierEditor)
-DEFINE_PROPERTY_FIELD(AffineTransformationModifier, _transformationTM, "Transformation")
-DEFINE_PROPERTY_FIELD(AffineTransformationModifier, _applyToParticles, "ApplyToParticles")
-DEFINE_PROPERTY_FIELD(AffineTransformationModifier, _toSelectionOnly, "SelectionOnly")
-DEFINE_PROPERTY_FIELD(AffineTransformationModifier, _applyToSimulationBox, "ApplyToSimulationBox")
-DEFINE_PROPERTY_FIELD(AffineTransformationModifier, _targetCell, "DestinationCell")
-DEFINE_PROPERTY_FIELD(AffineTransformationModifier, _relativeMode, "RelativeMode")
-DEFINE_PROPERTY_FIELD(AffineTransformationModifier, _applyToSurfaceMesh, "ApplyToSurfaceMesh")
-SET_PROPERTY_FIELD_LABEL(AffineTransformationModifier, _transformationTM, "Transformation")
-SET_PROPERTY_FIELD_LABEL(AffineTransformationModifier, _applyToParticles, "Transform particles")
-SET_PROPERTY_FIELD_LABEL(AffineTransformationModifier, _toSelectionOnly, "Selected particles only")
-SET_PROPERTY_FIELD_LABEL(AffineTransformationModifier, _applyToSimulationBox, "Transform simulation cell")
-SET_PROPERTY_FIELD_LABEL(AffineTransformationModifier, _targetCell, "Destination cell geometry")
-SET_PROPERTY_FIELD_LABEL(AffineTransformationModifier, _relativeMode, "Relative transformation")
-SET_PROPERTY_FIELD_LABEL(AffineTransformationModifier, _applyToSurfaceMesh, "Transform surface mesh")
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, AffineTransformationModifier, ParticleModifier);
+IMPLEMENT_OVITO_OBJECT(Particles, AffineTransformationModifierEditor, ParticleModifierEditor);
+SET_OVITO_OBJECT_EDITOR(AffineTransformationModifier, AffineTransformationModifierEditor);
+DEFINE_PROPERTY_FIELD(AffineTransformationModifier, _transformationTM, "Transformation");
+DEFINE_PROPERTY_FIELD(AffineTransformationModifier, _applyToParticles, "ApplyToParticles");
+DEFINE_PROPERTY_FIELD(AffineTransformationModifier, _toSelectionOnly, "SelectionOnly");
+DEFINE_PROPERTY_FIELD(AffineTransformationModifier, _applyToSimulationBox, "ApplyToSimulationBox");
+DEFINE_PROPERTY_FIELD(AffineTransformationModifier, _targetCell, "DestinationCell");
+DEFINE_PROPERTY_FIELD(AffineTransformationModifier, _relativeMode, "RelativeMode");
+DEFINE_PROPERTY_FIELD(AffineTransformationModifier, _applyToSurfaceMesh, "ApplyToSurfaceMesh");
+SET_PROPERTY_FIELD_LABEL(AffineTransformationModifier, _transformationTM, "Transformation");
+SET_PROPERTY_FIELD_LABEL(AffineTransformationModifier, _applyToParticles, "Transform particles");
+SET_PROPERTY_FIELD_LABEL(AffineTransformationModifier, _toSelectionOnly, "Selected particles only");
+SET_PROPERTY_FIELD_LABEL(AffineTransformationModifier, _applyToSimulationBox, "Transform simulation cell");
+SET_PROPERTY_FIELD_LABEL(AffineTransformationModifier, _targetCell, "Destination cell geometry");
+SET_PROPERTY_FIELD_LABEL(AffineTransformationModifier, _relativeMode, "Relative transformation");
+SET_PROPERTY_FIELD_LABEL(AffineTransformationModifier, _applyToSurfaceMesh, "Transform surface mesh");
 
 /******************************************************************************
 * Constructs the modifier object.

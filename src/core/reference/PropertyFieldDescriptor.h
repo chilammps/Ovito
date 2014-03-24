@@ -158,6 +158,12 @@ public:
 	/// Compares two property fields.
 	bool operator!=(const PropertyFieldDescriptor& other) const { return (this != &other); }
 
+	/// Saves the current value of a property field in the application's settings store.
+	void memorizeDefaultValue(RefMaker* object) const;
+
+	/// Loads the default value of a property field from the application's settings store.
+	bool loadDefaultValue(RefMaker* object) const;
+
 protected:
 
 	/// The unique identifier of the reference field. This must be unique within

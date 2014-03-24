@@ -29,9 +29,9 @@
 
 namespace Particles {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, SelectParticleTypeModifier, ParticleModifier)
-IMPLEMENT_OVITO_OBJECT(Particles, SelectParticleTypeModifierEditor, ParticleModifierEditor)
-SET_OVITO_OBJECT_EDITOR(SelectParticleTypeModifier, SelectParticleTypeModifierEditor)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, SelectParticleTypeModifier, ParticleModifier);
+IMPLEMENT_OVITO_OBJECT(Particles, SelectParticleTypeModifierEditor, ParticleModifierEditor);
+SET_OVITO_OBJECT_EDITOR(SelectParticleTypeModifier, SelectParticleTypeModifierEditor);
 
 /******************************************************************************
 * Sets the identifier of the data channel that contains the type for each atom.
