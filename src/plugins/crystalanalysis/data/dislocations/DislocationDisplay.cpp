@@ -29,14 +29,14 @@
 
 namespace CrystalAnalysis {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(CrystalAnalysis, DislocationDisplay, DisplayObject)
-IMPLEMENT_OVITO_OBJECT(CrystalAnalysis, DislocationDisplayEditor, PropertiesEditor)
-SET_OVITO_OBJECT_EDITOR(DislocationDisplay, DislocationDisplayEditor)
-DEFINE_FLAGS_PROPERTY_FIELD(DislocationDisplay, _lineWidth, "LineWidth", PROPERTY_FIELD_MEMORIZE)
-DEFINE_FLAGS_PROPERTY_FIELD(DislocationDisplay, _shadingMode, "ShadingMode", PROPERTY_FIELD_MEMORIZE)
-SET_PROPERTY_FIELD_LABEL(DislocationDisplay, _lineWidth, "Dislocation line width")
-SET_PROPERTY_FIELD_LABEL(DislocationDisplay, _shadingMode, "Shading mode")
-SET_PROPERTY_FIELD_UNITS(DislocationDisplay, _lineWidth, WorldParameterUnit)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(CrystalAnalysis, DislocationDisplay, DisplayObject);
+IMPLEMENT_OVITO_OBJECT(CrystalAnalysis, DislocationDisplayEditor, PropertiesEditor);
+SET_OVITO_OBJECT_EDITOR(DislocationDisplay, DislocationDisplayEditor);
+DEFINE_FLAGS_PROPERTY_FIELD(DislocationDisplay, _lineWidth, "LineWidth", PROPERTY_FIELD_MEMORIZE);
+DEFINE_FLAGS_PROPERTY_FIELD(DislocationDisplay, _shadingMode, "ShadingMode", PROPERTY_FIELD_MEMORIZE);
+SET_PROPERTY_FIELD_LABEL(DislocationDisplay, _lineWidth, "Dislocation line width");
+SET_PROPERTY_FIELD_LABEL(DislocationDisplay, _shadingMode, "Shading mode");
+SET_PROPERTY_FIELD_UNITS(DislocationDisplay, _lineWidth, WorldParameterUnit);
 
 /******************************************************************************
 * Constructor.

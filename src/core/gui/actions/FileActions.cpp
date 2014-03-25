@@ -30,6 +30,7 @@
 #include <core/viewport/ViewportConfiguration.h>
 #include <core/viewport/Viewport.h>
 #include <core/viewport/ViewportWindow.h>
+#include <core/rendering/viewport/ViewportSceneRenderer.h>
 #include <core/scene/SelectionSet.h>
 
 namespace Ovito {
@@ -86,7 +87,8 @@ void ActionManager::on_HelpOpenGLInfo_triggered()
 	QString text;
 	if(mainWindow()->datasetContainer().currentSet()) {
 		Viewport* vp = mainWindow()->datasetContainer().currentSet()->viewportConfig()->activeViewport();
-		if(vp && vp->viewportWindow()->glcontext()) {
+		ViewportSceneRenderer* renderer = mainWindow()->datasetContainer().currentSet()->viewportConfig()->viewportRenderer();
+		if(vp && renderer && vp->viewportWindow()->glcontext()) {
 			vp->viewportWindow()->glcontext()->makeCurrent(vp->viewportWindow());
 			QSurfaceFormat format = vp->viewportWindow()->glcontext()->format();
 			QTextStream stream(&text, QIODevice::WriteOnly | QIODevice::Text);
@@ -132,9 +134,8 @@ void ActionManager::on_HelpOpenGLInfo_triggered()
 			stream << "Depth buffer size: " << format.depthBufferSize() << endl;
 			stream << "Stencil buffer size: " << format.stencilBufferSize() << endl;
 			stream << "Deprecated functions: " << format.testOption(QSurfaceFormat::DeprecatedFunctions) << endl;
-#ifdef Q_OS_WIN
-			stream << "Not using point sprites: " << (strstr((const char*)glGetString(GL_VENDOR), "Intel") != nullptr) << endl;
-#endif
+			stream << "Using point sprites: " << renderer->usePointSprites() << endl;
+			stream << "Using geometry shaders: " << renderer->useGeometryShaders() << endl;
 			vp->viewportWindow()->glcontext()->doneCurrent();
 		}
 	}

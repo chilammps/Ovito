@@ -126,12 +126,12 @@ private:
 	int _verticesPerElement;
 
 	// The OpenGL shader programs that are used to render the arrows.
-	QPointer<QOpenGLShaderProgram> _flatShader;
-	QPointer<QOpenGLShaderProgram> _shadedShader;
-	QPointer<QOpenGLShaderProgram> _raytracedCylinderShader;
-	QPointer<QOpenGLShaderProgram> _flatPickingShader;
-	QPointer<QOpenGLShaderProgram> _shadedPickingShader;
-	QPointer<QOpenGLShaderProgram> _raytracedCylinderPickingShader;
+	QOpenGLShaderProgram* _flatShader;
+	QOpenGLShaderProgram* _shadedShader;
+	QOpenGLShaderProgram* _raytracedCylinderShader;
+	QOpenGLShaderProgram* _flatPickingShader;
+	QOpenGLShaderProgram* _shadedPickingShader;
+	QOpenGLShaderProgram* _raytracedCylinderPickingShader;
 
 	/// Pointer to the memory-mapped geometry buffer.
 	void* _mappedBuffer;

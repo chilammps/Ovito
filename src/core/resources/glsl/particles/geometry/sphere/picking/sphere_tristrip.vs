@@ -22,6 +22,7 @@
 // Inputs from calling program:
 uniform mat4 modelview_matrix;
 uniform mat4 projection_matrix;
+uniform mat4 modelviewprojection_matrix;
 uniform int pickingBaseID;
 uniform vec3 cubeVerts[14];
 
@@ -65,7 +66,7 @@ void main()
 		float((objectID >> 24) & 0xFF) / 255.0);
 		
 	// Transform and project vertex.
-	gl_Position = projection_matrix * modelview_matrix * vec4(position + cubeVerts[gl_VertexID % 14] * particle_radius, 1);
+	gl_Position = modelviewprojection_matrix * vec4(position + cubeVerts[gl_VertexID % 14] * particle_radius, 1);
 	
 #else
 
@@ -82,7 +83,7 @@ void main()
 		
 	// Transform and project vertex.
 	int cubeCorner = int(mod(vertexID+0.5, 14.0));
-	gl_Position = projection_matrix * modelview_matrix * (gl_Vertex + vec4(cubeVerts[cubeCorner] * particle_radius, 0));
+	gl_Position = modelviewprojection_matrix * (gl_Vertex + vec4(cubeVerts[cubeCorner] * particle_radius, 0));
 	
 #endif
 }

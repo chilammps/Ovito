@@ -22,6 +22,7 @@
 // Inputs from calling program:
 uniform mat4 modelview_matrix;
 uniform mat4 projection_matrix;
+uniform mat4 modelviewprojection_matrix;
 uniform mat3 normal_matrix;
 uniform vec3 cubeVerts[14];
 uniform vec3 normals[14];
@@ -57,7 +58,7 @@ void main()
 
 	// Transform and project vertex.
 	int cubeCorner = gl_VertexID % 14;
-	gl_Position = projection_matrix * modelview_matrix * vec4(position + cubeVerts[cubeCorner] * particle_radius, 1);
+	gl_Position = modelviewprojection_matrix * vec4(position + cubeVerts[cubeCorner] * particle_radius, 1);
 
 	// Determine face normal.
 	surface_normal_fs = normal_matrix * normals[cubeCorner];

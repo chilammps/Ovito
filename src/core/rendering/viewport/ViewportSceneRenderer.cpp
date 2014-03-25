@@ -119,11 +119,21 @@ void ViewportSceneRenderer::beginFrame(TimePoint time, const ViewProjectionParam
 			|| (glformat().majorVersion() == 3 && glformat().minorVersion() >= 2);
 
 	// Qt reports the core profile only for OpenGL >= 3.2. Assume core profile also for 3.1 contexts.
-	if(glformat().majorVersion() == 3 && glformat().minorVersion() == 1 && _glformat.profile() != QSurfaceFormat::CompatibilityProfile) {
+	if(glformat().majorVersion() == 3 && glformat().minorVersion() == 1 && _glformat.profile() != QSurfaceFormat::CompatibilityProfile)
 		_isCoreProfile = true;
-	}
 
-	// Set up a vertex array object. This is only required when using OpenGL Core Profile.
+	// Determine whether it's okay to use point sprites.
+	_usePointSprites = true;
+#ifdef Q_OS_WIN
+	// Point sprites seem not to work well on Windows with Intel graphics.
+	if(strstr(static_cast<const char*>(glGetString(GL_VENDOR)), "Intel") != nullptr)
+		_usePointSprites = false;
+#endif
+
+	// Determine whether its okay to use geometry shaders.
+	_useGeometryShaders = QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Geometry);
+
+	// Set up a vertex array object (VAO). An active VAO is required during rendering according to the OpenGL core profile.
 	if(glformat().majorVersion() >= 3) {
 		_vertexArrayObject.reset(new QOpenGLVertexArrayObject());
 		OVITO_CHECK_OPENGL(_vertexArrayObject->create());
@@ -455,6 +465,7 @@ QOpenGLShaderProgram* ViewportSceneRenderer::loadShaderProgram(const QString& id
 
 	// Load and compile geometry shader source.
 	if(!geometryShaderFile.isEmpty()) {
+		OVITO_ASSERT(useGeometryShaders());
 		loadShader(program.data(), QOpenGLShader::Geometry, geometryShaderFile);
 	}
 

@@ -118,6 +118,12 @@ public:
 	/// Indicates whether the current OpenGL implementation is according to the core profile.
 	bool isCoreProfile() const { return _isCoreProfile; }
 
+	/// Indicates whether it is okay to use OpenGL point sprites. Otherwise emulate them using explicit triangle geometry.
+	bool usePointSprites() const { return _usePointSprites; }
+
+	/// Indicates whether it is okay to use GLSL geometry shaders.
+	bool useGeometryShaders() const { return _useGeometryShaders; }
+
 	/// Translates an OpenGL error code to a human-readable message string.
 	static const char* openglErrorString(GLenum errorCode);
 
@@ -204,8 +210,14 @@ private:
 	/// The OpenGL surface format.
 	QSurfaceFormat _glformat;
 
-	/// Indicates whether the current OpenGL implementation is according to the core profile.
+	/// Indicates whether the current OpenGL implementation is based on the core or the compatibility profile.
 	bool _isCoreProfile;
+
+	/// Indicates whether it is okay to use OpenGL point sprites. Otherwise emulate them using explicit triangle geometry.
+	bool _usePointSprites;
+
+	/// Indicates whether it is okay to use GLSL geometry shaders.
+	bool _useGeometryShaders;
 
 	/// The current model-to-world transformation matrix.
 	AffineTransformation _modelWorldTM;

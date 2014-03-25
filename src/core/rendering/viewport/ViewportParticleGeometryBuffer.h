@@ -113,10 +113,14 @@ protected:
 	/// Renders the particles using quads.
 	void renderImposters(ViewportSceneRenderer* renderer);
 
-	/// Returns true if the OpenGL implementation supports geometry shaders.
-	bool hasGeometryShaders() const { return _raytracedSphereShader != nullptr; }
-
 private:
+
+	/// The available techniques for rendering particles.
+	enum RenderingTechnique {
+		POINT_SPRITES,	///< Use OpenGL point sprites to render imposter quads with a texture map.
+		IMPOSTER_QUADS,	///< Render explicit quad geometry made of two triangles.
+		CUBE_GEOMETRY	///< Render a cube for each particle (possibly using a raytracing fragment shader to make it look spherical).
+	};
 
 	/// The internal OpenGL vertex buffer that stores the particle positions.
 	OpenGLBuffer<Point3> _positionsBuffer;
@@ -139,26 +143,17 @@ private:
 	/// This array contains the vertex counts of primitives and is passed to glMultiDrawArrays().
 	std::vector<GLsizei> _primitiveVertexCounts;
 
-	/// Indicates whether point sprites are supported by the platform.
-	bool _usePointSprites;
+	/// The OpenGL shader program that is used to render the particles.
+	QOpenGLShaderProgram* _shader;
 
-	/// The OpenGL shader programs that are used to render the particles.
-	QPointer<QOpenGLShaderProgram> _flatImposterShader;
-	QPointer<QOpenGLShaderProgram> _shadedImposterShaderWithoutDepth;
-	QPointer<QOpenGLShaderProgram> _shadedImposterShaderWithDepth;
-	QPointer<QOpenGLShaderProgram> _raytracedSphereShader;
-	QPointer<QOpenGLShaderProgram> _raytracedSphereTristripShader;
-	QPointer<QOpenGLShaderProgram> _raytracedSphereTristripPickingShader;
-	QPointer<QOpenGLShaderProgram> _cubeShader;
-	QPointer<QOpenGLShaderProgram> _cubePickingShader;
-	QPointer<QOpenGLShaderProgram> _cubeTristripShader;
-	QPointer<QOpenGLShaderProgram> _cubeTristripPickingShader;
-	QPointer<QOpenGLShaderProgram> _flatSquareImposterShader;
+	/// The OpenGL shader program that is used to render the particles in picking mode.
+	QOpenGLShaderProgram* _pickingShader;
 
-	QPointer<QOpenGLShaderProgram> _imposterPickingShaderWithoutDepth;
-	QPointer<QOpenGLShaderProgram> _imposterPickingShaderWithDepth;
-	QPointer<QOpenGLShaderProgram> _raytracedPickingSphereShader;
-	QPointer<QOpenGLShaderProgram> _imposterSquarePickingShaderWithoutDepth;
+	/// The technique used to render particles. This depends on settings such as rendering quality, shading etc.
+	RenderingTechnique _renderingTechnique;
+
+	/// Indicates that an OpenGL geometry shader is being used.
+	bool _usingGeometryShader;
 };
 
 };
