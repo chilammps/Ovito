@@ -8,7 +8,7 @@ node = load("../data/NanocrystallinePd.dump.gz")
 // the input file has been completely loaded.
 // This is an optional step, but it ensures that the modifier we are going to create 
 // has access to the input data at the time it is inserted into the modification pipeline.
-// Then the Color Coding modifier will automatically adjust its interval to the range of 
+// This allows the Color Coding modifier to automatically adjust its interval to the range of 
 // values present in the input data.
 wait()
 

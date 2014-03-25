@@ -12,21 +12,21 @@
   <simplesect xml:id="scripting.scene_objects.apply_modifier">
   	<title>Applying new modifiers</title> 
     <para>
-  	    The <link linkend="scripting.input_output.load"><code>load()</code></link> script function returns a reference to the imported object, a so-called <emphasis>scene node</emphasis>, 
-  	    which consists of the input data source and the modification pipeline, which processes the input data before it is displayed. You can populate the node's
-  	    modification pipeline with modifiers as follows:
+  	    The <link linkend="scripting.input_output.load"><code>load()</code></link> script function returns a reference to the imported object, a so-called <emphasis>scene node</emphasis> 
+  	    that combines the data source (i.e the reference to the external simulation file) and a modification pipeline, which processes the input data before it is displayed on screen. 
+  	    You can populate the node's modification pipeline with modifiers as follows:
   	    <informalexample><programlisting language="javascript"><![CDATA[
 // Load an external data file. 
 // This creates a new object in OVITO with an attached modification pipeline.
 node = load("simulation.dump")
 
-// Insert two new modifiers using the applyModifier() function:
+// Insert a new modifier using the applyModifier() function:
 node.applyModifier(new SelectExpressionModifier({ expression : "PotentialEnergy < -3.9" }))
 node.applyModifier(new DeleteParticlesModifier())]]>
 </programlisting></informalexample>
 
-		The <code>applyModifier()</code> method appends a modifier to the modification pipeline. The new modifier instance is created using the <code>new</code> keyword
-		followed by the modifier type name. Note that we are calling a constructor function here, which is the standard way of creating new objects in JavaScript.
+		The <code>applyModifier()</code> method appends a modifier to the modification pipeline. The new modifier passed to this function is created by the script using 
+		the <code>new</code> keyword. This is the standard way of creating new objects in JavaScript.
 		The following modifier types are available in OVITO:
     </para> 
     <para>
@@ -60,13 +60,12 @@ node.applyModifier(new DeleteParticlesModifier())]]>
     	<code>WrapPeriodicImagesModifier</code>
     </para>
     <para>
-        A modifier's constructor function accepts an optional object literal, which can be used to initialize its parameters as demonstrated in the previous example for the 
-        <code>SelectExpressionModifier</code> modifier. 
-        Alternatively, you can change individual parameters after having created the modifier (It doesn't matter if you do that before or after inserting the modifier into the pipeline):
+        A constructor function accepts an optional object literal, which can be used to initialize the modifier's parameters as demonstrated in the preceding example. 
+        Alternatively, you can change individual parameters after having created the modifier (It doesn't matter whether you do this before or after inserting the modifier into the pipeline):
   	    <informalexample><programlisting language="javascript"><![CDATA[
-m = new SelectExpressionModifier()
-node.applyModifier(m)
-m.expression = "PotentialEnergy < -3.9"]]>
+modifier = new SelectExpressionModifier()
+node.applyModifier(modifier)
+modifier.expression = "PotentialEnergy < -3.9"]]>
 </programlisting></informalexample>
     </para> 
   </simplesect>
@@ -74,13 +73,12 @@ m.expression = "PotentialEnergy < -3.9"]]>
   <simplesect xml:id="scripting.scene_objects.modifiers">
   	<title>Accessing the modification pipeline</title> 
     <para>
-       The scene node has a <code>modifiers</code> property, which lists the existing modifiers in the associated modification pipeline:
+       Each scene node has a <code>modifiers</code> array property, which lists the existing modifiers in the associated modification pipeline:
   	    <informalexample><programlisting language="javascript"><![CDATA[
-// Print the list of modifiers in the modification pipeline of the selected object:
+// Print the list of modifiers in the modification pipeline of the selected scene node:
 node = ovito.selectedNode
 for(var i = 0; i < node.modifiers.length; i++)
-    print(node.modifiers[i])
-]]>
+    print(node.modifiers[i])]]>
 </programlisting></informalexample>
     </para>
   </simplesect>

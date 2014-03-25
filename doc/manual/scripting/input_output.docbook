@@ -97,8 +97,8 @@ node.source.load("/home/user/data/newfile.dump", {
   <simplesect xml:id="scripting.input_output.save">
     <title>Exporting data to a file</title>
     <para>
-      The <code>save()</code> function writes the current dataset to a file. Three different 
-      forms of this function exist:
+      The <code>save()</code> function writes the current dataset to a file. Three alternative 
+      variants of this function exist:
   	    <programlisting language="javascript">
 save(path, exportertype)
 save(path, exportertype, params)

@@ -10,7 +10,7 @@
   <title>Rendering</title>
 
   <simplesect xml:id="scripting.rendering.viewports">
-  	<title>Working with viewports</title>
+  	<title>Working with viewports and positioning the camera</title>
     <para>
       OVITO manages multiple viewports, which show the three-dimensional scene from different directions.
       There is always one selected viewport, called the <emphasis>active viewport</emphasis>. It can be accessed from
@@ -22,7 +22,7 @@
       positioned at the xyz coordinates (100, 85, 50), and looking toward the origin, you would call the <code>Viewport.perspective()</code> function:
  	    <informalexample><programlisting language="javascript"><![CDATA[
 activeViewport.perspective(
-	Point(100, 85, 50), 			// The camera position in space
+	Point(100, 85, 50), 			// The camera's position
 	Vector(-100, -85, -50), 		// The viewing direction
 	70.0 * Math.PI/180.0)			// The field of view angle]]>
 </programlisting></informalexample>
@@ -46,11 +46,17 @@ activeViewport.ortho(Point(0,0,0), Vector(0,-1,0), 30.0))]]>
 activeViewport.render()]]>
 </programlisting></informalexample>
        This will start the rendering process using the current render settings such as image size, output filename, background color etc.
+    </para>
+    <para>
+       Note that if you started OVITO with the <link linkend="usage.scripting.running_scripts"><command>--nogui</command> command line switch</link> to disable the graphical user interface of the program, 
+       OpenGL rendering is not possible. This is because the program runs in a <emphasis>headless</emphasis> mode, which doesn't require a graphics terminal
+       and allows to execute scripts on remote machines. Unfortunately, this restriction also means you cannot use the normal OpenGL-based renderer anymore to create output images.
+       The software-based <link linkend="rendering.tachyon_renderer">Tachyon renderer</link> therefore becomes the default when using the <command>--nogui</command> switch.
     </para>    
     <para>
-       You can modify the current render settings before calling <code>render()</code> by changing the corresponding properties of the <code>renderSettings</code> object, which is part of the global <code>dataset</code> object:
+       You can modify the current render settings before calling <code>render()</code> by changing the corresponding properties of the <code>renderSettings</code> object, which is part of the global <code>ovito</code> object:
  	    <informalexample><programlisting language="javascript"><![CDATA[
-rs = dataset.renderSettings
+rs = ovito.renderSettings
 
 rs.imageWidth = 320                // Sets the width in pixels of the output image
 rs.imageHeight = 240               // Sets the height in pixels of the output image
@@ -60,14 +66,13 @@ rs.saveToFile = true               // Set this flag, otherwise the generated ima
 // Control which frames should be rendered: 
 rs.renderingRangeType = RenderSettings.CURRENT_FRAME        // Render only the current animation frame (default)
 rs.renderingRangeType = RenderSettings.ANIMATION_INTERVAL   // Render all frames of the animation interval
-rs.renderingRangeType = RenderSettings.CUSTOM_INTERVAL      // Render a custom interval of frames
-]]>
+rs.renderingRangeType = RenderSettings.CUSTOM_INTERVAL      // Render a custom interval of frames]]>
 </programlisting></informalexample>
-	   As a shortcut, you can directly pass the render settings parameters to the <code>render()</code>  function via an object literal. For example:       
+	   As a shortcut, you can directly pass the parameters to the <code>render()</code> function as an object literal. For example:       
  	    <informalexample><programlisting language="javascript"><![CDATA[
 activeViewport.render({ filename : "output_image.png", imageWidth : 320, imageHeight : 240 })]]>
 </programlisting></informalexample>
-    </para>    
+    </para>
   </simplesect>
     
 </section>

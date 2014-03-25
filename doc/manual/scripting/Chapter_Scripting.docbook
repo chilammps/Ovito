@@ -10,9 +10,15 @@
          xmlns:ns="http://docbook.org/ns/docbook">
   <title>Scripting Reference</title>
   
-  <para>The following sections cover various topics related to OVITO's scripting interface:
+  <para>
+	OVITO provides a new scripting interface that enables you to automate tasks. 
+	<emphasis>Note that this feature is still considered experimental and incomplete, and it might be that you run into problems while using
+	it. Please inform the developer about any aspects that require better documentation, missing features, or issues that need to be fixed.</emphasis>
+  </para>
+  
+  <para>The following sections cover different aspects of OVITO's scripting interface:
   	<itemizedlist>
-  	  <listitem><link linkend="usage.scripting">How to run scripts</link></listitem>
+  	  <listitem><link linkend="usage.scripting">Introduction</link></listitem>
   	  <listitem><link linkend="scripting.input_output">Input/output functions</link></listitem>
   	  <listitem><link linkend="scripting.scene_objects">Working with modifiers</link></listitem>
   	  <listitem><link linkend="scripting.rendering">Rendering</link></listitem>
