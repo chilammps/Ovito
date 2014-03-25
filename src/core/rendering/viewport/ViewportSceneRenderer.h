@@ -76,25 +76,25 @@ public:
 	Box3 boundingBoxInteractive(TimePoint time, Viewport* viewport);
 
 	/// Requests a new line geometry buffer from the renderer.
-	virtual std::unique_ptr<LineGeometryBuffer> createLineGeometryBuffer() override;
+	virtual std::unique_ptr<LinePrimitive> createLinePrimitive() override;
 
 	/// Requests a new particle geometry buffer from the renderer.
-	virtual std::unique_ptr<ParticleGeometryBuffer> createParticleGeometryBuffer(ParticleGeometryBuffer::ShadingMode shadingMode,
-			ParticleGeometryBuffer::RenderingQuality renderingQuality, ParticleGeometryBuffer::ParticleShape shape) override;
+	virtual std::unique_ptr<ParticlePrimitive> createParticlePrimitive(ParticlePrimitive::ShadingMode shadingMode,
+			ParticlePrimitive::RenderingQuality renderingQuality, ParticlePrimitive::ParticleShape shape) override;
 
 	/// Requests a new text geometry buffer from the renderer.
-	virtual std::unique_ptr<TextGeometryBuffer> createTextGeometryBuffer() override;
+	virtual std::unique_ptr<TextPrimitive> createTextPrimitive() override;
 
 	/// Requests a new image geometry buffer from the renderer.
-	virtual std::unique_ptr<ImageGeometryBuffer> createImageGeometryBuffer() override;
+	virtual std::unique_ptr<ImagePrimitive> createImagePrimitive() override;
 
 	/// Requests a new arrow geometry buffer from the renderer.
-	virtual std::unique_ptr<ArrowGeometryBuffer> createArrowGeometryBuffer(ArrowGeometryBuffer::Shape shape,
-			ArrowGeometryBuffer::ShadingMode shadingMode,
-			ArrowGeometryBuffer::RenderingQuality renderingQuality) override;
+	virtual std::unique_ptr<ArrowPrimitive> createArrowPrimitive(ArrowPrimitive::Shape shape,
+			ArrowPrimitive::ShadingMode shadingMode,
+			ArrowPrimitive::RenderingQuality renderingQuality) override;
 
 	/// Requests a new triangle mesh buffer from the renderer.
-	virtual std::unique_ptr<TriMeshGeometryBuffer> createTriMeshGeometryBuffer() override;
+	virtual std::unique_ptr<MeshPrimitive> createMeshPrimitive() override;
 
 	/// Renders a 2d polyline in the viewport.
 	void render2DPolyline(const Point2* points, int count, const ColorA& color, bool closed);
@@ -232,7 +232,7 @@ private:
 	GLint _glVertexIDBufferSize;
 
 	/// The geometry buffer used to render the construction grid of a viewport.
-	std::unique_ptr<LineGeometryBuffer> _constructionGridGeometry;
+	std::unique_ptr<LinePrimitive> _constructionGridGeometry;
 
 	Q_OBJECT
 	OVITO_OBJECT

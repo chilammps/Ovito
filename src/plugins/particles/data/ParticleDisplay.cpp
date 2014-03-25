@@ -48,9 +48,9 @@ SET_PROPERTY_FIELD_UNITS(ParticleDisplay, _defaultParticleRadius, WorldParameter
 ******************************************************************************/
 ParticleDisplay::ParticleDisplay(DataSet* dataset) : DisplayObject(dataset),
 	_defaultParticleRadius(1.2),
-	_shadingMode(ParticleGeometryBuffer::NormalShading),
-	_renderingQuality(ParticleGeometryBuffer::AutoQuality),
-	_particleShape(ParticleGeometryBuffer::SphericalShape)
+	_shadingMode(ParticlePrimitive::NormalShading),
+	_renderingQuality(ParticlePrimitive::AutoQuality),
+	_particleShape(ParticlePrimitive::SphericalShape)
 {
 	INIT_PROPERTY_FIELD(ParticleDisplay::_defaultParticleRadius);
 	INIT_PROPERTY_FIELD(ParticleDisplay::_shadingMode);
@@ -270,18 +270,18 @@ Color ParticleDisplay::particleColor(size_t particleIndex, ParticlePropertyObjec
 /******************************************************************************
 * Returns the actual rendering quality used to render the given particles.
 ******************************************************************************/
-ParticleGeometryBuffer::RenderingQuality ParticleDisplay::effectiveRenderingQuality(SceneRenderer* renderer, ParticlePropertyObject* positionProperty) const
+ParticlePrimitive::RenderingQuality ParticleDisplay::effectiveRenderingQuality(SceneRenderer* renderer, ParticlePropertyObject* positionProperty) const
 {
-	ParticleGeometryBuffer::RenderingQuality renderQuality = renderingQuality();
-	if(renderQuality == ParticleGeometryBuffer::AutoQuality) {
-		if(!positionProperty) return ParticleGeometryBuffer::HighQuality;
+	ParticlePrimitive::RenderingQuality renderQuality = renderingQuality();
+	if(renderQuality == ParticlePrimitive::AutoQuality) {
+		if(!positionProperty) return ParticlePrimitive::HighQuality;
 		int particleCount = positionProperty->size();
 		if(particleCount < 2000 || renderer->isInteractive() == false)
-			renderQuality = ParticleGeometryBuffer::HighQuality;
+			renderQuality = ParticlePrimitive::HighQuality;
 		else if(particleCount < 100000)
-			renderQuality = ParticleGeometryBuffer::MediumQuality;
+			renderQuality = ParticlePrimitive::MediumQuality;
 		else
-			renderQuality = ParticleGeometryBuffer::LowQuality;
+			renderQuality = ParticlePrimitive::LowQuality;
 	}
 	return renderQuality;
 }
@@ -306,7 +306,7 @@ void ParticleDisplay::render(TimePoint time, SceneObject* sceneObject, const Pip
 	bool recreateBuffer = !_particleBuffer || !_particleBuffer->isValid(renderer);
 
 	// If rendering quality is set to automatic, pick quality level based on number of particles.
-	ParticleGeometryBuffer::RenderingQuality renderQuality = effectiveRenderingQuality(renderer, positionProperty);
+	ParticlePrimitive::RenderingQuality renderQuality = effectiveRenderingQuality(renderer, positionProperty);
 
 	// Set shading mode and rendering quality.
 	if(!recreateBuffer) {
@@ -339,7 +339,7 @@ void ParticleDisplay::render(TimePoint time, SceneObject* sceneObject, const Pip
 
 	// Re-create the geometry buffer if necessary.
 	if(recreateBuffer)
-		_particleBuffer = renderer->createParticleGeometryBuffer(shadingMode(), renderQuality, particleShape());
+		_particleBuffer = renderer->createParticlePrimitive(shadingMode(), renderQuality, particleShape());
 
 	// Re-size the geometry buffer if necessary.
 	if(resizeBuffer)
@@ -417,24 +417,24 @@ void ParticleDisplayEditor::createUI(const RolloutInsertionParameters& rolloutPa
 
 	// Shading mode.
 	VariantComboBoxParameterUI* shadingModeUI = new VariantComboBoxParameterUI(this, "shadingMode");
-	shadingModeUI->comboBox()->addItem(tr("Normal"), qVariantFromValue(ParticleGeometryBuffer::NormalShading));
-	shadingModeUI->comboBox()->addItem(tr("Flat"), qVariantFromValue(ParticleGeometryBuffer::FlatShading));
+	shadingModeUI->comboBox()->addItem(tr("Normal"), qVariantFromValue(ParticlePrimitive::NormalShading));
+	shadingModeUI->comboBox()->addItem(tr("Flat"), qVariantFromValue(ParticlePrimitive::FlatShading));
 	layout->addWidget(new QLabel(tr("Shading mode:")), 0, 0);
 	layout->addWidget(shadingModeUI->comboBox(), 0, 1);
 
 	// Rendering quality.
 	VariantComboBoxParameterUI* renderingQualityUI = new VariantComboBoxParameterUI(this, "renderingQuality");
-	renderingQualityUI->comboBox()->addItem(tr("Low"), qVariantFromValue(ParticleGeometryBuffer::LowQuality));
-	renderingQualityUI->comboBox()->addItem(tr("Medium"), qVariantFromValue(ParticleGeometryBuffer::MediumQuality));
-	renderingQualityUI->comboBox()->addItem(tr("High"), qVariantFromValue(ParticleGeometryBuffer::HighQuality));
-	renderingQualityUI->comboBox()->addItem(tr("Automatic"), qVariantFromValue(ParticleGeometryBuffer::AutoQuality));
+	renderingQualityUI->comboBox()->addItem(tr("Low"), qVariantFromValue(ParticlePrimitive::LowQuality));
+	renderingQualityUI->comboBox()->addItem(tr("Medium"), qVariantFromValue(ParticlePrimitive::MediumQuality));
+	renderingQualityUI->comboBox()->addItem(tr("High"), qVariantFromValue(ParticlePrimitive::HighQuality));
+	renderingQualityUI->comboBox()->addItem(tr("Automatic"), qVariantFromValue(ParticlePrimitive::AutoQuality));
 	layout->addWidget(new QLabel(tr("Rendering quality:")), 1, 0);
 	layout->addWidget(renderingQualityUI->comboBox(), 1, 1);
 
 	// Shape.
 	VariantComboBoxParameterUI* particleShapeUI = new VariantComboBoxParameterUI(this, "particleShape");
-	particleShapeUI->comboBox()->addItem(tr("Spherical"), qVariantFromValue(ParticleGeometryBuffer::SphericalShape));
-	particleShapeUI->comboBox()->addItem(tr("Square"), qVariantFromValue(ParticleGeometryBuffer::SquareShape));
+	particleShapeUI->comboBox()->addItem(tr("Spherical"), qVariantFromValue(ParticlePrimitive::SphericalShape));
+	particleShapeUI->comboBox()->addItem(tr("Square"), qVariantFromValue(ParticlePrimitive::SquareShape));
 	layout->addWidget(new QLabel(tr("Shape:")), 2, 0);
 	layout->addWidget(particleShapeUI->comboBox(), 2, 1);
 

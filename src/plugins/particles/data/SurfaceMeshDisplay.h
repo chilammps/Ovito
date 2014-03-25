@@ -26,7 +26,7 @@
 #include <core/scene/display/DisplayObject.h>
 #include <core/scene/objects/geometry/TriMesh.h>
 #include <core/scene/objects/geometry/HalfEdgeMesh.h>
-#include <core/rendering/TriMeshGeometryBuffer.h>
+#include <core/rendering/MeshPrimitive.h>
 #include <core/gui/properties/PropertiesEditor.h>
 #include <core/animation/controller/Controller.h>
 #include <plugins/particles/data/SimulationCellData.h>
@@ -116,10 +116,10 @@ protected:
 	ReferenceField<FloatController> _capTransparency;
 
 	/// The buffered geometry used to render the surface mesh.
-	std::unique_ptr<TriMeshGeometryBuffer> _surfaceBuffer;
+	std::unique_ptr<MeshPrimitive> _surfaceBuffer;
 
 	/// The buffered geometry used to render the surface cap.
-	std::unique_ptr<TriMeshGeometryBuffer> _capBuffer;
+	std::unique_ptr<MeshPrimitive> _capBuffer;
 
 	/// This helper structure is used to detect any changes in the input data
 	/// that require updating the geometry buffer.

@@ -20,12 +20,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
- * \file ArrowGeometryBuffer.h
- * \brief Contains the definition of the Ovito::ArrowGeometryBuffer class.
+ * \file ArrowPrimitive.h
+ * \brief Contains the definition of the Ovito::ArrowPrimitive class.
  */
 
-#ifndef __OVITO_ARROW_GEOMETRY_BUFFER_H
-#define __OVITO_ARROW_GEOMETRY_BUFFER_H
+#ifndef __OVITO_ARROW_PRIMITIVE_H
+#define __OVITO_ARROW_PRIMITIVE_H
 
 #include <core/Core.h>
 #include <core/object/OvitoObject.h>
@@ -33,9 +33,9 @@
 namespace Ovito {
 
 /**
- * \brief Abstract base class for buffer objects that store vector glyphs.
+ * \brief Abstract base class for rendering arrow glyphs and cylinders.
  */
-class OVITO_CORE_EXPORT ArrowGeometryBuffer : public OvitoObject
+class OVITO_CORE_EXPORT ArrowPrimitive : public OvitoObject
 {
 public:
 
@@ -61,7 +61,7 @@ public:
 public:
 
 	/// Constructor.
-	ArrowGeometryBuffer(Shape shape, ShadingMode shadingMode, RenderingQuality renderingQuality) :
+	ArrowPrimitive(Shape shape, ShadingMode shadingMode, RenderingQuality renderingQuality) :
 		_shape(shape), _shadingMode(shadingMode), _renderingQuality(renderingQuality) {}
 
 	/// \brief Allocates a geometry buffer with the given number of elements.
@@ -114,11 +114,11 @@ private:
 
 };
 
-Q_DECLARE_METATYPE(Ovito::ArrowGeometryBuffer::ShadingMode);
-Q_DECLARE_METATYPE(Ovito::ArrowGeometryBuffer::RenderingQuality);
-Q_DECLARE_METATYPE(Ovito::ArrowGeometryBuffer::Shape);
-Q_DECLARE_TYPEINFO(Ovito::ArrowGeometryBuffer::ShadingMode, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::ArrowGeometryBuffer::RenderingQuality, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::ArrowGeometryBuffer::Shape, Q_PRIMITIVE_TYPE);
+Q_DECLARE_METATYPE(Ovito::ArrowPrimitive::ShadingMode);
+Q_DECLARE_METATYPE(Ovito::ArrowPrimitive::RenderingQuality);
+Q_DECLARE_METATYPE(Ovito::ArrowPrimitive::Shape);
+Q_DECLARE_TYPEINFO(Ovito::ArrowPrimitive::ShadingMode, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::ArrowPrimitive::RenderingQuality, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::ArrowPrimitive::Shape, Q_PRIMITIVE_TYPE);
 
-#endif // __OVITO_ARROW_GEOMETRY_BUFFER_H
+#endif // __OVITO_ARROW_PRIMITIVE_H

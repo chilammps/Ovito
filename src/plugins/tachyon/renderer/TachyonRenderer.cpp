@@ -273,7 +273,7 @@ void TachyonRenderer::endRender()
 /******************************************************************************
 * Renders the line geometry stored in the given buffer.
 ******************************************************************************/
-void TachyonRenderer::renderLines(const DefaultLineGeometryBuffer& lineBuffer)
+void TachyonRenderer::renderLines(const DefaultLinePrimitive& lineBuffer)
 {
 	// Lines are not supported by this renderer.
 }
@@ -281,7 +281,7 @@ void TachyonRenderer::renderLines(const DefaultLineGeometryBuffer& lineBuffer)
 /******************************************************************************
 * Renders the particles stored in the given buffer.
 ******************************************************************************/
-void TachyonRenderer::renderParticles(const DefaultParticleGeometryBuffer& particleBuffer)
+void TachyonRenderer::renderParticles(const DefaultParticlePrimitive& particleBuffer)
 {
 	auto p = particleBuffer.positions().begin();
 	auto p_end = particleBuffer.positions().end();
@@ -291,7 +291,7 @@ void TachyonRenderer::renderParticles(const DefaultParticleGeometryBuffer& parti
 
 	const AffineTransformation tm = modelTM();
 
-	if(particleBuffer.particleShape() == ParticleGeometryBuffer::SphericalShape) {
+	if(particleBuffer.particleShape() == ParticlePrimitive::SphericalShape) {
 		// Rendering spherical particles.
 		for(; p != p_end; ++p, ++c, ++r) {
 			FloatType alpha = transparency ? (FloatType(1) - *transparency++) : FloatType(1);
@@ -314,11 +314,11 @@ void TachyonRenderer::renderParticles(const DefaultParticleGeometryBuffer& parti
 /******************************************************************************
 * Renders the arrow elements stored in the given buffer.
 ******************************************************************************/
-void TachyonRenderer::renderArrows(const DefaultArrowGeometryBuffer& arrowBuffer)
+void TachyonRenderer::renderArrows(const DefaultArrowPrimitive& arrowBuffer)
 {
 	const AffineTransformation tm = modelTM();
-	if(arrowBuffer.shape() == ArrowGeometryBuffer::CylinderShape) {
-		for(const DefaultArrowGeometryBuffer::ArrowElement& element : arrowBuffer.elements()) {
+	if(arrowBuffer.shape() == ArrowPrimitive::CylinderShape) {
+		for(const DefaultArrowPrimitive::ArrowElement& element : arrowBuffer.elements()) {
 			void* tex = getTachyonTexture(element.color.r(), element.color.g(), element.color.b(), element.color.a());
 			Point3 tp = tm * element.pos;
 			Vector3 ta = tm * element.dir;
@@ -337,8 +337,8 @@ void TachyonRenderer::renderArrows(const DefaultArrowGeometryBuffer& arrowBuffer
 		}
 	}
 
-	else if(arrowBuffer.shape() == ArrowGeometryBuffer::ArrowShape) {
-		for(const DefaultArrowGeometryBuffer::ArrowElement& element : arrowBuffer.elements()) {
+	else if(arrowBuffer.shape() == ArrowPrimitive::ArrowShape) {
+		for(const DefaultArrowPrimitive::ArrowElement& element : arrowBuffer.elements()) {
 			void* tex = getTachyonTexture(element.color.r(), element.color.g(), element.color.b(), element.color.a());
 			FloatType arrowHeadRadius = element.width * 2.5f;
 			FloatType arrowHeadLength = arrowHeadRadius * 1.8f;
@@ -391,7 +391,7 @@ void TachyonRenderer::renderArrows(const DefaultArrowGeometryBuffer& arrowBuffer
 /******************************************************************************
 * Renders the text stored in the given buffer.
 ******************************************************************************/
-void TachyonRenderer::renderText(const DefaultTextGeometryBuffer& textBuffer)
+void TachyonRenderer::renderText(const DefaultTextPrimitive& textBuffer)
 {
 	// Not supported by this renderer.
 }
@@ -399,7 +399,7 @@ void TachyonRenderer::renderText(const DefaultTextGeometryBuffer& textBuffer)
 /******************************************************************************
 * Renders the image stored in the given buffer.
 ******************************************************************************/
-void TachyonRenderer::renderImage(const DefaultImageGeometryBuffer& imageBuffer)
+void TachyonRenderer::renderImage(const DefaultImagePrimitive& imageBuffer)
 {
 	// Not supported by this renderer.
 }
@@ -407,7 +407,7 @@ void TachyonRenderer::renderImage(const DefaultImageGeometryBuffer& imageBuffer)
 /******************************************************************************
 * Renders the triangle mesh stored in the given buffer.
 ******************************************************************************/
-void TachyonRenderer::renderMesh(const DefaultTriMeshGeometryBuffer& meshBuffer)
+void TachyonRenderer::renderMesh(const DefaultMeshPrimitive& meshBuffer)
 {
 	// Stores data of a single vertex passed to Tachyon.
 	struct ColoredVertexWithNormal {

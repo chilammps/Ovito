@@ -20,26 +20,26 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
- * \file ImageGeometryBuffer.h
- * \brief Contains the definition of the Ovito::ImageGeometryBuffer class.
+ * \file ImagePrimitive.h
+ * \brief Contains the definition of the Ovito::ImagePrimitive class.
  */
 
-#ifndef __OVITO_IMAGE_GEOMETRY_BUFFER_H
-#define __OVITO_IMAGE_GEOMETRY_BUFFER_H
+#ifndef __OVITO_IMAGE_PRIMITIVE_H
+#define __OVITO_IMAGE_PRIMITIVE_H
 
 #include <core/Core.h>
 
 namespace Ovito {
 
 /**
- * \brief Abstract base class for buffer objects that store images.
+ * \brief Abstract base class for drawing bitmaps.
  */
-class OVITO_CORE_EXPORT ImageGeometryBuffer
+class OVITO_CORE_EXPORT ImagePrimitive
 {
 public:
 
 	/// \brief Virtual base constructor.
-	virtual ~ImageGeometryBuffer() {}
+	virtual ~ImagePrimitive() {}
 
 	/// \brief Sets the text to be rendered.
 	virtual void setImage(const QImage& image) { _image = image; }
@@ -64,4 +64,4 @@ private:
 
 };
 
-#endif // __OVITO_IMAGE_GEOMETRY_BUFFER_H
+#endif // __OVITO_IMAGE_PRIMITIVE_H

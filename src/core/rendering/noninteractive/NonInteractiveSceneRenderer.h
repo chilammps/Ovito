@@ -28,12 +28,12 @@
 
 #include <core/Core.h>
 #include <core/rendering/SceneRenderer.h>
-#include "DefaultArrowGeometryBuffer.h"
-#include "DefaultImageGeometryBuffer.h"
-#include "DefaultLineGeometryBuffer.h"
-#include "DefaultParticleGeometryBuffer.h"
-#include "DefaultTextGeometryBuffer.h"
-#include "DefaultTriMeshGeometryBuffer.h"
+#include "DefaultArrowPrimitive.h"
+#include "DefaultImagePrimitive.h"
+#include "DefaultLinePrimitive.h"
+#include "DefaultParticlePrimitive.h"
+#include "DefaultTextPrimitive.h"
+#include "DefaultMeshPrimitive.h"
 
 namespace Ovito {
 
@@ -60,58 +60,58 @@ public:
 	const AffineTransformation& modelTM() const { return _modelTM; }
 
 	/// Requests a new line geometry buffer from the renderer.
-	virtual std::unique_ptr<LineGeometryBuffer> createLineGeometryBuffer() override {
-		return std::unique_ptr<LineGeometryBuffer>{ new DefaultLineGeometryBuffer() };
+	virtual std::unique_ptr<LinePrimitive> createLinePrimitive() override {
+		return std::unique_ptr<LinePrimitive>{ new DefaultLinePrimitive() };
 	}
 
 	/// Requests a new particle geometry buffer from the renderer.
-	virtual std::unique_ptr<ParticleGeometryBuffer> createParticleGeometryBuffer(
-			ParticleGeometryBuffer::ShadingMode shadingMode,
-			ParticleGeometryBuffer::RenderingQuality renderingQuality,
-			ParticleGeometryBuffer::ParticleShape shape) override {
-		return std::unique_ptr<ParticleGeometryBuffer>{ new DefaultParticleGeometryBuffer(shadingMode, renderingQuality, shape) };
+	virtual std::unique_ptr<ParticlePrimitive> createParticlePrimitive(
+			ParticlePrimitive::ShadingMode shadingMode,
+			ParticlePrimitive::RenderingQuality renderingQuality,
+			ParticlePrimitive::ParticleShape shape) override {
+		return std::unique_ptr<ParticlePrimitive>{ new DefaultParticlePrimitive(shadingMode, renderingQuality, shape) };
 	}
 
 	/// Requests a new text geometry buffer from the renderer.
-	virtual std::unique_ptr<TextGeometryBuffer> createTextGeometryBuffer() override {
-		return std::unique_ptr<TextGeometryBuffer>{ new DefaultTextGeometryBuffer() };
+	virtual std::unique_ptr<TextPrimitive> createTextPrimitive() override {
+		return std::unique_ptr<TextPrimitive>{ new DefaultTextPrimitive() };
 	}
 
 	/// Requests a new image geometry buffer from the renderer.
-	virtual std::unique_ptr<ImageGeometryBuffer> createImageGeometryBuffer() override {
-		return std::unique_ptr<ImageGeometryBuffer>{ new DefaultImageGeometryBuffer() };
+	virtual std::unique_ptr<ImagePrimitive> createImagePrimitive() override {
+		return std::unique_ptr<ImagePrimitive>{ new DefaultImagePrimitive() };
 	}
 
 	/// Requests a new arrow geometry buffer from the renderer.
-	virtual std::unique_ptr<ArrowGeometryBuffer> createArrowGeometryBuffer(
-			ArrowGeometryBuffer::Shape shape,
-			ArrowGeometryBuffer::ShadingMode shadingMode,
-			ArrowGeometryBuffer::RenderingQuality renderingQuality) override {
-		return std::unique_ptr<ArrowGeometryBuffer>{ new DefaultArrowGeometryBuffer(shape, shadingMode, renderingQuality) };
+	virtual std::unique_ptr<ArrowPrimitive> createArrowPrimitive(
+			ArrowPrimitive::Shape shape,
+			ArrowPrimitive::ShadingMode shadingMode,
+			ArrowPrimitive::RenderingQuality renderingQuality) override {
+		return std::unique_ptr<ArrowPrimitive>{ new DefaultArrowPrimitive(shape, shadingMode, renderingQuality) };
 	}
 
 	/// Requests a new triangle mesh buffer from the renderer.
-	virtual std::unique_ptr<TriMeshGeometryBuffer> createTriMeshGeometryBuffer() override {
-		return std::unique_ptr<TriMeshGeometryBuffer>{ new DefaultTriMeshGeometryBuffer() };
+	virtual std::unique_ptr<MeshPrimitive> createMeshPrimitive() override {
+		return std::unique_ptr<MeshPrimitive>{ new DefaultMeshPrimitive() };
 	}
 
 	/// Renders the line geometry stored in the given buffer.
-	virtual void renderLines(const DefaultLineGeometryBuffer& lineBuffer) = 0;
+	virtual void renderLines(const DefaultLinePrimitive& lineBuffer) = 0;
 
 	/// Renders the particles stored in the given buffer.
-	virtual void renderParticles(const DefaultParticleGeometryBuffer& particleBuffer) = 0;
+	virtual void renderParticles(const DefaultParticlePrimitive& particleBuffer) = 0;
 
 	/// Renders the arrow elements stored in the given buffer.
-	virtual void renderArrows(const DefaultArrowGeometryBuffer& arrowBuffer) = 0;
+	virtual void renderArrows(const DefaultArrowPrimitive& arrowBuffer) = 0;
 
 	/// Renders the text stored in the given buffer.
-	virtual void renderText(const DefaultTextGeometryBuffer& textBuffer) = 0;
+	virtual void renderText(const DefaultTextPrimitive& textBuffer) = 0;
 
 	/// Renders the image stored in the given buffer.
-	virtual void renderImage(const DefaultImageGeometryBuffer& imageBuffer) = 0;
+	virtual void renderImage(const DefaultImagePrimitive& imageBuffer) = 0;
 
 	/// Renders the triangle mesh stored in the given buffer.
-	virtual void renderMesh(const DefaultTriMeshGeometryBuffer& meshBuffer) = 0;
+	virtual void renderMesh(const DefaultMeshPrimitive& meshBuffer) = 0;
 
 private:
 

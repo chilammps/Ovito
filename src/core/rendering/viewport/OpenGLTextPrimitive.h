@@ -20,15 +20,15 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
- * \file ViewportTextGeometryBuffer.h
- * \brief Contains the definition of the Ovito::ViewportTextGeometryBuffer class.
+ * \file OpenGLTextPrimitive.h
+ * \brief Contains the definition of the Ovito::OpenGLTextPrimitive class.
  */
 
-#ifndef __OVITO_VIEWPORT_TEXT_GEOMETRY_BUFFER_H
-#define __OVITO_VIEWPORT_TEXT_GEOMETRY_BUFFER_H
+#ifndef __OVITO_OPENGL_TEXT_PRIMITIVE_H
+#define __OVITO_OPENGL_TEXT_PRIMITIVE_H
 
 #include <core/Core.h>
-#include <core/rendering/TextGeometryBuffer.h>
+#include <core/rendering/TextPrimitive.h>
 #include <core/utilities/opengl/SharedOpenGLResource.h>
 
 namespace Ovito {
@@ -36,42 +36,42 @@ namespace Ovito {
 /**
  * \brief Buffer object that stores a text string to be rendered in the viewports.
  */
-class OVITO_CORE_EXPORT ViewportTextGeometryBuffer : public TextGeometryBuffer, private SharedOpenGLResource
+class OVITO_CORE_EXPORT OpenGLTextPrimitive : public TextPrimitive, private SharedOpenGLResource
 {
 public:
 
 	/// Constructor.
-	ViewportTextGeometryBuffer(ViewportSceneRenderer* renderer);
+	OpenGLTextPrimitive(ViewportSceneRenderer* renderer);
 
 	/// Destructor.
-	virtual ~ViewportTextGeometryBuffer();
+	virtual ~OpenGLTextPrimitive();
 
 	/// \brief Sets the text to be rendered.
 	virtual void setText(const QString& text) override {
 		if(text != this->text())
 			_needTextureUpdate = true;
-		TextGeometryBuffer::setText(text);
+		TextPrimitive::setText(text);
 	}
 
 	/// Sets the text font.
 	virtual void setFont(const QFont& font) override {
 		if(font != this->font())
 			_needTextureUpdate = true;
-		TextGeometryBuffer::setFont(font);
+		TextPrimitive::setFont(font);
 	}
 
 	/// Sets the text color.
 	virtual void setColor(const ColorA& color) override {
 		if(color != this->color())
 			_needTextureUpdate = true;
-		TextGeometryBuffer::setColor(color);
+		TextPrimitive::setColor(color);
 	}
 
 	/// Sets the text background color.
 	virtual void setBackgroundColor(const ColorA& color) override {
 		if(color != this->backgroundColor())
 			_needTextureUpdate = true;
-		TextGeometryBuffer::setBackgroundColor(color);
+		TextPrimitive::setBackgroundColor(color);
 	}
 
 	/// \brief Returns true if the geometry buffer is filled and can be rendered with the given renderer.
@@ -114,4 +114,4 @@ private:
 
 };
 
-#endif // __OVITO_VIEWPORT_TEXT_GEOMETRY_BUFFER_H
+#endif // __OVITO_OPENGL_TEXT_PRIMITIVE_H

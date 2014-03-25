@@ -134,21 +134,21 @@ SET(OVITO_CORE_SOURCE_FILES
 	utilities/opengl/SharedOpenGLResource.cpp
 	rendering/SceneRenderer.cpp
 	rendering/viewport/ViewportSceneRenderer.cpp
-	rendering/viewport/ViewportLineGeometryBuffer.cpp
-	rendering/viewport/ViewportParticleGeometryBuffer.cpp
-	rendering/viewport/ViewportTextGeometryBuffer.cpp
-	rendering/viewport/ViewportImageGeometryBuffer.cpp
-	rendering/viewport/ViewportArrowGeometryBuffer.cpp
-	rendering/viewport/ViewportTriMeshGeometryBuffer.cpp
+	rendering/viewport/OpenGLLinePrimitive.cpp
+	rendering/viewport/OpenGLParticlePrimitive.cpp
+	rendering/viewport/OpenGLTextPrimitive.cpp
+	rendering/viewport/OpenGLImagePrimitive.cpp
+	rendering/viewport/OpenGLArrowPrimitive.cpp
+	rendering/viewport/OpenGLMeshPrimitive.cpp
 	rendering/standard/StandardSceneRenderer.cpp
 	rendering/standard/StandardSceneRendererEditor.cpp
 	rendering/noninteractive/NonInteractiveSceneRenderer.cpp
-	rendering/noninteractive/DefaultLineGeometryBuffer.cpp
-	rendering/noninteractive/DefaultParticleGeometryBuffer.cpp
-	rendering/noninteractive/DefaultTextGeometryBuffer.cpp
-	rendering/noninteractive/DefaultImageGeometryBuffer.cpp
-	rendering/noninteractive/DefaultArrowGeometryBuffer.cpp
-	rendering/noninteractive/DefaultTriMeshGeometryBuffer.cpp
+	rendering/noninteractive/DefaultLinePrimitive.cpp
+	rendering/noninteractive/DefaultParticlePrimitive.cpp
+	rendering/noninteractive/DefaultTextPrimitive.cpp
+	rendering/noninteractive/DefaultImagePrimitive.cpp
+	rendering/noninteractive/DefaultArrowPrimitive.cpp
+	rendering/noninteractive/DefaultMeshPrimitive.cpp
 	rendering/RenderSettings.cpp
 	rendering/RenderSettingsEditor.cpp
 	rendering/FrameBuffer.cpp

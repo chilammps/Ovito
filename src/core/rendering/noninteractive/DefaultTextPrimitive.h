@@ -20,27 +20,27 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
- * \file DefaultTextGeometryBuffer.h
- * \brief Contains the definition of the Ovito::DefaultTextGeometryBuffer class.
+ * \file DefaultTextPrimitive.h
+ * \brief Contains the definition of the Ovito::DefaultTextPrimitive class.
  */
 
 #ifndef __OVITO_DEFAULT_TEXT_GEOMETRY_BUFFER_H
 #define __OVITO_DEFAULT_TEXT_GEOMETRY_BUFFER_H
 
 #include <core/Core.h>
-#include <core/rendering/TextGeometryBuffer.h>
+#include <core/rendering/TextPrimitive.h>
 
 namespace Ovito {
 
 /**
  * \brief Buffer object that stores a text string to be rendered by a non-interactive renderer.
  */
-class OVITO_CORE_EXPORT DefaultTextGeometryBuffer : public TextGeometryBuffer
+class OVITO_CORE_EXPORT DefaultTextPrimitive : public TextPrimitive
 {
 public:
 
 	/// Constructor.
-	DefaultTextGeometryBuffer() {}
+	DefaultTextPrimitive() {}
 
 	/// \brief Returns true if the geometry buffer is filled and can be rendered with the given renderer.
 	virtual bool isValid(SceneRenderer* renderer) override;

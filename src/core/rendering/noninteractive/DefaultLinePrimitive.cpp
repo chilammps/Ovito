@@ -20,29 +20,15 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include "DefaultArrowGeometryBuffer.h"
+#include "DefaultLinePrimitive.h"
 #include "NonInteractiveSceneRenderer.h"
 
 namespace Ovito {
 
 /******************************************************************************
-* Sets the properties of a single element.
-******************************************************************************/
-void DefaultArrowGeometryBuffer::setElement(int index, const Point3& pos, const Vector3& dir, const ColorA& color, FloatType width)
-{
-	OVITO_ASSERT(index >= 0 && index < _elements.size());
-	ArrowElement& elmnt = _elements[index];
-
-	elmnt.pos = pos;
-	elmnt.dir = dir;
-	elmnt.color = color;
-	elmnt.width = width;
-}
-
-/******************************************************************************
 * Returns true if the geometry buffer is filled and can be rendered with the given renderer.
 ******************************************************************************/
-bool DefaultArrowGeometryBuffer::isValid(SceneRenderer* renderer)
+bool DefaultLinePrimitive::isValid(SceneRenderer* renderer)
 {
 	// This buffer type works only in conjunction with a non-interactive renderer.
 	return (qobject_cast<NonInteractiveSceneRenderer*>(renderer) != nullptr);
@@ -51,13 +37,13 @@ bool DefaultArrowGeometryBuffer::isValid(SceneRenderer* renderer)
 /******************************************************************************
 * Renders the geometry.
 ******************************************************************************/
-void DefaultArrowGeometryBuffer::render(SceneRenderer* renderer)
+void DefaultLinePrimitive::render(SceneRenderer* renderer)
 {
 	NonInteractiveSceneRenderer* niRenderer = dynamic_object_cast<NonInteractiveSceneRenderer>(renderer);
-	if(_elements.empty() || !niRenderer || renderer->isPicking())
+	if(vertexCount() <= 0 || !niRenderer || renderer->isPicking())
 		return;
 
-	niRenderer->renderArrows(*this);
+	niRenderer->renderLines(*this);
 }
 
 };

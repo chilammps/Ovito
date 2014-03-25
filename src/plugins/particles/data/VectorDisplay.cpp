@@ -57,8 +57,8 @@ SET_PROPERTY_FIELD_UNITS(VectorDisplay, _arrowWidth, WorldParameterUnit);
 ******************************************************************************/
 VectorDisplay::VectorDisplay(DataSet* dataset) : DisplayObject(dataset),
 	_reverseArrowDirection(false), _flipVectors(false), _arrowColor(1, 1, 0), _arrowWidth(0.5), _scalingFactor(1),
-	_shadingMode(ArrowGeometryBuffer::FlatShading),
-	_renderingQuality(ArrowGeometryBuffer::LowQuality)
+	_shadingMode(ArrowPrimitive::FlatShading),
+	_renderingQuality(ArrowPrimitive::LowQuality)
 {
 	INIT_PROPERTY_FIELD(VectorDisplay::_arrowColor);
 	INIT_PROPERTY_FIELD(VectorDisplay::_arrowWidth);
@@ -167,7 +167,7 @@ void VectorDisplay::render(TimePoint time, SceneObject* sceneObject, const Pipel
 
 	// Re-create the geometry buffer if necessary.
 	if(recreateBuffer)
-		_buffer = renderer->createArrowGeometryBuffer(ArrowGeometryBuffer::ArrowShape, shadingMode(), renderingQuality());
+		_buffer = renderer->createArrowPrimitive(ArrowPrimitive::ArrowShape, shadingMode(), renderingQuality());
 
 	// Update buffer contents.
 	if(updateContents) {
@@ -180,7 +180,7 @@ void VectorDisplay::render(TimePoint time, SceneObject* sceneObject, const Pipel
 			const Vector3* v_begin = vectorProperty->constDataVector3();
 			ColorA color(arrowColor());
 			FloatType width = arrowWidth();
-			ArrowGeometryBuffer* buffer = _buffer.get();
+			ArrowPrimitive* buffer = _buffer.get();
 			if(!reverseArrowDirection()) {
 				parallelFor(vectorCount, [buffer, scalingFac, color, width, p_begin, v_begin](int index) {
 					buffer->setElement(index, p_begin[index], v_begin[index] * scalingFac, color, width);
@@ -217,16 +217,16 @@ void VectorDisplayEditor::createUI(const RolloutInsertionParameters& rolloutPara
 
 	// Shading mode.
 	VariantComboBoxParameterUI* shadingModeUI = new VariantComboBoxParameterUI(this, "shadingMode");
-	shadingModeUI->comboBox()->addItem(tr("Normal"), qVariantFromValue(ArrowGeometryBuffer::NormalShading));
-	shadingModeUI->comboBox()->addItem(tr("Flat"), qVariantFromValue(ArrowGeometryBuffer::FlatShading));
+	shadingModeUI->comboBox()->addItem(tr("Normal"), qVariantFromValue(ArrowPrimitive::NormalShading));
+	shadingModeUI->comboBox()->addItem(tr("Flat"), qVariantFromValue(ArrowPrimitive::FlatShading));
 	layout->addWidget(new QLabel(tr("Shading mode:")), 0, 0);
 	layout->addWidget(shadingModeUI->comboBox(), 0, 1);
 
 	// Rendering quality.
 	VariantComboBoxParameterUI* renderingQualityUI = new VariantComboBoxParameterUI(this, "renderingQuality");
-	renderingQualityUI->comboBox()->addItem(tr("Low"), qVariantFromValue(ArrowGeometryBuffer::LowQuality));
-	renderingQualityUI->comboBox()->addItem(tr("Medium"), qVariantFromValue(ArrowGeometryBuffer::MediumQuality));
-	renderingQualityUI->comboBox()->addItem(tr("High"), qVariantFromValue(ArrowGeometryBuffer::HighQuality));
+	renderingQualityUI->comboBox()->addItem(tr("Low"), qVariantFromValue(ArrowPrimitive::LowQuality));
+	renderingQualityUI->comboBox()->addItem(tr("Medium"), qVariantFromValue(ArrowPrimitive::MediumQuality));
+	renderingQualityUI->comboBox()->addItem(tr("High"), qVariantFromValue(ArrowPrimitive::HighQuality));
 	layout->addWidget(new QLabel(tr("Rendering quality:")), 1, 0);
 	layout->addWidget(renderingQualityUI->comboBox(), 1, 1);
 

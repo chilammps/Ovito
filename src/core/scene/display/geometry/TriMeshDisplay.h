@@ -29,7 +29,7 @@
 
 #include <core/Core.h>
 #include <core/scene/display/DisplayObject.h>
-#include <core/rendering/TriMeshGeometryBuffer.h>
+#include <core/rendering/MeshPrimitive.h>
 #include <core/animation/controller/Controller.h>
 #include <core/animation/AnimationSettings.h>
 #include <core/gui/properties/PropertiesEditor.h>
@@ -81,7 +81,7 @@ protected:
 	ReferenceField<FloatController> _transparency;
 
 	/// The buffered geometry used to render the mesh.
-	std::unique_ptr<TriMeshGeometryBuffer> _buffer;
+	std::unique_ptr<MeshPrimitive> _buffer;
 
 	/// This helper structure is used to detect any changes in the input data
 	/// that require updating the geometry buffer.

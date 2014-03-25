@@ -97,8 +97,8 @@ void SimulationCellDisplay::renderWireframe(SimulationCell* cell, SceneRenderer*
 			|| !_wireframeGeometry->isValid(renderer)
 			|| !_wireframePickingGeometry
 			|| !_wireframePickingGeometry->isValid(renderer)) {
-		_wireframeGeometry = renderer->createLineGeometryBuffer();
-		_wireframePickingGeometry = renderer->createLineGeometryBuffer();
+		_wireframeGeometry = renderer->createLinePrimitive();
+		_wireframePickingGeometry = renderer->createLinePrimitive();
 		_wireframeGeometry->setVertexCount(24);
 		_wireframePickingGeometry->setVertexCount(24, renderer->defaultLinePickingWidth());
 		Point3 corners[8];
@@ -146,8 +146,8 @@ void SimulationCellDisplay::renderSolid(SimulationCell* cell, SceneRenderer* ren
 			|| !_edgeGeometry || !_cornerGeometry
 			|| !_edgeGeometry->isValid(renderer)
 			|| !_cornerGeometry->isValid(renderer)) {
-		_edgeGeometry = renderer->createArrowGeometryBuffer(ArrowGeometryBuffer::CylinderShape, ArrowGeometryBuffer::NormalShading, ArrowGeometryBuffer::HighQuality);
-		_cornerGeometry = renderer->createParticleGeometryBuffer(ParticleGeometryBuffer::NormalShading, ParticleGeometryBuffer::HighQuality);
+		_edgeGeometry = renderer->createArrowPrimitive(ArrowPrimitive::CylinderShape, ArrowPrimitive::NormalShading, ArrowPrimitive::HighQuality);
+		_cornerGeometry = renderer->createParticlePrimitive(ParticlePrimitive::NormalShading, ParticlePrimitive::HighQuality);
 		_edgeGeometry->startSetElements(12);
 		ColorA color = (ColorA)simulationCellRenderingColor();
 		Point3 corners[8];

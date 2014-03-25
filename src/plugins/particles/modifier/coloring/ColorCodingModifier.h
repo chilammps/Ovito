@@ -26,8 +26,8 @@
 #include <plugins/particles/data/ParticlePropertyObject.h>
 #include <core/animation/controller/Controller.h>
 #include <core/animation/AnimationSettings.h>
-#include <core/rendering/ImageGeometryBuffer.h>
-#include <core/rendering/TextGeometryBuffer.h>
+#include <core/rendering/ImagePrimitive.h>
+#include <core/rendering/TextPrimitive.h>
 #include "../ParticleModifier.h"
 
 namespace Particles {
@@ -283,16 +283,16 @@ protected:
 	PropertyField<bool> _renderLegend;
 
 	/// Used to render the color scale legend on top the scene.
-	std::unique_ptr<ImageGeometryBuffer> _colorScaleImageBuffer;
+	std::unique_ptr<ImagePrimitive> _colorScaleImageBuffer;
 
 	/// Used to render the color scale labels.
-	std::unique_ptr<TextGeometryBuffer> _colorScaleTopLabel;
+	std::unique_ptr<TextPrimitive> _colorScaleTopLabel;
 
 	/// Used to render the color scale labels.
-	std::unique_ptr<TextGeometryBuffer> _colorScaleBottomLabel;
+	std::unique_ptr<TextPrimitive> _colorScaleBottomLabel;
 
 	/// Used to render the color scale title.
-	std::unique_ptr<TextGeometryBuffer> _colorScaleTitleLabel;
+	std::unique_ptr<TextPrimitive> _colorScaleTitleLabel;
 
 	/// This helper object is used to detect changes in the settings that required
 	/// updating the render buffers used to display the color scale legend.

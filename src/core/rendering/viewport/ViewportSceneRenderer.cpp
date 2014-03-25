@@ -32,12 +32,12 @@
 #include <core/gui/mainwin/MainWindow.h>
 #include <core/gui/app/Application.h>
 #include "ViewportSceneRenderer.h"
-#include "ViewportLineGeometryBuffer.h"
-#include "ViewportParticleGeometryBuffer.h"
-#include "ViewportTextGeometryBuffer.h"
-#include "ViewportImageGeometryBuffer.h"
-#include "ViewportArrowGeometryBuffer.h"
-#include "ViewportTriMeshGeometryBuffer.h"
+#include "OpenGLLinePrimitive.h"
+#include "OpenGLParticlePrimitive.h"
+#include "OpenGLTextPrimitive.h"
+#include "OpenGLImagePrimitive.h"
+#include "OpenGLArrowPrimitive.h"
+#include "OpenGLMeshPrimitive.h"
 
 namespace Ovito {
 
@@ -262,51 +262,51 @@ const char* ViewportSceneRenderer::openglErrorString(GLenum errorCode)
 /******************************************************************************
 * Requests a new line geometry buffer from the renderer.
 ******************************************************************************/
-std::unique_ptr<LineGeometryBuffer> ViewportSceneRenderer::createLineGeometryBuffer()
+std::unique_ptr<LinePrimitive> ViewportSceneRenderer::createLinePrimitive()
 {
-	return std::unique_ptr<LineGeometryBuffer>{ new ViewportLineGeometryBuffer(this) };
+	return std::unique_ptr<LinePrimitive>{ new OpenGLLinePrimitive(this) };
 }
 
 /******************************************************************************
 * Requests a new particle geometry buffer from the renderer.
 ******************************************************************************/
-std::unique_ptr<ParticleGeometryBuffer> ViewportSceneRenderer::createParticleGeometryBuffer(ParticleGeometryBuffer::ShadingMode shadingMode,
-		ParticleGeometryBuffer::RenderingQuality renderingQuality, ParticleGeometryBuffer::ParticleShape shape) {
-	return std::unique_ptr<ParticleGeometryBuffer>{ new ViewportParticleGeometryBuffer(this, shadingMode, renderingQuality, shape) };
+std::unique_ptr<ParticlePrimitive> ViewportSceneRenderer::createParticlePrimitive(ParticlePrimitive::ShadingMode shadingMode,
+		ParticlePrimitive::RenderingQuality renderingQuality, ParticlePrimitive::ParticleShape shape) {
+	return std::unique_ptr<ParticlePrimitive>{ new OpenGLParticlePrimitive(this, shadingMode, renderingQuality, shape) };
 }
 
 /******************************************************************************
 * Requests a new text geometry buffer from the renderer.
 ******************************************************************************/
-std::unique_ptr<TextGeometryBuffer> ViewportSceneRenderer::createTextGeometryBuffer()
+std::unique_ptr<TextPrimitive> ViewportSceneRenderer::createTextPrimitive()
 {
-	return std::unique_ptr<TextGeometryBuffer>{ new ViewportTextGeometryBuffer(this) };
+	return std::unique_ptr<TextPrimitive>{ new OpenGLTextPrimitive(this) };
 }
 
 /******************************************************************************
 * Requests a new image geometry buffer from the renderer.
 ******************************************************************************/
-std::unique_ptr<ImageGeometryBuffer> ViewportSceneRenderer::createImageGeometryBuffer()
+std::unique_ptr<ImagePrimitive> ViewportSceneRenderer::createImagePrimitive()
 {
-	return std::unique_ptr<ImageGeometryBuffer>{ new ViewportImageGeometryBuffer(this) };
+	return std::unique_ptr<ImagePrimitive>{ new OpenGLImagePrimitive(this) };
 }
 
 /******************************************************************************
 * Requests a new arrow geometry buffer from the renderer.
 ******************************************************************************/
-std::unique_ptr<ArrowGeometryBuffer> ViewportSceneRenderer::createArrowGeometryBuffer(ArrowGeometryBuffer::Shape shape,
-		ArrowGeometryBuffer::ShadingMode shadingMode,
-		ArrowGeometryBuffer::RenderingQuality renderingQuality)
+std::unique_ptr<ArrowPrimitive> ViewportSceneRenderer::createArrowPrimitive(ArrowPrimitive::Shape shape,
+		ArrowPrimitive::ShadingMode shadingMode,
+		ArrowPrimitive::RenderingQuality renderingQuality)
 {
-	return std::unique_ptr<ArrowGeometryBuffer>{ new ViewportArrowGeometryBuffer(this, shape, shadingMode, renderingQuality) };
+	return std::unique_ptr<ArrowPrimitive>{ new OpenGLArrowPrimitive(this, shape, shadingMode, renderingQuality) };
 }
 
 /******************************************************************************
 * Requests a new triangle mesh buffer from the renderer.
 ******************************************************************************/
-std::unique_ptr<TriMeshGeometryBuffer> ViewportSceneRenderer::createTriMeshGeometryBuffer()
+std::unique_ptr<MeshPrimitive> ViewportSceneRenderer::createMeshPrimitive()
 {
-	return std::unique_ptr<TriMeshGeometryBuffer>{ new ViewportTriMeshGeometryBuffer(this) };
+	return std::unique_ptr<MeshPrimitive>{ new OpenGLMeshPrimitive(this) };
 }
 
 /******************************************************************************
@@ -780,7 +780,7 @@ void ViewportSceneRenderer::renderGrid()
 	// Render grid lines.
 	setWorldTransform(viewport()->gridMatrix());
 	if(!_constructionGridGeometry || !_constructionGridGeometry->isValid(this))
-		_constructionGridGeometry = createLineGeometryBuffer();
+		_constructionGridGeometry = createLinePrimitive();
 	_constructionGridGeometry->setVertexCount(numVertices);
 	_constructionGridGeometry->setVertexPositions(vertexPositions.get());
 	_constructionGridGeometry->setVertexColors(vertexColors.get());

@@ -54,8 +54,8 @@ SET_PROPERTY_FIELD_UNITS(BondsDisplay, _bondWidth, WorldParameterUnit);
 ******************************************************************************/
 BondsDisplay::BondsDisplay(DataSet* dataset) : DisplayObject(dataset),
 	_bondWidth(0.4), _bondColor(0.6, 0.6, 0.6), _useParticleColors(true),
-	_shadingMode(ArrowGeometryBuffer::NormalShading),
-	_renderingQuality(ArrowGeometryBuffer::HighQuality)
+	_shadingMode(ArrowPrimitive::NormalShading),
+	_renderingQuality(ArrowPrimitive::HighQuality)
 {
 	INIT_PROPERTY_FIELD(BondsDisplay::_bondWidth);
 	INIT_PROPERTY_FIELD(BondsDisplay::_bondColor);
@@ -150,7 +150,7 @@ void BondsDisplay::render(TimePoint time, SceneObject* sceneObject, const Pipeli
 		if(bondsObj && positionProperty && bondRadius > 0) {
 
 			// Create bond geometry buffer.
-			_buffer = renderer->createArrowGeometryBuffer(ArrowGeometryBuffer::CylinderShape, shadingMode(), renderingQuality());
+			_buffer = renderer->createArrowPrimitive(ArrowPrimitive::CylinderShape, shadingMode(), renderingQuality());
 			_buffer->startSetElements(bondsObj->bonds().size());
 
 			// Obtain particle colors since they determine the bond colors.
@@ -217,16 +217,16 @@ void BondsDisplayEditor::createUI(const RolloutInsertionParameters& rolloutParam
 
 	// Shading mode.
 	VariantComboBoxParameterUI* shadingModeUI = new VariantComboBoxParameterUI(this, "shadingMode");
-	shadingModeUI->comboBox()->addItem(tr("Normal"), qVariantFromValue(ArrowGeometryBuffer::NormalShading));
-	shadingModeUI->comboBox()->addItem(tr("Flat"), qVariantFromValue(ArrowGeometryBuffer::FlatShading));
+	shadingModeUI->comboBox()->addItem(tr("Normal"), qVariantFromValue(ArrowPrimitive::NormalShading));
+	shadingModeUI->comboBox()->addItem(tr("Flat"), qVariantFromValue(ArrowPrimitive::FlatShading));
 	layout->addWidget(new QLabel(tr("Shading mode:")), 0, 0);
 	layout->addWidget(shadingModeUI->comboBox(), 0, 1);
 
 	// Rendering quality.
 	VariantComboBoxParameterUI* renderingQualityUI = new VariantComboBoxParameterUI(this, "renderingQuality");
-	renderingQualityUI->comboBox()->addItem(tr("Low"), qVariantFromValue(ArrowGeometryBuffer::LowQuality));
-	renderingQualityUI->comboBox()->addItem(tr("Medium"), qVariantFromValue(ArrowGeometryBuffer::MediumQuality));
-	renderingQualityUI->comboBox()->addItem(tr("High"), qVariantFromValue(ArrowGeometryBuffer::HighQuality));
+	renderingQualityUI->comboBox()->addItem(tr("Low"), qVariantFromValue(ArrowPrimitive::LowQuality));
+	renderingQualityUI->comboBox()->addItem(tr("Medium"), qVariantFromValue(ArrowPrimitive::MediumQuality));
+	renderingQualityUI->comboBox()->addItem(tr("High"), qVariantFromValue(ArrowPrimitive::HighQuality));
 	layout->addWidget(new QLabel(tr("Rendering quality:")), 1, 0);
 	layout->addWidget(renderingQualityUI->comboBox(), 1, 1);
 

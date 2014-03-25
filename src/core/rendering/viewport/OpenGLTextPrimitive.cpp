@@ -20,7 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include "ViewportImageGeometryBuffer.h"
+#include "OpenGLTextPrimitive.h"
 #include "ViewportSceneRenderer.h"
 
 #include <QGLWidget>
@@ -30,23 +30,24 @@ namespace Ovito {
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-ViewportImageGeometryBuffer::ViewportImageGeometryBuffer(ViewportSceneRenderer* renderer) :
+OpenGLTextPrimitive::OpenGLTextPrimitive(ViewportSceneRenderer* renderer) :
 	_contextGroup(QOpenGLContextGroup::currentContextGroup()),
 	_texture(0),
-	_needTextureUpdate(true)
+	_needTextureUpdate(true),
+	_textureImage(1, 1, QImage::Format_RGB32)
 {
 	OVITO_ASSERT(renderer->glcontext()->shareGroup() == _contextGroup);
 
 	// Initialize OpenGL shader.
-	_shader = renderer->loadShaderProgram("image", ":/core/glsl/image/image.vs", ":/core/glsl/image/image.fs");
+	_shader = renderer->loadShaderProgram("text", ":/core/glsl/text/text.vs", ":/core/glsl/text/text.fs");
 
 	// Create vertex buffer
 	if(!_vertexBuffer.create())
 		throw Exception(QStringLiteral("Failed to create OpenGL vertex buffer."));
 	_vertexBuffer.setUsagePattern(QOpenGLBuffer::DynamicDraw);
 	if(!_vertexBuffer.bind())
-		throw Exception(QStringLiteral("Failed to bind OpenGL vertex buffer."));
-	_vertexBuffer.allocate(4 * sizeof(Point2));
+			throw Exception(QStringLiteral("Failed to bind OpenGL vertex buffer."));
+	OVITO_CHECK_OPENGL(_vertexBuffer.allocate(4 * sizeof(Point2)));
 	_vertexBuffer.release();
 
 	// Create OpenGL texture.
@@ -59,7 +60,7 @@ ViewportImageGeometryBuffer::ViewportImageGeometryBuffer(ViewportSceneRenderer* 
 /******************************************************************************
 * Destructor.
 ******************************************************************************/
-ViewportImageGeometryBuffer::~ViewportImageGeometryBuffer()
+OpenGLTextPrimitive::~OpenGLTextPrimitive()
 {
 	destroyOpenGLResources();
 }
@@ -68,7 +69,7 @@ ViewportImageGeometryBuffer::~ViewportImageGeometryBuffer()
 * This method that takes care of freeing the shared OpenGL resources owned
 * by this class.
 ******************************************************************************/
-void ViewportImageGeometryBuffer::freeOpenGLResources()
+void OpenGLTextPrimitive::freeOpenGLResources()
 {
 	glDeleteTextures(1, &_texture);
 	_texture = 0;
@@ -77,7 +78,7 @@ void ViewportImageGeometryBuffer::freeOpenGLResources()
 /******************************************************************************
 * Returns true if the buffer is filled and can be rendered with the given renderer.
 ******************************************************************************/
-bool ViewportImageGeometryBuffer::isValid(SceneRenderer* renderer)
+bool OpenGLTextPrimitive::isValid(SceneRenderer* renderer)
 {
 	ViewportSceneRenderer* vpRenderer = qobject_cast<ViewportSceneRenderer*>(renderer);
 	if(!vpRenderer) return false;
@@ -85,63 +86,91 @@ bool ViewportImageGeometryBuffer::isValid(SceneRenderer* renderer)
 }
 
 /******************************************************************************
-* Renders the image in a rectangle given in viewport coordinates.
+* Renders the text string at the given location given in normalized
+* viewport coordinates ([-1,+1] range).
 ******************************************************************************/
-void ViewportImageGeometryBuffer::renderViewport(SceneRenderer* renderer, const Point2& pos, const Vector2& size)
+void OpenGLTextPrimitive::renderViewport(SceneRenderer* renderer, const Point2& pos, int alignment)
 {
 	GLint vc[4];
 	glGetIntegerv(GL_VIEWPORT, vc);
 
-	Point2 windowPos((pos.x() + 1.0) * vc[2] / 2, (-(pos.y() + size.y()) + 1.0) * vc[3] / 2);
-	Vector2 windowSize(size.x() * vc[2] / 2, size.y() * vc[3] / 2);
-	renderWindow(renderer, windowPos, windowSize);
+	Point2 windowPos((pos.x() + 1.0) * vc[2] / 2, (-pos.y() + 1.0) * vc[3] / 2);
+	renderWindow(renderer, windowPos, alignment);
 }
 
 /******************************************************************************
-* Renders the image in a rectangle given in window coordinates.
+* Renders the text string at the given 2D window (pixel) coordinates.
 ******************************************************************************/
-void ViewportImageGeometryBuffer::renderWindow(SceneRenderer* renderer, const Point2& pos, const Vector2& size)
+void OpenGLTextPrimitive::renderWindow(SceneRenderer* renderer, const Point2& pos, int alignment)
 {
 	OVITO_ASSERT(_contextGroup == QOpenGLContextGroup::currentContextGroup());
 	OVITO_ASSERT(_texture != 0);
-	OVITO_STATIC_ASSERT(sizeof(FloatType) == sizeof(GLfloat) && sizeof(Point2) == sizeof(GLfloat)*2);
+	OVITO_STATIC_ASSERT(sizeof(FloatType) == sizeof(float) && sizeof(Point2) == sizeof(float)*2);
 	ViewportSceneRenderer* vpRenderer = dynamic_object_cast<ViewportSceneRenderer>(renderer);
 
-	if(image().isNull() || !vpRenderer || renderer->isPicking())
+	if(text().isEmpty() || !vpRenderer || renderer->isPicking())
 		return;
+
+	// Enable texturing when using compatibility OpenGL. In the core profile, this is enabled by default.
+	if(vpRenderer->isCoreProfile() == false)
+		OVITO_CHECK_OPENGL(glEnable(GL_TEXTURE_2D));
 
 	// Prepare texture.
 	OVITO_CHECK_OPENGL(vpRenderer->glfuncs()->glActiveTexture(GL_TEXTURE0));
 	OVITO_CHECK_OPENGL(glBindTexture(GL_TEXTURE_2D, _texture));
 
-	// Enable texturing when using compatibility OpenGL. In the core profile, this is enabled by default.
-	if(vpRenderer->isCoreProfile() == false)
-		glEnable(GL_TEXTURE_2D);
-
 	if(_needTextureUpdate) {
 		_needTextureUpdate = false;
 
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LOD, 0);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+		OVITO_CHECK_OPENGL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+		OVITO_CHECK_OPENGL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+		OVITO_CHECK_OPENGL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LOD, 0));
+		OVITO_CHECK_OPENGL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0));
+
+		// Measure text size.
+		QRect rect;
+		qreal devicePixelRatio = 1.0;
+		{
+			if(vpRenderer->glcontext()->surface()->surfaceClass() == QSurface::Window) {
+				QWindow* window = static_cast<QWindow*>(vpRenderer->glcontext()->surface());
+				devicePixelRatio = window->devicePixelRatio();
+			}
+			_textureImage.setDevicePixelRatio(devicePixelRatio);
+			QPainter painter(&_textureImage);
+			painter.setFont(font());
+			rect = painter.boundingRect(QRect(), Qt::AlignLeft | Qt::AlignTop, text());
+		}
+
+		// Generate texture image.
+		_textureImage = QImage((rect.width() * devicePixelRatio)+1, (rect.height() * devicePixelRatio)+1, QImage::Format_ARGB32_Premultiplied);
+		_textureImage.setDevicePixelRatio(devicePixelRatio);
+		_textureImage.fill((QColor)backgroundColor());
+		{
+			QPainter painter(&_textureImage);
+			painter.setFont(font());
+			painter.setPen((QColor)color());
+			painter.drawText(rect, Qt::AlignLeft | Qt::AlignTop, text());
+		}
+		_textOffset = rect.topLeft();
+		//_textureImage.save(QString("%1.png").arg(text()));
 
 		// Upload texture data.
-		QImage textureImage = QGLWidget::convertToGLFormat(image());
+		QImage textureImage = QGLWidget::convertToGLFormat(_textureImage);
 		OVITO_CHECK_OPENGL(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureImage.width(), textureImage.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, textureImage.constBits()));
 	}
 
 	// Transform rectangle to normalized device coordinates.
-	FloatType x = pos.x(), y = pos.y();
-	FloatType w = size.x(), h = size.y();
-	if(vpRenderer->antialiasingLevel() > 1) {
-		x = (int)(x / vpRenderer->antialiasingLevel()) * vpRenderer->antialiasingLevel();
-		y = (int)(y / vpRenderer->antialiasingLevel()) * vpRenderer->antialiasingLevel();
-		int x2 = (int)((x + w) / vpRenderer->antialiasingLevel()) * vpRenderer->antialiasingLevel();
-		int y2 = (int)((y + h) / vpRenderer->antialiasingLevel()) * vpRenderer->antialiasingLevel();
-		w = x2 - x;
-		h = y2 - y;
-	}
+	int x = 0, y = 0;
+	int w = vpRenderer->antialiasingLevel() * _textureImage.width();
+	int h = vpRenderer->antialiasingLevel() * _textureImage.height();
+	if(alignment & Qt::AlignRight) x = -w;
+	else if(alignment & Qt::AlignHCenter) x = -w / 2;
+	if(alignment & Qt::AlignBottom) y = -h;
+	else if(alignment & Qt::AlignVCenter) y = -h / 2;
+	x += pos.x();
+	y += pos.y();
+	x = (x / vpRenderer->antialiasingLevel()) * vpRenderer->antialiasingLevel();
+	y = (y / vpRenderer->antialiasingLevel()) * vpRenderer->antialiasingLevel();
 	QRectF rect2(x, y, w, h);
 	GLint vc[4];
 	glGetIntegerv(GL_VIEWPORT, vc);
@@ -154,24 +183,25 @@ void ViewportImageGeometryBuffer::renderWindow(SceneRenderer* renderer, const Po
 
 	bool wasDepthTestEnabled = glIsEnabled(GL_DEPTH_TEST);
 	bool wasBlendEnabled = glIsEnabled(GL_BLEND);
-	glDisable(GL_DEPTH_TEST);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	OVITO_CHECK_OPENGL(glDisable(GL_DEPTH_TEST));
+	OVITO_CHECK_OPENGL(glEnable(GL_BLEND));
+	OVITO_CHECK_OPENGL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
 	if(!_shader->bind())
 		throw Exception(QStringLiteral("Failed to bind OpenGL shader."));
 
 	if(vpRenderer->glformat().majorVersion() >= 3) {
+
 		if(!_vertexBuffer.bind())
-				throw Exception(QStringLiteral("Failed to bind OpenGL vertex buffer."));
+			throw Exception(QStringLiteral("Failed to bind OpenGL vertex buffer."));
 
 		// Set up look-up table for texture coordinates.
 		const GLfloat uvcoords[] { 0,0,  1,0,  0,1,  1,1 };
-		_shader->setUniformValueArray("uvcoords", uvcoords, 4, 2);
+		OVITO_CHECK_OPENGL(_shader->setUniformValueArray("uvcoords", uvcoords, 4, 2));
 
-		_vertexBuffer.write(0, corners, 4 * sizeof(Point2));
-		_shader->enableAttributeArray("vertex_pos");
-		_shader->setAttributeBuffer("vertex_pos", GL_FLOAT, 0, 2);
+		OVITO_CHECK_OPENGL(_vertexBuffer.write(0, corners, 4 * sizeof(Point2)));
+		OVITO_CHECK_OPENGL(_shader->enableAttributeArray("vertex_pos"));
+		OVITO_CHECK_OPENGL(_shader->setAttributeBuffer("vertex_pos", GL_FLOAT, 0, 2));
 		_vertexBuffer.release();
 
 		OVITO_CHECK_OPENGL(glDrawArrays(GL_TRIANGLE_STRIP, 0, 4));
@@ -200,6 +230,8 @@ void ViewportImageGeometryBuffer::renderWindow(SceneRenderer* renderer, const Po
 	// Turn off texturing.
 	if(vpRenderer->isCoreProfile() == false)
 		glDisable(GL_TEXTURE_2D);
+
+	OVITO_CHECK_OPENGL();
 }
 
 };

@@ -54,22 +54,22 @@ public:
 	virtual void endRender() override;
 
 	/// Renders the line geometry stored in the given buffer.
-	virtual void renderLines(const DefaultLineGeometryBuffer& lineBuffer) override;
+	virtual void renderLines(const DefaultLinePrimitive& lineBuffer) override;
 
 	/// Renders the particles stored in the given buffer.
-	virtual void renderParticles(const DefaultParticleGeometryBuffer& particleBuffer) override;
+	virtual void renderParticles(const DefaultParticlePrimitive& particleBuffer) override;
 
 	/// Renders the arrow elements stored in the given buffer.
-	virtual void renderArrows(const DefaultArrowGeometryBuffer& arrowBuffer) override;
+	virtual void renderArrows(const DefaultArrowPrimitive& arrowBuffer) override;
 
 	/// Renders the text stored in the given buffer.
-	virtual void renderText(const DefaultTextGeometryBuffer& textBuffer) override;
+	virtual void renderText(const DefaultTextPrimitive& textBuffer) override;
 
 	/// Renders the image stored in the given buffer.
-	virtual void renderImage(const DefaultImageGeometryBuffer& imageBuffer) override;
+	virtual void renderImage(const DefaultImagePrimitive& imageBuffer) override;
 
 	/// Renders the triangle mesh stored in the given buffer.
-	virtual void renderMesh(const DefaultTriMeshGeometryBuffer& meshBuffer) override;
+	virtual void renderMesh(const DefaultMeshPrimitive& meshBuffer) override;
 
 private:
 

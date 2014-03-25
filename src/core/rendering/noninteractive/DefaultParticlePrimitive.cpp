@@ -20,7 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include "DefaultLineGeometryBuffer.h"
+#include "DefaultParticlePrimitive.h"
 #include "NonInteractiveSceneRenderer.h"
 
 namespace Ovito {
@@ -28,7 +28,7 @@ namespace Ovito {
 /******************************************************************************
 * Returns true if the geometry buffer is filled and can be rendered with the given renderer.
 ******************************************************************************/
-bool DefaultLineGeometryBuffer::isValid(SceneRenderer* renderer)
+bool DefaultParticlePrimitive::isValid(SceneRenderer* renderer)
 {
 	// This buffer type works only in conjunction with a non-interactive renderer.
 	return (qobject_cast<NonInteractiveSceneRenderer*>(renderer) != nullptr);
@@ -37,13 +37,13 @@ bool DefaultLineGeometryBuffer::isValid(SceneRenderer* renderer)
 /******************************************************************************
 * Renders the geometry.
 ******************************************************************************/
-void DefaultLineGeometryBuffer::render(SceneRenderer* renderer)
+void DefaultParticlePrimitive::render(SceneRenderer* renderer)
 {
 	NonInteractiveSceneRenderer* niRenderer = dynamic_object_cast<NonInteractiveSceneRenderer>(renderer);
-	if(vertexCount() <= 0 || !niRenderer || renderer->isPicking())
+	if(particleCount() <= 0 || !niRenderer || renderer->isPicking())
 		return;
 
-	niRenderer->renderLines(*this);
+	niRenderer->renderParticles(*this);
 }
 
 };

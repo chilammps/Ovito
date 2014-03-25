@@ -24,8 +24,8 @@
 
 #include <plugins/crystalanalysis/CrystalAnalysis.h>
 #include <core/scene/display/DisplayObject.h>
-#include <core/rendering/ParticleGeometryBuffer.h>
-#include <core/rendering/ArrowGeometryBuffer.h>
+#include <core/rendering/ParticlePrimitive.h>
+#include <core/rendering/ArrowPrimitive.h>
 #include <core/gui/properties/PropertiesEditor.h>
 #include <plugins/particles/data/SimulationCell.h>
 
@@ -60,10 +60,10 @@ public:
 	void setLineWidth(FloatType width) { _lineWidth = width; }
 
 	/// \brief Returns the selected shading mode for dislocation lines.
-	ArrowGeometryBuffer::ShadingMode shadingMode() const { return _shadingMode; }
+	ArrowPrimitive::ShadingMode shadingMode() const { return _shadingMode; }
 
 	/// \brief Sets the shading mode for dislocation lines.
-	void setShadingMode(ArrowGeometryBuffer::ShadingMode mode) { _shadingMode = mode; }
+	void setShadingMode(ArrowPrimitive::ShadingMode mode) { _shadingMode = mode; }
 
 	/// \brief Given an sub-object ID returned by the Viewport::pick() method, looks up the
 	/// corresponding dislocation segment.
@@ -80,7 +80,7 @@ public:
 public:
 
 	Q_PROPERTY(FloatType lineWidth READ lineWidth WRITE setLineWidth)
-	Q_PROPERTY(Ovito::ArrowGeometryBuffer::ShadingMode shadingMode READ shadingMode WRITE setShadingMode)
+	Q_PROPERTY(Ovito::ArrowPrimitive::ShadingMode shadingMode READ shadingMode WRITE setShadingMode)
 
 protected:
 
@@ -90,10 +90,10 @@ protected:
 protected:
 
 	/// The geometry buffer used to render the dislocation segments.
-	std::unique_ptr<ArrowGeometryBuffer> _segmentBuffer;
+	std::unique_ptr<ArrowPrimitive> _segmentBuffer;
 
 	/// The geometry buffer used to render the segment corners.
-	std::unique_ptr<ParticleGeometryBuffer> _cornerBuffer;
+	std::unique_ptr<ParticlePrimitive> _cornerBuffer;
 
 	/// This helper structure is used to detect any changes in the input data
 	/// that require updating the geometry buffers.
@@ -121,7 +121,7 @@ protected:
 	PropertyField<FloatType> _lineWidth;
 
 	/// Controls the shading mode for dislocation lines.
-	PropertyField<ArrowGeometryBuffer::ShadingMode, int> _shadingMode;
+	PropertyField<ArrowPrimitive::ShadingMode, int> _shadingMode;
 
 private:
 

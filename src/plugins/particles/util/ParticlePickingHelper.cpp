@@ -207,7 +207,7 @@ void ParticlePickingHelper::renderSelectionMarker(Viewport* vp, ViewportSceneRen
 	Color highlightColor = particleDisplay->selectionParticleColor();
 
 	// Determine rendering quality used to render the particles.
-	ParticleGeometryBuffer::RenderingQuality renderQuality = particleDisplay->effectiveRenderingQuality(renderer, posProperty);
+	ParticlePrimitive::RenderingQuality renderQuality = particleDisplay->effectiveRenderingQuality(renderer, posProperty);
 
 	TimeInterval iv;
 	const AffineTransformation& nodeTM = pickRecord.objNode->getWorldTransform(vp->dataset()->animationSettings()->time(), iv);
@@ -215,7 +215,7 @@ void ParticlePickingHelper::renderSelectionMarker(Viewport* vp, ViewportSceneRen
 	if(!_particleBuffer || !_particleBuffer->isValid(renderer)
 			|| !_particleBuffer->setShadingMode(particleDisplay->shadingMode())
 			|| !_particleBuffer->setRenderingQuality(renderQuality)) {
-		_particleBuffer = renderer->createParticleGeometryBuffer(
+		_particleBuffer = renderer->createParticlePrimitive(
 				particleDisplay->shadingMode(),
 				renderQuality,
 				particleDisplay->particleShape());
@@ -229,7 +229,7 @@ void ParticlePickingHelper::renderSelectionMarker(Viewport* vp, ViewportSceneRen
 	if(!_highlightBuffer || !_highlightBuffer->isValid(renderer)
 			|| !_highlightBuffer->setShadingMode(particleDisplay->shadingMode())
 			|| !_highlightBuffer->setRenderingQuality(renderQuality)) {
-		_highlightBuffer = renderer->createParticleGeometryBuffer(
+		_highlightBuffer = renderer->createParticlePrimitive(
 				particleDisplay->shadingMode(),
 				renderQuality,
 				particleDisplay->particleShape());

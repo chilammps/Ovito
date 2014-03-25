@@ -20,21 +20,21 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
- * \file ParticleGeometryBuffer.h
- * \brief Contains the definition of the Ovito::ParticleGeometryBuffer class.
+ * \file ParticlePrimitive.h
+ * \brief Contains the definition of the Ovito::ParticlePrimitive class.
  */
 
-#ifndef __OVITO_PARTICLE_GEOMETRY_BUFFER_H
-#define __OVITO_PARTICLE_GEOMETRY_BUFFER_H
+#ifndef __OVITO_PARTICLE_PRIMITIVE_H
+#define __OVITO_PARTICLE_PRIMITIVE_H
 
 #include <core/Core.h>
 
 namespace Ovito {
 
 /**
- * \brief Abstract base class for buffer objects that store point-like particles.
+ * \brief Abstract base class for particle drawing primitives.
  */
-class OVITO_CORE_EXPORT ParticleGeometryBuffer
+class OVITO_CORE_EXPORT ParticlePrimitive
 {
 public:
 
@@ -61,11 +61,11 @@ public:
 public:
 
 	/// Constructor.
-	ParticleGeometryBuffer(ShadingMode shadingMode, RenderingQuality renderingQuality, ParticleShape shape = SphericalShape)
+	ParticlePrimitive(ShadingMode shadingMode, RenderingQuality renderingQuality, ParticleShape shape = SphericalShape)
 		: _shadingMode(shadingMode), _renderingQuality(renderingQuality), _particleShape(shape) {}
 
 	/// \brief Virtual base constructor.
-	virtual ~ParticleGeometryBuffer() {}
+	virtual ~ParticlePrimitive() {}
 
 	/// \brief Allocates a geometry buffer with the given number of particles.
 	virtual void setSize(int particleCount) = 0;
@@ -135,11 +135,11 @@ private:
 
 };
 
-Q_DECLARE_METATYPE(Ovito::ParticleGeometryBuffer::ShadingMode);
-Q_DECLARE_METATYPE(Ovito::ParticleGeometryBuffer::RenderingQuality);
-Q_DECLARE_METATYPE(Ovito::ParticleGeometryBuffer::ParticleShape);
-Q_DECLARE_TYPEINFO(Ovito::ParticleGeometryBuffer::ShadingMode, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::ParticleGeometryBuffer::RenderingQuality, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(Ovito::ParticleGeometryBuffer::ParticleShape, Q_PRIMITIVE_TYPE);
+Q_DECLARE_METATYPE(Ovito::ParticlePrimitive::ShadingMode);
+Q_DECLARE_METATYPE(Ovito::ParticlePrimitive::RenderingQuality);
+Q_DECLARE_METATYPE(Ovito::ParticlePrimitive::ParticleShape);
+Q_DECLARE_TYPEINFO(Ovito::ParticlePrimitive::ShadingMode, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::ParticlePrimitive::RenderingQuality, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::ParticlePrimitive::ParticleShape, Q_PRIMITIVE_TYPE);
 
-#endif // __OVITO_PARTICLE_GEOMETRY_BUFFER_H
+#endif // __OVITO_PARTICLE_PRIMITIVE_H

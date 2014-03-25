@@ -20,15 +20,15 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
- * \file ViewportImageGeometryBuffer.h
- * \brief Contains the definition of the Ovito::ViewportImageGeometryBuffer class.
+ * \file OpenGLImagePrimitive.h
+ * \brief Contains the definition of the Ovito::OpenGLImagePrimitive class.
  */
 
-#ifndef __OVITO_VIEWPORT_IMAGE_GEOMETRY_BUFFER_H
-#define __OVITO_VIEWPORT_IMAGE_GEOMETRY_BUFFER_H
+#ifndef __OVITO_OPENGL_IMAGE_PRIMITIVE_H
+#define __OVITO_OPENGL_IMAGE_PRIMITIVE_H
 
 #include <core/Core.h>
-#include <core/rendering/ImageGeometryBuffer.h>
+#include <core/rendering/ImagePrimitive.h>
 #include <core/utilities/opengl/SharedOpenGLResource.h>
 
 namespace Ovito {
@@ -36,20 +36,20 @@ namespace Ovito {
 /**
  * \brief Buffer object that stores an image to be rendered in the viewports.
  */
-class OVITO_CORE_EXPORT ViewportImageGeometryBuffer : public ImageGeometryBuffer, private SharedOpenGLResource
+class OVITO_CORE_EXPORT OpenGLImagePrimitive : public ImagePrimitive, private SharedOpenGLResource
 {
 public:
 
 	/// Constructor.
-	ViewportImageGeometryBuffer(ViewportSceneRenderer* renderer);
+	OpenGLImagePrimitive(ViewportSceneRenderer* renderer);
 
 	/// Destructor.
-	virtual ~ViewportImageGeometryBuffer();
+	virtual ~OpenGLImagePrimitive();
 
 	/// \brief Sets the image to be rendered.
 	virtual void setImage(const QImage& image) override {
 		_needTextureUpdate = true;
-		ImageGeometryBuffer::setImage(image);
+		ImagePrimitive::setImage(image);
 	}
 
 	/// \brief Returns true if the geometry buffer is filled and can be rendered with the given renderer.
@@ -86,4 +86,4 @@ private:
 
 };
 
-#endif // __OVITO_VIEWPORT_IMAGE_GEOMETRY_BUFFER_H
+#endif // __OVITO_OPENGL_IMAGE_PRIMITIVE_H

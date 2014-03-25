@@ -591,7 +591,7 @@ void Viewport::renderViewportTitle()
 	// Create a rendering buffer that is responsible for rendering the viewport's caption text.
 	ViewportSceneRenderer* renderer = dataset()->viewportConfig()->viewportRenderer();
 	if(!_captionBuffer || !_captionBuffer->isValid(renderer)) {
-		_captionBuffer = renderer->createTextGeometryBuffer();
+		_captionBuffer = renderer->createTextPrimitive();
 		_captionBuffer->setFont(ViewportSettings::getSettings().viewportFont());
 	}
 
@@ -672,7 +672,7 @@ void Viewport::renderOrientationIndicator()
 
 	// Create line buffer.
 	if(!_orientationTripodGeometry || !_orientationTripodGeometry->isValid(renderer)) {
-		_orientationTripodGeometry = renderer->createLineGeometryBuffer();
+		_orientationTripodGeometry = renderer->createLinePrimitive();
 		_orientationTripodGeometry->setVertexCount(18);
 		ColorA vertexColors[18];
 		for(int i = 0; i < 18; i++)
@@ -699,7 +699,7 @@ void Viewport::renderOrientationIndicator()
 
 		// Create a rendering buffer that is responsible for rendering the text label.
 		if(!_orientationTripodLabels[axis] || !_orientationTripodLabels[axis]->isValid(renderer)) {
-			_orientationTripodLabels[axis] = renderer->createTextGeometryBuffer();
+			_orientationTripodLabels[axis] = renderer->createTextPrimitive();
 			_orientationTripodLabels[axis]->setFont(ViewportSettings::getSettings().viewportFont());
 			_orientationTripodLabels[axis]->setColor(axisColors[axis]);
 			_orientationTripodLabels[axis]->setText(labels[axis]);
@@ -788,7 +788,7 @@ void Viewport::renderRenderFrame()
 	// Create a rendering buffer that is responsible for rendering the frame.
 	ViewportSceneRenderer* renderer = dataset()->viewportConfig()->viewportRenderer();
 	if(!_renderFrameOverlay || !_renderFrameOverlay->isValid(renderer)) {
-		_renderFrameOverlay = renderer->createImageGeometryBuffer();
+		_renderFrameOverlay = renderer->createImagePrimitive();
 		QImage image(1, 1, QImage::Format_ARGB32_Premultiplied);
 		image.fill(0xA0FFFFFF);
 		_renderFrameOverlay->setImage(image);

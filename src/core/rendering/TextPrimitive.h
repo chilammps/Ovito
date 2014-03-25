@@ -20,29 +20,29 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
- * \file TextGeometryBuffer.h
- * \brief Contains the definition of the Ovito::TextGeometryBuffer class.
+ * \file TextPrimitive.h
+ * \brief Contains the definition of the Ovito::TextPrimitive class.
  */
 
-#ifndef __OVITO_TEXT_GEOMETRY_BUFFER_H
-#define __OVITO_TEXT_GEOMETRY_BUFFER_H
+#ifndef __OVITO_TEXT_PRIMITIVE_H
+#define __OVITO_TEXT_PRIMITIVE_H
 
 #include <core/Core.h>
 
 namespace Ovito {
 
 /**
- * \brief Abstract base class for buffer objects that store text strings.
+ * \brief Abstract base class rendering of text primitives.
  */
-class OVITO_CORE_EXPORT TextGeometryBuffer
+class OVITO_CORE_EXPORT TextPrimitive
 {
 public:
 
 	/// \brief Default constructor.
-	TextGeometryBuffer() : _color(1,1,1,1), _backgroundColor(0,0,0,0) {}
+	TextPrimitive() : _color(1,1,1,1), _backgroundColor(0,0,0,0) {}
 
 	/// \brief Virtual base constructor.
-	virtual ~TextGeometryBuffer() {}
+	virtual ~TextPrimitive() {}
 
 	/// \brief Sets the text to be rendered.
 	virtual void setText(const QString& text) { _text = text; }
@@ -94,4 +94,4 @@ private:
 
 };
 
-#endif // __OVITO_TEXT_GEOMETRY_BUFFER_H
+#endif // __OVITO_TEXT_PRIMITIVE_H

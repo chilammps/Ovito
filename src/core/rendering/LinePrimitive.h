@@ -20,26 +20,26 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
- * \file LineGeometryBuffer.h
- * \brief Contains the definition of the Ovito::LineGeometryBuffer class.
+ * \file LinePrimitive.h
+ * \brief Contains the definition of the Ovito::LinePrimitive class.
  */
 
-#ifndef __OVITO_LINE_GEOMETRY_BUFFER_H
-#define __OVITO_LINE_GEOMETRY_BUFFER_H
+#ifndef __OVITO_LINE_DISPLAY_PRIMITIVE_H
+#define __OVITO_LINE_DISPLAY_PRIMITIVE_H
 
 #include <core/Core.h>
 
 namespace Ovito {
 
 /**
- * \brief Abstract base class for buffer objects that store line geometry.
+ * \brief Abstract base class for line drawing primitives.
  */
-class OVITO_CORE_EXPORT LineGeometryBuffer
+class OVITO_CORE_EXPORT LinePrimitive
 {
 public:
 
 	/// \brief Virtual base constructor.
-	virtual ~LineGeometryBuffer() {}
+	virtual ~LinePrimitive() {}
 
 	/// \brief Allocates a geometry buffer with the given number of vertices.
 	virtual void setVertexCount(int vertexCount, FloatType lineWidth = FloatType(1)) = 0;
@@ -65,4 +65,4 @@ public:
 
 };
 
-#endif // __OVITO_LINE_GEOMETRY_BUFFER_H
+#endif // __OVITO_LINE_DISPLAY_PRIMITIVE_H

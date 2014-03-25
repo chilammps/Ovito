@@ -20,7 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include "ViewportArrowGeometryBuffer.h"
+#include "OpenGLArrowPrimitive.h"
 #include "ViewportSceneRenderer.h"
 
 namespace Ovito {
@@ -28,8 +28,8 @@ namespace Ovito {
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-ViewportArrowGeometryBuffer::ViewportArrowGeometryBuffer(ViewportSceneRenderer* renderer, ArrowGeometryBuffer::Shape shape, ShadingMode shadingMode, RenderingQuality renderingQuality) :
-	ArrowGeometryBuffer(shape, shadingMode, renderingQuality),
+OpenGLArrowPrimitive::OpenGLArrowPrimitive(ViewportSceneRenderer* renderer, ArrowPrimitive::Shape shape, ShadingMode shadingMode, RenderingQuality renderingQuality) :
+	ArrowPrimitive(shape, shadingMode, renderingQuality),
 	_contextGroup(QOpenGLContextGroup::currentContextGroup()),
 	_elementCount(-1), _cylinderSegments(16), _verticesPerElement(0),
 	_mappedBuffer(nullptr)
@@ -76,7 +76,7 @@ ViewportArrowGeometryBuffer::ViewportArrowGeometryBuffer(ViewportSceneRenderer* 
 /******************************************************************************
 * Allocates a particle buffer with the given number of elements.
 ******************************************************************************/
-void ViewportArrowGeometryBuffer::startSetElements(int elementCount)
+void OpenGLArrowPrimitive::startSetElements(int elementCount)
 {
 	OVITO_ASSERT(_glGeometryBuffer.isCreated());
 	OVITO_ASSERT(elementCount >= 0);
@@ -173,7 +173,7 @@ void ViewportArrowGeometryBuffer::startSetElements(int elementCount)
 /******************************************************************************
 * Sets the properties of a single element.
 ******************************************************************************/
-void ViewportArrowGeometryBuffer::setElement(int index, const Point3& pos, const Vector3& dir, const ColorA& color, FloatType width)
+void OpenGLArrowPrimitive::setElement(int index, const Point3& pos, const Vector3& dir, const ColorA& color, FloatType width)
 {
 	OVITO_ASSERT(index >= 0 && index < _elementCount);
 	OVITO_ASSERT(_mappedBuffer != nullptr);
@@ -190,7 +190,7 @@ void ViewportArrowGeometryBuffer::setElement(int index, const Point3& pos, const
 /******************************************************************************
 * Creates the geometry for a single cylinder element.
 ******************************************************************************/
-void ViewportArrowGeometryBuffer::createCylinderElement(int index, const Point3& pos, const Vector3& dir, const ColorA& color, FloatType width)
+void OpenGLArrowPrimitive::createCylinderElement(int index, const Point3& pos, const Vector3& dir, const ColorA& color, FloatType width)
 {
 	if(shadingMode() == NormalShading) {
 
@@ -306,7 +306,7 @@ void ViewportArrowGeometryBuffer::createCylinderElement(int index, const Point3&
 /******************************************************************************
 * Creates the geometry for a single arrow element.
 ******************************************************************************/
-void ViewportArrowGeometryBuffer::createArrowElement(int index, const Point3& pos, const Vector3& dir, const ColorA& color, FloatType width)
+void OpenGLArrowPrimitive::createArrowElement(int index, const Point3& pos, const Vector3& dir, const ColorA& color, FloatType width)
 {
 	const float arrowHeadRadius = width * 2.5f;
 	const float arrowHeadLength = arrowHeadRadius * 1.8f;
@@ -439,7 +439,7 @@ void ViewportArrowGeometryBuffer::createArrowElement(int index, const Point3& po
 /******************************************************************************
 * Finalizes the geometry buffer after all elements have been set.
 ******************************************************************************/
-void ViewportArrowGeometryBuffer::endSetElements()
+void OpenGLArrowPrimitive::endSetElements()
 {
 	OVITO_ASSERT(QOpenGLContextGroup::currentContextGroup() == _contextGroup);
 	OVITO_ASSERT(_elementCount >= 0 && _elementRenderCount >= 0);
@@ -455,7 +455,7 @@ void ViewportArrowGeometryBuffer::endSetElements()
 /******************************************************************************
 * Returns true if the geometry buffer is filled and can be rendered with the given renderer.
 ******************************************************************************/
-bool ViewportArrowGeometryBuffer::isValid(SceneRenderer* renderer)
+bool OpenGLArrowPrimitive::isValid(SceneRenderer* renderer)
 {
 	ViewportSceneRenderer* vpRenderer = dynamic_object_cast<ViewportSceneRenderer>(renderer);
 	if(!vpRenderer) return false;
@@ -467,7 +467,7 @@ bool ViewportArrowGeometryBuffer::isValid(SceneRenderer* renderer)
 /******************************************************************************
 * Renders the geometry.
 ******************************************************************************/
-void ViewportArrowGeometryBuffer::render(SceneRenderer* renderer)
+void OpenGLArrowPrimitive::render(SceneRenderer* renderer)
 {
 	OVITO_CHECK_OPENGL();
 	OVITO_ASSERT(_glGeometryBuffer.isCreated());
@@ -495,7 +495,7 @@ void ViewportArrowGeometryBuffer::render(SceneRenderer* renderer)
 /******************************************************************************
 * Renders the arrows in shaded mode.
 ******************************************************************************/
-void ViewportArrowGeometryBuffer::renderShadedTriangles(ViewportSceneRenderer* renderer)
+void OpenGLArrowPrimitive::renderShadedTriangles(ViewportSceneRenderer* renderer)
 {
 	QOpenGLShaderProgram* shader;
 	if(!renderer->isPicking())
@@ -564,7 +564,7 @@ void ViewportArrowGeometryBuffer::renderShadedTriangles(ViewportSceneRenderer* r
 /******************************************************************************
 * Renders the cylinder elements in using a raytracing hardware shader.
 ******************************************************************************/
-void ViewportArrowGeometryBuffer::renderRaytracedCylinders(ViewportSceneRenderer* renderer)
+void OpenGLArrowPrimitive::renderRaytracedCylinders(ViewportSceneRenderer* renderer)
 {
 	QOpenGLShaderProgram* shader;
 	if(!renderer->isPicking())
@@ -636,7 +636,7 @@ void ViewportArrowGeometryBuffer::renderRaytracedCylinders(ViewportSceneRenderer
 /******************************************************************************
 * Renders the arrows in flat mode.
 ******************************************************************************/
-void ViewportArrowGeometryBuffer::renderFlat(ViewportSceneRenderer* renderer)
+void OpenGLArrowPrimitive::renderFlat(ViewportSceneRenderer* renderer)
 {
 	QOpenGLShaderProgram* shader;
 	if(!renderer->isPicking())

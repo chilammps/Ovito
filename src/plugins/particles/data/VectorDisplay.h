@@ -30,7 +30,7 @@
 #include <plugins/particles/Particles.h>
 #include <core/scene/display/DisplayObject.h>
 #include <core/gui/properties/PropertiesEditor.h>
-#include <core/rendering/ArrowGeometryBuffer.h>
+#include <core/rendering/ArrowPrimitive.h>
 #include "ParticlePropertyObject.h"
 
 namespace Particles {
@@ -57,16 +57,16 @@ public:
 	virtual QString objectTitle() override { return tr("Vectors"); }
 
 	/// \brief Returns the selected shading mode for arrows.
-	ArrowGeometryBuffer::ShadingMode shadingMode() const { return _shadingMode; }
+	ArrowPrimitive::ShadingMode shadingMode() const { return _shadingMode; }
 
 	/// \brief Sets the shading mode for arrows.
-	void setShadingMode(ArrowGeometryBuffer::ShadingMode mode) { _shadingMode = mode; }
+	void setShadingMode(ArrowPrimitive::ShadingMode mode) { _shadingMode = mode; }
 
 	/// \brief Returns the selected rendering quality mode for arrows.
-	ArrowGeometryBuffer::RenderingQuality renderingQuality() const { return _renderingQuality; }
+	ArrowPrimitive::RenderingQuality renderingQuality() const { return _renderingQuality; }
 
 	/// \brief Sets the rendering quality mode for arrows.
-	void setRenderingQuality(ArrowGeometryBuffer::RenderingQuality quality) { _renderingQuality = quality; }
+	void setRenderingQuality(ArrowPrimitive::RenderingQuality quality) { _renderingQuality = quality; }
 
 	/// Returns whether the arrow pointing direction is reversed.
 	bool reverseArrowDirection() const { return _reverseArrowDirection; }
@@ -100,8 +100,8 @@ public:
 
 public:
 
-	Q_PROPERTY(Ovito::ArrowGeometryBuffer::ShadingMode shadingMode READ shadingMode WRITE setShadingMode);
-	Q_PROPERTY(Ovito::ArrowGeometryBuffer::RenderingQuality renderingQuality READ renderingQuality WRITE setRenderingQuality);
+	Q_PROPERTY(Ovito::ArrowPrimitive::ShadingMode shadingMode READ shadingMode WRITE setShadingMode);
+	Q_PROPERTY(Ovito::ArrowPrimitive::RenderingQuality renderingQuality READ renderingQuality WRITE setRenderingQuality);
 	Q_PROPERTY(Ovito::Color arrowColor READ arrowColor WRITE setArrowColor);
 	Q_PROPERTY(FloatType arrowWidth READ arrowWidth WRITE setArrowWidth);
 	Q_PROPERTY(FloatType scalingFactor READ scalingFactor WRITE setScalingFactor);
@@ -134,13 +134,13 @@ protected:
 	PropertyField<FloatType> _scalingFactor;
 
 	/// Controls the shading mode for arrows.
-	PropertyField<ArrowGeometryBuffer::ShadingMode, int> _shadingMode;
+	PropertyField<ArrowPrimitive::ShadingMode, int> _shadingMode;
 
 	/// Controls the rendering quality mode for arrows.
-	PropertyField<ArrowGeometryBuffer::RenderingQuality, int> _renderingQuality;
+	PropertyField<ArrowPrimitive::RenderingQuality, int> _renderingQuality;
 
 	/// The buffered geometry used to render the arrows.
-	std::unique_ptr<ArrowGeometryBuffer> _buffer;
+	std::unique_ptr<ArrowPrimitive> _buffer;
 
 	/// This helper structure is used to detect any changes in the input data
 	/// that require updating the geometry buffer.

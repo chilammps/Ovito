@@ -20,30 +20,39 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include "DefaultTriMeshGeometryBuffer.h"
+#include "DefaultTextPrimitive.h"
 #include "NonInteractiveSceneRenderer.h"
 
 namespace Ovito {
 
 /******************************************************************************
-* Returns true if the geometry buffer is filled and can be rendered with the given renderer.
+* Returns true if the buffer is filled and can be rendered with the given renderer.
 ******************************************************************************/
-bool DefaultTriMeshGeometryBuffer::isValid(SceneRenderer* renderer)
+bool DefaultTextPrimitive::isValid(SceneRenderer* renderer)
 {
 	// This buffer type works only in conjunction with a non-interactive renderer.
 	return (qobject_cast<NonInteractiveSceneRenderer*>(renderer) != nullptr);
 }
 
 /******************************************************************************
-* Renders the geometry.
+* Renders the text string at the given location given in normalized
+* viewport coordinates ([-1,+1] range).
 ******************************************************************************/
-void DefaultTriMeshGeometryBuffer::render(SceneRenderer* renderer)
+void DefaultTextPrimitive::renderViewport(SceneRenderer* renderer, const Point2& pos, int alignment)
 {
 	NonInteractiveSceneRenderer* niRenderer = dynamic_object_cast<NonInteractiveSceneRenderer>(renderer);
-	if(_mesh.faceCount() <= 0 || !niRenderer || renderer->isPicking())
+	if(text().isEmpty() || !niRenderer || renderer->isPicking())
 		return;
+}
 
-	niRenderer->renderMesh(*this);
+/******************************************************************************
+* Renders the text string at the given 2D window (pixel) coordinates.
+******************************************************************************/
+void DefaultTextPrimitive::renderWindow(SceneRenderer* renderer, const Point2& pos, int alignment)
+{
+	NonInteractiveSceneRenderer* niRenderer = dynamic_object_cast<NonInteractiveSceneRenderer>(renderer);
+	if(text().isEmpty() || !niRenderer || renderer->isPicking())
+		return;
 }
 
 };

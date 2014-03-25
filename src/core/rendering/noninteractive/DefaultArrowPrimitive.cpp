@@ -20,39 +20,44 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include "DefaultTextGeometryBuffer.h"
+#include "DefaultArrowPrimitive.h"
 #include "NonInteractiveSceneRenderer.h"
 
 namespace Ovito {
 
 /******************************************************************************
-* Returns true if the buffer is filled and can be rendered with the given renderer.
+* Sets the properties of a single element.
 ******************************************************************************/
-bool DefaultTextGeometryBuffer::isValid(SceneRenderer* renderer)
+void DefaultArrowPrimitive::setElement(int index, const Point3& pos, const Vector3& dir, const ColorA& color, FloatType width)
+{
+	OVITO_ASSERT(index >= 0 && index < _elements.size());
+	ArrowElement& elmnt = _elements[index];
+
+	elmnt.pos = pos;
+	elmnt.dir = dir;
+	elmnt.color = color;
+	elmnt.width = width;
+}
+
+/******************************************************************************
+* Returns true if the geometry buffer is filled and can be rendered with the given renderer.
+******************************************************************************/
+bool DefaultArrowPrimitive::isValid(SceneRenderer* renderer)
 {
 	// This buffer type works only in conjunction with a non-interactive renderer.
 	return (qobject_cast<NonInteractiveSceneRenderer*>(renderer) != nullptr);
 }
 
 /******************************************************************************
-* Renders the text string at the given location given in normalized
-* viewport coordinates ([-1,+1] range).
+* Renders the geometry.
 ******************************************************************************/
-void DefaultTextGeometryBuffer::renderViewport(SceneRenderer* renderer, const Point2& pos, int alignment)
+void DefaultArrowPrimitive::render(SceneRenderer* renderer)
 {
 	NonInteractiveSceneRenderer* niRenderer = dynamic_object_cast<NonInteractiveSceneRenderer>(renderer);
-	if(text().isEmpty() || !niRenderer || renderer->isPicking())
+	if(_elements.empty() || !niRenderer || renderer->isPicking())
 		return;
-}
 
-/******************************************************************************
-* Renders the text string at the given 2D window (pixel) coordinates.
-******************************************************************************/
-void DefaultTextGeometryBuffer::renderWindow(SceneRenderer* renderer, const Point2& pos, int alignment)
-{
-	NonInteractiveSceneRenderer* niRenderer = dynamic_object_cast<NonInteractiveSceneRenderer>(renderer);
-	if(text().isEmpty() || !niRenderer || renderer->isPicking())
-		return;
+	niRenderer->renderArrows(*this);
 }
 
 };

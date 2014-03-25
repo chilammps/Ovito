@@ -86,7 +86,7 @@ void TriMeshDisplay::render(TimePoint time, SceneObject* sceneObject, const Pipe
 
 	// Re-create the geometry buffer if necessary.
 	if(recreateBuffer)
-		_buffer = renderer->createTriMeshGeometryBuffer();
+		_buffer = renderer->createMeshPrimitive();
 
 	// Update buffer contents.
 	if(updateContents) {

@@ -29,7 +29,7 @@
 
 #include <plugins/particles/Particles.h>
 #include <core/scene/display/DisplayObject.h>
-#include <core/rendering/ParticleGeometryBuffer.h>
+#include <core/rendering/ParticlePrimitive.h>
 #include <core/gui/properties/PropertiesEditor.h>
 #include "ParticlePropertyObject.h"
 
@@ -71,25 +71,25 @@ public:
 	void setDefaultParticleRadius(FloatType newRadius) { _defaultParticleRadius = newRadius; }
 
 	/// \brief Returns the selected shading mode for particles.
-	ParticleGeometryBuffer::ShadingMode shadingMode() const { return _shadingMode; }
+	ParticlePrimitive::ShadingMode shadingMode() const { return _shadingMode; }
 
 	/// \brief Sets the shading mode for particles.
-	void setShadingMode(ParticleGeometryBuffer::ShadingMode mode) { _shadingMode = mode; }
+	void setShadingMode(ParticlePrimitive::ShadingMode mode) { _shadingMode = mode; }
 
 	/// \brief Returns the selected rendering quality mode for particles.
-	ParticleGeometryBuffer::RenderingQuality renderingQuality() const { return _renderingQuality; }
+	ParticlePrimitive::RenderingQuality renderingQuality() const { return _renderingQuality; }
 
 	/// \brief Returns the actual rendering quality used to render the given particles.
-	ParticleGeometryBuffer::RenderingQuality effectiveRenderingQuality(SceneRenderer* renderer, ParticlePropertyObject* positionProperty) const;
+	ParticlePrimitive::RenderingQuality effectiveRenderingQuality(SceneRenderer* renderer, ParticlePropertyObject* positionProperty) const;
 
 	/// \brief Sets the rendering quality mode for particles.
-	void setRenderingQuality(ParticleGeometryBuffer::RenderingQuality quality) { _renderingQuality = quality; }
+	void setRenderingQuality(ParticlePrimitive::RenderingQuality quality) { _renderingQuality = quality; }
 
 	/// \brief Returns the display shape of particles.
-	ParticleGeometryBuffer::ParticleShape particleShape() const { return _particleShape; }
+	ParticlePrimitive::ParticleShape particleShape() const { return _particleShape; }
 
 	/// \brief Sets the display shape of particles.
-	void setParticleShape(ParticleGeometryBuffer::ParticleShape shape) { _particleShape = shape; }
+	void setParticleShape(ParticlePrimitive::ParticleShape shape) { _particleShape = shape; }
 
 	/// \brief Determines the display particle colors.
 	void particleColors(std::vector<Color>& output, ParticlePropertyObject* colorProperty, ParticleTypeProperty* typeProperty, ParticlePropertyObject* selectionProperty = nullptr);
@@ -109,9 +109,9 @@ public:
 public:
 
 	Q_PROPERTY(FloatType defaultParticleRadius READ defaultParticleRadius WRITE setDefaultParticleRadius)
-	Q_PROPERTY(Ovito::ParticleGeometryBuffer::ShadingMode shadingMode READ shadingMode WRITE setShadingMode)
-	Q_PROPERTY(Ovito::ParticleGeometryBuffer::RenderingQuality renderingQuality READ renderingQuality WRITE setRenderingQuality)
-	Q_PROPERTY(Ovito::ParticleGeometryBuffer::ParticleShape particleShape READ particleShape WRITE setParticleShape)
+	Q_PROPERTY(Ovito::ParticlePrimitive::ShadingMode shadingMode READ shadingMode WRITE setShadingMode)
+	Q_PROPERTY(Ovito::ParticlePrimitive::RenderingQuality renderingQuality READ renderingQuality WRITE setRenderingQuality)
+	Q_PROPERTY(Ovito::ParticlePrimitive::ParticleShape particleShape READ particleShape WRITE setParticleShape)
 
 protected:
 
@@ -124,16 +124,16 @@ protected:
 	PropertyField<FloatType> _defaultParticleRadius;
 
 	/// Controls the shading mode for particles.
-	PropertyField<ParticleGeometryBuffer::ShadingMode, int> _shadingMode;
+	PropertyField<ParticlePrimitive::ShadingMode, int> _shadingMode;
 
 	/// Controls the rendering quality mode for particles.
-	PropertyField<ParticleGeometryBuffer::RenderingQuality, int> _renderingQuality;
+	PropertyField<ParticlePrimitive::RenderingQuality, int> _renderingQuality;
 
 	/// Controls the display shape of particles.
-	PropertyField<ParticleGeometryBuffer::ParticleShape, int> _particleShape;
+	PropertyField<ParticlePrimitive::ParticleShape, int> _particleShape;
 
 	/// The buffered particle geometry used to render the particles.
-	std::unique_ptr<ParticleGeometryBuffer> _particleBuffer;
+	std::unique_ptr<ParticlePrimitive> _particleBuffer;
 
 	/// This helper structure is used to detect any changes in the particle positions
 	/// that require updating the particle position buffer.

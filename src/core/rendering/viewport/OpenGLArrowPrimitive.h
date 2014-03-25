@@ -20,15 +20,15 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
- * \file ViewportArrowGeometryBuffer.h
- * \brief Contains the definition of the Ovito::ViewportArrowGeometryBuffer class.
+ * \file OpenGLArrowPrimitive.h
+ * \brief Contains the definition of the Ovito::OpenGLArrowPrimitive class.
  */
 
 #ifndef __OVITO_VIEWPORT_ARROW_GEOMETRY_BUFFER_H
 #define __OVITO_VIEWPORT_ARROW_GEOMETRY_BUFFER_H
 
 #include <core/Core.h>
-#include <core/rendering/ArrowGeometryBuffer.h>
+#include <core/rendering/ArrowPrimitive.h>
 #include "OpenGLBuffer.h"
 
 namespace Ovito {
@@ -36,12 +36,12 @@ namespace Ovito {
 /**
  * \brief Buffer object that stores a set of arrows to be rendered in the viewports.
  */
-class OVITO_CORE_EXPORT ViewportArrowGeometryBuffer : public ArrowGeometryBuffer
+class OVITO_CORE_EXPORT OpenGLArrowPrimitive : public ArrowPrimitive
 {
 public:
 
 	/// Constructor.
-	ViewportArrowGeometryBuffer(ViewportSceneRenderer* renderer, ArrowGeometryBuffer::Shape shape, ShadingMode shadingMode, RenderingQuality renderingQuality);
+	OpenGLArrowPrimitive(ViewportSceneRenderer* renderer, ArrowPrimitive::Shape shape, ShadingMode shadingMode, RenderingQuality renderingQuality);
 
 	/// \brief Allocates a geometry buffer with the given number of elements.
 	virtual void startSetElements(int elementCount) override;

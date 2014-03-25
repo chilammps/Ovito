@@ -20,7 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include "ViewportTriMeshGeometryBuffer.h"
+#include "OpenGLMeshPrimitive.h"
 #include "ViewportSceneRenderer.h"
 
 namespace Ovito {
@@ -28,7 +28,7 @@ namespace Ovito {
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-ViewportTriMeshGeometryBuffer::ViewportTriMeshGeometryBuffer(ViewportSceneRenderer* renderer) :
+OpenGLMeshPrimitive::OpenGLMeshPrimitive(ViewportSceneRenderer* renderer) :
 	_contextGroup(QOpenGLContextGroup::currentContextGroup())
 {
 	OVITO_ASSERT(renderer->glcontext()->shareGroup() == _contextGroup);
@@ -41,7 +41,7 @@ ViewportTriMeshGeometryBuffer::ViewportTriMeshGeometryBuffer(ViewportSceneRender
 /******************************************************************************
 * Sets the mesh to be stored in this buffer object.
 ******************************************************************************/
-void ViewportTriMeshGeometryBuffer::setMesh(const TriMesh& mesh, const ColorA& meshColor)
+void OpenGLMeshPrimitive::setMesh(const TriMesh& mesh, const ColorA& meshColor)
 {
 	OVITO_ASSERT(QOpenGLContextGroup::currentContextGroup() == _contextGroup);
 
@@ -130,7 +130,7 @@ void ViewportTriMeshGeometryBuffer::setMesh(const TriMesh& mesh, const ColorA& m
 /******************************************************************************
 * Returns true if the geometry buffer is filled and can be rendered with the given renderer.
 ******************************************************************************/
-bool ViewportTriMeshGeometryBuffer::isValid(SceneRenderer* renderer)
+bool OpenGLMeshPrimitive::isValid(SceneRenderer* renderer)
 {
 	ViewportSceneRenderer* vpRenderer = qobject_cast<ViewportSceneRenderer*>(renderer);
 	if(!vpRenderer) return false;
@@ -140,7 +140,7 @@ bool ViewportTriMeshGeometryBuffer::isValid(SceneRenderer* renderer)
 /******************************************************************************
 * Renders the geometry.
 ******************************************************************************/
-void ViewportTriMeshGeometryBuffer::render(SceneRenderer* renderer)
+void OpenGLMeshPrimitive::render(SceneRenderer* renderer)
 {
 	OVITO_ASSERT(_contextGroup == QOpenGLContextGroup::currentContextGroup());
 	ViewportSceneRenderer* vpRenderer = dynamic_object_cast<ViewportSceneRenderer>(renderer);

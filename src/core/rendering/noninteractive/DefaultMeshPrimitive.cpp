@@ -20,38 +20,30 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include "DefaultImageGeometryBuffer.h"
+#include "DefaultMeshPrimitive.h"
 #include "NonInteractiveSceneRenderer.h"
 
 namespace Ovito {
 
 /******************************************************************************
-* Returns true if the buffer is filled and can be rendered with the given renderer.
+* Returns true if the geometry buffer is filled and can be rendered with the given renderer.
 ******************************************************************************/
-bool DefaultImageGeometryBuffer::isValid(SceneRenderer* renderer)
+bool DefaultMeshPrimitive::isValid(SceneRenderer* renderer)
 {
 	// This buffer type works only in conjunction with a non-interactive renderer.
 	return (qobject_cast<NonInteractiveSceneRenderer*>(renderer) != nullptr);
 }
 
 /******************************************************************************
-* Renders the image in a rectangle given in viewport coordinates.
+* Renders the geometry.
 ******************************************************************************/
-void DefaultImageGeometryBuffer::renderViewport(SceneRenderer* renderer, const Point2& pos, const Vector2& size)
+void DefaultMeshPrimitive::render(SceneRenderer* renderer)
 {
 	NonInteractiveSceneRenderer* niRenderer = dynamic_object_cast<NonInteractiveSceneRenderer>(renderer);
-	if(image().isNull() || !niRenderer || renderer->isPicking())
+	if(_mesh.faceCount() <= 0 || !niRenderer || renderer->isPicking())
 		return;
-}
 
-/******************************************************************************
-* Renders the image in a rectangle given in window coordinates.
-******************************************************************************/
-void DefaultImageGeometryBuffer::renderWindow(SceneRenderer* renderer, const Point2& pos, const Vector2& size)
-{
-	NonInteractiveSceneRenderer* niRenderer = dynamic_object_cast<NonInteractiveSceneRenderer>(renderer);
-	if(image().isNull() || !niRenderer || renderer->isPicking())
-		return;
+	niRenderer->renderMesh(*this);
 }
 
 };

@@ -335,7 +335,7 @@ void ColorCodingModifier::render(TimePoint time, ObjectNode* contextNode, Modifi
 			image.setPixel(0, y, QColor(color).rgb());
 		}
 
-		_colorScaleImageBuffer = renderer->createImageGeometryBuffer();
+		_colorScaleImageBuffer = renderer->createImagePrimitive();
 		_colorScaleImageBuffer->setImage(image);
 	}
 
@@ -353,11 +353,11 @@ void ColorCodingModifier::render(TimePoint time, ObjectNode* contextNode, Modifi
 			Vector2(legendSize * 0.2, legendSize));
 
 	if(!_colorScaleTopLabel || !_colorScaleTopLabel->isValid(renderer))
-		_colorScaleTopLabel = renderer->createTextGeometryBuffer();
+		_colorScaleTopLabel = renderer->createTextPrimitive();
 	if(!_colorScaleBottomLabel || !_colorScaleBottomLabel->isValid(renderer))
-		_colorScaleBottomLabel = renderer->createTextGeometryBuffer();
+		_colorScaleBottomLabel = renderer->createTextPrimitive();
 	if(!_colorScaleTitleLabel || !_colorScaleTitleLabel->isValid(renderer))
-		_colorScaleTitleLabel = renderer->createTextGeometryBuffer();
+		_colorScaleTitleLabel = renderer->createTextPrimitive();
 
 	ColorA labelColor = renderer->isInteractive() ? ColorA(1,1,1) : ColorA(0,0,0);
 

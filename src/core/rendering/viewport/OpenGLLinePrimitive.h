@@ -20,28 +20,28 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
- * \file ViewportLineGeometryBuffer.h
- * \brief Contains the definition of the Ovito::ViewportLineGeometryBuffer class.
+ * \file OpenGLLinePrimitive.h
+ * \brief Contains the definition of the Ovito::OpenGLLinePrimitive class.
  */
 
-#ifndef __OVITO_VIEWPORT_LINE_GEOMETRY_BUFFER_H
-#define __OVITO_VIEWPORT_LINE_GEOMETRY_BUFFER_H
+#ifndef __OVITO_OPENGL_LINE_PRIMITIVE_H
+#define __OVITO_OPENGL_LINE_PRIMITIVE_H
 
 #include <core/Core.h>
-#include <core/rendering/LineGeometryBuffer.h>
+#include <core/rendering/LinePrimitive.h>
 #include "OpenGLBuffer.h"
 
 namespace Ovito {
 
 /**
- * \brief Buffer object that stores line geometry to be rendered in the viewports.
+ * \brief This class is responsible for rendering line primitives using OpenGL.
  */
-class OVITO_CORE_EXPORT ViewportLineGeometryBuffer : public LineGeometryBuffer
+class OVITO_CORE_EXPORT OpenGLLinePrimitive : public LinePrimitive
 {
 public:
 
 	/// Constructor.
-	ViewportLineGeometryBuffer(ViewportSceneRenderer* renderer);
+	OpenGLLinePrimitive(ViewportSceneRenderer* renderer);
 
 	/// \brief Allocates a geometry buffer with the given number of vertices.
 	virtual void setVertexCount(int vertexCount, FloatType lineWidth) override;
@@ -107,4 +107,4 @@ private:
 
 };
 
-#endif // __OVITO_VIEWPORT_LINE_GEOMETRY_BUFFER_H
+#endif // __OVITO_OPENGL_LINE_PRIMITIVE_H

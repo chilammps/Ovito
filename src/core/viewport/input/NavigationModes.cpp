@@ -137,7 +137,7 @@ void NavigationMode::renderOverlay3D(Viewport* vp, ViewportSceneRenderer* render
 
 	// Create line buffer.
 	if(!_orbitCenterMarker || !_orbitCenterMarker->isValid(renderer)) {
-		_orbitCenterMarker = renderer->createArrowGeometryBuffer(ArrowGeometryBuffer::CylinderShape, ArrowGeometryBuffer::NormalShading, ArrowGeometryBuffer::HighQuality);
+		_orbitCenterMarker = renderer->createArrowPrimitive(ArrowPrimitive::CylinderShape, ArrowPrimitive::NormalShading, ArrowPrimitive::HighQuality);
 		_orbitCenterMarker->startSetElements(3);
 		_orbitCenterMarker->setElement(0, {-1,0,0}, {2,0,0}, {1,0,0}, 0.05f);
 		_orbitCenterMarker->setElement(1, {0,-1,0}, {0,2,0}, {0,1,0}, 0.05f);

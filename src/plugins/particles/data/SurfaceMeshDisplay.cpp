@@ -117,9 +117,9 @@ void SurfaceMeshDisplay::render(TimePoint time, SceneObject* sceneObject, const 
 
 	// Re-create the geometry buffers if necessary.
 	if(recreateSurfaceBuffer)
-		_surfaceBuffer = renderer->createTriMeshGeometryBuffer();
+		_surfaceBuffer = renderer->createMeshPrimitive();
 	if(recreateCapBuffer && _showCap)
-		_capBuffer = renderer->createTriMeshGeometryBuffer();
+		_capBuffer = renderer->createMeshPrimitive();
 
 	// Update buffer contents.
 	if(updateContents) {

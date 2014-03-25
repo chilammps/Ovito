@@ -24,7 +24,7 @@
 
 #include <core/Core.h>
 #include <core/gui/app/Application.h>
-#include <core/rendering/ArrowGeometryBuffer.h>
+#include <core/rendering/ArrowPrimitive.h>
 #include "ViewportInputMode.h"
 
 namespace Ovito {
@@ -108,7 +108,7 @@ protected:
 	Point3 _currentOrbitCenter;
 
 	/// The geometry buffer used to render the orbit center.
-	std::unique_ptr<ArrowGeometryBuffer> _orbitCenterMarker;
+	std::unique_ptr<ArrowPrimitive> _orbitCenterMarker;
 };
 
 /******************************************************************************

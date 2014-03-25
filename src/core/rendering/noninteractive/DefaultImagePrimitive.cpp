@@ -20,30 +20,38 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include "DefaultParticleGeometryBuffer.h"
+#include "DefaultImagePrimitive.h"
 #include "NonInteractiveSceneRenderer.h"
 
 namespace Ovito {
 
 /******************************************************************************
-* Returns true if the geometry buffer is filled and can be rendered with the given renderer.
+* Returns true if the buffer is filled and can be rendered with the given renderer.
 ******************************************************************************/
-bool DefaultParticleGeometryBuffer::isValid(SceneRenderer* renderer)
+bool DefaultImagePrimitive::isValid(SceneRenderer* renderer)
 {
 	// This buffer type works only in conjunction with a non-interactive renderer.
 	return (qobject_cast<NonInteractiveSceneRenderer*>(renderer) != nullptr);
 }
 
 /******************************************************************************
-* Renders the geometry.
+* Renders the image in a rectangle given in viewport coordinates.
 ******************************************************************************/
-void DefaultParticleGeometryBuffer::render(SceneRenderer* renderer)
+void DefaultImagePrimitive::renderViewport(SceneRenderer* renderer, const Point2& pos, const Vector2& size)
 {
 	NonInteractiveSceneRenderer* niRenderer = dynamic_object_cast<NonInteractiveSceneRenderer>(renderer);
-	if(particleCount() <= 0 || !niRenderer || renderer->isPicking())
+	if(image().isNull() || !niRenderer || renderer->isPicking())
 		return;
+}
 
-	niRenderer->renderParticles(*this);
+/******************************************************************************
+* Renders the image in a rectangle given in window coordinates.
+******************************************************************************/
+void DefaultImagePrimitive::renderWindow(SceneRenderer* renderer, const Point2& pos, const Vector2& size)
+{
+	NonInteractiveSceneRenderer* niRenderer = dynamic_object_cast<NonInteractiveSceneRenderer>(renderer);
+	if(image().isNull() || !niRenderer || renderer->isPicking())
+		return;
 }
 
 };

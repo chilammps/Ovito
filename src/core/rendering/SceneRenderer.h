@@ -31,12 +31,12 @@
 #include <core/animation/TimeInterval.h>
 #include <core/reference/RefTarget.h>
 #include <core/viewport/Viewport.h>
-#include "LineGeometryBuffer.h"
-#include "ParticleGeometryBuffer.h"
-#include "TextGeometryBuffer.h"
-#include "ImageGeometryBuffer.h"
-#include "ArrowGeometryBuffer.h"
-#include "TriMeshGeometryBuffer.h"
+#include "LinePrimitive.h"
+#include "ParticlePrimitive.h"
+#include "TextPrimitive.h"
+#include "ImagePrimitive.h"
+#include "ArrowPrimitive.h"
+#include "MeshPrimitive.h"
 
 namespace Ovito {
 
@@ -110,26 +110,26 @@ public:
 	virtual const AffineTransformation& worldTransform() const = 0;
 
 	/// Requests a new line geometry buffer from the renderer.
-	virtual std::unique_ptr<LineGeometryBuffer> createLineGeometryBuffer() = 0;
+	virtual std::unique_ptr<LinePrimitive> createLinePrimitive() = 0;
 
 	/// Requests a new particle geometry buffer from the renderer.
-	virtual std::unique_ptr<ParticleGeometryBuffer> createParticleGeometryBuffer(ParticleGeometryBuffer::ShadingMode shadingMode = ParticleGeometryBuffer::NormalShading,
-			ParticleGeometryBuffer::RenderingQuality renderingQuality = ParticleGeometryBuffer::MediumQuality,
-			ParticleGeometryBuffer::ParticleShape shape = ParticleGeometryBuffer::SphericalShape) = 0;
+	virtual std::unique_ptr<ParticlePrimitive> createParticlePrimitive(ParticlePrimitive::ShadingMode shadingMode = ParticlePrimitive::NormalShading,
+			ParticlePrimitive::RenderingQuality renderingQuality = ParticlePrimitive::MediumQuality,
+			ParticlePrimitive::ParticleShape shape = ParticlePrimitive::SphericalShape) = 0;
 
 	/// Requests a new text geometry buffer from the renderer.
-	virtual std::unique_ptr<TextGeometryBuffer> createTextGeometryBuffer() = 0;
+	virtual std::unique_ptr<TextPrimitive> createTextPrimitive() = 0;
 
 	/// Requests a new image geometry buffer from the renderer.
-	virtual std::unique_ptr<ImageGeometryBuffer> createImageGeometryBuffer() = 0;
+	virtual std::unique_ptr<ImagePrimitive> createImagePrimitive() = 0;
 
 	/// Requests a new arrow geometry buffer from the renderer.
-	virtual std::unique_ptr<ArrowGeometryBuffer> createArrowGeometryBuffer(ArrowGeometryBuffer::Shape shape,
-			ArrowGeometryBuffer::ShadingMode shadingMode = ArrowGeometryBuffer::NormalShading,
-			ArrowGeometryBuffer::RenderingQuality renderingQuality = ArrowGeometryBuffer::MediumQuality) = 0;
+	virtual std::unique_ptr<ArrowPrimitive> createArrowPrimitive(ArrowPrimitive::Shape shape,
+			ArrowPrimitive::ShadingMode shadingMode = ArrowPrimitive::NormalShading,
+			ArrowPrimitive::RenderingQuality renderingQuality = ArrowPrimitive::MediumQuality) = 0;
 
 	/// Requests a new triangle mesh geometry buffer from the renderer.
-	virtual std::unique_ptr<TriMeshGeometryBuffer> createTriMeshGeometryBuffer() = 0;
+	virtual std::unique_ptr<MeshPrimitive> createMeshPrimitive() = 0;
 
 	/// Returns whether this renderer is rendering an interactive viewport.
 	/// \return true if rendering a real-time viewport; false if rendering an output image.

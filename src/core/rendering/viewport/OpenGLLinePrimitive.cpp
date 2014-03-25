@@ -20,7 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include "ViewportLineGeometryBuffer.h"
+#include "OpenGLLinePrimitive.h"
 #include "ViewportSceneRenderer.h"
 
 namespace Ovito {
@@ -28,7 +28,7 @@ namespace Ovito {
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-ViewportLineGeometryBuffer::ViewportLineGeometryBuffer(ViewportSceneRenderer* renderer) :
+OpenGLLinePrimitive::OpenGLLinePrimitive(ViewportSceneRenderer* renderer) :
 	_contextGroup(QOpenGLContextGroup::currentContextGroup()),
 	_indicesBuffer(QOpenGLBuffer::IndexBuffer)
 {
@@ -44,7 +44,7 @@ ViewportLineGeometryBuffer::ViewportLineGeometryBuffer(ViewportSceneRenderer* re
 /******************************************************************************
 * Allocates a vertex buffer with the given number of vertices.
 ******************************************************************************/
-void ViewportLineGeometryBuffer::setVertexCount(int vertexCount, FloatType lineWidth)
+void OpenGLLinePrimitive::setVertexCount(int vertexCount, FloatType lineWidth)
 {
 	OVITO_ASSERT(vertexCount >= 0);
 	OVITO_ASSERT(vertexCount < std::numeric_limits<int>::max() / sizeof(ColorA));
@@ -80,7 +80,7 @@ void ViewportLineGeometryBuffer::setVertexCount(int vertexCount, FloatType lineW
 /******************************************************************************
 * Sets the coordinates of the vertices.
 ******************************************************************************/
-void ViewportLineGeometryBuffer::setVertexPositions(const Point3* coordinates)
+void OpenGLLinePrimitive::setVertexPositions(const Point3* coordinates)
 {
 	OVITO_ASSERT(QOpenGLContextGroup::currentContextGroup() == _contextGroup);
 	_positionsBuffer.fill(coordinates);
@@ -99,7 +99,7 @@ void ViewportLineGeometryBuffer::setVertexPositions(const Point3* coordinates)
 /******************************************************************************
 * Sets the colors of the vertices.
 ******************************************************************************/
-void ViewportLineGeometryBuffer::setVertexColors(const ColorA* colors)
+void OpenGLLinePrimitive::setVertexColors(const ColorA* colors)
 {
 	OVITO_ASSERT(QOpenGLContextGroup::currentContextGroup() == _contextGroup);
 	_colorsBuffer.fill(colors);
@@ -108,7 +108,7 @@ void ViewportLineGeometryBuffer::setVertexColors(const ColorA* colors)
 /******************************************************************************
 * Sets the color of all vertices to the given value.
 ******************************************************************************/
-void ViewportLineGeometryBuffer::setLineColor(const ColorA color)
+void OpenGLLinePrimitive::setLineColor(const ColorA color)
 {
 	OVITO_ASSERT(QOpenGLContextGroup::currentContextGroup() == _contextGroup);
 	_colorsBuffer.fillConstant(color);
@@ -117,7 +117,7 @@ void ViewportLineGeometryBuffer::setLineColor(const ColorA color)
 /******************************************************************************
 * Returns true if the geometry buffer is filled and can be rendered with the given renderer.
 ******************************************************************************/
-bool ViewportLineGeometryBuffer::isValid(SceneRenderer* renderer)
+bool OpenGLLinePrimitive::isValid(SceneRenderer* renderer)
 {
 	ViewportSceneRenderer* vpRenderer = qobject_cast<ViewportSceneRenderer*>(renderer);
 	if(!vpRenderer) return false;
@@ -127,7 +127,7 @@ bool ViewportLineGeometryBuffer::isValid(SceneRenderer* renderer)
 /******************************************************************************
 * Renders the geometry.
 ******************************************************************************/
-void ViewportLineGeometryBuffer::render(SceneRenderer* renderer)
+void OpenGLLinePrimitive::render(SceneRenderer* renderer)
 {
 	OVITO_ASSERT(_contextGroup == QOpenGLContextGroup::currentContextGroup());
 	OVITO_STATIC_ASSERT(sizeof(FloatType) == 4);
@@ -145,7 +145,7 @@ void ViewportLineGeometryBuffer::render(SceneRenderer* renderer)
 /******************************************************************************
 * Renders the lines using GL_LINES mode.
 ******************************************************************************/
-void ViewportLineGeometryBuffer::renderLines(ViewportSceneRenderer* renderer)
+void OpenGLLinePrimitive::renderLines(ViewportSceneRenderer* renderer)
 {
 	QOpenGLShaderProgram* shader;
 	if(!renderer->isPicking())
@@ -185,7 +185,7 @@ void ViewportLineGeometryBuffer::renderLines(ViewportSceneRenderer* renderer)
 /******************************************************************************
 * Renders the lines using polygons.
 ******************************************************************************/
-void ViewportLineGeometryBuffer::renderThickLines(ViewportSceneRenderer* renderer)
+void OpenGLLinePrimitive::renderThickLines(ViewportSceneRenderer* renderer)
 {
 	QOpenGLShaderProgram* shader;
 	if(!renderer->isPicking())

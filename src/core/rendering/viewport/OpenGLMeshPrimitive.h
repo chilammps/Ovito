@@ -20,15 +20,15 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
- * \file ViewportTriMeshGeometryBuffer.h
- * \brief Contains the definition of the Ovito::ViewportTriMeshGeometryBuffer class.
+ * \file OpenGLMeshPrimitive.h
+ * \brief Contains the definition of the Ovito::OpenGLMeshPrimitive class.
  */
 
-#ifndef __OVITO_VIEWPORT_TRIMESH_GEOMETRY_BUFFER_H
-#define __OVITO_VIEWPORT_TRIMESH_GEOMETRY_BUFFER_H
+#ifndef __OVITO_OPENGL_MESH_PRIMITIVE_H
+#define __OVITO_OPENGL_MESH_PRIMITIVE_H
 
 #include <core/Core.h>
-#include <core/rendering/TriMeshGeometryBuffer.h>
+#include <core/rendering/MeshPrimitive.h>
 #include <core/scene/objects/geometry/TriMesh.h>
 #include "OpenGLBuffer.h"
 
@@ -37,12 +37,12 @@ namespace Ovito {
 /**
  * \brief Buffer object that stores a triangle mesh to be rendered in the viewports.
  */
-class OVITO_CORE_EXPORT ViewportTriMeshGeometryBuffer : public TriMeshGeometryBuffer
+class OVITO_CORE_EXPORT OpenGLMeshPrimitive : public MeshPrimitive
 {
 public:
 
 	/// Constructor.
-	ViewportTriMeshGeometryBuffer(ViewportSceneRenderer* renderer);
+	OpenGLMeshPrimitive(ViewportSceneRenderer* renderer);
 
 	/// Sets the mesh to be stored in this buffer object.
 	virtual void setMesh(const TriMesh& mesh, const ColorA& meshColor) override;
@@ -80,4 +80,4 @@ private:
 
 };
 
-#endif // __OVITO_VIEWPORT_TRIMESH_GEOMETRY_BUFFER_H
+#endif // __OVITO_OPENGL_MESH_PRIMITIVE_H

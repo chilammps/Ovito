@@ -20,33 +20,33 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
- * \file ViewportParticleGeometryBuffer.h
- * \brief Contains the definition of the Ovito::ViewportParticleGeometryBuffer class.
+ * \file OpenGLParticlePrimitive.h
+ * \brief Contains the definition of the Ovito::OpenGLParticlePrimitive class.
  */
 
-#ifndef __OVITO_VIEWPORT_PARTICLE_GEOMETRY_BUFFER_H
-#define __OVITO_VIEWPORT_PARTICLE_GEOMETRY_BUFFER_H
+#ifndef __OVITO_OPENGL_PARTICLE_PRIMITIVE_H
+#define __OVITO_OPENGL_PARTICLE_PRIMITIVE_H
 
 #include <core/Core.h>
-#include <core/rendering/ParticleGeometryBuffer.h>
+#include <core/rendering/ParticlePrimitive.h>
 #include <core/utilities/opengl/SharedOpenGLResource.h>
 #include "OpenGLBuffer.h"
 
 namespace Ovito {
 
 /**
- * \brief Buffer object that stores a set of particles to be rendered in the viewports.
+ * \brief This class is responsible for rendering particle primitives using OpenGL.
  */
-class OVITO_CORE_EXPORT ViewportParticleGeometryBuffer : public ParticleGeometryBuffer, private SharedOpenGLResource
+class OVITO_CORE_EXPORT OpenGLParticlePrimitive : public ParticlePrimitive, private SharedOpenGLResource
 {
 public:
 
 	/// Constructor.
-	ViewportParticleGeometryBuffer(ViewportSceneRenderer* renderer,
+	OpenGLParticlePrimitive(ViewportSceneRenderer* renderer,
 			ShadingMode shadingMode, RenderingQuality renderingQuality, ParticleShape shape);
 
 	/// Destructor.
-	virtual ~ViewportParticleGeometryBuffer();
+	virtual ~OpenGLParticlePrimitive();
 
 	/// \brief Allocates a geometry buffer with the given number of particles.
 	virtual void setSize(int particleCount) override;
@@ -158,4 +158,4 @@ private:
 
 };
 
-#endif // __OVITO_VIEWPORT_PARTICLE_GEOMETRY_BUFFER_H
+#endif // __OVITO_OPENGL_PARTICLE_PRIMITIVE_H

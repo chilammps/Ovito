@@ -71,8 +71,8 @@ void CameraDisplayObject::render(TimePoint time, SceneObject* sceneObject, const
 
 	// Re-create the geometry buffer if necessary.
 	if(recreateBuffer) {
-		_cameraIcon = renderer->createLineGeometryBuffer();
-		_pickingCameraIcon = renderer->createLineGeometryBuffer();
+		_cameraIcon = renderer->createLinePrimitive();
+		_pickingCameraIcon = renderer->createLinePrimitive();
 	}
 
 	// Update buffer contents.

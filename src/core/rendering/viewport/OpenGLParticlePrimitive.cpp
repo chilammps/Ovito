@@ -20,7 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include "ViewportParticleGeometryBuffer.h"
+#include "OpenGLParticlePrimitive.h"
 #include "ViewportSceneRenderer.h"
 
 /// The maximum resolution of the texture used for billboard rendering of particles. Specified as a power of two.
@@ -31,8 +31,8 @@ namespace Ovito {
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-ViewportParticleGeometryBuffer::ViewportParticleGeometryBuffer(ViewportSceneRenderer* renderer, ShadingMode shadingMode, RenderingQuality renderingQuality, ParticleShape shape) :
-	ParticleGeometryBuffer(shadingMode, renderingQuality, shape),
+OpenGLParticlePrimitive::OpenGLParticlePrimitive(ViewportSceneRenderer* renderer, ShadingMode shadingMode, RenderingQuality renderingQuality, ParticleShape shape) :
+	ParticlePrimitive(shadingMode, renderingQuality, shape),
 	_contextGroup(QOpenGLContextGroup::currentContextGroup()),
 	_billboardTexture(0), _shader(nullptr), _pickingShader(nullptr),
 	_usingGeometryShader(renderer->useGeometryShaders())
@@ -194,7 +194,7 @@ ViewportParticleGeometryBuffer::ViewportParticleGeometryBuffer(ViewportSceneRend
 /******************************************************************************
 * Destructor.
 ******************************************************************************/
-ViewportParticleGeometryBuffer::~ViewportParticleGeometryBuffer()
+OpenGLParticlePrimitive::~OpenGLParticlePrimitive()
 {
 	destroyOpenGLResources();
 }
@@ -202,7 +202,7 @@ ViewportParticleGeometryBuffer::~ViewportParticleGeometryBuffer()
 /******************************************************************************
 * Allocates a particle buffer with the given number of particles.
 ******************************************************************************/
-void ViewportParticleGeometryBuffer::setSize(int particleCount)
+void OpenGLParticlePrimitive::setSize(int particleCount)
 {
 	OVITO_ASSERT(QOpenGLContextGroup::currentContextGroup() == _contextGroup);
 
@@ -230,7 +230,7 @@ void ViewportParticleGeometryBuffer::setSize(int particleCount)
 /******************************************************************************
 * Sets the coordinates of the particles.
 ******************************************************************************/
-void ViewportParticleGeometryBuffer::setParticlePositions(const Point3* coordinates)
+void OpenGLParticlePrimitive::setParticlePositions(const Point3* coordinates)
 {
 	OVITO_ASSERT(QOpenGLContextGroup::currentContextGroup() == _contextGroup);
 	_positionsBuffer.fill(coordinates);
@@ -239,7 +239,7 @@ void ViewportParticleGeometryBuffer::setParticlePositions(const Point3* coordina
 /******************************************************************************
 * Sets the radii of the particles.
 ******************************************************************************/
-void ViewportParticleGeometryBuffer::setParticleRadii(const FloatType* radii)
+void OpenGLParticlePrimitive::setParticleRadii(const FloatType* radii)
 {
 	OVITO_ASSERT(QOpenGLContextGroup::currentContextGroup() == _contextGroup);
 	_radiiBuffer.fill(radii);
@@ -248,7 +248,7 @@ void ViewportParticleGeometryBuffer::setParticleRadii(const FloatType* radii)
 /******************************************************************************
 * Sets the radius of all particles to the given value.
 ******************************************************************************/
-void ViewportParticleGeometryBuffer::setParticleRadius(FloatType radius)
+void OpenGLParticlePrimitive::setParticleRadius(FloatType radius)
 {
 	OVITO_ASSERT(QOpenGLContextGroup::currentContextGroup() == _contextGroup);
 	_radiiBuffer.fillConstant(radius);
@@ -257,7 +257,7 @@ void ViewportParticleGeometryBuffer::setParticleRadius(FloatType radius)
 /******************************************************************************
 * Sets the colors of the particles.
 ******************************************************************************/
-void ViewportParticleGeometryBuffer::setParticleColors(const Color* colors)
+void OpenGLParticlePrimitive::setParticleColors(const Color* colors)
 {
 	OVITO_ASSERT(QOpenGLContextGroup::currentContextGroup() == _contextGroup);
 	_colorsBuffer.fill(colors);
@@ -266,7 +266,7 @@ void ViewportParticleGeometryBuffer::setParticleColors(const Color* colors)
 /******************************************************************************
 * Sets the color of all particles to the given value.
 ******************************************************************************/
-void ViewportParticleGeometryBuffer::setParticleColor(const Color color)
+void OpenGLParticlePrimitive::setParticleColor(const Color color)
 {
 	OVITO_ASSERT(QOpenGLContextGroup::currentContextGroup() == _contextGroup);
 	_colorsBuffer.fillConstant(color);
@@ -275,7 +275,7 @@ void ViewportParticleGeometryBuffer::setParticleColor(const Color color)
 /******************************************************************************
 * Returns true if the geometry buffer is filled and can be rendered with the given renderer.
 ******************************************************************************/
-bool ViewportParticleGeometryBuffer::isValid(SceneRenderer* renderer)
+bool OpenGLParticlePrimitive::isValid(SceneRenderer* renderer)
 {
 	ViewportSceneRenderer* vpRenderer = dynamic_object_cast<ViewportSceneRenderer>(renderer);
 	if(!vpRenderer) return false;
@@ -285,7 +285,7 @@ bool ViewportParticleGeometryBuffer::isValid(SceneRenderer* renderer)
 /******************************************************************************
 * Renders the geometry.
 ******************************************************************************/
-void ViewportParticleGeometryBuffer::render(SceneRenderer* renderer)
+void OpenGLParticlePrimitive::render(SceneRenderer* renderer)
 {
 	OVITO_CHECK_OPENGL();
 	OVITO_ASSERT(_contextGroup == QOpenGLContextGroup::currentContextGroup());
@@ -309,7 +309,7 @@ void ViewportParticleGeometryBuffer::render(SceneRenderer* renderer)
 /******************************************************************************
 * Renders the particles using OpenGL point sprites.
 ******************************************************************************/
-void ViewportParticleGeometryBuffer::renderPointSprites(ViewportSceneRenderer* renderer)
+void OpenGLParticlePrimitive::renderPointSprites(ViewportSceneRenderer* renderer)
 {
 	OVITO_ASSERT(_positionsBuffer.verticesPerElement() == 1);
 
@@ -385,7 +385,7 @@ void ViewportParticleGeometryBuffer::renderPointSprites(ViewportSceneRenderer* r
 /******************************************************************************
 * Renders a cube for each particle using triangle strips.
 ******************************************************************************/
-void ViewportParticleGeometryBuffer::renderCubes(ViewportSceneRenderer* renderer)
+void OpenGLParticlePrimitive::renderCubes(ViewportSceneRenderer* renderer)
 {
 	OVITO_ASSERT(!_usingGeometryShader || _positionsBuffer.verticesPerElement() == 1);
 	OVITO_ASSERT(_usingGeometryShader || _positionsBuffer.verticesPerElement() == 14);
@@ -502,7 +502,7 @@ void ViewportParticleGeometryBuffer::renderCubes(ViewportSceneRenderer* renderer
 /******************************************************************************
 * Renders particles using quads.
 ******************************************************************************/
-void ViewportParticleGeometryBuffer::renderImposters(ViewportSceneRenderer* renderer)
+void OpenGLParticlePrimitive::renderImposters(ViewportSceneRenderer* renderer)
 {
 	OVITO_ASSERT(_positionsBuffer.verticesPerElement() == 6);
 
@@ -560,7 +560,7 @@ void ViewportParticleGeometryBuffer::renderImposters(ViewportSceneRenderer* rend
 /******************************************************************************
 * Creates the textures used for billboard rendering of particles.
 ******************************************************************************/
-void ViewportParticleGeometryBuffer::initializeBillboardTexture(ViewportSceneRenderer* renderer)
+void OpenGLParticlePrimitive::initializeBillboardTexture(ViewportSceneRenderer* renderer)
 {
 	static std::vector<std::array<GLubyte,4>> textureImages[BILLBOARD_TEXTURE_LEVELS];
 	static bool generatedImages = false;
@@ -607,7 +607,7 @@ void ViewportParticleGeometryBuffer::initializeBillboardTexture(ViewportSceneRen
 	// Create OpenGL texture.
 	glGenTextures(1, &_billboardTexture);
 
-	// Make sure texture gets deleted again when this object is destroyed.
+	// Make sure texture gets deleted when this object is destroyed.
 	attachOpenGLResources();
 
 	// Transfer pixel data to OpenGL texture.
@@ -624,7 +624,7 @@ void ViewportParticleGeometryBuffer::initializeBillboardTexture(ViewportSceneRen
 * This method that takes care of freeing the shared OpenGL resources owned
 * by this class.
 ******************************************************************************/
-void ViewportParticleGeometryBuffer::freeOpenGLResources()
+void OpenGLParticlePrimitive::freeOpenGLResources()
 {
 	glDeleteTextures(1, &_billboardTexture);
 	_billboardTexture = 0;
@@ -633,7 +633,7 @@ void ViewportParticleGeometryBuffer::freeOpenGLResources()
 /******************************************************************************
 * Activates a texture for billboard rendering of spherical particles.
 ******************************************************************************/
-void ViewportParticleGeometryBuffer::activateBillboardTexture(ViewportSceneRenderer* renderer)
+void OpenGLParticlePrimitive::activateBillboardTexture(ViewportSceneRenderer* renderer)
 {
 	OVITO_ASSERT(_billboardTexture != 0);
 	OVITO_ASSERT(shadingMode() != FlatShading);
@@ -658,7 +658,7 @@ void ViewportParticleGeometryBuffer::activateBillboardTexture(ViewportSceneRende
 /******************************************************************************
 * Deactivates the texture used for billboard rendering of spherical particles.
 ******************************************************************************/
-void ViewportParticleGeometryBuffer::deactivateBillboardTexture(ViewportSceneRenderer* renderer)
+void OpenGLParticlePrimitive::deactivateBillboardTexture(ViewportSceneRenderer* renderer)
 {
 	// Disable texture mapping again when not using core profile.
 	if(renderer->isCoreProfile() == false)

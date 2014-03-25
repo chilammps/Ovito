@@ -20,22 +20,22 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
- * \file DefaultArrowGeometryBuffer.h
- * \brief Contains the definition of the Ovito::DefaultArrowGeometryBuffer class.
+ * \file DefaultArrowPrimitive.h
+ * \brief Contains the definition of the Ovito::DefaultArrowPrimitive class.
  */
 
 #ifndef __OVITO_DEFAULT_ARROW_GEOMETRY_BUFFER_H
 #define __OVITO_DEFAULT_ARROW_GEOMETRY_BUFFER_H
 
 #include <core/Core.h>
-#include <core/rendering/ArrowGeometryBuffer.h>
+#include <core/rendering/ArrowPrimitive.h>
 
 namespace Ovito {
 
 /**
  * \brief Buffer object that stores a set of arrows to be rendered by a non-interactive renderer.
  */
-class OVITO_CORE_EXPORT DefaultArrowGeometryBuffer : public ArrowGeometryBuffer
+class OVITO_CORE_EXPORT DefaultArrowPrimitive : public ArrowPrimitive
 {
 public:
 
@@ -50,8 +50,8 @@ public:
 public:
 
 	/// Constructor.
-	DefaultArrowGeometryBuffer(ArrowGeometryBuffer::Shape shape, ShadingMode shadingMode, RenderingQuality renderingQuality) :
-		ArrowGeometryBuffer(shape, shadingMode, renderingQuality) {}
+	DefaultArrowPrimitive(ArrowPrimitive::Shape shape, ShadingMode shadingMode, RenderingQuality renderingQuality) :
+		ArrowPrimitive(shape, shadingMode, renderingQuality) {}
 
 	/// \brief Allocates a geometry buffer with the given number of elements.
 	virtual void startSetElements(int elementCount) override {

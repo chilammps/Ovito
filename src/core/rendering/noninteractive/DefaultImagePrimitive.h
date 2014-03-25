@@ -20,27 +20,27 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
- * \file DefaultImageGeometryBuffer.h
- * \brief Contains the definition of the Ovito::DefaultImageGeometryBuffer class.
+ * \file DefaultImagePrimitive.h
+ * \brief Contains the definition of the Ovito::DefaultImagePrimitive class.
  */
 
 #ifndef __OVITO_DEFAULT_IMAGE_GEOMETRY_BUFFER_H
 #define __OVITO_DEFAULT_IMAGE_GEOMETRY_BUFFER_H
 
 #include <core/Core.h>
-#include <core/rendering/ImageGeometryBuffer.h>
+#include <core/rendering/ImagePrimitive.h>
 
 namespace Ovito {
 
 /**
  * \brief Buffer object that stores an image to be rendered by a non-interactive renderer.
  */
-class OVITO_CORE_EXPORT DefaultImageGeometryBuffer : public ImageGeometryBuffer
+class OVITO_CORE_EXPORT DefaultImagePrimitive : public ImagePrimitive
 {
 public:
 
 	/// Constructor.
-	DefaultImageGeometryBuffer() {}
+	DefaultImagePrimitive() {}
 
 	/// \brief Returns true if the geometry buffer is filled and can be rendered with the given renderer.
 	virtual bool isValid(SceneRenderer* renderer) override;

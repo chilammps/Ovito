@@ -20,28 +20,28 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
- * \file DefaultParticleGeometryBuffer.h
- * \brief Contains the definition of the Ovito::DefaultParticleGeometryBuffer class.
+ * \file DefaultParticlePrimitive.h
+ * \brief Contains the definition of the Ovito::DefaultParticlePrimitive class.
  */
 
 #ifndef __OVITO_DEFAULT_PARTICLE_GEOMETRY_BUFFER_H
 #define __OVITO_DEFAULT_PARTICLE_GEOMETRY_BUFFER_H
 
 #include <core/Core.h>
-#include <core/rendering/ParticleGeometryBuffer.h>
+#include <core/rendering/ParticlePrimitive.h>
 
 namespace Ovito {
 
 /**
  * \brief Buffer object that stores a set of particles to be rendered by a non-interactive renderer.
  */
-class OVITO_CORE_EXPORT DefaultParticleGeometryBuffer : public ParticleGeometryBuffer
+class OVITO_CORE_EXPORT DefaultParticlePrimitive : public ParticlePrimitive
 {
 public:
 
 	/// Constructor.
-	DefaultParticleGeometryBuffer(ShadingMode shadingMode, RenderingQuality renderingQuality, ParticleShape shape) :
-		ParticleGeometryBuffer(shadingMode, renderingQuality, shape) {}
+	DefaultParticlePrimitive(ShadingMode shadingMode, RenderingQuality renderingQuality, ParticleShape shape) :
+		ParticlePrimitive(shadingMode, renderingQuality, shape) {}
 
 	/// \brief Allocates a geometry buffer with the given number of particles.
 	virtual void setSize(int particleCount) override {
