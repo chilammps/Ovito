@@ -60,7 +60,7 @@ std::shared_ptr<AsynchronousParticleModifier::Engine> CoordinationNumberModifier
 	SimulationCell* inputCell = expectSimulationCell();
 
 	// The number of sampling intervals for the radial distribution function.
-	int rdfSampleCount = 400;
+	int rdfSampleCount = 500;
 
 	// Create engine object. Pass all relevant modifier parameters to the engine as well as the input data.
 	return std::make_shared<CoordinationAnalysisEngine>(posProperty->storage(), inputCell->data(), cutoff(), rdfSampleCount);
@@ -245,6 +245,17 @@ void CoordinationNumberModifierEditor::plotRDF()
 
 	_rdfPlot->graph()->setData(modifier->rdfX(), modifier->rdfY());
 	_rdfPlot->graph()->rescaleAxes();
+
+	// Determine lower X bound where the histogram is non-zero.
+	double maxx = modifier->rdfX().back();
+	for(int i = 0; i < modifier->rdfX().size(); i++) {
+		if(modifier->rdfY()[i] != 0) {
+			double minx = std::floor(modifier->rdfX()[i] * 9.0 / maxx) / 10.0 * maxx;
+			_rdfPlot->xAxis->setRange(minx, maxx);
+			break;
+		}
+	}
+
 	_rdfPlot->replot();
 }
 
