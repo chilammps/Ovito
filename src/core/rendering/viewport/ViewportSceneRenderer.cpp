@@ -126,7 +126,7 @@ void ViewportSceneRenderer::beginFrame(TimePoint time, const ViewProjectionParam
 	_usePointSprites = true;
 #ifdef Q_OS_WIN
 	// Point sprites seem not to work well on Windows with Intel graphics.
-	if(strstr(static_cast<const char*>(glGetString(GL_VENDOR)), "Intel") != nullptr)
+	if(strstr(reinterpret_cast<const char*>(glGetString(GL_VENDOR)), "Intel") != nullptr)
 		_usePointSprites = false;
 #endif
 
