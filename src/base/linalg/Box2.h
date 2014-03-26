@@ -243,6 +243,18 @@ inline std::ostream& operator<<(std::ostream &os, const Box_2<T> &b) {
 	return os << '[' << b.minc << "] - [" << b.maxc << ']';
 }
 
+/// \brief Writes a box to a Qt data stream.
+template<typename T>
+inline QDataStream& operator<<(QDataStream& stream, const Box_2<T>& b) {
+	return stream << b.minc << b.maxc;
+}
+
+/// \brief Reads a box from a Qt data stream.
+template<typename T>
+inline QDataStream& operator>>(QDataStream& stream, Box_2<T>& b) {
+	return stream >> b.minc >> b.maxc;
+}
+
 /**
  * \fn typedef Box2
  * \brief Template class instance of the Box_2 class used for floating-point calculations based on Point2.

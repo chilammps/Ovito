@@ -80,6 +80,23 @@ bool Application::initialize(int& argc, char** argv)
 	// Activate default "C" locale, which will be used to parse numbers in strings.
 	std::setlocale(LC_NUMERIC, "C");
 
+	// Register stream operators for basic types.
+	qRegisterMetaTypeStreamOperators<Vector2>("Ovito::Vector2");
+	qRegisterMetaTypeStreamOperators<Vector3>("Ovito::Vector3");
+	qRegisterMetaTypeStreamOperators<Vector4>("Ovito::Vector4");
+	qRegisterMetaTypeStreamOperators<Point2>("Ovito::Point2");
+	qRegisterMetaTypeStreamOperators<Point3>("Ovito::Point3");
+	qRegisterMetaTypeStreamOperators<AffineTransformation>("Ovito::AffineTransformation");
+	qRegisterMetaTypeStreamOperators<Matrix3>("Ovito::Matrix3");
+	qRegisterMetaTypeStreamOperators<Matrix4>("Ovito::Matrix4");
+	qRegisterMetaTypeStreamOperators<Box2>("Ovito::Box2");
+	qRegisterMetaTypeStreamOperators<Box3>("Ovito::Box3");
+	qRegisterMetaTypeStreamOperators<Rotation>("Ovito::Rotation");
+	qRegisterMetaTypeStreamOperators<Scaling>("Ovito::Scaling");
+	qRegisterMetaTypeStreamOperators<Quaternion>("Ovito::Quaternion");
+	qRegisterMetaTypeStreamOperators<Color>("Ovito::Color");
+	qRegisterMetaTypeStreamOperators<ColorA>("Ovito::ColorA");
+
 	// Register command line arguments.
 	_cmdLineParser.addOption(CommandLineOption(QStringList{{"v", "version"}}, tr("Prints the program version and exits.")));
 	_cmdLineParser.addOption(CommandLineOption(QStringList{{"nogui"}}, tr("Run in console mode without showing the graphical user interface.")));

@@ -138,6 +138,18 @@ inline LoadStream& operator>>(LoadStream& stream, Ray_3<T>& r)
 	return stream >> r.base >> r.dir;
 }
 
+/// \brief Writes a ray to a Qt data stream.
+template<typename T>
+inline QDataStream& operator<<(QDataStream& stream, const Ray_3<T>& r) {
+	return stream << r.base << r.dir;
+}
+
+/// \brief Reads a ray from a Qt data stream.
+template<typename T>
+inline QDataStream& operator>>(QDataStream& stream, Ray_3<T>& r) {
+	return stream >> r.base >> r.dir;
+}
+
 /**
  * \fn typedef Ray3
  * \brief Template class instance of the Ray_3 class.

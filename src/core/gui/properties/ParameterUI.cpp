@@ -22,6 +22,8 @@
 #include <core/Core.h>
 #include <core/gui/properties/ParameterUI.h>
 #include <core/gui/properties/PropertiesEditor.h>
+#include <core/animation/controller/Controller.h>
+#include <core/animation/AnimationSettings.h>
 
 namespace Ovito {
 
@@ -74,7 +76,7 @@ PropertyParameterUI::PropertyParameterUI(QObject* parent, const PropertyFieldDes
 	INIT_PROPERTY_FIELD(PropertyParameterUI::_parameterObject);
 
 	// If requested, save parameter value to application's settings store each time the user changes it.
-	if(!propField.isReferenceField() && propField.flags().testFlag(PROPERTY_FIELD_MEMORIZE))
+	if(propField.flags().testFlag(PROPERTY_FIELD_MEMORIZE))
 		connect(this, &PropertyParameterUI::valueEntered, this, &PropertyParameterUI::memorizeDefaultParameterValue);
 }
 
@@ -132,8 +134,32 @@ void PropertyParameterUI::resetUI()
 ******************************************************************************/
 void PropertyParameterUI::memorizeDefaultParameterValue()
 {
-	if(isPropertyFieldUI() && editObject())
+	if(!editObject())
+		return;
+
+	if(isPropertyFieldUI()) {
 		propertyField()->memorizeDefaultValue(editObject());
+	}
+	else if(isReferenceFieldUI() && !propertyField()->isVector()) {
+		Controller* ctrl = dynamic_object_cast<Controller>(parameterObject());
+		if(ctrl) {
+			QSettings settings;
+			settings.beginGroup(propertyField()->definingClass()->plugin()->pluginId());
+			settings.beginGroup(propertyField()->definingClass()->name());
+			if(FloatController* floatCtrl = dynamic_object_cast<FloatController>(ctrl)) {
+				settings.setValue(propertyField()->identifier(), QVariant::fromValue(floatCtrl->currentValue()));
+			}
+			else if(IntegerController* intCtrl = dynamic_object_cast<IntegerController>(ctrl)) {
+				settings.setValue(propertyField()->identifier(), QVariant::fromValue(intCtrl->currentValue()));
+			}
+			else if(BooleanController* boolCtrl = dynamic_object_cast<BooleanController>(ctrl)) {
+				settings.setValue(propertyField()->identifier(), QVariant::fromValue(boolCtrl->currentValue()));
+			}
+			else if(VectorController* vectorCtrl = dynamic_object_cast<VectorController>(ctrl)) {
+				settings.setValue(propertyField()->identifier(), QVariant::fromValue(vectorCtrl->currentValue()));
+			}
+		}
+	}
 }
 
 

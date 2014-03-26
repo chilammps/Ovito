@@ -261,6 +261,18 @@ inline LoadStream& operator>>(LoadStream& stream, Plane_3<T>& p)
 	return stream >> p.normal >> p.dist;
 }
 
+/// \brief Writes a plane to a Qt data stream.
+template<typename T>
+inline QDataStream& operator<<(QDataStream& stream, const Plane_3<T>& p) {
+	return stream << p.normal << p.dist;
+}
+
+/// \brief Reads a plane from a Qt data stream.
+template<typename T>
+inline QDataStream& operator>>(QDataStream& stream, Plane_3<T>& p) {
+	return stream >> p.normal >> p.dist;
+}
+
 /**
  * \fn typedef Plane3
  * \brief Template class instance of the Plane_3 class used for floating-point planes.

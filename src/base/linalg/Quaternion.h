@@ -328,6 +328,18 @@ inline LoadStream& operator>>(LoadStream& stream, QuaternionT<T>& q) {
 	return stream >> q.x() >> q.y() >> q.z() >> q.w();
 }
 
+/// \brief Writes a quaternion to a Qt data stream.
+template<typename T>
+inline QDataStream& operator<<(QDataStream& stream, const QuaternionT<T>& q) {
+	return stream << q.x() << q.y() << q.z() << q.w();
+}
+
+/// \brief Reads a quaternion from a Qt data stream.
+template<typename T>
+inline QDataStream& operator>>(QDataStream& stream, QuaternionT<T>& q) {
+	return stream >> q.x() >> q.y() >> q.z() >> q.w();
+}
+
 /**
  * \fn typedef Quaternion
  * \brief Template class instance of the QuaternionT class used for floating-point quaternions.

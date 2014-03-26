@@ -290,6 +290,18 @@ inline LoadStream& operator>>(LoadStream& stream, Vector_3<T>& v) {
 	return stream >> v.x() >> v.y() >> v.z();
 }
 
+/// \brief Writes a vector to a Qt data stream.
+template<typename T>
+inline QDataStream& operator<<(QDataStream& stream, const Vector_3<T>& v) {
+	return stream << v.x() << v.y() << v.z();
+}
+
+/// \brief Reads a vector from a Qt data stream.
+template<typename T>
+inline QDataStream& operator>>(QDataStream& stream, Vector_3<T>& v) {
+	return stream >> v.x() >> v.y() >> v.z();
+}
+
 /**
  * \fn typedef Vector3
  * \brief Template class instance of the Vector_3 class used for floating-point vectors.

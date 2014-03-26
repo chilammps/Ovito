@@ -80,6 +80,31 @@ ColorCodingModifier::ColorCodingModifier(DataSet* dataset) : ParticleModifier(da
 }
 
 /******************************************************************************
+* Loads the user-defined default values of this object's parameter fields from the
+* application's settings store.
+******************************************************************************/
+void ColorCodingModifier::loadUserDefaults()
+{
+	ParticleModifier::loadUserDefaults();
+
+	// Load the default gradient type set by the user.
+	QSettings settings;
+	settings.beginGroup(ColorCodingModifier::OOType.plugin()->pluginId());
+	settings.beginGroup(ColorCodingModifier::OOType.name());
+	QString typeString = settings.value(PROPERTY_FIELD(ColorCodingModifier::_colorGradient).identifier()).toString();
+	if(!typeString.isEmpty()) {
+		try {
+			OvitoObjectType* gradientType = OvitoObjectType::decodeFromString(typeString);
+			if(!colorGradient() || colorGradient()->getOOType() != *gradientType) {
+				OORef<ColorCodingGradient> gradient = dynamic_object_cast<ColorCodingGradient>(gradientType->createInstance(dataset()));
+				if(gradient) setColorGradient(gradient);
+			}
+		}
+		catch(...) {}
+	}
+}
+
+/******************************************************************************
 * Asks the modifier for its validity interval at the given time.
 ******************************************************************************/
 TimeInterval ColorCodingModifier::modifierValidity(TimePoint time)
@@ -399,7 +424,7 @@ void ColorCodingModifierEditor::createUI(const RolloutInsertionParameters& rollo
 	}
 
 	// Update color legend if another modifier has been loaded into the editor.
-	connect(this, SIGNAL(contentsReplaced(RefTarget*)), this, SLOT(updateColorGradient()));
+	connect(this, &ColorCodingModifierEditor::contentsReplaced, this, &ColorCodingModifierEditor::updateColorGradient);
 
 	layout1->addSpacing(10);
 
@@ -513,8 +538,15 @@ void ColorCodingModifierEditor::onColorGradientSelected(int index)
 	undoableTransaction(tr("Change color gradient"), [descriptor, mod]() {
 		// Create an instance of the selected color gradient class.
 		OORef<ColorCodingGradient> gradient = static_object_cast<ColorCodingGradient>(descriptor->createInstance(mod->dataset()));
-		if(gradient)
+		if(gradient) {
 	        mod->setColorGradient(gradient);
+
+			QSettings settings;
+			settings.beginGroup(ColorCodingModifier::OOType.plugin()->pluginId());
+			settings.beginGroup(ColorCodingModifier::OOType.name());
+			settings.setValue(PROPERTY_FIELD(ColorCodingModifier::_colorGradient).identifier(),
+					QVariant::fromValue(OvitoObjectType::encodeAsString(descriptor)));
+		}
 	});
 }
 

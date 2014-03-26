@@ -248,6 +248,18 @@ inline LoadStream& operator>>(LoadStream& stream, ColorT<T>& c) {
 	return stream >> c.r() >> c.g() >> c.b();
 }
 
+/// \brief Writes a color to a Qt data stream.
+template<typename T>
+inline QDataStream& operator<<(QDataStream& stream, const ColorT<T>& c) {
+	return stream << c.r() << c.g() << c.b();
+}
+
+/// \brief Reads a color from a Qt data stream.
+template<typename T>
+inline QDataStream& operator>>(QDataStream& stream, ColorT<T>& c) {
+	return stream >> c.r() >> c.g() >> c.b();
+}
+
 /**
  * \brief A color class with floating-point RGBA values.
  * 
@@ -444,6 +456,18 @@ inline SaveStream& operator<<(SaveStream& stream, const ColorAT<T>& c) {
 /// \return The source \a stream.
 template<typename T>
 inline LoadStream& operator>>(LoadStream& stream, ColorAT<T>& c) {
+	return stream >> c.r() >> c.g() >> c.b() >> c.a();
+}
+
+/// \brief Writes a color to a Qt data stream.
+template<typename T>
+inline QDataStream& operator<<(QDataStream& stream, const ColorAT<T>& c) {
+	return stream << c.r() << c.g() << c.b() << c.a();
+}
+
+/// \brief Reads a color from a Qt data stream.
+template<typename T>
+inline QDataStream& operator>>(QDataStream& stream, ColorAT<T>& c) {
 	return stream >> c.r() >> c.g() >> c.b() >> c.a();
 }
 

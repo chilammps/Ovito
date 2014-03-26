@@ -284,6 +284,19 @@ inline LoadStream& operator>>(LoadStream& stream, Box_3<T>& b)
 	return stream >> b.minc >> b.maxc;
 }
 
+/// \brief Writes a box to a Qt data stream.
+template<typename T>
+inline QDataStream& operator<<(QDataStream& stream, const Box_3<T>& b) {
+	return stream << b.minc << b.maxc;
+}
+
+/// \brief Reads a box from a Qt data stream.
+template<typename T>
+inline QDataStream& operator>>(QDataStream& stream, Box_3<T>& b) {
+	return stream >> b.minc >> b.maxc;
+}
+
+
 /** 
  * \typedef Box_3<FloatType> Box3
  * \brief Template class instance of the Box_3 class used for floating-point calculations based on Point3. 

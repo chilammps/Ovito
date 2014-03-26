@@ -486,6 +486,22 @@ inline LoadStream& operator>>(LoadStream& stream, Matrix_3<T>& m)
 	return stream;
 }
 
+/// \brief Writes a matrix to a Qt data stream.
+template<typename T>
+inline QDataStream& operator<<(QDataStream& stream, const Matrix_3<T>& m) {
+	for(typename Matrix_3<T>::size_type col = 0; col < m.col_count(); col++)
+		stream << m.column(col);
+	return stream;
+}
+
+/// \brief Reads a matrix from a Qt data stream.
+template<typename T>
+inline QDataStream& operator>>(QDataStream& stream, Matrix_3<T>& m) {
+	for(typename Matrix_3<T>::size_type col = 0; col < m.col_count(); col++)
+		stream >> m.column(col);
+	return stream;
+}
+
 /**
  * \fn typedef Matrix3
  * \brief Template class instance of the Matrix_3 class.

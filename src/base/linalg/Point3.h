@@ -244,6 +244,18 @@ inline LoadStream& operator>>(LoadStream& stream, Point_3<T>& v) {
 	return stream >> v.x() >> v.y() >> v.z();
 }
 
+/// \brief Writes a point to a Qt data stream.
+template<typename T>
+inline QDataStream& operator<<(QDataStream& stream, const Point_3<T>& v) {
+	return stream << v.x() << v.y() << v.z();
+}
+
+/// \brief Reads a point from a Qt data stream.
+template<typename T>
+inline QDataStream& operator>>(QDataStream& stream, Point_3<T>& v) {
+	return stream >> v.x() >> v.y() >> v.z();
+}
+
 /**
  * \fn typedef Point3
  * \brief Template class instance of the Point_3 class used for floating-point points.

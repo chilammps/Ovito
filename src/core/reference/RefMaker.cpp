@@ -26,6 +26,8 @@
 #include <core/plugins/Plugin.h>
 #include <core/utilities/io/ObjectSaveStream.h>
 #include <core/utilities/io/ObjectLoadStream.h>
+#include <core/animation/controller/Controller.h>
+#include <core/animation/AnimationSettings.h>
 
 namespace Ovito {
 
@@ -450,8 +452,31 @@ void RefMaker::loadUserDefaults()
 				if(field->isReferenceField()) {
 					// If it's a reference field, recursively call loadUserDefaults() on the reference object(s).
 					if(field->isVector() == false) {
-						if(RefTarget* target = getReferenceField(*field))
+						if(RefTarget* target = getReferenceField(*field)) {
 							target->loadUserDefaults();
+
+							// If it's a controller type, load default controller value.
+							if(Controller* ctrl = dynamic_object_cast<Controller>(target)) {
+								QSettings settings;
+								settings.beginGroup(field->definingClass()->plugin()->pluginId());
+								settings.beginGroup(field->definingClass()->name());
+								QVariant v = settings.value(field->identifier());
+								if(!v.isNull()) {
+									if(FloatController* floatCtrl = dynamic_object_cast<FloatController>(ctrl)) {
+										floatCtrl->setValue(0, v.value<FloatType>());
+									}
+									else if(IntegerController* intCtrl = dynamic_object_cast<IntegerController>(ctrl)) {
+										intCtrl->setValue(0, v.value<int>());
+									}
+									else if(BooleanController* boolCtrl = dynamic_object_cast<BooleanController>(ctrl)) {
+										boolCtrl->setValue(0, v.value<bool>());
+									}
+									else if(VectorController* vectorCtrl = dynamic_object_cast<VectorController>(ctrl)) {
+										vectorCtrl->setValue(0, v.value<Vector3>());
+									}
+								}
+							}
+						}
 					}
 					else {
 						const QVector<RefTarget*>& list = getVectorReferenceField(*field);

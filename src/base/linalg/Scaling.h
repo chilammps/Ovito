@@ -205,6 +205,18 @@ inline LoadStream& operator>>(LoadStream& stream, ScalingT<T>& s)
 	return stream >> s.S >> s.Q;
 }
 
+/// \brief Writes a scaling to a Qt data stream.
+template<typename T>
+inline QDataStream& operator<<(QDataStream& stream, const ScalingT<T>& s) {
+	return stream << s.S << s.Q;
+}
+
+/// \brief Reads a scaling from a Qt data stream.
+template<typename T>
+inline QDataStream& operator>>(QDataStream& stream, ScalingT<T>& s) {
+	return stream >> s.S >> s.Q;
+}
+
 /**
  * \fn typedef Scaling
  * \brief Template class instance of the ScalingT template.

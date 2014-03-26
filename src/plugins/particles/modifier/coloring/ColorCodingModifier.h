@@ -168,6 +168,10 @@ public:
 	/// Constructor.
 	Q_INVOKABLE ColorCodingModifier(DataSet* dataset);
 
+	/// Loads the user-defined default values of this object's parameter fields from the
+	/// application's settings store.
+	virtual void loadUserDefaults() override;
+
 	/// Asks the modifier for its validity interval at the given time.
 	virtual TimeInterval modifierValidity(TimePoint time) override;
 

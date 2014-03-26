@@ -415,6 +415,23 @@ inline LoadStream& operator>>(LoadStream& stream, RotationT<T>& r)
 	return stream;
 }
 
+/// \brief Writes a rotation to a Qt data stream.
+template<typename T>
+inline QDataStream& operator<<(QDataStream& stream, const RotationT<T>& r) {
+	return stream << r.axis() << r.angle();
+}
+
+/// \brief Reads a rotation from a Qt data stream.
+template<typename T>
+inline QDataStream& operator>>(QDataStream& stream, RotationT<T>& r) {
+	Vector_3<T> axis;
+	T angle;
+	stream >> axis >> angle;
+	r.setAxis(axis);
+	r.setAngle(angle);
+	return stream;
+}
+
 /**
  * \fn typedef Rotation
  * \brief Template class instance of the RotationT template.

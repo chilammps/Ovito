@@ -37,7 +37,7 @@ IMPLEMENT_OVITO_OBJECT(Particles, CalculateDisplacementsModifierEditor, Particle
 SET_OVITO_OBJECT_EDITOR(CalculateDisplacementsModifier, CalculateDisplacementsModifierEditor);
 DEFINE_REFERENCE_FIELD(CalculateDisplacementsModifier, _referenceObject, "Reference Configuration", SceneObject);
 DEFINE_PROPERTY_FIELD(CalculateDisplacementsModifier, _referenceShown, "ShowReferenceConfiguration");
-DEFINE_PROPERTY_FIELD(CalculateDisplacementsModifier, _eliminateCellDeformation, "EliminateCellDeformation");
+DEFINE_FLAGS_PROPERTY_FIELD(CalculateDisplacementsModifier, _eliminateCellDeformation, "EliminateCellDeformation", PROPERTY_FIELD_MEMORIZE);
 DEFINE_PROPERTY_FIELD(CalculateDisplacementsModifier, _assumeUnwrappedCoordinates, "AssumeUnwrappedCoordinates");
 DEFINE_PROPERTY_FIELD(CalculateDisplacementsModifier, _useReferenceFrameOffset, "UseReferenceFrameOffet");
 DEFINE_PROPERTY_FIELD(CalculateDisplacementsModifier, _referenceFrameNumber, "ReferenceFrameNumber");
