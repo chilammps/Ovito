@@ -135,7 +135,12 @@ public:
 	///
 	/// The default implementation of this method checks if the source URL contains a wild-card pattern.
 	/// If yes, it scans the directory to find all matching files.
-	virtual Future<QVector<FrameSourceInformation>> findFrames(const QUrl& sourceUrl);
+	virtual Future<QVector<FrameSourceInformation>> findFrames(const QUrl& sourceUrl) {
+		return findWildcardMatches(sourceUrl, dataset()->container());
+	}
+
+	/// \brief Returns the list of files that match the given wildcard pattern.
+	static Future<QVector<FrameSourceInformation>> findWildcardMatches(const QUrl& sourceUrl, DataSetContainer* datasetContainer);
 
 	/// \brief Sends a request to the LinkedFileObject owning this importer to reload the input file.
 	void requestReload(int frame = -1);

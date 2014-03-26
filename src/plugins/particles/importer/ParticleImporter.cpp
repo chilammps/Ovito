@@ -42,7 +42,10 @@ Future<QVector<LinkedFileImporter::FrameSourceInformation>> ParticleImporter::fi
 	if(isMultiTimestepFile()) {
 		DataSetContainer& datasetContainer = *dataset()->container();
 		return datasetContainer.taskManager().runInBackground<QVector<LinkedFileImporter::FrameSourceInformation>>(
-				std::bind(&ParticleImporter::scanMultiTimestepFile, this, std::placeholders::_1, std::ref(datasetContainer), sourceUrl));
+				[this, sourceUrl](FutureInterface<QVector<LinkedFileImporter::FrameSourceInformation>>& futureInterface) {
+					futureInterface.setResult(scanMultiTimestepFile(futureInterface, sourceUrl));
+				}
+		);
 	}
 	else {
 		return LinkedFileImporter::findFrames(sourceUrl);
@@ -52,21 +55,35 @@ Future<QVector<LinkedFileImporter::FrameSourceInformation>> ParticleImporter::fi
 /******************************************************************************
 * Scans the input file for simulation timesteps.
 ******************************************************************************/
-void ParticleImporter::scanMultiTimestepFile(FutureInterface<QVector<LinkedFileImporter::FrameSourceInformation>>& futureInterface, DataSetContainer& datasetContainer, const QUrl sourceUrl)
+QVector<LinkedFileImporter::FrameSourceInformation> ParticleImporter::scanMultiTimestepFile(FutureInterfaceBase& futureInterface, const QUrl sourceUrl)
 {
+	QVector<LinkedFileImporter::FrameSourceInformation> result;
+
+	// Check if filename is a wildcard pattern.
+	// If yes, find all matching files and scan each one of them.
+	QFileInfo fileInfo(sourceUrl.path());
+	if(fileInfo.fileName().contains('*') || fileInfo.fileName().contains('?')) {
+		auto findFilesFuture = LinkedFileImporter::findWildcardMatches(sourceUrl, dataset()->container());
+		if(!futureInterface.waitForSubTask(findFilesFuture))
+			return result;
+		for(auto item : findFilesFuture.result()) {
+			result += scanMultiTimestepFile(futureInterface, item.sourceFile);
+		}
+		return result;
+	}
+
 	futureInterface.setProgressText(tr("Scanning file %1").arg(sourceUrl.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));
 
 	// Fetch file.
-	Future<QString> fetchFileFuture = FileManager::instance().fetchUrl(datasetContainer, sourceUrl);
+	Future<QString> fetchFileFuture = FileManager::instance().fetchUrl(*dataset()->container(), sourceUrl);
 	if(!futureInterface.waitForSubTask(fetchFileFuture))
-		return;
+		return result;
 
 	// Open file.
 	QFile file(fetchFileFuture.result());
 	CompressedTextParserStream stream(file, sourceUrl.path());
 
 	// Scan file.
-	QVector<LinkedFileImporter::FrameSourceInformation> result;
 	try {
 		scanFileForTimesteps(futureInterface, result, sourceUrl, stream);
 	}
@@ -76,12 +93,10 @@ void ParticleImporter::scanMultiTimestepFile(FutureInterface<QVector<LinkedFileI
 		if(result.size() <= 1)
 			throw;
 		else
-			result.pop_back();		// Remove last discovered frame because it may be corrupted.
+			result.pop_back();		// Remove last discovered frame because it may be corrupted or only partially written.
 	}
 
-	// Return results.
-	if(!futureInterface.isCanceled())
-		futureInterface.setResult(result);
+	return result;
 }
 
 /******************************************************************************
