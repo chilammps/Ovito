@@ -15,7 +15,6 @@
 
 Sha Zhendong:
 
-- Calculation of the pair correlation function
 - Calculation of Voronoi atomic volume
 - Calculation of local atomic number density functions
 

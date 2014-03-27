@@ -48,6 +48,9 @@ MainWindow::MainWindow() :
 	setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
 	setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
 
+	// Disable context menus in toolbars.
+	setContextMenuPolicy(Qt::NoContextMenu);
+
 	// Create input manager.
 	_viewportInputManager = new ViewportInputManager(this);
 

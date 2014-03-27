@@ -23,6 +23,9 @@ Release 2.3.0 (xx-Mar-14):
  - Added a file importer for NetCDF files. Code was contributed by Lars Pastewka.
  - Added more input variables to the 'Compute property' and 'Expression select' modifiers (e.g. reduced particle 
    coordinates and simulation cell size).
+ - It's now possible to load a sequence of files with each file containing multiple frames. To do this, import the 
+   first file from the sequence, activate the option "File contains multiple timsteps", finally open the 
+   "Frame sequence" panel and change the wildcard pattern to include the '*' placeholder character again.
  - Fixed bug in CFG file importer, which did not read triclinic simulation cells correctly.
  - Fixed shader compilation error on OpenGL 2.0 systems and some other OpenGL related issues.
    
