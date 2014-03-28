@@ -16,7 +16,7 @@
        a large number of input files. The program's built-in script interpreter is based on the 
        <link xlink:href="http://www.ecma-international.org/publications/standards/Ecma-262.htm">ECMAScript language</link>,
        which forms also the basis for the popular <link xlink:href="http://en.wikipedia.org/wiki/JavaScript">JavaScript language</link> used in web browsers. 
-       If you are not familiar with JavaScript or the ECMAScript language, you can find several tutorials and books that cover this subject online. 
+       If you are not familiar with JavaScript or the ECMAScript language, you can find several tutorials and books online that cover this subject. 
     </para>
     <para>
        OVITO's scripting interface enables programmatic access to various functions of the program such as 

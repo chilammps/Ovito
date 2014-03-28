@@ -33,7 +33,7 @@ namespace Ovito {
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, RenderSettings, RefTarget);
 SET_OVITO_OBJECT_EDITOR(RenderSettings, RenderSettingsEditor);
 DEFINE_FLAGS_REFERENCE_FIELD(RenderSettings, _renderer, "Renderer", SceneRenderer, PROPERTY_FIELD_MEMORIZE);
-DEFINE_REFERENCE_FIELD(RenderSettings, _backgroundColor, "BackgroundColor", VectorController);
+DEFINE_FLAGS_REFERENCE_FIELD(RenderSettings, _backgroundColor, "BackgroundColor", VectorController, PROPERTY_FIELD_MEMORIZE);
 DEFINE_PROPERTY_FIELD(RenderSettings, _outputImageWidth, "OutputImageWidth");
 DEFINE_PROPERTY_FIELD(RenderSettings, _outputImageHeight, "OutputImageHeight");
 DEFINE_PROPERTY_FIELD(RenderSettings, _generateAlphaChannel, "GenerateAlphaChannel");

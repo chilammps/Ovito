@@ -5,17 +5,15 @@
 - Import file should keep a history of visited directories like the old Ovito version did.
 - Color Coding modifier: Display of color legend in rendered image.
 - Export of general triclinic cells to LAMMPS data/dump formats. See http://lammps.sandia.gov/doc/Section_howto.html#howto_12
-- Affine Transformation: Add "Duplicate particles" option.
 - Surface mesh for an empty simulation box should not display cap polygons.
 - Let the user configure the default colors and radii assigned to different atom types.
 - The particle information applet should allow the user to click on and select bonds directly (instead of picking the two particles).
 - More particle representations (e.g. open circles/rectangles)
 - Remember multiple column mappings, like in OVITO 1.x (useful if you work with many XYZ files with different columns).
-- Save more user-defined default settings (e.g. renderer type, render background color, particle colors, color gradient).
+- Save more user-defined default settings (e.g. renderer type, particle colors, math expressions).
 
 Sha Zhendong:
 
-- Calculation of the pair correlation function
 - Calculation of Voronoi atomic volume
 - Calculation of local atomic number density functions
 
