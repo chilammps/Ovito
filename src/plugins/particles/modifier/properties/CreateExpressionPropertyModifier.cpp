@@ -167,7 +167,7 @@ void CreateExpressionPropertyModifier::initializeModifier(PipelineObject* pipeli
 ******************************************************************************/
 void CreateExpressionPropertyModifierEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
-	rollout = createRollout(tr("Create expression property"), rolloutParams, "particles.modifiers.compute_property.html");
+	rollout = createRollout(tr("Compute property"), rolloutParams, "particles.modifiers.compute_property.html");
 
     // Create the rollout contents.
 	QVBoxLayout* mainLayout = new QVBoxLayout(rollout);

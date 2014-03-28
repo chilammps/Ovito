@@ -17,7 +17,7 @@
      
      The animation settings dialog is opened by the 
       <inlinemediaobject><imageobject><imagedata fileref="images/animation_toolbar/animation_settings.png" format="png"/></imageobject></inlinemediaobject>
-     button from the animation toolbar. It provides settings for frame rate and playback of the animation. 
+     button from the animation toolbar. It provides settings for frame rate and playback speed of the animation. 
      You use this dialog to change the length of your animation.
    </para>
     

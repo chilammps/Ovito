@@ -13,6 +13,7 @@
   
   <xi:include href="reference/modifiers/modifiers.docbook"/>
   <xi:include href="reference/display_objects/display_objects.docbook"/>
+  <xi:include href="reference/animation/animation_settings_dialog.docbook"/>
   
   <section xml:id="rendering">
     <title>Renderering</title>

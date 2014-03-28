@@ -103,13 +103,13 @@
     <title>Input and output</title>
     <para>
        Most file formats used by simulation codes support an arbitrary number of 
-       per-particle properties, which are stored in individual file columns in no specific order. 
-       When loading such a file into OVITO, the columns of the file must be mapped to OVITO's particle properties. It most cases this 
+       per-particle properties, which are stored in individual file columns in a user-defined order. 
+       When loading such a file into OVITO, the columns of the file must be mapped to OVITO's internal particle properties. It most cases this 
        happens automatically based on the metadata found in the file's header.
     </para>
     <para>
        Files in the XYZ format are an exception since they contain no metadata that could help OVITO to
-       interpret the file's columns. When opening such a file, the program will display a dialog box to let the
+       interpret the file's columns. When opening such a file, the program displays a dialog box to let the
        user specify the mapping of columns to internal particle properties. A similar step is necessary when 
        <link linkend="usage.export">exporting particle data to a file</link>: 
        The user has to specify which particle properties to export and in which order.

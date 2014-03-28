@@ -25,13 +25,13 @@
             <imagedata fileref="images/viewport_control_toolbar/viewport_screenshot.png" format="png" />
        </imageobject></mediaobject></screenshot>
     </figure> 
-    Use the mouse to navigate within a viewport and to move the camera around:
+    Use the mouse to navigate within a viewport and to move the virtual camera around:
     <itemizedlist>
     <listitem><para>
-      Left-click and dragging the mouse rotates the camera around the current orbit center, which, by default, is located in the center of the simulation cell.
+      Left-click and drag to rotate the camera around the current orbit center, which, by default, is located in the center of the simulation cell.
     </para></listitem>
     <listitem><para>
-      Right-click and dragging moves the camera parallel to the current projection plane. You can also use the middle mouse button for this.
+      Right-click and drag to move the camera parallel to the current projection plane. You can also use the middle mouse button for this.
     </para></listitem>
     <listitem><para>
       Use the mouse wheel to zoom in and out.

@@ -40,24 +40,26 @@
       <informaltable frame="none">
         <tgroup cols="3">
           <tbody>
-            <row>
+            <row valign="bottom">
+              <entry>Initial frame:</entry>
+              <entry>Without <emphasis>Freeze Property</emphasis> modifier:</entry>
+              <entry>With <emphasis>Freeze Property</emphasis> modifier:</entry>
+            </row>
+            <row valign="top">
               <entry>
-                <para>Initial frame:
 		        <mediaobject><imageobject>
 		        <imagedata fileref="images/modifiers/freeze_property_example1_initial.png" format="PNG" />
-		        </imageobject></mediaobject></para>
+		        </imageobject></mediaobject>
               </entry>
               <entry>
-                <para>Without <emphasis>Freeze Property</emphasis> modifier:
-		        <mediaobject><imageobject>
+                <mediaobject><imageobject>
 		        <imagedata fileref="images/modifiers/freeze_property_example1_without.png" format="PNG" />
-		        </imageobject></mediaobject></para>
+		        </imageobject></mediaobject>
               </entry>
               <entry>
-                <para>With <emphasis>Freeze Property</emphasis> modifier:
 		        <mediaobject><imageobject>
 		        <imagedata fileref="images/modifiers/freeze_property_example1_with.png" format="PNG" />
-		        </imageobject></mediaobject></para>
+		        </imageobject></mediaobject>
               </entry>
             </row>
           </tbody>

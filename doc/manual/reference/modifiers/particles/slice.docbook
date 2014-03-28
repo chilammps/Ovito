@@ -16,24 +16,26 @@
       <informaltable frame="none">
         <tgroup cols="2">
           <tbody>
-            <row>
-              <entry>
-                <para>Input:
+            <row valign="bottom">
+              <entry>Input:</entry>
+              <entry>Output (slice width = 0):</entry>
+              <entry>Output (slice width > 0):</entry>
+            </row>
+            <row valign="top">
+            <entry>
 		        <mediaobject><imageobject>
 		        <imagedata fileref="images/modifiers/slice_example_input.png" format="PNG" />
-		        </imageobject></mediaobject></para>
+		        </imageobject></mediaobject>
               </entry>
               <entry>
-                <para>Output (slice width = 0):
 		        <mediaobject><imageobject>
 		        <imagedata fileref="images/modifiers/slice_example_output1.png" format="PNG" />
-		        </imageobject></mediaobject></para>
+		        </imageobject></mediaobject>
               </entry>
               <entry>
-                <para>Output (slice width > 0):
 		        <mediaobject><imageobject>
 		        <imagedata fileref="images/modifiers/slice_example_output2.png" format="PNG" />
-		        </imageobject></mediaobject></para>
+		        </imageobject></mediaobject>
               </entry>
             </row>
           </tbody>
