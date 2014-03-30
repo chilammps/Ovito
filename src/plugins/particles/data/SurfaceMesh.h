@@ -59,6 +59,12 @@ public:
 	/// the scene object's revision number.
 	HalfEdgeMesh& mesh() { return _mesh; }
 
+	/// Indicates whether the entire simulation cell is part of the solid region.
+	bool isCompletelySolid() const { return _isCompletelySolid; }
+
+	/// Sets whether the entire simulation cell is part of the solid region.
+	void setCompletelySolid(bool flag) { _isCompletelySolid = flag; }
+
 	/// \brief Clears the triangle mesh by deleting all vertices and faces.
 	void clearMesh() {
 		mesh().clear();
@@ -86,6 +92,9 @@ private:
 
 	/// The internal triangle mesh.
 	HalfEdgeMesh _mesh;
+
+	/// Indicates that the entire simulation cell is part of the solid region.
+	bool _isCompletelySolid;
 
 	Q_OBJECT
 	OVITO_OBJECT

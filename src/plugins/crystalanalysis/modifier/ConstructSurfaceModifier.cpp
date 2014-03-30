@@ -122,6 +122,7 @@ void ConstructSurfaceModifier::retrieveModifierResults(Engine* engine)
 	ConstructSurfaceEngine* eng = static_cast<ConstructSurfaceEngine*>(engine);
 	if(surfaceMesh()) {
 		surfaceMesh()->mesh().swap(eng->mesh());
+		surfaceMesh()->setCompletelySolid(eng->isCompletelySolid());
 		surfaceMesh()->notifyDependents(ReferenceEvent::TargetChanged);
 	}
 	_solidVolume = eng->solidVolume();
@@ -198,6 +199,7 @@ void ConstructSurfaceModifier::ConstructSurfaceEngine::compute(FutureInterfaceBa
 	// Classify cells into solid and open tetrahedra.
 	int nghost = 0, ntotal = 0;
 	int solidCellCount = 0;
+	_isCompletelySolid = true;
 	for(DelaunayTessellation::CellIterator cell = tessellation.begin_cells(); cell != tessellation.end_cells(); ++cell) {
 		// This determines whether a Delaunay tetrahedron is part of the solid region.
 		bool isSolid = tessellation.isValidCell(cell) &&
@@ -212,8 +214,10 @@ void ConstructSurfaceModifier::ConstructSurfaceEngine::compute(FutureInterfaceBa
 		if(isSolid && !cell->info().isGhost) {
 			cell->info().index = solidCellCount++;
 		}
-		else
+		else {
+			if(!cell->info().isGhost) _isCompletelySolid = false;
 			cell->info().index = -1;
+		}
 
 		futureInterface.incrementProgressValue(0);
 	}

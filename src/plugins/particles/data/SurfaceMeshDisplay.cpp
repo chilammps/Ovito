@@ -130,7 +130,7 @@ void SurfaceMeshDisplay::render(TimePoint time, SceneObject* sceneObject, const 
 			if(buildSurfaceMesh(defectSurfaceObj->mesh(), cellObject->data(), surfaceMesh)) {
 				_surfaceBuffer->setMesh(surfaceMesh, color_surface);
 				if(_showCap) {
-					buildCapMesh(defectSurfaceObj->mesh(), cellObject->data(), capMesh);
+					buildCapMesh(defectSurfaceObj->mesh(), cellObject->data(), defectSurfaceObj->isCompletelySolid(), capMesh);
 					_capBuffer->setMesh(capMesh, color_cap);
 				}
 			}
@@ -297,7 +297,7 @@ bool SurfaceMeshDisplay::splitFace(TriMesh& output, TriMeshFace& face, int oldVe
 /******************************************************************************
 * Generates the triangle mesh for the PBC caps.
 ******************************************************************************/
-void SurfaceMeshDisplay::buildCapMesh(const HalfEdgeMesh& input, const SimulationCellData& cell, TriMesh& output)
+void SurfaceMeshDisplay::buildCapMesh(const HalfEdgeMesh& input, const SimulationCellData& cell, bool isCompletelySolid, TriMesh& output)
 {
 	// Convert vertex positions to reduced coordinates.
 	std::vector<Point3> reducedPos(input.vertexCount());
@@ -409,7 +409,7 @@ void SurfaceMeshDisplay::buildCapMesh(const HalfEdgeMesh& input, const Simulatio
 		else {
 			if(isBoxCornerInside3DRegion == -1) {
 				if(closedContours.empty())
-					isBoxCornerInside3DRegion = isCornerInside3DRegion(input, reducedPos, cell.pbcFlags());
+					isBoxCornerInside3DRegion = isCornerInside3DRegion(input, reducedPos, cell.pbcFlags(), isCompletelySolid);
 				else
 					isBoxCornerInside3DRegion = isCornerInside2DRegion(closedContours);
 			}
@@ -643,10 +643,10 @@ bool SurfaceMeshDisplay::isCornerInside2DRegion(const std::vector<std::vector<Po
 * Signed Distance Computation Using the Angle Weighted Pseudonormal
 * IEEE Transactions on Visualization and Computer Graphics 11 (2005), Page 243
 ******************************************************************************/
-bool SurfaceMeshDisplay::isCornerInside3DRegion(const HalfEdgeMesh& mesh, const std::vector<Point3>& reducedPos, const std::array<bool,3> pbcFlags)
+bool SurfaceMeshDisplay::isCornerInside3DRegion(const HalfEdgeMesh& mesh, const std::vector<Point3>& reducedPos, const std::array<bool,3> pbcFlags, bool isCompletelySolid)
 {
 	if(mesh.vertices().empty())
-		return true;
+		return isCompletelySolid;
 
 	// Determine which vertex is closest to the test point.
 	FloatType closestDistanceSq = FLOATTYPE_MAX;

@@ -80,7 +80,7 @@ protected:
 	bool splitFace(TriMesh& output, TriMeshFace& face, int oldVertexCount, std::vector<Point3>& newVertices, std::map<std::pair<int,int>,std::pair<int,int>>& newVertexLookupMap, const SimulationCellData& cell, size_t dim);
 
 	/// Generates the triangle mesh for the PBC cap.
-	void buildCapMesh(const HalfEdgeMesh& input, const SimulationCellData& cell, TriMesh& output);
+	void buildCapMesh(const HalfEdgeMesh& input, const SimulationCellData& cell, bool isCompletelySolid, TriMesh& output);
 
 	/// Traces the closed contour of the surface-boundary intersection.
 	std::vector<Point2> traceContour(HalfEdgeMesh::Edge* firstEdge, const std::vector<Point3>& reducedPos, const SimulationCellData& cell, size_t dim);
@@ -95,7 +95,7 @@ protected:
 	bool isCornerInside2DRegion(const std::vector<std::vector<Point2>>& contours);
 
 	/// Determines if the 3D box corner (0,0,0) is inside the region described by the half-edge polyhedron.
-	bool isCornerInside3DRegion(const HalfEdgeMesh& mesh, const std::vector<Point3>& reducedPos, const std::array<bool,3> pbcFlags);
+	bool isCornerInside3DRegion(const HalfEdgeMesh& mesh, const std::vector<Point3>& reducedPos, const std::array<bool,3> pbcFlags, bool isCompletelySolid);
 
 	/// Controls the display color of the surface mesh.
 	PropertyField<Color, QColor> _surfaceColor;
