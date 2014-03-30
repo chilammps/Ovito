@@ -129,6 +129,7 @@ bool LAMMPSBinaryDumpImporter::inspectNewFile(LinkedFileObject* obj)
 
 	InputColumnMapping mapping(_columnMapping);
 	mapping.setColumnCount(inspectionTask->columnMapping().columnCount());
+	mapping.setFileExcerpt(inspectionTask->columnMapping().fileExcerpt());
 	if(_columnMapping.columnCount() != mapping.columnCount()) {
 		if(_columnMapping.columnCount() == 0) {
 			int oldCount = 0;
@@ -157,7 +158,10 @@ bool LAMMPSBinaryDumpImporter::inspectNewFile(LinkedFileObject* obj)
 		}
 		return false;
 	}
-	else return true;
+	else {
+		_columnMapping.setFileExcerpt(inspectionTask->columnMapping().fileExcerpt());
+		return true;
+	}
 }
 
 /******************************************************************************

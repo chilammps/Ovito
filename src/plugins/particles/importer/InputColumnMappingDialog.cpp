@@ -44,6 +44,7 @@ InputColumnMappingDialog::InputColumnMappingDialog(const InputColumnMapping& map
 
 	// Create the table sub-widget.
 	QVBoxLayout* layout = new QVBoxLayout(this);
+	layout->setSpacing(2);
 
 	QLabel* captionLabel = new QLabel(
 			tr("Please specify how the data columns of the input file should be mapped "
@@ -71,7 +72,7 @@ InputColumnMappingDialog::InputColumnMappingDialog(const InputColumnMapping& map
 
 	_tableWidget->resizeColumnToContents(VECTOR_COMPNT_COLUMN);
 
-	// Calculate the optimum with of the property column.
+	// Calculate the optimum width of the property column.
 	QComboBox* box = new QComboBox();
 	box->setSizeAdjustPolicy(QComboBox::AdjustToContents);
 	QMapIterator<QString, ParticleProperty::Type> i(ParticleProperty::standardPropertyList());
@@ -82,6 +83,16 @@ InputColumnMappingDialog::InputColumnMappingDialog(const InputColumnMapping& map
 	_tableWidget->setColumnWidth(PROPERTY_COLUMN, box->sizeHint().width());
 	_tableWidget->verticalHeader()->setVisible(false);
 	_tableWidget->setShowGrid(false);
+
+	layout->addWidget(_fileExcerptLabel = new QLabel(tr("File excerpt:")));
+	_fileExcerptLabel->setVisible(false);
+	_fileExcerptField = new QTextEdit();
+	_fileExcerptField->setLineWrapMode(QTextEdit::NoWrap);
+	_fileExcerptField->setAcceptRichText(false);
+	_fileExcerptField->setReadOnly(true);
+	_fileExcerptField->setVisible(false);
+	layout->addWidget(_fileExcerptField);
+
 	layout->addStretch(1);
 
 	// Ok and Cancel buttons
@@ -170,6 +181,16 @@ void InputColumnMappingDialog::setMapping(const InputColumnMapping& mapping)
 	}
 
 	_tableWidget->resizeRowsToContents();
+
+	if(!mapping.fileExcerpt().isEmpty()) {
+		_fileExcerptField->setPlainText(mapping.fileExcerpt());
+		_fileExcerptField->setVisible(true);
+		_fileExcerptLabel->setVisible(true);
+	}
+	else {
+		_fileExcerptField->setVisible(false);
+		_fileExcerptLabel->setVisible(false);
+	}
 }
 
 /******************************************************************************
@@ -220,6 +241,9 @@ InputColumnMapping InputColumnMappingDialog::mapping() const
 			}
 		}
 		mapping.unmapColumn(index, _fileColumnBoxes[index]->text());
+	}
+	if(!_fileExcerptField->isHidden()) {
+		mapping.setFileExcerpt(_fileExcerptField->toPlainText());
 	}
 	return mapping;
 }

@@ -67,6 +67,9 @@ protected:
 	QVector<QComboBox*> _vectorComponentBoxes;
 
 	QSignalMapper* _vectorCmpntSignalMapper;
+
+	QLabel* _fileExcerptLabel;
+	QTextEdit* _fileExcerptField;
 };
 
 };

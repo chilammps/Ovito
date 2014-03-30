@@ -112,6 +112,14 @@ public:
 	/// \brief Checks if the mapping is valid; throws an exception if not.
 	void validate() const;
 
+	/// \brief Returns the first few lines of the file, which can help the user to figure out
+	///        the column mapping.
+	const QString& fileExcerpt() const { return _fileExcerpt; }
+
+	/// \brief Stores the first few lines of the file, which can help the user to figure out
+	///        the column mapping.
+	void setFileExcerpt(const QString& text) { _fileExcerpt = text; }
+
 private:
 
 	/// Stores information about a single column in the data file.
@@ -136,6 +144,9 @@ private:
 
 	/// Stores the mapping of each column in the input file.
 	QVector<Column> _columns;
+
+	/// A string with the first few lines of the file, which can help the user to figure out the column mapping.
+	QString _fileExcerpt;
 };
 
 
