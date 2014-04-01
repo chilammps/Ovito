@@ -40,6 +40,9 @@ void DataSetBinding::setupBinding(ScriptEngine& engine)
 	// Add a getter function property to workaround bug in Qt script.
 	datasetPrototype.setProperty("__qtsworksround__", engine.noopFunction(), QScriptValue::PropertyGetter);
 
+	// Make command line arguments accessible to script.
+	datasetPrototype.setProperty("arguments", engine.toScriptValue(QCoreApplication::arguments()));
+
 	// Install a prototype for DataSet values.
 	engine.setDefaultPrototype(qMetaTypeId<DataSet*>(), datasetPrototype);
 
