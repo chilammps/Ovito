@@ -384,10 +384,9 @@ void ModifyCommandPage::createAboutPanel()
 		// Generate a new unique ID.
 		id.fill('0', 16);
 		std::random_device rdev;
-		std::default_random_engine reng(rdev());
-		std::uniform_int_distribution<int> rdist(0, 0xFF);
+		std::uniform_int_distribution<char> rdist(0, 0xFF);
 		for(auto& c : id)
-			c = (char)rdist(reng);
+			c = rdist(rdev);
 		settings.setValue("id", id);
 	}
 
