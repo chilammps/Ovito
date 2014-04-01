@@ -10,6 +10,8 @@
 - More particle representations (e.g. open circles/rectangles)
 - Remember multiple column mappings, like in OVITO 1.x (useful if you work with many XYZ files with different columns).
 - Save more user-defined default settings (e.g. renderer type, particle colors, math expressions).
+- Scripting plugin: Add file I/O script functions.
+- Scripting plugin: Pass command line parameters to script.
 
 Sha Zhendong:
 

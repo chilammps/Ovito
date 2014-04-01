@@ -36,7 +36,10 @@ IMPLEMENT_OVITO_OBJECT(Scripting, ScriptAutostarter, AutoStartObject);
 void ScriptAutostarter::registerCommandLineOptions(CommandLineParser& cmdLineParser)
 {
 	// Register the --script command line option.
-	cmdLineParser.addOption(CommandLineOption("script", tr("Runs a script."), tr("FILE")));
+	cmdLineParser.addOption(CommandLineOption("script", tr("Runs a script file."), tr("FILE")));
+
+	// Register the --exec command line option.
+	cmdLineParser.addOption(CommandLineOption("exec", tr("Executes a script command."), tr("CMD")));
 }
 
 /******************************************************************************
@@ -44,15 +47,11 @@ void ScriptAutostarter::registerCommandLineOptions(CommandLineParser& cmdLinePar
 ******************************************************************************/
 void ScriptAutostarter::applicationStarted()
 {
-	// Execute the script files passed on the command line.
+	// Execute the script commands and files passed on the command line.
+	QStringList scriptCommands = Application::instance().cmdLineParser().values("exec");
 	QStringList scriptFiles = Application::instance().cmdLineParser().values("script");
-	for(const QString& scriptFile : scriptFiles) {
 
-		// Load the script program from file.
-		QFile programFile(scriptFile);
-		if(!programFile.open(QIODevice::ReadOnly | QIODevice::Text))
-			throw Exception(tr("Failed to load script file '%1': %2").arg(scriptFile).arg(programFile.errorString()));
-		QString program = QTextStream(&programFile).readAll();
+	if(!scriptCommands.empty() || !scriptFiles.empty()) {
 
 		// Get the current dataset.
 		DataSet* dataset = Application::instance().datasetContainer()->currentSet();
@@ -63,14 +62,37 @@ void ScriptAutostarter::applicationStarted()
 		// Set up script engine.
 		ScriptEngine engine(dataset);
 
-		// Execute script program.
-		engine.evaluate(program, scriptFile);
+		// Execute script commands.
+		for(int index = scriptCommands.size() - 1; index >= 0; index--) {
+			const QString& command = scriptCommands[index];
 
-		// Handle script errors by throwing a C++ exception, which will be handled by the main program.
-		if(engine.hasUncaughtException())
-			throw Exception(tr("Script error in line %1: %2")
-					.arg(engine.uncaughtExceptionLineNumber())
-					.arg(engine.uncaughtException().toString()));
+			// Execute script program.
+			engine.evaluate(command);
+
+			// Handle script errors by throwing a C++ exception, which will be handled by the main program.
+			if(engine.hasUncaughtException())
+				throw Exception(tr("Error in --exec script command: %1").arg(engine.uncaughtException().toString()));
+		}
+
+		// Execute script files.
+		for(int index = scriptFiles.size() - 1; index >= 0; index--) {
+			const QString& scriptFile = scriptFiles[index];
+
+			// Load the script program from file.
+			QFile programFile(scriptFile);
+			if(!programFile.open(QIODevice::ReadOnly | QIODevice::Text))
+				throw Exception(tr("Failed to load script file '%1': %2").arg(scriptFile).arg(programFile.errorString()));
+			QString program = QTextStream(&programFile).readAll();
+
+			// Execute script program.
+			engine.evaluate(program, scriptFile);
+
+			// Handle script errors by throwing a C++ exception, which will be handled by the main program.
+			if(engine.hasUncaughtException())
+				throw Exception(tr("Script error in line %1: %2")
+						.arg(engine.uncaughtExceptionLineNumber())
+						.arg(engine.uncaughtException().toString()));
+		}
 	}
 }
 
