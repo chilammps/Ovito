@@ -382,7 +382,7 @@ void ModifyCommandPage::createAboutPanel()
 	}
 	if(id.isEmpty()) {
 		// Generate a new unique ID.
-		id.fill(16, '0');
+		id.fill('0', 16);
 		std::random_device rdev;
 		std::default_random_engine reng(rdev());
 		std::uniform_int_distribution<int> rdist(0, 0xFF);
@@ -391,13 +391,24 @@ void ModifyCommandPage::createAboutPanel()
 		settings.setValue("id", id);
 	}
 
+	QString operatingSystemString;
+#if defined(Q_OS_MAC)
+	operatingSystemString = QStringLiteral("macosx");
+#elif defined(Q_OS_WIN)
+	operatingSystemString = QStringLiteral("win");
+#elif defined(Q_OS_LINUX)
+	operatingSystemString = QStringLiteral("linux");
+#endif
+
 	// Fetch newest web page from web server.
 	QNetworkAccessManager* networkAccessManager = new QNetworkAccessManager(_aboutRollout);
-	QString urlString = QString("http://www.ovito.org/appnews/v%1.%2.%3/?ovito=%4")
+	QString urlString = QString("http://www.ovito.org/appnews/v%1.%2.%3/?ovito=%4&OS=%5%6")
 			.arg(OVITO_VERSION_MAJOR)
 			.arg(OVITO_VERSION_MINOR)
 			.arg(OVITO_VERSION_REVISION)
-			.arg(QString(id.toHex()));
+			.arg(QString(id.toHex()))
+			.arg(operatingSystemString)
+			.arg(QT_POINTER_SIZE*8);
 	QNetworkReply* networkReply = networkAccessManager->get(QNetworkRequest(QUrl(urlString)));
 	connect(networkAccessManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(onWebRequestFinished(QNetworkReply*)));
 }
