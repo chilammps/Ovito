@@ -13,6 +13,13 @@ http://www.ovito.org/
 Change Log 
 ****************************************************************************************
 
+Release 2.3.1 (01-Apr-14):
+
+ - Added saving/loading of presets to the file column mapping dialog.
+ - Added the --exec command line option, which allows to directly execute a script command or to pass parameters to a script file.
+ - When opening a XYZ file, the column mapping dialog displays an excerpt of the file content to help the user in figuring out the mapping.
+ - The Construct Surface Modifier no longer creates cap polygons if the simulation cell doesn't contain any particles.
+
 Release 2.3.0 (29-Mar-14):
 
  - Added the new scripting interface, which allows to automate tasks.
