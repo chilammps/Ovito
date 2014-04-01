@@ -54,6 +54,12 @@ protected Q_SLOTS:
 	/// Updates the list of vector components for the given file column.
 	void updateVectorComponentList(int columnIndex);
 
+	/// Saves the current mapping as a preset.
+	void onSavePreset();
+
+	/// Loads a preset mapping.
+	void onLoadPreset();
+
 protected:
 
 	/// \brief Returns the string representation of a property's data type.

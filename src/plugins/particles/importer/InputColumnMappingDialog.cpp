@@ -20,7 +20,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <plugins/particles/Particles.h>
-#include <core/gui/mainwin/MainWindow.h>
 #include "InputColumnMappingDialog.h"
 
 namespace Particles {
@@ -60,7 +59,7 @@ InputColumnMappingDialog::InputColumnMappingDialog(const InputColumnMapping& map
 	tableWidgetLayout->setRowStretch(0, 1);
 	tableWidgetLayout->setColumnMinimumWidth(0, 450);
 	tableWidgetLayout->setColumnStretch(0, 1);
-	layout->addLayout(tableWidgetLayout);
+	layout->addLayout(tableWidgetLayout, 4);
 
 	_tableWidget->setColumnCount(3);
 	QStringList horizontalHeaders;
@@ -84,6 +83,7 @@ InputColumnMappingDialog::InputColumnMappingDialog(const InputColumnMapping& map
 	_tableWidget->verticalHeader()->setVisible(false);
 	_tableWidget->setShowGrid(false);
 
+	layout->addSpacing(6);
 	layout->addWidget(_fileExcerptLabel = new QLabel(tr("File excerpt:")));
 	_fileExcerptLabel->setVisible(false);
 	_fileExcerptField = new QTextEdit();
@@ -91,14 +91,15 @@ InputColumnMappingDialog::InputColumnMappingDialog(const InputColumnMapping& map
 	_fileExcerptField->setAcceptRichText(false);
 	_fileExcerptField->setReadOnly(true);
 	_fileExcerptField->setVisible(false);
-	layout->addWidget(_fileExcerptField);
+	layout->addWidget(_fileExcerptField, 1);
+	layout->addSpacing(10);
 
-	layout->addStretch(1);
-
-	// Ok and Cancel buttons
+	// Dialog buttons:
 	QDialogButtonBox* buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, this);
-	connect(buttonBox, SIGNAL(accepted()), this, SLOT(onOk()));
-	connect(buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
+	connect(buttonBox->addButton(tr("Load preset..."), QDialogButtonBox::ActionRole), &QPushButton::clicked, this, &InputColumnMappingDialog::onLoadPreset);
+	connect(buttonBox->addButton(tr("Save preset..."), QDialogButtonBox::ActionRole), &QPushButton::clicked, this, &InputColumnMappingDialog::onSavePreset);
+	connect(buttonBox, &QDialogButtonBox::accepted, this, &InputColumnMappingDialog::onOk);
+	connect(buttonBox, &QDialogButtonBox::rejected, this, &InputColumnMappingDialog::reject);
 	layout->addWidget(buttonBox);
 
 	setMapping(mapping);
@@ -218,7 +219,6 @@ void InputColumnMappingDialog::updateVectorComponentList(int columnIndex)
 	}
 }
 
-
 /******************************************************************************
  * Returns the current contents of the editor.
  *****************************************************************************/
@@ -246,6 +246,108 @@ InputColumnMapping InputColumnMappingDialog::mapping() const
 		mapping.setFileExcerpt(_fileExcerptField->toPlainText());
 	}
 	return mapping;
+}
+
+/******************************************************************************
+ * Saves the current mapping as a preset.
+ *****************************************************************************/
+void InputColumnMappingDialog::onSavePreset()
+{
+	try {
+		// Get current mapping.
+		InputColumnMapping m = mapping();
+
+		// Load existing mappings.
+		QSettings settings;
+		settings.beginGroup("inputcolumnmapping");
+		int size = settings.beginReadArray("presets");
+		QStringList presetNames;
+		QList<QByteArray> presetData;
+		for(int i = 0; i < size; ++i) {
+		    settings.setArrayIndex(i);
+		    presetNames.push_back(settings.value("name").toString());
+		    presetData.push_back(settings.value("data").toByteArray());
+		}
+		settings.endArray();
+
+		// Let the user give a name.
+		QString name = QInputDialog::getItem(this, tr("Save Column Mapping"),
+			tr("Please enter a name for the column mapping:"), presetNames, -1, true);
+		if(name.isEmpty()) return;
+
+		// Serialize mapping and add it to the list.
+		int index = presetNames.indexOf(name);
+		if(index >= 0) {
+			// Overwrite existing preset with the same name.
+			presetData[index] = m.toByteArray();
+		}
+		else {
+			// Add a new preset. Sort alphabetically.
+			index = std::lower_bound(presetNames.begin(), presetNames.end(), name) - presetNames.begin();
+			presetNames.insert(index, name);
+			presetData.insert(index, m.toByteArray());
+		}
+
+		// Write mappings to settings store.
+		settings.beginWriteArray("presets");
+		for(int i = 0; i < presetNames.size(); ++i) {
+		    settings.setArrayIndex(i);
+		    settings.setValue("name", presetNames[i]);
+		    settings.setValue("data", presetData[i]);
+		}
+		settings.endArray();
+	}
+	catch(const Exception& ex) {
+		ex.showError();
+	}
+}
+
+/******************************************************************************
+ * Loads a preset mapping.
+ *****************************************************************************/
+void InputColumnMappingDialog::onLoadPreset()
+{
+	try {
+		// Load list of presets.
+		QSettings settings;
+		settings.beginGroup("inputcolumnmapping");
+		int size = settings.beginReadArray("presets");
+		QStringList presetNames;
+		QList<QByteArray> presetData;
+		for(int i = 0; i < size; ++i) {
+		    settings.setArrayIndex(i);
+		    presetNames.push_back(settings.value("name").toString());
+		    presetData.push_back(settings.value("data").toByteArray());
+		}
+		settings.endArray();
+
+		if(size == 0)
+			throw Exception(tr("There are no saved presets so far."));
+
+		// Let the user pick a preset.
+		QString name = QInputDialog::getItem(this, tr("Load Column Mapping"),
+			tr("Select the column mapping to load:"), presetNames, 0, false);
+		if(name.isEmpty()) return;
+
+		// Load preset.
+		InputColumnMapping mapping;
+		mapping.fromByteArray(presetData[presetNames.indexOf(name)]);
+
+		for(int index = 0; index < mapping.columnCount() && index < _tableWidget->rowCount(); index++) {
+			_fileColumnBoxes[index]->setChecked(mapping.isMapped(index));
+			_propertyBoxes[index]->setCurrentText(mapping.propertyName(index));
+			_propertyBoxes[index]->setEnabled(mapping.isMapped(index));
+			updateVectorComponentList(index);
+			if(_vectorComponentBoxes[index]->count() != 0)
+				_vectorComponentBoxes[index]->setCurrentIndex(mapping.vectorComponent(index));
+		}
+		for(int index = mapping.columnCount(); index < _tableWidget->rowCount(); index++) {
+			_fileColumnBoxes[index]->setChecked(false);
+		}
+	}
+	catch(const Exception& ex) {
+		ex.showError();
+	}
 }
 
 };	// End of namespace
