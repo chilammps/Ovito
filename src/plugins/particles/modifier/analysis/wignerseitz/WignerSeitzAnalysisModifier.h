@@ -110,7 +110,7 @@ private:
 			_positions(positions), _simCell(simCell),
 			_refPositions(refPositions), _simCellRef(simCellRef),
 			_eliminateCellDeformation(eliminateCellDeformation),
-			_occupancyNumbers(new ParticleProperty(positions->size(), qMetaTypeId<int>(), sizeof(int), 1, tr("Occupancy"))) {}
+			_occupancyNumbers(new ParticleProperty(refPositions->size(), qMetaTypeId<int>(), sizeof(int), 1, tr("Occupancy"))) {}
 
 		/// Computes the modifier's results and stores them in this object for later retrieval.
 		virtual void compute(FutureInterfaceBase& futureInterface) override;

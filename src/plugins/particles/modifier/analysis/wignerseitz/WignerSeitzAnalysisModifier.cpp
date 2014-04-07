@@ -259,9 +259,10 @@ ObjectStatus WignerSeitzAnalysisModifier::applyModifierResults(TimePoint time, T
 	output().setStateValidity(oldValidity);
 	output().attributes() = oldAttributes;
 
-	ParticlePropertyObject* posProperty = outputStandardProperty(ParticleProperty::PositionProperty);
+	ParticlePropertyObject* posProperty = ParticlePropertyObject::findInState(output(), ParticleProperty::PositionProperty);
 	if(!posProperty)
-		throw Exception(tr("This modifier cannot be evaluated because the reference configuration does not contain any particles."));
+		throw Exception(tr("This modifier cannot be evaluated, because the reference configuration does not contain any particles."));
+	_outputParticleCount = posProperty->size();
 
 	if(posProperty->size() != occupancyNumbers().size())
 		throw Exception(tr("The number of particles in the reference configuration has changed. The stored results have become invalid."));
