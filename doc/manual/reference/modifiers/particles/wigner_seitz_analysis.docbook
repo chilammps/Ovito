@@ -34,18 +34,18 @@
   
   <para>
     The Wigner-Seitz analysis consists of mapping each input particle from the current configuration to the closest site in the reference configuration.
-    In other words, it counts the number of atoms located within the Wigner-Seitz (or Voronoi) cell of each reference site. This is a site's <emphasis>occupation number</emphasis>.    
+    In other words, it counts the number of atoms located within the Wigner-Seitz (or Voronoi) cell of each reference site. This is a site's <emphasis>occupancy number</emphasis>.    
   </para>
 
   <para>
     Note that, after performing the Wigner-Seitz analysis, the modifier replaces the current input configuration with the reference configuration.
-    That means you will see the reference state of the system in the viewports after applying the modifier. The reason is that the computed occupation 
+    That means you will see the reference state of the system in the viewports after applying the modifier. The reason is that the computed occupancy 
     numbers are associated with the sites of the reference lattice (and not with the atoms of the defective crystal).
   </para>
   <para>
-    The computed occupations numbers are stored in the <literal>Occupation</literal>
-    particle property by the modifier. They will be 0 for vacant sites, 1 for normal sites, and >1 for sites that are occupied by one or more excess atoms.
-    The <link linkend="particles.modifiers.expression_select">Expression select modifier</link> can be used to filter out perfect sites having <literal>Occupation==1</literal>.
+    The computed occupancy numbers are stored in the <literal>Occupancy</literal>
+    particle property by the modifier. It will be 0 for vacant sites, 1 for normal sites, and >1 for sites that are occupied by one or more excess atoms.
+    The <link linkend="particles.modifiers.expression_select">Expression select modifier</link> can be used to filter out perfect sites having <literal>Occupancy==1</literal>.
   </para>
 
   <simplesect>
