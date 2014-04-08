@@ -47,6 +47,9 @@ ELSE()
 	# Build library.
 	ADD_LIBRARY(muParser ${MUPARSER_SOURCE_FILES})
 
+	# Make header files of this library available to dependent targets.
+	TARGET_INCLUDE_DIRECTORIES(muParser INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}")
+
 	# This library is part of the installation package.
 	IF(NOT OVITO_MONOLITHIC_BUILD)
 		INSTALL(TARGETS muParser 

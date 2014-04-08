@@ -27,7 +27,6 @@
 #include <core/scene/pipeline/PipelineObject.h>
 #include <core/animation/AnimationSettings.h>
 #include <plugins/particles/util/ParticlePropertyParameterUI.h>
-#include <3rdparty/qcustomplot/qcustomplot.h>
 #include "ScatterPlotModifier.h"
 
 namespace Particles {

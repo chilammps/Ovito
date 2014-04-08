@@ -34,7 +34,7 @@ ELSE()
 	# Build our own version of the Botan library.
 
 	# Build library
-	ADD_LIBRARY(Botan botan.cpp)
+	ADD_LIBRARY(Botan botan/botan.cpp)
 
 	IF(APPLE)
 		TARGET_COMPILE_DEFINITIONS(Botan PRIVATE
@@ -96,8 +96,8 @@ ELSE()
 	# Link Qt5.
 	QT5_USE_MODULES(Botan ${OVITO_REQUIRED_QT_MODULES})
 
-	# This allows using the qssh/ path prefix in #include statements.
-	TARGET_INCLUDE_DIRECTORIES(Botan INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/..")
+	# Make header files of this library available to dependent targets.
+	TARGET_INCLUDE_DIRECTORIES(Botan INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}")
 
 	# This library is part of the installation package.
 	IF(NOT OVITO_MONOLITHIC_BUILD)

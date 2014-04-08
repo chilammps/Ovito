@@ -24,7 +24,7 @@
 
 #include <plugins/particles/Particles.h>
 #include <core/scene/pipeline/PipelineFlowState.h>
-#include <3rdparty/muparser/muParser.h>
+#include <muParser.h>
 
 namespace Particles {
 

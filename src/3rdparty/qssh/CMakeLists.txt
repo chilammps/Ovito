@@ -52,8 +52,8 @@ TARGET_COMPILE_DEFINITIONS(QSsh PRIVATE QSSH_LIBRARY)
 # Link required Botan library.
 TARGET_LINK_LIBRARIES(QSsh Botan)
 
-# This allows using the qssh/ path prefix in #include statements.
-TARGET_INCLUDE_DIRECTORIES(QSsh INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/..")
+# Make header files of this library available to dependent targets.
+TARGET_INCLUDE_DIRECTORIES(QSsh INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}")
 
 # Link Qt5.
 QT5_USE_MODULES(QSsh ${OVITO_REQUIRED_QT_MODULES})

@@ -44,7 +44,7 @@ ELSE()
 	# Link Qt5.
 	QT5_USE_MODULES(qcustomplot ${OVITO_REQUIRED_QT_MODULES})
 
-	# Add the current source directory as include directory.
+	# Make header files of this library available to dependent targets.
 	TARGET_INCLUDE_DIRECTORIES(qcustomplot INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}")
 
 	# This library is part of the installation package.
