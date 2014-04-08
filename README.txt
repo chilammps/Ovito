@@ -13,6 +13,11 @@ http://www.ovito.org/
 Change Log 
 ****************************************************************************************
 
+Release 2.3.2 (07-Apr-14):
+
+ - Fixed bug in Wigner-Seitz analysis modifier, which could cause a program crash when numbers of 
+   atoms in reference and current configuration differ.
+ 
 Release 2.3.1 (01-Apr-14):
 
  - Added saving/loading of presets to the file column mapping dialog.
