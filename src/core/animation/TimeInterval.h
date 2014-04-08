@@ -191,7 +191,7 @@ public:
 	}
 
 	/// Return the infinite time interval that contains all time values.
-	static Q_DECL_CONSTEXPR TimeInterval forever() { return TimeInterval(TimeNegativeInfinity(), TimePositiveInfinity()); }
+	static Q_DECL_CONSTEXPR TimeInterval infinite() { return TimeInterval(TimeNegativeInfinity(), TimePositiveInfinity()); }
 
 	/// Return the empty time interval that contains no time values.
 	static Q_DECL_CONSTEXPR TimeInterval empty() { return TimeInterval(TimeNegativeInfinity()); }

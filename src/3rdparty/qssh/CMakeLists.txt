@@ -19,29 +19,48 @@
 #
 ###############################################################################
 
-# Find FFmpeg library.
-FIND_PACKAGE(FFmpeg REQUIRED)
-IF(NOT FFMPEG_FOUND)
-	MESSAGE(FATAL_ERROR "FFmpeg library not found.")
-ENDIF()
-
-# Build library.
-ADD_LIBRARY(Video VideoEncoder.cpp)
-TARGET_LINK_LIBRARIES(Video Base)
+# Build library
+ADD_LIBRARY(QSsh
+	sftpchannel.cpp
+	sftpdefs.cpp
+	sftpfilesystemmodel.cpp
+	sftpincomingpacket.cpp
+	sftpoperation.cpp
+	sftpoutgoingpacket.cpp
+	sftppacket.cpp
+	sshcapabilities.cpp
+	sshchannel.cpp
+	sshchannelmanager.cpp
+	sshconnection.cpp
+	sshconnectionmanager.cpp
+	sshcryptofacility.cpp
+	sshincomingpacket.cpp
+	sshkeyexchange.cpp
+	sshkeygenerator.cpp
+	sshkeypasswordretriever.cpp
+	sshoutgoingpacket.cpp
+	sshpacket.cpp
+	sshpacketparser.cpp
+	sshremoteprocess.cpp
+	sshremoteprocessrunner.cpp
+	sshsendfacility.cpp
+)
 
 # This will let the source code export symbols when building a DLL.
-TARGET_COMPILE_DEFINITIONS(Video PRIVATE OVITO_VIDEO_LIBRARY)
+TARGET_COMPILE_DEFINITIONS(QSsh PRIVATE QSSH_LIBRARY)
 
-# Link to FFmpeg library.
-TARGET_LINK_LIBRARIES(Video ${FFMPEG_LIBRARIES})
-TARGET_INCLUDE_DIRECTORIES(Video PRIVATE ${FFMPEG_INCLUDE_DIR})
+# Link required Botan library.
+TARGET_LINK_LIBRARIES(QSsh Botan)
+
+# This allows using the qssh/ path prefix in #include statements.
+TARGET_INCLUDE_DIRECTORIES(QSsh INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/..")
 
 # Link Qt5.
-QT5_USE_MODULES(Video ${OVITO_REQUIRED_QT_MODULES})
+QT5_USE_MODULES(QSsh ${OVITO_REQUIRED_QT_MODULES})
 
 # This library is part of the installation package.
 IF(NOT OVITO_MONOLITHIC_BUILD)
-	INSTALL(TARGETS Video 
+	INSTALL(TARGETS QSsh 
 		RUNTIME DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}"
 		LIBRARY DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}")
 ENDIF()

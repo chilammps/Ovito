@@ -40,7 +40,7 @@ public:
 	Q_INVOKABLE DeleteParticlesModifier(DataSet* dataset) : ParticleModifier(dataset) {}
 
 	/// Asks the modifier for its validity interval at the given time.
-	virtual TimeInterval modifierValidity(TimePoint time) override { return TimeInterval::forever(); }
+	virtual TimeInterval modifierValidity(TimePoint time) override { return TimeInterval::infinite(); }
 
 protected:
 

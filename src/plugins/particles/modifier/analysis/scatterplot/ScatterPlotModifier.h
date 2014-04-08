@@ -26,7 +26,7 @@
 #include <plugins/particles/data/ParticleProperty.h>
 #include <plugins/particles/util/ParticlePropertyComboBox.h>
 #include "../../ParticleModifier.h"
-#include <3rdparty/qcustomplot/qcustomplot.h>
+#include <qcustomplot.h>
 
 class QCustomPlot;
 class QCPItemStraightLine;

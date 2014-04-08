@@ -66,7 +66,7 @@ CameraObject::CameraObject(DataSet* dataset) : AbstractCameraObject(dataset), _i
 ******************************************************************************/
 TimeInterval CameraObject::objectValidity(TimePoint time)
 {
-	TimeInterval interval = TimeInterval::forever();
+	TimeInterval interval = TimeInterval::infinite();
 	if(isPerspective() && _fov) interval.intersect(_fov->validityInterval(time));
 	if(!isPerspective() && _zoom) interval.intersect(_zoom->validityInterval(time));
 	return interval;

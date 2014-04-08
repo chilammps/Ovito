@@ -41,7 +41,7 @@ public:
 	Q_INVOKABLE WrapPeriodicImagesModifier(DataSet* dataset);
 
 	/// \brief Asks the modifier for its validity interval at the given time.
-	virtual TimeInterval modifierValidity(TimePoint time) override { return TimeInterval::forever(); }
+	virtual TimeInterval modifierValidity(TimePoint time) override { return TimeInterval::infinite(); }
 
 protected:
 

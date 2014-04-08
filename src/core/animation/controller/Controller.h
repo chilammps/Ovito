@@ -179,7 +179,7 @@ public:
 	/// This implementation returns the interval computed by getValue().
 	virtual TimeInterval validityInterval(TimePoint time) override {
 		ValueType v;
-		TimeInterval iv(TimeInterval::forever());
+		TimeInterval iv(TimeInterval::infinite());
 		getValue(time, v, iv);
 		return iv;
 	}

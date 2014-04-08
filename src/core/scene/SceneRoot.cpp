@@ -76,7 +76,7 @@ QString SceneRoot::makeNameUnique(QString baseName) const
 Box3 SceneRoot::localBoundingBox(TimePoint time)
 {
 	Box3 myBox;
-	TimeInterval iv = TimeInterval::forever();
+	TimeInterval iv = TimeInterval::infinite();
 	for(SceneNode* child : children()) {
 		// Get local child bounding box.
 		Box3 childBox = child->localBoundingBox(time);

@@ -133,7 +133,7 @@ void AmbientOcclusionModifier::AmbientOcclusionEngine::compute(FutureInterfaceBa
 								-projParams.fieldOfView, projParams.fieldOfView,
 								projParams.znear, projParams.zfar);
 			projParams.inverseProjectionMatrix = projParams.projectionMatrix.inverse();
-			projParams.validityInterval = TimeInterval::forever();
+			projParams.validityInterval = TimeInterval::infinite();
 
 			renderer->beginFrame(0, projParams, nullptr);
 			renderer->setWorldTransform(AffineTransformation::Identity());

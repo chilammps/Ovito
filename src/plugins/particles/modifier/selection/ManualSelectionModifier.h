@@ -47,7 +47,7 @@ public:
 	virtual void initializeModifier(PipelineObject* pipelineObject, ModifierApplication* modApp) override;
 
 	/// Asks the modifier for its validity interval at the given time.
-	virtual TimeInterval modifierValidity(TimePoint time) override { return TimeInterval::forever(); }
+	virtual TimeInterval modifierValidity(TimePoint time) override { return TimeInterval::infinite(); }
 
 	/// Adopts the selection state from the modifier's input.
 	void resetSelection(ModifierApplication* modApp, const PipelineFlowState& state);

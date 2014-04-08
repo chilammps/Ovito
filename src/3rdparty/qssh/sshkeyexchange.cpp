@@ -36,7 +36,12 @@
 #include "sshexception_p.h"
 #include "sshincomingpacket_p.h"
 
-#include "botan/botan.h"
+#include <botan/botan.h>
+#include <botan/dl_group.h>
+#include <botan/dh.h>
+#include <botan/pk_filts.h>
+#include <botan/dsa.h>
+#include <botan/rsa.h>
 
 #ifdef CREATOR_SSH_DEBUG
 #include <iostream>

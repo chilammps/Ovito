@@ -306,7 +306,7 @@ PipelineFlowState LinkedFileObject::requestFrame(int frame)
 	if(frame >= numberOfFrames()) frame = numberOfFrames() - 1;
 
 	// Determine validity interval of the returned state.
-	TimeInterval interval = TimeInterval::forever();
+	TimeInterval interval = TimeInterval::infinite();
 	if(frame > 0)
 		interval.setStart(inputFrameToAnimationTime(frame));
 	if(frame < numberOfFrames() - 1)

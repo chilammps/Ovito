@@ -56,8 +56,8 @@ public:
 	/// When computing the validity interval of the object, an implementation of this method
 	/// should take validity intervals of all sub-objects and sub-controller into account.
 	///
-	/// The default implementation return TimeInterval::forever().
-	virtual TimeInterval objectValidity(TimePoint time) { return TimeInterval::forever(); }
+	/// The default implementation return TimeInterval::infinite().
+	virtual TimeInterval objectValidity(TimePoint time) { return TimeInterval::infinite(); }
 
 	/// \brief This asks the object whether it supports the conversion to another object type.
 	/// \param objectClass The destination type. This must be a SceneObject derived class.

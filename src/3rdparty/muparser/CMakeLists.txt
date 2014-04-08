@@ -19,25 +19,39 @@
 #
 ###############################################################################
 
-# The source files of the muParser library.
-SET(MUPARSER_SOURCE_FILES
-	muParser.cpp
-	muParserBytecode.cpp
-	muParserTest.cpp
-	muParserDLL.cpp
-	muParserInt.cpp
-	muParserTokenReader.cpp
-	muParserError.cpp
-	muParserCallback.cpp
-	muParserBase.cpp
-)
+# Find muParser library.
+FIND_PACKAGE(MuParser)
 
-# Build library
-ADD_LIBRARY(muParser ${MUPARSER_SOURCE_FILES})
+IF(MUPARSER_FOUND)
 
-# This library is part of the installation package.
-IF(NOT OVITO_MONOLITHIC_BUILD)
-	INSTALL(TARGETS muParser 
-		RUNTIME DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}"
-		LIBRARY DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}")
+	# Create exported target for the existing muParser library.
+	ADD_LIBRARY(muParser SHARED IMPORTED GLOBAL)
+	SET_PROPERTY(TARGET muParser PROPERTY IMPORTED_LOCATION "${MUPARSER_LIBRARIES}")
+	SET_PROPERTY(TARGET muParser APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${MUPARSER_INCLUDE_DIRS}")
+
+ELSE()
+
+	# Build our own version of the library.
+	SET(MUPARSER_SOURCE_FILES
+		muParser.cpp
+		muParserBytecode.cpp
+		muParserTest.cpp
+		muParserDLL.cpp
+		muParserInt.cpp
+		muParserTokenReader.cpp
+		muParserError.cpp
+		muParserCallback.cpp
+		muParserBase.cpp
+	)
+
+	# Build library.
+	ADD_LIBRARY(muParser ${MUPARSER_SOURCE_FILES})
+
+	# This library is part of the installation package.
+	IF(NOT OVITO_MONOLITHIC_BUILD)
+		INSTALL(TARGETS muParser 
+			RUNTIME DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}"
+			LIBRARY DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}")
+	ENDIF()
+
 ENDIF()

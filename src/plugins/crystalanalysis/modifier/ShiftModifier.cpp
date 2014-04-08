@@ -67,7 +67,7 @@ TimeInterval ShiftModifier::modifierValidity(TimePoint time)
 ******************************************************************************/
 ObjectStatus ShiftModifier::modifyObject(TimePoint time, ModifierApplication* modApp, PipelineFlowState& state)
 {
-	TimeInterval validityInterval = TimeInterval::forever();
+	TimeInterval validityInterval = TimeInterval::infinite();
 
 	// Get translation vector.
 	Vector3 t = Vector3::Zero();

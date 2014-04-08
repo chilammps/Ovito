@@ -24,7 +24,8 @@ SET(LIBRARY_OUTPUT_PATH "${OVITO_LIBRARY_DIRECTORY}")
 
 ################# 3rd-party libraries  ####################
 
-ADD_SUBDIRECTORY(3rdparty/ssh)
+ADD_SUBDIRECTORY(3rdparty/botan)
+ADD_SUBDIRECTORY(3rdparty/qssh)
 ADD_SUBDIRECTORY(3rdparty/muparser)
 ADD_SUBDIRECTORY(3rdparty/qcustomplot)
 

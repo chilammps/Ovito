@@ -43,7 +43,7 @@ public:
 	virtual void initializeModifier(PipelineObject* pipelineObject, ModifierApplication* modApp) override;
 
 	/// Asks the modifier for its validity interval at the given time.
-	virtual TimeInterval modifierValidity(TimePoint time) override { return TimeInterval::forever(); }
+	virtual TimeInterval modifierValidity(TimePoint time) override { return TimeInterval::infinite(); }
 
 	/// Sets the source particle property which should be preserved.
 	void setSourceProperty(const ParticlePropertyReference& prop) { _sourceProperty = prop; }

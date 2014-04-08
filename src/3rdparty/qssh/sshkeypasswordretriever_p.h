@@ -30,7 +30,8 @@
 #ifndef KEYPASSWORDRETRIEVER_H
 #define KEYPASSWORDRETRIEVER_H
 
-#include "botan/botan.h"
+#include <botan/botan.h>
+#include <botan/ui.h>
 
 #include <string>
 

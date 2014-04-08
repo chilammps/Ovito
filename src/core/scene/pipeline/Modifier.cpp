@@ -104,7 +104,7 @@ TimeInterval Modifier::modifierValidity(TimePoint time)
 	if(isBeingEdited())
 		return TimeInterval::empty();
 
-	return TimeInterval::forever();
+	return TimeInterval::infinite();
 }
 
 };

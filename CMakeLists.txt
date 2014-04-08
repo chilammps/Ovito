@@ -57,9 +57,6 @@ FOREACH(COMPONENT ${OVITO_REQUIRED_QT_MODULES})
 	FIND_PACKAGE(Qt5${COMPONENT} REQUIRED)
 ENDFOREACH()
 
-# Use the Q_SIGNALS and Q_SLOTS macros to avoid name conflicts.
-ADD_DEFINITIONS(-DQT_NO_KEYWORDS)
-
 # Find OpenGL library.
 FIND_PACKAGE(OpenGL REQUIRED)
 
@@ -195,8 +192,8 @@ ENDIF()
 # Build program.
 ADD_SUBDIRECTORY(src)
 
-# On Window the third-party library DLLs are usually not part of the system. 
-# We need to copy them to the OVITO directory.
+# On Windows, the third-party library DLLs are not part of the system. 
+# We need to install them in the OVITO directory.
 IF(WIN32)
 	# Gather Qt dynamic link libraries.
 	FOREACH(COMPONENT ${OVITO_REQUIRED_QT_MODULES})

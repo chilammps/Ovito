@@ -30,9 +30,9 @@
 #include <core/Core.h>
 #include <core/utilities/concurrent/Future.h>
 
-#include <3rdparty/ssh/sshconnection.h>
-#include <3rdparty/ssh/sshconnectionmanager.h>
-#include <3rdparty/ssh/sftpchannel.h>
+#include <qssh/sshconnection.h>
+#include <qssh/sshconnectionmanager.h>
+#include <qssh/sftpchannel.h>
 
 namespace Ovito {
 

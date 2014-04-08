@@ -268,7 +268,7 @@ void SceneNode::addChild(SceneNode* newChild)
 	OVITO_ASSERT(newChild->parentNode() == this);
 
 	// Adjust transformation to preserve world position.
-	TimeInterval iv = TimeInterval::forever();
+	TimeInterval iv = TimeInterval::infinite();
 	const AffineTransformation& newParentTM = getWorldTransform(dataset()->animationSettings()->time(), iv);
 	if(newParentTM != AffineTransformation::Identity())
 		newChild->transformationController()->changeParent(dataset()->animationSettings()->time(), AffineTransformation::Identity(), newParentTM, newChild);
@@ -292,7 +292,7 @@ void SceneNode::removeChild(SceneNode* child)
 	OVITO_ASSERT(child->parentNode() == nullptr);
 
 	// Update child node.
-	TimeInterval iv = TimeInterval::forever();
+	TimeInterval iv = TimeInterval::infinite();
 	AffineTransformation oldParentTM = getWorldTransform(dataset()->animationSettings()->time(), iv);
 	if(oldParentTM != AffineTransformation::Identity())
 		child->transformationController()->changeParent(dataset()->animationSettings()->time(), oldParentTM, AffineTransformation::Identity(), child);
@@ -319,7 +319,7 @@ const Box3& SceneNode::worldBoundingBox(TimePoint time)
 		return _worldBB;
 
 	_worldBBTime = time;
-	TimeInterval iv = TimeInterval::forever();
+	TimeInterval iv = TimeInterval::infinite();
 	AffineTransformation tm = getWorldTransform(time, iv);
 	_worldBB = localBoundingBox(time).transformed(tm);
 

@@ -20,6 +20,7 @@
 ###############################################################################
 
 SET(OVITO_PARTICLES_SOURCE_FILES 
+	modifier/analysis/coordination/CoordinationNumberModifier.cpp
 	data/SimulationCell.cpp
 	data/SimulationCellDisplay.cpp
 	data/ParticlePropertyObject.cpp
@@ -47,7 +48,7 @@ SET(OVITO_PARTICLES_SOURCE_FILES
 	modifier/analysis/centrosymmetry/CentroSymmetryModifier.cpp
 	modifier/analysis/strain/AtomicStrainModifier.cpp
 	modifier/analysis/bonds/CreateBondsModifier.cpp
-	modifier/analysis/coordination/CoordinationNumberModifier.cpp
+
 	modifier/analysis/histogram/HistogramModifier.cpp
 	modifier/analysis/cluster/ClusterAnalysisModifier.cpp
 	modifier/analysis/scatterplot/ScatterPlotModifier.cpp
