@@ -78,6 +78,7 @@ SET(OVITO_PARTICLES_SOURCE_FILES
 	importer/imd/IMDImporter.cpp
 	importer/parcas/ParcasFileImporter.cpp
 	importer/cfg/CFGImporter.cpp
+	importer/pdb/PDBImporter.cpp
 	exporter/ParticleExporter.cpp
 	exporter/ParticleExporterSettingsDialog.cpp
 	exporter/OutputColumnMapping.cpp
