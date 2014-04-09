@@ -24,7 +24,7 @@ FIND_PACKAGE(MuParser)
 
 IF(MUPARSER_FOUND)
 
-	# Create exported target for the existing muParser library.
+	# Create imported target for the existing muParser library.
 	ADD_LIBRARY(muParser SHARED IMPORTED GLOBAL)
 	SET_PROPERTY(TARGET muParser PROPERTY IMPORTED_LOCATION "${MUPARSER_LIBRARIES}")
 	SET_PROPERTY(TARGET muParser APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${MUPARSER_INCLUDE_DIRS}")

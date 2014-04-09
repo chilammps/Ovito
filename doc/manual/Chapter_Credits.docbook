@@ -15,4 +15,23 @@
   <para>This manual has been written by Alexander Stukowski and is licensed under the terms of the <link
   linkend="appendix.GFDL">GNU Free Documentation License</link>.</para>
 
+  <para>The following third-party libraries are used by OVITO:
+    <itemizedlist>
+      <listitem><para><link xlink:href="https://qt-project.org">Qt</link> and <link xlink:href="http://qt.gitorious.org/qt-creator">Qt Creator</link>, licensed under the
+      GNU General Public License.</para></listitem>
+      <listitem><para><link xlink:href="http://www.qcustomplot.com">QCustomPlot</link> by Emanuel Eichhammer, licensed under the
+      GNU General Public License.</para></listitem>
+      <listitem><para><link xlink:href="http://www.cgal.org">Computational Geometry Algorithms Library</link>, licensed under the
+      GNU General Public License.</para></listitem>
+      <listitem><para><link xlink:href="http://jedi.ks.uiuc.edu/~johns/raytracer/">Tachyon Parallel / Multiprocessor Ray Tracing System</link>
+      by John E. Stone (<link linkend="appendix.license.tachyon">license</link>).</para></listitem>
+      <listitem><para><link xlink:href="http://muparser.beltoforion.de">muParser</link>
+      by Ingo Berg (<link linkend="appendix.license.muparser">license</link>).</para></listitem>
+      <listitem><para><link xlink:href="http://botan.randombit.net">Botan</link> library</para></listitem>
+      <listitem><para><link xlink:href="http://libav.org">Libav</link> library</para></listitem>
+      <listitem><para><link xlink:href="http://www.unidata.ucar.edu/software/netcdf/">netCDF</link> library by
+      University Corporation for Atmospheric Research/Unidata (<link linkend="appendix.license.netcdf">license</link>).</para></listitem>
+    </itemizedlist>
+  </para>
+
 </chapter>

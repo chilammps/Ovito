@@ -50,4 +50,10 @@
   <xi:include href="Appendix_License_gpl.docbook"/>
 
   <xi:include href="Appendix_License_fdl.docbook"/>
+
+  <xi:include href="Appendix_License_tachyon.docbook"/>
+
+  <xi:include href="Appendix_License_muparser.docbook"/>
+
+  <xi:include href="Appendix_License_netcdf.docbook"/>
 </book>

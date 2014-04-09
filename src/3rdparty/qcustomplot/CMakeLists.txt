@@ -31,7 +31,7 @@ IF(OVITO_USE_SYSTEM_QCUSTOMPLOT)
 		MESSAGE(FATAL_ERROR "QCustomPlot library was not found.")
 	ENDIF()
 
-	# Create exported target for the existing qcustomplot library.
+	# Create imported target for the existing qcustomplot library.
 	ADD_LIBRARY(qcustomplot SHARED IMPORTED GLOBAL)
 	SET_PROPERTY(TARGET qcustomplot PROPERTY IMPORTED_LOCATION "${QCUSTOMPLOT_LIBRARIES}")
 	SET_PROPERTY(TARGET qcustomplot APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${QCUSTOMPLOT_INCLUDE_DIRS}")
