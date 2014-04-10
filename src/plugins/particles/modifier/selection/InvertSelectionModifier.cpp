@@ -29,7 +29,7 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, InvertSelectionModifier, Particle
 /******************************************************************************
 * Modifies the particle object.
 ******************************************************************************/
-ObjectStatus InvertSelectionModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
+PipelineStatus InvertSelectionModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
 {
 	ParticlePropertyObject* selProperty = outputStandardProperty(ParticleProperty::SelectionProperty);
 
@@ -37,7 +37,7 @@ ObjectStatus InvertSelectionModifier::modifyParticles(TimePoint time, TimeInterv
 		s = !s;
 	selProperty->changed();
 
-	return ObjectStatus::Success;
+	return PipelineStatus::Success;
 }
 
 };	// End of namespace

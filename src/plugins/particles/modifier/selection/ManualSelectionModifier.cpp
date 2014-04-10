@@ -40,7 +40,7 @@ SET_OVITO_OBJECT_EDITOR(ManualSelectionModifier, ManualSelectionModifierEditor);
 /******************************************************************************
 * This modifies the input object.
 ******************************************************************************/
-ObjectStatus ManualSelectionModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
+PipelineStatus ManualSelectionModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
 {
 	// Retrieve the selection stored in the modifier application.
 	ParticleSelectionSet* selectionSet = getSelectionSet(modifierApplication());

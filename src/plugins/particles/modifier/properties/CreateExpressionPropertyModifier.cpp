@@ -78,7 +78,7 @@ void CreateExpressionPropertyModifier::setPropertyComponentCount(int newComponen
 /******************************************************************************
 * This modifies the input object.
 ******************************************************************************/
-ObjectStatus CreateExpressionPropertyModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
+PipelineStatus CreateExpressionPropertyModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
 {
 	// The current animation frame number.
 	int currentFrame = dataset()->animationSettings()->timeToFrame(time);
@@ -144,7 +144,7 @@ ObjectStatus CreateExpressionPropertyModifier::modifyParticles(TimePoint time, T
 	if(evaluator.isTimeDependent())
 		validityInterval.intersect(time);
 
-	return ObjectStatus::Success;
+	return PipelineStatus::Success;
 }
 
 /******************************************************************************

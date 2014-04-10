@@ -112,7 +112,7 @@ protected:
 	virtual void retrieveModifierResults(Engine* engine) override;
 
 	/// Inserts the computed and cached modifier results into the modification pipeline.
-	virtual ObjectStatus applyModifierResults(TimePoint time, TimeInterval& validityInterval) override;
+	virtual PipelineStatus applyModifierResults(TimePoint time, TimeInterval& validityInterval) override;
 
 	/// This stores the cached results of the modifier.
 	QExplicitlySharedDataPointer<ParticleProperty> _coordinationNumbers;

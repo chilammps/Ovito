@@ -304,14 +304,14 @@ void ParticleSelectionSet::selectAll(const PipelineFlowState& state)
 /******************************************************************************
 * Copies the stored selection set into the given output selection particle property.
 ******************************************************************************/
-ObjectStatus ParticleSelectionSet::applySelection(ParticlePropertyObject* outputSelectionProperty, ParticlePropertyObject* identifierProperty)
+PipelineStatus ParticleSelectionSet::applySelection(ParticlePropertyObject* outputSelectionProperty, ParticlePropertyObject* identifierProperty)
 {
 	size_t nselected = 0;
 	if(!identifierProperty || !useIdentifiers()) {
 
 		// When not using particle identifiers, the number of particles may not change.
 		if(outputSelectionProperty->size() != _selection.size())
-			return ObjectStatus(ObjectStatus::Error, tr("Cannot apply stored selection state. The number of input particles has changed."));
+			return PipelineStatus(PipelineStatus::Error, tr("Cannot apply stored selection state. The number of input particles has changed."));
 
 		// Restore selection simply by placing the snapshot into the pipeline.
 		int index = 0;
@@ -331,7 +331,7 @@ ObjectStatus ParticleSelectionSet::applySelection(ParticlePropertyObject* output
 	}
 	outputSelectionProperty->changed();
 
-	return ObjectStatus(ObjectStatus::Success, tr("%1 particles selected").arg(nselected));
+	return PipelineStatus(PipelineStatus::Success, tr("%1 particles selected").arg(nselected));
 }
 
 

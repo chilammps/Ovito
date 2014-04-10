@@ -106,7 +106,7 @@ protected:
 	virtual void retrieveModifierResults(Engine* engine) override;
 
 	/// This lets the modifier insert the previously computed results into the pipeline.
-	virtual ObjectStatus applyModifierResults(TimePoint time, TimeInterval& validityInterval) override;
+	virtual PipelineStatus applyModifierResults(TimePoint time, TimeInterval& validityInterval) override;
 
 	/// Computes the centrosymmetry parameter of a single particle.
 	static FloatType computeCSP(TreeNeighborListBuilder& neighList, size_t particleIndex);

@@ -81,7 +81,7 @@ void LinkedFileObjectEditor::createUI(const RolloutInsertionParameters& rolloutP
 	layout->addWidget(statusBox);
 	sublayout = new QVBoxLayout(statusBox);
 	sublayout->setContentsMargins(4,4,4,4);
-	_statusLabel = new ObjectStatusWidget(rollout);
+	_statusLabel = new StatusWidget(rollout);
 	sublayout->addWidget(_statusLabel);
 
 	// Create another rollout for animation settings.

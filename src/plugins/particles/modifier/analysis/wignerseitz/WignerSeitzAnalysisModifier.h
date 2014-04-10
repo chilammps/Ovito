@@ -160,7 +160,7 @@ protected:
 	virtual void retrieveModifierResults(Engine* engine) override;
 
 	/// Inserts the computed and cached modifier results into the modification pipeline.
-	virtual ObjectStatus applyModifierResults(TimePoint time, TimeInterval& validityInterval) override;
+	virtual PipelineStatus applyModifierResults(TimePoint time, TimeInterval& validityInterval) override;
 
 	/// Returns the reference state to be used to perform the analysis at the given time.
 	PipelineFlowState getReferenceState(TimePoint time);

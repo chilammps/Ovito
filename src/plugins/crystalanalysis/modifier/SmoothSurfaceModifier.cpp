@@ -52,10 +52,10 @@ bool SmoothSurfaceModifier::isApplicableTo(const PipelineFlowState& input)
 /******************************************************************************
 * This modifies the input object.
 ******************************************************************************/
-ObjectStatus SmoothSurfaceModifier::modifyObject(TimePoint time, ModifierApplication* modApp, PipelineFlowState& state)
+PipelineStatus SmoothSurfaceModifier::modifyObject(TimePoint time, ModifierApplication* modApp, PipelineFlowState& state)
 {
 	if(_smoothingLevel <= 0)
-		return ObjectStatus::Success;
+		return PipelineStatus::Success;
 
 	// Get simulation cell geometry and periodic boundary flags.
 	SimulationCellData cell;
@@ -72,7 +72,7 @@ ObjectStatus SmoothSurfaceModifier::modifyObject(TimePoint time, ModifierApplica
 			state.replaceObject(inputSurface, outputSurface);
 		}
 	}
-	return ObjectStatus::Success;
+	return PipelineStatus::Success;
 }
 
 /******************************************************************************

@@ -103,7 +103,7 @@ SET(OVITO_CORE_SOURCE_FILES
 	gui/widgets/rendering/FrameBufferWindow.cpp
 	gui/widgets/selection/SceneNodesListModel.cpp
 	gui/widgets/selection/SceneNodeSelectionBox.cpp
-	gui/widgets/display/ObjectStatusWidget.cpp
+	gui/widgets/display/StatusWidget.cpp
 	gui/properties/PropertiesEditor.cpp
 	gui/properties/PropertiesPanel.cpp
 	gui/properties/ParameterUI.cpp
@@ -164,7 +164,7 @@ SET(OVITO_CORE_SOURCE_FILES
 	viewport/picking/PickingSceneRenderer.cpp
 )
 
-# Compile resource files.
+# Compile resources.
 QT5_ADD_RESOURCES(OVITO_CORE_RESOURCE_FILES resources/core.qrc)
 
 # This will let the source code export symbols when building a DLL.

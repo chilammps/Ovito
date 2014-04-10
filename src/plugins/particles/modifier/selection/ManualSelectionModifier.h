@@ -67,7 +67,7 @@ public:
 protected:
 
 	/// Modifies the particle object.
-	virtual ObjectStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;
+	virtual PipelineStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;
 
 	/// Returns the selection set object stored in the ModifierApplication, or, if it does not exist, creates one when requested.
 	ParticleSelectionSet* getSelectionSet(ModifierApplication* modApp, bool createIfNotExist = false);

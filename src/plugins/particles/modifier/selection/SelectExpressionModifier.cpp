@@ -39,7 +39,7 @@ SET_PROPERTY_FIELD_LABEL(SelectExpressionModifier, _expression, "Boolean express
 /******************************************************************************
 * This modifies the input object.
 ******************************************************************************/
-ObjectStatus SelectExpressionModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
+PipelineStatus SelectExpressionModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
 {
 	// The current animation frame number.
 	int currentFrame = dataset()->animationSettings()->timeToFrame(time);
@@ -55,7 +55,7 @@ ObjectStatus SelectExpressionModifier::modifyParticles(TimePoint time, TimeInter
 	// If the user has not yet entered an expression let him know which
 	// data channels can be used in the expression.
 	if(expression().isEmpty())
-		return ObjectStatus(ObjectStatus::Warning, tr("Please enter a boolean expression."));
+		return PipelineStatus(PipelineStatus::Warning, tr("Please enter a boolean expression."));
 
 	// Check if expression contain an assignment ('=' operator).
 	// This should be considered an error, because the user is probably referring the comparison operator '=='.
@@ -92,7 +92,7 @@ ObjectStatus SelectExpressionModifier::modifyParticles(TimePoint time, TimeInter
 		validityInterval.intersect(time);
 
 	QString statusMessage = tr("%1 out of %2 particles selected (%3%)").arg(nselected).arg(inputParticleCount()).arg((FloatType)nselected * 100 / std::max(1,(int)inputParticleCount()), 0, 'f', 1);
-	return ObjectStatus(ObjectStatus::Success, statusMessage);
+	return PipelineStatus(PipelineStatus::Success, statusMessage);
 }
 
 /******************************************************************************

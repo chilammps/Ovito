@@ -65,7 +65,7 @@ TimeInterval ShiftModifier::modifierValidity(TimePoint time)
 /******************************************************************************
 * This modifies the input object.
 ******************************************************************************/
-ObjectStatus ShiftModifier::modifyObject(TimePoint time, ModifierApplication* modApp, PipelineFlowState& state)
+PipelineStatus ShiftModifier::modifyObject(TimePoint time, ModifierApplication* modApp, PipelineFlowState& state)
 {
 	TimeInterval validityInterval = TimeInterval::infinite();
 
@@ -75,7 +75,7 @@ ObjectStatus ShiftModifier::modifyObject(TimePoint time, ModifierApplication* mo
 	state.intersectStateValidity(validityInterval);
 
 	if(t == Vector3::Zero())
-		return ObjectStatus::Success;
+		return PipelineStatus::Success;
 
 	CloneHelper cloneHelper;
 
@@ -104,7 +104,7 @@ ObjectStatus ShiftModifier::modifyObject(TimePoint time, ModifierApplication* mo
 		}
 	}
 
-	return ObjectStatus::Success;
+	return PipelineStatus::Success;
 }
 
 /******************************************************************************

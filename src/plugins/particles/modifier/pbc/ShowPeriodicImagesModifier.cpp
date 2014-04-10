@@ -63,7 +63,7 @@ ShowPeriodicImagesModifier::ShowPeriodicImagesModifier(DataSet* dataset) : Parti
 /******************************************************************************
 * Modifies the particle object.
 ******************************************************************************/
-ObjectStatus ShowPeriodicImagesModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
+PipelineStatus ShowPeriodicImagesModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
 {
 	int nPBCx = showImageX() ? std::max(numImagesX(),1) : 1;
 	int nPBCy = showImageY() ? std::max(numImagesY(),1) : 1;
@@ -72,7 +72,7 @@ ObjectStatus ShowPeriodicImagesModifier::modifyParticles(TimePoint time, TimeInt
 	// Calculate new number of atoms.
 	size_t numCopies = nPBCx * nPBCy * nPBCz;
 	if(numCopies <= 1 || inputParticleCount() == 0)
-		return ObjectStatus::Success;
+		return PipelineStatus::Success;
 
 	// Enlarge particle property arrays.
 	size_t oldParticleCount = inputParticleCount();
@@ -133,7 +133,7 @@ ObjectStatus ShowPeriodicImagesModifier::modifyParticles(TimePoint time, TimeInt
 		outputSimulationCell()->setCellMatrix(simCell);
 	}
 
-	return ObjectStatus::Success;
+	return PipelineStatus::Success;
 }
 
 /******************************************************************************

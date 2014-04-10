@@ -51,12 +51,12 @@ FreezePropertyModifier::FreezePropertyModifier(DataSet* dataset) : ParticleModif
 /******************************************************************************
 * This modifies the input object.
 ******************************************************************************/
-ObjectStatus FreezePropertyModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
+PipelineStatus FreezePropertyModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
 {
 	if(sourceProperty().isNull())
-		return ObjectStatus(ObjectStatus::Warning, tr("No source property selected."));
+		return PipelineStatus(PipelineStatus::Warning, tr("No source property selected."));
 	if(destinationProperty().isNull())
-		return ObjectStatus(ObjectStatus::Error, tr("No output property selected."));
+		return PipelineStatus(PipelineStatus::Error, tr("No output property selected."));
 
 	// Retrieve the property values stored in the ModifierApplication.
 	SavedParticleProperty* savedProperty = dynamic_object_cast<SavedParticleProperty>(modifierApplication()->modifierData());
@@ -126,7 +126,7 @@ ObjectStatus FreezePropertyModifier::modifyParticles(TimePoint time, TimeInterva
 	// Insert particle property into modification pipeline.
 	output().addObject(outputProperty.get());
 
-	return ObjectStatus::Success;
+	return PipelineStatus::Success;
 }
 
 /******************************************************************************

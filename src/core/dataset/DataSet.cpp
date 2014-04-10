@@ -204,7 +204,7 @@ bool DataSet::isSceneReady(TimePoint time) const
 
 	// Iterate over all object nodes and request an evaluation of their geometry pipeline.
 	bool isReady = sceneRoot()->visitObjectNodes([time](ObjectNode* node) {
-		return (node->evalPipeline(time).status().type() != ObjectStatus::Pending);
+		return (node->evalPipeline(time).status().type() != PipelineStatus::Pending);
 	});
 
 	return isReady;
@@ -223,7 +223,7 @@ void DataSet::runWhenSceneIsReady(const std::function<void()>& fn)
 
 	// Iterate over all object nodes and request an evaluation of their geometry pipeline.
 	bool isReady = sceneRoot()->visitObjectNodes([time](ObjectNode* node) {
-		return (node->evalPipeline(time).status().type() != ObjectStatus::Pending);
+		return (node->evalPipeline(time).status().type() != PipelineStatus::Pending);
 	});
 
 	if(isReady)

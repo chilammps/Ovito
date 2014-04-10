@@ -110,7 +110,7 @@ Plane3 SliceModifier::slicingPlane(TimePoint time, TimeInterval& validityInterva
 /******************************************************************************
 * Modifies the particle object.
 ******************************************************************************/
-ObjectStatus SliceModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
+PipelineStatus SliceModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
 {
 	QString statusMessage = tr("%n input particles", 0, inputParticleCount());
 
@@ -124,7 +124,7 @@ ObjectStatus SliceModifier::modifyParticles(TimePoint time, TimeInterval& validi
 		statusMessage += tr("\n%n particles deleted", 0, numRejected);
 		statusMessage += tr("\n%n particles remaining", 0, numKept);
 		if(numRejected == 0)
-			return ObjectStatus(ObjectStatus::Success, statusMessage);
+			return PipelineStatus(PipelineStatus::Success, statusMessage);
 
 		// Delete the rejected particles.
 		deleteParticles(mask, numRejected);
@@ -140,7 +140,7 @@ ObjectStatus SliceModifier::modifyParticles(TimePoint time, TimeInterval& validi
 			s = *m++;
 		selProperty->changed();
 	}
-	return ObjectStatus(ObjectStatus::Success, statusMessage);
+	return PipelineStatus(PipelineStatus::Success, statusMessage);
 }
 
 /******************************************************************************

@@ -103,7 +103,7 @@ protected:
 	virtual bool referenceEvent(RefTarget* source, ReferenceEvent* event) override;
 
 	/// Modifies the particle object.
-	virtual ObjectStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;
+	virtual PipelineStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;
 
 	/// The reference configuration.
 	ReferenceField<SceneObject> _referenceObject;

@@ -34,7 +34,7 @@ SET_OVITO_OBJECT_EDITOR(FreezeSelectionModifier, FreezeSelectionModifierEditor);
 /******************************************************************************
 * This modifies the input object.
 ******************************************************************************/
-ObjectStatus FreezeSelectionModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
+PipelineStatus FreezeSelectionModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
 {
 	// Retrieve the selection stored in the modifier application.
 	ParticleSelectionSet* selectionSet = dynamic_object_cast<ParticleSelectionSet>(modifierApplication()->modifierData());

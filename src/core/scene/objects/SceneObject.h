@@ -114,10 +114,10 @@ public:
 	/// \brief Returns a structure that describes the current status of the object.
 	///
 	/// The default implementation of this method returns an empty status object
-	/// that indicates success (ObjectStatus::Success).
+	/// that indicates success (PipelineStatus::Success).
 	///
 	/// An object should generate a ReferenceEvent::ObjectStatusChanged event when its status has changed.
-	virtual ObjectStatus status() const { return ObjectStatus(); }
+	virtual PipelineStatus status() const { return PipelineStatus(); }
 
 	/// \brief Returns the list of attached display objects that are responsible for rendering this
 	///        scene object.

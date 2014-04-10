@@ -131,7 +131,7 @@ void CentroSymmetryModifier::retrieveModifierResults(Engine* engine)
 /******************************************************************************
 * This lets the modifier insert the previously computed results into the pipeline.
 ******************************************************************************/
-ObjectStatus CentroSymmetryModifier::applyModifierResults(TimePoint time, TimeInterval& validityInterval)
+PipelineStatus CentroSymmetryModifier::applyModifierResults(TimePoint time, TimeInterval& validityInterval)
 {
 	if(inputParticleCount() != cspValues().size())
 		throw Exception(tr("The number of input particles has changed. The stored results have become invalid."));
@@ -141,7 +141,7 @@ ObjectStatus CentroSymmetryModifier::applyModifierResults(TimePoint time, TimeIn
 	OVITO_ASSERT(cspProperty->size() == cspValues().size());
 	cspProperty->setStorage(_cspValues.data());
 
-	return ObjectStatus::Success;
+	return PipelineStatus::Success;
 }
 
 /******************************************************************************

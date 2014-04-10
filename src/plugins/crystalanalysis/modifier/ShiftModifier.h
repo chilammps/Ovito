@@ -49,7 +49,7 @@ public:
 	virtual TimeInterval modifierValidity(TimePoint time) override;
 
 	/// This modifies the input object.
-	virtual ObjectStatus modifyObject(TimePoint time, ModifierApplication* modApp, PipelineFlowState& state) override;
+	virtual PipelineStatus modifyObject(TimePoint time, ModifierApplication* modApp, PipelineFlowState& state) override;
 
 private:
 

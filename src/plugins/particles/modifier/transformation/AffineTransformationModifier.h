@@ -108,7 +108,7 @@ public:
 protected:
 
 	/// Modifies the particle object.
-	virtual ObjectStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;
+	virtual PipelineStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;
 
 	/// This property fields stores the transformation matrix (used in 'relative' mode).
 	PropertyField<AffineTransformation> _transformationTM;

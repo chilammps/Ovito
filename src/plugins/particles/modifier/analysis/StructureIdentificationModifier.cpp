@@ -86,7 +86,7 @@ void StructureIdentificationModifier::retrieveModifierResults(Engine* engine)
 /******************************************************************************
 * Inserts the computed and cached modifier results into the modification pipeline.
 ******************************************************************************/
-ObjectStatus StructureIdentificationModifier::applyModifierResults(TimePoint time, TimeInterval& validityInterval)
+PipelineStatus StructureIdentificationModifier::applyModifierResults(TimePoint time, TimeInterval& validityInterval)
 {
 	if(inputParticleCount() != particleStructures().size())
 		throw Exception(tr("The number of input particles has changed. The stored analysis results have become invalid."));
@@ -137,7 +137,7 @@ ObjectStatus StructureIdentificationModifier::applyModifierResults(TimePoint tim
 		notifyDependents(ReferenceEvent::ObjectStatusChanged);
 	}
 
-	return ObjectStatus::Success;
+	return PipelineStatus::Success;
 }
 
 /******************************************************************************

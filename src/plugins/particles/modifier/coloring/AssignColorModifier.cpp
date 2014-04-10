@@ -60,7 +60,7 @@ TimeInterval AssignColorModifier::modifierValidity(TimePoint time)
 /******************************************************************************
 * This modifies the input object.
 ******************************************************************************/
-ObjectStatus AssignColorModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
+PipelineStatus AssignColorModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
 {
 	// Get the selection property.
 	ParticlePropertyObject* selProperty = inputStandardProperty(ParticleProperty::SelectionProperty);
@@ -104,7 +104,7 @@ ObjectStatus AssignColorModifier::modifyParticles(TimePoint time, TimeInterval& 
 	}
 	colorProperty->changed();
 
-	return ObjectStatus();
+	return PipelineStatus();
 }
 
 /******************************************************************************

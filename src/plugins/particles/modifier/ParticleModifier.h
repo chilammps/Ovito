@@ -26,7 +26,7 @@
 #include <core/scene/pipeline/Modifier.h>
 #include <core/scene/objects/SceneObject.h>
 #include <core/gui/properties/PropertiesEditor.h>
-#include <core/gui/widgets/display/ObjectStatusWidget.h>
+#include <core/gui/widgets/display/StatusWidget.h>
 #include <core/reference/CloneHelper.h>
 #include <core/reference/RefTargetListener.h>
 
@@ -50,10 +50,10 @@ protected:
 public:
 
 	/// This modifies the input object.
-	virtual ObjectStatus modifyObject(TimePoint time, ModifierApplication* modApp, PipelineFlowState& state) override;
+	virtual PipelineStatus modifyObject(TimePoint time, ModifierApplication* modApp, PipelineFlowState& state) override;
 
 	/// \brief Returns a structure that describes the current status of the modifier.
-	virtual ObjectStatus status() const override { return _modifierStatus; }
+	virtual PipelineStatus status() const override { return _modifierStatus; }
 
 	/// \brief Asks the modifier whether it can be applied to the given input data.
 	virtual bool isApplicableTo(const PipelineFlowState& input) override;
@@ -69,7 +69,7 @@ protected:
 	/// Modifies the particle object. This function must be implemented by sub-classes
 	/// do the modifier specific work. The time interval passed
 	/// to the function should be reduced to the interval where the returned object is valid/constant.
-	virtual ObjectStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) = 0;
+	virtual PipelineStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) = 0;
 
 	/// Returns a standard particle property from the input state.
 	/// The returned property may be NULL if it does not exist.
@@ -135,7 +135,7 @@ protected:
 	}
 
 	/// Sets the status returned by the modifier and generates a ReferenceEvent::ObjectStatusChanged event.
-	void setStatus(const ObjectStatus& status);
+	void setStatus(const PipelineStatus& status);
 
 	/// Returns the current ModifierApplication object. It is only valid to call this
 	/// method from an implementation of modifyParticles().
@@ -163,7 +163,7 @@ protected:
 	size_t _outputParticleCount;
 
 	/// The status returned by the modifier.
-	ObjectStatus _modifierStatus;
+	PipelineStatus _modifierStatus;
 
 private:
 
@@ -186,7 +186,7 @@ public:
 	/// Returns a widget that displays a message sent by the modifier that
 	/// states the outcome of the modifier evaluation. Derived classes of this
 	/// editor base class can add the widget to their user interface.
-	ObjectStatusWidget* statusLabel();
+	StatusWidget* statusLabel();
 
 protected:
 
@@ -200,7 +200,7 @@ private Q_SLOTS:
 
 private:
 
-	QPointer<ObjectStatusWidget> _statusLabel;
+	QPointer<StatusWidget> _statusLabel;
 
 	Q_OBJECT
 	OVITO_OBJECT

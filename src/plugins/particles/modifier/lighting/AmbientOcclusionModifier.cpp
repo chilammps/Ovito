@@ -204,7 +204,7 @@ void AmbientOcclusionModifier::retrieveModifierResults(Engine* engine)
 /******************************************************************************
 * This lets the modifier insert the previously computed results into the pipeline.
 ******************************************************************************/
-ObjectStatus AmbientOcclusionModifier::applyModifierResults(TimePoint time, TimeInterval& validityInterval)
+PipelineStatus AmbientOcclusionModifier::applyModifierResults(TimePoint time, TimeInterval& validityInterval)
 {
 	if(inputParticleCount() != brightnessValues().size())
 		throw Exception(tr("The number of input particles has changed. The stored results have become invalid."));
@@ -231,7 +231,7 @@ ObjectStatus AmbientOcclusionModifier::applyModifierResults(TimePoint time, Time
 	}
 	colorProperty->changed();
 
-	return ObjectStatus::Success;
+	return PipelineStatus::Success;
 }
 
 /******************************************************************************

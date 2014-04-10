@@ -126,7 +126,7 @@ PipelineFlowState PipelineObject::evaluatePipeline(TimePoint time, ModifierAppli
 	// Save the input state as a reference for the next pipeline evaluation.
 	_lastInput = inputState;
 
-	bool isPending = (flowState.status().type() == ObjectStatus::Pending);
+	bool isPending = (flowState.status().type() == PipelineStatus::Pending);
 
     // Apply the modifiers, one after another.
 	int stackIndex;
@@ -150,11 +150,11 @@ PipelineFlowState PipelineObject::evaluatePipeline(TimePoint time, ModifierAppli
 
 		if(flowState.isEmpty() == false) {
 			// Apply modifier to current flow state.
-			ObjectStatus modifierStatus = mod->modifyObject(time, app, flowState);
+			PipelineStatus modifierStatus = mod->modifyObject(time, app, flowState);
 			flowState.setStatus(modifierStatus);
-			isPending |= (modifierStatus.type() == ObjectStatus::Pending);
-			if(isPending && flowState.status().type() != ObjectStatus::Pending)
-				flowState.setStatus(ObjectStatus::Pending);
+			isPending |= (modifierStatus.type() == PipelineStatus::Pending);
+			if(isPending && flowState.status().type() != PipelineStatus::Pending)
+				flowState.setStatus(PipelineStatus::Pending);
 		}
 	}
 

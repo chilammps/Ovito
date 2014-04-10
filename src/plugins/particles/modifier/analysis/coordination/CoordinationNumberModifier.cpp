@@ -152,14 +152,14 @@ void CoordinationNumberModifier::retrieveModifierResults(Engine* engine)
 /******************************************************************************
 * Inserts the computed and cached modifier results into the modification pipeline.
 ******************************************************************************/
-ObjectStatus CoordinationNumberModifier::applyModifierResults(TimePoint time, TimeInterval& validityInterval)
+PipelineStatus CoordinationNumberModifier::applyModifierResults(TimePoint time, TimeInterval& validityInterval)
 {
 	if(inputParticleCount() != coordinationNumbers().size())
 		throw Exception(tr("The number of input particles has changed. The stored results have become invalid."));
 
 	outputStandardProperty(ParticleProperty::CoordinationProperty)->setStorage(_coordinationNumbers.data());
 
-	return ObjectStatus::Success;
+	return PipelineStatus::Success;
 }
 
 /******************************************************************************

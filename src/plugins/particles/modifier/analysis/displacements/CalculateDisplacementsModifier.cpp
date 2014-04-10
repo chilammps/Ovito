@@ -133,7 +133,7 @@ bool CalculateDisplacementsModifier::referenceEvent(RefTarget* source, Reference
 /******************************************************************************
 * This modifies the input object.
 ******************************************************************************/
-ObjectStatus CalculateDisplacementsModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
+PipelineStatus CalculateDisplacementsModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
 {
 	// Get the reference positions of the particles.
 	if(!referenceConfiguration())
@@ -167,13 +167,13 @@ ObjectStatus CalculateDisplacementsModifier::modifyParticles(TimePoint time, Tim
 	else refState = referenceConfiguration()->evaluate(dataset()->animationSettings()->frameToTime(referenceFrame));
 
 	// Make sure the obtained reference configuration is valid and ready to use.
-	if(refState.status().type() == ObjectStatus::Error)
+	if(refState.status().type() == PipelineStatus::Error)
 		return refState.status();
 	if(refState.isEmpty()) {
-		if(refState.status().type() != ObjectStatus::Pending)
+		if(refState.status().type() != PipelineStatus::Pending)
 			throw Exception(tr("Reference configuration has not been specified yet or is empty. Please pick a reference simulation file."));
 		else
-			return ObjectStatus(ObjectStatus::Pending, tr("Waiting for input data to become ready..."));
+			return PipelineStatus(PipelineStatus::Pending, tr("Waiting for input data to become ready..."));
 	}
 	// Make sure we really got back the requested reference frame.
 	if(refState.attributes().value(QStringLiteral("Frame"), referenceFrame).toInt() != referenceFrame)
@@ -226,10 +226,10 @@ ObjectStatus CalculateDisplacementsModifier::modifyParticles(TimePoint time, Tim
 	else {
 		// Deformed and reference configuration must contain the same number of particles.
 		if(posProperty->size() != refPosProperty->size()) {
-			if(refState.status().type() != ObjectStatus::Pending)
+			if(refState.status().type() != PipelineStatus::Pending)
 				throw Exception(tr("Cannot calculate displacement vectors. Numbers of particles in reference configuration and current configuration do not match."));
 			else
-				return ObjectStatus(ObjectStatus::Pending, tr("Waiting for input data to become ready..."));
+				return PipelineStatus(PipelineStatus::Pending, tr("Waiting for input data to become ready..."));
 		}
 		// When particle identifiers are not available, use trivial 1-to-1 mapping.
 		std::iota(indexToIndexMap.begin(), indexToIndexMap.end(), size_t(0));

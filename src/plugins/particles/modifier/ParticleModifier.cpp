@@ -36,18 +36,18 @@ IMPLEMENT_OVITO_OBJECT(Particles, ParticleModifierEditor, PropertiesEditor);
 /******************************************************************************
 * This modifies the input object.
 ******************************************************************************/
-ObjectStatus ParticleModifier::modifyObject(TimePoint time, ModifierApplication* modApp, PipelineFlowState& state)
+PipelineStatus ParticleModifier::modifyObject(TimePoint time, ModifierApplication* modApp, PipelineFlowState& state)
 {
 	// This method is not re-entrant. If this method is called while the modifier is already being
 	// evaluated then we are not able to process the request.
 	if(!_input.isEmpty())
-		return ObjectStatus(ObjectStatus::Error, tr("Cannot handle re-entrant modifier calls."));
+		return PipelineStatus(PipelineStatus::Error, tr("Cannot handle re-entrant modifier calls."));
 
 	// Prepare internal fields.
 	_input = state;
 	_output = state;
 	_modApp = modApp;
-	ObjectStatus status;
+	PipelineStatus status;
 
 	try {
 		ParticlePropertyObject* posProperty = inputStandardProperty(ParticleProperty::PositionProperty);
@@ -65,10 +65,10 @@ ObjectStatus ParticleModifier::modifyObject(TimePoint time, ModifierApplication*
 	}
 	catch(const Exception& ex) {
 		// Transfer exception message to evaluation status.
-		status = ObjectStatus(ObjectStatus::Error, ex.messages().join('\n'));
+		status = PipelineStatus(PipelineStatus::Error, ex.messages().join('\n'));
 		state.intersectStateValidity(TimeInterval(time));
 	}
-	catch(const ObjectStatus& thrown_status) {
+	catch(const PipelineStatus& thrown_status) {
 		// Transfer exception message to evaluation status.
 		status = thrown_status;
 		state.intersectStateValidity(TimeInterval(time));
@@ -88,7 +88,7 @@ ObjectStatus ParticleModifier::modifyObject(TimePoint time, ModifierApplication*
 * Sets the status returned by the modifier and generates a
 * ReferenceEvent::ObjectStatusChanged event.
 ******************************************************************************/
-void ParticleModifier::setStatus(const ObjectStatus& status)
+void ParticleModifier::setStatus(const PipelineStatus& status)
 {
 	if(status == _modifierStatus) return;
 	_modifierStatus = status;
@@ -435,10 +435,10 @@ void ParticleModifierEditor::updateStatusLabel()
 * states the outcome of the modifier evaluation. Derived classes of this
 * editor base class can add the widget to their user interface.
 ******************************************************************************/
-ObjectStatusWidget* ParticleModifierEditor::statusLabel()
+StatusWidget* ParticleModifierEditor::statusLabel()
 {
 	if(!_statusLabel)
-		_statusLabel = new ObjectStatusWidget();
+		_statusLabel = new StatusWidget();
 	return _statusLabel;
 }
 

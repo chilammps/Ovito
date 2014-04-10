@@ -85,7 +85,7 @@ ParticleTypeProperty* SelectParticleTypeModifier::lookupInputProperty(const Pipe
 /******************************************************************************
 * This modifies the input object.
 ******************************************************************************/
-ObjectStatus SelectParticleTypeModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
+PipelineStatus SelectParticleTypeModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
 {
 	// Get the input type property.
 	ParticleTypeProperty* typeProperty = lookupInputProperty(input());
@@ -112,7 +112,7 @@ ObjectStatus SelectParticleTypeModifier::modifyParticles(TimePoint time, TimeInt
 	selProperty->changed();
 
 	QString statusMessage = tr("%1 out of %2 particles selected (%3%)").arg(nSelected).arg(inputParticleCount()).arg((FloatType)nSelected * 100 / std::max(1,(int)inputParticleCount()), 0, 'f', 1);
-	return ObjectStatus(ObjectStatus::Success, statusMessage);
+	return PipelineStatus(PipelineStatus::Success, statusMessage);
 }
 
 /******************************************************************************

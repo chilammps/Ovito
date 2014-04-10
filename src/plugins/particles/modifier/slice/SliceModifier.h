@@ -126,7 +126,7 @@ public:
 protected:
 
 	/// Modifies the particle object.
-	virtual ObjectStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;
+	virtual PipelineStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;
 
 	/// Performs the actual rejection of particles.
 	size_t filterParticles(std::vector<bool>& mask, TimePoint time, TimeInterval& validityInterval);

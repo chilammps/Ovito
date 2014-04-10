@@ -269,7 +269,7 @@ void CreateBondsModifier::retrieveModifierResults(Engine* engine)
 /******************************************************************************
 * This lets the modifier insert the previously computed results into the pipeline.
 ******************************************************************************/
-ObjectStatus CreateBondsModifier::applyModifierResults(TimePoint time, TimeInterval& validityInterval)
+PipelineStatus CreateBondsModifier::applyModifierResults(TimePoint time, TimeInterval& validityInterval)
 {
 	// Insert output object into pipeline.
 	size_t bondsCount = 0;
@@ -280,14 +280,14 @@ ObjectStatus CreateBondsModifier::applyModifierResults(TimePoint time, TimeInter
 		// If there are too many bonds, we better turn off bond sdisplay to prevent the program from freezing.
 		if(bondsCount > 1000000 && bondsDisplay()) {
 			bondsDisplay()->setEnabled(false);
-			return ObjectStatus(ObjectStatus::Warning, tr("Created %1 bonds. Automatically disabled display of such a large number of bonds to prevent the program from freezing.").arg(bondsCount));
+			return PipelineStatus(PipelineStatus::Warning, tr("Created %1 bonds. Automatically disabled display of such a large number of bonds to prevent the program from freezing.").arg(bondsCount));
 		}
 	}
 
 	if(!_hasWrappedParticles)
-		return ObjectStatus(ObjectStatus::Success, tr("Created %1 bonds.").arg(bondsCount));
+		return PipelineStatus(PipelineStatus::Success, tr("Created %1 bonds.").arg(bondsCount));
 	else
-		return ObjectStatus(ObjectStatus::Warning, tr("Created %1 bonds. Some of the particles are located outside the simulation cell boundaries. The bonds of these particles may not display correctly. Please use the 'Wrap at periodic boundaries' modifier to avoid this problem.").arg(bondsCount));
+		return PipelineStatus(PipelineStatus::Warning, tr("Created %1 bonds. Some of the particles are located outside the simulation cell boundaries. The bonds of these particles may not display correctly. Please use the 'Wrap at periodic boundaries' modifier to avoid this problem.").arg(bondsCount));
 }
 
 /******************************************************************************

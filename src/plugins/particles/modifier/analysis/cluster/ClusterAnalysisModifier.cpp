@@ -124,14 +124,14 @@ void ClusterAnalysisModifier::retrieveModifierResults(Engine* engine)
 /******************************************************************************
 * Inserts the computed and cached modifier results into the modification pipeline.
 ******************************************************************************/
-ObjectStatus ClusterAnalysisModifier::applyModifierResults(TimePoint time, TimeInterval& validityInterval)
+PipelineStatus ClusterAnalysisModifier::applyModifierResults(TimePoint time, TimeInterval& validityInterval)
 {
 	if(inputParticleCount() != particleClusters().size())
 		throw Exception(tr("The number of input particles has changed. The stored results have become invalid."));
 
 	outputStandardProperty(ParticleProperty::ClusterProperty)->setStorage(_particleClusters.data());
 
-	return ObjectStatus(ObjectStatus::Success, tr("Found %1 clusters").arg(_numClusters));
+	return PipelineStatus(PipelineStatus::Success, tr("Found %1 clusters").arg(_numClusters));
 }
 
 /******************************************************************************

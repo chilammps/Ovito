@@ -117,7 +117,7 @@ void ScatterPlotModifier::initializeModifier(PipelineObject* pipeline, ModifierA
 /******************************************************************************
 * This modifies the input object.
 ******************************************************************************/
-ObjectStatus ScatterPlotModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
+PipelineStatus ScatterPlotModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
 {
 	// Get the source property.
 	if(xAxisProperty().isNull())
@@ -308,7 +308,7 @@ ObjectStatus ScatterPlotModifier::modifyParticles(TimePoint time, TimeInterval& 
 
 	notifyDependents(ReferenceEvent::ObjectStatusChanged);
 
-	return ObjectStatus(ObjectStatus::Success, statusMessage);
+	return PipelineStatus(PipelineStatus::Success, statusMessage);
 }
 
 /******************************************************************************

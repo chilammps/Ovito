@@ -20,37 +20,36 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
- * \file ObjectStatus.h
- * \brief Contains the definition of the Ovito::ObjectStatus class.
+ * \file PipelineStatus.h
+ * \brief Contains the definition of the Ovito::PipelineStatus class.
  */
 
-#ifndef __OVITO_OBJECT_STATUS_H
-#define __OVITO_OBJECT_STATUS_H
+#ifndef __OVITO_PIPELINE_STATUS_H
+#define __OVITO_PIPELINE_STATUS_H
 
 #include <core/Core.h>
 
 namespace Ovito {
 
 /**
- * \brief Encapsulates the status information associated with a scene object or
- *        a pipeline evaluation.
+ * \brief Stores status information associated with an evaluation of the modification pipeline.
  */
-class OVITO_CORE_EXPORT ObjectStatus
+class OVITO_CORE_EXPORT PipelineStatus
 {
 public:
 
 	enum StatusType {
-		Success,
-		Warning,
-		Error,
-		Pending
+		Success,		//< Indicates that the evaluation was success full.
+		Warning,		//< Indicates that a modifier has issued a warning.
+		Error,			//< Indicates that the evaluation failed.
+		Pending			//< Indicates that the returned results are preliminary.
 	};
 
-	/// Default constructor that creates a status object with status StatusType::Success and an empty text.
-	ObjectStatus() : _type(Success) {}
+	/// Default constructor that creates a status object with status StatusType::Success and an empty info text.
+	PipelineStatus() : _type(Success) {}
 
 	/// Constructs a status object with the given status and optional text string describing the status.
-	ObjectStatus(StatusType t, const QString& text = QString()) :
+	PipelineStatus(StatusType t, const QString& text = QString()) :
 		_type(t), _text(text) {}
 
 	/// Returns the type of status stores in this object.
@@ -60,13 +59,13 @@ public:
 	const QString& text() const { return _text; }
 
 	/// Tests two status objects for equality.
-	bool operator==(const ObjectStatus& other) const {
+	bool operator==(const PipelineStatus& other) const {
 		return (_type == other._type) &&
 				(_text == other._text);
 	}
 
 	/// Tests two status objects for inequality.
-	bool operator!=(const ObjectStatus& other) const { return !(*this == other); }
+	bool operator!=(const PipelineStatus& other) const { return !(*this == other); }
 
 private:
 
@@ -76,15 +75,15 @@ private:
 	/// A human-readable string describing the status.
 	QString _text;
 
-	friend SaveStream& operator<<(SaveStream& stream, const ObjectStatus& s);
-	friend LoadStream& operator>>(LoadStream& stream, ObjectStatus& s);
+	friend SaveStream& operator<<(SaveStream& stream, const PipelineStatus& s);
+	friend LoadStream& operator>>(LoadStream& stream, PipelineStatus& s);
 };
 
 /// \brief Writes a status object to a file stream.
 /// \param stream The output stream.
 /// \param s The status to write to the output stream \a stream.
 /// \return The output stream \a stream.
-inline SaveStream& operator<<(SaveStream& stream, const ObjectStatus& s)
+inline SaveStream& operator<<(SaveStream& stream, const PipelineStatus& s)
 {
 	stream.beginChunk(0x02);
 	stream.writeEnum(s._type);
@@ -97,7 +96,7 @@ inline SaveStream& operator<<(SaveStream& stream, const ObjectStatus& s)
 /// \param stream The input stream.
 /// \param s Reference to a variable where the parsed data will be stored.
 /// \return The input stream \a stream.
-inline LoadStream& operator>>(LoadStream& stream, ObjectStatus& s)
+inline LoadStream& operator>>(LoadStream& stream, PipelineStatus& s)
 {
 	quint32 version = stream.expectChunkRange(0x0, 0x02);
 	stream.readEnum(s._type);
@@ -109,13 +108,13 @@ inline LoadStream& operator>>(LoadStream& stream, ObjectStatus& s)
 }
 
 /// \brief Writes a status object to the log stream.
-inline QDebug operator<<(QDebug debug, const ObjectStatus& s)
+inline QDebug operator<<(QDebug debug, const PipelineStatus& s)
 {
 	switch(s.type()) {
-	case ObjectStatus::Success: debug << "Success"; break;
-	case ObjectStatus::Pending: debug << "Pending"; break;
-	case ObjectStatus::Warning: debug << "Warning"; break;
-	case ObjectStatus::Error: debug << "Error"; break;
+	case PipelineStatus::Success: debug << "Success"; break;
+	case PipelineStatus::Pending: debug << "Pending"; break;
+	case PipelineStatus::Warning: debug << "Warning"; break;
+	case PipelineStatus::Error: debug << "Error"; break;
 	}
 	if(s.text().isEmpty() == false)
 		debug << s.text();
@@ -124,4 +123,4 @@ inline QDebug operator<<(QDebug debug, const ObjectStatus& s)
 
 };
 
-#endif // __OVITO_OBJECT_STATUS_H
+#endif // __OVITO_PIPELINE_STATUS_H

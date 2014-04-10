@@ -172,10 +172,10 @@ PipelineFlowState WignerSeitzAnalysisModifier::getReferenceState(TimePoint time)
 	else refState = referenceConfiguration()->evaluate(dataset()->animationSettings()->frameToTime(referenceFrame));
 
 	// Make sure the obtained reference configuration is valid and ready to use.
-	if(refState.status().type() == ObjectStatus::Error)
+	if(refState.status().type() == PipelineStatus::Error)
 		throw refState.status();
-	if(refState.status().type() == ObjectStatus::Pending)
-		throw ObjectStatus(ObjectStatus::Pending, tr("Waiting for input data to become ready..."));
+	if(refState.status().type() == PipelineStatus::Pending)
+		throw PipelineStatus(PipelineStatus::Pending, tr("Waiting for input data to become ready..."));
 	// Make sure we really received the requested reference frame.
 	if(refState.attributes().value(QStringLiteral("Frame"), referenceFrame).toInt() != referenceFrame)
 		throw Exception(tr("Requested reference frame %1 is out of range.").arg(referenceFrame));
@@ -247,7 +247,7 @@ void WignerSeitzAnalysisModifier::retrieveModifierResults(Engine* engine)
 /******************************************************************************
 * Inserts the computed and cached modifier results into the modification pipeline.
 ******************************************************************************/
-ObjectStatus WignerSeitzAnalysisModifier::applyModifierResults(TimePoint time, TimeInterval& validityInterval)
+PipelineStatus WignerSeitzAnalysisModifier::applyModifierResults(TimePoint time, TimeInterval& validityInterval)
 {
 	PipelineFlowState refState = getReferenceState(time);
 
@@ -269,7 +269,7 @@ ObjectStatus WignerSeitzAnalysisModifier::applyModifierResults(TimePoint time, T
 
 	outputCustomProperty(occupancyNumbers().name(), occupancyNumbers().dataType(), occupancyNumbers().dataTypeSize(), occupancyNumbers().componentCount())->setStorage(_occupancyNumbers.data());
 
-	return ObjectStatus(ObjectStatus::Success, tr("Found %1 vacancies and %2 interstitials").arg(vacancyCount()).arg(interstitialCount()));
+	return PipelineStatus(PipelineStatus::Success, tr("Found %1 vacancies and %2 interstitials").arg(vacancyCount()).arg(interstitialCount()));
 }
 
 /******************************************************************************

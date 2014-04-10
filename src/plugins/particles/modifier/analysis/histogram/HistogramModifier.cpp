@@ -105,7 +105,7 @@ void HistogramModifier::initializeModifier(PipelineObject* pipeline, ModifierApp
 /******************************************************************************
 * This modifies the input object.
 ******************************************************************************/
-ObjectStatus HistogramModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
+PipelineStatus HistogramModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
 {
 	_histogramData.resize(std::max(1, numberOfBins()));
 	std::fill(_histogramData.begin(), _histogramData.end(), 0);
@@ -225,7 +225,7 @@ ObjectStatus HistogramModifier::modifyParticles(TimePoint time, TimeInterval& va
 
 	notifyDependents(ReferenceEvent::ObjectStatusChanged);
 
-	return ObjectStatus(ObjectStatus::Success, statusMessage);
+	return PipelineStatus(PipelineStatus::Success, statusMessage);
 }
 
 /******************************************************************************

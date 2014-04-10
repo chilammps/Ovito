@@ -143,7 +143,7 @@ void ColorCodingModifier::initializeModifier(PipelineObject* pipeline, ModifierA
 /******************************************************************************
 * This modifies the input object.
 ******************************************************************************/
-ObjectStatus ColorCodingModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
+PipelineStatus ColorCodingModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
 {
 	// Get the source property.
 	if(sourceProperty().isNull())
@@ -243,7 +243,7 @@ ObjectStatus ColorCodingModifier::modifyParticles(TimePoint time, TimeInterval& 
 		output().removeObject(selProperty);
 
 	colorProperty->changed();
-	return ObjectStatus::Success;
+	return PipelineStatus::Success;
 }
 
 /******************************************************************************

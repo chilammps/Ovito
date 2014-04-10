@@ -87,7 +87,7 @@ void AffineTransformationModifier::initializeModifier(PipelineObject* pipeline, 
 /******************************************************************************
 * Modifies the particle object.
 ******************************************************************************/
-ObjectStatus AffineTransformationModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
+PipelineStatus AffineTransformationModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
 {
 	AffineTransformation tm;
 	if(relativeMode()) {
@@ -154,7 +154,7 @@ ObjectStatus AffineTransformationModifier::modifyParticles(TimePoint time, TimeI
 		}
 	}
 
-	return ObjectStatus::Success;
+	return PipelineStatus::Success;
 }
 
 /******************************************************************************

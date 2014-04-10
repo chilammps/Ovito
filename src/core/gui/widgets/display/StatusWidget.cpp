@@ -20,14 +20,14 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include "ObjectStatusWidget.h"
+#include "StatusWidget.h"
 
 namespace Ovito {
 
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-ObjectStatusWidget::ObjectStatusWidget(QWidget* parent) : QScrollArea(parent),
+StatusWidget::StatusWidget(QWidget* parent) : QScrollArea(parent),
 	_statusWarningIcon(":/core/mainwin/status/status_warning.png"),
 	_statusErrorIcon(":/core/mainwin/status/status_error.png")
 {
@@ -53,15 +53,15 @@ ObjectStatusWidget::ObjectStatusWidget(QWidget* parent) : QScrollArea(parent),
 /******************************************************************************
 * Sets the status displayed by the widget.
 ******************************************************************************/
-void ObjectStatusWidget::setStatus(const ObjectStatus& status)
+void StatusWidget::setStatus(const PipelineStatus& status)
 {
 	_status = status;
 
 	_textLabel->setText(status.text());
 
-	if(status.type() == ObjectStatus::Warning)
+	if(status.type() == PipelineStatus::Warning)
 		_iconLabel->setPixmap(_statusWarningIcon);
-	else if(status.type() == ObjectStatus::Error)
+	else if(status.type() == PipelineStatus::Error)
 		_iconLabel->setPixmap(_statusErrorIcon);
 	else
 		_iconLabel->clear();
@@ -70,7 +70,7 @@ void ObjectStatusWidget::setStatus(const ObjectStatus& status)
 /******************************************************************************
 * Returns the minimum size of the widget.
 ******************************************************************************/
-QSize ObjectStatusWidget::minimumSizeHint() const
+QSize StatusWidget::minimumSizeHint() const
 {
 	int widgetHeight = widget()->minimumSizeHint().height();
 	if(widgetHeight < 20) widgetHeight = 40;
@@ -82,7 +82,7 @@ QSize ObjectStatusWidget::minimumSizeHint() const
 /******************************************************************************
 * Returns the preferred size of the widget.
 ******************************************************************************/
-QSize ObjectStatusWidget::sizeHint() const
+QSize StatusWidget::sizeHint() const
 {
 	int widgetHeight = widget()->minimumSizeHint().height();
 	if(widgetHeight < 20) widgetHeight = 40;

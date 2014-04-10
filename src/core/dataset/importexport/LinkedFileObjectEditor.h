@@ -26,7 +26,7 @@
 #include <core/gui/properties/PropertiesEditor.h>
 #include <core/gui/properties/PropertiesPanel.h>
 #include <core/gui/widgets/general/ElidedTextLabel.h>
-#include <core/gui/widgets/display/ObjectStatusWidget.h>
+#include <core/gui/widgets/display/StatusWidget.h>
 
 #include "LinkedFileObject.h"
 
@@ -83,7 +83,7 @@ private:
 	QLineEdit* _filenameLabel;
 	QLineEdit* _sourcePathLabel;
 	QLineEdit* _wildcardPatternTextbox;
-	ObjectStatusWidget* _statusLabel;
+	StatusWidget* _statusLabel;
 	QComboBox* _framesListBox;
 
 	std::vector<OORef<PropertiesEditor>> _subEditors;

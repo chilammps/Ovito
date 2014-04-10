@@ -65,11 +65,11 @@ bool SmoothDislocationsModifier::isApplicableTo(const PipelineFlowState& input)
 /******************************************************************************
 * This modifies the input object.
 ******************************************************************************/
-ObjectStatus SmoothDislocationsModifier::modifyObject(TimePoint time, ModifierApplication* modApp, PipelineFlowState& state)
+PipelineStatus SmoothDislocationsModifier::modifyObject(TimePoint time, ModifierApplication* modApp, PipelineFlowState& state)
 {
 	DislocationNetwork* inputDislocations = state.findObject<DislocationNetwork>();
 	if(!inputDislocations)
-		return ObjectStatus::Success;	// Nothing to smooth in the modifier's input.
+		return PipelineStatus::Success;	// Nothing to smooth in the modifier's input.
 
 	CloneHelper cloneHelper;
 	OORef<DislocationNetwork> outputDislocations = cloneHelper.cloneObject(inputDislocations, false);
@@ -84,7 +84,7 @@ ObjectStatus SmoothDislocationsModifier::modifyObject(TimePoint time, ModifierAp
 
 	outputDislocations->notifyDependents(ReferenceEvent::TargetChanged);
 	state.replaceObject(inputDislocations, outputDislocations);
-	return ObjectStatus::Success;
+	return PipelineStatus::Success;
 }
 
 /******************************************************************************

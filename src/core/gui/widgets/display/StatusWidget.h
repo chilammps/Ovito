@@ -20,22 +20,22 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /** 
- * \file ObjectStatusWidget.h
- * \brief Contains the definition of the Ovito::ObjectStatusWidget class.
+ * \file StatusWidget.h
+ * \brief Contains the definition of the Ovito::StatusWidget class.
  */
 
-#ifndef __OVITO_OBJECT_STATUS_WIDGET_H
-#define __OVITO_OBJECT_STATUS_WIDGET_H
+#ifndef __OVITO_STATUS_WIDGET_H
+#define __OVITO_STATUS_WIDGET_H
 
 #include <core/Core.h>
-#include <core/utilities/ObjectStatus.h>
+#include <core/scene/pipeline/PipelineStatus.h>
 
 namespace Ovito {
 
 /**
- * \brief A widget that displays the information contained in the ObjectStatus class.
+ * \brief A widget that displays information from the PipelineStatus class.
  */
-class OVITO_CORE_EXPORT ObjectStatusWidget : public QScrollArea
+class OVITO_CORE_EXPORT StatusWidget : public QScrollArea
 {
 	Q_OBJECT
 	
@@ -43,17 +43,17 @@ public:
 	
 	/// \brief Constructs the widget.
 	/// \param parent The parent widget for the new widget.
-	ObjectStatusWidget(QWidget* parent = nullptr);
+	StatusWidget(QWidget* parent = nullptr);
 
 	/// Returns the current status displayed by the widget.
-	const ObjectStatus& status() const { return _status; }
+	const PipelineStatus& status() const { return _status; }
 
-	/// Sets the status displayed by the widget.
-	void setStatus(const ObjectStatus& status);
+	/// Sets the status to be displayed by the widget.
+	void setStatus(const PipelineStatus& status);
 
 	/// Resets the widget to not display any status.
 	void clearStatus() {
-		setStatus(ObjectStatus());
+		setStatus(PipelineStatus());
 	}
 
 	/// Returns the minimum size of the widget.
@@ -65,7 +65,7 @@ public:
 private:
 	
 	/// The current status displayed by the widget.
-	ObjectStatus _status;
+	PipelineStatus _status;
 
 	/// The internal text label.
 	QLabel* _textLabel;
@@ -80,4 +80,4 @@ private:
 
 };
 
-#endif // __OVITO_OBJECT_STATUS_WIDGET_H
+#endif // __OVITO_STATUS_WIDGET_H

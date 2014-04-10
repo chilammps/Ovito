@@ -322,7 +322,7 @@ PipelineFlowState LinkedFileObject::requestFrame(int frame)
 		if(_frameBeingLoaded == frame) {
 			// The requested frame is already being loaded at the moment.
 			// Indicate to the caller that the result is pending.
-			return PipelineFlowState(ObjectStatus::Pending, _sceneObjects.targets(), interval, attrs);
+			return PipelineFlowState(PipelineStatus::Pending, _sceneObjects.targets(), interval, attrs);
 		}
 		else {
 			// Another frame than the requested one is already being loaded.
@@ -351,18 +351,18 @@ PipelineFlowState LinkedFileObject::requestFrame(int frame)
 		if(frame < 0 || frame >= numberOfFrames() || !importer()) {
 			if(oldLoadingTaskWasCanceled)
 				notifyDependents(ReferenceEvent::PendingStateChanged);
-			setStatus(ObjectStatus(ObjectStatus::Error, tr("The source location is empty (no files found).")));
+			setStatus(PipelineStatus(PipelineStatus::Error, tr("The source location is empty (no files found).")));
 			_loadedFrame = -1;
 			return PipelineFlowState(status(), _sceneObjects.targets(), interval);
 		}
 		_frameBeingLoaded = frame;
 		_loadFrameOperation = importer()->load(_frames[frame]);
 		_loadFrameOperationWatcher.setFuture(_loadFrameOperation);
-		setStatus(ObjectStatus::Pending);
+		setStatus(PipelineStatus::Pending);
 		if(oldLoadingTaskWasCanceled)
 			notifyDependents(ReferenceEvent::PendingStateChanged);
 		// Indicate to the caller that the result is pending.
-		return PipelineFlowState(ObjectStatus::Pending, _sceneObjects.targets(), interval, attrs);
+		return PipelineFlowState(PipelineStatus::Pending, _sceneObjects.targets(), interval, attrs);
 	}
 }
 
@@ -375,7 +375,7 @@ void LinkedFileObject::loadOperationFinished()
 	bool wasCanceled = _loadFrameOperation.isCanceled();
 	_loadedFrame = _frameBeingLoaded;
 	_frameBeingLoaded = -1;
-	ObjectStatus newStatus = status();
+	PipelineStatus newStatus = status();
 
 	if(!wasCanceled) {
 		try {
@@ -390,12 +390,12 @@ void LinkedFileObject::loadOperationFinished()
 		}
 		catch(Exception& ex) {
 			// Transfer exception message to evaluation status.
-			newStatus = ObjectStatus(ObjectStatus::Error, ex.messages().join(QChar('\n')));
+			newStatus = PipelineStatus(PipelineStatus::Error, ex.messages().join(QChar('\n')));
 			ex.showError();
 		}
 	}
 	else {
-		newStatus = ObjectStatus(ObjectStatus::Error, tr("Load operation has been canceled by the user."));
+		newStatus = PipelineStatus(PipelineStatus::Error, tr("Load operation has been canceled by the user."));
 	}
 
 	// Reset everything.
@@ -433,7 +433,7 @@ void LinkedFileObject::refreshFromSource(int frame)
 * Saves the status returned by the parser object and generates a
 * ReferenceEvent::ObjectStatusChanged event.
 ******************************************************************************/
-void LinkedFileObject::setStatus(const ObjectStatus& status)
+void LinkedFileObject::setStatus(const PipelineStatus& status)
 {
 	if(status == _importStatus) return;
 	_importStatus = status;

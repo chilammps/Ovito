@@ -63,7 +63,7 @@ public:
 	Q_INVOKABLE void refreshFromSource(int frame = -1);
 
 	/// \brief Returns the status returned by the file parser on its last invocation.
-	virtual ObjectStatus status() const override { return _importStatus; }
+	virtual PipelineStatus status() const override { return _importStatus; }
 
 	/// \brief Scans the input source for animation frames and updates the internal list of frames.
 	Q_INVOKABLE bool updateFrames();
@@ -181,7 +181,7 @@ protected Q_SLOTS:
 protected:
 
 	/// \brief Saves the status returned by the parser object and generates a ReferenceEvent::ObjectStatusChanged event.
-	void setStatus(const ObjectStatus& status);
+	void setStatus(const PipelineStatus& status);
 
 	/// Is called when a RefTarget has been added to a VectorReferenceField of this RefMaker.
 	virtual void referenceInserted(const PropertyFieldDescriptor& field, RefTarget* newTarget, int listIndex) override;
@@ -240,7 +240,7 @@ private:
 	FutureWatcher _loadFrameOperationWatcher;
 
 	/// The status returned by the parser during its last call.
-	ObjectStatus _importStatus;
+	PipelineStatus _importStatus;
 
 	/// Attributes set or loaded by the file importer which will be fed into the modification pipeline
 	/// along with the scene objects.

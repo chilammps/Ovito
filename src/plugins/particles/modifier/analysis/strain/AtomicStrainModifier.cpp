@@ -139,10 +139,10 @@ std::shared_ptr<AsynchronousParticleModifier::Engine> AtomicStrainModifier::crea
 	else refState = referenceConfiguration()->evaluate(dataset()->animationSettings()->frameToTime(referenceFrame));
 
 	// Make sure the obtained reference configuration is valid and ready to use.
-	if(refState.status().type() == ObjectStatus::Error)
+	if(refState.status().type() == PipelineStatus::Error)
 		throw refState.status();
-	if(refState.status().type() == ObjectStatus::Pending)
-		throw ObjectStatus(ObjectStatus::Pending, tr("Waiting for input data to become ready..."));
+	if(refState.status().type() == PipelineStatus::Pending)
+		throw PipelineStatus(PipelineStatus::Pending, tr("Waiting for input data to become ready..."));
 	if(refState.isEmpty())
 		throw Exception(tr("Reference configuration has not been specified yet or is empty. Please pick a reference simulation file."));
 	// Make sure we really got back the requested reference frame.
@@ -379,7 +379,7 @@ void AtomicStrainModifier::retrieveModifierResults(Engine* engine)
 /******************************************************************************
 * Inserts the computed and cached modifier results into the modification pipeline.
 ******************************************************************************/
-ObjectStatus AtomicStrainModifier::applyModifierResults(TimePoint time, TimeInterval& validityInterval)
+PipelineStatus AtomicStrainModifier::applyModifierResults(TimePoint time, TimeInterval& validityInterval)
 {
 	if(inputParticleCount() != shearStrainValues().size() || inputParticleCount() != volumetricStrainValues().size())
 		throw Exception(tr("The number of input particles has changed. The stored results have become invalid."));
@@ -397,9 +397,9 @@ ObjectStatus AtomicStrainModifier::applyModifierResults(TimePoint time, TimeInte
 	outputCustomProperty(shearStrainValues().name(), qMetaTypeId<FloatType>(), sizeof(FloatType), 1)->setStorage(_shearStrainValues.data());
 
 	if(_numInvalidParticles == 0)
-		return ObjectStatus::Success;
+		return PipelineStatus::Success;
 	else
-		return ObjectStatus(ObjectStatus::Warning, tr("Could not compute compute strain tensor for %1 particles. Increase cutoff radius to include more neighbors.").arg(_numInvalidParticles));
+		return PipelineStatus(PipelineStatus::Warning, tr("Could not compute compute strain tensor for %1 particles. Increase cutoff radius to include more neighbors.").arg(_numInvalidParticles));
 }
 
 /******************************************************************************

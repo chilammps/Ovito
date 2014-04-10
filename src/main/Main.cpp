@@ -34,7 +34,7 @@ int main(int argc, char** argv)
 #ifdef OVITO_MONOLITHIC_BUILD
 	// If we build a monolithic executable with static libraries then
 	// the core's resources are not automatically initialized. Therefore
-	// it needs to be explicitely done here.
+	// it needs to be explicitly done here.
 	Q_INIT_RESOURCE(core);
 #endif
 

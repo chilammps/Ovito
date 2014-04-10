@@ -31,7 +31,7 @@ SET_OVITO_OBJECT_EDITOR(DeleteParticlesModifier, DeleteParticlesModifierEditor);
 /******************************************************************************
 * Modifies the particle object.
 ******************************************************************************/
-ObjectStatus DeleteParticlesModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
+PipelineStatus DeleteParticlesModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
 {
 	QString statusMessage = tr("%n input particles", 0, inputParticleCount());
 
@@ -61,7 +61,7 @@ ObjectStatus DeleteParticlesModifier::modifyParticles(TimePoint time, TimeInterv
 	deleteParticles(mask, numRejected);
 
 	statusMessage += tr("\n%n particles deleted (%1%)", 0, numRejected).arg(numRejected * 100 / std::max((int)inputParticleCount(), 1));
-	return ObjectStatus(ObjectStatus::Success, statusMessage);
+	return PipelineStatus(PipelineStatus::Success, statusMessage);
 }
 
 /******************************************************************************
