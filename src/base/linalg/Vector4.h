@@ -21,7 +21,7 @@
 
 /**
  * \file Vector4.h
- * \brief Contains definition of the Ovito::Vector_4 template class and operators.
+ * \brief Contains the definition of the Ovito::Vector_4 class template.
  */
 
 #ifndef __OVITO_VECTOR4_H

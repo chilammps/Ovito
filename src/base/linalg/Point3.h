@@ -21,7 +21,7 @@
 
 /**
  * \file Point3.h
- * \brief Contains definition of the Ovito::Point_3 template class and operators.
+ * \brief Contains the definition of the Ovito::Point_3 class template.
  */
 
 #ifndef __OVITO_POINT3_H

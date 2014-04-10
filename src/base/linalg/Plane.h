@@ -21,7 +21,7 @@
 
 /**
  * \file Plane.h
- * \brief Contains definition of the Ovito::Plane_3 template class.
+ * \brief Contains the definition of the Ovito::Plane_3 class template.
  */
 
 #ifndef __OVITO_PLANE_H

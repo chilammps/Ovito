@@ -21,7 +21,7 @@
 
 /**
  * \file Vector2.h
- * \brief Contains definition of the Ovito::Vector_2 template class and operators.
+ * \brief Contains the definition of the Ovito::Vector_2 class template.
  */
 
 #ifndef __OVITO_VECTOR2_H

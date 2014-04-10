@@ -21,7 +21,7 @@
 
 /**
  * \file Quaternion.h
- * \brief Contains definition of the Ovito::Quaternion class and operators.
+ * \brief Contains the definition of the Ovito::QuaternionT class template.
  */
 
 #ifndef __OVITO_QUATERNION_H

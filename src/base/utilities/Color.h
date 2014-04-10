@@ -21,7 +21,7 @@
 
 /** 
  * \file Color.h 
- * \brief Contains the definitions of the Ovito::Color and Ovito::ColorA classes.
+ * \brief Contains the definition of the Ovito::ColorT and Ovito::ColorAT class templates.
  */
 
 #ifndef __OVITO_COLOR_H

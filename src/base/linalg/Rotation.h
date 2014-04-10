@@ -21,7 +21,7 @@
 
 /**
  * \file Rotation.h
- * \brief Contains definition of the Ovito::Rotation class and operators.
+ * \brief Contains the definition of the Ovito::RotationT class template.
  */
 
 #ifndef __OVITO_ROTATION_H

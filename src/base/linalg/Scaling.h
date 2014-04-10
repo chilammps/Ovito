@@ -21,7 +21,7 @@
 
 /**
  * \file Scaling.h
- * \brief Contains definition of the Ovito::Scaling class and operators.
+ * \brief Contains the definition of the Ovito::ScalingT class template.
  */
 
 #ifndef __OVITO_SCALING_H

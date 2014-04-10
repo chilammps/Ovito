@@ -21,8 +21,7 @@
 
 /** 
  * \file LinAlg.h 
- * \brief This header file includes other header files
- *        to import the most important linear algebra classes. 
+ * \brief This high-level header file includes other headers to import the most important linear algebra classes.
  */
 
 #ifndef __OVITO_LINALG_H

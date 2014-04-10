@@ -21,7 +21,7 @@
 
 /** 
  * \file AffineTransformation.h 
- * \brief Contains definition of Ovito::AffineTransformation class.
+ * \brief Contains the definition of the Ovito::Matrix_34 class template.
  */
 
 #ifndef __OVITO_AFFINE_TRANSFORMATION_H

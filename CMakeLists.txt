@@ -67,9 +67,6 @@ INCLUDE_DIRECTORIES(${ZLIB_INCLUDE_DIRS})
 # Find the CGAL library.
 IF(OVITO_BUILD_PLUGIN_CRYSTALANALYSIS)
 	FIND_PACKAGE(CGAL REQUIRED)
-	IF(NOT CGAL_FOUND)
-		MESSAGE(FATAL_ERROR "CGAL library, which is required by the CrystalAnalysis plugin, not found.")
-	ENDIF()
 ENDIF()
 
 # Define the OVITO_DEBUG macro in debug builds.
@@ -294,14 +291,7 @@ ENDIF(WIN32)
 
 
 ################## Build documentation #####################
-
-# Controls the generation of the documentation files.
-OPTION(OVITO_BUILD_DOCUMENTATION "Build the documentation" "OFF")
-
-IF(OVITO_BUILD_DOCUMENTATION)
-	INCLUDE(cmake/Documentation.cmake)
-	ADD_DEPENDENCIES(${PROJECT_NAME} documentation)
-ENDIF(OVITO_BUILD_DOCUMENTATION)
+INCLUDE(cmake/Documentation.cmake)
 
 ######################### Setup CPack #######################
 INCLUDE(${OVITO_SOURCE_BASE_DIR}/cmake/Packaging.cmake)

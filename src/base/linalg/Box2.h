@@ -21,7 +21,7 @@
 
 /**
  * \file Box2.h
- * \brief Contains the definition of the Ovito::Box_2 template class.
+ * \brief Contains the definition of the Ovito::Box_2 class template.
  */
 
 #ifndef __OVITO_BOX2_H

@@ -21,7 +21,7 @@
 
 /** 
  * \file Ray.h 
- * \brief Contains definition of the Ovito::Ray3 template class.
+ * \brief Contains the definition of the Ovito::Ray_3 class template.
  */
 
 #ifndef __OVITO_RAY_H

@@ -19,6 +19,11 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+/**
+ * \file Tensor.h
+ * \brief Contains the definition of the Ovito::SymmetricTensor2T class template.
+ */
+
 #ifndef __OVITO_TENSOR_H
 #define __OVITO_TENSOR_H
 

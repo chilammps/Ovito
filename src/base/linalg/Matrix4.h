@@ -21,7 +21,7 @@
 
 /** 
  * \file Matrix4.h 
- * \brief Contains definition of the Ovito::Matrix4 class and operators.
+ * \brief Contains the definition of the Ovito::Matrix_4 class template.
  */
 
 #ifndef __OVITO_MATRIX4_H

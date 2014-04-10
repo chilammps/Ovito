@@ -21,7 +21,7 @@
 
 /** 
  * \file Matrix3.h 
- * \brief Contains definition of the Ovito::Matrix3 class and operators.
+ * \brief Contains the definition of the Ovito::Matrix_3 class template.
  */
  
 #ifndef __OVITO_MATRIX3_H

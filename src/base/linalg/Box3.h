@@ -21,7 +21,7 @@
 
 /** 
  * \file Box3.h 
- * \brief Contains the definition of the Ovito::Box_3 template class.
+ * \brief Contains the definition of the Ovito::Box_3 class template.
  */
 
 #ifndef __OVITO_BOX3_H
@@ -36,14 +36,15 @@
 namespace Ovito {
 
 /**
- * \brief A bounding box in 3D space.
+ * \brief An axis-aligned bounding box in 3D space.
  *
- * This class stores an axis-aligned box in 3D space.
- * It is defined by minimum and maximum coordinates in X, Y and Z direction.
- * 
- * There are two predefined instances of this template class: 
- * Box3 which is used for floating-point coordinates and \c Base::Box3I which is used
- * for integer coordinates. 
+ * This class describes an axis-aligned box in 3D space.
+ * The box is defined by the minimum XYZ coordinates
+ * and the maximum XYZ coordinates, i.e. two corners.
+ *
+ * There are two predefined instantiations of this class template:
+ * Box3, which is used for floating-point coordinates, and \c Box3I, which is used
+ * for integer coordinates.
  */
 template<typename T>
 class Box_3
