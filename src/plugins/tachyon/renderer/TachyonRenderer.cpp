@@ -30,9 +30,10 @@
 
 extern "C" {
 
-#include <plugins/tachyon/tachyonlib/render.h>
-#include <plugins/tachyon/tachyonlib/camera.h>
-#include <plugins/tachyon/tachyonlib/trace.h>
+#include <tachyon/render.h>
+#include <tachyon/camera.h>
+#include <tachyon/threads.h>
+#include <tachyon/trace.h>
 
 };
 

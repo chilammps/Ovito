@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include <core/rendering/noninteractive/NonInteractiveSceneRenderer.h>
 #define TACHYON_INTERNAL 1
-#include <plugins/tachyon/tachyonlib/tachyon.h>
+#include <tachyon/tachyon.h>
 
 namespace TachyonPlugin {
 
