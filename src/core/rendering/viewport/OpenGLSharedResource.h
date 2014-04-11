@@ -20,8 +20,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /** 
- * \file SharedOpenGLResource.h
- * \brief Contains the definition of the Ovito::SharedOpenGLResource class.
+ * \file OpenGLSharedResource.h
+ * \brief Contains the definition of the Ovito::OpenGLSharedResource class.
  */
 
 #ifndef __OVITO_SHARED_OPENGL_RESOURCE_H
@@ -34,12 +34,12 @@ namespace Ovito {
 class OpenGLContextInfo;
 class OpenGLContextManager;
 
-class OVITO_CORE_EXPORT SharedOpenGLResource
+class OVITO_CORE_EXPORT OpenGLSharedResource
 {
 public:
 
 	/// Destructor.
-    ~SharedOpenGLResource();
+    ~OpenGLSharedResource();
 
     /// This should be called after the OpenGL resources have been allocated.
     void attachOpenGLResources();
@@ -54,8 +54,8 @@ protected:
 
 private:
     OpenGLContextInfo* _contextInfo = nullptr;
-    SharedOpenGLResource* _next = nullptr;
-    SharedOpenGLResource* _prev = nullptr;
+    OpenGLSharedResource* _next = nullptr;
+    OpenGLSharedResource* _prev = nullptr;
 
     friend class OpenGLContextManager;
     friend class OpenGLContextInfo;

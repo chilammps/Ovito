@@ -29,22 +29,19 @@
 
 #include <core/Core.h>
 #include <core/rendering/TextPrimitive.h>
-#include <core/utilities/opengl/SharedOpenGLResource.h>
+#include "OpenGLTexture.h"
 
 namespace Ovito {
 
 /**
  * \brief Buffer object that stores a text string to be rendered in the viewports.
  */
-class OVITO_CORE_EXPORT OpenGLTextPrimitive : public TextPrimitive, private SharedOpenGLResource
+class OVITO_CORE_EXPORT OpenGLTextPrimitive : public TextPrimitive
 {
 public:
 
 	/// Constructor.
 	OpenGLTextPrimitive(ViewportSceneRenderer* renderer);
-
-	/// Destructor.
-	virtual ~OpenGLTextPrimitive();
 
 	/// \brief Sets the text to be rendered.
 	virtual void setText(const QString& text) override {
@@ -83,11 +80,6 @@ public:
 	/// \brief Renders the text string at the given 2D normalized viewport coordinates ([-1,+1] range).
 	virtual void renderViewport(SceneRenderer* renderer, const Point2& pos, int alignment = Qt::AlignLeft | Qt::AlignTop) override;
 
-protected:
-
-    /// This method that takes care of freeing the shared OpenGL resources owned by this class.
-    virtual void freeOpenGLResources() override;
-
 private:
 
 	/// The GL context group under which the GL vertex buffer has been created.
@@ -99,8 +91,8 @@ private:
 	/// The OpenGL vertex buffer that stores the vertex positions.
 	QOpenGLBuffer _vertexBuffer;
 
-	/// Resource identifier of the OpenGL texture that is used for rendering the text image.
-	GLuint _texture;
+	/// The OpenGL texture that is used for rendering the text image.
+	OpenGLTexture _texture;
 
 	/// The texture image.
 	QImage _textureImage;

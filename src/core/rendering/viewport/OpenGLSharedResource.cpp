@@ -20,7 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include "SharedOpenGLResource.h"
+#include "OpenGLSharedResource.h"
 
 namespace Ovito {
 
@@ -39,7 +39,7 @@ public:
 	/// Destructor.
 	~OpenGLContextInfo() {
         // Detach this information block from all of the shared resources that used to be owned by it.
-        for(SharedOpenGLResource* resource = _resources; resource != nullptr; resource = resource->_next) {
+        for(OpenGLSharedResource* resource = _resources; resource != nullptr; resource = resource->_next) {
             resource->_contextInfo = nullptr;
         }
     }
@@ -54,7 +54,7 @@ public:
     QPointer<QOffscreenSurface> _offscreenSurface;
 
     /// Linked list of resources associated with the OpenGL context.
-    SharedOpenGLResource* _resources;
+    OpenGLSharedResource* _resources;
 };
 
 class OpenGLContextManager : public QObject
@@ -91,7 +91,7 @@ private:
     QList<OpenGLContextInfo *> _contexts;
 };
 
-#include "SharedOpenGLResource.moc"
+#include "OpenGLSharedResource.moc"
 
 static QThreadStorage<OpenGLContextManager*> glContextManagerStorage;
 
@@ -130,12 +130,12 @@ void OpenGLContextManager::aboutToDestroyContext()
 }
 
 /// Destructor.
-SharedOpenGLResource::~SharedOpenGLResource() 
+OpenGLSharedResource::~OpenGLSharedResource()
 {
 	destroyOpenGLResources(); 
 }
 
-void SharedOpenGLResource::attachOpenGLResources()
+void OpenGLSharedResource::attachOpenGLResources()
 {
     OVITO_ASSERT(_contextInfo == nullptr);
 
@@ -152,7 +152,7 @@ void SharedOpenGLResource::attachOpenGLResources()
     _contextInfo->_resources = this;
 }
 
-void SharedOpenGLResource::destroyOpenGLResources()
+void OpenGLSharedResource::destroyOpenGLResources()
 {
 	if(!_contextInfo)
 		return;

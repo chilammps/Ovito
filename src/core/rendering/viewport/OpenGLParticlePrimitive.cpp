@@ -34,7 +34,7 @@ namespace Ovito {
 OpenGLParticlePrimitive::OpenGLParticlePrimitive(ViewportSceneRenderer* renderer, ShadingMode shadingMode, RenderingQuality renderingQuality, ParticleShape shape) :
 	ParticlePrimitive(shadingMode, renderingQuality, shape),
 	_contextGroup(QOpenGLContextGroup::currentContextGroup()),
-	_billboardTexture(0), _shader(nullptr), _pickingShader(nullptr),
+	_shader(nullptr), _pickingShader(nullptr),
 	_usingGeometryShader(renderer->useGeometryShaders())
 {
 	OVITO_ASSERT(renderer->glcontext()->shareGroup() == _contextGroup);
@@ -189,14 +189,6 @@ OpenGLParticlePrimitive::OpenGLParticlePrimitive(ViewportSceneRenderer* renderer
 	// Prepare texture that is required for imposter rendering of spherical particles.
 	if(shape == SphericalShape && shadingMode == NormalShading && (_renderingTechnique == POINT_SPRITES || _renderingTechnique == IMPOSTER_QUADS))
 		initializeBillboardTexture(renderer);
-}
-
-/******************************************************************************
-* Destructor.
-******************************************************************************/
-OpenGLParticlePrimitive::~OpenGLParticlePrimitive()
-{
-	destroyOpenGLResources();
 }
 
 /******************************************************************************
@@ -602,16 +594,10 @@ void OpenGLParticlePrimitive::initializeBillboardTexture(ViewportSceneRenderer* 
 		}
 	}
 
-	renderer->glfuncs()->glActiveTexture(GL_TEXTURE0);
-
-	// Create OpenGL texture.
-	glGenTextures(1, &_billboardTexture);
-
-	// Make sure texture gets deleted when this object is destroyed.
-	attachOpenGLResources();
+	_billboardTexture.create();
+	_billboardTexture.bind();
 
 	// Transfer pixel data to OpenGL texture.
-	OVITO_CHECK_OPENGL(glBindTexture(GL_TEXTURE_2D, _billboardTexture));
 	for(int mipmapLevel = 0; mipmapLevel < BILLBOARD_TEXTURE_LEVELS; mipmapLevel++) {
 		int resolution = (1 << (BILLBOARD_TEXTURE_LEVELS - mipmapLevel - 1));
 
@@ -621,21 +607,11 @@ void OpenGLParticlePrimitive::initializeBillboardTexture(ViewportSceneRenderer* 
 }
 
 /******************************************************************************
-* This method that takes care of freeing the shared OpenGL resources owned
-* by this class.
-******************************************************************************/
-void OpenGLParticlePrimitive::freeOpenGLResources()
-{
-	glDeleteTextures(1, &_billboardTexture);
-	_billboardTexture = 0;
-}
-
-/******************************************************************************
 * Activates a texture for billboard rendering of spherical particles.
 ******************************************************************************/
 void OpenGLParticlePrimitive::activateBillboardTexture(ViewportSceneRenderer* renderer)
 {
-	OVITO_ASSERT(_billboardTexture != 0);
+	OVITO_ASSERT(_billboardTexture.isCreated());
 	OVITO_ASSERT(shadingMode() != FlatShading);
 	OVITO_ASSERT(!renderer->isPicking());
 	OVITO_ASSERT(particleShape() == SphericalShape);
@@ -645,8 +621,7 @@ void OpenGLParticlePrimitive::activateBillboardTexture(ViewportSceneRenderer* re
 	if(renderer->isCoreProfile() == false)
 		OVITO_CHECK_OPENGL(glEnable(GL_TEXTURE_2D));
 
-	OVITO_CHECK_OPENGL(renderer->glfuncs()->glActiveTexture(GL_TEXTURE0));
-	OVITO_CHECK_OPENGL(glBindTexture(GL_TEXTURE_2D, _billboardTexture));
+	_billboardTexture.bind();
 
 	OVITO_CHECK_OPENGL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST));
 	OVITO_CHECK_OPENGL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));

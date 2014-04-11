@@ -29,24 +29,21 @@
 
 #include <core/Core.h>
 #include <core/rendering/ParticlePrimitive.h>
-#include <core/utilities/opengl/SharedOpenGLResource.h>
 #include "OpenGLBuffer.h"
+#include "OpenGLTexture.h"
 
 namespace Ovito {
 
 /**
  * \brief This class is responsible for rendering particle primitives using OpenGL.
  */
-class OVITO_CORE_EXPORT OpenGLParticlePrimitive : public ParticlePrimitive, private SharedOpenGLResource
+class OVITO_CORE_EXPORT OpenGLParticlePrimitive : public ParticlePrimitive
 {
 public:
 
 	/// Constructor.
 	OpenGLParticlePrimitive(ViewportSceneRenderer* renderer,
 			ShadingMode shadingMode, RenderingQuality renderingQuality, ParticleShape shape);
-
-	/// Destructor.
-	virtual ~OpenGLParticlePrimitive();
 
 	/// \brief Allocates a geometry buffer with the given number of particles.
 	virtual void setSize(int particleCount) override;
@@ -92,9 +89,6 @@ public:
 
 protected:
 
-    /// This method that takes care of freeing the shared OpenGL resources owned by this class.
-    virtual void freeOpenGLResources() override;
-
 	/// Creates the texture used for billboard rendering of particles.
 	void initializeBillboardTexture(ViewportSceneRenderer* renderer);
 
@@ -134,8 +128,8 @@ private:
 	/// The GL context group under which the GL vertex buffers have been created.
 	QPointer<QOpenGLContextGroup> _contextGroup;
 
-	/// Resource identifier of the OpenGL texture that is used for billboard rendering of particles.
-	GLuint _billboardTexture;
+	/// The OpenGL texture that is used for billboard rendering of particles.
+	OpenGLTexture _billboardTexture;
 
 	/// This array contains the start indices of primitives and is passed to glMultiDrawArrays().
 	std::vector<GLint> _primitiveStartIndices;

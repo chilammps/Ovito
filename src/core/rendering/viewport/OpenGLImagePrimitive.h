@@ -29,22 +29,19 @@
 
 #include <core/Core.h>
 #include <core/rendering/ImagePrimitive.h>
-#include <core/utilities/opengl/SharedOpenGLResource.h>
+#include "OpenGLTexture.h"
 
 namespace Ovito {
 
 /**
  * \brief Buffer object that stores an image to be rendered in the viewports.
  */
-class OVITO_CORE_EXPORT OpenGLImagePrimitive : public ImagePrimitive, private SharedOpenGLResource
+class OVITO_CORE_EXPORT OpenGLImagePrimitive : public ImagePrimitive
 {
 public:
 
 	/// Constructor.
 	OpenGLImagePrimitive(ViewportSceneRenderer* renderer);
-
-	/// Destructor.
-	virtual ~OpenGLImagePrimitive();
 
 	/// \brief Sets the image to be rendered.
 	virtual void setImage(const QImage& image) override {
@@ -61,11 +58,6 @@ public:
 	/// \brief Renders the image in a rectangle given in viewport coordinates.
 	virtual void renderViewport(SceneRenderer* renderer, const Point2& pos, const Vector2& size) override;
 
-protected:
-
-    /// This method that takes care of freeing the shared OpenGL resources owned by this class.
-    virtual void freeOpenGLResources() override;
-
 private:
 
 	/// The GL context group under which the GL vertex buffer has been created.
@@ -77,8 +69,8 @@ private:
 	/// The OpenGL vertex buffer that stores the vertex positions.
 	QOpenGLBuffer _vertexBuffer;
 
-	/// Resource identifier of the OpenGL texture that is used for rendering the image.
-	GLuint _texture;
+	/// The OpenGL texture that is used for rendering the image.
+	OpenGLTexture _texture;
 
 	/// Indicates that the texture needs to be updated.
 	bool _needTextureUpdate;

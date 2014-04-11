@@ -130,7 +130,6 @@ SET(OVITO_CORE_SOURCE_FILES
 	utilities/io/CompressedTextParserStream.cpp
 	utilities/concurrent/Future.cpp
 	utilities/concurrent/TaskManager.cpp
-	utilities/opengl/SharedOpenGLResource.cpp
 	rendering/SceneRenderer.cpp
 	rendering/viewport/ViewportSceneRenderer.cpp
 	rendering/viewport/OpenGLLinePrimitive.cpp
@@ -139,6 +138,7 @@ SET(OVITO_CORE_SOURCE_FILES
 	rendering/viewport/OpenGLImagePrimitive.cpp
 	rendering/viewport/OpenGLArrowPrimitive.cpp
 	rendering/viewport/OpenGLMeshPrimitive.cpp
+	rendering/viewport/OpenGLSharedResource.cpp
 	rendering/standard/StandardSceneRenderer.cpp
 	rendering/standard/StandardSceneRendererEditor.cpp
 	rendering/noninteractive/NonInteractiveSceneRenderer.cpp

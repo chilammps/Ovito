@@ -32,7 +32,6 @@ namespace Ovito {
 ******************************************************************************/
 OpenGLTextPrimitive::OpenGLTextPrimitive(ViewportSceneRenderer* renderer) :
 	_contextGroup(QOpenGLContextGroup::currentContextGroup()),
-	_texture(0),
 	_needTextureUpdate(true),
 	_textureImage(1, 1, QImage::Format_RGB32)
 {
@@ -51,28 +50,7 @@ OpenGLTextPrimitive::OpenGLTextPrimitive(ViewportSceneRenderer* renderer) :
 	_vertexBuffer.release();
 
 	// Create OpenGL texture.
-	glGenTextures(1, &_texture);
-
-	// Make sure texture gets deleted again when this object is destroyed.
-	attachOpenGLResources();
-}
-
-/******************************************************************************
-* Destructor.
-******************************************************************************/
-OpenGLTextPrimitive::~OpenGLTextPrimitive()
-{
-	destroyOpenGLResources();
-}
-
-/******************************************************************************
-* This method that takes care of freeing the shared OpenGL resources owned
-* by this class.
-******************************************************************************/
-void OpenGLTextPrimitive::freeOpenGLResources()
-{
-	glDeleteTextures(1, &_texture);
-	_texture = 0;
+	_texture.create();
 }
 
 /******************************************************************************
@@ -82,7 +60,7 @@ bool OpenGLTextPrimitive::isValid(SceneRenderer* renderer)
 {
 	ViewportSceneRenderer* vpRenderer = qobject_cast<ViewportSceneRenderer*>(renderer);
 	if(!vpRenderer) return false;
-	return (_contextGroup == vpRenderer->glcontext()->shareGroup()) && (_texture != 0) && _vertexBuffer.isCreated();
+	return (_contextGroup == vpRenderer->glcontext()->shareGroup()) && _texture.isCreated() && _vertexBuffer.isCreated();
 }
 
 /******************************************************************************
@@ -104,7 +82,7 @@ void OpenGLTextPrimitive::renderViewport(SceneRenderer* renderer, const Point2& 
 void OpenGLTextPrimitive::renderWindow(SceneRenderer* renderer, const Point2& pos, int alignment)
 {
 	OVITO_ASSERT(_contextGroup == QOpenGLContextGroup::currentContextGroup());
-	OVITO_ASSERT(_texture != 0);
+	OVITO_ASSERT(_texture.isCreated());
 	OVITO_STATIC_ASSERT(sizeof(FloatType) == sizeof(float) && sizeof(Point2) == sizeof(float)*2);
 	ViewportSceneRenderer* vpRenderer = dynamic_object_cast<ViewportSceneRenderer>(renderer);
 
@@ -116,8 +94,7 @@ void OpenGLTextPrimitive::renderWindow(SceneRenderer* renderer, const Point2& po
 		OVITO_CHECK_OPENGL(glEnable(GL_TEXTURE_2D));
 
 	// Prepare texture.
-	OVITO_CHECK_OPENGL(vpRenderer->glfuncs()->glActiveTexture(GL_TEXTURE0));
-	OVITO_CHECK_OPENGL(glBindTexture(GL_TEXTURE_2D, _texture));
+	_texture.bind();
 
 	if(_needTextureUpdate) {
 		_needTextureUpdate = false;
