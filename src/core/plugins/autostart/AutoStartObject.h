@@ -31,8 +31,6 @@
 
 namespace Ovito {
 
-class CommandLineParser;		// defined in CommandLineParser.h
-
 /**
  * \brief Base class that allows plugins to execute code on application startup.
  *
@@ -48,7 +46,7 @@ protected:
 public:
 
 	/// \brief Registers plugin-specific command line options.
-	virtual void registerCommandLineOptions(CommandLineParser& cmdLineParser) {}
+	virtual void registerCommandLineOptions(QCommandLineParser& cmdLineParser) {}
 
 	/// \brief Is called after the application has been completely initialized.
 	virtual void applicationStarted() {}

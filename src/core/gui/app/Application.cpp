@@ -98,18 +98,18 @@ bool Application::initialize(int& argc, char** argv)
 	qRegisterMetaTypeStreamOperators<ColorA>("Ovito::ColorA");
 
 	// Register command line arguments.
-	_cmdLineParser.addOption(CommandLineOption(QStringList{{"v", "version"}}, tr("Prints the program version and exits.")));
-	_cmdLineParser.addOption(CommandLineOption(QStringList{{"nogui"}}, tr("Run in console mode without showing the graphical user interface.")));
-	_cmdLineParser.addOption(CommandLineOption(QStringList{{"glversion"}}, tr("Selects a specific version of the OpenGL standard."), tr("VERSION")));
-	_cmdLineParser.addOption(CommandLineOption(QStringList{{"glcompatprofile"}}, tr("Request the OpenGL compatibility profile instead of the core profile.")));
+	_cmdLineParser.addOption(QCommandLineOption(QStringList{{"v", "version"}}, tr("Prints the program version and exits.")));
+	_cmdLineParser.addOption(QCommandLineOption(QStringList{{"nogui"}}, tr("Run in console mode without showing the graphical user interface.")));
+	_cmdLineParser.addOption(QCommandLineOption(QStringList{{"glversion"}}, tr("Selects a specific version of the OpenGL standard."), tr("VERSION")));
+	_cmdLineParser.addOption(QCommandLineOption(QStringList{{"glcompatprofile"}}, tr("Request the OpenGL compatibility profile instead of the core profile.")));
 
 	// Parse command line arguments.
 	// Ignore unknown command line options for now.
-	if(!_cmdLineParser.parse(argc, argv, true)) {
-        std::cerr << "Error: " << qPrintable(_cmdLineParser.errorText()) << std::endl;
-		_consoleMode = true;
-		return false;
-	}
+	QStringList arguments;
+	arguments.reserve(argc);
+	for(int i = 0; i < argc; i++)
+		arguments << QString::fromLocal8Bit(argv[i]);
+	_cmdLineParser.parse(arguments);
 
 	// Output program version if requested.
 	if(_cmdLineParser.isSet("version")) {

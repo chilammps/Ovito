@@ -41,7 +41,7 @@ public:
 	Q_INVOKABLE ScriptAutostarter() {}
 
 	/// \brief Registers plugin-specific command line options.
-	virtual void registerCommandLineOptions(CommandLineParser& cmdLineParser) override;
+	virtual void registerCommandLineOptions(QCommandLineParser& cmdLineParser) override;
 
 	/// \brief Is called after the application has been completely initialized.
 	virtual void applicationStarted() override;

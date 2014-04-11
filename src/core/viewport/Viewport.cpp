@@ -668,7 +668,7 @@ void Viewport::renderOrientationIndicator()
 	renderer->setWorldTransform(AffineTransformation::Identity());
 
 	static const ColorA axisColors[3] = { ColorA(1, 0, 0), ColorA(0, 1, 0), ColorA(0.2, 0.2, 1) };
-	static const QString labels[3] = { "x", "y", "z" };
+	static const QString labels[3] = { QStringLiteral("x"), QStringLiteral("y"), QStringLiteral("z") };
 
 	// Create line buffer.
 	if(!_orientationTripodGeometry || !_orientationTripodGeometry->isValid(renderer)) {

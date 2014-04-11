@@ -21,7 +21,6 @@
 
 #include <plugins/scripting/Scripting.h>
 #include <core/gui/app/Application.h>
-#include <core/gui/app/CommandLineParser.h>
 #include <core/dataset/DataSetContainer.h>
 #include "ScriptAutostarter.h"
 #include "ScriptEngine.h"
@@ -33,13 +32,13 @@ IMPLEMENT_OVITO_OBJECT(Scripting, ScriptAutostarter, AutoStartObject);
 /******************************************************************************
 * Registers plugin-specific command line options.
 ******************************************************************************/
-void ScriptAutostarter::registerCommandLineOptions(CommandLineParser& cmdLineParser)
+void ScriptAutostarter::registerCommandLineOptions(QCommandLineParser& cmdLineParser)
 {
 	// Register the --script command line option.
-	cmdLineParser.addOption(CommandLineOption("script", tr("Runs a script file."), tr("FILE")));
+	cmdLineParser.addOption(QCommandLineOption("script", tr("Runs a script file."), tr("FILE")));
 
 	// Register the --exec command line option.
-	cmdLineParser.addOption(CommandLineOption("exec", tr("Executes a script command."), tr("CMD")));
+	cmdLineParser.addOption(QCommandLineOption("exec", tr("Executes a script command."), tr("CMD")));
 }
 
 /******************************************************************************

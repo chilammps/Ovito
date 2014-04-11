@@ -64,7 +64,6 @@ SET(OVITO_CORE_SOURCE_FILES
 	scene/display/geometry/TriMeshDisplay.cpp
 	scene/display/camera/CameraDisplayObject.cpp
 	gui/app/Application.cpp
-	gui/app/CommandLineParser.cpp
 	gui/mainwin/MainWindow.cpp
 	gui/mainwin/ViewportsPanel.cpp
 	gui/mainwin/cmdpanel/CommandPanel.cpp

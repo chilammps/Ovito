@@ -4,8 +4,9 @@ Install third-party libraries
 sudo port install netcdf
 
 **************************************************************************
-Install Qt libraries, version 5.1.1
+Install Qt libraries, version 5.2.1
 **************************************************************************
+
 Build static libav library (release 0.8.8):
 
 wget http://libav.org/releases/libav-0.8.8.tar.gz

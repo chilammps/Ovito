@@ -236,11 +236,7 @@ inline OORef<T> static_object_cast(const OORef<U>& obj) {
 
 };	// End of namespace Ovito
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 2, 0))
-	Q_DECLARE_SMART_POINTER_METATYPE(Ovito::OORef);
-#else
-	Q_DECLARE_METATYPE(Ovito::OORef<Ovito::OvitoObject>);
-#endif
+Q_DECLARE_SMART_POINTER_METATYPE(Ovito::OORef);
 
 #include <core/utilities/io/ObjectSaveStream.h>
 #include <core/utilities/io/ObjectLoadStream.h>
