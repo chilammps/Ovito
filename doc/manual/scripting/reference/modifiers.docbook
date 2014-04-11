@@ -548,6 +548,45 @@ print("Number of FCC atoms: " + modifier.structureCounts[CommonNeighborAnalysisM
       </informaltable>
     </para>
   </simplesect>
+
+  <simplesect xml:id="scripting.modifiers.compute_property"><title>CreateExpressionPropertyModifier</title> 
+    <para>
+       Scripting interface of the <link linkend="particles.modifiers.compute_property">Compute property</link> modifier:
+       <informaltable>
+         <tgroup cols="2">
+          <thead><row><entry>Property</entry><entry>Data type</entry><entry>Default value</entry><entry>Description</entry></row></thead>
+          <tbody>
+            <row>
+              <entry><code>outputProperty</code></entry>
+              <entry>string</entry>
+              <entry><code>"Custom property"</code></entry>
+              <entry>The name of the output particle property.</entry>
+            </row>
+            <row>
+              <entry><code>onlySelectedParticles</code></entry>
+              <entry>boolean</entry>
+              <entry><code>false</code></entry>
+              <entry>Restricts the computation of property values to selected particles.</entry>
+            </row>
+            <row>
+              <entry><code>expressions</code></entry>
+              <entry>array of strings</entry>
+              <entry><code>["0"]</code></entry>
+              <entry>The list of math expressions. The size of the array must match the number of vector components of the output property.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </para>
+    <para>
+	  Example:
+<informalexample><programlisting language="javascript">
+ovito.selectedNode.applyModifier(new CreateExpressionPropertyModifier({ 
+	outputProperty : "Radius",
+	expressions : [ "ParticleType==2 ? 1.6 : 1.2" ] 
+}))</programlisting></informalexample>
+    </para>
+  </simplesect>
   
   <simplesect xml:id="scripting.modifiers.freeze_property"><title>FreezePropertyModifier</title> 
     <para>

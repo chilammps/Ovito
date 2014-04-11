@@ -303,7 +303,7 @@ void RefMaker::loadFromStream(ObjectLoadStream& stream)
 #endif
 
 	// Read property field from the stream.
-	Q_FOREACH(const ObjectLoadStream::PropertyFieldEntry& fieldEntry, stream._currentObject->pluginClass->propertyFields) {
+	Q_FOREACH(const ObjectLoadStream::SerializedPropertyField& fieldEntry, stream._currentObject->pluginClass->propertyFields) {
 		if(fieldEntry.isReferenceField) {
 			OVITO_ASSERT(fieldEntry.targetClass != nullptr);
 	
@@ -372,13 +372,15 @@ void RefMaker::loadFromStream(ObjectLoadStream& stream)
 			// Read the primitive value of the property field from the stream.
 			OVITO_ASSERT(fieldEntry.targetClass == nullptr);
 			stream.expectChunk(0x04);
-			if(fieldEntry.field) {
-				OVITO_ASSERT(fieldEntry.field->propertyStorageLoadFunc != nullptr);
-				fieldEntry.field->propertyStorageLoadFunc(this, stream);
-			}
-			else {
-				// The property field no longer exists.
-				// Ignore chunk contents.
+			if(!loadPropertyFieldFromStream(stream, fieldEntry)) {
+				if(fieldEntry.field) {
+					OVITO_ASSERT(fieldEntry.field->propertyStorageLoadFunc != nullptr);
+					fieldEntry.field->propertyStorageLoadFunc(this, stream);
+				}
+				else {
+					// The property field no longer exists.
+					// Ignore chunk contents.
+				}
 			}
 			stream.closeChunk();
 		}

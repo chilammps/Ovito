@@ -44,7 +44,7 @@ node.applyModifier(new DeleteParticlesModifier())]]>
     	<link linkend="scripting.modifiers.construct_surface_mesh"><code>ConstructSurfaceModifier</code></link>,
     	<link linkend="scripting.modifiers.coordination_analysis"><code>CoordinationNumberModifier</code></link>, 
     	<link linkend="scripting.modifiers.create_bonds"><code>CreateBondsModifier</code></link>,
-    	<code>CreateExpressionPropertyModifier</code>, 
+    	<link linkend="scripting.modifiers.compute_property"><code>CreateExpressionPropertyModifier</code></link>, 
     	<code>DeleteParticlesModifier</code>, 
     	<code>FreezeSelectionModifier</code>, 
     	<link linkend="scripting.modifiers.freeze_property"><code>FreezePropertyModifier</code></link>, 

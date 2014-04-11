@@ -24,7 +24,6 @@
 
 #include <plugins/particles/Particles.h>
 #include <core/gui/properties/StringParameterUI.h>
-#include <core/gui/properties/IntegerParameterUI.h>
 #include <core/gui/properties/BooleanParameterUI.h>
 #include <core/gui/properties/VariantComboBoxParameterUI.h>
 #include "../ParticleModifier.h"
@@ -32,8 +31,7 @@
 namespace Particles {
 
 /**
- * \brief Creates a particle property with values computed by n
- *        user-defined math expression.
+ * \brief Computes the values of a particle property from a user-defined math expression.
  */
 class OVITO_PARTICLES_EXPORT CreateExpressionPropertyModifier : public ParticleModifier
 {
@@ -41,14 +39,11 @@ public:
 
 	/// \brief Constructs a new instance of this class.
 	Q_INVOKABLE CreateExpressionPropertyModifier(DataSet* dataset) : ParticleModifier(dataset),
-		_propertyType(ParticleProperty::UserProperty),
-		_propertyDataType(qMetaTypeId<FloatType>()), _propertyName(tr("Custom property 1")), _expressions(QStringList("0")),
+		_outputProperty(tr("Custom property")), _expressions(QStringList("0")),
 		_onlySelectedParticles(false)
 	{
 		INIT_PROPERTY_FIELD(CreateExpressionPropertyModifier::_expressions);
-		INIT_PROPERTY_FIELD(CreateExpressionPropertyModifier::_propertyType);
-		INIT_PROPERTY_FIELD(CreateExpressionPropertyModifier::_propertyName);
-		INIT_PROPERTY_FIELD(CreateExpressionPropertyModifier::_propertyDataType);
+		INIT_PROPERTY_FIELD(CreateExpressionPropertyModifier::_outputProperty);
 		INIT_PROPERTY_FIELD(CreateExpressionPropertyModifier::_onlySelectedParticles);
 	}
 
@@ -94,39 +89,11 @@ public:
 		return expressions()[index];
 	}
 
-	/// \brief Returns the type of the property being created by this modifier.
-	/// \return The type.
-	/// \sa setPropertyType()
-	ParticleProperty::Type propertyType() const { return _propertyType; }
+	/// \brief Sets the output particle property that receives the computed per-particle values.
+	void setOutputProperty(const ParticlePropertyReference& prop) { _outputProperty = prop; }
 
-	/// \brief Sets the type of the property being created by this modifier.
-	/// \param newType The new type. If this is one of the standard properties then the
-	///                other parameters will be set to the defaults according to the standard property type.
-	/// \undoable
-	/// \sa propertyType()
-	void setPropertyType(ParticleProperty::Type newType);
-
-	/// \brief Returns the name of the property being created by this modifier.
-	/// \return The name of the new property.
-	/// \sa setPropertyName()
-	const QString& propertyName() const { return _propertyName; }
-
-	/// \brief Sets the name of the property being created by this modifier.
-	/// \param newName The name of the new property.
-	/// \undoable
-	/// \sa propertyName()
-	void setPropertyName(const QString& newName) { _propertyName = newName; }
-
-	/// \brief Returns the data type of the property being created.
-	/// \return The id of the Qt data type of the new property.
-	/// \sa setPropertyDataType()
-	int propertyDataType() const { return _propertyDataType; }
-
-	/// \brief Sets the data type of the property being created.
-	/// \param newDataType The id of the Qt data type of the new property.
-	/// \undoable
-	/// \sa propertyDataType()
-	void setPropertyDataType(int newDataType) { _propertyDataType = newDataType; }
+	/// \brief Returns the output particle property that receives the computed per-particle values.
+	const ParticlePropertyReference& outputProperty() const { return _outputProperty; }
 
 	/// \brief Returns the number of vector components of the property to create.
 	/// \return The number of vector components.
@@ -136,60 +103,55 @@ public:
 	/// \brief Sets the number of vector components of the property to create.
 	/// \param newComponentCount The number of vector components.
 	/// \undoable
-	/// \sa propertyComponentCount()
 	void setPropertyComponentCount(int newComponentCount);
 
 	/// \brief Returns whether the math expression is only evaluated for selected particles.
 	/// \return \c true if the expression is only evaluated for selected particles; \c false if it is calculated for all particles.
-	/// \sa setOnlySelectedParticles()
 	bool onlySelectedParticles() const { return _onlySelectedParticles; }
 
 	/// \brief Sets whether the math expression is only evaluated for selected particles.
 	/// \param enable Specifies the restriction to selected particles.
 	/// \undoable
-	/// \sa onlySelectedParticles()
 	void setOnlySelectedParticles(bool enable) { _onlySelectedParticles = enable; }
 
 	/// \brief Returns the list of available input variables.
-	const QStringList& inputVariableNames() const { return _variableNames; }
+	const QStringList& inputVariableNames() const { return _inputVariableNames; }
 
 	/// \brief Returns a human-readable text listing the input variables.
-	const QString& inputVariableTable() const { return _variableTable; }
+	const QString& inputVariableTable() const { return _inputVariableTable; }
 
 public:
 
 	Q_PROPERTY(QStringList expressions READ expressions WRITE setExpressions);
-	Q_PROPERTY(Particles::ParticleProperty::Type propertyType READ propertyType WRITE setPropertyType);
-	Q_PROPERTY(QString propertyName READ propertyName WRITE setPropertyName);
-	Q_PROPERTY(int propertyDataType READ propertyDataType WRITE setPropertyDataType);
-	Q_PROPERTY(int propertyComponentCount READ propertyComponentCount WRITE setPropertyComponentCount);
+	Q_PROPERTY(Particles::ParticlePropertyReference outputProperty READ outputProperty WRITE setOutputProperty);
+	Q_PROPERTY(int propertyComponentCount READ propertyComponentCount);
 	Q_PROPERTY(bool onlySelectedParticles READ onlySelectedParticles WRITE setOnlySelectedParticles);
 
 protected:
 
+	/// \brief Allows the object to parse the serialized contents of a property field in a custom way.
+	virtual bool loadPropertyFieldFromStream(ObjectLoadStream& stream, const ObjectLoadStream::SerializedPropertyField& serializedField) override;
+
+	/// \brief Is called when the value of a property of this object has changed.
+	virtual void propertyChanged(const PropertyFieldDescriptor& field) override;
+
 	/// Modifies the particle object.
 	virtual PipelineStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;
 
-	/// The math expressions that are used to calculate the values of the property.
+	/// The math expressions for calculating the property values. One for every vector component.
 	PropertyField<QStringList> _expressions;
 
-	/// The type of the property to create.
-	PropertyField<ParticleProperty::Type, int> _propertyType;
+	/// Specifies the output property that will receive the computed per-particles values.
+	PropertyField<ParticlePropertyReference> _outputProperty;
 
-	/// The name of the particle property to create.
-	PropertyField<QString> _propertyName;
-
-	/// The data type of the particle property to create.
-	PropertyField<int> _propertyDataType;
-
-	/// Controls whether the math expression is evaluated only for selected particles.
+	/// Controls whether the math expression is evaluated and output only for selected particles.
 	PropertyField<bool> _onlySelectedParticles;
 
 	/// The list of input variables during the last evaluation.
-	QStringList _variableNames;
+	QStringList _inputVariableNames;
 
 	/// Human-readable text listing the input variables during the last evaluation.
-	QString _variableTable;
+	QString _inputVariableTable;
 
 private:
 
@@ -200,9 +162,7 @@ private:
 	Q_CLASSINFO("ModifierCategory", "Modification");
 
 	DECLARE_PROPERTY_FIELD(_expressions);
-	DECLARE_PROPERTY_FIELD(_propertyType);
-	DECLARE_PROPERTY_FIELD(_propertyName);
-	DECLARE_PROPERTY_FIELD(_propertyDataType);
+	DECLARE_PROPERTY_FIELD(_outputProperty);
 	DECLARE_PROPERTY_FIELD(_onlySelectedParticles);
 };
 
@@ -235,10 +195,6 @@ protected Q_SLOTS:
 	void updateEditorFields();
 
 private:
-
-	StringParameterUI* propertyNameUI;
-	VariantComboBoxParameterUI* propertyDataTypeUI;
-	IntegerParameterUI* numComponentsUI;
 
 	QWidget* rollout;
 	QGroupBox* expressionsGroupBox;

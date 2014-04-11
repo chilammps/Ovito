@@ -74,7 +74,7 @@ ObjectLoadStream::ObjectLoadStream(QDataStream& source) : LoadStream(source), _c
 			if(chunkId != 0x00000001)
 				throw Exception(tr("File format cannot be read."));
 
-			PropertyFieldEntry propFieldEntry;
+			SerializedPropertyField propFieldEntry;
 			*this >> propFieldEntry.identifier;
 			propFieldEntry.definingClass = OvitoObjectType::deserializeRTTI(*this);
 			if(classEntry.descriptor->isDerivedFrom(*propFieldEntry.definingClass) == false)
@@ -84,7 +84,7 @@ ObjectLoadStream::ObjectLoadStream(QDataStream& source) : LoadStream(source), _c
 			if(propFieldEntry.isReferenceField)
 				propFieldEntry.targetClass = OvitoObjectType::deserializeRTTI(*this);
 			else
-				propFieldEntry.targetClass = NULL;
+				propFieldEntry.targetClass = nullptr;
 			closeChunk();
 
 			propFieldEntry.field = propFieldEntry.definingClass->findPropertyField(propFieldEntry.identifier.constData());
@@ -123,7 +123,7 @@ ObjectLoadStream::ObjectLoadStream(QDataStream& source) : LoadStream(source), _c
 * The method returns a pointer to the object but this object will be
 * in an uninitialized state until it is loaded at a later time.
 ******************************************************************************/
-OORef<OvitoObject> ObjectLoadStream::loadObject()
+OORef<OvitoObject> ObjectLoadStream::loadObjectInternal()
 {
 	quint32 id;
 	*this >> id;

@@ -219,6 +219,18 @@ protected:
 	/// \sa saveToStream()
 	virtual void loadFromStream(ObjectLoadStream& stream) override;
 
+	/// \brief Allows the object to parse the serialized contents of a property field in a custom way.
+	/// \param stream The source stream.
+	/// \param serializedField The property field to be parsed.
+	/// \throw Exception when a parsing error has occurred.
+	/// \return \c true if the function has parsed the field; \c false if the default parsing routine should be invoked.
+	///
+	/// Overriding this method is useful if a property field has been replaced by another. To maintain file
+	/// compatibility, the object can parse the value of the old property field from the file and store it in the new field.
+	///
+	/// The default implementation returns \c false.
+	virtual bool loadPropertyFieldFromStream(ObjectLoadStream& stream, const ObjectLoadStream::SerializedPropertyField& serializedField) { return false; }
+
 public:
 
 	/// \brief Returns true if this object is an instance of a RefTarget derived class.

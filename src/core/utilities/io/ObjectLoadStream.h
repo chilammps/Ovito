@@ -35,10 +35,7 @@
 namespace Ovito {
 
 /**
- * \brief An input stream that is used to parse a graph of objects from a file.
- * 
- * \sa ObjectSaveStream
- * \author Alexander Stukowski
+ * \brief An input stream that is loads OVITO objects from a file that has been create by an ObjectSaveStream.
  */
 class OVITO_CORE_EXPORT ObjectLoadStream : public LoadStream
 {
@@ -46,26 +43,48 @@ class OVITO_CORE_EXPORT ObjectLoadStream : public LoadStream
 
 public:
 
-	/// \brief Opens the stream for reading.
-	/// \param source The data stream from which the binary data is read. This must be 
-	///               stream that supports random access.
-	/// \throw Exception when the given data stream \a source does only support sequential access. 	
+	/// Data structure describing a property or reference field of a RefMaker-derived
+	/// class, which has been stored in the file.
+	struct SerializedPropertyField {
+
+		/// The identifier of the property field.
+		QByteArray identifier;
+
+		/// The RefMaker-derived class that owns the property field.
+		OvitoObjectType* definingClass;
+
+		/// The stored flags of the property field (see PropertyFieldFlag).
+		int flags;
+
+		/// Indicates whether this is a reference field or a property field.
+		bool isReferenceField;
+
+		/// If this is a reference field, this is its RefTarget-derived class.
+		OvitoObjectType* targetClass;
+
+		/// The property field of the defining class that matches the
+		/// stored field. Can be NULL if the property field no longer exists.
+		const PropertyFieldDescriptor* field;
+	};
+
+	/// \brief Opens a stream for reading.
+	/// \param source The data stream from which the data is read. This must be a supporting random access.
+	/// \throw Exception when the source stream does not support random access.
 	ObjectLoadStream(QDataStream& source);
 
-	/// \brief The destructor closes the stream.
-	/// \sa close()
+	/// \brief The destructor calls close().
 	virtual ~ObjectLoadStream() { close(); }
 
 	/// \brief Closes the stream.
-	/// \note The underlying data stream is not closed by this method.
+	/// \note The underlying input stream is not closed by this method.
 	virtual void close();
 
-	/// Loads an object with runtime type information from the stream.
-	/// The method returns a pointer to the object but this object will be
-	/// in an uninitialized state until it is loaded at a later time.
+	/// Loads an object from the stream.
+	/// Note that the returned object is still uninitialized when the function returns.
+	/// The actual object data is loaded on a call to close().
 	template<class T>
 	OORef<T> loadObject() {
-		OORef<OvitoObject> ptr(loadObject());
+		OORef<OvitoObject> ptr = loadObjectInternal();
 		OVITO_ASSERT(!ptr || ptr->getOOType().isDerivedFrom(T::OOType));
 		if(ptr && !ptr->getOOType().isDerivedFrom(T::OOType))
 			throw Exception(tr("Class hierarchy mismatch in file. The object class '%1' is not derived from class '%2' as expected.").arg(ptr->getOOType().name()).arg(T::OOType.name()));
@@ -75,40 +94,39 @@ public:
 private:
 
 	/// Loads an object with runtime type information from the stream.
-	/// The method returns a pointer to the object but this object will be
-	/// in an uninitialized state until it is loaded at a later time.
-	OORef<OvitoObject> loadObject();
-	
-	struct PropertyFieldEntry {
-		QByteArray identifier;
-		OvitoObjectType* definingClass;
-		int flags;
-		bool isReferenceField;
-		OvitoObjectType* targetClass;
-		const PropertyFieldDescriptor* field;
-	};
+	OORef<OvitoObject> loadObjectInternal();
 
+	/// Data structure describing a class of objects stored in the file.
 	struct ClassEntry {
+
+		/// The corresponding runtime class.
 		OvitoObjectType* descriptor;
-		QVector<PropertyFieldEntry> propertyFields;
+
+		/// The list of reference and property fields stored for each instance of the class
+		/// in the file.
+		QVector<SerializedPropertyField> propertyFields;
 	};
 	
+	/// Data structure describing an object instance loaded from the file.
 	struct ObjectEntry {
+		/// The runtime instance.
 		OORef<OvitoObject> object;
+		/// The class information.
 		ClassEntry* pluginClass;
+		/// The position at which the object data is stored in the file.
 		qint64 fileOffset;
 	};
 
-	/// The plugin classes used in the current scene file.
+	/// The list of classes stored in the file.
 	QVector<ClassEntry> _classes;
 	
-	/// List all the objects of the current scene file.
+	/// List all the object instances stored in the file.
 	QVector<ObjectEntry> _objects;
 
-	/// Indices of those objects that need to be loaded.
+	/// Objects that need to be loaded.
 	QVector<quint32> _objectsToLoad;
 	
-	/// This points to the current object while the objects are being loaded from the stream.
+	/// The object currently being loaded from the stream.
 	ObjectEntry* _currentObject;
 	
 	/// The current dataset being loaded.
