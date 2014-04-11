@@ -45,8 +45,13 @@ SceneNodeSelectionBox::SceneNodeSelectionBox(DataSetContainer& datasetContainer,
 	// Listen for selection changes.
 	connect(&datasetContainer, &DataSetContainer::selectionChangeComplete, this, &SceneNodeSelectionBox::onSceneSelectionChanged);
 	connect(model(), &SceneNodesListModel::modelReset, this, &SceneNodeSelectionBox::onSceneSelectionChanged);
+	connect(model(), &SceneNodesListModel::modelReset, this, &SceneNodeSelectionBox::onNodeCountChanged);
+	connect(model(), &SceneNodesListModel::rowsRemoved, this, &SceneNodeSelectionBox::onNodeCountChanged);
+	connect(model(), &SceneNodesListModel::rowsInserted, this, &SceneNodeSelectionBox::onNodeCountChanged);
 
-	connect(this, SIGNAL(activated(int)), this, SLOT(onItemActivated(int)));
+	connect(this, (void (QComboBox::*)(int))&QComboBox::activated, this, &SceneNodeSelectionBox::onItemActivated);
+
+	onNodeCountChanged();
 }
 
 /******************************************************************************
@@ -82,6 +87,14 @@ void SceneNodeSelectionBox::onItemActivated(int index)
 				selection->clear();
 		});
 	}
+}
+
+/******************************************************************************
+* This is called whenever the number of nodes changes.
+******************************************************************************/
+void SceneNodeSelectionBox::onNodeCountChanged()
+{
+	setEnabled(model()->rowCount() > 1);
 }
 
 };

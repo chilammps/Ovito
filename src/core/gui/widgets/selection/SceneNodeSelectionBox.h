@@ -54,6 +54,9 @@ protected Q_SLOTS:
 	/// Is called when the user selected an item in the list box.
 	void onItemActivated(int index);
 
+	/// This is called whenever the number of nodes changes.
+	void onNodeCountChanged();
+
 private:
 
 	/// The container of the dataset.
