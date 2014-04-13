@@ -279,15 +279,15 @@ void HistogramModifierEditor::createUI(const RolloutInsertionParameters& rollout
 	_selectionRangeEndMarker->setPen(markerPen);
 	_histogramPlot->addItem(_selectionRangeStartMarker);
 	_histogramPlot->addItem(_selectionRangeEndMarker);
-	connect(_histogramPlot->xAxis, SIGNAL(rangeChanged(const QCPRange&)), this, SLOT(updateXAxisRange(const QCPRange &)));
+	connect(_histogramPlot->xAxis, SIGNAL(rangeChanged(const QCPRange&)), this, SLOT(updateXAxisRange(const QCPRange&)));
 
 	layout->addWidget(new QLabel(tr("Histogram:")));
 	layout->addWidget(_histogramPlot);
-	connect(this, SIGNAL(contentsReplaced(RefTarget*)), this, SLOT(plotHistogram()));
+	connect(this, &HistogramModifierEditor::contentsReplaced, this, &HistogramModifierEditor::plotHistogram);
 
 	QPushButton* saveDataButton = new QPushButton(tr("Save histogram data"));
 	layout->addWidget(saveDataButton);
-	connect(saveDataButton, SIGNAL(clicked(bool)), this, SLOT(onSaveData()));
+	connect(saveDataButton, &QPushButton::clicked, this, &HistogramModifierEditor::onSaveData);
 
 	// Selection.
 	QGroupBox* selectionBox = new QGroupBox(tr("Selection"), rollout);
@@ -309,8 +309,8 @@ void HistogramModifierEditor::createUI(const RolloutInsertionParameters& rollout
 	hlayout->addLayout(selRangeEndPUI->createFieldLayout());
 	selRangeStartPUI->setEnabled(false);
 	selRangeEndPUI->setEnabled(false);
-	connect(selectInRangeUI->checkBox(), SIGNAL(toggled(bool)), selRangeStartPUI, SLOT(setEnabled(bool)));
-	connect(selectInRangeUI->checkBox(), SIGNAL(toggled(bool)), selRangeEndPUI, SLOT(setEnabled(bool)));
+	connect(selectInRangeUI->checkBox(), &QCheckBox::toggled, selRangeStartPUI, &FloatParameterUI::setEnabled);
+	connect(selectInRangeUI->checkBox(), &QCheckBox::toggled, selRangeEndPUI, &FloatParameterUI::setEnabled);
 
 	// Axes.
 	QGroupBox* axesBox = new QGroupBox(tr("Plot axes"), rollout);
@@ -333,8 +333,8 @@ void HistogramModifierEditor::createUI(const RolloutInsertionParameters& rollout
 		hlayout->addLayout(endPUI->createFieldLayout());
 		startPUI->setEnabled(false);
 		endPUI->setEnabled(false);
-		connect(rangeUI->checkBox(), SIGNAL(toggled(bool)), startPUI, SLOT(setEnabled(bool)));
-		connect(rangeUI->checkBox(), SIGNAL(toggled(bool)), endPUI, SLOT(setEnabled(bool)));
+		connect(rangeUI->checkBox(), &QCheckBox::toggled, startPUI, &FloatParameterUI::setEnabled);
+		connect(rangeUI->checkBox(), &QCheckBox::toggled, endPUI, &FloatParameterUI::setEnabled);
 	}
 	// y-axis.
 	{
@@ -352,8 +352,8 @@ void HistogramModifierEditor::createUI(const RolloutInsertionParameters& rollout
 		hlayout->addLayout(endPUI->createFieldLayout());
 		startPUI->setEnabled(false);
 		endPUI->setEnabled(false);
-		connect(rangeUI->checkBox(), SIGNAL(toggled(bool)), startPUI, SLOT(setEnabled(bool)));
-		connect(rangeUI->checkBox(), SIGNAL(toggled(bool)), endPUI, SLOT(setEnabled(bool)));
+		connect(rangeUI->checkBox(), &QCheckBox::toggled, startPUI, &FloatParameterUI::setEnabled);
+		connect(rangeUI->checkBox(), &QCheckBox::toggled, endPUI, &FloatParameterUI::setEnabled);
 	}
 
 	// Status label.

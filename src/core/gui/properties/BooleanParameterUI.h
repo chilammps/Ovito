@@ -40,7 +40,7 @@ public:
 	/// Constructor for a PropertyField property.
 	BooleanParameterUI(QObject* parentEditor, const PropertyFieldDescriptor& propField);
 	
-	/// Destructor, that releases all GUI controls.
+	/// Destructor.
 	virtual ~BooleanParameterUI();
 	
 	/// This returns the checkbox managed by this parameter UI.
@@ -64,7 +64,7 @@ public:
 	
 public:
 	
-	Q_PROPERTY(QCheckBox checkBox READ checkBox)		
+	Q_PROPERTY(QCheckBox checkBox READ checkBox);
 	
 public Q_SLOTS:
 	

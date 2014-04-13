@@ -77,7 +77,7 @@ public:
 		OpenGLContextInfo* info = new OpenGLContextInfo(ctx, ctx->surface());
 		_contexts.append(info);
 		// Install listener.
-		connect(ctx, SIGNAL(aboutToBeDestroyed()), this, SLOT(aboutToDestroyContext()), Qt::DirectConnection);
+		connect(ctx, &QOpenGLContext::aboutToBeDestroyed, this, &OpenGLContextManager::aboutToDestroyContext, Qt::DirectConnection);
 		return info;
 	}
 

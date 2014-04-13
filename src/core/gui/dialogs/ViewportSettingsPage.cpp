@@ -82,10 +82,10 @@ void ViewportSettingsPage::insertSettingsDialogPage(ApplicationSettingsDialog* s
 	_colorList->addItem(tr("Cameras"));
 	_colorList->addItem(tr("Lights"));
 	layout2->addWidget(_colorList, 0, 0, 2, 1);
-	connect(_colorList, SIGNAL(currentItemChanged(QListWidgetItem*, QListWidgetItem*)), this, SLOT(onColorListItemChanged(QListWidgetItem*, QListWidgetItem*)));
+	connect(_colorList, &QListWidget::currentItemChanged, this, &ViewportSettingsPage::onColorListItemChanged);
 
 	_colorPicker = new ColorPickerWidget(colorsGroupBox);
-	connect(_colorPicker, SIGNAL(colorChanged()), this, SLOT(onColorChanged()));
+	connect(_colorPicker, &ColorPickerWidget::colorChanged, this, &ViewportSettingsPage::onColorChanged);
 	QHBoxLayout* boxLayout = new QHBoxLayout();
 	layout2->addLayout(boxLayout, 0, 1, Qt::AlignLeft | Qt::AlignTop);
 	boxLayout->addWidget(new QLabel(tr("Color:")));
@@ -96,7 +96,7 @@ void ViewportSettingsPage::insertSettingsDialogPage(ApplicationSettingsDialog* s
 
 	QPushButton* restoreDefaultButton = new QPushButton(tr("Restore default colors"));
 	layout2->addWidget(restoreDefaultButton, 1, 1, Qt::AlignLeft | Qt::AlignBottom);
-	connect(restoreDefaultButton, SIGNAL(clicked(bool)), this, SLOT(onRestoreDefaultColors()));
+	connect(restoreDefaultButton, &QPushButton::clicked, this, &ViewportSettingsPage::onRestoreDefaultColors);
 
 	layout1->setRowStretch(2, 1);
 }

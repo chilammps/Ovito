@@ -36,7 +36,7 @@ AutocompleteLineEdit::AutocompleteLineEdit(QWidget* parent) : QLineEdit(parent),
 	_completer->setCaseSensitivity(Qt::CaseInsensitive);
 	_completer->setModel(_wordListModel);
 	_completer->setWidget(this);
-	connect(_completer, SIGNAL(activated(const QString&)), this, SLOT(onComplete(const QString&)));
+	connect(_completer, (void (QCompleter::*)(const QString&))&QCompleter::activated, this, &AutocompleteLineEdit::onComplete);
 }
 
 /******************************************************************************

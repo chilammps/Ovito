@@ -510,7 +510,7 @@ void LAMMPSTextDumpImporterEditor::createUI(const RolloutInsertionParameters& ro
 
 	QPushButton* editMappingButton = new QPushButton(tr("Edit column mapping..."));
 	sublayout->addWidget(editMappingButton);
-	connect(editMappingButton, SIGNAL(clicked(bool)), this, SLOT(onEditColumnMapping()));
+	connect(editMappingButton, &QPushButton::clicked, this, &LAMMPSTextDumpImporterEditor::onEditColumnMapping);
 }
 
 /******************************************************************************

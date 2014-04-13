@@ -182,12 +182,12 @@ void AffineTransformationModifierEditor::createUI(const RolloutInsertionParamete
 	selectionUI->buttonFalse()->setText(tr("All particles"));
 	selectionUI->buttonFalse()->setEnabled(false);
 	layout->addWidget(selectionUI->buttonFalse(), 2, 1);
-	connect(applyToParticlesUI->checkBox(), SIGNAL(toggled(bool)), selectionUI->buttonFalse(), SLOT(setEnabled(bool)));
+	connect(applyToParticlesUI->checkBox(), &QCheckBox::toggled, selectionUI->buttonFalse(), &QRadioButton::setEnabled);
 
 	selectionUI->buttonTrue()->setText(tr("Only to selected particles"));
 	selectionUI->buttonTrue()->setEnabled(false);
 	layout->addWidget(selectionUI->buttonTrue(), 3, 1);
-	connect(applyToParticlesUI->checkBox(), SIGNAL(toggled(bool)), selectionUI->buttonTrue(), SLOT(setEnabled(bool)));
+	connect(applyToParticlesUI->checkBox(), &QCheckBox::toggled, selectionUI->buttonTrue(), &QRadioButton::setEnabled);
 
 	BooleanParameterUI* applyToSurfaceMeshUI = new BooleanParameterUI(this, PROPERTY_FIELD(AffineTransformationModifier::_applyToSurfaceMesh));
 	layout->addWidget(applyToSurfaceMeshUI->checkBox(), 4, 0, 1, 2);
@@ -235,12 +235,12 @@ void AffineTransformationModifierEditor::createUI(const RolloutInsertionParamete
 			layout->addWidget(lineEdit, gridRow, col*3 + 0);
 			layout->addWidget(spinner, gridRow, col*3 + 1);
 
-			connect(spinner, SIGNAL(spinnerValueChanged()), this, SLOT(onSpinnerValueChanged()));
-			connect(spinner, SIGNAL(spinnerDragStart()), this, SLOT(onSpinnerDragStart()));
-			connect(spinner, SIGNAL(spinnerDragStop()), this, SLOT(onSpinnerDragStop()));
-			connect(spinner, SIGNAL(spinnerDragAbort()), this, SLOT(onSpinnerDragAbort()));
-			connect(relativeModeUI->buttonTrue(), SIGNAL(toggled(bool)), spinner, SLOT(setEnabled(bool)));
-			connect(relativeModeUI->buttonTrue(), SIGNAL(toggled(bool)), lineEdit, SLOT(setEnabled(bool)));
+			connect(spinner, &SpinnerWidget::spinnerValueChanged, this, &AffineTransformationModifierEditor::onSpinnerValueChanged);
+			connect(spinner, &SpinnerWidget::spinnerDragStart, this, &AffineTransformationModifierEditor::onSpinnerDragStart);
+			connect(spinner, &SpinnerWidget::spinnerDragStop, this, &AffineTransformationModifierEditor::onSpinnerDragStop);
+			connect(spinner, &SpinnerWidget::spinnerDragAbort, this, &AffineTransformationModifierEditor::onSpinnerDragAbort);
+			connect(relativeModeUI->buttonTrue(), &QRadioButton::toggled, spinner, &SpinnerWidget::setEnabled);
+			connect(relativeModeUI->buttonTrue(), &QRadioButton::toggled, lineEdit, &QLineEdit::setEnabled);
 		}
 	}
 	layout->addWidget(new QLabel(tr("Translation:")), 4, 0, 1, 8);
@@ -267,7 +267,7 @@ void AffineTransformationModifierEditor::createUI(const RolloutInsertionParamete
 			destinationCellUI->setEnabled(false);
 			layout->addWidget(destinationCellUI->textBox(), v*2+1, r*3+0);
 			layout->addWidget(destinationCellUI->spinner(), v*2+1, r*3+1);
-			connect(relativeModeUI->buttonFalse(), SIGNAL(toggled(bool)), destinationCellUI, SLOT(setEnabled(bool)));
+			connect(relativeModeUI->buttonFalse(), &QRadioButton::toggled, destinationCellUI, &AffineTransformationParameterUI::setEnabled);
 		}
 	}
 
@@ -277,7 +277,7 @@ void AffineTransformationModifierEditor::createUI(const RolloutInsertionParamete
 		destinationCellUI->setEnabled(false);
 		layout->addWidget(destinationCellUI->textBox(), 7, r*3+0);
 		layout->addWidget(destinationCellUI->spinner(), 7, r*3+1);
-		connect(relativeModeUI->buttonFalse(), SIGNAL(toggled(bool)), destinationCellUI, SLOT(setEnabled(bool)));
+		connect(relativeModeUI->buttonFalse(), &QRadioButton::toggled, destinationCellUI, &AffineTransformationParameterUI::setEnabled);
 	}
 
 	// Update spinner values when a new object has been loaded into the editor.

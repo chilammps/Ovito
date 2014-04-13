@@ -36,7 +36,7 @@ BooleanActionParameterUI::BooleanActionParameterUI(QObject* parentEditor, const 
 {
 	OVITO_ASSERT(action != NULL);
 	action->setCheckable(true);
-	connect(_action, SIGNAL(triggered(bool)), this, SLOT(updatePropertyValue()));
+	connect(_action, &QAction::triggered, this, &BooleanActionParameterUI::updatePropertyValue);
 }
 
 /******************************************************************************
@@ -48,7 +48,7 @@ BooleanActionParameterUI::BooleanActionParameterUI(QObject* parentEditor, const 
 	OVITO_ASSERT(isPropertyFieldUI());
 	OVITO_ASSERT(action != NULL);
 	action->setCheckable(true);
-	connect(_action, SIGNAL(triggered(bool)), this, SLOT(updatePropertyValue()));
+	connect(_action, &QAction::triggered, this, &BooleanActionParameterUI::updatePropertyValue);
 }
 
 /******************************************************************************

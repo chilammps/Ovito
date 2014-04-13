@@ -34,11 +34,11 @@ IMPLEMENT_OVITO_OBJECT(Core, VariantComboBoxParameterUI, PropertyParameterUI)
 VariantComboBoxParameterUI::VariantComboBoxParameterUI(QObject* parentEditor, const char* propertyName) :
 	PropertyParameterUI(parentEditor, propertyName), _comboBox(new QComboBox())
 {
-	connect(_comboBox, SIGNAL(activated(int)), this, SLOT(updatePropertyValue()));	
+	connect(_comboBox, (void (QComboBox::*)(int))&QComboBox::activated, this, &VariantComboBoxParameterUI::updatePropertyValue);
 }
 
 /******************************************************************************
-* Destructor, that releases all GUI controls.
+* Destructor.
 ******************************************************************************/
 VariantComboBoxParameterUI::~VariantComboBoxParameterUI()
 {

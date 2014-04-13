@@ -54,7 +54,7 @@ ModifyCommandPage::ModifyCommandPage(MainWindow* mainWindow, QWidget* parent) : 
 	_modificationListModel = new ModificationListModel(_datasetContainer, this);
 	_modifierSelector = new ModifierListBox(this, _modificationListModel);
     layout->addWidget(_modifierSelector, 1, 0, 1, 2);
-    connect(_modifierSelector, SIGNAL(activated(int)), this, SLOT(onModifierAdd(int)));
+    connect(_modifierSelector, (void (QComboBox::*)(int))&QComboBox::activated, this, &ModifyCommandPage::onModifierAdd);
 
 	class ModifierStackListView : public QListView {
 	public:
@@ -74,8 +74,8 @@ ModifyCommandPage::ModifyCommandPage(MainWindow* mainWindow, QWidget* parent) : 
 	_modificationListWidget = new ModifierStackListView(upperContainer);
 	_modificationListWidget->setModel(_modificationListModel);
 	_modificationListWidget->setSelectionModel(_modificationListModel->selectionModel());
-	connect(_modificationListModel, SIGNAL(selectedItemChanged()), this, SLOT(onSelectedItemChanged()));
-	connect(_modificationListWidget, SIGNAL(doubleClicked(const QModelIndex&)), this, SLOT(onModifierStackDoubleClicked(const QModelIndex&)));
+	connect(_modificationListModel, &ModificationListModel::selectedItemChanged, this, &ModifyCommandPage::onSelectedItemChanged);
+	connect(_modificationListWidget, &ModifierStackListView::doubleClicked, this, &ModifyCommandPage::onModifierStackDoubleClicked);
 	subLayout->addWidget(_modificationListWidget);
 
 	QToolBar* editToolbar = new QToolBar(this);
@@ -86,16 +86,16 @@ ModifyCommandPage::ModifyCommandPage(MainWindow* mainWindow, QWidget* parent) : 
 	subLayout->addWidget(editToolbar);
 
 	QAction* deleteModifierAction = _actionManager->createCommandAction(ACTION_MODIFIER_DELETE, tr("Delete Modifier"), ":/core/actions/modify/delete_modifier.png");
-	connect(deleteModifierAction, SIGNAL(triggered(bool)), this, SLOT(onDeleteModifier()));
+	connect(deleteModifierAction, &QAction::triggered, this, &ModifyCommandPage::onDeleteModifier);
 	editToolbar->addAction(deleteModifierAction);
 
 	editToolbar->addSeparator();
 
 	QAction* moveModifierUpAction = _actionManager->createCommandAction(ACTION_MODIFIER_MOVE_UP, tr("Move Modifier Up"), ":/core/actions/modify/modifier_move_up.png");
-	connect(moveModifierUpAction, SIGNAL(triggered(bool)), this, SLOT(onModifierMoveUp()));
+	connect(moveModifierUpAction, &QAction::triggered, this, &ModifyCommandPage::onModifierMoveUp);
 	editToolbar->addAction(moveModifierUpAction);
 	QAction* moveModifierDownAction = mainWindow->actionManager()->createCommandAction(ACTION_MODIFIER_MOVE_DOWN, tr("Move Modifier Down"), ":/core/actions/modify/modifier_move_down.png");
-	connect(moveModifierDownAction, SIGNAL(triggered(bool)), this, SLOT(onModifierMoveDown()));
+	connect(moveModifierDownAction, &QAction::triggered, this, &ModifyCommandPage::onModifierMoveDown);
 	editToolbar->addAction(moveModifierDownAction);
 
 	QAction* toggleModifierStateAction = _actionManager->createCommandAction(ACTION_MODIFIER_TOGGLE_STATE, tr("Enable/Disable Modifier"));
@@ -103,7 +103,7 @@ ModifyCommandPage::ModifyCommandPage(MainWindow* mainWindow, QWidget* parent) : 
 	QIcon toggleStateActionIcon(QString(":/core/actions/modify/modifier_enabled_large.png"));
 	toggleStateActionIcon.addFile(QString(":/core/actions/modify/modifier_disabled_large.png"), QSize(), QIcon::Normal, QIcon::On);
 	toggleModifierStateAction->setIcon(toggleStateActionIcon);
-	connect(toggleModifierStateAction, SIGNAL(triggered(bool)), this, SLOT(onModifierToggleState(bool)));
+	connect(toggleModifierStateAction, &QAction::triggered, this, &ModifyCommandPage::onModifierToggleState);
 
 	layout->addWidget(splitter, 2, 0, 1, 2);
 	layout->setRowStretch(2, 1);
@@ -409,7 +409,7 @@ void ModifyCommandPage::createAboutPanel()
 			.arg(operatingSystemString)
 			.arg(QT_POINTER_SIZE*8);
 	QNetworkReply* networkReply = networkAccessManager->get(QNetworkRequest(QUrl(urlString)));
-	connect(networkAccessManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(onWebRequestFinished(QNetworkReply*)));
+	connect(networkAccessManager, &QNetworkAccessManager::finished, this, &ModifyCommandPage::onWebRequestFinished);
 }
 
 /******************************************************************************

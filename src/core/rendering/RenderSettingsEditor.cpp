@@ -93,8 +93,8 @@ void RenderSettingsEditor::createUI(const RolloutInsertionParameters& rolloutPar
 		layout2c->addLayout(customRangeEndUI->createFieldLayout(), 3, 3);
 		layout2c->setColumnMinimumWidth(0, 30);
 		layout2c->setColumnStretch(4, 1);
-		connect(customIntervalButton, SIGNAL(toggled(bool)), customRangeStartUI, SLOT(setEnabled(bool)));
-		connect(customIntervalButton, SIGNAL(toggled(bool)), customRangeEndUI, SLOT(setEnabled(bool)));
+		connect(customIntervalButton, &QRadioButton::toggled, customRangeStartUI, &IntegerParameterUI::setEnabled);
+		connect(customIntervalButton, &QRadioButton::toggled, customRangeEndUI, &IntegerParameterUI::setEnabled);
 
 		QGridLayout* layout2a = new QGridLayout();
 		layout2a->setContentsMargins(0,6,0,0);
@@ -108,8 +108,8 @@ void RenderSettingsEditor::createUI(const RolloutInsertionParameters& rolloutPar
 		layout2a->addWidget(fileNumberBaseUI->label(), 1, 0);
 		layout2a->addLayout(fileNumberBaseUI->createFieldLayout(), 1, 1);
 		layout2a->setColumnStretch(2, 1);
-		connect(currentFrameButton, SIGNAL(toggled(bool)), everyNthFrameUI, SLOT(setDisabled(bool)));
-		connect(currentFrameButton, SIGNAL(toggled(bool)), fileNumberBaseUI, SLOT(setDisabled(bool)));
+		connect(currentFrameButton, &QRadioButton::toggled, everyNthFrameUI, &IntegerParameterUI::setDisabled);
+		connect(currentFrameButton, &QRadioButton::toggled, fileNumberBaseUI, &IntegerParameterUI::setDisabled);
 	}
 
 	// Output size
@@ -137,7 +137,7 @@ void RenderSettingsEditor::createUI(const RolloutInsertionParameters& rolloutPar
 		sizePresetsBox->addItem(tr("Presets..."));
 		for(int i = 0; i < sizeof(imageSizePresets)/sizeof(imageSizePresets[0]); i++)
 			sizePresetsBox->addItem(tr("%1 x %2").arg(imageSizePresets[i][0]).arg(imageSizePresets[i][1]));
-		connect(sizePresetsBox, SIGNAL(activated(int)), this, SLOT(onSizePresetActivated(int)));
+		connect(sizePresetsBox, (void (QComboBox::*)(int))&QComboBox::activated, this, &RenderSettingsEditor::onSizePresetActivated);
 		layout2->addWidget(sizePresetsBox, 1, 2);
 	}
 
@@ -160,7 +160,7 @@ void RenderSettingsEditor::createUI(const RolloutInsertionParameters& rolloutPar
 
 		// Create 'Change renderer' button.
 		QPushButton* changeRendererButton = new QPushButton(tr("Change renderer..."), groupBox);
-		connect(changeRendererButton, SIGNAL(clicked(bool)), this, SLOT(onChangeRenderer()));
+		connect(changeRendererButton, &QPushButton::clicked, this, &RenderSettingsEditor::onChangeRenderer);
 		layout2->addWidget(changeRendererButton, 4, 0, 1, 3);
 	}
 
@@ -177,7 +177,7 @@ void RenderSettingsEditor::createUI(const RolloutInsertionParameters& rolloutPar
 		layout2->addWidget(saveFileUI->checkBox(), 0, 0);
 
 		QPushButton* chooseFilenameBtn = new QPushButton(tr("Choose..."), rollout);
-		connect(chooseFilenameBtn, SIGNAL(clicked(bool)), this, SLOT(onChooseImageFilename()));
+		connect(chooseFilenameBtn, &QPushButton::clicked, this, &RenderSettingsEditor::onChooseImageFilename);
 		layout2->addWidget(chooseFilenameBtn, 0, 1);
 
 		// Output filename parameter.
@@ -188,7 +188,7 @@ void RenderSettingsEditor::createUI(const RolloutInsertionParameters& rolloutPar
 		BooleanParameterUI* skipExistingImagesUI = new BooleanParameterUI(this, PROPERTY_FIELD(RenderSettings::_skipExistingImages));
 		layout2->addWidget(skipExistingImagesUI->checkBox(), 2, 0, 1, 2);
 
-		connect(saveFileUI->checkBox(), SIGNAL(toggled(bool)), skipExistingImagesUI, SLOT(setEnabled(bool)));
+		connect(saveFileUI->checkBox(), &QCheckBox::toggled, skipExistingImagesUI, &BooleanParameterUI::setEnabled);
 	}
 
 	// Open a sub-editor for the renderer.

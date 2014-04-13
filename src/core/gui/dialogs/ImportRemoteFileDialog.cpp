@@ -82,8 +82,8 @@ ImportRemoteFileDialog::ImportRemoteFileDialog(const QVector<FileImporterDescrip
 	layout1->addSpacing(10);
 
 	QDialogButtonBox* buttonBox = new QDialogButtonBox(QDialogButtonBox::Open | QDialogButtonBox::Cancel, Qt::Horizontal, this);
-	connect(buttonBox, SIGNAL(accepted()), this, SLOT(onOk()));
-	connect(buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
+	connect(buttonBox, &QDialogButtonBox::accepted, this, &ImportRemoteFileDialog::onOk);
+	connect(buttonBox, &QDialogButtonBox::rejected, this, &ImportRemoteFileDialog::reject);
 	layout1->addWidget(buttonBox);
 }
 

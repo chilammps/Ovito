@@ -275,15 +275,15 @@ void ManualSelectionModifierEditor::createUI(const RolloutInsertionParameters& r
 	layout->addWidget(globalSelectionGroup);
 
 	QPushButton* selectAllBtn = new QPushButton(tr("Select all particles"));
-	connect(selectAllBtn, SIGNAL(clicked(bool)), this, SLOT(selectAll()));
+	connect(selectAllBtn, &QPushButton::clicked, this, &ManualSelectionModifierEditor::selectAll);
 	sublayout->addWidget(selectAllBtn);
 
 	QPushButton* clearSelectionBtn = new QPushButton(tr("Clear selection"));
-	connect(clearSelectionBtn, SIGNAL(clicked(bool)), this, SLOT(clearSelection()));
+	connect(clearSelectionBtn, &QPushButton::clicked, this, &ManualSelectionModifierEditor::clearSelection);
 	sublayout->addWidget(clearSelectionBtn);
 
 	QPushButton* resetSelectionBtn = new QPushButton(tr("Reset selection"));
-	connect(resetSelectionBtn, SIGNAL(clicked(bool)), this, SLOT(resetSelection()));
+	connect(resetSelectionBtn, &QPushButton::clicked, this, &ManualSelectionModifierEditor::resetSelection);
 	sublayout->addWidget(resetSelectionBtn);
 
 	// Status label.

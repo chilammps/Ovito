@@ -119,25 +119,25 @@ void SimulationCellEditor::createUI(const RolloutInsertionParameters& rolloutPar
 			layout2->addWidget(textBox, i, 1);
 			layout2->addWidget(simCellSizeSpinners[i], i, 2);
 
-			connect(simCellSizeSpinners[i], SIGNAL(spinnerValueChanged()), signalMapperValueChanged, SLOT(map()));
-			connect(simCellSizeSpinners[i], SIGNAL(spinnerDragStart()), signalMapperDragStart, SLOT(map()));
-			connect(simCellSizeSpinners[i], SIGNAL(spinnerDragStop()), signalMapperDragStop, SLOT(map()));
-			connect(simCellSizeSpinners[i], SIGNAL(spinnerDragAbort()), signalMapperDragAbort, SLOT(map()));
+			connect(simCellSizeSpinners[i], &SpinnerWidget::spinnerValueChanged, signalMapperValueChanged, (void (QSignalMapper::*)())&QSignalMapper::map);
+			connect(simCellSizeSpinners[i], &SpinnerWidget::spinnerDragStart, signalMapperDragStart, (void (QSignalMapper::*)())&QSignalMapper::map);
+			connect(simCellSizeSpinners[i], &SpinnerWidget::spinnerDragStop, signalMapperDragStop, (void (QSignalMapper::*)())&QSignalMapper::map);
+			connect(simCellSizeSpinners[i], &SpinnerWidget::spinnerDragAbort, signalMapperDragAbort, (void (QSignalMapper::*)())&QSignalMapper::map);
 
 			signalMapperValueChanged->setMapping(simCellSizeSpinners[i], i);
 			signalMapperDragStart->setMapping(simCellSizeSpinners[i], i);
 			signalMapperDragStop->setMapping(simCellSizeSpinners[i], i);
 			signalMapperDragAbort->setMapping(simCellSizeSpinners[i], i);
 		}
-		connect(signalMapperValueChanged, SIGNAL(mapped(int)), this, SLOT(onSizeSpinnerValueChanged(int)));
-		connect(signalMapperDragStart, SIGNAL(mapped(int)), this, SLOT(onSizeSpinnerDragStart(int)));
-		connect(signalMapperDragStop, SIGNAL(mapped(int)), this, SLOT(onSizeSpinnerDragStop(int)));
-		connect(signalMapperDragAbort, SIGNAL(mapped(int)), this, SLOT(onSizeSpinnerDragAbort(int)));
+		connect(signalMapperValueChanged, (void (QSignalMapper::*)(int))&QSignalMapper::mapped, this, &SimulationCellEditor::onSizeSpinnerValueChanged);
+		connect(signalMapperDragStart, (void (QSignalMapper::*)(int))&QSignalMapper::mapped, this, &SimulationCellEditor::onSizeSpinnerDragStart);
+		connect(signalMapperDragStop, (void (QSignalMapper::*)(int))&QSignalMapper::mapped, this, &SimulationCellEditor::onSizeSpinnerDragStop);
+		connect(signalMapperDragAbort, (void (QSignalMapper::*)(int))&QSignalMapper::mapped, this, &SimulationCellEditor::onSizeSpinnerDragAbort);
 		layout2->addWidget(new QLabel(tr("Width (X):")), 0, 0);
 		layout2->addWidget(new QLabel(tr("Length (Y):")), 1, 0);
 		layout2->addWidget(new QLabel(tr("Height (Z):")), 2, 0);
 
-		connect(this, SIGNAL(contentsChanged(RefTarget*)), this, SLOT(updateSimulationBoxSize()));
+		connect(this, &SimulationCellEditor::contentsChanged, this, &SimulationCellEditor::updateSimulationBoxSize);
 	}
 
 	{

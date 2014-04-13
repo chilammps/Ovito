@@ -47,8 +47,8 @@ AdjustCameraDialog::AdjustCameraDialog(Viewport* viewport, QWidget* parent) :
 	gridLayout->setColumnStretch(3,1);
 
 	_camPerspective = new QCheckBox(tr("Perspective projection"));
-	connect(_camPerspective, SIGNAL(clicked(bool)), this, SLOT(onAdjustCamera()));
-	connect(_camPerspective, SIGNAL(clicked(bool)), this, SLOT(updateGUI()));
+	connect(_camPerspective, &QCheckBox::clicked, this, &AdjustCameraDialog::onAdjustCamera);
+	connect(_camPerspective, &QCheckBox::clicked, this, &AdjustCameraDialog::updateGUI);
 	mainLayout->addWidget(_camPerspective);
 
 	QHBoxLayout* fieldLayout;
@@ -71,7 +71,7 @@ AdjustCameraDialog::AdjustCameraDialog(Viewport* viewport, QWidget* parent) :
 	fieldLayout->addWidget(textBox);
 	fieldLayout->addWidget(_camPosXSpinner);
 	gridLayout->addLayout(fieldLayout, 0, 1);
-	connect(_camPosXSpinner, SIGNAL(spinnerValueChanged()), this, SLOT(onAdjustCamera()));
+	connect(_camPosXSpinner, &SpinnerWidget::spinnerValueChanged, this, &AdjustCameraDialog::onAdjustCamera);
 
 	fieldLayout = new QHBoxLayout();
 	fieldLayout->setContentsMargins(0,0,0,0);
@@ -81,7 +81,7 @@ AdjustCameraDialog::AdjustCameraDialog(Viewport* viewport, QWidget* parent) :
 	fieldLayout->addWidget(textBox);
 	fieldLayout->addWidget(_camPosYSpinner);
 	gridLayout->addLayout(fieldLayout, 0, 2);
-	connect(_camPosYSpinner, SIGNAL(spinnerValueChanged()), this, SLOT(onAdjustCamera()));
+	connect(_camPosYSpinner, &SpinnerWidget::spinnerValueChanged, this, &AdjustCameraDialog::onAdjustCamera);
 
 	fieldLayout = new QHBoxLayout();
 	fieldLayout->setContentsMargins(0,0,0,0);
@@ -91,7 +91,7 @@ AdjustCameraDialog::AdjustCameraDialog(Viewport* viewport, QWidget* parent) :
 	fieldLayout->addWidget(textBox);
 	fieldLayout->addWidget(_camPosZSpinner);
 	gridLayout->addLayout(fieldLayout, 0, 3);
-	connect(_camPosZSpinner, SIGNAL(spinnerValueChanged()), this, SLOT(onAdjustCamera()));
+	connect(_camPosZSpinner, &SpinnerWidget::spinnerValueChanged, this, &AdjustCameraDialog::onAdjustCamera);
 
 	gridLayout->addWidget(new QLabel(tr("Camera direction:")), 1, 0);
 
@@ -110,7 +110,7 @@ AdjustCameraDialog::AdjustCameraDialog(Viewport* viewport, QWidget* parent) :
 	fieldLayout->addWidget(textBox);
 	fieldLayout->addWidget(_camDirXSpinner);
 	gridLayout->addLayout(fieldLayout, 1, 1);
-	connect(_camDirXSpinner, SIGNAL(spinnerValueChanged()), this, SLOT(onAdjustCamera()));
+	connect(_camDirXSpinner, &SpinnerWidget::spinnerValueChanged, this, &AdjustCameraDialog::onAdjustCamera);
 
 	fieldLayout = new QHBoxLayout();
 	fieldLayout->setContentsMargins(0,0,0,0);
@@ -120,7 +120,7 @@ AdjustCameraDialog::AdjustCameraDialog(Viewport* viewport, QWidget* parent) :
 	fieldLayout->addWidget(textBox);
 	fieldLayout->addWidget(_camDirYSpinner);
 	gridLayout->addLayout(fieldLayout, 1, 2);
-	connect(_camDirYSpinner, SIGNAL(spinnerValueChanged()), this, SLOT(onAdjustCamera()));
+	connect(_camDirYSpinner, &SpinnerWidget::spinnerValueChanged, this, &AdjustCameraDialog::onAdjustCamera);
 
 	fieldLayout = new QHBoxLayout();
 	fieldLayout->setContentsMargins(0,0,0,0);
@@ -130,7 +130,7 @@ AdjustCameraDialog::AdjustCameraDialog(Viewport* viewport, QWidget* parent) :
 	fieldLayout->addWidget(textBox);
 	fieldLayout->addWidget(_camDirZSpinner);
 	gridLayout->addLayout(fieldLayout, 1, 3);
-	connect(_camDirZSpinner, SIGNAL(spinnerValueChanged()), this, SLOT(onAdjustCamera()));
+	connect(_camDirZSpinner, &SpinnerWidget::spinnerValueChanged, this, &AdjustCameraDialog::onAdjustCamera);
 
 	_camFOVLabel = new QLabel(tr("Field of view:"));
 	gridLayout->addWidget(_camFOVLabel, 2, 0);
@@ -145,13 +145,13 @@ AdjustCameraDialog::AdjustCameraDialog(Viewport* viewport, QWidget* parent) :
 	fieldLayout->addWidget(textBox);
 	fieldLayout->addWidget(_camFOVSpinner);
 	gridLayout->addLayout(fieldLayout, 2, 1);
-	connect(_camFOVSpinner, SIGNAL(spinnerValueChanged()), this, SLOT(onAdjustCamera()));
+	connect(_camFOVSpinner, &SpinnerWidget::spinnerValueChanged, this, &AdjustCameraDialog::onAdjustCamera);
 
 	mainLayout->addLayout(gridLayout);
 
 	QDialogButtonBox* buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, this);
-	connect(buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
-	connect(buttonBox, SIGNAL(rejected()), this, SLOT(onCancel()));
+	connect(buttonBox, &QDialogButtonBox::accepted, this, &AdjustCameraDialog::accept);
+	connect(buttonBox, &QDialogButtonBox::rejected, this, &AdjustCameraDialog::onCancel);
 	mainLayout->addWidget(buttonBox);
 
 	updateGUI();

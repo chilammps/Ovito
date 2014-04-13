@@ -41,7 +41,7 @@ public:
 	/// Constructor.
 	ParticlePropertyParameterUI(QObject* parentEditor, const PropertyFieldDescriptor& propField, bool showComponents = true, bool inputProperty = true);
 	
-	/// Destructor, that releases all GUI controls.
+	/// Destructor.
 	virtual ~ParticlePropertyParameterUI();
 	
 	/// This returns the combo box managed by this ParameterUI.

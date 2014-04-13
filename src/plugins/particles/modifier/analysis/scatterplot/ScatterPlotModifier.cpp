@@ -378,16 +378,16 @@ void ScatterPlotModifierEditor::createUI(const RolloutInsertionParameters& rollo
 	_selectionYAxisRangeEndMarker->setPen(markerPen);
 	_scatterPlot->addItem(_selectionYAxisRangeStartMarker);
 	_scatterPlot->addItem(_selectionYAxisRangeEndMarker);
-	connect(_scatterPlot->xAxis, SIGNAL(rangeChanged(const QCPRange&)), this, SLOT(updateXAxisRange(const QCPRange &)));
-	connect(_scatterPlot->yAxis, SIGNAL(rangeChanged(const QCPRange&)), this, SLOT(updateYAxisRange(const QCPRange &)));
+	connect(_scatterPlot->xAxis, SIGNAL(rangeChanged(const QCPRange&)), this, SLOT(updateXAxisRange(const QCPRange&)));
+	connect(_scatterPlot->yAxis, SIGNAL(rangeChanged(const QCPRange&)), this, SLOT(updateYAxisRange(const QCPRange&)));
 
 	layout->addWidget(new QLabel(tr("Scatter plot:")));
 	layout->addWidget(_scatterPlot);
-	connect(this, SIGNAL(contentsReplaced(RefTarget*)), this, SLOT(plotScatterPlot()));
+	connect(this, &ScatterPlotModifierEditor::contentsReplaced, this, &ScatterPlotModifierEditor::plotScatterPlot);
 
 	QPushButton* saveDataButton = new QPushButton(tr("Save scatter plot data"));
 	layout->addWidget(saveDataButton);
-	connect(saveDataButton, SIGNAL(clicked(bool)), this, SLOT(onSaveData()));
+	connect(saveDataButton, &QPushButton::clicked, this, &ScatterPlotModifierEditor::onSaveData);
 
 	// Selection.
 	QGroupBox* selectionBox = new QGroupBox(tr("Selection"), rollout);
@@ -409,8 +409,8 @@ void ScatterPlotModifierEditor::createUI(const RolloutInsertionParameters& rollo
 	hlayout->addLayout(selRangeEndPUI->createFieldLayout());
 	selRangeStartPUI->setEnabled(false);
 	selRangeEndPUI->setEnabled(false);
-	connect(selectInRangeUI->checkBox(), SIGNAL(toggled(bool)), selRangeStartPUI, SLOT(setEnabled(bool)));
-	connect(selectInRangeUI->checkBox(), SIGNAL(toggled(bool)), selRangeEndPUI, SLOT(setEnabled(bool)));
+	connect(selectInRangeUI->checkBox(), &QCheckBox::toggled, selRangeStartPUI, &FloatParameterUI::setEnabled);
+	connect(selectInRangeUI->checkBox(), &QCheckBox::toggled, selRangeEndPUI, &FloatParameterUI::setEnabled);
 
 	selectInRangeUI = new BooleanParameterUI(this, PROPERTY_FIELD(ScatterPlotModifier::_selectYAxisInRange));
 	sublayout->addWidget(selectInRangeUI->checkBox());
@@ -426,8 +426,8 @@ void ScatterPlotModifierEditor::createUI(const RolloutInsertionParameters& rollo
 	hlayout->addLayout(selRangeEndPUI->createFieldLayout());
 	selRangeStartPUI->setEnabled(false);
 	selRangeEndPUI->setEnabled(false);
-	connect(selectInRangeUI->checkBox(), SIGNAL(toggled(bool)), selRangeStartPUI, SLOT(setEnabled(bool)));
-	connect(selectInRangeUI->checkBox(), SIGNAL(toggled(bool)), selRangeEndPUI, SLOT(setEnabled(bool)));
+	connect(selectInRangeUI->checkBox(), &QCheckBox::toggled, selRangeStartPUI, &FloatParameterUI::setEnabled);
+	connect(selectInRangeUI->checkBox(), &QCheckBox::toggled, selRangeEndPUI, &FloatParameterUI::setEnabled);
 
 	// Axes.
 	QGroupBox* axesBox = new QGroupBox(tr("Plot axes"), rollout);
@@ -450,8 +450,8 @@ void ScatterPlotModifierEditor::createUI(const RolloutInsertionParameters& rollo
 		hlayout->addLayout(endPUI->createFieldLayout());
 		startPUI->setEnabled(false);
 		endPUI->setEnabled(false);
-		connect(rangeUI->checkBox(), SIGNAL(toggled(bool)), startPUI, SLOT(setEnabled(bool)));
-		connect(rangeUI->checkBox(), SIGNAL(toggled(bool)), endPUI, SLOT(setEnabled(bool)));
+		connect(rangeUI->checkBox(), &QCheckBox::toggled, startPUI, &FloatParameterUI::setEnabled);
+		connect(rangeUI->checkBox(), &QCheckBox::toggled, endPUI, &FloatParameterUI::setEnabled);
 	}
 	// y-axis.
 	{
@@ -469,8 +469,8 @@ void ScatterPlotModifierEditor::createUI(const RolloutInsertionParameters& rollo
 		hlayout->addLayout(endPUI->createFieldLayout());
 		startPUI->setEnabled(false);
 		endPUI->setEnabled(false);
-		connect(rangeUI->checkBox(), SIGNAL(toggled(bool)), startPUI, SLOT(setEnabled(bool)));
-		connect(rangeUI->checkBox(), SIGNAL(toggled(bool)), endPUI, SLOT(setEnabled(bool)));
+		connect(rangeUI->checkBox(), &QCheckBox::toggled, startPUI, &FloatParameterUI::setEnabled);
+		connect(rangeUI->checkBox(), &QCheckBox::toggled, endPUI, &FloatParameterUI::setEnabled);
 	}
 
 	// Status label.

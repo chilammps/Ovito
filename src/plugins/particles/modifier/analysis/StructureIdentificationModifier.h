@@ -134,7 +134,7 @@ public:
 
 	StructureListParameterUI(PropertiesEditor* parentEditor)
 		: RefTargetListParameterUI(parentEditor, PROPERTY_FIELD(StructureIdentificationModifier::_structureTypes), RolloutInsertionParameters(), nullptr) {
-		connect(tableWidget(220), SIGNAL(doubleClicked(const QModelIndex&)), this, SLOT(onDoubleClickStructureType(const QModelIndex&)));
+		connect(tableWidget(220), &QTableWidget::doubleClicked, this, &StructureListParameterUI::onDoubleClickStructureType);
 		tableWidget()->setAutoScroll(false);
 	}
 

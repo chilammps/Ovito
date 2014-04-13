@@ -316,7 +316,7 @@ void CreateBondsModifierEditor::createUI(const RolloutInsertionParameters& rollo
 	gridlayout->addLayout(cutoffRadiusPUI->createFieldLayout(), 0, 1);
 	cutoffRadiusPUI->setMinValue(0);
 	cutoffRadiusPUI->setEnabled(false);
-	connect(uniformCutoffModeBtn, SIGNAL(toggled(bool)), cutoffRadiusPUI, SLOT(setEnabled(bool)));
+	connect(uniformCutoffModeBtn, &QRadioButton::toggled, cutoffRadiusPUI, &FloatParameterUI::setEnabled);
 
 	layout1->addLayout(gridlayout);
 
@@ -328,7 +328,7 @@ void CreateBondsModifierEditor::createUI(const RolloutInsertionParameters& rollo
 	_pairCutoffTable->setEnabled(false);
 	_pairCutoffTableModel = new PairCutoffTableModel(_pairCutoffTable);
 	_pairCutoffTable->setModel(_pairCutoffTableModel);
-	connect(pairCutoffModeBtn, SIGNAL(toggled(bool)), _pairCutoffTable, SLOT(setEnabled(bool)));
+	connect(pairCutoffModeBtn,&QRadioButton::toggled, _pairCutoffTable, &QTableView::setEnabled);
 	layout1->addWidget(_pairCutoffTable);
 
 	// Status label.
@@ -339,8 +339,8 @@ void CreateBondsModifierEditor::createUI(const RolloutInsertionParameters& rollo
 	new SubObjectParameterUI(this, PROPERTY_FIELD(CreateBondsModifier::_bondsDisplay), rolloutParams.after(rollout));
 
 	// Update pair-wise cutoff table whenever a modifier has been loaded into the editor.
-	connect(this, SIGNAL(contentsReplaced(RefTarget*)), this, SLOT(updatePairCutoffList()));
-	connect(this, SIGNAL(contentsChanged(RefTarget*)), this, SLOT(updatePairCutoffListValues()));
+	connect(this, &CreateBondsModifierEditor::contentsReplaced, this, &CreateBondsModifierEditor::updatePairCutoffList);
+	connect(this, &CreateBondsModifierEditor::contentsChanged, this, &CreateBondsModifierEditor::updatePairCutoffListValues);
 }
 
 /******************************************************************************

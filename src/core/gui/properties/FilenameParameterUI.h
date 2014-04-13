@@ -35,12 +35,12 @@ class OVITO_CORE_EXPORT FilenameParameterUI : public PropertyParameterUI
 public:
 
 	/// Constructor for a Qt property.
-	FilenameParameterUI(QObject* parentEditor, const char* propertyName, const char* customSelectorSlot);
+	FilenameParameterUI(QObject* parentEditor, const char* propertyName);
 	
 	/// Constructor for a PropertyField property.
-	FilenameParameterUI(QObject* parentEditor, const PropertyFieldDescriptor& propField, const char* customSelectorSlot);
+	FilenameParameterUI(QObject* parentEditor, const PropertyFieldDescriptor& propField);
 	
-	/// Destructor, that releases all GUI controls.
+	/// Destructor.
 	virtual ~FilenameParameterUI();
 
 	/// This returns the button managed by this ParameterUI.
@@ -63,25 +63,17 @@ public:
 	
 public:
 	
-	Q_PROPERTY(QPushButton selectorWidget READ selectorWidget)		
+	Q_PROPERTY(QPushButton selectorWidget READ selectorWidget);
 	
-public Q_SLOTS:	
+Q_SIGNALS:
 
-	/// Shows the file selector and lets the user select a new file.
+	/// This signal is emitted when the file selector should be shown to let the user select a new file.
 	void showSelectionDialog();
-
-Q_SIGNALS:	
-
-	/// Lets the edited object open the file selector dialog.
-	void invokeCustomSelector(QWidget* parent);
 	
 protected:
 
 	/// The selector control.
 	QPointer<QPushButton> _selectorButton;
-	
-	/// The identifier of the slot in the edited object that activates the file selector dialog. 
-	const char* _customSelectorSlot;
 
 private:
 

@@ -619,8 +619,8 @@ void CommonNeighborAnalysisModifierEditor::createUI(const RolloutInsertionParame
 	gridlayout->addWidget(cutoffPresetsPUI->comboBox(), 1, 1, 1, 2);
 	layout1->addLayout(gridlayout);
 
-	connect(adaptiveModeUI->buttonFalse(), SIGNAL(toggled(bool)), cutoffRadiusPUI, SLOT(setEnabled(bool)));
-	connect(adaptiveModeUI->buttonFalse(), SIGNAL(toggled(bool)), cutoffPresetsPUI, SLOT(setEnabled(bool)));
+	connect(adaptiveModeUI->buttonFalse(), &QRadioButton::toggled, cutoffRadiusPUI, &FloatParameterUI::setEnabled);
+	connect(adaptiveModeUI->buttonFalse(), &QRadioButton::toggled, cutoffPresetsPUI, &CutoffRadiusPresetsUI::setEnabled);
 	cutoffRadiusPUI->setEnabled(false);
 	cutoffPresetsPUI->setEnabled(false);
 

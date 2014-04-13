@@ -359,8 +359,8 @@ void SliceModifierEditor::createUI(const RolloutInsertionParameters& rolloutPara
 		Vector3ParameterUI* normalPUI = new Vector3ParameterUI(this, PROPERTY_FIELD(SliceModifier::_normalCtrl), i);
 		normalPUI->label()->setTextFormat(Qt::RichText);
 		normalPUI->label()->setTextInteractionFlags(Qt::LinksAccessibleByMouse);
-		normalPUI->label()->setText(tr("<a href=\"%1\">%2</a>").arg(i).arg(normalPUI->label()->text()));
-		connect(normalPUI->label(), SIGNAL(linkActivated(const QString&)), this, SLOT(onXYZNormal(const QString&)));
+		normalPUI->label()->setText(QStringLiteral("<a href=\"%1\">%2</a>").arg(i).arg(normalPUI->label()->text()));
+		connect(normalPUI->label(), &QLabel::linkActivated, this, &SliceModifierEditor::onXYZNormal);
 		gridlayout->addWidget(normalPUI->label(), i+1, 0);
 		gridlayout->addLayout(normalPUI->createFieldLayout(), i+1, 1);
 	}
@@ -388,15 +388,15 @@ void SliceModifierEditor::createUI(const RolloutInsertionParameters& rolloutPara
 
 	layout->addSpacing(8);
 	QPushButton* centerPlaneBtn = new QPushButton(tr("Move plane to simulation box center"), rollout);
-	connect(centerPlaneBtn, SIGNAL(clicked(bool)), this, SLOT(onCenterOfBox()));
+	connect(centerPlaneBtn, &QPushButton::clicked, this, &SliceModifierEditor::onCenterOfBox);
 	layout->addWidget(centerPlaneBtn);
 
 	// Add buttons for view alignment functions.
 	QPushButton* alignViewToPlaneBtn = new QPushButton(tr("Align view direction to plane normal"), rollout);
-	connect(alignViewToPlaneBtn, SIGNAL(clicked(bool)), this, SLOT(onAlignViewToPlane()));
+	connect(alignViewToPlaneBtn, &QPushButton::clicked, this, &SliceModifierEditor::onAlignViewToPlane);
 	layout->addWidget(alignViewToPlaneBtn);
 	QPushButton* alignPlaneToViewBtn = new QPushButton(tr("Align plane normal to view direction"), rollout);
-	connect(alignPlaneToViewBtn, SIGNAL(clicked(bool)), this, SLOT(onAlignPlaneToView()));
+	connect(alignPlaneToViewBtn, &QPushButton::clicked, this, &SliceModifierEditor::onAlignPlaneToView);
 	layout->addWidget(alignPlaneToViewBtn);
 
 	_pickParticlePlaneInputMode = new PickParticlePlaneInputMode(this);

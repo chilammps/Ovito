@@ -663,7 +663,7 @@ void NetCDFImporterEditor::createUI(const RolloutInsertionParameters& rolloutPar
 
 	QPushButton* editMappingButton = new QPushButton(tr("Edit column mapping..."));
 	sublayout->addWidget(editMappingButton);
-	connect(editMappingButton, SIGNAL(clicked(bool)), this, SLOT(onEditColumnMapping()));
+	connect(editMappingButton, &QPushButton::clicked, this, &NetCDFImporterEditor::onEditColumnMapping);
 }
 
 /******************************************************************************

@@ -74,7 +74,7 @@ UtilityCommandPage::UtilityCommandPage(MainWindow* mainWindow, QWidget* parent) 
 	}
 
 	// Listen for events.
-	connect(utilitiesButtonGroup, SIGNAL(buttonClicked(QAbstractButton*)), this, SLOT(onUtilityButton(QAbstractButton*)));
+	connect(utilitiesButtonGroup, (void (QButtonGroup::*)(QAbstractButton*))&QButtonGroup::buttonClicked, this, &UtilityCommandPage::onUtilityButton);
 }
 
 /******************************************************************************

@@ -187,8 +187,8 @@ void CameraObjectEditor::createUI(const RolloutInsertionParameters& rolloutParam
 	sublayout->addLayout(zoomPUI->createFieldLayout(), 0, 1);
 	zoomPUI->setMinValue(0);
 
-	connect(isPerspectivePUI->checkBox(), SIGNAL(toggled(bool)), perspectiveProjBox, SLOT(setEnabled(bool)));
-	connect(isPerspectivePUI->checkBox(), SIGNAL(toggled(bool)), parallelProjBox, SLOT(setDisabled(bool)));
+	connect(isPerspectivePUI->checkBox(), &QCheckBox::toggled, perspectiveProjBox, &QGroupBox::setEnabled);
+	connect(isPerspectivePUI->checkBox(), &QCheckBox::toggled, parallelProjBox, &QGroupBox::setDisabled);
 }
 
 };

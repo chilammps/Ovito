@@ -51,8 +51,8 @@ RemoteAuthenticationDialog::RemoteAuthenticationDialog(QWidget* parent, const QS
 	layout1->addSpacing(10);
 
 	QDialogButtonBox* buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, this);
-	connect(buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
-	connect(buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
+	connect(buttonBox, &QDialogButtonBox::accepted, this, &RemoteAuthenticationDialog::accept);
+	connect(buttonBox, &QDialogButtonBox::rejected, this, &RemoteAuthenticationDialog::reject);
 	layout1->addWidget(buttonBox);
 }
 

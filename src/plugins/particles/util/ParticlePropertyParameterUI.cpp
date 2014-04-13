@@ -35,7 +35,7 @@ IMPLEMENT_OVITO_OBJECT(Particles, ParticlePropertyParameterUI, PropertyParameter
 ParticlePropertyParameterUI::ParticlePropertyParameterUI(QObject* parentEditor, const char* propertyName, bool showComponents, bool inputProperty) :
 	PropertyParameterUI(parentEditor, propertyName), _comboBox(new ParticlePropertyComboBox()), _showComponents(showComponents), _inputProperty(inputProperty)
 {
-	connect(_comboBox, SIGNAL(activated(int)), this, SLOT(updatePropertyValue()));	
+	connect(_comboBox, (void (QComboBox::*)(int))&QComboBox::activated, this, &ParticlePropertyParameterUI::updatePropertyValue);
 
 	if(!inputProperty)
 		_comboBox->setEditable(true);
@@ -47,14 +47,14 @@ ParticlePropertyParameterUI::ParticlePropertyParameterUI(QObject* parentEditor, 
 ParticlePropertyParameterUI::ParticlePropertyParameterUI(QObject* parentEditor, const PropertyFieldDescriptor& propField, bool showComponents, bool inputProperty) :
 	PropertyParameterUI(parentEditor, propField), _comboBox(new ParticlePropertyComboBox()), _showComponents(showComponents), _inputProperty(inputProperty)
 {
-	connect(_comboBox, SIGNAL(activated(int)), this, SLOT(updatePropertyValue()));
+	connect(_comboBox, (void (QComboBox::*)(int))&QComboBox::activated, this, &ParticlePropertyParameterUI::updatePropertyValue);
 
 	if(!inputProperty)
 		_comboBox->setEditable(true);
 }
 
 /******************************************************************************
-* Destructor, that releases all GUI controls.
+* Destructor.
 ******************************************************************************/
 ParticlePropertyParameterUI::~ParticlePropertyParameterUI()
 {

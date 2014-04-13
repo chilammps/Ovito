@@ -62,15 +62,15 @@ void NumericalParameterUI::initUIControls(const QString& labelText)
 	_label = new QLabel(labelText);
 	_textBox = new QLineEdit();
 	_spinner = new SpinnerWidget();
-	connect(_spinner, SIGNAL(spinnerValueChanged()), this, SLOT(onSpinnerValueChanged()));	
-	connect(_spinner, SIGNAL(spinnerDragStart()), this, SLOT(onSpinnerDragStart()));
-	connect(_spinner, SIGNAL(spinnerDragStop()), this, SLOT(onSpinnerDragStop()));
-	connect(_spinner, SIGNAL(spinnerDragAbort()), this, SLOT(onSpinnerDragAbort()));
+	connect(_spinner, &SpinnerWidget::spinnerValueChanged, this, &NumericalParameterUI::onSpinnerValueChanged);
+	connect(_spinner, &SpinnerWidget::spinnerDragStart, this, &NumericalParameterUI::onSpinnerDragStart);
+	connect(_spinner, &SpinnerWidget::spinnerDragStop, this, &NumericalParameterUI::onSpinnerDragStop);
+	connect(_spinner, &SpinnerWidget::spinnerDragAbort, this, &NumericalParameterUI::onSpinnerDragAbort);
 	_spinner->setTextBox(_textBox);
 }
 
 /******************************************************************************
-* Destructor, that releases all GUI controls.
+* Destructor.
 ******************************************************************************/
 NumericalParameterUI::~NumericalParameterUI()
 {
@@ -87,13 +87,11 @@ NumericalParameterUI::~NumericalParameterUI()
 void NumericalParameterUI::resetUI()
 {
 	if(spinner()) {
-		spinner()->setEnabled(editObject() != NULL && isEnabled());
-		if(editObject() != NULL) {
-			ParameterUnit* unit;
+		spinner()->setEnabled(editObject() && isEnabled());
+		if(editObject()) {
+			ParameterUnit* unit = nullptr;
 			if(parameterUnitType())
 				unit = dataset()->unitsManager().getUnit(parameterUnitType());
-			else
-				unit = nullptr;
 			spinner()->setUnit(unit);
 		}
 		else {
@@ -121,10 +119,10 @@ void NumericalParameterUI::setEnabled(bool enabled)
 	PropertyParameterUI::setEnabled(enabled);
 	if(spinner()) {
 		if(isReferenceFieldUI()) {
-			spinner()->setEnabled(parameterObject() != NULL && isEnabled());
+			spinner()->setEnabled(parameterObject() && isEnabled());
 		}
 		else {
-			spinner()->setEnabled(editObject() != NULL && isEnabled());
+			spinner()->setEnabled(editObject() && isEnabled());
 		}
 	}
 }

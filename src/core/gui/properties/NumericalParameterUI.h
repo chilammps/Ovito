@@ -44,7 +44,7 @@ public:
 	/// Constructor for a PropertyField or ReferenceField property.
 	NumericalParameterUI(QObject* parentEditor, const PropertyFieldDescriptor& propField, const QMetaObject* defaultParameterUnitType);
 	
-	/// Destructor, that releases all GUI controls.
+	/// Destructor.
 	virtual ~NumericalParameterUI();
 
 	/// This returns a label for the text box managed by this ParameterUI.

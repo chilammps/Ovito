@@ -180,7 +180,7 @@ public:
 
 	/// Constructor.
 	ParticleModifierEditor() {
-		connect(this, SIGNAL(contentsReplaced(RefTarget*)), this, SLOT(updateStatusLabel()));
+		connect(this, &ParticleModifierEditor::contentsReplaced, this, &ParticleModifierEditor::updateStatusLabel);
 	}
 
 	/// Returns a widget that displays a message sent by the modifier that

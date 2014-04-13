@@ -140,6 +140,9 @@ void SelectExpressionModifierEditor::createUI(const RolloutInsertionParameters& 
 	variableNamesList->setWordWrap(true);
 	variableNamesList->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard | Qt::LinksAccessibleByMouse | Qt::LinksAccessibleByKeyboard);
 	variablesLayout->addWidget(variableNamesList);
+
+	// Update input variables list if another modifier has been loaded into the editor.
+	connect(this, &SelectExpressionModifierEditor::contentsReplaced, this, &SelectExpressionModifierEditor::updateEditorFields);
 }
 
 /******************************************************************************

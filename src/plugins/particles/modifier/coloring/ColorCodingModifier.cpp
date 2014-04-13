@@ -418,7 +418,7 @@ void ColorCodingModifierEditor::createUI(const RolloutInsertionParameters& rollo
 	colorGradientList = new QComboBox(rollout);
 	layout1->addWidget(new QLabel(tr("Color gradient:"), rollout));
 	layout1->addWidget(colorGradientList);
-	connect(colorGradientList, SIGNAL(activated(int)), this, SLOT(onColorGradientSelected(int)));
+	connect(colorGradientList, (void (QComboBox::*)(int))&QComboBox::activated, this, &ColorCodingModifierEditor::onColorGradientSelected);
 	for(OvitoObjectType* clazz : PluginManager::instance().listClasses(ColorCodingGradient::OOType)) {
 		colorGradientList->addItem(clazz->displayName(), qVariantFromValue((void*)clazz));
 	}
@@ -454,16 +454,16 @@ void ColorCodingModifierEditor::createUI(const RolloutInsertionParameters& rollo
 	exportBtn->setToolTip("Export color map to file");
 	exportBtn->setAutoRaise(true);
 	exportBtn->setIconSize(QSize(42,22));
-	connect(exportBtn, SIGNAL(clicked(bool)), this, SLOT(onExportColorScale()));
+	connect(exportBtn, &QPushButton::clicked, this, &ColorCodingModifierEditor::onExportColorScale);
 	layout2->addWidget(exportBtn, 1, 0, Qt::AlignHCenter | Qt::AlignVCenter);
 
 	layout1->addSpacing(8);
 	QPushButton* adjustBtn = new QPushButton(tr("Adjust range"), rollout);
-	connect(adjustBtn, SIGNAL(clicked(bool)), this, SLOT(onAdjustRange()));
+	connect(adjustBtn, &QPushButton::clicked, this, &ColorCodingModifierEditor::onAdjustRange);
 	layout1->addWidget(adjustBtn);
 	layout1->addSpacing(4);
 	QPushButton* reverseBtn = new QPushButton(tr("Reverse range"), rollout);
-	connect(reverseBtn, SIGNAL(clicked(bool)), this, SLOT(onReverseRange()));
+	connect(reverseBtn, &QPushButton::clicked, this, &ColorCodingModifierEditor::onReverseRange);
 	layout1->addWidget(reverseBtn);
 
 	layout1->addSpacing(8);
@@ -475,7 +475,7 @@ void ColorCodingModifierEditor::createUI(const RolloutInsertionParameters& rollo
 	// Keep selection
 	BooleanParameterUI* keepSelectionPUI = new BooleanParameterUI(this, PROPERTY_FIELD(ColorCodingModifier::_keepSelection));
 	layout1->addWidget(keepSelectionPUI->checkBox());
-	connect(onlySelectedPUI->checkBox(), SIGNAL(toggled(bool)), keepSelectionPUI->checkBox(), SLOT(setEnabled(bool)));
+	connect(onlySelectedPUI->checkBox(), &QCheckBox::toggled, keepSelectionPUI->checkBox(), &QCheckBox::setEnabled);
 
 	// Render legend.
 	BooleanParameterUI* renderLegendPUI = new BooleanParameterUI(this, PROPERTY_FIELD(ColorCodingModifier::_renderLegend));

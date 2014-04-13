@@ -153,6 +153,7 @@ void CreateExpressionPropertyModifier::initializeModifier(PipelineObject* pipeli
 	ParticleExpressionEvaluator evaluator;
 	evaluator.createInputVariables(input);
 	_inputVariableNames = evaluator.inputVariableNames();
+	_inputVariableTable = evaluator.inputVariableTable();
 }
 
 /******************************************************************************
@@ -217,6 +218,9 @@ void CreateExpressionPropertyModifierEditor::createUI(const RolloutInsertionPara
 	variableNamesList->setWordWrap(true);
 	variableNamesList->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard | Qt::LinksAccessibleByMouse | Qt::LinksAccessibleByKeyboard);
 	variablesLayout->addWidget(variableNamesList);
+
+	// Update input variables list if another modifier has been loaded into the editor.
+	connect(this, &CreateExpressionPropertyModifierEditor::contentsReplaced, this, &CreateExpressionPropertyModifierEditor::updateEditorFields);
 }
 
 /******************************************************************************
@@ -247,7 +251,7 @@ void CreateExpressionPropertyModifierEditor::updateEditorFields()
 		expressionsLayout->insertWidget(expressionBoxes.size()*2 + 1, edit);
 		expressionBoxes.push_back(edit);
 		expressionBoxLabels.push_back(label);
-		connect(edit, SIGNAL(editingFinished()), this, SLOT(onExpressionEditingFinished()));
+		connect(edit, &AutocompleteLineEdit::editingFinished, this, &CreateExpressionPropertyModifierEditor::onExpressionEditingFinished);
 	}
 	while(expr.size() < expressionBoxes.size()) {
 		delete expressionBoxes.takeLast();

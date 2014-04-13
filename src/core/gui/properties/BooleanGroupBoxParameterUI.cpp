@@ -39,7 +39,7 @@ BooleanGroupBoxParameterUI::BooleanGroupBoxParameterUI(QObject* parentEditor, co
 	// Create UI widget.
 	_groupBox = new QGroupBox(label);
 	_groupBox->setCheckable(true);
-	connect(_groupBox, SIGNAL(clicked(bool)), this, SLOT(updatePropertyValue()));
+	connect(_groupBox, &QGroupBox::clicked, this, &BooleanGroupBoxParameterUI::updatePropertyValue);
 }
 
 /******************************************************************************
@@ -51,11 +51,11 @@ BooleanGroupBoxParameterUI::BooleanGroupBoxParameterUI(QObject* parentEditor, co
 	// Create UI widget.
 	_groupBox = new QGroupBox(propField.displayName());
 	_groupBox->setCheckable(true);
-	connect(_groupBox, SIGNAL(clicked(bool)), this, SLOT(updatePropertyValue()));
+	connect(_groupBox, &QGroupBox::clicked, this, &BooleanGroupBoxParameterUI::updatePropertyValue);
 }
 
 /******************************************************************************
-* Destructor, that releases all GUI controls.
+* Destructor.
 ******************************************************************************/
 BooleanGroupBoxParameterUI::~BooleanGroupBoxParameterUI()
 {

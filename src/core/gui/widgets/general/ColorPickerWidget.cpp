@@ -32,7 +32,7 @@ ColorPickerWidget::ColorPickerWidget(QWidget* parent)
 	: QPushButton(parent), _color(1,1,1)
 {
 	setAutoFillBackground(true);
-	connect(this, SIGNAL(clicked(bool)), this, SLOT(activateColorPicker()));
+	connect(this, &ColorPickerWidget::clicked, this, &ColorPickerWidget::activateColorPicker);
 	setColor(Color(0,0,0));
 	setFlat(true);
 }

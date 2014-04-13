@@ -35,16 +35,16 @@ void FrameBufferWidget::setFrameBuffer(const QSharedPointer<FrameBuffer>& newFra
 	}
 
 	if(frameBuffer()) {
-		disconnect(_frameBuffer.data(), SIGNAL(contentChanged(QRect)), this, SLOT(onFrameBufferContentChanged(QRect)));
-		disconnect(_frameBuffer.data(), SIGNAL(contentReset()), this, SLOT(update()));
+		disconnect(_frameBuffer.data(), &FrameBuffer::contentChanged, this, &FrameBufferWidget::onFrameBufferContentChanged);
+		disconnect(_frameBuffer.data(), &FrameBuffer::contentReset, this, (void (FrameBufferWidget::*)())&FrameBufferWidget::update);
 	}
 	
 	_frameBuffer = newFrameBuffer;
 
 	onFrameBufferContentReset();
 
-	connect(_frameBuffer.data(), SIGNAL(contentChanged(QRect)), this, SLOT(onFrameBufferContentChanged(QRect)));
-	connect(_frameBuffer.data(), SIGNAL(contentReset()), this, SLOT(onFrameBufferContentReset()));
+	connect(_frameBuffer.data(), &FrameBuffer::contentChanged, this, &FrameBufferWidget::onFrameBufferContentChanged);
+	connect(_frameBuffer.data(), &FrameBuffer::contentReset, this, (void (FrameBufferWidget::*)())&FrameBufferWidget::update);
 }
 
 /******************************************************************************

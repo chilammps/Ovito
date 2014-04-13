@@ -98,9 +98,7 @@ class SelectExpressionModifierEditor : public ParticleModifierEditor
 public:
 
 	/// Default constructor.
-	Q_INVOKABLE SelectExpressionModifierEditor() {
-		connect(this, &PropertiesEditor::contentsReplaced, this, &SelectExpressionModifierEditor::updateEditorFields);
-	}
+	Q_INVOKABLE SelectExpressionModifierEditor() {}
 
 protected:
 

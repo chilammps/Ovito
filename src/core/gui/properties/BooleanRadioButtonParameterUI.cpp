@@ -35,7 +35,7 @@ BooleanRadioButtonParameterUI::BooleanRadioButtonParameterUI(QObject* parentEdit
 	PropertyParameterUI(parentEditor, propertyName)
 {
 	_buttonGroup = new QButtonGroup(this);
-	connect(_buttonGroup, SIGNAL(buttonClicked(int)), this, SLOT(updatePropertyValue()));	
+	connect(_buttonGroup, (void (QButtonGroup::*)(int))&QButtonGroup::buttonClicked, this, &BooleanRadioButtonParameterUI::updatePropertyValue);
 
 	QRadioButton* buttonNo = new QRadioButton();
 	QRadioButton* buttonYes = new QRadioButton();
@@ -50,7 +50,7 @@ BooleanRadioButtonParameterUI::BooleanRadioButtonParameterUI(QObject* parentEdit
 	PropertyParameterUI(parentEditor, propField)
 {
 	_buttonGroup = new QButtonGroup(this);
-	connect(_buttonGroup, SIGNAL(buttonClicked(int)), this, SLOT(updatePropertyValue()));	
+	connect(_buttonGroup, (void (QButtonGroup::*)(int))&QButtonGroup::buttonClicked, this, &BooleanRadioButtonParameterUI::updatePropertyValue);
 
 	QRadioButton* buttonNo = new QRadioButton();
 	QRadioButton* buttonYes = new QRadioButton();
@@ -59,7 +59,7 @@ BooleanRadioButtonParameterUI::BooleanRadioButtonParameterUI(QObject* parentEdit
 }
 
 /******************************************************************************
-* Destructor, that releases all GUI controls.
+* Destructor.
 ******************************************************************************/
 BooleanRadioButtonParameterUI::~BooleanRadioButtonParameterUI()
 {

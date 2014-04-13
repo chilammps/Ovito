@@ -174,9 +174,7 @@ class CreateExpressionPropertyModifierEditor : public ParticleModifierEditor
 public:
 
 	/// Default constructor.
-	Q_INVOKABLE CreateExpressionPropertyModifierEditor() {
-		connect(this, &PropertiesEditor::contentsReplaced, this, &CreateExpressionPropertyModifierEditor::updateEditorFields);
-	}
+	Q_INVOKABLE CreateExpressionPropertyModifierEditor() {}
 
 protected:
 

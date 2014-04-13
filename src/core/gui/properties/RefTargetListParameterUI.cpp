@@ -44,7 +44,7 @@ RefTargetListParameterUI::RefTargetListParameterUI(QObject* parentEditor, const 
 }
 
 /******************************************************************************
-* Destructor, that releases all GUI controls.
+* Destructor.
 ******************************************************************************/
 RefTargetListParameterUI::~RefTargetListParameterUI()
 {
@@ -72,7 +72,7 @@ QListView* RefTargetListParameterUI::listWidget(int listWidgetHeight)
 
 		_viewWidget = new MyListView(listWidgetHeight);
 		_viewWidget->setModel(_model);
-		connect(_viewWidget->selectionModel(), SIGNAL(selectionChanged(const QItemSelection&, const QItemSelection&)), this, SLOT(onSelectionChanged()));
+		connect(_viewWidget->selectionModel(), &QItemSelectionModel::selectionChanged, this, &RefTargetListParameterUI::onSelectionChanged);
 	}
 	return qobject_cast<QListView*>(_viewWidget);
 }
@@ -103,7 +103,7 @@ QTableView* RefTargetListParameterUI::tableWidget(int tableWidgetHeight)
 
 		_viewWidget = tableView;
 		_viewWidget->setModel(_model);
-		connect(_viewWidget->selectionModel(), SIGNAL(selectionChanged(const QItemSelection&, const QItemSelection&)), this, SLOT(onSelectionChanged()));
+		connect(_viewWidget->selectionModel(), &QItemSelectionModel::selectionChanged, this, &RefTargetListParameterUI::onSelectionChanged);
 	}
 	return qobject_cast<QTableView*>(_viewWidget);
 }

@@ -152,11 +152,11 @@ CutoffRadiusPresetsUI::CutoffRadiusPresetsUI(PropertiesEditor* parentEditor, con
 	_comboBox->insertItem(0, tr("Presets..."));
 	_comboBox->setCurrentIndex(0);
 
-	connect(_comboBox, SIGNAL(activated(int)), this, SLOT(onSelect(int)));
+	connect(_comboBox, (void (QComboBox::*)(int))&QComboBox::activated, this, &CutoffRadiusPresetsUI::onSelect);
 }
 
 /******************************************************************************
-* Destructor, that releases all GUI controls.
+* Destructor.
 ******************************************************************************/
 CutoffRadiusPresetsUI::~CutoffRadiusPresetsUI()
 {

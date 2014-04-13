@@ -37,7 +37,7 @@ public:
 	/// Constructor.
 	VariantComboBoxParameterUI(QObject* parentEditor, const char* propertyName);
 	
-	/// Destructor, that releases all GUI controls.
+	/// Destructor.
 	virtual ~VariantComboBoxParameterUI();
 	
 	/// This returns the combo box managed by this ParameterUI.

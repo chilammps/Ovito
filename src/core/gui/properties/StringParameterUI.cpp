@@ -36,7 +36,7 @@ StringParameterUI::StringParameterUI(QObject* parentEditor, const char* property
 {
 	// Create UI widget.
 	_textBox = new QLineEdit();
-	connect(_textBox, SIGNAL(editingFinished()), this, SLOT(updatePropertyValue()));	
+	connect(_textBox, &QLineEdit::editingFinished, this, &StringParameterUI::updatePropertyValue);
 }
 
 /******************************************************************************
@@ -47,11 +47,11 @@ StringParameterUI::StringParameterUI(QObject* parentEditor, const PropertyFieldD
 {
 	// Create UI widget.
 	_textBox = new QLineEdit();
-	connect(_textBox, SIGNAL(editingFinished()), this, SLOT(updatePropertyValue()));	
+	connect(_textBox, &QLineEdit::editingFinished, this, &StringParameterUI::updatePropertyValue);
 }
 
 /******************************************************************************
-* Destructor, that releases all GUI controls.
+* Destructor.
 ******************************************************************************/
 StringParameterUI::~StringParameterUI()
 {
@@ -67,7 +67,7 @@ void StringParameterUI::setTextBox(QLineEdit* textBox)
 {
 	delete _textBox;
 	_textBox = textBox;
-	connect(_textBox, SIGNAL(editingFinished()), this, SLOT(updatePropertyValue()));
+	connect(_textBox, &QLineEdit::editingFinished, this, &StringParameterUI::updatePropertyValue);
 	updateUI();
 }
 

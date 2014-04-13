@@ -97,7 +97,7 @@ void LinkedFileObjectEditor::createUI(const RolloutInsertionParameters& rolloutP
 	sublayout = new QVBoxLayout(wildcardBox);
 	sublayout->setContentsMargins(4,4,4,4);
 	_wildcardPatternTextbox = new QLineEdit();
-	connect(_wildcardPatternTextbox, SIGNAL(returnPressed()), this, SLOT(onWildcardPatternEntered()));
+	connect(_wildcardPatternTextbox, &QLineEdit::returnPressed, this, &LinkedFileObjectEditor::onWildcardPatternEntered);
 	sublayout->addWidget(_wildcardPatternTextbox);
 
 	QGroupBox* frameSequenceBox = new QGroupBox(tr("Input frames"), rollout);
@@ -112,7 +112,7 @@ void LinkedFileObjectEditor::createUI(const RolloutInsertionParameters& rolloutP
 	_framesListBox = new QComboBox();
 	_framesListBox->setEditable(false);
 	_framesListBox->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
-	connect(_framesListBox, SIGNAL(activated(int)), this, SLOT(onFrameSelected(int)));
+	connect(_framesListBox, (void (QComboBox::*)(int))&QComboBox::activated, this, &LinkedFileObjectEditor::onFrameSelected);
 	subsublayout->addWidget(_framesListBox, 1);
 	sublayout->addLayout(subsublayout);
 

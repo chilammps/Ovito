@@ -105,7 +105,7 @@ void PatternCatalogEditor::createUI(const RolloutInsertionParameters& rolloutPar
 	typesListUI = new CustomRefTargetListParameterUI(this, PROPERTY_FIELD(PatternCatalog::_patterns), RolloutInsertionParameters().insertInto(subEditorContainer));
 	layout->insertWidget(1, typesListUI->tableWidget(200));
 	typesListUI->tableWidget()->setAutoScroll(false);
-	connect(typesListUI->tableWidget(), SIGNAL(doubleClicked(const QModelIndex&)), this, SLOT(onDoubleClickPattern(const QModelIndex&)));
+	connect(typesListUI->tableWidget(), &QTableWidget::doubleClicked, this, &PatternCatalogEditor::onDoubleClickPattern);
 }
 
 /******************************************************************************

@@ -39,7 +39,7 @@ InputColumnMappingDialog::InputColumnMappingDialog(const InputColumnMapping& map
 	setWindowTitle(tr("File column mapping"));
 
 	_vectorCmpntSignalMapper = new QSignalMapper(this);
-	connect(_vectorCmpntSignalMapper, SIGNAL(mapped(int)), this, SLOT(updateVectorComponentList(int)));
+	connect(_vectorCmpntSignalMapper, (void (QSignalMapper::*)(int))&QSignalMapper::mapped, this, &InputColumnMappingDialog::updateVectorComponentList);
 
 	// Create the table sub-widget.
 	QVBoxLayout* layout = new QVBoxLayout(this);
@@ -174,11 +174,11 @@ void InputColumnMappingDialog::setMapping(const InputColumnMapping& mapping)
 		if(vectorComponentItem->count() != 0)
 			vectorComponentItem->setCurrentIndex(mapping.vectorComponent(i));
 
-		connect(fileColumnItem, SIGNAL(clicked(bool)), nameItem, SLOT(setEnabled(bool)));
+		connect(fileColumnItem, &QCheckBox::clicked, nameItem, &QComboBox::setEnabled);
 		_vectorCmpntSignalMapper->setMapping(fileColumnItem, i);
 		_vectorCmpntSignalMapper->setMapping(nameItem, i);
-		connect(fileColumnItem, SIGNAL(clicked(bool)), _vectorCmpntSignalMapper, SLOT(map()));
-		connect(nameItem, SIGNAL(currentTextChanged(const QString&)), _vectorCmpntSignalMapper, SLOT(map()));
+		connect(fileColumnItem, &QCheckBox::clicked, _vectorCmpntSignalMapper, (void (QSignalMapper::*)())&QSignalMapper::map);
+		connect(nameItem, &QComboBox::currentTextChanged, _vectorCmpntSignalMapper, (void (QSignalMapper::*)())&QSignalMapper::map);
 	}
 
 	_tableWidget->resizeRowsToContents();

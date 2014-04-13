@@ -209,11 +209,11 @@ void CoordinationNumberModifierEditor::createUI(const RolloutInsertionParameters
 
 	layout->addWidget(new QLabel(tr("Radial distribution function:")));
 	layout->addWidget(_rdfPlot);
-	connect(this, SIGNAL(contentsReplaced(RefTarget*)), this, SLOT(plotRDF()));
+	connect(this, &CoordinationNumberModifierEditor::contentsReplaced, this, &CoordinationNumberModifierEditor::plotRDF);
 
 	QPushButton* saveDataButton = new QPushButton(tr("Export data to file"));
 	layout->addWidget(saveDataButton);
-	connect(saveDataButton, SIGNAL(clicked(bool)), this, SLOT(onSaveData()));
+	connect(saveDataButton, &QPushButton::clicked, this, &CoordinationNumberModifierEditor::onSaveData);
 
 	// Status label.
 	layout->addSpacing(6);

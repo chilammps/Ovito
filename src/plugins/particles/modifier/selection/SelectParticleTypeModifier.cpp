@@ -203,7 +203,7 @@ void SelectParticleTypeModifierEditor::createUI(const RolloutInsertionParameters
 	layout->addWidget(particleTypesBox);
 
 	// Update property list if another modifier has been loaded into the editor.
-	connect(this, SIGNAL(contentsReplaced(RefTarget*)), this, SLOT(updatePropertyList()));
+	connect(this, &SelectParticleTypeModifierEditor::contentsReplaced, this, &SelectParticleTypeModifierEditor::updatePropertyList);
 
 	// Status label.
 	layout->addSpacing(12);
@@ -215,7 +215,7 @@ void SelectParticleTypeModifierEditor::createUI(const RolloutInsertionParameters
 ******************************************************************************/
 void SelectParticleTypeModifierEditor::updatePropertyList()
 {
-	disconnect(propertyListBox, SIGNAL(activated(int)), this, SLOT(onPropertySelected(int)));
+	disconnect(propertyListBox, (void (QComboBox::*)(int))&QComboBox::activated, this, &SelectParticleTypeModifierEditor::onPropertySelected);
 	propertyListBox->clear();
 
 	SelectParticleTypeModifier* mod = static_object_cast<SelectParticleTypeModifier>(editObject());
@@ -236,7 +236,7 @@ void SelectParticleTypeModifierEditor::updatePropertyList()
 
 		propertyListBox->setCurrentProperty(mod->sourceProperty());
 	}
-	connect(propertyListBox, SIGNAL(activated(int)), this, SLOT(onPropertySelected(int)));
+	connect(propertyListBox, (void (QComboBox::*)(int))&QComboBox::activated, this, &SelectParticleTypeModifierEditor::onPropertySelected);
 
 	updateParticleTypeList();
 }
@@ -246,7 +246,7 @@ void SelectParticleTypeModifierEditor::updatePropertyList()
 ******************************************************************************/
 void SelectParticleTypeModifierEditor::updateParticleTypeList()
 {
-	disconnect(particleTypesBox, SIGNAL(itemChanged(QListWidgetItem*)), this, SLOT(onParticleTypeSelected(QListWidgetItem*)));
+	disconnect(particleTypesBox, &QListWidget::itemChanged, this, &SelectParticleTypeModifierEditor::onParticleTypeSelected);
 	particleTypesBox->setUpdatesEnabled(false);
 	particleTypesBox->clear();
 
@@ -274,7 +274,7 @@ void SelectParticleTypeModifierEditor::updateParticleTypeList()
 		}
 	}
 
-	connect(particleTypesBox, SIGNAL(itemChanged(QListWidgetItem*)), this, SLOT(onParticleTypeSelected(QListWidgetItem*)));
+	connect(particleTypesBox, &QListWidget::itemChanged, this, &SelectParticleTypeModifierEditor::onParticleTypeSelected);
 	particleTypesBox->setUpdatesEnabled(true);
 }
 

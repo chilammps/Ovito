@@ -39,7 +39,7 @@ public:
 	RefTargetListParameterUI(QObject* parentEditor, const PropertyFieldDescriptor& refField,
 			const RolloutInsertionParameters& rolloutParams = RolloutInsertionParameters(), const OvitoObjectType* defaultEditorClass = nullptr);
 	
-	/// Destructor, that releases all GUI controls.
+	/// Destructor.
 	virtual ~RefTargetListParameterUI();
 	
 	/// The reference field that specifies the vector reference field of the edited object that

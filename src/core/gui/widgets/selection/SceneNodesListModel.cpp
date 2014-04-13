@@ -38,10 +38,10 @@ SceneNodesListModel::SceneNodesListModel(DataSetContainer& datasetContainer, QWi
 	connect(&datasetContainer, &DataSetContainer::dataSetChanged, this, &SceneNodesListModel::onDataSetChanged);
 
 	// Listen for events of the root node.
-	connect(&_rootNodeListener, SIGNAL(notificationEvent(ReferenceEvent*)), this, SLOT(onRootNodeNotificationEvent(ReferenceEvent*)));
+	connect(&_rootNodeListener, &RefTargetListener::notificationEvent, this, &SceneNodesListModel::onRootNodeNotificationEvent);
 
 	// Listen for events of the other scene nodes.
-	connect(&_nodeListener, SIGNAL(notificationEvent(RefTarget*, ReferenceEvent*)), this, SLOT(onNodeNotificationEvent(RefTarget*, ReferenceEvent*)));
+	connect(&_nodeListener, &VectorRefTargetListener::notificationEvent, this, &SceneNodesListModel::onNodeNotificationEvent);
 }
 
 /******************************************************************************
