@@ -32,7 +32,12 @@
 namespace Ovito {
 
 /**
- * \brief A smart pointer to an OvitoObject that uses reference counting system.
+ * \brief A smart pointer holding a reference to an OvitoObject.
+ *
+ * This smart pointer class takes care of incrementing and decrementing
+ * the reference counter of the object it is pointing to. As soon as no
+ * OORef pointer to an object instance is left, the object is automatically
+ * deleted.
  */
 template<class T>
 class OORef
@@ -42,6 +47,7 @@ private:
 	typedef OORef this_type;
 
 public:
+
     typedef T element_type;
 
     /// Default constructor.
@@ -70,7 +76,7 @@ public:
 
     /// Destructor.
     ~OORef() {
-    	if(px != 0) px->decrementReferenceCount();
+    	if(px) px->decrementReferenceCount();
     }
 
     template<class U>
@@ -96,40 +102,42 @@ public:
 
     typedef element_type* this_type::*unspecified_bool_type;
     operator unspecified_bool_type() const Q_DECL_NOTHROW {
-    	return px == 0 ? 0 : &this_type::px;
+    	return px == nullptr ? 0 : &this_type::px;
     }
 
     // operator! is redundant, but some compilers need it
     bool operator!() const Q_DECL_NOTHROW {
-    	return px == 0;
+    	return px == nullptr;
     }
 
     void reset() Q_DECL_NOTHROW {
-    	this_type().swap( *this );
+    	this_type().swap(*this);
     }
 
     void reset(T* rhs) {
-    	this_type( rhs ).swap( *this );
+    	this_type(rhs).swap(*this);
     }
 
-    T * get() const Q_DECL_NOTHROW {
+    inline T* get() const Q_DECL_NOTHROW {
     	return px;
     }
 
-    T& operator*() const {
+    inline operator T*() const Q_DECL_NOTHROW {
+    	return px;
+    }
+
+    inline T& operator*() const {
     	OVITO_ASSERT(px != nullptr);
     	return *px;
     }
 
-    T* operator->() const {
+    inline T* operator->() const {
     	OVITO_ASSERT(px != nullptr);
     	return px;
     }
 
-    void swap(OORef& rhs) Q_DECL_NOTHROW {
-    	T* tmp = px;
-    	px = rhs.px;
-    	rhs.px = tmp;
+    inline void swap(OORef& rhs) Q_DECL_NOTHROW {
+    	std::swap(px,rhs.px);
     }
 
 private:
@@ -137,85 +145,89 @@ private:
     T* px;
 };
 
-template<class T, class U> inline bool operator==(OORef<T> const & a, OORef<U> const & b)
+template<class T, class U> inline bool operator==(const OORef<T>& a, const OORef<U>& b)
 {
     return a.get() == b.get();
 }
 
-template<class T, class U> inline bool operator!=(OORef<T> const & a, OORef<U> const & b)
+template<class T, class U> inline bool operator!=(const OORef<T>& a, const OORef<U>& b)
 {
     return a.get() != b.get();
 }
 
-template<class T, class U> inline bool operator==(OORef<T> const & a, U * b)
+template<class T, class U> inline bool operator==(const OORef<T>& a, U* b)
 {
     return a.get() == b;
 }
 
-template<class T, class U> inline bool operator!=(OORef<T> const & a, U * b)
+template<class T, class U> inline bool operator!=(const OORef<T>& a, U* b)
 {
     return a.get() != b;
 }
 
-template<class T, class U> inline bool operator==(T * a, OORef<U> const & b)
+template<class T, class U> inline bool operator==(T* a, const OORef<U>& b)
 {
     return a == b.get();
 }
 
-template<class T, class U> inline bool operator!=(T * a, OORef<U> const & b)
+template<class T, class U> inline bool operator!=(T* a, const OORef<U>& b)
 {
     return a != b.get();
 }
 
-
-template<class T> inline bool operator==(OORef<T> const & p, std::nullptr_t) Q_DECL_NOTHROW
+template<class T> inline bool operator==(const OORef<T>& p, std::nullptr_t) Q_DECL_NOTHROW
 {
     return p.get() == nullptr;
 }
 
-template<class T> inline bool operator==(std::nullptr_t, OORef<T> const & p) Q_DECL_NOTHROW
+template<class T> inline bool operator==(std::nullptr_t, const OORef<T>& p) Q_DECL_NOTHROW
 {
     return p.get() == nullptr;
 }
 
-template<class T> inline bool operator!=(OORef<T> const & p, std::nullptr_t) Q_DECL_NOTHROW
+template<class T> inline bool operator!=(const OORef<T>& p, std::nullptr_t) Q_DECL_NOTHROW
 {
     return p.get() != nullptr;
 }
 
-template<class T> inline bool operator!=(std::nullptr_t, OORef<T> const & p) Q_DECL_NOTHROW
+template<class T> inline bool operator!=(std::nullptr_t, const OORef<T>& p) Q_DECL_NOTHROW
 {
     return p.get() != nullptr;
 }
 
-template<class T> inline bool operator<(OORef<T> const & a, OORef<T> const & b)
+template<class T> inline bool operator<(const OORef<T>& a, const OORef<T>& b)
 {
     return std::less<T*>()(a.get(), b.get());
 }
 
-template<class T> void swap(OORef<T> & lhs, OORef<T> & rhs)
+template<class T> void swap(OORef<T>& lhs, OORef<T>& rhs) Q_DECL_NOTHROW
 {
-    lhs.swap(rhs);
+	lhs.swap(rhs);
 }
 
-template<class T> T* get_pointer(OORef<T> const & p)
+template<class T> T* get_pointer(const OORef<T>& p)
 {
     return p.get();
 }
 
-template<class T, class U> OORef<T> static_pointer_cast(OORef<U> const & p)
+template<class T, class U> OORef<T> static_pointer_cast(const OORef<U>& p)
 {
     return static_cast<T*>(p.get());
 }
 
-template<class T, class U> OORef<T> const_pointer_cast(OORef<U> const & p)
+template<class T, class U> OORef<T> const_pointer_cast(const OORef<U>& p)
 {
     return const_cast<T*>(p.get());
 }
 
-template<class T, class U> OORef<T> dynamic_pointer_cast(OORef<U> const & p)
+template<class T, class U> OORef<T> dynamic_pointer_cast(const OORef<U>& p)
 {
-    return dynamic_cast<T*>(p.get());
+    return qobject_cast<T*>(p.get());
+}
+
+template<class T> QDebug operator<<(QDebug debug, const OORef<T>& p)
+{
+	return debug << p.get();
 }
 
 };	// End of namespace Ovito

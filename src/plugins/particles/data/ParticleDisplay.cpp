@@ -59,26 +59,13 @@ ParticleDisplay::ParticleDisplay(DataSet* dataset) : DisplayObject(dataset),
 }
 
 /******************************************************************************
-* Searches for the given standard particle property in the scene objects
-* stored in the pipeline flow state.
-******************************************************************************/
-ParticlePropertyObject* ParticleDisplay::findStandardProperty(ParticleProperty::Type type, const PipelineFlowState& flowState) const
-{
-	for(const auto& sceneObj : flowState.objects()) {
-		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(sceneObj.get());
-		if(property && property->type() == type) return property;
-	}
-	return nullptr;
-}
-
-/******************************************************************************
 * Computes the bounding box of the object.
 ******************************************************************************/
 Box3 ParticleDisplay::boundingBox(TimePoint time, SceneObject* sceneObject, ObjectNode* contextNode, const PipelineFlowState& flowState)
 {
 	ParticlePropertyObject* positionProperty = dynamic_object_cast<ParticlePropertyObject>(sceneObject);
-	ParticlePropertyObject* radiusProperty = findStandardProperty(ParticleProperty::RadiusProperty, flowState);
-	ParticleTypeProperty* typeProperty = dynamic_object_cast<ParticleTypeProperty>(findStandardProperty(ParticleProperty::ParticleTypeProperty, flowState));
+	ParticlePropertyObject* radiusProperty = ParticlePropertyObject::findInState(flowState, ParticleProperty::RadiusProperty);
+	ParticleTypeProperty* typeProperty = dynamic_object_cast<ParticleTypeProperty>(ParticlePropertyObject::findInState(flowState, ParticleProperty::ParticleTypeProperty));
 
 	// Detect if the input data has changed since the last time we computed the bounding box.
 	if(_boundingBoxCacheHelper.updateState(
@@ -293,11 +280,11 @@ void ParticleDisplay::render(TimePoint time, SceneObject* sceneObject, const Pip
 {
 	// Get input data.
 	ParticlePropertyObject* positionProperty = dynamic_object_cast<ParticlePropertyObject>(sceneObject);
-	ParticlePropertyObject* radiusProperty = findStandardProperty(ParticleProperty::RadiusProperty, flowState);
-	ParticlePropertyObject* colorProperty = findStandardProperty(ParticleProperty::ColorProperty, flowState);
-	ParticleTypeProperty* typeProperty = dynamic_object_cast<ParticleTypeProperty>(findStandardProperty(ParticleProperty::ParticleTypeProperty, flowState));
-	ParticlePropertyObject* selectionProperty = renderer->isInteractive() ? findStandardProperty(ParticleProperty::SelectionProperty, flowState) : nullptr;
-	ParticlePropertyObject* transparencyProperty = findStandardProperty(ParticleProperty::TransparencyProperty, flowState);
+	ParticlePropertyObject* radiusProperty = ParticlePropertyObject::findInState(flowState, ParticleProperty::RadiusProperty);
+	ParticlePropertyObject* colorProperty = ParticlePropertyObject::findInState(flowState, ParticleProperty::ColorProperty);
+	ParticleTypeProperty* typeProperty = dynamic_object_cast<ParticleTypeProperty>(ParticlePropertyObject::findInState(flowState, ParticleProperty::ParticleTypeProperty));
+	ParticlePropertyObject* selectionProperty = renderer->isInteractive() ? ParticlePropertyObject::findInState(flowState, ParticleProperty::SelectionProperty) : nullptr;
+	ParticlePropertyObject* transparencyProperty = ParticlePropertyObject::findInState(flowState, ParticleProperty::TransparencyProperty);
 
 	// Get number of particles.
 	int particleCount = positionProperty ? positionProperty->size() : 0;

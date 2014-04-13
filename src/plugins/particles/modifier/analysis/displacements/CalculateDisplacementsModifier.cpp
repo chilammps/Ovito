@@ -77,7 +77,7 @@ CalculateDisplacementsModifier::CalculateDisplacementsModifier(DataSet* dataset)
 	// We don't want the scene's animation interval to be affected by an animation
 	// loaded into the reference configuration object.
 	linkedFileObj->setAdjustAnimationIntervalEnabled(false);
-	setReferenceConfiguration(linkedFileObj.get());
+	setReferenceConfiguration(linkedFileObj);
 
 	// Create display object for vectors.
 	_vectorDisplay = new VectorDisplay(dataset);
@@ -114,7 +114,7 @@ void CalculateDisplacementsModifier::setReferenceSource(const QUrl& sourceUrl, c
 	else {
 		OORef<LinkedFileObject> newObj(new LinkedFileObject(dataset()));
 		newObj->setSource(sourceUrl, importerType);
-		setReferenceConfiguration(newObj.get());
+		setReferenceConfiguration(newObj);
 	}
 }
 

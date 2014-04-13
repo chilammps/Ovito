@@ -55,7 +55,7 @@ const QVector<FileImporterDescription*>& ImportExportManager::fileImporters(Data
 				// Create a temporary instance to get the supported file formats.
 				OORef<FileImporter> obj = static_object_cast<FileImporter>(clazz->createInstance(dataset));
 				if(obj)
-					_fileImporters.push_back(new FileImporterDescription(this, obj.get()));
+					_fileImporters.push_back(new FileImporterDescription(this, obj));
 			}
 			catch(const Exception& ex) {
 				ex.showError();
@@ -79,7 +79,7 @@ const QVector<FileExporterDescription*>& ImportExportManager::fileExporters(Data
 				// Create a temporary instance to get the supported file formats.
 				OORef<FileExporter> obj = static_object_cast<FileExporter>(clazz->createInstance(dataset));
 				if(obj)
-					_fileExporters.push_back(new FileExporterDescription(this, obj.get()));
+					_fileExporters.push_back(new FileExporterDescription(this, obj));
 			}
 			catch(const Exception& ex) {
 				ex.showError();

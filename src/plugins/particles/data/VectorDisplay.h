@@ -110,9 +110,6 @@ public:
 
 protected:
 
-	/// Searches for the given standard particle property in the scene objects stored in the pipeline flow state.
-	ParticlePropertyObject* findStandardProperty(ParticleProperty::Type type, const PipelineFlowState& flowState) const;
-
 	/// Computes the bounding box of the arrows.
 	Box3 arrowBoundingBox(ParticlePropertyObject* vectorProperty, ParticlePropertyObject* positionProperty);
 

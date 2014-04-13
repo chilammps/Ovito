@@ -601,7 +601,7 @@ void PickParticlePlaneInputMode::alignPlane(SliceModifier* mod)
 			throw Exception(tr("Cannot set the new slicing plane. The three selected particle are colinear."));
 
 		// Get the object to world transformation for the currently selected node.
-		ObjectNode* node = _pickedParticles[0].objNode.get();
+		ObjectNode* node = _pickedParticles[0].objNode;
 		TimeInterval interval;
 		const AffineTransformation& nodeTM = node->getWorldTransform(mod->dataset()->animationSettings()->time(), interval);
 

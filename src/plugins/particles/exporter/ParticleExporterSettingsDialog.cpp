@@ -130,8 +130,8 @@ ParticleExporterSettingsDialog::ParticleExporterSettingsDialog(QWidget* parent, 
 		columnsGroupBoxLayout->setRowStretch(2, 1);
 
 		bool hasParticleIdentifiers = false;
-		for(const auto& o : state.objects()) {
-			ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o.get());
+		for(SceneObject* o : state.objects()) {
+			ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o);
 			if(!property) continue;
 			for(int vectorComponent = 0; vectorComponent < property->componentCount(); vectorComponent++) {
 				QString propertyName = property->nameWithComponent(vectorComponent);

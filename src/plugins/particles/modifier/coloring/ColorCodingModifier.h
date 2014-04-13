@@ -215,9 +215,6 @@ public:
 	ColorCodingGradient* colorGradient() const { return _colorGradient; }
 
 	/// Sets the color gradient for the modifier to convert scalar atom properties to colors.
-	void setColorGradient(const OORef<ColorCodingGradient>& gradient) { setColorGradient(gradient.get()); }
-
-	/// Sets the color gradient for the modifier to convert scalar atom properties to colors.
 	void setColorGradient(ColorCodingGradient* gradient) { _colorGradient = gradient; }
 
 	/// Returns whether the modifier assigns a color only to selected particles.

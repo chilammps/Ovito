@@ -72,12 +72,12 @@ OORef<ParticlePropertyObject> ParticlePropertyObject::create(DataSet* dataset, P
 	if(storage->type() == ParticleProperty::PositionProperty) {
 		OORef<ParticleDisplay> displayObj = new ParticleDisplay(dataset);
 		displayObj->loadUserDefaults();
-		propertyObj->addDisplayObject(displayObj.get());
+		propertyObj->addDisplayObject(displayObj);
 	}
 	else if(storage->type() == ParticleProperty::DisplacementProperty) {
 		OORef<VectorDisplay> displayObj = new VectorDisplay(dataset);
 		displayObj->loadUserDefaults();
-		propertyObj->addDisplayObject(displayObj.get());
+		propertyObj->addDisplayObject(displayObj);
 	}
 
 	return propertyObj;
@@ -155,8 +155,8 @@ OORef<RefTarget> ParticlePropertyObject::clone(bool deepCopy, CloneHelper& clone
 ******************************************************************************/
 ParticlePropertyObject* ParticlePropertyObject::findInState(const PipelineFlowState& state, ParticleProperty::Type type)
 {
-	for(const auto& o : state.objects()) {
-		ParticlePropertyObject* particleProperty = dynamic_object_cast<ParticlePropertyObject>(o.get());
+	for(SceneObject* o : state.objects()) {
+		ParticlePropertyObject* particleProperty = dynamic_object_cast<ParticlePropertyObject>(o);
 		if(particleProperty && particleProperty->type() == type)
 			return particleProperty;
 	}
@@ -169,8 +169,8 @@ ParticlePropertyObject* ParticlePropertyObject::findInState(const PipelineFlowSt
 ******************************************************************************/
 ParticlePropertyObject* ParticlePropertyObject::findInState(const PipelineFlowState& state, const QString& name)
 {
-	for(const auto& o : state.objects()) {
-		ParticlePropertyObject* particleProperty = dynamic_object_cast<ParticlePropertyObject>(o.get());
+	for(SceneObject* o : state.objects()) {
+		ParticlePropertyObject* particleProperty = dynamic_object_cast<ParticlePropertyObject>(o);
 		if(particleProperty && particleProperty->type() == ParticleProperty::UserProperty && particleProperty->name() == name)
 			return particleProperty;
 	}
@@ -185,8 +185,8 @@ ParticlePropertyObject* ParticlePropertyReference::findInState(const PipelineFlo
 {
 	if(isNull())
 		return nullptr;
-	for(const auto& o : state.objects()) {
-		ParticlePropertyObject* prop = dynamic_object_cast<ParticlePropertyObject>(o.get());
+	for(SceneObject* o : state.objects()) {
+		ParticlePropertyObject* prop = dynamic_object_cast<ParticlePropertyObject>(o);
 		if(prop) {
 			if((this->type() == ParticleProperty::UserProperty && prop->name() == this->name()) ||
 					(this->type() != ParticleProperty::UserProperty && prop->type() == this->type())) {

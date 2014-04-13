@@ -37,7 +37,7 @@ OpenGLArrowPrimitive::OpenGLArrowPrimitive(ViewportSceneRenderer* renderer, Arro
 	OVITO_ASSERT(renderer->glcontext()->shareGroup() == _contextGroup);
 
 	if(!_glGeometryBuffer.create())
-		throw Exception(tr("Failed to create OpenGL vertex buffer."));
+		throw Exception(QStringLiteral("Failed to create OpenGL vertex buffer."));
 	_glGeometryBuffer.setUsagePattern(QOpenGLBuffer::StaticDraw);
 
 	// Initialize OpenGL shaders.
@@ -84,7 +84,7 @@ void OpenGLArrowPrimitive::startSetElements(int elementCount)
 	OVITO_ASSERT(_mappedBuffer == nullptr);
 
 	if(!_glGeometryBuffer.bind())
-		throw Exception(tr("Failed to bind OpenGL vertex buffer."));
+		throw Exception(QStringLiteral("Failed to bind OpenGL vertex buffer."));
 
 	_elementCount = elementCount;
 	size_t bytesPerVertex = 0;
@@ -154,7 +154,7 @@ void OpenGLArrowPrimitive::startSetElements(int elementCount)
 		_mappedBuffer = _glGeometryBuffer.map(QOpenGLBuffer::WriteOnly);
 		OVITO_CHECK_POINTER(_mappedBuffer);
 		if(!_mappedBuffer)
-			throw Exception(tr("Failed to map OpenGL vertex buffer to memory."));
+			throw Exception(QStringLiteral("Failed to map OpenGL vertex buffer to memory."));
 	}
 
 	// Precompute cos() and sin() functions.
@@ -506,7 +506,7 @@ void OpenGLArrowPrimitive::renderShadedTriangles(ViewportSceneRenderer* renderer
 	glEnable(GL_CULL_FACE);
 
 	if(!shader->bind())
-		throw Exception(tr("Failed to bind OpenGL shader."));
+		throw Exception(QStringLiteral("Failed to bind OpenGL shader."));
 
 	shader->setUniformValue("modelview_projection_matrix",
 			(QMatrix4x4)(renderer->projParams().projectionMatrix * renderer->modelViewTM()));
@@ -575,7 +575,7 @@ void OpenGLArrowPrimitive::renderRaytracedCylinders(ViewportSceneRenderer* rende
 	glEnable(GL_CULL_FACE);
 
 	if(!shader->bind())
-		throw Exception(tr("Failed to bind OpenGL shader."));
+		throw Exception(QStringLiteral("Failed to bind OpenGL shader."));
 
 	shader->setUniformValue("modelview_matrix",
 			(QMatrix4x4)renderer->modelViewTM());
@@ -645,7 +645,7 @@ void OpenGLArrowPrimitive::renderFlat(ViewportSceneRenderer* renderer)
 		shader = _flatPickingShader;
 
 	if(!shader->bind())
-		throw Exception(tr("Failed to bind OpenGL shader."));
+		throw Exception(QStringLiteral("Failed to bind OpenGL shader."));
 
 	shader->setUniformValue("modelview_projection_matrix",
 			(QMatrix4x4)(renderer->projParams().projectionMatrix * renderer->modelViewTM()));

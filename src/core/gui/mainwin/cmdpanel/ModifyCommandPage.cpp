@@ -215,7 +215,7 @@ void ModifyCommandPage::onModifierAdd(int index)
 				// Load user-defined default parameters.
 				modifier->loadUserDefaults();
 				// Apply it.
-				_modificationListModel->applyModifier(modifier.get());
+				_modificationListModel->applyModifier(modifier);
 			});
 			_modificationListModel->requestUpdate();
 		}
@@ -282,17 +282,17 @@ void ModifyCommandPage::onModifierMoveUp()
 	if(!pipelineObj)
 		return;
 
-	OVITO_ASSERT(pipelineObj->modifierApplications().contains(modApp.get()));
+	OVITO_ASSERT(pipelineObj->modifierApplications().contains(modApp));
 	if(modApp == pipelineObj->modifierApplications().back())
 		return;
 
 	UndoableTransaction::handleExceptions(_datasetContainer.currentSet()->undoStack(), tr("Move modifier up"), [pipelineObj, modApp]() {
 		// Determine old position in stack.
-		int index = pipelineObj->modifierApplications().indexOf(modApp.get());
+		int index = pipelineObj->modifierApplications().indexOf(modApp);
 		// Remove ModifierApplication from the PipelineObject.
-		pipelineObj->removeModifier(modApp.get());
+		pipelineObj->removeModifier(modApp);
 		// Re-insert ModifierApplication into the PipelineObject.
-		pipelineObj->insertModifierApplication(modApp.get(), index+1);
+		pipelineObj->insertModifierApplication(modApp, index+1);
 	});
 }
 
@@ -313,17 +313,17 @@ void ModifyCommandPage::onModifierMoveDown()
 	OORef<PipelineObject> pipelineObj = modApp->pipelineObject();
 	if(!pipelineObj) return;
 
-	OVITO_ASSERT(pipelineObj->modifierApplications().contains(modApp.get()));
+	OVITO_ASSERT(pipelineObj->modifierApplications().contains(modApp));
 	if(modApp == pipelineObj->modifierApplications().front())
 		return;
 
 	UndoableTransaction::handleExceptions(_datasetContainer.currentSet()->undoStack(), tr("Move modifier down"), [pipelineObj, modApp]() {
 		// Determine old position in stack.
-		int index = pipelineObj->modifierApplications().indexOf(modApp.get());
+		int index = pipelineObj->modifierApplications().indexOf(modApp);
 		// Remove ModifierApplication from the PipelineObject.
-		pipelineObj->removeModifier(modApp.get());
+		pipelineObj->removeModifier(modApp);
 		// Re-insert ModifierApplication into the PipelineObject.
-		pipelineObj->insertModifierApplication(modApp.get(), index-1);
+		pipelineObj->insertModifierApplication(modApp, index-1);
 	});
 }
 

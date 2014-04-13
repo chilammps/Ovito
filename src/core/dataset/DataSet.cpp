@@ -93,7 +93,7 @@ OORef<ViewportConfiguration> DataSet::createDefaultViewportConfiguration()
 	perspectiveView->setCameraTransformation(ViewportSettings::getSettings().coordinateSystemOrientation() * AffineTransformation::lookAlong({90, -120, 100}, {-90, 120, -100}, {0,0,1}).inverse());
 	defaultViewportConfig->addViewport(perspectiveView);
 
-	defaultViewportConfig->setActiveViewport(topView.get());
+	defaultViewportConfig->setActiveViewport(topView);
 	defaultViewportConfig->setMaximizedViewport(nullptr);
 
 	return defaultViewportConfig;

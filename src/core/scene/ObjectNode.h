@@ -60,13 +60,6 @@ public:
 	/// \undoable
 	void setSceneObject(SceneObject* obj) { _sceneObject = obj; }
 
-	/// \brief Sets the object of this node.
-	/// \param obj The new object that evaluated by the ObjectNode and shown in the viewports.
-	///
-	/// Same method as above but takes a smart pointer instead of a raw pointer.
-	/// \undoable
-	void setSceneObject(const OORef<SceneObject>& obj) { setSceneObject(obj.get()); }
-
 	/// \brief Evaluates the geometry pipeline of this object node at the given animation time.
 	/// \param time The animation time at which the geometry pipeline of the node should be evaluated.
 	/// \return The result of the evaluation.
@@ -94,19 +87,12 @@ public:
 	/// \undoable
 	Q_INVOKABLE void applyModifier(Modifier* mod);
 
-	/// \brief Applies a modifier to the object node.
-	/// \param mod The modifier to be applied.
-	///
-	/// Same method as above, but this one accepts a smart pointer.
-	/// \undoable
-	void applyModifier(const OORef<Modifier>& mod) {  applyModifier(mod.get()); }
-
 	/// \brief Returns the title of this object.
 	virtual QString objectTitle() override;
 
 public:
 
-	Q_PROPERTY(SceneObject* sceneObject READ sceneObject WRITE setSceneObject)
+	Q_PROPERTY(SceneObject* sceneObject READ sceneObject WRITE setSceneObject);
 
 protected:
 

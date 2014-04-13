@@ -106,8 +106,8 @@ OORef<RefTarget> ParticleSelectionSet::clone(bool deepCopy, CloneHelper& cloneHe
 size_t ParticleSelectionSet::particleCount(const PipelineFlowState& state)
 {
 	// Find the first particle property object to determine the number of particles.
-	for(const auto& o : state.objects()) {
-		if(ParticlePropertyObject* particleProperty = dynamic_object_cast<ParticlePropertyObject>(o.get()))
+	for(SceneObject* o : state.objects()) {
+		if(ParticlePropertyObject* particleProperty = dynamic_object_cast<ParticlePropertyObject>(o))
 			return particleProperty->size();
 	}
 	return 0;

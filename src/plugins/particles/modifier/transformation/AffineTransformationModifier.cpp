@@ -144,7 +144,7 @@ PipelineStatus AffineTransformationModifier::modifyParticles(TimePoint time, Tim
 	if(applyToSurfaceMesh()) {
 		for(int index = 0; index < input().objects().size(); index++) {
 			// Apply transformation to vertices of surface mesh.
-			if(SurfaceMesh* inputSurface = dynamic_object_cast<SurfaceMesh>(input().objects()[index].get())) {
+			if(SurfaceMesh* inputSurface = dynamic_object_cast<SurfaceMesh>(input().objects()[index])) {
 				OORef<SurfaceMesh> outputSurface = cloneHelper()->cloneObject(inputSurface, false);
 				for(HalfEdgeMesh::Vertex* vertex : outputSurface->mesh().vertices())
 					vertex->pos() = tm * vertex->pos();

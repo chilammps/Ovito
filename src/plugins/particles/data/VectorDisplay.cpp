@@ -70,25 +70,12 @@ VectorDisplay::VectorDisplay(DataSet* dataset) : DisplayObject(dataset),
 }
 
 /******************************************************************************
-* Searches for the given standard particle property in the scene objects
-* stored in the pipeline flow state.
-******************************************************************************/
-ParticlePropertyObject* VectorDisplay::findStandardProperty(ParticleProperty::Type type, const PipelineFlowState& flowState) const
-{
-	for(const auto& sceneObj : flowState.objects()) {
-		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(sceneObj.get());
-		if(property && property->type() == type) return property;
-	}
-	return nullptr;
-}
-
-/******************************************************************************
 * Computes the bounding box of the object.
 ******************************************************************************/
 Box3 VectorDisplay::boundingBox(TimePoint time, SceneObject* sceneObject, ObjectNode* contextNode, const PipelineFlowState& flowState)
 {
 	ParticlePropertyObject* vectorProperty = dynamic_object_cast<ParticlePropertyObject>(sceneObject);
-	ParticlePropertyObject* positionProperty = findStandardProperty(ParticleProperty::PositionProperty, flowState);
+	ParticlePropertyObject* positionProperty = ParticlePropertyObject::findInState(flowState, ParticleProperty::PositionProperty);
 	if(vectorProperty && (vectorProperty->dataType() != qMetaTypeId<FloatType>() || vectorProperty->componentCount() != 3))
 		vectorProperty = nullptr;
 
@@ -142,7 +129,7 @@ void VectorDisplay::render(TimePoint time, SceneObject* sceneObject, const Pipel
 {
 	// Get input data.
 	ParticlePropertyObject* vectorProperty = dynamic_object_cast<ParticlePropertyObject>(sceneObject);
-	ParticlePropertyObject* positionProperty = findStandardProperty(ParticleProperty::PositionProperty, flowState);
+	ParticlePropertyObject* positionProperty = ParticlePropertyObject::findInState(flowState, ParticleProperty::PositionProperty);
 	if(vectorProperty && (vectorProperty->dataType() != qMetaTypeId<FloatType>() || vectorProperty->componentCount() != 3))
 		vectorProperty = nullptr;
 

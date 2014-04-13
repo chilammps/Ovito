@@ -124,7 +124,7 @@ PipelineStatus FreezePropertyModifier::modifyParticles(TimePoint time, TimeInter
 	}
 
 	// Insert particle property into modification pipeline.
-	output().addObject(outputProperty.get());
+	output().addObject(outputProperty);
 
 	return PipelineStatus::Success;
 }
@@ -142,8 +142,8 @@ void FreezePropertyModifier::initializeModifier(PipelineObject* pipeline, Modifi
 	// Use the first available particle property from the input state as data source when the modifier is newly created.
 	if(sourceProperty().isNull()) {
 		input = pipeline->evaluatePipeline(dataset()->animationSettings()->time(), modApp, false);
-		for(const auto& o : input.objects()) {
-			if(ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o.get())) {
+		for(SceneObject* o : input.objects()) {
+			if(ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o)) {
 				setSourceProperty(ParticlePropertyReference(property));
 				setDestinationProperty(sourceProperty());
 				break;
@@ -171,7 +171,7 @@ void FreezePropertyModifier::takePropertySnapshot(ModifierApplication* modApp, c
 			// Take a snapshot of the property values.
 			OORef<SavedParticleProperty> savedProperty = new SavedParticleProperty(dataset());
 			savedProperty->reset(property, ParticlePropertyObject::findInState(state, ParticleProperty::IdentifierProperty));
-			modApp->setModifierData(savedProperty.get());
+			modApp->setModifierData(savedProperty);
 			return;
 		}
 	}

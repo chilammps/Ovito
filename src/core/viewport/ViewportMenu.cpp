@@ -206,7 +206,7 @@ void ViewportMenu::onCreateCamera()
 				cameraObj->zoomController()->setValue(0, _viewport->fieldOfView());
 
 			// Create an object node to insert camera object into scene.
-			cameraNode = new ObjectNode(_viewport->dataset(), cameraObj.get());
+			cameraNode = new ObjectNode(_viewport->dataset(), cameraObj);
 
 			// Give the new node a name.
 			cameraNode->setName(scene->makeNameUnique(tr("Camera")));
@@ -226,7 +226,7 @@ void ViewportMenu::onCreateCamera()
 
 		// Set new camera as view node for current viewport.
 		_viewport->setViewType(Viewport::VIEW_SCENENODE);
-		_viewport->setViewNode(cameraNode.get());
+		_viewport->setViewNode(cameraNode);
 	});
 }
 

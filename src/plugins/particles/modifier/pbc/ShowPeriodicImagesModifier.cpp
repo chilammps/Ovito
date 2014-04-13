@@ -81,8 +81,8 @@ PipelineStatus ShowPeriodicImagesModifier::modifyParticles(TimePoint time, TimeI
 	_outputParticleCount = newParticleCount;
 	AffineTransformation simCell = expectSimulationCell()->cellMatrix();
 
-	for(const auto& outobj : _output.objects()) {
-		OORef<ParticlePropertyObject> originalOutputProperty = dynamic_object_cast<ParticlePropertyObject>(outobj.get());
+	for(SceneObject* outobj : _output.objects()) {
+		OORef<ParticlePropertyObject> originalOutputProperty = dynamic_object_cast<ParticlePropertyObject>(outobj);
 		if(!originalOutputProperty)
 			continue;
 
@@ -93,7 +93,7 @@ PipelineStatus ShowPeriodicImagesModifier::modifyParticles(TimePoint time, TimeI
 		newProperty->resize(newParticleCount);
 
 		// Replace original property with the filtered one.
-		_output.replaceObject(originalOutputProperty.get(), newProperty);
+		_output.replaceObject(originalOutputProperty, newProperty);
 
 		OVITO_ASSERT(originalOutputProperty->size() == oldParticleCount);
 		size_t destinationIndex = oldParticleCount;

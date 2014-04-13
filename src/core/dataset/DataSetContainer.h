@@ -56,7 +56,7 @@ public:
 	
 	/// \brief Sets the current dataset being edited by the user.
 	/// \param set The dataset that should be shown in the main window.
-	void setCurrentSet(const OORef<DataSet>& set) { _currentSet = set.get(); }
+	void setCurrentSet(DataSet* set) { _currentSet = set; }
 
 	/// Returns the window this dataset container is linked to (may be NULL).
 	MainWindow* mainWindow() const { return _mainWindow; }

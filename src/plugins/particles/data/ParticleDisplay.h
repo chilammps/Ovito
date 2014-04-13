@@ -115,11 +115,6 @@ public:
 
 protected:
 
-	/// Searches for the given standard particle property in the scene objects stored in the pipeline flow state.
-	ParticlePropertyObject* findStandardProperty(ParticleProperty::Type type, const PipelineFlowState& flowState) const;
-
-protected:
-
 	/// Controls the default display radius of atomic particles.
 	PropertyField<FloatType> _defaultParticleRadius;
 

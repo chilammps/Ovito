@@ -94,8 +94,8 @@ public:
 	/// \brief Finds an object of the given type in the list of scene objects stored in this flow state.
 	template<class ObjectType>
 	ObjectType* findObject() const {
-		for(const auto& o : _objects) {
-			if(ObjectType* obj = dynamic_object_cast<ObjectType>(o.get()))
+		for(SceneObject* o : _objects) {
+			if(ObjectType* obj = dynamic_object_cast<ObjectType>(o))
 				return obj;
 		}
 		return nullptr;

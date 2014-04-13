@@ -99,8 +99,8 @@ void ScatterPlotModifier::initializeModifier(PipelineObject* pipeline, ModifierA
 	if(xAxisProperty().isNull() || yAxisProperty().isNull()) {
 		// Select the first available particle property from the input state.
 		PipelineFlowState input = pipeline->evaluatePipeline(dataset()->animationSettings()->time(), modApp, false);
-		for(const auto& o : input.objects()) {
-			ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o.get());
+		for(SceneObject* o : input.objects()) {
+			ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o);
 			if(property && (property->dataType() == qMetaTypeId<int>() || property->dataType() == qMetaTypeId<FloatType>())) {
 				bestProperty = ParticlePropertyReference(property, (property->componentCount() > 1) ? 0 : -1);
 			}
@@ -316,8 +316,8 @@ PipelineStatus ScatterPlotModifier::modifyParticles(TimePoint time, TimeInterval
 ******************************************************************************/
 ParticlePropertyObject* ScatterPlotModifier::lookupInputProperty(const PipelineFlowState& inputState, const ParticlePropertyReference &refprop) const
 {
-	for(const auto& o : inputState.objects()) {
-		ParticlePropertyObject* prop = dynamic_object_cast<ParticlePropertyObject>(o.get());
+	for(SceneObject* o : inputState.objects()) {
+		ParticlePropertyObject* prop = dynamic_object_cast<ParticlePropertyObject>(o);
 		if(prop) {
 			if((refprop.type() == ParticleProperty::UserProperty && prop->name() == refprop.name()) ||
 					(refprop.type() != ParticleProperty::UserProperty && prop->type() == refprop.type())) {

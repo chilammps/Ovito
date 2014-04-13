@@ -77,13 +77,6 @@ public:
 	/// \undoable
 	void setTargetNode(SceneNode* target) { _targetNode = target; }
 
-	/// \brief Sets the target node to look at.
-	/// \param target The new target this rotation controller should use for its
-	///               calculation of the rotation matrix.
-	/// \note This is the same method as above but takes a smart pointer instead of a raw pointer.
-	/// \undoable
-	void setTargetNode(const OORef<SceneNode>& target) { setTargetNode(target.get()); }
-	
 	/// \brief Returns the sub-controller that controls the rolling parameter.
 	/// \return The sub-controller for the rolling angle.
 	FloatController* rollController() const { return _rollCtrl; }
@@ -93,12 +86,6 @@ public:
 	/// \undoable
 	void setRollController(FloatController* ctrl) { _rollCtrl = ctrl; }
 
-	/// \brief Sets the sub-controller that controls the rolling parameter.
-	/// \param ctrl The new roll angle controller. 
-	/// \note This is the same method as above but takes a smart pointer instead of a raw pointer.
-	/// \undoable
-	void setRollController(const OORef<FloatController>& ctrl) { setRollController(ctrl.get()); }
-	
 private:
 
 	/// The sub-controller for rolling.

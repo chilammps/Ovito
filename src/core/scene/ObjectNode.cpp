@@ -113,7 +113,7 @@ void ObjectNode::render(TimePoint time, SceneRenderer* renderer)
 	for(const auto& sceneObj : state.objects()) {
 		for(DisplayObject* displayObj : sceneObj->displayObjects()) {
 			if(displayObj && displayObj->isEnabled()) {
-				displayObj->render(time, sceneObj.get(), state, renderer, this);
+				displayObj->render(time, sceneObj, state, renderer, this);
 			}
 		}
 	}
@@ -167,10 +167,10 @@ Box3 ObjectNode::localBoundingBox(TimePoint time)
 	const PipelineFlowState& state = evalPipeline(time);
 
 	// Compute bounding boxes of scene objects.
-	for(const auto& sceneObj : state.objects()) {
+	for(SceneObject* sceneObj : state.objects()) {
 		for(DisplayObject* displayObj : sceneObj->displayObjects()) {
 			if(displayObj && displayObj->isEnabled())
-				bb.addBox(displayObj->boundingBox(time, sceneObj.get(), this, state));
+				bb.addBox(displayObj->boundingBox(time, sceneObj, this, state));
 		}
 	}
 
@@ -235,7 +235,7 @@ void ObjectNode::applyModifier(Modifier* modifier)
 		OORef<PipelineObject> p = new PipelineObject(dataset());
 		p->setInputObject(sceneObject());
 		setSceneObject(p);
-		pipelineObj = p.get();
+		pipelineObj = p;
 	}
 	pipelineObj->insertModifier(modifier, pipelineObj->modifierApplications().size());
 }

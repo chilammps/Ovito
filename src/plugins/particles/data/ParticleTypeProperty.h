@@ -48,11 +48,6 @@ public:
 	/// Inserts a particle type into the list of types.
 	void insertParticleType(ParticleType* ptype);
 
-	/// Inserts a particle type into the list of types.
-	void insertParticleType(const OORef<ParticleType>& ptype) {
-		insertParticleType(ptype.get());
-	}
-
 	/// Returns the list of particle types.
 	const ParticleTypeList& particleTypes() const { return _particleTypes; }
 

@@ -65,25 +65,12 @@ BondsDisplay::BondsDisplay(DataSet* dataset) : DisplayObject(dataset),
 }
 
 /******************************************************************************
-* Searches for the given standard particle property in the scene objects
-* stored in the pipeline flow state.
-******************************************************************************/
-ParticlePropertyObject* BondsDisplay::findStandardProperty(ParticleProperty::Type type, const PipelineFlowState& flowState) const
-{
-	for(const auto& sceneObj : flowState.objects()) {
-		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(sceneObj.get());
-		if(property && property->type() == type) return property;
-	}
-	return nullptr;
-}
-
-/******************************************************************************
 * Computes the bounding box of the object.
 ******************************************************************************/
 Box3 BondsDisplay::boundingBox(TimePoint time, SceneObject* sceneObject, ObjectNode* contextNode, const PipelineFlowState& flowState)
 {
 	BondsObject* bondsObj = dynamic_object_cast<BondsObject>(sceneObject);
-	ParticlePropertyObject* positionProperty = findStandardProperty(ParticleProperty::PositionProperty, flowState);
+	ParticlePropertyObject* positionProperty = ParticlePropertyObject::findInState(flowState, ParticleProperty::PositionProperty);
 	SimulationCell* simulationCell = flowState.findObject<SimulationCell>();
 
 	// Detect if the input data has changed since the last time we computed the bounding box.
@@ -126,10 +113,10 @@ Box3 BondsDisplay::boundingBox(TimePoint time, SceneObject* sceneObject, ObjectN
 void BondsDisplay::render(TimePoint time, SceneObject* sceneObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode)
 {
 	BondsObject* bondsObj = dynamic_object_cast<BondsObject>(sceneObject);
-	ParticlePropertyObject* positionProperty = findStandardProperty(ParticleProperty::PositionProperty, flowState);
+	ParticlePropertyObject* positionProperty = ParticlePropertyObject::findInState(flowState, ParticleProperty::PositionProperty);
 	SimulationCell* simulationCell = flowState.findObject<SimulationCell>();
-	ParticlePropertyObject* colorProperty = findStandardProperty(ParticleProperty::ColorProperty, flowState);
-	ParticleTypeProperty* typeProperty = dynamic_object_cast<ParticleTypeProperty>(findStandardProperty(ParticleProperty::ParticleTypeProperty, flowState));
+	ParticlePropertyObject* colorProperty = ParticlePropertyObject::findInState(flowState, ParticleProperty::ColorProperty);
+	ParticleTypeProperty* typeProperty = dynamic_object_cast<ParticleTypeProperty>(ParticlePropertyObject::findInState(flowState, ParticleProperty::ParticleTypeProperty));
 	if(!useParticleColors()) {
 		colorProperty = nullptr;
 		typeProperty = nullptr;

@@ -253,7 +253,7 @@ void RenderSettingsEditor::onChangeRenderer()
 		undoableTransaction(tr("Change renderer"), [settings, newIndex, &rendererClasses]() {
 			OORef<SceneRenderer> renderer = static_object_cast<SceneRenderer>(rendererClasses[newIndex]->createInstance(settings->dataset()));
 			renderer->loadUserDefaults();
-			settings->setRenderer(renderer.get());
+			settings->setRenderer(renderer);
 		});
 	}
 }

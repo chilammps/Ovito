@@ -61,11 +61,6 @@ public:
 	/// \undoable
 	void setTransformationController(TransformationController* ctrl) { _transformation = ctrl; }
 
-	/// \brief Sets the controller that controls this node's local transformation.
-	/// \param ctrl The new transformation controller.
-	/// \undoable
-	void setTransformationController(const OORef<TransformationController>& ctrl) { setTransformationController(ctrl.get()); }
-
 	/// \brief Returns this node's world transformation matrix.
 	/// \param[in] time The animation for which the transformation matrix should be computed.
 	/// \param[in,out] validityInterval The validity interval of the returned transformation matrix.
@@ -125,14 +120,6 @@ public:
 	///
 	/// \undoable
 	void addChild(SceneNode* newChild);
-
-	/// \brief Adds a child scene node to this node.
-	/// \param newChild The node that becomes a child of this node. If \a newChild is already a child
-	///                 of another parent node then it is first removed form that parent.
-	///
-	/// This is the same method as the one above but takes a smart pointer instead of a raw pointer.
-	/// \undoable
-	void addChild(const OORef<SceneNode>& newChild) { addChild(newChild.get()); }
 
 	/// \brief Removes a child node from this parent node.
 	/// \param child A child node of this parent node.
@@ -211,7 +198,7 @@ public:
 	///
 	/// The target will automatically be deleted if this SceneNode is deleted and vice versa.
 	/// \undoable
-	LookAtController* bindToTarget(SceneNode* targetNode);
+	OORef<LookAtController> bindToTarget(SceneNode* targetNode);
 
 	/// \brief Returns the target node this scene node is looking at.
 	/// \return The target this node's rotation controller is bound to or \c NULL if this scene node
@@ -277,11 +264,11 @@ public:
 
 public:
 
-	Q_PROPERTY(bool isSelected READ isSelected WRITE setSelected)
-	Q_PROPERTY(SceneNode* targetNode READ targetNode WRITE bindToTarget)
-	Q_PROPERTY(QString name READ name WRITE setName)
-	Q_PROPERTY(Color displayColor READ displayColor WRITE setDisplayColor)
-	Q_PROPERTY(TransformationController* transformationController READ transformationController WRITE setTransformationController)
+	Q_PROPERTY(bool isSelected READ isSelected WRITE setSelected);
+	Q_PROPERTY(SceneNode* targetNode READ targetNode WRITE bindToTarget);
+	Q_PROPERTY(QString name READ name WRITE setName);
+	Q_PROPERTY(Color displayColor READ displayColor WRITE setDisplayColor);
+	Q_PROPERTY(TransformationController* transformationController READ transformationController WRITE setTransformationController);
 
 protected:
 

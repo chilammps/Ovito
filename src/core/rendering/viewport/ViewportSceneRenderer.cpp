@@ -402,7 +402,7 @@ Box3 ViewportSceneRenderer::boundingBoxInteractive(TimePoint time, Viewport* vie
 				if(displayObj && displayObj->isEnabled()) {
 					TimeInterval interval;
 					bb.addBox(displayObj->viewDependentBoundingBox(time, viewport,
-							sceneObj.get(), node, state).transformed(node->getWorldTransform(time, interval)));
+							sceneObj, node, state).transformed(node->getWorldTransform(time, interval)));
 				}
 			}
 		}

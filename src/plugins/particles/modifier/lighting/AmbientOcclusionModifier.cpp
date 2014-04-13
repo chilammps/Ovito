@@ -96,7 +96,7 @@ void AmbientOcclusionModifier::AmbientOcclusionEngine::compute(FutureInterfaceBa
 	// Create a temporary dataset, which is needed to host an instance of AmbientOcclusionRenderer.
 	OORef<DataSet> dataset(new DataSet());
 	// Create the AmbientOcclusionRenderer instance.
-	OORef<AmbientOcclusionRenderer> renderer(new AmbientOcclusionRenderer(dataset.get(), QSize(_resolution, _resolution), _offscreenSurface));
+	OORef<AmbientOcclusionRenderer> renderer(new AmbientOcclusionRenderer(dataset, QSize(_resolution, _resolution), _offscreenSurface));
 
 	renderer->startRender(nullptr, nullptr);
 	try {
@@ -139,13 +139,13 @@ void AmbientOcclusionModifier::AmbientOcclusionEngine::compute(FutureInterfaceBa
 			renderer->setWorldTransform(AffineTransformation::Identity());
 			try {
 				// Create particle buffer.
-				if(!particleBuffer || !particleBuffer->isValid(renderer.get())) {
+				if(!particleBuffer || !particleBuffer->isValid(renderer)) {
 					particleBuffer = renderer->createParticlePrimitive(ParticlePrimitive::FlatShading, ParticlePrimitive::LowQuality, ParticlePrimitive::SphericalShape);
 					particleBuffer->setSize(positions()->size());
 					particleBuffer->setParticlePositions(positions()->constDataPoint3());
 					particleBuffer->setParticleRadii(_particleRadii.data());
 				}
-				particleBuffer->render(renderer.get());
+				particleBuffer->render(renderer);
 			}
 			catch(...) {
 				renderer->endFrame();

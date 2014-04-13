@@ -66,7 +66,7 @@ PipelineStatus SmoothSurfaceModifier::modifyObject(TimePoint time, ModifierAppli
 
 	CloneHelper cloneHelper;
 	for(int index = 0; index < state.objects().size(); index++) {
-		if(SurfaceMesh* inputSurface = dynamic_object_cast<SurfaceMesh>(state.objects()[index].get())) {
+		if(SurfaceMesh* inputSurface = dynamic_object_cast<SurfaceMesh>(state.objects()[index])) {
 			OORef<SurfaceMesh> outputSurface = cloneHelper.cloneObject(inputSurface, false);
 			outputSurface->smoothMesh(cell, _smoothingLevel);
 			state.replaceObject(inputSurface, outputSurface);

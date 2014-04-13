@@ -35,13 +35,13 @@
 namespace Ovito {
 
 /**
- * \brief Modifies an input object in some way.
+ * \brief Base class for algorithms that modify an object or data in some way.
  *
- * This is the abstract base class for modifier objects that can be applied to
- * SceneObject objects. A Modifier takes a SceneObject derived object, modifies
- * in some specific way and finally produces a result object.
+ * A Modifier is inserted into the modification pipeline of a scene node
+ * using ObjectNode::applyModifier() or PipelineObject::insertModifier().
  *
- * A Modifier is applied to an object using ObjectNode::applyModifier().
+ * \sa PipelineObject
+ * \sa ModifierApplication
  */
 class OVITO_CORE_EXPORT Modifier : public RefTarget
 {

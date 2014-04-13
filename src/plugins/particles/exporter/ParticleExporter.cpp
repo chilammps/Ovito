@@ -130,12 +130,8 @@ PipelineFlowState ParticleExporter::getParticles(const QVector<SceneNode*>& node
 
 		// Check if the node's pipeline evaluates to something that contains particles.
 		const PipelineFlowState& state = node->evalPipeline(time);
-		for(const auto& o : state.objects()) {
-			ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o.get());
-			if(property && property->type() == ParticleProperty::PositionProperty) {
-				return state;
-			}
-		}
+		if(ParticlePropertyObject::findInState(state, ParticleProperty::PositionProperty))
+			return state;
 	}
 
 	// Nothing to export.

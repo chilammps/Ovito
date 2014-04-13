@@ -35,7 +35,7 @@ namespace Ovito {
 /**
  * \brief Abstract base class for rendering arrow glyphs and cylinders.
  */
-class OVITO_CORE_EXPORT ArrowPrimitive : public OvitoObject
+class OVITO_CORE_EXPORT ArrowPrimitive
 {
 public:
 

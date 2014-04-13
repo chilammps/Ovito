@@ -117,8 +117,8 @@ ParticlePropertyObject* ParticleModifier::inputStandardProperty(ParticleProperty
 ******************************************************************************/
 ParticlePropertyObject* ParticleModifier::expectCustomProperty(const QString& propertyName, int dataType, size_t componentCount) const
 {
-	for(const auto& o : _input.objects()) {
-		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o.get());
+	for(SceneObject* o : _input.objects()) {
+		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o);
 		if(property && property->name() == propertyName) {
 			if(property->dataType() != dataType)
 				throw Exception(tr("The modifier cannot be evaluated because the particle property '%1' does not have the required data type.").arg(property->name()));
@@ -174,17 +174,17 @@ ParticlePropertyObject* ParticleModifier::outputStandardProperty(ParticlePropert
 		if(outputProperty == inputProperty) {
 			// Make a real copy of the property, which may be modified.
 			outputProperty = cloneHelper()->cloneObject(inputProperty, false);
-			_output.replaceObject(inputProperty.get(), outputProperty);
+			_output.replaceObject(inputProperty, outputProperty);
 		}
 	}
 	else {
 		// Create a new particle property in the output.
 		outputProperty = ParticlePropertyObject::create(dataset(), _outputParticleCount, which);
-		_output.addObject(outputProperty.get());
+		_output.addObject(outputProperty);
 	}
 
 	OVITO_ASSERT(outputProperty->size() == outputParticleCount());
-	return outputProperty.get();
+	return outputProperty;
 }
 
 /******************************************************************************
@@ -194,8 +194,8 @@ ParticlePropertyObject* ParticleModifier::outputCustomProperty(const QString& na
 {
 	// Check if property already exists in the input.
 	OORef<ParticlePropertyObject> inputProperty;
-	for(const auto& o : input().objects()) {
-		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o.get());
+	for(SceneObject* o : input().objects()) {
+		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o);
 		if(property && property->type() == ParticleProperty::UserProperty && property->name() == name) {
 			inputProperty = property;
 			if(property->dataType() != dataType || property->dataTypeSize() != dataTypeSize)
@@ -208,8 +208,8 @@ ParticlePropertyObject* ParticleModifier::outputCustomProperty(const QString& na
 
 	// Check if property already exists in the output.
 	OORef<ParticlePropertyObject> outputProperty;
-	for(const auto& o : output().objects()) {
-		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o.get());
+	for(SceneObject* o : output().objects()) {
+		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o);
 		if(property && property->type() == ParticleProperty::UserProperty && property->name() == name) {
 			outputProperty = property;
 			OVITO_ASSERT(property->dataType() == dataType);
@@ -223,17 +223,17 @@ ParticlePropertyObject* ParticleModifier::outputCustomProperty(const QString& na
 		if(outputProperty == inputProperty) {
 			// Make a real copy of the property, which may be modified.
 			outputProperty = cloneHelper()->cloneObject(inputProperty, false);
-			_output.replaceObject(inputProperty.get(), outputProperty);
+			_output.replaceObject(inputProperty, outputProperty);
 		}
 	}
 	else {
 		// Create a new particle property in the output.
 		outputProperty = ParticlePropertyObject::create(dataset(), _outputParticleCount, dataType, dataTypeSize, componentCount, name);
-		_output.addObject(outputProperty.get());
+		_output.addObject(outputProperty);
 	}
 
 	OVITO_ASSERT(outputProperty->size() == outputParticleCount());
-	return outputProperty.get();
+	return outputProperty;
 }
 
 /******************************************************************************
@@ -264,10 +264,10 @@ SimulationCell* ParticleModifier::outputSimulationCell()
 	else {
 		// Create a new particle property in the output.
 		outputCell = new SimulationCell(dataset());
-		_output.addObject(outputCell.get());
+		_output.addObject(outputCell);
 	}
 
-	return outputCell.get();
+	return outputCell;
 }
 
 /******************************************************************************
@@ -290,8 +290,8 @@ size_t ParticleModifier::deleteParticles(const std::vector<bool>& mask, size_t d
 	QVector<QPair<OORef<ParticlePropertyObject>, OORef<ParticlePropertyObject>>> oldToNewMap;
 
 	// Create output particle properties.
-	for(const auto& outobj : _output.objects()) {
-		OORef<ParticlePropertyObject> originalOutputProperty = dynamic_object_cast<ParticlePropertyObject>(outobj.get());
+	for(SceneObject* outobj : _output.objects()) {
+		OORef<ParticlePropertyObject> originalOutputProperty = dynamic_object_cast<ParticlePropertyObject>(outobj);
 		if(!originalOutputProperty)
 			continue;
 
@@ -302,19 +302,19 @@ size_t ParticleModifier::deleteParticles(const std::vector<bool>& mask, size_t d
 		newProperty->resize(newParticleCount);
 
 		// Replace original property with the filtered one.
-		_output.replaceObject(originalOutputProperty.get(), newProperty);
+		_output.replaceObject(originalOutputProperty, newProperty);
 
 		oldToNewMap.push_back(qMakePair(originalOutputProperty, newProperty));
 	}
 
 	// Transfer and filter per-particle data elements.
 	QtConcurrent::blockingMap(oldToNewMap, [&mask](const QPair<OORef<ParticlePropertyObject>, OORef<ParticlePropertyObject>>& pair) {
-		pair.second->filterCopy(pair.first.get(), mask);
+		pair.second->filterCopy(pair.first, mask);
 	});
 
 	// Delete bonds for particles that have been deleted.
 	for(const auto& outobj : _output.objects()) {
-		OORef<BondsObject> originalBondsObject = dynamic_object_cast<BondsObject>(outobj.get());
+		OORef<BondsObject> originalBondsObject = dynamic_object_cast<BondsObject>(outobj);
 		if(!originalBondsObject)
 			continue;
 
@@ -323,7 +323,7 @@ size_t ParticleModifier::deleteParticles(const std::vector<bool>& mask, size_t d
 		newBondsObject->particlesDeleted(mask);
 
 		// Replace original bonds object with the filtered one.
-		_output.replaceObject(originalBondsObject.get(), newBondsObject);
+		_output.replaceObject(originalBondsObject, newBondsObject);
 	}
 
 	return newParticleCount;

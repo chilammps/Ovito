@@ -80,7 +80,7 @@ AtomicStrainModifier::AtomicStrainModifier(DataSet* dataset) : AsynchronousParti
 	// We don't want the scene's animation interval to be affected by an animation
 	// loaded into the reference configuration object.
 	linkedFileObj->setAdjustAnimationIntervalEnabled(false);
-	setReferenceConfiguration(linkedFileObj.get());
+	setReferenceConfiguration(linkedFileObj);
 }
 
 /******************************************************************************
@@ -105,7 +105,7 @@ void AtomicStrainModifier::setReferenceSource(const QUrl& sourceUrl, const FileI
 	else {
 		OORef<LinkedFileObject> newObj(new LinkedFileObject(dataset()));
 		newObj->setSource(sourceUrl, importerType);
-		setReferenceConfiguration(newObj.get());
+		setReferenceConfiguration(newObj);
 	}
 }
 

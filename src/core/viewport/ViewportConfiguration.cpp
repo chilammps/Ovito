@@ -142,7 +142,7 @@ ViewportSceneRenderer* ViewportConfiguration::viewportRenderer()
 {
 	if(!_viewportRenderer)
 		_viewportRenderer = new ViewportSceneRenderer(dataset());
-	return _viewportRenderer.get();
+	return _viewportRenderer;
 }
 
 /******************************************************************************

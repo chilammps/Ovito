@@ -69,7 +69,7 @@ void FreezeSelectionModifier::takeSelectionSnapshot(ModifierApplication* modApp,
 	OORef<ParticleSelectionSet> selectionSet = dynamic_object_cast<ParticleSelectionSet>(modApp->modifierData());
 	if(!selectionSet) {
 		selectionSet = new ParticleSelectionSet(dataset());
-		modApp->setModifierData(selectionSet.get());
+		modApp->setModifierData(selectionSet);
 	}
 	selectionSet->resetSelection(state);
 }

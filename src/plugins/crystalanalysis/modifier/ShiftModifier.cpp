@@ -82,7 +82,7 @@ PipelineStatus ShiftModifier::modifyObject(TimePoint time, ModifierApplication* 
 	for(int index = 0; index < state.objects().size(); index++) {
 
 		// Apply translation to vertices of surface mesh.
-		if(SurfaceMesh* inputSurface = dynamic_object_cast<SurfaceMesh>(state.objects()[index].get())) {
+		if(SurfaceMesh* inputSurface = dynamic_object_cast<SurfaceMesh>(state.objects()[index])) {
 			OORef<SurfaceMesh> outputSurface = cloneHelper.cloneObject(inputSurface, false);
 			for(HalfEdgeMesh::Vertex* vertex : outputSurface->mesh().vertices())
 				vertex->pos() += t;
@@ -91,7 +91,7 @@ PipelineStatus ShiftModifier::modifyObject(TimePoint time, ModifierApplication* 
 		}
 
 		// Apply translation to dislocation lines.
-		else if(DislocationNetwork* inputDislocations = dynamic_object_cast<DislocationNetwork>(state.objects()[index].get())) {
+		else if(DislocationNetwork* inputDislocations = dynamic_object_cast<DislocationNetwork>(state.objects()[index])) {
 			OORef<DislocationNetwork> outputDislocations = cloneHelper.cloneObject(inputDislocations, false);
 			for(DislocationSegment* segment : outputDislocations->segments()) {
 				QVector<Point3> line = segment->line();

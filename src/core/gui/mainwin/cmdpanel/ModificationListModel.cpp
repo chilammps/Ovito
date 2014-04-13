@@ -63,13 +63,13 @@ void ModificationListModel::setItems(const QList<OORef<ModificationListItem>>& n
 	beginResetModel();
 	_items = newItems;
 	_hiddenItems = newHiddenItems;
-	for(const auto& item : _items) {
-		connect(item.get(), SIGNAL(itemChanged(ModificationListItem*)), this, SLOT(refreshItem(ModificationListItem*)));
-		connect(item.get(), SIGNAL(subitemsChanged(ModificationListItem*)), this, SLOT(requestUpdate()));
+	for(ModificationListItem* item : _items) {
+		connect(item, &ModificationListItem::itemChanged, this, &ModificationListModel::refreshItem);
+		connect(item, &ModificationListItem::subitemsChanged, this, &ModificationListModel::requestUpdate);
 	}
-	for(const auto& item : _hiddenItems) {
-		connect(item.get(), SIGNAL(itemChanged(ModificationListItem*)), this, SLOT(refreshItem(ModificationListItem*)));
-		connect(item.get(), SIGNAL(subitemsChanged(ModificationListItem*)), this, SLOT(requestUpdate()));
+	for(ModificationListItem* item : _hiddenItems) {
+		connect(item, &ModificationListItem::itemChanged, this, &ModificationListModel::refreshItem);
+		connect(item, &ModificationListItem::subitemsChanged, this, &ModificationListModel::requestUpdate);
 	}
 	endResetModel();
 }

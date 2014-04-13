@@ -45,7 +45,21 @@ class ObjectLoadStream;		// defined in ObjectLoadStream.h
 #endif
 
 /**
- * \brief Universal base class for most core and plug-in classes.
+ * \brief Universal base class for most objects in OVITO.
+ *
+ * The OvitoObject class implements a simple reference counting mechanism to manage the
+ * the lifetime of object instances. User code should make use of the OORef
+ * smart-pointer class, which automatically increments and decrements the reference counter
+ * of an OvitoObject when it holds a pointer to it.
+ *
+ * When the reference counter of an OvitoObject reaches zero, the virtual aboutToBeDeleted()
+ * function is called to notify the object that is about to be deleted from memory.
+ * After this function returns, the object instance destroys itself.
+ *
+ * The OvitoObject class provides serialization and deserialization functions, which allow
+ * the object to be saved to disk and restored at a later time. Subclasses that want
+ * to support serialization of their data should override the virtual functions
+ * saveToStream() and loadFromStream().
  */
 class OVITO_CORE_EXPORT OvitoObject : public QObject
 {
@@ -64,59 +78,23 @@ public:
 	virtual ~OvitoObject() {
 #ifdef OVITO_DEBUG
 		OVITO_CHECK_OBJECT_POINTER(this);
+		OVITO_ASSERT_MSG(objectReferenceCount() == 0, "~OvitoObject()", "Destroying an object whose reference counter is non-zero.");
 		_magicAliveCode = 0xFEDCBA87;
 #endif
 	}
-
-	/// \brief Saves the class' contents to an output stream.
-	/// \param stream The destination stream.
-	///
-	/// Derived classes can overwrite this virtual method to store their specific data
-	/// in the output stream. The derived class \b must always call the base implementation of the saveToStream() method
-	/// before it writes its own data to the stream.
-	///
-	/// The base implementation of OvitoObject::saveToStream() does nothing.
-	///
-	/// \sa loadFromStream()
-	virtual void saveToStream(ObjectSaveStream& stream) {}
-
-	/// \brief Loads the class' contents from an input stream.
-	/// \param stream The source stream.
-	/// \throw Exception when a parsing error has occurred.
-	///
-	/// Derived classes can overwrite this virtual method to read their specific data
-	/// from the input stream. The derived class \b must always call the loadFromStream() method
-	/// of the base class before reading its own data from the stream.
-	///
-	/// The base implementation of OvitoObject::loadFromStream() method does nothing.
-	///
-	/// \note An OvitoObject is not in a fully initialized state when its loadFromStream() method is called.
-	///       In particular the developer cannot assume that all other objects stored in the data stream and
-	///       referenced by this object have already been restored at the time loadFromStream() is called.
-	///       The OvitoObject::loadFromStreamComplete() method will be called for every OvitoObject-derived object
-	///       after all objects have been completely deserialized. If the object has to do some post-deserialization
-	///       tasks that rely on other objects referenced by this object then this should be done in an implementation of
-	///       the loadFromStreamComplete() method.
-	///
-	/// \sa saveToStream(), loadFromStreamComplete()
-	virtual void loadFromStream(ObjectLoadStream& stream) {}
-
-	/// This method is called once for this object after it has been
-	/// loaded from the input stream and each other object in the stream
-	/// has been loaded as well. This function can therefore safely access
-	/// sub-objects stored in this class that have been loaded via ObjectLoadStream::loadObject().
-	/// \sa loadFromStream()
-	virtual void loadFromStreamComplete() {}
 
 	/// Returns true if this object is currently being loaded from an ObjectLoadStream.
 	bool isBeingLoaded() const;
 
 	/// \brief Returns the current value of the object's reference counter.
-	/// \return The reference count for this object.
+	/// \return The reference count for this object, i.e. the number of references
+	///         pointing to this object.
 	size_t objectReferenceCount() const { return _referenceCount; }
 
 #ifdef OVITO_DEBUG
 	/// \brief Returns whether this object has not been deleted yet.
+	///
+	/// This hidden function is used by the OVITO_CHECK_OBJECT_POINTER macro in debug builds.
 	bool __isObjectAlive() const { return _magicAliveCode == 0x87ABCDEF; }
 #endif
 
@@ -128,15 +106,51 @@ protected:
 		OVITO_CHECK_OBJECT_POINTER(this);
 	}
 
+	/// \brief Saves the internal data of this object to an output stream.
+	/// \param stream The destination stream.
+	///
+	/// Subclasses can override this method to write their data fields
+	/// to a file. The derived class \b must always call the base implementation saveToStream() first
+	/// before it writes its own data to the stream.
+	///
+	/// The default implementation of this method does nothing.
+	/// \sa loadFromStream()
+	virtual void saveToStream(ObjectSaveStream& stream) {}
+
+	/// \brief Loads the data of this class from an input stream.
+	/// \param stream The source stream.
+	/// \throw Exception when a parsing error has occurred.
+	///
+	/// Subclasses can override this method to read their saved data
+	/// from the input stream. The derived class \b must always call the base implementation of loadFromStream() first
+	/// before reading its own data from the stream.
+	///
+	/// The default implementation of this method does nothing.
+	///
+	/// \note The OvitoObject is not in a fully initialized state when the loadFromStream() method is called.
+	///       In particular the developer cannot assume that all other objects stored in the data stream and
+	///       referenced by this object have already been restored at the time loadFromStream() is invoked.
+	///       The loadFromStreamComplete() method will be called after all objects stored in a file have been completely
+	///       loaded and and their data has been restored. If you have to perform some post-deserialization
+	///       tasks that require other referenced objects to be in place and fully loaded, then this should
+	///       be done by overriding loadFromStreamComplete().
+	///
+	/// \sa saveToStream()
+	virtual void loadFromStream(ObjectLoadStream& stream) {}
+
+	/// \brief This method is called once for this object after they have been
+	///        completely loaded from a stream.
+	///
+	/// It is safe to access sub-objects when overriding this this method.
+	/// The default implementation of this method does nothing.
+	virtual void loadFromStreamComplete() {}
+
 private:
 
-	/// The number of references to this object.
+	/// The current number of references to this object.
 	size_t _referenceCount;
 
-private:
-
 	/// \brief Increments the reference count by one.
-	/// \sa decrementReferenceCount()
 	void incrementReferenceCount() {
 		OVITO_CHECK_OBJECT_POINTER(this);
 		++_referenceCount;
@@ -144,17 +158,17 @@ private:
 
 	/// \brief Decrements the reference count by one.
 	///
-	/// If the reference count becomes zero then the object is auto-deleted.
-	/// \sa autoDeleteObject(), incrementReferenceCount()
+	/// When the reference count becomes zero, then the object deletes itself automatically.
 	void decrementReferenceCount() {
 		OVITO_CHECK_OBJECT_POINTER(this);
 		OVITO_ASSERT_MSG(_referenceCount > 0, "OvitoObject::decrementReferenceCount()", "Reference count became negative.");
 		if(--_referenceCount == 0) {
 			// Set the reference counter to a positive value to prevent the object
-			// from being deleted a second time.
-			_referenceCount = 1;
+			// from being deleted a second time during the call to aboutToBeDeleted().
+			_referenceCount = 0xFFFF;
 			aboutToBeDeleted();
-			OVITO_ASSERT(_referenceCount == 1);
+			OVITO_ASSERT(_referenceCount == 0xFFFF);
+			_referenceCount = 0;
 			delete this;
 		}
 	}
@@ -166,48 +180,56 @@ private:
 	quint32 _magicAliveCode;
 #endif
 
-private:
-
 	Q_OBJECT
 	OVITO_OBJECT
 
-	template<class T> friend class OORef;	// Give OORef smart pointer access to the internal reference count.
+	// Give OORef smart pointer access to the internal reference count.
+	template<class T> friend class OORef;
+
+	// These classes also require direct access to the reference counter since they
+	// don't make use of the OORef smart pointer class.
 	friend class VectorReferenceFieldBase;
 	friend class SingleReferenceFieldBase;
+
+	// These classes need to access the protected serialization functions.
+	friend class ObjectSaveStream;
+	friend class ObjectLoadStream;
 };
 
-/// \brief Dynamic casting function for OvitoObject derived classes.
+/// \brief Dynamic cast operator for subclasses of OvitoObject.
 ///
-/// Returns the given object cast to type \c T if the object is of type \c T
-/// (or of a subclass); otherwise returns \c NULL.
+/// Returns a pointer to the input object, cast to type \c T if the object is of type \c T
+/// (or a subclass); otherwise returns \c NULL.
 template<class T, class U>
 inline T* dynamic_object_cast(U* obj) {
 	return qobject_cast<T*>(obj);
 }
 
-/// \brief Dynamic casting function for OvitoObject derived classes.
+/// \brief Dynamic cast operator for subclasses of OvitoObject derived.
 ///
-/// Returns the given object cast to type \c T if the object is of type \c T
-/// (or of a subclass); otherwise returns \c NULL.
+/// Returns a constant pointer to the input object, cast to type \c T if the object is of type \c T
+/// (or subclass); otherwise returns \c NULL.
 template<class T, class U>
 inline const T* dynamic_object_cast(const U* obj) {
 	return qobject_cast<const T*>(obj);
 }
 
-/// \brief Static casting function for OvitoObject derived classes.
+/// \brief Static cast operator for OvitoObject derived classes.
 ///
-/// Returns the given object cast to type \c T.
-/// Performs a runtime check of the object type in debug build.
+/// Returns a pointer to the object, cast to target type \c T.
+/// Performs a runtime check in debug builds to make sure the input object
+/// is really an instance of the target class.
 template<class T, class U>
 inline T* static_object_cast(U* obj) {
 	OVITO_ASSERT_MSG(!obj || obj->getOOType().isDerivedFrom(T::OOType), "static_object_cast", "Runtime type check failed. The source object is not an instance of the target class.");
 	return static_cast<T*>(obj);
 }
 
-/// \brief Static casting function for OvitoObject derived object.
+/// \brief Static cast operator for OvitoObject derived object.
 ///
-/// Returns the given object cast to type \c T.
-/// Performs a runtime check of the object type in debug build.
+/// Returns a const pointer to the object, cast to target type \c T.
+/// Performs a runtime check in debug builds to make sure the input object
+/// is really an instance of the target class.
 template<class T, class U>
 inline const T* static_object_cast(const U* obj) {
 	OVITO_ASSERT_MSG(!obj || obj->getOOType().isDerivedFrom(T::OOType), "static_object_cast", "Runtime type check failed. The source object is not an instance of the target class.");
@@ -215,16 +237,16 @@ inline const T* static_object_cast(const U* obj) {
 }
 
 
-/// \brief Dynamic casting function for smart pointer to OvitoObject.
+/// \brief Dynamic cast operator for OORef smart pointers.
 ///
-/// Returns the given object cast to type \c T if the object is of type \c T
-/// (or of a subclass); otherwise returns \c NULL.
+/// Returns a smart pointer to the input object, cast to type \c T if the object is of type \c T
+/// (or a subclass); otherwise returns \c NULL.
 template<class T, class U>
 inline OORef<T> dynamic_object_cast(const OORef<U>& obj) {
-	return OORef<T>(qobject_cast<T*>(obj.get()));
+	return qobject_cast<T*>(obj.get());
 }
 
-/// \brief Static casting function for smart pointers to OvitoObject derived objects.
+/// \brief Static cast operator for smart pointers to OvitoObject derived objects.
 ///
 /// Returns the given object cast to type \c T.
 /// Performs a runtime check of the object type in debug build.

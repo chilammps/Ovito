@@ -124,7 +124,7 @@ QSet<SceneObject*> ParticleImportTask::insertIntoScene(LinkedFileObject* destina
 		// Create a display object for the simulation cell.
 		OORef<SimulationCellDisplay> cellDisplay = new SimulationCellDisplay(destination->dataset());
 		cellDisplay->loadUserDefaults();
-		cell->addDisplayObject(cellDisplay.get());
+		cell->addDisplayObject(cellDisplay);
 
 		// Choose an appropriate line width for the cell size.
 		FloatType cellDiameter = (
@@ -133,12 +133,12 @@ QSet<SceneObject*> ParticleImportTask::insertIntoScene(LinkedFileObject* destina
 				simulationCell().matrix().column(2)).length();
 		cellDisplay->setSimulationCellLineWidth(cellDiameter * 1.4e-3f);
 
-		destination->addSceneObject(cell.get());
+		destination->addSceneObject(cell);
 	}
 	else {
 		cell->setData(simulationCell());
 	}
-	activeObjects.insert(cell.get());
+	activeObjects.insert(cell);
 
 	// Adopt particle properties.
 	for(auto& property : _properties) {
@@ -156,13 +156,13 @@ QSet<SceneObject*> ParticleImportTask::insertIntoScene(LinkedFileObject* destina
 		}
 		else {
 			propertyObj = ParticlePropertyObject::create(destination->dataset(), QSharedDataPointer<ParticleProperty>(property.release()));
-			destination->addSceneObject(propertyObj.get());
+			destination->addSceneObject(propertyObj);
 		}
 
 		if(propertyObj->type() == ParticleProperty::ParticleTypeProperty) {
-			insertParticleTypes(propertyObj.get());
+			insertParticleTypes(propertyObj);
 		}
-		activeObjects.insert(propertyObj.get());
+		activeObjects.insert(propertyObj);
 	}
 
 	// Pass timestep number to modification pipeline system.
@@ -206,7 +206,7 @@ void ParticleImportTask::insertParticleTypes(ParticlePropertyObject* propertyObj
 
 			typeProperty->insertParticleType(ptype);
 		}
-		activeTypes.insert(ptype.get());
+		activeTypes.insert(ptype);
 
 		if(!item.name.isEmpty())
 			ptype->setName(item.name);

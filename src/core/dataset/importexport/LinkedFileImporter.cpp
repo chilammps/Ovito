@@ -228,10 +228,10 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl, ImportMode importMode
 			UndoSuspender unsoSuspender(this);	// Do not create undo records for this part.
 
 			// Add object to scene.
-			node = new ObjectNode(dataset(), obj.get());
+			node = new ObjectNode(dataset(), obj);
 
 			// Let the import subclass customize the node.
-			prepareSceneNode(node.get(), obj.get());
+			prepareSceneNode(node, obj);
 		}
 
 		// Insert node into scene.
@@ -240,7 +240,7 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl, ImportMode importMode
 	else node = existingNode;
 
 	// Select import node.
-	dataset()->selection()->setNode(node.get());
+	dataset()->selection()->setNode(node);
 
 	// Jump to the right frame to show the originally selected file.
 	int jumpToFrame = -1;

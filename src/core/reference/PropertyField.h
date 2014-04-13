@@ -250,16 +250,6 @@ public:
 		return newPointer;
 	}
 
-	/// Write access to the RefTarget pointer. Changes the value of the reference field.
-	/// The old reference target will be released and the new reference target
-	/// will be bound to this reference field.
-	/// This operator automatically handles undo so the value change can be undone.
-	RefTargetType* operator=(const OORef<RefTargetType>& newPointer) {
-		setValue(newPointer.get());
-		OVITO_ASSERT(_pointer == newPointer);
-		return newPointer.get();
-	}
-
 	/// Overloaded arrow operator; implements pointer semantics.
 	/// Just use this operator as you would with a normal C++ pointer.
 	RefTargetType* operator->() const {
@@ -430,26 +420,14 @@ public:
 	/// Inserts a reference at the end of the vector.
 	void push_back(RefTargetType* object) { insertInternal(object); }
 
-	/// Inserts a reference at the end of the vector.
-	void push_back(const OORef<RefTargetType>& object) { insertInternal(object.get()); }
-
 	/// Inserts a reference at index position i in the vector.
 	/// If i is 0, the value is prepended to the vector.
 	/// If i is size() or negative, the value is appended to the vector.
 	void insert(int i, RefTargetType* object) { insertInternal(object, i); }
 
-	/// Inserts a reference at index position i in the vector.
-	/// If i is 0, the value is prepended to the vector.
-	/// If i is size() or negative, the value is appended to the vector.
-	void insert(int i, const OORef<RefTargetType>& object) { insertInternal(object.get(), i); }
-
 	/// Replaces a reference in the vector.
 	/// This method removes the reference at index i and inserts the new reference at the same index.
 	void set(int i, RefTargetType* object) { remove(i); insert(i, object); }
-
-	/// Replaces a reference in the vector.
-	/// This method removes the reference at index i and inserts the new reference at the same index.
-	void set(int i, const OORef<RefTargetType>& object) { remove(i); insert(i, object); }
 
 	/// Returns an STL-style iterator pointing to the first item in the vector.
 	const_iterator begin() const { return targets().begin(); }

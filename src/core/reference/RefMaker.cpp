@@ -296,7 +296,7 @@ void RefMaker::loadFromStream(ObjectLoadStream& stream)
 {
 	OvitoObject::loadFromStream(stream);
 	OVITO_ASSERT(!dataset()->undoStack().isRecording());
-	OVITO_ASSERT(stream._currentObject && stream._currentObject->object.get() == this);
+	OVITO_ASSERT(stream._currentObject && stream._currentObject->object == this);
 
 #if 0
 	qDebug() << "Loading object" << this;
@@ -323,9 +323,9 @@ void RefMaker::loadFromStream(ObjectLoadStream& stream)
 								.arg(QString(fieldEntry.identifier)).arg(fieldEntry.definingClass->name()).arg(fieldEntry.targetClass->name()).arg(target->getOOType().name()));
 						}
 #if 0
-						qDebug() << "  Reference field" << fieldEntry.identifier << " contains" << target.get();
+						qDebug() << "  Reference field" << fieldEntry.identifier << " contains" << target;
 #endif
-						fieldEntry.field->singleStorageAccessFunc(this).setValue(target.get());
+						fieldEntry.field->singleStorageAccessFunc(this).setValue(target);
 					}
 					else {
 						// Get storage address of member variable.
@@ -343,9 +343,9 @@ void RefMaker::loadFromStream(ObjectLoadStream& stream)
 									.arg(QString(fieldEntry.identifier)).arg(fieldEntry.definingClass->name(), fieldEntry.targetClass->name(), target->getOOType().name()));
 							}
 #if 0
-							qDebug() << "  Vector reference field" << fieldEntry.identifier << " contains" << target.get();
+							qDebug() << "  Vector reference field" << fieldEntry.identifier << " contains" << target;
 #endif
-							refField.insertInternal(target.get());
+							refField.insertInternal(target);
 						}
 					}
 				}

@@ -141,7 +141,7 @@ void SceneNode::deleteNode()
 * be deleted if this scene node is deleted and vice versa.
 * Returns the newly created LookAtController assigned as rotation controller for this node.
 ******************************************************************************/
-LookAtController* SceneNode::bindToTarget(SceneNode* targetNode)
+OORef<LookAtController> SceneNode::bindToTarget(SceneNode* targetNode)
 {
 	_targetNode = targetNode;
 
@@ -160,7 +160,7 @@ LookAtController* SceneNode::bindToTarget(SceneNode* targetNode)
 			// Assign it as rotation sub-controller.
 			prs->setRotationController(lookAtCtrl);
 
-			return lookAtCtrl.get();
+			return lookAtCtrl;
 		}
 		else {
 			// Reset to default rotation controller.

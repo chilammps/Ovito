@@ -64,7 +64,7 @@ public:
 	virtual void resetUI() override;
 
 	/// Returns the current sub-editor for the selected sub-object or NULL if there is none.
-	PropertiesEditor* subEditor() const { return _subEditor.get(); }
+	PropertiesEditor* subEditor() const { return _subEditor; }
 
 	/// Informs the parameter UI that the given columns of all items have changed.
 	void updateColumns(int columnStartIndex, int columnEndIndex) { _model->updateColumns(columnStartIndex, columnEndIndex); }

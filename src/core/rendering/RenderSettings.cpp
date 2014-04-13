@@ -99,7 +99,7 @@ RenderSettings::RenderSettings(DataSet* dataset) : RefTarget(dataset),
 
 	// Create an instance of the default renderer class.
 	OORef<SceneRenderer> renderer = static_object_cast<SceneRenderer>(rendererClass->createInstance(dataset));
-	setRenderer(renderer.get());
+	setRenderer(renderer);
 }
 
 /******************************************************************************

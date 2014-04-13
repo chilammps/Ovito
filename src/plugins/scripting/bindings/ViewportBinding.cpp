@@ -99,7 +99,7 @@ QScriptValue ViewportBinding::render(QScriptContext* context, ScriptEngine* engi
 		frameBuffer.reset(new FrameBuffer(settings->outputImageWidth(), settings->outputImageHeight()));
 
 	// Render.
-	return engine->toScriptValue(engine->dataset()->renderScene(settings.get(), viewport, frameBuffer, frameBufferWindow));
+	return engine->toScriptValue(engine->dataset()->renderScene(settings, viewport, frameBuffer, frameBufferWindow));
 }
 
 /******************************************************************************

@@ -165,16 +165,6 @@ protected:
 	/// \undoable
 	void replaceReferencesTo(RefTarget* oldTarget, RefTarget* newTarget);
 
-	/// \brief Replaces all references of this RefMaker to some RefTarget with new ones.
-	/// \param oldTarget Specifies which references should be replaced.
-	/// \param newTarget Specifies the new target that should replace the old one.
-	/// \note This is the same method as above but using a smart pointer for the parameter \a newTarget.
-	/// \undoable
-	template<class T>
-	void replaceReferencesTo(RefTarget* oldTarget, const OORef<T>& newTarget) {
-		replaceReferencesTo(oldTarget, newTarget.get());
-	}
-
 	/// \brief Clears a reference field.
 	/// \param field Specifies the reference field of this RefMaker to be cleared.
 	///

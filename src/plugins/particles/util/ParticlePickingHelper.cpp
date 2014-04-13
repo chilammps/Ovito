@@ -54,11 +54,9 @@ bool ParticlePickingHelper::pickParticle(Viewport* vp, const QPoint& clickPoint,
 			// Determine particle ID.
 			result.particleId = -1;
 			const PipelineFlowState& state = result.objNode->evalPipeline(vp->dataset()->animationSettings()->time());
-			for(const auto& sceneObj : state.objects()) {
-				ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(sceneObj.get());
-				if(property && property->type() == ParticleProperty::IdentifierProperty && result.particleIndex < property->size()) {
-					result.particleId = property->getInt(result.particleIndex);
-				}
+			ParticlePropertyObject* identifierProperty = ParticlePropertyObject::findInState(state, ParticleProperty::IdentifierProperty);
+			if(identifierProperty && result.particleIndex < identifierProperty->size()) {
+				result.particleId = identifierProperty->getInt(result.particleIndex);
 			}
 
 			return true;
@@ -82,15 +80,13 @@ Box3 ParticlePickingHelper::selectionMarkerBoundingBox(Viewport* vp, const PickR
 	// If particle selection is based on ID, find particle with the given ID.
 	size_t particleIndex = pickRecord.particleIndex;
 	if(pickRecord.particleId >= 0) {
-		for(const auto& sceneObj : flowState.objects()) {
-			ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(sceneObj.get());
-			if(property && property->type() == ParticleProperty::IdentifierProperty) {
-				const int* begin = property->constDataInt();
-				const int* end = begin + property->size();
-				const int* iter = std::find(begin, end, pickRecord.particleId);
-				if(iter != end)
-					particleIndex = (iter - begin);
-			}
+		ParticlePropertyObject* identifierProperty = ParticlePropertyObject::findInState(flowState, ParticleProperty::IdentifierProperty);
+		if(identifierProperty) {
+			const int* begin = identifierProperty->constDataInt();
+			const int* end = begin + identifierProperty->size();
+			const int* iter = std::find(begin, end, pickRecord.particleId);
+			if(iter != end)
+				particleIndex = (iter - begin);
 		}
 	}
 
@@ -98,8 +94,8 @@ Box3 ParticlePickingHelper::selectionMarkerBoundingBox(Viewport* vp, const PickR
 	ParticlePropertyObject* posProperty = nullptr;
 	ParticlePropertyObject* radiusProperty = nullptr;
 	ParticleTypeProperty* typeProperty = nullptr;
-	for(const auto& sceneObj : flowState.objects()) {
-		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(sceneObj.get());
+	for(SceneObject* sceneObj : flowState.objects()) {
+		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(sceneObj);
 		if(!property) continue;
 		if(property->type() == ParticleProperty::PositionProperty && property->size() >= particleIndex)
 			posProperty = property;
@@ -150,15 +146,13 @@ void ParticlePickingHelper::renderSelectionMarker(Viewport* vp, ViewportSceneRen
 	// If particle selection is based on ID, find particle with the given ID.
 	size_t particleIndex = pickRecord.particleIndex;
 	if(pickRecord.particleId >= 0) {
-		for(const auto& sceneObj : flowState.objects()) {
-			ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(sceneObj.get());
-			if(property && property->type() == ParticleProperty::IdentifierProperty) {
-				const int* begin = property->constDataInt();
-				const int* end = begin + property->size();
-				const int* iter = std::find(begin, end, pickRecord.particleId);
-				if(iter != end)
-					particleIndex = (iter - begin);
-			}
+		ParticlePropertyObject* identifierProperty = ParticlePropertyObject::findInState(flowState, ParticleProperty::IdentifierProperty);
+		if(identifierProperty) {
+			const int* begin = identifierProperty->constDataInt();
+			const int* end = begin + identifierProperty->size();
+			const int* iter = std::find(begin, end, pickRecord.particleId);
+			if(iter != end)
+				particleIndex = (iter - begin);
 		}
 	}
 
@@ -168,8 +162,8 @@ void ParticlePickingHelper::renderSelectionMarker(Viewport* vp, ViewportSceneRen
 	ParticlePropertyObject* colorProperty = nullptr;
 	ParticlePropertyObject* selectionProperty = nullptr;
 	ParticleTypeProperty* typeProperty = nullptr;
-	for(const auto& sceneObj : flowState.objects()) {
-		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(sceneObj.get());
+	for(SceneObject* sceneObj : flowState.objects()) {
+		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(sceneObj);
 		if(!property) continue;
 		if(property->type() == ParticleProperty::PositionProperty && property->size() >= particleIndex)
 			posProperty = property;

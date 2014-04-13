@@ -43,7 +43,7 @@ public:
 	ScriptEngine(DataSet* dataset, QObject* parent = nullptr);
 
 	/// \break Returns the dataset that provides the context for the script.
-	DataSet* dataset() const { return _dataset.get(); }
+	DataSet* dataset() const { return _dataset; }
 
 	/// \brief Create a script function object from a C++ std::function.
 	///
@@ -52,11 +52,6 @@ public:
 
 	/// \brief Wraps an OvitoObject pointer in a QScriptValue.
 	QScriptValue wrapOvitoObject(OvitoObject* obj);
-
-	/// \brief Wraps an OvitoObject smart pointer in a QScriptValue.
-	QScriptValue wrapOvitoObject(const OORef<OvitoObject>& obj) {
-		return wrapOvitoObject(obj.get());
-	}
 
 	/// \brief Returns the wrapped C++ object.
 	template<typename T>
@@ -118,7 +113,7 @@ private:
 		}
 		obj = dynamic_object_cast<T>(sv.data().toQObject());
 #ifdef OVITO_DEBUG
-		if(sv.data().data().toVariant().value<OORef<OvitoObject>>().get() != obj)
+		if(sv.data().data().toVariant().value<OORef<OvitoObject>>() != obj)
 			qDebug() << "WARNING: Script value storing a" << obj->getOOType().name() << "does not carry a reference counting smart pointer.";
 #endif
 	}

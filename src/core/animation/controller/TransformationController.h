@@ -179,12 +179,6 @@ public:
 		this->_position = position;
 	}
 
-	/// \brief Assigns a new sub-controller for the translational component of the transformation.
-	/// \param position The new controller.
-	/// \note This is the same method as above but takes a smart pointer instead of a raw pointer.
-	/// \undoable
-	void setPositionController(const OORef<PositionController>& position) { setPositionController(position.get()); }
-
 	/// \brief Assigns a new sub-controller for the rotational component of the transformation.
 	/// \param rotation The new controller.
 	/// \sa rotationController()
@@ -194,12 +188,6 @@ public:
 		this->_rotation = rotation;
 	}
 
-	/// \brief Assigns a new sub-controller for the rotational component of the transformation.
-	/// \param rotation The new controller.
-	/// \note This is the same method as above but takes a smart pointer instead of a raw pointer.
-	/// \undoable
-	void setRotationController(const OORef<RotationController>& rotation) { setRotationController(rotation.get()); }
-
 	/// \brief Assigns a new sub-controller for the scaling component of the transformation.
 	/// \param scaling The new controller.
 	/// \sa scalingController()
@@ -208,12 +196,6 @@ public:
 		OVITO_CHECK_OBJECT_POINTER(scaling);
 		this->_scaling = scaling;
 	}
-
-	/// \brief Assigns a new sub-controller for the scaling component of the transformation.
-	/// \param scaling The new controller.
-	/// \note This is the same method as above but takes a smart pointer instead of a raw pointer.
-	/// \undoable
-	void setScalingController(const OORef<ScalingController>& scaling) { setScalingController(scaling.get()); }
 
 	/// \brief Adds a translation to the transformation.
 	/// \param time The animation at which the translation should be applied to the transformation.

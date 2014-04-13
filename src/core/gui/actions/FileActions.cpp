@@ -267,7 +267,7 @@ void ActionManager::on_Settings_triggered()
 void ActionManager::on_FileImport_triggered()
 {
 	// Let the user select a file.
-	ImportFileDialog dialog(ImportExportManager::instance().fileImporters(_dataset.get()), mainWindow(), tr("Import Data"));
+	ImportFileDialog dialog(ImportExportManager::instance().fileImporters(_dataset), mainWindow(), tr("Import Data"));
 	if(dialog.exec() != QDialog::Accepted)
 		return;
 
@@ -286,7 +286,7 @@ void ActionManager::on_FileImport_triggered()
 void ActionManager::on_FileRemoteImport_triggered()
 {
 	// Let the user enter the URL of the remote file.
-	ImportRemoteFileDialog dialog(ImportExportManager::instance().fileImporters(_dataset.get()), mainWindow(), tr("Import Remote File"));
+	ImportRemoteFileDialog dialog(ImportExportManager::instance().fileImporters(_dataset), mainWindow(), tr("Import Remote File"));
 	if(dialog.exec() != QDialog::Accepted)
 		return;
 
@@ -313,7 +313,7 @@ void ActionManager::on_FileExport_triggered()
 
 	// Build filter string.
 	QStringList filterStrings;
-	const auto& exporterTypes = ImportExportManager::instance().fileExporters(_dataset.get());
+	const auto& exporterTypes = ImportExportManager::instance().fileExporters(_dataset);
 	for(FileExporterDescription* descriptor : exporterTypes) {
 		filterStrings << QString("%1 (%2)").arg(descriptor->fileFilterDescription(), descriptor->fileFilter());
 	}
@@ -360,7 +360,7 @@ void ActionManager::on_FileExport_triggered()
 		OVITO_ASSERT(exportFilterIndex >= 0 && exportFilterIndex < exporterTypes.size());
 
 		// Create exporter.
-		OORef<FileExporter> exporter = exporterTypes[exportFilterIndex]->createService(_dataset.get());
+		OORef<FileExporter> exporter = exporterTypes[exportFilterIndex]->createService(_dataset);
 
 		// Load user-defined default settings.
 		exporter->loadUserDefaults();
