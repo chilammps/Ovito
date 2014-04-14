@@ -75,6 +75,10 @@
 	<file>mainwin/status/status_none.png</file>
 	<file>mainwin/status/status_pending.gif</file>
 	
+	<file>mainwin/settings/vertical_axis_x.png</file>
+	<file>mainwin/settings/vertical_axis_y.png</file>
+	<file>mainwin/settings/vertical_axis_z.png</file>
+	
 	<file>actions/modify/modifier_enabled.png</file>
 	<file>actions/modify/modifier_disabled.png</file>
 	<file>actions/modify/modifier_enabled_large.png</file>

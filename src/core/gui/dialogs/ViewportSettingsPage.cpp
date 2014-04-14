@@ -24,7 +24,7 @@
 
 namespace Ovito {
 
-IMPLEMENT_OVITO_OBJECT(Core, ViewportSettingsPage, ApplicationSettingsPage)
+IMPLEMENT_OVITO_OBJECT(Core, ViewportSettingsPage, ApplicationSettingsPage);
 
 /******************************************************************************
 * Creates the widget that contains the plugin specific setting controls.
@@ -42,21 +42,33 @@ void ViewportSettingsPage::insertSettingsDialogPage(ApplicationSettingsDialog* s
 	layout1->addWidget(upDirectionGroupBox, 0, 0);
 	QGridLayout* layout2 = new QGridLayout(upDirectionGroupBox);
 
-	QLabel* label1 = new QLabel(tr("<html><p>Vertical viewpoint rotation axis:</p></html>"));
+	QLabel* label1 = new QLabel(tr("<html><p>Coordinate system orientation:</p></html>"));
 	label1->setWordWrap(true);
 	layout2->addWidget(label1, 0, 0, 1, 4);
 
 	_upDirectionGroup = new QButtonGroup(page);
-	_upDirectionGroup->addButton(new QRadioButton(tr("&X-axis"), upDirectionGroupBox), ViewportSettings::X_AXIS);
-	_upDirectionGroup->addButton(new QRadioButton(tr("&Y-axis"), upDirectionGroupBox), ViewportSettings::Y_AXIS);
-	_upDirectionGroup->addButton(new QRadioButton(tr("&Z-axis (default)"), upDirectionGroupBox), ViewportSettings::Z_AXIS);
-	layout2->addWidget(_upDirectionGroup->button(ViewportSettings::X_AXIS), 1, 0, 1, 1);
-	layout2->addWidget(_upDirectionGroup->button(ViewportSettings::Y_AXIS), 1, 1, 1, 1);
-	layout2->addWidget(_upDirectionGroup->button(ViewportSettings::Z_AXIS), 1, 2, 1, 1);
+	QRadioButton* verticalAxisX = new QRadioButton(QString(), upDirectionGroupBox);
+	QRadioButton* verticalAxisY = new QRadioButton(QString(), upDirectionGroupBox);
+	QRadioButton* verticalAxisZ = new QRadioButton(tr("(default)"), upDirectionGroupBox);
+	_upDirectionGroup->addButton(verticalAxisX, ViewportSettings::X_AXIS);
+	_upDirectionGroup->addButton(verticalAxisY, ViewportSettings::Y_AXIS);
+	_upDirectionGroup->addButton(verticalAxisZ, ViewportSettings::Z_AXIS);
+	verticalAxisX->setIcon(QIcon(":/core/mainwin/settings/vertical_axis_x.png"));
+	verticalAxisX->setIconSize(verticalAxisX->icon().availableSizes().front());
+	verticalAxisX->setToolTip(tr("X-axis"));
+	verticalAxisY->setIcon(QIcon(":/core/mainwin/settings/vertical_axis_y.png"));
+	verticalAxisY->setIconSize(verticalAxisY->icon().availableSizes().front());
+	verticalAxisY->setToolTip(tr("Y-axis"));
+	verticalAxisZ->setIcon(QIcon(":/core/mainwin/settings/vertical_axis_z.png"));
+	verticalAxisZ->setIconSize(verticalAxisZ->icon().availableSizes().front());
+	verticalAxisZ->setToolTip(tr("Z-axis"));
+	layout2->addWidget(verticalAxisX, 1, 0, 1, 1);
+	layout2->addWidget(verticalAxisY, 1, 1, 1, 1);
+	layout2->addWidget(verticalAxisZ, 1, 2, 1, 1);
 	_upDirectionGroup->button(_settings.upDirection())->setChecked(true);
 	layout2->setColumnStretch(3, 1);
 
-	_restrictVerticalRotationBox = new QCheckBox(tr("Restrict rotation to keep axis pointing upward"));
+	_restrictVerticalRotationBox = new QCheckBox(tr("Restrict camera to keep major axis pointing upward"));
 	_restrictVerticalRotationBox->setChecked(_settings.restrictVerticalRotation());
 	layout2->addWidget(_restrictVerticalRotationBox, 2, 0, 1, 3);
 

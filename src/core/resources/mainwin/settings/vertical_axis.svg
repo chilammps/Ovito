@@ -1,0 +1,563 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="744.09448819"
+   height="1052.3622047"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.48.4 r9939"
+   sodipodi:docname="vertical_axis.svg">
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1.4"
+     inkscape:cx="211.62801"
+     inkscape:cy="590.2056"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1920"
+     inkscape:window-height="1148"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1" />
+  <defs
+     id="defs4">
+    <marker
+       style="overflow:visible"
+       id="TriangleOutS"
+       refX="0.0"
+       refY="0.0"
+       orient="auto"
+       inkscape:stockid="TriangleOutS">
+      <path
+         transform="scale(0.2)"
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1.0pt"
+         d="M 5.77,0.0 L -2.88,5.0 L -2.88,-5.0 L 5.77,0.0 z "
+         id="path3907" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="TriangleOutM"
+       refX="0.0"
+       refY="0.0"
+       orient="auto"
+       inkscape:stockid="TriangleOutM">
+      <path
+         transform="scale(0.4)"
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1.0pt"
+         d="M 5.77,0.0 L -2.88,5.0 L -2.88,-5.0 L 5.77,0.0 z "
+         id="path3904" />
+    </marker>
+    <marker
+       style="overflow:visible;"
+       id="Arrow1Mend"
+       refX="0.0"
+       refY="0.0"
+       orient="auto"
+       inkscape:stockid="Arrow1Mend">
+      <path
+         transform="scale(0.4) rotate(180) translate(10,0)"
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1.0pt;"
+         d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
+         id="path3768" />
+    </marker>
+    <marker
+       style="overflow:visible;"
+       id="Arrow2Mend"
+       refX="0.0"
+       refY="0.0"
+       orient="auto"
+       inkscape:stockid="Arrow2Mend">
+      <path
+         transform="scale(0.6) rotate(180) translate(0,0)"
+         d="M 8.7185878,4.0337352 L -2.2072895,0.016013256 L 8.7185884,-4.0017078 C 6.9730900,-1.6296469 6.9831476,1.6157441 8.7185878,4.0337352 z "
+         style="fill-rule:evenodd;stroke-width:0.62500000;stroke-linejoin:round;"
+         id="path3786" />
+    </marker>
+    <marker
+       style="overflow:visible;"
+       id="Arrow2Lend"
+       refX="0.0"
+       refY="0.0"
+       orient="auto"
+       inkscape:stockid="Arrow2Lend">
+      <path
+         transform="scale(1.1) rotate(180) translate(1,0)"
+         d="M 8.7185878,4.0337352 L -2.2072895,0.016013256 L 8.7185884,-4.0017078 C 6.9730900,-1.6296469 6.9831476,1.6157441 8.7185878,4.0337352 z "
+         style="fill-rule:evenodd;stroke-width:0.62500000;stroke-linejoin:round;"
+         id="path3780" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="TriangleOutM-3"
+       refX="0"
+       refY="0"
+       orient="auto"
+       inkscape:stockid="TriangleOutM">
+      <path
+         transform="scale(0.4,0.4)"
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt"
+         d="m 5.77,0 -8.65,5 0,-10 8.65,5 z"
+         id="path3904-6"
+         inkscape:connector-curvature="0" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="TriangleOutM-5"
+       refX="0"
+       refY="0"
+       orient="auto"
+       inkscape:stockid="TriangleOutM">
+      <path
+         transform="scale(0.4,0.4)"
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt"
+         d="m 5.77,0 -8.65,5 0,-10 8.65,5 z"
+         id="path3904-3"
+         inkscape:connector-curvature="0" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="TriangleOutS-1"
+       refX="0"
+       refY="0"
+       orient="auto"
+       inkscape:stockid="TriangleOutS">
+      <path
+         transform="scale(0.2,0.2)"
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt"
+         d="m 5.77,0 -8.65,5 0,-10 8.65,5 z"
+         id="path3907-7"
+         inkscape:connector-curvature="0" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="marker5321"
+       refX="0"
+       refY="0"
+       orient="auto"
+       inkscape:stockid="TriangleOutS">
+      <path
+         transform="scale(0.2,0.2)"
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt"
+         d="m 5.77,0 -8.65,5 0,-10 8.65,5 z"
+         id="path5323"
+         inkscape:connector-curvature="0" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="marker5325"
+       refX="0"
+       refY="0"
+       orient="auto"
+       inkscape:stockid="TriangleOutS">
+      <path
+         transform="scale(0.2,0.2)"
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt"
+         d="m 5.77,0 -8.65,5 0,-10 8.65,5 z"
+         id="path5327"
+         inkscape:connector-curvature="0" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="TriangleOutSV"
+       refX="0.0"
+       refY="0.0"
+       orient="auto"
+       inkscape:stockid="TriangleOutSV">
+      <path
+         transform="scale(0.2)"
+         style="stroke:#00c800;stroke-width:1.0pt;fill:#00c800;fill-rule:evenodd"
+         d="M 5.77,0.0 L -2.88,5.0 L -2.88,-5.0 L 5.77,0.0 z "
+         id="path5439" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="TriangleOutSZ"
+       refX="0.0"
+       refY="0.0"
+       orient="auto"
+       inkscape:stockid="TriangleOutSZ">
+      <path
+         transform="scale(0.2)"
+         style="stroke:#00c800;stroke-width:1.0pt;fill:#00c800;fill-rule:evenodd"
+         d="M 5.77,0.0 L -2.88,5.0 L -2.88,-5.0 L 5.77,0.0 z "
+         id="path5442" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="TriangleOutSW"
+       refX="0.0"
+       refY="0.0"
+       orient="auto"
+       inkscape:stockid="TriangleOutSW">
+      <path
+         transform="scale(0.2)"
+         style="stroke:#0000ff;stroke-width:1.0pt;fill:#0000ff;fill-rule:evenodd"
+         d="M 5.77,0.0 L -2.88,5.0 L -2.88,-5.0 L 5.77,0.0 z "
+         id="path5445" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="TriangleOutS3"
+       refX="0.0"
+       refY="0.0"
+       orient="auto"
+       inkscape:stockid="TriangleOutS3">
+      <path
+         transform="scale(0.2)"
+         style="stroke:#ff0000;stroke-width:1.0pt;fill:#ff0000;fill-rule:evenodd"
+         d="M 5.77,0.0 L -2.88,5.0 L -2.88,-5.0 L 5.77,0.0 z "
+         id="path5448" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="TriangleOutSL"
+       refX="0.0"
+       refY="0.0"
+       orient="auto"
+       inkscape:stockid="TriangleOutSL">
+      <path
+         transform="scale(0.2)"
+         style="stroke:#00c800;stroke-width:1.0pt;fill:#00c800;fill-rule:evenodd"
+         d="M 5.77,0.0 L -2.88,5.0 L -2.88,-5.0 L 5.77,0.0 z "
+         id="path5451" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="TriangleOutSj"
+       refX="0.0"
+       refY="0.0"
+       orient="auto"
+       inkscape:stockid="TriangleOutSj">
+      <path
+         transform="scale(0.2)"
+         style="stroke:#0000ff;stroke-width:1.0pt;fill:#0000ff;fill-rule:evenodd"
+         d="M 5.77,0.0 L -2.88,5.0 L -2.88,-5.0 L 5.77,0.0 z "
+         id="path5454" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="TriangleOutSc"
+       refX="0.0"
+       refY="0.0"
+       orient="auto"
+       inkscape:stockid="TriangleOutSc">
+      <path
+         transform="scale(0.2)"
+         style="stroke:#0000ff;stroke-width:1.0pt;fill:#0000ff;fill-rule:evenodd"
+         d="M 5.77,0.0 L -2.88,5.0 L -2.88,-5.0 L 5.77,0.0 z "
+         id="path5457" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="TriangleOutSU"
+       refX="0.0"
+       refY="0.0"
+       orient="auto"
+       inkscape:stockid="TriangleOutSU">
+      <path
+         transform="scale(0.2)"
+         style="stroke:#ff0000;stroke-width:1.0pt;fill:#ff0000;fill-rule:evenodd"
+         d="M 5.77,0.0 L -2.88,5.0 L -2.88,-5.0 L 5.77,0.0 z "
+         id="path5460" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="TriangleOutSa"
+       refX="0.0"
+       refY="0.0"
+       orient="auto"
+       inkscape:stockid="TriangleOutSa">
+      <path
+         transform="scale(0.2)"
+         style="stroke:#ff0000;stroke-width:1.0pt;fill:#ff0000;fill-rule:evenodd"
+         d="M 5.77,0.0 L -2.88,5.0 L -2.88,-5.0 L 5.77,0.0 z "
+         id="path5463" />
+    </marker>
+  </defs>
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     id="layer1"
+     inkscape:groupmode="layer"
+     inkscape:label="Layer 1">
+    <text
+       inkscape:export-ydpi="40.802666"
+       inkscape:export-xdpi="40.802666"
+       inkscape:export-filename="/nfshome/stuko/prj/ovito2/src/core/resources/mainwin/settings/vertical_axis_z.png"
+       sodipodi:linespacing="125%"
+       id="text4385"
+       y="515.00165"
+       x="212.11172"
+       style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#0000ff;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       xml:space="preserve"><tspan
+         style="font-size:40px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans Bold"
+         y="515.00165"
+         x="212.11172"
+         id="tspan4387"
+         sodipodi:role="line">z</tspan></text>
+    <path
+       inkscape:export-ydpi="40.802666"
+       inkscape:export-xdpi="40.802666"
+       inkscape:export-filename="/nfshome/stuko/prj/ovito2/src/core/resources/mainwin/settings/vertical_axis_z.png"
+       sodipodi:nodetypes="cc"
+       inkscape:connector-curvature="0"
+       id="path2985-0"
+       d="M 203.04066,580.56731 240.4163,552.0046"
+       style="stroke-linejoin:miter;marker-end:url(#TriangleOutSL);stroke-opacity:1;stroke:#00c800;stroke-linecap:butt;stroke-miterlimit:4;stroke-dasharray:none;stroke-width:4;fill:none" />
+    <path
+       inkscape:export-ydpi="40.802666"
+       inkscape:export-xdpi="40.802666"
+       inkscape:export-filename="/nfshome/stuko/prj/ovito2/src/core/resources/mainwin/settings/vertical_axis_z.png"
+       sodipodi:nodetypes="cc"
+       inkscape:connector-curvature="0"
+       id="path2985-0-8"
+       d="m 202.83136,580.5715 51.51779,28.25838"
+       style="stroke-linejoin:miter;marker-end:url(#TriangleOutSa);stroke-opacity:1;stroke:#ff0000;stroke-linecap:butt;stroke-miterlimit:4;stroke-dasharray:none;stroke-width:4;fill:none" />
+    <path
+       inkscape:export-ydpi="40.802666"
+       inkscape:export-xdpi="40.802666"
+       inkscape:export-filename="/nfshome/stuko/prj/ovito2/src/core/resources/mainwin/settings/vertical_axis_z.png"
+       sodipodi:nodetypes="cc"
+       inkscape:connector-curvature="0"
+       id="path2985"
+       d="m 202.85714,581.00479 0,-70.9891"
+       style="stroke-linejoin:miter;marker-end:url(#TriangleOutSc);stroke-opacity:1;stroke:#0000ff;stroke-linecap:butt;stroke-miterlimit:4;stroke-dasharray:none;stroke-width:7;fill:none" />
+    <text
+       inkscape:export-ydpi="40.802666"
+       inkscape:export-xdpi="40.802666"
+       inkscape:export-filename="/nfshome/stuko/prj/ovito2/src/core/resources/mainwin/settings/vertical_axis_z.png"
+       sodipodi:linespacing="125%"
+       id="text4385-6"
+       y="548.12189"
+       x="249.11116"
+       style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#00c800;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       xml:space="preserve"><tspan
+         style="font-size:20px;fill:#00c800;fill-opacity:1;-inkscape-font-specification:DejaVu Sans;font-family:DejaVu Sans;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;text-anchor:start;text-align:start;writing-mode:lr;line-height:125%"
+         y="548.12189"
+         x="249.11116"
+         id="tspan4387-3"
+         sodipodi:role="line">y</tspan></text>
+    <text
+       inkscape:export-ydpi="40.802666"
+       inkscape:export-xdpi="40.802666"
+       inkscape:export-filename="/nfshome/stuko/prj/ovito2/src/core/resources/mainwin/settings/vertical_axis_z.png"
+       sodipodi:linespacing="125%"
+       id="text4385-6-7"
+       y="613.30408"
+       x="262.78259"
+       style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#ff0000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       xml:space="preserve"><tspan
+         style="font-size:20px;fill:#ff0000;fill-opacity:1;-inkscape-font-specification:DejaVu Sans;font-family:DejaVu Sans;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;text-anchor:start;text-align:start;writing-mode:lr;line-height:125%"
+         y="613.30408"
+         x="262.78259"
+         id="tspan4387-3-9"
+         sodipodi:role="line">x</tspan></text>
+    <path
+       transform="matrix(1.5,0,0,1.5,-101.52033,-290.05792)"
+       inkscape:export-ydpi="40.802666"
+       inkscape:export-xdpi="40.802666"
+       inkscape:export-filename="/nfshome/stuko/prj/ovito2/src/core/resources/mainwin/settings/vertical_axis_z.png"
+       d="m 206.32366,580.11584 a 3.2829957,3.2829957 0 1 1 -6.56599,0 3.2829957,3.2829957 0 1 1 6.56599,0 z"
+       sodipodi:ry="3.2829957"
+       sodipodi:rx="3.2829957"
+       sodipodi:cy="580.11584"
+       sodipodi:cx="203.04066"
+       id="path5258"
+       style="color:#000000;fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:5;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       sodipodi:type="arc" />
+    <text
+       inkscape:export-ydpi="40.802666"
+       inkscape:export-xdpi="40.802666"
+       inkscape:export-filename="/nfshome/stuko/prj/ovito2/src/core/resources/mainwin/settings/vertical_axis_y.png"
+       xml:space="preserve"
+       style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#0000ff;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="376.39743"
+       y="515.00165"
+       id="text5376"
+       sodipodi:linespacing="125%"><tspan
+         style="font-size:40px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#00c800;fill-opacity:1;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans Bold"
+         sodipodi:role="line"
+         id="tspan5378"
+         x="376.39743"
+         y="515.00165">y</tspan></text>
+    <path
+       inkscape:export-ydpi="40.802666"
+       inkscape:export-xdpi="40.802666"
+       inkscape:export-filename="/nfshome/stuko/prj/ovito2/src/core/resources/mainwin/settings/vertical_axis_y.png"
+       style="stroke-linejoin:miter;marker-end:url(#TriangleOutS3);stroke-opacity:1;stroke:#ff0000;stroke-linecap:butt;stroke-miterlimit:4;stroke-dasharray:none;stroke-width:4;fill:none"
+       d="M 367.32637,580.56731 404.70201,552.0046"
+       id="path5380"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc" />
+    <path
+       inkscape:export-ydpi="40.802666"
+       inkscape:export-xdpi="40.802666"
+       inkscape:export-filename="/nfshome/stuko/prj/ovito2/src/core/resources/mainwin/settings/vertical_axis_y.png"
+       style="stroke-linejoin:miter;marker-end:url(#TriangleOutSj);stroke-opacity:1;stroke:#0000ff;stroke-linecap:butt;stroke-miterlimit:4;stroke-dasharray:none;stroke-width:4;fill:none"
+       d="m 367.11707,580.5715 51.51779,28.25838"
+       id="path5382"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc" />
+    <path
+       inkscape:export-ydpi="40.802666"
+       inkscape:export-xdpi="40.802666"
+       inkscape:export-filename="/nfshome/stuko/prj/ovito2/src/core/resources/mainwin/settings/vertical_axis_y.png"
+       style="stroke-linejoin:miter;marker-end:url(#TriangleOutSZ);stroke-opacity:1;stroke:#00c800;stroke-linecap:butt;stroke-miterlimit:4;stroke-dasharray:none;stroke-width:7;fill:none"
+       d="m 367.14285,581.00479 0,-70.9891"
+       id="path5384"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc" />
+    <text
+       inkscape:export-ydpi="40.802666"
+       inkscape:export-xdpi="40.802666"
+       inkscape:export-filename="/nfshome/stuko/prj/ovito2/src/core/resources/mainwin/settings/vertical_axis_y.png"
+       xml:space="preserve"
+       style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#00c800;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="413.39688"
+       y="548.12189"
+       id="text5386"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan5388"
+         x="413.39688"
+         y="548.12189"
+         style="font-size:20px;fill:#ff0000;fill-opacity:1;-inkscape-font-specification:DejaVu Sans;font-family:DejaVu Sans;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;text-anchor:start;text-align:start;writing-mode:lr;line-height:125%">x</tspan></text>
+    <text
+       inkscape:export-ydpi="40.802666"
+       inkscape:export-xdpi="40.802666"
+       inkscape:export-filename="/nfshome/stuko/prj/ovito2/src/core/resources/mainwin/settings/vertical_axis_y.png"
+       xml:space="preserve"
+       style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#ff0000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="427.0683"
+       y="613.30408"
+       id="text5390"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan5392"
+         x="427.0683"
+         y="613.30408"
+         style="font-size:20px;fill:#0000ff;fill-opacity:1;-inkscape-font-specification:DejaVu Sans;font-family:DejaVu Sans;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;text-anchor:start;text-align:start;writing-mode:lr;line-height:125%">z</tspan></text>
+    <path
+       inkscape:export-ydpi="40.802666"
+       inkscape:export-xdpi="40.802666"
+       inkscape:export-filename="/nfshome/stuko/prj/ovito2/src/core/resources/mainwin/settings/vertical_axis_y.png"
+       transform="matrix(1.5,0,0,1.5,62.765378,-290.05792)"
+       sodipodi:type="arc"
+       style="color:#000000;fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:5;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       id="path5394"
+       sodipodi:cx="203.04066"
+       sodipodi:cy="580.11584"
+       sodipodi:rx="3.2829957"
+       sodipodi:ry="3.2829957"
+       d="m 206.32366,580.11584 a 3.2829957,3.2829957 0 1 1 -6.56599,0 3.2829957,3.2829957 0 1 1 6.56599,0 z" />
+    <text
+       inkscape:export-ydpi="40.802666"
+       inkscape:export-xdpi="40.802666"
+       inkscape:export-filename="/nfshome/stuko/prj/ovito2/src/core/resources/mainwin/settings/vertical_axis_x.png"
+       sodipodi:linespacing="125%"
+       id="text5396"
+       y="515.00165"
+       x="532.11169"
+       style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#0000ff;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       xml:space="preserve"><tspan
+         style="font-size:40px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#ff0000;fill-opacity:1;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans Bold"
+         y="515.00165"
+         x="532.11169"
+         id="tspan5398"
+         sodipodi:role="line">x</tspan></text>
+    <path
+       inkscape:export-ydpi="40.802666"
+       inkscape:export-xdpi="40.802666"
+       inkscape:export-filename="/nfshome/stuko/prj/ovito2/src/core/resources/mainwin/settings/vertical_axis_x.png"
+       sodipodi:nodetypes="cc"
+       inkscape:connector-curvature="0"
+       id="path5400"
+       d="M 523.04066,580.56731 560.4163,552.0046"
+       style="stroke-linejoin:miter;marker-end:url(#TriangleOutSW);stroke-opacity:1;stroke:#0000ff;stroke-linecap:butt;stroke-miterlimit:4;stroke-dasharray:none;stroke-width:4;fill:none" />
+    <path
+       inkscape:export-ydpi="40.802666"
+       inkscape:export-xdpi="40.802666"
+       inkscape:export-filename="/nfshome/stuko/prj/ovito2/src/core/resources/mainwin/settings/vertical_axis_x.png"
+       sodipodi:nodetypes="cc"
+       inkscape:connector-curvature="0"
+       id="path5402"
+       d="m 522.83136,580.5715 51.51779,28.25838"
+       style="stroke-linejoin:miter;marker-end:url(#TriangleOutSV);stroke-opacity:1;stroke:#00c800;stroke-linecap:butt;stroke-miterlimit:4;stroke-dasharray:none;stroke-width:4;fill:none" />
+    <path
+       inkscape:export-ydpi="40.802666"
+       inkscape:export-xdpi="40.802666"
+       inkscape:export-filename="/nfshome/stuko/prj/ovito2/src/core/resources/mainwin/settings/vertical_axis_x.png"
+       sodipodi:nodetypes="cc"
+       inkscape:connector-curvature="0"
+       id="path5404"
+       d="m 522.85714,581.00479 0,-70.9891"
+       style="stroke-linejoin:miter;marker-end:url(#TriangleOutSU);stroke-opacity:1;stroke:#ff0000;stroke-linecap:butt;stroke-miterlimit:4;stroke-dasharray:none;stroke-width:7;fill:none" />
+    <text
+       inkscape:export-ydpi="40.802666"
+       inkscape:export-xdpi="40.802666"
+       inkscape:export-filename="/nfshome/stuko/prj/ovito2/src/core/resources/mainwin/settings/vertical_axis_x.png"
+       sodipodi:linespacing="125%"
+       id="text5406"
+       y="548.12189"
+       x="569.11115"
+       style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#00c800;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       xml:space="preserve"><tspan
+         style="font-size:20px;fill:#0000ff;fill-opacity:1;-inkscape-font-specification:DejaVu Sans;font-family:DejaVu Sans;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;text-anchor:start;text-align:start;writing-mode:lr;line-height:125%"
+         y="548.12189"
+         x="569.11115"
+         id="tspan5408"
+         sodipodi:role="line">z</tspan></text>
+    <text
+       inkscape:export-ydpi="40.802666"
+       inkscape:export-xdpi="40.802666"
+       inkscape:export-filename="/nfshome/stuko/prj/ovito2/src/core/resources/mainwin/settings/vertical_axis_x.png"
+       sodipodi:linespacing="125%"
+       id="text5410"
+       y="613.30408"
+       x="582.78259"
+       style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#ff0000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       xml:space="preserve"><tspan
+         style="font-size:20px;fill:#00c800;fill-opacity:1;-inkscape-font-specification:DejaVu Sans;font-family:DejaVu Sans;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;text-anchor:start;text-align:start;writing-mode:lr;line-height:125%"
+         y="613.30408"
+         x="582.78259"
+         id="tspan5412"
+         sodipodi:role="line">y</tspan></text>
+    <path
+       inkscape:export-ydpi="40.802666"
+       inkscape:export-xdpi="40.802666"
+       inkscape:export-filename="/nfshome/stuko/prj/ovito2/src/core/resources/mainwin/settings/vertical_axis_x.png"
+       d="m 206.32366,580.11584 a 3.2829957,3.2829957 0 1 1 -6.56599,0 3.2829957,3.2829957 0 1 1 6.56599,0 z"
+       sodipodi:ry="3.2829957"
+       sodipodi:rx="3.2829957"
+       sodipodi:cy="580.11584"
+       sodipodi:cx="203.04066"
+       id="path5414"
+       style="color:#000000;fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:5;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       sodipodi:type="arc"
+       transform="matrix(1.5,0,0,1.5,218.47967,-290.05792)" />
+  </g>
+</svg>
