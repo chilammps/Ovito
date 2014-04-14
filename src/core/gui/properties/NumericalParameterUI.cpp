@@ -62,11 +62,11 @@ void NumericalParameterUI::initUIControls(const QString& labelText)
 	_label = new QLabel(labelText);
 	_textBox = new QLineEdit();
 	_spinner = new SpinnerWidget();
-	connect(_spinner, &SpinnerWidget::spinnerValueChanged, this, &NumericalParameterUI::onSpinnerValueChanged);
-	connect(_spinner, &SpinnerWidget::spinnerDragStart, this, &NumericalParameterUI::onSpinnerDragStart);
-	connect(_spinner, &SpinnerWidget::spinnerDragStop, this, &NumericalParameterUI::onSpinnerDragStop);
-	connect(_spinner, &SpinnerWidget::spinnerDragAbort, this, &NumericalParameterUI::onSpinnerDragAbort);
-	_spinner->setTextBox(_textBox);
+	connect(spinner(), &SpinnerWidget::spinnerValueChanged, this, &NumericalParameterUI::onSpinnerValueChanged);
+	connect(spinner(), &SpinnerWidget::spinnerDragStart, this, &NumericalParameterUI::onSpinnerDragStart);
+	connect(spinner(), &SpinnerWidget::spinnerDragStop, this, &NumericalParameterUI::onSpinnerDragStop);
+	connect(spinner(), &SpinnerWidget::spinnerDragAbort, this, &NumericalParameterUI::onSpinnerDragAbort);
+	spinner()->setTextBox(_textBox);
 }
 
 /******************************************************************************

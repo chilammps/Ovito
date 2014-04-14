@@ -28,7 +28,7 @@
 namespace Ovito {
 
 // Gives the class run-time type information.
-IMPLEMENT_OVITO_OBJECT(Core, BooleanGroupBoxParameterUI, PropertyParameterUI)
+IMPLEMENT_OVITO_OBJECT(Core, BooleanGroupBoxParameterUI, PropertyParameterUI);
 
 /******************************************************************************
 * Constructor for a Qt property.
@@ -39,7 +39,7 @@ BooleanGroupBoxParameterUI::BooleanGroupBoxParameterUI(QObject* parentEditor, co
 	// Create UI widget.
 	_groupBox = new QGroupBox(label);
 	_groupBox->setCheckable(true);
-	connect(_groupBox, &QGroupBox::clicked, this, &BooleanGroupBoxParameterUI::updatePropertyValue);
+	connect(_groupBox.data(), &QGroupBox::clicked, this, &BooleanGroupBoxParameterUI::updatePropertyValue);
 }
 
 /******************************************************************************
@@ -51,7 +51,7 @@ BooleanGroupBoxParameterUI::BooleanGroupBoxParameterUI(QObject* parentEditor, co
 	// Create UI widget.
 	_groupBox = new QGroupBox(propField.displayName());
 	_groupBox->setCheckable(true);
-	connect(_groupBox, &QGroupBox::clicked, this, &BooleanGroupBoxParameterUI::updatePropertyValue);
+	connect(_groupBox.data(), &QGroupBox::clicked, this, &BooleanGroupBoxParameterUI::updatePropertyValue);
 }
 
 /******************************************************************************

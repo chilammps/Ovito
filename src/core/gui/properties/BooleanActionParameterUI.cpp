@@ -26,7 +26,7 @@
 namespace Ovito {
 
 // Gives the class run-time type information.
-IMPLEMENT_OVITO_OBJECT(Core, BooleanActionParameterUI, PropertyParameterUI)
+IMPLEMENT_OVITO_OBJECT(Core, BooleanActionParameterUI, PropertyParameterUI);
 
 /******************************************************************************
 * Constructor for a Qt property.
@@ -34,9 +34,9 @@ IMPLEMENT_OVITO_OBJECT(Core, BooleanActionParameterUI, PropertyParameterUI)
 BooleanActionParameterUI::BooleanActionParameterUI(QObject* parentEditor, const char* propertyName, QAction* action) :
 	PropertyParameterUI(parentEditor, propertyName), _action(action)
 {
-	OVITO_ASSERT(action != NULL);
+	OVITO_ASSERT(action != nullptr);
 	action->setCheckable(true);
-	connect(_action, &QAction::triggered, this, &BooleanActionParameterUI::updatePropertyValue);
+	connect(action, &QAction::triggered, this, &BooleanActionParameterUI::updatePropertyValue);
 }
 
 /******************************************************************************
@@ -46,9 +46,9 @@ BooleanActionParameterUI::BooleanActionParameterUI(QObject* parentEditor, const 
 	PropertyParameterUI(parentEditor, propField), _action(action)
 {
 	OVITO_ASSERT(isPropertyFieldUI());
-	OVITO_ASSERT(action != NULL);
+	OVITO_ASSERT(action != nullptr);
 	action->setCheckable(true);
-	connect(_action, &QAction::triggered, this, &BooleanActionParameterUI::updatePropertyValue);
+	connect(action, &QAction::triggered, this, &BooleanActionParameterUI::updatePropertyValue);
 }
 
 /******************************************************************************

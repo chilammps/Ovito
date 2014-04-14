@@ -36,7 +36,7 @@ StringParameterUI::StringParameterUI(QObject* parentEditor, const char* property
 {
 	// Create UI widget.
 	_textBox = new QLineEdit();
-	connect(_textBox, &QLineEdit::editingFinished, this, &StringParameterUI::updatePropertyValue);
+	connect(_textBox.data(), &QLineEdit::editingFinished, this, &StringParameterUI::updatePropertyValue);
 }
 
 /******************************************************************************
@@ -47,7 +47,7 @@ StringParameterUI::StringParameterUI(QObject* parentEditor, const PropertyFieldD
 {
 	// Create UI widget.
 	_textBox = new QLineEdit();
-	connect(_textBox, &QLineEdit::editingFinished, this, &StringParameterUI::updatePropertyValue);
+	connect(_textBox.data(), &QLineEdit::editingFinished, this, &StringParameterUI::updatePropertyValue);
 }
 
 /******************************************************************************
@@ -65,9 +65,10 @@ StringParameterUI::~StringParameterUI()
 ******************************************************************************/
 void StringParameterUI::setTextBox(QLineEdit* textBox)
 {
+	OVITO_ASSERT(textBox != nullptr);
 	delete _textBox;
 	_textBox = textBox;
-	connect(_textBox, &QLineEdit::editingFinished, this, &StringParameterUI::updatePropertyValue);
+	connect(textBox, &QLineEdit::editingFinished, this, &StringParameterUI::updatePropertyValue);
 	updateUI();
 }
 

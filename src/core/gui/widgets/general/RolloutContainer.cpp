@@ -100,7 +100,7 @@ Rollout::Rollout(QWidget* parent, QWidget* content, const QString& title, const 
 	// Insert contents.
 	_content->setParent(this);
 	_content->setVisible(true);
-	connect(_content, &QWidget::destroyed, this, &Rollout::deleteLater);
+	connect(_content.data(), &QWidget::destroyed, this, &Rollout::deleteLater);
 
 	// Set up title button.
 	_titleButton = new QPushButton(title, this);

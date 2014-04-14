@@ -26,7 +26,7 @@
 namespace Ovito {
 
 // Gives the class run-time type information.
-IMPLEMENT_OVITO_OBJECT(Core, VariantComboBoxParameterUI, PropertyParameterUI)
+IMPLEMENT_OVITO_OBJECT(Core, VariantComboBoxParameterUI, PropertyParameterUI);
 
 /******************************************************************************
 * The constructor.
@@ -34,7 +34,7 @@ IMPLEMENT_OVITO_OBJECT(Core, VariantComboBoxParameterUI, PropertyParameterUI)
 VariantComboBoxParameterUI::VariantComboBoxParameterUI(QObject* parentEditor, const char* propertyName) :
 	PropertyParameterUI(parentEditor, propertyName), _comboBox(new QComboBox())
 {
-	connect(_comboBox, (void (QComboBox::*)(int))&QComboBox::activated, this, &VariantComboBoxParameterUI::updatePropertyValue);
+	connect(comboBox(), (void (QComboBox::*)(int))&QComboBox::activated, this, &VariantComboBoxParameterUI::updatePropertyValue);
 }
 
 /******************************************************************************

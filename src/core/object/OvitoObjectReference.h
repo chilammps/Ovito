@@ -100,16 +100,6 @@ public:
     	return *this;
     }
 
-    typedef element_type* this_type::*unspecified_bool_type;
-    operator unspecified_bool_type() const Q_DECL_NOTHROW {
-    	return px == nullptr ? 0 : &this_type::px;
-    }
-
-    // operator! is redundant, but some compilers need it
-    bool operator!() const Q_DECL_NOTHROW {
-    	return px == nullptr;
-    }
-
     void reset() Q_DECL_NOTHROW {
     	this_type().swap(*this);
     }

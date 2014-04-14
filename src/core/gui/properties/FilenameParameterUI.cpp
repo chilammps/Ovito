@@ -35,7 +35,7 @@ FilenameParameterUI::FilenameParameterUI(QObject* parentEditor, const char* prop
 {
 	// Create UI widget.
 	_selectorButton = new QPushButton(QStringLiteral(" "));
-	connect(_selectorButton, &QPushButton::clicked, this, &FilenameParameterUI::showSelectionDialog);
+	connect(_selectorButton.data(), &QPushButton::clicked, this, &FilenameParameterUI::showSelectionDialog);
 }
 
 /******************************************************************************
@@ -46,7 +46,7 @@ FilenameParameterUI::FilenameParameterUI(QObject* parentEditor, const PropertyFi
 {
 	// Create UI widget.
 	_selectorButton = new QPushButton(QStringLiteral(" "));
-	connect(_selectorButton, &QPushButton::clicked, this, &FilenameParameterUI::showSelectionDialog);
+	connect(_selectorButton.data(), &QPushButton::clicked, this, &FilenameParameterUI::showSelectionDialog);
 }
 
 /******************************************************************************
