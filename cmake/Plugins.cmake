@@ -172,6 +172,7 @@ MACRO(OVITO_FIXUP_BUNDLE)
 			file(GLOB_RECURSE OVITO_PLUGINS
 				\"${OVITO_CMAKE_INSTALL_PREFIX}/${OVITO_RELATIVE_PLUGINS_DIRECTORY}/*${CMAKE_SHARED_LIBRARY_SUFFIX}\")
 			set(BUNDLE_LIBS \${QTPLUGINS} \${OVITO_PLUGINS})
+			set(BU_CHMOD_BUNDLE_ITEMS ON)	# Make copies of system libraries writable before install_name_tool tries to change them.
 			include(BundleUtilities)
 			fixup_bundle(\"${APPS}\" \"\${BUNDLE_LIBS}\" \"${DIRS}\")
 			" COMPONENT Runtime)
