@@ -45,17 +45,11 @@ public:
 		COLOR_GRID_INTENS,				//< The color of the major construction grid lines
 		COLOR_GRID_AXIS,				//< The color of the construction grid axis lines
 		COLOR_VIEWPORT_CAPTION,			//< The color used to render the viewport caption
-		COLOR_ACTIVE_VIEWPORT_CAPTION,	//< The color used to render the viewport caption if the mouse cursor is hovering over it.
 		COLOR_SELECTION,				//< The color used for selected objects in wireframe mode
-		COLOR_ACTIVE_AXIS,				//< The color used to indicate the active axis in the axis tripod
-		COLOR_INACTIVE_AXIS,			//< The color used to indicate the inactive axes in the axis tripod
-		COLOR_VIEWPORT_BORDER,			//< The color used to draw the border of inactive viewports
+		COLOR_UNSELECTED,				//< The color used for unselected objects in wireframe mode
 		COLOR_ACTIVE_VIEWPORT_BORDER,	//< The color used to draw the border of the active viewport
-		COLOR_SNAPPING_MARKER,			//< The color used to render snapping markers
 		COLOR_ANIMATION_MODE,			//< The color used to indicate that the animation mode is active
-		COLOR_RENDER_FRAME,				//< The color used to draw the rendering frame around the viewport
 		COLOR_CAMERAS,					//< The color used to render camera dummies in the viewports
-		COLOR_LIGHTS,					//< The color used to render light dummies in the viewports
 
 		NUMBER_OF_COLORS
 	};

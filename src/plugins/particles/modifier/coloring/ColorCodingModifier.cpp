@@ -384,7 +384,7 @@ void ColorCodingModifier::render(TimePoint time, ObjectNode* contextNode, Modifi
 	if(!_colorScaleTitleLabel || !_colorScaleTitleLabel->isValid(renderer))
 		_colorScaleTitleLabel = renderer->createTextPrimitive();
 
-	ColorA labelColor = renderer->isInteractive() ? ColorA(1,1,1) : ColorA(0,0,0);
+	ColorA labelColor = renderer->isInteractive() ? ViewportSettings::getSettings().viewportColor(ViewportSettings::COLOR_VIEWPORT_CAPTION) : ColorA(0,0,0);
 
 	_colorScaleTopLabel->setText(topLabel);
 	_colorScaleTopLabel->setColor(labelColor);

@@ -206,7 +206,7 @@ public:
 	/// Lets the input mode render its 2d overlay content in a viewport.
 	virtual void renderOverlay2D(Viewport* vp, ViewportSceneRenderer* renderer) override {
 		if(isActive() && vp == vp->dataset()->viewportConfig()->activeViewport() && _fence.size() >= 2) {
-			renderer->render2DPolyline(_fence.constData(), _fence.size(), ColorA(1,1,1,1), true);
+			renderer->render2DPolyline(_fence.constData(), _fence.size(), ViewportSettings::getSettings().viewportColor(ViewportSettings::COLOR_SELECTION), true);
 		}
 		ViewportInputMode::renderOverlay2D(vp, renderer);
 	}
