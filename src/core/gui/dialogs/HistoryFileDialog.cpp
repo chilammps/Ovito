@@ -34,6 +34,14 @@ HistoryFileDialog::HistoryFileDialog(const QString& dialogClass, QWidget* parent
 {
 	connect(this, &QFileDialog::fileSelected, this, &HistoryFileDialog::onFileSelected);
 
+	// The user can request the Qt file dialog instead of the native dialog by settings the corresponding
+	// option in the application settings.
+	// The native dialogs of some platforms don't provide the directory history function but may be faster
+	// than the Qt implementation.
+	QSettings settings;
+	if(settings.value("file/use_qt_dialog", false).toBool())
+		setOption(QFileDialog::DontUseNativeDialog);
+
 	QStringList history = loadDirHistory();
 	if(history.isEmpty() == false) {
 		if(directory.isEmpty()) {

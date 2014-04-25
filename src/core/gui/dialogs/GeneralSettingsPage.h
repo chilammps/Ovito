@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -19,24 +19,23 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef __OVITO_VIEWPORT_SETTINGS_PAGE_H
-#define __OVITO_VIEWPORT_SETTINGS_PAGE_H
+#ifndef __OVITO_GENERAL_SETTINGS_PAGE_H
+#define __OVITO_GENERAL_SETTINGS_PAGE_H
 
 #include <core/Core.h>
 #include <core/gui/dialogs/ApplicationSettingsDialog.h>
-#include <core/viewport/ViewportSettings.h>
 
 namespace Ovito {
 
 /**
- * \brief Page of the application settings dialog, which hosts viewport-related program options.
+ * \brief Page of the application settings dialog, which hosts general program options.
  */
-class OVITO_CORE_EXPORT ViewportSettingsPage : public ApplicationSettingsPage
+class OVITO_CORE_EXPORT GeneralSettingsPage : public ApplicationSettingsPage
 {
 public:
 
 	/// Default constructor.
-	Q_INVOKABLE ViewportSettingsPage() : ApplicationSettingsPage() {}
+	Q_INVOKABLE GeneralSettingsPage() : ApplicationSettingsPage() {}
 
 	/// \brief Creates the widget.
 	virtual void insertSettingsDialogPage(ApplicationSettingsDialog* settingsDialog, QTabWidget* tabWidget) override;
@@ -47,12 +46,9 @@ public:
 
 private:
 
-	/// The settings object being modified.
-	ViewportSettings _settings;
-
-	QButtonGroup* _upDirectionGroup;
-	QCheckBox* _restrictVerticalRotationBox;
-	QButtonGroup* _colorScheme;
+	QCheckBox* _useQtFileDialog;
+	QCheckBox* _enableUpdateChecks;
+	QCheckBox* _enableUsageStatistics;
 
 	Q_OBJECT
 	OVITO_OBJECT
@@ -60,4 +56,4 @@ private:
 
 };	// End of namespace
 
-#endif // __OVITO_VIEWPORT_SETTINGS_PAGE_H
+#endif // __OVITO_GENERAL_SETTINGS_PAGE_H

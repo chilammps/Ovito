@@ -359,57 +359,66 @@ void ModifyCommandPage::createAboutPanel()
 	aboutLabel->viewport()->setAutoFillBackground(false);
 	layout->addWidget(aboutLabel);
 
-	// Retrieve cached news page from settings store.
 	QSettings settings;
-	settings.beginGroup("news");
-	QByteArray newsPage = settings.value("cached_webpage").toByteArray();
+	QByteArray newsPage;
+	if(settings.value("updates/check_for_updates", true).toBool()) {
+		// Retrieve cached news page from settings store.
+		newsPage = settings.value("news/cached_webpage").toByteArray();
+	}
 	if(newsPage.isEmpty()) {
 		QResource res("/core/mainwin/command_panel/about_panel.html");
 		newsPage = QByteArray((const char *)res.data(), (int)res.size());
 	}
 	aboutLabel->setHtml(QString::fromUtf8(newsPage.constData()));
-	settings.endGroup();
 
 	_aboutRollout = _propertiesPanel->addRollout(rollout, QCoreApplication::applicationName());
 
-	// Retrieve/generate unique installation id.
-	QByteArray id;
-	settings.beginGroup("installation");
-	if(settings.contains("id")) {
-		id = settings.value("id").toByteArray();
-		if(id == QByteArray(16, '\0') || id.size() != 16)
-			id.clear();
-	}
-	if(id.isEmpty()) {
-		// Generate a new unique ID.
-		id.fill('0', 16);
-		std::random_device rdev;
-		std::uniform_int_distribution<char> rdist(0, 0xFF);
-		for(auto& c : id)
-			c = rdist(rdev);
-		settings.setValue("id", id);
-	}
+	if(settings.value("updates/check_for_updates", true).toBool()) {
 
-	QString operatingSystemString;
+		// Retrieve/generate unique installation id.
+		QByteArray id;
+		if(settings.value("updates/transmit_id", true).toBool()) {
+			if(settings.contains("installation/id")) {
+				id = settings.value("id").toByteArray();
+				if(id == QByteArray(16, '\0') || id.size() != 16)
+					id.clear();
+			}
+			if(id.isEmpty()) {
+				// Generate a new unique ID.
+				id.fill('0', 16);
+				std::random_device rdev;
+				std::uniform_int_distribution<char> rdist(0, 0xFF);
+				for(auto& c : id)
+					c = rdist(rdev);
+				settings.setValue("installation/id", id);
+			}
+		}
+		else {
+			id.fill(0, 16);
+		}
+
+		QString operatingSystemString;
 #if defined(Q_OS_MAC)
-	operatingSystemString = QStringLiteral("macosx");
+		operatingSystemString = QStringLiteral("macosx");
 #elif defined(Q_OS_WIN)
-	operatingSystemString = QStringLiteral("win");
+		operatingSystemString = QStringLiteral("win");
 #elif defined(Q_OS_LINUX)
-	operatingSystemString = QStringLiteral("linux");
+		operatingSystemString = QStringLiteral("linux");
 #endif
 
-	// Fetch newest web page from web server.
-	QNetworkAccessManager* networkAccessManager = new QNetworkAccessManager(_aboutRollout);
-	QString urlString = QString("http://www.ovito.org/appnews/v%1.%2.%3/?ovito=%4&OS=%5%6")
-			.arg(OVITO_VERSION_MAJOR)
-			.arg(OVITO_VERSION_MINOR)
-			.arg(OVITO_VERSION_REVISION)
-			.arg(QString(id.toHex()))
-			.arg(operatingSystemString)
-			.arg(QT_POINTER_SIZE*8);
-	QNetworkReply* networkReply = networkAccessManager->get(QNetworkRequest(QUrl(urlString)));
-	connect(networkAccessManager, &QNetworkAccessManager::finished, this, &ModifyCommandPage::onWebRequestFinished);
+		// Fetch newest web page from web server.
+		QNetworkAccessManager* networkAccessManager = new QNetworkAccessManager(_aboutRollout);
+		QString urlString = QString("http://www.ovito.org/appnews/v%1.%2.%3/?ovito=%4&OS=%5%6")
+				.arg(OVITO_VERSION_MAJOR)
+				.arg(OVITO_VERSION_MINOR)
+				.arg(OVITO_VERSION_REVISION)
+				.arg(QString(id.toHex()))
+				.arg(operatingSystemString)
+				.arg(QT_POINTER_SIZE*8);
+		qDebug() << urlString;
+		QNetworkReply* networkReply = networkAccessManager->get(QNetworkRequest(QUrl(urlString)));
+		connect(networkAccessManager, &QNetworkAccessManager::finished, this, &ModifyCommandPage::onWebRequestFinished);
+	}
 }
 
 /******************************************************************************
@@ -428,8 +437,7 @@ void ModifyCommandPage::onWebRequestFinished(QNetworkReply* reply)
 			aboutLabel->setHtml(QString::fromUtf8(page.constData()));
 
 			QSettings settings;
-			settings.beginGroup("news");
-			settings.setValue("cached_webpage", page);
+			settings.setValue("news/cached_webpage", page);
 		}
 		else {
 			qDebug() << "News page fetched from server is invalid.";

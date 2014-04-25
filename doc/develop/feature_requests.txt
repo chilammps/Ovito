@@ -9,6 +9,7 @@
 - More particle representations (e.g. open circles/rectangles)
 - Save more user-defined default settings (e.g. renderer type, particle colors, math expressions).
 - Scripting plugin: Add file I/O script functions.
+- Add support for low-dimensional systems.
 
 - Export of general triclinic cells to LAMMPS data/dump formats. See http://lammps.sandia.gov/doc/Section_howto.html#howto_12
 - Import bond information from LAMMPS.

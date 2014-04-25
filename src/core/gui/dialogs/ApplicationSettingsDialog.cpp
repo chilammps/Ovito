@@ -25,7 +25,7 @@
 
 namespace Ovito {
 	
-IMPLEMENT_OVITO_OBJECT(Core, ApplicationSettingsPage, OvitoObject)
+IMPLEMENT_OVITO_OBJECT(Core, ApplicationSettingsPage, OvitoObject);
 
 /******************************************************************************
 * The constructor of the settings dialog class.
@@ -51,6 +51,7 @@ ApplicationSettingsDialog::ApplicationSettingsDialog(QWidget* parent) : QDialog(
 			ex.showError();
 		}	
 	}
+	_tabWidget->setCurrentIndex(0);
 
 	// Ok and Cancel buttons
 	QDialogButtonBox* buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, this);

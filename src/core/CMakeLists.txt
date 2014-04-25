@@ -77,6 +77,7 @@ SET(OVITO_CORE_SOURCE_FILES
 	gui/dialogs/AdjustCameraDialog.cpp
 	gui/dialogs/AnimationSettingsDialog.cpp
 	gui/dialogs/ApplicationSettingsDialog.cpp
+	gui/dialogs/GeneralSettingsPage.cpp
 	gui/dialogs/ViewportSettingsPage.cpp
 	gui/dialogs/HistoryFileDialog.cpp
 	gui/dialogs/ImportFileDialog.cpp
