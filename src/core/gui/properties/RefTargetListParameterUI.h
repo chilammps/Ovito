@@ -74,7 +74,7 @@ public:
 
 public:
 	
-	Q_PROPERTY(RefTarget selectedObject READ selectedObject)
+	Q_PROPERTY(RefTarget selectedObject READ selectedObject);
 	
 protected:
 

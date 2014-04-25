@@ -32,7 +32,7 @@ IMPLEMENT_OVITO_OBJECT(Core, GeneralSettingsPage, ApplicationSettingsPage);
 void GeneralSettingsPage::insertSettingsDialogPage(ApplicationSettingsDialog* settingsDialog, QTabWidget* tabWidget)
 {
 	QWidget* page = new QWidget();
-	tabWidget->insertTab(0, page, tr("General"));
+	tabWidget->addTab(page, tr("General"));
 	QVBoxLayout* layout1 = new QVBoxLayout(page);
 
 	QSettings settings;

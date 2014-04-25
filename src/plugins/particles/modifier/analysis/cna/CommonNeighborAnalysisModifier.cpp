@@ -55,12 +55,12 @@ CommonNeighborAnalysisModifier::CommonNeighborAnalysisModifier(DataSet* dataset)
 	INIT_PROPERTY_FIELD(CommonNeighborAnalysisModifier::_adaptiveMode);
 
 	// Create the structure types.
-	createStructureType(OTHER, tr("Other"), Color(0.95f, 0.95f, 0.95f));
-	createStructureType(FCC, tr("FCC"), Color(0.4f, 1.0f, 0.4f));
-	createStructureType(HCP, tr("HCP"), Color(1.0f, 0.4f, 0.4f));
-	createStructureType(BCC, tr("BCC"), Color(0.4f, 0.4f, 1.0f));
-	createStructureType(ICO, tr("ICO"), Color(0.95f, 0.8f, 0.2f));
-	createStructureType(DIA, tr("DIA"), Color(0.2f, 0.95f, 0.8f));
+	createStructureType(OTHER, tr("Other"));
+	createStructureType(FCC, tr("FCC"));
+	createStructureType(HCP, tr("HCP"));
+	createStructureType(BCC, tr("BCC"));
+	createStructureType(ICO, tr("ICO"));
+	createStructureType(DIA, tr("DIA"));
 }
 
 /******************************************************************************

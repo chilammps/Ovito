@@ -30,7 +30,7 @@ namespace Particles {
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ParticlePropertyObject, SceneObject);
 
 /******************************************************************************
-* Default constructor.
+* Constructor.
 ******************************************************************************/
 ParticlePropertyObject::ParticlePropertyObject(DataSet* dataset, ParticleProperty* storage)
 	: SceneObject(dataset), _storage(storage ? storage : new ParticleProperty())

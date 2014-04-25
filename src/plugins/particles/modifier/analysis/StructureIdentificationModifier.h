@@ -85,6 +85,11 @@ public:
 	/// Returns an array that contains the number of matching particles for each structure type.
 	const QList<int>& structureCounts() const { return _structureCounts; }
 
+	//////////////////////////////////// Default settings ////////////////////////////////
+
+	/// Returns the default color for a structure type.
+	static Color getDefaultStructureColor(const QString& structureName);
+
 public:
 
 	Q_PROPERTY(QList<int> structureCounts READ structureCounts);
@@ -96,6 +101,11 @@ protected:
 
 	/// Loads the class' contents from the given stream.
 	virtual void loadFromStream(ObjectLoadStream& stream) override;
+
+	/// Create an instance of the ParticleType class to represent a structure type.
+	void createStructureType(int id, const QString& name) {
+		createStructureType(id, name, getDefaultStructureColor(name));
+	}
 
 	/// Create an instance of the ParticleType class to represent a structure type.
 	void createStructureType(int id, const QString& name, const Color& color);
@@ -132,10 +142,14 @@ class StructureListParameterUI : public RefTargetListParameterUI
 {
 public:
 
-	StructureListParameterUI(PropertiesEditor* parentEditor)
-		: RefTargetListParameterUI(parentEditor, PROPERTY_FIELD(StructureIdentificationModifier::_structureTypes), RolloutInsertionParameters(), nullptr) {
-		connect(tableWidget(220), &QTableWidget::doubleClicked, this, &StructureListParameterUI::onDoubleClickStructureType);
-		tableWidget()->setAutoScroll(false);
+	/// Constructor.
+	StructureListParameterUI(PropertiesEditor* parentEditor);
+
+	/// This method is called when a new editable object has been activated.
+	virtual void resetUI() override {
+		RefTargetListParameterUI::resetUI();
+		// Clear initial selection by default.
+		tableWidget()->selectionModel()->clear();
 	}
 
 protected:
@@ -144,21 +158,26 @@ protected:
 	virtual QVariant getItemData(RefTarget* target, const QModelIndex& index, int role) override;
 
 	/// Returns the number of columns for the table view.
-	virtual int tableColumnCount() override { return 4; }
+	virtual int tableColumnCount() override { return 5; }
 
 	/// Returns the header data under the given role for the given RefTarget.
 	virtual QVariant getHorizontalHeaderData(int index, int role) override {
-		if(index == 0)
-			return qVariantFromValue(tr("Color"));
-		else if(index == 1)
-			return qVariantFromValue(tr("Name"));
-		else if(index == 2)
-			return qVariantFromValue(tr("Count"));
-		else
-			return qVariantFromValue(tr("Fraction"));
+		if(role == Qt::DisplayRole) {
+			if(index == 0)
+				return qVariantFromValue(tr("Color"));
+			else if(index == 1)
+				return qVariantFromValue(tr("Name"));
+			else if(index == 2)
+				return qVariantFromValue(tr("Count"));
+			else if(index == 3)
+				return qVariantFromValue(tr("Fraction"));
+			else
+				return qVariantFromValue(tr("Id"));
+		}
+		else return RefTargetListParameterUI::getHorizontalHeaderData(index, role);
 	}
 
-	/// Do not open sub-editor for selected atom type.
+	/// Do not open sub-editor for selected structure type.
 	virtual void openSubEditor() override {}
 
 	/// This method is called when a reference target changes.

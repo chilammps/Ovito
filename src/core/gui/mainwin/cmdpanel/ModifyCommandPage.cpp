@@ -415,7 +415,6 @@ void ModifyCommandPage::createAboutPanel()
 				.arg(QString(id.toHex()))
 				.arg(operatingSystemString)
 				.arg(QT_POINTER_SIZE*8);
-		qDebug() << urlString;
 		QNetworkReply* networkReply = networkAccessManager->get(QNetworkRequest(QUrl(urlString)));
 		connect(networkAccessManager, &QNetworkAccessManager::finished, this, &ModifyCommandPage::onWebRequestFinished);
 	}
