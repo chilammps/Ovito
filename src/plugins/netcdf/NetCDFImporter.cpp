@@ -288,6 +288,15 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 	NCERR( nc_get_vara_double(_ncid, _cell_angles_var, startp, countp, a) );
 	if (_shear_dx_var != -1)
 		NCERR( nc_get_vara_double(_ncid, _shear_dx_var, startp, countp, d) );
+
+    // Periodic boundary conditions. Non-periodic dimensions have length zero
+    // according to AMBER specification.
+    std::array<bool,3> pbc;
+    for (int i = 0; i < 3; i++) {
+        if (std::abs(l[i]) < 1e-12)  pbc[i] = false;
+        else pbc[i] = true;
+    }
+    simulationCell().setPbcFlags(pbc);
 	
 	// Express cell vectors va, vb and vc in the X,Y,Z-system
 	a[0] *= M_PI/180.0;
@@ -511,6 +520,44 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 #else
 								NCERRI( nc_get_vara_double(_ncid, varId, startp, countp, property->dataFloat()), tr("(While reading variable '%1'.)").arg(columnName) );
 #endif
+
+                                // If this is the particle coordinates, check if we need to update pbcs.
+                                if (propertyType == ParticleProperty::PositionProperty) {
+
+                                    FloatType *r = property->dataFloat();
+                                    // Do we have any non-periodic dimension?
+                                    if (!(pbc[0] && pbc[1] && pbc[2])) {
+
+                                        // Yes. Let's find the bounding box.
+                                        FloatType minvals[3], maxvals[3];
+                                        std::copy(r, r+3, minvals);
+                                        std::copy(r, r+3, maxvals);
+                                        for (int i = 0; i < particleCount; i++) {
+                                            for (int k = 0; k < 3; k++) {
+                                                minvals[k] = std::min(minvals[k], r[3*i+k]);
+                                                maxvals[k] = std::max(maxvals[k], r[3*i+k]);
+                                            }
+                                        }
+
+                                        // Compute new cell length and origin.
+                                        for (int k = 0; k < 3; k++) {
+                                            if (!pbc[k]) {
+                                                l[k] = maxvals[k]-minvals[k];
+                                                o[k] = minvals[k];
+                                            }
+                                        }
+
+                                        // Set new cell.
+                                        Vector3 va(l[0], 0, 0);
+                                        Vector3 vb(l[1]*cos(a[2]), l[1]*sin(a[2]), 0);
+                                        Vector3 vc(l[2]*cx+d[0], l[2]*cy+d[1], l[2]*cz);
+
+                                        // Set simulation cell.
+                                        simulationCell().setMatrix(AffineTransformation(va, vb, vc, Vector3(o[0], o[1], o[2])));
+
+                                    }
+
+                                }
 							}
 						}
 						else {
