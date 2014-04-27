@@ -77,7 +77,10 @@ ENDIF()
 # Make header files of this library available to dependent targets.
 TARGET_INCLUDE_DIRECTORIES(TachyonLib INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}")
 
-# Link to Pthreads multi-threading library.
 IF(APPLE)
+	# Link to Pthreads multi-threading library on MacOS.
 	TARGET_LINK_LIBRARIES(TachyonLib pthread)
+ELSEIF(WIN32)
+	# Link to ws2_32 library on Windows.
+	TARGET_LINK_LIBRARIES(TachyonLib ws2_32)
 ENDIF()
