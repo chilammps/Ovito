@@ -30,6 +30,9 @@
 //  A LAMMPS dump style for this file format can be found at
 //  <https://github.com/pastewka/lammps-netcdf>.
 //
+//  An ASE trajectory container is found in ase.io.netcdftrajectory.
+//  <https://wiki.fysik.dtu.dk/ase/epydoc/ase.io.netcdftrajectory-module.html>.
+//
 //  Please contact Lars Pastewka <lars.pastewka@iwm.fraunhofer.de> for
 //  questions and suggestions.
 //
