@@ -236,18 +236,18 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 	int nVars;
 	NCERR( nc_inq_nvars(_ncid, &nVars) );
 	int column = 0;
-	for (int varid = 0; varid < nVars; varid++) {
+	for (int varId = 0; varId < nVars; varId++) {
 		char name[NC_MAX_NAME+1];
 		nc_type type;
 
 		// Retrieve NetCDF meta-information.
 		int nDims, dimIds[NC_MAX_VAR_DIMS];
-		NCERR( nc_inq_var(_ncid, varid, name, &type, &nDims, dimIds, NULL) );
+		NCERR( nc_inq_var(_ncid, varId, name, &type, &nDims, dimIds, NULL) );
 
 		// Check if dimensions make sense and we can understand them.
 		if (dimIds[0] == _atom_dim || ( nDims > 1 && dimIds[0] == _frame_dim && dimIds[1] == _atom_dim )) {
 			// Do we support this data type?
-			if (type == NC_BYTE || type == NC_SHORT || type == NC_INT || type == NC_LONG) {
+			if (type == NC_BYTE || type == NC_SHORT || type == NC_INT || type == NC_LONG || type == NC_CHAR) {
 				mapVariableToColumn(columnMapping, column, name, qMetaTypeId<int>());
 				column++;
 			}
@@ -330,11 +330,11 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 
 		int dataType = columnMapping.dataType(column);
 
-		if(dataType != QMetaType::Void) {
+		if (dataType != QMetaType::Void) {
 			size_t dataTypeSize;
-			if(dataType == qMetaTypeId<int>())
+			if (dataType == qMetaTypeId<int>())
 				dataTypeSize = sizeof(int);
-			else if(dataType == qMetaTypeId<FloatType>())
+			else if (dataType == qMetaTypeId<FloatType>())
 				dataTypeSize = sizeof(FloatType);
 			else
 				throw Exception(tr("Invalid custom particle property (data type %1) for input file column %2 of NetCDF file.").arg(dataType).arg(column+1));
@@ -425,7 +425,7 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 				}
 
 				// Skip all fields that don't have the expected format.
-				if (nDimsDetected != -1 && nDimsDetected == nDims) {
+				if (nDimsDetected != -1 && (nDimsDetected == nDims || type == NC_CHAR)) {
 					// Find property to load this information into.
 					ParticleProperty::Type propertyType = columnMapping.propertyType(column);
 
@@ -473,34 +473,90 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 						if (property->dataType() == qMetaTypeId<int>()) {
 							// This is integer data.
 
-							if (componentCount == 6 && nativeComponentCount == 9) {
+							if (componentCount == 6 && nativeComponentCount == 9 && type != NC_CHAR) {
 								// Convert this property to Voigt notation.
 								int *data = new int[9*particleCount];
 								NCERRI( nc_get_vara_int(_ncid, varId, startp, countp, data), tr("(While reading variable '%1'.)").arg(columnName));
 								fullToVoigt(particleCount, data, property->dataInt());
 								delete [] data;
 							}
-							else {
-								NCERRI( nc_get_vara_int(_ncid, varId, startp, countp, property->dataInt()), tr("(While reading variable '%1'.)").arg(columnName) );
-							}
-							
-							// Create particles types if this is the particle type property.
-							if (propertyType == ParticleProperty::ParticleTypeProperty) {
-								// Find maximum atom type.
-								int maxType = 0;
-								for (int i = 0; i < particleCount; i++)
-									maxType = std::max(property->getInt(i), maxType);
+							else {						
+                                // Create particles types if this is the particle type property.
+                                if (propertyType == ParticleProperty::ParticleTypeProperty) {
+                                    if (type == NC_CHAR) {
+                                        // We can only read this if there is an additional dimension
+                                        if (nDims == nDimsDetected+1) {
+                                            int dimids[nDims];
+                                            NCERR( nc_inq_vardimid(_ncid, varId, dimids) );
 
-								// Count number of atoms for each type.
-								QVector<int> typeCount(maxType+1, 0);
-								for (int i = 0; i < particleCount; i++)
-									typeCount[property->getInt(i)]++;
+                                            size_t strLen;
+                                            NCERR( nc_inq_dimlen(_ncid, dimids[nDims-1], &strLen) );
+
+                                            startp[nDimsDetected] = 0;
+                                            countp[nDimsDetected] = strLen;
+                                            char *particleNamesData = new char[strLen*particleCount];
+                                                
+                                            // This is a string particle type, i.e. element names
+                                            NCERRI( nc_get_vara_text(_ncid, varId, startp, countp, particleNamesData), tr("(While reading variable '%1'.)").arg(columnName) );
+
+                                            // Collect all distinct particle names
+                                            QMap<QString, bool> discoveredParticleNames;
+                                            for (int i = 0; i < particleCount; i++) {
+                                                QString name = QString::fromLocal8Bit(&particleNamesData[strLen*i], strLen);
+                                                name = name.trimmed();
+                                                discoveredParticleNames[name] = true;
+                                            }
+
+                                            // Assing a particle type id to each particle name
+                                            QMap<QString, bool>::const_iterator particleName = discoveredParticleNames.constBegin();
+                                            QMap<QString, int> particleNameToType;
+                                            int i = 0;
+                                            while (particleName != discoveredParticleNames.constEnd()) {
+                                                addParticleTypeId(i, particleName.key());
+                                                particleNameToType[particleName.key()] = i;
+                                                i++;
+                                                particleName++;
+                                            }
+
+                                            // Convert particle names to particle ids and set them accordingly
+                                            int *particleTypes = property->dataInt();
+                                            for (int i = 0; i < particleCount; i++) {
+                                                QString name = QString::fromLocal8Bit(&particleNamesData[strLen*i], strLen);
+                                                name = name.trimmed();
+
+                                                *particleTypes = particleNameToType.value(name);
+                                                particleTypes++;
+                                            }
+
+                                            delete [] particleNamesData;
+                                        }
+                                    }
+                                    else {
+                                        // This is an integer particle type, i.e. atomic numbers or internal element numbers
+                                        NCERRI( nc_get_vara_int(_ncid, varId, startp, countp, property->dataInt()), tr("(While reading variable '%1'.)").arg(columnName) );
+
+                                        // Find maximum atom type.
+                                        int maxType = 0;
+                                        for (int i = 0; i < particleCount; i++)
+                                            maxType = std::max(property->getInt(i), maxType);
+                                        
+                                        // Count number of atoms for each type.
+                                        QVector<int> typeCount(maxType+1, 0);
+                                        for (int i = 0; i < particleCount; i++)
+                                            typeCount[property->getInt(i)]++;
 								
-								for (int i = 0; i <= maxType; i++) {
-									// Only define atom type if really present.
-									if (typeCount[i] > 0)
-										addParticleTypeId(i);
-								}							
+                                        for (int i = 0; i <= maxType; i++) {
+                                            // Only define atom type if really present.
+                                            if (typeCount[i] > 0)
+                                                addParticleTypeId(i);
+                                        }
+                                    }
+                                }
+                                else {
+                                    if (type != NC_CHAR) {
+                                        NCERRI( nc_get_vara_int(_ncid, varId, startp, countp, property->dataInt()), tr("(While reading variable '%1'.)").arg(columnName) );
+                                    }
+                                }
 							}
 						}
 						else if (property->dataType() == qMetaTypeId<FloatType>()) {
@@ -532,6 +588,7 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
                                     if (!(pbc[0] && pbc[1] && pbc[2])) {
 
                                         // Yes. Let's find the bounding box.
+                                        // FIXME! As implemented, this works for rectangular cells only.
                                         FloatType minvals[3], maxvals[3];
                                         std::copy(r, r+3, minvals);
                                         std::copy(r, r+3, maxvals);
