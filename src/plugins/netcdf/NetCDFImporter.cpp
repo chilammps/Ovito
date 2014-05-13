@@ -214,6 +214,81 @@ void NetCDFImporter::NetCDFImportTask::closeNetCDF()
 }
 
 /******************************************************************************
+* Close the current NetCDF file.
+******************************************************************************/
+void NetCDFImporter::NetCDFImportTask::detectDims(int movieFrame, int particleCount, int nDims, int *dimIds, int &nDimsDetected, int &componentCount, int &nativeComponentCount, size_t *startp, size_t *countp)
+{
+    // This is a per frame property
+    startp[0] = movieFrame;
+    countp[0] = 1;
+
+    if (nDims > 1 && dimIds[1] == _atom_dim) {
+        // This is a per atom property
+        startp[1] = 0;
+        countp[1] = particleCount;
+        nDimsDetected = 2;
+
+        if (nDims > 2 && dimIds[2] == _spatial_dim) {
+            // This is a vector property
+            startp[2] = 0;
+            countp[2] = 3;
+            componentCount = 3;
+            nativeComponentCount = 3;
+            nDimsDetected = 3;
+
+            if (nDims > 3 && dimIds[2] == _spatial_dim) {
+                // This is a tensor property
+                startp[3] = 0;
+                countp[3] = 3;
+                componentCount = 6;
+                nativeComponentCount = 9;
+                nDimsDetected = 4;
+            }
+        }
+        else if (nDims == 3 && dimIds[2] == _Voigt_dim) {
+            // This is a tensor property, in Voigt notation
+            startp[2] = 0;
+            countp[2] = 6;
+            componentCount = 6;
+            nativeComponentCount = 6;
+            nDimsDetected = 3;
+        }
+    }
+    else if (nDims > 0 && dimIds[0] == _atom_dim) {
+        // This is a per atom property, but global (per-file, not per frame)
+        startp[0] = 0;
+        countp[0] = particleCount;
+        nDimsDetected = 1;
+					
+        if (nDims > 1 && dimIds[1] == _spatial_dim) {
+            // This is a vector property
+            startp[1] = 0;
+            countp[1] = 3;
+            componentCount = 3;
+            nativeComponentCount = 3;
+            nDimsDetected = 2;
+
+            if (nDims > 2 && dimIds[2] == _spatial_dim) {
+                // This is a tensor property
+                startp[2] = 0;
+                countp[2] = 3;
+                componentCount = 6;
+                nativeComponentCount = 9;
+                nDimsDetected = 3;
+            }
+        }
+        else if (nDims == 2 && dimIds[1] == _Voigt_dim) {
+            // This is a tensor property, in Voigt notation
+            startp[1] = 0;
+            countp[1] = 6;
+            componentCount = 6;
+            nativeComponentCount = 6;
+            nDimsDetected = 2;
+        }
+    }
+}
+
+/******************************************************************************
 * Parses the given input file and stores the data in this container object.
 ******************************************************************************/
 void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInterface, CompressedTextParserStream& stream)
@@ -318,6 +393,43 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 	// Report to user.
 	futureInterface.setProgressRange(columnMapping.columnCount());
 
+    // Now iterate over all variables and see if we have to reduce particleCount
+    // We use the only float properties for this because at least one must be present (coordinates)
+	for (int column = 0; column < columnMapping.columnCount(); column++) {
+		int dataType = columnMapping.dataType(column);
+
+        if (dataType == qMetaTypeId<FloatType>()) {
+
+			QString columnName = columnMapping.columnName(column);
+            ParticleProperty::Type propertyType = columnMapping.propertyType(column);
+
+            // Retrieve NetCDF meta-information.
+            nc_type type;
+            int varId, nDims, dimIds[NC_MAX_VAR_DIMS];
+            NCERR( nc_inq_varid(_ncid, columnName.toLocal8Bit().constData(), &varId) );
+            NCERR( nc_inq_var(_ncid, varId, NULL, &type, &nDims, dimIds, NULL) );
+
+            if (nDims > 0 && type == NC_FLOAT) {
+                // Detect dims
+                int nDimsDetected = -1, componentCount = 1, nativeComponentCount = 1;
+                detectDims(movieFrame, particleCount, nDims, dimIds, nDimsDetected, componentCount, nativeComponentCount, startp, countp);
+
+                FloatType *data = new FloatType[nativeComponentCount*particleCount];
+
+#ifdef FLOATTYPE_FLOAT
+                NCERRI( nc_get_vara_float(_ncid, varId, startp, countp, data), tr("(While reading variable '%1'.)").arg(columnName) );
+                while (particleCount > 0 && data[nativeComponentCount*(particleCount-1)] == NC_FILL_FLOAT)  particleCount--;
+#else
+                NCERRI( nc_get_vara_double(_ncid, varId, startp, countp, data), tr("(While reading variable '%1'.)").arg(columnName) );
+                while (particleCount > 0 && data[nativeComponentCount*(particleCount-1)] == NC_FILL_DOUBLE)  particleCount--;
+#endif
+
+                delete [] data;
+            }
+
+        }
+    }
+
 	// Now iterate over all variables and load the appropriate frame
 	for (int column = 0; column < columnMapping.columnCount(); column++) {
 		if(futureInterface.isCanceled()) {
@@ -355,74 +467,7 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 
 			int nDimsDetected = -1, componentCount = 1, nativeComponentCount = 1;
 			if (nDims > 0) {
-				// This is a per frame property
-				startp[0] = movieFrame;
-				countp[0] = 1;
-
-				if (nDims > 1 && dimIds[1] == _atom_dim) {
-					// This is a per atom property
-					startp[1] = 0;
-					countp[1] = particleCount;
-					nDimsDetected = 2;
-
-					if (nDims > 2 && dimIds[2] == _spatial_dim) {
-						// This is a vector property
-						startp[2] = 0;
-						countp[2] = 3;
-						componentCount = 3;
-						nativeComponentCount = 3;
-						nDimsDetected = 3;
-
-						if (nDims > 3 && dimIds[2] == _spatial_dim) {
-							// This is a tensor property
-							startp[3] = 0;
-							countp[3] = 3;
-							componentCount = 6;
-							nativeComponentCount = 9;
-							nDimsDetected = 4;
-						}
-					}
-					else if (nDims == 3 && dimIds[2] == _Voigt_dim) {
-						// This is a tensor property, in Voigt notation
-						startp[2] = 0;
-						countp[2] = 6;
-						componentCount = 6;
-						nativeComponentCount = 6;
-						nDimsDetected = 3;
-					}
-				}
-				else if (nDims > 0 && dimIds[0] == _atom_dim) {
-					// This is a per atom property, but global (per-file, not per frame)
-					startp[0] = 0;
-					countp[0] = particleCount;
-					nDimsDetected = 1;
-					
-					if (nDims > 1 && dimIds[1] == _spatial_dim) {
-						// This is a vector property
-						startp[1] = 0;
-						countp[1] = 3;
-						componentCount = 3;
-						nativeComponentCount = 3;
-						nDimsDetected = 2;
-
-						if (nDims > 2 && dimIds[2] == _spatial_dim) {
-							// This is a tensor property
-							startp[2] = 0;
-							countp[2] = 3;
-							componentCount = 6;
-							nativeComponentCount = 9;
-							nDimsDetected = 3;
-						}
-					}
-					else if (nDims == 2 && dimIds[1] == _Voigt_dim) {
-						// This is a tensor property, in Voigt notation
-						startp[1] = 0;
-						countp[1] = 6;
-						componentCount = 6;
-						nativeComponentCount = 6;
-						nDimsDetected = 2;
-					}
-				}
+                detectDims(movieFrame, particleCount, nDims, dimIds, nDimsDetected, componentCount, nativeComponentCount, startp, countp);
 
 				// Skip all fields that don't have the expected format.
 				if (nDimsDetected != -1 && (nDimsDetected == nDims || type == NC_CHAR)) {

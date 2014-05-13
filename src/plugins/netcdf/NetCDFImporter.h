@@ -111,6 +111,9 @@ protected:
 
 	protected:
 
+        /// Map dimensions from NetCDF file to internal representation.
+        void detectDims(int movieFrame, int particleCount, int nDims, int *dimIds, int &nDimsDetected, int &componentCount, int &nativeComponentCount, size_t *startp, size_t *countp);
+
 		/// Parses the given input file and stores the data in this container object.
 		virtual void parseFile(FutureInterfaceBase& futureInterface, CompressedTextParserStream& stream) override;
 
