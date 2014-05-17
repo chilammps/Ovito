@@ -42,6 +42,7 @@ SET(OVITO_PARTICLES_SOURCE_FILES
 	modifier/slice/SliceModifier.cpp
 	modifier/delete/DeleteParticlesModifier.cpp
 	modifier/analysis/StructureIdentificationModifier.cpp
+	modifier/analysis/binandreduce/BinAndReduceModifier.cpp
 	modifier/analysis/bondangle/BondAngleAnalysisModifier.cpp
 	modifier/analysis/cna/CommonNeighborAnalysisModifier.cpp
 	modifier/analysis/displacements/CalculateDisplacementsModifier.cpp
