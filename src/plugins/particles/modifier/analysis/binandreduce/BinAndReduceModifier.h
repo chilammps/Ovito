@@ -41,6 +41,7 @@ class OVITO_PARTICLES_EXPORT BinAndReduceModifier : public ParticleModifier
 {
 public:
     enum ReductionOperationType { RED_MEAN, RED_SUM, RED_SUM_VOL, RED_MIN, RED_MAX };
+    enum BinDirectionType { CELL_VECTOR_1, CELL_VECTOR_2, CELL_VECTOR_3 };
 
 	/// Constructor.
 	Q_INVOKABLE BinAndReduceModifier(DataSet* dataset);
@@ -60,11 +61,11 @@ public:
 	/// Sets the reduction operation
 	void setReductionOperation(int o) { _reductionOperation = o; }
 
-	/// Returns the bin alignment
-	int reductionBinAlignment() const { return _binAlignment; }
+	/// Returns the bin direction
+	int reductionBinDirection1() const { return _binDirection; }
 
-	/// Sets the bin alignment
-	void setBinAlignment(int o) { _binAlignment = o; }
+	/// Sets the bin direction
+	void setBinDirection1(int o) { _binDirection = o; }
 
 	/// Returns the number of spatial bins of the computed average value.
 	int numberOfBins() const { return _numberOfBins; }
@@ -122,7 +123,7 @@ private:
 	PropertyField<int> _reductionOperation;
 
 	/// Bin alignment
-	PropertyField<int> _binAlignment;
+	PropertyField<int> _binDirection;
 
 	/// Controls the number of spatial bins.
 	PropertyField<int> _numberOfBins;
@@ -146,7 +147,7 @@ private:
 	Q_CLASSINFO("ModifierCategory", "Analysis");
 
 	DECLARE_PROPERTY_FIELD(_reductionOperation);
-	DECLARE_PROPERTY_FIELD(_binAlignment);
+	DECLARE_PROPERTY_FIELD(_binDirection);
 	DECLARE_PROPERTY_FIELD(_numberOfBins);
 	DECLARE_PROPERTY_FIELD(_fixYAxisRange);
 	DECLARE_PROPERTY_FIELD(_yAxisRangeStart);

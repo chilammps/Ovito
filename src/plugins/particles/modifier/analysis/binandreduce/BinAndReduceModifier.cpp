@@ -36,14 +36,14 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, BinAndReduceModifier, ParticleMod
 IMPLEMENT_OVITO_OBJECT(Particles, BinAndReduceModifierEditor, ParticleModifierEditor);
 SET_OVITO_OBJECT_EDITOR(BinAndReduceModifier, BinAndReduceModifierEditor);
 DEFINE_FLAGS_PROPERTY_FIELD(BinAndReduceModifier, _reductionOperation, "ReductionOperation", PROPERTY_FIELD_MEMORIZE);
-DEFINE_FLAGS_PROPERTY_FIELD(BinAndReduceModifier, _binAlignment, "BinAlignment", PROPERTY_FIELD_MEMORIZE);
+DEFINE_FLAGS_PROPERTY_FIELD(BinAndReduceModifier, _binDirection, "BinDirection", PROPERTY_FIELD_MEMORIZE);
 DEFINE_FLAGS_PROPERTY_FIELD(BinAndReduceModifier, _numberOfBins, "NumberOfBins", PROPERTY_FIELD_MEMORIZE);
 DEFINE_PROPERTY_FIELD(BinAndReduceModifier, _fixYAxisRange, "FixYAxisRange");
 DEFINE_FLAGS_PROPERTY_FIELD(BinAndReduceModifier, _yAxisRangeStart, "YAxisRangeStart", PROPERTY_FIELD_MEMORIZE);
 DEFINE_FLAGS_PROPERTY_FIELD(BinAndReduceModifier, _yAxisRangeEnd, "YAxisRangeEnd", PROPERTY_FIELD_MEMORIZE);
 DEFINE_PROPERTY_FIELD(BinAndReduceModifier, _sourceProperty, "SourceProperty");
 SET_PROPERTY_FIELD_LABEL(BinAndReduceModifier, _reductionOperation, "Reduction operation");
-SET_PROPERTY_FIELD_LABEL(BinAndReduceModifier, _binAlignment, "Bin alignment");
+SET_PROPERTY_FIELD_LABEL(BinAndReduceModifier, _binDirection, "Bin direction");
 SET_PROPERTY_FIELD_LABEL(BinAndReduceModifier, _numberOfBins, "Number of spatial bins");
 SET_PROPERTY_FIELD_LABEL(BinAndReduceModifier, _fixYAxisRange, "Fix y-axis range");
 SET_PROPERTY_FIELD_LABEL(BinAndReduceModifier, _yAxisRangeStart, "Y-axis range start");
@@ -54,10 +54,10 @@ SET_PROPERTY_FIELD_LABEL(BinAndReduceModifier, _sourceProperty, "Source property
 * Constructs the modifier object.
 ******************************************************************************/
 BinAndReduceModifier::BinAndReduceModifier(DataSet* dataset) : 
-    ParticleModifier(dataset), _reductionOperation(RED_MEAN), _binAlignment(2), _numberOfBins(200), _fixYAxisRange(false), _yAxisRangeStart(0),_yAxisRangeEnd(0)
+    ParticleModifier(dataset), _reductionOperation(RED_MEAN), _binDirection(2), _numberOfBins(200), _fixYAxisRange(false), _yAxisRangeStart(0),_yAxisRangeEnd(0)
 {
 	INIT_PROPERTY_FIELD(BinAndReduceModifier::_reductionOperation);
-	INIT_PROPERTY_FIELD(BinAndReduceModifier::_binAlignment);
+	INIT_PROPERTY_FIELD(BinAndReduceModifier::_binDirection);
 	INIT_PROPERTY_FIELD(BinAndReduceModifier::_numberOfBins);
 	INIT_PROPERTY_FIELD(BinAndReduceModifier::_fixYAxisRange);
 	INIT_PROPERTY_FIELD(BinAndReduceModifier::_yAxisRangeStart);
@@ -119,13 +119,13 @@ PipelineStatus BinAndReduceModifier::modifyParticles(TimePoint time, TimeInterva
 
     // Compute the surface normal vector.
     Vector3 normal;
-    if (_binAlignment == 0) {
+    if (_binDirection == CELL_VECTOR_1) {
         normal = expectSimulationCell()->edgeVector2().cross(expectSimulationCell()->edgeVector3());
     }
-    else if (_binAlignment == 1) {
+    else if (_binDirection == CELL_VECTOR_2) {
         normal = expectSimulationCell()->edgeVector1().cross(expectSimulationCell()->edgeVector3());
     }
-    else {
+    else if (_binDirection == CELL_VECTOR_3) {
         normal = expectSimulationCell()->edgeVector1().cross(expectSimulationCell()->edgeVector2());
     }
 
@@ -142,7 +142,7 @@ PipelineStatus BinAndReduceModifier::modifyParticles(TimePoint time, TimeInterva
 
 	if(property->size() > 0) {
         const FloatType* pos = posProperty->constDataFloat();
-        const FloatType* pos_end = pos + (posProperty->size() * posVecComponentCount); 
+        const FloatType* pos_end = pos + (posProperty->size() * posVecComponentCount);
 
         FloatType binSize = 1.0 / binDataSize;
 
@@ -152,7 +152,7 @@ PipelineStatus BinAndReduceModifier::modifyParticles(TimePoint time, TimeInterva
 
             while (pos != pos_end && v != v_end) {
                 if (!std::isnan(*v)) {
-                    FloatType fractionalPos = reciprocalCell.prodrow(Point3(pos[0], pos[1], pos[2]), _binAlignment);
+                    FloatType fractionalPos = reciprocalCell.prodrow(Point3(pos[0], pos[1], pos[2]), _binDirection);
                     size_t binIndex = size_t( fractionalPos / binSize ) % binDataSize;
                     if (_reductionOperation == RED_MEAN || _reductionOperation == RED_SUM || _reductionOperation == RED_SUM_VOL) {
                         _binData[binIndex] += *v;
@@ -182,7 +182,7 @@ PipelineStatus BinAndReduceModifier::modifyParticles(TimePoint time, TimeInterva
 			const int* v_end = v + (property->size() * vecComponentCount);
 
             while (pos != pos_end && v != v_end) {
-                FloatType fractionalPos = reciprocalCell.prodrow(Point3(pos[0], pos[1], pos[2]), _binAlignment);
+                FloatType fractionalPos = reciprocalCell.prodrow(Point3(pos[0], pos[1], pos[2]), _binDirection);
                 size_t binIndex = size_t( fractionalPos / binSize ) % binDataSize;
                 if (_reductionOperation == RED_MEAN || _reductionOperation == RED_SUM || _reductionOperation == RED_SUM) {
                     _binData[binIndex] += *v;
@@ -255,12 +255,12 @@ void BinAndReduceModifierEditor::createUI(const RolloutInsertionParameters& roll
     gridlayout->addWidget(reductionOperationPUI->addRadioButton(BinAndReduceModifier::RED_MAX, tr("max")), 0, 4);
     layout->addLayout(gridlayout);
 
-	layout->addWidget(new QLabel(tr("Bin alignment parallel to:"), rollout));
+	layout->addWidget(new QLabel(tr("Bin in direction of:"), rollout));
 	gridlayout = new QGridLayout();
-	IntegerRadioButtonParameterUI* binAlignmentPUI = new IntegerRadioButtonParameterUI(this, PROPERTY_FIELD(BinAndReduceModifier::_binAlignment));
-    gridlayout->addWidget(binAlignmentPUI->addRadioButton(BinAndReduceModifier::RED_MEAN, "cell vectors 2 and 3"), 0, 0);
-    gridlayout->addWidget(binAlignmentPUI->addRadioButton(BinAndReduceModifier::RED_SUM, "1 and 3"), 0, 1);
-    gridlayout->addWidget(binAlignmentPUI->addRadioButton(BinAndReduceModifier::RED_SUM_VOL, "1 and 2"), 0, 2);
+	IntegerRadioButtonParameterUI* binDirectionPUI = new IntegerRadioButtonParameterUI(this, PROPERTY_FIELD(BinAndReduceModifier::_binDirection));
+    gridlayout->addWidget(binDirectionPUI->addRadioButton(BinAndReduceModifier::CELL_VECTOR_1, "cell vector 1"), 0, 0);
+    gridlayout->addWidget(binDirectionPUI->addRadioButton(BinAndReduceModifier::CELL_VECTOR_2, "cell vector 2"), 0, 1);
+    gridlayout->addWidget(binDirectionPUI->addRadioButton(BinAndReduceModifier::CELL_VECTOR_3, "cell vector 3"), 0, 2);
     layout->addLayout(gridlayout);
 
 	gridlayout = new QGridLayout();
