@@ -57,7 +57,7 @@ SET_PROPERTY_FIELD_LABEL(BinAndReduceModifier, _sourceProperty, "Source property
 * Constructs the modifier object.
 ******************************************************************************/
 BinAndReduceModifier::BinAndReduceModifier(DataSet* dataset) : 
-    ParticleModifier(dataset), _reductionOperation(RED_MEAN), _binAlignment(2), _numberOfBinsX(200),
+    ParticleModifier(dataset), _reductionOperation(RED_MEAN), _binDirection(CELL_VECTOR_3),_numberOfBinsX(200),
     _numberOfBinsY(1), _fixYAxisRange(false), _yAxisRangeStart(0), _yAxisRangeEnd(0)
 {
 	INIT_PROPERTY_FIELD(BinAndReduceModifier::_reductionOperation);
@@ -121,6 +121,9 @@ PipelineStatus BinAndReduceModifier::modifyParticles(TimePoint time, TimeInterva
     // Get bottom-left and top-right corner of the simulation cell.
     AffineTransformation reciprocalCell = expectSimulationCell()->reciprocalCellMatrix();
 
+    // Get periodic boundary flag.
+	std::array<bool, 3> pbc = expectSimulationCell()->pbcFlags();
+
     // Compute the surface normal vector.
     Vector3 normal;
     if (_binDirection == CELL_VECTOR_1) {
@@ -153,21 +156,24 @@ PipelineStatus BinAndReduceModifier::modifyParticles(TimePoint time, TimeInterva
 
             while (pos != pos_end && v != v_end) {
                 if (!std::isnan(*v)) {
-                    FloatType fractionalPos = reciprocalCell.prodrow(*pos, _binAlignment);
-                    size_t binIndex = size_t( fractionalPos / binSize ) % binDataSize;
-                    if (_reductionOperation == RED_MEAN || _reductionOperation == RED_SUM || _reductionOperation == RED_SUM_VOL) {
-                        _binData[binIndex] += *v;
-                    } 
-                    else {
-                        if (numberOfParticlesPerBin[binIndex] == 0) {
-                            _binData[binIndex] = *v;  
-                        }
+                    FloatType fractionalPos = reciprocalCell.prodrow(*pos, _binDirection);
+                    ssize_t binIndex = ssize_t( fractionalPos / binSize );
+                    if (pbc[_binDirection])  binIndex %= binDataSize;
+                    if (binIndex >= 0 && binIndex < binDataSize) {
+                        if (_reductionOperation == RED_MEAN || _reductionOperation == RED_SUM || _reductionOperation == RED_SUM_VOL) {
+                            _binData[binIndex] += *v;
+                        } 
                         else {
-                            if (_reductionOperation == RED_MAX) {
-                                _binData[binIndex] = std::max(_binData[binIndex], *v);
+                            if (numberOfParticlesPerBin[binIndex] == 0) {
+                                _binData[binIndex] = *v;  
                             }
-                            else if (_reductionOperation == RED_MIN) {
-                                _binData[binIndex] = std::min(_binData[binIndex], *v);
+                            else {
+                                if (_reductionOperation == RED_MAX) {
+                                    _binData[binIndex] = std::max(_binData[binIndex], *v);
+                                }
+                                else if (_reductionOperation == RED_MIN) {
+                                    _binData[binIndex] = std::min(_binData[binIndex], *v);
+                                }
                             }
                         }
                     }
@@ -183,21 +189,24 @@ PipelineStatus BinAndReduceModifier::modifyParticles(TimePoint time, TimeInterva
 			const int* v_end = v + (property->size() * vecComponentCount);
 
             while (pos != pos_end && v != v_end) {
-                FloatType fractionalPos = reciprocalCell.prodrow(*pos, _binAlignment);
-                size_t binIndex = size_t( fractionalPos / binSize ) % binDataSize;
-                if (_reductionOperation == RED_MEAN || _reductionOperation == RED_SUM || _reductionOperation == RED_SUM) {
-                    _binData[binIndex] += *v;
-                }
-                else {
-                    if (numberOfParticlesPerBin[binIndex] == 0) {
-                        _binData[binIndex] = *v;  
+                FloatType fractionalPos = reciprocalCell.prodrow(*pos, _binDirection);
+                ssize_t binIndex = ssize_t( fractionalPos / binSize ) % binDataSize;
+                if (pbc[_binDirection])  binIndex %= binDataSize;
+                if (binIndex >= 0 && binIndex < binDataSize) {
+                    if (_reductionOperation == RED_MEAN || _reductionOperation == RED_SUM || _reductionOperation == RED_SUM) {
+                        _binData[binIndex] += *v;
                     }
                     else {
-                        if (_reductionOperation == RED_MAX) {
-                            _binData[binIndex] = std::max(_binData[binIndex], FloatType(*v));
+                        if (numberOfParticlesPerBin[binIndex] == 0) {
+                            _binData[binIndex] = *v;  
                         }
-                        else if (_reductionOperation == RED_MIN) {
-                            _binData[binIndex] = std::min(_binData[binIndex], FloatType(*v));
+                        else {
+                            if (_reductionOperation == RED_MAX) {
+                                _binData[binIndex] = std::max(_binData[binIndex], FloatType(*v));
+                            }
+                            else if (_reductionOperation == RED_MIN) {
+                                _binData[binIndex] = std::min(_binData[binIndex], FloatType(*v));
+                            }
                         }
                     }
                 }
