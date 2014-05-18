@@ -1,6 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
 //  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Lars Pastewka
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //

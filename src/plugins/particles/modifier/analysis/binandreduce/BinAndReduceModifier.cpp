@@ -1,6 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
+//  Copyright (2014) Lars Pastewka
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -54,7 +55,8 @@ SET_PROPERTY_FIELD_LABEL(BinAndReduceModifier, _sourceProperty, "Source property
 * Constructs the modifier object.
 ******************************************************************************/
 BinAndReduceModifier::BinAndReduceModifier(DataSet* dataset) : 
-    ParticleModifier(dataset), _reductionOperation(RED_MEAN), _binAlignment(2), _numberOfBins(200), _fixYAxisRange(false), _yAxisRangeStart(0),_yAxisRangeEnd(0)
+    ParticleModifier(dataset), _reductionOperation(RED_MEAN), _binAlignment(2), _numberOfBins(200),
+    _fixYAxisRange(false), _yAxisRangeStart(0), _yAxisRangeEnd(0)
 {
 	INIT_PROPERTY_FIELD(BinAndReduceModifier::_reductionOperation);
 	INIT_PROPERTY_FIELD(BinAndReduceModifier::_binAlignment);
@@ -99,8 +101,7 @@ PipelineStatus BinAndReduceModifier::modifyParticles(TimePoint time, TimeInterva
 	std::fill(_binData.begin(), _binData.end(), 0);
 
     // Number of particles for averaging.
-    std::vector<int> numberOfParticlesPerBin(binDataSize);
-    std::fill(numberOfParticlesPerBin.begin(), numberOfParticlesPerBin.end(), 0);
+    std::vector<int> numberOfParticlesPerBin(binDataSize, 0);
 
 	// Get the source property.
 	if(sourceProperty().isNull())
@@ -137,12 +138,9 @@ PipelineStatus BinAndReduceModifier::modifyParticles(TimePoint time, TimeInterva
 	// Get the current positions.
 	ParticlePropertyObject* posProperty = expectStandardProperty(ParticleProperty::PositionProperty);
 
-    // z-direction is hard coded for now.
-    size_t posVecComponentCount = posProperty->componentCount();
-
 	if(property->size() > 0) {
-        const FloatType* pos = posProperty->constDataFloat();
-        const FloatType* pos_end = pos + (posProperty->size() * posVecComponentCount); 
+        const Point3* pos = posProperty->constDataPoint3();
+        const Point3* pos_end = pos + posProperty->size();
 
         FloatType binSize = 1.0 / binDataSize;
 
@@ -152,7 +150,7 @@ PipelineStatus BinAndReduceModifier::modifyParticles(TimePoint time, TimeInterva
 
             while (pos != pos_end && v != v_end) {
                 if (!std::isnan(*v)) {
-                    FloatType fractionalPos = reciprocalCell.prodrow(Point3(pos[0], pos[1], pos[2]), _binAlignment);
+                    FloatType fractionalPos = reciprocalCell.prodrow(*pos, _binAlignment);
                     size_t binIndex = size_t( fractionalPos / binSize ) % binDataSize;
                     if (_reductionOperation == RED_MEAN || _reductionOperation == RED_SUM || _reductionOperation == RED_SUM_VOL) {
                         _binData[binIndex] += *v;
@@ -173,7 +171,7 @@ PipelineStatus BinAndReduceModifier::modifyParticles(TimePoint time, TimeInterva
                     numberOfParticlesPerBin[binIndex]++;
                 }
                 
-                pos += posVecComponentCount;
+                pos++;
                 v += vecComponentCount;
             }
 		}
@@ -182,7 +180,7 @@ PipelineStatus BinAndReduceModifier::modifyParticles(TimePoint time, TimeInterva
 			const int* v_end = v + (property->size() * vecComponentCount);
 
             while (pos != pos_end && v != v_end) {
-                FloatType fractionalPos = reciprocalCell.prodrow(Point3(pos[0], pos[1], pos[2]), _binAlignment);
+                FloatType fractionalPos = reciprocalCell.prodrow(*pos, _binAlignment);
                 size_t binIndex = size_t( fractionalPos / binSize ) % binDataSize;
                 if (_reductionOperation == RED_MEAN || _reductionOperation == RED_SUM || _reductionOperation == RED_SUM) {
                     _binData[binIndex] += *v;
@@ -200,6 +198,10 @@ PipelineStatus BinAndReduceModifier::modifyParticles(TimePoint time, TimeInterva
                         }
                     }
                 }
+                numberOfParticlesPerBin[binIndex]++;
+
+                pos++;
+                v += vecComponentCount;
             }
 		}
 
@@ -207,20 +209,21 @@ PipelineStatus BinAndReduceModifier::modifyParticles(TimePoint time, TimeInterva
             // Normalize.
             std::vector<FloatType>::iterator a = _binData.begin();
             for (auto n: numberOfParticlesPerBin) {
-                if (n > 0)  *a /= n;
+                if (n > 0) *a /= n;
                 a++;
             }
         }
         else if (_reductionOperation == RED_SUM_VOL) {
             // Divide by bin volume.
             FloatType binVolume = cellVolume / binDataSize;
-            std::for_each(_binData.begin(), _binData.end(), [&](FloatType &x) { x /= binVolume; });
+            std::for_each(_binData.begin(), _binData.end(), [binVolume](FloatType &x) { x /= binVolume; });
         }
 	}
 
 	if (!_fixYAxisRange) {
-		_yAxisRangeStart = *std::min_element(_binData.begin(), _binData.end());
-		_yAxisRangeEnd = *std::max_element(_binData.begin(), _binData.end());
+		auto minmax = std::minmax_element(_binData.begin(), _binData.end());
+		_yAxisRangeStart = *minmax.first;
+		_yAxisRangeEnd = *minmax.second;
 	}
 
 	notifyDependents(ReferenceEvent::ObjectStatusChanged);
@@ -234,7 +237,7 @@ PipelineStatus BinAndReduceModifier::modifyParticles(TimePoint time, TimeInterva
 void BinAndReduceModifierEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
 	// Create a rollout.
-	QWidget* rollout = createRollout(tr("Bin and reduce"), rolloutParams, "particles.modifiers.binandreduce.html");
+	QWidget* rollout = createRollout(tr("Bin and reduce"), rolloutParams /*, "particles.modifiers.binandreduce.html" */);
 
     // Create the rollout contents.
 	QVBoxLayout* layout = new QVBoxLayout(rollout);
@@ -255,12 +258,12 @@ void BinAndReduceModifierEditor::createUI(const RolloutInsertionParameters& roll
     gridlayout->addWidget(reductionOperationPUI->addRadioButton(BinAndReduceModifier::RED_MAX, tr("max")), 0, 4);
     layout->addLayout(gridlayout);
 
-	layout->addWidget(new QLabel(tr("Bin alignment parallel to:"), rollout));
+	layout->addWidget(new QLabel(tr("Binning direction:"), rollout));
 	gridlayout = new QGridLayout();
 	IntegerRadioButtonParameterUI* binAlignmentPUI = new IntegerRadioButtonParameterUI(this, PROPERTY_FIELD(BinAndReduceModifier::_binAlignment));
-    gridlayout->addWidget(binAlignmentPUI->addRadioButton(BinAndReduceModifier::RED_MEAN, "cell vectors 2 and 3"), 0, 0);
-    gridlayout->addWidget(binAlignmentPUI->addRadioButton(BinAndReduceModifier::RED_SUM, "1 and 3"), 0, 1);
-    gridlayout->addWidget(binAlignmentPUI->addRadioButton(BinAndReduceModifier::RED_SUM_VOL, "1 and 2"), 0, 2);
+    gridlayout->addWidget(binAlignmentPUI->addRadioButton(0, "cell vector 1"), 0, 0);
+    gridlayout->addWidget(binAlignmentPUI->addRadioButton(1, "cell vector 2"), 0, 1);
+    gridlayout->addWidget(binAlignmentPUI->addRadioButton(2, "cell vector 3"), 0, 2);
     layout->addLayout(gridlayout);
 
 	gridlayout = new QGridLayout();
@@ -289,7 +292,7 @@ void BinAndReduceModifierEditor::createUI(const RolloutInsertionParameters& roll
 	layout->addWidget(_averagesPlot);
 	connect(this, &BinAndReduceModifierEditor::contentsReplaced, this, &BinAndReduceModifierEditor::plotAverages);
 
-	QPushButton* saveDataButton = new QPushButton(tr("Save reduced data"));
+	QPushButton* saveDataButton = new QPushButton(tr("Save data"));
 	layout->addWidget(saveDataButton);
 	connect(saveDataButton, &QPushButton::clicked, this, &BinAndReduceModifierEditor::onSaveData);
 

@@ -1,6 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
+//  Copyright (2014) Lars Pastewka
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -40,7 +41,9 @@ namespace Particles {
 class OVITO_PARTICLES_EXPORT BinAndReduceModifier : public ParticleModifier
 {
 public:
+
     enum ReductionOperationType { RED_MEAN, RED_SUM, RED_SUM_VOL, RED_MIN, RED_MAX };
+    Q_ENUMS(ReductionOperationType);
 
 	/// Constructor.
 	Q_INVOKABLE BinAndReduceModifier(DataSet* dataset);
@@ -55,10 +58,10 @@ public:
 	const ParticlePropertyReference& sourceProperty() const { return _sourceProperty; }
 
 	/// Returns the reduction operation
-	int reductionOperation() const { return _reductionOperation; }
+	ReductionOperationType reductionOperation() const { return _reductionOperation; }
 
 	/// Sets the reduction operation
-	void setReductionOperation(int o) { _reductionOperation = o; }
+	void setReductionOperation(ReductionOperationType o) { _reductionOperation = o; }
 
 	/// Returns the bin alignment
 	int reductionBinAlignment() const { return _binAlignment; }
@@ -75,31 +78,31 @@ public:
 	/// Returns the stored average data.
 	const std::vector<FloatType>& binData() const { return _binData; }
 
-	/// Returns the start value of the y-axis.
+	/// Returns the start value of the plotting x-axis.
 	FloatType xAxisRangeStart() const { return _xAxisRangeStart; }
 
-	/// Returns the end value of the y-axis.
+	/// Returns the end value of the plotting x-axis.
 	FloatType xAxisRangeEnd() const { return _xAxisRangeEnd; }
 
-	/// Set whether the range of the y-axis of the scatter plot should be fixed.
+	/// Set whether the plotting range of the y-axis should be fixed.
 	void setFixYAxisRange(bool fix) { _fixYAxisRange = fix; }
 
-	/// Returns whether the range of the y-axis should be fixed.
+	/// Returns whether the plotting range of the y-axis should be fixed.
 	bool fixYAxisRange() const { return _fixYAxisRange; }
 
-	/// Set start and end value of the y-axis.
+	/// Set start and end value of the plotting y-axis.
 	void setYAxisRange(FloatType start, FloatType end) { _yAxisRangeStart = start; _yAxisRangeEnd = end; }
 
-	/// Returns the start value of the y-axis.
+	/// Returns the start value of the plotting y-axis.
 	FloatType yAxisRangeStart() const { return _yAxisRangeStart; }
 
-	/// Returns the end value of the y-axis.
+	/// Returns the end value of the plotting y-axis.
 	FloatType yAxisRangeEnd() const { return _yAxisRangeEnd; }
 
 public:
 
 	Q_PROPERTY(Particles::ParticlePropertyReference sourceProperty READ sourceProperty WRITE setSourceProperty);
-	Q_PROPERTY(int reductionOperation READ reductionOperation WRITE setReductionOperation);
+	Q_PROPERTY(Particles::BinAndReduceModifier::ReductionOperationType reductionOperation READ reductionOperation WRITE setReductionOperation);
 	Q_PROPERTY(int numberOfBins READ numberOfBins WRITE setNumberOfBins);
 
 protected:
@@ -109,17 +112,11 @@ protected:
 
 private:
 
-	/// Stores the start value of the y-axis.
-	FloatType _xAxisRangeStart;
-
-	/// Stores the end value of the y-axis.
-	FloatType _xAxisRangeEnd;
-
 	/// The particle property that serves as data source to be averaged.
 	PropertyField<ParticlePropertyReference> _sourceProperty;
 
 	/// Type of reduction operation
-	PropertyField<int> _reductionOperation;
+	PropertyField<ReductionOperationType,int> _reductionOperation;
 
 	/// Bin alignment
 	PropertyField<int> _binAlignment;
@@ -127,13 +124,19 @@ private:
 	/// Controls the number of spatial bins.
 	PropertyField<int> _numberOfBins;
 
-	/// Controls the whether the range of the y-axis of the avarage values should be fixed.
+	/// Stores the start value of the plotting x-axis.
+	FloatType _xAxisRangeStart;
+
+	/// Stores the end value of the plotting x-axis.
+	FloatType _xAxisRangeEnd;
+
+	/// Controls the whether the plotting range along the y-axis should be fixed.
 	PropertyField<bool> _fixYAxisRange;
 
-	/// Controls the start value of the y-axis.
+	/// Controls the start value of the plotting y-axis.
 	PropertyField<FloatType> _yAxisRangeStart;
 
-	/// Controls the end value of the y-axis.
+	/// Controls the end value of the plotting y-axis.
 	PropertyField<FloatType> _yAxisRangeEnd;
 
 	/// Stores the averaged data.
