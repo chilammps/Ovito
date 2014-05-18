@@ -452,6 +452,9 @@ void BinAndReduceModifierEditor::plotAverages()
         _averagesPlot->setInteraction(QCP::iRangeZoom, false);
         _averagesPlot->yAxis->setLabel("Position");
 
+        if(modifier->binData().empty())
+            return;
+
         _averagesColorMap->setInterpolate(false);
         _averagesColorMap->setTightBoundary(false);
         _averagesColorMap->setGradient(QCPColorGradient::gpJet);
