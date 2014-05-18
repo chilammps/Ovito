@@ -45,7 +45,8 @@ public:
 
     enum ReductionOperationType { RED_MEAN, RED_SUM, RED_SUM_VOL, RED_MIN, RED_MAX };
     Q_ENUMS(ReductionOperationType);
-    enum BinDirectionType { CELL_VECTOR_1, CELL_VECTOR_2, CELL_VECTOR_3, CELL_VECTORS_1_2, CELL_VECTORS_1_3, CELL_VECTORS_2_3 };
+    enum BinDirectionType { CELL_VECTOR_1 = 0, CELL_VECTOR_2 = 1, CELL_VECTOR_3 = 2,
+                            CELL_VECTORS_1_2 = 0+(1<<2), CELL_VECTORS_1_3 = 0+(2<<2), CELL_VECTORS_2_3 = 1+(2<<2) };
     Q_ENUMS(BinDirectionType);
 
 	/// Constructor.
@@ -93,24 +94,45 @@ public:
 	/// Returns the end value of the plotting x-axis.
 	FloatType xAxisRangeEnd() const { return _xAxisRangeEnd; }
 
-	/// Set whether the plotting range of the y-axis should be fixed.
-	void setFixYAxisRange(bool fix) { _fixYAxisRange = fix; }
-
-	/// Returns whether the plotting range of the y-axis should be fixed.
-	bool fixYAxisRange() const { return _fixYAxisRange; }
-
-	/// Set start and end value of the plotting y-axis.
-	void setYAxisRange(FloatType start, FloatType end) { _yAxisRangeStart = start; _yAxisRangeEnd = end; }
-
 	/// Returns the start value of the plotting y-axis.
 	FloatType yAxisRangeStart() const { return _yAxisRangeStart; }
 
 	/// Returns the end value of the plotting y-axis.
 	FloatType yAxisRangeEnd() const { return _yAxisRangeEnd; }
 
+	/// Set whether the plotting range of the property axis should be fixed.
+	void setFixPropertyAxisRange(bool fix) { _fixPropertyAxisRange = fix; }
+
+	/// Returns whether the plotting range of the property axis should be fixed.
+	bool fixPropertyAxisRange() const { return _fixPropertyAxisRange; }
+
+	/// Set start and end value of the plotting property axis.
+	void setPropertyAxisRange(FloatType start, FloatType end) { _propertyAxisRangeStart = start; _propertyAxisRangeEnd = end; }
+
+	/// Returns the start value of the plotting y-axis.
+	FloatType PropertyAxisRangeStart() const { return _propertyAxisRangeStart; }
+
+	/// Returns the end value of the plotting y-axis.
+	FloatType PropertyAxisRangeEnd() const { return _propertyAxisRangeEnd; }
+
     /// Returns true if binning in a single direction only.
-    static bool bin1d(BinDirectionType d) {
+    bool is1D() {
+        return bin1D(_binDirection);
+    }
+
+    /// Returns true if binning in a single direction only.
+    static bool bin1D(BinDirectionType d) {
         return d == CELL_VECTOR_1 || d == CELL_VECTOR_2 || d == CELL_VECTOR_3;
+    }
+
+    /// Return the coordinate index to be mapped on the X-axis.
+    static int binDirectionX(BinDirectionType d) {
+        return d & 3;
+    }
+
+    /// Return the coordinate index to be mapped on the Y-axis.
+    static int binDirectionY(BinDirectionType d) {
+        return (d >> 2) & 3;
     }
 
 public:
@@ -144,19 +166,25 @@ private:
 	PropertyField<int> _numberOfBinsY;
 
 	/// Controls the whether the plotting range along the y-axis should be fixed.
-	PropertyField<bool> _fixYAxisRange;
+	PropertyField<bool> _fixPropertyAxisRange;
 
 	/// Controls the start value of the plotting y-axis.
-	PropertyField<FloatType> _yAxisRangeStart;
+	PropertyField<FloatType> _propertyAxisRangeStart;
 
 	/// Controls the end value of the plotting y-axis.
-	PropertyField<FloatType> _yAxisRangeEnd;
+	PropertyField<FloatType> _propertyAxisRangeEnd;
 
 	/// Stores the start value of the plotting x-axis.
 	FloatType _xAxisRangeStart;
 
 	/// Stores the end value of the plotting x-axis.
 	FloatType _xAxisRangeEnd;
+
+	/// Stores the start value of the plotting y-axis.
+	FloatType _yAxisRangeStart;
+
+	/// Stores the end value of the plotting y-axis.
+	FloatType _yAxisRangeEnd;
 
 	/// Stores the averaged data.
 	std::vector<FloatType> _binData;
@@ -171,9 +199,9 @@ private:
 	DECLARE_PROPERTY_FIELD(_binDirection);
 	DECLARE_PROPERTY_FIELD(_numberOfBinsX);
 	DECLARE_PROPERTY_FIELD(_numberOfBinsY);
-	DECLARE_PROPERTY_FIELD(_fixYAxisRange);
-	DECLARE_PROPERTY_FIELD(_yAxisRangeStart);
-	DECLARE_PROPERTY_FIELD(_yAxisRangeEnd);
+	DECLARE_PROPERTY_FIELD(_fixPropertyAxisRange);
+	DECLARE_PROPERTY_FIELD(_propertyAxisRangeStart);
+	DECLARE_PROPERTY_FIELD(_propertyAxisRangeEnd);
 	DECLARE_PROPERTY_FIELD(_sourceProperty);
 };
 
@@ -185,7 +213,7 @@ class BinAndReduceModifierEditor : public ParticleModifierEditor
 public:
 
 	/// Default constructor.
-	Q_INVOKABLE BinAndReduceModifierEditor() : _rangeUpdate(true) {}
+	Q_INVOKABLE BinAndReduceModifierEditor() : _rangeUpdate(true), _averagesGraph(NULL), _averagesColorMap(NULL) {}
 
 protected:
 
@@ -201,10 +229,10 @@ protected Q_SLOTS:
 	void plotAverages();
 
     /// Update the bin direction.
-    void updateBinDirection(BinAndReduceModifier::BinDirectionType newBinDirection);
+    void updateBinDirection(int newBinDirection);
 
 	/// Keep y-axis range updated
-	void updateYAxisRange(const QCPRange &newRange);
+	void updatePropertyAxisRange(const QCPRange &newRange);
 
 	/// This is called when the user has clicked the "Save Data" button.
 	void onSaveData();
@@ -214,8 +242,14 @@ private:
     /// Widget controlling the number of y-bins.
     IntegerParameterUI* _numBinsYPUI;
 
-	/// The graph widget to display the average data.
+	/// The plot widget to display the average data.
 	QCustomPlot* _averagesPlot;
+
+	/// The graph widget to display the average data.
+	QCPGraph* _averagesGraph;
+
+	/// The color map widget to display the average data on a 2D grid.
+	QCPColorMap* _averagesColorMap;
 
 	/// Update range when plot ranges change?
 	bool _rangeUpdate;

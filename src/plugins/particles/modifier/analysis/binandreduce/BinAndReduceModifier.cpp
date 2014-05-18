@@ -40,33 +40,39 @@ DEFINE_FLAGS_PROPERTY_FIELD(BinAndReduceModifier, _reductionOperation, "Reductio
 DEFINE_FLAGS_PROPERTY_FIELD(BinAndReduceModifier, _binDirection, "BinDirection", PROPERTY_FIELD_MEMORIZE);
 DEFINE_FLAGS_PROPERTY_FIELD(BinAndReduceModifier, _numberOfBinsX, "NumberOfBinsX", PROPERTY_FIELD_MEMORIZE);
 DEFINE_FLAGS_PROPERTY_FIELD(BinAndReduceModifier, _numberOfBinsY, "NumberOfBinsY", PROPERTY_FIELD_MEMORIZE);
-DEFINE_PROPERTY_FIELD(BinAndReduceModifier, _fixYAxisRange, "FixYAxisRange");
-DEFINE_FLAGS_PROPERTY_FIELD(BinAndReduceModifier, _yAxisRangeStart, "YAxisRangeStart", PROPERTY_FIELD_MEMORIZE);
-DEFINE_FLAGS_PROPERTY_FIELD(BinAndReduceModifier, _yAxisRangeEnd, "YAxisRangeEnd", PROPERTY_FIELD_MEMORIZE);
+DEFINE_PROPERTY_FIELD(BinAndReduceModifier, _fixPropertyAxisRange, "FixPropertyAxisRange");
+DEFINE_FLAGS_PROPERTY_FIELD(BinAndReduceModifier, _propertyAxisRangeStart, "PropertyAxisRangeStart", PROPERTY_FIELD_MEMORIZE);
+DEFINE_FLAGS_PROPERTY_FIELD(BinAndReduceModifier, _propertyAxisRangeEnd, "PropertyAxisRangeEnd", PROPERTY_FIELD_MEMORIZE);
 DEFINE_PROPERTY_FIELD(BinAndReduceModifier, _sourceProperty, "SourceProperty");
 SET_PROPERTY_FIELD_LABEL(BinAndReduceModifier, _reductionOperation, "Reduction operation");
 SET_PROPERTY_FIELD_LABEL(BinAndReduceModifier, _binDirection, "Bin direction");
 SET_PROPERTY_FIELD_LABEL(BinAndReduceModifier, _numberOfBinsX, "Number of spatial bins");
 SET_PROPERTY_FIELD_LABEL(BinAndReduceModifier, _numberOfBinsY, "Number of spatial bins");
-SET_PROPERTY_FIELD_LABEL(BinAndReduceModifier, _fixYAxisRange, "Fix property-axis range");
-SET_PROPERTY_FIELD_LABEL(BinAndReduceModifier, _yAxisRangeStart, "Y-axis range start");
-SET_PROPERTY_FIELD_LABEL(BinAndReduceModifier, _yAxisRangeEnd, "Y-axis range end");
+SET_PROPERTY_FIELD_LABEL(BinAndReduceModifier, _fixPropertyAxisRange, "Fix property-axis range");
+SET_PROPERTY_FIELD_LABEL(BinAndReduceModifier, _propertyAxisRangeStart, "Property-axis range start");
+SET_PROPERTY_FIELD_LABEL(BinAndReduceModifier, _propertyAxisRangeEnd, "Property-axis range end");
 SET_PROPERTY_FIELD_LABEL(BinAndReduceModifier, _sourceProperty, "Source property");
+
+inline int modulo(int i, int n)
+{
+    while (i < 0) i += n;
+    return i%n;
+}
 
 /******************************************************************************
 * Constructs the modifier object.
 ******************************************************************************/
 BinAndReduceModifier::BinAndReduceModifier(DataSet* dataset) : 
     ParticleModifier(dataset), _reductionOperation(RED_MEAN), _binDirection(CELL_VECTOR_3),_numberOfBinsX(200),
-    _numberOfBinsY(1), _fixYAxisRange(false), _yAxisRangeStart(0), _yAxisRangeEnd(0)
+    _numberOfBinsY(1), _fixPropertyAxisRange(false), _propertyAxisRangeStart(0), _propertyAxisRangeEnd(0)
 {
 	INIT_PROPERTY_FIELD(BinAndReduceModifier::_reductionOperation);
 	INIT_PROPERTY_FIELD(BinAndReduceModifier::_binDirection);
 	INIT_PROPERTY_FIELD(BinAndReduceModifier::_numberOfBinsX);
 	INIT_PROPERTY_FIELD(BinAndReduceModifier::_numberOfBinsY);
-	INIT_PROPERTY_FIELD(BinAndReduceModifier::_fixYAxisRange);
-	INIT_PROPERTY_FIELD(BinAndReduceModifier::_yAxisRangeStart);
-	INIT_PROPERTY_FIELD(BinAndReduceModifier::_yAxisRangeEnd);
+	INIT_PROPERTY_FIELD(BinAndReduceModifier::_fixPropertyAxisRange);
+	INIT_PROPERTY_FIELD(BinAndReduceModifier::_propertyAxisRangeStart);
+	INIT_PROPERTY_FIELD(BinAndReduceModifier::_propertyAxisRangeEnd);
 	INIT_PROPERTY_FIELD(BinAndReduceModifier::_sourceProperty);
 }
 
@@ -99,9 +105,16 @@ void BinAndReduceModifier::initializeModifier(PipelineObject* pipeline, Modifier
 ******************************************************************************/
 PipelineStatus BinAndReduceModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
 {
-    size_t binDataSize = std::max(1, numberOfBinsX());
+    size_t binDataSizeX = std::max(1, numberOfBinsX());
+    size_t binDataSizeY = std::max(1, numberOfBinsY());
+    if (is1D()) binDataSizeY = 1;
+    size_t binDataSize = binDataSizeX*binDataSizeY;
 	_binData.resize(binDataSize);
 	std::fill(_binData.begin(), _binData.end(), 0);
+
+    // Return coordinate indices (0, 1 or 2).
+    int binDirX = binDirectionX(_binDirection);
+    int binDirY = binDirectionY(_binDirection);
 
     // Number of particles for averaging.
     std::vector<int> numberOfParticlesPerBin(binDataSize, 0);
@@ -125,21 +138,35 @@ PipelineStatus BinAndReduceModifier::modifyParticles(TimePoint time, TimeInterva
 	std::array<bool, 3> pbc = expectSimulationCell()->pbcFlags();
 
     // Compute the surface normal vector.
-    Vector3 normal;
+    Vector3 normalX, normalY(1, 1, 1);
     if (_binDirection == CELL_VECTOR_1) {
-        normal = expectSimulationCell()->edgeVector2().cross(expectSimulationCell()->edgeVector3());
+        normalX = expectSimulationCell()->edgeVector2().cross(expectSimulationCell()->edgeVector3());
     }
     else if (_binDirection == CELL_VECTOR_2) {
-        normal = expectSimulationCell()->edgeVector1().cross(expectSimulationCell()->edgeVector3());
+        normalX = expectSimulationCell()->edgeVector1().cross(expectSimulationCell()->edgeVector3());
     }
     else if (_binDirection == CELL_VECTOR_3) {
-        normal = expectSimulationCell()->edgeVector1().cross(expectSimulationCell()->edgeVector2());
+        normalX = expectSimulationCell()->edgeVector1().cross(expectSimulationCell()->edgeVector2());
+    }
+    else if (_binDirection == CELL_VECTORS_1_2) {
+        normalX = expectSimulationCell()->edgeVector2().cross(expectSimulationCell()->edgeVector3());
+        normalY = expectSimulationCell()->edgeVector1().cross(expectSimulationCell()->edgeVector3());
+    }
+    else if (_binDirection == CELL_VECTORS_2_3) {
+        normalX = expectSimulationCell()->edgeVector1().cross(expectSimulationCell()->edgeVector3());
+        normalY = expectSimulationCell()->edgeVector1().cross(expectSimulationCell()->edgeVector2());
+    }
+    else if (_binDirection == CELL_VECTORS_1_3) {
+        normalX = expectSimulationCell()->edgeVector2().cross(expectSimulationCell()->edgeVector3());
+        normalY = expectSimulationCell()->edgeVector1().cross(expectSimulationCell()->edgeVector3());
     }
 
     // Compute the distance of the two cell faces (normal.length() is area of face).
     FloatType cellVolume = expectSimulationCell()->volume();
     _xAxisRangeStart = 0.0;
-    _xAxisRangeEnd = cellVolume / normal.length();
+    _xAxisRangeEnd = cellVolume / normalX.length();
+    _yAxisRangeStart = 0.0;
+    _yAxisRangeEnd = cellVolume / normalY.length();
 
 	// Get the current positions.
 	ParticlePropertyObject* posProperty = expectStandardProperty(ParticleProperty::PositionProperty);
@@ -148,18 +175,20 @@ PipelineStatus BinAndReduceModifier::modifyParticles(TimePoint time, TimeInterva
         const Point3* pos = posProperty->constDataPoint3();
         const Point3* pos_end = pos + posProperty->size();
 
-        FloatType binSize = 1.0 / binDataSize;
-
 		if(property->dataType() == qMetaTypeId<FloatType>()) {
 			const FloatType* v = property->constDataFloat() + vecComponent;
 			const FloatType* v_end = v + (property->size() * vecComponentCount);
 
             while (pos != pos_end && v != v_end) {
                 if (!std::isnan(*v)) {
-                    FloatType fractionalPos = reciprocalCell.prodrow(*pos, _binDirection);
-                    ssize_t binIndex = ssize_t( fractionalPos / binSize );
-                    if (pbc[_binDirection])  binIndex %= binDataSize;
-                    if (binIndex >= 0 && binIndex < binDataSize) {
+                    FloatType fractionalPosX = reciprocalCell.prodrow(*pos, binDirX);
+                    FloatType fractionalPosY = reciprocalCell.prodrow(*pos, binDirY);
+                    ssize_t binIndexX = ssize_t( fractionalPosX * binDataSizeX );
+                    ssize_t binIndexY = ssize_t( fractionalPosY * binDataSizeY );
+                    if (pbc[binDirX])  binIndexX = modulo(binIndexX, binDataSizeX);
+                    if (pbc[binDirY])  binIndexY = modulo(binIndexY, binDataSizeY);
+                    if (binIndexX >= 0 && binIndexX < binDataSizeX && binIndexY >= 0 && binIndexY < binDataSizeY) {
+                        size_t binIndex = binIndexY*binDataSizeX+binIndexX;
                         if (_reductionOperation == RED_MEAN || _reductionOperation == RED_SUM || _reductionOperation == RED_SUM_VOL) {
                             _binData[binIndex] += *v;
                         } 
@@ -176,8 +205,8 @@ PipelineStatus BinAndReduceModifier::modifyParticles(TimePoint time, TimeInterva
                                 }
                             }
                         }
+                        numberOfParticlesPerBin[binIndex]++;
                     }
-                    numberOfParticlesPerBin[binIndex]++;
                 }
                 
                 pos++;
@@ -189,10 +218,14 @@ PipelineStatus BinAndReduceModifier::modifyParticles(TimePoint time, TimeInterva
 			const int* v_end = v + (property->size() * vecComponentCount);
 
             while (pos != pos_end && v != v_end) {
-                FloatType fractionalPos = reciprocalCell.prodrow(*pos, _binDirection);
-                ssize_t binIndex = ssize_t( fractionalPos / binSize ) % binDataSize;
-                if (pbc[_binDirection])  binIndex %= binDataSize;
-                if (binIndex >= 0 && binIndex < binDataSize) {
+                FloatType fractionalPosX = reciprocalCell.prodrow(*pos, binDirX);
+                FloatType fractionalPosY = reciprocalCell.prodrow(*pos, binDirY);
+                ssize_t binIndexX = ssize_t( fractionalPosX * binDataSizeX );
+                ssize_t binIndexY = ssize_t( fractionalPosY * binDataSizeY );
+                if (pbc[binDirX])  binIndexX = modulo(binIndexX, binDataSizeX);
+                if (pbc[binDirY])  binIndexY = modulo(binIndexY, binDataSizeY);
+                if (binIndexX >= 0 && binIndexX < binDataSizeX && binIndexY >= 0 && binIndexY < binDataSizeY) {
+                    size_t binIndex = binIndexY*binDataSizeX+binIndexX;
                     if (_reductionOperation == RED_MEAN || _reductionOperation == RED_SUM || _reductionOperation == RED_SUM) {
                         _binData[binIndex] += *v;
                     }
@@ -209,8 +242,8 @@ PipelineStatus BinAndReduceModifier::modifyParticles(TimePoint time, TimeInterva
                             }
                         }
                     }
+                    numberOfParticlesPerBin[binIndex]++;
                 }
-                numberOfParticlesPerBin[binIndex]++;
 
                 pos++;
                 v += vecComponentCount;
@@ -227,15 +260,15 @@ PipelineStatus BinAndReduceModifier::modifyParticles(TimePoint time, TimeInterva
         }
         else if (_reductionOperation == RED_SUM_VOL) {
             // Divide by bin volume.
-            FloatType binVolume = cellVolume / binDataSize;
+            FloatType binVolume = cellVolume / (binDataSizeX*binDataSizeY);
             std::for_each(_binData.begin(), _binData.end(), [binVolume](FloatType &x) { x /= binVolume; });
         }
 	}
 
-	if (!_fixYAxisRange) {
+	if (!_fixPropertyAxisRange) {
 		auto minmax = std::minmax_element(_binData.begin(), _binData.end());
-		_yAxisRangeStart = *minmax.first;
-		_yAxisRangeEnd = *minmax.second;
+		_propertyAxisRangeStart = *minmax.first;
+		_propertyAxisRangeEnd = *minmax.second;
 	}
 
 	notifyDependents(ReferenceEvent::ObjectStatusChanged);
@@ -280,7 +313,7 @@ void BinAndReduceModifierEditor::createUI(const RolloutInsertionParameters& roll
     gridlayout->addWidget(binDirectionPUI->addRadioButton(BinAndReduceModifier::CELL_VECTORS_1_3, "vectors 1 and 3"), 1, 1);
     gridlayout->addWidget(binDirectionPUI->addRadioButton(BinAndReduceModifier::CELL_VECTORS_2_3, "vectors 2 and 3"), 1, 2);
     layout->addLayout(gridlayout);
-    connect(binDirectionPUI->buttonGroup(), SIGNAL(buttonClicked(int)), this, SLOT(updateBinDirection(BinAndReduceModifier::BinDirectionType)));
+    connect(binDirectionPUI->buttonGroup(), SIGNAL(buttonClicked(int)), this, SLOT(updateBinDirection(int)));
 
 	gridlayout = new QGridLayout();
 	gridlayout->setContentsMargins(4,4,4,4);
@@ -300,13 +333,10 @@ void BinAndReduceModifierEditor::createUI(const RolloutInsertionParameters& roll
 
 	_averagesPlot = new QCustomPlot();
 	_averagesPlot->setMinimumHeight(240);
-	_averagesPlot->setInteraction(QCP::iRangeDrag, true);
-	_averagesPlot->axisRect()->setRangeDrag(Qt::Vertical);
-	_averagesPlot->setInteraction(QCP::iRangeZoom, true);
-	_averagesPlot->axisRect()->setRangeZoom(Qt::Vertical);
+    _averagesPlot->axisRect()->setRangeDrag(Qt::Vertical);
+    _averagesPlot->axisRect()->setRangeZoom(Qt::Vertical);
 	_averagesPlot->xAxis->setLabel("Position");
-	_averagesPlot->addGraph();
-	connect(_averagesPlot->yAxis, SIGNAL(rangeChanged(const QCPRange&)), this, SLOT(updateYAxisRange(const QCPRange&)));
+    connect(_averagesPlot->yAxis, SIGNAL(rangeChanged(const QCPRange&)), this, SLOT(updatePropertyAxisRange(const QCPRange&)));
 
 	layout->addWidget(new QLabel(tr("Reduction:")));
 	layout->addWidget(_averagesPlot);
@@ -321,13 +351,13 @@ void BinAndReduceModifierEditor::createUI(const RolloutInsertionParameters& roll
 	QVBoxLayout* axesSublayout = new QVBoxLayout(axesBox);
 	axesSublayout->setContentsMargins(4,4,4,4);
 	layout->addWidget(axesBox);
-    BooleanParameterUI* rangeUI = new BooleanParameterUI(this, PROPERTY_FIELD(BinAndReduceModifier::_fixYAxisRange));
+    BooleanParameterUI* rangeUI = new BooleanParameterUI(this, PROPERTY_FIELD(BinAndReduceModifier::_fixPropertyAxisRange));
     axesSublayout->addWidget(rangeUI->checkBox());
         
     QHBoxLayout* hlayout = new QHBoxLayout();
     axesSublayout->addLayout(hlayout);
-    FloatParameterUI* startPUI = new FloatParameterUI(this, PROPERTY_FIELD(BinAndReduceModifier::_yAxisRangeStart));
-    FloatParameterUI* endPUI = new FloatParameterUI(this, PROPERTY_FIELD(BinAndReduceModifier::_yAxisRangeEnd));
+    FloatParameterUI* startPUI = new FloatParameterUI(this, PROPERTY_FIELD(BinAndReduceModifier::_propertyAxisRangeStart));
+    FloatParameterUI* endPUI = new FloatParameterUI(this, PROPERTY_FIELD(BinAndReduceModifier::_propertyAxisRangeEnd));
     hlayout->addWidget(new QLabel(tr("From:")));
     hlayout->addLayout(startPUI->createFieldLayout());
     hlayout->addSpacing(12);
@@ -364,56 +394,113 @@ void BinAndReduceModifierEditor::plotAverages()
 	if(!modifier)
 		return;
 
-	_averagesPlot->yAxis->setLabel(modifier->sourceProperty().name());
+    size_t binDataSizeX = std::max(1, modifier->numberOfBinsX());
+    size_t binDataSizeY = std::max(1, modifier->numberOfBinsY());
+    if (modifier->is1D()) binDataSizeY = 1;
+    size_t binDataSize = binDataSizeX*binDataSizeY;
 
-	if(modifier->binData().empty())
-		return;
+    if (modifier->is1D()) {
+        // If previous plot was a color map, delete and create graph.
+        if (!_averagesGraph) {
+            if (_averagesColorMap) {
+                _averagesPlot->removePlottable(_averagesColorMap);
+                _averagesColorMap = NULL;
+            }
+            _averagesGraph = _averagesPlot->addGraph();
+        }
 
-    size_t binDataSize = modifier->binData().size();
-	QVector<double> xdata(binDataSize);
-	QVector<double> ydata(binDataSize);
-	double binSize = ( modifier->xAxisRangeEnd() - modifier->xAxisRangeStart() ) / binDataSize;
-	double maxBinData = 0.0;
-	for(int i = 0; i < xdata.size(); i++) {
-		xdata[i] = binSize * ((double)i + 0.5);
-		ydata[i] = modifier->binData()[i];
-		maxBinData = std::max(maxBinData, ydata[i]);
-	}
-	_averagesPlot->graph()->setLineStyle(QCPGraph::lsStepCenter);
-	_averagesPlot->graph()->setData(xdata, ydata);
+        _averagesPlot->setInteraction(QCP::iRangeDrag, true);
+        _averagesPlot->axisRect()->setRangeDrag(Qt::Vertical);
+        _averagesPlot->setInteraction(QCP::iRangeZoom, true);
+        _averagesPlot->axisRect()->setRangeZoom(Qt::Vertical);
+        _averagesPlot->yAxis->setLabel(modifier->sourceProperty().name());
 
-	// Check if range is already correct, because setRange emits the rangeChanged signal
-	// which is to be avoided if the range is not determined automatically.
-	_rangeUpdate = false;
-	_averagesPlot->xAxis->setRange(modifier->xAxisRangeStart(), modifier->xAxisRangeEnd());
-	_averagesPlot->yAxis->setRange(modifier->yAxisRangeStart(), modifier->yAxisRangeEnd());
-	_rangeUpdate = true;
+        if(modifier->binData().empty())
+            return;
 
-	_averagesPlot->replot();
+        QVector<double> xdata(binDataSize);
+        QVector<double> ydata(binDataSize);
+        double binSize = ( modifier->xAxisRangeEnd() - modifier->xAxisRangeStart() ) / binDataSize;
+        double maxBinData = 0.0;
+        for(int i = 0; i < xdata.size(); i++) {
+            xdata[i] = binSize * ((double)i + 0.5);
+            ydata[i] = modifier->binData()[i];
+            maxBinData = std::max(maxBinData, ydata[i]);
+        }
+        _averagesPlot->graph()->setLineStyle(QCPGraph::lsStepCenter);
+        _averagesPlot->graph()->setData(xdata, ydata);
+
+        // Check if range is already correct, because setRange emits the rangeChanged signal
+        // which is to be avoided if the range is not determined automatically.
+        _rangeUpdate = false;
+        _averagesPlot->xAxis->setRange(modifier->xAxisRangeStart(), modifier->xAxisRangeEnd());
+        _averagesPlot->yAxis->setRange(modifier->PropertyAxisRangeStart(), modifier->PropertyAxisRangeEnd());
+        _rangeUpdate = true;
+    }
+    else {
+        // If previous plot was a graph, delete and create color map.
+        if (!_averagesColorMap) {
+            if (_averagesGraph) {
+                _averagesPlot->removeGraph(_averagesGraph);
+                _averagesGraph = NULL;
+            }
+            _averagesColorMap = new QCPColorMap(_averagesPlot->xAxis, _averagesPlot->yAxis);
+            _averagesPlot->addPlottable(_averagesColorMap);
+        }
+
+        _averagesPlot->setInteraction(QCP::iRangeDrag, false);
+        _averagesPlot->setInteraction(QCP::iRangeZoom, false);
+        _averagesPlot->yAxis->setLabel("Position");
+
+        _averagesColorMap->setInterpolate(false);
+        _averagesColorMap->setTightBoundary(false);
+        _averagesColorMap->setGradient(QCPColorGradient::gpJet);
+
+        _averagesColorMap->data()->setSize(binDataSizeX, binDataSizeY);
+        _averagesColorMap->data()->setRange(QCPRange(modifier->xAxisRangeStart(), modifier->xAxisRangeEnd()),
+                                            QCPRange(modifier->yAxisRangeStart(), modifier->yAxisRangeEnd()));
+        for (int j = 0; j < binDataSizeY; j++) {
+            for (int i = 0; i < binDataSizeX; i++) {
+                _averagesColorMap->data()->setCell(i, j, modifier->binData()[j*binDataSizeX+i]);
+            }
+        }
+
+        // Check if range is already correct, because setRange emits the rangeChanged signal
+        // which is to be avoided if the range is not determined automatically.
+        _rangeUpdate = false;
+        _averagesColorMap->setDataRange(QCPRange(modifier->PropertyAxisRangeStart(), modifier->PropertyAxisRangeEnd()));
+        _rangeUpdate = true;
+
+        _averagesPlot->rescaleAxes();
+    }
+    
+    _averagesPlot->replot();
 }
 
 /******************************************************************************
 * Enable/disable the editor for number of y-bin
 ******************************************************************************/
-void BinAndReduceModifierEditor::updateBinDirection(BinAndReduceModifier::BinDirectionType newBinDirection)
+void BinAndReduceModifierEditor::updateBinDirection(int newBinDirection)
 {
-    _numBinsYPUI->setEnabled(!BinAndReduceModifier::bin1d(newBinDirection));
+    _numBinsYPUI->setEnabled(!BinAndReduceModifier::bin1D(BinAndReduceModifier::BinDirectionType(newBinDirection)));
 }
 
 
 /******************************************************************************
 * Keep y-axis range updated
 ******************************************************************************/
-void BinAndReduceModifierEditor::updateYAxisRange(const QCPRange &newRange)
+void BinAndReduceModifierEditor::updatePropertyAxisRange(const QCPRange &newRange)
 {
 	if (_rangeUpdate) {
 		BinAndReduceModifier* modifier = static_object_cast<BinAndReduceModifier>(editObject());
 		if(!modifier)
 			return;
+        if (!modifier->is1D())
+            return;
 
 		// Fix range if user modifies the range by a mouse action in QCustomPlot
-		modifier->setFixYAxisRange(true);
-		modifier->setYAxisRange(newRange.lower, newRange.upper);
+		modifier->setFixPropertyAxisRange(true);
+		modifier->setPropertyAxisRange(newRange.lower, newRange.upper);
 	}
 }
 
