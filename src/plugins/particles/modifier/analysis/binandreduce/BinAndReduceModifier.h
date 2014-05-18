@@ -1,6 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
+//  Copyright (2014) Lars Pastewka
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -40,8 +41,11 @@ namespace Particles {
 class OVITO_PARTICLES_EXPORT BinAndReduceModifier : public ParticleModifier
 {
 public:
+
     enum ReductionOperationType { RED_MEAN, RED_SUM, RED_SUM_VOL, RED_MIN, RED_MAX };
-    enum BinDirectionType { CELL_VECTOR_1, CELL_VECTOR_2, CELL_VECTOR_3 };
+    Q_ENUMS(ReductionOperationType);
+    enum BinDirectionType { CELL_VECTOR_1, CELL_VECTOR_2, CELL_VECTOR_3, CELL_VECTORS_1_2, CELL_VECTORS_1_3, CELL_VECTORS_2_3 };
+    Q_ENUMS(BinDirectionType);
 
 	/// Constructor.
 	Q_INVOKABLE BinAndReduceModifier(DataSet* dataset);
@@ -56,52 +60,59 @@ public:
 	const ParticlePropertyReference& sourceProperty() const { return _sourceProperty; }
 
 	/// Returns the reduction operation
-	int reductionOperation() const { return _reductionOperation; }
+	ReductionOperationType reductionOperation() const { return _reductionOperation; }
 
 	/// Sets the reduction operation
-	void setReductionOperation(int o) { _reductionOperation = o; }
+	void setReductionOperation(ReductionOperationType o) { _reductionOperation = o; }
 
 	/// Returns the bin direction
-	int reductionBinDirection1() const { return _binDirection; }
+	int reductionBinDirection() const { return _binDirection; }
 
 	/// Sets the bin direction
-	void setBinDirection1(int o) { _binDirection = o; }
+	void setBinDirection(int o) { _binDirection = o; }
 
 	/// Returns the number of spatial bins of the computed average value.
-	int numberOfBins() const { return _numberOfBins; }
+	int numberOfBinsX() const { return _numberOfBinsX; }
 
 	/// Sets the number of spatial bins of the computed average value.
-	void setNumberOfBins(int n) { _numberOfBins = n; }
+	void setNumberOfBinsX(int n) { _numberOfBinsX = n; }
+
+	/// Returns the number of spatial bins of the computed average value.
+	int numberOfBinsY() const { return _numberOfBinsY; }
+
+	/// Sets the number of spatial bins of the computed average value.
+	void setNumberOfBinsY(int n) { _numberOfBinsY = n; }
 
 	/// Returns the stored average data.
 	const std::vector<FloatType>& binData() const { return _binData; }
 
-	/// Returns the start value of the y-axis.
+	/// Returns the start value of the plotting x-axis.
 	FloatType xAxisRangeStart() const { return _xAxisRangeStart; }
 
-	/// Returns the end value of the y-axis.
+	/// Returns the end value of the plotting x-axis.
 	FloatType xAxisRangeEnd() const { return _xAxisRangeEnd; }
 
-	/// Set whether the range of the y-axis of the scatter plot should be fixed.
+	/// Set whether the plotting range of the y-axis should be fixed.
 	void setFixYAxisRange(bool fix) { _fixYAxisRange = fix; }
 
-	/// Returns whether the range of the y-axis should be fixed.
+	/// Returns whether the plotting range of the y-axis should be fixed.
 	bool fixYAxisRange() const { return _fixYAxisRange; }
 
-	/// Set start and end value of the y-axis.
+	/// Set start and end value of the plotting y-axis.
 	void setYAxisRange(FloatType start, FloatType end) { _yAxisRangeStart = start; _yAxisRangeEnd = end; }
 
-	/// Returns the start value of the y-axis.
+	/// Returns the start value of the plotting y-axis.
 	FloatType yAxisRangeStart() const { return _yAxisRangeStart; }
 
-	/// Returns the end value of the y-axis.
+	/// Returns the end value of the plotting y-axis.
 	FloatType yAxisRangeEnd() const { return _yAxisRangeEnd; }
 
 public:
 
 	Q_PROPERTY(Particles::ParticlePropertyReference sourceProperty READ sourceProperty WRITE setSourceProperty);
-	Q_PROPERTY(int reductionOperation READ reductionOperation WRITE setReductionOperation);
-	Q_PROPERTY(int numberOfBins READ numberOfBins WRITE setNumberOfBins);
+	Q_PROPERTY(Particles::BinAndReduceModifier::ReductionOperationType reductionOperation READ reductionOperation WRITE setReductionOperation);
+	Q_PROPERTY(int numberOfBinsX READ numberOfBinsX WRITE setNumberOfBinsX);
+	Q_PROPERTY(int numberOfBinsY READ numberOfBinsY WRITE setNumberOfBinsY);
 
 protected:
 
@@ -110,31 +121,34 @@ protected:
 
 private:
 
-	/// Stores the start value of the y-axis.
-	FloatType _xAxisRangeStart;
-
-	/// Stores the end value of the y-axis.
-	FloatType _xAxisRangeEnd;
-
 	/// The particle property that serves as data source to be averaged.
 	PropertyField<ParticlePropertyReference> _sourceProperty;
 
 	/// Type of reduction operation
-	PropertyField<int> _reductionOperation;
+	PropertyField<ReductionOperationType,int> _reductionOperation;
 
 	/// Bin alignment
 	PropertyField<int> _binDirection;
 
 	/// Controls the number of spatial bins.
-	PropertyField<int> _numberOfBins;
+	PropertyField<int> _numberOfBinsX;
 
-	/// Controls the whether the range of the y-axis of the avarage values should be fixed.
+	/// Controls the number of spatial bins.
+	PropertyField<int> _numberOfBinsY;
+
+	/// Stores the start value of the plotting x-axis.
+	FloatType _xAxisRangeStart;
+
+	/// Stores the end value of the plotting x-axis.
+	FloatType _xAxisRangeEnd;
+
+	/// Controls the whether the plotting range along the y-axis should be fixed.
 	PropertyField<bool> _fixYAxisRange;
 
-	/// Controls the start value of the y-axis.
+	/// Controls the start value of the plotting y-axis.
 	PropertyField<FloatType> _yAxisRangeStart;
 
-	/// Controls the end value of the y-axis.
+	/// Controls the end value of the plotting y-axis.
 	PropertyField<FloatType> _yAxisRangeEnd;
 
 	/// Stores the averaged data.
@@ -148,7 +162,8 @@ private:
 
 	DECLARE_PROPERTY_FIELD(_reductionOperation);
 	DECLARE_PROPERTY_FIELD(_binDirection);
-	DECLARE_PROPERTY_FIELD(_numberOfBins);
+	DECLARE_PROPERTY_FIELD(_numberOfBinsX);
+	DECLARE_PROPERTY_FIELD(_numberOfBinsY);
 	DECLARE_PROPERTY_FIELD(_fixYAxisRange);
 	DECLARE_PROPERTY_FIELD(_yAxisRangeStart);
 	DECLARE_PROPERTY_FIELD(_yAxisRangeEnd);
