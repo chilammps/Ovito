@@ -23,6 +23,7 @@
 #ifndef __OVITO_BIN_AND_REDUCE_MODIFIER_H
 #define __OVITO_BIN_AND_REDUCE_MODIFIER_H
 
+#include <core/gui/properties/IntegerParameterUI.h>
 #include <plugins/particles/Particles.h>
 #include <plugins/particles/data/ParticleProperty.h>
 #include <plugins/particles/data/ParticlePropertyObject.h>
@@ -66,10 +67,10 @@ public:
 	void setReductionOperation(ReductionOperationType o) { _reductionOperation = o; }
 
 	/// Returns the bin direction
-	int reductionBinDirection() const { return _binDirection; }
+	BinDirectionType binDirection() const { return _binDirection; }
 
 	/// Sets the bin direction
-	void setBinDirection(int o) { _binDirection = o; }
+	void setBinDirection(BinDirectionType o) { _binDirection = o; }
 
 	/// Returns the number of spatial bins of the computed average value.
 	int numberOfBinsX() const { return _numberOfBinsX; }
@@ -111,6 +112,7 @@ public:
 
 	Q_PROPERTY(Particles::ParticlePropertyReference sourceProperty READ sourceProperty WRITE setSourceProperty);
 	Q_PROPERTY(Particles::BinAndReduceModifier::ReductionOperationType reductionOperation READ reductionOperation WRITE setReductionOperation);
+	Q_PROPERTY(Particles::BinAndReduceModifier::BinDirectionType binDirection READ binDirection WRITE setBinDirection);
 	Q_PROPERTY(int numberOfBinsX READ numberOfBinsX WRITE setNumberOfBinsX);
 	Q_PROPERTY(int numberOfBinsY READ numberOfBinsY WRITE setNumberOfBinsY);
 
@@ -128,19 +130,13 @@ private:
 	PropertyField<ReductionOperationType,int> _reductionOperation;
 
 	/// Bin alignment
-	PropertyField<int> _binDirection;
+	PropertyField<BinDirectionType,int> _binDirection;
 
 	/// Controls the number of spatial bins.
 	PropertyField<int> _numberOfBinsX;
 
 	/// Controls the number of spatial bins.
 	PropertyField<int> _numberOfBinsY;
-
-	/// Stores the start value of the plotting x-axis.
-	FloatType _xAxisRangeStart;
-
-	/// Stores the end value of the plotting x-axis.
-	FloatType _xAxisRangeEnd;
 
 	/// Controls the whether the plotting range along the y-axis should be fixed.
 	PropertyField<bool> _fixYAxisRange;
@@ -150,6 +146,12 @@ private:
 
 	/// Controls the end value of the plotting y-axis.
 	PropertyField<FloatType> _yAxisRangeEnd;
+
+	/// Stores the start value of the plotting x-axis.
+	FloatType _xAxisRangeStart;
+
+	/// Stores the end value of the plotting x-axis.
+	FloatType _xAxisRangeEnd;
 
 	/// Stores the averaged data.
 	std::vector<FloatType> _binData;
@@ -193,6 +195,9 @@ protected Q_SLOTS:
 	/// Replots the average data computed by the modifier.
 	void plotAverages();
 
+    /// Update the bin direction.
+    void updateBinDirection(int newBinDirection);
+
 	/// Keep y-axis range updated
 	void updateYAxisRange(const QCPRange &newRange);
 
@@ -200,6 +205,9 @@ protected Q_SLOTS:
 	void onSaveData();
 
 private:
+
+    /// Widget controlling the number of y-bins.
+    IntegerParameterUI* _numBinsYPUI;
 
 	/// The graph widget to display the average data.
 	QCustomPlot* _averagesPlot;

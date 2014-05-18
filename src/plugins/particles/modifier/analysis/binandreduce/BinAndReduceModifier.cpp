@@ -47,7 +47,7 @@ DEFINE_PROPERTY_FIELD(BinAndReduceModifier, _sourceProperty, "SourceProperty");
 SET_PROPERTY_FIELD_LABEL(BinAndReduceModifier, _reductionOperation, "Reduction operation");
 SET_PROPERTY_FIELD_LABEL(BinAndReduceModifier, _binDirection, "Bin direction");
 SET_PROPERTY_FIELD_LABEL(BinAndReduceModifier, _numberOfBinsX, "Number of spatial bins");
-SET_PROPERTY_FIELD_LABEL(BinAndReduceModifier, _numberOfBinsY, "");
+SET_PROPERTY_FIELD_LABEL(BinAndReduceModifier, _numberOfBinsY, "Number of spatial bins");
 SET_PROPERTY_FIELD_LABEL(BinAndReduceModifier, _fixYAxisRange, "Fix property-axis range");
 SET_PROPERTY_FIELD_LABEL(BinAndReduceModifier, _yAxisRangeStart, "Y-axis range start");
 SET_PROPERTY_FIELD_LABEL(BinAndReduceModifier, _yAxisRangeEnd, "Y-axis range end");
@@ -280,20 +280,21 @@ void BinAndReduceModifierEditor::createUI(const RolloutInsertionParameters& roll
     gridlayout->addWidget(binDirectionPUI->addRadioButton(BinAndReduceModifier::CELL_VECTORS_1_3, "vectors 1 and 3"), 1, 1);
     gridlayout->addWidget(binDirectionPUI->addRadioButton(BinAndReduceModifier::CELL_VECTORS_2_3, "vectors 2 and 3"), 1, 2);
     layout->addLayout(gridlayout);
+    connect(binDirectionPUI->buttonGroup(), SIGNAL(buttonClicked(int)), this, SLOT(updateBinDirection(int)));
 
 	gridlayout = new QGridLayout();
 	gridlayout->setContentsMargins(4,4,4,4);
 	gridlayout->setColumnStretch(1, 1);
+	gridlayout->setColumnStretch(2, 1);
 
-	// Number of bins parameter.
-	IntegerParameterUI* numBinsPUI = new IntegerParameterUI(this, PROPERTY_FIELD(BinAndReduceModifier::_numberOfBinsX));
-	gridlayout->addWidget(numBinsPUI->label(), 0, 0);
-	gridlayout->addLayout(numBinsPUI->createFieldLayout(), 0, 1);
-	numBinsPUI->setMinValue(1);
-	numBinsPUI = new IntegerParameterUI(this, PROPERTY_FIELD(BinAndReduceModifier::_numberOfBinsY));
-	gridlayout->addWidget(numBinsPUI->label(), 0, 0);
-	gridlayout->addLayout(numBinsPUI->createFieldLayout(), 0, 2);
-	numBinsPUI->setMinValue(1);
+	// Number of bins parameters.
+	IntegerParameterUI* numBinsXPUI = new IntegerParameterUI(this, PROPERTY_FIELD(BinAndReduceModifier::_numberOfBinsX));
+	gridlayout->addWidget(numBinsXPUI->label(), 0, 0);
+	gridlayout->addLayout(numBinsXPUI->createFieldLayout(), 0, 1);
+	numBinsXPUI->setMinValue(1);
+	_numBinsYPUI = new IntegerParameterUI(this, PROPERTY_FIELD(BinAndReduceModifier::_numberOfBinsY));
+	gridlayout->addLayout(_numBinsYPUI->createFieldLayout(), 0, 2);
+	_numBinsYPUI->setMinValue(1);
 
 	layout->addLayout(gridlayout);
 
@@ -390,6 +391,22 @@ void BinAndReduceModifierEditor::plotAverages()
 
 	_averagesPlot->replot();
 }
+
+/******************************************************************************
+* Enable/disable the editor for number of y-bin
+******************************************************************************/
+void BinAndReduceModifierEditor::updateBinDirection(int newBinDirection)
+{
+    if (newBinDirection == BinAndReduceModifier::CELL_VECTOR_1 ||
+        newBinDirection == BinAndReduceModifier::CELL_VECTOR_2 ||
+        newBinDirection == BinAndReduceModifier::CELL_VECTOR_3) {
+        _numBinsYPUI->setEnabled(false);
+    }
+    else {
+        _numBinsYPUI->setEnabled(true);
+    }
+}
+
 
 /******************************************************************************
 * Keep y-axis range updated
