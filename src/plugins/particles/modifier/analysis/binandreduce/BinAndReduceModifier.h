@@ -108,6 +108,11 @@ public:
 	/// Returns the end value of the plotting y-axis.
 	FloatType yAxisRangeEnd() const { return _yAxisRangeEnd; }
 
+    /// Returns true if binning in a single direction only.
+    static bool bin1d(BinDirectionType d) {
+        return d == CELL_VECTOR_1 || d == CELL_VECTOR_2 || d == CELL_VECTOR_3;
+    }
+
 public:
 
 	Q_PROPERTY(Particles::ParticlePropertyReference sourceProperty READ sourceProperty WRITE setSourceProperty);
@@ -196,7 +201,7 @@ protected Q_SLOTS:
 	void plotAverages();
 
     /// Update the bin direction.
-    void updateBinDirection(int newBinDirection);
+    void updateBinDirection(BinAndReduceModifier::BinDirectionType newBinDirection);
 
 	/// Keep y-axis range updated
 	void updateYAxisRange(const QCPRange &newRange);

@@ -280,7 +280,7 @@ void BinAndReduceModifierEditor::createUI(const RolloutInsertionParameters& roll
     gridlayout->addWidget(binDirectionPUI->addRadioButton(BinAndReduceModifier::CELL_VECTORS_1_3, "vectors 1 and 3"), 1, 1);
     gridlayout->addWidget(binDirectionPUI->addRadioButton(BinAndReduceModifier::CELL_VECTORS_2_3, "vectors 2 and 3"), 1, 2);
     layout->addLayout(gridlayout);
-    connect(binDirectionPUI->buttonGroup(), SIGNAL(buttonClicked(int)), this, SLOT(updateBinDirection(int)));
+    connect(binDirectionPUI->buttonGroup(), SIGNAL(buttonClicked(int)), this, SLOT(updateBinDirection(BinAndReduceModifier::BinDirectionType)));
 
 	gridlayout = new QGridLayout();
 	gridlayout->setContentsMargins(4,4,4,4);
@@ -395,16 +395,9 @@ void BinAndReduceModifierEditor::plotAverages()
 /******************************************************************************
 * Enable/disable the editor for number of y-bin
 ******************************************************************************/
-void BinAndReduceModifierEditor::updateBinDirection(int newBinDirection)
+void BinAndReduceModifierEditor::updateBinDirection(BinAndReduceModifier::BinDirectionType newBinDirection)
 {
-    if (newBinDirection == BinAndReduceModifier::CELL_VECTOR_1 ||
-        newBinDirection == BinAndReduceModifier::CELL_VECTOR_2 ||
-        newBinDirection == BinAndReduceModifier::CELL_VECTOR_3) {
-        _numBinsYPUI->setEnabled(false);
-    }
-    else {
-        _numBinsYPUI->setEnabled(true);
-    }
+    _numBinsYPUI->setEnabled(!BinAndReduceModifier::bin1d(newBinDirection));
 }
 
 
