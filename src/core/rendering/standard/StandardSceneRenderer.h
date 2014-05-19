@@ -67,7 +67,7 @@ public:
 
 public:
 
-	Q_PROPERTY(int antialiasingLevel READ antialiasingLevel WRITE setAntialiasingLevel)
+	Q_PROPERTY(int antialiasingLevel READ antialiasingLevel WRITE setAntialiasingLevel);
 
 private:
 
