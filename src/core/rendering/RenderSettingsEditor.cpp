@@ -62,7 +62,7 @@ void RenderSettingsEditor::createUI(const RolloutInsertionParameters& rolloutPar
 
 	// Rendering range
 	{
-		QGroupBox* groupBox = new QGroupBox(tr("Time output"));
+		QGroupBox* groupBox = new QGroupBox(tr("Rendering range"));
 		layout->addWidget(groupBox);
 
 		QVBoxLayout* layout2 = new QVBoxLayout(groupBox);

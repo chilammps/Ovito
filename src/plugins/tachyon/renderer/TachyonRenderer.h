@@ -71,6 +71,65 @@ public:
 	/// Renders the triangle mesh stored in the given buffer.
 	virtual void renderMesh(const DefaultMeshPrimitive& meshBuffer) override;
 
+	/// Returns whether anti-aliasing is enabled.
+	bool antialiasingEnabled() const { return _antialiasingEnabled; }
+
+	/// Enables/disables anti-aliasing.
+	void setAntialiasingEnabled(bool on) { _antialiasingEnabled = on; }
+
+	/// Returns the quality level of anti-aliasing.
+	int antialiasingSamples() const { return _antialiasingSamples; }
+
+	/// Sets the quality level of anti-aliasing.
+	void setAntialiasingSamples(int sampleCount) { _antialiasingSamples = sampleCount; }
+
+	/// Returns whether the default direct light source is enabled.
+	bool directLightSourceEnabled() const { return _directLightSourceEnabled; }
+
+	/// Enables/disables the default direct light source.
+	void setDirectLightSourceEnabled(bool on) { _directLightSourceEnabled = on; }
+
+	/// Returns the brightness of the default direct light source.
+	FloatType defaultLightSourceIntensity() const { return _defaultLightSourceIntensity; }
+
+	/// Sets the brightness of the default direct light source.
+	void setDefaultLightSourceIntensity(FloatType brightness) { _defaultLightSourceIntensity = brightness; }
+
+	/// Returns whether the calculation of shadows is enabled.
+	bool shadowsEnabled() const { return _shadowsEnabled; }
+
+	/// Enables/disables the calculation of shadows.
+	void setShadowsEnabled(bool on) { _shadowsEnabled = on; }
+
+	/// Returns whether the calculation of ambient occlusion is enabled.
+	bool ambientOcclusionEnabled() const { return _ambientOcclusionEnabled; }
+
+	/// Enables/disables the calculation of ambient occlusion.
+	void setAmbientOcclusionEnabled(bool on) { _ambientOcclusionEnabled = on; }
+
+	/// Returns the brightness of the ambient occlusion sky light source.
+	FloatType ambientOcclusionBrightness() const { return _ambientOcclusionBrightness; }
+
+	/// Sets the brightness of the ambient occlusion sky light source.
+	void setAmbientOcclusionBrightness(FloatType brightness) { _ambientOcclusionBrightness = brightness; }
+
+	/// Returns the number of AO samples to compute.
+	int ambientOcclusionSamples() const { return _ambientOcclusionSamples; }
+
+	/// Sets the number of AO samples to compute.
+	void setAmbientOcclusionSamples(int sampleCount) { _ambientOcclusionSamples = sampleCount; }
+
+public:
+
+	Q_PROPERTY(bool antialiasingEnabled READ antialiasingEnabled WRITE setAntialiasingEnabled);
+	Q_PROPERTY(int antialiasingSamples READ antialiasingSamples WRITE setAntialiasingSamples);
+	Q_PROPERTY(bool directLightSourceEnabled READ directLightSourceEnabled WRITE setDirectLightSourceEnabled);
+	Q_PROPERTY(bool shadowsEnabled READ shadowsEnabled WRITE setShadowsEnabled);
+	Q_PROPERTY(bool ambientOcclusionEnabled READ ambientOcclusionEnabled WRITE setAmbientOcclusionEnabled);
+	Q_PROPERTY(FloatType defaultLightSourceIntensity READ defaultLightSourceIntensity WRITE setDefaultLightSourceIntensity);
+	Q_PROPERTY(FloatType ambientOcclusionBrightness READ ambientOcclusionBrightness WRITE setAmbientOcclusionBrightness);
+	Q_PROPERTY(int ambientOcclusionSamples READ ambientOcclusionSamples WRITE setAmbientOcclusionSamples);
+
 private:
 
 	/// Creates a texture with the given color.
@@ -79,22 +138,22 @@ private:
 private:
 
 	/// Controls anti-aliasing.
-	PropertyField<bool> _enableAntialiasing;
+	PropertyField<bool> _antialiasingEnabled;
 
 	/// Controls quality of anti-aliasing.
 	PropertyField<int> _antialiasingSamples;
 
 	/// Enables direct light source.
-	PropertyField<bool> _enableDirectLightSource;
+	PropertyField<bool> _directLightSourceEnabled;
 
 	/// Enables shadows for the direct light source.
-	PropertyField<bool> _enableShadows;
+	PropertyField<bool> _shadowsEnabled;
 
 	/// Controls the brightness of the default direct light source.
 	PropertyField<FloatType> _defaultLightSourceIntensity;
 
 	/// Enables ambient occlusion lighting.
-	PropertyField<bool> _enableAmbientOcclusion;
+	PropertyField<bool> _ambientOcclusionEnabled;
 
 	/// Controls quality of ambient occlusion.
 	PropertyField<int> _ambientOcclusionSamples;
@@ -110,12 +169,12 @@ private:
 
 	Q_CLASSINFO("DisplayName", "Tachyon renderer");
 
-	DECLARE_PROPERTY_FIELD(_enableAntialiasing);
+	DECLARE_PROPERTY_FIELD(_antialiasingEnabled);
 	DECLARE_PROPERTY_FIELD(_antialiasingSamples);
-	DECLARE_PROPERTY_FIELD(_enableDirectLightSource);
-	DECLARE_PROPERTY_FIELD(_enableShadows);
+	DECLARE_PROPERTY_FIELD(_directLightSourceEnabled);
+	DECLARE_PROPERTY_FIELD(_shadowsEnabled);
 	DECLARE_PROPERTY_FIELD(_defaultLightSourceIntensity);
-	DECLARE_PROPERTY_FIELD(_enableAmbientOcclusion);
+	DECLARE_PROPERTY_FIELD(_ambientOcclusionEnabled);
 	DECLARE_PROPERTY_FIELD(_ambientOcclusionSamples);
 	DECLARE_PROPERTY_FIELD(_ambientOcclusionBrightness);
 };

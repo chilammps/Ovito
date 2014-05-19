@@ -34,7 +34,7 @@ namespace Ovito {
 /**
  * \brief A UI control lets the user choose a color.
  */
-class OVITO_CORE_EXPORT ColorPickerWidget : public QPushButton
+class OVITO_CORE_EXPORT ColorPickerWidget : public QAbstractButton
 {
 	Q_OBJECT
 	
@@ -57,6 +57,9 @@ public:
 	/// \sa color()
 	void setColor(const Color& newVal, bool emitChangeSignal = false);
 	
+	/// Returns the preferred size of the widget.
+	virtual QSize sizeHint() const override;
+
 Q_SIGNALS:
 
 	/// \brief This signal is emitted by the color picker after its value has been changed by the user.
@@ -70,6 +73,9 @@ protected Q_SLOTS:
 	void activateColorPicker();
 	
 protected:
+
+	/// Paints the widget.
+	virtual void paintEvent(QPaintEvent* event) override;
 
 	/// The currently selected color.
 	Color _color; 

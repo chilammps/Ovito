@@ -45,20 +45,20 @@ namespace TachyonPlugin {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Tachyon, TachyonRenderer, NonInteractiveSceneRenderer);
 SET_OVITO_OBJECT_EDITOR(TachyonRenderer, TachyonRendererEditor);
-DEFINE_FLAGS_PROPERTY_FIELD(TachyonRenderer, _enableAntialiasing, "EnableAntialiasing", PROPERTY_FIELD_MEMORIZE);
-DEFINE_FLAGS_PROPERTY_FIELD(TachyonRenderer, _enableDirectLightSource, "EnableDirectLightSource", PROPERTY_FIELD_MEMORIZE);
-DEFINE_FLAGS_PROPERTY_FIELD(TachyonRenderer, _enableShadows, "EnableShadows", PROPERTY_FIELD_MEMORIZE);
+DEFINE_FLAGS_PROPERTY_FIELD(TachyonRenderer, _antialiasingEnabled, "EnableAntialiasing", PROPERTY_FIELD_MEMORIZE);
+DEFINE_FLAGS_PROPERTY_FIELD(TachyonRenderer, _directLightSourceEnabled, "EnableDirectLightSource", PROPERTY_FIELD_MEMORIZE);
+DEFINE_FLAGS_PROPERTY_FIELD(TachyonRenderer, _shadowsEnabled, "EnableShadows", PROPERTY_FIELD_MEMORIZE);
 DEFINE_FLAGS_PROPERTY_FIELD(TachyonRenderer, _antialiasingSamples, "AntialiasingSamples", PROPERTY_FIELD_MEMORIZE);
 DEFINE_FLAGS_PROPERTY_FIELD(TachyonRenderer, _defaultLightSourceIntensity, "DefaultLightSourceIntensity", PROPERTY_FIELD_MEMORIZE);
-DEFINE_FLAGS_PROPERTY_FIELD(TachyonRenderer, _enableAmbientOcclusion, "EnableAmbientOcclusion", PROPERTY_FIELD_MEMORIZE);
+DEFINE_FLAGS_PROPERTY_FIELD(TachyonRenderer, _ambientOcclusionEnabled, "EnableAmbientOcclusion", PROPERTY_FIELD_MEMORIZE);
 DEFINE_FLAGS_PROPERTY_FIELD(TachyonRenderer, _ambientOcclusionSamples, "AmbientOcclusionSamples", PROPERTY_FIELD_MEMORIZE);
 DEFINE_FLAGS_PROPERTY_FIELD(TachyonRenderer, _ambientOcclusionBrightness, "AmbientOcclusionBrightness", PROPERTY_FIELD_MEMORIZE);
-SET_PROPERTY_FIELD_LABEL(TachyonRenderer, _enableAntialiasing, "Enable anti-aliasing");
+SET_PROPERTY_FIELD_LABEL(TachyonRenderer, _antialiasingEnabled, "Enable anti-aliasing");
 SET_PROPERTY_FIELD_LABEL(TachyonRenderer, _antialiasingSamples, "Anti-aliasing samples");
-SET_PROPERTY_FIELD_LABEL(TachyonRenderer, _enableDirectLightSource, "Direct light");
-SET_PROPERTY_FIELD_LABEL(TachyonRenderer, _enableShadows, "Shadows");
+SET_PROPERTY_FIELD_LABEL(TachyonRenderer, _directLightSourceEnabled, "Direct light");
+SET_PROPERTY_FIELD_LABEL(TachyonRenderer, _shadowsEnabled, "Shadows");
 SET_PROPERTY_FIELD_LABEL(TachyonRenderer, _defaultLightSourceIntensity, "Direct light intensity");
-SET_PROPERTY_FIELD_LABEL(TachyonRenderer, _enableAmbientOcclusion, "Ambient occlusion");
+SET_PROPERTY_FIELD_LABEL(TachyonRenderer, _ambientOcclusionEnabled, "Ambient occlusion");
 SET_PROPERTY_FIELD_LABEL(TachyonRenderer, _ambientOcclusionSamples, "Ambient occlusion samples");
 SET_PROPERTY_FIELD_LABEL(TachyonRenderer, _ambientOcclusionBrightness, "Ambient occlusion brightness");
 
@@ -66,16 +66,16 @@ SET_PROPERTY_FIELD_LABEL(TachyonRenderer, _ambientOcclusionBrightness, "Ambient 
 * Default constructor.
 ******************************************************************************/
 TachyonRenderer::TachyonRenderer(DataSet* dataset) : NonInteractiveSceneRenderer(dataset),
-	  _enableAntialiasing(true), _enableDirectLightSource(true), _enableShadows(true),
-	  _antialiasingSamples(12), _enableAmbientOcclusion(true), _ambientOcclusionSamples(12),
+		_antialiasingEnabled(true), _directLightSourceEnabled(true), _shadowsEnabled(true),
+	  _antialiasingSamples(12), _ambientOcclusionEnabled(true), _ambientOcclusionSamples(12),
 	  _defaultLightSourceIntensity(0.90f), _ambientOcclusionBrightness(0.80f)
 {
-	INIT_PROPERTY_FIELD(TachyonRenderer::_enableAntialiasing);
+	INIT_PROPERTY_FIELD(TachyonRenderer::_antialiasingEnabled);
 	INIT_PROPERTY_FIELD(TachyonRenderer::_antialiasingSamples);
-	INIT_PROPERTY_FIELD(TachyonRenderer::_enableDirectLightSource);
-	INIT_PROPERTY_FIELD(TachyonRenderer::_enableShadows);
+	INIT_PROPERTY_FIELD(TachyonRenderer::_directLightSourceEnabled);
+	INIT_PROPERTY_FIELD(TachyonRenderer::_shadowsEnabled);
 	INIT_PROPERTY_FIELD(TachyonRenderer::_defaultLightSourceIntensity);
-	INIT_PROPERTY_FIELD(TachyonRenderer::_enableAmbientOcclusion);
+	INIT_PROPERTY_FIELD(TachyonRenderer::_ambientOcclusionEnabled);
 	INIT_PROPERTY_FIELD(TachyonRenderer::_ambientOcclusionSamples);
 	INIT_PROPERTY_FIELD(TachyonRenderer::_ambientOcclusionBrightness);
 }
@@ -103,8 +103,8 @@ bool TachyonRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialog* pro
 	// Create new scene and set up parameters.
 	_rtscene = rt_newscene();
 	rt_resolution(_rtscene, renderSettings()->outputImageWidth(), renderSettings()->outputImageHeight());
-	if(_enableAntialiasing)
-		rt_aa_maxsamples(_rtscene, _antialiasingSamples);
+	if(antialiasingEnabled())
+		rt_aa_maxsamples(_rtscene, antialiasingSamples());
 
 	// Create Tachyon frame buffer.
 	QImage img(renderSettings()->outputImageWidth(), renderSettings()->outputImageHeight(), QImage::Format_RGB888);
@@ -150,12 +150,10 @@ bool TachyonRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialog* pro
 	}
 
 	// Set up light.
-	if(_enableDirectLightSource) {
+	if(directLightSourceEnabled()) {
 		apitexture lightTex;
 		memset(&lightTex, 0, sizeof(lightTex));
-		lightTex.col.r = _defaultLightSourceIntensity;
-		lightTex.col.g = _defaultLightSourceIntensity;
-		lightTex.col.b = _defaultLightSourceIntensity;
+		lightTex.col.r = lightTex.col.g = lightTex.col.b = defaultLightSourceIntensity();
 		lightTex.ambient = 1.0;
 		lightTex.opacity = 1.0;
 		lightTex.diffuse = 1.0;
@@ -164,7 +162,7 @@ bool TachyonRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialog* pro
 		rt_directional_light(_rtscene, lightTexPtr, rt_vector(lightDir.x(), lightDir.y(), -lightDir.z()));
 	}
 
-	if(_enableAmbientOcclusion || (_enableDirectLightSource && _enableShadows)) {
+	if(ambientOcclusionEnabled() || (directLightSourceEnabled() && shadowsEnabled())) {
 		// Full shading mode required.
 		rt_shadermode(_rtscene, RT_SHADER_FULL);
 	}
@@ -173,13 +171,11 @@ bool TachyonRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialog* pro
 		rt_shadermode(_rtscene, RT_SHADER_MEDIUM);
 	}
 
-	if(_enableAmbientOcclusion) {
+	if(ambientOcclusionEnabled()) {
 		apicolor skycol;
-		skycol.r = _ambientOcclusionBrightness;
-		skycol.g = _ambientOcclusionBrightness;
-		skycol.b = _ambientOcclusionBrightness;
+		skycol.r = skycol.g = skycol.b = ambientOcclusionBrightness();
 		rt_rescale_lights(_rtscene, 0.2);
-		rt_ambient_occlusion(_rtscene, _ambientOcclusionSamples, skycol);
+		rt_ambient_occlusion(_rtscene, ambientOcclusionSamples(), skycol);
 	}
 
 	rt_trans_mode(_rtscene, RT_TRANS_VMD);

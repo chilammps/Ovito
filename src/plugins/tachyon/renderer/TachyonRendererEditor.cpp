@@ -29,7 +29,7 @@
 
 namespace TachyonPlugin {
 
-IMPLEMENT_OVITO_OBJECT(Tachyon, TachyonRendererEditor, PropertiesEditor)
+IMPLEMENT_OVITO_OBJECT(Tachyon, TachyonRendererEditor, PropertiesEditor);
 
 /******************************************************************************
 * Creates the UI controls for the editor.
@@ -43,7 +43,7 @@ void TachyonRendererEditor::createUI(const RolloutInsertionParameters& rolloutPa
 	mainLayout->setContentsMargins(4,4,4,4);
 
 	// Antialiasing
-	BooleanGroupBoxParameterUI* enableAntialiasingUI = new BooleanGroupBoxParameterUI(this, PROPERTY_FIELD(TachyonRenderer::_enableAntialiasing));
+	BooleanGroupBoxParameterUI* enableAntialiasingUI = new BooleanGroupBoxParameterUI(this, PROPERTY_FIELD(TachyonRenderer::_antialiasingEnabled));
 	QGroupBox* aaGroupBox = enableAntialiasingUI->groupBox();
 	mainLayout->addWidget(aaGroupBox);
 
@@ -58,7 +58,7 @@ void TachyonRendererEditor::createUI(const RolloutInsertionParameters& rolloutPa
 	aaSamplesUI->setMinValue(1);
 	aaSamplesUI->setMaxValue(100);
 
-	BooleanGroupBoxParameterUI* enableDirectLightUI = new BooleanGroupBoxParameterUI(this, PROPERTY_FIELD(TachyonRenderer::_enableDirectLightSource));
+	BooleanGroupBoxParameterUI* enableDirectLightUI = new BooleanGroupBoxParameterUI(this, PROPERTY_FIELD(TachyonRenderer::_directLightSourceEnabled));
 	QGroupBox* lightsGroupBox = enableDirectLightUI->groupBox();
 	mainLayout->addWidget(lightsGroupBox);
 
@@ -75,11 +75,11 @@ void TachyonRendererEditor::createUI(const RolloutInsertionParameters& rolloutPa
 	defaultLightIntensityUI->setMinValue(0);
 
 	// Shadows.
-	BooleanParameterUI* enableShadowsUI = new BooleanParameterUI(this, PROPERTY_FIELD(TachyonRenderer::_enableShadows));
+	BooleanParameterUI* enableShadowsUI = new BooleanParameterUI(this, PROPERTY_FIELD(TachyonRenderer::_shadowsEnabled));
 	layout->addWidget(enableShadowsUI->checkBox(), 1, 0, 1, 2);
 
 	// Ambient occlusion.
-	BooleanGroupBoxParameterUI* enableAmbientOcclusionUI = new BooleanGroupBoxParameterUI(this, PROPERTY_FIELD(TachyonRenderer::_enableAmbientOcclusion));
+	BooleanGroupBoxParameterUI* enableAmbientOcclusionUI = new BooleanGroupBoxParameterUI(this, PROPERTY_FIELD(TachyonRenderer::_ambientOcclusionEnabled));
 	QGroupBox* aoGroupBox = enableAmbientOcclusionUI->groupBox();
 	mainLayout->addWidget(aoGroupBox);
 

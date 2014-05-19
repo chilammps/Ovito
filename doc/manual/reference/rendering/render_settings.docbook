@@ -23,7 +23,7 @@
     <para>
     <variablelist>
       <varlistentry>
-        <term>Time output</term>
+        <term>Rendering range</term>
 
         <listitem>
           <para>Selects the animation frames to be rendered. 
