@@ -37,6 +37,7 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, BinAndReduceModifier, ParticleMod
 IMPLEMENT_OVITO_OBJECT(Particles, BinAndReduceModifierEditor, ParticleModifierEditor);
 SET_OVITO_OBJECT_EDITOR(BinAndReduceModifier, BinAndReduceModifierEditor);
 DEFINE_FLAGS_PROPERTY_FIELD(BinAndReduceModifier, _reductionOperation, "ReductionOperation", PROPERTY_FIELD_MEMORIZE);
+DEFINE_FLAGS_PROPERTY_FIELD(BinAndReduceModifier, _firstDerivative, "firstDerivative", PROPERTY_FIELD_MEMORIZE);
 DEFINE_FLAGS_PROPERTY_FIELD(BinAndReduceModifier, _binDirection, "BinDirection", PROPERTY_FIELD_MEMORIZE);
 DEFINE_FLAGS_PROPERTY_FIELD(BinAndReduceModifier, _numberOfBinsX, "NumberOfBinsX", PROPERTY_FIELD_MEMORIZE);
 DEFINE_FLAGS_PROPERTY_FIELD(BinAndReduceModifier, _numberOfBinsY, "NumberOfBinsY", PROPERTY_FIELD_MEMORIZE);
@@ -45,6 +46,7 @@ DEFINE_FLAGS_PROPERTY_FIELD(BinAndReduceModifier, _propertyAxisRangeStart, "Prop
 DEFINE_FLAGS_PROPERTY_FIELD(BinAndReduceModifier, _propertyAxisRangeEnd, "PropertyAxisRangeEnd", PROPERTY_FIELD_MEMORIZE);
 DEFINE_PROPERTY_FIELD(BinAndReduceModifier, _sourceProperty, "SourceProperty");
 SET_PROPERTY_FIELD_LABEL(BinAndReduceModifier, _reductionOperation, "Reduction operation");
+SET_PROPERTY_FIELD_LABEL(BinAndReduceModifier, _firstDerivative, "Compute first derivative");
 SET_PROPERTY_FIELD_LABEL(BinAndReduceModifier, _binDirection, "Bin direction");
 SET_PROPERTY_FIELD_LABEL(BinAndReduceModifier, _numberOfBinsX, "Number of spatial bins");
 SET_PROPERTY_FIELD_LABEL(BinAndReduceModifier, _numberOfBinsY, "Number of spatial bins");
@@ -63,10 +65,12 @@ inline int modulo(int i, int n)
 * Constructs the modifier object.
 ******************************************************************************/
 BinAndReduceModifier::BinAndReduceModifier(DataSet* dataset) : 
-    ParticleModifier(dataset), _reductionOperation(RED_MEAN), _binDirection(CELL_VECTOR_3),_numberOfBinsX(200),
-    _numberOfBinsY(1), _fixPropertyAxisRange(false), _propertyAxisRangeStart(0), _propertyAxisRangeEnd(0)
+    ParticleModifier(dataset), _reductionOperation(RED_MEAN), _firstDerivative(false),
+    _binDirection(CELL_VECTOR_3), _numberOfBinsX(200), _numberOfBinsY(1),
+    _fixPropertyAxisRange(false), _propertyAxisRangeStart(0), _propertyAxisRangeEnd(0)
 {
 	INIT_PROPERTY_FIELD(BinAndReduceModifier::_reductionOperation);
+	INIT_PROPERTY_FIELD(BinAndReduceModifier::_firstDerivative);
 	INIT_PROPERTY_FIELD(BinAndReduceModifier::_binDirection);
 	INIT_PROPERTY_FIELD(BinAndReduceModifier::_numberOfBinsX);
 	INIT_PROPERTY_FIELD(BinAndReduceModifier::_numberOfBinsY);
@@ -265,6 +269,21 @@ PipelineStatus BinAndReduceModifier::modifyParticles(TimePoint time, TimeInterva
         }
 	}
 
+    if (_firstDerivative) {
+        FloatType binSpacingX = (_xAxisRangeEnd - _xAxisRangeStart) / binDataSizeX;
+        std::vector<FloatType> derivativeData(binDataSize);
+        for (int j = 0; j < binDataSizeY; j++) {
+            for (int i = 0; i < binDataSizeX; i++) {
+                int i_plus_1 = modulo(i+1, binDataSizeX);
+                int i_minus_1 = modulo(i-1, binDataSizeX);
+                OVITO_ASSERT(j*binDataSizeY + i_plus_1 < binDataSize);
+                OVITO_ASSERT(j*binDataSizeY + i_minus_1 < binDataSize);
+                derivativeData[j*binDataSizeY + i] = (_binData[j*binDataSizeY + i_plus_1] - _binData[j*binDataSizeY + i_minus_1]) / (2*binSpacingX);
+            }
+        }
+        _binData = derivativeData;
+    }
+
 	if (!_fixPropertyAxisRange) {
 		auto minmax = std::minmax_element(_binData.begin(), _binData.end());
 		_propertyAxisRangeStart = *minmax.first;
@@ -302,6 +321,9 @@ void BinAndReduceModifierEditor::createUI(const RolloutInsertionParameters& roll
     gridlayout->addWidget(reductionOperationPUI->addRadioButton(BinAndReduceModifier::RED_MIN, tr("min")), 0, 3);
     gridlayout->addWidget(reductionOperationPUI->addRadioButton(BinAndReduceModifier::RED_MAX, tr("max")), 0, 4);
     layout->addLayout(gridlayout);
+
+	_firstDerivativePUI = new BooleanParameterUI(this, PROPERTY_FIELD(BinAndReduceModifier::_firstDerivative));
+	layout->addWidget(_firstDerivativePUI->checkBox());
 
 	layout->addWidget(new QLabel(tr("Binning direction:"), rollout));
 	gridlayout = new QGridLayout();
@@ -484,11 +506,13 @@ void BinAndReduceModifierEditor::plotAverages()
 }
 
 /******************************************************************************
-* Enable/disable the editor for number of y-bin
+* Enable/disable the editor for number of y-bin and the first derivativs
+* button
 ******************************************************************************/
 void BinAndReduceModifierEditor::updateBinDirection(int newBinDirection)
 {
     _numBinsYPUI->setEnabled(!BinAndReduceModifier::bin1D(BinAndReduceModifier::BinDirectionType(newBinDirection)));
+    _firstDerivativePUI->setEnabled(BinAndReduceModifier::bin1D(BinAndReduceModifier::BinDirectionType(newBinDirection)));
 }
 
 

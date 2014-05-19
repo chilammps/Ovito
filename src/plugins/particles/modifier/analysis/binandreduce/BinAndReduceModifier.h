@@ -23,6 +23,7 @@
 #ifndef __OVITO_BIN_AND_REDUCE_MODIFIER_H
 #define __OVITO_BIN_AND_REDUCE_MODIFIER_H
 
+#include <core/gui/properties/BooleanParameterUI.h>
 #include <core/gui/properties/IntegerParameterUI.h>
 #include <plugins/particles/Particles.h>
 #include <plugins/particles/data/ParticleProperty.h>
@@ -66,6 +67,12 @@ public:
 
 	/// Sets the reduction operation
 	void setReductionOperation(ReductionOperationType o) { _reductionOperation = o; }
+
+	/// Returns compute first derivative
+	bool firstDerivative() const { return _firstDerivative; }
+
+	/// Sets compute first derivative
+	void setFirstDerivative(bool d) { _firstDerivative = d; }
 
 	/// Returns the bin direction
 	BinDirectionType binDirection() const { return _binDirection; }
@@ -139,6 +146,7 @@ public:
 
 	Q_PROPERTY(Particles::ParticlePropertyReference sourceProperty READ sourceProperty WRITE setSourceProperty);
 	Q_PROPERTY(Particles::BinAndReduceModifier::ReductionOperationType reductionOperation READ reductionOperation WRITE setReductionOperation);
+    Q_PROPERTY(bool firstDerivative READ firstDerivative WRITE setFirstDerivative);
 	Q_PROPERTY(Particles::BinAndReduceModifier::BinDirectionType binDirection READ binDirection WRITE setBinDirection);
 	Q_PROPERTY(int numberOfBinsX READ numberOfBinsX WRITE setNumberOfBinsX);
 	Q_PROPERTY(int numberOfBinsY READ numberOfBinsY WRITE setNumberOfBinsY);
@@ -155,6 +163,9 @@ private:
 
 	/// Type of reduction operation
 	PropertyField<ReductionOperationType,int> _reductionOperation;
+
+	/// Compute first derivative.
+	PropertyField<bool> _firstDerivative;
 
 	/// Bin alignment
 	PropertyField<BinDirectionType,int> _binDirection;
@@ -196,6 +207,7 @@ private:
 	Q_CLASSINFO("ModifierCategory", "Analysis");
 
 	DECLARE_PROPERTY_FIELD(_reductionOperation);
+	DECLARE_PROPERTY_FIELD(_firstDerivative);
 	DECLARE_PROPERTY_FIELD(_binDirection);
 	DECLARE_PROPERTY_FIELD(_numberOfBinsX);
 	DECLARE_PROPERTY_FIELD(_numberOfBinsY);
@@ -228,7 +240,7 @@ protected Q_SLOTS:
 	/// Replots the average data computed by the modifier.
 	void plotAverages();
 
-    /// Update the bin direction.
+    /// Enable/disable the editor for number of y-bin and the first derivativs button.
     void updateBinDirection(int newBinDirection);
 
 	/// Keep y-axis range updated
@@ -238,6 +250,9 @@ protected Q_SLOTS:
 	void onSaveData();
 
 private:
+
+    /// Widget controlling the number of y-bins.
+    BooleanParameterUI* _firstDerivativePUI;
 
     /// Widget controlling the number of y-bins.
     IntegerParameterUI* _numBinsYPUI;
