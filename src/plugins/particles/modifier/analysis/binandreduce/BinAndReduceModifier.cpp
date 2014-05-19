@@ -520,7 +520,7 @@ void BinAndReduceModifierEditor::onSaveData()
 		return;
 
 	QString fileName = QFileDialog::getSaveFileName(mainWindow(),
-	    tr("Save Averages"), QString(), 
+	    tr("Save Data"), QString(), 
         tr("Text files (*.txt);;All files (*)"));
 	if(fileName.isEmpty())
 		return;
@@ -531,13 +531,29 @@ void BinAndReduceModifierEditor::onSaveData()
 		if(!file.open(QIODevice::WriteOnly | QIODevice::Text))
 			throw Exception(tr("Could not open file for writing: %1").arg(file.errorString()));
 
+        size_t binDataSizeX = std::max(1, modifier->numberOfBinsX());
+        size_t binDataSizeY = std::max(1, modifier->numberOfBinsY());
+        if (modifier->is1D()) binDataSizeY = 1;
+        size_t binDataSize = binDataSizeX*binDataSizeY;
+		FloatType binSizeX = (modifier->xAxisRangeEnd() - modifier->xAxisRangeStart()) / binDataSizeX;
+		FloatType binSizeY = (modifier->yAxisRangeEnd() - modifier->yAxisRangeStart()) / binDataSizeY;
+
 		QTextStream stream(&file);
-		FloatType binSize = (modifier->xAxisRangeEnd() - modifier->xAxisRangeStart()) / modifier->binData().size();
-		stream << "# " << modifier->sourceProperty().name() << " spatial averages (bin size: " << binSize << ")" << endl;
-		for(int i = 0; i < modifier->binData().size(); i++) {
-			stream << (binSize * (FloatType(i) + 0.5f) + modifier->xAxisRangeStart()) << " " <<
-					modifier->binData()[i] << endl;
-		}
+        if (binDataSizeY == 1) {
+            stream << "# " << modifier->sourceProperty().name() << " bin size: " << binSizeX << endl;
+            for(int i = 0; i < modifier->binData().size(); i++) {
+                stream << (binSizeX * (FloatType(i) + 0.5f) + modifier->xAxisRangeStart()) << " " << modifier->binData()[i] << endl;
+            }
+        }
+        else {
+            stream << "# " << modifier->sourceProperty().name() << " bin size X: " << binDataSizeX << ", bin size Y: " << binDataSizeY << endl;
+            for(int i = 0; i < binDataSizeY; i++) {
+                for(int j = 0; j < binDataSizeX; j++) {
+                    stream << modifier->binData()[i*binDataSizeX+j] << " ";
+                }
+                stream << endl;
+            }
+        }
 	}
 	catch(const Exception& ex) {
 		ex.showError();
