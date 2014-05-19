@@ -187,8 +187,8 @@ PipelineStatus BinAndReduceModifier::modifyParticles(TimePoint time, TimeInterva
                 if (!std::isnan(*v)) {
                     FloatType fractionalPosX = reciprocalCell.prodrow(*pos, binDirX);
                     FloatType fractionalPosY = reciprocalCell.prodrow(*pos, binDirY);
-                    ssize_t binIndexX = ssize_t( fractionalPosX * binDataSizeX );
-                    ssize_t binIndexY = ssize_t( fractionalPosY * binDataSizeY );
+                    int binIndexX = int( fractionalPosX * binDataSizeX );
+                    int binIndexY = int( fractionalPosY * binDataSizeY );
                     if (pbc[binDirX]) binIndexX = modulo(binIndexX, binDataSizeX);
                     if (pbc[binDirY]) binIndexY = modulo(binIndexY, binDataSizeY);
                     if (binIndexX >= 0 && binIndexX < binDataSizeX && binIndexY >= 0 && binIndexY < binDataSizeY) {
@@ -224,8 +224,8 @@ PipelineStatus BinAndReduceModifier::modifyParticles(TimePoint time, TimeInterva
             while (pos != pos_end && v != v_end) {
                 FloatType fractionalPosX = reciprocalCell.prodrow(*pos, binDirX);
                 FloatType fractionalPosY = reciprocalCell.prodrow(*pos, binDirY);
-                ssize_t binIndexX = ssize_t( fractionalPosX * binDataSizeX );
-                ssize_t binIndexY = ssize_t( fractionalPosY * binDataSizeY );
+                int binIndexX = int( fractionalPosX * binDataSizeX );
+                int binIndexY = int( fractionalPosY * binDataSizeY );
                 if (pbc[binDirX])  binIndexX = modulo(binIndexX, binDataSizeX);
                 if (pbc[binDirY])  binIndexY = modulo(binIndexY, binDataSizeY);
                 if (binIndexX >= 0 && binIndexX < binDataSizeX && binIndexY >= 0 && binIndexY < binDataSizeY) {
