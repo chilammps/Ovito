@@ -158,7 +158,7 @@ PipelineStatus BinAndReduceModifier::modifyParticles(TimePoint time, TimeInterva
     }
     else if (_binDirection == CELL_VECTORS_1_3) {
         normalX = expectSimulationCell()->edgeVector2().cross(expectSimulationCell()->edgeVector3());
-        normalY = expectSimulationCell()->edgeVector1().cross(expectSimulationCell()->edgeVector3());
+        normalY = expectSimulationCell()->edgeVector1().cross(expectSimulationCell()->edgeVector2());
     }
 
     // Compute the distance of the two cell faces (normal.length() is area of face).
@@ -185,8 +185,8 @@ PipelineStatus BinAndReduceModifier::modifyParticles(TimePoint time, TimeInterva
                     FloatType fractionalPosY = reciprocalCell.prodrow(*pos, binDirY);
                     ssize_t binIndexX = ssize_t( fractionalPosX * binDataSizeX );
                     ssize_t binIndexY = ssize_t( fractionalPosY * binDataSizeY );
-                    if (pbc[binDirX])  binIndexX = modulo(binIndexX, binDataSizeX);
-                    if (pbc[binDirY])  binIndexY = modulo(binIndexY, binDataSizeY);
+                    if (pbc[binDirX]) binIndexX = modulo(binIndexX, binDataSizeX);
+                    if (pbc[binDirY]) binIndexY = modulo(binIndexY, binDataSizeY);
                     if (binIndexX >= 0 && binIndexX < binDataSizeX && binIndexY >= 0 && binIndexY < binDataSizeY) {
                         size_t binIndex = binIndexY*binDataSizeX+binIndexX;
                         if (_reductionOperation == RED_MEAN || _reductionOperation == RED_SUM || _reductionOperation == RED_SUM_VOL) {
@@ -462,6 +462,11 @@ void BinAndReduceModifierEditor::plotAverages()
         _averagesColorMap->data()->setSize(binDataSizeX, binDataSizeY);
         _averagesColorMap->data()->setRange(QCPRange(modifier->xAxisRangeStart(), modifier->xAxisRangeEnd()),
                                             QCPRange(modifier->yAxisRangeStart(), modifier->yAxisRangeEnd()));
+
+        _averagesPlot->xAxis->setRange(QCPRange(modifier->xAxisRangeStart(), modifier->xAxisRangeEnd()));
+        _averagesPlot->yAxis->setRange(QCPRange(modifier->yAxisRangeStart(), modifier->yAxisRangeEnd()));
+
+        // Copy data to QCPColorMapData object.
         for (int j = 0; j < binDataSizeY; j++) {
             for (int i = 0; i < binDataSizeX; i++) {
                 _averagesColorMap->data()->setCell(i, j, modifier->binData()[j*binDataSizeX+i]);
@@ -473,8 +478,6 @@ void BinAndReduceModifierEditor::plotAverages()
         _rangeUpdate = false;
         _averagesColorMap->setDataRange(QCPRange(modifier->PropertyAxisRangeStart(), modifier->PropertyAxisRangeEnd()));
         _rangeUpdate = true;
-
-        _averagesPlot->rescaleAxes();
     }
     
     _averagesPlot->replot();
