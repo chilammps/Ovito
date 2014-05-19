@@ -60,19 +60,7 @@ private Q_SLOTS:
 	}
 
 	/// This handles contentReset() signals from the frame buffer.
-	void onFrameBufferContentReset() {
-
-		// Resize widget.
-		if(_frameBuffer) {
-			resize(_frameBuffer->image().size());
-			// Size hint of scroll area has changed. Update its geometry.
-			if(parentWidget() && parentWidget()->parentWidget())
-				parentWidget()->parentWidget()->updateGeometry();
-		}
-
-		// Repaint the widget.
-		update();
-	}
+	void onFrameBufferContentReset();
 
 private:
 
