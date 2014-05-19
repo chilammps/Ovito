@@ -21,10 +21,11 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <plugins/particles/Particles.h>
+#include <core/gui/properties/BooleanParameterUI.h>
+#include <core/gui/properties/FloatParameterUI.h>
 #include <core/gui/properties/IntegerParameterUI.h>
 #include <core/gui/properties/IntegerRadioButtonParameterUI.h>
-#include <core/gui/properties/FloatParameterUI.h>
-#include <core/gui/properties/BooleanParameterUI.h>
+#include <core/gui/properties/VariantComboBoxParameterUI.h>
 #include <core/gui/mainwin/MainWindow.h>
 #include <core/scene/pipeline/PipelineObject.h>
 #include <core/animation/AnimationSettings.h>
@@ -312,30 +313,32 @@ void BinAndReduceModifierEditor::createUI(const RolloutInsertionParameters& roll
 	layout->addWidget(new QLabel(tr("Property:"), rollout));
 	layout->addWidget(sourcePropertyUI->comboBox());
 
-	layout->addWidget(new QLabel(tr("Reduction operation:"), rollout));
 	QGridLayout* gridlayout = new QGridLayout();
-	IntegerRadioButtonParameterUI* reductionOperationPUI = new IntegerRadioButtonParameterUI(this, PROPERTY_FIELD(BinAndReduceModifier::_reductionOperation));
-    gridlayout->addWidget(reductionOperationPUI->addRadioButton(BinAndReduceModifier::RED_MEAN, tr("mean")), 0, 0);
-    gridlayout->addWidget(reductionOperationPUI->addRadioButton(BinAndReduceModifier::RED_SUM, tr("sum")), 0, 1);
-    gridlayout->addWidget(reductionOperationPUI->addRadioButton(BinAndReduceModifier::RED_SUM_VOL, tr("sum/volume")), 0, 2);
-    gridlayout->addWidget(reductionOperationPUI->addRadioButton(BinAndReduceModifier::RED_MIN, tr("min")), 0, 3);
-    gridlayout->addWidget(reductionOperationPUI->addRadioButton(BinAndReduceModifier::RED_MAX, tr("max")), 0, 4);
+	gridlayout->addWidget(new QLabel(tr("Reduction operation:"), rollout), 0, 0);
+	VariantComboBoxParameterUI* reductionOperationPUI = new VariantComboBoxParameterUI(this, PROPERTY_FIELD(BinAndReduceModifier::_reductionOperation));
+    reductionOperationPUI->comboBox()->addItem(tr("mean"), qVariantFromValue(Particles::BinAndReduceModifier::RED_MEAN));
+    reductionOperationPUI->comboBox()->addItem(tr("sum"), qVariantFromValue(Particles::BinAndReduceModifier::RED_SUM));
+    reductionOperationPUI->comboBox()->addItem(tr("sum divided by bin volume"), qVariantFromValue(Particles::BinAndReduceModifier::RED_SUM_VOL));
+    reductionOperationPUI->comboBox()->addItem(tr("min"), qVariantFromValue(Particles::BinAndReduceModifier::RED_MIN));
+    reductionOperationPUI->comboBox()->addItem(tr("max"), qVariantFromValue(Particles::BinAndReduceModifier::RED_MAX));
+    gridlayout->addWidget(reductionOperationPUI->comboBox(), 0, 1);
     layout->addLayout(gridlayout);
 
 	_firstDerivativePUI = new BooleanParameterUI(this, PROPERTY_FIELD(BinAndReduceModifier::_firstDerivative));
 	layout->addWidget(_firstDerivativePUI->checkBox());
 
-	layout->addWidget(new QLabel(tr("Binning direction:"), rollout));
 	gridlayout = new QGridLayout();
-	IntegerRadioButtonParameterUI* binDirectionPUI = new IntegerRadioButtonParameterUI(this, PROPERTY_FIELD(BinAndReduceModifier::_binDirection));
-    gridlayout->addWidget(binDirectionPUI->addRadioButton(BinAndReduceModifier::CELL_VECTOR_1, "cell vector 1"), 0, 0);
-    gridlayout->addWidget(binDirectionPUI->addRadioButton(BinAndReduceModifier::CELL_VECTOR_2, "cell vector 2"), 0, 1);
-    gridlayout->addWidget(binDirectionPUI->addRadioButton(BinAndReduceModifier::CELL_VECTOR_3, "cell vector 3"), 0, 2);
-    gridlayout->addWidget(binDirectionPUI->addRadioButton(BinAndReduceModifier::CELL_VECTORS_1_2, "vectors 1 and 2"), 1, 0);
-    gridlayout->addWidget(binDirectionPUI->addRadioButton(BinAndReduceModifier::CELL_VECTORS_1_3, "vectors 1 and 3"), 1, 1);
-    gridlayout->addWidget(binDirectionPUI->addRadioButton(BinAndReduceModifier::CELL_VECTORS_2_3, "vectors 2 and 3"), 1, 2);
+	gridlayout->addWidget(new QLabel(tr("Binning direction:"), rollout), 0, 0);
+	VariantComboBoxParameterUI* binDirectionPUI = new VariantComboBoxParameterUI(this, PROPERTY_FIELD(BinAndReduceModifier::_binDirection));
+    binDirectionPUI->comboBox()->addItem("cell vector 1", qVariantFromValue(BinAndReduceModifier::CELL_VECTOR_1));
+    binDirectionPUI->comboBox()->addItem("cell vector 2", qVariantFromValue(BinAndReduceModifier::CELL_VECTOR_2));
+    binDirectionPUI->comboBox()->addItem("cell vector 3", qVariantFromValue(BinAndReduceModifier::CELL_VECTOR_3));
+    binDirectionPUI->comboBox()->addItem("vectors 1 and 2", qVariantFromValue(BinAndReduceModifier::CELL_VECTORS_1_2));
+    binDirectionPUI->comboBox()->addItem("vectors 1 and 3", qVariantFromValue(BinAndReduceModifier::CELL_VECTORS_1_3));
+    binDirectionPUI->comboBox()->addItem("vectors 2 and 3", qVariantFromValue(BinAndReduceModifier::CELL_VECTORS_2_3));
+    gridlayout->addWidget(binDirectionPUI->comboBox(), 0, 1);
     layout->addLayout(gridlayout);
-    connect(binDirectionPUI->buttonGroup(), SIGNAL(buttonClicked(int)), this, SLOT(updateBinDirection(int)));
+    connect(binDirectionPUI->comboBox(), SIGNAL(currentIndexChanged(int)), this, SLOT(updateBinDirection(int)));
 
 	gridlayout = new QGridLayout();
 	gridlayout->setContentsMargins(4,4,4,4);
@@ -393,6 +396,8 @@ void BinAndReduceModifierEditor::createUI(const RolloutInsertionParameters& roll
 	// Status label.
 	layout->addSpacing(6);
 	layout->addWidget(statusLabel());
+
+    updateBinDirection(0);
 }
 
 /******************************************************************************
@@ -509,10 +514,14 @@ void BinAndReduceModifierEditor::plotAverages()
 * Enable/disable the editor for number of y-bin and the first derivativs
 * button
 ******************************************************************************/
-void BinAndReduceModifierEditor::updateBinDirection(int newBinDirection)
+void BinAndReduceModifierEditor::updateBinDirection(int newDirection)
 {
-    _numBinsYPUI->setEnabled(!BinAndReduceModifier::bin1D(BinAndReduceModifier::BinDirectionType(newBinDirection)));
-    _firstDerivativePUI->setEnabled(BinAndReduceModifier::bin1D(BinAndReduceModifier::BinDirectionType(newBinDirection)));
+	BinAndReduceModifier* modifier = static_object_cast<BinAndReduceModifier>(editObject());
+	if(!modifier)
+		return;
+
+    _numBinsYPUI->setEnabled(modifier->is1D());
+    _firstDerivativePUI->setEnabled(!modifier->is1D());
 }
 
 

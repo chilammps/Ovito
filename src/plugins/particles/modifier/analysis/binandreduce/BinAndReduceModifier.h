@@ -241,7 +241,7 @@ protected Q_SLOTS:
 	void plotAverages();
 
     /// Enable/disable the editor for number of y-bin and the first derivativs button.
-    void updateBinDirection(int newBinDirection);
+    void updateBinDirection(int newDirection);
 
 	/// Keep y-axis range updated
 	void updatePropertyAxisRange(const QCPRange &newRange);
@@ -275,4 +275,9 @@ private:
 
 };	// End of namespace
 
-#endif // __OVITO_SPATIAL_AVERAGE_MODIFIER_H
+Q_DECLARE_METATYPE(Particles::BinAndReduceModifier::ReductionOperationType);
+Q_DECLARE_METATYPE(Particles::BinAndReduceModifier::BinDirectionType);
+Q_DECLARE_TYPEINFO(Particles::BinAndReduceModifier::ReductionOperationType, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Particles::BinAndReduceModifier::BinDirectionType, Q_PRIMITIVE_TYPE);
+
+#endif // __OVITO_BIN_AND_REDUCE_MODIFIER_H
