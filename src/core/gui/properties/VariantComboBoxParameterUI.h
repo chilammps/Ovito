@@ -36,6 +36,9 @@ public:
 
 	/// Constructor.
 	VariantComboBoxParameterUI(QObject* parentEditor, const char* propertyName);
+
+	/// Constructor for a PropertyField property.
+	VariantComboBoxParameterUI(QObject* parentEditor, const PropertyFieldDescriptor& propField);
 	
 	/// Destructor.
 	virtual ~VariantComboBoxParameterUI();

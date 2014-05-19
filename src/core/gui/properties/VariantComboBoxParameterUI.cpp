@@ -29,10 +29,19 @@ namespace Ovito {
 IMPLEMENT_OVITO_OBJECT(Core, VariantComboBoxParameterUI, PropertyParameterUI);
 
 /******************************************************************************
-* The constructor.
+* Constructor for a Qt property.
 ******************************************************************************/
 VariantComboBoxParameterUI::VariantComboBoxParameterUI(QObject* parentEditor, const char* propertyName) :
 	PropertyParameterUI(parentEditor, propertyName), _comboBox(new QComboBox())
+{
+	connect(comboBox(), (void (QComboBox::*)(int))&QComboBox::activated, this, &VariantComboBoxParameterUI::updatePropertyValue);
+}
+
+/******************************************************************************
+* Constructor for a PropertyField property.
+******************************************************************************/
+VariantComboBoxParameterUI::VariantComboBoxParameterUI(QObject* parentEditor, const PropertyFieldDescriptor& propField) :
+	PropertyParameterUI(parentEditor, propField), _comboBox(new QComboBox())
 {
 	connect(comboBox(), (void (QComboBox::*)(int))&QComboBox::activated, this, &VariantComboBoxParameterUI::updatePropertyValue);
 }
@@ -67,14 +76,23 @@ void VariantComboBoxParameterUI::updateUI()
 	PropertyParameterUI::updateUI();	
 	
 	if(comboBox() && editObject()) {
-		QVariant val = editObject()->property(propertyName());
-		OVITO_ASSERT_MSG(val.isValid(), "VariantComboBoxParameterUI::updateUI()", QString("The object class %1 does not define a property with the name %2.").arg(editObject()->metaObject()->className(), QString(propertyName())).toLocal8Bit().constData());
-		if(!val.isValid()) {
-			throw Exception(tr("The object class %1 does not define a property with the name %2.").arg(editObject()->metaObject()->className(), QString(propertyName())));
-		}
-		comboBox()->setCurrentIndex(comboBox()->findData(val));
-		if(comboBox()->isEditable())
-			comboBox()->setEditText(val.toString());
+        if (isQtPropertyUI()) {
+            QVariant val = editObject()->property(propertyName());
+            OVITO_ASSERT_MSG(val.isValid(), "VariantComboBoxParameterUI::updateUI()", QString("The object class %1 does not define a property with the name %2.").arg(editObject()->metaObject()->className(), QString(propertyName())).toLocal8Bit().constData());
+            if(!val.isValid()) {
+                throw Exception(tr("The object class %1 does not define a property with the name %2.").arg(editObject()->metaObject()->className(), QString(propertyName())));
+            }
+            comboBox()->setCurrentIndex(comboBox()->findData(val));
+            if(comboBox()->isEditable())
+                comboBox()->setEditText(val.toString());
+        }
+        else if (isPropertyFieldUI()) {
+            QVariant val = editObject()->getPropertyFieldValue(*propertyField());
+            OVITO_ASSERT(val.isValid());
+            comboBox()->setCurrentIndex(comboBox()->findData(val));
+            if(comboBox()->isEditable())
+                comboBox()->setEditText(val.toString());
+        }
 	}
 }
 
@@ -102,9 +120,14 @@ void VariantComboBoxParameterUI::updatePropertyValue()
 			else
 				newValue = comboBox()->itemData(comboBox()->currentIndex());
 
-			if(!editObject()->setProperty(propertyName(), newValue)) {
-				OVITO_ASSERT_MSG(false, "VariantComboBoxParameterUI::updatePropertyValue()", QString("The value of property %1 of object class %2 could not be set.").arg(QString(propertyName()), editObject()->metaObject()->className()).toLocal8Bit().constData());
-			}
+            if (isQtPropertyUI()) {
+                if(!editObject()->setProperty(propertyName(), newValue)) {
+                    OVITO_ASSERT_MSG(false, "VariantComboBoxParameterUI::updatePropertyValue()", QString("The value of property %1 of object class %2 could not be set.").arg(QString(propertyName()), editObject()->metaObject()->className()).toLocal8Bit().constData());
+                }
+            }
+            else if (isPropertyFieldUI()) {
+                editObject()->setPropertyFieldValue(*propertyField(), newValue);
+            }
 
 			Q_EMIT valueEntered();
 		});
