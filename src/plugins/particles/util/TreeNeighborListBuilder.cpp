@@ -24,11 +24,6 @@
 
 namespace Particles {
 
-/// Used to sort PBC images by distance from the master image.
-static bool pbcShiftCompare(const std::pair<Vector3, Vector3>& a, const std::pair<Vector3, Vector3>& b) {
-	return a.first.squaredLength() < b.first.squaredLength();
-}
-
 /******************************************************************************
 * Prepares the neighbor list builder.
 ******************************************************************************/
@@ -61,7 +56,10 @@ bool TreeNeighborListBuilder::prepare(ParticleProperty* posProperty, const Simul
 			}
 		}
 	}
-	std::sort(pbcImages.begin(), pbcImages.end(), pbcShiftCompare);
+	// Sort PBC images by distance from the master image.
+	std::sort(pbcImages.begin(), pbcImages.end(), [](const std::pair<Vector3, Vector3>& a, const std::pair<Vector3, Vector3>& b) {
+		return a.first.squaredLength() < b.first.squaredLength();
+	});
 
 	// Compute bounding box of all particles (only for non-periodic directions).
 	Box3 boundingBox(Point3(0,0,0), Point3(1,1,1));

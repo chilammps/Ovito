@@ -192,6 +192,22 @@ public:
 	/// \brief Returns the title of this object.
 	virtual QString objectTitle() override { return tr("Simulation cell"); }
 
+	/// \brief Helper function that computes the modulo operation for two integer numbers k and n.
+	///
+	/// This function can handle negative numbers k. This allows mapping any number k that is
+	/// outside the interval [0,n) back into the interval. Use this to implement periodic boundary conditions.
+	static inline int modulo(int k, int n) {
+		return SimulationCellData::modulo(k,n);
+	}
+
+	/// \brief Helper function that computes the modulo operation for two floating-point numbers k and n.
+	///
+	/// This function can handle negative numbers k. This allows mapping any number k that is
+	/// outside the interval [0,n) back into the interval. Use this to implement periodic boundary conditions.
+	static inline FloatType modulo(FloatType k, FloatType n) {
+		return SimulationCellData::modulo(k,n);
+	}
+
 protected:
 
 	/// Creates the storage for the internal parameters.
