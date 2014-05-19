@@ -66,7 +66,7 @@ inline int modulo(int i, int n)
 ******************************************************************************/
 BinAndReduceModifier::BinAndReduceModifier(DataSet* dataset) : 
     ParticleModifier(dataset), _reductionOperation(RED_MEAN), _firstDerivative(false),
-    _binDirection(CELL_VECTOR_3), _numberOfBinsX(200), _numberOfBinsY(1),
+    _binDirection(CELL_VECTOR_3), _numberOfBinsX(200), _numberOfBinsY(200),
     _fixPropertyAxisRange(false), _propertyAxisRangeStart(0), _propertyAxisRangeEnd(0)
 {
 	INIT_PROPERTY_FIELD(BinAndReduceModifier::_reductionOperation);
