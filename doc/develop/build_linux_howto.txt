@@ -47,6 +47,10 @@ paths to newest gcc and g++ compilers if necessary (e.g. 'g++-4.8').
 	-no-nis \
 	-no-cups \
 	-no-glib \
+	-fontconfig \
+	-skip qtconnectivity -skip qtmultimedia -skip qtwebkit -skip qtwebkit-examples -skip qtxmlpatterns -skip qtlocation \
+	-skip qtsensors -skip qtdeclarative -skip qtdoc -skip qtquick1 -skip qtquickcontrols \
+	-skip qtserialport -skip qtgraphicaleffects -skip qttranslations \
 	-prefix $HOME/progs/qt5static
 
 make

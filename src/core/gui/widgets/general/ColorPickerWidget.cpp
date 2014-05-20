@@ -30,8 +30,6 @@ namespace Ovito {
 ColorPickerWidget::ColorPickerWidget(QWidget* parent)
 	: QAbstractButton(parent), _color(1,1,1)
 {
-	setAutoFillBackground(true);
-	setColor(Color(0,0,0));
 	connect(this, &ColorPickerWidget::clicked, this, &ColorPickerWidget::activateColorPicker);
 }
 
@@ -44,11 +42,6 @@ void ColorPickerWidget::setColor(const Color& newVal, bool emitChangeSignal)
 	
 	// Update control.
 	_color = newVal;
-
-	QPalette pal = palette();
-	pal.setColor(QPalette::Button, QColor(_color));
-	pal.setColor(QPalette::Active, QPalette::WindowText, Qt::white);
-	setPalette(pal);
 	update();
 	
 	// Send change message
@@ -62,10 +55,8 @@ void ColorPickerWidget::setColor(const Color& newVal, bool emitChangeSignal)
 void ColorPickerWidget::paintEvent(QPaintEvent* event)
 {
 	QPainter painter(this);
-	painter.setPen(palette().color(
-			isEnabled() ? (isDown() ? QPalette::Active : QPalette::Inactive) : QPalette::Disabled,
-					QPalette::WindowText));
-	painter.drawRect(0,0,width()-1,height()-1);
+	QBrush brush{(QColor)color()};
+	qDrawShadePanel(&painter, rect(), palette(), isDown(), 1, &brush);
 }
 
 /******************************************************************************
@@ -78,8 +69,8 @@ QSize ColorPickerWidget::sizeHint() const
 
 	QStyleOptionButton opt;
 	opt.initFrom(this);
-	opt.features |= QStyleOptionButton::Flat;
-	return (style()->sizeFromContents(QStyle::CT_PushButton, &opt, QSize(w, h), this).expandedTo(QApplication::globalStrut()));
+	opt.features = QStyleOptionButton::Flat;
+	return style()->sizeFromContents(QStyle::CT_PushButton, &opt, QSize(w, h), this).expandedTo(QApplication::globalStrut()).expandedTo(QSize(0,22));
 }
 
 /******************************************************************************
