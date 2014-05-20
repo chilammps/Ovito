@@ -56,12 +56,6 @@ SET_PROPERTY_FIELD_LABEL(BinAndReduceModifier, _propertyAxisRangeStart, "Propert
 SET_PROPERTY_FIELD_LABEL(BinAndReduceModifier, _propertyAxisRangeEnd, "Property axis range end");
 SET_PROPERTY_FIELD_LABEL(BinAndReduceModifier, _sourceProperty, "Source property");
 
-inline int modulo(int i, int n)
-{
-    while (i < 0) i += n;
-    return i%n;
-}
-
 /******************************************************************************
 * Constructs the modifier object.
 ******************************************************************************/
@@ -190,8 +184,8 @@ PipelineStatus BinAndReduceModifier::modifyParticles(TimePoint time, TimeInterva
                     FloatType fractionalPosY = reciprocalCell.prodrow(*pos, binDirY);
                     int binIndexX = int( fractionalPosX * binDataSizeX );
                     int binIndexY = int( fractionalPosY * binDataSizeY );
-                    if (pbc[binDirX]) binIndexX = modulo(binIndexX, binDataSizeX);
-                    if (pbc[binDirY]) binIndexY = modulo(binIndexY, binDataSizeY);
+                    if (pbc[binDirX]) binIndexX = SimulationCell::modulo(binIndexX, binDataSizeX);
+                    if (pbc[binDirY]) binIndexY = SimulationCell::modulo(binIndexY, binDataSizeY);
                     if (binIndexX >= 0 && binIndexX < binDataSizeX && binIndexY >= 0 && binIndexY < binDataSizeY) {
                         size_t binIndex = binIndexY*binDataSizeX+binIndexX;
                         if (_reductionOperation == RED_MEAN || _reductionOperation == RED_SUM || _reductionOperation == RED_SUM_VOL) {
@@ -227,8 +221,8 @@ PipelineStatus BinAndReduceModifier::modifyParticles(TimePoint time, TimeInterva
                 FloatType fractionalPosY = reciprocalCell.prodrow(*pos, binDirY);
                 int binIndexX = int( fractionalPosX * binDataSizeX );
                 int binIndexY = int( fractionalPosY * binDataSizeY );
-                if (pbc[binDirX])  binIndexX = modulo(binIndexX, binDataSizeX);
-                if (pbc[binDirY])  binIndexY = modulo(binIndexY, binDataSizeY);
+                if (pbc[binDirX])  binIndexX = SimulationCell::modulo(binIndexX, binDataSizeX);
+                if (pbc[binDirY])  binIndexY = SimulationCell::modulo(binIndexY, binDataSizeY);
                 if (binIndexX >= 0 && binIndexX < binDataSizeX && binIndexY >= 0 && binIndexY < binDataSizeY) {
                     size_t binIndex = binIndexY*binDataSizeX+binIndexX;
                     if (_reductionOperation == RED_MEAN || _reductionOperation == RED_SUM || _reductionOperation == RED_SUM) {
@@ -275,8 +269,8 @@ PipelineStatus BinAndReduceModifier::modifyParticles(TimePoint time, TimeInterva
         std::vector<FloatType> derivativeData(binDataSize);
         for (int j = 0; j < binDataSizeY; j++) {
             for (int i = 0; i < binDataSizeX; i++) {
-                int i_plus_1 = modulo(i+1, binDataSizeX);
-                int i_minus_1 = modulo(i-1, binDataSizeX);
+                int i_plus_1 = SimulationCell::modulo(i+1, binDataSizeX);
+                int i_minus_1 = SimulationCell::modulo(i-1, binDataSizeX);
                 OVITO_ASSERT(j*binDataSizeY + i_plus_1 < binDataSize);
                 OVITO_ASSERT(j*binDataSizeY + i_minus_1 < binDataSize);
                 derivativeData[j*binDataSizeY + i] = (_binData[j*binDataSizeY + i_plus_1] - _binData[j*binDataSizeY + i_minus_1]) / (2*binSpacingX);

@@ -76,23 +76,20 @@ void VariantComboBoxParameterUI::updateUI()
 	PropertyParameterUI::updateUI();	
 	
 	if(comboBox() && editObject()) {
-        if (isQtPropertyUI()) {
-            QVariant val = editObject()->property(propertyName());
-            OVITO_ASSERT_MSG(val.isValid(), "VariantComboBoxParameterUI::updateUI()", QString("The object class %1 does not define a property with the name %2.").arg(editObject()->metaObject()->className(), QString(propertyName())).toLocal8Bit().constData());
-            if(!val.isValid()) {
+		QVariant val;
+        if(isQtPropertyUI()) {
+            val = editObject()->property(propertyName());
+            if(!val.isValid())
                 throw Exception(tr("The object class %1 does not define a property with the name %2.").arg(editObject()->metaObject()->className(), QString(propertyName())));
-            }
-            comboBox()->setCurrentIndex(comboBox()->findData(val));
-            if(comboBox()->isEditable())
-                comboBox()->setEditText(val.toString());
         }
-        else if (isPropertyFieldUI()) {
-            QVariant val = editObject()->getPropertyFieldValue(*propertyField());
-            OVITO_ASSERT(val.isValid());
-            comboBox()->setCurrentIndex(comboBox()->findData(val));
-            if(comboBox()->isEditable())
-                comboBox()->setEditText(val.toString());
+        else if(isPropertyFieldUI()) {
+            val = editObject()->getPropertyFieldValue(*propertyField());
+            OVITO_ASSERT_MSG(val.isValid(), "VariantComboBoxParameterUI::updateUI()", QString("The object class %1 does not define a property with the name %2.").arg(editObject()->metaObject()->className(), QString(propertyName())).toLocal8Bit().constData());
         }
+        else return;
+        comboBox()->setCurrentIndex(comboBox()->findData(val));
+        if(comboBox()->isEditable())
+            comboBox()->setEditText(val.toString());
 	}
 }
 
@@ -120,12 +117,12 @@ void VariantComboBoxParameterUI::updatePropertyValue()
 			else
 				newValue = comboBox()->itemData(comboBox()->currentIndex());
 
-            if (isQtPropertyUI()) {
+            if(isQtPropertyUI()) {
                 if(!editObject()->setProperty(propertyName(), newValue)) {
                     OVITO_ASSERT_MSG(false, "VariantComboBoxParameterUI::updatePropertyValue()", QString("The value of property %1 of object class %2 could not be set.").arg(QString(propertyName()), editObject()->metaObject()->className()).toLocal8Bit().constData());
                 }
             }
-            else if (isPropertyFieldUI()) {
+            else if(isPropertyFieldUI()) {
                 editObject()->setPropertyFieldValue(*propertyField(), newValue);
             }
 
