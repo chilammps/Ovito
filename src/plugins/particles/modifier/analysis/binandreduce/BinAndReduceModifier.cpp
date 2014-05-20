@@ -448,7 +448,12 @@ void BinAndReduceModifierEditor::plotAverages()
         _averagesPlot->axisRect()->setRangeDrag(Qt::Vertical);
         _averagesPlot->setInteraction(QCP::iRangeZoom, true);
         _averagesPlot->axisRect()->setRangeZoom(Qt::Vertical);
-        _averagesPlot->yAxis->setLabel(modifier->sourceProperty().name());
+        if(modifier->firstDerivative()) {
+            _averagesPlot->yAxis->setLabel("d( "+modifier->sourceProperty().name()+" )/d( Position )");
+        }
+        else {
+            _averagesPlot->yAxis->setLabel(modifier->sourceProperty().name());
+        }
 
         if(modifier->binData().empty())
             return;
