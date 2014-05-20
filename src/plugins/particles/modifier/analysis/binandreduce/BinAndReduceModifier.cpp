@@ -331,9 +331,6 @@ void BinAndReduceModifierEditor::createUI(const RolloutInsertionParameters& roll
     gridlayout->addWidget(reductionOperationPUI->comboBox(), 0, 1);
     layout->addLayout(gridlayout);
 
-	_firstDerivativePUI = new BooleanParameterUI(this, PROPERTY_FIELD(BinAndReduceModifier::_firstDerivative));
-	layout->addWidget(_firstDerivativePUI->checkBox());
-
 	gridlayout = new QGridLayout();
 	gridlayout->addWidget(new QLabel(tr("Binning direction:"), rollout), 0, 0);
 	VariantComboBoxParameterUI* binDirectionPUI = new VariantComboBoxParameterUI(this, PROPERTY_FIELD(BinAndReduceModifier::_binDirection));
@@ -345,10 +342,13 @@ void BinAndReduceModifierEditor::createUI(const RolloutInsertionParameters& roll
     binDirectionPUI->comboBox()->addItem("vectors 2 and 3", qVariantFromValue(BinAndReduceModifier::CELL_VECTORS_2_3));
     gridlayout->addWidget(binDirectionPUI->comboBox(), 0, 1);
     layout->addLayout(gridlayout);
-    connect(binDirectionPUI->comboBox(), SIGNAL(currentIndexChanged(int)), this, SLOT(updateBinDirection(int)));
+
+	_firstDerivativePUI = new BooleanParameterUI(this, PROPERTY_FIELD(BinAndReduceModifier::_firstDerivative));
+	_firstDerivativePUI->setEnabled(false);
+	layout->addWidget(_firstDerivativePUI->checkBox());
 
 	gridlayout = new QGridLayout();
-	gridlayout->setContentsMargins(4,4,4,4);
+	gridlayout->setContentsMargins(0,0,0,0);
 	gridlayout->setColumnStretch(1, 1);
 	gridlayout->setColumnStretch(2, 1);
 
@@ -360,6 +360,7 @@ void BinAndReduceModifierEditor::createUI(const RolloutInsertionParameters& roll
 	_numBinsYPUI = new IntegerParameterUI(this, PROPERTY_FIELD(BinAndReduceModifier::_numberOfBinsY));
 	gridlayout->addLayout(_numBinsYPUI->createFieldLayout(), 0, 2);
 	_numBinsYPUI->setMinValue(1);
+	_numBinsYPUI->setEnabled(false);
 
 	layout->addLayout(gridlayout);
 
@@ -404,7 +405,7 @@ void BinAndReduceModifierEditor::createUI(const RolloutInsertionParameters& roll
 	layout->addSpacing(6);
 	layout->addWidget(statusLabel());
 
-    updateBinDirection(0);
+	connect(this, &BinAndReduceModifierEditor::contentsChanged, this, &BinAndReduceModifierEditor::updateWidgets);
 }
 
 /******************************************************************************
@@ -412,9 +413,9 @@ void BinAndReduceModifierEditor::createUI(const RolloutInsertionParameters& roll
 ******************************************************************************/
 bool BinAndReduceModifierEditor::referenceEvent(RefTarget* source, ReferenceEvent* event)
 {
-	if(event->sender() == editObject() && 
-       event->type() == ReferenceEvent::ObjectStatusChanged) {
-		plotAverages();
+	if(event->sender() == editObject()
+			&& event->type() == ReferenceEvent::ObjectStatusChanged) {
+			plotAverages();
 	}
 	return ParticleModifierEditor::referenceEvent(source, event);
 }
@@ -518,19 +519,18 @@ void BinAndReduceModifierEditor::plotAverages()
 }
 
 /******************************************************************************
-* Enable/disable the editor for number of y-bin and the first derivativs
+* Enable/disable the editor for number of y-bins and the first derivative
 * button
 ******************************************************************************/
-void BinAndReduceModifierEditor::updateBinDirection(int newDirection)
+void BinAndReduceModifierEditor::updateWidgets()
 {
 	BinAndReduceModifier* modifier = static_object_cast<BinAndReduceModifier>(editObject());
 	if(!modifier)
 		return;
 
-    _numBinsYPUI->setEnabled(modifier->is1D());
-    _firstDerivativePUI->setEnabled(!modifier->is1D());
+    _numBinsYPUI->setEnabled(!modifier->is1D());
+    _firstDerivativePUI->setEnabled(modifier->is1D());
 }
-
 
 /******************************************************************************
 * Keep y-axis range updated

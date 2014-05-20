@@ -225,7 +225,7 @@ class BinAndReduceModifierEditor : public ParticleModifierEditor
 public:
 
 	/// Default constructor.
-	Q_INVOKABLE BinAndReduceModifierEditor() : _rangeUpdate(true), _averagesGraph(NULL), _averagesColorMap(NULL) {}
+	Q_INVOKABLE BinAndReduceModifierEditor() : _rangeUpdate(true), _averagesGraph(nullptr), _averagesColorMap(nullptr) {}
 
 protected:
 
@@ -240,8 +240,8 @@ protected Q_SLOTS:
 	/// Replots the average data computed by the modifier.
 	void plotAverages();
 
-    /// Enable/disable the editor for number of y-bin and the first derivativs button.
-    void updateBinDirection(int newDirection);
+    /// Enable/disable the editor for number of y-bins and the first derivative button.
+    void updateWidgets();
 
 	/// Keep y-axis range updated
 	void updatePropertyAxisRange(const QCPRange &newRange);

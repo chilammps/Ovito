@@ -12,7 +12,7 @@ Install essential tools and dependencies on Ubuntu 10.04 for
 building the static executable:
 **************************************************************************
 
-sudo apt-get install build-essential perl python git \
+sudo apt-get install build-essential perl python git libfreetype6-dev libfontconfig-dev \
                      libx11-xcb-dev libpcre3-dev libxi-dev libgmp-dev \
                      libmpfr-dev libsm-dev libice-dev libnetcdf-dev libhdf5-serial-dev \
                      libglu1-mesa-dev libxrender-dev xsltproc docbook-xml docbook-xsl-doc-html 
@@ -50,12 +50,9 @@ paths to newest gcc and g++ compilers if necessary (e.g. 'g++-4.8').
 	-prefix $HOME/progs/qt5static
 
 make
-
-cd qtbase/src/plugins/platforms/xcb/xcb-static/
-make
-cd ../../../../../..
-
 make install
+
+cp qtbase/src/plugins/platforms/xcb/xcb-static/libxcb-static.a $HOME/progs/qt5static/plugins/platforms/
 
 **************************************************************************
 Build static versions of Boost libraries (release 1.55):
