@@ -264,19 +264,32 @@ PipelineStatus BinAndReduceModifier::modifyParticles(TimePoint time, TimeInterva
         }
 	}
 
+	// Compute first derivative using finite differences.
     if (_firstDerivative) {
         FloatType binSpacingX = (_xAxisRangeEnd - _xAxisRangeStart) / binDataSizeX;
-        std::vector<FloatType> derivativeData(binDataSize);
-        for (int j = 0; j < binDataSizeY; j++) {
-            for (int i = 0; i < binDataSizeX; i++) {
-                int i_plus_1 = SimulationCell::modulo(i+1, binDataSizeX);
-                int i_minus_1 = SimulationCell::modulo(i-1, binDataSizeX);
-                OVITO_ASSERT(j*binDataSizeY + i_plus_1 < binDataSize);
-                OVITO_ASSERT(j*binDataSizeY + i_minus_1 < binDataSize);
-                derivativeData[j*binDataSizeY + i] = (_binData[j*binDataSizeY + i_plus_1] - _binData[j*binDataSizeY + i_minus_1]) / (2*binSpacingX);
-            }
+        if(binDataSizeX > 1 && _xAxisRangeEnd > _xAxisRangeStart) {
+			std::vector<FloatType> derivativeData(binDataSize);
+			for (int j = 0; j < binDataSizeY; j++) {
+				for (int i = 0; i < binDataSizeX; i++) {
+					int ndx = 2;
+					int i_plus_1 = i+1;
+					int i_minus_1 = i-1;
+					if(i_plus_1 == binDataSizeX) {
+						if(pbc[binDirX]) i_plus_1 = 0;
+						else { i_plus_1 = binDataSizeX-1; ndx = 1; }
+					}
+					if(i_minus_1 == -1) {
+						if(pbc[binDirX]) i_minus_1 = binDataSizeX-1;
+						else { i_minus_1 = 0; ndx = 1; }
+					}
+					OVITO_ASSERT(j*binDataSizeX + i_plus_1 < binDataSize);
+					OVITO_ASSERT(j*binDataSizeX + i_minus_1 < binDataSize);
+					derivativeData[j*binDataSizeX + i] = (_binData[j*binDataSizeX + i_plus_1] - _binData[j*binDataSizeX + i_minus_1]) / (ndx*binSpacingX);
+				}
+			}
+			_binData = derivativeData;
         }
-        _binData = derivativeData;
+        else std::fill(_binData.begin(), _binData.end(), FloatType(0));
     }
 
 	if (!_fixPropertyAxisRange) {
@@ -564,7 +577,6 @@ void BinAndReduceModifierEditor::onSaveData()
         size_t binDataSizeX = std::max(1, modifier->numberOfBinsX());
         size_t binDataSizeY = std::max(1, modifier->numberOfBinsY());
         if (modifier->is1D()) binDataSizeY = 1;
-        size_t binDataSize = binDataSizeX*binDataSizeY;
 		FloatType binSizeX = (modifier->xAxisRangeEnd() - modifier->xAxisRangeStart()) / binDataSizeX;
 		FloatType binSizeY = (modifier->yAxisRangeEnd() - modifier->yAxisRangeStart()) / binDataSizeY;
 
