@@ -65,9 +65,13 @@ bool ViewportWindow::pointSpritesEnabled(bool forceDefaultSetting)
 			return userSetting.toBool();
 	}
 
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN)
 	// Point sprites don't seem to work well on Intel graphics under Windows.
 	if(_openGLVendor.contains("Intel"))
+		return false;
+#elif defined(Q_OS_OSX)
+	// Point sprites don't seem to work well on ATI graphics under Mac OS X.
+	if(_openGLVendor.contains("ATI"))
 		return false;
 #endif
 
