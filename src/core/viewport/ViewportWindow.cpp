@@ -30,6 +30,24 @@
 namespace Ovito {
 
 /******************************************************************************
+* Returns whether all viewport windows should share one GL context or not.
+******************************************************************************/
+bool ViewportWindow::useMultipleContexts()
+{
+	// The user can request the use of multiple GL contexts independent from the platform.
+	if(Application::instance().cmdLineParser().isSet(QStringLiteral("dontsharecontext")))
+		return true;
+
+#ifdef Q_OS_OSX
+	// On Mac OS X 10.9, sharing a single context doesn't work very well.
+	return true;
+#else
+	// By default, all viewports use the same GL context.
+	return false;
+#endif
+}
+
+/******************************************************************************
 * Constructor.
 ******************************************************************************/
 ViewportWindow::ViewportWindow(Viewport* owner) :
@@ -37,16 +55,20 @@ ViewportWindow::ViewportWindow(Viewport* owner) :
 		_context(nullptr),
 		_mainWindow(owner->dataset()->mainWindow())
 {
-#ifndef Q_OS_OSX
-	OVITO_CHECK_POINTER(_mainWindow);
-	_context = _mainWindow->getOpenGLContext();
-#else
-	_context = new QOpenGLContext(this);
-	_context->setFormat(ViewportSceneRenderer::getDefaultSurfaceFormat());
-	_context->setShareContext(_mainWindow->getOpenGLContext());
-	if(!_context->create())
-		throw Exception(tr("Failed to create OpenGL context."));
-#endif
+	if(!useMultipleContexts()) {
+		// Get the master OpenGL context, which is managed by the main window.
+		OVITO_CHECK_POINTER(_mainWindow);
+		_context = _mainWindow->getOpenGLContext();
+	}
+	else {
+		// Create a dedicated OpenGL context for this viewport window.
+		// All contexts still share OpenGL resources.
+		_context = new QOpenGLContext(this);
+		_context->setFormat(ViewportSceneRenderer::getDefaultSurfaceFormat());
+		_context->setShareContext(_mainWindow->getOpenGLContext());
+		if(!_context->create())
+			throw Exception(tr("Failed to create OpenGL context."));
+	}
 
 	// Indicate that the window is to be used for OpenGL rendering.
 	setSurfaceType(QWindow::OpenGLSurface);

@@ -49,6 +49,7 @@ bool StandardSceneRenderer::startRender(DataSet* dataset, RenderSettings* settin
 
 	int sampling = std::max(1, antialiasingLevel());
 
+	// Use the OpenGL context managed by the main window to render to the offscreen buffer.
 	QOpenGLContext* glcontext = renderDataset()->mainWindow()->getOpenGLContext();
 
 	// Create offscreen buffer.

@@ -54,6 +54,9 @@ public:
 	/// Returns the window's OpenGL context used for rendering.
 	QOpenGLContext* glcontext() const { return _context; }
 
+	/// Returns whether all viewport windows should share one GL context or not.
+	static bool useMultipleContexts();
+
 protected:
 
 	/// Handles the expose events.

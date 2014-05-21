@@ -38,8 +38,7 @@ namespace Ovito {
 /******************************************************************************
 * The constructor of the main window class.
 ******************************************************************************/
-MainWindow::MainWindow() :
-		_datasetContainer(this), _glcontext(nullptr)
+MainWindow::MainWindow() : _datasetContainer(this)
 {
 	setWindowTitle(tr("Ovito (Open Visualization Tool)"));
 	setAttribute(Qt::WA_DeleteOnClose);
@@ -345,29 +344,31 @@ void MainWindow::openHelpTopic(const QString& page)
 }
 
 /******************************************************************************
-* Returns the window's OpenGL context used for rendering the viewports.
+* Returns the master OpenGL context managed by this window, which is used to
+* render the viewports. If sharing of OpenGL contexts between viewports is
+* disabled, then this function returns the GL context of the first viewport
+* in this window.
 ******************************************************************************/
 QOpenGLContext* MainWindow::getOpenGLContext()
 {
-#ifndef Q_OS_OSX
 	if(_glcontext)
 		return _glcontext;
 
-	_glcontext = new QOpenGLContext(this);
-	_glcontext->setFormat(ViewportSceneRenderer::getDefaultSurfaceFormat());
-	if(!_glcontext->create())
-		throw Exception(tr("Failed to create OpenGL context."));
+	if(!ViewportWindow::useMultipleContexts()) {
+		_glcontext = new QOpenGLContext(this);
+		_glcontext->setFormat(ViewportSceneRenderer::getDefaultSurfaceFormat());
+		if(!_glcontext->create())
+			throw Exception(tr("Failed to create OpenGL context."));
+	}
+	else {
+		if(datasetContainer().currentSet()) {
+			const QVector<Viewport*>& viewports = datasetContainer().currentSet()->viewportConfig()->viewports();
+			if(!viewports.empty() && viewports.front()->viewportWindow())
+				_glcontext = viewports.front()->viewportWindow()->glcontext();
+		}
+	}
 
 	return _glcontext;
-#else
-
-	if(datasetContainer().currentSet()) {
-		const QVector<Viewport*>& viewports = datasetContainer().currentSet()->viewportConfig()->viewports();
-		if(!viewports.empty() && viewports.front()->viewportWindow())
-			return viewports.front()->viewportWindow()->glcontext();
-	}
-	return nullptr;
-#endif
 }
 
 };
