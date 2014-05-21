@@ -122,6 +122,6 @@ SET(GLUSourceFiles
 OVITO_PLUGIN(Particles
 	SOURCES ${OVITO_PARTICLES_SOURCE_FILES} ${GLUSourceFiles}
 	RESOURCE particles.rcc resources/particles.qrc
-	LIB_DEPENDENCIES muParser qcustomplot
+	LIB_DEPENDENCIES muParser qcustomplot ${OPENGL_gl_LIBRARY}
 	OPTIONAL_PLUGIN_DEPENDENCIES Scripting
 )

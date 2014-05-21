@@ -72,8 +72,8 @@ void GeneralSettingsPage::insertSettingsDialogPage(ApplicationSettingsDialog* se
 	_contextSharingMode->setCurrentIndex(ViewportWindow::contextSharingEnabled() ? 0 : 1);
 
 	// OpenGL point sprites:
-	_overrideUseOfPointSprites = new QCheckBox(tr("Override use of point sprites"), openglGroupBox);
-	_overrideUseOfPointSprites->setToolTip(tr("<p>Activate this option to explicitly control the use of OpenGL point sprites for rendering particles.</p>"));
+	_overrideUseOfPointSprites = new QCheckBox(tr("Override usage of point sprites"), openglGroupBox);
+	_overrideUseOfPointSprites->setToolTip(tr("<p>Activate this option to explicitly control the usage of OpenGL point sprites for rendering of particles.</p>"));
 	layout2->addWidget(_overrideUseOfPointSprites, 1, 0);
 	_pointSpriteMode = new QComboBox(openglGroupBox);
 	_pointSpriteMode->setEnabled(false);
