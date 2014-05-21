@@ -20,6 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
+#include <core/viewport/ViewportWindow.h>
 #include "GeneralSettingsPage.h"
 
 namespace Ovito {
@@ -46,6 +47,50 @@ void GeneralSettingsPage::insertSettingsDialogPage(ApplicationSettingsDialog* se
 			"<p>Use an alternative file selection dialog instead of the native dialog box provided by the operating system.</p>"));
 	layout2->addWidget(_useQtFileDialog, 0, 0);
 	_useQtFileDialog->setChecked(settings.value("file/use_qt_dialog", false).toBool());
+
+	QGroupBox* openglGroupBox = new QGroupBox(tr("Display / OpenGL"), page);
+	layout1->addWidget(openglGroupBox);
+	layout2 = new QGridLayout(openglGroupBox);
+
+	// OpenGL context sharing:
+	_overrideGLContextSharing = new QCheckBox(tr("Override context sharing"), openglGroupBox);
+	_overrideGLContextSharing->setToolTip(tr("<p>Activate this option to explicitly control the sharing of OpenGL contexts between viewport windows.</p>"));
+	layout2->addWidget(_overrideGLContextSharing, 0, 0);
+	_contextSharingMode = new QComboBox(openglGroupBox);
+	_contextSharingMode->setEnabled(false);
+	if(ViewportWindow::contextSharingEnabled(true)) {
+		_contextSharingMode->addItem(tr("Enable sharing (default)"));
+		_contextSharingMode->addItem(tr("Disable sharing"));
+	}
+	else {
+		_contextSharingMode->addItem(tr("Enable sharing"));
+		_contextSharingMode->addItem(tr("Disable sharing (default)"));
+	}
+	layout2->addWidget(_contextSharingMode, 0, 1);
+	connect(_overrideGLContextSharing, &QCheckBox::toggled, _contextSharingMode, &QComboBox::setEnabled);
+	_overrideGLContextSharing->setChecked(settings.contains("display/share_opengl_context"));
+	_contextSharingMode->setCurrentIndex(ViewportWindow::contextSharingEnabled() ? 0 : 1);
+
+	// OpenGL point sprites:
+	_overrideUseOfPointSprites = new QCheckBox(tr("Override use of point sprites"), openglGroupBox);
+	_overrideUseOfPointSprites->setToolTip(tr("<p>Activate this option to explicitly control the use of OpenGL point sprites for rendering particles.</p>"));
+	layout2->addWidget(_overrideUseOfPointSprites, 1, 0);
+	_pointSpriteMode = new QComboBox(openglGroupBox);
+	_pointSpriteMode->setEnabled(false);
+	if(ViewportWindow::pointSpritesEnabled(true)) {
+		_pointSpriteMode->addItem(tr("Use point sprites (default)"));
+		_pointSpriteMode->addItem(tr("Don't use point sprites"));
+	}
+	else {
+		_pointSpriteMode->addItem(tr("Use point sprites"));
+		_pointSpriteMode->addItem(tr("Don't use point sprites (default)"));
+	}
+	layout2->addWidget(_pointSpriteMode, 1, 1);
+	connect(_overrideUseOfPointSprites, &QCheckBox::toggled, _pointSpriteMode, &QComboBox::setEnabled);
+	_overrideUseOfPointSprites->setChecked(settings.contains("display/use_point_sprites"));
+	_pointSpriteMode->setCurrentIndex(ViewportWindow::pointSpritesEnabled() ? 0 : 1);
+
+	layout2->addWidget(new QLabel(tr("<p style=\"font-size: small; color: #686868;\">(Restart required for changes to take effect.)</p>")), 2, 0, 1, 2);
 
 	QGroupBox* updateGroupBox = new QGroupBox(tr("Program updates"), page);
 	layout1->addWidget(updateGroupBox);
@@ -81,6 +126,14 @@ bool GeneralSettingsPage::saveValues(ApplicationSettingsDialog* settingsDialog, 
 	settings.setValue("file/use_qt_dialog", _useQtFileDialog->isChecked());
 	settings.setValue("updates/check_for_updates", _enableUpdateChecks->isChecked());
 	settings.setValue("updates/transmit_id", _enableUsageStatistics->isChecked());
+	if(_overrideGLContextSharing->isChecked())
+		settings.setValue("display/share_opengl_context", _contextSharingMode->currentIndex() == 0);
+	else
+		settings.remove("display/share_opengl_context");
+	if(_overrideUseOfPointSprites->isChecked())
+		settings.setValue("display/use_point_sprites", _pointSpriteMode->currentIndex() == 0);
+	else
+		settings.remove("display/use_point_sprites");
 	return true;
 }
 

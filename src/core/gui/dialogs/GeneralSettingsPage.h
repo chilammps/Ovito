@@ -47,6 +47,10 @@ public:
 private:
 
 	QCheckBox* _useQtFileDialog;
+	QCheckBox* _overrideGLContextSharing;
+	QComboBox* _contextSharingMode;
+	QCheckBox* _overrideUseOfPointSprites;
+	QComboBox* _pointSpriteMode;
 	QCheckBox* _enableUpdateChecks;
 	QCheckBox* _enableUsageStatistics;
 

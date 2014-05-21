@@ -102,7 +102,6 @@ bool Application::initialize(int& argc, char** argv)
 	_cmdLineParser.addOption(QCommandLineOption(QStringList{{"nogui"}}, tr("Run in console mode without showing the graphical user interface.")));
 	_cmdLineParser.addOption(QCommandLineOption(QStringList{{"glversion"}}, tr("Selects a specific version of the OpenGL standard."), tr("VERSION")));
 	_cmdLineParser.addOption(QCommandLineOption(QStringList{{"glcompatprofile"}}, tr("Request the OpenGL compatibility profile instead of the core profile.")));
-	_cmdLineParser.addOption(QCommandLineOption(QStringList{{"dontsharecontext"}}, tr("Disables sharing of OpenGL contexts between viewport windows.")));
 
 	// Parse command line arguments.
 	// Ignore unknown command line options for now.

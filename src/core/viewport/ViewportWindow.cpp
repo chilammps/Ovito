@@ -29,22 +29,50 @@
 
 namespace Ovito {
 
+/// The vendor of the OpenGL implementation in use.
+QByteArray ViewportWindow::_openGLVendor;
+
 /******************************************************************************
 * Returns whether all viewport windows should share one GL context or not.
 ******************************************************************************/
-bool ViewportWindow::useMultipleContexts()
+bool ViewportWindow::contextSharingEnabled(bool forceDefaultSetting)
 {
-	// The user can request the use of multiple GL contexts independent from the platform.
-	if(Application::instance().cmdLineParser().isSet(QStringLiteral("dontsharecontext")))
-		return true;
+	if(!forceDefaultSetting) {
+		// The user can control the use of multiple GL contexts.
+		QVariant userSetting = QSettings().value("display/share_opengl_context");
+		if(userSetting.isValid())
+			return userSetting.toBool();
+	}
 
 #ifdef Q_OS_OSX
 	// On Mac OS X 10.9, sharing a single context doesn't work very well.
-	return true;
+	return false;
 #else
 	// By default, all viewports use the same GL context.
-	return false;
+	return true;
 #endif
+}
+
+/******************************************************************************
+* Determines whether OpenGL point sprites should be used or not.
+******************************************************************************/
+bool ViewportWindow::pointSpritesEnabled(bool forceDefaultSetting)
+{
+	if(!forceDefaultSetting) {
+		// The user can control the use of point sprites.
+		QVariant userSetting = QSettings().value("display/use_point_sprites");
+		if(userSetting.isValid())
+			return userSetting.toBool();
+	}
+
+#ifdef Q_OS_WIN
+	// Point sprites don't seem to work well on Intel graphics under Windows.
+	if(_openGLVendor.contains("Intel"))
+		return false;
+#endif
+
+	// Use point sprites by default.
+	return true;
 }
 
 /******************************************************************************
@@ -55,7 +83,7 @@ ViewportWindow::ViewportWindow(Viewport* owner) :
 		_context(nullptr),
 		_mainWindow(owner->dataset()->mainWindow())
 {
-	if(!useMultipleContexts()) {
+	if(contextSharingEnabled()) {
 		// Get the master OpenGL context, which is managed by the main window.
 		OVITO_CHECK_POINTER(_mainWindow);
 		_context = _mainWindow->getOpenGLContext();
@@ -253,8 +281,12 @@ void ViewportWindow::renderNow()
 		return;
 	}
 
-	OVITO_CHECK_OPENGL();
+	// Store OpenGL vendor string so other parts of the code can decide
+	// which OpenGL features are save to use.
+	if(_openGLVendor.isEmpty())
+		_openGLVendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
 
+	OVITO_CHECK_OPENGL();
 	if(!_viewport->dataset()->viewportConfig()->isSuspended()) {
 		_viewport->render(_context);
 	}

@@ -54,8 +54,11 @@ public:
 	/// Returns the window's OpenGL context used for rendering.
 	QOpenGLContext* glcontext() const { return _context; }
 
-	/// Returns whether all viewport windows should share one GL context or not.
-	static bool useMultipleContexts();
+	/// Determines whether all viewport windows should share one GL context or not.
+	static bool contextSharingEnabled(bool forceDefaultSetting = false);
+
+	/// Determines whether OpenGL point sprites should be used or not.
+	static bool pointSpritesEnabled(bool forceDefaultSetting = false);
 
 protected:
 
@@ -99,6 +102,9 @@ private:
 
 	/// The parent window of this viewport window.
 	MainWindow* _mainWindow;
+
+	/// The vendor of the OpenGL implementation in use.
+	static QByteArray _openGLVendor;
 
 private:
 

@@ -354,7 +354,7 @@ QOpenGLContext* MainWindow::getOpenGLContext()
 	if(_glcontext)
 		return _glcontext;
 
-	if(!ViewportWindow::useMultipleContexts()) {
+	if(ViewportWindow::contextSharingEnabled()) {
 		_glcontext = new QOpenGLContext(this);
 		_glcontext->setFormat(ViewportSceneRenderer::getDefaultSurfaceFormat());
 		if(!_glcontext->create())

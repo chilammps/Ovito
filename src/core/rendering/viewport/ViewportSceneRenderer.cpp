@@ -123,12 +123,7 @@ void ViewportSceneRenderer::beginFrame(TimePoint time, const ViewProjectionParam
 		_isCoreProfile = true;
 
 	// Determine whether it's okay to use point sprites.
-	_usePointSprites = true;
-#ifdef Q_OS_WIN
-	// Point sprites seem not to work well on Windows with Intel graphics.
-	if(strstr(reinterpret_cast<const char*>(glGetString(GL_VENDOR)), "Intel") != nullptr)
-		_usePointSprites = false;
-#endif
+	_usePointSprites = ViewportWindow::pointSpritesEnabled();
 
 	// Determine whether its okay to use geometry shaders.
 	_useGeometryShaders = QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Geometry);

@@ -136,6 +136,7 @@ void ActionManager::on_HelpOpenGLInfo_triggered()
 			stream << "Deprecated functions: " << format.testOption(QSurfaceFormat::DeprecatedFunctions) << endl;
 			stream << "Using point sprites: " << renderer->usePointSprites() << endl;
 			stream << "Using geometry shaders: " << renderer->useGeometryShaders() << endl;
+			stream << "Context sharing: " << ViewportWindow::contextSharingEnabled() << endl;
 			vp->viewportWindow()->glcontext()->doneCurrent();
 		}
 	}
