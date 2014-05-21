@@ -27,10 +27,10 @@ sudo apt-get install build-essential git cmake-curses-gui qt5-default qtscript5-
                      libbotan1.10-dev libmuparser-dev
 
 **************************************************************************
-Build static Qt libraries (version 5.2.1) on Ubuntu 10.04:
+Build static Qt libraries (version 5.3.0) on Ubuntu 10.04:
 
 Edit file qtbase/mkspecs/common/g++-base.conf and specify
-paths to newest gcc and g++ compilers if necessary (e.g. 'g++-4.8').
+paths to latest gcc and g++ compilers if necessary (e.g. 'g++-4.8').
 **************************************************************************
 
 ./configure \
@@ -55,8 +55,6 @@ paths to newest gcc and g++ compilers if necessary (e.g. 'g++-4.8').
 
 make
 make install
-
-cp qtbase/src/plugins/platforms/xcb/xcb-static/libxcb-static.a $HOME/progs/qt5static/plugins/platforms/
 
 **************************************************************************
 Build static versions of Boost libraries (release 1.55):

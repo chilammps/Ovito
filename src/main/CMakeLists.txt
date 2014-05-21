@@ -65,7 +65,7 @@ IF(OVITO_MONOLITHIC_BUILD)
 		# The static Qt plugins must be linked into the executable.
 		TARGET_LINK_LIBRARIES(${PROJECT_NAME} "${_qt5Core_install_prefix}/plugins/platforms/libqxcb.a")
 		TARGET_LINK_LIBRARIES(${PROJECT_NAME} "${_qt5Core_install_prefix}/plugins/platforms/libqminimal.a")
-		TARGET_LINK_LIBRARIES(${PROJECT_NAME} "${_qt5Core_install_prefix}/plugins/platforms/libxcb-static.a")
+		TARGET_LINK_LIBRARIES(${PROJECT_NAME} "${_qt5Core_install_prefix}/lib/libxcb-static.a")
 		TARGET_LINK_LIBRARIES(${PROJECT_NAME} "${_qt5Core_install_prefix}/lib/libQt5PlatformSupport.a")
 
 		# Some additional system libraries are required.
