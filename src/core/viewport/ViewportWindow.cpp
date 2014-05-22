@@ -44,13 +44,17 @@ bool ViewportWindow::contextSharingEnabled(bool forceDefaultSetting)
 			return userSetting.toBool();
 	}
 
-#ifdef Q_OS_OSX
+#if defined(Q_OS_OSX)
 	// On Mac OS X 10.9, sharing a single context doesn't work very well.
 	return false;
-#else
-	// By default, all viewports use the same GL context.
-	return true;
+#elif defined(Q_OS_LINUX)
+	// On Intel graphics under Linux, sharing a single context doesn't work very well.
+	if(_openGLVendor.contains("Intel"))
+		return false;
 #endif
+
+	// By default, all viewports of a main window use the same GL context.
+	return true;
 }
 
 /******************************************************************************
