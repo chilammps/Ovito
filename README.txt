@@ -2,16 +2,31 @@
 OVITO - Open Visualization Tool 
 ****************************************************************************************
 
-Author: Alexander Stukowski (Darmstadt University of Technology, Germany)
+Author: Alexander Stukowski (mail@ovito.org)
+        (Institute of Materials Science, Darmstadt University of Technology, Germany)
 
 OVITO is a scientific visualization and analysis software for atomistic simulation data. 
-See website for more information: 
+See official website for more information: 
 
-http://www.ovito.org/
+   http://www.ovito.org/
 
 ****************************************************************************************
 Change Log 
 ****************************************************************************************
+
+Release 2.3.3 (22-May-14):
+
+ - Added user options to application settings dialog that give control over sharing of 
+   OpenGL contexts and the use of OpenGL point sprites. This allows to work around compatibility
+   problems on some systems.
+ - User can now choose between dark and light viewport color schemes.
+ - Added scripting interface for Tachyon renderer.
+ - Added support for variable particle numbers in NetCDF reader (i.e. support for unlimited atom dimension)
+   and for NC_CHAR variables as particle types. (I.e. particle types given by names instead of numbers.)
+ - Added user options that control the automatic fetching of the news page from the web server and 
+   the transmission of the installation ID.
+ - Fixed bug in camera orbit mode, not correctly restricting camera's orientation when coordinate system 
+   orientation has been changed.
 
 Release 2.3.2 (07-Apr-14):
 
