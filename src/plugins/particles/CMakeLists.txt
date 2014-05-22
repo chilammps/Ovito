@@ -20,7 +20,6 @@
 ###############################################################################
 
 SET(OVITO_PARTICLES_SOURCE_FILES 
-	modifier/analysis/coordination/CoordinationNumberModifier.cpp
 	data/SimulationCell.cpp
 	data/SimulationCellDisplay.cpp
 	data/ParticlePropertyObject.cpp
@@ -42,9 +41,10 @@ SET(OVITO_PARTICLES_SOURCE_FILES
 	modifier/slice/SliceModifier.cpp
 	modifier/delete/DeleteParticlesModifier.cpp
 	modifier/analysis/StructureIdentificationModifier.cpp
-	modifier/analysis/binandreduce/BinAndReduceModifier.cpp
+#	modifier/analysis/binandreduce/BinAndReduceModifier.cpp
 	modifier/analysis/bondangle/BondAngleAnalysisModifier.cpp
 	modifier/analysis/cna/CommonNeighborAnalysisModifier.cpp
+	modifier/analysis/coordination/CoordinationNumberModifier.cpp
 	modifier/analysis/displacements/CalculateDisplacementsModifier.cpp
 	modifier/analysis/centrosymmetry/CentroSymmetryModifier.cpp
 	modifier/analysis/strain/AtomicStrainModifier.cpp
@@ -79,7 +79,7 @@ SET(OVITO_PARTICLES_SOURCE_FILES
 	importer/imd/IMDImporter.cpp
 	importer/parcas/ParcasFileImporter.cpp
 	importer/cfg/CFGImporter.cpp
-	importer/pdb/PDBImporter.cpp
+#	importer/pdb/PDBImporter.cpp
 	exporter/ParticleExporter.cpp
 	exporter/ParticleExporterSettingsDialog.cpp
 	exporter/OutputColumnMapping.cpp
