@@ -19,37 +19,28 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+layout(points) in;
+layout(triangle_strip, max_vertices=4) out;
+
 // Inputs from calling program:
-uniform mat4 modelview_matrix;
-uniform int pickingBaseID;
+uniform mat4 projection_matrix;
+uniform vec2 imposter_texcoords[4];
+uniform vec4 imposter_voffsets[4];
 
-#if __VERSION__ >= 130
+// Inputs from vertex shader
+in vec4 particle_color_gs[1];
+in float particle_radius_gs[1];
 
-// The particle data:
-in vec3 position;
-in float particle_radius;
-
-// Output to geometry shader.
-out vec4 particle_color_gs;
-out float particle_radius_gs;
-
-#endif
+// Outputs to fragment shader
+flat out vec4 particle_color_fs;
+out vec2 texcoords;
 
 void main()
 {
-#if __VERSION__ >= 130
-	// Compute color from object ID.
-	int objectID = pickingBaseID + gl_VertexID;
-	particle_color_gs = vec4(
-		float(objectID & 0xFF) / 255.0, 
-		float((objectID >> 8) & 0xFF) / 255.0, 
-		float((objectID >> 16) & 0xFF) / 255.0, 
-		float((objectID >> 24) & 0xFF) / 255.0);	
-		
-	// Pass radius to geometry shader.
-	particle_radius_gs = particle_radius;
-
-	// Transform particle center to eye coordinates.
-	gl_Position = modelview_matrix * vec4(position, 1);
-#endif
+	for(int vertex = 0; vertex < 4; vertex++) {
+		particle_color_fs = particle_color_gs[0];
+		texcoords = imposter_texcoords[vertex];
+		gl_Position = projection_matrix * (gl_in[0].gl_Position + imposter_voffsets[vertex] * particle_radius_gs[0]);
+		EmitVertex();
+	}
 }

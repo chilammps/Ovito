@@ -21,26 +21,17 @@
 
 // Inputs from calling program:
 uniform mat4 modelview_matrix;
-uniform mat4 projection_matrix;
-uniform vec2 imposter_texcoords[6];
-uniform vec4 imposter_voffsets[6];
 uniform int pickingBaseID;
 
 #if __VERSION__ >= 130
 
-	// The input particle data:
-	in vec3 position;
-	in float particle_radius;
-	
-	// Output passed to fragment shader.
-	flat out vec4 particle_color_fs;
-	out vec2 texcoords;
+// The particle data:
+in vec3 position;
+in float particle_radius;
 
-#else
-
-	// The input particle data:
-	attribute float particle_radius;
-	attribute float vertexID;
+// Output to geometry shader.
+out vec4 particle_color_gs;
+out float particle_radius_gs;
 
 #endif
 
@@ -48,40 +39,17 @@ void main()
 {
 #if __VERSION__ >= 130
 	// Compute color from object ID.
-	int objectID = pickingBaseID + (gl_VertexID / 6);
-
-	particle_color_fs = vec4(
+	int objectID = pickingBaseID + gl_VertexID;
+	particle_color_gs = vec4(
 		float(objectID & 0xFF) / 255.0, 
 		float((objectID >> 8) & 0xFF) / 255.0, 
 		float((objectID >> 16) & 0xFF) / 255.0, 
-		float((objectID >> 24) & 0xFF) / 255.0);
+		float((objectID >> 24) & 0xFF) / 255.0);	
 		
-	// Transform and project particle position.
-	vec4 eye_position = modelview_matrix * vec4(position, 1);
+	// Pass radius to geometry shader.
+	particle_radius_gs = particle_radius;
 
-	// Assign texture coordinates. 
-	texcoords = imposter_texcoords[gl_VertexID % 6];
-
-	// Transform and project particle position.
-	gl_Position = projection_matrix * (eye_position + particle_radius * imposter_voffsets[gl_VertexID % 6]);
-
-#else
-	float objectID = pickingBaseID + floor(vertexID / 6);
-	gl_FrontColor = vec4(
-		floor(mod(objectID, 256.0)) / 255.0,
-		floor(mod(objectID / 256.0, 256.0)) / 255.0, 
-		floor(mod(objectID / 65536.0, 256.0)) / 255.0, 
-		floor(mod(objectID / 16777216.0, 256.0)) / 255.0);	
-		
-	// Transform and project particle position.
-	vec4 eye_position = modelview_matrix * gl_Vertex;
-
-	int cornerIndex = int(mod(vertexID+0.5, 6.0));
-	
-	// Assign texture coordinates. 
-	gl_TexCoord[0].xy = imposter_texcoords[cornerIndex];
-	
-	// Transform and project particle position.
-	gl_Position = projection_matrix * (eye_position + particle_radius * imposter_voffsets[cornerIndex]);
+	// Transform particle center to eye coordinates.
+	gl_Position = modelview_matrix * vec4(position, 1);
 #endif
 }
