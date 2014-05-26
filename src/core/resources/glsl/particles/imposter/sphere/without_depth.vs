@@ -20,7 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 // Inputs from calling program:
-uniform mat4 modelview_matrix;
+uniform mat4 modelviewprojection_matrix;
 
 #if __VERSION__ >= 130
 
@@ -38,11 +38,8 @@ out float particle_radius_gs;
 void main()
 {
 #if __VERSION__ >= 130
-	// Forward color and radius to geometry shader.
 	particle_color_gs = vec4(color, 1);
 	particle_radius_gs = particle_radius;
-
-	// Transform particle center to eye coordinates.
-	gl_Position = modelview_matrix * vec4(position, 1);
+	gl_Position = modelviewprojection_matrix * vec4(position, 1.0);
 #endif
 }

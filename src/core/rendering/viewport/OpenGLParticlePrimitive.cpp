@@ -559,16 +559,7 @@ void OpenGLParticlePrimitive::renderImposters(ViewportSceneRenderer* renderer)
 	glCullFace(GL_BACK);
 	glEnable(GL_CULL_FACE);
 
-	if(_usingGeometryShader) {
-		// The texture coordinates of a quad made of a triangle strip.
-		static const QVector2D texcoords[4] = {{1,1},{1,0},{0,1},{0,0}};
-		shader->setUniformValueArray("imposter_texcoords", &texcoords[0], 4);
-
-		// The coordinate offsets of the four vertices of a quad made of a triangle strip.
-		static const QVector4D voffsets[4] = {{1,-1,0,0},{1,1,0,0},{-1,-1,0,0},{-1,1,0,0}};
-		shader->setUniformValueArray("imposter_voffsets", &voffsets[0], 4);
-	}
-	else {
+	if(!_usingGeometryShader) {
 		// The texture coordinates of a quad made of two triangles.
 		static const QVector2D texcoords[6] = {{0,1},{1,1},{1,0},{0,1},{1,0},{0,0}};
 		shader->setUniformValueArray("imposter_texcoords", &texcoords[0], 6);
@@ -580,6 +571,7 @@ void OpenGLParticlePrimitive::renderImposters(ViewportSceneRenderer* renderer)
 
 	shader->setUniformValue("projection_matrix", (QMatrix4x4)renderer->projParams().projectionMatrix);
 	shader->setUniformValue("modelview_matrix", (QMatrix4x4)renderer->modelViewTM());
+	shader->setUniformValue("modelviewprojection_matrix", (QMatrix4x4)(renderer->projParams().projectionMatrix * renderer->modelViewTM()));
 
 	_positionsBuffer.bindPositions(renderer, shader);
 	_radiiBuffer.bind(renderer, shader, "particle_radius", GL_FLOAT, 0, 1);

@@ -24,12 +24,11 @@ layout(triangle_strip, max_vertices=4) out;
 
 // Inputs from calling program:
 uniform mat4 projection_matrix;
-uniform vec2 imposter_texcoords[4];
-uniform vec4 imposter_voffsets[4];
 
 // Inputs from vertex shader
 in vec4 particle_color_gs[1];
 in float particle_radius_gs[1];
+in float particle_ze0_gs[1];
 
 // Outputs to fragment shader
 flat out vec4 particle_color_fs;
@@ -39,12 +38,34 @@ out vec2 texcoords;
 
 void main()
 {
-	for(int vertex = 0; vertex < 4; vertex++) {
-		particle_color_fs = particle_color_gs[0];
-		texcoords = imposter_texcoords[vertex];
-		particle_radius_fs = particle_radius_gs[0];	
-		ze0 = gl_in[0].gl_Position.z;
-		gl_Position = projection_matrix * (gl_in[0].gl_Position + imposter_voffsets[vertex] * particle_radius_gs[0]);
-		EmitVertex();
-	}
+	float psizeX = particle_radius_gs[0] * projection_matrix[0][0];
+	float psizeY = particle_radius_gs[0] * projection_matrix[1][1];
+
+	particle_color_fs = particle_color_gs[0];
+	particle_radius_fs = particle_radius_gs[0];
+	ze0 = particle_ze0_gs[0];
+	texcoords = vec2(1,1);
+	gl_Position = gl_in[0].gl_Position + vec4(psizeX, -psizeY, 0.0, 0.0);
+	EmitVertex();
+	
+	particle_color_fs = particle_color_gs[0];
+	particle_radius_fs = particle_radius_gs[0];
+	ze0 = particle_ze0_gs[0];
+	texcoords = vec2(1,0);
+	gl_Position = gl_in[0].gl_Position + vec4(psizeX, psizeY, 0.0, 0.0);
+	EmitVertex();
+	
+	particle_color_fs = particle_color_gs[0];
+	particle_radius_fs = particle_radius_gs[0];
+	ze0 = particle_ze0_gs[0];
+	texcoords = vec2(0,1);
+	gl_Position = gl_in[0].gl_Position + vec4(-psizeX, -psizeY, 0.0, 0.0);
+	EmitVertex();
+	
+	particle_color_fs = particle_color_gs[0];
+	particle_radius_fs = particle_radius_gs[0];
+	ze0 = particle_ze0_gs[0];
+	texcoords = vec2(0,0);
+	gl_Position = gl_in[0].gl_Position + vec4(-psizeX, psizeY, 0.0, 0.0);
+	EmitVertex();	
 }

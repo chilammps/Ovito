@@ -20,7 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 // Inputs from calling program:
-uniform mat4 modelview_matrix;
+uniform mat4 modelviewprojection_matrix;
 uniform int pickingBaseID;
 
 #if __VERSION__ >= 130
@@ -46,10 +46,7 @@ void main()
 		float((objectID >> 16) & 0xFF) / 255.0, 
 		float((objectID >> 24) & 0xFF) / 255.0);	
 		
-	// Pass radius to geometry shader.
 	particle_radius_gs = particle_radius;
-
-	// Transform particle center to eye coordinates.
-	gl_Position = modelview_matrix * vec4(position, 1);
+	gl_Position = modelviewprojection_matrix * vec4(position, 1.0);
 #endif
 }
