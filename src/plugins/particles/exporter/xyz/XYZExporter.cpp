@@ -82,7 +82,7 @@ bool XYZExporter::exportParticles(const PipelineFlowState& state, int frameNumbe
 		throw Exception(tr("No particle positions available. Cannot write XYZ file."));
 
 	size_t atomsCount = posProperty->size();
-	textStream() << atomsCount << endl;
+	textStream() << atomsCount << "\n";
 
 	textStream() << "Frame " << frameNumber;
 	SimulationCell* simulationCell = state.findObject<SimulationCell>();
@@ -94,7 +94,7 @@ bool XYZExporter::exportParticles(const PipelineFlowState& state, int frameNumbe
 		textStream() << " cell_vec3 " << simCell.column(2).x() << " " << simCell.column(2).y() << " " << simCell.column(2).z();
 		textStream() << " pbc " << simulationCell->pbcX() << " " << simulationCell->pbcY() << " " << simulationCell->pbcZ();
 	}
-	textStream() << endl;
+	textStream() << "\n";
 
 	const OutputColumnMapping& mapping = columnMapping();
 	if(mapping.columnCount() <= 0)
@@ -103,7 +103,7 @@ bool XYZExporter::exportParticles(const PipelineFlowState& state, int frameNumbe
 	OutputColumnWriter columnWriter(mapping, state, true);
 	for(size_t i = 0; i < atomsCount; i++) {
 		columnWriter.writeParticle(i, textStream());
-		textStream() << endl;
+		textStream() << "\n";
 
 		if((i % 4096) == 0) {
 			progress.setPercentage((quint64)i * 100 / atomsCount);

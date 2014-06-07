@@ -102,7 +102,6 @@ std::shared_ptr<AsynchronousParticleModifier::Engine> CommonNeighborAnalysisModi
 ******************************************************************************/
 void CommonNeighborAnalysisModifier::AdaptiveCommonNeighborAnalysisEngine::compute(FutureInterfaceBase& futureInterface)
 {
-	size_t particleCount = positions()->size();
 	futureInterface.setProgressText(tr("Performing adaptive common neighbor analysis"));
 
 	// Prepare the neighbor list.
@@ -114,7 +113,7 @@ void CommonNeighborAnalysisModifier::AdaptiveCommonNeighborAnalysisEngine::compu
 	ParticleProperty* output = structures();
 
 	// Perform analysis on each particle.
-	parallelFor(particleCount, futureInterface, [&neighborListBuilder, output](size_t index) {
+	parallelFor(positions()->size(), futureInterface, [&neighborListBuilder, output](size_t index) {
 		output->setInt(index, determineStructureAdaptive(neighborListBuilder, index));
 	});
 }
@@ -124,7 +123,6 @@ void CommonNeighborAnalysisModifier::AdaptiveCommonNeighborAnalysisEngine::compu
 ******************************************************************************/
 void CommonNeighborAnalysisModifier::FixedCommonNeighborAnalysisEngine::compute(FutureInterfaceBase& futureInterface)
 {
-	size_t particleCount = positions()->size();
 	futureInterface.setProgressText(tr("Performing common neighbor analysis"));
 
 	// Prepare the neighbor list.
@@ -136,7 +134,7 @@ void CommonNeighborAnalysisModifier::FixedCommonNeighborAnalysisEngine::compute(
 	ParticleProperty* output = structures();
 
 	// Perform analysis on each particle.
-	parallelFor(particleCount, futureInterface, [&neighborListBuilder, output](size_t index) {
+	parallelFor(positions()->size(), futureInterface, [&neighborListBuilder, output](size_t index) {
 		output->setInt(index, determineStructureFixed(neighborListBuilder, index));
 	});
 }

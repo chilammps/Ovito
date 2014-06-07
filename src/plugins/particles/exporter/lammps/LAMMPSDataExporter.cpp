@@ -74,31 +74,31 @@ bool LAMMPSDataExporter::exportParticles(const PipelineFlowState& state, int fra
 		throw Exception(tr("Cannot save simulation cell to a LAMMPS data file. This type of non-orthogonal "
 				"cell is not supported by LAMMPS and its file format. See the documentation of LAMMPS for details."));
 
-	textStream() << "# LAMMPS data file written by OVITO" << endl;
-	textStream() << posProperty->size() << " atoms" << endl;
+	textStream() << "# LAMMPS data file written by OVITO\n";
+	textStream() << posProperty->size() << " atoms\n";
 
 	if(particleTypeProperty && particleTypeProperty->size() > 0) {
 		int numParticleTypes = std::max(
 				particleTypeProperty->particleTypes().size(),
 				*std::max_element(particleTypeProperty->constDataInt(), particleTypeProperty->constDataInt() + particleTypeProperty->size()));
-		textStream() << numParticleTypes << " atom types" << endl;
+		textStream() << numParticleTypes << " atom types\n";
 	}
-	else textStream() << "1 atom types" << endl;
+	else textStream() << "1 atom types\n";
 
-	textStream() << xlo << " " << xhi << " xlo xhi" << endl;
-	textStream() << ylo << " " << yhi << " ylo yhi" << endl;
-	textStream() << zlo << " " << zhi << " zlo zhi" << endl;
+	textStream() << xlo << " " << xhi << " xlo xhi\n";
+	textStream() << ylo << " " << yhi << " ylo yhi\n";
+	textStream() << zlo << " " << zhi << " zlo zhi\n";
 	if(xy != 0 || xz != 0 || yz != 0) {
-		textStream() << xy << " " << xz << " " << yz << " xy xz yz" << endl;
+		textStream() << xy << " " << xz << " " << yz << " xy xz yz\n";
 	}
-	textStream() << endl;
+	textStream() << "\n";
 
 	size_t totalProgressCount = posProperty->size();
 	if(velocityProperty) totalProgressCount += posProperty->size();
 	size_t currentProgress = 0;
 
 	// Write atomic positions.
-	textStream() << "Atoms" << endl << endl;
+	textStream() << "Atoms\n\n";
 	const Point3* p = posProperty->constDataPoint3();
 	for(size_t i = 0; i < posProperty->size(); i++, ++p) {
 		if(identifierProperty)
@@ -117,7 +117,7 @@ bool LAMMPSDataExporter::exportParticles(const PipelineFlowState& state, int fra
 			const Point3I& pbc = periodicImageProperty->getPoint3I(i);
 			textStream() << pbc.x() << " " << pbc.y() << " " << pbc.z();
 		}
-		textStream() << endl;
+		textStream() << "\n";
 
 		currentProgress++;
 		if((currentProgress % 1000) == 0) {
@@ -129,7 +129,7 @@ bool LAMMPSDataExporter::exportParticles(const PipelineFlowState& state, int fra
 
 	// Write atomic velocities
 	if(velocityProperty) {
-		textStream() << endl << "Velocities" << endl << endl;
+		textStream() << endl << "Velocities" << endl << "\n";
 		const Vector3* v = velocityProperty->constDataVector3();
 		for(size_t i = 0; i < velocityProperty->size(); i++, ++v) {
 			if(identifierProperty)
@@ -137,7 +137,7 @@ bool LAMMPSDataExporter::exportParticles(const PipelineFlowState& state, int fra
 			else
 				textStream() << (i+1) << " ";
 
-			textStream() << v->x() << " " << v->y() << " " << v->z() << endl;
+			textStream() << v->x() << " " << v->y() << " " << v->z() << "\n";
 
 			currentProgress++;
 			if((currentProgress % 1000) == 0) {
