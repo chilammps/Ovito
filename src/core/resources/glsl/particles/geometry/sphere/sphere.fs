@@ -58,8 +58,8 @@ void main()
 
 		float basePointSize = projection_matrix[1][1] / inverse_viewport_size.y;
 		float pointSizeSq = basePointSize * particle_radius_squared_fs / (particle_view_pos_fs.z * projection_matrix[2][3] + projection_matrix[3][3]);
-		if(pointSizeSq > 0.0 && pointSizeSq < 6.0)
-			disc_limit = max(0.0, pointSizeSq / 3.0 - 1.0);
+		if(pointSizeSq > 0.0 && pointSizeSq < 4.0)
+			disc_limit = max(0.0, pointSizeSq / 2.0 - 1.0);
 	}
 	else {
 		ray_origin = vec3(inverse_projection_matrix * vec4(view_c.x, view_c.y, 0.0, 1.0));

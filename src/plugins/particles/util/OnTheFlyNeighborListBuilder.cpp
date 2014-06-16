@@ -188,16 +188,15 @@ size_t OnTheFlyNeighborListBuilder::iterator::next()
 			OVITO_ASSERT(_neighborIndex < _builder.particles.size());
 			_neighbor = _neighbor->nextInBin;
 			_distsq = _delta.squaredLength();
-			if(_distsq <= _builder._cutoffRadiusSquared && (_pbcShift != Vector_3<int8_t>::Zero() || _neighborIndex != _centerIndex)) {
+			if(_distsq <= _builder._cutoffRadiusSquared && (_neighborIndex != _centerIndex || _pbcShift != Vector_3<int8_t>::Zero())) {
 				return _neighborIndex;
 			}
 		};
 
 		for(;;) {
 			if(_stencilIter == _builder.stencil.end()) {
-				_neighborIndex = std::numeric_limits<size_t>::max();
 				_atEnd = true;
-				return std::numeric_limits<size_t>::max();
+				return (_neighborIndex = std::numeric_limits<size_t>::max());
 			}
 
 			_pbcOffset.setZero();
