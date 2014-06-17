@@ -118,26 +118,31 @@ void TaskManager::showIndicator()
 
 		// Create progress display widget.
 		if(_mainWindow && _progressWidget == nullptr) {
-			_progressWidget = new QFrame();
-			//static_cast<QFrame*>(_progressWidget)->setFrameStyle(QFrame::Panel | QFrame::Sunken);
+			_progressWidget = new QWidget();
 			QHBoxLayout* progressWidgetLayout = new QHBoxLayout(_progressWidget);
 			progressWidgetLayout->setContentsMargins(0,0,0,0);
 			progressWidgetLayout->setSpacing(0);
 			_progressTextDisplay = new QLabel();
+			_progressTextDisplay->setLineWidth(0);
+			_progressTextDisplay->setAlignment(Qt::Alignment(Qt::AlignRight | Qt::AlignVCenter));
+			_progressTextDisplay->setMargin(2);
 			_progressBar = new QProgressBar(_progressWidget);
-			_cancelTaskButton = new QPushButton(tr("Cancel"), _progressWidget);
+			_cancelTaskButton = new QToolButton(_progressWidget);
+			_cancelTaskButton->setText(tr("Cancel"));
+			QIcon cancelIcon(":/core/mainwin/process-stop-16.png");
+			cancelIcon.addFile(":/core/mainwin/process-stop-22.png");
+			_cancelTaskButton->setIcon(cancelIcon);
 			progressWidgetLayout->addWidget(_progressBar);
 			progressWidgetLayout->addWidget(_cancelTaskButton);
 			_progressWidget->setMinimumHeight(_progressTextDisplay->minimumSizeHint().height());
 			_widgetCleanupHandler.add(_progressTextDisplay);
 			_widgetCleanupHandler.add(_progressWidget);
-			connect(_cancelTaskButton, &QPushButton::clicked, this, &TaskManager::cancelAll);
-			_progressWidget->hide();
+			connect(_cancelTaskButton, &QAbstractButton::clicked, this, &TaskManager::cancelAll);
 			_mainWindow->statusBarLayout()->insertWidget(1, _progressWidget);
 		}
 
-		_progressWidget->show();
 		_mainWindow->statusBar()->addWidget(_progressTextDisplay, 1);
+		_progressWidget->show();
 		_progressTextDisplay->show();
 		_indicatorVisible = true;
 		updateIndicator();

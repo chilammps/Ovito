@@ -73,13 +73,15 @@ void DataSetContainer::referenceReplaced(const PropertyFieldDescriptor& field, R
 			_viewportConfigReplacedConnection = connect(currentSet(), &DataSet::viewportConfigReplaced, this, &DataSetContainer::viewportConfigReplaced);
 			_animationSettingsReplacedConnection = connect(currentSet(), &DataSet::animationSettingsReplaced, this, &DataSetContainer::animationSettingsReplaced);
 			_renderSettingsReplacedConnection = connect(currentSet(), &DataSet::renderSettingsReplaced, this, &DataSetContainer::renderSettingsReplaced);
-			onSelectionSetReplaced(currentSet()->selection());
 			Q_EMIT viewportConfigReplaced(currentSet()->viewportConfig());
 			Q_EMIT animationSettingsReplaced(currentSet()->animationSettings());
 			Q_EMIT renderSettingsReplaced(currentSet()->renderSettings());
+			onSelectionSetReplaced(currentSet()->selection());
+			onAnimationSettingsReplaced(currentSet()->animationSettings());
 		}
 		else {
 			onSelectionSetReplaced(nullptr);
+			onAnimationSettingsReplaced(nullptr);
 			Q_EMIT viewportConfigReplaced(nullptr);
 			Q_EMIT animationSettingsReplaced(nullptr);
 			Q_EMIT renderSettingsReplaced(nullptr);
@@ -106,6 +108,25 @@ void DataSetContainer::onSelectionSetReplaced(SelectionSet* newSelectionSet)
 	Q_EMIT selectionSetReplaced(newSelectionSet);
 	Q_EMIT selectionChanged(newSelectionSet);
 	Q_EMIT selectionChangeComplete(newSelectionSet);
+}
+
+/******************************************************************************
+* This handler is invoked when the current animation settings of the current
+* dataset have been replaced.
+******************************************************************************/
+void DataSetContainer::onAnimationSettingsReplaced(AnimationSettings* newAnimationSettings)
+{
+	// Forward signals from the current animation settings object.
+	disconnect(_animationTimeChangedConnection);
+	disconnect(_animationTimeChangeCompleteConnection);
+	if(newAnimationSettings) {
+		_animationTimeChangedConnection = connect(newAnimationSettings, &AnimationSettings::timeChanged, this, &DataSetContainer::timeChanged);
+		_animationTimeChangeCompleteConnection = connect(newAnimationSettings, &AnimationSettings::timeChangeComplete, this, &DataSetContainer::timeChangeComplete);
+	}
+	if(newAnimationSettings) {
+		Q_EMIT timeChanged(newAnimationSettings->time());
+		Q_EMIT timeChangeComplete();
+	}
 }
 
 /******************************************************************************

@@ -46,20 +46,10 @@ public:
 	CoordinateDisplayWidget(DataSetContainer& datasetContainer, QWidget* parent = nullptr);
 
 	/// \brief Shows the coordinate display widget.
-	void activate(const QString& undoOperationName) {
-		setEnabled(true);
-		_undoOperationName = undoOperationName;
-	}
+	void activate(const QString& undoOperationName);
 
 	/// \brief Deactivates the coordinate display widget.
-	void deactivate() {
-		if(isEnabled()) {
-			setEnabled(false);
-			_spinners[0]->setFloatValue(0);
-			_spinners[1]->setFloatValue(0);
-			_spinners[2]->setFloatValue(0);
-		}
-	}
+	void deactivate();
 
 	/// Sets the values displayed by the coordinate display widget.
 	void setValues(const Vector3& xyz) {

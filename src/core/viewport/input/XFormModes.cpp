@@ -97,6 +97,7 @@ void XFormMode::activated(bool temporaryActivation)
 	// Listen to selection change events to update the coordinate display.
 	DataSetContainer& datasetContainer = inputManager()->mainWindow()->datasetContainer();
 	connect(&datasetContainer, &DataSetContainer::selectionChangeComplete, this, &XFormMode::onSelectionChangeComplete);
+	connect(&datasetContainer, &DataSetContainer::timeChanged, this, &XFormMode::onTimeChanged);
 	onSelectionChangeComplete(datasetContainer.currentSet() ? datasetContainer.currentSet()->selection() : nullptr);
 }
 
@@ -113,6 +114,7 @@ void XFormMode::deactivated(bool temporary)
 		_viewport = nullptr;
 	}
 	disconnect(&inputManager()->mainWindow()->datasetContainer(), &DataSetContainer::selectionChangeComplete, this, &XFormMode::onSelectionChangeComplete);
+	disconnect(&inputManager()->mainWindow()->datasetContainer(), &DataSetContainer::timeChanged, this, &XFormMode::onTimeChanged);
 	_selectedNode.setTarget(nullptr);
 	onSelectionChangeComplete(nullptr);
 	ViewportInputMode::deactivated(temporary);
@@ -146,6 +148,14 @@ void XFormMode::onSceneNodeEvent(ReferenceEvent* event)
 	if(event->type() == ReferenceEvent::TransformationChanged) {
 		updateCoordinateDisplay(inputManager()->mainWindow()->coordinateDisplay());
 	}
+}
+
+/******************************************************************************
+* Is called when the current animation time has changed.
+******************************************************************************/
+void XFormMode::onTimeChanged(TimePoint time)
+{
+	updateCoordinateDisplay(inputManager()->mainWindow()->coordinateDisplay());
 }
 
 /******************************************************************************

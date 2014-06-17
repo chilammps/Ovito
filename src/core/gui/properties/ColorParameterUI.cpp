@@ -22,6 +22,7 @@
 #include <core/Core.h>
 #include <core/gui/properties/ColorParameterUI.h>
 #include <core/dataset/UndoStack.h>
+#include <core/dataset/DataSetContainer.h>
 #include <core/animation/controller/Controller.h>
 #include <core/animation/AnimationSettings.h>
 
@@ -70,11 +71,9 @@ void ColorParameterUI::resetUI()
 		}
 	}
 
-	if(isReferenceFieldUI()) {
+	if(isReferenceFieldUI() && editObject()) {
 		// Update the displayed value when the animation time has changed.
-		disconnect(_animationTimeChangedConnection);
-		if(editObject())
-			_animationTimeChangedConnection = connect(dataset()->animationSettings(), &AnimationSettings::timeChanged, this, &ColorParameterUI::updateUI);
+		connect(dataset()->container(), &DataSetContainer::timeChanged, this, &ColorParameterUI::updateUI, Qt::UniqueConnection);
 	}
 }
 

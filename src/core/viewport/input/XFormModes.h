@@ -138,6 +138,9 @@ protected Q_SLOT:
 	/// Is called when the selected scene node generates a notification event.
 	void onSceneNodeEvent(ReferenceEvent* event);
 
+	/// Is called when the current animation time has changed.
+	void onTimeChanged(TimePoint time);
+
 	/// This signal handler is called by the coordinate display widget when the user
 	/// has changed the value of one of the vector components.
 	virtual void onCoordinateValueEntered(int component, FloatType value) {}

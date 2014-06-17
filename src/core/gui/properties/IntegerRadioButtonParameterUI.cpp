@@ -24,6 +24,7 @@
 #include <core/animation/controller/Controller.h>
 #include <core/animation/AnimationSettings.h>
 #include <core/dataset/UndoStack.h>
+#include <core/dataset/DataSetContainer.h>
 
 namespace Ovito {
 
@@ -81,11 +82,9 @@ void IntegerRadioButtonParameterUI::resetUI()
 		}
 	}
 
-	if(isReferenceFieldUI()) {
+	if(isReferenceFieldUI() && editObject()) {
 		// Update the displayed value when the animation time has changed.
-		disconnect(_animationTimeChangedConnection);
-		if(editObject())
-			_animationTimeChangedConnection = connect(dataset()->animationSettings(), &AnimationSettings::timeChanged, this, &IntegerRadioButtonParameterUI::updateUI);
+		connect(dataset()->container(), &DataSetContainer::timeChanged, this, &IntegerRadioButtonParameterUI::updateUI, Qt::UniqueConnection);
 	}
 }
 

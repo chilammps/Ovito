@@ -39,6 +39,7 @@ CoordinateDisplayWidget::CoordinateDisplayWidget(DataSetContainer& datasetContai
 	layout->setContentsMargins(2,0,2,0);
 	layout->setSpacing(0);
 	setEnabled(false);
+	hide();
 
 	QLabel* xlabel = new QLabel(tr("X:"), this);
 	QLabel* ylabel = new QLabel(tr("Y:"), this);
@@ -82,6 +83,30 @@ CoordinateDisplayWidget::CoordinateDisplayWidget(DataSetContainer& datasetContai
 	connect(_spinners[0], &SpinnerWidget::spinnerDragAbort, this, &CoordinateDisplayWidget::onSpinnerDragAbort);
 	connect(_spinners[1], &SpinnerWidget::spinnerDragAbort, this, &CoordinateDisplayWidget::onSpinnerDragAbort);
 	connect(_spinners[2], &SpinnerWidget::spinnerDragAbort, this, &CoordinateDisplayWidget::onSpinnerDragAbort);
+}
+
+/******************************************************************************
+* Shows the coordinate display widget.
+******************************************************************************/
+void CoordinateDisplayWidget::activate(const QString& undoOperationName)
+{
+	setEnabled(true);
+	_undoOperationName = undoOperationName;
+	show();
+}
+
+/******************************************************************************
+* Deactivates the coordinate display widget.
+******************************************************************************/
+void CoordinateDisplayWidget::deactivate()
+{
+	if(isEnabled()) {
+		setEnabled(false);
+		hide();
+		_spinners[0]->setFloatValue(0);
+		_spinners[1]->setFloatValue(0);
+		_spinners[2]->setFloatValue(0);
+	}
 }
 
 /******************************************************************************

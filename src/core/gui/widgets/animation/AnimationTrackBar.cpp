@@ -445,7 +445,7 @@ QString AnimationTrackBar::keyValueString(AnimationKey* key) const
 	}
 	else if(value.userType() == qMetaTypeId<Rotation>()) {
 		Rotation rot = value.value<Rotation>();
-		return QString("axis (%1, %2, %3), angle: %4").arg(rot.axis().x()).arg(rot.axis().y()).arg(rot.axis().z()).arg(rot.angle() * FloatType(180) / FLOATTYPE_PI);
+		return QString("axis (%1, %2, %3), angle: %4°").arg(rot.axis().x()).arg(rot.axis().y()).arg(rot.axis().z()).arg(rot.angle() * FloatType(180) / FLOATTYPE_PI);
 	}
 	else if(value.userType() == qMetaTypeId<Scaling>()) {
 		Scaling s = value.value<Scaling>();

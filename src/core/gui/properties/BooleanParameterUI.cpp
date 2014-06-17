@@ -22,6 +22,7 @@
 #include <core/Core.h>
 #include <core/gui/properties/BooleanParameterUI.h>
 #include <core/dataset/UndoStack.h>
+#include <core/dataset/DataSetContainer.h>
 #include <core/animation/AnimationSettings.h>
 #include <core/animation/controller/Controller.h>
 
@@ -76,11 +77,9 @@ void BooleanParameterUI::resetUI()
 			checkBox()->setEnabled(editObject() != NULL && isEnabled());
 	}
 
-	if(isReferenceFieldUI()) {
+	if(isReferenceFieldUI() && editObject()) {
 		// Update the displayed value when the animation time has changed.
-		disconnect(_animationTimeChangedConnection);
-		if(editObject())
-			_animationTimeChangedConnection = connect(dataset()->animationSettings(), &AnimationSettings::timeChanged, this, &BooleanParameterUI::updateUI);
+		connect(dataset()->container(), &DataSetContainer::timeChanged, this, &BooleanParameterUI::updateUI, Qt::UniqueConnection);
 	}
 }
 

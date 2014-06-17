@@ -74,6 +74,8 @@
 	<file>mainwin/status/status_warning.png</file>
 	<file>mainwin/status/status_none.png</file>
 	<file>mainwin/status/status_pending.gif</file>
+	<file>mainwin/process-stop-16.png</file>
+	<file>mainwin/process-stop-22.png</file>
 	
 	<file>mainwin/settings/vertical_axis_x.png</file>
 	<file>mainwin/settings/vertical_axis_y.png</file>
