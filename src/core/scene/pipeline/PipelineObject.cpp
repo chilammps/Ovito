@@ -25,11 +25,11 @@
 
 namespace Ovito {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, PipelineObject, SceneObject)
-DEFINE_REFERENCE_FIELD(PipelineObject, _inputObject, "InputObject", SceneObject)
-DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(PipelineObject, _modApps, "ModifierApplications", ModifierApplication, PROPERTY_FIELD_ALWAYS_CLONE)
-SET_PROPERTY_FIELD_LABEL(PipelineObject, _inputObject, "Input")
-SET_PROPERTY_FIELD_LABEL(PipelineObject, _modApps, "Modifier Applications")
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, PipelineObject, SceneObject);
+DEFINE_REFERENCE_FIELD(PipelineObject, _inputObject, "InputObject", SceneObject);
+DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(PipelineObject, _modApps, "ModifierApplications", ModifierApplication, PROPERTY_FIELD_ALWAYS_CLONE);
+SET_PROPERTY_FIELD_LABEL(PipelineObject, _inputObject, "Input");
+SET_PROPERTY_FIELD_LABEL(PipelineObject, _modApps, "Modifier Applications");
 
 /******************************************************************************
 * Default constructor.
@@ -233,7 +233,7 @@ bool PipelineObject::referenceEvent(RefTarget* source, ReferenceEvent* event)
 			// following it in the stack need to be informed.
 			int index = _modApps.indexOf(source);
 			if(index != -1) {
-				if(event->type() == ReferenceEvent::TargetEnabledOrDisabled || modifierApplications()[index]->modifier()->isEnabled())
+				if(modifierApplications()[index]->modifier()->isEnabled() || event->type() == ReferenceEvent::TargetEnabledOrDisabled)
 					modifierChanged(index);
 				if(event->type() == ReferenceEvent::TargetEnabledOrDisabled)
 					notifyDependents(ReferenceEvent::TargetChanged);
