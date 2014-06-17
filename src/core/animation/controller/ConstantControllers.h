@@ -43,7 +43,7 @@ public:
 	virtual ControllerType controllerType() const override { return ControllerTypeFloat; }
 
 	/// \brief Calculates the largest time interval containing the given time during which the controller's value does not change.
-	virtual TimeInterval validityInterval(TimePoint time) override { return TimeInterval::forever(); }
+	virtual TimeInterval validityInterval(TimePoint time) override { return TimeInterval::infinite(); }
 
 	/// \brief Gets the controller's value at a certain animation time.
 	virtual FloatType getFloatValue(TimePoint time, TimeInterval& validityInterval) override { return _value; }
@@ -78,7 +78,7 @@ public:
 	virtual ControllerType controllerType() const override { return ControllerTypeInt; }
 
 	/// \brief Calculates the largest time interval containing the given time during which the controller's value does not change.
-	virtual TimeInterval validityInterval(TimePoint time) override { return TimeInterval::forever(); }
+	virtual TimeInterval validityInterval(TimePoint time) override { return TimeInterval::infinite(); }
 
 	/// \brief Gets the controller's value at a certain animation time.
 	virtual int getIntValue(TimePoint time, TimeInterval& validityInterval) override { return _value; }
@@ -113,7 +113,7 @@ public:
 	virtual ControllerType controllerType() const override { return ControllerTypeVector3; }
 
 	/// \brief Calculates the largest time interval containing the given time during which the controller's value does not change.
-	virtual TimeInterval validityInterval(TimePoint time) override { return TimeInterval::forever(); }
+	virtual TimeInterval validityInterval(TimePoint time) override { return TimeInterval::infinite(); }
 
 	/// \brief Gets the controller's value at a certain animation time.
 	virtual void getVector3Value(TimePoint time, Vector3& result, TimeInterval& validityInterval) override { result = _value; }
@@ -148,7 +148,7 @@ public:
 	virtual ControllerType controllerType() const override { return ControllerTypePosition; }
 
 	/// \brief Calculates the largest time interval containing the given time during which the controller's value does not change.
-	virtual TimeInterval validityInterval(TimePoint time) override { return TimeInterval::forever(); }
+	virtual TimeInterval validityInterval(TimePoint time) override { return TimeInterval::infinite(); }
 
 	/// \brief Gets the controller's value at a certain animation time.
 	virtual void getPositionValue(TimePoint time, Vector3& result, TimeInterval& validityInterval) { result = _value; }
@@ -186,7 +186,7 @@ public:
 	virtual ControllerType controllerType() const override { return ControllerTypeRotation; }
 
 	/// \brief Calculates the largest time interval containing the given time during which the controller's value does not change.
-	virtual TimeInterval validityInterval(TimePoint time) override { return TimeInterval::forever(); }
+	virtual TimeInterval validityInterval(TimePoint time) override { return TimeInterval::infinite(); }
 
 	/// \brief Gets the controller's value at a certain animation time.
 	virtual void getRotationValue(TimePoint time, Rotation& result, TimeInterval& validityInterval) { result = _value; }
@@ -224,7 +224,7 @@ public:
 	virtual ControllerType controllerType() const override { return ControllerTypeScaling; }
 
 	/// \brief Calculates the largest time interval containing the given time during which the controller's value does not change.
-	virtual TimeInterval validityInterval(TimePoint time) override { return TimeInterval::forever(); }
+	virtual TimeInterval validityInterval(TimePoint time) override { return TimeInterval::infinite(); }
 
 	/// \brief Gets the controller's value at a certain animation time.
 	virtual void getScalingValue(TimePoint time, Scaling& result, TimeInterval& validityInterval) { result = _value; }

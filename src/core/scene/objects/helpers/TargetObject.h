@@ -25,7 +25,7 @@
 #include <core/Core.h>
 #include <core/scene/objects/SceneObject.h>
 #include <core/scene/display/DisplayObject.h>
-#include <core/rendering/LineGeometryBuffer.h>
+#include <core/rendering/LinePrimitive.h>
 
 namespace Ovito {
 
@@ -73,10 +73,10 @@ public:
 protected:
 
 	/// The buffered geometry used to render the icon.
-	std::unique_ptr<LineGeometryBuffer> _icon;
+	std::unique_ptr<LinePrimitive> _icon;
 
 	/// The icon geometry to be rendered in object picking mode.
-	std::unique_ptr<LineGeometryBuffer> _pickingIcon;
+	std::unique_ptr<LinePrimitive> _pickingIcon;
 
 	/// This helper structure is used to detect any changes in the input data
 	/// that require updating the geometry buffer.

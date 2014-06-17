@@ -45,7 +45,7 @@ public:
 	virtual bool isApplicableTo(const PipelineFlowState& input) override;
 
 	/// This modifies the input object.
-	virtual ObjectStatus modifyObject(TimePoint time, ModifierApplication* modApp, PipelineFlowState& state) override;
+	virtual PipelineStatus modifyObject(TimePoint time, ModifierApplication* modApp, PipelineFlowState& state) override;
 
 protected:
 

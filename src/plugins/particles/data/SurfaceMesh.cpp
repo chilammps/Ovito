@@ -31,7 +31,7 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, SurfaceMesh, SceneObject);
 /******************************************************************************
 * Constructs an empty surface mesh object.
 ******************************************************************************/
-SurfaceMesh::SurfaceMesh(DataSet* dataset) : SceneObject(dataset)
+SurfaceMesh::SurfaceMesh(DataSet* dataset) : SceneObject(dataset), _isCompletelySolid(false)
 {
 	addDisplayObject(new SurfaceMeshDisplay(dataset));
 }
@@ -46,6 +46,7 @@ OORef<RefTarget> SurfaceMesh::clone(bool deepCopy, CloneHelper& cloneHelper)
 
 	// Copy the internal mesh.
 	clone->_mesh = this->_mesh;
+	clone->_isCompletelySolid = this->_isCompletelySolid;
 
 	return clone;
 }

@@ -19,15 +19,39 @@
 #
 ###############################################################################
 
-# Build library
-ADD_LIBRARY(qcustomplot qcustomplot.cpp)
+# Let the user choose whether to use the system library or to build 
+# our own library from the included third-party source code.
+OPTION(OVITO_USE_SYSTEM_QCUSTOMPLOT "Use the QCustomPlot library from the operating system." "OFF")
 
-# Link Qt5.
-QT5_USE_MODULES(qcustomplot ${OVITO_REQUIRED_QT_MODULES})
+IF(OVITO_USE_SYSTEM_QCUSTOMPLOT)
 
-# This library is part of the installation package.
-IF(NOT OVITO_MONOLITHIC_BUILD)
-	INSTALL(TARGETS qcustomplot 
-		RUNTIME DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}"
-		LIBRARY DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}")
+	# Find system QCustomPlot library.
+	FIND_PACKAGE(QCustomPlot REQUIRED)
+	IF(NOT QCUSTOMPLOT_FOUND)
+		MESSAGE(FATAL_ERROR "QCustomPlot library was not found.")
+	ENDIF()
+
+	# Create imported target for the existing qcustomplot library.
+	ADD_LIBRARY(qcustomplot SHARED IMPORTED GLOBAL)
+	SET_PROPERTY(TARGET qcustomplot PROPERTY IMPORTED_LOCATION "${QCUSTOMPLOT_LIBRARIES}")
+	SET_PROPERTY(TARGET qcustomplot APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${QCUSTOMPLOT_INCLUDE_DIRS}")
+
+ELSE()
+
+	# Build our own version of the library.
+	ADD_LIBRARY(qcustomplot qcustomplot.cpp)
+
+	# Link Qt5.
+	QT5_USE_MODULES(qcustomplot ${OVITO_REQUIRED_QT_MODULES})
+
+	# Make header files of this library available to dependent targets.
+	TARGET_INCLUDE_DIRECTORIES(qcustomplot INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}")
+
+	# This library is part of the installation package.
+	IF(NOT OVITO_MONOLITHIC_BUILD)
+		INSTALL(TARGETS qcustomplot 
+			RUNTIME DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}"
+			LIBRARY DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}")
+	ENDIF()
+
 ENDIF()

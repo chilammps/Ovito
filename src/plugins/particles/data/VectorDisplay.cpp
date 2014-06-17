@@ -33,32 +33,32 @@
 
 namespace Particles {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, VectorDisplay, DisplayObject)
-IMPLEMENT_OVITO_OBJECT(Particles, VectorDisplayEditor, PropertiesEditor)
-SET_OVITO_OBJECT_EDITOR(VectorDisplay, VectorDisplayEditor)
-DEFINE_FLAGS_PROPERTY_FIELD(VectorDisplay, _reverseArrowDirection, "ReverseArrowDirection", PROPERTY_FIELD_MEMORIZE)
-DEFINE_FLAGS_PROPERTY_FIELD(VectorDisplay, _flipVectors, "FlipVectors", PROPERTY_FIELD_MEMORIZE)
-DEFINE_FLAGS_PROPERTY_FIELD(VectorDisplay, _arrowColor, "ArrowColor", PROPERTY_FIELD_MEMORIZE)
-DEFINE_FLAGS_PROPERTY_FIELD(VectorDisplay, _arrowWidth, "ArrowWidth", PROPERTY_FIELD_MEMORIZE)
-DEFINE_FLAGS_PROPERTY_FIELD(VectorDisplay, _scalingFactor, "ScalingFactor", PROPERTY_FIELD_MEMORIZE)
-DEFINE_FLAGS_PROPERTY_FIELD(VectorDisplay, _shadingMode, "ShadingMode", PROPERTY_FIELD_MEMORIZE)
-DEFINE_PROPERTY_FIELD(VectorDisplay, _renderingQuality, "RenderingQuality")
-SET_PROPERTY_FIELD_LABEL(VectorDisplay, _arrowColor, "Arrow color")
-SET_PROPERTY_FIELD_LABEL(VectorDisplay, _arrowWidth, "Arrow width")
-SET_PROPERTY_FIELD_LABEL(VectorDisplay, _scalingFactor, "Scaling factor")
-SET_PROPERTY_FIELD_LABEL(VectorDisplay, _reverseArrowDirection, "Reverse arrow direction")
-SET_PROPERTY_FIELD_LABEL(VectorDisplay, _flipVectors, "Flip vectors")
-SET_PROPERTY_FIELD_LABEL(VectorDisplay, _shadingMode, "Shading mode")
-SET_PROPERTY_FIELD_LABEL(VectorDisplay, _renderingQuality, "RenderingQuality")
-SET_PROPERTY_FIELD_UNITS(VectorDisplay, _arrowWidth, WorldParameterUnit)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, VectorDisplay, DisplayObject);
+IMPLEMENT_OVITO_OBJECT(Particles, VectorDisplayEditor, PropertiesEditor);
+SET_OVITO_OBJECT_EDITOR(VectorDisplay, VectorDisplayEditor);
+DEFINE_FLAGS_PROPERTY_FIELD(VectorDisplay, _reverseArrowDirection, "ReverseArrowDirection", PROPERTY_FIELD_MEMORIZE);
+DEFINE_FLAGS_PROPERTY_FIELD(VectorDisplay, _flipVectors, "FlipVectors", PROPERTY_FIELD_MEMORIZE);
+DEFINE_FLAGS_PROPERTY_FIELD(VectorDisplay, _arrowColor, "ArrowColor", PROPERTY_FIELD_MEMORIZE);
+DEFINE_FLAGS_PROPERTY_FIELD(VectorDisplay, _arrowWidth, "ArrowWidth", PROPERTY_FIELD_MEMORIZE);
+DEFINE_FLAGS_PROPERTY_FIELD(VectorDisplay, _scalingFactor, "ScalingFactor", PROPERTY_FIELD_MEMORIZE);
+DEFINE_FLAGS_PROPERTY_FIELD(VectorDisplay, _shadingMode, "ShadingMode", PROPERTY_FIELD_MEMORIZE);
+DEFINE_PROPERTY_FIELD(VectorDisplay, _renderingQuality, "RenderingQuality");
+SET_PROPERTY_FIELD_LABEL(VectorDisplay, _arrowColor, "Arrow color");
+SET_PROPERTY_FIELD_LABEL(VectorDisplay, _arrowWidth, "Arrow width");
+SET_PROPERTY_FIELD_LABEL(VectorDisplay, _scalingFactor, "Scaling factor");
+SET_PROPERTY_FIELD_LABEL(VectorDisplay, _reverseArrowDirection, "Reverse arrow direction");
+SET_PROPERTY_FIELD_LABEL(VectorDisplay, _flipVectors, "Flip vectors");
+SET_PROPERTY_FIELD_LABEL(VectorDisplay, _shadingMode, "Shading mode");
+SET_PROPERTY_FIELD_LABEL(VectorDisplay, _renderingQuality, "RenderingQuality");
+SET_PROPERTY_FIELD_UNITS(VectorDisplay, _arrowWidth, WorldParameterUnit);
 
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
 VectorDisplay::VectorDisplay(DataSet* dataset) : DisplayObject(dataset),
 	_reverseArrowDirection(false), _flipVectors(false), _arrowColor(1, 1, 0), _arrowWidth(0.5), _scalingFactor(1),
-	_shadingMode(ArrowGeometryBuffer::FlatShading),
-	_renderingQuality(ArrowGeometryBuffer::LowQuality)
+	_shadingMode(ArrowPrimitive::FlatShading),
+	_renderingQuality(ArrowPrimitive::LowQuality)
 {
 	INIT_PROPERTY_FIELD(VectorDisplay::_arrowColor);
 	INIT_PROPERTY_FIELD(VectorDisplay::_arrowWidth);
@@ -70,25 +70,12 @@ VectorDisplay::VectorDisplay(DataSet* dataset) : DisplayObject(dataset),
 }
 
 /******************************************************************************
-* Searches for the given standard particle property in the scene objects
-* stored in the pipeline flow state.
-******************************************************************************/
-ParticlePropertyObject* VectorDisplay::findStandardProperty(ParticleProperty::Type type, const PipelineFlowState& flowState) const
-{
-	for(const auto& sceneObj : flowState.objects()) {
-		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(sceneObj.get());
-		if(property && property->type() == type) return property;
-	}
-	return nullptr;
-}
-
-/******************************************************************************
 * Computes the bounding box of the object.
 ******************************************************************************/
 Box3 VectorDisplay::boundingBox(TimePoint time, SceneObject* sceneObject, ObjectNode* contextNode, const PipelineFlowState& flowState)
 {
 	ParticlePropertyObject* vectorProperty = dynamic_object_cast<ParticlePropertyObject>(sceneObject);
-	ParticlePropertyObject* positionProperty = findStandardProperty(ParticleProperty::PositionProperty, flowState);
+	ParticlePropertyObject* positionProperty = ParticlePropertyObject::findInState(flowState, ParticleProperty::PositionProperty);
 	if(vectorProperty && (vectorProperty->dataType() != qMetaTypeId<FloatType>() || vectorProperty->componentCount() != 3))
 		vectorProperty = nullptr;
 
@@ -142,7 +129,7 @@ void VectorDisplay::render(TimePoint time, SceneObject* sceneObject, const Pipel
 {
 	// Get input data.
 	ParticlePropertyObject* vectorProperty = dynamic_object_cast<ParticlePropertyObject>(sceneObject);
-	ParticlePropertyObject* positionProperty = findStandardProperty(ParticleProperty::PositionProperty, flowState);
+	ParticlePropertyObject* positionProperty = ParticlePropertyObject::findInState(flowState, ParticleProperty::PositionProperty);
 	if(vectorProperty && (vectorProperty->dataType() != qMetaTypeId<FloatType>() || vectorProperty->componentCount() != 3))
 		vectorProperty = nullptr;
 
@@ -167,7 +154,7 @@ void VectorDisplay::render(TimePoint time, SceneObject* sceneObject, const Pipel
 
 	// Re-create the geometry buffer if necessary.
 	if(recreateBuffer)
-		_buffer = renderer->createArrowGeometryBuffer(ArrowGeometryBuffer::ArrowShape, shadingMode(), renderingQuality());
+		_buffer = renderer->createArrowPrimitive(ArrowPrimitive::ArrowShape, shadingMode(), renderingQuality());
 
 	// Update buffer contents.
 	if(updateContents) {
@@ -180,7 +167,7 @@ void VectorDisplay::render(TimePoint time, SceneObject* sceneObject, const Pipel
 			const Vector3* v_begin = vectorProperty->constDataVector3();
 			ColorA color(arrowColor());
 			FloatType width = arrowWidth();
-			ArrowGeometryBuffer* buffer = _buffer.get();
+			ArrowPrimitive* buffer = _buffer.get();
 			if(!reverseArrowDirection()) {
 				parallelFor(vectorCount, [buffer, scalingFac, color, width, p_begin, v_begin](int index) {
 					buffer->setElement(index, p_begin[index], v_begin[index] * scalingFac, color, width);
@@ -217,16 +204,16 @@ void VectorDisplayEditor::createUI(const RolloutInsertionParameters& rolloutPara
 
 	// Shading mode.
 	VariantComboBoxParameterUI* shadingModeUI = new VariantComboBoxParameterUI(this, "shadingMode");
-	shadingModeUI->comboBox()->addItem(tr("Normal"), qVariantFromValue(ArrowGeometryBuffer::NormalShading));
-	shadingModeUI->comboBox()->addItem(tr("Flat"), qVariantFromValue(ArrowGeometryBuffer::FlatShading));
+	shadingModeUI->comboBox()->addItem(tr("Normal"), qVariantFromValue(ArrowPrimitive::NormalShading));
+	shadingModeUI->comboBox()->addItem(tr("Flat"), qVariantFromValue(ArrowPrimitive::FlatShading));
 	layout->addWidget(new QLabel(tr("Shading mode:")), 0, 0);
 	layout->addWidget(shadingModeUI->comboBox(), 0, 1);
 
 	// Rendering quality.
 	VariantComboBoxParameterUI* renderingQualityUI = new VariantComboBoxParameterUI(this, "renderingQuality");
-	renderingQualityUI->comboBox()->addItem(tr("Low"), qVariantFromValue(ArrowGeometryBuffer::LowQuality));
-	renderingQualityUI->comboBox()->addItem(tr("Medium"), qVariantFromValue(ArrowGeometryBuffer::MediumQuality));
-	renderingQualityUI->comboBox()->addItem(tr("High"), qVariantFromValue(ArrowGeometryBuffer::HighQuality));
+	renderingQualityUI->comboBox()->addItem(tr("Low"), qVariantFromValue(ArrowPrimitive::LowQuality));
+	renderingQualityUI->comboBox()->addItem(tr("Medium"), qVariantFromValue(ArrowPrimitive::MediumQuality));
+	renderingQualityUI->comboBox()->addItem(tr("High"), qVariantFromValue(ArrowPrimitive::HighQuality));
 	layout->addWidget(new QLabel(tr("Rendering quality:")), 1, 0);
 	layout->addWidget(renderingQualityUI->comboBox(), 1, 1);
 

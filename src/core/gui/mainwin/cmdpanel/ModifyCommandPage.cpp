@@ -54,7 +54,7 @@ ModifyCommandPage::ModifyCommandPage(MainWindow* mainWindow, QWidget* parent) : 
 	_modificationListModel = new ModificationListModel(_datasetContainer, this);
 	_modifierSelector = new ModifierListBox(this, _modificationListModel);
     layout->addWidget(_modifierSelector, 1, 0, 1, 2);
-    connect(_modifierSelector, SIGNAL(activated(int)), this, SLOT(onModifierAdd(int)));
+    connect(_modifierSelector, (void (QComboBox::*)(int))&QComboBox::activated, this, &ModifyCommandPage::onModifierAdd);
 
 	class ModifierStackListView : public QListView {
 	public:
@@ -74,8 +74,8 @@ ModifyCommandPage::ModifyCommandPage(MainWindow* mainWindow, QWidget* parent) : 
 	_modificationListWidget = new ModifierStackListView(upperContainer);
 	_modificationListWidget->setModel(_modificationListModel);
 	_modificationListWidget->setSelectionModel(_modificationListModel->selectionModel());
-	connect(_modificationListModel, SIGNAL(selectedItemChanged()), this, SLOT(onSelectedItemChanged()));
-	connect(_modificationListWidget, SIGNAL(doubleClicked(const QModelIndex&)), this, SLOT(onModifierStackDoubleClicked(const QModelIndex&)));
+	connect(_modificationListModel, &ModificationListModel::selectedItemChanged, this, &ModifyCommandPage::onSelectedItemChanged);
+	connect(_modificationListWidget, &ModifierStackListView::doubleClicked, this, &ModifyCommandPage::onModifierStackDoubleClicked);
 	subLayout->addWidget(_modificationListWidget);
 
 	QToolBar* editToolbar = new QToolBar(this);
@@ -86,16 +86,16 @@ ModifyCommandPage::ModifyCommandPage(MainWindow* mainWindow, QWidget* parent) : 
 	subLayout->addWidget(editToolbar);
 
 	QAction* deleteModifierAction = _actionManager->createCommandAction(ACTION_MODIFIER_DELETE, tr("Delete Modifier"), ":/core/actions/modify/delete_modifier.png");
-	connect(deleteModifierAction, SIGNAL(triggered(bool)), this, SLOT(onDeleteModifier()));
+	connect(deleteModifierAction, &QAction::triggered, this, &ModifyCommandPage::onDeleteModifier);
 	editToolbar->addAction(deleteModifierAction);
 
 	editToolbar->addSeparator();
 
 	QAction* moveModifierUpAction = _actionManager->createCommandAction(ACTION_MODIFIER_MOVE_UP, tr("Move Modifier Up"), ":/core/actions/modify/modifier_move_up.png");
-	connect(moveModifierUpAction, SIGNAL(triggered(bool)), this, SLOT(onModifierMoveUp()));
+	connect(moveModifierUpAction, &QAction::triggered, this, &ModifyCommandPage::onModifierMoveUp);
 	editToolbar->addAction(moveModifierUpAction);
 	QAction* moveModifierDownAction = mainWindow->actionManager()->createCommandAction(ACTION_MODIFIER_MOVE_DOWN, tr("Move Modifier Down"), ":/core/actions/modify/modifier_move_down.png");
-	connect(moveModifierDownAction, SIGNAL(triggered(bool)), this, SLOT(onModifierMoveDown()));
+	connect(moveModifierDownAction, &QAction::triggered, this, &ModifyCommandPage::onModifierMoveDown);
 	editToolbar->addAction(moveModifierDownAction);
 
 	QAction* toggleModifierStateAction = _actionManager->createCommandAction(ACTION_MODIFIER_TOGGLE_STATE, tr("Enable/Disable Modifier"));
@@ -103,7 +103,7 @@ ModifyCommandPage::ModifyCommandPage(MainWindow* mainWindow, QWidget* parent) : 
 	QIcon toggleStateActionIcon(QString(":/core/actions/modify/modifier_enabled_large.png"));
 	toggleStateActionIcon.addFile(QString(":/core/actions/modify/modifier_disabled_large.png"), QSize(), QIcon::Normal, QIcon::On);
 	toggleModifierStateAction->setIcon(toggleStateActionIcon);
-	connect(toggleModifierStateAction, SIGNAL(triggered(bool)), this, SLOT(onModifierToggleState(bool)));
+	connect(toggleModifierStateAction, &QAction::triggered, this, &ModifyCommandPage::onModifierToggleState);
 
 	layout->addWidget(splitter, 2, 0, 1, 2);
 	layout->setRowStretch(2, 1);
@@ -209,11 +209,13 @@ void ModifyCommandPage::onModifierAdd(int index)
 		const OvitoObjectType* descriptor = static_cast<const OvitoObjectType*>(_modifierSelector->itemData(index).value<void*>());
 		if(descriptor) {
 			UndoableTransaction::handleExceptions(_datasetContainer.currentSet()->undoStack(), tr("Apply modifier"), [descriptor, this]() {
-				// Create an instance of the modifier...
+				// Create an instance of the modifier.
 				OORef<Modifier> modifier = static_object_cast<Modifier>(descriptor->createInstance(_datasetContainer.currentSet()));
 				OVITO_CHECK_OBJECT_POINTER(modifier);
-				// .. and apply it.
-				_modificationListModel->applyModifier(modifier.get());
+				// Load user-defined default parameters.
+				modifier->loadUserDefaults();
+				// Apply it.
+				_modificationListModel->applyModifier(modifier);
 			});
 			_modificationListModel->requestUpdate();
 		}
@@ -280,17 +282,17 @@ void ModifyCommandPage::onModifierMoveUp()
 	if(!pipelineObj)
 		return;
 
-	OVITO_ASSERT(pipelineObj->modifierApplications().contains(modApp.get()));
+	OVITO_ASSERT(pipelineObj->modifierApplications().contains(modApp));
 	if(modApp == pipelineObj->modifierApplications().back())
 		return;
 
 	UndoableTransaction::handleExceptions(_datasetContainer.currentSet()->undoStack(), tr("Move modifier up"), [pipelineObj, modApp]() {
 		// Determine old position in stack.
-		int index = pipelineObj->modifierApplications().indexOf(modApp.get());
+		int index = pipelineObj->modifierApplications().indexOf(modApp);
 		// Remove ModifierApplication from the PipelineObject.
-		pipelineObj->removeModifier(modApp.get());
+		pipelineObj->removeModifier(modApp);
 		// Re-insert ModifierApplication into the PipelineObject.
-		pipelineObj->insertModifierApplication(modApp.get(), index+1);
+		pipelineObj->insertModifierApplication(modApp, index+1);
 	});
 }
 
@@ -311,17 +313,17 @@ void ModifyCommandPage::onModifierMoveDown()
 	OORef<PipelineObject> pipelineObj = modApp->pipelineObject();
 	if(!pipelineObj) return;
 
-	OVITO_ASSERT(pipelineObj->modifierApplications().contains(modApp.get()));
+	OVITO_ASSERT(pipelineObj->modifierApplications().contains(modApp));
 	if(modApp == pipelineObj->modifierApplications().front())
 		return;
 
 	UndoableTransaction::handleExceptions(_datasetContainer.currentSet()->undoStack(), tr("Move modifier down"), [pipelineObj, modApp]() {
 		// Determine old position in stack.
-		int index = pipelineObj->modifierApplications().indexOf(modApp.get());
+		int index = pipelineObj->modifierApplications().indexOf(modApp);
 		// Remove ModifierApplication from the PipelineObject.
-		pipelineObj->removeModifier(modApp.get());
+		pipelineObj->removeModifier(modApp);
 		// Re-insert ModifierApplication into the PipelineObject.
-		pipelineObj->insertModifierApplication(modApp.get(), index-1);
+		pipelineObj->insertModifierApplication(modApp, index-1);
 	});
 }
 
@@ -357,47 +359,65 @@ void ModifyCommandPage::createAboutPanel()
 	aboutLabel->viewport()->setAutoFillBackground(false);
 	layout->addWidget(aboutLabel);
 
-	// Retrieve cached news page from settings store.
 	QSettings settings;
-	settings.beginGroup("news");
-	QByteArray newsPage = settings.value("cached_webpage").toByteArray();
+	QByteArray newsPage;
+	if(settings.value("updates/check_for_updates", true).toBool()) {
+		// Retrieve cached news page from settings store.
+		newsPage = settings.value("news/cached_webpage").toByteArray();
+	}
 	if(newsPage.isEmpty()) {
 		QResource res("/core/mainwin/command_panel/about_panel.html");
 		newsPage = QByteArray((const char *)res.data(), (int)res.size());
 	}
 	aboutLabel->setHtml(QString::fromUtf8(newsPage.constData()));
-	settings.endGroup();
 
 	_aboutRollout = _propertiesPanel->addRollout(rollout, QCoreApplication::applicationName());
 
-	// Retrieve/generate unique installation id.
-	QByteArray id;
-	settings.beginGroup("installation");
-	if(settings.contains("id")) {
-		id = settings.value("id").toByteArray();
-		if(id == QByteArray(16, '\0') || id.size() != 16)
-			id.clear();
-	}
-	if(id.isEmpty()) {
-		// Generate a new unique ID.
-		id.fill(16, '0');
-		std::random_device rdev;
-		std::default_random_engine reng(rdev());
-		std::uniform_int_distribution<int> rdist(0, 0xFF);
-		for(auto& c : id)
-			c = (char)rdist(reng);
-		settings.setValue("id", id);
-	}
+	if(settings.value("updates/check_for_updates", true).toBool()) {
 
-	// Fetch newest web page from web server.
-	QNetworkAccessManager* networkAccessManager = new QNetworkAccessManager(_aboutRollout);
-	QString urlString = QString("http://www.ovito.org/appnews/v%1.%2.%3/?ovito=%4")
-			.arg(OVITO_VERSION_MAJOR)
-			.arg(OVITO_VERSION_MINOR)
-			.arg(OVITO_VERSION_REVISION)
-			.arg(QString(id.toHex()));
-	QNetworkReply* networkReply = networkAccessManager->get(QNetworkRequest(QUrl(urlString)));
-	connect(networkAccessManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(onWebRequestFinished(QNetworkReply*)));
+		// Retrieve/generate unique installation id.
+		QByteArray id;
+		if(settings.value("updates/transmit_id", true).toBool()) {
+			if(settings.contains("installation/id")) {
+				id = settings.value("id").toByteArray();
+				if(id == QByteArray(16, '\0') || id.size() != 16)
+					id.clear();
+			}
+			if(id.isEmpty()) {
+				// Generate a new unique ID.
+				id.fill('0', 16);
+				std::random_device rdev;
+				std::uniform_int_distribution<char> rdist(0, 0xFF);
+				for(auto& c : id)
+					c = rdist(rdev);
+				settings.setValue("installation/id", id);
+			}
+		}
+		else {
+			id.fill(0, 16);
+		}
+
+		QString operatingSystemString;
+#if defined(Q_OS_MAC)
+		operatingSystemString = QStringLiteral("macosx");
+#elif defined(Q_OS_WIN)
+		operatingSystemString = QStringLiteral("win");
+#elif defined(Q_OS_LINUX)
+		operatingSystemString = QStringLiteral("linux");
+#endif
+
+		// Fetch newest web page from web server.
+		QNetworkAccessManager* networkAccessManager = new QNetworkAccessManager(_aboutRollout);
+		QString urlString = QString("http://www.ovito.org/appnews/v%1.%2.%3/?ovito=%4&OS=%5%6")
+				.arg(OVITO_VERSION_MAJOR)
+				.arg(OVITO_VERSION_MINOR)
+				.arg(OVITO_VERSION_REVISION)
+				.arg(QString(id.toHex()))
+				.arg(operatingSystemString)
+				.arg(QT_POINTER_SIZE*8);
+		QNetworkReply* networkReply = networkAccessManager->get(QNetworkRequest(QUrl(urlString)));
+		connect(networkAccessManager, &QNetworkAccessManager::finished, this, &ModifyCommandPage::onWebRequestFinished);
+	}
 }
 
 /******************************************************************************
@@ -416,8 +436,7 @@ void ModifyCommandPage::onWebRequestFinished(QNetworkReply* reply)
 			aboutLabel->setHtml(QString::fromUtf8(page.constData()));
 
 			QSettings settings;
-			settings.beginGroup("news");
-			settings.setValue("cached_webpage", page);
+			settings.setValue("news/cached_webpage", page);
 		}
 #if 0
 		else {

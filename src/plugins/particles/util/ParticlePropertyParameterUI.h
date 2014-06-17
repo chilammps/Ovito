@@ -36,12 +36,12 @@ class OVITO_PARTICLES_EXPORT ParticlePropertyParameterUI : public PropertyParame
 public:
 
 	/// Constructor.
-	ParticlePropertyParameterUI(QObject* parentEditor, const char* propertyName);
+	ParticlePropertyParameterUI(QObject* parentEditor, const char* propertyName, bool showComponents = true, bool inputProperty = true);
 
 	/// Constructor.
-	ParticlePropertyParameterUI(QObject* parentEditor, const PropertyFieldDescriptor& propField);
+	ParticlePropertyParameterUI(QObject* parentEditor, const PropertyFieldDescriptor& propField, bool showComponents = true, bool inputProperty = true);
 	
-	/// Destructor, that releases all GUI controls.
+	/// Destructor.
 	virtual ~ParticlePropertyParameterUI();
 	
 	/// This returns the combo box managed by this ParameterUI.
@@ -81,6 +81,13 @@ protected:
 
 	/// The combo box of the UI component.
 	QPointer<ParticlePropertyComboBox> _comboBox;
+
+	/// Controls whether the combo box should display a separate entry for each component of
+	/// a particle property.
+	bool _showComponents;
+
+	/// Controls whether the combo box should list input or output particle properties.
+	bool _inputProperty;
 
 private:
 

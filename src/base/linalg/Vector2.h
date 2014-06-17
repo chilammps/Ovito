@@ -21,7 +21,7 @@
 
 /**
  * \file Vector2.h
- * \brief Contains definition of the Ovito::Vector_2 template class and operators.
+ * \brief Contains the definition of the Ovito::Vector_2 class template.
  */
 
 #ifndef __OVITO_VECTOR2_H
@@ -266,6 +266,18 @@ inline LoadStream& operator>>(LoadStream& stream, Vector_2<T>& v) {
 	return stream >> v.x() >> v.y();
 }
 
+/// \brief Writes a vector to a Qt data stream.
+template<typename T>
+inline QDataStream& operator<<(QDataStream& stream, const Vector_2<T>& v) {
+	return stream << v.x() << v.y();
+}
+
+/// \brief Reads a vector from a Qt data stream.
+template<typename T>
+inline QDataStream& operator>>(QDataStream& stream, Vector_2<T>& v) {
+	return stream >> v.x() >> v.y();
+}
+
 /**
  * \fn typedef Vector2
  * \brief Template class instance of the Vector_2 class used for floating-point vectors.
@@ -280,9 +292,13 @@ typedef Vector_2<int>			Vector2I;
 
 };	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Vector2)
-Q_DECLARE_METATYPE(Ovito::Vector2I)
+Q_DECLARE_METATYPE(Ovito::Vector2);
+Q_DECLARE_METATYPE(Ovito::Vector2I);
+Q_DECLARE_METATYPE(Ovito::Vector2*);
+Q_DECLARE_METATYPE(Ovito::Vector2I*);
 Q_DECLARE_TYPEINFO(Ovito::Vector2, Q_PRIMITIVE_TYPE);
 Q_DECLARE_TYPEINFO(Ovito::Vector2I, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Vector2*, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Vector2I*, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_VECTOR2_H

@@ -30,11 +30,11 @@ namespace Particles {
 /// The maximum number of neighbors that can be taken into account to compute the CSP.
 enum { MAX_CSP_NEIGHBORS = 32 };
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, CentroSymmetryModifier, AsynchronousParticleModifier)
-IMPLEMENT_OVITO_OBJECT(Particles, CentroSymmetryModifierEditor, ParticleModifierEditor)
-SET_OVITO_OBJECT_EDITOR(CentroSymmetryModifier, CentroSymmetryModifierEditor)
-DEFINE_FLAGS_PROPERTY_FIELD(CentroSymmetryModifier, _numNeighbors, "NumNeighbors", PROPERTY_FIELD_MEMORIZE)
-SET_PROPERTY_FIELD_LABEL(CentroSymmetryModifier, _numNeighbors, "Number of neighbors")
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, CentroSymmetryModifier, AsynchronousParticleModifier);
+IMPLEMENT_OVITO_OBJECT(Particles, CentroSymmetryModifierEditor, ParticleModifierEditor);
+SET_OVITO_OBJECT_EDITOR(CentroSymmetryModifier, CentroSymmetryModifierEditor);
+DEFINE_FLAGS_PROPERTY_FIELD(CentroSymmetryModifier, _numNeighbors, "NumNeighbors", PROPERTY_FIELD_MEMORIZE);
+SET_PROPERTY_FIELD_LABEL(CentroSymmetryModifier, _numNeighbors, "Number of neighbors");
 
 /******************************************************************************
 * Constructs the modifier object.
@@ -131,7 +131,7 @@ void CentroSymmetryModifier::retrieveModifierResults(Engine* engine)
 /******************************************************************************
 * This lets the modifier insert the previously computed results into the pipeline.
 ******************************************************************************/
-ObjectStatus CentroSymmetryModifier::applyModifierResults(TimePoint time, TimeInterval& validityInterval)
+PipelineStatus CentroSymmetryModifier::applyModifierResults(TimePoint time, TimeInterval& validityInterval)
 {
 	if(inputParticleCount() != cspValues().size())
 		throw Exception(tr("The number of input particles has changed. The stored results have become invalid."));
@@ -141,7 +141,7 @@ ObjectStatus CentroSymmetryModifier::applyModifierResults(TimePoint time, TimeIn
 	OVITO_ASSERT(cspProperty->size() == cspValues().size());
 	cspProperty->setStorage(_cspValues.data());
 
-	return ObjectStatus::Success;
+	return PipelineStatus::Success;
 }
 
 /******************************************************************************

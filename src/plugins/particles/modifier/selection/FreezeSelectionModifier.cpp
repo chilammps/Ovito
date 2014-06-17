@@ -27,14 +27,14 @@
 
 namespace Particles {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, FreezeSelectionModifier, ParticleModifier)
-IMPLEMENT_OVITO_OBJECT(Particles, FreezeSelectionModifierEditor, ParticleModifierEditor)
-SET_OVITO_OBJECT_EDITOR(FreezeSelectionModifier, FreezeSelectionModifierEditor)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, FreezeSelectionModifier, ParticleModifier);
+IMPLEMENT_OVITO_OBJECT(Particles, FreezeSelectionModifierEditor, ParticleModifierEditor);
+SET_OVITO_OBJECT_EDITOR(FreezeSelectionModifier, FreezeSelectionModifierEditor);
 
 /******************************************************************************
 * This modifies the input object.
 ******************************************************************************/
-ObjectStatus FreezeSelectionModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
+PipelineStatus FreezeSelectionModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
 {
 	// Retrieve the selection stored in the modifier application.
 	ParticleSelectionSet* selectionSet = dynamic_object_cast<ParticleSelectionSet>(modifierApplication()->modifierData());
@@ -69,7 +69,7 @@ void FreezeSelectionModifier::takeSelectionSnapshot(ModifierApplication* modApp,
 	OORef<ParticleSelectionSet> selectionSet = dynamic_object_cast<ParticleSelectionSet>(modApp->modifierData());
 	if(!selectionSet) {
 		selectionSet = new ParticleSelectionSet(dataset());
-		modApp->setModifierData(selectionSet.get());
+		modApp->setModifierData(selectionSet);
 	}
 	selectionSet->resetSelection(state);
 }
@@ -87,7 +87,7 @@ void FreezeSelectionModifierEditor::createUI(const RolloutInsertionParameters& r
 	layout->setSpacing(4);
 
 	QPushButton* takeSnapshotBtn = new QPushButton(tr("Take selection snapshot"), rollout);
-	connect(takeSnapshotBtn, SIGNAL(clicked(bool)), this, SLOT(takeSelectionSnapshot()));
+	connect(takeSnapshotBtn, &QPushButton::clicked, this, &FreezeSelectionModifierEditor::takeSelectionSnapshot);
 	layout->addWidget(takeSnapshotBtn);
 
 	// Status label.

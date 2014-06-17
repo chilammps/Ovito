@@ -145,18 +145,18 @@ CutoffRadiusPresetsUI::CutoffRadiusPresetsUI(PropertiesEditor* parentEditor, con
 		
 		if(e != HandledTypes.end()) {
 			FloatType r = ChemicalElements[i].latticeParameter * e.value().second;
-			_comboBox->addItem(e.value().first.arg(ChemicalElements[i].elementName).arg(r, 0, 'f', 2), r);
+			comboBox()->addItem(e.value().first.arg(ChemicalElements[i].elementName).arg(r, 0, 'f', 2), r);
 		}
 	}
-	_comboBox->model()->sort(0);
-	_comboBox->insertItem(0, tr("Presets..."));
-	_comboBox->setCurrentIndex(0);
+	comboBox()->model()->sort(0);
+	comboBox()->insertItem(0, tr("Presets..."));
+	comboBox()->setCurrentIndex(0);
 
-	connect(_comboBox, SIGNAL(activated(int)), this, SLOT(onSelect(int)));
+	connect(comboBox(), (void (QComboBox::*)(int))&QComboBox::activated, this, &CutoffRadiusPresetsUI::onSelect);
 }
 
 /******************************************************************************
-* Destructor, that releases all GUI controls.
+* Destructor.
 ******************************************************************************/
 CutoffRadiusPresetsUI::~CutoffRadiusPresetsUI()
 {

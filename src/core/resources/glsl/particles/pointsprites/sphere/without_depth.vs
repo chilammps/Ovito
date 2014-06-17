@@ -33,8 +33,8 @@ uniform mat4 projection_matrix;
 	// Output passed to fragment shader.
 	flat out vec4 particle_color_fs;
 #else
+	// The particle data:
 	attribute float particle_radius;
-	#define particle_color_fs gl_FrontColor
 #endif
 
 void main()
@@ -47,7 +47,7 @@ void main()
 	vec4 eye_position = modelview_matrix * vec4(position, 1);
 #else
 	// Pass color to fragment shader.
-	particle_color_fs = gl_Color;
+	gl_FrontColor = gl_Color;
 
 	// Transform and project particle position.
 	vec4 eye_position = modelview_matrix * gl_Vertex;

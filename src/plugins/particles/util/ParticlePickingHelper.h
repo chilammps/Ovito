@@ -26,8 +26,8 @@
 #include <core/scene/pipeline/PipelineFlowState.h>
 #include <core/scene/ObjectNode.h>
 #include <core/viewport/Viewport.h>
-#include <core/rendering/LineGeometryBuffer.h>
-#include <core/rendering/ParticleGeometryBuffer.h>
+#include <core/rendering/LinePrimitive.h>
+#include <core/rendering/ParticlePrimitive.h>
 #include <core/rendering/viewport/ViewportSceneRenderer.h>
 
 namespace Particles {
@@ -83,11 +83,16 @@ protected:
 	/// \param pickRecord Specifies the particle for which the selection marker should be rendered.
 	void renderSelectionMarker(Viewport* vp, ViewportSceneRenderer* renderer, const PickResult& pickRecord);
 
+	/// \brief Computes the world space bounding box of the particle selection marker.
+	/// \param vp The viewport into which the selection will be rendered.
+	/// \param pickRecord Specifies the particle for which the selection marker will be rendered.
+	Box3 selectionMarkerBoundingBox(Viewport* vp, const PickResult& pickRecord);
+
 	/// Used to render the marker for a selected particle.
-	std::unique_ptr<ParticleGeometryBuffer> _highlightBuffer;
+	std::unique_ptr<ParticlePrimitive> _highlightBuffer;
 
 	/// Used to render the selected particle itself.
-	std::unique_ptr<ParticleGeometryBuffer> _particleBuffer;
+	std::unique_ptr<ParticlePrimitive> _particleBuffer;
 };
 
 };	// End of namespace

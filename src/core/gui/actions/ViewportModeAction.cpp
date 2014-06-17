@@ -75,8 +75,8 @@ QPushButton* ViewportModeAction::createPushButton(QWidget* parent)
 		button->setStyleSheet("QPushButton:checked { background-color: moccasin; }");
 #endif
 
-	connect(this, SIGNAL(toggled(bool)), button, SLOT(setChecked(bool)));
-	connect(button, SIGNAL(clicked(bool)), this, SLOT(trigger()));
+	connect(this, &ViewportModeAction::toggled, button, &QPushButton::setChecked);
+	connect(button, &QPushButton::clicked, this, &ViewportModeAction::trigger);
 	return button;
 }
 

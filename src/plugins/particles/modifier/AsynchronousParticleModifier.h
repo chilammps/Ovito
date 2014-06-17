@@ -103,7 +103,7 @@ protected:
 
 	/// Modifies the particle object. The time interval passed
 	/// to the function is reduced to the interval where the modified object is valid/constant.
-	virtual ObjectStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;
+	virtual PipelineStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;
 
 	/// Invalidates the modifier's result cache so that the results will be recomputed
 	/// next time the modifier is evaluated.
@@ -122,7 +122,7 @@ protected:
 	virtual void retrieveModifierResults(Engine* engine) = 0;
 
 	/// This lets the modifier insert the previously computed results into the pipeline.
-	virtual ObjectStatus applyModifierResults(TimePoint time, TimeInterval& validityInterval) = 0;
+	virtual PipelineStatus applyModifierResults(TimePoint time, TimeInterval& validityInterval) = 0;
 
 private:
 
@@ -145,7 +145,7 @@ private:
 	TimeInterval _computationValidity;
 
 	/// The status returned by the asynchronous job.
-	ObjectStatus _asyncStatus;
+	PipelineStatus _asyncStatus;
 
 private:
 

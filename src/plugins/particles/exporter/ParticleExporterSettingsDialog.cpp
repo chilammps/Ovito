@@ -118,7 +118,7 @@ ParticleExporterSettingsDialog::ParticleExporterSettingsDialog(QWidget* parent, 
 	_wildcardTextbox = new QLineEdit(_exporter->wildcardFilename(), fileGroupBox);
 	fileGroupLayout->addWidget(_wildcardTextbox, 2, 1, 1, 1);
 	_wildcardTextbox->setEnabled(radioBtn->isChecked());
-	connect(radioBtn, SIGNAL(toggled(bool)), _wildcardTextbox, SLOT(setEnabled(bool)));
+	connect(radioBtn, &QRadioButton::toggled, _wildcardTextbox, &QLineEdit::setEnabled);
 
 	if(columnMapping) {
 		QGroupBox* columnsGroupBox = new QGroupBox(tr("Particle properties to export"), this);
@@ -130,8 +130,8 @@ ParticleExporterSettingsDialog::ParticleExporterSettingsDialog(QWidget* parent, 
 		columnsGroupBoxLayout->setRowStretch(2, 1);
 
 		bool hasParticleIdentifiers = false;
-		for(const auto& o : state.objects()) {
-			ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o.get());
+		for(SceneObject* o : state.objects()) {
+			ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o);
 			if(!property) continue;
 			for(int vectorComponent = 0; vectorComponent < property->componentCount(); vectorComponent++) {
 				QString propertyName = property->nameWithComponent(vectorComponent);
@@ -173,8 +173,8 @@ ParticleExporterSettingsDialog::ParticleExporterSettingsDialog(QWidget* parent, 
 	}
 
 	QDialogButtonBox* buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, this);
-	connect(buttonBox, SIGNAL(accepted()), this, SLOT(onOk()));
-	connect(buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
+	connect(buttonBox, &QDialogButtonBox::accepted, this, &ParticleExporterSettingsDialog::onOk);
+	connect(buttonBox, &QDialogButtonBox::rejected, this, &ParticleExporterSettingsDialog::reject);
 	layout1->addWidget(buttonBox);
 }
 

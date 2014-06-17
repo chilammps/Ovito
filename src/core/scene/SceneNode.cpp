@@ -40,11 +40,11 @@ DEFINE_FLAGS_REFERENCE_FIELD(SceneNode, _targetNode, "TargetNode", SceneNode, PR
 DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(SceneNode, _children, "Children", SceneNode, PROPERTY_FIELD_ALWAYS_CLONE | PROPERTY_FIELD_NO_SUB_ANIM);
 DEFINE_PROPERTY_FIELD(SceneNode, _nodeName, "NodeName");
 DEFINE_PROPERTY_FIELD(SceneNode, _displayColor, "DisplayColor");
-SET_PROPERTY_FIELD_LABEL(SceneNode, _transformation, "Transformation")
-SET_PROPERTY_FIELD_LABEL(SceneNode, _targetNode, "Target")
-SET_PROPERTY_FIELD_LABEL(SceneNode, _children, "Children")
-SET_PROPERTY_FIELD_LABEL(SceneNode, _nodeName, "Name")
-SET_PROPERTY_FIELD_LABEL(SceneNode, _displayColor, "Display color")
+SET_PROPERTY_FIELD_LABEL(SceneNode, _transformation, "Transformation");
+SET_PROPERTY_FIELD_LABEL(SceneNode, _targetNode, "Target");
+SET_PROPERTY_FIELD_LABEL(SceneNode, _children, "Children");
+SET_PROPERTY_FIELD_LABEL(SceneNode, _nodeName, "Name");
+SET_PROPERTY_FIELD_LABEL(SceneNode, _displayColor, "Display color");
 
 /******************************************************************************
 * Default constructor.
@@ -162,7 +162,7 @@ LookAtController* SceneNode::bindToTarget(SceneNode* targetNode)
 			// Assign it as rotation sub-controller.
 			prs->setRotationController(lookAtCtrl);
 
-			return lookAtCtrl.get();
+			return dynamic_object_cast<LookAtController>(prs->rotationController());
 		}
 		else {
 			// Save old rotation.
@@ -290,7 +290,7 @@ void SceneNode::addChild(SceneNode* newChild)
 	OVITO_ASSERT(newChild->parentNode() == this);
 
 	// Adjust transformation to preserve world position.
-	TimeInterval iv = TimeInterval::forever();
+	TimeInterval iv = TimeInterval::infinite();
 	const AffineTransformation& newParentTM = getWorldTransform(dataset()->animationSettings()->time(), iv);
 	if(newParentTM != AffineTransformation::Identity())
 		newChild->transformationController()->changeParent(dataset()->animationSettings()->time(), AffineTransformation::Identity(), newParentTM, newChild);
@@ -314,7 +314,7 @@ void SceneNode::removeChild(SceneNode* child)
 	OVITO_ASSERT(child->parentNode() == nullptr);
 
 	// Update child node.
-	TimeInterval iv = TimeInterval::forever();
+	TimeInterval iv = TimeInterval::infinite();
 	AffineTransformation oldParentTM = getWorldTransform(dataset()->animationSettings()->time(), iv);
 	if(oldParentTM != AffineTransformation::Identity())
 		child->transformationController()->changeParent(dataset()->animationSettings()->time(), oldParentTM, AffineTransformation::Identity(), child);
@@ -341,7 +341,7 @@ const Box3& SceneNode::worldBoundingBox(TimePoint time)
 		return _worldBB;
 
 	_worldBBTime = time;
-	TimeInterval iv = TimeInterval::forever();
+	TimeInterval iv = TimeInterval::infinite();
 	AffineTransformation tm = getWorldTransform(time, iv);
 	_worldBB = localBoundingBox(time).transformed(tm);
 

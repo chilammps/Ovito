@@ -41,6 +41,9 @@ public:
 	/// Returns the current simulation cell matrix.
 	const AffineTransformation& matrix() const { return _simulationCell; }
 
+	/// Returns the current reciprocal simulation cell matrix.
+	const AffineTransformation& inverseMatrix() const { return _reciprocalSimulationCell; }
+
 	/// Sets the simulation cell matrix.
 	void setMatrix(const AffineTransformation& cellMatrix) {
 		_simulationCell = cellMatrix;
@@ -122,6 +125,23 @@ public:
 			}
 		}
 		return false;
+	}
+
+	/// \brief Helper function that computes the modulo operation for two integer numbers k and n.
+	///
+	/// This function can handle negative numbers k. This allows mapping any number k that is
+	/// outside the interval [0,n) back into the interval. Use this to implement periodic boundary conditions.
+	static inline int modulo(int k, int n) {
+		return ((k %= n) < 0) ? k+n : k;
+	}
+
+	/// \brief Helper function that computes the modulo operation for two floating-point numbers k and n.
+	///
+	/// This function can handle negative numbers k. This allows mapping any number k that is
+	/// outside the interval [0,n) back into the interval. Use this to implement periodic boundary conditions.
+	static inline FloatType modulo(FloatType k, FloatType n) {
+		k = fmod(k, n);
+		return (k < 0) ? k+n : k;
 	}
 
 private:

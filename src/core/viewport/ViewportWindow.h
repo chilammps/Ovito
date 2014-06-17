@@ -54,6 +54,12 @@ public:
 	/// Returns the window's OpenGL context used for rendering.
 	QOpenGLContext* glcontext() const { return _context; }
 
+	/// Determines whether all viewport windows should share one GL context or not.
+	static bool contextSharingEnabled(bool forceDefaultSetting = false);
+
+	/// Determines whether OpenGL point sprites should be used or not.
+	static bool pointSpritesEnabled(bool forceDefaultSetting = false);
+
 protected:
 
 	/// Handles the expose events.
@@ -80,11 +86,6 @@ protected:
 	/// This internal method receives events to the viewport window.
 	virtual bool event(QEvent* event) override;
 
-protected Q_SLOTS:
-
-	/// This receives log messages from the QOpenGLDebugLogger.
-	void openGLDebugMessage(const QOpenGLDebugMessage& debugMessage);
-
 private:
 
 	/// The owning viewport of this window.
@@ -99,11 +100,11 @@ private:
 	/// The OpenGL context used for rendering.
 	QOpenGLContext* _context;
 
-	/// The OpenGL debug logger that receives log messages from the OpenGL server.
-	QOpenGLDebugLogger* _oglDebugLogger;
-
 	/// The parent window of this viewport window.
 	MainWindow* _mainWindow;
+
+	/// The vendor of the OpenGL implementation in use.
+	static QByteArray _openGLVendor;
 
 private:
 

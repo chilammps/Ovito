@@ -22,6 +22,7 @@
 // Inputs from calling program:
 uniform mat4 modelview_matrix;
 uniform mat4 projection_matrix;
+uniform mat4 modelviewprojection_matrix;
 uniform vec3 cubeVerts[14];
 
 #if __VERSION__ >= 130
@@ -42,9 +43,9 @@ uniform vec3 cubeVerts[14];
 	attribute float particle_radius;
 	attribute float vertexID;
 
-	// Outputs to fragment shader
-	varying float particle_radius_squared_fs;
-	varying vec3 particle_view_pos_fs;
+	// Output to fragment shader:
+	#define particle_radius_squared_fs gl_TexCoord[1].w
+	#define particle_view_pos_fs gl_TexCoord[1].xyz
 
 #endif
 
@@ -57,7 +58,7 @@ void main()
 	particle_view_pos_fs = vec3(modelview_matrix * vec4(position, 1));
 
 	// Transform and project vertex.
-	gl_Position = projection_matrix * modelview_matrix * vec4(position + cubeVerts[gl_VertexID % 14] * particle_radius, 1);
+	gl_Position = modelviewprojection_matrix * vec4(position + cubeVerts[gl_VertexID % 14] * particle_radius, 1);
 #else
 	// Forward color to fragment shader.
 	gl_FrontColor = gl_Color;
@@ -65,7 +66,7 @@ void main()
 	particle_view_pos_fs = vec3(modelview_matrix * gl_Vertex);
 
 	// Transform and project vertex.
-	int cubeCorner = int(floor(int(vertexID) - 14 * floor(int(vertexID) / 14 + 0.5) + 0.5));
-	gl_Position = projection_matrix * modelview_matrix * (gl_Vertex + vec4(cubeVerts[cubeCorner] * particle_radius, 0));
+	int cubeCorner = int(mod(vertexID+0.5, 14.0));
+	gl_Position = modelviewprojection_matrix * (gl_Vertex + vec4(cubeVerts[cubeCorner] * particle_radius, 0));
 #endif
 }

@@ -24,17 +24,17 @@
 
 namespace Particles {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ClearSelectionModifier, ParticleModifier)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ClearSelectionModifier, ParticleModifier);
 
 /******************************************************************************
 * Modifies the particle object.
 ******************************************************************************/
-ObjectStatus ClearSelectionModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
+PipelineStatus ClearSelectionModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
 {
 	ParticlePropertyObject* selProperty = outputStandardProperty(ParticleProperty::SelectionProperty);
 	if(selProperty) removeOutputProperty(selProperty);
 
-	return ObjectStatus::Success;
+	return PipelineStatus::Success;
 }
 
 };	// End of namespace

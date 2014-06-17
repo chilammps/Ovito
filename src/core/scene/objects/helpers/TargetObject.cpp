@@ -80,8 +80,8 @@ void TargetDisplayObject::render(TimePoint time, SceneObject* sceneObject, const
 
 	// Re-create the geometry buffers if necessary.
 	if(recreateBuffer) {
-		_icon = renderer->createLineGeometryBuffer();
-		_pickingIcon = renderer->createLineGeometryBuffer();
+		_icon = renderer->createLinePrimitive();
+		_pickingIcon = renderer->createLinePrimitive();
 	}
 
 	// Update geometry buffers.

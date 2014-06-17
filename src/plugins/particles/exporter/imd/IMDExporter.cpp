@@ -106,8 +106,8 @@ bool IMDExporter::exportParticles(const PipelineFlowState& state, int frameNumbe
 	else textStream() << "0 ";
 
 	int otherColumnsCount = 0;
-	for(const auto& o : state.objects()) {
-		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o.get());
+	for(SceneObject* o : state.objects()) {
+		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o);
 		if(!property) continue;
 		if(property == posProperty || property == typeProperty || property == identifierProperty || property == massProperty || property == velocityProperty)
 			continue;
@@ -121,25 +121,25 @@ bool IMDExporter::exportParticles(const PipelineFlowState& state, int frameNumbe
 			columnNames.push_back(columnName);
 		}
 	}
-	textStream() << otherColumnsCount << endl;
+	textStream() << otherColumnsCount << "\n";
 
 	textStream() << "#C";
 	Q_FOREACH(const QString& cname, columnNames)
 		textStream() << " " << cname;
-	textStream() << endl;
+	textStream() << "\n";
 
-	textStream() << "#X " << simCell.column(0)[0] << " " << simCell.column(0)[1] << " " << simCell.column(0)[2] << endl;
-	textStream() << "#Y " << simCell.column(1)[0] << " " << simCell.column(1)[1] << " " << simCell.column(1)[2] << endl;
-	textStream() << "#Z " << simCell.column(2)[0] << " " << simCell.column(2)[1] << " " << simCell.column(2)[2] << endl;
+	textStream() << "#X " << simCell.column(0)[0] << " " << simCell.column(0)[1] << " " << simCell.column(0)[2] << "\n";
+	textStream() << "#Y " << simCell.column(1)[0] << " " << simCell.column(1)[1] << " " << simCell.column(1)[2] << "\n";
+	textStream() << "#Z " << simCell.column(2)[0] << " " << simCell.column(2)[1] << " " << simCell.column(2)[2] << "\n";
 
-	textStream() << "## Generated on " << QDateTime::currentDateTime().toString() << endl;
-	textStream() << "## IMD file written by " << QCoreApplication::applicationName() << endl;
-	textStream() << "#E" << endl;
+	textStream() << "## Generated on " << QDateTime::currentDateTime().toString() << "\n";
+	textStream() << "## IMD file written by " << QCoreApplication::applicationName() << "\n";
+	textStream() << "#E\n";
 
 	OutputColumnWriter columnWriter(columnMapping, state);
 	for(size_t i = 0; i < atomsCount; i++) {
 		columnWriter.writeParticle(i, textStream());
-		textStream() << endl;
+		textStream() << "\n";
 
 		if((i % 4096) == 0) {
 			progress.setPercentage((quint64)i * 100 / atomsCount);

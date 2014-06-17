@@ -88,7 +88,7 @@ void PRSTransformationController::changeParent(TimePoint time, const AffineTrans
 ******************************************************************************/
 TimeInterval PRSTransformationController::validityInterval(TimePoint time)
 {
-	TimeInterval iv = TimeInterval::forever();
+	TimeInterval iv = TimeInterval::infinite();
 	iv.intersect(positionController()->validityInterval(time));
 	iv.intersect(rotationController()->validityInterval(time));
 	iv.intersect(scalingController()->validityInterval(time));

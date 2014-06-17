@@ -31,9 +31,9 @@
 #include <core/reference/RefTarget.h>
 #include <core/animation/TimeInterval.h>
 #include <core/scene/ObjectNode.h>
-#include <core/rendering/TextGeometryBuffer.h>
-#include <core/rendering/ImageGeometryBuffer.h>
-#include <core/rendering/LineGeometryBuffer.h>
+#include <core/rendering/TextPrimitive.h>
+#include <core/rendering/ImagePrimitive.h>
+#include <core/rendering/LinePrimitive.h>
 #include "ViewportSettings.h"
 #include "ViewportWindow.h"
 
@@ -488,16 +488,16 @@ private:
 	int _renderDebugCounter;
 
 	/// The rendering buffer maintained to render the viewport's caption text.
-	std::unique_ptr<TextGeometryBuffer> _captionBuffer;
+	std::unique_ptr<TextPrimitive> _captionBuffer;
 
 	/// The geometry buffer used to render the viewport's orientation indicator.
-	std::unique_ptr<LineGeometryBuffer> _orientationTripodGeometry;
+	std::unique_ptr<LinePrimitive> _orientationTripodGeometry;
 
 	/// The rendering buffer used to render the viewport's orientation indicator labels.
-	std::unique_ptr<TextGeometryBuffer> _orientationTripodLabels[3];
+	std::unique_ptr<TextPrimitive> _orientationTripodLabels[3];
 
 	/// This is used to render the render frame around the viewport.
-	std::unique_ptr<ImageGeometryBuffer> _renderFrameOverlay;
+	std::unique_ptr<ImagePrimitive> _renderFrameOverlay;
 
 	/// This renderer generates an offscreen rendering of the scene that allows picking of objects.
 	OORef<PickingSceneRenderer> _pickingRenderer;

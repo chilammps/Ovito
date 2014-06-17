@@ -2,18 +2,73 @@
 OVITO - Open Visualization Tool 
 ****************************************************************************************
 
-Author: Alexander Stukowski (Darmstadt University of Technology, Germany)
+Author: Alexander Stukowski (mail@ovito.org)
+        (Institute of Materials Science, Darmstadt University of Technology, Germany)
 
 OVITO is a scientific visualization and analysis software for atomistic simulation data. 
-See website for more information: 
+See official website for more information: 
 
-http://www.ovito.org/
+   http://www.ovito.org/
 
 ****************************************************************************************
 Change Log 
 ****************************************************************************************
 
-Release 2.2.3 (xx-Jan-14):
+Release 2.3.3 (22-May-14):
+
+ - Added user options to application settings dialog that give control over sharing of 
+   OpenGL contexts and the use of OpenGL point sprites. This allows to work around compatibility
+   problems on some systems.
+ - User can now choose between dark and light viewport color schemes.
+ - Added scripting interface for Tachyon renderer.
+ - Added support for variable particle numbers in NetCDF reader (i.e. support for unlimited atom dimension)
+   and for NC_CHAR variables as particle types. (I.e. particle types given by names instead of numbers.)
+ - Added user options that control the automatic fetching of the news page from the web server and 
+   the transmission of the installation ID.
+ - Fixed bug in camera orbit mode, not correctly restricting camera's orientation when coordinate system 
+   orientation has been changed.
+
+Release 2.3.2 (07-Apr-14):
+
+ - Fixed bug in Wigner-Seitz analysis modifier, which could cause a program crash when numbers of 
+   atoms in reference and current configuration differ.
+ 
+Release 2.3.1 (01-Apr-14):
+
+ - Added saving/loading of presets to the file column mapping dialog.
+ - Added the --exec command line option, which allows to directly execute a script command or to pass parameters to a script file.
+ - When opening a XYZ file, the column mapping dialog displays an excerpt of the file content to help the user in figuring out the mapping.
+ - The Construct Surface Modifier no longer creates cap polygons if the simulation cell doesn't contain any particles.
+
+Release 2.3.0 (29-Mar-14):
+
+ - Added the new scripting interface, which allows to automate tasks.
+ - Added the 'Freeze property' modifier, which can prevent a particle property from changing over time.
+ - Added the 'Scatter plot' modifier, which plots one particle property against another. 
+   This modifier has been contributed by Lars Pastewka.
+ - Added the 'Wigner-Seitz analysis' modifier, which can identify vacancies and interstitials in a lattice.
+ - Added a file importer for NetCDF files. Code was contributed by Lars Pastewka.
+ - Added more input variables to the 'Compute property' and 'Expression select' modifiers (e.g. reduced particle 
+   coordinates and simulation cell size).
+ - It's now possible to load a sequence of files with each file containing multiple frames. To do this, import the 
+   first file from the sequence, activate the option "File contains multiple timesteps", finally open the 
+   "Frame sequence" panel and change the wildcard pattern to include the '*' placeholder character again.
+ - Fixed bug in CFG file importer, which did not read triclinic simulation cells correctly.
+ - Fixed shader compilation error on OpenGL 2.0 systems and some other OpenGL related issues.
+   
+Release 2.2.4 (29-Jan-14):
+
+ - Modified particle file importers to ensure stable ordering of particle types (using 
+   lexicographical ordering when atom types have names, and ID-based ordering otherwise). 
+   The ordering of named particle types is now independent of their first occurrence in the input file.
+ - Fixed particle picking issue on computers with Intel graphics.
+ - Fixed OpenGL issues on systems with Intel graphics.
+ - Fixed blurred display of viewport captions.
+ - Fixed program crash when changing particle radius/color without having selected a particle type first. 
+ - OVITO is now built using version 5.2.1 of the Qt library. 
+   This fixes several issues related to the graphical user interface. 
+
+Release 2.2.3 (15-Jan-14):
 
  - Fixed the CFG file importer, which is now able to read CFG files written by newer versions of LAMMPS correctly.
    Auxiliary file columns are now automatically mapped to OVITO's standard particle properties if possible.
@@ -69,7 +124,7 @@ Release 2.1.0 (15-Nov-13):
    used by the ParaView software and can, for instance, be written by LIGGGHTS/LAMMPS.
  - Camera objects can be created through the viewport context menu. A viewport can be 
    linked to a camera object to show the the corresponding view. Camera objects can
-   be animated (that's still an experimemtal and incomplete feature).
+   be animated (that's still an experimental and incomplete feature).
  - When importing a sequence of simulation snapshots into OVITO, one can now configure
    the mapping of input frames to OVITO's animation frames. This allows to generate output
    movies with less (or more) frames than the imported snapshot sequence. 

@@ -1,6 +1,6 @@
 ###############################################################################
 # 
-#  Copyright (2013) Alexander Stukowski
+#  Copyright (2014) Alexander Stukowski
 #
 #  This file is part of OVITO (Open Visualization Tool).
 #
@@ -22,11 +22,12 @@
 SET(OVITO_SCRIPTING_SOURCE_FILES
 	engine/ScriptEngine.cpp
 	engine/ScriptAutostarter.cpp
-	ui/ScriptingApplet.cpp
 	bindings/BasicTypesBinding.cpp
+	bindings/DataSetBinding.cpp
 	bindings/InputOutputBinding.cpp
 	bindings/ObjectNodeBinding.cpp
 	bindings/ViewportBinding.cpp
+	bindings/LinkedFileObjectBinding.cpp
 )
 
 # Generate plugin module.

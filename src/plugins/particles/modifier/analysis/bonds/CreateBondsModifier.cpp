@@ -30,18 +30,18 @@
 
 namespace Particles {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, CreateBondsModifier, AsynchronousParticleModifier)
-IMPLEMENT_OVITO_OBJECT(Particles, CreateBondsModifierEditor, ParticleModifierEditor)
-SET_OVITO_OBJECT_EDITOR(CreateBondsModifier, CreateBondsModifierEditor)
-DEFINE_PROPERTY_FIELD(CreateBondsModifier, _cutoffMode, "CutoffMode")
-DEFINE_FLAGS_PROPERTY_FIELD(CreateBondsModifier, _uniformCutoff, "UniformCutoff", PROPERTY_FIELD_MEMORIZE)
-DEFINE_FLAGS_REFERENCE_FIELD(CreateBondsModifier, _bondsDisplay, "BondsDisplay", BondsDisplay, PROPERTY_FIELD_ALWAYS_DEEP_COPY)
-DEFINE_FLAGS_REFERENCE_FIELD(CreateBondsModifier, _bondsObj, "BondsObject", BondsObject, PROPERTY_FIELD_ALWAYS_DEEP_COPY)
-SET_PROPERTY_FIELD_LABEL(CreateBondsModifier, _cutoffMode, "Cutoff mode")
-SET_PROPERTY_FIELD_LABEL(CreateBondsModifier, _uniformCutoff, "Cutoff radius")
-SET_PROPERTY_FIELD_LABEL(CreateBondsModifier, _bondsDisplay, "Bonds display")
-SET_PROPERTY_FIELD_LABEL(CreateBondsModifier, _bondsObj, "Bonds")
-SET_PROPERTY_FIELD_UNITS(CreateBondsModifier, _uniformCutoff, WorldParameterUnit)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, CreateBondsModifier, AsynchronousParticleModifier);
+IMPLEMENT_OVITO_OBJECT(Particles, CreateBondsModifierEditor, ParticleModifierEditor);
+SET_OVITO_OBJECT_EDITOR(CreateBondsModifier, CreateBondsModifierEditor);
+DEFINE_PROPERTY_FIELD(CreateBondsModifier, _cutoffMode, "CutoffMode");
+DEFINE_FLAGS_PROPERTY_FIELD(CreateBondsModifier, _uniformCutoff, "UniformCutoff", PROPERTY_FIELD_MEMORIZE);
+DEFINE_FLAGS_REFERENCE_FIELD(CreateBondsModifier, _bondsDisplay, "BondsDisplay", BondsDisplay, PROPERTY_FIELD_ALWAYS_DEEP_COPY|PROPERTY_FIELD_MEMORIZE);
+DEFINE_FLAGS_REFERENCE_FIELD(CreateBondsModifier, _bondsObj, "BondsObject", BondsObject, PROPERTY_FIELD_ALWAYS_DEEP_COPY);
+SET_PROPERTY_FIELD_LABEL(CreateBondsModifier, _cutoffMode, "Cutoff mode");
+SET_PROPERTY_FIELD_LABEL(CreateBondsModifier, _uniformCutoff, "Cutoff radius");
+SET_PROPERTY_FIELD_LABEL(CreateBondsModifier, _bondsDisplay, "Bonds display");
+SET_PROPERTY_FIELD_LABEL(CreateBondsModifier, _bondsObj, "Bonds");
+SET_PROPERTY_FIELD_UNITS(CreateBondsModifier, _uniformCutoff, WorldParameterUnit);
 
 /******************************************************************************
 * Constructs the modifier object.
@@ -269,7 +269,7 @@ void CreateBondsModifier::retrieveModifierResults(Engine* engine)
 /******************************************************************************
 * This lets the modifier insert the previously computed results into the pipeline.
 ******************************************************************************/
-ObjectStatus CreateBondsModifier::applyModifierResults(TimePoint time, TimeInterval& validityInterval)
+PipelineStatus CreateBondsModifier::applyModifierResults(TimePoint time, TimeInterval& validityInterval)
 {
 	// Insert output object into pipeline.
 	size_t bondsCount = 0;
@@ -280,14 +280,14 @@ ObjectStatus CreateBondsModifier::applyModifierResults(TimePoint time, TimeInter
 		// If there are too many bonds, we better turn off bond sdisplay to prevent the program from freezing.
 		if(bondsCount > 1000000 && bondsDisplay()) {
 			bondsDisplay()->setEnabled(false);
-			return ObjectStatus(ObjectStatus::Warning, tr("Created %1 bonds. Automatically disabled display of such a large number of bonds to prevent the program from freezing.").arg(bondsCount));
+			return PipelineStatus(PipelineStatus::Warning, tr("Created %1 bonds. Automatically disabled display of such a large number of bonds to prevent the program from freezing.").arg(bondsCount));
 		}
 	}
 
 	if(!_hasWrappedParticles)
-		return ObjectStatus(ObjectStatus::Success, tr("Created %1 bonds.").arg(bondsCount));
+		return PipelineStatus(PipelineStatus::Success, tr("Created %1 bonds.").arg(bondsCount));
 	else
-		return ObjectStatus(ObjectStatus::Warning, tr("Created %1 bonds. Some of the particles are located outside the simulation cell boundaries. The bonds of these particles may not display correctly. Please use the 'Wrap at periodic boundaries' modifier to avoid this problem.").arg(bondsCount));
+		return PipelineStatus(PipelineStatus::Warning, tr("Created %1 bonds. Some of the particles are located outside the simulation cell boundaries. The bonds of these particles may not display correctly. Please use the 'Wrap at periodic boundaries' modifier to avoid this problem.").arg(bondsCount));
 }
 
 /******************************************************************************
@@ -316,7 +316,7 @@ void CreateBondsModifierEditor::createUI(const RolloutInsertionParameters& rollo
 	gridlayout->addLayout(cutoffRadiusPUI->createFieldLayout(), 0, 1);
 	cutoffRadiusPUI->setMinValue(0);
 	cutoffRadiusPUI->setEnabled(false);
-	connect(uniformCutoffModeBtn, SIGNAL(toggled(bool)), cutoffRadiusPUI, SLOT(setEnabled(bool)));
+	connect(uniformCutoffModeBtn, &QRadioButton::toggled, cutoffRadiusPUI, &FloatParameterUI::setEnabled);
 
 	layout1->addLayout(gridlayout);
 
@@ -328,7 +328,7 @@ void CreateBondsModifierEditor::createUI(const RolloutInsertionParameters& rollo
 	_pairCutoffTable->setEnabled(false);
 	_pairCutoffTableModel = new PairCutoffTableModel(_pairCutoffTable);
 	_pairCutoffTable->setModel(_pairCutoffTableModel);
-	connect(pairCutoffModeBtn, SIGNAL(toggled(bool)), _pairCutoffTable, SLOT(setEnabled(bool)));
+	connect(pairCutoffModeBtn,&QRadioButton::toggled, _pairCutoffTable, &QTableView::setEnabled);
 	layout1->addWidget(_pairCutoffTable);
 
 	// Status label.
@@ -339,8 +339,8 @@ void CreateBondsModifierEditor::createUI(const RolloutInsertionParameters& rollo
 	new SubObjectParameterUI(this, PROPERTY_FIELD(CreateBondsModifier::_bondsDisplay), rolloutParams.after(rollout));
 
 	// Update pair-wise cutoff table whenever a modifier has been loaded into the editor.
-	connect(this, SIGNAL(contentsReplaced(RefTarget*)), this, SLOT(updatePairCutoffList()));
-	connect(this, SIGNAL(contentsChanged(RefTarget*)), this, SLOT(updatePairCutoffListValues()));
+	connect(this, &CreateBondsModifierEditor::contentsReplaced, this, &CreateBondsModifierEditor::updatePairCutoffList);
+	connect(this, &CreateBondsModifierEditor::contentsChanged, this, &CreateBondsModifierEditor::updatePairCutoffListValues);
 }
 
 /******************************************************************************

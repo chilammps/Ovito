@@ -21,7 +21,7 @@
 
 /** 
  * \file Color.h 
- * \brief Contains the definitions of the Ovito::Color and Ovito::ColorA classes.
+ * \brief Contains the definition of the Ovito::ColorT and Ovito::ColorAT class templates.
  */
 
 #ifndef __OVITO_COLOR_H
@@ -248,6 +248,18 @@ inline LoadStream& operator>>(LoadStream& stream, ColorT<T>& c) {
 	return stream >> c.r() >> c.g() >> c.b();
 }
 
+/// \brief Writes a color to a Qt data stream.
+template<typename T>
+inline QDataStream& operator<<(QDataStream& stream, const ColorT<T>& c) {
+	return stream << c.r() << c.g() << c.b();
+}
+
+/// \brief Reads a color from a Qt data stream.
+template<typename T>
+inline QDataStream& operator>>(QDataStream& stream, ColorT<T>& c) {
+	return stream >> c.r() >> c.g() >> c.b();
+}
+
 /**
  * \brief A color class with floating-point RGBA values.
  * 
@@ -447,6 +459,18 @@ inline LoadStream& operator>>(LoadStream& stream, ColorAT<T>& c) {
 	return stream >> c.r() >> c.g() >> c.b() >> c.a();
 }
 
+/// \brief Writes a color to a Qt data stream.
+template<typename T>
+inline QDataStream& operator<<(QDataStream& stream, const ColorAT<T>& c) {
+	return stream << c.r() << c.g() << c.b() << c.a();
+}
+
+/// \brief Reads a color from a Qt data stream.
+template<typename T>
+inline QDataStream& operator>>(QDataStream& stream, ColorAT<T>& c) {
+	return stream >> c.r() >> c.g() >> c.b() >> c.a();
+}
+
 /**
  * \fn typedef Color
  * \brief Template class instance of the ColorT template.
@@ -467,9 +491,13 @@ inline void glColor4(const ColorAT<GLfloat>& c) { glColor4fv(c.data()); }
 
 };	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Color)
-Q_DECLARE_METATYPE(Ovito::ColorA)
+Q_DECLARE_METATYPE(Ovito::Color);
+Q_DECLARE_METATYPE(Ovito::ColorA);
+Q_DECLARE_METATYPE(Ovito::Color*);
+Q_DECLARE_METATYPE(Ovito::ColorA*);
 Q_DECLARE_TYPEINFO(Ovito::Color, Q_PRIMITIVE_TYPE);
 Q_DECLARE_TYPEINFO(Ovito::ColorA, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Color*, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::ColorA*, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_COLOR_H

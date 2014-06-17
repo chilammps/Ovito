@@ -41,7 +41,7 @@ class OVITO_PARTICLES_EXPORT AmbientOcclusionRenderer : public ViewportSceneRend
 public:
 
 	/// Constructor.
-	AmbientOcclusionRenderer(DataSet* dataset, QSize resolution) : ViewportSceneRenderer(dataset), _resolution(resolution) {
+	AmbientOcclusionRenderer(DataSet* dataset, QSize resolution, QOffscreenSurface& offscreenSurface) : ViewportSceneRenderer(dataset), _resolution(resolution), _offscreenSurface(offscreenSurface) {
 		setPicking(true);
 	}
 
@@ -63,6 +63,9 @@ public:
 	/// Registers a range of sub-IDs belonging to the current object being rendered.
 	virtual quint32 registerSubObjectIDs(quint32 subObjectCount) override { return 1; }
 
+	/// Returns whether this renderer is rendering an interactive viewport.
+	virtual bool isInteractive() const override { return false; }
+
 private:
 
 	/// The OpenGL framebuffer.
@@ -72,7 +75,7 @@ private:
 	QScopedPointer<QOpenGLContext> _offscreenContext;
 
 	/// The offscreen surface used to render into an image buffer using OpenGL.
-	QOffscreenSurface _offscreenSurface;
+	QOffscreenSurface& _offscreenSurface;
 
 	/// The rendered image.
 	QImage _image;

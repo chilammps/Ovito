@@ -1,0 +1,1732 @@
+# Makefile architecture configuration for Tachyon ray tracing library.
+# Copyright 1994-2011 John E. Stone
+# All Rights Reserved
+#
+# $Id: Make-arch,v 1.204 2013/04/21 18:17:32 johns Exp $
+#
+
+# Some machines don't have/need ranlib, in their case, use 'touch'
+# this should be overridden by arch specific configuration lines below
+RANLIB= touch
+
+MISCDEFS=$(USEJPEG) $(USEPNG) $(FLT) $(MBOX)
+MISCINC=$(JPEGINC) $(PNGINC) $(SPACEBALLINC)
+MISCFLAGS=$(MISCDEFS) $(MISCINC)
+MISCLIB=$(JPEGLIB) $(PNGLIB) $(SPACEBALLLIB)
+
+default:
+	@echo ""
+	@echo ""
+	@echo "Choose one of the architectures specified below."
+	@echo "--------------------------------------------------------------"
+	@echo " Hybrid Parallel Versions                                     "
+	@echo ""
+	@echo "       linux-mpi-thr - Linux, generic MPI+Threads             "
+	@echo "  bluewaters-mpi-thr - NCSA Cray XE6/XK7, MPI+Threads         "
+	@echo ""
+	@echo "--------------------------------------------------------------"
+	@echo " Parallel Versions                                            "
+	@echo ""
+	@echo "             aix-thr - IBM AIX 5.x      Threads               "
+	@echo "          aix-64-thr - IBM AIX 5.x      Threads, 64-bit       "
+	@echo "             aix-mpi - IBM AIX 5.x (SP) MPI                   "
+	@echo "        bluegene-mpi - IBM Blue Gene    MPI                   "
+	@echo "      bluewaters-mpi - NCSA Cray XE6/XK7, MPI only            "
+	@echo "      bluewaters-thr - NCSA Cray XE6/XK7, Threads only        "
+	@echo "            hpux-thr - HP/UX 11.x       Threads               "
+	@echo "       hpux-ia64-thr - HP-UX IA-64, HP C, Threads             "
+	@echo "           irix6-thr - SGI IRIX 6.5.x   Threads               "
+	@echo "        irix6-64-thr - SGI IRIX 6.5.x   Threads, 64-bit       "
+	@echo "           linux-mpi - Linux, generic MPI                     "
+	@echo "           linux-thr - Linux, Threads                         "
+	@echo "        linux-64-thr - Linux AMD64/EM64T, Threads, 64-bit     "
+	@echo "      linux-ia64-thr - Linux IA-64, GCC, Threads              "
+	@echo "linux-ia64-thr-sgicc - Linux IA-64, SGI Pro64 Compilers       "
+	@echo "          macosx-thr - MacOS X PowerPC, Threads               "
+	@echo "      macosx-x86-thr - MacOS X x86, Threads                   "
+	@echo "         solaris-mpi - Sun Solaris, MPI (MPICH)               " 
+	@echo "         solaris-thr - Sun Solaris, UI/Sun Threads            " 
+	@echo "      solaris-64-thr - Sun Solaris, UI/Sun Threads, 64-bit    " 
+	@echo ""
+	@echo "--------------------------------------------------------------"
+	@echo " Sequential Versions                                          "
+	@echo ""
+	@echo "                 aix - IBM AIX 5.x                            "
+	@echo "                 bsd - OpenBSD/FreeBSD/NetBSD                 "
+	@echo "                hpux - HP/UX 11.x                             "
+	@echo "               irix6 - SGI Irix 6.x                           "
+	@echo "               linux - Linux                                  "
+	@echo "            linux-64 - Linux, AMD64/EM64T, GCC 3.x, 64-bit    "
+	@echo "              macosx - MacOS X (aka Darwin, Rhapsody)         "
+	@echo "             solaris - Sun Solaris                            "
+	@echo "               win32 - Windows 95/NT with Cygnus EGCS/CygWin32"
+	@echo ""
+	@echo "--------------------------------------------------------------"
+	@echo " OpenGL Runtime Display Versions                              "
+	@echo ""
+	@echo "        irix6-thr-ogl - SGI IRIX 6.5.x, Threads, OpenGL       "
+	@echo "        linux-thr-ogl - Linux, Threads, OpenGL                "
+	@echo "     linux-64-thr-ogl - Linux, Threads, OpenGL                "
+	@echo "    linux-mpi-thr-ogl - Linux, MPI, Threads, OpenGL           "
+	@echo "   macosx-x86-thr-ogl - MacOS X x86, Threads, OpenGL          "
+	@echo "   solaris-64-thr-ogl - Sun Solaris UI/Sun Threads, 64-bit    " 
+	@echo ""
+	@echo "--------------------------------------------------------------"
+	@echo "Type: 'make arch' to build for an architecture listed above."
+	@echo "Consult the README file in this directory for further info. "
+
+
+##
+## Android NDK for Java native interface
+##
+android-armv5te:
+	$(MAKE) all \
+	"ARCH = android-armv5te" \
+	"CC = $(ANDROIDBINS)/arm-linux-androideabi-gcc" \
+	"CFLAGS = -Wall -Wno-psabi -MMD -MP -fpic -ffunction-sections -funwind-tables -fstack-protector -D__ARM_ARCH_5__ -D__ARM_ARCH_5T__ -D__ARM_ARCH_5E__ -D__ARM_ARCH_5TE__ -march=armv5te -mtune=xscale -msoft-float -fno-exceptions -mthumb -Os -fomit-frame-pointer -fno-strict-aliasing -finline-limit=64 -DANDROID -Wa,--noexecstack -O3 $(ANDROIDINCS) -DLinux $(JNIDEFS) $(MISCFLAGS)" \
+	"AR = $(ANDROIDBINS)/arm-linux-androideabi-ar" \
+	"ARFLAGS = r" \
+	"STRIP = $(ANDROIDBINS)/arm-linux-androideabi-strip" \
+	"RANLIB = $(ANDROIDBINS)/arm-linux-androideabi-ranlib" \
+	"LIBS = -Wl,-soname,libjniWrapper.so -shared $(ANDROIDSYSROOT) -Wl,--no-undefined -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now $(ANDROIDLIBS) -L. -ltachyon $(MISCLIB) -lc -lm"
+
+
+android-armv5te-thr:
+	$(MAKE) all \
+	"ARCH = android-armv5te-thr" \
+	"CC = $(ANDROIDBINS)/arm-linux-androideabi-gcc" \
+	"CFLAGS = -Wall -Wno-psabi -MMD -MP -fpic -ffunction-sections -funwind-tables -fstack-protector -D__ARM_ARCH_5__ -D__ARM_ARCH_5T__ -D__ARM_ARCH_5E__ -D__ARM_ARCH_5TE__ -march=armv5te -mtune=xscale -msoft-float -fno-exceptions -mthumb -Os -fomit-frame-pointer -fno-strict-aliasing -finline-limit=64 -DANDROID -Wa,--noexecstack -O3 $(ANDROIDINCS) -DLinux $(JNIDEFS) $(THREADSFLAGS) -D_REENTRANT $(MISCFLAGS)" \
+	"AR = $(ANDROIDBINS)/arm-linux-androideabi-ar" \
+	"ARFLAGS = r" \
+	"STRIP = $(ANDROIDBINS)/arm-linux-androideabi-strip" \
+	"RANLIB = $(ANDROIDBINS)/arm-linux-androideabi-ranlib" \
+	"LIBS = -Wl,-soname,libjniWrapper.so -shared $(ANDROIDSYSROOT) -Wl,--no-undefined -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now $(ANDROIDLIBS) -L. -ltachyon $(MISCLIB) -lc -lm"
+
+
+android-armv7a:
+	$(MAKE) all \
+	"ARCH = android-armv7a" \
+	"CC = $(ANDROIDBINS)/arm-linux-androideabi-gcc" \
+	"CFLAGS = -Wall -Wno-psabi -MMD -MP -fpic -ffunction-sections -funwind-tables -fstack-protector -D__ARM_ARCH_5__ -D__ARM_ARCH_5T__ -D__ARM_ARCH_5E__ -D__ARM_ARCH_5TE__ -march=armv7-a -msoft-float -mfpu=vfp -ffast-math -mthumb -fomit-frame-pointer -fno-strict-aliasing -finline-limit=64 -DANDROID -Wa,--noexecstack -O3 $(ANDROIDINCS) -DLinux $(JNIDEFS) $(MISCFLAGS)" \
+	"AR = $(ANDROIDBINS)/arm-linux-androideabi-ar" \
+	"ARFLAGS = r" \
+	"STRIP = $(ANDROIDBINS)/arm-linux-androideabi-strip" \
+	"RANLIB = $(ANDROIDBINS)/arm-linux-androideabi-ranlib" \
+	"LIBS = -Wl,-soname,libjniWrapper.so -shared $(ANDROIDSYSROOT) -Wl,--fix-cortex-a8 -Wl,--no-undefined -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now $(ANDROIDLIBS) -L. -ltachyon $(MISCLIB) -lc -lm"
+
+
+android-armv7a-thr:
+	$(MAKE) all \
+	"ARCH = android-armv7a-thr" \
+	"CC = $(ANDROIDBINS)/arm-linux-androideabi-gcc" \
+	"CFLAGS = -Wall -Wno-psabi -MMD -MP -fpic -ffunction-sections -funwind-tables -fstack-protector -D__ARM_ARCH_5__ -D__ARM_ARCH_5T__ -D__ARM_ARCH_5E__ -D__ARM_ARCH_5TE__ -march=armv7-a -mcpu=cortex-a9 -mtune=cortex-a9 -msoft-float -mfpu=vfpv3-d16 -ffast-math -fomit-frame-pointer -fno-strict-aliasing -finline-limit=64 -DANDROID -Wa,--noexecstack -Ofast $(ANDROIDINCS) -DLinux $(JNIDEFS) $(THREADSFLAGS) -D_REENTRANT $(MISCFLAGS)" \
+	"AR = $(ANDROIDBINS)/arm-linux-androideabi-ar" \
+	"ARFLAGS = r" \
+	"STRIP = $(ANDROIDBINS)/arm-linux-androideabi-strip" \
+	"RANLIB = $(ANDROIDBINS)/arm-linux-androideabi-ranlib" \
+	"LIBS = -Wl,-soname,libjniWrapper.so -shared $(ANDROIDSYSROOT) -Wl,--fix-cortex-a8 -Wl,--no-undefined -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now $(ANDROIDLIBS) -L. -ltachyon $(MISCLIB) -lc -lm"
+
+
+##
+## SECO / NVIDIA CARMA Tegra3 ARM+CUDA development platform, 
+## hard floating point ABI
+##
+linux-carma-thr:
+	$(MAKE) all \
+	"ARCH = linux-carma-thr" \
+	"CC = gcc" \
+	"CFLAGS = -Wall -march=armv7-a -mcpu=cortex-a9 -mtune=cortex-a9 -mfpu=vfpv3-d16 -ffast-math -fomit-frame-pointer -fno-strict-aliasing -O3 -DLinux $(THREADSFLAGS) -DUSEPHYSCPUCOUNT -D_REENTRANT $(MISCFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"RANLIB = ranlib" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm -lpthread"
+
+linux-carma-thr-fast:
+	$(MAKE) all \
+	"ARCH = linux-carma-thr-fast" \
+	"CC = gcc" \
+	"CFLAGS = -Wall -fexpensive-optimizations -funsafe-math-optimizations -march=armv7-a -mcpu=cortex-a9 -mtune=cortex-a9 -mfpu=vfpv3 -ffast-math -fomit-frame-pointer -fno-strict-aliasing -O3 -DLinux $(THREADSFLAGS) -DUSEPHYSCPUCOUNT -D_REENTRANT $(MISCFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"RANLIB = ranlib" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm -lpthread"
+
+linux-carma-thr-neon:
+	$(MAKE) all \
+	"ARCH = linux-carma-thr-neon" \
+	"CC = gcc" \
+	"CFLAGS = -Wall -fexpensive-optimizations -funsafe-math-optimizations -march=armv7-a -mcpu=cortex-a9 -mtune=cortex-a9 -mfpu=neon -ffast-math -fomit-frame-pointer -fno-strict-aliasing -O3 -DLinux $(THREADSFLAGS) -DUSEPHYSCPUCOUNT -D_REENTRANT $(MISCFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"RANLIB = ranlib" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm -lpthread"
+
+
+
+
+##
+## SECO / NVIDIA CARMA Tegra3 ARM+CUDA development platform,
+## soft floating point ABI, similar flags as used for Android builds
+##
+linux-carma-softfp-thr:
+	$(MAKE) all \
+	"ARCH = linux-carma-softfp-thr" \
+	"CC = gcc" \
+	"CFLAGS = -Wall -march=armv7-a -mcpu=cortex-a9 -mtune=cortex-a9 -msoft-float -mfpu=vfpv3-d16 -ffast-math -fomit-frame-pointer -fno-strict-aliasing -finline-limit=64 -Wa,--noexecstack -O -DLinux $(THREADSFLAGS) -DUSEPHYSCPUCOUNT -D_REENTRANT $(MISCFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"RANLIB = ranlib" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm -lpthread"
+
+
+##
+## Intel ASCI Red (Janus) using MPI.  
+## No pthreads on ASCI Red yet.  I didn't bother with the cop() stuff
+##
+asci-red-mpi:
+	$(MAKE) all \
+	"ARCH = asci-red-mpi" \
+	"CC = cicc" \
+	"CFLAGS = -cougar -O4 -Mvect -Knoieee -I$(MPIINC) -Dparagon $(MISCFLAGS) $(MPIFLAGS)" \
+	"AR = xar" \
+	"ARFLAGS = r" \
+	"STRIP = xstrip" \
+	"LIBS = -L. -L$(MPILIB)/paragon/ch_nx -nx -ltachyon -lmpi $(MISCLIB) -lm $(MISCLIB) -lmach3"
+
+
+##
+## NCSA/IBM "Blue Drop" Power 775 Supercomputer
+##
+bluedrop-mpi:
+	$(MAKE) all \
+	"ARCH = bluedrop-mpi" \
+	"CC = mpcc" \
+	"CFLAGS = -qsuppress=1500-036 -O3 -qaggrcopy=nooverlap -qalias=ansi -qarch=auto -qtune=auto -DLinux $(MPIFLAGS) $(MISCFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"LIBS = -us -L. -ltachyon $(MISCLIB) -lm"
+
+bluedrop-thr:
+	$(MAKE) all \
+	"ARCH = bluedrop-thr" \
+	"CC = xlc_r" \
+	"CFLAGS = -qsuppress=1500-036 -O3 -qaggrcopy=nooverlap -qalias=ansi -qarch=auto -qtune=auto -DLinux $(THREADSFLAGS) $(MISCFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm -lpthread"
+
+
+##
+## IBM Blue Gene/L Parallel Supercomputer
+## 
+## NOTE: strip breaks bluegene executables, they are dynamically re-linked
+##       at runtime, so we must use /bin/true rather than strip
+##
+bluegene-mpi:
+	$(MAKE) all \
+	"ARCH = bluegene-mpi" \
+	"CC = mpcc" \
+	"CFLAGS = -O3 -qarch=440 -DAIX $(MISCFLAGS) $(MPIFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = /bin/true" \
+	"LIBS = -us -L. -ltachyon $(MISCLIB) -lm"
+
+
+##
+## NCSA/Cray Blue Waters Parallel Supercomputer
+##
+bluewaters-mpi:
+	$(MAKE) all \
+	"ARCH = bluewaters-mpi" \
+	"CC = cc" \
+	"CFLAGS = -DLinux $(MISCFLAGS) $(MPIFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"LIBS = -us -L. -ltachyon $(MISCLIB) -lm"
+
+bluewaters-thr:
+	$(MAKE) all \
+	"ARCH = bluewaters-thr" \
+	"CC = cc" \
+	"CFLAGS = -DLinux $(THREADSFLAGS) $(MISCFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm -lpthread"
+
+bluewaters-mpi-thr:
+	$(MAKE) all \
+	"ARCH = bluewaters-mpi-thr" \
+	"CC = cc" \
+	"CFLAGS = -DLinux $(THREADSFLAGS) $(MISCFLAGS) $(MPIFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"LIBS = -us -L. -ltachyon $(MISCLIB) -lm -lpthread"
+
+
+##
+## Compaq AlphaSC w/ MPI
+##
+compaq-alphasc-mpi:
+	$(MAKE) all \
+	"ARCH = compaq-alphasc-mpi" \
+	"CC = cc" \
+	"CFLAGS = -speculate all -std1 -pthread -fast -O4 -arch host -tune host -verbose $(MISCFLAGS) $(MPIFLAGS) " \
+	"AR = ar" \
+	"ARFLAGS = -r" \
+	"STRIP = strip" \
+	"LIBS = -L. -ltachyon -lmpi $(MISCLIB) -lm"
+
+
+##
+##
+## Cray Parallel Vector Processor Machines Using Threads
+##
+## Tested on J90s, but should work on almost any of the Cray PVP systems.
+## Note: This code is not currently vectorized, and you may be better 
+##       off running on a fast workstation, or even better, on a T3E!!!
+##
+cray-pvp-thr:
+	@echo "**"
+	@echo "** Warning: This software will build on Cray PVP systems;    "
+	@echo "**          however the code isn't vectorized.               "
+	@echo "**          Measurements on a J90 indicate that the code     "
+	@echo "**          only attains 25% of the per-cpu peak vector      "
+	@echo "**          performance.  Just FYI for people that don't     "
+	@echo "**          want to waste Cray PVP time.                     "
+	@echo "**          The efficiency on scalar Cray machines is        "
+	@echo "**          excellent (T3E).                                 "
+	@echo "**"
+	$(MAKE) all \
+	"ARCH = cray-pvp-thr" \
+	"CC = cc" \
+	"CFLAGS = -O3 -D_REENTRANT $(THREADSFLAGS) $(MISCFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = -r" \
+	"STRIP = strip" \
+	"LIBS = -L. -ltachyon -lpthread $(MISCLIB) -lm"
+
+##
+## Cray T3E Using MPI
+##
+cray-t3e-mpi:
+	$(MAKE) all \
+	"ARCH = cray-t3e-mpi" \
+	"CC = cc" \
+	"CFLAGS = -O3 $(MISCFLAGS) $(MPIFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = -r" \
+	"STRIP = strip" \
+	"LIBS = -L. -ltachyon -lmpi $(MISCLIB) -lm"
+
+# Cray T3E performance tuning via "pat"
+cray-t3e-mpi-pat:
+	$(MAKE) all \
+	"ARCH = cray-t3e-mpi-pat" \
+	"CC = cc" \
+	"CFLAGS = -O3 $(MISCFLAGS) $(MPIFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = -r" \
+	"STRIP = strip" \
+	"LIBS = -L. -ltachyon -lmpi $(MISCLIB) -lm -lpat"
+
+# Cray T3E profiling using "apprentice"
+cray-t3e-mpi-app:
+	$(MAKE) all \
+	"ARCH = cray-t3e-mpi-app" \
+	"CC = cc" \
+	"CFLAGS = -O3 -X1 -happrentice $(MISCFLAGS) $(MPIFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = -r" \
+	"STRIP = touch" \
+	"LIBS = -L. -ltachyon -lmpi $(MISCLIB) -lm -lapp"
+
+
+## Cray XT3 Using MPI
+## Contributed by Paul Bourke
+##
+cray-xt3-mpi:
+	$(MAKE) all \
+	"ARCH = cray-xt3-mpi" \
+	"CC = cc -target=catamount -B" \
+	"CFLAGS = -O3 $(MISCFLAGS) $(MPIFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = -r" \
+	"STRIP = strip" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm"
+
+
+##
+## Architecture flags for the Intel iPSC/860 Multicomputer using MPI 
+## for message passing.  NX is no longer supported by this software. 
+## Tested with the mpich distribution from Argonne National Labs
+##
+ipsc860-mpi:
+	$(MAKE) all \
+	"ARCH = ipsc860-mpi" \
+	"CC = icc" \
+	"CFLAGS = -O4 -Mvect -Knoieee -I$(MPIINC) -Dcube $(MISCFLAGS) $(MPIFLAGS)" \
+	"AR = ar860" \
+	"ARFLAGS = r" \
+	"STRIP = strip860" \
+	"LIBS = -L. -L$(MPILIB)/intelnx/ch_nx -ltachyon -lmpi $(MISCLIB) -lm"   	
+
+ipsc860-mpi-debug:
+	$(MAKE) all \
+	"ARCH = ipsc860-mpi-debug" \
+	"CC = icc" \
+	"CFLAGS = -p -O4 -Mvect -Knoieee -I$(MPIINC) -Dcube $(MISCFLAGS) $(MPIFLAGS)" \
+	"AR = ar860" \
+	"ARFLAGS = r" \
+	"STRIP = touch " \
+	"LIBS = -L. -L$(MPILIB)/intelnx/ch_nx -ltachyon -lmpi $(MISCLIB) -lm"
+
+
+##
+## Architecture flags for the Intel Paragon XP/S Supercomputer using MPI
+## for message passing.  NX is no longer supported by this software.
+## Configurations supporting systems with MP-3 nodes are listed, 
+## Concurrent I/O is used by default.
+##
+paragon-thr-mpi:
+	$(MAKE) all \
+	"ARCH = paragon-thr-mpi" \
+	"CC = icc" \
+	"CFLAGS = -O4 -Mvect -Mreentrant -Mnoperfmon -Knoieee -I$(MPIINC) -Dparagon -DTHRIO $(THREADSFLAGS) $(MISCFLAGS) $(MPIFLAGS)" \
+	"AR = ar860" \
+	"ARFLAGS = r" \
+	"STRIP = strip860" \
+	"LIBS = -L. -L$(MPILIB)/paragon/ch_nx -nx -ltachyon -lmpi $(MISCLIB) -lm $(MISCLIB) -lmach3 -lpthreads -lc_r "
+
+paragon-mp-mpi:
+	$(MAKE) all \
+	"ARCH = paragon-mp-mpi" \
+	"CC = icc" \
+	"CFLAGS = -O4 -Mvect -Mreentrant -Mnoperfmon -Knoieee -I$(MPIINC) -Dparagon $(THREADSFLAGS) $(MISCFLAGS) $(MPIFLAGS)" \
+	"AR = ar860" \
+	"ARFLAGS = r" \
+	"STRIP = strip860" \
+	"LIBS = -L. -L$(MPILIB)/paragon/ch_nx -nx -ltachyon -lmpi $(MISCLIB) -lm $(MISCLIB) -lmach3 -lpthreads -lc_r "
+
+paragon-mpi:
+	$(MAKE) all \
+	"ARCH = paragon-mpi" \
+	"CC = icc" \
+	"CFLAGS = -O4 -Mvect -Mnoperfmon -Knoieee -I$(MPIINC) -Dparagon $(MISCFLAGS) $(MPIFLAGS)" \
+	"AR = ar860" \
+	"ARFLAGS = r" \
+	"STRIP = strip860" \
+	"LIBS = -L. -L$(MPILIB)/paragon/ch_nx -nx -ltachyon -lmpi $(MISCLIB) -lm $(MISCLIB) -lmach3"
+
+
+##
+## OSF1 / Digital Unix 4.0b on Alpha processors
+##
+tru64-alpha:
+	$(MAKE) all \
+	"ARCH = tru64-alpha" \
+	"CC = cc" \
+	"CFLAGS = -std1 -fast -O4 -arch host -tune host -w0 -verbose $(MISCFLAGS) " \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"LIBS = -non_shared -om -L. -ltachyon $(MISCLIB) -lm"
+
+##
+## OSF1 / Digital Unix 4.0b on Alpha processors with POSIX Threads 
+##
+tru64-alpha-thr:
+	$(MAKE) all \
+	"ARCH = tru64-alpha-thr" \
+	"CC = cc" \
+	"CFLAGS = -speculate all -std1 -pthread -fast -O4 -arch host -tune host -verbose $(MISCFLAGS) $(THREADSFLAGS) " \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm"
+
+tru64-alpha-thr-ogl:
+	$(MAKE) all \
+	"ARCH = tru64-alpha-thr-ogl" \
+	"CC = cc" \
+	"CFLAGS = -speculate all -std1 -pthread -fast -O4 -arch host -tune host -verbose $(MISCFLAGS) $(THREADSFLAGS) -DUSEOPENGL " \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"LIBS = -L. -ltachyon $(TRU64_GLX_LIBS) $(MISCLIB) -lm"
+
+##
+## OSF1 / Digital Unix 4.0d on Alpha processors with Guide for OpenMP
+##
+tru64-alpha-omp:
+	$(MAKE) all \
+	"ARCH = tru64-alpha-omp" \
+	"CC = guidec" \
+	"CFLAGS = -O4 -arch host -tune host $(MISCFLAGS) " \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm"
+
+##
+## OSF1 / Digital Unix 4.0d on Alpha processors with Assure for OpenMP
+##
+## -WApname=<prjfile> needs an absolute path to a project file. This file is
+##    created and maintained by assurec.
+##
+tru64-alpha-ompa:
+	$(MAKE) all \
+	"ARCH = tru64-alpha-ompa" \
+	"CC = assurec" \
+	"CFLAGS = -O4 -arch host -tune host $(MISCFLAGS) -WApname=/tacheon/tacheon.prj " \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm"
+
+##
+## Architecture flags for Sun Solaris 8/9/10 running on the Sparc platform.
+## Expects Sun's most recent compilers.
+## Configurations for gcc, and lcc are also listed.
+##
+solaris:
+	$(MAKE) all \
+	"ARCH = solaris" \
+	"CC = cc" \
+	"CFLAGS = -v -xtransition -Xc -fast -xO5 -native -xdepend -fsimple=2 -DSunOS $(MISCFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm"
+
+solaris-profile:
+	$(MAKE) all \
+	"ARCH = solaris-profile" \
+	"CC = cc" \
+	"CFLAGS = -fast -xO3 -native -g -xpg -DSunOS $(MISCFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = touch" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm"
+
+solaris-profile2:
+	$(MAKE) all \
+	"ARCH = solaris-profile2" \
+	"CC = cc" \
+	"CFLAGS = -fast -xO3 -native -g -p -DSunOS $(MISCFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = touch" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm"
+
+solaris-quantify:
+	$(MAKE) all \
+	"ARCH = solaris-quantify" \
+	"CC = quantify cc" \
+	"CFLAGS = -native -g -xarch=v8plusa -DSunOS $(MISCFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = touch " \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm"
+
+solaris-purify:
+	$(MAKE) all \
+	"ARCH = solaris-purify" \
+	"CC = purify cc" \
+	"CFLAGS = -g -DSunOS $(MISCFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = touch" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm"
+
+solaris-debug:
+	$(MAKE) all \
+	"ARCH = solaris-debug" \
+	"CC = cc" \
+	"CFLAGS = -Xc -g -native -DSunOS $(MISCFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = touch" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm"
+
+solaris-lam:
+	$(MAKE) all \
+	"ARCH = solaris-lam" \
+	"CC = hcc" \
+	"CFLAGS = -v -xtransition -Xc -fast -xO5 -native -xdepend -fsimple=2 -I$(LAMHOME)/h -DSunOS $(MISCFLAGS) $(MPIFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"LIBS = -L. -L$(LAMHOME)/lib -ltachyon -lmpi $(MISCLIB) -lm -lsocket -lnsl"
+
+solaris-64-openmpi:
+	$(MAKE) all \
+	"ARCH = solaris-64-openmpi" \
+	"CC = mpicc" \
+	"CFLAGS = -v -xtransition -Xc -xarch=generic64 -I$(OPENMPIHOME) -DSunOS $(MISCFLAGS) $(MPIFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"LIBS = -L. -L$(OPENMPIHOME)/lib -ltachyon -lmpi $(MISCLIB) -lm -lsocket -lnsl"
+
+solaris-ultra-hpc:
+	$(MAKE) all \
+	"ARCH = solaris-ultra-hpc" \
+	"CC = mpcc" \
+	"CFLAGS = -v -xtransition -Xc -fast -xO5 -native -xarch=v8plusa -xdepend -fsimple=2 -DSunOS $(MISCFLAGS) $(MPIFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"LIBS = -L. -ltachyon -lmpi $(MISCLIB) -lm -lsocket -lnsl" 
+
+solaris-mpi:
+	$(MAKE) all \
+	"ARCH = solaris-mpi" \
+	"CC = cc" \
+	"CFLAGS = -v -xtransition -Xc -fast -xO5 -native -xdepend -fsimple=2 -I$(MPIINC) -DSunOS $(MISCFLAGS) $(MPIFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"LIBS = -L. -L$(MPILIB)/solaris/ch_p4 -ltachyon -lmpi $(MISCLIB) -lm -lsocket -lnsl" 
+
+solaris-thr:
+	$(MAKE) all \
+	"ARCH = solaris-thr" \
+	"CC = cc" \
+	"CFLAGS = -v -xtransition -Xc -mt -fast -xO5 -xarch=native -xdepend -fsimple=2 -DSunOS $(MISCFLAGS) $(THREADSFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm"
+
+solaris-pthreads-gcc:
+	$(MAKE) all \
+	"ARCH = solaris-pthreads-gcc" \
+	"CC = gcc" \
+	"CFLAGS = -Wall -O3 -fomit-frame-pointer -ffast-math -D_REENTRANT -DSunOS $(MISCFLAGS) $(THREADSFLAGS) -DUSEPOSIXTHREADS" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm -lpthread"
+
+solaris-thr-x11:
+	$(MAKE) all \
+	"ARCH = solaris-thr-x11" \
+	"CC = cc" \
+	"CFLAGS = -v -xtransition -Xc -mt -fast -xO5 -native -xdepend -fsimple=2 $(X11INC) -DSunOS $(MISCFLAGS) $(THREADSFLAGS) -DUSEX11" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm $(X11LIB)"
+
+solaris-v8-thr:
+	$(MAKE) all \
+	"ARCH = solaris-v8-thr" \
+	"CC = cc" \
+	"CFLAGS = -v -xtransition -Xc -mt -fast -xO5 -native -xarch=v8 -xdepend -fsimple=2 -DSunOS $(MISCFLAGS) $(THREADSFLAGS)  " \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = touch" \
+	"LIBS = -L. -ltachyon $(MISCLIB) $(MISCLIB) -lm"
+
+solaris-ultra-thr:
+	$(MAKE) all \
+	"ARCH = solaris-ultra-thr" \
+	"CC = cc" \
+	"CFLAGS = -v -xtransition -Xc -mt -fast -xO5 -native -xarch=v8plusa -xdepend -fsimple=2 -DSunOS $(MISCFLAGS) $(THREADSFLAGS)  " \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = touch" \
+	"LIBS = -L. -ltachyon $(MISCLIB) $(MISCLIB) -lm"
+
+solaris-ultra2-thr:
+	$(MAKE) all \
+	"ARCH = solaris-ultra2-thr" \
+	"CC = cc" \
+	"CFLAGS = -v -Xc -mt -fast -xO5 -native -xtarget=ultra2 -xarch=v8plusa -xdepend -fsimple=2 -DSunOS $(MISCFLAGS) $(THREADSFLAGS)  " \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = touch" \
+	"LIBS = -L. -ltachyon $(MISCLIB) $(MISCLIB) -lm"
+
+solaris-ultra3-thr:
+	$(MAKE) all \
+	"ARCH = solaris-ultra3-thr" \
+	"CC = cc" \
+	"CFLAGS = -v -xtransition -Xc -mt -fast -xO5 -native -xarch=v8plusb -xdepend -fsimple=2 -xalias_level=strong -xprefetch -DSunOS $(MISCFLAGS) $(THREADSFLAGS)  " \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = touch" \
+	"LIBS = -L. -ltachyon $(MISCLIB) $(MISCLIB) -lm"
+
+solaris-ultra3cu-thr:
+	$(MAKE) all \
+	"ARCH = solaris-ultra3cu-thr" \
+	"CC = cc" \
+	"CFLAGS = -v -xtransition -Xc -mt -fast -xO5 -native -xarch=v8plusb -xchip=ultra3cu -xdepend -fsimple=2 -xalias_level=strong -xprefetch -DSunOS $(MISCFLAGS) $(THREADSFLAGS)  " \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = touch" \
+	"LIBS = -L. -ltachyon $(MISCLIB) $(MISCLIB) -lm"
+
+solaris-64-profile:
+	$(MAKE) all \
+	"ARCH = solaris-64-profile" \
+	"CC = cc" \
+	"CFLAGS = -xarch=v9a -g -xpg -DSunOS $(MISCFLAGS) " \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = touch" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm"
+
+solaris-64-purify:
+	$(MAKE) all \
+	"ARCH = solaris-64-purify" \
+	"CC = purify cc" \
+	"CFLAGS = -xarch=v9a -g -DSunOS $(MISCFLAGS) " \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = touch" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm"
+
+solaris-64-purify-thr:
+	$(MAKE) all \
+	"ARCH = solaris-64-purify-thr" \
+	"CC = purify cc" \
+	"CFLAGS = -v -Xc -mt -g -xarch=v9a -DSunOS $(MISCFLAGS) $(THREADSFLAGS) " \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = touch" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm"
+
+solaris-64-thr:
+	$(MAKE) all \
+	"ARCH = solaris-64-thr" \
+	"CC = cc" \
+	"CFLAGS = -v -Xc -mt -fast -xO5 -native -xarch=native64 -xdepend -fsimple=2 -DSunOS $(MISCFLAGS) $(THREADSFLAGS) " \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = touch" \
+	"LIBS = -L. -ltachyon $(MISCLIB) $(MISCLIB) -lm"
+
+solaris-64-ultra2-thr:
+	$(MAKE) all \
+	"ARCH = solaris-64-ultra2-thr" \
+	"CC = cc" \
+	"CFLAGS = -v -Xc -mt -fast -xO5 -native -xtarget=ultra2 -xarch=v9a -xdepend -fsimple=2 -DSunOS $(MISCFLAGS) $(THREADSFLAGS) " \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = touch" \
+	"LIBS = -L. -ltachyon $(MISCLIB) $(MISCLIB) -lm"
+
+solaris-64-ultra3-thr:
+	$(MAKE) all \
+	"ARCH = solaris-64-ultra3-thr" \
+	"CC = cc" \
+	"CFLAGS = -v -Xc -mt -fast -xO5 -xipo -native -xtarget=ultra3cu -xarch=v9b -xdepend -fsimple=2 -DSunOS $(MISCFLAGS) $(THREADSFLAGS) " \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = touch" \
+	"LIBS = -L. -ltachyon $(MISCLIB) $(MISCLIB) -lm"
+
+solaris-ultra-thr-ogl:
+	$(MAKE) all \
+	"ARCH = solaris-ultra-thr-ogl" \
+	"CC = cc" \
+	"CFLAGS = -v -xtransition -Xc -mt -fast -xO5 -native -xarch=v8plusa -xdepend -fsimple=2 -DSunOS $(MISCFLAGS) $(THREADSFLAGS) -DUSEOPENGL  " \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = touch" \
+	"LIBS = -L. -ltachyon $(MISCLIB) $(SOLARIS_GLX_LIBS) $(MISCLIB) -lm"
+
+solaris-ultra-hpc-ogl:
+	$(MAKE) all \
+	"ARCH = solaris-ultra-hpc" \
+	"CC = mpcc" \
+	"CFLAGS = -v -xtransition -Xc -fast -xO5 -native -xarch=v8plusa -xdepend -fsimple=2 -DSunOS $(MISCFLAGS) $(MPIFLAGS) -DUSEOPENGL" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"LIBS = -L. -ltachyon -lmpi $(MISCLIB) $(SOLARIS_GLX_LIBS) $(MISCLIB) -lm -lsocket -lnsl" 
+
+solaris-64-thr-ogl:
+	$(MAKE) all \
+	"ARCH = solaris-64-thr-ogl" \
+	"CC = cc" \
+	"CFLAGS = -v -xtransition -Xc -mt -fast -xO5 -native -xarch=native64 -xdepend -fsimple=2 -DSunOS $(MISCFLAGS) $(THREADSFLAGS) -DUSEOPENGL  " \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = touch" \
+	"LIBS = -L. -ltachyon $(MISCLIB) $(SOLARIS_GLX_LIBS) $(MISCLIB) -lm"
+
+solaris-ultra-pthreads-ogl:
+	$(MAKE) all \
+	"ARCH = solaris-ultra-pthreads-ogl" \
+	"CC = cc" \
+	"CFLAGS = -v -xtransition -Xc -mt -fast -xO5 -native -xarch=v8plusa -xdepend -fsimple=2 -DSunOS $(MISCFLAGS) $(THREADSFLAGS) -DUSEOPENGL -DUSEPOSIXTHREADS  " \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = touch" \
+	"LIBS = -L. -ltachyon $(MISCLIB) $(SOLARIS_GLX_LIBS) $(MISCLIB) -lm -lpthread"
+
+solaris-apcc-ultra-thr:
+	$(MAKE) all \
+	"ARCH = solaris-apcc-ultra-thr" \
+	"CC = apcc" \
+	"CFLAGS = -fast -O5 -native -Xalnref=0 -Xmopt=4 -Xunroll=1 -Xconstp=2 -Xcopyp=2 -Xflow=1 -Xcg=94 -Xfltacc=2 -Xfltedge=3 -Xintedge=1 -Xfltfold=2 -Xivrep=1 -Xreg=3 -Xsafeintr=1 -Xsched=2 -Xxopt=5 -Xdeflib=2 -Xinllev=5 -XT=ultra2 -DSunOS $(MISCFLAGS) $(THREADSFLAGS) -D_REENTRANT  " \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = touch" \
+	"LIBS = -L. -ltachyon $(MISCLIB) $(MISCLIB) -lm -lthread"
+
+solaris-gcc-thr:
+	$(MAKE) all \
+	"ARCH = solaris-gcc-thr" \
+	"CC = gcc" \
+	"CFLAGS = -ansi -Wall -pedantic -O4 -mv8 -msupersparc -DSunOS $(MISCFLAGS) $(THREADSFLAGS) -D_REENTRANT" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = touch" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm -lsocket -lthread"
+
+solaris-gcc-thr-x11:
+	$(MAKE) all \
+	"ARCH = solaris-gcc-thr-x11" \
+	"CC = gcc" \
+	"CFLAGS = -ansi -Wall -pedantic -O4 -mv8 -msupersparc $(X11INC) -DSunOS $(MISCFLAGS) $(THREADSFLAGS) -D_REENTRANT -DUSEX11" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = touch" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm -lsocket $(X11LIB) -lthread"
+
+solaris-lcc:
+	$(MAKE) all \
+	"ARCH = solaris-lcc" \
+	"CC = lcc" \
+	"CFLAGS = -A -A -DSunOS $(MISCFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = touch" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm -lsocket"
+
+solaris-lcc-thr:
+	$(MAKE) all \
+	"ARCH = solaris-lcc-thr" \
+	"CC = lcc" \
+	"CFLAGS = -A -A -DSunOS $(MISCFLAGS) $(THREADSFLAGS) -D_REENTRANT" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = touch" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm -lsocket -lthread"
+
+solaris-lcc-thr-x11:
+	$(MAKE) all \
+	"ARCH = solaris-lcc-thr-x11" \
+	"CC = lcc" \
+	"CFLAGS = -A -A $(X11INC) -DSunOS $(MISCFLAGS) $(THREADSFLAGS) -D_REENTRANT -DUSEX11" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = touch" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm -lsocket $(X11LIB) -lthread"
+
+##
+## SGI Architecture flags, should work with MPI, threads etc.
+## Tested with Irix 6.x extensively
+##
+irix5-mpi:
+	$(MAKE) all \
+	"ARCH = irix5-mpi" \
+	"CFLAGS = -O2 -mips2 -I$(MPIINC) -DIrix $(MISCFLAGS) $(MPIFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"LIBS = -L. -L$(MPILIB)/IRIX/ch_p4 -ltachyon -lmpi $(MISCLIB) -lm" 
+
+irix5:
+	$(MAKE) all \
+	"ARCH = irix5" \
+	"CFLAGS = -O2 -mips2 -DIrix $(MISCFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm" 
+
+irix6:
+	$(MAKE) all \
+	"ARCH = irix6" \
+	"CFLAGS = -O3 -mips3 -n32 -DIrix $(MISCFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm" 
+
+irix6-purify:
+	$(MAKE) all \
+	"ARCH = irix6-purify" \
+	"CC = purify cc" \
+	"CFLAGS = -g -O2 -mips3 -n32 -DIrix $(MISCFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = touch" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm"
+
+irix6-64-thr:
+	$(MAKE) all \
+	"ARCH = irix6-64-thr" \
+	"CFLAGS = -woff 1209,1174,3201 -xansi -fullwarn -O3 -mips4 -64 -DIrix -D_REENTRANT $(THREADSFLAGS) $(MISCFLAGS) " \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm -lpthread" 
+
+irix6-thr:
+	$(MAKE) all \
+	"ARCH = irix6-thr" \
+	"CFLAGS = -woff 1209,1174,3201 -xansi -fullwarn -O3 -mips3 -n32 -DIrix -D_REENTRANT $(THREADSFLAGS) $(MISCFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm -lpthread" 
+
+irix6-thr-purify:
+	$(MAKE) all \
+	"ARCH = irix6-thr-purify" \
+	"CC = purify cc" \
+	"CFLAGS = -g -O2 -mips3 -n32 -DIrix -D_REENTRANT $(THREADSFLAGS) $(MISCFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = touch" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm -lpthread"
+
+irix6-thr-ogl:
+	$(MAKE) all \
+	"ARCH = irix6-thr-ogl" \
+	"CFLAGS = -woff 1209,1174,3201 -xansi -fullwarn -O3 -mips3 -n32 -DIrix -D_REENTRANT -DUSEOPENGL $(THREADSFLAGS) $(MISCFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"LIBS = -L. -ltachyon $(IRIX_GLX_LIBS) $(MISCLIB) -lm -lpthread" 
+
+
+##
+## Architecture flags for IBM RS/6000 systems, including the SP-2
+## Supercomputer, and PowerPC based RS/6000 systems.  The SP-2 configuration
+## requires MPI for message passing.  No multithread configurations are
+## available yet, since access to a thread capable test machine is needed
+## for implementation.  These configurations require xlc.
+##
+
+
+aix:
+	$(MAKE) all \
+	"ARCH = aix" \
+	"CC = xlc" \
+	"CFLAGS = -O3 -DAIX $(MISCFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm"
+
+aix-mpi:
+	$(MAKE) all \
+	"ARCH = aix-mpi" \
+	"CC = mpcc" \
+	"CFLAGS = -O3 -I$(MPIINC) -DAIX $(MISCFLAGS) $(MPIFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"LIBS = -us -L. -L$(MPILIB)/rs6000/ch_eui -ltachyon -lmpi $(MISCLIB) -lm"
+
+aix-thr:
+	$(MAKE) all \
+	"ARCH = aix-thr" \
+	"CC = xlc" \
+	"CFLAGS = -O3 -DAIX $(MISCFLAGS) $(THREADSFLAGS) -D_REENTRANT" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm -lpthread"
+
+aix-64-thr:
+	$(MAKE) all \
+	"ARCH = aix-64-thr" \
+	"CC = xlc" \
+	"CFLAGS = -q64 -O3 -DAIX $(MISCFLAGS) $(THREADSFLAGS) -D_REENTRANT" \
+	"AR = ar -X64 " \
+	"ARFLAGS = r" \
+	"STRIP = strip -X64 " \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm -lpthread"
+
+##
+## Architecture flags for HP Unix workstations, no MPI configuration
+## since no test platform has been available.  The threaded HPUX
+## configuration is untested, since no access to a test platform has
+## been available.  In theory it should work on a multiprocessor HP
+## with POSIX threads capability.
+##
+
+hpux:
+	$(MAKE) all \
+	"ARCH = hpux" \
+	"CC = cc" \
+	"CFLAGS = -Ae +O4 -DHPUX $(MISCFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm"
+
+hpux-thr:
+	$(MAKE) all \
+	"ARCH = hpux-thr" \
+	"CC = cc" \
+	"CFLAGS = -Ae +O4 -DHPUX $(MISCFLAGS) $(THREADSFLAGS) -D_REENTRANT" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm -lpthread"
+
+# HP-UX IA-64 using gcc compilers and threads (Merced, Itanium, McKinley, etc)
+hpux-ia64-thr:
+	$(MAKE) all \
+	"ARCH = hpux-ia64-thr" \
+	"CC = cc" \
+	"CFLAGS = -fast +O3 +Otype_safety=ansi +Onoptrs_to_globals -DHPUX $(THREADSFLAGS) -D_REENTRANT $(MISCFLAGS) " \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"RANLIB = ranlib" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm -lpthread"
+
+
+##
+## An ancient configuration for NeXT computers, has not been tested
+## recently, good luck.
+##
+
+next:
+	$(MAKE) all \
+	"ARCH = next" \
+	"CC = cc" \
+	"CFLAGS = -O -DNEXT $(MISCFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"RANLIB = ranlib" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm"
+
+macosx:
+	$(MAKE) all \
+	"ARCH = macosx" \
+	"CC = cc" \
+	"CFLAGS = -Os -ffast-math -DBsd $(MISCFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"RANLIB = ranlib" \
+	"LIBS = -L. -ltachyon $(MISCLIB)"
+
+macosx-thr:
+	$(MAKE) all \
+	"ARCH = macosx-thr" \
+	"CC = cc" \
+	"CFLAGS = -Os -ffast-math -DBsd $(THREADSFLAGS) -F/System/Library/Frameworks $(MISCFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"RANLIB = ranlib" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lpthread -framework Carbon"
+
+macosx-altivec:
+	$(MAKE) all \
+	"ARCH = macosx-altivec" \
+	"CC = cc" \
+	"CFLAGS = -Os -mcpu=750 -faltivec -force_cpusubtype_ALL -fomit-frame-pointer -ffast-math -DBsd $(MISCFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"RANLIB = ranlib" \
+	"LIBS = -L. -ltachyon $(MISCLIB)"
+
+macosx-x86-thr:
+	$(MAKE) all \
+	"ARCH = macosx-x86-thr" \
+	"CC = cc" \
+	"CFLAGS = -O2 -ffast-math -DBsd $(THREADSFLAGS) $(MISCFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"RANLIB = ranlib" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lpthread"
+
+macosx-x86-thr-ogl:
+	$(MAKE) all \
+	"ARCH = macosx-x86-thr-ogl" \
+	"CC = cc" \
+	"CFLAGS = -O2 -ffast-math -DBsd $(THREADSFLAGS) -I/usr/X11R6/include $(MISCFLAGS) -DUSEOPENGL" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"RANLIB = ranlib" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lpthread -L/usr/X11R6/lib -lGLU -lGL -lX11"
+
+
+##
+## BeOS
+##
+
+beos:
+	$(MAKE) all \
+	"ARCH = beos" \
+	"CC = gcc" \
+	"CFLAGS = -O3 -fomit-frame-pointer -ffast-math $(MISCFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"RANLIB = ranlib" \
+	"LIBS = -L. -ltachyon $(MISCLIB)"
+
+##
+## An ancient configuration for generic BSD, has not been tested recently,
+## good luck.
+##
+
+bsd:
+	$(MAKE) all \
+	"ARCH = bsd" \
+	"CC = gcc" \
+	"CFLAGS = -O3 -fomit-frame-pointer -ffast-math -DBsd  $(MISCFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"RANLIB = ranlib" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm"
+
+bsd-sparc:
+	$(MAKE) all \
+	"ARCH = bsd-sparc" \
+	"CC = gcc" \
+	"CFLAGS = -mv8 -msupersparc -O3 -fomit-frame-pointer -ffast-math -DBsd  $(MISCFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"RANLIB = ranlib" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm"
+
+##
+## Windows (Win32) Builds using Cygnus' CygWin32 libraries and egcs
+##
+
+win32:
+	$(MAKE) all \
+	"ARCH = win32" \
+	"CC = gcc" \
+	"CFLAGS = -mpentium -Wall -O3 -fomit-frame-pointer -ffast-math -DWIN32 $(MISCFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = echo" \
+	"RANLIB = echo" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm"
+
+win32-mpi:
+	$(MAKE) all \
+	"ARCH = win32-mpi" \
+	"CC = gcc" \
+	"CFLAGS = -mpentium -Wall -O3 -fomit-frame-pointer -ffast-math -DWIN32 $(MISCFLAGS) -I'/Program files/MPIPro/INCLUDE' $(MPIFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = echo" \
+	"RANLIB = echo" \
+	"LIBS = -L. -L'/Program files/MPIPro/LIB' -ltachyon -lmpi $(MISCLIB) -lm"
+
+##
+## Configurations of Tachyon for various versions of Linux
+##
+
+# Linux on x86, using gcc
+linux:
+	$(MAKE) all \
+	"ARCH = linux" \
+	"CC = gcc" \
+	"CFLAGS = -m32 -Wall -O3 -g -ffast-math -DLinux $(MISCFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"RANLIB = ranlib" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm"
+
+# Linux on x86, using gcc
+linux-profile:
+	$(MAKE) all \
+	"ARCH = linux-profile" \
+	"CC = gcc" \
+	"CFLAGS = -m32 -Wall -O3 -g -pg -ffast-math -DLinux $(MISCFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = touch" \
+	"RANLIB = ranlib" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm"
+
+# Linux on x86, using gcc
+linux-debug:
+	$(MAKE) all \
+	"ARCH = linux-debug" \
+	"CC = gcc" \
+	"CFLAGS = -m32 -Wall -g -DLinux $(MISCFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = touch" \
+	"RANLIB = ranlib" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm"
+
+# Linux on AMD64/EM64T, using gcc
+linux-64:
+	$(MAKE) all \
+	"ARCH = linux-64" \
+	"CC = gcc" \
+	"CFLAGS = -m64 -Wall -O3 -fomit-frame-pointer -ffast-math -DLinux  $(MISCFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"RANLIB = ranlib" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm"
+
+# Linux on AMD64/EM64T, using gcc
+linux-64-debug:
+	$(MAKE) all \
+	"ARCH = linux-64-debug" \
+	"CC = gcc" \
+	"CFLAGS = -m64 -Wall -O -g -DLinux  $(MISCFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = touch" \
+	"RANLIB = ranlib" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm"
+
+
+# Linux on AMD64/EM64T, using gcc
+linux-64-thr:
+	$(MAKE) all \
+	"ARCH = linux-64-thr" \
+	"CC = gcc" \
+	"CFLAGS = -m64 -Wall -O3 -fomit-frame-pointer -ffast-math -DLinux  $(THREADSFLAGS) -D_REENTRANT $(MISCFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"RANLIB = ranlib" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm -lpthread"
+
+# Linux on AMD64/EM64T, using Intel C 
+linux-icc-64-thr:
+	$(MAKE) all \
+	"ARCH = linux-icc-64-thr" \
+	"CC = icc" \
+	"CFLAGS = -m64 -msse2 -Wall -O3 -fomit-frame-pointer -DLinux  $(THREADSFLAGS) -D_REENTRANT $(MISCFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"RANLIB = ranlib" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm -lpthread"
+
+# Linux on AMD64/EM64T, using GCC
+linux-64-openmp:
+	$(MAKE) all \
+	"ARCH = linux-64-openmp" \
+	"CC = gcc" \
+	"CFLAGS = -m64 -Wall -O3 -fopenmp -fomit-frame-pointer -ffast-math -DLinux -D_REENTRANT $(MISCFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"RANLIB = ranlib" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm"
+
+# Linux on AMD64/EM64T, using Intel C 
+linux-icc-64-openmp:
+	$(MAKE) all \
+	"ARCH = linux-icc-64-openmp" \
+	"CC = icc" \
+	"CFLAGS = -m64 -msse2 -Wall -O3 -openmp -fomit-frame-pointer -DLinux -D_REENTRANT $(MISCFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"RANLIB = ranlib" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm"
+
+# Linux w/ Intel MIC Xeon Phi
+# XXX use -opt-threads-per-core=4 for later revs of Intel C compilers
+linux-mic-thr:
+	$(MAKE) all \
+	"ARCH = linux-mic-thr" \
+	"CC = icc" \
+	"CFLAGS = -mmic -mCG_lrb_num_threads=4 -O3 -fomit-frame-pointer -DLinux $(THREADSFLAGS) -D_REENTRANT -DUSECPUAFFINITY $(MISCFLAGS)" \
+	"AR = xiar" \
+	"ARFLAGS = r" \
+	"STRIP = touch" \
+	"RANLIB = touch" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm -lpthread"
+
+# Linux x86, on AMD Athlon, using gcc
+linux-p4:
+	$(MAKE) all \
+	"ARCH = linux-p4" \
+	"CC = gcc" \
+	"CFLAGS = -mcpu=i686 -march=i686 -funroll-loops -fexpensive-optimizations -malign-double -fschedule-insns2 -Wall -O3 -fomit-frame-pointer -ffast-math -DLinux $(MISCFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"RANLIB = ranlib" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm"
+
+# Linux x86, on Intel P4 using Intel C 8.0
+#	"CFLAGS = -axN -fast -ansi_alias -DLinux $(MISCFLAGS)" 
+#	"CFLAGS = -restrict -O3 -tpp7 -vec_report3 -xiMKW -ip -unroll -static -DLinux $(MISCFLAGS)" 
+linux-p4-icc:
+	$(MAKE) all \
+	"ARCH = linux-p4-icc" \
+	"CC = icc" \
+	"CFLAGS = -restrict -O3 -tpp7 -vec_report3 -xiMKW -ip -unroll -static -DLinux $(MISCFLAGS)" \
+	"AR = xiar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"RANLIB = ranlib" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm"
+
+# Linux x86, on Intel P4 using Intel C 8.0
+linux-p4-icc-thr:
+	$(MAKE) all \
+	"ARCH = linux-p4-icc-thr" \
+	"CC = icc" \
+	"CFLAGS = -restrict -O3 -tpp7 -vec_report3 -xiMKW -ip -unroll -static -DLinux $(THREADSFLAGS) -D_REENTRANT $(MISCFLAGS)" \
+	"AR = xiar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"RANLIB = ranlib" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm -lpthread"
+
+# Linux x86, on AMD Athlon, using gcc
+linux-athlon:
+	$(MAKE) all \
+	"ARCH = linux-athlon" \
+	"CC = gcc" \
+	"CFLAGS = -mcpu=athlon -march=athlon -funroll-loops -fexpensive-optimizations -malign-double -fschedule-insns2 -Wall -O3 -fomit-frame-pointer -ffast-math -DLinux $(MISCFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"RANLIB = ranlib" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm"
+
+linux-athlon-thr:
+	$(MAKE) all \
+	"ARCH = linux-athlon-thr" \
+	"CC = gcc" \
+	"CFLAGS = -mcpu=athlon -march=athlon -funroll-loops -fexpensive-optimizations -malign-double -fschedule-insns2 -Wall -O3 -fomit-frame-pointer -ffast-math -DLinux $(THREADSFLAGS) -D_REENTRANT $(MISCFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"RANLIB = ranlib" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm -lpthread"
+
+
+# Linux x86/Pentium with Portland group compilers
+linux-pgcc:
+	$(MAKE) all \
+	"ARCH = linux-pgcc" \
+	"CC = pgcc" \
+	"CFLAGS = -fast -Mvect=assoc,prefetch -tp p6 -DLinux $(MISCFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"RANLIB = ranlib" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm"
+
+# Linux x86/athlon with Portland group compilers
+linux-athlon-pgcc:
+	$(MAKE) all \
+	"ARCH = linux-athlon-pgcc" \
+	"CC = pgcc" \
+	"CFLAGS = -fast -Mvect=assoc,prefetch -tp athlon -DLinux $(MISCFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"RANLIB = ranlib" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm"
+
+# Linux x86 using gcc, with threads
+linux-thr:
+	$(MAKE) all \
+	"ARCH = linux-thr" \
+	"CC = gcc" \
+	"CFLAGS = -m32 -Wall -O3 -fomit-frame-pointer -ffast-math -DLinux $(THREADSFLAGS) -D_REENTRANT $(MISCFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"RANLIB = ranlib" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm -lpthread"
+
+# Linux x86 using gcc, threads, and OpenGL
+linux-thr-ogl:
+	$(MAKE) all \
+	"ARCH = linux-thr-ogl" \
+	"CC = cc" \
+	"CFLAGS = -m32 -Wall -O3 -fomit-frame-pointer -ffast-math -DLinux $(THREADSFLAGS) -D_REENTRANT $(MISCFLAGS) -DUSEOPENGL $(LINUX_GLX_INCS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = touch" \
+	"LIBS = -L. -ltachyon $(MISCLIB) $(LINUX_GLX_LIBS) $(MISCLIB) -lm -lpthread"
+
+# Linux x86 using gcc, threads, and OpenGL
+linux-64-thr-ogl:
+	$(MAKE) all \
+	"ARCH = linux-64-thr-ogl" \
+	"CC = cc" \
+	"CFLAGS = -m64 -Wall -O3 -fomit-frame-pointer -ffast-math -DLinux $(THREADSFLAGS) -D_REENTRANT $(MISCFLAGS) -DUSEOPENGL $(LINUX_GLX_INCS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = touch" \
+	"LIBS = -L. -ltachyon $(MISCLIB) $(LINUX_GLX_LIBS) $(MISCLIB) -lm -lpthread"
+
+# Linux x86 using gcc, threads, and OpenGL
+linux-64-thr-ogl-debug:
+	$(MAKE) all \
+	"ARCH = linux-64-thr-ogl-debug" \
+	"CC = cc" \
+	"CFLAGS = -m64 -Wall -g -DLinux $(THREADSFLAGS) -D_REENTRANT $(MISCFLAGS) -DUSEOPENGL $(LINUX_GLX_INCS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = touch" \
+	"LIBS = -L. -ltachyon $(MISCLIB) $(LINUX_GLX_LIBS) $(MISCLIB) -lm -lpthread"
+
+
+# Linux x86, on Intel using Intel C 11.0
+#	"CFLAGS = -Wall -restrict -O3 -axW -vec_report3 -unroll -static -DLinux $(THREADSFLAGS) -D_REENTRANT $(MISCFLAGS) -DUSEOPENGL $(LINUX_GLX_INCS)" 
+linux-icc-thr-ogl:
+	$(MAKE) all \
+	"ARCH = linux-icc-thr-ogl" \
+	"CC = icc" \
+	"CFLAGS = -Wall -restrict -O3 -axW -DLinux $(THREADSFLAGS) -D_REENTRANT $(MISCFLAGS) -DUSEOPENGL $(LINUX_GLX_INCS)" \
+	"AR = xiar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"RANLIB = ranlib" \
+	"LIBS = -L. -ltachyon $(MISCLIB) $(LINUX_GLX_LIBS) $(MISCLIB) -lm -lpthread"
+
+# Linux x86 using Scyld's beowulf distribution and OpenGL
+linux-beowulf-mpi-ogl:
+	$(MAKE) all \
+	"ARCH = linux-beowulf-mpi" \
+	"CC = gcc" \
+	"CFLAGS = -m32 -Wall -O3 -fomit-frame-pointer -ffast-math -DLinux $(MISCFLAGS) $(MPIFLAGS) -DUSEOPENGL $(LINUX_GLX_INCS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"RANLIB = ranlib" \
+	"LIBS = -L. -ltachyon -lmpi $(MISCLIB) $(LINUX_GLX_LIBS) $(MISCLIB) -lm"
+
+# Linux x86 using Scyld's beowulf distribution
+linux-beowulf-mpi:
+	$(MAKE) all \
+	"ARCH = linux-beowulf-mpi" \
+	"CC = gcc" \
+	"CFLAGS = -m32 -Wall -O3 -fomit-frame-pointer -ffast-math -DLinux $(MISCFLAGS) $(MPIFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"RANLIB = ranlib" \
+	"LIBS = -L. -ltachyon -lmpi $(MISCLIB) -lm"
+
+# Linux x86 using LAM MPI
+linux-lam:
+	$(MAKE) all \
+	"ARCH = linux-lam" \
+	"CC = hcc" \
+	"CFLAGS = -m486 -Wall -O3 -fomit-frame-pointer -ffast-math -I$(LAMHOME)/h -DLinux $(MISCFLAGS) $(MPIFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"RANLIB = ranlib" \
+	"LIBS = -L. -L$(LAMHOME)/lib -ltachyon -lmpi $(MISCLIB) -lm"
+
+# Linux AMD64/EM64T using LAM MPI
+linux-lam-64:
+	$(MAKE) all \
+	"ARCH = linux-lam-64" \
+	"CC = hcc" \
+	"CFLAGS = -m64 -Wall -O3 -fomit-frame-pointer -ffast-math -I$(LAMHOME)/h -DLinux $(MISCFLAGS) $(MPIFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"RANLIB = ranlib" \
+	"LIBS = -L. -L$(LAMHOME)/lib -ltachyon -lmpi $(MISCLIB) -lm"
+
+linux-mpi:
+	$(MAKE) all \
+	"ARCH = linux-mpi" \
+	"CC = mpicc" \
+	"CFLAGS = -DLinux $(MISCFLAGS) $(MPIFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"RANLIB = ranlib" \
+	"LIBS = -L. -ltachyon  $(MISCLIB) -lm"
+
+linux-mpi-thr:
+	$(MAKE) all \
+	"ARCH = linux-mpi-thr" \
+	"CC = mpicc" \
+	"CFLAGS = -DLinux $(THREADSFLAGS) $(MISCFLAGS) $(MPIFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"RANLIB = ranlib" \
+	"LIBS = -L. -ltachyon  $(MISCLIB) -lm -lpthread"
+
+linux-mpi-openmp:
+	$(MAKE) all \
+	"ARCH = linux-mpi-openmp" \
+	"CC = mpicc" \
+	"CFLAGS = -m64 -Wall -O3 -fopenmp -fomit-frame-pointer -ffast-math -DLinux -D_REENTRANT $(MISCFLAGS) $(MPIFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"RANLIB = ranlib" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm"
+
+linux-mpi-64:
+	$(MAKE) all \
+	"ARCH = linux-mpi-64" \
+	"CC = mpicc" \
+	"CFLAGS = -Wall -O3 -fomit-frame-pointer -ffast-math -I$(LAMHOME)/h -DLinux $(MISCFLAGS) $(MPIFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"RANLIB = ranlib" \
+	"LIBS = -L. -L$(LAMHOME)/lib -ltachyon $(MISCLIB) -lm"
+
+
+# Linux AMD64/EM64T using LAM MPI, with OpenGL display
+linux-mpi-ogl:
+	$(MAKE) all \
+	"ARCH = linux-mpi-ogl" \
+	"CC = mpicc" \
+	"CFLAGS = -m64 -Wall -O3 -fomit-frame-pointer -ffast-math -DLinux -DUSEOPENGL $(LINUX_GLX_INCS) $(MISCFLAGS) $(MPIFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"RANLIB = ranlib" \
+	"LIBS = -L. -L$(LAMHOME)/lib -ltachyon -lmpi $(LINUX_GLX_LIBS) $(MISCLIB) -lm"
+
+# Linux AMD64/EM64T using LAM MPI, with OpenGL display
+linux-lam-64-ogl:
+	$(MAKE) all \
+	"ARCH = linux-lam-64-ogl" \
+	"CC = hcc" \
+	"CFLAGS = -m64 -Wall -O3 -fomit-frame-pointer -ffast-math -I$(LAMHOME)/h -DLinux -DUSEOPENGL $(LINUX_GLX_INCS) $(MISCFLAGS) $(MPIFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"RANLIB = ranlib" \
+	"LIBS = -L. -L$(LAMHOME)/lib -ltachyon -lmpi $(LINUX_GLX_LIBS) $(MISCLIB) -lm"
+
+# Linux x86 using LAM MPI and threads
+linux-lam-thr:
+	$(MAKE) all \
+	"ARCH = linux-lam-thr" \
+	"CC = hcc" \
+	"CFLAGS = -m486 -Wall -O3 -fomit-frame-pointer -ffast-math -I$(LAMHOME)/h -DLinux $(THREADSFLAGS) -D_REENTRANT $(MISCFLAGS) $(MPIFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"RANLIB = ranlib" \
+	"LIBS = -L. -L$(LAMHOME)/lib -ltachyon -lmpi $(MISCLIB) -lm -lpthread"
+
+# Linux on iPaq, using gcc
+linux-ipaq:
+	$(MAKE) all \
+	"ARCH = linux-ipaq" \
+	"CC = gcc" \
+	"CFLAGS = -Wall -O3 -fomit-frame-pointer -ffast-math -DLinux $(MISCFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"RANLIB = ranlib" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm"
+
+# Linux PPC using gcc 
+linux-ppc:
+	$(MAKE) all \
+	"ARCH = linux-ppc" \
+	"CC = gcc" \
+	"CFLAGS = -Wall -O3 -fomit-frame-pointer -ffast-math -DLinux $(MISCFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"RANLIB = ranlib" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm"
+
+# Linux PPC using gcc 
+linux-ps2:
+	$(MAKE) all \
+	"ARCH = linux-ps2" \
+	"CC = gcc" \
+	"CFLAGS = -Wall -O3 -fomit-frame-pointer -ffast-math -DLinux $(MISCFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"RANLIB = ranlib" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm"
+
+# Linux Alpha using gcc 
+linux-alpha:
+	$(MAKE) all \
+	"ARCH = linux-alpha" \
+	"CC = gcc" \
+	"CFLAGS = -Wall -O3 -fomit-frame-pointer -ffast-math -DLinux $(MISCFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"RANLIB = ranlib" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm"
+
+# Linux Alpha using Compaq's compilers
+linux-alpha-ccc:
+	$(MAKE) all \
+	"ARCH = linux-alpha-ccc" \
+	"CC = ccc" \
+	"CFLAGS = -std1 -fast -O4 -arch host -tune host -w0 -verbose -DLinux $(MISCFLAGS)" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"RANLIB = ranlib" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm"
+
+# Linux Alpha using Compaq's compilers, and the Quadrics MPI implementation
+linux-alpha-ccc-qsw:
+	$(MAKE) all \
+	"ARCH = linux-alpha-ccc" \
+	"CC = ccc" \
+	"CFLAGS = -std1 -fast -O4 -arch host -tune host -w0 -verbose -DLinux $(MISCFLAGS) $(MPIFLAGS) -I/usr/lib/mpi/include" \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"RANLIB = ranlib" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm -lelan -lmpi -L/usr/lib/mpi/lib"
+
+# Linux IA-64 using gcc (Merced, Itanium, McKinley, etc)
+linux-ia64:
+	$(MAKE) all \
+	"ARCH = linux-ia64" \
+	"CC = cc" \
+	"CFLAGS = -O3 -DLinux $(MISCFLAGS) " \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"RANLIB = ranlib" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm"
+
+# Linux IA-64 using SGI compilers (Merced, Itanium, McKinley, etc)
+linux-ia64-sgicc:
+	$(MAKE) all \
+	"ARCH = linux-ia64-sgicc" \
+	"CC = sgicc" \
+	"CFLAGS = -O3 -DLinux $(MISCFLAGS) " \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"RANLIB = ranlib" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm"
+
+# Linux IA-64 using gcc compilers and threads (Merced, Itanium, McKinley, etc)
+linux-ia64-thr:
+	$(MAKE) all \
+	"ARCH = linux-ia64-thr" \
+	"CC = cc" \
+	"CFLAGS = -O3 -DLinux $(THREADSFLAGS) -D_REENTRANT $(MISCFLAGS) " \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"RANLIB = ranlib" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm -lpthread"
+
+# Linux IA-64 using SGI compilers and threads (Merced, Itanium, McKinley, etc)
+linux-ia64-thr-sgicc:
+	$(MAKE) all \
+	"ARCH = linux-ia64-thr-sgicc" \
+	"CC = sgicc" \
+	"CFLAGS = -O3 -DLinux $(THREADSFLAGS) -D_REENTRANT $(MISCFLAGS) " \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"RANLIB = ranlib" \
+	"LIBS = -L. -ltachyon $(MISCLIB) -lm -lpthread"
+
+##
+## IVEC SGI altix (by Paul Bourke)
+## XXX Paul mentioned that enabling -DTHR gave him crashes and difficulties
+##     during MPI_Finalize() calls, need to look into that.
+##
+sgi-altix-mpi:
+	$(MAKE) all \
+	"ARCH = sgi-altix-mpi" \
+	"CC = cc" \
+	"CFLAGS = -Wall -O3 -DLinux  $(MPIFLAGS) " \
+	"AR = ar" \
+	"ARFLAGS = r" \
+	"STRIP = strip" \
+	"LIBS = -ltachyon -lmpi $(MISCLIB) -lm "
+
+##
+## CSPI PowerPC Based Multicomputers Running VXWORKS
+## This configuration works for the machine at MPI Software Technologies
+## Uses MSTI MPI/Pro for message passing.
+## 
+cspi-ppc-mpi:
+	$(MAKE) all \
+	"ARCH = cspi-ppc-mpi" \
+	"CC = ccppc" \
+	"CFLAGS = -O3 -fomit-frame-pointer -ffast-math -DCPU=PPC603 -DVXWORKS -I$(WIND_BASE)/target/h -I/home/projects/CSPI/mpi_pro/include $(MISCFLAGS) $(MPIFLAGS)" \
+	"AR = arppc" \
+	"ARFLAGS = -r" \
+	"STRIP = /bin/touch" \
+	"LIBS = -nostartfiles -Wl,-r -L. -L/home/projects/CSPI/mpi_pro/lib/ppc603/bdmp -ltachyon -lmpi"
+
+
+##
+## Mercury PowerPC Based Multicomputers Running MCOS
+## This configuration works for the machine at MPI Software Technologies
+## Uses MSTI MPI/Pro for message passing.
+## 
+mercury-ppc-mpi:
+	$(MAKE) all \
+	"ARCH = mercury-ppc-mpi" \
+	"CC = ccmc -t ppc -x " \
+	"CFLAGS = -w0 -Ot -to ppc:c:-O3,-fomit-frame-pointer,-ffast-math -I/opt/MPIPro/include -DMCOS $(MISCFLAGS) $(MPIFLAGS)" \
+	"AR = armc" \
+	"ARFLAGS = -r" \
+	"STRIP = /bin/touch" \
+	"LIBS = -L. -L/opt/MPIPro/lib ../compile/mercury-ppc-mpi/libmgf.a ../compile/mercury-ppc-mpi/libray.a -lmpi.appc"
+
+##
+## Mercury i860 Based Multicomputers Running MCOS
+## This configuration works for the machine at MPI Software Technologies
+## Uses MSTI MPI/Pro for message passing.
+## 
+mercury-i860-mpi:
+	$(MAKE) all \
+	"ARCH = mercury-i860-mpi" \
+	"CC = ccmc -t i860 -x " \
+	"CFLAGS = -w0 -Ot -I/opt/MPIPro/include -DMCOS $(MISCFLAGS) $(MPIFLAGS)" \
+	"AR = armc" \
+	"ARFLAGS = -r" \
+	"STRIP = /bin/touch" \
+	"LIBS = -L. -L/opt/MPIPro/lib ../compile/mercury-i860-mpi/libmgf.a ../compile/mercury-i860-mpi/libray.a -lmpi"
+
+
+

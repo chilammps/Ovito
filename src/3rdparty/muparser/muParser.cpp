@@ -151,7 +151,7 @@ namespace mu
   value_type Parser::Avg(const value_type *a_afArg, int a_iArgc)
   { 
     if (!a_iArgc)	
-      throw exception_type(_T("too few arguments for function sum."));
+      throw exception_type(_T("too few arguments for function avg."));
 
     value_type fRes=0;
     for (int i=0; i<a_iArgc; ++i) fRes += a_afArg[i];

@@ -51,9 +51,7 @@ void LinkedFileObjectEditor::createUI(const RolloutInsertionParameters& rolloutP
 	toolbar->setStyleSheet("QToolBar { padding: 0px; margin: 0px; border: 0px none black; }");
 	layout->addWidget(toolbar);
 
-	FilenameParameterUI* inputFilePUI = new FilenameParameterUI(this, "sourceUrl", SLOT(showFileSelectionDialog(QWidget*)));
-
-	toolbar->addAction(QIcon(":/core/actions/file/import_object_changefile.png"), tr("Pick new local input file"), inputFilePUI, SLOT(showSelectionDialog()));
+	toolbar->addAction(QIcon(":/core/actions/file/import_object_changefile.png"), tr("Pick new local input file"), this, SLOT(onPickLocalInputFile()));
 	toolbar->addAction(QIcon(":/core/actions/file/file_import_remote.png"), tr("Pick new remote input file"), this, SLOT(onPickRemoteInputFile()));
 	toolbar->addAction(QIcon(":/core/actions/file/import_object_reload.png"), tr("Reload current input file"), this, SLOT(onReloadFrame()));
 	toolbar->addAction(QIcon(":/core/actions/file/import_object_refresh_animation.png"), tr("Reload animation frames"), this, SLOT(onReloadAnimation()));
@@ -83,7 +81,7 @@ void LinkedFileObjectEditor::createUI(const RolloutInsertionParameters& rolloutP
 	layout->addWidget(statusBox);
 	sublayout = new QVBoxLayout(statusBox);
 	sublayout->setContentsMargins(4,4,4,4);
-	_statusLabel = new ObjectStatusWidget(rollout);
+	_statusLabel = new StatusWidget(rollout);
 	sublayout->addWidget(_statusLabel);
 
 	// Create another rollout for animation settings.
@@ -99,7 +97,7 @@ void LinkedFileObjectEditor::createUI(const RolloutInsertionParameters& rolloutP
 	sublayout = new QVBoxLayout(wildcardBox);
 	sublayout->setContentsMargins(4,4,4,4);
 	_wildcardPatternTextbox = new QLineEdit();
-	connect(_wildcardPatternTextbox, SIGNAL(returnPressed()), this, SLOT(onWildcardPatternEntered()));
+	connect(_wildcardPatternTextbox, &QLineEdit::returnPressed, this, &LinkedFileObjectEditor::onWildcardPatternEntered);
 	sublayout->addWidget(_wildcardPatternTextbox);
 
 	QGroupBox* frameSequenceBox = new QGroupBox(tr("Input frames"), rollout);
@@ -114,7 +112,7 @@ void LinkedFileObjectEditor::createUI(const RolloutInsertionParameters& rolloutP
 	_framesListBox = new QComboBox();
 	_framesListBox->setEditable(false);
 	_framesListBox->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
-	connect(_framesListBox, SIGNAL(activated(int)), this, SLOT(onFrameSelected(int)));
+	connect(_framesListBox, (void (QComboBox::*)(int))&QComboBox::activated, this, &LinkedFileObjectEditor::onFrameSelected);
 	subsublayout->addWidget(_framesListBox, 1);
 	sublayout->addLayout(subsublayout);
 
@@ -173,13 +171,23 @@ void LinkedFileObjectEditor::onEditorContentsReplaced(RefTarget* newObject)
 }
 
 /******************************************************************************
+* Is called when the user presses the "Pick local input file" button.
+******************************************************************************/
+void LinkedFileObjectEditor::onPickLocalInputFile()
+{
+	LinkedFileObject* obj = static_object_cast<LinkedFileObject>(editObject());
+	if(obj)
+		obj->showFileSelectionDialog(container()->window());
+}
+
+/******************************************************************************
 * Is called when the user presses the "Pick remote input file" button.
 ******************************************************************************/
 void LinkedFileObjectEditor::onPickRemoteInputFile()
 {
 	LinkedFileObject* obj = static_object_cast<LinkedFileObject>(editObject());
 	if(obj)
-		obj->showURLSelectionDialog();
+		obj->showURLSelectionDialog(container()->window());
 }
 
 /******************************************************************************

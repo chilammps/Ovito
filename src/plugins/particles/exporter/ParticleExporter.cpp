@@ -130,12 +130,8 @@ PipelineFlowState ParticleExporter::getParticles(const QVector<SceneNode*>& node
 
 		// Check if the node's pipeline evaluates to something that contains particles.
 		const PipelineFlowState& state = node->evalPipeline(time);
-		for(const auto& o : state.objects()) {
-			ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o.get());
-			if(property && property->type() == ParticleProperty::PositionProperty) {
-				return state;
-			}
-		}
+		if(ParticlePropertyObject::findInState(state, ParticleProperty::PositionProperty))
+			return state;
 	}
 
 	// Nothing to export.
@@ -294,17 +290,9 @@ bool ParticleExporter::exportFrame(const QVector<SceneNode*>& nodes, int frameNu
 	dataset()->animationSettings()->setTime(time);
 
 	// Wait until the scene is ready.
-	volatile bool sceneIsReady = false;
-	dataset()->runWhenSceneIsReady( [&sceneIsReady]() { sceneIsReady = true; } );
-	if(!sceneIsReady) {
-		if(progressDialog)
-			progressDialog->setLabelText(tr("Preparing frame %1 for export...").arg(frameNumber));
-		while(!sceneIsReady) {
-			if(progressDialog && progressDialog->wasCanceled())
-				return false;
-			QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents, 200);
-		}
-	}
+	if(!dataset()->waitUntilSceneIsReady(tr("Preparing frame %1 for export...").arg(frameNumber), progressDialog))
+		return false;
+
 	if(progressDialog)
 		progressDialog->setLabelText(tr("Exporting frame %1 to file '%2'.").arg(frameNumber).arg(filePath));
 

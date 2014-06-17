@@ -74,7 +74,7 @@ UtilityCommandPage::UtilityCommandPage(MainWindow* mainWindow, QWidget* parent) 
 	}
 
 	// Listen for events.
-	connect(utilitiesButtonGroup, SIGNAL(buttonClicked(QAbstractButton*)), this, SLOT(onUtilityButton(QAbstractButton*)));
+	connect(utilitiesButtonGroup, (void (QButtonGroup::*)(QAbstractButton*))&QButtonGroup::buttonClicked, this, &UtilityCommandPage::onUtilityButton);
 }
 
 /******************************************************************************
@@ -113,7 +113,7 @@ void UtilityCommandPage::onUtilityButton(QAbstractButton* button)
 void UtilityCommandPage::closeUtility()
 {
 	if(!currentUtility) return;
-	OVITO_CHECK_OBJECT_POINTER(currentUtility.get());
+	OVITO_CHECK_OBJECT_POINTER(currentUtility);
 	OVITO_CHECK_POINTER(currentButton);
 	OVITO_ASSERT(currentButton->property("ClassDescriptor").value<void*>() == &currentUtility->getOOType());
 
@@ -124,7 +124,7 @@ void UtilityCommandPage::closeUtility()
 	currentButton->setChecked(false);
 
 	currentButton = nullptr;
-	OVITO_CHECK_OBJECT_POINTER(currentUtility.get());
+	OVITO_CHECK_OBJECT_POINTER(currentUtility);
 	currentUtility = nullptr;
 }
 

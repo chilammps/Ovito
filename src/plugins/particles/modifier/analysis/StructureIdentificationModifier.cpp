@@ -25,9 +25,9 @@
 
 namespace Particles {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, StructureIdentificationModifier, AsynchronousParticleModifier)
-DEFINE_VECTOR_REFERENCE_FIELD(StructureIdentificationModifier, _structureTypes, "StructureTypes", ParticleType)
-SET_PROPERTY_FIELD_LABEL(StructureIdentificationModifier, _structureTypes, "Structure types")
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, StructureIdentificationModifier, AsynchronousParticleModifier);
+DEFINE_VECTOR_REFERENCE_FIELD(StructureIdentificationModifier, _structureTypes, "StructureTypes", ParticleType);
+SET_PROPERTY_FIELD_LABEL(StructureIdentificationModifier, _structureTypes, "Structure types");
 
 /******************************************************************************
 * Constructs the modifier object.
@@ -86,7 +86,7 @@ void StructureIdentificationModifier::retrieveModifierResults(Engine* engine)
 /******************************************************************************
 * Inserts the computed and cached modifier results into the modification pipeline.
 ******************************************************************************/
-ObjectStatus StructureIdentificationModifier::applyModifierResults(TimePoint time, TimeInterval& validityInterval)
+PipelineStatus StructureIdentificationModifier::applyModifierResults(TimePoint time, TimeInterval& validityInterval)
 {
 	if(inputParticleCount() != particleStructures().size())
 		throw Exception(tr("The number of input particles has changed. The stored analysis results have become invalid."));
@@ -137,7 +137,30 @@ ObjectStatus StructureIdentificationModifier::applyModifierResults(TimePoint tim
 		notifyDependents(ReferenceEvent::ObjectStatusChanged);
 	}
 
-	return ObjectStatus::Success;
+	return PipelineStatus::Success;
+}
+
+/******************************************************************************
+* Returns the default color for a structure type.
+******************************************************************************/
+Color StructureIdentificationModifier::getDefaultStructureColor(const QString& structureName)
+{
+	if(structureName == QStringLiteral("FCC")) return Color(0.4f, 1.0f, 0.4f);
+	else if(structureName == QStringLiteral("HCP")) return Color(1.0f, 0.4f, 0.4f);
+	else if(structureName == QStringLiteral("BCC")) return Color(0.4f, 0.4f, 1.0f);
+	else if(structureName == QStringLiteral("ICO")) return Color(0.95f, 0.8f, 0.2f);
+	else if(structureName == QStringLiteral("DIA")) return Color(0.2f, 0.95f, 0.8f);
+	else return Color(0.95f, 0.95f, 0.95f);
+}
+
+/******************************************************************************
+* Constructor.
+******************************************************************************/
+StructureListParameterUI::StructureListParameterUI(PropertiesEditor* parentEditor)
+	: RefTargetListParameterUI(parentEditor, PROPERTY_FIELD(StructureIdentificationModifier::_structureTypes), RolloutInsertionParameters(), nullptr)
+{
+	connect(tableWidget(220), &QTableWidget::doubleClicked, this, &StructureListParameterUI::onDoubleClickStructureType);
+	tableWidget()->setAutoScroll(false);
 }
 
 /******************************************************************************
@@ -168,6 +191,8 @@ QVariant StructureListParameterUI::getItemData(RefTarget* target, const QModelIn
 				else
 					return QString();
 			}
+			else if(index.column() == 4)
+				return stype->id();
 		}
 		else if(role == Qt::DecorationRole) {
 			if(index.column() == 0)
@@ -184,7 +209,7 @@ bool StructureListParameterUI::referenceEvent(RefTarget* source, ReferenceEvent*
 {
 	if(source == editObject()) {
 		if(event->type() == ReferenceEvent::ObjectStatusChanged) {
-			// Update the structure count columns.
+			// Update the structure count and fraction columns.
 			_model->updateColumns(2, 3);
 		}
 	}

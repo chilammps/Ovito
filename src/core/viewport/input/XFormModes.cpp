@@ -57,7 +57,7 @@ void SelectionMode::mouseReleaseEvent(Viewport* vp, QMouseEvent* event)
 		ViewportPickResult pickResult = vp->pick(_clickPoint);
 		if(pickResult.valid && pickResult.objectNode) {
 			_viewport->dataset()->undoStack().beginCompoundOperation(tr("Select"));
-			_viewport->dataset()->selection()->setNode(pickResult.objectNode.get());
+			_viewport->dataset()->selection()->setNode(pickResult.objectNode);
 			_viewport->dataset()->undoStack().endCompoundOperation();
 		}
 		_viewport = nullptr;
@@ -162,7 +162,7 @@ void XFormMode::mousePressEvent(Viewport* vp, QMouseEvent* event)
 				_viewport = vp;
 				_startPoint = event->localPos();
 				_viewport->dataset()->undoStack().beginCompoundOperation(undoDisplayName());
-				_viewport->dataset()->selection()->setNode(pickResult.objectNode.get());
+				_viewport->dataset()->selection()->setNode(pickResult.objectNode);
 				_viewport->dataset()->undoStack().beginCompoundOperation(undoDisplayName());
 				startXForm();
 			}

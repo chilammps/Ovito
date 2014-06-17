@@ -32,37 +32,37 @@
 
 namespace Particles {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, AffineTransformationModifier, ParticleModifier)
-IMPLEMENT_OVITO_OBJECT(Particles, AffineTransformationModifierEditor, ParticleModifierEditor)
-SET_OVITO_OBJECT_EDITOR(AffineTransformationModifier, AffineTransformationModifierEditor)
-DEFINE_PROPERTY_FIELD(AffineTransformationModifier, _transformationTM, "Transformation")
-DEFINE_PROPERTY_FIELD(AffineTransformationModifier, _applyToParticles, "ApplyToParticles")
-DEFINE_PROPERTY_FIELD(AffineTransformationModifier, _toSelectionOnly, "SelectionOnly")
-DEFINE_PROPERTY_FIELD(AffineTransformationModifier, _applyToSimulationBox, "ApplyToSimulationBox")
-DEFINE_PROPERTY_FIELD(AffineTransformationModifier, _destinationCell, "DestinationCell")
-DEFINE_PROPERTY_FIELD(AffineTransformationModifier, _relativeMode, "RelativeMode")
-DEFINE_PROPERTY_FIELD(AffineTransformationModifier, _applyToSurfaceMesh, "ApplyToSurfaceMesh")
-SET_PROPERTY_FIELD_LABEL(AffineTransformationModifier, _transformationTM, "Transformation")
-SET_PROPERTY_FIELD_LABEL(AffineTransformationModifier, _applyToParticles, "Transform particles")
-SET_PROPERTY_FIELD_LABEL(AffineTransformationModifier, _toSelectionOnly, "Selected particles only")
-SET_PROPERTY_FIELD_LABEL(AffineTransformationModifier, _applyToSimulationBox, "Transform simulation cell")
-SET_PROPERTY_FIELD_LABEL(AffineTransformationModifier, _destinationCell, "Destination cell geometry")
-SET_PROPERTY_FIELD_LABEL(AffineTransformationModifier, _relativeMode, "Relative transformation")
-SET_PROPERTY_FIELD_LABEL(AffineTransformationModifier, _applyToSurfaceMesh, "Transform surface mesh")
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, AffineTransformationModifier, ParticleModifier);
+IMPLEMENT_OVITO_OBJECT(Particles, AffineTransformationModifierEditor, ParticleModifierEditor);
+SET_OVITO_OBJECT_EDITOR(AffineTransformationModifier, AffineTransformationModifierEditor);
+DEFINE_PROPERTY_FIELD(AffineTransformationModifier, _transformationTM, "Transformation");
+DEFINE_PROPERTY_FIELD(AffineTransformationModifier, _applyToParticles, "ApplyToParticles");
+DEFINE_PROPERTY_FIELD(AffineTransformationModifier, _toSelectionOnly, "SelectionOnly");
+DEFINE_PROPERTY_FIELD(AffineTransformationModifier, _applyToSimulationBox, "ApplyToSimulationBox");
+DEFINE_PROPERTY_FIELD(AffineTransformationModifier, _targetCell, "DestinationCell");
+DEFINE_PROPERTY_FIELD(AffineTransformationModifier, _relativeMode, "RelativeMode");
+DEFINE_PROPERTY_FIELD(AffineTransformationModifier, _applyToSurfaceMesh, "ApplyToSurfaceMesh");
+SET_PROPERTY_FIELD_LABEL(AffineTransformationModifier, _transformationTM, "Transformation");
+SET_PROPERTY_FIELD_LABEL(AffineTransformationModifier, _applyToParticles, "Transform particles");
+SET_PROPERTY_FIELD_LABEL(AffineTransformationModifier, _toSelectionOnly, "Selected particles only");
+SET_PROPERTY_FIELD_LABEL(AffineTransformationModifier, _applyToSimulationBox, "Transform simulation cell");
+SET_PROPERTY_FIELD_LABEL(AffineTransformationModifier, _targetCell, "Destination cell geometry");
+SET_PROPERTY_FIELD_LABEL(AffineTransformationModifier, _relativeMode, "Relative transformation");
+SET_PROPERTY_FIELD_LABEL(AffineTransformationModifier, _applyToSurfaceMesh, "Transform surface mesh");
 
 /******************************************************************************
 * Constructs the modifier object.
 ******************************************************************************/
 AffineTransformationModifier::AffineTransformationModifier(DataSet* dataset) : ParticleModifier(dataset),
 	_applyToParticles(true), _toSelectionOnly(false), _applyToSimulationBox(false),
-	_transformationTM(AffineTransformation::Identity()), _destinationCell(AffineTransformation::Zero()),
+	_transformationTM(AffineTransformation::Identity()), _targetCell(AffineTransformation::Zero()),
 	_relativeMode(true), _applyToSurfaceMesh(true)
 {
 	INIT_PROPERTY_FIELD(AffineTransformationModifier::_transformationTM);
 	INIT_PROPERTY_FIELD(AffineTransformationModifier::_applyToParticles);
 	INIT_PROPERTY_FIELD(AffineTransformationModifier::_toSelectionOnly);
 	INIT_PROPERTY_FIELD(AffineTransformationModifier::_applyToSimulationBox);
-	INIT_PROPERTY_FIELD(AffineTransformationModifier::_destinationCell);
+	INIT_PROPERTY_FIELD(AffineTransformationModifier::_targetCell);
 	INIT_PROPERTY_FIELD(AffineTransformationModifier::_relativeMode);
 	INIT_PROPERTY_FIELD(AffineTransformationModifier::_applyToSurfaceMesh);
 }
@@ -76,22 +76,22 @@ void AffineTransformationModifier::initializeModifier(PipelineObject* pipeline, 
 	ParticleModifier::initializeModifier(pipeline, modApp);
 
 	// Take the simulation cell from the input object as the default destination cell geometry for absolute scaling.
-	if((AffineTransformation)_destinationCell == AffineTransformation::Zero()) {
+	if(targetCell() == AffineTransformation::Zero()) {
 		PipelineFlowState input = pipeline->evaluatePipeline(dataset()->animationSettings()->time(), modApp, false);
 		SimulationCell* cell = input.findObject<SimulationCell>();
 		if(cell)
-			_destinationCell = cell->cellMatrix();
+			setTargetCell(cell->cellMatrix());
 	}
 }
 
 /******************************************************************************
 * Modifies the particle object.
 ******************************************************************************/
-ObjectStatus AffineTransformationModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
+PipelineStatus AffineTransformationModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
 {
 	AffineTransformation tm;
-	if(_relativeMode) {
-		tm = _transformationTM;
+	if(relativeMode()) {
+		tm = transformation();
 		if(applyToSimulationBox()) {
 			AffineTransformation deformedCell = tm * expectSimulationCell()->cellMatrix();
 			outputSimulationCell()->setCellMatrix(deformedCell);
@@ -99,18 +99,18 @@ ObjectStatus AffineTransformationModifier::modifyParticles(TimePoint time, TimeI
 	}
 	else {
 		AffineTransformation oldCell = expectSimulationCell()->cellMatrix();
-		if(oldCell.determinant() == 0.0)
+		if(oldCell.determinant() == 0)
 			throw Exception(tr("Input simulation cell is degenerate."));
-		tm = (AffineTransformation)_destinationCell * oldCell.inverse();
+		tm = targetCell() * oldCell.inverse();
 		if(applyToSimulationBox())
-			outputSimulationCell()->setCellMatrix(_destinationCell);
+			outputSimulationCell()->setCellMatrix(targetCell());
 	}
 
 	if(applyToParticles()) {
 		expectStandardProperty(ParticleProperty::PositionProperty);
 		ParticlePropertyObject* posProperty = outputStandardProperty(ParticleProperty::PositionProperty);
 
-		if(toSelectionOnly()) {
+		if(selectionOnly()) {
 			ParticlePropertyObject* selProperty = inputStandardProperty(ParticleProperty::SelectionProperty);
 			if(selProperty) {
 				const int* sbegin = selProperty->constDataInt();
@@ -144,7 +144,7 @@ ObjectStatus AffineTransformationModifier::modifyParticles(TimePoint time, TimeI
 	if(applyToSurfaceMesh()) {
 		for(int index = 0; index < input().objects().size(); index++) {
 			// Apply transformation to vertices of surface mesh.
-			if(SurfaceMesh* inputSurface = dynamic_object_cast<SurfaceMesh>(input().objects()[index].get())) {
+			if(SurfaceMesh* inputSurface = dynamic_object_cast<SurfaceMesh>(input().objects()[index])) {
 				OORef<SurfaceMesh> outputSurface = cloneHelper()->cloneObject(inputSurface, false);
 				for(HalfEdgeMesh::Vertex* vertex : outputSurface->mesh().vertices())
 					vertex->pos() = tm * vertex->pos();
@@ -154,7 +154,7 @@ ObjectStatus AffineTransformationModifier::modifyParticles(TimePoint time, TimeI
 		}
 	}
 
-	return ObjectStatus::Success;
+	return PipelineStatus::Success;
 }
 
 /******************************************************************************
@@ -182,12 +182,12 @@ void AffineTransformationModifierEditor::createUI(const RolloutInsertionParamete
 	selectionUI->buttonFalse()->setText(tr("All particles"));
 	selectionUI->buttonFalse()->setEnabled(false);
 	layout->addWidget(selectionUI->buttonFalse(), 2, 1);
-	connect(applyToParticlesUI->checkBox(), SIGNAL(toggled(bool)), selectionUI->buttonFalse(), SLOT(setEnabled(bool)));
+	connect(applyToParticlesUI->checkBox(), &QCheckBox::toggled, selectionUI->buttonFalse(), &QRadioButton::setEnabled);
 
 	selectionUI->buttonTrue()->setText(tr("Only to selected particles"));
 	selectionUI->buttonTrue()->setEnabled(false);
 	layout->addWidget(selectionUI->buttonTrue(), 3, 1);
-	connect(applyToParticlesUI->checkBox(), SIGNAL(toggled(bool)), selectionUI->buttonTrue(), SLOT(setEnabled(bool)));
+	connect(applyToParticlesUI->checkBox(), &QCheckBox::toggled, selectionUI->buttonTrue(), &QRadioButton::setEnabled);
 
 	BooleanParameterUI* applyToSurfaceMeshUI = new BooleanParameterUI(this, PROPERTY_FIELD(AffineTransformationModifier::_applyToSurfaceMesh));
 	layout->addWidget(applyToSurfaceMeshUI->checkBox(), 4, 0, 1, 2);
@@ -235,12 +235,12 @@ void AffineTransformationModifierEditor::createUI(const RolloutInsertionParamete
 			layout->addWidget(lineEdit, gridRow, col*3 + 0);
 			layout->addWidget(spinner, gridRow, col*3 + 1);
 
-			connect(spinner, SIGNAL(spinnerValueChanged()), this, SLOT(onSpinnerValueChanged()));
-			connect(spinner, SIGNAL(spinnerDragStart()), this, SLOT(onSpinnerDragStart()));
-			connect(spinner, SIGNAL(spinnerDragStop()), this, SLOT(onSpinnerDragStop()));
-			connect(spinner, SIGNAL(spinnerDragAbort()), this, SLOT(onSpinnerDragAbort()));
-			connect(relativeModeUI->buttonTrue(), SIGNAL(toggled(bool)), spinner, SLOT(setEnabled(bool)));
-			connect(relativeModeUI->buttonTrue(), SIGNAL(toggled(bool)), lineEdit, SLOT(setEnabled(bool)));
+			connect(spinner, &SpinnerWidget::spinnerValueChanged, this, &AffineTransformationModifierEditor::onSpinnerValueChanged);
+			connect(spinner, &SpinnerWidget::spinnerDragStart, this, &AffineTransformationModifierEditor::onSpinnerDragStart);
+			connect(spinner, &SpinnerWidget::spinnerDragStop, this, &AffineTransformationModifierEditor::onSpinnerDragStop);
+			connect(spinner, &SpinnerWidget::spinnerDragAbort, this, &AffineTransformationModifierEditor::onSpinnerDragAbort);
+			connect(relativeModeUI->buttonTrue(), &QRadioButton::toggled, spinner, &SpinnerWidget::setEnabled);
+			connect(relativeModeUI->buttonTrue(), &QRadioButton::toggled, lineEdit, &QLineEdit::setEnabled);
 		}
 	}
 	layout->addWidget(new QLabel(tr("Translation:")), 4, 0, 1, 8);
@@ -263,21 +263,21 @@ void AffineTransformationModifierEditor::createUI(const RolloutInsertionParamete
 	for(size_t v = 0; v < 3; v++) {
 		layout->addWidget(new QLabel(tr("Cell vector %1:").arg(v+1)), v*2, 0, 1, 8);
 		for(size_t r = 0; r < 3; r++) {
-			destinationCellUI = new AffineTransformationParameterUI(this, PROPERTY_FIELD(AffineTransformationModifier::_destinationCell), r, v);
+			destinationCellUI = new AffineTransformationParameterUI(this, PROPERTY_FIELD(AffineTransformationModifier::_targetCell), r, v);
 			destinationCellUI->setEnabled(false);
 			layout->addWidget(destinationCellUI->textBox(), v*2+1, r*3+0);
 			layout->addWidget(destinationCellUI->spinner(), v*2+1, r*3+1);
-			connect(relativeModeUI->buttonFalse(), SIGNAL(toggled(bool)), destinationCellUI, SLOT(setEnabled(bool)));
+			connect(relativeModeUI->buttonFalse(), &QRadioButton::toggled, destinationCellUI, &AffineTransformationParameterUI::setEnabled);
 		}
 	}
 
 	layout->addWidget(new QLabel(tr("Cell origin:")), 6, 0, 1, 8);
 	for(size_t r = 0; r < 3; r++) {
-		destinationCellUI = new AffineTransformationParameterUI(this, PROPERTY_FIELD(AffineTransformationModifier::_destinationCell), r, 3);
+		destinationCellUI = new AffineTransformationParameterUI(this, PROPERTY_FIELD(AffineTransformationModifier::_targetCell), r, 3);
 		destinationCellUI->setEnabled(false);
 		layout->addWidget(destinationCellUI->textBox(), 7, r*3+0);
 		layout->addWidget(destinationCellUI->spinner(), 7, r*3+1);
-		connect(relativeModeUI->buttonFalse(), SIGNAL(toggled(bool)), destinationCellUI, SLOT(setEnabled(bool)));
+		connect(relativeModeUI->buttonFalse(), &QRadioButton::toggled, destinationCellUI, &AffineTransformationParameterUI::setEnabled);
 	}
 
 	// Update spinner values when a new object has been loaded into the editor.

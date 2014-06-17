@@ -25,6 +25,7 @@ layout(triangle_strip, max_vertices=14) out;
 // Inputs from calling program:
 uniform mat4 projection_matrix;
 uniform mat4 modelview_matrix;
+uniform mat4 modelviewprojection_matrix;
 uniform mat3 normal_matrix;
 uniform vec3 cubeVerts[14];
 uniform vec3 normals[14];
@@ -39,11 +40,10 @@ flat out vec3 surface_normal_fs;
 
 void main()
 {
-	particle_color_fs = particle_color_gs[0];
-	
 	for(int vertex = 0; vertex < 14; vertex++) {
+		particle_color_fs = particle_color_gs[0];
 		surface_normal_fs = normal_matrix * normals[vertex];
-		gl_Position = projection_matrix * modelview_matrix *
+		gl_Position = modelviewprojection_matrix *
 			(gl_in[0].gl_Position + vec4(cubeVerts[vertex] * particle_radius_gs[0], 0));
 		EmitVertex();
 	}	

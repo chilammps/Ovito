@@ -25,32 +25,32 @@
 namespace Ovito {
 
 // Gives the class run-time type information.
-IMPLEMENT_OVITO_OBJECT(Core, FilenameParameterUI, PropertyParameterUI)
+IMPLEMENT_OVITO_OBJECT(Core, FilenameParameterUI, PropertyParameterUI);
 
 /******************************************************************************
 * Constructor for a Qt property.
 ******************************************************************************/
-FilenameParameterUI::FilenameParameterUI(QObject* parentEditor, const char* propertyName, const char* customSelectorSlot) :
-	PropertyParameterUI(parentEditor, propertyName), _customSelectorSlot(customSelectorSlot)
+FilenameParameterUI::FilenameParameterUI(QObject* parentEditor, const char* propertyName) :
+	PropertyParameterUI(parentEditor, propertyName)
 {
 	// Create UI widget.
-	_selectorButton = new QPushButton(" ");
-	connect(_selectorButton, SIGNAL(clicked(bool)), this, SLOT(showSelectionDialog()));	
+	_selectorButton = new QPushButton(QStringLiteral(" "));
+	connect(_selectorButton.data(), &QPushButton::clicked, this, &FilenameParameterUI::showSelectionDialog);
 }
 
 /******************************************************************************
 * Constructor for a PropertyField property.
 ******************************************************************************/
-FilenameParameterUI::FilenameParameterUI(QObject* parentEditor, const PropertyFieldDescriptor& propField, const char* customSelectorSlot) :
-	PropertyParameterUI(parentEditor, propField), _customSelectorSlot(customSelectorSlot)
+FilenameParameterUI::FilenameParameterUI(QObject* parentEditor, const PropertyFieldDescriptor& propField) :
+	PropertyParameterUI(parentEditor, propField)
 {
 	// Create UI widget.
-	_selectorButton = new QPushButton(" ");
-	connect(_selectorButton, SIGNAL(clicked(bool)), this, SLOT(showSelectionDialog()));	
+	_selectorButton = new QPushButton(QStringLiteral(" "));
+	connect(_selectorButton.data(), &QPushButton::clicked, this, &FilenameParameterUI::showSelectionDialog);
 }
 
 /******************************************************************************
-* Destructor, that releases all GUI controls.
+* Destructor.
 ******************************************************************************/
 FilenameParameterUI::~FilenameParameterUI()
 {
@@ -67,7 +67,7 @@ void FilenameParameterUI::resetUI()
 	PropertyParameterUI::resetUI();	
 	
 	if(selectorWidget()) 
-		selectorWidget()->setEnabled(editObject() != NULL && isEnabled());
+		selectorWidget()->setEnabled(editObject() && isEnabled());
 }
 
 /******************************************************************************
@@ -109,24 +109,7 @@ void FilenameParameterUI::setEnabled(bool enabled)
 {
 	if(enabled == isEnabled()) return;
 	PropertyParameterUI::setEnabled(enabled);
-	if(selectorWidget()) selectorWidget()->setEnabled(editObject() != NULL && isEnabled());
-}
-
-/******************************************************************************
-* Shows the file selector and lets the user select a new file.
-******************************************************************************/
-void FilenameParameterUI::showSelectionDialog()
-{
-	// Create a temporary signal-slot connection.
-	QPointer<QObject> obj(editObject());
-	QPointer<QObject> myself(this);
-	connect(this, SIGNAL(invokeCustomSelector(QWidget*)), obj, _customSelectorSlot);
-	// Emit signal.
-	invokeCustomSelector(selectorWidget());
-	// Disconnect again.
-	if(obj && myself) {
-		disconnect(myself, SIGNAL(invokeCustomSelector(QWidget*)), obj, _customSelectorSlot);
-	}
+	if(selectorWidget()) selectorWidget()->setEnabled(editObject() && isEnabled());
 }
 
 };

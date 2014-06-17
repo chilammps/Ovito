@@ -19,26 +19,25 @@
 #
 ###############################################################################
 
-SET(VIDEO_SOURCE_FILES 
-	VideoEncoder.cpp
-)
-
 # Find FFmpeg library.
 FIND_PACKAGE(FFmpeg REQUIRED)
 IF(NOT FFMPEG_FOUND)
 	MESSAGE(FATAL_ERROR "FFmpeg library not found.")
 ENDIF()
-INCLUDE_DIRECTORIES(${FFMPEG_INCLUDE_DIR})
-
-# This will let the source code export symbols when building a DLL.
-ADD_DEFINITIONS(-DOVITO_VIDEO_LIBRARY)
 
 # Build library.
-ADD_LIBRARY(Video ${VIDEO_SOURCE_FILES})
+ADD_LIBRARY(Video VideoEncoder.cpp)
 TARGET_LINK_LIBRARIES(Video Base)
+
+# This will let the source code export symbols when building a DLL.
+TARGET_COMPILE_DEFINITIONS(Video PRIVATE OVITO_VIDEO_LIBRARY)
 
 # Link to FFmpeg library.
 TARGET_LINK_LIBRARIES(Video ${FFMPEG_LIBRARIES})
+TARGET_INCLUDE_DIRECTORIES(Video PRIVATE ${FFMPEG_INCLUDE_DIR})
+
+# Link to ZLib library.
+TARGET_LINK_LIBRARIES(Video ${ZLIB_LIBRARIES})
 
 # Link Qt5.
 QT5_USE_MODULES(Video ${OVITO_REQUIRED_QT_MODULES})

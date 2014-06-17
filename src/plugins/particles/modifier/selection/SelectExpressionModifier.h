@@ -26,8 +26,6 @@
 #include <core/gui/widgets/general/AutocompleteLineEdit.h>
 #include "../ParticleModifier.h"
 
-class FunctionParser;	// From muParser library.
-
 namespace Particles {
 
 using namespace Ovito;
@@ -57,8 +55,11 @@ public:
 	/// Returns the expression that is used to select particles.
 	const QString& expression() const { return _expression; }
 
-	/// \brief Returns the list of input variables discovered during the last modifier evaluation.
-	const QStringList& lastVariableNames() const { return _variableNames; }
+	/// \brief Returns the list of available input variables.
+	const QStringList& inputVariableNames() const { return _variableNames; }
+
+	/// \brief Returns a human-readable text listing the input variables.
+	const QString& inputVariableTable() const { return _variableTable; }
 
 public:
 
@@ -67,19 +68,16 @@ public:
 protected:
 
 	/// Modifies the particle object.
-	virtual ObjectStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;
-
-	/// Compiles the stored expression string. Throws an exception on error.
-	void compileExpression(FunctionParser& parser, int& numVariables);
-
-	/// Determines the available variable names.
-	QStringList getVariableNames(const PipelineFlowState& inputState);
+	virtual PipelineStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;
 
 	/// The expression that is used to select atoms.
 	PropertyField<QString> _expression;
 
-	/// The list of variables during the last evaluation.
+	/// The list of input variables during the last evaluation.
 	QStringList _variableNames;
+
+	/// Human-readable text listing the input variables during the last evaluation.
+	QString _variableTable;
 
 private:
 
@@ -100,9 +98,7 @@ class SelectExpressionModifierEditor : public ParticleModifierEditor
 public:
 
 	/// Default constructor.
-	Q_INVOKABLE SelectExpressionModifierEditor() {
-		connect(this, &PropertiesEditor::contentsReplaced, this, &SelectExpressionModifierEditor::updateEditorFields);
-	}
+	Q_INVOKABLE SelectExpressionModifierEditor() {}
 
 protected:
 

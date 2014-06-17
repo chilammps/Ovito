@@ -87,9 +87,9 @@ public:
 
 public:	
 	
-	Q_PROPERTY(RefTarget editObject READ editObject)		
-	Q_PROPERTY(bool isEnabled READ isEnabled WRITE setEnabled)
-	Q_PROPERTY(bool isDisabled READ isDisabled WRITE setDisabled)
+	Q_PROPERTY(RefTarget editObject READ editObject);
+	Q_PROPERTY(bool isEnabled READ isEnabled WRITE setEnabled);
+	Q_PROPERTY(bool isDisabled READ isDisabled WRITE setDisabled);
 		
 Q_SIGNALS:
 
@@ -204,8 +204,15 @@ public:
 
 public:
 	
-	Q_PROPERTY(const char* propertyName READ propertyName)
-	Q_PROPERTY(RefTarget parameterObject READ parameterObject)
+	Q_PROPERTY(const char* propertyName READ propertyName);
+	Q_PROPERTY(RefTarget parameterObject READ parameterObject);
+
+protected Q_SLOTS:
+
+	/// This slot is called when the user has changed the value of the parameter.
+	/// It stores the new value in the application's settings store so that it can be used
+	/// as the default initialization value next time when a new object of the same class is created.
+	void memorizeDefaultParameterValue();
 
 protected:
 

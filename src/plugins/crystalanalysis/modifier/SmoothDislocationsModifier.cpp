@@ -29,17 +29,17 @@
 
 namespace CrystalAnalysis {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(CrystalAnalysis, SmoothDislocationsModifier, Modifier)
-IMPLEMENT_OVITO_OBJECT(CrystalAnalysis, SmoothDislocationsModifierEditor, PropertiesEditor)
-SET_OVITO_OBJECT_EDITOR(SmoothDislocationsModifier, SmoothDislocationsModifierEditor)
-DEFINE_FLAGS_PROPERTY_FIELD(SmoothDislocationsModifier, _smoothingEnabled, "SmoothingEnabled", PROPERTY_FIELD_MEMORIZE)
-DEFINE_FLAGS_PROPERTY_FIELD(SmoothDislocationsModifier, _smoothingLevel, "SmoothingLevel", PROPERTY_FIELD_MEMORIZE)
-DEFINE_FLAGS_PROPERTY_FIELD(SmoothDislocationsModifier, _coarseningEnabled, "CoarseningEnabled", PROPERTY_FIELD_MEMORIZE)
-DEFINE_FLAGS_PROPERTY_FIELD(SmoothDislocationsModifier, _linePointInterval, "LinePointInterval", PROPERTY_FIELD_MEMORIZE)
-SET_PROPERTY_FIELD_LABEL(SmoothDislocationsModifier, _smoothingEnabled, "Enable smoothing")
-SET_PROPERTY_FIELD_LABEL(SmoothDislocationsModifier, _smoothingLevel, "Smoothing level")
-SET_PROPERTY_FIELD_LABEL(SmoothDislocationsModifier, _coarseningEnabled, "Enable coarsening")
-SET_PROPERTY_FIELD_LABEL(SmoothDislocationsModifier, _linePointInterval, "Point separation")
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(CrystalAnalysis, SmoothDislocationsModifier, Modifier);
+IMPLEMENT_OVITO_OBJECT(CrystalAnalysis, SmoothDislocationsModifierEditor, PropertiesEditor);
+SET_OVITO_OBJECT_EDITOR(SmoothDislocationsModifier, SmoothDislocationsModifierEditor);
+DEFINE_FLAGS_PROPERTY_FIELD(SmoothDislocationsModifier, _smoothingEnabled, "SmoothingEnabled", PROPERTY_FIELD_MEMORIZE);
+DEFINE_FLAGS_PROPERTY_FIELD(SmoothDislocationsModifier, _smoothingLevel, "SmoothingLevel", PROPERTY_FIELD_MEMORIZE);
+DEFINE_FLAGS_PROPERTY_FIELD(SmoothDislocationsModifier, _coarseningEnabled, "CoarseningEnabled", PROPERTY_FIELD_MEMORIZE);
+DEFINE_FLAGS_PROPERTY_FIELD(SmoothDislocationsModifier, _linePointInterval, "LinePointInterval", PROPERTY_FIELD_MEMORIZE);
+SET_PROPERTY_FIELD_LABEL(SmoothDislocationsModifier, _smoothingEnabled, "Enable smoothing");
+SET_PROPERTY_FIELD_LABEL(SmoothDislocationsModifier, _smoothingLevel, "Smoothing level");
+SET_PROPERTY_FIELD_LABEL(SmoothDislocationsModifier, _coarseningEnabled, "Enable coarsening");
+SET_PROPERTY_FIELD_LABEL(SmoothDislocationsModifier, _linePointInterval, "Point separation");
 
 /******************************************************************************
 * Constructs the modifier object.
@@ -65,11 +65,11 @@ bool SmoothDislocationsModifier::isApplicableTo(const PipelineFlowState& input)
 /******************************************************************************
 * This modifies the input object.
 ******************************************************************************/
-ObjectStatus SmoothDislocationsModifier::modifyObject(TimePoint time, ModifierApplication* modApp, PipelineFlowState& state)
+PipelineStatus SmoothDislocationsModifier::modifyObject(TimePoint time, ModifierApplication* modApp, PipelineFlowState& state)
 {
 	DislocationNetwork* inputDislocations = state.findObject<DislocationNetwork>();
 	if(!inputDislocations)
-		return ObjectStatus::Success;	// Nothing to smooth in the modifier's input.
+		return PipelineStatus::Success;	// Nothing to smooth in the modifier's input.
 
 	CloneHelper cloneHelper;
 	OORef<DislocationNetwork> outputDislocations = cloneHelper.cloneObject(inputDislocations, false);
@@ -84,7 +84,7 @@ ObjectStatus SmoothDislocationsModifier::modifyObject(TimePoint time, ModifierAp
 
 	outputDislocations->notifyDependents(ReferenceEvent::TargetChanged);
 	state.replaceObject(inputDislocations, outputDislocations);
-	return ObjectStatus::Success;
+	return PipelineStatus::Success;
 }
 
 /******************************************************************************

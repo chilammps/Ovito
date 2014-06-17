@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -45,7 +45,7 @@ public:
 	virtual void setupBinding(ScriptEngine& engine) override;
 
 	/// Renders the viewport contents to an output image or movie file.
-	Q_INVOKABLE bool render(RenderSettings* settings);
+	static QScriptValue render(QScriptContext* context, ScriptEngine* engine);
 
 	/// Sets up a perspective camera for this viewport.
 	Q_INVOKABLE void perspective(const Point3& cameraPos, const Vector3& cameraDir, FloatType fov);

@@ -21,7 +21,7 @@
 
 /** 
  * \file Box3.h 
- * \brief Contains the definition of the Ovito::Box_3 template class.
+ * \brief Contains the definition of the Ovito::Box_3 class template.
  */
 
 #ifndef __OVITO_BOX3_H
@@ -36,7 +36,7 @@
 namespace Ovito {
 
 /**
- * \brief A bounding box in 3D space.
+ * \brief An axis-aligned bounding box in 3D space.
  *
  * This class stores an axis-aligned box in 3D space.
  * It is defined by minimum and maximum coordinates in X, Y and Z direction.
@@ -284,6 +284,19 @@ inline LoadStream& operator>>(LoadStream& stream, Box_3<T>& b)
 	return stream >> b.minc >> b.maxc;
 }
 
+/// \brief Writes a box to a Qt data stream.
+template<typename T>
+inline QDataStream& operator<<(QDataStream& stream, const Box_3<T>& b) {
+	return stream << b.minc << b.maxc;
+}
+
+/// \brief Reads a box from a Qt data stream.
+template<typename T>
+inline QDataStream& operator>>(QDataStream& stream, Box_3<T>& b) {
+	return stream >> b.minc >> b.maxc;
+}
+
+
 /** 
  * \typedef Box_3<FloatType> Box3
  * \brief Template class instance of the Box_3 class used for floating-point calculations based on Point3. 
@@ -298,9 +311,13 @@ typedef Box_3<int> Box3I;
 
 };	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Box3)
-Q_DECLARE_METATYPE(Ovito::Box3I)
+Q_DECLARE_METATYPE(Ovito::Box3);
+Q_DECLARE_METATYPE(Ovito::Box3I);
+Q_DECLARE_METATYPE(Ovito::Box3*);
+Q_DECLARE_METATYPE(Ovito::Box3I*);
 Q_DECLARE_TYPEINFO(Ovito::Box3, Q_MOVABLE_TYPE);
 Q_DECLARE_TYPEINFO(Ovito::Box3I, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Box3*, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Box3I*, Q_MOVABLE_TYPE);
 
 #endif // __OVITO_BOX3_H

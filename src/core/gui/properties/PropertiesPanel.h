@@ -50,11 +50,8 @@ public:
 	/// Sets the target object being edited in the panel.
 	void setEditObject(RefTarget* newEditObject);
 
-	/// Sets the target object being edited in the panel.
-	void setEditObject(const OORef<RefTarget>& newEditObject) { setEditObject(newEditObject.get()); }
-
 	/// Returns the editor that is responsible for the object being edited.
-	PropertiesEditor* editor() const { return _editor.get(); }
+	PropertiesEditor* editor() const { return _editor; }
 	
 protected:
 

@@ -22,7 +22,7 @@
 PROJECT(Ovito)
 
 # Make sure we have a recent version of CMake.
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8.8 FATAL_ERROR)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8.12 FATAL_ERROR)
 
 # Automatically link to qtmain.lib on Windows.
 IF(WIN32)
@@ -40,7 +40,7 @@ OPTION(OVITO_BUILD_PLUGIN_PARTICLES "Build the Particles plugin." "ON")
 OPTION(OVITO_BUILD_PLUGIN_MESH "Build the Mesh plugin." "ON")
 OPTION(OVITO_BUILD_PLUGIN_TACHYON "Build the Tachyon plugin." "ON")
 OPTION(OVITO_BUILD_PLUGIN_CRYSTALANALYSIS "Build the CrystalAnalysis plugin." "OFF")
-OPTION(OVITO_BUILD_PLUGIN_SCRIPTING "Build the Scripting plugin." "OFF")
+OPTION(OVITO_BUILD_PLUGIN_SCRIPTING "Build the Scripting plugin." "ON")
 OPTION(OVITO_BUILD_PLUGIN_NETCDF "Build the NetCDF plugin." "OFF")
 
 # Tell CMake to run Qt moc when necessary:
@@ -57,9 +57,6 @@ FOREACH(COMPONENT ${OVITO_REQUIRED_QT_MODULES})
 	FIND_PACKAGE(Qt5${COMPONENT} REQUIRED)
 ENDFOREACH()
 
-# Use the Q_SIGNALS and Q_SLOTS macros to avoid name conflicts.
-ADD_DEFINITIONS(-DQT_NO_KEYWORDS)
-
 # Find OpenGL library.
 FIND_PACKAGE(OpenGL REQUIRED)
 
@@ -70,9 +67,6 @@ INCLUDE_DIRECTORIES(${ZLIB_INCLUDE_DIRS})
 # Find the CGAL library.
 IF(OVITO_BUILD_PLUGIN_CRYSTALANALYSIS)
 	FIND_PACKAGE(CGAL REQUIRED)
-	IF(NOT CGAL_FOUND)
-		MESSAGE(FATAL_ERROR "CGAL library, which is required by the CrystalAnalysis plugin, not found.")
-	ENDIF()
 ENDIF()
 
 # Define the OVITO_DEBUG macro in debug builds.
@@ -195,8 +189,8 @@ ENDIF()
 # Build program.
 ADD_SUBDIRECTORY(src)
 
-# On Window the third-party library DLLs are usually not part of the system. 
-# We need to copy them to the OVITO directory.
+# On Windows, the third-party library DLLs are not part of the system. 
+# We need to install them in the OVITO directory.
 IF(WIN32)
 	# Gather Qt dynamic link libraries.
 	FOREACH(COMPONENT ${OVITO_REQUIRED_QT_MODULES})
@@ -208,9 +202,16 @@ IF(WIN32)
 				LIST(APPEND REQUIRED_DLLS "${QtBinaryPath}/icudt52.dll")		
 				LIST(APPEND REQUIRED_DLLS "${QtBinaryPath}/icuin52.dll")		
 				LIST(APPEND REQUIRED_DLLS "${QtBinaryPath}/icuuc52.dll")
+				LIST(APPEND REQUIRED_DLLS "${QtBinaryPath}/libharfbuzz-0.dll")
+				LIST(APPEND REQUIRED_DLLS "${QtBinaryPath}/libfreetype-6.dll")
 				LIST(APPEND REQUIRED_DLLS "${QtBinaryPath}/libpcre16-0.dll")
 				LIST(APPEND REQUIRED_DLLS "${QtBinaryPath}/zlib1.dll")
+				LIST(APPEND REQUIRED_DLLS "${QtBinaryPath}/libbz2-1.dll")
+				LIST(APPEND REQUIRED_DLLS "${QtBinaryPath}/libglib-2.0-0.dll")
+				LIST(APPEND REQUIRED_DLLS "${QtBinaryPath}/libintl-8.dll")
 				LIST(APPEND REQUIRED_DLLS "${QtBinaryPath}/libpng16-16.dll")
+				LIST(APPEND REQUIRED_DLLS "${QtBinaryPath}/libiconv-2.dll")
+				LIST(APPEND REQUIRED_DLLS "${QtBinaryPath}/libjpeg-8.dll")
 			ELSE()
 				LIST(APPEND REQUIRED_DLLS "${QtBinaryPath}/icudt51.dll")		
 				LIST(APPEND REQUIRED_DLLS "${QtBinaryPath}/icuin51.dll")		
@@ -247,8 +248,11 @@ IF(WIN32)
 	    " COMPONENT Runtime)
 		
 	# Install zlib DLL.
-	GET_FILENAME_COMPONENT(ZLIB_LIBRARY_PATH ${ZLIB_LIBRARIES} PATH)
-	LIST(APPEND REQUIRED_DLLS "${ZLIB_LIBRARY_PATH}/../bin/libzlib.dll")
+	LIST(GET ZLIB_LIBRARIES 0 ZLIB_FIRST_LIBRARY)
+	GET_FILENAME_COMPONENT(ZLIB_LIBRARY_PATH "${ZLIB_FIRST_LIBRARY}" PATH)
+	SET(ZLIB_DLL_PATH "${ZLIB_LIBRARY_PATH}/../bin" CACHE PATH "Directory where the ZLib dll is located.")
+	MARK_AS_ADVANCED(ZLIB_DLL_PATH)
+	LIST(APPEND REQUIRED_DLLS "${ZLIB_DLL_PATH}/libzlib.dll")
 
 	# Install libav DLLS.
 	IF(OVITO_VIDEO_OUTPUT_SUPPORT)
@@ -273,10 +277,9 @@ IF(WIN32)
 
 	# Install NetCDF and HDF5 dlls.
 	IF(OVITO_BUILD_PLUGIN_NETCDF)
-		GET_FILENAME_COMPONENT(NETCDF_LIBRARY_PATH "${NETCDF_LIBRARY}" PATH)
-		LIST(APPEND REQUIRED_DLLS "${NETCDF_LIBRARY_PATH}/../bin/libnetcdf.dll")
-		LIST(APPEND REQUIRED_DLLS "${HDF5_C_LIBRARY}")
-		LIST(APPEND REQUIRED_DLLS "${HDF5_HL_LIBRARY}")
+		LIST(APPEND REQUIRED_DLLS "${NETCDF_DLL_PATH}/libnetcdf.dll")
+		LIST(APPEND REQUIRED_DLLS "${HDF5_DLL_PATH}/hdf5.dll")
+		LIST(APPEND REQUIRED_DLLS "${HDF5_DLL_PATH}/hdf5_hl.dll")
 	ENDIF()
 	
 	# Copy library DLLs to output directory.
@@ -289,14 +292,7 @@ ENDIF(WIN32)
 
 
 ################## Build documentation #####################
-
-# Controls the generation of the documentation files.
-OPTION(OVITO_BUILD_DOCUMENTATION "Build the documentation" "OFF")
-
-IF(OVITO_BUILD_DOCUMENTATION)
-	INCLUDE(cmake/Documentation.cmake)
-	ADD_DEPENDENCIES(${PROJECT_NAME} documentation)
-ENDIF(OVITO_BUILD_DOCUMENTATION)
+INCLUDE(cmake/Documentation.cmake)
 
 ######################### Setup CPack #######################
 INCLUDE(${OVITO_SOURCE_BASE_DIR}/cmake/Packaging.cmake)

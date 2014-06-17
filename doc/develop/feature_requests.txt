@@ -1,22 +1,20 @@
 
-- OpenGL rendering support for more than 12 million particles.
-
-- Import bond information from LAMMPS.
+- Complete/improve PDB file parser.
 - Create Bonds modifier: Add 'lower bound' parameter such that, when using the modifier several times, bonds with different lengths can be assigned different colors.
-- Compute Property modifier: Add variables for simulation box size etc.
-- Import file should keep a history of visited directories like the old Ovito version did.
 - Color Coding modifier: Display of color legend in rendered image.
-- Export of general triclinic cells to LAMMPS data/dump formats. See http://lammps.sandia.gov/doc/Section_howto.html#howto_12
-- POV-Ray rendering and file export.
-- Affine Transformation: Add "Duplicate particles" option.
-- Surface mesh for an empty simulation box should not display cap polygons.
-
 - Let the user configure the default colors and radii assigned to different atom types.
-- Implement modifier for Wigner-Seitz defect analysis.
+- The particle information applet should allow the user to click on and select bonds directly (instead of picking the two particles).
+- More particle representations (e.g. open circles/rectangles)
+- Save more user-defined default settings (e.g. renderer type, particle colors, math expressions).
+- Scripting plugin: Add file I/O script functions.
+- Add support for low-dimensional systems.
+
+- Export of general triclinic cells to LAMMPS data/dump formats. See http://lammps.sandia.gov/doc/Section_howto.html#howto_12
+- Import bond information from LAMMPS.
+- Test OpenGL rendering support for more than 12 million particles.
 
 Sha Zhendong:
 
-- Calculation of the pair correlation function
 - Calculation of Voronoi atomic volume
 - Calculation of local atomic number density functions
 
@@ -39,3 +37,11 @@ Taojun:
 - Plotting the value of a certain property of a certain particle versus simulation time. To make this work, 
   all simulation frames need to be kept in memory.
   
+NirajGupta@my.unt.edu:
+
+I also had a feature request, maybe you can consider adding at some point. Since you have a very quick coordination search implemented, 
+would it be possible to also implement a "Compute Radial Property"? Where in one can define a radius, and define an expression, and produce a 
+new channel that sums or averages over all the atoms within that radius. For instance, if I've outputted the per atom stress tensor and volume in a 
+LAMMPS dump, I can specify a radius  of 10 and write an expression like sum(c_stress1)/sum(c_vol) to get an averaged stress component over all the 
+atoms within a 10 ang radius, and assign that value to that atom (more realistically to that point in space). I've written a little post-processing 
+tool to do this, but perhaps it would useful to other users. 

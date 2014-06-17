@@ -22,6 +22,7 @@
 // Inputs from calling program:
 uniform mat4 modelview_matrix;
 uniform mat4 projection_matrix;
+uniform mat4 modelviewprojection_matrix;
 uniform int pickingBaseID;
 uniform vec3 cubeVerts[14];
 
@@ -30,6 +31,7 @@ uniform vec3 cubeVerts[14];
 	// The particle data:
 	in vec3 position;
 	in float particle_radius;
+	in float vertexID;
 	
 	// Outputs to fragment shader
 	flat out vec4 particle_color_fs;
@@ -45,8 +47,9 @@ uniform vec3 cubeVerts[14];
 void main()
 {
 #if __VERSION__ >= 130	
+	
 	// Compute color from object ID.
-	int objectID = pickingBaseID + (gl_VertexID / 14);
+	int objectID = pickingBaseID + int(vertexID) / 14;
 	
 	particle_color_fs = vec4(
 		float(objectID & 0xFF) / 255.0, 
@@ -55,20 +58,21 @@ void main()
 		float((objectID >> 24) & 0xFF) / 255.0);
 
 	// Transform and project vertex.
-	gl_Position = projection_matrix * modelview_matrix * vec4(position + cubeVerts[gl_VertexID % 14] * particle_radius, 1);
+	gl_Position = modelviewprojection_matrix * vec4(position + cubeVerts[gl_VertexID % 14] * particle_radius, 1);
+	
 #else
 
 	// Compute color from object ID.
-	int objectID = pickingBaseID + int(vertexID) / 14;
+	float objectID = pickingBaseID + floor(vertexID / 14);
 	gl_FrontColor = vec4(
-		mod(objectID, 0x100) / 255.0, 
-		mod(objectID / 0x100, 0x100) / 255.0, 
-		mod(objectID / 0x10000, 0x100) / 255.0, 
-		mod(objectID / 0x1000000, 0x100) / 255.0);	
-		
+		floor(mod(objectID, 256.0)) / 255.0,
+		floor(mod(objectID / 256.0, 256.0)) / 255.0, 
+		floor(mod(objectID / 65536.0, 256.0)) / 255.0, 
+		floor(mod(objectID / 16777216.0, 256.0)) / 255.0);	
+				
 	// Transform and project vertex.
-	int cubeCorner = int(floor(int(vertexID) - 14 * floor(int(vertexID) / 14 + 0.5) + 0.5));
-	gl_Position = projection_matrix * modelview_matrix * (gl_Vertex + vec4(cubeVerts[cubeCorner] * particle_radius, 0));
+	int cubeCorner = int(mod(vertexID+0.5, 14.0));
+	gl_Position = modelviewprojection_matrix * (gl_Vertex + vec4(cubeVerts[cubeCorner] * particle_radius, 0));
 
 #endif
 }

@@ -28,7 +28,7 @@
 namespace Ovito {
 
 // Gives the class run-time type information.
-IMPLEMENT_OVITO_OBJECT(Core, ColorParameterUI, PropertyParameterUI)
+IMPLEMENT_OVITO_OBJECT(Core, ColorParameterUI, PropertyParameterUI);
 
 /******************************************************************************
 * The constructor.
@@ -39,11 +39,11 @@ ColorParameterUI::ColorParameterUI(QObject* parentEditor, const PropertyFieldDes
 	_label = new QLabel(propField.displayName() + ":");
 	_colorPicker = new ColorPickerWidget();
 	_colorPicker->setObjectName("colorButton");
-	connect(_colorPicker, SIGNAL(colorChanged()), this, SLOT(onColorPickerChanged()));
+	connect(_colorPicker.data(), &ColorPickerWidget::colorChanged, this, &ColorParameterUI::onColorPickerChanged);
 }
 
 /******************************************************************************
-* Destructor, that releases all GUI controls.
+* Destructor.
 ******************************************************************************/
 ColorParameterUI::~ColorParameterUI()
 {

@@ -48,11 +48,6 @@ public:
 	/// Inserts a particle type into the list of types.
 	void insertParticleType(ParticleType* ptype);
 
-	/// Inserts a particle type into the list of types.
-	void insertParticleType(const OORef<ParticleType>& ptype) {
-		insertParticleType(ptype.get());
-	}
-
 	/// Returns the list of particle types.
 	const ParticleTypeList& particleTypes() const { return _particleTypes; }
 
@@ -101,11 +96,19 @@ public:
 		return m;
 	}
 
-	/////////////////////////////////////// from RefTarget //////////////////////////////
+	//////////////////////////////////// from RefTarget //////////////////////////////////
 
 	/// \brief Returns whether this object, when returned as an editable sub-object by another object,
 	///        should be displayed in the modification stack.
 	virtual bool isSubObjectEditable() const override { return true; }
+
+	//////////////////////////////////// Default settings ////////////////////////////////
+
+	/// Returns the default color for the particle type with the given ID.
+	static Color getDefaultParticleColorFromId(int particleTypeId);
+
+	/// Returns the default color for a named particle type.
+	static Color getDefaultParticleColorFromName(const QString& particleTypeName, int particleTypeId);
 
 protected:
 

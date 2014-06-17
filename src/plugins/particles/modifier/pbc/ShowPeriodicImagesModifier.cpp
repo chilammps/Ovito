@@ -26,23 +26,23 @@
 
 namespace Particles {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ShowPeriodicImagesModifier, ParticleModifier)
-IMPLEMENT_OVITO_OBJECT(Particles, ShowPeriodicImagesModifierEditor, ParticleModifierEditor)
-SET_OVITO_OBJECT_EDITOR(ShowPeriodicImagesModifier, ShowPeriodicImagesModifierEditor)
-DEFINE_PROPERTY_FIELD(ShowPeriodicImagesModifier, _showImageX, "ShowImageX")
-DEFINE_PROPERTY_FIELD(ShowPeriodicImagesModifier, _showImageY, "ShowImageY")
-DEFINE_PROPERTY_FIELD(ShowPeriodicImagesModifier, _showImageZ, "ShowImageZ")
-DEFINE_PROPERTY_FIELD(ShowPeriodicImagesModifier, _numImagesX, "NumImagesX")
-DEFINE_PROPERTY_FIELD(ShowPeriodicImagesModifier, _numImagesY, "NumImagesY")
-DEFINE_PROPERTY_FIELD(ShowPeriodicImagesModifier, _numImagesZ, "NumImagesZ")
-DEFINE_PROPERTY_FIELD(ShowPeriodicImagesModifier, _adjustBoxSize, "AdjustBoxSize")
-SET_PROPERTY_FIELD_LABEL(ShowPeriodicImagesModifier, _showImageX, "Periodic images X")
-SET_PROPERTY_FIELD_LABEL(ShowPeriodicImagesModifier, _showImageY, "Periodic images Y")
-SET_PROPERTY_FIELD_LABEL(ShowPeriodicImagesModifier, _showImageZ, "Periodic images Z")
-SET_PROPERTY_FIELD_LABEL(ShowPeriodicImagesModifier, _numImagesX, "Number of periodic images - X")
-SET_PROPERTY_FIELD_LABEL(ShowPeriodicImagesModifier, _numImagesY, "Number of periodic images - Y")
-SET_PROPERTY_FIELD_LABEL(ShowPeriodicImagesModifier, _numImagesZ, "Number of periodic images - Z")
-SET_PROPERTY_FIELD_LABEL(ShowPeriodicImagesModifier, _adjustBoxSize, "Adjust simulation box size")
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ShowPeriodicImagesModifier, ParticleModifier);
+IMPLEMENT_OVITO_OBJECT(Particles, ShowPeriodicImagesModifierEditor, ParticleModifierEditor);
+SET_OVITO_OBJECT_EDITOR(ShowPeriodicImagesModifier, ShowPeriodicImagesModifierEditor);
+DEFINE_PROPERTY_FIELD(ShowPeriodicImagesModifier, _showImageX, "ShowImageX");
+DEFINE_PROPERTY_FIELD(ShowPeriodicImagesModifier, _showImageY, "ShowImageY");
+DEFINE_PROPERTY_FIELD(ShowPeriodicImagesModifier, _showImageZ, "ShowImageZ");
+DEFINE_PROPERTY_FIELD(ShowPeriodicImagesModifier, _numImagesX, "NumImagesX");
+DEFINE_PROPERTY_FIELD(ShowPeriodicImagesModifier, _numImagesY, "NumImagesY");
+DEFINE_PROPERTY_FIELD(ShowPeriodicImagesModifier, _numImagesZ, "NumImagesZ");
+DEFINE_PROPERTY_FIELD(ShowPeriodicImagesModifier, _adjustBoxSize, "AdjustBoxSize");
+SET_PROPERTY_FIELD_LABEL(ShowPeriodicImagesModifier, _showImageX, "Periodic images X");
+SET_PROPERTY_FIELD_LABEL(ShowPeriodicImagesModifier, _showImageY, "Periodic images Y");
+SET_PROPERTY_FIELD_LABEL(ShowPeriodicImagesModifier, _showImageZ, "Periodic images Z");
+SET_PROPERTY_FIELD_LABEL(ShowPeriodicImagesModifier, _numImagesX, "Number of periodic images - X");
+SET_PROPERTY_FIELD_LABEL(ShowPeriodicImagesModifier, _numImagesY, "Number of periodic images - Y");
+SET_PROPERTY_FIELD_LABEL(ShowPeriodicImagesModifier, _numImagesZ, "Number of periodic images - Z");
+SET_PROPERTY_FIELD_LABEL(ShowPeriodicImagesModifier, _adjustBoxSize, "Adjust simulation box size");
 
 /******************************************************************************
 * Constructs the modifier object.
@@ -63,7 +63,7 @@ ShowPeriodicImagesModifier::ShowPeriodicImagesModifier(DataSet* dataset) : Parti
 /******************************************************************************
 * Modifies the particle object.
 ******************************************************************************/
-ObjectStatus ShowPeriodicImagesModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
+PipelineStatus ShowPeriodicImagesModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
 {
 	int nPBCx = showImageX() ? std::max(numImagesX(),1) : 1;
 	int nPBCy = showImageY() ? std::max(numImagesY(),1) : 1;
@@ -72,7 +72,7 @@ ObjectStatus ShowPeriodicImagesModifier::modifyParticles(TimePoint time, TimeInt
 	// Calculate new number of atoms.
 	size_t numCopies = nPBCx * nPBCy * nPBCz;
 	if(numCopies <= 1 || inputParticleCount() == 0)
-		return ObjectStatus::Success;
+		return PipelineStatus::Success;
 
 	// Enlarge particle property arrays.
 	size_t oldParticleCount = inputParticleCount();
@@ -81,8 +81,8 @@ ObjectStatus ShowPeriodicImagesModifier::modifyParticles(TimePoint time, TimeInt
 	_outputParticleCount = newParticleCount;
 	AffineTransformation simCell = expectSimulationCell()->cellMatrix();
 
-	for(const auto& outobj : _output.objects()) {
-		OORef<ParticlePropertyObject> originalOutputProperty = dynamic_object_cast<ParticlePropertyObject>(outobj.get());
+	for(SceneObject* outobj : _output.objects()) {
+		OORef<ParticlePropertyObject> originalOutputProperty = dynamic_object_cast<ParticlePropertyObject>(outobj);
 		if(!originalOutputProperty)
 			continue;
 
@@ -93,7 +93,7 @@ ObjectStatus ShowPeriodicImagesModifier::modifyParticles(TimePoint time, TimeInt
 		newProperty->resize(newParticleCount);
 
 		// Replace original property with the filtered one.
-		_output.replaceObject(originalOutputProperty.get(), newProperty);
+		_output.replaceObject(originalOutputProperty, newProperty);
 
 		OVITO_ASSERT(originalOutputProperty->size() == oldParticleCount);
 		size_t destinationIndex = oldParticleCount;
@@ -133,7 +133,7 @@ ObjectStatus ShowPeriodicImagesModifier::modifyParticles(TimePoint time, TimeInt
 		outputSimulationCell()->setCellMatrix(simCell);
 	}
 
-	return ObjectStatus::Success;
+	return PipelineStatus::Success;
 }
 
 /******************************************************************************

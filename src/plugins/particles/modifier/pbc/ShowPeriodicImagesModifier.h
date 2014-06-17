@@ -100,7 +100,7 @@ protected:
 
 	/// Modifies the particle object. The time interval passed
 	/// to the function is reduced to the interval where the modified object is valid/constant.
-	virtual ObjectStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;
+	virtual PipelineStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;
 
 private:
 

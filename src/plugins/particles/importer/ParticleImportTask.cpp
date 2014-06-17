@@ -123,21 +123,22 @@ QSet<SceneObject*> ParticleImportTask::insertIntoScene(LinkedFileObject* destina
 
 		// Create a display object for the simulation cell.
 		OORef<SimulationCellDisplay> cellDisplay = new SimulationCellDisplay(destination->dataset());
-		cell->addDisplayObject(cellDisplay.get());
+		cellDisplay->loadUserDefaults();
+		cell->addDisplayObject(cellDisplay);
 
-		// Choose an appropriate simulation cell line rendering width for the given cell dimensions.
+		// Choose an appropriate line width for the cell size.
 		FloatType cellDiameter = (
 				simulationCell().matrix().column(0) +
 				simulationCell().matrix().column(1) +
 				simulationCell().matrix().column(2)).length();
 		cellDisplay->setSimulationCellLineWidth(cellDiameter * 1.4e-3f);
 
-		destination->addSceneObject(cell.get());
+		destination->addSceneObject(cell);
 	}
 	else {
 		cell->setData(simulationCell());
 	}
-	activeObjects.insert(cell.get());
+	activeObjects.insert(cell);
 
 	// Adopt particle properties.
 	for(auto& property : _properties) {
@@ -149,16 +150,26 @@ QSet<SceneObject*> ParticleImportTask::insertIntoScene(LinkedFileObject* destina
 				break;
 			}
 		}
-		if(propertyObj)
+
+		if(propertyObj) {
 			propertyObj->setStorage(QSharedDataPointer<ParticleProperty>(property.release()));
+		}
 		else {
 			propertyObj = ParticlePropertyObject::create(destination->dataset(), QSharedDataPointer<ParticleProperty>(property.release()));
-			destination->addSceneObject(propertyObj.get());
+			destination->addSceneObject(propertyObj);
 		}
-		if(propertyObj->type() == ParticleProperty::ParticleTypeProperty)
-			insertParticleTypes(propertyObj.get());
-		activeObjects.insert(propertyObj.get());
+
+		if(propertyObj->type() == ParticleProperty::ParticleTypeProperty) {
+			insertParticleTypes(propertyObj);
+		}
+		activeObjects.insert(propertyObj);
 	}
+
+	// Pass timestep number to modification pipeline system.
+	if(hasTimestep())
+		destination->setAttributes({{ QStringLiteral("Timestep"), QVariant::fromValue(timestep()) }});
+	else
+		destination->clearAttributes();
 
 	return activeObjects;
 }
@@ -180,22 +191,16 @@ void ParticleImportTask::insertParticleTypes(ParticlePropertyObject* propertyObj
 			ptype->setId(item.id);
 
 			// Assign initial standard color to new particle types.
-			static const Color defaultTypeColors[] = {
-				Color(0.4f,1.0f,0.4f),
-				Color(1.0f,0.4f,0.4f),
-				Color(0.4f,0.4f,1.0f),
-				Color(1.0f,1.0f,0.7f),
-				Color(0.97f,0.97f,0.97f),
-				Color(1.0f,1.0f,0.0f),
-				Color(1.0f,0.4f,1.0f),
-				Color(0.7f,0.0f,1.0f),
-				Color(0.2f,1.0f,1.0f),
-			};
-			ptype->setColor(defaultTypeColors[std::abs(ptype->id()) % (sizeof(defaultTypeColors) / sizeof(defaultTypeColors[0]))]);
+			if(item.color != Color(0,0,0))
+				ptype->setColor(item.color);
+			else if(item.name.isEmpty())
+				ptype->setColor(ParticleTypeProperty::getDefaultParticleColorFromId(ptype->id()));
+			else
+				ptype->setColor(ParticleTypeProperty::getDefaultParticleColorFromName(item.name, ptype->id()));
 
 			typeProperty->insertParticleType(ptype);
 		}
-		activeTypes.insert(ptype.get());
+		activeTypes.insert(ptype);
 
 		if(!item.name.isEmpty())
 			ptype->setName(item.name);

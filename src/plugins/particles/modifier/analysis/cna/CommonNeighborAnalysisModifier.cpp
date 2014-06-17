@@ -33,14 +33,14 @@
 
 namespace Particles {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, CommonNeighborAnalysisModifier, StructureIdentificationModifier)
-IMPLEMENT_OVITO_OBJECT(Particles, CommonNeighborAnalysisModifierEditor, ParticleModifierEditor)
-SET_OVITO_OBJECT_EDITOR(CommonNeighborAnalysisModifier, CommonNeighborAnalysisModifierEditor)
-DEFINE_FLAGS_PROPERTY_FIELD(CommonNeighborAnalysisModifier, _cutoff, "Cutoff", PROPERTY_FIELD_MEMORIZE)
-DEFINE_FLAGS_PROPERTY_FIELD(CommonNeighborAnalysisModifier, _adaptiveMode, "AdaptiveMode", PROPERTY_FIELD_MEMORIZE)
-SET_PROPERTY_FIELD_LABEL(CommonNeighborAnalysisModifier, _cutoff, "Cutoff radius")
-SET_PROPERTY_FIELD_LABEL(CommonNeighborAnalysisModifier, _adaptiveMode, "Adaptive CNA")
-SET_PROPERTY_FIELD_UNITS(CommonNeighborAnalysisModifier, _cutoff, WorldParameterUnit)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, CommonNeighborAnalysisModifier, StructureIdentificationModifier);
+IMPLEMENT_OVITO_OBJECT(Particles, CommonNeighborAnalysisModifierEditor, ParticleModifierEditor);
+SET_OVITO_OBJECT_EDITOR(CommonNeighborAnalysisModifier, CommonNeighborAnalysisModifierEditor);
+DEFINE_FLAGS_PROPERTY_FIELD(CommonNeighborAnalysisModifier, _cutoff, "Cutoff", PROPERTY_FIELD_MEMORIZE);
+DEFINE_FLAGS_PROPERTY_FIELD(CommonNeighborAnalysisModifier, _adaptiveMode, "AdaptiveMode", PROPERTY_FIELD_MEMORIZE);
+SET_PROPERTY_FIELD_LABEL(CommonNeighborAnalysisModifier, _cutoff, "Cutoff radius");
+SET_PROPERTY_FIELD_LABEL(CommonNeighborAnalysisModifier, _adaptiveMode, "Adaptive CNA");
+SET_PROPERTY_FIELD_UNITS(CommonNeighborAnalysisModifier, _cutoff, WorldParameterUnit);
 
 // The maximum number of neighbor atoms taken into account for the common neighbor analysis.
 #define CNA_MAX_PATTERN_NEIGHBORS 16
@@ -55,12 +55,12 @@ CommonNeighborAnalysisModifier::CommonNeighborAnalysisModifier(DataSet* dataset)
 	INIT_PROPERTY_FIELD(CommonNeighborAnalysisModifier::_adaptiveMode);
 
 	// Create the structure types.
-	createStructureType(OTHER, tr("Other"), Color(0.95f, 0.95f, 0.95f));
-	createStructureType(FCC, tr("FCC"), Color(0.4f, 1.0f, 0.4f));
-	createStructureType(HCP, tr("HCP"), Color(1.0f, 0.4f, 0.4f));
-	createStructureType(BCC, tr("BCC"), Color(0.4f, 0.4f, 1.0f));
-	createStructureType(ICO, tr("ICO"), Color(0.95f, 0.8f, 0.2f));
-	createStructureType(DIA, tr("DIA"), Color(0.2f, 0.95f, 0.8f));
+	createStructureType(OTHER, tr("Other"));
+	createStructureType(FCC, tr("FCC"));
+	createStructureType(HCP, tr("HCP"));
+	createStructureType(BCC, tr("BCC"));
+	createStructureType(ICO, tr("ICO"));
+	createStructureType(DIA, tr("DIA"));
 }
 
 /******************************************************************************
@@ -102,7 +102,6 @@ std::shared_ptr<AsynchronousParticleModifier::Engine> CommonNeighborAnalysisModi
 ******************************************************************************/
 void CommonNeighborAnalysisModifier::AdaptiveCommonNeighborAnalysisEngine::compute(FutureInterfaceBase& futureInterface)
 {
-	size_t particleCount = positions()->size();
 	futureInterface.setProgressText(tr("Performing adaptive common neighbor analysis"));
 
 	// Prepare the neighbor list.
@@ -114,7 +113,7 @@ void CommonNeighborAnalysisModifier::AdaptiveCommonNeighborAnalysisEngine::compu
 	ParticleProperty* output = structures();
 
 	// Perform analysis on each particle.
-	parallelFor(particleCount, futureInterface, [&neighborListBuilder, output](size_t index) {
+	parallelFor(positions()->size(), futureInterface, [&neighborListBuilder, output](size_t index) {
 		output->setInt(index, determineStructureAdaptive(neighborListBuilder, index));
 	});
 }
@@ -124,7 +123,6 @@ void CommonNeighborAnalysisModifier::AdaptiveCommonNeighborAnalysisEngine::compu
 ******************************************************************************/
 void CommonNeighborAnalysisModifier::FixedCommonNeighborAnalysisEngine::compute(FutureInterfaceBase& futureInterface)
 {
-	size_t particleCount = positions()->size();
 	futureInterface.setProgressText(tr("Performing common neighbor analysis"));
 
 	// Prepare the neighbor list.
@@ -136,7 +134,7 @@ void CommonNeighborAnalysisModifier::FixedCommonNeighborAnalysisEngine::compute(
 	ParticleProperty* output = structures();
 
 	// Perform analysis on each particle.
-	parallelFor(particleCount, futureInterface, [&neighborListBuilder, output](size_t index) {
+	parallelFor(positions()->size(), futureInterface, [&neighborListBuilder, output](size_t index) {
 		output->setInt(index, determineStructureFixed(neighborListBuilder, index));
 	});
 }
@@ -619,8 +617,8 @@ void CommonNeighborAnalysisModifierEditor::createUI(const RolloutInsertionParame
 	gridlayout->addWidget(cutoffPresetsPUI->comboBox(), 1, 1, 1, 2);
 	layout1->addLayout(gridlayout);
 
-	connect(adaptiveModeUI->buttonFalse(), SIGNAL(toggled(bool)), cutoffRadiusPUI, SLOT(setEnabled(bool)));
-	connect(adaptiveModeUI->buttonFalse(), SIGNAL(toggled(bool)), cutoffPresetsPUI, SLOT(setEnabled(bool)));
+	connect(adaptiveModeUI->buttonFalse(), &QRadioButton::toggled, cutoffRadiusPUI, &FloatParameterUI::setEnabled);
+	connect(adaptiveModeUI->buttonFalse(), &QRadioButton::toggled, cutoffPresetsPUI, &CutoffRadiusPresetsUI::setEnabled);
 	cutoffRadiusPUI->setEnabled(false);
 	cutoffPresetsPUI->setEnabled(false);
 

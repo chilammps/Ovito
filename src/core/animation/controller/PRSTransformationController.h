@@ -125,10 +125,6 @@ public:
 		this->_position = position;
 	}
 
-	/// \brief Assigns a new sub-controller for the translational component of the transformation.
-	/// \param position The new controller.
-	void setPositionController(const OORef<Controller>& position) { setPositionController(position.get()); }
-
 	/// \brief Assigns a new sub-controller for the rotational component of the transformation.
 	/// \param rotation The new controller.
 	void setRotationController(Controller* rotation) {
@@ -136,20 +132,12 @@ public:
 		this->_rotation = rotation;
 	}
 
-	/// \brief Assigns a new sub-controller for the rotational component of the transformation.
-	/// \param rotation The new controller.
-	void setRotationController(const OORef<Controller>& rotation) { setRotationController(rotation.get()); }
-
 	/// \brief Assigns a new sub-controller for the scaling component of the transformation.
 	/// \param scaling The new controller.
 	void setScalingController(Controller* scaling) {
 		OVITO_CHECK_OBJECT_POINTER(scaling);
 		this->_scaling = scaling;
 	}
-
-	/// \brief Assigns a new sub-controller for the scaling component of the transformation.
-	/// \param scaling The new controller.
-	void setScalingController(const OORef<Controller>& scaling) { setScalingController(scaling.get()); }
 
 	/// \brief Adds a translation to the transformation.
 	/// \param time The animation at which the translation should be applied to the transformation.

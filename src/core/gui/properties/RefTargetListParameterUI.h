@@ -39,7 +39,7 @@ public:
 	RefTargetListParameterUI(QObject* parentEditor, const PropertyFieldDescriptor& refField,
 			const RolloutInsertionParameters& rolloutParams = RolloutInsertionParameters(), const OvitoObjectType* defaultEditorClass = nullptr);
 	
-	/// Destructor, that releases all GUI controls.
+	/// Destructor.
 	virtual ~RefTargetListParameterUI();
 	
 	/// The reference field that specifies the vector reference field of the edited object that
@@ -64,7 +64,7 @@ public:
 	virtual void resetUI() override;
 
 	/// Returns the current sub-editor for the selected sub-object or NULL if there is none.
-	PropertiesEditor* subEditor() const { return _subEditor.get(); }
+	PropertiesEditor* subEditor() const { return _subEditor; }
 
 	/// Informs the parameter UI that the given columns of all items have changed.
 	void updateColumns(int columnStartIndex, int columnEndIndex) { _model->updateColumns(columnStartIndex, columnEndIndex); }
@@ -74,7 +74,7 @@ public:
 
 public:
 	
-	Q_PROPERTY(RefTarget selectedObject READ selectedObject)
+	Q_PROPERTY(RefTarget selectedObject READ selectedObject);
 	
 protected:
 

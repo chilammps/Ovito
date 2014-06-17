@@ -91,7 +91,7 @@ void SceneObject::loadFromStream(ObjectLoadStream& stream)
 		OORef<DisplayObject> displayObject = stream.loadObject<DisplayObject>();
 		if(displayObject) {
 			_displayObjects.clear();
-			addDisplayObject(displayObject.get());
+			addDisplayObject(displayObject);
 		}
 	}
 	stream.closeChunk();

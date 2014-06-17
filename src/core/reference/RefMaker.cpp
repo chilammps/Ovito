@@ -26,6 +26,8 @@
 #include <core/plugins/Plugin.h>
 #include <core/utilities/io/ObjectSaveStream.h>
 #include <core/utilities/io/ObjectLoadStream.h>
+#include <core/animation/controller/Controller.h>
+#include <core/animation/AnimationSettings.h>
 
 namespace Ovito {
 
@@ -56,7 +58,7 @@ QVariant RefMaker::getPropertyFieldValue(const PropertyFieldDescriptor& field) c
 {
 	OVITO_ASSERT_MSG(!field.isReferenceField(), "RefMaker::getPropertyFieldValue", "This function may be used only to access property fields and not reference fields."); 
 	OVITO_ASSERT_MSG(getOOType().isDerivedFrom(*field.definingClass()), "RefMaker::getPropertyFieldValue", "The property field has not been defined in this class or its base classes.");
-	OVITO_ASSERT(field.propertyStorageReadFunc != NULL);
+	OVITO_ASSERT(field.propertyStorageReadFunc != nullptr);
 	return field.propertyStorageReadFunc(const_cast<RefMaker*>(this));
 }
 
@@ -67,7 +69,7 @@ void RefMaker::setPropertyFieldValue(const PropertyFieldDescriptor& field, const
 {
 	OVITO_ASSERT_MSG(!field.isReferenceField(), "RefMaker::setPropertyFieldValue", "This function may be used only to access property fields and not reference fields."); 
 	OVITO_ASSERT_MSG(getOOType().isDerivedFrom(*field.definingClass()), "RefMaker::setPropertyFieldValue", "The property field has not been defined in this class or its base classes.");
-	OVITO_ASSERT(field.propertyStorageWriteFunc != NULL);
+	OVITO_ASSERT(field.propertyStorageWriteFunc != nullptr);
 	field.propertyStorageWriteFunc(this, newValue);
 }
 
@@ -79,7 +81,7 @@ const SingleReferenceFieldBase& RefMaker::getReferenceField(const PropertyFieldD
 	OVITO_ASSERT_MSG(field.isReferenceField(), "RefMaker::getReferenceField", "This function may not be used to retrieve property fields."); 
 	OVITO_ASSERT_MSG(field.isVector() == false, "RefMaker::getReferenceField", "This function may not be used to retrieve vector reference fields."); 
 	OVITO_ASSERT_MSG(getOOType().isDerivedFrom(*field.definingClass()), "RefMaker::getReferenceField", "The reference field has not been defined in this class or its base classes.");
-	OVITO_ASSERT(field.singleStorageAccessFunc != NULL);
+	OVITO_ASSERT(field.singleStorageAccessFunc != nullptr);
 	return field.singleStorageAccessFunc(const_cast<RefMaker*>(this));
 }
 
@@ -91,7 +93,7 @@ const VectorReferenceFieldBase& RefMaker::getVectorReferenceField(const Property
 	OVITO_ASSERT_MSG(field.isReferenceField(), "RefMaker::getVectorReferenceField", "This function may not be used to retrieve property fields."); 
 	OVITO_ASSERT_MSG(field.isVector() == true, "RefMaker::getVectorReferenceField", "This function may not be used to retrieve single reference fields."); 
 	OVITO_ASSERT_MSG(getOOType().isDerivedFrom(*field.definingClass()), "RefMaker::getVectorReferenceField", "The reference field has not been defined in this class or its base classes.");
-	OVITO_ASSERT(field.vectorStorageAccessFunc != NULL);
+	OVITO_ASSERT(field.vectorStorageAccessFunc != nullptr);
 	return field.vectorStorageAccessFunc(const_cast<RefMaker*>(this));
 }
 
@@ -301,14 +303,14 @@ void RefMaker::loadFromStream(ObjectLoadStream& stream)
 {
 	OvitoObject::loadFromStream(stream);
 	OVITO_ASSERT(!dataset()->undoStack().isRecording());
-	OVITO_ASSERT(stream._currentObject && stream._currentObject->object.get() == this);
+	OVITO_ASSERT(stream._currentObject && stream._currentObject->object == this);
 
 #if 0
 	qDebug() << "Loading object" << this;
 #endif
 
 	// Read property field from the stream.
-	Q_FOREACH(const ObjectLoadStream::PropertyFieldEntry& fieldEntry, stream._currentObject->pluginClass->propertyFields) {
+	Q_FOREACH(const ObjectLoadStream::SerializedPropertyField& fieldEntry, stream._currentObject->pluginClass->propertyFields) {
 		if(fieldEntry.isReferenceField) {
 			OVITO_ASSERT(fieldEntry.targetClass != nullptr);
 	
@@ -328,9 +330,9 @@ void RefMaker::loadFromStream(ObjectLoadStream& stream)
 								.arg(QString(fieldEntry.identifier)).arg(fieldEntry.definingClass->name()).arg(fieldEntry.targetClass->name()).arg(target->getOOType().name()));
 						}
 #if 0
-						qDebug() << "  Reference field" << fieldEntry.identifier << " contains" << target.get();
+						qDebug() << "  Reference field" << fieldEntry.identifier << " contains" << target;
 #endif
-						fieldEntry.field->singleStorageAccessFunc(this).setValue(target.get());
+						fieldEntry.field->singleStorageAccessFunc(this).setValue(target);
 					}
 					else {
 						// Get storage address of member variable.
@@ -348,9 +350,9 @@ void RefMaker::loadFromStream(ObjectLoadStream& stream)
 									.arg(QString(fieldEntry.identifier)).arg(fieldEntry.definingClass->name(), fieldEntry.targetClass->name(), target->getOOType().name()));
 							}
 #if 0
-							qDebug() << "  Vector reference field" << fieldEntry.identifier << " contains" << target.get();
+							qDebug() << "  Vector reference field" << fieldEntry.identifier << " contains" << target;
 #endif
-							refField.insertInternal(target.get());
+							refField.insertInternal(target);
 						}
 					}
 				}
@@ -377,16 +379,15 @@ void RefMaker::loadFromStream(ObjectLoadStream& stream)
 			// Read the primitive value of the property field from the stream.
 			OVITO_ASSERT(fieldEntry.targetClass == nullptr);
 			stream.expectChunk(0x04);
-			if(fieldEntry.field) {
-				OVITO_ASSERT(fieldEntry.field->propertyStorageLoadFunc != nullptr);
-				fieldEntry.field->propertyStorageLoadFunc(this, stream);
-#if 0
-				qDebug() << "  Property field" << fieldEntry.identifier << " contains" << fieldEntry.field->propertyStorageReadFunc(this);
-#endif
-			}
-			else {
-				// The property field no longer exists.
-				// Ignore chunk contents.
+			if(!loadPropertyFieldFromStream(stream, fieldEntry)) {
+				if(fieldEntry.field) {
+					OVITO_ASSERT(fieldEntry.field->propertyStorageLoadFunc != nullptr);
+					fieldEntry.field->propertyStorageLoadFunc(this, stream);
+				}
+				else {
+					// The property field no longer exists.
+					// Ignore chunk contents.
+				}
 			}
 			stream.closeChunk();
 		}
@@ -433,6 +434,66 @@ void RefMaker::walkNode(QSet<RefTarget*>& nodes, const RefMaker* node)
 						nodes.insert(target);
 						walkNode(nodes, target);
 					}
+				}
+			}
+		}
+	}
+}
+
+/******************************************************************************
+* Loads the user-defined default values of this object's parameter fields from the
+* application's settings store.
+*
+* This function should be called immediately after creation of the object instance.
+* It loads the default value for every property field for which the user has set
+* a default value. This is usually the case for property fields that have the
+* PROPERTY_FIELD_MEMORIZE flag set.
+*
+* This function is recursive, i.e., it also loads default parameter values for
+* referenced objects (when the PROPERTY_FIELD_MEMORIZE flag is set for this RefMaker's reference field).
+******************************************************************************/
+void RefMaker::loadUserDefaults()
+{
+	// Iterate over all property fields in the class hierarchy.
+	for(const OvitoObjectType* clazz = &getOOType(); clazz != nullptr; clazz = clazz->superClass()) {
+		for(const PropertyFieldDescriptor* field = clazz->firstPropertyField(); field != nullptr; field = field->next()) {
+			if(field->flags().testFlag(PROPERTY_FIELD_MEMORIZE)) {
+				if(field->isReferenceField()) {
+					// If it's a reference field, recursively call loadUserDefaults() on the reference object(s).
+					if(field->isVector() == false) {
+						if(RefTarget* target = getReferenceField(*field)) {
+							target->loadUserDefaults();
+
+							// If it's a controller type, load default controller value.
+							if(Controller* ctrl = dynamic_object_cast<Controller>(target)) {
+								QSettings settings;
+								settings.beginGroup(field->definingClass()->plugin()->pluginId());
+								settings.beginGroup(field->definingClass()->name());
+								QVariant v = settings.value(field->identifier());
+								if(!v.isNull()) {
+									if(ctrl->controllerType() == Controller::ControllerTypeFloat) {
+										ctrl->setFloatValue(0, v.value<FloatType>());
+									}
+									else if(ctrl->controllerType() == Controller::ControllerTypeInt) {
+										ctrl->setIntValue(0, v.value<int>());
+									}
+									else if(ctrl->controllerType() == Controller::ControllerTypeVector3) {
+										ctrl->setVector3Value(0, v.value<Vector3>());
+									}
+								}
+							}
+						}
+					}
+					else {
+						const QVector<RefTarget*>& list = getVectorReferenceField(*field);
+						for(RefTarget* target : list) {
+							if(target) target->loadUserDefaults();
+						}
+					}
+				}
+				else {
+					// If it's a property field, load the user-defined default value.
+					field->loadDefaultValue(this);
 				}
 			}
 		}

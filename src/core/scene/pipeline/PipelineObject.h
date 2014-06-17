@@ -61,11 +61,6 @@ public:
 	/// \undoable
 	void setInputObject(SceneObject* inputObject) { _inputObject = inputObject; }
 
-	/// \brief Sets the input object for the modifiers.
-	/// \param inputObject The new input object to which the modifiers will be applied.
-	/// \undoable
-	void setInputObject(const OORef<SceneObject>& inputObject) { setInputObject(inputObject.get()); }
-
 	/// \brief Returns the list of modifier applications.
 	/// \return The list of applications of modifiers that make up the geometry pipeline.
 	///         The modifiers in this list are applied to the input object in ascending order.

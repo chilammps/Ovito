@@ -30,32 +30,32 @@
 
 namespace Ovito {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, RenderSettings, RefTarget)
-SET_OVITO_OBJECT_EDITOR(RenderSettings, RenderSettingsEditor)
-DEFINE_REFERENCE_FIELD(RenderSettings, _renderer, "Renderer", SceneRenderer)
-DEFINE_REFERENCE_FIELD(RenderSettings, _backgroundColor, "BackgroundColor", Controller)
-DEFINE_PROPERTY_FIELD(RenderSettings, _outputImageWidth, "OutputImageWidth")
-DEFINE_PROPERTY_FIELD(RenderSettings, _outputImageHeight, "OutputImageHeight")
-DEFINE_PROPERTY_FIELD(RenderSettings, _generateAlphaChannel, "GenerateAlphaChannel")
-DEFINE_PROPERTY_FIELD(RenderSettings, _saveToFile, "SaveToFile")
-DEFINE_PROPERTY_FIELD(RenderSettings, _skipExistingImages, "SkipExistingImages")
-DEFINE_PROPERTY_FIELD(RenderSettings, _renderingRangeType, "RenderingRangeType")
-DEFINE_PROPERTY_FIELD(RenderSettings, _customRangeStart, "CustomRangeStart")
-DEFINE_PROPERTY_FIELD(RenderSettings, _customRangeEnd, "CustomRangeEnd")
-DEFINE_PROPERTY_FIELD(RenderSettings, _everyNthFrame, "EveryNthFrame")
-DEFINE_PROPERTY_FIELD(RenderSettings, _fileNumberBase, "FileNumberBase")
-SET_PROPERTY_FIELD_LABEL(RenderSettings, _renderer, "Renderer")
-SET_PROPERTY_FIELD_LABEL(RenderSettings, _backgroundColor, "Background color")
-SET_PROPERTY_FIELD_LABEL(RenderSettings, _outputImageWidth, "Width")
-SET_PROPERTY_FIELD_LABEL(RenderSettings, _outputImageHeight, "Height")
-SET_PROPERTY_FIELD_LABEL(RenderSettings, _generateAlphaChannel, "Transparent background")
-SET_PROPERTY_FIELD_LABEL(RenderSettings, _saveToFile, "Save to file")
-SET_PROPERTY_FIELD_LABEL(RenderSettings, _skipExistingImages, "Skip existing animation images")
-SET_PROPERTY_FIELD_LABEL(RenderSettings, _renderingRangeType, "Rendering range")
-SET_PROPERTY_FIELD_LABEL(RenderSettings, _customRangeStart, "Range start")
-SET_PROPERTY_FIELD_LABEL(RenderSettings, _customRangeEnd, "Range end")
-SET_PROPERTY_FIELD_LABEL(RenderSettings, _everyNthFrame, "Every Nth frame")
-SET_PROPERTY_FIELD_LABEL(RenderSettings, _fileNumberBase, "File number base")
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, RenderSettings, RefTarget);
+SET_OVITO_OBJECT_EDITOR(RenderSettings, RenderSettingsEditor);
+DEFINE_FLAGS_REFERENCE_FIELD(RenderSettings, _renderer, "Renderer", SceneRenderer, PROPERTY_FIELD_MEMORIZE);
+DEFINE_FLAGS_REFERENCE_FIELD(RenderSettings, _backgroundColor, "BackgroundColor", Controller, PROPERTY_FIELD_MEMORIZE);
+DEFINE_PROPERTY_FIELD(RenderSettings, _outputImageWidth, "OutputImageWidth");
+DEFINE_PROPERTY_FIELD(RenderSettings, _outputImageHeight, "OutputImageHeight");
+DEFINE_PROPERTY_FIELD(RenderSettings, _generateAlphaChannel, "GenerateAlphaChannel");
+DEFINE_PROPERTY_FIELD(RenderSettings, _saveToFile, "SaveToFile");
+DEFINE_PROPERTY_FIELD(RenderSettings, _skipExistingImages, "SkipExistingImages");
+DEFINE_PROPERTY_FIELD(RenderSettings, _renderingRangeType, "RenderingRangeType");
+DEFINE_PROPERTY_FIELD(RenderSettings, _customRangeStart, "CustomRangeStart");
+DEFINE_PROPERTY_FIELD(RenderSettings, _customRangeEnd, "CustomRangeEnd");
+DEFINE_PROPERTY_FIELD(RenderSettings, _everyNthFrame, "EveryNthFrame");
+DEFINE_PROPERTY_FIELD(RenderSettings, _fileNumberBase, "FileNumberBase");
+SET_PROPERTY_FIELD_LABEL(RenderSettings, _renderer, "Renderer");
+SET_PROPERTY_FIELD_LABEL(RenderSettings, _backgroundColor, "Background color");
+SET_PROPERTY_FIELD_LABEL(RenderSettings, _outputImageWidth, "Width");
+SET_PROPERTY_FIELD_LABEL(RenderSettings, _outputImageHeight, "Height");
+SET_PROPERTY_FIELD_LABEL(RenderSettings, _generateAlphaChannel, "Transparent background");
+SET_PROPERTY_FIELD_LABEL(RenderSettings, _saveToFile, "Save to file");
+SET_PROPERTY_FIELD_LABEL(RenderSettings, _skipExistingImages, "Skip existing animation images");
+SET_PROPERTY_FIELD_LABEL(RenderSettings, _renderingRangeType, "Rendering range");
+SET_PROPERTY_FIELD_LABEL(RenderSettings, _customRangeStart, "Range start");
+SET_PROPERTY_FIELD_LABEL(RenderSettings, _customRangeEnd, "Range end");
+SET_PROPERTY_FIELD_LABEL(RenderSettings, _everyNthFrame, "Every Nth frame");
+SET_PROPERTY_FIELD_LABEL(RenderSettings, _fileNumberBase, "File number base");
 
 /******************************************************************************
 * Constructor.
@@ -84,40 +84,22 @@ RenderSettings::RenderSettings(DataSet* dataset) : RefTarget(dataset),
 	_backgroundColor = ControllerManager::instance().createColorController(dataset);
 	setBackgroundColor(Color(1,1,1));
 
-	// Create an instance of the default renderer class.
-	setRendererClass(&StandardSceneRenderer::OOType);
+	// Pick the default renderer class.
+	const OvitoObjectType* rendererClass = &StandardSceneRenderer::OOType;
 
 	// In console mode, use a software-based renderer instead of the OpenGL-based one.
 	if(Application::instance().guiMode() == false) {
-		for(const OvitoObjectType* rendererClass : PluginManager::instance().listClasses(SceneRenderer::OOType)) {
-			if(rendererClass != &StandardSceneRenderer::OOType) {
-				setRendererClass(rendererClass);
+		for(const OvitoObjectType* rc : PluginManager::instance().listClasses(SceneRenderer::OOType)) {
+			if(rc != &StandardSceneRenderer::OOType) {
+				rendererClass = rc;
 				break;
 			}
 		}
 	}
-}
 
-/******************************************************************************
-* Returns the class of the current renderer or NULL if there is no current renderer. 
-******************************************************************************/
-const OvitoObjectType* RenderSettings::rendererClass() const
-{
-	return renderer() ? &renderer()->getOOType() : nullptr;
-}
-
-/******************************************************************************
-* Selects the type of renderer to use for rendering. The specified class must be derived from PluginRenderer. 
-* This method will create a new instance of the given renderer class and stores the new renderer in this settings object.
-* When an error occurs an exception is thrown. 
-******************************************************************************/
-void RenderSettings::setRendererClass(const OvitoObjectType* rendererClass)
-{
-	OVITO_ASSERT(rendererClass != NULL);
-	OVITO_ASSERT(rendererClass->isDerivedFrom(SceneRenderer::OOType));
-	
-	// Create a new instance of the specified class.
-	_renderer = static_object_cast<SceneRenderer>(rendererClass->createInstance(dataset()));
+	// Create an instance of the default renderer class.
+	OORef<SceneRenderer> renderer = static_object_cast<SceneRenderer>(rendererClass->createInstance(dataset));
+	setRenderer(renderer);
 }
 
 /******************************************************************************
@@ -189,9 +171,6 @@ OORef<RefTarget> RenderSettings::clone(bool deepCopy, CloneHelper& cloneHelper)
 	
 	/// Copy data values.
 	clone->_imageInfo = this->_imageInfo;
-	
-	/// Copy renderer.
-	OVITO_ASSERT((clone->renderer() != NULL) == (renderer() != NULL));
 
 	return clone;
 }

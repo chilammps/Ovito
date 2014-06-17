@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -45,12 +45,7 @@ void InputOutputBinding::setupBinding(ScriptEngine& engine)
 	engine.globalObject().setProperty("cd", engine.newStdFunction(&InputOutputBinding::cd, 1));
 	engine.globalObject().setProperty("pwd", engine.newStdFunction(&InputOutputBinding::pwd, 0));
 	engine.globalObject().setProperty("wait", engine.newStdFunction(&InputOutputBinding::wait, 0));
-
-	// The version() script function returns the version string of the application.
-	engine.globalObject().setProperty("version", engine.newStdFunction(
-			[](QScriptContext* context, ScriptEngine* engine) -> QScriptValue {
-		return QCoreApplication::applicationVersion();
-	}, 0));
+	engine.globalObject().setProperty("assert", engine.newStdFunction(&InputOutputBinding::assert, 1));
 
 	// Marshaling of URLs.
 	qScriptRegisterMetaType<QUrl>(&engine, fromQUrl, toQUrl);
@@ -65,7 +60,7 @@ QScriptValue InputOutputBinding::load(QScriptContext* context, ScriptEngine* eng
 {
 	// Process function arguments.
 	if(context->argumentCount() < 1 || context->argumentCount() > 2)
-		return context->throwError(tr("load() takes 1 or 2 arguments."));
+		return context->throwError(tr("load() function expects 1 or 2 arguments."));
 	const QString urlString = context->argument(0).toString();
 	QUrl importURL = FileManager::instance().urlFromUserInput(urlString);
 	if(!importURL.isValid())
@@ -131,7 +126,7 @@ QScriptValue InputOutputBinding::save(QScriptContext* context, ScriptEngine* eng
 	QScriptValue exporterObject = context->argument(1).construct(constructorArgs);
 	if(exporterObject.isError() || engine->hasUncaughtException())
 		return exporterObject;
-	FileExporter* exporter = qscriptvalue_cast<FileExporter*>(exporterObject);
+	FileExporter* exporter = ScriptEngine::unwrapOvitoObject<FileExporter>(exporterObject);
 	if(!exporter)
 		return context->throwError(tr("Could not create an instance of the exporter type (second argument passed to save() function)."));
 
@@ -139,7 +134,7 @@ QScriptValue InputOutputBinding::save(QScriptContext* context, ScriptEngine* eng
 	DataSet* dataset = engine->dataset();
 	QVector<SceneNode*> nodes;
 	if(context->argumentCount() >= 4) {
-		SceneNode* node = qscriptvalue_cast<SceneNode*>(context->argument(3));
+		SceneNode* node = ScriptEngine::unwrapOvitoObject<SceneNode>(context->argument(3));
 		if(!node)
 			return context->throwError(tr("That's not a scene node (fourth argument passed to save() function)."));
 		nodes.push_back(node);
@@ -150,7 +145,7 @@ QScriptValue InputOutputBinding::save(QScriptContext* context, ScriptEngine* eng
 	if(!exporter->exportToFile(nodes, outputPath, true))
 		return context->throwError(tr("Operation has been canceled by the user."));
 
-	return QScriptValue();
+	return engine->undefinedValue();
 }
 
 /******************************************************************************
@@ -199,37 +194,28 @@ QScriptValue InputOutputBinding::wait(QScriptContext* context, ScriptEngine* eng
 		return context->throwError("wait() takes no arguments.");
 
 	// Wait until scene is ready.
-	volatile bool sceneIsReady = false;
-	engine->dataset()->runWhenSceneIsReady( [&sceneIsReady]() { sceneIsReady = true; } );
-	if(!sceneIsReady) {
-
-		if(Application::instance().guiMode()) {
-
-			// Show a modal progress dialog to block user interface while waiting for the scene to become ready.
-			QProgressDialog progressDialog(engine->dataset()->mainWindow());
-			progressDialog.setWindowModality(Qt::WindowModal);
-			progressDialog.setAutoClose(false);
-			progressDialog.setAutoReset(false);
-			progressDialog.setMinimumDuration(0);
-			progressDialog.setValue(0);
-			progressDialog.setLabelText(tr("Script is waiting for scene graph to become ready."));
-
-			// Poll the flag that indicates if the scene is ready.
-			while(!sceneIsReady) {
-				if(progressDialog.wasCanceled())
-					return QScriptValue(false);
-				QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents, 50);
-			}
-		}
-		else {
-			// Poll the flag that indicates if the scene is ready.
-			while(!sceneIsReady) {
-				QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents, 50);
-			}
-		}
-	}
+	if(!engine->dataset()->waitUntilSceneIsReady(tr("Script is waiting for scene graph to become ready.")))
+		return QScriptValue(false);
 
 	return QScriptValue(true);
+}
+
+/******************************************************************************
+* Implementation of the 'assert' script function.
+*
+* Throws an error if the argument is not true.
+******************************************************************************/
+QScriptValue InputOutputBinding::assert(QScriptContext* context, ScriptEngine* engine)
+{
+	// Process function arguments.
+	if(context->argumentCount() != 1)
+		return context->throwError("assert() takes one argument.");
+	bool exprResult = context->argument(0).toBool();
+
+	if(exprResult)
+		return context->argument(0);
+	else
+		return context->throwError(tr("Assertion failed."));
 }
 
 /******************************************************************************

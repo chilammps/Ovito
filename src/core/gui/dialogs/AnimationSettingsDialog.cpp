@@ -67,7 +67,7 @@ AnimationSettingsDialog::AnimationSettingsDialog(AnimationSettings* animSettings
 	fpsBox->addItem(locale.toString(50), TICKS_PER_SECOND / 50);
 	fpsBox->addItem(locale.toString(60), TICKS_PER_SECOND / 60);
 	contentLayout->addWidget(fpsBox, 0, 1, 1, 2);
-	connect(fpsBox, SIGNAL(activated(int)), this, SLOT(onFramesPerSecondChanged(int)));
+	connect(fpsBox, (void (QComboBox::*)(int))&QComboBox::activated, this, &AnimationSettingsDialog::onFramesPerSecondChanged);
 
 	contentLayout->addWidget(new QLabel(tr("Animation start:"), this), 1, 0);
 	QLineEdit* animStartBox = new QLineEdit(this);
@@ -76,7 +76,7 @@ AnimationSettingsDialog::AnimationSettingsDialog(AnimationSettings* animSettings
 	animStartSpinner->setTextBox(animStartBox);
 	animStartSpinner->setUnit(animSettings->dataset()->unitsManager().timeUnit());
 	contentLayout->addWidget(animStartSpinner, 1, 2);
-	connect(animStartSpinner, SIGNAL(spinnerValueChanged()), this, SLOT(onAnimationIntervalChanged()));
+	connect(animStartSpinner, &SpinnerWidget::spinnerValueChanged, this, &AnimationSettingsDialog::onAnimationIntervalChanged);
 
 	contentLayout->addWidget(new QLabel(tr("Animation end:"), this), 2, 0);
 	QLineEdit* animEndBox = new QLineEdit(this);
@@ -85,7 +85,7 @@ AnimationSettingsDialog::AnimationSettingsDialog(AnimationSettings* animSettings
 	animEndSpinner->setTextBox(animEndBox);
 	animEndSpinner->setUnit(animSettings->dataset()->unitsManager().timeUnit());
 	contentLayout->addWidget(animEndSpinner, 2, 2);
-	connect(animEndSpinner, SIGNAL(spinnerValueChanged()), this, SLOT(onAnimationIntervalChanged()));
+	connect(animEndSpinner, &SpinnerWidget::spinnerValueChanged, this, &AnimationSettingsDialog::onAnimationIntervalChanged);
 	
 	contentLayout->addWidget(new QLabel(tr("Playback speed in viewports:"), this), 3, 0);
 	playbackSpeedBox = new QComboBox(this);
@@ -100,7 +100,7 @@ AnimationSettingsDialog::AnimationSettingsDialog(AnimationSettings* animSettings
 	playbackSpeedBox->addItem(tr("x 10"), 10);
 	playbackSpeedBox->addItem(tr("x 20"), 20);
 	contentLayout->addWidget(playbackSpeedBox, 3, 1, 1, 2);
-	connect(playbackSpeedBox, SIGNAL(activated(int)), this, SLOT(onPlaybackSpeedChanged(int)));
+	connect(playbackSpeedBox, (void (QComboBox::*)(int))&QComboBox::activated, this, &AnimationSettingsDialog::onPlaybackSpeedChanged);
 	
 	QDialogButtonBox* buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel | QDialogButtonBox::Help, Qt::Horizontal, this);
 	connect(buttonBox, &QDialogButtonBox::accepted, this, &AnimationSettingsDialog::onOk);

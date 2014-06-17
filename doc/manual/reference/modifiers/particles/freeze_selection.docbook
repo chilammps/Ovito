@@ -21,12 +21,16 @@
   <simplesect>
     <title>Usage example</title>
 	  <para>A typical application of this modifier is to make 
-	  the motion of particles (i.e. tracers) visible. For this, one first selects
-	  a group of particles in a confined region of space (for instance using the <link
-	  linkend="particles.modifiers.slice">Slice modifier</link> to select a thin slab), which will become the tracer particles. 
-	  This selection is defined at the first frame of the simulation. One then applies the <emphasis>Freeze selection</emphasis> 
+	  the motion of (tracer) particles visible. For this, one first selects
+	  the group of tracer particles (for instance, using the <link
+	  linkend="particles.modifiers.slice">Slice modifier</link>, which allows to select particles within a thin slab). 
+	  This initial selection is performed at the first frame of the simulation. One then applies the <emphasis>Freeze selection</emphasis> 
 	  modifier to preserve this selection for all times. When jumping to a different simulation frame,
 	  the same set of particles remains selected, independent of where the tracer particles have moved.
+	  </para>
+	  <para>
+	  Hint: If you want to preserve an arbitrary particle property over time (and not just the selection state),
+	  you can use the <link linkend="particles.modifiers.freeze_property">Freeze property</link> modifier.
 	  </para>
   </simplesect>
   

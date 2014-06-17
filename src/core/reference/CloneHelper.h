@@ -109,7 +109,7 @@ public:
 	/// This is the same method as the one above but takes a smart pointer instead of a raw pointer.
 	template<class T>
 	OORef<T> cloneObject(const ReferenceField<T>& reffield, bool deepCopy) {
-		return cloneObject((T*)reffield, deepCopy);
+		return cloneObject(static_cast<T*>(reffield), deepCopy);
 	}
 
 	/// \brief Can be used to copy a sub-object reference.
@@ -138,7 +138,7 @@ public:
 	/// This is the same method as above but takes a reference field as input instead of a raw pointer.
 	template<class T>
 	OORef<T> copyReference(const ReferenceField<T>& reffield, bool deepCopy) {
-		return copyReference((T*)reffield, deepCopy);
+		return copyReference(static_cast<T*>(reffield), deepCopy);
 	}
 
 private:

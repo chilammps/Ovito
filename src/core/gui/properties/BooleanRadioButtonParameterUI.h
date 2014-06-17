@@ -41,7 +41,7 @@ public:
 	/// Constructor for a PropertyField property.
 	BooleanRadioButtonParameterUI(QObject* parentEditor, const PropertyFieldDescriptor& propField);
 	
-	/// Destructor, that releases all GUI controls.
+	/// Destructor.
 	virtual ~BooleanRadioButtonParameterUI();
 	
 	/// This returns the radio button group managed by this ParameterUI.

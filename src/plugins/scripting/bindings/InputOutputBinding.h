@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -58,6 +58,9 @@ public:
 
 	/// Implementation of the 'wait' script command.
 	static QScriptValue wait(QScriptContext* context, ScriptEngine* engine);
+
+	/// Implementation of the 'assert' script function.
+	static QScriptValue assert(QScriptContext* context, ScriptEngine* engine);
 
 	/// Converts a QUrl to a script value.
 	static QScriptValue fromQUrl(QScriptEngine *engine, const QUrl& url);

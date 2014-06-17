@@ -59,6 +59,18 @@ public:
 	/// Sets the affine transformation.
 	void setTransformation(const AffineTransformation& tm) { _transformationTM = tm; }
 
+	/// Returns the target cell matrix matrix for absolute transformation mode.
+	const AffineTransformation& targetCell() const { return _targetCell; }
+
+	/// Sets the target cell matrix for absolute transformation mode.
+	void setTargetCell(const AffineTransformation& cell) { _targetCell = cell; }
+
+	/// Returns true if relative transformation mode is selected; returns false if absolute transformation mode is active.
+	bool relativeMode() const { return _relativeMode; }
+
+	/// Switches between relative and absolute transformation mode.
+	void setRelativeMode(bool relative) { _relativeMode = relative; }
+
 	/// Returns whether the transformation is applied to the particles.
 	bool applyToParticles() const { return _applyToParticles; }
 
@@ -66,28 +78,16 @@ public:
 	void setApplyToParticles(bool apply) { _applyToParticles = apply; }
 
 	/// Returns whether the transformation is applied only to the selected particles.
-	bool toSelectionOnly() const { return _toSelectionOnly; }
+	bool selectionOnly() const { return _toSelectionOnly; }
 
 	/// Sets whether the transformation is applied only to the selected particles.
-	void setToSelectionOnly(bool onlySelected) { _toSelectionOnly = onlySelected; }
+	void setSelectionOnly(bool onlySelected) { _toSelectionOnly = onlySelected; }
 
 	/// Returns whether the transformation is applied to the simulation box.
 	bool applyToSimulationBox() const { return _applyToSimulationBox; }
 
 	/// Sets whether the transformation is applied to the simulation box.
 	void setApplyToSimulationBox(bool apply) { _applyToSimulationBox = apply; }
-
-	/// Returns the target cell matrix matrix for absolute transformation mode.
-	const AffineTransformation& destinationCell() const { return _destinationCell; }
-
-	/// Sets the target cell matrix for absolute transformation mode.
-	void setDestinationCell(const AffineTransformation& cell) { _destinationCell = cell; }
-
-	/// Returns true if relative transformation mode is selected; returns false if absolute transformation mode is active.
-	bool relativeMode() const { return _relativeMode; }
-
-	/// Switches between relative and absolute transformation mode.
-	void setRelativeMode(bool relative) { _relativeMode = relative; }
 
 	/// Returns whether the transformation is applied to a surface mesh.
 	bool applyToSurfaceMesh() const { return _applyToSurfaceMesh; }
@@ -97,24 +97,24 @@ public:
 
 public:
 
-	Q_PROPERTY(AffineTransformation transformation READ transformation WRITE setTransformation)
-	Q_PROPERTY(AffineTransformation destinationCell READ destinationCell WRITE setDestinationCell)
-	Q_PROPERTY(bool toSelectionOnly READ toSelectionOnly WRITE setToSelectionOnly)
-	Q_PROPERTY(bool applyToSimulationBox READ applyToSimulationBox WRITE setApplyToSimulationBox)
-	Q_PROPERTY(bool applyToParticles READ applyToParticles WRITE setApplyToParticles)
-	Q_PROPERTY(bool applyToSurfaceMesh READ applyToSurfaceMesh WRITE setApplyToSurfaceMesh)
-	Q_PROPERTY(bool relativeMode READ relativeMode WRITE setRelativeMode)
+	Q_PROPERTY(AffineTransformation transformation READ transformation WRITE setTransformation);
+	Q_PROPERTY(AffineTransformation targetCell READ targetCell WRITE setTargetCell);
+	Q_PROPERTY(bool relativeMode READ relativeMode WRITE setRelativeMode);
+	Q_PROPERTY(bool applyToSimulationBox READ applyToSimulationBox WRITE setApplyToSimulationBox);
+	Q_PROPERTY(bool applyToParticles READ applyToParticles WRITE setApplyToParticles);
+	Q_PROPERTY(bool applyToSurfaceMesh READ applyToSurfaceMesh WRITE setApplyToSurfaceMesh);
+	Q_PROPERTY(bool selectionOnly READ selectionOnly WRITE setSelectionOnly);
 
 protected:
 
 	/// Modifies the particle object.
-	virtual ObjectStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;
+	virtual PipelineStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;
 
 	/// This property fields stores the transformation matrix (used in 'relative' mode).
 	PropertyField<AffineTransformation> _transformationTM;
 
 	/// This property fields stores the simulation cell geometry (used in 'absolute' mode).
-	PropertyField<AffineTransformation> _destinationCell;
+	PropertyField<AffineTransformation> _targetCell;
 
 	/// This controls whether the transformation is applied to the particles.
 	PropertyField<bool> _applyToParticles;
@@ -144,7 +144,7 @@ private:
 	DECLARE_PROPERTY_FIELD(_applyToParticles);
 	DECLARE_PROPERTY_FIELD(_toSelectionOnly);
 	DECLARE_PROPERTY_FIELD(_applyToSimulationBox);
-	DECLARE_PROPERTY_FIELD(_destinationCell);
+	DECLARE_PROPERTY_FIELD(_targetCell);
 	DECLARE_PROPERTY_FIELD(_relativeMode);
 	DECLARE_PROPERTY_FIELD(_applyToSurfaceMesh);
 };

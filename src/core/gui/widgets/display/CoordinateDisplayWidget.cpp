@@ -32,8 +32,9 @@ namespace Ovito {
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-CoordinateDisplayWidget::CoordinateDisplayWidget(DataSetContainer& datasetContainer, QWidget* parent) : QWidget(parent), _datasetContainer(datasetContainer)
+CoordinateDisplayWidget::CoordinateDisplayWidget(DataSetContainer& datasetContainer, QWidget* parent) : QFrame(parent), _datasetContainer(datasetContainer)
 {
+	//setFrameStyle(QFrame::Panel | QFrame::Sunken);
 	QHBoxLayout* layout = new QHBoxLayout(this);
 	layout->setContentsMargins(2,0,2,0);
 	layout->setSpacing(0);
@@ -81,17 +82,6 @@ CoordinateDisplayWidget::CoordinateDisplayWidget(DataSetContainer& datasetContai
 	connect(_spinners[0], &SpinnerWidget::spinnerDragAbort, this, &CoordinateDisplayWidget::onSpinnerDragAbort);
 	connect(_spinners[1], &SpinnerWidget::spinnerDragAbort, this, &CoordinateDisplayWidget::onSpinnerDragAbort);
 	connect(_spinners[2], &SpinnerWidget::spinnerDragAbort, this, &CoordinateDisplayWidget::onSpinnerDragAbort);
-}
-
-/******************************************************************************
-* Paints the widget.
-******************************************************************************/
-void CoordinateDisplayWidget::paintEvent(QPaintEvent *)
-{
-    QPainter painter(this);
-	QStyleOption styleOption;
-	styleOption.initFrom(this);
-	style()->drawPrimitive(QStyle::PE_PanelStatusBar, &styleOption, &painter, this);
 }
 
 /******************************************************************************

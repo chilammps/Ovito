@@ -53,19 +53,10 @@ public:
 	/// Creates an instance of the default renderer class which can be accessed via the renderer() method.
 	Q_INVOKABLE RenderSettings(DataSet* dataset);
 	
-	/// Returns the class of the current renderer or NULL if there is no current renderer.
-	const OvitoObjectType* rendererClass() const;
-
-	/// Selects the type of renderer to use for rendering. The specified class must be derived from PluginRenderer. 
-	/// This method will create a new instance of the given renderer class and stores the new renderer in this settings object.
-	/// When an error occurs an exception is thrown.  
-	/// \undoable
-	void setRendererClass(const OvitoObjectType* rendererClass);
-	
 	/// Returns the active renderer.
 	SceneRenderer* renderer() const { return _renderer; }
 	/// Sets the active renderer.
-	void setRenderer(SceneRenderer* renderer) { _renderer = renderer; }
+	void setRenderer(SceneRenderer* renderer) { OVITO_ASSERT(renderer == nullptr || renderer->dataset() == this->dataset()); _renderer = renderer; }
 	
 	/// Returns whether only the current frame or the whole animation will be rendered.
 	RenderingRangeType renderingRangeType() const { return _renderingRangeType; }
@@ -141,19 +132,19 @@ public:
 
 public:	
 	
-	Q_PROPERTY(int imageWidth READ outputImageWidth WRITE setOutputImageWidth)
-	Q_PROPERTY(int imageHeight READ outputImageHeight WRITE setOutputImageHeight)
-	Q_PROPERTY(FloatType imageAspectRatio READ outputImageAspectRatio)
-	Q_PROPERTY(QString filename READ imageFilename WRITE setImageFilename)
-	Q_PROPERTY(bool generateAlphaChannel READ generateAlphaChannel WRITE setGenerateAlphaChannel)
-	Q_PROPERTY(bool saveToFile READ saveToFile WRITE setSaveToFile)
-	Q_PROPERTY(bool skipExistingImages READ skipExistingImages WRITE setSkipExistingImages)
-	Q_PROPERTY(SceneRenderer* renderer READ renderer WRITE setRenderer)
-	Q_PROPERTY(RenderingRangeType renderingRangeType READ renderingRangeType WRITE setRenderingRangeType)
-	Q_PROPERTY(int customRangeStart READ customRangeStart WRITE setCustomRangeStart)
-	Q_PROPERTY(int customRangeEnd READ customRangeEnd WRITE setCustomRangeEnd)
-	Q_PROPERTY(int everyNthFrame READ everyNthFrame WRITE setEveryNthFrame)
-	Q_PROPERTY(int fileNumberBase READ fileNumberBase WRITE setFileNumberBase)
+	Q_PROPERTY(int imageWidth READ outputImageWidth WRITE setOutputImageWidth);
+	Q_PROPERTY(int imageHeight READ outputImageHeight WRITE setOutputImageHeight);
+	Q_PROPERTY(FloatType imageAspectRatio READ outputImageAspectRatio);
+	Q_PROPERTY(QString filename READ imageFilename WRITE setImageFilename);
+	Q_PROPERTY(bool generateAlphaChannel READ generateAlphaChannel WRITE setGenerateAlphaChannel);
+	Q_PROPERTY(bool saveToFile READ saveToFile WRITE setSaveToFile);
+	Q_PROPERTY(bool skipExistingImages READ skipExistingImages WRITE setSkipExistingImages);
+	Q_PROPERTY(SceneRenderer* renderer READ renderer WRITE setRenderer);
+	Q_PROPERTY(RenderingRangeType renderingRangeType READ renderingRangeType WRITE setRenderingRangeType);
+	Q_PROPERTY(int customRangeStart READ customRangeStart WRITE setCustomRangeStart);
+	Q_PROPERTY(int customRangeEnd READ customRangeEnd WRITE setCustomRangeEnd);
+	Q_PROPERTY(int everyNthFrame READ everyNthFrame WRITE setEveryNthFrame);
+	Q_PROPERTY(int fileNumberBase READ fileNumberBase WRITE setFileNumberBase);
 
 protected:
 

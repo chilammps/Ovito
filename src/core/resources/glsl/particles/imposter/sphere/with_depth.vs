@@ -20,63 +20,29 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 // Inputs from calling program:
+uniform mat4 modelviewprojection_matrix;
 uniform mat4 modelview_matrix;
-uniform mat4 projection_matrix;
-uniform vec2 imposter_texcoords[6];
-uniform vec4 imposter_voffsets[6];
 
 #if __VERSION__ >= 130
 
-	// The particle data:
-	in vec3 position;
-	in vec3 color;
-	in float particle_radius;
+// The particle data:
+in vec3 position;
+in vec3 color;
+in float particle_radius;
 
-	// Output to fragment shader:
-	flat out vec4 particle_color_fs;
-	flat out float particle_radius_fs;	// The particle's radius.
-	flat out float ze0;					// The particle's Z coordinate in eye coordinates.
-	out vec2 texcoords;
+// Output to geometry shader.
+out vec4 particle_color_gs;
+out float particle_radius_gs;
+out float particle_ze0_gs;
 
-#else
-
-	attribute float particle_radius;
-	
-	varying float particle_radius_fs;
-	varying float ze0;
-	#define particle_color_fs gl_FrontColor
 #endif
 
 void main()
 {
 #if __VERSION__ >= 130
-
-	// Forward color to fragment shader.
-	particle_color_fs = vec4(color, 1);
-
-	// Transform and project particle position.
-	vec4 eye_position = modelview_matrix * vec4(position, 1);
-
-	// Assign texture coordinates. 
-	texcoords = imposter_texcoords[gl_VertexID % 6];
-
-#else
-
-	// Pass color to fragment shader.
-	particle_color_fs = gl_Color;
-
-	// Transform and project particle position.
-	vec4 eye_position = modelview_matrix * gl_Vertex;
-
+	particle_color_gs = vec4(color, 1);
+	particle_radius_gs = particle_radius;
+	particle_ze0_gs = modelview_matrix[0][2] * position.x + modelview_matrix[1][2] * position.y + modelview_matrix[2][2] * position.z + modelview_matrix[3][2];
+	gl_Position = modelviewprojection_matrix * vec4(position, 1.0);
 #endif
-
-	// Transform and project particle position.
-	gl_Position = projection_matrix * (eye_position + particle_radius * imposter_voffsets[gl_VertexID % 6]);
-
-	// Forward particle radius to fragment shader.
-	particle_radius_fs = particle_radius;
-	
-	// Pass particle position in eye coordinates to fragment shader.
-	ze0 = eye_position.z;
 }
-

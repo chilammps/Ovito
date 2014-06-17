@@ -29,19 +29,19 @@
 
 #include <core/Core.h>
 #include <core/reference/RefTarget.h>
-#include <core/utilities/ObjectStatus.h>
 #include "PipelineFlowState.h"
+#include "PipelineStatus.h"
 
 namespace Ovito {
 
 /**
- * \brief Modifies an input object in some way.
+ * \brief Base class for algorithms that modify an object or data in some way.
  *
- * This is the abstract base class for modifier objects that can be applied to
- * SceneObject objects. A Modifier takes a SceneObject derived object, modifies
- * in some specific way and finally produces a result object.
+ * A Modifier is inserted into the modification pipeline of a scene node
+ * using ObjectNode::applyModifier() or PipelineObject::insertModifier().
  *
- * A Modifier is applied to an object using ObjectNode::applyModifier().
+ * \sa PipelineObject
+ * \sa ModifierApplication
  */
 class OVITO_CORE_EXPORT Modifier : public RefTarget
 {
@@ -58,7 +58,7 @@ public:
 	///               modifier in the geometry pipeline.
 	/// \param[in,out] state The object flowing down the geometry pipeline. It contains the input object
 	///                      when the method is called and is filled with the resulting object by the method.
-	virtual ObjectStatus modifyObject(TimePoint time, ModifierApplication* modApp, PipelineFlowState& state) = 0;
+	virtual PipelineStatus modifyObject(TimePoint time, ModifierApplication* modApp, PipelineFlowState& state) = 0;
 
 	/// \brief Asks the modifier for its validity interval at the given time.
 	/// \param time The animation at which the validity interval should be computed.
@@ -78,11 +78,10 @@ public:
 
 	/// \brief Returns a structure that describes the current status of the modifier.
 	///
-	/// The default implementation of this method returns an empty status object
-	/// that indicates success (ObjectStatus::StatusType::Success).
+	/// The default implementation of this method returns PipelineStatus::StatusType::Success.
 	///
-	/// A modifier should generate a ReferenceEvent::ObjectStatusChanged event when its status has changed.
-	virtual ObjectStatus status() const { return ObjectStatus(); }
+	/// A modifier should generate a ReferenceEvent::ObjectStatusChanged event when its status changes.
+	virtual PipelineStatus status() const { return PipelineStatus(); }
 
 	/// \brief Asks the modifier if its output depends on the given input object.
 	/// \param input A scene object that flows own the pipeline.
@@ -112,7 +111,7 @@ public:
 	/// \return The bounding box of the modifier in local object coordinates.
 	///
 	/// The default implementation returns an empty bounding box.
-	virtual Box3 boundingBox(TimePoint time,  ObjectNode* contextNode, ModifierApplication* modApp) { return Box3(); }
+	virtual Box3 boundingBox(TimePoint time, ObjectNode* contextNode, ModifierApplication* modApp) { return Box3(); }
 
 	/// \brief Returns the list of applications of this modifier in pipelines.
 	/// \return The list of ModifierApplication objects that describe the particular applications of this Modifier.
@@ -146,7 +145,7 @@ public:
 
 	/// \brief This virtual method is called by the system when the modifier has been inserted into a PipelineObject.
 	/// \param pipeline The PipelineObject into which the modifier has been inserted.
-	/// \param modApp The ModifiedApplication object that has been created for the modifier.
+	/// \param modApp The ModifierApplication object that has been created for this modifier.
 	virtual void initializeModifier(PipelineObject* pipeline, ModifierApplication* modApp) {}
 
 	/// \brief Returns whether this modifier is currently enabled.

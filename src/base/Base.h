@@ -46,6 +46,7 @@
 #include <mutex>
 #include <thread>
 #include <clocale>
+#include <atomic>
 
 /******************************************************************************
 * QT Library
@@ -67,6 +68,10 @@
 #include <QtGui>
 #include <QtNetwork>
 #include <qopengl.h>
+
+#if (QT_VERSION < QT_VERSION_CHECK(5, 2, 0))
+#  error "OVITO requires at least Qt version 5.2"
+#endif
 
 #ifdef OVITO_BASE_LIBRARY
 #  define OVITO_BASE_EXPORT Q_DECL_EXPORT

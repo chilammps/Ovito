@@ -43,7 +43,7 @@ public:
 	virtual void initializeModifier(PipelineObject* pipelineObject, ModifierApplication* modApp) override;
 
 	/// Asks the modifier for its validity interval at the given time.
-	virtual TimeInterval modifierValidity(TimePoint time) override { return TimeInterval::forever(); }
+	virtual TimeInterval modifierValidity(TimePoint time) override { return TimeInterval::infinite(); }
 
 	/// Takes a snapshot of the selection state.
 	void takeSelectionSnapshot(ModifierApplication* modApp, const PipelineFlowState& state);
@@ -51,7 +51,7 @@ public:
 protected:
 
 	/// Modifies the particle object.
-	virtual ObjectStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;
+	virtual PipelineStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;
 
 private:
 

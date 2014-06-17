@@ -30,6 +30,7 @@
 #include <core/gui/widgets/display/CoordinateDisplayWidget.h>
 #include <core/viewport/ViewportConfiguration.h>
 #include <core/viewport/input/ViewportInputManager.h>
+#include <core/rendering/viewport/ViewportSceneRenderer.h>
 #include "MainWindow.h"
 #include "ViewportsPanel.h"
 #include "cmdpanel/CommandPanel.h"
@@ -39,8 +40,7 @@ namespace Ovito {
 /******************************************************************************
 * The constructor of the main window class.
 ******************************************************************************/
-MainWindow::MainWindow() :
-		_datasetContainer(this)
+MainWindow::MainWindow() : _datasetContainer(this)
 {
 	setWindowTitle(tr("Ovito (Open Visualization Tool)"));
 	setAttribute(Qt::WA_DeleteOnClose);
@@ -48,6 +48,9 @@ MainWindow::MainWindow() :
 	// Setup the layout of docking widgets.
 	setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
 	setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
+
+	// Disable context menus in toolbars.
+	setContextMenuPolicy(Qt::NoContextMenu);
 
 	// Create input manager.
 	_viewportInputManager = new ViewportInputManager(this);
@@ -68,7 +71,7 @@ MainWindow::MainWindow() :
 	QWidget* animationPanel = new QWidget();
 	QVBoxLayout* animationPanelLayout = new QVBoxLayout();
 	animationPanelLayout->setSpacing(0);
-	animationPanelLayout->setContentsMargins(0, 0, 0, 0);
+	animationPanelLayout->setContentsMargins(0, 1, 0, 0);
 	animationPanel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 #if defined(Q_OS_LINUX)
 	QHBoxLayout* animationPanelParentLayout = new QHBoxLayout(animationPanel);
@@ -86,27 +89,24 @@ MainWindow::MainWindow() :
 
 	// Create animation time slider
 	AnimationTimeSlider* timeSlider = new AnimationTimeSlider(this);
-	timeSlider->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 	animationPanelLayout->addWidget(timeSlider);
 	AnimationTrackBar* trackBar = new AnimationTrackBar(this, timeSlider);
-	trackBar->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 	animationPanelLayout->addWidget(trackBar);
 
 	// Create status bar.
-	QHBoxLayout* statusBarLayout = new QHBoxLayout();
-	statusBarLayout->setContentsMargins(0,0,0,0);
-	statusBarLayout->setSpacing(0);
-	animationPanelLayout->addLayout(statusBarLayout, 1);
+	_statusBarLayout = new QHBoxLayout();
+	_statusBarLayout->setContentsMargins(0,0,0,0);
+	_statusBarLayout->setSpacing(0);
+	animationPanelLayout->addLayout(_statusBarLayout, 1);
 
 	_statusBar = new QStatusBar(animationPanel);
 	_statusBar->setSizeGripEnabled(false);
 	_statusBar->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
 	setStatusBar(_statusBar);
-	statusBarLayout->addWidget(_statusBar, 1);
+	_statusBarLayout->addWidget(_statusBar, 1);
 
 	_coordinateDisplay = new CoordinateDisplayWidget(datasetContainer(), animationPanel);
-	statusBarLayout->addWidget(_coordinateDisplay);
-	//_statusBar->addPermanentWidget(_coordinateDisplay);
+	_statusBarLayout->addWidget(_coordinateDisplay);
 
 	// Create the animation control toolbar.
 	QToolBar* animationControlBar1 = new QToolBar();
@@ -361,6 +361,34 @@ void MainWindow::openHelpTopic(const QString& page)
 	if(!QDesktopServices::openUrl(QUrl::fromLocalFile(fullPath))) {
 		Exception(tr("Could not launch web browser to display online manual. The requested file path is %1").arg(fullPath)).showError();
 	}
+}
+
+/******************************************************************************
+* Returns the master OpenGL context managed by this window, which is used to
+* render the viewports. If sharing of OpenGL contexts between viewports is
+* disabled, then this function returns the GL context of the first viewport
+* in this window.
+******************************************************************************/
+QOpenGLContext* MainWindow::getOpenGLContext()
+{
+	if(_glcontext)
+		return _glcontext;
+
+	if(ViewportWindow::contextSharingEnabled()) {
+		_glcontext = new QOpenGLContext(this);
+		_glcontext->setFormat(ViewportSceneRenderer::getDefaultSurfaceFormat());
+		if(!_glcontext->create())
+			throw Exception(tr("Failed to create OpenGL context."));
+	}
+	else {
+		if(datasetContainer().currentSet()) {
+			const QVector<Viewport*>& viewports = datasetContainer().currentSet()->viewportConfig()->viewports();
+			if(!viewports.empty() && viewports.front()->viewportWindow())
+				_glcontext = viewports.front()->viewportWindow()->glcontext();
+		}
+	}
+
+	return _glcontext;
 }
 
 };

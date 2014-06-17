@@ -25,14 +25,14 @@
 
 namespace Particles {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ParticleTypeProperty, ParticlePropertyObject)
-IMPLEMENT_OVITO_OBJECT(Particles, ParticleTypePropertyEditor, PropertiesEditor)
-SET_OVITO_OBJECT_EDITOR(ParticleTypeProperty, ParticleTypePropertyEditor)
-DEFINE_VECTOR_REFERENCE_FIELD(ParticleTypeProperty, _particleTypes, "ParticleTypes", ParticleType)
-SET_PROPERTY_FIELD_LABEL(ParticleTypeProperty, _particleTypes, "Particle Types")
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ParticleTypeProperty, ParticlePropertyObject);
+IMPLEMENT_OVITO_OBJECT(Particles, ParticleTypePropertyEditor, PropertiesEditor);
+SET_OVITO_OBJECT_EDITOR(ParticleTypeProperty, ParticleTypePropertyEditor);
+DEFINE_VECTOR_REFERENCE_FIELD(ParticleTypeProperty, _particleTypes, "ParticleTypes", ParticleType);
+SET_PROPERTY_FIELD_LABEL(ParticleTypeProperty, _particleTypes, "Particle Types");
 
 /******************************************************************************
-* Deserialization constructor.
+* Constructor.
 ******************************************************************************/
 ParticleTypeProperty::ParticleTypeProperty(DataSet* dataset, ParticleProperty* storage)
 	: ParticlePropertyObject(dataset, storage)
@@ -49,6 +49,34 @@ void ParticleTypeProperty::insertParticleType(ParticleType* ptype)
 
 	// Insert into array.
 	_particleTypes.push_back(ptype);
+}
+
+/******************************************************************************
+* Returns the default color for a particle type ID.
+******************************************************************************/
+Color ParticleTypeProperty::getDefaultParticleColorFromId(int particleTypeId)
+{
+	// Assign initial standard color to new particle types.
+	static const Color defaultTypeColors[] = {
+		Color(0.4f,1.0f,0.4f),
+		Color(1.0f,0.4f,0.4f),
+		Color(0.4f,0.4f,1.0f),
+		Color(1.0f,1.0f,0.7f),
+		Color(0.97f,0.97f,0.97f),
+		Color(1.0f,1.0f,0.0f),
+		Color(1.0f,0.4f,1.0f),
+		Color(0.7f,0.0f,1.0f),
+		Color(0.2f,1.0f,1.0f),
+	};
+	return defaultTypeColors[std::abs(particleTypeId) % (sizeof(defaultTypeColors) / sizeof(defaultTypeColors[0]))];
+}
+
+/******************************************************************************
+* Returns the default color for a particle type name.
+******************************************************************************/
+Color ParticleTypeProperty::getDefaultParticleColorFromName(const QString& particleTypeName, int particleTypeId)
+{
+	return getDefaultParticleColorFromId(particleTypeId);
 }
 
 /******************************************************************************

@@ -28,7 +28,7 @@
 namespace Ovito {
 
 // Gives the class run-time type information.
-IMPLEMENT_OVITO_OBJECT(Core, IntegerRadioButtonParameterUI, PropertyParameterUI)
+IMPLEMENT_OVITO_OBJECT(Core, IntegerRadioButtonParameterUI, PropertyParameterUI);
 
 /******************************************************************************
 * The constructor.
@@ -37,7 +37,7 @@ IntegerRadioButtonParameterUI::IntegerRadioButtonParameterUI(QObject* parentEdit
 	PropertyParameterUI(parentEditor, propertyName)
 {
 	_buttonGroup = new QButtonGroup(this);
-	connect(_buttonGroup, SIGNAL(buttonClicked(int)), this, SLOT(updatePropertyValue()));	
+	connect(_buttonGroup.data(), (void (QButtonGroup::*)(int))&QButtonGroup::buttonClicked, this, &IntegerRadioButtonParameterUI::updatePropertyValue);
 }
 
 /******************************************************************************
@@ -47,7 +47,7 @@ IntegerRadioButtonParameterUI::IntegerRadioButtonParameterUI(QObject* parentEdit
 	PropertyParameterUI(parentEditor, propField)
 {
 	_buttonGroup = new QButtonGroup(this);
-	connect(_buttonGroup, SIGNAL(buttonClicked(int)), this, SLOT(updatePropertyValue()));
+	connect(_buttonGroup.data(), (void (QButtonGroup::*)(int))&QButtonGroup::buttonClicked, this, &IntegerRadioButtonParameterUI::updatePropertyValue);
 }
 
 /******************************************************************************
@@ -58,7 +58,7 @@ QRadioButton* IntegerRadioButtonParameterUI::addRadioButton(int value, const QSt
 {
 	QRadioButton* button = new QRadioButton(caption);
 	if(buttonGroup()) {
-		button->setEnabled(editObject() != NULL && isEnabled());
+		button->setEnabled(editObject() && isEnabled());
 		buttonGroup()->addButton(button, value);
 	}
 	return button;
@@ -75,9 +75,9 @@ void IntegerRadioButtonParameterUI::resetUI()
 	if(buttonGroup()) {
 		Q_FOREACH(QAbstractButton* button, buttonGroup()->buttons()) {
 			if(isReferenceFieldUI())
-				button->setEnabled(parameterObject() != NULL && isEnabled());
+				button->setEnabled(parameterObject() && isEnabled());
 			else
-				button->setEnabled(editObject() != NULL && isEnabled());
+				button->setEnabled(editObject() && isEnabled());
 		}
 	}
 
@@ -138,9 +138,9 @@ void IntegerRadioButtonParameterUI::setEnabled(bool enabled)
 	if(buttonGroup()) {
 		Q_FOREACH(QAbstractButton* button, buttonGroup()->buttons()) {
 			if(isReferenceFieldUI())
-				button->setEnabled(parameterObject() != NULL && isEnabled());
+				button->setEnabled(parameterObject() && isEnabled());
 			else
-				button->setEnabled(editObject() != NULL && isEnabled());
+				button->setEnabled(editObject() && isEnabled());
 		}
 	}
 }

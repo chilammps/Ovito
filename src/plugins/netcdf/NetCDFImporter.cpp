@@ -30,6 +30,9 @@
 //  A LAMMPS dump style for this file format can be found at
 //  <https://github.com/pastewka/lammps-netcdf>.
 //
+//  An ASE trajectory container is found in ase.io.netcdftrajectory.
+//  <https://wiki.fysik.dtu.dk/ase/epydoc/ase.io.netcdftrajectory-module.html>.
+//
 //  Please contact Lars Pastewka <lars.pastewka@iwm.fraunhofer.de> for
 //  questions and suggestions.
 //
@@ -184,6 +187,8 @@ void NetCDFImporter::NetCDFImportTask::openNetCDF(const QString &filename)
 	NCERR( nc_inq_dimid(_ncid, "frame", &_frame_dim) );
 	NCERR( nc_inq_dimid(_ncid, "atom", &_atom_dim) );
 	NCERR( nc_inq_dimid(_ncid, "spatial", &_spatial_dim) );
+	if (nc_inq_dimid(_ncid, "Voigt", &_Voigt_dim) != NC_NOERR)
+		_Voigt_dim = -1;
 	NCERR( nc_inq_dimid(_ncid, "cell_spatial", &_cell_spatial_dim) );
 	NCERR( nc_inq_dimid(_ncid, "cell_angular", &_cell_angular_dim) );
 
@@ -209,6 +214,81 @@ void NetCDFImporter::NetCDFImportTask::closeNetCDF()
 }
 
 /******************************************************************************
+* Close the current NetCDF file.
+******************************************************************************/
+void NetCDFImporter::NetCDFImportTask::detectDims(int movieFrame, int particleCount, int nDims, int *dimIds, int &nDimsDetected, int &componentCount, int &nativeComponentCount, size_t *startp, size_t *countp)
+{
+    // This is a per frame property
+    startp[0] = movieFrame;
+    countp[0] = 1;
+
+    if (nDims > 1 && dimIds[1] == _atom_dim) {
+        // This is a per atom property
+        startp[1] = 0;
+        countp[1] = particleCount;
+        nDimsDetected = 2;
+
+        if (nDims > 2 && dimIds[2] == _spatial_dim) {
+            // This is a vector property
+            startp[2] = 0;
+            countp[2] = 3;
+            componentCount = 3;
+            nativeComponentCount = 3;
+            nDimsDetected = 3;
+
+            if (nDims > 3 && dimIds[2] == _spatial_dim) {
+                // This is a tensor property
+                startp[3] = 0;
+                countp[3] = 3;
+                componentCount = 6;
+                nativeComponentCount = 9;
+                nDimsDetected = 4;
+            }
+        }
+        else if (nDims == 3 && dimIds[2] == _Voigt_dim) {
+            // This is a tensor property, in Voigt notation
+            startp[2] = 0;
+            countp[2] = 6;
+            componentCount = 6;
+            nativeComponentCount = 6;
+            nDimsDetected = 3;
+        }
+    }
+    else if (nDims > 0 && dimIds[0] == _atom_dim) {
+        // This is a per atom property, but global (per-file, not per frame)
+        startp[0] = 0;
+        countp[0] = particleCount;
+        nDimsDetected = 1;
+					
+        if (nDims > 1 && dimIds[1] == _spatial_dim) {
+            // This is a vector property
+            startp[1] = 0;
+            countp[1] = 3;
+            componentCount = 3;
+            nativeComponentCount = 3;
+            nDimsDetected = 2;
+
+            if (nDims > 2 && dimIds[2] == _spatial_dim) {
+                // This is a tensor property
+                startp[2] = 0;
+                countp[2] = 3;
+                componentCount = 6;
+                nativeComponentCount = 9;
+                nDimsDetected = 3;
+            }
+        }
+        else if (nDims == 2 && dimIds[1] == _Voigt_dim) {
+            // This is a tensor property, in Voigt notation
+            startp[1] = 0;
+            countp[1] = 6;
+            componentCount = 6;
+            nativeComponentCount = 6;
+            nDimsDetected = 2;
+        }
+    }
+}
+
+/******************************************************************************
 * Parses the given input file and stores the data in this container object.
 ******************************************************************************/
 void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInterface, CompressedTextParserStream& stream)
@@ -231,18 +311,18 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 	int nVars;
 	NCERR( nc_inq_nvars(_ncid, &nVars) );
 	int column = 0;
-	for (int varid = 0; varid < nVars; varid++) {
+	for (int varId = 0; varId < nVars; varId++) {
 		char name[NC_MAX_NAME+1];
 		nc_type type;
 
 		// Retrieve NetCDF meta-information.
 		int nDims, dimIds[NC_MAX_VAR_DIMS];
-		NCERR( nc_inq_var(_ncid, varid, name, &type, &nDims, dimIds, NULL) );
+		NCERR( nc_inq_var(_ncid, varId, name, &type, &nDims, dimIds, NULL) );
 
 		// Check if dimensions make sense and we can understand them.
 		if (dimIds[0] == _atom_dim || ( nDims > 1 && dimIds[0] == _frame_dim && dimIds[1] == _atom_dim )) {
 			// Do we support this data type?
-			if (type == NC_BYTE || type == NC_SHORT || type == NC_INT || type == NC_LONG) {
+			if (type == NC_BYTE || type == NC_SHORT || type == NC_INT || type == NC_LONG || type == NC_CHAR) {
 				mapVariableToColumn(columnMapping, column, name, qMetaTypeId<int>());
 				column++;
 			}
@@ -286,6 +366,15 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 	NCERR( nc_get_vara_double(_ncid, _cell_angles_var, startp, countp, a) );
 	if (_shear_dx_var != -1)
 		NCERR( nc_get_vara_double(_ncid, _shear_dx_var, startp, countp, d) );
+
+    // Periodic boundary conditions. Non-periodic dimensions have length zero
+    // according to AMBER specification.
+    std::array<bool,3> pbc;
+    for (int i = 0; i < 3; i++) {
+        if (std::abs(l[i]) < 1e-12)  pbc[i] = false;
+        else pbc[i] = true;
+    }
+    simulationCell().setPbcFlags(pbc);
 	
 	// Express cell vectors va, vb and vc in the X,Y,Z-system
 	a[0] *= M_PI/180.0;
@@ -304,6 +393,43 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 	// Report to user.
 	futureInterface.setProgressRange(columnMapping.columnCount());
 
+    // Now iterate over all variables and see if we have to reduce particleCount
+    // We use the only float properties for this because at least one must be present (coordinates)
+	for (int column = 0; column < columnMapping.columnCount(); column++) {
+		int dataType = columnMapping.dataType(column);
+
+        if (dataType == qMetaTypeId<FloatType>()) {
+
+			QString columnName = columnMapping.columnName(column);
+            ParticleProperty::Type propertyType = columnMapping.propertyType(column);
+
+            // Retrieve NetCDF meta-information.
+            nc_type type;
+            int varId, nDims, dimIds[NC_MAX_VAR_DIMS];
+            NCERR( nc_inq_varid(_ncid, columnName.toLocal8Bit().constData(), &varId) );
+            NCERR( nc_inq_var(_ncid, varId, NULL, &type, &nDims, dimIds, NULL) );
+
+            if (nDims > 0 && type == NC_FLOAT) {
+                // Detect dims
+                int nDimsDetected = -1, componentCount = 1, nativeComponentCount = 1;
+                detectDims(movieFrame, particleCount, nDims, dimIds, nDimsDetected, componentCount, nativeComponentCount, startp, countp);
+
+                FloatType *data = new FloatType[nativeComponentCount*particleCount];
+
+#ifdef FLOATTYPE_FLOAT
+                NCERRI( nc_get_vara_float(_ncid, varId, startp, countp, data), tr("(While reading variable '%1'.)").arg(columnName) );
+                while (particleCount > 0 && data[nativeComponentCount*(particleCount-1)] == NC_FILL_FLOAT)  particleCount--;
+#else
+                NCERRI( nc_get_vara_double(_ncid, varId, startp, countp, data), tr("(While reading variable '%1'.)").arg(columnName) );
+                while (particleCount > 0 && data[nativeComponentCount*(particleCount-1)] == NC_FILL_DOUBLE)  particleCount--;
+#endif
+
+                delete [] data;
+            }
+
+        }
+    }
+
 	// Now iterate over all variables and load the appropriate frame
 	for (int column = 0; column < columnMapping.columnCount(); column++) {
 		if(futureInterface.isCanceled()) {
@@ -316,11 +442,11 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 
 		int dataType = columnMapping.dataType(column);
 
-		if(dataType != QMetaType::Void) {
+		if (dataType != QMetaType::Void) {
 			size_t dataTypeSize;
-			if(dataType == qMetaTypeId<int>())
+			if (dataType == qMetaTypeId<int>())
 				dataTypeSize = sizeof(int);
-			else if(dataType == qMetaTypeId<FloatType>())
+			else if (dataType == qMetaTypeId<FloatType>())
 				dataTypeSize = sizeof(FloatType);
 			else
 				throw Exception(tr("Invalid custom particle property (data type %1) for input file column %2 of NetCDF file.").arg(dataType).arg(column+1));
@@ -341,61 +467,10 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 
 			int nDimsDetected = -1, componentCount = 1, nativeComponentCount = 1;
 			if (nDims > 0) {
-				// This is a per frame property
-				startp[0] = movieFrame;
-				countp[0] = 1;
-
-				if (nDims > 1 && dimIds[1] == _atom_dim) {
-					// This is a per atom property
-					startp[1] = 0;
-					countp[1] = particleCount;
-					nDimsDetected = 2;
-
-					if (nDims > 2 && dimIds[2] == _spatial_dim) {
-						// This is a vector property
-						startp[2] = 0;
-						countp[2] = 3;
-						componentCount = 3;
-						nativeComponentCount = 3;
-						nDimsDetected = 3;
-
-						if (nDims > 3 && dimIds[2] == _spatial_dim) {
-							// This is a tensor property
-							startp[3] = 0;
-							countp[3] = 3;
-							componentCount = 6;
-							nativeComponentCount = 9;
-							nDimsDetected = 4;
-						}
-					}
-				}
-				else if (nDims > 0 && dimIds[0] == _atom_dim) {
-					// This is a per atom property, but global (per-file, not per frame)
-					startp[0] = 0;
-					countp[0] = particleCount;
-					nDimsDetected = 1;
-					
-					if (nDims > 1 && dimIds[1] == _spatial_dim) {
-						// This is a vector property
-						startp[1] = 0;
-						countp[1] = 3;
-						componentCount = 3;
-						nativeComponentCount = 3;
-						nDimsDetected = 2;
-
-						if (nDims > 2 && dimIds[2] == _spatial_dim) {
-							// This is a tensor property
-							startp[2] = 0;
-							countp[2] = 3;
-							componentCount = 6;
-							nativeComponentCount = 9;
-							nDimsDetected = 3;
-						}
-					}
-				}
+                detectDims(movieFrame, particleCount, nDims, dimIds, nDimsDetected, componentCount, nativeComponentCount, startp, countp);
 
 				// Skip all fields that don't have the expected format.
-				if (nDimsDetected != -1 && nDimsDetected == nDims) {
+				if (nDimsDetected != -1 && (nDimsDetected == nDims || type == NC_CHAR)) {
 					// Find property to load this information into.
 					ParticleProperty::Type propertyType = columnMapping.propertyType(column);
 
@@ -443,34 +518,90 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 						if (property->dataType() == qMetaTypeId<int>()) {
 							// This is integer data.
 
-							if (componentCount == 6 && nativeComponentCount == 9) {
+							if (componentCount == 6 && nativeComponentCount == 9 && type != NC_CHAR) {
 								// Convert this property to Voigt notation.
 								int *data = new int[9*particleCount];
 								NCERRI( nc_get_vara_int(_ncid, varId, startp, countp, data), tr("(While reading variable '%1'.)").arg(columnName));
 								fullToVoigt(particleCount, data, property->dataInt());
 								delete [] data;
 							}
-							else {
-								NCERRI( nc_get_vara_int(_ncid, varId, startp, countp, property->dataInt()), tr("(While reading variable '%1'.)").arg(columnName) );
-							}
-							
-							// Create particles types if this is the particle type property.
-							if (propertyType == ParticleProperty::ParticleTypeProperty) {
-								// Find maximum atom type.
-								int maxType = 0;
-								for (int i = 0; i < particleCount; i++)
-									maxType = std::max(property->getInt(i), maxType);
+							else {						
+                                // Create particles types if this is the particle type property.
+                                if (propertyType == ParticleProperty::ParticleTypeProperty) {
+                                    if (type == NC_CHAR) {
+                                        // We can only read this if there is an additional dimension
+                                        if (nDims == nDimsDetected+1) {
+                                            int dimids[nDims];
+                                            NCERR( nc_inq_vardimid(_ncid, varId, dimids) );
 
-								// Count number of atoms for each type.
-								QVector<int> typeCount(maxType+1, 0);
-								for (int i = 0; i < particleCount; i++)
-									typeCount[property->getInt(i)]++;
+                                            size_t strLen;
+                                            NCERR( nc_inq_dimlen(_ncid, dimids[nDims-1], &strLen) );
+
+                                            startp[nDimsDetected] = 0;
+                                            countp[nDimsDetected] = strLen;
+                                            char *particleNamesData = new char[strLen*particleCount];
+                                                
+                                            // This is a string particle type, i.e. element names
+                                            NCERRI( nc_get_vara_text(_ncid, varId, startp, countp, particleNamesData), tr("(While reading variable '%1'.)").arg(columnName) );
+
+                                            // Collect all distinct particle names
+                                            QMap<QString, bool> discoveredParticleNames;
+                                            for (int i = 0; i < particleCount; i++) {
+                                                QString name = QString::fromLocal8Bit(&particleNamesData[strLen*i], strLen);
+                                                name = name.trimmed();
+                                                discoveredParticleNames[name] = true;
+                                            }
+
+                                            // Assing a particle type id to each particle name
+                                            QMap<QString, bool>::const_iterator particleName = discoveredParticleNames.constBegin();
+                                            QMap<QString, int> particleNameToType;
+                                            int i = 0;
+                                            while (particleName != discoveredParticleNames.constEnd()) {
+                                                addParticleTypeId(i, particleName.key());
+                                                particleNameToType[particleName.key()] = i;
+                                                i++;
+                                                particleName++;
+                                            }
+
+                                            // Convert particle names to particle ids and set them accordingly
+                                            int *particleTypes = property->dataInt();
+                                            for (int i = 0; i < particleCount; i++) {
+                                                QString name = QString::fromLocal8Bit(&particleNamesData[strLen*i], strLen);
+                                                name = name.trimmed();
+
+                                                *particleTypes = particleNameToType.value(name);
+                                                particleTypes++;
+                                            }
+
+                                            delete [] particleNamesData;
+                                        }
+                                    }
+                                    else {
+                                        // This is an integer particle type, i.e. atomic numbers or internal element numbers
+                                        NCERRI( nc_get_vara_int(_ncid, varId, startp, countp, property->dataInt()), tr("(While reading variable '%1'.)").arg(columnName) );
+
+                                        // Find maximum atom type.
+                                        int maxType = 0;
+                                        for (int i = 0; i < particleCount; i++)
+                                            maxType = std::max(property->getInt(i), maxType);
+                                        
+                                        // Count number of atoms for each type.
+                                        QVector<int> typeCount(maxType+1, 0);
+                                        for (int i = 0; i < particleCount; i++)
+                                            typeCount[property->getInt(i)]++;
 								
-								for (int i = 0; i <= maxType; i++) {
-									// Only define atom type if really present.
-									if (typeCount[i] > 0)
-										addParticleTypeId(i);
-								}							
+                                        for (int i = 0; i <= maxType; i++) {
+                                            // Only define atom type if really present.
+                                            if (typeCount[i] > 0)
+                                                addParticleTypeId(i);
+                                        }
+                                    }
+                                }
+                                else {
+                                    if (type != NC_CHAR) {
+                                        NCERRI( nc_get_vara_int(_ncid, varId, startp, countp, property->dataInt()), tr("(While reading variable '%1'.)").arg(columnName) );
+                                    }
+                                }
 							}
 						}
 						else if (property->dataType() == qMetaTypeId<FloatType>()) {
@@ -493,6 +624,45 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 #else
 								NCERRI( nc_get_vara_double(_ncid, varId, startp, countp, property->dataFloat()), tr("(While reading variable '%1'.)").arg(columnName) );
 #endif
+
+                                // If this is the particle coordinates, check if we need to update pbcs.
+                                if (propertyType == ParticleProperty::PositionProperty) {
+
+                                    FloatType *r = property->dataFloat();
+                                    // Do we have any non-periodic dimension?
+                                    if (!(pbc[0] && pbc[1] && pbc[2])) {
+
+                                        // Yes. Let's find the bounding box.
+                                        // FIXME! As implemented, this works for rectangular cells only.
+                                        FloatType minvals[3], maxvals[3];
+                                        std::copy(r, r+3, minvals);
+                                        std::copy(r, r+3, maxvals);
+                                        for (int i = 0; i < particleCount; i++) {
+                                            for (int k = 0; k < 3; k++) {
+                                                minvals[k] = std::min(minvals[k], r[3*i+k]);
+                                                maxvals[k] = std::max(maxvals[k], r[3*i+k]);
+                                            }
+                                        }
+
+                                        // Compute new cell length and origin.
+                                        for (int k = 0; k < 3; k++) {
+                                            if (!pbc[k]) {
+                                                l[k] = maxvals[k]-minvals[k];
+                                                o[k] = minvals[k];
+                                            }
+                                        }
+
+                                        // Set new cell.
+                                        Vector3 va(l[0], 0, 0);
+                                        Vector3 vb(l[1]*cos(a[2]), l[1]*sin(a[2]), 0);
+                                        Vector3 vc(l[2]*cx+d[0], l[2]*cy+d[1], l[2]*cz);
+
+                                        // Set simulation cell.
+                                        simulationCell().setMatrix(AffineTransformation(va, vb, vc, Vector3(o[0], o[1], o[2])));
+
+                                    }
+
+                                }
 							}
 						}
 						else {
@@ -645,7 +815,7 @@ void NetCDFImporterEditor::createUI(const RolloutInsertionParameters& rolloutPar
 
 	QPushButton* editMappingButton = new QPushButton(tr("Edit column mapping..."));
 	sublayout->addWidget(editMappingButton);
-	connect(editMappingButton, SIGNAL(clicked(bool)), this, SLOT(onEditColumnMapping()));
+	connect(editMappingButton, &QPushButton::clicked, this, &NetCDFImporterEditor::onEditColumnMapping);
 }
 
 /******************************************************************************

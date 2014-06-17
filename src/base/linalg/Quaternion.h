@@ -21,7 +21,7 @@
 
 /**
  * \file Quaternion.h
- * \brief Contains definition of the Ovito::Quaternion class and operators.
+ * \brief Contains the definition of the Ovito::QuaternionT class template.
  */
 
 #ifndef __OVITO_QUATERNION_H
@@ -389,6 +389,18 @@ inline LoadStream& operator>>(LoadStream& stream, QuaternionT<T>& q) {
 	return stream >> q.x() >> q.y() >> q.z() >> q.w();
 }
 
+/// \brief Writes a quaternion to a Qt data stream.
+template<typename T>
+inline QDataStream& operator<<(QDataStream& stream, const QuaternionT<T>& q) {
+	return stream << q.x() << q.y() << q.z() << q.w();
+}
+
+/// \brief Reads a quaternion from a Qt data stream.
+template<typename T>
+inline QDataStream& operator>>(QDataStream& stream, QuaternionT<T>& q) {
+	return stream >> q.x() >> q.y() >> q.z() >> q.w();
+}
+
 /**
  * \fn typedef Quaternion
  * \brief Template class instance of the QuaternionT class used for floating-point quaternions.
@@ -397,7 +409,9 @@ typedef QuaternionT<FloatType>		Quaternion;
 
 };	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Quaternion)
+Q_DECLARE_METATYPE(Ovito::Quaternion);
+Q_DECLARE_METATYPE(Ovito::Quaternion*);
 Q_DECLARE_TYPEINFO(Ovito::Quaternion, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Quaternion*, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_QUATERNION_H

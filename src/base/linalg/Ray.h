@@ -21,7 +21,7 @@
 
 /** 
  * \file Ray.h 
- * \brief Contains definition of the Ovito::Ray3 template class.
+ * \brief Contains the definition of the Ovito::Ray_3 class template.
  */
 
 #ifndef __OVITO_RAY_H
@@ -138,6 +138,18 @@ inline LoadStream& operator>>(LoadStream& stream, Ray_3<T>& r)
 	return stream >> r.base >> r.dir;
 }
 
+/// \brief Writes a ray to a Qt data stream.
+template<typename T>
+inline QDataStream& operator<<(QDataStream& stream, const Ray_3<T>& r) {
+	return stream << r.base << r.dir;
+}
+
+/// \brief Reads a ray from a Qt data stream.
+template<typename T>
+inline QDataStream& operator>>(QDataStream& stream, Ray_3<T>& r) {
+	return stream >> r.base >> r.dir;
+}
+
 /**
  * \fn typedef Ray3
  * \brief Template class instance of the Ray_3 class.
@@ -146,7 +158,9 @@ typedef Ray_3<FloatType> Ray3;
 
 };	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Ray3)
+Q_DECLARE_METATYPE(Ovito::Ray3);
+Q_DECLARE_METATYPE(Ovito::Ray3*);
 Q_DECLARE_TYPEINFO(Ovito::Ray3, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Ray3*, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_RAY_H

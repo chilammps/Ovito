@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<section version="5.0"
+         xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xml:id="particles.modifiers.wigner_seitz_analysis"
+         xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title>Wigner-Seitz defect analysis</title>
+
+  <para>
+  
+    <informalfigure><screenshot><mediaobject><imageobject>
+       <imagedata fileref="images/modifiers/wigner_seitz_analysis_panel.png" format="PNG" />
+    </imageobject></mediaobject></screenshot></informalfigure>
+  
+    This modifier identifies and counts vacancies and interstitial atoms in a crystal lattice
+    using the so-called Wigner-Seitz cell method. It can be used to track diffusing point defects,
+    for instance, in simulations of displacement cascades.
+  </para>  
+  
+  <para>
+    The Wigner-Seitz analysis requires two different input configurations of the atomistic system: the current configuration containing the point defects 
+    and a reference configuration, which defines the defect-free state of the system (usually a perfect crystal lattice). 
+    The modifier reads the reference configuration from a separate input file and considers the particle set currently loaded in OVITO as the defective state.
+  </para>
+  
+  <para>Use the <emphasis>"Reference: External data source"</emphasis> panel to pick the
+    file containing the reference particle positions, which define the defect-free state of the crystal.
+    Note that the number of particles in the reference file can differ from the number in the current configuration.
+  </para>
+  
+  <para>
+    The Wigner-Seitz analysis consists of mapping each input particle from the current configuration to the closest site in the reference configuration.
+    In other words, it counts the number of atoms located within the Wigner-Seitz (or Voronoi) cell of each reference site. This is a site's <emphasis>occupancy number</emphasis>.    
+  </para>
+
+  <para>
+    Note that, after performing the Wigner-Seitz analysis, the modifier replaces the current input configuration with the reference configuration.
+    That means you will see the reference state of the system in the viewports after applying the modifier. The reason is that the computed occupancy 
+    numbers are associated with the sites of the reference lattice (and not with the atoms of the defective crystal).
+  </para>
+  <para>
+    The computed occupancy numbers are stored in the <literal>Occupancy</literal>
+    particle property by the modifier. It will be 0 for vacant sites, 1 for normal sites, and >1 for sites that are occupied by one or more excess atoms.
+    The <link linkend="particles.modifiers.expression_select">Expression select modifier</link> can be used to filter out perfect sites having <literal>Occupancy==1</literal>.
+  </para>
+
+  <simplesect>
+    <title>Parameters</title>
+
+    <variablelist>
+
+      <varlistentry>
+        <term>Eliminate homogeneous cell deformation</term>
+        <listitem>
+          <para>This option lets the modifier first rescale the current
+          simulation cell including all particle coordinates to match the 
+          cell shape in the reference configuration before performing the Wigner-Seitz analysis. This effectively eliminates any
+          macroscopic, homogeneous deformation of the simulation cell, and the atomic displacements will reflect only the internal motion of particles.</para>
+        </listitem>
+      </varlistentry>    
+
+      <varlistentry>
+        <term>Fixed reference configuration</term>
+        <listitem>
+          <para>If this option is active, the selected animation frame from the reference simulation sequence is used
+          as a fixed reference to perform the analysis. This is the default mode.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Relative to current frame</term>
+        <listitem>
+          <para>If this option is active, then a changing reference configuration is used for the analysis.
+          The frame offset controls the distance between reference and current frame and can be negative or positive. If it is negative, then the reference frame 
+          precedes the current frame in the simulation sequence. 
+          Note that the analysis will not be performed for frames for which the reference frame is negative or out of range.
+          </para>
+        </listitem>
+      </varlistentry>
+ 
+    </variablelist>
+  </simplesect>
+</section>

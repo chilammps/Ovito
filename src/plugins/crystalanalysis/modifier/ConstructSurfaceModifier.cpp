@@ -31,20 +31,20 @@
 
 namespace CrystalAnalysis {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(CrystalAnalysis, ConstructSurfaceModifier, AsynchronousParticleModifier)
-IMPLEMENT_OVITO_OBJECT(CrystalAnalysis, ConstructSurfaceModifierEditor, ParticleModifierEditor)
-SET_OVITO_OBJECT_EDITOR(ConstructSurfaceModifier, ConstructSurfaceModifierEditor)
-DEFINE_FLAGS_PROPERTY_FIELD(ConstructSurfaceModifier, _smoothingLevel, "SmoothingLevel", PROPERTY_FIELD_MEMORIZE)
-DEFINE_FLAGS_PROPERTY_FIELD(ConstructSurfaceModifier, _radius, "Radius", PROPERTY_FIELD_MEMORIZE)
-DEFINE_FLAGS_REFERENCE_FIELD(ConstructSurfaceModifier, _surfaceMeshObj, "SurfaceMesh", SurfaceMesh, PROPERTY_FIELD_ALWAYS_DEEP_COPY)
-DEFINE_FLAGS_REFERENCE_FIELD(ConstructSurfaceModifier, _surfaceMeshDisplay, "SurfaceMeshDisplay", SurfaceMeshDisplay, PROPERTY_FIELD_ALWAYS_DEEP_COPY)
-DEFINE_PROPERTY_FIELD(ConstructSurfaceModifier, _onlySelectedParticles, "OnlySelectedParticles")
-SET_PROPERTY_FIELD_LABEL(ConstructSurfaceModifier, _smoothingLevel, "Smoothing level")
-SET_PROPERTY_FIELD_LABEL(ConstructSurfaceModifier, _radius, "Probe sphere radius")
-SET_PROPERTY_FIELD_LABEL(ConstructSurfaceModifier, _surfaceMeshObj, "Surface mesh")
-SET_PROPERTY_FIELD_LABEL(ConstructSurfaceModifier, _surfaceMeshDisplay, "Surface mesh display")
-SET_PROPERTY_FIELD_LABEL(ConstructSurfaceModifier, _onlySelectedParticles, "Use only selected particles")
-SET_PROPERTY_FIELD_UNITS(ConstructSurfaceModifier, _radius, WorldParameterUnit)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(CrystalAnalysis, ConstructSurfaceModifier, AsynchronousParticleModifier);
+IMPLEMENT_OVITO_OBJECT(CrystalAnalysis, ConstructSurfaceModifierEditor, ParticleModifierEditor);
+SET_OVITO_OBJECT_EDITOR(ConstructSurfaceModifier, ConstructSurfaceModifierEditor);
+DEFINE_FLAGS_PROPERTY_FIELD(ConstructSurfaceModifier, _smoothingLevel, "SmoothingLevel", PROPERTY_FIELD_MEMORIZE);
+DEFINE_FLAGS_PROPERTY_FIELD(ConstructSurfaceModifier, _radius, "Radius", PROPERTY_FIELD_MEMORIZE);
+DEFINE_FLAGS_REFERENCE_FIELD(ConstructSurfaceModifier, _surfaceMeshObj, "SurfaceMesh", SurfaceMesh, PROPERTY_FIELD_ALWAYS_DEEP_COPY);
+DEFINE_FLAGS_REFERENCE_FIELD(ConstructSurfaceModifier, _surfaceMeshDisplay, "SurfaceMeshDisplay", SurfaceMeshDisplay, PROPERTY_FIELD_ALWAYS_DEEP_COPY|PROPERTY_FIELD_MEMORIZE);
+DEFINE_PROPERTY_FIELD(ConstructSurfaceModifier, _onlySelectedParticles, "OnlySelectedParticles");
+SET_PROPERTY_FIELD_LABEL(ConstructSurfaceModifier, _smoothingLevel, "Smoothing level");
+SET_PROPERTY_FIELD_LABEL(ConstructSurfaceModifier, _radius, "Probe sphere radius");
+SET_PROPERTY_FIELD_LABEL(ConstructSurfaceModifier, _surfaceMeshObj, "Surface mesh");
+SET_PROPERTY_FIELD_LABEL(ConstructSurfaceModifier, _surfaceMeshDisplay, "Surface mesh display");
+SET_PROPERTY_FIELD_LABEL(ConstructSurfaceModifier, _onlySelectedParticles, "Use only selected particles");
+SET_PROPERTY_FIELD_UNITS(ConstructSurfaceModifier, _radius, WorldParameterUnit);
 
 /******************************************************************************
 * Constructs the modifier object.
@@ -122,6 +122,7 @@ void ConstructSurfaceModifier::retrieveModifierResults(Engine* engine)
 	ConstructSurfaceEngine* eng = static_cast<ConstructSurfaceEngine*>(engine);
 	if(surfaceMesh()) {
 		surfaceMesh()->mesh().swap(eng->mesh());
+		surfaceMesh()->setCompletelySolid(eng->isCompletelySolid());
 		surfaceMesh()->notifyDependents(ReferenceEvent::TargetChanged);
 	}
 	_solidVolume = eng->solidVolume();
@@ -132,13 +133,13 @@ void ConstructSurfaceModifier::retrieveModifierResults(Engine* engine)
 /******************************************************************************
 * This lets the modifier insert the previously computed results into the pipeline.
 ******************************************************************************/
-ObjectStatus ConstructSurfaceModifier::applyModifierResults(TimePoint time, TimeInterval& validityInterval)
+PipelineStatus ConstructSurfaceModifier::applyModifierResults(TimePoint time, TimeInterval& validityInterval)
 {
 	// Insert output object into pipeline.
 	if(surfaceMesh()) {
 		output().addObject(surfaceMesh());
 	}
-	return ObjectStatus(ObjectStatus::Success, tr("Surface area: %1\nSolid volume: %2\nTotal volume: %3\nSolid volume fraction: %4\nSurface area per solid volume: %5\nSurface area per total volume: %6")
+	return PipelineStatus(PipelineStatus::Success, tr("Surface area: %1\nSolid volume: %2\nTotal volume: %3\nSolid volume fraction: %4\nSurface area per solid volume: %5\nSurface area per total volume: %6")
 			.arg(surfaceArea()).arg(solidVolume()).arg(totalVolume())
 			.arg(solidVolume() / totalVolume()).arg(surfaceArea() / solidVolume()).arg(surfaceArea() / totalVolume()));
 }
@@ -198,6 +199,7 @@ void ConstructSurfaceModifier::ConstructSurfaceEngine::compute(FutureInterfaceBa
 	// Classify cells into solid and open tetrahedra.
 	int nghost = 0, ntotal = 0;
 	int solidCellCount = 0;
+	_isCompletelySolid = true;
 	for(DelaunayTessellation::CellIterator cell = tessellation.begin_cells(); cell != tessellation.end_cells(); ++cell) {
 		// This determines whether a Delaunay tetrahedron is part of the solid region.
 		bool isSolid = tessellation.isValidCell(cell) &&
@@ -212,8 +214,10 @@ void ConstructSurfaceModifier::ConstructSurfaceEngine::compute(FutureInterfaceBa
 		if(isSolid && !cell->info().isGhost) {
 			cell->info().index = solidCellCount++;
 		}
-		else
+		else {
+			if(!cell->info().isGhost) _isCompletelySolid = false;
 			cell->info().index = -1;
+		}
 
 		futureInterface.incrementProgressValue(0);
 	}

@@ -1,15 +1,36 @@
 **************************************************************************
-Install indirect dependencies on Ubuntu 10.04:
+This file contains instructions how to prepare the dependencies
+when building the monolithic (statically linked) version of OVITO
+on a Ubuntu Linux system. This is the official build distributed
+through the website. 
+Building a dynamically linked executable on a local system is easier and 
+one can use the shared libraries installed by the package management system.
 **************************************************************************
 
-sudo apt-get install libx11-xcb-dev libpcre3-dev libxi-dev libgmp-dev \
-                     libmpfr-dev libsm-dev libice-dev libnetcdf-dev
+**************************************************************************
+Install essential tools and dependencies on Ubuntu 10.04 for 
+building the static executable:
+**************************************************************************
+
+sudo apt-get install build-essential perl python git libfreetype6-dev libfontconfig-dev \
+                     libx11-xcb-dev libpcre3-dev libxi-dev libgmp-dev \
+                     libmpfr-dev libsm-dev libice-dev libnetcdf-dev libhdf5-serial-dev \
+                     libglu1-mesa-dev libxrender-dev xsltproc docbook-xml docbook-xsl-doc-html 
 
 **************************************************************************
-Build static Qt libraries (version 5.2.0) on Ubuntu 10.04:
+To build the dynamically-linked executable instead (on Ubuntu 14.04):
+**************************************************************************
+
+sudo apt-get install build-essential git cmake-curses-gui qt5-default qtscript5-dev xsltproc docbook-xml \
+                     libavcodec-dev libavdevice-dev libavfilter-dev libavformat-dev \
+                     libavutil-dev libswscale-dev libcgal-dev libnetcdf-dev libhdf5-dev \
+                     libbotan1.10-dev libmuparser-dev
+
+**************************************************************************
+Build static Qt libraries (version 5.3.0) on Ubuntu 10.04:
 
 Edit file qtbase/mkspecs/common/g++-base.conf and specify
-paths to newest gcc and g++ compilers.
+paths to latest gcc and g++ compilers if necessary (e.g. 'g++-4.8').
 **************************************************************************
 
 ./configure \
@@ -26,14 +47,13 @@ paths to newest gcc and g++ compilers.
 	-no-nis \
 	-no-cups \
 	-no-glib \
+	-fontconfig \
+	-skip qtconnectivity -skip qtmultimedia -skip qtwebkit -skip qtwebkit-examples -skip qtxmlpatterns -skip qtlocation \
+	-skip qtsensors -skip qtdeclarative -skip qtdoc -skip qtquick1 -skip qtquickcontrols \
+	-skip qtserialport -skip qtgraphicaleffects -skip qttranslations \
 	-prefix $HOME/progs/qt5static
 
 make
-
-cd qtbase/src/plugins/platforms/xcb/xcb-static/
-make
-cd ../../../../../..
-
 make install
 
 **************************************************************************
@@ -82,4 +102,15 @@ export CXX=g++-4.8
 make install
 
 export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$HOME/progs/libavstatic/lib/pkgconfig
+
+**************************************************************************
+Set the following flags in the CMake configuration to build all features:
+**************************************************************************
+
+OVITO_BUILD_DOCUMENTATION=ON
+OVITO_BUILD_PLUGIN_CRYSTALANALYSIS=ON
+OVITO_BUILD_PLUGIN_NETCDF=ON
+OVITO_VIDEO_OUPUT_SUPPORT=ON
+CMAKE_BUILD_TYPE=Release
+
 

@@ -28,7 +28,7 @@
 namespace Ovito {
 
 // Gives the class run-time type information.
-IMPLEMENT_OVITO_OBJECT(Core, BooleanParameterUI, PropertyParameterUI)
+IMPLEMENT_OVITO_OBJECT(Core, BooleanParameterUI, PropertyParameterUI);
 
 /******************************************************************************
 * Constructor for a Qt property.
@@ -38,7 +38,7 @@ BooleanParameterUI::BooleanParameterUI(QObject* parentEditor, const char* proper
 {
 	// Create UI widget.
 	_checkBox = new QCheckBox(checkBoxLabel);
-	connect(_checkBox, SIGNAL(clicked(bool)), this, SLOT(updatePropertyValue()));	
+	connect(_checkBox.data(), &QCheckBox::clicked, this, &BooleanParameterUI::updatePropertyValue);
 }
 
 /******************************************************************************
@@ -49,15 +49,15 @@ BooleanParameterUI::BooleanParameterUI(QObject* parentEditor, const PropertyFiel
 {
 	// Create UI widget.
 	_checkBox = new QCheckBox(propField.displayName());
-	connect(_checkBox, SIGNAL(clicked(bool)), this, SLOT(updatePropertyValue()));	
+	connect(_checkBox.data(), &QCheckBox::clicked, this, &BooleanParameterUI::updatePropertyValue);
 }
 
 /******************************************************************************
-* Destructor, that releases all GUI controls.
+* Destructor.
 ******************************************************************************/
 BooleanParameterUI::~BooleanParameterUI()
 {
-	// Release GUI controls. 
+	// Release widget.
 	delete checkBox(); 
 }
 

@@ -54,11 +54,9 @@ bool ParticlePickingHelper::pickParticle(Viewport* vp, const QPoint& clickPoint,
 			// Determine particle ID.
 			result.particleId = -1;
 			const PipelineFlowState& state = result.objNode->evalPipeline(vp->dataset()->animationSettings()->time());
-			for(const auto& sceneObj : state.objects()) {
-				ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(sceneObj.get());
-				if(property && property->type() == ParticleProperty::IdentifierProperty && result.particleIndex < property->size()) {
-					result.particleId = property->getInt(result.particleIndex);
-				}
+			ParticlePropertyObject* identifierProperty = ParticlePropertyObject::findInState(state, ParticleProperty::IdentifierProperty);
+			if(identifierProperty && result.particleIndex < identifierProperty->size()) {
+				result.particleId = identifierProperty->getInt(result.particleIndex);
 			}
 
 			return true;
@@ -67,6 +65,69 @@ bool ParticlePickingHelper::pickParticle(Viewport* vp, const QPoint& clickPoint,
 
 	result.objNode = nullptr;
 	return false;
+}
+
+/******************************************************************************
+* Computes the world space bounding box of the particle selection marker.
+******************************************************************************/
+Box3 ParticlePickingHelper::selectionMarkerBoundingBox(Viewport* vp, const PickResult& pickRecord)
+{
+	if(!pickRecord.objNode)
+		return Box3();
+
+	const PipelineFlowState& flowState = pickRecord.objNode->evalPipeline(vp->dataset()->animationSettings()->time());
+
+	// If particle selection is based on ID, find particle with the given ID.
+	size_t particleIndex = pickRecord.particleIndex;
+	if(pickRecord.particleId >= 0) {
+		ParticlePropertyObject* identifierProperty = ParticlePropertyObject::findInState(flowState, ParticleProperty::IdentifierProperty);
+		if(identifierProperty) {
+			const int* begin = identifierProperty->constDataInt();
+			const int* end = begin + identifierProperty->size();
+			const int* iter = std::find(begin, end, pickRecord.particleId);
+			if(iter != end)
+				particleIndex = (iter - begin);
+		}
+	}
+
+	// Fetch properties of selected particle needed to compute the bounding box.
+	ParticlePropertyObject* posProperty = nullptr;
+	ParticlePropertyObject* radiusProperty = nullptr;
+	ParticleTypeProperty* typeProperty = nullptr;
+	for(SceneObject* sceneObj : flowState.objects()) {
+		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(sceneObj);
+		if(!property) continue;
+		if(property->type() == ParticleProperty::PositionProperty && property->size() >= particleIndex)
+			posProperty = property;
+		else if(property->type() == ParticleProperty::RadiusProperty && property->size() >= particleIndex)
+			radiusProperty = property;
+		else if(property->type() == ParticleProperty::ParticleTypeProperty && property->size() >= particleIndex)
+			typeProperty = dynamic_object_cast<ParticleTypeProperty>(property);
+	}
+	if(!posProperty)
+		return Box3();
+
+	// Get the particle display object, which is attached to the position property object.
+	ParticleDisplay* particleDisplay = nullptr;
+	for(DisplayObject* displayObj : posProperty->displayObjects()) {
+		if((particleDisplay = dynamic_object_cast<ParticleDisplay>(displayObj)) != nullptr)
+			break;
+	}
+	if(!particleDisplay)
+		return Box3();
+
+	// Determine position of selected particle.
+	Point3 pos = posProperty->getPoint3(particleIndex);
+
+	// Determine radius of selected particle.
+	FloatType radius = particleDisplay->particleRadius(particleIndex, radiusProperty, typeProperty);
+	if(radius <= 0)
+		return Box3();
+
+	TimeInterval iv;
+	const AffineTransformation& nodeTM = pickRecord.objNode->getWorldTransform(vp->dataset()->animationSettings()->time(), iv);
+
+	return nodeTM * Box3(pos, radius + vp->nonScalingSize(nodeTM * pos) * 1e-1f);
 }
 
 /******************************************************************************
@@ -85,15 +146,13 @@ void ParticlePickingHelper::renderSelectionMarker(Viewport* vp, ViewportSceneRen
 	// If particle selection is based on ID, find particle with the given ID.
 	size_t particleIndex = pickRecord.particleIndex;
 	if(pickRecord.particleId >= 0) {
-		for(const auto& sceneObj : flowState.objects()) {
-			ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(sceneObj.get());
-			if(property && property->type() == ParticleProperty::IdentifierProperty) {
-				const int* begin = property->constDataInt();
-				const int* end = begin + property->size();
-				const int* iter = std::find(begin, end, pickRecord.particleId);
-				if(iter != end)
-					particleIndex = (iter - begin);
-			}
+		ParticlePropertyObject* identifierProperty = ParticlePropertyObject::findInState(flowState, ParticleProperty::IdentifierProperty);
+		if(identifierProperty) {
+			const int* begin = identifierProperty->constDataInt();
+			const int* end = begin + identifierProperty->size();
+			const int* iter = std::find(begin, end, pickRecord.particleId);
+			if(iter != end)
+				particleIndex = (iter - begin);
 		}
 	}
 
@@ -103,8 +162,8 @@ void ParticlePickingHelper::renderSelectionMarker(Viewport* vp, ViewportSceneRen
 	ParticlePropertyObject* colorProperty = nullptr;
 	ParticlePropertyObject* selectionProperty = nullptr;
 	ParticleTypeProperty* typeProperty = nullptr;
-	for(const auto& sceneObj : flowState.objects()) {
-		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(sceneObj.get());
+	for(SceneObject* sceneObj : flowState.objects()) {
+		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(sceneObj);
 		if(!property) continue;
 		if(property->type() == ParticleProperty::PositionProperty && property->size() >= particleIndex)
 			posProperty = property;
@@ -142,7 +201,7 @@ void ParticlePickingHelper::renderSelectionMarker(Viewport* vp, ViewportSceneRen
 	Color highlightColor = particleDisplay->selectionParticleColor();
 
 	// Determine rendering quality used to render the particles.
-	ParticleGeometryBuffer::RenderingQuality renderQuality = particleDisplay->effectiveRenderingQuality(renderer, posProperty);
+	ParticlePrimitive::RenderingQuality renderQuality = particleDisplay->effectiveRenderingQuality(renderer, posProperty);
 
 	TimeInterval iv;
 	const AffineTransformation& nodeTM = pickRecord.objNode->getWorldTransform(vp->dataset()->animationSettings()->time(), iv);
@@ -150,7 +209,7 @@ void ParticlePickingHelper::renderSelectionMarker(Viewport* vp, ViewportSceneRen
 	if(!_particleBuffer || !_particleBuffer->isValid(renderer)
 			|| !_particleBuffer->setShadingMode(particleDisplay->shadingMode())
 			|| !_particleBuffer->setRenderingQuality(renderQuality)) {
-		_particleBuffer = renderer->createParticleGeometryBuffer(
+		_particleBuffer = renderer->createParticlePrimitive(
 				particleDisplay->shadingMode(),
 				renderQuality,
 				particleDisplay->particleShape());
@@ -164,7 +223,7 @@ void ParticlePickingHelper::renderSelectionMarker(Viewport* vp, ViewportSceneRen
 	if(!_highlightBuffer || !_highlightBuffer->isValid(renderer)
 			|| !_highlightBuffer->setShadingMode(particleDisplay->shadingMode())
 			|| !_highlightBuffer->setRenderingQuality(renderQuality)) {
-		_highlightBuffer = renderer->createParticleGeometryBuffer(
+		_highlightBuffer = renderer->createParticlePrimitive(
 				particleDisplay->shadingMode(),
 				renderQuality,
 				particleDisplay->particleShape());
@@ -175,6 +234,8 @@ void ParticlePickingHelper::renderSelectionMarker(Viewport* vp, ViewportSceneRen
 	_highlightBuffer->setParticleRadius(radius + vp->nonScalingSize(nodeTM * pos) * 1e-1f);
 
 	renderer->setWorldTransform(nodeTM);
+	GLint oldDepthFunc;
+	glGetIntegerv(GL_DEPTH_FUNC, &oldDepthFunc);
 	glEnable(GL_DEPTH_TEST);
 	glClearStencil(0);
 	glClear(GL_STENCIL_BUFFER_BIT);
@@ -191,6 +252,7 @@ void ParticlePickingHelper::renderSelectionMarker(Viewport* vp, ViewportSceneRen
 	_highlightBuffer->render(renderer);
 	glEnable(GL_DEPTH_TEST);
 	glDisable(GL_STENCIL_TEST);
+	glDepthFunc(oldDepthFunc);
 }
 
 };	// End of namespace

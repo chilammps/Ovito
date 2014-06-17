@@ -96,6 +96,9 @@ public:
 	/// \brief Indicates whether this input mode renders into the viewports.
 	virtual bool hasOverlay() override { return true; }
 
+	/// Computes the bounding box of the 3d visual viewport overlay rendered by the input mode.
+	virtual Box3 overlayBoundingBox(Viewport* vp, ViewportSceneRenderer* renderer) override;
+
 private:
 
 	/// The particle information applet.

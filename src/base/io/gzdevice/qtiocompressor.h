@@ -49,6 +49,8 @@
 
 #include <base/Base.h>
 
+namespace Ovito {
+
 class QtIOCompressorPrivate;
 
 class OVITO_BASE_EXPORT QtIOCompressor : public QIODevice
@@ -88,6 +90,8 @@ private:
 
     Q_DECLARE_PRIVATE(QtIOCompressor);
     Q_DISABLE_COPY(QtIOCompressor);
+};
+
 };
 
 #endif

@@ -71,7 +71,7 @@ protected Q_SLOTS:
 			action->setEnabled(false);
 		}
 
-		connect(&menu, SIGNAL(triggered(QAction*)), this, SLOT(onActionTriggered(QAction*)));
+		connect(&menu, &QMenu::triggered, this, &AnimationFramesToolButton::onActionTriggered);
 		menu.exec(mapToGlobal(QPoint(0, 0)));
 	}
 

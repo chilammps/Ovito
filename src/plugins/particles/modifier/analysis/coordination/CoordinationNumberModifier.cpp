@@ -23,17 +23,17 @@
 #include <core/scene/objects/SceneObject.h>
 #include <core/dataset/importexport/LinkedFileObject.h>
 #include <core/gui/mainwin/MainWindow.h>
-#include <3rdparty/qcustomplot/qcustomplot.h>
+#include <qcustomplot.h>
 #include "CoordinationNumberModifier.h"
 
 namespace Particles {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, CoordinationNumberModifier, AsynchronousParticleModifier)
-IMPLEMENT_OVITO_OBJECT(Particles, CoordinationNumberModifierEditor, ParticleModifierEditor)
-SET_OVITO_OBJECT_EDITOR(CoordinationNumberModifier, CoordinationNumberModifierEditor)
-DEFINE_FLAGS_PROPERTY_FIELD(CoordinationNumberModifier, _cutoff, "Cutoff", PROPERTY_FIELD_MEMORIZE)
-SET_PROPERTY_FIELD_LABEL(CoordinationNumberModifier, _cutoff, "Cutoff radius")
-SET_PROPERTY_FIELD_UNITS(CoordinationNumberModifier, _cutoff, WorldParameterUnit)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, CoordinationNumberModifier, AsynchronousParticleModifier);
+IMPLEMENT_OVITO_OBJECT(Particles, CoordinationNumberModifierEditor, ParticleModifierEditor);
+SET_OVITO_OBJECT_EDITOR(CoordinationNumberModifier, CoordinationNumberModifierEditor);
+DEFINE_FLAGS_PROPERTY_FIELD(CoordinationNumberModifier, _cutoff, "Cutoff", PROPERTY_FIELD_MEMORIZE);
+SET_PROPERTY_FIELD_LABEL(CoordinationNumberModifier, _cutoff, "Cutoff radius");
+SET_PROPERTY_FIELD_UNITS(CoordinationNumberModifier, _cutoff, WorldParameterUnit);
 
 /******************************************************************************
 * Constructs the modifier object.
@@ -60,7 +60,7 @@ std::shared_ptr<AsynchronousParticleModifier::Engine> CoordinationNumberModifier
 	SimulationCell* inputCell = expectSimulationCell();
 
 	// The number of sampling intervals for the radial distribution function.
-	int rdfSampleCount = 400;
+	int rdfSampleCount = 500;
 
 	// Create engine object. Pass all relevant modifier parameters to the engine as well as the input data.
 	return std::make_shared<CoordinationAnalysisEngine>(posProperty->storage(), inputCell->data(), cutoff(), rdfSampleCount);
@@ -152,14 +152,14 @@ void CoordinationNumberModifier::retrieveModifierResults(Engine* engine)
 /******************************************************************************
 * Inserts the computed and cached modifier results into the modification pipeline.
 ******************************************************************************/
-ObjectStatus CoordinationNumberModifier::applyModifierResults(TimePoint time, TimeInterval& validityInterval)
+PipelineStatus CoordinationNumberModifier::applyModifierResults(TimePoint time, TimeInterval& validityInterval)
 {
 	if(inputParticleCount() != coordinationNumbers().size())
 		throw Exception(tr("The number of input particles has changed. The stored results have become invalid."));
 
 	outputStandardProperty(ParticleProperty::CoordinationProperty)->setStorage(_coordinationNumbers.data());
 
-	return ObjectStatus::Success;
+	return PipelineStatus::Success;
 }
 
 /******************************************************************************
@@ -209,11 +209,11 @@ void CoordinationNumberModifierEditor::createUI(const RolloutInsertionParameters
 
 	layout->addWidget(new QLabel(tr("Radial distribution function:")));
 	layout->addWidget(_rdfPlot);
-	connect(this, SIGNAL(contentsReplaced(RefTarget*)), this, SLOT(plotRDF()));
+	connect(this, &CoordinationNumberModifierEditor::contentsReplaced, this, &CoordinationNumberModifierEditor::plotRDF);
 
 	QPushButton* saveDataButton = new QPushButton(tr("Export data to file"));
 	layout->addWidget(saveDataButton);
-	connect(saveDataButton, SIGNAL(clicked(bool)), this, SLOT(onSaveData()));
+	connect(saveDataButton, &QPushButton::clicked, this, &CoordinationNumberModifierEditor::onSaveData);
 
 	// Status label.
 	layout->addSpacing(6);
@@ -245,6 +245,17 @@ void CoordinationNumberModifierEditor::plotRDF()
 
 	_rdfPlot->graph()->setData(modifier->rdfX(), modifier->rdfY());
 	_rdfPlot->graph()->rescaleAxes();
+
+	// Determine lower X bound where the histogram is non-zero.
+	double maxx = modifier->rdfX().back();
+	for(int i = 0; i < modifier->rdfX().size(); i++) {
+		if(modifier->rdfY()[i] != 0) {
+			double minx = std::floor(modifier->rdfX()[i] * 9.0 / maxx) / 10.0 * maxx;
+			_rdfPlot->xAxis->setRange(minx, maxx);
+			break;
+		}
+	}
+
 	_rdfPlot->replot();
 }
 

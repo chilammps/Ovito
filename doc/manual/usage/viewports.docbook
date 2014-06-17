@@ -19,13 +19,19 @@
   <simplesect xml:id="usage.viewports.navigation">
   <title>Navigation</title>     
   <para>
-    Use the mouse to navigate within a viewport and to move the camera around:
+    <figure>
+      <title>The colored cross marks the center of rotation of the camera. Double-click on a particle to reposition the marker.</title>
+      <screenshot><mediaobject><imageobject>
+            <imagedata fileref="images/viewport_control_toolbar/viewport_screenshot.png" format="png" />
+       </imageobject></mediaobject></screenshot>
+    </figure> 
+    Use the mouse to navigate within a viewport and to move the virtual camera around:
     <itemizedlist>
     <listitem><para>
-      Left-click and dragging the mouse rotates the camera around the current orbit center, which, by default, is located at the center of the current object.
+      Left-click and drag to rotate the camera around the current orbit center, which, by default, is located in the center of the simulation cell.
     </para></listitem>
     <listitem><para>
-      Right-click and dragging moves the camera parallel to the current projection plane. You can also use the middle mouse button for this.
+      Right-click and drag to move the camera parallel to the current projection plane. You can also use the middle mouse button for this.
     </para></listitem>
     <listitem><para>
       Use the mouse wheel to zoom in and out.
@@ -38,8 +44,8 @@
     </para></listitem>
     </itemizedlist>
 
-     By default, the z-axis is considered the "up" direction, and OVITO ensures that it is always pointing upward when you rotate the camera. 
-     Depending on your simulation setup, this might not be the best choice. In such a case you can also make the x-axis or the y-axis the "up" directions in the 
+     By default, the z-axis is considered the "up" (=vertical) direction, and OVITO ensures that it is always pointing upward when you rotate or move the camera. 
+     Depending on your simulation setup, this might not be the best choice. In such a case you can also make the x or y axis pointing upward in the 
      application settings dialog.
   </para>
   </simplesect>
@@ -47,25 +53,36 @@
   <simplesect xml:id="usage.viewports.toolbar">
   <title>Viewport toolbar</title>     
    <para>
-     The viewport toolbar is located below the viewports, in the lower right corner. It contains buttons that activate various viewport navigation modes. 
-     With the <emphasis>Maximize Active Viewport</emphasis> button 
-     the active viewport can be enlarged to fill the entire main window. Clicking the button again restores the original 2x2 layout.
-     The active viewport is marked by a yellow border.
+     <figure>
+      <title>The viewport toolbar.</title>
+      <screenshot><mediaobject><imageobject>
+            <imagedata fileref="images/viewport_control_toolbar/viewport_toolbar.png" format="png" />
+       </imageobject></mediaobject></screenshot>
+     </figure> 
+     The viewport toolbar is located below the viewports and contains buttons to explicitly activate certain navigation input modes.
+     The <emphasis>Maximize Active Viewport</emphasis> button enlarges the current viewport such that it fills the entire main window. 
+     Clicking the button a second time restores the original 2x2 layout of viewports. The active viewport is marked by a yellow border.
    </para>
    <para>
-     The <emphasis>Zoom Scene Extents</emphasis> button adjusts the zoom level of the active viewport
-     such that the entire scene becomes fully visible.
+     The <emphasis>Zoom Scene Extents</emphasis> button adjusts the zoom level and repositions the camera of the active viewport
+     such that the complete scene becomes fully visible.
    </para>
   </simplesect>
 
   <simplesect xml:id="usage.viewports.menu">
   <title>Viewport menu</title>
    <para>
+     <figure>
+      <title>The viewport menu.</title>
+      <screenshot><mediaobject><imageobject>
+            <imagedata fileref="images/viewport_control_toolbar/viewport_menu_screenshot.png" format="png" scale="50" />
+       </imageobject></mediaobject></screenshot>
+     </figure> 
      Clicking on the caption text in a viewport's upper left corner opens the viewport menu. Here you can switch between the standard view types
      such as <emphasis>Top</emphasis>, <emphasis>Left</emphasis>, <emphasis>Front</emphasis> etc. 
    </para>
    <para>
-     Selecting <menuchoice><guimenuitem>Adjust Camera</guimenuitem></menuchoice> opens a dialog box that lets you adjust the camera's position and orientation numerically.
+     <menuchoice><guimenuitem>Adjust View</guimenuitem></menuchoice> opens a dialog box that lets you adjust the camera's position and orientation numerically.
    </para>
    <para>
      The <menuchoice><guimenuitem>Show Render Frame</guimenuitem></menuchoice> option activates a visual clue to indicate the area of the viewport that will be visible 

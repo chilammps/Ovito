@@ -111,6 +111,9 @@ protected:
 
 	protected:
 
+        /// Map dimensions from NetCDF file to internal representation.
+        void detectDims(int movieFrame, int particleCount, int nDims, int *dimIds, int &nDimsDetected, int &componentCount, int &nativeComponentCount, size_t *startp, size_t *countp);
+
 		/// Parses the given input file and stores the data in this container object.
 		virtual void parseFile(FutureInterfaceBase& futureInterface, CompressedTextParserStream& stream) override;
 
@@ -120,7 +123,7 @@ protected:
 		bool _ncIsOpen;
 
 		/// NetCDF ids.
-		int _ncid, _frame_dim, _atom_dim, _spatial_dim;
+		int _ncid, _frame_dim, _atom_dim, _spatial_dim, _Voigt_dim;
 		int _cell_spatial_dim, _cell_angular_dim;
 		int _cell_origin_var, _cell_lengths_var, _cell_angles_var;
 		int _shear_dx_var;

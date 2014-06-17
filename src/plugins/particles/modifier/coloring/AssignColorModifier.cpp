@@ -27,13 +27,13 @@
 
 namespace Particles {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, AssignColorModifier, ParticleModifier)
-IMPLEMENT_OVITO_OBJECT(Particles, AssignColorModifierEditor, ParticleModifierEditor)
-SET_OVITO_OBJECT_EDITOR(AssignColorModifier, AssignColorModifierEditor)
-DEFINE_REFERENCE_FIELD(AssignColorModifier, _colorCtrl, "Color", Controller)
-DEFINE_PROPERTY_FIELD(AssignColorModifier, _keepSelection, "KeepSelection")
-SET_PROPERTY_FIELD_LABEL(AssignColorModifier, _colorCtrl, "Color")
-SET_PROPERTY_FIELD_LABEL(AssignColorModifier, _keepSelection, "Keep selection")
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, AssignColorModifier, ParticleModifier);
+IMPLEMENT_OVITO_OBJECT(Particles, AssignColorModifierEditor, ParticleModifierEditor);
+SET_OVITO_OBJECT_EDITOR(AssignColorModifier, AssignColorModifierEditor);
+DEFINE_FLAGS_REFERENCE_FIELD(AssignColorModifier, _colorCtrl, "Color", Controller, PROPERTY_FIELD_MEMORIZE);
+DEFINE_PROPERTY_FIELD(AssignColorModifier, _keepSelection, "KeepSelection");
+SET_PROPERTY_FIELD_LABEL(AssignColorModifier, _colorCtrl, "Color");
+SET_PROPERTY_FIELD_LABEL(AssignColorModifier, _keepSelection, "Keep selection");
 
 /******************************************************************************
 * Constructs the modifier object.
@@ -60,7 +60,7 @@ TimeInterval AssignColorModifier::modifierValidity(TimePoint time)
 /******************************************************************************
 * This modifies the input object.
 ******************************************************************************/
-ObjectStatus AssignColorModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
+PipelineStatus AssignColorModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
 {
 	// Get the selection property.
 	ParticlePropertyObject* selProperty = inputStandardProperty(ParticleProperty::SelectionProperty);
@@ -104,7 +104,7 @@ ObjectStatus AssignColorModifier::modifyParticles(TimePoint time, TimeInterval& 
 	}
 	colorProperty->changed();
 
-	return ObjectStatus();
+	return PipelineStatus();
 }
 
 /******************************************************************************

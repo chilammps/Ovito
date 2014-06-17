@@ -21,7 +21,7 @@
 
 /**
  * \file Point2.h
- * \brief Contains definition of the Ovito::Point_2 template class and operators.
+ * \brief Contains the definition of the Ovito::Point_2 class template.
  */
 
 #ifndef __OVITO_POINT2_H
@@ -226,6 +226,19 @@ inline LoadStream& operator>>(LoadStream& stream, Point_2<T>& v) {
 	return stream >> v.x() >> v.y();
 }
 
+/// \brief Writes a point to a Qt data stream.
+template<typename T>
+inline QDataStream& operator<<(QDataStream& stream, const Point_2<T>& v) {
+	return stream << v.x() << v.y();
+}
+
+/// \brief Reads a point from a Qt data stream.
+template<typename T>
+inline QDataStream& operator>>(QDataStream& stream, Point_2<T>& v) {
+	return stream >> v.x() >> v.y();
+}
+
+
 /**
  * \fn typedef Point2
  * \brief Template class instance of the Point_2 class used for floating-point points.
@@ -244,9 +257,13 @@ inline void glVertex(const Point_2<GLfloat>& v) { glVertex2fv(v.data()); }
 
 };	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Point2)
-Q_DECLARE_METATYPE(Ovito::Point2I)
+Q_DECLARE_METATYPE(Ovito::Point2);
+Q_DECLARE_METATYPE(Ovito::Point2I);
+Q_DECLARE_METATYPE(Ovito::Point2*);
+Q_DECLARE_METATYPE(Ovito::Point2I*);
 Q_DECLARE_TYPEINFO(Ovito::Point2, Q_PRIMITIVE_TYPE);
 Q_DECLARE_TYPEINFO(Ovito::Point2I, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Point2*, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Point2I*, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_POINT2_H

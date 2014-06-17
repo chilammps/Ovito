@@ -358,25 +358,25 @@ QSet<SceneObject*> CAImporter::CrystalAnalysisImportTask::insertIntoScene(Linked
 	OORef<DislocationNetwork> dislocationsObj = destination->findSceneObject<DislocationNetwork>();
 	if(!dislocationsObj) {
 		dislocationsObj = new DislocationNetwork(destination->dataset());
-		destination->addSceneObject(dislocationsObj.get());
+		destination->addSceneObject(dislocationsObj);
 	}
-	activeObjects.insert(dislocationsObj.get());
+	activeObjects.insert(dislocationsObj);
 
 	// Insert defect surface.
 	OORef<SurfaceMesh> defectSurfaceObj = destination->findSceneObject<SurfaceMesh>();
 	if(!defectSurfaceObj) {
 		defectSurfaceObj = new SurfaceMesh(destination->dataset());
-		destination->addSceneObject(defectSurfaceObj.get());
+		destination->addSceneObject(defectSurfaceObj);
 	}
 	defectSurfaceObj->mesh().swap(_defectSurface);
 	defectSurfaceObj->notifyDependents(ReferenceEvent::TargetChanged);
-	activeObjects.insert(defectSurfaceObj.get());
+	activeObjects.insert(defectSurfaceObj);
 
 	// Insert pattern catalog.
 	OORef<PatternCatalog> patternCatalog = destination->findSceneObject<PatternCatalog>();
 	if(!patternCatalog) {
 		patternCatalog = new PatternCatalog(destination->dataset());
-		destination->addSceneObject(patternCatalog.get());
+		destination->addSceneObject(patternCatalog);
 	}
 	activeObjects.insert(patternCatalog.get());
 
@@ -388,7 +388,7 @@ QSet<SceneObject*> CAImporter::CrystalAnalysisImportTask::insertIntoScene(Linked
 		}
 		else {
 			pattern.reset(new StructurePattern(patternCatalog->dataset()));
-			patternCatalog->addPattern(pattern.get());
+			patternCatalog->addPattern(pattern);
 		}
 		if(pattern->shortName() != _patterns[i].shortName)
 			pattern->setColor(_patterns[i].color);
@@ -405,7 +405,7 @@ QSet<SceneObject*> CAImporter::CrystalAnalysisImportTask::insertIntoScene(Linked
 			}
 			else {
 				family.reset(new BurgersVectorFamily(pattern->dataset()));
-				pattern->addBurgersVectorFamily(family.get());
+				pattern->addBurgersVectorFamily(family);
 			}
 			if(family->name() != _patterns[i].burgersVectorFamilies[j].name)
 				family->setColor(_patterns[i].burgersVectorFamilies[j].color);
@@ -424,9 +424,9 @@ QSet<SceneObject*> CAImporter::CrystalAnalysisImportTask::insertIntoScene(Linked
 	OORef<ClusterGraph> clusterGraph = destination->findSceneObject<ClusterGraph>();
 	if(!clusterGraph) {
 		clusterGraph = new ClusterGraph(destination->dataset());
-		destination->addSceneObject(clusterGraph.get());
+		destination->addSceneObject(clusterGraph);
 	}
-	activeObjects.insert(clusterGraph.get());
+	activeObjects.insert(clusterGraph);
 	clusterGraph->clear();
 	for(const ClusterInfo& icluster : _clusters) {
 		OORef<Cluster> cluster(new Cluster(clusterGraph->dataset()));
@@ -434,7 +434,7 @@ QSet<SceneObject*> CAImporter::CrystalAnalysisImportTask::insertIntoScene(Linked
 		cluster->setId(icluster.id);
 		cluster->setAtomCount(icluster.atomCount);
 		cluster->setOrientation(icluster.orientation);
-		clusterGraph->addCluster(cluster.get());
+		clusterGraph->addCluster(cluster);
 	}
 
 	// Convert cluster transitions.
@@ -449,16 +449,16 @@ QSet<SceneObject*> CAImporter::CrystalAnalysisImportTask::insertIntoScene(Linked
 	OORef<DislocationNetwork> dislocationNetwork = destination->findSceneObject<DislocationNetwork>();
 	if(!dislocationNetwork) {
 		dislocationNetwork = new DislocationNetwork(destination->dataset());
-		destination->addSceneObject(dislocationNetwork.get());
+		destination->addSceneObject(dislocationNetwork);
 	}
-	activeObjects.insert(dislocationNetwork.get());
+	activeObjects.insert(dislocationNetwork);
 	dislocationNetwork->clear();
 	for(const DislocationSegmentInfo& s : _dislocations) {
 		OORef<DislocationSegment> segment(new DislocationSegment(dislocationNetwork->dataset()));
 		segment->setLine(s.line, s.coreSize);
 		segment->setIsClosedLoop(s.isClosedLoop);
 		segment->setBurgersVector(s.burgersVector, clusterGraph->clusters()[s.clusterIndex]);
-		dislocationNetwork->addSegment(segment.get());
+		dislocationNetwork->addSegment(segment);
 	}
 
 	// Insert particles.

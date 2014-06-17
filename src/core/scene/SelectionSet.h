@@ -81,11 +81,6 @@ public:
 	/// \undoable
 	virtual void add(SceneNode* node);
 
-	/// \brief Adds a scene node to this selection set.
-	/// \param node The node to be added.
-	/// \undoable
-	void add(const OORef<SceneNode>& node) { add(node.get()); }
-
 	/// \brief Adds multiple scene nodes to this selection set.
 	/// \param nodes The scene nodes to be added to the set.
 	/// \undoable

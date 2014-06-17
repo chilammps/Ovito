@@ -30,9 +30,9 @@
 
 namespace Particles {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, BondAngleAnalysisModifier, StructureIdentificationModifier)
-IMPLEMENT_OVITO_OBJECT(Particles, BondAngleAnalysisModifierEditor, ParticleModifierEditor)
-SET_OVITO_OBJECT_EDITOR(BondAngleAnalysisModifier, BondAngleAnalysisModifierEditor)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, BondAngleAnalysisModifier, StructureIdentificationModifier);
+IMPLEMENT_OVITO_OBJECT(Particles, BondAngleAnalysisModifierEditor, ParticleModifierEditor);
+SET_OVITO_OBJECT_EDITOR(BondAngleAnalysisModifier, BondAngleAnalysisModifierEditor);
 
 /******************************************************************************
 * Constructs the modifier object.
@@ -40,11 +40,11 @@ SET_OVITO_OBJECT_EDITOR(BondAngleAnalysisModifier, BondAngleAnalysisModifierEdit
 BondAngleAnalysisModifier::BondAngleAnalysisModifier(DataSet* dataset) : StructureIdentificationModifier(dataset)
 {
 	// Create the structure types.
-	createStructureType(OTHER, tr("Other"), Color(0.95f, 0.95f, 0.95f));
-	createStructureType(FCC, tr("FCC"), Color(0.4f, 1.0f, 0.4f));
-	createStructureType(HCP, tr("HCP"), Color(1.0f, 0.4f, 0.4f));
-	createStructureType(BCC, tr("BCC"), Color(0.4f, 0.4f, 1.0f));
-	createStructureType(ICO, tr("ICO"), Color(0.95f, 0.8f, 0.2f));
+	createStructureType(OTHER, tr("Other"));
+	createStructureType(FCC, tr("FCC"));
+	createStructureType(HCP, tr("HCP"));
+	createStructureType(BCC, tr("BCC"));
+	createStructureType(ICO, tr("ICO"));
 }
 
 /******************************************************************************
@@ -100,10 +100,10 @@ BondAngleAnalysisModifier::StructureType BondAngleAnalysisModifier::determineStr
 		return OTHER;
 
 	// Mean squared distance of 6 nearest neighbors.
-	FloatType r0_sq = 0.0;
+	FloatType r0_sq = 0;
 	for(int j = 0; j < 6; j++)
 		r0_sq += loc.results()[j].distanceSq;
-	r0_sq /= 6.0;
+	r0_sq /= 6.0f;
 
 	// n0 near neighbors with: distsq<1.45*r0_sq
 	// n1 near neighbors with: distsq<1.55*r0_sq
@@ -128,14 +128,14 @@ BondAngleAnalysisModifier::StructureType BondAngleAnalysisModifier::determineStr
 			FloatType bond_angle = j->delta.dot(k->delta) / (norm_j*norm_k);
 
 			// Build histogram for identifying the relevant peaks.
-			if(bond_angle < -0.945) { chi[0]++; }
-			else if(-0.945 <= bond_angle && bond_angle < -0.915) { chi[1]++; }
-			else if(-0.915 <= bond_angle && bond_angle < -0.755) { chi[2]++; }
-			else if(-0.755 <= bond_angle && bond_angle < -0.195) { chi[3]++; }
-			else if(-0.195 <= bond_angle && bond_angle < 0.195) { chi[4]++; }
-			else if(0.195 <= bond_angle && bond_angle < 0.245) { chi[5]++; }
-			else if(0.245 <= bond_angle && bond_angle < 0.795) { chi[6]++; }
-			else if(0.795 <= bond_angle) { chi[7]++; }
+			if(bond_angle < -0.945f) { chi[0]++; }
+			else if(-0.945f <= bond_angle && bond_angle < -0.915f) { chi[1]++; }
+			else if(-0.915f <= bond_angle && bond_angle < -0.755f) { chi[2]++; }
+			else if(-0.755f <= bond_angle && bond_angle < -0.195f) { chi[3]++; }
+			else if(-0.195f <= bond_angle && bond_angle < 0.195f) { chi[4]++; }
+			else if(0.195f <= bond_angle && bond_angle < 0.245f) { chi[5]++; }
+			else if(0.245f <= bond_angle && bond_angle < 0.795f) { chi[6]++; }
+			else if(0.795f <= bond_angle) { chi[7]++; }
 		}
 	}
 
@@ -146,9 +146,9 @@ BondAngleAnalysisModifier::StructureType BondAngleAnalysisModifier::determineStr
 	FloatType delta_hcp = (FloatType)(std::abs(chi[0] - 3) + std::abs(chi[0] + chi[1] + chi[2] + chi[3] - 9)) / 12;
 
 	// Identification of the local structure according to the reference.
-	if(chi[0] == 7)       { delta_bcc = 0.; }
-	else if(chi[0] == 6)  { delta_fcc = 0.; }
-	else if(chi[0] <= 3)  { delta_hcp = 0.; }
+	if(chi[0] == 7)       { delta_bcc = 0; }
+	else if(chi[0] == 6)  { delta_fcc = 0; }
+	else if(chi[0] <= 3)  { delta_hcp = 0; }
 
 	if(chi[7] > 0) return OTHER;
 	else if(chi[4] < 3) {

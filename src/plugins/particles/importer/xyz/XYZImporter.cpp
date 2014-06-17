@@ -119,6 +119,7 @@ bool XYZImporter::inspectNewFile(LinkedFileObject* obj)
 
 	InputColumnMapping mapping(_columnMapping);
 	mapping.setColumnCount(inspectionTask->columnMapping().columnCount());
+	mapping.setFileExcerpt(inspectionTask->columnMapping().fileExcerpt());
 	if(_columnMapping.columnCount() != mapping.columnCount()) {
 		if(_columnMapping.columnCount() == 0) {
 			int oldCount = 0;
@@ -147,6 +148,8 @@ bool XYZImporter::inspectNewFile(LinkedFileObject* obj)
 		}
 		return false;
 	}
+	else _columnMapping.setFileExcerpt(inspectionTask->columnMapping().fileExcerpt());
+
 	return true;
 }
 
@@ -214,6 +217,7 @@ void XYZImporter::XYZImportTask::parseFile(FutureInterfaceBase& futureInterface,
 	if(sscanf(stream.readLine(), "%u", &numParticles) != 1 || numParticles < 0 || numParticles > 1e9)
 		throw Exception(tr("Invalid number of particles in line %1 of XYZ file: %2").arg(stream.lineNumber()).arg(stream.lineString()));
 	futureInterface.setProgressRange(numParticles);
+	QString fileExcerpt = stream.lineString();
 
 	// Regular expression for whitespace characters.
 	QRegularExpression ws_re(QStringLiteral("\\s+"));
@@ -281,8 +285,16 @@ void XYZImporter::XYZImportTask::parseFile(FutureInterfaceBase& futureInterface,
 
 	if(_parseFileHeaderOnly) {
 		// Read first atoms line and count number of data columns.
-		stream.readLine();
-		_columnMapping.setColumnCount(stream.lineString().split(ws_re, QString::SkipEmptyParts).size());
+		fileExcerpt += stream.lineString();
+		QString lineString;
+		for(int i = 0; i < 5 && i < numParticles; i++) {
+			stream.readLine();
+			lineString = stream.lineString();
+			fileExcerpt += lineString;
+		}
+		if(numParticles > 5) fileExcerpt += QStringLiteral("...\n");
+		_columnMapping.setColumnCount(lineString.split(ws_re, QString::SkipEmptyParts).size());
+		_columnMapping.setFileExcerpt(fileExcerpt);
 		return;
 	}
 
@@ -425,7 +437,7 @@ void XYZImporterEditor::createUI(const RolloutInsertionParameters& rolloutParams
 
 	QPushButton* editMappingButton = new QPushButton(tr("Edit column mapping..."));
 	sublayout->addWidget(editMappingButton);
-	connect(editMappingButton, SIGNAL(clicked(bool)), this, SLOT(onEditColumnMapping()));
+	connect(editMappingButton, &QPushButton::clicked, this, &XYZImporterEditor::onEditColumnMapping);
 }
 
 /******************************************************************************

@@ -79,7 +79,7 @@ protected:
 	virtual OORef<RefTarget> clone(bool deepCopy, CloneHelper& cloneHelper) override;
 
 	/// Modifies the particle object.
-	virtual ObjectStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;
+	virtual PipelineStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;
 
 	/// The particle type property that is used as source for the selection.
 	ParticlePropertyReference _inputPropertyRef;

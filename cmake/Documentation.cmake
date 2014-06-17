@@ -19,31 +19,52 @@
 #
 ###############################################################################
 
-# This CMake script compiles the documentation files for OVITO
-# by transforming the source XML docbook files to a HTML-based format.
+# This CMake script compiles the user manual for OVITO
+# by transforming the  docbook files to HTML.
 
-#
-# Find the XSLT processor program.
-#
-FIND_PROGRAM(XSLT_PROCESSOR "xsltproc" DOC "Path to the XSLT processor program used to build the documentation.")
-IF(NOT XSLT_PROCESSOR)	
-	MESSAGE(FATAL_ERROR "The XSLT processor program (xsltproc) was not found. Please install it and/or specify its location manually.")
-ENDIF(NOT XSLT_PROCESSOR)
-SET(XSLT_PROCESSOR_OPTIONS "--xinclude" CACHE STRING "Additional to pass to the XSLT processor program when building the documentation" )
-MARK_AS_ADVANCED(XSLT_PROCESSOR_OPTIONS)
+# Controls the generation of the user manual.
+OPTION(OVITO_BUILD_DOCUMENTATION "Build the user manual" "OFF")
 
-# Create destination directories.
-FILE(MAKE_DIRECTORY "${OVITO_SHARE_DIRECTORY}/doc/manual")
-FILE(MAKE_DIRECTORY "${OVITO_SHARE_DIRECTORY}/doc/manual/html")
+IF(OVITO_BUILD_DOCUMENTATION)
 
-#
-# XSL transform documentation files.
-#
-ADD_CUSTOM_TARGET(documentation 
-				COMMAND ${CMAKE_COMMAND} "-E" copy_directory "images/" "${OVITO_SHARE_DIRECTORY}/doc/manual/html/images/"
-				COMMAND ${CMAKE_COMMAND} "-E" copy "manual.css" "${OVITO_SHARE_DIRECTORY}/doc/manual/html/"
-				COMMAND ${XSLT_PROCESSOR} ${XSLT_PROCESSOR_OPTIONS} --stringparam base.dir "${OVITO_SHARE_DIRECTORY}/doc/manual/html/" html-customization-layer.xsl Manual.docbook
-				WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/doc/manual/"
-				COMMENT "Building documentation files")
+	# Find the XSLT processor program.
+	FIND_PROGRAM(XSLT_PROCESSOR "xsltproc" DOC "Path to the XSLT processor program used to build the documentation.")
+	IF(NOT XSLT_PROCESSOR)
+		MESSAGE(FATAL_ERROR "The XSLT processor program (xsltproc) was not found. Please install it and/or specify its location manually.")
+	ENDIF(NOT XSLT_PROCESSOR)
+	SET(XSLT_PROCESSOR_OPTIONS "--xinclude" CACHE STRING "Additional to pass to the XSLT processor program when building the documentation")
+	MARK_AS_ADVANCED(XSLT_PROCESSOR_OPTIONS)
+	
+	# Create destination directories.
+	FILE(MAKE_DIRECTORY "${OVITO_SHARE_DIRECTORY}/doc/manual")
+	FILE(MAKE_DIRECTORY "${OVITO_SHARE_DIRECTORY}/doc/manual/html")
+	
+	# XSL transform documentation files.
+	ADD_CUSTOM_TARGET(documentation 
+					COMMAND ${CMAKE_COMMAND} "-E" copy_directory "images/" "${OVITO_SHARE_DIRECTORY}/doc/manual/html/images/"
+					COMMAND ${CMAKE_COMMAND} "-E" copy "manual.css" "${OVITO_SHARE_DIRECTORY}/doc/manual/html/"
+					COMMAND ${XSLT_PROCESSOR} "${XSLT_PROCESSOR_OPTIONS}" --stringparam base.dir "${OVITO_SHARE_DIRECTORY}/doc/manual/html/" html-customization-layer.xsl Manual.docbook
+					WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/doc/manual/"
+					COMMENT "Building documentation files")
+	
+	INSTALL(DIRECTORY "${OVITO_SHARE_DIRECTORY}/doc/manual/html/" DESTINATION "${OVITO_RELATIVE_SHARE_DIRECTORY}/doc/manual/html/")
 
-INSTALL(DIRECTORY "${OVITO_SHARE_DIRECTORY}/doc/manual/html/" DESTINATION "${OVITO_RELATIVE_SHARE_DIRECTORY}/doc/manual/html/")
+	ADD_DEPENDENCIES(${PROJECT_NAME} documentation)
+
+ENDIF(OVITO_BUILD_DOCUMENTATION)
+
+# Controls the generation of the API docs.
+OPTION(OVITO_BUILD_API_DOCS "Generate developer documentation from source code comments (requires Doxygen)" "OFF")
+
+IF(OVITO_BUILD_API_DOCS)
+
+	# Find the Doxygen program.
+	FIND_PACKAGE(Doxygen REQUIRED)
+	
+	# Generate API documentation files.
+	ADD_CUSTOM_TARGET(apidocs ALL
+					COMMAND ${DOXYGEN_EXECUTABLE} Doxyfile
+					WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/doc/develop/"
+					COMMENT "Building API documentation files")
+	
+ENDIF(OVITO_BUILD_API_DOCS)

@@ -150,7 +150,7 @@ private:
 			_strainTensors(calculateStrainTensors ? new ParticleProperty(positions->size(), ParticleProperty::StrainTensorProperty) : nullptr),
 			_deformationGradients(calculateDeformationGradients ? new ParticleProperty(positions->size(), ParticleProperty::DeformationGradientProperty) : nullptr),
 			_invalidParticles(new ParticleProperty(positions->size(), ParticleProperty::SelectionProperty)),
-			_currentSimCellInv(simCell.matrix().inverse()),
+			_currentSimCellInv(simCell.inverseMatrix()),
 			_reducedToAbsolute(eliminateCellDeformation ? simCellRef.matrix() : simCell.matrix()) {}
 
 		/// Computes the modifier's results and stores them in this object for later retrieval.
@@ -224,7 +224,7 @@ protected:
 	virtual void retrieveModifierResults(Engine* engine) override;
 
 	/// Inserts the computed and cached modifier results into the modification pipeline.
-	virtual ObjectStatus applyModifierResults(TimePoint time, TimeInterval& validityInterval) override;
+	virtual PipelineStatus applyModifierResults(TimePoint time, TimeInterval& validityInterval) override;
 
 	/// This stores the cached results of the modifier.
 	QExplicitlySharedDataPointer<ParticleProperty> _shearStrainValues;

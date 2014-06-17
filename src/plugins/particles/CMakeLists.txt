@@ -41,16 +41,19 @@ SET(OVITO_PARTICLES_SOURCE_FILES
 	modifier/slice/SliceModifier.cpp
 	modifier/delete/DeleteParticlesModifier.cpp
 	modifier/analysis/StructureIdentificationModifier.cpp
+	modifier/analysis/binandreduce/BinAndReduceModifier.cpp
 	modifier/analysis/bondangle/BondAngleAnalysisModifier.cpp
 	modifier/analysis/cna/CommonNeighborAnalysisModifier.cpp
+	modifier/analysis/coordination/CoordinationNumberModifier.cpp
 	modifier/analysis/displacements/CalculateDisplacementsModifier.cpp
 	modifier/analysis/centrosymmetry/CentroSymmetryModifier.cpp
 	modifier/analysis/strain/AtomicStrainModifier.cpp
 	modifier/analysis/bonds/CreateBondsModifier.cpp
-	modifier/analysis/coordination/CoordinationNumberModifier.cpp
+
 	modifier/analysis/histogram/HistogramModifier.cpp
 	modifier/analysis/cluster/ClusterAnalysisModifier.cpp
 	modifier/analysis/scatterplot/ScatterPlotModifier.cpp
+	modifier/analysis/wignerseitz/WignerSeitzAnalysisModifier.cpp
 	modifier/lighting/AmbientOcclusionModifier.cpp
 	modifier/lighting/AmbientOcclusionRenderer.cpp
 	modifier/transformation/AffineTransformationModifier.cpp
@@ -63,6 +66,7 @@ SET(OVITO_PARTICLES_SOURCE_FILES
 	modifier/selection/ManualSelectionModifier.cpp
 	modifier/selection/ClearSelectionModifier.cpp
 	modifier/properties/CreateExpressionPropertyModifier.cpp
+	modifier/properties/FreezePropertyModifier.cpp
 	importer/ParticleImporter.cpp
 	importer/ParticleImportTask.cpp
 	importer/InputColumnMapping.cpp
@@ -75,6 +79,7 @@ SET(OVITO_PARTICLES_SOURCE_FILES
 	importer/imd/IMDImporter.cpp
 	importer/parcas/ParcasFileImporter.cpp
 	importer/cfg/CFGImporter.cpp
+	importer/pdb/PDBImporter.cpp
 	exporter/ParticleExporter.cpp
 	exporter/ParticleExporterSettingsDialog.cpp
 	exporter/OutputColumnMapping.cpp
@@ -90,6 +95,7 @@ SET(OVITO_PARTICLES_SOURCE_FILES
 	util/ParticleInformationApplet.cpp
 	util/ParticlePickingHelper.cpp
 	util/ParticlePropertyParameterUI.cpp
+	util/ParticleExpressionEvaluator.cpp
 )
 
 IF(OVITO_BUILD_PLUGIN_SCRIPTING)
@@ -116,6 +122,6 @@ SET(GLUSourceFiles
 OVITO_PLUGIN(Particles
 	SOURCES ${OVITO_PARTICLES_SOURCE_FILES} ${GLUSourceFiles}
 	RESOURCE particles.rcc resources/particles.qrc
-	LIB_DEPENDENCIES muParser qcustomplot
+	LIB_DEPENDENCIES muParser qcustomplot ${OPENGL_gl_LIBRARY}
 	OPTIONAL_PLUGIN_DEPENDENCIES Scripting
 )

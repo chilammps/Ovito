@@ -69,7 +69,7 @@ CameraObject::CameraObject(DataSet* dataset) : AbstractCameraObject(dataset), _i
 ******************************************************************************/
 TimeInterval CameraObject::objectValidity(TimePoint time)
 {
-	TimeInterval interval = TimeInterval::forever();
+	TimeInterval interval = TimeInterval::infinite();
 	if(isPerspective() && _fov) interval.intersect(_fov->validityInterval(time));
 	if(!isPerspective() && _zoom) interval.intersect(_zoom->validityInterval(time));
 	return interval;
@@ -179,7 +179,7 @@ void CameraObject::setIsTargetCamera(bool enable)
 				Vector3 cameraDir = cameraTM.column(2).normalized();
 				Vector3 targetPos = cameraPos - targetDistance() * cameraDir;
 				targetNode->transformationController()->translate(0, targetPos, AffineTransformation::Identity());
-				node->bindToTarget(targetNode.get());
+				node->bindToTarget(targetNode);
 			}
 		}
 		else if(node->targetNode() != nullptr && !enable) {
@@ -340,8 +340,8 @@ void CameraDisplayObject::render(TimePoint time, SceneObject* sceneObject, const
 
 	// Re-create the geometry buffers if necessary.
 	if(recreateBuffer) {
-		_cameraIcon = renderer->createLineGeometryBuffer();
-		_pickingCameraIcon = renderer->createLineGeometryBuffer();
+		_cameraIcon = renderer->createLinePrimitive();
+		_pickingCameraIcon = renderer->createLinePrimitive();
 	}
 
 	// Fill geometry buffers.
@@ -423,7 +423,7 @@ void CameraDisplayObject::render(TimePoint time, SceneObject* sceneObject, const
 
 	// Re-create the geometry buffer if necessary.
 	if(recreateBuffer)
-		_cameraCone = renderer->createLineGeometryBuffer();
+		_cameraCone = renderer->createLinePrimitive();
 
 	// Fill geometry buffer.
 	if(updateContents) {
@@ -474,7 +474,6 @@ void CameraDisplayObject::render(TimePoint time, SceneObject* sceneObject, const
 	else
 		_pickingCameraIcon->render(renderer);
 	renderer->endPickObject();
-
 }
 
 };

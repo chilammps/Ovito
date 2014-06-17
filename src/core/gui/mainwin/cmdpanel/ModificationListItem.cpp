@@ -78,7 +78,7 @@ bool ModificationListItem::referenceEvent(RefTarget* source, ReferenceEvent* eve
 ******************************************************************************/
 ModificationListItem::Status ModificationListItem::status() const
 {
-	ObjectStatus status;
+	PipelineStatus status;
 	Modifier* modifier = dynamic_object_cast<Modifier>(object());
 	if(modifier)
 		status = modifier->status();
@@ -87,11 +87,11 @@ ModificationListItem::Status ModificationListItem::status() const
 		if(sceneObject)
 			status = sceneObject->status();
 	}
-	if(status.type() == ObjectStatus::Warning)
+	if(status.type() == PipelineStatus::Warning)
 		return Warning;
-	else if(status.type() == ObjectStatus::Error)
+	else if(status.type() == PipelineStatus::Error)
 		return Error;
-	else if(status.type() == ObjectStatus::Pending)
+	else if(status.type() == PipelineStatus::Pending)
 		return Pending;
 
 	return None;

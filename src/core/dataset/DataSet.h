@@ -96,7 +96,7 @@ public:
 
 	/// \brief Deletes all nodes from the scene.
 	/// \undoable
-	void clearScene();
+	Q_INVOKABLE void clearScene();
 
 	/// \brief Rescales the animation keys of all controllers in the scene.
 	/// \param oldAnimationInterval The old animation interval, which will be mapped to the new animation interval.
@@ -130,6 +130,22 @@ public:
 	/// \brief Calls the given slot as soon as the geometry pipelines of all scene nodes has been
 	///        completely evaluated.
 	void runWhenSceneIsReady(const std::function<void()>& fn);
+
+	/// \brief This function blocks until the scene has become ready.
+	/// \param message The text to be shown to the user while waiting.
+	/// \param progressDialog An existing progress dialog to use to show the message.
+	///                       If NULL, the function will show its own dialog box.
+	/// \return true on success; false if the operation has been canceled by the user.
+	bool waitUntilSceneIsReady(const QString& message, QProgressDialog* progressDialog = nullptr);
+
+public:
+
+	Q_PROPERTY(SceneRoot* sceneRoot READ sceneRoot);
+	Q_PROPERTY(RenderSettings* renderSettings READ renderSettings);
+	Q_PROPERTY(SelectionSet* selection READ selection);
+	Q_PROPERTY(ViewportConfiguration* viewportConfig READ viewportConfig);
+	Q_PROPERTY(AnimationSettings* animationSettings READ animationSettings);
+	Q_PROPERTY(QString filePath READ filePath WRITE setFilePath);
 
 Q_SIGNALS:
 

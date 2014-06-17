@@ -39,24 +39,24 @@
 
 namespace Particles {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, SliceModifier, ParticleModifier)
-IMPLEMENT_OVITO_OBJECT(Particles, SliceModifierEditor, ParticleModifierEditor)
-SET_OVITO_OBJECT_EDITOR(SliceModifier, SliceModifierEditor)
-DEFINE_REFERENCE_FIELD(SliceModifier, _normalCtrl, "PlaneNormal", Controller)
-DEFINE_REFERENCE_FIELD(SliceModifier, _distanceCtrl, "PlaneDistance", Controller)
-DEFINE_REFERENCE_FIELD(SliceModifier, _widthCtrl, "SliceWidth", Controller)
-DEFINE_PROPERTY_FIELD(SliceModifier, _createSelection, "CreateSelection")
-DEFINE_PROPERTY_FIELD(SliceModifier, _inverse, "Inverse")
-DEFINE_PROPERTY_FIELD(SliceModifier, _applyToSelection, "ApplyToSelection")
-SET_PROPERTY_FIELD_LABEL(SliceModifier, _normalCtrl, "Normal")
-SET_PROPERTY_FIELD_LABEL(SliceModifier, _distanceCtrl, "Distance")
-SET_PROPERTY_FIELD_LABEL(SliceModifier, _widthCtrl, "Slice width")
-SET_PROPERTY_FIELD_LABEL(SliceModifier, _createSelection, "Select particles (do not delete)")
-SET_PROPERTY_FIELD_LABEL(SliceModifier, _inverse, "Invert")
-SET_PROPERTY_FIELD_LABEL(SliceModifier, _applyToSelection, "Apply to selected particles only")
-SET_PROPERTY_FIELD_UNITS(SliceModifier, _normalCtrl, WorldParameterUnit)
-SET_PROPERTY_FIELD_UNITS(SliceModifier, _distanceCtrl, WorldParameterUnit)
-SET_PROPERTY_FIELD_UNITS(SliceModifier, _widthCtrl, WorldParameterUnit)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, SliceModifier, ParticleModifier);
+IMPLEMENT_OVITO_OBJECT(Particles, SliceModifierEditor, ParticleModifierEditor);
+SET_OVITO_OBJECT_EDITOR(SliceModifier, SliceModifierEditor);
+DEFINE_REFERENCE_FIELD(SliceModifier, _normalCtrl, "PlaneNormal", Controller);
+DEFINE_REFERENCE_FIELD(SliceModifier, _distanceCtrl, "PlaneDistance", Controller);
+DEFINE_REFERENCE_FIELD(SliceModifier, _widthCtrl, "SliceWidth", Controller);
+DEFINE_PROPERTY_FIELD(SliceModifier, _createSelection, "CreateSelection");
+DEFINE_PROPERTY_FIELD(SliceModifier, _inverse, "Inverse");
+DEFINE_PROPERTY_FIELD(SliceModifier, _applyToSelection, "ApplyToSelection");
+SET_PROPERTY_FIELD_LABEL(SliceModifier, _normalCtrl, "Normal");
+SET_PROPERTY_FIELD_LABEL(SliceModifier, _distanceCtrl, "Distance");
+SET_PROPERTY_FIELD_LABEL(SliceModifier, _widthCtrl, "Slice width");
+SET_PROPERTY_FIELD_LABEL(SliceModifier, _createSelection, "Select particles (do not delete)");
+SET_PROPERTY_FIELD_LABEL(SliceModifier, _inverse, "Invert");
+SET_PROPERTY_FIELD_LABEL(SliceModifier, _applyToSelection, "Apply to selected particles only");
+SET_PROPERTY_FIELD_UNITS(SliceModifier, _normalCtrl, WorldParameterUnit);
+SET_PROPERTY_FIELD_UNITS(SliceModifier, _distanceCtrl, WorldParameterUnit);
+SET_PROPERTY_FIELD_UNITS(SliceModifier, _widthCtrl, WorldParameterUnit);
 
 /******************************************************************************
 * Constructs the modifier object.
@@ -110,7 +110,7 @@ Plane3 SliceModifier::slicingPlane(TimePoint time, TimeInterval& validityInterva
 /******************************************************************************
 * Modifies the particle object.
 ******************************************************************************/
-ObjectStatus SliceModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
+PipelineStatus SliceModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
 {
 	QString statusMessage = tr("%n input particles", 0, inputParticleCount());
 
@@ -124,7 +124,7 @@ ObjectStatus SliceModifier::modifyParticles(TimePoint time, TimeInterval& validi
 		statusMessage += tr("\n%n particles deleted", 0, numRejected);
 		statusMessage += tr("\n%n particles remaining", 0, numKept);
 		if(numRejected == 0)
-			return ObjectStatus(ObjectStatus::Success, statusMessage);
+			return PipelineStatus(PipelineStatus::Success, statusMessage);
 
 		// Delete the rejected particles.
 		deleteParticles(mask, numRejected);
@@ -140,7 +140,7 @@ ObjectStatus SliceModifier::modifyParticles(TimePoint time, TimeInterval& validi
 			s = *m++;
 		selProperty->changed();
 	}
-	return ObjectStatus(ObjectStatus::Success, statusMessage);
+	return PipelineStatus(PipelineStatus::Success, statusMessage);
 }
 
 /******************************************************************************
@@ -273,7 +273,7 @@ Box3 SliceModifier::renderPlane(SceneRenderer* renderer, const Plane3& plane, co
 
 	if(renderer) {
 		// Render plane-box intersection lines.
-		std::unique_ptr<LineGeometryBuffer> buffer = renderer->createLineGeometryBuffer();
+		std::unique_ptr<LinePrimitive> buffer = renderer->createLinePrimitive();
 		buffer->setVertexCount(vertices.size());
 		buffer->setVertexPositions(vertices.constData());
 		buffer->setLineColor(color);
@@ -359,8 +359,8 @@ void SliceModifierEditor::createUI(const RolloutInsertionParameters& rolloutPara
 		Vector3ParameterUI* normalPUI = new Vector3ParameterUI(this, PROPERTY_FIELD(SliceModifier::_normalCtrl), i);
 		normalPUI->label()->setTextFormat(Qt::RichText);
 		normalPUI->label()->setTextInteractionFlags(Qt::LinksAccessibleByMouse);
-		normalPUI->label()->setText(tr("<a href=\"%1\">%2</a>").arg(i).arg(normalPUI->label()->text()));
-		connect(normalPUI->label(), SIGNAL(linkActivated(const QString&)), this, SLOT(onXYZNormal(const QString&)));
+		normalPUI->label()->setText(QStringLiteral("<a href=\"%1\">%2</a>").arg(i).arg(normalPUI->label()->text()));
+		connect(normalPUI->label(), &QLabel::linkActivated, this, &SliceModifierEditor::onXYZNormal);
 		gridlayout->addWidget(normalPUI->label(), i+1, 0);
 		gridlayout->addLayout(normalPUI->createFieldLayout(), i+1, 1);
 	}
@@ -388,15 +388,15 @@ void SliceModifierEditor::createUI(const RolloutInsertionParameters& rolloutPara
 
 	layout->addSpacing(8);
 	QPushButton* centerPlaneBtn = new QPushButton(tr("Move plane to simulation box center"), rollout);
-	connect(centerPlaneBtn, SIGNAL(clicked(bool)), this, SLOT(onCenterOfBox()));
+	connect(centerPlaneBtn, &QPushButton::clicked, this, &SliceModifierEditor::onCenterOfBox);
 	layout->addWidget(centerPlaneBtn);
 
 	// Add buttons for view alignment functions.
 	QPushButton* alignViewToPlaneBtn = new QPushButton(tr("Align view direction to plane normal"), rollout);
-	connect(alignViewToPlaneBtn, SIGNAL(clicked(bool)), this, SLOT(onAlignViewToPlane()));
+	connect(alignViewToPlaneBtn, &QPushButton::clicked, this, &SliceModifierEditor::onAlignViewToPlane);
 	layout->addWidget(alignViewToPlaneBtn);
 	QPushButton* alignPlaneToViewBtn = new QPushButton(tr("Align plane normal to view direction"), rollout);
-	connect(alignPlaneToViewBtn, SIGNAL(clicked(bool)), this, SLOT(onAlignPlaneToView()));
+	connect(alignPlaneToViewBtn, &QPushButton::clicked, this, &SliceModifierEditor::onAlignPlaneToView);
 	layout->addWidget(alignPlaneToViewBtn);
 
 	_pickParticlePlaneInputMode = new PickParticlePlaneInputMode(this);
@@ -601,7 +601,7 @@ void PickParticlePlaneInputMode::alignPlane(SliceModifier* mod)
 			throw Exception(tr("Cannot set the new slicing plane. The three selected particle are colinear."));
 
 		// Get the object to world transformation for the currently selected node.
-		ObjectNode* node = _pickedParticles[0].objNode.get();
+		ObjectNode* node = _pickedParticles[0].objNode;
 		TimeInterval interval;
 		const AffineTransformation& nodeTM = node->getWorldTransform(mod->dataset()->animationSettings()->time(), interval);
 
@@ -633,6 +633,18 @@ void PickParticlePlaneInputMode::renderOverlay3D(Viewport* vp, ViewportSceneRend
 	Q_FOREACH(const PickResult& pa, _pickedParticles) {
 		renderSelectionMarker(vp, renderer, pa);
 	}
+}
+
+/******************************************************************************
+* Computes the bounding box of the 3d visual viewport overlay rendered by the input mode.
+******************************************************************************/
+Box3 PickParticlePlaneInputMode::overlayBoundingBox(Viewport* vp, ViewportSceneRenderer* renderer)
+{
+	Box3 bbox = ViewportInputMode::overlayBoundingBox(vp, renderer);
+	Q_FOREACH(const PickResult& pa, _pickedParticles) {
+		bbox.addBox(selectionMarkerBoundingBox(vp, pa));
+	}
+	return bbox;
 }
 
 };	// End of namespace

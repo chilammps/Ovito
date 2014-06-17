@@ -77,12 +77,12 @@ public:
 
 public:
 
-	Q_PROPERTY(FloatType radius READ radius WRITE setRadius)
-	Q_PROPERTY(int smoothingLevel READ smoothingLevel WRITE setSmoothingLevel)
-	Q_PROPERTY(bool onlySelectedParticles READ onlySelectedParticles WRITE setOnlySelectedParticles)
-	Q_PROPERTY(FloatType solidVolume READ solidVolume)
-	Q_PROPERTY(FloatType totalVolume READ totalVolume)
-	Q_PROPERTY(FloatType surfaceArea READ surfaceArea)
+	Q_PROPERTY(FloatType radius READ radius WRITE setRadius);
+	Q_PROPERTY(int smoothingLevel READ smoothingLevel WRITE setSmoothingLevel);
+	Q_PROPERTY(bool onlySelectedParticles READ onlySelectedParticles WRITE setOnlySelectedParticles);
+	Q_PROPERTY(FloatType solidVolume READ solidVolume);
+	Q_PROPERTY(FloatType totalVolume READ totalVolume);
+	Q_PROPERTY(FloatType surfaceArea READ surfaceArea);
 
 public:
 
@@ -93,7 +93,7 @@ public:
 
 		/// Constructor.
 		ConstructSurfaceEngine(ParticleProperty* positions, ParticleProperty* selection, const SimulationCellData& simCell, FloatType radius, int smoothingLevel) :
-			_positions(positions), _selection(selection), _simCell(simCell), _radius(radius), _smoothingLevel(smoothingLevel) {}
+			_positions(positions), _selection(selection), _simCell(simCell), _radius(radius), _smoothingLevel(smoothingLevel), _isCompletelySolid(false) {}
 
 		/// Computes the modifier's results and stores them in this object for later retrieval.
 		virtual void compute(FutureInterfaceBase& futureInterface) override;
@@ -116,6 +116,9 @@ public:
 		/// Returns the computed surface area.
 		FloatType surfaceArea() const { return _surfaceArea; }
 
+		/// Indicates whether the entire simulation cell is part of the solid region.
+		bool isCompletelySolid() const { return _isCompletelySolid; }
+
 	private:
 
 		FloatType _radius;
@@ -126,6 +129,7 @@ public:
 		SimulationCellData _simCell;
 		FloatType _solidVolume;
 		FloatType _surfaceArea;
+		bool _isCompletelySolid;
 	};
 
 protected:
@@ -143,7 +147,7 @@ protected:
 	virtual void retrieveModifierResults(Engine* engine) override;
 
 	/// This lets the modifier insert the previously computed results into the pipeline.
-	virtual ObjectStatus applyModifierResults(TimePoint time, TimeInterval& validityInterval) override;
+	virtual PipelineStatus applyModifierResults(TimePoint time, TimeInterval& validityInterval) override;
 
 private:
 

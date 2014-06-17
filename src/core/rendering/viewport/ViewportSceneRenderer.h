@@ -76,25 +76,25 @@ public:
 	Box3 boundingBoxInteractive(TimePoint time, Viewport* viewport);
 
 	/// Requests a new line geometry buffer from the renderer.
-	virtual std::unique_ptr<LineGeometryBuffer> createLineGeometryBuffer() override;
+	virtual std::unique_ptr<LinePrimitive> createLinePrimitive() override;
 
 	/// Requests a new particle geometry buffer from the renderer.
-	virtual std::unique_ptr<ParticleGeometryBuffer> createParticleGeometryBuffer(ParticleGeometryBuffer::ShadingMode shadingMode,
-			ParticleGeometryBuffer::RenderingQuality renderingQuality, ParticleGeometryBuffer::ParticleShape shape) override;
+	virtual std::unique_ptr<ParticlePrimitive> createParticlePrimitive(ParticlePrimitive::ShadingMode shadingMode,
+			ParticlePrimitive::RenderingQuality renderingQuality, ParticlePrimitive::ParticleShape shape) override;
 
 	/// Requests a new text geometry buffer from the renderer.
-	virtual std::unique_ptr<TextGeometryBuffer> createTextGeometryBuffer() override;
+	virtual std::unique_ptr<TextPrimitive> createTextPrimitive() override;
 
 	/// Requests a new image geometry buffer from the renderer.
-	virtual std::unique_ptr<ImageGeometryBuffer> createImageGeometryBuffer() override;
+	virtual std::unique_ptr<ImagePrimitive> createImagePrimitive() override;
 
 	/// Requests a new arrow geometry buffer from the renderer.
-	virtual std::unique_ptr<ArrowGeometryBuffer> createArrowGeometryBuffer(ArrowGeometryBuffer::Shape shape,
-			ArrowGeometryBuffer::ShadingMode shadingMode,
-			ArrowGeometryBuffer::RenderingQuality renderingQuality) override;
+	virtual std::unique_ptr<ArrowPrimitive> createArrowPrimitive(ArrowPrimitive::Shape shape,
+			ArrowPrimitive::ShadingMode shadingMode,
+			ArrowPrimitive::RenderingQuality renderingQuality) override;
 
 	/// Requests a new triangle mesh buffer from the renderer.
-	virtual std::unique_ptr<TriMeshGeometryBuffer> createTriMeshGeometryBuffer() override;
+	virtual std::unique_ptr<MeshPrimitive> createMeshPrimitive() override;
 
 	/// Renders a 2d polyline in the viewport.
 	void render2DPolyline(const Point2* points, int count, const ColorA& color, bool closed);
@@ -112,20 +112,17 @@ public:
 	/// Returns a pointer to the OpenGL functions object.
 	QOpenGLFunctions* glfuncs() const { return _glFunctions; }
 
-	/// Returns a pointer to the OpenGL 2.0 functions object.
-	QOpenGLFunctions_2_0* glfuncs20() const { return _glFunctions20; }
-
-	/// Returns a pointer to the OpenGL 3.0 functions object.
-	QOpenGLFunctions_3_0* glfuncs30() const { return _glFunctions30; }
-
-	/// Returns a pointer to the OpenGL 3.2 core profile functions object.
-	QOpenGLFunctions_3_2_Core* glfuncs32() const { return _glFunctions32; }
-
 	/// Returns the surface format of the current OpenGL context.
 	const QSurfaceFormat& glformat() const { return _glformat; }
 
 	/// Indicates whether the current OpenGL implementation is according to the core profile.
 	bool isCoreProfile() const { return _isCoreProfile; }
+
+	/// Indicates whether it is okay to use OpenGL point sprites. Otherwise emulate them using explicit triangle geometry.
+	bool usePointSprites() const { return _usePointSprites; }
+
+	/// Indicates whether it is okay to use GLSL geometry shaders.
+	bool useGeometryShaders() const { return _useGeometryShaders; }
 
 	/// Translates an OpenGL error code to a human-readable message string.
 	static const char* openglErrorString(GLenum errorCode);
@@ -135,30 +132,30 @@ public:
 
 	/// The OpenGL glPointParameterf() function.
 	void glPointParameterf(GLenum pname, GLfloat param) {
-		if(glfuncs32()) glfuncs32()->glPointParameterf(pname, param);
-		else if(glfuncs30()) glfuncs30()->glPointParameterf(pname, param);
-		else if(glfuncs20()) glfuncs20()->glPointParameterf(pname, param);
+		if(_glFunctions32) _glFunctions32->glPointParameterf(pname, param);
+		else if(_glFunctions30) _glFunctions30->glPointParameterf(pname, param);
+		else if(_glFunctions20) _glFunctions20->glPointParameterf(pname, param);
 	}
 
 	/// The OpenGL glPointParameterfv() function.
 	void glPointParameterfv(GLenum pname, const GLfloat* params) {
-		if(glfuncs32()) glfuncs32()->glPointParameterfv(pname, params);
-		else if(glfuncs30()) glfuncs30()->glPointParameterfv(pname, params);
-		else if(glfuncs20()) glfuncs20()->glPointParameterfv(pname, params);
+		if(_glFunctions32) _glFunctions32->glPointParameterfv(pname, params);
+		else if(_glFunctions30) _glFunctions30->glPointParameterfv(pname, params);
+		else if(_glFunctions20) _glFunctions20->glPointParameterfv(pname, params);
 	}
 
 	/// The OpenGL glMultiDrawArrays() function.
 	void glMultiDrawArrays(GLenum mode, const GLint* first, const GLsizei* count, GLsizei drawcount) {
-		if(glfuncs32()) glfuncs32()->glMultiDrawArrays(mode, first, count, drawcount);
-		else if(glfuncs30()) glfuncs30()->glMultiDrawArrays(mode, first, count, drawcount);
-		else if(glfuncs20()) glfuncs20()->glMultiDrawArrays(mode, first, count, drawcount);
+		if(_glFunctions32) _glFunctions32->glMultiDrawArrays(mode, first, count, drawcount);
+		else if(_glFunctions30) _glFunctions30->glMultiDrawArrays(mode, first, count, drawcount);
+		else if(_glFunctions20) _glFunctions20->glMultiDrawArrays(mode, first, count, drawcount);
 	}
 
 	/// Make sure vertex IDs are available to use by the OpenGL shader.
-	void activateVertexIDs(QOpenGLShaderProgram* shader, GLint vertexCount);
+	void activateVertexIDs(QOpenGLShaderProgram* shader, GLint vertexCount, bool alwaysUseVBO = false);
 
 	/// This needs to be called to deactivate vertex IDs, which were activated by a call to activateVertexIDs().
-	void deactivateVertexIDs(QOpenGLShaderProgram* shader);
+	void deactivateVertexIDs(QOpenGLShaderProgram* shader, bool alwaysUseVBO = false);
 
 	/// Registers a range of sub-IDs belonging to the current object being rendered.
 	/// This is an internal method used by the PickingSceneRenderer class to implement the picking mechanism.
@@ -213,8 +210,14 @@ private:
 	/// The OpenGL surface format.
 	QSurfaceFormat _glformat;
 
-	/// Indicates whether the current OpenGL implementation is according to the core profile.
+	/// Indicates whether the current OpenGL implementation is based on the core or the compatibility profile.
 	bool _isCoreProfile;
+
+	/// Indicates whether it is okay to use OpenGL point sprites. Otherwise emulate them using explicit triangle geometry.
+	bool _usePointSprites;
+
+	/// Indicates whether it is okay to use GLSL geometry shaders.
+	bool _useGeometryShaders;
 
 	/// The current model-to-world transformation matrix.
 	AffineTransformation _modelWorldTM;
@@ -229,7 +232,7 @@ private:
 	GLint _glVertexIDBufferSize;
 
 	/// The geometry buffer used to render the construction grid of a viewport.
-	std::unique_ptr<LineGeometryBuffer> _constructionGridGeometry;
+	std::unique_ptr<LinePrimitive> _constructionGridGeometry;
 
 	Q_OBJECT
 	OVITO_OBJECT

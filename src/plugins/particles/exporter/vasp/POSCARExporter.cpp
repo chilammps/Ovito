@@ -56,11 +56,11 @@ bool POSCARExporter::exportParticles(const PipelineFlowState& state, int frameNu
 		throw Exception(tr("No simulation cell available. Cannot write POSCAR file."));
 
 	// Write POSCAR header including the simulation cell geometry.
-	textStream() << "POSCAR file written by OVITO" << endl;
-	textStream() << "1" << endl;
+	textStream() << "POSCAR file written by OVITO\n";
+	textStream() << "1\n";
 	AffineTransformation cell = simulationCell->cellMatrix();
 	for(size_t i = 0; i < 3; i++)
-		textStream() << cell(0, i) << " " << cell(1, i) << " " << cell(2, i) << endl;
+		textStream() << cell(0, i) << " " << cell(1, i) << " " << cell(2, i) << "\n";
 	Vector3 origin = cell.translation();
 
 	// Count number of particles per particle type.
@@ -83,19 +83,19 @@ bool POSCARExporter::exportParticles(const PipelineFlowState& state, int frameNu
 			}
 			else textStream() << "Type" << c.key() << " ";
 		}
-		textStream() << endl;
+		textStream() << "\n";
 
 		// Write line with particle counts per type.
 		for(auto c = particleCounts.begin(); c != particleCounts.end(); ++c) {
 			textStream() << c.value() << " ";
 		}
-		textStream() << endl;
+		textStream() << "\n";
 	}
 	else {
 		// Write line with particle type name.
-		textStream() << "A" << endl;
+		textStream() << "A\n";
 		// Write line with particle count.
-		textStream() << posProperty->size() << endl;
+		textStream() << posProperty->size() << "\n";
 		particleCounts[0] = posProperty->size();
 	}
 
@@ -104,14 +104,14 @@ bool POSCARExporter::exportParticles(const PipelineFlowState& state, int frameNu
 	size_t currentProgress = 0;
 
 	// Write atomic positions.
-	textStream() << "Cartesian" << endl;
+	textStream() << "Cartesian\n";
 	for(auto c = particleCounts.begin(); c != particleCounts.end(); ++c) {
 		int ptype = c.key();
 		const Point3* p = posProperty->constDataPoint3();
 		for(size_t i = 0; i < posProperty->size(); i++, ++p) {
 			if(particleTypeProperty && particleTypeProperty->getInt(i) != ptype)
 				continue;
-			textStream() << (p->x() - origin.x()) << " " << (p->y() - origin.y()) << " " << (p->z() - origin.z()) << endl;
+			textStream() << (p->x() - origin.x()) << " " << (p->y() - origin.y()) << " " << (p->z() - origin.z()) << "\n";
 			currentProgress++;
 
 			if((currentProgress % 1000) == 0) {
@@ -124,14 +124,14 @@ bool POSCARExporter::exportParticles(const PipelineFlowState& state, int frameNu
 
 	// Write atomic velocities.
 	if(velocityProperty) {
-		textStream() << "Cartesian" << endl;
+		textStream() << "Cartesian\n";
 		for(auto c = particleCounts.begin(); c != particleCounts.end(); ++c) {
 			int ptype = c.key();
 			const Vector3* v = velocityProperty->constDataVector3();
 			for(size_t i = 0; i < velocityProperty->size(); i++, ++v) {
 				if(particleTypeProperty && particleTypeProperty->getInt(i) != ptype)
 					continue;
-				textStream() << v->x() << " " << v->y() << " " << v->z() << endl;
+				textStream() << v->x() << " " << v->y() << " " << v->z() << "\n";
 				currentProgress++;
 
 				if((currentProgress % 1000) == 0) {

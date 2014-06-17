@@ -20,7 +20,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include <core/gui/mainwin/MainWindow.h>
 #include "ColorPickerWidget.h"
 
 namespace Ovito {
@@ -29,12 +28,9 @@ namespace Ovito {
 * Constructs the control.
 ******************************************************************************/
 ColorPickerWidget::ColorPickerWidget(QWidget* parent)
-	: QPushButton(parent), _color(1,1,1)
+	: QAbstractButton(parent), _color(1,1,1)
 {
-	setAutoFillBackground(true);
-	connect(this, SIGNAL(clicked(bool)), this, SLOT(activateColorPicker()));
-	setColor(Color(0,0,0));
-	setFlat(true);
+	connect(this, &ColorPickerWidget::clicked, this, &ColorPickerWidget::activateColorPicker);
 }
 
 /******************************************************************************
@@ -46,26 +42,35 @@ void ColorPickerWidget::setColor(const Color& newVal, bool emitChangeSignal)
 	
 	// Update control.
 	_color = newVal;
-
-	QColor col(_color);
-	setStyleSheet(QString("QPushButton { "
-				   "border-style: solid; "
-				   "border-width: 1px; "
-				   "border-radius: 0px; "
-				   "border-color: black; "
-				   "background-color: rgb(%1,%2,%3); "
-				   "padding: 1px; "
-				   "min-width: 16px; "
-				   "}"
-				   "QPushButton:pressed { "
-				   "border-color: white; "
-						   "}")
-					   .arg(col.red()).arg(col.green()).arg(col.blue()));
 	update();
 	
 	// Send change message
 	if(emitChangeSignal)
 		colorChanged();
+}
+
+/******************************************************************************
+* Paints the widget.
+******************************************************************************/
+void ColorPickerWidget::paintEvent(QPaintEvent* event)
+{
+	QPainter painter(this);
+	QBrush brush{(QColor)color()};
+	qDrawShadePanel(&painter, rect(), palette(), isDown(), 1, &brush);
+}
+
+/******************************************************************************
+* Returns the preferred size of the widget.
+******************************************************************************/
+QSize ColorPickerWidget::sizeHint() const
+{
+    int w = 16;
+	int h = fontMetrics().xHeight();
+
+	QStyleOptionButton opt;
+	opt.initFrom(this);
+	opt.features = QStyleOptionButton::Flat;
+	return style()->sizeFromContents(QStyle::CT_PushButton, &opt, QSize(w, h), this).expandedTo(QApplication::globalStrut()).expandedTo(QSize(0,22));
 }
 
 /******************************************************************************

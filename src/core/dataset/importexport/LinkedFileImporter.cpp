@@ -33,7 +33,7 @@
 
 namespace Ovito {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LinkedFileImporter, FileImporter)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LinkedFileImporter, FileImporter);
 
 /******************************************************************************
 * Sends a request to the LinkedFileObject owning this importer to reload
@@ -228,10 +228,10 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl, ImportMode importMode
 			UndoSuspender unsoSuspender(this);	// Do not create undo records for this part.
 
 			// Add object to scene.
-			node = new ObjectNode(dataset(), obj.get());
+			node = new ObjectNode(dataset(), obj);
 
 			// Let the import subclass customize the node.
-			prepareSceneNode(node.get(), obj.get());
+			prepareSceneNode(node, obj);
 		}
 
 		// Insert node into scene.
@@ -240,7 +240,7 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl, ImportMode importMode
 	else node = existingNode;
 
 	// Select import node.
-	dataset()->selection()->setNode(node.get());
+	dataset()->selection()->setNode(node);
 
 	// Jump to the right frame to show the originally selected file.
 	int jumpToFrame = -1;
@@ -265,13 +265,9 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl, ImportMode importMode
 }
 
 /******************************************************************************
-* Scans the input source (which can be a directory or a single file) to
-* discover all animation frames.
-*
-* This implementation of this method checks if the source URL contains a wild-card pattern.
-* If yes, it scans the directory to find all matching files.
+* Returns the list of files that match the given wildcard pattern.
 ******************************************************************************/
-Future<QVector<LinkedFileImporter::FrameSourceInformation>> LinkedFileImporter::findFrames(const QUrl& sourceUrl)
+Future<QVector<LinkedFileImporter::FrameSourceInformation>> LinkedFileImporter::findWildcardMatches(const QUrl& sourceUrl, DataSetContainer* datasetContainer)
 {
 	QVector<FrameSourceInformation> frames;
 
@@ -309,7 +305,7 @@ Future<QVector<LinkedFileImporter::FrameSourceInformation>> LinkedFileImporter::
 
 			// Retrieve list of files in remote directory.
 			Future<QStringList> fileListFuture = FileManager::instance().listDirectoryContents(directoryUrl);
-			if(!dataset()->container()->taskManager().waitForTask(fileListFuture))
+			if(!datasetContainer->taskManager().waitForTask(fileListFuture))
 				return Future<QVector<FrameSourceInformation>>::createCanceled();
 
 			// Filter file names.

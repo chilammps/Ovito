@@ -149,40 +149,40 @@ OORef<RefTarget> RefTarget::clone(bool deepCopy, CloneHelper& cloneHelper)
 		for(const PropertyFieldDescriptor* field = clazz->firstPropertyField(); field; field = field->next()) {
 			if(field->isReferenceField()) {
 				if(field->isVector() == false) {
-					OVITO_ASSERT(field->singleStorageAccessFunc != NULL);
+					OVITO_ASSERT(field->singleStorageAccessFunc != nullptr);
 					const SingleReferenceFieldBase& sourceField = field->singleStorageAccessFunc(this);
 					// Clone reference target.
 					OORef<RefTarget> clonedReference;
 					if(field->flags().testFlag(PROPERTY_FIELD_NEVER_CLONE_TARGET))
-						clonedReference = (RefTarget*)sourceField;
+						clonedReference = static_cast<RefTarget*>(sourceField);
 					else if(field->flags().testFlag(PROPERTY_FIELD_ALWAYS_CLONE))
-						clonedReference = cloneHelper.cloneObject((RefTarget*)sourceField, deepCopy);
+						clonedReference = cloneHelper.cloneObject(static_cast<RefTarget*>(sourceField), deepCopy);
 					else if(field->flags().testFlag(PROPERTY_FIELD_ALWAYS_DEEP_COPY))
-						clonedReference = cloneHelper.cloneObject((RefTarget*)sourceField, true);
+						clonedReference = cloneHelper.cloneObject(static_cast<RefTarget*>(sourceField), true);
 					else
-						clonedReference = cloneHelper.copyReference((RefTarget*)sourceField, deepCopy);
+						clonedReference = cloneHelper.copyReference(static_cast<RefTarget*>(sourceField), deepCopy);
 					// Store in reference field of destination object.
-					field->singleStorageAccessFunc(clone.get()).setValue(clonedReference.get());
+					field->singleStorageAccessFunc(clone).setValue(clonedReference);
 				}
 				else {
-					OVITO_ASSERT(field->vectorStorageAccessFunc != NULL);
+					OVITO_ASSERT(field->vectorStorageAccessFunc != nullptr);
 					// Clone all reference targets in the source vector.
 					const VectorReferenceFieldBase& sourceField = field->vectorStorageAccessFunc(this);
-					VectorReferenceFieldBase& destField = field->vectorStorageAccessFunc(clone.get());
+					VectorReferenceFieldBase& destField = field->vectorStorageAccessFunc(clone);
 					destField.clear();
-					for(int i=0; i<sourceField.size(); i++) {
+					for(int i = 0; i < sourceField.size(); i++) {
 						OORef<RefTarget> clonedReference;
 						// Clone reference target.
 						if(field->flags().testFlag(PROPERTY_FIELD_NEVER_CLONE_TARGET))
-							clonedReference = (RefTarget*)sourceField[i];
+							clonedReference = static_cast<RefTarget*>(sourceField[i]);
 						else if(field->flags().testFlag(PROPERTY_FIELD_ALWAYS_CLONE))
-							clonedReference = cloneHelper.cloneObject((RefTarget*)sourceField[i], deepCopy);
+							clonedReference = cloneHelper.cloneObject(static_cast<RefTarget*>(sourceField[i]), deepCopy);
 						else if(field->flags().testFlag(PROPERTY_FIELD_ALWAYS_DEEP_COPY))
-							clonedReference = cloneHelper.cloneObject((RefTarget*)sourceField[i], true);
+							clonedReference = cloneHelper.cloneObject(static_cast<RefTarget*>(sourceField[i]), true);
 						else
-							clonedReference = cloneHelper.copyReference((RefTarget*)sourceField[i], deepCopy);
+							clonedReference = cloneHelper.copyReference(static_cast<RefTarget*>(sourceField[i]), deepCopy);
 						// Store in reference field of destination object.
-						destField.insertInternal(clonedReference.get());
+						destField.insertInternal(clonedReference);
 					}
 				}
 			}

@@ -24,7 +24,7 @@
 
 #include <core/Core.h>
 #include <core/dataset/importexport/FileImporter.h>
-#include <core/utilities/ObjectStatus.h>
+#include <core/scene/pipeline/PipelineStatus.h>
 #include <core/utilities/concurrent/Future.h>
 
 namespace Ovito {
@@ -36,16 +36,16 @@ class OVITO_CORE_EXPORT LinkedFileImporter : public FileImporter
 {
 public:
 
-	/// \brief This structures stores source information about an imported animation frame.
+	/// \brief This data structure stores source information about an imported animation frame.
 	struct FrameSourceInformation {
 
 		/// The source file that contains the data of the animation frame.
 		QUrl sourceFile;
 
-		/// The byte offset into the source file where the data is stored.
+		/// The byte offset into the source file where the frame's data is stored.
 		qint64 byteOffset;
 
-		/// The line number in the source file where the data is stored, if the file has a text-based format.
+		/// The line number in the source file where the frame data is stored, if the file has a text-based format.
 		int lineNumber;
 
 		/// The last modification time of the source file.
@@ -55,7 +55,7 @@ public:
 		/// The name or label of the source frame.
 		QString label;
 
-		/// Compares two structures.
+		/// Compares two data records.
 		bool operator!=(const FrameSourceInformation& other) const {
 			return (sourceFile != other.sourceFile) ||
 					(byteOffset != other.byteOffset) ||
@@ -89,8 +89,8 @@ public:
 		/// Returns the source file information.
 		const FrameSourceInformation& frame() const { return _frame; }
 
-		/// Returns a status object that describes the outcome of the loading operation.
-		ObjectStatus status() const { return ObjectStatus(ObjectStatus::Success, _infoText); }
+		/// Returns the status of the import operation.
+		PipelineStatus status() const { return PipelineStatus(PipelineStatus::Success, _infoText); }
 
 		/// Sets the informational text.
 		void setInfoText(const QString& text) { _infoText = text; }
@@ -135,7 +135,12 @@ public:
 	///
 	/// The default implementation of this method checks if the source URL contains a wild-card pattern.
 	/// If yes, it scans the directory to find all matching files.
-	virtual Future<QVector<FrameSourceInformation>> findFrames(const QUrl& sourceUrl);
+	virtual Future<QVector<FrameSourceInformation>> findFrames(const QUrl& sourceUrl) {
+		return findWildcardMatches(sourceUrl, dataset()->container());
+	}
+
+	/// \brief Returns the list of files that match the given wildcard pattern.
+	static Future<QVector<FrameSourceInformation>> findWildcardMatches(const QUrl& sourceUrl, DataSetContainer* datasetContainer);
 
 	/// \brief Sends a request to the LinkedFileObject owning this importer to reload the input file.
 	void requestReload(int frame = -1);

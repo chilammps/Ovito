@@ -30,6 +30,7 @@
 #include <core/viewport/ViewportConfiguration.h>
 #include <core/viewport/Viewport.h>
 #include <core/viewport/ViewportWindow.h>
+#include <core/rendering/viewport/ViewportSceneRenderer.h>
 #include <core/scene/SelectionSet.h>
 
 namespace Ovito {
@@ -53,7 +54,7 @@ void ActionManager::on_HelpAbout_triggered()
 			QMessageBox::Ok, mainWindow());
 	msgBox.setInformativeText(tr(
 			"<p>A visualization and analysis software for atomistic simulation data.</p>"
-			"<p>Copyright (C) 2013, Alexander Stukowski</p>"
+			"<p>Copyright (C) 2014, Alexander Stukowski</p>"
 			"<p>This program comes with ABSOLUTELY NO WARRANTY.<br>"
 			"This is free software, and you are welcome to redistribute\n"
 			"it under certain conditions. See the source for copying conditions.</p>"
@@ -86,7 +87,8 @@ void ActionManager::on_HelpOpenGLInfo_triggered()
 	QString text;
 	if(mainWindow()->datasetContainer().currentSet()) {
 		Viewport* vp = mainWindow()->datasetContainer().currentSet()->viewportConfig()->activeViewport();
-		if(vp && vp->viewportWindow()->glcontext()) {
+		ViewportSceneRenderer* renderer = mainWindow()->datasetContainer().currentSet()->viewportConfig()->viewportRenderer();
+		if(vp && renderer && vp->viewportWindow()->glcontext()) {
 			vp->viewportWindow()->glcontext()->makeCurrent(vp->viewportWindow());
 			QSurfaceFormat format = vp->viewportWindow()->glcontext()->format();
 			QTextStream stream(&text, QIODevice::WriteOnly | QIODevice::Text);
@@ -117,7 +119,6 @@ void ActionManager::on_HelpOpenGLInfo_triggered()
 			stream << "Architecture: " << (QT_POINTER_SIZE*8) << " bit" << endl;
 			stream << "Command line: " << QCoreApplication::arguments().join(' ') << endl;
 			stream << "======= OpenGL info =======" << endl;
-			stream << "Depth buffer size: " << format.depthBufferSize() << endl;
 			stream << "Version: " << format.majorVersion() << QStringLiteral(".") << format.minorVersion() << endl;
 			stream << "Profile: " << (format.profile() == QSurfaceFormat::CoreProfile ? "core" : (format.profile() == QSurfaceFormat::CompatibilityProfile ? "compatibility" : "none")) << endl;
 			stream << "Alpha: " << format.hasAlpha() << endl;
@@ -130,11 +131,12 @@ void ActionManager::on_HelpOpenGLInfo_triggered()
 			stream << "Fragment shaders: " << QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Fragment) << endl;
 			stream << "Geometry shaders: " << QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Geometry) << endl;
 			stream << "Swap behavior: " << (format.swapBehavior() == QSurfaceFormat::SingleBuffer ? QStringLiteral("single buffer") : (format.swapBehavior() == QSurfaceFormat::DoubleBuffer ? QStringLiteral("double buffer") : (format.swapBehavior() == QSurfaceFormat::TripleBuffer ? QStringLiteral("triple buffer") : QStringLiteral("other")))) << endl;
+			stream << "Depth buffer size: " << format.depthBufferSize() << endl;
 			stream << "Stencil buffer size: " << format.stencilBufferSize() << endl;
 			stream << "Deprecated functions: " << format.testOption(QSurfaceFormat::DeprecatedFunctions) << endl;
-#ifdef Q_OS_WIN
-			stream << "Not using point sprites: " << (format.majorVersion() == 3 && format.minorVersion() == 1 && strstr((const char*)glGetString(GL_VENDOR), "Intel") != nullptr) << endl;
-#endif
+			stream << "Using point sprites: " << renderer->usePointSprites() << endl;
+			stream << "Using geometry shaders: " << renderer->useGeometryShaders() << endl;
+			stream << "Context sharing: " << ViewportWindow::contextSharingEnabled() << endl;
 			vp->viewportWindow()->glcontext()->doneCurrent();
 		}
 	}
@@ -174,8 +176,7 @@ void ActionManager::on_FileNew_triggered()
 {
 	try {
 		if(mainWindow()->datasetContainer().askForSaveChanges()) {
-			OORef<DataSet> newSet(new DataSet());
-			mainWindow()->datasetContainer().setCurrentSet(newSet);
+			mainWindow()->datasetContainer().fileNew();
 		}
 	}
 	catch(const Exception& ex) {
@@ -267,7 +268,7 @@ void ActionManager::on_Settings_triggered()
 void ActionManager::on_FileImport_triggered()
 {
 	// Let the user select a file.
-	ImportFileDialog dialog(ImportExportManager::instance().fileImporters(_dataset.get()), mainWindow(), tr("Import Data"));
+	ImportFileDialog dialog(ImportExportManager::instance().fileImporters(_dataset), mainWindow(), tr("Import Data"));
 	if(dialog.exec() != QDialog::Accepted)
 		return;
 
@@ -286,7 +287,7 @@ void ActionManager::on_FileImport_triggered()
 void ActionManager::on_FileRemoteImport_triggered()
 {
 	// Let the user enter the URL of the remote file.
-	ImportRemoteFileDialog dialog(ImportExportManager::instance().fileImporters(_dataset.get()), mainWindow(), tr("Import Remote File"));
+	ImportRemoteFileDialog dialog(ImportExportManager::instance().fileImporters(_dataset), mainWindow(), tr("Import Remote File"));
 	if(dialog.exec() != QDialog::Accepted)
 		return;
 
@@ -313,7 +314,7 @@ void ActionManager::on_FileExport_triggered()
 
 	// Build filter string.
 	QStringList filterStrings;
-	const auto& exporterTypes = ImportExportManager::instance().fileExporters(_dataset.get());
+	const auto& exporterTypes = ImportExportManager::instance().fileExporters(_dataset);
 	for(FileExporterDescription* descriptor : exporterTypes) {
 		filterStrings << QString("%1 (%2)").arg(descriptor->fileFilterDescription(), descriptor->fileFilter());
 	}
@@ -359,7 +360,12 @@ void ActionManager::on_FileExport_triggered()
 		int exportFilterIndex = filterStrings.indexOf(dialog.selectedNameFilter());
 		OVITO_ASSERT(exportFilterIndex >= 0 && exportFilterIndex < exporterTypes.size());
 
-		OORef<FileExporter> exporter = exporterTypes[exportFilterIndex]->createService(_dataset.get());
+		// Create exporter.
+		OORef<FileExporter> exporter = exporterTypes[exportFilterIndex]->createService(_dataset);
+
+		// Load user-defined default settings.
+		exporter->loadUserDefaults();
+
 		exporter->exportToFile(nodes, exportFile, false);
 	}
 	catch(const Exception& ex) {

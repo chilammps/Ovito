@@ -55,7 +55,7 @@ public:
 	/// Constructor for a PropertyField property.
 	CutoffRadiusPresetsUI(PropertiesEditor* parentEditor, const PropertyFieldDescriptor& propField);
 
-	/// Destructor, that releases all GUI controls.
+	/// Destructor.
 	virtual ~CutoffRadiusPresetsUI();
 
 	/// This returns the QComboBox managed by this ParameterUI.

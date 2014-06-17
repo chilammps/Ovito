@@ -27,28 +27,34 @@
 namespace Particles {
 
 // Gives the class run-time type information.
-IMPLEMENT_OVITO_OBJECT(Particles, ParticlePropertyParameterUI, PropertyParameterUI)
+IMPLEMENT_OVITO_OBJECT(Particles, ParticlePropertyParameterUI, PropertyParameterUI);
 
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-ParticlePropertyParameterUI::ParticlePropertyParameterUI(QObject* parentEditor, const char* propertyName) :
-	PropertyParameterUI(parentEditor, propertyName), _comboBox(new ParticlePropertyComboBox())
+ParticlePropertyParameterUI::ParticlePropertyParameterUI(QObject* parentEditor, const char* propertyName, bool showComponents, bool inputProperty) :
+	PropertyParameterUI(parentEditor, propertyName), _comboBox(new ParticlePropertyComboBox()), _showComponents(showComponents), _inputProperty(inputProperty)
 {
-	connect(_comboBox, SIGNAL(activated(int)), this, SLOT(updatePropertyValue()));	
+	connect(comboBox(), (void (QComboBox::*)(int))&QComboBox::activated, this, &ParticlePropertyParameterUI::updatePropertyValue);
+
+	if(!inputProperty)
+		comboBox()->setEditable(true);
 }
 
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-ParticlePropertyParameterUI::ParticlePropertyParameterUI(QObject* parentEditor, const PropertyFieldDescriptor& propField) :
-	PropertyParameterUI(parentEditor, propField), _comboBox(new ParticlePropertyComboBox())
+ParticlePropertyParameterUI::ParticlePropertyParameterUI(QObject* parentEditor, const PropertyFieldDescriptor& propField, bool showComponents, bool inputProperty) :
+	PropertyParameterUI(parentEditor, propField), _comboBox(new ParticlePropertyComboBox()), _showComponents(showComponents), _inputProperty(inputProperty)
 {
-	connect(_comboBox, SIGNAL(activated(int)), this, SLOT(updatePropertyValue()));
+	connect(comboBox(), (void (QComboBox::*)(int))&QComboBox::activated, this, &ParticlePropertyParameterUI::updatePropertyValue);
+
+	if(!inputProperty)
+		comboBox()->setEditable(true);
 }
 
 /******************************************************************************
-* Destructor, that releases all GUI controls.
+* Destructor.
 ******************************************************************************/
 ParticlePropertyParameterUI::~ParticlePropertyParameterUI()
 {
@@ -93,44 +99,53 @@ void ParticlePropertyParameterUI::updateUI()
 			pref = val.value<ParticlePropertyReference>();
 		}
 
-		_comboBox->clear();
+		if(_inputProperty) {
+			_comboBox->clear();
 
-		// Obtain the list of input particle properties.
-		Modifier* mod = dynamic_object_cast<Modifier>(editObject());
-		if(mod) {
-			PipelineFlowState inputState = mod->getModifierInput();
+			// Obtain the list of input particle properties.
+			Modifier* mod = dynamic_object_cast<Modifier>(editObject());
+			if(mod) {
+				PipelineFlowState inputState = mod->getModifierInput();
 
-			// Populate property list from input object.
-			int initialIndex = -1;
-			for(const auto& o : inputState.objects()) {
-				ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o.get());
-				if(!property) continue;
+				// Populate property list from input object.
+				int initialIndex = -1;
+				for(SceneObject* o : inputState.objects()) {
+					ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o);
+					if(!property) continue;
 
-				// Properties with a non-numeric data type cannot be used as source properties.
-				if(property->dataType() != qMetaTypeId<int>() && property->dataType() != qMetaTypeId<FloatType>())
-					continue;
+					// Properties with a non-numeric data type cannot be used as source properties.
+					if(property->dataType() != qMetaTypeId<int>() && property->dataType() != qMetaTypeId<FloatType>())
+						continue;
 
-				if(property->componentNames().empty()) {
-					// Scalar property:
-					_comboBox->addItem(property);
-				}
-				else {
-					// Vector property:
-					for(int vectorComponent = 0; vectorComponent < (int)property->componentCount(); vectorComponent++) {
-						_comboBox->addItem(property, vectorComponent);
+					if(property->componentNames().empty() || !_showComponents) {
+						// Scalar property:
+						_comboBox->addItem(property);
+					}
+					else {
+						// Vector property:
+						for(int vectorComponent = 0; vectorComponent < (int)property->componentCount(); vectorComponent++) {
+							_comboBox->addItem(property, vectorComponent);
+						}
 					}
 				}
 			}
-		}
 
-		// Select the right item in the list box.
-		int selIndex = _comboBox->propertyIndex(pref);
-		if(selIndex < 0 && !pref.isNull()) {
-			// Add a place-holder item if the selected property does not exist anymore.
-			_comboBox->addItem(pref, tr("%1 (no longer available)").arg(pref.name()));
-			selIndex = _comboBox->count() - 1;
+			// Select the right item in the list box.
+			int selIndex = _comboBox->propertyIndex(pref);
+			if(selIndex < 0 && !pref.isNull()) {
+				// Add a place-holder item if the selected property does not exist anymore.
+				_comboBox->addItem(pref, tr("%1 (no longer available)").arg(pref.name()));
+				selIndex = _comboBox->count() - 1;
+			}
+			_comboBox->setCurrentIndex(selIndex);
 		}
-		_comboBox->setCurrentIndex(selIndex);
+		else {
+			if(_comboBox->count() == 0) {
+				for(auto type : ParticleProperty::standardPropertyList())
+					_comboBox->addItem(type);
+			}
+			_comboBox->setCurrentProperty(pref);
+		}
 	}
 	else if(comboBox())
 		comboBox()->clear();

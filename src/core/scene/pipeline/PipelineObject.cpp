@@ -100,7 +100,7 @@ PipelineFlowState PipelineObject::evaluatePipeline(TimePoint time, ModifierAppli
 						OVITO_CHECK_OBJECT_POINTER(modifier);
 						if(modifier->isEnabled() == false)
 							continue;
-						if(modifier->dependsOnInput(inputState.objects()[index].get())) {
+						if(modifier->dependsOnInput(inputState.objects()[index])) {
 							cacheIsValid = false;
 							break;
 						}
@@ -126,7 +126,7 @@ PipelineFlowState PipelineObject::evaluatePipeline(TimePoint time, ModifierAppli
 	// Save the input state as a reference for the next pipeline evaluation.
 	_lastInput = inputState;
 
-	bool isPending = (flowState.status().type() == ObjectStatus::Pending);
+	bool isPending = (flowState.status().type() == PipelineStatus::Pending);
 
     // Apply the modifiers, one after another.
 	int stackIndex;
@@ -150,11 +150,11 @@ PipelineFlowState PipelineObject::evaluatePipeline(TimePoint time, ModifierAppli
 
 		if(flowState.isEmpty() == false) {
 			// Apply modifier to current flow state.
-			ObjectStatus modifierStatus = mod->modifyObject(time, app, flowState);
+			PipelineStatus modifierStatus = mod->modifyObject(time, app, flowState);
 			flowState.setStatus(modifierStatus);
-			isPending |= (modifierStatus.type() == ObjectStatus::Pending);
-			if(isPending && flowState.status().type() != ObjectStatus::Pending)
-				flowState.setStatus(ObjectStatus::Pending);
+			isPending |= (modifierStatus.type() == PipelineStatus::Pending);
+			if(isPending && flowState.status().type() != PipelineStatus::Pending)
+				flowState.setStatus(PipelineStatus::Pending);
 		}
 	}
 
@@ -180,8 +180,8 @@ ModifierApplication* PipelineObject::insertModifier(Modifier* modifier, int atIn
 
 	// Create a modifier application object.
 	OORef<ModifierApplication> modApp(new ModifierApplication(dataset(), modifier));
-	insertModifierApplication(modApp.get(), atIndex);
-	return modApp.get();
+	insertModifierApplication(modApp, atIndex);
+	return modApp;
 }
 
 /******************************************************************************
@@ -248,8 +248,8 @@ bool PipelineObject::referenceEvent(RefTarget* source, ReferenceEvent* event)
 ******************************************************************************/
 void PipelineObject::referenceInserted(const PropertyFieldDescriptor& field, RefTarget* newTarget, int listIndex)
 {
-	// If a new modifier has been inserted into the stack then all
-	// modifiers following it in the stack need to be informed.
+	// If a new modifier has been inserted into the stack, then all
+	// successive modifiers need to be informed.
 	if(field == PROPERTY_FIELD(PipelineObject::_modApps)) {
 
 		// Inform modifier that its input has changed when it is inserted into the pipeline.
@@ -294,7 +294,7 @@ void PipelineObject::referenceReplaced(const PropertyFieldDescriptor& field, Ref
 void PipelineObject::modifierChanged(int changedIndex)
 {
 	if(isBeingLoaded())
-		return;	// Do not nothing while modifiers are being loaded.
+		return;	// Do nothing while modifiers are being loaded.
 
 	OVITO_ASSERT(changedIndex >= -1 && changedIndex < modifierApplications().size());
 

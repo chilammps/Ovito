@@ -21,3 +21,37 @@
 
 #include <core/Core.h>
 #include "ParticlePropertyComboBox.h"
+
+namespace Particles {
+
+/******************************************************************************
+* Returns the particle property that is currently selected in the combo box.
+******************************************************************************/
+ParticlePropertyReference ParticlePropertyComboBox::currentProperty() const
+{
+	int index = currentIndex();
+	if(!isEditable()) {
+		if(index < 0)
+			return ParticlePropertyReference();
+		return itemData(index).value<ParticlePropertyReference>();
+	}
+	else {
+		if(index >= 0) {
+			QVariant data = itemData(index);
+			if(data.canConvert<ParticlePropertyReference>())
+				return data.value<ParticlePropertyReference>();
+		}
+		QString name = currentText().simplified();
+		if(!name.isEmpty()) {
+			QMap<QString, ParticleProperty::Type> stdplist = ParticleProperty::standardPropertyList();
+			auto entry = stdplist.find(name);
+			if(entry != stdplist.end())
+				return ParticlePropertyReference(entry.value());
+			return ParticlePropertyReference(name);
+		}
+		return ParticlePropertyReference();
+	}
+}
+
+};
+

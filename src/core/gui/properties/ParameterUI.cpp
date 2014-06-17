@@ -22,14 +22,16 @@
 #include <core/Core.h>
 #include <core/gui/properties/ParameterUI.h>
 #include <core/gui/properties/PropertiesEditor.h>
+#include <core/animation/controller/Controller.h>
+#include <core/animation/AnimationSettings.h>
 
 namespace Ovito {
 
 // Gives the class run-time type information.
-IMPLEMENT_OVITO_OBJECT(Core, ParameterUI, RefMaker)
-IMPLEMENT_OVITO_OBJECT(Core, PropertyParameterUI, ParameterUI)
-DEFINE_FLAGS_REFERENCE_FIELD(ParameterUI, _editObject, "EditObject", RefTarget, PROPERTY_FIELD_NO_UNDO | PROPERTY_FIELD_WEAK_REF | PROPERTY_FIELD_NO_CHANGE_MESSAGE)
-DEFINE_FLAGS_REFERENCE_FIELD(PropertyParameterUI, _parameterObject, "ParameterObject", RefTarget, PROPERTY_FIELD_NO_UNDO | PROPERTY_FIELD_WEAK_REF | PROPERTY_FIELD_NO_CHANGE_MESSAGE)
+IMPLEMENT_OVITO_OBJECT(Core, ParameterUI, RefMaker);
+IMPLEMENT_OVITO_OBJECT(Core, PropertyParameterUI, ParameterUI);
+DEFINE_FLAGS_REFERENCE_FIELD(ParameterUI, _editObject, "EditObject", RefTarget, PROPERTY_FIELD_NO_UNDO | PROPERTY_FIELD_WEAK_REF | PROPERTY_FIELD_NO_CHANGE_MESSAGE);
+DEFINE_FLAGS_REFERENCE_FIELD(PropertyParameterUI, _parameterObject, "ParameterObject", RefTarget, PROPERTY_FIELD_NO_UNDO | PROPERTY_FIELD_WEAK_REF | PROPERTY_FIELD_NO_CHANGE_MESSAGE);
 
 ///////////////////////////////////// ParameterUI /////////////////////////////////////////
 
@@ -49,7 +51,7 @@ ParameterUI::ParameterUI(QObject* parent) : RefMaker(nullptr), _enabled(true)
 
 		// Connect to the contentsReplaced() signal of the editor to synchronize the
 		// parameter UI's edit object with the editor's edit object.
-		connect(editor, SIGNAL(contentsReplaced(RefTarget*)), this, SLOT(setEditObject(RefTarget*)));
+		connect(editor, &PropertiesEditor::contentsReplaced, this, &ParameterUI::setEditObject);
 	}
 }
 
@@ -72,6 +74,10 @@ PropertyParameterUI::PropertyParameterUI(QObject* parent, const PropertyFieldDes
 	ParameterUI(parent), _propertyName(nullptr), _propField(&propField)
 {
 	INIT_PROPERTY_FIELD(PropertyParameterUI::_parameterObject);
+
+	// If requested, save parameter value to application's settings store each time the user changes it.
+	if(propField.flags().testFlag(PROPERTY_FIELD_MEMORIZE))
+		connect(this, &PropertyParameterUI::valueEntered, this, &PropertyParameterUI::memorizeDefaultParameterValue);
 }
 
 /******************************************************************************
@@ -120,6 +126,39 @@ void PropertyParameterUI::resetUI()
 
 	ParameterUI::resetUI();
 }
+
+/******************************************************************************
+* This slot is called when the user has changed the value of the parameter.
+* It stores the new value in the application's settings store so that it can be used
+* as the default initialization value next time when a new object of the same class is created.
+******************************************************************************/
+void PropertyParameterUI::memorizeDefaultParameterValue()
+{
+	if(!editObject())
+		return;
+
+	if(isPropertyFieldUI()) {
+		propertyField()->memorizeDefaultValue(editObject());
+	}
+	else if(isReferenceFieldUI() && !propertyField()->isVector()) {
+		Controller* ctrl = dynamic_object_cast<Controller>(parameterObject());
+		if(ctrl) {
+			QSettings settings;
+			settings.beginGroup(propertyField()->definingClass()->plugin()->pluginId());
+			settings.beginGroup(propertyField()->definingClass()->name());
+			if(ctrl->controllerType() == Controller::ControllerTypeFloat) {
+				settings.setValue(propertyField()->identifier(), QVariant::fromValue(ctrl->currentFloatValue()));
+			}
+			else if(ctrl->controllerType() == Controller::ControllerTypeInt) {
+				settings.setValue(propertyField()->identifier(), QVariant::fromValue(ctrl->currentIntValue()));
+			}
+			else if(ctrl->controllerType() == Controller::ControllerTypeVector3) {
+				settings.setValue(propertyField()->identifier(), QVariant::fromValue(ctrl->currentVector3Value()));
+			}
+		}
+	}
+}
+
 
 };
 

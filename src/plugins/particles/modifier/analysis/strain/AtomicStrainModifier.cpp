@@ -30,26 +30,26 @@
 
 namespace Particles {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, AtomicStrainModifier, AsynchronousParticleModifier)
-IMPLEMENT_OVITO_OBJECT(Particles, AtomicStrainModifierEditor, ParticleModifierEditor)
-SET_OVITO_OBJECT_EDITOR(AtomicStrainModifier, AtomicStrainModifierEditor)
-DEFINE_FLAGS_REFERENCE_FIELD(AtomicStrainModifier, _referenceObject, "Reference Configuration", SceneObject, PROPERTY_FIELD_NO_SUB_ANIM)
-DEFINE_PROPERTY_FIELD(AtomicStrainModifier, _referenceShown, "ShowReferenceConfiguration")
-DEFINE_PROPERTY_FIELD(AtomicStrainModifier, _eliminateCellDeformation, "EliminateCellDeformation")
-DEFINE_PROPERTY_FIELD(AtomicStrainModifier, _assumeUnwrappedCoordinates, "AssumeUnwrappedCoordinates")
-DEFINE_FLAGS_PROPERTY_FIELD(AtomicStrainModifier, _cutoff, "Cutoff", PROPERTY_FIELD_MEMORIZE)
-DEFINE_PROPERTY_FIELD(AtomicStrainModifier, _calculateDeformationGradients, "CalculateDeformationGradients")
-DEFINE_PROPERTY_FIELD(AtomicStrainModifier, _calculateStrainTensors, "CalculateStrainTensors")
-DEFINE_PROPERTY_FIELD(AtomicStrainModifier, _selectInvalidParticles, "SelectInvalidParticles")
-SET_PROPERTY_FIELD_LABEL(AtomicStrainModifier, _referenceObject, "Reference Configuration")
-SET_PROPERTY_FIELD_LABEL(AtomicStrainModifier, _referenceShown, "Show reference configuration")
-SET_PROPERTY_FIELD_LABEL(AtomicStrainModifier, _eliminateCellDeformation, "Eliminate homogeneous cell deformation")
-SET_PROPERTY_FIELD_LABEL(AtomicStrainModifier, _assumeUnwrappedCoordinates, "Assume unwrapped coordinates")
-SET_PROPERTY_FIELD_LABEL(AtomicStrainModifier, _cutoff, "Cutoff radius")
-SET_PROPERTY_FIELD_LABEL(AtomicStrainModifier, _calculateDeformationGradients, "Output deformation gradient tensors")
-SET_PROPERTY_FIELD_LABEL(AtomicStrainModifier, _calculateStrainTensors, "Output strain tensors")
-SET_PROPERTY_FIELD_LABEL(AtomicStrainModifier, _selectInvalidParticles, "Select invalid particles")
-SET_PROPERTY_FIELD_UNITS(AtomicStrainModifier, _cutoff, WorldParameterUnit)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, AtomicStrainModifier, AsynchronousParticleModifier);
+IMPLEMENT_OVITO_OBJECT(Particles, AtomicStrainModifierEditor, ParticleModifierEditor);
+SET_OVITO_OBJECT_EDITOR(AtomicStrainModifier, AtomicStrainModifierEditor);
+DEFINE_FLAGS_REFERENCE_FIELD(AtomicStrainModifier, _referenceObject, "Reference Configuration", SceneObject, PROPERTY_FIELD_NO_SUB_ANIM);
+DEFINE_PROPERTY_FIELD(AtomicStrainModifier, _referenceShown, "ShowReferenceConfiguration");
+DEFINE_FLAGS_PROPERTY_FIELD(AtomicStrainModifier, _eliminateCellDeformation, "EliminateCellDeformation", PROPERTY_FIELD_MEMORIZE);
+DEFINE_PROPERTY_FIELD(AtomicStrainModifier, _assumeUnwrappedCoordinates, "AssumeUnwrappedCoordinates");
+DEFINE_FLAGS_PROPERTY_FIELD(AtomicStrainModifier, _cutoff, "Cutoff", PROPERTY_FIELD_MEMORIZE);
+DEFINE_PROPERTY_FIELD(AtomicStrainModifier, _calculateDeformationGradients, "CalculateDeformationGradients");
+DEFINE_PROPERTY_FIELD(AtomicStrainModifier, _calculateStrainTensors, "CalculateStrainTensors");
+DEFINE_PROPERTY_FIELD(AtomicStrainModifier, _selectInvalidParticles, "SelectInvalidParticles");
+SET_PROPERTY_FIELD_LABEL(AtomicStrainModifier, _referenceObject, "Reference Configuration");
+SET_PROPERTY_FIELD_LABEL(AtomicStrainModifier, _referenceShown, "Show reference configuration");
+SET_PROPERTY_FIELD_LABEL(AtomicStrainModifier, _eliminateCellDeformation, "Eliminate homogeneous cell deformation");
+SET_PROPERTY_FIELD_LABEL(AtomicStrainModifier, _assumeUnwrappedCoordinates, "Assume unwrapped coordinates");
+SET_PROPERTY_FIELD_LABEL(AtomicStrainModifier, _cutoff, "Cutoff radius");
+SET_PROPERTY_FIELD_LABEL(AtomicStrainModifier, _calculateDeformationGradients, "Output deformation gradient tensors");
+SET_PROPERTY_FIELD_LABEL(AtomicStrainModifier, _calculateStrainTensors, "Output strain tensors");
+SET_PROPERTY_FIELD_LABEL(AtomicStrainModifier, _selectInvalidParticles, "Select invalid particles");
+SET_PROPERTY_FIELD_UNITS(AtomicStrainModifier, _cutoff, WorldParameterUnit);
 
 /******************************************************************************
 * Constructs the modifier object.
@@ -75,11 +75,12 @@ AtomicStrainModifier::AtomicStrainModifier(DataSet* dataset) : AsynchronousParti
 	// Create the scene object, which will be responsible for loading
 	// and storing the reference configuration.
 	OORef<LinkedFileObject> linkedFileObj(new LinkedFileObject(dataset));
+
 	// Disable automatic adjustment of animation length for the reference object.
 	// We don't want the scene's animation interval to be affected by an animation
 	// loaded into the reference configuration object.
 	linkedFileObj->setAdjustAnimationIntervalEnabled(false);
-	_referenceObject = linkedFileObj;
+	setReferenceConfiguration(linkedFileObj);
 }
 
 /******************************************************************************
@@ -104,7 +105,7 @@ void AtomicStrainModifier::setReferenceSource(const QUrl& sourceUrl, const FileI
 	else {
 		OORef<LinkedFileObject> newObj(new LinkedFileObject(dataset()));
 		newObj->setSource(sourceUrl, importerType);
-		setReferenceConfiguration(newObj.get());
+		setReferenceConfiguration(newObj);
 	}
 }
 
@@ -138,10 +139,10 @@ std::shared_ptr<AsynchronousParticleModifier::Engine> AtomicStrainModifier::crea
 	else refState = referenceConfiguration()->evaluate(dataset()->animationSettings()->frameToTime(referenceFrame));
 
 	// Make sure the obtained reference configuration is valid and ready to use.
-	if(refState.status().type() == ObjectStatus::Error)
+	if(refState.status().type() == PipelineStatus::Error)
 		throw refState.status();
-	if(refState.status().type() == ObjectStatus::Pending)
-		throw ObjectStatus(ObjectStatus::Pending, tr("Waiting for input data to become ready..."));
+	if(refState.status().type() == PipelineStatus::Pending)
+		throw PipelineStatus(PipelineStatus::Pending, tr("Waiting for input data to become ready..."));
 	if(refState.isEmpty())
 		throw Exception(tr("Reference configuration has not been specified yet or is empty. Please pick a reference simulation file."));
 	// Make sure we really got back the requested reference frame.
@@ -378,7 +379,7 @@ void AtomicStrainModifier::retrieveModifierResults(Engine* engine)
 /******************************************************************************
 * Inserts the computed and cached modifier results into the modification pipeline.
 ******************************************************************************/
-ObjectStatus AtomicStrainModifier::applyModifierResults(TimePoint time, TimeInterval& validityInterval)
+PipelineStatus AtomicStrainModifier::applyModifierResults(TimePoint time, TimeInterval& validityInterval)
 {
 	if(inputParticleCount() != shearStrainValues().size() || inputParticleCount() != volumetricStrainValues().size())
 		throw Exception(tr("The number of input particles has changed. The stored results have become invalid."));
@@ -396,9 +397,9 @@ ObjectStatus AtomicStrainModifier::applyModifierResults(TimePoint time, TimeInte
 	outputCustomProperty(shearStrainValues().name(), qMetaTypeId<FloatType>(), sizeof(FloatType), 1)->setStorage(_shearStrainValues.data());
 
 	if(_numInvalidParticles == 0)
-		return ObjectStatus::Success;
+		return PipelineStatus::Success;
 	else
-		return ObjectStatus(ObjectStatus::Warning, tr("Could not compute compute strain tensor for %1 particles. Increase cutoff radius to include more neighbors.").arg(_numInvalidParticles));
+		return PipelineStatus(PipelineStatus::Warning, tr("Could not compute compute strain tensor for %1 particles. Increase cutoff radius to include more neighbors.").arg(_numInvalidParticles));
 }
 
 /******************************************************************************

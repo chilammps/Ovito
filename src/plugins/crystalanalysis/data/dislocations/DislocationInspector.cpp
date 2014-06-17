@@ -331,8 +331,8 @@ bool DislocationPickMode::pickDislocationSegment(Viewport* vp, const QPoint& pos
 	if(vpPickResult.valid) {
 
 		// Check if that was a dislocation.
-		DislocationNetwork* dislocationObj = dynamic_object_cast<DislocationNetwork>(vpPickResult.sceneObject.get());
-		DislocationDisplay* displayObj = dynamic_object_cast<DislocationDisplay>(vpPickResult.displayObject.get());
+		DislocationNetwork* dislocationObj = dynamic_object_cast<DislocationNetwork>(vpPickResult.sceneObject);
+		DislocationDisplay* displayObj = dynamic_object_cast<DislocationDisplay>(vpPickResult.displayObject);
 		if(dislocationObj && displayObj) {
 			int segmentIndex = displayObj->segmentIndexFromSubObjectID(vpPickResult.subobjectId);
 			if(segmentIndex >= 0 && segmentIndex < dislocationObj->segments().size()) {
@@ -400,10 +400,10 @@ void DislocationPickMode::renderOverlay3D(Viewport* vp, ViewportSceneRenderer* r
 	if(!dislocationObj)
 		return;
 
-	_hoverSegment.displayObj->renderOverlayMarker(vp->dataset()->animationSettings()->time(), dislocationObj, flowState, _hoverSegment.segmentIndex, renderer, _hoverSegment.objNode.get());
+	_hoverSegment.displayObj->renderOverlayMarker(vp->dataset()->animationSettings()->time(), dislocationObj, flowState, _hoverSegment.segmentIndex, renderer, _hoverSegment.objNode);
 
 	// Render Burgers vector next to the mouse cursor.
-	std::unique_ptr<TextGeometryBuffer> textBuffer = renderer->createTextGeometryBuffer();
+	std::unique_ptr<TextPrimitive> textBuffer = renderer->createTextPrimitive();
 	QFont font(vp->widget()->font());
 	font.setPointSize(font.pointSize() * 3 / 2);
 	textBuffer->setFont(font);

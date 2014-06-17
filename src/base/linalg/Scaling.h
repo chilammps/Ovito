@@ -21,7 +21,7 @@
 
 /**
  * \file Scaling.h
- * \brief Contains definition of the Ovito::Scaling class and operators.
+ * \brief Contains the definition of the Ovito::ScalingT class template.
  */
 
 #ifndef __OVITO_SCALING_H
@@ -205,6 +205,18 @@ inline LoadStream& operator>>(LoadStream& stream, ScalingT<T>& s)
 	return stream >> s.S >> s.Q;
 }
 
+/// \brief Writes a scaling to a Qt data stream.
+template<typename T>
+inline QDataStream& operator<<(QDataStream& stream, const ScalingT<T>& s) {
+	return stream << s.S << s.Q;
+}
+
+/// \brief Reads a scaling from a Qt data stream.
+template<typename T>
+inline QDataStream& operator>>(QDataStream& stream, ScalingT<T>& s) {
+	return stream >> s.S >> s.Q;
+}
+
 /**
  * \fn typedef Scaling
  * \brief Template class instance of the ScalingT template.
@@ -213,7 +225,9 @@ typedef ScalingT<FloatType>		Scaling;
 
 };	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Scaling)
+Q_DECLARE_METATYPE(Ovito::Scaling);
+Q_DECLARE_METATYPE(Ovito::Scaling*);
 Q_DECLARE_TYPEINFO(Ovito::Scaling, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Scaling*, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_SCALING_H

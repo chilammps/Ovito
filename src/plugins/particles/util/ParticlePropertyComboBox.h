@@ -70,12 +70,7 @@ public:
 	///        combo box.
 	/// \return The selected item. The returned reference can be null if
 	///         no item is currently selected.
-	ParticlePropertyReference currentProperty() const {
-		int index = currentIndex();
-		if(index < 0)
-			return ParticlePropertyReference();
-		return itemData(index).value<ParticlePropertyReference>();
-	}
+	ParticlePropertyReference currentProperty() const;
 
 	/// \brief Returns the list index of the given property, or -1 if not found.
 	int propertyIndex(const ParticlePropertyReference& property) const {
@@ -101,6 +96,8 @@ public:
 			}
 		}
 		setCurrentIndex(-1);
+		if(isEditable() && !property.isNull())
+			setCurrentText(property.name());
 	}
 };
 

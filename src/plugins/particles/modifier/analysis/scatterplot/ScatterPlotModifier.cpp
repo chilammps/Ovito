@@ -1,6 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
 //  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Lars Pastewka
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -27,42 +28,41 @@
 #include <core/scene/pipeline/PipelineObject.h>
 #include <core/animation/AnimationSettings.h>
 #include <plugins/particles/util/ParticlePropertyParameterUI.h>
-#include <3rdparty/qcustomplot/qcustomplot.h>
 #include "ScatterPlotModifier.h"
 
 namespace Particles {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ScatterPlotModifier, ParticleModifier)
-IMPLEMENT_OVITO_OBJECT(Particles, ScatterPlotModifierEditor, ParticleModifierEditor)
-SET_OVITO_OBJECT_EDITOR(ScatterPlotModifier, ScatterPlotModifierEditor)
-DEFINE_PROPERTY_FIELD(ScatterPlotModifier, _selectXAxisInRange, "SelectXAxisInRange")
-DEFINE_FLAGS_PROPERTY_FIELD(ScatterPlotModifier, _selectionXAxisRangeStart, "SelectionXAxisRangeStart", PROPERTY_FIELD_MEMORIZE)
-DEFINE_FLAGS_PROPERTY_FIELD(ScatterPlotModifier, _selectionXAxisRangeEnd, "SelectionXAxisRangeEnd", PROPERTY_FIELD_MEMORIZE)
-DEFINE_PROPERTY_FIELD(ScatterPlotModifier, _selectYAxisInRange, "SelectYAxisInRange")
-DEFINE_FLAGS_PROPERTY_FIELD(ScatterPlotModifier, _selectionYAxisRangeStart, "SelectionYAxisRangeStart", PROPERTY_FIELD_MEMORIZE)
-DEFINE_FLAGS_PROPERTY_FIELD(ScatterPlotModifier, _selectionYAxisRangeEnd, "SelectionYAxisRangeEnd", PROPERTY_FIELD_MEMORIZE)
-DEFINE_PROPERTY_FIELD(ScatterPlotModifier, _fixXAxisRange, "FixXAxisRange")
-DEFINE_FLAGS_PROPERTY_FIELD(ScatterPlotModifier, _xAxisRangeStart, "XAxisRangeStart", PROPERTY_FIELD_MEMORIZE)
-DEFINE_FLAGS_PROPERTY_FIELD(ScatterPlotModifier, _xAxisRangeEnd, "XAxisRangeEnd", PROPERTY_FIELD_MEMORIZE)
-DEFINE_PROPERTY_FIELD(ScatterPlotModifier, _fixYAxisRange, "FixYAxisRange")
-DEFINE_FLAGS_PROPERTY_FIELD(ScatterPlotModifier, _yAxisRangeStart, "YAxisRangeStart", PROPERTY_FIELD_MEMORIZE)
-DEFINE_FLAGS_PROPERTY_FIELD(ScatterPlotModifier, _yAxisRangeEnd, "YAxisRangeEnd", PROPERTY_FIELD_MEMORIZE)
-DEFINE_PROPERTY_FIELD(ScatterPlotModifier, _xAxisProperty, "XAxisProperty")
-DEFINE_PROPERTY_FIELD(ScatterPlotModifier, _yAxisProperty, "YAxisProperty")
-SET_PROPERTY_FIELD_LABEL(ScatterPlotModifier, _selectXAxisInRange, "Select particles in x-range")
-SET_PROPERTY_FIELD_LABEL(ScatterPlotModifier, _selectionXAxisRangeStart, "Selection x-range start")
-SET_PROPERTY_FIELD_LABEL(ScatterPlotModifier, _selectionXAxisRangeEnd, "Selection x-range end")
-SET_PROPERTY_FIELD_LABEL(ScatterPlotModifier, _selectYAxisInRange, "Select particles in y-range")
-SET_PROPERTY_FIELD_LABEL(ScatterPlotModifier, _selectionYAxisRangeStart, "Selection y-range start")
-SET_PROPERTY_FIELD_LABEL(ScatterPlotModifier, _selectionYAxisRangeEnd, "Selection y-range end")
-SET_PROPERTY_FIELD_LABEL(ScatterPlotModifier, _fixXAxisRange, "Fix x-axis range")
-SET_PROPERTY_FIELD_LABEL(ScatterPlotModifier, _xAxisRangeStart, "X-axis range start")
-SET_PROPERTY_FIELD_LABEL(ScatterPlotModifier, _xAxisRangeEnd, "X-axis range end")
-SET_PROPERTY_FIELD_LABEL(ScatterPlotModifier, _fixYAxisRange, "Fix y-axis range")
-SET_PROPERTY_FIELD_LABEL(ScatterPlotModifier, _yAxisRangeStart, "Y-axis range start")
-SET_PROPERTY_FIELD_LABEL(ScatterPlotModifier, _yAxisRangeEnd, "Y-axis range end")
-SET_PROPERTY_FIELD_LABEL(ScatterPlotModifier, _xAxisProperty, "X-axis property")
-SET_PROPERTY_FIELD_LABEL(ScatterPlotModifier, _yAxisProperty, "Y-axis property")
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ScatterPlotModifier, ParticleModifier);
+IMPLEMENT_OVITO_OBJECT(Particles, ScatterPlotModifierEditor, ParticleModifierEditor);
+SET_OVITO_OBJECT_EDITOR(ScatterPlotModifier, ScatterPlotModifierEditor);
+DEFINE_PROPERTY_FIELD(ScatterPlotModifier, _selectXAxisInRange, "SelectXAxisInRange");
+DEFINE_FLAGS_PROPERTY_FIELD(ScatterPlotModifier, _selectionXAxisRangeStart, "SelectionXAxisRangeStart", PROPERTY_FIELD_MEMORIZE);
+DEFINE_FLAGS_PROPERTY_FIELD(ScatterPlotModifier, _selectionXAxisRangeEnd, "SelectionXAxisRangeEnd", PROPERTY_FIELD_MEMORIZE);
+DEFINE_PROPERTY_FIELD(ScatterPlotModifier, _selectYAxisInRange, "SelectYAxisInRange");
+DEFINE_FLAGS_PROPERTY_FIELD(ScatterPlotModifier, _selectionYAxisRangeStart, "SelectionYAxisRangeStart", PROPERTY_FIELD_MEMORIZE);
+DEFINE_FLAGS_PROPERTY_FIELD(ScatterPlotModifier, _selectionYAxisRangeEnd, "SelectionYAxisRangeEnd", PROPERTY_FIELD_MEMORIZE);
+DEFINE_PROPERTY_FIELD(ScatterPlotModifier, _fixXAxisRange, "FixXAxisRange");
+DEFINE_FLAGS_PROPERTY_FIELD(ScatterPlotModifier, _xAxisRangeStart, "XAxisRangeStart", PROPERTY_FIELD_MEMORIZE);
+DEFINE_FLAGS_PROPERTY_FIELD(ScatterPlotModifier, _xAxisRangeEnd, "XAxisRangeEnd", PROPERTY_FIELD_MEMORIZE);
+DEFINE_PROPERTY_FIELD(ScatterPlotModifier, _fixYAxisRange, "FixYAxisRange");
+DEFINE_FLAGS_PROPERTY_FIELD(ScatterPlotModifier, _yAxisRangeStart, "YAxisRangeStart", PROPERTY_FIELD_MEMORIZE);
+DEFINE_FLAGS_PROPERTY_FIELD(ScatterPlotModifier, _yAxisRangeEnd, "YAxisRangeEnd", PROPERTY_FIELD_MEMORIZE);
+DEFINE_PROPERTY_FIELD(ScatterPlotModifier, _xAxisProperty, "XAxisProperty");
+DEFINE_PROPERTY_FIELD(ScatterPlotModifier, _yAxisProperty, "YAxisProperty");
+SET_PROPERTY_FIELD_LABEL(ScatterPlotModifier, _selectXAxisInRange, "Select particles in x-range");
+SET_PROPERTY_FIELD_LABEL(ScatterPlotModifier, _selectionXAxisRangeStart, "Selection x-range start");
+SET_PROPERTY_FIELD_LABEL(ScatterPlotModifier, _selectionXAxisRangeEnd, "Selection x-range end");
+SET_PROPERTY_FIELD_LABEL(ScatterPlotModifier, _selectYAxisInRange, "Select particles in y-range");
+SET_PROPERTY_FIELD_LABEL(ScatterPlotModifier, _selectionYAxisRangeStart, "Selection y-range start");
+SET_PROPERTY_FIELD_LABEL(ScatterPlotModifier, _selectionYAxisRangeEnd, "Selection y-range end");
+SET_PROPERTY_FIELD_LABEL(ScatterPlotModifier, _fixXAxisRange, "Fix x-axis range");
+SET_PROPERTY_FIELD_LABEL(ScatterPlotModifier, _xAxisRangeStart, "X-axis range start");
+SET_PROPERTY_FIELD_LABEL(ScatterPlotModifier, _xAxisRangeEnd, "X-axis range end");
+SET_PROPERTY_FIELD_LABEL(ScatterPlotModifier, _fixYAxisRange, "Fix y-axis range");
+SET_PROPERTY_FIELD_LABEL(ScatterPlotModifier, _yAxisRangeStart, "Y-axis range start");
+SET_PROPERTY_FIELD_LABEL(ScatterPlotModifier, _yAxisRangeEnd, "Y-axis range end");
+SET_PROPERTY_FIELD_LABEL(ScatterPlotModifier, _xAxisProperty, "X-axis property");
+SET_PROPERTY_FIELD_LABEL(ScatterPlotModifier, _yAxisProperty, "Y-axis property");
 
 /******************************************************************************
 * Constructs the modifier object.
@@ -100,8 +100,8 @@ void ScatterPlotModifier::initializeModifier(PipelineObject* pipeline, ModifierA
 	if(xAxisProperty().isNull() || yAxisProperty().isNull()) {
 		// Select the first available particle property from the input state.
 		PipelineFlowState input = pipeline->evaluatePipeline(dataset()->animationSettings()->time(), modApp, false);
-		for(const auto& o : input.objects()) {
-			ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o.get());
+		for(SceneObject* o : input.objects()) {
+			ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o);
 			if(property && (property->dataType() == qMetaTypeId<int>() || property->dataType() == qMetaTypeId<FloatType>())) {
 				bestProperty = ParticlePropertyReference(property, (property->componentCount() > 1) ? 0 : -1);
 			}
@@ -118,7 +118,7 @@ void ScatterPlotModifier::initializeModifier(PipelineObject* pipeline, ModifierA
 /******************************************************************************
 * This modifies the input object.
 ******************************************************************************/
-ObjectStatus ScatterPlotModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
+PipelineStatus ScatterPlotModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
 {
 	// Get the source property.
 	if(xAxisProperty().isNull())
@@ -309,7 +309,7 @@ ObjectStatus ScatterPlotModifier::modifyParticles(TimePoint time, TimeInterval& 
 
 	notifyDependents(ReferenceEvent::ObjectStatusChanged);
 
-	return ObjectStatus(ObjectStatus::Success, statusMessage);
+	return PipelineStatus(PipelineStatus::Success, statusMessage);
 }
 
 /******************************************************************************
@@ -317,8 +317,8 @@ ObjectStatus ScatterPlotModifier::modifyParticles(TimePoint time, TimeInterval& 
 ******************************************************************************/
 ParticlePropertyObject* ScatterPlotModifier::lookupInputProperty(const PipelineFlowState& inputState, const ParticlePropertyReference &refprop) const
 {
-	for(const auto& o : inputState.objects()) {
-		ParticlePropertyObject* prop = dynamic_object_cast<ParticlePropertyObject>(o.get());
+	for(SceneObject* o : inputState.objects()) {
+		ParticlePropertyObject* prop = dynamic_object_cast<ParticlePropertyObject>(o);
 		if(prop) {
 			if((refprop.type() == ParticleProperty::UserProperty && prop->name() == refprop.name()) ||
 					(refprop.type() != ParticleProperty::UserProperty && prop->type() == refprop.type())) {
@@ -379,16 +379,16 @@ void ScatterPlotModifierEditor::createUI(const RolloutInsertionParameters& rollo
 	_selectionYAxisRangeEndMarker->setPen(markerPen);
 	_scatterPlot->addItem(_selectionYAxisRangeStartMarker);
 	_scatterPlot->addItem(_selectionYAxisRangeEndMarker);
-	connect(_scatterPlot->xAxis, SIGNAL(rangeChanged(const QCPRange&)), this, SLOT(updateXAxisRange(const QCPRange &)));
-	connect(_scatterPlot->yAxis, SIGNAL(rangeChanged(const QCPRange&)), this, SLOT(updateYAxisRange(const QCPRange &)));
+	connect(_scatterPlot->xAxis, SIGNAL(rangeChanged(const QCPRange&)), this, SLOT(updateXAxisRange(const QCPRange&)));
+	connect(_scatterPlot->yAxis, SIGNAL(rangeChanged(const QCPRange&)), this, SLOT(updateYAxisRange(const QCPRange&)));
 
 	layout->addWidget(new QLabel(tr("Scatter plot:")));
 	layout->addWidget(_scatterPlot);
-	connect(this, SIGNAL(contentsReplaced(RefTarget*)), this, SLOT(plotScatterPlot()));
+	connect(this, &ScatterPlotModifierEditor::contentsReplaced, this, &ScatterPlotModifierEditor::plotScatterPlot);
 
 	QPushButton* saveDataButton = new QPushButton(tr("Save scatter plot data"));
 	layout->addWidget(saveDataButton);
-	connect(saveDataButton, SIGNAL(clicked(bool)), this, SLOT(onSaveData()));
+	connect(saveDataButton, &QPushButton::clicked, this, &ScatterPlotModifierEditor::onSaveData);
 
 	// Selection.
 	QGroupBox* selectionBox = new QGroupBox(tr("Selection"), rollout);
@@ -410,8 +410,8 @@ void ScatterPlotModifierEditor::createUI(const RolloutInsertionParameters& rollo
 	hlayout->addLayout(selRangeEndPUI->createFieldLayout());
 	selRangeStartPUI->setEnabled(false);
 	selRangeEndPUI->setEnabled(false);
-	connect(selectInRangeUI->checkBox(), SIGNAL(toggled(bool)), selRangeStartPUI, SLOT(setEnabled(bool)));
-	connect(selectInRangeUI->checkBox(), SIGNAL(toggled(bool)), selRangeEndPUI, SLOT(setEnabled(bool)));
+	connect(selectInRangeUI->checkBox(), &QCheckBox::toggled, selRangeStartPUI, &FloatParameterUI::setEnabled);
+	connect(selectInRangeUI->checkBox(), &QCheckBox::toggled, selRangeEndPUI, &FloatParameterUI::setEnabled);
 
 	selectInRangeUI = new BooleanParameterUI(this, PROPERTY_FIELD(ScatterPlotModifier::_selectYAxisInRange));
 	sublayout->addWidget(selectInRangeUI->checkBox());
@@ -427,8 +427,8 @@ void ScatterPlotModifierEditor::createUI(const RolloutInsertionParameters& rollo
 	hlayout->addLayout(selRangeEndPUI->createFieldLayout());
 	selRangeStartPUI->setEnabled(false);
 	selRangeEndPUI->setEnabled(false);
-	connect(selectInRangeUI->checkBox(), SIGNAL(toggled(bool)), selRangeStartPUI, SLOT(setEnabled(bool)));
-	connect(selectInRangeUI->checkBox(), SIGNAL(toggled(bool)), selRangeEndPUI, SLOT(setEnabled(bool)));
+	connect(selectInRangeUI->checkBox(), &QCheckBox::toggled, selRangeStartPUI, &FloatParameterUI::setEnabled);
+	connect(selectInRangeUI->checkBox(), &QCheckBox::toggled, selRangeEndPUI, &FloatParameterUI::setEnabled);
 
 	// Axes.
 	QGroupBox* axesBox = new QGroupBox(tr("Plot axes"), rollout);
@@ -451,8 +451,8 @@ void ScatterPlotModifierEditor::createUI(const RolloutInsertionParameters& rollo
 		hlayout->addLayout(endPUI->createFieldLayout());
 		startPUI->setEnabled(false);
 		endPUI->setEnabled(false);
-		connect(rangeUI->checkBox(), SIGNAL(toggled(bool)), startPUI, SLOT(setEnabled(bool)));
-		connect(rangeUI->checkBox(), SIGNAL(toggled(bool)), endPUI, SLOT(setEnabled(bool)));
+		connect(rangeUI->checkBox(), &QCheckBox::toggled, startPUI, &FloatParameterUI::setEnabled);
+		connect(rangeUI->checkBox(), &QCheckBox::toggled, endPUI, &FloatParameterUI::setEnabled);
 	}
 	// y-axis.
 	{
@@ -470,8 +470,8 @@ void ScatterPlotModifierEditor::createUI(const RolloutInsertionParameters& rollo
 		hlayout->addLayout(endPUI->createFieldLayout());
 		startPUI->setEnabled(false);
 		endPUI->setEnabled(false);
-		connect(rangeUI->checkBox(), SIGNAL(toggled(bool)), startPUI, SLOT(setEnabled(bool)));
-		connect(rangeUI->checkBox(), SIGNAL(toggled(bool)), endPUI, SLOT(setEnabled(bool)));
+		connect(rangeUI->checkBox(), &QCheckBox::toggled, startPUI, &FloatParameterUI::setEnabled);
+		connect(rangeUI->checkBox(), &QCheckBox::toggled, endPUI, &FloatParameterUI::setEnabled);
 	}
 
 	// Status label.

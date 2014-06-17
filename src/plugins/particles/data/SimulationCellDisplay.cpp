@@ -31,16 +31,16 @@
 
 namespace Particles {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, SimulationCellDisplay, DisplayObject)
-IMPLEMENT_OVITO_OBJECT(Particles, SimulationCellDisplayEditor, PropertiesEditor)
-SET_OVITO_OBJECT_EDITOR(SimulationCellDisplay, SimulationCellDisplayEditor)
-DEFINE_PROPERTY_FIELD(SimulationCellDisplay, _renderSimulationCell, "RenderSimulationCell")
-DEFINE_PROPERTY_FIELD(SimulationCellDisplay, _simulationCellLineWidth, "SimulationCellLineWidth")
-DEFINE_FLAGS_PROPERTY_FIELD(SimulationCellDisplay, _simulationCellColor, "SimulationCellRenderingColor", PROPERTY_FIELD_MEMORIZE)
-SET_PROPERTY_FIELD_LABEL(SimulationCellDisplay, _simulationCellLineWidth, "Line width")
-SET_PROPERTY_FIELD_LABEL(SimulationCellDisplay, _renderSimulationCell, "Render cell")
-SET_PROPERTY_FIELD_LABEL(SimulationCellDisplay, _simulationCellColor, "Line color")
-SET_PROPERTY_FIELD_UNITS(SimulationCellDisplay, _simulationCellLineWidth, WorldParameterUnit)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, SimulationCellDisplay, DisplayObject);
+IMPLEMENT_OVITO_OBJECT(Particles, SimulationCellDisplayEditor, PropertiesEditor);
+SET_OVITO_OBJECT_EDITOR(SimulationCellDisplay, SimulationCellDisplayEditor);
+DEFINE_PROPERTY_FIELD(SimulationCellDisplay, _renderSimulationCell, "RenderSimulationCell");
+DEFINE_PROPERTY_FIELD(SimulationCellDisplay, _simulationCellLineWidth, "SimulationCellLineWidth");
+DEFINE_FLAGS_PROPERTY_FIELD(SimulationCellDisplay, _simulationCellColor, "SimulationCellRenderingColor", PROPERTY_FIELD_MEMORIZE);
+SET_PROPERTY_FIELD_LABEL(SimulationCellDisplay, _simulationCellLineWidth, "Line width");
+SET_PROPERTY_FIELD_LABEL(SimulationCellDisplay, _renderSimulationCell, "Render cell");
+SET_PROPERTY_FIELD_LABEL(SimulationCellDisplay, _simulationCellColor, "Line color");
+SET_PROPERTY_FIELD_UNITS(SimulationCellDisplay, _simulationCellLineWidth, WorldParameterUnit);
 
 /******************************************************************************
 * Constructor.
@@ -90,15 +90,15 @@ void SimulationCellDisplay::render(TimePoint time, SceneObject* sceneObject, con
 ******************************************************************************/
 void SimulationCellDisplay::renderWireframe(SimulationCell* cell, SceneRenderer* renderer, ObjectNode* contextNode)
 {
-	ColorA color = contextNode->isSelected() ? ColorA(1,1,1) : ColorA(0.6,0.6,1);
+	ColorA color = ViewportSettings::getSettings().viewportColor(contextNode->isSelected() ? ViewportSettings::COLOR_SELECTION : ViewportSettings::COLOR_UNSELECTED);
 
 	if(_wireframeGeometryCacheHelper.updateState(cell, cell->revisionNumber(), color)
 			|| !_wireframeGeometry
 			|| !_wireframeGeometry->isValid(renderer)
 			|| !_wireframePickingGeometry
 			|| !_wireframePickingGeometry->isValid(renderer)) {
-		_wireframeGeometry = renderer->createLineGeometryBuffer();
-		_wireframePickingGeometry = renderer->createLineGeometryBuffer();
+		_wireframeGeometry = renderer->createLinePrimitive();
+		_wireframePickingGeometry = renderer->createLinePrimitive();
 		_wireframeGeometry->setVertexCount(24);
 		_wireframePickingGeometry->setVertexCount(24, renderer->defaultLinePickingWidth());
 		Point3 corners[8];
@@ -146,8 +146,8 @@ void SimulationCellDisplay::renderSolid(SimulationCell* cell, SceneRenderer* ren
 			|| !_edgeGeometry || !_cornerGeometry
 			|| !_edgeGeometry->isValid(renderer)
 			|| !_cornerGeometry->isValid(renderer)) {
-		_edgeGeometry = renderer->createArrowGeometryBuffer(ArrowGeometryBuffer::CylinderShape, ArrowGeometryBuffer::NormalShading, ArrowGeometryBuffer::HighQuality);
-		_cornerGeometry = renderer->createParticleGeometryBuffer(ParticleGeometryBuffer::NormalShading, ParticleGeometryBuffer::HighQuality);
+		_edgeGeometry = renderer->createArrowPrimitive(ArrowPrimitive::CylinderShape, ArrowPrimitive::NormalShading, ArrowPrimitive::HighQuality);
+		_cornerGeometry = renderer->createParticlePrimitive(ParticlePrimitive::NormalShading, ParticlePrimitive::HighQuality);
 		_edgeGeometry->startSetElements(12);
 		ColorA color = (ColorA)simulationCellRenderingColor();
 		Point3 corners[8];

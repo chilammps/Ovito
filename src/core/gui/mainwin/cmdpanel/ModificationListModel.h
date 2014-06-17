@@ -78,7 +78,7 @@ public:
 	/// Returns an item from the list model.
 	ModificationListItem* item(int index) const {
 		OVITO_ASSERT(index >= 0 && index < _items.size());
-		return _items[index].get();
+		return _items[index];
 	}
 
 	/// Populates the model with the given list items.

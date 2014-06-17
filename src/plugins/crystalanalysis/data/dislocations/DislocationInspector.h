@@ -171,7 +171,7 @@ public:
 	QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override {
 		if(index.data(Qt::EditRole).canConvert<SegmentCluster>()) {
 			QComboBox* combobox = new QComboBox(parent);
-			connect(combobox, SIGNAL(activated(int)), this, SLOT(commitAndCloseEditor()));
+			connect(combobox, (void (QComboBox::*)(int))&QComboBox::activated, this, &ClusterItemDelegate::commitAndCloseEditor);
 			combobox->view()->setTextElideMode(Qt::ElideNone);
 			return combobox;
 		}

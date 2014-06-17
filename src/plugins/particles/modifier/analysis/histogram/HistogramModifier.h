@@ -26,7 +26,7 @@
 #include <plugins/particles/data/ParticleProperty.h>
 #include <plugins/particles/data/ParticlePropertyObject.h>
 #include "../../ParticleModifier.h"
-#include <3rdparty/qcustomplot/qcustomplot.h>
+#include <qcustomplot.h>
 
 class QCustomPlot;
 class QCPItemStraightLine;
@@ -108,11 +108,11 @@ public:
 protected:
 
 	/// Modifies the particle object.
-	virtual ObjectStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;
+	virtual PipelineStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;
 
 private:
 
-	/// The particle type property that serves as data source of the histogram.
+	/// The particle property that serves as data source of the histogram.
 	PropertyField<ParticlePropertyReference> _sourceProperty;
 
 	/// Controls the number of histogram bins.

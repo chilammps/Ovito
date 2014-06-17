@@ -1,6 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
 //  Copyright (2013) Alexander Stukowski
+//  Copyright (2014) Lars Pastewka
 //
 //  This file is part of OVITO (Open Visualization Tool).
 //
@@ -26,7 +27,7 @@
 #include <plugins/particles/data/ParticleProperty.h>
 #include <plugins/particles/util/ParticlePropertyComboBox.h>
 #include "../../ParticleModifier.h"
-#include <3rdparty/qcustomplot/qcustomplot.h>
+#include <qcustomplot.h>
 
 class QCustomPlot;
 class QCPItemStraightLine;
@@ -135,7 +136,7 @@ public:
 protected:
 
 	/// Modifies the particle object.
-	virtual ObjectStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;
+	virtual PipelineStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;
 
 private:
 

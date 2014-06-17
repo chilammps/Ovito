@@ -106,15 +106,12 @@ bool OnTheFlyNeighborListBuilder::prepare(ParticleProperty* posProperty, const S
 			binLocation[k] = (int)floor(rp[k]);
 
 			if(pbc[k]) {
-				while(binLocation[k] < 0) {
-					binLocation[k] += binDim[k];
-					a->pos += simCell.column(k);
-					if(hasWrappedParticles)
-						*hasWrappedParticles = true;
-				}
-				while(binLocation[k] >= binDim[k]) {
-					binLocation[k] -= binDim[k];
-					a->pos -= simCell.column(k);
+				if(binLocation[k] < 0 || binLocation[k] >= binDim[k]) {
+					if(binLocation[k] < 0)
+						a->pos += (FloatType)(-(binLocation[k]+1)/binDim[k]+1) * simCell.column(k);
+					else
+						a->pos -= (FloatType)(binLocation[k]/binDim[k]) * simCell.column(k);
+					binLocation[k] = SimulationCellData::modulo(binLocation[k], binDim[k]);
 					if(hasWrappedParticles)
 						*hasWrappedParticles = true;
 				}
@@ -191,16 +188,15 @@ size_t OnTheFlyNeighborListBuilder::iterator::next()
 			OVITO_ASSERT(_neighborIndex < _builder.particles.size());
 			_neighbor = _neighbor->nextInBin;
 			_distsq = _delta.squaredLength();
-			if(_distsq <= _builder._cutoffRadiusSquared && (_pbcShift != Vector_3<int8_t>::Zero() || _neighborIndex != _centerIndex)) {
+			if(_distsq <= _builder._cutoffRadiusSquared && (_neighborIndex != _centerIndex || _pbcShift != Vector_3<int8_t>::Zero())) {
 				return _neighborIndex;
 			}
 		};
 
 		for(;;) {
 			if(_stencilIter == _builder.stencil.end()) {
-				_neighborIndex = std::numeric_limits<size_t>::max();
 				_atEnd = true;
-				return std::numeric_limits<size_t>::max();
+				return (_neighborIndex = std::numeric_limits<size_t>::max());
 			}
 
 			_pbcOffset.setZero();

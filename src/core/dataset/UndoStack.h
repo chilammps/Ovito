@@ -482,7 +482,7 @@ private:
  * Create an instance of this class on the stack to suspend recording of operations
  * during the lifetime of the class instance.
  */
-class UndoSuspender {
+class OVITO_CORE_EXPORT UndoSuspender {
 public:
 	UndoSuspender(UndoStack& undoStack) : _suspendCount(&undoStack._suspendCount) { ++(*_suspendCount); }
 	UndoSuspender(RefMaker* object);
@@ -500,7 +500,7 @@ private:
  * Helper class that begins a new compound operation.
  * Unless the operation committed, the destructor of this class will undo all operations.
  */
-class UndoableTransaction
+class OVITO_CORE_EXPORT UndoableTransaction
 {
 public:
 

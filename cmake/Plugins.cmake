@@ -41,7 +41,6 @@ MACRO(OVITO_PLUGIN target_name)
 			"${currentArg}" STREQUAL "LIB_DEPENDENCIES" OR 
 			"${currentArg}" STREQUAL "PLUGIN_DEPENDENCIES" OR 
 			"${currentArg}" STREQUAL "OPTIONAL_PLUGIN_DEPENDENCIES" OR
-			"${currentArg}" STREQUAL "PCH" OR  
 			"${currentArg}" STREQUAL "RESOURCE")
 			SET(DOING_WHAT "${currentArg}")
 		ELSE()
@@ -53,8 +52,6 @@ MACRO(OVITO_PLUGIN target_name)
 				LIST(APPEND plugin_dependencies "${currentArg}")
 		    ELSEIF(${DOING_WHAT} STREQUAL "OPTIONAL_PLUGIN_DEPENDENCIES")
 				LIST(APPEND optional_plugin_dependencies "${currentArg}")
-		    ELSEIF(${DOING_WHAT} STREQUAL "PCH")
-				SET(pch_header "${currentArg}")
 		    ELSEIF(${DOING_WHAT} STREQUAL "RESOURCE")
 				SET(resource_output "${currentArg}")
 				SET(DOING_WHAT "RESOURCE_INPUT")
@@ -112,14 +109,14 @@ MACRO(OVITO_PLUGIN target_name)
 			LIBRARY DESTINATION "${OVITO_RELATIVE_PLUGINS_DIRECTORY}")
 	ENDIF(NOT OVITO_MONOLITHIC_BUILD)
 
-	# Build optional resource file for this plugin which is not linked into the shared library.
+	# Generate resource file for this plugin.
 	IF(resource_output)
 		QT_COMPILE_RESOURCES(${target_name} "${OVITO_PLUGINS_DIRECTORY}/${resource_output}" ${resource_input})
-		# The resource file will be part of the installation package.
+		# Make resource file part of the installation package.
 		INSTALL(FILES "${OVITO_PLUGINS_DIRECTORY}/${resource_output}" DESTINATION "${OVITO_RELATIVE_PLUGINS_DIRECTORY}")
 	ENDIF()
 	
-	# Keep a list plugins.
+	# Keep a list of plugins.
 	LIST(APPEND OVITO_PLUGINS_LIST ${target_name})
 	SET(OVITO_PLUGINS_LIST "${OVITO_PLUGINS_LIST}" PARENT_SCOPE)
 
@@ -175,6 +172,7 @@ MACRO(OVITO_FIXUP_BUNDLE)
 			file(GLOB_RECURSE OVITO_PLUGINS
 				\"${OVITO_CMAKE_INSTALL_PREFIX}/${OVITO_RELATIVE_PLUGINS_DIRECTORY}/*${CMAKE_SHARED_LIBRARY_SUFFIX}\")
 			set(BUNDLE_LIBS \${QTPLUGINS} \${OVITO_PLUGINS})
+			set(BU_CHMOD_BUNDLE_ITEMS ON)	# Make copies of system libraries writable before install_name_tool tries to change them.
 			include(BundleUtilities)
 			fixup_bundle(\"${APPS}\" \"\${BUNDLE_LIBS}\" \"${DIRS}\")
 			" COMPONENT Runtime)

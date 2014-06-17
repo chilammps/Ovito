@@ -34,15 +34,15 @@ uniform sampler2D tex;			// The imposter texture.
 
 #else
 
-	varying float particle_radius_fs;
-	varying float ze0;
+	#define particle_radius_fs gl_TexCoord[1].x
+	#define ze0 gl_TexCoord[1].y
 	
 	#define particle_color_fs gl_Color
 	#define FragColor gl_FragColor
 	#define texture texture2D
 	
 	#if __VERSION__ < 120
-	#define gl_PointCoord gl_TexCoord[0].xy
+		#define gl_PointCoord gl_TexCoord[0].xy
 	#endif
 
 #endif

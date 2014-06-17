@@ -36,7 +36,7 @@ namespace Ovito {
  * \brief The coordinate display widget at the bottom of the main window,
  *        which displays the current mouse coordinates and the transform of the selected object.
  */
-class OVITO_CORE_EXPORT CoordinateDisplayWidget : public QWidget
+class OVITO_CORE_EXPORT CoordinateDisplayWidget : public QFrame
 {
 	Q_OBJECT
 	
@@ -101,11 +101,6 @@ protected Q_SLOT:
 
 	/// Is called when the user has aborted the spinner drag operation.
 	void onSpinnerDragAbort();
-
-protected:
-
-	/// Paints the widget.
-	virtual void paintEvent(QPaintEvent *) override;
 
 private:
 	

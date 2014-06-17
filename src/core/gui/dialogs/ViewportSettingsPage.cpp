@@ -24,7 +24,7 @@
 
 namespace Ovito {
 
-IMPLEMENT_OVITO_OBJECT(Core, ViewportSettingsPage, ApplicationSettingsPage)
+IMPLEMENT_OVITO_OBJECT(Core, ViewportSettingsPage, ApplicationSettingsPage);
 
 /******************************************************************************
 * Creates the widget that contains the plugin specific setting controls.
@@ -42,88 +42,53 @@ void ViewportSettingsPage::insertSettingsDialogPage(ApplicationSettingsDialog* s
 	layout1->addWidget(upDirectionGroupBox, 0, 0);
 	QGridLayout* layout2 = new QGridLayout(upDirectionGroupBox);
 
-	QLabel* label1 = new QLabel(tr("<html><p>Vertical viewpoint rotation axis:</p></html>"));
+	QLabel* label1 = new QLabel(tr("<html><p>Coordinate system orientation:</p></html>"));
 	label1->setWordWrap(true);
 	layout2->addWidget(label1, 0, 0, 1, 4);
 
 	_upDirectionGroup = new QButtonGroup(page);
-	_upDirectionGroup->addButton(new QRadioButton(tr("&X-axis"), upDirectionGroupBox), ViewportSettings::X_AXIS);
-	_upDirectionGroup->addButton(new QRadioButton(tr("&Y-axis"), upDirectionGroupBox), ViewportSettings::Y_AXIS);
-	_upDirectionGroup->addButton(new QRadioButton(tr("&Z-axis (default)"), upDirectionGroupBox), ViewportSettings::Z_AXIS);
-	layout2->addWidget(_upDirectionGroup->button(ViewportSettings::X_AXIS), 1, 0, 1, 1);
-	layout2->addWidget(_upDirectionGroup->button(ViewportSettings::Y_AXIS), 1, 1, 1, 1);
-	layout2->addWidget(_upDirectionGroup->button(ViewportSettings::Z_AXIS), 1, 2, 1, 1);
+	QRadioButton* verticalAxisX = new QRadioButton(QString(), upDirectionGroupBox);
+	QRadioButton* verticalAxisY = new QRadioButton(QString(), upDirectionGroupBox);
+	QRadioButton* verticalAxisZ = new QRadioButton(tr("(default)"), upDirectionGroupBox);
+	_upDirectionGroup->addButton(verticalAxisX, ViewportSettings::X_AXIS);
+	_upDirectionGroup->addButton(verticalAxisY, ViewportSettings::Y_AXIS);
+	_upDirectionGroup->addButton(verticalAxisZ, ViewportSettings::Z_AXIS);
+	verticalAxisX->setIcon(QIcon(":/core/mainwin/settings/vertical_axis_x.png"));
+	verticalAxisX->setIconSize(verticalAxisX->icon().availableSizes().front());
+	verticalAxisX->setToolTip(tr("X-axis"));
+	verticalAxisY->setIcon(QIcon(":/core/mainwin/settings/vertical_axis_y.png"));
+	verticalAxisY->setIconSize(verticalAxisY->icon().availableSizes().front());
+	verticalAxisY->setToolTip(tr("Y-axis"));
+	verticalAxisZ->setIcon(QIcon(":/core/mainwin/settings/vertical_axis_z.png"));
+	verticalAxisZ->setIconSize(verticalAxisZ->icon().availableSizes().front());
+	verticalAxisZ->setToolTip(tr("Z-axis"));
+	layout2->addWidget(verticalAxisX, 1, 0, 1, 1);
+	layout2->addWidget(verticalAxisY, 1, 1, 1, 1);
+	layout2->addWidget(verticalAxisZ, 1, 2, 1, 1);
 	_upDirectionGroup->button(_settings.upDirection())->setChecked(true);
 	layout2->setColumnStretch(3, 1);
 
-	_restrictVerticalRotationBox = new QCheckBox(tr("Restrict rotation to keep axis pointing upward"));
+	_restrictVerticalRotationBox = new QCheckBox(tr("Restrict camera to keep major axis pointing upward"));
 	_restrictVerticalRotationBox->setChecked(_settings.restrictVerticalRotation());
 	layout2->addWidget(_restrictVerticalRotationBox, 2, 0, 1, 3);
 
-	QGroupBox* colorsGroupBox = new QGroupBox(tr("Colors"), page);
+	QGroupBox* colorsGroupBox = new QGroupBox(tr("Color scheme"), page);
 	layout1->addWidget(colorsGroupBox, 1, 0);
 	layout2 = new QGridLayout(colorsGroupBox);
 
-	_colorList = new QListWidget(colorsGroupBox);
-	_colorList->addItem(tr("Background"));
-	_colorList->addItem(tr("Grid lines (minor)"));
-	_colorList->addItem(tr("Grid lines (major)"));
-	_colorList->addItem(tr("Grid lines (axes)"));
-	_colorList->addItem(tr("Viewport caption"));
-	_colorList->addItem(tr("Viewport caption (active)"));
-	_colorList->addItem(tr("Selection box"));
-	_colorList->addItem(tr("Axis (active)"));
-	_colorList->addItem(tr("Axis (inactive)"));
-	_colorList->addItem(tr("Viewport border (inactive)"));
-	_colorList->addItem(tr("Viewport border (active)"));
-	_colorList->addItem(tr("Snapping marker"));
-	_colorList->addItem(tr("Animation mode"));
-	_colorList->addItem(tr("Render frame"));
-	_colorList->addItem(tr("Cameras"));
-	_colorList->addItem(tr("Lights"));
-	layout2->addWidget(_colorList, 0, 0, 2, 1);
-	connect(_colorList, SIGNAL(currentItemChanged(QListWidgetItem*, QListWidgetItem*)), this, SLOT(onColorListItemChanged(QListWidgetItem*, QListWidgetItem*)));
-
-	_colorPicker = new ColorPickerWidget(colorsGroupBox);
-	connect(_colorPicker, SIGNAL(colorChanged()), this, SLOT(onColorChanged()));
-	QHBoxLayout* boxLayout = new QHBoxLayout();
-	layout2->addLayout(boxLayout, 0, 1, Qt::AlignLeft | Qt::AlignTop);
-	boxLayout->addWidget(new QLabel(tr("Color:")));
-	boxLayout->addWidget(_colorPicker, 1);
-	layout2->setColumnStretch(1, 1);
-	layout2->setRowStretch(1, 1);
-	_colorList->setCurrentRow(0);
-
-	QPushButton* restoreDefaultButton = new QPushButton(tr("Restore default colors"));
-	layout2->addWidget(restoreDefaultButton, 1, 1, Qt::AlignLeft | Qt::AlignBottom);
-	connect(restoreDefaultButton, SIGNAL(clicked(bool)), this, SLOT(onRestoreDefaultColors()));
+	_colorScheme = new QButtonGroup(page);
+	QRadioButton* darkColorScheme = new QRadioButton(tr("Dark"), colorsGroupBox);
+	QRadioButton* lightColorScheme = new QRadioButton(tr("Light"), colorsGroupBox);
+	layout2->addWidget(darkColorScheme, 0, 0, 1, 1);
+	layout2->addWidget(lightColorScheme, 0, 1, 1, 1);
+	_colorScheme->addButton(darkColorScheme, 0);
+	_colorScheme->addButton(lightColorScheme, 1);
+	if(_settings.viewportColor(ViewportSettings::COLOR_VIEWPORT_BKG) == Color(0,0,0))
+		darkColorScheme->setChecked(true);
+	else
+		lightColorScheme->setChecked(true);
 
 	layout1->setRowStretch(2, 1);
-}
-
-/******************************************************************************
-* Is called when the user selects another entry in the color list.
-******************************************************************************/
-void ViewportSettingsPage::onColorListItemChanged(QListWidgetItem* current, QListWidgetItem* previous)
-{
-	_colorPicker->setColor(_settings.viewportColor((ViewportSettings::ViewportColor)_colorList->currentRow()));
-}
-
-/******************************************************************************
-* Is called when the user has changed a viewport element color.
-******************************************************************************/
-void ViewportSettingsPage::onColorChanged()
-{
-	_settings.setViewportColor((ViewportSettings::ViewportColor)_colorList->currentRow(), _colorPicker->color());
-}
-
-/******************************************************************************
-* Is called when the user clicks the "Restore defaults" button in the color section.
-******************************************************************************/
-void ViewportSettingsPage::onRestoreDefaultColors()
-{
-	_settings.restoreDefaultViewportColors();
-	_colorPicker->setColor(_settings.viewportColor((ViewportSettings::ViewportColor)_colorList->currentRow()));
 }
 
 /******************************************************************************
@@ -134,6 +99,23 @@ bool ViewportSettingsPage::saveValues(ApplicationSettingsDialog* settingsDialog,
 	// Update settings.
 	_settings.setUpDirection((ViewportSettings::UpDirection)_upDirectionGroup->checkedId());
 	_settings.setRestrictVerticalRotation(_restrictVerticalRotationBox->isChecked());
+	if(_colorScheme->checkedId() == 1) {
+		// Light color scheme.
+		_settings.setViewportColor(ViewportSettings::COLOR_VIEWPORT_BKG, Color(1.0f, 1.0f, 1.0f));
+		_settings.setViewportColor(ViewportSettings::COLOR_GRID, Color(0.6f, 0.6f, 0.6f));
+		_settings.setViewportColor(ViewportSettings::COLOR_GRID_INTENS, Color(0.5f, 0.5f, 0.5f));
+		_settings.setViewportColor(ViewportSettings::COLOR_GRID_AXIS, Color(0.4f, 0.4f, 0.4f));
+		_settings.setViewportColor(ViewportSettings::COLOR_VIEWPORT_CAPTION, Color(0.0f, 0.0f, 0.0f));
+		_settings.setViewportColor(ViewportSettings::COLOR_SELECTION, Color(0.0f, 0.0f, 0.0f));
+		_settings.setViewportColor(ViewportSettings::COLOR_UNSELECTED, Color(0.5f, 0.5f, 1.0f));
+		_settings.setViewportColor(ViewportSettings::COLOR_ACTIVE_VIEWPORT_BORDER, Color(1.0f, 1.0f, 0.0f));
+		_settings.setViewportColor(ViewportSettings::COLOR_ANIMATION_MODE, Color(1.0f, 0.0f, 0.0f));
+		_settings.setViewportColor(ViewportSettings::COLOR_CAMERAS, Color(0.5f, 0.5f, 1.0f));
+	}
+	else {
+		// Dark color scheme.
+		_settings.restoreDefaultViewportColors();
+	}
 
 	// Store current settings.
 	ViewportSettings::setSettings(_settings);

@@ -109,7 +109,7 @@ void LookAtController::applyRotation(TimePoint time, AffineTransformation& resul
 ******************************************************************************/
 TimeInterval LookAtController::validityInterval(TimePoint time)
 {
-	TimeInterval iv(TimeInterval::forever());
+	TimeInterval iv(TimeInterval::infinite());
 	if(rollController())
 		iv.intersect(rollController()->validityInterval(time));
 	if(targetNode())

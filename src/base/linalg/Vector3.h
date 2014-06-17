@@ -21,7 +21,7 @@
 
 /**
  * \file Vector3.h
- * \brief Contains definition of the Ovito::Vector_3 template class and operators.
+ * \brief Contains the definition of the Ovito::Vector_3 class template.
  */
 
 #ifndef __OVITO_VECTOR3_H
@@ -290,6 +290,18 @@ inline LoadStream& operator>>(LoadStream& stream, Vector_3<T>& v) {
 	return stream >> v.x() >> v.y() >> v.z();
 }
 
+/// \brief Writes a vector to a Qt data stream.
+template<typename T>
+inline QDataStream& operator<<(QDataStream& stream, const Vector_3<T>& v) {
+	return stream << v.x() << v.y() << v.z();
+}
+
+/// \brief Reads a vector from a Qt data stream.
+template<typename T>
+inline QDataStream& operator>>(QDataStream& stream, Vector_3<T>& v) {
+	return stream >> v.x() >> v.y() >> v.z();
+}
+
 /**
  * \fn typedef Vector3
  * \brief Template class instance of the Vector_3 class used for floating-point vectors.
@@ -307,9 +319,13 @@ inline void glVertex(const Vector_3<GLfloat>& v) { glVertex3fv(v.data()); }
 
 };	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Vector3)
-Q_DECLARE_METATYPE(Ovito::Vector3I)
+Q_DECLARE_METATYPE(Ovito::Vector3);
+Q_DECLARE_METATYPE(Ovito::Vector3I);
+Q_DECLARE_METATYPE(Ovito::Vector3*);
+Q_DECLARE_METATYPE(Ovito::Vector3I*);
 Q_DECLARE_TYPEINFO(Ovito::Vector3, Q_PRIMITIVE_TYPE);
 Q_DECLARE_TYPEINFO(Ovito::Vector3I, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Vector3*, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Vector3I*, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_VECTOR3_H

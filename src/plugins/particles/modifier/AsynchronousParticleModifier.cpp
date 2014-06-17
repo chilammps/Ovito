@@ -29,11 +29,11 @@
 
 namespace Particles {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, AsynchronousParticleModifier, ParticleModifier)
-DEFINE_PROPERTY_FIELD(AsynchronousParticleModifier, _autoUpdate, "AutoUpdate")
-DEFINE_PROPERTY_FIELD(AsynchronousParticleModifier, _saveResults, "SaveResults")
-SET_PROPERTY_FIELD_LABEL(AsynchronousParticleModifier, _autoUpdate, "Automatic update")
-SET_PROPERTY_FIELD_LABEL(AsynchronousParticleModifier, _saveResults, "Save results")
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, AsynchronousParticleModifier, ParticleModifier);
+DEFINE_PROPERTY_FIELD(AsynchronousParticleModifier, _autoUpdate, "AutoUpdate");
+DEFINE_PROPERTY_FIELD(AsynchronousParticleModifier, _saveResults, "SaveResults");
+SET_PROPERTY_FIELD_LABEL(AsynchronousParticleModifier, _autoUpdate, "Automatic update");
+SET_PROPERTY_FIELD_LABEL(AsynchronousParticleModifier, _saveResults, "Save results");
 
 /******************************************************************************
 * Constructs the modifier object.
@@ -93,8 +93,8 @@ void AsynchronousParticleModifier::cancelBackgroundJob()
 			_backgroundOperation.waitForFinished();
 		} catch(...) {}
 		_backgroundOperation.reset();
-		if(status().type() == ObjectStatus::Pending)
-			setStatus(ObjectStatus());
+		if(status().type() == PipelineStatus::Pending)
+			setStatus(PipelineStatus());
 	}
 	_computationValidity.setEmpty();
 }
@@ -102,9 +102,9 @@ void AsynchronousParticleModifier::cancelBackgroundJob()
 /******************************************************************************
 * This modifies the input object.
 ******************************************************************************/
-ObjectStatus AsynchronousParticleModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
+PipelineStatus AsynchronousParticleModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
 {
-	if(autoUpdateEnabled() && !_cacheValidity.contains(time) && input().status().type() != ObjectStatus::Pending) {
+	if(autoUpdateEnabled() && !_cacheValidity.contains(time) && input().status().type() != PipelineStatus::Pending) {
 		if(!_computationValidity.contains(time)) {
 
 			// Stop running job first.
@@ -120,7 +120,7 @@ ObjectStatus AsynchronousParticleModifier::modifyParticles(TimePoint time, TimeI
 				_backgroundOperation = dataset()->container()->taskManager().runInBackground<std::shared_ptr<Engine>>(std::bind(&AsynchronousParticleModifier::runEngine, this, std::placeholders::_1, engine));
 				_backgroundOperationWatcher.setFuture(_backgroundOperation);
 			}
-			catch(const ObjectStatus& status) {
+			catch(const PipelineStatus& status) {
 				return status;
 			}
 		}
@@ -128,10 +128,10 @@ ObjectStatus AsynchronousParticleModifier::modifyParticles(TimePoint time, TimeI
 
 	if(!_computationValidity.contains(time)) {
 		if(!_cacheValidity.contains(time)) {
-			if(input().status().type() != ObjectStatus::Pending)
+			if(input().status().type() != PipelineStatus::Pending)
 				throw Exception(tr("The modifier results have not been computed yet."));
 			else
-				return ObjectStatus(ObjectStatus::Warning, tr("Waiting for input data to become ready..."));
+				return PipelineStatus(PipelineStatus::Warning, tr("Waiting for input data to become ready..."));
 		}
 	}
 	else {
@@ -149,10 +149,10 @@ ObjectStatus AsynchronousParticleModifier::modifyParticles(TimePoint time, TimeI
 			catch(const Exception&) { /* Ignore problems. */ }
 		}
 
-		return ObjectStatus(ObjectStatus::Pending, tr("Results are being computed..."));
+		return PipelineStatus(PipelineStatus::Pending, tr("Results are being computed..."));
 	}
 
-	if(_asyncStatus.type() == ObjectStatus::Error)
+	if(_asyncStatus.type() == PipelineStatus::Error)
 		return _asyncStatus;
 
 	validityInterval.intersect(_cacheValidity);
@@ -187,15 +187,15 @@ void AsynchronousParticleModifier::backgroundJobFinished()
 			retrieveModifierResults(engine.get());
 
 			// Notify dependents that the background operation has succeeded and new data is available.
-			_asyncStatus = ObjectStatus::Success;
+			_asyncStatus = PipelineStatus::Success;
 		}
 		catch(const Exception& ex) {
 			// Transfer exception message to evaluation status.
-			_asyncStatus = ObjectStatus(ObjectStatus::Error, ex.messages().join(QChar('\n')));
+			_asyncStatus = PipelineStatus(PipelineStatus::Error, ex.messages().join(QChar('\n')));
 		}
 	}
 	else {
-		_asyncStatus = ObjectStatus(ObjectStatus::Error, tr("Operation has been canceled by the user."));
+		_asyncStatus = PipelineStatus(PipelineStatus::Error, tr("Operation has been canceled by the user."));
 	}
 
 	// Reset everything.

@@ -37,11 +37,10 @@ flat out vec3 particle_view_pos_fs;
 
 void main()
 {
-	particle_view_pos_fs = vec3(gl_in[0].gl_Position); 
-	particle_color_fs = particle_color_gs[0];
-	particle_radius_squared_fs = particle_radius_gs[0] * particle_radius_gs[0];
-
 	for(int vertex = 0; vertex < 14; vertex++) {
+		particle_view_pos_fs = vec3(gl_in[0].gl_Position); 
+		particle_color_fs = particle_color_gs[0];
+		particle_radius_squared_fs = particle_radius_gs[0] * particle_radius_gs[0];
 		gl_Position = projection_matrix * vec4(particle_view_pos_fs + cubeVerts[vertex] * particle_radius_gs[0], 1);
 		EmitVertex();
 	}

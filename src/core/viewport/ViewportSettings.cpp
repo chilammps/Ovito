@@ -93,17 +93,11 @@ void ViewportSettings::restoreDefaultViewportColors()
 	_viewportColors[COLOR_GRID_INTENS] = Color(0.6f, 0.6f, 0.6f);
 	_viewportColors[COLOR_GRID_AXIS] = Color(0.7f, 0.7f, 0.7f);
 	_viewportColors[COLOR_VIEWPORT_CAPTION] = Color(1.0f, 1.0f, 1.0f);
-	_viewportColors[COLOR_ACTIVE_VIEWPORT_CAPTION] = Color(0.7f, 0.7f, 1.0f);
 	_viewportColors[COLOR_SELECTION] = Color(1.0f, 1.0f, 1.0f);
-	_viewportColors[COLOR_ACTIVE_AXIS] = Color(1.0f, 0.0f, 0.0f);
-	_viewportColors[COLOR_INACTIVE_AXIS] = Color(0.0f, 0.0f, 0.0f);
-	_viewportColors[COLOR_VIEWPORT_BORDER] = Color(0.5f, 0.5f, 0.5f);
+	_viewportColors[COLOR_UNSELECTED] = Color(0.6f, 0.6f, 1.0f);
 	_viewportColors[COLOR_ACTIVE_VIEWPORT_BORDER] = Color(1.0f, 1.0f, 0.0f);
-	_viewportColors[COLOR_SNAPPING_MARKER] = Color(0.8f, 1.0f, 1.0f);
 	_viewportColors[COLOR_ANIMATION_MODE] = Color(1.0f, 0.0f, 0.0f);
-	_viewportColors[COLOR_RENDER_FRAME] = Color(0.0f, 1.0f, 0.0f);
 	_viewportColors[COLOR_CAMERAS] = Color(0.5f, 0.5f, 1.0f);
-	_viewportColors[COLOR_LIGHTS] = Color(1.0f, 1.0f, 0.0f);
 }
 
 /******************************************************************************
@@ -160,14 +154,24 @@ void ViewportSettings::load(QSettings& store)
 {
 	_upDirection = (UpDirection)store.value("UpDirection", qVariantFromValue((int)_upDirection)).toInt();
 	_restrictVerticalRotation = store.value("RestrictVerticalRotation", qVariantFromValue(_restrictVerticalRotation)).toBool();
-	int arraySize = store.beginReadArray("colors");
-	for(int i = 0; i < _viewportColors.size() && i < arraySize; i++) {
-		store.setArrayIndex(i);
-		_viewportColors[i].r() = store.value("R").value<FloatType>();
-		_viewportColors[i].g() = store.value("G").value<FloatType>();
-		_viewportColors[i].b() = store.value("B").value<FloatType>();
+	store.beginGroup("Colors");
+	QMetaEnum colorEnum;
+	for(int i = 0; i < ViewportSettings::staticMetaObject.enumeratorCount(); i++) {
+		if(qstrcmp(ViewportSettings::staticMetaObject.enumerator(i).name(), "ViewportColor") == 0) {
+			colorEnum = ViewportSettings::staticMetaObject.enumerator(i);
+			break;
+		}
 	}
-	store.endArray();
+	OVITO_ASSERT(colorEnum.isValid());
+	for(const QString& key : store.childKeys()) {
+		QColor c = store.value(key).value<QColor>();
+		bool ok;
+		int index = colorEnum.keyToValue(key.toLatin1().constData(), &ok);
+		if(ok && index >= 0 && index < NUMBER_OF_COLORS) {
+			_viewportColors[index] = Color(c);
+		}
+	}
+	store.endGroup();
 }
 
 /******************************************************************************
@@ -177,14 +181,20 @@ void ViewportSettings::save(QSettings& store) const
 {
 	store.setValue("UpDirection", (int)_upDirection);
 	store.setValue("RestrictVerticalRotation", _restrictVerticalRotation);
-	store.beginWriteArray("colors");
-	for(int i = 0; i < _viewportColors.size(); i++) {
-		store.setArrayIndex(i);
-		store.setValue("R", _viewportColors[i].r());
-		store.setValue("G", _viewportColors[i].g());
-		store.setValue("B", _viewportColors[i].b());
+	store.remove("Colors");
+	store.beginGroup("Colors");
+	QMetaEnum colorEnum;
+	for(int i = 0; i < ViewportSettings::staticMetaObject.enumeratorCount(); i++) {
+		if(qstrcmp(ViewportSettings::staticMetaObject.enumerator(i).name(), "ViewportColor") == 0) {
+			colorEnum = ViewportSettings::staticMetaObject.enumerator(i);
+			break;
+		}
 	}
-	store.endArray();
+	OVITO_ASSERT(colorEnum.isValid());
+	for(int i = 0; i < _viewportColors.size(); i++) {
+		store.setValue(colorEnum.key(i), QVariant::fromValue((QColor)_viewportColors[i]));
+	}
+	store.endGroup();
 }
 
 };

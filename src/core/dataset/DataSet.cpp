@@ -38,16 +38,16 @@
 namespace Ovito {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, DataSet, RefTarget);
-DEFINE_FLAGS_REFERENCE_FIELD(DataSet, _viewportConfig, "ViewportConfiguration", ViewportConfiguration, PROPERTY_FIELD_NO_CHANGE_MESSAGE|PROPERTY_FIELD_ALWAYS_DEEP_COPY)
-DEFINE_FLAGS_REFERENCE_FIELD(DataSet, _animSettings, "AnimationSettings", AnimationSettings, PROPERTY_FIELD_NO_CHANGE_MESSAGE|PROPERTY_FIELD_ALWAYS_DEEP_COPY)
-DEFINE_FLAGS_REFERENCE_FIELD(DataSet, _sceneRoot, "SceneRoot", SceneRoot, PROPERTY_FIELD_NO_CHANGE_MESSAGE|PROPERTY_FIELD_ALWAYS_DEEP_COPY)
-DEFINE_FLAGS_REFERENCE_FIELD(DataSet, _selection, "CurrentSelection", SelectionSet, PROPERTY_FIELD_NO_CHANGE_MESSAGE|PROPERTY_FIELD_ALWAYS_DEEP_COPY)
-DEFINE_FLAGS_REFERENCE_FIELD(DataSet, _renderSettings, "RenderSettings", RenderSettings, PROPERTY_FIELD_NO_CHANGE_MESSAGE|PROPERTY_FIELD_ALWAYS_DEEP_COPY)
-SET_PROPERTY_FIELD_LABEL(DataSet, _viewportConfig, "Viewport Configuration")
-SET_PROPERTY_FIELD_LABEL(DataSet, _animSettings, "Animation Settings")
-SET_PROPERTY_FIELD_LABEL(DataSet, _sceneRoot, "Scene")
-SET_PROPERTY_FIELD_LABEL(DataSet, _selection, "Selection")
-SET_PROPERTY_FIELD_LABEL(DataSet, _renderSettings, "Render Settings")
+DEFINE_FLAGS_REFERENCE_FIELD(DataSet, _viewportConfig, "ViewportConfiguration", ViewportConfiguration, PROPERTY_FIELD_NO_CHANGE_MESSAGE|PROPERTY_FIELD_ALWAYS_DEEP_COPY|PROPERTY_FIELD_MEMORIZE);
+DEFINE_FLAGS_REFERENCE_FIELD(DataSet, _animSettings, "AnimationSettings", AnimationSettings, PROPERTY_FIELD_NO_CHANGE_MESSAGE|PROPERTY_FIELD_ALWAYS_DEEP_COPY|PROPERTY_FIELD_MEMORIZE);
+DEFINE_FLAGS_REFERENCE_FIELD(DataSet, _sceneRoot, "SceneRoot", SceneRoot, PROPERTY_FIELD_NO_CHANGE_MESSAGE|PROPERTY_FIELD_ALWAYS_DEEP_COPY);
+DEFINE_FLAGS_REFERENCE_FIELD(DataSet, _selection, "CurrentSelection", SelectionSet, PROPERTY_FIELD_NO_CHANGE_MESSAGE|PROPERTY_FIELD_ALWAYS_DEEP_COPY);
+DEFINE_FLAGS_REFERENCE_FIELD(DataSet, _renderSettings, "RenderSettings", RenderSettings, PROPERTY_FIELD_NO_CHANGE_MESSAGE|PROPERTY_FIELD_ALWAYS_DEEP_COPY|PROPERTY_FIELD_MEMORIZE);
+SET_PROPERTY_FIELD_LABEL(DataSet, _viewportConfig, "Viewport Configuration");
+SET_PROPERTY_FIELD_LABEL(DataSet, _animSettings, "Animation Settings");
+SET_PROPERTY_FIELD_LABEL(DataSet, _sceneRoot, "Scene");
+SET_PROPERTY_FIELD_LABEL(DataSet, _selection, "Selection");
+SET_PROPERTY_FIELD_LABEL(DataSet, _renderSettings, "Render Settings");
 
 /******************************************************************************
 * Constructor.
@@ -93,7 +93,7 @@ OORef<ViewportConfiguration> DataSet::createDefaultViewportConfiguration()
 	perspectiveView->setCameraTransformation(ViewportSettings::getSettings().coordinateSystemOrientation() * AffineTransformation::lookAlong({90, -120, 100}, {-90, 120, -100}, {0,0,1}).inverse());
 	defaultViewportConfig->addViewport(perspectiveView);
 
-	defaultViewportConfig->setActiveViewport(topView.get());
+	defaultViewportConfig->setActiveViewport(topView);
 	defaultViewportConfig->setMaximizedViewport(nullptr);
 
 	return defaultViewportConfig;
@@ -204,7 +204,7 @@ bool DataSet::isSceneReady(TimePoint time) const
 
 	// Iterate over all object nodes and request an evaluation of their geometry pipeline.
 	bool isReady = sceneRoot()->visitObjectNodes([time](ObjectNode* node) {
-		return (node->evalPipeline(time).status().type() != ObjectStatus::Pending);
+		return (node->evalPipeline(time).status().type() != PipelineStatus::Pending);
 	});
 
 	return isReady;
@@ -223,7 +223,7 @@ void DataSet::runWhenSceneIsReady(const std::function<void()>& fn)
 
 	// Iterate over all object nodes and request an evaluation of their geometry pipeline.
 	bool isReady = sceneRoot()->visitObjectNodes([time](ObjectNode* node) {
-		return (node->evalPipeline(time).status().type() != ObjectStatus::Pending);
+		return (node->evalPipeline(time).status().type() != PipelineStatus::Pending);
 	});
 
 	if(isReady)
@@ -410,17 +410,9 @@ void DataSet::renderFrame(TimePoint renderTime, int frameNumber, RenderSettings*
 	animationSettings()->setTime(renderTime);
 
 	// Wait until the scene is ready.
-	volatile bool sceneIsReady = false;
-	runWhenSceneIsReady( [&sceneIsReady]() { sceneIsReady = true; } );
-	if(!sceneIsReady) {
-		if(progressDialog)
-			progressDialog->setLabelText(tr("Rendering frame %1. Preparing scene...").arg(frameNumber));
-		while(!sceneIsReady) {
-			if(progressDialog && progressDialog->wasCanceled())
-				return;
-			QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents, 200);
-		}
-	}
+	if(!waitUntilSceneIsReady(tr("Preparing frame %1.").arg(frameNumber), progressDialog))
+		return;
+
 	if(progressDialog)
 		progressDialog->setLabelText(tr("Rendering frame %1.").arg(frameNumber));
 
@@ -454,6 +446,57 @@ void DataSet::renderFrame(TimePoint renderTime, int frameNumber, RenderSettings*
 #endif
 		}
 	}
+}
+
+/******************************************************************************
+* This function blocks until the scene has become ready.
+******************************************************************************/
+bool DataSet::waitUntilSceneIsReady(const QString& message, QProgressDialog* progressDialog)
+{
+	std::atomic_flag keepWaiting;
+	keepWaiting.test_and_set();
+	runWhenSceneIsReady( [&keepWaiting]() { keepWaiting.clear(); } );
+	if(keepWaiting.test_and_set()) {
+		if(Application::instance().guiMode()) {
+
+			// Show a modal progress dialog to block user interface while waiting for the scene to become ready.
+			if(!progressDialog) {
+				QProgressDialog pdlg(mainWindow());
+				pdlg.setWindowModality(Qt::WindowModal);
+				pdlg.setAutoClose(false);
+				pdlg.setAutoReset(false);
+				pdlg.setMinimumDuration(0);
+				pdlg.setValue(0);
+				pdlg.setLabelText(message);
+
+				// Poll the flag that indicates if the scene is ready.
+				while(keepWaiting.test_and_set()) {
+					if(pdlg.wasCanceled())
+						return false;
+					QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents, 50);
+				}
+
+			}
+			else {
+				progressDialog->setLabelText(message);
+
+				// Poll the flag that indicates if the scene is ready.
+				while(keepWaiting.test_and_set()) {
+					if(progressDialog->wasCanceled())
+						return false;
+					QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents, 50);
+				}
+			}
+		}
+		else {
+			// Poll the flag that indicates if the scene is ready.
+			while(keepWaiting.test_and_set()) {
+				QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents, 50);
+			}
+		}
+	}
+
+	return true;
 }
 
 };

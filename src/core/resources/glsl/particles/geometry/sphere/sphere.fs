@@ -33,8 +33,8 @@ uniform vec2 inverse_viewport_size;	// Specifies the transformation from screen 
 	out vec4 FragColor;
 #else
 	#define particle_color_fs gl_Color
-	varying float particle_radius_squared_fs;
-	varying vec3 particle_view_pos_fs;
+	#define particle_radius_squared_fs gl_TexCoord[1].w
+	#define particle_view_pos_fs gl_TexCoord[1].xyz
 	#define FragColor gl_FragColor
 #endif
 
@@ -47,13 +47,19 @@ void main()
 {
 	// Calculate the pixel coordinate in viewport space.
 	vec2 view_c = ((gl_FragCoord.xy - viewport_origin) * inverse_viewport_size) - 1.0;
-
+	
 	// Calculate viewing ray direction in view space
 	vec3 ray_dir;
 	vec3 ray_origin;
+	float disc_limit = 1.0;
 	if(is_perspective) {
 		ray_dir = normalize(vec3(inverse_projection_matrix * vec4(view_c.x, view_c.y, 1.0, 1.0)));
 		ray_origin = vec3(0.0);
+
+		float basePointSize = projection_matrix[1][1] / inverse_viewport_size.y;
+		float pointSizeSq = basePointSize * particle_radius_squared_fs / (particle_view_pos_fs.z * projection_matrix[2][3] + projection_matrix[3][3]);
+		if(pointSizeSq > 0.0 && pointSizeSq < 4.0)
+			disc_limit = max(0.0, pointSizeSq / 2.0 - 1.0);
 	}
 	else {
 		ray_origin = vec3(inverse_projection_matrix * vec4(view_c.x, view_c.y, 0.0, 1.0));
@@ -64,13 +70,12 @@ void main()
 	
 	// Perform ray-sphere intersection test.
 	float b = dot(ray_dir, sphere_dir);
-	float temp = dot(sphere_dir, sphere_dir);
-	float disc = b*b + particle_radius_squared_fs - temp;
+	float sphere_dir_sq = dot(sphere_dir, sphere_dir);
+	float disc = mix(particle_radius_squared_fs, b*b - sphere_dir_sq + particle_radius_squared_fs, disc_limit);
 		
 	// Only calculate the intersection closest to the viewer.
-	if(disc <= 0.0) {
+	if(disc < 0.0)
 		discard; // Ray missed sphere entirely, discard fragment
-	}
 		
 	// Calculate closest intersection position.
 	float tnear = b - sqrt(disc);

@@ -81,7 +81,7 @@ ActionManager::ActionManager(MainWindow* mainWindow) : QObject(mainWindow)
 	createCommandAction(ACTION_FILE_EXPORT, tr("Export File"), ":/core/actions/file/file_export.png", tr("Export data to a file."), Qt::CTRL + Qt::Key_E);
 	createCommandAction(ACTION_FILE_NEW_WINDOW, tr("New Window"), ":/core/actions/file/file_new.png", tr("Opens a new OVITO window."));
 	createCommandAction(ACTION_HELP_ABOUT, tr("About Ovito"), NULL, tr("Show information about the application."));
-	createCommandAction(ACTION_HELP_SHOW_ONLINE_HELP, tr("Manual"), NULL, tr("Open the online manual."), QKeySequence::HelpContents);
+	createCommandAction(ACTION_HELP_SHOW_ONLINE_HELP, tr("User Manual"), NULL, tr("Open the user manual."), QKeySequence::HelpContents);
 	createCommandAction(ACTION_HELP_OPENGL_INFO, tr("OpenGL Information"), NULL, tr("Display OpenGL graphics driver information."));
 
 	createCommandAction(ACTION_EDIT_UNDO, tr("Undo"), ":/core/actions/edit/edit_undo.png", tr("Reverse a user action."), QKeySequence::Undo);

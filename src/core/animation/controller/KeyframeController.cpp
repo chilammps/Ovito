@@ -59,7 +59,7 @@ TimeInterval KeyframeController::validityInterval(TimePoint time)
 {
 	OVITO_ASSERT(areKeysSorted());
 	if(keys().empty())
-		return TimeInterval::forever();
+		return TimeInterval::infinite();
 	else if(time <= keys().front()->time())
 		return TimeInterval(TimeNegativeInfinity(), keys().front()->time());
 	else if(time >= keys().back()->time())

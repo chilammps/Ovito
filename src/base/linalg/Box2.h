@@ -21,7 +21,7 @@
 
 /**
  * \file Box2.h
- * \brief Contains the definition of the Ovito::Box_2 template class.
+ * \brief Contains the definition of the Ovito::Box_2 class template.
  */
 
 #ifndef __OVITO_BOX2_H
@@ -243,6 +243,18 @@ inline std::ostream& operator<<(std::ostream &os, const Box_2<T> &b) {
 	return os << '[' << b.minc << "] - [" << b.maxc << ']';
 }
 
+/// \brief Writes a box to a Qt data stream.
+template<typename T>
+inline QDataStream& operator<<(QDataStream& stream, const Box_2<T>& b) {
+	return stream << b.minc << b.maxc;
+}
+
+/// \brief Reads a box from a Qt data stream.
+template<typename T>
+inline QDataStream& operator>>(QDataStream& stream, Box_2<T>& b) {
+	return stream >> b.minc >> b.maxc;
+}
+
 /**
  * \fn typedef Box2
  * \brief Template class instance of the Box_2 class used for floating-point calculations based on Point2.
@@ -257,9 +269,13 @@ typedef Box_2<int>			Box2I;
 
 };	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Box2)
-Q_DECLARE_METATYPE(Ovito::Box2I)
+Q_DECLARE_METATYPE(Ovito::Box2);
+Q_DECLARE_METATYPE(Ovito::Box2I);
+Q_DECLARE_METATYPE(Ovito::Box2*);
+Q_DECLARE_METATYPE(Ovito::Box2I*);
 Q_DECLARE_TYPEINFO(Ovito::Box2, Q_MOVABLE_TYPE);
 Q_DECLARE_TYPEINFO(Ovito::Box2I, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Box2*, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Box2I*, Q_MOVABLE_TYPE);
 
 #endif // __OVITO_BOX2_H

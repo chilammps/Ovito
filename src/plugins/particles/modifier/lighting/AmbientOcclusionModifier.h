@@ -30,6 +30,7 @@
 #include <plugins/particles/Particles.h>
 #include <core/gui/properties/RefTargetListParameterUI.h>
 #include <plugins/particles/modifier/AsynchronousParticleModifier.h>
+#include <core/rendering/viewport/ViewportSceneRenderer.h>
 
 namespace Particles {
 
@@ -54,7 +55,10 @@ public:
 			_positions(positions),
 			_boundingBox(boundingBox),
 			_brightness(new ParticleProperty(positions->size(), qMetaTypeId<FloatType>(), sizeof(FloatType), 1, tr("Brightness"))),
-			_particleRadii(particleRadii) {}
+			_particleRadii(particleRadii) {
+			_offscreenSurface.setFormat(ViewportSceneRenderer::getDefaultSurfaceFormat());
+			_offscreenSurface.create();
+		}
 
 		/// Computes the modifier's results and stores them in this object for later retrieval.
 		virtual void compute(FutureInterfaceBase& futureInterface) override;
@@ -73,6 +77,7 @@ public:
 		QExplicitlySharedDataPointer<ParticleProperty> _brightness;
 		Box3 _boundingBox;
 		std::vector<FloatType> _particleRadii;
+		QOffscreenSurface _offscreenSurface;
 	};
 
 public:
@@ -119,7 +124,7 @@ protected:
 	virtual void retrieveModifierResults(Engine* engine) override;
 
 	/// This lets the modifier insert the previously computed results into the pipeline.
-	virtual ObjectStatus applyModifierResults(TimePoint time, TimeInterval& validityInterval) override;
+	virtual PipelineStatus applyModifierResults(TimePoint time, TimeInterval& validityInterval) override;
 
 private:
 

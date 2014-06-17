@@ -38,7 +38,7 @@ public:
 	/// Constructor.
 	ColorParameterUI(QObject* parentEditor, const PropertyFieldDescriptor& propField);
 	
-	/// Destructor, that releases all GUI controls.
+	/// Destructor.
 	virtual ~ColorParameterUI();
 	    
 	/// This returns the color picker widget managed by this parameter UI.

@@ -1,7 +1,7 @@
 **************************************************************************
 Build MPFR library (using MSYS enviroment):
 **************************************************************************
-./configure --prefix=/c/Users/stuko/ovito/mpfr64_install --host=x86_64-w64-mingw32 --build=x86_64-w64-mingw32 --with-gmp=/c/Users/stuko/ovito/Qt-5.2.0-x86_64
+./configure --prefix=/c/Users/stuko/ovito/mpfr64_install --host=x86_64-w64-mingw32 --build=x86_64-w64-mingw32 --with-gmp=/c/Users/stuko/ovito/Qt5.2.1-x86_64
 
 **************************************************************************
 Build Boost libraries (release 1.55):
@@ -16,7 +16,7 @@ Build CGAL library (release 4.3):
 **************************************************************************
 
 cmake -DBOOST_INCLUDE_DIR=c:/Users/stuko/ovito/boost64/include \
-	-DGMP_LIBRARIES=c:/Users/stuko/ovito/Qt-5.2.0-x86_64 \
+	-DGMP_LIBRARIES=c:/Users/stuko/ovito/Qt5.2.1-x86_64 \
 	-DMPFR_LIBRARIES=c:/Users/stuko/ovito/mpfr64_install \
 	-DWITH_CGAL_Qt3=OFF \
 	-DWITH_CGAL_Qt4=OFF \

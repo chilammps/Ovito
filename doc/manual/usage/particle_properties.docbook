@@ -9,90 +9,111 @@
          xmlns:ns="http://docbook.org/ns/docbook">
   <title>Particle properties</title>
 
-  <para>Particle properties play a central role in OVITO. Each particle in a data set is associated with a set of properties.
-  For example, the particle's position, type, or velocity are all properties managed by OVITO.
-  These properties are read from the imported simulation file. Modifiers have access
-  to the existing particle properties, can alter the stored values, or can associate
-  new properties with particles. For instance, the Coordination Analysis modifier
-  adds the <literal>Coordination number</literal> property to each particle, which stores their number
-  of neighbors. 
-  </para>
-  
-  <para>
-  All particles in a data set have the same set of properties associated with them. Internally, particle
-  properties are implemented as data arrays with one entry per particle. A single entry can 
-  hold an integer or floating-point number, or a more complex data type such as a vector or a tensor.
-  The <literal>Position</literal> property, for instance, stores vectors with three components.
-  The individual components of this property are referred to as 
-  <literal>Position.X</literal>, <literal>Position.Y</literal>, and <literal>Position.Z</literal>. 
-  </para>
-
-  <para>One can distinguish two types of particle properties: Standard properties and user-defined properties.
-  Standard properties have a pre-defined name, data type, and specific meaning or function.
-  The standard property <literal>Position</literal>, for instance, is used by OVITO to store the particle
-  positions while the <literal>Color</literal> standard property stores the particle colors etc.
-  Particles always have at least the <literal>Position</literal> associated with them; all other 
-  standard properties are optional. That means, they are only defined if the input file contains a 
-  corresponding data column or if they have been added later by a <link linkend="usage.modification_pipeline">modifier</link>.
-  </para>
-
-  <para>Certain standard properties have a special meaning and affect how OVITO displays particles. 
-  The following table lists the most important standard properties and defines their meaning:
-   <informaltable>
-        <tgroup cols="2">
-          <thead>
-            <row>
-              <entry>Standard property</entry>
-              <entry>Data type / Components</entry>
-              <entry>Description</entry>
-            </row>
-          </thead>
-
-          <tbody>
-            <row>
-              <entry><literal>Position</literal></entry>
-              <entry>X, Y, Z</entry>
-              <entry><para>Controls the locations of particles in space.</para></entry>
-            </row>
-            <row>
-              <entry><literal>Color</literal></entry>
-              <entry>R, G, B</entry>
-              <entry><para>Controls the display color of individual particles.</para></entry>
-            </row>
-            <row>
-              <entry><literal>Radius</literal></entry>
-              <entry>Real</entry>
-              <entry><para>Controls the size of individual particles.</para></entry>
-            </row>
-            <row>
-              <entry><literal>Particle Type</literal></entry>
-              <entry>Integer</entry>
-              <entry><para>Stores the type identifier of each particle. This will also determine the display size and color of 
-              particles unless the <emphasis>Radius</emphasis> or <emphasis>Color</emphasis> properties are present.</para></entry>
-            </row>
-            <row>
-              <entry><literal>Particle Identifier</literal></entry>
-              <entry>Integer</entry>
-              <entry><para>Stores the unique ID of each particle. This is used by some modifiers
-              to track particles over time when the storage order of particles changes between simulation
-              frames.</para></entry>
-            </row>
-            <row>
-              <entry><literal>Selection</literal></entry>
-              <entry>Integer</entry>
-              <entry><para>Stores the selection state of particles. The <emphasis>Selection</emphasis> property of 
-              selected particles is 1 (and 0 otherwise).</para></entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </informaltable>  
-    </para>
+  <simplesect>
+    <title>Introduction</title>
     
+	  <para>Particle properties, which are data values associated with every particle, play a central role in OVITO.
+	  For example, a particle's position, its type, or its velocity vector are all properties managed by OVITO.
+	  Such properties can be read from the imported simulation file, or they can be computed within OVITO.
+	  <link linkend="usage.modification_pipeline">Modifiers</link>, which are applied to the simulation data by the user, 
+	  have read or write access to existing particle properties and can compute and assign new properties to particles. 
+	  For instance, the <link linkend="particles.modifiers.coordination_analysis">Coordination Analysis modifier</link> 
+	  computes the number of neighbors of each particle and stores this number in the <literal>Coordination number</literal> 
+	  particle property. 
+	  </para>
+	  
+	  <para>
+	  Internally, a particle property is stored as a data array with one entry per particle. 
+	  A single entry can hold a number or a more complex data type such as a vector or a tensor.
+	  The <literal>Position</literal> property, for instance, stores vectors with three components.
+	  The individual components are referred to as <literal>Position.X</literal>, <literal>Position.Y</literal>, 
+	  and <literal>Position.Z</literal> in OVITO's user interface. 
+	  </para>
+  </simplesect>
+
+  <simplesect>
+    <title>Standard properties</title>
+
+	  <para>One can further distinguish two types of particle properties: Standard properties and user-defined properties.
+	  Standard properties have a predefined name, data type, and a specific meaning.
+	  The standard property <literal>Position</literal>, for instance, is used by OVITO to store the coordinates
+	  of particles while the <literal>Color</literal> property stores the colors used to render
+	  particles. User-defined properties, in contrast, simply store arbitrary per-particle data generated externally 
+	  (e.g. by the simulation code) or within OVITO. This data is not interpreted by OVITO in a specific way, 
+	  but it can be used within the program to <link linkend="particles.modifiers.expression_select">select particles</link>,
+	  to <link linkend="particles.modifiers.color_coding">color particles</link>, or to <link linkend="particles.modifiers.compute_property">perform other computations</link>.
+	  </para>
+	
+	  <para>As explained above, some properties have a special meaning and control how OVITO displays particles. 
+	  The following table lists some important standard properties and their function:
+	   <informaltable>
+	        <tgroup cols="3">
+				<colspec colnum="1" colname="name" colwidth="2*" />
+				<colspec colnum="2" colname="datatype" colwidth="1*" />
+				<colspec colnum="3" colname="description" colwidth="4*" />
+	          <thead>
+	            <row>
+	              <entry>Standard property</entry>
+	              <entry>Data type / Components</entry>
+	              <entry>Description</entry>
+	            </row>
+	          </thead>
+	
+	          <tbody>
+	            <row>
+	              <entry><literal>Position</literal></entry>
+	              <entry>X, Y, Z</entry>
+	              <entry><para>Controls the locations of particles in space.</para></entry>
+	            </row>
+	            <row>
+	              <entry><literal>Color</literal></entry>
+	              <entry>R, G, B</entry>
+	              <entry><para>Controls the display color of individual particles.</para></entry>
+	            </row>
+	            <row>
+	              <entry><literal>Radius</literal></entry>
+	              <entry>Real</entry>
+	              <entry><para>Controls the size of individual particles.</para></entry>
+	            </row>
+	            <row>
+	              <entry><literal>Particle Type</literal></entry>
+	              <entry>Integer</entry>
+	              <entry><para>Stores the type identifier of each particle. This will also determine the display size and color of 
+	              particles unless the <emphasis>Radius</emphasis> or <emphasis>Color</emphasis> properties are present.</para></entry>
+	            </row>
+	            <row>
+	              <entry><literal>Particle Identifier</literal></entry>
+	              <entry>Integer</entry>
+	              <entry><para>Stores the unique ID of each particle. This is used by some modifiers
+	              to track particles over time when the storage order of particles changes between simulation
+	              frames.</para></entry>
+	            </row>
+	            <row>
+	              <entry><literal>Selection</literal></entry>
+	              <entry>Integer</entry>
+	              <entry><para>Stores the selection state of particles (1 for selected particles; 0 otherwise).</para></entry>
+	            </row>
+	          </tbody>
+	        </tgroup>
+	      </informaltable>  
+	    </para>
+  </simplesect>    
+
+  <simplesect>
+    <title>Input and output</title>
     <para>
-    User-defined particles properties are created by OVITO when loading a simulation file with
-    data columns that cannot be mapped to any of the standard property types. While OVITO itself does 
-    not interpret such user-defined properties, they can still be 
-    used as input for modifiers, e.g. the <link linkend="particles.modifiers.color_coding">Color Coding</link> modifier.
+       Most file formats used by simulation codes support an arbitrary number of 
+       per-particle properties, which are stored in individual file columns in a user-defined order. 
+       When loading such a file into OVITO, the columns of the file must be mapped to OVITO's internal particle properties. It most cases this 
+       happens automatically based on the metadata found in the file's header.
     </para>
+    <para>
+       Files in the XYZ format are an exception since they contain no metadata that could help OVITO to
+       interpret the file's columns. When opening such a file, the program displays a dialog box to let the
+       user specify the mapping of columns to internal particle properties. A similar step is necessary when 
+       <link linkend="usage.export">exporting particle data to a file</link>: 
+       The user has to specify which particle properties to export and in which order.
+    </para>
+  </simplesect>
 
 </section>

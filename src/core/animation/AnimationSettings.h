@@ -34,13 +34,10 @@
 namespace Ovito {
 
 /**
- * \brief This class stores the animation settings for a scene.
+ * \brief This class stores the animation settings of a scene.
  * 
  * Each DataSet has an instance of this class associated with it. It
  * can be accessed via DataSet::animationSettings().
- * 
- * To access the animation settings of the current scene you can also use
- * the methods of AnimManager.
  */
 class OVITO_CORE_EXPORT AnimationSettings : public RefTarget
 {
@@ -112,6 +109,25 @@ public:
 	/// This setting controls the playback speed of the animation.
 	/// \sa ticksPerFrame()
 	void setTicksPerFrame(int ticksPerFrame) { _ticksPerFrame = ticksPerFrame; }
+
+	/// \brief Gets the current animation frame.
+	/// \return The current frame.
+	int currentFrame() const { return timeToFrame(time()); }
+
+	/// \brief Jumps to the given animation frame by changing the current animation time.
+	void setCurrentFrame(int frame) { setTime(frameToTime(frame)); }
+
+	/// \brief Returns the number of the last frame of the active animation interval.
+	int lastFrame() const { return timeToFrame(animationInterval().end()); }
+
+	/// \brief Changes the length of the active animation interval by setting the interval end to the given frame.
+	void setLastFrame(int frame) { setAnimationInterval(TimeInterval(animationInterval().start(), frameToTime(frame))); }
+
+	/// \brief Returns the number of the first frame of the active animation interval.
+	int firstFrame() const { return timeToFrame(animationInterval().start()); }
+
+	/// \brief Changes the length of the active animation interval by setting the interval start to the given frame.
+	void setFirstFrame(int frame) { setAnimationInterval(TimeInterval(frameToTime(frame), animationInterval().end())); }
 
 	/// \brief Converts an animation frame number to a time value.
 	/// \param frame A frame number starting at 0.
@@ -198,6 +214,18 @@ public:
 	/// \brief Indicates whether the animation has recently been changed, and the scene
 	///        is still being prepared for display of the new frame.
 	bool isTimeChanging() const { return _timeIsChanging != 0; }
+
+public:
+
+	Q_PROPERTY(TimePoint time READ time WRITE setTime);
+	Q_PROPERTY(int currentFrame READ currentFrame WRITE setCurrentFrame);
+	Q_PROPERTY(int firstFrame READ firstFrame WRITE setFirstFrame);
+	Q_PROPERTY(int lastFrame READ lastFrame WRITE setLastFrame);
+	Q_PROPERTY(int ticksPerFrame READ ticksPerFrame WRITE setTicksPerFrame);
+	Q_PROPERTY(TimeInterval animationInterval READ animationInterval WRITE setAnimationInterval);
+	Q_PROPERTY(int framesPerSecond READ framesPerSecond WRITE setFramesPerSecond);
+	Q_PROPERTY(int playbackSpeed READ playbackSpeed WRITE setPlaybackSpeed);
+	Q_PROPERTY(bool autoKeyMode READ autoKeyMode WRITE setAutoKeyMode);
 
 public Q_SLOTS:
 

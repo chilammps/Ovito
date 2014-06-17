@@ -100,7 +100,7 @@ Rollout::Rollout(QWidget* parent, QWidget* content, const QString& title, const 
 	// Insert contents.
 	_content->setParent(this);
 	_content->setVisible(true);
-	connect(_content, SIGNAL(destroyed(QObject*)), this, SLOT(deleteLater()));
+	connect(_content.data(), &QWidget::destroyed, this, &Rollout::deleteLater);
 
 	// Set up title button.
 	_titleButton = new QPushButton(title, this);
@@ -118,7 +118,7 @@ Rollout::Rollout(QWidget* parent, QWidget* content, const QString& title, const 
 							   "QPushButton:pressed { "
 							   "  border-color: white; "
 							   "}");
-	connect(_titleButton, SIGNAL(clicked(bool)), this, SLOT(toggleCollapsed()));
+	connect(_titleButton, &QPushButton::clicked, this, &Rollout::toggleCollapsed);
 
 	if(helpPage) {
 		_helpButton = new QPushButton(QStringLiteral("?"), this);
@@ -138,7 +138,7 @@ Rollout::Rollout(QWidget* parent, QWidget* content, const QString& title, const 
 								   "QPushButton:pressed { "
 								   "  border-color: white; "
 								   "}");
-		connect(_helpButton, SIGNAL(clicked(bool)), this, SLOT(onHelpButton()));
+		connect(_helpButton, &QPushButton::clicked, this, &Rollout::onHelpButton);
 	}
 	else _helpButton = nullptr;
 

@@ -139,6 +139,19 @@ public:
 	/// \brief Returns the type of this property.
 	Type type() const { return _type; }
 
+	/// \brief Changes the type of this property.
+	/// \note The type may only be changed if the new property has the same
+	///       data type and component count as the old one.
+	void setType(Type newType) {
+		if(newType != UserProperty) {
+			OVITO_ASSERT(dataType() == standardPropertyDataType(newType));
+			OVITO_ASSERT(componentCount() == standardPropertyComponentCount(newType));
+			setName(standardPropertyName(newType));
+			_componentNames = standardPropertyComponentNames(newType);
+		}
+		_type = newType;
+	}
+
 	/// \brief Returns the data type of the property.
 	/// \return The identifier of the data type used for the elements stored in
 	///         this property storage according to the Qt meta type system.

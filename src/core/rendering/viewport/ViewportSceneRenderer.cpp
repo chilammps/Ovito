@@ -32,12 +32,12 @@
 #include <core/gui/mainwin/MainWindow.h>
 #include <core/gui/app/Application.h>
 #include "ViewportSceneRenderer.h"
-#include "ViewportLineGeometryBuffer.h"
-#include "ViewportParticleGeometryBuffer.h"
-#include "ViewportTextGeometryBuffer.h"
-#include "ViewportImageGeometryBuffer.h"
-#include "ViewportArrowGeometryBuffer.h"
-#include "ViewportTriMeshGeometryBuffer.h"
+#include "OpenGLLinePrimitive.h"
+#include "OpenGLParticlePrimitive.h"
+#include "OpenGLTextPrimitive.h"
+#include "OpenGLImagePrimitive.h"
+#include "OpenGLArrowPrimitive.h"
+#include "OpenGLMeshPrimitive.h"
 
 namespace Ovito {
 
@@ -70,11 +70,6 @@ QSurfaceFormat ViewportSceneRenderer::getDefaultSurfaceFormat()
 		format.setOption(QSurfaceFormat::DeprecatedFunctions);
 	}
 	format.setStencilBufferSize(1);
-#if 0
-#ifdef OVITO_DEBUG
-	format.setOption(QSurfaceFormat::DebugContext);
-#endif
-#endif
 	return format;
 }
 
@@ -92,9 +87,12 @@ void ViewportSceneRenderer::beginFrame(TimePoint time, const ViewProjectionParam
 	if(!_glcontext)
 		throw Exception(tr("Cannot render scene: There is no active OpenGL context"));
 
+	// Obtain surface format.
 	OVITO_CHECK_OPENGL();
+	_glformat = _glcontext->format();
 
 	// Obtain a functions object that allows to call basic OpenGL functions in a platform-independent way.
+	OVITO_CHECK_OPENGL();
 	_glFunctions = _glcontext->functions();
 
 	// Obtain a functions object that allows to call OpenGL 2.0 functions in a platform-independent way.
@@ -115,20 +113,22 @@ void ViewportSceneRenderer::beginFrame(TimePoint time, const ViewProjectionParam
 	if(!_glFunctions20 && !_glFunctions30 && !_glFunctions32)
 		throw Exception(tr("Could not resolve OpenGL functions. Invalid OpenGL context."));
 
-	// Obtain surface format.
-	_glformat = _glcontext->format();
-
 	// Check if this context implements the core profile.
 	_isCoreProfile = (_glformat.profile() == QSurfaceFormat::CoreProfile)
 			|| (glformat().majorVersion() > 3)
 			|| (glformat().majorVersion() == 3 && glformat().minorVersion() >= 2);
 
 	// Qt reports the core profile only for OpenGL >= 3.2. Assume core profile also for 3.1 contexts.
-	if(glformat().majorVersion() == 3 && glformat().minorVersion() == 1 && _glformat.profile() != QSurfaceFormat::CompatibilityProfile) {
+	if(glformat().majorVersion() == 3 && glformat().minorVersion() == 1 && _glformat.profile() != QSurfaceFormat::CompatibilityProfile)
 		_isCoreProfile = true;
-	}
 
-	// Set up a vertex array object. This is only required when using OpenGL Core Profile.
+	// Determine whether it's okay to use point sprites.
+	_usePointSprites = ViewportWindow::pointSpritesEnabled();
+
+	// Determine whether its okay to use geometry shaders.
+	_useGeometryShaders = QOpenGLShader::hasOpenGLShaders(QOpenGLShader::Geometry);
+
+	// Set up a vertex array object (VAO). An active VAO is required during rendering according to the OpenGL core profile.
 	if(glformat().majorVersion() >= 3) {
 		_vertexArrayObject.reset(new QOpenGLVertexArrayObject());
 		OVITO_CHECK_OPENGL(_vertexArrayObject->create());
@@ -138,8 +138,10 @@ void ViewportSceneRenderer::beginFrame(TimePoint time, const ViewProjectionParam
 
 	// Set viewport background color.
 	OVITO_CHECK_OPENGL();
-	Color backgroundColor = Viewport::viewportColor(ViewportSettings::COLOR_VIEWPORT_BKG);
-	OVITO_CHECK_OPENGL(glClearColor(backgroundColor.r(), backgroundColor.g(), backgroundColor.b(), 1));
+	if(isInteractive()) {
+		Color backgroundColor = Viewport::viewportColor(ViewportSettings::COLOR_VIEWPORT_BKG);
+		OVITO_CHECK_OPENGL(glClearColor(backgroundColor.r(), backgroundColor.g(), backgroundColor.b(), 1));
+	}
 }
 
 /******************************************************************************
@@ -161,10 +163,18 @@ bool ViewportSceneRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialo
 {
 	OVITO_ASSERT(_glcontext == QOpenGLContext::currentContext());
 
-	// Clear background.
+	// Set up OpenGL state.
 	OVITO_CHECK_OPENGL();
-	OVITO_CHECK_OPENGL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+	OVITO_CHECK_OPENGL(glDisable(GL_STENCIL_TEST));
 	OVITO_CHECK_OPENGL(glEnable(GL_DEPTH_TEST));
+	OVITO_CHECK_OPENGL(glDepthFunc(GL_LESS));
+	OVITO_CHECK_OPENGL(glDepthRange(0, 1));
+	OVITO_CHECK_OPENGL(glDepthMask(GL_TRUE));
+	OVITO_CHECK_OPENGL(glClearDepth(1));
+	OVITO_CHECK_OPENGL(glDisable(GL_SCISSOR_TEST));
+
+	// Clear background.
+	OVITO_CHECK_OPENGL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT));
 
 	renderScene();
 
@@ -247,51 +257,51 @@ const char* ViewportSceneRenderer::openglErrorString(GLenum errorCode)
 /******************************************************************************
 * Requests a new line geometry buffer from the renderer.
 ******************************************************************************/
-std::unique_ptr<LineGeometryBuffer> ViewportSceneRenderer::createLineGeometryBuffer()
+std::unique_ptr<LinePrimitive> ViewportSceneRenderer::createLinePrimitive()
 {
-	return std::unique_ptr<LineGeometryBuffer>{ new ViewportLineGeometryBuffer(this) };
+	return std::unique_ptr<LinePrimitive>{ new OpenGLLinePrimitive(this) };
 }
 
 /******************************************************************************
 * Requests a new particle geometry buffer from the renderer.
 ******************************************************************************/
-std::unique_ptr<ParticleGeometryBuffer> ViewportSceneRenderer::createParticleGeometryBuffer(ParticleGeometryBuffer::ShadingMode shadingMode,
-		ParticleGeometryBuffer::RenderingQuality renderingQuality, ParticleGeometryBuffer::ParticleShape shape) {
-	return std::unique_ptr<ParticleGeometryBuffer>{ new ViewportParticleGeometryBuffer(this, shadingMode, renderingQuality, shape) };
+std::unique_ptr<ParticlePrimitive> ViewportSceneRenderer::createParticlePrimitive(ParticlePrimitive::ShadingMode shadingMode,
+		ParticlePrimitive::RenderingQuality renderingQuality, ParticlePrimitive::ParticleShape shape) {
+	return std::unique_ptr<ParticlePrimitive>{ new OpenGLParticlePrimitive(this, shadingMode, renderingQuality, shape) };
 }
 
 /******************************************************************************
 * Requests a new text geometry buffer from the renderer.
 ******************************************************************************/
-std::unique_ptr<TextGeometryBuffer> ViewportSceneRenderer::createTextGeometryBuffer()
+std::unique_ptr<TextPrimitive> ViewportSceneRenderer::createTextPrimitive()
 {
-	return std::unique_ptr<TextGeometryBuffer>{ new ViewportTextGeometryBuffer(this) };
+	return std::unique_ptr<TextPrimitive>{ new OpenGLTextPrimitive(this) };
 }
 
 /******************************************************************************
 * Requests a new image geometry buffer from the renderer.
 ******************************************************************************/
-std::unique_ptr<ImageGeometryBuffer> ViewportSceneRenderer::createImageGeometryBuffer()
+std::unique_ptr<ImagePrimitive> ViewportSceneRenderer::createImagePrimitive()
 {
-	return std::unique_ptr<ImageGeometryBuffer>{ new ViewportImageGeometryBuffer(this) };
+	return std::unique_ptr<ImagePrimitive>{ new OpenGLImagePrimitive(this) };
 }
 
 /******************************************************************************
 * Requests a new arrow geometry buffer from the renderer.
 ******************************************************************************/
-std::unique_ptr<ArrowGeometryBuffer> ViewportSceneRenderer::createArrowGeometryBuffer(ArrowGeometryBuffer::Shape shape,
-		ArrowGeometryBuffer::ShadingMode shadingMode,
-		ArrowGeometryBuffer::RenderingQuality renderingQuality)
+std::unique_ptr<ArrowPrimitive> ViewportSceneRenderer::createArrowPrimitive(ArrowPrimitive::Shape shape,
+		ArrowPrimitive::ShadingMode shadingMode,
+		ArrowPrimitive::RenderingQuality renderingQuality)
 {
-	return std::unique_ptr<ArrowGeometryBuffer>{ new ViewportArrowGeometryBuffer(this, shape, shadingMode, renderingQuality) };
+	return std::unique_ptr<ArrowPrimitive>{ new OpenGLArrowPrimitive(this, shape, shadingMode, renderingQuality) };
 }
 
 /******************************************************************************
 * Requests a new triangle mesh buffer from the renderer.
 ******************************************************************************/
-std::unique_ptr<TriMeshGeometryBuffer> ViewportSceneRenderer::createTriMeshGeometryBuffer()
+std::unique_ptr<MeshPrimitive> ViewportSceneRenderer::createMeshPrimitive()
 {
-	return std::unique_ptr<TriMeshGeometryBuffer>{ new ViewportTriMeshGeometryBuffer(this) };
+	return std::unique_ptr<MeshPrimitive>{ new OpenGLMeshPrimitive(this) };
 }
 
 /******************************************************************************
@@ -387,7 +397,7 @@ Box3 ViewportSceneRenderer::boundingBoxInteractive(TimePoint time, Viewport* vie
 				if(displayObj && displayObj->isEnabled()) {
 					TimeInterval interval;
 					bb.addBox(displayObj->viewDependentBoundingBox(time, viewport,
-							sceneObj.get(), node, state).transformed(node->getWorldTransform(time, interval)));
+							sceneObj, node, state).transformed(node->getWorldTransform(time, interval)));
 				}
 			}
 		}
@@ -450,6 +460,7 @@ QOpenGLShaderProgram* ViewportSceneRenderer::loadShaderProgram(const QString& id
 
 	// Load and compile geometry shader source.
 	if(!geometryShaderFile.isEmpty()) {
+		OVITO_ASSERT(useGeometryShaders());
 		loadShader(program.data(), QOpenGLShader::Geometry, geometryShaderFile);
 	}
 
@@ -601,11 +612,11 @@ void ViewportSceneRenderer::render2DPolyline(const Point2* points, int count, co
 /******************************************************************************
 * Makes vertex IDs available to the shader.
 ******************************************************************************/
-void ViewportSceneRenderer::activateVertexIDs(QOpenGLShaderProgram* shader, GLint vertexCount)
+void ViewportSceneRenderer::activateVertexIDs(QOpenGLShaderProgram* shader, GLint vertexCount, bool alwaysUseVBO)
 {
 	// Older OpenGL implementations do not provide the built-in gl_VertexID shader
 	// variable. Therefore we have to provide the IDs in a vertex buffer.
-	if(glformat().majorVersion() < 3) {
+	if(glformat().majorVersion() < 3 || alwaysUseVBO) {
 		if(!_glVertexIDBuffer.isCreated() || _glVertexIDBufferSize < vertexCount) {
 			if(!_glVertexIDBuffer.isCreated()) {
 				// Create the ID buffer only once and keep it until the number of particles changes.
@@ -642,9 +653,9 @@ void ViewportSceneRenderer::activateVertexIDs(QOpenGLShaderProgram* shader, GLin
 /******************************************************************************
 * Disables vertex IDs.
 ******************************************************************************/
-void ViewportSceneRenderer::deactivateVertexIDs(QOpenGLShaderProgram* shader)
+void ViewportSceneRenderer::deactivateVertexIDs(QOpenGLShaderProgram* shader, bool alwaysUseVBO)
 {
-	if(glformat().majorVersion() < 3)
+	if(glformat().majorVersion() < 3 || alwaysUseVBO)
 		shader->disableAttributeArray("vertexID");
 }
 
@@ -764,7 +775,7 @@ void ViewportSceneRenderer::renderGrid()
 	// Render grid lines.
 	setWorldTransform(viewport()->gridMatrix());
 	if(!_constructionGridGeometry || !_constructionGridGeometry->isValid(this))
-		_constructionGridGeometry = createLineGeometryBuffer();
+		_constructionGridGeometry = createLinePrimitive();
 	_constructionGridGeometry->setVertexCount(numVertices);
 	_constructionGridGeometry->setVertexPositions(vertexPositions.get());
 	_constructionGridGeometry->setVertexColors(vertexColors.get());

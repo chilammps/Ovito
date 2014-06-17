@@ -134,7 +134,7 @@ void StructurePatternEditor::createUI(const RolloutInsertionParameters& rolloutP
 	familiesListUI = new CustomRefTargetListParameterUI(this, PROPERTY_FIELD(StructurePattern::_burgersVectorFamilies));
 	layout1->addWidget(familiesListUI->tableWidget(200));
 	familiesListUI->tableWidget()->setAutoScroll(false);
-	connect(familiesListUI->tableWidget(), SIGNAL(doubleClicked(const QModelIndex&)), this, SLOT(onDoubleClickBurgersFamily(const QModelIndex&)));
+	connect(familiesListUI->tableWidget(), &QTableWidget::doubleClicked, this, &StructurePatternEditor::onDoubleClickBurgersFamily);
 }
 
 /******************************************************************************

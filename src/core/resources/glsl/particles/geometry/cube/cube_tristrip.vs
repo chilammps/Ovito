@@ -22,6 +22,7 @@
 // Inputs from calling program:
 uniform mat4 modelview_matrix;
 uniform mat4 projection_matrix;
+uniform mat4 modelviewprojection_matrix;
 uniform mat3 normal_matrix;
 uniform vec3 cubeVerts[14];
 uniform vec3 normals[14];
@@ -44,31 +45,33 @@ uniform vec3 normals[14];
 	attribute float vertexID;
 
 	// Outputs to fragment shader
-	varying vec3 surface_normal_fs;
+	#define ec_pos gl_TexCoord[1].xyz
 
 #endif
 
 void main()
 {
 #if __VERSION__ >= 130
+
 	// Forward color to fragment shader.
 	particle_color_fs = vec4(color, 1);
 
 	// Transform and project vertex.
 	int cubeCorner = gl_VertexID % 14;
-	gl_Position = projection_matrix * modelview_matrix * vec4(position + cubeVerts[cubeCorner] * particle_radius, 1);
+	gl_Position = modelviewprojection_matrix * vec4(position + cubeVerts[cubeCorner] * particle_radius, 1);
 
 	// Determine face normal.
 	surface_normal_fs = normal_matrix * normals[cubeCorner];
+
 #else
+
 	// Forward color to fragment shader.
 	gl_FrontColor = gl_Color;
 
 	// Transform and project vertex.
-	int cubeCorner = int(floor(int(vertexID) - 14 * floor(int(vertexID) / 14 + 0.5) + 0.5));
-	gl_Position = projection_matrix * modelview_matrix * (gl_Vertex + vec4(cubeVerts[cubeCorner] * particle_radius, 0));
+	int cubeCorner = int(mod(vertexID+0.5, 14.0));
+	ec_pos = (modelview_matrix * vec4(gl_Vertex.xyz + cubeVerts[cubeCorner] * particle_radius, 1)).xyz;
+	gl_Position = projection_matrix * vec4(ec_pos,1);
 
-	// Determine face normal.
-	surface_normal_fs = normal_matrix * normals[cubeCorner];
 #endif
 }

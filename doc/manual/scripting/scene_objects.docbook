@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<section version="5.0"
+         xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xml:id="scripting.scene_objects" xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title>Working with modifiers</title>
+
+  <simplesect xml:id="scripting.scene_objects.apply_modifier">
+  	<title>Applying new modifiers</title> 
+    <para>
+  	    The <link linkend="scripting.input_output.load"><code>load()</code></link> script function returns a reference to the imported object, a so-called <emphasis>scene node</emphasis> 
+  	    that combines the data source (i.e the reference to the external simulation file) and a modification pipeline, which processes the input data before it is displayed on screen. 
+  	    You can populate the node's modification pipeline with modifiers as follows:
+  	    <informalexample><programlisting language="javascript"><![CDATA[
+// Load an external data file. 
+// This creates a new object in OVITO with an attached modification pipeline.
+node = load("simulation.dump")
+
+// Insert a new modifier using the applyModifier() function:
+node.applyModifier(new SelectExpressionModifier({ expression : "PotentialEnergy < -3.9" }))
+node.applyModifier(new DeleteParticlesModifier())]]>
+</programlisting></informalexample>
+
+		The <code>applyModifier()</code> method appends a modifier to the modification pipeline. The new modifier passed to this function is created by the script using 
+		the <code>new</code> keyword. This is the standard way of creating new objects in JavaScript.
+		The following modifier types are available in OVITO:
+    </para> 
+    <para>
+    	<link linkend="scripting.modifiers.affine_transformation"><code>AffineTransformationModifier</code></link>, 
+    	<link linkend="scripting.modifiers.ambient_occlusion"><code>AmbientOcclusionModifier</code></link>, 
+    	<link linkend="scripting.modifiers.assign_color"><code>AssignColorModifier</code></link>, 
+    	<link linkend="scripting.modifiers.atomic_strain"><code>AtomicStrainModifier</code></link>, 
+    	<link linkend="scripting.modifiers.bond_angle_analysis"><code>BondAngleAnalysisModifier</code></link>, 
+    	<link linkend="scripting.modifiers.displacement_vectors"><code>CalculateDisplacementsModifier</code></link>, 
+    	<link linkend="scripting.modifiers.centrosymmetry"><code>CentroSymmetryModifier</code></link>, 
+    	<code>ClearSelectionModifier</code>, 
+    	<link linkend="scripting.modifiers.cluster_analysis"><code>ClusterAnalysisModifier</code></link>, 
+    	<link linkend="scripting.modifiers.color_coding"><code>ColorCodingModifier</code></link>, 
+    	<link linkend="scripting.modifiers.common_neighbor_analysis"><code>CommonNeighborAnalysisModifier</code></link>, 
+    	<link linkend="scripting.modifiers.construct_surface_mesh"><code>ConstructSurfaceModifier</code></link>,
+    	<link linkend="scripting.modifiers.coordination_analysis"><code>CoordinationNumberModifier</code></link>, 
+    	<link linkend="scripting.modifiers.create_bonds"><code>CreateBondsModifier</code></link>,
+    	<link linkend="scripting.modifiers.compute_property"><code>CreateExpressionPropertyModifier</code></link>, 
+    	<code>DeleteParticlesModifier</code>, 
+    	<code>FreezeSelectionModifier</code>, 
+    	<link linkend="scripting.modifiers.freeze_property"><code>FreezePropertyModifier</code></link>, 
+    	<code>HistogramModifier</code>, 
+    	<code>InvertSelectionModifier</code>, 
+    	<code>ManualSelectionModifier</code>,
+    	<code>ScatterPlotModifier</code>,
+    	<link linkend="scripting.modifiers.expression_select"><code>SelectExpressionModifier</code></link>, 
+    	<code>SelectParticleTypeModifier</code>, 
+    	<link linkend="scripting.modifiers.show_periodic_images"><code>ShowPeriodicImagesModifier</code></link>, 
+    	<link linkend="scripting.modifiers.slice"><code>SliceModifier</code></link>, 
+    	<link linkend="scripting.modifiers.wigner_seitz_analysis"><code>WignerSeitzAnalysisModifier</code></link>,
+    	<code>WrapPeriodicImagesModifier</code>
+    </para>
+    <para>
+        A constructor function accepts an optional object literal, which can be used to initialize the modifier's parameters as demonstrated in the preceding example. 
+        Alternatively, you can change individual parameters after having created the modifier (It doesn't matter whether you do this before or after inserting the modifier into the pipeline):
+  	    <informalexample><programlisting language="javascript"><![CDATA[
+modifier = new SelectExpressionModifier()
+node.applyModifier(modifier)
+modifier.expression = "PotentialEnergy < -3.9"]]>
+</programlisting></informalexample>
+    </para> 
+  </simplesect>
+
+  <simplesect xml:id="scripting.scene_objects.modifiers">
+  	<title>Accessing the modification pipeline</title> 
+    <para>
+       Each scene node has a <code>modifiers</code> array property, which lists the existing modifiers in the associated modification pipeline:
+  	    <informalexample><programlisting language="javascript"><![CDATA[
+// Print the list of modifiers in the modification pipeline of the selected scene node:
+node = ovito.selectedNode
+for(var i = 0; i < node.modifiers.length; i++)
+    print(node.modifiers[i])]]>
+</programlisting></informalexample>
+    </para>
+  </simplesect>
+
+  <simplesect xml:id="scripting.scene_objects.wait">
+  	<title>The <code>wait()</code> function</title> 
+    <para>
+       OVITO uses an asynchronous (and multi-threaded) evaluation model to compute the results of the modification pipeline. This allows the user to continue working
+       with the program while it is still computing the results of modifiers that take a long time to evaluate. 
+       Not all modifiers take part in this asynchronous evaluation model: 
+       Simple and inexpensive modifiers, like the <link linkend="particles.modifiers.select_particle_type">Select particle type modifier</link>, 
+       are processed immediately. Computationally more expensive analysis modifier such as the <link linkend="particles.modifiers.coordination_analysis">Coordination analysis modifier</link>,
+       which potentially take a long time to compute for large systems, are evaluated asynchronously.
+    </para>
+    <para>
+       That means, if you want to access the results of such a modifier from a script, you have to wait until OVITO has finished computing them. This can be achieved with the 
+       <code>wait()</code> script function. For example:
+  	    <informalexample><programlisting language="javascript"><![CDATA[
+// Insert an analysis modifier, which takes long to compute:
+modifier = new CommonNeighborAnalysisModifier({ cutoff : 3.2, adaptiveMode : false })
+node.applyModifier(modifier)
+
+// Wait until calculation has been completed. 
+wait()
+
+// Now it's safe to read out the modifier's results:
+numFCC = modifier.structureCounts[CommonNeighborAnalysisModifier.FCC]
+print("Number of FCC atoms: " + numFCC)]]>
+</programlisting></informalexample>
+In this example, we read out the <code>structureCounts</code> array of the CNA modifier, which contains the number of particles identified by the modifier for each known structure type.
+If we had accessed this output array without calling <code>wait()</code> first, it would contain invalid or old data since the analysis would still be in progress.
+    </para>  
+    <para>
+       Calling the <code>wait()</code> function is only necessary when accessing output properties of analysis modifiers. It is <emphasis>not</emphasis> necessary
+       when <link linkend="scripting.rendering">rendering a picture</link> of the dataset or when exporting the processed particles to an output file using <link linkend="scripting.input_output.save"><code>save()</code></link>. 
+       In these cases, OVITO will implicitly call the <code>wait()</code> function to make sure the modification pipeline has been fully evaluated.
+    </para>
+    <para>
+       Loading a dataset from an external file is also an asynchronous operation, similar to evaluating analysis modifiers. Accordingly, you can also use the 
+       <code>wait()</code> function to block script execution until a dataset has been fully loaded and is ready to be fed into the modification pipeline.
+       This may be useful in some situations, for instance when inserting the <link linkend="particles.modifiers.slice">Slice modifier</link>. This modifier automatically
+       positions the slicing plane in the center of the simulation cell when it is first inserted into the modification pipeline. This automatic initialization only works
+       if the simulation cell has already been loaded from the file at the time the modifier is inserted into the pipeline. The following example demonstrates
+       how to explicitly synchronize these steps using the <code>wait()</code> function:
+  	    <informalexample><programlisting language="javascript"><![CDATA[
+// Start loading a data file (asynchronously):
+node = load("simulation.dump")
+
+// Block script execution until data has been completely loaded and the simulation cell geometry is known.  
+wait()
+
+// Now insert the Slice modifier using default parameters, which will position 
+// the slicing plane in the center of the simulation cell:
+node.applyModifier(new SliceModifier())]]>
+</programlisting></informalexample>
+	   Note that use of the <code>wait()</code> function would not have been necessary here if we had positioned the slicing plane explicitly from our script.
+    </para>
+  </simplesect>
+    
+</section>

@@ -168,7 +168,7 @@ void POSCARImporter::POSCARImportTask::parseFile(FutureInterfaceBase& futureInte
 		}
 	}
 
-	// Parse coordinate system for velocity vectors.
+	// Parse file for velocity vectors.
 	if(!stream.eof())
 		stream.readLine();
 	if(!stream.eof() && stream.line()[0] != '\0') {

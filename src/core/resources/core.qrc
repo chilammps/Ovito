@@ -75,6 +75,10 @@
 	<file>mainwin/status/status_none.png</file>
 	<file>mainwin/status/status_pending.gif</file>
 	
+	<file>mainwin/settings/vertical_axis_x.png</file>
+	<file>mainwin/settings/vertical_axis_y.png</file>
+	<file>mainwin/settings/vertical_axis_z.png</file>
+	
 	<file>actions/modify/modifier_enabled.png</file>
 	<file>actions/modify/modifier_disabled.png</file>
 	<file>actions/modify/modifier_enabled_large.png</file>
@@ -107,12 +111,20 @@
 	<file>glsl/particles/imposter/sphere/flat_shading.fs</file>
 	<file>glsl/particles/imposter/sphere/with_depth.fs</file>
 	<file>glsl/particles/imposter/sphere/with_depth.vs</file>
+	<file>glsl/particles/imposter/sphere/with_depth_tri.vs</file>
+	<file>glsl/particles/imposter/sphere/with_depth.gs</file>
 	<file>glsl/particles/imposter/sphere/without_depth.fs</file>
 	<file>glsl/particles/imposter/sphere/without_depth.vs</file>
+	<file>glsl/particles/imposter/sphere/without_depth_tri.vs</file>
+	<file>glsl/particles/imposter/sphere/without_depth.gs</file>
 	<file>glsl/particles/imposter/sphere/picking/flat_shading.fs</file>
 	<file>glsl/particles/imposter/sphere/picking/with_depth.fs</file>
 	<file>glsl/particles/imposter/sphere/picking/with_depth.vs</file>
+	<file>glsl/particles/imposter/sphere/picking/with_depth_tri.vs</file>
+	<file>glsl/particles/imposter/sphere/picking/with_depth.gs</file>
 	<file>glsl/particles/imposter/sphere/picking/without_depth.vs</file>
+	<file>glsl/particles/imposter/sphere/picking/without_depth_tri.vs</file>
+	<file>glsl/particles/imposter/sphere/picking/without_depth.gs</file>
 	
 	<file>glsl/particles/geometry/sphere/sphere.fs</file>
 	<file>glsl/particles/geometry/sphere/sphere.vs</file>
@@ -156,10 +168,10 @@
 	<file>glsl/lines/picking/line.vs</file>
 	<file>glsl/lines/picking/line.fs</file>
 	<file>glsl/lines/picking/thick_line.vs</file>
-	<file>glsl/text.vertex.glsl</file>
-	<file>glsl/text.fragment.glsl</file>
-	<file>glsl/image.vertex.glsl</file>
-	<file>glsl/image.fragment.glsl</file>
+	<file>glsl/text/text.vs</file>
+	<file>glsl/text/text.fs</file>
+	<file>glsl/image/image.vs</file>
+	<file>glsl/image/image.fs</file>
 	
 	<file>3dicons/camera.ply</file>
 

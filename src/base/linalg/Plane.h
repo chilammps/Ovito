@@ -21,7 +21,7 @@
 
 /**
  * \file Plane.h
- * \brief Contains definition of the Ovito::Plane_3 template class.
+ * \brief Contains the definition of the Ovito::Plane_3 class template.
  */
 
 #ifndef __OVITO_PLANE_H
@@ -261,6 +261,18 @@ inline LoadStream& operator>>(LoadStream& stream, Plane_3<T>& p)
 	return stream >> p.normal >> p.dist;
 }
 
+/// \brief Writes a plane to a Qt data stream.
+template<typename T>
+inline QDataStream& operator<<(QDataStream& stream, const Plane_3<T>& p) {
+	return stream << p.normal << p.dist;
+}
+
+/// \brief Reads a plane from a Qt data stream.
+template<typename T>
+inline QDataStream& operator>>(QDataStream& stream, Plane_3<T>& p) {
+	return stream >> p.normal >> p.dist;
+}
+
 /**
  * \fn typedef Plane3
  * \brief Template class instance of the Plane_3 class used for floating-point planes.
@@ -270,6 +282,8 @@ typedef Plane_3<FloatType> Plane3;
 };	// End of namespace
 
 Q_DECLARE_METATYPE(Ovito::Plane3);
+Q_DECLARE_METATYPE(Ovito::Plane3*);
 Q_DECLARE_TYPEINFO(Ovito::Plane3, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Plane3*, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_PLANE_H

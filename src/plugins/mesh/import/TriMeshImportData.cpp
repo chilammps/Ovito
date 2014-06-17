@@ -64,14 +64,14 @@ QSet<SceneObject*> TriMeshImportData::insertIntoScene(LinkedFileObject* destinat
 
 		// Create a display object for the scene object.
 		OORef<TriMeshDisplay> triMeshDisplay = new TriMeshDisplay(destination->dataset());
-		triMeshObj->addDisplayObject(triMeshDisplay.get());
+		triMeshObj->addDisplayObject(triMeshDisplay);
 
-		destination->addSceneObject(triMeshObj.get());
+		destination->addSceneObject(triMeshObj);
 	}
 	triMeshObj->mesh() = mesh();
 	triMeshObj->notifyDependents(ReferenceEvent::TargetChanged);
 
-	return { triMeshObj.get() };
+	return { triMeshObj };
 }
 
 };

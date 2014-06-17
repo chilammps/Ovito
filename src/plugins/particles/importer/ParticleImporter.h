@@ -70,7 +70,7 @@ protected:
 	virtual void scanFileForTimesteps(FutureInterfaceBase& futureInterface, QVector<LinkedFileImporter::FrameSourceInformation>& frames, const QUrl& sourceUrl, CompressedTextParserStream& stream);
 
 	/// Retrieves the given file in the background and scans it for simulation timesteps.
-	virtual void scanMultiTimestepFile(FutureInterface<QVector<LinkedFileImporter::FrameSourceInformation>>& futureInterface, DataSetContainer& datasetContainer, const QUrl sourceUrl);
+	virtual QVector<LinkedFileImporter::FrameSourceInformation> scanMultiTimestepFile(FutureInterfaceBase& futureInterface, const QUrl sourceUrl);
 
 private:
 

@@ -24,14 +24,12 @@
 
 #include <core/Core.h>
 #include <core/gui/dialogs/ApplicationSettingsDialog.h>
-#include <core/gui/widgets/general/ColorPickerWidget.h>
 #include <core/viewport/ViewportSettings.h>
 
 namespace Ovito {
 
 /**
- * \brief A dialog page that is plugged into the application's settings dialog to let the user
- *        configure the general viewport settings.
+ * \brief Page of the application settings dialog, which hosts viewport-related program options.
  */
 class OVITO_CORE_EXPORT ViewportSettingsPage : public ApplicationSettingsPage
 {
@@ -47,26 +45,14 @@ public:
 	/// \param settingsDialog The settings dialog box.
 	virtual bool saveValues(ApplicationSettingsDialog* settingsDialog, QTabWidget* tabWidget) override;
 
-private Q_SLOTS:
-
-	/// Is called when the user selects another entry in the color list.
-	void onColorListItemChanged(QListWidgetItem* current, QListWidgetItem* previous);
-
-	/// Is called when the user has changed a viewport element color.
-	void onColorChanged();
-
-	/// Is called when the user clicks the "Restore defaults" button in the color section.
-	void onRestoreDefaultColors();
-
 private:
 
 	/// The settings object being modified.
 	ViewportSettings _settings;
 
 	QButtonGroup* _upDirectionGroup;
-	QListWidget* _colorList;
-	ColorPickerWidget* _colorPicker;
 	QCheckBox* _restrictVerticalRotationBox;
+	QButtonGroup* _colorScheme;
 
 	Q_OBJECT
 	OVITO_OBJECT

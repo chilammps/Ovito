@@ -150,7 +150,7 @@ protected:
 	virtual void retrieveModifierResults(Engine* engine) override;
 
 	/// This lets the modifier insert the previously computed results into the pipeline.
-	virtual ObjectStatus applyModifierResults(TimePoint time, TimeInterval& validityInterval) override;
+	virtual PipelineStatus applyModifierResults(TimePoint time, TimeInterval& validityInterval) override;
 
 	/// The mode of choosing the cutoff radius.
 	PropertyField<CutoffMode, int> _cutoffMode;

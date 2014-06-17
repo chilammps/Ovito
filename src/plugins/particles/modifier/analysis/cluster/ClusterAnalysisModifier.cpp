@@ -24,12 +24,12 @@
 
 namespace Particles {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ClusterAnalysisModifier, AsynchronousParticleModifier)
-IMPLEMENT_OVITO_OBJECT(Particles, ClusterAnalysisModifierEditor, ParticleModifierEditor)
-SET_OVITO_OBJECT_EDITOR(ClusterAnalysisModifier, ClusterAnalysisModifierEditor)
-DEFINE_FLAGS_PROPERTY_FIELD(ClusterAnalysisModifier, _cutoff, "Cutoff", PROPERTY_FIELD_MEMORIZE)
-SET_PROPERTY_FIELD_LABEL(ClusterAnalysisModifier, _cutoff, "Cutoff radius")
-SET_PROPERTY_FIELD_UNITS(ClusterAnalysisModifier, _cutoff, WorldParameterUnit)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ClusterAnalysisModifier, AsynchronousParticleModifier);
+IMPLEMENT_OVITO_OBJECT(Particles, ClusterAnalysisModifierEditor, ParticleModifierEditor);
+SET_OVITO_OBJECT_EDITOR(ClusterAnalysisModifier, ClusterAnalysisModifierEditor);
+DEFINE_FLAGS_PROPERTY_FIELD(ClusterAnalysisModifier, _cutoff, "Cutoff", PROPERTY_FIELD_MEMORIZE);
+SET_PROPERTY_FIELD_LABEL(ClusterAnalysisModifier, _cutoff, "Cutoff radius");
+SET_PROPERTY_FIELD_UNITS(ClusterAnalysisModifier, _cutoff, WorldParameterUnit);
 
 /******************************************************************************
 * Constructs the modifier object.
@@ -124,14 +124,14 @@ void ClusterAnalysisModifier::retrieveModifierResults(Engine* engine)
 /******************************************************************************
 * Inserts the computed and cached modifier results into the modification pipeline.
 ******************************************************************************/
-ObjectStatus ClusterAnalysisModifier::applyModifierResults(TimePoint time, TimeInterval& validityInterval)
+PipelineStatus ClusterAnalysisModifier::applyModifierResults(TimePoint time, TimeInterval& validityInterval)
 {
 	if(inputParticleCount() != particleClusters().size())
 		throw Exception(tr("The number of input particles has changed. The stored results have become invalid."));
 
 	outputStandardProperty(ParticleProperty::ClusterProperty)->setStorage(_particleClusters.data());
 
-	return ObjectStatus(ObjectStatus::Success, tr("Found %1 clusters").arg(_numClusters));
+	return PipelineStatus(PipelineStatus::Success, tr("Found %1 clusters").arg(_numClusters));
 }
 
 /******************************************************************************

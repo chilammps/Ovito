@@ -105,8 +105,8 @@ void ParticleInformationApplet::updateInformationDisplay()
 		const PipelineFlowState& flowState = pickedParticle.objNode->evalPipeline(dataset->animationSettings()->time());
 
 		if(pickedParticle.particleId >= 0) {
-			for(const auto& sceneObj : flowState.objects()) {
-				ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(sceneObj.get());
+			for(SceneObject* sceneObj : flowState.objects()) {
+				ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(sceneObj);
 				if(property && property->type() == ParticleProperty::IdentifierProperty) {
 					const int* begin = property->constDataInt();
 					const int* end = begin + property->size();
@@ -120,8 +120,8 @@ void ParticleInformationApplet::updateInformationDisplay()
 		stream << QStringLiteral("<b>") << tr("Particle") << QStringLiteral(" ") << (pickedParticle.particleIndex + 1) << QStringLiteral(":</b>");
 		stream << QStringLiteral("<table border=\"0\">");
 
-		for(const auto& sceneObj : flowState.objects()) {
-			ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(sceneObj.get());
+		for(SceneObject* sceneObj : flowState.objects()) {
+			ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(sceneObj);
 			if(!property || property->size() <= pickedParticle.particleIndex) continue;
 			if(property->dataType() != qMetaTypeId<int>() && property->dataType() != qMetaTypeId<FloatType>()) continue;
 			for(size_t component = 0; component < property->componentCount(); component++) {
@@ -229,6 +229,17 @@ void ParticleInformationInputMode::renderOverlay3D(Viewport* vp, ViewportSceneRe
 	ViewportInputMode::renderOverlay3D(vp, renderer);
 	for(const auto& pickedParticle : _pickedParticles)
 		renderSelectionMarker(vp, renderer, pickedParticle);
+}
+
+/******************************************************************************
+* Computes the bounding box of the 3d visual viewport overlay rendered by the input mode.
+******************************************************************************/
+Box3 ParticleInformationInputMode::overlayBoundingBox(Viewport* vp, ViewportSceneRenderer* renderer)
+{
+	Box3 bbox = ViewportInputMode::overlayBoundingBox(vp, renderer);
+	for(const auto& pickedParticle : _pickedParticles)
+		bbox.addBox(selectionMarkerBoundingBox(vp, pickedParticle));
+	return bbox;
 }
 
 };

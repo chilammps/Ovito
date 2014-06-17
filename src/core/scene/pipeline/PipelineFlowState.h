@@ -30,7 +30,7 @@
 #include <core/Core.h>
 #include <core/animation/TimeInterval.h>
 #include <core/reference/RefMaker.h>
-#include <core/utilities/ObjectStatus.h>
+#include "PipelineStatus.h"
 
 namespace Ovito {
 
@@ -56,7 +56,7 @@ public:
 	/// \param status A status object that describes the outcome of the pipeline evaluation.
 	/// \param sceneObjects The objects that represents the current state of a geometry pipeline evaluation.
 	/// \param validityInterval Specifies the time interval during which the returned objects are valid.
-	PipelineFlowState(const ObjectStatus& status, const QVector<SceneObject*>& sceneObjects, const TimeInterval& validityInterval, const QVariantMap& attributes = QVariantMap()) :
+	PipelineFlowState(const PipelineStatus& status, const QVector<SceneObject*>& sceneObjects, const TimeInterval& validityInterval, const QVariantMap& attributes = QVariantMap()) :
 		_status(status), _stateValidity(validityInterval), _attributes(attributes)
 	{
 		_objects.reserve(sceneObjects.size());
@@ -70,7 +70,7 @@ public:
 		_objects.clear();
 		_revisionNumbers.clear();
 		_stateValidity.setEmpty();
-		_status = ObjectStatus();
+		_status = PipelineStatus();
 		_attributes.clear();
 	}
 
@@ -94,8 +94,8 @@ public:
 	/// \brief Finds an object of the given type in the list of scene objects stored in this flow state.
 	template<class ObjectType>
 	ObjectType* findObject() const {
-		for(const auto& o : _objects) {
-			if(ObjectType* obj = dynamic_object_cast<ObjectType>(o.get()))
+		for(SceneObject* o : _objects) {
+			if(ObjectType* obj = dynamic_object_cast<ObjectType>(o))
 				return obj;
 		}
 		return nullptr;
@@ -138,10 +138,10 @@ public:
 	int revisionNumber(int index) const { return _revisionNumbers[index]; }
 
 	/// Returns the status of the pipeline evaluation.
-	const ObjectStatus& status() const { return _status; }
+	const PipelineStatus& status() const { return _status; }
 
 	/// Changes the stored status record.
-	void setStatus(const ObjectStatus& status) { _status = status; }
+	void setStatus(const PipelineStatus& status) { _status = status; }
 
 	/// Returns the extra attributes associated with the pipeline flow state.
 	const QVariantMap& attributes() const { return _attributes; }
@@ -162,8 +162,8 @@ private:
 	/// Contains the validity interval for this pipeline flow state.
 	TimeInterval _stateValidity;
 
-	/// The status structure.
-	ObjectStatus _status;
+	/// The status of the pipeline evaluation.
+	PipelineStatus _status;
 
 	/// Extra attributes associated with the pipeline flow state.
 	QVariantMap _attributes;

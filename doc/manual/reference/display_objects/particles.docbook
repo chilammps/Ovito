@@ -38,7 +38,7 @@
 		      <varlistentry>
 		        <term>Low</term>
 		        <listitem><para>Particles are rendered as texture-mapped imposters facing the viewer. Particles do not have depth in this mode, 
-		        and intersections between spherical particles will not be displayed correctly. This mode is the fastest.</para></listitem>
+		        and intersections between spherical particles may not be displayed correctly. This mode is the fastest.</para></listitem>
 		      </varlistentry>
 		      <varlistentry>
 		        <term>Medium</term>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
 
 <!-- 
-  Copyright (2013) Alexander Stukowski
+  Copyright (2014) Alexander Stukowski
 
   This file is part of OVITO (Open Visualization Tool).
 
@@ -27,7 +27,7 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	Plugin-Id="Scripting"
 	Plugin-Version="1.0"
-	Plugin-Vendor="Alexander Stukowski &amp; Tobias Brink">
+	Plugin-Vendor="Alexander Stukowski">
 	
 	<NativePlugin Library="Scripting" />
 	

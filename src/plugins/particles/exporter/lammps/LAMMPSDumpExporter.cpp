@@ -108,19 +108,19 @@ bool LAMMPSDumpExporter::exportParticles(const PipelineFlowState& state, int fra
 	ylo += std::min((FloatType)0, yz);
 	yhi += std::max((FloatType)0, yz);
 
-	textStream() << "ITEM: TIMESTEP" << endl;
-	textStream() << frameNumber << endl;
-	textStream() << "ITEM: NUMBER OF ATOMS" << endl;
-	textStream() << atomsCount << endl;
+	textStream() << "ITEM: TIMESTEP\n";
+	textStream() << frameNumber << "\n";
+	textStream() << "ITEM: NUMBER OF ATOMS\n";
+	textStream() << atomsCount << "\n";
 	if(xy != 0 || xz != 0 || yz != 0) {
 		textStream() << "ITEM: BOX BOUNDS xy xz yz";
 		textStream() << (simulationCell->pbcX() ? " pp" : " ff");
 		textStream() << (simulationCell->pbcY() ? " pp" : " ff");
 		textStream() << (simulationCell->pbcZ() ? " pp" : " ff");
-		textStream() << endl;
-		textStream() << xlo << " " << xhi << " " << xy << endl;
-		textStream() << ylo << " " << yhi << " " << xz << endl;
-		textStream() << zlo << " " << zhi << " " << yz << endl;
+		textStream() << "\n";
+		textStream() << xlo << " " << xhi << " " << xy << "\n";
+		textStream() << ylo << " " << yhi << " " << xz << "\n";
+		textStream() << zlo << " " << zhi << " " << yz << "\n";
 	}
 	else {
 		textStream() << "ITEM: BOX BOUNDS";
@@ -128,9 +128,9 @@ bool LAMMPSDumpExporter::exportParticles(const PipelineFlowState& state, int fra
 		textStream() << (simulationCell->pbcY() ? " pp" : " ff");
 		textStream() << (simulationCell->pbcZ() ? " pp" : " ff");
 		textStream() << endl;
-		textStream() << xlo << " " << xhi << endl;
-		textStream() << ylo << " " << yhi << endl;
-		textStream() << zlo << " " << zhi << endl;
+		textStream() << xlo << " " << xhi << "\n";
+		textStream() << ylo << " " << yhi << "\n";
+		textStream() << zlo << " " << zhi << "\n";
 	}
 	textStream() << "ITEM: ATOMS";
 
@@ -186,12 +186,12 @@ bool LAMMPSDumpExporter::exportParticles(const PipelineFlowState& state, int fra
 		}
 		textStream() << " " << columnName;
 	}
-	textStream() << endl;
+	textStream() << "\n";
 
 	OutputColumnWriter columnWriter(mapping, state);
 	for(size_t i = 0; i < atomsCount; i++) {
 		columnWriter.writeParticle(i, textStream());
-		textStream() << endl;
+		textStream() << "\n";
 
 		if((i % 4096) == 0) {
 			progress.setPercentage((quint64)i * 100 / atomsCount);

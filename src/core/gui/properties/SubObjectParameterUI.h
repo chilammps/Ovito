@@ -48,7 +48,7 @@ public:
 	virtual void resetUI() override;
 	
 	/// Returns the current sub-editor or NULL if there is none.
-	PropertiesEditor* subEditor() const { return _subEditor.get(); }
+	PropertiesEditor* subEditor() const { return _subEditor; }
 	
 	/// Sets the enabled state of the UI.
 	virtual void setEnabled(bool enabled) override;

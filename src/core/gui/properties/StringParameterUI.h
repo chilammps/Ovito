@@ -39,7 +39,7 @@ public:
 	/// Constructor for a PropertyField property.
 	StringParameterUI(QObject* parentEditor, const PropertyFieldDescriptor& propField);
 	
-	/// Destructor, that releases all GUI controls.
+	/// Destructor.
 	virtual ~StringParameterUI();
 
 	/// This returns the text box managed by this ParameterUI.

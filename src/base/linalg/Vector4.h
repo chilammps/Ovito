@@ -21,7 +21,7 @@
 
 /**
  * \file Vector4.h
- * \brief Contains definition of the Ovito::Vector_4 template class and operators.
+ * \brief Contains the definition of the Ovito::Vector_4 class template.
  */
 
 #ifndef __OVITO_VECTOR4_H
@@ -264,6 +264,18 @@ inline LoadStream& operator>>(LoadStream& stream, Vector_4<T>& v) {
 	return stream >> v.x() >> v.y() >> v.z() >> v.w();
 }
 
+/// \brief Writes a vector to a Qt data stream.
+template<typename T>
+inline QDataStream& operator<<(QDataStream& stream, const Vector_4<T>& v) {
+	return stream << v.x() << v.y() << v.z() << v.w();
+}
+
+/// \brief Reads a vector from a Qt data stream.
+template<typename T>
+inline QDataStream& operator>>(QDataStream& stream, Vector_4<T>& v) {
+	return stream >> v.x() >> v.y() >> v.z() >> v.w();
+}
+
 /**
  * \fn typedef Vector4
  * \brief Template class instance of the Vector_4 class used for floating-point vectors.
@@ -281,9 +293,13 @@ inline void glVertex(const Vector_4<GLfloat>& v) { glVertex4fv(v.data()); }
 
 };	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Vector4)
-Q_DECLARE_METATYPE(Ovito::Vector4I)
+Q_DECLARE_METATYPE(Ovito::Vector4);
+Q_DECLARE_METATYPE(Ovito::Vector4I);
+Q_DECLARE_METATYPE(Ovito::Vector4*);
+Q_DECLARE_METATYPE(Ovito::Vector4I*);
 Q_DECLARE_TYPEINFO(Ovito::Vector4, Q_PRIMITIVE_TYPE);
 Q_DECLARE_TYPEINFO(Ovito::Vector4I, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Vector4*, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Vector4I*, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_VECTOR4_H

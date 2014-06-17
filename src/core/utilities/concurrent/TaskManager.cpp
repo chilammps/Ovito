@@ -29,32 +29,18 @@ namespace Ovito {
 /******************************************************************************
 * Initializes the progress manager.
 ******************************************************************************/
-TaskManager::TaskManager(MainWindow* mainWindow) : QObject(mainWindow), _mainWindow(mainWindow)
+TaskManager::TaskManager(MainWindow* mainWindow) : QObject(mainWindow), _mainWindow(mainWindow),
+		_progressBar(nullptr), _cancelTaskButton(nullptr), _progressWidget(nullptr),
+		_progressTextDisplay(nullptr)
 {
 	qRegisterMetaType<FutureInterfacePointer>("FutureInterfacePointer");
 
-	if(mainWindow) {
-		// Create progress display widget.
-		_progressTextDisplay = new QLabel();
-		_progressWidget = new QWidget();
-		QHBoxLayout* progressWidgetLayout = new QHBoxLayout(_progressWidget);
-		progressWidgetLayout->setContentsMargins(0,0,0,0);
-		progressWidgetLayout->setSpacing(0);
-		_progressBar = new QProgressBar(_progressWidget);
-		_cancelTaskButton = new QPushButton(tr("Cancel"), _progressWidget);
-		progressWidgetLayout->addWidget(_progressBar);
-		progressWidgetLayout->addWidget(_cancelTaskButton);
-		_progressWidget->setMaximumWidth(_progressWidget->minimumSizeHint().width());
-		_widgetCleanupHandler.add(_progressWidget);
-		_widgetCleanupHandler.add(_progressTextDisplay);
-		connect(_cancelTaskButton, SIGNAL(clicked(bool)), this, SLOT(cancelAll()));
-	}
 	_indicatorVisible = false;
 
-	connect(&_taskStartedSignalMapper, SIGNAL(mapped(QObject*)), this, SLOT(taskStarted(QObject*)));
-	connect(&_taskFinishedSignalMapper, SIGNAL(mapped(QObject*)), this, SLOT(taskFinished(QObject*)));
-	connect(&_taskProgressValueChangedSignalMapper, SIGNAL(mapped(QObject*)), this, SLOT(taskProgressValueChanged(QObject*)));
-	connect(&_taskProgressTextChangedSignalMapper, SIGNAL(mapped(QObject*)), this, SLOT(taskProgressTextChanged(QObject*)));
+	connect(&_taskStartedSignalMapper, (void (QSignalMapper::*)(QObject*))&QSignalMapper::mapped, this, &TaskManager::taskStarted);
+	connect(&_taskFinishedSignalMapper, (void (QSignalMapper::*)(QObject*))&QSignalMapper::mapped, this, &TaskManager::taskFinished);
+	connect(&_taskProgressValueChangedSignalMapper, (void (QSignalMapper::*)(QObject*))&QSignalMapper::mapped, this, &TaskManager::taskProgressValueChanged);
+	connect(&_taskProgressTextChangedSignalMapper, (void (QSignalMapper::*)(QObject*))&QSignalMapper::mapped, this, &TaskManager::taskProgressTextChanged);
 }
 
 /******************************************************************************
@@ -63,11 +49,11 @@ TaskManager::TaskManager(MainWindow* mainWindow) : QObject(mainWindow), _mainWin
 void TaskManager::addTaskInternal(FutureInterfacePointer futureInterface)
 {
 	FutureWatcher* watcher = new FutureWatcher(this);
-	connect(watcher, SIGNAL(started()), &_taskStartedSignalMapper, SLOT(map()));
-	connect(watcher, SIGNAL(finished()), &_taskFinishedSignalMapper, SLOT(map()));
-	connect(watcher, SIGNAL(progressRangeChanged(int)), &_taskProgressValueChangedSignalMapper, SLOT(map()));
-	connect(watcher, SIGNAL(progressValueChanged(int)), &_taskProgressValueChangedSignalMapper, SLOT(map()));
-	connect(watcher, SIGNAL(progressTextChanged(const QString&)), &_taskProgressTextChangedSignalMapper, SLOT(map()));
+	connect(watcher, &FutureWatcher::started, &_taskStartedSignalMapper, (void (QSignalMapper::*)())&QSignalMapper::map);
+	connect(watcher, &FutureWatcher::finished, &_taskFinishedSignalMapper, (void (QSignalMapper::*)())&QSignalMapper::map);
+	connect(watcher, &FutureWatcher::progressRangeChanged, &_taskProgressValueChangedSignalMapper, (void (QSignalMapper::*)())&QSignalMapper::map);
+	connect(watcher, &FutureWatcher::progressValueChanged, &_taskProgressValueChangedSignalMapper, (void (QSignalMapper::*)())&QSignalMapper::map);
+	connect(watcher, &FutureWatcher::progressTextChanged, &_taskProgressTextChangedSignalMapper, (void (QSignalMapper::*)())&QSignalMapper::map);
 	_taskStartedSignalMapper.setMapping(watcher, watcher);
 	_taskFinishedSignalMapper.setMapping(watcher, watcher);
 	_taskProgressValueChangedSignalMapper.setMapping(watcher, watcher);
@@ -129,11 +115,30 @@ void TaskManager::taskProgressTextChanged(QObject* object)
 void TaskManager::showIndicator()
 {
 	if(_indicatorVisible == false && _taskStack.isEmpty() == false) {
-		QStatusBar* statusBar = _mainWindow->statusBar();
-		statusBar->addWidget(_progressTextDisplay, 1);
-		statusBar->insertPermanentWidget(1, _progressWidget);
-		_progressTextDisplay->show();
+
+		// Create progress display widget.
+		if(_mainWindow && _progressWidget == nullptr) {
+			_progressWidget = new QFrame();
+			//static_cast<QFrame*>(_progressWidget)->setFrameStyle(QFrame::Panel | QFrame::Sunken);
+			QHBoxLayout* progressWidgetLayout = new QHBoxLayout(_progressWidget);
+			progressWidgetLayout->setContentsMargins(0,0,0,0);
+			progressWidgetLayout->setSpacing(0);
+			_progressTextDisplay = new QLabel();
+			_progressBar = new QProgressBar(_progressWidget);
+			_cancelTaskButton = new QPushButton(tr("Cancel"), _progressWidget);
+			progressWidgetLayout->addWidget(_progressBar);
+			progressWidgetLayout->addWidget(_cancelTaskButton);
+			_progressWidget->setMinimumHeight(_progressTextDisplay->minimumSizeHint().height());
+			_widgetCleanupHandler.add(_progressTextDisplay);
+			_widgetCleanupHandler.add(_progressWidget);
+			connect(_cancelTaskButton, &QPushButton::clicked, this, &TaskManager::cancelAll);
+			_progressWidget->hide();
+			_mainWindow->statusBarLayout()->insertWidget(1, _progressWidget);
+		}
+
 		_progressWidget->show();
+		_mainWindow->statusBar()->addWidget(_progressTextDisplay, 1);
+		_progressTextDisplay->show();
 		_indicatorVisible = true;
 		updateIndicator();
 	}
@@ -148,9 +153,8 @@ void TaskManager::updateIndicator()
 		return;
 
 	if(_taskStack.isEmpty() == true) {
-		QStatusBar* statusBar = _mainWindow->statusBar();
-		statusBar->removeWidget(_progressWidget);
-		statusBar->removeWidget(_progressTextDisplay);
+		_progressWidget->hide();
+		_mainWindow->statusBar()->removeWidget(_progressTextDisplay);
 		_indicatorVisible = false;
 	}
 	else {
@@ -158,6 +162,7 @@ void TaskManager::updateIndicator()
 		_progressBar->setRange(0, watcher->progressMaximum());
 		_progressBar->setValue(watcher->progressValue());
 		_progressTextDisplay->setText(watcher->progressText());
+		_progressWidget->show();
 	}
 }
 
@@ -220,10 +225,10 @@ bool TaskManager::waitForTask(const FutureInterfacePointer& futureInterface)
 		progressDialog.setLabel(label);
 
 		FutureWatcher watcher;
-		connect(&watcher, SIGNAL(progressRangeChanged(int)), &progressDialog, SLOT(setMaximum(int)));
-		connect(&watcher, SIGNAL(progressValueChanged(int)), &progressDialog, SLOT(setValue(int)));
-		connect(&watcher, SIGNAL(progressTextChanged(const QString&)), &progressDialog, SLOT(setLabelText(const QString&)));
-		connect(&progressDialog, SIGNAL(canceled()), &watcher, SLOT(cancel()));
+		connect(&watcher, &FutureWatcher::progressRangeChanged, &progressDialog, &QProgressDialog::setMaximum);
+		connect(&watcher, &FutureWatcher::progressValueChanged, &progressDialog, &QProgressDialog::setValue);
+		connect(&watcher, &FutureWatcher::progressTextChanged, &progressDialog, &QProgressDialog::setLabelText);
+		connect(&progressDialog, &QProgressDialog::canceled, &watcher, &FutureWatcher::cancel);
 		watcher.setFutureInterface(futureInterface);
 
 		progressDialog.setLabelText(futureInterface->progressText());

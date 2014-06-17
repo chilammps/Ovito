@@ -36,29 +36,29 @@
 
 namespace Particles {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ColorCodingModifier, ParticleModifier)
-IMPLEMENT_OVITO_OBJECT(Particles, ColorCodingModifierEditor, ParticleModifierEditor)
-SET_OVITO_OBJECT_EDITOR(ColorCodingModifier, ColorCodingModifierEditor)
-DEFINE_REFERENCE_FIELD(ColorCodingModifier, _startValueCtrl, "StartValue", Controller)
-DEFINE_REFERENCE_FIELD(ColorCodingModifier, _endValueCtrl, "EndValue", Controller)
-DEFINE_REFERENCE_FIELD(ColorCodingModifier, _colorGradient, "ColorGradient", ColorCodingGradient)
-DEFINE_PROPERTY_FIELD(ColorCodingModifier, _colorOnlySelected, "SelectedOnly")
-DEFINE_PROPERTY_FIELD(ColorCodingModifier, _keepSelection, "KeepSelection")
-DEFINE_PROPERTY_FIELD(ColorCodingModifier, _renderLegend, "RenderLegend")
-DEFINE_PROPERTY_FIELD(ColorCodingModifier, _sourceProperty, "SourceProperty")
-SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _startValueCtrl, "Start value")
-SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _endValueCtrl, "End value")
-SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _colorGradient, "Color gradient")
-SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _colorOnlySelected, "Color only selected particles")
-SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _keepSelection, "Keep selection")
-SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _renderLegend, "Render color legend (experimental)")
-SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _sourceProperty, "Source property")
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ColorCodingModifier, ParticleModifier);
+IMPLEMENT_OVITO_OBJECT(Particles, ColorCodingModifierEditor, ParticleModifierEditor);
+SET_OVITO_OBJECT_EDITOR(ColorCodingModifier, ColorCodingModifierEditor);
+DEFINE_REFERENCE_FIELD(ColorCodingModifier, _startValueCtrl, "StartValue", Controller);
+DEFINE_REFERENCE_FIELD(ColorCodingModifier, _endValueCtrl, "EndValue", Controller);
+DEFINE_REFERENCE_FIELD(ColorCodingModifier, _colorGradient, "ColorGradient", ColorCodingGradient);
+DEFINE_PROPERTY_FIELD(ColorCodingModifier, _colorOnlySelected, "SelectedOnly");
+DEFINE_PROPERTY_FIELD(ColorCodingModifier, _keepSelection, "KeepSelection");
+DEFINE_PROPERTY_FIELD(ColorCodingModifier, _renderLegend, "RenderLegend");
+DEFINE_PROPERTY_FIELD(ColorCodingModifier, _sourceProperty, "SourceProperty");
+SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _startValueCtrl, "Start value");
+SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _endValueCtrl, "End value");
+SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _colorGradient, "Color gradient");
+SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _colorOnlySelected, "Color only selected particles");
+SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _keepSelection, "Keep selection");
+SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _renderLegend, "Render color legend (experimental)");
+SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _sourceProperty, "Source property");
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ColorCodingGradient, RefTarget)
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ColorCodingHSVGradient, ColorCodingGradient)
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ColorCodingGrayscaleGradient, ColorCodingGradient)
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ColorCodingHotGradient, ColorCodingGradient)
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ColorCodingJetGradient, ColorCodingGradient)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ColorCodingGradient, RefTarget);
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ColorCodingHSVGradient, ColorCodingGradient);
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ColorCodingGrayscaleGradient, ColorCodingGradient);
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ColorCodingHotGradient, ColorCodingGradient);
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ColorCodingJetGradient, ColorCodingGradient);
 
 /******************************************************************************
 * Constructs the modifier object.
@@ -77,6 +77,31 @@ ColorCodingModifier::ColorCodingModifier(DataSet* dataset) : ParticleModifier(da
 	_colorGradient = new ColorCodingHSVGradient(dataset);
 	_startValueCtrl = ControllerManager::instance().createFloatController(dataset);
 	_endValueCtrl = ControllerManager::instance().createFloatController(dataset);
+}
+
+/******************************************************************************
+* Loads the user-defined default values of this object's parameter fields from the
+* application's settings store.
+******************************************************************************/
+void ColorCodingModifier::loadUserDefaults()
+{
+	ParticleModifier::loadUserDefaults();
+
+	// Load the default gradient type set by the user.
+	QSettings settings;
+	settings.beginGroup(ColorCodingModifier::OOType.plugin()->pluginId());
+	settings.beginGroup(ColorCodingModifier::OOType.name());
+	QString typeString = settings.value(PROPERTY_FIELD(ColorCodingModifier::_colorGradient).identifier()).toString();
+	if(!typeString.isEmpty()) {
+		try {
+			OvitoObjectType* gradientType = OvitoObjectType::decodeFromString(typeString);
+			if(!colorGradient() || colorGradient()->getOOType() != *gradientType) {
+				OORef<ColorCodingGradient> gradient = dynamic_object_cast<ColorCodingGradient>(gradientType->createInstance(dataset()));
+				if(gradient) setColorGradient(gradient);
+			}
+		}
+		catch(...) {}
+	}
 }
 
 /******************************************************************************
@@ -101,8 +126,8 @@ void ColorCodingModifier::initializeModifier(PipelineObject* pipeline, ModifierA
 		// Select the first available particle property from the input.
 		PipelineFlowState input = pipeline->evaluatePipeline(dataset()->animationSettings()->time(), modApp, false);
 		ParticlePropertyReference bestProperty;
-		for(const auto& o : input.objects()) {
-			ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o.get());
+		for(SceneObject* o : input.objects()) {
+			ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o);
 			if(property && (property->dataType() == qMetaTypeId<int>() || property->dataType() == qMetaTypeId<FloatType>())) {
 				bestProperty = ParticlePropertyReference(property, (property->componentCount() > 1) ? 0 : -1);
 			}
@@ -118,7 +143,7 @@ void ColorCodingModifier::initializeModifier(PipelineObject* pipeline, ModifierA
 /******************************************************************************
 * This modifies the input object.
 ******************************************************************************/
-ObjectStatus ColorCodingModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
+PipelineStatus ColorCodingModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
 {
 	// Get the source property.
 	if(sourceProperty().isNull())
@@ -218,7 +243,7 @@ ObjectStatus ColorCodingModifier::modifyParticles(TimePoint time, TimeInterval& 
 		output().removeObject(selProperty);
 
 	colorProperty->changed();
-	return ObjectStatus::Success;
+	return PipelineStatus::Success;
 }
 
 /******************************************************************************
@@ -335,7 +360,7 @@ void ColorCodingModifier::render(TimePoint time, ObjectNode* contextNode, Modifi
 			image.setPixel(0, y, QColor(color).rgb());
 		}
 
-		_colorScaleImageBuffer = renderer->createImageGeometryBuffer();
+		_colorScaleImageBuffer = renderer->createImagePrimitive();
 		_colorScaleImageBuffer->setImage(image);
 	}
 
@@ -353,13 +378,13 @@ void ColorCodingModifier::render(TimePoint time, ObjectNode* contextNode, Modifi
 			Vector2(legendSize * 0.2, legendSize));
 
 	if(!_colorScaleTopLabel || !_colorScaleTopLabel->isValid(renderer))
-		_colorScaleTopLabel = renderer->createTextGeometryBuffer();
+		_colorScaleTopLabel = renderer->createTextPrimitive();
 	if(!_colorScaleBottomLabel || !_colorScaleBottomLabel->isValid(renderer))
-		_colorScaleBottomLabel = renderer->createTextGeometryBuffer();
+		_colorScaleBottomLabel = renderer->createTextPrimitive();
 	if(!_colorScaleTitleLabel || !_colorScaleTitleLabel->isValid(renderer))
-		_colorScaleTitleLabel = renderer->createTextGeometryBuffer();
+		_colorScaleTitleLabel = renderer->createTextPrimitive();
 
-	ColorA labelColor = renderer->isInteractive() ? ColorA(1,1,1) : ColorA(0,0,0);
+	ColorA labelColor = renderer->isInteractive() ? ViewportSettings::getSettings().viewportColor(ViewportSettings::COLOR_VIEWPORT_CAPTION) : ColorA(0,0,0);
 
 	_colorScaleTopLabel->setText(topLabel);
 	_colorScaleTopLabel->setColor(labelColor);
@@ -393,13 +418,13 @@ void ColorCodingModifierEditor::createUI(const RolloutInsertionParameters& rollo
 	colorGradientList = new QComboBox(rollout);
 	layout1->addWidget(new QLabel(tr("Color gradient:"), rollout));
 	layout1->addWidget(colorGradientList);
-	connect(colorGradientList, SIGNAL(activated(int)), this, SLOT(onColorGradientSelected(int)));
+	connect(colorGradientList, (void (QComboBox::*)(int))&QComboBox::activated, this, &ColorCodingModifierEditor::onColorGradientSelected);
 	for(OvitoObjectType* clazz : PluginManager::instance().listClasses(ColorCodingGradient::OOType)) {
 		colorGradientList->addItem(clazz->displayName(), qVariantFromValue((void*)clazz));
 	}
 
 	// Update color legend if another modifier has been loaded into the editor.
-	connect(this, SIGNAL(contentsReplaced(RefTarget*)), this, SLOT(updateColorGradient()));
+	connect(this, &ColorCodingModifierEditor::contentsReplaced, this, &ColorCodingModifierEditor::updateColorGradient);
 
 	layout1->addSpacing(10);
 
@@ -429,16 +454,16 @@ void ColorCodingModifierEditor::createUI(const RolloutInsertionParameters& rollo
 	exportBtn->setToolTip("Export color map to file");
 	exportBtn->setAutoRaise(true);
 	exportBtn->setIconSize(QSize(42,22));
-	connect(exportBtn, SIGNAL(clicked(bool)), this, SLOT(onExportColorScale()));
+	connect(exportBtn, &QPushButton::clicked, this, &ColorCodingModifierEditor::onExportColorScale);
 	layout2->addWidget(exportBtn, 1, 0, Qt::AlignHCenter | Qt::AlignVCenter);
 
 	layout1->addSpacing(8);
 	QPushButton* adjustBtn = new QPushButton(tr("Adjust range"), rollout);
-	connect(adjustBtn, SIGNAL(clicked(bool)), this, SLOT(onAdjustRange()));
+	connect(adjustBtn, &QPushButton::clicked, this, &ColorCodingModifierEditor::onAdjustRange);
 	layout1->addWidget(adjustBtn);
 	layout1->addSpacing(4);
 	QPushButton* reverseBtn = new QPushButton(tr("Reverse range"), rollout);
-	connect(reverseBtn, SIGNAL(clicked(bool)), this, SLOT(onReverseRange()));
+	connect(reverseBtn, &QPushButton::clicked, this, &ColorCodingModifierEditor::onReverseRange);
 	layout1->addWidget(reverseBtn);
 
 	layout1->addSpacing(8);
@@ -450,7 +475,7 @@ void ColorCodingModifierEditor::createUI(const RolloutInsertionParameters& rollo
 	// Keep selection
 	BooleanParameterUI* keepSelectionPUI = new BooleanParameterUI(this, PROPERTY_FIELD(ColorCodingModifier::_keepSelection));
 	layout1->addWidget(keepSelectionPUI->checkBox());
-	connect(onlySelectedPUI->checkBox(), SIGNAL(toggled(bool)), keepSelectionPUI->checkBox(), SLOT(setEnabled(bool)));
+	connect(onlySelectedPUI->checkBox(), &QCheckBox::toggled, keepSelectionPUI->checkBox(), &QCheckBox::setEnabled);
 
 	// Render legend.
 	BooleanParameterUI* renderLegendPUI = new BooleanParameterUI(this, PROPERTY_FIELD(ColorCodingModifier::_renderLegend));
@@ -513,8 +538,15 @@ void ColorCodingModifierEditor::onColorGradientSelected(int index)
 	undoableTransaction(tr("Change color gradient"), [descriptor, mod]() {
 		// Create an instance of the selected color gradient class.
 		OORef<ColorCodingGradient> gradient = static_object_cast<ColorCodingGradient>(descriptor->createInstance(mod->dataset()));
-		if(gradient)
+		if(gradient) {
 	        mod->setColorGradient(gradient);
+
+			QSettings settings;
+			settings.beginGroup(ColorCodingModifier::OOType.plugin()->pluginId());
+			settings.beginGroup(ColorCodingModifier::OOType.name());
+			settings.setValue(PROPERTY_FIELD(ColorCodingModifier::_colorGradient).identifier(),
+					QVariant::fromValue(OvitoObjectType::encodeAsString(descriptor)));
+		}
 	});
 }
 

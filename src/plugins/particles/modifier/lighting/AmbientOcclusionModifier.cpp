@@ -31,16 +31,16 @@ namespace Particles {
 
 enum { MAX_AO_RENDER_BUFFER_RESOLUTION = 4 };
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, AmbientOcclusionModifier, AsynchronousParticleModifier)
-IMPLEMENT_OVITO_OBJECT(Particles, AmbientOcclusionModifierEditor, ParticleModifierEditor)
-SET_OVITO_OBJECT_EDITOR(AmbientOcclusionModifier, AmbientOcclusionModifierEditor)
-DEFINE_PROPERTY_FIELD(AmbientOcclusionModifier, _intensity, "Intensity")
-DEFINE_PROPERTY_FIELD(AmbientOcclusionModifier, _samplingCount, "SamplingCount")
-DEFINE_PROPERTY_FIELD(AmbientOcclusionModifier, _bufferResolution, "BufferResolution")
-SET_PROPERTY_FIELD_LABEL(AmbientOcclusionModifier, _intensity, "Shading intensity")
-SET_PROPERTY_FIELD_LABEL(AmbientOcclusionModifier, _samplingCount, "Number of exposure samples")
-SET_PROPERTY_FIELD_LABEL(AmbientOcclusionModifier, _bufferResolution, "Render buffer resolution")
-SET_PROPERTY_FIELD_UNITS(AmbientOcclusionModifier, _intensity, PercentParameterUnit)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, AmbientOcclusionModifier, AsynchronousParticleModifier);
+IMPLEMENT_OVITO_OBJECT(Particles, AmbientOcclusionModifierEditor, ParticleModifierEditor);
+SET_OVITO_OBJECT_EDITOR(AmbientOcclusionModifier, AmbientOcclusionModifierEditor);
+DEFINE_PROPERTY_FIELD(AmbientOcclusionModifier, _intensity, "Intensity");
+DEFINE_PROPERTY_FIELD(AmbientOcclusionModifier, _samplingCount, "SamplingCount");
+DEFINE_PROPERTY_FIELD(AmbientOcclusionModifier, _bufferResolution, "BufferResolution");
+SET_PROPERTY_FIELD_LABEL(AmbientOcclusionModifier, _intensity, "Shading intensity");
+SET_PROPERTY_FIELD_LABEL(AmbientOcclusionModifier, _samplingCount, "Number of exposure samples");
+SET_PROPERTY_FIELD_LABEL(AmbientOcclusionModifier, _bufferResolution, "Render buffer resolution");
+SET_PROPERTY_FIELD_UNITS(AmbientOcclusionModifier, _intensity, PercentParameterUnit);
 
 /******************************************************************************
 * Constructs the modifier object.
@@ -96,14 +96,14 @@ void AmbientOcclusionModifier::AmbientOcclusionEngine::compute(FutureInterfaceBa
 	// Create a temporary dataset, which is needed to host an instance of AmbientOcclusionRenderer.
 	OORef<DataSet> dataset(new DataSet());
 	// Create the AmbientOcclusionRenderer instance.
-	OORef<AmbientOcclusionRenderer> renderer(new AmbientOcclusionRenderer(dataset.get(), QSize(_resolution, _resolution)));
+	OORef<AmbientOcclusionRenderer> renderer(new AmbientOcclusionRenderer(dataset, QSize(_resolution, _resolution), _offscreenSurface));
 
 	renderer->startRender(nullptr, nullptr);
 	try {
 		OVITO_ASSERT(!_boundingBox.isEmpty());
 
 		// The buffered particle geometry used to render the particles.
-		std::unique_ptr<ParticleGeometryBuffer> particleBuffer;
+		std::unique_ptr<ParticlePrimitive> particleBuffer;
 
 		futureInterface.setProgressRange(_samplingCount);
 		for(int sample = 0; sample < _samplingCount && !futureInterface.isCanceled(); sample++) {
@@ -112,7 +112,7 @@ void AmbientOcclusionModifier::AmbientOcclusionEngine::compute(FutureInterfaceBa
 			// Generate lighting direction on unit sphere.
 			FloatType y = (FloatType)sample * 2 / _samplingCount - FloatType(1) + FloatType(1) / _samplingCount;
 			FloatType r = sqrt(FloatType(1) - y * y);
-			FloatType phi = (FloatType)sample * FLOATTYPE_PI * (3.0 - sqrt(5.0));
+			FloatType phi = (FloatType)sample * FLOATTYPE_PI * (3.0f - sqrt(5.0f));
 			Vector3 dir(cos(phi), y, sin(phi));
 
 			// Set up view projection.
@@ -120,32 +120,32 @@ void AmbientOcclusionModifier::AmbientOcclusionEngine::compute(FutureInterfaceBa
 			projParams.viewMatrix = AffineTransformation::lookAlong(_boundingBox.center(), dir, Vector3(0,0,1));
 
 			// Transform bounding box to camera space.
-			Box3 bb = _boundingBox.transformed(projParams.viewMatrix).centerScale(1.01);
+			Box3 bb = _boundingBox.transformed(projParams.viewMatrix).centerScale(1.01f);
 
 			// Complete projection parameters.
 			projParams.aspectRatio = 1;
 			projParams.isPerspective = false;
 			projParams.inverseViewMatrix = projParams.viewMatrix.inverse();
-			projParams.fieldOfView = 0.5 * _boundingBox.size().length();
+			projParams.fieldOfView = 0.5f * _boundingBox.size().length();
 			projParams.znear = -bb.maxc.z();
 			projParams.zfar  = std::max(-bb.minc.z(), projParams.znear + 1.0f);
 			projParams.projectionMatrix = Matrix4::ortho(-projParams.fieldOfView, projParams.fieldOfView,
 								-projParams.fieldOfView, projParams.fieldOfView,
 								projParams.znear, projParams.zfar);
 			projParams.inverseProjectionMatrix = projParams.projectionMatrix.inverse();
-			projParams.validityInterval = TimeInterval::forever();
+			projParams.validityInterval = TimeInterval::infinite();
 
 			renderer->beginFrame(0, projParams, nullptr);
 			renderer->setWorldTransform(AffineTransformation::Identity());
 			try {
 				// Create particle buffer.
-				if(!particleBuffer || !particleBuffer->isValid(renderer.get())) {
-					particleBuffer = renderer->createParticleGeometryBuffer(ParticleGeometryBuffer::FlatShading, ParticleGeometryBuffer::LowQuality, ParticleGeometryBuffer::SphericalShape);
+				if(!particleBuffer || !particleBuffer->isValid(renderer)) {
+					particleBuffer = renderer->createParticlePrimitive(ParticlePrimitive::FlatShading, ParticlePrimitive::LowQuality, ParticlePrimitive::SphericalShape);
 					particleBuffer->setSize(positions()->size());
 					particleBuffer->setParticlePositions(positions()->constDataPoint3());
 					particleBuffer->setParticleRadii(_particleRadii.data());
 				}
-				particleBuffer->render(renderer.get());
+				particleBuffer->render(renderer);
 			}
 			catch(...) {
 				renderer->endFrame();
@@ -204,7 +204,7 @@ void AmbientOcclusionModifier::retrieveModifierResults(Engine* engine)
 /******************************************************************************
 * This lets the modifier insert the previously computed results into the pipeline.
 ******************************************************************************/
-ObjectStatus AmbientOcclusionModifier::applyModifierResults(TimePoint time, TimeInterval& validityInterval)
+PipelineStatus AmbientOcclusionModifier::applyModifierResults(TimePoint time, TimeInterval& validityInterval)
 {
 	if(inputParticleCount() != brightnessValues().size())
 		throw Exception(tr("The number of input particles has changed. The stored results have become invalid."));
@@ -231,7 +231,7 @@ ObjectStatus AmbientOcclusionModifier::applyModifierResults(TimePoint time, Time
 	}
 	colorProperty->changed();
 
-	return ObjectStatus::Success;
+	return PipelineStatus::Success;
 }
 
 /******************************************************************************

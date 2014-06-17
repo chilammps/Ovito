@@ -21,7 +21,7 @@
 
 /**
  * \file Rotation.h
- * \brief Contains definition of the Ovito::Rotation class and operators.
+ * \brief Contains the definition of the Ovito::RotationT class template.
  */
 
 #ifndef __OVITO_ROTATION_H
@@ -476,6 +476,23 @@ inline LoadStream& operator>>(LoadStream& stream, RotationT<T>& r)
 	return stream;
 }
 
+/// \brief Writes a rotation to a Qt data stream.
+template<typename T>
+inline QDataStream& operator<<(QDataStream& stream, const RotationT<T>& r) {
+	return stream << r.axis() << r.angle();
+}
+
+/// \brief Reads a rotation from a Qt data stream.
+template<typename T>
+inline QDataStream& operator>>(QDataStream& stream, RotationT<T>& r) {
+	Vector_3<T> axis;
+	T angle;
+	stream >> axis >> angle;
+	r.setAxis(axis);
+	r.setAngle(angle);
+	return stream;
+}
+
 /**
  * \fn typedef Rotation
  * \brief Template class instance of the RotationT template.
@@ -484,7 +501,9 @@ typedef RotationT<FloatType>		Rotation;
 
 };	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Rotation)
+Q_DECLARE_METATYPE(Ovito::Rotation);
+Q_DECLARE_METATYPE(Ovito::Rotation*);
 Q_DECLARE_TYPEINFO(Ovito::Rotation, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Rotation*, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_ROTATION_H

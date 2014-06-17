@@ -1,0 +1,38 @@
+# Makefile configuration for the Tachyon ray tracing library.
+# Copyright 1994-2011 John E. Stone
+# All Rights Reserved
+#
+# $Id: Make-distrib,v 1.8 2011/01/16 00:44:25 johns Exp $
+#
+
+distrib:
+	@echo "Building /tmp/tachyon`date '+%Y%m%d'`.tar.gz"
+	rm -f /tmp/tachyon`date '+%Y%m%d'`.tar
+	rm -f /tmp/tachyon`date '+%Y%m%d'`.tar.gz
+	(cd ../..; \
+	tar -cf /tmp/tachyon`date '+%Y%m%d'`.tar \
+	tachyon/Changes \
+	tachyon/Copyright \
+	tachyon/README \
+	tachyon/compile \
+	tachyon/demosrc \
+	tachyon/docs \
+	tachyon/src \
+	tachyon/unix \
+	tachyon/msvc \
+	tachyon/scenes; \
+	)
+	gzip /tmp/tachyon`date '+%Y%m%d'`.tar 
+	@echo "Distribution created."
+
+# don't redistribute some old stuff anymore.
+#	tachyon/exp \
+#	tachyon/libmgf \
+#	tachyon/libomf \
+#	tachyon/liborb \
+#	tachyon/mesagl \
+#	tachyon/motif \
+#	tachyon/opengl \
+#	tachyon/tk \
+
+

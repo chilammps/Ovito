@@ -97,12 +97,12 @@ void SftpJob::start()
 	OVITO_CHECK_POINTER(_connection);
 
 	// Listen for signals of the connection.
-	connect(_connection, SIGNAL(error(QSsh::SshError)), this, SLOT(onSshConnectionError(QSsh::SshError)));
+	connect(_connection, &QSsh::SshConnection::error, this, &SftpJob::onSshConnectionError);
 	if(_connection->state() == QSsh::SshConnection::Connected) {
 		onSshConnectionEstablished();
 		return;
 	}
-	QObject::connect(_connection, SIGNAL(connected()), this, SLOT(onSshConnectionEstablished()));
+	QObject::connect(_connection, &QSsh::SshConnection::connected, this, &SftpJob::onSshConnectionEstablished);
 
 	// Start to connect.
 	if(_connection->state() == QSsh::SshConnection::Unconnected)
@@ -206,8 +206,8 @@ void SftpJob::onSshConnectionEstablished()
 	_futureInterface->setProgressText(tr("Opening SFTP file transfer channel."));
 
 	_sftpChannel = _connection->createSftpChannel();
-	connect(_sftpChannel.data(), SIGNAL(initialized()), SLOT(onSftpChannelInitialized()));
-	connect(_sftpChannel.data(), SIGNAL(initializationFailed(const QString&)), SLOT(onSftpChannelInitializationFailed(const QString&)));
+	connect(_sftpChannel.data(), &QSsh::SftpChannel::initialized, this, &SftpJob::onSftpChannelInitialized);
+	connect(_sftpChannel.data(), &QSsh::SftpChannel::initializationFailed, this, &SftpJob::onSftpChannelInitializationFailed);
 	_sftpChannel->initialize();
 }
 
@@ -253,8 +253,8 @@ void SftpDownloadJob::onSftpChannelInitialized()
 		return;
 	}
 
-	connect(_sftpChannel.data(), SIGNAL(finished(QSsh::SftpJobId, QString)), this, SLOT(onSftpJobFinished(QSsh::SftpJobId, QString)));
-	connect(_sftpChannel.data(), SIGNAL(fileInfoAvailable(QSsh::SftpJobId, const QList<QSsh::SftpFileInfo>&)), this, SLOT(onFileInfoAvailable(QSsh::SftpJobId, const QList<QSsh::SftpFileInfo>&)));
+	connect(_sftpChannel.data(), &QSsh::SftpChannel::finished, this, &SftpDownloadJob::onSftpJobFinished);
+	connect(_sftpChannel.data(), &QSsh::SftpChannel::fileInfoAvailable, this, &SftpDownloadJob::onFileInfoAvailable);
 	try {
 
 		// Set progress text.
@@ -348,8 +348,8 @@ void SftpListDirectoryJob::onSftpChannelInitialized()
 		return;
 	}
 
-	connect(_sftpChannel.data(), SIGNAL(finished(QSsh::SftpJobId, QString)), this, SLOT(onSftpJobFinished(QSsh::SftpJobId, QString)));
-	connect(_sftpChannel.data(), SIGNAL(fileInfoAvailable(QSsh::SftpJobId, const QList<QSsh::SftpFileInfo>&)), this, SLOT(onFileInfoAvailable(QSsh::SftpJobId, const QList<QSsh::SftpFileInfo>&)));
+	connect(_sftpChannel.data(), &QSsh::SftpChannel::finished, this, &SftpListDirectoryJob::onSftpJobFinished);
+	connect(_sftpChannel.data(), &QSsh::SftpChannel::fileInfoAvailable, this, &SftpListDirectoryJob::onFileInfoAvailable);
 	try {
 		// Set progress text.
 		_futureInterface->setProgressText(tr("Listing remote directory %1").arg(_url.toString(QUrl::RemovePassword | QUrl::PreferLocalFile | QUrl::PrettyDecoded)));

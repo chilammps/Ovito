@@ -15,18 +15,20 @@
       <informaltable frame="none">
         <tgroup cols="2">
           <tbody>
-            <row>
+            <row valign="bottom">
+              <entry>Input:</entry>
+              <entry>Output:</entry>
+            </row>
+            <row valign="top">
               <entry>
-                <para>Input:
 		        <mediaobject><imageobject>
 		        <imagedata fileref="images/modifiers/ambient_occlusion_input.png" format="PNG" />
-		        </imageobject></mediaobject></para>
+		        </imageobject></mediaobject>
               </entry>
               <entry>
-                <para>Output:
 		        <mediaobject><imageobject>
 		        <imagedata fileref="images/modifiers/ambient_occlusion_output.png" format="PNG" />
-		        </imageobject></mediaobject></para>
+		        </imageobject></mediaobject>
               </entry>
             </row>
           </tbody>

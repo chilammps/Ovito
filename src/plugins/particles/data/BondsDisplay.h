@@ -29,7 +29,7 @@
 
 #include <plugins/particles/Particles.h>
 #include <core/scene/display/DisplayObject.h>
-#include <core/rendering/ArrowGeometryBuffer.h>
+#include <core/rendering/ArrowPrimitive.h>
 #include <core/gui/properties/PropertiesEditor.h>
 #include "BondsObject.h"
 #include "ParticlePropertyObject.h"
@@ -65,16 +65,16 @@ public:
 	void setBondWidth(FloatType newWidth) { _bondWidth = newWidth; }
 
 	/// \brief Returns the selected shading mode for bonds.
-	ArrowGeometryBuffer::ShadingMode shadingMode() const { return _shadingMode; }
+	ArrowPrimitive::ShadingMode shadingMode() const { return _shadingMode; }
 
 	/// \brief Sets the shading mode for bonds.
-	void setShadingMode(ArrowGeometryBuffer::ShadingMode mode) { _shadingMode = mode; }
+	void setShadingMode(ArrowPrimitive::ShadingMode mode) { _shadingMode = mode; }
 
 	/// \brief Returns the selected rendering quality mode for bonds.
-	ArrowGeometryBuffer::RenderingQuality renderingQuality() const { return _renderingQuality; }
+	ArrowPrimitive::RenderingQuality renderingQuality() const { return _renderingQuality; }
 
 	/// \brief Sets the rendering quality mode for bonds.
-	void setRenderingQuality(ArrowGeometryBuffer::RenderingQuality quality) { _renderingQuality = quality; }
+	void setRenderingQuality(ArrowPrimitive::RenderingQuality quality) { _renderingQuality = quality; }
 
 	/// Returns the display color for bonds.
 	const Color& bondColor() const { return _bondColor; }
@@ -93,13 +93,8 @@ public:
 	Q_PROPERTY(FloatType bondWidth READ bondWidth WRITE setBondWidth)
 	Q_PROPERTY(Ovito::Color bondColor READ bondColor WRITE setBondColor)
 	Q_PROPERTY(bool useParticleColors READ useParticleColors WRITE setUseParticleColors)
-	Q_PROPERTY(Ovito::ArrowGeometryBuffer::ShadingMode shadingMode READ shadingMode WRITE setShadingMode)
-	Q_PROPERTY(Ovito::ArrowGeometryBuffer::RenderingQuality renderingQuality READ renderingQuality WRITE setRenderingQuality)
-
-protected:
-
-	/// Searches for the given standard particle property in the scene objects stored in the pipeline flow state.
-	ParticlePropertyObject* findStandardProperty(ParticleProperty::Type type, const PipelineFlowState& flowState) const;
+	Q_PROPERTY(Ovito::ArrowPrimitive::ShadingMode shadingMode READ shadingMode WRITE setShadingMode)
+	Q_PROPERTY(Ovito::ArrowPrimitive::RenderingQuality renderingQuality READ renderingQuality WRITE setRenderingQuality)
 
 protected:
 
@@ -113,13 +108,13 @@ protected:
 	PropertyField<bool> _useParticleColors;
 
 	/// Controls the shading mode for bonds.
-	PropertyField<ArrowGeometryBuffer::ShadingMode, int> _shadingMode;
+	PropertyField<ArrowPrimitive::ShadingMode, int> _shadingMode;
 
 	/// Controls the rendering quality mode for bonds.
-	PropertyField<ArrowGeometryBuffer::RenderingQuality, int> _renderingQuality;
+	PropertyField<ArrowPrimitive::RenderingQuality, int> _renderingQuality;
 
 	/// The buffered geometry used to render the bonds.
-	std::unique_ptr<ArrowGeometryBuffer> _buffer;
+	std::unique_ptr<ArrowPrimitive> _buffer;
 
 	/// This helper structure is used to detect any changes in the input data
 	/// that require updating the geometry buffer.

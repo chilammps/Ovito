@@ -49,7 +49,7 @@ ViewportMenu::ViewportMenu(Viewport* vp) : QMenu(vp->widget()), _viewport(vp)
 	addSeparator();
 
 	_viewTypeMenu = addMenu(tr("View Type"));
-	connect(_viewTypeMenu, SIGNAL(aboutToShow()), this, SLOT(onShowViewTypeMenu()));
+	connect(_viewTypeMenu, &QMenu::aboutToShow, this, &ViewportMenu::onShowViewTypeMenu);
 
 	QActionGroup* viewTypeGroup = new QActionGroup(this);
 	action = viewTypeGroup->addAction(tr("Top"));
@@ -85,13 +85,13 @@ ViewportMenu::ViewportMenu(Viewport* vp) : QMenu(vp->widget()), _viewport(vp)
 	action->setChecked(_viewport->viewType() == Viewport::VIEW_PERSPECTIVE);
 	action->setData((int)Viewport::VIEW_PERSPECTIVE);
 	_viewTypeMenu->addActions(viewTypeGroup->actions());
-	connect(viewTypeGroup, SIGNAL(triggered(QAction*)), this, SLOT(onViewType(QAction*)));
+	connect(viewTypeGroup, &QActionGroup::triggered, this, &ViewportMenu::onViewType);
 
 	addSeparator();
 	addAction(tr("Adjust View..."), this, SLOT(onAdjustView()))->setEnabled(_viewport->viewType() != Viewport::VIEW_SCENENODE);
 
 #ifdef Q_OS_MACX
-	connect(QGuiApplication::instance(), SIGNAL(focusWindowChanged(QWindow*)), this, SLOT(onWindowFocusChanged()));
+	connect(static_cast<QGuiApplication*>(QGuiApplication::instance()), &QGuiApplication::focusWindowChanged, this, &ViewportMenu::onWindowFocusChanged);
 #endif
 }
 
@@ -109,7 +109,7 @@ void ViewportMenu::show(const QPoint& pos)
 void ViewportMenu::onShowViewTypeMenu()
 {
 	QActionGroup* viewNodeGroup = new QActionGroup(this);
-	connect(viewNodeGroup, SIGNAL(triggered(QAction*)), this, SLOT(onViewNode(QAction*)));
+	connect(viewNodeGroup, &QActionGroup::triggered, this, &ViewportMenu::onViewNode);
 
 	// Find all camera nodes in the scene.
 	_viewport->dataset()->sceneRoot()->visitObjectNodes([this, viewNodeGroup](ObjectNode* node) -> bool {
@@ -134,7 +134,7 @@ void ViewportMenu::onShowViewTypeMenu()
 	_viewTypeMenu->addSeparator();
 	_viewTypeMenu->addAction(tr("Create Camera"), this, SLOT(onCreateCamera()))->setEnabled(_viewport->viewNode() == nullptr);
 
-	disconnect(_viewTypeMenu, SIGNAL(aboutToShow()), this, SLOT(onShowViewTypeMenu()));
+	disconnect(_viewTypeMenu, &QMenu::aboutToShow, this, &ViewportMenu::onShowViewTypeMenu);
 }
 
 /******************************************************************************
@@ -206,7 +206,7 @@ void ViewportMenu::onCreateCamera()
 				cameraObj->zoomController()->setFloatValue(0, _viewport->fieldOfView());
 
 			// Create an object node to insert camera object into scene.
-			cameraNode = new ObjectNode(_viewport->dataset(), cameraObj.get());
+			cameraNode = new ObjectNode(_viewport->dataset(), cameraObj);
 
 			// Give the new node a name.
 			cameraNode->setName(scene->makeNameUnique(tr("Camera")));
@@ -226,7 +226,7 @@ void ViewportMenu::onCreateCamera()
 
 		// Set new camera as view node for current viewport.
 		_viewport->setViewType(Viewport::VIEW_SCENENODE);
-		_viewport->setViewNode(cameraNode.get());
+		_viewport->setViewNode(cameraNode);
 	});
 }
 

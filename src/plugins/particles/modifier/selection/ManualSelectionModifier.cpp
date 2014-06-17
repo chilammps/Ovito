@@ -33,14 +33,14 @@
 
 namespace Particles {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ManualSelectionModifier, ParticleModifier)
-IMPLEMENT_OVITO_OBJECT(Particles, ManualSelectionModifierEditor, ParticleModifierEditor)
-SET_OVITO_OBJECT_EDITOR(ManualSelectionModifier, ManualSelectionModifierEditor)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ManualSelectionModifier, ParticleModifier);
+IMPLEMENT_OVITO_OBJECT(Particles, ManualSelectionModifierEditor, ParticleModifierEditor);
+SET_OVITO_OBJECT_EDITOR(ManualSelectionModifier, ManualSelectionModifierEditor);
 
 /******************************************************************************
 * This modifies the input object.
 ******************************************************************************/
-ObjectStatus ManualSelectionModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
+PipelineStatus ManualSelectionModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
 {
 	// Retrieve the selection stored in the modifier application.
 	ParticleSelectionSet* selectionSet = getSelectionSet(modifierApplication());
@@ -206,7 +206,7 @@ public:
 	/// Lets the input mode render its 2d overlay content in a viewport.
 	virtual void renderOverlay2D(Viewport* vp, ViewportSceneRenderer* renderer) override {
 		if(isActive() && vp == vp->dataset()->viewportConfig()->activeViewport() && _fence.size() >= 2) {
-			renderer->render2DPolyline(_fence.constData(), _fence.size(), ColorA(1,1,1,1), true);
+			renderer->render2DPolyline(_fence.constData(), _fence.size(), ViewportSettings::getSettings().viewportColor(ViewportSettings::COLOR_SELECTION), true);
 		}
 		ViewportInputMode::renderOverlay2D(vp, renderer);
 	}
@@ -275,15 +275,15 @@ void ManualSelectionModifierEditor::createUI(const RolloutInsertionParameters& r
 	layout->addWidget(globalSelectionGroup);
 
 	QPushButton* selectAllBtn = new QPushButton(tr("Select all particles"));
-	connect(selectAllBtn, SIGNAL(clicked(bool)), this, SLOT(selectAll()));
+	connect(selectAllBtn, &QPushButton::clicked, this, &ManualSelectionModifierEditor::selectAll);
 	sublayout->addWidget(selectAllBtn);
 
 	QPushButton* clearSelectionBtn = new QPushButton(tr("Clear selection"));
-	connect(clearSelectionBtn, SIGNAL(clicked(bool)), this, SLOT(clearSelection()));
+	connect(clearSelectionBtn, &QPushButton::clicked, this, &ManualSelectionModifierEditor::clearSelection);
 	sublayout->addWidget(clearSelectionBtn);
 
 	QPushButton* resetSelectionBtn = new QPushButton(tr("Reset selection"));
-	connect(resetSelectionBtn, SIGNAL(clicked(bool)), this, SLOT(resetSelection()));
+	connect(resetSelectionBtn, &QPushButton::clicked, this, &ManualSelectionModifierEditor::resetSelection);
 	sublayout->addWidget(resetSelectionBtn);
 
 	// Status label.

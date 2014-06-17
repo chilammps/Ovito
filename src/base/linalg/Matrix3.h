@@ -21,7 +21,7 @@
 
 /** 
  * \file Matrix3.h 
- * \brief Contains definition of the Ovito::Matrix3 class and operators.
+ * \brief Contains the definition of the Ovito::Matrix_3 class template.
  */
  
 #ifndef __OVITO_MATRIX3_H
@@ -626,6 +626,22 @@ inline LoadStream& operator>>(LoadStream& stream, Matrix_3<T>& m)
 	return stream;
 }
 
+/// \brief Writes a matrix to a Qt data stream.
+template<typename T>
+inline QDataStream& operator<<(QDataStream& stream, const Matrix_3<T>& m) {
+	for(typename Matrix_3<T>::size_type col = 0; col < m.col_count(); col++)
+		stream << m.column(col);
+	return stream;
+}
+
+/// \brief Reads a matrix from a Qt data stream.
+template<typename T>
+inline QDataStream& operator>>(QDataStream& stream, Matrix_3<T>& m) {
+	for(typename Matrix_3<T>::size_type col = 0; col < m.col_count(); col++)
+		stream >> m.column(col);
+	return stream;
+}
+
 /**
  * \fn typedef Matrix3
  * \brief Template class instance of the Matrix_3 class.
@@ -635,7 +651,9 @@ typedef Matrix_3<FloatType>		Matrix3;
 
 };	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Matrix3)
+Q_DECLARE_METATYPE(Ovito::Matrix3);
+Q_DECLARE_METATYPE(Ovito::Matrix3*);
 Q_DECLARE_TYPEINFO(Ovito::Matrix3, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Matrix3*, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_MATRIX3_H

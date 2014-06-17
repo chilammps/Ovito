@@ -26,7 +26,7 @@
 
 namespace Particles {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, WrapPeriodicImagesModifier, ParticleModifier)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, WrapPeriodicImagesModifier, ParticleModifier);
 
 /******************************************************************************
 * Constructs the modifier object.
@@ -38,11 +38,11 @@ WrapPeriodicImagesModifier::WrapPeriodicImagesModifier(DataSet* dataset) : Parti
 /******************************************************************************
 * Modifies the particle object.
 ******************************************************************************/
-ObjectStatus WrapPeriodicImagesModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
+PipelineStatus WrapPeriodicImagesModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
 {
 	std::array<bool, 3> pbc = expectSimulationCell()->pbcFlags();
 	if(!pbc[0] && !pbc[1] && !pbc[2])
-		return ObjectStatus(ObjectStatus::Warning, tr("The simulation cell has no periodic boundary conditions."));
+		return PipelineStatus(PipelineStatus::Warning, tr("The simulation cell has no periodic boundary conditions."));
 
 	AffineTransformation simCell = expectSimulationCell()->cellMatrix();
 	if(std::abs(simCell.determinant()) < FLOATTYPE_EPSILON)
@@ -69,7 +69,7 @@ ObjectStatus WrapPeriodicImagesModifier::modifyParticles(TimePoint time, TimeInt
 	});
 	posProperty->changed();
 
-	return ObjectStatus::Success;
+	return PipelineStatus::Success;
 }
 
 };	// End of namespace

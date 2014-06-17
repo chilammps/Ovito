@@ -30,24 +30,24 @@
 
 namespace Particles {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ParticleModifier, Modifier)
-IMPLEMENT_OVITO_OBJECT(Particles, ParticleModifierEditor, PropertiesEditor)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ParticleModifier, Modifier);
+IMPLEMENT_OVITO_OBJECT(Particles, ParticleModifierEditor, PropertiesEditor);
 
 /******************************************************************************
 * This modifies the input object.
 ******************************************************************************/
-ObjectStatus ParticleModifier::modifyObject(TimePoint time, ModifierApplication* modApp, PipelineFlowState& state)
+PipelineStatus ParticleModifier::modifyObject(TimePoint time, ModifierApplication* modApp, PipelineFlowState& state)
 {
 	// This method is not re-entrant. If this method is called while the modifier is already being
 	// evaluated then we are not able to process the request.
 	if(!_input.isEmpty())
-		return ObjectStatus(ObjectStatus::Error, tr("Cannot handle re-entrant modifier calls."));
+		return PipelineStatus(PipelineStatus::Error, tr("Cannot handle re-entrant modifier calls."));
 
 	// Prepare internal fields.
 	_input = state;
 	_output = state;
 	_modApp = modApp;
-	ObjectStatus status;
+	PipelineStatus status;
 
 	try {
 		ParticlePropertyObject* posProperty = inputStandardProperty(ParticleProperty::PositionProperty);
@@ -65,7 +65,12 @@ ObjectStatus ParticleModifier::modifyObject(TimePoint time, ModifierApplication*
 	}
 	catch(const Exception& ex) {
 		// Transfer exception message to evaluation status.
-		status = ObjectStatus(ObjectStatus::Error, ex.messages().join('\n'));
+		status = PipelineStatus(PipelineStatus::Error, ex.messages().join('\n'));
+		state.intersectStateValidity(TimeInterval(time));
+	}
+	catch(const PipelineStatus& thrown_status) {
+		// Transfer exception message to evaluation status.
+		status = thrown_status;
 		state.intersectStateValidity(TimeInterval(time));
 	}
 	setStatus(status);
@@ -83,7 +88,7 @@ ObjectStatus ParticleModifier::modifyObject(TimePoint time, ModifierApplication*
 * Sets the status returned by the modifier and generates a
 * ReferenceEvent::ObjectStatusChanged event.
 ******************************************************************************/
-void ParticleModifier::setStatus(const ObjectStatus& status)
+void ParticleModifier::setStatus(const PipelineStatus& status)
 {
 	if(status == _modifierStatus) return;
 	_modifierStatus = status;
@@ -112,8 +117,8 @@ ParticlePropertyObject* ParticleModifier::inputStandardProperty(ParticleProperty
 ******************************************************************************/
 ParticlePropertyObject* ParticleModifier::expectCustomProperty(const QString& propertyName, int dataType, size_t componentCount) const
 {
-	for(const auto& o : _input.objects()) {
-		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o.get());
+	for(SceneObject* o : _input.objects()) {
+		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o);
 		if(property && property->name() == propertyName) {
 			if(property->dataType() != dataType)
 				throw Exception(tr("The modifier cannot be evaluated because the particle property '%1' does not have the required data type.").arg(property->name()));
@@ -169,17 +174,17 @@ ParticlePropertyObject* ParticleModifier::outputStandardProperty(ParticlePropert
 		if(outputProperty == inputProperty) {
 			// Make a real copy of the property, which may be modified.
 			outputProperty = cloneHelper()->cloneObject(inputProperty, false);
-			_output.replaceObject(inputProperty.get(), outputProperty);
+			_output.replaceObject(inputProperty, outputProperty);
 		}
 	}
 	else {
 		// Create a new particle property in the output.
 		outputProperty = ParticlePropertyObject::create(dataset(), _outputParticleCount, which);
-		_output.addObject(outputProperty.get());
+		_output.addObject(outputProperty);
 	}
 
 	OVITO_ASSERT(outputProperty->size() == outputParticleCount());
-	return outputProperty.get();
+	return outputProperty;
 }
 
 /******************************************************************************
@@ -189,8 +194,8 @@ ParticlePropertyObject* ParticleModifier::outputCustomProperty(const QString& na
 {
 	// Check if property already exists in the input.
 	OORef<ParticlePropertyObject> inputProperty;
-	for(const auto& o : input().objects()) {
-		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o.get());
+	for(SceneObject* o : input().objects()) {
+		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o);
 		if(property && property->type() == ParticleProperty::UserProperty && property->name() == name) {
 			inputProperty = property;
 			if(property->dataType() != dataType || property->dataTypeSize() != dataTypeSize)
@@ -203,8 +208,8 @@ ParticlePropertyObject* ParticleModifier::outputCustomProperty(const QString& na
 
 	// Check if property already exists in the output.
 	OORef<ParticlePropertyObject> outputProperty;
-	for(const auto& o : output().objects()) {
-		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o.get());
+	for(SceneObject* o : output().objects()) {
+		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o);
 		if(property && property->type() == ParticleProperty::UserProperty && property->name() == name) {
 			outputProperty = property;
 			OVITO_ASSERT(property->dataType() == dataType);
@@ -218,17 +223,17 @@ ParticlePropertyObject* ParticleModifier::outputCustomProperty(const QString& na
 		if(outputProperty == inputProperty) {
 			// Make a real copy of the property, which may be modified.
 			outputProperty = cloneHelper()->cloneObject(inputProperty, false);
-			_output.replaceObject(inputProperty.get(), outputProperty);
+			_output.replaceObject(inputProperty, outputProperty);
 		}
 	}
 	else {
 		// Create a new particle property in the output.
 		outputProperty = ParticlePropertyObject::create(dataset(), _outputParticleCount, dataType, dataTypeSize, componentCount, name);
-		_output.addObject(outputProperty.get());
+		_output.addObject(outputProperty);
 	}
 
 	OVITO_ASSERT(outputProperty->size() == outputParticleCount());
-	return outputProperty.get();
+	return outputProperty;
 }
 
 /******************************************************************************
@@ -259,10 +264,10 @@ SimulationCell* ParticleModifier::outputSimulationCell()
 	else {
 		// Create a new particle property in the output.
 		outputCell = new SimulationCell(dataset());
-		_output.addObject(outputCell.get());
+		_output.addObject(outputCell);
 	}
 
-	return outputCell.get();
+	return outputCell;
 }
 
 /******************************************************************************
@@ -285,8 +290,8 @@ size_t ParticleModifier::deleteParticles(const std::vector<bool>& mask, size_t d
 	QVector<QPair<OORef<ParticlePropertyObject>, OORef<ParticlePropertyObject>>> oldToNewMap;
 
 	// Create output particle properties.
-	for(const auto& outobj : _output.objects()) {
-		OORef<ParticlePropertyObject> originalOutputProperty = dynamic_object_cast<ParticlePropertyObject>(outobj.get());
+	for(SceneObject* outobj : _output.objects()) {
+		OORef<ParticlePropertyObject> originalOutputProperty = dynamic_object_cast<ParticlePropertyObject>(outobj);
 		if(!originalOutputProperty)
 			continue;
 
@@ -297,19 +302,19 @@ size_t ParticleModifier::deleteParticles(const std::vector<bool>& mask, size_t d
 		newProperty->resize(newParticleCount);
 
 		// Replace original property with the filtered one.
-		_output.replaceObject(originalOutputProperty.get(), newProperty);
+		_output.replaceObject(originalOutputProperty, newProperty);
 
 		oldToNewMap.push_back(qMakePair(originalOutputProperty, newProperty));
 	}
 
 	// Transfer and filter per-particle data elements.
 	QtConcurrent::blockingMap(oldToNewMap, [&mask](const QPair<OORef<ParticlePropertyObject>, OORef<ParticlePropertyObject>>& pair) {
-		pair.second->filterCopy(pair.first.get(), mask);
+		pair.second->filterCopy(pair.first, mask);
 	});
 
 	// Delete bonds for particles that have been deleted.
 	for(const auto& outobj : _output.objects()) {
-		OORef<BondsObject> originalBondsObject = dynamic_object_cast<BondsObject>(outobj.get());
+		OORef<BondsObject> originalBondsObject = dynamic_object_cast<BondsObject>(outobj);
 		if(!originalBondsObject)
 			continue;
 
@@ -318,7 +323,7 @@ size_t ParticleModifier::deleteParticles(const std::vector<bool>& mask, size_t d
 		newBondsObject->particlesDeleted(mask);
 
 		// Replace original bonds object with the filtered one.
-		_output.replaceObject(originalBondsObject.get(), newBondsObject);
+		_output.replaceObject(originalBondsObject, newBondsObject);
 	}
 
 	return newParticleCount;
@@ -430,10 +435,10 @@ void ParticleModifierEditor::updateStatusLabel()
 * states the outcome of the modifier evaluation. Derived classes of this
 * editor base class can add the widget to their user interface.
 ******************************************************************************/
-ObjectStatusWidget* ParticleModifierEditor::statusLabel()
+StatusWidget* ParticleModifierEditor::statusLabel()
 {
 	if(!_statusLabel)
-		_statusLabel = new ObjectStatusWidget();
+		_statusLabel = new StatusWidget();
 	return _statusLabel;
 }
 

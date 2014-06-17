@@ -84,7 +84,7 @@ public:
 	void setParticleSelection(const PipelineFlowState& state, const QBitArray& selection, SelectionMode mode = SelectionReplace);
 
 	/// Copies the stored selection set into the given output selection particle property.
-	ObjectStatus applySelection(ParticlePropertyObject* outputSelectionProperty, ParticlePropertyObject* identifierProperty);
+	PipelineStatus applySelection(ParticlePropertyObject* outputSelectionProperty, ParticlePropertyObject* identifierProperty);
 
 	/// Returns true if this object tries to store identifiers of selected particle when available.
 	bool useIdentifiers() const { return _useIdentifiers; }
@@ -111,7 +111,7 @@ private:
 	/// Stores the selection as a list of particle identifiers.
 	QSet<int> _selectedIdentifiers;
 
-	/// Controls whether the object should store the identifiers of selected particle when available.
+	/// Controls whether the object should store the identifiers of selected particles (when available).
 	PropertyField<bool> _useIdentifiers;
 
 	Q_OBJECT

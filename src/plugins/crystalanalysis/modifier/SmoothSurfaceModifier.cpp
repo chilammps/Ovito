@@ -27,11 +27,11 @@
 
 namespace CrystalAnalysis {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(CrystalAnalysis, SmoothSurfaceModifier, Modifier)
-IMPLEMENT_OVITO_OBJECT(CrystalAnalysis, SmoothSurfaceModifierEditor, PropertiesEditor)
-SET_OVITO_OBJECT_EDITOR(SmoothSurfaceModifier, SmoothSurfaceModifierEditor)
-DEFINE_FLAGS_PROPERTY_FIELD(SmoothSurfaceModifier, _smoothingLevel, "SmoothingLevel", PROPERTY_FIELD_MEMORIZE)
-SET_PROPERTY_FIELD_LABEL(SmoothSurfaceModifier, _smoothingLevel, "Smoothing level")
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(CrystalAnalysis, SmoothSurfaceModifier, Modifier);
+IMPLEMENT_OVITO_OBJECT(CrystalAnalysis, SmoothSurfaceModifierEditor, PropertiesEditor);
+SET_OVITO_OBJECT_EDITOR(SmoothSurfaceModifier, SmoothSurfaceModifierEditor);
+DEFINE_FLAGS_PROPERTY_FIELD(SmoothSurfaceModifier, _smoothingLevel, "SmoothingLevel", PROPERTY_FIELD_MEMORIZE);
+SET_PROPERTY_FIELD_LABEL(SmoothSurfaceModifier, _smoothingLevel, "Smoothing level");
 
 /******************************************************************************
 * Constructs the modifier object.
@@ -52,10 +52,10 @@ bool SmoothSurfaceModifier::isApplicableTo(const PipelineFlowState& input)
 /******************************************************************************
 * This modifies the input object.
 ******************************************************************************/
-ObjectStatus SmoothSurfaceModifier::modifyObject(TimePoint time, ModifierApplication* modApp, PipelineFlowState& state)
+PipelineStatus SmoothSurfaceModifier::modifyObject(TimePoint time, ModifierApplication* modApp, PipelineFlowState& state)
 {
 	if(_smoothingLevel <= 0)
-		return ObjectStatus::Success;
+		return PipelineStatus::Success;
 
 	// Get simulation cell geometry and periodic boundary flags.
 	SimulationCellData cell;
@@ -66,13 +66,13 @@ ObjectStatus SmoothSurfaceModifier::modifyObject(TimePoint time, ModifierApplica
 
 	CloneHelper cloneHelper;
 	for(int index = 0; index < state.objects().size(); index++) {
-		if(SurfaceMesh* inputSurface = dynamic_object_cast<SurfaceMesh>(state.objects()[index].get())) {
+		if(SurfaceMesh* inputSurface = dynamic_object_cast<SurfaceMesh>(state.objects()[index])) {
 			OORef<SurfaceMesh> outputSurface = cloneHelper.cloneObject(inputSurface, false);
 			outputSurface->smoothMesh(cell, _smoothingLevel);
 			state.replaceObject(inputSurface, outputSurface);
 		}
 	}
-	return ObjectStatus::Success;
+	return PipelineStatus::Success;
 }
 
 /******************************************************************************

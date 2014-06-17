@@ -67,7 +67,6 @@ SET(OVITO_CORE_SOURCE_FILES
 	scene/display/DisplayObject.cpp
 	scene/display/geometry/TriMeshDisplay.cpp
 	gui/app/Application.cpp
-	gui/app/CommandLineParser.cpp
 	gui/mainwin/MainWindow.cpp
 	gui/mainwin/ViewportsPanel.cpp
 	gui/mainwin/cmdpanel/CommandPanel.cpp
@@ -81,6 +80,7 @@ SET(OVITO_CORE_SOURCE_FILES
 	gui/dialogs/AdjustCameraDialog.cpp
 	gui/dialogs/AnimationSettingsDialog.cpp
 	gui/dialogs/ApplicationSettingsDialog.cpp
+	gui/dialogs/GeneralSettingsPage.cpp
 	gui/dialogs/ViewportSettingsPage.cpp
 	gui/dialogs/HistoryFileDialog.cpp
 	gui/dialogs/ImportFileDialog.cpp
@@ -106,8 +106,8 @@ SET(OVITO_CORE_SOURCE_FILES
 	gui/widgets/rendering/FrameBufferWindow.cpp
 	gui/widgets/selection/SceneNodesListModel.cpp
 	gui/widgets/selection/SceneNodeSelectionBox.cpp
-	gui/widgets/display/ObjectStatusWidget.cpp
 	gui/widgets/display/CoordinateDisplayWidget.cpp
+	gui/widgets/display/StatusWidget.cpp
 	gui/properties/PropertiesEditor.cpp
 	gui/properties/PropertiesPanel.cpp
 	gui/properties/ParameterUI.cpp
@@ -135,24 +135,24 @@ SET(OVITO_CORE_SOURCE_FILES
 	utilities/io/CompressedTextParserStream.cpp
 	utilities/concurrent/Future.cpp
 	utilities/concurrent/TaskManager.cpp
-	utilities/opengl/SharedOpenGLResource.cpp
 	rendering/SceneRenderer.cpp
 	rendering/viewport/ViewportSceneRenderer.cpp
-	rendering/viewport/ViewportLineGeometryBuffer.cpp
-	rendering/viewport/ViewportParticleGeometryBuffer.cpp
-	rendering/viewport/ViewportTextGeometryBuffer.cpp
-	rendering/viewport/ViewportImageGeometryBuffer.cpp
-	rendering/viewport/ViewportArrowGeometryBuffer.cpp
-	rendering/viewport/ViewportTriMeshGeometryBuffer.cpp
+	rendering/viewport/OpenGLLinePrimitive.cpp
+	rendering/viewport/OpenGLParticlePrimitive.cpp
+	rendering/viewport/OpenGLTextPrimitive.cpp
+	rendering/viewport/OpenGLImagePrimitive.cpp
+	rendering/viewport/OpenGLArrowPrimitive.cpp
+	rendering/viewport/OpenGLMeshPrimitive.cpp
+	rendering/viewport/OpenGLSharedResource.cpp
 	rendering/standard/StandardSceneRenderer.cpp
 	rendering/standard/StandardSceneRendererEditor.cpp
 	rendering/noninteractive/NonInteractiveSceneRenderer.cpp
-	rendering/noninteractive/DefaultLineGeometryBuffer.cpp
-	rendering/noninteractive/DefaultParticleGeometryBuffer.cpp
-	rendering/noninteractive/DefaultTextGeometryBuffer.cpp
-	rendering/noninteractive/DefaultImageGeometryBuffer.cpp
-	rendering/noninteractive/DefaultArrowGeometryBuffer.cpp
-	rendering/noninteractive/DefaultTriMeshGeometryBuffer.cpp
+	rendering/noninteractive/DefaultLinePrimitive.cpp
+	rendering/noninteractive/DefaultParticlePrimitive.cpp
+	rendering/noninteractive/DefaultTextPrimitive.cpp
+	rendering/noninteractive/DefaultImagePrimitive.cpp
+	rendering/noninteractive/DefaultArrowPrimitive.cpp
+	rendering/noninteractive/DefaultMeshPrimitive.cpp
 	rendering/RenderSettings.cpp
 	rendering/RenderSettingsEditor.cpp
 	rendering/FrameBuffer.cpp
@@ -168,7 +168,7 @@ SET(OVITO_CORE_SOURCE_FILES
 	viewport/picking/PickingSceneRenderer.cpp
 )
 
-# Compile resource files.
+# Compile resources.
 QT5_ADD_RESOURCES(OVITO_CORE_RESOURCE_FILES resources/core.qrc)
 
 # This will let the source code export symbols when building a DLL.

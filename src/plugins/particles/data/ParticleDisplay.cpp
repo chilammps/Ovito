@@ -30,27 +30,27 @@
 
 namespace Particles {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ParticleDisplay, DisplayObject)
-IMPLEMENT_OVITO_OBJECT(Particles, ParticleDisplayEditor, PropertiesEditor)
-SET_OVITO_OBJECT_EDITOR(ParticleDisplay, ParticleDisplayEditor)
-DEFINE_FLAGS_PROPERTY_FIELD(ParticleDisplay, _defaultParticleRadius, "DefaultParticleRadius", PROPERTY_FIELD_MEMORIZE)
-DEFINE_PROPERTY_FIELD(ParticleDisplay, _shadingMode, "ShadingMode")
-DEFINE_PROPERTY_FIELD(ParticleDisplay, _renderingQuality, "RenderingQuality")
-DEFINE_PROPERTY_FIELD(ParticleDisplay, _particleShape, "ParticleShape")
-SET_PROPERTY_FIELD_LABEL(ParticleDisplay, _defaultParticleRadius, "Default particle radius")
-SET_PROPERTY_FIELD_LABEL(ParticleDisplay, _shadingMode, "Shading mode")
-SET_PROPERTY_FIELD_LABEL(ParticleDisplay, _renderingQuality, "Rendering quality")
-SET_PROPERTY_FIELD_LABEL(ParticleDisplay, _particleShape, "Shape")
-SET_PROPERTY_FIELD_UNITS(ParticleDisplay, _defaultParticleRadius, WorldParameterUnit)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ParticleDisplay, DisplayObject);
+IMPLEMENT_OVITO_OBJECT(Particles, ParticleDisplayEditor, PropertiesEditor);
+SET_OVITO_OBJECT_EDITOR(ParticleDisplay, ParticleDisplayEditor);
+DEFINE_FLAGS_PROPERTY_FIELD(ParticleDisplay, _defaultParticleRadius, "DefaultParticleRadius", PROPERTY_FIELD_MEMORIZE);
+DEFINE_FLAGS_PROPERTY_FIELD(ParticleDisplay, _shadingMode, "ShadingMode", PROPERTY_FIELD_MEMORIZE);
+DEFINE_PROPERTY_FIELD(ParticleDisplay, _renderingQuality, "RenderingQuality");
+DEFINE_FLAGS_PROPERTY_FIELD(ParticleDisplay, _particleShape, "ParticleShape", PROPERTY_FIELD_MEMORIZE);
+SET_PROPERTY_FIELD_LABEL(ParticleDisplay, _defaultParticleRadius, "Default particle radius");
+SET_PROPERTY_FIELD_LABEL(ParticleDisplay, _shadingMode, "Shading mode");
+SET_PROPERTY_FIELD_LABEL(ParticleDisplay, _renderingQuality, "Rendering quality");
+SET_PROPERTY_FIELD_LABEL(ParticleDisplay, _particleShape, "Shape");
+SET_PROPERTY_FIELD_UNITS(ParticleDisplay, _defaultParticleRadius, WorldParameterUnit);
 
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
 ParticleDisplay::ParticleDisplay(DataSet* dataset) : DisplayObject(dataset),
 	_defaultParticleRadius(1.2),
-	_shadingMode(ParticleGeometryBuffer::NormalShading),
-	_renderingQuality(ParticleGeometryBuffer::AutoQuality),
-	_particleShape(ParticleGeometryBuffer::SphericalShape)
+	_shadingMode(ParticlePrimitive::NormalShading),
+	_renderingQuality(ParticlePrimitive::AutoQuality),
+	_particleShape(ParticlePrimitive::SphericalShape)
 {
 	INIT_PROPERTY_FIELD(ParticleDisplay::_defaultParticleRadius);
 	INIT_PROPERTY_FIELD(ParticleDisplay::_shadingMode);
@@ -59,26 +59,13 @@ ParticleDisplay::ParticleDisplay(DataSet* dataset) : DisplayObject(dataset),
 }
 
 /******************************************************************************
-* Searches for the given standard particle property in the scene objects
-* stored in the pipeline flow state.
-******************************************************************************/
-ParticlePropertyObject* ParticleDisplay::findStandardProperty(ParticleProperty::Type type, const PipelineFlowState& flowState) const
-{
-	for(const auto& sceneObj : flowState.objects()) {
-		ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(sceneObj.get());
-		if(property && property->type() == type) return property;
-	}
-	return nullptr;
-}
-
-/******************************************************************************
 * Computes the bounding box of the object.
 ******************************************************************************/
 Box3 ParticleDisplay::boundingBox(TimePoint time, SceneObject* sceneObject, ObjectNode* contextNode, const PipelineFlowState& flowState)
 {
 	ParticlePropertyObject* positionProperty = dynamic_object_cast<ParticlePropertyObject>(sceneObject);
-	ParticlePropertyObject* radiusProperty = findStandardProperty(ParticleProperty::RadiusProperty, flowState);
-	ParticleTypeProperty* typeProperty = dynamic_object_cast<ParticleTypeProperty>(findStandardProperty(ParticleProperty::ParticleTypeProperty, flowState));
+	ParticlePropertyObject* radiusProperty = ParticlePropertyObject::findInState(flowState, ParticleProperty::RadiusProperty);
+	ParticleTypeProperty* typeProperty = dynamic_object_cast<ParticleTypeProperty>(ParticlePropertyObject::findInState(flowState, ParticleProperty::ParticleTypeProperty));
 
 	// Detect if the input data has changed since the last time we computed the bounding box.
 	if(_boundingBoxCacheHelper.updateState(
@@ -270,18 +257,18 @@ Color ParticleDisplay::particleColor(size_t particleIndex, ParticlePropertyObjec
 /******************************************************************************
 * Returns the actual rendering quality used to render the given particles.
 ******************************************************************************/
-ParticleGeometryBuffer::RenderingQuality ParticleDisplay::effectiveRenderingQuality(SceneRenderer* renderer, ParticlePropertyObject* positionProperty) const
+ParticlePrimitive::RenderingQuality ParticleDisplay::effectiveRenderingQuality(SceneRenderer* renderer, ParticlePropertyObject* positionProperty) const
 {
-	ParticleGeometryBuffer::RenderingQuality renderQuality = renderingQuality();
-	if(renderQuality == ParticleGeometryBuffer::AutoQuality) {
-		if(!positionProperty) return ParticleGeometryBuffer::HighQuality;
+	ParticlePrimitive::RenderingQuality renderQuality = renderingQuality();
+	if(renderQuality == ParticlePrimitive::AutoQuality) {
+		if(!positionProperty) return ParticlePrimitive::HighQuality;
 		int particleCount = positionProperty->size();
 		if(particleCount < 2000 || renderer->isInteractive() == false)
-			renderQuality = ParticleGeometryBuffer::HighQuality;
+			renderQuality = ParticlePrimitive::HighQuality;
 		else if(particleCount < 100000)
-			renderQuality = ParticleGeometryBuffer::MediumQuality;
+			renderQuality = ParticlePrimitive::MediumQuality;
 		else
-			renderQuality = ParticleGeometryBuffer::LowQuality;
+			renderQuality = ParticlePrimitive::LowQuality;
 	}
 	return renderQuality;
 }
@@ -293,11 +280,11 @@ void ParticleDisplay::render(TimePoint time, SceneObject* sceneObject, const Pip
 {
 	// Get input data.
 	ParticlePropertyObject* positionProperty = dynamic_object_cast<ParticlePropertyObject>(sceneObject);
-	ParticlePropertyObject* radiusProperty = findStandardProperty(ParticleProperty::RadiusProperty, flowState);
-	ParticlePropertyObject* colorProperty = findStandardProperty(ParticleProperty::ColorProperty, flowState);
-	ParticleTypeProperty* typeProperty = dynamic_object_cast<ParticleTypeProperty>(findStandardProperty(ParticleProperty::ParticleTypeProperty, flowState));
-	ParticlePropertyObject* selectionProperty = renderer->isInteractive() ? findStandardProperty(ParticleProperty::SelectionProperty, flowState) : nullptr;
-	ParticlePropertyObject* transparencyProperty = findStandardProperty(ParticleProperty::TransparencyProperty, flowState);
+	ParticlePropertyObject* radiusProperty = ParticlePropertyObject::findInState(flowState, ParticleProperty::RadiusProperty);
+	ParticlePropertyObject* colorProperty = ParticlePropertyObject::findInState(flowState, ParticleProperty::ColorProperty);
+	ParticleTypeProperty* typeProperty = dynamic_object_cast<ParticleTypeProperty>(ParticlePropertyObject::findInState(flowState, ParticleProperty::ParticleTypeProperty));
+	ParticlePropertyObject* selectionProperty = renderer->isInteractive() ? ParticlePropertyObject::findInState(flowState, ParticleProperty::SelectionProperty) : nullptr;
+	ParticlePropertyObject* transparencyProperty = ParticlePropertyObject::findInState(flowState, ParticleProperty::TransparencyProperty);
 
 	// Get number of particles.
 	int particleCount = positionProperty ? positionProperty->size() : 0;
@@ -306,7 +293,7 @@ void ParticleDisplay::render(TimePoint time, SceneObject* sceneObject, const Pip
 	bool recreateBuffer = !_particleBuffer || !_particleBuffer->isValid(renderer);
 
 	// If rendering quality is set to automatic, pick quality level based on number of particles.
-	ParticleGeometryBuffer::RenderingQuality renderQuality = effectiveRenderingQuality(renderer, positionProperty);
+	ParticlePrimitive::RenderingQuality renderQuality = effectiveRenderingQuality(renderer, positionProperty);
 
 	// Set shading mode and rendering quality.
 	if(!recreateBuffer) {
@@ -339,7 +326,7 @@ void ParticleDisplay::render(TimePoint time, SceneObject* sceneObject, const Pip
 
 	// Re-create the geometry buffer if necessary.
 	if(recreateBuffer)
-		_particleBuffer = renderer->createParticleGeometryBuffer(shadingMode(), renderQuality, particleShape());
+		_particleBuffer = renderer->createParticlePrimitive(shadingMode(), renderQuality, particleShape());
 
 	// Re-size the geometry buffer if necessary.
 	if(resizeBuffer)
@@ -417,24 +404,24 @@ void ParticleDisplayEditor::createUI(const RolloutInsertionParameters& rolloutPa
 
 	// Shading mode.
 	VariantComboBoxParameterUI* shadingModeUI = new VariantComboBoxParameterUI(this, "shadingMode");
-	shadingModeUI->comboBox()->addItem(tr("Normal"), qVariantFromValue(ParticleGeometryBuffer::NormalShading));
-	shadingModeUI->comboBox()->addItem(tr("Flat"), qVariantFromValue(ParticleGeometryBuffer::FlatShading));
+	shadingModeUI->comboBox()->addItem(tr("Normal"), qVariantFromValue(ParticlePrimitive::NormalShading));
+	shadingModeUI->comboBox()->addItem(tr("Flat"), qVariantFromValue(ParticlePrimitive::FlatShading));
 	layout->addWidget(new QLabel(tr("Shading mode:")), 0, 0);
 	layout->addWidget(shadingModeUI->comboBox(), 0, 1);
 
 	// Rendering quality.
 	VariantComboBoxParameterUI* renderingQualityUI = new VariantComboBoxParameterUI(this, "renderingQuality");
-	renderingQualityUI->comboBox()->addItem(tr("Low"), qVariantFromValue(ParticleGeometryBuffer::LowQuality));
-	renderingQualityUI->comboBox()->addItem(tr("Medium"), qVariantFromValue(ParticleGeometryBuffer::MediumQuality));
-	renderingQualityUI->comboBox()->addItem(tr("High"), qVariantFromValue(ParticleGeometryBuffer::HighQuality));
-	renderingQualityUI->comboBox()->addItem(tr("Automatic"), qVariantFromValue(ParticleGeometryBuffer::AutoQuality));
+	renderingQualityUI->comboBox()->addItem(tr("Low"), qVariantFromValue(ParticlePrimitive::LowQuality));
+	renderingQualityUI->comboBox()->addItem(tr("Medium"), qVariantFromValue(ParticlePrimitive::MediumQuality));
+	renderingQualityUI->comboBox()->addItem(tr("High"), qVariantFromValue(ParticlePrimitive::HighQuality));
+	renderingQualityUI->comboBox()->addItem(tr("Automatic"), qVariantFromValue(ParticlePrimitive::AutoQuality));
 	layout->addWidget(new QLabel(tr("Rendering quality:")), 1, 0);
 	layout->addWidget(renderingQualityUI->comboBox(), 1, 1);
 
 	// Shape.
 	VariantComboBoxParameterUI* particleShapeUI = new VariantComboBoxParameterUI(this, "particleShape");
-	particleShapeUI->comboBox()->addItem(tr("Spherical"), qVariantFromValue(ParticleGeometryBuffer::SphericalShape));
-	particleShapeUI->comboBox()->addItem(tr("Square"), qVariantFromValue(ParticleGeometryBuffer::SquareShape));
+	particleShapeUI->comboBox()->addItem(tr("Spherical"), qVariantFromValue(ParticlePrimitive::SphericalShape));
+	particleShapeUI->comboBox()->addItem(tr("Square"), qVariantFromValue(ParticlePrimitive::SquareShape));
 	layout->addWidget(new QLabel(tr("Shape:")), 2, 0);
 	layout->addWidget(particleShapeUI->comboBox(), 2, 1);
 

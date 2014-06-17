@@ -46,7 +46,7 @@ void Application::qtMessageOutput(QtMsgType type, const QMessageLogContext& cont
 {
 	// Forward message to default handler.
 	if(defaultQtMessageHandler) defaultQtMessageHandler(type, context, msg);
-	else std::cerr << msg.toLocal8Bit().constData() << std::endl;
+	else std::cerr << qPrintable(msg) << std::endl;
 }
 
 /******************************************************************************
@@ -83,19 +83,36 @@ bool Application::initialize(int& argc, char** argv)
 	// Register our floating-point data type with the Qt type system.
 	qRegisterMetaType<FloatType>("FloatType");
 
+	// Register stream operators for basic types.
+	qRegisterMetaTypeStreamOperators<Vector2>("Ovito::Vector2");
+	qRegisterMetaTypeStreamOperators<Vector3>("Ovito::Vector3");
+	qRegisterMetaTypeStreamOperators<Vector4>("Ovito::Vector4");
+	qRegisterMetaTypeStreamOperators<Point2>("Ovito::Point2");
+	qRegisterMetaTypeStreamOperators<Point3>("Ovito::Point3");
+	qRegisterMetaTypeStreamOperators<AffineTransformation>("Ovito::AffineTransformation");
+	qRegisterMetaTypeStreamOperators<Matrix3>("Ovito::Matrix3");
+	qRegisterMetaTypeStreamOperators<Matrix4>("Ovito::Matrix4");
+	qRegisterMetaTypeStreamOperators<Box2>("Ovito::Box2");
+	qRegisterMetaTypeStreamOperators<Box3>("Ovito::Box3");
+	qRegisterMetaTypeStreamOperators<Rotation>("Ovito::Rotation");
+	qRegisterMetaTypeStreamOperators<Scaling>("Ovito::Scaling");
+	qRegisterMetaTypeStreamOperators<Quaternion>("Ovito::Quaternion");
+	qRegisterMetaTypeStreamOperators<Color>("Ovito::Color");
+	qRegisterMetaTypeStreamOperators<ColorA>("Ovito::ColorA");
+
 	// Register command line arguments.
-	_cmdLineParser.addOption(CommandLineOption(QStringList{{"v", "version"}}, tr("Prints the program version and exits.")));
-	_cmdLineParser.addOption(CommandLineOption(QStringList{{"nogui"}}, tr("Run in console mode without showing the graphical user interface.")));
-	_cmdLineParser.addOption(CommandLineOption(QStringList{{"glversion"}}, tr("Selects a specific version of the OpenGL standard."), tr("VERSION")));
-	_cmdLineParser.addOption(CommandLineOption(QStringList{{"glcompatprofile"}}, tr("Request the OpenGL compatibility profile instead of the core profile.")));
+	_cmdLineParser.addOption(QCommandLineOption(QStringList{{"v", "version"}}, tr("Prints the program version and exits.")));
+	_cmdLineParser.addOption(QCommandLineOption(QStringList{{"nogui"}}, tr("Run in console mode without showing the graphical user interface.")));
+	_cmdLineParser.addOption(QCommandLineOption(QStringList{{"glversion"}}, tr("Selects a specific version of the OpenGL standard."), tr("VERSION")));
+	_cmdLineParser.addOption(QCommandLineOption(QStringList{{"glcompatprofile"}}, tr("Request the OpenGL compatibility profile instead of the core profile.")));
 
 	// Parse command line arguments.
 	// Ignore unknown command line options for now.
-	if(!_cmdLineParser.parse(argc, argv, true)) {
-        std::cerr << "Error: " << qPrintable(_cmdLineParser.errorText()) << std::endl;
-		_consoleMode = true;
-		return false;
-	}
+	QStringList arguments;
+	arguments.reserve(argc);
+	for(int i = 0; i < argc; i++)
+		arguments << QString::fromLocal8Bit(argv[i]);
+	_cmdLineParser.parse(arguments);
 
 	// Output program version if requested.
 	if(_cmdLineParser.isSet("version")) {
@@ -305,8 +322,7 @@ void Application::guiExceptionHandler(const Exception& exception)
 void Application::consoleExceptionHandler(const Exception& exception)
 {
 	for(int i = exception.messages().size() - 1; i >= 0; i--) {
-		std::cerr << "ERROR: ";
-		std::cerr << exception.messages()[i].toLocal8Bit().constData() << std::endl;
+		std::cerr << "ERROR: " << qPrintable(exception.messages()[i]) << std::endl;
 	}
 	std::cerr << std::flush;
 }

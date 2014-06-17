@@ -36,7 +36,7 @@
 
 namespace Ovito {
 
-IMPLEMENT_OVITO_OBJECT(Core, RenderSettingsEditor, PropertiesEditor)
+IMPLEMENT_OVITO_OBJECT(Core, RenderSettingsEditor, PropertiesEditor);
 
 // Predefined output image dimensions.
 static const int imageSizePresets[][2] = {
@@ -44,6 +44,7 @@ static const int imageSizePresets[][2] = {
 		{ 640, 480 },
 		{ 800, 600 },
 		{ 1024, 768 },
+		{ 1600, 1200 },
 		{ 600, 600 },
 		{ 1000, 1000 }
 };
@@ -61,7 +62,7 @@ void RenderSettingsEditor::createUI(const RolloutInsertionParameters& rolloutPar
 
 	// Rendering range
 	{
-		QGroupBox* groupBox = new QGroupBox(tr("Time output"));
+		QGroupBox* groupBox = new QGroupBox(tr("Rendering range"));
 		layout->addWidget(groupBox);
 
 		QVBoxLayout* layout2 = new QVBoxLayout(groupBox);
@@ -92,8 +93,8 @@ void RenderSettingsEditor::createUI(const RolloutInsertionParameters& rolloutPar
 		layout2c->addLayout(customRangeEndUI->createFieldLayout(), 3, 3);
 		layout2c->setColumnMinimumWidth(0, 30);
 		layout2c->setColumnStretch(4, 1);
-		connect(customIntervalButton, SIGNAL(toggled(bool)), customRangeStartUI, SLOT(setEnabled(bool)));
-		connect(customIntervalButton, SIGNAL(toggled(bool)), customRangeEndUI, SLOT(setEnabled(bool)));
+		connect(customIntervalButton, &QRadioButton::toggled, customRangeStartUI, &IntegerParameterUI::setEnabled);
+		connect(customIntervalButton, &QRadioButton::toggled, customRangeEndUI, &IntegerParameterUI::setEnabled);
 
 		QGridLayout* layout2a = new QGridLayout();
 		layout2a->setContentsMargins(0,6,0,0);
@@ -107,8 +108,8 @@ void RenderSettingsEditor::createUI(const RolloutInsertionParameters& rolloutPar
 		layout2a->addWidget(fileNumberBaseUI->label(), 1, 0);
 		layout2a->addLayout(fileNumberBaseUI->createFieldLayout(), 1, 1);
 		layout2a->setColumnStretch(2, 1);
-		connect(currentFrameButton, SIGNAL(toggled(bool)), everyNthFrameUI, SLOT(setDisabled(bool)));
-		connect(currentFrameButton, SIGNAL(toggled(bool)), fileNumberBaseUI, SLOT(setDisabled(bool)));
+		connect(currentFrameButton, &QRadioButton::toggled, everyNthFrameUI, &IntegerParameterUI::setDisabled);
+		connect(currentFrameButton, &QRadioButton::toggled, fileNumberBaseUI, &IntegerParameterUI::setDisabled);
 	}
 
 	// Output size
@@ -136,7 +137,7 @@ void RenderSettingsEditor::createUI(const RolloutInsertionParameters& rolloutPar
 		sizePresetsBox->addItem(tr("Presets..."));
 		for(int i = 0; i < sizeof(imageSizePresets)/sizeof(imageSizePresets[0]); i++)
 			sizePresetsBox->addItem(tr("%1 x %2").arg(imageSizePresets[i][0]).arg(imageSizePresets[i][1]));
-		connect(sizePresetsBox, SIGNAL(activated(int)), this, SLOT(onSizePresetActivated(int)));
+		connect(sizePresetsBox, (void (QComboBox::*)(int))&QComboBox::activated, this, &RenderSettingsEditor::onSizePresetActivated);
 		layout2->addWidget(sizePresetsBox, 1, 2);
 	}
 
@@ -159,7 +160,7 @@ void RenderSettingsEditor::createUI(const RolloutInsertionParameters& rolloutPar
 
 		// Create 'Change renderer' button.
 		QPushButton* changeRendererButton = new QPushButton(tr("Change renderer..."), groupBox);
-		connect(changeRendererButton, SIGNAL(clicked(bool)), this, SLOT(onChangeRenderer()));
+		connect(changeRendererButton, &QPushButton::clicked, this, &RenderSettingsEditor::onChangeRenderer);
 		layout2->addWidget(changeRendererButton, 4, 0, 1, 3);
 	}
 
@@ -176,7 +177,7 @@ void RenderSettingsEditor::createUI(const RolloutInsertionParameters& rolloutPar
 		layout2->addWidget(saveFileUI->checkBox(), 0, 0);
 
 		QPushButton* chooseFilenameBtn = new QPushButton(tr("Choose..."), rollout);
-		connect(chooseFilenameBtn, SIGNAL(clicked(bool)), this, SLOT(onChooseImageFilename()));
+		connect(chooseFilenameBtn, &QPushButton::clicked, this, &RenderSettingsEditor::onChooseImageFilename);
 		layout2->addWidget(chooseFilenameBtn, 0, 1);
 
 		// Output filename parameter.
@@ -187,7 +188,7 @@ void RenderSettingsEditor::createUI(const RolloutInsertionParameters& rolloutPar
 		BooleanParameterUI* skipExistingImagesUI = new BooleanParameterUI(this, PROPERTY_FIELD(RenderSettings::_skipExistingImages));
 		layout2->addWidget(skipExistingImagesUI->checkBox(), 2, 0, 1, 2);
 
-		connect(saveFileUI->checkBox(), SIGNAL(toggled(bool)), skipExistingImagesUI, SLOT(setEnabled(bool)));
+		connect(saveFileUI->checkBox(), &QCheckBox::toggled, skipExistingImagesUI, &BooleanParameterUI::setEnabled);
 	}
 
 	// Open a sub-editor for the renderer.
@@ -234,14 +235,14 @@ void RenderSettingsEditor::onChangeRenderer()
 	RenderSettings* settings = static_object_cast<RenderSettings>(editObject());
 	if(!settings) return;
 
-	QVector<OvitoObjectType*> rendererClasses = PluginManager::instance().listClasses(SceneRenderer::OOType);
 	QStringList itemList;
+	QVector<OvitoObjectType*> rendererClasses = PluginManager::instance().listClasses(SceneRenderer::OOType);
 	Q_FOREACH(OvitoObjectType* clazz, rendererClasses)
 		itemList << clazz->displayName();
 
 	int currentIndex = 0;
-	if(settings->rendererClass())
-		currentIndex = itemList.indexOf(settings->rendererClass()->displayName());
+	if(settings->renderer())
+		currentIndex = itemList.indexOf(settings->renderer()->getOOType().displayName());
 
 	bool ok;
 	QString selectedClass = QInputDialog::getItem(NULL, tr("Choose renderer"), tr("Select the rendering engine:"), itemList, currentIndex, false, &ok);
@@ -250,7 +251,9 @@ void RenderSettingsEditor::onChangeRenderer()
 	int newIndex = itemList.indexOf(selectedClass);
 	if(newIndex != currentIndex && newIndex >= 0) {
 		undoableTransaction(tr("Change renderer"), [settings, newIndex, &rendererClasses]() {
-			settings->setRendererClass(rendererClasses[newIndex]);
+			OORef<SceneRenderer> renderer = static_object_cast<SceneRenderer>(rendererClasses[newIndex]->createInstance(settings->dataset()));
+			renderer->loadUserDefaults();
+			settings->setRenderer(renderer);
 		});
 	}
 }

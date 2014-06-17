@@ -26,7 +26,7 @@
 namespace Ovito {
 
 // Gives the class run-time type information.
-IMPLEMENT_OVITO_OBJECT(Core, StringParameterUI, PropertyParameterUI)
+IMPLEMENT_OVITO_OBJECT(Core, StringParameterUI, PropertyParameterUI);
 
 /******************************************************************************
 * Constructor for a Qt property.
@@ -36,7 +36,7 @@ StringParameterUI::StringParameterUI(QObject* parentEditor, const char* property
 {
 	// Create UI widget.
 	_textBox = new QLineEdit();
-	connect(_textBox, SIGNAL(editingFinished()), this, SLOT(updatePropertyValue()));	
+	connect(_textBox.data(), &QLineEdit::editingFinished, this, &StringParameterUI::updatePropertyValue);
 }
 
 /******************************************************************************
@@ -47,11 +47,11 @@ StringParameterUI::StringParameterUI(QObject* parentEditor, const PropertyFieldD
 {
 	// Create UI widget.
 	_textBox = new QLineEdit();
-	connect(_textBox, SIGNAL(editingFinished()), this, SLOT(updatePropertyValue()));	
+	connect(_textBox.data(), &QLineEdit::editingFinished, this, &StringParameterUI::updatePropertyValue);
 }
 
 /******************************************************************************
-* Destructor, that releases all GUI controls.
+* Destructor.
 ******************************************************************************/
 StringParameterUI::~StringParameterUI()
 {
@@ -65,9 +65,10 @@ StringParameterUI::~StringParameterUI()
 ******************************************************************************/
 void StringParameterUI::setTextBox(QLineEdit* textBox)
 {
+	OVITO_ASSERT(textBox != nullptr);
 	delete _textBox;
 	_textBox = textBox;
-	connect(_textBox, SIGNAL(editingFinished()), this, SLOT(updatePropertyValue()));
+	connect(textBox, &QLineEdit::editingFinished, this, &StringParameterUI::updatePropertyValue);
 	updateUI();
 }
 

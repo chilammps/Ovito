@@ -26,8 +26,8 @@
 
 namespace Particles {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ParticleSelectionSet, RefTarget)
-DEFINE_PROPERTY_FIELD(ParticleSelectionSet, _useIdentifiers, "UseIdentifiers")
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ParticleSelectionSet, RefTarget);
+DEFINE_PROPERTY_FIELD(ParticleSelectionSet, _useIdentifiers, "UseIdentifiers");
 
 /* Undo record that can restore an old particle selection state. */
 class ReplaceSelectionOperation : public UndoableOperation
@@ -106,8 +106,8 @@ OORef<RefTarget> ParticleSelectionSet::clone(bool deepCopy, CloneHelper& cloneHe
 size_t ParticleSelectionSet::particleCount(const PipelineFlowState& state)
 {
 	// Find the first particle property object to determine the number of particles.
-	for(const auto& o : state.objects()) {
-		if(ParticlePropertyObject* particleProperty = dynamic_object_cast<ParticlePropertyObject>(o.get()))
+	for(SceneObject* o : state.objects()) {
+		if(ParticlePropertyObject* particleProperty = dynamic_object_cast<ParticlePropertyObject>(o))
 			return particleProperty->size();
 	}
 	return 0;
@@ -304,14 +304,14 @@ void ParticleSelectionSet::selectAll(const PipelineFlowState& state)
 /******************************************************************************
 * Copies the stored selection set into the given output selection particle property.
 ******************************************************************************/
-ObjectStatus ParticleSelectionSet::applySelection(ParticlePropertyObject* outputSelectionProperty, ParticlePropertyObject* identifierProperty)
+PipelineStatus ParticleSelectionSet::applySelection(ParticlePropertyObject* outputSelectionProperty, ParticlePropertyObject* identifierProperty)
 {
 	size_t nselected = 0;
 	if(!identifierProperty || !useIdentifiers()) {
 
 		// When not using particle identifiers, the number of particles may not change.
 		if(outputSelectionProperty->size() != _selection.size())
-			return ObjectStatus(ObjectStatus::Error, tr("Cannot apply stored selection state. The number of input particles has changed."));
+			return PipelineStatus(PipelineStatus::Error, tr("Cannot apply stored selection state. The number of input particles has changed."));
 
 		// Restore selection simply by placing the snapshot into the pipeline.
 		int index = 0;
@@ -331,7 +331,7 @@ ObjectStatus ParticleSelectionSet::applySelection(ParticlePropertyObject* output
 	}
 	outputSelectionProperty->changed();
 
-	return ObjectStatus(ObjectStatus::Success, tr("%1 particles selected").arg(nselected));
+	return PipelineStatus(PipelineStatus::Success, tr("%1 particles selected").arg(nselected));
 }
 
 

@@ -15,18 +15,20 @@
       <informaltable frame="none">
         <tgroup cols="2">
           <tbody>
-            <row>
-              <entry>
-                <para>Input:
+            <row valign="bottom">
+              <entry>Input:</entry>
+              <entry>Output:</entry>
+            </row>
+            <row valign="top">
+            <entry>
 		        <mediaobject><imageobject>
 		        <imagedata fileref="images/modifiers/wrap_at_periodic_boundaries_example_before.png" format="PNG" />
-		        </imageobject></mediaobject></para>
+		        </imageobject></mediaobject>
               </entry>
               <entry>
-                <para>Output:
 		        <mediaobject><imageobject>
 		        <imagedata fileref="images/modifiers/wrap_at_periodic_boundaries_example_after.png" format="PNG" />
-		        </imageobject></mediaobject></para>
+		        </imageobject></mediaobject>
               </entry>
             </row>
           </tbody>

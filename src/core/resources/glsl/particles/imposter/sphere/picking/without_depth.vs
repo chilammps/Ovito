@@ -20,60 +20,33 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 // Inputs from calling program:
-uniform mat4 modelview_matrix;
-uniform mat4 projection_matrix;
-uniform vec2 imposter_texcoords[6];
-uniform vec4 imposter_voffsets[6];
+uniform mat4 modelviewprojection_matrix;
 uniform int pickingBaseID;
 
 #if __VERSION__ >= 130
 
-	// The input particle data:
-	in vec3 position;
-	in float particle_radius;
-	
-	// Output passed to fragment shader.
-	flat out vec4 particle_color_fs;
-	out vec2 texcoords;
+// The particle data:
+in vec3 position;
+in float particle_radius;
 
-#else
+// Output to geometry shader.
+out vec4 particle_color_gs;
+out float particle_radius_gs;
 
-	// The input particle data:
-	attribute float particle_radius;
-	attribute float vertexID;
-	#define gl_VertexID int(vertexID)
-
-	#define particle_color_fs gl_FrontColor
 #endif
 
 void main()
 {
+#if __VERSION__ >= 130
 	// Compute color from object ID.
 	int objectID = pickingBaseID + gl_VertexID;
-#if __VERSION__ >= 130
-	particle_color_fs = vec4(
+	particle_color_gs = vec4(
 		float(objectID & 0xFF) / 255.0, 
 		float((objectID >> 8) & 0xFF) / 255.0, 
 		float((objectID >> 16) & 0xFF) / 255.0, 
-		float((objectID >> 24) & 0xFF) / 255.0);
+		float((objectID >> 24) & 0xFF) / 255.0);	
 		
-	// Transform and project particle position.
-	vec4 eye_position = modelview_matrix * vec4(position, 1);
-
-	// Assign texture coordinates. 
-	texcoords = imposter_texcoords[gl_VertexID % 6];
-
-#else
-	particle_color_fs = vec4(
-		float(mod(objectID, 0x100)) / 255.0, 
-		float(mod(objectID / 0x100, 0x100)) / 255.0, 
-		float(mod(objectID / 0x10000, 0x100)) / 255.0, 
-		float(mod(objectID / 0x1000000, 0x100)) / 255.0);		
-
-	// Transform and project particle position.
-	vec4 eye_position = modelview_matrix * gl_Vertex;
+	particle_radius_gs = particle_radius;
+	gl_Position = modelviewprojection_matrix * vec4(position, 1.0);
 #endif
-
-	// Transform and project particle position.
-	gl_Position = projection_matrix * (eye_position + particle_radius * imposter_voffsets[gl_VertexID % 6]);
 }

@@ -21,7 +21,7 @@
 
 /** 
  * \file AffineTransformation.h 
- * \brief Contains definition of Ovito::AffineTransformation class.
+ * \brief Contains the definition of the Ovito::Matrix_34 class template.
  */
 
 #ifndef __OVITO_AFFINE_TRANSFORMATION_H
@@ -666,6 +666,22 @@ inline LoadStream& operator>>(LoadStream& stream, Matrix_34<T>& m)
 	return stream;
 }
 
+/// \brief Writes a matrix to a Qt data stream.
+template<typename T>
+inline QDataStream& operator<<(QDataStream& stream, const Matrix_34<T>& m) {
+	for(typename Matrix_34<T>::size_type col = 0; col < m.col_count(); col++)
+		stream << m.column(col);
+	return stream;
+}
+
+/// \brief Reads a matrix from a Qt data stream.
+template<typename T>
+inline QDataStream& operator>>(QDataStream& stream, Matrix_34<T>& m) {
+	for(typename Matrix_34<T>::size_type col = 0; col < m.col_count(); col++)
+		stream >> m.column(col);
+	return stream;
+}
+
 /**
  * \fn typedef AffineTransformation
  * \brief Template class instance of the Matrix_34 class.
@@ -674,7 +690,9 @@ typedef Matrix_34<FloatType>		AffineTransformation;
 
 };	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::AffineTransformation)
+Q_DECLARE_METATYPE(Ovito::AffineTransformation);
+Q_DECLARE_METATYPE(Ovito::AffineTransformation*);
 Q_DECLARE_TYPEINFO(Ovito::AffineTransformation, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::AffineTransformation*, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_AFFINE_TRANSFORMATION_H

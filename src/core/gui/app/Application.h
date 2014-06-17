@@ -29,7 +29,6 @@
 
 #include <core/Core.h>
 #include <base/utilities/Exception.h>
-#include "CommandLineParser.h"
 
 namespace Ovito {
 
@@ -99,7 +98,7 @@ public:
 	DataSetContainer* datasetContainer() const;
 
 	/// \brief Returns the command line options passed to the program.
-	const CommandLineParser& cmdLineParser() const { return _cmdLineParser; }
+	const QCommandLineParser& cmdLineParser() const { return _cmdLineParser; }
 
 	/// This registers a functor object to be called after all events in the UI event queue have been processed and
 	/// before control returns to the event loop. For a given target object, only one functor can be registered at a
@@ -128,7 +127,7 @@ private:
 	QScopedPointer<QCoreApplication> _app;
 
 	/// The parser for the command line options passed to the program.
-	CommandLineParser _cmdLineParser;
+	QCommandLineParser _cmdLineParser;
 
 	/// Indicates that the application is running in console mode.
 	bool _consoleMode;

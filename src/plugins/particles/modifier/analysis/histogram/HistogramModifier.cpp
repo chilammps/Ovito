@@ -27,36 +27,35 @@
 #include <core/scene/pipeline/PipelineObject.h>
 #include <core/animation/AnimationSettings.h>
 #include <plugins/particles/util/ParticlePropertyParameterUI.h>
-#include <3rdparty/qcustomplot/qcustomplot.h>
 #include "HistogramModifier.h"
 
 namespace Particles {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, HistogramModifier, ParticleModifier)
-IMPLEMENT_OVITO_OBJECT(Particles, HistogramModifierEditor, ParticleModifierEditor)
-SET_OVITO_OBJECT_EDITOR(HistogramModifier, HistogramModifierEditor)
-DEFINE_FLAGS_PROPERTY_FIELD(HistogramModifier, _numberOfBins, "NumberOfBins", PROPERTY_FIELD_MEMORIZE)
-DEFINE_PROPERTY_FIELD(HistogramModifier, _selectInRange, "SelectInRange")
-DEFINE_FLAGS_PROPERTY_FIELD(HistogramModifier, _selectionRangeStart, "SelectionRangeStart", PROPERTY_FIELD_MEMORIZE)
-DEFINE_FLAGS_PROPERTY_FIELD(HistogramModifier, _selectionRangeEnd, "SelectionRangeEnd", PROPERTY_FIELD_MEMORIZE)
-DEFINE_PROPERTY_FIELD(HistogramModifier, _fixXAxisRange, "FixXAxisRange")
-DEFINE_FLAGS_PROPERTY_FIELD(HistogramModifier, _xAxisRangeStart, "XAxisRangeStart", PROPERTY_FIELD_MEMORIZE)
-DEFINE_FLAGS_PROPERTY_FIELD(HistogramModifier, _xAxisRangeEnd, "XAxisRangeEnd", PROPERTY_FIELD_MEMORIZE)
-DEFINE_PROPERTY_FIELD(HistogramModifier, _fixYAxisRange, "FixYAxisRange")
-DEFINE_FLAGS_PROPERTY_FIELD(HistogramModifier, _yAxisRangeStart, "YAxisRangeStart", PROPERTY_FIELD_MEMORIZE)
-DEFINE_FLAGS_PROPERTY_FIELD(HistogramModifier, _yAxisRangeEnd, "YAxisRangeEnd", PROPERTY_FIELD_MEMORIZE)
-DEFINE_PROPERTY_FIELD(HistogramModifier, _sourceProperty, "SourceProperty")
-SET_PROPERTY_FIELD_LABEL(HistogramModifier, _numberOfBins, "Number of histogram bins")
-SET_PROPERTY_FIELD_LABEL(HistogramModifier, _selectInRange, "Select particles in range")
-SET_PROPERTY_FIELD_LABEL(HistogramModifier, _selectionRangeStart, "Selection range start")
-SET_PROPERTY_FIELD_LABEL(HistogramModifier, _selectionRangeEnd, "Selection range end")
-SET_PROPERTY_FIELD_LABEL(HistogramModifier, _fixXAxisRange, "Fix x-axis range")
-SET_PROPERTY_FIELD_LABEL(HistogramModifier, _xAxisRangeStart, "X-axis range start")
-SET_PROPERTY_FIELD_LABEL(HistogramModifier, _xAxisRangeEnd, "X-axis range end")
-SET_PROPERTY_FIELD_LABEL(HistogramModifier, _fixYAxisRange, "Fix y-axis range")
-SET_PROPERTY_FIELD_LABEL(HistogramModifier, _yAxisRangeStart, "Y-axis range start")
-SET_PROPERTY_FIELD_LABEL(HistogramModifier, _yAxisRangeEnd, "Y-axis range end")
-SET_PROPERTY_FIELD_LABEL(HistogramModifier, _sourceProperty, "Source property")
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, HistogramModifier, ParticleModifier);
+IMPLEMENT_OVITO_OBJECT(Particles, HistogramModifierEditor, ParticleModifierEditor);
+SET_OVITO_OBJECT_EDITOR(HistogramModifier, HistogramModifierEditor);
+DEFINE_FLAGS_PROPERTY_FIELD(HistogramModifier, _numberOfBins, "NumberOfBins", PROPERTY_FIELD_MEMORIZE);
+DEFINE_PROPERTY_FIELD(HistogramModifier, _selectInRange, "SelectInRange");
+DEFINE_FLAGS_PROPERTY_FIELD(HistogramModifier, _selectionRangeStart, "SelectionRangeStart", PROPERTY_FIELD_MEMORIZE);
+DEFINE_FLAGS_PROPERTY_FIELD(HistogramModifier, _selectionRangeEnd, "SelectionRangeEnd", PROPERTY_FIELD_MEMORIZE);
+DEFINE_PROPERTY_FIELD(HistogramModifier, _fixXAxisRange, "FixXAxisRange");
+DEFINE_FLAGS_PROPERTY_FIELD(HistogramModifier, _xAxisRangeStart, "XAxisRangeStart", PROPERTY_FIELD_MEMORIZE);
+DEFINE_FLAGS_PROPERTY_FIELD(HistogramModifier, _xAxisRangeEnd, "XAxisRangeEnd", PROPERTY_FIELD_MEMORIZE);
+DEFINE_PROPERTY_FIELD(HistogramModifier, _fixYAxisRange, "FixYAxisRange");
+DEFINE_FLAGS_PROPERTY_FIELD(HistogramModifier, _yAxisRangeStart, "YAxisRangeStart", PROPERTY_FIELD_MEMORIZE);
+DEFINE_FLAGS_PROPERTY_FIELD(HistogramModifier, _yAxisRangeEnd, "YAxisRangeEnd", PROPERTY_FIELD_MEMORIZE);
+DEFINE_PROPERTY_FIELD(HistogramModifier, _sourceProperty, "SourceProperty");
+SET_PROPERTY_FIELD_LABEL(HistogramModifier, _numberOfBins, "Number of histogram bins");
+SET_PROPERTY_FIELD_LABEL(HistogramModifier, _selectInRange, "Select particles in range");
+SET_PROPERTY_FIELD_LABEL(HistogramModifier, _selectionRangeStart, "Selection range start");
+SET_PROPERTY_FIELD_LABEL(HistogramModifier, _selectionRangeEnd, "Selection range end");
+SET_PROPERTY_FIELD_LABEL(HistogramModifier, _fixXAxisRange, "Fix x-axis range");
+SET_PROPERTY_FIELD_LABEL(HistogramModifier, _xAxisRangeStart, "X-axis range start");
+SET_PROPERTY_FIELD_LABEL(HistogramModifier, _xAxisRangeEnd, "X-axis range end");
+SET_PROPERTY_FIELD_LABEL(HistogramModifier, _fixYAxisRange, "Fix y-axis range");
+SET_PROPERTY_FIELD_LABEL(HistogramModifier, _yAxisRangeStart, "Y-axis range start");
+SET_PROPERTY_FIELD_LABEL(HistogramModifier, _yAxisRangeEnd, "Y-axis range end");
+SET_PROPERTY_FIELD_LABEL(HistogramModifier, _sourceProperty, "Source property");
 
 /******************************************************************************
 * Constructs the modifier object.
@@ -91,8 +90,8 @@ void HistogramModifier::initializeModifier(PipelineObject* pipeline, ModifierApp
 	if(sourceProperty().isNull()) {
 		PipelineFlowState input = pipeline->evaluatePipeline(dataset()->animationSettings()->time(), modApp, false);
 		ParticlePropertyReference bestProperty;
-		for(const auto& o : input.objects()) {
-			ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o.get());
+		for(SceneObject* o : input.objects()) {
+			ParticlePropertyObject* property = dynamic_object_cast<ParticlePropertyObject>(o);
 			if(property && (property->dataType() == qMetaTypeId<int>() || property->dataType() == qMetaTypeId<FloatType>())) {
 				bestProperty = ParticlePropertyReference(property, (property->componentCount() > 1) ? 0 : -1);
 			}
@@ -106,7 +105,7 @@ void HistogramModifier::initializeModifier(PipelineObject* pipeline, ModifierApp
 /******************************************************************************
 * This modifies the input object.
 ******************************************************************************/
-ObjectStatus HistogramModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
+PipelineStatus HistogramModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
 {
 	_histogramData.resize(std::max(1, numberOfBins()));
 	std::fill(_histogramData.begin(), _histogramData.end(), 0);
@@ -226,7 +225,7 @@ ObjectStatus HistogramModifier::modifyParticles(TimePoint time, TimeInterval& va
 
 	notifyDependents(ReferenceEvent::ObjectStatusChanged);
 
-	return ObjectStatus(ObjectStatus::Success, statusMessage);
+	return PipelineStatus(PipelineStatus::Success, statusMessage);
 }
 
 /******************************************************************************
@@ -280,15 +279,15 @@ void HistogramModifierEditor::createUI(const RolloutInsertionParameters& rollout
 	_selectionRangeEndMarker->setPen(markerPen);
 	_histogramPlot->addItem(_selectionRangeStartMarker);
 	_histogramPlot->addItem(_selectionRangeEndMarker);
-	connect(_histogramPlot->xAxis, SIGNAL(rangeChanged(const QCPRange&)), this, SLOT(updateXAxisRange(const QCPRange &)));
+	connect(_histogramPlot->xAxis, SIGNAL(rangeChanged(const QCPRange&)), this, SLOT(updateXAxisRange(const QCPRange&)));
 
 	layout->addWidget(new QLabel(tr("Histogram:")));
 	layout->addWidget(_histogramPlot);
-	connect(this, SIGNAL(contentsReplaced(RefTarget*)), this, SLOT(plotHistogram()));
+	connect(this, &HistogramModifierEditor::contentsReplaced, this, &HistogramModifierEditor::plotHistogram);
 
 	QPushButton* saveDataButton = new QPushButton(tr("Save histogram data"));
 	layout->addWidget(saveDataButton);
-	connect(saveDataButton, SIGNAL(clicked(bool)), this, SLOT(onSaveData()));
+	connect(saveDataButton, &QPushButton::clicked, this, &HistogramModifierEditor::onSaveData);
 
 	// Selection.
 	QGroupBox* selectionBox = new QGroupBox(tr("Selection"), rollout);
@@ -310,8 +309,8 @@ void HistogramModifierEditor::createUI(const RolloutInsertionParameters& rollout
 	hlayout->addLayout(selRangeEndPUI->createFieldLayout());
 	selRangeStartPUI->setEnabled(false);
 	selRangeEndPUI->setEnabled(false);
-	connect(selectInRangeUI->checkBox(), SIGNAL(toggled(bool)), selRangeStartPUI, SLOT(setEnabled(bool)));
-	connect(selectInRangeUI->checkBox(), SIGNAL(toggled(bool)), selRangeEndPUI, SLOT(setEnabled(bool)));
+	connect(selectInRangeUI->checkBox(), &QCheckBox::toggled, selRangeStartPUI, &FloatParameterUI::setEnabled);
+	connect(selectInRangeUI->checkBox(), &QCheckBox::toggled, selRangeEndPUI, &FloatParameterUI::setEnabled);
 
 	// Axes.
 	QGroupBox* axesBox = new QGroupBox(tr("Plot axes"), rollout);
@@ -334,8 +333,8 @@ void HistogramModifierEditor::createUI(const RolloutInsertionParameters& rollout
 		hlayout->addLayout(endPUI->createFieldLayout());
 		startPUI->setEnabled(false);
 		endPUI->setEnabled(false);
-		connect(rangeUI->checkBox(), SIGNAL(toggled(bool)), startPUI, SLOT(setEnabled(bool)));
-		connect(rangeUI->checkBox(), SIGNAL(toggled(bool)), endPUI, SLOT(setEnabled(bool)));
+		connect(rangeUI->checkBox(), &QCheckBox::toggled, startPUI, &FloatParameterUI::setEnabled);
+		connect(rangeUI->checkBox(), &QCheckBox::toggled, endPUI, &FloatParameterUI::setEnabled);
 	}
 	// y-axis.
 	{
@@ -353,8 +352,8 @@ void HistogramModifierEditor::createUI(const RolloutInsertionParameters& rollout
 		hlayout->addLayout(endPUI->createFieldLayout());
 		startPUI->setEnabled(false);
 		endPUI->setEnabled(false);
-		connect(rangeUI->checkBox(), SIGNAL(toggled(bool)), startPUI, SLOT(setEnabled(bool)));
-		connect(rangeUI->checkBox(), SIGNAL(toggled(bool)), endPUI, SLOT(setEnabled(bool)));
+		connect(rangeUI->checkBox(), &QCheckBox::toggled, startPUI, &FloatParameterUI::setEnabled);
+		connect(rangeUI->checkBox(), &QCheckBox::toggled, endPUI, &FloatParameterUI::setEnabled);
 	}
 
 	// Status label.

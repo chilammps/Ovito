@@ -165,16 +165,6 @@ protected:
 	/// \undoable
 	void replaceReferencesTo(RefTarget* oldTarget, RefTarget* newTarget);
 
-	/// \brief Replaces all references of this RefMaker to some RefTarget with new ones.
-	/// \param oldTarget Specifies which references should be replaced.
-	/// \param newTarget Specifies the new target that should replace the old one.
-	/// \note This is the same method as above but using a smart pointer for the parameter \a newTarget.
-	/// \undoable
-	template<class T>
-	void replaceReferencesTo(RefTarget* oldTarget, const OORef<T>& newTarget) {
-		replaceReferencesTo(oldTarget, newTarget.get());
-	}
-
 	/// \brief Clears a reference field.
 	/// \param field Specifies the reference field of this RefMaker to be cleared.
 	///
@@ -219,6 +209,18 @@ protected:
 	/// \sa saveToStream()
 	virtual void loadFromStream(ObjectLoadStream& stream) override;
 
+	/// \brief Allows the object to parse the serialized contents of a property field in a custom way.
+	/// \param stream The source stream.
+	/// \param serializedField The property field to be parsed.
+	/// \throw Exception when a parsing error has occurred.
+	/// \return \c true if the function has parsed the field; \c false if the default parsing routine should be invoked.
+	///
+	/// Overriding this method is useful if a property field has been replaced by another. To maintain file
+	/// compatibility, the object can parse the value of the old property field from the file and store it in the new field.
+	///
+	/// The default implementation returns \c false.
+	virtual bool loadPropertyFieldFromStream(ObjectLoadStream& stream, const ObjectLoadStream::SerializedPropertyField& serializedField) { return false; }
+
 public:
 
 	/// \brief Returns true if this object is an instance of a RefTarget derived class.
@@ -239,6 +241,18 @@ public:
 	/// \sa OvitoObjectType::firstPropertyField()
 	/// \sa OvitoObjectType::findPropertyField()
 	void setPropertyFieldValue(const PropertyFieldDescriptor& field, const QVariant& newValue);
+
+	/// \brief Loads the user-defined default values of this object's parameter fields from the
+	///        application's settings store.
+	///
+	/// This function should be called immediately after creation of the object instance.
+	/// It loads the default value for every property field for which the user has set
+	/// a default value. This is usually the case for property fields that have the
+	/// PROPERTY_FIELD_MEMORIZE flag set.
+	///
+	/// This function is recursive, i.e., it also loads default parameter values for
+	/// referenced objects (when the PROPERTY_FIELD_MEMORIZE flag is set for this RefMaker's reference field).
+	virtual void loadUserDefaults();
 
 	/////////////////////////// Runtime reference field access //////////////////////////////
 

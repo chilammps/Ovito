@@ -35,16 +35,16 @@ void FrameBufferWidget::setFrameBuffer(const QSharedPointer<FrameBuffer>& newFra
 	}
 
 	if(frameBuffer()) {
-		disconnect(_frameBuffer.data(), SIGNAL(contentChanged(QRect)), this, SLOT(onFrameBufferContentChanged(QRect)));
-		disconnect(_frameBuffer.data(), SIGNAL(contentReset()), this, SLOT(update()));
+		disconnect(_frameBuffer.data(), &FrameBuffer::contentChanged, this, &FrameBufferWidget::onFrameBufferContentChanged);
+		disconnect(_frameBuffer.data(), &FrameBuffer::contentReset, this, &FrameBufferWidget::onFrameBufferContentReset);
 	}
 	
 	_frameBuffer = newFrameBuffer;
 
 	onFrameBufferContentReset();
 
-	connect(_frameBuffer.data(), SIGNAL(contentChanged(QRect)), this, SLOT(onFrameBufferContentChanged(QRect)));
-	connect(_frameBuffer.data(), SIGNAL(contentReset()), this, SLOT(onFrameBufferContentReset()));
+	connect(_frameBuffer.data(), &FrameBuffer::contentChanged, this, &FrameBufferWidget::onFrameBufferContentChanged);
+	connect(_frameBuffer.data(), &FrameBuffer::contentReset, this, &FrameBufferWidget::onFrameBufferContentReset);
 }
 
 /******************************************************************************
@@ -53,7 +53,7 @@ void FrameBufferWidget::setFrameBuffer(const QSharedPointer<FrameBuffer>& newFra
 QSize FrameBufferWidget::sizeHint() const 
 {
 	if(_frameBuffer) {
-		return _frameBuffer->image().size();
+		return _frameBuffer->size();
 	}
 	return QWidget::sizeHint();
 } 
@@ -69,5 +69,25 @@ void FrameBufferWidget::paintEvent(QPaintEvent* event)
 	}
 }
 
+/******************************************************************************
+* This handles contentReset() signals from the frame buffer.
+******************************************************************************/
+void FrameBufferWidget::onFrameBufferContentReset()
+{
+	// Resize widget.
+	if(_frameBuffer) {
+		resize(_frameBuffer->size());
+		for(QWidget* w = parentWidget(); w != nullptr; w = w->parentWidget()) {
+			// Size hint of scroll area has changed. Update its geometry.
+			if(qobject_cast<QScrollArea*>(w)) {
+				w->updateGeometry();
+				break;
+			}
+		}
+	}
+
+	// Repaint the widget.
+	update();
+}
 
 };

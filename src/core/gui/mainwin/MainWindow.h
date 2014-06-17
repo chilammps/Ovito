@@ -83,8 +83,16 @@ public:
 	/// Returns the widget that numerically displays the transformation.
 	CoordinateDisplayWidget* coordinateDisplay() const { return _coordinateDisplay; }
 
+	/// Returns the layout manager for the status bar area of the main window.
+	QHBoxLayout* statusBarLayout() const { return _statusBarLayout; }
+
 	/// \brief Shows the online manual and opens the given help page.
 	void openHelpTopic(const QString& page);
+
+	/// Returns the master OpenGL context managed by this window, which is used to render the viewports.
+	/// If sharing of OpenGL contexts between viewports is disabled, then this function returns the GL context
+	/// of the first viewport in this window.
+	QOpenGLContext* getOpenGLContext();
 
 protected:
 
@@ -130,6 +138,12 @@ private:
 
 	/// The widget that numerically displays the transformation.
 	CoordinateDisplayWidget* _coordinateDisplay;
+
+	/// The layout manager for the status bar area of the main window.
+	QHBoxLayout* _statusBarLayout;
+
+	/// The OpenGL context used for rendering the viewports.
+	QPointer<QOpenGLContext> _glcontext;
 };
 
 };

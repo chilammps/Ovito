@@ -126,7 +126,7 @@ public:
 protected:
 
 	/// Modifies the particle object.
-	virtual ObjectStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;
+	virtual PipelineStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;
 
 	/// Performs the actual rejection of particles.
 	size_t filterParticles(std::vector<bool>& mask, TimePoint time, TimeInterval& validityInterval);
@@ -192,6 +192,9 @@ public:
 
 	/// Lets the input mode render its overlay content in a viewport.
 	virtual void renderOverlay3D(Viewport* vp, ViewportSceneRenderer* renderer) override;
+
+	/// Computes the bounding box of the 3d visual viewport overlay rendered by the input mode.
+	virtual Box3 overlayBoundingBox(Viewport* vp, ViewportSceneRenderer* renderer) override;
 
 	/// Indicates whether this input mode renders into the viewports.
 	virtual bool hasOverlay() override { return true; }

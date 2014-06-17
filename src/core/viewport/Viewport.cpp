@@ -93,10 +93,7 @@ Viewport::Viewport(DataSet* dataset) : RefTarget(dataset),
 ******************************************************************************/
 Viewport::~Viewport()
 {
-	delete _widget;
-
-	OVITO_ASSERT(!_widget);
-	OVITO_ASSERT(!_viewportWindow);
+	if(_widget) _widget->deleteLater();
 }
 
 /******************************************************************************
@@ -598,7 +595,7 @@ void Viewport::renderViewportTitle()
 	// Create a rendering buffer that is responsible for rendering the viewport's caption text.
 	ViewportSceneRenderer* renderer = dataset()->viewportConfig()->viewportRenderer();
 	if(!_captionBuffer || !_captionBuffer->isValid(renderer)) {
-		_captionBuffer = renderer->createTextGeometryBuffer();
+		_captionBuffer = renderer->createTextPrimitive();
 		_captionBuffer->setFont(ViewportSettings::getSettings().viewportFont());
 	}
 
@@ -631,7 +628,8 @@ bool Viewport::setMouseGrabEnabled(bool grab)
 ******************************************************************************/
 void Viewport::setCursor(const QCursor& cursor)
 {
-#ifndef Q_OS_MACX
+	// Changing the cursor leads to program crash on MacOS and Qt <= 5.2.0.
+#if !defined(Q_OS_MACX) || (QT_VERSION >= QT_VERSION_CHECK(5, 2, 1))
 	if(_viewportWindow)
 		_viewportWindow->setCursor(cursor);
 #endif
@@ -642,7 +640,7 @@ void Viewport::setCursor(const QCursor& cursor)
 ******************************************************************************/
 void Viewport::unsetCursor()
 {
-#ifndef Q_OS_MACX
+#if !defined(Q_OS_MACX) || (QT_VERSION >= QT_VERSION_CHECK(5, 2, 1))
 	if(_viewportWindow)
 		_viewportWindow->unsetCursor();
 #endif
@@ -674,11 +672,11 @@ void Viewport::renderOrientationIndicator()
 	renderer->setWorldTransform(AffineTransformation::Identity());
 
 	static const ColorA axisColors[3] = { ColorA(1, 0, 0), ColorA(0, 1, 0), ColorA(0.2, 0.2, 1) };
-	static const QString labels[3] = { "x", "y", "z" };
+	static const QString labels[3] = { QStringLiteral("x"), QStringLiteral("y"), QStringLiteral("z") };
 
 	// Create line buffer.
 	if(!_orientationTripodGeometry || !_orientationTripodGeometry->isValid(renderer)) {
-		_orientationTripodGeometry = renderer->createLineGeometryBuffer();
+		_orientationTripodGeometry = renderer->createLinePrimitive();
 		_orientationTripodGeometry->setVertexCount(18);
 		ColorA vertexColors[18];
 		for(int i = 0; i < 18; i++)
@@ -705,7 +703,7 @@ void Viewport::renderOrientationIndicator()
 
 		// Create a rendering buffer that is responsible for rendering the text label.
 		if(!_orientationTripodLabels[axis] || !_orientationTripodLabels[axis]->isValid(renderer)) {
-			_orientationTripodLabels[axis] = renderer->createTextGeometryBuffer();
+			_orientationTripodLabels[axis] = renderer->createTextPrimitive();
 			_orientationTripodLabels[axis]->setFont(ViewportSettings::getSettings().viewportFont());
 			_orientationTripodLabels[axis]->setColor(axisColors[axis]);
 			_orientationTripodLabels[axis]->setText(labels[axis]);
@@ -794,7 +792,7 @@ void Viewport::renderRenderFrame()
 	// Create a rendering buffer that is responsible for rendering the frame.
 	ViewportSceneRenderer* renderer = dataset()->viewportConfig()->viewportRenderer();
 	if(!_renderFrameOverlay || !_renderFrameOverlay->isValid(renderer)) {
-		_renderFrameOverlay = renderer->createImageGeometryBuffer();
+		_renderFrameOverlay = renderer->createImagePrimitive();
 		QImage image(1, 1, QImage::Format_ARGB32_Premultiplied);
 		image.fill(0xA0FFFFFF);
 		_renderFrameOverlay->setImage(image);

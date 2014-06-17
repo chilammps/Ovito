@@ -72,6 +72,10 @@
               <entry><link linkend="particles.modifiers.scatter_plot">Scatter plot</link></entry>
               <entry>Generates a scatter plot of two particle properties.</entry>
             </row>
+            <row>
+              <entry><link linkend="particles.modifiers.wigner_seitz_analysis">Wigner-Seitz defect analysis</link></entry>
+              <entry>Identifies point defects (vacancies and interstitials) in a crystal lattice.</entry>
+            </row>
 
 		<!-- COLORING -->
             <row>
@@ -109,6 +113,10 @@
             <row>
               <entry><link linkend="particles.modifiers.delete_selected_particles">Delete selected particles</link></entry>
               <entry>Deletes all selected particles.</entry>
+            </row>
+            <row>
+              <entry><link linkend="particles.modifiers.freeze_property">Freeze property</link></entry>
+              <entry>Takes a snapshot of the current state of a particle property and preserves it over time.</entry>
             </row>
             <row>
               <entry><link linkend="particles.modifiers.show_periodic_images">Show periodic images</link></entry>
@@ -190,6 +198,8 @@
 
   <xi:include href="particles/expression_select.docbook"/>
 
+  <xi:include href="particles/freeze_property.docbook"/>
+
   <xi:include href="particles/freeze_selection.docbook"/>
 
   <xi:include href="particles/histogram.docbook"/>
@@ -205,6 +215,8 @@
   <xi:include href="particles/show_periodic_images.docbook"/>
 
   <xi:include href="particles/slice.docbook"/>
+
+  <xi:include href="particles/wigner_seitz_analysis.docbook"/>
 
   <xi:include href="particles/wrap_at_periodic_boundaries.docbook"/>
   

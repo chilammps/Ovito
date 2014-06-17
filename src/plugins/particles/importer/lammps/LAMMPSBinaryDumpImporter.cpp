@@ -129,6 +129,7 @@ bool LAMMPSBinaryDumpImporter::inspectNewFile(LinkedFileObject* obj)
 
 	InputColumnMapping mapping(_columnMapping);
 	mapping.setColumnCount(inspectionTask->columnMapping().columnCount());
+	mapping.setFileExcerpt(inspectionTask->columnMapping().fileExcerpt());
 	if(_columnMapping.columnCount() != mapping.columnCount()) {
 		if(_columnMapping.columnCount() == 0) {
 			int oldCount = 0;
@@ -157,7 +158,10 @@ bool LAMMPSBinaryDumpImporter::inspectNewFile(LinkedFileObject* obj)
 		}
 		return false;
 	}
-	else return true;
+	else {
+		_columnMapping.setFileExcerpt(inspectionTask->columnMapping().fileExcerpt());
+		return true;
+	}
 }
 
 /******************************************************************************
@@ -317,6 +321,7 @@ void LAMMPSBinaryDumpImporter::LAMMPSBinaryDumpImportTask::parseFile(FutureInter
 	LAMMPSBinaryDumpHeader header;
 	if(!header.parse(file))
 		throw Exception(tr("Failed to read binary LAMMPS dump file: Invalid file header."));
+	setTimestep(header.ntimestep);
 
 	if(_parseFileHeaderOnly) {
 		_columnMapping.setColumnCount(header.size_one);
@@ -483,7 +488,7 @@ void LAMMPSBinaryDumpImporterEditor::createUI(const RolloutInsertionParameters& 
 
 	QPushButton* editMappingButton = new QPushButton(tr("Edit column mapping..."));
 	sublayout->addWidget(editMappingButton);
-	connect(editMappingButton, SIGNAL(clicked(bool)), this, SLOT(onEditColumnMapping()));
+	connect(editMappingButton, &QPushButton::clicked, this, &LAMMPSBinaryDumpImporterEditor::onEditColumnMapping);
 }
 
 /******************************************************************************

@@ -26,8 +26,8 @@
 #include <plugins/particles/data/ParticlePropertyObject.h>
 #include <core/animation/controller/Controller.h>
 #include <core/animation/AnimationSettings.h>
-#include <core/rendering/ImageGeometryBuffer.h>
-#include <core/rendering/TextGeometryBuffer.h>
+#include <core/rendering/ImagePrimitive.h>
+#include <core/rendering/TextPrimitive.h>
 #include "../ParticleModifier.h"
 
 namespace Particles {
@@ -168,6 +168,10 @@ public:
 	/// Constructor.
 	Q_INVOKABLE ColorCodingModifier(DataSet* dataset);
 
+	/// Loads the user-defined default values of this object's parameter fields from the
+	/// application's settings store.
+	virtual void loadUserDefaults() override;
+
 	/// Asks the modifier for its validity interval at the given time.
 	virtual TimeInterval modifierValidity(TimePoint time) override;
 
@@ -209,9 +213,6 @@ public:
 
 	/// Returns the color gradient used by the modifier to convert scalar atom properties to colors.
 	ColorCodingGradient* colorGradient() const { return _colorGradient; }
-
-	/// Sets the color gradient for the modifier to convert scalar atom properties to colors.
-	void setColorGradient(const OORef<ColorCodingGradient>& gradient) { setColorGradient(gradient.get()); }
 
 	/// Sets the color gradient for the modifier to convert scalar atom properties to colors.
 	void setColorGradient(ColorCodingGradient* gradient) { _colorGradient = gradient; }
@@ -258,7 +259,7 @@ protected:
 	virtual void loadFromStream(ObjectLoadStream& stream) override;
 
 	/// Modifies the particle object.
-	virtual ObjectStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;
+	virtual PipelineStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;
 
 	/// This controller stores the start value of the color scale.
 	ReferenceField<Controller> _startValueCtrl;
@@ -283,16 +284,16 @@ protected:
 	PropertyField<bool> _renderLegend;
 
 	/// Used to render the color scale legend on top the scene.
-	std::unique_ptr<ImageGeometryBuffer> _colorScaleImageBuffer;
+	std::unique_ptr<ImagePrimitive> _colorScaleImageBuffer;
 
 	/// Used to render the color scale labels.
-	std::unique_ptr<TextGeometryBuffer> _colorScaleTopLabel;
+	std::unique_ptr<TextPrimitive> _colorScaleTopLabel;
 
 	/// Used to render the color scale labels.
-	std::unique_ptr<TextGeometryBuffer> _colorScaleBottomLabel;
+	std::unique_ptr<TextPrimitive> _colorScaleBottomLabel;
 
 	/// Used to render the color scale title.
-	std::unique_ptr<TextGeometryBuffer> _colorScaleTitleLabel;
+	std::unique_ptr<TextPrimitive> _colorScaleTitleLabel;
 
 	/// This helper object is used to detect changes in the settings that required
 	/// updating the render buffers used to display the color scale legend.

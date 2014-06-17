@@ -116,8 +116,8 @@ OutputColumnWriter::OutputColumnWriter(const OutputColumnMapping& mapping, const
 		if(vectorComponent < 0) vectorComponent = 0;
 
 		ParticlePropertyObject* property = nullptr;
-		for(const auto& o : source.objects()) {
-			ParticlePropertyObject* p = dynamic_object_cast<ParticlePropertyObject>(o.get());
+		for(SceneObject* o : source.objects()) {
+			ParticlePropertyObject* p = dynamic_object_cast<ParticlePropertyObject>(o);
 			if(p && p->type() == propertyType) {
 				if(propertyType != ParticleProperty::UserProperty || p->name() == propertyName) {
 					property = p;

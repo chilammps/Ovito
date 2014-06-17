@@ -22,7 +22,7 @@
 #include <core/Core.h>
 #include "HistoryFileDialog.h"
 
-#define MAX_DIRECTORY_HISTORY_SIZE	8
+#define MAX_DIRECTORY_HISTORY_SIZE	5
 
 namespace Ovito {
 
@@ -34,11 +34,20 @@ HistoryFileDialog::HistoryFileDialog(const QString& dialogClass, QWidget* parent
 {
 	connect(this, &QFileDialog::fileSelected, this, &HistoryFileDialog::onFileSelected);
 
-	if(directory.isEmpty()) {
-		QStringList history = loadDirHistory();
-		if(history.isEmpty() == false) {
+	// The user can request the Qt file dialog instead of the native dialog by settings the corresponding
+	// option in the application settings.
+	// The native dialogs of some platforms don't provide the directory history function but may be faster
+	// than the Qt implementation.
+	QSettings settings;
+	if(settings.value("file/use_qt_dialog", false).toBool())
+		setOption(QFileDialog::DontUseNativeDialog);
+
+	QStringList history = loadDirHistory();
+	if(history.isEmpty() == false) {
+		if(directory.isEmpty()) {
 			setDirectory(history.front());
 		}
+		setHistory(history);
 	}
 }
 
@@ -51,10 +60,14 @@ void HistoryFileDialog::onFileSelected(const QString& file)
 	QString currentDir = QFileInfo(file).absolutePath();
 
 	QStringList history = loadDirHistory();
-	history.removeAll(currentDir);
-	if(history.size() >= MAX_DIRECTORY_HISTORY_SIZE)
-		history.erase(history.begin() + (MAX_DIRECTORY_HISTORY_SIZE - 1), history.end());
-	history.push_front(currentDir);
+	int index = history.indexOf(currentDir);
+	if(index >= 0)
+		history.move(index, 0);
+	else {
+		history.push_front(currentDir);
+		if(history.size() > MAX_DIRECTORY_HISTORY_SIZE)
+			history.erase(history.begin() + MAX_DIRECTORY_HISTORY_SIZE, history.end());
+	}
 	saveDirHistory(history);
 }
 
@@ -63,15 +76,9 @@ void HistoryFileDialog::onFileSelected(const QString& file)
 ******************************************************************************/
 QStringList HistoryFileDialog::loadDirHistory() const
 {
-	QStringList list;
 	QSettings settings;
-	settings.beginGroup("file/dir_history/" + _dialogClass);
-	for(int index = 0; ; index++) {
-		QString d = settings.value(QString("dir%1").arg(index++)).toString();
-		if(d.isEmpty()) break;
-		list.push_back(d);
-	}
-	return list;
+	settings.beginGroup("filedialog/" + _dialogClass);
+	return settings.value("history").toStringList();
 }
 
 /******************************************************************************
@@ -80,11 +87,8 @@ QStringList HistoryFileDialog::loadDirHistory() const
 void HistoryFileDialog::saveDirHistory(const QStringList& list) const
 {
 	QSettings settings;
-	settings.beginGroup("file/dir_history/" + _dialogClass);
-	settings.remove("");
-	for(int index = 0; index < list.size(); index++) {
-		settings.setValue(QString("dir%1").arg(index), list[index]);
-	}
+	settings.beginGroup("filedialog/" + _dialogClass);
+	settings.setValue("history", QVariant::fromValue(list));
 }
 
 };

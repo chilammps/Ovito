@@ -71,7 +71,7 @@ IMPLEMENT_OVITO_OBJECT(Particles, SimulationCellEditor, PropertiesEditor)
 ******************************************************************************/
 void SimulationCellEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
-	// Create first rollout.
+	// Create rollout.
 	QWidget* rollout = createRollout(QString(), rolloutParams);
 
 	QVBoxLayout* layout1 = new QVBoxLayout(rollout);
@@ -119,95 +119,103 @@ void SimulationCellEditor::createUI(const RolloutInsertionParameters& rolloutPar
 			layout2->addWidget(textBox, i, 1);
 			layout2->addWidget(simCellSizeSpinners[i], i, 2);
 
-			connect(simCellSizeSpinners[i], SIGNAL(spinnerValueChanged()), signalMapperValueChanged, SLOT(map()));
-			connect(simCellSizeSpinners[i], SIGNAL(spinnerDragStart()), signalMapperDragStart, SLOT(map()));
-			connect(simCellSizeSpinners[i], SIGNAL(spinnerDragStop()), signalMapperDragStop, SLOT(map()));
-			connect(simCellSizeSpinners[i], SIGNAL(spinnerDragAbort()), signalMapperDragAbort, SLOT(map()));
+			connect(simCellSizeSpinners[i], &SpinnerWidget::spinnerValueChanged, signalMapperValueChanged, (void (QSignalMapper::*)())&QSignalMapper::map);
+			connect(simCellSizeSpinners[i], &SpinnerWidget::spinnerDragStart, signalMapperDragStart, (void (QSignalMapper::*)())&QSignalMapper::map);
+			connect(simCellSizeSpinners[i], &SpinnerWidget::spinnerDragStop, signalMapperDragStop, (void (QSignalMapper::*)())&QSignalMapper::map);
+			connect(simCellSizeSpinners[i], &SpinnerWidget::spinnerDragAbort, signalMapperDragAbort, (void (QSignalMapper::*)())&QSignalMapper::map);
 
 			signalMapperValueChanged->setMapping(simCellSizeSpinners[i], i);
 			signalMapperDragStart->setMapping(simCellSizeSpinners[i], i);
 			signalMapperDragStop->setMapping(simCellSizeSpinners[i], i);
 			signalMapperDragAbort->setMapping(simCellSizeSpinners[i], i);
 		}
-		connect(signalMapperValueChanged, SIGNAL(mapped(int)), this, SLOT(onSizeSpinnerValueChanged(int)));
-		connect(signalMapperDragStart, SIGNAL(mapped(int)), this, SLOT(onSizeSpinnerDragStart(int)));
-		connect(signalMapperDragStop, SIGNAL(mapped(int)), this, SLOT(onSizeSpinnerDragStop(int)));
-		connect(signalMapperDragAbort, SIGNAL(mapped(int)), this, SLOT(onSizeSpinnerDragAbort(int)));
+		connect(signalMapperValueChanged, (void (QSignalMapper::*)(int))&QSignalMapper::mapped, this, &SimulationCellEditor::onSizeSpinnerValueChanged);
+		connect(signalMapperDragStart, (void (QSignalMapper::*)(int))&QSignalMapper::mapped, this, &SimulationCellEditor::onSizeSpinnerDragStart);
+		connect(signalMapperDragStop, (void (QSignalMapper::*)(int))&QSignalMapper::mapped, this, &SimulationCellEditor::onSizeSpinnerDragStop);
+		connect(signalMapperDragAbort, (void (QSignalMapper::*)(int))&QSignalMapper::mapped, this, &SimulationCellEditor::onSizeSpinnerDragAbort);
 		layout2->addWidget(new QLabel(tr("Width (X):")), 0, 0);
 		layout2->addWidget(new QLabel(tr("Length (Y):")), 1, 0);
 		layout2->addWidget(new QLabel(tr("Height (Z):")), 2, 0);
 
-		connect(this, SIGNAL(contentsChanged(RefTarget*)), this, SLOT(updateSimulationBoxSize()));
+		connect(this, &SimulationCellEditor::contentsChanged, this, &SimulationCellEditor::updateSimulationBoxSize);
 	}
 
-	// Create second rollout.
-	rollout = createRollout(tr("Cell vectors"), rolloutParams);
+	{
+		QGroupBox* vectorsGroupBox = new QGroupBox(tr("Cell vectors"), rollout);
+		layout1->addWidget(vectorsGroupBox);
 
-	layout1 = new QVBoxLayout(rollout);
-	layout1->setContentsMargins(4,4,4,4);
-	layout1->setSpacing(0);
+		QVBoxLayout* sublayout = new QVBoxLayout(vectorsGroupBox);
+		sublayout->setContentsMargins(4,4,4,4);
+		sublayout->setSpacing(2);
 
-	QString xyz[3] = { QString("X: "), QString("Y: "), QString("Z: ") };
+		QString xyz[3] = { QString("X: "), QString("Y: "), QString("Z: ") };
 
-	{	// First cell vector.
-		layout1->addWidget(new QLabel(tr("Cell vector 1:"), rollout));
-		QGridLayout* layout2 = new QGridLayout();
-		layout2->setContentsMargins(0,0,0,0);
-		layout2->setSpacing(0);
-		layout2->setColumnStretch(1, 1);
-		layout1->addLayout(layout2);
-		for(int i = 0; i < 3; i++) {
-			Vector3ParameterUI* vPUI = new Vector3ParameterUI(this, PROPERTY_FIELD(SimulationCell::_cellVector1), i);
-			layout2->addWidget(new QLabel(xyz[i]), i, 0);
-			layout2->addWidget(vPUI->textBox(), i, 1);
-			layout2->addWidget(vPUI->spinner(), i, 2);
+		{	// First cell vector.
+			sublayout->addSpacing(6);
+			sublayout->addWidget(new QLabel(tr("Cell vector 1:"), rollout));
+			QGridLayout* layout2 = new QGridLayout();
+			layout2->setContentsMargins(0,0,0,0);
+			layout2->setSpacing(0);
+			sublayout->addLayout(layout2);
+			for(int i = 0; i < 3; i++) {
+				Vector3ParameterUI* vPUI = new Vector3ParameterUI(this, PROPERTY_FIELD(SimulationCell::_cellVector1), i);
+				layout2->addWidget(vPUI->textBox(), 0, i*3);
+				layout2->addWidget(vPUI->spinner(), 0, i*3+1);
+				layout2->setColumnStretch(i*4+1, 1);
+				if(i != 2)
+					layout2->setColumnMinimumWidth(i*3+2, 6);
+			}
 		}
-	}
 
-	{	// Second cell vector.
-		layout1->addWidget(new QLabel(tr("Cell vector 2:"), rollout));
-		QGridLayout* layout2 = new QGridLayout();
-		layout2->setContentsMargins(0,0,0,0);
-		layout2->setSpacing(0);
-		layout2->setColumnStretch(1, 1);
-		layout1->addLayout(layout2);
-		for(int i = 0; i < 3; i++) {
-			Vector3ParameterUI* vPUI = new Vector3ParameterUI(this, PROPERTY_FIELD(SimulationCell::_cellVector2), i);
-			layout2->addWidget(new QLabel(xyz[i]), i, 0);
-			layout2->addWidget(vPUI->textBox(), i, 1);
-			layout2->addWidget(vPUI->spinner(), i, 2);
+		{	// Second cell vector.
+			sublayout->addSpacing(2);
+			sublayout->addWidget(new QLabel(tr("Cell vector 2:"), rollout));
+			QGridLayout* layout2 = new QGridLayout();
+			layout2->setContentsMargins(0,0,0,0);
+			layout2->setSpacing(0);
+			sublayout->addLayout(layout2);
+			for(int i = 0; i < 3; i++) {
+				Vector3ParameterUI* vPUI = new Vector3ParameterUI(this, PROPERTY_FIELD(SimulationCell::_cellVector2), i);
+				layout2->addWidget(vPUI->textBox(), 0, i*3);
+				layout2->addWidget(vPUI->spinner(), 0, i*3+1);
+				layout2->setColumnStretch(i*4+1, 1);
+				if(i != 2)
+					layout2->setColumnMinimumWidth(i*3+2, 6);
+			}
 		}
-	}
 
-	{	// Third cell vector.
-		layout1->addWidget(new QLabel(tr("Cell vector 3:"), rollout));
-		QGridLayout* layout2 = new QGridLayout();
-		layout2->setContentsMargins(0,0,0,0);
-		layout2->setSpacing(0);
-		layout2->setColumnStretch(1, 1);
-		layout1->addLayout(layout2);
-		for(int i = 0; i < 3; i++) {
-			Vector3ParameterUI* vPUI = new Vector3ParameterUI(this, PROPERTY_FIELD(SimulationCell::_cellVector3), i);
-			layout2->addWidget(new QLabel(xyz[i]), i, 0);
-			layout2->addWidget(vPUI->textBox(), i, 1);
-			layout2->addWidget(vPUI->spinner(), i, 2);
+		{	// Third cell vector.
+			sublayout->addSpacing(2);
+			sublayout->addWidget(new QLabel(tr("Cell vector 3:"), rollout));
+			QGridLayout* layout2 = new QGridLayout();
+			layout2->setContentsMargins(0,0,0,0);
+			layout2->setSpacing(0);
+			sublayout->addLayout(layout2);
+			for(int i = 0; i < 3; i++) {
+				Vector3ParameterUI* vPUI = new Vector3ParameterUI(this, PROPERTY_FIELD(SimulationCell::_cellVector3), i);
+				layout2->addWidget(vPUI->textBox(), 0, i*3);
+				layout2->addWidget(vPUI->spinner(), 0, i*3+1);
+				layout2->setColumnStretch(i*4+1, 1);
+				if(i != 2)
+					layout2->setColumnMinimumWidth(i*3+2, 6);
+			}
 		}
-	}
 
-	layout1->addSpacing(6);
-
-	{	// Cell origin.
-		layout1->addWidget(new QLabel(tr("Cell origin:"), rollout));
-		QGridLayout* layout2 = new QGridLayout();
-		layout2->setContentsMargins(0,0,0,0);
-		layout2->setSpacing(0);
-		layout2->setColumnStretch(1, 1);
-		layout1->addLayout(layout2);
-		for(size_t i=0; i<3; i++) {
-			Vector3ParameterUI* vPUI = new Vector3ParameterUI(this, PROPERTY_FIELD(SimulationCell::_cellOrigin), i);
-			layout2->addWidget(new QLabel(xyz[i]), i, 0);
-			layout2->addWidget(vPUI->textBox(), i, 1);
-			layout2->addWidget(vPUI->spinner(), i, 2);
+		{	// Cell origin.
+			sublayout->addSpacing(8);
+			sublayout->addWidget(new QLabel(tr("Cell origin:"), rollout));
+			QGridLayout* layout2 = new QGridLayout();
+			layout2->setContentsMargins(0,0,0,0);
+			layout2->setSpacing(0);
+			sublayout->addLayout(layout2);
+			for(int i = 0; i < 3; i++) {
+				Vector3ParameterUI* vPUI = new Vector3ParameterUI(this, PROPERTY_FIELD(SimulationCell::_cellOrigin), i);
+				layout2->addWidget(vPUI->textBox(), 0, i*3);
+				layout2->addWidget(vPUI->spinner(), 0, i*3+1);
+				layout2->setColumnStretch(i*4+1, 1);
+				if(i != 2)
+					layout2->setColumnMinimumWidth(i*3+2, 6);
+			}
 		}
 	}
 }

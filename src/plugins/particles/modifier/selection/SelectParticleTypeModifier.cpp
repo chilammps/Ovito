@@ -29,9 +29,9 @@
 
 namespace Particles {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, SelectParticleTypeModifier, ParticleModifier)
-IMPLEMENT_OVITO_OBJECT(Particles, SelectParticleTypeModifierEditor, ParticleModifierEditor)
-SET_OVITO_OBJECT_EDITOR(SelectParticleTypeModifier, SelectParticleTypeModifierEditor)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, SelectParticleTypeModifier, ParticleModifier);
+IMPLEMENT_OVITO_OBJECT(Particles, SelectParticleTypeModifierEditor, ParticleModifierEditor);
+SET_OVITO_OBJECT_EDITOR(SelectParticleTypeModifier, SelectParticleTypeModifierEditor);
 
 /******************************************************************************
 * Sets the identifier of the data channel that contains the type for each atom.
@@ -70,8 +70,8 @@ void SelectParticleTypeModifier::setSelectedParticleTypes(const QSet<int>& types
 ******************************************************************************/
 ParticleTypeProperty* SelectParticleTypeModifier::lookupInputProperty(const PipelineFlowState& inputState) const
 {
-	for(const auto& o : inputState.objects()) {
-		ParticleTypeProperty* ptypeProp = dynamic_object_cast<ParticleTypeProperty>(o.get());
+	for(SceneObject* o : inputState.objects()) {
+		ParticleTypeProperty* ptypeProp = dynamic_object_cast<ParticleTypeProperty>(o);
 		if(ptypeProp) {
 			if((sourceProperty().type() == ParticleProperty::UserProperty && ptypeProp->name() == sourceProperty().name()) ||
 					(sourceProperty().type() != ParticleProperty::UserProperty && ptypeProp->type() == sourceProperty().type())) {
@@ -85,7 +85,7 @@ ParticleTypeProperty* SelectParticleTypeModifier::lookupInputProperty(const Pipe
 /******************************************************************************
 * This modifies the input object.
 ******************************************************************************/
-ObjectStatus SelectParticleTypeModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
+PipelineStatus SelectParticleTypeModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
 {
 	// Get the input type property.
 	ParticleTypeProperty* typeProperty = lookupInputProperty(input());
@@ -112,7 +112,7 @@ ObjectStatus SelectParticleTypeModifier::modifyParticles(TimePoint time, TimeInt
 	selProperty->changed();
 
 	QString statusMessage = tr("%1 out of %2 particles selected (%3%)").arg(nSelected).arg(inputParticleCount()).arg((FloatType)nSelected * 100 / std::max(1,(int)inputParticleCount()), 0, 'f', 1);
-	return ObjectStatus(ObjectStatus::Success, statusMessage);
+	return PipelineStatus(PipelineStatus::Success, statusMessage);
 }
 
 /******************************************************************************
@@ -126,8 +126,8 @@ void SelectParticleTypeModifier::initializeModifier(PipelineObject* pipeline, Mo
 	// Select the first particle type property from the input with more than one particle type.
 	PipelineFlowState input = pipeline->evaluatePipeline(dataset()->animationSettings()->time(), modApp, false);
 	ParticleTypeProperty* bestProperty = nullptr;
-	for(const auto& o : input.objects()) {
-		ParticleTypeProperty* ptypeProp = dynamic_object_cast<ParticleTypeProperty>(o.get());
+	for(SceneObject* o : input.objects()) {
+		ParticleTypeProperty* ptypeProp = dynamic_object_cast<ParticleTypeProperty>(o);
 		if(ptypeProp && ptypeProp->particleTypes().empty() == false && ptypeProp->componentCount() == 1) {
 			bestProperty = ptypeProp;
 		}
@@ -203,7 +203,7 @@ void SelectParticleTypeModifierEditor::createUI(const RolloutInsertionParameters
 	layout->addWidget(particleTypesBox);
 
 	// Update property list if another modifier has been loaded into the editor.
-	connect(this, SIGNAL(contentsReplaced(RefTarget*)), this, SLOT(updatePropertyList()));
+	connect(this, &SelectParticleTypeModifierEditor::contentsReplaced, this, &SelectParticleTypeModifierEditor::updatePropertyList);
 
 	// Status label.
 	layout->addSpacing(12);
@@ -215,7 +215,7 @@ void SelectParticleTypeModifierEditor::createUI(const RolloutInsertionParameters
 ******************************************************************************/
 void SelectParticleTypeModifierEditor::updatePropertyList()
 {
-	disconnect(propertyListBox, SIGNAL(activated(int)), this, SLOT(onPropertySelected(int)));
+	disconnect(propertyListBox, (void (QComboBox::*)(int))&QComboBox::activated, this, &SelectParticleTypeModifierEditor::onPropertySelected);
 	propertyListBox->clear();
 
 	SelectParticleTypeModifier* mod = static_object_cast<SelectParticleTypeModifier>(editObject());
@@ -227,8 +227,8 @@ void SelectParticleTypeModifierEditor::updatePropertyList()
 
 		// Populate type property list based on modifier input.
 		PipelineFlowState inputState = mod->getModifierInput();
-		for(const auto& o : inputState.objects()) {
-			ParticleTypeProperty* ptypeProp = dynamic_object_cast<ParticleTypeProperty>(o.get());
+		for(SceneObject* o : inputState.objects()) {
+			ParticleTypeProperty* ptypeProp = dynamic_object_cast<ParticleTypeProperty>(o);
 			if(ptypeProp && ptypeProp->particleTypes().empty() == false && ptypeProp->componentCount() == 1) {
 				propertyListBox->addItem(ptypeProp);
 			}
@@ -236,7 +236,7 @@ void SelectParticleTypeModifierEditor::updatePropertyList()
 
 		propertyListBox->setCurrentProperty(mod->sourceProperty());
 	}
-	connect(propertyListBox, SIGNAL(activated(int)), this, SLOT(onPropertySelected(int)));
+	connect(propertyListBox, (void (QComboBox::*)(int))&QComboBox::activated, this, &SelectParticleTypeModifierEditor::onPropertySelected);
 
 	updateParticleTypeList();
 }
@@ -246,7 +246,7 @@ void SelectParticleTypeModifierEditor::updatePropertyList()
 ******************************************************************************/
 void SelectParticleTypeModifierEditor::updateParticleTypeList()
 {
-	disconnect(particleTypesBox, SIGNAL(itemChanged(QListWidgetItem*)), this, SLOT(onParticleTypeSelected(QListWidgetItem*)));
+	disconnect(particleTypesBox, &QListWidget::itemChanged, this, &SelectParticleTypeModifierEditor::onParticleTypeSelected);
 	particleTypesBox->setUpdatesEnabled(false);
 	particleTypesBox->clear();
 
@@ -274,7 +274,7 @@ void SelectParticleTypeModifierEditor::updateParticleTypeList()
 		}
 	}
 
-	connect(particleTypesBox, SIGNAL(itemChanged(QListWidgetItem*)), this, SLOT(onParticleTypeSelected(QListWidgetItem*)));
+	connect(particleTypesBox, &QListWidget::itemChanged, this, &SelectParticleTypeModifierEditor::onParticleTypeSelected);
 	particleTypesBox->setUpdatesEnabled(true);
 }
 

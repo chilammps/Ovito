@@ -27,10 +27,10 @@
 
 namespace Particles {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ParticlePropertyObject, SceneObject)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ParticlePropertyObject, SceneObject);
 
 /******************************************************************************
-* Default constructor.
+* Constructor.
 ******************************************************************************/
 ParticlePropertyObject::ParticlePropertyObject(DataSet* dataset, ParticleProperty* storage)
 	: SceneObject(dataset), _storage(storage ? storage : new ParticleProperty())
@@ -69,10 +69,16 @@ OORef<ParticlePropertyObject> ParticlePropertyObject::create(DataSet* dataset, P
 		propertyObj = new ParticlePropertyObject(dataset, storage);
 	}
 
-	if(storage->type() == ParticleProperty::PositionProperty)
-		propertyObj->addDisplayObject(new ParticleDisplay(dataset));
-	else if(storage->type() == ParticleProperty::DisplacementProperty)
-		propertyObj->addDisplayObject(new VectorDisplay(dataset));
+	if(storage->type() == ParticleProperty::PositionProperty) {
+		OORef<ParticleDisplay> displayObj = new ParticleDisplay(dataset);
+		displayObj->loadUserDefaults();
+		propertyObj->addDisplayObject(displayObj);
+	}
+	else if(storage->type() == ParticleProperty::DisplacementProperty) {
+		OORef<VectorDisplay> displayObj = new VectorDisplay(dataset);
+		displayObj->loadUserDefaults();
+		propertyObj->addDisplayObject(displayObj);
+	}
 
 	return propertyObj;
 }
@@ -144,14 +150,28 @@ OORef<RefTarget> ParticlePropertyObject::clone(bool deepCopy, CloneHelper& clone
 }
 
 /******************************************************************************
-* This helper method returns the particle property (if present) from the
-* given pipeline state with the given type.
+* This helper method returns a standard particle property (if present) from the
+* given pipeline state.
 ******************************************************************************/
 ParticlePropertyObject* ParticlePropertyObject::findInState(const PipelineFlowState& state, ParticleProperty::Type type)
 {
-	for(const auto& o : state.objects()) {
-		ParticlePropertyObject* particleProperty = dynamic_object_cast<ParticlePropertyObject>(o.get());
+	for(SceneObject* o : state.objects()) {
+		ParticlePropertyObject* particleProperty = dynamic_object_cast<ParticlePropertyObject>(o);
 		if(particleProperty && particleProperty->type() == type)
+			return particleProperty;
+	}
+	return nullptr;
+}
+
+/******************************************************************************
+* This helper method returns a specific user-defined particle property (if present) from the
+* given pipeline state.
+******************************************************************************/
+ParticlePropertyObject* ParticlePropertyObject::findInState(const PipelineFlowState& state, const QString& name)
+{
+	for(SceneObject* o : state.objects()) {
+		ParticlePropertyObject* particleProperty = dynamic_object_cast<ParticlePropertyObject>(o);
+		if(particleProperty && particleProperty->type() == ParticleProperty::UserProperty && particleProperty->name() == name)
 			return particleProperty;
 	}
 	return nullptr;
@@ -165,8 +185,8 @@ ParticlePropertyObject* ParticlePropertyReference::findInState(const PipelineFlo
 {
 	if(isNull())
 		return nullptr;
-	for(const auto& o : state.objects()) {
-		ParticlePropertyObject* prop = dynamic_object_cast<ParticlePropertyObject>(o.get());
+	for(SceneObject* o : state.objects()) {
+		ParticlePropertyObject* prop = dynamic_object_cast<ParticlePropertyObject>(o);
 		if(prop) {
 			if((this->type() == ParticleProperty::UserProperty && prop->name() == this->name()) ||
 					(this->type() != ParticleProperty::UserProperty && prop->type() == this->type())) {

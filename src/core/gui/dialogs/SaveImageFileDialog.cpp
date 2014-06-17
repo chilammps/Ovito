@@ -33,8 +33,8 @@ namespace Ovito {
 SaveImageFileDialog::SaveImageFileDialog(QWidget* parent, const QString& caption, bool includeVideoFormats, const ImageInfo& imageInfo) :
 	HistoryFileDialog("save_image", parent, caption), _imageInfo(imageInfo)
 {
-	connect(this, SIGNAL(fileSelected(const QString&)), this, SLOT(onFileSelected(const QString&)));
-	connect(this, SIGNAL(filterSelected(const QString&)), this, SLOT(onFilterSelected(const QString&)));
+	connect(this, &QFileDialog::fileSelected, this, &SaveImageFileDialog::onFileSelected);
+	connect(this, &QFileDialog::filterSelected, this, &SaveImageFileDialog::onFilterSelected);
 
 	// Build filter string.
 	QStringList filterStrings;

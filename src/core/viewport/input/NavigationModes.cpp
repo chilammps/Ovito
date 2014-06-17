@@ -153,7 +153,7 @@ void NavigationMode::renderOverlay3D(Viewport* vp, ViewportSceneRenderer* render
 
 	// Create line buffer.
 	if(!_orbitCenterMarker || !_orbitCenterMarker->isValid(renderer)) {
-		_orbitCenterMarker = renderer->createArrowGeometryBuffer(ArrowGeometryBuffer::CylinderShape, ArrowGeometryBuffer::NormalShading, ArrowGeometryBuffer::HighQuality);
+		_orbitCenterMarker = renderer->createArrowPrimitive(ArrowPrimitive::CylinderShape, ArrowPrimitive::NormalShading, ArrowPrimitive::HighQuality);
 		_orbitCenterMarker->startSetElements(3);
 		_orbitCenterMarker->setElement(0, {-1,0,0}, {2,0,0}, {1,0,0}, 0.05f);
 		_orbitCenterMarker->setElement(1, {0,-1,0}, {0,2,0}, {0,1,0}, 0.05f);
@@ -293,7 +293,7 @@ void ZoomMode::zoom(Viewport* vp, FloatType steps)
 				if(cameraObj) {
 					TimeInterval iv;
 					FloatType oldFOV = cameraObj->fieldOfView(vp->dataset()->animationSettings()->time(), iv);
-					cameraObj->setFieldOfView(vp->dataset()->animationSettings()->time(), oldFOV * exp(-steps * 0.001));
+					cameraObj->setFieldOfView(vp->dataset()->animationSettings()->time(), oldFOV * exp(-steps * 0.001f));
 				}
 			}
 		});
@@ -348,7 +348,7 @@ void OrbitMode::modifyView(Viewport* vp, QPointF delta)
 		vp->setViewType(Viewport::VIEW_ORTHO, true);
 
 	Matrix3 coordSys = ViewportSettings::getSettings().coordinateSystemOrientation();
-	Vector3 v = coordSys.inverse() * _oldViewMatrix * Vector3(0,0,1);
+	Vector3 v = _oldViewMatrix * coordSys.column(2);
 
 	FloatType theta, phi;
 	if(v.x() == 0 && v.y() == 0)

@@ -30,53 +30,54 @@
 
 extern "C" {
 
-#include <plugins/tachyon/tachyonlib/render.h>
-#include <plugins/tachyon/tachyonlib/camera.h>
-#include <plugins/tachyon/tachyonlib/trace.h>
+#include <tachyon/render.h>
+#include <tachyon/camera.h>
+#include <tachyon/threads.h>
+#include <tachyon/trace.h>
 
 };
 
 #if TACHYON_MAJOR_VERSION <= 0 && TACHYON_MINOR_VERSION < 99
-	#error "The OVITO Tachyon plugin requires version 0.99 of the Tachyon library or higher."
+	#error "The OVITO Tachyon plugin requires version 0.99 or newer of the Tachyon library."
 #endif
 
 namespace TachyonPlugin {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Tachyon, TachyonRenderer, NonInteractiveSceneRenderer)
-SET_OVITO_OBJECT_EDITOR(TachyonRenderer, TachyonRendererEditor)
-DEFINE_FLAGS_PROPERTY_FIELD(TachyonRenderer, _enableAntialiasing, "EnableAntialiasing", PROPERTY_FIELD_MEMORIZE)
-DEFINE_FLAGS_PROPERTY_FIELD(TachyonRenderer, _enableDirectLightSource, "EnableDirectLightSource", PROPERTY_FIELD_MEMORIZE)
-DEFINE_FLAGS_PROPERTY_FIELD(TachyonRenderer, _enableShadows, "EnableShadows", PROPERTY_FIELD_MEMORIZE)
-DEFINE_FLAGS_PROPERTY_FIELD(TachyonRenderer, _antialiasingSamples, "AntialiasingSamples", PROPERTY_FIELD_MEMORIZE)
-DEFINE_FLAGS_PROPERTY_FIELD(TachyonRenderer, _defaultLightSourceIntensity, "DefaultLightSourceIntensity", PROPERTY_FIELD_MEMORIZE)
-DEFINE_FLAGS_PROPERTY_FIELD(TachyonRenderer, _enableAmbientOcclusion, "EnableAmbientOcclusion", PROPERTY_FIELD_MEMORIZE)
-DEFINE_FLAGS_PROPERTY_FIELD(TachyonRenderer, _ambientOcclusionSamples, "AmbientOcclusionSamples", PROPERTY_FIELD_MEMORIZE)
-DEFINE_FLAGS_PROPERTY_FIELD(TachyonRenderer, _ambientOcclusionBrightness, "AmbientOcclusionBrightness", PROPERTY_FIELD_MEMORIZE)
-SET_PROPERTY_FIELD_LABEL(TachyonRenderer, _enableAntialiasing, "Enable anti-aliasing")
-SET_PROPERTY_FIELD_LABEL(TachyonRenderer, _antialiasingSamples, "Anti-aliasing samples")
-SET_PROPERTY_FIELD_LABEL(TachyonRenderer, _enableDirectLightSource, "Direct light")
-SET_PROPERTY_FIELD_LABEL(TachyonRenderer, _enableShadows, "Shadows")
-SET_PROPERTY_FIELD_LABEL(TachyonRenderer, _defaultLightSourceIntensity, "Direct light intensity")
-SET_PROPERTY_FIELD_LABEL(TachyonRenderer, _enableAmbientOcclusion, "Ambient occlusion")
-SET_PROPERTY_FIELD_LABEL(TachyonRenderer, _ambientOcclusionSamples, "Ambient occlusion samples")
-SET_PROPERTY_FIELD_LABEL(TachyonRenderer, _ambientOcclusionBrightness, "Ambient occlusion brightness")
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Tachyon, TachyonRenderer, NonInteractiveSceneRenderer);
+SET_OVITO_OBJECT_EDITOR(TachyonRenderer, TachyonRendererEditor);
+DEFINE_FLAGS_PROPERTY_FIELD(TachyonRenderer, _antialiasingEnabled, "EnableAntialiasing", PROPERTY_FIELD_MEMORIZE);
+DEFINE_FLAGS_PROPERTY_FIELD(TachyonRenderer, _directLightSourceEnabled, "EnableDirectLightSource", PROPERTY_FIELD_MEMORIZE);
+DEFINE_FLAGS_PROPERTY_FIELD(TachyonRenderer, _shadowsEnabled, "EnableShadows", PROPERTY_FIELD_MEMORIZE);
+DEFINE_FLAGS_PROPERTY_FIELD(TachyonRenderer, _antialiasingSamples, "AntialiasingSamples", PROPERTY_FIELD_MEMORIZE);
+DEFINE_FLAGS_PROPERTY_FIELD(TachyonRenderer, _defaultLightSourceIntensity, "DefaultLightSourceIntensity", PROPERTY_FIELD_MEMORIZE);
+DEFINE_FLAGS_PROPERTY_FIELD(TachyonRenderer, _ambientOcclusionEnabled, "EnableAmbientOcclusion", PROPERTY_FIELD_MEMORIZE);
+DEFINE_FLAGS_PROPERTY_FIELD(TachyonRenderer, _ambientOcclusionSamples, "AmbientOcclusionSamples", PROPERTY_FIELD_MEMORIZE);
+DEFINE_FLAGS_PROPERTY_FIELD(TachyonRenderer, _ambientOcclusionBrightness, "AmbientOcclusionBrightness", PROPERTY_FIELD_MEMORIZE);
+SET_PROPERTY_FIELD_LABEL(TachyonRenderer, _antialiasingEnabled, "Enable anti-aliasing");
+SET_PROPERTY_FIELD_LABEL(TachyonRenderer, _antialiasingSamples, "Anti-aliasing samples");
+SET_PROPERTY_FIELD_LABEL(TachyonRenderer, _directLightSourceEnabled, "Direct light");
+SET_PROPERTY_FIELD_LABEL(TachyonRenderer, _shadowsEnabled, "Shadows");
+SET_PROPERTY_FIELD_LABEL(TachyonRenderer, _defaultLightSourceIntensity, "Direct light intensity");
+SET_PROPERTY_FIELD_LABEL(TachyonRenderer, _ambientOcclusionEnabled, "Ambient occlusion");
+SET_PROPERTY_FIELD_LABEL(TachyonRenderer, _ambientOcclusionSamples, "Ambient occlusion samples");
+SET_PROPERTY_FIELD_LABEL(TachyonRenderer, _ambientOcclusionBrightness, "Ambient occlusion brightness");
 
 /******************************************************************************
 * Default constructor.
 ******************************************************************************/
 TachyonRenderer::TachyonRenderer(DataSet* dataset) : NonInteractiveSceneRenderer(dataset),
-	  _enableAntialiasing(true), _enableDirectLightSource(true), _enableShadows(true),
-	  _antialiasingSamples(12), _enableAmbientOcclusion(true), _ambientOcclusionSamples(12),
+		_antialiasingEnabled(true), _directLightSourceEnabled(true), _shadowsEnabled(true),
+	  _antialiasingSamples(12), _ambientOcclusionEnabled(true), _ambientOcclusionSamples(12),
 	  _defaultLightSourceIntensity(0.90f), _ambientOcclusionBrightness(0.80f)
 {
-	INIT_PROPERTY_FIELD(TachyonRenderer::_enableAntialiasing)
-	INIT_PROPERTY_FIELD(TachyonRenderer::_antialiasingSamples)
-	INIT_PROPERTY_FIELD(TachyonRenderer::_enableDirectLightSource)
-	INIT_PROPERTY_FIELD(TachyonRenderer::_enableShadows)
-	INIT_PROPERTY_FIELD(TachyonRenderer::_defaultLightSourceIntensity)
-	INIT_PROPERTY_FIELD(TachyonRenderer::_enableAmbientOcclusion)
-	INIT_PROPERTY_FIELD(TachyonRenderer::_ambientOcclusionSamples)
-	INIT_PROPERTY_FIELD(TachyonRenderer::_ambientOcclusionBrightness)
+	INIT_PROPERTY_FIELD(TachyonRenderer::_antialiasingEnabled);
+	INIT_PROPERTY_FIELD(TachyonRenderer::_antialiasingSamples);
+	INIT_PROPERTY_FIELD(TachyonRenderer::_directLightSourceEnabled);
+	INIT_PROPERTY_FIELD(TachyonRenderer::_shadowsEnabled);
+	INIT_PROPERTY_FIELD(TachyonRenderer::_defaultLightSourceIntensity);
+	INIT_PROPERTY_FIELD(TachyonRenderer::_ambientOcclusionEnabled);
+	INIT_PROPERTY_FIELD(TachyonRenderer::_ambientOcclusionSamples);
+	INIT_PROPERTY_FIELD(TachyonRenderer::_ambientOcclusionBrightness);
 }
 
 /******************************************************************************
@@ -102,8 +103,8 @@ bool TachyonRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialog* pro
 	// Create new scene and set up parameters.
 	_rtscene = rt_newscene();
 	rt_resolution(_rtscene, renderSettings()->outputImageWidth(), renderSettings()->outputImageHeight());
-	if(_enableAntialiasing)
-		rt_aa_maxsamples(_rtscene, _antialiasingSamples);
+	if(antialiasingEnabled())
+		rt_aa_maxsamples(_rtscene, antialiasingSamples());
 
 	// Create Tachyon frame buffer.
 	QImage img(renderSettings()->outputImageWidth(), renderSettings()->outputImageHeight(), QImage::Format_RGB888);
@@ -151,12 +152,10 @@ bool TachyonRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialog* pro
 	}
 
 	// Set up light.
-	if(_enableDirectLightSource) {
+	if(directLightSourceEnabled()) {
 		apitexture lightTex;
 		memset(&lightTex, 0, sizeof(lightTex));
-		lightTex.col.r = _defaultLightSourceIntensity;
-		lightTex.col.g = _defaultLightSourceIntensity;
-		lightTex.col.b = _defaultLightSourceIntensity;
+		lightTex.col.r = lightTex.col.g = lightTex.col.b = defaultLightSourceIntensity();
 		lightTex.ambient = 1.0;
 		lightTex.opacity = 1.0;
 		lightTex.diffuse = 1.0;
@@ -165,7 +164,7 @@ bool TachyonRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialog* pro
 		rt_directional_light(_rtscene, lightTexPtr, rt_vector(lightDir.x(), lightDir.y(), -lightDir.z()));
 	}
 
-	if(_enableAmbientOcclusion || (_enableDirectLightSource && _enableShadows)) {
+	if(ambientOcclusionEnabled() || (directLightSourceEnabled() && shadowsEnabled())) {
 		// Full shading mode required.
 		rt_shadermode(_rtscene, RT_SHADER_FULL);
 	}
@@ -174,13 +173,11 @@ bool TachyonRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialog* pro
 		rt_shadermode(_rtscene, RT_SHADER_MEDIUM);
 	}
 
-	if(_enableAmbientOcclusion) {
+	if(ambientOcclusionEnabled()) {
 		apicolor skycol;
-		skycol.r = _ambientOcclusionBrightness;
-		skycol.g = _ambientOcclusionBrightness;
-		skycol.b = _ambientOcclusionBrightness;
+		skycol.r = skycol.g = skycol.b = ambientOcclusionBrightness();
 		rt_rescale_lights(_rtscene, 0.2);
-		rt_ambient_occlusion(_rtscene, _ambientOcclusionSamples, skycol);
+		rt_ambient_occlusion(_rtscene, ambientOcclusionSamples(), skycol);
 	}
 
 	rt_trans_mode(_rtscene, RT_TRANS_VMD);
@@ -275,7 +272,7 @@ void TachyonRenderer::endRender()
 /******************************************************************************
 * Renders the line geometry stored in the given buffer.
 ******************************************************************************/
-void TachyonRenderer::renderLines(const DefaultLineGeometryBuffer& lineBuffer)
+void TachyonRenderer::renderLines(const DefaultLinePrimitive& lineBuffer)
 {
 	// Lines are not supported by this renderer.
 }
@@ -283,7 +280,7 @@ void TachyonRenderer::renderLines(const DefaultLineGeometryBuffer& lineBuffer)
 /******************************************************************************
 * Renders the particles stored in the given buffer.
 ******************************************************************************/
-void TachyonRenderer::renderParticles(const DefaultParticleGeometryBuffer& particleBuffer)
+void TachyonRenderer::renderParticles(const DefaultParticlePrimitive& particleBuffer)
 {
 	auto p = particleBuffer.positions().begin();
 	auto p_end = particleBuffer.positions().end();
@@ -293,7 +290,7 @@ void TachyonRenderer::renderParticles(const DefaultParticleGeometryBuffer& parti
 
 	const AffineTransformation tm = modelTM();
 
-	if(particleBuffer.particleShape() == ParticleGeometryBuffer::SphericalShape) {
+	if(particleBuffer.particleShape() == ParticlePrimitive::SphericalShape) {
 		// Rendering spherical particles.
 		for(; p != p_end; ++p, ++c, ++r) {
 			FloatType alpha = transparency ? (FloatType(1) - *transparency++) : FloatType(1);
@@ -316,11 +313,11 @@ void TachyonRenderer::renderParticles(const DefaultParticleGeometryBuffer& parti
 /******************************************************************************
 * Renders the arrow elements stored in the given buffer.
 ******************************************************************************/
-void TachyonRenderer::renderArrows(const DefaultArrowGeometryBuffer& arrowBuffer)
+void TachyonRenderer::renderArrows(const DefaultArrowPrimitive& arrowBuffer)
 {
 	const AffineTransformation tm = modelTM();
-	if(arrowBuffer.shape() == ArrowGeometryBuffer::CylinderShape) {
-		for(const DefaultArrowGeometryBuffer::ArrowElement& element : arrowBuffer.elements()) {
+	if(arrowBuffer.shape() == ArrowPrimitive::CylinderShape) {
+		for(const DefaultArrowPrimitive::ArrowElement& element : arrowBuffer.elements()) {
 			void* tex = getTachyonTexture(element.color.r(), element.color.g(), element.color.b(), element.color.a());
 			Point3 tp = tm * element.pos;
 			Vector3 ta = tm * element.dir;
@@ -339,8 +336,8 @@ void TachyonRenderer::renderArrows(const DefaultArrowGeometryBuffer& arrowBuffer
 		}
 	}
 
-	else if(arrowBuffer.shape() == ArrowGeometryBuffer::ArrowShape) {
-		for(const DefaultArrowGeometryBuffer::ArrowElement& element : arrowBuffer.elements()) {
+	else if(arrowBuffer.shape() == ArrowPrimitive::ArrowShape) {
+		for(const DefaultArrowPrimitive::ArrowElement& element : arrowBuffer.elements()) {
 			void* tex = getTachyonTexture(element.color.r(), element.color.g(), element.color.b(), element.color.a());
 			FloatType arrowHeadRadius = element.width * 2.5f;
 			FloatType arrowHeadLength = arrowHeadRadius * 1.8f;
@@ -393,7 +390,7 @@ void TachyonRenderer::renderArrows(const DefaultArrowGeometryBuffer& arrowBuffer
 /******************************************************************************
 * Renders the text stored in the given buffer.
 ******************************************************************************/
-void TachyonRenderer::renderText(const DefaultTextGeometryBuffer& textBuffer)
+void TachyonRenderer::renderText(const DefaultTextPrimitive& textBuffer)
 {
 	// Not supported by this renderer.
 }
@@ -401,7 +398,7 @@ void TachyonRenderer::renderText(const DefaultTextGeometryBuffer& textBuffer)
 /******************************************************************************
 * Renders the image stored in the given buffer.
 ******************************************************************************/
-void TachyonRenderer::renderImage(const DefaultImageGeometryBuffer& imageBuffer)
+void TachyonRenderer::renderImage(const DefaultImagePrimitive& imageBuffer)
 {
 	// Not supported by this renderer.
 }
@@ -409,7 +406,7 @@ void TachyonRenderer::renderImage(const DefaultImageGeometryBuffer& imageBuffer)
 /******************************************************************************
 * Renders the triangle mesh stored in the given buffer.
 ******************************************************************************/
-void TachyonRenderer::renderMesh(const DefaultTriMeshGeometryBuffer& meshBuffer)
+void TachyonRenderer::renderMesh(const DefaultMeshPrimitive& meshBuffer)
 {
 	// Stores data of a single vertex passed to Tachyon.
 	struct ColoredVertexWithNormal {

@@ -21,7 +21,7 @@
 
 /** 
  * \file Matrix4.h 
- * \brief Contains definition of the Ovito::Matrix4 class and operators.
+ * \brief Contains the definition of the Ovito::Matrix_4 class template.
  */
 
 #ifndef __OVITO_MATRIX4_H
@@ -439,6 +439,22 @@ inline LoadStream& operator>>(LoadStream& stream, Matrix_4<T>& m)
 	return stream;
 }
 
+/// \brief Writes a matrix to a Qt data stream.
+template<typename T>
+inline QDataStream& operator<<(QDataStream& stream, const Matrix_4<T>& m) {
+	for(typename Matrix_4<T>::size_type col = 0; col < m.col_count(); col++)
+		stream << m.column(col);
+	return stream;
+}
+
+/// \brief Reads a matrix from a Qt data stream.
+template<typename T>
+inline QDataStream& operator>>(QDataStream& stream, Matrix_4<T>& m) {
+	for(typename Matrix_4<T>::size_type col = 0; col < m.col_count(); col++)
+		stream >> m.column(col);
+	return stream;
+}
+
 /**
  * \fn typedef Matrix4
  * \brief Template class instance of the Matrix_4 class.
@@ -451,7 +467,9 @@ inline void glLoadMatrix(const Matrix_4<GLfloat>& tm) { glLoadMatrixf(tm.constDa
 
 };	// End of namespace
 
-Q_DECLARE_METATYPE(Ovito::Matrix4)
+Q_DECLARE_METATYPE(Ovito::Matrix4);
+Q_DECLARE_METATYPE(Ovito::Matrix4*);
 Q_DECLARE_TYPEINFO(Ovito::Matrix4, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(Ovito::Matrix4*, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_MATRIX4_H

@@ -17,13 +17,12 @@
     </imageobject></mediaobject></screenshot></informalfigure>
   
   This modifier evaluates a user-defined mathematical expression for every particle 
-  and stores the results in a particle property. The modifier
-  can be used to assign new properties to a particle, or to overwrite the
-  values stored in an existing particle property.</para>
+  and stores the results in an output particle property. The modifier
+  can be used to assign a new property to a particle, or to change the
+  value of an existing particle property.</para>
 
-  <para>The entered math formula can contain references to existing per-particle
-  properties such the position or type. The list of variables
-  that may be referenced in the formula is displayed in the second
+  <para>The entered math formula can depend on existing properties such as the position or type. 
+  The list of available input variables is displayed in the lower
   panel. Variable and function names are case-sensitive.</para>
 
   <simplesect>
@@ -33,41 +32,17 @@
       <varlistentry>
         <term>Output property</term>
         <listitem>
-          <para>Specifies the target property that should be written by the modifier. 
-          You can either generate a new <emphasis>custom</emphasis> property or pick one of the <link
+          <para>Specifies the output property that receives the values computed by the modifier.
+          You can either create a new <emphasis>custom</emphasis> property by entering a new name in the field, or pick one of the <link
           linkend="usage.particle_properties">predefined standard properties</link>.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>Name</term>
-        <listitem>
-          <para>The name of the user-defined property to generate.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>Data type</term>
-        <listitem>
-          <para>The data type of the user-defined property to generate (floating-point or integer numbers).</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>Number of components</term>
-        <listitem>
-          <para>The number of vector components of the user-defined property. 
-          This allows you to create properties that store more than one value per particle.
-          </para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
         <term>Compute only for selected particles</term>
         <listitem>
-          <para>Controls whether the math formula is only evaluated for
-          selected particles. This option is useful if you want to avoid overwriting
-          existing property values for certain particles.</para>
+          <para>Controls whether the math expression is evaluated and output only for
+          selected particles. This option is useful if you want to overwrite the property values of a subset of the particles.</para>
         </listitem>
       </varlistentry>
 
@@ -75,11 +50,11 @@
         <term>Expressions</term>
         <listitem>
           <para>The panel contains one input field for every vector component
-          of the property to be computed. You must enter a mathematical
+          of the property to be computed. You enter a mathematical
           expression in each field that will be evaluated for every
           particle. The expression syntax supported by the modifier is very
-          similar to the C language syntax. Arithmetic expressions can be created from
-          float literals, variables or functions using the following operators
+          similar to the C language. Arithmetic expressions can be created from
+          float literals, variables, or functions using the following operators
           in the given order of precedence: 
           <informaltable>
           <tgroup cols="2">
@@ -265,14 +240,19 @@
                 <row>
                   <entry>max(A,B,...)</entry>
 
-                  <entry>Returns the maximum of all values.</entry>
+                  <entry>Returns the maximum of all parameter values.</entry>
                 </row>
 
                 <row>
                   <entry>min(A,B,...)</entry>
 
-                  <entry>Returns the minimum of all values.</entry>
+                  <entry>Returns the minimum of all parameter values.</entry>
                 </row>
+
+                <row>
+                  <entry>sign(A)</entry>
+                  <entry>Returns: 1 if A is positive; -1 if A is negative; 0 if A is zero.</entry>
+                </row>                
 
                 <row>
                   <entry>sin(A)</entry>
@@ -294,6 +274,12 @@
                 </row>
 
                 <row>
+                  <entry>sum(A,B,...)</entry>
+
+                  <entry>Returns the sum of all parameter values.</entry>
+                </row>
+                
+                <row>
                   <entry>tan(A)</entry>
 
                   <entry>Tangent of A. Returns the tangent of the angle A, where
@@ -308,40 +294,34 @@
 
   <simplesect>
     <title>Example 1</title>
-    <para>In the first example, we compute the linear velocity of each
+    <para>We want to compute the linear velocity of each
     particle based on the components v<subscript>x</subscript>,
     v<subscript>y</subscript>, and v<subscript>z</subscript> of their velocity
     vectors. For this, we create a new user-defined property with the name "Linear
     Velocity". The following
-    formula needs to be entered into the expression field: <programlisting>sqrt(Velocity.X^2 + Velocity.Y^2 + Velocity.Z^2)</programlisting>
-    Here we referenced the X, Y, and Z components of the standard
-    <literal>Velocity</literal> particle property, which must be present in the
-    input data set. The computed linear velocity property can 
-    subsequently be used to color particle with the <emphasis><link
+    formula is entered into the expression field: <programlisting>sqrt(Velocity.X^2 + Velocity.Y^2 + Velocity.Z^2)</programlisting>
+    Here we reference the X, Y, and Z components of the standard
+    <literal>Velocity</literal> particle property, which we assume is present in the
+    input dataset. The computed linear velocity property can 
+    subsequently be used, for instance, to color particles with the <emphasis><link
     linkend="particles.modifiers.color_coding">Color Coding</link></emphasis>
     modifier.</para>
   </simplesect>
 
   <simplesect>
     <title>Example 2</title>
-    <para>The <emphasis>Compute property</emphasis> modifier can be used to set
+    <para>The <emphasis>Compute property</emphasis> modifier can also be used to set
     particle properties which are not accessible by other means. One such example is
-    the per-particle radius: Let us assume we have selected a subset of particles
-    which we want to display with a different size than the others.
-    To this end, we use the <emphasis>Compute property</emphasis> modifier to control
+    the per-particle radius: Let us assume we have selected a subset of particles that 
+    we want to give a different size.
+    We may use the <emphasis>Compute property</emphasis> modifier to set
     the value of the <literal>Radius</literal> particle property, which stores the
     per-particle display radii. The selection state of particles is stored in the
-    <literal>Selection</literal> property. Using the
-    formula <programlisting>Selection ? 1.4 : 1.0</programlisting> we can assign a
+    <literal>Selection</literal> property. With the
+    formula <programlisting>Selection ? 1.5 : 1.0</programlisting> we assign a
     radius that depends on the selection state of each particle, which can be either 1 or 0. 
-    That is, the above radius expression will evaluate to 1.4 for selected particles, and to 1.0 for unselected
+    That is, the above radius expression will evaluate to 1.5 for selected particles, and to 1.0 for unselected
     particles.
-    </para>
-    <para>
-    Alternatively, we can simply enter the constant expression <literal>1.4</literal> and 
-    activate the <emphasis>Compute only for selected particles</emphasis> option to achieve the same result 
-    (given that all particles already have a radius of 1.0 before applying the modifier).
-    
     </para>
   </simplesect>
 </section>

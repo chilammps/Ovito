@@ -19,11 +19,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/***********************************************************************
- * This OpenGL fragment shader renders a spherical atom using 
- * the raytracing method. 
- ***********************************************************************/
-
 // Input from calling program:
 uniform mat4 projection_matrix;
 uniform mat4 inverse_projection_matrix;
@@ -38,9 +33,9 @@ uniform vec2 inverse_viewport_size;	// Specifies the transformation from screen 
 	out vec4 FragColor;
 #else
 	#define particle_color_fs gl_Color
-	varying float particle_radius_squared_fs;
-	varying vec3 particle_view_pos_fs;
-	#define FragColor gl_FragColor	
+	#define particle_radius_squared_fs gl_TexCoord[1].w
+	#define particle_view_pos_fs gl_TexCoord[1].xyz
+	#define FragColor gl_FragColor
 #endif
 
 void main() 

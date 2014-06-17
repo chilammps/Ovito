@@ -32,25 +32,25 @@
 
 namespace Particles {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, CalculateDisplacementsModifier, ParticleModifier)
-IMPLEMENT_OVITO_OBJECT(Particles, CalculateDisplacementsModifierEditor, ParticleModifierEditor)
-SET_OVITO_OBJECT_EDITOR(CalculateDisplacementsModifier, CalculateDisplacementsModifierEditor)
-DEFINE_FLAGS_REFERENCE_FIELD(CalculateDisplacementsModifier, _referenceObject, "Reference Configuration", SceneObject, PROPERTY_FIELD_NO_SUB_ANIM)
-DEFINE_PROPERTY_FIELD(CalculateDisplacementsModifier, _referenceShown, "ShowReferenceConfiguration")
-DEFINE_PROPERTY_FIELD(CalculateDisplacementsModifier, _eliminateCellDeformation, "EliminateCellDeformation")
-DEFINE_PROPERTY_FIELD(CalculateDisplacementsModifier, _assumeUnwrappedCoordinates, "AssumeUnwrappedCoordinates")
-DEFINE_PROPERTY_FIELD(CalculateDisplacementsModifier, _useReferenceFrameOffset, "UseReferenceFrameOffet")
-DEFINE_PROPERTY_FIELD(CalculateDisplacementsModifier, _referenceFrameNumber, "ReferenceFrameNumber")
-DEFINE_FLAGS_PROPERTY_FIELD(CalculateDisplacementsModifier, _referenceFrameOffset, "ReferenceFrameOffset", PROPERTY_FIELD_MEMORIZE)
-DEFINE_FLAGS_REFERENCE_FIELD(CalculateDisplacementsModifier, _vectorDisplay, "VectorDisplay", VectorDisplay, PROPERTY_FIELD_ALWAYS_DEEP_COPY)
-SET_PROPERTY_FIELD_LABEL(CalculateDisplacementsModifier, _referenceObject, "Reference Configuration")
-SET_PROPERTY_FIELD_LABEL(CalculateDisplacementsModifier, _referenceShown, "Show reference configuration")
-SET_PROPERTY_FIELD_LABEL(CalculateDisplacementsModifier, _eliminateCellDeformation, "Eliminate homogeneous cell deformation")
-SET_PROPERTY_FIELD_LABEL(CalculateDisplacementsModifier, _assumeUnwrappedCoordinates, "Assume unwrapped coordinates")
-SET_PROPERTY_FIELD_LABEL(CalculateDisplacementsModifier, _useReferenceFrameOffset, "Use reference frame offset")
-SET_PROPERTY_FIELD_LABEL(CalculateDisplacementsModifier, _referenceFrameNumber, "Reference frame number")
-SET_PROPERTY_FIELD_LABEL(CalculateDisplacementsModifier, _referenceFrameOffset, "Reference frame offset")
-SET_PROPERTY_FIELD_LABEL(CalculateDisplacementsModifier, _vectorDisplay, "Vector display")
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, CalculateDisplacementsModifier, ParticleModifier);
+IMPLEMENT_OVITO_OBJECT(Particles, CalculateDisplacementsModifierEditor, ParticleModifierEditor);
+SET_OVITO_OBJECT_EDITOR(CalculateDisplacementsModifier, CalculateDisplacementsModifierEditor);
+DEFINE_FLAGS_REFERENCE_FIELD(CalculateDisplacementsModifier, _referenceObject, "Reference Configuration", SceneObject, PROPERTY_FIELD_NO_SUB_ANIM);
+DEFINE_PROPERTY_FIELD(CalculateDisplacementsModifier, _referenceShown, "ShowReferenceConfiguration");
+DEFINE_FLAGS_PROPERTY_FIELD(CalculateDisplacementsModifier, _eliminateCellDeformation, "EliminateCellDeformation", PROPERTY_FIELD_MEMORIZE);
+DEFINE_PROPERTY_FIELD(CalculateDisplacementsModifier, _assumeUnwrappedCoordinates, "AssumeUnwrappedCoordinates");
+DEFINE_PROPERTY_FIELD(CalculateDisplacementsModifier, _useReferenceFrameOffset, "UseReferenceFrameOffet");
+DEFINE_PROPERTY_FIELD(CalculateDisplacementsModifier, _referenceFrameNumber, "ReferenceFrameNumber");
+DEFINE_FLAGS_PROPERTY_FIELD(CalculateDisplacementsModifier, _referenceFrameOffset, "ReferenceFrameOffset", PROPERTY_FIELD_MEMORIZE);
+DEFINE_FLAGS_REFERENCE_FIELD(CalculateDisplacementsModifier, _vectorDisplay, "VectorDisplay", VectorDisplay, PROPERTY_FIELD_ALWAYS_DEEP_COPY|PROPERTY_FIELD_MEMORIZE);
+SET_PROPERTY_FIELD_LABEL(CalculateDisplacementsModifier, _referenceObject, "Reference Configuration");
+SET_PROPERTY_FIELD_LABEL(CalculateDisplacementsModifier, _referenceShown, "Show reference configuration");
+SET_PROPERTY_FIELD_LABEL(CalculateDisplacementsModifier, _eliminateCellDeformation, "Eliminate homogeneous cell deformation");
+SET_PROPERTY_FIELD_LABEL(CalculateDisplacementsModifier, _assumeUnwrappedCoordinates, "Assume unwrapped coordinates");
+SET_PROPERTY_FIELD_LABEL(CalculateDisplacementsModifier, _useReferenceFrameOffset, "Use reference frame offset");
+SET_PROPERTY_FIELD_LABEL(CalculateDisplacementsModifier, _referenceFrameNumber, "Reference frame number");
+SET_PROPERTY_FIELD_LABEL(CalculateDisplacementsModifier, _referenceFrameOffset, "Reference frame offset");
+SET_PROPERTY_FIELD_LABEL(CalculateDisplacementsModifier, _vectorDisplay, "Vector display");
 
 /******************************************************************************
 * Constructs the modifier object.
@@ -72,11 +72,12 @@ CalculateDisplacementsModifier::CalculateDisplacementsModifier(DataSet* dataset)
 	// Create the scene object, which will be responsible for loading
 	// and storing the reference configuration.
 	OORef<LinkedFileObject> linkedFileObj(new LinkedFileObject(dataset));
+
 	// Disable automatic adjustment of animation length for the reference object.
 	// We don't want the scene's animation interval to be affected by an animation
 	// loaded into the reference configuration object.
 	linkedFileObj->setAdjustAnimationIntervalEnabled(false);
-	_referenceObject = linkedFileObj;
+	setReferenceConfiguration(linkedFileObj);
 
 	// Create display object for vectors.
 	_vectorDisplay = new VectorDisplay(dataset);
@@ -84,6 +85,11 @@ CalculateDisplacementsModifier::CalculateDisplacementsModifier(DataSet* dataset)
 	// Don't show vectors by default, because too many vectors could make the
 	// program hang.
 	_vectorDisplay->setEnabled(false);
+
+	// Configure vector display such that arrows point from the reference particle positions
+	// to the current particle positions.
+	_vectorDisplay->setReverseArrowDirection(true);
+	_vectorDisplay->setFlipVectors(true);
 }
 
 /******************************************************************************
@@ -108,7 +114,7 @@ void CalculateDisplacementsModifier::setReferenceSource(const QUrl& sourceUrl, c
 	else {
 		OORef<LinkedFileObject> newObj(new LinkedFileObject(dataset()));
 		newObj->setSource(sourceUrl, importerType);
-		setReferenceConfiguration(newObj.get());
+		setReferenceConfiguration(newObj);
 	}
 }
 
@@ -127,7 +133,7 @@ bool CalculateDisplacementsModifier::referenceEvent(RefTarget* source, Reference
 /******************************************************************************
 * This modifies the input object.
 ******************************************************************************/
-ObjectStatus CalculateDisplacementsModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
+PipelineStatus CalculateDisplacementsModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
 {
 	// Get the reference positions of the particles.
 	if(!referenceConfiguration())
@@ -161,13 +167,13 @@ ObjectStatus CalculateDisplacementsModifier::modifyParticles(TimePoint time, Tim
 	else refState = referenceConfiguration()->evaluate(dataset()->animationSettings()->frameToTime(referenceFrame));
 
 	// Make sure the obtained reference configuration is valid and ready to use.
-	if(refState.status().type() == ObjectStatus::Error)
+	if(refState.status().type() == PipelineStatus::Error)
 		return refState.status();
 	if(refState.isEmpty()) {
-		if(refState.status().type() != ObjectStatus::Pending)
+		if(refState.status().type() != PipelineStatus::Pending)
 			throw Exception(tr("Reference configuration has not been specified yet or is empty. Please pick a reference simulation file."));
 		else
-			return ObjectStatus(ObjectStatus::Pending, tr("Waiting for input data to become ready..."));
+			return PipelineStatus(PipelineStatus::Pending, tr("Waiting for input data to become ready..."));
 	}
 	// Make sure we really got back the requested reference frame.
 	if(refState.attributes().value(QStringLiteral("Frame"), referenceFrame).toInt() != referenceFrame)
@@ -220,10 +226,10 @@ ObjectStatus CalculateDisplacementsModifier::modifyParticles(TimePoint time, Tim
 	else {
 		// Deformed and reference configuration must contain the same number of particles.
 		if(posProperty->size() != refPosProperty->size()) {
-			if(refState.status().type() != ObjectStatus::Pending)
+			if(refState.status().type() != PipelineStatus::Pending)
 				throw Exception(tr("Cannot calculate displacement vectors. Numbers of particles in reference configuration and current configuration do not match."));
 			else
-				return ObjectStatus(ObjectStatus::Pending, tr("Waiting for input data to become ready..."));
+				return PipelineStatus(PipelineStatus::Pending, tr("Waiting for input data to become ready..."));
 		}
 		// When particle identifiers are not available, use trivial 1-to-1 mapping.
 		std::iota(indexToIndexMap.begin(), indexToIndexMap.end(), size_t(0));
@@ -383,7 +389,7 @@ void CalculateDisplacementsModifierEditor::createUI(const RolloutInsertionParame
 	sublayout->addLayout(frameNumberUI->createFieldLayout(), 1, 2, 1, 1);
 	frameNumberUI->setMinValue(0);
 	frameNumberUI->setEnabled(false);
-	connect(useFrameOffsetUI->buttonFalse(), SIGNAL(toggled(bool)), frameNumberUI, SLOT(setEnabled(bool)));
+	connect(useFrameOffsetUI->buttonFalse(), &QRadioButton::toggled, frameNumberUI, &IntegerParameterUI::setEnabled);
 
 	sublayout->addWidget(useFrameOffsetUI->buttonTrue(), 2, 0, 1, 3);
 	IntegerParameterUI* frameOffsetUI = new IntegerParameterUI(this, PROPERTY_FIELD(CalculateDisplacementsModifier::_referenceFrameOffset));
@@ -391,7 +397,7 @@ void CalculateDisplacementsModifierEditor::createUI(const RolloutInsertionParame
 	sublayout->addWidget(frameOffsetUI->label(), 3, 1, 1, 1);
 	sublayout->addLayout(frameOffsetUI->createFieldLayout(), 3, 2, 1, 1);
 	frameOffsetUI->setEnabled(false);
-	connect(useFrameOffsetUI->buttonTrue(), SIGNAL(toggled(bool)), frameOffsetUI, SLOT(setEnabled(bool)));
+	connect(useFrameOffsetUI->buttonTrue(), &QRadioButton::toggled, frameOffsetUI, &IntegerParameterUI::setEnabled);
 
 	// Status label.
 	layout->addSpacing(6);

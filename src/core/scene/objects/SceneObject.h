@@ -56,8 +56,8 @@ public:
 	/// When computing the validity interval of the object, an implementation of this method
 	/// should take validity intervals of all sub-objects and sub-controller into account.
 	///
-	/// The default implementation return TimeInterval::forever().
-	virtual TimeInterval objectValidity(TimePoint time) { return TimeInterval::forever(); }
+	/// The default implementation return TimeInterval::infinite().
+	virtual TimeInterval objectValidity(TimePoint time) { return TimeInterval::infinite(); }
 
 	/// \brief This asks the object whether it supports the conversion to another object type.
 	/// \param objectClass The destination type. This must be a SceneObject derived class.
@@ -114,10 +114,10 @@ public:
 	/// \brief Returns a structure that describes the current status of the object.
 	///
 	/// The default implementation of this method returns an empty status object
-	/// that indicates success (ObjectStatus::Success).
+	/// that indicates success (PipelineStatus::Success).
 	///
 	/// An object should generate a ReferenceEvent::ObjectStatusChanged event when its status has changed.
-	virtual ObjectStatus status() const { return ObjectStatus(); }
+	virtual PipelineStatus status() const { return PipelineStatus(); }
 
 	/// \brief Returns the list of attached display objects that are responsible for rendering this
 	///        scene object.

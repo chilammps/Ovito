@@ -29,20 +29,20 @@
 
 namespace CrystalAnalysis {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(CrystalAnalysis, DislocationDisplay, DisplayObject)
-IMPLEMENT_OVITO_OBJECT(CrystalAnalysis, DislocationDisplayEditor, PropertiesEditor)
-SET_OVITO_OBJECT_EDITOR(DislocationDisplay, DislocationDisplayEditor)
-DEFINE_FLAGS_PROPERTY_FIELD(DislocationDisplay, _lineWidth, "LineWidth", PROPERTY_FIELD_MEMORIZE)
-DEFINE_FLAGS_PROPERTY_FIELD(DislocationDisplay, _shadingMode, "ShadingMode", PROPERTY_FIELD_MEMORIZE)
-SET_PROPERTY_FIELD_LABEL(DislocationDisplay, _lineWidth, "Dislocation line width")
-SET_PROPERTY_FIELD_LABEL(DislocationDisplay, _shadingMode, "Shading mode")
-SET_PROPERTY_FIELD_UNITS(DislocationDisplay, _lineWidth, WorldParameterUnit)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(CrystalAnalysis, DislocationDisplay, DisplayObject);
+IMPLEMENT_OVITO_OBJECT(CrystalAnalysis, DislocationDisplayEditor, PropertiesEditor);
+SET_OVITO_OBJECT_EDITOR(DislocationDisplay, DislocationDisplayEditor);
+DEFINE_FLAGS_PROPERTY_FIELD(DislocationDisplay, _lineWidth, "LineWidth", PROPERTY_FIELD_MEMORIZE);
+DEFINE_FLAGS_PROPERTY_FIELD(DislocationDisplay, _shadingMode, "ShadingMode", PROPERTY_FIELD_MEMORIZE);
+SET_PROPERTY_FIELD_LABEL(DislocationDisplay, _lineWidth, "Dislocation line width");
+SET_PROPERTY_FIELD_LABEL(DislocationDisplay, _shadingMode, "Shading mode");
+SET_PROPERTY_FIELD_UNITS(DislocationDisplay, _lineWidth, WorldParameterUnit);
 
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
 DislocationDisplay::DislocationDisplay(DataSet* dataset) : DisplayObject(dataset),
-	_lineWidth(1.0f), _shadingMode(ArrowGeometryBuffer::NormalShading)
+	_lineWidth(1.0f), _shadingMode(ArrowPrimitive::NormalShading)
 {
 	INIT_PROPERTY_FIELD(DislocationDisplay::_lineWidth);
 	INIT_PROPERTY_FIELD(DislocationDisplay::_shadingMode);
@@ -81,8 +81,8 @@ void DislocationDisplay::render(TimePoint time, SceneObject* sceneObject, const 
 						|| !_cornerBuffer || !_cornerBuffer->isValid(renderer);
 
 	// Set up shading mode.
-	ParticleGeometryBuffer::ShadingMode cornerShadingMode = (shadingMode() == ArrowGeometryBuffer::NormalShading)
-			? ParticleGeometryBuffer::NormalShading : ParticleGeometryBuffer::FlatShading;
+	ParticlePrimitive::ShadingMode cornerShadingMode = (shadingMode() == ArrowPrimitive::NormalShading)
+			? ParticlePrimitive::NormalShading : ParticlePrimitive::FlatShading;
 	if(!recreateBuffers) {
 		recreateBuffers |= !_segmentBuffer->setShadingMode(shadingMode());
 		recreateBuffers |= !_cornerBuffer->setShadingMode(cornerShadingMode);
@@ -95,8 +95,8 @@ void DislocationDisplay::render(TimePoint time, SceneObject* sceneObject, const 
 
 	// Re-create the geometry buffers if necessary.
 	if(recreateBuffers) {
-		_segmentBuffer = renderer->createArrowGeometryBuffer(ArrowGeometryBuffer::CylinderShape, shadingMode(), ArrowGeometryBuffer::HighQuality);
-		_cornerBuffer = renderer->createParticleGeometryBuffer(cornerShadingMode, ParticleGeometryBuffer::HighQuality);
+		_segmentBuffer = renderer->createArrowPrimitive(ArrowPrimitive::CylinderShape, shadingMode(), ArrowPrimitive::HighQuality);
+		_cornerBuffer = renderer->createParticlePrimitive(cornerShadingMode, ParticlePrimitive::HighQuality);
 	}
 
 	// Update buffer contents.
@@ -198,7 +198,7 @@ void DislocationDisplay::renderOverlayMarker(TimePoint time, SceneObject* sceneO
 	glDisable(GL_DEPTH_TEST);
 
 	FloatType lineRadius = std::max(lineWidth() / 4, FloatType(0));
-	std::unique_ptr<ArrowGeometryBuffer> segmentBuffer = renderer->createArrowGeometryBuffer(ArrowGeometryBuffer::CylinderShape, ArrowGeometryBuffer::FlatShading, ArrowGeometryBuffer::HighQuality);
+	std::unique_ptr<ArrowPrimitive> segmentBuffer = renderer->createArrowPrimitive(ArrowPrimitive::CylinderShape, ArrowPrimitive::FlatShading, ArrowPrimitive::HighQuality);
 	segmentBuffer->startSetElements(lineSegments.size());
 	int index = 0;
 	for(const auto& seg : lineSegments)
@@ -206,7 +206,7 @@ void DislocationDisplay::renderOverlayMarker(TimePoint time, SceneObject* sceneO
 	segmentBuffer->endSetElements();
 	segmentBuffer->render(renderer);
 
-	std::unique_ptr<ParticleGeometryBuffer> cornerBuffer = renderer->createParticleGeometryBuffer(ParticleGeometryBuffer::FlatShading, ParticleGeometryBuffer::HighQuality);
+	std::unique_ptr<ParticlePrimitive> cornerBuffer = renderer->createParticlePrimitive(ParticlePrimitive::FlatShading, ParticlePrimitive::HighQuality);
 	cornerBuffer->setSize(cornerVertices.size());
 	cornerBuffer->setParticlePositions(cornerVertices.constData());
 	cornerBuffer->setParticleColor(Color(1,1,1));
@@ -215,7 +215,7 @@ void DislocationDisplay::renderOverlayMarker(TimePoint time, SceneObject* sceneO
 
 	if(!segment->line().empty()) {
 		Point3 wrappedHeadPos = cellData.wrapPoint(segment->line().front());
-		std::unique_ptr<ParticleGeometryBuffer> headBuffer = renderer->createParticleGeometryBuffer(ParticleGeometryBuffer::FlatShading, ParticleGeometryBuffer::HighQuality);
+		std::unique_ptr<ParticlePrimitive> headBuffer = renderer->createParticlePrimitive(ParticlePrimitive::FlatShading, ParticlePrimitive::HighQuality);
 		headBuffer->setSize(1);
 		headBuffer->setParticlePositions(&wrappedHeadPos);
 		headBuffer->setParticleColor(Color(1,1,1));
@@ -299,8 +299,8 @@ void DislocationDisplayEditor::createUI(const RolloutInsertionParameters& rollou
 
 	// Shading mode.
 	VariantComboBoxParameterUI* shadingModeUI = new VariantComboBoxParameterUI(this, "shadingMode");
-	shadingModeUI->comboBox()->addItem(tr("Normal"), qVariantFromValue(ArrowGeometryBuffer::NormalShading));
-	shadingModeUI->comboBox()->addItem(tr("Flat"), qVariantFromValue(ArrowGeometryBuffer::FlatShading));
+	shadingModeUI->comboBox()->addItem(tr("Normal"), qVariantFromValue(ArrowPrimitive::NormalShading));
+	shadingModeUI->comboBox()->addItem(tr("Flat"), qVariantFromValue(ArrowPrimitive::FlatShading));
 	layout->addWidget(new QLabel(tr("Shading mode:")), 0, 0);
 	layout->addWidget(shadingModeUI->comboBox(), 0, 1);
 

@@ -25,8 +25,8 @@
 namespace Ovito {
 
 // Gives the class run-time type information.
-IMPLEMENT_OVITO_OBJECT(Core, RefTargetListParameterUI, ParameterUI)
-DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(RefTargetListParameterUI, _targets, "Targets", RefTarget, PROPERTY_FIELD_NO_UNDO | PROPERTY_FIELD_WEAK_REF | PROPERTY_FIELD_NO_CHANGE_MESSAGE)
+IMPLEMENT_OVITO_OBJECT(Core, RefTargetListParameterUI, ParameterUI);
+DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(RefTargetListParameterUI, _targets, "Targets", RefTarget, PROPERTY_FIELD_NO_UNDO | PROPERTY_FIELD_WEAK_REF | PROPERTY_FIELD_NO_CHANGE_MESSAGE);
 
 /******************************************************************************
 * The constructor.
@@ -44,7 +44,7 @@ RefTargetListParameterUI::RefTargetListParameterUI(QObject* parentEditor, const 
 }
 
 /******************************************************************************
-* Destructor, that releases all GUI controls.
+* Destructor.
 ******************************************************************************/
 RefTargetListParameterUI::~RefTargetListParameterUI()
 {
@@ -72,7 +72,7 @@ QListView* RefTargetListParameterUI::listWidget(int listWidgetHeight)
 
 		_viewWidget = new MyListView(listWidgetHeight);
 		_viewWidget->setModel(_model);
-		connect(_viewWidget->selectionModel(), SIGNAL(selectionChanged(const QItemSelection&, const QItemSelection&)), this, SLOT(onSelectionChanged()));
+		connect(_viewWidget->selectionModel(), &QItemSelectionModel::selectionChanged, this, &RefTargetListParameterUI::onSelectionChanged);
 	}
 	return qobject_cast<QListView*>(_viewWidget);
 }
@@ -89,13 +89,13 @@ QTableView* RefTargetListParameterUI::tableWidget(int tableWidgetHeight)
 			int _tableWidgetHeight;
 		public:
 			MyTableView(int tableWidgetHeight) : QTableView(), _tableWidgetHeight(tableWidgetHeight) {}
-			virtual QSize sizeHint() const { return QSize(320, _tableWidgetHeight); }
+			virtual QSize sizeHint() const override { return QSize(320, _tableWidgetHeight); }
 		};
 		MyTableView* tableView = new MyTableView(tableWidgetHeight);
 		tableView->setShowGrid(false);
 		tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
 		tableView->setCornerButtonEnabled(false);
-		tableView->verticalHeader()->setVisible(false);
+		tableView->verticalHeader()->hide();
 		tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 		tableView->setSelectionMode(QAbstractItemView::SingleSelection);
 		tableView->setWordWrap(false);
@@ -103,7 +103,7 @@ QTableView* RefTargetListParameterUI::tableWidget(int tableWidgetHeight)
 
 		_viewWidget = tableView;
 		_viewWidget->setModel(_model);
-		connect(_viewWidget->selectionModel(), SIGNAL(selectionChanged(const QItemSelection&, const QItemSelection&)), this, SLOT(onSelectionChanged()));
+		connect(_viewWidget->selectionModel(), &QItemSelectionModel::selectionChanged, this, &RefTargetListParameterUI::onSelectionChanged);
 	}
 	return qobject_cast<QTableView*>(_viewWidget);
 }
@@ -213,10 +213,10 @@ int RefTargetListParameterUI::setSelectedObject(RefTarget* selObj)
 	if(!_viewWidget) return -1;
 	OVITO_ASSERT(_targetToRow.size() == _targets.size());
 	if(selObj != nullptr) {
-		for(int i=0; i<_targets.size(); i++) {
+		for(int i = 0; i<_targets.size(); i++) {
 			if(_targets[i] == selObj) {
 				int rowIndex = _targetToRow[i];
-				_viewWidget->selectionModel()->select(_model->index(rowIndex, 0), QItemSelectionModel::ClearAndSelect);
+				_viewWidget->selectionModel()->select(_model->index(rowIndex, 0), QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
 				return rowIndex;
 			}
 		}
