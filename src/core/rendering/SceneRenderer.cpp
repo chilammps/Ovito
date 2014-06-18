@@ -24,7 +24,8 @@
 #include <core/rendering/RenderSettings.h>
 #include <core/scene/SceneNode.h>
 #include <core/scene/SceneRoot.h>
-#include <core/scene/objects/geometry/TriMesh.h>
+#include <core/scene/pipeline/PipelineObject.h>
+#include <core/scene/pipeline/Modifier.h>
 #include <core/dataset/DataSet.h>
 
 namespace Ovito {
@@ -103,5 +104,74 @@ void SceneRenderer::renderNode(SceneNode* node)
 	for(SceneNode* child : node->children())
 		renderNode(child);
 }
+
+/******************************************************************************
+* Renders the visual representation of the modifiers.
+******************************************************************************/
+void SceneRenderer::renderModifiers(bool renderOverlay)
+{
+	// Visit all pipeline objects in the scene.
+	renderDataset()->sceneRoot()->visitChildren([this, renderOverlay](SceneNode* node) -> bool {
+		if(node->isObjectNode()) {
+			ObjectNode* objNode = static_object_cast<ObjectNode>(node);
+			PipelineObject* pipelineObj = dynamic_object_cast<PipelineObject>(objNode->sceneObject());
+			if(pipelineObj)
+				renderModifiers(pipelineObj, objNode, renderOverlay);
+		}
+		return true;
+	});
+}
+
+/******************************************************************************
+* Renders the visual representation of the modifiers.
+******************************************************************************/
+void SceneRenderer::renderModifiers(PipelineObject* pipelineObj, ObjectNode* objNode, bool renderOverlay)
+{
+	OVITO_CHECK_OBJECT_POINTER(pipelineObj);
+
+	// Render the visual representation of the modifier that is currently being edited.
+	for(ModifierApplication* modApp : pipelineObj->modifierApplications()) {
+		Modifier* mod = modApp->modifier();
+
+		TimeInterval interval;
+		// Setup transformation.
+		setWorldTransform(objNode->getWorldTransform(time(), interval));
+
+		// Render selected modifier.
+		mod->render(time(), objNode, modApp, this, renderOverlay);
+	}
+
+	// Continue with nested pipeline objects.
+	for(int i = 0; i < pipelineObj->inputObjectCount(); i++) {
+		PipelineObject* input = dynamic_object_cast<PipelineObject>(pipelineObj->inputObject(i));
+		if(input)
+			renderModifiers(input, objNode, renderOverlay);
+	}
+}
+
+/******************************************************************************
+* Determines the bounding box of the visual representation of the modifiers.
+******************************************************************************/
+void SceneRenderer::boundingBoxModifiers(PipelineObject* pipelineObj, ObjectNode* objNode, Box3& boundingBox)
+{
+	OVITO_CHECK_OBJECT_POINTER(pipelineObj);
+	TimeInterval interval;
+
+	// Render the visual representation of the modifier that is currently being edited.
+	for(ModifierApplication* modApp : pipelineObj->modifierApplications()) {
+		Modifier* mod = modApp->modifier();
+
+		// Compute bounding box and transform it to world space.
+		boundingBox.addBox(mod->boundingBox(time(), objNode, modApp).transformed(objNode->getWorldTransform(time(), interval)));
+	}
+
+	// Continue with nested pipeline objects.
+	for(int i = 0; i < pipelineObj->inputObjectCount(); i++) {
+		PipelineObject* input = dynamic_object_cast<PipelineObject>(pipelineObj->inputObject(i));
+		if(input)
+			boundingBoxModifiers(input, objNode, boundingBox);
+	}
+}
+
 
 };

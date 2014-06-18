@@ -40,9 +40,9 @@ bool DefaultTextPrimitive::isValid(SceneRenderer* renderer)
 ******************************************************************************/
 void DefaultTextPrimitive::renderViewport(SceneRenderer* renderer, const Point2& pos, int alignment)
 {
-	NonInteractiveSceneRenderer* niRenderer = dynamic_object_cast<NonInteractiveSceneRenderer>(renderer);
-	if(text().isEmpty() || !niRenderer || renderer->isPicking())
-		return;
+	QSize imageSize = renderer->outputSize();
+	Point2 windowPos((pos.x() + 1.0f) * imageSize.width() / 2, (-pos.y() + 1.0f) * imageSize.height() / 2);
+	renderWindow(renderer, windowPos, alignment);
 }
 
 /******************************************************************************
@@ -53,6 +53,8 @@ void DefaultTextPrimitive::renderWindow(SceneRenderer* renderer, const Point2& p
 	NonInteractiveSceneRenderer* niRenderer = dynamic_object_cast<NonInteractiveSceneRenderer>(renderer);
 	if(text().isEmpty() || !niRenderer || renderer->isPicking())
 		return;
+
+	niRenderer->renderText(*this, pos, alignment);
 }
 
 };

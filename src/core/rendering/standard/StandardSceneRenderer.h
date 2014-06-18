@@ -65,6 +65,9 @@ public:
 	/// \return true if rendering a real-time viewport; false if rendering an output image.
 	virtual bool isInteractive() const override { return false; }
 
+	/// Returns the final size of the rendered image in pixels.
+	virtual QSize outputSize() const override { return SceneRenderer::outputSize(); }
+
 public:
 
 	Q_PROPERTY(int antialiasingLevel READ antialiasingLevel WRITE setAntialiasingLevel);

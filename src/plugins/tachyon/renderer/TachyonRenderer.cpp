@@ -184,6 +184,12 @@ bool TachyonRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialog* pro
 	// Export Ovito scene objects to Tachyon scene.
 	renderScene();
 
+	// Render visual 3D representation of the modifiers.
+	renderModifiers(false);
+
+	// Render visual 2D representation of the modifiers.
+	renderModifiers(true);
+
 	// Render scene.
 	if(progress) {
 		progress->setMaximum(renderSettings()->outputImageWidth() * renderSettings()->outputImageHeight());
@@ -249,6 +255,22 @@ bool TachyonRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialog* pro
 			break;
 	}
 
+	// Execute recorded overlay draw calls.
+	QPainter painter(&frameBuffer->image());
+	for(const auto& imageCall : _imageDrawCalls) {
+		QRectF rect(std::get<1>(imageCall).x(), std::get<1>(imageCall).y(), std::get<2>(imageCall).x(), std::get<2>(imageCall).y());
+		painter.drawImage(rect, std::get<0>(imageCall));
+		frameBuffer->update(rect.toAlignedRect());
+	}
+	for(const auto& textCall : _textDrawCalls) {
+		QRectF pos(std::get<3>(textCall).x(), std::get<3>(textCall).y(), 0, 0);
+		painter.setPen(std::get<1>(textCall));
+		painter.setFont(std::get<2>(textCall));
+		QRectF boundingRect;
+		painter.drawText(pos, std::get<4>(textCall) | Qt::TextSingleLine | Qt::TextDontClip, std::get<0>(textCall), &boundingRect);
+		frameBuffer->update(boundingRect.toAlignedRect());
+	}
+
 	// Clean up.
 	rt_deletescene(_rtscene);
 
@@ -263,6 +285,10 @@ void TachyonRenderer::endRender()
 {
 	// Shut down Tachyon library.
 	rt_finalize();
+
+	// Release draw call buffers.
+	_imageDrawCalls.clear();
+	_textDrawCalls.clear();
 
 	NonInteractiveSceneRenderer::endRender();
 }
@@ -388,17 +414,17 @@ void TachyonRenderer::renderArrows(const DefaultArrowPrimitive& arrowBuffer)
 /******************************************************************************
 * Renders the text stored in the given buffer.
 ******************************************************************************/
-void TachyonRenderer::renderText(const DefaultTextPrimitive& textBuffer)
+void TachyonRenderer::renderText(const DefaultTextPrimitive& textBuffer, const Point2& pos, int alignment)
 {
-	// Not supported by this renderer.
+	_textDrawCalls.push_back(std::make_tuple(textBuffer.text(), textBuffer.color(), textBuffer.font(), pos, alignment));
 }
 
 /******************************************************************************
 * Renders the image stored in the given buffer.
 ******************************************************************************/
-void TachyonRenderer::renderImage(const DefaultImagePrimitive& imageBuffer)
+void TachyonRenderer::renderImage(const DefaultImagePrimitive& imageBuffer, const Point2& pos, const Vector2& size)
 {
-	// Not supported by this renderer.
+	_imageDrawCalls.push_back(std::make_tuple(imageBuffer.image(), pos, size));
 }
 
 /******************************************************************************

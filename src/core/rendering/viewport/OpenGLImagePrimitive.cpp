@@ -70,7 +70,7 @@ void OpenGLImagePrimitive::renderViewport(SceneRenderer* renderer, const Point2&
 	GLint vc[4];
 	glGetIntegerv(GL_VIEWPORT, vc);
 
-	Point2 windowPos((pos.x() + 1.0) * vc[2] / 2, (-(pos.y() + size.y()) + 1.0) * vc[3] / 2);
+	Point2 windowPos((pos.x() + 1.0f) * vc[2] / 2, (-(pos.y() + size.y()) + 1.0f) * vc[3] / 2);
 	Vector2 windowSize(size.x() * vc[2] / 2, size.y() * vc[3] / 2);
 	renderWindow(renderer, windowPos, windowSize);
 }

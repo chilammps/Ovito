@@ -162,6 +162,15 @@ protected:
 	/// \brief Render a scene node (and all its children).
 	virtual void renderNode(SceneNode* node);
 
+	/// \brief Renders the visual representation of the modifiers.
+	void renderModifiers(bool renderOverlay);
+
+	/// \brief Renders the visual representation of the modifiers.
+	void renderModifiers(PipelineObject* pipelineObj, ObjectNode* objNode, bool renderOverlay);
+
+	/// \brief Determines the bounding box of the visual representation of the modifiers.
+	void boundingBoxModifiers(PipelineObject* pipelineObj, ObjectNode* objNode, Box3& boundingBox);
+
 	/// Sets whether object picking mode is active.
 	void setPicking(bool enable) { _isPicking = enable; }
 

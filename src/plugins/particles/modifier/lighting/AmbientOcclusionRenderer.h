@@ -60,6 +60,9 @@ public:
 	/// Returns the rendered image.
 	const QImage& image() const { return _image; }
 
+	/// Returns the final size of the rendered image in pixels.
+	virtual QSize outputSize() const override { return _image.size(); }
+
 	/// Registers a range of sub-IDs belonging to the current object being rendered.
 	virtual quint32 registerSubObjectIDs(quint32 subObjectCount) override { return 1; }
 

@@ -357,7 +357,7 @@ void ColorCodingModifier::loadFromStream(ObjectLoadStream& stream)
 ******************************************************************************/
 void ColorCodingModifier::render(TimePoint time, ObjectNode* contextNode, ModifierApplication* modApp, SceneRenderer* renderer, bool renderOverlay)
 {
-	if(!renderOverlay || !isEnabled() || !_renderLegend || renderer->isPicking())
+	if(!renderOverlay || !isEnabled() || !renderLegend() || renderer->isPicking())
 		return;
 
 	if(renderer->viewport() && renderer->viewport() != legendViewport())
@@ -413,12 +413,11 @@ void ColorCodingModifier::render(TimePoint time, ObjectNode* contextNode, Modifi
 	QFont font;
 	font.setPointSizeF(legendFontSize());
 
-	FloatType canvasSize = 0.5f * renderRect.height();
 	FloatType colorBarSize = legendSize() * renderRect.height();
-	FloatType vMargin = 0.03f * canvasSize;
-	FloatType hMargin = 0.03f * canvasSize;
+	FloatType vMargin = 0.015f * renderRect.height();
+	FloatType hMargin = 1.0f * vMargin;
 	FloatType textLineHeight = 1.2 * 2.0 * (FloatType)QFontMetrics(font).height() / renderer->outputSize().height();
-	FloatType colorBarAspectRatio = 0.18f;
+	FloatType colorBarAspectRatio = 0.2f * renderer->projParams().aspectRatio;
 	if(legendFontSize() <= 0) textLineHeight = 0;
 
 	Point2 colorBarPos;
@@ -619,6 +618,7 @@ void ColorCodingModifierEditor::createUI(const RolloutInsertionParameters& rollo
 	StringParameterUI* legendTitlePUI = new StringParameterUI(this, PROPERTY_FIELD(ColorCodingModifier::_legendTitle));
 	layout2->addWidget(new QLabel(tr("Custom title:")), 4, 0);
 	layout2->addWidget(legendTitlePUI->textBox(), 4, 1);
+	legendTitlePUI->textBox()->setClearButtonEnabled(true);
 
 	StringParameterUI* legendValueFormatStringPUI = new StringParameterUI(this, PROPERTY_FIELD(ColorCodingModifier::_legendValueFormatString));
 	layout2->addWidget(new QLabel(tr("Format string:")), 5, 0);

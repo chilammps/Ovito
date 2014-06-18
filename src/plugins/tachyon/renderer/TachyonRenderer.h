@@ -63,10 +63,10 @@ public:
 	virtual void renderArrows(const DefaultArrowPrimitive& arrowBuffer) override;
 
 	/// Renders the text stored in the given buffer.
-	virtual void renderText(const DefaultTextPrimitive& textBuffer) override;
+	virtual void renderText(const DefaultTextPrimitive& textBuffer, const Point2& pos, int alignment) override;
 
 	/// Renders the image stored in the given buffer.
-	virtual void renderImage(const DefaultImagePrimitive& imageBuffer) override;
+	virtual void renderImage(const DefaultImagePrimitive& imageBuffer, const Point2& pos, const Vector2& size) override;
 
 	/// Renders the triangle mesh stored in the given buffer.
 	virtual void renderMesh(const DefaultMeshPrimitive& meshBuffer) override;
@@ -163,6 +163,12 @@ private:
 
 	/// The Tachyon internal scene handle.
 	SceneHandle _rtscene;
+
+	/// List of image primitives that need to be painted over the final image.
+	std::vector<std::tuple<QImage,Point2,Vector2>> _imageDrawCalls;
+
+	/// List of text primitives that need to be painted over the final image.
+	std::vector<std::tuple<QString,ColorA,QFont,Point2,int>> _textDrawCalls;
 
 	Q_OBJECT
 	OVITO_OBJECT

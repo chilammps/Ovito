@@ -26,7 +26,7 @@
 
 namespace Ovito {
 
-IMPLEMENT_OVITO_OBJECT(Core, StandardSceneRendererEditor, PropertiesEditor)
+IMPLEMENT_OVITO_OBJECT(Core, StandardSceneRendererEditor, PropertiesEditor);
 
 /******************************************************************************
 * Constructor that creates the UI controls for the editor.

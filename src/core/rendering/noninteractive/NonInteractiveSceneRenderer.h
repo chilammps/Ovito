@@ -105,10 +105,10 @@ public:
 	virtual void renderArrows(const DefaultArrowPrimitive& arrowBuffer) = 0;
 
 	/// Renders the text stored in the given buffer.
-	virtual void renderText(const DefaultTextPrimitive& textBuffer) = 0;
+	virtual void renderText(const DefaultTextPrimitive& textBuffer, const Point2& pos, int alignment) = 0;
 
 	/// Renders the image stored in the given buffer.
-	virtual void renderImage(const DefaultImagePrimitive& imageBuffer) = 0;
+	virtual void renderImage(const DefaultImagePrimitive& imageBuffer, const Point2& pos, const Vector2& size) = 0;
 
 	/// Renders the triangle mesh stored in the given buffer.
 	virtual void renderMesh(const DefaultMeshPrimitive& meshBuffer) = 0;

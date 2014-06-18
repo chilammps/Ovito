@@ -172,15 +172,6 @@ public:
 
 protected:
 
-	/// \brief Renders the visual representation of the modifiers.
-	void renderModifiers(bool renderOverlay);
-
-	/// \brief Renders the visual representation of the modifiers.
-	void renderModifiers(PipelineObject* pipelineObj, ObjectNode* objNode, bool renderOverlay);
-
-	/// \brief Determines the bounding box of the visual representation of the modifiers.
-	void boundingBoxModifiers(PipelineObject* pipelineObj, ObjectNode* objNode, Box3& boundingBox);
-
 	/// \brief Loads and compiles a GLSL shader and adds it to the given program object.
 	void loadShader(QOpenGLShaderProgram* program, QOpenGLShader::ShaderType shaderType, const QString& filename);
 

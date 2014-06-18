@@ -39,9 +39,10 @@ bool DefaultImagePrimitive::isValid(SceneRenderer* renderer)
 ******************************************************************************/
 void DefaultImagePrimitive::renderViewport(SceneRenderer* renderer, const Point2& pos, const Vector2& size)
 {
-	NonInteractiveSceneRenderer* niRenderer = dynamic_object_cast<NonInteractiveSceneRenderer>(renderer);
-	if(image().isNull() || !niRenderer || renderer->isPicking())
-		return;
+	QSize imageSize = renderer->outputSize();
+	Point2 windowPos((pos.x() + 1.0f) * imageSize.width() / 2, (-(pos.y() + size.y()) + 1.0) * imageSize.height() / 2);
+	Vector2 windowSize(size.x() * imageSize.width() / 2, size.y() * imageSize.height() / 2);
+	renderWindow(renderer, windowPos, windowSize);
 }
 
 /******************************************************************************
@@ -52,6 +53,8 @@ void DefaultImagePrimitive::renderWindow(SceneRenderer* renderer, const Point2& 
 	NonInteractiveSceneRenderer* niRenderer = dynamic_object_cast<NonInteractiveSceneRenderer>(renderer);
 	if(image().isNull() || !niRenderer || renderer->isPicking())
 		return;
+
+	niRenderer->renderImage(*this, pos, size);
 }
 
 };
