@@ -60,16 +60,16 @@
       <varlistentry>
         <term>Color only selected particles</term>
         <listitem>
-          <para>This option restricts the assigment of colors to selected particles.</para>
+          <para>This option restricts the assignment of colors to selected particles.</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term>Keep selection</term>
+        <term>Keep particles selected</term>
         <listitem>
-          <para>Selected particles are highlighted with a special color (red by default). 
-          Since the highlighting would mask the color assigned by this modifier, the modifier clears 
-          the current selection. You can suppress this behavior and keep the particle selection by 
+          <para>OVITO highlights selected particles in the viewports using a special color (red by default). 
+          Since this highlighting would mask the color assigned by the Color Coding modifier, 
+          the particle selection is cleared by default. You can disable this behavior and preserve the current particle selection by 
           activating this option.</para>
         </listitem>
       </varlistentry>

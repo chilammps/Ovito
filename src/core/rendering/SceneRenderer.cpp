@@ -21,6 +21,7 @@
 
 #include <core/Core.h>
 #include <core/rendering/SceneRenderer.h>
+#include <core/rendering/RenderSettings.h>
 #include <core/scene/SceneNode.h>
 #include <core/scene/SceneRoot.h>
 #include <core/scene/objects/geometry/TriMesh.h>
@@ -37,6 +38,14 @@ SceneRenderer::SceneRenderer(DataSet* dataset) : RefTarget(dataset),
 		_renderDataset(nullptr), _settings(nullptr),
 		_viewport(nullptr), _isPicking(false)
 {
+}
+
+/******************************************************************************
+* Returns the final size of the rendered image in pixels.
+******************************************************************************/
+QSize SceneRenderer::outputSize() const
+{
+	return QSize(renderSettings()->outputImageWidth(), renderSettings()->outputImageHeight());
 }
 
 /******************************************************************************

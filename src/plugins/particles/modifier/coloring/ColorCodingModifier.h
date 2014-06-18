@@ -28,6 +28,7 @@
 #include <core/animation/AnimationSettings.h>
 #include <core/rendering/ImagePrimitive.h>
 #include <core/rendering/TextPrimitive.h>
+#include <core/viewport/Viewport.h>
 #include "../ParticleModifier.h"
 
 namespace Particles {
@@ -235,6 +236,42 @@ public:
 	/// Sets whether the color legend is displayed in the rendered image.
 	void setRenderLegend(bool render) { _renderLegend = render; }
 
+	/// Returns the viewport in which the color legend is displayed.
+	Viewport* legendViewport() const { return _legendViewport; }
+
+	/// Sets the viewport in which to display the color legend.
+	void setLegendViewport(Viewport* viewport) { _legendViewport = viewport; }
+
+	/// Returns the position of the legend in the viewport.
+	Qt::Alignment legendAlignment() const { return (Qt::Alignment)_legendAlignment.value(); }
+
+	/// Sets the position of the legend in the viewport.
+	void setLegendAlignment(Qt::Alignment pos) { _legendAlignment = (int)pos; }
+
+	/// Returns the overall size of the color legend.
+	FloatType legendSize() const { return _legendSize; }
+
+	/// Returns the font size for rendering text in the color legend.
+	FloatType legendFontSize() const { return _legendFontSize; }
+
+	/// Returns the title text of the color legend.
+	const QString& legendTitle() const { return _legendTitle; }
+
+	/// Returns the formatting of the value labels in the color legend.
+	const QString& legendValueFormatString() const { return _legendValueFormatString; }
+
+	/// Sets the overall size of the color legend.
+	void setLegendSize(FloatType size) { _legendSize = size; }
+
+	/// Sets the font size for rendering text in the color legend.
+	void setLegendFontSize(FloatType size) { _legendFontSize = size; }
+
+	/// Sets the title text of the color legend.
+	void setLegendTitle(const QString& text) { _legendTitle = text; }
+
+	/// Sets the formatting of the value labels in the color legend.
+	void setLegendValueFormatString(const QString& format) { _legendValueFormatString = format; }
+
 public Q_SLOTS:
 
 	/// Sets the start and end value to the minimum and maximum value in the selected data channel.
@@ -245,10 +282,16 @@ public:
 	Q_PROPERTY(FloatType startValue READ startValue WRITE setStartValue);
 	Q_PROPERTY(FloatType endValue READ endValue WRITE setEndValue);
 	Q_PROPERTY(Particles::ParticlePropertyReference sourceProperty READ sourceProperty WRITE setSourceProperty);
-	Q_PROPERTY(ColorCodingGradient* colorGradient READ colorGradient WRITE setColorGradient);
+	Q_PROPERTY(Particles::ColorCodingGradient* colorGradient READ colorGradient WRITE setColorGradient);
 	Q_PROPERTY(bool colorOnlySelected READ colorOnlySelected WRITE setColorOnlySelected);
 	Q_PROPERTY(bool keepSelection READ keepSelection WRITE setKeepSelection);
 	Q_PROPERTY(bool renderLegend READ renderLegend WRITE setRenderLegend);
+	Q_PROPERTY(Ovito::Viewport* legendViewport READ legendViewport WRITE setLegendViewport);
+	Q_PROPERTY(Qt::Alignment legendAlignment READ legendAlignment WRITE setLegendAlignment);
+	Q_PROPERTY(FloatType legendSize READ legendSize WRITE setLegendSize);
+	Q_PROPERTY(FloatType legendFontSize READ legendFontSize WRITE setLegendFontSize);
+	Q_PROPERTY(QString legendTitle READ legendTitle WRITE setLegendTitle);
+	Q_PROPERTY(QString legendValueFormatString READ legendValueFormatString WRITE setLegendValueFormatString);
 
 protected:
 
@@ -282,6 +325,24 @@ protected:
 
 	/// Controls the display of the color legend in the rendered image.
 	PropertyField<bool> _renderLegend;
+
+	/// Selects the viewport in which to display the color legend.
+	ReferenceField<Viewport> _legendViewport;
+
+	/// Controls the position of the legend in the viewport.
+	PropertyField<int> _legendAlignment;
+
+	/// Controls the overall size of the color legend.
+	PropertyField<FloatType> _legendSize;
+
+	/// Controls the font size for rendering text in the color legend.
+	PropertyField<FloatType> _legendFontSize;
+
+	/// Controls the title text of the color legend.
+	PropertyField<QString> _legendTitle;
+
+	/// Controls the formatting of the value labels in the color legend.
+	PropertyField<QString> _legendValueFormatString;
 
 	/// Used to render the color scale legend on top the scene.
 	std::unique_ptr<ImagePrimitive> _colorScaleImageBuffer;
@@ -318,6 +379,12 @@ private:
 	DECLARE_PROPERTY_FIELD(_keepSelection);
 	DECLARE_PROPERTY_FIELD(_renderLegend);
 	DECLARE_PROPERTY_FIELD(_sourceProperty);
+	DECLARE_REFERENCE_FIELD(_legendViewport);
+	DECLARE_PROPERTY_FIELD(_legendAlignment);
+	DECLARE_PROPERTY_FIELD(_legendSize);
+	DECLARE_PROPERTY_FIELD(_legendFontSize);
+	DECLARE_PROPERTY_FIELD(_legendTitle);
+	DECLARE_PROPERTY_FIELD(_legendValueFormatString);
 };
 
 /*

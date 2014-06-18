@@ -106,6 +106,9 @@ public:
 	/// Returns the supersampling level.
 	virtual int antialiasingLevel() const { return 1; }
 
+	/// Returns the final size of the rendered image in pixels.
+	virtual QSize outputSize() const override;
+
 	/// Returns the OpenGL context this renderer uses.
 	QOpenGLContext* glcontext() const { return _glcontext; }
 

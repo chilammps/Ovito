@@ -81,6 +81,9 @@ public:
 	/// This may be NULL.
 	Viewport* viewport() const { OVITO_CHECK_OBJECT_POINTER(_viewport); return _viewport; }
 
+	/// Returns the final size of the rendered image in pixels.
+	virtual QSize outputSize() const;
+
 	/// \brief Computes the bounding box of the entire scene to be rendered.
 	/// \param time The time at which the bounding box should be computed.
 	/// \return An axis-aligned box in the world coordinate system that contains

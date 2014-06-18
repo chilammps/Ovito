@@ -114,6 +114,7 @@ SET(OVITO_CORE_SOURCE_FILES
 	gui/properties/BooleanParameterUI.cpp
 	gui/properties/BooleanRadioButtonParameterUI.cpp
 	gui/properties/ColorParameterUI.cpp
+	gui/properties/CustomParameterUI.cpp
 	gui/properties/FilenameParameterUI.cpp
 	gui/properties/FloatParameterUI.cpp
 	gui/properties/IntegerParameterUI.cpp

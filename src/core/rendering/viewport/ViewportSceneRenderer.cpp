@@ -255,6 +255,14 @@ const char* ViewportSceneRenderer::openglErrorString(GLenum errorCode)
 }
 
 /******************************************************************************
+* Returns the final size of the rendered image in pixels.
+******************************************************************************/
+QSize ViewportSceneRenderer::outputSize() const
+{
+	return viewport()->size();
+}
+
+/******************************************************************************
 * Requests a new line geometry buffer from the renderer.
 ******************************************************************************/
 std::unique_ptr<LinePrimitive> ViewportSceneRenderer::createLinePrimitive()

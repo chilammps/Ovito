@@ -93,8 +93,8 @@ public:
 		
 Q_SIGNALS:
 
-	/// This signal is emitted when the user has changed the value of the parameter.
-	/// It is not emitted when the parameter's value has been changed programmatically.
+	/// This signal is emitted when the user is changing the value of the parameter by manipulating the UI widget.
+	/// It is not emitted when the parameter value has been changed programmatically.
 	void valueEntered();
 
 public Q_SLOTS:	
@@ -198,7 +198,7 @@ public:
 	///
 	/// It is also called when the editable object itself has
 	/// been replaced in the editor. The parameter UI should react to this change appropriately and
-	/// show the properties value for the new edit object in the UI. New implementations of this
+	/// show the property value for the new edit object in the UI. New implementations of this
 	/// method must call the base implementation before any other action is taken.
 	virtual void resetUI() override;
 
@@ -224,7 +224,7 @@ private:
 	/// The controller or sub-object whose value is being edited.
 	ReferenceField<RefTarget> _parameterObject;
 
-	/// The property or reference field being edited or NULL if editing a Qt property.
+	/// The property or reference field being edited or NULL if bound to a Qt property.
 	const PropertyFieldDescriptor* _propField;
 
 	/// The name of the Qt property being edited or NULL.

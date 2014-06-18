@@ -68,7 +68,7 @@ public:
 	
 public:
 	
-	Q_PROPERTY(QComboBox comboBox READ comboBox)		
+	Q_PROPERTY(QComboBox comboBox READ comboBox);
 	
 public Q_SLOTS:
 	

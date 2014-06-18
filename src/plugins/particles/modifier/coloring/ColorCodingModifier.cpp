@@ -28,9 +28,14 @@
 #include <core/gui/properties/Vector3ParameterUI.h>
 #include <core/gui/properties/ColorParameterUI.h>
 #include <core/gui/properties/BooleanParameterUI.h>
+#include <core/gui/properties/BooleanGroupBoxParameterUI.h>
+#include <core/gui/properties/CustomParameterUI.h>
+#include <core/gui/properties/StringParameterUI.h>
+#include <core/gui/properties/VariantComboBoxParameterUI.h>
 #include <core/plugins/PluginManager.h>
 #include <core/gui/dialogs/SaveImageFileDialog.h>
 #include <core/rendering/SceneRenderer.h>
+#include <core/viewport/ViewportConfiguration.h>
 #include <plugins/particles/util/ParticlePropertyParameterUI.h>
 #include "ColorCodingModifier.h"
 
@@ -46,13 +51,25 @@ DEFINE_PROPERTY_FIELD(ColorCodingModifier, _colorOnlySelected, "SelectedOnly");
 DEFINE_PROPERTY_FIELD(ColorCodingModifier, _keepSelection, "KeepSelection");
 DEFINE_PROPERTY_FIELD(ColorCodingModifier, _renderLegend, "RenderLegend");
 DEFINE_PROPERTY_FIELD(ColorCodingModifier, _sourceProperty, "SourceProperty");
+DEFINE_REFERENCE_FIELD(ColorCodingModifier, _legendViewport, "LegendViewport", Viewport);
+DEFINE_PROPERTY_FIELD(ColorCodingModifier, _legendAlignment, "LegendAlignment");
+DEFINE_PROPERTY_FIELD(ColorCodingModifier, _legendSize, "LegendSize");
+DEFINE_PROPERTY_FIELD(ColorCodingModifier, _legendFontSize, "LegendFontSize");
+DEFINE_PROPERTY_FIELD(ColorCodingModifier, _legendTitle, "LegendTitle");
+DEFINE_PROPERTY_FIELD(ColorCodingModifier, _legendValueFormatString, "LegendValueFormatString");
 SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _startValueCtrl, "Start value");
 SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _endValueCtrl, "End value");
 SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _colorGradient, "Color gradient");
 SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _colorOnlySelected, "Color only selected particles");
-SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _keepSelection, "Keep selection");
-SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _renderLegend, "Render color legend (experimental)");
+SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _keepSelection, "Keep particles selected");
+SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _renderLegend, "Show color legend in viewport");
 SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _sourceProperty, "Source property");
+SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _legendViewport, "Legend viewport");
+SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _legendAlignment, "Position");
+SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _legendSize, "Size");
+SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _legendFontSize, "Font size");
+SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _legendTitle, "Title");
+SET_PROPERTY_FIELD_LABEL(ColorCodingModifier, _legendValueFormatString, "Format string");
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ColorCodingGradient, RefTarget);
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ColorCodingHSVGradient, ColorCodingGradient);
@@ -64,7 +81,9 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ColorCodingJetGradient, ColorCodi
 * Constructs the modifier object.
 ******************************************************************************/
 ColorCodingModifier::ColorCodingModifier(DataSet* dataset) : ParticleModifier(dataset),
-	_colorOnlySelected(false), _keepSelection(false), _renderLegend(false)
+	_colorOnlySelected(false), _keepSelection(false), _renderLegend(false),
+	_legendAlignment(Qt::AlignRight | Qt::AlignTop), _legendSize(0.2f),
+	_legendFontSize(10.0f), _legendValueFormatString("%g")
 {
 	INIT_PROPERTY_FIELD(ColorCodingModifier::_startValueCtrl);
 	INIT_PROPERTY_FIELD(ColorCodingModifier::_endValueCtrl);
@@ -73,6 +92,12 @@ ColorCodingModifier::ColorCodingModifier(DataSet* dataset) : ParticleModifier(da
 	INIT_PROPERTY_FIELD(ColorCodingModifier::_keepSelection);
 	INIT_PROPERTY_FIELD(ColorCodingModifier::_renderLegend);
 	INIT_PROPERTY_FIELD(ColorCodingModifier::_sourceProperty);
+	INIT_PROPERTY_FIELD(ColorCodingModifier::_legendViewport);
+	INIT_PROPERTY_FIELD(ColorCodingModifier::_legendAlignment);
+	INIT_PROPERTY_FIELD(ColorCodingModifier::_legendSize);
+	INIT_PROPERTY_FIELD(ColorCodingModifier::_legendFontSize);
+	INIT_PROPERTY_FIELD(ColorCodingModifier::_legendTitle);
+	INIT_PROPERTY_FIELD(ColorCodingModifier::_legendValueFormatString);
 
 	_colorGradient = new ColorCodingHSVGradient(dataset);
 	_startValueCtrl = ControllerManager::instance().createDefaultController<FloatController>(dataset);
@@ -135,9 +160,14 @@ void ColorCodingModifier::initializeModifier(PipelineObject* pipeline, ModifierA
 		if(!bestProperty.isNull())
 			setSourceProperty(bestProperty);
 	}
+
 	// Automatically adjust value range.
 	if(startValue() == 0 && endValue() == 0)
 		adjustRange();
+
+	// Select a default viewport for displaying the color legend.
+	if(!legendViewport() && dataset()->viewportConfig() && !dataset()->viewportConfig()->viewports().empty())
+		setLegendViewport(dataset()->viewportConfig()->viewports().back());
 }
 
 /******************************************************************************
@@ -330,11 +360,13 @@ void ColorCodingModifier::render(TimePoint time, ObjectNode* contextNode, Modifi
 	if(!renderOverlay || !isEnabled() || !_renderLegend || renderer->isPicking())
 		return;
 
-	// Show color legend in the viewports only if the render frame has been activated.
-	if(renderer->viewport() && renderer->isInteractive() && !renderer->viewport()->renderFrameShown())
+	if(renderer->viewport() && renderer->viewport() != legendViewport())
 		return;
 
 	if(!colorGradient())
+		return;
+
+	if(legendSize() <= 0.0f)
 		return;
 
 	// Get modifier's parameter values.
@@ -343,9 +375,12 @@ void ColorCodingModifier::render(TimePoint time, ObjectNode* contextNode, Modifi
 	if(_startValueCtrl) _startValueCtrl->getValue(time, startValue, validityInterval);
 	if(_endValueCtrl) _endValueCtrl->getValue(time, endValue, validityInterval);
 
-	QString topLabel = QString::number(endValue);
-	QString bottomLabel = QString::number(startValue);
-	QString titleLabel = sourceProperty().name();
+	QByteArray format = legendValueFormatString().toLatin1();
+	if(format.contains("%s")) format.clear();
+	QString topLabel, bottomLabel;
+	topLabel.sprintf(format.constData(), endValue);
+	bottomLabel.sprintf(format.constData(), startValue);
+	QString titleLabel = legendTitle().isEmpty() ? sourceProperty().name() : legendTitle();
 
 	if(_renderBufferUpdateHelper.updateState(colorGradient())
 			|| !_colorScaleImageBuffer
@@ -365,17 +400,8 @@ void ColorCodingModifier::render(TimePoint time, ObjectNode* contextNode, Modifi
 	}
 
 	Box2 renderRect(Point2(-1), Point2(+1));
-	if(renderer->viewport() && renderer->isInteractive())
+	if(renderer->viewport() && renderer->isInteractive() && renderer->viewport()->renderFrameShown())
 		renderRect = renderer->viewport()->renderFrameRect();
-
-	FloatType canvasSize = 0.5 * renderRect.height();
-	FloatType legendSize = 0.4 * canvasSize;
-	FloatType topMargin = 0.1 * canvasSize;
-	FloatType rightMargin = 0.03 * canvasSize;
-
-	_colorScaleImageBuffer->renderViewport(renderer,
-			Point2(renderRect.maxc.x() - rightMargin - legendSize * 0.2, renderRect.maxc.y() - topMargin - legendSize),
-			Vector2(legendSize * 0.2, legendSize));
 
 	if(!_colorScaleTopLabel || !_colorScaleTopLabel->isValid(renderer))
 		_colorScaleTopLabel = renderer->createTextPrimitive();
@@ -384,18 +410,67 @@ void ColorCodingModifier::render(TimePoint time, ObjectNode* contextNode, Modifi
 	if(!_colorScaleTitleLabel || !_colorScaleTitleLabel->isValid(renderer))
 		_colorScaleTitleLabel = renderer->createTextPrimitive();
 
-	ColorA labelColor = renderer->isInteractive() ? ViewportSettings::getSettings().viewportColor(ViewportSettings::COLOR_VIEWPORT_CAPTION) : ColorA(0,0,0);
+	QFont font;
+	font.setPointSizeF(legendFontSize());
 
-	_colorScaleTopLabel->setText(topLabel);
-	_colorScaleTopLabel->setColor(labelColor);
-	_colorScaleBottomLabel->setText(bottomLabel);
-	_colorScaleBottomLabel->setColor(labelColor);
-	_colorScaleTitleLabel->setText(titleLabel);
-	_colorScaleTitleLabel->setColor(labelColor);
+	FloatType canvasSize = 0.5f * renderRect.height();
+	FloatType colorBarSize = legendSize() * renderRect.height();
+	FloatType vMargin = 0.03f * canvasSize;
+	FloatType hMargin = 0.03f * canvasSize;
+	FloatType textLineHeight = 1.2 * 2.0 * (FloatType)QFontMetrics(font).height() / renderer->outputSize().height();
+	FloatType colorBarAspectRatio = 0.18f;
+	if(legendFontSize() <= 0) textLineHeight = 0;
 
-	_colorScaleTitleLabel->renderViewport(renderer, Point2(renderRect.maxc.x() - rightMargin, renderRect.maxc.y() - topMargin + 0.01), Qt::AlignRight | Qt::AlignBottom);
-	_colorScaleTopLabel->renderViewport(renderer, Point2(renderRect.maxc.x() - rightMargin - legendSize * 0.24, renderRect.maxc.y() - topMargin), Qt::AlignRight | Qt::AlignTop);
-	_colorScaleBottomLabel->renderViewport(renderer, Point2(renderRect.maxc.x() - rightMargin - legendSize * 0.24, renderRect.maxc.y() - topMargin - legendSize), Qt::AlignRight | Qt::AlignBottom);
+	Point2 colorBarPos;
+	Point2 titlePos;
+	Point2 topLabelPos, bottomLabelPos;
+	Qt::Alignment titleAlignment;
+
+	if(legendAlignment().testFlag(Qt::AlignRight)) {
+		colorBarPos.x() = renderRect.maxc.x() - hMargin - colorBarSize * colorBarAspectRatio;
+		titlePos.x() = renderRect.maxc.x() - hMargin;
+		titleAlignment = Qt::AlignRight;
+		topLabelPos.x() = renderRect.maxc.x() - 1.5 * hMargin - colorBarSize * colorBarAspectRatio;
+		bottomLabelPos.x() = topLabelPos.x();
+	}
+	else {
+		colorBarPos.x() = renderRect.minc.x() + hMargin;
+		titlePos.x() = renderRect.minc.x() + hMargin;
+		titleAlignment = Qt::AlignLeft;
+		topLabelPos.x() = renderRect.minc.x() + 1.5 * hMargin + colorBarSize * colorBarAspectRatio;
+		bottomLabelPos.x() = topLabelPos.x();
+	}
+
+	if(legendAlignment().testFlag(Qt::AlignTop)) {
+		colorBarPos.y() = renderRect.maxc.y() - vMargin - textLineHeight - colorBarSize;
+		titlePos.y() = renderRect.maxc.y() - vMargin;
+	}
+	else {
+		colorBarPos.y() = renderRect.minc.y() + vMargin;
+		titlePos.y() = renderRect.minc.y() + vMargin + colorBarSize + textLineHeight;
+	}
+	topLabelPos.y() = colorBarPos.y() + colorBarSize;
+	bottomLabelPos.y() = colorBarPos.y();
+
+	_colorScaleImageBuffer->renderViewport(renderer, colorBarPos, Vector2(colorBarSize * colorBarAspectRatio, colorBarSize));
+
+	if(legendFontSize() > 0.0f) {
+		ColorA labelColor = renderer->isInteractive() ? ViewportSettings::getSettings().viewportColor(ViewportSettings::COLOR_VIEWPORT_CAPTION) : ColorA(0,0,0);
+
+		_colorScaleTopLabel->setText(topLabel);
+		_colorScaleTopLabel->setColor(labelColor);
+		_colorScaleTopLabel->setFont(font);
+		_colorScaleBottomLabel->setText(bottomLabel);
+		_colorScaleBottomLabel->setColor(labelColor);
+		_colorScaleBottomLabel->setFont(font);
+		_colorScaleTitleLabel->setText(titleLabel);
+		_colorScaleTitleLabel->setColor(labelColor);
+		_colorScaleTitleLabel->setFont(font);
+
+		_colorScaleTitleLabel->renderViewport(renderer, titlePos, titleAlignment | Qt::AlignTop);
+		_colorScaleTopLabel->renderViewport(renderer, topLabelPos, titleAlignment | Qt::AlignTop);
+		_colorScaleBottomLabel->renderViewport(renderer, bottomLabelPos, titleAlignment | Qt::AlignBottom);
+	}
 }
 
 /******************************************************************************
@@ -451,7 +526,7 @@ void ColorCodingModifierEditor::createUI(const RolloutInsertionParameters& rollo
 	// Export color scale button.
 	QToolButton* exportBtn = new QToolButton(rollout);
 	exportBtn->setIcon(QIcon(":/particles/icons/export_color_scale.png"));
-	exportBtn->setToolTip("Export color map to file");
+	exportBtn->setToolTip("Export color map to graphics file");
 	exportBtn->setAutoRaise(true);
 	exportBtn->setIconSize(QSize(42,22));
 	connect(exportBtn, &QPushButton::clicked, this, &ColorCodingModifierEditor::onExportColorScale);
@@ -477,13 +552,84 @@ void ColorCodingModifierEditor::createUI(const RolloutInsertionParameters& rollo
 	layout1->addWidget(keepSelectionPUI->checkBox());
 	connect(onlySelectedPUI->checkBox(), &QCheckBox::toggled, keepSelectionPUI->checkBox(), &QCheckBox::setEnabled);
 
-	// Render legend.
-	BooleanParameterUI* renderLegendPUI = new BooleanParameterUI(this, PROPERTY_FIELD(ColorCodingModifier::_renderLegend));
-	layout1->addWidget(renderLegendPUI->checkBox());
-
+#if 0
 	// Status label.
-	layout1->addSpacing(10);
+	layout1->addSpacing(2);
 	layout1->addWidget(statusLabel());
+#endif
+
+	// Create a second rollout.
+	rollout = createRollout(tr("Color legend"), rolloutParams.after(rollout), "particles.modifiers.color_coding.html");
+
+    // Create the rollout contents.
+	layout1 = new QVBoxLayout(rollout);
+	layout1->setContentsMargins(4,4,4,4);
+	layout1->setSpacing(2);
+
+	// Render legend.
+	BooleanGroupBoxParameterUI* renderLegendPUI = new BooleanGroupBoxParameterUI(this, PROPERTY_FIELD(ColorCodingModifier::_renderLegend));
+	renderLegendPUI->groupBox()->setTitle(tr("Show legend"));
+	layout1->addWidget(renderLegendPUI->groupBox());
+
+	layout2 = new QGridLayout(renderLegendPUI->groupBox());
+	layout2->setContentsMargins(4,4,4,4);
+	layout2->setColumnStretch(1, 1);
+
+	// Viewport.
+	QComboBox* legendViewportComboBox = new QComboBox();
+	CustomParameterUI* legendViewportPUI = new CustomParameterUI(this, "legendViewport", legendViewportComboBox,
+			[legendViewportComboBox](const QVariant& value) {
+				legendViewportComboBox->setCurrentIndex(legendViewportComboBox->findData(value));
+			},
+			[legendViewportComboBox]() {
+				return legendViewportComboBox->currentData();
+			},
+			[legendViewportComboBox](RefTarget* editObject) {
+				// Populate combo box with list of viewports.
+				legendViewportComboBox->clear();
+				if(editObject) {
+					for(Viewport* vp : editObject->dataset()->viewportConfig()->viewports())
+						legendViewportComboBox->addItem(vp->viewportTitle(), QVariant::fromValue(vp));
+				}
+			});
+	connect(legendViewportComboBox, (void (QComboBox::*)(int))&QComboBox::activated, legendViewportPUI, &CustomParameterUI::updatePropertyValue);
+	layout2->addWidget(new QLabel(tr("In viewport:")), 0, 0);
+	layout2->addWidget(legendViewportPUI->widget(), 0, 1);
+
+	VariantComboBoxParameterUI* legendAlignmentPUI = new VariantComboBoxParameterUI(this, PROPERTY_FIELD(ColorCodingModifier::_legendAlignment));
+	layout2->addWidget(new QLabel(tr("Position:")), 1, 0);
+	layout2->addWidget(legendAlignmentPUI->comboBox(), 1, 1);
+	legendAlignmentPUI->comboBox()->addItem(tr("Top left"), QVariant::fromValue((int)(Qt::AlignTop | Qt::AlignLeft)));
+	legendAlignmentPUI->comboBox()->addItem(tr("Top right"), QVariant::fromValue((int)(Qt::AlignTop | Qt::AlignRight)));
+	legendAlignmentPUI->comboBox()->addItem(tr("Bottom left"), QVariant::fromValue((int)(Qt::AlignBottom | Qt::AlignLeft)));
+	legendAlignmentPUI->comboBox()->addItem(tr("Bottom right"), QVariant::fromValue((int)(Qt::AlignBottom | Qt::AlignRight)));
+
+	FloatParameterUI* legendSizePUI = new FloatParameterUI(this, PROPERTY_FIELD(ColorCodingModifier::_legendSize));
+	layout2->addWidget(legendSizePUI->label(), 2, 0);
+	layout2->addLayout(legendSizePUI->createFieldLayout(), 2, 1);
+	legendSizePUI->setMinValue(0.0f);
+	legendSizePUI->setMaxValue(1.0f);
+
+	FloatParameterUI* legendFontSizePUI = new FloatParameterUI(this, PROPERTY_FIELD(ColorCodingModifier::_legendFontSize));
+	layout2->addWidget(legendFontSizePUI->label(), 3, 0);
+	layout2->addLayout(legendFontSizePUI->createFieldLayout(), 3, 1);
+	legendFontSizePUI->setMinValue(0.0f);
+	legendFontSizePUI->setMaxValue(200.0f);
+
+	StringParameterUI* legendTitlePUI = new StringParameterUI(this, PROPERTY_FIELD(ColorCodingModifier::_legendTitle));
+	layout2->addWidget(new QLabel(tr("Custom title:")), 4, 0);
+	layout2->addWidget(legendTitlePUI->textBox(), 4, 1);
+
+	StringParameterUI* legendValueFormatStringPUI = new StringParameterUI(this, PROPERTY_FIELD(ColorCodingModifier::_legendValueFormatString));
+	layout2->addWidget(new QLabel(tr("Format string:")), 5, 0);
+	layout2->addWidget(legendValueFormatStringPUI->textBox(), 5, 1);
+
+	connect(renderLegendPUI->groupBox(), &QGroupBox::toggled, legendViewportPUI, &CustomParameterUI::setEnabled);
+	connect(renderLegendPUI->groupBox(), &QGroupBox::toggled, legendAlignmentPUI, &VariantComboBoxParameterUI::setEnabled);
+	connect(renderLegendPUI->groupBox(), &QGroupBox::toggled, legendSizePUI, &FloatParameterUI::setEnabled);
+	connect(renderLegendPUI->groupBox(), &QGroupBox::toggled, legendFontSizePUI, &FloatParameterUI::setEnabled);
+	connect(renderLegendPUI->groupBox(), &QGroupBox::toggled, legendTitlePUI, &StringParameterUI::setEnabled);
+	connect(renderLegendPUI->groupBox(), &QGroupBox::toggled, legendValueFormatStringPUI, &StringParameterUI::setEnabled);
 }
 
 /******************************************************************************
