@@ -67,7 +67,7 @@ void PDBImporter::PDBImportTask::parseFile(FutureInterfaceBase& futureInterface,
 	while(!stream.eof()) {
 		stream.readLine();
 		int lineLength = qstrlen(stream.line());
-		if(lineLength < 7 || lineLength > 82)
+		if(lineLength < 3 || lineLength > 82)
 			throw Exception(tr("Invalid line length detected in Protein Data Bank (PDB) file at line %1").arg(stream.lineNumber()));
 
 		// Parse simulation cell.
@@ -127,25 +127,25 @@ void PDBImporter::PDBImportTask::parseFile(FutureInterfaceBase& futureInterface,
 	while(!stream.eof() && atomIndex < numAtoms) {
 		stream.readLine();
 		int lineLength = qstrlen(stream.line());
-		if(lineLength < 7 || lineLength > 82)
+		if(lineLength < 3 || lineLength > 82)
 			throw Exception(tr("Invalid line length detected in Protein Data Bank (PDB) file at line %1").arg(stream.lineNumber()));
 
 		// Parse atom definition.
 		if(stream.lineStartsWith("ATOM  ") || stream.lineStartsWith("HETATM")) {
 			char atomType[3];
 			int atomTypeLength = 0;
-			for(const char* c = stream.line() + 76; c <= stream.line() + 77; ++c)
+			for(const char* c = stream.line() + 76; c <= stream.line() + std::min(77, lineLength); ++c)
 				if(*c != ' ') atomType[atomTypeLength++] = *c;
 			if(atomTypeLength == 0) {
-				for(const char* c = stream.line() + 12; c <= stream.line() + 15; ++c)
+				for(const char* c = stream.line() + 12; c <= stream.line() + std::min(15, lineLength); ++c)
 					if(*c != ' ') atomType[atomTypeLength++] = *c;
 			}
 			atomType[atomTypeLength] = '\0';
 			*a = addParticleTypeName(atomType);
 #ifdef FLOATTYPE_FLOAT
-			if(sscanf(stream.line() + 30, "%8g%8g%8g", &p->x(), &p->y(), &p->z()) != 3)
+			if(lineLength <= 30 || sscanf(stream.line() + 30, "%8g%8g%8g", &p->x(), &p->y(), &p->z()) != 3)
 #else
-			if(sscanf(stream.line() + 30, "%8lg%8lg%8lg", &p->x(), &p->y(), &p->z()) != 3)
+			if(lineLength <= 30 || sscanf(stream.line() + 30, "%8lg%8lg%8lg", &p->x(), &p->y(), &p->z()) != 3)
 #endif
 				throw Exception(tr("Invalid atom coordinates (line %1): %2").arg(stream.lineNumber()).arg(stream.lineString()));
 			atomIndex++;
@@ -155,7 +155,6 @@ void PDBImporter::PDBImportTask::parseFile(FutureInterfaceBase& futureInterface,
 	}
 
 	setInfoText(tr("Number of particles: %1").arg(numAtoms));
-
 }
 
 };
