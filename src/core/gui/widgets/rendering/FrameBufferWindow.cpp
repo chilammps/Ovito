@@ -29,13 +29,13 @@ namespace Ovito {
 * Constructor.
 ******************************************************************************/
 FrameBufferWindow::FrameBufferWindow(QWidget* parent) :
-#ifndef Q_OS_MAC
+#if !defined(Q_OS_MAC) || QT_VERSION >= QT_VERSION_CHECK(5, 3, 1)
 	QMainWindow(parent, (Qt::WindowFlags)(Qt::Tool | Qt::CustomizeWindowHint | Qt::WindowMaximizeButtonHint | Qt::WindowCloseButtonHint))
 #else
 	QMainWindow(parent, (Qt::WindowFlags)(Qt::Window | Qt::CustomizeWindowHint | Qt::WindowMaximizeButtonHint | Qt::WindowCloseButtonHint))
 #endif
 {
-#ifdef Q_OS_MAC
+#if defined(Q_OS_MAC) && QT_VERSION < QT_VERSION_CHECK(5, 3, 1)
 	setWindowModality(Qt::ApplicationModal);
 #endif
 	_frameBufferWidget = new FrameBufferWidget();
