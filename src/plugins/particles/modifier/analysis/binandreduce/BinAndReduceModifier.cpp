@@ -472,7 +472,7 @@ void BinAndReduceModifierEditor::plotAverages()
         // which is to be avoided if the range is not determined automatically.
         _rangeUpdate = false;
         _averagesPlot->xAxis->setRange(modifier->xAxisRangeStart(), modifier->xAxisRangeEnd());
-        _averagesPlot->yAxis->setRange(modifier->PropertyAxisRangeStart(), modifier->PropertyAxisRangeEnd());
+        _averagesPlot->yAxis->setRange(modifier->propertyAxisRangeStart(), modifier->propertyAxisRangeEnd());
         _rangeUpdate = true;
     }
     else {
@@ -514,7 +514,7 @@ void BinAndReduceModifierEditor::plotAverages()
         // Check if range is already correct, because setRange emits the rangeChanged signal
         // which is to be avoided if the range is not determined automatically.
         _rangeUpdate = false;
-        _averagesColorMap->setDataRange(QCPRange(modifier->PropertyAxisRangeStart(), modifier->PropertyAxisRangeEnd()));
+        _averagesColorMap->setDataRange(QCPRange(modifier->propertyAxisRangeStart(), modifier->propertyAxisRangeEnd()));
         _rangeUpdate = true;
     }
     

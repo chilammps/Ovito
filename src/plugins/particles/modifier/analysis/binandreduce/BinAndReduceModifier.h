@@ -117,10 +117,10 @@ public:
 	void setPropertyAxisRange(FloatType start, FloatType end) { _propertyAxisRangeStart = start; _propertyAxisRangeEnd = end; }
 
 	/// Returns the start value of the plotting y-axis.
-	FloatType PropertyAxisRangeStart() const { return _propertyAxisRangeStart; }
+	FloatType propertyAxisRangeStart() const { return _propertyAxisRangeStart; }
 
 	/// Returns the end value of the plotting y-axis.
-	FloatType PropertyAxisRangeEnd() const { return _propertyAxisRangeEnd; }
+	FloatType propertyAxisRangeEnd() const { return _propertyAxisRangeEnd; }
 
     /// Returns true if binning in a single direction only.
     bool is1D() {
