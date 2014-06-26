@@ -461,11 +461,9 @@ void BinAndReduceModifierEditor::plotAverages()
         QVector<double> xdata(binDataSize);
         QVector<double> ydata(binDataSize);
         double binSize = ( modifier->xAxisRangeEnd() - modifier->xAxisRangeStart() ) / binDataSize;
-        double maxBinData = 0.0;
         for(int i = 0; i < xdata.size(); i++) {
             xdata[i] = binSize * ((double)i + 0.5);
             ydata[i] = modifier->binData()[i];
-            maxBinData = std::max(maxBinData, ydata[i]);
         }
         _averagesPlot->graph()->setLineStyle(QCPGraph::lsStepCenter);
         _averagesPlot->graph()->setData(xdata, ydata);
