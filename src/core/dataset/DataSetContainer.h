@@ -147,6 +147,12 @@ Q_SIGNALS:
 	/// \note This signal is NOT emitted when parameters of the current render settings object change.
 	void renderSettingsReplaced(RenderSettings* newRenderSettings);
 
+	/// \brief This signal is emitted when the current animation time has changed or if the current animation settings have been replaced.
+	void timeChanged(TimePoint newTime);
+
+	/// \brief This signal is emitted when the scene becomes ready after the current animation time has changed.
+	void timeChangeComplete();
+
 protected:
 
 	/// Is called when the value of a reference field of this RefMaker changes.
@@ -157,12 +163,12 @@ protected Q_SLOTS:
 	/// This handler is invoked when the current selection set of the current dataset has been replaced.
 	void onSelectionSetReplaced(SelectionSet* newSelectionSet);
 
+	/// This handler is invoked when the current animation settings of the current dataset have been replaced.
+	void onAnimationSettingsReplaced(AnimationSettings* newAnimationSettings);
+
 #if 0
 	/// This handler is invoked when the current viewport configuration of the current dataset has been replaced.
 	void onViewportConfigReplaced(ViewportConfiguration* newViewportConfiguration);
-
-	/// This handler is invoked when the current animation settings of the current dataset have been replaced.
-	void onAnimationSettingsReplaced(AnimationSettings* newAnimationSettings);
 
 	/// This handler is invoked when the current render settings of the current dataset have been replaced.
 	void onRenderSettingsReplaced(RenderSettings* newRenderSettings);
@@ -185,6 +191,8 @@ private:
 	QMetaObject::Connection _viewportConfigReplacedConnection;
 	QMetaObject::Connection _animationSettingsReplacedConnection;
 	QMetaObject::Connection _renderSettingsReplacedConnection;
+	QMetaObject::Connection _animationTimeChangedConnection;
+	QMetaObject::Connection _animationTimeChangeCompleteConnection;
 
 	Q_OBJECT
 	OVITO_OBJECT

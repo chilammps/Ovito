@@ -89,11 +89,6 @@ protected:
 	/// The radio button group.
 	QPointer<QButtonGroup> _buttonGroup;
 
-private:
-
-	/// The signal/slot connection that informs the parameter UI about animation time changes.
-	QMetaObject::Connection _animationTimeChangedConnection;
-
 	Q_OBJECT
 	OVITO_OBJECT
 };

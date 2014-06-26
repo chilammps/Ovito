@@ -24,15 +24,15 @@
 
 namespace Ovito {
 
-IMPLEMENT_OVITO_OBJECT(Core, RefTargetListener, RefMaker)
-IMPLEMENT_OVITO_OBJECT(Core, VectorRefTargetListener, RefMaker)
-DEFINE_FLAGS_REFERENCE_FIELD(RefTargetListener, _target, "Target", RefTarget, PROPERTY_FIELD_NEVER_CLONE_TARGET|PROPERTY_FIELD_NO_UNDO|PROPERTY_FIELD_NO_CHANGE_MESSAGE|PROPERTY_FIELD_WEAK_REF)
-DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(VectorRefTargetListener, _targets, "Targets", RefTarget, PROPERTY_FIELD_NEVER_CLONE_TARGET|PROPERTY_FIELD_NO_UNDO|PROPERTY_FIELD_NO_CHANGE_MESSAGE|PROPERTY_FIELD_WEAK_REF)
+IMPLEMENT_OVITO_OBJECT(Core, RefTargetListenerBase, RefMaker)
+IMPLEMENT_OVITO_OBJECT(Core, VectorRefTargetListenerBase, RefMaker)
+DEFINE_FLAGS_REFERENCE_FIELD(RefTargetListenerBase, _target, "Target", RefTarget, PROPERTY_FIELD_NEVER_CLONE_TARGET|PROPERTY_FIELD_NO_UNDO|PROPERTY_FIELD_NO_CHANGE_MESSAGE|PROPERTY_FIELD_WEAK_REF)
+DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(VectorRefTargetListenerBase, _targets, "Targets", RefTarget, PROPERTY_FIELD_NEVER_CLONE_TARGET|PROPERTY_FIELD_NO_UNDO|PROPERTY_FIELD_NO_CHANGE_MESSAGE|PROPERTY_FIELD_WEAK_REF)
 
 /******************************************************************************
 * Is called when the RefTarget referenced by this listener has sent a message.
 ******************************************************************************/
-bool RefTargetListener::referenceEvent(RefTarget* source, ReferenceEvent* event)
+bool RefTargetListenerBase::referenceEvent(RefTarget* source, ReferenceEvent* event)
 {
 	// Emit Qt signal.
 	Q_EMIT notificationEvent(event);
@@ -43,7 +43,7 @@ bool RefTargetListener::referenceEvent(RefTarget* source, ReferenceEvent* event)
 /******************************************************************************
 * Is called when the RefTarget referenced by this listener has sent a message.
 ******************************************************************************/
-bool VectorRefTargetListener::referenceEvent(RefTarget* source, ReferenceEvent* event)
+bool VectorRefTargetListenerBase::referenceEvent(RefTarget* source, ReferenceEvent* event)
 {
 	// Emit Qt signal.
 	Q_EMIT notificationEvent(source, event);

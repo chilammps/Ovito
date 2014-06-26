@@ -38,10 +38,10 @@ SceneNodesListModel::SceneNodesListModel(DataSetContainer& datasetContainer, QWi
 	connect(&datasetContainer, &DataSetContainer::dataSetChanged, this, &SceneNodesListModel::onDataSetChanged);
 
 	// Listen for events of the root node.
-	connect(&_rootNodeListener, &RefTargetListener::notificationEvent, this, &SceneNodesListModel::onRootNodeNotificationEvent);
+	connect(&_rootNodeListener, &RefTargetListener<SceneRoot>::notificationEvent, this, &SceneNodesListModel::onRootNodeNotificationEvent);
 
 	// Listen for events of the other scene nodes.
-	connect(&_nodeListener, &VectorRefTargetListener::notificationEvent, this, &SceneNodesListModel::onNodeNotificationEvent);
+	connect(&_nodeListener, &VectorRefTargetListener<SceneNode>::notificationEvent, this, &SceneNodesListModel::onNodeNotificationEvent);
 }
 
 /******************************************************************************
@@ -58,13 +58,10 @@ int SceneNodesListModel::rowCount(const QModelIndex& parent) const
 QVariant SceneNodesListModel::data(const QModelIndex& index, int role) const
 {
 	if(role == Qt::DisplayRole) {
-		SceneNode* node = dynamic_object_cast<SceneNode>(_nodeListener.targets()[index.row()]);
-		if(node)
-			return qVariantFromValue(node->objectTitle());
+		return qVariantFromValue(_nodeListener.targets()[index.row()]->objectTitle());
 	}
 	else if(role == Qt::UserRole) {
-		SceneNode* node = dynamic_object_cast<SceneNode>(_nodeListener.targets()[index.row()]);
-		return qVariantFromValue(node);
+		return qVariantFromValue(_nodeListener.targets()[index.row()]);
 	}
 	return QVariant();
 }
@@ -127,7 +124,7 @@ void SceneNodesListModel::onNodeNotificationEvent(RefTarget* source, ReferenceEv
 
 	// If a node is being renamed, let the model emit an update signal.
 	if(event->type() == ReferenceEvent::TitleChanged) {
-		int index = _nodeListener.targets().indexOf(source);
+		int index = _nodeListener.targets().indexOf(static_cast<SceneNode*>(source));
 		if(index >= 0) {
 			QModelIndex modelIndex = createIndex(index, 0, source);
 			dataChanged(modelIndex, modelIndex);

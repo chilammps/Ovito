@@ -54,9 +54,8 @@ void IntegerParameterUI::updatePropertyValue()
 {
 	if(editObject() && spinner()) {
 		if(isReferenceFieldUI()) {
-			IntegerController* ctrl = dynamic_object_cast<IntegerController>(parameterObject());
-			if(ctrl != NULL)
-				ctrl->setCurrentValue(spinner()->intValue());
+			if(Controller* ctrl = dynamic_object_cast<Controller>(parameterObject()))
+				ctrl->setCurrentIntValue(spinner()->intValue());
 		}
 		else if(isQtPropertyUI()) {
 			if(!editObject()->setProperty(propertyName(), spinner()->intValue())) {
@@ -77,11 +76,8 @@ void IntegerParameterUI::updateUI()
 	if(editObject() && spinner() && !spinner()->isDragging()) {
 		try {
 			if(isReferenceFieldUI()) {
-				IntegerController* ctrl = dynamic_object_cast<IntegerController>(parameterObject());
-				if(ctrl != NULL) {
-					TimeInterval interval;
-					spinner()->setIntValue(ctrl->currentValue());
-				}
+				if(Controller* ctrl = dynamic_object_cast<Controller>(parameterObject()))
+					spinner()->setIntValue(ctrl->currentIntValue());
 			}
 			else {
 				QVariant val(0);

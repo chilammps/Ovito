@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-//
+// 
 //  Copyright (2013) Alexander Stukowski
 //
 //  This file is part of OVITO (Open Visualization Tool).
@@ -19,29 +19,44 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file CameraDisplayObject.h
- * \brief Contains the definition of the Ovito::CameraDisplayObject class.
- */
-
-#ifndef __OVITO_CAMERA_DISPLAY_OBJECT_H
-#define __OVITO_CAMERA_DISPLAY_OBJECT_H
+#ifndef __OVITO_TARGET_OBJECT_H
+#define __OVITO_TARGET_OBJECT_H
 
 #include <core/Core.h>
+#include <core/scene/objects/SceneObject.h>
 #include <core/scene/display/DisplayObject.h>
 #include <core/rendering/LinePrimitive.h>
 
 namespace Ovito {
 
 /**
- * \brief A scene display object for camera scene objects.
+ * A simple helper object that serves as direction target for camera and light objects.
  */
-class OVITO_CORE_EXPORT CameraDisplayObject : public DisplayObject
+class OVITO_CORE_EXPORT TargetObject : public SceneObject
+{
+public:
+
+	/// Constructor.
+	Q_INVOKABLE TargetObject(DataSet* dataset);
+
+	/// \brief Returns the title of this object.
+	virtual QString objectTitle() override { return tr("Target"); }
+
+private:
+
+	Q_OBJECT
+	OVITO_OBJECT
+};
+
+/**
+ * \brief A scene display object for target scene objects.
+ */
+class OVITO_CORE_EXPORT TargetDisplayObject : public DisplayObject
 {
 public:
 
 	/// \brief Constructor.
-	Q_INVOKABLE CameraDisplayObject(DataSet* dataset) : DisplayObject(dataset) {}
+	Q_INVOKABLE TargetDisplayObject(DataSet* dataset) : DisplayObject(dataset) {}
 
 	/// \brief Lets the display object render a scene object.
 	virtual void render(TimePoint time, SceneObject* sceneObject, const PipelineFlowState& flowState, SceneRenderer* renderer, ObjectNode* contextNode) override;
@@ -53,20 +68,20 @@ public:
 	virtual Box3 viewDependentBoundingBox(TimePoint time, Viewport* viewport, SceneObject* sceneObject, ObjectNode* contextNode, const PipelineFlowState& flowState) override;
 
 	/// \brief Returns the title of this object.
-	virtual QString objectTitle() override { return tr("Camera icon"); }
+	virtual QString objectTitle() override { return tr("Target icon"); }
 
 protected:
 
 	/// The buffered geometry used to render the icon.
-	std::unique_ptr<LinePrimitive> _cameraIcon;
+	std::unique_ptr<LinePrimitive> _icon;
 
 	/// The icon geometry to be rendered in object picking mode.
-	std::unique_ptr<LinePrimitive> _pickingCameraIcon;
+	std::unique_ptr<LinePrimitive> _pickingIcon;
 
 	/// This helper structure is used to detect any changes in the input data
 	/// that require updating the geometry buffer.
 	SceneObjectCacheHelper<
-		QPointer<SceneObject>, unsigned int,		// Camera object + revision number
+		QPointer<SceneObject>, unsigned int,		// Scene object + revision number
 		Color										// Display color
 		> _geometryCacheHelper;
 
@@ -76,6 +91,6 @@ private:
 	OVITO_OBJECT
 };
 
-};	// End of namespace
+};
 
-#endif // __OVITO_CAMERA_DISPLAY_OBJECT_H
+#endif // __OVITO_TARGET_OBJECT_H

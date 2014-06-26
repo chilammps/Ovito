@@ -45,16 +45,16 @@ public:
 	virtual TimeInterval modifierValidity(TimePoint time) override;
 
 	/// Returns the color that is assigned to the selected atoms.
-	Color color() const { return _colorCtrl ? (Color)_colorCtrl->currentValue() : Color(0,0,0); }
+	Color color() const { return _colorCtrl ? _colorCtrl->currentColorValue() : Color(0,0,0); }
 
 	/// Sets the color that is assigned to the selected atoms.
-	void setColor(const Color& color) { if(_colorCtrl) _colorCtrl->setCurrentValue((Vector3)color); }
+	void setColor(const Color& color) { if(_colorCtrl) _colorCtrl->setCurrentColorValue(color); }
 
 	/// Returns the controller for the color that is assigned to the selected atoms.
-	VectorController* colorController() const { return _colorCtrl; }
+	Controller* colorController() const { return _colorCtrl; }
 
 	/// Sets the controller for the color that is assigned to the selected atoms.
-	void setColorController(const OORef<VectorController>& ctrl) { _colorCtrl = ctrl; }
+	void setColorController(const OORef<Controller>& ctrl) { _colorCtrl = ctrl; }
 
 	/// Returns whether the input particle selection is preserved.
 	/// If false, the selection is cleared by the modifier.
@@ -76,7 +76,7 @@ protected:
 	virtual PipelineStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;
 
 	/// This controller stores the constant color to be assigned to all atoms.
-	ReferenceField<VectorController> _colorCtrl;
+	ReferenceField<Controller> _colorCtrl;
 
 	/// Controls whether the input particle selection is preserved.
 	/// If false, the selection is cleared by the modifier.

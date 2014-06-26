@@ -79,7 +79,7 @@ public:
 protected:
 
 	/// Creates and initializes a computation engine that will compute the modifier's results.
-	virtual std::shared_ptr<Engine> createEngine(TimePoint time) override;
+	virtual std::shared_ptr<Engine> createEngine(TimePoint time, TimeInterval& validityInterval) override;
 
 	/// Determines the coordination structure of a single particle using the bond-angle analysis method.
 	static StructureType determineStructure(TreeNeighborListBuilder& neighList, size_t particleIndex);

@@ -36,14 +36,23 @@ NativeOvitoObjectType* NativeOvitoObjectType::_firstInfo = nullptr;
 ******************************************************************************/
 OvitoObject* NativeOvitoObjectType::createInstanceImpl(DataSet* dataset) const
 {
+#ifdef OVITO_DEBUG
+	// Check if class hierarchy is consistent.
+	OVITO_ASSERT(superClass() != nullptr);
+	const QMetaObject* qtSuperClass = qtMetaObject()->superClass();
+	while(qtSuperClass && qtSuperClass != superClass()->qtMetaObject())
+		qtSuperClass = qtSuperClass->superClass();
+	OVITO_ASSERT_MSG(qtSuperClass != nullptr, "NativeOvitoObjectType::createInstanceImpl", qPrintable(QString("Class %1 is not derived from base class %2 as specified by the object type descriptor.").arg(name()).arg(superClass()->name())));
+#endif
+
 	OvitoObject* obj;
 
 	if(isDerivedFrom(RefTarget::OOType) && *this != DataSet::OOType) {
 		UndoSuspender noUndo(dataset->undoStack());
-		obj = qobject_cast<OvitoObject*>(_qtClassInfo->newInstance(Q_ARG(DataSet*, dataset)));
+		obj = qobject_cast<OvitoObject*>(qtMetaObject()->newInstance(Q_ARG(DataSet*, dataset)));
 	}
 	else {
-		obj = qobject_cast<OvitoObject*>(_qtClassInfo->newInstance());
+		obj = qobject_cast<OvitoObject*>(qtMetaObject()->newInstance());
 	}
 
 	if(!obj)

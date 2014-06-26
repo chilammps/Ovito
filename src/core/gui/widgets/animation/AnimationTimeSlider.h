@@ -38,6 +38,24 @@ public:
 	/// Constructor.
 	AnimationTimeSlider(MainWindow* mainWindow, QWidget* parentWindow = nullptr);
 
+	/// Computes the x position within the widget corresponding to the given animation time.
+	int timeToPos(TimePoint time);
+
+	/// Converts a distance in pixels to a time difference.
+	TimePoint distanceToTimeDifference(int distance);
+
+	/// Computes the current position of the slider thumb.
+	QRect thumbRectangle();
+
+	/// Computes the width of the thumb.
+	int thumbWidth() const;
+
+	/// Computes the time ticks to draw.
+	std::tuple<TimePoint,TimePoint,TimePoint> tickRange(int tickWidth);
+
+	/// Computes the maximum width of a frame tick label.
+	int maxTickLabelWidth();
+
 protected:
 
 	/// Handles paint events.
@@ -57,7 +75,7 @@ protected:
 
 	/// Returns the minimum size of the widget.
 	virtual QSize minimumSizeHint() const override { return sizeHint(); }
-	
+
 protected Q_SLOTS:
 
 	/// This is called when new animation settings have been loaded.
@@ -68,12 +86,6 @@ protected Q_SLOTS:
 
 private:
 
-	/// Computes the current position of the slider thumb.
-	QRect thumbRectangle();
-
-	/// Computes the width of the thumb.
-	int thumbWidth() const;
-	
 	/// The dragging start position.
 	int _dragPos;
 
@@ -82,6 +94,9 @@ private:
 
 	/// The color palette used to the draw the time slide background when Auto Key mode is active.
 	QPalette _autoKeyModePalette;
+
+	/// The palette used to the draw the slider.
+	QPalette _sliderPalette;
 
 	/// The main window.
 	MainWindow* _mainWindow;

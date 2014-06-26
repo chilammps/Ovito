@@ -139,6 +139,13 @@ public:
 	/// \return The animation frame that corresponds to the given time.
 	int timeToFrame(TimePoint time) const { return time / ticksPerFrame(); }
 
+	/// \brief Rounds the given time value to the closest frame time.
+	/// \param time A time in ticks units.
+	/// \return The animation frame that is closest to the given time.
+	TimePoint snapTime(TimePoint time) const {
+		return frameToTime(timeToFrame(time + ticksPerFrame()/(time >= 0 ? 2 : -2)));
+	}
+
 	/// \brief Returns the playback speed factor that is used for animation playback in the viewports.
 	/// \return The playback speed factor. A value greater than 1 means that the animation is played at a speed higher
 	///         than realtime whereas a value smaller than -1 means that the animation is played at a speed lower than realtime.

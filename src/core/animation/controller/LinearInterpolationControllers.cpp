@@ -19,18 +19,16 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * \file StandardControllers.h
- * \brief Include file for all standard controller classes defined by the application core.
- */
-
-#ifndef __OVITO_STD_CONTROLLERS_H
-#define __OVITO_STD_CONTROLLERS_H
-
 #include <core/Core.h>
-#include "StandardConstControllers.h"
-#include "StandardLinearControllers.h"
-#include "TransformationController.h"
-#include "LookAtController.h"
+#include "LinearInterpolationControllers.h"
 
-#endif // __OVITO_STD_CONTROLLERS_H
+namespace Ovito {
+
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LinearFloatController, KeyframeController);
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LinearIntegerController, KeyframeController);
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LinearVectorController, KeyframeController);
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LinearPositionController, KeyframeController);
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LinearRotationController, KeyframeController);
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LinearScalingController, KeyframeController);
+
+};

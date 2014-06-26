@@ -80,6 +80,9 @@ bool Application::initialize(int& argc, char** argv)
 	// Activate default "C" locale, which will be used to parse numbers in strings.
 	std::setlocale(LC_NUMERIC, "C");
 
+	// Register our floating-point data type with the Qt type system.
+	qRegisterMetaType<FloatType>("FloatType");
+
 	// Register stream operators for basic types.
 	qRegisterMetaTypeStreamOperators<Vector2>("Ovito::Vector2");
 	qRegisterMetaTypeStreamOperators<Vector3>("Ovito::Vector3");

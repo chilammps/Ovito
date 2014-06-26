@@ -87,13 +87,13 @@ public:
 	void setImageInfo(const ImageInfo& imageInfo);
 
 	/// Returns the background color of the rendered image.
-	Color backgroundColor() const { return _backgroundColor ? (Color)_backgroundColor->currentValue() : Color(0,0,0); }
+	Color backgroundColor() const { return _backgroundColor ? _backgroundColor->currentColorValue() : Color(0,0,0); }
 	/// Sets the background color of the rendered image.
-	void setBackgroundColor(const Color& color) { if(_backgroundColor) _backgroundColor->setCurrentValue((Vector3)color); }
+	void setBackgroundColor(const Color& color) { if(_backgroundColor) _backgroundColor->setCurrentColorValue(color); }
 	/// Returns the controller for the background color of the rendered image.
-	VectorController* backgroundColorController() const { return _backgroundColor; }
+	Controller* backgroundColorController() const { return _backgroundColor; }
 	/// Sets the controller for the background color of the rendered image.
-	void setBackgroundColorController(VectorController* colorController) { _backgroundColor = colorController; }
+	void setBackgroundColorController(Controller* colorController) { _backgroundColor = colorController; }
 	
 	/// Returns whether the alpha channel will be generated.
 	bool generateAlphaChannel() const { return _generateAlphaChannel; }
@@ -164,7 +164,7 @@ private:
 	ReferenceField<SceneRenderer> _renderer;
 
 	/// Controls the background color of the rendered image.
-	ReferenceField<VectorController> _backgroundColor;
+	ReferenceField<Controller> _backgroundColor;
 	
 	/// The width of the output image in pixels.
 	PropertyField<int> _outputImageWidth;

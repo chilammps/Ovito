@@ -81,7 +81,7 @@ void CommonNeighborAnalysisModifier::propertyChanged(const PropertyFieldDescript
 /******************************************************************************
 * Creates and initializes a computation engine that will compute the modifier's results.
 ******************************************************************************/
-std::shared_ptr<AsynchronousParticleModifier::Engine> CommonNeighborAnalysisModifier::createEngine(TimePoint time)
+std::shared_ptr<AsynchronousParticleModifier::Engine> CommonNeighborAnalysisModifier::createEngine(TimePoint time, TimeInterval& validityInterval)
 {
 	if(structureTypes().size() != NUM_STRUCTURE_TYPES)
 		throw Exception(tr("The number of structure types has changed. Please remove this modifier from the modification pipeline and insert it again."));

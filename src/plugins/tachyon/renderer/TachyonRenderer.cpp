@@ -111,7 +111,9 @@ bool TachyonRenderer::renderFrame(FrameBuffer* frameBuffer, QProgressDialog* pro
 	rt_rawimage_rgb24(_rtscene, img.bits());
 
 	// Set background color.
-	Color backgroundColor(renderSettings()->backgroundColorController()->getValueAtTime(time()));
+	TimeInterval iv;
+	Color backgroundColor;
+	renderSettings()->backgroundColorController()->getColorValue(time(), backgroundColor, iv);
 	rt_background(_rtscene, rt_color(backgroundColor.r(), backgroundColor.g(), backgroundColor.b()));
 
 	// Set equation used for rendering specular highlights.

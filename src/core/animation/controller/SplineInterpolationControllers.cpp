@@ -20,17 +20,22 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <core/Core.h>
-#include <core/animation/controller/StandardControllers.h>
-#include <core/animation/controller/StandardLinearControllers.h>
-#include <core/animation/controller/Controller.h>
+#include "SplineInterpolationControllers.h"
 
 namespace Ovito {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LinearFloatController, FloatController);
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LinearIntegerController, IntegerController);
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LinearVectorController, VectorController);
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LinearPositionController, PositionController);
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LinearRotationController, RotationController);
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, LinearScalingController, ScalingController);
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, FloatSplineAnimationKey, FloatAnimationKey);
+DEFINE_PROPERTY_FIELD(FloatSplineAnimationKey, _inTangent, "InTangent");
+DEFINE_PROPERTY_FIELD(FloatSplineAnimationKey, _outTangent, "OutTangent");
+SET_PROPERTY_FIELD_LABEL(FloatSplineAnimationKey, _inTangent, "In Tangent");
+SET_PROPERTY_FIELD_LABEL(FloatSplineAnimationKey, _outTangent, "Out Tangent");
+
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, PositionSplineAnimationKey, PositionAnimationKey);
+DEFINE_PROPERTY_FIELD(PositionSplineAnimationKey, _inTangent, "InTangent");
+DEFINE_PROPERTY_FIELD(PositionSplineAnimationKey, _outTangent, "OutTangent");
+SET_PROPERTY_FIELD_LABEL(PositionSplineAnimationKey, _inTangent, "In Tangent");
+SET_PROPERTY_FIELD_LABEL(PositionSplineAnimationKey, _outTangent, "Out Tangent");
+
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, SplinePositionController, KeyframeController);
 
 };

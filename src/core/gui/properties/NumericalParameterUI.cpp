@@ -22,6 +22,7 @@
 #include <core/Core.h>
 #include <core/gui/properties/NumericalParameterUI.h>
 #include <core/dataset/UndoStack.h>
+#include <core/dataset/DataSetContainer.h>
 #include <core/viewport/ViewportConfiguration.h>
 #include <core/animation/AnimationSettings.h>
 #include <core/utilities/units/UnitsManager.h>
@@ -100,11 +101,9 @@ void NumericalParameterUI::resetUI()
 		}
 	}
 
-	if(isReferenceFieldUI()) {
+	if(isReferenceFieldUI() && editObject()) {
 		// Update the displayed value when the animation time has changed.
-		disconnect(_animationTimeChangedConnection);
-		if(editObject())
-			_animationTimeChangedConnection = connect(dataset()->animationSettings(), &AnimationSettings::timeChanged, this, &NumericalParameterUI::updateUI);
+		connect(dataset()->container(), &DataSetContainer::timeChanged, this, &NumericalParameterUI::updateUI, Qt::UniqueConnection);
 	}
 
 	PropertyParameterUI::resetUI();

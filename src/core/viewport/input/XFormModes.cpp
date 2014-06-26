@@ -24,6 +24,7 @@
 #include <core/animation/AnimationSettings.h>
 #include <core/scene/SelectionSet.h>
 #include <core/gui/mainwin/MainWindow.h>
+#include <core/gui/widgets/display/CoordinateDisplayWidget.h>
 #include <core/viewport/ViewportConfiguration.h>
 #include <core/viewport/Viewport.h>
 #include <core/viewport/input/ViewportInputManager.h>
@@ -86,6 +87,21 @@ void SelectionMode::mouseMoveEvent(Viewport* vp, QMouseEvent* event)
 }
 
 /******************************************************************************
+* This is called by the system after the input handler has
+* become the active handler.
+******************************************************************************/
+void XFormMode::activated(bool temporaryActivation)
+{
+	ViewportInputMode::activated(temporaryActivation);
+
+	// Listen to selection change events to update the coordinate display.
+	DataSetContainer& datasetContainer = inputManager()->mainWindow()->datasetContainer();
+	connect(&datasetContainer, &DataSetContainer::selectionChangeComplete, this, &XFormMode::onSelectionChangeComplete);
+	connect(&datasetContainer, &DataSetContainer::timeChanged, this, &XFormMode::onTimeChanged);
+	onSelectionChangeComplete(datasetContainer.currentSet() ? datasetContainer.currentSet()->selection() : nullptr);
+}
+
+/******************************************************************************
 * This is called by the system after the input handler is
 * no longer the active handler.
 ******************************************************************************/
@@ -97,7 +113,49 @@ void XFormMode::deactivated(bool temporary)
 		_viewport->dataset()->undoStack().endCompoundOperation(false);
 		_viewport = nullptr;
 	}
+	disconnect(&inputManager()->mainWindow()->datasetContainer(), &DataSetContainer::selectionChangeComplete, this, &XFormMode::onSelectionChangeComplete);
+	disconnect(&inputManager()->mainWindow()->datasetContainer(), &DataSetContainer::timeChanged, this, &XFormMode::onTimeChanged);
+	_selectedNode.setTarget(nullptr);
+	onSelectionChangeComplete(nullptr);
 	ViewportInputMode::deactivated(temporary);
+}
+
+/******************************************************************************
+* Is called when the user has selected a different scene node.
+******************************************************************************/
+void XFormMode::onSelectionChangeComplete(SelectionSet* selection)
+{
+	CoordinateDisplayWidget* coordDisplay = inputManager()->mainWindow()->coordinateDisplay();
+	if(selection) {
+		if(selection->count() == 1) {
+			_selectedNode.setTarget(selection->node(0));
+			updateCoordinateDisplay(coordDisplay);
+			coordDisplay->activate(undoDisplayName());
+			connect(coordDisplay, &CoordinateDisplayWidget::valueEntered, this, &XFormMode::onCoordinateValueEntered, Qt::ConnectionType(Qt::AutoConnection | Qt::UniqueConnection));
+			return;
+		}
+	}
+	_selectedNode.setTarget(nullptr);
+	disconnect(coordDisplay, &CoordinateDisplayWidget::valueEntered, this, &XFormMode::onCoordinateValueEntered);
+	coordDisplay->deactivate();
+}
+
+/******************************************************************************
+* Is called when the selected scene node generates a notification event.
+******************************************************************************/
+void XFormMode::onSceneNodeEvent(ReferenceEvent* event)
+{
+	if(event->type() == ReferenceEvent::TransformationChanged) {
+		updateCoordinateDisplay(inputManager()->mainWindow()->coordinateDisplay());
+	}
+}
+
+/******************************************************************************
+* Is called when the current animation time has changed.
+******************************************************************************/
+void XFormMode::onTimeChanged(TimePoint time)
+{
+	updateCoordinateDisplay(inputManager()->mainWindow()->coordinateDisplay());
 }
 
 /******************************************************************************
@@ -117,9 +175,9 @@ void XFormMode::mousePressEvent(Viewport* vp, QMouseEvent* event)
 				_viewport->dataset()->selection()->setNode(pickResult.objectNode);
 				_viewport->dataset()->undoStack().beginCompoundOperation(undoDisplayName());
 				startXForm();
-				return;
 			}
 		}
+		return;
 	}
 	else if(event->button() == Qt::RightButton) {
 		if(_viewport != nullptr) {
@@ -254,6 +312,45 @@ void MoveMode::applyXForm(const QVector<SceneNode*>& nodeSet, FloatType multipli
 }
 
 /******************************************************************************
+* Updates the values displayed in the coordinate display widget.
+******************************************************************************/
+void MoveMode::updateCoordinateDisplay(CoordinateDisplayWidget* coordDisplay)
+{
+	if(_selectedNode.target()) {
+		DataSet* dataset = _selectedNode.target()->dataset();
+		coordDisplay->setUnit(dataset->unitsManager().worldUnit());
+		Controller* ctrl = _selectedNode.target()->transformationController();
+		if(ctrl) {
+			TimeInterval iv;
+			Vector3 translation;
+			ctrl->getPositionValue(dataset->animationSettings()->time(), translation, iv);
+			coordDisplay->setValues(translation);
+			return;
+		}
+	}
+	coordDisplay->setValues(Vector3::Zero());
+}
+
+/******************************************************************************
+* This signal handler is called by the coordinate display widget when the user
+* has changed the value of one of the vector components.
+******************************************************************************/
+void MoveMode::onCoordinateValueEntered(int component, FloatType value)
+{
+	if(_selectedNode.target()) {
+		Controller* ctrl = _selectedNode.target()->transformationController();
+		if(ctrl) {
+			TimeInterval iv;
+			Vector3 translation;
+			DataSet* dataset = _selectedNode.target()->dataset();
+			ctrl->getPositionValue(dataset->animationSettings()->time(), translation, iv);
+			translation[component] = value;
+			ctrl->setPositionValue(dataset->animationSettings()->time(), translation, true);
+		}
+	}
+}
+
+/******************************************************************************
 * Is called when the transformation operation begins.
 ******************************************************************************/
 void RotateMode::startXForm()
@@ -312,6 +409,47 @@ void RotateMode::applyXForm(const QVector<SceneNode*>& nodeSet, FloatType multip
 			node->transformationController()->translate(time, translation, transformSystem);
 		}
 #endif
+	}
+}
+
+/******************************************************************************
+* Updates the values displayed in the coordinate display widget.
+******************************************************************************/
+void RotateMode::updateCoordinateDisplay(CoordinateDisplayWidget* coordDisplay)
+{
+	if(_selectedNode.target()) {
+		DataSet* dataset = _selectedNode.target()->dataset();
+		coordDisplay->setUnit(dataset->unitsManager().angleUnit());
+		Controller* ctrl = _selectedNode.target()->transformationController();
+		if(ctrl) {
+			TimeInterval iv;
+			Rotation rotation;
+			ctrl->getRotationValue(dataset->animationSettings()->time(), rotation, iv);
+			Vector3 euler = rotation.toEuler(Matrix3::szyx);
+			coordDisplay->setValues(Vector3(euler[2], euler[1], euler[0]));
+			return;
+		}
+	}
+	coordDisplay->setValues(Vector3::Zero());
+}
+
+/******************************************************************************
+* This signal handler is called by the coordinate display widget when the user
+* has changed the value of one of the vector components.
+******************************************************************************/
+void RotateMode::onCoordinateValueEntered(int component, FloatType value)
+{
+	if(_selectedNode.target()) {
+		Controller* ctrl = _selectedNode.target()->transformationController();
+		if(ctrl) {
+			TimeInterval iv;
+			Vector3 translation;
+			DataSet* dataset = _selectedNode.target()->dataset();
+			CoordinateDisplayWidget* coordDisplay = inputManager()->mainWindow()->coordinateDisplay();
+			Vector3 euler = coordDisplay->getValues();
+			Rotation rotation = Rotation::fromEuler(Vector3(euler[2], euler[1], euler[0]), Matrix3::szyx);
+			ctrl->setRotationValue(dataset->animationSettings()->time(), rotation, true);
+		}
 	}
 }
 

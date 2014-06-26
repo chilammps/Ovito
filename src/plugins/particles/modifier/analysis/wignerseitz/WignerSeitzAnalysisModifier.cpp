@@ -100,7 +100,7 @@ void WignerSeitzAnalysisModifier::setReferenceSource(const QUrl& sourceUrl, cons
 /******************************************************************************
 * Creates and initializes a computation engine that will compute the modifier's results.
 ******************************************************************************/
-std::shared_ptr<AsynchronousParticleModifier::Engine> WignerSeitzAnalysisModifier::createEngine(TimePoint time)
+std::shared_ptr<AsynchronousParticleModifier::Engine> WignerSeitzAnalysisModifier::createEngine(TimePoint time, TimeInterval& validityInterval)
 {
 	if(inputParticleCount() == 0)
 		throw Exception(tr("There are no input particles"));

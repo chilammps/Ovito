@@ -77,11 +77,6 @@ protected:
 	/// The check box of the UI component.
 	QPointer<QCheckBox> _checkBox;
 
-private:
-
-	/// The signal/slot connection that informs the parameter UI about animation time changes.
-	QMetaObject::Connection _animationTimeChangedConnection;
-
 	Q_OBJECT
 	OVITO_OBJECT
 };

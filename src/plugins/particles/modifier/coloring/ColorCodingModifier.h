@@ -189,28 +189,28 @@ public:
 	const ParticlePropertyReference& sourceProperty() const { return _sourceProperty; }
 
 	/// Returns the range start value.
-	FloatType startValue() const { return _startValueCtrl ? _startValueCtrl->currentValue() : 0; }
+	FloatType startValue() const { return _startValueCtrl ? _startValueCtrl->currentFloatValue() : 0; }
 
 	/// Sets the range start value.
-	void setStartValue(FloatType value) { if(_startValueCtrl) _startValueCtrl->setCurrentValue(value); }
+	void setStartValue(FloatType value) { if(_startValueCtrl) _startValueCtrl->setCurrentFloatValue(value); }
 
 	/// Returns the controller for the range start value.
-	FloatController* startValueController() const { return _startValueCtrl; }
+	Controller* startValueController() const { return _startValueCtrl; }
 
 	/// Sets the controller for the range start value.
-	void setStartValueController(const OORef<FloatController>& ctrl) { _startValueCtrl = ctrl; }
+	void setStartValueController(const OORef<Controller>& ctrl) { _startValueCtrl = ctrl; }
 
 	/// Returns the range end value.
-	FloatType endValue() const { return _endValueCtrl ? _endValueCtrl->currentValue() : 0; }
+	FloatType endValue() const { return _endValueCtrl ? _endValueCtrl->currentFloatValue() : 0; }
 
 	/// Sets the range end value.
-	void setEndValue(FloatType value) { if(_endValueCtrl) _endValueCtrl->setCurrentValue(value); }
+	void setEndValue(FloatType value) { if(_endValueCtrl) _endValueCtrl->setCurrentFloatValue(value); }
 
 	/// Returns the controller for the range end value.
-	FloatController* endValueController() const { return _endValueCtrl; }
+	Controller* endValueController() const { return _endValueCtrl; }
 
 	/// Sets the controller for the range end value.
-	void setEndValueController(const OORef<FloatController>& ctrl) { _endValueCtrl = ctrl; }
+	void setEndValueController(const OORef<Controller>& ctrl) { _endValueCtrl = ctrl; }
 
 	/// Returns the color gradient used by the modifier to convert scalar atom properties to colors.
 	ColorCodingGradient* colorGradient() const { return _colorGradient; }
@@ -305,10 +305,10 @@ protected:
 	virtual PipelineStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;
 
 	/// This controller stores the start value of the color scale.
-	ReferenceField<FloatController> _startValueCtrl;
+	ReferenceField<Controller> _startValueCtrl;
 
 	/// This controller stores the end value of the color scale.
-	ReferenceField<FloatController> _endValueCtrl;
+	ReferenceField<Controller> _endValueCtrl;
 
 	/// This object converts scalar atom properties to colors.
 	ReferenceField<ColorCodingGradient> _colorGradient;

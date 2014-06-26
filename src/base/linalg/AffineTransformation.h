@@ -354,16 +354,28 @@ public:
 	static Matrix_34 rotation(const QuaternionT<T>& q);
 
 	/// Generates a pure translation matrix.
-	static Matrix_34 translation(const Vector_3<T>& translation);
+	static Q_DECL_CONSTEXPR Matrix_34 translation(const Vector_3<T>& t) {
+		return Matrix_34(T(1), T(0), T(0), t.x(),
+						 T(0), T(1), T(0), t.y(),
+						 T(0), T(0), T(1), t.z());
+	}
 
 	/// Generates a pure diagonal scaling matrix.
-	static Matrix_34 scaling(T scalingFactor);
+	static Q_DECL_CONSTEXPR Matrix_34 scaling(T s) {
+		return Matrix_34(   s, T(0), T(0), T(0),
+						 T(0),    s, T(0), T(0),
+						 T(0), T(0),    s, T(0));
+	}
 
 	/// Generates a pure scaling matrix.
 	static Matrix_34 scaling(const ScalingT<T>& scaling);
 
 	/// Generates a matrix with pure shearing transformation normal to the z-axis in the x- and y-direction.
-	static Matrix_34 shear(T gammaX, T gammaY);
+	static Q_DECL_CONSTEXPR Matrix_34 shear(T gammaX, T gammaY) {
+		return Matrix_34(T(1), T(0), gammaX, T(0),
+						 T(0), T(1), gammaY, T(0),
+						 T(0), T(0), T(1),   T(0));
+	}
 
 	/// Generates a matrix from an OpenGL transformation matrix stored in the given array.
 	static Matrix_34 fromOpenGL(const T tm[16]) {
@@ -459,8 +471,26 @@ inline Q_DECL_CONSTEXPR Point_3<T> operator*(const Matrix_34<T>& m, const Point_
 
 /// Computes the product of a 3x4 matrix with another 3x4 Matrix.
 template<typename T>
-inline Matrix_34<T> operator*(const Matrix_34<T>& a, const Matrix_34<T>& b)
+inline Q_DECL_CONSTEXPR Matrix_34<T> operator*(const Matrix_34<T>& a, const Matrix_34<T>& b)
 {
+#if 1
+	return Matrix_34<T>(
+			a(0,0)*b(0,0) + a(0,1)*b(1,0) + a(0,2)*b(2,0),
+			a(0,0)*b(0,1) + a(0,1)*b(1,1) + a(0,2)*b(2,1),
+			a(0,0)*b(0,2) + a(0,1)*b(1,2) + a(0,2)*b(2,2),
+			a(0,0)*b(0,3) + a(0,1)*b(1,3) + a(0,2)*b(2,3) + a(0,3),
+
+			a(1,0)*b(0,0) + a(1,1)*b(1,0) + a(1,2)*b(2,0),
+			a(1,0)*b(0,1) + a(1,1)*b(1,1) + a(1,2)*b(2,1),
+			a(1,0)*b(0,2) + a(1,1)*b(1,2) + a(1,2)*b(2,2),
+			a(1,0)*b(0,3) + a(1,1)*b(1,3) + a(1,2)*b(2,3) + a(1,3),
+
+			a(2,0)*b(0,0) + a(2,1)*b(1,0) + a(2,2)*b(2,0),
+			a(2,0)*b(0,1) + a(2,1)*b(1,1) + a(2,2)*b(2,1),
+			a(2,0)*b(0,2) + a(2,1)*b(1,2) + a(2,2)*b(2,2),
+			a(2,0)*b(0,3) + a(2,1)*b(1,3) + a(2,2)*b(2,3) + a(2,3)
+	);
+#else
 	Matrix_34<T> res;
 	for(typename Matrix_34<T>::size_type i = 0; i < 3; i++) {
 		for(typename Matrix_34<T>::size_type j = 0; j < 4; j++) {
@@ -469,37 +499,75 @@ inline Matrix_34<T> operator*(const Matrix_34<T>& a, const Matrix_34<T>& b)
 		res(i,3) += a(i,3);
 	}
 	return res;
+#endif
 }
 
 /// Multiplies a 3x4 matrix with a scalar.
 template<typename T>
-Q_DECL_CONSTEXPR inline Matrix_34<T> operator*(const Matrix_34<T>& a, T s)
+inline Q_DECL_CONSTEXPR Matrix_34<T> operator*(const Matrix_34<T>& a, T s)
 {
 	return { a.column(0)*s, a.column(1)*s, a.column(2)*s, a.column(3)*s };
 }
 
 /// Multiplies a 3x4 matrix with a scalar.
 template<typename T>
-Q_DECL_CONSTEXPR inline Matrix_34<T> operator*(T s, const Matrix_34<T>& a)
+inline Q_DECL_CONSTEXPR Matrix_34<T> operator*(T s, const Matrix_34<T>& a)
 {
 	return a * s;
 }
 
 /// Computes the product of a 3x3 matrix and a 3x4 Matrix.
 template<typename T>
-inline Matrix_34<T> operator*(const Matrix_3<T>& a, const Matrix_34<T>& b)
+inline Q_DECL_CONSTEXPR Matrix_34<T> operator*(const Matrix_3<T>& a, const Matrix_34<T>& b)
 {
+#if 1
+	return Matrix_34<T>(
+			a(0,0)*b(0,0) + a(0,1)*b(1,0) + a(0,2)*b(2,0),
+			a(0,0)*b(0,1) + a(0,1)*b(1,1) + a(0,2)*b(2,1),
+			a(0,0)*b(0,2) + a(0,1)*b(1,2) + a(0,2)*b(2,2),
+			a(0,0)*b(0,3) + a(0,1)*b(1,3) + a(0,2)*b(2,3),
+
+			a(1,0)*b(0,0) + a(1,1)*b(1,0) + a(1,2)*b(2,0),
+			a(1,0)*b(0,1) + a(1,1)*b(1,1) + a(1,2)*b(2,1),
+			a(1,0)*b(0,2) + a(1,1)*b(1,2) + a(1,2)*b(2,2),
+			a(1,0)*b(0,3) + a(1,1)*b(1,3) + a(1,2)*b(2,3),
+
+			a(2,0)*b(0,0) + a(2,1)*b(1,0) + a(2,2)*b(2,0),
+			a(2,0)*b(0,1) + a(2,1)*b(1,1) + a(2,2)*b(2,1),
+			a(2,0)*b(0,2) + a(2,1)*b(1,2) + a(2,2)*b(2,2),
+			a(2,0)*b(0,3) + a(2,1)*b(1,3) + a(2,2)*b(2,3)
+	);
+#else
 	Matrix_34<T> res;
 	for(typename Matrix_34<T>::size_type i = 0; i < 3; i++)
 		for(typename Matrix_34<T>::size_type j = 0; j < 4; j++)
 			res(i,j) = a(i,0)*b(0,j) + a(i,1)*b(1,j) + a(i,2)*b(2,j);
 	return res;
+#endif
 }
 
 /// Computes the product of a 3x4 matrix and a 3x3 matrix.
 template<typename T>
-inline Matrix_34<T> operator*(const Matrix_34<T>& a, const Matrix_3<T>& b)
+inline Q_DECL_CONSTEXPR Matrix_34<T> operator*(const Matrix_34<T>& a, const Matrix_3<T>& b)
 {
+#if 1
+	return Matrix_34<T>(
+			a(0,0)*b(0,0) + a(0,1)*b(1,0) + a(0,2)*b(2,0),
+			a(0,0)*b(0,1) + a(0,1)*b(1,1) + a(0,2)*b(2,1),
+			a(0,0)*b(0,2) + a(0,1)*b(1,2) + a(0,2)*b(2,2),
+			a(0,3),
+
+			a(1,0)*b(0,0) + a(1,1)*b(1,0) + a(1,2)*b(2,0),
+			a(1,0)*b(0,1) + a(1,1)*b(1,1) + a(1,2)*b(2,1),
+			a(1,0)*b(0,2) + a(1,1)*b(1,2) + a(1,2)*b(2,2),
+			a(1,3),
+
+			a(2,0)*b(0,0) + a(2,1)*b(1,0) + a(2,2)*b(2,0),
+			a(2,0)*b(0,1) + a(2,1)*b(1,1) + a(2,2)*b(2,1),
+			a(2,0)*b(0,2) + a(2,1)*b(1,2) + a(2,2)*b(2,2),
+			a(2,3)
+	);
+#else
 	Matrix_34<T> res;
 	for(typename Matrix_34<T>::size_type i = 0; i < 3; i++) {
 		for(typename Matrix_34<T>::size_type j = 0; j < 3; j++) {
@@ -508,6 +576,7 @@ inline Matrix_34<T> operator*(const Matrix_34<T>& a, const Matrix_3<T>& b)
 		res(i,3) = a(i,3);
 	}
 	return res;
+#endif
 }
 
 /// Generates a pure rotation matrix around the given axis.
@@ -552,24 +621,6 @@ inline Matrix_34<T> Matrix_34<T>::rotation(const QuaternionT<T>& q)
 						T(2)*(q.x()*q.z() - q.w()*q.y()),       T(2)*(q.y()*q.z() + q.w()*q.x()), T(1) - T(2)*(q.x()*q.x() + q.y()*q.y()), T(0));
 }
 
-/// Generates a pure translation matrix.
-template<typename T>
-inline Matrix_34<T> Matrix_34<T>::translation(const Vector_3<T>& t)
-{
-	return Matrix_34<T>(T(1), T(0), T(0), t.x(),
-						T(0), T(1), T(0), t.y(),
-						T(0), T(0), T(1), t.z());
-}
-
-/// Generates a pure diagonal scaling matrix.
-template<typename T>
-inline Matrix_34<T> Matrix_34<T>::scaling(T s)
-{
-	return Matrix_34<T>(   s, T(0), T(0), T(0),
-						T(0),    s, T(0), T(0),
-						T(0), T(0),    s, T(0));
-}
-
 /// Generates a pure scaling matrix.
 template<typename T>
 inline Matrix_34<T> Matrix_34<T>::scaling(const ScalingT<T>& scaling)
@@ -579,15 +630,6 @@ inline Matrix_34<T> Matrix_34<T>::scaling(const ScalingT<T>& scaling)
 								T(0), scaling.S.y(), T(0),
 								T(0), T(0), scaling.S.z());
 	return Matrix_34<T>(U * K * U.transposed());
-}
-
-/// Generates a matrix with pure shearing transformation normal to the z-axis in the x- and y-direction.
-template<typename T>
-inline Matrix_34<T> Matrix_34<T>::shear(T gammaX, T gammaY)
-{
-	return AffineTransformation(T(1), T(0), gammaX, T(0),
-								T(0), T(1), gammaY, T(0),
-								T(0), T(0), T(1), T(0));
 }
 
 /// Writes the matrix to an output stream.

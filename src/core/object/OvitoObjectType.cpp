@@ -95,17 +95,37 @@ OvitoObjectType* OvitoObjectType::deserializeRTTI(ObjectLoadStream& stream)
 	stream >> className;
 	stream.closeChunk();
 
-	// Lookup class descriptor.
-	Plugin* plugin = PluginManager::instance().plugin(pluginId);
-	if(!plugin)
-		throw Exception(Plugin::tr("A required plugin is not installed: %1").arg(pluginId));
-	OVITO_CHECK_POINTER(plugin);
+	try {
 
-	OvitoObjectType* type = plugin->findClass(className);
-	if(!type)
-		throw Exception(Plugin::tr("Required class %1 not found in plugin %2.").arg(className, pluginId));
+		// Lookup class descriptor.
+		Plugin* plugin = PluginManager::instance().plugin(pluginId);
+		if(!plugin)
+			throw Exception(Plugin::tr("A required plugin is not installed: %1").arg(pluginId));
+		OVITO_CHECK_POINTER(plugin);
 
-	return type;
+		OvitoObjectType* type = plugin->findClass(className);
+		if(!type) {
+
+			// Handle legacy classes that no longer exist.
+			if(className == QStringLiteral("VectorController")
+					|| className == QStringLiteral("FloatController")
+					|| className == QStringLiteral("IntegerController")
+					|| className == QStringLiteral("RotationController")
+					|| className == QStringLiteral("ScalingController")
+					|| className == QStringLiteral("PositionController")
+					|| className == QStringLiteral("TransformationController"))
+				type = plugin->findClass(QStringLiteral("Controller"));
+
+			if(!type)
+				throw Exception(Plugin::tr("Required class %1 not found in plugin %2.").arg(className, pluginId));
+		}
+
+		return type;
+	}
+	catch(Exception& ex) {
+		ex.prependGeneralMessage(Plugin::tr("File cannot be loaded, because it contains object types that are not (or no longer) available in this program version."));
+		throw ex;
+	}
 }
 
 /******************************************************************************

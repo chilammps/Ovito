@@ -27,9 +27,9 @@
 
 namespace Ovito {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, Modifier, RefTarget)
-DEFINE_PROPERTY_FIELD(Modifier, _isEnabled, "IsEnabled")
-SET_PROPERTY_FIELD_LABEL(Modifier, _isEnabled, "Enabled")
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, Modifier, RefTarget);
+DEFINE_PROPERTY_FIELD(Modifier, _isEnabled, "IsEnabled");
+SET_PROPERTY_FIELD_LABEL(Modifier, _isEnabled, "Enabled");
 
 /******************************************************************************
 * Constructor.

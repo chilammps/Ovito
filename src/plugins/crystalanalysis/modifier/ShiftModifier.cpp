@@ -22,7 +22,6 @@
 #include <plugins/crystalanalysis/CrystalAnalysis.h>
 #include <plugins/particles/data/SurfaceMesh.h>
 #include <plugins/crystalanalysis/data/dislocations/DislocationNetwork.h>
-#include <core/animation/controller/StandardControllers.h>
 #include <core/gui/properties/Vector3ParameterUI.h>
 #include "ShiftModifier.h"
 
@@ -31,7 +30,7 @@ namespace CrystalAnalysis {
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(CrystalAnalysis, ShiftModifier, Modifier);
 IMPLEMENT_OVITO_OBJECT(CrystalAnalysis, ShiftModifierEditor, PropertiesEditor);
 SET_OVITO_OBJECT_EDITOR(ShiftModifier, ShiftModifierEditor);
-DEFINE_REFERENCE_FIELD(ShiftModifier, _translation, "Translation", VectorController);
+DEFINE_REFERENCE_FIELD(ShiftModifier, _translation, "Translation", Controller);
 SET_PROPERTY_FIELD_LABEL(ShiftModifier, _translation, "Translation");
 
 /******************************************************************************
@@ -40,7 +39,7 @@ SET_PROPERTY_FIELD_LABEL(ShiftModifier, _translation, "Translation");
 ShiftModifier::ShiftModifier(DataSet* dataset) : Modifier(dataset)
 {
 	INIT_PROPERTY_FIELD(ShiftModifier::_translation);
-	_translation = ControllerManager::instance().createDefaultController<VectorController>(dataset);
+	_translation = ControllerManager::instance().createVector3Controller(dataset);
 }
 
 /******************************************************************************
@@ -71,7 +70,7 @@ PipelineStatus ShiftModifier::modifyObject(TimePoint time, ModifierApplication* 
 
 	// Get translation vector.
 	Vector3 t = Vector3::Zero();
-	if(_translation) _translation->getValue(time, t, validityInterval);
+	if(_translation) _translation->getVector3Value(time, t, validityInterval);
 	state.intersectStateValidity(validityInterval);
 
 	if(t == Vector3::Zero())
