@@ -198,7 +198,7 @@ public:
 	Controller* startValueController() const { return _startValueCtrl; }
 
 	/// Sets the controller for the range start value.
-	void setStartValueController(const OORef<Controller>& ctrl) { _startValueCtrl = ctrl; }
+	void setStartValueController(Controller* ctrl) { _startValueCtrl = ctrl; }
 
 	/// Returns the range end value.
 	FloatType endValue() const { return _endValueCtrl ? _endValueCtrl->currentFloatValue() : 0; }
@@ -210,7 +210,7 @@ public:
 	Controller* endValueController() const { return _endValueCtrl; }
 
 	/// Sets the controller for the range end value.
-	void setEndValueController(const OORef<Controller>& ctrl) { _endValueCtrl = ctrl; }
+	void setEndValueController(Controller* ctrl) { _endValueCtrl = ctrl; }
 
 	/// Returns the color gradient used by the modifier to convert scalar atom properties to colors.
 	ColorCodingGradient* colorGradient() const { return _colorGradient; }
@@ -300,6 +300,15 @@ protected:
 
 	/// Loads the class' contents from the given stream.
 	virtual void loadFromStream(ObjectLoadStream& stream) override;
+
+	/// Is called when a RefTarget referenced by this object has generated an event.
+	virtual bool referenceEvent(RefTarget* source, ReferenceEvent* event) override {
+		bool propagate = ParticleModifier::referenceEvent(source, event);
+		// Do not propagate messages from the viewport which displays the color legend.
+		if(source == legendViewport())
+			propagate = false;
+		return propagate;
+	}
 
 	/// Modifies the particle object.
 	virtual PipelineStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;

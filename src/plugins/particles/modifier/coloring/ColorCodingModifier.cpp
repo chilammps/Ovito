@@ -51,7 +51,7 @@ DEFINE_PROPERTY_FIELD(ColorCodingModifier, _colorOnlySelected, "SelectedOnly");
 DEFINE_PROPERTY_FIELD(ColorCodingModifier, _keepSelection, "KeepSelection");
 DEFINE_PROPERTY_FIELD(ColorCodingModifier, _renderLegend, "RenderLegend");
 DEFINE_PROPERTY_FIELD(ColorCodingModifier, _sourceProperty, "SourceProperty");
-DEFINE_REFERENCE_FIELD(ColorCodingModifier, _legendViewport, "LegendViewport", Viewport);
+DEFINE_FLAGS_REFERENCE_FIELD(ColorCodingModifier, _legendViewport, "LegendViewport", Viewport, PROPERTY_FIELD_NO_SUB_ANIM);
 DEFINE_PROPERTY_FIELD(ColorCodingModifier, _legendAlignment, "LegendAlignment");
 DEFINE_PROPERTY_FIELD(ColorCodingModifier, _legendSize, "LegendSize");
 DEFINE_PROPERTY_FIELD(ColorCodingModifier, _legendFontSize, "LegendFontSize");
