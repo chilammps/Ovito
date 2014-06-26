@@ -366,6 +366,9 @@ void RefMaker::loadFromStream(ObjectLoadStream& stream)
 							stream.loadObject<RefTarget>();
 					}
 					else {
+#if 0
+						qDebug() << "  Reference field" << fieldEntry.identifier << " no longer exists.";
+#endif
 						stream.loadObject<RefTarget>();
 					}
 				}

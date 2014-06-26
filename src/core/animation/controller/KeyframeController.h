@@ -239,10 +239,10 @@ protected:
 	}
 
 	/// Loads the object from a file stream.
-	/// This method is here to support reading old files written by Ovito 2.2 or older.
+	/// This method is here to support reading old files written by Ovito 2.3.x or older.
 	virtual void loadFromStream(ObjectLoadStream& stream) override {
 		KeyframeController::loadFromStream(stream);
-		if(stream.formatVersion() == 20003) {
+		if(stream.formatVersion() < 20400) {
 			stream.expectChunk(0x01);
 			quint32 nkeys;
 			stream >> nkeys;
