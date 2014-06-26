@@ -225,7 +225,7 @@ public:
     	OVITO_ASSERT(t >= 0 && t <= 1);
 
     	RotationT _rot2;
-    	if(rot1.axis().dot(rot2.axis()) < 0.0)
+    	if(rot1.axis().dot(rot2.axis()) < T(0))
     		_rot2 = RotationT(-rot2.axis(), -rot2.angle(), false);
     	else
     		_rot2 = rot2;
@@ -236,13 +236,13 @@ public:
     	// Eliminate any non-acute angles between successive quaternions. This
     	// is done to prevent potential discontinuities that are the result of
     	// invalid intermediate value quaternions.
-    	if(q1.dot(q2) < 0.0)
+    	if(q1.dot(q2) < T(0))
     		q2 = -q2;
 
     	// Clamp identity quaternions so that |w| <= 1 (avoids problems with
-    	// call to acos in SlerpExtraSpins).
-    	if(q1.w() < -1.0) q1.w() = -1.0; else if(q1.w() > 1.0) q1.w() = 1.0;
-    	if(q2.w() < -1.0) q2.w() = -1.0; else if(q2.w() > 1.0) q2.w() = 1.0;
+    	// call to acos() in slerpExtraSpins()).
+    	if(q1.w() < T(-1)) q1.w() = T(-1); else if(q1.w() > T(1)) q1.w() = T(1);
+    	if(q2.w() < T(-1)) q2.w() = T(-1); else if(q2.w() > T(1)) q2.w() = T(1);
 
     	// Determine interpolation type, compute extra spins, and adjust angles accordingly.
     	T fDiff = rot1.angle() - _rot2.angle();
@@ -253,12 +253,12 @@ public:
     		int iExtraSpins = (int)(fDiff/T(2*M_PI));
 
     		if(rot1.axis().equals(_rot2.axis())) {
-    			return (Quaternion)RotationT(rot1.axis(), (1 - t) * rot1.angle() + t * _rot2.angle());
+    			return (Quaternion)RotationT(rot1.axis(), (T(1) - t) * rot1.angle() + t * _rot2.angle());
     		}
-    		else if(rot1.angle() != 0.0)
+    		else if(rot1.angle() != T(0))
     			return slerpExtraSpins(t, q1, q2, iExtraSpins);
     		else {
-    			return (Quaternion)RotationT(interpolateAxis(t, rot1.axis(), _rot2.axis()), (1.0 - t) * rot1.angle() + t * _rot2.angle());
+    			return (Quaternion)RotationT(interpolateAxis(t, rot1.axis(), _rot2.axis()), (T(1) - t) * rot1.angle() + t * _rot2.angle());
     		}
     	}
     }
@@ -273,7 +273,7 @@ public:
     static QuaternionT<T> interpolateQuad(const RotationT& rot1, const RotationT& rot2, const RotationT& out, const RotationT& in, T t) {
     	QuaternionT<T> slerpP = interpolate(rot1, rot2, t);
     	QuaternionT<T> slerpQ = interpolate(out, in, t);
-    	T Ti = 2 * t * (1 - t);
+    	T Ti = T(2) * t * (T(1) - t);
     	return QuaternionT<T>::interpolate(slerpP, slerpQ, Ti);
     }
 
@@ -312,11 +312,11 @@ private:
 		// assert:  0 <= time <= 1
 
 		T cos = axis0.dot(axis1);  // >= 0 by assertion
-		OVITO_ASSERT(cos >= 0.0);
-		if(cos > 1.0) cos = 1.0; // round-off error might create problems in acos call
+		OVITO_ASSERT(cos >= 0);
+		if(cos > T(1)) cos = T(1); // round-off error might create problems in acos call
 
 		T angle = acos(cos);
-		T invSin = 1.0 / sin(angle);
+		T invSin = T(1) / sin(angle);
 		T timeAngle = time * angle;
 		T coeff0 = sin(angle - timeAngle) * invSin;
 		T coeff1 = sin(timeAngle) * invSin;
@@ -326,22 +326,22 @@ private:
 
 	static inline QuaternionT<T> slerpExtraSpins(T t, const QuaternionT<T>& p, const QuaternionT<T>& q, int iExtraSpins) {
 		T fCos = p.dot(q);
-		OVITO_ASSERT(fCos >= 0.0);
+		OVITO_ASSERT(fCos >= 0);
 
 		// Numerical round-off error could create problems in call to acos.
-		if(fCos < -1.0) fCos = -1.0;
-		else if(fCos > 1.0) fCos = 1.0;
+		if(fCos < -1.0) fCos = T(-1);
+		else if(fCos > 1.0) fCos = T(1);
 
 		T fAngle = acos(fCos);
 		T fSin = sin(fAngle);  // fSin >= 0 since fCos >= 0
 
-		if(fSin < 0.001) {
+		if(fSin < T(0.001)) {
 			return p;
 		}
 		else {
 			T fPhase = T(M_PI) * (T)iExtraSpins * t;
-			T fInvSin = 1.0 / fSin;
-			T fCoeff0 = sin((1.0f - t) * fAngle - fPhase) * fInvSin;
+			T fInvSin = T(1) / fSin;
+			T fCoeff0 = sin((T(1) - t) * fAngle - fPhase) * fInvSin;
 			T fCoeff1 = sin(t * fAngle + fPhase) * fInvSin;
 			return QuaternionT<T>(fCoeff0*p.x() + fCoeff1*q.x(), fCoeff0*p.y() + fCoeff1*q.y(),
 			                        fCoeff0*p.z() + fCoeff1*q.z(), fCoeff0*p.w() + fCoeff1*q.w());

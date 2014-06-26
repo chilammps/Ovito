@@ -240,9 +240,9 @@ inline QuaternionT<T>::QuaternionT(const Matrix_34<T>& tm)
     // article "Quaternion Calculus and Fast Animation".
     T trace = tm(0,0) + tm(1,1) + tm(2,2);
 	if(trace > 0) {
-		T root = sqrt(trace + 1.0);
-		w() = 0.5 * root;
-		root = 0.5 / root;
+		T root = sqrt(trace + T(1));
+		w() = T(0.5) * root;
+		root = T(0.5) / root;
 		x() = (tm(2,1) - tm(1,2)) * root;
 		y() = (tm(0,2) - tm(2,0)) * root;
 		z() = (tm(1,0) - tm(0,1)) * root;
@@ -255,8 +255,8 @@ inline QuaternionT<T>::QuaternionT(const Matrix_34<T>& tm)
 		typename Matrix_34<T>::size_type j = next[i];
 		typename Matrix_34<T>::size_type k = next[j];
 		T root = sqrt(tm(i,i) - tm(j,j) - tm(k,k) + 1.0);
-		(*this)[i] = 0.5 * root;
-		root = 0.5 / root;
+		(*this)[i] = T(0.5) * root;
+		root = T(0.5) / root;
 		w() = (tm(k,j) - tm(j,k)) * root;
 		(*this)[j] = (tm(j,i) + tm(i,j)) * root;
 		(*this)[k] = (tm(k,i) + tm(i,k)) * root;

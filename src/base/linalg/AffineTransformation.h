@@ -516,7 +516,7 @@ inline Matrix_34<T> Matrix_34<T>::rotation(const RotationT<T>& rot)
 {
 	T c = cos(rot.angle());
 	T s = sin(rot.angle());
-	T t = 1.0 - c;
+	T t = T(1) - c;
     const auto& a = rot.axis();
 	OVITO_ASSERT_MSG(std::abs(a.squaredLength() - T(1)) <= T(FLOATTYPE_EPSILON), "AffineTransformation::rotation", "Rotation axis vector must be normalized.");
 
