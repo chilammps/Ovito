@@ -59,6 +59,11 @@ public:
 	typedef T value_type;
 	typedef std::size_t size_type;
 
+	enum EulerAxisSequence {
+		sxyz, sxyx, sxzy, sxzx, syzx, syzy, syxz, syxy, szxy, szxz, szyx, szyz,
+		rzyx, rxyx, ryzx, rxzx, rxzy, ryzy, rzxy, ryxy, ryxz, rzxz, rxyz, rzyz
+	};
+
 public:
 
 	/// \brief Constructs a matrix without initializing its elements.
@@ -262,8 +267,8 @@ public:
 	/// \brief Converts this matrix to a Qt 3x3 matrix object.
 	operator QMatrix3x3() const {
 		QMatrix3x3 qtm;
-		for(int row = 0; row < 3; row++)
-			for(int col = 0; col < 3; col++)
+		for(size_type row = 0; row < 3; row++)
+			for(size_type col = 0; col < 3; col++)
 				qtm(row,col) = (*this)(row,col);
 		return qtm;
 	}
@@ -297,6 +302,9 @@ public:
 	    _m[2][2] -= dot0*_m[0][2] + dot1*_m[1][2];
 	    _m[2].normalize();
 	}
+
+	/// \brief Returns the Euler angles from a rotation matrix.
+	Vector_3<T> toEuler(EulerAxisSequence axisSequence) const;
 
 	////////////////////////////////// Generation ///////////////////////////////////
 
@@ -337,6 +345,9 @@ public:
 	/// \brief Generates a rotation matrix from a quaternion.
 	/// \param q The Quaternion describing the 3d rotation.
 	static Matrix_3 rotation(const QuaternionT<T>& q);
+
+	/// \brief Generates a rotation matrix from Euler angles and an axis sequence.
+	static Matrix_3 rotation(T ai, T aj, T ak, EulerAxisSequence axisSequence);
 
 	/// \brief Generates a scaling matrix.
 	static Matrix_3 scaling(const ScalingT<T>& scaling);
@@ -383,6 +394,111 @@ inline Matrix_3<T> Matrix_3<T>::rotation(const QuaternionT<T>& q)
 						T(2)*(q.x()*q.z() - q.w()*q.y()),       T(2)*(q.y()*q.z() + q.w()*q.x()), T(1) - T(2)*(q.x()*q.x() + q.y()*q.y()));
 }
 
+/// Generates a rotation matrix from Euler angles and an axis sequence.
+template<typename T>
+inline Matrix_3<T> Matrix_3<T>::rotation(T ai, T aj, T ak, Matrix_3<T>::EulerAxisSequence axisSequence)
+{
+	OVITO_ASSERT(axisSequence == Matrix_3<T>::szyx);
+	int firstaxis = 2;
+	int parity = 1;
+	bool repetition = false;
+	bool frame = false;
+
+	int i = firstaxis;
+	int j = (i + parity + 1) % 3;
+	int k = (i - parity + 2) % 3;
+
+	if(frame)
+		std::swap(ai, ak);
+	if(parity) {
+		ai = -ai;
+		aj = -aj;
+		ak = -ak;
+	}
+
+	T si = std::sin(ai), sj = std::sin(aj), sk = std::sin(ak);
+	T ci = std::cos(ai), cj = std::cos(aj), ck = std::cos(ak);
+	T cc = ci*ck, cs = ci*sk;
+	T sc = si*ck, ss = si*sk;
+
+	Matrix_3<T> M;
+	if(repetition) {
+		M(i, i) = cj;
+		M(i, j) = sj*si;
+		M(i, k) = sj*ci;
+		M(j, i) = sj*sk;
+		M(j, j) = -cj*ss+cc;
+		M(j, k) = -cj*cs-sc;
+		M(k, i) = -sj*ck;
+		M(k, j) = cj*sc+cs;
+		M(k, k) = cj*cc-ss;
+	}
+	else {
+		M(i, i) = cj*ck;
+		M(i, j) = sj*sc-cs;
+		M(i, k) = sj*cc+ss;
+		M(j, i) = cj*sk;
+		M(j, j) = sj*ss+cc;
+		M(j, k) = sj*cs-sc;
+		M(k, i) = -sj;
+		M(k, j) = cj*si;
+		M(k, k) = cj*ci;
+	}
+	return M;
+}
+
+/// \brief Returns the Euler angles from a rotation matrix.
+template<typename T>
+inline Vector_3<T> Matrix_3<T>::toEuler(Matrix_3<T>::EulerAxisSequence axisSequence) const
+{
+	OVITO_ASSERT(axisSequence == Matrix_3<T>::szyx);
+	int firstaxis = 2;
+	int parity = 1;
+	bool repetition = false;
+	bool frame = false;
+
+	int i = firstaxis;
+	int j = (i + parity + 1) % 3;
+	int k = (i - parity + 2) % 3;
+
+	T ax, ay, az;
+	const Matrix_3<T>& M = *this;
+    if(repetition) {
+        T sy = std::sqrt(M(i, j)*M(i, j) + M(i, k)*M(i, k));
+        if(sy > T(FLOATTYPE_EPSILON)) {
+            ax = std::atan2( M(i, j),  M(i, k));
+            ay = std::atan2( sy,       M(i, i));
+            az = std::atan2( M(j, i), -M(k, i));
+        }
+        else {
+            ax = std::atan2(-M(j, k),  M(j, j));
+            ay = std::atan2( sy,       M(i, i));
+            az = 0;
+        }
+    }
+    else {
+        T cy = std::sqrt(M(i, i)*M(i, i) + M(j, i)*M(j, i));
+        if(cy > T(FLOATTYPE_EPSILON)) {
+            ax = std::atan2( M(k, j),  M(k, k));
+            ay = std::atan2(-M(k, i),  cy);
+            az = std::atan2( M(j, i),  M(i, i));
+        }
+        else {
+            ax = std::atan2(-M(j, k),  M(j, j));
+            ay = std::atan2(-M(k, i),  cy);
+            az = 0;
+        }
+    }
+
+    if(parity) {
+    	ax = -ax;
+    	ay = -ay;
+    	az = -az;
+    }
+    if(frame)
+    	std::swap(ax, az);
+    return Vector_3<T>(ax, ay, az);
+}
 
 /// Generates a scaling matrix.
 template<typename T>
@@ -417,8 +533,23 @@ Q_DECL_CONSTEXPR inline Point_3<T> operator*(const Matrix_3<T>& m, const Point_3
 
 /// \brief Multiplies a 3x3 matrix with a 3x3 Matrix.
 template<typename T>
-inline Matrix_3<T> operator*(const Matrix_3<T>& a, const Matrix_3<T>& b)
+Q_DECL_CONSTEXPR inline Matrix_3<T> operator*(const Matrix_3<T>& a, const Matrix_3<T>& b)
 {
+#if 1
+	return Matrix_3<T>(
+			a(0,0)*b(0,0) + a(0,1)*b(1,0) + a(0,2)*b(2,0),
+			a(0,0)*b(0,1) + a(0,1)*b(1,1) + a(0,2)*b(2,1),
+			a(0,0)*b(0,2) + a(0,1)*b(1,2) + a(0,2)*b(2,2),
+
+			a(1,0)*b(0,0) + a(1,1)*b(1,0) + a(1,2)*b(2,0),
+			a(1,0)*b(0,1) + a(1,1)*b(1,1) + a(1,2)*b(2,1),
+			a(1,0)*b(0,2) + a(1,1)*b(1,2) + a(1,2)*b(2,2),
+
+			a(2,0)*b(0,0) + a(2,1)*b(1,0) + a(2,2)*b(2,0),
+			a(2,0)*b(0,1) + a(2,1)*b(1,1) + a(2,2)*b(2,1),
+			a(2,0)*b(0,2) + a(2,1)*b(1,2) + a(2,2)*b(2,2)
+	);
+#else
 	Matrix_3<T> m;
 	for(typename Matrix_3<T>::size_type col = 0; col < 3; col++) {
 		for(typename Matrix_3<T>::size_type row = 0; row < 3; row++) {
@@ -429,13 +560,21 @@ inline Matrix_3<T> operator*(const Matrix_3<T>& a, const Matrix_3<T>& b)
 		}
 	}
 	return m;
+#endif
 }
 
 /// \brief Multiplies a 3x3 matrix with a scalar value. 
 /// Each element of the matrix is multiplied by the scalar value.
 template<typename T>
-inline Matrix_3<T> operator*(const Matrix_3<T>& a, T s)
+Q_DECL_CONSTEXPR inline Matrix_3<T> operator*(const Matrix_3<T>& a, T s)
 {
+#if 1
+	return Matrix_3<T>(
+			a(0,0)*s, a(0,1)*s, a(0,2)*s,
+			a(1,0)*s, a(1,1)*s, a(1,2)*s,
+			a(2,0)*s, a(2,1)*s, a(2,2)*s
+	);
+#else
 	Matrix_3<T> m;
 	for(typename Matrix_3<T>::size_type i = 0; i < 3; i++) {
 		for(typename Matrix_3<T>::size_type j = 0; j < 3; j++) {
@@ -443,12 +582,13 @@ inline Matrix_3<T> operator*(const Matrix_3<T>& a, T s)
 		}
 	}
 	return m;
+#endif
 }
 
 /// \brief Multiplies a 3x3 matrix with a scalar value. 
 /// Each element of the matrix is multiplied by the scalar value.
 template<typename T>
-inline Matrix_3<T> operator*(T s, const Matrix_3<T>& a) {
+Q_DECL_CONSTEXPR inline Matrix_3<T> operator*(T s, const Matrix_3<T>& a) {
 	return a * s;
 }
 

@@ -102,7 +102,7 @@ bool ConstructSurfaceModifier::referenceEvent(RefTarget* source, ReferenceEvent*
 /******************************************************************************
 * Creates and initializes a computation engine that will compute the modifier's results.
 ******************************************************************************/
-std::shared_ptr<AsynchronousParticleModifier::Engine> ConstructSurfaceModifier::createEngine(TimePoint time)
+std::shared_ptr<AsynchronousParticleModifier::Engine> ConstructSurfaceModifier::createEngine(TimePoint time, TimeInterval& validityInterval)
 {
 	// Get modifier inputs.
 	ParticlePropertyObject* posProperty = expectStandardProperty(ParticleProperty::PositionProperty);

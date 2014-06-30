@@ -49,11 +49,7 @@ LoadStream::LoadStream(QDataStream& source) : _is(source), _isOpen(false)
 	_isOpen = false;
 
 	if(magic1 != 0x0FACC5AB || magic2 != 0x0AFCCA5A)
-		throw Exception(tr("Unknown file format. This scene file has not been written by %1.").arg(QCoreApplication::applicationName()));
-
-	// Check file format version.
-	if(_fileFormat > OVITO_FILE_FORMAT_VERSION)
-		throw Exception(tr("Unsupported file format version: %1. This file has been written by a newer program version. Please upgrade to the newest program version.").arg(_fileFormat));
+		throw Exception(tr("Unknown file format. This is not a scene file written by %1.").arg(QCoreApplication::applicationName()));
 
 	_is.setVersion(QDataStream::Qt_5_1);
 	_is.setFloatingPointPrecision(_fpPrecision == 4 ? QDataStream::SinglePrecision : QDataStream::DoublePrecision);
@@ -66,6 +62,11 @@ LoadStream::LoadStream(QDataStream& source) : _is(source), _isOpen(false)
 	*this >> _applicationMajorVersion;
 	*this >> _applicationMinorVersion;
 	*this >> _applicationRevisionVersion;
+
+	// Check file format version.
+	if(_fileFormat > OVITO_FILE_FORMAT_VERSION)
+		throw Exception(tr("Unsupported file format revision %1. This file has been written by %2 %3.%4.%5. Please upgrade to the newest program version to open this file.")
+				.arg(_fileFormat).arg(_applicationName).arg(_applicationMajorVersion).arg(_applicationMinorVersion).arg(_applicationRevisionVersion));
 }
 
 /******************************************************************************
@@ -118,7 +119,7 @@ void LoadStream::expectChunk(quint32 chunkId)
 {
 	quint32 cid = openChunk();
 	if(cid != chunkId) {
-        Exception ex(tr("Invalid file structure. This error might be caused by old files that are no longer supported by the newer program version."));
+        Exception ex(tr("Invalid file structure. This error might be caused by old files that are no longer supported by the current program version."));
         ex.appendDetailMessage(tr("Expected chunk ID %1 (0x%2) but found chunk ID %3 (0x%4).").arg(chunkId).arg(chunkId, 0, 16).arg(cid).arg(cid, 0, 16));
 		throw ex;
 	}
@@ -131,13 +132,13 @@ quint32 LoadStream::expectChunkRange(quint32 chunkBaseId, quint32 maxVersion)
 {
 	quint32 cid = openChunk();
 	if(cid < chunkBaseId) {
-        Exception ex(tr("Invalid file structure. This error might be caused by old files that are no longer supported by the newer program version."));
-        ex.appendDetailMessage(tr("Expected chunk ID range %1-%2 (0x%3-0x%4) but found chunk ID %5 (0x%6).").arg(chunkBaseId).arg(chunkBaseId, 0, 16).arg(chunkBaseId+maxVersion).arg(chunkBaseId+maxVersion, 0, 16).arg(cid).arg(cid, 0, 16));
+        Exception ex(tr("Invalid file structure. This error might be caused by old files that are no longer supported by the current program version."));
+        ex.appendDetailMessage(tr("Expected chunk ID range %1-%2 (0x%3-0x%4), but found chunk ID %5 (0x%6).").arg(chunkBaseId).arg(chunkBaseId, 0, 16).arg(chunkBaseId+maxVersion).arg(chunkBaseId+maxVersion, 0, 16).arg(cid).arg(cid, 0, 16));
 		throw ex;
 	}
 	else if(cid > chunkBaseId + maxVersion) {
         Exception ex(tr("Unexpected chunk ID. This error might be caused by files that have been written by a newer program version."));
-        ex.appendDetailMessage(tr("Expected chunk ID range %1-%2 (0x%3-0x%4) but found chunk ID %5 (0x%6).").arg(chunkBaseId).arg(chunkBaseId, 0, 16).arg(chunkBaseId+maxVersion).arg(chunkBaseId+maxVersion, 0, 16).arg(cid).arg(cid, 0, 16));
+        ex.appendDetailMessage(tr("Expected chunk ID range %1-%2 (0x%3-0x%4), but found chunk ID %5 (0x%6).").arg(chunkBaseId).arg(chunkBaseId, 0, 16).arg(chunkBaseId+maxVersion).arg(chunkBaseId+maxVersion, 0, 16).arg(cid).arg(cid, 0, 16));
 		throw ex;
 	}
 	else return cid - chunkBaseId;

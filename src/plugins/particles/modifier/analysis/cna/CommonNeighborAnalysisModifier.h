@@ -123,7 +123,7 @@ protected:
 	virtual void propertyChanged(const PropertyFieldDescriptor& field) override;
 
 	/// Creates and initializes a computation engine that will compute the modifier's results.
-	virtual std::shared_ptr<Engine> createEngine(TimePoint time) override;
+	virtual std::shared_ptr<Engine> createEngine(TimePoint time, TimeInterval& validityInterval) override;
 
 	/// Determines the coordination structure of a single particle using the common neighbor analysis method.
 	static StructureType determineStructureAdaptive(TreeNeighborListBuilder& neighList, size_t particleIndex);

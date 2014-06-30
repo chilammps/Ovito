@@ -30,6 +30,7 @@
 #include <base/Base.h>
 #include "Vector3.h"
 #include "Quaternion.h"
+#include "Matrix3.h"
 
 namespace Ovito {
 
@@ -214,6 +215,17 @@ public:
 	/// \return \c true if the rotation angle is not zero; \c false otherwise.
 	Q_DECL_CONSTEXPR bool operator!=(Identity) const { return (_angle != T(0)); }
 
+	/// \brief Checks whether two rotations are equal within a given tolerance.
+	/// \param r The rotation that should be compared to this rotation.
+	/// \param tolerance A non-negative threshold for the equality test. The two rotations are considered equal when
+	///        the differences in the X, Y, and Z components of the rotation axis and the angle are all smaller than this tolerance value.
+	///        Two rotations with equal but opposite axis and angle are considered equal.
+	/// \return true if this rotation is equal to the given rotation within the given tolerance.
+	Q_DECL_CONSTEXPR bool equals(const RotationT& r, T tolerance = T(FLOATTYPE_EPSILON)) const {
+		return (std::abs(angle() - r.angle()) <= tolerance && axis().equals( r.axis(), tolerance)) ||
+			   (std::abs(angle() + r.angle()) <= tolerance && axis().equals(-r.axis(), tolerance));
+	}
+
 	///////////////////////////////// Interpolation //////////////////////////////
 
 	/// \brief Interpolates between the two rotations using spherical linear interpolation and handles multiple revolutions.
@@ -221,61 +233,108 @@ public:
 	/// \param rot2 The second rotation.
 	/// \param t The parameter for the linear interpolation in the range [0,1].
 	/// \return A linear interpolation between \a rot1 and \a rot2.
-    static QuaternionT<T> interpolate(const RotationT& rot1, const RotationT& rot2, T t) {
+    static RotationT interpolate(const RotationT& rot1, const RotationT& rot2, T t) {
     	OVITO_ASSERT(t >= 0 && t <= 1);
 
     	RotationT _rot2;
-    	if(rot1.axis().dot(rot2.axis()) < 0.0)
+    	if(rot1.axis().dot(rot2.axis()) < T(0))
     		_rot2 = RotationT(-rot2.axis(), -rot2.angle(), false);
     	else
     		_rot2 = rot2;
 
-    	QuaternionT<T> q1 = (QuaternionT<T>)rot1;
-    	QuaternionT<T> q2 = (QuaternionT<T>)_rot2;
-
-    	// Eliminate any non-acute angles between successive quaternions. This
-    	// is done to prevent potential discontinuities that are the result of
-    	// invalid intermediate value quaternions.
-    	if(q1.dot(q2) < 0.0)
-    		q2 = -q2;
-
-    	// Clamp identity quaternions so that |w| <= 1 (avoids problems with
-    	// call to acos in SlerpExtraSpins).
-    	if(q1.w() < -1.0) q1.w() = -1.0; else if(q1.w() > 1.0) q1.w() = 1.0;
-    	if(q2.w() < -1.0) q2.w() = -1.0; else if(q2.w() > 1.0) q2.w() = 1.0;
-
     	// Determine interpolation type, compute extra spins, and adjust angles accordingly.
-    	T fDiff = rot1.angle() - _rot2.angle();
-    	if(std::abs(fDiff) < T(2*M_PI)) {
-    		return QuaternionT<T>::interpolate(q1, q2, t);
-    	}
-    	else {
-    		int iExtraSpins = (int)(fDiff/T(2*M_PI));
+		if(rot1.axis().equals(_rot2.axis())) {
+			return RotationT((T(1) - t) * rot1.axis() + t * _rot2.axis(), (T(1) - t) * rot1.angle() + t * _rot2.angle());
+		}
+		else if(rot1.angle() != T(0)) {
+			T fDiff = _rot2.angle() - rot1.angle();
+			T fDiffUnit = fDiff/T(2*M_PI);
+			int extraSpins = (int)floor(fDiffUnit + T(0.5));
+			if(extraSpins * fDiffUnit * (fDiffUnit - extraSpins) < 0)
+				extraSpins = -extraSpins;
 
-    		if(rot1.axis().equals(_rot2.axis())) {
-    			return (Quaternion)RotationT(rot1.axis(), (1 - t) * rot1.angle() + t * _rot2.angle());
-    		}
-    		else if(rot1.angle() != 0.0)
-    			return slerpExtraSpins(t, q1, q2, iExtraSpins);
-    		else {
-    			return (Quaternion)RotationT(interpolateAxis(t, rot1.axis(), _rot2.axis()), (1.0 - t) * rot1.angle() + t * _rot2.angle());
-    		}
-    	}
+	    	QuaternionT<T> q1 = (QuaternionT<T>)rot1;
+	    	QuaternionT<T> q2 = (QuaternionT<T>)_rot2;
+
+	    	// Eliminate any non-acute angles between quaternions. This
+	    	// is done to prevent potential discontinuities that are the result of
+	    	// invalid intermediate value quaternions.
+	    	if(q1.dot(q2) < T(0))
+	    		q2 = -q2;
+
+	    	// Clamp identity quaternions so that |w| <= 1 (avoids problems with
+	    	// call to acos() in slerpExtraSpins).
+	    	if(q1.w() < T(-1)) q1.w() = T(-1); else if(q1.w() > T(1)) q1.w() = T(1);
+	    	if(q2.w() < T(-1)) q2.w() = T(-1); else if(q2.w() > T(1)) q2.w() = T(1);
+
+			RotationT result = RotationT(slerpExtraSpins(t, q1, q2, extraSpins));
+			if(result.axis().dot(interpolateAxis(t, rot1.axis(), _rot2.axis())) < T(0))
+				result = RotationT(-result.axis(), -result.angle(), false);
+			int nrev = floor((t * _rot2.angle() + (T(1) - t) * rot1.angle() - result.angle())/T(2*M_PI) + T(0.5));
+			result.addRevolutions(nrev);
+			return result;
+		}
+		else {
+			return RotationT(interpolateAxis(t, rot1.axis(), _rot2.axis()), (T(1) - t) * rot1.angle() + t * _rot2.angle());
+		}
     }
 
 	/// \brief Interpolates between the two rotations using spherical quadratic interpolation.
-	/// \param rot1 The first rotation (at t==0.0).
-	/// \param rot2 The second rotation (at t==1.0).
+	/// \param rot1 The first rotation (at t == 0).
+	/// \param rot2 The second rotation (at t == 1).
 	/// \param out Controls the tangential direction at \a rot1.
 	/// \param in Controls the tangential direction at \a rot2.
 	/// \param t The interpolation parameter in the range [0,1].
 	/// \return The interpolated rotation between \a rot1 and \a rot2.
-    static QuaternionT<T> interpolateQuad(const RotationT& rot1, const RotationT& rot2, const RotationT& out, const RotationT& in, T t) {
-    	QuaternionT<T> slerpP = interpolate(rot1, rot2, t);
-    	QuaternionT<T> slerpQ = interpolate(out, in, t);
-    	T Ti = 2 * t * (1 - t);
-    	return QuaternionT<T>::interpolate(slerpP, slerpQ, Ti);
+    static RotationT interpolateQuad(const RotationT& rot1, const RotationT& rot2, const RotationT& out, const RotationT& in, T t) {
+    	RotationT slerpP = interpolate(rot1, rot2, t);
+    	RotationT slerpQ = interpolate(out, in, t);
+    	T Ti = T(2) * t * (T(1) - t);
+    	return interpolate(slerpP, slerpQ, Ti);
     }
+
+	/// \brief Constructs a rotation from three Euler angles.
+	static RotationT fromEuler(const Vector_3<T>& eulerAngles, typename Matrix_3<T>::EulerAxisSequence axisSequence) {
+		OVITO_ASSERT(axisSequence == Matrix_3<T>::szyx);
+		return RotationT(Vector3(1,0,0), eulerAngles[2]) * RotationT(Vector3(0,1,0), eulerAngles[1]) * RotationT(Vector3(0,0,1), eulerAngles[0]);
+	}
+
+	/// \brief Converts the rotation to three Euler angles.
+	Vector_3<T> toEuler(typename Matrix_3<T>::EulerAxisSequence axisSequence) const {
+		if(*this == Identity()) return typename Vector_3<T>::Zero();
+		Vector_3<T> euler = Matrix_3<T>::rotation(*this).toEuler(axisSequence);
+
+		// Handles rotations with multiple revolutions.
+		// Since the Euler-angle decomposition routine cannot handle this case directly,
+		// we have to determine the correct revolution number for each Euler axis in a trial-and-error
+		// fashion. To this end, we test all possible combinations of revolutions until
+		// we the one that yields the original axis-angle rotation. Multiple equivalent decompositions
+		// are ranked, because we prefer Euler decompositions that rotate only about a single axis.
+		int maxRevolutions = (int)std::floor(std::abs(angle()) / T(M_PI*2) + T(0.5 + FLOATTYPE_EPSILON));
+		if(maxRevolutions == 0) return euler;
+		Vector_3<T> bestDecomposition = euler;
+		int bestDecompositionRanking = -1;
+		for(int xr = -maxRevolutions; xr <= maxRevolutions; xr++) {
+			Vector_3<T> euler2;
+			euler2.x() = euler.x() + T(M_PI*2) * xr;
+			int maxRevolutionsY = maxRevolutions - std::abs(xr);
+			for(int yr = -maxRevolutionsY; yr <= maxRevolutionsY; yr++) {
+				euler2.y() = euler.y() + T(M_PI*2) * yr;
+				int maxRevolutionsZ = maxRevolutionsY - std::abs(yr);
+				for(int zr = -maxRevolutionsZ; zr <= maxRevolutionsZ; zr++) {
+					euler2.z() = euler.z() + T(M_PI*2) * zr;
+					if(equals(fromEuler(euler2, axisSequence))) {
+						int ranking = int(std::abs(euler2.x()) <= T(FLOATTYPE_EPSILON)) + int(std::abs(euler2.y()) <= T(FLOATTYPE_EPSILON)) + int(std::abs(euler2.z()) <= T(FLOATTYPE_EPSILON));
+						if(ranking > bestDecompositionRanking) {
+							bestDecomposition = euler2;
+							bestDecompositionRanking = ranking;
+						}
+					}
+				}
+			}
+		}
+		return bestDecomposition;
+	}
 
     ////////////////////////////////// Utilities /////////////////////////////////
 
@@ -301,22 +360,22 @@ public:
 	/// \brief Returns a string representation of this rotation.
 	/// \return A string that contains the components of the rotation structure.
 	QString toString() const {
-		return QString("[Axis: %1 Angle: %2]").arg(axis().toString()).arg(angle());
+		return QStringLiteral("[Axis: %1 Angle: %2]").arg(axis().toString()).arg(angle());
 	}
 
 private:
 
-	static inline Vector3 interpolateAxis(T time, const Vector_3<T>& axis0, const Vector_3<T>& axis1) {
+	static inline Vector_3<T> interpolateAxis(T time, const Vector_3<T>& axis0, const Vector_3<T>& axis1) {
 		// assert:  axis0 and axis1 are unit length
-		// assert:  DotProduct(axis0, axis1) >= 0
+		// assert:  axis0.dot(axis1) >= 0
 		// assert:  0 <= time <= 1
 
 		T cos = axis0.dot(axis1);  // >= 0 by assertion
-		OVITO_ASSERT(cos >= 0.0);
-		if(cos > 1.0) cos = 1.0; // round-off error might create problems in acos call
+		OVITO_ASSERT(cos >= T(0));
+		if(cos > T(1)) cos = T(1); // round-off error might create problems in acos call
 
 		T angle = acos(cos);
-		T invSin = 1.0 / sin(angle);
+		T invSin = T(1) / sin(angle);
 		T timeAngle = time * angle;
 		T coeff0 = sin(angle - timeAngle) * invSin;
 		T coeff1 = sin(timeAngle) * invSin;
@@ -326,22 +385,22 @@ private:
 
 	static inline QuaternionT<T> slerpExtraSpins(T t, const QuaternionT<T>& p, const QuaternionT<T>& q, int iExtraSpins) {
 		T fCos = p.dot(q);
-		OVITO_ASSERT(fCos >= 0.0);
+		OVITO_ASSERT(fCos >= T(0));
 
 		// Numerical round-off error could create problems in call to acos.
-		if(fCos < -1.0) fCos = -1.0;
-		else if(fCos > 1.0) fCos = 1.0;
+		if(fCos < T(-1)) fCos = T(-1);
+		else if(fCos > T(1)) fCos = T(1);
 
 		T fAngle = acos(fCos);
 		T fSin = sin(fAngle);  // fSin >= 0 since fCos >= 0
 
-		if(fSin < 0.001) {
+		if(fSin < T(1e-3)) {
 			return p;
 		}
 		else {
 			T fPhase = T(M_PI) * (T)iExtraSpins * t;
-			T fInvSin = 1.0 / fSin;
-			T fCoeff0 = sin((1.0f - t) * fAngle - fPhase) * fInvSin;
+			T fInvSin = T(1) / fSin;
+			T fCoeff0 = sin((T(1) - t) * fAngle - fPhase) * fInvSin;
 			T fCoeff1 = sin(t * fAngle + fPhase) * fInvSin;
 			return QuaternionT<T>(fCoeff0*p.x() + fCoeff1*q.x(), fCoeff0*p.y() + fCoeff1*q.y(),
 			                        fCoeff0*p.z() + fCoeff1*q.z(), fCoeff0*p.w() + fCoeff1*q.w());
@@ -355,16 +414,18 @@ private:
 /// \return A new rotation that is equal to first applying \a r2 and then applying \a r1.
 template<typename T>
 inline RotationT<T> operator*(const RotationT<T>& r1, const RotationT<T>& r2) {
+	if(r1 == typename RotationT<T>::Identity()) return r2;
+	if(r2 == typename RotationT<T>::Identity()) return r1;
 	QuaternionT<T> q1 = (QuaternionT<T>)r1;
 	QuaternionT<T> q2 = (QuaternionT<T>)r2;
 	QuaternionT<T> q = q1 * q2;
 	RotationT<T> result(q);
 	int rev;
-	if(r1.axis().dot(r2.axis()) >= 0.0)
+	if(r1.axis().dot(r2.axis()) >= T(0))
 		rev = (int)floor(((r1.angle()+r2.angle()) / T(M_PI*2)));
 	else
 		rev = (int)floor(((r1.angle()-r2.angle()) / T(M_PI*2)));
-	if(((rev & 1) != 0)) {
+	if((rev & 1) != 0) {
 		result.setAngle(-result.angle());
 		rev++;
 		result.setAxis(-result.axis());

@@ -22,8 +22,9 @@
 #include <core/Core.h>
 #include <base/utilities/Color.h>
 #include <core/scene/SceneNode.h>
-#include <core/animation/controller/StandardControllers.h>
 #include <core/animation/controller/LookAtController.h>
+#include <core/animation/controller/PRSTransformationController.h>
+#include <core/animation/AnimationSettings.h>
 #include <core/dataset/UndoStack.h>
 #include <core/dataset/DataSet.h>
 #include <core/animation/TimeInterval.h>
@@ -34,16 +35,16 @@
 namespace Ovito {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, SceneNode, RefTarget)
-DEFINE_FLAGS_REFERENCE_FIELD(SceneNode, _transformation, "Transform", TransformationController, PROPERTY_FIELD_ALWAYS_DEEP_COPY);
-DEFINE_FLAGS_REFERENCE_FIELD(SceneNode, _targetNode, "TargetNode", SceneNode, PROPERTY_FIELD_ALWAYS_CLONE);
-DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(SceneNode, _children, "Children", SceneNode, PROPERTY_FIELD_ALWAYS_CLONE);
+DEFINE_FLAGS_REFERENCE_FIELD(SceneNode, _transformation, "Transform", Controller, PROPERTY_FIELD_ALWAYS_DEEP_COPY);
+DEFINE_FLAGS_REFERENCE_FIELD(SceneNode, _targetNode, "TargetNode", SceneNode, PROPERTY_FIELD_ALWAYS_CLONE | PROPERTY_FIELD_NO_SUB_ANIM);
+DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(SceneNode, _children, "Children", SceneNode, PROPERTY_FIELD_ALWAYS_CLONE | PROPERTY_FIELD_NO_SUB_ANIM);
 DEFINE_PROPERTY_FIELD(SceneNode, _nodeName, "NodeName");
 DEFINE_PROPERTY_FIELD(SceneNode, _displayColor, "DisplayColor");
-SET_PROPERTY_FIELD_LABEL(SceneNode, _transformation, "Transformation")
-SET_PROPERTY_FIELD_LABEL(SceneNode, _targetNode, "Target")
-SET_PROPERTY_FIELD_LABEL(SceneNode, _children, "Children")
-SET_PROPERTY_FIELD_LABEL(SceneNode, _nodeName, "Name")
-SET_PROPERTY_FIELD_LABEL(SceneNode, _displayColor, "Display color")
+SET_PROPERTY_FIELD_LABEL(SceneNode, _transformation, "Transformation");
+SET_PROPERTY_FIELD_LABEL(SceneNode, _targetNode, "Target");
+SET_PROPERTY_FIELD_LABEL(SceneNode, _children, "Children");
+SET_PROPERTY_FIELD_LABEL(SceneNode, _nodeName, "Name");
+SET_PROPERTY_FIELD_LABEL(SceneNode, _displayColor, "Display color");
 
 /******************************************************************************
 * Default constructor.
@@ -63,7 +64,7 @@ SceneNode::SceneNode(DataSet* dataset) : RefTarget(dataset), _parentNode(nullptr
 	_displayColor = Color::fromHSV(std::uniform_real_distribution<FloatType>()(rng), 1, 1);
 
 	// Create a transformation controller for the node.
-	_transformation = ControllerManager::instance().createDefaultController<TransformationController>(dataset);
+	_transformation = ControllerManager::instance().createTransformationController(dataset);
 }
 
 /******************************************************************************
@@ -81,7 +82,7 @@ const AffineTransformation& SceneNode::getWorldTransform(TimePoint time, TimeInt
 		}
 		// Apply own tm.
 		if(transformationController())
-			transformationController()->applyValue(time, _worldTransform, _worldTransformValidity);
+			transformationController()->applyTransformation(time, _worldTransform, _worldTransformValidity);
 	}
 	validityInterval.intersect(_worldTransformValidity);
 	return _worldTransform;
@@ -96,7 +97,7 @@ AffineTransformation SceneNode::getLocalTransform(TimePoint time, TimeInterval& 
 {
 	AffineTransformation result = AffineTransformation::Identity();
 	if(transformationController())
-		transformationController()->applyValue(time, result, validityInterval);
+		transformationController()->applyTransformation(time, result, validityInterval);
 	return result;
 }
 
@@ -110,6 +111,7 @@ void SceneNode::invalidateWorldTransformation()
 	invalidateBoundingBox();
 	for(SceneNode* child : children())
 		child->invalidateWorldTransformation();
+	notifyDependents(ReferenceEvent::TransformationChanged);
 }
 
 /******************************************************************************
@@ -141,7 +143,7 @@ void SceneNode::deleteNode()
 * be deleted if this scene node is deleted and vice versa.
 * Returns the newly created LookAtController assigned as rotation controller for this node.
 ******************************************************************************/
-OORef<LookAtController> SceneNode::bindToTarget(SceneNode* targetNode)
+LookAtController* SceneNode::bindToTarget(SceneNode* targetNode)
 {
 	_targetNode = targetNode;
 
@@ -160,11 +162,19 @@ OORef<LookAtController> SceneNode::bindToTarget(SceneNode* targetNode)
 			// Assign it as rotation sub-controller.
 			prs->setRotationController(lookAtCtrl);
 
-			return lookAtCtrl;
+			return dynamic_object_cast<LookAtController>(prs->rotationController());
 		}
 		else {
+			// Save old rotation.
+			TimePoint time = dataset()->animationSettings()->time();
+			TimeInterval iv;
+			Rotation rotation;
+			prs->rotationController()->getRotationValue(time, rotation, iv);
+
 			// Reset to default rotation controller.
-			prs->setRotationController(ControllerManager::instance().createDefaultController<RotationController>(dataset()));
+			OORef<Controller> controller = ControllerManager::instance().createRotationController(dataset());
+			controller->setRotationValue(time, rotation, true);
+			prs->setRotationController(controller);
 		}
 	}
 
@@ -203,6 +213,18 @@ bool SceneNode::referenceEvent(RefTarget* source, ReferenceEvent* event)
 			deleteNode();
 	}
 	return RefTarget::referenceEvent(source, event);
+}
+
+/******************************************************************************
+* From RefMaker.
+******************************************************************************/
+void SceneNode::referenceReplaced(const PropertyFieldDescriptor& field, RefTarget* oldTarget, RefTarget* newTarget)
+{
+	if(field == PROPERTY_FIELD(SceneNode::_transformation)) {
+		// TM controller has changed -> rebuild world tm cache.
+		invalidateWorldTransformation();
+	}
+	RefTarget::referenceReplaced(field, oldTarget, newTarget);
 }
 
 /******************************************************************************

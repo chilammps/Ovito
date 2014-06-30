@@ -247,6 +247,10 @@ void RefMaker::saveToStream(ObjectSaveStream& stream)
 {
 	OvitoObject::saveToStream(stream);
 
+#if 0
+	qDebug() << "Saving object" << this;
+#endif
+
 	// Iterate over all property fields in the class hierarchy.
 	for(const OvitoObjectType* clazz = &getOOType(); clazz != nullptr; clazz = clazz->superClass()) {
 		for(const PropertyFieldDescriptor* field = clazz->firstPropertyField(); field != nullptr; field = field->next()) {
@@ -283,6 +287,9 @@ void RefMaker::saveToStream(ObjectSaveStream& stream)
 				OVITO_ASSERT(field->propertyStorageSaveFunc != nullptr);
 				stream.beginChunk(0x04);
 				field->propertyStorageSaveFunc(this, stream);
+#if 0
+				qDebug() << "  Property field" << field->identifier() << " contains" << field->propertyStorageReadFunc(this);
+#endif
 				stream.endChunk();
 			}
 		}
@@ -359,6 +366,9 @@ void RefMaker::loadFromStream(ObjectLoadStream& stream)
 							stream.loadObject<RefTarget>();
 					}
 					else {
+#if 0
+						qDebug() << "  Reference field" << fieldEntry.identifier << " no longer exists.";
+#endif
 						stream.loadObject<RefTarget>();
 					}
 				}
@@ -464,17 +474,14 @@ void RefMaker::loadUserDefaults()
 								settings.beginGroup(field->definingClass()->name());
 								QVariant v = settings.value(field->identifier());
 								if(!v.isNull()) {
-									if(FloatController* floatCtrl = dynamic_object_cast<FloatController>(ctrl)) {
-										floatCtrl->setValue(0, v.value<FloatType>());
+									if(ctrl->controllerType() == Controller::ControllerTypeFloat) {
+										ctrl->setFloatValue(0, v.value<FloatType>());
 									}
-									else if(IntegerController* intCtrl = dynamic_object_cast<IntegerController>(ctrl)) {
-										intCtrl->setValue(0, v.value<int>());
+									else if(ctrl->controllerType() == Controller::ControllerTypeInt) {
+										ctrl->setIntValue(0, v.value<int>());
 									}
-									else if(BooleanController* boolCtrl = dynamic_object_cast<BooleanController>(ctrl)) {
-										boolCtrl->setValue(0, v.value<bool>());
-									}
-									else if(VectorController* vectorCtrl = dynamic_object_cast<VectorController>(ctrl)) {
-										vectorCtrl->setValue(0, v.value<Vector3>());
+									else if(ctrl->controllerType() == Controller::ControllerTypeVector3) {
+										ctrl->setVector3Value(0, v.value<Vector3>());
 									}
 								}
 							}

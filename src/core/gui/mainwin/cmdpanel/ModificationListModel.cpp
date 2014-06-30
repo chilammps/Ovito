@@ -48,7 +48,7 @@ ModificationListModel::ModificationListModel(DataSetContainer& datasetContainer,
 	connect(&_statusPendingIcon, &QMovie::frameChanged, this, &ModificationListModel::iconAnimationFrameChanged);
 	_selectionModel = new QItemSelectionModel(this);
 	connect(_selectionModel, &QItemSelectionModel::selectionChanged, this, &ModificationListModel::selectedItemChanged);
-	connect(&_selectedNodes, &VectorRefTargetListener::notificationEvent, this, &ModificationListModel::onNodeEvent);
+	connect(&_selectedNodes, &VectorRefTargetListener<ObjectNode>::notificationEvent, this, &ModificationListModel::onNodeEvent);
 	if(_sectionHeaderFont.pixelSize() < 0)
 		_sectionHeaderFont.setPointSize(_sectionHeaderFont.pointSize() * 4 / 5);
 	else
@@ -129,8 +129,8 @@ void ModificationListModel::refreshList()
 	if(cmnObject) {
 
 		// Create list items for display objects.
-		for(RefTarget* objNode : _selectedNodes.targets()) {
-			for(DisplayObject* displayObj : static_object_cast<ObjectNode>(objNode)->displayObjects())
+		for(ObjectNode* objNode : _selectedNodes.targets()) {
+			for(DisplayObject* displayObj : objNode->displayObjects())
 				items.push_back(new ModificationListItem(displayObj));
 		}
 		if(!items.empty())
@@ -307,8 +307,8 @@ void ModificationListModel::applyModifier(Modifier* modifier)
 	}
 
 	// Apply modifier to each selected node.
-	for(RefTarget* objNode : selectedNodes()) {
-		static_object_cast<ObjectNode>(objNode)->applyModifier(modifier);
+	for(ObjectNode* objNode : selectedNodes()) {
+		objNode->applyModifier(modifier);
 	}
 }
 

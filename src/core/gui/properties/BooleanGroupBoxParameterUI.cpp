@@ -89,11 +89,13 @@ void BooleanGroupBoxParameterUI::updateUI()
 
 	if(groupBox() && editObject()) {
 		if(isReferenceFieldUI()) {
+#if 0
 			BooleanController* ctrl = dynamic_object_cast<BooleanController>(parameterObject());
 			if(ctrl != NULL) {
 				bool val = ctrl->currentValue();
 				groupBox()->setChecked(val);
 			}
+#endif
 		}
 		else {
 			QVariant val(false);
@@ -137,10 +139,12 @@ void BooleanGroupBoxParameterUI::updatePropertyValue()
 	if(groupBox() && editObject()) {
 		undoableTransaction(tr("Change parameter"), [this]() {
 			if(isReferenceFieldUI()) {
+#if 0
 				if(BooleanController* ctrl = dynamic_object_cast<BooleanController>(parameterObject())) {
 					ctrl->setCurrentValue(groupBox()->isChecked());
 					updateUI();
 				}
+#endif
 			}
 			else if(isQtPropertyUI()) {
 				if(!editObject()->setProperty(propertyName(), groupBox()->isChecked())) {

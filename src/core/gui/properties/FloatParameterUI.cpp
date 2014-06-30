@@ -54,9 +54,8 @@ void FloatParameterUI::updatePropertyValue()
 {
 	if(editObject() && spinner()) {
 		if(isReferenceFieldUI()) {
-			FloatController* ctrl = dynamic_object_cast<FloatController>(parameterObject());
-			if(ctrl != NULL)
-				ctrl->setCurrentValue(spinner()->floatValue());
+			if(Controller* ctrl = dynamic_object_cast<Controller>(parameterObject()))
+				ctrl->setCurrentFloatValue(spinner()->floatValue());
 		}
 		else if(isQtPropertyUI()) {
 			if(!editObject()->setProperty(propertyName(), spinner()->floatValue())) {
@@ -78,9 +77,9 @@ void FloatParameterUI::updateUI()
 	if(editObject() && spinner() && !spinner()->isDragging()) {
 		try {
 			if(isReferenceFieldUI()) {
-				FloatController* ctrl = dynamic_object_cast<FloatController>(parameterObject());
+				Controller* ctrl = dynamic_object_cast<Controller>(parameterObject());
 				if(ctrl != NULL && spinner() && !spinner()->isDragging()) {
-					spinner()->setFloatValue(ctrl->currentValue());
+					spinner()->setFloatValue(ctrl->currentFloatValue());
 				}
 			}
 			else {

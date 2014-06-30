@@ -26,7 +26,7 @@
 #include <core/gui/properties/FloatParameterUI.h>
 #include <core/gui/properties/BooleanGroupBoxParameterUI.h>
 #include <core/scene/objects/geometry/TriMesh.h>
-#include <core/animation/controller/StandardControllers.h>
+#include <core/animation/controller/Controller.h>
 #include <plugins/particles/data/SimulationCell.h>
 #include <plugins/particles/util/CapPolygonTessellator.h>
 #include "SurfaceMeshDisplay.h"
@@ -34,23 +34,23 @@
 
 namespace Particles {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, SurfaceMeshDisplay, DisplayObject)
-IMPLEMENT_OVITO_OBJECT(Particles, SurfaceMeshDisplayEditor, PropertiesEditor)
-SET_OVITO_OBJECT_EDITOR(SurfaceMeshDisplay, SurfaceMeshDisplayEditor)
-DEFINE_FLAGS_PROPERTY_FIELD(SurfaceMeshDisplay, _surfaceColor, "SurfaceColor", PROPERTY_FIELD_MEMORIZE)
-DEFINE_FLAGS_PROPERTY_FIELD(SurfaceMeshDisplay, _capColor, "CapColor", PROPERTY_FIELD_MEMORIZE)
-DEFINE_FLAGS_PROPERTY_FIELD(SurfaceMeshDisplay, _showCap, "ShowCap", PROPERTY_FIELD_MEMORIZE)
-DEFINE_PROPERTY_FIELD(SurfaceMeshDisplay, _smoothShading, "SmoothShading")
-DEFINE_REFERENCE_FIELD(SurfaceMeshDisplay, _surfaceTransparency, "SurfaceTransparency", FloatController)
-DEFINE_REFERENCE_FIELD(SurfaceMeshDisplay, _capTransparency, "CapTransparency", FloatController)
-SET_PROPERTY_FIELD_LABEL(SurfaceMeshDisplay, _surfaceColor, "Surface color")
-SET_PROPERTY_FIELD_LABEL(SurfaceMeshDisplay, _capColor, "Cap color")
-SET_PROPERTY_FIELD_LABEL(SurfaceMeshDisplay, _showCap, "Show cap polygons")
-SET_PROPERTY_FIELD_LABEL(SurfaceMeshDisplay, _smoothShading, "Smooth shading")
-SET_PROPERTY_FIELD_LABEL(SurfaceMeshDisplay, _surfaceTransparency, "Surface transparency")
-SET_PROPERTY_FIELD_LABEL(SurfaceMeshDisplay, _capTransparency, "Cap transparency")
-SET_PROPERTY_FIELD_UNITS(SurfaceMeshDisplay, _surfaceTransparency, PercentParameterUnit)
-SET_PROPERTY_FIELD_UNITS(SurfaceMeshDisplay, _capTransparency, PercentParameterUnit)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, SurfaceMeshDisplay, DisplayObject);
+IMPLEMENT_OVITO_OBJECT(Particles, SurfaceMeshDisplayEditor, PropertiesEditor);
+SET_OVITO_OBJECT_EDITOR(SurfaceMeshDisplay, SurfaceMeshDisplayEditor);
+DEFINE_FLAGS_PROPERTY_FIELD(SurfaceMeshDisplay, _surfaceColor, "SurfaceColor", PROPERTY_FIELD_MEMORIZE);
+DEFINE_FLAGS_PROPERTY_FIELD(SurfaceMeshDisplay, _capColor, "CapColor", PROPERTY_FIELD_MEMORIZE);
+DEFINE_FLAGS_PROPERTY_FIELD(SurfaceMeshDisplay, _showCap, "ShowCap", PROPERTY_FIELD_MEMORIZE);
+DEFINE_PROPERTY_FIELD(SurfaceMeshDisplay, _smoothShading, "SmoothShading");
+DEFINE_REFERENCE_FIELD(SurfaceMeshDisplay, _surfaceTransparency, "SurfaceTransparency", Controller);
+DEFINE_REFERENCE_FIELD(SurfaceMeshDisplay, _capTransparency, "CapTransparency", Controller);
+SET_PROPERTY_FIELD_LABEL(SurfaceMeshDisplay, _surfaceColor, "Surface color");
+SET_PROPERTY_FIELD_LABEL(SurfaceMeshDisplay, _capColor, "Cap color");
+SET_PROPERTY_FIELD_LABEL(SurfaceMeshDisplay, _showCap, "Show cap polygons");
+SET_PROPERTY_FIELD_LABEL(SurfaceMeshDisplay, _smoothShading, "Smooth shading");
+SET_PROPERTY_FIELD_LABEL(SurfaceMeshDisplay, _surfaceTransparency, "Surface transparency");
+SET_PROPERTY_FIELD_LABEL(SurfaceMeshDisplay, _capTransparency, "Cap transparency");
+SET_PROPERTY_FIELD_UNITS(SurfaceMeshDisplay, _surfaceTransparency, PercentParameterUnit);
+SET_PROPERTY_FIELD_UNITS(SurfaceMeshDisplay, _capTransparency, PercentParameterUnit);
 
 /******************************************************************************
 * Constructor.
@@ -65,8 +65,8 @@ SurfaceMeshDisplay::SurfaceMeshDisplay(DataSet* dataset) : DisplayObject(dataset
 	INIT_PROPERTY_FIELD(SurfaceMeshDisplay::_surfaceTransparency);
 	INIT_PROPERTY_FIELD(SurfaceMeshDisplay::_capTransparency);
 
-	_surfaceTransparency = ControllerManager::instance().createDefaultController<FloatController>(dataset);
-	_capTransparency = ControllerManager::instance().createDefaultController<FloatController>(dataset);
+	_surfaceTransparency = ControllerManager::instance().createFloatController(dataset);
+	_capTransparency = ControllerManager::instance().createFloatController(dataset);
 }
 
 /******************************************************************************
@@ -104,8 +104,8 @@ void SurfaceMeshDisplay::render(TimePoint time, SceneObject* sceneObject, const 
 	FloatType transp_surface = 0;
 	FloatType transp_cap = 0;
 	TimeInterval iv;
-	if(_surfaceTransparency) _surfaceTransparency->getValue(time, transp_surface, iv);
-	if(_capTransparency) _capTransparency->getValue(time, transp_cap, iv);
+	if(_surfaceTransparency) transp_surface = _surfaceTransparency->getFloatValue(time, iv);
+	if(_capTransparency) transp_cap = _capTransparency->getFloatValue(time, iv);
 	ColorA color_surface(surfaceColor(), 1.0f - transp_surface);
 	ColorA color_cap(capColor(), 1.0f - transp_cap);
 
@@ -526,12 +526,18 @@ void SurfaceMeshDisplay::clipContour(std::vector<Point2>& input, std::array<bool
 			if(pbcFlags[dim]) {
 				if(delta[dim] >= 0.5f) {
 					delta[dim] -= 1.0f;
-					t[dim] = (*v1)[dim] / -delta[dim];
+					if(std::abs(delta[dim]) > FLOATTYPE_EPSILON)
+						t[dim] = (*v1)[dim] / -delta[dim];
+					else
+						t[dim] = 0.5f;
 					crossDir[dim] = -1;
 				}
 				else if(delta[dim] <= -0.5f) {
 					delta[dim] += 1.0f;
-					t[dim] = (1.0f - (*v1)[dim]) / delta[dim];
+					if(std::abs(delta[dim]) > FLOATTYPE_EPSILON)
+						t[dim] = (1.0f - (*v1)[dim]) / delta[dim];
+					else
+						t[dim] = 0.5f;
 					crossDir[dim] = +1;
 				}
 				OVITO_ASSERT(t[dim] >= 0 && t[dim] <= 1);

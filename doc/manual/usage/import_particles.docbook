@@ -138,12 +138,16 @@
               <entry>NetCDF</entry>
               <entry><para>A binary format for molecular dynamics data based on the standard NetCDF container. There exists an <link xlink:href="https://github.com/pastewka/lammps-netcdf">extension module for LAMMPS</link> that adds NetCDF output.</para></entry>
             </row>
+            <row>
+              <entry>PDB</entry>
+              <entry><para>OVITO can read atomic coordinates from Protein Data Bank (PDB) files.</para></entry>
+            </row>
           </tbody>
         </tgroup>
       </informaltable>  
   </para>
   <para>
-  	Triangle meshes can be read in the following format:  
+  	Triangle meshes can be read from files in the following format:  
     <informaltable>
         <tgroup cols="2">
           <thead>

@@ -201,9 +201,9 @@ void ViewportMenu::onCreateCamera()
 			cameraObj = new CameraObject(_viewport->dataset());
 			cameraObj->setIsPerspective(_viewport->isPerspectiveProjection());
 			if(_viewport->isPerspectiveProjection())
-				cameraObj->fovController()->setValue(0, _viewport->fieldOfView());
+				cameraObj->fovController()->setFloatValue(0, _viewport->fieldOfView());
 			else
-				cameraObj->zoomController()->setValue(0, _viewport->fieldOfView());
+				cameraObj->zoomController()->setFloatValue(0, _viewport->fieldOfView());
 
 			// Create an object node to insert camera object into scene.
 			cameraNode = new ObjectNode(_viewport->dataset(), cameraObj);
@@ -218,7 +218,7 @@ void ViewportMenu::onCreateCamera()
 				tm = tm * AffineTransformation::translation(
 						Vector3(0, 0, -_viewport->_projParams.znear + 0.2f * (_viewport->_projParams.zfar-_viewport->_projParams.znear)));
 			}
-			cameraNode->transformationController()->setValue(0, tm);
+			cameraNode->transformationController()->setTransformationValue(0, tm, true);
 		}
 
 		// Insert node into scene.

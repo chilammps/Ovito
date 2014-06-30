@@ -58,40 +58,40 @@ public:
 	// Property access functions:
 
 	/// Returns the plane's distance from the origin.
-	FloatType distance() const { return _distanceCtrl ? _distanceCtrl->currentValue() : (FloatType)0; }
+	FloatType distance() const { return _distanceCtrl ? _distanceCtrl->currentFloatValue() : 0.0f; }
 
 	/// Sets the plane's distance from the origin.
-	void setDistance(FloatType newDistance) { if(_distanceCtrl) _distanceCtrl->setCurrentValue(newDistance); }
+	void setDistance(FloatType newDistance) { if(_distanceCtrl) _distanceCtrl->setCurrentFloatValue(newDistance); }
 
 	/// Returns the controller for the plane distance.
-	FloatController* distanceController() const { return _distanceCtrl; }
+	Controller* distanceController() const { return _distanceCtrl; }
 
 	/// Sets the controller for the plane distance.
-	void setDistanceController(const OORef<FloatController>& ctrl) { _distanceCtrl = ctrl; }
+	void setDistanceController(const OORef<Controller>& ctrl) { _distanceCtrl = ctrl; }
 
 	/// Returns the plane's normal vector.
-	Vector3 normal() const { return _normalCtrl ? _normalCtrl->currentValue() : Vector3(0,0,1); }
+	Vector3 normal() const { return _normalCtrl ? _normalCtrl->currentVector3Value() : Vector3(0,0,1); }
 
 	/// Sets the plane's distance from the origin.
-	void setNormal(const Vector3& newNormal) { if(_normalCtrl) _normalCtrl->setCurrentValue(newNormal); }
+	void setNormal(const Vector3& newNormal) { if(_normalCtrl) _normalCtrl->setCurrentVector3Value(newNormal); }
 
 	/// Returns the controller for the plane normal.
-	VectorController* normalController() const { return _normalCtrl; }
+	Controller* normalController() const { return _normalCtrl; }
 
 	/// Sets the controller for the plane normal.
-	void setVectorController(const OORef<VectorController>& ctrl) { _normalCtrl = ctrl; }
+	void setVectorController(const OORef<Controller>& ctrl) { _normalCtrl = ctrl; }
 
 	/// Returns the slice width.
-	FloatType sliceWidth() const { return _widthCtrl ? _widthCtrl->currentValue() : (FloatType)0; }
+	FloatType sliceWidth() const { return _widthCtrl ? _widthCtrl->currentFloatValue() : 0.0f; }
 
 	/// Sets the slice width.
-	void setSliceWidth(FloatType newWidth) { if(_widthCtrl) _widthCtrl->setCurrentValue(newWidth); }
+	void setSliceWidth(FloatType newWidth) { if(_widthCtrl) _widthCtrl->setCurrentFloatValue(newWidth); }
 
 	/// Returns the controller for the slice width.
-	FloatController* sliceWidthController() const { return _widthCtrl; }
+	Controller* sliceWidthController() const { return _widthCtrl; }
 
 	/// Sets the controller for the slice width.
-	void setSliceWidthController(const OORef<FloatController>& ctrl) { _widthCtrl = ctrl; }
+	void setSliceWidthController(const OORef<Controller>& ctrl) { _widthCtrl = ctrl; }
 
 	/// Returns whether the plane's orientation should be flipped.
 	bool inverse() const { return _inverse; }
@@ -141,13 +141,13 @@ protected:
 	void planeQuadIntersection(const Point3 corners[8], const std::array<int,4>& quadVerts, const Plane3& plane, QVector<Point3>& vertices) const;
 
 	/// This controller stores the normal of the slicing plane.
-	ReferenceField<VectorController> _normalCtrl;
+	ReferenceField<Controller> _normalCtrl;
 
 	/// This controller stores the distance of the slicing plane from the origin.
-	ReferenceField<FloatController> _distanceCtrl;
+	ReferenceField<Controller> _distanceCtrl;
 
 	/// Controls the slice width.
-	ReferenceField<FloatController> _widthCtrl;
+	ReferenceField<Controller> _widthCtrl;
 
 	/// Controls whether the atoms should only be selected instead of deleted.
 	PropertyField<bool> _createSelection;

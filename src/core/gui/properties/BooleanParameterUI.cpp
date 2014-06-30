@@ -22,6 +22,7 @@
 #include <core/Core.h>
 #include <core/gui/properties/BooleanParameterUI.h>
 #include <core/dataset/UndoStack.h>
+#include <core/dataset/DataSetContainer.h>
 #include <core/animation/AnimationSettings.h>
 #include <core/animation/controller/Controller.h>
 
@@ -76,11 +77,9 @@ void BooleanParameterUI::resetUI()
 			checkBox()->setEnabled(editObject() != NULL && isEnabled());
 	}
 
-	if(isReferenceFieldUI()) {
+	if(isReferenceFieldUI() && editObject()) {
 		// Update the displayed value when the animation time has changed.
-		disconnect(_animationTimeChangedConnection);
-		if(editObject())
-			_animationTimeChangedConnection = connect(dataset()->animationSettings(), &AnimationSettings::timeChanged, this, &BooleanParameterUI::updateUI);
+		connect(dataset()->container(), &DataSetContainer::timeChanged, this, &BooleanParameterUI::updateUI, Qt::UniqueConnection);
 	}
 }
 
@@ -94,11 +93,13 @@ void BooleanParameterUI::updateUI()
 	
 	if(checkBox() && editObject()) {
 		if(isReferenceFieldUI()) {
+#if 0
 			BooleanController* ctrl = dynamic_object_cast<BooleanController>(parameterObject());
 			if(ctrl) {
 				bool val = ctrl->currentValue();
 				checkBox()->setChecked(val);
 			}
+#endif
 		}
 		else {
 			QVariant val(false);
@@ -142,10 +143,12 @@ void BooleanParameterUI::updatePropertyValue()
 	if(checkBox() && editObject()) {
 		undoableTransaction(tr("Change parameter"), [this]() {
 			if(isReferenceFieldUI()) {
+#if 0
 				if(BooleanController* ctrl = dynamic_object_cast<BooleanController>(parameterObject())) {
 					ctrl->setCurrentValue(checkBox()->isChecked());
 					updateUI();
 				}
+#endif
 			}
 			else if(isQtPropertyUI()) {
 				if(!editObject()->setProperty(propertyName(), checkBox()->isChecked())) {

@@ -2,9 +2,9 @@
 # This helper file provides information on the program version of OVITO. 
 
 SET(OVITO_VERSION_MAJOR 		"2")
-SET(OVITO_VERSION_MINOR 		"3")
-SET(OVITO_VERSION_REVISION		"3")
-SET(OVITO_FILE_FORMAT_VERSION	"20303")
+SET(OVITO_VERSION_MINOR 		"4")
+SET(OVITO_VERSION_REVISION		"0")
+SET(OVITO_FILE_FORMAT_VERSION	"20400")
 
 # Make the version information available to the source code.
 

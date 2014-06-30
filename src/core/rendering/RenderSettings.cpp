@@ -33,7 +33,7 @@ namespace Ovito {
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, RenderSettings, RefTarget);
 SET_OVITO_OBJECT_EDITOR(RenderSettings, RenderSettingsEditor);
 DEFINE_FLAGS_REFERENCE_FIELD(RenderSettings, _renderer, "Renderer", SceneRenderer, PROPERTY_FIELD_MEMORIZE);
-DEFINE_FLAGS_REFERENCE_FIELD(RenderSettings, _backgroundColor, "BackgroundColor", VectorController, PROPERTY_FIELD_MEMORIZE);
+DEFINE_FLAGS_REFERENCE_FIELD(RenderSettings, _backgroundColor, "BackgroundColor", Controller, PROPERTY_FIELD_MEMORIZE);
 DEFINE_PROPERTY_FIELD(RenderSettings, _outputImageWidth, "OutputImageWidth");
 DEFINE_PROPERTY_FIELD(RenderSettings, _outputImageHeight, "OutputImageHeight");
 DEFINE_PROPERTY_FIELD(RenderSettings, _generateAlphaChannel, "GenerateAlphaChannel");
@@ -81,7 +81,7 @@ RenderSettings::RenderSettings(DataSet* dataset) : RefTarget(dataset),
 	INIT_PROPERTY_FIELD(RenderSettings::_fileNumberBase);
 
 	// Setup default background color.
-	_backgroundColor = ControllerManager::instance().createDefaultController<VectorController>(dataset);
+	_backgroundColor = ControllerManager::instance().createColorController(dataset);
 	setBackgroundColor(Color(1,1,1));
 
 	// Pick the default renderer class.

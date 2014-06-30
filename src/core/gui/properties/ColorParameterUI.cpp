@@ -22,6 +22,7 @@
 #include <core/Core.h>
 #include <core/gui/properties/ColorParameterUI.h>
 #include <core/dataset/UndoStack.h>
+#include <core/dataset/DataSetContainer.h>
 #include <core/animation/controller/Controller.h>
 #include <core/animation/AnimationSettings.h>
 
@@ -70,11 +71,9 @@ void ColorParameterUI::resetUI()
 		}
 	}
 
-	if(isReferenceFieldUI()) {
+	if(isReferenceFieldUI() && editObject()) {
 		// Update the displayed value when the animation time has changed.
-		disconnect(_animationTimeChangedConnection);
-		if(editObject())
-			_animationTimeChangedConnection = connect(dataset()->animationSettings(), &AnimationSettings::timeChanged, this, &ColorParameterUI::updateUI);
+		connect(dataset()->container(), &DataSetContainer::timeChanged, this, &ColorParameterUI::updateUI, Qt::UniqueConnection);
 	}
 }
 
@@ -85,11 +84,9 @@ void ColorParameterUI::updateUI()
 {
 	if(editObject() && colorPicker()) {
 		if(isReferenceFieldUI()) {
-			VectorController* ctrl = dynamic_object_cast<VectorController>(parameterObject());
-			if(ctrl) {
-				Vector3 val = ctrl->currentValue();
-				colorPicker()->setColor(Color(val));
-			}
+			Controller* ctrl = dynamic_object_cast<Controller>(parameterObject());
+			if(ctrl)
+				colorPicker()->setColor(ctrl->currentColorValue());
 		}
 		else if(isPropertyFieldUI()) {
 			QVariant currentValue = editObject()->getPropertyFieldValue(*propertyField());
@@ -127,8 +124,8 @@ void ColorParameterUI::onColorPickerChanged()
 	if(colorPicker() && editObject()) {
 		undoableTransaction(tr("Change color"), [this]() {
 			if(isReferenceFieldUI()) {
-				if(VectorController* ctrl = dynamic_object_cast<VectorController>(parameterObject()))
-					ctrl->setCurrentValue((Vector3)colorPicker()->color());
+				if(Controller* ctrl = dynamic_object_cast<Controller>(parameterObject()))
+					ctrl->setCurrentColorValue(colorPicker()->color());
 			}
 			else if(isPropertyFieldUI()) {
 				editObject()->setPropertyFieldValue(*propertyField(), qVariantFromValue((QColor)colorPicker()->color()));

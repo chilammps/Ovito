@@ -171,7 +171,7 @@ public:
 
 public:
 
-	Q_PROPERTY(bool isEnabled READ isEnabled WRITE setEnabled)
+	Q_PROPERTY(bool isEnabled READ isEnabled WRITE setEnabled);
 
 private:
 

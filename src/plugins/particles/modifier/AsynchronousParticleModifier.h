@@ -116,7 +116,7 @@ protected:
 	void runEngine(FutureInterface<std::shared_ptr<Engine>>& futureInterface, std::shared_ptr<Engine> engine);
 
 	/// Creates and initializes a computation engine that will compute the modifier's results.
-	virtual std::shared_ptr<Engine> createEngine(TimePoint time) = 0;
+	virtual std::shared_ptr<Engine> createEngine(TimePoint time, TimeInterval& validityInterval) = 0;
 
 	/// Unpacks the computation results stored in the given engine object.
 	virtual void retrieveModifierResults(Engine* engine) = 0;
@@ -137,9 +137,6 @@ private:
 
 	/// The watcher object that is used to monitor the background operation.
 	FutureWatcher _backgroundOperationWatcher;
-
-	/// Indicates that the modifier's results need to be recalculated.
-	bool _needsUpdate;
 
 	/// Indicates if and how long the cached modifier results are valid.
 	TimeInterval _cacheValidity;

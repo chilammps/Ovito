@@ -51,7 +51,7 @@ namespace Ovito {
  * \li R - Rotation
  * \li S - Scaling  
  * 
- * The scaling matrix is spectrally decomposed into S = U * K * Transposed(U).
+ * The scaling matrix is spectrally decomposed into S = U * K * U.transposed().
  * 
  * \note Decomposing a matrix into its affine parts is a slow operation and should only be done when really necessary.
  */
@@ -68,7 +68,7 @@ public:
 	/// Scaling part.
 	Scaling scaling;
 
-	/// Sign of determinant (-1 or +1).
+	/// Sign of determinant (either -1.0 or +1.0).
 	FloatType sign;	
 
 	/// \brief Constructor that decomposes the given matrix into its affine parts.

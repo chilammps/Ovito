@@ -138,7 +138,7 @@ void SpinnerWidget::setFloatValue(FloatType newVal, bool emitChangeSignal)
 	if(_value != newVal) {
 		_value = newVal;
 		if(emitChangeSignal)
-			spinnerValueChanged();
+			Q_EMIT spinnerValueChanged();
 	}
 	updateTextBox();
 }
@@ -157,7 +157,7 @@ void SpinnerWidget::setIntValue(int newValInt, bool emitChangeSignal)
 	if(_value != newVal) {
 		_value = newVal;
 		if(emitChangeSignal)
-			spinnerValueChanged();
+			Q_EMIT spinnerValueChanged();
 	}
 	updateTextBox();
 }
@@ -241,7 +241,7 @@ void SpinnerWidget::mousePressEvent(QMouseEvent* event)
 		setFloatValue(_oldValue, true);
 
 		if(_upperBtnPressed == _lowerBtnPressed) {
-			spinnerDragAbort();
+			Q_EMIT spinnerDragAbort();
 		}
 
 		_upperBtnPressed = false;
@@ -259,7 +259,7 @@ void SpinnerWidget::mouseReleaseEvent(QMouseEvent* event)
 {
 	if(_upperBtnPressed || _lowerBtnPressed) {
 		if(_upperBtnPressed == _lowerBtnPressed) {
-			spinnerDragStop();
+			Q_EMIT spinnerDragStop();
 		}
 		else {
 			FloatType newValue;
@@ -298,7 +298,7 @@ void SpinnerWidget::mouseMoveEvent(QMouseEvent* event)
 				_lowerBtnPressed = true;
 				_lastMouseY = _startMouseY = mapToGlobal(event->pos()).y();
 				update();
-				spinnerDragStart();
+				Q_EMIT spinnerDragStart();
 			}
 		}
 		else if(!_upperBtnPressed && _lowerBtnPressed) {
@@ -306,7 +306,7 @@ void SpinnerWidget::mouseMoveEvent(QMouseEvent* event)
 				_upperBtnPressed = true;
 				_lastMouseY = _startMouseY = mapToGlobal(event->pos()).y();
 				update();
-				spinnerDragStart();
+				Q_EMIT spinnerDragStart();
 			}
 		}
 		else { 

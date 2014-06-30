@@ -35,10 +35,13 @@ SET(OVITO_CORE_SOURCE_FILES
 	reference/RefTargetListener.cpp
 	animation/AnimationSettings.cpp
 	animation/controller/Controller.cpp
-	animation/controller/StandardConstControllers.cpp
-	animation/controller/StandardLinearControllers.cpp
+	animation/controller/ConstantControllers.cpp
+	animation/controller/KeyframeController.cpp
+	animation/controller/LinearInterpolationControllers.cpp
+	animation/controller/SplineInterpolationControllers.cpp
+	animation/controller/AnimationKeys.cpp
 	animation/controller/LookAtController.cpp
-	animation/controller/TransformationController.cpp
+	animation/controller/PRSTransformationController.cpp
 	dataset/DataSet.cpp
 	dataset/DataSetContainer.cpp
 	dataset/UndoStack.cpp
@@ -56,13 +59,13 @@ SET(OVITO_CORE_SOURCE_FILES
 	scene/objects/geometry/TriMeshObject.cpp
 	scene/objects/geometry/HalfEdgeMesh.cpp
 	scene/objects/camera/CameraObject.cpp
+	scene/objects/helpers/TargetObject.cpp
 	scene/pipeline/PipelineFlowState.cpp
 	scene/pipeline/PipelineObject.cpp
 	scene/pipeline/Modifier.cpp
 	scene/pipeline/ModifierApplication.cpp
 	scene/display/DisplayObject.cpp
 	scene/display/geometry/TriMeshDisplay.cpp
-	scene/display/camera/CameraDisplayObject.cpp
 	gui/app/Application.cpp
 	gui/mainwin/MainWindow.cpp
 	gui/mainwin/ViewportsPanel.cpp
@@ -103,6 +106,7 @@ SET(OVITO_CORE_SOURCE_FILES
 	gui/widgets/rendering/FrameBufferWindow.cpp
 	gui/widgets/selection/SceneNodesListModel.cpp
 	gui/widgets/selection/SceneNodeSelectionBox.cpp
+	gui/widgets/display/CoordinateDisplayWidget.cpp
 	gui/widgets/display/StatusWidget.cpp
 	gui/properties/PropertiesEditor.cpp
 	gui/properties/PropertiesPanel.cpp

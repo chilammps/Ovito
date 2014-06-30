@@ -285,4 +285,20 @@ void UndoStack::CompoundOperation::redo()
 	}
 }
 
+/******************************************************************************
+* Is called to undo an operation.
+******************************************************************************/
+void TargetChangedUndoOperation::undo()
+{
+	_target->notifyDependents(ReferenceEvent::TargetChanged);
+}
+
+/******************************************************************************
+* Is called to redo an operation.
+******************************************************************************/
+void TargetChangedRedoOperation::redo()
+{
+	_target->notifyDependents(ReferenceEvent::TargetChanged);
+}
+
 };

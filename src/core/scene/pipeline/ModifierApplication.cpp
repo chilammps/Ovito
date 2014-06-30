@@ -26,11 +26,11 @@
 
 namespace Ovito {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, ModifierApplication, RefTarget)
-DEFINE_REFERENCE_FIELD(ModifierApplication, _modifier, "Modifier", Modifier)
-DEFINE_FLAGS_REFERENCE_FIELD(ModifierApplication, _modifierData, "ModifierData", RefTarget, PROPERTY_FIELD_ALWAYS_CLONE)
-SET_PROPERTY_FIELD_LABEL(ModifierApplication, _modifier, "Modifier")
-SET_PROPERTY_FIELD_LABEL(ModifierApplication, _modifierData, "Modifier data")
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, ModifierApplication, RefTarget);
+DEFINE_REFERENCE_FIELD(ModifierApplication, _modifier, "Modifier", Modifier);
+DEFINE_FLAGS_REFERENCE_FIELD(ModifierApplication, _modifierData, "ModifierData", RefTarget, PROPERTY_FIELD_ALWAYS_CLONE);
+SET_PROPERTY_FIELD_LABEL(ModifierApplication, _modifier, "Modifier");
+SET_PROPERTY_FIELD_LABEL(ModifierApplication, _modifierData, "Modifier data");
 
 /******************************************************************************
 * Constructor.

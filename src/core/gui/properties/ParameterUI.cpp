@@ -146,17 +146,14 @@ void PropertyParameterUI::memorizeDefaultParameterValue()
 			QSettings settings;
 			settings.beginGroup(propertyField()->definingClass()->plugin()->pluginId());
 			settings.beginGroup(propertyField()->definingClass()->name());
-			if(FloatController* floatCtrl = dynamic_object_cast<FloatController>(ctrl)) {
-				settings.setValue(propertyField()->identifier(), QVariant::fromValue(floatCtrl->currentValue()));
+			if(ctrl->controllerType() == Controller::ControllerTypeFloat) {
+				settings.setValue(propertyField()->identifier(), QVariant::fromValue(ctrl->currentFloatValue()));
 			}
-			else if(IntegerController* intCtrl = dynamic_object_cast<IntegerController>(ctrl)) {
-				settings.setValue(propertyField()->identifier(), QVariant::fromValue(intCtrl->currentValue()));
+			else if(ctrl->controllerType() == Controller::ControllerTypeInt) {
+				settings.setValue(propertyField()->identifier(), QVariant::fromValue(ctrl->currentIntValue()));
 			}
-			else if(BooleanController* boolCtrl = dynamic_object_cast<BooleanController>(ctrl)) {
-				settings.setValue(propertyField()->identifier(), QVariant::fromValue(boolCtrl->currentValue()));
-			}
-			else if(VectorController* vectorCtrl = dynamic_object_cast<VectorController>(ctrl)) {
-				settings.setValue(propertyField()->identifier(), QVariant::fromValue(vectorCtrl->currentValue()));
+			else if(ctrl->controllerType() == Controller::ControllerTypeVector3) {
+				settings.setValue(propertyField()->identifier(), QVariant::fromValue(ctrl->currentVector3Value()));
 			}
 		}
 	}
