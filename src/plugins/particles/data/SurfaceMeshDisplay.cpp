@@ -314,9 +314,9 @@ void SurfaceMeshDisplay::buildCapMesh(const HalfEdgeMesh& input, const Simulatio
 		// Make sure all vertices are located inside the periodic box.
 		for(Point3& p : reducedPos) {
 			FloatType& c = p[dim];
-			OVITO_ASSERT(isfinite(c));
+			OVITO_ASSERT(std::isfinite(c));
 			if(FloatType s = floor(c)) c -= s;
-			OVITO_ASSERT(isfinite(c));
+			OVITO_ASSERT(std::isfinite(c));
 		}
 
 		// Reset 'visited' flag for all faces.
@@ -472,7 +472,7 @@ std::vector<Point2> SurfaceMeshDisplay::traceContour(HalfEdgeMesh::Edge* firstEd
 			t = FloatType(0.5);
 		FloatType x = v1[dim1] - delta[dim1] * t;
 		FloatType y = v1[dim2] - delta[dim2] * t;
-		OVITO_ASSERT(isfinite(x) && isfinite(y));
+		OVITO_ASSERT(std::isfinite(x) && std::isfinite(y));
 		contour.push_back({x,y});
 
 		// Find the face edge that crosses the boundary in the reverse direction.
@@ -504,13 +504,13 @@ void SurfaceMeshDisplay::clipContour(std::vector<Point2>& input, std::array<bool
 	// Ensure all coordinates are within the primary image.
 	if(pbcFlags[0]) {
 		for(auto& v : input) {
-			OVITO_ASSERT(isfinite(v.x()));
+			OVITO_ASSERT(std::isfinite(v.x()));
 			if(FloatType s = floor(v.x())) v.x() -= s;
 		}
 	}
 	if(pbcFlags[1]) {
 		for(auto& v : input) {
-			OVITO_ASSERT(isfinite(v.y()));
+			OVITO_ASSERT(std::isfinite(v.y()));
 			if(FloatType s = floor(v.y())) v.y() -= s;
 		}
 	}
@@ -580,7 +580,7 @@ void SurfaceMeshDisplay::clipContour(std::vector<Point2>& input, std::array<bool
 ******************************************************************************/
 void SurfaceMeshDisplay::computeContourIntersection(size_t dim, FloatType t, Point2& base, Vector2& delta, int crossDir, std::vector<std::vector<Point2>>& contours)
 {
-	OVITO_ASSERT(isfinite(t));
+	OVITO_ASSERT(std::isfinite(t));
 	Point2 intersection = base + t * delta;
 	intersection[dim] = (crossDir == -1) ? 0.0f : 1.0f;
 	contours.back().push_back(intersection);
