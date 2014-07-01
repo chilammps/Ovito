@@ -175,10 +175,14 @@ PipelineStatus SpatialCorrelationFunctionModifier::modifyParticles(TimePoint tim
 
     // Compute the distance of the two cell faces (normal.length() is area of face).
     FloatType cellVolume = expectSimulationCell()->volume();
-    _xAxisRangeStart = 0.0;
-    _xAxisRangeEnd = (binDataSizeX-1)*recXLength;
-    _yAxisRangeStart = 0.0;
-    _yAxisRangeEnd = (binDataSizeY-1)*recYLength;
+    _xAxisRangeStart = -0.5*recXLength;
+    _xAxisRangeEnd = (binDataSizeX-0.5)*recXLength;
+    _yAxisRangeStart = -0.5*recYLength;
+    _yAxisRangeEnd = (binDataSizeY-0.5)*recYLength;
+    _xDataRangeStart = 0.0;
+    _xDataRangeEnd = (binDataSizeX-1.0)*recXLength;
+    _yDataRangeStart = 0.0;
+    _yDataRangeEnd = (binDataSizeY-1.0)*recYLength;
 
 	// Get the current positions.
 	ParticlePropertyObject* posProperty = expectStandardProperty(ParticleProperty::PositionProperty);
@@ -448,8 +452,8 @@ void SpatialCorrelationFunctionModifierEditor::plotSpatialCorrelationFunction()
         _correlationFunctionColorMap->setGradient(QCPColorGradient::gpJet);
 
         _correlationFunctionColorMap->data()->setSize(binDataSizeX, binDataSizeY);
-        _correlationFunctionColorMap->data()->setRange(QCPRange(modifier->xAxisRangeStart(), modifier->xAxisRangeEnd()),
-                                                       QCPRange(modifier->yAxisRangeStart(), modifier->yAxisRangeEnd()));
+        _correlationFunctionColorMap->data()->setRange(QCPRange(modifier->xDataRangeStart(), modifier->xDataRangeEnd()),
+                                                       QCPRange(modifier->yDataRangeStart(), modifier->yDataRangeEnd()));
     
         _correlationFunctionPlot->xAxis->setRange(QCPRange(modifier->xAxisRangeStart(), modifier->xAxisRangeEnd()));
         _correlationFunctionPlot->yAxis->setRange(QCPRange(modifier->yAxisRangeStart(), modifier->yAxisRangeEnd()));

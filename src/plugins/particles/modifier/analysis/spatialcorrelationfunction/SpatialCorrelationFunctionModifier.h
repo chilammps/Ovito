@@ -118,6 +118,18 @@ public:
 	/// Returns the end value of the plotting y-axis.
 	FloatType yAxisRangeEnd() const { return _yAxisRangeEnd; }
 
+	/// Returns the start value of the plotting x-data.
+	FloatType xDataRangeStart() const { return _xDataRangeStart; }
+
+	/// Returns the end value of the plotting x-data.
+	FloatType xDataRangeEnd() const { return _xDataRangeEnd; }
+
+	/// Returns the start value of the plotting y-data.
+	FloatType yDataRangeStart() const { return _yDataRangeStart; }
+
+	/// Returns the end value of the plotting y-data.
+	FloatType yDataRangeEnd() const { return _yDataRangeEnd; }
+
 	/// Set whether the plotting range of the property axis should be fixed.
 	void setFixPropertyAxisRange(bool fix) { _fixPropertyAxisRange = fix; }
 
@@ -192,6 +204,18 @@ private:
 
 	/// Stores the end value of the plotting y-axis.
 	FloatType _yAxisRangeEnd;
+
+	/// Stores the start value of the plotting x-data.
+	FloatType _xDataRangeStart;
+
+	/// Stores the end value of the plotting x-data.
+	FloatType _xDataRangeEnd;
+
+	/// Stores the start value of the plotting y-data.
+	FloatType _yDataRangeStart;
+
+	/// Stores the end value of the plotting y-data.
+	FloatType _yDataRangeEnd;
 
 	/// Stores the Fourier transform of property 1.
 	std::vector<std::complex<FloatType>> _binData1;
