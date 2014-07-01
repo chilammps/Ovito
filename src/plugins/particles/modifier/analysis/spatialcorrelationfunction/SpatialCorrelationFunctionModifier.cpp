@@ -127,8 +127,8 @@ PipelineStatus SpatialCorrelationFunctionModifier::modifyParticles(TimePoint tim
 	if(sourceProperty1().vectorComponent() >= (int)property1->componentCount())
 		throw Exception(tr("The selected vector component is out of range. The particle property '%1' contains only %2 values per particle.").arg(sourceProperty1().name()).arg(property1->componentCount()));
 
-	size_t vecComponent1 = sourceProperty1().vectorComponent() >= 0 ? sourceProperty1().vectorComponent() : 0;
-	size_t vecComponentCount1 = property1->componentCount();
+	int vecComponent1 = sourceProperty1().vectorComponent() >= 0 ? sourceProperty1().vectorComponent() : 0;
+	int vecComponentCount1 = property1->componentCount();
 
     // Get the second property.
     ParticlePropertyObject* property2 = sourceProperty2().findInState(input());
@@ -137,8 +137,8 @@ PipelineStatus SpatialCorrelationFunctionModifier::modifyParticles(TimePoint tim
 	if(sourceProperty2().vectorComponent() >= (int)property2->componentCount())
 		throw Exception(tr("The selected vector component is out of range. The particle property '%1' contains only %2 values per particle.").arg(sourceProperty2().name()).arg(property2->componentCount()));
 
-	size_t vecComponent2 = sourceProperty2().vectorComponent() >= 0 ? sourceProperty2().vectorComponent() : 0;
-	size_t vecComponentCount2 = property2->componentCount();
+	int vecComponent2 = sourceProperty2().vectorComponent() >= 0 ? sourceProperty2().vectorComponent() : 0;
+	int vecComponentCount2 = property2->componentCount();
 
     // Get bottom-left and top-right corner of the simulation cell.
     AffineTransformation reciprocalCell = expectSimulationCell()->reciprocalCellMatrix();
@@ -160,12 +160,14 @@ PipelineStatus SpatialCorrelationFunctionModifier::modifyParticles(TimePoint tim
 
     FloatType recXLength = recX.length();
     FloatType recYLength = recY.length();
-    size_t binDataSizeX = size_t(std::ceil(_maxWaveVector/recXLength))+1;
-    size_t binDataSizeY = size_t(std::ceil(_maxWaveVector/recYLength))+1;
+    int binDataSizeXHalf = int(std::ceil(_maxWaveVector/recXLength));
+    int binDataSizeYHalf = int(std::ceil(_maxWaveVector/recYLength));
+    int binDataSizeX = 2*binDataSizeXHalf+1;
+    int binDataSizeY = 2*binDataSizeYHalf+1;
     _numberOfBinsX = binDataSizeX;
     _numberOfBinsY = binDataSizeY;
 
-    size_t binDataSize = binDataSizeX*binDataSizeY;
+    int binDataSize = binDataSizeX*binDataSizeY;
 	_binData1.resize(binDataSize);
 	_binData2.resize(binDataSize);
     _binData.resize(binDataSize);
@@ -175,14 +177,14 @@ PipelineStatus SpatialCorrelationFunctionModifier::modifyParticles(TimePoint tim
 
     // Compute the distance of the two cell faces (normal.length() is area of face).
     FloatType cellVolume = expectSimulationCell()->volume();
-    _xAxisRangeStart = -0.5*recXLength;
-    _xAxisRangeEnd = (binDataSizeX-0.5)*recXLength;
-    _yAxisRangeStart = -0.5*recYLength;
-    _yAxisRangeEnd = (binDataSizeY-0.5)*recYLength;
-    _xDataRangeStart = 0.0;
-    _xDataRangeEnd = (binDataSizeX-1.0)*recXLength;
-    _yDataRangeStart = 0.0;
-    _yDataRangeEnd = (binDataSizeY-1.0)*recYLength;
+    _xAxisRangeStart = -(binDataSizeXHalf+0.5)*recXLength;
+    _xAxisRangeEnd = (binDataSizeXHalf+0.5)*recXLength;
+    _yAxisRangeStart = -(binDataSizeYHalf+0.5)*recYLength;
+    _yAxisRangeEnd = (binDataSizeYHalf+0.5)*recYLength;
+    _xDataRangeStart = -binDataSizeXHalf*recXLength;
+    _xDataRangeEnd = binDataSizeXHalf*recXLength;
+    _yDataRangeStart = -binDataSizeYHalf*recYLength;
+    _yDataRangeEnd = binDataSizeYHalf*recYLength;
 
 	// Get the current positions.
 	ParticlePropertyObject* posProperty = expectStandardProperty(ParticleProperty::PositionProperty);
@@ -202,10 +204,10 @@ PipelineStatus SpatialCorrelationFunctionModifier::modifyParticles(TimePoint tim
                 if (!std::isnan(*v1) && !std::isnan(*v2)) {
                     FloatType X = 2*M_PI*(recX.x()*pos->x()+recX.y()*pos->y()+recX.z()*pos->z());
                     FloatType Y = 2*M_PI*(recY.x()*pos->x()+recY.y()*pos->y()+recY.z()*pos->z());
-                    for (int binIndexY = 0; binIndexY < binDataSizeY; binIndexY++) {
+                    for (int binIndexY = 0; binIndexY <= binDataSizeYHalf; binIndexY++) {
                         for (int binIndexX = 0; binIndexX < binDataSizeX; binIndexX++) {
-                            size_t binIndex = binIndexY*binDataSizeX+binIndexX;
-                            std::complex<FloatType> phase = std::exp(std::complex<FloatType>(0.0, -binIndexX*X-binIndexY*Y));
+                            int binIndex = (binIndexY+binDataSizeYHalf)*binDataSizeX+binIndexX;
+                            std::complex<FloatType> phase = std::exp(std::complex<FloatType>(0.0, -(binIndexX-binDataSizeXHalf)*X-binIndexY*Y));
                             _binData1[binIndex] += (*v1)*phase;
                             _binData2[binIndex] += (*v2)*phase;
                         }
@@ -221,10 +223,18 @@ PipelineStatus SpatialCorrelationFunctionModifier::modifyParticles(TimePoint tim
 
         // Normalize and compute correlation function.
         if (particleCount > 0) {
-            for (int binIndex = 0; binIndex < binDataSize; binIndex++) {
-                _binData1[binIndex] /= particleCount;
-                _binData2[binIndex] /= particleCount;
-                _binData[binIndex] = std::real(_binData1[binIndex]*std::conj(_binData2[binIndex]));
+            for (int binIndexY = 0; binIndexY <= binDataSizeYHalf; binIndexY++) {
+                for (int binIndexX = 0; binIndexX < binDataSizeX; binIndexX++) {
+                    int binIndex = (binIndexY+binDataSizeYHalf)*binDataSizeX+binIndexX;
+                    _binData1[binIndex] /= particleCount;
+                    _binData2[binIndex] /= particleCount;
+                    _binData[binIndex] = std::real(_binData1[binIndex]*std::conj(_binData2[binIndex]));
+
+                    if (binIndexY != 0) {
+                        int binIndex2 = (binDataSizeYHalf-binIndexY)*binDataSizeX+(binDataSizeX-1-binIndexX);
+                        _binData[binIndex2] = _binData[binIndex];
+                    }
+                }
             }
         }
 	}
@@ -234,13 +244,14 @@ PipelineStatus SpatialCorrelationFunctionModifier::modifyParticles(TimePoint tim
         _radialBinData.resize(numberOfRadialBins());
         std::fill(_radialBinData.begin(), _radialBinData.end(), 0.0);
 
-        for (int j = 0; j < binDataSizeY; j++) {
-            for (int i = 0; i < binDataSizeX; i++) {
-                FloatType waveVector = sqrt(i*recXLength*i*recXLength + j*recYLength*j*recYLength);
-                int binIndex = int(std::floor(waveVector*numberOfRadialBins()/_maxWaveVector));
+        for (int binIndexY = 0; binIndexY <= binDataSizeYHalf; binIndexY++) {
+            for (int binIndexX = 0; binIndexX < binDataSizeX; binIndexX++) {
+                Vector3 waveVector = FloatType(binIndexX-binDataSizeXHalf)*recX + FloatType(binIndexY)*recY;
+                FloatType waveVectorLength = waveVector.length();
+                int binIndex = int(std::floor(waveVectorLength*numberOfRadialBins()/maxWaveVector()));
 
                 if (binIndex < numberOfRadialBins()) {
-                    _radialBinData[binIndex] += _binData[j*binDataSizeX+i];
+                    _radialBinData[binIndex] += _binData[(binIndexY+binDataSizeYHalf)*binDataSizeX+binIndexX];
                     numberOfDataPoints[binIndex]++;
                 }
             }
@@ -391,7 +402,7 @@ void SpatialCorrelationFunctionModifierEditor::plotSpatialCorrelationFunction()
 		return;
     
     if (modifier->radialAverage()) {
-        size_t binDataSize = modifier->numberOfRadialBins();
+        int binDataSize = modifier->numberOfRadialBins();
 
         // If previous plot was a color map, delete and create graph.
         if (!_correlationFunctionGraph) {
@@ -400,6 +411,8 @@ void SpatialCorrelationFunctionModifierEditor::plotSpatialCorrelationFunction()
                 _correlationFunctionColorMap = NULL;
             }
             _correlationFunctionGraph = _correlationFunctionPlot->addGraph();
+            _correlationFunctionGraph->setLineStyle(QCPGraph::lsLine);
+            _correlationFunctionGraph->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 5));
         }
 
         _correlationFunctionPlot->setInteraction(QCP::iRangeDrag, true);
@@ -426,9 +439,9 @@ void SpatialCorrelationFunctionModifierEditor::plotSpatialCorrelationFunction()
         _correlationFunctionPlot->yAxis->setRange(modifier->propertyAxisRangeStart(), modifier->propertyAxisRangeEnd());
     }
     else {
-        size_t binDataSizeX = std::max(1, modifier->numberOfBinsX());
-        size_t binDataSizeY = std::max(1, modifier->numberOfBinsY());
-        size_t bnDataSize = binDataSizeX*binDataSizeY;
+        int binDataSizeX = std::max(1, modifier->numberOfBinsX());
+        int binDataSizeY = std::max(1, modifier->numberOfBinsY());
+        int bnDataSize = binDataSizeX*binDataSizeY;
 
         // If previous plot was a graph, delete and create color map.
         if (!_correlationFunctionColorMap) {
@@ -497,8 +510,8 @@ void SpatialCorrelationFunctionModifierEditor::onSaveData()
 		if(!file.open(QIODevice::WriteOnly | QIODevice::Text))
 			throw Exception(tr("Could not open file for writing: %1").arg(file.errorString()));
 
-        size_t binDataSizeX = std::max(1, modifier->numberOfBinsX());
-        size_t binDataSizeY = std::max(1, modifier->numberOfBinsY());
+        int binDataSizeX = std::max(1, modifier->numberOfBinsX());
+        int binDataSizeY = std::max(1, modifier->numberOfBinsY());
 		FloatType binSizeX = (modifier->xAxisRangeEnd() - modifier->xAxisRangeStart()) / binDataSizeX;
 		FloatType binSizeY = (modifier->yAxisRangeEnd() - modifier->yAxisRangeStart()) / binDataSizeY;
 
