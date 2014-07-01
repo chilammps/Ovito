@@ -112,6 +112,43 @@ void SpatialCorrelationFunctionModifier::initializeModifier(PipelineObject* pipe
 }
 
 /******************************************************************************
+* Carry out 2D Fourier transform
+******************************************************************************/
+template<typename T1, typename T2> void doubleFourierTransform2D(const Point3 *pos, const Point3 *pos_end,
+                                                                 const T1 *v1, const T1 *v1_end,
+                                                                 int vecComponentCount1,
+                                                                 const T2 *v2, const T2 *v2_end,
+                                                                 int vecComponentCount2,
+                                                                 int binDataSizeX, int binDataSizeY,
+                                                                 const Vector3 &recX, const Vector3 &recY,
+                                                                 std::vector<std::complex<FloatType>> &_binData1,
+                                                                 std::vector<std::complex<FloatType>> &_binData2,
+                                                                 int &particleCount)
+{
+    int binDataSizeXHalf = (binDataSizeX-1)/2;
+    int binDataSizeYHalf = (binDataSizeY-1)/2;
+    while (pos != pos_end && v1 != v1_end && v2 != v2_end) {
+        if (!std::isnan(*v1) && !std::isnan(*v2)) {
+            FloatType X = 2*M_PI*(recX.x()*pos->x()+recX.y()*pos->y()+recX.z()*pos->z());
+            FloatType Y = 2*M_PI*(recY.x()*pos->x()+recY.y()*pos->y()+recY.z()*pos->z());
+            for (int binIndexY = 0; binIndexY <= binDataSizeYHalf; binIndexY++) {
+                for (int binIndexX = 0; binIndexX < binDataSizeX; binIndexX++) {
+                    int binIndex = (binIndexY+binDataSizeYHalf)*binDataSizeX+binIndexX;
+                    std::complex<FloatType> phase = std::exp(std::complex<FloatType>(0.0, -(binIndexX-binDataSizeXHalf)*X-binIndexY*Y));
+                    _binData1[binIndex] += FloatType(*v1)*phase;
+                    _binData2[binIndex] += FloatType(*v2)*phase;
+                }
+            }
+        }
+                
+        pos++;
+        v1 += vecComponentCount1;
+        v2 += vecComponentCount2;
+        particleCount++;
+    }
+}
+
+/******************************************************************************
 * This modifies the input object.
 ******************************************************************************/
 PipelineStatus SpatialCorrelationFunctionModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
@@ -194,31 +231,57 @@ PipelineStatus SpatialCorrelationFunctionModifier::modifyParticles(TimePoint tim
         const Point3* pos_end = pos + posProperty->size();
 
         int particleCount = 0;
-		if(property1->dataType() == qMetaTypeId<FloatType>() && property2->dataType() == qMetaTypeId<FloatType>()) {
-			const FloatType* v1 = property1->constDataFloat() + vecComponent1;
-			const FloatType* v1_end = v1 + (property1->size() * vecComponentCount1);
-			const FloatType* v2 = property2->constDataFloat() + vecComponent2;
-			const FloatType* v2_end = v2 + (property2->size() * vecComponentCount2);
+		if(property1->dataType() == qMetaTypeId<FloatType>() && 
+           property2->dataType() == qMetaTypeId<FloatType>()) {
+            const FloatType* v1 = property1->constDataFloat() + vecComponent1;
+            const FloatType* v1_end = v1 + (property1->size() * vecComponentCount1);
+            const FloatType* v2 = property2->constDataFloat() + vecComponent2;
+            const FloatType* v2_end = v2 + (property2->size() * vecComponentCount2);
 
-            while (pos != pos_end && v1 != v1_end && v2 != v2_end) {
-                if (!std::isnan(*v1) && !std::isnan(*v2)) {
-                    FloatType X = 2*M_PI*(recX.x()*pos->x()+recX.y()*pos->y()+recX.z()*pos->z());
-                    FloatType Y = 2*M_PI*(recY.x()*pos->x()+recY.y()*pos->y()+recY.z()*pos->z());
-                    for (int binIndexY = 0; binIndexY <= binDataSizeYHalf; binIndexY++) {
-                        for (int binIndexX = 0; binIndexX < binDataSizeX; binIndexX++) {
-                            int binIndex = (binIndexY+binDataSizeYHalf)*binDataSizeX+binIndexX;
-                            std::complex<FloatType> phase = std::exp(std::complex<FloatType>(0.0, -(binIndexX-binDataSizeXHalf)*X-binIndexY*Y));
-                            _binData1[binIndex] += (*v1)*phase;
-                            _binData2[binIndex] += (*v2)*phase;
-                        }
-                    }
-                }
-                
-                pos++;
-                v1 += vecComponentCount1;
-                v2 += vecComponentCount2;
-                particleCount++;
-            }
+            doubleFourierTransform2D(pos, pos_end,
+                                     v1, v1_end, vecComponentCount1,
+                                     v2, v2_end, vecComponentCount2,
+                                     binDataSizeX, binDataSizeY, recX, recY,
+                                     _binData1, _binData2, particleCount);
+		}
+        else if(property1->dataType() == qMetaTypeId<int>() && 
+                property2->dataType() == qMetaTypeId<FloatType>()) {
+            const int* v1 = property1->constDataInt() + vecComponent1;
+            const int* v1_end = v1 + (property1->size() * vecComponentCount1);
+            const FloatType* v2 = property2->constDataFloat() + vecComponent2;
+            const FloatType* v2_end = v2 + (property2->size() * vecComponentCount2);
+
+            doubleFourierTransform2D(pos, pos_end,
+                                     v1, v1_end, vecComponentCount1,
+                                     v2, v2_end, vecComponentCount2,
+                                     binDataSizeX, binDataSizeY, recX, recY,
+                                     _binData1, _binData2, particleCount);
+		}
+		else if(property1->dataType() == qMetaTypeId<FloatType>() && 
+                property2->dataType() == qMetaTypeId<int>()) {
+            const FloatType* v1 = property1->constDataFloat() + vecComponent1;
+            const FloatType* v1_end = v1 + (property1->size() * vecComponentCount1);
+            const int* v2 = property2->constDataInt() + vecComponent2;
+            const int* v2_end = v2 + (property2->size() * vecComponentCount2);
+
+            doubleFourierTransform2D(pos, pos_end,
+                                     v1, v1_end, vecComponentCount1,
+                                     v2, v2_end, vecComponentCount2,
+                                     binDataSizeX, binDataSizeY, recX, recY,
+                                     _binData1, _binData2, particleCount);
+		}
+        else if(property1->dataType() == qMetaTypeId<int>() && 
+                property2->dataType() == qMetaTypeId<int>()) {
+            const int* v1 = property1->constDataInt() + vecComponent1;
+            const int* v1_end = v1 + (property1->size() * vecComponentCount1);
+            const int* v2 = property2->constDataInt() + vecComponent2;
+            const int* v2_end = v2 + (property2->size() * vecComponentCount2);
+
+            doubleFourierTransform2D(pos, pos_end,
+                                     v1, v1_end, vecComponentCount1,
+                                     v2, v2_end, vecComponentCount2,
+                                     binDataSizeX, binDataSizeY, recX, recY,
+                                     _binData1, _binData2, particleCount);
 		}
 
         // Normalize and compute correlation function.
