@@ -183,16 +183,16 @@ PipelineStatus SpatialCorrelationFunctionModifier::modifyParticles(TimePoint tim
     // Compute the surface normal vector.
     Vector3 recX, recY;
     if (_binDirection == CELL_VECTORS_1_2) {
-        recX = reciprocalCell.column(0);
-        recY = reciprocalCell.column(1);
+        recX = reciprocalCell.linear().row(0);
+        recY = reciprocalCell.linear().row(1);
     }
     else if (_binDirection == CELL_VECTORS_2_3) {
-        recX = reciprocalCell.column(1);
-        recY = reciprocalCell.column(2);
+        recX = reciprocalCell.linear().row(1);
+        recY = reciprocalCell.linear().row(2);
     }
     else if (_binDirection == CELL_VECTORS_1_3) {
-        recX = reciprocalCell.column(0);
-        recY = reciprocalCell.column(2);
+        recX = reciprocalCell.linear().row(0);
+        recY = reciprocalCell.linear().row(2);
     }
 
     FloatType recXLength = recX.length();
