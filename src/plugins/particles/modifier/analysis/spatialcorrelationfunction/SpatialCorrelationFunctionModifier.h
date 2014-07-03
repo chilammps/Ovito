@@ -20,8 +20,10 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef __OVITO_BIN_AND_REDUCE_MODIFIER_H
-#define __OVITO_BIN_AND_REDUCE_MODIFIER_H
+#ifndef __OVITO_SPATIAL_CORRELATION_FUNCTION_MODIFIER_H
+#define __OVITO_SPATIAL_CORRELATION_FUNCTION_MODIFIER_H
+
+#include <complex>
 
 #include <core/gui/properties/BooleanParameterUI.h>
 #include <core/gui/properties/IntegerParameterUI.h>
@@ -37,42 +39,33 @@ class QCPItemStraightLine;
 namespace Particles {
 
 /*
- * This modifier computes a spatial average (over splices) for a particle
- * property.
+ * This modifier computes the Fourier transform of a (spatial) cross correlation function
+ * between two particle properties.
  */
-class OVITO_PARTICLES_EXPORT BinAndReduceModifier : public ParticleModifier
+class OVITO_PARTICLES_EXPORT SpatialCorrelationFunctionModifier : public ParticleModifier
 {
 public:
 
-    enum ReductionOperationType { RED_MEAN, RED_SUM, RED_SUM_VOL, RED_MIN, RED_MAX };
-    Q_ENUMS(ReductionOperationType);
-    enum BinDirectionType { CELL_VECTOR_1 = 0, CELL_VECTOR_2 = 1, CELL_VECTOR_3 = 2,
-                            CELL_VECTORS_1_2 = 0+(1<<2), CELL_VECTORS_1_3 = 0+(2<<2), CELL_VECTORS_2_3 = 1+(2<<2) };
+    enum BinDirectionType { CELL_VECTORS_1_2 = 0, CELL_VECTORS_1_3 = 1, CELL_VECTORS_2_3 = 2 };
     Q_ENUMS(BinDirectionType);
 
 	/// Constructor.
-	Q_INVOKABLE BinAndReduceModifier(DataSet* dataset);
+	Q_INVOKABLE SpatialCorrelationFunctionModifier(DataSet* dataset);
 
 	/// This virtual method is called by the system when the modifier has been inserted into a PipelineObject.
 	virtual void initializeModifier(PipelineObject* pipelineObject, ModifierApplication* modApp) override;
 
-	/// Sets the source particle property for which the average should be computed.
-	void setSourceProperty(const ParticlePropertyReference& prop) { _sourceProperty = prop; }
+	/// Sets the first source particle property for which the correlation function is computed.
+	void setSourceProperty1(const ParticlePropertyReference& prop) { _sourceProperty1 = prop; }
 
-	/// Returns the source particle property for which the average is computed.
-	const ParticlePropertyReference& sourceProperty() const { return _sourceProperty; }
+	/// Returns the first source particle property for which the correlation function is computed.
+	const ParticlePropertyReference& sourceProperty1() const { return _sourceProperty1; }
 
-	/// Returns the reduction operation
-	ReductionOperationType reductionOperation() const { return _reductionOperation; }
+	/// Sets the second source particle property for which the correlation function is computed.
+	void setSourceProperty2(const ParticlePropertyReference& prop) { _sourceProperty2 = prop; }
 
-	/// Sets the reduction operation
-	void setReductionOperation(ReductionOperationType o) { _reductionOperation = o; }
-
-	/// Returns compute first derivative
-	bool firstDerivative() const { return _firstDerivative; }
-
-	/// Sets compute first derivative
-	void setFirstDerivative(bool d) { _firstDerivative = d; }
+	/// Returns the second source particle property for which the correlation function is computed.
+	const ParticlePropertyReference& sourceProperty2() const { return _sourceProperty2; }
 
 	/// Returns the bin direction
 	BinDirectionType binDirection() const { return _binDirection; }
@@ -80,20 +73,38 @@ public:
 	/// Sets the bin direction
 	void setBinDirection(BinDirectionType o) { _binDirection = o; }
 
-	/// Returns the number of spatial bins of the computed average value.
+	/// Returns the number of spatial bins of the computed correlation value.
+	FloatType maxWaveVector() const { return _maxWaveVector; }
+
+	/// Sets the number of spatial bins of the computed correlation value.
+	void setMaxWaveVector(FloatType v) { _maxWaveVector = v; }
+
+	/// Returns the number of spatial bins of the computed correlation value.
+	int numberOfRadialBins() const { return _numberOfRadialBins; }
+
+	/// Sets the number of spatial bins of the computed correlation value.
+	void setNumberOfRadialBins(int n) { _numberOfRadialBins = n; }
+
+	/// Returns the number of spatial bins of the computed correlation value.
 	int numberOfBinsX() const { return _numberOfBinsX; }
 
-	/// Sets the number of spatial bins of the computed average value.
+	/// Sets the number of spatial bins of the computed correlation value.
 	void setNumberOfBinsX(int n) { _numberOfBinsX = n; }
 
-	/// Returns the number of spatial bins of the computed average value.
+	/// Returns the number of spatial bins of the computed correlation value.
 	int numberOfBinsY() const { return _numberOfBinsY; }
 
-	/// Sets the number of spatial bins of the computed average value.
+	/// Sets the number of spatial bins of the computed correlation value.
 	void setNumberOfBinsY(int n) { _numberOfBinsY = n; }
 
-	/// Returns the stored average data.
+	/// Returns compute first derivative
+	bool radialAverage() const { return _radialAverage; }
+
+	/// Returns the stored correlation function.
 	const std::vector<FloatType>& binData() const { return _binData; }
+
+	/// Returns the stored radially averaged correlation function.
+	const std::vector<FloatType>& radialBinData() const { return _radialBinData; }
 
 	/// Returns the start value of the plotting x-axis.
 	FloatType xAxisRangeStart() const { return _xAxisRangeStart; }
@@ -106,6 +117,18 @@ public:
 
 	/// Returns the end value of the plotting y-axis.
 	FloatType yAxisRangeEnd() const { return _yAxisRangeEnd; }
+
+	/// Returns the start value of the plotting x-data.
+	FloatType xDataRangeStart() const { return _xDataRangeStart; }
+
+	/// Returns the end value of the plotting x-data.
+	FloatType xDataRangeEnd() const { return _xDataRangeEnd; }
+
+	/// Returns the start value of the plotting y-data.
+	FloatType yDataRangeStart() const { return _yDataRangeStart; }
+
+	/// Returns the end value of the plotting y-data.
+	FloatType yDataRangeEnd() const { return _yDataRangeEnd; }
 
 	/// Set whether the plotting range of the property axis should be fixed.
 	void setFixPropertyAxisRange(bool fix) { _fixPropertyAxisRange = fix; }
@@ -122,32 +145,11 @@ public:
 	/// Returns the end value of the plotting y-axis.
 	FloatType propertyAxisRangeEnd() const { return _propertyAxisRangeEnd; }
 
-    /// Returns true if binning in a single direction only.
-    bool is1D() {
-        return bin1D(_binDirection);
-    }
-
-    /// Returns true if binning in a single direction only.
-    static bool bin1D(BinDirectionType d) {
-        return d == CELL_VECTOR_1 || d == CELL_VECTOR_2 || d == CELL_VECTOR_3;
-    }
-
-    /// Return the coordinate index to be mapped on the X-axis.
-    static int binDirectionX(BinDirectionType d) {
-        return d & 3;
-    }
-
-    /// Return the coordinate index to be mapped on the Y-axis.
-    static int binDirectionY(BinDirectionType d) {
-        return (d >> 2) & 3;
-    }
-
 public:
 
-	Q_PROPERTY(Particles::ParticlePropertyReference sourceProperty READ sourceProperty WRITE setSourceProperty);
-	Q_PROPERTY(Particles::BinAndReduceModifier::ReductionOperationType reductionOperation READ reductionOperation WRITE setReductionOperation);
-    Q_PROPERTY(bool firstDerivative READ firstDerivative WRITE setFirstDerivative);
-	Q_PROPERTY(Particles::BinAndReduceModifier::BinDirectionType binDirection READ binDirection WRITE setBinDirection);
+	Q_PROPERTY(Particles::ParticlePropertyReference sourceProperty1 READ sourceProperty1 WRITE setSourceProperty1);
+	Q_PROPERTY(Particles::ParticlePropertyReference sourceProperty2 READ sourceProperty2 WRITE setSourceProperty2);
+	Q_PROPERTY(Particles::SpatialCorrelationFunctionModifier::BinDirectionType binDirection READ binDirection WRITE setBinDirection);
 	Q_PROPERTY(int numberOfBinsX READ numberOfBinsX WRITE setNumberOfBinsX);
 	Q_PROPERTY(int numberOfBinsY READ numberOfBinsY WRITE setNumberOfBinsY);
 
@@ -158,17 +160,23 @@ protected:
 
 private:
 
-	/// The particle property that serves as data source to be averaged.
-	PropertyField<ParticlePropertyReference> _sourceProperty;
+	/// First particle property that serves as data source for the correlation.
+	PropertyField<ParticlePropertyReference> _sourceProperty1;
 
-	/// Type of reduction operation
-	PropertyField<ReductionOperationType,int> _reductionOperation;
-
-	/// Compute first derivative.
-	PropertyField<bool> _firstDerivative;
+	/// Second particle property that serves as data source for the correlation.
+	PropertyField<ParticlePropertyReference> _sourceProperty2;
 
 	/// Bin alignment
 	PropertyField<BinDirectionType,int> _binDirection;
+
+	/// Controls the wave-vector cutoff.
+	PropertyField<FloatType> _maxWaveVector;
+
+	/// Controls whether to compute a radial average.
+	PropertyField<bool> _radialAverage;
+
+	/// Controls the number of spatial bins.
+	PropertyField<int> _numberOfRadialBins;
 
 	/// Controls the number of spatial bins.
 	PropertyField<int> _numberOfBinsX;
@@ -197,35 +205,58 @@ private:
 	/// Stores the end value of the plotting y-axis.
 	FloatType _yAxisRangeEnd;
 
-	/// Stores the averaged data.
+	/// Stores the start value of the plotting x-data.
+	FloatType _xDataRangeStart;
+
+	/// Stores the end value of the plotting x-data.
+	FloatType _xDataRangeEnd;
+
+	/// Stores the start value of the plotting y-data.
+	FloatType _yDataRangeStart;
+
+	/// Stores the end value of the plotting y-data.
+	FloatType _yDataRangeEnd;
+
+	/// Stores the Fourier transform of property 1.
+	std::vector<std::complex<FloatType>> _binData1;
+
+	/// Stores the Fourier transform of property 2.
+	std::vector<std::complex<FloatType>> _binData2;
+
+	/// Stores the correlation function.
 	std::vector<FloatType> _binData;
+
+	/// Stores the radially averaged correlation function.
+	std::vector<FloatType> _radialBinData;
 
 	Q_OBJECT
 	OVITO_OBJECT
 
-	Q_CLASSINFO("DisplayName", "Bin and reduce");
+	Q_CLASSINFO("DisplayName", "Spatial correlation function");
 	Q_CLASSINFO("ModifierCategory", "Analysis");
 
-	DECLARE_PROPERTY_FIELD(_reductionOperation);
-	DECLARE_PROPERTY_FIELD(_firstDerivative);
 	DECLARE_PROPERTY_FIELD(_binDirection);
+	DECLARE_PROPERTY_FIELD(_maxWaveVector);
+	DECLARE_PROPERTY_FIELD(_radialAverage);
+	DECLARE_PROPERTY_FIELD(_numberOfRadialBins);
 	DECLARE_PROPERTY_FIELD(_numberOfBinsX);
 	DECLARE_PROPERTY_FIELD(_numberOfBinsY);
 	DECLARE_PROPERTY_FIELD(_fixPropertyAxisRange);
 	DECLARE_PROPERTY_FIELD(_propertyAxisRangeStart);
 	DECLARE_PROPERTY_FIELD(_propertyAxisRangeEnd);
-	DECLARE_PROPERTY_FIELD(_sourceProperty);
+	DECLARE_PROPERTY_FIELD(_sourceProperty1);
+	DECLARE_PROPERTY_FIELD(_sourceProperty2);
 };
 
 /******************************************************************************
-* A properties editor for the BinAndReduceModifier class.
+* A properties editor for the SpatialCorrelationFunctionModifier class.
 ******************************************************************************/
-class BinAndReduceModifierEditor : public ParticleModifierEditor
+class SpatialCorrelationFunctionModifierEditor : public ParticleModifierEditor
 {
 public:
 
 	/// Default constructor.
-	Q_INVOKABLE BinAndReduceModifierEditor() : _rangeUpdate(true), _averagesGraph(nullptr), _averagesColorMap(nullptr) {}
+	Q_INVOKABLE SpatialCorrelationFunctionModifierEditor() : _correlationFunctionGraph(nullptr), _correlationFunctionColorMap(nullptr) {}
 
 protected:
 
@@ -238,36 +269,21 @@ protected:
 protected Q_SLOTS:
 
 	/// Replots the average data computed by the modifier.
-	void plotAverages();
-
-    /// Enable/disable the editor for number of y-bins and the first derivative button.
-    void updateWidgets();
-
-	/// Keep y-axis range updated
-	void updatePropertyAxisRange(const QCPRange &newRange);
+	void plotSpatialCorrelationFunction();
 
 	/// This is called when the user has clicked the "Save Data" button.
 	void onSaveData();
 
 private:
 
-    /// Widget controlling the number of y-bins.
-    BooleanParameterUI* _firstDerivativePUI;
-
-    /// Widget controlling the number of y-bins.
-    IntegerParameterUI* _numBinsYPUI;
-
 	/// The plot widget to display the average data.
-	QCustomPlot* _averagesPlot;
+	QCustomPlot* _correlationFunctionPlot;
 
 	/// The graph widget to display the average data.
-	QCPGraph* _averagesGraph;
+	QCPGraph* _correlationFunctionGraph;
 
 	/// The color map widget to display the average data on a 2D grid.
-	QCPColorMap* _averagesColorMap;
-
-	/// Update range when plot ranges change?
-	bool _rangeUpdate;
+	QCPColorMap* _correlationFunctionColorMap;
 
 	Q_OBJECT
 	OVITO_OBJECT
@@ -275,9 +291,7 @@ private:
 
 };	// End of namespace
 
-Q_DECLARE_METATYPE(Particles::BinAndReduceModifier::ReductionOperationType);
-Q_DECLARE_METATYPE(Particles::BinAndReduceModifier::BinDirectionType);
-Q_DECLARE_TYPEINFO(Particles::BinAndReduceModifier::ReductionOperationType, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(Particles::BinAndReduceModifier::BinDirectionType, Q_PRIMITIVE_TYPE);
+Q_DECLARE_METATYPE(Particles::SpatialCorrelationFunctionModifier::BinDirectionType);
+Q_DECLARE_TYPEINFO(Particles::SpatialCorrelationFunctionModifier::BinDirectionType, Q_PRIMITIVE_TYPE);
 
-#endif // __OVITO_BIN_AND_REDUCE_MODIFIER_H
+#endif // __OVITO_SPATIAL_CORRELATION_FUNCTION_MODIFIER_H

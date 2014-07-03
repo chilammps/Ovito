@@ -461,11 +461,9 @@ void BinAndReduceModifierEditor::plotAverages()
         QVector<double> xdata(binDataSize);
         QVector<double> ydata(binDataSize);
         double binSize = ( modifier->xAxisRangeEnd() - modifier->xAxisRangeStart() ) / binDataSize;
-        double maxBinData = 0.0;
         for(int i = 0; i < xdata.size(); i++) {
             xdata[i] = binSize * ((double)i + 0.5);
             ydata[i] = modifier->binData()[i];
-            maxBinData = std::max(maxBinData, ydata[i]);
         }
         _averagesPlot->graph()->setLineStyle(QCPGraph::lsStepCenter);
         _averagesPlot->graph()->setData(xdata, ydata);
@@ -474,7 +472,7 @@ void BinAndReduceModifierEditor::plotAverages()
         // which is to be avoided if the range is not determined automatically.
         _rangeUpdate = false;
         _averagesPlot->xAxis->setRange(modifier->xAxisRangeStart(), modifier->xAxisRangeEnd());
-        _averagesPlot->yAxis->setRange(modifier->PropertyAxisRangeStart(), modifier->PropertyAxisRangeEnd());
+        _averagesPlot->yAxis->setRange(modifier->propertyAxisRangeStart(), modifier->propertyAxisRangeEnd());
         _rangeUpdate = true;
     }
     else {
@@ -516,7 +514,7 @@ void BinAndReduceModifierEditor::plotAverages()
         // Check if range is already correct, because setRange emits the rangeChanged signal
         // which is to be avoided if the range is not determined automatically.
         _rangeUpdate = false;
-        _averagesColorMap->setDataRange(QCPRange(modifier->PropertyAxisRangeStart(), modifier->PropertyAxisRangeEnd()));
+        _averagesColorMap->setDataRange(QCPRange(modifier->propertyAxisRangeStart(), modifier->propertyAxisRangeEnd()));
         _rangeUpdate = true;
     }
     
