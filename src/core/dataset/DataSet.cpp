@@ -410,11 +410,11 @@ void DataSet::renderFrame(TimePoint renderTime, int frameNumber, RenderSettings*
 	animationSettings()->setTime(renderTime);
 
 	// Wait until the scene is ready.
-	if(!waitUntilSceneIsReady(tr("Preparing frame %1.").arg(frameNumber), progressDialog))
+	if(!waitUntilSceneIsReady(tr("Preparing frame %1").arg(frameNumber), progressDialog))
 		return;
 
 	if(progressDialog)
-		progressDialog->setLabelText(tr("Rendering frame %1.").arg(frameNumber));
+		progressDialog->setLabelText(tr("Rendering frame %1").arg(frameNumber));
 
 	// Request scene bounding box.
 	Box3 boundingBox = renderer->sceneBoundingBox(renderTime);

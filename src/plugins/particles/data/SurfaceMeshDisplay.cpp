@@ -314,8 +314,9 @@ void SurfaceMeshDisplay::buildCapMesh(const HalfEdgeMesh& input, const Simulatio
 		// Make sure all vertices are located inside the periodic box.
 		for(Point3& p : reducedPos) {
 			FloatType& c = p[dim];
-			while(c < FloatType(0)) c += FloatType(1);
-			while(c > FloatType(1)) c -= FloatType(1);
+			OVITO_ASSERT(std::isfinite(c));
+			if(FloatType s = floor(c)) c -= s;
+			OVITO_ASSERT(std::isfinite(c));
 		}
 
 		// Reset 'visited' flag for all faces.
@@ -456,17 +457,22 @@ std::vector<Point2> SurfaceMeshDisplay::traceContour(HalfEdgeMesh::Edge* firstEd
 		delta[dim] -= 1.0f;
 		if(cell.pbcFlags()[dim1]) {
 			FloatType& c = delta[dim1];
-			while(c < FloatType(0.5)) c += FloatType(1);
-			while(c > FloatType(0.5)) c -= FloatType(1);
+			if(FloatType s = floor(c + FloatType(0.5)))
+				c -= s;
 		}
 		if(cell.pbcFlags()[dim2]) {
 			FloatType& c = delta[dim2];
-			while(c < FloatType(0.5)) c += FloatType(1);
-			while(c > FloatType(0.5)) c -= FloatType(1);
+			if(FloatType s = floor(c + FloatType(0.5)))
+				c -= s;
 		}
-		FloatType t = v1[dim] / delta[dim];
+		FloatType t;
+		if(std::abs(delta[dim]) > FloatType(1e-9f))
+			t = v1[dim] / delta[dim];
+		else
+			t = FloatType(0.5);
 		FloatType x = v1[dim1] - delta[dim1] * t;
 		FloatType y = v1[dim2] - delta[dim2] * t;
+		OVITO_ASSERT(std::isfinite(x) && std::isfinite(y));
 		contour.push_back({x,y});
 
 		// Find the face edge that crosses the boundary in the reverse direction.
@@ -498,14 +504,14 @@ void SurfaceMeshDisplay::clipContour(std::vector<Point2>& input, std::array<bool
 	// Ensure all coordinates are within the primary image.
 	if(pbcFlags[0]) {
 		for(auto& v : input) {
-			while(v.x() < FloatType(0)) v.x() += FloatType(1);
-			while(v.x() > FloatType(1)) v.x() -= FloatType(1);
+			OVITO_ASSERT(std::isfinite(v.x()));
+			if(FloatType s = floor(v.x())) v.x() -= s;
 		}
 	}
 	if(pbcFlags[1]) {
 		for(auto& v : input) {
-			while(v.y() < FloatType(0)) v.y() += FloatType(1);
-			while(v.y() > FloatType(1)) v.y() -= FloatType(1);
+			OVITO_ASSERT(std::isfinite(v.y()));
+			if(FloatType s = floor(v.y())) v.y() -= s;
 		}
 	}
 
@@ -574,6 +580,7 @@ void SurfaceMeshDisplay::clipContour(std::vector<Point2>& input, std::array<bool
 ******************************************************************************/
 void SurfaceMeshDisplay::computeContourIntersection(size_t dim, FloatType t, Point2& base, Vector2& delta, int crossDir, std::vector<std::vector<Point2>>& contours)
 {
+	OVITO_ASSERT(std::isfinite(t));
 	Point2 intersection = base + t * delta;
 	intersection[dim] = (crossDir == -1) ? 0.0f : 1.0f;
 	contours.back().push_back(intersection);
@@ -662,8 +669,8 @@ bool SurfaceMeshDisplay::isCornerInside3DRegion(const HalfEdgeMesh& mesh, const 
 		Vector3 r = reducedPos[v->index()] - Point3::Origin();
 		for(size_t k = 0; k < 3; k++) {
 			if(pbcFlags[k]) {
-				while(r[k] > FloatType( 0.5)) r[k] -= FloatType(1);
-				while(r[k] < FloatType(-0.5)) r[k] += FloatType(1);
+				if(FloatType s = floor(r[k] + FloatType(0.5)))
+					r[k] -= s;
 			}
 		}
 		FloatType distSq = r.squaredLength();
@@ -683,10 +690,10 @@ bool SurfaceMeshDisplay::isCornerInside3DRegion(const HalfEdgeMesh& mesh, const 
 			Vector3 r = p1 - Point3::Origin();
 			for(size_t k = 0; k < 3; k++) {
 				if(pbcFlags[k]) {
-					while(r[k] > FloatType( 0.5)) r[k] -= FloatType(1);
-					while(r[k] < FloatType(-0.5)) r[k] += FloatType(1);
-					while(edgeDir[k] > FloatType( 0.5)) edgeDir[k] -= FloatType(1);
-					while(edgeDir[k] < FloatType(-0.5)) edgeDir[k] += FloatType(1);
+					if(FloatType s = floor(r[k] + FloatType(0.5)))
+						r[k] -= s;
+					if(FloatType s = floor(edgeDir[k] + FloatType(0.5)))
+						edgeDir[k] -= s;
 				}
 			}
 			FloatType edgeLength = edgeDir.length();
@@ -704,10 +711,10 @@ bool SurfaceMeshDisplay::isCornerInside3DRegion(const HalfEdgeMesh& mesh, const 
 				Vector3 e2 = reducedPos[edge->oppositeEdge()->nextFaceEdge()->vertex2()->index()] - p1;
 				for(size_t k = 0; k < 3; k++) {
 					if(pbcFlags[k]) {
-						while(e1[k] > FloatType( 0.5)) e1[k] -= FloatType(1);
-						while(e1[k] < FloatType(-0.5)) e1[k] += FloatType(1);
-						while(e2[k] > FloatType( 0.5)) e2[k] -= FloatType(1);
-						while(e2[k] < FloatType(-0.5)) e2[k] += FloatType(1);
+						if(FloatType s = floor(e1[k] + FloatType(0.5)))
+							e1[k] -= s;
+						if(FloatType s = floor(e2[k] + FloatType(0.5)))
+							e2[k] -= s;
 					}
 				}
 				closestNormal = edgeDir.cross(e1).normalized() + e2.cross(edgeDir).normalized();
@@ -729,12 +736,12 @@ bool SurfaceMeshDisplay::isCornerInside3DRegion(const HalfEdgeMesh& mesh, const 
 		Vector3 r = p1 - Point3::Origin();
 		for(size_t k = 0; k < 3; k++) {
 			if(pbcFlags[k]) {
-				while(r[k] > FloatType( 0.5)) r[k] -= FloatType(1);
-				while(r[k] < FloatType(-0.5)) r[k] += FloatType(1);
-				while(edgeVectors[0][k] > FloatType( 0.5)) edgeVectors[0][k] -= FloatType(1);
-				while(edgeVectors[0][k] < FloatType(-0.5)) edgeVectors[0][k] += FloatType(1);
-				while(edgeVectors[1][k] > FloatType( 0.5)) edgeVectors[1][k] -= FloatType(1);
-				while(edgeVectors[1][k] < FloatType(-0.5)) edgeVectors[1][k] += FloatType(1);
+				if(FloatType s = floor(r[k] + FloatType(0.5)))
+					r[k] -= s;
+				if(FloatType s = floor(edgeVectors[0][k] + FloatType(0.5)))
+					edgeVectors[0][k] -= s;
+				if(FloatType s = floor(edgeVectors[1][k] + FloatType(0.5)))
+					edgeVectors[1][k] -= s;
 			}
 		}
 		edgeVectors[2] = -edgeVectors[1] - edgeVectors[0];
@@ -770,8 +777,8 @@ bool SurfaceMeshDisplay::isCornerInside3DRegion(const HalfEdgeMesh& mesh, const 
 		Vector3 edge1v = reducedPos[edge->vertex2()->index()] - reducedPos[closestVertex->index()];
 		for(size_t k = 0; k < 3; k++) {
 			if(pbcFlags[k]) {
-				while(edge1v[k] > FloatType( 0.5)) edge1v[k] -= FloatType(1);
-				while(edge1v[k] < FloatType(-0.5)) edge1v[k] += FloatType(1);
+				if(FloatType s = floor(edge1v[k] + FloatType(0.5)))
+					edge1v[k] -= s;
 			}
 		}
 		edge1v.normalizeSafely();
@@ -781,8 +788,8 @@ bool SurfaceMeshDisplay::isCornerInside3DRegion(const HalfEdgeMesh& mesh, const 
 			Vector3 edge2v = reducedPos[nextEdge->vertex2()->index()] - reducedPos[closestVertex->index()];
 			for(size_t k = 0; k < 3; k++) {
 				if(pbcFlags[k]) {
-					while(edge2v[k] > FloatType( 0.5)) edge2v[k] -= FloatType(1);
-					while(edge2v[k] < FloatType(-0.5)) edge2v[k] += FloatType(1);
+					if(FloatType s = floor(edge2v[k] + FloatType(0.5)))
+						edge2v[k] -= s;
 				}
 			}
 			edge2v.normalizeSafely();
