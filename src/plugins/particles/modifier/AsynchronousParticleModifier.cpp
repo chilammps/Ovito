@@ -112,7 +112,6 @@ PipelineStatus AsynchronousParticleModifier::modifyParticles(TimePoint time, Tim
 
 			// Create the engine that will compute the results.
 			try {
-				_computationValidity = input().stateValidity();
 				std::shared_ptr<Engine> engine = createEngine(time, _computationValidity);
 				OVITO_CHECK_POINTER(engine.get());
 
@@ -123,6 +122,7 @@ PipelineStatus AsynchronousParticleModifier::modifyParticles(TimePoint time, Tim
 			catch(const PipelineStatus& status) {
 				return status;
 			}
+			_computationValidity = input().stateValidity();
 		}
 	}
 
