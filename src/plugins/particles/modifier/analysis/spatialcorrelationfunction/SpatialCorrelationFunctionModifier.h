@@ -30,7 +30,7 @@
 #include <plugins/particles/Particles.h>
 #include <plugins/particles/data/ParticleProperty.h>
 #include <plugins/particles/data/ParticlePropertyObject.h>
-#include "../../ParticleModifier.h"
+#include "../../AsynchronousParticleModifier.h"
 #include <qcustomplot.h>
 
 class QCustomPlot;
@@ -42,7 +42,7 @@ namespace Particles {
  * This modifier computes the Fourier transform of a (spatial) cross correlation function
  * between two particle properties.
  */
-class OVITO_PARTICLES_EXPORT SpatialCorrelationFunctionModifier : public ParticleModifier
+class OVITO_PARTICLES_EXPORT SpatialCorrelationFunctionModifier : public AsynchronousParticleModifier
 {
 public:
 
@@ -129,7 +129,7 @@ public:
 
 	/// Returns the end value of the plotting y-data.
 	FloatType yDataRangeEnd() const { return _yDataRangeEnd; }
-
+    
 	/// Set whether the plotting range of the property axis should be fixed.
 	void setFixPropertyAxisRange(bool fix) { _fixPropertyAxisRange = fix; }
 
@@ -150,13 +150,95 @@ public:
 	Q_PROPERTY(Particles::ParticlePropertyReference sourceProperty1 READ sourceProperty1 WRITE setSourceProperty1);
 	Q_PROPERTY(Particles::ParticlePropertyReference sourceProperty2 READ sourceProperty2 WRITE setSourceProperty2);
 	Q_PROPERTY(Particles::SpatialCorrelationFunctionModifier::BinDirectionType binDirection READ binDirection WRITE setBinDirection);
-	Q_PROPERTY(int numberOfBinsX READ numberOfBinsX WRITE setNumberOfBinsX);
-	Q_PROPERTY(int numberOfBinsY READ numberOfBinsY WRITE setNumberOfBinsY);
+	Q_PROPERTY(FloatType maxWaveVector READ maxWaveVector WRITE setMaxWaveVector);
+	Q_PROPERTY(bool radialAverage READ radialAverage);
+    Q_PROPERTY(int numberOfRadialBins READ numberOfRadialBins WRITE setNumberOfRadialBins);
+    Q_PROPERTY(bool fixPropertyAxisRange READ fixPropertyAxisRange WRITE setFixPropertyAxisRange);
+    Q_PROPERTY(FloatType propertyAxisRangeStart READ propertyAxisRangeStart);
+    Q_PROPERTY(FloatType propertyAxisRangeEnd READ propertyAxisRangeEnd);
+
+private:
+
+    /// Computes the modifier's results.
+    class SpatialCorrelationAnalysisEngine : public AsynchronousParticleModifier::Engine
+    {
+    public:
+       
+        /// Constructor.
+        SpatialCorrelationAnalysisEngine(ParticleProperty *posProperty,
+                                         ParticleProperty *property1, int vecComponent1, int vecComponentCount1,
+                                         ParticleProperty *property2, int vecComponent2, int vecComponentCount2,
+                                         int binDataSizeX, int binDataSizeY,
+                                         Vector3 recX, Vector3 recY) :
+            _posProperty(posProperty),
+            _property1(property1), _vecComponent1(vecComponent1), _vecComponentCount1(vecComponentCount1),
+            _property2(property2), _vecComponent2(vecComponent2), _vecComponentCount2(vecComponentCount2),
+            _binDataSizeX(binDataSizeX), _binDataSizeY(binDataSizeY), _recX(recX), _recY(recY) {}
+
+		/// Computes the modifier's results and stores them in this object for later retrieval.
+		virtual void compute(FutureInterfaceBase& futureInterface) override;
+
+		/// Returns the property storage that contains the input particle positions.
+		ParticleProperty* posProperty() const { return _posProperty.data(); }
+
+        /// Returns the first source particle property for which the correlation function is computed.
+		ParticleProperty* property1() const { return _property1.data(); }
+
+        /// Returns the second source particle property for which the correlation function is computed.
+		ParticleProperty* property2() const { return _property2.data(); }
+
+        /// Returns the Fourier transform of the first property
+		const std::vector<std::complex<FloatType>> &binData1() const { return _binData1; }
+
+        /// Returns the Fourier transform of the second property
+		const std::vector<std::complex<FloatType>> &binData2() const { return _binData2; }
+
+    private:
+
+        QExplicitlySharedDataPointer<ParticleProperty> _posProperty;
+
+        QExplicitlySharedDataPointer<ParticleProperty> _property1;
+
+        int _vecComponent1;
+
+        int _vecComponentCount1;
+
+        QExplicitlySharedDataPointer<ParticleProperty> _property2;
+
+        int _vecComponent2;
+
+        int _vecComponentCount2;
+
+        int _binDataSizeX;
+
+        int _binDataSizeY;
+
+        Vector3 _recX;
+
+        Vector3 _recY;        
+
+        /// Stores the Fourier transform of property 1.
+        std::vector<std::complex<FloatType>> _binData1;
+
+        /// Stores the Fourier transform of property 2.
+        std::vector<std::complex<FloatType>> _binData2;
+    };
 
 protected:
 
-	/// Modifies the particle object.
-	virtual PipelineStatus modifyParticles(TimePoint time, TimeInterval& validityInterval) override;
+	/// Is called when the value of a property of this object has changed.
+	virtual void propertyChanged(const PropertyFieldDescriptor& field) override;
+
+	/// Creates and initializes a computation engine that will compute the modifier's results.
+	virtual std::shared_ptr<Engine> createEngine(TimePoint time, TimeInterval& validityInterval) override;
+
+	/// Unpacks the computation results stored in the given engine object.
+	virtual void retrieveModifierResults(Engine* engine) override;
+
+	/// Inserts the computed and cached modifier results into the modification pipeline.
+	virtual PipelineStatus applyModifierResults(TimePoint time, TimeInterval& validityInterval) override {
+        return PipelineStatus::Success;
+    };
 
 private:
 
@@ -179,10 +261,10 @@ private:
 	PropertyField<int> _numberOfRadialBins;
 
 	/// Controls the number of spatial bins.
-	PropertyField<int> _numberOfBinsX;
+	int _numberOfBinsX;
 
 	/// Controls the number of spatial bins.
-	PropertyField<int> _numberOfBinsY;
+	int _numberOfBinsY;
 
 	/// Controls the whether the plotting range along the y-axis should be fixed.
 	PropertyField<bool> _fixPropertyAxisRange;
@@ -217,11 +299,9 @@ private:
 	/// Stores the end value of the plotting y-data.
 	FloatType _yDataRangeEnd;
 
-	/// Stores the Fourier transform of property 1.
-	std::vector<std::complex<FloatType>> _binData1;
+    Vector3 _recX;
 
-	/// Stores the Fourier transform of property 2.
-	std::vector<std::complex<FloatType>> _binData2;
+    Vector3 _recY;
 
 	/// Stores the correlation function.
 	std::vector<FloatType> _binData;
@@ -239,8 +319,6 @@ private:
 	DECLARE_PROPERTY_FIELD(_maxWaveVector);
 	DECLARE_PROPERTY_FIELD(_radialAverage);
 	DECLARE_PROPERTY_FIELD(_numberOfRadialBins);
-	DECLARE_PROPERTY_FIELD(_numberOfBinsX);
-	DECLARE_PROPERTY_FIELD(_numberOfBinsY);
 	DECLARE_PROPERTY_FIELD(_fixPropertyAxisRange);
 	DECLARE_PROPERTY_FIELD(_propertyAxisRangeStart);
 	DECLARE_PROPERTY_FIELD(_propertyAxisRangeEnd);

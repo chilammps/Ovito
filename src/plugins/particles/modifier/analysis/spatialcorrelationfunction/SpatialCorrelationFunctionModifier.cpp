@@ -34,15 +34,13 @@
 
 namespace Particles {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, SpatialCorrelationFunctionModifier, ParticleModifier);
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, SpatialCorrelationFunctionModifier, AsynchronousParticleModifier);
 IMPLEMENT_OVITO_OBJECT(Particles, SpatialCorrelationFunctionModifierEditor, ParticleModifierEditor);
 SET_OVITO_OBJECT_EDITOR(SpatialCorrelationFunctionModifier, SpatialCorrelationFunctionModifierEditor);
 DEFINE_FLAGS_PROPERTY_FIELD(SpatialCorrelationFunctionModifier, _binDirection, "BinDirection", PROPERTY_FIELD_MEMORIZE);
 DEFINE_FLAGS_PROPERTY_FIELD(SpatialCorrelationFunctionModifier, _maxWaveVector, "MaxWaveVector", PROPERTY_FIELD_MEMORIZE);
 DEFINE_FLAGS_PROPERTY_FIELD(SpatialCorrelationFunctionModifier, _radialAverage, "radialAverage", PROPERTY_FIELD_MEMORIZE);
 DEFINE_FLAGS_PROPERTY_FIELD(SpatialCorrelationFunctionModifier, _numberOfRadialBins, "NumberOfRadialBins", PROPERTY_FIELD_MEMORIZE);
-DEFINE_FLAGS_PROPERTY_FIELD(SpatialCorrelationFunctionModifier, _numberOfBinsX, "NumberOfBinsX", PROPERTY_FIELD_MEMORIZE);
-DEFINE_FLAGS_PROPERTY_FIELD(SpatialCorrelationFunctionModifier, _numberOfBinsY, "NumberOfBinsY", PROPERTY_FIELD_MEMORIZE);
 DEFINE_PROPERTY_FIELD(SpatialCorrelationFunctionModifier, _fixPropertyAxisRange, "FixPropertyAxisRange");
 DEFINE_FLAGS_PROPERTY_FIELD(SpatialCorrelationFunctionModifier, _propertyAxisRangeStart, "PropertyAxisRangeStart", PROPERTY_FIELD_MEMORIZE);
 DEFINE_FLAGS_PROPERTY_FIELD(SpatialCorrelationFunctionModifier, _propertyAxisRangeEnd, "PropertyAxisRangeEnd", PROPERTY_FIELD_MEMORIZE);
@@ -52,8 +50,6 @@ SET_PROPERTY_FIELD_LABEL(SpatialCorrelationFunctionModifier, _binDirection, "Bin
 SET_PROPERTY_FIELD_LABEL(SpatialCorrelationFunctionModifier, _maxWaveVector, "Maximum wavevector");
 SET_PROPERTY_FIELD_LABEL(SpatialCorrelationFunctionModifier, _radialAverage, "Radial average");
 SET_PROPERTY_FIELD_LABEL(SpatialCorrelationFunctionModifier, _numberOfRadialBins, "Number of radial bins");
-SET_PROPERTY_FIELD_LABEL(SpatialCorrelationFunctionModifier, _numberOfBinsX, "Max. wavevector");
-SET_PROPERTY_FIELD_LABEL(SpatialCorrelationFunctionModifier, _numberOfBinsY, "Max. wavevector");
 SET_PROPERTY_FIELD_LABEL(SpatialCorrelationFunctionModifier, _fixPropertyAxisRange, "Fix property axis range");
 SET_PROPERTY_FIELD_LABEL(SpatialCorrelationFunctionModifier, _propertyAxisRangeStart, "Property axis range start");
 SET_PROPERTY_FIELD_LABEL(SpatialCorrelationFunctionModifier, _propertyAxisRangeEnd, "Property axis range end");
@@ -64,22 +60,20 @@ SET_PROPERTY_FIELD_LABEL(SpatialCorrelationFunctionModifier, _sourceProperty2, "
 * Constructs the modifier object.
 ******************************************************************************/
 SpatialCorrelationFunctionModifier::SpatialCorrelationFunctionModifier(DataSet* dataset) : 
-    ParticleModifier(dataset),
+    AsynchronousParticleModifier(dataset),
     _binDirection(CELL_VECTORS_1_2), _maxWaveVector(0.5), _radialAverage(false),
-    _numberOfRadialBins(20), _numberOfBinsX(20), _numberOfBinsY(20),
-    _fixPropertyAxisRange(false), _propertyAxisRangeStart(0), _propertyAxisRangeEnd(0)
+    _numberOfRadialBins(20), _fixPropertyAxisRange(false), _propertyAxisRangeStart(0),
+    _propertyAxisRangeEnd(0)
 {
+	INIT_PROPERTY_FIELD(SpatialCorrelationFunctionModifier::_sourceProperty1);
+	INIT_PROPERTY_FIELD(SpatialCorrelationFunctionModifier::_sourceProperty2);
 	INIT_PROPERTY_FIELD(SpatialCorrelationFunctionModifier::_binDirection);
 	INIT_PROPERTY_FIELD(SpatialCorrelationFunctionModifier::_maxWaveVector);
 	INIT_PROPERTY_FIELD(SpatialCorrelationFunctionModifier::_radialAverage);
 	INIT_PROPERTY_FIELD(SpatialCorrelationFunctionModifier::_numberOfRadialBins);
-	INIT_PROPERTY_FIELD(SpatialCorrelationFunctionModifier::_numberOfBinsX);
-	INIT_PROPERTY_FIELD(SpatialCorrelationFunctionModifier::_numberOfBinsY);
 	INIT_PROPERTY_FIELD(SpatialCorrelationFunctionModifier::_fixPropertyAxisRange);
 	INIT_PROPERTY_FIELD(SpatialCorrelationFunctionModifier::_propertyAxisRangeStart);
 	INIT_PROPERTY_FIELD(SpatialCorrelationFunctionModifier::_propertyAxisRangeEnd);
-	INIT_PROPERTY_FIELD(SpatialCorrelationFunctionModifier::_sourceProperty1);
-	INIT_PROPERTY_FIELD(SpatialCorrelationFunctionModifier::_sourceProperty2);
 }
 
 /******************************************************************************
@@ -88,7 +82,7 @@ SpatialCorrelationFunctionModifier::SpatialCorrelationFunctionModifier(DataSet* 
 ******************************************************************************/
 void SpatialCorrelationFunctionModifier::initializeModifier(PipelineObject* pipeline, ModifierApplication* modApp)
 {
-	ParticleModifier::initializeModifier(pipeline, modApp);
+	AsynchronousParticleModifier::initializeModifier(pipeline, modApp);
 
 	// Use the first available particle property from the input state as data source when the modifier is newly created.
 	if(sourceProperty1().isNull() || sourceProperty1().isNull()) {
@@ -112,46 +106,9 @@ void SpatialCorrelationFunctionModifier::initializeModifier(PipelineObject* pipe
 }
 
 /******************************************************************************
-* Carry out 2D Fourier transform
+* Creates and initializes a computation engine that will compute the modifier's results.
 ******************************************************************************/
-template<typename T1, typename T2> void doubleFourierTransform2D(const Point3 *pos, const Point3 *pos_end,
-                                                                 const T1 *v1, const T1 *v1_end,
-                                                                 int vecComponentCount1,
-                                                                 const T2 *v2, const T2 *v2_end,
-                                                                 int vecComponentCount2,
-                                                                 int binDataSizeX, int binDataSizeY,
-                                                                 const Vector3 &recX, const Vector3 &recY,
-                                                                 std::vector<std::complex<FloatType>> &_binData1,
-                                                                 std::vector<std::complex<FloatType>> &_binData2,
-                                                                 int &particleCount)
-{
-    int binDataSizeXHalf = (binDataSizeX-1)/2;
-    int binDataSizeYHalf = (binDataSizeY-1)/2;
-    while (pos != pos_end && v1 != v1_end && v2 != v2_end) {
-        if (!std::isnan(*v1) && !std::isnan(*v2)) {
-            FloatType X = 2*M_PI*(recX.x()*pos->x()+recX.y()*pos->y()+recX.z()*pos->z());
-            FloatType Y = 2*M_PI*(recY.x()*pos->x()+recY.y()*pos->y()+recY.z()*pos->z());
-            for (int binIndexY = 0; binIndexY <= binDataSizeYHalf; binIndexY++) {
-                for (int binIndexX = 0; binIndexX < binDataSizeX; binIndexX++) {
-                    int binIndex = (binIndexY+binDataSizeYHalf)*binDataSizeX+binIndexX;
-                    std::complex<FloatType> phase = std::exp(std::complex<FloatType>(0.0, -(binIndexX-binDataSizeXHalf)*X-binIndexY*Y));
-                    _binData1[binIndex] += FloatType(*v1)*phase;
-                    _binData2[binIndex] += FloatType(*v2)*phase;
-                }
-            }
-        }
-                
-        pos++;
-        v1 += vecComponentCount1;
-        v2 += vecComponentCount2;
-        particleCount++;
-    }
-}
-
-/******************************************************************************
-* This modifies the input object.
-******************************************************************************/
-PipelineStatus SpatialCorrelationFunctionModifier::modifyParticles(TimePoint time, TimeInterval& validityInterval)
+std::shared_ptr<AsynchronousParticleModifier::Engine> SpatialCorrelationFunctionModifier::createEngine(TimePoint time, TimeInterval& validityInterval)
 {
 	// Get the source property.
 	if(sourceProperty1().isNull() || sourceProperty2().isNull())
@@ -181,36 +138,27 @@ PipelineStatus SpatialCorrelationFunctionModifier::modifyParticles(TimePoint tim
     AffineTransformation reciprocalCell = expectSimulationCell()->reciprocalCellMatrix();
 
     // Compute the surface normal vector.
-    Vector3 recX, recY;
     if (_binDirection == CELL_VECTORS_1_2) {
-        recX = reciprocalCell.linear().row(0);
-        recY = reciprocalCell.linear().row(1);
+        _recX = reciprocalCell.linear().row(0);
+        _recY = reciprocalCell.linear().row(1);
     }
     else if (_binDirection == CELL_VECTORS_2_3) {
-        recX = reciprocalCell.linear().row(1);
-        recY = reciprocalCell.linear().row(2);
+        _recX = reciprocalCell.linear().row(1);
+        _recY = reciprocalCell.linear().row(2);
     }
     else if (_binDirection == CELL_VECTORS_1_3) {
-        recX = reciprocalCell.linear().row(0);
-        recY = reciprocalCell.linear().row(2);
+        _recX = reciprocalCell.linear().row(0);
+        _recY = reciprocalCell.linear().row(2);
     }
 
-    FloatType recXLength = recX.length();
-    FloatType recYLength = recY.length();
+    FloatType recXLength = _recX.length();
+    FloatType recYLength = _recY.length();
     int binDataSizeXHalf = int(std::ceil(_maxWaveVector/recXLength));
     int binDataSizeYHalf = int(std::ceil(_maxWaveVector/recYLength));
     int binDataSizeX = 2*binDataSizeXHalf+1;
     int binDataSizeY = 2*binDataSizeYHalf+1;
     _numberOfBinsX = binDataSizeX;
     _numberOfBinsY = binDataSizeY;
-
-    int binDataSize = binDataSizeX*binDataSizeY;
-	_binData1.resize(binDataSize);
-	_binData2.resize(binDataSize);
-    _binData.resize(binDataSize);
-	std::fill(_binData1.begin(), _binData1.end(), 0.0);
-	std::fill(_binData2.begin(), _binData2.end(), 0.0);
-	std::fill(_binData.begin(), _binData.end(), 0.0);
 
     // Compute the distance of the two cell faces (normal.length() is area of face).
     FloatType cellVolume = expectSimulationCell()->volume();
@@ -226,81 +174,179 @@ PipelineStatus SpatialCorrelationFunctionModifier::modifyParticles(TimePoint tim
 	// Get the current positions.
 	ParticlePropertyObject* posProperty = expectStandardProperty(ParticleProperty::PositionProperty);
 
-	if(property1->size() > 0 && property2->size() > 0) {
-        const Point3* pos = posProperty->constDataPoint3();
-        const Point3* pos_end = pos + posProperty->size();
+	// Create engine object. Pass all relevant modifier parameters to the engine as well as the input data.
+	return std::make_shared<SpatialCorrelationAnalysisEngine>(posProperty->storage(),
+                                                              property1->storage(), vecComponent1, vecComponentCount1,
+                                                              property2->storage(), vecComponent2, vecComponentCount2,
+                                                              binDataSizeX, binDataSizeY,
+                                                              _recX, _recY);
+}
+
+/******************************************************************************
+* Carry out 2D Fourier transform
+******************************************************************************/
+template<typename T1, typename T2> void doubleFourierTransform2D(const Point3 *pos, const Point3 *pos_end,
+                                                                 const T1 *v1, const T1 *v1_end,
+                                                                 int vecComponentCount1,
+                                                                 const T2 *v2, const T2 *v2_end,
+                                                                 int vecComponentCount2,
+                                                                 int binDataSizeX, int binDataSizeY,
+                                                                 const Vector3 &recX, const Vector3 &recY,
+                                                                 std::vector<std::complex<FloatType>> &_binData1,
+                                                                 std::vector<std::complex<FloatType>> &_binData2,
+                                                                 int &particleCount,
+                                                                 FutureInterfaceBase& futureInterface)
+{
+    int binDataSizeXHalf = (binDataSizeX-1)/2;
+    int binDataSizeYHalf = (binDataSizeY-1)/2;
+    while (pos != pos_end && v1 != v1_end && v2 != v2_end) {
+        if (!std::isnan(*v1) && !std::isnan(*v2)) {
+            FloatType X = 2*M_PI*(recX.x()*pos->x()+recX.y()*pos->y()+recX.z()*pos->z());
+            FloatType Y = 2*M_PI*(recY.x()*pos->x()+recY.y()*pos->y()+recY.z()*pos->z());
+            for (int binIndexY = 0; binIndexY <= binDataSizeYHalf; binIndexY++) {
+                for (int binIndexX = 0; binIndexX < binDataSizeX; binIndexX++) {
+                    int binIndex = (binIndexY+binDataSizeYHalf)*binDataSizeX+binIndexX;
+                    std::complex<FloatType> phase = std::exp(std::complex<FloatType>(0.0, -(binIndexX-binDataSizeXHalf)*X-binIndexY*Y));
+                    _binData1[binIndex] += FloatType(*v1)*phase;
+                    _binData2[binIndex] += FloatType(*v2)*phase;
+                }
+
+                futureInterface.incrementProgressValue();
+                if(futureInterface.isCanceled())
+                    return;
+            }
+        }
+                
+        pos++;
+        v1 += vecComponentCount1;
+        v2 += vecComponentCount2;
+        particleCount++;
+    }
+}
+
+/******************************************************************************
+* Performs the actual computation. This method is executed in a worker thread.
+******************************************************************************/
+void SpatialCorrelationFunctionModifier::SpatialCorrelationAnalysisEngine::compute(FutureInterfaceBase& futureInterface)
+{
+	futureInterface.setProgressText(tr("Computing spatial correlation function"));
+	if(futureInterface.isCanceled())
+		return;
+
+    int particleCount = 0;
+    int binDataSizeXHalf = (_binDataSizeX-1)/2;
+    int binDataSizeYHalf = (_binDataSizeY-1)/2;
+
+	futureInterface.setProgressRange(binDataSizeYHalf);
+	futureInterface.setProgressValue(0);
+
+    int binDataSize = _binDataSizeX*_binDataSizeY;
+	_binData1.resize(binDataSize);
+	_binData2.resize(binDataSize);
+	std::fill(_binData1.begin(), _binData1.end(), 0.0);
+	std::fill(_binData2.begin(), _binData2.end(), 0.0);
+
+	if(property1()->size() > 0 && property2()->size() > 0) {
+        const Point3* pos = posProperty()->constDataPoint3();
+        const Point3* pos_end = pos + posProperty()->size();
 
         int particleCount = 0;
-		if(property1->dataType() == qMetaTypeId<FloatType>() && 
-           property2->dataType() == qMetaTypeId<FloatType>()) {
-            const FloatType* v1 = property1->constDataFloat() + vecComponent1;
-            const FloatType* v1_end = v1 + (property1->size() * vecComponentCount1);
-            const FloatType* v2 = property2->constDataFloat() + vecComponent2;
-            const FloatType* v2_end = v2 + (property2->size() * vecComponentCount2);
+		if(property1()->dataType() == qMetaTypeId<FloatType>() && 
+           property2()->dataType() == qMetaTypeId<FloatType>()) {
+            const FloatType* v1 = property1()->constDataFloat() + _vecComponent1;
+            const FloatType* v1_end = v1 + (property1()->size() * _vecComponentCount1);
+            const FloatType* v2 = property2()->constDataFloat() + _vecComponent2;
+            const FloatType* v2_end = v2 + (property2()->size() * _vecComponentCount2);
 
             doubleFourierTransform2D(pos, pos_end,
-                                     v1, v1_end, vecComponentCount1,
-                                     v2, v2_end, vecComponentCount2,
-                                     binDataSizeX, binDataSizeY, recX, recY,
-                                     _binData1, _binData2, particleCount);
+                                     v1, v1_end, _vecComponentCount1,
+                                     v2, v2_end, _vecComponentCount2,
+                                     _binDataSizeX, _binDataSizeY, _recX, _recY,
+                                     _binData1, _binData2, particleCount,
+                                     futureInterface);
 		}
-        else if(property1->dataType() == qMetaTypeId<int>() && 
-                property2->dataType() == qMetaTypeId<FloatType>()) {
-            const int* v1 = property1->constDataInt() + vecComponent1;
-            const int* v1_end = v1 + (property1->size() * vecComponentCount1);
-            const FloatType* v2 = property2->constDataFloat() + vecComponent2;
-            const FloatType* v2_end = v2 + (property2->size() * vecComponentCount2);
+        else if(property1()->dataType() == qMetaTypeId<int>() && 
+                property2()->dataType() == qMetaTypeId<FloatType>()) {
+            const int* v1 = property1()->constDataInt() + _vecComponent1;
+            const int* v1_end = v1 + (property1()->size() * _vecComponentCount1);
+            const FloatType* v2 = property2()->constDataFloat() + _vecComponent2;
+            const FloatType* v2_end = v2 + (property2()->size() * _vecComponentCount2);
 
             doubleFourierTransform2D(pos, pos_end,
-                                     v1, v1_end, vecComponentCount1,
-                                     v2, v2_end, vecComponentCount2,
-                                     binDataSizeX, binDataSizeY, recX, recY,
-                                     _binData1, _binData2, particleCount);
+                                     v1, v1_end, _vecComponentCount1,
+                                     v2, v2_end, _vecComponentCount2,
+                                     _binDataSizeX, _binDataSizeY, _recX, _recY,
+                                     _binData1, _binData2, particleCount,
+                                     futureInterface);
 		}
-		else if(property1->dataType() == qMetaTypeId<FloatType>() && 
-                property2->dataType() == qMetaTypeId<int>()) {
-            const FloatType* v1 = property1->constDataFloat() + vecComponent1;
-            const FloatType* v1_end = v1 + (property1->size() * vecComponentCount1);
-            const int* v2 = property2->constDataInt() + vecComponent2;
-            const int* v2_end = v2 + (property2->size() * vecComponentCount2);
+		else if(property1()->dataType() == qMetaTypeId<FloatType>() && 
+                property2()->dataType() == qMetaTypeId<int>()) {
+            const FloatType* v1 = property1()->constDataFloat() + _vecComponent1;
+            const FloatType* v1_end = v1 + (property1()->size() * _vecComponentCount1);
+            const int* v2 = property2()->constDataInt() + _vecComponent2;
+            const int* v2_end = v2 + (property2()->size() * _vecComponentCount2);
 
             doubleFourierTransform2D(pos, pos_end,
-                                     v1, v1_end, vecComponentCount1,
-                                     v2, v2_end, vecComponentCount2,
-                                     binDataSizeX, binDataSizeY, recX, recY,
-                                     _binData1, _binData2, particleCount);
+                                     v1, v1_end, _vecComponentCount1,
+                                     v2, v2_end, _vecComponentCount2,
+                                     _binDataSizeX, _binDataSizeY, _recX, _recY,
+                                     _binData1, _binData2, particleCount,
+                                     futureInterface);
 		}
-        else if(property1->dataType() == qMetaTypeId<int>() && 
-                property2->dataType() == qMetaTypeId<int>()) {
-            const int* v1 = property1->constDataInt() + vecComponent1;
-            const int* v1_end = v1 + (property1->size() * vecComponentCount1);
-            const int* v2 = property2->constDataInt() + vecComponent2;
-            const int* v2_end = v2 + (property2->size() * vecComponentCount2);
+        else if(property1()->dataType() == qMetaTypeId<int>() && 
+                property2()->dataType() == qMetaTypeId<int>()) {
+            const int* v1 = property1()->constDataInt() + _vecComponent1;
+            const int* v1_end = v1 + (property1()->size() * _vecComponentCount1);
+            const int* v2 = property2()->constDataInt() + _vecComponent2;
+            const int* v2_end = v2 + (property2()->size() * _vecComponentCount2);
 
             doubleFourierTransform2D(pos, pos_end,
-                                     v1, v1_end, vecComponentCount1,
-                                     v2, v2_end, vecComponentCount2,
-                                     binDataSizeX, binDataSizeY, recX, recY,
-                                     _binData1, _binData2, particleCount);
+                                     v1, v1_end, _vecComponentCount1,
+                                     v2, v2_end, _vecComponentCount2,
+                                     _binDataSizeX, _binDataSizeY, _recX, _recY,
+                                     _binData1, _binData2, particleCount,
+                                     futureInterface);
 		}
 
         // Normalize and compute correlation function.
         if (particleCount > 0) {
             for (int binIndexY = 0; binIndexY <= binDataSizeYHalf; binIndexY++) {
-                for (int binIndexX = 0; binIndexX < binDataSizeX; binIndexX++) {
-                    int binIndex = (binIndexY+binDataSizeYHalf)*binDataSizeX+binIndexX;
+                for (int binIndexX = 0; binIndexX < _binDataSizeX; binIndexX++) {
+                    int binIndex = (binIndexY+binDataSizeYHalf)*_binDataSizeX+binIndexX;
                     _binData1[binIndex] /= particleCount;
                     _binData2[binIndex] /= particleCount;
-                    _binData[binIndex] = std::real(_binData1[binIndex]*std::conj(_binData2[binIndex]));
-
-                    if (binIndexY != 0) {
-                        int binIndex2 = (binDataSizeYHalf-binIndexY)*binDataSizeX+(binDataSizeX-1-binIndexX);
-                        _binData[binIndex2] = _binData[binIndex];
-                    }
                 }
             }
         }
 	}
+}
+
+/******************************************************************************
+* Unpacks the computation results stored in the given engine object.
+******************************************************************************/
+void SpatialCorrelationFunctionModifier::retrieveModifierResults(Engine* engine)
+{
+	SpatialCorrelationAnalysisEngine* eng = static_cast<SpatialCorrelationAnalysisEngine*>(engine);
+
+    int binDataSize = _numberOfBinsX*_numberOfBinsY;
+    _binData.resize(binDataSize);
+	std::fill(_binData.begin(), _binData.end(), 0.0);
+
+    int binDataSizeXHalf = (_numberOfBinsX-1)/2;
+    int binDataSizeYHalf = (_numberOfBinsY-1)/2;
+
+    // Normalize and compute correlation function.
+    for (int binIndexY = 0; binIndexY <= binDataSizeYHalf; binIndexY++) {
+        for (int binIndexX = 0; binIndexX < _numberOfBinsX; binIndexX++) {
+            int binIndex = (binIndexY+binDataSizeYHalf)*_numberOfBinsX+binIndexX;
+            _binData[binIndex] = std::real(eng->binData1()[binIndex]*std::conj(eng->binData2()[binIndex]));
+                
+            if (binIndexY != 0) {
+                int binIndex2 = (binDataSizeYHalf-binIndexY)*_numberOfBinsX+(_numberOfBinsX-1-binIndexX);
+                _binData[binIndex2] = _binData[binIndex];
+            }
+        }
+    }
 
     if (_radialAverage) {
         std::vector<int> numberOfDataPoints(numberOfRadialBins(), 0);
@@ -308,13 +354,13 @@ PipelineStatus SpatialCorrelationFunctionModifier::modifyParticles(TimePoint tim
         std::fill(_radialBinData.begin(), _radialBinData.end(), 0.0);
 
         for (int binIndexY = 0; binIndexY <= binDataSizeYHalf; binIndexY++) {
-            for (int binIndexX = 0; binIndexX < binDataSizeX; binIndexX++) {
-                Vector3 waveVector = FloatType(binIndexX-binDataSizeXHalf)*recX + FloatType(binIndexY)*recY;
+            for (int binIndexX = 0; binIndexX < _numberOfBinsX; binIndexX++) {
+                Vector3 waveVector = FloatType(binIndexX-binDataSizeXHalf)*_recX + FloatType(binIndexY)*_recY;
                 FloatType waveVectorLength = waveVector.length();
                 int binIndex = int(std::floor(waveVectorLength*numberOfRadialBins()/maxWaveVector()));
 
                 if (binIndex < numberOfRadialBins()) {
-                    _radialBinData[binIndex] += _binData[(binIndexY+binDataSizeYHalf)*binDataSizeX+binIndexX];
+                    _radialBinData[binIndex] += _binData[(binIndexY+binDataSizeYHalf)*_numberOfBinsX+binIndexX];
                     numberOfDataPoints[binIndex]++;
                 }
             }
@@ -337,10 +383,24 @@ PipelineStatus SpatialCorrelationFunctionModifier::modifyParticles(TimePoint tim
             _propertyAxisRangeEnd = *minmax.second;
         }
 	}
+}
 
-	notifyDependents(ReferenceEvent::ObjectStatusChanged);
+/******************************************************************************
+* Is called when the value of a property of this object has changed.
+******************************************************************************/
+void SpatialCorrelationFunctionModifier::propertyChanged(const PropertyFieldDescriptor& field)
+{
+	// Recompute modifier results when the parameters have been changed.
+	if(autoUpdateEnabled()) {
+		if(field == PROPERTY_FIELD(SpatialCorrelationFunctionModifier::_sourceProperty1) ||
+           field == PROPERTY_FIELD(SpatialCorrelationFunctionModifier::_sourceProperty2) ||
+           field == PROPERTY_FIELD(SpatialCorrelationFunctionModifier::_binDirection) ||
+           field == PROPERTY_FIELD(SpatialCorrelationFunctionModifier::_maxWaveVector)) {
+            invalidateCachedResults();
+        }
+	}
 
-	return PipelineStatus(PipelineStatus::Success);
+	AsynchronousParticleModifier::propertyChanged(field);
 }
 
 /******************************************************************************
@@ -448,9 +508,8 @@ void SpatialCorrelationFunctionModifierEditor::createUI(const RolloutInsertionPa
 ******************************************************************************/
 bool SpatialCorrelationFunctionModifierEditor::referenceEvent(RefTarget* source, ReferenceEvent* event)
 {
-	if(event->sender() == editObject()
-			&& event->type() == ReferenceEvent::ObjectStatusChanged) {
-			plotSpatialCorrelationFunction();
+	if(event->sender() == editObject() && event->type() == ReferenceEvent::ObjectStatusChanged) {
+        plotSpatialCorrelationFunction();
 	}
 	return ParticleModifierEditor::referenceEvent(source, event);
 }
