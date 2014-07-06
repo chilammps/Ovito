@@ -309,7 +309,7 @@ PipelineStatus BinAndReduceModifier::modifyParticles(TimePoint time, TimeInterva
 void BinAndReduceModifierEditor::createUI(const RolloutInsertionParameters& rolloutParams)
 {
 	// Create a rollout.
-	QWidget* rollout = createRollout(tr("Bin and reduce"), rolloutParams /*, "particles.modifiers.binandreduce.html" */);
+	QWidget* rollout = createRollout(tr("Bin and reduce"), rolloutParams, "particles.modifiers.bin_and_reduce.html");
 
     // Create the rollout contents.
 	QVBoxLayout* layout = new QVBoxLayout(rollout);
