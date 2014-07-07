@@ -153,23 +153,21 @@ std::shared_ptr<AsynchronousParticleModifier::Engine> SpatialCorrelationFunction
 
     FloatType recXLength = _recX.length();
     FloatType recYLength = _recY.length();
-    int binDataSizeXHalf = int(std::ceil(_maxWaveVector/recXLength));
-    int binDataSizeYHalf = int(std::ceil(_maxWaveVector/recYLength));
-    int binDataSizeX = 2*binDataSizeXHalf+1;
-    int binDataSizeY = 2*binDataSizeYHalf+1;
-    _numberOfBinsX = binDataSizeX;
-    _numberOfBinsY = binDataSizeY;
+    int numberOfBinsXHalf = int(std::ceil(_maxWaveVector/recXLength));
+    int numberOfBinsYHalf = int(std::ceil(_maxWaveVector/recYLength));
+    _numberOfBinsX = 2*numberOfBinsXHalf+1;
+    _numberOfBinsY = 2*numberOfBinsYHalf+1;
 
     // Compute the distance of the two cell faces (normal.length() is area of face).
     FloatType cellVolume = expectSimulationCell()->volume();
-    _xAxisRangeStart = -(binDataSizeXHalf+0.5)*recXLength;
-    _xAxisRangeEnd = (binDataSizeXHalf+0.5)*recXLength;
-    _yAxisRangeStart = -(binDataSizeYHalf+0.5)*recYLength;
-    _yAxisRangeEnd = (binDataSizeYHalf+0.5)*recYLength;
-    _xDataRangeStart = -binDataSizeXHalf*recXLength;
-    _xDataRangeEnd = binDataSizeXHalf*recXLength;
-    _yDataRangeStart = -binDataSizeYHalf*recYLength;
-    _yDataRangeEnd = binDataSizeYHalf*recYLength;
+    _xAxisRangeStart = -(numberOfBinsXHalf+0.5)*recXLength;
+    _xAxisRangeEnd = (numberOfBinsXHalf+0.5)*recXLength;
+    _yAxisRangeStart = -(numberOfBinsYHalf+0.5)*recYLength;
+    _yAxisRangeEnd = (numberOfBinsYHalf+0.5)*recYLength;
+    _xDataRangeStart = -numberOfBinsXHalf*recXLength;
+    _xDataRangeEnd = numberOfBinsXHalf*recXLength;
+    _yDataRangeStart = -numberOfBinsYHalf*recYLength;
+    _yDataRangeEnd = numberOfBinsYHalf*recYLength;
 
 	// Get the current positions.
 	ParticlePropertyObject* posProperty = expectStandardProperty(ParticleProperty::PositionProperty);
@@ -178,8 +176,7 @@ std::shared_ptr<AsynchronousParticleModifier::Engine> SpatialCorrelationFunction
 	return std::make_shared<SpatialCorrelationAnalysisEngine>(posProperty->storage(),
                                                               property1->storage(), vecComponent1, vecComponentCount1,
                                                               property2->storage(), vecComponent2, vecComponentCount2,
-                                                              binDataSizeX, binDataSizeY,
-                                                              _recX, _recY);
+                                                              _numberOfBinsX, _numberOfBinsY, _recX, _recY);
 }
 
 /******************************************************************************
@@ -190,23 +187,23 @@ template<typename T1, typename T2> void doubleFourierTransform2D(const Point3 *p
                                                                  int vecComponentCount1,
                                                                  const T2 *v2, const T2 *v2_end,
                                                                  int vecComponentCount2,
-                                                                 int binDataSizeX, int binDataSizeY,
+                                                                 int numberOfBinsX, int numberOfBinsY,
                                                                  const Vector3 &recX, const Vector3 &recY,
                                                                  std::vector<std::complex<FloatType>> &_binData1,
                                                                  std::vector<std::complex<FloatType>> &_binData2,
                                                                  int &particleCount,
                                                                  FutureInterfaceBase& futureInterface)
 {
-    int binDataSizeXHalf = (binDataSizeX-1)/2;
-    int binDataSizeYHalf = (binDataSizeY-1)/2;
+    int numberOfBinsXHalf = (numberOfBinsX-1)/2;
+    int numberOfBinsYHalf = (numberOfBinsY-1)/2;
     while (pos != pos_end && v1 != v1_end && v2 != v2_end) {
         if (!std::isnan(*v1) && !std::isnan(*v2)) {
             FloatType X = 2*M_PI*(recX.x()*pos->x()+recX.y()*pos->y()+recX.z()*pos->z());
             FloatType Y = 2*M_PI*(recY.x()*pos->x()+recY.y()*pos->y()+recY.z()*pos->z());
-            for (int binIndexY = 0; binIndexY <= binDataSizeYHalf; binIndexY++) {
-                for (int binIndexX = 0; binIndexX < binDataSizeX; binIndexX++) {
-                    int binIndex = (binIndexY+binDataSizeYHalf)*binDataSizeX+binIndexX;
-                    std::complex<FloatType> phase = std::exp(std::complex<FloatType>(0.0, -(binIndexX-binDataSizeXHalf)*X-binIndexY*Y));
+            for (int binIndexY = 0; binIndexY <= numberOfBinsYHalf; binIndexY++) {
+                for (int binIndexX = 0; binIndexX < numberOfBinsX; binIndexX++) {
+                    int binIndex = (binIndexY+numberOfBinsYHalf)*numberOfBinsX+binIndexX;
+                    std::complex<FloatType> phase = std::exp(std::complex<FloatType>(0.0, -(binIndexX-numberOfBinsXHalf)*X-binIndexY*Y));
                     _binData1[binIndex] += FloatType(*v1)*phase;
                     _binData2[binIndex] += FloatType(*v2)*phase;
                 }
@@ -234,15 +231,15 @@ void SpatialCorrelationFunctionModifier::SpatialCorrelationAnalysisEngine::compu
 		return;
 
     int particleCount = 0;
-    int binDataSizeXHalf = (_binDataSizeX-1)/2;
-    int binDataSizeYHalf = (_binDataSizeY-1)/2;
+    int numberOfBinsXHalf = (_numberOfBinsX-1)/2;
+    int numberOfBinsYHalf = (_numberOfBinsY-1)/2;
 
-	futureInterface.setProgressRange(binDataSizeYHalf);
+	futureInterface.setProgressRange(numberOfBinsYHalf);
 	futureInterface.setProgressValue(0);
 
-    int binDataSize = _binDataSizeX*_binDataSizeY;
-	_binData1.resize(binDataSize);
-	_binData2.resize(binDataSize);
+    int numberOfBins = _numberOfBinsX*_numberOfBinsY;
+	_binData1.resize(numberOfBins);
+	_binData2.resize(numberOfBins);
 	std::fill(_binData1.begin(), _binData1.end(), 0.0);
 	std::fill(_binData2.begin(), _binData2.end(), 0.0);
 
@@ -261,7 +258,7 @@ void SpatialCorrelationFunctionModifier::SpatialCorrelationAnalysisEngine::compu
             doubleFourierTransform2D(pos, pos_end,
                                      v1, v1_end, _vecComponentCount1,
                                      v2, v2_end, _vecComponentCount2,
-                                     _binDataSizeX, _binDataSizeY, _recX, _recY,
+                                     _numberOfBinsX, _numberOfBinsY, _recX, _recY,
                                      _binData1, _binData2, particleCount,
                                      futureInterface);
 		}
@@ -275,7 +272,7 @@ void SpatialCorrelationFunctionModifier::SpatialCorrelationAnalysisEngine::compu
             doubleFourierTransform2D(pos, pos_end,
                                      v1, v1_end, _vecComponentCount1,
                                      v2, v2_end, _vecComponentCount2,
-                                     _binDataSizeX, _binDataSizeY, _recX, _recY,
+                                     _numberOfBinsX, _numberOfBinsY, _recX, _recY,
                                      _binData1, _binData2, particleCount,
                                      futureInterface);
 		}
@@ -289,7 +286,7 @@ void SpatialCorrelationFunctionModifier::SpatialCorrelationAnalysisEngine::compu
             doubleFourierTransform2D(pos, pos_end,
                                      v1, v1_end, _vecComponentCount1,
                                      v2, v2_end, _vecComponentCount2,
-                                     _binDataSizeX, _binDataSizeY, _recX, _recY,
+                                     _numberOfBinsX, _numberOfBinsY, _recX, _recY,
                                      _binData1, _binData2, particleCount,
                                      futureInterface);
 		}
@@ -303,16 +300,16 @@ void SpatialCorrelationFunctionModifier::SpatialCorrelationAnalysisEngine::compu
             doubleFourierTransform2D(pos, pos_end,
                                      v1, v1_end, _vecComponentCount1,
                                      v2, v2_end, _vecComponentCount2,
-                                     _binDataSizeX, _binDataSizeY, _recX, _recY,
+                                     _numberOfBinsX, _numberOfBinsY, _recX, _recY,
                                      _binData1, _binData2, particleCount,
                                      futureInterface);
 		}
 
         // Normalize and compute correlation function.
         if (particleCount > 0) {
-            for (int binIndexY = 0; binIndexY <= binDataSizeYHalf; binIndexY++) {
-                for (int binIndexX = 0; binIndexX < _binDataSizeX; binIndexX++) {
-                    int binIndex = (binIndexY+binDataSizeYHalf)*_binDataSizeX+binIndexX;
+            for (int binIndexY = 0; binIndexY <= numberOfBinsYHalf; binIndexY++) {
+                for (int binIndexX = 0; binIndexX < _numberOfBinsX; binIndexX++) {
+                    int binIndex = (binIndexY+numberOfBinsYHalf)*_numberOfBinsX+binIndexX;
                     _binData1[binIndex] /= particleCount;
                     _binData2[binIndex] /= particleCount;
                 }
@@ -328,21 +325,21 @@ void SpatialCorrelationFunctionModifier::retrieveModifierResults(Engine* engine)
 {
 	SpatialCorrelationAnalysisEngine* eng = static_cast<SpatialCorrelationAnalysisEngine*>(engine);
 
-    int binDataSize = _numberOfBinsX*_numberOfBinsY;
-    _binData.resize(binDataSize);
+    int numberOfBins = _numberOfBinsX*_numberOfBinsY;
+    _binData.resize(numberOfBins);
 	std::fill(_binData.begin(), _binData.end(), 0.0);
 
-    int binDataSizeXHalf = (_numberOfBinsX-1)/2;
-    int binDataSizeYHalf = (_numberOfBinsY-1)/2;
+    int numberOfBinsXHalf = (_numberOfBinsX-1)/2;
+    int numberOfBinsYHalf = (_numberOfBinsY-1)/2;
 
     // Normalize and compute correlation function.
-    for (int binIndexY = 0; binIndexY <= binDataSizeYHalf; binIndexY++) {
+    for (int binIndexY = 0; binIndexY <= numberOfBinsYHalf; binIndexY++) {
         for (int binIndexX = 0; binIndexX < _numberOfBinsX; binIndexX++) {
-            int binIndex = (binIndexY+binDataSizeYHalf)*_numberOfBinsX+binIndexX;
+            int binIndex = (binIndexY+numberOfBinsYHalf)*_numberOfBinsX+binIndexX;
             _binData[binIndex] = std::real(eng->binData1()[binIndex]*std::conj(eng->binData2()[binIndex]));
                 
             if (binIndexY != 0) {
-                int binIndex2 = (binDataSizeYHalf-binIndexY)*_numberOfBinsX+(_numberOfBinsX-1-binIndexX);
+                int binIndex2 = (numberOfBinsYHalf-binIndexY)*_numberOfBinsX+(_numberOfBinsX-1-binIndexX);
                 _binData[binIndex2] = _binData[binIndex];
             }
         }
@@ -353,14 +350,14 @@ void SpatialCorrelationFunctionModifier::retrieveModifierResults(Engine* engine)
         _radialBinData.resize(numberOfRadialBins());
         std::fill(_radialBinData.begin(), _radialBinData.end(), 0.0);
 
-        for (int binIndexY = 0; binIndexY <= binDataSizeYHalf; binIndexY++) {
+        for (int binIndexY = 0; binIndexY <= numberOfBinsYHalf; binIndexY++) {
             for (int binIndexX = 0; binIndexX < _numberOfBinsX; binIndexX++) {
-                Vector3 waveVector = FloatType(binIndexX-binDataSizeXHalf)*_recX + FloatType(binIndexY)*_recY;
+                Vector3 waveVector = FloatType(binIndexX-numberOfBinsXHalf)*_recX + FloatType(binIndexY)*_recY;
                 FloatType waveVectorLength = waveVector.length();
                 int binIndex = int(std::floor(waveVectorLength*numberOfRadialBins()/maxWaveVector()));
 
                 if (binIndex < numberOfRadialBins()) {
-                    _radialBinData[binIndex] += _binData[(binIndexY+binDataSizeYHalf)*_numberOfBinsX+binIndexX];
+                    _radialBinData[binIndex] += _binData[(binIndexY+numberOfBinsYHalf)*_numberOfBinsX+binIndexX];
                     numberOfDataPoints[binIndex]++;
                 }
             }
@@ -524,7 +521,7 @@ void SpatialCorrelationFunctionModifierEditor::plotSpatialCorrelationFunction()
 		return;
     
     if (modifier->radialAverage()) {
-        int binDataSize = modifier->numberOfRadialBins();
+        int numberOfBins = modifier->numberOfRadialBins();
 
         // If previous plot was a color map, delete and create graph.
         if (!_correlationFunctionGraph) {
@@ -546,10 +543,10 @@ void SpatialCorrelationFunctionModifierEditor::plotSpatialCorrelationFunction()
         if(modifier->binData().empty())
             return;
 
-        QVector<double> xdata(binDataSize);
-        QVector<double> ydata(binDataSize);
-        double binSize = modifier->maxWaveVector() / binDataSize;
-        for(int i = 0; i < binDataSize; i++) {
+        QVector<double> xdata(numberOfBins);
+        QVector<double> ydata(numberOfBins);
+        double binSize = modifier->maxWaveVector() / numberOfBins;
+        for(int i = 0; i < numberOfBins; i++) {
             xdata[i] = binSize * ((double)i + 0.5);
             ydata[i] = modifier->radialBinData()[i];
         }
@@ -561,9 +558,9 @@ void SpatialCorrelationFunctionModifierEditor::plotSpatialCorrelationFunction()
         _correlationFunctionPlot->yAxis->setRange(modifier->propertyAxisRangeStart(), modifier->propertyAxisRangeEnd());
     }
     else {
-        int binDataSizeX = std::max(1, modifier->numberOfBinsX());
-        int binDataSizeY = std::max(1, modifier->numberOfBinsY());
-        int bnDataSize = binDataSizeX*binDataSizeY;
+        int numberOfBinsX = std::max(1, modifier->numberOfBinsX());
+        int numberOfBinsY = std::max(1, modifier->numberOfBinsY());
+        int bnDataSize = numberOfBinsX*numberOfBinsY;
 
         // If previous plot was a graph, delete and create color map.
         if (!_correlationFunctionColorMap) {
@@ -586,7 +583,7 @@ void SpatialCorrelationFunctionModifierEditor::plotSpatialCorrelationFunction()
         _correlationFunctionColorMap->setTightBoundary(false);
         _correlationFunctionColorMap->setGradient(QCPColorGradient::gpJet);
 
-        _correlationFunctionColorMap->data()->setSize(binDataSizeX, binDataSizeY);
+        _correlationFunctionColorMap->data()->setSize(numberOfBinsX, numberOfBinsY);
         _correlationFunctionColorMap->data()->setRange(QCPRange(modifier->xDataRangeStart(), modifier->xDataRangeEnd()),
                                                        QCPRange(modifier->yDataRangeStart(), modifier->yDataRangeEnd()));
     
@@ -594,9 +591,9 @@ void SpatialCorrelationFunctionModifierEditor::plotSpatialCorrelationFunction()
         _correlationFunctionPlot->yAxis->setRange(QCPRange(modifier->yAxisRangeStart(), modifier->yAxisRangeEnd()));
     
         // Copy data to QCPColorMapData object.
-        for (int j = 0; j < binDataSizeY; j++) {
-            for (int i = 0; i < binDataSizeX; i++) {
-                _correlationFunctionColorMap->data()->setCell(i, j, modifier->binData()[j*binDataSizeX+i]);
+        for (int j = 0; j < numberOfBinsY; j++) {
+            for (int i = 0; i < numberOfBinsX; i++) {
+                _correlationFunctionColorMap->data()->setCell(i, j, modifier->binData()[j*numberOfBinsX+i]);
             }
         }
         
@@ -632,23 +629,23 @@ void SpatialCorrelationFunctionModifierEditor::onSaveData()
 		if(!file.open(QIODevice::WriteOnly | QIODevice::Text))
 			throw Exception(tr("Could not open file for writing: %1").arg(file.errorString()));
 
-        int binDataSizeX = std::max(1, modifier->numberOfBinsX());
-        int binDataSizeY = std::max(1, modifier->numberOfBinsY());
-		FloatType binSizeX = (modifier->xAxisRangeEnd() - modifier->xAxisRangeStart()) / binDataSizeX;
-		FloatType binSizeY = (modifier->yAxisRangeEnd() - modifier->yAxisRangeStart()) / binDataSizeY;
+        int numberOfBinsX = std::max(1, modifier->numberOfBinsX());
+        int numberOfBinsY = std::max(1, modifier->numberOfBinsY());
+		FloatType binSizeX = (modifier->xAxisRangeEnd() - modifier->xAxisRangeStart()) / numberOfBinsX;
+		FloatType binSizeY = (modifier->yAxisRangeEnd() - modifier->yAxisRangeStart()) / numberOfBinsY;
 
 		QTextStream stream(&file);
-        if (binDataSizeY == 1) {
+        if (numberOfBinsY == 1) {
             stream << "# " << modifier->sourceProperty1().name() << " bin size: " << binSizeX << endl;
             for(int i = 0; i < modifier->binData().size(); i++) {
                 stream << (binSizeX * (FloatType(i) + 0.5f) + modifier->xAxisRangeStart()) << " " << modifier->binData()[i] << endl;
             }
         }
         else {
-            stream << "# " << modifier->sourceProperty1().name() << " bin size X: " << binDataSizeX << ", bin size Y: " << binDataSizeY << endl;
-            for(int i = 0; i < binDataSizeY; i++) {
-                for(int j = 0; j < binDataSizeX; j++) {
-                    stream << modifier->binData()[i*binDataSizeX+j] << " ";
+            stream << "# " << modifier->sourceProperty1().name() << " bin size X: " << numberOfBinsX << ", bin size Y: " << numberOfBinsY << endl;
+            for(int i = 0; i < numberOfBinsY; i++) {
+                for(int j = 0; j < numberOfBinsX; j++) {
+                    stream << modifier->binData()[i*numberOfBinsX+j] << " ";
                 }
                 stream << endl;
             }
