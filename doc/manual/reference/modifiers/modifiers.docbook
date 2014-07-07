@@ -37,6 +37,10 @@
               <entry>Calculates the atomic-level strain tensors based on an initial reference and a deformed configuration. </entry>
             </row>
             <row>
+              <entry><link linkend="particles.modifiers.bin_and_reduce">Bin and reduce</link></entry>
+              <entry>Agregates a particle property over a one- or two-dimensional bin grid.</entry>
+            </row>          
+            <row>
               <entry><link linkend="particles.modifiers.bond_angle_analysis">Bond-angle analysis</link></entry>
               <entry>Performs the bond-angle analysis of Ackland and Jones to determine the local crystal structure.</entry>
             </row>          
@@ -171,6 +175,8 @@
   <xi:include href="particles/assign_color.docbook"/>
 
   <xi:include href="particles/atomic_strain.docbook"/>
+
+  <xi:include href="particles/bin_and_reduce.docbook"/>
   
   <xi:include href="particles/bond_angle_analysis.docbook"/>
 

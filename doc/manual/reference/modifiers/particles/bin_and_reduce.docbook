@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<section version="5.0"
+         xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xml:id="particles.modifiers.bin_and_reduce"
+         xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title>Bin and reduce</title>
+
+  <para>
+  
+    <informalfigure><screenshot><mediaobject><imageobject>
+       <imagedata fileref="images/modifiers/bin_and_reduce_panel.png" format="PNG" />
+    </imageobject></mediaobject></screenshot></informalfigure>
+  
+  This modifier applies an <emphasis>reduction</emphasis> operation to a certain property
+  of all particles within a spatial bin.
+  </para>
+  
+  <para>
+  The reduction operation can be a sum, an average (mean), or the minimum or maximum value of
+  the property with the bin.
+  </para>
+
+  <para>
+  The spatial bins are aligned parallel to the simulation cell axes.
+  </para>
+
+  <para>
+  The bin grid can be one- or two-dimensional.
+  </para>
+
+  <simplesect>
+    <title>Parameters</title>
+
+    <variablelist>
+      <varlistentry>
+        <term>Property</term>
+        <listitem>
+          <para>The particle property the reduction operation should be applied to.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>Reduction operation</term>
+        <listitem>
+          <para>The type of reduction operation to be carried out. Possibilities are sum, mean, min or max.
+          There is an additional option "sum divided by bin volume" that sums first and then divides the result
+          by the volume of the respective bin. This option is intended to compute pressure (or stress) within
+          each bin from the per-atom virial.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>Binning direction</term>
+        <listitem>
+          <para>The alignment of the bins. Note that selecting a single cell vectors gives a
+          one-dimensional bin grid. Bins are aligned perpendicular to the selected cell vector.
+          Selecting two cell vectors gives a two-dimensional bin grid. Bins are aligned perpendicular
+          to both cell vectors (i.e. parallel to the third vector).</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>Compute first derivatives</term>
+        <listitem>
+          <para>Numerically compute the first derivative of the binned data using a finite differences
+          approximation. This works only for one-dimensional bin grids. (It is useful to e.g. compute derivatives
+          of a velocity profile to get the shear rate.)</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>Number of spatial bins</term>
+        <listitem>
+          <para>Number of bins in both binning directions.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>Fix property axis range</term>
+        <listitem>
+          <para>If selected, the property axis (or color scale for 2D plots) will scale from the values given
+          in the "From:" and "To:" fields. Otherwise, the maximum and minimum value of the data will be used
+          as bounds for the axes.</para>
+        </listitem>
+      </varlistentry>
+
+
+    </variablelist>
+  </simplesect>
+</section>
