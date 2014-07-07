@@ -85,16 +85,16 @@ public:
 	/// Sets the number of spatial bins of the computed correlation value.
 	void setNumberOfRadialBins(int n) { _numberOfRadialBins = n; }
 
-	/// Returns the number of spatial bins of the computed correlation value.
+	/// Returns the number of spatial bins in X-direction of the computed correlation value.
 	int numberOfBinsX() const { return _numberOfBinsX; }
 
-	/// Sets the number of spatial bins of the computed correlation value.
+	/// Sets the number of spatial bins in X-direction of the computed correlation value.
 	void setNumberOfBinsX(int n) { _numberOfBinsX = n; }
 
-	/// Returns the number of spatial bins of the computed correlation value.
+	/// Returns the number of spatial bins in Y-direction of the computed correlation value.
 	int numberOfBinsY() const { return _numberOfBinsY; }
 
-	/// Sets the number of spatial bins of the computed correlation value.
+	/// Sets the number of spatial bins in Y-direction of the computed correlation value.
 	void setNumberOfBinsY(int n) { _numberOfBinsY = n; }
 
 	/// Returns compute first derivative
@@ -195,26 +195,37 @@ private:
 
     private:
 
+        /// Position particle property.
         QExplicitlySharedDataPointer<ParticleProperty> _posProperty;
 
+        /// The first source particle property for which the correlation function is computed.
         QExplicitlySharedDataPointer<ParticleProperty> _property1;
 
+        /// Vector component for the first particle property.
         int _vecComponent1;
 
+        /// Total number of vector components of the first particle property.
         int _vecComponentCount1;
 
+        /// The second source particle property for which the correlation function is computed.
         QExplicitlySharedDataPointer<ParticleProperty> _property2;
 
+        /// Vector component for the second particle property.
         int _vecComponent2;
 
+        /// Total number of vector components of the second particle property.
         int _vecComponentCount2;
 
+        /// Number of spatial bins in X-direction of the computed correlation value.
         int _binDataSizeX;
 
+        /// Number of spatial bins in Y-direction of the computed correlation value.
         int _binDataSizeY;
 
+        /// Reciprocal cell vector that maps on the X-axis of the graph.
         Vector3 _recX;
 
+        /// Reciprocal cell vector that maps on the Y-axis of the graph.
         Vector3 _recY;        
 
         /// Stores the Fourier transform of property 1.
@@ -299,8 +310,10 @@ private:
 	/// Stores the end value of the plotting y-data.
 	FloatType _yDataRangeEnd;
 
+    /// Reciprocal cell vector that maps on the X-axis of the graph.
     Vector3 _recX;
 
+    /// Reciprocal cell vector that maps on the Y-axis of the graph.
     Vector3 _recY;
 
 	/// Stores the correlation function.
