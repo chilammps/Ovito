@@ -345,27 +345,26 @@ void SpatialCorrelationFunctionModifier::retrieveModifierResults(Engine* engine)
         }
     }
 
-    if (_radialAverage) {
-        std::vector<int> numberOfDataPoints(numberOfRadialBins(), 0);
-        _radialBinData.resize(numberOfRadialBins());
-        std::fill(_radialBinData.begin(), _radialBinData.end(), 0.0);
+    // Compute radial average.
+    std::vector<int> numberOfDataPoints(numberOfRadialBins(), 0);
+    _radialBinData.resize(numberOfRadialBins());
+    std::fill(_radialBinData.begin(), _radialBinData.end(), 0.0);
 
-        for (int binIndexY = 0; binIndexY <= numberOfBinsYHalf; binIndexY++) {
-            for (int binIndexX = 0; binIndexX < _numberOfBinsX; binIndexX++) {
-                Vector3 waveVector = FloatType(binIndexX-numberOfBinsXHalf)*_recX + FloatType(binIndexY)*_recY;
-                FloatType waveVectorLength = waveVector.length();
-                int binIndex = int(std::floor(waveVectorLength*numberOfRadialBins()/maxWaveVector()));
+    for (int binIndexY = 0; binIndexY <= numberOfBinsYHalf; binIndexY++) {
+        for (int binIndexX = 0; binIndexX < _numberOfBinsX; binIndexX++) {
+            Vector3 waveVector = FloatType(binIndexX-numberOfBinsXHalf)*_recX + FloatType(binIndexY)*_recY;
+            FloatType waveVectorLength = waveVector.length();
+            int binIndex = int(std::floor(waveVectorLength*numberOfRadialBins()/maxWaveVector()));
 
-                if (binIndex < numberOfRadialBins()) {
-                    _radialBinData[binIndex] += _binData[(binIndexY+numberOfBinsYHalf)*_numberOfBinsX+binIndexX];
-                    numberOfDataPoints[binIndex]++;
-                }
+            if (binIndex < numberOfRadialBins()) {
+                _radialBinData[binIndex] += _binData[(binIndexY+numberOfBinsYHalf)*_numberOfBinsX+binIndexX];
+                numberOfDataPoints[binIndex]++;
             }
         }
+    }
 
-        for (int binIndex = 0; binIndex < numberOfRadialBins(); binIndex++) {
-            _radialBinData[binIndex] /= numberOfDataPoints[binIndex];
-        }
+    for (int binIndex = 0; binIndex < numberOfRadialBins(); binIndex++) {
+        _radialBinData[binIndex] /= numberOfDataPoints[binIndex];
     }
 
 	if (!_fixPropertyAxisRange) {
@@ -392,7 +391,8 @@ void SpatialCorrelationFunctionModifier::propertyChanged(const PropertyFieldDesc
 		if(field == PROPERTY_FIELD(SpatialCorrelationFunctionModifier::_sourceProperty1) ||
            field == PROPERTY_FIELD(SpatialCorrelationFunctionModifier::_sourceProperty2) ||
            field == PROPERTY_FIELD(SpatialCorrelationFunctionModifier::_binDirection) ||
-           field == PROPERTY_FIELD(SpatialCorrelationFunctionModifier::_maxWaveVector)) {
+           field == PROPERTY_FIELD(SpatialCorrelationFunctionModifier::_maxWaveVector) ||
+           field == PROPERTY_FIELD(SpatialCorrelationFunctionModifier::_numberOfRadialBins)) {
             invalidateCachedResults();
         }
 	}
@@ -505,7 +505,8 @@ void SpatialCorrelationFunctionModifierEditor::createUI(const RolloutInsertionPa
 ******************************************************************************/
 bool SpatialCorrelationFunctionModifierEditor::referenceEvent(RefTarget* source, ReferenceEvent* event)
 {
-	if(event->sender() == editObject() && event->type() == ReferenceEvent::ObjectStatusChanged) {
+	if(event->sender() == editObject() &&
+       (event->type() == ReferenceEvent::ObjectStatusChanged || event->type() == ReferenceEvent::TargetChanged)) {
         plotSpatialCorrelationFunction();
 	}
 	return ParticleModifierEditor::referenceEvent(source, event);
