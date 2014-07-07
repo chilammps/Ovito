@@ -168,12 +168,12 @@ private:
         SpatialCorrelationAnalysisEngine(ParticleProperty *posProperty,
                                          ParticleProperty *property1, int vecComponent1, int vecComponentCount1,
                                          ParticleProperty *property2, int vecComponent2, int vecComponentCount2,
-                                         int binDataSizeX, int binDataSizeY,
+                                         int numberOfBinsX, int numberOfBinsY,
                                          Vector3 recX, Vector3 recY) :
             _posProperty(posProperty),
             _property1(property1), _vecComponent1(vecComponent1), _vecComponentCount1(vecComponentCount1),
             _property2(property2), _vecComponent2(vecComponent2), _vecComponentCount2(vecComponentCount2),
-            _binDataSizeX(binDataSizeX), _binDataSizeY(binDataSizeY), _recX(recX), _recY(recY) {}
+            _numberOfBinsX(numberOfBinsX), _numberOfBinsY(numberOfBinsY), _recX(recX), _recY(recY) {}
 
 		/// Computes the modifier's results and stores them in this object for later retrieval.
 		virtual void compute(FutureInterfaceBase& futureInterface) override;
@@ -217,10 +217,10 @@ private:
         int _vecComponentCount2;
 
         /// Number of spatial bins in X-direction of the computed correlation value.
-        int _binDataSizeX;
+        int _numberOfBinsX;
 
         /// Number of spatial bins in Y-direction of the computed correlation value.
-        int _binDataSizeY;
+        int _numberOfBinsY;
 
         /// Reciprocal cell vector that maps on the X-axis of the graph.
         Vector3 _recX;
