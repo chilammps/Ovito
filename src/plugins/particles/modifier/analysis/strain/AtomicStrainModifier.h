@@ -115,6 +115,24 @@ public:
 	/// the strain tensor could not be computed.
 	size_t invalidParticleCount() const { return _numInvalidParticles; }
 
+	/// Returns whether to use a reference frame relative to current frame.
+	bool useReferenceFrameOffset() const { return _useReferenceFrameOffset; }
+
+	/// Sets whether to use a reference frame relative to current frame.
+	void setUseReferenceFrameOffset(bool useOffset) { _useReferenceFrameOffset = useOffset; }
+
+	/// Returns the absolute frame number from reference file to use when calculating displacement vectors.
+	int referenceFrameNumber() const { return _referenceFrameNumber; }
+
+	/// Sets the absolute frame number from reference file to use when calculating displacement vectors.
+	void setReferenceFrameNumber(int frame) { _referenceFrameNumber = frame; }
+
+	/// Returns the relative frame offset to use.
+	int referenceFrameOffset() const { return _referenceFrameOffset; }
+
+	/// Sets the relative frame offset to use.
+	void setReferenceFrameOffset(int frameOffset) { _referenceFrameOffset = frameOffset; }
+
 public:
 
 	Q_PROPERTY(bool eliminateCellDeformation READ eliminateCellDeformation WRITE setEliminateCellDeformation)
@@ -122,10 +140,17 @@ public:
 	Q_PROPERTY(bool calculateDeformationGradients READ calculateDeformationGradients WRITE setCalculateDeformationGradients)
 	Q_PROPERTY(bool calculateStrainTensors READ calculateStrainTensors WRITE setCalculateStrainTensors)
 	Q_PROPERTY(bool selectInvalidParticles READ selectInvalidParticles WRITE setSelectInvalidParticles)
+	Q_PROPERTY(bool useReferenceFrameOffset READ useReferenceFrameOffset WRITE setUseReferenceFrameOffset);
+	Q_PROPERTY(int referenceFrameNumber READ referenceFrameNumber WRITE setReferenceFrameNumber);
+	Q_PROPERTY(int referenceFrameOffset READ referenceFrameOffset WRITE setReferenceFrameOffset);
 	Q_PROPERTY(FloatType cutoff READ cutoff WRITE setCutoff)
 	Q_PROPERTY(SceneObject* referenceConfiguration READ referenceConfiguration WRITE setReferenceConfiguration);
 	Q_PROPERTY(QUrl referenceSource READ referenceSource WRITE setReferenceSource);
 	Q_PROPERTY(int invalidParticleCount READ invalidParticleCount);
+
+	Q_PROPERTY(bool useReferenceFrameOffset READ useReferenceFrameOffset WRITE setUseReferenceFrameOffset);
+	Q_PROPERTY(int referenceFrameNumber READ referenceFrameNumber WRITE setReferenceFrameNumber);
+	Q_PROPERTY(int referenceFrameOffset READ referenceFrameOffset WRITE setReferenceFrameOffset);
 
 private:
 
@@ -265,6 +290,15 @@ protected:
 	/// Controls the whether particles, for which the strain tensor could not be computed, are selected.
 	PropertyField<bool> _selectInvalidParticles;
 
+	/// Specify reference frame relative to current frame.
+	PropertyField<bool> _useReferenceFrameOffset;
+
+	/// Absolute frame number from reference file to use when calculating displacement vectors.
+	PropertyField<int> _referenceFrameNumber;
+
+	/// Relative frame offset for reference coordinates.
+	PropertyField<int> _referenceFrameOffset;
+
 	/// Counts the number of invalid particles for which the strain tensor could not be computed.
 	size_t _numInvalidParticles;
 
@@ -284,6 +318,9 @@ private:
 	DECLARE_PROPERTY_FIELD(_calculateDeformationGradients)
 	DECLARE_PROPERTY_FIELD(_calculateStrainTensors)
 	DECLARE_PROPERTY_FIELD(_selectInvalidParticles)
+	DECLARE_PROPERTY_FIELD(_useReferenceFrameOffset);
+	DECLARE_PROPERTY_FIELD(_referenceFrameNumber);
+	DECLARE_PROPERTY_FIELD(_referenceFrameOffset);
 };
 
 /******************************************************************************

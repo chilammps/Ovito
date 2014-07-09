@@ -24,6 +24,8 @@
 #include <core/animation/AnimationSettings.h>
 #include <core/dataset/importexport/LinkedFileObject.h>
 #include <core/gui/properties/BooleanParameterUI.h>
+#include <core/gui/properties/BooleanRadioButtonParameterUI.h>
+#include <core/gui/properties/IntegerParameterUI.h>
 #include <core/gui/properties/SubObjectParameterUI.h>
 #include <core/utilities/concurrent/ParallelFor.h>
 #include "AtomicStrainModifier.h"
@@ -41,6 +43,9 @@ DEFINE_FLAGS_PROPERTY_FIELD(AtomicStrainModifier, _cutoff, "Cutoff", PROPERTY_FI
 DEFINE_PROPERTY_FIELD(AtomicStrainModifier, _calculateDeformationGradients, "CalculateDeformationGradients");
 DEFINE_PROPERTY_FIELD(AtomicStrainModifier, _calculateStrainTensors, "CalculateStrainTensors");
 DEFINE_PROPERTY_FIELD(AtomicStrainModifier, _selectInvalidParticles, "SelectInvalidParticles");
+DEFINE_PROPERTY_FIELD(AtomicStrainModifier, _useReferenceFrameOffset, "UseReferenceFrameOffet");
+DEFINE_PROPERTY_FIELD(AtomicStrainModifier, _referenceFrameNumber, "ReferenceFrameNumber");
+DEFINE_FLAGS_PROPERTY_FIELD(AtomicStrainModifier, _referenceFrameOffset, "ReferenceFrameOffset", PROPERTY_FIELD_MEMORIZE);
 SET_PROPERTY_FIELD_LABEL(AtomicStrainModifier, _referenceObject, "Reference Configuration");
 SET_PROPERTY_FIELD_LABEL(AtomicStrainModifier, _referenceShown, "Show reference configuration");
 SET_PROPERTY_FIELD_LABEL(AtomicStrainModifier, _eliminateCellDeformation, "Eliminate homogeneous cell deformation");
@@ -49,6 +54,9 @@ SET_PROPERTY_FIELD_LABEL(AtomicStrainModifier, _cutoff, "Cutoff radius");
 SET_PROPERTY_FIELD_LABEL(AtomicStrainModifier, _calculateDeformationGradients, "Output deformation gradient tensors");
 SET_PROPERTY_FIELD_LABEL(AtomicStrainModifier, _calculateStrainTensors, "Output strain tensors");
 SET_PROPERTY_FIELD_LABEL(AtomicStrainModifier, _selectInvalidParticles, "Select invalid particles");
+SET_PROPERTY_FIELD_LABEL(AtomicStrainModifier, _useReferenceFrameOffset, "Use reference frame offset");
+SET_PROPERTY_FIELD_LABEL(AtomicStrainModifier, _referenceFrameNumber, "Reference frame number");
+SET_PROPERTY_FIELD_LABEL(AtomicStrainModifier, _referenceFrameOffset, "Reference frame offset");
 SET_PROPERTY_FIELD_UNITS(AtomicStrainModifier, _cutoff, WorldParameterUnit);
 
 /******************************************************************************
@@ -61,7 +69,8 @@ AtomicStrainModifier::AtomicStrainModifier(DataSet* dataset) : AsynchronousParti
 	_volumetricStrainValues(new ParticleProperty(0, qMetaTypeId<FloatType>(), sizeof(FloatType), 1, tr("Volumetric Strain"))),
 	_strainTensors(new ParticleProperty(0, ParticleProperty::StrainTensorProperty)),
 	_deformationGradients(new ParticleProperty(0, ParticleProperty::DeformationGradientProperty)),
-	_invalidParticles(new ParticleProperty(0, ParticleProperty::SelectionProperty))
+    _invalidParticles(new ParticleProperty(0, ParticleProperty::SelectionProperty)),
+    _useReferenceFrameOffset(false), _referenceFrameNumber(0), _referenceFrameOffset(-1)
 {
 	INIT_PROPERTY_FIELD(AtomicStrainModifier::_referenceObject);
 	INIT_PROPERTY_FIELD(AtomicStrainModifier::_referenceShown);
@@ -71,6 +80,9 @@ AtomicStrainModifier::AtomicStrainModifier(DataSet* dataset) : AsynchronousParti
 	INIT_PROPERTY_FIELD(AtomicStrainModifier::_calculateDeformationGradients);
 	INIT_PROPERTY_FIELD(AtomicStrainModifier::_calculateStrainTensors);
 	INIT_PROPERTY_FIELD(AtomicStrainModifier::_selectInvalidParticles);
+	INIT_PROPERTY_FIELD(AtomicStrainModifier::_useReferenceFrameOffset);
+	INIT_PROPERTY_FIELD(AtomicStrainModifier::_referenceFrameNumber);
+	INIT_PROPERTY_FIELD(AtomicStrainModifier::_referenceFrameOffset);
 
 	// Create the scene object, which will be responsible for loading
 	// and storing the reference configuration.
@@ -124,8 +136,21 @@ std::shared_ptr<AsynchronousParticleModifier::Engine> AtomicStrainModifier::crea
 	if(!referenceConfiguration())
 		throw Exception(tr("Cannot calculate displacements. Reference configuration has not been specified."));
 
-	// Always use frame 0 as reference configuration.
-	int referenceFrame = 0;
+	// What is the reference frame number to use?
+	int referenceFrame;
+	if(_useReferenceFrameOffset) {
+		// Determine the current frame, preferably from the attributes stored with the pipeline flow state.
+		// If the "Frame" attribute is not present, infer it from the current animation time.
+		int currentFrame = input().attributes().value(QStringLiteral("Frame"),
+				dataset()->animationSettings()->timeToFrame(time)).toInt();
+
+		// Use frame offset relative to current configuration.
+		referenceFrame = currentFrame + _referenceFrameOffset;
+	}
+	else {
+		// Always use the same, user-specified frame as reference configuration.
+		referenceFrame = _referenceFrameNumber;
+	}
 
 	// Get the reference configuration.
 	PipelineFlowState refState;
@@ -474,6 +499,37 @@ void AtomicStrainModifierEditor::createUI(const RolloutInsertionParameters& roll
 
 	BooleanParameterUI* selectInvalidParticlesUI = new BooleanParameterUI(this, PROPERTY_FIELD(AtomicStrainModifier::_selectInvalidParticles));
 	layout->addWidget(selectInvalidParticlesUI->checkBox());
+
+	QGroupBox* referenceFrameGroupBox = new QGroupBox(tr("Reference frame"));
+	layout->addWidget(referenceFrameGroupBox);
+
+	QGridLayout* sublayout = new QGridLayout(referenceFrameGroupBox);
+	sublayout->setContentsMargins(4,4,4,4);
+	sublayout->setSpacing(4);
+	sublayout->setColumnStretch(0, 5);
+	sublayout->setColumnStretch(2, 95);
+
+	// Add box for selection between absolute and relative reference frames.
+	BooleanRadioButtonParameterUI* useFrameOffsetUI = new BooleanRadioButtonParameterUI(this, PROPERTY_FIELD(AtomicStrainModifier::_useReferenceFrameOffset));
+	useFrameOffsetUI->buttonTrue()->setText(tr("Relative to current frame"));
+	useFrameOffsetUI->buttonFalse()->setText(tr("Fixed reference configuration"));
+	sublayout->addWidget(useFrameOffsetUI->buttonFalse(), 0, 0, 1, 3);
+
+	IntegerParameterUI* frameNumberUI = new IntegerParameterUI(this, PROPERTY_FIELD(AtomicStrainModifier::_referenceFrameNumber));
+	frameNumberUI->label()->setText(tr("Frame number:"));
+	sublayout->addWidget(frameNumberUI->label(), 1, 1, 1, 1);
+	sublayout->addLayout(frameNumberUI->createFieldLayout(), 1, 2, 1, 1);
+	frameNumberUI->setMinValue(0);
+	frameNumberUI->setEnabled(false);
+	connect(useFrameOffsetUI->buttonFalse(), &QRadioButton::toggled, frameNumberUI, &IntegerParameterUI::setEnabled);
+
+	sublayout->addWidget(useFrameOffsetUI->buttonTrue(), 2, 0, 1, 3);
+	IntegerParameterUI* frameOffsetUI = new IntegerParameterUI(this, PROPERTY_FIELD(AtomicStrainModifier::_referenceFrameOffset));
+	frameOffsetUI->label()->setText(tr("Frame offset:"));
+	sublayout->addWidget(frameOffsetUI->label(), 3, 1, 1, 1);
+	sublayout->addLayout(frameOffsetUI->createFieldLayout(), 3, 2, 1, 1);
+	frameOffsetUI->setEnabled(false);
+	connect(useFrameOffsetUI->buttonTrue(), &QRadioButton::toggled, frameOffsetUI, &IntegerParameterUI::setEnabled);
 
 	// Status label.
 	layout->addSpacing(6);
