@@ -42,6 +42,7 @@ DEFINE_PROPERTY_FIELD(AtomicStrainModifier, _assumeUnwrappedCoordinates, "Assume
 DEFINE_FLAGS_PROPERTY_FIELD(AtomicStrainModifier, _cutoff, "Cutoff", PROPERTY_FIELD_MEMORIZE);
 DEFINE_PROPERTY_FIELD(AtomicStrainModifier, _calculateDeformationGradients, "CalculateDeformationGradients");
 DEFINE_PROPERTY_FIELD(AtomicStrainModifier, _calculateStrainTensors, "CalculateStrainTensors");
+DEFINE_PROPERTY_FIELD(AtomicStrainModifier, _calculateNonaffineSquaredDisplacements, "CalculateNonaffineSquaredDisplacements");
 DEFINE_PROPERTY_FIELD(AtomicStrainModifier, _selectInvalidParticles, "SelectInvalidParticles");
 DEFINE_PROPERTY_FIELD(AtomicStrainModifier, _useReferenceFrameOffset, "UseReferenceFrameOffet");
 DEFINE_PROPERTY_FIELD(AtomicStrainModifier, _referenceFrameNumber, "ReferenceFrameNumber");
@@ -53,6 +54,7 @@ SET_PROPERTY_FIELD_LABEL(AtomicStrainModifier, _assumeUnwrappedCoordinates, "Ass
 SET_PROPERTY_FIELD_LABEL(AtomicStrainModifier, _cutoff, "Cutoff radius");
 SET_PROPERTY_FIELD_LABEL(AtomicStrainModifier, _calculateDeformationGradients, "Output deformation gradient tensors");
 SET_PROPERTY_FIELD_LABEL(AtomicStrainModifier, _calculateStrainTensors, "Output strain tensors");
+SET_PROPERTY_FIELD_LABEL(AtomicStrainModifier, _calculateNonaffineSquaredDisplacements, "Output non-affine squared displacements (D^2_min)");
 SET_PROPERTY_FIELD_LABEL(AtomicStrainModifier, _selectInvalidParticles, "Select invalid particles");
 SET_PROPERTY_FIELD_LABEL(AtomicStrainModifier, _useReferenceFrameOffset, "Use reference frame offset");
 SET_PROPERTY_FIELD_LABEL(AtomicStrainModifier, _referenceFrameNumber, "Reference frame number");
@@ -64,11 +66,13 @@ SET_PROPERTY_FIELD_UNITS(AtomicStrainModifier, _cutoff, WorldParameterUnit);
 ******************************************************************************/
 AtomicStrainModifier::AtomicStrainModifier(DataSet* dataset) : AsynchronousParticleModifier(dataset),
 	_referenceShown(false), _eliminateCellDeformation(false), _assumeUnwrappedCoordinates(false),
-	_cutoff(3), _calculateDeformationGradients(false), _calculateStrainTensors(false), _selectInvalidParticles(true),
+    _cutoff(3), _calculateDeformationGradients(false), _calculateStrainTensors(false), _calculateNonaffineSquaredDisplacements(false),
+    _selectInvalidParticles(true),
 	_shearStrainValues(new ParticleProperty(0, qMetaTypeId<FloatType>(), sizeof(FloatType), 1, tr("Shear Strain"))),
 	_volumetricStrainValues(new ParticleProperty(0, qMetaTypeId<FloatType>(), sizeof(FloatType), 1, tr("Volumetric Strain"))),
 	_strainTensors(new ParticleProperty(0, ParticleProperty::StrainTensorProperty)),
 	_deformationGradients(new ParticleProperty(0, ParticleProperty::DeformationGradientProperty)),
+	_nonaffineSquaredDisplacements(new ParticleProperty(0, ParticleProperty::NonaffineSquaredDisplacementProperty)),
     _invalidParticles(new ParticleProperty(0, ParticleProperty::SelectionProperty)),
     _useReferenceFrameOffset(false), _referenceFrameNumber(0), _referenceFrameOffset(-1)
 {
@@ -79,6 +83,7 @@ AtomicStrainModifier::AtomicStrainModifier(DataSet* dataset) : AsynchronousParti
 	INIT_PROPERTY_FIELD(AtomicStrainModifier::_cutoff);
 	INIT_PROPERTY_FIELD(AtomicStrainModifier::_calculateDeformationGradients);
 	INIT_PROPERTY_FIELD(AtomicStrainModifier::_calculateStrainTensors);
+	INIT_PROPERTY_FIELD(AtomicStrainModifier::_calculateNonaffineSquaredDisplacements);
 	INIT_PROPERTY_FIELD(AtomicStrainModifier::_selectInvalidParticles);
 	INIT_PROPERTY_FIELD(AtomicStrainModifier::_useReferenceFrameOffset);
 	INIT_PROPERTY_FIELD(AtomicStrainModifier::_referenceFrameNumber);
@@ -197,8 +202,9 @@ std::shared_ptr<AsynchronousParticleModifier::Engine> AtomicStrainModifier::crea
 
 	// Create engine object. Pass all relevant modifier parameters to the engine as well as the input data.
 	return std::make_shared<AtomicStrainEngine>(posProperty->storage(), inputCell->data(), refPosProperty->storage(), refCell->data(),
-			identifierProperty ? identifierProperty->storage() : nullptr, refIdentifierProperty ? refIdentifierProperty->storage() : nullptr,
-			cutoff(), eliminateCellDeformation(), assumeUnwrappedCoordinates(), calculateDeformationGradients(), calculateStrainTensors());
+                                                identifierProperty ? identifierProperty->storage() : nullptr, refIdentifierProperty ? refIdentifierProperty->storage() : nullptr,
+                                                cutoff(), eliminateCellDeformation(), assumeUnwrappedCoordinates(), calculateDeformationGradients(), calculateStrainTensors(),
+                                                calculateNonaffineSquaredDisplacements());
 }
 
 /******************************************************************************
@@ -338,6 +344,8 @@ bool AtomicStrainModifier::AtomicStrainEngine::computeStrain(size_t particleInde
 			_deformationGradients->setTensor2(particleIndex, Tensor2::Zero());
 		if(_strainTensors)
 			_strainTensors->setSymmetricTensor2(particleIndex, SymmetricTensor2::Zero());
+        if(_nonaffineSquaredDisplacements)
+            _nonaffineSquaredDisplacements->setFloat(particleIndex, 0);
 		_shearStrains->setFloat(particleIndex, 0);
 		_volumetricStrains->setFloat(particleIndex, 0);
 		return false;
@@ -352,6 +360,37 @@ bool AtomicStrainModifier::AtomicStrainEngine::computeStrain(size_t particleInde
 	SymmetricTensor2T<double> strain = (Product_AtA(F) - SymmetricTensor2T<double>::Identity()) * 0.5;
 	if(_strainTensors)
 		_strainTensors->setSymmetricTensor2(particleIndex, (SymmetricTensor2)strain);
+
+    // Calculate nonaffine displacements.
+    if (_nonaffineSquaredDisplacements) {
+        double D2min = 0.0;
+
+        // Iterate over neighbor vectors of central particle.
+        size_t refParticleIndex = currentToRefIndexMap[particleIndex];
+        const Point3 x = positions()->getPoint3(particleIndex);
+        int numNeighbors = 0;
+        for(OnTheFlyNeighborListBuilder::iterator neighborIter(neighborListBuilder, refParticleIndex); !neighborIter.atEnd(); neighborIter.next()) {
+            const Vector3& r0 = neighborIter.delta();
+            Vector3 r = positions()->getPoint3(refToCurrentIndexMap[neighborIter.current()]) - x;
+            Vector3 sr = _currentSimCellInv * r;
+            if(!_assumeUnwrappedCoordinates) {
+                for(size_t k = 0; k < 3; k++) {
+                    if(!_simCell.pbcFlags()[k]) continue;
+                    while(sr[k] > FloatType(+0.5)) sr[k] -= FloatType(1);
+                    while(sr[k] < FloatType(-0.5)) sr[k] += FloatType(1);
+                }
+            }
+            r = _reducedToAbsolute * sr;
+
+            Vector_3<double> rDouble(r.x(), r.y(), r.z());
+            Vector_3<double> r0Double(r0.x(), r0.y(), r0.z());
+            Vector_3<double> dr = rDouble - F * r0Double;
+            D2min += dr.squaredLength();
+		}
+
+        _nonaffineSquaredDisplacements->setFloat(particleIndex, D2min);
+	}
+
 
 	// Calculate von Mises shear strain.
 	double xydiff = strain.xx() - strain.yy();
@@ -393,6 +432,10 @@ void AtomicStrainModifier::retrieveModifierResults(Engine* engine)
 		_deformationGradients = eng->deformationGradients();
 	else
 		_deformationGradients->resize(0);
+	if(eng->nonaffineSquaredDisplacements())
+		_nonaffineSquaredDisplacements = eng->nonaffineSquaredDisplacements();
+	else
+		_nonaffineSquaredDisplacements->resize(0);
 	if(eng->invalidParticles())
 		_invalidParticles = eng->invalidParticles();
 	else
@@ -418,6 +461,9 @@ PipelineStatus AtomicStrainModifier::applyModifierResults(TimePoint time, TimeIn
 	if(calculateDeformationGradients() && deformationGradients().size() == inputParticleCount())
 		outputStandardProperty(ParticleProperty::DeformationGradientProperty)->setStorage(_deformationGradients.data());
 
+	if(calculateNonaffineSquaredDisplacements() && nonaffineSquaredDisplacements().size() == inputParticleCount())
+		outputStandardProperty(ParticleProperty::NonaffineSquaredDisplacementProperty)->setStorage(_nonaffineSquaredDisplacements.data());
+
 	outputCustomProperty(volumetricStrainValues().name(), qMetaTypeId<FloatType>(), sizeof(FloatType), 1)->setStorage(_volumetricStrainValues.data());
 	outputCustomProperty(shearStrainValues().name(), qMetaTypeId<FloatType>(), sizeof(FloatType), 1)->setStorage(_shearStrainValues.data());
 
@@ -438,7 +484,8 @@ void AtomicStrainModifier::propertyChanged(const PropertyFieldDescriptor& field)
 				field == PROPERTY_FIELD(AtomicStrainModifier::_assumeUnwrappedCoordinates) ||
 				field == PROPERTY_FIELD(AtomicStrainModifier::_cutoff) ||
 				field == PROPERTY_FIELD(AtomicStrainModifier::_calculateDeformationGradients) ||
-				field == PROPERTY_FIELD(AtomicStrainModifier::_calculateStrainTensors))
+                field == PROPERTY_FIELD(AtomicStrainModifier::_calculateStrainTensors) ||
+                field == PROPERTY_FIELD(AtomicStrainModifier::_calculateNonaffineSquaredDisplacements))
 			invalidateCachedResults();
 	}
 
@@ -496,6 +543,9 @@ void AtomicStrainModifierEditor::createUI(const RolloutInsertionParameters& roll
 
 	BooleanParameterUI* calculateStrainTensorsUI = new BooleanParameterUI(this, PROPERTY_FIELD(AtomicStrainModifier::_calculateStrainTensors));
 	layout->addWidget(calculateStrainTensorsUI->checkBox());
+
+	BooleanParameterUI* calculateNonaffineSquaredDisplacementsUI = new BooleanParameterUI(this, PROPERTY_FIELD(AtomicStrainModifier::_calculateNonaffineSquaredDisplacements));
+	layout->addWidget(calculateNonaffineSquaredDisplacementsUI->checkBox());
 
 	BooleanParameterUI* selectInvalidParticlesUI = new BooleanParameterUI(this, PROPERTY_FIELD(AtomicStrainModifier::_selectInvalidParticles));
 	layout->addWidget(selectInvalidParticlesUI->checkBox());

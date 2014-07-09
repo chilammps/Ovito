@@ -122,6 +122,11 @@ ParticleProperty::ParticleProperty(size_t particleCount, Type type, size_t compo
 		_dataTypeSize = sizeof(int);
 		_componentCount = 3;
 		break;
+    case NonaffineSquaredDisplacementProperty:
+        _dataType = qMetaTypeId<FloatType>();
+        _dataTypeSize = sizeof(FloatType);
+        _componentCount = 1;
+        break;
 	default:
 		OVITO_ASSERT_MSG(false, "ParticleProperty constructor", "Invalid standard property type");
 		throw Exception(ParticlePropertyObject::tr("This is not a valid standard property type: %1").arg(type));
@@ -353,6 +358,7 @@ QString ParticleProperty::standardPropertyName(Type which)
 	case SpinProperty: return ParticlePropertyObject::tr("Spin");
 	case CentroSymmetryProperty: return ParticlePropertyObject::tr("Centrosymmetry");
 	case VelocityMagnitudeProperty: return ParticlePropertyObject::tr("Velocity Magnitude");
+	case NonaffineSquaredDisplacementProperty: return ParticlePropertyObject::tr("Nonaffine Squared Displacement");
 	default:
 		OVITO_ASSERT_MSG(false, "ParticleProperty::standardPropertyName", "Invalid standard particle property type");
 		throw Exception(ParticlePropertyObject::tr("This is not a valid standard particle property type: %1").arg(which));
@@ -417,6 +423,7 @@ int ParticleProperty::standardPropertyDataType(Type which)
 	case TorqueProperty:
 	case CentroSymmetryProperty:
 	case VelocityMagnitudeProperty:
+	case NonaffineSquaredDisplacementProperty:
 		return qMetaTypeId<FloatType>();
 	default:
 		OVITO_ASSERT_MSG(false, "ParticleProperty::standardPropertyDataType", "Invalid standard particle property type");
@@ -463,6 +470,7 @@ QMap<QString, ParticleProperty::Type> ParticleProperty::standardPropertyList()
 		table.insert(standardPropertyName(SpinProperty), SpinProperty);
 		table.insert(standardPropertyName(CentroSymmetryProperty), CentroSymmetryProperty);
 		table.insert(standardPropertyName(VelocityMagnitudeProperty), VelocityMagnitudeProperty);
+		table.insert(standardPropertyName(NonaffineSquaredDisplacementProperty), NonaffineSquaredDisplacementProperty);
 	}
 	return table;
 }
@@ -491,6 +499,7 @@ size_t ParticleProperty::standardPropertyComponentCount(Type which)
 	case CentroSymmetryProperty:
 	case DisplacementMagnitudeProperty:
 	case VelocityMagnitudeProperty:
+    case NonaffineSquaredDisplacementProperty:
 		return 1;
 	case PositionProperty:
 	case ColorProperty:
@@ -547,6 +556,7 @@ QStringList ParticleProperty::standardPropertyComponentNames(Type which, size_t 
 	case CentroSymmetryProperty:
 	case DisplacementMagnitudeProperty:
 	case VelocityMagnitudeProperty:
+    case NonaffineSquaredDisplacementProperty:
 		return emptyList;
 	case PositionProperty:
 	case DisplacementProperty:

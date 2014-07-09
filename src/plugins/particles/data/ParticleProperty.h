@@ -74,7 +74,8 @@ public:
 		TorqueProperty,
 		SpinProperty,
 		CentroSymmetryProperty,
-		VelocityMagnitudeProperty
+		VelocityMagnitudeProperty,
+        NonaffineSquaredDisplacementProperty
 	};
 	Q_ENUMS(Type);
 

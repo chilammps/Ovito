@@ -90,6 +90,12 @@ public:
 	/// Sets whether atomic strain tensors should be computed and stored.
 	void setCalculateStrainTensors(bool enableCalculation) { _calculateStrainTensors = enableCalculation; }
 
+	/// Returns whether non-affine displacements should be computed and stored.
+	bool calculateNonaffineSquaredDisplacements() const { return _calculateNonaffineSquaredDisplacements; }
+
+	/// Sets whether non-affine displacements should be computed and stored.
+	void setCalculateNonaffineSquaredDisplacements(bool enableCalculation) { _calculateNonaffineSquaredDisplacements = enableCalculation; }
+
 	/// Returns whether particles, for which the strain tensor could not be computed, are selected.
 	bool selectInvalidParticles() const { return _selectInvalidParticles; }
 
@@ -107,6 +113,9 @@ public:
 
 	/// Returns the computed deformation gradient tensors.
 	const ParticleProperty& deformationGradients() const { OVITO_CHECK_POINTER(_deformationGradients.constData()); return *_deformationGradients; }
+
+	/// Returns the computed deformation gradient tensors.
+	const ParticleProperty& nonaffineSquaredDisplacements() const { OVITO_CHECK_POINTER(_nonaffineSquaredDisplacements.constData()); return *_nonaffineSquaredDisplacements; }
 
 	/// Returns the selection of invalid particles.
 	const ParticleProperty& invalidParticles() const { OVITO_CHECK_POINTER(_invalidParticles.constData()); return *_invalidParticles; }
@@ -139,6 +148,7 @@ public:
 	Q_PROPERTY(bool assumeUnwrappedCoordinates READ assumeUnwrappedCoordinates WRITE setAssumeUnwrappedCoordinates)
 	Q_PROPERTY(bool calculateDeformationGradients READ calculateDeformationGradients WRITE setCalculateDeformationGradients)
 	Q_PROPERTY(bool calculateStrainTensors READ calculateStrainTensors WRITE setCalculateStrainTensors)
+	Q_PROPERTY(bool calculateNonaffineSquaredDisplacements READ calculateNonaffineSquaredDisplacements WRITE setCalculateNonaffineSquaredDisplacements)
 	Q_PROPERTY(bool selectInvalidParticles READ selectInvalidParticles WRITE setSelectInvalidParticles)
 	Q_PROPERTY(bool useReferenceFrameOffset READ useReferenceFrameOffset WRITE setUseReferenceFrameOffset);
 	Q_PROPERTY(int referenceFrameNumber READ referenceFrameNumber WRITE setReferenceFrameNumber);
@@ -164,16 +174,19 @@ private:
 				ParticleProperty* refPositions, const SimulationCellData& simCellRef,
 				ParticleProperty* identifiers, ParticleProperty* refIdentifiers,
 				FloatType cutoff, bool eliminateCellDeformation, bool assumeUnwrappedCoordinates,
-				bool calculateDeformationGradients, bool calculateStrainTensors) :
+                bool calculateDeformationGradients, bool calculateStrainTensors,
+                bool calculateNonaffineSquaredDisplacements) :
 			_positions(positions), _simCell(simCell),
 			_refPositions(refPositions), _simCellRef(simCellRef),
 			_identifiers(identifiers), _refIdentifiers(refIdentifiers),
 			_cutoff(cutoff), _eliminateCellDeformation(eliminateCellDeformation), _assumeUnwrappedCoordinates(assumeUnwrappedCoordinates),
 			_calculateDeformationGradients(calculateDeformationGradients), _calculateStrainTensors(calculateStrainTensors),
+            _calculateNonaffineSquaredDisplacements(calculateNonaffineSquaredDisplacements),
 			_shearStrains(new ParticleProperty(positions->size(), qMetaTypeId<FloatType>(), sizeof(FloatType), 1, tr("Shear Strain"))),
 			_volumetricStrains(new ParticleProperty(positions->size(), qMetaTypeId<FloatType>(), sizeof(FloatType), 1, tr("Volumetric Strain"))),
 			_strainTensors(calculateStrainTensors ? new ParticleProperty(positions->size(), ParticleProperty::StrainTensorProperty) : nullptr),
 			_deformationGradients(calculateDeformationGradients ? new ParticleProperty(positions->size(), ParticleProperty::DeformationGradientProperty) : nullptr),
+			_nonaffineSquaredDisplacements(calculateNonaffineSquaredDisplacements ? new ParticleProperty(positions->size(), ParticleProperty::NonaffineSquaredDisplacementProperty) : nullptr),
 			_invalidParticles(new ParticleProperty(positions->size(), ParticleProperty::SelectionProperty)),
 			_currentSimCellInv(simCell.inverseMatrix()),
 			_reducedToAbsolute(eliminateCellDeformation ? simCellRef.matrix() : simCell.matrix()) {}
@@ -205,6 +218,9 @@ private:
 		/// Returns the property storage that contains the computed per-particle deformation gradient tensors.
 		ParticleProperty* deformationGradients() const { return _deformationGradients.data(); }
 
+		/// Returns the property storage that contains the computed per-particle deformation gradient tensors.
+		ParticleProperty* nonaffineSquaredDisplacements() const { return _nonaffineSquaredDisplacements.data(); }
+
 		/// Returns the property storage that contains the selection of invalid particles.
 		ParticleProperty* invalidParticles() const { return _invalidParticles.data(); }
 
@@ -229,11 +245,13 @@ private:
 		QExplicitlySharedDataPointer<ParticleProperty> _volumetricStrains;
 		QExplicitlySharedDataPointer<ParticleProperty> _strainTensors;
 		QExplicitlySharedDataPointer<ParticleProperty> _deformationGradients;
+		QExplicitlySharedDataPointer<ParticleProperty> _nonaffineSquaredDisplacements;
 		QExplicitlySharedDataPointer<ParticleProperty> _invalidParticles;
 		bool _eliminateCellDeformation;
 		bool _assumeUnwrappedCoordinates;
 		bool _calculateDeformationGradients;
 		bool _calculateStrainTensors;
+		bool _calculateNonaffineSquaredDisplacements;
 		QAtomicInt _numInvalidParticles;
 	};
 
@@ -263,6 +281,9 @@ protected:
 	/// This stores the cached results of the modifier.
 	QExplicitlySharedDataPointer<ParticleProperty> _deformationGradients;
 
+	/// This stores the cached results of the modifier.
+	QExplicitlySharedDataPointer<ParticleProperty> _nonaffineSquaredDisplacements;
+
 	/// This stores the selection of invalid particles.
 	QExplicitlySharedDataPointer<ParticleProperty> _invalidParticles;
 
@@ -286,6 +307,9 @@ protected:
 
 	/// Controls the whether atomic strain tensors should be computed and stored.
 	PropertyField<bool> _calculateStrainTensors;
+
+	/// Controls the whether non-affine displacements should be computed and stored.
+	PropertyField<bool> _calculateNonaffineSquaredDisplacements;
 
 	/// Controls the whether particles, for which the strain tensor could not be computed, are selected.
 	PropertyField<bool> _selectInvalidParticles;
@@ -317,6 +341,7 @@ private:
 	DECLARE_PROPERTY_FIELD(_cutoff)
 	DECLARE_PROPERTY_FIELD(_calculateDeformationGradients)
 	DECLARE_PROPERTY_FIELD(_calculateStrainTensors)
+	DECLARE_PROPERTY_FIELD(_calculateNonaffineSquaredDisplacements)
 	DECLARE_PROPERTY_FIELD(_selectInvalidParticles)
 	DECLARE_PROPERTY_FIELD(_useReferenceFrameOffset);
 	DECLARE_PROPERTY_FIELD(_referenceFrameNumber);
