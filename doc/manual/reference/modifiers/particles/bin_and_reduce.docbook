@@ -21,8 +21,8 @@
   </para>
   
   <para>
-  The reduction operation can be a sum, an average (mean), or the minimum or maximum value of
-  the property with the bin.
+  The reduction operation can be the sum, the average (mean), or the minimum or maximum value of
+  the property inside the bin.
   </para>
 
   <para>
@@ -47,7 +47,7 @@
         <term>Reduction operation</term>
         <listitem>
           <para>The type of reduction operation to be carried out. Possibilities are sum, mean, min or max.
-          There is an additional option "sum divided by bin volume" that sums first and then divides the result
+          There is an additional option "sum divided by bin volume", which sums first and then divides the result
           by the volume of the respective bin. This option is intended to compute pressure (or stress) within
           each bin from the per-atom virial.
           </para>
@@ -56,17 +56,17 @@
       <varlistentry>
         <term>Binning direction</term>
         <listitem>
-          <para>The alignment of the bins. Note that selecting a single cell vectors gives a
+          <para>The alignment of the bins. Note that selecting a single cell vector gives a
           one-dimensional bin grid. Bins are aligned perpendicular to the selected cell vector.
           Selecting two cell vectors gives a two-dimensional bin grid. Bins are aligned perpendicular
           to both cell vectors (i.e. parallel to the third vector).</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term>Compute first derivatives</term>
+        <term>Compute first derivative</term>
         <listitem>
           <para>Numerically compute the first derivative of the binned data using a finite differences
-          approximation. This works only for one-dimensional bin grids. (It is useful to e.g. compute derivatives
+          approximation. This works only for one-dimensional bin grids. (It is useful to e.g. compute the derivative
           of a velocity profile to get the shear rate.)</para>
         </listitem>
       </varlistentry>
@@ -79,13 +79,20 @@
       <varlistentry>
         <term>Fix property axis range</term>
         <listitem>
-          <para>If selected, the property axis (or color scale for 2D plots) will scale from the values given
-          in the "From:" and "To:" fields. Otherwise, the maximum and minimum value of the data will be used
-          as bounds for the axes.</para>
+          <para>If selected, the plotted property range (or color scale for 2D plots) will be set to the values given
+          in the "From:" and "To:" fields. Otherwise, the minimum and maximum data values will be used to automatically adjust the plotting range.</para>
         </listitem>
       </varlistentry>
 
 
     </variablelist>
   </simplesect>
+
+  <simplesect>
+    <title>Acknowledgment</title>
+    <para>
+      This modifier has been contributed by Lars Pastewka.
+    </para>
+  </simplesect>
+
 </section>
