@@ -202,9 +202,9 @@ std::shared_ptr<AsynchronousParticleModifier::Engine> AtomicStrainModifier::crea
 
 	// Create engine object. Pass all relevant modifier parameters to the engine as well as the input data.
 	return std::make_shared<AtomicStrainEngine>(posProperty->storage(), inputCell->data(), refPosProperty->storage(), refCell->data(),
-                                                identifierProperty ? identifierProperty->storage() : nullptr, refIdentifierProperty ? refIdentifierProperty->storage() : nullptr,
-                                                cutoff(), eliminateCellDeformation(), assumeUnwrappedCoordinates(), calculateDeformationGradients(), calculateStrainTensors(),
-                                                calculateNonaffineSquaredDisplacements());
+			identifierProperty ? identifierProperty->storage() : nullptr, refIdentifierProperty ? refIdentifierProperty->storage() : nullptr,
+            cutoff(), eliminateCellDeformation(), assumeUnwrappedCoordinates(), calculateDeformationGradients(), calculateStrainTensors(),
+            calculateNonaffineSquaredDisplacements());
 }
 
 /******************************************************************************
@@ -485,7 +485,10 @@ void AtomicStrainModifier::propertyChanged(const PropertyFieldDescriptor& field)
 				field == PROPERTY_FIELD(AtomicStrainModifier::_cutoff) ||
 				field == PROPERTY_FIELD(AtomicStrainModifier::_calculateDeformationGradients) ||
                 field == PROPERTY_FIELD(AtomicStrainModifier::_calculateStrainTensors) ||
-                field == PROPERTY_FIELD(AtomicStrainModifier::_calculateNonaffineSquaredDisplacements))
+                field == PROPERTY_FIELD(AtomicStrainModifier::_calculateNonaffineSquaredDisplacements) ||
+                field == PROPERTY_FIELD(AtomicStrainModifier::_useReferenceFrameOffset) ||
+                field == PROPERTY_FIELD(AtomicStrainModifier::_referenceFrameNumber) ||
+                field == PROPERTY_FIELD(AtomicStrainModifier::_referenceFrameOffset))
 			invalidateCachedResults();
 	}
 
