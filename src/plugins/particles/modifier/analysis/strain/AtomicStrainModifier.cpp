@@ -319,9 +319,8 @@ bool AtomicStrainModifier::AtomicStrainEngine::computeStrain(size_t particleInde
 		Vector3 sr = _currentSimCellInv * r;
 		if(!_assumeUnwrappedCoordinates) {
 			for(size_t k = 0; k < 3; k++) {
-				if(!_simCell.pbcFlags()[k]) continue;
-				while(sr[k] > FloatType(+0.5)) sr[k] -= FloatType(1);
-				while(sr[k] < FloatType(-0.5)) sr[k] += FloatType(1);
+				if(_simCell.pbcFlags()[k])
+					sr[k] -= floor(sr[k] + FloatType(0.5));
 			}
 		}
 		r = _reducedToAbsolute * sr;
@@ -365,7 +364,7 @@ bool AtomicStrainModifier::AtomicStrainEngine::computeStrain(size_t particleInde
     if (_nonaffineSquaredDisplacements) {
         double D2min = 0.0;
 
-        // Iterate over neighbor vectors of central particle.
+        // Again iterate over neighbor vectors of central particle.
         size_t refParticleIndex = currentToRefIndexMap[particleIndex];
         const Point3 x = positions()->getPoint3(particleIndex);
         int numNeighbors = 0;
@@ -375,9 +374,8 @@ bool AtomicStrainModifier::AtomicStrainEngine::computeStrain(size_t particleInde
             Vector3 sr = _currentSimCellInv * r;
             if(!_assumeUnwrappedCoordinates) {
                 for(size_t k = 0; k < 3; k++) {
-                    if(!_simCell.pbcFlags()[k]) continue;
-                    while(sr[k] > FloatType(+0.5)) sr[k] -= FloatType(1);
-                    while(sr[k] < FloatType(-0.5)) sr[k] += FloatType(1);
+                    if(_simCell.pbcFlags()[k])
+						sr[k] -= floor(sr[k] + FloatType(0.5));
                 }
             }
             r = _reducedToAbsolute * sr;
@@ -398,12 +396,12 @@ bool AtomicStrainModifier::AtomicStrainEngine::computeStrain(size_t particleInde
 	double yzdiff = strain.yy() - strain.zz();
 	double shearStrain = sqrt(strain.xy()*strain.xy() + strain.xz()*strain.xz() + strain.yz()*strain.yz() +
 			(xydiff*xydiff + xzdiff*xzdiff + yzdiff*yzdiff) / 6.0);
-	OVITO_ASSERT(!std::isnan(shearStrain) && !std::isinf(shearStrain));
+	OVITO_ASSERT(std::isfinite(shearStrain));
 	_shearStrains->setFloat(particleIndex, (FloatType)shearStrain);
 
 	// Calculate volumetric component.
-	double volumetricStrain = (strain(0,0) + strain(1,1) + strain(2,2)) / 3;
-	OVITO_ASSERT(!std::isnan(volumetricStrain) && !std::isinf(volumetricStrain));
+	double volumetricStrain = (strain(0,0) + strain(1,1) + strain(2,2)) / 3.0;
+	OVITO_ASSERT(std::isfinite(volumetricStrain));
 	_volumetricStrains->setFloat(particleIndex, (FloatType)volumetricStrain);
 
 	_invalidParticles->setInt(particleIndex, 0);
