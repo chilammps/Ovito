@@ -111,7 +111,7 @@ bool XYZImporter::inspectNewFile(LinkedFileObject* obj)
 	if(Application::instance().consoleMode())
 		return true;
 
-	// Start task that inspects the file header to determine the number of data columns.
+	// Start task that inspects the file header to determine the number of columns.
 	std::unique_ptr<XYZImportTask> inspectionTask(new XYZImportTask(obj->frames().front()));
 	DataSetContainer& datasetContainer = *dataset()->container();
 	Future<void> future = datasetContainer.taskManager().runInBackground<void>(std::bind(&XYZImportTask::load,
@@ -122,10 +122,10 @@ bool XYZImporter::inspectNewFile(LinkedFileObject* obj)
 	// This is to throw an exception if an error has occurred.
 	future.result();
 
-	// If column names were given in the XYZ file, use them rather than popping up a dialog
-	if (inspectionTask->propertiesAssigned()) {
-	  setColumnMapping(inspectionTask->columnMapping());
-	  return true;
+	// If column names were given in the XYZ file, use them rather than popping up a dialog.
+	if(inspectionTask->propertiesAssigned()) {
+		setColumnMapping(inspectionTask->columnMapping());
+		return true;
 	}
 
 	InputColumnMapping mapping(_columnMapping);

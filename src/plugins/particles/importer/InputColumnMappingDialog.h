@@ -71,6 +71,7 @@ protected:
 	QVector<QCheckBox*> _fileColumnBoxes;
 	QVector<QComboBox*> _propertyBoxes;
 	QVector<QComboBox*> _vectorComponentBoxes;
+	QVector<int> _propertyDataTypes;
 
 	QSignalMapper* _vectorCmpntSignalMapper;
 

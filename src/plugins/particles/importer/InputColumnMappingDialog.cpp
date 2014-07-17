@@ -142,6 +142,7 @@ void InputColumnMappingDialog::setMapping(const InputColumnMapping& mapping)
 	_fileColumnBoxes.clear();
 	_propertyBoxes.clear();
 	_vectorComponentBoxes.clear();
+	_propertyDataTypes.clear();
 
 	_tableWidget->setRowCount(mapping.columnCount());
 	for(int i = 0; i < mapping.columnCount(); i++) {
@@ -179,6 +180,8 @@ void InputColumnMappingDialog::setMapping(const InputColumnMapping& mapping)
 		_vectorCmpntSignalMapper->setMapping(nameItem, i);
 		connect(fileColumnItem, &QCheckBox::clicked, _vectorCmpntSignalMapper, (void (QSignalMapper::*)())&QSignalMapper::map);
 		connect(nameItem, &QComboBox::currentTextChanged, _vectorCmpntSignalMapper, (void (QSignalMapper::*)())&QSignalMapper::map);
+
+		_propertyDataTypes.push_back(mapping.dataType(i) != QMetaType::Void ? mapping.dataType(i) : qMetaTypeId<FloatType>());
 	}
 
 	_tableWidget->resizeRowsToContents();
@@ -236,7 +239,7 @@ InputColumnMapping InputColumnMappingDialog::mapping() const
 				continue;
 			}
 			else if(!propertyName.isEmpty()) {
-				mapping.mapCustomColumn(index, propertyName, qMetaTypeId<FloatType>(), 0, ParticleProperty::UserProperty, _fileColumnBoxes[index]->text());
+				mapping.mapCustomColumn(index, propertyName, _propertyDataTypes[index], 0, ParticleProperty::UserProperty, _fileColumnBoxes[index]->text());
 				continue;
 			}
 		}
