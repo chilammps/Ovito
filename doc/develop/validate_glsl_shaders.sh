@@ -2,10 +2,12 @@
 
 # This shell script runs the GLSL shader validator from the Khronos Group on all shader files.
 
-# Execute this script in a directory containing shader source files. It validate all files
-# with a .vs, .fs, or .gs extension in all subdirectories.
+# Execute this script in a directory containing shader source files. It validates all files
+# having a .vs, .fs, or .gs extension in the directory tree.
 
-validator_exe="$HOME/progs/glslvalidator/build/install/bin/glslangValidator"
+# Change the following line to point to the GLSL validator program:
+
+validator_exe="glslangValidator"
 
 function validate_source() {
 

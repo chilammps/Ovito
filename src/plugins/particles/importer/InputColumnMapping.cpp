@@ -322,6 +322,23 @@ inline bool parseInt(const char* s, int& i)
 }
 
 /******************************************************************************
+ * Helper function that converts a string repr. of a bool ('T' or 'F') to an int
+ *****************************************************************************/
+inline bool parseBool(const char* s, int& d)
+{
+	if(s[1] != '\0') return false;
+	if(s[0] == 'T') {
+		d = 1;
+		return true;
+	}
+	else if(s[0] == 'F') {
+		d = 0;
+		return true;
+	}
+	return false;
+}
+
+/******************************************************************************
  * Parses the string tokens from one line of the input file and stores the values
  * in the particle properties.
  *****************************************************************************/
@@ -353,8 +370,11 @@ void InputColumnReader::readParticle(size_t particleIndex, int ntokens, const ch
 		else if(property->dataType() == _intMetaTypeId) {
 			bool ok = parseInt(*token, d);
 			if(property->type() != ParticleProperty::ParticleTypeProperty) {
-				if(!ok)
-					throw Exception(tr("Invalid integer value in column %1 (%2): \"%3\"").arg(columnIndex+1).arg(property->name()).arg(*token));
+				if(!ok) {
+					ok = parseBool(*token, d);
+					if(!ok)
+						throw Exception(tr("Invalid integer/bool value in column %1 (%2): \"%3\"").arg(columnIndex+1).arg(property->name()).arg(*token));
+				}
 			}
 			else {
 				// Automatically register a new particle type if a new type identifier is encountered.

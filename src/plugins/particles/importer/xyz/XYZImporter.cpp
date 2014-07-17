@@ -413,14 +413,15 @@ void XYZImporter::XYZImportTask::parseFile(FutureInterfaceBase& futureInterface,
 					}
 					break;
 				case 'L':
-					qDebug() << "Warning: Skipping field '" << propName << "' of XYZ file because it has an unsupported data type (logical).";
-					for(int k = 0; k < nCols; k++)
+					for(int k = 0; k < nCols; k++) {
+						mapVariableToProperty(_columnMapping, col, propName, qMetaTypeId<int>(), k);
 						col++;
+					}
 					break;
 				case 'S':
 					for(int k = 0; k < nCols; k++) {
 						if(!mapVariableToProperty(_columnMapping, col, propName, qMetaTypeId<char>(), k) && k == 0)
-							qDebug() << "Warning: Skipping field '" << propName << "' of XYZ file because it has an unsupported data type (string).";
+							qDebug() << "Warning: Skipping field" << propName << "of XYZ file because it has an unsupported data type (string).";
 						col++;
 					}
 					break;
@@ -428,6 +429,7 @@ void XYZImporter::XYZImportTask::parseFile(FutureInterfaceBase& futureInterface,
 			}
 			_propertiesAssigned = true;
 		}
+
 		return;
 	}
 
