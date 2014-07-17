@@ -219,7 +219,7 @@ InputColumnReader::InputColumnReader(const InputColumnMapping& mapping, Particle
 				for(int j = 0; j < destination.particleProperties().size(); j++) {
 					const auto& p = destination.particleProperties()[j];
 					if(p->name() == propertyName) {
-						if(property->dataType() == dataType && (int)property->componentCount() > vectorComponent)
+						if(p->dataType() == dataType && (int)p->componentCount() > vectorComponent)
 							property = p.get();
 						else
 							destination.removeParticleProperty(j);
