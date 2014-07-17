@@ -115,7 +115,9 @@
             <row>
               <entry>XYZ</entry>
               <entry><para>A simple column-based text format, which is documented <link xlink:href="http://en.wikipedia.org/wiki/XYZ_file_format">here</link>.</para>
-			    <para>This format does not store simulation box dimensions. OVITO takes the axis-aligned bounding box of particles as the simulation box.</para>
+			    <para>The basic XYZ format does not store simulation cell dimensions. OVITO takes the axis-aligned bounding box of particles as the simulation box in this case.
+			    OVITO also supports an <link xlink:href="http://jrkermode.co.uk/quippy/io.html#extendedxyz">extended XYZ format</link>, which includes header information on the simulation cell,
+			    boundary conditions, and the data fields stored in the file.</para>
                 </entry>
             </row>
             <row>

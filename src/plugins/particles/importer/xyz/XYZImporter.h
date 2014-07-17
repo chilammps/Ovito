@@ -71,6 +71,9 @@ public:
 	/// property mapping.
 	void showEditColumnMappingDialog(QWidget* parent);
 
+	/// Guesses the mapping of input file columns to internal particle properties.
+	static bool mapVariableToProperty(InputColumnMapping &columnMapping, int column, QString name, int dataType, int vec);
+
 public:
 
 	Q_PROPERTY(Particles::InputColumnMapping columnMapping READ columnMapping WRITE setColumnMapping);
@@ -84,14 +87,17 @@ protected:
 
 		/// Normal constructor.
 		XYZImportTask(const LinkedFileImporter::FrameSourceInformation& frame, const InputColumnMapping& columnMapping)
-			: ParticleImportTask(frame), _parseFileHeaderOnly(false), _columnMapping(columnMapping) {}
+		  : ParticleImportTask(frame), _parseFileHeaderOnly(false), _columnMapping(columnMapping), _propertiesAssigned(false) {}
 
 		/// Constructor used when reading only the file header information.
 		XYZImportTask(const LinkedFileImporter::FrameSourceInformation& frame)
-			: ParticleImportTask(frame), _parseFileHeaderOnly(true) {}
+		  : ParticleImportTask(frame), _parseFileHeaderOnly(true), _propertiesAssigned(false) {}
 
 		/// Returns the file column mapping used to load the file.
 		const InputColumnMapping& columnMapping() const { return _columnMapping; }
+
+		/// Returns true if names of columns/properties were read from comment line of XYZ file
+		const bool propertiesAssigned() const { return _propertiesAssigned; }
 
 	protected:
 
@@ -101,6 +107,7 @@ protected:
 	private:
 
 		bool _parseFileHeaderOnly;
+		bool _propertiesAssigned;
 		InputColumnMapping _columnMapping;
 	};
 
