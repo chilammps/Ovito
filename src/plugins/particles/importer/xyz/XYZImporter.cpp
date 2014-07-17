@@ -33,9 +33,9 @@
 
 namespace Particles {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, XYZImporter, ParticleImporter)
-IMPLEMENT_OVITO_OBJECT(Particles, XYZImporterEditor, PropertiesEditor)
-SET_OVITO_OBJECT_EDITOR(XYZImporter, XYZImporterEditor)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, XYZImporter, ParticleImporter);
+IMPLEMENT_OVITO_OBJECT(Particles, XYZImporterEditor, PropertiesEditor);
+SET_OVITO_OBJECT_EDITOR(XYZImporter, XYZImporterEditor);
 
 /******************************************************************************
  * Sets the user-defined mapping between data columns in the input file and

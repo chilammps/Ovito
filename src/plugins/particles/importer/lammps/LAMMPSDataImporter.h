@@ -37,8 +37,36 @@ class OVITO_PARTICLES_EXPORT LAMMPSDataImporter : public ParticleImporter
 {
 public:
 
+	/// \brief The LAMMPS atom_style used by the data file.
+	enum LAMMPSAtomStyle {
+		AtomStyle_Unknown,	//< Special value indicating that the atom_style cannot be detected and needs to be specified by the user.
+		AtomStyle_Angle,
+		AtomStyle_Atomic,
+		AtomStyle_Body,
+		AtomStyle_Bond,
+		AtomStyle_Charge,
+		AtomStyle_Dipole,
+		AtomStyle_Electron,
+		AtomStyle_Ellipsoid,
+		AtomStyle_Full,
+		AtomStyle_Line,
+		AtomStyle_Meso,
+		AtomStyle_Molecular,
+		AtomStyle_Peri,
+		AtomStyle_Sphere,
+		AtomStyle_Template,
+		AtomStyle_Tri,
+		AtomStyle_Wavepacket,
+		AtomStyle_Hybrid
+	};
+	Q_ENUMS(LAMMPSAtomStyle);
+
+public:
+
 	/// \brief Constructs a new instance of this class.
-	Q_INVOKABLE LAMMPSDataImporter(DataSet* dataset) : ParticleImporter(dataset) {}
+	Q_INVOKABLE LAMMPSDataImporter(DataSet* dataset) : ParticleImporter(dataset), _atomStyle(AtomStyle_Unknown) {
+		INIT_PROPERTY_FIELD(LAMMPSDataImporter::_atomStyle);
+	}
 
 	/// \brief Returns the file filter that specifies the files that can be imported by this service.
 	/// \return A wild-card pattern that specifies the file types that can be handled by this import class.
@@ -54,6 +82,23 @@ public:
 	/// Returns the title of this object.
 	virtual QString objectTitle() override { return tr("LAMMPS Data"); }
 
+	/// This method is called by the LinkedFileObject each time a new source
+	/// file has been selected by the user.
+	virtual bool inspectNewFile(LinkedFileObject* obj) override;
+
+	/// Returns the LAMMPS atom style used in the data file.
+	LAMMPSAtomStyle atomStyle() const { return _atomStyle; }
+
+	/// Specifies the LAMMPS atom style used in the data file.
+	void setAtomStyle(LAMMPSAtomStyle atomStyle) { _atomStyle = atomStyle; }
+
+	/// Displays a dialog box that allows the user to select the LAMMPS atom style of the data file.
+	bool showAtomStyleDialog(QWidget* parent);
+
+public:
+
+	Q_PROPERTY(Particles::LAMMPSDataImporter::LAMMPSAtomStyle atomStyle READ atomStyle WRITE setAtomStyle);
+
 protected:
 
 	/// The format-specific task object that is responsible for reading an input file in the background.
@@ -62,25 +107,54 @@ protected:
 	public:
 
 		/// Normal constructor.
-		LAMMPSDataImportTask(const LinkedFileImporter::FrameSourceInformation& frame) : ParticleImportTask(frame) {}
+		LAMMPSDataImportTask(const LinkedFileImporter::FrameSourceInformation& frame,
+				LAMMPSAtomStyle atomStyle = AtomStyle_Unknown,
+				bool detectAtomStyle = false) : ParticleImportTask(frame), _atomStyle(atomStyle), _detectAtomStyle(detectAtomStyle) {}
+
+		/// Returns the LAMMPS atom style used in the data file.
+		LAMMPSAtomStyle atomStyle() const { return _atomStyle; }
+
+		/// Detects or verifies the LAMMPS atom style used by the data file.
+		bool detectAtomStyle(const char* firstLine);
 
 	protected:
 
 		/// Parses the given input file and stores the data in this container object.
 		virtual void parseFile(FutureInterfaceBase& futureInterface, CompressedTextParserStream& stream) override;
-	};
 
-protected:
+		// Updates the progress indicator.
+		bool reportProgress(FutureInterfaceBase& futureInterface, int progressValue) {
+			if((progressValue % 4096) == 0) {
+				if(futureInterface.isCanceled()) return false;
+				futureInterface.setProgressValue(progressValue);
+			}
+			return true;
+		}
+
+		/// The LAMMPS atom style used by the data file.
+		LAMMPSAtomStyle _atomStyle;
+		bool _detectAtomStyle;
+	};
 
 	/// \brief Creates an import task object to read the given frame.
 	virtual ImportTaskPtr createImportTask(const FrameSourceInformation& frame) override {
-		return std::make_shared<LAMMPSDataImportTask>(frame);
+		return std::make_shared<LAMMPSDataImportTask>(frame, atomStyle());
 	}
+
+private:
+
+	/// The LAMMPS atom style used by the data format.
+	PropertyField<LAMMPSAtomStyle, int> _atomStyle;
 
 	Q_OBJECT
 	OVITO_OBJECT
+
+	DECLARE_PROPERTY_FIELD(_atomStyle);
 };
 
 };
+
+Q_DECLARE_METATYPE(Particles::LAMMPSDataImporter::LAMMPSAtomStyle);
+Q_DECLARE_TYPEINFO(Particles::LAMMPSDataImporter::LAMMPSAtomStyle, Q_PRIMITIVE_TYPE);
 
 #endif // __OVITO_LAMMPS_DATA_IMPORTER_H
