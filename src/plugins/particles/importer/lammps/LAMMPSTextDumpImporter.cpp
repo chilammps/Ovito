@@ -34,11 +34,11 @@
 
 namespace Particles {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, LAMMPSTextDumpImporter, ParticleImporter)
-IMPLEMENT_OVITO_OBJECT(Particles, LAMMPSTextDumpImporterEditor, PropertiesEditor)
-SET_OVITO_OBJECT_EDITOR(LAMMPSTextDumpImporter, LAMMPSTextDumpImporterEditor)
-DEFINE_PROPERTY_FIELD(LAMMPSTextDumpImporter, _useCustomColumnMapping, "UseCustomColumnMapping")
-SET_PROPERTY_FIELD_LABEL(LAMMPSTextDumpImporter, _useCustomColumnMapping, "Custom file column mapping")
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, LAMMPSTextDumpImporter, ParticleImporter);
+IMPLEMENT_OVITO_OBJECT(Particles, LAMMPSTextDumpImporterEditor, PropertiesEditor);
+SET_OVITO_OBJECT_EDITOR(LAMMPSTextDumpImporter, LAMMPSTextDumpImporterEditor);
+DEFINE_PROPERTY_FIELD(LAMMPSTextDumpImporter, _useCustomColumnMapping, "UseCustomColumnMaspping");
+SET_PROPERTY_FIELD_LABEL(LAMMPSTextDumpImporter, _useCustomColumnMapping, "Custom file column mapping");
 
 /******************************************************************************
  * Sets the user-defined mapping between data columns in the input file and
@@ -353,6 +353,7 @@ InputColumnMapping LAMMPSTextDumpImporter::generateAutomaticColumnMapping(const 
 		else if(name == "type" || name == "element" || name == "atom_types") columnMapping.mapStandardColumn(i, ParticleProperty::ParticleTypeProperty, 0, name);
 		else if(name == "mass") columnMapping.mapStandardColumn(i, ParticleProperty::MassProperty, 0, name);
 		else if(name == "radius") columnMapping.mapStandardColumn(i, ParticleProperty::RadiusProperty, 0, name);
+		else if(name == "mol") columnMapping.mapStandardColumn(i, ParticleProperty::MoleculeProperty, 0, name);
 		else if(name == "q") columnMapping.mapStandardColumn(i, ParticleProperty::ChargeProperty, 0, name);
 		else if(name == "ix") columnMapping.mapStandardColumn(i, ParticleProperty::PeriodicImageProperty, 0, name);
 		else if(name == "iy") columnMapping.mapStandardColumn(i, ParticleProperty::PeriodicImageProperty, 1, name);

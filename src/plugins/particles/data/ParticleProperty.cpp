@@ -64,6 +64,7 @@ ParticleProperty::ParticleProperty(size_t particleCount, Type type, size_t compo
 	case ClusterProperty:
 	case CoordinationProperty:
 	case IdentifierProperty:
+	case MoleculeProperty:
 		_dataType = qMetaTypeId<int>();
 		_dataTypeSize = sizeof(int);
 		_componentCount = 1;
@@ -94,6 +95,7 @@ ParticleProperty::ParticleProperty(size_t particleCount, Type type, size_t compo
 	case CentroSymmetryProperty:
 	case DisplacementMagnitudeProperty:
 	case VelocityMagnitudeProperty:
+    case NonaffineSquaredDisplacementProperty:
 		_dataType = qMetaTypeId<FloatType>();
 		_dataTypeSize = sizeof(FloatType);
 		_componentCount = 1;
@@ -122,11 +124,6 @@ ParticleProperty::ParticleProperty(size_t particleCount, Type type, size_t compo
 		_dataTypeSize = sizeof(int);
 		_componentCount = 3;
 		break;
-    case NonaffineSquaredDisplacementProperty:
-        _dataType = qMetaTypeId<FloatType>();
-        _dataTypeSize = sizeof(FloatType);
-        _componentCount = 1;
-        break;
 	default:
 		OVITO_ASSERT_MSG(false, "ParticleProperty constructor", "Invalid standard property type");
 		throw Exception(ParticlePropertyObject::tr("This is not a valid standard property type: %1").arg(type));
@@ -359,6 +356,7 @@ QString ParticleProperty::standardPropertyName(Type which)
 	case CentroSymmetryProperty: return ParticlePropertyObject::tr("Centrosymmetry");
 	case VelocityMagnitudeProperty: return ParticlePropertyObject::tr("Velocity Magnitude");
 	case NonaffineSquaredDisplacementProperty: return ParticlePropertyObject::tr("Nonaffine Squared Displacement");
+	case MoleculeProperty: return ParticlePropertyObject::tr("Molecule Identifier");
 	default:
 		OVITO_ASSERT_MSG(false, "ParticleProperty::standardPropertyName", "Invalid standard particle property type");
 		throw Exception(ParticlePropertyObject::tr("This is not a valid standard particle property type: %1").arg(which));
@@ -397,6 +395,7 @@ int ParticleProperty::standardPropertyDataType(Type which)
 	case CoordinationProperty:
 	case IdentifierProperty:
 	case PeriodicImageProperty:
+	case MoleculeProperty:
 		return qMetaTypeId<int>();
 	case PositionProperty:
 	case ColorProperty:
@@ -471,6 +470,7 @@ QMap<QString, ParticleProperty::Type> ParticleProperty::standardPropertyList()
 		table.insert(standardPropertyName(CentroSymmetryProperty), CentroSymmetryProperty);
 		table.insert(standardPropertyName(VelocityMagnitudeProperty), VelocityMagnitudeProperty);
 		table.insert(standardPropertyName(NonaffineSquaredDisplacementProperty), NonaffineSquaredDisplacementProperty);
+		table.insert(standardPropertyName(MoleculeProperty), MoleculeProperty);
 	}
 	return table;
 }
@@ -500,6 +500,7 @@ size_t ParticleProperty::standardPropertyComponentCount(Type which)
 	case DisplacementMagnitudeProperty:
 	case VelocityMagnitudeProperty:
     case NonaffineSquaredDisplacementProperty:
+    case MoleculeProperty:
 		return 1;
 	case PositionProperty:
 	case ColorProperty:
@@ -557,6 +558,7 @@ QStringList ParticleProperty::standardPropertyComponentNames(Type which, size_t 
 	case DisplacementMagnitudeProperty:
 	case VelocityMagnitudeProperty:
     case NonaffineSquaredDisplacementProperty:
+    case MoleculeProperty:
 		return emptyList;
 	case PositionProperty:
 	case DisplacementProperty:
