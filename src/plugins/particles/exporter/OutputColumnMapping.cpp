@@ -115,20 +115,10 @@ OutputColumnWriter::OutputColumnWriter(const OutputColumnMapping& mapping, const
 		int vectorComponent = mapping.vectorComponent(i);
 		if(vectorComponent < 0) vectorComponent = 0;
 
-		ParticlePropertyObject* property = nullptr;
-		for(SceneObject* o : source.objects()) {
-			ParticlePropertyObject* p = dynamic_object_cast<ParticlePropertyObject>(o);
-			if(p && p->type() == propertyType) {
-				if(propertyType != ParticleProperty::UserProperty || p->name() == propertyName) {
-					property = p;
-					break;
-				}
-			}
-		}
-
+		ParticlePropertyObject* property = mapping.column(i).findInState(source);
 		if(property == nullptr && propertyType != ParticleProperty::IdentifierProperty) {
-			throw Exception(tr("The defined data columns to be written to the output file are not valid (file column %1). "
-			                   "The particle dataset does not contain a property named '%2'.").arg(i+1).arg(propertyName));
+			throw Exception(tr("The selection of data columns to be written to the output file is invalid (file column %1). "
+			                   "The particle do not have a property named '%2'.").arg(i+1).arg(propertyName));
 		}
 		if(property && property->componentCount() <= vectorComponent)
 			throw Exception(tr("The vector component specified for column %1 exceeds the number of available vector components in the particle property '%2'.").arg(i+1).arg(propertyName));

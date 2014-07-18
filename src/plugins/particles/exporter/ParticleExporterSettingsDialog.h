@@ -43,6 +43,9 @@ public:
 	/// Constructor.
 	ParticleExporterSettingsDialog(QWidget* parent, ParticleExporter* exporter, const PipelineFlowState& state, OutputColumnMapping* columnMapping = nullptr);
 
+	/// Extends the dialog by inserting an additional widget (usually a QGroupBox) into the layout.
+	void insertWidget(QWidget* widget);
+
 protected Q_SLOTS:
 
 	/// This is called when the user has pressed the OK button.
@@ -53,6 +56,7 @@ protected:
 	/// Populates the column mapping list box with an entry.
 	void insertPropertyItem(ParticlePropertyReference propRef, const QString& displayName);
 
+	QVBoxLayout* _mainLayout;
 	OORef<ParticleExporter> _exporter;
 	SpinnerWidget* _startTimeSpinner;
 	SpinnerWidget* _endTimeSpinner;

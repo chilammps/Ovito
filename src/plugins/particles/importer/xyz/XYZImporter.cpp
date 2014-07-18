@@ -254,7 +254,7 @@ bool XYZImporter::mapVariableToProperty(InputColumnMapping &columnMapping, int c
 	else if(loweredName == "omega") columnMapping.mapStandardColumn(column, ParticleProperty::AngularVelocityProperty, vec, name);	
 	else if(loweredName == "angular_momentum") columnMapping.mapStandardColumn(column, ParticleProperty::AngularMomentumProperty, vec, name);
 	else if(loweredName == "torque") columnMapping.mapStandardColumn(column, ParticleProperty::TorqueProperty, vec, name);
-	else if(loweredName == "spin") columnMapping.mapStandardColumn(column, ParticleProperty::TorqueProperty, vec, name);
+	else if(loweredName == "spin") columnMapping.mapStandardColumn(column, ParticleProperty::SpinProperty, vec, name);
 	else if(loweredName == "centro_symmetry") columnMapping.mapStandardColumn(column, ParticleProperty::CentroSymmetryProperty, vec, name);
 	else {
 		// Only int or float custom properties are supported
@@ -323,7 +323,7 @@ void XYZImporter::XYZImportTask::parseFile(FutureInterfaceBase& futureInterface,
 
 		QString latticeStr = commentLine.mid(index + 9);
 		latticeStr.truncate(latticeStr.indexOf("\""));
-		QStringList list = latticeStr.split(ws_re);
+		QStringList list = latticeStr.split(ws_re, QString::SkipEmptyParts);
 		if(list.size() >= 9) {
 			for(int k = 0; k < 3; k++)
 				cellVector1[k] = (FloatType)list[k].toDouble();
@@ -339,22 +339,22 @@ void XYZImporter::XYZImportTask::parseFile(FutureInterfaceBase& futureInterface,
 		// XYZ file written by Parcas MD code contain simulation cell info in comment line.
 
 		if((index = commentLine.indexOf("cell_orig ")) >= 0) {
-			QStringList list = commentLine.mid(index + 10).split(ws_re);
+			QStringList list = commentLine.mid(index + 10).split(ws_re, QString::SkipEmptyParts);
 			for(int k = 0; k < list.size() && k < 3; k++)
 				cellOrigin[k] = (FloatType)list[k].toDouble();
 		}
 		if((index = commentLine.indexOf("cell_vec1 ")) >= 0) {
-			QStringList list = commentLine.mid(index + 10).split(ws_re);
+			QStringList list = commentLine.mid(index + 10).split(ws_re, QString::SkipEmptyParts);
 			for(int k = 0; k < list.size() && k < 3; k++)
 				cellVector1[k] = (FloatType)list[k].toDouble();
 		}
 		if((index = commentLine.indexOf("cell_vec2 ")) >= 0) {
-			QStringList list = commentLine.mid(index + 10).split(ws_re);
+			QStringList list = commentLine.mid(index + 10).split(ws_re, QString::SkipEmptyParts);
 			for(int k = 0; k < list.size() && k < 3; k++)
 				cellVector2[k] = (FloatType)list[k].toDouble();
 		}
 		if((index = commentLine.indexOf("cell_vec3 ")) >= 0) {
-			QStringList list = commentLine.mid(index + 10).split(ws_re);
+			QStringList list = commentLine.mid(index + 10).split(ws_re, QString::SkipEmptyParts);
 			for(int k = 0; k < list.size() && k < 3; k++)
 				cellVector3[k] = (FloatType)list[k].toDouble();
 		}

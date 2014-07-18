@@ -30,13 +30,6 @@ namespace Particles {
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, XYZExporter, ParticleExporter);
 
 /******************************************************************************
-* Constructs a new instance of this class.
-******************************************************************************/
-XYZExporter::XYZExporter(DataSet* dataset) : ParticleExporter(dataset)
-{
-}
-
-/******************************************************************************
 * Opens the export settings dialog for this exporter service.
 ******************************************************************************/
 bool XYZExporter::showSettingsDialog(const PipelineFlowState& state, QWidget* parent)
@@ -54,16 +47,29 @@ bool XYZExporter::showSettingsDialog(const PipelineFlowState& state, QWidget* pa
 				ex.logError();
 			}
 		}
+		setSubFormat((XYZSubFormat)settings.value("subformat", (int)subFormat()).toInt());
 		settings.endGroup();
 	}
 
 	ParticleExporterSettingsDialog dialog(parent, this, state, &_columnMapping);
+
+	QGroupBox* subFormatGroupBox = new QGroupBox(tr("Format style"));
+	dialog.insertWidget(subFormatGroupBox);
+
+	QVBoxLayout* layout = new QVBoxLayout(subFormatGroupBox);
+	QCheckBox* extendedXYZBox = new QCheckBox(tr("Extended XYZ format"));
+	layout->addWidget(extendedXYZBox);
+	extendedXYZBox->setChecked(subFormat() == ExtendedFormat);
+
 	if(dialog.exec() == QDialog::Accepted) {
+
+		setSubFormat(extendedXYZBox->isChecked() ? ExtendedFormat : ParcasFormat);
 
 		// Remember the output column mapping for the next time.
 		QSettings settings;
 		settings.beginGroup("viz/exporter/xyz/");
 		settings.setValue("columnmapping", _columnMapping.toByteArray());
+		settings.setValue("subformat", (int)subFormat());
 		settings.endGroup();
 
 		return true;
@@ -84,23 +90,116 @@ bool XYZExporter::exportParticles(const PipelineFlowState& state, int frameNumbe
 	size_t atomsCount = posProperty->size();
 	textStream() << atomsCount << "\n";
 
-	textStream() << "Frame " << frameNumber;
-	SimulationCell* simulationCell = state.findObject<SimulationCell>();
-	if(simulationCell) {
-		AffineTransformation simCell = simulationCell->cellMatrix();
-		textStream() << " cell_orig " << simCell.translation().x() << " " << simCell.translation().y() << " " << simCell.translation().z();
-		textStream() << " cell_vec1 " << simCell.column(0).x() << " " << simCell.column(0).y() << " " << simCell.column(0).z();
-		textStream() << " cell_vec2 " << simCell.column(1).x() << " " << simCell.column(1).y() << " " << simCell.column(1).z();
-		textStream() << " cell_vec3 " << simCell.column(2).x() << " " << simCell.column(2).y() << " " << simCell.column(2).z();
-		textStream() << " pbc " << simulationCell->pbcX() << " " << simulationCell->pbcY() << " " << simulationCell->pbcZ();
-	}
-	textStream() << "\n";
-
 	const OutputColumnMapping& mapping = columnMapping();
 	if(mapping.columnCount() <= 0)
 		throw Exception(tr("No particle properties have been selected for export to the XYZ file. Cannot write file with zero columns."));
-
 	OutputColumnWriter columnWriter(mapping, state, true);
+
+	SimulationCell* simulationCell = state.findObject<SimulationCell>();
+
+	if(subFormat() == ParcasFormat) {
+		textStream() << QStringLiteral("Frame %1").arg(frameNumber);
+		if(simulationCell) {
+			AffineTransformation simCell = simulationCell->cellMatrix();
+			textStream() << " cell_orig " << simCell.translation().x() << " " << simCell.translation().y() << " " << simCell.translation().z();
+			textStream() << " cell_vec1 " << simCell.column(0).x() << " " << simCell.column(0).y() << " " << simCell.column(0).z();
+			textStream() << " cell_vec2 " << simCell.column(1).x() << " " << simCell.column(1).y() << " " << simCell.column(1).z();
+			textStream() << " cell_vec3 " << simCell.column(2).x() << " " << simCell.column(2).y() << " " << simCell.column(2).z();
+			textStream() << " pbc " << simulationCell->pbcX() << " " << simulationCell->pbcY() << " " << simulationCell->pbcZ();
+		}
+	}
+	else if(subFormat() == ExtendedFormat) {
+		if(simulationCell) {
+			AffineTransformation simCell = simulationCell->cellMatrix();
+			// Save cell information in extended XYZ format:
+			// see http://jrkermode.co.uk/quippy/io.html#extendedxyz for details
+			QString latticeStr;
+			latticeStr = latticeStr.sprintf("Lattice=\"%16.8f %16.8f %16.8f %16.8f %16.8f %16.8f %16.8f %16.8f %16.8f\" ",
+							simCell.column(0).x(), simCell.column(0).y(), simCell.column(0).z(),
+							simCell.column(1).x(), simCell.column(1).y(), simCell.column(1).z(),
+							simCell.column(2).x(), simCell.column(2).y(), simCell.column(2).z());
+			textStream() << latticeStr;
+		}
+		// Save column information in extended XYZ format:
+		// see http://jrkermode.co.uk/quippy/io.html#extendedxyz for details
+		textStream() << QStringLiteral("Properties=");
+		QString propertiesStr;
+		int i = 0;
+		while(i < mapping.columnCount()) {
+			ParticleProperty::Type propertyType = mapping.propertyType(i);
+			QString propertyName = mapping.propertyName(i);
+
+			// Convert from OVITO property type and name to extended XYZ property name
+			// Naming conventions followed are those of the QUIP code
+			QString columnName;
+			switch(propertyType) {
+			case ParticleProperty::ParticleTypeProperty: columnName = QStringLiteral("species"); break;
+			case ParticleProperty::PositionProperty: columnName = QStringLiteral("pos"); break;
+			case ParticleProperty::SelectionProperty: columnName = QStringLiteral("selection"); break;
+			case ParticleProperty::ColorProperty: columnName = QStringLiteral("color"); break;
+			case ParticleProperty::DisplacementProperty: columnName = QStringLiteral("disp"); break;
+			case ParticleProperty::DisplacementMagnitudeProperty: columnName = QStringLiteral("disp_mag"); break;
+			case ParticleProperty::PotentialEnergyProperty: columnName = QStringLiteral("local_energy"); break;
+			case ParticleProperty::KineticEnergyProperty: columnName = QStringLiteral("kinetic_energy"); break;
+			case ParticleProperty::TotalEnergyProperty: columnName = QStringLiteral("total_energy"); break;
+			case ParticleProperty::VelocityProperty: columnName = QStringLiteral("velo"); break;
+			case ParticleProperty::VelocityMagnitudeProperty: columnName = QStringLiteral("velo_mag"); break;
+			case ParticleProperty::RadiusProperty: columnName = QStringLiteral("radius"); break;
+			case ParticleProperty::ClusterProperty: columnName = QStringLiteral("cluster"); break;
+			case ParticleProperty::CoordinationProperty: columnName = QStringLiteral("n_neighb"); break;
+			case ParticleProperty::StructureTypeProperty: columnName = QStringLiteral("structure_type"); break;
+			case ParticleProperty::IdentifierProperty: columnName = QStringLiteral("id"); break;
+			case ParticleProperty::StressTensorProperty: columnName = QStringLiteral("stress"); break;
+			case ParticleProperty::StrainTensorProperty: columnName = QStringLiteral("strain"); break;
+			case ParticleProperty::DeformationGradientProperty: columnName = QStringLiteral("deform"); break;
+			case ParticleProperty::OrientationProperty: columnName = QStringLiteral("orientation"); break;
+			case ParticleProperty::ForceProperty: columnName = QStringLiteral("force"); break;
+			case ParticleProperty::MassProperty: columnName = QStringLiteral("mass"); break;
+			case ParticleProperty::ChargeProperty: columnName = QStringLiteral("charge"); break;
+			case ParticleProperty::PeriodicImageProperty: columnName = QStringLiteral("map_shift"); break;
+			case ParticleProperty::TransparencyProperty: columnName = QStringLiteral("transparency"); break;
+			case ParticleProperty::DipoleOrientationProperty: columnName = QStringLiteral("dipoles"); break;
+			case ParticleProperty::DipoleMagnitudeProperty: columnName = QStringLiteral("dipoles_mag"); break;
+			case ParticleProperty::AngularVelocityProperty: columnName = QStringLiteral("omega"); break;
+			case ParticleProperty::AngularMomentumProperty: columnName = QStringLiteral("angular_momentum"); break;
+			case ParticleProperty::TorqueProperty: columnName = QStringLiteral("torque"); break;
+			case ParticleProperty::SpinProperty: columnName = QStringLiteral("spin"); break;
+			case ParticleProperty::CentroSymmetryProperty: columnName = QStringLiteral("centro_symmetry"); break;
+			default:
+				columnName = propertyName;
+				columnName.remove(QRegExp("[^A-Za-z\\d_]"));
+			}
+
+			// Find matching property
+			ParticlePropertyObject* property = mapping.column(i).findInState(state);
+			OVITO_ASSERT(property != nullptr || propertyType == ParticleProperty::IdentifierProperty);
+
+			// Count the number of consecutive columns with the same name
+			int nCols = 1;
+			while(++i < mapping.columnCount() && propertyName == mapping.propertyName(i))
+				nCols++;
+
+			// Convert OVITO property type to extended XYZ type code: 'I','R','S','L'
+			int dataType = property ? property->dataType() : qMetaTypeId<int>();
+			QString dataTypeStr;
+			if(dataType == qMetaTypeId<FloatType>())
+				dataTypeStr = QStringLiteral("R");
+			else if(dataType == qMetaTypeId<char>() || propertyType == ParticleProperty::ParticleTypeProperty)
+				dataTypeStr = QStringLiteral("S");
+			else if(dataType == qMetaTypeId<int>())
+				dataTypeStr = QStringLiteral("I");
+			else if(dataType == qMetaTypeId<bool>())
+				dataTypeStr = QStringLiteral("L");
+			else
+				throw Exception(tr("Unexpected data type '%1' for property '%2'.").arg(QMetaType::typeName(dataType) ? QMetaType::typeName(dataType) : "unknown").arg(propertyName));
+
+			if(!propertiesStr.isEmpty()) propertiesStr += QStringLiteral(":");
+			propertiesStr += QStringLiteral("%1:%2:%3").arg(columnName).arg(dataTypeStr).arg(nCols);
+		}
+		textStream() << propertiesStr;
+	}
+	textStream() << "\n";
+
 	for(size_t i = 0; i < atomsCount; i++) {
 		columnWriter.writeParticle(i, textStream());
 		textStream() << "\n";

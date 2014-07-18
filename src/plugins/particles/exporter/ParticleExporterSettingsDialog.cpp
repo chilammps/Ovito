@@ -34,11 +34,11 @@ ParticleExporterSettingsDialog::ParticleExporterSettingsDialog(QWidget* parent, 
 {
 	setWindowTitle(tr("Export Settings"));
 
-	QVBoxLayout* layout1 = new QVBoxLayout(this);
+	_mainLayout = new QVBoxLayout(this);
 	QRadioButton* radioBtn;
 
-	QGroupBox* rangeGroupBox = new QGroupBox(tr("Animation"), this);
-	layout1->addWidget(rangeGroupBox);
+	QGroupBox* rangeGroupBox = new QGroupBox(tr("Export frame sequence"), this);
+	_mainLayout->addWidget(rangeGroupBox);
 
 	QGridLayout* rangeGroupLayout = new QGridLayout(rangeGroupBox);
 	rangeGroupLayout->setColumnStretch(0, 5);
@@ -46,12 +46,12 @@ ParticleExporterSettingsDialog::ParticleExporterSettingsDialog(QWidget* parent, 
 	_rangeButtonGroup = new QButtonGroup(this);
 
 	bool exportAnim = _exporter->exportAnimation();
-	radioBtn = new QRadioButton(tr("Export current frame"));
+	radioBtn = new QRadioButton(tr("Only current frame"));
 	_rangeButtonGroup->addButton(radioBtn, 0);
 	rangeGroupLayout->addWidget(radioBtn, 0, 0, 1, 2);
 	radioBtn->setChecked(!exportAnim);
 
-	radioBtn = new QRadioButton(tr("Export animation range"));
+	radioBtn = new QRadioButton(tr("Animation range"));
 	_rangeButtonGroup->addButton(radioBtn, 1);
 	rangeGroupLayout->addWidget(radioBtn, 1, 0, 1, 2);
 	radioBtn->setChecked(exportAnim);
@@ -98,7 +98,7 @@ ParticleExporterSettingsDialog::ParticleExporterSettingsDialog(QWidget* parent, 
 	connect(radioBtn, &QRadioButton::toggled, _nthFrameSpinner, &SpinnerWidget::setEnabled);
 
 	QGroupBox* fileGroupBox = new QGroupBox(tr("Output"), this);
-	layout1->addWidget(fileGroupBox);
+	_mainLayout->addWidget(fileGroupBox);
 
 	QGridLayout* fileGroupLayout = new QGridLayout(fileGroupBox);
 	fileGroupLayout->setColumnStretch(0, 5);
@@ -110,7 +110,7 @@ ParticleExporterSettingsDialog::ParticleExporterSettingsDialog(QWidget* parent, 
 	fileGroupLayout->addWidget(radioBtn, 0, 0, 1, 2);
 	radioBtn->setChecked(!_exporter->useWildcardFilename());
 
-	radioBtn = new QRadioButton(tr("Multiple files using wild-card pattern:"));
+	radioBtn = new QRadioButton(tr("Multiple files (wild-card pattern):"));
 	_fileGroupButtonGroup->addButton(radioBtn, 1);
 	fileGroupLayout->addWidget(radioBtn, 1, 0, 1, 2);
 	radioBtn->setChecked(_exporter->useWildcardFilename());
@@ -121,8 +121,8 @@ ParticleExporterSettingsDialog::ParticleExporterSettingsDialog(QWidget* parent, 
 	connect(radioBtn, &QRadioButton::toggled, _wildcardTextbox, &QLineEdit::setEnabled);
 
 	if(columnMapping) {
-		QGroupBox* columnsGroupBox = new QGroupBox(tr("Particle properties to export"), this);
-		layout1->addWidget(columnsGroupBox);
+		QGroupBox* columnsGroupBox = new QGroupBox(tr("Particle properties"), this);
+		_mainLayout->addWidget(columnsGroupBox);
 		QGridLayout* columnsGroupBoxLayout = new QGridLayout(columnsGroupBox);
 
 		_columnMappingWidget = new QListWidget();
@@ -175,7 +175,7 @@ ParticleExporterSettingsDialog::ParticleExporterSettingsDialog(QWidget* parent, 
 	QDialogButtonBox* buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, this);
 	connect(buttonBox, &QDialogButtonBox::accepted, this, &ParticleExporterSettingsDialog::onOk);
 	connect(buttonBox, &QDialogButtonBox::rejected, this, &ParticleExporterSettingsDialog::reject);
-	layout1->addWidget(buttonBox);
+	_mainLayout->addWidget(buttonBox);
 }
 
 /******************************************************************************
@@ -210,6 +210,14 @@ void ParticleExporterSettingsDialog::insertPropertyItem(ParticlePropertyReferenc
 	else {
 		_columnMappingWidget->addItem(item);
 	}
+}
+
+/******************************************************************************
+* Extends the dialog by inserting an additional widget (usually a QGroupBox) into the layout.
+******************************************************************************/
+void ParticleExporterSettingsDialog::insertWidget(QWidget* widget)
+{
+	_mainLayout->insertWidget(_mainLayout->count() - 1, widget);
 }
 
 /******************************************************************************
