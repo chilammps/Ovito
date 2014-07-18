@@ -46,7 +46,7 @@ ParticleExporterSettingsDialog::ParticleExporterSettingsDialog(QWidget* parent, 
 	_rangeButtonGroup = new QButtonGroup(this);
 
 	bool exportAnim = _exporter->exportAnimation();
-	radioBtn = new QRadioButton(tr("Only current frame"));
+	radioBtn = new QRadioButton(tr("Single frame"));
 	_rangeButtonGroup->addButton(radioBtn, 0);
 	rangeGroupLayout->addWidget(radioBtn, 0, 0, 1, 2);
 	radioBtn->setChecked(!exportAnim);
@@ -126,7 +126,7 @@ ParticleExporterSettingsDialog::ParticleExporterSettingsDialog(QWidget* parent, 
 		QGridLayout* columnsGroupBoxLayout = new QGridLayout(columnsGroupBox);
 
 		_columnMappingWidget = new QListWidget();
-		columnsGroupBoxLayout->addWidget(_columnMappingWidget, 0, 0, 3, 1);
+		columnsGroupBoxLayout->addWidget(_columnMappingWidget, 0, 0, 5, 1);
 		columnsGroupBoxLayout->setRowStretch(2, 1);
 
 		bool hasParticleIdentifiers = false;
@@ -147,8 +147,12 @@ ParticleExporterSettingsDialog::ParticleExporterSettingsDialog(QWidget* parent, 
 
 		QPushButton* moveUpButton = new QPushButton(tr("Move up"), columnsGroupBox);
 		QPushButton* moveDownButton = new QPushButton(tr("Move down"), columnsGroupBox);
+		QPushButton* selectAllButton = new QPushButton(tr("Select all"), columnsGroupBox);
+		QPushButton* selectNoneButton = new QPushButton(tr("Unselect all"), columnsGroupBox);
 		columnsGroupBoxLayout->addWidget(moveUpButton, 0, 1, 1, 1);
 		columnsGroupBoxLayout->addWidget(moveDownButton, 1, 1, 1, 1);
+		columnsGroupBoxLayout->addWidget(selectAllButton, 3, 1, 1, 1);
+		columnsGroupBoxLayout->addWidget(selectNoneButton, 4, 1, 1, 1);
 		moveUpButton->setEnabled(_columnMappingWidget->currentRow() >= 1);
 		moveDownButton->setEnabled(_columnMappingWidget->currentRow() >= 0 && _columnMappingWidget->currentRow() < _columnMappingWidget->count() - 1);
 
@@ -169,6 +173,16 @@ ParticleExporterSettingsDialog::ParticleExporterSettingsDialog(QWidget* parent, 
 			QListWidgetItem* currentItem = _columnMappingWidget->takeItem(currentIndex);
 			_columnMappingWidget->insertItem(currentIndex + 1, currentItem);
 			_columnMappingWidget->setCurrentRow(currentIndex + 1);
+		});
+
+		connect(selectAllButton, &QPushButton::clicked, [this]() {
+			for(int index = 0; index < _columnMappingWidget->count(); index++)
+				_columnMappingWidget->item(index)->setCheckState(Qt::Checked);
+		});
+
+		connect(selectNoneButton, &QPushButton::clicked, [this]() {
+			for(int index = 0; index < _columnMappingWidget->count(); index++)
+				_columnMappingWidget->item(index)->setCheckState(Qt::Unchecked);
 		});
 	}
 
