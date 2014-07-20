@@ -17,8 +17,10 @@
     </imageobject></mediaobject></screenshot></informalfigure>
   
   This modifier calculates he atomic-level strain tensors from two
-  configurations of the simulated system. See <link
-  xlink:href="http://li.mit.edu/Archive/Activities/Archive/Papers/07/Shimizu07a.pdf">[Mater.
+  configurations of the simulated system. See
+  <link xlink:href="http://dx.doi.org/10.1103/PhysRevE.57.7192">[Falk, Langer, Phys. Rev. E 57 (1998), 7192]</link>
+  and <link
+  xlink:href="http://li.mit.edu/Archive/Activities/Archive/Papers/07/Shimizu07a.pdf">[Shimizu, Ogata, Li, Mater.
   Trans. 48 (2007), 2923]</link> for a description of how the per-particle deformation
   tensors are calculated by OVITO.</para>
 
@@ -37,9 +39,13 @@
 
   <para>After calculating the atomic deformation gradient tensor <emphasis>F</emphasis>, the
   Green-Langrangian strain tensor <inlineequation><mathphrase>E=1/2(F<superscript>T</superscript>F-I)</mathphrase></inlineequation> 
-  is derived from it. Finally, the modifier
-  calculates and outputs the <emphasis>von Mises</emphasis> local shear invariant and the
+  is derived from it. The modifier calculates and outputs the <emphasis>von Mises</emphasis> local shear invariant and the
   volumetric (hydrostatic) part of the strain tensor.</para>
+
+  <para>Finally, the modifier calculates the residual of the deformation gradient calculation.
+  This is a measure for the non-affine part of the local deformation and was termed
+  <inlineequation><mathphrase>D<superscript>2</superscript><subscript>min</subscript></mathphrase></inlineequation>
+  by Falk &amp; Langer.</para>
 
   <para>Use the <emphasis>"Reference: External data source"</emphasis> panel to pick the
   file containing the initial particle positions. Note
@@ -114,12 +120,44 @@
       </varlistentry>      
 
       <varlistentry>
+        <term>Output non-affine squared displacements</term>
+
+        <listitem>
+          <para>If activated, the modifier computes the non-affine displacements in an output
+          property. This is the residual of the least squares fit of the deformation gradient
+          tensor (i.e. the <inlineequation><mathphrase>D<superscript>2</superscript><subscript>min</subscript></mathphrase></inlineequation>
+	  property of Falk &amp; Langer). Turn this off to save memory if you do not need non-affine
+	  displacements.</para>
+        </listitem>
+      </varlistentry>      
+
+      <varlistentry>
         <term>Select invalid particles</term>
 
         <listitem>
           <para>If activated, the modifier selects those particles for which it
           could not calculate the local deformation gradient and strain tensors
           (due to too few neighbors within the cutoff radius).</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Fixed reference configuration</term>
+        <listitem>
+          <para>If this option is active, the selected animation frame from the reference simulation sequence is used
+          as a fixed reference to calculate the displacement vectors. This is the default mode.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Relative to current frame</term>
+        <listitem>
+          <para>If this option is active, then a changing reference configuration is used to calculate the displacement vectors. 
+          This allows computing incremental displacement vectors (similar to discrete velocity vectors).
+          The frame offset controls the distance between reference and current frame and can be negative or positive. If it is negative, then the reference frame 
+          precedes the current frame in the simulation sequence.
+          Note that the displacement vectors will not be computed for simulation frames for which the resulting reference frame is negative or out of range.
+          </para>
         </listitem>
       </varlistentry>
 
