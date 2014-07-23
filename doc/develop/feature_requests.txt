@@ -1,14 +1,19 @@
 
+- Import bond information from LAMMPS.
 - Create Bonds modifier: Add 'lower bound' parameter such that, when using the modifier several times, bonds with different lengths can be assigned different colors.
+
 - Let the user configure the default colors and radii assigned to different atom types.
-- The particle information applet should allow the user to click on and select bonds directly (instead of picking the two particles).
-- More particle representations (e.g. open circles/rectangles)
 - Save more user-defined default settings (e.g. renderer type, particle colors, math expressions).
-- Scripting plugin: Add file I/O script functions.
+- More particle representations (e.g. open circles/rectangles)
+
 - Add support for low-dimensional systems.
+- The particle information applet should allow the user to click on and select bonds directly (instead of picking the two particles).
+- Compute center of mass of a group of atoms, output to file
+
+- Scripting plugin: Add file I/O script functions.
+- Scripting plugin: Provide direct access to individual atoms and their properties
 
 - Export of general triclinic cells to LAMMPS data/dump formats. See http://lammps.sandia.gov/doc/Section_howto.html#howto_12
-- Import bond information from LAMMPS.
 - Test OpenGL rendering support for more than 12 million particles.
 
 Sha Zhendong:
