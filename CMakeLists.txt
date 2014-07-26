@@ -40,8 +40,12 @@ OPTION(OVITO_BUILD_PLUGIN_PARTICLES "Build the Particles plugin." "ON")
 OPTION(OVITO_BUILD_PLUGIN_MESH "Build the Mesh plugin." "ON")
 OPTION(OVITO_BUILD_PLUGIN_TACHYON "Build the Tachyon plugin." "ON")
 OPTION(OVITO_BUILD_PLUGIN_CRYSTALANALYSIS "Build the CrystalAnalysis plugin." "OFF")
-OPTION(OVITO_BUILD_PLUGIN_SCRIPTING "Build the Scripting plugin." "ON")
+OPTION(OVITO_BUILD_PLUGIN_SCRIPTING "Build the Qt Scripting plugin." "ON")
+OPTION(OVITO_BUILD_PLUGIN_PYSCRIPT "Build the Python Scripting plugin." "OFF")
 OPTION(OVITO_BUILD_PLUGIN_NETCDF "Build the NetCDF plugin." "OFF")
+
+# Static or shared (and extensible) version of Ovito?
+OPTION(OVITO_MONOLITHIC_BUILD "Create one big executable that contains all plugins and third-party libraries." "OFF")
 
 # Tell CMake to run Qt moc when necessary:
 SET(CMAKE_AUTOMOC ON)
@@ -69,6 +73,16 @@ IF(OVITO_BUILD_PLUGIN_CRYSTALANALYSIS)
 	FIND_PACKAGE(CGAL REQUIRED)
 ENDIF()
 
+# Find the Boost.Python library, which is required by the scripting plugin.
+IF(OVITO_BUILD_PLUGIN_PYSCRIPT)
+	SET(BOOST_REQUIRED_BOOST_COMPONENTS iostreams)
+	SET(Boost_USE_STATIC_LIBS ${OVITO_MONOLITHIC_BUILD})
+	FIND_PACKAGE(Boost COMPONENTS python REQUIRED)
+	IF(NOT Boost_FOUND)
+		MESSAGE(FATAL_ERROR "The Boost library could not be found on your system. ${Boost_ERROR_REASON}")
+	ENDIF()
+ENDIF()
+
 # Define the OVITO_DEBUG macro in debug builds.
 SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DOVITO_DEBUG")
 
@@ -94,9 +108,6 @@ ENDIF()
 
 # This is the base directory for all included header files.
 INCLUDE_DIRECTORIES("${OVITO_SOURCE_BASE_DIR}/src")
-
-# Static or shared (and extensible) version of Ovito?
-OPTION(OVITO_MONOLITHIC_BUILD "Create one big executable that contains all plugins and third-party libraries." "OFF")
 
 IF(UNIX)
 	IF(APPLE)
