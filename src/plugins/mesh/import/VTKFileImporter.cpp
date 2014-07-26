@@ -25,7 +25,7 @@
 
 namespace Mesh {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Mesh, VTKFileImporter, LinkedFileImporter)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Mesh, VTKFileImporter, LinkedFileImporter);
 
 /******************************************************************************
 * Checks if the given file has format that can be read by this importer.
@@ -83,11 +83,22 @@ void VTKFileImporter::VTKFileImportTask::parseFile(FutureInterfaceBase& futureIn
 	// Parse point coordinates.
 	mesh().setVertexCount(pointCount);
 	auto v = mesh().vertices().begin();
-	for(int i = 0; i < pointCount; i++, ++v) {
-		if(sscanf(stream.readLine(),
-				FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING " " FLOATTYPE_SCANF_STRING,
-				&v->x(), &v->y(), &v->z()) != 3)
-			throw Exception(tr("Invalid vertex coordinates in VTK file (line %1): %2").arg(stream.lineNumber()).arg(stream.lineString()));
+	size_t component = 0;
+	for(int i = 0; i < pointCount; ) {
+		if(stream.eof())
+			throw Exception(tr("Unexpected end of VTK file in line %1.").arg(stream.lineNumber()));
+		const char* s = stream.readLine();
+		for(;;) {
+			while(*s <= ' ' && *s != '\0') ++s;			// Skip whitespace in front of token
+			if(*s == '\0' || i >= pointCount) break;
+			(*v)[component++] = (FloatType)std::atof(s);
+			if(component == 3) {
+				component = 0;
+				++v; ++i;
+			}
+			while(*s > ' ') ++s;						// Proceed to end of token
+		}
+
 	}
 	mesh().invalidateVertices();
 
