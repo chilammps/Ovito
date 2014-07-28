@@ -686,7 +686,7 @@ void NetCDFImporter::mapVariableToColumn(InputColumnMapping &columnMapping, int 
 	if(loweredName == "coordinates") columnMapping.mapStandardColumn(column, ParticleProperty::PositionProperty, 0, name);
 	else if(loweredName == "velocities") columnMapping.mapStandardColumn(column, ParticleProperty::VelocityProperty, 0, name);
 	else if(loweredName == "id") columnMapping.mapStandardColumn(column, ParticleProperty::IdentifierProperty, 0, name);
-	else if(loweredName == "type" || loweredName == "element" || loweredName == "atom_types") columnMapping.mapStandardColumn(column, ParticleProperty::ParticleTypeProperty, 0, name);
+	else if(loweredName == "type" || loweredName == "element" || loweredName == "atom_types" || loweredName == "species") columnMapping.mapStandardColumn(column, ParticleProperty::ParticleTypeProperty, 0, name);
 	else if(loweredName == "mass") columnMapping.mapStandardColumn(column, ParticleProperty::MassProperty, 0, name);
 	else if(loweredName == "radius") columnMapping.mapStandardColumn(column, ParticleProperty::RadiusProperty, 0, name);
 	else if(loweredName == "c_cna" || loweredName == "pattern") columnMapping.mapStandardColumn(column, ParticleProperty::StructureTypeProperty, 0, name);
