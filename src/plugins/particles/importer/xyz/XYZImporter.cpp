@@ -266,6 +266,22 @@ bool XYZImporter::mapVariableToProperty(InputColumnMapping &columnMapping, int c
 	return true;
 }
 
+/******************************************************************************
+ * Helper function that converts a string repr. of a bool ('T' or 'F') to an int
+ *****************************************************************************/
+inline bool parseBool(const char* s, int& d)
+{
+	if(s[1] != '\0') return false;
+	if(s[0] == 'T') {
+		d = 1;
+		return true;
+	}
+	else if(s[0] == 'F') {
+		d = 0;
+		return true;
+	}
+	return false;
+}
 
 /******************************************************************************
 * Parses the given input file and stores the data in the given container object.
@@ -317,7 +333,7 @@ void XYZImporter::XYZImportTask::parseFile(FutureInterfaceBase& futureInterface,
 			}
 		}
 	}
-	if((index = commentLine.indexOf("Lattice=\"")) >= 0) {
+	if((index = commentLine.toLower().indexOf("lattice=\"")) >= 0) {
 		// Extended XYZ format: Lattice="R11 R21 R31 R12 R22 R32 R13 R23 R33"
 		// See http://jrkermode.co.uk/quippy/io.html#extendedxyz for details
 
@@ -331,8 +347,12 @@ void XYZImporter::XYZImportTask::parseFile(FutureInterfaceBase& futureInterface,
 				cellVector2[k - 3] = (FloatType)list[k].toDouble();
 			for(int k = 6; k < 9; k++)
 				cellVector3[k - 6] = (FloatType)list[k].toDouble();
-			cellOrigin = cellVector1 + cellVector2 + cellVector3;
-			cellOrigin *= -0.5;
+		}
+
+		if ((index = commentLine.toLower().indexOf("cell_origin=\"")) >= 0) {
+			QStringList list = commentLine.mid(index + 12).split(ws_re, QString::SkipEmptyParts);
+			for(int k = 0; k < list.size() && k < 3; k++)
+				cellOrigin[k] = (FloatType)list[k].toDouble();
 		}
 	}
 	else {
@@ -368,7 +388,17 @@ void XYZImporter::XYZImportTask::parseFile(FutureInterfaceBase& futureInterface,
 	if((index = commentLine.indexOf("pbc ")) >= 0) {
 		QStringList list = commentLine.mid(index + 4).split(ws_re);
 		simulationCell().setPbcFlags((bool)list[0].toInt(), (bool)list[1].toInt(), (bool)list[2].toInt());
-	}
+	} else if ((index = commentLine.indexOf("pbc=\"")) >= 0) {
+		// Look for Extended XYZ PBC keyword
+		QStringList list = commentLine.mid(index + 5).split(ws_re);
+		int pbcFlags[3] = {0, 0, 0};
+		for (int i=0; i < list.size() && i < 3; i++) {
+			QByteArray ba = list[i].toLatin1();
+			parseBool(ba.data(), pbcFlags[i]);
+		}
+		simulationCell().setPbcFlags(pbcFlags[0], pbcFlags[1], pbcFlags[2]);
+	} else if (hasSimulationCell)
+		simulationCell().setPbcFlags(true, true, true);
 
 	if(_parseFileHeaderOnly) {
 		// Read first atoms line and count number of data columns.
@@ -387,7 +417,7 @@ void XYZImporter::XYZImportTask::parseFile(FutureInterfaceBase& futureInterface,
 		// format is described at http://jrkermode.co.uk/quippy/io.html#extendedxyz
 		// example: Properties=species:S:1:pos:R:3 for atomic species (1 column, string property)
 		// and atomic positions (3 columns, real property)
-		if((index = commentLine.indexOf("Properties=")) >= 0) {
+		if((index = commentLine.toLower().indexOf("properties=")) >= 0) {
 			QString propertiesStr = commentLine.mid(index + 11);
 			propertiesStr = propertiesStr.left(propertiesStr.indexOf(ws_re));
 			QStringList fields = propertiesStr.split(":");
