@@ -244,7 +244,7 @@ bool XYZImporter::mapVariableToProperty(InputColumnMapping &columnMapping, int c
 	else if(loweredName == "strain") columnMapping.mapStandardColumn(column, ParticleProperty::StrainTensorProperty, vec, name);
 	else if(loweredName == "deform") columnMapping.mapStandardColumn(column, ParticleProperty::DeformationGradientProperty, vec, name);
 	else if(loweredName == "orientation") columnMapping.mapStandardColumn(column, ParticleProperty::OrientationProperty, vec, name);
-	else if(loweredName == "force") columnMapping.mapStandardColumn(column, ParticleProperty::ForceProperty, vec, name);
+	else if(loweredName == "force" || loweredName == "forces") columnMapping.mapStandardColumn(column, ParticleProperty::ForceProperty, vec, name);
 	else if(loweredName == "mass") columnMapping.mapStandardColumn(column, ParticleProperty::MassProperty, vec, name);
 	else if(loweredName == "charge") columnMapping.mapStandardColumn(column, ParticleProperty::ChargeProperty, vec, name);
 	else if(loweredName == "map_shift") columnMapping.mapStandardColumn(column, ParticleProperty::PeriodicImageProperty, vec, name);
