@@ -216,13 +216,18 @@ InputColumnReader::InputColumnReader(const InputColumnMapping& mapping, Particle
 			}
 			else {
 				// Look for existing user-defined property with the same name.
+                ParticleProperty* oldProperty = nullptr;
+                int oldPropertyIndex = -1;
 				for(int j = 0; j < destination.particleProperties().size(); j++) {
 					const auto& p = destination.particleProperties()[j];
 					if(p->name() == propertyName) {
-						if(p->dataType() == dataType && (int)p->componentCount() > vectorComponent)
+						if(p->dataType() == dataType && (int)p->componentCount() > vectorComponent) {
 							property = p.get();
-						else
-							destination.removeParticleProperty(j);
+                        }
+						else {
+                            oldProperty = p.get();
+                            oldPropertyIndex = j;
+                        }
 						break;
 					}
 				}
@@ -230,6 +235,16 @@ InputColumnReader::InputColumnReader(const InputColumnMapping& mapping, Particle
 					// Create a new user-defined property for the column.
 					property = new ParticleProperty(particleCount, dataType, dataTypeSize, vectorComponent + 1, propertyName);
 					destination.addParticleProperty(property);
+                    if (oldProperty) {
+                        // We need to replace all old properties with (lower vector component count) with this one.
+                        int indexOfOldProperty = _properties.indexOf(oldProperty);
+                        while (indexOfOldProperty != -1) {
+                            _properties.replace(indexOfOldProperty, property);
+                            indexOfOldProperty = _properties.indexOf(oldProperty);
+                        }
+                        // Remove here and not above because it is auto-released.
+                        destination.removeParticleProperty(oldPropertyIndex);
+                    }
 				}
 			}
 			if(property)
