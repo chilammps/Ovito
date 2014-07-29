@@ -390,7 +390,9 @@ void XYZImporter::XYZImportTask::parseFile(FutureInterfaceBase& futureInterface,
 		simulationCell().setPbcFlags((bool)list[0].toInt(), (bool)list[1].toInt(), (bool)list[2].toInt());
 	} else if ((index = commentLine.indexOf("pbc=\"")) >= 0) {
 		// Look for Extended XYZ PBC keyword
-		QStringList list = commentLine.mid(index + 5).split(ws_re);
+		QString pbcStr = commentLine.mid(index + 5);
+		pbcStr.truncate(pbcStr.indexOf("\""));
+		QStringList list = pbcStr.split(ws_re);
 		int pbcFlags[3] = {0, 0, 0};
 		for (int i=0; i < list.size() && i < 3; i++) {
 			QByteArray ba = list[i].toLatin1();
