@@ -56,6 +56,12 @@ public:
 
 	/// \brief Tries to detect the format of the given file.
 	/// \return The importer class that can handle the given file. If the file format could not be recognized then NULL is returned.
+	/// \throw Exception if url is invalid or if operation has been canceled by the user.
+	/// \note This is a blocking function, which downloads the file and can take a long time to return.
+	OORef<FileImporter> autodetectFileFormat(DataSet* dataset, const QUrl& url);
+
+	/// \brief Tries to detect the format of the given file.
+	/// \return The importer class that can handle the given file. If the file format could not be recognized then NULL is returned.
 	OORef<FileImporter> autodetectFileFormat(DataSet* dataset, const QString& localFile, const QUrl& sourceLocation = QUrl());
 
 private:

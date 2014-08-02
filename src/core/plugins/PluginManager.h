@@ -77,6 +77,9 @@ public:
 	///       delete it on application shutdown.
 	void registerPlugin(Plugin* plugin);
 
+	/// \brief Returns the list of directories containing the Ovito plugins.
+	QList<QDir> pluginDirs();
+
 	/// \brief Destructor that unloads all plugins.
 	~PluginManager();
 
@@ -90,7 +93,7 @@ private:
 	/// The built-in core plugin.
 	Plugin* _corePlugin;
 
-	/// Searches the plugin directory for installed plugins and loads their XML manifests.
+	/// Searches the plugin directories for installed plugins and loads their XML manifests.
 	void registerPlugins();
 
 	/// Loads the given plugin manifest file and creates a Plugin object for it.

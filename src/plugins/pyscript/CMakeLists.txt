@@ -21,12 +21,10 @@
 
 FIND_PACKAGE(PythonLibs REQUIRED)
 
-INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
-INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
-
 SET(OVITO_PYSCRIPT_SOURCE_FILES
 	engine/ScriptEngine.cpp
 	engine/ScriptAutostarter.cpp
+	binding/PythonInterface.cpp
 )
 
 # Generate plugin module.
@@ -34,3 +32,10 @@ OVITO_PLUGIN(PyScript
 	SOURCES ${OVITO_PYSCRIPT_SOURCE_FILES}
 	LIB_DEPENDENCIES ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARY}
 )
+
+# Add Python and Boost include directories.
+TARGET_INCLUDE_DIRECTORIES(PyScript PUBLIC ${PYTHON_INCLUDE_PATH} ${Boost_INCLUDE_DIRS})
+
+# Install the Python source files that belong to the plugin and which provide the scripting interface.
+ADD_CUSTOM_COMMAND(TARGET PyScript POST_BUILD COMMAND ${CMAKE_COMMAND} "-E" copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/python/" "${OVITO_PLUGINS_DIRECTORY}/python/")
+INSTALL(DIRECTORY "${OVITO_PLUGINS_DIRECTORY}/python/" DESTINATION "${OVITO_RELATIVE_PLUGINS_DIRECTORY}/python/")

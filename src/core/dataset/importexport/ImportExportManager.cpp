@@ -21,6 +21,9 @@
 
 #include <core/Core.h>
 #include <core/plugins/PluginManager.h>
+#include <core/utilities/io/FileManager.h>
+#include <core/dataset/DataSet.h>
+#include <core/dataset/DataSetContainer.h>
 #include "ImportExportManager.h"
 #include "moc_FileImporter.cpp"
 #include "moc_FileExporter.cpp"
@@ -87,6 +90,24 @@ const QVector<FileExporterDescription*>& ImportExportManager::fileExporters(Data
 		}
 	}
 	return _fileExporters;
+}
+
+/******************************************************************************
+* Tries to detect the format of the given file.
+******************************************************************************/
+OORef<FileImporter> ImportExportManager::autodetectFileFormat(DataSet* dataset, const QUrl& url)
+{
+	if(!url.isValid())
+		throw Exception(tr("Invalid path or URL."));
+
+	// Download file so we can determine its format.
+	DataSetContainer* container = dataset->container();
+	Future<QString> fetchFileFuture = FileManager::instance().fetchUrl(*container, url);
+	if(!container->taskManager().waitForTask(fetchFileFuture))
+		throw Exception(tr("Operation has been canceled by the user."));
+
+	// Detect file format.
+	return autodetectFileFormat(dataset, fetchFileFuture.result(), url.path());
 }
 
 /******************************************************************************

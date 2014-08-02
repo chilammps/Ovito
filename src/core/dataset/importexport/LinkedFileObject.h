@@ -99,7 +99,7 @@ public:
 	virtual PipelineFlowState evaluate(TimePoint time) override;
 
 	/// \brief Returns the list of imported scene objects.
-	const QVector<SceneObject*> sceneObjects() const { return _sceneObjects; }
+	const QVector<SceneObject*>& sceneObjects() const { return _sceneObjects; }
 
 	/// \brief Inserts a new object into the list of scene objects held by this container object.
 	void addSceneObject(SceneObject* obj) {

@@ -105,6 +105,10 @@ IF(OVITO_BUILD_PLUGIN_SCRIPTING)
 	)
 ENDIF()
 
+IF(OVITO_BUILD_PLUGIN_PYSCRIPT)
+	LIST(APPEND OVITO_PARTICLES_SOURCE_FILES scripting/PythonInterface.cpp)
+ENDIF()
+
 # List of source files of the GLU library used for polygon tessellation.
 SET(GLUSourceFiles
 	util/polytess/dict.c
@@ -124,5 +128,9 @@ OVITO_PLUGIN(Particles
 	SOURCES ${OVITO_PARTICLES_SOURCE_FILES} ${GLUSourceFiles}
 	RESOURCE particles.rcc resources/particles.qrc
 	LIB_DEPENDENCIES muParser qcustomplot ${OPENGL_gl_LIBRARY}
-	OPTIONAL_PLUGIN_DEPENDENCIES Scripting
+	OPTIONAL_PLUGIN_DEPENDENCIES Scripting PyScript
 )
+
+# Install the Python source files that belong to the plugin and which provide the scripting interface.
+ADD_CUSTOM_COMMAND(TARGET Particles POST_BUILD COMMAND ${CMAKE_COMMAND} "-E" copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/resources/python/" "${OVITO_PLUGINS_DIRECTORY}/python/")
+

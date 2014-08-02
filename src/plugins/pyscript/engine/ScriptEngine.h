@@ -24,7 +24,6 @@
 
 #include <plugins/pyscript/PyScript.h>
 #include <core/dataset/DataSet.h>
-#include "ScriptBinding.h"
 
 namespace PyScript {
 
@@ -40,30 +39,70 @@ public:
 	/// \brief Initializes the scripting engine and sets up the environment.
 	/// \param dataset The engine will execute scripts in the context of this dataset.
 	/// \param parent The owner of this QObject.
-	ScriptEngine(DataSet* dataset, QObject* parent = nullptr);
+	/// \param redirectOutputToConsole Controls whether the Python script output should be forwarded to the terminal.
+	ScriptEngine(DataSet* dataset, QObject* parent = nullptr, bool redirectOutputToConsole = true);
 
 	/// \brief Returns the dataset that provides the context for the script.
 	DataSet* dataset() const { return _dataset; }
 
-	/// \brief Executes one or more Python statements.
-	void execute(const QString& commands);
+	/// \brief Executes a Python script consisting of one or more statements.
+	/// \param script The script source code.
+	/// \return The exit code returned by the Python script.
+	/// \throw Exception on error.
+	int execute(const QString& commands);
 
-	/// \brief Executes a Python program.
-	void executeFile(const QString& file);
+	/// \brief Executes a Python script file.
+	/// \param scriptFile The script file path.
+	/// \return The exit code returned by the Python script.
+	/// \throw Exception on error.
+	int executeFile(const QString& file);
+
+Q_SIGNALS:
+
+	/// This signal is emitted when the Python script writes to the sys.stdout stream.
+	void scriptOutput(const QString& outputString);
+
+	/// This is emitted when the Python script writes to the sys.stderr stream.
+	void scriptError(const QString& errorString);
 
 private:
 
 	/// Initializes the Python interpreter and sets up the global namespace.
 	static void initializeInterpreter();
 
+	/// Handles a call to sys.exit() in the Python interpreter.
+	/// Returns the program exit code.
+	int handleSystemExit();
+
+	/// This helper class redirects Python script write calls to the sys.stdout stream to this script engine.
+	struct InterpreterStdOutputRedirector {
+		void write(const QString& str) {
+			if(ScriptEngine* eng = _activeEngine.load()) eng->scriptOutput(str);
+			else std::cout << str.toStdString();
+		}
+	};
+	/// This helper class redirects Python script write calls to the sys.stderr stream to this script engine.
+	struct InterpreterStdErrorRedirector {
+		void write(const QString& str) {
+			if(ScriptEngine* eng = _activeEngine.load()) eng->scriptError(str);
+			else std::cerr << str.toStdString();
+		}
+	};
+
 	/// The dataset that provides the context for the script execution.
 	OORef<DataSet> _dataset;
 
 	/// The namespace (scope) the script will be executed in by this script engine.
-	boost::python::object _mainNamespace;
+	boost::python::dict _mainNamespace;
+
+	/// Flag that indicates whether the global Python interpreter has been initialized.
+	static bool _isInterpreterInitialized;
 
 	/// The prototype namespace that is used to initialize new script engines with.
-	static boost::python::object _prototypeMainNamespace;
+	static boost::python::dict _prototypeMainNamespace;
+
+	/// The script engine that is currently active (i.e. which is executing a script).
+	static QAtomicPointer<ScriptEngine> _activeEngine;
 
 	Q_OBJECT
 };

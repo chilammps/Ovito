@@ -23,6 +23,7 @@ PROJECT(Ovito)
 
 # Make sure we have a recent version of CMake.
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.12 FATAL_ERROR)
+CMAKE_POLICY(SET CMP0023 OLD)
 
 # Automatically link to qtmain.lib on Windows.
 IF(WIN32)
@@ -187,6 +188,14 @@ SET(OVITO_SHARE_DIRECTORY "${${PROJECT_NAME}_BINARY_DIR}/${OVITO_RELATIVE_SHARE_
 
 # Our installation path.
 SET(OVITO_CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
+
+# This is the name suffix used for generating plugin libraries.
+SET(OVITO_PLUGIN_LIBRARY_SUFFIX ${CMAKE_SHARED_LIBRARY_SUFFIX})
+IF(APPLE)
+	# On Mac OS, we use .so inseatd of the standard .dylib to be compatible
+	# with the Python interpreter, which only finds modules with .so suffix.
+	SET(OVITO_PLUGIN_LIBRARY_SUFFIX ".so")
+ENDIF()
 
 # Add the plugins directory to the library path. Some plugins may link against other plugins.
 LINK_DIRECTORIES(${OVITO_PLUGINS_DIRECTORY})

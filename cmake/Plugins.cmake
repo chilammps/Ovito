@@ -1,13 +1,11 @@
-MACRO(OVITO_ADD_PLUGIN_DEPENDENCY target_name plugin_name)
+MACRO(OVITO_ADD_PLUGIN_DEPENDENCY target_name dependency_name)
 
-	STRING(TOUPPER "${plugin_name}" uppercase_plugin_name)
+	STRING(TOUPPER "${dependency_name}" uppercase_plugin_name)
 	IF(NOT OVITO_BUILD_PLUGIN_${uppercase_plugin_name})
-		STRING(TOUPPER "${plugin_name}" uppercase_plugin_name)
-		MESSAGE(FATAL_ERROR "To build the ${target_name} plugin, the ${plugin_name} plugin has to be enabled too. Please set the OVITO_BUILD_PLUGIN_${uppercase_plugin_name} option to ON.")
+		MESSAGE(FATAL_ERROR "To build the ${target_name} plugin, the ${dependency_name} plugin has to be enabled too. Please set the OVITO_BUILD_PLUGIN_${uppercase_plugin_name} option to ON.")
 	ENDIF()
 
-	TARGET_LINK_LIBRARIES(${target_name} ${plugin_name})
-
+	TARGET_LINK_LIBRARIES(${target_name} PUBLIC ${dependency_name})
 ENDMACRO(OVITO_ADD_PLUGIN_DEPENDENCY)
 
 # This macro adds a static library target to an executable target and makes sure that
@@ -35,7 +33,6 @@ MACRO(OVITO_PLUGIN target_name)
 	SET(resource_input)
 	SET(plugin_dependencies)
 	SET(optional_plugin_dependencies)
-	SET(pch_header)
 	FOREACH(currentArg ${ARGN})
 		IF("${currentArg}" STREQUAL "SOURCES" OR 
 			"${currentArg}" STREQUAL "LIB_DEPENDENCIES" OR 
@@ -61,18 +58,19 @@ MACRO(OVITO_PLUGIN target_name)
 		ENDIF()
 	ENDFOREACH(currentArg)
 
-	# This is needed to export the symbols in this shared library.
-	STRING(TOUPPER "${target_name}" uppercase_target_name)
-	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMAKING_MODULE_${uppercase_target_name}")
-
 	# Create the library target for the plugin.
 	ADD_LIBRARY(${target_name} ${plugin_sources})
 
-	# Link mandatory OVITO libraries.
-	TARGET_LINK_LIBRARIES(${target_name} Base Core)
+	# Define this macro so the source code knows the shared library is being compiled 
+	# and symbols need to be exported.
+	STRING(TOUPPER "${target_name}" uppercase_target_name)
+	TARGET_COMPILE_DEFINITIONS(${target_name} PRIVATE "-DMAKING_MODULE_${uppercase_target_name}")
 
-	# Link required OVITO libraries.
-	TARGET_LINK_LIBRARIES(${target_name} ${lib_dependencies})
+	# Link mandatory OVITO libraries.
+	TARGET_LINK_LIBRARIES(${target_name} PUBLIC Base Core)
+
+	# Link other required libraries.
+	TARGET_LINK_LIBRARIES(${target_name} PUBLIC ${lib_dependencies})
 
 	# Link Qt5.
 	QT5_USE_MODULES(${target_name} ${OVITO_REQUIRED_QT_MODULES})
@@ -89,6 +87,10 @@ MACRO(OVITO_PLUGIN target_name)
 			OVITO_ADD_PLUGIN_DEPENDENCY(${target_name} ${plugin_name})
 		ENDIF()
 	ENDFOREACH(plugin_name)
+	
+	# Set prefix and suffix of library name.
+	# This is needed so that the Python interpreter can load OVITO plugins as modules.
+	SET_TARGET_PROPERTIES(${target_name} PROPERTIES PREFIX "" SUFFIX "${OVITO_PLUGIN_LIBRARY_SUFFIX}")
 
 	IF(APPLE)
 		# Assign an absolute install path to this dynamic link library.
@@ -170,7 +172,7 @@ MACRO(OVITO_FIXUP_BUNDLE)
 			file(GLOB_RECURSE QTPLUGINS
 				\"${OVITO_CMAKE_INSTALL_PREFIX}/${plugin_dest_dir}/plugins/*${CMAKE_SHARED_LIBRARY_SUFFIX}\")
 			file(GLOB_RECURSE OVITO_PLUGINS
-				\"${OVITO_CMAKE_INSTALL_PREFIX}/${OVITO_RELATIVE_PLUGINS_DIRECTORY}/*${CMAKE_SHARED_LIBRARY_SUFFIX}\")
+				\"${OVITO_CMAKE_INSTALL_PREFIX}/${OVITO_RELATIVE_PLUGINS_DIRECTORY}/*${OVITO_PLUGIN_LIBRARY_SUFFIX}\")
 			set(BUNDLE_LIBS \${QTPLUGINS} \${OVITO_PLUGINS})
 			set(BU_CHMOD_BUNDLE_ITEMS ON)	# Make copies of system libraries writable before install_name_tool tries to change them.
 			include(BundleUtilities)

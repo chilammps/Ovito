@@ -84,9 +84,26 @@ void PluginManager::registerPlugin(Plugin* plugin)
 	_plugins.push_back(plugin);
 }
 
+/******************************************************************************
+* Returns the list of directories containing the Ovito plugins.
+******************************************************************************/
+QList<QDir> PluginManager::pluginDirs()
+{
+	QList<QDir> list;
+
+	// Scan the plugins directory for installed plugins.
+	QDir prefixDir(QCoreApplication::applicationDirPath());
+#if defined(Q_OS_WIN) || defined(Q_OS_MAC)
+	list.push_back(QDir(prefixDir.absolutePath() + "/plugins"));
+#else
+	prefixDir.cdUp();
+	list.push_back(QDir(prefixDir.absolutePath() + "/lib/ovito/plugins"));
+#endif
+	return list;
+}
 
 /******************************************************************************
-* Searches the plugin directory for installed plugins and
+* Searches the plugin directories for installed plugins and
 * loads their XML manifests.
 ******************************************************************************/
 void PluginManager::registerPlugins()
@@ -94,36 +111,32 @@ void PluginManager::registerPlugins()
 	// Register the built-in classes of the core.
 	_corePlugin = loadPluginManifest(":/core/Core.manifest.xml");
 
-	// Scan the plugins directory for installed plugins.
-	QDir prefixDir(QCoreApplication::applicationDirPath());
-#if defined(Q_OS_WIN) || defined(Q_OS_MAC)
-	QDir pluginDir = QDir(prefixDir.absolutePath() + "/plugins");
-#else
-	prefixDir.cdUp();
-	QDir pluginDir = QDir(prefixDir.absolutePath() + "/lib/ovito/plugins");
-#endif
-	if(!pluginDir.exists())
-		throw Exception(QString("Failed to scan the plugin directory: %1").arg(pluginDir.path()));
+	// Scan the plugin directories for installed plugins.
+	for(QDir pluginDir : pluginDirs()) {
+		if(!pluginDir.exists())
+			throw Exception(QString("Failed to scan the plugin directory. Path %1 does not exist.").arg(pluginDir.path()));
 
-	// List all manifest files.
-	pluginDir.setNameFilters(QStringList("*.manifest.xml"));
-	pluginDir.setFilter(QDir::Files);
-	QStringList files = pluginDir.entryList();
+		// List all manifest files.
+		pluginDir.setNameFilters(QStringList("*.manifest.xml"));
+		pluginDir.setFilter(QDir::Files);
+		QStringList files = pluginDir.entryList();
 
-	// Load each manifest file in the plugins directory.
-	for(const QString& file : files) {
+		// Load each manifest file in the plugin directory.
+		for(const QString& file : files) {
 
-		// The Viz plugin has been renamed to Particles as of Ovito 2.1.
-		// Skip an old plugin file, which may still exist in the installation directory.
-		if(file == QStringLiteral("Viz.manifest.xml"))
-			continue;
+			// The Viz plugin has been renamed to Particles as of Ovito 2.1.
+			// Skip the old plugin file, which may still exist if the user has overwritten an old installation.
+			if(file == QStringLiteral("Viz.manifest.xml"))
+				continue;
 
-		try {
-			loadPluginManifest(pluginDir.absoluteFilePath(file));
-		}
-		catch(Exception& ex) {
-			ex.prependGeneralMessage(tr("Failed to load plugin manifest:\n\n%1").arg(file));
-			ex.showError();
+			QString filePath = pluginDir.absoluteFilePath(file);
+			try {
+				loadPluginManifest(filePath);
+			}
+			catch(Exception& ex) {
+				ex.prependGeneralMessage(tr("Failed to load plugin manifest:\n\n%1").arg(filePath));
+				ex.showError();
+			}
 		}
 	}
 

@@ -51,9 +51,10 @@ bool NativePlugin::parseToplevelManifestElement(const QDomElement& element)
 			baseDir = QCoreApplication::applicationDirPath();
 		else
 			baseDir = QFileInfo(manifestFile()).dir();
-		QFileInfo libFile(baseDir.absoluteFilePath(libBasename));
-#if defined(Q_CC_MINGW) || defined(Q_WS_X11)
-		libFile.setFile(libFile.absolutePath() + "/lib" + libFile.fileName());
+#if defined(Q_OS_WIN)
+		QFileInfo libFile(baseDir.absoluteFilePath(libBasename + ".dll"));
+#else
+		QFileInfo libFile(baseDir.absoluteFilePath(libBasename + ".so"));
 #endif
 		_libraryFilename = QDir::cleanPath(libFile.absoluteFilePath());
 
