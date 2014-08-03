@@ -148,6 +148,9 @@ public:
 
 BOOST_PYTHON_MODULE(PyScript)
 {
+	// Make Ovito program version number available to script.
+	scope().attr("__dict__")["version"] = make_tuple(OVITO_VERSION_MAJOR, OVITO_VERSION_MINOR, OVITO_VERSION_REVISION);
+
 	class_<TimeInterval>("TimeInterval", init<>())
 		.def(init<TimePoint>())
 		.def(init<TimePoint, TimePoint>())

@@ -84,9 +84,6 @@ void ScriptEngine::initializeInterpreter()
 		object main_module = import("__main__");
 		_prototypeMainNamespace = extract<dict>(main_module.attr("__dict__"));
 
-		// Make Ovito program version number available to script.
-		_prototypeMainNamespace["version"] = make_tuple(OVITO_VERSION_MAJOR, OVITO_VERSION_MINOR, OVITO_VERSION_REVISION);
-
 		// Install automatic QString to Python string conversion.
 		struct QString_to_python_str {
 			static PyObject* convert(const QString& s) {
