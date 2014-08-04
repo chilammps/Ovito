@@ -56,7 +56,7 @@ public:
 	///                     the size of a data type at runtime.
 	/// \param componentCount The number of components per particle of type \a dataType.
 	/// \param name The name assigned to the property.
-	static OORef<ParticlePropertyObject> create(DataSet* dataset, size_t particleCount, int dataType, size_t dataTypeSize, size_t componentCount, const QString& name);
+	static OORef<ParticlePropertyObject> createUserProperty(DataSet* dataset, size_t particleCount, int dataType, size_t dataTypeSize, size_t componentCount, const QString& name);
 
 	/// \brief Factory function that creates a standard property object.
 	/// \param particleCount The number of particles.
@@ -65,10 +65,10 @@ public:
 	/// \param componentCount The component count if this type of property
 	///                       has a variable component count; otherwise 0 to use the
 	///                       default number of components.
-	static OORef<ParticlePropertyObject> create(DataSet* dataset, size_t particleCount, ParticleProperty::Type which, size_t componentCount = 0);
+	static OORef<ParticlePropertyObject> createStandardProperty(DataSet* dataset, size_t particleCount, ParticleProperty::Type which, size_t componentCount = 0);
 
 	/// \brief Factory function that creates a property object based on an existing storage.
-	static OORef<ParticlePropertyObject> create(DataSet* dataset, ParticleProperty* storage);
+	static OORef<ParticlePropertyObject> createFromStorage(DataSet* dataset, ParticleProperty* storage);
 
 	/// \brief Gets the property's name.
 	/// \return The name of property, which is shown to the user.
@@ -531,9 +531,9 @@ public:
 
 public:
 
-	Q_PROPERTY(QString name READ name WRITE setName)
-	Q_PROPERTY(size_t size READ size WRITE resize)
-	Q_PROPERTY(int dataType READ dataType)
+	Q_PROPERTY(QString name READ name WRITE setName);
+	Q_PROPERTY(size_t size READ size WRITE resize);
+	Q_PROPERTY(int dataType READ dataType);
 
 protected:
 

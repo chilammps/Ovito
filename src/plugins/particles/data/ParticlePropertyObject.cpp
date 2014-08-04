@@ -40,23 +40,23 @@ ParticlePropertyObject::ParticlePropertyObject(DataSet* dataset, ParticlePropert
 /******************************************************************************
 * Factory function that creates a user-defined property object.
 ******************************************************************************/
-OORef<ParticlePropertyObject> ParticlePropertyObject::create(DataSet* dataset, size_t particleCount, int dataType, size_t dataTypeSize, size_t componentCount, const QString& name)
+OORef<ParticlePropertyObject> ParticlePropertyObject::createUserProperty(DataSet* dataset, size_t particleCount, int dataType, size_t dataTypeSize, size_t componentCount, const QString& name)
 {
-	return create(dataset, new ParticleProperty(particleCount, dataType, dataTypeSize, componentCount, name));
+	return createFromStorage(dataset, new ParticleProperty(particleCount, dataType, dataTypeSize, componentCount, name));
 }
 
 /******************************************************************************
 * Factory function that creates a standard property object.
 ******************************************************************************/
-OORef<ParticlePropertyObject> ParticlePropertyObject::create(DataSet* dataset, size_t particleCount, ParticleProperty::Type which, size_t componentCount)
+OORef<ParticlePropertyObject> ParticlePropertyObject::createStandardProperty(DataSet* dataset, size_t particleCount, ParticleProperty::Type which, size_t componentCount)
 {
-	return create(dataset, new ParticleProperty(particleCount, which, componentCount));
+	return createFromStorage(dataset, new ParticleProperty(particleCount, which, componentCount));
 }
 
 /******************************************************************************
 * Factory function that creates a property object based on an existing storage.
 ******************************************************************************/
-OORef<ParticlePropertyObject> ParticlePropertyObject::create(DataSet* dataset, ParticleProperty* storage)
+OORef<ParticlePropertyObject> ParticlePropertyObject::createFromStorage(DataSet* dataset, ParticleProperty* storage)
 {
 	OORef<ParticlePropertyObject> propertyObj;
 

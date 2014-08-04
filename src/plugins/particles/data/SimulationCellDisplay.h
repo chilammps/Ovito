@@ -92,9 +92,9 @@ public:
 
 public:
 
-	Q_PROPERTY(FloatType simulationCellLineWidth READ simulationCellLineWidth WRITE setSimulationCellLineWidth)
-	Q_PROPERTY(Color simulationCellRenderingColor READ simulationCellRenderingColor WRITE setSimulationCellRenderingColor)
-	Q_PROPERTY(bool renderSimulationCell READ renderSimulationCell WRITE setRenderSimulationCell)
+	Q_PROPERTY(FloatType simulationCellLineWidth READ simulationCellLineWidth WRITE setSimulationCellLineWidth);
+	Q_PROPERTY(Color simulationCellRenderingColor READ simulationCellRenderingColor WRITE setSimulationCellRenderingColor);
+	Q_PROPERTY(bool renderSimulationCell READ renderSimulationCell WRITE setRenderSimulationCell);
 
 protected:
 

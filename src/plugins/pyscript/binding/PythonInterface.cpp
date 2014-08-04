@@ -29,6 +29,8 @@
 #include <core/rendering/RenderSettings.h>
 #include <core/rendering/SceneRenderer.h>
 #include <core/rendering/standard/StandardSceneRenderer.h>
+#include <core/rendering/ParticlePrimitive.h>
+#include <core/rendering/ArrowPrimitive.h>
 #include <core/dataset/importexport/ImportExportManager.h>
 #include <core/dataset/importexport/FileImporter.h>
 #include <core/dataset/importexport/FileExporter.h>
@@ -46,6 +48,7 @@
 #include <core/scene/pipeline/ModifierApplication.h>
 #include <core/scene/pipeline/PipelineObject.h>
 #include <core/utilities/io/FileManager.h>
+#include "PythonBinding.h"
 
 namespace PyScript {
 
@@ -57,94 +60,6 @@ inline object OvitoObject__str__(OvitoObject* o) {
 	if(!o) return str("<OvitoObject nullptr>");
 	else return "<%s at address 0x%x>" % make_tuple(o->getOOType().name(), (std::intptr_t)o);
 }
-
-// A model of the Boost.Python concept ResultConverterGenerator which wraps
-// a raw pointer to an OvitoObject derived class in a OORef<> smart pointer.
-struct ovito_object_reference
-{
-	struct make_ooref_holder {
-		template <class T> static PyObject* execute(T* p) {
-			typedef objects::pointer_holder<OORef<T>, T> holder_t;
-			OORef<T> ptr(const_cast<T*>(p));
-			return objects::make_ptr_instance<T, holder_t>::execute(ptr);
-		}
-	};
-	template <class T> struct apply {
-        typedef to_python_indirect<T, make_ooref_holder> type;
-    };
-};
-
-/// Indexing suite for QVector<T*> containers, where T is an OvitoObject derived class.
-/// This indexing suite exposes only read-only methods which do not modify the QVector container.
-template<class T, typename Container = QVector<T*>>
-class QVector_OO_readonly_indexing_suite : public def_visitor<QVector_OO_readonly_indexing_suite<T>>
-{
-public:
-    typedef T* data_type;
-    typedef T* key_type;
-    typedef typename Container::size_type index_type;
-    typedef typename Container::size_type size_type;
-    typedef typename Container::difference_type difference_type;
-    typedef return_value_policy<ovito_object_reference> iterator_return_policy;
-
-    typedef boost::python::iterator<Container, iterator_return_policy> def_iterator;
-
-    template<class Class>
-    void visit(Class& cl) const {
-        cl
-            .def("__len__", &get_size)
-            .def("__setitem__", &set_item)
-            .def("__delitem__", &delete_item)
-            .def("__getitem__", make_function(&get_item, return_value_policy<ovito_object_reference>()))
-            .def("__contains__", &contains)
-            .def("__iter__", def_iterator())
-        ;
-    }
-
-    static size_type get_size(Container& container) {
-    	return container.size();
-    }
-
-    static T* get_item(back_reference<Container&> container, PyObject* i) {
-        if(PySlice_Check(i)) {
-        	PyErr_SetString(PyExc_NotImplementedError, "This sequence type does not support slicing.");
-        	throw_error_already_set();
-        }
-        return container.get()[convert_index(container.get(), i)];
-    }
-
-	static void set_item(Container& container, PyObject* i, PyObject* v) {
-		PyErr_SetString(PyExc_NotImplementedError, "This sequence type is read-only.");
-		throw_error_already_set();
-	}
-
-	static void delete_item(Container& container, PyObject* i) {
-		PyErr_SetString(PyExc_NotImplementedError, "This sequence type is read-only.");
-		throw_error_already_set();
-	}
-
-	static bool contains(Container& container, key_type const& key) {
-		return container.contains(key);
-	}
-
-	static index_type convert_index(Container& container, PyObject* i_) {
-		extract<index_type> i(i_);
-		if(i.check()) {
-			index_type index = i();
-			if(index < 0)
-				index += container.size();
-			if(index >= container.size() || index < 0) {
-				PyErr_SetString(PyExc_IndexError, "Index out of range");
-				throw_error_already_set();
-			}
-			return index;
-		}
-
-		PyErr_SetString(PyExc_TypeError, "Invalid index type");
-		throw_error_already_set();
-		return index_type();
-	}
-};
 
 BOOST_PYTHON_MODULE(PyScript)
 {
@@ -508,6 +423,39 @@ BOOST_PYTHON_MODULE(PyScript)
 		.def("fileSave", &DataSetContainer::fileSave)
 		.def("fileSaveAs", &DataSetContainer::fileSaveAs)
 		.def("askForSaveChanges", &DataSetContainer::askForSaveChanges)
+	;
+
+	enum_<ParticlePrimitive::ShadingMode>("ParticleShadingMode")
+		.value("NormalShading", ParticlePrimitive::NormalShading)
+		.value("FlatShading", ParticlePrimitive::FlatShading)
+	;
+
+	enum_<ParticlePrimitive::RenderingQuality>("ParticleRenderingQuality")
+		.value("LowQuality", ParticlePrimitive::LowQuality)
+		.value("MediumQuality", ParticlePrimitive::MediumQuality)
+		.value("HighQuality", ParticlePrimitive::HighQuality)
+		.value("AutoQuality", ParticlePrimitive::AutoQuality)
+	;
+
+	enum_<ParticlePrimitive::ParticleShape>("ParticleShape")
+		.value("SphericalShape", ParticlePrimitive::SphericalShape)
+		.value("SquareShape", ParticlePrimitive::SquareShape)
+	;
+
+	enum_<ArrowPrimitive::ShadingMode>("ArrowShadingMode")
+		.value("NormalShading", ArrowPrimitive::NormalShading)
+		.value("FlatShading", ArrowPrimitive::FlatShading)
+	;
+
+	enum_<ArrowPrimitive::RenderingQuality>("ArrowRenderingQuality")
+		.value("LowQuality", ArrowPrimitive::LowQuality)
+		.value("MediumQuality", ArrowPrimitive::MediumQuality)
+		.value("HighQuality", ArrowPrimitive::HighQuality)
+	;
+
+	enum_<ArrowPrimitive::Shape>("ArrowShape")
+		.value("CylinderShape", ArrowPrimitive::CylinderShape)
+		.value("ArrowShape", ArrowPrimitive::ArrowShape)
 	;
 }
 

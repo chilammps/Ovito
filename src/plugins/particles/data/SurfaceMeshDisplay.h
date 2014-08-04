@@ -68,8 +68,8 @@ public:
 
 public:
 
-	Q_PROPERTY(Ovito::Color surfacecColor READ surfaceColor WRITE setSurfaceColor)
-	Q_PROPERTY(Ovito::Color capColor READ capColor WRITE setCapColor)
+	Q_PROPERTY(Ovito::Color surfacecColor READ surfaceColor WRITE setSurfaceColor);
+	Q_PROPERTY(Ovito::Color capColor READ capColor WRITE setCapColor);
 
 protected:
 
