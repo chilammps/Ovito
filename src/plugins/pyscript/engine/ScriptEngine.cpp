@@ -20,6 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <plugins/pyscript/PyScript.h>
+#include <plugins/pyscript/binding/PythonBinding.h>
 #include <core/plugins/PluginManager.h>
 #include "ScriptEngine.h"
 
@@ -35,6 +36,9 @@ dict ScriptEngine::_prototypeMainNamespace;
 
 /// The script engine that is currently active (i.e. which is executing a script).
 QAtomicPointer<ScriptEngine> ScriptEngine::_activeEngine;
+
+/// Head of linked list that contains all initXXX functions.
+PythonPluginRegistration* PythonPluginRegistration::linkedlist = nullptr;
 
 /******************************************************************************
 * Initializes the scripting engine and sets up the environment.
@@ -68,6 +72,11 @@ ScriptEngine::ScriptEngine(DataSet* dataset, QObject* parent, bool redirectOutpu
 	}
 }
 
+extern "C" {
+	void initPyScript();
+	void initParticles();
+};
+
 /******************************************************************************
 * Initializes the Python interpreter and sets up the global namespace.
 ******************************************************************************/
@@ -77,6 +86,20 @@ void ScriptEngine::initializeInterpreter()
 		return;	// Interpreter is already initialized.
 
 	try {
+
+#ifdef OVITO_MONOLITHIC_BUILD
+		// Call Py_SetProgramName() because the Python interpreter uses the path of the main executable to determine the 
+		// location of Python standard library, which gets shipped with the static build of OVITO.
+		static QByteArray programName = QCoreApplication::applicationFilePath().toLocal8Bit();
+		Py_SetProgramName(programName.data());
+
+		// Make our internal script modules available by registering their initXXX functions with the Python interpreter.
+		// This is required in static builds only where all Ovito plugins are linked into the main executable file.
+		for(PythonPluginRegistration* r = PythonPluginRegistration::linkedlist; r != nullptr; r = r->_next) {
+			PyImport_AppendInittab(r->_pluginName, r->_initFunc);
+		}
+#endif
+
 		// Initialize the Python interpreter.
 		Py_Initialize();
 

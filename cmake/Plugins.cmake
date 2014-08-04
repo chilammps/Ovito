@@ -88,9 +88,11 @@ MACRO(OVITO_PLUGIN target_name)
 		ENDIF()
 	ENDFOREACH(plugin_name)
 	
-	# Set prefix and suffix of library name.
-	# This is needed so that the Python interpreter can load OVITO plugins as modules.
-	SET_TARGET_PROPERTIES(${target_name} PROPERTIES PREFIX "" SUFFIX "${OVITO_PLUGIN_LIBRARY_SUFFIX}")
+	IF(NOT OVITO_MONOLITHIC_BUILD)
+		# Set prefix and suffix of library name.
+		# This is needed so that the Python interpreter can load OVITO plugins as modules.
+		SET_TARGET_PROPERTIES(${target_name} PROPERTIES PREFIX "" SUFFIX "${OVITO_PLUGIN_LIBRARY_SUFFIX}")
+	ENDIF()
 
 	IF(APPLE)
 		# Assign an absolute install path to this dynamic link library.

@@ -29,6 +29,30 @@ namespace PyScript {
 using namespace boost::python;
 using namespace Ovito;
 
+/// \brief Adds the initXXX() function of a plugin to an internal list so that the scripting engine can discover and register all internal modules.
+/// Use the OVITO_REGISTER_PLUGIN_PYTHON_INTERFACE macro to create an instance of this structure on application startup.
+struct OVITO_PYSCRIPT_EXPORT PythonPluginRegistration
+{
+	/// The identifier of the plugin to register.
+	const char* _pluginName;
+	/// The initXXX() function to be registered with the Python interpreter.
+	void (*_initFunc)();
+	/// Next structure in linked list.
+	PythonPluginRegistration* _next;
+
+	PythonPluginRegistration(const char* pluginName, void (*initFunc)()) : _pluginName(pluginName), _initFunc(initFunc) {
+		_next = linkedlist;
+		linkedlist = this;
+	}
+
+	/// The initXXX() functions for each of the registered plugins.
+	static PythonPluginRegistration* linkedlist;
+};
+
+/// This macro must be used exactly once by every plugin that contains a Python scripting interface.
+#define OVITO_REGISTER_PLUGIN_PYTHON_INTERFACE(pluginName) \
+	static PyScript::PythonPluginRegistration __pyscript_unused_variable##pluginName(#pluginName, init##pluginName);
+
 // A model of the Boost.Python concept ResultConverterGenerator which wraps
 // a raw pointer to an OvitoObject derived class in a OORef<> smart pointer.
 struct ovito_object_reference

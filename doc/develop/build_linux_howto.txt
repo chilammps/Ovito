@@ -24,7 +24,22 @@ To build the dynamically-linked executable instead (on Ubuntu 14.04):
 sudo apt-get install build-essential git cmake-curses-gui qt5-default qtscript5-dev xsltproc docbook-xml \
                      libavcodec-dev libavdevice-dev libavfilter-dev libavformat-dev \
                      libavutil-dev libswscale-dev libcgal-dev libnetcdf-dev libhdf5-dev \
-                     libbotan1.10-dev libmuparser-dev
+                     libbotan1.10-dev libmuparser-dev python-dev
+
+**************************************************************************
+Install GNU g++ 4.8 compiler on Ubuntu 10.04
+**************************************************************************
+
+sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+sudo apt-get update; sudo apt-get install gcc-4.8 g++-4.8
+sudo update-alternatives --remove-all gcc 
+sudo update-alternatives --remove-all g++
+sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 20
+sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 20
+sudo update-alternatives --config gcc
+sudo update-alternatives --config g++
+export CC=gcc-4.8
+export CXX=g++-4.8
 
 **************************************************************************
 Build static Qt libraries (version 5.3.0) on Ubuntu 10.04:
@@ -33,6 +48,8 @@ Edit file qtbase/mkspecs/common/g++-base.conf and specify
 paths to latest gcc and g++ compilers if necessary (e.g. 'g++-4.8').
 **************************************************************************
 
+export CC=gcc-4.8
+export CXX=g++-4.8
 ./configure \
 	-opensource \
 	-static \
@@ -57,19 +74,44 @@ make
 make install
 
 **************************************************************************
+Build Python (version 2.7.x):
+**************************************************************************
+
+export CC=gcc-4.8
+export CXX=g++-4.8
+./configure --enable-shared --prefix=$HOME/progs/python
+make
+make install
+
+**************************************************************************
+Build NumPy:
+**************************************************************************
+
+export CC=gcc-4.8
+export CXX=g++-4.8
+LD_LIBRARY_PATH=$HOME/progs/python/lib $HOME/progs/python/bin/python setup.py install
+
+**************************************************************************
 Build static versions of Boost libraries (release 1.55):
 **************************************************************************
 
+echo "using gcc : 4.8 : /usr/bin/g++-4.8 ; " >> tools/build/v2/user-config.jam
+echo "using python : 2.7 : /home/stuko/progs/python ; " >> tools/build/v2/user-config.jam
 ./bootstrap.sh \
-	--with-libraries=system,thread \
+	--with-libraries=system,thread,python \
+	--with-python=$HOME/progs/python/bin/python \
+	--with-python-root=$HOME/progs/python \
+	--with-python-version=2.7 \
 	--prefix=$HOME/progs/booststatic
 
-./b2 release link=static install
+./b2 toolset=gcc-4.8 release link=static install
 
 **************************************************************************
 Build static CGAL library (release 4.3):
 **************************************************************************
 
+export CC=gcc-4.8
+export CXX=g++-4.8
 cmake -DBOOST_ROOT=$HOME/progs/booststatic \
 	-DBUILD_SHARED_LIBS=OFF \
 	-DGMP_LIBRARIES=/usr/lib/libgmp.a \
@@ -107,10 +149,17 @@ export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$HOME/progs/libavstatic/lib/pkgconfig
 Set the following flags in the CMake configuration to build all features:
 **************************************************************************
 
-OVITO_BUILD_DOCUMENTATION=ON
-OVITO_BUILD_PLUGIN_CRYSTALANALYSIS=ON
-OVITO_BUILD_PLUGIN_NETCDF=ON
-OVITO_VIDEO_OUPUT_SUPPORT=ON
-CMAKE_BUILD_TYPE=Release
+export CC=gcc-4.8
+export CXX=g++-4.8
+ccmake \
+	-DOVITO_BUILD_DOCUMENTATION=ON \
+	-DOVITO_BUILD_PLUGIN_CRYSTALANALYSIS=ON \
+	-DOVITO_BUILD_PLUGIN_NETCDF=ON \
+	-DOVITO_VIDEO_OUPUT_SUPPORT=ON \
+	-DCMAKE_BUILD_TYPE=Release \
+	-DBOOST_ROOT=$HOME/progs/booststatic \
+	-DPYTHON_LIBRARY=$HOME/progs/python/lib/libpython2.7.so.1.0 \
+	-DPYTHON_INCLUDE_DIR=$HOME/progs/python/include/python2.7 \
+	....
 
 
