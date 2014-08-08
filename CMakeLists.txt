@@ -25,8 +25,8 @@ PROJECT(Ovito)
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.12 FATAL_ERROR)
 CMAKE_POLICY(SET CMP0023 OLD)
 
-# Automatically link to qtmain.lib on Windows.
 IF(WIN32)
+	# Automatically link to qtmain.lib on Windows.
 	CMAKE_POLICY(SET CMP0020 NEW)
 ENDIF()
 
@@ -36,7 +36,7 @@ INCLUDE(${OVITO_SOURCE_BASE_DIR}/cmake/Version.cmake)
 INCLUDE(${OVITO_SOURCE_BASE_DIR}/cmake/Plugins.cmake)
 INCLUDE(${OVITO_SOURCE_BASE_DIR}/cmake/CompileQtResource.cmake)
 
-# Add options that control the building of plugins.
+# Define user options that control the building of OVITO's standard plugins.
 OPTION(OVITO_BUILD_PLUGIN_PARTICLES "Build the Particles plugin." "ON")
 OPTION(OVITO_BUILD_PLUGIN_MESH "Build the Mesh plugin." "ON")
 OPTION(OVITO_BUILD_PLUGIN_TACHYON "Build the Tachyon plugin." "ON")
@@ -45,43 +45,12 @@ OPTION(OVITO_BUILD_PLUGIN_SCRIPTING "Build the Qt Scripting plugin." "ON")
 OPTION(OVITO_BUILD_PLUGIN_PYSCRIPT "Build the Python Scripting plugin." "OFF")
 OPTION(OVITO_BUILD_PLUGIN_NETCDF "Build the NetCDF plugin." "OFF")
 
-# Static or shared (and extensible) version of Ovito?
-OPTION(OVITO_MONOLITHIC_BUILD "Create one big executable that contains all plugins and third-party libraries." "OFF")
-
-# Tell CMake to run Qt moc when necessary:
-SET(CMAKE_AUTOMOC ON)
-# As moc files are generated in the binary dir, tell CMake to always look for includes there:
-SET(CMAKE_INCLUDE_CURRENT_DIR ON)
-  
-# Find and setup Qt5 libraries.
-SET(OVITO_REQUIRED_QT_MODULES Core Gui Widgets Xml OpenGL Concurrent Network PrintSupport)
-IF(OVITO_BUILD_PLUGIN_SCRIPTING)
-	LIST(APPEND OVITO_REQUIRED_QT_MODULES Script)
-ENDIF()
-FOREACH(COMPONENT ${OVITO_REQUIRED_QT_MODULES})
-	FIND_PACKAGE(Qt5${COMPONENT} REQUIRED)
-ENDFOREACH()
-
-# Find OpenGL library.
-FIND_PACKAGE(OpenGL REQUIRED)
-
-# Find the ZLib library.
-FIND_PACKAGE(ZLIB REQUIRED)
-INCLUDE_DIRECTORIES(${ZLIB_INCLUDE_DIRS})
-
-# Find the CGAL library.
-IF(OVITO_BUILD_PLUGIN_CRYSTALANALYSIS)
-	FIND_PACKAGE(CGAL REQUIRED)
-ENDIF()
-
-# Find the Boost.Python library, which is required by the scripting plugin.
-IF(OVITO_BUILD_PLUGIN_PYSCRIPT)
-	SET(BOOST_REQUIRED_BOOST_COMPONENTS iostreams)
-	SET(Boost_USE_STATIC_LIBS ${OVITO_MONOLITHIC_BUILD})
-	FIND_PACKAGE(Boost COMPONENTS python REQUIRED)
-	IF(NOT Boost_FOUND)
-		MESSAGE(FATAL_ERROR "The Boost library could not be found on your system. ${Boost_ERROR_REASON}")
-	ENDIF()
+# Controls whether a static or a shared OVITO executable is built.
+# In a static build, all plugins (and most third-party libraries) are linked into one big executable,
+# which makes distribution easier. In a shared build, plugins are built as shared objects (dynamic link libraries)
+# and it becomes possible to add or remove plugins after distribution.
+IF(UNIX AND NOT APPLE AND CMAKE_COMPILER_IS_GNUCXX)
+	OPTION(OVITO_MONOLITHIC_BUILD "Create one big executable that contains all plugins and third-party libraries." "OFF")
 ENDIF()
 
 # Define the OVITO_DEBUG macro in debug builds.
@@ -107,7 +76,7 @@ ENDIF()
 #	SET(CMAKE_MODULE_LINKER_FLAGS_RELEASE "${CMAKE_MODULE_LINKER_FLAGS_RELEASE} -flto -fuse-linker-plugin")
 #ENDIF()
 
-# This is the base directory for all included header files.
+# Set the base directory for all header files included by the OVITO source code.
 INCLUDE_DIRECTORIES("${OVITO_SOURCE_BASE_DIR}/src")
 
 IF(UNIX)
@@ -144,25 +113,20 @@ ELSE(UNIX)
 	SET(OVITO_RELATIVE_PLUGINS_DIRECTORY "${OVITO_RELATIVE_LIBRARY_DIRECTORY}/plugins")
 ENDIF(UNIX)
 
-# If a monothlitic build is enabled, a single static executable is created that contains all plugins.
+# If a static build is selected, a single executable is created that contains all plugins and most third-party libraries.
 # Otherwise the plugin and core libraries are created as shared objects. This is the default.
 IF(OVITO_MONOLITHIC_BUILD)
-	
-	# Creating a static executable has only been tested for Linux systems.
-	IF(NOT UNIX OR APPLE OR NOT CMAKE_COMPILER_IS_GNUCXX)
-		MESSAGE(FATAL_ERROR "Creating a static executable is only supported on Linux using the GCC compiler. Please set OVITO_MONOLITHIC_BUILD to OFF.")
-	ENDIF(NOT UNIX OR APPLE OR NOT CMAKE_COMPILER_IS_GNUCXX)
 
-	# Create .a libraries.
+	# Create only static .a libraries on Linux.
 	SET(BUILD_SHARED_LIBS "OFF")
 
-	# Let the source code know that we're building a monolithic executable without
-	# plugins residing in shared libraries.
+	# Let the source code know that we're building a monolithic executable. 
+	# This disables the code that is responsible for dynamic loading of plugins.
 	ADD_DEFINITIONS(-DOVITO_MONOLITHIC_BUILD)
 
 ELSE(OVITO_MONOLITHIC_BUILD)
 
-	# Create .so libraries.
+	# Create dynamic libraries.
 	SET(BUILD_SHARED_LIBS "ON")
 
 	# Setup RPATH
@@ -192,61 +156,94 @@ SET(OVITO_CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
 # This is the name suffix used for generating plugin libraries.
 SET(OVITO_PLUGIN_LIBRARY_SUFFIX ${CMAKE_SHARED_LIBRARY_SUFFIX})
 IF(APPLE)
-	# On Mac OS, we use .so inseatd of the standard .dylib to be compatible
-	# with the Python interpreter, which only finds modules with .so suffix.
+	# On Mac OS, we use the .so extension instead of the standard .dylib to be compatible
+	# with the Python interpreter, which only finds modules having a .so suffix.
 	SET(OVITO_PLUGIN_LIBRARY_SUFFIX ".so")
 ENDIF()
 
-# Add the plugins directory to the library path. Some plugins may link against other plugins.
-LINK_DIRECTORIES(${OVITO_PLUGINS_DIRECTORY})
-
-# Controls compilation of the video encoding module.
+# Controls compilation of the video encoding feature.
 OPTION(OVITO_VIDEO_OUTPUT_SUPPORT "Build the video encoding module." "OFF")
-IF(OVITO_VIDEO_OUTPUT_SUPPORT)
-	ADD_DEFINITIONS(-DOVITO_VIDEO_OUTPUT_SUPPORT)
+
+# This macro installs a required third-party DLL in the OVITO directory
+# so that it can be distributed together with the program.
+MACRO(OVITO_INSTALL_DLL dll)
+	MESSAGE("Installing DLL library ${dll} in output directory.")
+	CONFIGURE_FILE("${dll}" "${OVITO_BINARY_DIRECTORY}" COPYONLY)
+	INSTALL(FILES "${dll}" DESTINATION "${OVITO_RELATIVE_BINARY_DIRECTORY}")
+ENDMACRO()
+
+# Tell CMake to run Qt moc whenever necessary.
+SET(CMAKE_AUTOMOC ON)
+# As moc files are generated in the binary dir, tell CMake to always look for includes there.
+SET(CMAKE_INCLUDE_CURRENT_DIR ON)
+  
+# Find and set up Qt5 libraries.
+SET(OVITO_REQUIRED_QT_MODULES Core Gui Widgets Xml OpenGL Concurrent Network PrintSupport)
+IF(OVITO_BUILD_PLUGIN_SCRIPTING)
+	LIST(APPEND OVITO_REQUIRED_QT_MODULES Script)
+ENDIF()
+FOREACH(COMPONENT ${OVITO_REQUIRED_QT_MODULES})
+	FIND_PACKAGE(Qt5${COMPONENT} REQUIRED)
+ENDFOREACH()
+
+# Find OpenGL library.
+FIND_PACKAGE(OpenGL REQUIRED)
+ADD_LIBRARY(OpenGLLib SHARED IMPORTED GLOBAL)
+SET_PROPERTY(TARGET OpenGLLib PROPERTY IMPORTED_LOCATION "${OPENGL_gl_LIBRARY}")
+SET_PROPERTY(TARGET OpenGLLib APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${OPENGL_INCLUDE_DIR}")
+
+# Find the zlib library. It is required for reading/writing compressed simulation files.
+FIND_PACKAGE(ZLIB REQUIRED)
+
+# Find the Boost.Python library, which is required by the scripting plugin.
+IF(OVITO_BUILD_PLUGIN_PYSCRIPT)
+	SET(Boost_USE_STATIC_LIBS ${OVITO_MONOLITHIC_BUILD})
+	FIND_PACKAGE(Boost COMPONENTS python REQUIRED)
+	IF(NOT Boost_FOUND)
+		MESSAGE(FATAL_ERROR "The Boost library could not be found on your system. ${Boost_ERROR_REASON}")
+	ENDIF()
 ENDIF()
 
 # Build program.
 ADD_SUBDIRECTORY(src)
 
-# On Windows, the third-party library DLLs are not part of the system. 
-# We need to install them in the OVITO directory.
+# On Windows, the third-party library DLLs need to be installed in the OVITO directory.
 IF(WIN32)
 	# Gather Qt dynamic link libraries.
 	FOREACH(COMPONENT ${OVITO_REQUIRED_QT_MODULES})
 		GET_TARGET_PROPERTY(dll Qt5::${COMPONENT} LOCATION_${CMAKE_BUILD_TYPE})
-		LIST(APPEND REQUIRED_DLLS "${dll}")
+		OVITO_INSTALL_DLL("${dll}")
 		IF(${COMPONENT} MATCHES "Core")
 			GET_FILENAME_COMPONENT(QtBinaryPath ${dll} PATH)
 			IF(CMAKE_SIZEOF_VOID_P EQUAL 8)
-				LIST(APPEND REQUIRED_DLLS "${QtBinaryPath}/icudt52.dll")		
-				LIST(APPEND REQUIRED_DLLS "${QtBinaryPath}/icuin52.dll")		
-				LIST(APPEND REQUIRED_DLLS "${QtBinaryPath}/icuuc52.dll")
-				LIST(APPEND REQUIRED_DLLS "${QtBinaryPath}/libharfbuzz-0.dll")
-				LIST(APPEND REQUIRED_DLLS "${QtBinaryPath}/libfreetype-6.dll")
-				LIST(APPEND REQUIRED_DLLS "${QtBinaryPath}/libpcre16-0.dll")
-				LIST(APPEND REQUIRED_DLLS "${QtBinaryPath}/zlib1.dll")
-				LIST(APPEND REQUIRED_DLLS "${QtBinaryPath}/libbz2-1.dll")
-				LIST(APPEND REQUIRED_DLLS "${QtBinaryPath}/libglib-2.0-0.dll")
-				LIST(APPEND REQUIRED_DLLS "${QtBinaryPath}/libintl-8.dll")
-				LIST(APPEND REQUIRED_DLLS "${QtBinaryPath}/libpng16-16.dll")
-				LIST(APPEND REQUIRED_DLLS "${QtBinaryPath}/libiconv-2.dll")
-				LIST(APPEND REQUIRED_DLLS "${QtBinaryPath}/libjpeg-8.dll")
+				OVITO_INSTALL_DLL("${QtBinaryPath}/icudt52.dll")		
+				OVITO_INSTALL_DLL("${QtBinaryPath}/icuin52.dll")		
+				OVITO_INSTALL_DLL("${QtBinaryPath}/icuuc52.dll")
+				OVITO_INSTALL_DLL("${QtBinaryPath}/libharfbuzz-0.dll")
+				OVITO_INSTALL_DLL("${QtBinaryPath}/libfreetype-6.dll")
+				OVITO_INSTALL_DLL("${QtBinaryPath}/libpcre16-0.dll")
+				OVITO_INSTALL_DLL("${QtBinaryPath}/zlib1.dll")
+				OVITO_INSTALL_DLL("${QtBinaryPath}/libbz2-1.dll")
+				OVITO_INSTALL_DLL("${QtBinaryPath}/libglib-2.0-0.dll")
+				OVITO_INSTALL_DLL("${QtBinaryPath}/libintl-8.dll")
+				OVITO_INSTALL_DLL("${QtBinaryPath}/libpng16-16.dll")
+				OVITO_INSTALL_DLL("${QtBinaryPath}/libiconv-2.dll")
+				OVITO_INSTALL_DLL("${QtBinaryPath}/libjpeg-8.dll")
 			ELSE()
-				LIST(APPEND REQUIRED_DLLS "${QtBinaryPath}/icudt51.dll")		
-				LIST(APPEND REQUIRED_DLLS "${QtBinaryPath}/icuin51.dll")		
-				LIST(APPEND REQUIRED_DLLS "${QtBinaryPath}/icuuc51.dll")
+				OVITO_INSTALL_DLL("${QtBinaryPath}/icudt51.dll")		
+				OVITO_INSTALL_DLL("${QtBinaryPath}/icuin51.dll")		
+				OVITO_INSTALL_DLL("${QtBinaryPath}/icuuc51.dll")
 			ENDIF()
 			IF(MINGW)
 				# 32-bit and 64-bit MinGW use different exception models and must link different
 				# libgcc_s variants.
 				IF(CMAKE_SIZEOF_VOID_P EQUAL 8)
-					LIST(APPEND REQUIRED_DLLS "${QtBinaryPath}/libgcc_s_seh-1.dll")
+					OVITO_INSTALL_DLL("${QtBinaryPath}/libgcc_s_seh-1.dll")
 				ELSE()
-					LIST(APPEND REQUIRED_DLLS "${QtBinaryPath}/libgcc_s_dw2-1.dll")
+					OVITO_INSTALL_DLL("${QtBinaryPath}/libgcc_s_dw2-1.dll")
 				ENDIF()
-				LIST(APPEND REQUIRED_DLLS "${QtBinaryPath}/libstdc++-6.dll")
-				LIST(APPEND REQUIRED_DLLS "${QtBinaryPath}/libwinpthread-1.dll")
+				OVITO_INSTALL_DLL("${QtBinaryPath}/libstdc++-6.dll")
+				OVITO_INSTALL_DLL("${QtBinaryPath}/libwinpthread-1.dll")
 			ENDIF()
 		ENDIF()
 	ENDFOREACH()
@@ -262,7 +259,8 @@ IF(WIN32)
 		INSTALL(FILES "${QtBinaryPath}/../plugins/accessible/qtaccessiblewidgets.dll" DESTINATION "${OVITO_RELATIVE_BINARY_DIRECTORY}/plugins/accessible/")
 	ENDIF()
 	
-	# Install a qt.conf file.
+	# Create a qt.conf file.
+	# This is required to let Qt search for its plugin modules in the program directory.
 	INSTALL(CODE "
 	    file(WRITE \"\${CMAKE_INSTALL_PREFIX}/${OVITO_RELATIVE_BINARY_DIRECTORY}/qt.conf\" \"[Paths]\\nPlugins = plugins/\")
 	    " COMPONENT Runtime)
@@ -272,7 +270,7 @@ IF(WIN32)
 	GET_FILENAME_COMPONENT(ZLIB_LIBRARY_PATH "${ZLIB_FIRST_LIBRARY}" PATH)
 	SET(ZLIB_DLL_PATH "${ZLIB_LIBRARY_PATH}/../bin" CACHE PATH "Directory where the ZLib dll is located.")
 	MARK_AS_ADVANCED(ZLIB_DLL_PATH)
-	LIST(APPEND REQUIRED_DLLS "${ZLIB_DLL_PATH}/libzlib.dll")
+	OVITO_INSTALL_DLL("${ZLIB_DLL_PATH}/libzlib.dll")
 
 	# Install libav DLLS.
 	IF(OVITO_VIDEO_OUTPUT_SUPPORT)
@@ -280,39 +278,13 @@ IF(WIN32)
 						libogg-0.dll librtmp.dll libvo-aacenc-0.dll libvorbis-0.dll libvorbisenc-2.dll 
 						libvorbisfile-3.dll libx264-118.dll libx264-125.dll swscale-2.dll)
 		FOREACH(dll ${LIBAV_DLLS})
-			LIST(APPEND REQUIRED_DLLS "${FFMPEG_LIBRARY_DIR}/../bin/${dll}")
+			OVITO_INSTALL_DLL("${FFMPEG_LIBRARY_DIR}/../bin/${dll}")
 		ENDFOREACH()
 	ENDIF()
-	
-	# Install CGAL, GMP, MPFR, and Boost DLLs.
-	IF(OVITO_BUILD_PLUGIN_CRYSTALANALYSIS)
-		LIST(APPEND REQUIRED_DLLS ${CGAL_LIBRARY})
-		IF(NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
-			LIST(APPEND REQUIRED_DLLS ${GMP_LIBRARIES})
-			LIST(APPEND REQUIRED_DLLS ${MPFR_LIBRARIES})
-		ENDIF()
-		LIST(APPEND REQUIRED_DLLS "${CGAL_3RD_PARTY_LIBRARIES_DIRS}/libboost_thread-mt.dll")
-		LIST(APPEND REQUIRED_DLLS "${CGAL_3RD_PARTY_LIBRARIES_DIRS}/libboost_system-mt.dll")
-	ENDIF()
-
-	# Install NetCDF and HDF5 dlls.
-	IF(OVITO_BUILD_PLUGIN_NETCDF)
-		LIST(APPEND REQUIRED_DLLS "${NETCDF_DLL_PATH}/libnetcdf.dll")
-		LIST(APPEND REQUIRED_DLLS "${HDF5_DLL_PATH}/hdf5.dll")
-		LIST(APPEND REQUIRED_DLLS "${HDF5_DLL_PATH}/hdf5_hl.dll")
-	ENDIF()
-	
-	# Copy library DLLs to output directory.
-	FOREACH(dll ${REQUIRED_DLLS})
-		MESSAGE("Installing DLL library ${dll} in output directory.")
-		CONFIGURE_FILE("${dll}" "${OVITO_BINARY_DIRECTORY}" COPYONLY)
-		INSTALL(FILES "${dll}" DESTINATION "${OVITO_RELATIVE_BINARY_DIRECTORY}")
-	ENDFOREACH()
-ENDIF(WIN32)
-
+ENDIF()
 
 ################## Build documentation #####################
 INCLUDE(cmake/Documentation.cmake)
 
-######################### Setup CPack #######################
-INCLUDE(${OVITO_SOURCE_BASE_DIR}/cmake/Packaging.cmake)
+##################### Set up CPack #########################
+INCLUDE(cmake/Packaging.cmake)

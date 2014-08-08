@@ -25,6 +25,11 @@ SET(OVITO_PYSCRIPT_SOURCE_FILES
 	engine/ScriptEngine.cpp
 	engine/ScriptAutostarter.cpp
 	binding/PythonInterface.cpp
+	binding/ViewportBinding.cpp
+	binding/AnimationBinding.cpp
+	binding/SceneBinding.cpp
+	binding/FileIOBinding.cpp
+	binding/RenderingBinding.cpp
 )
 
 # Generate plugin module.
@@ -48,13 +53,12 @@ IF(APPLE)
 	INSTALL(DIRECTORY "${PYTHON_LIBRARY_PATH}/python${PYTHON_MAJORMINOR_VERSION}" 
 		DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}/../Frameworks/Python.framework/Versions/${PYTHON_MAJORMINOR_VERSION}/lib/"
 		PATTERN "*.pyc" EXCLUDE PATTERN "*.pyo" EXCLUDE)
-ENDIF()
-IF(UNIX AND NOT APPLE)
+ELSEIF(UNIX)
 	IF(OVITO_MONOLITHIC_BUILD)
 		# Install standard Python packages. 
 		STRING(REGEX MATCH "[0-9]+\\.[0-9]+" PYTHON_MAJORMINOR_VERSION ${PYTHONLIBS_VERSION_STRING})
 		LIST(GET PYTHON_LIBRARIES 0 PYTHON_FIRST_LIBRARY)
-		GET_FILENAME_COMPONENT(PYTHON_LIBRARY_PATH "${PYTHON_FIRST_LIBRARY}" PATH)
+		GET_FILENAME_COMPONENT(PYTHON_LIBRARY_PATH "${PYTHON_LIBRARY}" PATH)
 		INSTALL(DIRECTORY "${PYTHON_LIBRARY_PATH}/python${PYTHON_MAJORMINOR_VERSION}" 
 			DESTINATION "lib/"
 			PATTERN "*.pyc" EXCLUDE PATTERN "*.pyo" EXCLUDE)
@@ -62,4 +66,33 @@ IF(UNIX AND NOT APPLE)
 		# Install a copy of libpython.so shared library.
 		INSTALL(FILES "${PYTHON_LIBRARIES}" DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}/")
 	ENDIF()
+ELSEIF(WIN32)
+	# Install standard Python packages. 
+	STRING(REGEX MATCH "[0-9]+\\.[0-9]+" PYTHON_MAJORMINOR_VERSION ${PYTHONLIBS_VERSION_STRING})
+	LIST(GET PYTHON_LIBRARIES 0 PYTHON_FIRST_LIBRARY)
+	GET_FILENAME_COMPONENT(PYTHON_LIBRARY_PATH "${PYTHON_FIRST_LIBRARY}" PATH)
+	INSTALL(DIRECTORY "${PYTHON_LIBRARY_PATH}/../../python${PYTHON_MAJORMINOR_VERSION}" 
+		DESTINATION "lib/"
+		PATTERN "*.pyc" EXCLUDE PATTERN "*.pyo" EXCLUDE PATTERN "test" EXCLUDE)
+
+	# Install Python config header file. The Python interpreter requires it at runtime.
+	IF(CMAKE_SIZEOF_VOID_P EQUAL 4)
+		INSTALL(FILES "${PYTHON_LIBRARY_PATH}/../../../include/python${PYTHON_MAJORMINOR_VERSION}/pyconfig.h" DESTINATION "include/python${PYTHON_MAJORMINOR_VERSION}")
+	ENDIF()
+	
+	# Install Python interpreter and Boost.Python DLL libraries, which are required by the OVITO PyScript plugin.
+
+	# The boost_python DLL is located in the lib directory of the Boost installation.
+	IF(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
+		OVITO_INSTALL_DLL("${Boost_LIBRARY_DIRS}/libboost_python-mt.dll")
+	ELSE()
+		OVITO_INSTALL_DLL("${Boost_LIBRARY_DIRS}/libboost_python-mt-d.dll")
+	ENDIF()
+	
+	# The python interpreter DLL (libpython2.7.dll) is located in the opt/bin/ directory of 
+	# the MinGW compiler installation. We find it by using a relative path from the
+	# opt/lib/python2.7/config/ directory where the corresponding link library (libpython2.7.dll.a)
+	# is located.
+	OVITO_INSTALL_DLL("${PYTHON_LIBRARY_PATH}/../../../bin/libpython${PYTHON_MAJORMINOR_VERSION}.dll")
 ENDIF()
+

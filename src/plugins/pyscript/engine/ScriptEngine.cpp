@@ -65,17 +65,12 @@ ScriptEngine::ScriptEngine(DataSet* dataset, QObject* parent, bool redirectOutpu
 		throw Exception(tr("Could not initialize Python interpreter. See console output for error details."));
 	}
 
-	// Install default signal handlers for Python script output.
+	// Install default signal handlers for Python script output, which forward the script output to the host application's stdout/stderr.
 	if(redirectOutputToConsole) {
 		connect(this, &ScriptEngine::scriptOutput, [](const QString& str) { std::cout << str.toLocal8Bit().constData(); });
 		connect(this, &ScriptEngine::scriptError, [](const QString& str) { std::cerr << str.toLocal8Bit().constData(); });
 	}
 }
-
-extern "C" {
-	void initPyScript();
-	void initParticles();
-};
 
 /******************************************************************************
 * Initializes the Python interpreter and sets up the global namespace.
@@ -84,21 +79,20 @@ void ScriptEngine::initializeInterpreter()
 {
 	if(_isInterpreterInitialized)
 		return;	// Interpreter is already initialized.
-
 	try {
 
-#ifdef OVITO_MONOLITHIC_BUILD
 		// Call Py_SetProgramName() because the Python interpreter uses the path of the main executable to determine the 
 		// location of Python standard library, which gets shipped with the static build of OVITO.
 		static QByteArray programName = QCoreApplication::applicationFilePath().toLocal8Bit();
 		Py_SetProgramName(programName.data());
 
 		// Make our internal script modules available by registering their initXXX functions with the Python interpreter.
-		// This is required in static builds only where all Ovito plugins are linked into the main executable file.
+		// This is always required for static builds where all Ovito plugins are linked into the main executable file.
+		// On Windows this pre-registration is also needed, because OVITO plugin dynamic libraries have an .dll extension and the Python interpreter 
+		// can only find modules that have a .pyd extension.
 		for(PythonPluginRegistration* r = PythonPluginRegistration::linkedlist; r != nullptr; r = r->_next) {
 			PyImport_AppendInittab(r->_pluginName, r->_initFunc);
 		}
-#endif
 
 		// Initialize the Python interpreter.
 		Py_Initialize();
@@ -145,13 +139,15 @@ void ScriptEngine::initializeInterpreter()
 		};
 		register_exception_translator<Exception>(toPythonExceptionTranslator);
 
-		// Add plugin directories to sys.path.
+		// Add directories containing OVITO's Python modules to sys.path.
 		list sys_path = extract<list>(sys_namespace["path"]);
 		for(const QDir& pluginDir : PluginManager::instance().pluginDirs()) {
-			// Add the directory containing the native plugin libraries.
-			sys_path.insert(0, QDir::toNativeSeparators(pluginDir.absolutePath()));
-			// Also add the python/ subdirectory containing the Python-based part of the plugins.
+#ifndef Q_OS_WIN
 			sys_path.insert(0, QDir::toNativeSeparators(pluginDir.absolutePath() + "/python"));
+#else
+			object path2(QDir::toNativeSeparators(pluginDir.absolutePath() + "/python"));
+			PyList_Insert(sys_path.ptr(), 0, path2.ptr());
+#endif
 		}
 	}
 	catch(const Exception&) {

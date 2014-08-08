@@ -172,15 +172,9 @@ SET(OVITO_CORE_SOURCE_FILES
 # Compile resources.
 QT5_ADD_RESOURCES(OVITO_CORE_RESOURCE_FILES resources/core.qrc)
 
-# This will let the source code export symbols when building a DLL.
-ADD_DEFINITIONS(-DOVITO_CORE_LIBRARY)
-
 # Build library
 ADD_LIBRARY(Core ${OVITO_CORE_SOURCE_FILES} ${OVITO_CORE_RESOURCE_FILES})
 TARGET_LINK_LIBRARIES(Core Base QSsh)
-IF(OVITO_VIDEO_OUTPUT_SUPPORT)
-	TARGET_LINK_LIBRARIES(Core Video)
-ENDIF()
 
 # Link to OpenGL library.
 TARGET_LINK_LIBRARIES(Core ${OPENGL_gl_LIBRARY})
@@ -188,10 +182,18 @@ TARGET_LINK_LIBRARIES(Core ${OPENGL_gl_LIBRARY})
 # Link Qt5.
 QT5_USE_MODULES(Core ${OVITO_REQUIRED_QT_MODULES})
 
+# This will let the source code export symbols when building a DLL.
+TARGET_COMPILE_DEFINITIONS(Core PRIVATE OVITO_CORE_LIBRARY)
+
 # This is required to avoid error by install_name_tool on MacOS.
 IF(APPLE)
 	SET_TARGET_PROPERTIES(Core PROPERTIES LINK_FLAGS "-headerpad_max_install_names")
 ENDIF(APPLE)
+
+IF(OVITO_VIDEO_OUTPUT_SUPPORT)
+	TARGET_COMPILE_DEFINITIONS(Core PUBLIC OVITO_VIDEO_OUTPUT_SUPPORT)
+	TARGET_LINK_LIBRARIES(Core Video)
+ENDIF()
 
 # This library is part of the installation package.
 IF(NOT OVITO_MONOLITHIC_BUILD)

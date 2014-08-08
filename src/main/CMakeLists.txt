@@ -55,7 +55,7 @@ IF(OVITO_MONOLITHIC_BUILD)
 	# Build a monolithic executable that includes everything.
 	# When statically linking, the linker will typically eliminate
 	# unreferenced static objects in the final executable. To prevent this from
-	# happening, we have to use the -whole-archive linker option. 
+	# happening we have to use the -whole-archive linker option. 
 	LINK_WHOLE_LIBRARY(${PROJECT_NAME} Core)
 	FOREACH(plugin ${OVITO_PLUGINS_LIST})
 		LINK_WHOLE_LIBRARY(${PROJECT_NAME} ${plugin})
@@ -78,14 +78,6 @@ IF(OVITO_MONOLITHIC_BUILD)
 		GET_FILENAME_COMPONENT(OVITO_LIBSTDCXX_REAL ${OVITO_LIBSTDCXX} REALPATH)
 		INSTALL(FILES "${OVITO_LIBSTDCXX}" "${OVITO_LIBSTDCXX_REAL}" DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}/")
 		
-		# Install a qt.conf file.
-		# INSTALL(CODE "
-		#	file(WRITE \"\${CMAKE_INSTALL_PREFIX}/${OVITO_RELATIVE_BINARY_DIRECTORY}/qt.conf\" \"[Paths]\\nLibraries = ../${OVITO_RELATIVE_LIBRARY_DIRECTORY}/\")
-		#	" COMPONENT Runtime)
-
-		# Install Qt fonts.
-		# INSTALL(DIRECTORY "${_qt5Core_install_prefix}/lib/fonts" DESTINATION ${OVITO_RELATIVE_LIBRARY_DIRECTORY} COMPONENT Runtime)
-
 	ENDIF()
 
 ENDIF()
