@@ -350,7 +350,9 @@ void XYZImporter::XYZImportTask::parseFile(FutureInterfaceBase& futureInterface,
 		}
 
 		if ((index = commentLine.toLower().indexOf("cell_origin=\"")) >= 0) {
-			QStringList list = commentLine.mid(index + 12).split(ws_re, QString::SkipEmptyParts);
+			QString cellOriginStr = commentLine.mid(index + 13);
+			cellOriginStr.truncate(cellOriginStr.indexOf("\""));
+			QStringList list = cellOriginStr.split(ws_re, QString::SkipEmptyParts);
 			for(int k = 0; k < list.size() && k < 3; k++)
 				cellOrigin[k] = (FloatType)list[k].toDouble();
 		}
