@@ -32,7 +32,7 @@ using namespace Ovito;
 
 void setupViewportBinding()
 {
-	class_<Viewport, bases<RefTarget>, OORef<Viewport>, boost::noncopyable>("Viewport", no_init)
+	ovito_class<Viewport, RefTarget>()
 		.add_property("isRendering", &Viewport::isRendering)
 		.add_property("isPerspectiveProjection", &Viewport::isPerspectiveProjection)
 		.add_property("viewType", &Viewport::viewType, &Viewport::setViewType)
@@ -70,7 +70,7 @@ void setupViewportBinding()
 		.value("SCENENODE", Viewport::VIEW_SCENENODE)
 	;
 
-	class_<ViewportConfiguration, bases<RefTarget>, OORef<ViewportConfiguration>, boost::noncopyable>("ViewportConfiguration", no_init)
+	ovito_class<ViewportConfiguration, RefTarget>()
 		.add_property("activeViewport", make_function(&ViewportConfiguration::activeViewport, return_value_policy<ovito_object_reference>()), &ViewportConfiguration::setActiveViewport)
 		.add_property("maximizedViewport", make_function(&ViewportConfiguration::maximizedViewport, return_value_policy<ovito_object_reference>()), &ViewportConfiguration::setMaximizedViewport)
 		.def("zoomToSelectionExtents", &ViewportConfiguration::zoomToSelectionExtents)

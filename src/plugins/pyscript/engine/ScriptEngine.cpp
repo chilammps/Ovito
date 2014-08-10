@@ -62,7 +62,7 @@ ScriptEngine::ScriptEngine(DataSet* dataset, QObject* parent, bool redirectOutpu
 	}
 	catch(const error_already_set&) {
 		PyErr_Print();
-		throw Exception(tr("Could not initialize Python interpreter. See console output for error details."));
+		throw Exception(tr("Failed to initialize Python interpreter. See console output for error details."));
 	}
 
 	// Install default signal handlers for Python script output, which forward the script output to the host application's stdout/stderr.

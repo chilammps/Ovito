@@ -66,21 +66,21 @@ using namespace PyScript;
 void setupModifierBinding()
 {
 
-	class_<ParticleModifier, bases<Modifier>, OORef<ParticleModifier>, boost::noncopyable>("ParticleModifier", no_init)
+	ovito_abstract_class<ParticleModifier, Modifier>()
 	;
 
-	class_<AsynchronousParticleModifier, bases<ParticleModifier>, OORef<AsynchronousParticleModifier>, boost::noncopyable>("AsynchronousParticleModifier", no_init)
+	ovito_abstract_class<AsynchronousParticleModifier, ParticleModifier>()
 		.add_property("autoUpdateEnabled", &AsynchronousParticleModifier::autoUpdateEnabled, &AsynchronousParticleModifier::setAutoUpdateEnabled)
 		.add_property("storeResultsWithScene", &AsynchronousParticleModifier::storeResultsWithScene, &AsynchronousParticleModifier::setStoreResultsWithScene)
 	;
 
-	class_<AssignColorModifier, bases<ParticleModifier>, OORef<AssignColorModifier>, boost::noncopyable>("AssignColorModifier", init<DataSet*>())
+	ovito_class<AssignColorModifier, ParticleModifier>()
 		.add_property("color", &AssignColorModifier::color, &AssignColorModifier::setColor)
 		.add_property("colorController", make_function(&AssignColorModifier::colorController, return_value_policy<ovito_object_reference>()), &AssignColorModifier::setColorController)
 		.add_property("keepSelection", &AssignColorModifier::keepSelection, &AssignColorModifier::setKeepSelection)
 	;
 
-	class_<ColorCodingModifier, bases<ParticleModifier>, OORef<ColorCodingModifier>, boost::noncopyable>("ColorCodingModifier", init<DataSet*>())
+	ovito_class<ColorCodingModifier, ParticleModifier>()
 		.add_property("sourceProperty", make_function(&ColorCodingModifier::sourceProperty, return_value_policy<copy_const_reference>()), &ColorCodingModifier::setSourceProperty)
 		.add_property("startValue", &ColorCodingModifier::startValue, &ColorCodingModifier::setStartValue)
 		.add_property("startValueController", make_function(&ColorCodingModifier::startValueController, return_value_policy<ovito_object_reference>()), &ColorCodingModifier::setStartValueController)
@@ -93,16 +93,16 @@ void setupModifierBinding()
 		.add_property("legendViewport", make_function(&ColorCodingModifier::legendViewport, return_value_policy<ovito_object_reference>()), &ColorCodingModifier::setLegendViewport)
 	;
 
-	class_<AmbientOcclusionModifier, bases<AsynchronousParticleModifier>, OORef<AmbientOcclusionModifier>, boost::noncopyable>("AmbientOcclusionModifier", init<DataSet*>())
+	ovito_class<AmbientOcclusionModifier, AsynchronousParticleModifier>()
 		.add_property("intensity", &AmbientOcclusionModifier::intensity, &AmbientOcclusionModifier::setIntensity)
 		.add_property("samplingCount", &AmbientOcclusionModifier::samplingCount, &AmbientOcclusionModifier::setSamplingCount)
 		.add_property("bufferResolution", &AmbientOcclusionModifier::bufferResolution, &AmbientOcclusionModifier::setBufferResolution)
 	;
 
-	class_<DeleteParticlesModifier, bases<ParticleModifier>, OORef<DeleteParticlesModifier>, boost::noncopyable>("DeleteParticlesModifier", init<DataSet*>())
+	ovito_class<DeleteParticlesModifier, ParticleModifier>()
 	;
 
-	class_<ShowPeriodicImagesModifier, bases<ParticleModifier>, OORef<ShowPeriodicImagesModifier>, boost::noncopyable>("ShowPeriodicImagesModifier", init<DataSet*>())
+	ovito_class<ShowPeriodicImagesModifier, ParticleModifier>()
 		.add_property("showImageX", &ShowPeriodicImagesModifier::showImageX, &ShowPeriodicImagesModifier::setShowImageX)
 		.add_property("showImageY", &ShowPeriodicImagesModifier::showImageY, &ShowPeriodicImagesModifier::setShowImageY)
 		.add_property("showImageZ", &ShowPeriodicImagesModifier::showImageZ, &ShowPeriodicImagesModifier::setShowImageZ)
@@ -112,10 +112,10 @@ void setupModifierBinding()
 		.add_property("adjustBoxSize", &ShowPeriodicImagesModifier::adjustBoxSize, &ShowPeriodicImagesModifier::setAdjustBoxSize)
 	;
 
-	class_<WrapPeriodicImagesModifier, bases<ParticleModifier>, OORef<WrapPeriodicImagesModifier>, boost::noncopyable>("WrapPeriodicImagesModifier", init<DataSet*>())
+	ovito_class<WrapPeriodicImagesModifier, ParticleModifier>()
 	;
 
-	class_<CreateExpressionPropertyModifier, bases<ParticleModifier>, OORef<CreateExpressionPropertyModifier>, boost::noncopyable>("CreateExpressionPropertyModifier", init<DataSet*>())
+	ovito_class<CreateExpressionPropertyModifier, ParticleModifier>()
 	// Requires binding for QStringList
 		.add_property("expressions", make_function(&CreateExpressionPropertyModifier::expressions, return_value_policy<copy_const_reference>()), &CreateExpressionPropertyModifier::setExpressions)
 		.add_property("outputProperty", make_function(&CreateExpressionPropertyModifier::outputProperty, return_value_policy<copy_const_reference>()), &CreateExpressionPropertyModifier::setOutputProperty)
@@ -123,40 +123,40 @@ void setupModifierBinding()
 		.add_property("onlySelectedParticles", &CreateExpressionPropertyModifier::onlySelectedParticles, &CreateExpressionPropertyModifier::setOnlySelectedParticles)
 	;
 
-	class_<FreezePropertyModifier, bases<ParticleModifier>, OORef<FreezePropertyModifier>, boost::noncopyable>("FreezePropertyModifier", init<DataSet*>())
+	ovito_class<FreezePropertyModifier, ParticleModifier>()
 		.add_property("sourceProperty", make_function(&FreezePropertyModifier::sourceProperty, return_value_policy<copy_const_reference>()), &FreezePropertyModifier::setSourceProperty)
 		.add_property("destinationProperty", make_function(&FreezePropertyModifier::destinationProperty, return_value_policy<copy_const_reference>()), &FreezePropertyModifier::setDestinationProperty)
 		.def("takePropertySnapshot", &FreezePropertyModifier::takePropertySnapshot)
 	;
 
-	class_<ClearSelectionModifier, bases<ParticleModifier>, OORef<ClearSelectionModifier>, boost::noncopyable>("ClearSelectionModifier", init<DataSet*>())
+	ovito_class<ClearSelectionModifier, ParticleModifier>()
 	;
 
-	class_<InvertSelectionModifier, bases<ParticleModifier>, OORef<InvertSelectionModifier>, boost::noncopyable>("InvertSelectionModifier", init<DataSet*>())
+	ovito_class<InvertSelectionModifier, ParticleModifier>()
 	;
 
-	class_<FreezeSelectionModifier, bases<ParticleModifier>, OORef<FreezeSelectionModifier>, boost::noncopyable>("FreezeSelectionModifier", init<DataSet*>())
+	ovito_class<FreezeSelectionModifier, ParticleModifier>()
 		.def("takeSelectionSnapshot", &FreezeSelectionModifier::takeSelectionSnapshot)
 	;
 
-	class_<ManualSelectionModifier, bases<ParticleModifier>, OORef<ManualSelectionModifier>, boost::noncopyable>("ManualSelectionModifier", init<DataSet*>())
+	ovito_class<ManualSelectionModifier, ParticleModifier>()
 		.def("resetSelection", &ManualSelectionModifier::resetSelection)
 		.def("selectAll", &ManualSelectionModifier::selectAll)
 		.def("clearSelection", &ManualSelectionModifier::clearSelection)
 		.def("toggleParticleSelection", &ManualSelectionModifier::toggleParticleSelection)
 	;
 
-	class_<SelectExpressionModifier, bases<ParticleModifier>, OORef<SelectExpressionModifier>, boost::noncopyable>("SelectExpressionModifier", init<DataSet*>())
+	ovito_class<SelectExpressionModifier, ParticleModifier>()
 		.add_property("expression", make_function(&SelectExpressionModifier::expression, return_value_policy<copy_const_reference>()), &SelectExpressionModifier::setExpression)
 	;
 
-	class_<SelectParticleTypeModifier, bases<ParticleModifier>, OORef<SelectParticleTypeModifier>, boost::noncopyable>("SelectParticleTypeModifier", init<DataSet*>())
+	ovito_class<SelectParticleTypeModifier, ParticleModifier>()
 		.add_property("sourceProperty", make_function(&SelectParticleTypeModifier::sourceProperty, return_value_policy<copy_const_reference>()), &SelectParticleTypeModifier::setSourceProperty)
 	// Requires binding for QSet<int>
 		.add_property("selectedParticleTypes", make_function(&SelectParticleTypeModifier::selectedParticleTypes, return_value_policy<copy_const_reference>()), &SelectParticleTypeModifier::setSelectedParticleTypes)
 	;
 
-	class_<SliceModifier, bases<ParticleModifier>, OORef<SliceModifier>, boost::noncopyable>("SliceModifier", init<DataSet*>())
+	ovito_class<SliceModifier, ParticleModifier>()
 		.add_property("distance", &SliceModifier::distance, &SliceModifier::setDistance)
 		.add_property("distanceController", make_function(&SliceModifier::distanceController, return_value_policy<ovito_object_reference>()), &SliceModifier::setDistanceController)
 		.add_property("normal", &SliceModifier::normal, &SliceModifier::setNormal)
@@ -168,7 +168,7 @@ void setupModifierBinding()
 		.add_property("applyToSelection", &SliceModifier::applyToSelection, &SliceModifier::setApplyToSelection)
 	;
 
-	class_<AffineTransformationModifier, bases<ParticleModifier>, OORef<AffineTransformationModifier>, boost::noncopyable>("AffineTransformationModifier", init<DataSet*>())
+	ovito_class<AffineTransformationModifier, ParticleModifier>()
 		.add_property("transformation", make_function(&AffineTransformationModifier::transformation, return_value_policy<copy_const_reference>()), &AffineTransformationModifier::setTransformation)
 		.add_property("targetCell", make_function(&AffineTransformationModifier::targetCell, return_value_policy<copy_const_reference>()), &AffineTransformationModifier::setTargetCell)
 		.add_property("relativeMode", &AffineTransformationModifier::relativeMode, &AffineTransformationModifier::setRelativeMode)
@@ -178,7 +178,7 @@ void setupModifierBinding()
 		.add_property("applyToSurfaceMesh", &AffineTransformationModifier::applyToSurfaceMesh, &AffineTransformationModifier::setApplyToSurfaceMesh)
 	;
 
-	class_<BinAndReduceModifier, bases<ParticleModifier>, OORef<BinAndReduceModifier>, boost::noncopyable>("BinAndReduceModifier", init<DataSet*>())
+	ovito_class<BinAndReduceModifier, ParticleModifier>()
 		.add_property("sourceProperty", make_function(&BinAndReduceModifier::sourceProperty, return_value_policy<copy_const_reference>()), &BinAndReduceModifier::setSourceProperty)
 		.add_property("reductionOperation", &BinAndReduceModifier::reductionOperation, &BinAndReduceModifier::setReductionOperation)
 		.add_property("firstDerivative", &BinAndReduceModifier::firstDerivative, &BinAndReduceModifier::setFirstDerivative)
@@ -204,11 +204,11 @@ void setupModifierBinding()
 		.value("CELL_VECTORS_2_3", BinAndReduceModifier::CELL_VECTORS_2_3)
 	;
 
-	class_<StructureIdentificationModifier, bases<AsynchronousParticleModifier>, OORef<StructureIdentificationModifier>, boost::noncopyable>("StructureIdentificationModifier", no_init)
+	ovito_abstract_class<StructureIdentificationModifier, AsynchronousParticleModifier>()
 	;
 
 	{
-		scope s = class_<BondAngleAnalysisModifier, bases<StructureIdentificationModifier>, OORef<BondAngleAnalysisModifier>, boost::noncopyable>("BondAngleAnalysisModifier", init<DataSet*>())
+		scope s = ovito_class<BondAngleAnalysisModifier, StructureIdentificationModifier>()
 		;
 
 		enum_<BondAngleAnalysisModifier::StructureType>("StructureType")
@@ -221,7 +221,7 @@ void setupModifierBinding()
 	}
 
 	{
-		scope s = class_<CommonNeighborAnalysisModifier, bases<StructureIdentificationModifier>, OORef<CommonNeighborAnalysisModifier>, boost::noncopyable>("CommonNeighborAnalysisModifier", init<DataSet*>())
+		scope s = ovito_class<CommonNeighborAnalysisModifier, StructureIdentificationModifier>()
 			.add_property("cutoff", &CommonNeighborAnalysisModifier::cutoff, &CommonNeighborAnalysisModifier::setCutoff)
 			.add_property("adaptiveMode", &CommonNeighborAnalysisModifier::adaptiveMode, &CommonNeighborAnalysisModifier::setAdaptiveMode)
 		;
@@ -237,7 +237,7 @@ void setupModifierBinding()
 	}
 
 	{
-		scope s = class_<CreateBondsModifier, bases<AsynchronousParticleModifier>, OORef<CreateBondsModifier>, boost::noncopyable>("CreateBondsModifier", init<DataSet*>())
+		scope s = ovito_class<CreateBondsModifier, AsynchronousParticleModifier>()
 			.add_property("cutoffMode", &CreateBondsModifier::cutoffMode, &CreateBondsModifier::setCutoffMode)
 			.add_property("uniformCutoff", &CreateBondsModifier::uniformCutoff, &CreateBondsModifier::setUniformCutoff)
 			.add_property("bondsDisplay", make_function(&CreateBondsModifier::bondsDisplay, return_value_policy<ovito_object_reference>()))
@@ -250,20 +250,20 @@ void setupModifierBinding()
 		;
 	}
 
-	class_<CentroSymmetryModifier, bases<AsynchronousParticleModifier>, OORef<CentroSymmetryModifier>, boost::noncopyable>("CentroSymmetryModifier", init<DataSet*>())
+	ovito_class<CentroSymmetryModifier, AsynchronousParticleModifier>()
 		.add_property("numNeighbors", &CentroSymmetryModifier::numNeighbors, &CentroSymmetryModifier::setNumNeighbors)
 	;
 
-	class_<ClusterAnalysisModifier, bases<AsynchronousParticleModifier>, OORef<ClusterAnalysisModifier>, boost::noncopyable>("ClusterAnalysisModifier", init<DataSet*>())
+	ovito_class<ClusterAnalysisModifier, AsynchronousParticleModifier>()
 		.add_property("cutoff", &ClusterAnalysisModifier::cutoff, &ClusterAnalysisModifier::setCutoff)
 		.add_property("clusterCount", &ClusterAnalysisModifier::clusterCount)
 	;
 
-	class_<CoordinationNumberModifier, bases<AsynchronousParticleModifier>, OORef<CoordinationNumberModifier>, boost::noncopyable>("CoordinationNumberModifier", init<DataSet*>())
+	ovito_class<CoordinationNumberModifier, AsynchronousParticleModifier>()
 		.add_property("cutoff", &CoordinationNumberModifier::cutoff, &CoordinationNumberModifier::setCutoff)
 	;
 
-	class_<CalculateDisplacementsModifier, bases<ParticleModifier>, OORef<CalculateDisplacementsModifier>, boost::noncopyable>("CalculateDisplacementsModifier", init<DataSet*>())
+	ovito_class<CalculateDisplacementsModifier, ParticleModifier>()
 		.add_property("referenceConfiguration", make_function(&CalculateDisplacementsModifier::referenceConfiguration, return_value_policy<ovito_object_reference>()), &CalculateDisplacementsModifier::setReferenceConfiguration)
 		.add_property("eliminateCellDeformation", &CalculateDisplacementsModifier::eliminateCellDeformation, &CalculateDisplacementsModifier::setEliminateCellDeformation)
 		.add_property("assumeUnwrappedCoordinates", &CalculateDisplacementsModifier::assumeUnwrappedCoordinates, &CalculateDisplacementsModifier::setAssumeUnwrappedCoordinates)
@@ -273,17 +273,17 @@ void setupModifierBinding()
 		.add_property("vectorDisplay", make_function(&CalculateDisplacementsModifier::vectorDisplay, return_value_policy<ovito_object_reference>()))
 	;
 
-	class_<HistogramModifier, bases<ParticleModifier>, OORef<HistogramModifier>, boost::noncopyable>("HistogramModifier", init<DataSet*>())
+	ovito_class<HistogramModifier, ParticleModifier>()
 		.add_property("sourceProperty", make_function(&HistogramModifier::sourceProperty, return_value_policy<copy_const_reference>()), &HistogramModifier::setSourceProperty)
 		.add_property("numberOfBins", &HistogramModifier::numberOfBins, &HistogramModifier::setNumberOfBins)
 	;
 
-	class_<ScatterPlotModifier, bases<ParticleModifier>, OORef<ScatterPlotModifier>, boost::noncopyable>("ScatterPlotModifier", init<DataSet*>())
+	ovito_class<ScatterPlotModifier, ParticleModifier>()
 		.add_property("xAxisProperty", make_function(&ScatterPlotModifier::xAxisProperty, return_value_policy<copy_const_reference>()), &ScatterPlotModifier::setXAxisProperty)
 		.add_property("yAxisProperty", make_function(&ScatterPlotModifier::yAxisProperty, return_value_policy<copy_const_reference>()), &ScatterPlotModifier::setYAxisProperty)
 	;
 
-	class_<AtomicStrainModifier, bases<AsynchronousParticleModifier>, OORef<AtomicStrainModifier>, boost::noncopyable>("AtomicStrainModifier", init<DataSet*>())
+	ovito_class<AtomicStrainModifier, AsynchronousParticleModifier>()
 		.add_property("referenceConfiguration", make_function(&AtomicStrainModifier::referenceConfiguration, return_value_policy<ovito_object_reference>()), &AtomicStrainModifier::setReferenceConfiguration)
 		.add_property("eliminateCellDeformation", &AtomicStrainModifier::eliminateCellDeformation, &AtomicStrainModifier::setEliminateCellDeformation)
 		.add_property("assumeUnwrappedCoordinates", &AtomicStrainModifier::assumeUnwrappedCoordinates, &AtomicStrainModifier::setAssumeUnwrappedCoordinates)
@@ -298,7 +298,7 @@ void setupModifierBinding()
 		.add_property("invalidParticleCount", &AtomicStrainModifier::invalidParticleCount)
 	;
 
-	class_<WignerSeitzAnalysisModifier, bases<AsynchronousParticleModifier>, OORef<WignerSeitzAnalysisModifier>, boost::noncopyable>("WignerSeitzAnalysisModifier", init<DataSet*>())
+	ovito_class<WignerSeitzAnalysisModifier, AsynchronousParticleModifier>()
 		.add_property("referenceConfiguration", make_function(&WignerSeitzAnalysisModifier::referenceConfiguration, return_value_policy<ovito_object_reference>()), &WignerSeitzAnalysisModifier::setReferenceConfiguration)
 		.add_property("eliminateCellDeformation", &WignerSeitzAnalysisModifier::eliminateCellDeformation, &WignerSeitzAnalysisModifier::setEliminateCellDeformation)
 		.add_property("useReferenceFrameOffset", &WignerSeitzAnalysisModifier::useReferenceFrameOffset, &WignerSeitzAnalysisModifier::setUseReferenceFrameOffset)

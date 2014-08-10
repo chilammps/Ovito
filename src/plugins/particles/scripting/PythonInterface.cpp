@@ -90,7 +90,7 @@ BOOST_PYTHON_MODULE(Particles)
 		.def("findInState", make_function(&ParticlePropertyReference::findInState, return_value_policy<ovito_object_reference>()))
 	;
 
-	class_<ParticlePropertyObject, bases<SceneObject>, OORef<ParticlePropertyObject>, boost::noncopyable>("ParticlePropertyObject", init<DataSet*>())
+	ovito_class<ParticlePropertyObject, SceneObject>()
 		.def("createUserProperty", &ParticlePropertyObject::createUserProperty)
 		.def("createStandardProperty", &ParticlePropertyObject::createStandardProperty)
 		.def("findInState", make_function((ParticlePropertyObject* (*)(const PipelineFlowState&, ParticleProperty::Type))&ParticlePropertyObject::findInState, return_value_policy<ovito_object_reference>()))
@@ -109,7 +109,7 @@ BOOST_PYTHON_MODULE(Particles)
 		.add_property("componentCount", &ParticlePropertyObject::componentCount)
 	;
 
-	class_<ParticleTypeProperty, bases<ParticlePropertyObject>, OORef<ParticleTypeProperty>, boost::noncopyable>("ParticleTypeProperty", init<DataSet*>())
+	ovito_class<ParticleTypeProperty, ParticlePropertyObject>()
 		.def("insertParticleType", &ParticleTypeProperty::insertParticleType)
 		.def("particleType", make_function((ParticleType* (ParticleTypeProperty::*)(int) const)&ParticleTypeProperty::particleType, return_value_policy<ovito_object_reference>()))
 		.def("particleType", make_function((ParticleType* (ParticleTypeProperty::*)(const QString&) const)&ParticleTypeProperty::particleType, return_value_policy<ovito_object_reference>()))
@@ -122,20 +122,20 @@ BOOST_PYTHON_MODULE(Particles)
 		.staticmethod("getDefaultParticleColorFromName")
 	;
 
-	class_<SimulationCell, bases<SceneObject>, OORef<SimulationCell>, boost::noncopyable>("SimulationCell", init<DataSet*>())
+	ovito_class<SimulationCell, SceneObject>()
 		.add_property("pbcX", &SimulationCell::pbcX)
 		.add_property("pbcY", &SimulationCell::pbcY)
 		.add_property("pbcZ", &SimulationCell::pbcZ)
 	;
 
-	class_<ParticleType, bases<RefTarget>, OORef<ParticleType>, boost::noncopyable>("ParticleType", init<DataSet*>())
+	ovito_class<ParticleType, RefTarget>()
 		.add_property("id", &ParticleType::id, &ParticleType::setId)
 		.add_property("color", &ParticleType::color, &ParticleType::setColor)
 		.add_property("radius", &ParticleType::radius, &ParticleType::setRadius)
 		.add_property("name", make_function(&ParticleType::name, return_value_policy<copy_const_reference>()), &ParticleType::setName)
 	;
 
-	class_<ParticleDisplay, bases<DisplayObject>, OORef<ParticleDisplay>, boost::noncopyable>("ParticleDisplay", init<DataSet*>())
+	ovito_class<ParticleDisplay, DisplayObject>()
 		.add_property("defaultParticleRadius", &ParticleDisplay::defaultParticleRadius, &ParticleDisplay::setDefaultParticleRadius)
 		.add_property("defaultParticleColor", &ParticleDisplay::defaultParticleColor)
 		.add_property("selectionParticleColor", &ParticleDisplay::selectionParticleColor)
@@ -144,7 +144,7 @@ BOOST_PYTHON_MODULE(Particles)
 		.add_property("particleShape", &ParticleDisplay::particleShape, &ParticleDisplay::setParticleShape)
 	;
 
-	class_<VectorDisplay, bases<DisplayObject>, OORef<VectorDisplay>, boost::noncopyable>("VectorDisplay", init<DataSet*>())
+	ovito_class<VectorDisplay, DisplayObject>()
 		.add_property("shadingMode", &VectorDisplay::shadingMode, &VectorDisplay::setShadingMode)
 		.add_property("renderingQuality", &VectorDisplay::renderingQuality, &VectorDisplay::setRenderingQuality)
 		.add_property("reverseArrowDirection", &VectorDisplay::reverseArrowDirection, &VectorDisplay::setReverseArrowDirection)
@@ -154,18 +154,18 @@ BOOST_PYTHON_MODULE(Particles)
 		.add_property("scalingFactor", &VectorDisplay::scalingFactor, &VectorDisplay::setScalingFactor)
 	;
 
-	class_<SimulationCellDisplay, bases<DisplayObject>, OORef<SimulationCellDisplay>, boost::noncopyable>("SimulationCellDisplay", init<DataSet*>())
+	ovito_class<SimulationCellDisplay, DisplayObject>()
 		.add_property("simulationCellLineWidth", &SimulationCellDisplay::simulationCellLineWidth, &SimulationCellDisplay::setSimulationCellLineWidth)
 		.add_property("renderSimulationCell", &SimulationCellDisplay::renderSimulationCell, &SimulationCellDisplay::setRenderSimulationCell)
 		.add_property("simulationCellRenderingColor", &SimulationCellDisplay::simulationCellRenderingColor, &SimulationCellDisplay::setSimulationCellRenderingColor)
 	;
 
-	class_<SurfaceMeshDisplay, bases<DisplayObject>, OORef<SurfaceMeshDisplay>, boost::noncopyable>("SurfaceMeshDisplay", init<DataSet*>())
+	ovito_class<SurfaceMeshDisplay, DisplayObject>()
 		.add_property("surfaceColor", make_function(&SurfaceMeshDisplay::surfaceColor, return_value_policy<copy_const_reference>()), &SurfaceMeshDisplay::setSurfaceColor)
 		.add_property("capColor", make_function(&SurfaceMeshDisplay::capColor, return_value_policy<copy_const_reference>()), &SurfaceMeshDisplay::setCapColor)
 	;
 
-	class_<BondsDisplay, bases<DisplayObject>, OORef<BondsDisplay>, boost::noncopyable>("BondsDisplay", init<DataSet*>())
+	ovito_class<BondsDisplay, DisplayObject>()
 		.add_property("bondWidth", &BondsDisplay::bondWidth, &BondsDisplay::setBondWidth)
 		.add_property("bondColor", make_function(&BondsDisplay::bondColor, return_value_policy<copy_const_reference>()), &BondsDisplay::setBondColor)
 		.add_property("shadingMode", &BondsDisplay::shadingMode, &BondsDisplay::setShadingMode)

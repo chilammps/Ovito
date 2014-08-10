@@ -64,20 +64,20 @@ void setupImporterBinding()
 		.def("validate", &InputColumnMapping::validate)
 	;
 
-	class_<ParticleImporter, bases<FileImporter>, OORef<ParticleImporter>, boost::noncopyable>("ParticleImporter", no_init)
+	ovito_abstract_class<ParticleImporter, FileImporter>()
 		.add_property("multiTimestepFile", &ParticleImporter::isMultiTimestepFile, &ParticleImporter::setMultiTimestepFile)
 	;
 
-	class_<XYZImporter, bases<ParticleImporter>, OORef<XYZImporter>, boost::noncopyable>("XYZImporter", init<DataSet*>())
+	ovito_class<XYZImporter, ParticleImporter>()
 		.add_property("columnMapping", make_function(&XYZImporter::columnMapping, return_value_policy<copy_const_reference>()), &XYZImporter::setColumnMapping)
 	;
 
-	class_<LAMMPSTextDumpImporter, bases<ParticleImporter>, OORef<LAMMPSTextDumpImporter>, boost::noncopyable>("LAMMPSTextDumpImporter", init<DataSet*>())
+	ovito_class<LAMMPSTextDumpImporter, ParticleImporter>()
 		.add_property("customColumnMapping", make_function(&LAMMPSTextDumpImporter::customColumnMapping, return_value_policy<copy_const_reference>()), &LAMMPSTextDumpImporter::setCustomColumnMapping)
 		.add_property("useCustomColumnMapping", &LAMMPSTextDumpImporter::useCustomColumnMapping, &LAMMPSTextDumpImporter::setUseCustomColumnMapping)
 	;
 
-	class_<LAMMPSDataImporter, bases<ParticleImporter>, OORef<LAMMPSDataImporter>, boost::noncopyable>("LAMMPSDataImporter", init<DataSet*>())
+	ovito_class<LAMMPSDataImporter, ParticleImporter>()
 		.add_property("LAMMPSDataImporter", &LAMMPSDataImporter::atomStyle, &LAMMPSDataImporter::setAtomStyle)
 	;
 
@@ -90,23 +90,23 @@ void setupImporterBinding()
 		.value("Charge", LAMMPSDataImporter::AtomStyle_Charge)
 	;
 
-	class_<LAMMPSBinaryDumpImporter, bases<ParticleImporter>, OORef<LAMMPSBinaryDumpImporter>, boost::noncopyable>("LAMMPSBinaryDumpImporter", init<DataSet*>())
+	ovito_class<LAMMPSBinaryDumpImporter, ParticleImporter>()
 		.add_property("columnMapping", make_function(&LAMMPSBinaryDumpImporter::columnMapping, return_value_policy<copy_const_reference>()), &LAMMPSBinaryDumpImporter::setColumnMapping)
 	;
 
-	class_<CFGImporter, bases<ParticleImporter>, OORef<CFGImporter>, boost::noncopyable>("CFGImporter", init<DataSet*>())
+	ovito_class<CFGImporter, ParticleImporter>()
 	;
 
-	class_<IMDImporter, bases<ParticleImporter>, OORef<IMDImporter>, boost::noncopyable>("IMDImporter", init<DataSet*>())
+	ovito_class<IMDImporter, ParticleImporter>()
 	;
 
-	class_<ParcasFileImporter, bases<ParticleImporter>, OORef<ParcasFileImporter>, boost::noncopyable>("ParcasFileImporter", init<DataSet*>())
+	ovito_class<ParcasFileImporter, ParticleImporter>()
 	;
 
-	class_<PDBImporter, bases<ParticleImporter>, OORef<PDBImporter>, boost::noncopyable>("PDBImporter", init<DataSet*>())
+	ovito_class<PDBImporter, ParticleImporter>()
 	;
 
-	class_<POSCARImporter, bases<ParticleImporter>, OORef<POSCARImporter>, boost::noncopyable>("POSCARImporter", init<DataSet*>())
+	ovito_class<POSCARImporter, ParticleImporter>()
 	;
 
 }

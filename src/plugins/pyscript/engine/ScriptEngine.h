@@ -45,6 +45,10 @@ public:
 	/// \brief Returns the dataset that provides the context for the script.
 	DataSet* dataset() const { return _dataset; }
 
+	/// \brief Returns the script engine that is currently active (i.e. which is executing a script).
+	/// \return The active script engine or NULL if no script is currently being executed.
+	static ScriptEngine* activeEngine() { return _activeEngine.load(); }
+
 	/// \brief Executes a Python script consisting of one or more statements.
 	/// \param script The script source code.
 	/// \return The exit code returned by the Python script.

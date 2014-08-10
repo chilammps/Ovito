@@ -44,7 +44,7 @@ void setupFileIOBinding()
 		.add_property("localFile", &QUrl::toLocalFile)
 	;
 
-	class_<FileImporter, bases<RefTarget>, OORef<FileImporter>, boost::noncopyable>("FileImporter", no_init)
+	ovito_abstract_class<FileImporter, RefTarget>()
 		.add_property("fileFilter", &FileImporter::fileFilter)
 		.add_property("fileFilterDescription", &FileImporter::fileFilterDescription)
 		.def("importFile", &FileImporter::importFile)
@@ -69,18 +69,18 @@ void setupFileIOBinding()
 		.def("urlFromUserInput", &FileManager::urlFromUserInput)
 	;
 
-	class_<LinkedFileImporter, bases<FileImporter>, OORef<LinkedFileImporter>, boost::noncopyable>("LinkedFileImporter", no_init)
+	ovito_abstract_class<LinkedFileImporter, FileImporter>()
 		.def("requestReload", &LinkedFileImporter::requestReload)
 		.def("requestFramesUpdate", &LinkedFileImporter::requestFramesUpdate)
 	;
 
-	class_<FileExporter, bases<RefTarget>, OORef<FileExporter>, boost::noncopyable>("FileExporter", no_init)
+	ovito_abstract_class<FileExporter, RefTarget>()
 		.add_property("fileFilter", &FileExporter::fileFilter)
 		.add_property("fileFilterDescription", &FileExporter::fileFilterDescription)
 		.def("exportToFile", &FileExporter::exportToFile)
 	;
 
-	class_<LinkedFileObject, bases<SceneObject>, OORef<LinkedFileObject>, boost::noncopyable>("LinkedFileObject", init<DataSet*>())
+	ovito_class<LinkedFileObject, SceneObject>()
 		.add_property("importer", make_function(&LinkedFileObject::importer, return_value_policy<ovito_object_reference>()))
 	// Add setter method.
 		.add_property("sourceUrl", make_function(&LinkedFileObject::sourceUrl, return_value_policy<copy_const_reference>()))

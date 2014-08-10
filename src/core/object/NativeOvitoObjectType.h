@@ -62,19 +62,20 @@ public:
 
 	/// \brief Returns the name of this class.
 	/// \return A pointer to the class name string (without namespace qualifier).
-	const char* className() {
+	const char* className() const {
 		if(_pureClassName) return _pureClassName;
 
 		// Remove namespace qualifier from Qt's class name.
-		_pureClassName = _qtClassInfo->className();
-		for(const char* p = _pureClassName; *p != '\0'; p++) {
+		NativeOvitoObjectType* this_ = const_cast<NativeOvitoObjectType*>(this);
+		this_->_pureClassName = _qtClassInfo->className();
+		for(const char* p = this_->_pureClassName; *p != '\0'; p++) {
 			if(p[0] == ':' && p[1] == ':') {
 				p++;
-				_pureClassName = p+1;
+				this_->_pureClassName = p+1;
 			}
 		}
 
-		return _pureClassName;
+		return this_->_pureClassName;
 	}
 
 	/// \brief Returns the identifier of the plugin this class belongs to.

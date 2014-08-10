@@ -56,7 +56,7 @@ void setupAnimationBinding()
 		.def(self != TimeInterval())
 	;
 
-	class_<AnimationSettings, bases<RefTarget>, OORef<AnimationSettings>, boost::noncopyable>("AnimationSettings", no_init)
+	ovito_class<AnimationSettings, RefTarget>()
 		.add_property("time", &AnimationSettings::time, &AnimationSettings::setTime)
 		.add_property("animationInterval", make_function(&AnimationSettings::animationInterval, return_value_policy<copy_const_reference>()), &AnimationSettings::setAnimationInterval)
 		.add_property("framesPerSecond", &AnimationSettings::framesPerSecond, &AnimationSettings::setFramesPerSecond)

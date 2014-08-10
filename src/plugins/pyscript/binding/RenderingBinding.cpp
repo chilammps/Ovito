@@ -36,7 +36,7 @@ using namespace Ovito;
 
 void setupRenderingBinding()
 {
-	class_<RenderSettings, bases<RefTarget>, OORef<RenderSettings>, boost::noncopyable>("RenderSettings", init<DataSet*>())
+	ovito_class<RenderSettings, RefTarget>()
 		.add_property("renderer", make_function(&RenderSettings::renderer, return_value_policy<ovito_object_reference>()), &RenderSettings::setRenderer)
 		.add_property("renderingRangeType", &RenderSettings::renderingRangeType, &RenderSettings::setRenderingRangeType)
 		.add_property("outputImageWidth", &RenderSettings::outputImageWidth, &RenderSettings::setOutputImageWidth)
@@ -59,19 +59,19 @@ void setupRenderingBinding()
 		.value("CUSTOM_INTERVAL", RenderSettings::CUSTOM_INTERVAL)
 	;
 
-	class_<SceneRenderer, bases<RefTarget>, OORef<SceneRenderer>, boost::noncopyable>("SceneRenderer", no_init)
+	ovito_abstract_class<SceneRenderer, RefTarget>()
 		.add_property("isInteractive", &SceneRenderer::isInteractive)
 	;
 
-	class_<StandardSceneRenderer, bases<SceneRenderer>, OORef<StandardSceneRenderer>, boost::noncopyable>("StandardSceneRenderer", init<DataSet*>())
+	ovito_class<StandardSceneRenderer, SceneRenderer>()
 		.add_property("antialiasingLevel", &StandardSceneRenderer::antialiasingLevel, &StandardSceneRenderer::setAntialiasingLevel)
 	;
 
-	class_<DisplayObject, bases<RefTarget>, OORef<DisplayObject>, boost::noncopyable>("DisplayObject", no_init)
+	ovito_abstract_class<DisplayObject, RefTarget>()
 		.add_property("enabled", &DisplayObject::isEnabled, &DisplayObject::setEnabled)
 	;
 
-	class_<TriMeshDisplay, bases<DisplayObject>, OORef<TriMeshDisplay>, boost::noncopyable>("TriMeshDisplay", init<DataSet*>())
+	ovito_class<TriMeshDisplay, DisplayObject>()
 		.add_property("color", make_function(&TriMeshDisplay::color, return_value_policy<copy_const_reference>()), &TriMeshDisplay::setColor)
 		.add_property("transparency", &TriMeshDisplay::transparency, &TriMeshDisplay::setTransparency)
 	;

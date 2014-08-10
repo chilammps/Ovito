@@ -23,6 +23,7 @@
 #define __OVITO_PYSCRIPT_BINDING_H
 
 #include <plugins/pyscript/PyScript.h>
+#include <plugins/pyscript/engine/ScriptEngine.h>
 
 namespace PyScript {
 
@@ -67,6 +68,69 @@ struct ovito_object_reference
 	template <class T> struct apply {
         typedef to_python_indirect<T, make_ooref_holder> type;
     };
+};
+
+/// Defines a Python class for an abstract OvitoObject-derived C++ class.
+template<class OvitoObjectClass, class BaseClass>
+class ovito_abstract_class : public class_<OvitoObjectClass, bases<BaseClass>, OORef<OvitoObjectClass>, boost::noncopyable>
+{
+public:
+	/// Constructor.
+	ovito_abstract_class() : class_<OvitoObjectClass, bases<BaseClass>, OORef<OvitoObjectClass>, boost::noncopyable>(OvitoObjectClass::OOType.className(), no_init) {}
+};
+
+/// Defines a Python class for an OvitoObject-derived C++ class.
+template<class OvitoObjectClass, class BaseClass>
+class ovito_class : public class_<OvitoObjectClass, bases<BaseClass>, OORef<OvitoObjectClass>, boost::noncopyable>
+{
+public:
+
+	/// Constructor.
+	ovito_class() : class_<OvitoObjectClass, bases<BaseClass>, OORef<OvitoObjectClass>, boost::noncopyable>(OvitoObjectClass::OOType.className(), no_init) {
+		// Define a constructor for this Python class, which allows to create instances
+		// of the OvitoObject class from a script without passing a DataSet pointer.
+		this->def("__init__", make_constructor(&construct_instance));
+		// Also define a constructor that takes a dictionary, which is used to initialize
+		// properties of the newly created object.
+		this->def("__init__", make_constructor(&construct_instance_with_params));
+	}
+
+private:
+
+	/// This constructs a new instance of the OvitoObject class and passes the DataSet
+	/// of the active script engine to its constructor.
+	static OORef<OvitoObjectClass> construct_instance() {
+		ScriptEngine* engine = ScriptEngine::activeEngine();
+		if(!engine) throw Exception("Invalid interpreter state. There is no active script engine.");
+		DataSet* dataset = engine->dataset();
+		if(!dataset) throw Exception("Invalid interpreter state. There is no active dataset.");
+		return new OvitoObjectClass(dataset);
+	}
+
+	/// This constructs a new instance of the OvitoObject class and initializes
+	/// its properties using the values stored in a dictionary.
+	static OORef<OvitoObjectClass> construct_instance_with_params(const dict& params) {
+		// Construct the C++ object instance.
+		OORef<OvitoObjectClass> obj = construct_instance();
+		// Create a Python wrapper for the object so we can set its attributes.
+		object pyobj(obj);
+		// Iterate over the keys of the dictionary and set attributes of the
+		// newly created object.
+		PyObject *key, *value;
+		Py_ssize_t pos = 0;
+		while(PyDict_Next(params.ptr(), &pos, &key, &value)) {
+			// Check if the attribute exists. Otherwise raise error.
+			if(!PyObject_HasAttr(pyobj.ptr(), key)) {
+				const char* keystr = extract<char const*>(object(handle<>(borrowed(key))));
+				PyErr_Format(PyExc_AttributeError, "Error in constructor. Object type %s does not have an attribute with the name '%s'.",
+						OvitoObjectClass::OOType.className(), keystr);
+				throw_error_already_set();
+			}
+			// Set attribute value.
+			pyobj.attr(object(handle<>(borrowed(key)))) = handle<>(borrowed(value));
+		}
+		return obj;
+	}
 };
 
 /// Indexing suite for QVector<T*> containers, where T is an OvitoObject derived class.

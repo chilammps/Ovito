@@ -65,7 +65,7 @@ void setupSceneBinding()
 		.add_property("objects", make_function(&PipelineFlowState::objects, return_internal_reference<>()))
 	;
 
-	class_<SceneObject, bases<RefTarget>, OORef<SceneObject>, boost::noncopyable>("SceneObject", no_init)
+	ovito_abstract_class<SceneObject, RefTarget>()
 		.def("objectValidity", &SceneObject::objectValidity)
 		.def("evaluate", &SceneObject::evaluate)
 		.def("addDisplayObject", &SceneObject::addDisplayObject)
@@ -77,7 +77,7 @@ void setupSceneBinding()
 		.add_property("inputObjectCount", &SceneObject::inputObjectCount)
 	;
 
-	class_<Modifier, bases<RefTarget>, OORef<Modifier>, boost::noncopyable>("Modifier", no_init)
+	ovito_abstract_class<Modifier, RefTarget>()
 		.add_property("enabled", &Modifier::isEnabled, &Modifier::setEnabled)
 		.add_property("status", &Modifier::status)
 		.def("modifierValidity", &Modifier::modifierValidity)
@@ -85,14 +85,14 @@ void setupSceneBinding()
 		.def("isApplicableTo", &Modifier::isApplicableTo)
 	;
 
-	class_<ModifierApplication, bases<RefTarget>, OORef<ModifierApplication>, boost::noncopyable>("ModifierApplication", init<DataSet*>())
+	ovito_class<ModifierApplication, RefTarget>()
 		.def(init<DataSet*, Modifier*>())
 		.add_property("modifier", make_function(&ModifierApplication::modifier, return_value_policy<ovito_object_reference>()))
 		.add_property("pipelineObject", make_function(&ModifierApplication::pipelineObject, return_value_policy<ovito_object_reference>()))
 		.add_property("objectNodes", &ModifierApplication::objectNodes)
 	;
 
-	class_<PipelineObject, bases<SceneObject>, OORef<PipelineObject>, boost::noncopyable>("PipelineObject", init<DataSet*>())
+	ovito_class<PipelineObject, SceneObject>()
 		.add_property("inputObject", make_function((SceneObject* (PipelineObject::*)() const)&PipelineObject::inputObject, return_value_policy<ovito_object_reference>()), &PipelineObject::setInputObject)
 		.add_property("modifierApplications", make_function(&PipelineObject::modifierApplications, return_internal_reference<>()))
 		.def("insertModifier", make_function(&PipelineObject::insertModifier, return_value_policy<ovito_object_reference>()))
@@ -100,7 +100,7 @@ void setupSceneBinding()
 		.def("removeModifier", &PipelineObject::removeModifier)
 	;
 
-	class_<SceneNode, bases<RefTarget>, OORef<SceneNode>, boost::noncopyable>("SceneNode", no_init)
+	ovito_abstract_class<SceneNode, RefTarget>()
 		.add_property("name", make_function(&SceneNode::name, return_value_policy<copy_const_reference>()), &SceneNode::setName)
 		.add_property("displayColor", make_function(&SceneNode::displayColor, return_value_policy<copy_const_reference>()), &SceneNode::setDisplayColor)
 		.add_property("parentNode", make_function(&SceneNode::parentNode, return_value_policy<ovito_object_reference>()))
@@ -115,23 +115,23 @@ void setupSceneBinding()
 		.def("worldBoundingBox", make_function(&SceneNode::worldBoundingBox, return_value_policy<copy_const_reference>()))
 	;
 
-	class_<ObjectNode, bases<SceneNode>, OORef<ObjectNode>, boost::noncopyable>("ObjectNode", init<DataSet*>())
+	ovito_class<ObjectNode, SceneNode>()
 		.add_property("sceneObject", make_function(&ObjectNode::sceneObject, return_value_policy<ovito_object_reference>()), &ObjectNode::setSceneObject)
 		.add_property("displayObjects", make_function(&ObjectNode::displayObjects, return_internal_reference<>()))
 		.def("evalPipeline", make_function(&ObjectNode::evalPipeline, return_value_policy<copy_const_reference>()))
 		.def("applyModifier", &ObjectNode::applyModifier)
 	;
 
-	class_<SceneRoot, bases<SceneNode>, OORef<SceneRoot>, boost::noncopyable>("SceneRoot", init<DataSet*>())
+	ovito_class<SceneRoot, SceneNode>()
 		.def("getNodeByName", make_function(&SceneRoot::getNodeByName, return_value_policy<ovito_object_reference>()))
 		.def("makeNameUnique", &SceneRoot::makeNameUnique)
 	;
 
-	class_<GroupNode, bases<SceneNode>, OORef<GroupNode>, boost::noncopyable>("GroupNode", init<DataSet*>())
+	ovito_class<GroupNode, SceneNode>()
 		.add_property("open", &GroupNode::isGroupOpen, &GroupNode::setGroupOpen)
 	;
 
-	class_<SelectionSet, bases<RefTarget>, OORef<SelectionSet>, boost::noncopyable>("SelectionSet", init<DataSet*>())
+	ovito_class<SelectionSet, RefTarget>()
 		.add_property("count", &SelectionSet::count)
 		.add_property("empty", &SelectionSet::empty)
 		.add_property("firstNode", make_function(&SelectionSet::firstNode, return_value_policy<ovito_object_reference>()))
