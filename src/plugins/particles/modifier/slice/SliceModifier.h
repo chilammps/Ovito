@@ -67,7 +67,7 @@ public:
 	Controller* distanceController() const { return _distanceCtrl; }
 
 	/// Sets the controller for the plane distance.
-	void setDistanceController(const OORef<Controller>& ctrl) { _distanceCtrl = ctrl; }
+	void setDistanceController(Controller* ctrl) { _distanceCtrl = ctrl; }
 
 	/// Returns the plane's normal vector.
 	Vector3 normal() const { return _normalCtrl ? _normalCtrl->currentVector3Value() : Vector3(0,0,1); }
@@ -79,7 +79,7 @@ public:
 	Controller* normalController() const { return _normalCtrl; }
 
 	/// Sets the controller for the plane normal.
-	void setVectorController(const OORef<Controller>& ctrl) { _normalCtrl = ctrl; }
+	void setNormalController(Controller* ctrl) { _normalCtrl = ctrl; }
 
 	/// Returns the slice width.
 	FloatType sliceWidth() const { return _widthCtrl ? _widthCtrl->currentFloatValue() : 0.0f; }
@@ -91,7 +91,7 @@ public:
 	Controller* sliceWidthController() const { return _widthCtrl; }
 
 	/// Sets the controller for the slice width.
-	void setSliceWidthController(const OORef<Controller>& ctrl) { _widthCtrl = ctrl; }
+	void setSliceWidthController(Controller* ctrl) { _widthCtrl = ctrl; }
 
 	/// Returns whether the plane's orientation should be flipped.
 	bool inverse() const { return _inverse; }
@@ -116,12 +116,12 @@ public:
 
 public:
 
-	Q_PROPERTY(FloatType distance READ distance WRITE setDistance)
-	Q_PROPERTY(Vector3 normal READ normal WRITE setNormal)
-	Q_PROPERTY(FloatType sliceWidth READ sliceWidth WRITE setSliceWidth)
-	Q_PROPERTY(bool inverse READ inverse WRITE setInverse)
-	Q_PROPERTY(bool createSelection READ createSelection WRITE setCreateSelection)
-	Q_PROPERTY(bool applyToSelection READ applyToSelection WRITE setApplyToSelection)
+	Q_PROPERTY(FloatType distance READ distance WRITE setDistance);
+	Q_PROPERTY(Vector3 normal READ normal WRITE setNormal);
+	Q_PROPERTY(FloatType sliceWidth READ sliceWidth WRITE setSliceWidth);
+	Q_PROPERTY(bool inverse READ inverse WRITE setInverse);
+	Q_PROPERTY(bool createSelection READ createSelection WRITE setCreateSelection);
+	Q_PROPERTY(bool applyToSelection READ applyToSelection WRITE setApplyToSelection);
 
 protected:
 

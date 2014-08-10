@@ -30,25 +30,15 @@
 #include <plugins/particles/data/SurfaceMeshDisplay.h>
 #include <plugins/particles/data/BondsDisplay.h>
 #include <plugins/particles/data/SimulationCell.h>
-#include <plugins/particles/importer/InputColumnMapping.h>
-#include <plugins/particles/importer/ParticleImporter.h>
-#include <plugins/particles/importer/cfg/CFGImporter.h>
-#include <plugins/particles/importer/imd/IMDImporter.h>
-#include <plugins/particles/importer/parcas/ParcasFileImporter.h>
-#include <plugins/particles/importer/vasp/POSCARImporter.h>
-#include <plugins/particles/importer/xyz/XYZImporter.h>
-#include <plugins/particles/importer/pdb/PDBImporter.h>
-#include <plugins/particles/importer/lammps/LAMMPSTextDumpImporter.h>
-#include <plugins/particles/importer/lammps/LAMMPSBinaryDumpImporter.h>
-#include <plugins/particles/importer/lammps/LAMMPSDataImporter.h>
-#include <plugins/particles/modifier/ParticleModifier.h>
-#include <plugins/particles/modifier/AsynchronousParticleModifier.h>
 
 namespace Particles {
 
 using namespace boost::python;
 using namespace Ovito;
 using namespace PyScript;
+
+extern void setupImporterBinding();
+extern void setupModifierBinding();
 
 BOOST_PYTHON_MODULE(Particles)
 {
@@ -88,6 +78,16 @@ BOOST_PYTHON_MODULE(Particles)
 		.value("VelocityMagnitudeProperty", ParticleProperty::VelocityMagnitudeProperty)
 		.value("NonaffineSquaredDisplacementProperty", ParticleProperty::NonaffineSquaredDisplacementProperty)
 		.value("MoleculeProperty", ParticleProperty::MoleculeProperty)
+	;
+
+	class_<ParticlePropertyReference>("ParticlePropertyReference", init<ParticleProperty::Type, optional<int>>())
+		.def(init<const QString&, optional<int>>())
+		.add_property("type", &ParticlePropertyReference::type, &ParticlePropertyReference::setType)
+		.add_property("name", make_function(&ParticlePropertyReference::name, return_value_policy<copy_const_reference>()))
+		.add_property("vectorComponent", &ParticlePropertyReference::vectorComponent, &ParticlePropertyReference::setVectorComponent)
+		.add_property("isNull", &ParticlePropertyReference::isNull)
+		.def(self == other<ParticlePropertyReference>())
+		.def("findInState", make_function(&ParticlePropertyReference::findInState, return_value_policy<ovito_object_reference>()))
 	;
 
 	class_<ParticlePropertyObject, bases<SceneObject>, OORef<ParticlePropertyObject>, boost::noncopyable>("ParticlePropertyObject", init<DataSet*>())
@@ -173,76 +173,8 @@ BOOST_PYTHON_MODULE(Particles)
 		.add_property("useParticleColors", &BondsDisplay::useParticleColors, &BondsDisplay::setUseParticleColors)
 	;
 
-	class_<InputColumnMapping>("InputColumnMapping", init<>())
-		.add_property("columnCount", &InputColumnMapping::columnCount, &InputColumnMapping::setColumnCount)
-		.add_property("fileExcerpt", make_function(&InputColumnMapping::fileExcerpt, return_value_policy<copy_const_reference>()), &InputColumnMapping::setFileExcerpt)
-		.def("shrink", &InputColumnMapping::shrink)
-		.def("mapCustomColumn", &InputColumnMapping::mapCustomColumn)
-		.def("mapStandardColumn", &InputColumnMapping::mapStandardColumn)
-		.def("unmapColumn", &InputColumnMapping::unmapColumn)
-		.def("columnName", &InputColumnMapping::columnName)
-		.def("setColumnName", &InputColumnMapping::setColumnName)
-		.def("resetColumnNames", &InputColumnMapping::resetColumnNames)
-		.def("propertyType", &InputColumnMapping::propertyType)
-		.def("propertyName", &InputColumnMapping::propertyName)
-		.def("dataType", &InputColumnMapping::dataType)
-		.def("isMapped", &InputColumnMapping::isMapped)
-		.def("vectorComponent", &InputColumnMapping::vectorComponent)
-		.def("validate", &InputColumnMapping::validate)
-	;
-
-	class_<ParticleImporter, bases<FileImporter>, OORef<ParticleImporter>, boost::noncopyable>("ParticleImporter", no_init)
-		.add_property("multiTimestepFile", &ParticleImporter::isMultiTimestepFile, &ParticleImporter::setMultiTimestepFile)
-	;
-
-	class_<XYZImporter, bases<ParticleImporter>, OORef<XYZImporter>, boost::noncopyable>("XYZImporter", init<DataSet*>())
-		.add_property("columnMapping", make_function(&XYZImporter::columnMapping, return_value_policy<copy_const_reference>()), &XYZImporter::setColumnMapping)
-	;
-
-	class_<LAMMPSTextDumpImporter, bases<ParticleImporter>, OORef<LAMMPSTextDumpImporter>, boost::noncopyable>("LAMMPSTextDumpImporter", init<DataSet*>())
-		.add_property("customColumnMapping", make_function(&LAMMPSTextDumpImporter::customColumnMapping, return_value_policy<copy_const_reference>()), &LAMMPSTextDumpImporter::setCustomColumnMapping)
-		.add_property("useCustomColumnMapping", &LAMMPSTextDumpImporter::useCustomColumnMapping, &LAMMPSTextDumpImporter::setUseCustomColumnMapping)
-	;
-
-	class_<LAMMPSDataImporter, bases<ParticleImporter>, OORef<LAMMPSDataImporter>, boost::noncopyable>("LAMMPSDataImporter", init<DataSet*>())
-		.add_property("LAMMPSDataImporter", &LAMMPSDataImporter::atomStyle, &LAMMPSDataImporter::setAtomStyle)
-	;
-
-	enum_<LAMMPSDataImporter::LAMMPSAtomStyle>("LAMMPSAtomStyle")
-		.value("Unknown", LAMMPSDataImporter::AtomStyle_Unknown)
-		.value("Angle", LAMMPSDataImporter::AtomStyle_Angle)
-		.value("Atomic", LAMMPSDataImporter::AtomStyle_Atomic)
-		.value("Body", LAMMPSDataImporter::AtomStyle_Body)
-		.value("Bond", LAMMPSDataImporter::AtomStyle_Bond)
-		.value("Charge", LAMMPSDataImporter::AtomStyle_Charge)
-	;
-
-	class_<LAMMPSBinaryDumpImporter, bases<ParticleImporter>, OORef<LAMMPSBinaryDumpImporter>, boost::noncopyable>("LAMMPSBinaryDumpImporter", init<DataSet*>())
-		.add_property("columnMapping", make_function(&LAMMPSBinaryDumpImporter::columnMapping, return_value_policy<copy_const_reference>()), &LAMMPSBinaryDumpImporter::setColumnMapping)
-	;
-
-	class_<CFGImporter, bases<ParticleImporter>, OORef<CFGImporter>, boost::noncopyable>("CFGImporter", init<DataSet*>())
-	;
-
-	class_<IMDImporter, bases<ParticleImporter>, OORef<IMDImporter>, boost::noncopyable>("IMDImporter", init<DataSet*>())
-	;
-
-	class_<ParcasFileImporter, bases<ParticleImporter>, OORef<ParcasFileImporter>, boost::noncopyable>("ParcasFileImporter", init<DataSet*>())
-	;
-
-	class_<PDBImporter, bases<ParticleImporter>, OORef<PDBImporter>, boost::noncopyable>("PDBImporter", init<DataSet*>())
-	;
-
-	class_<POSCARImporter, bases<ParticleImporter>, OORef<POSCARImporter>, boost::noncopyable>("POSCARImporter", init<DataSet*>())
-	;
-
-	class_<ParticleModifier, bases<Modifier>, OORef<ParticleModifier>, boost::noncopyable>("ParticleModifier", no_init)
-	;
-
-	class_<AsynchronousParticleModifier, bases<ParticleModifier>, OORef<AsynchronousParticleModifier>, boost::noncopyable>("AsynchronousParticleModifier", no_init)
-		.add_property("autoUpdateEnabled", &AsynchronousParticleModifier::autoUpdateEnabled, &AsynchronousParticleModifier::setAutoUpdateEnabled)
-		.add_property("storeResultsWithScene", &AsynchronousParticleModifier::storeResultsWithScene, &AsynchronousParticleModifier::setStoreResultsWithScene)
-	;
+	setupImporterBinding();
+	setupModifierBinding();
 }
 
 OVITO_REGISTER_PLUGIN_PYTHON_INTERFACE(Particles);

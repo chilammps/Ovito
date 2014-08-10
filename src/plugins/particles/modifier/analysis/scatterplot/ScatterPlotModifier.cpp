@@ -123,8 +123,8 @@ PipelineStatus ScatterPlotModifier::modifyParticles(TimePoint time, TimeInterval
 	// Get the source property.
 	if(xAxisProperty().isNull())
 		throw Exception(tr("Select a particle property first."));
-	ParticlePropertyObject* xProperty = lookupInputProperty(input(), xAxisProperty());
-	ParticlePropertyObject* yProperty = lookupInputProperty(input(), yAxisProperty());
+	ParticlePropertyObject* xProperty = xAxisProperty().findInState(input());
+	ParticlePropertyObject* yProperty = yAxisProperty().findInState(input());
 	if(!xProperty)
 		throw Exception(tr("The selected particle property with the name '%1' does not exist.").arg(xAxisProperty().name()));
 	if(!yProperty)
@@ -310,23 +310,6 @@ PipelineStatus ScatterPlotModifier::modifyParticles(TimePoint time, TimeInterval
 	notifyDependents(ReferenceEvent::ObjectStatusChanged);
 
 	return PipelineStatus(PipelineStatus::Success, statusMessage);
-}
-
-/******************************************************************************
-* Retrieves the selected input particle property from the given input state.
-******************************************************************************/
-ParticlePropertyObject* ScatterPlotModifier::lookupInputProperty(const PipelineFlowState& inputState, const ParticlePropertyReference &refprop) const
-{
-	for(SceneObject* o : inputState.objects()) {
-		ParticlePropertyObject* prop = dynamic_object_cast<ParticlePropertyObject>(o);
-		if(prop) {
-			if((refprop.type() == ParticleProperty::UserProperty && prop->name() == refprop.name()) ||
-					(refprop.type() != ParticleProperty::UserProperty && prop->type() == refprop.type())) {
-				return prop;
-			}
-		}
-	}
-	return nullptr;
 }
 
 /******************************************************************************

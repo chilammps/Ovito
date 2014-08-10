@@ -108,9 +108,9 @@ public:
 
 public:
 
-	Q_PROPERTY(FloatType intensity READ intensity WRITE setIntensity)
-	Q_PROPERTY(int samplingCount READ samplingCount WRITE setSamplingCount)
-	Q_PROPERTY(int bufferResolution READ bufferResolution WRITE setBufferResolution)
+	Q_PROPERTY(FloatType intensity READ intensity WRITE setIntensity);
+	Q_PROPERTY(int samplingCount READ samplingCount WRITE setSamplingCount);
+	Q_PROPERTY(int bufferResolution READ bufferResolution WRITE setBufferResolution);
 
 protected:
 

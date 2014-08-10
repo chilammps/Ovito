@@ -38,6 +38,8 @@ SET(OVITO_PARTICLES_SOURCE_FILES
 	modifier/AsynchronousParticleModifier.cpp
 	modifier/coloring/AssignColorModifier.cpp
 	modifier/coloring/ColorCodingModifier.cpp
+	modifier/coloring/AmbientOcclusionModifier.cpp
+	modifier/coloring/AmbientOcclusionRenderer.cpp
 	modifier/slice/SliceModifier.cpp
 	modifier/delete/DeleteParticlesModifier.cpp
 	modifier/analysis/StructureIdentificationModifier.cpp
@@ -50,13 +52,10 @@ SET(OVITO_PARTICLES_SOURCE_FILES
 	modifier/analysis/centrosymmetry/CentroSymmetryModifier.cpp
 	modifier/analysis/strain/AtomicStrainModifier.cpp
 	modifier/analysis/bonds/CreateBondsModifier.cpp
-
 	modifier/analysis/histogram/HistogramModifier.cpp
 	modifier/analysis/cluster/ClusterAnalysisModifier.cpp
 	modifier/analysis/scatterplot/ScatterPlotModifier.cpp
 	modifier/analysis/wignerseitz/WignerSeitzAnalysisModifier.cpp
-	modifier/lighting/AmbientOcclusionModifier.cpp
-	modifier/lighting/AmbientOcclusionRenderer.cpp
 	modifier/transformation/AffineTransformationModifier.cpp
 	modifier/pbc/ShowPeriodicImagesModifier.cpp
 	modifier/pbc/WrapPeriodicImagesModifier.cpp
@@ -106,7 +105,11 @@ IF(OVITO_BUILD_PLUGIN_SCRIPTING)
 ENDIF()
 
 IF(OVITO_BUILD_PLUGIN_PYSCRIPT)
-	LIST(APPEND OVITO_PARTICLES_SOURCE_FILES scripting/PythonInterface.cpp)
+	LIST(APPEND OVITO_PARTICLES_SOURCE_FILES 
+		scripting/PythonInterface.cpp
+		scripting/ImporterBinding.cpp
+		scripting/ModifierBinding.cpp
+	)
 ENDIF()
 
 # List of source files of the GLU library used for polygon tessellation.

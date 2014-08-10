@@ -82,8 +82,8 @@ public:
 
 public:
 
-	Q_PROPERTY(bool autoUpdateEnabled READ autoUpdateEnabled WRITE setAutoUpdateEnabled)
-	Q_PROPERTY(bool storeResultsWithScene READ storeResultsWithScene WRITE setStoreResultsWithScene)
+	Q_PROPERTY(bool autoUpdateEnabled READ autoUpdateEnabled WRITE setAutoUpdateEnabled);
+	Q_PROPERTY(bool storeResultsWithScene READ storeResultsWithScene WRITE setStoreResultsWithScene);
 
 protected Q_SLOTS:
 
