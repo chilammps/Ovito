@@ -185,8 +185,8 @@ void ModificationListModel::refreshList()
 			SceneObject* nextObj = nullptr;
 			for(int i = 0; i < cmnObject->inputObjectCount(); i++) {
 				if(!nextObj)
-					nextObj = cmnObject->inputObject(i);
-				else if(nextObj != cmnObject->inputObject(i)) {
+					nextObj = cmnObject->getInputObject(i);
+				else if(nextObj != cmnObject->getInputObject(i)) {
 					nextObj = nullptr;  // The input objects do not match.
 					break;
 				}

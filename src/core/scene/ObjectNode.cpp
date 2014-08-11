@@ -28,10 +28,10 @@
 
 namespace Ovito {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, ObjectNode, SceneNode)
-DEFINE_REFERENCE_FIELD(ObjectNode, _sceneObject, "SceneObject", SceneObject)
-DEFINE_VECTOR_REFERENCE_FIELD(ObjectNode, _displayObjects, "DisplayObjects", DisplayObject)
-SET_PROPERTY_FIELD_LABEL(ObjectNode, _sceneObject, "Object")
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, ObjectNode, SceneNode);
+DEFINE_REFERENCE_FIELD(ObjectNode, _sceneObject, "SceneObject", SceneObject);
+DEFINE_VECTOR_REFERENCE_FIELD(ObjectNode, _displayObjects, "DisplayObjects", DisplayObject);
+SET_PROPERTY_FIELD_LABEL(ObjectNode, _sceneObject, "Object");
 
 /******************************************************************************
 * Constructor.
@@ -209,12 +209,8 @@ QString ObjectNode::objectTitle()
 		return name();
 
 	// Otherwise, use the display title of the node's source scene object.
-	SceneObject* sceneObj = sceneObject();
-	while(sceneObj) {
-		if(sceneObj->inputObjectCount() == 0)
-			return sceneObj->objectTitle();
-		sceneObj = sceneObj->inputObject(0);
-	}
+	if(SceneObject* sourceObj = sourceObject())
+		return sourceObj->objectTitle();
 
 	return SceneNode::objectTitle();
 }
@@ -238,6 +234,20 @@ void ObjectNode::applyModifier(Modifier* modifier)
 		pipelineObj = p;
 	}
 	pipelineObj->insertModifier(modifier, pipelineObj->modifierApplications().size());
+}
+
+/******************************************************************************
+* Returns the modification pipeline source object, i.e., the input of this
+* node's modification pipeline.
+******************************************************************************/
+SceneObject* ObjectNode::sourceObject() const
+{
+	SceneObject* sceneObj = sceneObject();
+	while(sceneObj) {
+		if(sceneObj->inputObjectCount() <= 0) break;
+		sceneObj = sceneObj->getInputObject(0);
+	}
+	return sceneObj;
 }
 
 };

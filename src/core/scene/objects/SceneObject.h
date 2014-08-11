@@ -152,8 +152,8 @@ public:
 	/// \brief Returns an input object of this scene object.
 	/// \param index The index of the input object. This must be between 0 and inputObjectCount()-1.
 	/// \return The requested input object. Can be \c NULL.
-	virtual SceneObject* inputObject(int index) {
-		OVITO_ASSERT_MSG(false, "SceneObject::inputObject", "This type of scene object has no input objects.");
+	virtual SceneObject* getInputObject(int index) {
+		OVITO_ASSERT_MSG(false, "SceneObject::getInputObject", "This type of scene object has no input objects.");
 		return nullptr;
 	}
 

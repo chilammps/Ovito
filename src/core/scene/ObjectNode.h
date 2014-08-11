@@ -51,7 +51,7 @@ public:
 	/// \return Always returns \c true.
 	virtual bool isObjectNode() const { return true; }
 
-	/// \brief Allows direct access to this node's SceneObject.
+	/// \brief Returns this node's SceneObject, which is the head of the modification pipeline.
 	/// \return The object that represented by this node in the scene graph. Can be \c NULL.
 	SceneObject* sceneObject() const { return _sceneObject; }
 
@@ -59,6 +59,9 @@ public:
 	/// \param obj The new object that evaluated by the ObjectNode and shown in the viewports.
 	/// \undoable
 	void setSceneObject(SceneObject* obj) { _sceneObject = obj; }
+
+	/// \brief Returns the modification pipeline source object, i.e., the input of this node's modification pipeline.
+	SceneObject* sourceObject() const;
 
 	/// \brief Evaluates the geometry pipeline of this object node at the given animation time.
 	/// \param time The animation time at which the geometry pipeline of the node should be evaluated.

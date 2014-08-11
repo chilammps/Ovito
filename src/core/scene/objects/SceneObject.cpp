@@ -108,7 +108,7 @@ QSet<ObjectNode*> SceneObject::findSceneNodes() const
 			nodeList.insert(node);
 		else if(SceneObject* sceneObj = dynamic_object_cast<SceneObject>(dependent)) {
 			for(int i = 0; i < sceneObj->inputObjectCount(); i++) {
-				if(sceneObj->inputObject(i) == this) {
+				if(sceneObj->getInputObject(i) == this) {
 					nodeList.unite(sceneObj->findSceneNodes());
 				}
 			}

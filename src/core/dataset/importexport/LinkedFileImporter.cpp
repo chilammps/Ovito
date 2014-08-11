@@ -112,14 +112,10 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl, ImportMode importMode
 			// data source we can replace with the newly imported file.
 			for(SceneNode* node : dataset()->selection()->nodes()) {
 				if(ObjectNode* objNode = dynamic_object_cast<ObjectNode>(node)) {
-					SceneObject* sceneObj = objNode->sceneObject();
-					while(sceneObj) {
-						if(LinkedFileObject* linkedFileObj = dynamic_object_cast<LinkedFileObject>(sceneObj)) {
-							existingObj = linkedFileObj;
-							existingNode = objNode;
-							break;
-						}
-						sceneObj = (sceneObj->inputObjectCount() > 0) ? sceneObj->inputObject(0) : nullptr;
+					existingObj = dynamic_object_cast<LinkedFileObject>(objNode->sourceObject());
+					if(existingObj) {
+						existingNode = objNode;
+						break;
 					}
 				}
 			}

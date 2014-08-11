@@ -103,11 +103,11 @@ public:
 	virtual int inputObjectCount() override { return 1; }
 
 	/// Returns the input object of this scene object.
-	virtual SceneObject* inputObject(int index) override { return _inputObject; }
+	virtual SceneObject* getInputObject(int index) override { return _inputObject; }
 
 public:
 
-	Q_PROPERTY(SceneObject* inputObject READ inputObject WRITE setInputObject)
+	Q_PROPERTY(SceneObject* inputObject READ inputObject WRITE setInputObject);
 
 protected:
 

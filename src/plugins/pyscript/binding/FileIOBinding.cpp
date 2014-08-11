@@ -35,14 +35,28 @@ using namespace Ovito;
 
 void setupFileIOBinding()
 {
-	class_<QUrl>("QUrl", init<>())
-		.def(init<const QString&>())
-		.add_property("errorString", &QUrl::errorString)
-		.add_property("isEmpty", &QUrl::isEmpty)
-		.add_property("isLocalFile", &QUrl::isLocalFile)
-		.add_property("isValid", &QUrl::isValid)
-		.add_property("localFile", &QUrl::toLocalFile)
-	;
+	// Install automatic QUrl to Python string conversion.
+	struct QUrl_to_python_str {
+		static PyObject* convert(const QUrl& url) {
+			return incref(object(url.toString(QUrl::PreferLocalFile).toLocal8Bit().constData()).ptr());
+		}
+	};
+	to_python_converter<QUrl, QUrl_to_python_str>();
+
+	// Install automatic Python string to QUrl conversion.
+	auto convertible_QUrl = [](PyObject* obj_ptr) -> void* {
+		if(!PyString_Check(obj_ptr)) return nullptr;
+		return obj_ptr;
+	};
+	auto construct_QUrl = [](PyObject* obj_ptr, boost::python::converter::rvalue_from_python_stage1_data* data) {
+		const char* value = PyString_AsString(obj_ptr);
+		if(!value) throw_error_already_set();
+		void* storage = ((boost::python::converter::rvalue_from_python_storage<QUrl>*)data)->storage.bytes;
+		new (storage) QUrl(value);
+		*((QUrl*)storage) = FileManager::instance().urlFromUserInput(QString::fromLocal8Bit(value));
+		data->convertible = storage;
+	};
+	converter::registry::push_back(convertible_QUrl, construct_QUrl, boost::python::type_id<QUrl>());
 
 	ovito_abstract_class<FileImporter, RefTarget>()
 		.add_property("fileFilter", &FileImporter::fileFilter)
@@ -82,7 +96,6 @@ void setupFileIOBinding()
 
 	ovito_class<LinkedFileObject, SceneObject>()
 		.add_property("importer", make_function(&LinkedFileObject::importer, return_value_policy<ovito_object_reference>()))
-	// Add setter method.
 		.add_property("sourceUrl", make_function(&LinkedFileObject::sourceUrl, return_value_policy<copy_const_reference>()))
 		.add_property("status", &LinkedFileObject::status)
 		.add_property("numberOfFrames", &LinkedFileObject::numberOfFrames)
@@ -95,6 +108,8 @@ void setupFileIOBinding()
 		.def("inputFrameToAnimationTime", &LinkedFileObject::inputFrameToAnimationTime)
 		.def("adjustAnimationInterval", &LinkedFileObject::adjustAnimationInterval)
 		.def("addSceneObject", &LinkedFileObject::addSceneObject)
+		.def("setSource", (bool (LinkedFileObject::*)(const QUrl&, const FileImporterDescription*))&LinkedFileObject::setSource)
+		.def("setSource", (bool (LinkedFileObject::*)(QUrl, LinkedFileImporter*, bool))&LinkedFileObject::setSource)
 	;
 }
 

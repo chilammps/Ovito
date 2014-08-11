@@ -143,8 +143,7 @@ void SceneRenderer::renderModifiers(PipelineObject* pipelineObj, ObjectNode* obj
 
 	// Continue with nested pipeline objects.
 	for(int i = 0; i < pipelineObj->inputObjectCount(); i++) {
-		PipelineObject* input = dynamic_object_cast<PipelineObject>(pipelineObj->inputObject(i));
-		if(input)
+		if(PipelineObject* input = dynamic_object_cast<PipelineObject>(pipelineObj->getInputObject(i)))
 			renderModifiers(input, objNode, renderOverlay);
 	}
 }
@@ -167,8 +166,7 @@ void SceneRenderer::boundingBoxModifiers(PipelineObject* pipelineObj, ObjectNode
 
 	// Continue with nested pipeline objects.
 	for(int i = 0; i < pipelineObj->inputObjectCount(); i++) {
-		PipelineObject* input = dynamic_object_cast<PipelineObject>(pipelineObj->inputObject(i));
-		if(input)
+		if(PipelineObject* input = dynamic_object_cast<PipelineObject>(pipelineObj->getInputObject(i)))
 			boundingBoxModifiers(input, objNode, boundingBox);
 	}
 }
