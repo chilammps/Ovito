@@ -52,6 +52,18 @@ inline object OvitoObject__str__(OvitoObject* o) {
 	else return "<%s at address 0x%x>" % make_tuple(o->getOOType().name(), (std::intptr_t)o);
 }
 
+// Implementation of the __eq__ method for OvitoObject derived classes.
+inline bool OvitoObject__eq__(OvitoObject* o, const object& other) {
+	extract<OvitoObject*> other_oo(other);
+	if(!other_oo.check()) return false;
+	return o == other_oo();
+}
+
+// Implementation of the __ne__ method for OvitoObject derived classes.
+inline bool OvitoObject__ne__(OvitoObject* o, const object& other) {
+	return !OvitoObject__eq__(o, other);
+}
+
 BOOST_PYTHON_MODULE(PyScript)
 {
 	// Make Ovito program version number available to script.
@@ -59,6 +71,8 @@ BOOST_PYTHON_MODULE(PyScript)
 
 	class_<OvitoObject, OORef<OvitoObject>, boost::noncopyable>("OvitoObject", no_init)
 		.def("__str__", OvitoObject__str__)
+		.def("__eq__", OvitoObject__eq__)
+		.def("__ne__", OvitoObject__ne__)
 	;
 
 	class_<RefMaker, bases<OvitoObject>, OORef<RefMaker>, boost::noncopyable>("RefMaker", no_init)

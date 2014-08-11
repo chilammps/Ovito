@@ -24,9 +24,9 @@
 
 namespace Ovito {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, SelectionSet, RefTarget)
-DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(SelectionSet, _selection, "SelectedNodes", SceneNode, PROPERTY_FIELD_NEVER_CLONE_TARGET)
-SET_PROPERTY_FIELD_LABEL(SelectionSet, _selection, "Nodes")
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, SelectionSet, RefTarget);
+DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(SelectionSet, _selection, "SelectedNodes", SceneNode, PROPERTY_FIELD_NEVER_CLONE_TARGET);
+SET_PROPERTY_FIELD_LABEL(SelectionSet, _selection, "Nodes");
 
 /******************************************************************************
 * Default constructor.

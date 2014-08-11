@@ -11,3 +11,12 @@ print obj
 # Apply a modifier
 mod = ovito.particles.CoordinationNumberModifier({'cutoff': 2.36})
 obj.applyModifier(mod)
+
+# Selection access
+print ovito.dataset.selection
+print ovito.dataset.selectedNode
+assert ovito.dataset.selectedNode != None
+assert ovito.dataset.selectedNode == obj
+
+# Clear selection
+ovito.dataset.selectedNode = None

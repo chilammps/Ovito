@@ -39,3 +39,15 @@ def load(source, params = {}):
 		raise RuntimeError("File import failed. Nothing was imported.")
 	
 	return node	
+
+
+def get_selectedNode(self):
+	"""Returns the scene node that is currently selected in OVITO."""	
+	return self.selection.firstNode
+
+def set_selectedNode(self, node):
+	"""Sets the scene node that is currently selected in OVITO."""
+	if node: self.selection.setNode(node)
+	else: self.selection.clear()
+
+DataSet.selectedNode = property(get_selectedNode, set_selectedNode)
