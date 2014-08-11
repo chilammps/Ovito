@@ -31,4 +31,8 @@
 
 	<NativePlugin Library="Tachyon" />
 	
+	<Plugin-Dependencies>
+		<Plugin-Dependency Plugin-Id="PyScript" Enabled="${OVITO_BUILD_PLUGIN_PYSCRIPT}" />
+	</Plugin-Dependencies>
+		
 </Plugin-Manifest>

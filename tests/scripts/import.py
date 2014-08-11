@@ -9,5 +9,5 @@ obj = ovito.load("../files/animation.dump.gz")
 print obj
 
 # Apply a modifier
-mod = ovito.particles.CoordinationNumberModifier({'cutoff': 2.36, 'test': 6})
+mod = ovito.particles.CoordinationNumberModifier({'cutoff': 2.36})
 obj.applyModifier(mod)

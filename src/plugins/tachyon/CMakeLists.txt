@@ -25,10 +25,18 @@ SET(Tachyon_SRCS
 	renderer/TachyonRendererEditor.cpp
 )
 
+IF(OVITO_BUILD_PLUGIN_PYSCRIPT)
+	LIST(APPEND Tachyon_SRCS 
+		scripting/PythonInterface.cpp
+	)
+ENDIF()
+
 # Generate plugin module.
 OVITO_PLUGIN(Tachyon
 	SOURCES ${Tachyon_SRCS}
 	LIB_DEPENDENCIES TachyonLib
+	OPTIONAL_PLUGIN_DEPENDENCIES PyScript	
 )
 
-
+# Install the Python source files that belong to the plugin and which provide the scripting interface.
+ADD_CUSTOM_COMMAND(TARGET Particles POST_BUILD COMMAND ${CMAKE_COMMAND} "-E" copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/resources/python/" "${OVITO_PLUGINS_DIRECTORY}/python/")

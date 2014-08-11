@@ -23,6 +23,7 @@
 #include <core/rendering/RenderSettings.h>
 #include <core/rendering/SceneRenderer.h>
 #include <core/rendering/standard/StandardSceneRenderer.h>
+#include <core/rendering/noninteractive/NonInteractiveSceneRenderer.h>
 #include <core/rendering/ParticlePrimitive.h>
 #include <core/rendering/ArrowPrimitive.h>
 #include <core/scene/display/DisplayObject.h>
@@ -65,6 +66,9 @@ void setupRenderingBinding()
 
 	ovito_class<StandardSceneRenderer, SceneRenderer>()
 		.add_property("antialiasingLevel", &StandardSceneRenderer::antialiasingLevel, &StandardSceneRenderer::setAntialiasingLevel)
+	;
+
+	ovito_abstract_class<NonInteractiveSceneRenderer, SceneRenderer>()
 	;
 
 	ovito_abstract_class<DisplayObject, RefTarget>()
