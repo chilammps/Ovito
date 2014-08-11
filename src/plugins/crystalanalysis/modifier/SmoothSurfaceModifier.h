@@ -48,6 +48,12 @@ public:
 	/// This modifies the input object.
 	virtual PipelineStatus modifyObject(TimePoint time, ModifierApplication* modApp, PipelineFlowState& state) override;
 
+	/// Returns the smoothing strength.
+	int smoothingLevel() const { return _smoothingLevel; }
+
+	/// Sets the smoothing strength.
+	void setSmoothingLevel(int level) { _smoothingLevel = level; }
+
 private:
 
 	/// Controls the amount of smoothing.

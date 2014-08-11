@@ -42,11 +42,18 @@ SET(OVITO_CRYSTALANALYSIS_SOURCE_FILES
 	util/DelaunayTessellation.cpp
 )
 
+IF(OVITO_BUILD_PLUGIN_PYSCRIPT)
+	LIST(APPEND OVITO_CRYSTALANALYSIS_SOURCE_FILES 
+		scripting/PythonInterface.cpp
+	)
+ENDIF()
+
 # Generate plugin module.
 OVITO_PLUGIN(CrystalAnalysis
 	SOURCES ${OVITO_CRYSTALANALYSIS_SOURCE_FILES}
 	PLUGIN_DEPENDENCIES Particles
 	LIB_DEPENDENCIES ${CGAL_LIBRARIES} ${CGAL_3RD_PARTY_LIBRARIES} ${OPENGL_gl_LIBRARY}
+	OPTIONAL_PLUGIN_DEPENDENCIES PyScript
 )
 
 IF(NOT CMAKE_COMPILER_IS_GNUCXX)
@@ -64,3 +71,5 @@ IF(WIN32)
 	OVITO_INSTALL_DLL("${CGAL_3RD_PARTY_LIBRARIES_DIRS}/libboost_system-mt.dll")
 ENDIF()
 
+# Install the Python source files that belong to the plugin and which provide the scripting interface.
+ADD_CUSTOM_COMMAND(TARGET Particles POST_BUILD COMMAND ${CMAKE_COMMAND} "-E" copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/resources/python/" "${OVITO_PLUGINS_DIRECTORY}/python/")

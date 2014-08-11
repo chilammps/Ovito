@@ -30,6 +30,7 @@
 #include <plugins/particles/data/SurfaceMeshDisplay.h>
 #include <plugins/particles/data/BondsDisplay.h>
 #include <plugins/particles/data/SimulationCell.h>
+#include <plugins/particles/data/SurfaceMesh.h>
 
 namespace Particles {
 
@@ -171,6 +172,11 @@ BOOST_PYTHON_MODULE(Particles)
 		.add_property("shadingMode", &BondsDisplay::shadingMode, &BondsDisplay::setShadingMode)
 		.add_property("renderingQuality", &BondsDisplay::renderingQuality, &BondsDisplay::setRenderingQuality)
 		.add_property("useParticleColors", &BondsDisplay::useParticleColors, &BondsDisplay::setUseParticleColors)
+	;
+
+	ovito_class<SurfaceMesh, SceneObject>()
+		.add_property("isCompletelySolid", &SurfaceMesh::isCompletelySolid, &SurfaceMesh::setCompletelySolid)
+		.def("clearMesh", &SurfaceMesh::clearMesh)
 	;
 
 	setupImporterBinding();

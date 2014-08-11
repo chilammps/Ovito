@@ -58,6 +58,12 @@ public:
 	/// Returns the title of this object.
 	virtual QString objectTitle() override { return tr("CAT Output"); }
 
+	/// Returns whether loading of the associated particle file is enabled.
+	bool loadParticles() const { return _loadParticles; }
+
+	/// Controls the loading of the associated particle file.
+	void setLoadParticles(bool enable) { _loadParticles = enable; }
+
 protected:
 
 	/// The format-specific task object that is responsible for reading an input file in the background.

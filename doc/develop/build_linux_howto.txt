@@ -3,8 +3,9 @@ This file contains instructions how to prepare the dependencies
 when building the monolithic (statically linked) version of OVITO
 on a Ubuntu Linux system. This is the official build distributed
 through the website. 
-Building a dynamically linked executable on a local system is easier and 
-one can use the shared libraries installed by the package management system.
+Building a dynamically linked executable on a local system is easier, and 
+one can use the shared libraries provided by the Linux package manager in 
+most cases.
 **************************************************************************
 
 **************************************************************************
@@ -23,8 +24,8 @@ To build the dynamically-linked executable instead (on Ubuntu 14.04):
 
 sudo apt-get install build-essential git cmake-curses-gui qt5-default qtscript5-dev xsltproc docbook-xml \
                      libavcodec-dev libavdevice-dev libavfilter-dev libavformat-dev \
-                     libavutil-dev libswscale-dev libcgal-dev libnetcdf-dev libhdf5-dev \
-                     libbotan1.10-dev libmuparser-dev python-dev
+                     libavutil-dev libswscale-dev libcgal-dev libnetcdf-dev libhdf5-dev libhdf5-serial-dev \
+                     libbotan1.10-dev libmuparser-dev python-dev libboost-python-dev
 
 **************************************************************************
 Install GNU g++ 4.8 compiler on Ubuntu 10.04
@@ -155,6 +156,7 @@ ccmake \
 	-DOVITO_BUILD_DOCUMENTATION=ON \
 	-DOVITO_BUILD_PLUGIN_CRYSTALANALYSIS=ON \
 	-DOVITO_BUILD_PLUGIN_NETCDF=ON \
+	-DOVITO_BUILD_PLUGIN_PYSCRIPT=ON \
 	-DOVITO_VIDEO_OUPUT_SUPPORT=ON \
 	-DCMAKE_BUILD_TYPE=Release \
 	-DBOOST_ROOT=$HOME/progs/booststatic \
