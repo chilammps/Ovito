@@ -214,7 +214,7 @@ void CreateBondsModifier::BondGenerationEngine::compute(FutureInterfaceBase& fut
 
 	// Prepare the neighbor list.
 	OnTheFlyNeighborListBuilder neighborListBuilder(maxCutoff);
-	if(!neighborListBuilder.prepare(_positions.data(), _simCell, &_hasWrappedParticles) || futureInterface.isCanceled())
+	if(!neighborListBuilder.prepare(_positions.data(), _simCell) || futureInterface.isCanceled())
 		return;
 
 	// Generate (half) bonds.
@@ -223,7 +223,7 @@ void CreateBondsModifier::BondGenerationEngine::compute(FutureInterfaceBase& fut
 	if(!_particleTypes) {
 		for(size_t particleIndex = 0; particleIndex < particleCount; particleIndex++) {
 			for(OnTheFlyNeighborListBuilder::iterator neighborIter(neighborListBuilder, particleIndex); !neighborIter.atEnd(); neighborIter.next()) {
-				_bonds->addBond(particleIndex, neighborIter.current(), neighborIter.pbcShift());
+				_bonds->addBond(particleIndex, neighborIter.current(), neighborIter.unwrappedPbcShift());
 			}
 			// Update progress indicator.
 			if((particleIndex % 4096) == 0) {
@@ -240,7 +240,7 @@ void CreateBondsModifier::BondGenerationEngine::compute(FutureInterfaceBase& fut
 				int type2 = _particleTypes->getInt(neighborIter.current());
 				if(type1 >= 0 && type1 < _pairCutoffs.size() && type2 >= 0 && type2 < _pairCutoffs[type1].size()) {
 					if(neighborIter.distanceSquared() <= _pairCutoffs[type1][type2])
-						_bonds->addBond(particleIndex, neighborIter.current(), neighborIter.pbcShift());
+						_bonds->addBond(particleIndex, neighborIter.current(), neighborIter.unwrappedPbcShift());
 				}
 			}
 			// Update progress indicator.
@@ -262,7 +262,6 @@ void CreateBondsModifier::retrieveModifierResults(Engine* engine)
 	BondGenerationEngine* eng = static_cast<BondGenerationEngine*>(engine);
 	if(eng->bonds() && bondsObject()) {
 		bondsObject()->setStorage(eng->bonds());
-		_hasWrappedParticles = eng->hasWrappedParticles();
 	}
 }
 
@@ -284,10 +283,7 @@ PipelineStatus CreateBondsModifier::applyModifierResults(TimePoint time, TimeInt
 		}
 	}
 
-	if(!_hasWrappedParticles)
-		return PipelineStatus(PipelineStatus::Success, tr("Created %1 bonds.").arg(bondsCount));
-	else
-		return PipelineStatus(PipelineStatus::Warning, tr("Created %1 bonds. Some of the particles are located outside the simulation cell boundaries. The bonds of these particles may not display correctly. Please use the 'Wrap at periodic boundaries' modifier to avoid this problem.").arg(bondsCount));
+	return PipelineStatus(PipelineStatus::Success, tr("Created %1 bonds.").arg(bondsCount));
 }
 
 /******************************************************************************
