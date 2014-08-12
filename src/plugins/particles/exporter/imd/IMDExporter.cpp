@@ -68,27 +68,27 @@ bool IMDExporter::exportParticles(const PipelineFlowState& state, int frameNumbe
 	textStream() << "#F A ";
 	if(identifierProperty) {
 		textStream() << "1 ";
-		columnMapping.insertColumn(columnMapping.columnCount(), identifierProperty->type(), identifierProperty->name());
+		columnMapping.emplace_back(identifierProperty->type(), identifierProperty->name());
 		columnNames.push_back("number");
 	}
 	else textStream() << "0 ";
 	if(typeProperty) {
 		textStream() << "1 ";
-		columnMapping.insertColumn(columnMapping.columnCount(), typeProperty->type(), typeProperty->name());
+		columnMapping.emplace_back(typeProperty->type(), typeProperty->name());
 		columnNames.push_back("type");
 	}
 	else textStream() << "0 ";
 	if(massProperty) {
 		textStream() << "1 ";
-		columnMapping.insertColumn(columnMapping.columnCount(), massProperty->type(), massProperty->name());
+		columnMapping.emplace_back(massProperty->type(), massProperty->name());
 		columnNames.push_back("mass");
 	}
 	else textStream() << "0 ";
 	if(posProperty) {
 		textStream() << "3 ";
-		columnMapping.insertColumn(columnMapping.columnCount(), posProperty->type(), posProperty->name(), 0);
-		columnMapping.insertColumn(columnMapping.columnCount(), posProperty->type(), posProperty->name(), 1);
-		columnMapping.insertColumn(columnMapping.columnCount(), posProperty->type(), posProperty->name(), 2);
+		columnMapping.emplace_back(posProperty->type(), posProperty->name(), 0);
+		columnMapping.emplace_back(posProperty->type(), posProperty->name(), 1);
+		columnMapping.emplace_back(posProperty->type(), posProperty->name(), 2);
 		columnNames.push_back("x");
 		columnNames.push_back("y");
 		columnNames.push_back("z");
@@ -96,9 +96,9 @@ bool IMDExporter::exportParticles(const PipelineFlowState& state, int frameNumbe
 	else textStream() << "0 ";
 	if(velocityProperty) {
 		textStream() << "3 ";
-		columnMapping.insertColumn(columnMapping.columnCount(), velocityProperty->type(), velocityProperty->name(), 0);
-		columnMapping.insertColumn(columnMapping.columnCount(), velocityProperty->type(), velocityProperty->name(), 1);
-		columnMapping.insertColumn(columnMapping.columnCount(), velocityProperty->type(), velocityProperty->name(), 2);
+		columnMapping.emplace_back(velocityProperty->type(), velocityProperty->name(), 0);
+		columnMapping.emplace_back(velocityProperty->type(), velocityProperty->name(), 1);
+		columnMapping.emplace_back(velocityProperty->type(), velocityProperty->name(), 2);
 		columnNames.push_back("vx");
 		columnNames.push_back("vy");
 		columnNames.push_back("vz");
@@ -114,7 +114,7 @@ bool IMDExporter::exportParticles(const PipelineFlowState& state, int frameNumbe
 		if(property->type() == ParticleProperty::ColorProperty || property->type() == ParticleProperty::SelectionProperty)
 			continue;
 		for(size_t component = 0; component < property->componentCount(); component++) {
-			columnMapping.insertColumn(columnMapping.columnCount(), property->type(), property->name(), component);
+			columnMapping.emplace_back(property->type(), property->name(), component);
 			otherColumnsCount += 1;
 			QString columnName = property->nameWithComponent(component);
 			columnName.remove(QRegExp("[^A-Za-z\\d_.]"));

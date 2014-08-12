@@ -35,7 +35,7 @@ IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, XYZExporter, ParticleExporter);
 bool XYZExporter::showSettingsDialog(const PipelineFlowState& state, QWidget* parent)
 {
 	// Load last mapping if no new one has been set already.
-	if(_columnMapping.isEmpty()) {
+	if(_columnMapping.empty()) {
 		QSettings settings;
 		settings.beginGroup("viz/exporter/xyz/");
 		if(settings.contains("columnmapping")) {
@@ -91,7 +91,7 @@ bool XYZExporter::exportParticles(const PipelineFlowState& state, int frameNumbe
 	textStream() << atomsCount << "\n";
 
 	const OutputColumnMapping& mapping = columnMapping();
-	if(mapping.columnCount() <= 0)
+	if(mapping.empty())
 		throw Exception(tr("No particle properties have been selected for export to the XYZ file. Cannot write file with zero columns."));
 	OutputColumnWriter columnWriter(mapping, state, true);
 
@@ -125,14 +125,13 @@ bool XYZExporter::exportParticles(const PipelineFlowState& state, int frameNumbe
 		textStream() << QStringLiteral("Properties=");
 		QString propertiesStr;
 		int i = 0;
-		while(i < mapping.columnCount()) {
-			ParticleProperty::Type propertyType = mapping.propertyType(i);
-			QString propertyName = mapping.propertyName(i);
+		while(i < mapping.size()) {
+			const ParticlePropertyReference& pref = mapping[i];
 
 			// Convert from OVITO property type and name to extended XYZ property name
 			// Naming conventions followed are those of the QUIP code
 			QString columnName;
-			switch(propertyType) {
+			switch(pref.type()) {
 			case ParticleProperty::ParticleTypeProperty: columnName = QStringLiteral("species"); break;
 			case ParticleProperty::PositionProperty: columnName = QStringLiteral("pos"); break;
 			case ParticleProperty::SelectionProperty: columnName = QStringLiteral("selection"); break;
@@ -166,32 +165,33 @@ bool XYZExporter::exportParticles(const PipelineFlowState& state, int frameNumbe
 			case ParticleProperty::SpinProperty: columnName = QStringLiteral("spin"); break;
 			case ParticleProperty::CentroSymmetryProperty: columnName = QStringLiteral("centro_symmetry"); break;
 			default:
-				columnName = propertyName;
+				columnName = pref.name();
 				columnName.remove(QRegExp("[^A-Za-z\\d_]"));
 			}
 
 			// Find matching property
-			ParticlePropertyObject* property = mapping.column(i).findInState(state);
-			OVITO_ASSERT(property != nullptr || propertyType == ParticleProperty::IdentifierProperty);
+			ParticlePropertyObject* property = pref.findInState(state);
+			if(property == nullptr && pref.type() != ParticleProperty::IdentifierProperty)
+				throw Exception(tr("Particle property '%1' cannot be exported because it does not exist.").arg(pref.name()));
 
-			// Count the number of consecutive columns with the same name
+			// Count the number of consecutive columns with the same property.
 			int nCols = 1;
-			while(++i < mapping.columnCount() && propertyName == mapping.propertyName(i))
+			while(++i < mapping.size() && pref.name() == mapping[i].name() && pref.type() == mapping[i].type())
 				nCols++;
 
-			// Convert OVITO property type to extended XYZ type code: 'I','R','S','L'
+			// Convert OVITO property data type to extended XYZ type code: 'I','R','S','L'
 			int dataType = property ? property->dataType() : qMetaTypeId<int>();
 			QString dataTypeStr;
 			if(dataType == qMetaTypeId<FloatType>())
 				dataTypeStr = QStringLiteral("R");
-			else if(dataType == qMetaTypeId<char>() || propertyType == ParticleProperty::ParticleTypeProperty)
+			else if(dataType == qMetaTypeId<char>() || pref.type() == ParticleProperty::ParticleTypeProperty)
 				dataTypeStr = QStringLiteral("S");
 			else if(dataType == qMetaTypeId<int>())
 				dataTypeStr = QStringLiteral("I");
 			else if(dataType == qMetaTypeId<bool>())
 				dataTypeStr = QStringLiteral("L");
 			else
-				throw Exception(tr("Unexpected data type '%1' for property '%2'.").arg(QMetaType::typeName(dataType) ? QMetaType::typeName(dataType) : "unknown").arg(propertyName));
+				throw Exception(tr("Unexpected data type '%1' for property '%2'.").arg(QMetaType::typeName(dataType) ? QMetaType::typeName(dataType) : "unknown").arg(pref.name()));
 
 			if(!propertiesStr.isEmpty()) propertiesStr += QStringLiteral(":");
 			propertiesStr += QStringLiteral("%1:%2:%3").arg(columnName).arg(dataTypeStr).arg(nCols);

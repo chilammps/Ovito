@@ -134,9 +134,9 @@ PipelineStatus ScatterPlotModifier::modifyParticles(TimePoint time, TimeInterval
 	if(yAxisProperty().vectorComponent() >= (int)yProperty->componentCount())
 		throw Exception(tr("The selected vector component is out of range. The particle property '%1' contains only %2 values per particle.").arg(yAxisProperty().name()).arg(yProperty->componentCount()));
 
-	size_t xVecComponent = xAxisProperty().vectorComponent() >= 0 ? xAxisProperty().vectorComponent() : 0;
+	size_t xVecComponent = std::max(0, xAxisProperty().vectorComponent());
 	size_t xVecComponentCount = xProperty->componentCount();
-	size_t yVecComponent = yAxisProperty().vectorComponent() >= 0 ? yAxisProperty().vectorComponent() : 0;
+	size_t yVecComponent = std::max(0, yAxisProperty().vectorComponent());
 	size_t yVecComponentCount = yProperty->componentCount();
 
 	ParticlePropertyObject* selProperty = nullptr;

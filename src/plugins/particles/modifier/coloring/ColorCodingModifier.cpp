@@ -184,7 +184,7 @@ PipelineStatus ColorCodingModifier::modifyParticles(TimePoint time, TimeInterval
 	if(sourceProperty().vectorComponent() >= (int)property->componentCount())
 		throw Exception(tr("The selected vector component is out of range. The particle property '%1' contains only %2 values per particle.").arg(sourceProperty().name()).arg(property->componentCount()));
 
-	int vecComponent = sourceProperty().vectorComponent() >= 0 ? sourceProperty().vectorComponent() : 0;
+	int vecComponent = std::max(0, sourceProperty().vectorComponent());
 	int vecComponentCount = property->componentCount();
 
 	if(!_colorGradient)
@@ -292,7 +292,7 @@ bool ColorCodingModifier::adjustRange()
 
 	if(sourceProperty().vectorComponent() >= (int)property->componentCount())
 		return false;
-	int vecComponent = sourceProperty().vectorComponent() >= 0 ? sourceProperty().vectorComponent() : 0;
+	int vecComponent = std::max(0, sourceProperty().vectorComponent());
 	int vecComponentCount = property->componentCount();
 
 	// Iterate over all atoms.

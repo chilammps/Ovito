@@ -26,37 +26,13 @@
 namespace Particles {
 
 /******************************************************************************
- * Inserts a column that will be written to the output data file.
- *****************************************************************************/
-void OutputColumnMapping::insertColumn(int columnIndex, const ParticlePropertyReference& propertyRef)
-{
-	OVITO_ASSERT(columnIndex >= 0);
-
-	// Expand column array if necessary and initialize all new columns to their default values.
-	if(columnIndex >= columnCount())
-		_columns.resize(columnIndex + 1);
-
-	_columns[columnIndex] = propertyRef;
-}
-
-/******************************************************************************
- * Removes the definition of a column.
- *****************************************************************************/
-void OutputColumnMapping::removeColumn(int columnIndex)
-{
-	OVITO_ASSERT(columnIndex >= 0);
-	if(columnIndex < columnCount())
-		_columns.remove(columnIndex);
-}
-
-/******************************************************************************
  * Saves the mapping to the given stream.
  *****************************************************************************/
 void OutputColumnMapping::saveToStream(SaveStream& stream) const
 {
 	stream.beginChunk(0x01);
-	stream << (int)_columns.size();
-	for(const ParticlePropertyReference& col : _columns) {
+	stream << (int)size();
+	for(const ParticlePropertyReference& col : *this) {
 		stream << col;
 	}
 	stream.endChunk();
@@ -70,8 +46,8 @@ void OutputColumnMapping::loadFromStream(LoadStream& stream)
 	stream.expectChunk(0x01);
 	int numColumns;
 	stream >> numColumns;
-	_columns.resize(numColumns);
-	for(ParticlePropertyReference& col : _columns) {
+	resize(numColumns);
+	for(ParticlePropertyReference& col : *this) {
 		stream >> col;
 	}
 	stream.closeChunk();
@@ -102,32 +78,30 @@ void OutputColumnMapping::fromByteArray(const QByteArray& array)
 }
 
 /******************************************************************************
- * Initializes the helper object.
+ * Initializes the writer object.
  *****************************************************************************/
 OutputColumnWriter::OutputColumnWriter(const OutputColumnMapping& mapping, const PipelineFlowState& source, bool writeTypeNames)
 	: _mapping(mapping), _source(source), _writeTypeNames(writeTypeNames)
 {
 	// Gather the source properties.
-	for(int i = 0; i < mapping.columnCount(); i++) {
+	for(int i = 0; i < mapping.size(); i++) {
+		const ParticlePropertyReference& pref = mapping[i];
 
-		ParticleProperty::Type propertyType = mapping.propertyType(i);
-		QString propertyName = mapping.propertyName(i);
-		int vectorComponent = mapping.vectorComponent(i);
-		if(vectorComponent < 0) vectorComponent = 0;
-
-		ParticlePropertyObject* property = mapping.column(i).findInState(source);
-		if(property == nullptr && propertyType != ParticleProperty::IdentifierProperty) {
+		ParticlePropertyObject* property = pref.findInState(source);
+		if(property == nullptr && pref.type() != ParticleProperty::IdentifierProperty) {
 			throw Exception(tr("The selection of data columns to be written to the output file is invalid (file column %1). "
-			                   "The particle do not have a property named '%2'.").arg(i+1).arg(propertyName));
+			                   "The particle do not have a property named '%2'.").arg(i+1).arg(pref.name()));
 		}
-		if(property && property->componentCount() <= vectorComponent)
-			throw Exception(tr("The vector component specified for column %1 exceeds the number of available vector components in the particle property '%2'.").arg(i+1).arg(propertyName));
-		if(property && property->dataType() == QMetaType::Void)
-			throw Exception(tr("The particle property '%1' cannot be written to the output file because it is empty.").arg(propertyName));
+		if(property) {
+			if(property->componentCount() <= std::max(1, pref.vectorComponent()))
+				throw Exception(tr("The output vector component selected for column %1 is out of range. The particle property '%2' has only %3 component(s).").arg(i+1).arg(pref.name()).arg(property->componentCount()));
+			if(property->dataType() == QMetaType::Void)
+				throw Exception(tr("The particle property '%1' cannot be written to the output file because it is empty.").arg(pref.name()));
+		}
 
 		// Build internal list of property objects for fast look up during writing.
 		_properties.push_back(property);
-		_vectorComponents.push_back(vectorComponent);
+		_vectorComponents.push_back(std::max(0, pref.vectorComponent()));
 	}
 }
 

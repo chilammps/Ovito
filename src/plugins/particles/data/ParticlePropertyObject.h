@@ -37,7 +37,21 @@ namespace Particles {
 using namespace Ovito;
 
 /**
- * \brief Storage for a per-particle property.
+ * \brief Stores one particle property.
+ *
+ * The ParticlePropertyObject class stores the data of one particle property (which may consist
+ * of multiple values per particle if it is a vector property).
+ *
+ * An entire particle dataset usually consists of multiple ParticlePropertyObject instances, each storing a
+ * different property such as position, type, identifier etc. A particle dataset is normally kept
+ * in a PipelineFlowState structure, which consists of a collection of scene objects (with some of them
+ * being ParticlePropertyObject instances and perhaps a instance of the SimulationCell class).
+ *
+ * The ParticlePropertyObject class keeps the actual per-particle data in an internal storage object
+ * (see ParticleProperty class). The reason is that ParticlePropertyObject instances can only be created and
+ * accessed from the main thread while ParticleProperty storage objects can be used by background threads
+ * too (e.g. when loading data from a file).
+ *
  */
 class OVITO_PARTICLES_EXPORT ParticlePropertyObject : public SceneObject
 {
@@ -556,26 +570,30 @@ private:
 };
 
 /**
- * \brief A reference to a ParticleProperty
+ * \brief A reference to a particle property.
  *
- * This small helper class can be used to store a reference to a
- * particular property.
+ * This class holds a reference to a particle property. It is used, for instance, by modifiers
+ * to store the selected input property they will act on. When the modifier is evaluated, the particle property reference
+ * is resolved by looking up the actual ParticlePropertyObject from the current input dataset.
+ *
+ * A particle property reference consists of the ParticleProperty::Type identifier, the name of the property
+ * (only used to reference user-defined properties), and an optional vector component.
  */
 class ParticlePropertyReference
 {
 public:
 
-	/// \brief Default constructor.
+	/// \brief Default constructor. Creates an empty reference.
 	ParticlePropertyReference() : _type(ParticleProperty::UserProperty), _vectorComponent(-1) {}
-	/// \brief Constructor for references to standard property.
+	/// \brief Constructs a reference to a standard property.
 	ParticlePropertyReference(ParticleProperty::Type type, int vectorComponent = -1) : _type(type), _name(ParticleProperty::standardPropertyName(type)), _vectorComponent(vectorComponent) {}
-	/// \brief Constructor for references to a property.
+	/// \brief Constructs a reference to a property.
 	ParticlePropertyReference(ParticleProperty::Type type, const QString& name, int vectorComponent = -1) : _type(type), _name(name), _vectorComponent(vectorComponent) {}
-	/// \brief Constructor for references to user-defined properties.
+	/// \brief Constructs a reference to a user-defined property.
 	ParticlePropertyReference(const QString& name, int vectorComponent = -1) : _type(ParticleProperty::UserProperty), _name(name), _vectorComponent(vectorComponent) {}
-	/// \brief Constructor for references to an existing property instance.
+	/// \brief Constructs a reference based on an existing ParticleProperty.
 	ParticlePropertyReference(ParticleProperty* property, int vectorComponent = -1) : _type(property->type()), _name(property->name()), _vectorComponent(vectorComponent) {}
-	/// \brief Constructor for references to an existing property instance.
+	/// \brief Constructs a reference based on an existing ParticlePropertyObject.
 	ParticlePropertyReference(ParticlePropertyObject* property, int vectorComponent = -1) : _type(property->type()), _name(property->name()), _vectorComponent(vectorComponent) {}
 
 	/// \brief Gets the type identifier of the referenced property.
@@ -593,7 +611,7 @@ public:
 	/// \return The property name.
 	const QString& name() const { return _name; }
 
-	/// Returns the selected component index if the property is a vector property.
+	/// Returns the selected component index.
 	int vectorComponent() const { return _vectorComponent; }
 
 	/// Selects a component index if the property is a vector property.
@@ -610,20 +628,37 @@ public:
 	/// \brief Returns whether this reference object does not point to a ParticleProperty.
 	bool isNull() const { return type() == ParticleProperty::UserProperty && name().isEmpty(); }
 
-	/// This helper method find the particle property referenced by this ParticlePropertyReference
-	/// in the given pipeline state.
+	/// \brief This method retrieves the actual particle property from a pipeline state.
+	/// \return The actual particle property after resolving this reference; or NULL if the property does not exist.
 	ParticlePropertyObject* findInState(const PipelineFlowState& state) const;
+
+	/// \brief Returns the display name of the referenced property including the optional vector component.
+	QString nameWithComponent() const {
+		if(type() != ParticleProperty::UserProperty) {
+			if(vectorComponent() < 0 || ParticleProperty::standardPropertyComponentCount(type()) <= 1) {
+				return name();
+			}
+			else {
+				QStringList names = ParticleProperty::standardPropertyComponentNames(type());
+				if(vectorComponent() < names.size())
+					QString("%1.%2").arg(name()).arg(names[vectorComponent()]);
+			}
+		}
+		if(vectorComponent() < 0)
+			return name();
+		else
+			return QString("%1.%2").arg(name()).arg(vectorComponent() + 1);
+	}
 
 private:
 
-	/// The type identifier of the property.
+	/// The type of the property.
 	ParticleProperty::Type _type;
 
 	/// The human-readable name of the property.
-	/// It is only used for user-defined properties.
 	QString _name;
 
-	/// The component index if the property is a vector property.
+	/// The zero-based component index if the property is a vector property (or zero if not a vector property).
 	int _vectorComponent;
 };
 

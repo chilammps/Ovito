@@ -42,7 +42,7 @@ LAMMPSDumpExporter::LAMMPSDumpExporter(DataSet* dataset) : ParticleExporter(data
 bool LAMMPSDumpExporter::showSettingsDialog(const PipelineFlowState& state, QWidget* parent)
 {
 	// Load last mapping if no new one has been set already.
-	if(_columnMapping.isEmpty()) {
+	if(_columnMapping.empty()) {
 		QSettings settings;
 		settings.beginGroup("viz/exporter/lammpsdump/");
 		if(settings.contains("columnmapping")) {
@@ -135,35 +135,36 @@ bool LAMMPSDumpExporter::exportParticles(const PipelineFlowState& state, int fra
 	textStream() << "ITEM: ATOMS";
 
 	const OutputColumnMapping& mapping = columnMapping();
-	if(mapping.columnCount() <= 0)
+	if(mapping.empty())
 		throw Exception(tr("No particle properties have been selected for export to the LAMMPS dump file. Cannot write dump file with zero columns."));
 
 	// Write column names.
-	for(int i = 0; i < mapping.columnCount(); i++) {
+	for(int i = 0; i < mapping.size(); i++) {
+		const ParticlePropertyReference& pref = mapping[i];
 		QString columnName;
-		switch(mapping.propertyType(i)) {
+		switch(pref.type()) {
 		case ParticleProperty::PositionProperty:
-			if(mapping.vectorComponent(i) == 0) columnName = QStringLiteral("x");
-			else if(mapping.vectorComponent(i) == 1) columnName = QStringLiteral("y");
-			else if(mapping.vectorComponent(i) == 2) columnName = QStringLiteral("z");
+			if(pref.vectorComponent() == 0) columnName = QStringLiteral("x");
+			else if(pref.vectorComponent() == 1) columnName = QStringLiteral("y");
+			else if(pref.vectorComponent() == 2) columnName = QStringLiteral("z");
 			else columnName = QStringLiteral("position");
 			break;
 		case ParticleProperty::VelocityProperty:
-			if(mapping.vectorComponent(i) == 0) columnName = QStringLiteral("vx");
-			else if(mapping.vectorComponent(i) == 1) columnName = QStringLiteral("vy");
-			else if(mapping.vectorComponent(i) == 2) columnName = QStringLiteral("vz");
+			if(pref.vectorComponent() == 0) columnName = QStringLiteral("vx");
+			else if(pref.vectorComponent() == 1) columnName = QStringLiteral("vy");
+			else if(pref.vectorComponent() == 2) columnName = QStringLiteral("vz");
 			else columnName = QStringLiteral("velocity");
 			break;
 		case ParticleProperty::ForceProperty:
-			if(mapping.vectorComponent(i) == 0) columnName = QStringLiteral("fx");
-			else if(mapping.vectorComponent(i) == 1) columnName = QStringLiteral("fy");
-			else if(mapping.vectorComponent(i) == 2) columnName = QStringLiteral("fz");
+			if(pref.vectorComponent() == 0) columnName = QStringLiteral("fx");
+			else if(pref.vectorComponent() == 1) columnName = QStringLiteral("fy");
+			else if(pref.vectorComponent() == 2) columnName = QStringLiteral("fz");
 			else columnName = QStringLiteral("force");
 			break;
 		case ParticleProperty::PeriodicImageProperty:
-			if(mapping.vectorComponent(i) == 0) columnName = QStringLiteral("ix");
-			else if(mapping.vectorComponent(i) == 1) columnName = QStringLiteral("iy");
-			else if(mapping.vectorComponent(i) == 2) columnName = QStringLiteral("iz");
+			if(pref.vectorComponent() == 0) columnName = QStringLiteral("ix");
+			else if(pref.vectorComponent() == 1) columnName = QStringLiteral("iy");
+			else if(pref.vectorComponent() == 2) columnName = QStringLiteral("iz");
 			else columnName = QStringLiteral("pbcimage");
 			break;
 		case ParticleProperty::IdentifierProperty: columnName = QStringLiteral("id"); break;
@@ -171,18 +172,8 @@ bool LAMMPSDumpExporter::exportParticles(const PipelineFlowState& state, int fra
 		case ParticleProperty::MassProperty: columnName = QStringLiteral("mass"); break;
 		case ParticleProperty::RadiusProperty: columnName = QStringLiteral("radius"); break;
 		default:
-			columnName = mapping.propertyName(i);
+			columnName = pref.nameWithComponent();
 			columnName.remove(QRegExp("[^A-Za-z\\d_]"));
-			if(mapping.propertyType(i) == ParticleProperty::UserProperty) {
-				if(mapping.vectorComponent(i) > 0)
-					columnName += "." + QString::number(mapping.vectorComponent(i));
-			}
-			else {
-				QStringList componentNames = ParticleProperty::standardPropertyComponentNames(mapping.propertyType(i));
-				if(mapping.vectorComponent(i) < componentNames.size()) {
-					columnName += "." + componentNames[mapping.vectorComponent(i)];
-				}
-			}
 		}
 		textStream() << " " << columnName;
 	}
