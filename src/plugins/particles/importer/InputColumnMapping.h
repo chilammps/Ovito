@@ -29,73 +29,60 @@
 namespace Particles {
 
 /**
- * \brief Describes the mapping between data columns in a column-based input file
- *        and the internal particle properties.
+ * \brief Defines the mapping between one column of an particle input file and
+ *        one of OVITO's particle properties.
+ *
+ * An InputColumnMapping is composed of a list of these structures, one for each
+ * column in the input file.
  */
-class OVITO_PARTICLES_EXPORT InputColumnMapping
+class OVITO_PARTICLES_EXPORT InputColumnInfo
 {
 public:
 
-	/// \brief Returns the number of columns that have been mapped.
-	int columnCount() const { return _columns.size(); }
+	/// \brief Constructor, which sets the column to an unmapped state.
+	InputColumnInfo() : dataType(QMetaType::Void) {}
 
-	/// \brief Resizes the mapping array to include the specified number of file columns.
-	void setColumnCount(int numberOfColumns, const QStringList& columnNames = QStringList());
-
-	/// \brief Removes unmapped columns from the end of the list.
-	void shrink() {
-		while(columnCount() > 0 && dataType(columnCount() - 1) == QMetaType::Void)
-			setColumnCount(columnCount() - 1);
-	}
-
-	/// \brief Map a column in the data file to a custom ParticleProperty.
-	/// \param columnIndex The column number starting at 0.
-	/// \param propertyName The name of ParticleProperty to be created.
+	/// \brief Maps this column to a custom particle property.
+	/// \param propertyName The name of target particle property.
 	/// \param dataType The data type of the property to create.
 	/// \param vectorComponent The component of the per-particle vector.
-	/// \param property The type of the ParticleProperty (usually ParticleProperty::UserProperty).
-	/// \param columnName Specifies the name of the column in the input file if known.
-	void mapCustomColumn(int columnIndex, const QString& propertyName, int dataType, int vectorComponent = 0, ParticleProperty::Type property = ParticleProperty::UserProperty, const QString& columnName = QString());
-
-	/// \brief Map a column in the data file to a standard ParticleProperty.
-	/// \param columnIndex The column number starting at 0.
-	/// \param property The type of the standard property.
-	/// \param vectorComponent The component in the per-particle vector.
-	/// \param columnName Specifies the name of the column in the input file if known.
-	void mapStandardColumn(int columnIndex, ParticleProperty::Type property, int vectorComponent = 0, const QString& columnName = QString());
-
-	/// \brief Ignores a column in the data file and removes any mapping to a particle property.
-	/// \param columnIndex The column number starting at 0.
-	/// \param columnName Assigns this name to the column.
-	void unmapColumn(int columnIndex, const QString& columnName = QString());
-
-	/// \brief Returns the assigned name of a column in the input file.
-	/// \return The name of the column or an empty string if the input file does not contain column name information.
-	QString columnName(int columnIndex) const { return (columnIndex < _columns.size()) ? _columns[columnIndex].columnName : QString(); }
-
-	/// \brief Sets the assigned name of a column in the input file.
-	void setColumnName(int columnIndex, const QString& name) { if(columnIndex < _columns.size()) _columns[columnIndex].columnName  = name; }
-
-	/// \brief Resets the assigned column names.
-	void resetColumnNames() {
-		for(Column& col : _columns)
-			col.columnName.clear();
+	/// \param type The type of the ParticleProperty (should be ParticleProperty::UserProperty).
+	void mapCustomColumn(const QString& propertyName, int dataType, int vectorComponent = 0, ParticleProperty::Type type = ParticleProperty::UserProperty) {
+		this->property = ParticlePropertyReference(type, propertyName, vectorComponent);
+		this->dataType = dataType;
 	}
 
-	/// \brief Returns the type of the ParticleProperty to which the given column of the input file has been mapped.
-	ParticleProperty::Type propertyType(int columnIndex) const { return (columnIndex < _columns.size()) ? _columns[columnIndex].propertyType : ParticleProperty::UserProperty; }
+	/// \brief Maps this column to a standard particle property.
+	/// \param type Specifies the standard property.
+	/// \param vectorComponent The component in the per-particle vector.
+	void mapStandardColumn(ParticleProperty::Type type, int vectorComponent = 0) {
+		OVITO_ASSERT(type != ParticleProperty::UserProperty);
+		this->property = ParticlePropertyReference(type, vectorComponent);
+		this->dataType = ParticleProperty::standardPropertyDataType(type);
+	}
 
-	/// \brief Returns the name of the particle property to which the given column of the input file has been mapped.
-	QString propertyName(int columnIndex) const { return (columnIndex < _columns.size()) ? _columns[columnIndex].propertyName : QString(); }
+	/// \brief Returns true if the file column is mapped to a particle property; false otherwise (file column will be ignored during import).
+	bool isMapped() const { return dataType != QMetaType::Void; }
 
-	/// \brief Returns the data type of the property to which the given column of the input file has been mapped.
-	int dataType(int columnIndex) const { return (columnIndex < _columns.size()) ? _columns[columnIndex].dataType : QMetaType::Void; }
+	/// The target particle property this column is mapped to.
+	ParticlePropertyReference property;
 
-	/// \brief Returns true if the given file column is mapped to a particle property; false otherwise.
-	bool isMapped(int columnIndex) const { return columnIndex < columnCount() && dataType(columnIndex) != QMetaType::Void; }
+	/// The data type of the particle property if this column is mapped to a user-defined property.
+	/// This field can be set to QMetaType::Void to indicate that the column should be ignored during file import.
+	int dataType;
 
-	/// \brief Returns the vector component for a column when it has been mapped to a vector particle property.
-	int vectorComponent(int columnIndex) const { return (columnIndex < _columns.size()) ? _columns[columnIndex].vectorComponent : 0; }
+	/// The name of the column in the input file. This information is
+	/// read from the input file (if available).
+	QString columnName;
+};
+
+/**
+ * \brief Defines a mapping between the columns in a column-based input particle file
+ *        and OVITO's internal particle properties.
+ */
+class OVITO_PARTICLES_EXPORT InputColumnMapping : public std::vector<InputColumnInfo>
+{
+public:
 
 	/// \brief Saves the mapping to a stream.
 	void saveToStream(SaveStream& stream) const;
@@ -122,39 +109,17 @@ public:
 
 private:
 
-	/// Stores information about a single column in the data file.
-	struct Column {
-
-		/// The name of the column in the input file.
-		QString columnName;
-
-		/// The type of the particle property the column is mapped to.
-		ParticleProperty::Type propertyType;
-
-		/// The name of the particle property the column is mapped to.
-		QString propertyName;
-
-		/// The data type of the particle property if this is a user-defined property.
-		/// If this is QMetaType::Void, the column will be ignored completely.
-		int dataType;
-
-		/// The component for vector properties.
-		int vectorComponent;
-	};
-
-	/// Stores the mapping of each column in the input file.
-	QVector<Column> _columns;
-
-	/// A string with the first few lines of the file, which can help the user to figure out the column mapping.
+	/// A string with the first few lines of the file, which is meant as a hint for the user to figure out
+	/// the column mapping.
 	QString _fileExcerpt;
 };
 
 
 /**
- * \brief Helper class that parses the data columns in a input file and
- *        maps them to internal particles properties according to a InputColumnMapping.
+ * \brief Helper class that reads column-based data from an input file and
+ *        stores the parsed values in particles properties according to an InputColumnMapping.
  */
-class InputColumnReader : public QObject
+class OVITO_PARTICLES_EXPORT InputColumnReader : public QObject
 {
 public:
 
@@ -214,6 +179,7 @@ private:
 
 };	// End of namespace
 
+Q_DECLARE_METATYPE(Particles::InputColumnInfo);
 Q_DECLARE_METATYPE(Particles::InputColumnMapping);
 
 #endif // __OVITO_INPUT_COLUMN_MAPPING_H

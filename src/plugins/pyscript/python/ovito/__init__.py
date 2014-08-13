@@ -4,8 +4,7 @@ import os.path
 from PyScript import *
 
 # Add __str__ method to TimeInterval class:
-def _TimeInterval_str(self): return str((self.start,self.end))
-TimeInterval.__str__ = _TimeInterval_str
+TimeInterval.__str__ = lambda self: str((self.start,self.end))
 
 # Load bindings of plugins.
 # Scan directory containing the main 'ovito' module for subpackages.

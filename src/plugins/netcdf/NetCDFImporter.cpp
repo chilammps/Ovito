@@ -61,11 +61,11 @@
 
 namespace NetCDF {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(NetCDF, NetCDFImporter, ParticleImporter)
-IMPLEMENT_OVITO_OBJECT(NetCDF, NetCDFImporterEditor, PropertiesEditor)
-SET_OVITO_OBJECT_EDITOR(NetCDFImporter, NetCDFImporterEditor)
-DEFINE_PROPERTY_FIELD(NetCDFImporter, _useCustomColumnMapping, "UseCustomColumnMapping")
-SET_PROPERTY_FIELD_LABEL(NetCDFImporter, _useCustomColumnMapping, "Custom file column mapping")
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(NetCDF, NetCDFImporter, ParticleImporter);
+IMPLEMENT_OVITO_OBJECT(NetCDF, NetCDFImporterEditor, PropertiesEditor);
+SET_OVITO_OBJECT_EDITOR(NetCDFImporter, NetCDFImporterEditor);
+DEFINE_PROPERTY_FIELD(NetCDFImporter, _useCustomColumnMapping, "UseCustomColumnMapping");
+SET_PROPERTY_FIELD_LABEL(NetCDFImporter, _useCustomColumnMapping, "Custom file column mapping");
 
 /******************************************************************************
 * Check for NetCDF error and throw exception
@@ -310,7 +310,6 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 	// Now iterate over all variables and see whether they start with either atom or frame dimensions.
 	int nVars;
 	NCERR( nc_inq_nvars(_ncid, &nVars) );
-	int column = 0;
 	for (int varId = 0; varId < nVars; varId++) {
 		char name[NC_MAX_NAME+1];
 		nc_type type;
@@ -323,15 +322,13 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 		if (dimIds[0] == _atom_dim || ( nDims > 1 && dimIds[0] == _frame_dim && dimIds[1] == _atom_dim )) {
 			// Do we support this data type?
 			if (type == NC_BYTE || type == NC_SHORT || type == NC_INT || type == NC_LONG || type == NC_CHAR) {
-				mapVariableToColumn(columnMapping, column, name, qMetaTypeId<int>());
-				column++;
+				columnMapping.push_back(mapVariableToColumn(name, qMetaTypeId<int>()));
 			}
 			else if (type == NC_FLOAT || type == NC_DOUBLE) {
-				mapVariableToColumn(columnMapping, column, name, qMetaTypeId<FloatType>());
-				column++;
+				columnMapping.push_back(mapVariableToColumn(name, qMetaTypeId<FloatType>()));
 			}
 			else {
-				qDebug() << "Skipping NetCDF variable " << name << " because type is not known." << endl;
+				qDebug() << "Skipping NetCDF variable " << name << " because type is not known.";
 			}
 		}
 	}
@@ -344,7 +341,7 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 	}
 
 	// Set up column-to-property mapping.
-	if(_useCustomColumnMapping && _customColumnMapping.columnCount() > 0)
+	if(_useCustomColumnMapping && !_customColumnMapping.empty())
 		columnMapping = _customColumnMapping;
 
 	// Get frame number.
@@ -391,17 +388,17 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 	simulationCell().setMatrix(AffineTransformation(va, vb, vc, Vector3(o[0], o[1], o[2])));
 
 	// Report to user.
-	futureInterface.setProgressRange(columnMapping.columnCount());
+	futureInterface.setProgressRange(columnMapping.size());
 
     // Now iterate over all variables and see if we have to reduce particleCount
     // We use the only float properties for this because at least one must be present (coordinates)
-	for (int column = 0; column < columnMapping.columnCount(); column++) {
-		int dataType = columnMapping.dataType(column);
+	for (const InputColumnInfo& column : columnMapping) {
+		int dataType = column.dataType;
 
         if (dataType == qMetaTypeId<FloatType>()) {
 
-			QString columnName = columnMapping.columnName(column);
-            ParticleProperty::Type propertyType = columnMapping.propertyType(column);
+			QString columnName = column.columnName;
+            ParticleProperty::Type propertyType = column.property.type();
 
             // Retrieve NetCDF meta-information.
             nc_type type;
@@ -431,16 +428,18 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
     }
 
 	// Now iterate over all variables and load the appropriate frame
-	for (int column = 0; column < columnMapping.columnCount(); column++) {
+	for (const InputColumnInfo& column : columnMapping) {
 		if(futureInterface.isCanceled()) {
 			closeNetCDF();
 			return;
 		}
-		futureInterface.setProgressValue(column);
+		futureInterface.incrementProgressValue();
 		
 		ParticleProperty* property = nullptr;
 
-		int dataType = columnMapping.dataType(column);
+		int dataType = column.dataType;
+		QString columnName = column.columnName;
+		QString propertyName = column.property.name();
 
 		if (dataType != QMetaType::Void) {
 			size_t dataTypeSize;
@@ -449,10 +448,7 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 			else if (dataType == qMetaTypeId<FloatType>())
 				dataTypeSize = sizeof(FloatType);
 			else
-				throw Exception(tr("Invalid custom particle property (data type %1) for input file column %2 of NetCDF file.").arg(dataType).arg(column+1));
-
-			QString columnName = columnMapping.columnName(column);
-			QString propertyName = columnMapping.propertyName(column);
+				throw Exception(tr("Invalid custom particle property (data type %1) for input file column %2 of NetCDF file.").arg(dataType).arg(columnName));
 
 			// Retrieve NetCDF meta-information.
 			nc_type type;
@@ -472,7 +468,7 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 				// Skip all fields that don't have the expected format.
 				if (nDimsDetected != -1 && (nDimsDetected == nDims || type == NC_CHAR)) {
 					// Find property to load this information into.
-					ParticleProperty::Type propertyType = columnMapping.propertyType(column);
+					ParticleProperty::Type propertyType = column.property.type();
 
 					if(propertyType != ParticleProperty::UserProperty) {
 						// Look for existing standard property.
@@ -511,7 +507,7 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 					property->setName(propertyName);
 
 					if (property->componentCount() != componentCount) {
-						qDebug() << "Warning: Skipping field '" << columnName << "' of NetCDF file because internal and NetCDF component counts do not match." << endl;
+						qDebug() << "Warning: Skipping field '" << columnName << "' of NetCDF file because internal and NetCDF component counts do not match.";
 					}
 					else {
 						// Type mangling.
@@ -666,7 +662,7 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 							}
 						}
 						else {
-							qDebug() << "Warning: Skipping field '" << columnName << "' of NetCDF file because it has an unrecognized data type." << endl;
+							qDebug() << "Warning: Skipping field '" << columnName << "' of NetCDF file because it has an unrecognized data type.";
 						}
 					}
 				}
@@ -678,31 +674,35 @@ void NetCDFImporter::NetCDFImportTask::parseFile(FutureInterfaceBase& futureInte
 }
 
 /******************************************************************************
- * Guesses the mapping of input file columns to internal particle properties.
+ * Guesses the mapping of an input file field to one of OVITO's internal
+ * particle properties.
  *****************************************************************************/
-void NetCDFImporter::mapVariableToColumn(InputColumnMapping &columnMapping, int column, QString name, int dataType)
+InputColumnInfo NetCDFImporter::mapVariableToColumn(const QString& name, int dataType)
 {
+	InputColumnInfo column;
+	column.columnName = name;
 	QString loweredName = name.toLower();
-	if(loweredName == "coordinates") columnMapping.mapStandardColumn(column, ParticleProperty::PositionProperty, 0, name);
-	else if(loweredName == "velocities") columnMapping.mapStandardColumn(column, ParticleProperty::VelocityProperty, 0, name);
-	else if(loweredName == "id") columnMapping.mapStandardColumn(column, ParticleProperty::IdentifierProperty, 0, name);
-	else if(loweredName == "type" || loweredName == "element" || loweredName == "atom_types" || loweredName == "species") columnMapping.mapStandardColumn(column, ParticleProperty::ParticleTypeProperty, 0, name);
-	else if(loweredName == "mass") columnMapping.mapStandardColumn(column, ParticleProperty::MassProperty, 0, name);
-	else if(loweredName == "radius") columnMapping.mapStandardColumn(column, ParticleProperty::RadiusProperty, 0, name);
-	else if(loweredName == "c_cna" || loweredName == "pattern") columnMapping.mapStandardColumn(column, ParticleProperty::StructureTypeProperty, 0, name);
-	else if(loweredName == "c_epot") columnMapping.mapStandardColumn(column, ParticleProperty::PotentialEnergyProperty, 0, name);
-	else if(loweredName == "c_kpot") columnMapping.mapStandardColumn(column, ParticleProperty::KineticEnergyProperty, 0, name);
-	else if(loweredName == "c_stress[1]") columnMapping.mapStandardColumn(column, ParticleProperty::StressTensorProperty, 0, name);
-	else if(loweredName == "c_stress[2]") columnMapping.mapStandardColumn(column, ParticleProperty::StressTensorProperty, 1, name);
-	else if(loweredName == "c_stress[3]") columnMapping.mapStandardColumn(column, ParticleProperty::StressTensorProperty, 2, name);
-	else if(loweredName == "c_stress[4]") columnMapping.mapStandardColumn(column, ParticleProperty::StressTensorProperty, 3, name);
-	else if(loweredName == "c_stress[5]") columnMapping.mapStandardColumn(column, ParticleProperty::StressTensorProperty, 4, name);
-	else if(loweredName == "c_stress[6]") columnMapping.mapStandardColumn(column, ParticleProperty::StressTensorProperty, 5, name);
-	else if(loweredName == "selection") columnMapping.mapStandardColumn(column, ParticleProperty::SelectionProperty, 0, name);
-	else if(loweredName == "forces") columnMapping.mapStandardColumn(column, ParticleProperty::ForceProperty, 0, name);
+	if(loweredName == "coordinates") column.mapStandardColumn(ParticleProperty::PositionProperty, 0);
+	else if(loweredName == "velocities") column.mapStandardColumn(ParticleProperty::VelocityProperty, 0);
+	else if(loweredName == "id") column.mapStandardColumn(ParticleProperty::IdentifierProperty);
+	else if(loweredName == "type" || loweredName == "element" || loweredName == "atom_types" || loweredName == "species") column.mapStandardColumn(ParticleProperty::ParticleTypeProperty);
+	else if(loweredName == "mass") column.mapStandardColumn(ParticleProperty::MassProperty);
+	else if(loweredName == "radius") column.mapStandardColumn(ParticleProperty::RadiusProperty);
+	else if(loweredName == "c_cna" || loweredName == "pattern") column.mapStandardColumn(ParticleProperty::StructureTypeProperty);
+	else if(loweredName == "c_epot") column.mapStandardColumn(ParticleProperty::PotentialEnergyProperty);
+	else if(loweredName == "c_kpot") column.mapStandardColumn(ParticleProperty::KineticEnergyProperty);
+	else if(loweredName == "c_stress[1]") column.mapStandardColumn(ParticleProperty::StressTensorProperty, 0);
+	else if(loweredName == "c_stress[2]") column.mapStandardColumn(ParticleProperty::StressTensorProperty, 1);
+	else if(loweredName == "c_stress[3]") column.mapStandardColumn(ParticleProperty::StressTensorProperty, 2);
+	else if(loweredName == "c_stress[4]") column.mapStandardColumn(ParticleProperty::StressTensorProperty, 3);
+	else if(loweredName == "c_stress[5]") column.mapStandardColumn(ParticleProperty::StressTensorProperty, 4);
+	else if(loweredName == "c_stress[6]") column.mapStandardColumn(ParticleProperty::StressTensorProperty, 5);
+	else if(loweredName == "selection") column.mapStandardColumn(ParticleProperty::SelectionProperty);
+	else if(loweredName == "forces") column.mapStandardColumn(ParticleProperty::ForceProperty, 0);
 	else {
-		columnMapping.mapCustomColumn(column, name, dataType, 0, ParticleProperty::UserProperty, name);
+		column.mapCustomColumn(name, dataType);
 	}
+	return column;
 }
 
 /******************************************************************************
@@ -772,13 +772,13 @@ void NetCDFImporter::showEditColumnMappingDialog(QWidget* parent)
 	}
 
 	InputColumnMapping mapping;
-	if(_customColumnMapping.columnCount() == 0)
+	if(_customColumnMapping.empty())
 		mapping = inspectionTask->columnMapping();
 	else {
 		mapping = _customColumnMapping;
-		mapping.setColumnCount(inspectionTask->columnMapping().columnCount());
-		for(int i = 0; i < mapping.columnCount(); i++)
-			mapping.setColumnName(i, inspectionTask->columnMapping().columnName(i));
+		mapping.resize(inspectionTask->columnMapping().size());
+		for(int i = 0; i < mapping.size(); i++)
+			mapping[i].columnName = inspectionTask->columnMapping()[i].columnName;
 	}
 
 	InputColumnMappingDialog dialog(mapping, parent);

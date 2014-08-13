@@ -35,28 +35,31 @@ using namespace Ovito;
 
 void setupFileIOBinding()
 {
-	// Install automatic QUrl to Python string conversion.
-	struct QUrl_to_python_str {
-		static PyObject* convert(const QUrl& url) {
-			return incref(object(url.toString(QUrl::PreferLocalFile).toLocal8Bit().constData()).ptr());
-		}
-	};
-	to_python_converter<QUrl, QUrl_to_python_str>();
+	class_<QUrl>("QUrl", init<>())
+		.def(init<const QString&>())
+		.def("clear", &QUrl::clear)
+		.add_property("errorString", &QUrl::errorString)
+		.add_property("isEmpty", &QUrl::isEmpty)
+		.add_property("isLocalFile", &QUrl::isLocalFile)
+		.add_property("isValid", &QUrl::isValid)
+		.def("__str__", (QString (*)(const QUrl&))([](const QUrl& url) { return url.toString(QUrl::PreferLocalFile); }))
+		.def(self == other<QUrl>())
+		.def(self != other<QUrl>())
+	;
 
 	// Install automatic Python string to QUrl conversion.
 	auto convertible_QUrl = [](PyObject* obj_ptr) -> void* {
+		// Check if Python object can be converted to target type.
 		if(!PyString_Check(obj_ptr)) return nullptr;
 		return obj_ptr;
 	};
-	auto construct_QUrl = [](PyObject* obj_ptr, boost::python::converter::rvalue_from_python_stage1_data* data) {
-		const char* value = PyString_AsString(obj_ptr);
-		if(!value) throw_error_already_set();
-		void* storage = ((boost::python::converter::rvalue_from_python_storage<QUrl>*)data)->storage.bytes;
-		new (storage) QUrl(value);
-		*((QUrl*)storage) = FileManager::instance().urlFromUserInput(QString::fromLocal8Bit(value));
+	auto construct_QUrl = [](PyObject* obj_ptr, converter::rvalue_from_python_stage1_data* data) {
+		QString value = extract<QString>(obj_ptr);
+		void* storage = ((converter::rvalue_from_python_storage<QUrl>*)data)->storage.bytes;
+		new (storage) QUrl(FileManager::instance().urlFromUserInput(value));
 		data->convertible = storage;
 	};
-	converter::registry::push_back(convertible_QUrl, construct_QUrl, boost::python::type_id<QUrl>());
+	converter::registry::push_back(convertible_QUrl, construct_QUrl, type_id<QUrl>());
 
 	ovito_abstract_class<FileImporter, RefTarget>()
 		.add_property("fileFilter", &FileImporter::fileFilter)

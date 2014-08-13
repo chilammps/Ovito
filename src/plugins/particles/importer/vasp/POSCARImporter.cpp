@@ -27,7 +27,7 @@
 
 namespace Particles {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, POSCARImporter, ParticleImporter)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, POSCARImporter, ParticleImporter);
 
 /******************************************************************************
 * Checks if the given file has format that can be read by this importer.

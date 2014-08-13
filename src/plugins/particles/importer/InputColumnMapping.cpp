@@ -24,25 +24,7 @@
 
 namespace Particles {
 
-/******************************************************************************
- * Resizes the mapping array to include the specified number of file columns.
- *****************************************************************************/
-void InputColumnMapping::setColumnCount(int numberOfColumns, const QStringList& columnNames)
-{
-	// Expand column array if necessary and initialize all new columns to their default values.
-	while(numberOfColumns >= columnCount()) {
-		Column col;
-		col.propertyType = ParticleProperty::UserProperty;
-		col.dataType = QMetaType::Void;
-		col.vectorComponent = 0;
-		_columns.append(col);
-	}
-	_columns.resize(numberOfColumns);
-
-	for(int i = 0; i < columnNames.size() && i < numberOfColumns; i++)
-		_columns[i].columnName = columnNames[i];
-}
-
+#if 0
 /******************************************************************************
  * Map a column in the data file to a custom ParticleProperty.
  *****************************************************************************/
@@ -89,20 +71,20 @@ void InputColumnMapping::unmapColumn(int columnIndex, const QString& columnName)
 		_columns[columnIndex].columnName = columnName;
 	}
 }
-
+#endif
 /******************************************************************************
  * Saves the mapping to the given stream.
  *****************************************************************************/
 void InputColumnMapping::saveToStream(SaveStream& stream) const
 {
 	stream.beginChunk(0x01);
-	stream << (int)_columns.size();
-	for(const Column& col : _columns) {
+	stream << (int)size();
+	for(const InputColumnInfo& col : *this) {
 		stream << col.columnName;
-		stream.writeEnum(col.propertyType);
-		stream << col.propertyName;
+		stream.writeEnum(col.property.type());
+		stream << col.property.name();
 		stream.writeEnum(col.dataType);
-		stream << col.vectorComponent;
+		stream << col.property.vectorComponent();
 	}
 	stream.endChunk();
 }
@@ -115,15 +97,19 @@ void InputColumnMapping::loadFromStream(LoadStream& stream)
 	stream.expectChunk(0x01);
 	int numColumns;
 	stream >> numColumns;
-	_columns.resize(numColumns);
-	for(Column& col : _columns) {
+	resize(numColumns);
+	for(InputColumnInfo& col : *this) {
 		stream >> col.columnName;
-		stream.readEnum(col.propertyType);
-		stream >> col.propertyName;
+		ParticleProperty::Type propertyType;
+		stream.readEnum(propertyType);
+		QString propertyName;
+		stream >> propertyName;
 		stream.readEnum(col.dataType);
 		if(col.dataType == qMetaTypeId<float>() || col.dataType == qMetaTypeId<double>())
 			col.dataType = qMetaTypeId<FloatType>();
-		stream >> col.vectorComponent;
+		int vectorComponent;
+		stream >> vectorComponent;
+		col.property = ParticlePropertyReference(propertyType, propertyName, vectorComponent);
 	}
 	stream.closeChunk();
 }
@@ -158,14 +144,7 @@ void InputColumnMapping::fromByteArray(const QByteArray& array)
 void InputColumnMapping::validate() const
 {
 	// Make sure that at least the particle positions are read from the input file.
-	bool posPropertyPresent = false;
-	for(int i = 0; i < columnCount(); i++) {
-		if(propertyType(i) == ParticleProperty::PositionProperty) {
-			posPropertyPresent = true;
-			break;
-		}
-	}
-	if(!posPropertyPresent)
+	if(std::none_of(begin(), end(), [](const InputColumnInfo& column) { return column.property.type() == ParticleProperty::PositionProperty; }))
 		throw Exception(InputColumnReader::tr("No file column has been mapped to the particle position property."));
 }
 
@@ -180,18 +159,15 @@ InputColumnReader::InputColumnReader(const InputColumnMapping& mapping, Particle
 	mapping.validate();
 
 	// Create particle properties as defined by the mapping.
-	for(int i = 0; i < mapping.columnCount(); i++) {
+	for(int i = 0; i < mapping.size(); i++) {
 
 		ParticleProperty* property = nullptr;
+		const ParticlePropertyReference& pref = mapping[i].property;
 
-		int vectorComponent = mapping.vectorComponent(i);
-		int dataType = mapping.dataType(i);
-		if(vectorComponent < 0) vectorComponent = 0;
+		int vectorComponent = std::max(0, pref.vectorComponent());
+		int dataType = mapping[i].dataType;
 
 		if(dataType != QMetaType::Void) {
-			ParticleProperty::Type propertyType = mapping.propertyType(i);
-			QString propertyName = mapping.propertyName(i);
-
 			size_t dataTypeSize;
 			if(dataType == qMetaTypeId<int>())
 				dataTypeSize = sizeof(int);
@@ -200,17 +176,17 @@ InputColumnReader::InputColumnReader(const InputColumnMapping& mapping, Particle
 			else
 				throw Exception(tr("Invalid custom particle property (data type %1) for input file column %2").arg(dataType).arg(i+1));
 
-			if(propertyType != ParticleProperty::UserProperty) {
+			if(pref.type() != ParticleProperty::UserProperty) {
 				// Look for existing standard property.
 				for(const auto& p : destination.particleProperties()) {
-					if(p->type() == propertyType) {
+					if(p->type() == pref.type()) {
 						property = p.get();
 						break;
 					}
 				}
 				if(!property) {
 					// Create standard property.
-					property = new ParticleProperty(particleCount, propertyType);
+					property = new ParticleProperty(particleCount, pref.type());
 					destination.addParticleProperty(property);
 				}
 			}
@@ -220,7 +196,7 @@ InputColumnReader::InputColumnReader(const InputColumnMapping& mapping, Particle
                 int oldPropertyIndex = -1;
 				for(int j = 0; j < destination.particleProperties().size(); j++) {
 					const auto& p = destination.particleProperties()[j];
-					if(p->name() == propertyName) {
+					if(p->name() == pref.name()) {
 						if(p->dataType() == dataType && (int)p->componentCount() > vectorComponent) {
 							property = p.get();
                         }
@@ -233,22 +209,22 @@ InputColumnReader::InputColumnReader(const InputColumnMapping& mapping, Particle
 				}
 				if(!property) {
 					// Create a new user-defined property for the column.
-					property = new ParticleProperty(particleCount, dataType, dataTypeSize, vectorComponent + 1, propertyName);
+					property = new ParticleProperty(particleCount, dataType, dataTypeSize, vectorComponent + 1, pref.name());
 					destination.addParticleProperty(property);
-                    if (oldProperty) {
-                        // We need to replace all old properties with (lower vector component count) with this one.
-                        int indexOfOldProperty = _properties.indexOf(oldProperty);
-                        while (indexOfOldProperty != -1) {
-                            _properties.replace(indexOfOldProperty, property);
-                            indexOfOldProperty = _properties.indexOf(oldProperty);
-                        }
-                        // Remove here and not above because it is auto-released.
-                        destination.removeParticleProperty(oldPropertyIndex);
-                    }
+					if(oldProperty) {
+						// We need to replace all old properties with (lower vector component count) with this one.
+						int indexOfOldProperty = _properties.indexOf(oldProperty);
+						while(indexOfOldProperty != -1) {
+							_properties.replace(indexOfOldProperty, property);
+							indexOfOldProperty = _properties.indexOf(oldProperty);
+						}
+						// Remove here and not above because it is auto-released.
+						destination.removeParticleProperty(oldPropertyIndex);
+					}
 				}
 			}
 			if(property)
-				property->setName(propertyName);
+				property->setName(pref.name());
 
 			OVITO_ASSERT(vectorComponent < (int)property->componentCount());
 		}
@@ -359,7 +335,7 @@ inline bool parseBool(const char* s, int& d)
  *****************************************************************************/
 void InputColumnReader::readParticle(size_t particleIndex, int ntokens, const char* tokens[])
 {
-	OVITO_ASSERT(_properties.size() == _mapping.columnCount());
+	OVITO_ASSERT(_properties.size() == _mapping.size());
 	if(ntokens < _properties.size())
 		throw Exception(tr("Data line in input file does not contain enough columns. Expected %1 file columns, but found only %2.").arg(_properties.size()).arg(ntokens));
 
@@ -374,13 +350,15 @@ void InputColumnReader::readParticle(size_t particleIndex, int ntokens, const ch
 
 		if(particleIndex >= property->size())
 			throw Exception(tr("Too many data lines in input file. Expected only %1 lines.").arg(property->size()));
-		OVITO_ASSERT_MSG(_mapping.vectorComponent(columnIndex) < (int)property->componentCount(), "InputColumnReader::readParticle", "Component index is out of range.");
+
+		int vectorComponent = std::max(0, _mapping[columnIndex].property.vectorComponent());
+		OVITO_ASSERT_MSG(vectorComponent < (int)property->componentCount(), "InputColumnReader::readParticle", "Component index is out of range.");
 
 		if(property->dataType() == _floatMetaTypeId) {
 			FloatType f;
 			if(!parseFloatType(*token, f))
 				throw Exception(tr("Invalid floating-point value in column %1 (%2): \"%3\"").arg(columnIndex+1).arg(property->name()).arg(*token));
-			property->setFloatComponent(particleIndex, _mapping.vectorComponent(columnIndex), f);
+			property->setFloatComponent(particleIndex, vectorComponent, f);
 		}
 		else if(property->dataType() == _intMetaTypeId) {
 			bool ok = parseInt(*token, d);
@@ -401,7 +379,7 @@ void InputColumnReader::readParticle(size_t particleIndex, int ntokens, const ch
 					_usingNamedParticleTypes = true;
 				}
 			}
-			property->setIntComponent(particleIndex, _mapping.vectorComponent(columnIndex), d);
+			property->setIntComponent(particleIndex, vectorComponent, d);
 		}
 	}
 }
@@ -412,7 +390,7 @@ void InputColumnReader::readParticle(size_t particleIndex, int ntokens, const ch
  *****************************************************************************/
 void InputColumnReader::readParticle(size_t particleIndex, const double* values, int nvalues)
 {
-	OVITO_ASSERT(_properties.size() == _mapping.columnCount());
+	OVITO_ASSERT(_properties.size() == _mapping.size());
 	if(nvalues < _properties.size())
 		throw Exception(tr("Data record in input file does not contain enough columns. Expected %1 file columns, but found only %2.").arg(_properties.size()).arg(nvalues));
 
@@ -426,10 +404,12 @@ void InputColumnReader::readParticle(size_t particleIndex, const double* values,
 
 		if(particleIndex >= property->size())
 			throw Exception(tr("Too many data lines in input file. Expected only %1 lines.").arg(property->size()));
-		OVITO_ASSERT_MSG(_mapping.vectorComponent(columnIndex) < (int)property->componentCount(), "InputColumnReader::readParticle", "Component index is out of range.");
+
+		int vectorComponent = std::max(0, _mapping[columnIndex].property.vectorComponent());
+		OVITO_ASSERT_MSG(vectorComponent < (int)property->componentCount(), "InputColumnReader::readParticle", "Component index is out of range.");
 
 		if(property->dataType() == _floatMetaTypeId) {
-			property->setFloatComponent(particleIndex, _mapping.vectorComponent(columnIndex), *token);
+			property->setFloatComponent(particleIndex, vectorComponent, *token);
 		}
 		else if(property->dataType() == _intMetaTypeId) {
 			int ival = (int)*token;
@@ -437,7 +417,7 @@ void InputColumnReader::readParticle(size_t particleIndex, const double* values,
 				// Automatically register a new particle type if a new type identifier is encountered.
 				_destination.addParticleTypeId(ival);
 			}
-			property->setIntComponent(particleIndex, _mapping.vectorComponent(columnIndex), ival);
+			property->setIntComponent(particleIndex, vectorComponent, ival);
 		}
 	}
 }

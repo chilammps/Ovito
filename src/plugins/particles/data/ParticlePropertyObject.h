@@ -572,12 +572,14 @@ private:
 /**
  * \brief A reference to a particle property.
  *
- * This class holds a reference to a particle property. It is used, for instance, by modifiers
- * to store the selected input property they will act on. When the modifier is evaluated, the particle property reference
- * is resolved by looking up the actual ParticlePropertyObject from the current input dataset.
+ * This class is a reference to a particle property. For instance, it is used by modifiers
+ * to store the input property selected by the user, which they will act upon. When the modifier
+ * is evaluated, the particle property reference is resolved by looking up the corresponding ParticlePropertyObject
+ * from the current input dataset, which contains the actual per-particle data.
  *
- * A particle property reference consists of the ParticleProperty::Type identifier, the name of the property
- * (only used to reference user-defined properties), and an optional vector component.
+ * A ParticlePropertyReference consists of the ParticleProperty::Type identifier, the name of the property
+ * (only used for user-defined properties), and an optional vector component (can be -1 to indicate that the entire
+ * vector property is referenced).
  */
 class ParticlePropertyReference
 {
@@ -596,11 +598,10 @@ public:
 	/// \brief Constructs a reference based on an existing ParticlePropertyObject.
 	ParticlePropertyReference(ParticlePropertyObject* property, int vectorComponent = -1) : _type(property->type()), _name(property->name()), _vectorComponent(vectorComponent) {}
 
-	/// \brief Gets the type identifier of the referenced property.
-	/// \return The property type.
+	/// \brief Returns the type of property being referenced.
 	ParticleProperty::Type type() const { return _type; }
 
-	/// \brief Sets the type of referenced property.
+	/// \brief Sets the type of property being referenced.
 	void setType(ParticleProperty::Type type) {
 		_type = type;
 		if(type != ParticleProperty::UserProperty)
@@ -625,7 +626,11 @@ public:
 		return name() == other.name();
 	}
 
-	/// \brief Returns whether this reference object does not point to a ParticleProperty.
+	/// \brief Compares two references for inequality.
+	bool operator!=(const ParticlePropertyReference& other) const { return !(*this == other); }
+
+	/// \brief Returns true if this reference does not point to any particle property.
+	/// \return true if this is a default constructed ParticlePropertyReference.
 	bool isNull() const { return type() == ParticleProperty::UserProperty && name().isEmpty(); }
 
 	/// \brief This method retrieves the actual particle property from a pipeline state.

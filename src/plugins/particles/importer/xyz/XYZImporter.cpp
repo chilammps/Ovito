@@ -129,11 +129,11 @@ bool XYZImporter::inspectNewFile(LinkedFileObject* obj)
 	}
 
 	InputColumnMapping mapping(_columnMapping);
-	mapping.setColumnCount(inspectionTask->columnMapping().columnCount());
+	mapping.resize(inspectionTask->columnMapping().size());
 	mapping.setFileExcerpt(inspectionTask->columnMapping().fileExcerpt());
-	if(_columnMapping.columnCount() != mapping.columnCount()) {
-		if(_columnMapping.columnCount() == 0) {
-			int oldCount = 0;
+	if(_columnMapping.size() != mapping.size()) {
+		if(_columnMapping.empty()) {
+			size_t oldCount = 0;
 
 			// Load last mapping from settings store.
 			QSettings settings;
@@ -141,7 +141,7 @@ bool XYZImporter::inspectNewFile(LinkedFileObject* obj)
 			if(settings.contains("columnmapping")) {
 				try {
 					mapping.fromByteArray(settings.value("columnmapping").toByteArray());
-					oldCount = mapping.columnCount();
+					oldCount = mapping.size();
 				}
 				catch(Exception& ex) {
 					ex.prependGeneralMessage(tr("Failed to load last used column-to-property mapping from application settings store."));
@@ -149,7 +149,7 @@ bool XYZImporter::inspectNewFile(LinkedFileObject* obj)
 				}
 			}
 
-			mapping.setColumnCount(inspectionTask->columnMapping().columnCount());
+			mapping.resize(inspectionTask->columnMapping().size());
 		}
 
 		InputColumnMappingDialog dialog(mapping, datasetContainer.mainWindow());
@@ -220,46 +220,47 @@ void XYZImporter::scanFileForTimesteps(FutureInterfaceBase& futureInterface, QVe
  * Guesses the mapping of input file columns to internal particle properties.
  * Naming conventions followed are those used by QUIP code <http://www.libatoms.org>
  *****************************************************************************/
-bool XYZImporter::mapVariableToProperty(InputColumnMapping &columnMapping, int column, QString name, int dataType, int vec)
+bool XYZImporter::mapVariableToProperty(InputColumnMapping& columnMapping, int column, QString name, int dataType, int vec)
 {
+	columnMapping[column].columnName = name;
 	QString loweredName = name.toLower();
 	if(loweredName == "type" || loweredName == "element" || loweredName == "atom_types" ||loweredName == "species") 
-		columnMapping.mapStandardColumn(column, ParticleProperty::ParticleTypeProperty, 0, name);
-	else if(loweredName == "pos") columnMapping.mapStandardColumn(column, ParticleProperty::PositionProperty, vec, name);
-	else if(loweredName == "selection") columnMapping.mapStandardColumn(column, ParticleProperty::SelectionProperty, vec, name);
-	else if(loweredName == "color") columnMapping.mapStandardColumn(column, ParticleProperty::ColorProperty, vec, name);
-	else if(loweredName == "disp") columnMapping.mapStandardColumn(column, ParticleProperty::DisplacementProperty, vec, name);
-	else if(loweredName == "disp_mag") columnMapping.mapStandardColumn(column, ParticleProperty::DisplacementMagnitudeProperty, vec, name);
-	else if(loweredName == "local_energy") columnMapping.mapStandardColumn(column, ParticleProperty::PotentialEnergyProperty, vec, name);
-	else if(loweredName == "kinetic_energy") columnMapping.mapStandardColumn(column, ParticleProperty::KineticEnergyProperty, vec, name);
-	else if(loweredName == "total_energy") columnMapping.mapStandardColumn(column, ParticleProperty::TotalEnergyProperty, vec, name);
-	else if(loweredName == "velo") columnMapping.mapStandardColumn(column, ParticleProperty::VelocityProperty, vec, name);
-	else if(loweredName == "velo_mag") columnMapping.mapStandardColumn(column, ParticleProperty::VelocityMagnitudeProperty, vec, name);
-	else if(loweredName == "radius") columnMapping.mapStandardColumn(column, ParticleProperty::RadiusProperty, vec, name);
-	else if(loweredName == "cluster") columnMapping.mapStandardColumn(column, ParticleProperty::ClusterProperty, vec, name);
-	else if(loweredName == "n_neighb") columnMapping.mapStandardColumn(column, ParticleProperty::CoordinationProperty, vec, name);
- 	else if(loweredName == "structure_type") columnMapping.mapStandardColumn(column, ParticleProperty::StructureTypeProperty, vec, name);
-	else if(loweredName == "id") columnMapping.mapStandardColumn(column, ParticleProperty::IdentifierProperty, vec, name);
-	else if(loweredName == "stress") columnMapping.mapStandardColumn(column, ParticleProperty::StressTensorProperty, vec, name);
-	else if(loweredName == "strain") columnMapping.mapStandardColumn(column, ParticleProperty::StrainTensorProperty, vec, name);
-	else if(loweredName == "deform") columnMapping.mapStandardColumn(column, ParticleProperty::DeformationGradientProperty, vec, name);
-	else if(loweredName == "orientation") columnMapping.mapStandardColumn(column, ParticleProperty::OrientationProperty, vec, name);
-	else if(loweredName == "force" || loweredName == "forces") columnMapping.mapStandardColumn(column, ParticleProperty::ForceProperty, vec, name);
-	else if(loweredName == "mass") columnMapping.mapStandardColumn(column, ParticleProperty::MassProperty, vec, name);
-	else if(loweredName == "charge") columnMapping.mapStandardColumn(column, ParticleProperty::ChargeProperty, vec, name);
-	else if(loweredName == "map_shift") columnMapping.mapStandardColumn(column, ParticleProperty::PeriodicImageProperty, vec, name);
-	else if(loweredName == "transparency") columnMapping.mapStandardColumn(column, ParticleProperty::TransparencyProperty, vec, name);
-	else if(loweredName == "dipoles") columnMapping.mapStandardColumn(column, ParticleProperty::DipoleOrientationProperty, vec, name);
-	else if(loweredName == "dipoles_mag") columnMapping.mapStandardColumn(column, ParticleProperty::DipoleMagnitudeProperty, vec, name);
-	else if(loweredName == "omega") columnMapping.mapStandardColumn(column, ParticleProperty::AngularVelocityProperty, vec, name);	
-	else if(loweredName == "angular_momentum") columnMapping.mapStandardColumn(column, ParticleProperty::AngularMomentumProperty, vec, name);
-	else if(loweredName == "torque") columnMapping.mapStandardColumn(column, ParticleProperty::TorqueProperty, vec, name);
-	else if(loweredName == "spin") columnMapping.mapStandardColumn(column, ParticleProperty::SpinProperty, vec, name);
-	else if(loweredName == "centro_symmetry") columnMapping.mapStandardColumn(column, ParticleProperty::CentroSymmetryProperty, vec, name);
+		columnMapping[column].mapStandardColumn(ParticleProperty::ParticleTypeProperty);
+	else if(loweredName == "pos") columnMapping[column].mapStandardColumn(ParticleProperty::PositionProperty, vec);
+	else if(loweredName == "selection") columnMapping[column].mapStandardColumn(ParticleProperty::SelectionProperty, vec);
+	else if(loweredName == "color") columnMapping[column].mapStandardColumn(ParticleProperty::ColorProperty, vec);
+	else if(loweredName == "disp") columnMapping[column].mapStandardColumn(ParticleProperty::DisplacementProperty, vec);
+	else if(loweredName == "disp_mag") columnMapping[column].mapStandardColumn(ParticleProperty::DisplacementMagnitudeProperty);
+	else if(loweredName == "local_energy") columnMapping[column].mapStandardColumn(ParticleProperty::PotentialEnergyProperty);
+	else if(loweredName == "kinetic_energy") columnMapping[column].mapStandardColumn(ParticleProperty::KineticEnergyProperty);
+	else if(loweredName == "total_energy") columnMapping[column].mapStandardColumn(ParticleProperty::TotalEnergyProperty);
+	else if(loweredName == "velo") columnMapping[column].mapStandardColumn(ParticleProperty::VelocityProperty, vec);
+	else if(loweredName == "velo_mag") columnMapping[column].mapStandardColumn(ParticleProperty::VelocityMagnitudeProperty);
+	else if(loweredName == "radius") columnMapping[column].mapStandardColumn(ParticleProperty::RadiusProperty);
+	else if(loweredName == "cluster") columnMapping[column].mapStandardColumn(ParticleProperty::ClusterProperty);
+	else if(loweredName == "n_neighb") columnMapping[column].mapStandardColumn(ParticleProperty::CoordinationProperty);
+ 	else if(loweredName == "structure_type") columnMapping[column].mapStandardColumn(ParticleProperty::StructureTypeProperty);
+	else if(loweredName == "id") columnMapping[column].mapStandardColumn(ParticleProperty::IdentifierProperty);
+	else if(loweredName == "stress") columnMapping[column].mapStandardColumn(ParticleProperty::StressTensorProperty, vec);
+	else if(loweredName == "strain") columnMapping[column].mapStandardColumn(ParticleProperty::StrainTensorProperty, vec);
+	else if(loweredName == "deform") columnMapping[column].mapStandardColumn(ParticleProperty::DeformationGradientProperty, vec);
+	else if(loweredName == "orientation") columnMapping[column].mapStandardColumn(ParticleProperty::OrientationProperty, vec);
+	else if(loweredName == "force" || loweredName == "forces") columnMapping[column].mapStandardColumn(ParticleProperty::ForceProperty, vec);
+	else if(loweredName == "mass") columnMapping[column].mapStandardColumn(ParticleProperty::MassProperty);
+	else if(loweredName == "charge") columnMapping[column].mapStandardColumn(ParticleProperty::ChargeProperty);
+	else if(loweredName == "map_shift") columnMapping[column].mapStandardColumn(ParticleProperty::PeriodicImageProperty, vec);
+	else if(loweredName == "transparency") columnMapping[column].mapStandardColumn(ParticleProperty::TransparencyProperty);
+	else if(loweredName == "dipoles") columnMapping[column].mapStandardColumn(ParticleProperty::DipoleOrientationProperty, vec);
+	else if(loweredName == "dipoles_mag") columnMapping[column].mapStandardColumn(ParticleProperty::DipoleMagnitudeProperty);
+	else if(loweredName == "omega") columnMapping[column].mapStandardColumn(ParticleProperty::AngularVelocityProperty, vec);
+	else if(loweredName == "angular_momentum") columnMapping[column].mapStandardColumn(ParticleProperty::AngularMomentumProperty, vec);
+	else if(loweredName == "torque") columnMapping[column].mapStandardColumn(ParticleProperty::TorqueProperty, vec);
+	else if(loweredName == "spin") columnMapping[column].mapStandardColumn(ParticleProperty::SpinProperty, vec);
+	else if(loweredName == "centro_symmetry") columnMapping[column].mapStandardColumn(ParticleProperty::CentroSymmetryProperty);
 	else {
 		// Only int or float custom properties are supported
 		if(dataType == qMetaTypeId<FloatType>() || dataType == qMetaTypeId<int>())
-			columnMapping.mapCustomColumn(column, name, dataType, vec, ParticleProperty::UserProperty, name);
+			columnMapping[column].mapCustomColumn(name, dataType, vec);
 		else
 			return false;
 	}
@@ -414,7 +415,7 @@ void XYZImporter::XYZImportTask::parseFile(FutureInterfaceBase& futureInterface,
 			fileExcerpt += lineString;
 		}
 		if(numParticles > 5) fileExcerpt += QStringLiteral("...\n");
-		_columnMapping.setColumnCount(lineString.split(ws_re, QString::SkipEmptyParts).size());
+		_columnMapping.resize(lineString.split(ws_re, QString::SkipEmptyParts).size());
 		_columnMapping.setFileExcerpt(fileExcerpt);
 
 		// check for Extended XYZ Properties key and use instead of popping up dialog box

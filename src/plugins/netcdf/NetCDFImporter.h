@@ -158,8 +158,8 @@ protected:
 	/// \brief Scans the given input file to find all contained simulation frames.
 	virtual void scanFileForTimesteps(FutureInterfaceBase& futureInterface, QVector<LinkedFileImporter::FrameSourceInformation>& frames, const QUrl& sourceUrl, CompressedTextParserStream& stream) override;
 
-	/// \brief Guesses the mapping of input file columns to internal particle properties.
-	static void mapVariableToColumn(InputColumnMapping &columnMapping, int column, QString name, int dataType);
+	/// \brief Guesses the mapping of an input file field to one of OVITO's internal particle properties.
+	static InputColumnInfo mapVariableToColumn(const QString& name, int dataType);
 
 private:
 

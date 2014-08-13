@@ -70,16 +70,16 @@ BOOST_PYTHON_MODULE(PyScript)
 	scope().attr("__dict__")["version"] = make_tuple(OVITO_VERSION_MAJOR, OVITO_VERSION_MINOR, OVITO_VERSION_REVISION);
 
 	class_<OvitoObject, OORef<OvitoObject>, boost::noncopyable>("OvitoObject", no_init)
-		.def("__str__", OvitoObject__str__)
-		.def("__eq__", OvitoObject__eq__)
-		.def("__ne__", OvitoObject__ne__)
+		.def("__str__", &OvitoObject__str__)
+		.def("__eq__", &OvitoObject__eq__)
+		.def("__ne__", &OvitoObject__ne__)
 	;
 
-	class_<RefMaker, bases<OvitoObject>, OORef<RefMaker>, boost::noncopyable>("RefMaker", no_init)
+	ovito_abstract_class<RefMaker, OvitoObject>()
 		.add_property("dataset", make_function(&RefMaker::dataset, return_value_policy<ovito_object_reference>()))
 	;
 
-	class_<RefTarget, bases<RefMaker>, OORef<RefTarget>, boost::noncopyable>("RefTarget", no_init)
+	ovito_abstract_class<RefTarget, RefMaker>()
 		.def("isReferencedBy", &RefTarget::isReferencedBy)
 		.def("deleteReferenceObject", &RefTarget::deleteReferenceObject)
 		.add_property("isBeingEdited", &RefTarget::isBeingEdited)
@@ -102,7 +102,7 @@ BOOST_PYTHON_MODULE(PyScript)
 		.def(QVector_OO_readonly_indexing_suite<ModifierApplication>())
 	;
 
-	class_<DataSet, bases<RefTarget>, OORef<DataSet>, boost::noncopyable>("DataSet", no_init)
+	ovito_abstract_class<DataSet, RefTarget>()
 		.add_property("filePath", make_function(&DataSet::filePath, return_value_policy<copy_const_reference>()), &DataSet::setFilePath)
 		.add_property("animationSettings", make_function(&DataSet::animationSettings, return_value_policy<ovito_object_reference>()))
 		.add_property("viewportConfig", make_function(&DataSet::viewportConfig, return_value_policy<ovito_object_reference>()))
@@ -114,7 +114,7 @@ BOOST_PYTHON_MODULE(PyScript)
 		.def("rescaleTime", &DataSet::rescaleTime)
 	;
 
-	class_<DataSetContainer, bases<RefMaker>, boost::noncopyable>("DataSetContainer", no_init)
+	ovito_abstract_class<DataSetContainer, RefMaker>()
 		.add_property("currentSet", make_function(&DataSetContainer::currentSet, return_value_policy<ovito_object_reference>()), &DataSetContainer::setCurrentSet)
 		.def("fileNew", &DataSetContainer::fileNew)
 		.def("fileLoad", &DataSetContainer::fileLoad)

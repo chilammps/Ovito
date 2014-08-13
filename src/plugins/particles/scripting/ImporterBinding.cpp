@@ -46,14 +46,14 @@ using namespace PyScript;
 /// Constructs an InputColumnMapping from a list of strings.
 InputColumnMapping* InputColumnMapping_from_python_list(const list& list_) {
 	std::unique_ptr<InputColumnMapping> mapping(new InputColumnMapping());
-	mapping->setColumnCount(len(list_));
-	for(int i = 0; i < mapping->columnCount(); i++) {
+	mapping->resize(len(list_));
+	for(int i = 0; i < mapping->size(); i++) {
 		ParticlePropertyReference pref = extract<ParticlePropertyReference>(list_[i]);
 		if(!pref.isNull()) {
 			if(pref.type() != ParticleProperty::UserProperty)
-				mapping->mapStandardColumn(i, pref.type(), pref.vectorComponent());
+				(*mapping)[i].mapStandardColumn(pref.type(), pref.vectorComponent());
 			else
-				mapping->mapCustomColumn(i, pref.name(), qMetaTypeId<FloatType>(), pref.vectorComponent());
+				(*mapping)[i].mapCustomColumn(pref.name(), qMetaTypeId<FloatType>(), pref.vectorComponent());
 		}
 	}
 	return mapping.release();
@@ -62,20 +62,8 @@ InputColumnMapping* InputColumnMapping_from_python_list(const list& list_) {
 void setupImporterBinding()
 {
 	class_<InputColumnMapping>("InputColumnMapping", init<>())
-		.add_property("columnCount", &InputColumnMapping::columnCount, &InputColumnMapping::setColumnCount)
+		.add_property("columnCount", &InputColumnMapping::size, (void (InputColumnMapping::*)(InputColumnMapping::size_type))&InputColumnMapping::resize)
 		.add_property("fileExcerpt", make_function(&InputColumnMapping::fileExcerpt, return_value_policy<copy_const_reference>()), &InputColumnMapping::setFileExcerpt)
-		.def("shrink", &InputColumnMapping::shrink)
-		.def("mapCustomColumn", &InputColumnMapping::mapCustomColumn)
-		.def("mapStandardColumn", &InputColumnMapping::mapStandardColumn)
-		.def("unmapColumn", &InputColumnMapping::unmapColumn)
-		.def("columnName", &InputColumnMapping::columnName)
-		.def("setColumnName", &InputColumnMapping::setColumnName)
-		.def("resetColumnNames", &InputColumnMapping::resetColumnNames)
-		.def("propertyType", &InputColumnMapping::propertyType)
-		.def("propertyName", &InputColumnMapping::propertyName)
-		.def("dataType", &InputColumnMapping::dataType)
-		.def("isMapped", &InputColumnMapping::isMapped)
-		.def("vectorComponent", &InputColumnMapping::vectorComponent)
 		.def("validate", &InputColumnMapping::validate)
 	;
 
@@ -139,14 +127,14 @@ void setupImporterBinding()
 		new (storage) InputColumnMapping();
 		InputColumnMapping* mapping = (InputColumnMapping*)storage;
 		Py_ssize_t count = PyList_Size(obj_ptr);
-		mapping->setColumnCount(count);
-		for(int i = 0; i < mapping->columnCount(); i++) {
+		mapping->resize(count);
+		for(int i = 0; i < mapping->size(); i++) {
 			ParticlePropertyReference pref = extract<ParticlePropertyReference>(object(handle<>(borrowed(PyList_GetItem(obj_ptr, i)))));
 			if(!pref.isNull()) {
 				if(pref.type() != ParticleProperty::UserProperty)
-					mapping->mapStandardColumn(i, pref.type(), pref.vectorComponent());
+					(*mapping)[i].mapStandardColumn(pref.type(), pref.vectorComponent());
 				else
-					mapping->mapCustomColumn(i, pref.name(), qMetaTypeId<FloatType>(), pref.vectorComponent());
+					(*mapping)[i].mapCustomColumn(pref.name(), qMetaTypeId<FloatType>(), pref.vectorComponent());
 			}
 		}
 		data->convertible = storage;

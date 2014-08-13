@@ -25,7 +25,7 @@
 
 namespace Particles {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, IMDImporter, ParticleImporter)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, IMDImporter, ParticleImporter);
 
 /******************************************************************************
 * Checks if the given file has format that can be read by this importer.
@@ -72,19 +72,21 @@ void IMDImporter::IMDImportTask::parseFile(FutureInterfaceBase& futureInterface,
 		else if(stream.line()[1] == 'E') break;
 		else if(stream.line()[1] == 'C') {
 			QStringList tokens = stream.lineString().split(ws_re, QString::SkipEmptyParts);
-			int columnIndex = 0;
+			columnMapping.resize(std::max(0, tokens.size() - 1));
 			for(int t = 1; t < tokens.size(); t++) {
 				const QString& token = tokens[t];
-				if(token == "mass") columnMapping.mapStandardColumn(columnIndex, ParticleProperty::MassProperty);
-				else if(token == "type") columnMapping.mapStandardColumn(columnIndex, ParticleProperty::ParticleTypeProperty);
-				else if(token == "number") columnMapping.mapStandardColumn(columnIndex, ParticleProperty::IdentifierProperty);
-				else if(token == "x") columnMapping.mapStandardColumn(columnIndex, ParticleProperty::PositionProperty, 0);
-				else if(token == "y") columnMapping.mapStandardColumn(columnIndex, ParticleProperty::PositionProperty, 1);
-				else if(token == "z") columnMapping.mapStandardColumn(columnIndex, ParticleProperty::PositionProperty, 2);
-				else if(token == "vx") columnMapping.mapStandardColumn(columnIndex, ParticleProperty::VelocityProperty, 0);
-				else if(token == "vy") columnMapping.mapStandardColumn(columnIndex, ParticleProperty::VelocityProperty, 1);
-				else if(token == "vz") columnMapping.mapStandardColumn(columnIndex, ParticleProperty::VelocityProperty, 2);
-				else if(token == "Epot") columnMapping.mapStandardColumn(columnIndex, ParticleProperty::PotentialEnergyProperty);
+				int columnIndex = t - 1;
+				columnMapping[columnIndex].columnName = token;
+				if(token == "mass") columnMapping[columnIndex].mapStandardColumn(ParticleProperty::MassProperty);
+				else if(token == "type") columnMapping[columnIndex].mapStandardColumn(ParticleProperty::ParticleTypeProperty);
+				else if(token == "number") columnMapping[columnIndex].mapStandardColumn(ParticleProperty::IdentifierProperty);
+				else if(token == "x") columnMapping[columnIndex].mapStandardColumn(ParticleProperty::PositionProperty, 0);
+				else if(token == "y") columnMapping[columnIndex].mapStandardColumn(ParticleProperty::PositionProperty, 1);
+				else if(token == "z") columnMapping[columnIndex].mapStandardColumn(ParticleProperty::PositionProperty, 2);
+				else if(token == "vx") columnMapping[columnIndex].mapStandardColumn(ParticleProperty::VelocityProperty, 0);
+				else if(token == "vy") columnMapping[columnIndex].mapStandardColumn(ParticleProperty::VelocityProperty, 1);
+				else if(token == "vz") columnMapping[columnIndex].mapStandardColumn(ParticleProperty::VelocityProperty, 2);
+				else if(token == "Epot") columnMapping[columnIndex].mapStandardColumn(ParticleProperty::PotentialEnergyProperty);
 				else {
 					bool isStandardProperty = false;
 					QMap<QString, ParticleProperty::Type> standardPropertyList = ParticleProperty::standardPropertyList();
@@ -100,7 +102,7 @@ void IMDImporter::IMDImportTask::parseFile(FutureInterfaceBase& futureInterface,
 								columnName += componentName;
 							}
 							if(columnName == token) {
-								columnMapping.mapStandardColumn(columnIndex, id, component);
+								columnMapping[columnIndex].mapStandardColumn(id, component);
 								isStandardProperty = true;
 								break;
 							}
@@ -108,9 +110,8 @@ void IMDImporter::IMDImportTask::parseFile(FutureInterfaceBase& futureInterface,
 						if(isStandardProperty) break;
 					}
 					if(!isStandardProperty)
-						columnMapping.mapCustomColumn(columnIndex, QString(token), qMetaTypeId<FloatType>());
+						columnMapping[columnIndex].mapCustomColumn(token, qMetaTypeId<FloatType>());
 				}
-				columnIndex++;
 			}
 		}
 		else if(stream.line()[1] == 'X') {

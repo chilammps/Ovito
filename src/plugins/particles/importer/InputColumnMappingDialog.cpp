@@ -144,14 +144,14 @@ void InputColumnMappingDialog::setMapping(const InputColumnMapping& mapping)
 	_vectorComponentBoxes.clear();
 	_propertyDataTypes.clear();
 
-	_tableWidget->setRowCount(mapping.columnCount());
-	for(int i = 0; i < mapping.columnCount(); i++) {
+	_tableWidget->setRowCount(mapping.size());
+	for(int i = 0; i < mapping.size(); i++) {
 		QCheckBox* fileColumnItem = new QCheckBox();
-		if(mapping.columnName(i).isEmpty())
+		if(mapping[i].columnName.isEmpty())
 			fileColumnItem->setText(tr("Column %1").arg(i+1));
 		else
-			fileColumnItem->setText(mapping.columnName(i));
-		fileColumnItem->setChecked(mapping.isMapped(i));
+			fileColumnItem->setText(mapping[i].columnName);
+		fileColumnItem->setChecked(mapping[i].isMapped());
 		_tableWidget->setCellWidget(i, FILE_COLUMN_COLUMN, fileColumnItem);
 		_fileColumnBoxes.push_back(fileColumnItem);
 
@@ -163,8 +163,8 @@ void InputColumnMappingDialog::setMapping(const InputColumnMapping& mapping)
 			propIter.next();
 			nameItem->addItem(propIter.key(), propIter.value());
 		}
-		nameItem->setCurrentText(mapping.propertyName(i));
-		nameItem->setEnabled(mapping.isMapped(i));
+		nameItem->setCurrentText(mapping[i].property.name());
+		nameItem->setEnabled(mapping[i].isMapped());
 		_tableWidget->setCellWidget(i, PROPERTY_COLUMN, nameItem);
 		_propertyBoxes.push_back(nameItem);
 
@@ -173,7 +173,7 @@ void InputColumnMappingDialog::setMapping(const InputColumnMapping& mapping)
 		_vectorComponentBoxes.push_back(vectorComponentItem);
 		updateVectorComponentList(i);
 		if(vectorComponentItem->count() != 0)
-			vectorComponentItem->setCurrentIndex(mapping.vectorComponent(i));
+			vectorComponentItem->setCurrentIndex(std::max(0,mapping[i].property.vectorComponent()));
 
 		connect(fileColumnItem, &QCheckBox::clicked, nameItem, &QComboBox::setEnabled);
 		_vectorCmpntSignalMapper->setMapping(fileColumnItem, i);
@@ -181,7 +181,7 @@ void InputColumnMappingDialog::setMapping(const InputColumnMapping& mapping)
 		connect(fileColumnItem, &QCheckBox::clicked, _vectorCmpntSignalMapper, (void (QSignalMapper::*)())&QSignalMapper::map);
 		connect(nameItem, &QComboBox::currentTextChanged, _vectorCmpntSignalMapper, (void (QSignalMapper::*)())&QSignalMapper::map);
 
-		_propertyDataTypes.push_back(mapping.dataType(i) != QMetaType::Void ? mapping.dataType(i) : qMetaTypeId<FloatType>());
+		_propertyDataTypes.push_back(mapping[i].dataType != QMetaType::Void ? mapping[i].dataType : qMetaTypeId<FloatType>());
 	}
 
 	_tableWidget->resizeRowsToContents();
@@ -228,22 +228,22 @@ void InputColumnMappingDialog::updateVectorComponentList(int columnIndex)
 InputColumnMapping InputColumnMappingDialog::mapping() const
 {
 	InputColumnMapping mapping;
-	mapping.setColumnCount(_tableWidget->rowCount());
-	for(int index = 0; index < mapping.columnCount(); index++) {
+	mapping.resize(_tableWidget->rowCount());
+	for(int index = 0; index < mapping.size(); index++) {
+		mapping[index].columnName = _fileColumnBoxes[index]->text();
 		if(_fileColumnBoxes[index]->isChecked()) {
 			QString propertyName = _propertyBoxes[index]->currentText().trimmed();
 			ParticleProperty::Type type = ParticleProperty::standardPropertyList().value(propertyName);
 			if(type != ParticleProperty::UserProperty) {
 				int vectorCompnt = std::max(0, _vectorComponentBoxes[index]->currentIndex());
-				mapping.mapStandardColumn(index, type, vectorCompnt, _fileColumnBoxes[index]->text());
+				mapping[index].mapStandardColumn(type, vectorCompnt);
 				continue;
 			}
 			else if(!propertyName.isEmpty()) {
-				mapping.mapCustomColumn(index, propertyName, _propertyDataTypes[index], 0, ParticleProperty::UserProperty, _fileColumnBoxes[index]->text());
+				mapping[index].mapCustomColumn(propertyName, _propertyDataTypes[index]);
 				continue;
 			}
 		}
-		mapping.unmapColumn(index, _fileColumnBoxes[index]->text());
 	}
 	if(!_fileExcerptField->isHidden()) {
 		mapping.setFileExcerpt(_fileExcerptField->toPlainText());
@@ -336,15 +336,15 @@ void InputColumnMappingDialog::onLoadPreset()
 		InputColumnMapping mapping;
 		mapping.fromByteArray(presetData[presetNames.indexOf(name)]);
 
-		for(int index = 0; index < mapping.columnCount() && index < _tableWidget->rowCount(); index++) {
-			_fileColumnBoxes[index]->setChecked(mapping.isMapped(index));
-			_propertyBoxes[index]->setCurrentText(mapping.propertyName(index));
-			_propertyBoxes[index]->setEnabled(mapping.isMapped(index));
+		for(int index = 0; index < mapping.size() && index < _tableWidget->rowCount(); index++) {
+			_fileColumnBoxes[index]->setChecked(mapping[index].isMapped());
+			_propertyBoxes[index]->setCurrentText(mapping[index].property.name());
+			_propertyBoxes[index]->setEnabled(mapping[index].isMapped());
 			updateVectorComponentList(index);
 			if(_vectorComponentBoxes[index]->count() != 0)
-				_vectorComponentBoxes[index]->setCurrentIndex(mapping.vectorComponent(index));
+				_vectorComponentBoxes[index]->setCurrentIndex(std::max(0,mapping[index].property.vectorComponent()));
 		}
-		for(int index = mapping.columnCount(); index < _tableWidget->rowCount(); index++) {
+		for(int index = mapping.size(); index < _tableWidget->rowCount(); index++) {
 			_fileColumnBoxes[index]->setChecked(false);
 		}
 	}
