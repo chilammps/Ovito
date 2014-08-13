@@ -40,6 +40,7 @@ namespace PyScript {
 using namespace boost::python;
 using namespace Ovito;
 
+void setupLinearAlgebraBinding();
 void setupRenderingBinding();
 void setupAnimationBinding();
 void setupViewportBinding();
@@ -63,6 +64,8 @@ inline bool OvitoObject__eq__(OvitoObject* o, const object& other) {
 inline bool OvitoObject__ne__(OvitoObject* o, const object& other) {
 	return !OvitoObject__eq__(o, other);
 }
+
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(dataset_waitUntilSceneIsReady_overloads, waitUntilSceneIsReady, 1, 2);
 
 BOOST_PYTHON_MODULE(PyScript)
 {
@@ -112,6 +115,7 @@ BOOST_PYTHON_MODULE(PyScript)
 		.add_property("container", make_function(&DataSet::container, return_value_policy<ovito_object_reference>()))
 		.def("clearScene", &DataSet::clearScene)
 		.def("rescaleTime", &DataSet::rescaleTime)
+		.def("waitUntilSceneIsReady", &DataSet::waitUntilSceneIsReady, dataset_waitUntilSceneIsReady_overloads())
 	;
 
 	ovito_abstract_class<DataSetContainer, RefMaker>()
@@ -123,6 +127,7 @@ BOOST_PYTHON_MODULE(PyScript)
 		.def("askForSaveChanges", &DataSetContainer::askForSaveChanges)
 	;
 	
+	setupLinearAlgebraBinding();
 	setupRenderingBinding();
 	setupAnimationBinding();
 	setupViewportBinding();

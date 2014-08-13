@@ -12,9 +12,13 @@ base_module_dir = os.path.dirname(__file__)
 for item in os.listdir(base_module_dir):
 	if os.path.isdir(os.path.join(base_module_dir, item)):
 		__import__("ovito.%s" % item)
+		
+def wait(msgText = "Script is waiting for scene graph to become ready."):
+	""" Blocks script execution until all data have been loaded and all modifiers in the scene have been computed. """
+	return dataset.waitUntilSceneIsReady(msgText)
 	
 def load(source_url, params = {}, importMode = ImportMode.AddToScene):
-	"""Imports an external file into Ovito."""
+	""" Imports an external file into Ovito. """
 
 	# Determine the file's format.
 	importer = ImportExportManager.instance.autodetectFileFormat(dataset, source_url)
@@ -64,11 +68,11 @@ LinkedFileObject.load = _LinkedFileObject_load
 
 # Implement the 'selectedNode' property, which returns or sets the currently selected scene node in a dataset.
 def _get_DataSet_selectedNode(self):
-	"""Returns the scene node that is currently selected in OVITO."""	
+	""" Returns the scene node that is currently selected in OVITO. """	
 	return self.selection.firstNode
 
 def _set_DataSet_selectedNode(self, node):
-	"""Sets the scene node that is currently selected in OVITO."""
+	""" Sets the scene node that is currently selected in OVITO. """
 	if node: self.selection.setNode(node)
 	else: self.selection.clear()
 
@@ -76,13 +80,20 @@ DataSet.selectedNode = property(_get_DataSet_selectedNode, _set_DataSet_selected
 
 # Implement the 'sourceUrl' property of LinkedFileObject, which returns or sets the currently loaded file path.
 def _get_LinkedFileObject_sourceUrl(self, oldGetterMethod = LinkedFileObject.sourceUrl):
-	"""Returns the URL of the file referenced by this LinkedFileObject."""	
+	""" Returns the URL of the file referenced by this LinkedFileObject. """	
 	return oldGetterMethod.__get__(self)
 
 def _set_LinkedFileObject_sourceUrl(self, url):
-	"""Sets the URL of the file referenced by this LinkedFileObject."""
+	""" Sets the URL of the file referenced by this LinkedFileObject. """
 	self.setSource(url, None) 
 
 LinkedFileObject.sourceUrl = property(_get_LinkedFileObject_sourceUrl, _set_LinkedFileObject_sourceUrl)
 
+def _Viewport_perspective(self, cameraPos, cameraDir, fov):
+	""" Sets up a viewport view with perspective projection. """
+	self.viewType = ViewType.PERSPECTIVE
+	self.cameraPosition = cameraPos
+	self.cameraDirection = cameraDir
+	self.fieldOfView = fov
 
+Viewport.perspective = _Viewport_perspective

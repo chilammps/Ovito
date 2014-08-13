@@ -133,35 +133,73 @@ private:
 	}
 };
 
-/// Indexing suite for QVector<T*> containers, where T is an OvitoObject derived class.
-/// This indexing suite exposes only read-only methods which do not modify the QVector container.
-template<class T, typename Container = QVector<T*>>
-class QVector_OO_readonly_indexing_suite : public def_visitor<QVector_OO_readonly_indexing_suite<T>>
+/// Base indexing suite for vector-like containers.
+template<class Container, class DerivedClass, typename value_type = typename Container::value_type>
+class base_indexing_suite : public def_visitor<DerivedClass>
 {
 public:
-    typedef T* data_type;
-    typedef T* key_type;
+    typedef value_type data_type;
+    typedef value_type key_type;
     typedef typename Container::size_type index_type;
     typedef typename Container::size_type size_type;
     typedef typename Container::difference_type difference_type;
-    typedef return_value_policy<ovito_object_reference> iterator_return_policy;
-
-    typedef boost::python::iterator<Container, iterator_return_policy> def_iterator;
 
     template<class Class>
     void visit(Class& cl) const {
         cl
             .def("__len__", &get_size)
-            .def("__setitem__", &set_item)
             .def("__delitem__", &delete_item)
-            .def("__getitem__", make_function(&get_item, return_value_policy<ovito_object_reference>()))
             .def("__contains__", &contains)
-            .def("__iter__", def_iterator())
         ;
     }
 
-    static size_type get_size(Container& container) {
-    	return container.size();
+    static size_type get_size(const Container& container) { return container.size(); }
+	static void delete_item(Container& container, PyObject* i) {
+		PyErr_SetString(PyExc_NotImplementedError, "This sequence type does not allow deleting elements.");
+		throw_error_already_set();
+	}
+	static bool contains(const Container& container, const key_type& key) { return std::find(container.begin(), container.end(), key) != container.end(); }
+
+	static index_type convert_index(Container& container, PyObject* i_) {
+		extract<long> i(i_);
+		if(i.check()) {
+			long index = i();
+			if(index < 0)
+				index += container.size();
+			if(index >= container.size() || index < 0) {
+				PyErr_SetString(PyExc_IndexError, "Index out of range");
+				throw_error_already_set();
+			}
+			return static_cast<index_type>(index);
+		}
+
+		PyErr_SetString(PyExc_TypeError, "Invalid index type");
+		throw_error_already_set();
+		return index_type();
+	}
+};
+
+/// Indexing suite for QVector<T*> containers, where T is an OvitoObject derived class.
+/// This indexing suite exposes only read-only methods which do not modify the QVector container.
+template<class T, typename Container = QVector<T*>>
+class QVector_OO_readonly_indexing_suite : public base_indexing_suite<Container, QVector_OO_readonly_indexing_suite<T,Container>, T*>
+{
+public:
+	typedef base_indexing_suite<Container, QVector_OO_readonly_indexing_suite<T,Container>, T*> base_class;
+    typedef typename std::conditional<std::is_pointer<typename Container::value_type>::value,
+    			return_value_policy<ovito_object_reference>,
+    			return_value_policy<copy_non_const_reference>
+    			>::type iterator_return_policy;
+    typedef boost::python::iterator<Container, iterator_return_policy> def_iterator;
+
+    template<class Class>
+    void visit(Class& cl) const {
+    	base_class::visit(cl);
+        cl
+        	.def("__setitem__", &set_item)
+        	.def("__getitem__", make_function(&get_item, return_value_policy<ovito_object_reference>()))
+        	.def("__iter__", def_iterator())
+        ;
     }
 
     static T* get_item(back_reference<Container&> container, PyObject* i) {
@@ -169,39 +207,51 @@ public:
         	PyErr_SetString(PyExc_NotImplementedError, "This sequence type does not support slicing.");
         	throw_error_already_set();
         }
-        return container.get()[convert_index(container.get(), i)];
+        return container.get()[base_class::convert_index(container.get(), i)];
     }
 
-	static void set_item(Container& container, PyObject* i, PyObject* v) {
+    static void set_item(Container& container, PyObject* i, PyObject* v) {
 		PyErr_SetString(PyExc_NotImplementedError, "This sequence type is read-only.");
 		throw_error_already_set();
 	}
+};
 
-	static void delete_item(Container& container, PyObject* i) {
-		PyErr_SetString(PyExc_NotImplementedError, "This sequence type is read-only.");
-		throw_error_already_set();
-	}
+/// Indexing suite for std::array<T> containers, where T is a value type.
+template<class ArrayType>
+class array_indexing_suite : public base_indexing_suite<ArrayType, array_indexing_suite<ArrayType>>
+{
+public:
+	typedef base_indexing_suite<ArrayType, array_indexing_suite<ArrayType>> base_class;
 
-	static bool contains(Container& container, key_type const& key) {
-		return container.contains(key);
-	}
+	template<class Class>
+    void visit(Class& cl) const {
+		base_class::visit(cl);
+        cl
+            .def("__setitem__", &set_item)
+            .def("__getitem__", &get_item)
+            .def("__iter__", boost::python::iterator<ArrayType>())
+        ;
+    }
 
-	static index_type convert_index(Container& container, PyObject* i_) {
-		extract<index_type> i(i_);
-		if(i.check()) {
-			index_type index = i();
-			if(index < 0)
-				index += container.size();
-			if(index >= container.size() || index < 0) {
-				PyErr_SetString(PyExc_IndexError, "Index out of range");
-				throw_error_already_set();
-			}
-			return index;
+    static typename ArrayType::value_type get_item(back_reference<ArrayType&> container, PyObject* i) {
+        if(PySlice_Check(i)) {
+        	PyErr_SetString(PyExc_NotImplementedError, "This sequence type does not support slicing.");
+        	throw_error_already_set();
+        }
+        return container.get()[base_class::convert_index(container.get(), i)];
+    }
+
+	static void set_item(ArrayType& container, PyObject* i, PyObject* v) {
+		if(PySlice_Check(i)) {
+			PyErr_SetString(PyExc_NotImplementedError, "This sequence type does not support slicing.");
+			throw_error_already_set();
 		}
-
-		PyErr_SetString(PyExc_TypeError, "Invalid index type");
-		throw_error_already_set();
-		return index_type();
+		extract<typename ArrayType::value_type> ex(v);
+		if(!ex.check()) {
+			PyErr_SetString(PyExc_TypeError, "Invalid type in array assignment.");
+			throw_error_already_set();
+		}
+        container[base_class::convert_index(container, i)] = ex();
 	}
 };
 

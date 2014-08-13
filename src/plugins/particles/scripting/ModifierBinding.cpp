@@ -80,6 +80,19 @@ void setupModifierBinding()
 		.add_property("keepSelection", &AssignColorModifier::keepSelection, &AssignColorModifier::setKeepSelection)
 	;
 
+	ovito_abstract_class<ColorCodingGradient, RefTarget>()
+		.def("valueToColor", pure_virtual(&ColorCodingGradient::valueToColor))
+	;
+
+	ovito_class<ColorCodingHSVGradient, ColorCodingGradient>()
+	;
+	ovito_class<ColorCodingGrayscaleGradient, ColorCodingGradient>()
+	;
+	ovito_class<ColorCodingHotGradient, ColorCodingGradient>()
+	;
+	ovito_class<ColorCodingJetGradient, ColorCodingGradient>()
+	;
+
 	ovito_class<ColorCodingModifier, ParticleModifier>()
 		.add_property("sourceProperty", make_function(&ColorCodingModifier::sourceProperty, return_value_policy<copy_const_reference>()), &ColorCodingModifier::setSourceProperty)
 		.add_property("startValue", &ColorCodingModifier::startValue, &ColorCodingModifier::setStartValue)
