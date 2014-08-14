@@ -78,6 +78,7 @@ void NativePlugin::loadPluginImpl()
 			if(libraryFilename().isEmpty())
 				throw Exception(QString("The manifest file of the native plugin %1 does not specify the library name.").arg(pluginId()));
 			_library = new QLibrary(libraryFilename(), this);
+			_library->setLoadHints(QLibrary::ExportExternalSymbolsHint);
 			if(!_library->load()) {
 				throw Exception(QString("Failed to load native plugin library.\nLibrary file: %1\nError: %2").arg(libraryFilename(), _library->errorString()));
 			}

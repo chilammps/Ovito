@@ -22,6 +22,7 @@
 #include <plugins/pyscript/PyScript.h>
 #include <plugins/pyscript/binding/PythonBinding.h>
 #include <core/plugins/PluginManager.h>
+#include <core/gui/app/Application.h>
 #include "ScriptEngine.h"
 
 namespace PyScript {
@@ -91,7 +92,7 @@ void ScriptEngine::initializeInterpreter()
 		// On Windows this pre-registration is also needed, because OVITO plugin dynamic libraries have an .dll extension and the Python interpreter 
 		// can only find modules that have a .pyd extension.
 		for(PythonPluginRegistration* r = PythonPluginRegistration::linkedlist; r != nullptr; r = r->_next) {
-			PyImport_AppendInittab(r->_pluginName, r->_initFunc);
+			PyImport_AppendInittab(r->_moduleName, r->_initFunc);
 		}
 
 		// Initialize the Python interpreter.
@@ -111,15 +112,28 @@ void ScriptEngine::initializeInterpreter()
 
 		// Install automatic Python string to QString conversion.
 		auto convertible = [](PyObject* obj_ptr) -> void* {
-			if(!PyString_Check(obj_ptr)) return nullptr;
+			if(!PyString_Check(obj_ptr) && !PyUnicode_Check(obj_ptr)) return nullptr;
 			return obj_ptr;
 		};
 		auto construct = [](PyObject* obj_ptr, boost::python::converter::rvalue_from_python_stage1_data* data) {
-			const char* value = PyString_AsString(obj_ptr);
-			if(!value) throw_error_already_set();
 			void* storage = ((boost::python::converter::rvalue_from_python_storage<QString>*)data)->storage.bytes;
-			new (storage) QString(value);
-			data->convertible = storage;
+			if(PyString_Check(obj_ptr)) {
+				const char* value = PyString_AsString(obj_ptr);
+				if(!value) throw_error_already_set();
+				new (storage) QString(value);
+				data->convertible = storage;
+			}
+			else if(PyUnicode_Check(obj_ptr)) {
+				const Py_UNICODE* value = PyUnicode_AS_UNICODE(obj_ptr);
+				if(!value) throw_error_already_set();
+				if(sizeof(Py_UNICODE) == sizeof(wchar_t))
+					new (storage) QString(QString::fromWCharArray(reinterpret_cast<const wchar_t*>(value)));
+				else if(sizeof(Py_UNICODE) == sizeof(uint))
+					new (storage) QString(QString::fromUcs4(reinterpret_cast<const uint*>(value)));
+				else
+					throw Exception(tr("The Unicode character size used by Python has an unsupported size."));
+				data->convertible = storage;
+			}
 		};
 		converter::registry::push_back(convertible, construct, boost::python::type_id<QString>());
 
@@ -217,6 +231,14 @@ int ScriptEngine::executeFile(const QString& file)
 		throw Exception("There is already another script engine being active.");
 
 	try {
+		// Pass command line parameters to the script.
+		list argList;
+		argList.append(file);
+		QStringList scriptArguments = Application::instance().cmdLineParser().values("scriptarg");
+		for(const QString& a : scriptArguments)
+			argList.append(a);
+		import("sys").attr("__dict__")["argv"] = argList;
+
 	    exec_file(QDir::toNativeSeparators(file).toLatin1().constData(), _mainNamespace, _mainNamespace);
 	    _activeEngine.storeRelease(nullptr);
 	    return 0;

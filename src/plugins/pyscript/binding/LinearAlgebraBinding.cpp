@@ -64,7 +64,7 @@ struct python_to_vector_conversion
 
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(Vector_normalizeSafely_overloads, normalizeSafely, 0, 1);
 
-void setupLinearAlgebraBinding()
+BOOST_PYTHON_MODULE(PyScriptLinearAlgebra)
 {
 	class_<Vector3>("Vector3", init<FloatType, FloatType, FloatType>())
 		.def(init<FloatType>())
@@ -407,5 +407,7 @@ void setupLinearAlgebraBinding()
 		.staticmethod("scaling")
 	;
 }
+
+OVITO_REGISTER_PLUGIN_PYTHON_INTERFACE(PyScriptLinearAlgebra);
 
 };

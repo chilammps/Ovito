@@ -35,13 +35,13 @@ using namespace Ovito;
 struct OVITO_PYSCRIPT_EXPORT PythonPluginRegistration
 {
 	/// The identifier of the plugin to register.
-	const char* _pluginName;
+	const char* _moduleName;
 	/// The initXXX() function to be registered with the Python interpreter.
 	void (*_initFunc)();
 	/// Next structure in linked list.
 	PythonPluginRegistration* _next;
 
-	PythonPluginRegistration(const char* pluginName, void (*initFunc)()) : _pluginName(pluginName), _initFunc(initFunc) {
+	PythonPluginRegistration(const char* moduleName, void (*initFunc)()) : _moduleName(moduleName), _initFunc(initFunc) {
 		_next = linkedlist;
 		linkedlist = this;
 	}

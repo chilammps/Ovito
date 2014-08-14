@@ -43,7 +43,6 @@ namespace PyScript {
 using namespace boost::python;
 using namespace Ovito;
 
-void setupLinearAlgebraBinding();
 void setupRenderingBinding();
 void setupAnimationBinding();
 void setupViewportBinding();
@@ -80,7 +79,7 @@ BOOST_PYTHON_MODULE(PyScript)
 	// Make environment information available
 	scope().attr("__dict__")["guiMode"] = Application::instance().guiMode();
 
-	class_<OvitoObject, OORef<OvitoObject>, boost::noncopyable>("OvitoObject", no_init)
+	class_<OvitoObject, OORef<OvitoObject>, boost::noncopyable>("OvitoObject", "This is the fundamental base class for all objects in OVITO.", no_init)
 		.def("__str__", &OvitoObject__str__)
 		.def("__eq__", &OvitoObject__eq__)
 		.def("__ne__", &OvitoObject__ne__)
@@ -120,7 +119,6 @@ BOOST_PYTHON_MODULE(PyScript)
 		.def("askForSaveChanges", &DataSetContainer::askForSaveChanges)
 	;
 	
-	setupLinearAlgebraBinding();
 	setupRenderingBinding();
 	setupAnimationBinding();
 	setupViewportBinding();

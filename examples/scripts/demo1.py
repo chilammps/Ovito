@@ -1,4 +1,5 @@
 from ovito import *
+from ovito.linalg import *
 from ovito.particles import *
 import math
 
