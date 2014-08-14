@@ -183,6 +183,12 @@ Q_DECL_CONSTEXPR Vector_2<T> operator-(const Point_2<T>& a, const Point_2<T>& b)
 	return { a.x() - b.x(), a.y() - b.y() };
 }
 
+/// \brief Subtracts a vector from a point.
+template<typename T>
+Q_DECL_CONSTEXPR Point_2<T> operator-(const Point_2<T>& a, const Vector_2<T>& b) {
+	return { a.x() - b.x(), a.y() - b.y() };
+}
+
 /// \brief Computes the product of a point and a scalar value.
 template<typename T>
 Q_DECL_CONSTEXPR Point_2<T> operator*(const Point_2<T>& a, T s) {

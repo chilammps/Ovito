@@ -218,13 +218,14 @@ void setupModifierBinding()
 	;
 
 	ovito_abstract_class<StructureIdentificationModifier, AsynchronousParticleModifier>()
+		.add_property("structureCounts", make_function(&StructureIdentificationModifier::structureCounts, return_value_policy<copy_const_reference>()))
 	;
 
 	{
 		scope s = ovito_class<BondAngleAnalysisModifier, StructureIdentificationModifier>()
 		;
 
-		enum_<BondAngleAnalysisModifier::StructureType>("StructureType")
+		enum_<BondAngleAnalysisModifier::StructureType>("StructureTypes")
 			.value("OTHER", BondAngleAnalysisModifier::OTHER)
 			.value("FCC", BondAngleAnalysisModifier::FCC)
 			.value("HCP", BondAngleAnalysisModifier::HCP)
@@ -239,7 +240,7 @@ void setupModifierBinding()
 			.add_property("adaptiveMode", &CommonNeighborAnalysisModifier::adaptiveMode, &CommonNeighborAnalysisModifier::setAdaptiveMode)
 		;
 
-		enum_<CommonNeighborAnalysisModifier::StructureType>("StructureType")
+		enum_<CommonNeighborAnalysisModifier::StructureType>("StructureTypes")
 			.value("OTHER", CommonNeighborAnalysisModifier::OTHER)
 			.value("FCC", CommonNeighborAnalysisModifier::FCC)
 			.value("HCP", CommonNeighborAnalysisModifier::HCP)

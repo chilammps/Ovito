@@ -43,22 +43,6 @@ using namespace boost::python;
 using namespace Ovito;
 using namespace PyScript;
 
-/// Constructs an InputColumnMapping from a list of strings.
-InputColumnMapping* InputColumnMapping_from_python_list(const list& list_) {
-	std::unique_ptr<InputColumnMapping> mapping(new InputColumnMapping());
-	mapping->resize(len(list_));
-	for(int i = 0; i < mapping->size(); i++) {
-		ParticlePropertyReference pref = extract<ParticlePropertyReference>(list_[i]);
-		if(!pref.isNull()) {
-			if(pref.type() != ParticleProperty::UserProperty)
-				(*mapping)[i].mapStandardColumn(pref.type(), pref.vectorComponent());
-			else
-				(*mapping)[i].mapCustomColumn(pref.name(), qMetaTypeId<FloatType>(), pref.vectorComponent());
-		}
-	}
-	return mapping.release();
-}
-
 void setupImporterBinding()
 {
 	class_<InputColumnMapping>("InputColumnMapping", init<>())

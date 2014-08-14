@@ -39,6 +39,7 @@ using namespace Ovito;
 using namespace PyScript;
 
 extern void setupImporterBinding();
+extern void setupExporterBinding();
 extern void setupModifierBinding();
 
 BOOST_PYTHON_MODULE(Particles)
@@ -180,6 +181,7 @@ BOOST_PYTHON_MODULE(Particles)
 	;
 
 	setupImporterBinding();
+	setupExporterBinding();
 	setupModifierBinding();
 }
 

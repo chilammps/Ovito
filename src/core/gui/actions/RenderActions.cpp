@@ -23,7 +23,6 @@
 #include <core/gui/actions/ActionManager.h>
 #include <core/gui/mainwin/MainWindow.h>
 #include <core/gui/app/Application.h>
-#include <core/gui/widgets/rendering/FrameBufferWindow.h>
 #include <core/rendering/RenderSettings.h>
 #include <core/viewport/ViewportConfiguration.h>
 
@@ -35,7 +34,6 @@ namespace Ovito {
 void ActionManager::on_RenderActiveViewport_triggered()
 {
 	try {
-
 		// Set input focus to main window.
 		// This will process any pending user inputs in QLineEdit fields that haven't been processed yet.
 		mainWindow()->setFocus();
@@ -48,18 +46,8 @@ void ActionManager::on_RenderActiveViewport_triggered()
 		if(!viewport)
 			throw Exception(tr("There is no active viewport to render."));
 
-		// Get the frame buffer for the output image, or create one if necessary.
-		FrameBufferWindow* frameBufferWindow = nullptr;
-		QSharedPointer<FrameBuffer> frameBuffer;
-		if(Application::instance().guiMode()) {
-			frameBufferWindow = mainWindow()->frameBufferWindow();
-			frameBuffer = frameBufferWindow->frameBuffer();
-		}
-		if(!frameBuffer)
-			frameBuffer.reset(new FrameBuffer(settings->outputImageWidth(), settings->outputImageHeight()));
-
 		// Call high-level rendering function, which will take care of the rest.
-		_dataset->renderScene(settings, viewport, frameBuffer, frameBufferWindow);
+		_dataset->renderScene(settings, viewport);
 	}
 	catch(const Exception& ex) {
 		ex.showError();

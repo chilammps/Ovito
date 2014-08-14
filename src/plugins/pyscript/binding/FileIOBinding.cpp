@@ -33,6 +33,8 @@ namespace PyScript {
 using namespace boost::python;
 using namespace Ovito;
 
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(FileExporter_exportToFile_overloads, exportToFile, 2, 3);
+
 void setupFileIOBinding()
 {
 	class_<QUrl>("QUrl", init<>())
@@ -94,7 +96,7 @@ void setupFileIOBinding()
 	ovito_abstract_class<FileExporter, RefTarget>()
 		.add_property("fileFilter", &FileExporter::fileFilter)
 		.add_property("fileFilterDescription", &FileExporter::fileFilterDescription)
-		.def("exportToFile", &FileExporter::exportToFile)
+		.def("exportToFile", &FileExporter::exportToFile, FileExporter_exportToFile_overloads())
 	;
 
 	ovito_class<LinkedFileObject, SceneObject>()

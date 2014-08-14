@@ -20,6 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <plugins/pyscript/PyScript.h>
+#include <core/gui/app/Application.h>
 #include <core/dataset/DataSet.h>
 #include <core/dataset/DataSetContainer.h>
 #include <core/scene/SceneNode.h>
@@ -33,6 +34,8 @@
 #include <core/animation/AnimationSettings.h>
 #include <core/viewport/ViewportConfiguration.h>
 #include <core/rendering/RenderSettings.h>
+#include <core/rendering/FrameBuffer.h>
+#include <core/gui/widgets/rendering/FrameBufferWindow.h>
 #include "PythonBinding.h"
 
 namespace PyScript {
@@ -46,6 +49,7 @@ void setupAnimationBinding();
 void setupViewportBinding();
 void setupSceneBinding();
 void setupFileIOBinding();
+void setupContainerBinding();
 
 // Implementation of the __str__ method for OvitoObject derived classes.
 inline object OvitoObject__str__(OvitoObject* o) {
@@ -65,12 +69,16 @@ inline bool OvitoObject__ne__(OvitoObject* o, const object& other) {
 	return !OvitoObject__eq__(o, other);
 }
 
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(dataset_waitUntilSceneIsReady_overloads, waitUntilSceneIsReady, 1, 2);
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(DataSet_waitUntilSceneIsReady_overloads, waitUntilSceneIsReady, 1, 2);
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(DataSet_renderScene_overloads, renderScene, 2, 4);
 
 BOOST_PYTHON_MODULE(PyScript)
 {
 	// Make Ovito program version number available to script.
 	scope().attr("__dict__")["version"] = make_tuple(OVITO_VERSION_MAJOR, OVITO_VERSION_MINOR, OVITO_VERSION_REVISION);
+
+	// Make environment information available
+	scope().attr("__dict__")["guiMode"] = Application::instance().guiMode();
 
 	class_<OvitoObject, OORef<OvitoObject>, boost::noncopyable>("OvitoObject", no_init)
 		.def("__str__", &OvitoObject__str__)
@@ -89,22 +97,6 @@ BOOST_PYTHON_MODULE(PyScript)
 		.add_property("objectTitle", &RefTarget::objectTitle)
 	;
 
-	class_<QVector<DisplayObject*>, boost::noncopyable>("DisplayObjectQVector", no_init)
-		.def(QVector_OO_readonly_indexing_suite<DisplayObject>())
-	;
-	class_<QVector<SceneNode*>, boost::noncopyable>("SceneNodeQVector", no_init)
-		.def(QVector_OO_readonly_indexing_suite<SceneNode>())
-	;
-	class_<QVector<SceneObject*>, boost::noncopyable>("SceneObjectQVector", no_init)
-		.def(QVector_OO_readonly_indexing_suite<SceneObject>())
-	;
-	class_<QVector<OORef<SceneObject>>, boost::noncopyable>("OORefSceneObjectQVector", no_init)
-		.def(QVector_OO_readonly_indexing_suite<SceneObject, QVector<OORef<SceneObject>>>())
-	;
-	class_<QVector<ModifierApplication*>, boost::noncopyable>("ModifierApplicationQVector", no_init)
-		.def(QVector_OO_readonly_indexing_suite<ModifierApplication>())
-	;
-
 	ovito_abstract_class<DataSet, RefTarget>()
 		.add_property("filePath", make_function(&DataSet::filePath, return_value_policy<copy_const_reference>()), &DataSet::setFilePath)
 		.add_property("animationSettings", make_function(&DataSet::animationSettings, return_value_policy<ovito_object_reference>()))
@@ -115,7 +107,8 @@ BOOST_PYTHON_MODULE(PyScript)
 		.add_property("container", make_function(&DataSet::container, return_value_policy<ovito_object_reference>()))
 		.def("clearScene", &DataSet::clearScene)
 		.def("rescaleTime", &DataSet::rescaleTime)
-		.def("waitUntilSceneIsReady", &DataSet::waitUntilSceneIsReady, dataset_waitUntilSceneIsReady_overloads())
+		.def("waitUntilSceneIsReady", &DataSet::waitUntilSceneIsReady, DataSet_waitUntilSceneIsReady_overloads())
+		.def("renderScene", &DataSet::renderScene, DataSet_renderScene_overloads())
 	;
 
 	ovito_abstract_class<DataSetContainer, RefMaker>()
@@ -133,6 +126,7 @@ BOOST_PYTHON_MODULE(PyScript)
 	setupViewportBinding();
 	setupSceneBinding();
 	setupFileIOBinding();	
+	setupContainerBinding();
 }
 
 OVITO_REGISTER_PLUGIN_PYTHON_INTERFACE(PyScript);

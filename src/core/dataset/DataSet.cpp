@@ -254,7 +254,17 @@ bool DataSet::renderScene(RenderSettings* settings, Viewport* viewport, QSharedP
 {
 	OVITO_CHECK_OBJECT_POINTER(settings);
 	OVITO_CHECK_OBJECT_POINTER(viewport);
-	OVITO_CHECK_POINTER(frameBuffer);
+
+	// If the caller did not supply a frame buffer, get the default frame buffer for the output image, or create a temporary one if necessary.
+	if(!frameBuffer) {
+		if(Application::instance().guiMode()) {
+			frameBuffer = frameBufferWindow->frameBuffer();
+			frameBufferWindow = mainWindow()->frameBufferWindow();
+		}
+		if(!frameBuffer) {
+			frameBuffer.reset(new FrameBuffer(settings->outputImageWidth(), settings->outputImageHeight()));
+		}
+	}
 
 	// Get the selected scene renderer.
 	SceneRenderer* renderer = settings->renderer();

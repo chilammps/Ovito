@@ -255,6 +255,32 @@ public:
 	}
 };
 
+// Automatic Python list to container conversion.
+template<typename Container>
+struct python_to_container_conversion
+{
+	python_to_container_conversion() {
+		converter::registry::push_back(&convertible, &construct, type_id<Container>());
+	}
+
+	static void* convertible(PyObject* obj_ptr) {
+		// Check if Python object can be converted to target type.
+		if(PyList_Check(obj_ptr)) return obj_ptr;
+		return nullptr;
+	}
+
+	static void construct(PyObject* obj_ptr, converter::rvalue_from_python_stage1_data* data) {
+		list list_ = extract<list>(obj_ptr);
+		Container temp(len(list_));
+		for(typename Container::size_type i = 0; i < temp.size(); i++)
+			temp[i] = extract<typename Container::value_type>(list_[i]);
+		void* storage = ((converter::rvalue_from_python_storage<Container>*)data)->storage.bytes;
+		new (storage) Container(temp);
+		data->convertible = storage;
+	}
+};
+
+
 };	// End of namespace
 
 #endif

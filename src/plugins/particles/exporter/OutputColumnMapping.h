@@ -39,6 +39,18 @@ class OVITO_PARTICLES_EXPORT OutputColumnMapping : public std::vector<ParticlePr
 {
 public:
 
+	using std::vector<ParticlePropertyReference>::size_type;
+
+	/// Default constructor.
+	OutputColumnMapping() {}
+
+	/// Constructor.
+	OutputColumnMapping(size_type size) : std::vector<ParticlePropertyReference>(size) {}
+
+	/// Constructor.
+	template<class InputIt>
+	OutputColumnMapping(InputIt first, InputIt last) : std::vector<ParticlePropertyReference>(first, last) {}
+
 	/// \brief Saves the mapping to the given stream.
 	void saveToStream(SaveStream& stream) const;
 

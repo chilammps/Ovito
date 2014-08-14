@@ -89,11 +89,11 @@ OutputColumnWriter::OutputColumnWriter(const OutputColumnMapping& mapping, const
 
 		ParticlePropertyObject* property = pref.findInState(source);
 		if(property == nullptr && pref.type() != ParticleProperty::IdentifierProperty) {
-			throw Exception(tr("The selection of data columns to be written to the output file is invalid (file column %1). "
-			                   "The particle do not have a property named '%2'.").arg(i+1).arg(pref.name()));
+			throw Exception(tr("The set of output data columns is invalid (column %1). "
+			                   "The property '%2' does not exist.").arg(i+1).arg(pref.name()));
 		}
 		if(property) {
-			if(property->componentCount() <= std::max(1, pref.vectorComponent()))
+			if(property->componentCount() <= std::max(0, pref.vectorComponent()))
 				throw Exception(tr("The output vector component selected for column %1 is out of range. The particle property '%2' has only %3 component(s).").arg(i+1).arg(pref.name()).arg(property->componentCount()));
 			if(property->dataType() == QMetaType::Void)
 				throw Exception(tr("The particle property '%1' cannot be written to the output file because it is empty.").arg(pref.name()));

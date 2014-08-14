@@ -166,7 +166,7 @@ public:
 
 	/// \brief Rescales the vector to the given length.
 	/// \note If this is the null vector then an assertion message is generated in debug builds. In release builds the behavior is undefined.
-	inline void resize(T len) const {
+	inline void resize(T len) {
 		OVITO_ASSERT_MSG(*this != Zero(), "Vector2::resize", "Cannot resize a vector with zero length.");
 		*this *= (len / length());
 	}

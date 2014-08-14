@@ -1,9 +1,9 @@
-import math
 from ovito import *
 from ovito.particles import *
+import math
 
 # Query program version.
-print "This is Ovito", version
+print "This is Ovito version", version
 
 # Import a data file.
 node = load("../data/NanocrystallinePd.dump.gz")
@@ -17,40 +17,42 @@ node = load("../data/NanocrystallinePd.dump.gz")
 wait()
 
 # Apply a modifier to the dataset.
-node.applyModifier(ColorCodingModifier({ 
-	'sourceProperty' : "Potential Energy",
-	'colorGradient'  : ColorCodingHotGradient()
+node.modifiers.append(ColorCodingModifier({ 
+	"sourceProperty" : "Potential Energy",
+	"colorGradient"  : ColorCodingHotGradient()
 }))
 
-# Set up view, looking along the [2,3,-3] vector.
-dataset.viewportConfig.activeViewport.perspective((-100, -150, 150), (2, 3, -3), math.radians(60.0))
+# Set up view, looking along the [2,3,-3] vector from camera position (-100, -150, 150).
+vp = dataset.viewportConfig.activeViewport
+vp.perspective((-100, -150, 150), (2, 3, -3), math.radians(60.0))
 
 # Render a picture of the dataset.
-#activeViewport.render({
-#	filename    : "rendering.png",
-#	imageWidth  : 120,
-#	imageHeight : 120
-#})
+vp.render({
+	"filename"    : "image.png",
+	"imageWidth"  : 120,
+	"imageHeight" : 120
+})
 
 # Apply two more modifiers to delete some particles.
-#node.applyModifier(new SelectExpressionModifier({ expression : "PotentialEnergy < -3.9" }))
-#node.applyModifier(new DeleteParticlesModifier())
+node.modifiers.append(SelectExpressionModifier({ "expression" : "PotentialEnergy < -3.9" }))
+node.modifiers.append(DeleteParticlesModifier())
 
 # Print the modification pipeline of the selected node to the console.
-#print("Current modification pipeline:")
-#for(var i = 0; i < node.modifiers.length; i++)
-#	print("  " + node.modifiers[i])  
+print "Modification pipeline:"
+for mod in node.modifiers:
+	print "  ", mod
 	
 # Perform some analysis.
-#cna = new CommonNeighborAnalysisModifier({ cutoff : 3.2, adaptiveMode : false })
-#node.applyModifier(cna)
+cna = CommonNeighborAnalysisModifier({ "cutoff" : 3.2, "adaptiveMode" : False })
+node.modifiers.append(cna)
 
 # Wait until computation has been completed.
-#wait()
+wait()
 
 # Read out analysis results.
-#print("Number of FCC atoms: " + cna.structureCounts[CommonNeighborAnalysisModifier.FCC])
+print "Number of FCC atoms:", cna.structureCounts[CommonNeighborAnalysisModifier.StructureTypes.FCC]
 
 # Write processed atoms back to an output file.
-#save("exporteddata.dump", LAMMPSDumpExporter, 
-#	{ columnMapping: ["Position.X", "Position.Y", "Position.Z", "Structure Type"] })
+LAMMPSDumpExporter({ 
+	"columnMapping": ["Position.X", "Position.Y", "Position.Z", "Structure Type"] 
+}).exportToFile("exporteddata.dump")

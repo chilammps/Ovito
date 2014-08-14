@@ -108,6 +108,7 @@ IF(OVITO_BUILD_PLUGIN_PYSCRIPT)
 	LIST(APPEND OVITO_PARTICLES_SOURCE_FILES 
 		scripting/PythonInterface.cpp
 		scripting/ImporterBinding.cpp
+		scripting/ExporterBinding.cpp
 		scripting/ModifierBinding.cpp
 	)
 ENDIF()
