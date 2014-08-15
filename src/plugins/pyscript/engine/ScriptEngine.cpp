@@ -57,9 +57,7 @@ ScriptEngine::ScriptEngine(DataSet* dataset, QObject* parent, bool redirectOutpu
 		_mainNamespace = _prototypeMainNamespace.copy();
 
 		// Add a reference to the current dataset to the namespace.
-		object ovito_module = import("ovito");
-		object ovito_namespace = ovito_module.attr("__dict__");
-		ovito_namespace["dataset"] = ptr(dataset);
+		import("ovito").attr("dataset") = ptr(dataset);
 	}
 	catch(const error_already_set&) {
 		PyErr_Print();
@@ -143,9 +141,8 @@ void ScriptEngine::initializeInterpreter()
 
 		// Install output redirection.
 		object sys_module = import("sys");
-		object sys_namespace = sys_module.attr("__dict__");
-		sys_namespace["stdout"] = ptr(new InterpreterStdOutputRedirector());
-		sys_namespace["stderr"] = ptr(new InterpreterStdErrorRedirector());
+		sys_module.attr("stdout") = ptr(new InterpreterStdOutputRedirector());
+		sys_module.attr("stderr") = ptr(new InterpreterStdErrorRedirector());
 
 		// Install Ovito to Python exception translator.
 		auto toPythonExceptionTranslator = [](const Exception& ex) {
@@ -154,7 +151,7 @@ void ScriptEngine::initializeInterpreter()
 		register_exception_translator<Exception>(toPythonExceptionTranslator);
 
 		// Add directories containing OVITO's Python modules to sys.path.
-		list sys_path = extract<list>(sys_namespace["path"]);
+		list sys_path = extract<list>(sys_module.attr("path"));
 		for(const QDir& pluginDir : PluginManager::instance().pluginDirs()) {
 #ifndef Q_OS_WIN
 			sys_path.insert(0, QDir::toNativeSeparators(pluginDir.absolutePath() + "/python"));
@@ -191,7 +188,7 @@ int ScriptEngine::execute(const QString& commands)
 		throw Exception("There is already another script engine being active.");
 
 	try {
-		exec(commands.toLatin1().constData(), _mainNamespace, _mainNamespace);
+		exec(commands.toLocal8Bit().constData(), _mainNamespace, _mainNamespace);
 	    _activeEngine.storeRelease(nullptr);
 		return 0;
 	}
@@ -237,7 +234,7 @@ int ScriptEngine::executeFile(const QString& file)
 		QStringList scriptArguments = Application::instance().cmdLineParser().values("scriptarg");
 		for(const QString& a : scriptArguments)
 			argList.append(a);
-		import("sys").attr("__dict__")["argv"] = argList;
+		import("sys").attr("argv") = argList;
 
 	    exec_file(QDir::toNativeSeparators(file).toLatin1().constData(), _mainNamespace, _mainNamespace);
 	    _activeEngine.storeRelease(nullptr);

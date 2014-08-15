@@ -32,6 +32,7 @@ SET(OVITO_PYSCRIPT_SOURCE_FILES
 	binding/RenderingBinding.cpp
 	binding/LinearAlgebraBinding.cpp
 	binding/ContainerBinding.cpp
+	binding/AppBinding.cpp
 )
 
 # Generate plugin module.

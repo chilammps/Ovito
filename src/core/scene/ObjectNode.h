@@ -90,6 +90,15 @@ public:
 	/// \undoable
 	Q_INVOKABLE void applyModifier(Modifier* mod);
 
+	/// \brief This function blocks execution until the node's modification
+	///        pipeline has been fully evaluated.
+	/// \param time The animation time at which the modification pipeline should be evaluated.
+	/// \param message The text to be shown to the user while waiting.
+	/// \param progressDialog An existing progress dialog to use to show the message.
+	///                       If NULL, the function will show its own dialog box.
+	/// \return true on success; false if the operation has been canceled by the user.
+	bool waitUntilReady(TimePoint time, const QString& message, QProgressDialog* progressDialog = nullptr);
+
 	/// \brief Returns the title of this object.
 	virtual QString objectTitle() override;
 

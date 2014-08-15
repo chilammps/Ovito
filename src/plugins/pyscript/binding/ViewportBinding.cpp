@@ -30,8 +30,10 @@ namespace PyScript {
 using namespace boost::python;
 using namespace Ovito;
 
-void setupViewportBinding()
+BOOST_PYTHON_MODULE(PyScriptViewport)
 {
+	docstring_options docoptions(true, false);
+
 	ovito_class<Viewport, RefTarget>()
 		.add_property("isRendering", &Viewport::isRendering)
 		.add_property("isPerspectiveProjection", &Viewport::isPerspectiveProjection)
@@ -78,5 +80,7 @@ void setupViewportBinding()
 		.def("updateViewports", &ViewportConfiguration::updateViewports)
 	;
 }
+
+OVITO_REGISTER_PLUGIN_PYTHON_INTERFACE(PyScriptViewport);
 
 };

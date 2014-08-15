@@ -35,8 +35,10 @@ namespace PyScript {
 using namespace boost::python;
 using namespace Ovito;
 
-void setupRenderingBinding()
+BOOST_PYTHON_MODULE(PyScriptRendering)
 {
+	docstring_options docoptions(true, false);
+
 	ovito_class<RenderSettings, RefTarget>()
 		.add_property("renderer", make_function(&RenderSettings::renderer, return_value_policy<ovito_object_reference>()), &RenderSettings::setRenderer)
 		.add_property("renderingRangeType", &RenderSettings::renderingRangeType, &RenderSettings::setRenderingRangeType)
@@ -113,5 +115,8 @@ void setupRenderingBinding()
 		.value("ArrowShape", ArrowPrimitive::ArrowShape)
 	;
 }
+
+OVITO_REGISTER_PLUGIN_PYTHON_INTERFACE(PyScriptRendering);
+
 
 };

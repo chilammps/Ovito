@@ -66,6 +66,8 @@ BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(Vector_normalizeSafely_overloads, normali
 
 BOOST_PYTHON_MODULE(PyScriptLinearAlgebra)
 {
+	docstring_options docoptions(true, false);
+
 	class_<Vector3>("Vector3", init<FloatType, FloatType, FloatType>())
 		.def(init<FloatType>())
 		.def("__init__", make_constructor((Vector3* (*)())([]() { return new Vector3(Vector3::Zero()); })))

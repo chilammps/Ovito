@@ -45,6 +45,10 @@ OPTION(OVITO_BUILD_PLUGIN_SCRIPTING "Build the Qt Scripting plugin." "ON")
 OPTION(OVITO_BUILD_PLUGIN_PYSCRIPT "Build the Python Scripting plugin." "OFF")
 OPTION(OVITO_BUILD_PLUGIN_NETCDF "Build the NetCDF plugin." "OFF")
 
+# This is a global list of plugin targets that will be built.
+# It will get populated by the OVITO_PLUGIN macro.
+SET(OVITO_PLUGINS_LIST "")
+
 # Controls whether a static or a shared OVITO executable is built.
 # In a static build, all plugins (and most third-party libraries) are linked into one big executable,
 # which makes distribution easier. In a shared build, plugins are built as shared objects (dynamic link libraries)

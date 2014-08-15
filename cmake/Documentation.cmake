@@ -62,18 +62,21 @@ IF(OVITO_BUILD_DOCUMENTATION)
 		# Let OVITO's built in Python interpreter execute the Sphinx program.
 		# We cannot use the standard Python interpreter, because it cannot load OVITO's scripting modules, which is required to auto-generate the
 		# interface documentation from the docstrings.
-		ADD_CUSTOM_TARGET(scripting_documentation 
-					COMMAND "/nfshome/stuko/prj/ovito2/build/debug/bin/ovito" "--nogui" "--script" ${SPINX_PROCESSOR} "--scriptarg" "-b" "--scriptarg" "html" 
+		GET_PROPERTY(OVITO_MAIN_EXECUTABLE TARGET ${PROJECT_NAME} PROPERTY LOCATION)
+		ADD_CUSTOM_TARGET(scripting_documentation ALL 
+					COMMAND "${OVITO_MAIN_EXECUTABLE}" "--nogui" "--script" ${SPINX_PROCESSOR} "--scriptarg" "-b" "--scriptarg" "html" 
 					"--scriptarg" "-D" "--scriptarg" "version=${OVITO_VERSION_MAJOR}.${OVITO_VERSION_MINOR}" 
 					"--scriptarg" "-D" "--scriptarg" "release=${OVITO_VERSION_MAJOR}.${OVITO_VERSION_MINOR}.${OVITO_VERSION_REVISION}"
 					"--scriptarg" "." "--scriptarg" "${OVITO_SHARE_DIRECTORY}/doc/python/" 
 					WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/doc/python/"
 					COMMENT "Building scripting documentation files")
-					
-					#COMMAND "/nfshome/stuko/prj/ovito2/build/debug/bin/ovito" "--nogui" "--script" ${SPINX_PROCESSOR} "--" "-b" "html"
 	
-		#INSTALL(DIRECTORY "${OVITO_SHARE_DIRECTORY}/doc/manual/html/" DESTINATION "${OVITO_RELATIVE_SHARE_DIRECTORY}/doc/manual/html/")
-		ADD_DEPENDENCIES(${PROJECT_NAME} scripting_documentation)
+		INSTALL(DIRECTORY "${OVITO_SHARE_DIRECTORY}/doc/python/" DESTINATION "${OVITO_RELATIVE_SHARE_DIRECTORY}/doc/python/")
+		
+		# Run Sphinx only after OVITO and all plugins have been built.
+		ADD_DEPENDENCIES(scripting_documentation ${PROJECT_NAME} ${OVITO_PLUGINS_LIST})
+		# Build the scripting documentation every time the main documentation target is built.
+		ADD_DEPENDENCIES(scripting_documentation documentation)
 	ENDIF()
 
 ENDIF(OVITO_BUILD_DOCUMENTATION)

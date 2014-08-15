@@ -32,8 +32,10 @@ namespace PyScript {
 using namespace boost::python;
 using namespace Ovito;
 
-void setupContainerBinding()
+BOOST_PYTHON_MODULE(PyScriptContainers)
 {
+	docstring_options docoptions(true, false);
+
 	class_<QVector<DisplayObject*>, boost::noncopyable>("QVectorDisplayObject", no_init)
 		.def(QVector_OO_readonly_indexing_suite<DisplayObject>())
 	;
@@ -62,5 +64,7 @@ void setupContainerBinding()
 		.def(array_indexing_suite<QList<int>>())
 	;
 }
+
+OVITO_REGISTER_PLUGIN_PYTHON_INTERFACE(PyScriptContainers);
 
 };

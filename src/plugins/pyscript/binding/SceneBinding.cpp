@@ -36,8 +36,12 @@ namespace PyScript {
 using namespace boost::python;
 using namespace Ovito;
 
-void setupSceneBinding()
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(ObjectNode_waitUntilReady_overloads, waitUntilReady, 2, 3);
+
+BOOST_PYTHON_MODULE(PyScriptScene)
 {
+	docstring_options docoptions(true, false);
+
 	class_<PipelineStatus>("PipelineStatus", init<optional<PipelineStatus::StatusType, const QString&>>())
 		.add_property("type", &PipelineStatus::type)
 		.add_property("text", make_function(&PipelineStatus::text, return_value_policy<copy_const_reference>()))
@@ -100,7 +104,12 @@ void setupSceneBinding()
 		.def("removeModifier", &PipelineObject::removeModifier)
 	;
 
-	ovito_abstract_class<SceneNode, RefTarget>()
+	ovito_abstract_class<SceneNode, RefTarget>(
+			"Represents an object or group of objects in the three-dimensional scene.\n\n"
+
+			"A :py:class:`!SceneNode` is part of the scene graph, which is a tree structure with a root node. "
+			"The root node of the current scene graph can be accessed through the :py:attr:`~ovito.app.DataSet.sceneRoot` attribute of the :py:attr:`~ovito.app.DataSet` class."
+		)
 		.add_property("name", make_function(&SceneNode::name, return_value_policy<copy_const_reference>()), &SceneNode::setName)
 		.add_property("displayColor", make_function(&SceneNode::displayColor, return_value_policy<copy_const_reference>()), &SceneNode::setDisplayColor)
 		.add_property("parentNode", make_function(&SceneNode::parentNode, return_value_policy<ovito_object_reference>()))
@@ -115,12 +124,25 @@ void setupSceneBinding()
 		.def("worldBoundingBox", make_function(&SceneNode::worldBoundingBox, return_value_policy<copy_const_reference>()))
 	;
 
-	ovito_class<ObjectNode, SceneNode>()
+	ovito_class<ObjectNode, SceneNode>(
+			"Base class: :py:class:`ovito.scene.SceneNode`"
+			"\n\n"
+			"Represents an object in the three-dimensional scene."
+			"\n\n"
+			"An :py:class:`!ObjectNode` is created when a new object is inserted into the scene. "
+			"The node maintains a modification pipeline, which allows to apply modifiers to the object. "
+			"The results of the modification pipeline (which may be empty) are displayed by the "
+			":py:class:`!ObjectNode` in the three-dimensional scene."
+			"\n\n"
+			"The node's modification pipeline can be accessed through its :py:attr:`.modifiers` attribute. The source object, which "
+			"enters the modification pipeline, can be accessed through the :py:attr:`.source` attribute."
+			)
 		.add_property("sceneObject", make_function(&ObjectNode::sceneObject, return_value_policy<ovito_object_reference>()), &ObjectNode::setSceneObject)
-		.add_property("sourceObject", make_function(&ObjectNode::sourceObject, return_value_policy<ovito_object_reference>()))
+		.add_property("source", make_function(&ObjectNode::sourceObject, return_value_policy<ovito_object_reference>()))
 		.add_property("displayObjects", make_function(&ObjectNode::displayObjects, return_internal_reference<>()))
 		.def("evalPipeline", make_function(&ObjectNode::evalPipeline, return_value_policy<copy_const_reference>()))
 		.def("applyModifier", &ObjectNode::applyModifier)
+		.def("waitUntilReady", &ObjectNode::waitUntilReady, ObjectNode_waitUntilReady_overloads())
 	;
 
 	ovito_class<SceneRoot, SceneNode>()
@@ -145,5 +167,7 @@ void setupSceneBinding()
 		.def("setNode", &SelectionSet::setNode)
 	;
 }
+
+OVITO_REGISTER_PLUGIN_PYTHON_INTERFACE(PyScriptScene);
 
 };

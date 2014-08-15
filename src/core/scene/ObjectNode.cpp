@@ -23,6 +23,8 @@
 #include <core/scene/ObjectNode.h>
 #include <core/scene/objects/SceneObject.h>
 #include <core/scene/pipeline/PipelineObject.h>
+#include <core/gui/mainwin/MainWindow.h>
+#include <core/gui/app/Application.h>
 #include <core/viewport/Viewport.h>
 #include <core/dataset/UndoStack.h>
 
@@ -248,6 +250,59 @@ SceneObject* ObjectNode::sourceObject() const
 		sceneObj = sceneObj->getInputObject(0);
 	}
 	return sceneObj;
+}
+
+/******************************************************************************
+* This function blocks execution until the node's modification
+* pipeline has been fully evaluated.
+******************************************************************************/
+bool ObjectNode::waitUntilReady(TimePoint time, const QString& message, QProgressDialog* progressDialog)
+{
+	OVITO_ASSERT_MSG(QThread::currentThread() == QApplication::instance()->thread(), "ObjectNode::waitUntilReady", "This function may only be called from the GUI thread.");
+
+	// Check if pipeline is already complete.
+	if(evalPipeline(time).status().type() != PipelineStatus::Pending)
+		return true;
+
+	if(Application::instance().guiMode()) {
+
+		// Show a modal progress dialog to block user interface while waiting for the scene to become ready.
+		if(!progressDialog) {
+			QProgressDialog pdlg(dataset()->mainWindow());
+			pdlg.setWindowModality(Qt::WindowModal);
+			pdlg.setAutoClose(false);
+			pdlg.setAutoReset(false);
+			pdlg.setMinimumDuration(0);
+			pdlg.setValue(0);
+			pdlg.setLabelText(message);
+
+			// Poll pipeline until it becomes ready.
+			while(evalPipeline(time).status().type() == PipelineStatus::Pending) {
+				if(pdlg.wasCanceled())
+					return false;
+				QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents, 50);
+			}
+
+		}
+		else {
+			progressDialog->setLabelText(message);
+
+			// Poll pipeline until it becomes ready.
+			while(evalPipeline(time).status().type() == PipelineStatus::Pending) {
+				if(progressDialog->wasCanceled())
+					return false;
+				QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents, 50);
+			}
+		}
+	}
+	else {
+		// Poll pipeline until it becomes ready.
+		while(evalPipeline(time).status().type() == PipelineStatus::Pending) {
+			QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents, 50);
+		}
+	}
+
+	return true;
 }
 
 };

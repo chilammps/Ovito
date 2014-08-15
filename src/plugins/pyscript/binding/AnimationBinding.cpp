@@ -29,8 +29,10 @@ namespace PyScript {
 using namespace boost::python;
 using namespace Ovito;
 
-void setupAnimationBinding()
+BOOST_PYTHON_MODULE(PyScriptAnimation)
 {
+	docstring_options docoptions(true, false);
+
 	class_<TimeInterval>("TimeInterval", init<>())
 		.def(init<TimePoint>())
 		.def(init<TimePoint, TimePoint>())
@@ -81,5 +83,7 @@ void setupAnimationBinding()
 		.def("stopAnimationPlayback", &AnimationSettings::stopAnimationPlayback)
 	;
 }
+
+OVITO_REGISTER_PLUGIN_PYTHON_INTERFACE(PyScriptAnimation);
 
 };

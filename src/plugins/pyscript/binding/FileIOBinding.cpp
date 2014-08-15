@@ -35,8 +35,10 @@ using namespace Ovito;
 
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(FileExporter_exportToFile_overloads, exportToFile, 2, 3);
 
-void setupFileIOBinding()
+BOOST_PYTHON_MODULE(PyScriptFileIO)
 {
+	docstring_options docoptions(true, false);
+
 	class_<QUrl>("QUrl", init<>())
 		.def(init<const QString&>())
 		.def("clear", &QUrl::clear)
@@ -117,5 +119,7 @@ void setupFileIOBinding()
 		.def("setSource", (bool (LinkedFileObject::*)(QUrl, LinkedFileImporter*, bool))&LinkedFileObject::setSource)
 	;
 }
+
+OVITO_REGISTER_PLUGIN_PYTHON_INTERFACE(PyScriptFileIO);
 
 };

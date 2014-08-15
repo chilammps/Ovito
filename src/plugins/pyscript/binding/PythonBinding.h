@@ -76,7 +76,8 @@ class ovito_abstract_class : public class_<OvitoObjectClass, bases<BaseClass>, O
 {
 public:
 	/// Constructor.
-	ovito_abstract_class() : class_<OvitoObjectClass, bases<BaseClass>, OORef<OvitoObjectClass>, boost::noncopyable>(OvitoObjectClass::OOType.className(), no_init) {}
+	ovito_abstract_class(const char* docstring = nullptr)
+		: class_<OvitoObjectClass, bases<BaseClass>, OORef<OvitoObjectClass>, boost::noncopyable>(OvitoObjectClass::OOType.className(), docstring, no_init) {}
 };
 
 /// Defines a Python class for an OvitoObject-derived C++ class.
@@ -86,7 +87,7 @@ class ovito_class : public class_<OvitoObjectClass, bases<BaseClass>, OORef<Ovit
 public:
 
 	/// Constructor.
-	ovito_class() : class_<OvitoObjectClass, bases<BaseClass>, OORef<OvitoObjectClass>, boost::noncopyable>(OvitoObjectClass::OOType.className(), no_init) {
+	ovito_class(const char* docstring = nullptr) : class_<OvitoObjectClass, bases<BaseClass>, OORef<OvitoObjectClass>, boost::noncopyable>(OvitoObjectClass::OOType.className(), docstring, no_init) {
 		// Define a constructor for this Python class, which allows to create instances
 		// of the OvitoObject class from a script without passing a DataSet pointer.
 		this->def("__init__", make_constructor(&construct_instance));
