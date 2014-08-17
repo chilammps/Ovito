@@ -1,12 +1,45 @@
 MACRO(OVITO_ADD_PLUGIN_DEPENDENCY target_name dependency_name)
-
 	STRING(TOUPPER "${dependency_name}" uppercase_plugin_name)
 	IF(NOT OVITO_BUILD_PLUGIN_${uppercase_plugin_name})
 		MESSAGE(FATAL_ERROR "To build the ${target_name} plugin, the ${dependency_name} plugin has to be enabled too. Please set the OVITO_BUILD_PLUGIN_${uppercase_plugin_name} option to ON.")
 	ENDIF()
 
-	TARGET_LINK_LIBRARIES(${target_name} PUBLIC ${dependency_name})
-ENDMACRO(OVITO_ADD_PLUGIN_DEPENDENCY)
+	TARGET_LINK_LIBRARIES(${target_name} ${dependency_name})
+ENDMACRO()
+
+# Fix the library paths in the build directory.
+# This is required so that OVITO can be run from the build directory (and not only from the installation directory).
+MACRO(OVITO_FIXUP_BUILD_OBJECT target_name)
+	IF(APPLE)
+		IF(${ARGC} EQUAL 1)
+			SET(dependency_list "")
+			GET_PROPERTY(TARGET_LINK_LIBS TARGET ${target_name} PROPERTY LINK_LIBRARIES)
+		ELSE()
+			GET_PROPERTY(TARGET_LINK_LIBS TARGET ${ARGV1} PROPERTY LINK_LIBRARIES)
+		ENDIF()
+		FOREACH(dependency ${TARGET_LINK_LIBS})
+			IF(NOT IS_ABSOLUTE "${dependency}" AND NOT ";${dependency_list};" MATCHES ";${dependency};")
+				GET_PROPERTY(IS_IMPORTED TARGET ${dependency} PROPERTY IMPORTED)
+				IF(NOT ${IS_IMPORTED})
+					GET_PROPERTY(TARGET_TYPE TARGET ${dependency} PROPERTY TYPE)
+					IF(TARGET_TYPE STREQUAL "SHARED_LIBRARY")
+						LIST(APPEND dependency_list ${dependency})
+						GET_PROPERTY(TARGET_LOCATION TARGET ${dependency} PROPERTY LOCATION)
+						GET_FILENAME_COMPONENT(TARGET_FILE "${TARGET_LOCATION}" NAME)
+						IF(";${OVITO_PLUGINS_LIST};" MATCHES ";${dependency};")
+							ADD_CUSTOM_COMMAND(TARGET ${target_name} POST_BUILD 
+								COMMAND "install_name_tool" "-change" "${TARGET_FILE}" "@executable_path/plugins/${TARGET_FILE}" "$<TARGET_FILE:${target_name}>")
+						ELSE()
+							ADD_CUSTOM_COMMAND(TARGET ${target_name} POST_BUILD 
+								COMMAND "install_name_tool" "-change" "${TARGET_FILE}" "@executable_path/${TARGET_FILE}" "$<TARGET_FILE:${target_name}>")
+						ENDIF()
+						OVITO_FIXUP_BUILD_OBJECT(${target_name} ${dependency}) 
+					ENDIF()
+				ENDIF()
+			ENDIF()
+		ENDFOREACH()
+	ENDIF()
+ENDMACRO()
 
 # This macro adds a static library target to an executable target and makes sure that
 # the library is linked completely into the executable without removal of unreferenced
@@ -22,7 +55,7 @@ MACRO(LINK_WHOLE_LIBRARY _targetName _libraryTarget)
 		SET_TARGET_PROPERTIES(${_targetName} PROPERTIES LINK_FLAGS ${EXE_LINKER_OPTIONS})
 	ENDIF()
 	TARGET_LINK_LIBRARIES(${_targetName} ${_libraryTarget})
-ENDMACRO(LINK_WHOLE_LIBRARY)
+ENDMACRO()
 
 # Create a new target for a plugin.
 MACRO(OVITO_PLUGIN target_name)
@@ -78,7 +111,7 @@ MACRO(OVITO_PLUGIN target_name)
 	# Link plugin dependencies.
 	FOREACH(plugin_name ${plugin_dependencies})
 		OVITO_ADD_PLUGIN_DEPENDENCY(${target_name} ${plugin_name})
-	ENDFOREACH(plugin_name)
+	ENDFOREACH()
 
 	# Link optional plugin dependencies.
 	FOREACH(plugin_name ${optional_plugin_dependencies})
@@ -86,7 +119,7 @@ MACRO(OVITO_PLUGIN target_name)
 		IF(OVITO_BUILD_PLUGIN_${uppercase_plugin_name})
 			OVITO_ADD_PLUGIN_DEPENDENCY(${target_name} ${plugin_name})
 		ENDIF()
-	ENDFOREACH(plugin_name)
+	ENDFOREACH()
 	
 	IF(NOT OVITO_MONOLITHIC_BUILD)
 		# Set prefix and suffix of library name.
@@ -96,7 +129,7 @@ MACRO(OVITO_PLUGIN target_name)
 
 	IF(APPLE)
 		# Assign an absolute install path to this dynamic link library.
-		SET_TARGET_PROPERTIES(${target_name} PROPERTIES INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/${OVITO_RELATIVE_PLUGINS_DIRECTORY}")
+		# SET_TARGET_PROPERTIES(${target_name} PROPERTIES INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/${OVITO_RELATIVE_PLUGINS_DIRECTORY}")
 		# This is required to avoid error by install_name_tool.
 		SET_TARGET_PROPERTIES(${target_name} PROPERTIES LINK_FLAGS "-headerpad_max_install_names")
 	ENDIF(APPLE)
@@ -124,7 +157,9 @@ MACRO(OVITO_PLUGIN target_name)
 	LIST(APPEND OVITO_PLUGINS_LIST ${target_name})
 	SET(OVITO_PLUGINS_LIST "${OVITO_PLUGINS_LIST}" PARENT_SCOPE)
 
-ENDMACRO(OVITO_PLUGIN)
+	OVITO_FIXUP_BUILD_OBJECT(${target_name})
+
+ENDMACRO()
 
 # Fixes the Ovito installation bundle on MacOS.
 MACRO(OVITO_FIXUP_BUNDLE)

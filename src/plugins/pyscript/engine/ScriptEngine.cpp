@@ -128,8 +128,10 @@ void ScriptEngine::initializeInterpreter()
 					new (storage) QString(QString::fromWCharArray(reinterpret_cast<const wchar_t*>(value)));
 				else if(sizeof(Py_UNICODE) == sizeof(uint))
 					new (storage) QString(QString::fromUcs4(reinterpret_cast<const uint*>(value)));
+				else if(sizeof(Py_UNICODE) == sizeof(QChar))
+					new (storage) QString(reinterpret_cast<const QChar*>(value));
 				else
-					throw Exception(tr("The Unicode character size used by Python has an unsupported size."));
+					throw Exception(tr("The Unicode character size used by Python has an unsupported size: %1 bytes").arg(sizeof(Py_UNICODE)));
 				data->convertible = storage;
 			}
 		};

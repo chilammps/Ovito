@@ -50,6 +50,8 @@ QT5_USE_MODULES(${PROJECT_NAME} ${OVITO_REQUIRED_QT_MODULES})
 # This executable will be part of the installation package.
 INSTALL(TARGETS ${PROJECT_NAME} DESTINATION "${OVITO_RELATIVE_BINARY_DIRECTORY}")
 
+OVITO_FIXUP_BUILD_OBJECT(${PROJECT_NAME})
+
 IF(OVITO_MONOLITHIC_BUILD)
 
 	# Build a monolithic executable that includes everything.

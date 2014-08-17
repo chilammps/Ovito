@@ -646,7 +646,7 @@ public:
 			else {
 				QStringList names = ParticleProperty::standardPropertyComponentNames(type());
 				if(vectorComponent() < names.size())
-					QString("%1.%2").arg(name()).arg(names[vectorComponent()]);
+					return QString("%1.%2").arg(name()).arg(names[vectorComponent()]);
 			}
 		}
 		if(vectorComponent() < 0)
