@@ -40,7 +40,7 @@ using namespace boost::python;
 using namespace Ovito;
 using namespace PyScript;
 
-void setupExporterBinding()
+BOOST_PYTHON_MODULE(ParticlesExporter)
 {
 	class_<OutputColumnMapping>("OutputColumnMapping", init<>())
 		.def(vector_indexing_suite<OutputColumnMapping>())
@@ -80,5 +80,7 @@ void setupExporterBinding()
 		.value("Extended", XYZExporter::ExtendedFormat)
 	;
 }
+
+OVITO_REGISTER_PLUGIN_PYTHON_INTERFACE(ParticlesExporter);
 
 };

@@ -105,9 +105,9 @@ BOOST_PYTHON_MODULE(PyScriptScene)
 	;
 
 	ovito_abstract_class<SceneNode, RefTarget>(
-			"Represents an object or group of objects in the three-dimensional scene.\n\n"
+			"An object or group of objects in the three-dimensional scene.\n\n"
 
-			"A :py:class:`!SceneNode` is part of the scene graph, which is a tree structure with a root node. "
+			"A :py:class:`!SceneNode` is part of the scene graph, which is a tree data structure with a root node. "
 			"The root node of the current scene graph can be accessed through the :py:attr:`~ovito.app.DataSet.sceneRoot` attribute of the :py:attr:`~ovito.app.DataSet` class."
 		)
 		.add_property("name", make_function(&SceneNode::name, return_value_policy<copy_const_reference>()), &SceneNode::setName)

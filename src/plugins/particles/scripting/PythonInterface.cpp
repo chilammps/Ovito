@@ -38,10 +38,6 @@ using namespace boost::python;
 using namespace Ovito;
 using namespace PyScript;
 
-extern void setupImporterBinding();
-extern void setupExporterBinding();
-extern void setupModifierBinding();
-
 BOOST_PYTHON_MODULE(Particles)
 {
 	enum_<ParticleProperty::Type>("ParticlePropertyType")
@@ -179,10 +175,6 @@ BOOST_PYTHON_MODULE(Particles)
 		.add_property("isCompletelySolid", &SurfaceMesh::isCompletelySolid, &SurfaceMesh::setCompletelySolid)
 		.def("clearMesh", &SurfaceMesh::clearMesh)
 	;
-
-	setupImporterBinding();
-	setupExporterBinding();
-	setupModifierBinding();
 }
 
 OVITO_REGISTER_PLUGIN_PYTHON_INTERFACE(Particles);

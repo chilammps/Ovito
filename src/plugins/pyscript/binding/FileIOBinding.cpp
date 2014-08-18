@@ -101,13 +101,60 @@ BOOST_PYTHON_MODULE(PyScriptFileIO)
 		.def("exportToFile", &FileExporter::exportToFile, FileExporter_exportToFile_overloads())
 	;
 
-	ovito_class<LinkedFileObject, SceneObject>()
-		.add_property("importer", make_function(&LinkedFileObject::importer, return_value_policy<ovito_object_reference>()))
-		.add_property("sourceUrl", make_function(&LinkedFileObject::sourceUrl, return_value_policy<copy_const_reference>()))
+	ovito_class<LinkedFileObject, SceneObject>(
+			"An object that is responsible for feeding an external data file into OVITO's modification pipeline."
+			"\n\n"
+			"An instance of this class is created by the :py:func:`ovito.importData` function to hook "
+			"the external simulation file into the scene. The instance is assigned to the :py:attr:`~ovito.scene.ObjectNode.source` "
+			"attribute of the :py:class:`~ovito.scene.ObjectNode`, which is returned by :py:func:`ovito.importData`. "
+			"The ``LinkedFileObject`` is responsible for managing the loading of the external file and for inserting the data into the "
+			"modification pipeline."
+			"\n\n"
+			"Its :py:meth:`.load` method allows to hook a different external file into the existing modification pipeline. "
+			"\n\n"
+			"The actual loading and parsing the external file is not performed by the ``LinkedFileObject`` itself. For this, a dedicated "
+			"file importer object is responsible, which is accessible through the :py:attr:`.importer` attribute. When loading a new file, "
+			"the ``LinkedFileObject`` automatically creates the right file importer depending on the file's format (which is auto-detected). "
+			"Note that the importer might have additional parameter attributes, which further control the loading of specific file formats."
+			"\n\n"
+			"**Example**"
+			"\n\n"
+			"The following script accepts a list of data files on the command line. It loads them one by one and performs a common neighbor analysis "
+			"to determine the number of FCC atoms in each structure::"
+			"\n\n"
+			"    import sys\n"
+			"    import ovito\n"
+			"    \n"
+			"    node = None\n"
+			"    for fn in sys.argv[1:]:\n\n"
+			"        if not node:\n"
+			"            # Import the first file using importData().\n"
+			"            # This creates the ObjectNode and sets up the modification pipeline.\n"
+			"            node = ovito.importData(fn)\n"
+			"            # Insert a modifier into the pipeline.\n"
+			"            cnaMod = CommonNeighborAnalysisModifier(adaptiveMode=True)\n"
+			"            node.modifiers.append(cnaMod)\n"
+			"        else:\n"
+			"            # To load subsequent files, call the load() function of the LinkedFileObject.\n"
+			"            node.source.load(fn)\n\n"
+			"        # Wait until the results of the analysis modifier are available.\n"
+			"        node.wait()\n"
+			"        print \"Structure %s contains %i FCC atoms.\" % (fn, cnaMod.structureCounts[CommonNeighborAnalysisModifier.StructureTypes.FCC])\n")
+		.add_property("importer", make_function(&LinkedFileObject::importer, return_value_policy<ovito_object_reference>()),
+				"The file importer object that is responsible for parsing the external data file.")
+		.add_property("sourceUrl", make_function(&LinkedFileObject::sourceUrl, return_value_policy<copy_const_reference>()),
+				"The path or URL of the loaded file (read-only).")
 		.add_property("status", &LinkedFileObject::status)
-		.add_property("numberOfFrames", &LinkedFileObject::numberOfFrames)
-		.add_property("loadedFrame", &LinkedFileObject::loadedFrame)
-		.add_property("adjustAnimationIntervalEnabled", &LinkedFileObject::adjustAnimationIntervalEnabled, &LinkedFileObject::setAdjustAnimationIntervalEnabled)
+		.add_property("numberOfFrames", &LinkedFileObject::numberOfFrames,
+				"The number of frames the loaded file or file sequence contains (read-only).")
+		.add_property("loadedFrame", &LinkedFileObject::loadedFrame,
+				"The index of the frame that is currently loaded (read-only).")
+		.add_property("adjustAnimationIntervalEnabled", &LinkedFileObject::adjustAnimationIntervalEnabled, &LinkedFileObject::setAdjustAnimationIntervalEnabled,
+				"Boolean flag that controls whether the animation length in OVITO is automatically adjusted to match the number of frames in the "
+				"loaded file or file sequence. In some situations it is necessary to turn this off, for example, if more than one data file is imported into "
+				"OVITO simultaneously, but their numbers of frames do not match."
+				"\n\n"
+				"Default: ``True``\n")
 		.add_property("sceneObjects", make_function(&LinkedFileObject::sceneObjects, return_internal_reference<>()))
 		.def("refreshFromSource", &LinkedFileObject::refreshFromSource)
 		.def("updateFrames", &LinkedFileObject::updateFrames)

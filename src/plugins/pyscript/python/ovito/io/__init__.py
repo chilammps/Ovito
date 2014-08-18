@@ -1,11 +1,20 @@
 # Load the native module.
 from PyScriptFileIO import *
 
-def _LinkedFileObject_load(self, source_url, params = {}):
-    """Loads a new file into the LinkedFileObject."""
+def _LinkedFileObject_load(self, location, **params):
+    """ Loads a different external data file.
+    
+        The function first detects the format of the file and creates an importer object that
+        can read the format.
+        
+        Like the :py:func:`ovito.importData` function, this function accepts additional
+        keyword arguments that are forwarded to the format-specific file importer.
+        
+        :param str location: The file to load. This can be a local file path or a remote sftp:// URL.
+    """
 
     # Determine the file's format.
-    importer = ImportExportManager.instance.autodetectFileFormat(self.dataset, source_url)
+    importer = ImportExportManager.instance.autodetectFileFormat(self.dataset, location)
     if not importer:
         raise RuntimeError("Could not detect the file format. The format might not be supported.")
     
@@ -20,13 +29,13 @@ def _LinkedFileObject_load(self, source_url, params = {}):
         importer.__setattr__(key, params[key])
 
     # Load new data file.
-    if not self.setSource(source_url, importer, False):
+    if not self.setSource(location, importer, False):
         raise RuntimeError("Operation has been canceled by the user.")
 LinkedFileObject.load = _LinkedFileObject_load
 
 # Implement the 'sourceUrl' property of LinkedFileObject, which returns or sets the currently loaded file path.
 def _get_LinkedFileObject_sourceUrl(self, _originalGetterMethod = LinkedFileObject.sourceUrl):
-    """ Returns the URL of the file referenced by this LinkedFileObject. """    
+    """ The path or URL of the loaded file. """    
     return _originalGetterMethod.__get__(self)
 def _set_LinkedFileObject_sourceUrl(self, url):
     """ Sets the URL of the file referenced by this LinkedFileObject. """

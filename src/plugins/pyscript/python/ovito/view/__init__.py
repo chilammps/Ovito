@@ -3,16 +3,13 @@ from PyScriptViewport import *
 
 import ovito.render
 
-def _Viewport_perspective(self, cameraPos, cameraDir, fov):
-    """ Sets up a viewport view with perspective projection. """
-    self.viewType = ViewType.PERSPECTIVE
-    self.cameraPosition = cameraPos
-    self.cameraDirection = cameraDir
-    self.fieldOfView = fov
-Viewport.perspective = _Viewport_perspective
-
 def _Viewport_render(self, renderSettings = None):
-    """ Renders an image or movie of the the viewport's view. """
+    """ Renders an image or movie of the the viewport's view.
+    
+        :param renderSettings: A custom render settings object. If ``None``, the global render settings are used (see :py:attr:`ovito.app.DataSet.renderSettings` attribute).
+        :type renderSettings: :py:class:`~ovito.render.RenderSettings`
+        :returns: ``True`` on success; ``False`` if operation has been canceled by the user.
+    """
     if renderSettings == None:
         renderSettings = self.dataset.renderSettings
     elif isinstance(renderSettings, dict):

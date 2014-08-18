@@ -19,12 +19,13 @@ import ovito.scene
 import ovito.render
 import ovito.io
 
-# Load bindings of plugins.
-# Scan directory containing the main 'ovito' module for subpackages.
-base_module_dir = os.path.dirname(__file__)
-for item in os.listdir(base_module_dir):
-	if os.path.isdir(os.path.join(base_module_dir, item)):
-		__import__("ovito.%s" % item)
+# Load all OVITO modules packages. This is required
+# to make all Boost.Python bindings available.
+import pkgutil
+import importlib
+for module_loader, name, ispkg in pkgutil.walk_packages(__path__, __name__ + '.'):
+	print "Loading module", name
+	importlib.import_module(name)
 		
 def importData(location, importMode = "AddToScene", **params):
 	""" Imports an external data file. 
@@ -41,17 +42,16 @@ def importData(location, importMode = "AddToScene", **params):
 				
 		The ``importData()`` function passes additional keyword parameters on to the format-specific file importer.
 			
-		:param location: The file to import. This can be a local file path or a remote sftp:// URL.
-		:type location: str
-		:param importMode: Determines how the imported data is inserted into the current scene. 
+		:param str location: The file to import. This can be a local file path or a remote sftp:// URL.
+		:param str importMode: Determines how the imported data is inserted into the current scene. 
 		                   
 		                   * ``AddToScene`` (default): A new :py:class:`~ovito.scene.ObjectNode` is added to the scene.
 		                   * ``ReplaceSelected``: The source object of the currently selected node is updated to reference the new file. 
 		                     Existing modifiers are kept. 
 		                   * ``ResetScene``: All existing nodes are deleted from the scene before importing the data.
-		                   
-		:type importMode: str
-		:returns: :py:class:`ovito.scene.ObjectNode` -- The scene node that has been created for the imported data.
+	                   
+		:returns: The scene node that has been created for the imported data.
+		:rtype: :py:class:`ovito.scene.ObjectNode`
 	"""
 	
 	if isinstance(importMode, basestring):

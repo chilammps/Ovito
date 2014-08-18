@@ -107,9 +107,9 @@ def _ObjectNode_wait(self, msgText = None):
         in the node's modification pipeline. This method will ensure that the modifiers have been computed and their result data is
         up to date.
                
-        :param msgText: An optional text that will be shown to the user while waiting for the operation to finish.
-        :type msgText: str
-        :returns: bool -- True if successful, False if the operation has been canceled by the user.
+        :param str msgText: An optional text that will be shown to the user while waiting for the operation to finish.
+        :returns: True if successful, false if the operation has been canceled by the user.
+        :rtype: bool
     """
     if not msgText: msgText = "Script is waiting for scene graph to become ready." 
     return self.waitUntilReady(self.dataset.animationSettings.time, msgText)

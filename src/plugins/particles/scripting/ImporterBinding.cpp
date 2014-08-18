@@ -43,7 +43,7 @@ using namespace boost::python;
 using namespace Ovito;
 using namespace PyScript;
 
-void setupImporterBinding()
+BOOST_PYTHON_MODULE(ParticlesImporter)
 {
 	class_<InputColumnMapping>("InputColumnMapping", init<>())
 		.add_property("columnCount", &InputColumnMapping::size, (void (InputColumnMapping::*)(InputColumnMapping::size_type))&InputColumnMapping::resize)
@@ -169,7 +169,8 @@ void setupImporterBinding()
 
 	ovito_class<POSCARImporter, ParticleImporter>()
 	;
-
 }
+
+OVITO_REGISTER_PLUGIN_PYTHON_INTERFACE(ParticlesImporter);
 
 };

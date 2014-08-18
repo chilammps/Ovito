@@ -77,4 +77,4 @@ IF(WIN32)
 ENDIF()
 
 # Install the Python source files that belong to the plugin and which provide the scripting interface.
-ADD_CUSTOM_COMMAND(TARGET Particles POST_BUILD COMMAND ${CMAKE_COMMAND} "-E" copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/resources/python/" "${OVITO_PLUGINS_DIRECTORY}/python/")
+ADD_CUSTOM_COMMAND(TARGET NetCDFImporter POST_BUILD COMMAND ${CMAKE_COMMAND} "-E" copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/resources/python/" "${OVITO_PLUGINS_DIRECTORY}/python/")
