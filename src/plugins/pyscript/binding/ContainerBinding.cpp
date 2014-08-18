@@ -25,6 +25,7 @@
 #include <core/scene/SceneNode.h>
 #include <core/scene/ObjectNode.h>
 #include <core/scene/display/DisplayObject.h>
+#include <core/viewport/Viewport.h>
 #include "PythonBinding.h"
 
 namespace PyScript {
@@ -35,6 +36,11 @@ using namespace Ovito;
 BOOST_PYTHON_MODULE(PyScriptContainers)
 {
 	docstring_options docoptions(true, false);
+
+	class_<QVector<Viewport*>, boost::noncopyable>("QVectorViewport", no_init)
+		.def(QVector_OO_readonly_indexing_suite<Viewport>())
+	;
+	python_to_container_conversion<QVector<Viewport*>>();
 
 	class_<QVector<DisplayObject*>, boost::noncopyable>("QVectorDisplayObject", no_init)
 		.def(QVector_OO_readonly_indexing_suite<DisplayObject>())

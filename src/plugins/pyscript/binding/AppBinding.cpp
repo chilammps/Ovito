@@ -86,16 +86,21 @@ BOOST_PYTHON_MODULE(PyScriptApp)
 	;
 
 	ovito_abstract_class<DataSet, RefTarget>(
-			"A container holding all data associated with an OVITO program session."
+			"A container object holding all data associated with an OVITO program session. "
+			"It provides access to the scene data, the viewports, the current selection, and the animation settings. "
+			"Basically everything that gets saved in an OVITO file. "
 			"\n\n"
-			"It provides access to the scene data, the viewports, the current selection, and the animation settings."
-			"\n\n"
-			"There exists a global instance of this class, which can be accessed via the :py:data:`ovito.dataset` attribute.")
-		.add_property("sceneRoot", make_function(&DataSet::sceneRoot, return_value_policy<ovito_object_reference>()), "The root :py:class:`~ovito.scene.SceneNode` of the scene graph.")
+			"There exists exactly one instance of this class, which can be accessed via the :py:data:`ovito.dataset` module-level attribute.")
+		.add_property("sceneRoot", make_function(&DataSet::sceneRoot, return_value_policy<ovito_object_reference>()),
+				"The root :py:class:`~ovito.scene.SceneNode` of the scene graph. This provides access to the objects "
+				"in the three-dimensional scene.")
 		.add_property("filePath", make_function(&DataSet::filePath, return_value_policy<copy_const_reference>()), &DataSet::setFilePath)
-		.add_property("animationSettings", make_function(&DataSet::animationSettings, return_value_policy<ovito_object_reference>()), "An :py:class:`~ovito.anim.AnimationSettings` object, which manages various settings related to animation such as the number of frames, the current frame, playback speed etc.")
-		.add_property("viewportConfig", make_function(&DataSet::viewportConfig, return_value_policy<ovito_object_reference>()), "The :py:class:`~ovito.viewport.ViewportConfiguration` object, which provides access to the list of viewports.")
-		.add_property("renderSettings", make_function(&DataSet::renderSettings, return_value_policy<ovito_object_reference>()), "A :py:class:`~ovito.render.RenderSettings` object, which stores the current settings for rendering pictures and movies of the scene.")
+		.add_property("anim", make_function(&DataSet::animationSettings, return_value_policy<ovito_object_reference>()),
+				"An :py:class:`~ovito.anim.AnimationSettings` object, which manages various animation-related settings such as the number of frames, the current frame, playback speed etc.")
+		.add_property("viewports", make_function(&DataSet::viewportConfig, return_value_policy<ovito_object_reference>()),
+				"A :py:class:`~ovito.view.ViewportConfiguration` object that contains OVITO's 3d viewports.")
+		.add_property("renderSettings", make_function(&DataSet::renderSettings, return_value_policy<ovito_object_reference>()),
+				"A :py:class:`~ovito.render.RenderSettings` object, which stores the current settings for rendering pictures and movies.")
 		.add_property("selection", make_function(&DataSet::selection, return_value_policy<ovito_object_reference>()))
 		.add_property("container", make_function(&DataSet::container, return_value_policy<ovito_object_reference>()))
 		.def("clearScene", &DataSet::clearScene)

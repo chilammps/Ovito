@@ -25,6 +25,8 @@
 #include <plugins/pyscript/PyScript.h>
 #include <plugins/pyscript/engine/ScriptEngine.h>
 
+#include <boost/python/raw_function.hpp>
+
 namespace PyScript {
 
 using namespace boost::python;
@@ -88,38 +90,59 @@ public:
 
 	/// Constructor.
 	ovito_class(const char* docstring = nullptr) : class_<OvitoObjectClass, bases<BaseClass>, OORef<OvitoObjectClass>, boost::noncopyable>(OvitoObjectClass::OOType.className(), docstring, no_init) {
-		// Define a constructor for this Python class, which allows to create instances
-		// of the OvitoObject class from a script without passing a DataSet pointer.
-		this->def("__init__", make_constructor(&construct_instance));
-		// Also define a constructor that takes a dictionary, which is used to initialize
+		// Define a constructor that takes a variable number of keyword arguments, which are used to initialize
 		// properties of the newly created object.
-		this->def("__init__", make_constructor(&construct_instance_with_params));
+		this->def("__init__", raw_constructor(&construct_instance_with_params));
 	}
 
 private:
 
-	/// This constructs a new instance of the OvitoObject class and passes the DataSet
-	/// of the active script engine to its constructor.
-	static OORef<OvitoObjectClass> construct_instance() {
-		ScriptEngine* engine = ScriptEngine::activeEngine();
-		if(!engine) throw Exception("Invalid interpreter state. There is no active script engine.");
-		DataSet* dataset = engine->dataset();
-		if(!dataset) throw Exception("Invalid interpreter state. There is no active dataset.");
-		return new OvitoObjectClass(dataset);
+	template <class F>
+	struct raw_constructor_dispatcher {
+		raw_constructor_dispatcher(F f) : f(make_constructor(f)) {}
+		PyObject* operator()(PyObject* args, PyObject* keywords) {
+			boost::python::detail::borrowed_reference_t* ra = boost::python::detail::borrowed_reference(args);
+			object a(ra);
+			return incref(object(f(
+					  object(a[0])
+					, object(a.slice(1, len(a)))
+					, keywords ? dict(boost::python::detail::borrowed_reference(keywords)) : dict()
+			)).ptr());
+		}
+	private:
+		object f;
+	};
+
+	template <class F>
+	object raw_constructor(F f, std::size_t min_args = 0) {
+		return boost::python::detail::make_raw_function(
+			boost::python::objects::py_function(
+				raw_constructor_dispatcher<F>(f)
+				, boost::mpl::vector2<void, object>()
+				, min_args + 1
+				, (std::numeric_limits<unsigned>::max)()
+			)
+		);
 	}
 
 	/// This constructs a new instance of the OvitoObject class and initializes
 	/// its properties using the values stored in a dictionary.
-	static OORef<OvitoObjectClass> construct_instance_with_params(const dict& params) {
+	static OORef<OvitoObjectClass> construct_instance_with_params(const tuple& args, const dict& kwargs) {
+		if(len(args) != 0)
+			throw Exception("Constructor function accepts only keyword arguments.");
 		// Construct the C++ object instance.
-		OORef<OvitoObjectClass> obj = construct_instance();
+		ScriptEngine* engine = ScriptEngine::activeEngine();
+		if(!engine) throw Exception("Invalid interpreter state. There is no active script engine.");
+		DataSet* dataset = engine->dataset();
+		if(!dataset) throw Exception("Invalid interpreter state. There is no active dataset.");
+		OORef<OvitoObjectClass> obj(new OvitoObjectClass(dataset));
 		// Create a Python wrapper for the object so we can set its attributes.
 		object pyobj(obj);
 		// Iterate over the keys of the dictionary and set attributes of the
 		// newly created object.
 		PyObject *key, *value;
 		Py_ssize_t pos = 0;
-		while(PyDict_Next(params.ptr(), &pos, &key, &value)) {
+		while(PyDict_Next(kwargs.ptr(), &pos, &key, &value)) {
 			// Check if the attribute exists. Otherwise raise error.
 			if(!PyObject_HasAttr(pyobj.ptr(), key)) {
 				const char* keystr = extract<char const*>(object(handle<>(borrowed(key))));

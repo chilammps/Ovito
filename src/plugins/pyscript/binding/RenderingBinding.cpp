@@ -39,16 +39,33 @@ BOOST_PYTHON_MODULE(PyScriptRendering)
 {
 	docstring_options docoptions(true, false);
 
-	ovito_class<RenderSettings, RefTarget>()
-		.add_property("renderer", make_function(&RenderSettings::renderer, return_value_policy<ovito_object_reference>()), &RenderSettings::setRenderer)
+	ovito_class<RenderSettings, RefTarget>(
+			"Stores settings and parameters for rendering images and movies."
+			"\n\n"
+			"There exists an instance of this class which can be accessed via the :py:attr:`~ovito.app.DataSet.renderSettings` attribute of the :py:attr:`~ovito.app.DataSet`.\n"
+			"This global settings object is the one the user can manipulate on the Render tab of the main window. In addition, it is possible "
+			"to construct new ``RenderSettings`` instances from a script if necessary.")
+		.add_property("renderer", make_function(&RenderSettings::renderer, return_value_policy<ovito_object_reference>()), &RenderSettings::setRenderer,
+				"The renderer that will be used to generate the image or movie. Depending on the selected renderer you "
+				"can use this to set additional parameters such as the anti-aliasing level."
+				"\n\n"
+				"See the :py:class:`~ovito.render.StandardSceneRenderer` and :py:class:`~ovito.tachyon.TachyonRenderer` classes "
+				"for a list of renderer-specific parameters.")
 		.add_property("renderingRangeType", &RenderSettings::renderingRangeType, &RenderSettings::setRenderingRangeType)
-		.add_property("imageWidth", &RenderSettings::outputImageWidth, &RenderSettings::setOutputImageWidth)
-		.add_property("imageHeight", &RenderSettings::outputImageHeight, &RenderSettings::setOutputImageHeight)
+		.add_property("imageWidth", &RenderSettings::outputImageWidth, &RenderSettings::setOutputImageWidth,
+				"The width of the output image in pixels.")
+		.add_property("imageHeight", &RenderSettings::outputImageHeight, &RenderSettings::setOutputImageHeight,
+				"The height of the output image in pixels.")
 		.add_property("outputImageAspectRatio", &RenderSettings::outputImageAspectRatio)
-		.add_property("filename", make_function(&RenderSettings::imageFilename, return_value_policy<copy_const_reference>()), &RenderSettings::setImageFilename)
-		.add_property("backgroundColor", &RenderSettings::backgroundColor, &RenderSettings::setBackgroundColor)
+		.add_property("filename", make_function(&RenderSettings::imageFilename, return_value_policy<copy_const_reference>()), &RenderSettings::setImageFilename,
+				"A string specifying the file name under which the rendered image or movie will be saved.\n"
+				"This only has an effect if :py:attr:`saveToFile` is set to ``True``.")
+		.add_property("backgroundColor", &RenderSettings::backgroundColor, &RenderSettings::setBackgroundColor,
+				"Controls the background color of the rendered image.")
 		.add_property("generateAlphaChannel", &RenderSettings::generateAlphaChannel, &RenderSettings::setGenerateAlphaChannel)
-		.add_property("saveToFile", &RenderSettings::saveToFile, &RenderSettings::setSaveToFile)
+		.add_property("saveToFile", &RenderSettings::saveToFile, &RenderSettings::setSaveToFile,
+				"A boolean flag controlling whether the rendered image will be saved to a file. If ``False``, the "
+				"rendered image will only be shown to the user (only in graphical mode) and not saved to disk.")
 		.add_property("skipExistingImages", &RenderSettings::skipExistingImages, &RenderSettings::setSkipExistingImages)
 		.add_property("customRangeStart", &RenderSettings::customRangeStart, &RenderSettings::setCustomRangeStart)
 		.add_property("customRangeEnd", &RenderSettings::customRangeEnd, &RenderSettings::setCustomRangeEnd)
@@ -67,7 +84,8 @@ BOOST_PYTHON_MODULE(PyScriptRendering)
 	;
 
 	ovito_class<StandardSceneRenderer, SceneRenderer>()
-		.add_property("antialiasingLevel", &StandardSceneRenderer::antialiasingLevel, &StandardSceneRenderer::setAntialiasingLevel)
+		.add_property("antialiasingLevel", &StandardSceneRenderer::antialiasingLevel, &StandardSceneRenderer::setAntialiasingLevel,
+				"A non-negative integer controlling the level of antialiasing.")
 	;
 
 	ovito_abstract_class<NonInteractiveSceneRenderer, SceneRenderer>()

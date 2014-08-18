@@ -58,14 +58,28 @@ BOOST_PYTHON_MODULE(PyScriptAnimation)
 		.def(self != TimeInterval())
 	;
 
-	ovito_class<AnimationSettings, RefTarget>()
+	ovito_class<AnimationSettings, RefTarget>(
+			"Stores animation-related settings."
+			"\n\n"
+			"You normally access an instance of this class via the :py:attr:`~ovito.app.DataSet.anim` attribute of the :py:attr:`~ovito.app.DataSet`."
+			"\n\n"
+			"You can use this object to query or set the current animation frame and animation length. "
+			"For example, to step through each animation frame and perform some action::"
+			"\n\n"
+			"    for frame in range(0, dataset.anim.lastFrame + 1):\n"
+			"        dataset.anim.currentFrame = frame    # Jump to the animation frame.\n"
+			"        performSomething()\n"
+			"\n")
 		.add_property("time", &AnimationSettings::time, &AnimationSettings::setTime)
 		.add_property("animationInterval", make_function(&AnimationSettings::animationInterval, return_value_policy<copy_const_reference>()), &AnimationSettings::setAnimationInterval)
 		.add_property("framesPerSecond", &AnimationSettings::framesPerSecond, &AnimationSettings::setFramesPerSecond)
 		.add_property("ticksPerFrame", &AnimationSettings::ticksPerFrame, &AnimationSettings::setTicksPerFrame)
-		.add_property("currentFrame", &AnimationSettings::currentFrame, &AnimationSettings::setCurrentFrame)
-		.add_property("lastFrame", &AnimationSettings::lastFrame, &AnimationSettings::setLastFrame)
-		.add_property("firstFrame", &AnimationSettings::firstFrame, &AnimationSettings::setFirstFrame)
+		.add_property("currentFrame", &AnimationSettings::currentFrame, &AnimationSettings::setCurrentFrame,
+				"The current animation frame that is shown in the viewports.")
+		.add_property("lastFrame", &AnimationSettings::lastFrame, &AnimationSettings::setLastFrame,
+				"The index of the last animation frame. You can change this property to set a new animation length.")
+		.add_property("firstFrame", &AnimationSettings::firstFrame, &AnimationSettings::setFirstFrame,
+				"The index of the first animation frame (usually 0).")
 		.add_property("playbackSpeed", &AnimationSettings::playbackSpeed, &AnimationSettings::setPlaybackSpeed)
 		.add_property("isAnimating", &AnimationSettings::isAnimating)
 		.add_property("autoKeyMode", &AnimationSettings::autoKeyMode, &AnimationSettings::setAutoKeyMode)

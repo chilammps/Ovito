@@ -9,6 +9,11 @@ def _get_ObjectNode_modifiers(self):
        can add and remove modifiers from this list as needed. The first modifier in the list is
        evaluated first, and its output is passed to the second modifier and so on. The output
        of the last modifier is displayed in the viewports. 
+       
+       Usage example::
+       
+           modifier = WrapPeriodicImagesModifier()
+           dataset.selectedNode.modifiers.append(modifier)
     """    
     
     class ObjectNodeModifierList:

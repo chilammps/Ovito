@@ -1,6 +1,7 @@
 from ovito import *
 from ovito.linalg import *
 from ovito.particles import *
+from ovito.render import *
 import math
 
 # Query program version.
@@ -8,6 +9,9 @@ print "This is Ovito version", version
 
 # Import a data file.
 node = importData("../data/NanocrystallinePd.dump.gz")
+
+for vp in dataset.viewports:
+	print vp.title
 
 # Block execution of the script until the node's modification pipeline is ready, that is, until 
 # the input data has been completely loaded.
@@ -18,24 +22,24 @@ node = importData("../data/NanocrystallinePd.dump.gz")
 node.wait()
 
 # Apply a modifier to the dataset.
-node.modifiers.append(ColorCodingModifier({ 
-	"sourceProperty" : "Potential Energy",
-	"colorGradient"  : ColorCodingHotGradient()
-}))
+node.modifiers.append(ColorCodingModifier(
+	sourceProperty = "Potential Energy",
+	colorGradient = ColorCodingHotGradient()
+))
 
 # Set up view, looking along the [2,3,-3] vector from camera position (-100, -150, 150).
-vp = dataset.viewportConfig.activeViewport
+vp = dataset.viewports.activeViewport
 vp.perspective((-100, -150, 150), (2, 3, -3), math.radians(60.0))
 
 # Render a picture of the dataset.
-vp.render({
-	"filename"    : "image.png",
-	"imageWidth"  : 120,
-	"imageHeight" : 120
-})
+vp.render(RenderSettings(
+	filename = "image.png",
+	imageWidth = 120,
+	imageHeight = 120
+))
 
 # Apply two more modifiers to delete some particles.
-node.modifiers.append(SelectExpressionModifier({ "expression" : "PotentialEnergy < -3.9" }))
+node.modifiers.append(SelectExpressionModifier(expression = "PotentialEnergy < -3.9"))
 node.modifiers.append(DeleteParticlesModifier())
 
 # Print the modification pipeline of the selected node to the console.
@@ -44,7 +48,7 @@ for mod in node.modifiers:
 	print "  ", mod
 	
 # Perform some analysis.
-cna = CommonNeighborAnalysisModifier({ "cutoff" : 3.2, "adaptiveMode" : False })
+cna = CommonNeighborAnalysisModifier(cutoff = 3.2, adaptiveMode = False)
 node.modifiers.append(cna)
 
 # Wait until computation has been completed.
@@ -54,6 +58,5 @@ node.wait()
 print "Number of FCC atoms:", cna.structureCounts[CommonNeighborAnalysisModifier.StructureTypes.FCC]
 
 # Write processed atoms back to an output file.
-LAMMPSDumpExporter({ 
-	"columnMapping": ["Position.X", "Position.Y", "Position.Z", "Structure Type"] 
-}).exportToFile("exporteddata.dump")
+exporter = LAMMPSDumpExporter(columnMapping = ["Position.X", "Position.Y", "Position.Z", "Structure Type"])
+exporter.exportToFile("exporteddata.dump")
