@@ -4,16 +4,23 @@
 OVITO Scripting Reference
 **********************************
 
-List of modules:
+Overview:
+-----------------
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
+   
+   introduction/running
+
+Module Reference:
+-----------------
+
+.. toctree::
    
    modules/ovito
    modules/ovito_anim
    modules/ovito_app
    modules/ovito_io
-   modules/ovito_particles
    modules/ovito_modify_particles
    modules/ovito_render
    modules/ovito_render_tachyon

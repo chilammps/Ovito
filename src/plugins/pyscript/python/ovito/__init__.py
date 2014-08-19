@@ -23,8 +23,8 @@ import ovito.io
 # to make all Boost.Python bindings available.
 import pkgutil
 import importlib
-for module_loader, name, ispkg in pkgutil.walk_packages(__path__, __name__ + '.'):
-	importlib.import_module(name)
+for _, _name, _ in pkgutil.walk_packages(__path__, __name__ + '.'):
+	importlib.import_module(_name)
 		
 def importData(location, importMode = "AddToScene", **params):
 	""" Imports an external data file. 
