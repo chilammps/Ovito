@@ -67,11 +67,9 @@ IF(OVITO_BUILD_DOCUMENTATION)
 					COMMAND "${OVITO_MAIN_EXECUTABLE}" "--nogui" "--script" ${SPINX_PROCESSOR} "--scriptarg" "-b" "--scriptarg" "html" 
 					"--scriptarg" "-D" "--scriptarg" "version=${OVITO_VERSION_MAJOR}.${OVITO_VERSION_MINOR}" 
 					"--scriptarg" "-D" "--scriptarg" "release=${OVITO_VERSION_MAJOR}.${OVITO_VERSION_MINOR}.${OVITO_VERSION_REVISION}"
-					"--scriptarg" "." "--scriptarg" "${OVITO_SHARE_DIRECTORY}/doc/python/" 
+					"--scriptarg" "." "--scriptarg" "${OVITO_SHARE_DIRECTORY}/doc/manual/html/python/" 
 					WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/doc/python/"
 					COMMENT "Building scripting documentation files")
-
-		INSTALL(DIRECTORY "${OVITO_SHARE_DIRECTORY}/doc/python/" DESTINATION "${OVITO_RELATIVE_SHARE_DIRECTORY}/doc/python/")
 		
 		# Run Sphinx only after OVITO and all plugins have been built.
 		ADD_DEPENDENCIES(scripting_documentation ${PROJECT_NAME} ${OVITO_PLUGINS_LIST})
