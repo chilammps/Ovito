@@ -1,0 +1,72 @@
+#!/bin/bash
+#
+# This shell script launches OVITO in scripting mode and turns off
+# the graphical user interface. It also takes care of passing command
+# line parameters on to the Python script. 
+#
+# Usage:
+#
+#   ovitos [-o FILE] [script.py [arg...]] 
+#
+# The -i starts OVITO's Python interpreter in interactive mode.
+#
+# The -o option tells OVITO to load the given FILE before executing the script.
+# FILE can be a data file to import or an OVITO scene file to load.
+#
+
+# Get the directory this shell script is loacted in.
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+OVITO_EXE="${DIR}/ovito"
+
+# Check if OVITO executable is present.
+if [ ! -x "${OVITO_EXE}" ]
+then
+  echo "ERROR: OVITO executable does not exist: ${OVITO_EXE}"
+#  exit 1
+fi
+
+# Process options
+while [ $# -ge 1 ]
+do
+  # Process -o option.
+  if [ "$1" = "-o" ]
+  then
+    OPEN_FILE=$2
+    shift
+    shift
+  elif [ "$1" = "-h" -o "$1" = "--help" ]
+  then
+    echo "OVITO Script Interpreter"
+    echo ""
+    echo "Usage: `basename $0` [-o FILE] [script.py] [args...]"
+    exit 0
+#  elif [ "$1" = "-i" ]
+#  then
+#    INTERACTIVE="--exec \"import code; code.interact(banner='This is OVITO\'s interactive Python interpreter. Use quit() or Ctrl-D to exit.');\""
+#    shift
+  else
+    break
+  fi
+done
+
+# Get the name of the script file to execute.
+if [ $# -ge 1 ]
+then
+  SCRIPT_FILE="--script \"$1\""
+else
+  INTERACTIVE="--exec \"import code; code.interact(banner='This is OVITO\'s interactive Python interpreter. Use quit() or Ctrl-D to exit.');\""
+fi
+
+shift
+
+# Read in the list of command line arguments that need to be passed to the script.
+ARGLIST=""
+for var in "$@"
+do
+  ARGLIST="${ARGLIST} --scriptarg \"${var}\""
+done
+
+# Invoke the main OVITO executable.
+# Escape all script arguments with the --scriptarg option.
+# The data file to be loaded must be specified last.
+eval ${OVITO_EXE} --nogui ${SCRIPT_FILE} ${ARGLIST} ${INTERACTIVE} ${OPEN_FILE}

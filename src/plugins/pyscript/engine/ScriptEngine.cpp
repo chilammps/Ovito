@@ -137,14 +137,17 @@ void ScriptEngine::initializeInterpreter()
 		};
 		converter::registry::push_back(convertible, construct, boost::python::type_id<QString>());
 
-		// Register the output redirector class.
-		class_<InterpreterStdOutputRedirector, std::auto_ptr<InterpreterStdOutputRedirector>, boost::noncopyable>("__StdOutStreamRedirectorHelper", no_init).def("write", &InterpreterStdOutputRedirector::write);
-		class_<InterpreterStdErrorRedirector, std::auto_ptr<InterpreterStdErrorRedirector>, boost::noncopyable>("__StdErrStreamRedirectorHelper", no_init).def("write", &InterpreterStdErrorRedirector::write);
-
-		// Install output redirection.
 		object sys_module = import("sys");
-		sys_module.attr("stdout") = ptr(new InterpreterStdOutputRedirector());
-		sys_module.attr("stderr") = ptr(new InterpreterStdErrorRedirector());
+
+		// Install output redirection (don't do this in console mode as it interferes with the interactive interpreter).
+		if(Application::instance().guiMode()) {
+			// Register the output redirector class.
+			class_<InterpreterStdOutputRedirector, std::auto_ptr<InterpreterStdOutputRedirector>, boost::noncopyable>("__StdOutStreamRedirectorHelper", no_init).def("write", &InterpreterStdOutputRedirector::write);
+			class_<InterpreterStdErrorRedirector, std::auto_ptr<InterpreterStdErrorRedirector>, boost::noncopyable>("__StdErrStreamRedirectorHelper", no_init).def("write", &InterpreterStdErrorRedirector::write);
+			// Replace stdout and stderr streams.
+			sys_module.attr("stdout") = ptr(new InterpreterStdOutputRedirector());
+			sys_module.attr("stderr") = ptr(new InterpreterStdErrorRedirector());
+		}
 
 		// Install Ovito to Python exception translator.
 		auto toPythonExceptionTranslator = [](const Exception& ex) {

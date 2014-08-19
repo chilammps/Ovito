@@ -24,7 +24,6 @@ import ovito.io
 import pkgutil
 import importlib
 for module_loader, name, ispkg in pkgutil.walk_packages(__path__, __name__ + '.'):
-	print "Loading module", name
 	importlib.import_module(name)
 		
 def importData(location, importMode = "AddToScene", **params):
