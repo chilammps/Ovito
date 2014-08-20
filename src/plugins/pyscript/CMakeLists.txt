@@ -48,10 +48,17 @@ TARGET_INCLUDE_DIRECTORIES(PyScript PUBLIC ${PYTHON_INCLUDE_PATH} ${Boost_INCLUD
 ADD_CUSTOM_COMMAND(TARGET PyScript POST_BUILD COMMAND ${CMAKE_COMMAND} "-E" copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/python/" "${OVITO_PLUGINS_DIRECTORY}/python/")
 INSTALL(DIRECTORY "${OVITO_PLUGINS_DIRECTORY}/python/" DESTINATION "${OVITO_RELATIVE_PLUGINS_DIRECTORY}/python/")
 
-# Install script launcher.
 IF(UNIX)
+	# Install script launcher.
 	CONFIGURE_FILE("resources/ovitos" "${OVITO_BINARY_DIRECTORY}/ovitos" COPYONLY)
 	INSTALL(PROGRAMS "resources/ovitos" DESTINATION "${OVITO_RELATIVE_BINARY_DIRECTORY}")
+ELSEIF(WIN32)
+	# We have to build a second executable under Windows because the main ovito.exe is not a console application.
+	SET(EXECUTABLE_OUTPUT_PATH ${OVITO_BINARY_DIRECTORY})
+	ADD_EXECUTABLE(ovitos launcher/WinMain.cpp)
+	TARGET_LINK_LIBRARIES(ovitos Base Core)
+	QT5_USE_MODULES(ovitos ${OVITO_REQUIRED_QT_MODULES})
+	INSTALL(TARGETS ovitos DESTINATION "${OVITO_RELATIVE_BINARY_DIRECTORY}")
 ENDIF()
 
 # Install standard Python packages. 
@@ -77,17 +84,11 @@ ELSEIF(UNIX)
 	ENDIF()
 ELSEIF(WIN32)
 	# Install standard Python packages. 
-	STRING(REGEX MATCH "[0-9]+\\.[0-9]+" PYTHON_MAJORMINOR_VERSION ${PYTHONLIBS_VERSION_STRING})
 	LIST(GET PYTHON_LIBRARIES 0 PYTHON_FIRST_LIBRARY)
 	GET_FILENAME_COMPONENT(PYTHON_LIBRARY_PATH "${PYTHON_FIRST_LIBRARY}" PATH)
-	INSTALL(DIRECTORY "${PYTHON_LIBRARY_PATH}/../../python${PYTHON_MAJORMINOR_VERSION}" 
-		DESTINATION "lib/"
+	INSTALL(DIRECTORY "${PYTHON_LIBRARY_PATH}/../Lib" 
+		DESTINATION "${OVITO_RELATIVE_BINARY_DIRECTORY}"
 		PATTERN "*.pyc" EXCLUDE PATTERN "*.pyo" EXCLUDE PATTERN "test" EXCLUDE)
-
-	# Install Python config header file. The Python interpreter requires it at runtime.
-	IF(CMAKE_SIZEOF_VOID_P EQUAL 4)
-		INSTALL(FILES "${PYTHON_LIBRARY_PATH}/../../../include/python${PYTHON_MAJORMINOR_VERSION}/pyconfig.h" DESTINATION "include/python${PYTHON_MAJORMINOR_VERSION}")
-	ENDIF()
 	
 	# Install Python interpreter and Boost.Python DLL libraries, which are required by the OVITO PyScript plugin.
 
@@ -98,10 +99,11 @@ ELSEIF(WIN32)
 		OVITO_INSTALL_DLL("${Boost_LIBRARY_DIRS}/libboost_python-mt-d.dll")
 	ENDIF()
 	
-	# The python interpreter DLL (libpython2.7.dll) is located in the opt/bin/ directory of 
-	# the MinGW compiler installation. We find it by using a relative path from the
-	# opt/lib/python2.7/config/ directory where the corresponding link library (libpython2.7.dll.a)
-	# is located.
-	OVITO_INSTALL_DLL("${PYTHON_LIBRARY_PATH}/../../../bin/libpython${PYTHON_MAJORMINOR_VERSION}.dll")
+	# The 32-bit python interpreter DLL (python27.dll) is usually located in the Windows SysWOW64 directory.
+	FIND_FILE(PYTHON_DLL NAMES python27.dll HINTS "C:/Windows/SysWOW64" ENV PATH DOC "Python interpreter DLL")
+	IF(NOT PYTHON_DLL)
+		MESSAGE(FATAL_ERROR "Please set the PYTHON_DLL variable to specify the location of the Python interpreter DLL.")
+	ENDIF()
+	OVITO_INSTALL_DLL("${PYTHON_DLL}")
 ENDIF()
 

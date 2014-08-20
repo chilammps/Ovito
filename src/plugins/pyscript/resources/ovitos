@@ -38,12 +38,12 @@ do
   then
     echo "OVITO Script Interpreter"
     echo ""
-    echo "Usage: `basename $0` [-o FILE] [script.py] [args...]"
+    echo "Usage: `basename $0` [-o FILE] [-v] [script.py] [args...]"
     exit 0
-#  elif [ "$1" = "-i" ]
-#  then
-#    INTERACTIVE="--exec \"import code; code.interact(banner='This is OVITO\'s interactive Python interpreter. Use quit() or Ctrl-D to exit.');\""
-#    shift
+  elif [ "$1" = "-v" -o "$1" = "--version" ]
+  then
+    SHOW_VERSION="-v"
+    shift
   else
     break
   fi
@@ -69,4 +69,4 @@ done
 # Invoke the main OVITO executable.
 # Escape all script arguments with the --scriptarg option.
 # The data file to be loaded must be specified last.
-eval ${OVITO_EXE} --nogui ${SCRIPT_FILE} ${ARGLIST} ${INTERACTIVE} ${OPEN_FILE}
+eval ${OVITO_EXE} --nogui ${SHOW_VERSION} ${SCRIPT_FILE} ${ARGLIST} ${INTERACTIVE} ${OPEN_FILE}

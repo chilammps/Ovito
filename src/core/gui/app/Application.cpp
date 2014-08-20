@@ -109,10 +109,19 @@ bool Application::initialize(int& argc, char** argv)
 	// Parse command line arguments.
 	// Ignore unknown command line options for now.
 	QStringList arguments;
-	arguments.reserve(argc);
 	for(int i = 0; i < argc; i++)
 		arguments << QString::fromLocal8Bit(argv[i]);
-	_cmdLineParser.parse(arguments);
+	
+	// Because they may collide with our own options, we should ignore script arguments though. 
+	QStringList filteredArguments;
+	for(int i = 0; i < argc; i++) {
+		if(strcmp(argv[i], "--scriptarg") == 0) {
+			i += 1;
+			continue;
+		}
+		filteredArguments.push_back(arguments[i]);
+	}
+	_cmdLineParser.parse(filteredArguments);
 
 	// Output program version if requested.
 	if(_cmdLineParser.isSet("version")) {
@@ -158,7 +167,8 @@ bool Application::initialize(int& argc, char** argv)
 		}
 
 		// Parse the command line parameters again after the plugins have registered their options.
-		if(!_cmdLineParser.parse(QCoreApplication::arguments())) {
+		//QStringList cmdLinArgs = QCoreApplication::arguments();
+		if(!_cmdLineParser.parse(arguments)) {
 	        std::cerr << "Error: " << qPrintable(_cmdLineParser.errorText()) << std::endl;
 			_consoleMode = true;
 			shutdown();
@@ -199,7 +209,6 @@ bool Application::initialize(int& argc, char** argv)
 		// Invoke auto-start objects.
 		for(const auto& obj : _autostartObjects)
 			obj->applicationStarted();
-
 	}
 	catch(const Exception& ex) {
 		ex.showError();

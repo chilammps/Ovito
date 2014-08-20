@@ -79,7 +79,7 @@ SceneObject* ObjectNodeBinding::source()
 	SceneObject* sceneObj = objNode->sceneObject();
 	while(sceneObj) {
 		if(sceneObj->inputObjectCount() == 0) break;
-		SceneObject* inputObj = sceneObj->inputObject(0);
+		SceneObject* inputObj = sceneObj->getInputObject(0);
 		if(!inputObj) break;
 		sceneObj = inputObj;
 	}
