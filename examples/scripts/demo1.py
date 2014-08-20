@@ -1,7 +1,7 @@
 from ovito import *
-from ovito.linalg import *
-from ovito.particles import *
 from ovito.render import *
+from ovito.modify.particles import *
+from ovito.io.particles import *
 import math
 
 # Query program version.
@@ -9,9 +9,6 @@ print "This is Ovito version", version
 
 # Import a data file.
 node = importData("../data/NanocrystallinePd.dump.gz")
-
-for vp in dataset.viewports:
-	print vp.title
 
 # Block execution of the script until the node's modification pipeline is ready, that is, until 
 # the input data has been completely loaded.
@@ -29,13 +26,15 @@ node.modifiers.append(ColorCodingModifier(
 
 # Set up view, looking along the [2,3,-3] vector from camera position (-100, -150, 150).
 vp = dataset.viewports.activeViewport
-vp.perspective((-100, -150, 150), (2, 3, -3), math.radians(60.0))
+vp.viewType = ovito.view.ViewType.PERSPECTIVE
+vp.cameraPosition = (-100, -150, 150)
+vp.cameraDirection = (2, 3, -3)
+vp.fieldOfView = math.radians(60.0)
 
 # Render a picture of the dataset.
 vp.render(RenderSettings(
-	filename = "image.png",
-	imageWidth = 120,
-	imageHeight = 120
+	filename = "rendered_image.png",
+	size = (120,120)
 ))
 
 # Apply two more modifiers to delete some particles.
@@ -59,4 +58,4 @@ print "Number of FCC atoms:", cna.structureCounts[CommonNeighborAnalysisModifier
 
 # Write processed atoms back to an output file.
 exporter = LAMMPSDumpExporter(columnMapping = ["Position.X", "Position.Y", "Position.Z", "Structure Type"])
-exporter.exportToFile("exporteddata.dump")
+exporter.exportToFile("exported_data.dump")

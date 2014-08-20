@@ -258,8 +258,9 @@ bool DataSet::renderScene(RenderSettings* settings, Viewport* viewport, QSharedP
 	// If the caller did not supply a frame buffer, get the default frame buffer for the output image, or create a temporary one if necessary.
 	if(!frameBuffer) {
 		if(Application::instance().guiMode()) {
-			frameBuffer = frameBufferWindow->frameBuffer();
+			OVITO_ASSERT(mainWindow());
 			frameBufferWindow = mainWindow()->frameBufferWindow();
+			frameBuffer = frameBufferWindow->frameBuffer();
 		}
 		if(!frameBuffer) {
 			frameBuffer.reset(new FrameBuffer(settings->outputImageWidth(), settings->outputImageHeight()));
