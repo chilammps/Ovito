@@ -112,5 +112,5 @@ def _ObjectNode_wait(self, msgText = None):
         :rtype: bool
     """
     if not msgText: msgText = "Script is waiting for scene graph to become ready." 
-    return self.waitUntilReady(self.dataset.animationSettings.time, msgText)
+    return self.waitUntilReady(self.dataset.anim.time, msgText)
 ObjectNode.wait = _ObjectNode_wait

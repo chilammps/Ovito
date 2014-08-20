@@ -17,7 +17,7 @@ sudo apt-get install build-essential perl python git libfreetype6-dev libfontcon
                      libx11-xcb-dev libpcre3-dev libxi-dev libgmp-dev \
                      libmpfr-dev libsm-dev libice-dev libnetcdf-dev libhdf5-serial-dev \
                      libglu1-mesa-dev libxrender-dev xsltproc docbook-xml docbook-xsl-doc-html \
-                     python-sphinx
+                     python-sphinx libssl-dev
 
 **************************************************************************
 To build the dynamically-linked executable instead (on Ubuntu 14.04):
@@ -79,11 +79,28 @@ make install
 Build Python (version 2.7.x):
 **************************************************************************
 
+Edit Modules/Setup to enable SSL module:
+
+# Socket module helper for socket(2)
+_socket socketmodule.c timemodule.c
+
+SSL=/usr
+_ssl _ssl.c \
+	-DUSE_SSL -I$(SSL)/include -I$(SSL)/include/openssl \
+	-L$(SSL)/lib -lssl -lcrypto
+
 export CC=gcc-4.8
 export CXX=g++-4.8
 ./configure --enable-shared --prefix=$HOME/progs/python
 make
 make install
+
+Install Sphinx:
+
+cd $HOME/progs/python/bin
+wget https://bitbucket.org/pypa/setuptools/raw/bootstrap/ez_setup.py
+LD_LIBRARY_PATH=$PWD/../lib ./python ez_setup.py --insecure
+LD_LIBRARY_PATH=$PWD/../lib ./easy_install sphinx
 
 **************************************************************************
 Build NumPy:
@@ -163,6 +180,7 @@ ccmake \
 	-DBOOST_ROOT=$HOME/progs/booststatic \
 	-DPYTHON_LIBRARY=$HOME/progs/python/lib/libpython2.7.so.1.0 \
 	-DPYTHON_INCLUDE_DIR=$HOME/progs/python/include/python2.7 \
+	-DSPHINX_PROCESSOR=$HOME/progs/python/bin/sphinx-build \
 	....
 
 
