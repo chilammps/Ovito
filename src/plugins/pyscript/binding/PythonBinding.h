@@ -128,8 +128,10 @@ private:
 	/// This constructs a new instance of the OvitoObject class and initializes
 	/// its properties using the values stored in a dictionary.
 	static OORef<OvitoObjectClass> construct_instance_with_params(const tuple& args, const dict& kwargs) {
-		if(len(args) != 0)
-			throw Exception("Constructor function accepts only keyword arguments.");
+		if(len(args) != 0) {
+			if(len(args) > 1 || !extract<dict>(args[0]).check())
+				throw Exception("Constructor function accepts only keyword arguments.");
+		}
 		// Construct the C++ object instance.
 		ScriptEngine* engine = ScriptEngine::activeEngine();
 		if(!engine) throw Exception("Invalid interpreter state. There is no active script engine.");
@@ -138,22 +140,31 @@ private:
 		OORef<OvitoObjectClass> obj(new OvitoObjectClass(dataset));
 		// Create a Python wrapper for the object so we can set its attributes.
 		object pyobj(obj);
-		// Iterate over the keys of the dictionary and set attributes of the
-		// newly created object.
+		// Set attributes based on keyword arguments.
+		applyParameters(pyobj, kwargs);
+		// The caller may alternatively provide a dictionary with attributes.
+		if(len(args) == 1)
+			applyParameters(pyobj, extract<dict>(args[0]));
+		return obj;
+	}
+
+	// Sets attributes of the given object as specified in the dictionary.
+	static void applyParameters(object& obj, const dict& params) {
 		PyObject *key, *value;
 		Py_ssize_t pos = 0;
-		while(PyDict_Next(kwargs.ptr(), &pos, &key, &value)) {
+		// Iterate over the keys of the dictionary and set attributes of the
+		// newly created object.
+		while(PyDict_Next(params.ptr(), &pos, &key, &value)) {
 			// Check if the attribute exists. Otherwise raise error.
-			if(!PyObject_HasAttr(pyobj.ptr(), key)) {
+			if(!PyObject_HasAttr(obj.ptr(), key)) {
 				const char* keystr = extract<char const*>(object(handle<>(borrowed(key))));
-				PyErr_Format(PyExc_AttributeError, "Error in constructor. Object type %s does not have an attribute with the name '%s'.",
+				PyErr_Format(PyExc_AttributeError, "Error in constructor. Object type %s does not have an attribute named '%s'.",
 						OvitoObjectClass::OOType.className(), keystr);
 				throw_error_already_set();
 			}
 			// Set attribute value.
-			pyobj.attr(object(handle<>(borrowed(key)))) = handle<>(borrowed(value));
+			obj.attr(object(handle<>(borrowed(key)))) = handle<>(borrowed(value));
 		}
-		return obj;
 	}
 };
 

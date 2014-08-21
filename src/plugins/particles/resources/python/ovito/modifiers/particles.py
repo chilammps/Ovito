@@ -34,3 +34,5 @@ ovito.modifiers.HistogramModifier = ParticlesModify.HistogramModifier
 ovito.modifiers.ScatterPlotModifier = ParticlesModify.ScatterPlotModifier
 ovito.modifiers.AtomicStrainModifier = ParticlesModify.AtomicStrainModifier
 ovito.modifiers.WignerSeitzAnalysisModifier = ParticlesModify.WignerSeitzAnalysisModifier
+
+

@@ -67,11 +67,11 @@ BOOST_PYTHON_MODULE(ParticlesExporter)
 	;
 
 	ovito_class<LAMMPSDumpExporter, ParticleExporter>()
-		.add_property("columnMapping", make_function(&LAMMPSDumpExporter::columnMapping, return_value_policy<copy_const_reference>()), &LAMMPSDumpExporter::setColumnMapping)
+		.add_property("columns", make_function(&LAMMPSDumpExporter::columnMapping, return_value_policy<copy_const_reference>()), &LAMMPSDumpExporter::setColumnMapping)
 	;
 
 	ovito_class<XYZExporter, ParticleExporter>()
-		.add_property("columnMapping", make_function(&XYZExporter::columnMapping, return_value_policy<copy_const_reference>()), &XYZExporter::setColumnMapping)
+		.add_property("columns", make_function(&XYZExporter::columnMapping, return_value_policy<copy_const_reference>()), &XYZExporter::setColumnMapping)
 		.add_property("subFormat", &XYZExporter::subFormat, &XYZExporter::setSubFormat)
 	;
 

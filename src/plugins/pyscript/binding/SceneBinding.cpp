@@ -81,8 +81,13 @@ BOOST_PYTHON_MODULE(PyScriptScene)
 		.add_property("inputObjectCount", &SceneObject::inputObjectCount)
 	;
 
-	ovito_abstract_class<Modifier, RefTarget>()
-		.add_property("enabled", &Modifier::isEnabled, &Modifier::setEnabled)
+	ovito_abstract_class<Modifier, RefTarget>(
+			"This is the base class for all modifiers in OVITO.")
+		.add_property("enabled", &Modifier::isEnabled, &Modifier::setEnabled,
+				"Determines whether the modifier is applied to the input data. Modifiers which are not enabled "
+				"are skipped even if they are part of a modification pipeline."
+				"\n\n"
+				"Default: ``True``\n")
 		.add_property("status", &Modifier::status)
 		.def("modifierValidity", &Modifier::modifierValidity)
 		.def("modifierApplications", &Modifier::modifierApplications)

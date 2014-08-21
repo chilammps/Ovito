@@ -107,7 +107,7 @@ BOOST_PYTHON_MODULE(PyScriptFileIO)
 			"\n\n"
 			"You normally do not create an instance of this class yourself. "
 			"The :py:func:`ovito.io.import_file` function automatically assigns a :py:class:`!FileSourceObject` to the :py:attr:`~ovito.scene.ObjectNode.source` "
-			"attribute of the :py:class:`~ovito.scene.ObjectNode` it returns. "
+			"attribute of the returned :py:class:`~ovito.scene.ObjectNode`. "
 			"The file source object is responsible for managing the reference to the external file and for loading data upon request, which "
 			"is then fed into the modification pipeline."
 			"\n\n"

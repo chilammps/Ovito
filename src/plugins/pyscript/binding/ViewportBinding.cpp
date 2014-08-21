@@ -39,8 +39,8 @@ BOOST_PYTHON_MODULE(PyScriptViewport)
 				"A viewport defines the view on the three-dimensional scene. "
 				"\n\n"
 				"You can create an instance of this class to define a camera position from which "
-				"an image of the three-dimensional data should be generated. After the camera "
-				"has been set up, you can render an image or movie of the scene using the viewport's "
+				"a picture of the three-dimensional scene should be generated. After the camera "
+				"has been set up, you can render an image or movie using the viewport's "
 				":py:meth:`.render` method::"
 				"\n\n"
 				"    vp = Viewport()\n"
@@ -51,7 +51,7 @@ BOOST_PYTHON_MODULE(PyScriptViewport)
 				"    rs = RenderSettings(size=(800,600), filename=\"image.png\")\n"
 				"    vp.render(rs)\n"
 				"\n"
-				"Note that the four interactive viewports in OVITO's main window are also instances of this class. If you want to "
+				"Note that the four interactive viewports in OVITO's main window are instances of this class. If you want to "
 				"manipulate these existing viewports, you can access them through the "
 				":py:attr:`DataSet.viewports <ovito.DataSet.viewports>` attribute.")
 			.add_property("isRendering", &Viewport::isRendering)

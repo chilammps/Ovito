@@ -1,3 +1,15 @@
+""" This module contains functions and classes related to file input and output.
+
+It primarily provides two high-level functions for reading and writing
+external files:
+
+    * :py:func:`import_file`
+    * :py:func:`export_file`
+
+In addition, it contains the :py:class:`FileSourceObject` class, which represents a mutable reference to an external
+input file.
+"""
+
 import ovito
 import ovito.scene
 
@@ -5,12 +17,13 @@ import ovito.scene
 from PyScriptFileIO import *
 
 def import_file(location, mode = "AddToScene", **params):
-    """ Imports an external data file. 
+    """ This high-level function imports an external data file. 
     
-        This script function corresponds to the *Open Local File* command in OVITO's
+        This Python function corresponds to the *Open Local File* command in OVITO's
         user interface. The format of the imported file is automatically detected.
-        But depending on the file format, additional keyword parameters need to be supplied to specify 
-        how the data in the file should be interpreted. These keyword parameters are documented below.
+        However, depending on the file's format, additional keyword parameters may need to be supplied to 
+        the file parser to specify how the data should be interpreted. 
+        These keyword parameters are documented below.
         
         :param str location: The file to import. This can be a local file path or a remote sftp:// URL.
         :param str mode: Determines how the imported data is inserted into the current scene. 
@@ -21,6 +34,14 @@ def import_file(location, mode = "AddToScene", **params):
                            * ``ResetScene``: All existing nodes are deleted from the scene before importing the data.
                        
         :returns: The :py:class:`~ovito.scene.ObjectNode` that has been created for the imported data.
+                  
+        ..  Note::
+    
+                The loading of external files typically happens asynchronously in OVITO. That is, 
+                this function may return a node whose input data is still being loaded in the background.
+                If necessary, you can call the node's :py:func:`~ovito.scene.ObjectNode.wait` function to 
+                block script execution until the data has been fully loaded; for example, if you are going to
+                directly access the imported data instead of relying on OVITO's modifier system.
         
         **File columns**
         
@@ -30,8 +51,8 @@ def import_file(location, mode = "AddToScene", **params):
             import_file("file.xyz", columns = 
               ["Particle Identifier", "Particle Type", "Position.X", "Position.Y", "Position.Z"])
         
-        The length of the list must match the number of columns in the input file. If a column should be ignored
-        during import, specify ``None`` instead of a property name.
+        The length of the list must match the number of columns in the input file. To ignore a column 
+        during import, specify ``None`` instead of a property name at the corresponding position in the list.
         
         **Multi-timestep files**
         
@@ -110,10 +131,52 @@ def _set_FileSourceObject_source_path(self, url):
     self.setSource(url, None) 
 FileSourceObject.source_path = property(_get_FileSourceObject_source_path, _set_FileSourceObject_source_path)
 
-def _FileExporter_exportToFile(self, filename, nodeList = None, noninteractive = True, _originalMethod = FileExporter.exportToFile):
-    # If caller doesn't specify a list of nodes to export, simply export all nodes in the scene.
-    if nodeList == None:
-        nodeList = self.dataset.scene_nodes.children
-    return _originalMethod(self, nodeList, filename, noninteractive)
-FileExporter.exportToFile = _FileExporter_exportToFile
+def export_file(node, file, format, **params):
+    """ High-level function that exports data to a file.
+    
+        :param node: The node that provides the data to be exported.
+        :type node: :py:class:`~ovito.scene.ObjectNode` 
+        :param str file: The name of the output file.
+        :param str format: The type of file to write:
+        
+                            * ``"lammps_dump"`` -- LAMMPS text-based dump format
+                            * ``"lammps_data"`` -- LAMMPS data format
+                            * ``"imd"`` -- IMD format
+                            * ``"vasp"`` -- POSCAR format
+                            * ``"xyz"`` -- XYZ format
+        
+        :returns: ``True`` on success; ``False`` if the operation was canceled by the user.
+        
+        The function evaluates the modification pipeline of the given object node and exports
+        the results to one or more files. By default, only the current animation frame is exported.
+        
+        Depending on the selected export format, additional keyword parameters need to be specified.
+       
+        **File columns**
+        
+        When writing files in the ``"lammps_dump"`` or ``"xyz"`` format, you must specify the particle properties to be exported 
+        using the ``columns`` keyword parameter::
+        
+            export_file(node, "output.xyz", "xyz", columns = 
+              ["Particle Identifier", "Particle Type", "Position.X", "Position.Y", "Position.Z"]
+            )
+    """
+    
+    # Look up the exporter class for the selected format.
+    if not format in export_file._formatTable:
+        raise RuntimeError("Unknown output file format: %s" % format)
+    
+    # Create an instance of the exporter class.
+    exporter = export_file._formatTable[format](params)
+    
+    # Ensure the data is available.
+    node.wait()
+    
+    # Export data.
+    return exporter.exportToFile([node], file, True)
 
+# This is the table of export formats used by the export_file() function
+# to look up the right exporter class for a file format.
+# Plugins can register their exporter class by inserting a new entry in this dictionary.
+export_file._formatTable = {}
+    

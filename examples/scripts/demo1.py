@@ -60,5 +60,6 @@ node.wait()
 print "Number of FCC atoms:", cna.structureCounts[CommonNeighborAnalysisModifier.StructureTypes.FCC]
 
 # Write processed atoms back to an output file.
-#exporter = LAMMPSDumpExporter(columnMapping = ["Position.X", "Position.Y", "Position.Z", "Structure Type"])
-#exporter.exportToFile("exported_data.dump")
+export_file(node, "exported_data.dump", "lammps_dump", 	
+	columns = ["Position.X", "Position.Y", "Position.Z", "Structure Type"]
+)
