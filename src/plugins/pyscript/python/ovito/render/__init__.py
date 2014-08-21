@@ -1,18 +1,18 @@
 # Load the native module.
 from PyScriptRendering import *
 
-def _get_RenderSettings_customRange(self):
+def _get_RenderSettings_custom_range(self):
     """ 
     Specifies the range of animation frames to render if :py:attr:`.range` is ``CUSTOM_INTERVAL``.
     
     Default: ``(0,100)`` 
     """
     return (self.customRangeStart, self.customRangeEnd)
-def _set_RenderSettings_customRange(self, range):
+def _set_RenderSettings_custom_range(self, range):
     if len(range) != 2: raise TypeError("Tuple or list of length two expected.")
     self.customRangeStart = range[0]
     self.customRangeEnd = range[1]
-RenderSettings.customRange = property(_get_RenderSettings_customRange, _set_RenderSettings_customRange)
+RenderSettings.custom_range = property(_get_RenderSettings_custom_range, _set_RenderSettings_custom_range)
 
 def _get_RenderSettings_size(self):
     """ 

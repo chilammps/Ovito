@@ -39,10 +39,10 @@ We can run the script from a Linux terminal as follows:
 	Hello, this is OVITO 2.4.0
 	
 By default, the :program:`ovitos` script launcher invokes OVITO in console mode, which is a non-graphical mode
-where no main window is shown. This allows running OVITO scripts on remote machines or
-computing clusters that don't possess a graphics terminal. Scripts executed in OVITO's console mode can read from and write
-to the terminal as if they were executed by a standard Python interpreter. Any command line arguments that follow the 
-script name are passed on to the script via the ``sys.argv`` variable. Furthermore, it is possible to start OVITO's 
+where the main window isn't shown. This allows running OVITO scripts on remote machines or
+computing clusters that don't possess a graphics terminal. In OVITO's console mode, scripts can read from and write
+to the terminal as if they were executed by a standard Python interpreter. Any command line arguments following the 
+script's name are passed to the script via the ``sys.argv`` variable. Furthermore, it is possible to start OVITO's 
 interpreter in interactive scripting mode by running :program:`ovitos` without specifying a script file.
 
 The :command:`-o` command line option loads an OVITO scene file before executing the
@@ -52,8 +52,8 @@ work, because modifiers, parameters, and the camera setup get loaded from the OV
 don't have to be set up programatically in the script anymore.
 
 The :command:`-g` command line option switches from console mode to graphical mode. This displays OVITO's main window
-and you can follow your script's actions as it is being executed. This is useful if you need to inspect the results 
-your script generates.
+and you can follow your script's actions as they are being executed. This is useful, for instance, if you want to visually 
+inspect the results of your script and to check if everything is correctly set up during the development of a script.
 
 .. note::
 

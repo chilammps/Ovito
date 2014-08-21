@@ -133,8 +133,8 @@ BOOST_PYTHON_MODULE(PyScriptScene)
 			)
 		.add_property("sceneObject", make_function(&ObjectNode::sceneObject, return_value_policy<ovito_object_reference>()), &ObjectNode::setSceneObject)
 		.add_property("source", make_function(&ObjectNode::sourceObject, return_value_policy<ovito_object_reference>()),
-				"The object that enters the modification pipeline of this node. For nodes that have been "
-				"create by the :py:func:`ovito.importData` function, this typically is a :py:class:`~ovito.io.LinkedFileObject`.")
+				"An object providing the data that enters the modification pipeline of this node. For nodes that have been "
+				"created by the :py:func:`~ovito.io.import_file` function this is typically a :py:class:`~ovito.io.FileSourceObject`.")
 		.add_property("displayObjects", make_function(&ObjectNode::displayObjects, return_internal_reference<>()))
 		.def("evalPipeline", make_function(&ObjectNode::evalPipeline, return_value_policy<copy_const_reference>()))
 		.def("applyModifier", &ObjectNode::applyModifier)

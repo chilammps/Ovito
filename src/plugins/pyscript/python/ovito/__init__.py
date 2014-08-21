@@ -6,7 +6,6 @@ from PyScriptContainers import *
 from PyScriptApp import *
 
 # Load sub-modules (in the right order because there are dependencies between them)
-import ovito.app
 import ovito.linalg
 import ovito.view
 import ovito.anim
@@ -20,6 +19,7 @@ import ovito.modifiers
 import pkgutil
 import importlib
 for _, _name, _ in pkgutil.walk_packages(__path__, __name__ + '.'):
+	#print "Loading module", _name
 	importlib.import_module(_name)
 
 def _get_DataSet_selected_node(self):

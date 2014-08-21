@@ -39,66 +39,68 @@ BOOST_PYTHON_MODULE(PyScriptRendering)
 {
 	docstring_options docoptions(true, false);
 
-	ovito_class<RenderSettings, RefTarget>(
-			"Stores settings and parameters for rendering images and movies."
-			"\n\n"
-			"Instances of this class can be passed to the :py:func:`~ovito.view.Viewport.render` function "
-			"of the :py:class:`~ovito.view.Viewport` class to control various aspects such as the resolution of the generated image. "
-			"The ``RenderSettings`` object contains a :py:attr:`.renderer`, which is the rendering engine "
-			"that will be used to generate images of the three-dimensional scene. OVITO comes with two different "
-			"rendering engines:"
-			"\n\n"
-			"  * :py:class:`~ovito.render.OpenGLRenderer` -- An OpenGL-based renderer, which is also used for the interactive display in OVITO's viewports.\n"
-			"  * :py:class:`~ovito.render.TachyonRenderer` -- A software-based, high-quality raytracing renderer.\n"
-			"\n"
-			"Usage example::"
-			"\n\n"
-			"    rs = RenderSettings(\n"
-			"        filename = 'image.png',\n"
-			"        size = (1024,768),\n"
-			"        background_color = (0.8,0.8,1.0)\n"
-			"    )\n"
-			"    rs.renderer.antialiasing = False\n"
-			"    dataset.viewports.active_vp.render(rs)\n")
-		.add_property("renderer", make_function(&RenderSettings::renderer, return_value_policy<ovito_object_reference>()), &RenderSettings::setRenderer,
-				"The renderer that is used to generate the image or movie. Depending on the selected renderer you "
-				"can use this to set additional parameters such as the anti-aliasing level."
+	{
+		scope s = ovito_class<RenderSettings, RefTarget>(
+				"Stores settings and parameters for rendering images and movies."
 				"\n\n"
-				"See the :py:class:`~ovito.render.OpenGLRenderer` and :py:class:`~ovito.render.TachyonRenderer` classes "
-				"for a list of renderer-specific parameters.")
-		.add_property("range", &RenderSettings::renderingRangeType, &RenderSettings::setRenderingRangeType,
-				"Selects the animation frames to be rendered."
+				"Instances of this class can be passed to the :py:func:`~ovito.view.Viewport.render` function "
+				"of the :py:class:`~ovito.view.Viewport` class to control various aspects such as the resolution of the generated image. "
+				"The ``RenderSettings`` object contains a :py:attr:`.renderer`, which is the rendering engine "
+				"that will be used to generate images of the three-dimensional scene. OVITO comes with two different "
+				"rendering engines:"
 				"\n\n"
-				"Possible values:\n"
-				"  * ``ovito.render.RenderingRange.CURRENT_FRAME`` (default): Renders a single image at the current animation time.\n"
-				"  * ``ovito.render.RenderingRange.ANIMATION_INTERVAL``: Renders a movie of the entire animation sequence.\n"
-				"  * ``ovito.render.RenderingRange.CUSTOM_INTERVAL``: Renders a movie of the animation interval given by the :py:attr:`.customRange` attribute.\n")
-		.add_property("outputImageWidth", &RenderSettings::outputImageWidth, &RenderSettings::setOutputImageWidth)
-		.add_property("outputImageHeight", &RenderSettings::outputImageHeight, &RenderSettings::setOutputImageHeight)
-		.add_property("outputImageAspectRatio", &RenderSettings::outputImageAspectRatio)
-		.add_property("imageFilename", make_function(&RenderSettings::imageFilename, return_value_policy<copy_const_reference>()), &RenderSettings::setImageFilename)
-		.add_property("background_color", &RenderSettings::backgroundColor, &RenderSettings::setBackgroundColor,
-				"Controls the background color of the rendered image."
+				"  * :py:class:`~ovito.render.OpenGLRenderer` -- An OpenGL-based renderer, which is also used for the interactive display in OVITO's viewports.\n"
+				"  * :py:class:`~ovito.render.TachyonRenderer` -- A software-based, high-quality raytracing renderer.\n"
+				"\n"
+				"Usage example::"
 				"\n\n"
-				"Default: ``(1,1,1)`` -- white")
-		.add_property("generate_alpha", &RenderSettings::generateAlphaChannel, &RenderSettings::setGenerateAlphaChannel,
-				"When saving the generated image to a file format that stores transparency information, this option will make "
-				"those parts of the output image transparent, which are not covered by an object."
-				"\n\n"
-				"Default: ``False``")
-		.add_property("saveToFile", &RenderSettings::saveToFile, &RenderSettings::setSaveToFile)
-		.add_property("skipExistingImages", &RenderSettings::skipExistingImages, &RenderSettings::setSkipExistingImages)
-		.add_property("customRangeStart", &RenderSettings::customRangeStart, &RenderSettings::setCustomRangeStart)
-		.add_property("customRangeEnd", &RenderSettings::customRangeEnd, &RenderSettings::setCustomRangeEnd)
-		.add_property("everyNthFrame", &RenderSettings::everyNthFrame, &RenderSettings::setEveryNthFrame)
-		.add_property("fileNumberBase", &RenderSettings::fileNumberBase, &RenderSettings::setFileNumberBase)
-	;
+				"    rs = RenderSettings(\n"
+				"        filename = 'image.png',\n"
+				"        size = (1024,768),\n"
+				"        background_color = (0.8,0.8,1.0)\n"
+				"    )\n"
+				"    rs.renderer.antialiasing = False\n"
+				"    dataset.viewports.active_vp.render(rs)\n")
+			.add_property("renderer", make_function(&RenderSettings::renderer, return_value_policy<ovito_object_reference>()), &RenderSettings::setRenderer,
+					"The renderer that is used to generate the image or movie. Depending on the selected renderer you "
+					"can use this to set additional parameters such as the anti-aliasing level."
+					"\n\n"
+					"See the :py:class:`~ovito.render.OpenGLRenderer` and :py:class:`~ovito.render.TachyonRenderer` classes "
+					"for a list of renderer-specific parameters.")
+			.add_property("range", &RenderSettings::renderingRangeType, &RenderSettings::setRenderingRangeType,
+					"Selects the animation frames to be rendered."
+					"\n\n"
+					"Possible values:\n"
+					"  * ``RenderSettings.Range.CURRENT_FRAME`` (default): Renders a single image at the current animation time.\n"
+					"  * ``RenderSettings.Range.ANIMATION``: Renders a movie of the entire animation sequence.\n"
+					"  * ``RenderSettings.Range.CUSTOM_INTERVAL``: Renders a movie of the animation interval given by the :py:attr:`.custom_range` attribute.\n")
+			.add_property("outputImageWidth", &RenderSettings::outputImageWidth, &RenderSettings::setOutputImageWidth)
+			.add_property("outputImageHeight", &RenderSettings::outputImageHeight, &RenderSettings::setOutputImageHeight)
+			.add_property("outputImageAspectRatio", &RenderSettings::outputImageAspectRatio)
+			.add_property("imageFilename", make_function(&RenderSettings::imageFilename, return_value_policy<copy_const_reference>()), &RenderSettings::setImageFilename)
+			.add_property("background_color", &RenderSettings::backgroundColor, &RenderSettings::setBackgroundColor,
+					"Controls the background color of the rendered image."
+					"\n\n"
+					"Default: ``(1,1,1)`` -- white")
+			.add_property("generate_alpha", &RenderSettings::generateAlphaChannel, &RenderSettings::setGenerateAlphaChannel,
+					"When saving the generated image to a file format that can store transparency information (e.g. PNG), this option will make "
+					"those parts of the output image transparent that are not covered by an object."
+					"\n\n"
+					"Default: ``False``")
+			.add_property("saveToFile", &RenderSettings::saveToFile, &RenderSettings::setSaveToFile)
+			.add_property("skipExistingImages", &RenderSettings::skipExistingImages, &RenderSettings::setSkipExistingImages)
+			.add_property("customRangeStart", &RenderSettings::customRangeStart, &RenderSettings::setCustomRangeStart)
+			.add_property("customRangeEnd", &RenderSettings::customRangeEnd, &RenderSettings::setCustomRangeEnd)
+			.add_property("everyNthFrame", &RenderSettings::everyNthFrame, &RenderSettings::setEveryNthFrame)
+			.add_property("fileNumberBase", &RenderSettings::fileNumberBase, &RenderSettings::setFileNumberBase)
+		;
 
-	enum_<RenderSettings::RenderingRangeType>("RenderingRange")
-		.value("CURRENT_FRAME", RenderSettings::CURRENT_FRAME)
-		.value("ANIMATION_INTERVAL", RenderSettings::ANIMATION_INTERVAL)
-		.value("CUSTOM_INTERVAL", RenderSettings::CUSTOM_INTERVAL)
-	;
+		enum_<RenderSettings::RenderingRangeType>("Range")
+			.value("CURRENT_FRAME", RenderSettings::CURRENT_FRAME)
+			.value("ANIMATION", RenderSettings::ANIMATION_INTERVAL)
+			.value("CUSTOM_INTERVAL", RenderSettings::CUSTOM_INTERVAL)
+		;
+	}
 
 	ovito_abstract_class<SceneRenderer, RefTarget>()
 		.add_property("isInteractive", &SceneRenderer::isInteractive)
@@ -111,8 +113,8 @@ BOOST_PYTHON_MODULE(PyScriptRendering)
 			"Since it accelerates the generation of images by using the computer's graphics hardware, it is very fast.",
 			"OpenGLRenderer")
 		.add_property("antialiasing_level", &StandardSceneRenderer::antialiasingLevel, &StandardSceneRenderer::setAntialiasingLevel,
-				"A positive integer controlling the level of antialiasing. If 1, no antialiasing is performed. For larger values, "
-				"the image in rendered at a higher resolution and scaled back to the desired output size to reduce aliasing artifacts."
+				"A positive integer controlling the level of supersampling. If 1, no supersampling is performed. For larger values, "
+				"the image in rendered at a higher resolution and then scaled back to the output size to reduce aliasing artifacts."
 				"\n\n"
 				"Default: 3")
 	;

@@ -55,7 +55,7 @@ BOOST_PYTHON_MODULE(PyScriptViewport)
 				"manipulate these existing viewports, you can access them through the "
 				":py:attr:`DataSet.viewports <ovito.DataSet.viewports>` attribute.")
 			.add_property("isRendering", &Viewport::isRendering)
-			.add_property("isPerspective", &Viewport::isPerspectiveProjection, "A boolean flag indicating whether this viewport uses a perspective projection (read-only).")
+			.add_property("isPerspective", &Viewport::isPerspectiveProjection)
 			.add_property("type", &Viewport::viewType, (void (*)(Viewport&,Viewport::ViewType))([](Viewport& vp, Viewport::ViewType vt) { vp.setViewType(vt); }),
 					"The type of projection:"
 					"\n\n"

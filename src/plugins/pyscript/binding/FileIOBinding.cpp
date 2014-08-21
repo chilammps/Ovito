@@ -102,20 +102,32 @@ BOOST_PYTHON_MODULE(PyScriptFileIO)
 	;
 
 	ovito_class<LinkedFileObject, SceneObject>(
-			"An object that is responsible for feeding an external data file into OVITO's modification pipeline."
+			"This object serves as data source for a modification pipeline. It reads data from one or more external files "
+			"and makes it available as input for modifiers."
 			"\n\n"
-			"An instance of this class is created by the :py:func:`ovito.importData` function to hook "
-			"the external simulation file into the scene. The instance is assigned to the :py:attr:`~ovito.scene.ObjectNode.source` "
-			"attribute of the :py:class:`~ovito.scene.ObjectNode`, which is returned by :py:func:`ovito.importData`. "
-			"The ``LinkedFileObject`` is responsible for managing the loading of the external file and for inserting the data into the "
-			"modification pipeline."
+			"You normally do not create an instance of this class yourself. "
+			"The :py:func:`ovito.io.import_file` function automatically assigns a :py:class:`!FileSourceObject` to the :py:attr:`~ovito.scene.ObjectNode.source` "
+			"attribute of the :py:class:`~ovito.scene.ObjectNode` it returns. "
+			"The file source object is responsible for managing the reference to the external file and for loading data upon request, which "
+			"is then fed into the modification pipeline."
 			"\n\n"
-			"Its :py:meth:`.load` method allows to hook a different external file into the existing modification pipeline. "
+			"The :py:meth:`FileSourceObject.load` method allows you to hook a different external file into an existing modification pipeline::"
 			"\n\n"
-			"The actual loading and parsing the external file is not performed by the ``LinkedFileObject`` itself. For this, a dedicated "
-			"file importer object is responsible, which is accessible through the :py:attr:`.importer` attribute. When loading a new file, "
-			"the ``LinkedFileObject`` automatically creates the right file importer depending on the file's format (which is auto-detected). "
-			"Note that the importer might have additional parameter attributes, which further control the loading of specific file formats."
+			"    # This create a new node with an empty modification pipeline:\n"
+			"    node = import_file(\"first_file.dump\")\n"
+			"    \n"
+			"    # Populate the pipeline with a modifier:\n"
+			"    node.modifiers.append(ColorCodingModifier(source=\"Potential Energy\"))\n"
+			"    \n"
+			"    # This will replace the input data with a new file \n"
+			"    # but keeps the modification pipeline:\n"
+			"    node.source.load(\"second_file.dump\")\n"
+			"\n"
+			"File source objects are also used by certain modifiers to load a reference configuration."
+//			"Note the actual parsing of the external file is not performed by the :py:class:`!FileSourceObject` itself. For this, a dedicated "
+//			"file importer object is responsible, which is accessible through the :py:attr:`.importer` attribute. When loading a new file, "
+//			"the :py:class:`!FileSourceObject`` automatically creates the right file importer depending on the file's format (which is auto-detected). "
+//			"Note that the importer might have additional parameter attributes, which further control the loading of specific file formats."
 			"\n\n"
 			"**Example**"
 			"\n\n"
@@ -123,36 +135,43 @@ BOOST_PYTHON_MODULE(PyScriptFileIO)
 			"to determine the number of FCC atoms in each structure::"
 			"\n\n"
 			"    import sys\n"
-			"    import ovito\n"
+			"    from ovito.io import *\n"
+			"    from ovito.modifiers import *\n"
 			"    \n"
 			"    node = None\n"
-			"    for fn in sys.argv[1:]:\n\n"
+			"    for file in sys.argv[1:]:\n\n"
 			"        if not node:\n"
-			"            # Import the first file using importData().\n"
+			"            # Import the first file using import_file().\n"
 			"            # This creates the ObjectNode and sets up the modification pipeline.\n"
-			"            node = ovito.importData(fn)\n"
+			"            node = import_file(file)\n"
 			"            # Insert a modifier into the pipeline.\n"
-			"            cnaMod = CommonNeighborAnalysisModifier(adaptiveMode=True)\n"
-			"            node.modifiers.append(cnaMod)\n"
+			"            cna = CommonNeighborAnalysisModifier(adaptive_mode=True)\n"
+			"            node.modifiers.append(cna)\n"
 			"        else:\n"
-			"            # To load subsequent files, call the load() function of the LinkedFileObject.\n"
-			"            node.source.load(fn)\n\n"
+			"            # To load subsequent files, call the load() function of the FileSourceObject.\n"
+			"            node.source.load(file)\n\n"
 			"        # Wait until the results of the analysis modifier are available.\n"
 			"        node.wait()\n"
-			"        print \"Structure %s contains %i FCC atoms.\" % (fn, cnaMod.structureCounts[CommonNeighborAnalysisModifier.StructureTypes.FCC])\n")
-		.add_property("importer", make_function(&LinkedFileObject::importer, return_value_policy<ovito_object_reference>()),
-				"The file importer object that is responsible for parsing the external data file.")
-		.add_property("sourceUrl", make_function(&LinkedFileObject::sourceUrl, return_value_policy<copy_const_reference>()),
-				"The path or URL of the loaded file (read-only).")
+			"        print \"Structure %s contains %i FCC atoms.\" % (file, cna.counts[\"FCC\"])\n",
+			// The Python class name:
+			"FileSourceObject")
+		.add_property("importer", make_function(&LinkedFileObject::importer, return_value_policy<ovito_object_reference>()))
+		.add_property("source_path", make_function(&LinkedFileObject::sourceUrl, return_value_policy<copy_const_reference>()))
 		.add_property("status", &LinkedFileObject::status)
-		.add_property("numberOfFrames", &LinkedFileObject::numberOfFrames,
+		.add_property("num_frames", &LinkedFileObject::numberOfFrames,
 				"The number of frames the loaded file or file sequence contains (read-only).")
-		.add_property("loadedFrame", &LinkedFileObject::loadedFrame,
-				"The index of the frame that is currently loaded (read-only).")
-		.add_property("adjustAnimationIntervalEnabled", &LinkedFileObject::adjustAnimationIntervalEnabled, &LinkedFileObject::setAdjustAnimationIntervalEnabled,
-				"Boolean flag that controls whether the animation length in OVITO is automatically adjusted to match the number of frames in the "
-				"loaded file or file sequence. In some situations it is necessary to turn this off, for example, if more than one data file is imported into "
-				"OVITO simultaneously, but their numbers of frames do not match."
+		.add_property("loaded_frame", &LinkedFileObject::loadedFrame,
+				"The zero-based index of the frame that is currently loaded (read-only)	.")
+		.add_property("adjust_animation_interval", &LinkedFileObject::adjustAnimationIntervalEnabled, &LinkedFileObject::setAdjustAnimationIntervalEnabled,
+				"A flag that controls whether the animation length in OVITO is automatically adjusted to match the number of frames in the "
+				"loaded file or file sequence."
+				"\n\n"
+				"The current length of the animation in OVITO is stored in the :py:class:`~ovito.anim.AnimationSettings` object. The number of frames in the external file "
+				"or file sequence is indicated by the :py:attr:`.num_frames` attribute of this :py:class:`!FileSourceObject`. If :py:attr:`.adjust_animation_interval` "
+				"is ``True``, then animation length will be automatically adjusted to match the number of frames in the file input. "
+				"\n\n"
+				"In some situations it makes sense to turn this option off, for example, if you import several data files into "
+				"OVITO simultaneously, but their frame counts do not match. "
 				"\n\n"
 				"Default: ``True``\n")
 		.add_property("sceneObjects", make_function(&LinkedFileObject::sceneObjects, return_internal_reference<>()))

@@ -7,13 +7,12 @@ def _get_ObjectNode_modifiers(self):
     
        This list contains the modifiers that are applied to the node's :py:attr:`.source` object. You
        can add and remove modifiers from this list as needed. The first modifier in the list is
-       evaluated first, and its output is passed to the second modifier and so on. 
-       The output of the last modifier is displayed in the viewports. 
+       always evaluated first, and its output is passed on to the second modifier and so on. 
+       The results of the last modifier are displayed in the viewports. 
        
        Usage example::
        
-           modifier = WrapPeriodicImagesModifier()
-           dataset.selected_node.modifiers.append(modifier)
+           node.modifiers.append(WrapPeriodicImagesModifier())
     """    
     
     class ObjectNodeModifierList:
@@ -93,25 +92,24 @@ def _ObjectNode_wait(self, msgText = None):
         .. note::
         
             OVITO uses an asynchronous evaluation model to compute the results of the modification pipeline. 
-            This allows the user to continue working with the program while it is performing long-running
+            This allows the user to continue working in the graphical user interface of the program while it is performing long-running
             operations such as computing the results of modifiers or loading data files. The evaluation of modifiers
-            in a pipeline is triggered each time the output of the pipeline is requested by someone. In an interactive
-            program session of OVITO this happens very frequently, each time OVITO updates the viewport display.
+            in a pipeline is triggered whenever the output of the pipeline is requested by someone. In an interactive
+            program session of OVITO this happens very frequently, each time OVITO redraws the viewports.
             The object node caches the results of the last pipeline evaluation and automatically detects any changes made
             to a modification pipeline. Thus, subsequent evaluation requests can be served very quickly as long as 
             the modification pipeline or its input do not change.
             
-        This method requests an update of the node's modification pipeline and waits until the input data (i.e. the source object) 
-        has been fully loaded and the effect of all modifiers in the node's modification pipeline has been computed.
+        This method requests an update of the node's modification pipeline and waits until the input data is available 
+        (i.e. the external has been completely loaded) and the effect of all modifiers in the node's modification pipeline has been computed.
         If the modification pipeline is already up to date, the method returns immediately.
         
-        You should call this method if you are going to access status information or other data from individual modifiers 
+        You should call this method if you are going to read out information from individual modifiers 
         in the node's modification pipeline. This method will ensure that the modifiers have been computed and their result data is
         up to date.
                
         :param str msgText: An optional text that will be shown to the user while waiting for the operation to finish.
-        :returns: True if successful, false if the operation has been canceled by the user.
-        :rtype: bool
+        :returns: ``True`` if successful, ``False`` if the operation has been canceled by the user.
     """
     if not msgText: msgText = "Script is waiting for scene graph to become ready." 
     return self.waitUntilReady(self.dataset.anim.time, msgText)

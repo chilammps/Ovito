@@ -124,6 +124,11 @@ BOOST_PYTHON_MODULE(Particles)
 		.add_property("pbcX", &SimulationCell::pbcX)
 		.add_property("pbcY", &SimulationCell::pbcY)
 		.add_property("pbcZ", &SimulationCell::pbcZ)
+		.add_property("cellMatrix", &SimulationCell::cellMatrix, &SimulationCell::setCellMatrix)
+		.add_property("edgeVector1", make_function(&SimulationCell::edgeVector1, return_value_policy<copy_const_reference>()))
+		.add_property("edgeVector2", make_function(&SimulationCell::edgeVector2, return_value_policy<copy_const_reference>()))
+		.add_property("edgeVector3", make_function(&SimulationCell::edgeVector3, return_value_policy<copy_const_reference>()))
+		.add_property("origin", make_function(&SimulationCell::origin, return_value_policy<copy_const_reference>()))
 	;
 
 	ovito_class<ParticleType, RefTarget>()
