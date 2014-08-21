@@ -3,7 +3,7 @@ from PyScriptRendering import *
 
 def _get_RenderSettings_customRange(self):
     """ 
-    Specifies the range of animation frames to render if :py:attr:`.renderingRange` is ``CUSTOM_INTERVAL``.
+    Specifies the range of animation frames to render if :py:attr:`.range` is ``CUSTOM_INTERVAL``.
     
     Default: ``(0,100)`` 
     """

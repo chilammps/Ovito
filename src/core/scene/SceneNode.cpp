@@ -269,7 +269,7 @@ void SceneNode::referenceRemoved(const PropertyFieldDescriptor& field, RefTarget
 /******************************************************************************
 * Adds a child scene node to this node.
 ******************************************************************************/
-void SceneNode::addChild(SceneNode* newChild)
+void SceneNode::insertChild(int index, SceneNode* newChild)
 {
 	OVITO_CHECK_OBJECT_POINTER(newChild);
 
@@ -285,7 +285,7 @@ void SceneNode::addChild(SceneNode* newChild)
 	OVITO_ASSERT(newChild->parentNode() == nullptr);
 
 	// Insert into children array of this parent.
-	_children.push_back(newChild);
+	_children.insert(index, newChild);
 	// This parent should be automatically filled into the child's parent pointer.
 	OVITO_ASSERT(newChild->parentNode() == this);
 

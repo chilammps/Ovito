@@ -39,15 +39,15 @@ BOOST_PYTHON_MODULE(Tachyon)
 				"Enables supersampling to reduce aliasing effects."
 				"\n\n"
 				"Default: ``True``")
-		.add_property("antialiasingSamples", &TachyonRenderer::antialiasingSamples, &TachyonRenderer::setAntialiasingSamples,
+		.add_property("antialiasing_samples", &TachyonRenderer::antialiasingSamples, &TachyonRenderer::setAntialiasingSamples,
 				"The number of supersampling rays to generate per pixel to reduce aliasing effects."
 				"\n\n"
 				"Default: 12")
-		.add_property("directLightSource", &TachyonRenderer::directLightSourceEnabled, &TachyonRenderer::setDirectLightSourceEnabled,
+		.add_property("direct_light", &TachyonRenderer::directLightSourceEnabled, &TachyonRenderer::setDirectLightSourceEnabled,
 				"Enables the parallel light source, which is positioned at an angle behind the camera."
 				"\n\n"
 				"Default: ``True``")
-		.add_property("defaultLightSourceIntensity", &TachyonRenderer::defaultLightSourceIntensity, &TachyonRenderer::setDefaultLightSourceIntensity,
+		.add_property("direct_light_intensity", &TachyonRenderer::defaultLightSourceIntensity, &TachyonRenderer::setDefaultLightSourceIntensity,
 				"Controls the brightness of the directional light source."
 				"\n\n"
 				"Default: 0.9")
@@ -55,16 +55,16 @@ BOOST_PYTHON_MODULE(Tachyon)
 				"Enables cast shadows for the directional light source."
 				"\n\n"
 				"Default: ``True``")
-		.add_property("ambientOcclusion", &TachyonRenderer::ambientOcclusionEnabled, &TachyonRenderer::setAmbientOcclusionEnabled,
+		.add_property("ambient_occlusion", &TachyonRenderer::ambientOcclusionEnabled, &TachyonRenderer::setAmbientOcclusionEnabled,
 				"Enables ambient occlusion shading. Enabling this lighting technique mimics some of the effects that occur "
 				"under conditions of omnidirectional diffuse illumination, e.g. outdoors on an overcast day."
 				"\n\n"
 				"Default: ``True``")
-		.add_property("ambientOcclusionBrightness", &TachyonRenderer::ambientOcclusionBrightness, &TachyonRenderer::setAmbientOcclusionBrightness,
+		.add_property("ambient_occlusion_brightness", &TachyonRenderer::ambientOcclusionBrightness, &TachyonRenderer::setAmbientOcclusionBrightness,
 				"Controls the brightness of the sky light source used for ambient occlusion."
 				"\n\n"
 				"Default: 0.8")
-		.add_property("ambientOcclusionSamples", &TachyonRenderer::ambientOcclusionSamples, &TachyonRenderer::setAmbientOcclusionSamples,
+		.add_property("ambient_occlusion_samples", &TachyonRenderer::ambientOcclusionSamples, &TachyonRenderer::setAmbientOcclusionSamples,
 				"Ambient occlusion is implemented using a Monte Carlo technique. This parameters controls the number of samples to compute. "
 				"A higher sample count leads to a more even shading, but requires more computation time."
 				"\n\n"

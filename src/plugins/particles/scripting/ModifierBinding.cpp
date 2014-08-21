@@ -75,75 +75,71 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 	;
 
 	ovito_class<AssignColorModifier, ParticleModifier>(
-			"Assigns a color to the selected particles.")
+			"Assigns a color to selected particles.")
 		.add_property("color", &AssignColorModifier::color, &AssignColorModifier::setColor,
 				"The color that will be assigned to particles."
 				"\n\n"
 				"Default: ``(0.3,0.3,1.0)``\n")
 		.add_property("colorController", make_function(&AssignColorModifier::colorController, return_value_policy<ovito_object_reference>()), &AssignColorModifier::setColorController)
-		.add_property("keepSelection", &AssignColorModifier::keepSelection, &AssignColorModifier::setKeepSelection,
-				"If false, the modifier resets the selection after coloring the selected particles."
-				"\n\n"
-				"Default: ``False``")
+		.add_property("keepSelection", &AssignColorModifier::keepSelection, &AssignColorModifier::setKeepSelection)
 	;
 
-	ovito_class<ColorCodingModifier, ParticleModifier>(
-			"Colors particles based on the value of an arbitrary particle property."
-			"\n\n"
-			"Usage example::"
-			"\n\n"
-			"    from ovito.modify.particles import *\n"
-			"    \n"
-			"    modifier = ColorCodingModifier(\n"
-			"        sourceProperty = \"Potential Energy\",\n"
-			"        colorGradient = ColorCodingHotGradient()\n"
-			"    )\n"
-			"    node.modifiers.append(modifier)\n"
-			"\n"
-			"If, as in the example above, the :py:attr:`.startValue` and :py:attr:`.endValue` parameters are not explicitly set, "
-			"then the modifier automatically adjusts them to the minimum and maximum values of the particle property when the modifier "
-			"is inserted into the modification pipeline.")
-		.add_property("sourceProperty", make_function(&ColorCodingModifier::sourceProperty, return_value_policy<copy_const_reference>()), &ColorCodingModifier::setSourceProperty,
-				"The input particle property that determines the color of particles.")
-		.add_property("startValue", &ColorCodingModifier::startValue, &ColorCodingModifier::setStartValue,
-				"This determines the value range when mapping the input property to a color.")
-		.add_property("startValueController", make_function(&ColorCodingModifier::startValueController, return_value_policy<ovito_object_reference>()), &ColorCodingModifier::setStartValueController)
-		.add_property("endValue", &ColorCodingModifier::endValue, &ColorCodingModifier::setEndValue,
-				"This determines the value range when mapping the input property to a color.")
-		.add_property("endValueController", make_function(&ColorCodingModifier::endValueController, return_value_policy<ovito_object_reference>()), &ColorCodingModifier::setEndValueController)
-		.add_property("colorGradient", make_function(&ColorCodingModifier::colorGradient, return_value_policy<ovito_object_reference>()), &ColorCodingModifier::setColorGradient,
-				"The color gradient object, which is responsible for mapping normalized property values to colors."
+	{
+		scope s = ovito_class<ColorCodingModifier, ParticleModifier>(
+				"Colors particles based on the values of an arbitrary particle property."
 				"\n\n"
-				"Available gradient types are:\n"
-				" * ``ColorCodingHSVGradient`` -- Rainbow (default)\n"
-				" * ``ColorCodingGrayscaleGradient`` -- Grayscale\n"
-				" * ``ColorCodingHotGradient`` -- Hot\n"
-				" * ``ColorCodingJetGradient`` -- Jet\n"
-				"\n")
-		.add_property("colorOnlySelected", &ColorCodingModifier::colorOnlySelected, &ColorCodingModifier::setColorOnlySelected,
-				"If true, only selected particles will be assigned a color by the modifier; if false, all particles will be colored."
+				"Usage example::"
 				"\n\n"
-				"Default: ``False``\n")
-		.add_property("keepSelection", &ColorCodingModifier::keepSelection, &ColorCodingModifier::setKeepSelection,
-				"If :py:attr:`.colorOnlySelected` == ``True`` and this property is false, then the modifier resets the particle selection after coloring the particles."
-				"\n\n"
-				"Default: ``False``")
-		.add_property("renderLegend", &ColorCodingModifier::renderLegend, &ColorCodingModifier::setRenderLegend)
-		.add_property("legendViewport", make_function(&ColorCodingModifier::legendViewport, return_value_policy<ovito_object_reference>()), &ColorCodingModifier::setLegendViewport)
-	;
+				"    from ovito.modifiers import *\n"
+				"    \n"
+				"    modifier = ColorCodingModifier(\n"
+				"        source = \"Potential Energy\",\n"
+				"        gradient = ColorCodingModifier.Hot()\n"
+				"    )\n"
+				"    node.modifiers.append(modifier)\n"
+				"\n"
+				"If, as in the example above, the :py:attr:`.start_value` and :py:attr:`.end_value` parameters are not explicitly set, "
+				"then the modifier automatically adjusts them to the minimum and maximum values of the particle property when the modifier "
+				"is inserted into the modification pipeline.")
+			.add_property("source", make_function(&ColorCodingModifier::sourceProperty, return_value_policy<copy_const_reference>()), &ColorCodingModifier::setSourceProperty,
+					"The name of the input property that determines the color of particles.")
+			.add_property("start_value", &ColorCodingModifier::startValue, &ColorCodingModifier::setStartValue,
+					"This parameter defines the value range when mapping the input property to a color.")
+			.add_property("startValueController", make_function(&ColorCodingModifier::startValueController, return_value_policy<ovito_object_reference>()), &ColorCodingModifier::setStartValueController)
+			.add_property("end_value", &ColorCodingModifier::endValue, &ColorCodingModifier::setEndValue,
+					"This parameter defines the value range when mapping the input property to a color.")
+			.add_property("endValueController", make_function(&ColorCodingModifier::endValueController, return_value_policy<ovito_object_reference>()), &ColorCodingModifier::setEndValueController)
+			.add_property("gradient", make_function(&ColorCodingModifier::colorGradient, return_value_policy<ovito_object_reference>()), &ColorCodingModifier::setColorGradient,
+					"The color gradient object, which is responsible for mapping normalized property values to colors."
+					"\n\n"
+					"Available gradient types are:\n"
+					" * ``ColorCodingModifier.Rainbow()`` (default)\n"
+					" * ``ColorCodingModifier.Grayscale()``\n"
+					" * ``ColorCodingModifier.Hot()``\n"
+					" * ``ColorCodingModifier.Jet()``\n"
+					"\n")
+			.add_property("color_only_selected", &ColorCodingModifier::colorOnlySelected, &ColorCodingModifier::setColorOnlySelected,
+					"If true, only selected particles will be affected by the modifier; if false, all particles will be colored."
+					"\n\n"
+					"Default: ``False``\n")
+			.add_property("keepSelection", &ColorCodingModifier::keepSelection, &ColorCodingModifier::setKeepSelection)
+			.add_property("renderLegend", &ColorCodingModifier::renderLegend, &ColorCodingModifier::setRenderLegend)
+			.add_property("legendViewport", make_function(&ColorCodingModifier::legendViewport, return_value_policy<ovito_object_reference>()), &ColorCodingModifier::setLegendViewport)
+		;
 
-	ovito_abstract_class<ColorCodingGradient, RefTarget>()
-		.def("valueToColor", pure_virtual(&ColorCodingGradient::valueToColor))
-	;
+		ovito_abstract_class<ColorCodingGradient, RefTarget>()
+			.def("valueToColor", pure_virtual(&ColorCodingGradient::valueToColor))
+		;
 
-	ovito_class<ColorCodingHSVGradient, ColorCodingGradient>()
-	;
-	ovito_class<ColorCodingGrayscaleGradient, ColorCodingGradient>()
-	;
-	ovito_class<ColorCodingHotGradient, ColorCodingGradient>()
-	;
-	ovito_class<ColorCodingJetGradient, ColorCodingGradient>()
-	;
+		ovito_class<ColorCodingHSVGradient, ColorCodingGradient>(nullptr, "Rainbow")
+		;
+		ovito_class<ColorCodingGrayscaleGradient, ColorCodingGradient>(nullptr, "Grayscale")
+		;
+		ovito_class<ColorCodingHotGradient, ColorCodingGradient>(nullptr, "Hot")
+		;
+		ovito_class<ColorCodingJetGradient, ColorCodingGradient>(nullptr, "Jet")
+		;
+	}
 
 	ovito_class<AmbientOcclusionModifier, AsynchronousParticleModifier>()
 		.add_property("intensity", &AmbientOcclusionModifier::intensity, &AmbientOcclusionModifier::setIntensity)

@@ -104,39 +104,32 @@ BOOST_PYTHON_MODULE(PyScriptScene)
 		.def("removeModifier", &PipelineObject::removeModifier)
 	;
 
-	ovito_abstract_class<SceneNode, RefTarget>(
-			"An object or group of objects in the three-dimensional scene.\n\n"
-
-			"A :py:class:`!SceneNode` is part of the scene graph, which is a tree data structure with a root node. "
-			"The root node of the current scene graph can be accessed through the :py:attr:`~ovito.app.DataSet.sceneRoot` attribute of the :py:attr:`~ovito.app.DataSet` class."
-		)
+	ovito_abstract_class<SceneNode, RefTarget>()
 		.add_property("name", make_function(&SceneNode::name, return_value_policy<copy_const_reference>()), &SceneNode::setName)
 		.add_property("displayColor", make_function(&SceneNode::displayColor, return_value_policy<copy_const_reference>()), &SceneNode::setDisplayColor)
 		.add_property("parentNode", make_function(&SceneNode::parentNode, return_value_policy<ovito_object_reference>()))
 		.add_property("childCount", &SceneNode::childCount)
-		.add_property("children", make_function(&SceneNode::children, return_internal_reference<>()),
-				"A read-only Python sequence with the child nodes of this :py:class:`!SceneNode`.")
+		.add_property("children", make_function(&SceneNode::children, return_internal_reference<>()))
 		.add_property("targetNode", make_function(&SceneNode::targetNode, return_value_policy<ovito_object_reference>()))
 		.add_property("selected", &SceneNode::isSelected, &SceneNode::setSelected)
-		.def("delete", &SceneNode::deleteNode, "Deletes this node from the scene.")
+		.def("delete", &SceneNode::deleteNode)
 		.def("addChild", &SceneNode::addChild)
+		.def("insertChild", &SceneNode::insertChild)
 		.def("removeChild", &SceneNode::removeChild)
 		.def("localBoundingBox", &SceneNode::localBoundingBox)
 		.def("worldBoundingBox", make_function(&SceneNode::worldBoundingBox, return_value_policy<copy_const_reference>()))
 	;
 
 	ovito_class<ObjectNode, SceneNode>(
-			"Base class: :py:class:`ovito.scene.SceneNode`"
-			"\n\n"
-			"Represents an object in the three-dimensional scene."
+			"Manages an object and it's associated modification pipeline."
 			"\n\n"
 			"An :py:class:`!ObjectNode` is created when a new object is inserted into the scene. "
 			"The node maintains a modification pipeline, which allows to apply modifiers to the object. "
 			"The results of the modification pipeline (which may be empty) are displayed by the "
 			":py:class:`!ObjectNode` in the three-dimensional scene."
 			"\n\n"
-			"The node's modification pipeline can be accessed through its :py:attr:`.modifiers` attribute. The source object, which "
-			"enters the modification pipeline, can be accessed through the :py:attr:`.source` attribute."
+			"The node's modification pipeline can be accessed through its :py:attr:`.modifiers` attribute. "
+			"The data that enters the modification pipeline is provided by the node's :py:attr:`.source` object."
 			)
 		.add_property("sceneObject", make_function(&ObjectNode::sceneObject, return_value_policy<ovito_object_reference>()), &ObjectNode::setSceneObject)
 		.add_property("source", make_function(&ObjectNode::sourceObject, return_value_policy<ovito_object_reference>()),

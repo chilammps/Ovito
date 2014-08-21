@@ -6,7 +6,7 @@
 #
 # Usage:
 #
-#   ovitos [-o FILE] [script.py [arg...]] 
+#   ovitos [-o FILE] [-g] [-v] [script.py [arg...]] 
 #
 # The -i starts OVITO's Python interpreter in interactive mode.
 #
@@ -25,6 +25,9 @@ then
 #  exit 1
 fi
 
+# Assume console mode by default
+CONSOLE_MODE="--nogui"
+
 # Process options
 while [ $# -ge 1 ]
 do
@@ -38,8 +41,12 @@ do
   then
     echo "OVITO Script Interpreter"
     echo ""
-    echo "Usage: `basename $0` [-o FILE] [-v] [script.py] [args...]"
+    echo "Usage: `basename $0` [-o FILE] [-v] [-g] [script.py] [args...]"
     exit 0
+  elif [ "$1" = "-g" -o "$1" = "--gui" ]
+  then
+    CONSOLE_MODE=
+    shift
   elif [ "$1" = "-v" -o "$1" = "--version" ]
   then
     SHOW_VERSION="-v"
@@ -69,4 +76,4 @@ done
 # Invoke the main OVITO executable.
 # Escape all script arguments with the --scriptarg option.
 # The data file to be loaded must be specified last.
-eval ${OVITO_EXE} --nogui ${SHOW_VERSION} ${SCRIPT_FILE} ${ARGLIST} ${INTERACTIVE} ${OPEN_FILE}
+eval ${OVITO_EXE} ${CONSOLE_MODE} ${SHOW_VERSION} ${SCRIPT_FILE} ${ARGLIST} ${INTERACTIVE} ${OPEN_FILE}

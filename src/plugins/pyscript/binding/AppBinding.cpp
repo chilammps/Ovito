@@ -46,7 +46,13 @@ using namespace Ovito;
 // Implementation of the __str__ method for OvitoObject derived classes.
 inline object OvitoObject__str__(OvitoObject* o) {
 	if(!o) return str("<OvitoObject nullptr>");
-	else return "<%s at address 0x%x>" % make_tuple(o->getOOType().name(), (std::intptr_t)o);
+	else return "<%s at 0x%x>" % make_tuple(o->getOOType().name(), (std::intptr_t)o);
+}
+
+// Implementation of the __repr__ method for OvitoObject derived classes.
+inline object OvitoObject__repr__(OvitoObject* o) {
+	if(!o) return str("<OvitoObject nullptr>");
+	else return "%s()" % str(o->getOOType().name());
 }
 
 // Implementation of the __eq__ method for OvitoObject derived classes.
@@ -70,6 +76,7 @@ BOOST_PYTHON_MODULE(PyScriptApp)
 
 	class_<OvitoObject, OORef<OvitoObject>, boost::noncopyable>("OvitoObject", no_init)
 		.def("__str__", &OvitoObject__str__)
+		.def("__repr__", &OvitoObject__repr__)
 		.def("__eq__", &OvitoObject__eq__)
 		.def("__ne__", &OvitoObject__ne__)
 	;
@@ -88,19 +95,20 @@ BOOST_PYTHON_MODULE(PyScriptApp)
 	ovito_abstract_class<DataSet, RefTarget>(
 			"A container object holding all data associated with an OVITO program session. "
 			"It provides access to the scene data, the viewports, the current selection, and the animation settings. "
-			"Basically everything that gets saved in an OVITO file. "
+			"Basically everything that would get saved in an OVITO file. "
 			"\n\n"
-			"There exists exactly one instance of this class, which can be accessed via the :py:data:`ovito.dataset` module-level attribute.")
-		.add_property("sceneRoot", make_function(&DataSet::sceneRoot, return_value_policy<ovito_object_reference>()),
-				"The root :py:class:`~ovito.scene.SceneNode` of the scene graph. This provides access to the objects "
-				"in the three-dimensional scene.")
+			"There exists only one global instance of this class, which can be accessed via the :py:data:`ovito.dataset` module-level attribute.")
+		.add_property("scene_nodes", make_function(&DataSet::sceneRoot, return_value_policy<ovito_object_reference>()),
+				"A list-like object that contains all :py:class:`~ovito.scene.ObjectNode` instances that are part of the three-dimensional scene. "
+				"Only nodes that are in this list are visible in the viewports. You can add or remove nodes from this list.")
 		.add_property("filePath", make_function(&DataSet::filePath, return_value_policy<copy_const_reference>()), &DataSet::setFilePath)
 		.add_property("anim", make_function(&DataSet::animationSettings, return_value_policy<ovito_object_reference>()),
-				"An :py:class:`~ovito.anim.AnimationSettings` object, which manages various animation-related settings such as the number of frames, the current frame, playback speed etc.")
+				"An :py:class:`~ovito.anim.AnimationSettings` object, which manages various animation-related settings in OVITO such as the number of frames, the current frame, playback speed etc.")
 		.add_property("viewports", make_function(&DataSet::viewportConfig, return_value_policy<ovito_object_reference>()),
-				"A :py:class:`~ovito.view.ViewportConfiguration` object that contains OVITO's 3d viewports.")
-		.add_property("renderSettings", make_function(&DataSet::renderSettings, return_value_policy<ovito_object_reference>()),
-				"A :py:class:`~ovito.render.RenderSettings` object, which stores the current settings for rendering pictures and movies.")
+				"A :py:class:`~ovito.view.ViewportConfiguration` object managing the viewports in OVITO's main window.")
+		.add_property("render_settings", make_function(&DataSet::renderSettings, return_value_policy<ovito_object_reference>()),
+				"The global :py:class:`~ovito.render.RenderSettings` object, which stores the current settings for rendering pictures and movies. "
+				"These are the settings the user edits on the :guilabel:`Render` tab of OVITO's main window.")
 		.add_property("selection", make_function(&DataSet::selection, return_value_policy<ovito_object_reference>()))
 		.add_property("container", make_function(&DataSet::container, return_value_policy<ovito_object_reference>()))
 		.def("clearScene", &DataSet::clearScene)

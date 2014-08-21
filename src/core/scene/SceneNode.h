@@ -107,25 +107,36 @@ public:
 	/// \undoable
 	Q_INVOKABLE virtual void deleteNode();
 
-	/// \brief Adds a child scene node to this node.
+	/// \brief Inserts a scene node into this node's list of children.
+	/// \param index The position at which to insert the child node into the list of children.
 	/// \param newChild The node that becomes a child of this node. If \a newChild is already a child
-	///                 of another parent node then it is first removed form that parent.
+	///                 of another parent node then it is first removed from that parent.
 	///
 	/// This method preserves the world transformation of the new child node by calling
 	/// Transformation::changeParents() on the node's local transformation controller.
-	/// Please note that is actually only preserves the node's world position at the current
-	/// animation time.
 	///
 	/// \undoable
-	void addChild(SceneNode* newChild);
+	/// \sa removeChild()
+	void insertChild(int index, SceneNode* newChild);
+
+	/// \brief Adds a child scene node to this node.
+	/// \param newChild The node that becomes a child of this node. If \a newChild is already a child
+	///                 of another parent node then it is first removed from that parent.
+	///
+	/// This method preserves the world transformation of the new child node by calling
+	/// Transformation::changeParents() on the node's local transformation controller.
+	///
+	/// \undoable
+	/// \sa removeChild()
+	void addChild(SceneNode* newChild) {
+		insertChild(childCount(), newChild);
+	}
 
 	/// \brief Removes a child node from this parent node.
 	/// \param child A child node of this parent node.
 	///
 	/// This method preserves the world transformation of the child node by calling
 	/// Transformation::changeParents() on the node's local transformation controller.
-	/// Please note that is actually only preserves the node's world position at the current
-	/// animation time.
 	///
 	/// \undoable
 	/// \sa addChild()

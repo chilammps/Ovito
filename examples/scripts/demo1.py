@@ -1,7 +1,10 @@
+# Import OVITO modules.
 from ovito import *
 from ovito.render import *
 from ovito.modify.particles import *
 from ovito.io.particles import *
+
+# Import modules from standard Python library.
 import math
 
 # Query program version.
@@ -25,11 +28,11 @@ node.modifiers.append(ColorCodingModifier(
 ))
 
 # Set up view, looking along the [2,3,-3] vector from camera position (-100, -150, 150).
-vp = dataset.viewports.activeViewport
-vp.viewType = ovito.view.ViewType.PERSPECTIVE
-vp.cameraPosition = (-100, -150, 150)
-vp.cameraDirection = (2, 3, -3)
-vp.fieldOfView = math.radians(60.0)
+vp = dataset.viewports.active_vp
+vp.type = ovito.view.ViewType.PERSPECTIVE
+vp.camera_pos = (-100, -150, 150)
+vp.camera_dir = (2, 3, -3)
+vp.fov = math.radians(60.0)
 
 # Render a picture of the dataset.
 vp.render(RenderSettings(
@@ -43,8 +46,7 @@ node.modifiers.append(DeleteParticlesModifier())
 
 # Print the modification pipeline of the selected node to the console.
 print "Modification pipeline:"
-for mod in node.modifiers:
-	print "  ", mod
+print node.modifiers
 	
 # Perform some analysis.
 cna = CommonNeighborAnalysisModifier(cutoff = 3.2, adaptiveMode = False)

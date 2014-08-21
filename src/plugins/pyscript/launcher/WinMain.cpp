@@ -33,10 +33,10 @@ int main(int argc, char** argv)
 	// Preprocess command line parameters in a similar manner as the "ovitos" Bash shell script on Linux does.
 	std::vector<const char*> newargv;
 	newargv.push_back(*argv++);
-	newargv.push_back("--nogui");
 	argc--;
 	
 	const char* loadFile = nullptr;
+	bool graphicalMode = false;
 	while(argc > 0) {
 		if(strcmp(*argv, "-o") == 0) {
 			if(argc >= 2)
@@ -46,15 +46,22 @@ int main(int argc, char** argv)
 		}
 		else if(strcmp(*argv, "-h") == 0 || strcmp(*argv, "--help") == 0) {
 			std::cout << "OVITO Script Interpreter" << std::endl << std::endl;
-			std::cout << "Usage: ovitos.exe [-o FILE] [-v] [script.py] [args...]" << std::endl;
+			std::cout << "Usage: ovitos.exe [-o FILE] [-g] [-v] [script.py] [args...]" << std::endl;
 			return 0;
 		}
 		else if(strcmp(*argv, "-v") == 0 || strcmp(*argv, "--version") == 0) {
 			argc--;
 			newargv.push_back(*argv++);
 		}
+		else if(strcmp(*argv, "-g") == 0 || strcmp(*argv, "--gui") == 0) {
+			argc--;
+			argv++;
+			graphicalMode = true;
+		}
 		else break;
 	}
+	if(!graphicalMode)
+		newargv.insert(1, "--nogui");
 	
 	if(argc >= 1) {
 		// Parse script name and any subsequent arguments.

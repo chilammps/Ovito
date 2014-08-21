@@ -19,10 +19,8 @@ Module Reference:
    
    modules/ovito
    modules/ovito_anim
-   modules/ovito_app
    modules/ovito_io
-   modules/ovito_modify_particles
+   modules/ovito_modifiers
    modules/ovito_render
-   modules/ovito_render_tachyon
    modules/ovito_scene
    modules/ovito_view

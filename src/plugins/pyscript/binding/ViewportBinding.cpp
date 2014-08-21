@@ -34,88 +34,105 @@ BOOST_PYTHON_MODULE(PyScriptViewport)
 {
 	docstring_options docoptions(true, false);
 
-	ovito_class<Viewport, RefTarget>(
-			"A viewport window showing the contents of the three-dimensional scene.")
-		.add_property("isRendering", &Viewport::isRendering)
-		.add_property("isPerspective", &Viewport::isPerspectiveProjection, "A boolean flag indicating whether this viewport uses a perspective projection (read-only).")
-		.add_property("viewType", &Viewport::viewType, (void (*)(Viewport&,Viewport::ViewType))([](Viewport& vp, Viewport::ViewType vt) { vp.setViewType(vt); }),
-				"The projection type of the viewport."
+	{
+		scope s = ovito_class<Viewport, RefTarget>(
+				"A viewport defines the view on the three-dimensional scene. "
 				"\n\n"
-				"Possible types are:"
+				"You can create an instance of this class to define a camera position from which "
+				"an image of the three-dimensional data should be generated. After the camera "
+				"has been set up, you can render an image or movie of the scene using the viewport's "
+				":py:meth:`.render` method::"
 				"\n\n"
-				"  * ``ovito.view.ViewType.TOP``\n"
-				"  * ``ovito.view.ViewType.BOTTOM``\n"
-				"  * ``ovito.view.ViewType.FRONT``\n"
-				"  * ``ovito.view.ViewType.BACK``\n"
-				"  * ``ovito.view.ViewType.LEFT``\n"
-				"  * ``ovito.view.ViewType.RIGHT``\n"
-				"  * ``ovito.view.ViewType.ORTHO``\n"
-				"  * ``ovito.view.ViewType.PERSPECTIVE``\n"
+				"    vp = Viewport()\n"
+				"    vp.type = Viewport.Type.PERSPECTIVE\n"
+				"    vp.camera_pos = (100, 50, 50)\n"
+				"    vp.camera_dir = (-100, -50, -50)\n"
 				"\n"
-				"The last two types, ``ORTHO`` and ``PERSPECTIVE``, allow you to set up custom views of the scene. For example, to set up a camera with "
-				"perspective projection that is looking from a point in space toward the origin::"
-				"\n\n"
-				"    vp = dataset.viewports.activeViewport\n"
-				"    vp.viewType = ovito.view.ViewType.PERSPECTIVE\n"
-				"    vp.cameraPosition = (100, 50, 50)\n"
-				"    vp.cameraDirection = (-100, -50, -50)\n"
-				"    vp.fieldOfView = math.radians(60.0)\n")
-		.add_property("fieldOfView", &Viewport::fieldOfView, &Viewport::setFieldOfView, "The field of view of the viewport's camera. "
-				"For perspective projections this is the camera's angle in the vertical direction (in radians). For orthogonal projections this is the visible range in the vertical direction (in world units).")
-		.add_property("cameraTransformation", make_function(&Viewport::cameraTransformation, return_value_policy<copy_const_reference>()), &Viewport::setCameraTransformation)
-		.add_property("cameraDirection", &Viewport::cameraDirection, &Viewport::setCameraDirection, "The viewing direction vector of the viewport's camera.")
-		.add_property("cameraPosition", &Viewport::cameraPosition, &Viewport::setCameraPosition,
-				"\nThe position of the viewport's camera. For example, to move the camera of the active viewport to a new location in space::"
-				"\n\n"
-				"    dataset.viewports.activeViewport.cameraPosition = (100, 80, -30)\n"
-				"\n\n")
-		.add_property("viewMatrix", make_function(&Viewport::viewMatrix, return_value_policy<copy_const_reference>()))
-		.add_property("inverseViewMatrix", make_function(&Viewport::inverseViewMatrix, return_value_policy<copy_const_reference>()))
-		.add_property("projectionMatrix", make_function(&Viewport::projectionMatrix, return_value_policy<copy_const_reference>()))
-		.add_property("inverseProjectionMatrix", make_function(&Viewport::inverseProjectionMatrix, return_value_policy<copy_const_reference>()))
-		.add_property("renderFrameShown", &Viewport::renderFrameShown, &Viewport::setRenderFrameShown)
-		.add_property("gridVisible", &Viewport::isGridVisible, &Viewport::setGridVisible)
-		.add_property("viewNode", make_function(&Viewport::viewNode, return_value_policy<ovito_object_reference>()), &Viewport::setViewNode)
-		.add_property("gridMatrix", make_function(&Viewport::gridMatrix, return_value_policy<copy_const_reference>()), &Viewport::setGridMatrix)
-		.add_property("title", make_function(&Viewport::viewportTitle, return_value_policy<copy_const_reference>()), "The title string of the viewport shown in its top left corner (read-only).")
-		.def("updateViewport", &Viewport::updateViewport)
-		.def("redrawViewport", &Viewport::redrawViewport)
-		.def("nonScalingSize", &Viewport::nonScalingSize)
-		.def("zoomToSceneExtents", &Viewport::zoomToSceneExtents, "Repositions the viewport camera such that all objects in the scene become completely visible.")
-		.def("zoomToSelectionExtents", &Viewport::zoomToSelectionExtents)
-		.def("zoomToBox", &Viewport::zoomToBox)
-	;
+				"    rs = RenderSettings(size=(800,600), filename=\"image.png\")\n"
+				"    vp.render(rs)\n"
+				"\n"
+				"Note that the four interactive viewports in OVITO's main window are also instances of this class. If you want to "
+				"manipulate these existing viewports, you can access them through the "
+				":py:attr:`DataSet.viewports <ovito.DataSet.viewports>` attribute.")
+			.add_property("isRendering", &Viewport::isRendering)
+			.add_property("isPerspective", &Viewport::isPerspectiveProjection, "A boolean flag indicating whether this viewport uses a perspective projection (read-only).")
+			.add_property("type", &Viewport::viewType, (void (*)(Viewport&,Viewport::ViewType))([](Viewport& vp, Viewport::ViewType vt) { vp.setViewType(vt); }),
+					"The type of projection:"
+					"\n\n"
+					"  * ``Viewport.Type.TOP``\n"
+					"  * ``Viewport.Type.BOTTOM``\n"
+					"  * ``Viewport.Type.FRONT``\n"
+					"  * ``Viewport.Type.BACK``\n"
+					"  * ``Viewport.Type.LEFT``\n"
+					"  * ``Viewport.Type.RIGHT``\n"
+					"  * ``Viewport.Type.ORTHO``\n"
+					"  * ``Viewport.Type.PERSPECTIVE``\n"
+					"\n"
+					"The last two types (``ORTHO`` and ``PERSPECTIVE``) allow you to set up custom views with arbitrary camera orientation.\n")
+			.add_property("fov", &Viewport::fieldOfView, &Viewport::setFieldOfView,
+					"The field of view of the viewport's camera. "
+					"For perspective projections this is the camera's angle in the vertical direction (in radians). For orthogonal projections this is the visible range in the vertical direction (in world units).")
+			.add_property("cameraTransformation", make_function(&Viewport::cameraTransformation, return_value_policy<copy_const_reference>()), &Viewport::setCameraTransformation)
+			.add_property("camera_dir", &Viewport::cameraDirection, &Viewport::setCameraDirection,
+					"The viewing direction vector of the viewport's camera. This can be an arbitrary vector with non-zero length.")
+			.add_property("camera_pos", &Viewport::cameraPosition, &Viewport::setCameraPosition,
+					"\nThe position of the viewport's camera. For example, to move the camera of the active viewport in OVITO's main window to a new location in space::"
+					"\n\n"
+					"    dataset.viewports.active_vp.camera_pos = (100, 80, -30)\n"
+					"\n\n")
+			.add_property("viewMatrix", make_function(&Viewport::viewMatrix, return_value_policy<copy_const_reference>()))
+			.add_property("inverseViewMatrix", make_function(&Viewport::inverseViewMatrix, return_value_policy<copy_const_reference>()))
+			.add_property("projectionMatrix", make_function(&Viewport::projectionMatrix, return_value_policy<copy_const_reference>()))
+			.add_property("inverseProjectionMatrix", make_function(&Viewport::inverseProjectionMatrix, return_value_policy<copy_const_reference>()))
+			.add_property("renderFrameShown", &Viewport::renderFrameShown, &Viewport::setRenderFrameShown)
+			.add_property("gridVisible", &Viewport::isGridVisible, &Viewport::setGridVisible)
+			.add_property("viewNode", make_function(&Viewport::viewNode, return_value_policy<ovito_object_reference>()), &Viewport::setViewNode)
+			.add_property("gridMatrix", make_function(&Viewport::gridMatrix, return_value_policy<copy_const_reference>()), &Viewport::setGridMatrix)
+			.add_property("title", make_function(&Viewport::viewportTitle, return_value_policy<copy_const_reference>()),
+					"The title string of the viewport shown in its top left corner (read-only).")
+			.def("updateViewport", &Viewport::updateViewport)
+			.def("redrawViewport", &Viewport::redrawViewport)
+			.def("nonScalingSize", &Viewport::nonScalingSize)
+			.def("zoom_all", &Viewport::zoomToSceneExtents,
+					"Repositions the viewport camera such that all objects in the scene become completely visible. "
+					"The camera direction is not changed.")
+			.def("zoomToSelectionExtents", &Viewport::zoomToSelectionExtents)
+			.def("zoomToBox", &Viewport::zoomToBox)
+		;
 
-	enum_<Viewport::ViewType>("ViewType")
-		.value("NONE", Viewport::VIEW_NONE)
-		.value("TOP", Viewport::VIEW_TOP)
-		.value("BOTTOM", Viewport::VIEW_BOTTOM)
-		.value("FRONT", Viewport::VIEW_FRONT)
-		.value("BACK", Viewport::VIEW_BACK)
-		.value("LEFT", Viewport::VIEW_LEFT)
-		.value("RIGHT", Viewport::VIEW_RIGHT)
-		.value("ORTHO", Viewport::VIEW_ORTHO)
-		.value("PERSPECTIVE", Viewport::VIEW_PERSPECTIVE)
-		.value("SCENENODE", Viewport::VIEW_SCENENODE)
-	;
+		enum_<Viewport::ViewType>("Type")
+			.value("NONE", Viewport::VIEW_NONE)
+			.value("TOP", Viewport::VIEW_TOP)
+			.value("BOTTOM", Viewport::VIEW_BOTTOM)
+			.value("FRONT", Viewport::VIEW_FRONT)
+			.value("BACK", Viewport::VIEW_BACK)
+			.value("LEFT", Viewport::VIEW_LEFT)
+			.value("RIGHT", Viewport::VIEW_RIGHT)
+			.value("ORTHO", Viewport::VIEW_ORTHO)
+			.value("PERSPECTIVE", Viewport::VIEW_PERSPECTIVE)
+			.value("SCENENODE", Viewport::VIEW_SCENENODE)
+		;
+	}
 
 	ovito_class<ViewportConfiguration, RefTarget>(
-			"Manages OVITO's viewports."
+			"Manages the viewports in OVITO's main window."
 			"\n\n"
-			"This object can be accessed through the :py:attr:`~ovito.app.DataSet.viewports` attribute of the :py:attr:`~ovito.app.DataSet` class. "
-			"It behaves like a list of that contains the :py:class:`Viewport` objects::"
+			"This list-like object can be accessed through the :py:attr:`~ovito.DataSet.viewports` attribute of the :py:attr:`~ovito.DataSet` class. "
+			"It contains all viewports in OVITO's main window::"
 			"\n\n"
 			"    for viewport in dataset.viewports:\n"
 			"        print viewport.title\n"
 			"\n"
-			"The ``ViewportConfiguration`` object contains four predefined viewports by default. It also manages the active and the maximized viewport.")
-		.add_property("activeViewport", make_function(&ViewportConfiguration::activeViewport, return_value_policy<ovito_object_reference>()), &ViewportConfiguration::setActiveViewport,
+			"By default OVITO creates four predefined :py:class:`Viewport` instances. Note that in the current program version it is not possible to add or remove "
+			"viewports from the main window. "
+			"The ``ViewportConfiguration`` object also manages the :py:attr:`active <.active_vp>` and the :py:attr:`maximized <.maximized_vp>` viewport.")
+		.add_property("active_vp", make_function(&ViewportConfiguration::activeViewport, return_value_policy<ovito_object_reference>()), &ViewportConfiguration::setActiveViewport,
 				"The viewport that is currently active. It is marked with a colored border in OVITO's main window.")
-		.add_property("maximizedViewport", make_function(&ViewportConfiguration::maximizedViewport, return_value_policy<ovito_object_reference>()), &ViewportConfiguration::setMaximizedViewport,
+		.add_property("maximized_vp", make_function(&ViewportConfiguration::maximizedViewport, return_value_policy<ovito_object_reference>()), &ViewportConfiguration::setMaximizedViewport,
 				"The viewport that is currently maximized; or ``None`` if no viewport is maximized.\n"
 				"Assign a viewport to this attribute to maximize it, e.g.::"
 				"\n\n"
-				"    dataset.viewports.maximizedViewport = dataset.viewports.activeViewport\n")
+				"    dataset.viewports.maximized_vp = dataset.viewports.active_vp\n")
 		.def("zoomToSelectionExtents", &ViewportConfiguration::zoomToSelectionExtents)
 		.def("zoomToSceneExtents", &ViewportConfiguration::zoomToSceneExtents)
 		.def("updateViewports", &ViewportConfiguration::updateViewports)

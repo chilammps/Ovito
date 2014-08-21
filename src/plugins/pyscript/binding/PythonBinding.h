@@ -78,8 +78,8 @@ class ovito_abstract_class : public class_<OvitoObjectClass, bases<BaseClass>, O
 {
 public:
 	/// Constructor.
-	ovito_abstract_class(const char* docstring = nullptr)
-		: class_<OvitoObjectClass, bases<BaseClass>, OORef<OvitoObjectClass>, boost::noncopyable>(OvitoObjectClass::OOType.className(), docstring, no_init) {}
+	ovito_abstract_class(const char* docstring = nullptr, const char* pythonClassName = nullptr)
+		: class_<OvitoObjectClass, bases<BaseClass>, OORef<OvitoObjectClass>, boost::noncopyable>(pythonClassName ? pythonClassName : OvitoObjectClass::OOType.className(), docstring, no_init) {}
 };
 
 /// Defines a Python class for an OvitoObject-derived C++ class.
@@ -89,7 +89,7 @@ class ovito_class : public class_<OvitoObjectClass, bases<BaseClass>, OORef<Ovit
 public:
 
 	/// Constructor.
-	ovito_class(const char* docstring = nullptr) : class_<OvitoObjectClass, bases<BaseClass>, OORef<OvitoObjectClass>, boost::noncopyable>(OvitoObjectClass::OOType.className(), docstring, no_init) {
+	ovito_class(const char* docstring = nullptr, const char* pythonClassName = nullptr) : class_<OvitoObjectClass, bases<BaseClass>, OORef<OvitoObjectClass>, boost::noncopyable>(pythonClassName ? pythonClassName : OvitoObjectClass::OOType.className(), docstring, no_init) {
 		// Define a constructor that takes a variable number of keyword arguments, which are used to initialize
 		// properties of the newly created object.
 		this->def("__init__", raw_constructor(&construct_instance_with_params));

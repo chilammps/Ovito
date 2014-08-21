@@ -8,4 +8,6 @@
 
    .. py:data:: dataset
       
-      A module-level attribute pointing to the current :py:class:`~ovito.app.DataSet`. This object provides access to the scene, the viewports, the animation settings, etc.
+      A module-level attribute holding the current :py:class:`~ovito.DataSet` instance. 
+      This object provides access to the three-dimensional scene shown in OVITO's graphical user interface, 
+      the viewports, the animation settings, etc.

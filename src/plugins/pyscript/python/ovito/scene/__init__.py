@@ -3,17 +3,17 @@ from PyScriptScene import *
 
 # Implement the 'modifiers' property of the ObjectNode class, which provides access to modifiers in the pipeline. 
 def _get_ObjectNode_modifiers(self):
-    """A list-like object that provides access to the node's modification pipeline.
+    """The node's modification pipeline.
     
-       It contains the modifiers in the current pipeline. You
+       This list contains the modifiers that are applied to the node's :py:attr:`.source` object. You
        can add and remove modifiers from this list as needed. The first modifier in the list is
-       evaluated first, and its output is passed to the second modifier and so on. The output
-       of the last modifier is displayed in the viewports. 
+       evaluated first, and its output is passed to the second modifier and so on. 
+       The output of the last modifier is displayed in the viewports. 
        
        Usage example::
        
            modifier = WrapPeriodicImagesModifier()
-           dataset.selectedNode.modifiers.append(modifier)
+           dataset.selected_node.modifiers.append(modifier)
     """    
     
     class ObjectNodeModifierList:
@@ -81,6 +81,8 @@ def _get_ObjectNode_modifiers(self):
                         return
                     count += 1
             self.node.applyModifier(mod)
+        def __str__(self):
+            return str(self._modifierList())
                     
     return ObjectNodeModifierList(self)
 ObjectNode.modifiers = property(_get_ObjectNode_modifiers)
@@ -114,3 +116,33 @@ def _ObjectNode_wait(self, msgText = None):
     if not msgText: msgText = "Script is waiting for scene graph to become ready." 
     return self.waitUntilReady(self.dataset.anim.time, msgText)
 ObjectNode.wait = _ObjectNode_wait
+
+# Give SceneRoot class a list-like interface.
+SceneRoot.__len__ = lambda self: len(self.children)
+SceneRoot.__iter__ = lambda self: self.children.__iter__
+SceneRoot.__getitem__ = lambda self, i: self.children[i]
+def _SceneRoot__setitem__(self, index, newNode):
+    if index < 0: index += len(self)
+    if index < 0 or index >= len(self):
+        raise IndexError("List index is out of range.")
+    self.removeChild(self.children[index])
+    self.insertChild(index, newNode)
+SceneRoot.__setitem__ = _SceneRoot__setitem__
+def _SceneRoot__delitem__(self, index):
+    if index < 0 or index >= len(self):
+        raise IndexError("List index is out of range.")
+    self.removeChild(self.children[index])
+SceneRoot.__delitem__ = _SceneRoot__delitem__
+def _SceneRoot_append(self, node):
+    if node.parentNode == self:
+        raise RuntimeError("Cannot add the same node more than once to the scene.")
+    self.addChild(node)
+SceneRoot.append = _SceneRoot_append
+def _SceneRoot_insert(self, index, node):
+    if index < 0: index += len(self)
+    if index < 0 or index >= len(self):
+        raise IndexError("List index is out of range.")
+    if node.parentNode == self:
+        raise RuntimeError("Cannot insert the same node more than once into the scene.")
+    self.insertChild(index, node)
+SceneRoot.insert = _SceneRoot_insert

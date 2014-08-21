@@ -1,8 +1,8 @@
 ==================================
-``ovito.app``
+``ovito.modifiers``
 ==================================
 
-.. automodule:: ovito.app
+.. automodule:: ovito.modifiers
    :members:
    :imported-members:
 

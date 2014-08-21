@@ -4,9 +4,10 @@ from PyScriptViewport import *
 import ovito.render
 
 def _Viewport_render(self, renderSettings = None):
-    """ Renders an image or movie of the the viewport's view.
+    """ Renders an image or movie of the viewport's view.
     
-        :param renderSettings: A custom render settings object. If ``None``, the global render settings are used (see :py:attr:`ovito.app.DataSet.renderSettings` attribute).
+        :param renderSettings: A render settings object, which specifies the resolution and filename of the output image. 
+                               If ``None``, the global render settings are used (see :py:attr:`DataSet.render_settings <ovito.DataSet.render_settings>` attribute).
         :type renderSettings: :py:class:`~ovito.render.RenderSettings`
         :returns: ``True`` on success; ``False`` if operation has been canceled by the user.
     """
