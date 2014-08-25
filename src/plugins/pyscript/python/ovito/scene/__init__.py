@@ -22,10 +22,10 @@ def _get_ObjectNode_modifiers(self):
         def _pipelineObjectList(self):
             """ This internal helper function builds a list of PipelineObjects in the node's pipeline. """
             polist = []
-            obj = self.node.sceneObject
+            obj = self.node.data_provider
             while isinstance(obj, PipelineObject):
                 polist.insert(0, obj)
-                obj = obj.inputObject
+                obj = obj.source_object
             return polist
         def _modifierList(self):
             """ This internal helper function builds a list containing all modifiers in the node's pipeline. """
@@ -37,10 +37,10 @@ def _get_ObjectNode_modifiers(self):
         def __len__(self):
             """ Returns the total number of modifiers in the node's pipeline. """
             count = 0
-            obj = self.node.sceneObject
+            obj = self.node.data_provider
             while isinstance(obj, PipelineObject):
                 count += len(obj.modifierApplications)
-                obj = obj.inputObject
+                obj = obj.source_object
             return count
         def __iter__(self):
             return self._modifierList().__iter__()

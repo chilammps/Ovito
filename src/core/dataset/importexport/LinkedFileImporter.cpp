@@ -102,7 +102,7 @@ void LinkedFileImporter::requestFramesUpdate()
 ******************************************************************************/
 bool LinkedFileImporter::importFile(const QUrl& sourceUrl, ImportMode importMode)
 {
-	OORef<LinkedFileObject> existingObj;
+	OORef<LinkedFileObject> existingFileSource;
 	ObjectNode* existingNode = nullptr;
 
 	if(dataset()->sceneRoot()->children().empty() == false) {
@@ -112,8 +112,8 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl, ImportMode importMode
 			// data source we can replace with the newly imported file.
 			for(SceneNode* node : dataset()->selection()->nodes()) {
 				if(ObjectNode* objNode = dynamic_object_cast<ObjectNode>(node)) {
-					existingObj = dynamic_object_cast<LinkedFileObject>(objNode->sourceObject());
-					if(existingObj) {
+					existingFileSource = dynamic_object_cast<LinkedFileObject>(objNode->sourceObject());
+					if(existingFileSource) {
 						existingNode = objNode;
 						break;
 					}
@@ -121,7 +121,7 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl, ImportMode importMode
 			}
 		}
 
-		if(existingObj) {
+		if(existingFileSource) {
 			if(importMode == AskUser) {
 				// Ask user if the current import node including any applied modifiers should be kept.
 				QMessageBox msgBox(QMessageBox::Question, tr("Import file"),
@@ -181,14 +181,14 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl, ImportMode importMode
 	}
 
 	if(importMode == ResetScene) {
-		existingObj = nullptr;
+		existingFileSource = nullptr;
 		existingNode = nullptr;
 		dataset()->clearScene();
 		if(!dataset()->undoStack().isRecording())
 			dataset()->undoStack().clear();
 	}
 	else if(importMode == AddToScene) {
-		existingObj = nullptr;
+		existingFileSource = nullptr;
 		existingNode = nullptr;
 	}
 
@@ -197,22 +197,22 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl, ImportMode importMode
 	// Do not create any animation keys during import.
 	AnimationSuspender animSuspender(this);
 
-	OORef<LinkedFileObject> obj;
+	OORef<LinkedFileObject> fileSource;
 
 	// Create the object that will insert the imported data into the scene.
-	if(existingObj == nullptr) {
-		obj = new LinkedFileObject(dataset());
+	if(existingFileSource == nullptr) {
+		fileSource = new LinkedFileObject(dataset());
 
 		// When adding the imported data to an existing scene,
 		// do not auto-adjust animation interval.
 		if(importMode == AddToScene)
-			obj->setAdjustAnimationIntervalEnabled(false);
+			fileSource->setAdjustAnimationIntervalEnabled(false);
 	}
 	else
-		obj = existingObj;
+		fileSource = existingFileSource;
 
 	// Set the input location and importer.
-	if(!obj->setSource(sourceUrl, this)) {
+	if(!fileSource->setSource(sourceUrl, this)) {
 		return false;
 	}
 
@@ -224,10 +224,11 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl, ImportMode importMode
 			UndoSuspender unsoSuspender(this);	// Do not create undo records for this part.
 
 			// Add object to scene.
-			node = new ObjectNode(dataset(), obj);
+			node = new ObjectNode(dataset());
+			node->setDataProvider(fileSource);
 
 			// Let the import subclass customize the node.
-			prepareSceneNode(node, obj);
+			prepareSceneNode(node, fileSource);
 		}
 
 		// Insert node into scene.
@@ -240,15 +241,15 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl, ImportMode importMode
 
 	// Jump to the right frame to show the originally selected file.
 	int jumpToFrame = -1;
-	for(int frameIndex = 0; frameIndex < obj->frames().size(); frameIndex++) {
-		if(obj->frames()[frameIndex].sourceFile == sourceUrl) {
+	for(int frameIndex = 0; frameIndex < existingFileSource->frames().size(); frameIndex++) {
+		if(existingFileSource->frames()[frameIndex].sourceFile == sourceUrl) {
 			jumpToFrame = frameIndex;
 			break;
 		}
 	}
 
 	// Adjust the animation length number to match the number of frames in the input data source.
-	obj->adjustAnimationInterval(jumpToFrame);
+	fileSource->adjustAnimationInterval(jumpToFrame);
 
 	// Adjust views to completely show the newly imported object.
 	OORef<DataSet> ds(dataset());

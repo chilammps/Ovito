@@ -25,7 +25,7 @@ for _, _name, _ in pkgutil.walk_packages(__path__, __name__ + '.'):
 def _get_DataSet_selected_node(self):
     """ The :py:class:`~ovito.scene.ObjectNode` that is currently selected in OVITO's graphical user interface, 
         or ``None`` if no node is selected. """
-    return self.selection.firstNode
+    return self.selection.front
 def _set_DataSet_selected_node(self, node):
     """ Sets the scene node that is currently selected in OVITO. """
     if node: self.selection.setNode(node)

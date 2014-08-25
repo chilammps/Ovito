@@ -113,7 +113,7 @@ BOOST_PYTHON_MODULE(PyScriptFileIO)
 			"\n\n"
 			"The :py:meth:`FileSourceObject.load` method allows you to hook a different external file into an existing modification pipeline::"
 			"\n\n"
-			"    # This create a new node with an empty modification pipeline:\n"
+			"    # This creates a new node with an empty modification pipeline:\n"
 			"    node = import_file(\"first_file.dump\")\n"
 			"    \n"
 			"    # Populate the pipeline with a modifier:\n"

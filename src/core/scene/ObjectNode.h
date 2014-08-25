@@ -37,58 +37,32 @@ namespace Ovito {
 class Modifier;			// defined in Modifier.h
 
 /**
- * \brief A node in the scene tree that represents an object.
+ * \brief A node in the scene that represents an object.
  */
 class OVITO_CORE_EXPORT ObjectNode : public SceneNode
 {
 public:
 
-	/// \brief Constructs an object node that is associated with the given SceneObject.
-	/// \param object The scene object that should be placed into the scene.
-	Q_INVOKABLE ObjectNode(DataSet* dataset, SceneObject* object = nullptr);
+	/// \brief Constructs an object node.
+	Q_INVOKABLE ObjectNode(DataSet* dataset);
 
-	/// \brief Returns whether this is an instance of the ObjectNode class.
-	/// \return Always returns \c true.
-	virtual bool isObjectNode() const { return true; }
+	/// \brief Returns this node's data provider, i.e. the object
+	///        that generates the data displayed by this scene node.
+	SceneObject* dataProvider() const { return _dataProvider; }
 
-	/// \brief Returns this node's SceneObject, which is the head of the modification pipeline.
-	/// \return The object that represented by this node in the scene graph. Can be \c NULL.
-	SceneObject* sceneObject() const { return _sceneObject; }
-
-	/// \brief Sets the object of this node.
-	/// \param obj The new object that evaluated by the ObjectNode and shown in the viewports.
+	/// \brief Sets the data provider object of this node.
+	/// \param pipeline An object that generates data, which will be displayed by this ObjectNode.
 	/// \undoable
-	void setSceneObject(SceneObject* obj) { _sceneObject = obj; }
+	void setDataProvider(SceneObject* dataProvider) { _dataProvider = dataProvider; }
 
-	/// \brief Returns the modification pipeline source object, i.e., the input of this node's modification pipeline.
+	/// \brief Returns the data source of this node's pipeline, i.e., the object that provides the
+	///        input data that enters the pipeline.
 	SceneObject* sourceObject() const;
 
-	/// \brief Evaluates the geometry pipeline of this object node at the given animation time.
-	/// \param time The animation time at which the geometry pipeline of the node should be evaluated.
-	/// \return The result of the evaluation.
+	/// \brief Evaluates the data flow pipeline of this object node at the given animation time.
+	/// \param time The animation time at which the pipeline of the node should be evaluated.
+	/// \return The output of the pipeline.
 	const PipelineFlowState& evalPipeline(TimePoint time);
-
-	/// \brief Returns the list of display objects that are responsible for displaying
-	///        the node's scene object in the viewports.
-	const QVector<DisplayObject*>& displayObjects() const { return _displayObjects; }
-
-	/// \brief Returns the bounding box of the node's object in local coordinates.
-	/// \param time The time at which the bounding box should be computed.
-	/// \return An axis-aligned box in the node's local coordinate system that contains
-	///         the whole node geometry.
-	virtual Box3 localBoundingBox(TimePoint time) override;
-
-	/// \brief Renders the node's scene objects.
-	/// \param time Specifies the animation frame to render.
-	/// \param renderer The renderer that should be called by this method to display geometry.
-	void render(TimePoint time, SceneRenderer* renderer);
-
-	/// \brief Applies a modifier to the object node.
-	/// \param mod The modifier to be applied.
-	///
-	/// The modifier is inserted into the geometry pipeline where it is put on top of the modifier stack.
-	/// \undoable
-	Q_INVOKABLE void applyModifier(Modifier* mod);
 
 	/// \brief This function blocks execution until the node's modification
 	///        pipeline has been fully evaluated.
@@ -99,12 +73,28 @@ public:
 	/// \return true on success; false if the operation has been canceled by the user.
 	bool waitUntilReady(TimePoint time, const QString& message, QProgressDialog* progressDialog = nullptr);
 
+	/// \brief Applies a modifier by appending it to the end of the node's data pipeline.
+	/// \param mod The modifier to be inserted into the data flow pipeline.
+	/// \undoable
+	Q_INVOKABLE void applyModifier(Modifier* mod);
+
+	/// \brief Returns the list of display objects that are responsible for displaying
+	///        the node's scene object in the viewports.
+	const QVector<DisplayObject*>& displayObjects() const { return _displayObjects; }
+
+	/// \brief Returns the bounding box of the node's object in local coordinates.
+	/// \param time The time at which the bounding box should be computed.
+	/// \return An axis-aligned box in the node's local coordinate system that fully contains
+	///         the node's object.
+	virtual Box3 localBoundingBox(TimePoint time) override;
+
+	/// \brief Renders the node's object.
+	/// \param time Specifies the animation frame to render.
+	/// \param renderer The renderer that should be used to render graphics primitives.
+	void render(TimePoint time, SceneRenderer* renderer);
+
 	/// \brief Returns the title of this object.
 	virtual QString objectTitle() override;
-
-public:
-
-	Q_PROPERTY(SceneObject* sceneObject READ sceneObject WRITE setSceneObject);
 
 protected:
 
@@ -122,24 +112,28 @@ protected:
 
 private:
 
-	/// The object of this node.
-	ReferenceField<SceneObject> _sceneObject;
+	/// The object which generates the data to be displayed by this ObjectNode.
+	ReferenceField<SceneObject> _dataProvider;
 
-	/// The cached result from the last geometry pipeline evaluation.
+	/// The cached results from the last data pipeline evaluation.
 	PipelineFlowState _pipelineCache;
 
 	/// The list of display objects that are responsible for displaying
-	/// the node's scene object in the viewports.
+	/// the node's data in the viewports.
 	VectorReferenceField<DisplayObject> _displayObjects;
 
-	/// This method invalidates the geometry pipeline cache of the object node.
-	/// This will automatically rebuild the cache on the next call to evalPipeline();
-	void invalidatePipelineCache();
+	/// This method invalidates the data pipeline cache of the object node.
+	void invalidatePipelineCache() {
+		// Reset data cache.
+		_pipelineCache.clear();
+		// Also mark the cached bounding box of this scene node as invalid.
+		invalidateBoundingBox();
+	}
 
 	Q_OBJECT
 	OVITO_OBJECT
 
-	DECLARE_REFERENCE_FIELD(_sceneObject);
+	DECLARE_REFERENCE_FIELD(_dataProvider);
 	DECLARE_VECTOR_REFERENCE_FIELD(_displayObjects);
 };
 

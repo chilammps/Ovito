@@ -45,27 +45,31 @@ class OVITO_CORE_EXPORT SelectionSet : public RefTarget
 {
 public:
 
+	typedef VectorReferenceField<SceneNode>::value_type value_type;
+	typedef VectorReferenceField<SceneNode>::size_type size_type;
+	typedef VectorReferenceField<SceneNode>::difference_type difference_type;
+	typedef VectorReferenceField<SceneNode>::const_iterator const_iterator;
+
 	/// \brief Creates an empty selection set.
 	Q_INVOKABLE SelectionSet(DataSet* dataset);
 
 	/// \brief Returns the number of scene nodes in the selection set.
 	/// \return The number of selected objects.
-	virtual int count() const { return _selection.size(); }
+	size_type size() const { return _selection.size(); }
 
 	/// \brief Returns whether this selection set is empty.
 	/// \return \c true if the number of nodes in the set is zero.
-	bool empty() const { return count() == 0; }
-
-	/// \brief Returns a scene node from the selection set with the given index.
-	/// \param index The index into the internal array of selected object. This must
-	///              be between zero and count() - 1.
-	/// \return The scene node that is selected.
-	virtual SceneNode* node(int index) const { return _selection[index]; }
+	bool empty() const { return _selection.empty(); }
 
 	/// \brief Returns the first scene node from the selection set.
 	/// \return The first node from the set or \c NULL if the set is empty.
-	/// \sa node(), empty()
-	SceneNode* firstNode() const { return empty() ? nullptr : node(0); }
+	SceneNode* front() const { return empty() ? nullptr : _selection.front(); }
+
+	/// \brief Returns the i-th scene node in the selection set.
+	SceneNode* node(size_type index) const {
+		OVITO_ASSERT(index >= 0 && index < size());
+		return _selection[index];
+	}
 
 	/// \brief Returns whether a scene node is selected.
 	/// \param node The node that should be checked.
@@ -74,51 +78,38 @@ public:
 	///
 	/// An alternative way is to call SceneNode::isSelected() to check whether
 	/// a scene node is part of the current selection set.
-	virtual bool contains(SceneNode* node) const { return _selection.contains(node); }
+	bool contains(SceneNode* node) const { return _selection.contains(node); }
 
 	/// \brief Adds a scene node to this selection set.
 	/// \param node The node to be added.
 	/// \undoable
-	virtual void add(SceneNode* node);
-
-	/// \brief Adds multiple scene nodes to this selection set.
-	/// \param nodes The scene nodes to be added to the set.
-	/// \undoable
-	virtual void addAll(const QVector<SceneNode*>& nodes);
+	void push_back(SceneNode* node);
 
 	/// \brief Removes a scene node from this selection set.
 	/// \param node The node to be unselected.
 	/// \undoable
-	/// \sa clear()
-	virtual void remove(SceneNode* node);
+	void remove(SceneNode* node);
 
 	/// \brief Clears the selection.
 	///
 	/// All nodes are removed from the selection set.
 	/// \undoable
-	virtual void clear();
+	void clear() { _selection.clear(); }
 
-	/// \brief Returns the bounding box that includes all selected nodes.
-	/// \param time The animation for which the bounding box should be computed.
-	/// \return The bounding box that contains the bounding boxes of all
-	///         scene nodes in the selection set.
-	virtual Box3 boundingBox(TimePoint time);
+	/// \brief Computes the bounding box containing all selected nodes.
+	/// \param time The animation time at which the bounding box should be computed.
+	Box3 boundingBox(TimePoint time) const;
 
-	/// \brief Returns all nodes that are selected.
-	/// \return The list of nodes included in this selection set.
-	virtual const QVector<SceneNode*>& nodes() const { return _selection; }
+	/// \brief Returns the list of selected nodes.
+	const QVector<SceneNode*>& nodes() const { return _selection; }
 
 	/// \brief Sets the contents of the selection set.
 	/// \param nodes The set of nodes to be selected.
-	///
-	/// The selection set is cleared before it is filled with the new nodes.
-	virtual void setNodes(const QVector<SceneNode*>& nodes);
+	void setNodes(const QVector<SceneNode*>& nodes);
 
-	/// \brief Resets the selection set to contain only a single node.
+	/// \brief Resets the selection set to contain only the given node.
 	/// \param node The node to be selected.
-	///
-	/// The selection set is cleared before the single node is added to it.
-	virtual void setNode(SceneNode* node);
+	void setNode(SceneNode* node);
 
 Q_SIGNALS:
 

@@ -39,23 +39,13 @@ SelectionSet::SelectionSet(DataSet* dataset) : RefTarget(dataset), _selectionCha
 /******************************************************************************
 * Adds a scene node to this selection set. 
 ******************************************************************************/
-void SelectionSet::add(SceneNode* node)
+void SelectionSet::push_back(SceneNode* node)
 {
 	OVITO_CHECK_OBJECT_POINTER(node);
 	if(contains(node)) return;
 			
 	// Insert into children array.
 	_selection.push_back(node);
-	OVITO_ASSERT(contains(node));
-}
-
-/******************************************************************************
-* Adds multiple scene nodes to this selection set. 
-******************************************************************************/
-void SelectionSet::addAll(const QVector<SceneNode*>& nodes)
-{
-	for(SceneNode* node : nodes)
-		add(node);
 }
 
 /******************************************************************************
@@ -68,7 +58,8 @@ void SelectionSet::setNodes(const QVector<SceneNode*>& nodes)
 		if(!nodes.contains(_selection[i]))
 			_selection.remove(i);
 	}
-	addAll(nodes);
+	for(SceneNode* node : nodes)
+		push_back(node);
 }
 
 /******************************************************************************
@@ -79,7 +70,7 @@ void SelectionSet::setNode(SceneNode* node)
 	OVITO_CHECK_POINTER(node);
 	if(!_selection.contains(node)) {
 		clear();
-		add(node);
+		push_back(node);
 	}
 	else {
 		// Remove all other nodes from the selection set.
@@ -99,14 +90,6 @@ void SelectionSet::remove(SceneNode* node)
 	if(index == -1) return;	
 	_selection.remove(index);
 	OVITO_ASSERT(!contains(node));
-}
-
-/******************************************************************************
-* Clears the selection.
-******************************************************************************/
-void SelectionSet::clear()
-{
-	_selection.clear();
 }
 
 /******************************************************************************
@@ -171,7 +154,7 @@ void SelectionSet::onSelectionChangeCompleted()
 /******************************************************************************
 * Returns the bounding box that includes all selected nodes.
 ******************************************************************************/
-Box3 SelectionSet::boundingBox(TimePoint time)
+Box3 SelectionSet::boundingBox(TimePoint time) const
 {
 	Box3 bb;
 	for(SceneNode* node : nodes()) {

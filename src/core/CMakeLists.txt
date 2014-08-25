@@ -50,7 +50,6 @@ SET(OVITO_CORE_SOURCE_FILES
 	dataset/importexport/LinkedFileObject.cpp
 	dataset/importexport/LinkedFileObjectEditor.cpp
 	scene/SceneNode.cpp
-	scene/GroupNode.cpp
 	scene/ObjectNode.cpp
 	scene/SceneRoot.cpp
 	scene/SelectionSet.cpp

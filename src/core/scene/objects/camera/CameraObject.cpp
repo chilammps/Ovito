@@ -150,8 +150,8 @@ void CameraObject::setFieldOfView(TimePoint time, FloatType newFOV)
 ******************************************************************************/
 bool CameraObject::isTargetCamera() const
 {
-	for(ObjectNode* node : findSceneNodes()) {
-		if(node->targetNode() != nullptr)
+	for(ObjectNode* node : dependentNodes()) {
+		if(node->lookatTargetNode() != nullptr)
 			return true;
 	}
 	return false;
@@ -164,12 +164,13 @@ void CameraObject::setIsTargetCamera(bool enable)
 {
 	if(dataset()->undoStack().isRecording())
 		dataset()->undoStack().push(new TargetChangedUndoOperation(this));
-	for(ObjectNode* node : findSceneNodes()) {
-		if(node->targetNode() == nullptr && enable) {
+	for(ObjectNode* node : dependentNodes()) {
+		if(node->lookatTargetNode() == nullptr && enable) {
 			if(SceneNode* parentNode = node->parentNode()) {
 				AnimationSuspender noAnim(this);
 				OORef<TargetObject> targetObj = new TargetObject(dataset());
-				OORef<ObjectNode> targetNode = new ObjectNode(dataset(), targetObj.get());
+				OORef<ObjectNode> targetNode = new ObjectNode(dataset());
+				targetNode->setDataProvider(targetObj);
 				targetNode->setName(tr("%1.target").arg(node->name()));
 				parentNode->addChild(targetNode);
 				// Position the new target to match the current orientation of the camera.
@@ -179,12 +180,12 @@ void CameraObject::setIsTargetCamera(bool enable)
 				Vector3 cameraDir = cameraTM.column(2).normalized();
 				Vector3 targetPos = cameraPos - targetDistance() * cameraDir;
 				targetNode->transformationController()->translate(0, targetPos, AffineTransformation::Identity());
-				node->bindToTarget(targetNode);
+				node->setLookatTargetNode(targetNode);
 			}
 		}
-		else if(node->targetNode() != nullptr && !enable) {
-			OORef<SceneNode> targetNode = node->targetNode();
-			node->bindToTarget(nullptr);
+		else if(node->lookatTargetNode() != nullptr && !enable) {
+			OORef<SceneNode> targetNode = node->lookatTargetNode();
+			node->setLookatTargetNode(nullptr);
 			targetNode->deleteNode();
 		}
 	}
@@ -198,11 +199,11 @@ void CameraObject::setIsTargetCamera(bool enable)
 ******************************************************************************/
 FloatType CameraObject::targetDistance() const
 {
-	for(ObjectNode* node : findSceneNodes()) {
-		if(node->targetNode() != nullptr) {
+	for(ObjectNode* node : dependentNodes()) {
+		if(node->lookatTargetNode() != nullptr) {
 			TimeInterval iv;
 			Vector3 cameraPos = node->getWorldTransform(dataset()->animationSettings()->time(), iv).translation();
-			Vector3 targetPos = node->targetNode()->getWorldTransform(dataset()->animationSettings()->time(), iv).translation();
+			Vector3 targetPos = node->lookatTargetNode()->getWorldTransform(dataset()->animationSettings()->time(), iv).translation();
 			return (cameraPos - targetPos).length();
 		}
 	}
@@ -289,9 +290,9 @@ Box3 CameraDisplayObject::viewDependentBoundingBox(TimePoint time, Viewport* vie
 			if(camera->isPerspective()) {
 				// Determine the camera and target positions when rendering a target camera.
 				FloatType targetDistance;
-				if(contextNode->targetNode()) {
+				if(contextNode->lookatTargetNode()) {
 					Vector3 cameraPos = contextNode->getWorldTransform(time, iv).translation();
-					Vector3 targetPos = contextNode->targetNode()->getWorldTransform(time, iv).translation();
+					Vector3 targetPos = contextNode->lookatTargetNode()->getWorldTransform(time, iv).translation();
 					targetDistance = (cameraPos - targetPos).length();
 				}
 				else targetDistance = camera->targetDistance();
@@ -392,9 +393,9 @@ void CameraDisplayObject::render(TimePoint time, SceneObject* sceneObject, const
 	// Determine the camera and target positions when rendering a target camera.
 	FloatType targetDistance = 0;
 	bool showTargetLine = false;
-	if(contextNode->targetNode()) {
+	if(contextNode->lookatTargetNode()) {
 		Vector3 cameraPos = contextNode->getWorldTransform(time, iv).translation();
-		Vector3 targetPos = contextNode->targetNode()->getWorldTransform(time, iv).translation();
+		Vector3 targetPos = contextNode->lookatTargetNode()->getWorldTransform(time, iv).translation();
 		targetDistance = (cameraPos - targetPos).length();
 		showTargetLine = true;
 	}

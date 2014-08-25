@@ -44,8 +44,7 @@ OORef<SceneObject> PipelineFlowState::convertObject(const OvitoObjectType& objec
 void PipelineFlowState::addObject(SceneObject* obj)
 {
 	OVITO_CHECK_OBJECT_POINTER(obj);
-	OVITO_ASSERT_MSG(std::find(_objects.begin(), _objects.end(), obj) == _objects.end(), "PipelineFlowState::addObject", "Cannot add the same scene object more than once.");
-	_revisionNumbers.push_back(obj->revisionNumber());
+	okay ? OVITO_ASSERT_MSG(std::find(_objects.begin(), _objects.end(), obj) == _objects.end(), "PipelineFlowState::addObject", "Cannot add the same scene object more than once.");
 	_objects.push_back(obj);
 }
 
