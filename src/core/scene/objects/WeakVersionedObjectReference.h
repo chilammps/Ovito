@@ -19,15 +19,15 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef __OVITO_VERSIONED_OBJECT_REFERENCE_H
-#define __OVITO_VERSIONED_OBJECT_REFERENCE_H
+#ifndef __OVITO_WEAK_VERSIONED_OBJECT_REFERENCE_H
+#define __OVITO_WEAK_VERSIONED_OBJECT_REFERENCE_H
 
 #include <core/Core.h>
 
 namespace Ovito {
 
 /**
- * \brief A reference (a.k.a. smart pointer) that refers to a particular revision of an object.
+ * \brief A weak reference (a.k.a. guarded pointer) that refers to a particular revision of an object.
  *
  * Data objects undergo changes when the user alters a parameter or if the external file containing the
  * source data has been modified. To keep track of such changes, and to manage the automatic recalculation
@@ -37,53 +37,53 @@ namespace Ovito {
  * the object is being modified in some way. This allows to detect changes made to an object without
  * looking at the stored data. In particular, it avoid saving a complete copy of the old data to detect changes.
  *
- * This VersionedOORef smart pointer class stores an ordinary reference-counted pointer (OORef) to a data object and,
+ * The WeakVersionedOORef class stores an ordinary guarded pointer (QPointer) to a data object and,
  * in addition, a revision number, which refers to a particular version (or state in time) of that object.
  *
- * Two VersionedOORef instances compare equal only if both the raw C++ pointers match as well as the
+ * Two WeakVersionedOORef instances compare equal only if both the raw C++ pointers match as well as the
  * object revision numbers they refer to.
  */
 template<class T>
-class VersionedOORef {
+class WeakVersionedOORef {
 private:
 
-	typedef VersionedOORef this_type;
+	typedef WeakVersionedOORef this_type;
 
 public:
 
-	typedef typename OORef<T>::element_type element_type;
+	typedef T* element_type;
 
 	/// Default constructor.
-	VersionedOORef() Q_DECL_NOTHROW : _revision(0) {}
+	WeakVersionedOORef() Q_DECL_NOTHROW : _revision(0) {}
 
 	/// Initialization constructor.
-	VersionedOORef(T* p) : _ref(p), _revision(p ? p->revisionNumber() : 0) {}
+	WeakVersionedOORef(T* p) : _ref(p), _revision(p ? p->revisionNumber() : 0) {}
 
 	/// Initialization constructor with explicit revision number.
-	VersionedOORef(T* p, unsigned int revision) : _ref(p), _revision(revision) {}
+	WeakVersionedOORef(T* p, unsigned int revision) : _ref(p), _revision(revision) {}
 
-	VersionedOORef& operator=(T* rhs) {
+	WeakVersionedOORef& operator=(T* rhs) {
 		_ref = rhs;
 		_revision = rhs ? rhs->revisionNumber() : 0;
 		return *this;
 	}
 
 	void reset() Q_DECL_NOTHROW {
-		_ref.reset();
+		_ref.clear();
 		_revision = 0;
 	}
 
 	void reset(T* rhs) {
-		_ref.reset(rhs);
+		_ref = rhs;
 		_revision = rhs ? rhs->revisionNumber() : 0;
 	}
 
 	inline T* get() const Q_DECL_NOTHROW {
-		return _ref.get();
+		return _ref.data();
 	}
 
 	inline operator T*() const Q_DECL_NOTHROW {
-		return _ref.get();
+		return _ref.data();
 	}
 
 	inline T& operator*() const {
@@ -91,11 +91,11 @@ public:
 	}
 
 	inline T* operator->() const {
-		return _ref.get();
+		return _ref.data();
 	}
 
-	inline void swap(VersionedOORef& rhs) Q_DECL_NOTHROW {
-		_ref.swap(rhs._ref);
+	inline void swap(WeakVersionedOORef& rhs) Q_DECL_NOTHROW {
+		std::swap(_ref, rhs._ref);
 		std::swap(_revision, rhs._revision);
 	}
 
@@ -107,80 +107,80 @@ public:
 
 private:
 
-	// The internal OORef pointer.
-	OORef<T> _ref;
+	// The internal guarded pointer.
+	QPointer<T> _ref;
 
 	// The referenced revision of the object.
 	unsigned int _revision;
 };
 
-template<class T, class U> inline bool operator==(const VersionedOORef<T>& a, const VersionedOORef<U>& b) {
+template<class T, class U> inline bool operator==(const WeakVersionedOORef<T>& a, const WeakVersionedOORef<U>& b) {
 	return a.get() == b.get() && a.revisionNumber() == b.revisionNumber();
 }
 
-template<class T, class U> inline bool operator!=(const VersionedOORef<T>& a, const VersionedOORef<U>& b) {
+template<class T, class U> inline bool operator!=(const WeakVersionedOORef<T>& a, const WeakVersionedOORef<U>& b) {
 	return a.get() != b.get() || a.revisionNumber() != b.revisionNumber();
 }
 
-template<class T, class U> inline bool operator==(const VersionedOORef<T>& a, U* b) {
+template<class T, class U> inline bool operator==(const WeakVersionedOORef<T>& a, U* b) {
 	return a.get() == b && (b == nullptr || a.revisionNumber() == b->revisionNumber());
 }
 
-template<class T, class U> inline bool operator!=(const VersionedOORef<T>& a, U* b) {
+template<class T, class U> inline bool operator!=(const WeakVersionedOORef<T>& a, U* b) {
 	return a.get() != b || (b != nullptr && a.revisionNumber() != b->revisionNumber());
 }
 
-template<class T, class U> inline bool operator==(T* a, const VersionedOORef<U>& b) {
+template<class T, class U> inline bool operator==(T* a, const WeakVersionedOORef<U>& b) {
 	return a == b.get() && (a == nullptr || a->revisionNumber() == b.revisionNumber());
 }
 
-template<class T, class U> inline bool operator!=(T* a, const VersionedOORef<U>& b) {
+template<class T, class U> inline bool operator!=(T* a, const WeakVersionedOORef<U>& b) {
 	return a != b.get() || (a != nullptr && a->revisionNumber() != b.revisionNumber());
 }
 
-template<class T> inline bool operator==(const VersionedOORef<T>& p, std::nullptr_t)
+template<class T> inline bool operator==(const WeakVersionedOORef<T>& p, std::nullptr_t)
 Q_DECL_NOTHROW
 {
 	return p.get() == nullptr;
 }
 
-template<class T> inline bool operator==(std::nullptr_t, const VersionedOORef<T>& p)
+template<class T> inline bool operator==(std::nullptr_t, const WeakVersionedOORef<T>& p)
 Q_DECL_NOTHROW
 {
 	return p.get() == nullptr;
 }
 
-template<class T> inline bool operator!=(const VersionedOORef<T>& p, std::nullptr_t)
+template<class T> inline bool operator!=(const WeakVersionedOORef<T>& p, std::nullptr_t)
 Q_DECL_NOTHROW
 {
 	return p.get() != nullptr;
 }
 
-template<class T> inline bool operator!=(std::nullptr_t, const VersionedOORef<T>& p)
+template<class T> inline bool operator!=(std::nullptr_t, const WeakVersionedOORef<T>& p)
 Q_DECL_NOTHROW
 {
 	return p.get() != nullptr;
 }
 
-template<class T> void swap(VersionedOORef<T>& lhs, VersionedOORef<T>& rhs)
+template<class T> void swap(WeakVersionedOORef<T>& lhs, WeakVersionedOORef<T>& rhs)
 Q_DECL_NOTHROW
 {
 	lhs.swap(rhs);
 }
 
-template<class T> T* get_pointer(const VersionedOORef<T>& p) {
+template<class T> T* get_pointer(const WeakVersionedOORef<T>& p) {
 	return p.get();
 }
 
-template<class T, class U> T* static_object_cast(const VersionedOORef<U>& p) {
+template<class T, class U> T* static_object_cast(const WeakVersionedOORef<U>& p) {
 	return static_cast<T*>(p.get());
 }
 
-template<class T, class U> T* dynamic_object_cast(const VersionedOORef<U>& p) {
+template<class T, class U> T* dynamic_object_cast(const WeakVersionedOORef<U>& p) {
 	return dynamic_object_cast<T>(p.get());
 }
 
-template<class T> QDebug operator<<(QDebug debug, const VersionedOORef<T>& p) {
+template<class T> QDebug operator<<(QDebug debug, const WeakVersionedOORef<T>& p) {
 	return debug << p.get();
 }
 
@@ -188,4 +188,4 @@ template<class T> QDebug operator<<(QDebug debug, const VersionedOORef<T>& p) {
 ;
 // End of namespace Ovito
 
-#endif // __OVITO_VERSIONED_OBJECT_REFERENCE_H
+#endif // __OVITO_WEAK_VERSIONED_OBJECT_REFERENCE_H

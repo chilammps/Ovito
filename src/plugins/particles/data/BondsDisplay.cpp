@@ -75,9 +75,9 @@ Box3 BondsDisplay::boundingBox(TimePoint time, SceneObject* sceneObject, ObjectN
 
 	// Detect if the input data has changed since the last time we computed the bounding box.
 	if(_boundingBoxCacheHelper.updateState(
-			bondsObj, bondsObj ? bondsObj->revisionNumber() : 0,
-			positionProperty, positionProperty ? positionProperty->revisionNumber() : 0,
-			simulationCell, simulationCell ? simulationCell->revisionNumber() : 0,
+			bondsObj,
+			positionProperty,
+			simulationCell,
 			bondWidth())) {
 
 		// Recompute bounding box.
@@ -123,11 +123,11 @@ void BondsDisplay::render(TimePoint time, SceneObject* sceneObject, const Pipeli
 	}
 
 	if(_geometryCacheHelper.updateState(
-			bondsObj, bondsObj ? bondsObj->revisionNumber() : 0,
-			positionProperty, positionProperty ? positionProperty->revisionNumber() : 0,
-			colorProperty, colorProperty ? colorProperty->revisionNumber() : 0,
-			typeProperty, typeProperty ? typeProperty->revisionNumber() : 0,
-			simulationCell, simulationCell ? simulationCell->revisionNumber() : 0,
+			bondsObj,
+			positionProperty,
+			colorProperty,
+			typeProperty,
+			simulationCell,
 			bondWidth(), bondColor(), useParticleColors())
 			|| !_buffer	|| !_buffer->isValid(renderer)
 			|| !_buffer->setShadingMode(shadingMode())

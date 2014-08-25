@@ -366,7 +366,7 @@ void SceneNode::loadFromStream(ObjectLoadStream& stream)
 {
 	RefTarget::loadFromStream(stream);
 
-	stream.expectChunk(0x02);
+	stream.expectChunkRange(0x01, 0x02);
 	// This is for future use...
 	stream.closeChunk();
 

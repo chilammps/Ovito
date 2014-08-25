@@ -39,50 +39,42 @@ OORef<SceneObject> PipelineFlowState::convertObject(const OvitoObjectType& objec
 }
 
 /******************************************************************************
+* Returns true if the given object is part of this pipeline flow state.
+* The method ignores the revision number of the object.
+******************************************************************************/
+bool PipelineFlowState::contains(SceneObject* obj) const
+{
+	for(SceneObject* o : _objects)
+		if(o == obj) return true;
+	return false;
+}
+
+/******************************************************************************
 * Adds an additional scene object to this state.
 ******************************************************************************/
 void PipelineFlowState::addObject(SceneObject* obj)
 {
 	OVITO_CHECK_OBJECT_POINTER(obj);
-	okay ? OVITO_ASSERT_MSG(std::find(_objects.begin(), _objects.end(), obj) == _objects.end(), "PipelineFlowState::addObject", "Cannot add the same scene object more than once.");
+	OVITO_ASSERT_MSG(!contains(obj), "PipelineFlowState::addObject", "Cannot add the same scene object more than once.");
 	_objects.push_back(obj);
 }
 
 /******************************************************************************
 * Replaces a scene object with a new one.
 ******************************************************************************/
-void PipelineFlowState::replaceObject(SceneObject* oldObj, const OORef<SceneObject>& newObj)
+void PipelineFlowState::replaceObject(SceneObject* oldObj, SceneObject* newObj)
 {
 	OVITO_CHECK_OBJECT_POINTER(oldObj);
 	for(int index = 0; index < _objects.size(); index++) {
-		if(_objects[index] == oldObj) {
-			if(newObj) {
-				_revisionNumbers[index] = newObj->revisionNumber();
+		if(_objects[index].get() == oldObj) {
+			if(newObj)
 				_objects[index] = newObj;
-			}
-			else {
-				_revisionNumbers.remove(index);
+			else
 				_objects.remove(index);
-			}
 			return;
 		}
 	}
-	OVITO_ASSERT_MSG(false, "PipelineFlowState::replaceObject", "Scene object not found.");
-}
-
-/******************************************************************************
-* Updates the stored revision number for a scene object.
-******************************************************************************/
-void PipelineFlowState::updateRevisionNumber(SceneObject* obj)
-{
-	OVITO_ASSERT(_objects.size() == _revisionNumbers.size());
-	for(int index = 0; index < _objects.size(); index++) {
-		if(_objects[index] == obj) {
-			_revisionNumbers[index] = obj->revisionNumber();
-			return;
-		}
-	}
-	OVITO_ASSERT_MSG(false, "PipelineFlowState::updateRevisionNumber", "Scene object not found.");
+	OVITO_ASSERT_MSG(false, "PipelineFlowState::replaceObject", "Old object not found.");
 }
 
 /******************************************************************************
@@ -90,10 +82,8 @@ void PipelineFlowState::updateRevisionNumber(SceneObject* obj)
 ******************************************************************************/
 void PipelineFlowState::updateRevisionNumbers()
 {
-	OVITO_ASSERT(_objects.size() == _revisionNumbers.size());
-	for(int index = 0; index < _objects.size(); index++) {
-		_revisionNumbers[index] = _objects[index]->revisionNumber();
-	}
+	for(auto& o : _objects)
+		o.updateRevisionNumber();
 }
 
 };

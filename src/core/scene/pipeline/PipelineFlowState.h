@@ -73,11 +73,15 @@ public:
 		_attributes.clear();
 	}
 
+	/// \brief Returns true if the given object is part of this pipeline flow state.
+	/// \note The method ignores the revision number of the object.
+	bool contains(SceneObject* obj) const;
+
 	/// \brief Adds an additional scene object to this state.
 	void addObject(SceneObject* obj);
 
 	/// \brief Replaces a scene object with a new one.
-	void replaceObject(SceneObject* oldObj, const OORef<SceneObject>& newObj);
+	void replaceObject(SceneObject* oldObj, SceneObject* newObj);
 
 	/// \brief Removes a scene object from this state.
 	void removeObject(SceneObject* sceneObj) {
@@ -86,9 +90,6 @@ public:
 
 	/// \brief Returns the list of scene objects stored in this flow state.
 	const QVector<VersionedOORef<SceneObject>>& objects() const { return _objects; }
-
-	/// \brief Returns the number of objects stored in this container.
-	int count() const { return _objects.size(); }
 
 	/// \brief Finds an object of the given type in the list of scene objects stored in this flow state.
 	template<class ObjectType>
@@ -127,28 +128,26 @@ public:
 	/// \brief Returns true if this state object has no valid contents.
 	bool isEmpty() const { return _objects.empty(); }
 
-	/// \brief Updates the stored revision number for a scene object.
-	void updateRevisionNumber(SceneObject* obj);
-
 	/// \brief Updates the stored revision numbers for all scene objects.
 	void updateRevisionNumbers();
 
 	/// Returns the status of the pipeline evaluation.
 	const PipelineStatus& status() const { return _status; }
 
-	/// Changes the stored status record.
+	/// Sets the stored status.
 	void setStatus(const PipelineStatus& status) { _status = status; }
 
-	/// Returns the extra attributes associated with the pipeline flow state.
+	/// Returns the auxiliary attributes associated with the state.
 	const QVariantMap& attributes() const { return _attributes; }
 
-	/// Returns a reference to the extra attributes associated with the pipeline flow state.
+	/// Returns a modifiable reference to the auxiliary attributes associated with this state.
 	QVariantMap& attributes() { return _attributes; }
 
 private:
 
-	/// Contains the objects that flow up the geometry pipeline
-	/// and are modified by modifiers.
+	/// The data that has been output by the modification pipeline.
+	/// This is a list of data objects and associated revision numbers
+	/// to easily detect changes.
 	QVector<VersionedOORef<SceneObject>> _objects;
 
 	/// Contains the validity interval for this pipeline flow state.

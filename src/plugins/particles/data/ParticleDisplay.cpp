@@ -69,9 +69,9 @@ Box3 ParticleDisplay::boundingBox(TimePoint time, SceneObject* sceneObject, Obje
 
 	// Detect if the input data has changed since the last time we computed the bounding box.
 	if(_boundingBoxCacheHelper.updateState(
-			positionProperty, positionProperty ? positionProperty->revisionNumber() : 0,
-			radiusProperty, radiusProperty ? radiusProperty->revisionNumber() : 0,
-			typeProperty, typeProperty ? typeProperty->revisionNumber() : 0,
+			positionProperty,
+			radiusProperty,
+			typeProperty,
 			defaultParticleRadius()) || _cachedBoundingBox.isEmpty()) {
 		// Recompute bounding box.
 		_cachedBoundingBox = particleBoundingBox(positionProperty, typeProperty, radiusProperty);
@@ -306,22 +306,22 @@ void ParticleDisplay::render(TimePoint time, SceneObject* sceneObject, const Pip
 	bool resizeBuffer = recreateBuffer || (_particleBuffer->particleCount() != particleCount);
 
 	// Do we have to update the particle positions in the geometry buffer?
-	bool updatePositions = _positionsCacheHelper.updateState(positionProperty, positionProperty ? positionProperty->revisionNumber() : 0)
+	bool updatePositions = _positionsCacheHelper.updateState(positionProperty)
 			|| resizeBuffer;
 
 	// Do we have to update the particle radii in the geometry buffer?
 	bool updateRadii = _radiiCacheHelper.updateState(
-			radiusProperty, radiusProperty ? radiusProperty->revisionNumber() : 0,
-			typeProperty, typeProperty ? typeProperty->revisionNumber() : 0,
+			radiusProperty,
+			typeProperty,
 			defaultParticleRadius())
 			|| resizeBuffer;
 
 	// Do we have to update the particle colors in the geometry buffer?
 	bool updateColors = _colorsCacheHelper.updateState(
-			colorProperty, colorProperty ? colorProperty->revisionNumber() : 0,
-			typeProperty, typeProperty ? typeProperty->revisionNumber() : 0,
-			selectionProperty, selectionProperty ? selectionProperty->revisionNumber() : 0,
-			transparencyProperty, transparencyProperty ? transparencyProperty->revisionNumber() : 0)
+			colorProperty,
+			typeProperty,
+			selectionProperty,
+			transparencyProperty)
 			|| resizeBuffer;
 
 	// Re-create the geometry buffer if necessary.

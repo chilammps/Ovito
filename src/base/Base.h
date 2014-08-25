@@ -47,6 +47,7 @@
 #include <thread>
 #include <clocale>
 #include <atomic>
+#include <tuple>
 
 /******************************************************************************
 * QT Library

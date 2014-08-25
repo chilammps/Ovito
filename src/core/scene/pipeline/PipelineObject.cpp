@@ -84,11 +84,10 @@ PipelineFlowState PipelineObject::evaluatePipeline(TimePoint time, ModifierAppli
 		// If any of the input objects has been replaced, removed, newly added,
 		// or changed, then the cache is considered invalid.
 
-		// Can use cached state only if none of the input objects have been replaced.
+		// Can use cached state only if none of the input objects have been replaced or modified.
 		if(_lastInput.objects() == inputState.objects()) {
-			// Can use cached state only if none of the input objects has been changed,
-			// i.e., their revision numbers must have stayed constant.
-			if(_lastInput.revisionNumbers() == inputState.revisionNumbers() && _lastInput.attributes() == inputState.attributes()) {
+			// Also check if the auxiliary attributes have not changed.
+			if(_lastInput.attributes() == inputState.attributes()) {
 				// Use cached state.
 				fromHereIndex = _cachedIndex;
 				flowState = _cachedState;

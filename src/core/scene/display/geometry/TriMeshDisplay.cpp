@@ -28,14 +28,14 @@
 
 namespace Ovito {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, TriMeshDisplay, DisplayObject)
-IMPLEMENT_OVITO_OBJECT(Core, TriMeshDisplayEditor, PropertiesEditor)
-SET_OVITO_OBJECT_EDITOR(TriMeshDisplay, TriMeshDisplayEditor)
-DEFINE_FLAGS_PROPERTY_FIELD(TriMeshDisplay, _color, "Color", PROPERTY_FIELD_MEMORIZE)
-DEFINE_REFERENCE_FIELD(TriMeshDisplay, _transparency, "Transparency", Controller)
-SET_PROPERTY_FIELD_LABEL(TriMeshDisplay, _color, "Display color")
-SET_PROPERTY_FIELD_LABEL(TriMeshDisplay, _transparency, "Transparency")
-SET_PROPERTY_FIELD_UNITS(TriMeshDisplay, _transparency, PercentParameterUnit)
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, TriMeshDisplay, DisplayObject);
+IMPLEMENT_OVITO_OBJECT(Core, TriMeshDisplayEditor, PropertiesEditor);
+SET_OVITO_OBJECT_EDITOR(TriMeshDisplay, TriMeshDisplayEditor);
+DEFINE_FLAGS_PROPERTY_FIELD(TriMeshDisplay, _color, "Color", PROPERTY_FIELD_MEMORIZE);
+DEFINE_REFERENCE_FIELD(TriMeshDisplay, _transparency, "Transparency", Controller);
+SET_PROPERTY_FIELD_LABEL(TriMeshDisplay, _color, "Display color");
+SET_PROPERTY_FIELD_LABEL(TriMeshDisplay, _transparency, "Transparency");
+SET_PROPERTY_FIELD_UNITS(TriMeshDisplay, _transparency, PercentParameterUnit);
 
 /******************************************************************************
 * Constructor.
@@ -55,7 +55,7 @@ TriMeshDisplay::TriMeshDisplay(DataSet* dataset) : DisplayObject(dataset),
 Box3 TriMeshDisplay::boundingBox(TimePoint time, SceneObject* sceneObject, ObjectNode* contextNode, const PipelineFlowState& flowState)
 {
 	// Detect if the input data has changed since the last time we computed the bounding box.
-	if(_boundingBoxCacheHelper.updateState(sceneObject, sceneObject ? sceneObject->revisionNumber() : 0) || _cachedBoundingBox.isEmpty()) {
+	if(_boundingBoxCacheHelper.updateState(sceneObject) || _cachedBoundingBox.isEmpty()) {
 		// Recompute bounding box.
 		OORef<TriMeshObject> triMeshObj = sceneObject->convertTo<TriMeshObject>(time);
 		if(triMeshObj)
@@ -80,9 +80,7 @@ void TriMeshDisplay::render(TimePoint time, SceneObject* sceneObject, const Pipe
 	ColorA color_mesh(color(), 1.0f - transp);
 
 	// Do we have to update contents of the geometry buffer?
-	bool updateContents = _geometryCacheHelper.updateState(
-			sceneObject, sceneObject ? sceneObject->revisionNumber() : 0,
-					color_mesh) || recreateBuffer;
+	bool updateContents = _geometryCacheHelper.updateState(sceneObject, color_mesh) || recreateBuffer;
 
 	// Re-create the geometry buffer if necessary.
 	if(recreateBuffer)

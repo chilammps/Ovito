@@ -81,8 +81,8 @@ Box3 VectorDisplay::boundingBox(TimePoint time, SceneObject* sceneObject, Object
 
 	// Detect if the input data has changed since the last time we computed the bounding box.
 	if(_boundingBoxCacheHelper.updateState(
-			vectorProperty, vectorProperty ? vectorProperty->revisionNumber() : 0,
-			positionProperty, positionProperty ? positionProperty->revisionNumber() : 0,
+			vectorProperty,
+			positionProperty,
 			scalingFactor(), arrowWidth()) || _cachedBoundingBox.isEmpty()) {
 		// Recompute bounding box.
 		_cachedBoundingBox = arrowBoundingBox(vectorProperty, positionProperty);
@@ -147,8 +147,8 @@ void VectorDisplay::render(TimePoint time, SceneObject* sceneObject, const Pipel
 
 	// Do we have to update contents of the geometry buffer?
 	bool updateContents = _geometryCacheHelper.updateState(
-			vectorProperty, vectorProperty ? vectorProperty->revisionNumber() : 0,
-			positionProperty, positionProperty ? positionProperty->revisionNumber() : 0,
+			vectorProperty,
+			positionProperty,
 			scalingFactor(), arrowWidth(), arrowColor(), reverseArrowDirection(), flipVectors())
 			|| recreateBuffer || (_buffer->elementCount() != vectorCount);
 

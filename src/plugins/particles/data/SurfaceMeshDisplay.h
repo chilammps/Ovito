@@ -26,6 +26,7 @@
 #include <core/scene/display/DisplayObject.h>
 #include <core/scene/objects/geometry/TriMesh.h>
 #include <core/scene/objects/geometry/HalfEdgeMesh.h>
+#include <core/scene/objects/WeakVersionedObjectReference.h>
 #include <core/rendering/MeshPrimitive.h>
 #include <core/gui/properties/PropertiesEditor.h>
 #include <core/animation/controller/Controller.h>
@@ -124,11 +125,11 @@ protected:
 	/// This helper structure is used to detect any changes in the input data
 	/// that require updating the geometry buffer.
 	SceneObjectCacheHelper<
-		QPointer<SceneObject>, unsigned int,		// Source object + revision number
-		SimulationCellData,							// Simulation cell geometry
-		ColorA,										// Surface color
-		ColorA,										// Cap color
-		bool										// Smooth shading
+		WeakVersionedOORef<SceneObject>,		// Source object + revision number
+		SimulationCellData,						// Simulation cell geometry
+		ColorA,									// Surface color
+		ColorA,									// Cap color
+		bool									// Smooth shading
 		> _geometryCacheHelper;
 
 	/// The cached bounding box.
@@ -137,8 +138,8 @@ protected:
 	/// This helper structure is used to detect changes in the input
 	/// that require recalculating the bounding box.
 	SceneObjectCacheHelper<
-		QPointer<SceneObject>, unsigned int,		// Source object + revision number
-		SimulationCellData							// Simulation cell geometry
+		WeakVersionedOORef<SceneObject>,		// Source object + revision number
+		SimulationCellData						// Simulation cell geometry
 		> _boundingBoxCacheHelper;
 
 private:

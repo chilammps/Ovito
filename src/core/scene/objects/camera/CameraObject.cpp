@@ -69,7 +69,7 @@ CameraObject::CameraObject(DataSet* dataset) : AbstractCameraObject(dataset), _i
 ******************************************************************************/
 TimeInterval CameraObject::objectValidity(TimePoint time)
 {
-	TimeInterval interval = TimeInterval::infinite();
+	TimeInterval interval = SceneObject::objectValidity(time);
 	if(isPerspective() && _fov) interval.intersect(_fov->validityInterval(time));
 	if(!isPerspective() && _zoom) interval.intersect(_zoom->validityInterval(time));
 	return interval;
@@ -335,9 +335,7 @@ void CameraDisplayObject::render(TimePoint time, SceneObject* sceneObject, const
 	Color color = ViewportSettings::getSettings().viewportColor(contextNode->isSelected() ? ViewportSettings::COLOR_SELECTION : ViewportSettings::COLOR_CAMERAS);
 
 	// Do we have to update contents of the geometry buffers?
-	bool updateContents = _geometryCacheHelper.updateState(
-			sceneObject, sceneObject ? sceneObject->revisionNumber() : 0,
-			color) || recreateBuffer;
+	bool updateContents = _geometryCacheHelper.updateState(sceneObject, color) || recreateBuffer;
 
 	// Re-create the geometry buffers if necessary.
 	if(recreateBuffer) {
