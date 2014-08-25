@@ -86,7 +86,7 @@ def _get_ObjectNode_modifiers(self):
     return ObjectNodeModifierList(self)
 ObjectNode.modifiers = property(_get_ObjectNode_modifiers)
 
-def _ObjectNode_wait(self, msgText = None):
+def _ObjectNode_wait(self, signalError = True, msgText = None):
     """ Blocks script execution until the node's modification pipeline is ready.
 
         .. note::
@@ -109,10 +109,18 @@ def _ObjectNode_wait(self, msgText = None):
         up to date.
                
         :param str msgText: An optional text that will be shown to the user while waiting for the operation to finish.
-        :returns: ``True`` if successful, ``False`` if the operation has been canceled by the user.
+        :param signalError: If ``True``, the function raises an exception when the modification pipeline could not be successfully evaluated.
+                            This may be the case if the input file could not be loaded, or if one of the modifiers reported an error.   
+        :returns: ``True`` if the pipeline evaluation is complete, ``False`` if the operation has been canceled by the user.
     """
     if not msgText: msgText = "Script is waiting for scene graph to become ready." 
-    return self.waitUntilReady(self.dataset.anim.time, msgText)
+    if not self.waitUntilReady(self.dataset.anim.time, msgText):
+        return False
+    if signalError:
+        state = self.evalPipeline(self.dataset.anim.time)
+        if state.status.type == PipelineStatusType.Error:
+            raise RuntimeError(state.status.text)
+    return True
 ObjectNode.wait = _ObjectNode_wait
 
 # Give SceneRoot class a list-like interface.

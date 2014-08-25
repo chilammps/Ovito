@@ -87,7 +87,7 @@ BOOST_PYTHON_MODULE(PyScriptScene)
 				"Determines whether the modifier is applied to the input data. Modifiers which are not enabled "
 				"are skipped even if they are part of a modification pipeline."
 				"\n\n"
-				"Default: ``True``\n")
+				":Default: ``True``\n")
 		.add_property("status", &Modifier::status)
 		.def("modifierValidity", &Modifier::modifierValidity)
 		.def("modifierApplications", &Modifier::modifierApplications)

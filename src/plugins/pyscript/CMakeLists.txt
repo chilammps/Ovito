@@ -50,10 +50,12 @@ INSTALL(DIRECTORY "${OVITO_PLUGINS_DIRECTORY}/python/" DESTINATION "${OVITO_RELA
 
 # Install "ovitos" script launcher.
 IF(APPLE)
-	CONFIGURE_FILE("resources/ovitos" "${OVITO_LIBRARY_DIRECTORY}/ovitos" COPYONLY)
+	SET(OVITOS_EXECUTABLE "${OVITO_LIBRARY_DIRECTORY}/ovitos")
+	CONFIGURE_FILE("resources/ovitos" "${OVITOS_EXECUTABLE}" COPYONLY)
 	INSTALL(PROGRAMS "resources/ovitos" DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}")
 ELSEIF(UNIX)
-	CONFIGURE_FILE("resources/ovitos" "${OVITO_BINARY_DIRECTORY}/ovitos" COPYONLY)
+	SET(OVITOS_EXECUTABLE "${OVITO_BINARY_DIRECTORY}/ovitos")
+	CONFIGURE_FILE("resources/ovitos" "${OVITOS_EXECUTABLE}" COPYONLY)
 	INSTALL(PROGRAMS "resources/ovitos" DESTINATION "${OVITO_RELATIVE_BINARY_DIRECTORY}")
 ELSEIF(WIN32)
 	# We have to build a second executable under Windows because the main ovito.exe is not a console application.
@@ -62,6 +64,7 @@ ELSEIF(WIN32)
 	TARGET_LINK_LIBRARIES(ovitos Base Core)
 	QT5_USE_MODULES(ovitos ${OVITO_REQUIRED_QT_MODULES})
 	INSTALL(TARGETS ovitos DESTINATION "${OVITO_RELATIVE_BINARY_DIRECTORY}")
+	GET_PROPERTY(OVITOS_EXECUTABLE TARGET ovitos PROPERTY LOCATION)
 ENDIF()
 
 # Install standard Python packages. 
@@ -112,7 +115,7 @@ ELSEIF(WIN32)
 		OVITO_INSTALL_DLL("${Boost_LIBRARY_DIRS}/libboost_python-mt-d.dll")
 	ENDIF()
 	
-	# The 32-bit python interpreter DLL (python27.dll) is usually located in the Windows SysWOW64 directory.
+	# The 32-bit python interpreter DLL (python27.dll) is usually located in the Windows/SysWOW64 directory.
 	FIND_FILE(PYTHON_DLL NAMES python27.dll HINTS "C:/Windows/SysWOW64" ENV PATH DOC "Python interpreter DLL")
 	IF(NOT PYTHON_DLL)
 		MESSAGE(FATAL_ERROR "Please set the PYTHON_DLL variable to specify the location of the Python interpreter DLL.")
@@ -120,3 +123,9 @@ ELSEIF(WIN32)
 	OVITO_INSTALL_DLL("${PYTHON_DLL}")
 ENDIF()
 
+# Define tests for the scripting interface.
+SET(PYTHON_TEST_SCRIPTS_DIR "${CMAKE_SOURCE_DIR}/tests/scripts/test_suite")
+FILE(GLOB_RECURSE PYTHON_TEST_SCRIPTS RELATIVE "${PYTHON_TEST_SCRIPTS_DIR}" "${PYTHON_TEST_SCRIPTS_DIR}/*.py")
+FOREACH(test_script ${PYTHON_TEST_SCRIPTS})
+	ADD_TEST(NAME "${test_script}" WORKING_DIRECTORY "${PYTHON_TEST_SCRIPTS_DIR}" COMMAND "${OVITOS_EXECUTABLE}" "${test_script}")
+ENDFOREACH()

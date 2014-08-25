@@ -173,7 +173,7 @@ BOOST_PYTHON_MODULE(PyScriptFileIO)
 				"In some situations it makes sense to turn this option off, for example, if you import several data files into "
 				"OVITO simultaneously, but their frame counts do not match. "
 				"\n\n"
-				"Default: ``True``\n")
+				":Default: ``True``\n")
 		.add_property("sceneObjects", make_function(&LinkedFileObject::sceneObjects, return_internal_reference<>()))
 		.def("refreshFromSource", &LinkedFileObject::refreshFromSource)
 		.def("updateFrames", &LinkedFileObject::updateFrames)

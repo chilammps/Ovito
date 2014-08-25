@@ -59,16 +59,17 @@ BOOST_PYTHON_MODULE(PyScriptViewport)
 			.add_property("type", &Viewport::viewType, (void (*)(Viewport&,Viewport::ViewType))([](Viewport& vp, Viewport::ViewType vt) { vp.setViewType(vt); }),
 					"The type of projection:"
 					"\n\n"
+					"  * ``Viewport.Type.PERSPECTIVE``\n"
+					"  * ``Viewport.Type.ORTHO``\n"
 					"  * ``Viewport.Type.TOP``\n"
 					"  * ``Viewport.Type.BOTTOM``\n"
 					"  * ``Viewport.Type.FRONT``\n"
 					"  * ``Viewport.Type.BACK``\n"
 					"  * ``Viewport.Type.LEFT``\n"
 					"  * ``Viewport.Type.RIGHT``\n"
-					"  * ``Viewport.Type.ORTHO``\n"
-					"  * ``Viewport.Type.PERSPECTIVE``\n"
+					"  * ``Viewport.Type.NONE``\n"
 					"\n"
-					"The last two types (``ORTHO`` and ``PERSPECTIVE``) allow you to set up custom views with arbitrary camera orientation.\n")
+					"The first two types (``PERSPECTIVE`` and ``ORTHO``) allow you to set up custom views with arbitrary camera orientation.\n")
 			.add_property("fov", &Viewport::fieldOfView, &Viewport::setFieldOfView,
 					"The field of view of the viewport's camera. "
 					"For perspective projections this is the camera's angle in the vertical direction (in radians). For orthogonal projections this is the visible range in the vertical direction (in world units).")

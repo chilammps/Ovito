@@ -79,7 +79,7 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 		.add_property("color", &AssignColorModifier::color, &AssignColorModifier::setColor,
 				"The color that will be assigned to particles."
 				"\n\n"
-				"Default: ``(0.3,0.3,1.0)``\n")
+				":Default: ``(0.3,0.3,1.0)``\n")
 		.add_property("colorController", make_function(&AssignColorModifier::colorController, return_value_policy<ovito_object_reference>()), &AssignColorModifier::setColorController)
 		.add_property("keepSelection", &AssignColorModifier::keepSelection, &AssignColorModifier::setKeepSelection)
 	;
@@ -102,7 +102,7 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 				"then the modifier automatically adjusts them to the minimum and maximum values of the particle property when the modifier "
 				"is inserted into the modification pipeline.")
 			.add_property("source", make_function(&ColorCodingModifier::sourceProperty, return_value_policy<copy_const_reference>()), &ColorCodingModifier::setSourceProperty,
-					"The name of the input property that determines the color of particles.")
+					"The name of the input property that determines the color of particles. ")
 			.add_property("start_value", &ColorCodingModifier::startValue, &ColorCodingModifier::setStartValue,
 					"This parameter defines the value range when mapping the input property to a color.")
 			.add_property("startValueController", make_function(&ColorCodingModifier::startValueController, return_value_policy<ovito_object_reference>()), &ColorCodingModifier::setStartValueController)
@@ -121,7 +121,7 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 			.add_property("color_only_selected", &ColorCodingModifier::colorOnlySelected, &ColorCodingModifier::setColorOnlySelected,
 					"If true, only selected particles will be affected by the modifier; if false, all particles will be colored."
 					"\n\n"
-					"Default: ``False``\n")
+					":Default: ``False``\n")
 			.add_property("keepSelection", &ColorCodingModifier::keepSelection, &ColorCodingModifier::setKeepSelection)
 			.add_property("renderLegend", &ColorCodingModifier::renderLegend, &ColorCodingModifier::setRenderLegend)
 			.add_property("legendViewport", make_function(&ColorCodingModifier::legendViewport, return_value_policy<ovito_object_reference>()), &ColorCodingModifier::setLegendViewport)
@@ -141,26 +141,65 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 		;
 	}
 
-	ovito_class<AmbientOcclusionModifier, AsynchronousParticleModifier>()
-		.add_property("intensity", &AmbientOcclusionModifier::intensity, &AmbientOcclusionModifier::setIntensity)
-		.add_property("samplingCount", &AmbientOcclusionModifier::samplingCount, &AmbientOcclusionModifier::setSamplingCount)
-		.add_property("bufferResolution", &AmbientOcclusionModifier::bufferResolution, &AmbientOcclusionModifier::setBufferResolution)
+	ovito_class<AmbientOcclusionModifier, AsynchronousParticleModifier>(
+			"Performs a quick lighting calculation to shade particles according to the degree of occlusion by other particles. ")
+		.add_property("intensity", &AmbientOcclusionModifier::intensity, &AmbientOcclusionModifier::setIntensity,
+				"A number controlling the strength of the applied shading effect. "
+				"\n\n"
+				":Valid range: [0.0, 1.0]\n"
+				":Default: 0.7")
+		.add_property("sample_count", &AmbientOcclusionModifier::samplingCount, &AmbientOcclusionModifier::setSamplingCount,
+				"The number of light exposure samples to compute. A large number takes longer to compute but leads to a more "
+				"even light distribution."
+				"\n\n"
+				":Default: 20\n")
+		.add_property("buffer_resolution", &AmbientOcclusionModifier::bufferResolution, &AmbientOcclusionModifier::setBufferResolution,
+				"A positive integer controlling the resolution of the internal render buffer, which is used to compute how much "
+				"light each particle receives. When the number of particles is large, a larger buffer resolution should be used."
+				"\n\n"
+				":Valid range: [1, 4]\n"
+				":Default: 3\n")
 	;
 
-	ovito_class<DeleteParticlesModifier, ParticleModifier>()
+	ovito_class<DeleteParticlesModifier, ParticleModifier>(
+			"This modifier deletes the selected particles. It has no parameters.")
 	;
 
-	ovito_class<ShowPeriodicImagesModifier, ParticleModifier>()
-		.add_property("showImageX", &ShowPeriodicImagesModifier::showImageX, &ShowPeriodicImagesModifier::setShowImageX)
-		.add_property("showImageY", &ShowPeriodicImagesModifier::showImageY, &ShowPeriodicImagesModifier::setShowImageY)
-		.add_property("showImageZ", &ShowPeriodicImagesModifier::showImageZ, &ShowPeriodicImagesModifier::setShowImageZ)
-		.add_property("numImagesX", &ShowPeriodicImagesModifier::numImagesX, &ShowPeriodicImagesModifier::setNumImagesX)
-		.add_property("numImagesY", &ShowPeriodicImagesModifier::numImagesY, &ShowPeriodicImagesModifier::setNumImagesY)
-		.add_property("numImagesZ", &ShowPeriodicImagesModifier::numImagesZ, &ShowPeriodicImagesModifier::setNumImagesZ)
-		.add_property("adjustBoxSize", &ShowPeriodicImagesModifier::adjustBoxSize, &ShowPeriodicImagesModifier::setAdjustBoxSize)
+	ovito_class<ShowPeriodicImagesModifier, ParticleModifier>(
+			"This modifier replicates all particles to display periodic images of the system.")
+		.add_property("replicate_x", &ShowPeriodicImagesModifier::showImageX, &ShowPeriodicImagesModifier::setShowImageX,
+				"Enables replication of particles along X."
+				"\n\n"
+				":Default: ``False``\n")
+		.add_property("replicate_y", &ShowPeriodicImagesModifier::showImageY, &ShowPeriodicImagesModifier::setShowImageY,
+				"Enables replication of particles along Y."
+				"\n\n"
+				":Default: ``False``\n")
+		.add_property("replicate_z", &ShowPeriodicImagesModifier::showImageZ, &ShowPeriodicImagesModifier::setShowImageZ,
+				"Enables replication of particles along Z."
+				"\n\n"
+				":Default: ``False``\n")
+		.add_property("num_x", &ShowPeriodicImagesModifier::numImagesX, &ShowPeriodicImagesModifier::setNumImagesX,
+				"A positive integer specifying the number of periodic images to generate in the X direction (including the existing primary image)."
+				"\n\n"
+				":Default: 3\n")
+		.add_property("num_y", &ShowPeriodicImagesModifier::numImagesY, &ShowPeriodicImagesModifier::setNumImagesY,
+				"A positive integer specifying the number of periodic images to generate in the Y direction (including the existing primary image)."
+				"\n\n"
+				":Default: 3\n")
+		.add_property("num_z", &ShowPeriodicImagesModifier::numImagesZ, &ShowPeriodicImagesModifier::setNumImagesZ,
+				"A positive integer specifying the number of periodic images to generate in the Z direction (including the existing primary image)."
+				"\n\n"
+				":Default: 3\n")
+		.add_property("adjust_box", &ShowPeriodicImagesModifier::adjustBoxSize, &ShowPeriodicImagesModifier::setAdjustBoxSize,
+				"If ``True``, the simulation cell is extended to fit the multiplied system."
+				"\n\n"
+				":Default: ``False``\n")
 	;
 
-	ovito_class<WrapPeriodicImagesModifier, ParticleModifier>()
+	ovito_class<WrapPeriodicImagesModifier, ParticleModifier>(
+			"This modifier maps particles located outside the simulation cell back into the box by \"wrapping\" their coordinates "
+			"around at the periodic boundaries of the simulation cell. This modifier has no parameters.")
 	;
 
 	ovito_class<CreateExpressionPropertyModifier, ParticleModifier>()
@@ -177,10 +216,12 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 		.def("takePropertySnapshot", &FreezePropertyModifier::takePropertySnapshot)
 	;
 
-	ovito_class<ClearSelectionModifier, ParticleModifier>()
+	ovito_class<ClearSelectionModifier, ParticleModifier>(
+			"This modifier clears the particle selection. It has no parameters.")
 	;
 
-	ovito_class<InvertSelectionModifier, ParticleModifier>()
+	ovito_class<InvertSelectionModifier, ParticleModifier>(
+		"This modifier inverts the particle selection. It has no parameters.")
 	;
 
 	ovito_class<FreezeSelectionModifier, ParticleModifier>()
@@ -194,8 +235,10 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 		.def("toggleParticleSelection", &ManualSelectionModifier::toggleParticleSelection)
 	;
 
-	ovito_class<SelectExpressionModifier, ParticleModifier>()
-		.add_property("expression", make_function(&SelectExpressionModifier::expression, return_value_policy<copy_const_reference>()), &SelectExpressionModifier::setExpression)
+	ovito_class<SelectExpressionModifier, ParticleModifier>(
+			"This modifier selects particles based on a user-defined Boolean expression.")
+		.add_property("expression", make_function(&SelectExpressionModifier::expression, return_value_policy<copy_const_reference>()), &SelectExpressionModifier::setExpression,
+				"A string with a a Boolean expression. The syntax is documented in OVITO's user manual.")
 	;
 
 	ovito_class<SelectParticleTypeModifier, ParticleModifier>()

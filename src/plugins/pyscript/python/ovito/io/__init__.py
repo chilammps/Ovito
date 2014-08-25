@@ -35,14 +35,6 @@ def import_file(location, mode = "AddToScene", **params):
                        
         :returns: The :py:class:`~ovito.scene.ObjectNode` that has been created for the imported data.
                   
-        ..  Note::
-    
-                The loading of external files typically happens asynchronously in OVITO. That is, 
-                this function may return a node whose input data is still being loaded in the background.
-                If necessary, you can call the node's :py:func:`~ovito.scene.ObjectNode.wait` function to 
-                block script execution until the data has been fully loaded; for example, if you are going to
-                directly access the imported data instead of relying on OVITO's modifier system.
-        
         **File columns**
         
         When importing XYZ files or binary LAMMPS dump files, the mapping of file columns 
@@ -84,10 +76,15 @@ def import_file(location, mode = "AddToScene", **params):
     if not importer.importFile(location, mode):
         raise RuntimeError("Operation has been canceled by the user.")
 
-    # Return the newly created ObjectNode.
+    # Get the newly created ObjectNode.
     node = ovito.dataset.selected_node
     if not isinstance(node, ovito.scene.ObjectNode):
         raise RuntimeError("File import failed. Nothing was imported.")
+    
+    # Block execution until file is loaded.
+    # Raise exception if error occurs during loading, or if canceled by the user.
+    if not node.wait(signalError = True):
+        raise RuntimeError("Operation has been canceled by the user.")
     
     return node    
 
@@ -98,7 +95,15 @@ def _FileSourceObject_load(self, location, **params):
         
         The function accepts additional keyword arguments that are forwarded to the format-specific file importer.
         See the documentation of the :py:func:`ovito.io.import_file` function for more information.
-        
+
+        ..  Note::
+    
+                This method operates asynchronously. That is, the method returns immediately and the data 
+                is loaded in the background. If necessary, you can call :py:func:`~ovito.scene.ObjectNode.wait` on the
+                :py:class:`~ovito.scene.ObjectNode` to block script execution until the data has been fully loaded; 
+                for example, if you want to check for errors during file import, or if you are going to
+                directly access the imported data instead of relying on OVITO's modifier system.        
+
         :param str location: The local file or remote sftp:// URL to load.
     """
 
@@ -118,7 +123,7 @@ def _FileSourceObject_load(self, location, **params):
         importer.__setattr__(key, params[key])
 
     # Load new data file.
-    if not self.setSource(location, importer, False):
+    if not self.setSource(location, importer, True):
         raise RuntimeError("Operation has been canceled by the user.")
 FileSourceObject.load = _FileSourceObject_load
 
@@ -169,7 +174,7 @@ def export_file(node, file, format, **params):
     # Create an instance of the exporter class.
     exporter = export_file._formatTable[format](params)
     
-    # Ensure the data is available.
+    # Ensure the data to be exported is available.
     node.wait()
     
     # Export data.

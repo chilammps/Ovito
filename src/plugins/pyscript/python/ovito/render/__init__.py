@@ -5,7 +5,7 @@ def _get_RenderSettings_custom_range(self):
     """ 
     Specifies the range of animation frames to render if :py:attr:`.range` is ``CUSTOM_INTERVAL``.
     
-    Default: ``(0,100)`` 
+    :Default: ``(0,100)`` 
     """
     return (self.customRangeStart, self.customRangeEnd)
 def _set_RenderSettings_custom_range(self, range):
@@ -18,7 +18,7 @@ def _get_RenderSettings_size(self):
     """ 
     Specifies the resolution of the generated image or movie in pixels. 
     
-    Default: ``(640,480)`` 
+    :Default: ``(640,480)`` 
     """
     return (self.outputImageWidth, self.outputImageHeight)
 def _set_RenderSettings_size(self, size):
@@ -31,7 +31,7 @@ def _get_RenderSettings_filename(self):
     """ 
     A string specifying the file name under which the rendered image or movie will be saved.
     
-    Default: ``None``
+    :Default: ``None``
     """
     if self.saveToFile and self.imageFilename: return self.imageFilename
     else: return None

@@ -81,12 +81,12 @@ BOOST_PYTHON_MODULE(PyScriptRendering)
 			.add_property("background_color", &RenderSettings::backgroundColor, &RenderSettings::setBackgroundColor,
 					"Controls the background color of the rendered image."
 					"\n\n"
-					"Default: ``(1,1,1)`` -- white")
+					":Default: ``(1,1,1)`` -- white")
 			.add_property("generate_alpha", &RenderSettings::generateAlphaChannel, &RenderSettings::setGenerateAlphaChannel,
 					"When saving the generated image to a file format that can store transparency information (e.g. PNG), this option will make "
 					"those parts of the output image transparent that are not covered by an object."
 					"\n\n"
-					"Default: ``False``")
+					":Default: ``False``")
 			.add_property("saveToFile", &RenderSettings::saveToFile, &RenderSettings::setSaveToFile)
 			.add_property("skipExistingImages", &RenderSettings::skipExistingImages, &RenderSettings::setSkipExistingImages)
 			.add_property("customRangeStart", &RenderSettings::customRangeStart, &RenderSettings::setCustomRangeStart)
@@ -116,7 +116,7 @@ BOOST_PYTHON_MODULE(PyScriptRendering)
 				"A positive integer controlling the level of supersampling. If 1, no supersampling is performed. For larger values, "
 				"the image in rendered at a higher resolution and then scaled back to the output size to reduce aliasing artifacts."
 				"\n\n"
-				"Default: 3")
+				":Default: 3")
 	;
 
 	ovito_abstract_class<NonInteractiveSceneRenderer, SceneRenderer>()

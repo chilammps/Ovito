@@ -46,7 +46,6 @@ using namespace PyScript;
 BOOST_PYTHON_MODULE(ParticlesImporter)
 {
 	class_<InputColumnMapping>("InputColumnMapping", init<>())
-		.add_property("columnCount", &InputColumnMapping::size, (void (InputColumnMapping::*)(InputColumnMapping::size_type))&InputColumnMapping::resize)
 		.add_property("fileExcerpt", make_function(&InputColumnMapping::fileExcerpt, return_value_policy<copy_const_reference>()), &InputColumnMapping::setFileExcerpt)
 		.def("validate", &InputColumnMapping::validate)
 	;
@@ -126,11 +125,11 @@ BOOST_PYTHON_MODULE(ParticlesImporter)
 	converter::registry::push_back(convertible_InputColumnMapping, construct_InputColumnMapping, boost::python::type_id<InputColumnMapping>());
 
 	ovito_abstract_class<ParticleImporter, FileImporter>()
-		.add_property("multiTimestepFile", &ParticleImporter::isMultiTimestepFile, &ParticleImporter::setMultiTimestepFile)
+		.add_property("multiple_frames", &ParticleImporter::isMultiTimestepFile, &ParticleImporter::setMultiTimestepFile)
 	;
 
 	ovito_class<XYZImporter, ParticleImporter>()
-		.add_property("columnMapping", make_function(&XYZImporter::columnMapping, return_value_policy<copy_const_reference>()), &XYZImporter::setColumnMapping)
+		.add_property("columns", make_function(&XYZImporter::columnMapping, return_value_policy<copy_const_reference>()), &XYZImporter::setColumnMapping)
 	;
 
 	ovito_class<LAMMPSTextDumpImporter, ParticleImporter>()
@@ -138,21 +137,23 @@ BOOST_PYTHON_MODULE(ParticlesImporter)
 		.add_property("useCustomColumnMapping", &LAMMPSTextDumpImporter::useCustomColumnMapping, &LAMMPSTextDumpImporter::setUseCustomColumnMapping)
 	;
 
-	ovito_class<LAMMPSDataImporter, ParticleImporter>()
-		.add_property("LAMMPSDataImporter", &LAMMPSDataImporter::atomStyle, &LAMMPSDataImporter::setAtomStyle)
-	;
+	{
+		scope s = ovito_class<LAMMPSDataImporter, ParticleImporter>()
+			.add_property("atomStyle", &LAMMPSDataImporter::atomStyle, &LAMMPSDataImporter::setAtomStyle)
+		;
 
-	enum_<LAMMPSDataImporter::LAMMPSAtomStyle>("LAMMPSAtomStyle")
-		.value("Unknown", LAMMPSDataImporter::AtomStyle_Unknown)
-		.value("Angle", LAMMPSDataImporter::AtomStyle_Angle)
-		.value("Atomic", LAMMPSDataImporter::AtomStyle_Atomic)
-		.value("Body", LAMMPSDataImporter::AtomStyle_Body)
-		.value("Bond", LAMMPSDataImporter::AtomStyle_Bond)
-		.value("Charge", LAMMPSDataImporter::AtomStyle_Charge)
-	;
+		enum_<LAMMPSDataImporter::LAMMPSAtomStyle>("LAMMPSAtomStyle")
+			.value("Unknown", LAMMPSDataImporter::AtomStyle_Unknown)
+			.value("Angle", LAMMPSDataImporter::AtomStyle_Angle)
+			.value("Atomic", LAMMPSDataImporter::AtomStyle_Atomic)
+			.value("Body", LAMMPSDataImporter::AtomStyle_Body)
+			.value("Bond", LAMMPSDataImporter::AtomStyle_Bond)
+			.value("Charge", LAMMPSDataImporter::AtomStyle_Charge)
+		;
+	}
 
 	ovito_class<LAMMPSBinaryDumpImporter, ParticleImporter>()
-		.add_property("columnMapping", make_function(&LAMMPSBinaryDumpImporter::columnMapping, return_value_policy<copy_const_reference>()), &LAMMPSBinaryDumpImporter::setColumnMapping)
+		.add_property("columns", make_function(&LAMMPSBinaryDumpImporter::columnMapping, return_value_policy<copy_const_reference>()), &LAMMPSBinaryDumpImporter::setColumnMapping)
 	;
 
 	ovito_class<CFGImporter, ParticleImporter>()
