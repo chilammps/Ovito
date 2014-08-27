@@ -268,7 +268,7 @@ void ConstructSurfaceModifier::ConstructSurfaceEngine::compute(FutureInterfaceBa
 		Vector3 cd = unwrappedVerts[2] - unwrappedVerts[3];
 		if(_simCell.isWrappedVector(ad) || _simCell.isWrappedVector(bd) || _simCell.isWrappedVector(cd))
 			throw Exception(tr("Cannot construct surface mesh. Simulation cell length is too small for the given radius parameter."));
-		_solidVolume += std::abs(ad.dot(cd.cross(bd))) / 6.0f;
+		_solidVolume += std::abs(ad.dot(cd.cross(bd))) / 6.0;
 
 		// Iterate over the four faces of the tetrahedron cell.
 		for(int f = 0; f < 4; f++) {
