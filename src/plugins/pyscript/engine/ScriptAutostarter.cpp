@@ -38,10 +38,10 @@ void ScriptAutostarter::registerCommandLineOptions(QCommandLineParser& cmdLinePa
 	cmdLineParser.addOption(QCommandLineOption("script", tr("Runs a Python script file."), tr("FILE")));
 
 	// Register the --scriptarg command line option.
-	cmdLineParser.addOption(QCommandLineOption("scriptarg", tr("Passes a command line option to the script."), tr("ARG")));
+	cmdLineParser.addOption(QCommandLineOption("scriptarg", tr("Passes a command line option to the Python script."), tr("ARG")));
 
 	// Register the --exec command line option.
-	cmdLineParser.addOption(QCommandLineOption("exec", tr("Executes a Python statement."), tr("CMD")));
+	cmdLineParser.addOption(QCommandLineOption("exec", tr("Executes a single Python statement."), tr("CMD")));
 }
 
 /******************************************************************************

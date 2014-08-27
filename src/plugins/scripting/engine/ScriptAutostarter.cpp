@@ -35,10 +35,10 @@ IMPLEMENT_OVITO_OBJECT(Scripting, ScriptAutostarter, AutoStartObject);
 void ScriptAutostarter::registerCommandLineOptions(QCommandLineParser& cmdLineParser)
 {
 	// Register the --script command line option.
-	cmdLineParser.addOption(QCommandLineOption("jsscript", tr("Runs a script file."), tr("FILE")));
+	cmdLineParser.addOption(QCommandLineOption("jsscript", tr("Runs a Javascript file."), tr("FILE")));
 
 	// Register the --exec command line option.
-	cmdLineParser.addOption(QCommandLineOption("jsexec", tr("Executes a script command."), tr("CMD")));
+	cmdLineParser.addOption(QCommandLineOption("jsexec", tr("Executes a Javascript command."), tr("CMD")));
 }
 
 /******************************************************************************

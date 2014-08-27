@@ -101,6 +101,8 @@ bool Application::initialize(int& argc, char** argv)
 	qRegisterMetaTypeStreamOperators<ColorA>("Ovito::ColorA");
 
 	// Register command line arguments.
+	_cmdLineParser.setApplicationDescription(tr("OVITO - Open Visualization Tool"));
+	_cmdLineParser.addOption(QCommandLineOption(QStringList{{"h", "help"}}, tr("Shows this list of program options and exits.")));
 	_cmdLineParser.addOption(QCommandLineOption(QStringList{{"v", "version"}}, tr("Prints the program version and exits.")));
 	_cmdLineParser.addOption(QCommandLineOption(QStringList{{"nogui"}}, tr("Run in console mode without showing the graphical user interface.")));
 	_cmdLineParser.addOption(QCommandLineOption(QStringList{{"glversion"}}, tr("Selects a specific version of the OpenGL standard."), tr("VERSION")));
@@ -173,6 +175,13 @@ bool Application::initialize(int& argc, char** argv)
 			_consoleMode = true;
 			shutdown();
 			return false;
+		}
+
+		// Handle --help command line option. Print list of command line options.
+		if(_cmdLineParser.isSet("help")) {
+			std::cout << qPrintable(_cmdLineParser.helpText()) << std::endl;
+			_consoleMode = true;
+			return true;
 		}
 
 		if(guiMode()) {
