@@ -14,14 +14,6 @@ print "This is Ovito version", version
 # Import a data file.
 node = import_file("../data/NanocrystallinePd.dump.gz")
 
-# Block execution of the script until the node's modification pipeline is ready, that is, until 
-# the input data has been completely loaded.
-# This waiting step is optional, but it ensures that the modifier we are going to create 
-# has access to the input data when it is inserted into the modification pipeline.
-# This allows the Color Coding modifier to automatically adjust its interval to the min/max range of 
-# the input data.
-node.wait()
-
 # Apply a modifier to the dataset.
 node.modifiers.append(ColorCodingModifier(
 	source = "Potential Energy",
@@ -53,7 +45,8 @@ print node.modifiers
 cna = CommonNeighborAnalysisModifier(cutoff = 3.2, adaptiveMode = False)
 node.modifiers.append(cna)
 
-# Wait until computation has been completed.
+# Block execution of the script until the node's modification pipeline is ready, that is, until 
+# the results of all modifiers have been computed.
 node.wait()
 
 # Read out analysis results.

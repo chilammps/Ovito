@@ -26,11 +26,11 @@
 
 namespace Ovito {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, SceneObject, RefTarget)
-DEFINE_PROPERTY_FIELD(SceneObject, _saveWithScene, "SaveWithScene")
-DEFINE_VECTOR_REFERENCE_FIELD(SceneObject, _displayObjects, "DisplayObjects", DisplayObject)
-SET_PROPERTY_FIELD_LABEL(SceneObject, _saveWithScene, "Save data with scene")
-SET_PROPERTY_FIELD_LABEL(SceneObject, _displayObjects, "Display objects")
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, SceneObject, RefTarget);
+DEFINE_PROPERTY_FIELD(SceneObject, _saveWithScene, "SaveWithScene");
+DEFINE_VECTOR_REFERENCE_FIELD(SceneObject, _displayObjects, "DisplayObjects", DisplayObject);
+SET_PROPERTY_FIELD_LABEL(SceneObject, _saveWithScene, "Save data with scene");
+SET_PROPERTY_FIELD_LABEL(SceneObject, _displayObjects, "Display objects");
 
 /******************************************************************************
 * Constructor.

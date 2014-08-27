@@ -123,6 +123,19 @@ def _ObjectNode_wait(self, signalError = True, msgText = None):
     return True
 ObjectNode.wait = _ObjectNode_wait
 
+def _ObjectNode_compute(self):
+    """ Computes and returns the results of the node's modification pipeline.
+    
+        The function raises a ``RuntimeError`` when the modification pipeline could not be successfully evaluated for some reason.
+        This may happen due to modifier parameters that are invalid for example.
+
+        :returns: A :py:class:`~ovito.scene.PipelineFlowState` container that holds the output of the modification pipeline.
+    """
+    if not self.wait():
+        raise RuntimeError("Operation has been canceled by the user.")
+    return self.evalPipeline(self.dataset.anim.time)
+ObjectNode.compute = _ObjectNode_compute
+
 # Give SceneRoot class a list-like interface.
 SceneRoot.__len__ = lambda self: len(self.children)
 SceneRoot.__iter__ = lambda self: self.children.__iter__
