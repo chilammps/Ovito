@@ -94,8 +94,9 @@ bool OnTheFlyNeighborListBuilder::prepare(ParticleProperty* posProperty, const S
 	auto a = particles.begin();
 	size_t particleIndex = 0;
 	for(; p != p_end; ++a, ++p, ++particleIndex) {
-		a->index = particleIndex;
 		a->pos = *p;
+		a->pbcShift.setZero();
+		a->index = particleIndex;
 
 		// Determine the bin the atom is located in.
 		Point3 rp = reciprocalBinCell * (*p);
@@ -107,10 +108,13 @@ bool OnTheFlyNeighborListBuilder::prepare(ParticleProperty* posProperty, const S
 
 			if(pbc[k]) {
 				if(binLocation[k] < 0 || binLocation[k] >= binDim[k]) {
+					int shift;
 					if(binLocation[k] < 0)
-						a->pos += (FloatType)(-(binLocation[k]+1)/binDim[k]+1) * simCell.column(k);
+						shift = -(binLocation[k]+1)/binDim[k]+1;
 					else
-						a->pos -= (FloatType)(binLocation[k]/binDim[k]) * simCell.column(k);
+						shift = -binLocation[k]/binDim[k];
+					a->pbcShift[k] = (int8_t)shift;
+					a->pos += (FloatType)shift * simCell.column(k);
 					binLocation[k] = SimulationCellData::modulo(binLocation[k], binDim[k]);
 					if(hasWrappedParticles)
 						*hasWrappedParticles = true;

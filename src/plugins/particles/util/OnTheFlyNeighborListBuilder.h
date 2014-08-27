@@ -49,6 +49,9 @@ private:
 		/// The position of the particle, wrapped at periodic boundaries.
 		Point3 pos;
 
+		/// The offset applied to the particle when wrapping it at periodic boundaries.
+		Vector_3<int8_t> pbcShift;
+
 		/// The next item in the linked list used for binning.
 		NeighborListParticle* nextInBin;
 
@@ -92,7 +95,21 @@ public:
 		size_t current() { return _neighborIndex; }
 		const Vector3& delta() const { return _delta; }
 		FloatType distanceSquared() const { return _distsq; }
+
+		// Returns the PBC shift vector between the two particles.
+		// This vector is non-zero if the current neighbor bond crosses a periodic boundary.
 		const Vector_3<int8_t>& pbcShift() const { return _pbcShift; }
+
+		// Returns the PBC shift vector between the two particles as if the two particles
+		// were not wrapped at the periodic boundaries of the simulation cell.
+		Vector_3<int8_t> unwrappedPbcShift() const {
+			const auto& s1 = _builder.particles[_centerIndex].pbcShift;
+			const auto& s2 = _builder.particles[_neighborIndex].pbcShift;
+			return Vector_3<int8_t>(
+					_pbcShift.x() - s1.x() + s2.x(),
+					_pbcShift.y() - s1.y() + s2.y(),
+					_pbcShift.z() - s1.z() + s2.z());
+		}
 
 	private:
 

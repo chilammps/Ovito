@@ -174,7 +174,7 @@ public:
 /// \brief Computes the sum of a point and a vector.
 template<typename T>
 Q_DECL_CONSTEXPR Point_3<T> operator+(const Point_3<T>& a, const Vector_3<T>& b) {
-	return { a.x() + b.x(), a.y() + b.y(), a.z() + b.z() };
+	return Point_3<T>{ a.x() + b.x(), a.y() + b.y(), a.z() + b.z() };
 }
 
 /// \brief Converts a vector to a point.
@@ -192,31 +192,31 @@ Q_DECL_CONSTEXPR Point_3<T> operator+(const Vector_3<T>& a, const Point_3<T>& b)
 /// \brief Computes the difference of a point and a vector.
 template<typename T>
 Q_DECL_CONSTEXPR Point_3<T> operator-(const Point_3<T>& a, const Vector_3<T>& b) {
-	return { a.x() - b.x(), a.y() - b.y(), a.z() - b.z() };
+	return Point_3<T>{ a.x() - b.x(), a.y() - b.y(), a.z() - b.z() };
 }
 
 /// \brief Computes the difference vector of two points.
 template<typename T>
 Q_DECL_CONSTEXPR Vector_3<T> operator-(const Point_3<T>& a, const Point_3<T>& b) {
-	return { a.x() - b.x(), a.y() - b.y(), a.z() - b.z() };
+	return Vector_3<T>{ a.x() - b.x(), a.y() - b.y(), a.z() - b.z() };
 }
 
 /// \brief Computes the product of a point and a scalar value.
 template<typename T>
 Q_DECL_CONSTEXPR Point_3<T> operator*(const Point_3<T>& a, T s) {
-	return { a.x() * s, a.y() * s, a.z() * s };
+	return Point_3<T>{ a.x() * s, a.y() * s, a.z() * s };
 }
 
 /// \brief Computes the product of a point and a scalar value.
 template<typename T>
 Q_DECL_CONSTEXPR Point_3<T> operator*(T s, const Point_3<T>& a) {
-	return { a.x() * s, a.y() * s, a.z() * s };
+	return Point_3<T>{ a.x() * s, a.y() * s, a.z() * s };
 }
 
 /// \brief Computes the division of a vector by a scalar value.
 template<typename T>
 Q_DECL_CONSTEXPR Point_3<T> operator/(const Point_3<T>& a, T s) {
-	return { a.x() / s, a.y() / s, a.z() / s };
+	return Point_3<T>{ a.x() / s, a.y() / s, a.z() / s };
 }
 
 /// \brief Writes the point to a text output stream.
