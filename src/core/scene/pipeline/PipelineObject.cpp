@@ -26,17 +26,17 @@
 namespace Ovito {
 
 IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Core, PipelineObject, SceneObject);
-DEFINE_REFERENCE_FIELD(PipelineObject, _inputObject, "InputObject", SceneObject);
+DEFINE_REFERENCE_FIELD(PipelineObject, _sourceObject, "InputObject", SceneObject);
 DEFINE_FLAGS_VECTOR_REFERENCE_FIELD(PipelineObject, _modApps, "ModifierApplications", ModifierApplication, PROPERTY_FIELD_ALWAYS_CLONE);
-SET_PROPERTY_FIELD_LABEL(PipelineObject, _inputObject, "Input");
+SET_PROPERTY_FIELD_LABEL(PipelineObject, _sourceObject, "Input");
 SET_PROPERTY_FIELD_LABEL(PipelineObject, _modApps, "Modifier Applications");
 
 /******************************************************************************
 * Default constructor.
 ******************************************************************************/
-PipelineObject::PipelineObject(DataSet* dataset) : SceneObject(dataset), _cacheIndex(-1)
+PipelineObject::PipelineObject(DataSet* dataset) : SceneObject(dataset), _cachedIndex(-1)
 {
-	INIT_PROPERTY_FIELD(PipelineObject::_inputObject);
+	INIT_PROPERTY_FIELD(PipelineObject::_sourceObject);
 	INIT_PROPERTY_FIELD(PipelineObject::_modApps);
 }
 
@@ -50,12 +50,14 @@ PipelineObject::PipelineObject(DataSet* dataset) : SceneObject(dataset), _cacheI
 ******************************************************************************/
 PipelineFlowState PipelineObject::evaluatePipeline(TimePoint time, ModifierApplication* upToHere, bool including)
 {
-	UndoSuspender undoSuspender(dataset()->undoStack());	// Do not create undo records while evaluating the pipeline.
+	// Prevent the recoding of transient operations while evaluating the pipeline.
+	UndoSuspender undoSuspender(dataset()->undoStack());
 
-	if(!inputObject())
-		return PipelineFlowState();	// Cannot evaluate pipeline if there is no input.
+	// Cannot evaluate a pipeline that doesn't have an input.
+	if(!sourceObject())
+		return PipelineFlowState();
 
-	// Determine the index up to which the pipeline should be evaluated.
+	// Determine the position in the pipeline up to which it should be evaluated.
 	int upToHereIndex;
 	if(upToHere != nullptr) {
 		upToHereIndex = modifierApplications().indexOf(upToHere);
@@ -64,74 +66,55 @@ PipelineFlowState PipelineObject::evaluatePipeline(TimePoint time, ModifierAppli
 	}
 	else upToHereIndex = modifierApplications().size();
 
-	// Evaluate the input object.
-	PipelineFlowState inputState = inputObject()->evaluate(time);
+	// Receive the input data from the source object.
+	PipelineFlowState inputState = sourceObject()->evaluate(time);
 
-	// The index from which on the stack should be evaluated.
+	// Determine the modifier from which on to evaluate the pipeline.
 	int fromHereIndex = 0;
 	PipelineFlowState flowState = inputState;
 
-	// Use the cached results if possible. First check if the cache is filled.
-	if(_cacheIndex >= 0 && _cacheIndex <= upToHereIndex &&
-			_cachedModifiedState.stateValidity().contains(time) &&
-			_lastInput.stateValidity().contains(time) &&
-			_lastInput.count() == inputState.count()) {
+	// Use the cached results if possible.
+	// First check if the cache is filled.
+	if(_cachedIndex >= 0 && _cachedIndex <= upToHereIndex &&
+			_cachedState.stateValidity().contains(time) &&
+			_lastInput.stateValidity().contains(time)) {
 
 		// Check if there have been any changes in the input data
-		// since the last time the pipeline was evaluated.
-		// If any of the input objects has been replaced, removed, or newly added,
-		// this change is considered significant and the cache becomes invalid.
-		// If only the revision of some input objects has changed, the modifiers
-		// are asked whether they depend on these input objects. If yes,
-		// the cache is considered invalid and a full re-evaluation of the pipeline
-		// is triggered. If not, however, the pipeline doesn't need to be re-evaluated
-		// and we can directly update the cache with the changed input objects.
+		// since the cache has been filled.
+		// If any of the input objects has been replaced, removed, newly added,
+		// or changed, then the cache is considered invalid.
 
-		// Need to re-evaluate pipeline if any of the input objects have been replaced.
-		bool cacheIsValid = (_lastInput.objects() == inputState.objects());
-
-		if(cacheIsValid) {
-			for(int index = 0; index < inputState.count(); index++) {
-				// If the revision number of an input object has changed, we ask the modifiers
-				// if they depend on this input object.
-				if(inputState.revisionNumber(index) != _lastInput.revisionNumber(index)) {
-					for(int stackIndex = fromHereIndex; stackIndex < _cacheIndex; stackIndex++) {
-						Modifier* modifier = modifierApplications()[stackIndex]->modifier();
-						OVITO_CHECK_OBJECT_POINTER(modifier);
-						if(modifier->isEnabled() == false)
-							continue;
-						if(modifier->dependsOnInput(inputState.objects()[index])) {
-							cacheIsValid = false;
-							break;
-						}
-					}
-					if(!cacheIsValid)
-						break;
-				}
+		// Can use cached state only if none of the input objects have been replaced or modified.
+		if(_lastInput.objects() == inputState.objects()) {
+			// Also check if the auxiliary attributes have not changed.
+			if(_lastInput.attributes() == inputState.attributes()) {
+				// Use cached state.
+				fromHereIndex = _cachedIndex;
+				flowState = _cachedState;
+				flowState.intersectStateValidity(inputState.stateValidity());
 			}
-		}
-
-		if(cacheIsValid) {
-			// Use cached state.
-			fromHereIndex = _cacheIndex;
-			flowState = _cachedModifiedState;
-			flowState.intersectStateValidity(inputState.stateValidity());
 		}
 	}
 
-	// Clear cache and then regenerate it below.
-	_cachedModifiedState.clear();
-	_cacheIndex = -1;
+	// Reset cache, then regenerate it below.
+	_cachedState.clear();
+	_cachedIndex = -1;
 
-	// Save the input state as a reference for the next pipeline evaluation.
+	// Store the input state, so we can detect changes in the input next time the
+	// pipeline is evaluated.
 	_lastInput = inputState;
 
+	// Flag that indicates whether the output of the pipeline is considered incomplete.
 	bool isPending = (flowState.status().type() == PipelineStatus::Pending);
 
-    // Apply the modifiers, one after another.
-	int stackIndex;
-	for(stackIndex = fromHereIndex; stackIndex < upToHereIndex; stackIndex++) {
-    	ModifierApplication* app = modifierApplications()[stackIndex];
+    // Apply the modifiers one by one.
+	for(int stackIndex = fromHereIndex; stackIndex < upToHereIndex; stackIndex++) {
+
+		// Skip further processing steps if flow state became empty.
+		if(flowState.isEmpty())
+			break;
+
+		ModifierApplication* app = modifierApplications()[stackIndex];
     	OVITO_CHECK_OBJECT_POINTER(app);
 
 		Modifier* mod = app->modifier();
@@ -141,31 +124,31 @@ PipelineFlowState PipelineObject::evaluatePipeline(TimePoint time, ModifierAppli
 		if(mod->isEnabled() == false)
 			continue;
 
-		// Save current evaluation result in cache at this point of the pipeline
+		// Save current flow state in cache at this point of the pipeline
 		// if the next modifier is changing frequently (because it is currently being edited).
 		if(mod->modifierValidity(time).isEmpty()) {
-			_cachedModifiedState = flowState;
-			_cacheIndex = stackIndex;
+			_cachedState = flowState;
+			_cachedState.updateRevisionNumbers();
+			_cachedIndex = stackIndex;
 		}
 
-		if(flowState.isEmpty() == false) {
-			// Apply modifier to current flow state.
-			PipelineStatus modifierStatus = mod->modifyObject(time, app, flowState);
-			flowState.setStatus(modifierStatus);
-			isPending |= (modifierStatus.type() == PipelineStatus::Pending);
-			if(isPending && flowState.status().type() != PipelineStatus::Pending)
-				flowState.setStatus(PipelineStatus::Pending);
-		}
+		// Apply modifier.
+		PipelineStatus modifierStatus = mod->modifyObject(time, app, flowState);
+		if(modifierStatus.type() == PipelineStatus::Pending)
+			isPending = true;
+		else if(isPending)
+			modifierStatus = PipelineStatus::Pending;
+		flowState.setStatus(modifierStatus);
 	}
 
+	// Make sure the revision information in the output is up to date.
 	flowState.updateRevisionNumbers();
 
-	// Cache the final results.
-	if(_cacheIndex < 0 && flowState.isEmpty() == false) {
-		_cachedModifiedState = flowState;
-		_cacheIndex = stackIndex;
+	// Cache the pipeline output (if not already cached an intermediate state of the pipeline).
+	if(_cachedIndex < 0 && flowState.isEmpty() == false) {
+		_cachedState = flowState;
+		_cachedIndex = upToHereIndex;
 	}
-	else _cachedModifiedState.updateRevisionNumbers();
 
 	return flowState;
 }
@@ -217,26 +200,36 @@ void PipelineObject::removeModifier(ModifierApplication* app)
 ******************************************************************************/
 bool PipelineObject::referenceEvent(RefTarget* source, ReferenceEvent* event)
 {
-	if(source == inputObject()) {
+	if(source == sourceObject()) {
 		if(event->type() == ReferenceEvent::TargetChanged || event->type() == ReferenceEvent::PendingStateChanged) {
+			// If the source object changed, all modifiers need to be informed that
+			// their input has changed.
 			modifierChanged(-1);
 		}
 		else if(event->type() == ReferenceEvent::TitleChanged) {
+			// Propagate title changed events from the source object on to the ObjectNode.
 			notifyDependents(ReferenceEvent::TitleChanged);
 		}
 	}
 	else {
 		if(event->type() == ReferenceEvent::TargetChanged ||
-			event->type() == ReferenceEvent::TargetEnabledOrDisabled ||
 			event->type() == ReferenceEvent::PendingStateChanged) {
-			// If one of the modifiers has changed then all other modifiers
-			// following it in the stack need to be informed.
+			// If one of the modifiers has changed, then all subsequent
+			// modifiers in the pipeline need to be informed (unless it's from a disabled modifier).
 			int index = _modApps.indexOf(source);
 			if(index != -1) {
-				if(modifierApplications()[index]->modifier()->isEnabled() || event->type() == ReferenceEvent::TargetEnabledOrDisabled)
+				if(modifierApplications()[index]->modifier()->isEnabled())
 					modifierChanged(index);
-				if(event->type() == ReferenceEvent::TargetEnabledOrDisabled)
-					notifyDependents(ReferenceEvent::TargetChanged);
+			}
+		}
+		else if(event->type() == ReferenceEvent::TargetEnabledOrDisabled) {
+			// If one of the modifiers gets enabled/disabled, then all subsequent
+			// modifiers in the pipeline need to be informed.
+			int index = _modApps.indexOf(source);
+			if(index != -1) {
+				modifierChanged(index);
+				// We also consider this a change of the modification pipeline itself.
+				notifyDependents(ReferenceEvent::TargetChanged);
 			}
 		}
 	}
@@ -244,18 +237,20 @@ bool PipelineObject::referenceEvent(RefTarget* source, ReferenceEvent* event)
 }
 
 /******************************************************************************
-* Is called when a reference target has been added to a list reference field of this RefMaker.
+* Is called when a reference target has been added to a list reference field of
+* this RefMaker.
 ******************************************************************************/
 void PipelineObject::referenceInserted(const PropertyFieldDescriptor& field, RefTarget* newTarget, int listIndex)
 {
-	// If a new modifier has been inserted into the stack, then all
-	// successive modifiers need to be informed.
+	// If a new modifier has been inserted into the pipeline, then all
+	// following modifiers need to be informed.
 	if(field == PROPERTY_FIELD(PipelineObject::_modApps)) {
 
-		// Inform modifier that its input has changed when it is inserted into the pipeline.
+		// Also inform the new modifier itself that its input has changed
+		// because it is being inserted into a pipeline.
 		ModifierApplication* app = static_object_cast<ModifierApplication>(newTarget);
 		if(app && app->modifier())
-			app->modifier()->modifierInputChanged(app);
+			app->modifier()->inputDataChanged(app);
 
 		// Inform all subsequent modifiers that their input has changed.
 		modifierChanged(listIndex);
@@ -264,13 +259,14 @@ void PipelineObject::referenceInserted(const PropertyFieldDescriptor& field, Ref
 }
 
 /******************************************************************************
-* Is called when a reference target has been removed from a list reference field of this RefMaker.
+* Is called when a reference target has been removed from a list reference
+* field of this RefMaker.
 ******************************************************************************/
 void PipelineObject::referenceRemoved(const PropertyFieldDescriptor& field, RefTarget* oldTarget, int listIndex)
 {
-	// If a new modifier has been removed from the stack then all
-	// modifiers following it in the stack need to be informed.
 	if(field == PROPERTY_FIELD(PipelineObject::_modApps)) {
+		// If a modifier is being removed from the pipeline, then all
+		// modifiers following it need to be informed.
 		modifierChanged(listIndex - 1);
 	}
 	SceneObject::referenceRemoved(field, oldTarget, listIndex);
@@ -281,7 +277,7 @@ void PipelineObject::referenceRemoved(const PropertyFieldDescriptor& field, RefT
 ******************************************************************************/
 void PipelineObject::referenceReplaced(const PropertyFieldDescriptor& field, RefTarget* oldTarget, RefTarget* newTarget)
 {
-	if(field == PROPERTY_FIELD(PipelineObject::_inputObject)) {
+	if(field == PROPERTY_FIELD(PipelineObject::_sourceObject)) {
 		// Invalidate cache if input object has been replaced.
 		modifierChanged(-1);
 	}
@@ -289,29 +285,31 @@ void PipelineObject::referenceReplaced(const PropertyFieldDescriptor& field, Ref
 }
 
 /******************************************************************************
-* Notifies all modifiers from the given index on that their input has changed.
+* This function is called when a part of the pipeline (or its source) have changed.
+* Notifies all modifiers starting at the given index that their input has changed.
 ******************************************************************************/
 void PipelineObject::modifierChanged(int changedIndex)
 {
-	if(isBeingLoaded())
-		return;	// Do nothing while modifiers are being loaded.
-
 	OVITO_ASSERT(changedIndex >= -1 && changedIndex < modifierApplications().size());
 
-	// Invalidate the internal cache if it stores a state that was produced by the changing modifier.
-	if(changedIndex < _cacheIndex) {
+	// Ignore signal while modifiers are being loaded.
+	if(isBeingLoaded())
+		return;
+
+	// Invalidate the data cache if it contains a state that
+	// is affected by the changing modifier.
+	if(changedIndex < _cachedIndex) {
 		_lastInput.clear();
-		_cachedModifiedState.clear();
-		_cacheIndex = -1;
+		_cachedState.clear();
+		_cachedIndex = -1;
 	}
 
-	// Call the modifierInputChanged() method for all affected modifiers.
+	// Inform modifiers following the changing modifier in the
+	// modification pipeline that their input has changed.
 	while(++changedIndex < modifierApplications().size()) {
 		ModifierApplication* app = modifierApplications()[changedIndex];
-		if(app && app->modifier()) {
-			OVITO_CHECK_OBJECT_POINTER(app->modifier());
-			app->modifier()->modifierInputChanged(app);
-		}
+		if(app && app->modifier())
+			app->modifier()->inputDataChanged(app);
 	}
 }
 

@@ -81,10 +81,10 @@ void NavigationMode::mousePressEvent(Viewport* vp, QMouseEvent* event)
 		_oldInverseViewMatrix = vp->inverseViewMatrix();
 
 		// Use the target of a camera as the orbit center.
-		if(vp->viewNode() != nullptr && vp->viewType() == Viewport::VIEW_SCENENODE && vp->viewNode()->targetNode() != nullptr) {
+		if(vp->viewNode() != nullptr && vp->viewType() == Viewport::VIEW_SCENENODE && vp->viewNode()->lookatTargetNode() != nullptr) {
 			TimeInterval iv;
 			TimePoint time = vp->dataset()->animationSettings()->time();
-			_currentOrbitCenter = Point3::Origin() + vp->viewNode()->targetNode()->getWorldTransform(time, iv).translation();
+			_currentOrbitCenter = Point3::Origin() + vp->viewNode()->lookatTargetNode()->getWorldTransform(time, iv).translation();
 		}
 		else {
 			_currentOrbitCenter = _viewport->dataset()->viewportConfig()->orbitCenter();
@@ -203,8 +203,8 @@ void PanMode::modifyView(Viewport* vp, QPointF delta)
 				vp->dataset()->animationSettings()->time(), displacement, parentSys.inverse());
 
 		// If it's a target camera, move target as well.
-		if(vp->viewNode()->targetNode()) {
-			vp->viewNode()->targetNode()->transformationController()->translate(
+		if(vp->viewNode()->lookatTargetNode()) {
+			vp->viewNode()->lookatTargetNode()->transformationController()->translate(
 					vp->dataset()->animationSettings()->time(), displacement, parentSys.inverse());
 		}
 	}
@@ -235,7 +235,7 @@ void ZoomMode::modifyView(Viewport* vp, QPointF delta)
 		AbstractCameraObject* cameraObj = nullptr;
 		FloatType oldFOV = _oldFieldOfView;
 		if(vp->viewNode() && vp->viewType() == Viewport::VIEW_SCENENODE) {
-			cameraObj = dynamic_object_cast<AbstractCameraObject>(vp->viewNode()->sceneObject());
+			cameraObj = dynamic_object_cast<AbstractCameraObject>(vp->viewNode()->sourceObject());
 			if(cameraObj) {
 				TimeInterval iv;
 				oldFOV = cameraObj->fieldOfView(vp->dataset()->animationSettings()->time(), iv);
@@ -289,7 +289,7 @@ void ZoomMode::zoom(Viewport* vp, FloatType steps)
 				vp->viewNode()->transformationController()->translate(vp->dataset()->animationSettings()->time(), Vector3(0,0,-amount), sys);
 			}
 			else {
-				AbstractCameraObject* cameraObj = dynamic_object_cast<AbstractCameraObject>(vp->viewNode()->sceneObject());
+				AbstractCameraObject* cameraObj = dynamic_object_cast<AbstractCameraObject>(vp->viewNode()->sourceObject());
 				if(cameraObj) {
 					TimeInterval iv;
 					FloatType oldFOV = cameraObj->fieldOfView(vp->dataset()->animationSettings()->time(), iv);
@@ -311,7 +311,7 @@ void FOVMode::modifyView(Viewport* vp, QPointF delta)
 	AbstractCameraObject* cameraObj = nullptr;
 	FloatType oldFOV = _oldFieldOfView;
 	if(vp->viewNode() && vp->viewType() == Viewport::VIEW_SCENENODE) {
-		cameraObj = dynamic_object_cast<AbstractCameraObject>(vp->viewNode()->sceneObject());
+		cameraObj = dynamic_object_cast<AbstractCameraObject>(vp->viewNode()->sourceObject());
 		if(cameraObj) {
 			TimeInterval iv;
 			oldFOV = cameraObj->fieldOfView(vp->dataset()->animationSettings()->time(), iv);

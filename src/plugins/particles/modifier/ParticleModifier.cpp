@@ -314,7 +314,7 @@ size_t ParticleModifier::deleteParticles(const std::vector<bool>& mask, size_t d
 
 	// Delete bonds for particles that have been deleted.
 	for(const auto& outobj : _output.objects()) {
-		OORef<BondsObject> originalBondsObject = dynamic_object_cast<BondsObject>(outobj);
+		BondsObject* originalBondsObject = dynamic_object_cast<BondsObject>(outobj);
 		if(!originalBondsObject)
 			continue;
 

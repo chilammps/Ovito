@@ -29,6 +29,7 @@
 
 #include <core/Core.h>
 #include <core/scene/display/DisplayObject.h>
+#include <core/scene/objects/WeakVersionedObjectReference.h>
 #include <core/rendering/MeshPrimitive.h>
 #include <core/animation/controller/Controller.h>
 #include <core/animation/AnimationSettings.h>
@@ -69,8 +70,8 @@ public:
 
 public:
 
-	Q_PROPERTY(Ovito::Color color READ color WRITE setColor)
-	Q_PROPERTY(FloatType transparency READ transparency WRITE setTransparency)
+	Q_PROPERTY(Ovito::Color color READ color WRITE setColor);
+	Q_PROPERTY(FloatType transparency READ transparency WRITE setTransparency);
 
 protected:
 
@@ -86,8 +87,8 @@ protected:
 	/// This helper structure is used to detect any changes in the input data
 	/// that require updating the geometry buffer.
 	SceneObjectCacheHelper<
-		QPointer<SceneObject>, unsigned int,		// Mesh object + revision number
-		ColorA										// Display color
+		WeakVersionedOORef<SceneObject>,		// Mesh object
+		ColorA									// Display color
 		> _geometryCacheHelper;
 
 	/// The cached bounding box.
@@ -96,7 +97,7 @@ protected:
 	/// This helper structure is used to detect changes in the input
 	/// that require recalculating the bounding box.
 	SceneObjectCacheHelper<
-		QPointer<SceneObject>, unsigned int			// Mesh object + revision number
+		WeakVersionedOORef<SceneObject>	// Mesh object
 		> _boundingBoxCacheHelper;
 
 private:

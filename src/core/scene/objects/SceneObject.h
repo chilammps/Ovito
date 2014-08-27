@@ -143,22 +143,8 @@ public:
 	/// \undoable
 	virtual void setSaveWithScene(bool on) { _saveWithScene = on; }
 
-	/// \brief Returns the number of input objects that are referenced by this scene object.
-	/// \return The number of input objects that this object relies on.
-	///
-	/// The default implementation of this method returns 0.
-	virtual int inputObjectCount() { return 0; }
-
-	/// \brief Returns an input object of this scene object.
-	/// \param index The index of the input object. This must be between 0 and inputObjectCount()-1.
-	/// \return The requested input object. Can be \c NULL.
-	virtual SceneObject* getInputObject(int index) {
-		OVITO_ASSERT_MSG(false, "SceneObject::getInputObject", "This type of scene object has no input objects.");
-		return nullptr;
-	}
-
-	/// \brief Generates a list of scene nodes that reference this scene object.
-	QSet<ObjectNode*> findSceneNodes() const;
+	/// \brief Returns a list of object nodes that have this object as a data source.
+	QSet<ObjectNode*> dependentNodes() const;
 
 	/// \brief Returns the current value of the revision counter of this scene object.
 	/// This counter is increment every time the object changes.

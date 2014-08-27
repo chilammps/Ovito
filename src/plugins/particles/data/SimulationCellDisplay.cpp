@@ -92,7 +92,7 @@ void SimulationCellDisplay::renderWireframe(SimulationCell* cell, SceneRenderer*
 {
 	ColorA color = ViewportSettings::getSettings().viewportColor(contextNode->isSelected() ? ViewportSettings::COLOR_SELECTION : ViewportSettings::COLOR_UNSELECTED);
 
-	if(_wireframeGeometryCacheHelper.updateState(cell, cell->revisionNumber(), color)
+	if(_wireframeGeometryCacheHelper.updateState(cell, color)
 			|| !_wireframeGeometry
 			|| !_wireframeGeometry->isValid(renderer)
 			|| !_wireframePickingGeometry
@@ -142,7 +142,7 @@ void SimulationCellDisplay::renderWireframe(SimulationCell* cell, SceneRenderer*
 ******************************************************************************/
 void SimulationCellDisplay::renderSolid(SimulationCell* cell, SceneRenderer* renderer, ObjectNode* contextNode)
 {
-	if(_solidGeometryCacheHelper.updateState(cell, cell->revisionNumber(), simulationCellLineWidth(), simulationCellRenderingColor())
+	if(_solidGeometryCacheHelper.updateState(cell, simulationCellLineWidth(), simulationCellRenderingColor())
 			|| !_edgeGeometry || !_cornerGeometry
 			|| !_edgeGeometry->isValid(renderer)
 			|| !_cornerGeometry->isValid(renderer)) {

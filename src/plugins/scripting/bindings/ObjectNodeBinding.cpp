@@ -55,12 +55,12 @@ QVector<Modifier*> ObjectNodeBinding::modifiers()
 	}
 
 	// Go through the modification pipeline and collect all modifiers in a list.
-	PipelineObject* pipelineObj = dynamic_object_cast<PipelineObject>(objNode->sceneObject());
+	PipelineObject* pipelineObj = dynamic_object_cast<PipelineObject>(objNode->dataProvider());
 	while(pipelineObj) {
 		for(ModifierApplication* modApp : pipelineObj->modifierApplications()) {
 			result.push_back(modApp->modifier());
 		}
-		pipelineObj = dynamic_object_cast<PipelineObject>(pipelineObj->inputObject());
+		pipelineObj = dynamic_object_cast<PipelineObject>(pipelineObj->sourceObject());
 	}
 	return result;
 }
@@ -76,14 +76,7 @@ SceneObject* ObjectNodeBinding::source()
 		return nullptr;
 	}
 
-	SceneObject* sceneObj = objNode->sceneObject();
-	while(sceneObj) {
-		if(sceneObj->inputObjectCount() == 0) break;
-		SceneObject* inputObj = sceneObj->getInputObject(0);
-		if(!inputObj) break;
-		sceneObj = inputObj;
-	}
-	return sceneObj;
+	return objNode->sourceObject();
 }
 
 };

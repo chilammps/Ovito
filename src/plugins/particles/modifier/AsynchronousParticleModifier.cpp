@@ -52,9 +52,9 @@ AsynchronousParticleModifier::AsynchronousParticleModifier(DataSet* dataset) : P
 * This method is called by the system when an item in the modification pipeline
 * located before this modifier has changed.
 ******************************************************************************/
-void AsynchronousParticleModifier::modifierInputChanged(ModifierApplication* modApp)
+void AsynchronousParticleModifier::inputDataChanged(ModifierApplication* modApp)
 {
-	ParticleModifier::modifierInputChanged(modApp);
+	ParticleModifier::inputDataChanged(modApp);
 	invalidateCachedResults();
 }
 

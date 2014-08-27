@@ -76,7 +76,7 @@ void DislocationNetworkEditor::onOpenInspector()
 	mainPanelLayout->setContentsMargins(0,0,0,0);
 	inspectorWindow->setCentralWidget(mainPanel);
 
-	ObjectNode* node = dynamic_object_cast<ObjectNode>(dataset()->selection()->firstNode());
+	ObjectNode* node = dynamic_object_cast<ObjectNode>(dataset()->selection()->front());
 	DislocationInspector* inspector = new DislocationInspector(node);
 	connect(inspector, &QObject::destroyed, inspectorWindow, &QMainWindow::close);
 	inspector->setParent(propertiesPanel);

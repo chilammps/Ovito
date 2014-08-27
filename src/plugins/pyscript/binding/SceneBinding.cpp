@@ -22,7 +22,6 @@
 #include <plugins/pyscript/PyScript.h>
 #include <core/scene/SceneNode.h>
 #include <core/scene/ObjectNode.h>
-#include <core/scene/GroupNode.h>
 #include <core/scene/SceneRoot.h>
 #include <core/scene/SelectionSet.h>
 #include <core/scene/objects/SceneObject.h>
@@ -63,7 +62,6 @@ BOOST_PYTHON_MODULE(PyScriptScene)
 		.def("addObject", &PipelineFlowState::addObject)
 		.def("replaceObject", &PipelineFlowState::replaceObject)
 		.def("removeObject", &PipelineFlowState::removeObject)
-		.add_property("count", &PipelineFlowState::count)
 		.add_property("isEmpty", &PipelineFlowState::isEmpty)
 		.add_property("status", make_function(&PipelineFlowState::status, return_internal_reference<>()), &PipelineFlowState::setStatus)
 		.add_property("objects", make_function(&PipelineFlowState::objects, return_internal_reference<>()))
@@ -74,11 +72,9 @@ BOOST_PYTHON_MODULE(PyScriptScene)
 		.def("evaluate", &SceneObject::evaluate)
 		.def("addDisplayObject", &SceneObject::addDisplayObject)
 		.def("setDisplayObject", &SceneObject::setDisplayObject)
-		.def("getInputObject", make_function(&SceneObject::getInputObject, return_value_policy<ovito_object_reference>()))
 		.add_property("status", &SceneObject::status)
 		.add_property("displayObjects", make_function(&SceneObject::displayObjects, return_internal_reference<>()))
 		.add_property("saveWithScene", &SceneObject::saveWithScene, &SceneObject::setSaveWithScene)
-		.add_property("inputObjectCount", &SceneObject::inputObjectCount)
 	;
 
 	ovito_abstract_class<Modifier, RefTarget>(
@@ -102,7 +98,7 @@ BOOST_PYTHON_MODULE(PyScriptScene)
 	;
 
 	ovito_class<PipelineObject, SceneObject>()
-		.add_property("inputObject", make_function(&PipelineObject::inputObject, return_value_policy<ovito_object_reference>()), &PipelineObject::setInputObject)
+		.add_property("source_object", make_function(&PipelineObject::sourceObject, return_value_policy<ovito_object_reference>()), &PipelineObject::setSourceObject)
 		.add_property("modifierApplications", make_function(&PipelineObject::modifierApplications, return_internal_reference<>()))
 		.def("insertModifier", make_function(&PipelineObject::insertModifier, return_value_policy<ovito_object_reference>()))
 		.def("insertModifierApplication", &PipelineObject::insertModifierApplication)
@@ -113,10 +109,9 @@ BOOST_PYTHON_MODULE(PyScriptScene)
 		.add_property("name", make_function(&SceneNode::name, return_value_policy<copy_const_reference>()), &SceneNode::setName)
 		.add_property("displayColor", make_function(&SceneNode::displayColor, return_value_policy<copy_const_reference>()), &SceneNode::setDisplayColor)
 		.add_property("parentNode", make_function(&SceneNode::parentNode, return_value_policy<ovito_object_reference>()))
-		.add_property("childCount", &SceneNode::childCount)
 		.add_property("children", make_function(&SceneNode::children, return_internal_reference<>()))
-		.add_property("targetNode", make_function(&SceneNode::targetNode, return_value_policy<ovito_object_reference>()))
-		.add_property("selected", &SceneNode::isSelected, &SceneNode::setSelected)
+		.add_property("lookatTargetNode", make_function(&SceneNode::lookatTargetNode, return_value_policy<ovito_object_reference>()))
+		.add_property("isSelected", &SceneNode::isSelected)
 		.def("delete", &SceneNode::deleteNode)
 		.def("addChild", &SceneNode::addChild)
 		.def("insertChild", &SceneNode::insertChild)
@@ -136,7 +131,7 @@ BOOST_PYTHON_MODULE(PyScriptScene)
 			"The node's modification pipeline can be accessed through its :py:attr:`.modifiers` attribute. "
 			"The data that enters the modification pipeline is provided by the node's :py:attr:`.source` object."
 			)
-		.add_property("sceneObject", make_function(&ObjectNode::sceneObject, return_value_policy<ovito_object_reference>()), &ObjectNode::setSceneObject)
+		.add_property("data_provider", make_function(&ObjectNode::dataProvider, return_value_policy<ovito_object_reference>()), &ObjectNode::setDataProvider)
 		.add_property("source", make_function(&ObjectNode::sourceObject, return_value_policy<ovito_object_reference>()),
 				"An object providing the data that enters the modification pipeline of this node. For nodes that have been "
 				"created by the :py:func:`~ovito.io.import_file` function this is typically a :py:class:`~ovito.io.FileSourceObject`.")
@@ -151,17 +146,13 @@ BOOST_PYTHON_MODULE(PyScriptScene)
 		.def("makeNameUnique", &SceneRoot::makeNameUnique)
 	;
 
-	ovito_class<GroupNode, SceneNode>()
-		.add_property("open", &GroupNode::isGroupOpen, &GroupNode::setGroupOpen)
-	;
-
 	ovito_class<SelectionSet, RefTarget>()
-		.add_property("count", &SelectionSet::count)
+		.add_property("size", &SelectionSet::size)
 		.add_property("empty", &SelectionSet::empty)
-		.add_property("firstNode", make_function(&SelectionSet::firstNode, return_value_policy<ovito_object_reference>()))
+		.add_property("front", make_function(&SelectionSet::front, return_value_policy<ovito_object_reference>()))
 		.add_property("nodes", make_function(&SelectionSet::nodes, return_internal_reference<>()))
 		.def("contains", &SelectionSet::contains)
-		.def("add", &SelectionSet::add)
+		.def("push_back", &SelectionSet::push_back)
 		.def("clear", &SelectionSet::clear)
 		.def("remove", &SelectionSet::remove)
 		.def("boundingBox", &SelectionSet::boundingBox)

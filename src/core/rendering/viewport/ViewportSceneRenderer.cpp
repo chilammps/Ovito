@@ -23,7 +23,6 @@
 #include <core/scene/SceneNode.h>
 #include <core/scene/SceneRoot.h>
 #include <core/scene/ObjectNode.h>
-#include <core/scene/GroupNode.h>
 #include <core/scene/pipeline/PipelineObject.h>
 #include <core/scene/pipeline/Modifier.h>
 #include <core/scene/display/DisplayObject.h>
@@ -326,7 +325,7 @@ Box3 ViewportSceneRenderer::boundingBoxInteractive(TimePoint time, Viewport* vie
 
 		// Ignore node if it is the view node of the viewport or if it is the target of the view node.
 		if(viewport->viewNode()) {
-			if(viewport->viewNode() == node || viewport->viewNode()->targetNode() == node)
+			if(viewport->viewNode() == node || viewport->viewNode()->lookatTargetNode() == node)
 				return true;
 		}
 
@@ -342,9 +341,9 @@ Box3 ViewportSceneRenderer::boundingBoxInteractive(TimePoint time, Viewport* vie
 			}
 		}
 
-		PipelineObject* pipelineObj = dynamic_object_cast<PipelineObject>(node->sceneObject());
-		if(pipelineObj)
+		if(PipelineObject* pipelineObj = dynamic_object_cast<PipelineObject>(node->dataProvider()))
 			boundingBoxModifiers(pipelineObj, node, bb);
+
 		return true;
 	});
 

@@ -86,13 +86,12 @@ void SceneRenderer::renderNode(SceneNode* node)
 	const AffineTransformation& nodeTM = node->getWorldTransform(time(), interval);
 	setWorldTransform(nodeTM);
 
-	if(node->isObjectNode()) {
-		ObjectNode* objNode = static_object_cast<ObjectNode>(node);
+	if(ObjectNode* objNode = dynamic_object_cast<ObjectNode>(node)) {
 
 		// Do not render node if it is the view node of the viewport or
 		// if it is the target of the view node.
 		if(viewport() && viewport()->viewNode()) {
-			if(viewport()->viewNode() == objNode || viewport()->viewNode()->targetNode() == objNode)
+			if(viewport()->viewNode() == objNode || viewport()->viewNode()->lookatTargetNode() == objNode)
 				return;
 		}
 
@@ -111,13 +110,9 @@ void SceneRenderer::renderNode(SceneNode* node)
 void SceneRenderer::renderModifiers(bool renderOverlay)
 {
 	// Visit all pipeline objects in the scene.
-	renderDataset()->sceneRoot()->visitChildren([this, renderOverlay](SceneNode* node) -> bool {
-		if(node->isObjectNode()) {
-			ObjectNode* objNode = static_object_cast<ObjectNode>(node);
-			PipelineObject* pipelineObj = dynamic_object_cast<PipelineObject>(objNode->sceneObject());
-			if(pipelineObj)
-				renderModifiers(pipelineObj, objNode, renderOverlay);
-		}
+	renderDataset()->sceneRoot()->visitObjectNodes([this, renderOverlay](ObjectNode* objNode) -> bool {
+		if(PipelineObject* pipelineObj = dynamic_object_cast<PipelineObject>(objNode->dataProvider()))
+			renderModifiers(pipelineObj, objNode, renderOverlay);
 		return true;
 	});
 }
@@ -133,8 +128,8 @@ void SceneRenderer::renderModifiers(PipelineObject* pipelineObj, ObjectNode* obj
 	for(ModifierApplication* modApp : pipelineObj->modifierApplications()) {
 		Modifier* mod = modApp->modifier();
 
-		TimeInterval interval;
 		// Setup transformation.
+		TimeInterval interval;
 		setWorldTransform(objNode->getWorldTransform(time(), interval));
 
 		// Render selected modifier.
@@ -142,10 +137,8 @@ void SceneRenderer::renderModifiers(PipelineObject* pipelineObj, ObjectNode* obj
 	}
 
 	// Continue with nested pipeline objects.
-	for(int i = 0; i < pipelineObj->inputObjectCount(); i++) {
-		if(PipelineObject* input = dynamic_object_cast<PipelineObject>(pipelineObj->getInputObject(i)))
-			renderModifiers(input, objNode, renderOverlay);
-	}
+	if(PipelineObject* input = dynamic_object_cast<PipelineObject>(pipelineObj->sourceObject()))
+		renderModifiers(input, objNode, renderOverlay);
 }
 
 /******************************************************************************
@@ -165,10 +158,8 @@ void SceneRenderer::boundingBoxModifiers(PipelineObject* pipelineObj, ObjectNode
 	}
 
 	// Continue with nested pipeline objects.
-	for(int i = 0; i < pipelineObj->inputObjectCount(); i++) {
-		if(PipelineObject* input = dynamic_object_cast<PipelineObject>(pipelineObj->getInputObject(i)))
-			boundingBoxModifiers(input, objNode, boundingBox);
-	}
+	if(PipelineObject* input = dynamic_object_cast<PipelineObject>(pipelineObj->sourceObject()))
+		boundingBoxModifiers(input, objNode, boundingBox);
 }
 
 

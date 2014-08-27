@@ -24,6 +24,7 @@
 
 #include <plugins/crystalanalysis/CrystalAnalysis.h>
 #include <core/scene/display/DisplayObject.h>
+#include <core/scene/objects/WeakVersionedObjectReference.h>
 #include <core/rendering/ParticlePrimitive.h>
 #include <core/rendering/ArrowPrimitive.h>
 #include <core/gui/properties/PropertiesEditor.h>
@@ -98,9 +99,9 @@ protected:
 	/// This helper structure is used to detect any changes in the input data
 	/// that require updating the geometry buffers.
 	SceneObjectCacheHelper<
-		QPointer<SceneObject>, unsigned int,		// Source object + revision number
-		SimulationCellData,							// Simulation cell geometry
-		FloatType									// Line width
+		WeakVersionedOORef<SceneObject>,		// Source object + revision number
+		SimulationCellData,						// Simulation cell geometry
+		FloatType								// Line width
 		> _geometryCacheHelper;
 
 	/// This array is used to map sub-object picking IDs back to dislocation segments.
@@ -112,9 +113,9 @@ protected:
 	/// This helper structure is used to detect changes in the input
 	/// that require recalculating the bounding box.
 	SceneObjectCacheHelper<
-		QPointer<SceneObject>, unsigned int,		// Source object + revision number
-		SimulationCellData,							// Simulation cell geometry
-		FloatType									// Line width
+		WeakVersionedOORef<SceneObject>,		// Source object + revision number
+		SimulationCellData,						// Simulation cell geometry
+		FloatType								// Line width
 		> _boundingBoxCacheHelper;
 
 	/// Controls the rendering width for dislocation lines.

@@ -127,7 +127,7 @@ void XFormMode::onSelectionChangeComplete(SelectionSet* selection)
 {
 	CoordinateDisplayWidget* coordDisplay = inputManager()->mainWindow()->coordinateDisplay();
 	if(selection) {
-		if(selection->count() == 1) {
+		if(selection->size() == 1) {
 			_selectedNode.setTarget(selection->node(0));
 			updateCoordinateDisplay(coordDisplay);
 			coordDisplay->activate(undoDisplayName());
@@ -250,7 +250,7 @@ Point3 XFormMode::transformationCenter()
 			const AffineTransformation& nodeTM = node->getWorldTransform(time, interval);
 			center += nodeTM.translation();
 		}
-		center /= (FloatType)selection->count();
+		center /= (FloatType)selection->size();
 	}
 	return center;
 }

@@ -24,6 +24,7 @@
 
 #include <core/Core.h>
 #include <core/scene/objects/camera/AbstractCameraObject.h>
+#include <core/scene/objects/WeakVersionedObjectReference.h>
 #include <core/animation/controller/Controller.h>
 #include <core/gui/properties/PropertiesEditor.h>
 #include <core/scene/display/DisplayObject.h>
@@ -165,8 +166,8 @@ protected:
 	/// This helper structure is used to detect any changes in the input data
 	/// that require updating the geometry buffer.
 	SceneObjectCacheHelper<
-		QPointer<SceneObject>, unsigned int,		// Camera object + revision number
-		Color										// Display color
+		WeakVersionedOORef<SceneObject>,		// Camera object + revision number
+		Color									// Display color
 		> _geometryCacheHelper;
 
 	/// This helper structure is used to detect any changes in the input data

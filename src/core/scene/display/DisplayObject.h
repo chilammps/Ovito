@@ -106,14 +106,21 @@ private:
 };
 
 /**
- * This template class can be used by DisplayObject-derived classes to keep track of cached data
- * that depends on the input SceneObject.
+ * This helper class can be used in implementations of simple data caches.
+ * It helps in keeping track of changes to input parameters and other input data.
+ * It allows to detect changes in the input by comparing a stored version of the
+ * input to the current input.
+ *
+ * The input can be composed of an arbitrary number of data fields of arbitrary type (tuple).
  */
 template<class... Types>
 class SceneObjectCacheHelper
 {
 public:
 
+	/// Compares the stored state to the new input state before replacing it with the
+	/// new state. Returns true if the new input state differs from the old one. This indicates
+	/// that the cached data is invalid and needs to be regenerated.
 	bool updateState(const Types&... args) {
 		bool hasChanged = (_oldState != std::tuple<Types...>(args...));
 		_oldState = std::tuple<Types...>(args...);
@@ -122,6 +129,7 @@ public:
 
 private:
 
+	// The previous input state.
 	std::tuple<Types...> _oldState;
 };
 
