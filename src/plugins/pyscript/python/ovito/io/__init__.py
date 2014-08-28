@@ -89,20 +89,12 @@ def import_file(location, mode = "AddToScene", **params):
     return node    
 
 def _FileSourceObject_load(self, location, **params):
-    """ Loads a different external data file and replaces the reference to the old file.
+    """ Changes this source object to point to a new external data file and loads it.
     
-        The function auto-detects the format of the new file.
+        The function auto-detects the format of the file.
         
         The function accepts additional keyword arguments that are forwarded to the format-specific file importer.
         See the documentation of the :py:func:`ovito.io.import_file` function for more information.
-
-        ..  Note::
-    
-                This method operates asynchronously. That is, the method returns immediately and the data 
-                is loaded in the background. If necessary, you can call :py:func:`~ovito.scene.ObjectNode.wait` on the
-                :py:class:`~ovito.scene.ObjectNode` to block script execution until the data has been fully loaded; 
-                for example, if you want to check for errors during file import, or if you are going to
-                directly access the imported data instead of relying on OVITO's modifier system.        
 
         :param str location: The local file or remote sftp:// URL to load.
     """
@@ -125,6 +117,15 @@ def _FileSourceObject_load(self, location, **params):
     # Load new data file.
     if not self.setSource(location, importer, True):
         raise RuntimeError("Operation has been canceled by the user.")
+    
+    # Block execution until data has been laoded. 
+    if not self.waitUntilReady(self.dataset.anim.time, "Script is waiting for I/O operation to finish."):
+        raise RuntimeError("Operation has been canceled by the user.")
+    
+    # Raise Python error if loading failed.
+    if self.status.type == PipelineStatusType.Error:
+        raise RuntimeError(self.status.text)
+    
 FileSourceObject.load = _FileSourceObject_load
 
 # Implement the 'sourceUrl' property of FileSourceObject, which returns or sets the currently loaded file path.
@@ -150,8 +151,6 @@ def export_file(node, file, format, **params):
                             * ``"vasp"`` -- POSCAR format
                             * ``"xyz"`` -- XYZ format
         
-        :returns: ``True`` on success; ``False`` if the operation was canceled by the user.
-        
         The function evaluates the modification pipeline of the given object node and exports
         the results to one or more files. By default, only the current animation frame is exported.
         
@@ -175,10 +174,12 @@ def export_file(node, file, format, **params):
     exporter = export_file._formatTable[format](params)
     
     # Ensure the data to be exported is available.
-    node.wait()
+    if not node.wait():
+        raise RuntimeError("Operation has been canceled by the user.")
     
     # Export data.
-    return exporter.exportToFile([node], file, True)
+    if not exporter.exportToFile([node], file, True):
+        raise RuntimeError("Operation has been canceled by the user.")
 
 # This is the table of export formats used by the export_file() function
 # to look up the right exporter class for a file format.

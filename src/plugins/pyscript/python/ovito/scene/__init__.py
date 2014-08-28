@@ -1,3 +1,5 @@
+import collections
+
 # Load the native module.
 from PyScriptScene import *
 
@@ -87,32 +89,13 @@ def _get_ObjectNode_modifiers(self):
 ObjectNode.modifiers = property(_get_ObjectNode_modifiers)
 
 def _ObjectNode_wait(self, signalError = True, msgText = None):
-    """ Blocks script execution until the node's modification pipeline is ready.
-
-        .. note::
-        
-            OVITO uses an asynchronous evaluation model to compute the results of the modification pipeline. 
-            This allows the user to continue working in the graphical user interface of the program while it is performing long-running
-            operations such as computing the results of modifiers or loading data files. The evaluation of modifiers
-            in a pipeline is triggered whenever the output of the pipeline is requested by someone. In an interactive
-            program session of OVITO this happens very frequently, each time OVITO redraws the viewports.
-            The object node caches the results of the last pipeline evaluation and automatically detects any changes made
-            to a modification pipeline. Thus, subsequent evaluation requests can be served very quickly as long as 
-            the modification pipeline or its input do not change.
-            
-        This method requests an update of the node's modification pipeline and waits until the input data is available 
-        (i.e. the external has been completely loaded) and the effect of all modifiers in the node's modification pipeline has been computed.
-        If the modification pipeline is already up to date, the method returns immediately.
-        
-        You should call this method if you are going to read out information from individual modifiers 
-        in the node's modification pipeline. This method will ensure that the modifiers have been computed and their result data is
-        up to date.
-               
-        :param str msgText: An optional text that will be shown to the user while waiting for the operation to finish.
-        :param signalError: If ``True``, the function raises an exception when the modification pipeline could not be successfully evaluated.
-                            This may be the case if the input file could not be loaded, or if one of the modifiers reported an error.   
-        :returns: ``True`` if the pipeline evaluation is complete, ``False`` if the operation has been canceled by the user.
-    """
+    # Blocks script execution until the node's modification pipeline is ready.
+    #
+    #    :param str msgText: An optional text that will be shown to the user while waiting for the operation to finish.
+    #    :param signalError: If ``True``, the function raises an exception when the modification pipeline could not be successfully evaluated.
+    #                        This may be the case if the input file could not be loaded, or if one of the modifiers reported an error.   
+    #    :returns: ``True`` if the pipeline evaluation is complete, ``False`` if the operation has been canceled by the user.
+    #
     if not msgText: msgText = "Script is waiting for scene graph to become ready." 
     if not self.waitUntilReady(self.dataset.anim.time, msgText):
         return False
@@ -125,16 +108,64 @@ ObjectNode.wait = _ObjectNode_wait
 
 def _ObjectNode_compute(self):
     """ Computes and returns the results of the node's modification pipeline.
-    
-        The function raises a ``RuntimeError`` when the modification pipeline could not be successfully evaluated for some reason.
-        This may happen due to modifier parameters that are invalid for example.
 
-        :returns: A :py:class:`~ovito.scene.PipelineFlowState` container that holds the output of the modification pipeline.
+        This method requests an update of the node's modification pipeline and waits until the effect of all modifiers in the 
+        node's modification pipeline has been computed. If the modification pipeline is already up to date, that is, if the 
+        results are already available in the node's pipeline cache, the method returns immediately.
+        
+        The method returns a new :py:class:`~ovito.scene.PipelineFlowState` object, which holds the results of the modification pipeline.
+        
+        Even if you are not interested in the final data that leaves the modification pipeline, you should call this method in case you are going to 
+        directly access information provided by individual modifiers in the pipeline. This method will ensure that all modifiers 
+        have been computed and their internal fields are up to date.
+
+        This function raises a ``RuntimeError`` when the modification pipeline could not be successfully evaluated for some reason.
+        This may happen due to invalid modifier parameters for example.
+
+        :returns: A :py:class:`~ovito.scene.PipelineFlowState` object holding the output of the modification pipeline.
     """
     if not self.wait():
         raise RuntimeError("Operation has been canceled by the user.")
-    return self.evalPipeline(self.dataset.anim.time)
+    state = self.evalPipeline(self.dataset.anim.time)
+    
+    # Raise Python error if the pipeline could not be successfully evaluated.
+    if state.status.type == PipelineStatusType.Error:
+        raise RuntimeError(state.status.text)
+    
+    return state    
+    
 ObjectNode.compute = _ObjectNode_compute
+
+# Give PipelineFlowState class a dict-like interface.
+PipelineFlowState.__len__ = lambda self: len(self.objects)
+def _PipelineFlowState__iter__(self):
+    for o in self.objects:
+        if hasattr(o, "data_key"):
+            yield o.data_key
+        else:
+            yield o.objectTitle
+PipelineFlowState.__iter__ = _PipelineFlowState__iter__
+def _PipelineFlowState__getitem__(self, key):
+    for o in self.objects:
+        if hasattr(o, "data_key"):
+            if o.data_key == key:
+                return o
+        elif o.objectTitle == key:
+            return o
+    raise KeyError("Data object '%s' does not exist." % key)
+PipelineFlowState.__getitem__ = _PipelineFlowState__getitem__
+def _PipelineFlowState__getattr__(self, name):
+    for o in self.objects:
+        if hasattr(o, "data_key"):
+            if o.data_key == name:
+                return o
+        elif o.objectTitle == name:
+            return o
+    raise AttributeError("PipelineFlowState object does not have an attribute '%s'." % name)
+PipelineFlowState.__getattr__ = _PipelineFlowState__getattr__
+# Mix in base class collections.Mapping:
+PipelineFlowState.__bases__ = PipelineFlowState.__bases__ + (collections.Mapping, )
+
 
 # Give SceneRoot class a list-like interface.
 SceneRoot.__len__ = lambda self: len(self.children)

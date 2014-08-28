@@ -31,4 +31,3 @@ def _set_DataSet_selected_node(self, node):
     if node: self.selection.setNode(node)
     else: self.selection.clear()
 DataSet.selected_node = property(_get_DataSet_selected_node, _set_DataSet_selected_node)
-		

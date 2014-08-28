@@ -38,6 +38,11 @@ using namespace boost::python;
 using namespace Ovito;
 using namespace PyScript;
 
+object numPyArrayFromParticleProperty(const ParticlePropertyObject& p)
+{
+	return object();
+}
+
 BOOST_PYTHON_MODULE(Particles)
 {
 	enum_<ParticleProperty::Type>("ParticlePropertyType")
@@ -105,6 +110,7 @@ BOOST_PYTHON_MODULE(Particles)
 		.add_property("dataTypeSize", &ParticlePropertyObject::dataTypeSize)
 		.add_property("perParticleSize", &ParticlePropertyObject::perParticleSize)
 		.add_property("componentCount", &ParticlePropertyObject::componentCount)
+		.add_property("nparray", make_function(numPyArrayFromParticleProperty, return_value_policy<return_by_value, with_custodian_and_ward_postcall<0, 1>>()))
 	;
 
 	ovito_class<ParticleTypeProperty, ParticlePropertyObject>()

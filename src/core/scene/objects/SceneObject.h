@@ -111,6 +111,15 @@ public:
 		return PipelineFlowState(this, objectValidity(time));
 	}
 
+	/// \brief This function blocks execution until the object is able ready to
+	///        provide data via its evaluate() function.
+	/// \param time The animation time at which the object should be evaluated.
+	/// \param message The text to be shown to the user while waiting.
+	/// \param progressDialog An existing progress dialog to use to show the message.
+	///                       If NULL, the function will show its own dialog box.
+	/// \return true on success; false if the operation has been canceled by the user.
+	bool waitUntilReady(TimePoint time, const QString& message, QProgressDialog* progressDialog = nullptr);
+
 	/// \brief Returns a structure that describes the current status of the object.
 	///
 	/// The default implementation of this method returns an empty status object

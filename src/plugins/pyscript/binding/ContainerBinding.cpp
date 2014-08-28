@@ -60,6 +60,11 @@ BOOST_PYTHON_MODULE(PyScriptContainers)
 	class_<QVector<OORef<SceneObject>>, boost::noncopyable>("QVectorOORefSceneObject", no_init)
 		.def(QVector_OO_readonly_indexing_suite<SceneObject, QVector<OORef<SceneObject>>>())
 	;
+
+	class_<QVector<VersionedOORef<SceneObject>>, boost::noncopyable>("QVectorVersionedOORefSceneObject", no_init)
+		.def(QVector_OO_readonly_indexing_suite<SceneObject, QVector<VersionedOORef<SceneObject>>>())
+	;
+
 	class_<QVector<ModifierApplication*>, boost::noncopyable>("QVectorModifierApplication", no_init)
 		.def(QVector_OO_readonly_indexing_suite<ModifierApplication>())
 	;

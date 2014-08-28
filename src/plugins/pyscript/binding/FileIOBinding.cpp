@@ -150,8 +150,8 @@ BOOST_PYTHON_MODULE(PyScriptFileIO)
 			"        else:\n"
 			"            # To load subsequent files, call the load() function of the FileSourceObject.\n"
 			"            node.source.load(file)\n\n"
-			"        # Wait until the results of the analysis modifier are available.\n"
-			"        node.wait()\n"
+			"        # Evaluate pipeline and wait until the analysis results are available.\n"
+			"        node.compute()\n"
 			"        print \"Structure %s contains %i FCC atoms.\" % (file, cna.counts[\"FCC\"])\n",
 			// The Python class name:
 			"FileSourceObject")

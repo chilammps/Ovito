@@ -36,6 +36,7 @@ using namespace boost::python;
 using namespace Ovito;
 
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(ObjectNode_waitUntilReady_overloads, waitUntilReady, 2, 3);
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(SceneObject_waitUntilReady_overloads, waitUntilReady, 2, 3);
 
 BOOST_PYTHON_MODULE(PyScriptScene)
 {
@@ -55,7 +56,29 @@ BOOST_PYTHON_MODULE(PyScriptScene)
 		.value("Pending", PipelineStatus::Pending)
 	;
 
-	class_<PipelineFlowState>("PipelineFlowState", init<>())
+	class_<PipelineFlowState>("PipelineFlowState",
+			"A dictionary-like container storing a collection of data that enters or leaves a modification pipeline."
+			"\n\n"
+			"The :py:meth:`ObjectNode.compute() <ovito.scene.ObjectNode.compute>` method returns an instance of this class "
+			"with the output of the modification pipeline. It contains a set of data objects "
+			"that were loaded from the input file, modified by modifiers, or newly generated within the pipeline."
+			"\n\n"
+			"In general, the contents of the flow state depend on the input data and the modifiers that were used. "
+			"Individual data objects in the flow state can be accessed via keys. Use the :py:meth:`.keys` method to "
+			"find out which data is contained in a :py:class:`!PipelineFlowState`::"
+			"\n\n"
+			"   >>> state = node.compute()\n"
+			"   >>> state.keys()\n"
+			"   ['cell', 'particle_identifier', 'position', 'potential_energy', 'structure_type']\n"
+			"\n\n"
+			"Specific data objects can be accessed as attributes or using index notation::"
+			"\n\n"
+			"   >>> state.cell\n"
+			"   <SimulationCell at 0xdf89b0>\n"
+			"   >>> state['position']\n"
+			"   <ParticlePropertyObject at 0x11d01d60>\n"
+			"\n\n"
+			, init<>())
 		.def(init<SceneObject*, TimeInterval>())
 		.def(init<const PipelineStatus&, const QVector<SceneObject*>&, const TimeInterval&>())
 		.def("clear", &PipelineFlowState::clear)
@@ -75,7 +98,9 @@ BOOST_PYTHON_MODULE(PyScriptScene)
 		.add_property("status", &SceneObject::status)
 		.add_property("displayObjects", make_function(&SceneObject::displayObjects, return_internal_reference<>()))
 		.add_property("saveWithScene", &SceneObject::saveWithScene, &SceneObject::setSaveWithScene)
+		.def("waitUntilReady", &SceneObject::waitUntilReady, SceneObject_waitUntilReady_overloads())
 	;
+	register_ptr_to_python<VersionedOORef<SceneObject>>();
 
 	ovito_abstract_class<Modifier, RefTarget>(
 			"This is the base class for all modifiers in OVITO.")
