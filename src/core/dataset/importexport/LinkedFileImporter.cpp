@@ -241,8 +241,8 @@ bool LinkedFileImporter::importFile(const QUrl& sourceUrl, ImportMode importMode
 
 	// Jump to the right frame to show the originally selected file.
 	int jumpToFrame = -1;
-	for(int frameIndex = 0; frameIndex < existingFileSource->frames().size(); frameIndex++) {
-		if(existingFileSource->frames()[frameIndex].sourceFile == sourceUrl) {
+	for(int frameIndex = 0; frameIndex < fileSource->frames().size(); frameIndex++) {
+		if(fileSource->frames()[frameIndex].sourceFile == sourceUrl) {
 			jumpToFrame = frameIndex;
 			break;
 		}

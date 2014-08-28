@@ -31,21 +31,21 @@
 
 namespace Particles {
 
-IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ParticleExporter, FileExporter)
-DEFINE_PROPERTY_FIELD(ParticleExporter, _outputFilename, "OutputFile")
-DEFINE_PROPERTY_FIELD(ParticleExporter, _exportAnimation, "ExportAnimation")
-DEFINE_PROPERTY_FIELD(ParticleExporter, _useWildcardFilename, "UseWildcardFilename")
-DEFINE_PROPERTY_FIELD(ParticleExporter, _wildcardFilename, "WildcardFilename")
-DEFINE_PROPERTY_FIELD(ParticleExporter, _startFrame, "StartFrame")
-DEFINE_PROPERTY_FIELD(ParticleExporter, _endFrame, "EndFrame")
-DEFINE_PROPERTY_FIELD(ParticleExporter, _everyNthFrame, "EveryNthFrame")
-SET_PROPERTY_FIELD_LABEL(ParticleExporter, _outputFilename, "Output filename")
-SET_PROPERTY_FIELD_LABEL(ParticleExporter, _exportAnimation, "Export animation")
-SET_PROPERTY_FIELD_LABEL(ParticleExporter, _useWildcardFilename, "Use wildcard filename")
-SET_PROPERTY_FIELD_LABEL(ParticleExporter, _wildcardFilename, "Wildcard filename")
-SET_PROPERTY_FIELD_LABEL(ParticleExporter, _startFrame, "Start frame")
-SET_PROPERTY_FIELD_LABEL(ParticleExporter, _endFrame, "End frame")
-SET_PROPERTY_FIELD_LABEL(ParticleExporter, _everyNthFrame, "Every Nth frame")
+IMPLEMENT_SERIALIZABLE_OVITO_OBJECT(Particles, ParticleExporter, FileExporter);
+DEFINE_PROPERTY_FIELD(ParticleExporter, _outputFilename, "OutputFile");
+DEFINE_PROPERTY_FIELD(ParticleExporter, _exportAnimation, "ExportAnimation");
+DEFINE_PROPERTY_FIELD(ParticleExporter, _useWildcardFilename, "UseWildcardFilename");
+DEFINE_PROPERTY_FIELD(ParticleExporter, _wildcardFilename, "WildcardFilename");
+DEFINE_PROPERTY_FIELD(ParticleExporter, _startFrame, "StartFrame");
+DEFINE_PROPERTY_FIELD(ParticleExporter, _endFrame, "EndFrame");
+DEFINE_PROPERTY_FIELD(ParticleExporter, _everyNthFrame, "EveryNthFrame");
+SET_PROPERTY_FIELD_LABEL(ParticleExporter, _outputFilename, "Output filename");
+SET_PROPERTY_FIELD_LABEL(ParticleExporter, _exportAnimation, "Export animation");
+SET_PROPERTY_FIELD_LABEL(ParticleExporter, _useWildcardFilename, "Use wildcard filename");
+SET_PROPERTY_FIELD_LABEL(ParticleExporter, _wildcardFilename, "Wildcard filename");
+SET_PROPERTY_FIELD_LABEL(ParticleExporter, _startFrame, "Start frame");
+SET_PROPERTY_FIELD_LABEL(ParticleExporter, _endFrame, "End frame");
+SET_PROPERTY_FIELD_LABEL(ParticleExporter, _everyNthFrame, "Every Nth frame");
 
 /******************************************************************************
 * Constructs a new instance of the class.
@@ -272,8 +272,10 @@ bool ParticleExporter::openOutputFile(const QString& filePath, int numberOfFrame
  *****************************************************************************/
 void ParticleExporter::closeOutputFile(bool exportCompleted)
 {
-	if(_compressor.isOpen())
+	if(_compressor.isOpen()) {
+		textStream().flush();
 		_compressor.close();
+	}
 	if(_outputFile.isOpen())
 		_outputFile.close();
 
