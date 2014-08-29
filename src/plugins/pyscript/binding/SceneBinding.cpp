@@ -42,41 +42,49 @@ BOOST_PYTHON_MODULE(PyScriptScene)
 {
 	docstring_options docoptions(true, false);
 
-	class_<PipelineStatus>("PipelineStatus", init<optional<PipelineStatus::StatusType, const QString&>>())
-		.add_property("type", &PipelineStatus::type)
-		.add_property("text", make_function(&PipelineStatus::text, return_value_policy<copy_const_reference>()))
-		.def(self == PipelineStatus())
-		.def(self != PipelineStatus())
-	;
+	{
+		scope s = class_<PipelineStatus>("PipelineStatus", init<optional<PipelineStatus::StatusType, const QString&>>())
+			.add_property("type", &PipelineStatus::type)
+			.add_property("text", make_function(&PipelineStatus::text, return_value_policy<copy_const_reference>()))
+			.def(self == PipelineStatus())
+			.def(self != PipelineStatus())
+		;
 
-	enum_<PipelineStatus::StatusType>("PipelineStatusType")
-		.value("Success", PipelineStatus::Success)
-		.value("Warning", PipelineStatus::Warning)
-		.value("Error", PipelineStatus::Error)
-		.value("Pending", PipelineStatus::Pending)
-	;
+		enum_<PipelineStatus::StatusType>("Type")
+			.value("Success", PipelineStatus::Success)
+			.value("Warning", PipelineStatus::Warning)
+			.value("Error", PipelineStatus::Error)
+			.value("Pending", PipelineStatus::Pending)
+		;
+	}
 
-	class_<PipelineFlowState>("PipelineFlowState",
-			"A dictionary-like container storing a collection of data that enters or leaves a modification pipeline."
+	class_<PipelineFlowState>("DataCollection",
+			"A dictionary-like container storing a set of data objects that enter or leave a modification pipeline."
 			"\n\n"
 			"The :py:meth:`ObjectNode.compute() <ovito.scene.ObjectNode.compute>` method returns an instance of this class "
-			"with the output of the modification pipeline. It contains a set of data objects "
+			"holding the output of the modification pipeline. The data collection is a set of data objects "
 			"that were loaded from the input file, modified by modifiers, or newly generated within the pipeline."
 			"\n\n"
-			"In general, the contents of the flow state depend on the input data and the modifiers that were used. "
-			"Individual data objects in the flow state can be accessed via keys. Use the :py:meth:`.keys` method to "
-			"find out which data is contained in a :py:class:`!PipelineFlowState`::"
+			"In general, the contents of the data collection depend on the pipeline input and the modifiers that were used. "
+			"Individual data objects in a collection can be accessed via keys. Use the :py:meth:`.keys` method to "
+			"find out which objects are available::"
 			"\n\n"
-			"   >>> state = node.compute()\n"
-			"   >>> state.keys()\n"
-			"   ['cell', 'particle_identifier', 'position', 'potential_energy', 'structure_type']\n"
+			"   >>> data = node.compute()\n"
+			"   >>> data.keys()\n"
+			"   ['Simulation cell', 'Particle identifiers', 'Particle positions', \n"
+			"    'Potential Energy', 'Particle colors', 'Structure types']\n"
 			"\n\n"
-			"Specific data objects can be accessed as attributes or using index notation::"
+			"Specific data objects can be accessed using the dictionary interface::"
 			"\n\n"
-			"   >>> state.cell\n"
-			"   <SimulationCell at 0xdf89b0>\n"
-			"   >>> state['position']\n"
-			"   <ParticlePropertyObject at 0x11d01d60>\n"
+			"   >>> data['Potential Energy']\n"
+			"   <ParticleProperty at 0x11d01d60>\n"
+			"\n\n"
+			"Alternatively, standard particle properties and the simulation cell can be directly accessed as attributes of the data collection::"
+			"\n\n"
+			"   >>> data.potential_energy\n"
+			"   <ParticleProperty at 0x11d01d60>\n"
+			"   >>> data.cell\n"
+			"   <SimulationCell at 0x24338a0>\n"
 			"\n\n"
 			, init<>())
 		.def(init<SceneObject*, TimeInterval>())
@@ -146,20 +154,21 @@ BOOST_PYTHON_MODULE(PyScriptScene)
 	;
 
 	ovito_class<ObjectNode, SceneNode>(
-			"Manages an object and it's associated modification pipeline."
+			"Manages a data source, a modification pipeline, and the output of the pipeline."
 			"\n\n"
 			"An :py:class:`!ObjectNode` is created when a new object is inserted into the scene. "
-			"The node maintains a modification pipeline, which allows to apply modifiers to the object. "
-			"The results of the modification pipeline (which may be empty) are displayed by the "
-			":py:class:`!ObjectNode` in the three-dimensional scene."
+			"The node maintains a modification pipeline, which allows to apply modifiers to the input data. "
+			"The output of the modification pipeline are displayed by the :py:class:`!ObjectNode` in the three-dimensional scene."
 			"\n\n"
-			"The node's modification pipeline can be accessed through its :py:attr:`.modifiers` attribute. "
-			"The data that enters the modification pipeline is provided by the node's :py:attr:`.source` object."
+			"The data that enters the modification pipeline is provided by the node's :py:attr:`ObjectNode.source` object. "
+			"The node's modification pipeline can be accessed through the :py:attr:`ObjectNode.modifiers` attribute. "
+			"The modification pipeline can be computed by calling the :py:meth:`ObjectNode.compute` method. "
+			"Finally, the output data of the pipeline can be accessed through the the node's :py:attr:`ObjectNode.output` attribute. "
 			)
 		.add_property("data_provider", make_function(&ObjectNode::dataProvider, return_value_policy<ovito_object_reference>()), &ObjectNode::setDataProvider)
 		.add_property("source", make_function(&ObjectNode::sourceObject, return_value_policy<ovito_object_reference>()),
-				"An object providing the data that enters the modification pipeline of this node. For nodes that have been "
-				"created by the :py:func:`~ovito.io.import_file` function this is typically a :py:class:`~ovito.io.FileSourceObject`.")
+				"An object providing the data that enters the modification pipeline of this node. "
+				"This typically is a :py:class:`~ovito.io.FileSource` instance for nodes that have been created by the :py:func:`~ovito.io.import_file` function.")
 		.add_property("displayObjects", make_function(&ObjectNode::displayObjects, return_internal_reference<>()))
 		.def("evalPipeline", make_function(&ObjectNode::evalPipeline, return_value_policy<copy_const_reference>()))
 		.def("applyModifier", &ObjectNode::applyModifier)

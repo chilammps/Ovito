@@ -1,18 +1,23 @@
 import collections
 
 # Load the native module.
-from PyScriptScene import *
+from PyScriptScene import ObjectNode
+from PyScriptScene import DataCollection
+from PyScriptScene import SceneRoot
+from PyScriptScene import SceneObject
+from PyScriptScene import PipelineObject     
+from PyScriptScene import PipelineStatus
 
 # Implement the 'modifiers' property of the ObjectNode class, which provides access to modifiers in the pipeline. 
 def _get_ObjectNode_modifiers(self):
     """The node's modification pipeline.
     
-       This list contains the modifiers that are applied to the node's :py:attr:`.source` object. You
+       This list contains the modifiers that are applied to the input data provided by the node's :py:attr:`.source` object. You
        can add and remove modifiers from this list as needed. The first modifier in the list is
        always evaluated first, and its output is passed on to the second modifier and so on. 
        The results of the last modifier are displayed in the viewports. 
        
-       Usage example::
+       Example::
        
            node.modifiers.append(WrapPeriodicImagesModifier())
     """    
@@ -101,8 +106,8 @@ def _ObjectNode_wait(self, signalError = True, msgText = None):
         return False
     if signalError:
         state = self.evalPipeline(self.dataset.anim.time)
-        if state.status.type == PipelineStatusType.Error:
-            raise RuntimeError(state.status.text)
+        if state.status.type == PipelineStatus.Type.Error:
+            raise RuntimeError("Pipeline error: %s" % state.status.text)
     return True
 ObjectNode.wait = _ObjectNode_wait
 
@@ -110,10 +115,8 @@ def _ObjectNode_compute(self):
     """ Computes and returns the results of the node's modification pipeline.
 
         This method requests an update of the node's modification pipeline and waits until the effect of all modifiers in the 
-        node's modification pipeline has been computed. If the modification pipeline is already up to date, that is, if the 
-        results are already available in the node's pipeline cache, the method returns immediately.
-        
-        The method returns a new :py:class:`~ovito.scene.PipelineFlowState` object, which holds the results of the modification pipeline.
+        node's modification pipeline has been computed. If the modification pipeline is already up to date, i.e., results are already 
+        available in the node's pipeline cache, the method returns immediately.
         
         Even if you are not interested in the final data that leaves the modification pipeline, you should call this method in case you are going to 
         directly access information provided by individual modifiers in the pipeline. This method will ensure that all modifiers 
@@ -122,49 +125,50 @@ def _ObjectNode_compute(self):
         This function raises a ``RuntimeError`` when the modification pipeline could not be successfully evaluated for some reason.
         This may happen due to invalid modifier parameters for example.
 
-        :returns: A :py:class:`~ovito.scene.PipelineFlowState` object holding the output of the modification pipeline.
+        :returns: A reference to the node's internal :py:class:`~ovito.scene.DataCollection` containing the output of the modification pipeline.
+                  It is also accessible via the :py:attr:`.output` attribute after calling :py:meth:`!.compute`.
     """
     if not self.wait():
         raise RuntimeError("Operation has been canceled by the user.")
-    state = self.evalPipeline(self.dataset.anim.time)
-    
-    # Raise Python error if the pipeline could not be successfully evaluated.
-    if state.status.type == PipelineStatusType.Error:
-        raise RuntimeError(state.status.text)
-    
-    return state    
-    
+    self.__output = self.evalPipeline(self.dataset.anim.time)    
+    assert(self.__output.status.type != PipelineStatus.Type.Error)
+    assert(self.__output.status.type != PipelineStatus.Type.Pending)
+        
+    return self.__output    
 ObjectNode.compute = _ObjectNode_compute
 
-# Give PipelineFlowState class a dict-like interface.
-PipelineFlowState.__len__ = lambda self: len(self.objects)
-def _PipelineFlowState__iter__(self):
+def _ObjectNode_output(self):
+    """ Provides access to the last results of the node's modification pipeline.
+        
+        After calling the :py:meth:`.compute` method, this attribute holds a :py:class:`DataCollection`
+        with the output of the node's modification pipeline.
+    """    
+    if not hasattr(self, "__output"):
+        raise RuntimeError("The node's pipeline has not been evaluated yet. Call compute() first.")
+    return self.__output
+ObjectNode.output = property(_ObjectNode_output)
+
+# Give the DataCollection class a dict-like interface.
+DataCollection.__len__ = lambda self: len(self.objects)
+def _DataCollection__iter__(self):
     for o in self.objects:
-        if hasattr(o, "data_key"):
-            yield o.data_key
-        else:
-            yield o.objectTitle
-PipelineFlowState.__iter__ = _PipelineFlowState__iter__
-def _PipelineFlowState__getitem__(self, key):
+        yield o.objectTitle
+DataCollection.__iter__ = _DataCollection__iter__
+def _DataCollection__getitem__(self, key):
     for o in self.objects:
-        if hasattr(o, "data_key"):
-            if o.data_key == key:
-                return o
-        elif o.objectTitle == key:
+        if o.objectTitle == key:
             return o
-    raise KeyError("Data object '%s' does not exist." % key)
-PipelineFlowState.__getitem__ = _PipelineFlowState__getitem__
-def _PipelineFlowState__getattr__(self, name):
+    raise KeyError("DataCollection does not contain an object named '%s'." % key)
+DataCollection.__getitem__ = _DataCollection__getitem__
+def _DataCollection__getattr__(self, name):
     for o in self.objects:
-        if hasattr(o, "data_key"):
-            if o.data_key == name:
+        if hasattr(o, "_data_attribute_name"):
+            if o._data_attribute_name == name:
                 return o
-        elif o.objectTitle == name:
-            return o
-    raise AttributeError("PipelineFlowState object does not have an attribute '%s'." % name)
-PipelineFlowState.__getattr__ = _PipelineFlowState__getattr__
+    raise AttributeError("DataCollection does not have an attribute named '%s'." % name)
+DataCollection.__getattr__ = _DataCollection__getattr__
 # Mix in base class collections.Mapping:
-PipelineFlowState.__bases__ = PipelineFlowState.__bases__ + (collections.Mapping, )
+DataCollection.__bases__ = DataCollection.__bases__ + (collections.Mapping, )
 
 
 # Give SceneRoot class a list-like interface.
@@ -196,3 +200,10 @@ def _SceneRoot_insert(self, index, node):
         raise RuntimeError("Cannot insert the same node more than once into the scene.")
     self.insertChild(index, node)
 SceneRoot.insert = _SceneRoot_insert
+
+# Implement 'display' attribute of SceneObject class.
+def _SceneObject_display(self):
+    if not self.displayObjects:
+        raise RuntimeError("This data object doesn't have a display attribute.")
+    return self.displayObjects[0]
+SceneObject.display = property(_SceneObject_display)

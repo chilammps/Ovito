@@ -118,7 +118,7 @@ BOOST_PYTHON_MODULE(Particles)
 		.def("findInState", make_function(&ParticlePropertyReference::findInState, return_value_policy<ovito_object_reference>()))
 	;
 
-	ovito_class<ParticlePropertyObject, SceneObject>()
+	ovito_class<ParticlePropertyObject, SceneObject>(nullptr, "ParticleProperty")
 		.def("createUserProperty", &ParticlePropertyObject::createUserProperty)
 		.def("createStandardProperty", &ParticlePropertyObject::createStandardProperty)
 		.def("findInState", make_function((ParticlePropertyObject* (*)(const PipelineFlowState&, ParticleProperty::Type))&ParticlePropertyObject::findInState, return_value_policy<ovito_object_reference>()))

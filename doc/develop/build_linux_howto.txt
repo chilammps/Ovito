@@ -16,17 +16,18 @@ building the static executable:
 sudo apt-get install build-essential perl python git libfreetype6-dev libfontconfig-dev \
                      libx11-xcb-dev libpcre3-dev libxi-dev libgmp-dev \
                      libmpfr-dev libsm-dev libice-dev libnetcdf-dev libhdf5-serial-dev \
-                     libglu1-mesa-dev libxrender-dev xsltproc docbook-xml docbook-xsl-doc-html \
+                     libglu1-mesa-dev libxrender-dev xsltproc docbook-xml docbook-xsl docbook-xsl-doc-html \
                      python-sphinx libssl-dev
 
 **************************************************************************
 To build the dynamically-linked executable instead (on Ubuntu 14.04):
 **************************************************************************
 
-sudo apt-get install build-essential git cmake-curses-gui qt5-default qtscript5-dev xsltproc docbook-xml \
+sudo apt-get install build-essential git cmake-curses-gui qt5-default qtscript5-dev \
                      libavcodec-dev libavdevice-dev libavfilter-dev libavformat-dev \
                      libavutil-dev libswscale-dev libcgal-dev libnetcdf-dev libhdf5-dev libhdf5-serial-dev \
-                     libbotan1.10-dev libmuparser-dev python-dev libboost-python-dev python-sphinx
+                     libbotan1.10-dev libmuparser-dev python-dev libboost-python-dev python-sphinx \
+                     xsltproc docbook-xml docbook-xsl docbook-xsl-doc-html
 
 **************************************************************************
 Install GNU g++ 4.8 compiler on Ubuntu 10.04

@@ -138,7 +138,10 @@ PipelineFlowState PipelineObject::evaluatePipeline(TimePoint time, ModifierAppli
 			isPending = true;
 		else if(isPending)
 			modifierStatus = PipelineStatus::Pending;
-		flowState.setStatus(modifierStatus);
+
+		// Give precedence to error status.
+		if(flowState.status().type() != PipelineStatus::Error || isPending)
+			flowState.setStatus(modifierStatus);
 	}
 
 	// Make sure the revision information in the output is up to date.

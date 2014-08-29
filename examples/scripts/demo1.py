@@ -51,7 +51,11 @@ node.modifiers.append(cna)
 #node.compute()
 
 state = node.compute()
+print state.keys()
 print state.position.array
+print state.position
+print state.cell
+print state.cell.display.enabled
 
 # Read out analysis results.
 print "Number of FCC atoms:", cna.structureCounts[CommonNeighborAnalysisModifier.StructureTypes.FCC]

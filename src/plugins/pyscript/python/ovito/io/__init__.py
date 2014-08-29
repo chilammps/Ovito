@@ -6,8 +6,8 @@ external files:
     * :py:func:`import_file`
     * :py:func:`export_file`
 
-In addition, it contains the :py:class:`FileSourceObject` class, which represents a mutable reference to an external
-input file.
+In addition, it contains the :py:class:`FileSource` class, which is a data source object
+that reads its input data from an external file.
 """
 
 import ovito
@@ -88,13 +88,13 @@ def import_file(location, mode = "AddToScene", **params):
     
     return node    
 
-def _FileSourceObject_load(self, location, **params):
-    """ Changes this source object to point to a new external data file and loads it.
+def _FileSource_load(self, location, **params):
+    """ Loads a new external file into this source object.
     
         The function auto-detects the format of the file.
         
         The function accepts additional keyword arguments that are forwarded to the format-specific file importer.
-        See the documentation of the :py:func:`ovito.io.import_file` function for more information.
+        See the documentation of the :py:func:`import_file` function for more information.
 
         :param str location: The local file or remote sftp:// URL to load.
     """
@@ -126,16 +126,16 @@ def _FileSourceObject_load(self, location, **params):
     if self.status.type == PipelineStatusType.Error:
         raise RuntimeError(self.status.text)
     
-FileSourceObject.load = _FileSourceObject_load
+FileSource.load = _FileSource_load
 
-# Implement the 'sourceUrl' property of FileSourceObject, which returns or sets the currently loaded file path.
-def _get_FileSourceObject_source_path(self, _originalGetterMethod = FileSourceObject.source_path):
+# Implement the 'sourceUrl' property of FileSource, which returns or sets the currently loaded file path.
+def _get_FileSource_source_path(self, _originalGetterMethod = FileSource.source_path):
     """ The path or URL of the loaded file. """    
     return _originalGetterMethod.__get__(self)
-def _set_FileSourceObject_source_path(self, url):
-    """ Sets the URL of the file referenced by this FileSourceObject. """
+def _set_FileSource_source_path(self, url):
+    """ Sets the URL of the file referenced by this FileSource. """
     self.setSource(url, None) 
-FileSourceObject.source_path = property(_get_FileSourceObject_source_path, _set_FileSourceObject_source_path)
+FileSource.source_path = property(_get_FileSource_source_path, _set_FileSource_source_path)
 
 def export_file(node, file, format, **params):
     """ High-level function that exports data to a file.

@@ -44,15 +44,14 @@ using namespace boost::python;
 using namespace Ovito;
 
 // Implementation of the __str__ method for OvitoObject derived classes.
-inline object OvitoObject__str__(OvitoObject* o) {
-	if(!o) return str("<OvitoObject nullptr>");
-	else return "<%s at 0x%x>" % make_tuple(o->getOOType().name(), (std::intptr_t)o);
+inline object OvitoObject__str__(const object& pyobj) {
+	OvitoObject* o = extract<OvitoObject*>(pyobj);
+	return "<%s at 0x%x>" % make_tuple(pyobj.attr("__class__").attr("__name__"), (std::intptr_t)o);
 }
 
 // Implementation of the __repr__ method for OvitoObject derived classes.
-inline object OvitoObject__repr__(OvitoObject* o) {
-	if(!o) return str("<OvitoObject nullptr>");
-	else return "%s()" % str(o->getOOType().name());
+inline object OvitoObject__repr__(const object& pyobj) {
+	return "%s()" % pyobj.attr("__class__").attr("__name__");
 }
 
 // Implementation of the __eq__ method for OvitoObject derived classes.
@@ -99,8 +98,8 @@ BOOST_PYTHON_MODULE(PyScriptApp)
 			"\n\n"
 			"There exists only one global instance of this class, which can be accessed via the :py:data:`ovito.dataset` module-level attribute.")
 		.add_property("scene_nodes", make_function(&DataSet::sceneRoot, return_value_policy<ovito_object_reference>()),
-				"A list-like object that contains all :py:class:`~ovito.scene.ObjectNode` instances that are part of the three-dimensional scene. "
-				"Only nodes that are in this list are visible in the viewports. You can add or remove nodes from this list.")
+				"A list-like object containing the :py:class:`~ovito.scene.ObjectNode` instances that are part of the three-dimensional scene. "
+				"Only nodes in this list are visible in the viewports. You can add or remove nodes from this list.")
 		.add_property("filePath", make_function(&DataSet::filePath, return_value_policy<copy_const_reference>()), &DataSet::setFilePath)
 		.add_property("anim", make_function(&DataSet::animationSettings, return_value_policy<ovito_object_reference>()),
 				"An :py:class:`~ovito.anim.AnimationSettings` object, which manages various animation-related settings in OVITO such as the number of frames, the current frame, playback speed etc.")
