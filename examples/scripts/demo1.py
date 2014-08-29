@@ -7,6 +7,7 @@ from ovito.render import *
 
 # Import modules from standard Python library.
 import math
+import numpy as np
 
 # Query program version.
 print "This is Ovito version", version
@@ -28,10 +29,10 @@ vp.camera_dir = (2, 3, -3)
 vp.fov = math.radians(60.0)
 
 # Render a picture of the dataset.
-vp.render(RenderSettings(
-	filename = "rendered_image.png",
-	size = (120,120)
-))
+#vp.render(RenderSettings(
+#	filename = "rendered_image.png",
+#	size = (120,120)
+#))
 
 # Apply two more modifiers to delete some particles.
 node.modifiers.append(SelectExpressionModifier(expression = "PotentialEnergy < -3.9"))
@@ -47,13 +48,10 @@ node.modifiers.append(cna)
 
 # Block execution of the script until the node's modification pipeline is ready, that is, until 
 # the results of all modifiers have been computed.
-node.wait()
+#node.compute()
 
 state = node.compute()
-print state.keys()
-print state.values()
-print state['cell']
-print state.position
+print state.position.array
 
 # Read out analysis results.
 print "Number of FCC atoms:", cna.structureCounts[CommonNeighborAnalysisModifier.StructureTypes.FCC]

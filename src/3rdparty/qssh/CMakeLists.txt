@@ -65,9 +65,4 @@ IF(NOT OVITO_MONOLITHIC_BUILD)
 		LIBRARY DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}")
 ENDIF()
 
-IF(APPLE)
-	# Fix the library paths in the build directory.
-	# This is required so that OVITO can be run from the build directory (and not only from the installation directory).
-	ADD_CUSTOM_COMMAND(TARGET QSsh POST_BUILD 
-		COMMAND "install_name_tool" "-change" "libBotan.dylib" "@executable_path/libBotan.dylib" "$<TARGET_FILE:QSsh>")
-ENDIF(APPLE)
+OVITO_FIXUP_BUILD_OBJECT(QSsh)

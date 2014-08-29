@@ -38,9 +38,34 @@ using namespace boost::python;
 using namespace Ovito;
 using namespace PyScript;
 
-object numPyArrayFromParticleProperty(const ParticlePropertyObject& p)
+dict ParticlePropertyObject__array_interface__(const ParticlePropertyObject& p)
 {
-	return object();
+	dict ai;
+	if(p.componentCount() == 1) {
+		ai["shape"] = boost::python::make_tuple(p.size());
+	}
+	else if(p.componentCount() > 1) {
+		ai["shape"] = boost::python::make_tuple(p.size(), p.componentCount());
+	}
+	else throw Exception("Cannot access empty particle property from Python.");
+	if(p.dataType() == qMetaTypeId<int>()) {
+#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
+		ai["typestr"] = str("<i") + str(sizeof(int));
+#else
+		ai["typestr"] = str(">i") + str(sizeof(int));
+#endif
+	}
+	else if(p.dataType() == qMetaTypeId<FloatType>()) {
+#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
+		ai["typestr"] = str("<f") + str(sizeof(FloatType));
+#else
+		ai["typestr"] = str(">f") + str(sizeof(FloatType));
+#endif
+	}
+	else throw Exception("Cannot access particle property of this data type from Python.");
+	ai["data"] = boost::python::make_tuple((std::intptr_t)p.constData(), true);
+	ai["version"] = 3;
+	return ai;
 }
 
 BOOST_PYTHON_MODULE(Particles)
@@ -110,7 +135,7 @@ BOOST_PYTHON_MODULE(Particles)
 		.add_property("dataTypeSize", &ParticlePropertyObject::dataTypeSize)
 		.add_property("perParticleSize", &ParticlePropertyObject::perParticleSize)
 		.add_property("componentCount", &ParticlePropertyObject::componentCount)
-		.add_property("nparray", make_function(numPyArrayFromParticleProperty, return_value_policy<return_by_value, with_custodian_and_ward_postcall<0, 1>>()))
+		.add_property("__array_interface__", &ParticlePropertyObject__array_interface__)
 	;
 
 	ovito_class<ParticleTypeProperty, ParticlePropertyObject>()
