@@ -1,8 +1,8 @@
 ==================================
-``ovito.scene``
+``ovito.data``
 ==================================
 
-.. automodule:: ovito.scene
+.. automodule:: ovito.data
    :members:
    :imported-members:
 

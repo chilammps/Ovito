@@ -1,5 +1,4 @@
-# Load dependencies first.
-import ovito
+# Load dependencies
 import ovito.io
 
 # Load the native code modules

@@ -6,16 +6,16 @@ This section explains how to use OVITO's built-in script interpreter.
 
 .. topic:: Note to 64-bit Windows users:
 
-	Due to compiler limitations, Python scripting support is currently NOT available in the 64-bit version of OVITO for Windows.
-	Please use the 32-bit version of OVITO instead if you want to use this feature under Windows.
-	The 32-bit version of the program runs on 64-bit systems too.
+	Due to compiler limitations, Python scripting is currently NOT available in the 64-bit version of OVITO for Windows.
+	Please use the 32-bit version of OVITO instead if you want to use this feature on Windows.
+	The 32-bit Windows version of the program runs on 64-bit operating systems too.
 
 OVITO's Python interpreter
 ----------------------------------
 
 OVITO includes a built-in script interpreter, which can execute programs written in the Python language.
 The current version of OVITO is compatible with the Python 2.7 language standard. 
-You execute a Python script from the terminal using the :program:`ovitos` script launcher that comes with OVITO:
+You typically execute a Python script from the terminal using the :program:`ovitos` script launcher that comes with OVITO:
 
 .. code-block:: shell-session
 
@@ -24,14 +24,14 @@ You execute a Python script from the terminal using the :program:`ovitos` script
 The :program:`ovitos` program is located in the :file:`bin/` subdirectory of OVITO for Linux, in the 
 :file:`Ovito.app/Contents/MacOS/` directory of OVITO for MacOS, and in the main program directory 
 on Windows systems. It should not be confused with :program:`ovito`, the main OVITO program
-having a graphical user interface.
+showing a graphical user interface.
 
 Let's assume we used a text editor to write a simple Python script file named :file:`hello.py`::
 
 	import ovito
 	print "Hello, this is OVITO %i.%i.%i" % ovito.version
 
-We can run the script from a Linux terminal as follows:
+We can execute the script from a Linux terminal as follows:
 
 .. code-block:: shell-session
 
@@ -53,11 +53,11 @@ don't have to be set up programatically in the script anymore.
 
 The :command:`-g` command line option switches from console mode to graphical mode. This displays OVITO's main window
 and you can follow your script's actions as they are being executed. This is useful, for instance, if you want to visually 
-inspect the results of your script and to check if everything is correctly set up during the development of a script.
+inspect the results of your script and check if everything is correctly set up during the development of a script.
 
 .. note::
 
 	With the current program version it is not possible to run OVITO scripts with 
-	the standard Python interpreter (usually named :program:`python`). OVITO scripts must be executed with OVITO's built-in interpreter. 
-	If you want to use third-party Python packages in your OVITO script, you can install them in the built-in interpreter as usual
-	(using :program:`ovitos` instead of :program:`python` to run the package install script).
+	a standard Python interpreter (usually named :program:`python`). OVITO scripts must be executed with OVITO's built-in interpreter. 
+	If you want to use a third-party Python package in your OVITO scripts, you can install it in OVITO's built-in interpreter as usual
+	(Use :program:`ovitos` instead of :program:`python` to run the package install script).

@@ -45,74 +45,25 @@ using namespace PyScript;
 
 BOOST_PYTHON_MODULE(ParticlesImporter)
 {
+	docstring_options docoptions(true, false);
+
 	class_<InputColumnMapping>("InputColumnMapping", init<>())
 		.add_property("fileExcerpt", make_function(&InputColumnMapping::fileExcerpt, return_value_policy<copy_const_reference>()), &InputColumnMapping::setFileExcerpt)
 		.def("validate", &InputColumnMapping::validate)
 	;
 
-	// Install automatic Python string to ParticlePropertyReference conversion.
-	auto convertible_ParticlePropertyReference = [](PyObject* obj_ptr) -> void* {
-		if(!PyString_Check(obj_ptr) && obj_ptr != Py_None) return nullptr;
-		return obj_ptr;
-	};
-	auto construct_ParticlePropertyReference = [](PyObject* obj_ptr, boost::python::converter::rvalue_from_python_stage1_data* data) {
-		void* storage = ((boost::python::converter::rvalue_from_python_storage<ParticlePropertyReference>*)data)->storage.bytes;
-		if(obj_ptr == Py_None) {
-			new (storage) ParticlePropertyReference();
-			data->convertible = storage;
-			return;
-		}
-
-		QStringList parts = extract<QString>(obj_ptr)().split(QChar('.'));
-		if(parts.length() > 2)
-			throw Exception("Too many dots in particle property name string.");
-		else if(parts.length() == 0 || parts[0].isEmpty())
-			throw Exception("Particle property name string is empty.");
-		// Determine property type.
-		QString name = parts[0];
-		ParticleProperty::Type type = ParticleProperty::standardPropertyList().value(name, ParticleProperty::UserProperty);
-
-		// Determine vector component.
-		int component = -1;
-		if(parts.length() == 2) {
-			// First try to convert component to integer.
-			bool ok;
-			component = parts[1].toInt(&ok);
-			if(!ok) {
-				if(type == ParticleProperty::UserProperty)
-					throw Exception(QString("Invalid component name or index for particle property '%1': %2").arg(parts[0]).arg(parts[1]));
-
-				// Perhaps the name was used instead of an integer.
-				const QString componentName = parts[1].toUpper();
-				QStringList standardNames = ParticleProperty::standardPropertyComponentNames(type);
-				component = standardNames.indexOf(componentName);
-				if(component < 0)
-					throw Exception(QString("Unknown component name '%1' for particle property '%2'. Possible components are: %3").arg(parts[1]).arg(parts[0]).arg(standardNames.join(',')));
-			}
-		}
-
-		// Construct object.
-		if(type == Particles::ParticleProperty::UserProperty)
-			new (storage) ParticlePropertyReference(name, component);
-		else
-			new (storage) ParticlePropertyReference(type, component);
-		data->convertible = storage;
-	};
-	converter::registry::push_back(convertible_ParticlePropertyReference, construct_ParticlePropertyReference, boost::python::type_id<ParticlePropertyReference>());
-
-	// Install automatic Python list to InputColumnMapping conversion.
+	// Install automatic Python sequence to InputColumnMapping conversion.
 	auto convertible_InputColumnMapping = [](PyObject* obj_ptr) -> void* {
-		if(!PyList_Check(obj_ptr)) return nullptr;
+		if(!PySequence_Check(obj_ptr)) return nullptr;
 		return obj_ptr;
 	};
 	auto construct_InputColumnMapping = [](PyObject* obj_ptr, boost::python::converter::rvalue_from_python_stage1_data* data) {
 		void* storage = ((boost::python::converter::rvalue_from_python_storage<InputColumnMapping>*)data)->storage.bytes;
 		new (storage) InputColumnMapping();
 		InputColumnMapping* mapping = (InputColumnMapping*)storage;
-		Py_ssize_t count = PyList_Size(obj_ptr);
-		mapping->resize(count);
+		mapping->resize(PySequence_Size(obj_ptr));
 		for(int i = 0; i < mapping->size(); i++) {
-			ParticlePropertyReference pref = extract<ParticlePropertyReference>(object(handle<>(borrowed(PyList_GetItem(obj_ptr, i)))));
+			ParticlePropertyReference pref = extract<ParticlePropertyReference>(object(handle<>(PySequence_GetItem(obj_ptr, i))));
 			if(!pref.isNull()) {
 				if(pref.type() != ParticleProperty::UserProperty)
 					(*mapping)[i].mapStandardColumn(pref.type(), pref.vectorComponent());

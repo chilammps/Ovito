@@ -31,6 +31,8 @@ using namespace PyScript;
 
 BOOST_PYTHON_MODULE(NetCDFImporter)
 {
+	docstring_options docoptions(true, false);
+
 	ovito_class<NetCDFImporter, ParticleImporter>()
 		.add_property("customColumnMapping", make_function(&NetCDFImporter::customColumnMapping, return_value_policy<copy_const_reference>()), &NetCDFImporter::setCustomColumnMapping)
 		.add_property("useCustomColumnMapping", &NetCDFImporter::useCustomColumnMapping, &NetCDFImporter::setUseCustomColumnMapping)

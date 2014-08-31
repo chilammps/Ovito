@@ -31,6 +31,8 @@ using namespace PyScript;
 
 BOOST_PYTHON_MODULE(Tachyon)
 {
+	docstring_options docoptions(true, false);
+
 	ovito_class<TachyonRenderer, NonInteractiveSceneRenderer>(
 			"This is the software-based raytracing renderer of OVITO."
 			"\n\n"

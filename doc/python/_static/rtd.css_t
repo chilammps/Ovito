@@ -37,6 +37,11 @@ body {
     margin: 0;
 }
 
+dl[class=class]>dt,dl[class=function]>dt,dl[class=data]>dt {
+    border-top:1px solid #aaa;
+    background-color: #e8ecef;
+}
+
 div.document {
     text-align: left;
     background-color: #e8ecef;

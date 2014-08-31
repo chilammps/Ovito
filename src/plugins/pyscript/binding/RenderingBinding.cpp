@@ -43,14 +43,14 @@ BOOST_PYTHON_MODULE(PyScriptRendering)
 		scope s = ovito_class<RenderSettings, RefTarget>(
 				"Stores settings and parameters for rendering images and movies."
 				"\n\n"
-				"Instances of this class can be passed to the :py:func:`~ovito.view.Viewport.render` function "
-				"of the :py:class:`~ovito.view.Viewport` class to control various aspects such as the resolution of the generated image. "
+				"A instance of this class can be passed to the :py:func:`~Viewport.render` function "
+				"of the :py:class:`Viewport` class to control various aspects such as the resolution of the generated image. "
 				"The ``RenderSettings`` object contains a :py:attr:`.renderer`, which is the rendering engine "
 				"that will be used to generate images of the three-dimensional scene. OVITO comes with two different "
 				"rendering engines:"
 				"\n\n"
-				"  * :py:class:`~ovito.render.OpenGLRenderer` -- An OpenGL-based renderer, which is also used for the interactive display in OVITO's viewports.\n"
-				"  * :py:class:`~ovito.render.TachyonRenderer` -- A software-based, high-quality raytracing renderer.\n"
+				"  * :py:class:`OpenGLRenderer` -- An OpenGL-based renderer, which is also used for the interactive display in OVITO's viewports.\n"
+				"  * :py:class:`TachyonRenderer` -- A software-based, high-quality raytracing renderer.\n"
 				"\n"
 				"Usage example::"
 				"\n\n"
@@ -65,7 +65,7 @@ BOOST_PYTHON_MODULE(PyScriptRendering)
 					"The renderer that is used to generate the image or movie. Depending on the selected renderer you "
 					"can use this to set additional parameters such as the anti-aliasing level."
 					"\n\n"
-					"See the :py:class:`~ovito.render.OpenGLRenderer` and :py:class:`~ovito.render.TachyonRenderer` classes "
+					"See the :py:class:`OpenGLRenderer` and :py:class:`TachyonRenderer` classes "
 					"for a list of renderer-specific parameters.")
 			.add_property("range", &RenderSettings::renderingRangeType, &RenderSettings::setRenderingRangeType,
 					"Selects the animation frames to be rendered."
@@ -122,8 +122,17 @@ BOOST_PYTHON_MODULE(PyScriptRendering)
 	ovito_abstract_class<NonInteractiveSceneRenderer, SceneRenderer>()
 	;
 
-	ovito_abstract_class<DisplayObject, RefTarget>()
-		.add_property("enabled", &DisplayObject::isEnabled, &DisplayObject::setEnabled)
+	ovito_abstract_class<DisplayObject, RefTarget>(
+			"Abstract base class for display setting objects that control the visual appearance of data. "
+			":py:class:`DataObjects <ovito.data.DataObject>` may be associated with an instance of this class, which can be accessed via "
+			"their :py:attr:`~ovito.data.DataObject.display` property.",
+			// Python class name:
+			"Display")
+		.add_property("enabled", &DisplayObject::isEnabled, &DisplayObject::setEnabled,
+				"Boolean flag controlling the visibility of the data. If set to ``False``, the "
+				"data will not be visible in the viewports or in rendered images."
+				"\n\n"
+				":Default: ``True``\n")
 	;
 
 	ovito_class<TriMeshDisplay, DisplayObject>()
@@ -132,8 +141,8 @@ BOOST_PYTHON_MODULE(PyScriptRendering)
 	;
 
 	enum_<ParticlePrimitive::ShadingMode>("ParticleShadingMode")
-		.value("NormalShading", ParticlePrimitive::NormalShading)
-		.value("FlatShading", ParticlePrimitive::FlatShading)
+		.value("Normal", ParticlePrimitive::NormalShading)
+		.value("Flat", ParticlePrimitive::FlatShading)
 	;
 
 	enum_<ParticlePrimitive::RenderingQuality>("ParticleRenderingQuality")
@@ -144,13 +153,13 @@ BOOST_PYTHON_MODULE(PyScriptRendering)
 	;
 
 	enum_<ParticlePrimitive::ParticleShape>("ParticleShape")
-		.value("SphericalShape", ParticlePrimitive::SphericalShape)
-		.value("SquareShape", ParticlePrimitive::SquareShape)
+		.value("Spherical", ParticlePrimitive::SphericalShape)
+		.value("Square", ParticlePrimitive::SquareShape)
 	;
 
 	enum_<ArrowPrimitive::ShadingMode>("ArrowShadingMode")
-		.value("NormalShading", ArrowPrimitive::NormalShading)
-		.value("FlatShading", ArrowPrimitive::FlatShading)
+		.value("Normal", ArrowPrimitive::NormalShading)
+		.value("Flat", ArrowPrimitive::FlatShading)
 	;
 
 	enum_<ArrowPrimitive::RenderingQuality>("ArrowRenderingQuality")

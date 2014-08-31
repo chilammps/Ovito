@@ -4,7 +4,9 @@
 OVITO Scripting Reference
 **********************************
 
-Overview:
+This manual describes OVITO's scripting interface.
+
+Introduction:
 -----------------
 
 .. toctree::
@@ -20,8 +22,7 @@ Module Reference:
    
    modules/ovito
    modules/ovito_anim
+   modules/ovito_data
    modules/ovito_io
    modules/ovito_modifiers
-   modules/ovito_render
-   modules/ovito_scene
-   modules/ovito_view
+   modules/ovito_vis

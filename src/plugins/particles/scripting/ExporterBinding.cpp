@@ -42,6 +42,8 @@ using namespace PyScript;
 
 BOOST_PYTHON_MODULE(ParticlesExporter)
 {
+	docstring_options docoptions(true, false);
+
 	class_<OutputColumnMapping>("OutputColumnMapping", init<>())
 		.def(vector_indexing_suite<OutputColumnMapping>())
 	;

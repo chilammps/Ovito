@@ -98,15 +98,15 @@ BOOST_PYTHON_MODULE(PyScriptApp)
 			"\n\n"
 			"There exists only one global instance of this class, which can be accessed via the :py:data:`ovito.dataset` module-level attribute.")
 		.add_property("scene_nodes", make_function(&DataSet::sceneRoot, return_value_policy<ovito_object_reference>()),
-				"A list-like object containing the :py:class:`~ovito.scene.ObjectNode` instances that are part of the three-dimensional scene. "
+				"A list-like object containing the :py:class:`~ovito.ObjectNode` instances that are part of the three-dimensional scene. "
 				"Only nodes in this list are visible in the viewports. You can add or remove nodes from this list.")
 		.add_property("filePath", make_function(&DataSet::filePath, return_value_policy<copy_const_reference>()), &DataSet::setFilePath)
 		.add_property("anim", make_function(&DataSet::animationSettings, return_value_policy<ovito_object_reference>()),
 				"An :py:class:`~ovito.anim.AnimationSettings` object, which manages various animation-related settings in OVITO such as the number of frames, the current frame, playback speed etc.")
 		.add_property("viewports", make_function(&DataSet::viewportConfig, return_value_policy<ovito_object_reference>()),
-				"A :py:class:`~ovito.view.ViewportConfiguration` object managing the viewports in OVITO's main window.")
+				"A :py:class:`~ovito.vis.ViewportConfiguration` object managing the viewports in OVITO's main window.")
 		.add_property("render_settings", make_function(&DataSet::renderSettings, return_value_policy<ovito_object_reference>()),
-				"The global :py:class:`~ovito.render.RenderSettings` object, which stores the current settings for rendering pictures and movies. "
+				"The global :py:class:`~ovito.vis.RenderSettings` object, which stores the current settings for rendering pictures and movies. "
 				"These are the settings the user edits on the :guilabel:`Render` tab of OVITO's main window.")
 		.add_property("selection", make_function(&DataSet::selection, return_value_policy<ovito_object_reference>()))
 		.add_property("container", make_function(&DataSet::container, return_value_policy<ovito_object_reference>()))

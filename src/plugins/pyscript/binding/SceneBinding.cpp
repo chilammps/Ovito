@@ -59,9 +59,9 @@ BOOST_PYTHON_MODULE(PyScriptScene)
 	}
 
 	class_<PipelineFlowState>("DataCollection",
-			"A dictionary-like container storing a set of data objects that enter or leave a modification pipeline."
+			"A dictionary-like container storing a set of :py:class:`DataObjects <DataObject>` that enter or leave a modification pipeline."
 			"\n\n"
-			"The :py:meth:`ObjectNode.compute() <ovito.scene.ObjectNode.compute>` method returns an instance of this class "
+			"The :py:meth:`ObjectNode.compute() <ovito.ObjectNode.compute>` method returns an instance of this class "
 			"holding the output of the modification pipeline. The data collection is a set of data objects "
 			"that were loaded from the input file, modified by modifiers, or newly generated within the pipeline."
 			"\n\n"
@@ -79,10 +79,11 @@ BOOST_PYTHON_MODULE(PyScriptScene)
 			"   >>> data['Potential Energy']\n"
 			"   <ParticleProperty at 0x11d01d60>\n"
 			"\n\n"
-			"Alternatively, standard particle properties and the simulation cell can be directly accessed as attributes of the data collection::"
+			"More conveniently, standard particle properties and the simulation cell can be directly accessed as attributes of the data collection::"
 			"\n\n"
 			"   >>> data.potential_energy\n"
 			"   <ParticleProperty at 0x11d01d60>\n"
+			"   \n"
 			"   >>> data.cell\n"
 			"   <SimulationCell at 0x24338a0>\n"
 			"\n\n"
@@ -98,7 +99,15 @@ BOOST_PYTHON_MODULE(PyScriptScene)
 		.add_property("objects", make_function(&PipelineFlowState::objects, return_internal_reference<>()))
 	;
 
-	ovito_abstract_class<SceneObject, RefTarget>()
+	ovito_abstract_class<SceneObject, RefTarget>(
+			"Abstract base class for all data objects."
+			"\n\n"
+			"Some data objects are associated with a :py:class:`~ovito.vis.Display` object, which is responsible for "
+			"displaying the data in the viewports and in rendered images. "
+			"The the :py:attr:`.display` attribute provides access to the attached display object and "
+			"allows controlling the visual appearance of the data.",
+			// Python class name:
+			"DataObject")
 		.def("objectValidity", &SceneObject::objectValidity)
 		.def("evaluate", &SceneObject::evaluate)
 		.def("addDisplayObject", &SceneObject::addDisplayObject)
@@ -113,7 +122,7 @@ BOOST_PYTHON_MODULE(PyScriptScene)
 	ovito_abstract_class<Modifier, RefTarget>(
 			"This is the base class for all modifiers in OVITO.")
 		.add_property("enabled", &Modifier::isEnabled, &Modifier::setEnabled,
-				"Determines whether the modifier is applied to the input data. Modifiers which are not enabled "
+				"Controls whether the modifier is applied to the input data. Modifiers which are not enabled "
 				"are skipped even if they are part of a modification pipeline."
 				"\n\n"
 				":Default: ``True``\n")

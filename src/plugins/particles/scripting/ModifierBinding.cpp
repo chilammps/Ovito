@@ -75,7 +75,10 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 	;
 
 	ovito_class<AssignColorModifier, ParticleModifier>(
-			"Assigns a color to selected particles.")
+			":Base: :py:class:`ovito.modifiers.Modifier`\n\n"
+			"Assigns a uniform color to all selected particles. "
+			"If no particle selection is defined (i.e. the ``\"Selection\"`` particle property does not exist), "
+			"the modifier assigns the color to all particles. ")
 		.add_property("color", &AssignColorModifier::color, &AssignColorModifier::setColor,
 				"The color that will be assigned to particles."
 				"\n\n"
@@ -86,6 +89,7 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 
 	{
 		scope s = ovito_class<ColorCodingModifier, ParticleModifier>(
+				":Base: :py:class:`ovito.modifiers.Modifier`\n\n"
 				"Colors particles based on the values of an arbitrary particle property."
 				"\n\n"
 				"Usage example::"
@@ -93,7 +97,7 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 				"    from ovito.modifiers import *\n"
 				"    \n"
 				"    modifier = ColorCodingModifier(\n"
-				"        source = \"Potential Energy\",\n"
+				"        property = \"Potential Energy\",\n"
 				"        gradient = ColorCodingModifier.Hot()\n"
 				"    )\n"
 				"    node.modifiers.append(modifier)\n"
@@ -101,7 +105,7 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 				"If, as in the example above, the :py:attr:`.start_value` and :py:attr:`.end_value` parameters are not explicitly set, "
 				"then the modifier automatically adjusts them to the minimum and maximum values of the particle property when the modifier "
 				"is inserted into the modification pipeline.")
-			.add_property("source", make_function(&ColorCodingModifier::sourceProperty, return_value_policy<copy_const_reference>()), &ColorCodingModifier::setSourceProperty,
+			.add_property("property", make_function(&ColorCodingModifier::sourceProperty, return_value_policy<copy_const_reference>()), &ColorCodingModifier::setSourceProperty,
 					"The name of the input property that determines the color of particles. ")
 			.add_property("start_value", &ColorCodingModifier::startValue, &ColorCodingModifier::setStartValue,
 					"This parameter defines the value range when mapping the input property to a color.")
@@ -118,8 +122,9 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 					" * ``ColorCodingModifier.Hot()``\n"
 					" * ``ColorCodingModifier.Jet()``\n"
 					"\n")
-			.add_property("color_only_selected", &ColorCodingModifier::colorOnlySelected, &ColorCodingModifier::setColorOnlySelected,
-					"If true, only selected particles will be affected by the modifier; if false, all particles will be colored."
+			.add_property("only_selected", &ColorCodingModifier::colorOnlySelected, &ColorCodingModifier::setColorOnlySelected,
+					"If ``True``, only selected particles will be affected by the modifier and the existing colors "
+					"of unselected particles will be preserved; if ``False``, all particles will be colored."
 					"\n\n"
 					":Default: ``False``\n")
 			.add_property("keepSelection", &ColorCodingModifier::keepSelection, &ColorCodingModifier::setKeepSelection)
@@ -142,6 +147,7 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 	}
 
 	ovito_class<AmbientOcclusionModifier, AsynchronousParticleModifier>(
+			":Base: :py:class:`ovito.modifiers.Modifier`\n\n"
 			"Performs a quick lighting calculation to shade particles according to the degree of occlusion by other particles. ")
 		.add_property("intensity", &AmbientOcclusionModifier::intensity, &AmbientOcclusionModifier::setIntensity,
 				"A number controlling the strength of the applied shading effect. "
@@ -162,33 +168,37 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 	;
 
 	ovito_class<DeleteParticlesModifier, ParticleModifier>(
-			"This modifier deletes the selected particles. It has no parameters.")
+			":Base: :py:class:`ovito.modifiers.Modifier`\n\n"
+			"This modifier deletes the selected particles. It has no parameters.",
+			// Python class name:
+			"DeleteSelectedParticlesModifier")
 	;
 
 	ovito_class<ShowPeriodicImagesModifier, ParticleModifier>(
+			":Base: :py:class:`ovito.modifiers.Modifier`\n\n"
 			"This modifier replicates all particles to display periodic images of the system.")
 		.add_property("replicate_x", &ShowPeriodicImagesModifier::showImageX, &ShowPeriodicImagesModifier::setShowImageX,
-				"Enables replication of particles along X."
+				"Enables replication of particles along *x*."
 				"\n\n"
 				":Default: ``False``\n")
 		.add_property("replicate_y", &ShowPeriodicImagesModifier::showImageY, &ShowPeriodicImagesModifier::setShowImageY,
-				"Enables replication of particles along Y."
+				"Enables replication of particles along *y*."
 				"\n\n"
 				":Default: ``False``\n")
 		.add_property("replicate_z", &ShowPeriodicImagesModifier::showImageZ, &ShowPeriodicImagesModifier::setShowImageZ,
-				"Enables replication of particles along Z."
+				"Enables replication of particles along *z*."
 				"\n\n"
 				":Default: ``False``\n")
 		.add_property("num_x", &ShowPeriodicImagesModifier::numImagesX, &ShowPeriodicImagesModifier::setNumImagesX,
-				"A positive integer specifying the number of periodic images to generate in the X direction (including the existing primary image)."
+				"A positive integer specifying the number of copies to generate in the *x* direction (including the existing primary image)."
 				"\n\n"
 				":Default: 3\n")
 		.add_property("num_y", &ShowPeriodicImagesModifier::numImagesY, &ShowPeriodicImagesModifier::setNumImagesY,
-				"A positive integer specifying the number of periodic images to generate in the Y direction (including the existing primary image)."
+				"A positive integer specifying the number of copies to generate in the *y* direction (including the existing primary image)."
 				"\n\n"
 				":Default: 3\n")
 		.add_property("num_z", &ShowPeriodicImagesModifier::numImagesZ, &ShowPeriodicImagesModifier::setNumImagesZ,
-				"A positive integer specifying the number of periodic images to generate in the Z direction (including the existing primary image)."
+				"A positive integer specifying the number of copies to generate in the *z* direction (including the existing primary image)."
 				"\n\n"
 				":Default: 3\n")
 		.add_property("adjust_box", &ShowPeriodicImagesModifier::adjustBoxSize, &ShowPeriodicImagesModifier::setAdjustBoxSize,
@@ -198,16 +208,38 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 	;
 
 	ovito_class<WrapPeriodicImagesModifier, ParticleModifier>(
+			":Base: :py:class:`ovito.modifiers.Modifier`\n\n"
 			"This modifier maps particles located outside the simulation cell back into the box by \"wrapping\" their coordinates "
 			"around at the periodic boundaries of the simulation cell. This modifier has no parameters.")
 	;
 
-	ovito_class<CreateExpressionPropertyModifier, ParticleModifier>()
-	// Requires binding for QStringList
-		.add_property("expressions", make_function(&CreateExpressionPropertyModifier::expressions, return_value_policy<copy_const_reference>()), &CreateExpressionPropertyModifier::setExpressions)
-		.add_property("outputProperty", make_function(&CreateExpressionPropertyModifier::outputProperty, return_value_policy<copy_const_reference>()), &CreateExpressionPropertyModifier::setOutputProperty)
+	ovito_class<CreateExpressionPropertyModifier, ParticleModifier>(
+			":Base: :py:class:`ovito.modifiers.Modifier`\n\n"
+			"Evaluates a user-defined math expression to compute the values of a particle property."
+			"\n\n"
+			"Example::"
+			"\n\n"
+			"   modifier = ComputePropertyModifier()\n"
+			"   modifier.output_property = \"Color\"\n"
+			"   modifier.expressions = [\"Position.X / CellSize.X\", \"0.0\", \"0.5\"]\n"
+			"\n",
+			// Python class name:
+			"ComputePropertyModifier")
+		.add_property("expressions", make_function(&CreateExpressionPropertyModifier::expressions, return_value_policy<copy_const_reference>()), &CreateExpressionPropertyModifier::setExpressions,
+				"A list of strings containing the math expressions to compute, one for each vector component of the output property. "
+				"If the output property is a scalar property, the list should comprise exactly one string. "
+				"\n\n"
+				":Default: ``[\"0\"]``\n")
+		.add_property("output_property", make_function(&CreateExpressionPropertyModifier::outputProperty, return_value_policy<copy_const_reference>()), &CreateExpressionPropertyModifier::setOutputProperty,
+				"The output particle property in which the modifier should store the computed values. "
+				"\n\n"
+				":Default: ``\"Custom property\"``\n")
 		.add_property("propertyComponentCount", &CreateExpressionPropertyModifier::propertyComponentCount, &CreateExpressionPropertyModifier::setPropertyComponentCount)
-		.add_property("onlySelectedParticles", &CreateExpressionPropertyModifier::onlySelectedParticles, &CreateExpressionPropertyModifier::setOnlySelectedParticles)
+		.add_property("only_selected", &CreateExpressionPropertyModifier::onlySelectedParticles, &CreateExpressionPropertyModifier::setOnlySelectedParticles,
+				"If ``True``, the property is only computed for selected particles and existing property values "
+				"are preserved for unselected particles."
+				"\n\n"
+				":Default: ``False``\n")
 	;
 
 	ovito_class<FreezePropertyModifier, ParticleModifier>()
@@ -217,11 +249,14 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 	;
 
 	ovito_class<ClearSelectionModifier, ParticleModifier>(
-			"This modifier clears the particle selection. It has no parameters.")
+			":Base: :py:class:`ovito.modifiers.Modifier`\n\n"
+			"This modifier clears the particle selection by deleting the ``\"Selection\"`` particle property. "
+			"It has no parameters.")
 	;
 
 	ovito_class<InvertSelectionModifier, ParticleModifier>(
-		"This modifier inverts the particle selection. It has no parameters.")
+			":Base: :py:class:`ovito.modifiers.Modifier`\n\n"
+			"This modifier inverts the particle selection. It has no parameters.")
 	;
 
 	ovito_class<FreezeSelectionModifier, ParticleModifier>()
@@ -236,37 +271,108 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 	;
 
 	ovito_class<SelectExpressionModifier, ParticleModifier>(
+			":Base: :py:class:`ovito.modifiers.Modifier`\n\n"
 			"This modifier selects particles based on a user-defined Boolean expression.")
 		.add_property("expression", make_function(&SelectExpressionModifier::expression, return_value_policy<copy_const_reference>()), &SelectExpressionModifier::setExpression,
 				"A string with a a Boolean expression. The syntax is documented in OVITO's user manual.")
 	;
 
-	ovito_class<SelectParticleTypeModifier, ParticleModifier>()
-		.add_property("sourceProperty", make_function(&SelectParticleTypeModifier::sourceProperty, return_value_policy<copy_const_reference>()), &SelectParticleTypeModifier::setSourceProperty)
-	// Requires binding for QSet<int>
-		.add_property("selectedParticleTypes", make_function(&SelectParticleTypeModifier::selectedParticleTypes, return_value_policy<copy_const_reference>()), &SelectParticleTypeModifier::setSelectedParticleTypes)
+	ovito_class<SelectParticleTypeModifier, ParticleModifier>(
+			":Base: :py:class:`ovito.modifiers.Modifier`\n\n"
+			"Selects particles of a certain type (or multiple types)."
+			"\n\n"
+			"Example::"
+			"\n\n"
+			"   modifier = SelectParticleTypeModifier()\n"
+			"   modifier.property = \"Structure Type\"\n"
+			"   modifier.types = { CommonNeighborAnalysisModifier.Type.FCC,\n"
+			"                      CommonNeighborAnalysisModifier.Type.HCP }\n"
+			"\n")
+		.add_property("property", make_function(&SelectParticleTypeModifier::sourceProperty, return_value_policy<copy_const_reference>()), &SelectParticleTypeModifier::setSourceProperty,
+				"The input particle property the selection created by the modifier should be based on."
+				"\n\n"
+				":Default: ``\"Particle Type\"``\n")
+		.add_property("types", make_function(&SelectParticleTypeModifier::selectedParticleTypes, return_value_policy<copy_const_reference>()), &SelectParticleTypeModifier::setSelectedParticleTypes,
+				"A Python ``set`` of integers specifying the particle types to select. "
+				"\n\n"
+				":Default: ``set([])``\n")
 	;
 
-	ovito_class<SliceModifier, ParticleModifier>()
-		.add_property("distance", &SliceModifier::distance, &SliceModifier::setDistance)
+	ovito_class<SliceModifier, ParticleModifier>(
+			":Base: :py:class:`ovito.modifiers.Modifier`\n\n"
+			"Deletes or selects particles based on a plane in three-dimensional space.")
+		.add_property("distance", &SliceModifier::distance, &SliceModifier::setDistance,
+				"The distance of the slicing plane from the origin (along its normal vector)."
+				"\n\n"
+				":Default: 0.0\n")
 		.add_property("distanceController", make_function(&SliceModifier::distanceController, return_value_policy<ovito_object_reference>()), &SliceModifier::setDistanceController)
-		.add_property("normal", &SliceModifier::normal, &SliceModifier::setNormal)
+		.add_property("normal", &SliceModifier::normal, &SliceModifier::setNormal,
+				"The normal vector of the slicing plane. Does not have to be a unit vector."
+				"\n\n"
+				":Default: ``(1,0,0)``\n")
 		.add_property("normalController", make_function(&SliceModifier::normalController, return_value_policy<ovito_object_reference>()), &SliceModifier::setNormalController)
-		.add_property("sliceWidth", &SliceModifier::sliceWidth, &SliceModifier::setSliceWidth)
+		.add_property("slice_width", &SliceModifier::sliceWidth, &SliceModifier::setSliceWidth,
+				"The width of the slab to cut. If zero, the modifier cuts all particles on one "
+				"side of the slicing plane."
+				"\n\n"
+				":Default: 0.0\n")
 		.add_property("sliceWidthController", make_function(&SliceModifier::sliceWidthController, return_value_policy<ovito_object_reference>()), &SliceModifier::setSliceWidthController)
-		.add_property("inverse", &SliceModifier::inverse, &SliceModifier::setInverse)
-		.add_property("createSelection", &SliceModifier::createSelection, &SliceModifier::setCreateSelection)
-		.add_property("applyToSelection", &SliceModifier::applyToSelection, &SliceModifier::setApplyToSelection)
+		.add_property("inverse", &SliceModifier::inverse, &SliceModifier::setInverse,
+				"Reverses the sense of the slicing plane."
+				"\n\n"
+				":Default: ``False``\n")
+		.add_property("select", &SliceModifier::createSelection, &SliceModifier::setCreateSelection,
+				"If ``True``, the modifier selects particles instead of deleting them."
+				"\n\n"
+				":Default: ``False``\n")
+		.add_property("only_selected", &SliceModifier::applyToSelection, &SliceModifier::setApplyToSelection,
+				"If ``True``, the modifier acts only on selected particles; if ``False``, the modifier acts on all particles."
+				"\n\n"
+				":Default: ``False``\n")
 	;
 
-	ovito_class<AffineTransformationModifier, ParticleModifier>()
-		.add_property("transformation", make_function(&AffineTransformationModifier::transformation, return_value_policy<copy_const_reference>()), &AffineTransformationModifier::setTransformation)
-		.add_property("targetCell", make_function(&AffineTransformationModifier::targetCell, return_value_policy<copy_const_reference>()), &AffineTransformationModifier::setTargetCell)
-		.add_property("relativeMode", &AffineTransformationModifier::relativeMode, &AffineTransformationModifier::setRelativeMode)
-		.add_property("applyToParticles", &AffineTransformationModifier::applyToParticles, &AffineTransformationModifier::setApplyToParticles)
-		.add_property("selectionOnly", &AffineTransformationModifier::selectionOnly, &AffineTransformationModifier::selectionOnly)
-		.add_property("applyToSimulationBox", &AffineTransformationModifier::applyToSimulationBox, &AffineTransformationModifier::setApplyToSimulationBox)
-		.add_property("applyToSurfaceMesh", &AffineTransformationModifier::applyToSurfaceMesh, &AffineTransformationModifier::setApplyToSurfaceMesh)
+	ovito_class<AffineTransformationModifier, ParticleModifier>(
+			":Base: :py:class:`ovito.modifiers.Modifier`\n\n"
+			"Applies an affine transformation to particles and/or the simulation cell.")
+		.add_property("transformation", make_function(&AffineTransformationModifier::transformation, return_value_policy<copy_const_reference>()), &AffineTransformationModifier::setTransformation,
+				"The 3x4 transformation matrix being applied to particle positions and/or the simulation cell. "
+				"The first three matrix columns define the linear part of the transformation, while the fourth "
+				"column specifies the translation vector. "
+				"\n\n"
+				"This matrix describes a relative transformation and is used only if :py:attr:`.relative_mode` == ``True``."
+				"\n\n"
+				":Default: ``[[ 1.  0.  0.  0.] [ 0.  1.  0.  0.] [ 0.  0.  1.  0.]]``\n")
+		.add_property("target_cell", make_function(&AffineTransformationModifier::targetCell, return_value_policy<copy_const_reference>()), &AffineTransformationModifier::setTargetCell,
+				"This 3x4 matrix specifies the target cell shape. It is used when :py:attr:`.relative_mode` == ``False``. "
+				"\n\n"
+				"The first three columns of the matrix specify the three edge vectors of the target cell. "
+				"The fourth column defines the origin vector of the target cell.")
+		.add_property("relative_mode", &AffineTransformationModifier::relativeMode, &AffineTransformationModifier::setRelativeMode,
+				"Selects the operation mode of the modifier."
+				"\n\n"
+				"If ``relative_mode==True``, the modifier transforms the particles and/or the simulation cell "
+				"by applying the matrix given by the :py:attr:`.transformation` parameter."
+				"\n\n"
+				"If ``relative_mode==False``, the modifier transforms the particles and/or the simulation cell "
+				"such that the old simulation cell will have the shape given by the the :py:attr:`.target_cell` parameter after the transformation."
+				"\n\n"
+				":Default: ``True``\n")
+		.add_property("transform_particles", &AffineTransformationModifier::applyToParticles, &AffineTransformationModifier::setApplyToParticles,
+				"If ``True``, the modifier transforms the particle positions."
+				"\n\n"
+				":Default: ``True``\n")
+		.add_property("only_selected", &AffineTransformationModifier::selectionOnly, &AffineTransformationModifier::setSelectionOnly,
+				"If ``True``, the modifier acts only on selected particles; if ``False``, the modifier acts on all particles."
+				"\n\n"
+				":Default: ``False``\n")
+		.add_property("transform_box", &AffineTransformationModifier::applyToSimulationBox, &AffineTransformationModifier::setApplyToSimulationBox,
+				"If ``True``, the modifier transforms the simulation cell."
+				"\n\n"
+				":Default: ``False``\n")
+		.add_property("transform_surface", &AffineTransformationModifier::applyToSurfaceMesh, &AffineTransformationModifier::setApplyToSurfaceMesh,
+				"If ``True``, the modifier transforms the surface mesh (if any) that has previously been generated by a :py:class:`ConstructSurfaceModifier`."
+				"\n\n"
+				":Default: ``True``\n")
 	;
 
 	ovito_class<BinAndReduceModifier, ParticleModifier>()
@@ -296,14 +402,55 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 	;
 
 	ovito_abstract_class<StructureIdentificationModifier, AsynchronousParticleModifier>()
-		.add_property("structureCounts", make_function(&StructureIdentificationModifier::structureCounts, return_value_policy<copy_const_reference>()))
 	;
 
 	{
-		scope s = ovito_class<BondAngleAnalysisModifier, StructureIdentificationModifier>()
+		scope s = ovito_class<BondAngleAnalysisModifier, StructureIdentificationModifier>(
+				":Base: :py:class:`ovito.modifiers.Modifier`\n\n"
+				"Performs the bond-angle analysis described by Ackland & Jones to classify the local "
+				"structure of each particle. "
+				"\n\n"
+				"The modifier stores its results as integer values in the ``\"Structure Type\"`` particle property. "
+				"The following constants are defined: "
+				"\n\n"
+				"   * ``BondAngleAnalysisModifier.Type.OTHER`` (0)\n"
+				"   * ``BondAngleAnalysisModifier.Type.FCC`` (1)\n"
+				"   * ``BondAngleAnalysisModifier.Type.HCP`` (2)\n"
+				"   * ``BondAngleAnalysisModifier.Type.BCC`` (3)\n"
+				"   * ``BondAngleAnalysisModifier.Type.ICO`` (4)\n"
+				"\n"
+				"For example, to count the number of FCC atoms in a system::"
+				"\n\n"
+				"   modifier = BondAngleAnalysisModifier()\n"
+				"   node.modifiers.append(modifier)\n"
+				"   node.compute()\n"
+				"   print \"Number of FCC atoms:\", modifier.counts[BondAngleAnalysisModifier.Type.FCC]\n"
+				"\n"
+				"Furthermore, the modifier assigns a color to particles based on their structural types. "
+				"You can change the color of a structural type as shown in the following example::"
+				"\n\n"
+				"   modifier = BondAngleAnalysisModifier()\n"
+				"   node.modifiers.append(modifier)\n"
+				"   \n"
+				"   # Give FCC atoms a blue color:\n"
+				"   modifier.structures[BondAngleAnalysisModifier.Type.FCC].color = (0,0,1)\n"
+				"   \n"
+				"   # Select all disordered atoms:\n"
+				"   node.modifiers.append(SelectParticleTypeModifier(\n"
+				"       property = ParticleProperty.Type.StructureType,\n"
+				"       types = { BondAngleAnalysisModifier.Type.OTHER }\n"
+				"   ))\n"
+				"\n")
+			.add_property("structures", make_function(&BondAngleAnalysisModifier::structureTypes, return_internal_reference<>()),
+					"A list of :py:class:`~ovito.data.ParticleType` instances managed by this modifier, one for each structural type. "
+					"You can adjust the color of structural types here as shown in the code example above.")
+			.add_property("counts", make_function(&BondAngleAnalysisModifier::structureCounts, return_value_policy<copy_const_reference>()),
+					"A list of integers indicating the number of particles found for each structure type. "
+					"Note that accessing this output field is only possible after the modifier has computed its results. "
+					"Thus, you have to call :py:meth:`ovito.ObjectNode.compute` first to ensure that this information is up to date. ")
 		;
 
-		enum_<BondAngleAnalysisModifier::StructureType>("StructureTypes")
+		enum_<BondAngleAnalysisModifier::StructureType>("Type")
 			.value("OTHER", BondAngleAnalysisModifier::OTHER)
 			.value("FCC", BondAngleAnalysisModifier::FCC)
 			.value("HCP", BondAngleAnalysisModifier::HCP)
@@ -313,12 +460,62 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 	}
 
 	{
-		scope s = ovito_class<CommonNeighborAnalysisModifier, StructureIdentificationModifier>()
-			.add_property("cutoff", &CommonNeighborAnalysisModifier::cutoff, &CommonNeighborAnalysisModifier::setCutoff)
-			.add_property("adaptiveMode", &CommonNeighborAnalysisModifier::adaptiveMode, &CommonNeighborAnalysisModifier::setAdaptiveMode)
+		scope s = ovito_class<CommonNeighborAnalysisModifier, StructureIdentificationModifier>(
+				":Base: :py:class:`ovito.modifiers.Modifier`\n\n"
+				"Performs the common neighbor analysis (CNA) to classify the local "
+				"structure of each particle. "
+				"\n\n"
+				"The modifier stores its results as integer values in the ``\"Structure Type\"`` particle property. "
+				"The following constants are defined: "
+				"\n\n"
+				"   * ``CommonNeighborAnalysisModifier.Type.OTHER`` (0)\n"
+				"   * ``CommonNeighborAnalysisModifier.Type.FCC`` (1)\n"
+				"   * ``CommonNeighborAnalysisModifier.Type.HCP`` (2)\n"
+				"   * ``CommonNeighborAnalysisModifier.Type.BCC`` (3)\n"
+				"   * ``CommonNeighborAnalysisModifier.Type.ICO`` (4)\n"
+				"   * ``CommonNeighborAnalysisModifier.Type.DIA`` (5)\n"
+				"\n"
+				"For example, to count the number of FCC atoms in a system::"
+				"\n\n"
+				"   modifier = CommonNeighborAnalysisModifier(adaptive_mode = True)\n"
+				"   node.modifiers.append(modifier)\n"
+				"   node.compute()\n"
+				"   print \"Number of FCC atoms:\", modifier.counts[CommonNeighborAnalysisModifier.Type.FCC]\n"
+				"\n"
+				"Furthermore, the modifier assigns a color to particles based on their structural types. "
+				"You can change the color of a structural type as shown in the following example::"
+				"\n\n"
+				"   modifier = CommonNeighborAnalysisModifier()\n"
+				"   node.modifiers.append(modifier)\n"
+				"   \n"
+				"   # Give FCC atoms a blue color:\n"
+				"   modifier.structures[CommonNeighborAnalysisModifier.Type.FCC].color = (0,0,1)\n"
+				"   \n"
+				"   # Select all disordered atoms:\n"
+				"   node.modifiers.append(SelectParticleTypeModifier(\n"
+				"       property = ParticleProperty.Type.StructureType,\n"
+				"       types = { CommonNeighborAnalysisModifier.Type.OTHER }\n"
+				"   ))\n"
+				"\n")
+			.add_property("structures", make_function(&CommonNeighborAnalysisModifier::structureTypes, return_internal_reference<>()),
+					"A list of :py:class:`~ovito.data.ParticleType` instances managed by this modifier, one for each structural type. "
+					"You can adjust the color of structural types here as shown in the code example above.")
+			.add_property("counts", make_function(&CommonNeighborAnalysisModifier::structureCounts, return_value_policy<copy_const_reference>()),
+					"A list of integers indicating the number of particles found for each structure type. "
+					"Note that accessing this output field is only possible after the modifier has computed its results. "
+					"Thus, you have to call :py:meth:`ovito.ObjectNode.compute` first to ensure that this information is up to date. ")
+			.add_property("cutoff", &CommonNeighborAnalysisModifier::cutoff, &CommonNeighborAnalysisModifier::setCutoff,
+					"The cutoff radius used for the conventional common neighbor analysis (:py:attr:`.adaptive_mode` == ``False``)."
+					"\n\n"
+					":Default: 3.2\n")
+			.add_property("adaptive_mode", &CommonNeighborAnalysisModifier::adaptiveMode, &CommonNeighborAnalysisModifier::setAdaptiveMode,
+					"Activate the adaptive version of the common neighbor analysis, which automatically determine the optimal cutoff radius "
+					"for each atom. If ``False``, the conventional CNA is performed using a fixed neighbor cutoff radius."
+					"\n\n"
+					":Default: ``True``\n")
 		;
 
-		enum_<CommonNeighborAnalysisModifier::StructureType>("StructureTypes")
+		enum_<CommonNeighborAnalysisModifier::StructureType>("Type")
 			.value("OTHER", CommonNeighborAnalysisModifier::OTHER)
 			.value("FCC", CommonNeighborAnalysisModifier::FCC)
 			.value("HCP", CommonNeighborAnalysisModifier::HCP)
@@ -342,27 +539,92 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 		;
 	}
 
-	ovito_class<CentroSymmetryModifier, AsynchronousParticleModifier>()
-		.add_property("numNeighbors", &CentroSymmetryModifier::numNeighbors, &CentroSymmetryModifier::setNumNeighbors)
+	ovito_class<CentroSymmetryModifier, AsynchronousParticleModifier>(
+			":Base: :py:class:`ovito.modifiers.Modifier`\n\n"
+			"Computes the centro-symmetry parameter (CSP) of each particle."
+			"\n\n"
+			"The modifier outputs the computed values in the ``\"Centrosymmetry\"`` particle property.")
+		.add_property("num_neighbors", &CentroSymmetryModifier::numNeighbors, &CentroSymmetryModifier::setNumNeighbors,
+				"The number of neighbors to take into account (12 for FCC crystals, 8 for BCC crystals)."
+				"\n\n"
+				":Default: 12\n")
 	;
 
-	ovito_class<ClusterAnalysisModifier, AsynchronousParticleModifier>()
-		.add_property("cutoff", &ClusterAnalysisModifier::cutoff, &ClusterAnalysisModifier::setCutoff)
-		.add_property("clusterCount", &ClusterAnalysisModifier::clusterCount)
+	ovito_class<ClusterAnalysisModifier, AsynchronousParticleModifier>(
+			":Base: :py:class:`ovito.modifiers.Modifier`\n\n"
+			"Groups particles into clusters."
+			"\n\n"
+			"The modifier stores the assigned cluster IDs in the ``\"Cluster\"`` particle property.")
+		.add_property("cutoff", &ClusterAnalysisModifier::cutoff, &ClusterAnalysisModifier::setCutoff,
+				"The cutoff radius used when forming clusters."
+				"\n\n"
+				":Default: 3.2\n")
+		.add_property("count", &ClusterAnalysisModifier::clusterCount,
+				"This output field contains the number of clusters found. "
+				"Note that accessing this value is only possible after the modifier has computed its results. "
+				"Thus, you have to call :py:meth:`ovito.ObjectNode.compute` first to ensure that this information is up to date. ")
 	;
 
-	ovito_class<CoordinationNumberModifier, AsynchronousParticleModifier>()
-		.add_property("cutoff", &CoordinationNumberModifier::cutoff, &CoordinationNumberModifier::setCutoff)
+	ovito_class<CoordinationNumberModifier, AsynchronousParticleModifier>(
+			":Base: :py:class:`ovito.modifiers.Modifier`\n\n"
+			"Computes the coordination number of each particle."
+			"\n\n"
+			"The modifier stores the computed coordination numbers in the ``\"Coordination\"`` particle property.")
+		.add_property("cutoff", &CoordinationNumberModifier::cutoff, &CoordinationNumberModifier::setCutoff,
+				"The neighbor cutoff distance."
+				"\n\n"
+				":Default: 3.2\n")
 	;
 
-	ovito_class<CalculateDisplacementsModifier, ParticleModifier>()
-		.add_property("referenceConfiguration", make_function(&CalculateDisplacementsModifier::referenceConfiguration, return_value_policy<ovito_object_reference>()), &CalculateDisplacementsModifier::setReferenceConfiguration)
-		.add_property("eliminateCellDeformation", &CalculateDisplacementsModifier::eliminateCellDeformation, &CalculateDisplacementsModifier::setEliminateCellDeformation)
-		.add_property("assumeUnwrappedCoordinates", &CalculateDisplacementsModifier::assumeUnwrappedCoordinates, &CalculateDisplacementsModifier::setAssumeUnwrappedCoordinates)
-		.add_property("useReferenceFrameOffset", &CalculateDisplacementsModifier::useReferenceFrameOffset, &CalculateDisplacementsModifier::setUseReferenceFrameOffset)
-		.add_property("referenceFrameNumber", &CalculateDisplacementsModifier::referenceFrameNumber, &CalculateDisplacementsModifier::setReferenceFrameNumber)
-		.add_property("referenceFrameOffset", &CalculateDisplacementsModifier::referenceFrameOffset, &CalculateDisplacementsModifier::setReferenceFrameOffset)
-		.add_property("vectorDisplay", make_function(&CalculateDisplacementsModifier::vectorDisplay, return_value_policy<ovito_object_reference>()))
+	ovito_class<CalculateDisplacementsModifier, ParticleModifier>(
+			":Base: :py:class:`ovito.modifiers.Modifier`\n\n"
+			"Computes the displacement vectors of particles based on a separate reference configuration. "
+			"The modifier requires you to load a reference configuration from an external file::"
+			"\n\n"
+			"   modifier = CalculateDisplacementsModifier()\n"
+			"   modifier.reference.load(\"frame0000.dump\")\n"
+			"\n\n"
+			"The modifier stores the computed displacement vectors in the ``\"Displacement\"`` particle property. "
+			"The displacement magnitudes are stored in the ``\"Displacement Magnitude\"`` property. ")
+		.add_property("reference", make_function(&CalculateDisplacementsModifier::referenceConfiguration, return_value_policy<ovito_object_reference>()), &CalculateDisplacementsModifier::setReferenceConfiguration,
+				"A :py:class:`~ovito.io.FileSource` that provides the reference positions of particles. "
+				"You can call its :py:meth:`~ovito.io.FileSource.load` function to load a reference simulation file "
+				"as shown in the code example above.")
+		.add_property("eliminate_cell_deformation", &CalculateDisplacementsModifier::eliminateCellDeformation, &CalculateDisplacementsModifier::setEliminateCellDeformation,
+				"Boolean flag that controls the elimination of the affine cell deformation prior to calculating the "
+				"displacement vectors."
+				"\n\n"
+				":Default: ``False``\n")
+		.add_property("assume_unwrapped_coordinates", &CalculateDisplacementsModifier::assumeUnwrappedCoordinates, &CalculateDisplacementsModifier::setAssumeUnwrappedCoordinates,
+				"If ``True``, the particle coordinates of the reference and of the current configuration are taken as is. "
+				"If ``False``, the minimum image convention is used to deal with particles that have crossed a periodic boundary. "
+				"\n\n"
+				":Default: ``False``\n")
+		.add_property("reference_frame", &CalculateDisplacementsModifier::referenceFrameNumber, &CalculateDisplacementsModifier::setReferenceFrameNumber,
+				"The frame number to use as reference configuration if the reference data comprises multiple "
+				"simulation frames. Only used if ``use_frame_offset==False``."
+				"\n\n"
+				":Default: 0\n")
+		.add_property("use_frame_offset", &CalculateDisplacementsModifier::useReferenceFrameOffset, &CalculateDisplacementsModifier::setUseReferenceFrameOffset,
+				"Determines whether a sliding reference configuration is taken at a constant time offset (specified by :py:attr:`.frame_offset`) "
+				"relative to the current frame. If ``False``, a constant reference configuration is used (set by the :py:attr:`.reference_frame` parameter) "
+				"irrespective of the current frame."
+				"\n\n"
+				":Default: ``False``\n")
+		.add_property("frame_offset", &CalculateDisplacementsModifier::referenceFrameOffset, &CalculateDisplacementsModifier::setReferenceFrameOffset,
+				"The relative frame offset when using a sliding reference configuration (``use_frame_offset==True``)."
+				"\n\n"
+				":Default: -1\n")
+		.add_property("vector_display", make_function(&CalculateDisplacementsModifier::vectorDisplay, return_value_policy<ovito_object_reference>()),
+				"A :py:class:`~ovito.vis.VectorDisplay` instance controlling the visual representation of the computed "
+				"displacement vectors. \n"
+				"Note that the computed displacement vectors are not shown by default. You can enable "
+				"the arrow display as follows::"
+				"\n\n"
+				"   modifier = CalculateDisplacementsModifier()\n"
+				"   modifier.vector_display.enabled = True\n"
+				"   modifier.vector_display.color = (0,0,0)\n"
+				"\n")
 	;
 
 	ovito_class<HistogramModifier, ParticleModifier>()
@@ -375,19 +637,72 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 		.add_property("yAxisProperty", make_function(&ScatterPlotModifier::yAxisProperty, return_value_policy<copy_const_reference>()), &ScatterPlotModifier::setYAxisProperty)
 	;
 
-	ovito_class<AtomicStrainModifier, AsynchronousParticleModifier>()
-		.add_property("referenceConfiguration", make_function(&AtomicStrainModifier::referenceConfiguration, return_value_policy<ovito_object_reference>()), &AtomicStrainModifier::setReferenceConfiguration)
-		.add_property("eliminateCellDeformation", &AtomicStrainModifier::eliminateCellDeformation, &AtomicStrainModifier::setEliminateCellDeformation)
-		.add_property("assumeUnwrappedCoordinates", &AtomicStrainModifier::assumeUnwrappedCoordinates, &AtomicStrainModifier::setAssumeUnwrappedCoordinates)
-		.add_property("useReferenceFrameOffset", &AtomicStrainModifier::useReferenceFrameOffset, &AtomicStrainModifier::setUseReferenceFrameOffset)
-		.add_property("referenceFrameNumber", &AtomicStrainModifier::referenceFrameNumber, &AtomicStrainModifier::setReferenceFrameNumber)
-		.add_property("referenceFrameOffset", &AtomicStrainModifier::referenceFrameOffset, &AtomicStrainModifier::setReferenceFrameOffset)
-		.add_property("cutoff", &AtomicStrainModifier::cutoff, &AtomicStrainModifier::setCutoff)
-		.add_property("calculateDeformationGradients", &AtomicStrainModifier::calculateDeformationGradients, &AtomicStrainModifier::setCalculateDeformationGradients)
-		.add_property("calculateStrainTensors", &AtomicStrainModifier::calculateStrainTensors, &AtomicStrainModifier::setCalculateStrainTensors)
-		.add_property("calculateNonaffineSquaredDisplacements", &AtomicStrainModifier::calculateNonaffineSquaredDisplacements, &AtomicStrainModifier::setCalculateNonaffineSquaredDisplacements)
-		.add_property("selectInvalidParticles", &AtomicStrainModifier::selectInvalidParticles, &AtomicStrainModifier::setSelectInvalidParticles)
-		.add_property("invalidParticleCount", &AtomicStrainModifier::invalidParticleCount)
+	ovito_class<AtomicStrainModifier, AsynchronousParticleModifier>(
+			":Base: :py:class:`ovito.modifiers.Modifier`\n\n"
+			"Computes the atomic strain tensors of particles based on a separate reference configuration. "
+			"The modifier requires you to load a reference configuration from an external file::"
+			"\n\n"
+			"   modifier = AtomicStrainModifier()\n"
+			"   modifier.reference.load(\"frame0000.dump\")\n"
+			"\n\n"
+			"The modifier stores the computed per-particle strain tensors in the ``\"Strain Tensor\"`` particle property (only if :py:attr:`.output_strain_tensors` == True). "
+			"The computed deformation gradient tensors are output in the  ``\"Deformation Gradient\"`` particle property (only if :py:attr:`.output_deformation_gradients` == True). "
+			"The von Mises shear strain invariants are stored in the ``\"Shear Strain\"`` property. "
+			"The hydrostatic component of the strain tensors gets stored in the ``\"Volumetric Strain\"`` property. ")
+		.add_property("reference", make_function(&AtomicStrainModifier::referenceConfiguration, return_value_policy<ovito_object_reference>()), &AtomicStrainModifier::setReferenceConfiguration,
+				"A :py:class:`~ovito.io.FileSource` that provides the reference positions of particles. "
+				"You can call its :py:meth:`~ovito.io.FileSource.load` function to load a reference simulation file "
+				"as shown in the code example above.")
+		.add_property("eliminate_cell_deformation", &AtomicStrainModifier::eliminateCellDeformation, &AtomicStrainModifier::setEliminateCellDeformation,
+				"Boolean flag that controls the elimination of the affine cell deformation prior to calculating the "
+				"local strain."
+				"\n\n"
+				":Default: ``False``\n")
+		.add_property("assume_unwrapped_coordinates", &AtomicStrainModifier::assumeUnwrappedCoordinates, &AtomicStrainModifier::setAssumeUnwrappedCoordinates,
+				"If ``True``, the particle coordinates of the reference and of the current configuration are taken as is. "
+				"If ``False``, the minimum image convention is used to deal with particles that have crossed a periodic boundary. "
+				"\n\n"
+				":Default: ``False``\n")
+		.add_property("use_frame_offset", &AtomicStrainModifier::useReferenceFrameOffset, &AtomicStrainModifier::setUseReferenceFrameOffset,
+				"Determines whether a sliding reference configuration is taken at a constant time offset (specified by :py:attr:`.frame_offset`) "
+				"relative to the current frame. If ``False``, a constant reference configuration is used (set by the :py:attr:`.reference_frame` parameter) "
+				"irrespective of the current frame."
+				"\n\n"
+				":Default: ``False``\n")
+		.add_property("reference_frame", &AtomicStrainModifier::referenceFrameNumber, &AtomicStrainModifier::setReferenceFrameNumber,
+				"The frame number to use as reference configuration if the reference data comprises multiple "
+				"simulation frames. Only used if ``use_frame_offset==False``."
+				"\n\n"
+				":Default: 0\n")
+		.add_property("frame_offset", &AtomicStrainModifier::referenceFrameOffset, &AtomicStrainModifier::setReferenceFrameOffset,
+				"The relative frame offset when using a sliding reference configuration (``use_frame_offset==True``)."
+				"\n\n"
+				":Default: -1\n")
+		.add_property("cutoff", &AtomicStrainModifier::cutoff, &AtomicStrainModifier::setCutoff,
+				"Sets the distance up to which neighbor atoms are taken into account in the local strain calculation."
+				"\n\n"
+				":Default: 3.0\n")
+		.add_property("output_deformation_gradients", &AtomicStrainModifier::calculateDeformationGradients, &AtomicStrainModifier::setCalculateDeformationGradients,
+				"Controls the output of the per-particle deformation gradient tensors. If ``False``, the computed tensors are not output as a particle property to save memory."
+				"\n\n"
+				":Default: ``False``\n")
+		.add_property("output_strain_tensors", &AtomicStrainModifier::calculateStrainTensors, &AtomicStrainModifier::setCalculateStrainTensors,
+				"Controls the output of the per-particle strain tensors tensors. If ``False``, the computed strain tensors are not output as a particle property to save memory."
+				"\n\n"
+				":Default: ``False``\n")
+		.add_property("output_nonaffine_squared_displacements", &AtomicStrainModifier::calculateNonaffineSquaredDisplacements, &AtomicStrainModifier::setCalculateNonaffineSquaredDisplacements,
+				"Enables the computation of the squared magnitude of the non-affine part of the atomic displacements. The computed values are output in the ``\"Nonaffine Squared Displacement\"`` particle property."
+				"\n\n"
+				":Default: ``False``\n")
+		.add_property("select_invalid_particles", &AtomicStrainModifier::selectInvalidParticles, &AtomicStrainModifier::setSelectInvalidParticles,
+				"If ``True``, the modifier selects all particle for which the local strain tensor could not be computed (because of an insufficient number of neighbors within the cutoff)."
+				"\n\n"
+				":Default: ``True``\n")
+		.add_property("invalid_particle_count", &AtomicStrainModifier::invalidParticleCount,
+				"After the modifier has computed the atomic strain tensors this field contains the number of particles "
+				"for which the strain calculation failed. "
+				"Note that accessing this value is only possible after the modifier has computed its results. "
+				"Thus, you have to call :py:meth:`ovito.ObjectNode.compute` first to ensure that this information is up to date. ")
 	;
 
 	ovito_class<WignerSeitzAnalysisModifier, AsynchronousParticleModifier>()

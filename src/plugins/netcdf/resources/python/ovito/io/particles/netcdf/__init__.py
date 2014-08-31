@@ -1,6 +1,8 @@
-# Load dependencies first.
-import ovito
+# Load dependencies
 import ovito.io.particles
 
 # Load the native code module
-from NetCDFImporter import *
+import NetCDFImporter
+
+# Inject selected classes into parent module.
+ovito.io.particles.NetCDFImporter = NetCDFImporter.NetCDFImporter

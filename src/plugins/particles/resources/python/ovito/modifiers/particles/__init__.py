@@ -1,7 +1,7 @@
-# Load dependencies first.
-import ovito
+# Load dependencies
+import ovito.modifiers
 
-# Load the native code modules
+# Load the native code modules.
 import Particles
 import ParticlesModify
 
@@ -9,10 +9,10 @@ import ParticlesModify
 ovito.modifiers.ColorCodingModifier = ParticlesModify.ColorCodingModifier
 ovito.modifiers.AssignColorModifier = ParticlesModify.AssignColorModifier
 ovito.modifiers.AmbientOcclusionModifier = ParticlesModify.AmbientOcclusionModifier
-ovito.modifiers.DeleteParticlesModifier = ParticlesModify.DeleteParticlesModifier
+ovito.modifiers.DeleteSelectedParticlesModifier = ParticlesModify.DeleteSelectedParticlesModifier
 ovito.modifiers.ShowPeriodicImagesModifier = ParticlesModify.ShowPeriodicImagesModifier
 ovito.modifiers.WrapPeriodicImagesModifier = ParticlesModify.WrapPeriodicImagesModifier
-ovito.modifiers.CreateExpressionPropertyModifier = ParticlesModify.CreateExpressionPropertyModifier
+ovito.modifiers.ComputePropertyModifier = ParticlesModify.ComputePropertyModifier
 ovito.modifiers.FreezePropertyModifier = ParticlesModify.FreezePropertyModifier
 ovito.modifiers.ClearSelectionModifier = ParticlesModify.ClearSelectionModifier
 ovito.modifiers.InvertSelectionModifier = ParticlesModify.InvertSelectionModifier
@@ -25,6 +25,7 @@ ovito.modifiers.AffineTransformationModifier = ParticlesModify.AffineTransformat
 ovito.modifiers.BinAndReduceModifier = ParticlesModify.BinAndReduceModifier
 ovito.modifiers.StructureIdentificationModifier = ParticlesModify.StructureIdentificationModifier
 ovito.modifiers.CommonNeighborAnalysisModifier = ParticlesModify.CommonNeighborAnalysisModifier
+ovito.modifiers.BondAngleAnalysisModifier = ParticlesModify.BondAngleAnalysisModifier
 ovito.modifiers.CreateBondsModifier = ParticlesModify.CreateBondsModifier
 ovito.modifiers.CentroSymmetryModifier = ParticlesModify.CentroSymmetryModifier
 ovito.modifiers.ClusterAnalysisModifier = ParticlesModify.ClusterAnalysisModifier

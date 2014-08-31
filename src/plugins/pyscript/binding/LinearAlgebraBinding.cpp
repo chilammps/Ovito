@@ -27,7 +27,7 @@ namespace PyScript {
 using namespace boost::python;
 using namespace Ovito;
 
-// Automatic Python to Vector3/Point3/Color conversion.
+// Automatic Python to Vector3/Point3/Color.
 template<typename T>
 struct python_to_vector_conversion
 {
@@ -49,7 +49,7 @@ struct python_to_vector_conversion
 			throw_error_already_set();
 		}
 		for(size_t i = 0; i < v.size(); i++) {
-			extract<FloatType> ex(t[i]);
+			extract<typename T::value_type> ex(t[i]);
 			if(!ex.check()) {
 				PyErr_Format(PyExc_TypeError, "Conversion to %s works only for tuples containing numbers.", boost::python::type_id<T>().name());
 				throw_error_already_set();
@@ -61,6 +61,22 @@ struct python_to_vector_conversion
 		data->convertible = storage;
 	}
 };
+
+template<typename T>
+dict Matrix__array_interface__(T& m)
+{
+	dict ai;
+	ai["shape"] = boost::python::make_tuple(m.row_count(), m.col_count());
+	ai["strides"] = boost::python::make_tuple(sizeof(typename T::value_type), sizeof(typename T::value_type) * m.row_count());
+#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
+	ai["typestr"] = str("<f") + str(sizeof(typename T::value_type));
+#else
+	ai["typestr"] = str(">f") + str(sizeof(typename T::value_type));
+#endif
+	ai["data"] = boost::python::make_tuple((std::intptr_t)m.data(), false);
+	ai["version"] = 3;
+	return ai;
+}
 
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(Vector_normalizeSafely_overloads, normalizeSafely, 0, 1);
 
@@ -364,6 +380,7 @@ BOOST_PYTHON_MODULE(PyScriptLinearAlgebra)
 		.staticmethod("rotation")
 		.def("scaling", &Matrix3::scaling)
 		.staticmethod("scaling")
+		.add_property("__array_interface__", &Matrix__array_interface__<Matrix3>)
 	;
 
 	class_<AffineTransformation>("AffineTransformation", init<FloatType,FloatType,FloatType,FloatType,FloatType,FloatType,FloatType,FloatType,FloatType,FloatType,FloatType,FloatType>())
@@ -407,6 +424,7 @@ BOOST_PYTHON_MODULE(PyScriptLinearAlgebra)
 		.staticmethod("rotation")
 		.def("scaling", (AffineTransformation (*)(const Scaling&))&AffineTransformation::scaling)
 		.staticmethod("scaling")
+		.add_property("__array_interface__", &Matrix__array_interface__<AffineTransformation>)
 	;
 }
 

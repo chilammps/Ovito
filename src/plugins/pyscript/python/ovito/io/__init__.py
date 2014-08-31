@@ -10,8 +10,8 @@ In addition, it contains the :py:class:`FileSource` class, which is a data sourc
 that reads its input data from an external file.
 """
 
-import ovito
-import ovito.scene
+import ovito.data
+import PyScriptScene
 
 # Load the native module.
 from PyScriptFileIO import *
@@ -28,12 +28,12 @@ def import_file(location, mode = "AddToScene", **params):
         :param str location: The file to import. This can be a local file path or a remote sftp:// URL.
         :param str mode: Determines how the imported data is inserted into the current scene. 
                            
-                           * ``AddToScene`` (default): A new :py:class:`~ovito.scene.ObjectNode` is created and added to the scene.
+                           * ``AddToScene`` (default): A new :py:class:`~ovito.ObjectNode` is created and added to the scene.
                            * ``ReplaceSelected``: The source object of the currently selected node is updated to reference the new file. 
                              Existing modifiers are kept. 
                            * ``ResetScene``: All existing nodes are deleted from the scene before importing the data.
                        
-        :returns: The :py:class:`~ovito.scene.ObjectNode` that has been created for the imported data.
+        :returns: The :py:class:`~ovito.ObjectNode` that has been created for the imported data.
                   
         **File columns**
         
@@ -78,7 +78,7 @@ def import_file(location, mode = "AddToScene", **params):
 
     # Get the newly created ObjectNode.
     node = ovito.dataset.selected_node
-    if not isinstance(node, ovito.scene.ObjectNode):
+    if not isinstance(node, ovito.ObjectNode):
         raise RuntimeError("File import failed. Nothing was imported.")
     
     # Block execution until file is loaded.
@@ -118,15 +118,33 @@ def _FileSource_load(self, location, **params):
     if not self.setSource(location, importer, True):
         raise RuntimeError("Operation has been canceled by the user.")
     
-    # Block execution until data has been laoded. 
+    # Block execution until data has been loaded. 
     if not self.waitUntilReady(self.dataset.anim.time, "Script is waiting for I/O operation to finish."):
         raise RuntimeError("Operation has been canceled by the user.")
     
     # Raise Python error if loading failed.
-    if self.status.type == PipelineStatusType.Error:
+    if self.status.type == PyScriptScene.PipelineStatus.Type.Error:
         raise RuntimeError(self.status.text)
     
 FileSource.load = _FileSource_load
+
+def _FileSource_data(self):
+    """ A :py:class:`~ovito.data.DataCollection` containing the input data that was read from the external file. """
+
+    # Block execution until data has been fully loaded. 
+    if not self.waitUntilReady(self.dataset.anim.time, "Script is waiting for I/O operation to finish."):
+        raise RuntimeError("Operation has been canceled by the user.")
+    
+    # Get data objects.
+    data = self.evaluate(self.dataset.anim.time)
+    
+    # Raise Python error if loading failed.
+    if data.status.type == PyScriptScene.PipelineStatus.Type.Error:
+        raise RuntimeError(data.status.text)
+    
+    return data
+    
+FileSource.data = property(_FileSource_data)
 
 # Implement the 'sourceUrl' property of FileSource, which returns or sets the currently loaded file path.
 def _get_FileSource_source_path(self, _originalGetterMethod = FileSource.source_path):

@@ -1,8 +1,8 @@
 ==================================
-``ovito.view``
+``ovito.vis``
 ==================================
 
-.. automodule:: ovito.view
+.. automodule:: ovito.vis
    :members:
    :imported-members:
 

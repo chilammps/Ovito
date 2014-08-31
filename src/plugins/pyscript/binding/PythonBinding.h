@@ -26,6 +26,7 @@
 #include <plugins/pyscript/engine/ScriptEngine.h>
 
 #include <boost/python/raw_function.hpp>
+#include <boost/python/stl_iterator.hpp>
 
 namespace PyScript {
 
@@ -56,12 +57,13 @@ struct OVITO_PYSCRIPT_EXPORT PythonPluginRegistration
 #define OVITO_REGISTER_PLUGIN_PYTHON_INTERFACE(pluginName) \
 	static PyScript::PythonPluginRegistration __pyscript_unused_variable##pluginName(#pluginName, init##pluginName);
 
-// A model of the Boost.Python concept ResultConverterGenerator which wraps
+// A model of the Boost.Python ResultConverterGenerator concept which wraps
 // a raw pointer to an OvitoObject derived class in a OORef<> smart pointer.
 struct ovito_object_reference
 {
 	struct make_ooref_holder {
-		template <class T> static PyObject* execute(T* p) {
+		template <class T>
+		static PyObject* execute(T* p) {
 			typedef objects::pointer_holder<OORef<T>, T> holder_t;
 			OORef<T> ptr(const_cast<T*>(p));
 			return objects::make_ptr_instance<T, holder_t>::execute(ptr);
@@ -290,7 +292,7 @@ public:
 	}
 };
 
-// Automatic Python list to container conversion.
+// Automatic Python sequence to C++ container conversion.
 template<typename Container>
 struct python_to_container_conversion
 {
@@ -300,21 +302,47 @@ struct python_to_container_conversion
 
 	static void* convertible(PyObject* obj_ptr) {
 		// Check if Python object can be converted to target type.
-		if(PyList_Check(obj_ptr)) return obj_ptr;
+		if(PyObject_HasAttrString(obj_ptr, "__iter__")) return obj_ptr;
 		return nullptr;
 	}
 
 	static void construct(PyObject* obj_ptr, converter::rvalue_from_python_stage1_data* data) {
-		list list_ = extract<list>(obj_ptr);
-		Container temp(len(list_));
-		for(typename Container::size_type i = 0; i < temp.size(); i++)
-			temp[i] = extract<typename Container::value_type>(list_[i]);
+		stl_input_iterator<typename Container::value_type> begin(object(handle<>(borrowed(obj_ptr))));
+		stl_input_iterator<typename Container::value_type> end;
 		void* storage = ((converter::rvalue_from_python_storage<Container>*)data)->storage.bytes;
-		new (storage) Container(temp);
+		new (storage) Container();
 		data->convertible = storage;
+		Container& c = *reinterpret_cast<Container*>(storage);
+		for(; begin != end; ++begin)
+			c.push_back(*begin);
 	}
 };
 
+// Automatic Python sequence to C++ set container conversion.
+template<typename Container>
+struct python_to_set_conversion
+{
+	python_to_set_conversion() {
+		converter::registry::push_back(&convertible, &construct, type_id<Container>());
+	}
+
+	static void* convertible(PyObject* obj_ptr) {
+		// Check if Python object can be converted to target type.
+		if(PyObject_HasAttrString(obj_ptr, "__iter__")) return obj_ptr;
+		return nullptr;
+	}
+
+	static void construct(PyObject* obj_ptr, converter::rvalue_from_python_stage1_data* data) {
+		stl_input_iterator<typename Container::value_type> begin(object(handle<>(borrowed(obj_ptr))));
+		stl_input_iterator<typename Container::value_type> end;
+		void* storage = ((converter::rvalue_from_python_storage<Container>*)data)->storage.bytes;
+		new (storage) Container();
+		data->convertible = storage;
+		Container& c = *reinterpret_cast<Container*>(storage);
+		for(; begin != end; ++begin)
+			c.insert(*begin);
+	}
+};
 
 };	// End of namespace
 

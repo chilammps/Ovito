@@ -74,6 +74,23 @@ BOOST_PYTHON_MODULE(PyScriptContainers)
 	class_<QList<int>>("QListInt")
 		.def(array_indexing_suite<QList<int>>())
 	;
+
+	class_<QStringList>("QStringList")
+		.def(array_indexing_suite<QStringList>())
+	;
+	python_to_container_conversion<QStringList>();
+
+	struct QSetInt_to_python {
+		static PyObject* convert(const QSet<int>& s) {
+			object pyset(handle<>(PySet_New(NULL)));
+			for(int v : s) {
+				PySet_Add(pyset.ptr(), object(v).ptr());
+			}
+			return incref(pyset.ptr());
+		}
+	};
+	to_python_converter<QSet<int>, QSetInt_to_python>();
+	python_to_set_conversion<QSet<int>>();
 }
 
 OVITO_REGISTER_PLUGIN_PYTHON_INTERFACE(PyScriptContainers);
