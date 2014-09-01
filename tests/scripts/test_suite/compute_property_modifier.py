@@ -7,7 +7,13 @@ import numpy
 node = ovito.io.import_file("../../files/shear.void.120.cfg")
 modifier = ovito.modifiers.ComputePropertyModifier()
 assert(len(modifier.expressions) == 1)
+
+print modifier.expressions
+print modifier.only_selected
+print modifier.output_property
+
 modifier.expressions = ["Position.X * 2.0", "Position.Y / 2"]
+
 print "Expressions:", list(modifier.expressions)
 node.modifiers.append(modifier)
 

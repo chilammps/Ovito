@@ -70,8 +70,8 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 	;
 
 	ovito_abstract_class<AsynchronousParticleModifier, ParticleModifier>()
-		.add_property("autoUpdateEnabled", &AsynchronousParticleModifier::autoUpdateEnabled, &AsynchronousParticleModifier::setAutoUpdateEnabled)
-		.add_property("storeResultsWithScene", &AsynchronousParticleModifier::storeResultsWithScene, &AsynchronousParticleModifier::setStoreResultsWithScene)
+		.add_property("auto_update", &AsynchronousParticleModifier::autoUpdateEnabled, &AsynchronousParticleModifier::setAutoUpdateEnabled)
+		.add_property("store_results", &AsynchronousParticleModifier::storeResultsWithScene, &AsynchronousParticleModifier::setStoreResultsWithScene)
 	;
 
 	ovito_class<AssignColorModifier, ParticleModifier>(
@@ -243,9 +243,9 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 	;
 
 	ovito_class<FreezePropertyModifier, ParticleModifier>()
-		.add_property("sourceProperty", make_function(&FreezePropertyModifier::sourceProperty, return_value_policy<copy_const_reference>()), &FreezePropertyModifier::setSourceProperty)
-		.add_property("destinationProperty", make_function(&FreezePropertyModifier::destinationProperty, return_value_policy<copy_const_reference>()), &FreezePropertyModifier::setDestinationProperty)
-		.def("takePropertySnapshot", &FreezePropertyModifier::takePropertySnapshot)
+		.add_property("source_property", make_function(&FreezePropertyModifier::sourceProperty, return_value_policy<copy_const_reference>()), &FreezePropertyModifier::setSourceProperty)
+		.add_property("destination_property", make_function(&FreezePropertyModifier::destinationProperty, return_value_policy<copy_const_reference>()), &FreezePropertyModifier::setDestinationProperty)
+		.def("take_snapshot", &FreezePropertyModifier::takePropertySnapshot)
 	;
 
 	ovito_class<ClearSelectionModifier, ParticleModifier>(
@@ -260,7 +260,7 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 	;
 
 	ovito_class<FreezeSelectionModifier, ParticleModifier>()
-		.def("takeSelectionSnapshot", &FreezeSelectionModifier::takeSelectionSnapshot)
+		.def("take_snapshot", &FreezeSelectionModifier::takeSelectionSnapshot)
 	;
 
 	ovito_class<ManualSelectionModifier, ParticleModifier>()
@@ -333,7 +333,18 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 
 	ovito_class<AffineTransformationModifier, ParticleModifier>(
 			":Base: :py:class:`ovito.modifiers.Modifier`\n\n"
-			"Applies an affine transformation to particles and/or the simulation cell.")
+			"Applies an affine transformation to particles and/or the simulation cell."
+			"\n\n"
+			"Example::"
+			"\n\n"
+			"   xy_shear = 0.05\n"
+			"   mod = AffineTransformationModifier(\n"
+			"             transform_particles = True,\n"
+			"             transform_box = True,\n"
+			"             transformation = [[1,xy_shear,0,0],\n"
+			"                               [0,       1,0,0],\n"
+			"                               [0,       0,1,0]])\n"
+			"\n")
 		.add_property("transformation", make_function(&AffineTransformationModifier::transformation, return_value_policy<copy_const_reference>()), &AffineTransformationModifier::setTransformation,
 				"The 3x4 transformation matrix being applied to particle positions and/or the simulation cell. "
 				"The first three matrix columns define the linear part of the transformation, while the fourth "
@@ -376,7 +387,7 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 	;
 
 	ovito_class<BinAndReduceModifier, ParticleModifier>()
-		.add_property("sourceProperty", make_function(&BinAndReduceModifier::sourceProperty, return_value_policy<copy_const_reference>()), &BinAndReduceModifier::setSourceProperty)
+		.add_property("property", make_function(&BinAndReduceModifier::sourceProperty, return_value_policy<copy_const_reference>()), &BinAndReduceModifier::setSourceProperty)
 		.add_property("reductionOperation", &BinAndReduceModifier::reductionOperation, &BinAndReduceModifier::setReductionOperation)
 		.add_property("firstDerivative", &BinAndReduceModifier::firstDerivative, &BinAndReduceModifier::setFirstDerivative)
 		.add_property("binDirection", &BinAndReduceModifier::binDirection, &BinAndReduceModifier::setBinDirection)
@@ -527,9 +538,9 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 
 	{
 		scope s = ovito_class<CreateBondsModifier, AsynchronousParticleModifier>()
-			.add_property("cutoffMode", &CreateBondsModifier::cutoffMode, &CreateBondsModifier::setCutoffMode)
-			.add_property("uniformCutoff", &CreateBondsModifier::uniformCutoff, &CreateBondsModifier::setUniformCutoff)
-			.add_property("bondsDisplay", make_function(&CreateBondsModifier::bondsDisplay, return_value_policy<ovito_object_reference>()))
+			.add_property("mode", &CreateBondsModifier::cutoffMode, &CreateBondsModifier::setCutoffMode)
+			.add_property("cutoff", &CreateBondsModifier::uniformCutoff, &CreateBondsModifier::setUniformCutoff)
+			.add_property("bonds_display", make_function(&CreateBondsModifier::bondsDisplay, return_value_policy<ovito_object_reference>()))
 			.add_property("bondsObject", make_function(&CreateBondsModifier::bondsObject, return_value_policy<ovito_object_reference>()))
 		;
 
@@ -628,8 +639,8 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 	;
 
 	ovito_class<HistogramModifier, ParticleModifier>()
-		.add_property("sourceProperty", make_function(&HistogramModifier::sourceProperty, return_value_policy<copy_const_reference>()), &HistogramModifier::setSourceProperty)
-		.add_property("numberOfBins", &HistogramModifier::numberOfBins, &HistogramModifier::setNumberOfBins)
+		.add_property("property", make_function(&HistogramModifier::sourceProperty, return_value_policy<copy_const_reference>()), &HistogramModifier::setSourceProperty)
+		.add_property("num_bins", &HistogramModifier::numberOfBins, &HistogramModifier::setNumberOfBins)
 	;
 
 	ovito_class<ScatterPlotModifier, ParticleModifier>()
@@ -706,13 +717,13 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 	;
 
 	ovito_class<WignerSeitzAnalysisModifier, AsynchronousParticleModifier>()
-		.add_property("referenceConfiguration", make_function(&WignerSeitzAnalysisModifier::referenceConfiguration, return_value_policy<ovito_object_reference>()), &WignerSeitzAnalysisModifier::setReferenceConfiguration)
-		.add_property("eliminateCellDeformation", &WignerSeitzAnalysisModifier::eliminateCellDeformation, &WignerSeitzAnalysisModifier::setEliminateCellDeformation)
-		.add_property("useReferenceFrameOffset", &WignerSeitzAnalysisModifier::useReferenceFrameOffset, &WignerSeitzAnalysisModifier::setUseReferenceFrameOffset)
-		.add_property("referenceFrameNumber", &WignerSeitzAnalysisModifier::referenceFrameNumber, &WignerSeitzAnalysisModifier::setReferenceFrameNumber)
-		.add_property("referenceFrameOffset", &WignerSeitzAnalysisModifier::referenceFrameOffset, &WignerSeitzAnalysisModifier::setReferenceFrameOffset)
-		.add_property("vacancyCount", &WignerSeitzAnalysisModifier::vacancyCount)
-		.add_property("interstitialCount", &WignerSeitzAnalysisModifier::interstitialCount)
+		.add_property("reference", make_function(&WignerSeitzAnalysisModifier::referenceConfiguration, return_value_policy<ovito_object_reference>()), &WignerSeitzAnalysisModifier::setReferenceConfiguration)
+		.add_property("eliminate_cell_deformation", &WignerSeitzAnalysisModifier::eliminateCellDeformation, &WignerSeitzAnalysisModifier::setEliminateCellDeformation)
+		.add_property("use_frame_offset", &WignerSeitzAnalysisModifier::useReferenceFrameOffset, &WignerSeitzAnalysisModifier::setUseReferenceFrameOffset)
+		.add_property("reference_frame", &WignerSeitzAnalysisModifier::referenceFrameNumber, &WignerSeitzAnalysisModifier::setReferenceFrameNumber)
+		.add_property("frame_offset", &WignerSeitzAnalysisModifier::referenceFrameOffset, &WignerSeitzAnalysisModifier::setReferenceFrameOffset)
+		.add_property("vacancy_count", &WignerSeitzAnalysisModifier::vacancyCount)
+		.add_property("interstitial_count", &WignerSeitzAnalysisModifier::interstitialCount)
 	;
 }
 

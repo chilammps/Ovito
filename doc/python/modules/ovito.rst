@@ -14,5 +14,5 @@
 
    .. py:data:: version
       
-      This module-level attribute contains the program version of OVITO as a 3-tuple.
+      This module-level attribute returning the program version of OVITO as a 3-tuple.
       

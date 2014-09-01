@@ -23,6 +23,7 @@
 #include <core/gui/properties/BooleanParameterUI.h>
 #include <core/gui/properties/IntegerParameterUI.h>
 #include <core/gui/properties/FloatParameterUI.h>
+#include <core/gui/app/Application.h>
 #include <plugins/particles/data/ParticleDisplay.h>
 #include "AmbientOcclusionModifier.h"
 #include "AmbientOcclusionRenderer.h"
@@ -61,6 +62,9 @@ std::shared_ptr<AsynchronousParticleModifier::Engine> AmbientOcclusionModifier::
 {
 	if(inputParticleCount() == 0)
 		throw Exception(tr("There are no input particles"));
+
+	if(Application::instance().headlessMode())
+		throw Exception(tr("Ambient occlusion modifier cannot be used in headless mode because of missing OpenGL support."));
 
 	// Get modifier input.
 	ParticlePropertyObject* posProperty = expectStandardProperty(ParticleProperty::PositionProperty);

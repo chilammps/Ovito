@@ -36,7 +36,8 @@ BOOST_PYTHON_MODULE(PyScript)
 	scope().attr("version") = make_tuple(OVITO_VERSION_MAJOR, OVITO_VERSION_MINOR, OVITO_VERSION_REVISION);
 
 	// Make environment information available
-	scope().attr("guiMode") = Application::instance().guiMode();
+	scope().attr("gui_mode") = Application::instance().guiMode();
+	scope().attr("headless_mode") = Application::instance().headlessMode();
 }
 
 OVITO_REGISTER_PLUGIN_PYTHON_INTERFACE(PyScript);

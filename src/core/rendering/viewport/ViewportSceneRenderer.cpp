@@ -94,6 +94,11 @@ void ViewportSceneRenderer::beginFrame(TimePoint time, const ViewProjectionParam
 	OVITO_CHECK_OPENGL();
 	_glFunctions = _glcontext->functions();
 
+	// Obtain a functions object that allows to call OpenGL 1.4 functions in a platform-independent way.
+	_glFunctions14 = _glcontext->versionFunctions<QOpenGLFunctions_1_4>();
+	if(!_glFunctions14 || !_glFunctions14->initializeOpenGLFunctions())
+		_glFunctions14 = nullptr;
+
 	// Obtain a functions object that allows to call OpenGL 2.0 functions in a platform-independent way.
 	_glFunctions20 = _glcontext->versionFunctions<QOpenGLFunctions_2_0>();
 	if(!_glFunctions20 || !_glFunctions20->initializeOpenGLFunctions())
@@ -109,7 +114,7 @@ void ViewportSceneRenderer::beginFrame(TimePoint time, const ViewProjectionParam
 	if(!_glFunctions32 || !_glFunctions32->initializeOpenGLFunctions())
 		_glFunctions32 = nullptr;
 
-	if(!_glFunctions20 && !_glFunctions30 && !_glFunctions32)
+	if(!_glFunctions14 && !_glFunctions20 && !_glFunctions30 && !_glFunctions32)
 		throw Exception(tr("Could not resolve OpenGL functions. Invalid OpenGL context."));
 
 	// Check if this context implements the core profile.

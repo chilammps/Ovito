@@ -27,7 +27,7 @@ namespace PyScript {
 using namespace boost::python;
 using namespace Ovito;
 
-// Automatic Python to Vector3/Point3/Color.
+// Automatic Python to Vector3/Point3/Color conversion.
 template<typename T>
 struct python_to_vector_conversion
 {
@@ -59,6 +59,48 @@ struct python_to_vector_conversion
 		void* storage = ((converter::rvalue_from_python_storage<T>*)data)->storage.bytes;
 		new (storage) T(v);
 		data->convertible = storage;
+	}
+};
+
+// Automatic Python to Matrix3/AffineTransformation conversion.
+template<typename T>
+struct python_to_matrix_conversion
+{
+	python_to_matrix_conversion() {
+		converter::registry::push_back(&convertible, &construct, type_id<T>());
+	}
+
+	static void* convertible(PyObject* obj_ptr) {
+		// Check if Python object can be converted to target type.
+		if(PySequence_Check(obj_ptr)) return obj_ptr;
+		return nullptr;
+	}
+
+	static void construct(PyObject* obj_ptr, converter::rvalue_from_python_stage1_data* data) {
+		Py_ssize_t numRows = PySequence_Length(obj_ptr);
+		if(numRows < 0) {
+			PyErr_SetString(PyExc_TypeError, "This Python object cannot be converted to a matrix.");
+			throw_error_already_set();
+		}
+		else if(numRows != T::row_count()) {
+			PyErr_Format(PyExc_ValueError, "Conversion to %ix%i matrix failed. Wrong Python sequence length. Nested list of outer length %i expected.", (int)T::row_count(), (int)T::col_count(), (int)T::row_count());
+			throw_error_already_set();
+		}
+		void* storage = ((converter::rvalue_from_python_storage<T>*)data)->storage.bytes;
+		new (storage) T();
+		data->convertible = storage;
+		T& m = *reinterpret_cast<T*>(storage);
+		for(size_t i = 0; i < numRows; i++) {
+			object row(handle<>(PySequence_ITEM(obj_ptr, i)));
+			Py_ssize_t numCols = len(row);
+			if(numCols != T::col_count()) {
+				PyErr_Format(PyExc_ValueError, "Conversion to %ix%i matrix failed. Wrong Python sequence length. Nested list of inner length %i expected.", (int)T::row_count(), (int)T::col_count(), (int)T::col_count());
+				throw_error_already_set();
+			}
+			for(size_t j = 0; j < numCols; j++) {
+				m(i,j) = extract<typename T::value_type>(row[j]);
+			}
+		}
 	}
 };
 
@@ -383,6 +425,9 @@ BOOST_PYTHON_MODULE(PyScriptLinearAlgebra)
 		.add_property("__array_interface__", &Matrix__array_interface__<Matrix3>)
 	;
 
+	// Install automatic Python list to C++ matrix conversion.
+	python_to_matrix_conversion<Matrix3>();
+
 	class_<AffineTransformation>("AffineTransformation", init<FloatType,FloatType,FloatType,FloatType,FloatType,FloatType,FloatType,FloatType,FloatType,FloatType,FloatType,FloatType>())
 		.def(init<FloatType,FloatType,FloatType,FloatType,FloatType,FloatType,FloatType,FloatType,FloatType>())
 		.def(init<const Vector3&,const Vector3&,const Vector3&,const Vector3&>())
@@ -426,6 +471,9 @@ BOOST_PYTHON_MODULE(PyScriptLinearAlgebra)
 		.staticmethod("scaling")
 		.add_property("__array_interface__", &Matrix__array_interface__<AffineTransformation>)
 	;
+
+	// Install automatic Python list to C++ matrix conversion.
+	python_to_matrix_conversion<AffineTransformation>();
 }
 
 OVITO_REGISTER_PLUGIN_PYTHON_INTERFACE(PyScriptLinearAlgebra);

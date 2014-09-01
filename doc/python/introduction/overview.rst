@@ -190,7 +190,7 @@ by the modification pipeline. For example, to access the simulation cell we woul
 Similarly, the data of individual particle properties may be accessed as NumPy arrays:
 
     >>> import numpy
-    >>> numpy.asarray(node.output.position)
+    >>> node.output.position.array
     [[ 73.24230194  -5.77583981  -0.87618297]
      [-49.00170135 -35.47610092 -27.92519951]
      [-50.36349869 -39.02569962 -25.61310005]

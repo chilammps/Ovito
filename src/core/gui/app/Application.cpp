@@ -132,15 +132,15 @@ bool Application::initialize(int& argc, char** argv)
 		return true;
 	}
 
-	// Check if started in console mode.
+	// Check if program was started in console mode.
 	if(_cmdLineParser.isSet("nogui"))
 		_consoleMode = true;
 
 	// Create Qt application object.
-	if(guiMode())
-		_app.reset(new QApplication(argc, argv));
-	else
+	if(headlessMode())
 		_app.reset(new QCoreApplication(argc, argv));
+	else
+		_app.reset(new QApplication(argc, argv));
 
 	// Reactivate default "C" locale, which, in the meantime, might have been changed by QCoreApplication.
 	std::setlocale(LC_NUMERIC, "C");

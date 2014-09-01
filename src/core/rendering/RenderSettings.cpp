@@ -87,8 +87,9 @@ RenderSettings::RenderSettings(DataSet* dataset) : RefTarget(dataset),
 	// Pick the default renderer class.
 	const OvitoObjectType* rendererClass = &StandardSceneRenderer::OOType;
 
-	// In console mode, use a software-based renderer instead of the OpenGL-based one.
-	if(Application::instance().guiMode() == false) {
+	// In headless mode no OpenGL support is available.
+	// We'll have to use a software-based renderer then.
+	if(Application::instance().headlessMode()) {
 		for(const OvitoObjectType* rc : PluginManager::instance().listClasses(SceneRenderer::OOType)) {
 			if(rc != &StandardSceneRenderer::OOType) {
 				rendererClass = rc;

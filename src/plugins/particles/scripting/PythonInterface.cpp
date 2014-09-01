@@ -77,10 +77,11 @@ BOOST_PYTHON_MODULE(Particles)
 		.def(init<const QString&, optional<int>>())
 		.add_property("type", &ParticlePropertyReference::type, &ParticlePropertyReference::setType)
 		.add_property("name", make_function(&ParticlePropertyReference::name, return_value_policy<copy_const_reference>()))
-		.add_property("vectorComponent", &ParticlePropertyReference::vectorComponent, &ParticlePropertyReference::setVectorComponent)
+		.add_property("component", &ParticlePropertyReference::vectorComponent, &ParticlePropertyReference::setVectorComponent)
 		.add_property("isNull", &ParticlePropertyReference::isNull)
 		.def(self == other<ParticlePropertyReference>())
 		.def("findInState", make_function(&ParticlePropertyReference::findInState, return_value_policy<ovito_object_reference>()))
+		.def("__str__", &ParticlePropertyReference::nameWithComponent)
 	;
 
 	// Implement Python to ParticlePropertyReference conversion.
@@ -146,7 +147,7 @@ BOOST_PYTHON_MODULE(Particles)
 	{
 		scope s = ovito_class<ParticlePropertyObject, SceneObject>(
 				":Base: :py:class:`ovito.data.DataObject`\n\n"
-				"A data object that stores a particle property.",
+				"A data object that stores the values of a single particle property.",
 				// Python class name:
 				"ParticleProperty")
 			.def("createUserProperty", &ParticlePropertyObject::createUserProperty)
@@ -159,13 +160,55 @@ BOOST_PYTHON_MODULE(Particles)
 			.def("changed", &ParticlePropertyObject::changed)
 			.def("nameWithComponent", &ParticlePropertyObject::nameWithComponent)
 			.add_property("name", make_function(&ParticlePropertyObject::name, return_value_policy<copy_const_reference>()), &ParticlePropertyObject::setName,
-					"The name of the particle property.")
-			.add_property("size", &ParticlePropertyObject::size, &ParticlePropertyObject::resize)
-			.add_property("type", &ParticlePropertyObject::type, &ParticlePropertyObject::setType)
+					"The human-readable name of the particle property.")
+			.add_property("__len__", &ParticlePropertyObject::size)
+			.add_property("size", &ParticlePropertyObject::size, &ParticlePropertyObject::resize,
+					"The number of particles.")
+			.add_property("type", &ParticlePropertyObject::type, &ParticlePropertyObject::setType,
+					"The type of the particle property (user-defined or one of the standard types).\n"
+					"One of the following constants:"
+					"\n\n"
+					"  * ``ParticleProperty.Type.User`` (indicates a user-defined property)\n"
+					"  * ``ParticleProperty.Type.ParticleType``\n"
+					"  * ``ParticleProperty.Type.Position``\n"
+					"  * ``ParticleProperty.Type.Selection``\n"
+					"  * ``ParticleProperty.Type.Color``\n"
+					"  * ``ParticleProperty.Type.Displacement``\n"
+					"  * ``ParticleProperty.Type.DisplacementMagnitude``\n"
+					"  * ``ParticleProperty.Type.PotentialEnergy``\n"
+					"  * ``ParticleProperty.Type.KineticEnergy``\n"
+					"  * ``ParticleProperty.Type.TotalEnergy``\n"
+					"  * ``ParticleProperty.Type.Velocity``\n"
+					"  * ``ParticleProperty.Type.Radius``\n"
+					"  * ``ParticleProperty.Type.Cluster``\n"
+					"  * ``ParticleProperty.Type.Coordination``\n"
+					"  * ``ParticleProperty.Type.StructureType``\n"
+					"  * ``ParticleProperty.Type.Identifier``\n"
+					"  * ``ParticleProperty.Type.StressTensor``\n"
+					"  * ``ParticleProperty.Type.StrainTensor``\n"
+					"  * ``ParticleProperty.Type.DeformationGradient``\n"
+					"  * ``ParticleProperty.Type.Orientation``\n"
+					"  * ``ParticleProperty.Type.Force``\n"
+					"  * ``ParticleProperty.Type.Mass``\n"
+					"  * ``ParticleProperty.Type.Charge``\n"
+					"  * ``ParticleProperty.Type.PeriodicImage``\n"
+					"  * ``ParticleProperty.Type.Transparency``\n"
+					"  * ``ParticleProperty.Type.DipoleOrientation``\n"
+					"  * ``ParticleProperty.Type.DipoleMagnitude``\n"
+					"  * ``ParticleProperty.Type.AngularVelocity``\n"
+					"  * ``ParticleProperty.Type.AngularMomentum``\n"
+					"  * ``ParticleProperty.Type.Torque``\n"
+					"  * ``ParticleProperty.Type.Spin``\n"
+					"  * ``ParticleProperty.Type.CentroSymmetry``\n"
+					"  * ``ParticleProperty.Type.VelocityMagnitude``\n"
+					"  * ``ParticleProperty.Type.NonaffineSquaredDisplacement``\n"
+					"  * ``ParticleProperty.Type.Molecule``\n"
+					)
 			.add_property("dataType", &ParticlePropertyObject::dataType)
 			.add_property("dataTypeSize", &ParticlePropertyObject::dataTypeSize)
 			.add_property("perParticleSize", &ParticlePropertyObject::perParticleSize)
-			.add_property("componentCount", &ParticlePropertyObject::componentCount)
+			.add_property("components", &ParticlePropertyObject::componentCount,
+					"The number of vector components (if this is a vector particle property); otherwise 1 (= scalar property).")
 			.add_property("__array_interface__", &ParticlePropertyObject__array_interface__)
 		;
 

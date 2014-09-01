@@ -41,8 +41,8 @@ SET_PROPERTY_FIELD_LABEL(StandardSceneRenderer, _antialiasingLevel, "Antialiasin
 ******************************************************************************/
 bool StandardSceneRenderer::startRender(DataSet* dataset, RenderSettings* settings)
 {
-	if(Application::instance().guiMode() == false)
-		throw Exception(tr("Cannot use OpenGL-based renderer in console mode. Please use a different rendering engine."));
+	if(Application::instance().headlessMode())
+		throw Exception(tr("Cannot use OpenGL-based renderer in headless mode. Please use a different rendering engine."));
 
 	if(!ViewportSceneRenderer::startRender(dataset, settings))
 		return false;

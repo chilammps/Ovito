@@ -24,6 +24,15 @@ Particles.ParticleProperty._data_attribute_name = property(_ParticleProperty_dat
 
 # Returns a NumPy array wrapper for a particle property.
 def _ParticleProperty_array(self):
+    """ This attribute returns a NumPy array providing direct access to the data stored in this 
+        particle property object.
+        
+        The returned array will be one-dimensional for scalar particle properties (:py:attr:`.components` == 1)
+        and two-dimensional for vector properties (:py:attr:`.components` > 1).
+        
+        Note that the returned NumPy array is read-only and provides a view of the internal data. 
+        No copy of the data is made.  
+    """
     return numpy.asarray(self)
 Particles.ParticleProperty.array = property(_ParticleProperty_array)
 
