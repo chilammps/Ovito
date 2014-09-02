@@ -28,6 +28,7 @@ ADD_SUBDIRECTORY(3rdparty/botan)
 ADD_SUBDIRECTORY(3rdparty/qssh)
 ADD_SUBDIRECTORY(3rdparty/muparser)
 ADD_SUBDIRECTORY(3rdparty/qcustomplot)
+ADD_SUBDIRECTORY(3rdparty/voro++)
 
 ################# Core libraries  ####################
 
