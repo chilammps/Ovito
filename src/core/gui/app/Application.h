@@ -89,7 +89,7 @@ public:
 	///         \c false if the application should use a graphical user interface.
 	bool consoleMode() const { return _consoleMode; }
 
-	/// \brief Returns whether the application run headless (without an X server on Linux).
+	/// \brief Returns whether the application runs in headless mode (without an X server on Linux and no OpenGL support).
 	bool headlessMode() const { return _headlessMode; }
 
 	/// \brief When in console mode, this specifies the exit code that will be returned by the application on shutdown.

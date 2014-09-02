@@ -254,7 +254,10 @@ int ScriptEngine::executeFile(const QString& file)
 		}
 		PyErr_Print();
 	    _activeEngine.storeRelease(nullptr);
-		throw Exception(tr("Python interpreter has exited with an error. See interpreter output for details."));
+	    if(Application::instance().guiMode())
+	    	throw Exception(tr("The Python script '%1' has exited with an error. See console output for details.").arg(file));
+	    else
+	    	throw Exception(tr("The Python script '%1' has exited with an error.").arg(file));
 	}
 	catch(const Exception&) {
 	    _activeEngine.storeRelease(nullptr);

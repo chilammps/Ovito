@@ -58,6 +58,13 @@ fi
 
 shift
 
+# Cannot start interactive in GUI mode.
+if [ -z "${CONSOLE_MODE}" -a -n "${INTERACTIVE}" ]
+then
+  echo "ERROR: Interactive interpreter cannot be started in graphical mode."
+  exit 1
+fi
+
 # Read in the list of command line arguments that need to be passed to the script.
 ARGLIST=""
 for var in "$@"

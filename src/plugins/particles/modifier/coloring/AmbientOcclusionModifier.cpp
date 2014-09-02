@@ -64,7 +64,8 @@ std::shared_ptr<AsynchronousParticleModifier::Engine> AmbientOcclusionModifier::
 		throw Exception(tr("There are no input particles"));
 
 	if(Application::instance().headlessMode())
-		throw Exception(tr("Ambient occlusion modifier cannot be used in headless mode because of missing OpenGL support."));
+		throw Exception(tr("Ambient occlusion modifier requires OpenGL support and cannot be used when program is running in headless mode. "
+						   "Please run program on a machine where access to graphics hardware is possible."));
 
 	// Get modifier input.
 	ParticlePropertyObject* posProperty = expectStandardProperty(ParticleProperty::PositionProperty);

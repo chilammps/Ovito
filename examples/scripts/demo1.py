@@ -33,6 +33,8 @@ vp.camera_pos = (-100, -150, 150)
 vp.camera_dir = (2, 3, -3)
 vp.fov = math.radians(60.0)
 
+node.modifiers.append(AmbientOcclusionModifier())
+
 settings = RenderSettings(
 	filename = "rendered_image.png",
 	size = (220,220)

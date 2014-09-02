@@ -78,14 +78,7 @@ void ScriptAutostarter::applicationStarted()
 
 		// Execute script files.
 		for(int index = scriptFiles.size() - 1; index >= 0; index--) {
-			const QString& scriptFile = scriptFiles[index];
-			try {
-				engine.executeFile(scriptFile);
-			}
-			catch(Exception& ex) {
-				ex.prependGeneralMessage(tr("An error has occurred while executing the Python script '%1'").arg(scriptFile));
-				throw;
-			}
+			engine.executeFile(scriptFiles[index]);
 		}
 	}
 }

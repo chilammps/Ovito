@@ -84,22 +84,8 @@ RenderSettings::RenderSettings(DataSet* dataset) : RefTarget(dataset),
 	_backgroundColor = ControllerManager::instance().createColorController(dataset);
 	setBackgroundColor(Color(1,1,1));
 
-	// Pick the default renderer class.
-	const OvitoObjectType* rendererClass = &StandardSceneRenderer::OOType;
-
-	// In headless mode no OpenGL support is available.
-	// We'll have to use a software-based renderer then.
-	if(Application::instance().headlessMode()) {
-		for(const OvitoObjectType* rc : PluginManager::instance().listClasses(SceneRenderer::OOType)) {
-			if(rc != &StandardSceneRenderer::OOType) {
-				rendererClass = rc;
-				break;
-			}
-		}
-	}
-
 	// Create an instance of the default renderer class.
-	OORef<SceneRenderer> renderer = static_object_cast<SceneRenderer>(rendererClass->createInstance(dataset));
+	OORef<SceneRenderer> renderer(new StandardSceneRenderer(dataset));
 	setRenderer(renderer);
 }
 

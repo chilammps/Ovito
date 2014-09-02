@@ -140,9 +140,10 @@ bool Application::initialize(int& argc, char** argv)
 	if(_cmdLineParser.isSet("nogui")) {
 		_consoleMode = true;
 #if defined(Q_OS_LINUX)
-		// On Unix/Linux, console mode means headless mode since
-		// no X server might be available when running on remote machines.
-		_headlessMode = true;
+		// On Unix/Linux, console mode means headless mode if no X server is available.
+		if(qEnvironmentVariableIsEmpty("DISPLAY")) {
+			_headlessMode = true;
+		}
 #elif defined(Q_OS_OSX)
 		// Don't let Qt move the app to the foreground when running in console mode.
 		::setenv("QT_MAC_DISABLE_FOREGROUND_APPLICATION_TRANSFORM", "1", 1);
