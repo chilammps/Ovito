@@ -191,28 +191,30 @@ MACRO(OVITO_FIXUP_BUNDLE)
 		# Note that the image plugins depend on QtSvg and QtXml, and it got those copied
 		# over.
 		INSTALL(CODE "
+			CMAKE_POLICY(SET CMP0011 NEW)
+			CMAKE_POLICY(SET CMP0009 NEW)
 			# Returns the path that others should refer to the item by when the item is embedded inside a bundle.
 			# This ensures that all plugin libraries go into the plugins/ directory of the bundle.
 			FUNCTION(gp_item_default_embedded_path_override item default_embedded_path_var)
 				# Let everything that is already in the bundle stay where it comes from.
-		    	if(item MATCHES \"^.*/.*\\\\${MACOSX_BUNDLE_NAME}.app/.*$\")
+		    	IF(item MATCHES \"^.*/.*\\\\${MACOSX_BUNDLE_NAME}.app/.*$\")
 					FILE(RELATIVE_PATH relpath \"${OVITO_CMAKE_INSTALL_PREFIX}/${MACOSX_BUNDLE_NAME}.app/Contents/MacOS/\" \"\${item}\")
 					GET_FILENAME_COMPONENT(relpath2 \${relpath} PATH)
 				    SET(path \"@executable_path/\${relpath2}\")
-				endif()
-		    	if(item MATCHES \"@executable_path\")
+				ENDIF()
+		    	IF(item MATCHES \"@executable_path\")
 					GET_FILENAME_COMPONENT(path \"\${item}\" PATH)
-				endif()
+				ENDIF()
 				SET(\${default_embedded_path_var} \"\${path}\" PARENT_SCOPE)
 			    MESSAGE(\"Embedding path override: \${item}\ -> \${path}\")
 			ENDFUNCTION(gp_item_default_embedded_path_override)
-			file(GLOB_RECURSE QTPLUGINS
+			FILE(GLOB_RECURSE QTPLUGINS
 				\"${OVITO_CMAKE_INSTALL_PREFIX}/${plugin_dest_dir}/plugins/*${CMAKE_SHARED_LIBRARY_SUFFIX}\")
-			file(GLOB_RECURSE OVITO_PLUGINS
+			FILE(GLOB_RECURSE OVITO_PLUGINS
 				\"${OVITO_CMAKE_INSTALL_PREFIX}/${OVITO_RELATIVE_PLUGINS_DIRECTORY}/*${OVITO_PLUGIN_LIBRARY_SUFFIX}\")
-			set(BUNDLE_LIBS \${QTPLUGINS} \${OVITO_PLUGINS})
-			set(BU_CHMOD_BUNDLE_ITEMS ON)	# Make copies of system libraries writable before install_name_tool tries to change them.
-			include(BundleUtilities)
-			fixup_bundle(\"${APPS}\" \"\${BUNDLE_LIBS}\" \"${DIRS}\")
+			SET(BUNDLE_LIBS \${QTPLUGINS} \${OVITO_PLUGINS})
+			SET(BU_CHMOD_BUNDLE_ITEMS ON)	# Make copies of system libraries writable before install_name_tool tries to change them.
+			INCLUDE(BundleUtilities)
+			FIXUP_BUNDLE(\"${APPS}\" \"\${BUNDLE_LIBS}\" \"${DIRS}\")
 			" COMPONENT Runtime)
 ENDMACRO()

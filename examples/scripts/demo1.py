@@ -33,11 +33,14 @@ vp.camera_pos = (-100, -150, 150)
 vp.camera_dir = (2, 3, -3)
 vp.fov = math.radians(60.0)
 
-# Render a picture of the dataset.
-vp.render(RenderSettings(
+settings = RenderSettings(
 	filename = "rendered_image.png",
 	size = (220,220)
-))
+)
+print settings.renderer
+
+# Render a picture of the dataset.
+vp.render(settings)
 
 # Apply two more modifiers to delete some particles.
 node.modifiers.append(SelectExpressionModifier(expression = "PotentialEnergy < -3.9"))

@@ -50,14 +50,28 @@ INSTALL(DIRECTORY "${OVITO_PLUGINS_DIRECTORY}/python/" DESTINATION "${OVITO_RELA
 
 # Install "ovitos" script launcher.
 IF(APPLE)
+
 	SET(OVITOS_EXECUTABLE "${OVITO_LIBRARY_DIRECTORY}/ovitos")
 	CONFIGURE_FILE("resources/ovitos" "${OVITOS_EXECUTABLE}" COPYONLY)
 	INSTALL(PROGRAMS "resources/ovitos" DESTINATION "${OVITO_RELATIVE_LIBRARY_DIRECTORY}")
+
+	# Create a nested application bundle with a modified Info.plist file
+	# that starts the application without displaying the dock icon.
+	EXECUTE_PROCESS(COMMAND "${CMAKE_COMMAND}" -E make_directory "${OVITO_BINARY_DIRECTORY}/${MACOSX_BUNDLE_NAME}.app/Contents/MacOS/Ovito.App/Contents")
+	EXECUTE_PROCESS(COMMAND "${CMAKE_COMMAND}" -E create_symlink "../../../MacOS" "${OVITO_BINARY_DIRECTORY}/${MACOSX_BUNDLE_NAME}.app/Contents/MacOS/Ovito.App/Contents/MacOS")
+	EXECUTE_PROCESS(COMMAND "${CMAKE_COMMAND}" -E create_symlink "../../../Resources" "${OVITO_BINARY_DIRECTORY}/${MACOSX_BUNDLE_NAME}.app/Contents/MacOS/Ovito.App/Contents/Resources")
+	EXECUTE_PROCESS(COMMAND "${CMAKE_COMMAND}" -E create_symlink "../../../Frameworks" "${OVITO_BINARY_DIRECTORY}/${MACOSX_BUNDLE_NAME}.app/Contents/MacOS/Ovito.App/Contents/Frameworks")
+	CONFIGURE_FILE("${CMAKE_SOURCE_DIR}/src/main/resources/Info.plist" "${OVITO_BINARY_DIRECTORY}/${MACOSX_BUNDLE_NAME}.app/Contents/MacOS/Ovito.App/Contents/Info.plist")
+	EXECUTE_PROCESS(COMMAND defaults write "${OVITO_BINARY_DIRECTORY}/${MACOSX_BUNDLE_NAME}.app/Contents/MacOS/Ovito.App/Contents/Info" LSUIElement 1)
+
 ELSEIF(UNIX)
+
 	SET(OVITOS_EXECUTABLE "${OVITO_BINARY_DIRECTORY}/ovitos")
 	CONFIGURE_FILE("resources/ovitos" "${OVITOS_EXECUTABLE}" COPYONLY)
 	INSTALL(PROGRAMS "resources/ovitos" DESTINATION "${OVITO_RELATIVE_BINARY_DIRECTORY}")
+
 ELSEIF(WIN32)
+
 	# We have to build a second executable under Windows because the main ovito.exe is not a console application.
 	SET(EXECUTABLE_OUTPUT_PATH ${OVITO_BINARY_DIRECTORY})
 	ADD_EXECUTABLE(ovitos launcher/WinMain.cpp)
@@ -65,6 +79,7 @@ ELSEIF(WIN32)
 	QT5_USE_MODULES(ovitos ${OVITO_REQUIRED_QT_MODULES})
 	INSTALL(TARGETS ovitos DESTINATION "${OVITO_RELATIVE_BINARY_DIRECTORY}")
 	GET_PROPERTY(OVITOS_EXECUTABLE TARGET ovitos PROPERTY LOCATION)
+
 ENDIF()
 
 # Install standard Python packages. 

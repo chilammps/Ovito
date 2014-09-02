@@ -79,8 +79,8 @@ void ViewportSceneRenderer::beginFrame(TimePoint time, const ViewProjectionParam
 {
 	SceneRenderer::beginFrame(time, params, vp);
 
-	if(Application::instance().guiMode() == false)
-		throw Exception(tr("Cannot use OpenGL renderer in console mode."));
+	if(Application::instance().headlessMode())
+		throw Exception(tr("Cannot use OpenGL renderer in headless mode."));
 
 	_glcontext = QOpenGLContext::currentContext();
 	if(!_glcontext)

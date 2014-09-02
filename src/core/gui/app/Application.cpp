@@ -30,6 +30,10 @@
 #include <core/plugins/autostart/AutoStartObject.h>
 #include <core/utilities/io/FileManager.h>
 
+#ifdef Q_OS_MACX
+	#include <Carbon/Carbon.h>
+#endif
+
 namespace Ovito {
 
 /// The one and only instance of this class.
@@ -52,7 +56,7 @@ void Application::qtMessageOutput(QtMsgType type, const QMessageLogContext& cont
 /******************************************************************************
 * Constructor.
 ******************************************************************************/
-Application::Application() : _exitCode(0), _consoleMode(false)
+Application::Application() : _exitCode(0), _consoleMode(false), _headlessMode(false)
 {
 }
 
@@ -133,8 +137,17 @@ bool Application::initialize(int& argc, char** argv)
 	}
 
 	// Check if program was started in console mode.
-	if(_cmdLineParser.isSet("nogui"))
+	if(_cmdLineParser.isSet("nogui")) {
 		_consoleMode = true;
+#if defined(Q_OS_LINUX)
+		// On Unix/Linux, console mode means headless mode since
+		// no X server might be available when running on remote machines.
+		_headlessMode = true;
+#elif defined(Q_OS_OSX)
+		// Don't let Qt move the app to the foreground when running in console mode.
+		::setenv("QT_MAC_DISABLE_FOREGROUND_APPLICATION_TRANSFORM", "1", 1);
+#endif
+	}
 
 	// Create Qt application object.
 	if(headlessMode())

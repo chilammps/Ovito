@@ -16,14 +16,6 @@
 
 # Get the directory this shell script is loacted in.
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-OVITO_EXE="${DIR}/ovito"
-
-# Check if OVITO executable is present.
-if [ ! -x "${OVITO_EXE}" ]
-then
-  echo "ERROR: OVITO executable does not exist: ${OVITO_EXE}"
-#  exit 1
-fi
 
 # Assume console mode by default
 CONSOLE_MODE="--nogui"
@@ -72,6 +64,23 @@ for var in "$@"
 do
   ARGLIST="${ARGLIST} --scriptarg \"${var}\""
 done
+
+# Pick the executable.
+OVITO_EXE="${DIR}/ovito"
+if [[ "$OSTYPE" == "darwin"* ]]
+then
+	if [ -n "${CONSOLE_MODE}" ]
+	then
+		OVITO_EXE="${DIR}/Ovito.app/Contents/MacOS/ovito"
+	fi
+fi
+
+# Check if OVITO executable is present.
+if [ ! -x "${OVITO_EXE}" ]
+then
+  echo "ERROR: OVITO executable does not exist: ${OVITO_EXE}"
+  exit 1
+fi
 
 # Invoke the main OVITO executable.
 # Escape all script arguments with the --scriptarg option.

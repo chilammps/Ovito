@@ -263,7 +263,7 @@ void ViewportWindow::renderNow()
 		qDebug() << "OpenGL swap behavior:       " << (format.swapBehavior() == QSurfaceFormat::SingleBuffer ? QStringLiteral("single buffer") : (format.swapBehavior() == QSurfaceFormat::DoubleBuffer ? QStringLiteral("double buffer") : (format.swapBehavior() == QSurfaceFormat::TripleBuffer ? QStringLiteral("triple buffer") : QStringLiteral("other"))));
 		qDebug() << "OpenGL stencil buffer size: " << format.stencilBufferSize();
 		qDebug() << "OpenGL deprecated func:     " << format.testOption(QSurfaceFormat::DeprecatedFunctions);
-		qDebug() << "OpenGL extensions:          " << QString((const char*)glGetString(GL_EXTENSIONS));
+		//qDebug() << "OpenGL extensions:          " << QString((const char*)glGetString(GL_EXTENSIONS));
 	}
 #endif
 

@@ -17,4 +17,4 @@ modifier.intensity = 0.9
 print modifier.sample_count
 modifier.sample_count = 30
 
-#node.compute()
+node.compute()

@@ -90,7 +90,7 @@ public:
 	bool consoleMode() const { return _consoleMode; }
 
 	/// \brief Returns whether the application run headless (without an X server on Linux).
-	bool headlessMode() const { return _consoleMode; }
+	bool headlessMode() const { return _headlessMode; }
 
 	/// \brief When in console mode, this specifies the exit code that will be returned by the application on shutdown.
 	void setExitCode(int code) { _exitCode = code; }
@@ -134,6 +134,9 @@ private:
 
 	/// Indicates that the application is running in console mode.
 	bool _consoleMode;
+
+	/// Indicates that the application is running in headless mode (without OpenGL support).
+	bool _headlessMode;
 
 	/// In console mode, this is the exit code returned by the application on shutdown.
 	int _exitCode;
