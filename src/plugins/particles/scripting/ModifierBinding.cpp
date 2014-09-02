@@ -537,10 +537,16 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 	}
 
 	{
-		scope s = ovito_class<CreateBondsModifier, AsynchronousParticleModifier>()
+		scope s = ovito_class<CreateBondsModifier, AsynchronousParticleModifier>(
+				":Base: :py:class:`ovito.modifiers.Modifier`\n\n"
+				"Creates bonds between nearby particles. The modifier outputs its computation results as a :py:class:`~ovito.data.Bonds` data object.")
 			.add_property("mode", &CreateBondsModifier::cutoffMode, &CreateBondsModifier::setCutoffMode)
-			.add_property("cutoff", &CreateBondsModifier::uniformCutoff, &CreateBondsModifier::setUniformCutoff)
-			.add_property("bonds_display", make_function(&CreateBondsModifier::bondsDisplay, return_value_policy<ovito_object_reference>()))
+			.add_property("cutoff", &CreateBondsModifier::uniformCutoff, &CreateBondsModifier::setUniformCutoff,
+					"The cutoff distance for the creation of bonds between particle."
+					"\n\n"
+					":Default: 3.2\n")
+			.add_property("bonds_display", make_function(&CreateBondsModifier::bondsDisplay, return_value_policy<ovito_object_reference>()),
+					"A :py:class:`~ovito.vis.BondsDisplay` instance controlling the visual appearance of the bonds created by this modifier.")
 			.add_property("bondsObject", make_function(&CreateBondsModifier::bondsObject, return_value_policy<ovito_object_reference>()))
 		;
 
@@ -578,13 +584,15 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 
 	ovito_class<CoordinationNumberModifier, AsynchronousParticleModifier>(
 			":Base: :py:class:`ovito.modifiers.Modifier`\n\n"
-			"Computes the coordination number of each particle."
+			"Computes coordination numbers of particles and the radial distribution function (RDF) of the system."
 			"\n\n"
 			"The modifier stores the computed coordination numbers in the ``\"Coordination\"`` particle property.")
 		.add_property("cutoff", &CoordinationNumberModifier::cutoff, &CoordinationNumberModifier::setCutoff,
 				"The neighbor cutoff distance."
 				"\n\n"
 				":Default: 3.2\n")
+		.add_property("rdf_x", make_function(&CoordinationNumberModifier::rdfX, return_internal_reference<>()))
+		.add_property("rdf_y", make_function(&CoordinationNumberModifier::rdfY, return_internal_reference<>()))
 	;
 
 	ovito_class<CalculateDisplacementsModifier, ParticleModifier>(

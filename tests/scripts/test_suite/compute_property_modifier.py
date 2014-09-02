@@ -13,6 +13,7 @@ print modifier.only_selected
 print modifier.output_property
 
 modifier.expressions = ["Position.X * 2.0", "Position.Y / 2"]
+modifier.only_selected = False
 
 print "Expressions:", list(modifier.expressions)
 node.modifiers.append(modifier)

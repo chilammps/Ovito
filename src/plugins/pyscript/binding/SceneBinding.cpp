@@ -104,7 +104,7 @@ BOOST_PYTHON_MODULE(PyScriptScene)
 			"\n\n"
 			"Some data objects are associated with a :py:class:`~ovito.vis.Display` object, which is responsible for "
 			"displaying the data in the viewports and in rendered images. "
-			"The the :py:attr:`.display` attribute provides access to the attached display object and "
+			"The :py:attr:`.display` attribute provides access to the attached display object and "
 			"allows controlling the visual appearance of the data.",
 			// Python class name:
 			"DataObject")

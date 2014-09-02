@@ -11,9 +11,6 @@
 - The particle information applet should allow the user to click on and select bonds directly (instead of picking the two particles).
 - Compute center of mass of a group of atoms, output to file
 
-- Scripting plugin: Add file I/O script functions.
-- Scripting plugin: Provide direct access to individual atoms and their properties
-
 - Export of general triclinic cells to LAMMPS data/dump formats. See http://lammps.sandia.gov/doc/Section_howto.html#howto_12
 - Test OpenGL rendering support for more than 12 million particles.
 - Allow the user to permanently override the PBC flags read from an input file.

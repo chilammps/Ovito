@@ -71,6 +71,9 @@ BOOST_PYTHON_MODULE(PyScriptContainers)
 	class_<QVector<int>>("QVectorInt")
 		.def(array_indexing_suite<QVector<int>>())
 	;
+	class_<QVector<double>>("QVectorDouble")
+		.def(array_indexing_suite<QVector<double>>())
+	;
 	class_<QList<int>>("QListInt")
 		.def(array_indexing_suite<QList<int>>())
 	;

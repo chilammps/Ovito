@@ -15,3 +15,4 @@ ovito.vis.SurfaceMeshDisplay = Particles.SurfaceMeshDisplay
 ovito.vis.ParticleDisplay.Shape = ovito.vis.ParticleShape
 ovito.vis.ParticleDisplay.Shading = ovito.vis.ParticleShadingMode
 ovito.vis.VectorDisplay.Shading = ovito.vis.ArrowShadingMode
+ovito.vis.BondsDisplay.Shading = ovito.vis.ArrowShadingMode

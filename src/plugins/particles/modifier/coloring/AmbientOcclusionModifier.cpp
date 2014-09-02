@@ -60,9 +60,6 @@ AmbientOcclusionModifier::AmbientOcclusionModifier(DataSet* dataset) : Asynchron
 ******************************************************************************/
 std::shared_ptr<AsynchronousParticleModifier::Engine> AmbientOcclusionModifier::createEngine(TimePoint time, TimeInterval& validityInterval)
 {
-	if(inputParticleCount() == 0)
-		throw Exception(tr("There are no input particles"));
-
 	if(Application::instance().headlessMode())
 		throw Exception(tr("Ambient occlusion modifier requires OpenGL support and cannot be used when program is running in headless mode. "
 						   "Please run program on a machine where access to graphics hardware is possible."));
@@ -79,8 +76,6 @@ std::shared_ptr<AsynchronousParticleModifier::Engine> AmbientOcclusionModifier::
 			boundingBox.addBox(particleDisplay->particleBoundingBox(posProperty, typeProperty, radiusProperty));
 		}
 	}
-	if(boundingBox.isEmpty())
-		throw Exception(tr("There are no valid particles."));
 
 	// The render buffer resolution.
 	int res = std::min(std::max(bufferResolution(), 0), (int)MAX_AO_RENDER_BUFFER_RESOLUTION);

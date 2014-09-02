@@ -69,6 +69,24 @@ dict ParticlePropertyObject__array_interface__(const ParticlePropertyObject& p)
 	return ai;
 }
 
+dict BondsObject__array_interface__(const BondsObject& p)
+{
+	dict ai;
+	ai["shape"] = boost::python::make_tuple(p.bonds().size(), 2);
+#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
+	ai["typestr"] = str("<i") + str(sizeof(int));
+#else
+	ai["typestr"] = str(">i") + str(sizeof(int));
+#endif
+	const unsigned int* data = nullptr;
+	if(!p.bonds().empty())
+		data = &p.bonds().front().index1;
+	ai["data"] = boost::python::make_tuple((std::intptr_t)data, true);
+	ai["strides"] = boost::python::make_tuple(sizeof(BondsStorage::Bond), sizeof(int));
+	ai["version"] = 3;
+	return ai;
+}
+
 BOOST_PYTHON_MODULE(Particles)
 {
 	docstring_options docoptions(true, false);
@@ -283,7 +301,12 @@ BOOST_PYTHON_MODULE(Particles)
 		.add_property("origin", make_function(&SimulationCell::origin, return_value_policy<copy_const_reference>()))
 	;
 
-	ovito_class<BondsObject, SceneObject>()
+	ovito_class<BondsObject, SceneObject>(
+			":Base: :py:class:`ovito.data.DataObject`\n\n"
+			"This data object stores bonds between particles. One way of creating bonds is to use the :py:class:`~.ovito.modifiers.CreateBondsModifier`.",
+			// Python class name:
+			"Bonds")
+		.add_property("__array_interface__", &BondsObject__array_interface__)
 	;
 
 	ovito_class<ParticleType, RefTarget>()
@@ -405,12 +428,29 @@ BOOST_PYTHON_MODULE(Particles)
 				":Default: ``True``\n")
 	;
 
-	ovito_class<BondsDisplay, DisplayObject>()
-		.add_property("bondWidth", &BondsDisplay::bondWidth, &BondsDisplay::setBondWidth)
-		.add_property("bondColor", make_function(&BondsDisplay::bondColor, return_value_policy<copy_const_reference>()), &BondsDisplay::setBondColor)
-		.add_property("shadingMode", &BondsDisplay::shadingMode, &BondsDisplay::setShadingMode)
+	ovito_class<BondsDisplay, DisplayObject>(
+			":Base: :py:class:`ovito.vis.Display`\n\n"
+			"Controls the visual appearance of particle bonds. An instance of this class is attached to every :py:class:`~ovito.data.Bonds` data object.")
+		.add_property("width", &BondsDisplay::bondWidth, &BondsDisplay::setBondWidth,
+				"The display width of bonds (in natural length units)."
+				"\n\n"
+				":Default: 0.4\n")
+		.add_property("color", make_function(&BondsDisplay::bondColor, return_value_policy<copy_const_reference>()), &BondsDisplay::setBondColor,
+				"The display color of bonds. Used only if :py:attr:`.use_particle_colors` == False."
+				"\n\n"
+				":Default: ``(0.6, 0.6, 0.6)``\n")
+		.add_property("shading", &BondsDisplay::shadingMode, &BondsDisplay::setShadingMode,
+				"The shading style used for bonds.\n"
+				"Possible values:"
+				"\n\n"
+				"   * ``BondsDisplay.Shading.Normal`` (default) \n"
+				"   * ``BondsDisplay.Shading.Flat``\n"
+				"\n")
 		.add_property("renderingQuality", &BondsDisplay::renderingQuality, &BondsDisplay::setRenderingQuality)
-		.add_property("useParticleColors", &BondsDisplay::useParticleColors, &BondsDisplay::setUseParticleColors)
+		.add_property("use_particle_colors", &BondsDisplay::useParticleColors, &BondsDisplay::setUseParticleColors,
+				"If ``True``, bonds are assigned the same color as the particles they are adjacent to."
+				"\n\n"
+				":Default: ``True``\n")
 	;
 
 	ovito_class<SurfaceMesh, SceneObject>()

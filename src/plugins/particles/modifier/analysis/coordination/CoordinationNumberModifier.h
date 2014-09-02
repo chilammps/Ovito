@@ -58,7 +58,7 @@ public:
 
 public:
 
-	Q_PROPERTY(FloatType cutoff READ cutoff WRITE setCutoff)
+	Q_PROPERTY(FloatType cutoff READ cutoff WRITE setCutoff);
 
 private:
 

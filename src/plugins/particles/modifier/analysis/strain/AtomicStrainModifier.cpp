@@ -131,9 +131,6 @@ void AtomicStrainModifier::setReferenceSource(const QUrl& sourceUrl, const FileI
 ******************************************************************************/
 std::shared_ptr<AsynchronousParticleModifier::Engine> AtomicStrainModifier::createEngine(TimePoint time, TimeInterval& validityInterval)
 {
-	if(inputParticleCount() == 0)
-		throw Exception(tr("There are no input particles"));
-
 	// Get the current positions.
 	ParticlePropertyObject* posProperty = expectStandardProperty(ParticleProperty::PositionProperty);
 

@@ -51,9 +51,6 @@ CentroSymmetryModifier::CentroSymmetryModifier(DataSet* dataset) : AsynchronousP
 ******************************************************************************/
 std::shared_ptr<AsynchronousParticleModifier::Engine> CentroSymmetryModifier::createEngine(TimePoint time, TimeInterval& validityInterval)
 {
-	if(inputParticleCount() == 0)
-		throw Exception(tr("There are no input particles"));
-
 	// Get modifier input.
 	ParticlePropertyObject* posProperty = expectStandardProperty(ParticleProperty::PositionProperty);
 	SimulationCell* simCell = expectSimulationCell();
