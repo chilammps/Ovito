@@ -103,7 +103,7 @@ private:
 				int edgeCount, bool computeIndices, FloatType edgeThreshold, FloatType faceThreshold) :
 			_positions(positions),
 			_selection(selection),
-			_radii(radii),
+			_squaredRadii(radii),
 			_simCell(simCell),
 			_cutoff(cutoff),
 			_edgeThreshold(edgeThreshold),
@@ -130,7 +130,7 @@ private:
 		FloatType _edgeThreshold;
 		FloatType _faceThreshold;
 		SimulationCellData _simCell;
-		std::vector<FloatType> _radii;
+		std::vector<FloatType> _squaredRadii;
 		QExplicitlySharedDataPointer<ParticleProperty> _positions;
 		QExplicitlySharedDataPointer<ParticleProperty> _selection;
 		QExplicitlySharedDataPointer<ParticleProperty> _coordinationNumbers;

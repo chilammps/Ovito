@@ -21,6 +21,10 @@
 
 #include <plugins/particles/Particles.h>
 #include <core/utilities/concurrent/ParallelFor.h>
+#include <core/gui/properties/BooleanParameterUI.h>
+#include <core/gui/properties/BooleanGroupBoxParameterUI.h>
+#include <core/gui/properties/IntegerParameterUI.h>
+#include <core/gui/properties/FloatParameterUI.h>
 #include "VoronoiAnalysisModifier.h"
 
 #include <voro++.hh>
@@ -40,7 +44,7 @@ DEFINE_PROPERTY_FIELD(VoronoiAnalysisModifier, _edgeCount, "EdgeCount");
 DEFINE_PROPERTY_FIELD(VoronoiAnalysisModifier, _edgeThreshold, "EdgeThreshold");
 DEFINE_PROPERTY_FIELD(VoronoiAnalysisModifier, _faceThreshold, "FaceThreshold");
 SET_PROPERTY_FIELD_LABEL(VoronoiAnalysisModifier, _cutoff, "Cutoff distance");
-SET_PROPERTY_FIELD_LABEL(VoronoiAnalysisModifier, _onlySelected, "Only selected particles");
+SET_PROPERTY_FIELD_LABEL(VoronoiAnalysisModifier, _onlySelected, "Use only selected particles");
 SET_PROPERTY_FIELD_LABEL(VoronoiAnalysisModifier, _useRadii, "Use atomic radii");
 SET_PROPERTY_FIELD_LABEL(VoronoiAnalysisModifier, _computeIndices, "Compute Voronoi indices");
 SET_PROPERTY_FIELD_LABEL(VoronoiAnalysisModifier, _edgeCount, "Maximum edge count");
@@ -94,7 +98,7 @@ std::shared_ptr<AsynchronousParticleModifier::Engine> VoronoiAnalysisModifier::c
 			std::move(radii),
 			inputCell->data(),
 			cutoff(),
-			qMax(0, edgeCount()),
+			qMax(1, edgeCount()),
 			computeIndices(),
 			edgeThreshold(),
 			faceThreshold());
@@ -105,15 +109,34 @@ std::shared_ptr<AsynchronousParticleModifier::Engine> VoronoiAnalysisModifier::c
 ******************************************************************************/
 void VoronoiAnalysisModifier::VoronoiAnalysisEngine::compute(FutureInterfaceBase& futureInterface)
 {
-	futureInterface.setProgressText(tr("Computing Voronoi polyhedra"));
+	futureInterface.setProgressText(tr("Computing Voronoi cells"));
 
 	// Prepare the neighbor list generator.
 	OnTheFlyNeighborListBuilder neighborListBuilder(_cutoff);
 	if(!neighborListBuilder.prepare(_positions.data(), _simCell) || futureInterface.isCanceled())
 		return;
 
-	// Perform analysis.
-	parallelFor(_positions->size(), futureInterface, [&neighborListBuilder, this](size_t index) {
+	// Compute squared particle radii (input was just particle radii).
+	FloatType maxRadius = 0;
+	for(auto& r : _squaredRadii) {
+		if(r > maxRadius) maxRadius = r;
+		r = r*r;
+	}
+
+	// Extend cutoff by maximum particle radius, so Voronoi cell gets initialized below with a larger cube.
+	_cutoff += maxRadius;
+
+	// The squared edge length threshold.
+	// Add additional factor of 4 because Voronoi cell vertex coordinates are all scaled by factor of 2.
+	FloatType sqEdgeThreshold = _edgeThreshold * _edgeThreshold * 4;
+
+	// Perform analysis, particle-wise parallel.
+	parallelFor(_positions->size(), futureInterface, [&neighborListBuilder, this, sqEdgeThreshold](size_t index) {
+
+		// Skip unselected particles (if requested).
+		if(_selection && _selection->getInt(index) == 0)
+			return;
+
 		// Build Voronoi cell.
 		voronoicell v;
 
@@ -121,43 +144,62 @@ void VoronoiAnalysisModifier::VoronoiAnalysisEngine::compute(FutureInterfaceBase
 		v.init(-_cutoff, _cutoff, -_cutoff, _cutoff, -_cutoff, _cutoff);
 
 		for(OnTheFlyNeighborListBuilder::iterator niter(neighborListBuilder, index); !niter.atEnd(); niter.next()) {
-			v.plane(niter.delta().x(), niter.delta().y(), niter.delta().z(), niter.distanceSquared());
+			// Skip unselected particles (if requested).
+			if(_selection && _selection->getInt(niter.current()) == 0)
+				continue;
+
+			// Take into account particle radii.
+			FloatType rs = niter.distanceSquared();
+			if(!_squaredRadii.empty())
+				 rs += _squaredRadii[index] - _squaredRadii[niter.current()];
+
+			// Cut cell with bisecting plane.
+			v.plane(niter.delta().x(), niter.delta().y(), niter.delta().z(), rs);
 		}
 
 		// Compute cell volume.
 		_atomicVolumes->setFloat(index, (FloatType)v.volume());
 
 		// Iterate over the Voronoi faces and their edges.
-		for(int i=1; i < v.p; i++) {
+		int coordNumber = 0;
+		for(int i = 1; i < v.p; i++) {
 			for(int j = 0; j < v.nu[i]; j++) {
 				int k = v.ed[i][j];
 				if(k >= 0) {
 					int faceOrder = 0;
-					double dx = v.pts[3*k]   - v.pts[3*i];
-					double dy = v.pts[3*k+1] - v.pts[3*i+1];
-					double dz = v.pts[3*k+2] - v.pts[3*i+2];
-					double edge_len = dx*dx + dy*dy + dz*dz;
-					if(edge_len > _edgeThreshold) faceOrder++;
-					v.ed[i][j] = -1-k;
+					FloatType area = 0;
+					// Compute length of first face edge.
+					Vector3 d(v.pts[3*k] - v.pts[3*i], v.pts[3*k+1] - v.pts[3*i+1], v.pts[3*k+2] - v.pts[3*i+2]);
+					if(d.squaredLength() > _edgeThreshold * _edgeThreshold)
+						faceOrder++;
+					v.ed[i][j] = -1 - k;
 					int l = v.cycle_up(v.ed[i][v.nu[i]+j], k);
 					do {
 						int m = v.ed[k][l];
-						dx = v.pts[3*m]   - v.pts[3*k];
-						dy = v.pts[3*m+1] - v.pts[3*k+1];
-						dz = v.pts[3*m+2] - v.pts[3*k+2];
-						edge_len = dx*dx + dy*dy + dz*dz;
-						if(edge_len > _edgeThreshold) faceOrder++;
-						v.ed[k][l] = -1-m;
-						l = v.cycle_up(v.ed[k][v.nu[k]+l],m);
+						// Compute length of current edge.
+						Vector3 u(v.pts[3*m] - v.pts[3*k], v.pts[3*m+1] - v.pts[3*k+1], v.pts[3*m+2] - v.pts[3*k+2]);
+						if(u.squaredLength() > sqEdgeThreshold)
+							faceOrder++;
+						area += d.cross(u).length();
+						d = u;
+						v.ed[k][l] = -1 - m;
+						l = v.cycle_up(v.ed[k][v.nu[k]+l], m);
 						k = m;
 					}
 					while(k != i);
-					if(faceOrder >= 3 && faceOrder <= 6)
-						signature[faceOrder-3]++;
+					area /= 8;  // Voronoi cell vertex coordinates are scaled by a factor of 2. That's why area must be divided by an additional factor of 4.
+					if(area > _faceThreshold && faceOrder > 0) {
+						coordNumber++;
+						faceOrder--;
+						if(_voronoiIndices && faceOrder < _voronoiIndices->componentCount())
+							_voronoiIndices->setIntComponent(index, faceOrder, _voronoiIndices->getIntComponent(index, faceOrder) + 1);
+					}
 				}
 			}
 		}
 
+		// Store computed result.
+		_coordinationNumbers->setInt(index, coordNumber);
 	});
 }
 
@@ -215,6 +257,7 @@ void VoronoiAnalysisModifierEditor::createUI(const RolloutInsertionParameters& r
 
 	QGridLayout* gridlayout = new QGridLayout();
 	gridlayout->setContentsMargins(4,4,4,4);
+	gridlayout->setSpacing(4);
 	gridlayout->setColumnStretch(1, 1);
 
 	// Cutoff parameter.
@@ -222,6 +265,41 @@ void VoronoiAnalysisModifierEditor::createUI(const RolloutInsertionParameters& r
 	gridlayout->addWidget(cutoffRadiusPUI->label(), 0, 0);
 	gridlayout->addLayout(cutoffRadiusPUI->createFieldLayout(), 0, 1);
 	cutoffRadiusPUI->setMinValue(0);
+
+	// Face threshold.
+	FloatParameterUI* faceThresholdPUI = new FloatParameterUI(this, PROPERTY_FIELD(VoronoiAnalysisModifier::_faceThreshold));
+	gridlayout->addWidget(faceThresholdPUI->label(), 1, 0);
+	gridlayout->addLayout(faceThresholdPUI->createFieldLayout(), 1, 1);
+	faceThresholdPUI->setMinValue(0);
+
+	// Compute indices.
+	BooleanGroupBoxParameterUI* computeIndicesPUI = new BooleanGroupBoxParameterUI(this, PROPERTY_FIELD(VoronoiAnalysisModifier::_computeIndices));
+	gridlayout->addWidget(computeIndicesPUI->groupBox(), 2, 0, 1, 2);
+	QGridLayout* sublayout = new QGridLayout(computeIndicesPUI->groupBox());
+	sublayout->setContentsMargins(4,4,4,4);
+	sublayout->setSpacing(4);
+	sublayout->setColumnStretch(1, 1);
+
+	// Edge count parameter.
+	IntegerParameterUI* edgeCountPUI = new IntegerParameterUI(this, PROPERTY_FIELD(VoronoiAnalysisModifier::_edgeCount));
+	sublayout->addWidget(edgeCountPUI->label(), 0, 0);
+	sublayout->addLayout(edgeCountPUI->createFieldLayout(), 0, 1);
+	edgeCountPUI->setMinValue(3);
+	edgeCountPUI->setMaxValue(18);
+
+	// Edge threshold.
+	FloatParameterUI* edgeThresholdPUI = new FloatParameterUI(this, PROPERTY_FIELD(VoronoiAnalysisModifier::_edgeThreshold));
+	sublayout->addWidget(edgeThresholdPUI->label(), 1, 0);
+	sublayout->addLayout(edgeThresholdPUI->createFieldLayout(), 1, 1);
+	edgeThresholdPUI->setMinValue(0);
+
+	// Atomic radii.
+	BooleanParameterUI* useRadiiPUI = new BooleanParameterUI(this, PROPERTY_FIELD(VoronoiAnalysisModifier::_useRadii));
+	gridlayout->addWidget(useRadiiPUI->checkBox(), 3, 0, 1, 2);
+
+	// Only selected particles.
+	BooleanParameterUI* onlySelectedPUI = new BooleanParameterUI(this, PROPERTY_FIELD(VoronoiAnalysisModifier::_onlySelected));
+	gridlayout->addWidget(onlySelectedPUI->checkBox(), 4, 0, 1, 2);
 
 	layout->addLayout(gridlayout);
 
