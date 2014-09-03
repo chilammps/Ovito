@@ -45,11 +45,50 @@ public:
 	/// \brief Sets the cutoff radius used to build the neighbor lists for the analysis.
 	void setCutoff(FloatType newCutoff) { _cutoff = newCutoff; }
 
+	/// Returns whether the modifier takes into account only selected particles.
+	bool onlySelected() const { return _onlySelected; }
+
+	/// Sets whether the modifier takes into account only selected particles.
+	void setOnlySelected(bool onlySelected) { _onlySelected = onlySelected; }
+
+	/// Returns whether the modifier takes into account particle radii.
+	bool useRadii() const { return _useRadii; }
+
+	/// Sets whether the modifier takes into account particle radii.
+	void setUseRadii(bool useRadii) { _useRadii = useRadii; }
+
+	/// Returns whether the modifier computes Voronoi indices.
+	bool computeIndices() const { return _computeIndices; }
+
+	/// Sets whether the modifier computes Voronoi indices.
+	void setComputeIndices(bool computeIndices) { _computeIndices = computeIndices; }
+
+	/// Returns up to which edge count Voronoi indices are being computed.
+	int edgeCount() const { return _edgeCount; }
+
+	/// Sets up to which edge count Voronoi indices are being computed.
+	void setEdgeCount(int edgeCount) { _edgeCount = edgeCount; }
+
+	/// Returns the minimum length for an edge to be counted.
+	FloatType edgeThreshold() const { return _edgeThreshold; }
+
+	/// Sets the minimum length for an edge to be counted.
+	void setEdgeThreshold(FloatType threshold) { _edgeThreshold = threshold; }
+
+	/// Returns the minimum area for a face to be counted.
+	FloatType faceThreshold() const { return _faceThreshold; }
+
+	/// Sets the minimum area for a face to be counted.
+	void setFaceThreshold(FloatType threshold) { _faceThreshold = threshold; }
+
 	/// Returns the computed coordination numbers.
-	const ParticleProperty& coordinationNumbers() const { OVITO_CHECK_POINTER(_coordinationNumbers.constData()); return *_coordinationNumbers; }
+	ParticleProperty* coordinationNumbers() const { return _coordinationNumbers.data(); }
+
+	/// Returns the computed atomic volumes.
+	ParticleProperty* atomicVolumes() const { return _atomicVolumes.data(); }
 
 	/// Returns the computed Voronoi indices.
-	//const ParticleProperty& voronoiIndices() const { OVITO_CHECK_POINTER(_voronoiIndices.constData()); return *_voronoiIndices; }
+	ParticleProperty* voronoiIndices() const { return _voronoiIndices.data(); }
 
 private:
 
@@ -59,32 +98,44 @@ private:
 	public:
 
 		/// Constructor.
-		VoronoiAnalysisEngine(ParticleProperty* positions, const SimulationCellData& simCell, FloatType cutoff, int indexVectorLength) :
-			_positions(positions), _simCell(simCell),
+		VoronoiAnalysisEngine(ParticleProperty* positions, ParticleProperty* selection, std::vector<FloatType>&& radii,
+				const SimulationCellData& simCell, FloatType cutoff,
+				int edgeCount, bool computeIndices, FloatType edgeThreshold, FloatType faceThreshold) :
+			_positions(positions),
+			_selection(selection),
+			_radii(radii),
+			_simCell(simCell),
 			_cutoff(cutoff),
-			_coordinationNumbers(new ParticleProperty(positions->size(), ParticleProperty::CoordinationProperty)) {}
+			_edgeThreshold(edgeThreshold),
+			_faceThreshold(faceThreshold),
+			_coordinationNumbers(new ParticleProperty(positions->size(), ParticleProperty::CoordinationProperty)),
+			_atomicVolumes(new ParticleProperty(positions->size(), qMetaTypeId<FloatType>(), sizeof(FloatType), 1, QStringLiteral("Atomic volume"))),
+			_voronoiIndices(computeIndices ? new ParticleProperty(positions->size(), qMetaTypeId<int>(), sizeof(int), edgeCount, QStringLiteral("Voronoi index")) : nullptr) {}
 
 		/// Computes the modifier's results and stores them in this object for later retrieval.
 		virtual void compute(FutureInterfaceBase& futureInterface) override;
 
-		/// Returns the property storage that contains the input particle positions.
-		ParticleProperty* positions() const { return _positions.data(); }
-
-		/// Returns the simulation cell data.
-		const SimulationCellData& cell() const { return _simCell; }
-
 		/// Returns the property storage that contains the computed coordination numbers.
 		ParticleProperty* coordinationNumbers() const { return _coordinationNumbers.data(); }
 
-		/// Returns the cutoff radius.
-		FloatType cutoff() const { return _cutoff; }
+		/// Returns the property storage that contains the computed atomic volumes.
+		ParticleProperty* atomicVolumes() const { return _atomicVolumes.data(); }
+
+		/// Returns the property storage that contains the computed Voronoi indices.
+		ParticleProperty* voronoiIndices() const { return _voronoiIndices.data(); }
 
 	private:
 
 		FloatType _cutoff;
+		FloatType _edgeThreshold;
+		FloatType _faceThreshold;
 		SimulationCellData _simCell;
+		std::vector<FloatType> _radii;
 		QExplicitlySharedDataPointer<ParticleProperty> _positions;
+		QExplicitlySharedDataPointer<ParticleProperty> _selection;
 		QExplicitlySharedDataPointer<ParticleProperty> _coordinationNumbers;
+		QExplicitlySharedDataPointer<ParticleProperty> _atomicVolumes;
+		QExplicitlySharedDataPointer<ParticleProperty> _voronoiIndices;
 	};
 
 protected:
@@ -104,8 +155,32 @@ protected:
 	/// This stores the cached coordination numbers computed by the modifier.
 	QExplicitlySharedDataPointer<ParticleProperty> _coordinationNumbers;
 
+	/// This stores the cached atomic volumes computed by the modifier.
+	QExplicitlySharedDataPointer<ParticleProperty> _atomicVolumes;
+
+	/// This stores the cached Voronoi indices computed by the modifier.
+	QExplicitlySharedDataPointer<ParticleProperty> _voronoiIndices;
+
 	/// Controls the cutoff radius for Voronoi cell generation.
 	PropertyField<FloatType> _cutoff;
+
+	/// Controls whether the modifier takes into account only selected particles.
+	PropertyField<bool> _onlySelected;
+
+	/// Controls whether the modifier takes into account particle radii.
+	PropertyField<bool> _useRadii;
+
+	/// Controls whether the modifier computes Voronoi indices.
+	PropertyField<bool> _computeIndices;
+
+	/// Controls up to which edge count Voronoi indices are being computed.
+	PropertyField<int> _edgeCount;
+
+	/// The minimum length for an edge to be counted.
+	PropertyField<FloatType> _edgeThreshold;
+
+	/// The minimum area for a face to be counted.
+	PropertyField<FloatType> _faceThreshold;
 
 private:
 
@@ -116,6 +191,12 @@ private:
 	Q_CLASSINFO("ModifierCategory", "Analysis");
 
 	DECLARE_PROPERTY_FIELD(_cutoff);
+	DECLARE_PROPERTY_FIELD(_onlySelected);
+	DECLARE_PROPERTY_FIELD(_useRadii);
+	DECLARE_PROPERTY_FIELD(_computeIndices);
+	DECLARE_PROPERTY_FIELD(_edgeCount);
+	DECLARE_PROPERTY_FIELD(_edgeThreshold);
+	DECLARE_PROPERTY_FIELD(_faceThreshold);
 };
 
 /******************************************************************************

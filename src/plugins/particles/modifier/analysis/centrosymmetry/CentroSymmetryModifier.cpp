@@ -81,7 +81,7 @@ void CentroSymmetryModifier::CentroSymmetryEngine::compute(FutureInterfaceBase& 
 		return;
 	}
 
-	// Create output storage.
+	// Output storage.
 	ParticleProperty* output = csp();
 
 	// Perform analysis on each particle.
