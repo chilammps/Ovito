@@ -24,7 +24,6 @@
 
 #include <plugins/particles/Particles.h>
 #include <plugins/particles/data/ParticleProperty.h>
-#include <plugins/particles/util/OnTheFlyNeighborListBuilder.h>
 #include <plugins/particles/modifier/AsynchronousParticleModifier.h>
 
 namespace Particles {
@@ -38,6 +37,12 @@ public:
 
 	/// Constructor.
 	Q_INVOKABLE VoronoiAnalysisModifier(DataSet* dataset);
+
+	/// Returns whether the modifier uses a distance cutoff to speed up the Voronoi cell calculation.
+	bool useCutoff() const { return _useCutoff; }
+
+	/// Sets whether the modifier uses a distance cutoff to speed up the Voronoi cell calculation.
+	void setUseCutoff(bool useCutoff) { _useCutoff = useCutoff; }
 
 	/// Returns the cutoff radius used to build the neighbor lists for the analysis.
 	FloatType cutoff() const { return _cutoff; }
@@ -90,6 +95,12 @@ public:
 	/// Returns the computed Voronoi indices.
 	ParticleProperty* voronoiIndices() const { return _voronoiIndices.data(); }
 
+	/// Returns the total volume of the simulation cell computed by the modifier.
+	double simulationBoxVolume() const { return _simulationBoxVolume; }
+
+	/// Returns the volume sum of all Voronoi cells computed by the modifier.
+	double voronoiVolumeSum() const { return _voronoiVolumeSum; }
+
 private:
 
 	/// Computes the modifier's results.
@@ -124,11 +135,19 @@ private:
 		/// Returns the property storage that contains the computed Voronoi indices.
 		ParticleProperty* voronoiIndices() const { return _voronoiIndices.data(); }
 
+		/// Returns the total volume of the simulation cell computed by the modifier.
+		double simulationBoxVolume() const { return _simulationBoxVolume; }
+
+		/// Returns the volume sum of all Voronoi cells.
+		double voronoiVolumeSum() const { return _voronoiVolumeSum; }
+
 	private:
 
 		FloatType _cutoff;
 		FloatType _edgeThreshold;
 		FloatType _faceThreshold;
+		double _simulationBoxVolume;
+		double _voronoiVolumeSum;
 		SimulationCellData _simCell;
 		std::vector<FloatType> _squaredRadii;
 		QExplicitlySharedDataPointer<ParticleProperty> _positions;
@@ -161,6 +180,9 @@ protected:
 	/// This stores the cached Voronoi indices computed by the modifier.
 	QExplicitlySharedDataPointer<ParticleProperty> _voronoiIndices;
 
+	/// Controls whether the modifier uses a distance cutoff to speed up the Voronoi cell calculation.
+	PropertyField<bool> _useCutoff;
+
 	/// Controls the cutoff radius for Voronoi cell generation.
 	PropertyField<FloatType> _cutoff;
 
@@ -182,6 +204,12 @@ protected:
 	/// The minimum area for a face to be counted.
 	PropertyField<FloatType> _faceThreshold;
 
+	/// The total volume of the simulation cell computed by the modifier.
+	double _simulationBoxVolume;
+
+	/// The volume sum of all Voronoi cells.
+	double _voronoiVolumeSum;
+
 private:
 
 	Q_OBJECT
@@ -190,6 +218,7 @@ private:
 	Q_CLASSINFO("DisplayName", "Voronoi analysis");
 	Q_CLASSINFO("ModifierCategory", "Analysis");
 
+	DECLARE_PROPERTY_FIELD(_useCutoff);
 	DECLARE_PROPERTY_FIELD(_cutoff);
 	DECLARE_PROPERTY_FIELD(_onlySelected);
 	DECLARE_PROPERTY_FIELD(_useRadii);
