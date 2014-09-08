@@ -73,7 +73,8 @@ public:
 		bool operator!=(const Point3WithIndex& other) const { return x() != other.x() || y() != other.y() || z() != other.z(); }
 
 		Kernel::Vector_3 operator-(const Point3WithIndex& b) const { return Kernel::Vector_3(x()-b.x(), y()-b.y(), z()-b.z()); }
-		operator Point3() const { return Point3(x(),y(),z()); }
+		operator Ovito::Point3() const { return Ovito::Point3(x(),y(),z()); }
+		operator Ovito::Point_3<double>() const { return Ovito::Point_3<double>(x(),y(),z()); }
 
 		/// Returns the original index of this point.
 		int index() const { return _index; }

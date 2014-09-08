@@ -108,13 +108,13 @@ public:
 		ParticleProperty* selection() const { return _selection.data(); }
 
 		/// Returns the computed solid volume.
-		FloatType solidVolume() const { return _solidVolume; }
+		FloatType solidVolume() const { return (FloatType)_solidVolume; }
 
 		/// Returns the computed total volume.
 		FloatType totalVolume() const { return std::abs(_simCell.matrix().determinant()); }
 
 		/// Returns the computed surface area.
-		FloatType surfaceArea() const { return _surfaceArea; }
+		FloatType surfaceArea() const { return (FloatType)_surfaceArea; }
 
 		/// Indicates whether the entire simulation cell is part of the solid region.
 		bool isCompletelySolid() const { return _isCompletelySolid; }
@@ -127,8 +127,8 @@ public:
 		QExplicitlySharedDataPointer<ParticleProperty> _selection;
 		HalfEdgeMesh _mesh;
 		SimulationCellData _simCell;
-		FloatType _solidVolume;
-		FloatType _surfaceArea;
+		double _solidVolume;
+		double _surfaceArea;
 		bool _isCompletelySolid;
 	};
 

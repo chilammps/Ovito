@@ -52,6 +52,7 @@ SET(OVITO_PARTICLES_SOURCE_FILES
 	modifier/analysis/centrosymmetry/CentroSymmetryModifier.cpp
 	modifier/analysis/strain/AtomicStrainModifier.cpp
 	modifier/analysis/bonds/CreateBondsModifier.cpp
+	modifier/analysis/voronoi/VoronoiAnalysisModifier.cpp
 	modifier/analysis/histogram/HistogramModifier.cpp
 	modifier/analysis/cluster/ClusterAnalysisModifier.cpp
 	modifier/analysis/scatterplot/ScatterPlotModifier.cpp
@@ -131,7 +132,7 @@ SET(GLUSourceFiles
 OVITO_PLUGIN(Particles
 	SOURCES ${OVITO_PARTICLES_SOURCE_FILES} ${GLUSourceFiles}
 	RESOURCE particles.rcc resources/particles.qrc
-	LIB_DEPENDENCIES muParser qcustomplot ${OPENGL_gl_LIBRARY}
+	LIB_DEPENDENCIES muParser qcustomplot VoroPlusPlus ${OPENGL_gl_LIBRARY}
 	OPTIONAL_PLUGIN_DEPENDENCIES Scripting PyScript
 )
 
