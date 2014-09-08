@@ -205,6 +205,10 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 				"If ``True``, the simulation cell is extended to fit the multiplied system."
 				"\n\n"
 				":Default: ``False``\n")
+		.add_property("unique_ids", &ShowPeriodicImagesModifier::uniqueIdentifiers, &ShowPeriodicImagesModifier::setUniqueIdentifiers,
+				"If ``True``, the modifier automatically generates a new unique ID for copies of a particle."
+				"\n\n"
+				":Default: ``True``\n")
 	;
 
 	ovito_class<WrapPeriodicImagesModifier, ParticleModifier>(

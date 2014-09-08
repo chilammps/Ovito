@@ -36,6 +36,7 @@ DEFINE_PROPERTY_FIELD(ShowPeriodicImagesModifier, _numImagesX, "NumImagesX");
 DEFINE_PROPERTY_FIELD(ShowPeriodicImagesModifier, _numImagesY, "NumImagesY");
 DEFINE_PROPERTY_FIELD(ShowPeriodicImagesModifier, _numImagesZ, "NumImagesZ");
 DEFINE_PROPERTY_FIELD(ShowPeriodicImagesModifier, _adjustBoxSize, "AdjustBoxSize");
+DEFINE_PROPERTY_FIELD(ShowPeriodicImagesModifier, _uniqueIdentifiers, "UniqueIdentifiers");
 SET_PROPERTY_FIELD_LABEL(ShowPeriodicImagesModifier, _showImageX, "Periodic images X");
 SET_PROPERTY_FIELD_LABEL(ShowPeriodicImagesModifier, _showImageY, "Periodic images Y");
 SET_PROPERTY_FIELD_LABEL(ShowPeriodicImagesModifier, _showImageZ, "Periodic images Z");
@@ -43,13 +44,14 @@ SET_PROPERTY_FIELD_LABEL(ShowPeriodicImagesModifier, _numImagesX, "Number of per
 SET_PROPERTY_FIELD_LABEL(ShowPeriodicImagesModifier, _numImagesY, "Number of periodic images - Y");
 SET_PROPERTY_FIELD_LABEL(ShowPeriodicImagesModifier, _numImagesZ, "Number of periodic images - Z");
 SET_PROPERTY_FIELD_LABEL(ShowPeriodicImagesModifier, _adjustBoxSize, "Adjust simulation box size");
+SET_PROPERTY_FIELD_LABEL(ShowPeriodicImagesModifier, _uniqueIdentifiers, "Assign unique particle IDs");
 
 /******************************************************************************
 * Constructs the modifier object.
 ******************************************************************************/
 ShowPeriodicImagesModifier::ShowPeriodicImagesModifier(DataSet* dataset) : ParticleModifier(dataset),
 	_showImageX(false), _showImageY(false), _showImageZ(false),
-	_numImagesX(3), _numImagesY(3), _numImagesZ(3), _adjustBoxSize(false)
+	_numImagesX(3), _numImagesY(3), _numImagesZ(3), _adjustBoxSize(false), _uniqueIdentifiers(true)
 {
 	INIT_PROPERTY_FIELD(ShowPeriodicImagesModifier::_showImageX);
 	INIT_PROPERTY_FIELD(ShowPeriodicImagesModifier::_showImageY);
@@ -58,6 +60,7 @@ ShowPeriodicImagesModifier::ShowPeriodicImagesModifier(DataSet* dataset) : Parti
 	INIT_PROPERTY_FIELD(ShowPeriodicImagesModifier::_numImagesY);
 	INIT_PROPERTY_FIELD(ShowPeriodicImagesModifier::_numImagesZ);
 	INIT_PROPERTY_FIELD(ShowPeriodicImagesModifier::_adjustBoxSize);
+	INIT_PROPERTY_FIELD(ShowPeriodicImagesModifier::_uniqueIdentifiers);
 }
 
 /******************************************************************************
@@ -121,6 +124,18 @@ PipelineStatus ShowPeriodicImagesModifier::modifyParticles(TimePoint time, TimeI
 				}
 			}
 		}
+
+		// Assign unique IDs to duplicated particle.
+		if(uniqueIdentifiers() && newProperty->type() == ParticleProperty::IdentifierProperty) {
+			auto minmax = std::minmax_element(newProperty->constDataInt(), newProperty->constDataInt() + oldParticleCount);
+			int minID = *minmax.first;
+			int maxID = *minmax.second;
+			for(size_t c = 1; c < numCopies; c++) {
+				int offset = (maxID - minID + 1) * c;
+				for(auto id = newProperty->dataInt() + c * oldParticleCount, id_end = id + oldParticleCount; id != id_end; ++id)
+					*id += offset;
+			}
+		}
 	}
 
 	if(adjustBoxSize()) {
@@ -172,6 +187,9 @@ void ShowPeriodicImagesModifierEditor::createUI(const RolloutInsertionParameters
 
 	BooleanParameterUI* adjustBoxSizeUI = new BooleanParameterUI(this, PROPERTY_FIELD(ShowPeriodicImagesModifier::_adjustBoxSize));
 	layout->addWidget(adjustBoxSizeUI->checkBox(), 3, 0, 1, 2);
+
+	BooleanParameterUI* uniqueIdentifiersUI = new BooleanParameterUI(this, PROPERTY_FIELD(ShowPeriodicImagesModifier::_uniqueIdentifiers));
+	layout->addWidget(uniqueIdentifiersUI->checkBox(), 4, 0, 1, 2);
 }
 
 };	// End of namespace

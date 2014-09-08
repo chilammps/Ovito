@@ -84,6 +84,12 @@ public:
 	/// Sets whether the size of the simulation box should be adjusted.
 	void setAdjustBoxSize(bool adjust) { _adjustBoxSize = adjust; }
 
+	/// Returns whether the modifier assigns unique identifiers to particle copies.
+	bool uniqueIdentifiers() const { return _uniqueIdentifiers; }
+
+	/// Sets whether the the modifier assigns unique identifiers to particle copies.
+	void setUniqueIdentifiers(bool uniqueIdentifiers) { _uniqueIdentifiers = uniqueIdentifiers; }
+
 public:
 
 	Q_PROPERTY(bool showImageX READ showImageX WRITE setShowImageX);
@@ -119,6 +125,9 @@ private:
 	/// Controls whether the size of the simulation box is adjusted to the extended system.
 	PropertyField<bool> _adjustBoxSize;
 
+	/// Controls whether the modifier assigns unique identifiers to particle copies.
+	PropertyField<bool> _uniqueIdentifiers;
+
 private:
 
 	Q_OBJECT
@@ -134,6 +143,7 @@ private:
 	DECLARE_PROPERTY_FIELD(_numImagesY);
 	DECLARE_PROPERTY_FIELD(_numImagesZ);
 	DECLARE_PROPERTY_FIELD(_adjustBoxSize);
+	DECLARE_PROPERTY_FIELD(_uniqueIdentifiers);
 };
 
 /**
