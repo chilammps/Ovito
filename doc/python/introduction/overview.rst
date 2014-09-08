@@ -29,7 +29,7 @@ To make use of this capability from a script, we first need to understand the ba
 data model. In general, there are two different groups of objects that participate in the described system: 
 Objects that constitute the modification pipeline (e.g. modifiers and a data source) and *data objects*, which 
 enter the modification pipeline, get modified by it, or are newly produced by modifiers (e.g. particle properties). 
-We will start by discussing the former group in the following.
+We will start by discussing the first group in the next section.
 
 ------------------------------------
 Data sources, modifiers, and more

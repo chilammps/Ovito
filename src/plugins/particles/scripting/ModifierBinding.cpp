@@ -459,7 +459,7 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 				"\n")
 			.add_property("structures", make_function(&BondAngleAnalysisModifier::structureTypes, return_internal_reference<>()),
 					"A list of :py:class:`~ovito.data.ParticleType` instances managed by this modifier, one for each structural type. "
-					"You can adjust the color of structural types here as shown in the code example above.")
+					"You can adjust the color of structural types as shown in the code example above.")
 			.add_property("counts", make_function(&BondAngleAnalysisModifier::structureCounts, return_value_policy<copy_const_reference>()),
 					"A list of integers indicating the number of particles found for each structure type. "
 					"Note that accessing this output field is only possible after the modifier has computed its results. "
@@ -743,7 +743,7 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 			":Base: :py:class:`ovito.modifiers.Modifier`\n\n"
 			"Computes the atomic volumes and coordination numbers using a Voronoi tessellation of the particle system."
 			"\n\n"
-			"The modifier stores the computed per-particle volume in the ``\"Atomic volume\"`` particle property and the number of neighbors "
+			"The modifier stores the computed per-particle volume in the ``\"Atomic Volume\"`` particle property and the number of neighbors "
 			"of each particle in the ``\"Coordination number\"`` property.")
 		.add_property("use_cutoff", &VoronoiAnalysisModifier::useCutoff, &VoronoiAnalysisModifier::setUseCutoff,
 				"Activates the cutoff-based scheme to construct Voronoi cells (fast method)."
@@ -775,7 +775,7 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 				":Default: 0.0\n")
 		.add_property("compute_indices", &VoronoiAnalysisModifier::computeIndices, &VoronoiAnalysisModifier::setComputeIndices,
 				"If ``True``, the modifier calculates the Voronoi indices of particles. The modifier stores the computed indices in a vector particle property "
-				"named ``Voronoi index``. The *i*-th component of this property will contain the number of faces of the "
+				"named ``Voronoi Index``. The *i*-th component of this property will contain the number of faces of the "
 				"Voronoi cell that have *i* edges. Thus, the first two components of the per-particle vector will always be zero, because the minimum "
 				"number of edges a polygon can have is three. "
 				"\n\n"

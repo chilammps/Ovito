@@ -12,6 +12,8 @@ ovito.data.SimulationCell = Particles.SimulationCell
 ovito.data.ParticleProperty = Particles.ParticleProperty
 ovito.data.Bonds = Particles.Bonds
 ovito.data.SurfaceMesh = Particles.SurfaceMesh
+ovito.data.ParticleTypeProperty = Particles.ParticleTypeProperty
+ovito.data.ParticleType = Particles.ParticleType
 
 # Register attribute keys by which data objects in a DataCollection can be accessed.
 Particles.SimulationCell._data_attribute_name = "cell"
@@ -56,3 +58,4 @@ def _SimulationCell_pbc(self):
     """ A 3-tuple with the periodic boundary flags. """
     return (self.pbc_x, self.pbc_y, self.pbc_z)
 Particles.SimulationCell.pbc = property(_SimulationCell_pbc)
+

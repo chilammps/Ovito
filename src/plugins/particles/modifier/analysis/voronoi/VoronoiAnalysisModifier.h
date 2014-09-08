@@ -120,8 +120,8 @@ private:
 			_edgeThreshold(edgeThreshold),
 			_faceThreshold(faceThreshold),
 			_coordinationNumbers(new ParticleProperty(positions->size(), ParticleProperty::CoordinationProperty)),
-			_atomicVolumes(new ParticleProperty(positions->size(), qMetaTypeId<FloatType>(), sizeof(FloatType), 1, QStringLiteral("Atomic volume"))),
-			_voronoiIndices(computeIndices ? new ParticleProperty(positions->size(), qMetaTypeId<int>(), sizeof(int), edgeCount, QStringLiteral("Voronoi index")) : nullptr) {}
+			_atomicVolumes(new ParticleProperty(positions->size(), qMetaTypeId<FloatType>(), sizeof(FloatType), 1, QStringLiteral("Atomic Volume"))),
+			_voronoiIndices(computeIndices ? new ParticleProperty(positions->size(), qMetaTypeId<int>(), sizeof(int), edgeCount, QStringLiteral("Voronoi Index")) : nullptr) {}
 
 		/// Computes the modifier's results and stores them in this object for later retrieval.
 		virtual void compute(FutureInterfaceBase& futureInterface) override;

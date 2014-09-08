@@ -1,16 +1,21 @@
 """
-This module contains classes that store data that is processed in OVITO's modification pipeline system.
+This module contains data container classes that are used by OVITO's modification pipeline system.
 
 **Data collection:**
 
-  * The :py:class:`DataCollection` class is container for multiple data objects and holds the pipeline results.
+  * The :py:class:`DataCollection` class is container for multiple data objects and holds the results of a modification pipeline.
 
 **Data objects:**
 
   * :py:class:`DataObject` (base class of all other data classes)
   * :py:class:`Bonds`
   * :py:class:`ParticleProperty`
+  * :py:class:`ParticleTypeProperty`
   * :py:class:`SimulationCell`
+
+**Helper classes:**
+
+  * :py:class:`ParticleType`
 
 """
 

@@ -98,7 +98,7 @@
         <listitem>
           <para>
              Lets the modifier calculate the Voronoi indices of particles. The modifier stores the computed indices in a vector particle property
-             named <code>Voronoi index</code>. The <emphasis>i</emphasis>-th component of this property will contain the number of faces of the 
+             named <code>Voronoi Index</code>. The <emphasis>i</emphasis>-th component of this property will contain the number of faces of the 
              Voronoi cell that have <emphasis>i</emphasis> edges. Thus, the first two components of the per-particle vector will always be zero, because the minimum
              number of edges a polygon can have is three.
           </para>

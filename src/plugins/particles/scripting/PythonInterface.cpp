@@ -269,13 +269,21 @@ BOOST_PYTHON_MODULE(Particles)
 		;
 	}
 
-	ovito_class<ParticleTypeProperty, ParticlePropertyObject>()
+	ovito_class<ParticleTypeProperty, ParticlePropertyObject>(
+			":Base: :py:class:`ovito.data.ParticleProperty`\n\n"
+			"A special :py:class:`ParticleProperty` that stores a list of :py:class:`ParticleType` instances in addition "
+			"to the per-particle values. "
+			"\n\n"
+			"The particle properties ``Particle Type`` and ``Structure Type`` are represented by instances of this class. In addition to the regular per-particle "
+			"data (consisting of an integer per particle, indicating its type ID), this class holds the list of defined particle types. These are "
+			":py:class:`ParticleType` instances, which store the ID, name, color, and radius of each particle type.")
 		.def("insertParticleType", &ParticleTypeProperty::insertParticleType)
 		.def("particleType", make_function((ParticleType* (ParticleTypeProperty::*)(int) const)&ParticleTypeProperty::particleType, return_value_policy<ovito_object_reference>()))
 		.def("particleType", make_function((ParticleType* (ParticleTypeProperty::*)(const QString&) const)&ParticleTypeProperty::particleType, return_value_policy<ovito_object_reference>()))
 		.def("removeParticleType", &ParticleTypeProperty::removeParticleType)
 		.def("clearParticleTypes", &ParticleTypeProperty::clearParticleTypes)
-		.add_property("particleTypes", make_function(&ParticleTypeProperty::particleTypes, return_internal_reference<>()))
+		.add_property("particle_types", make_function(&ParticleTypeProperty::particleTypes, return_internal_reference<>()),
+				"A list of :py:class:`ParticleType` instances.")
 		.def("getDefaultParticleColorFromId", &ParticleTypeProperty::getDefaultParticleColorFromId)
 		.def("getDefaultParticleColorFromName", &ParticleTypeProperty::getDefaultParticleColorFromName)
 		.staticmethod("getDefaultParticleColorFromId")
@@ -309,11 +317,16 @@ BOOST_PYTHON_MODULE(Particles)
 		.add_property("__array_interface__", &BondsObject__array_interface__)
 	;
 
-	ovito_class<ParticleType, RefTarget>()
-		.add_property("id", &ParticleType::id, &ParticleType::setId)
-		.add_property("color", &ParticleType::color, &ParticleType::setColor)
-		.add_property("radius", &ParticleType::radius, &ParticleType::setRadius)
-		.add_property("name", make_function(&ParticleType::name, return_value_policy<copy_const_reference>()), &ParticleType::setName)
+	ovito_class<ParticleType, RefTarget>(
+			"Defines the properties of a single particle type.")
+		.add_property("id", &ParticleType::id, &ParticleType::setId,
+				"The identifier of the particle type.")
+		.add_property("color", &ParticleType::color, &ParticleType::setColor,
+				"The display color to use for particles of this type.")
+		.add_property("radius", &ParticleType::radius, &ParticleType::setRadius,
+				"The display radius to use for particles of this type.")
+		.add_property("name", make_function(&ParticleType::name, return_value_policy<copy_const_reference>()), &ParticleType::setName,
+				"The display name of this particle type.")
 	;
 
 	class_<ParticleTypeList, boost::noncopyable>("ParticleTypeList", no_init)
