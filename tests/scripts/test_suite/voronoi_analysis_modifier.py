@@ -37,6 +37,7 @@ modifier.use_radii = True
 node.compute()
 
 print "Output:"
-print node.output["Atomic volume"].array
-print node.output["Voronoi index"].array
+print node.output["Atomic Volume"].array
+print node.output["Voronoi Index"].array
+print node.output["Coordination"].array
 print node.output.coordination.array

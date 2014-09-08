@@ -106,7 +106,9 @@ std::shared_ptr<AsynchronousParticleModifier::Engine> ConstructSurfaceModifier::
 {
 	// Get modifier inputs.
 	ParticlePropertyObject* posProperty = expectStandardProperty(ParticleProperty::PositionProperty);
-	ParticlePropertyObject* selProperty = _onlySelectedParticles ? inputStandardProperty(ParticleProperty::SelectionProperty) : nullptr;
+	ParticlePropertyObject* selProperty = nullptr;
+	if(onlySelectedParticles())
+		selProperty = expectStandardProperty(ParticleProperty::SelectionProperty);
 	SimulationCell* simCell = expectSimulationCell();
 
 	// Create engine object. Pass all relevant modifier parameters to the engine as well as the input data.

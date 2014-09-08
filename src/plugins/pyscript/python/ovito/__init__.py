@@ -178,7 +178,7 @@ ObjectNode.output = property(_ObjectNode_output)
 
 def _ObjectNode_remove_from_scene(self):
 	""" Removes the node from the scene by deleting it from the :py:attr:`ovito.DataSet.scene_nodes` list.
-	    The node's data will no longer be visible in the viewports after calling this method.
+	    The visual representation of the node will disappear from the viewports after calling this method.
 	"""
 	del self.dataset.scene_nodes[self]
 ObjectNode.remove_from_scene = _ObjectNode_remove_from_scene

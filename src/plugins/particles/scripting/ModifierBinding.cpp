@@ -778,7 +778,7 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 			"Computes the atomic volumes and coordination numbers using a Voronoi tessellation of the particle system."
 			"\n\n"
 			"The modifier stores the computed per-particle volume in the ``\"Atomic Volume\"`` particle property and the number of neighbors "
-			"of each particle in the ``\"Coordination number\"`` property.")
+			"of each particle in the ``\"Coordination\"`` property.")
 		.add_property("use_cutoff", &VoronoiAnalysisModifier::useCutoff, &VoronoiAnalysisModifier::setUseCutoff,
 				"Activates the cutoff-based scheme to construct Voronoi cells (fast method)."
 				"\n\n"

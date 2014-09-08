@@ -39,7 +39,7 @@ BOOST_PYTHON_MODULE(CrystalAnalysis)
 
 	ovito_class<ConstructSurfaceModifier, AsynchronousParticleModifier>(
 			":Base: :py:class:`ovito.modifiers.Modifier`\n\n"
-			"Constructs the geometric surface from a set of point particles.")
+			"Constructs the geometric surface from a set of point-like particles.")
 		.add_property("radius", &ConstructSurfaceModifier::radius, &ConstructSurfaceModifier::setRadius,
 				"The radius of the probe sphere used in the surface construction algorithm."
 				"\n\n"

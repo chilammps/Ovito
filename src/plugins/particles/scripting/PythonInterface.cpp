@@ -282,7 +282,7 @@ BOOST_PYTHON_MODULE(Particles)
 		.def("particleType", make_function((ParticleType* (ParticleTypeProperty::*)(const QString&) const)&ParticleTypeProperty::particleType, return_value_policy<ovito_object_reference>()))
 		.def("removeParticleType", &ParticleTypeProperty::removeParticleType)
 		.def("clearParticleTypes", &ParticleTypeProperty::clearParticleTypes)
-		.add_property("particle_types", make_function(&ParticleTypeProperty::particleTypes, return_internal_reference<>()),
+		.add_property("type_list", make_function(&ParticleTypeProperty::particleTypes, return_internal_reference<>()),
 				"A list of :py:class:`ParticleType` instances.")
 		.def("getDefaultParticleColorFromId", &ParticleTypeProperty::getDefaultParticleColorFromId)
 		.def("getDefaultParticleColorFromName", &ParticleTypeProperty::getDefaultParticleColorFromName)
