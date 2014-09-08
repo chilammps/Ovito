@@ -109,7 +109,7 @@
         <term>Maximum edge count</term>
         <listitem>
           <para>
-             Controls the order up to which Voronoi indices are computed. Voronoi faces that have a larger number of edges than this will be ignored.
+             Controls the order up to which Voronoi indices are computed. Note that Voronoi faces with a more edges than this maximum will be ignored when calculating the index vector.
           </para>
         </listitem>
       </varlistentry>
@@ -138,7 +138,7 @@
         <term>Use only selected particles</term>
         <listitem>
           <para>
-             Makes the modifier use only selected particles. Particles that are not selected will be treated as if they did not exist.
+             Lets the modifier perform the analysis only for selected particles. Particles that are not selected will be treated as if they did not exist.
           </para>
         </listitem>
       </varlistentry>

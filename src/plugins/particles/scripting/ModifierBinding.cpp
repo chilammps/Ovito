@@ -56,6 +56,7 @@
 #include <plugins/particles/modifier/analysis/scatterplot/ScatterPlotModifier.h>
 #include <plugins/particles/modifier/analysis/strain/AtomicStrainModifier.h>
 #include <plugins/particles/modifier/analysis/wignerseitz/WignerSeitzAnalysisModifier.h>
+#include <plugins/particles/modifier/analysis/voronoi/VoronoiAnalysisModifier.h>
 
 namespace Particles {
 
@@ -206,7 +207,7 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 				"\n\n"
 				":Default: ``False``\n")
 		.add_property("unique_ids", &ShowPeriodicImagesModifier::uniqueIdentifiers, &ShowPeriodicImagesModifier::setUniqueIdentifiers,
-				"If ``True``, the modifier automatically generates a new unique ID for copies of a particle."
+				"If ``True``, the modifier automatically generates a new unique ID for each copy of a particle."
 				"\n\n"
 				":Default: ``True``\n")
 	;
@@ -736,6 +737,55 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 		.add_property("frame_offset", &WignerSeitzAnalysisModifier::referenceFrameOffset, &WignerSeitzAnalysisModifier::setReferenceFrameOffset)
 		.add_property("vacancy_count", &WignerSeitzAnalysisModifier::vacancyCount)
 		.add_property("interstitial_count", &WignerSeitzAnalysisModifier::interstitialCount)
+	;
+
+	ovito_class<VoronoiAnalysisModifier, AsynchronousParticleModifier>(
+			":Base: :py:class:`ovito.modifiers.Modifier`\n\n"
+			"Computes the atomic volumes and coordination numbers using a Voronoi tessellation of the particle system."
+			"\n\n"
+			"The modifier stores the computed per-particle volume in the ``\"Atomic volume\"`` particle property and the number of neighbors "
+			"of each particle in the ``\"Coordination number\"`` property.")
+		.add_property("use_cutoff", &VoronoiAnalysisModifier::useCutoff, &VoronoiAnalysisModifier::setUseCutoff,
+				"Activates the cutoff-based scheme to construct Voronoi cells (fast method)."
+				"\n\n"
+				":Default: ``False``\n")
+		.add_property("cutoff", &VoronoiAnalysisModifier::cutoff, &VoronoiAnalysisModifier::setCutoff,
+				"Controls the cutoff distance for neighboring particle which are taken into account when computing the Voronoi cells using the cutoff-based method. "
+				"This parameter is only used if :py:attr:`.use_cutoff` == ``True``."
+				"\n\n"
+				":Default: 6.0\n")
+		.add_property("only_selected", &VoronoiAnalysisModifier::onlySelected, &VoronoiAnalysisModifier::setOnlySelected,
+				"Lets the modifier perform the analysis only for selected particles. Particles that are not selected will be treated as if they did not exist."
+				"\n\n"
+				":Default: ``False``\n")
+		.add_property("use_radii", &VoronoiAnalysisModifier::useRadii, &VoronoiAnalysisModifier::setUseRadii,
+				"If ``True``, the modifier computes the poly-disperse Voronoi tessellation, which takes into account the radii of particles. "
+				"Otherwise a mono-disperse Voronoi tessellation is computed, which is independent of the particle sizes. "
+				"\n\n"
+				":Default: ``False``\n")
+		.add_property("face_threshold", &VoronoiAnalysisModifier::faceThreshold, &VoronoiAnalysisModifier::setFaceThreshold,
+				"Specifies a minimum area for faces of a Voronoi cell. The modifier will ignore any Voronoi cell faces with an area smaller than this "
+				"threshold when computing the coordination number and the Voronoi index of particles."
+				"\n\n"
+				":Default: 0.0\n")
+		.add_property("edge_threshold", &VoronoiAnalysisModifier::edgeThreshold, &VoronoiAnalysisModifier::setEdgeThreshold,
+				"Specifies the minimum length an edge must have to be considered in the Voronoi index calculation. Edges that are shorter "
+				"than this threshold will be ignored when counting the number of edges of a Voronoi face."
+				"\n\n"
+				":Default: 0.0\n")
+		.add_property("compute_indices", &VoronoiAnalysisModifier::computeIndices, &VoronoiAnalysisModifier::setComputeIndices,
+				"If ``True``, the modifier calculates the Voronoi indices of particles. The modifier stores the computed indices in a vector particle property "
+				"named ``Voronoi index``. The *i*-th component of this property will contain the number of faces of the "
+				"Voronoi cell that have *i* edges. Thus, the first two components of the per-particle vector will always be zero, because the minimum "
+				"number of edges a polygon can have is three. "
+				"\n\n"
+				":Default: ``False``\n")
+		.add_property("edge_count", &VoronoiAnalysisModifier::edgeCount, &VoronoiAnalysisModifier::setEdgeCount,
+				"Integer parameter controlling the order up to which Voronoi indices are computed by the modifier. "
+				"Note that Voronoi faces with more edges than this maximum will be ignored when calculating the index vector. "
+				"Must be at least 3."
+				"\n\n"
+				":Default: 6\n")
 	;
 }
 
