@@ -100,7 +100,7 @@ public:
 	}
 
 	/// Returns the index of the particle closest to the given point.
-	int findClosestParticle(const Point3& query_point, FloatType& closestDistanceSq) const {
+	int findClosestParticle(const Point3& query_point, FloatType& closestDistanceSq, bool includeSelf = true) const {
 		int closestIndex = -1;
 		closestDistanceSq = FLOATTYPE_MAX;
 		auto visitor = [&closestIndex, &closestDistanceSq](const Neighbor& n, FloatType& mrs) {
@@ -109,7 +109,7 @@ public:
 				closestIndex = n.index();
 			}
 		};
-		visitNeighbors(query_point, visitor);
+		visitNeighbors(query_point, visitor, includeSelf);
 		return closestIndex;
 	}
 
@@ -184,13 +184,13 @@ public:
 	};
 
 	template<class Visitor>
-	void visitNeighbors(const Point3& query_point, Visitor& v) const {
+	void visitNeighbors(const Point3& query_point, Visitor& v, bool includeSelf = false) const {
 		FloatType mrs = FLOATTYPE_MAX;
 		for(const Vector3& pbcShift : pbcImages) {
 			Point3 q = query_point - pbcShift;
 			Point3 qr = simCellInverse * q;
 			if(mrs > minimumDistance(root->bounds, q))
-				visitNode(root, q, qr, v, mrs);
+				visitNode(root, q, qr, v, mrs, includeSelf);
 		}
 	}
 
@@ -220,13 +220,13 @@ private:
 	}
 
 	template<class Visitor>
-	void visitNode(TreeNode* node, const Point3& q, const Point3& qr, Visitor& v, FloatType& mrs) const {
+	void visitNode(TreeNode* node, const Point3& q, const Point3& qr, Visitor& v, FloatType& mrs, bool includeSelf) const {
 		if(node->isLeaf()) {
 			for(NeighborListAtom* atom = node->atoms; atom != nullptr; atom = atom->nextInBin) {
 				Neighbor n;
 				n.delta = atom->pos - q;
 				n.distanceSq = n.delta.squaredLength();
-				if(n.distanceSq != 0) {
+				if(includeSelf || n.distanceSq != 0) {
 					n.atom = atom;
 					v(n, mrs);
 				}
@@ -234,14 +234,14 @@ private:
 		}
 		else {
 			if(qr[node->splitDim] < node->splitPos) {
-				visitNode(node->children[0], q, qr, v, mrs);
+				visitNode(node->children[0], q, qr, v, mrs, includeSelf);
 				if(mrs > minimumDistance(node->children[1]->bounds, q))
-					visitNode(node->children[1], q, qr, v, mrs);
+					visitNode(node->children[1], q, qr, v, mrs, includeSelf);
 			}
 			else {
-				visitNode(node->children[1], q, qr, v, mrs);
+				visitNode(node->children[1], q, qr, v, mrs, includeSelf);
 				if(mrs > minimumDistance(node->children[0]->bounds, q))
-					visitNode(node->children[0], q, qr, v, mrs);
+					visitNode(node->children[0], q, qr, v, mrs, includeSelf);
 			}
 		}
 	}

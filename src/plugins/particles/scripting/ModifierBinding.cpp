@@ -768,7 +768,7 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 				"Note that accessing this value is only possible after the modifier has computed its results. "
 				"Thus, you have to call :py:meth:`ovito.ObjectNode.compute` first to ensure that this information is up to date. ")
 		.add_property("interstitial_count", &WignerSeitzAnalysisModifier::interstitialCount,
-				"After the modifier has performed the analysis, this field contains the number of sites occupied by more than one particle. "
+				"After the modifier has performed the analysis, this field contains the number of interstitial atoms. "
 				"Note that accessing this value is only possible after the modifier has computed its results. "
 				"Thus, you have to call :py:meth:`ovito.ObjectNode.compute` first to ensure that this information is up to date. ")
 	;
