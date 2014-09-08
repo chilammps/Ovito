@@ -729,14 +729,48 @@ BOOST_PYTHON_MODULE(ParticlesModify)
 				"Thus, you have to call :py:meth:`ovito.ObjectNode.compute` first to ensure that this information is up to date. ")
 	;
 
-	ovito_class<WignerSeitzAnalysisModifier, AsynchronousParticleModifier>()
-		.add_property("reference", make_function(&WignerSeitzAnalysisModifier::referenceConfiguration, return_value_policy<ovito_object_reference>()), &WignerSeitzAnalysisModifier::setReferenceConfiguration)
-		.add_property("eliminate_cell_deformation", &WignerSeitzAnalysisModifier::eliminateCellDeformation, &WignerSeitzAnalysisModifier::setEliminateCellDeformation)
-		.add_property("use_frame_offset", &WignerSeitzAnalysisModifier::useReferenceFrameOffset, &WignerSeitzAnalysisModifier::setUseReferenceFrameOffset)
-		.add_property("reference_frame", &WignerSeitzAnalysisModifier::referenceFrameNumber, &WignerSeitzAnalysisModifier::setReferenceFrameNumber)
-		.add_property("frame_offset", &WignerSeitzAnalysisModifier::referenceFrameOffset, &WignerSeitzAnalysisModifier::setReferenceFrameOffset)
-		.add_property("vacancy_count", &WignerSeitzAnalysisModifier::vacancyCount)
-		.add_property("interstitial_count", &WignerSeitzAnalysisModifier::interstitialCount)
+	ovito_class<WignerSeitzAnalysisModifier, AsynchronousParticleModifier>(
+			":Base: :py:class:`ovito.modifiers.Modifier`\n\n"
+			"Performs the Wigner-Seitz cell analysis to identify point defects in crystals. "
+			"The modifier requires you to load a reference configuration from an external file::"
+			"\n\n"
+			"   modifier = WignerSeitzAnalysisModifier()\n"
+			"   modifier.reference.load(\"frame0000.dump\")\n"
+			"\n\n"
+			"The modifier stores the computed occupation numbers in the ``\"Occupancy\"`` particle property. "
+			"The number of vacancies and the number of interstitial sites found by the modifier are reported in "
+			"the :py:attr:`.vacancy_count` and :py:attr:`.interstitial_count` output fields.")
+		.add_property("reference", make_function(&WignerSeitzAnalysisModifier::referenceConfiguration, return_value_policy<ovito_object_reference>()), &WignerSeitzAnalysisModifier::setReferenceConfiguration,
+				"A :py:class:`~ovito.io.FileSource` that provides the reference positions of particles. "
+				"You can call its :py:meth:`~ovito.io.FileSource.load` function to load a reference simulation file "
+				"as shown in the code example above.")
+		.add_property("eliminate_cell_deformation", &WignerSeitzAnalysisModifier::eliminateCellDeformation, &WignerSeitzAnalysisModifier::setEliminateCellDeformation,
+				"Boolean flag that controls the elimination of the affine cell deformation prior to performing the analysis."
+				"\n\n"
+				":Default: ``False``\n")
+		.add_property("use_frame_offset", &WignerSeitzAnalysisModifier::useReferenceFrameOffset, &WignerSeitzAnalysisModifier::setUseReferenceFrameOffset,
+				"Determines whether a sliding reference configuration is taken at a constant time offset (specified by :py:attr:`.frame_offset`) "
+				"relative to the current frame. If ``False``, a constant reference configuration is used (set by the :py:attr:`.reference_frame` parameter) "
+				"irrespective of the current frame."
+				"\n\n"
+				":Default: ``False``\n")
+		.add_property("reference_frame", &WignerSeitzAnalysisModifier::referenceFrameNumber, &WignerSeitzAnalysisModifier::setReferenceFrameNumber,
+				"The frame number to use as reference configuration if the reference data comprises multiple "
+				"simulation frames. Only used if ``use_frame_offset==False``."
+				"\n\n"
+				":Default: 0\n")
+		.add_property("frame_offset", &WignerSeitzAnalysisModifier::referenceFrameOffset, &WignerSeitzAnalysisModifier::setReferenceFrameOffset,
+				"The relative frame offset when using a sliding reference configuration (``use_frame_offset==True``)."
+				"\n\n"
+				":Default: -1\n")
+		.add_property("vacancy_count", &WignerSeitzAnalysisModifier::vacancyCount,
+				"After the modifier has performed the analysis, this field contains the number of vacant sites. "
+				"Note that accessing this value is only possible after the modifier has computed its results. "
+				"Thus, you have to call :py:meth:`ovito.ObjectNode.compute` first to ensure that this information is up to date. ")
+		.add_property("interstitial_count", &WignerSeitzAnalysisModifier::interstitialCount,
+				"After the modifier has performed the analysis, this field contains the number of sites occupied by more than one particle. "
+				"Note that accessing this value is only possible after the modifier has computed its results. "
+				"Thus, you have to call :py:meth:`ovito.ObjectNode.compute` first to ensure that this information is up to date. ")
 	;
 
 	ovito_class<VoronoiAnalysisModifier, AsynchronousParticleModifier>(
