@@ -23,8 +23,7 @@
 #include <core/scene/objects/SceneObject.h>
 #include <core/scene/ObjectNode.h>
 #include <core/scene/pipeline/PipelineObject.h>
-#include <core/gui/mainwin/MainWindow.h>
-#include <core/gui/app/Application.h>
+#include <core/dataset/DataSetContainer.h>
 
 namespace Ovito {
 
@@ -125,51 +124,9 @@ QSet<ObjectNode*> SceneObject::dependentNodes() const
 ******************************************************************************/
 bool SceneObject::waitUntilReady(TimePoint time, const QString& message, QProgressDialog* progressDialog)
 {
-	OVITO_ASSERT_MSG(QThread::currentThread() == QApplication::instance()->thread(), "SceneObject::waitUntilReady", "This function may only be called from the GUI thread.");
-
-	// Check if data is already available.
-	if(evaluate(time).status().type() != PipelineStatus::Pending)
-		return true;
-
-	if(Application::instance().guiMode()) {
-
-		// Show a modal progress dialog to block user interface while waiting for the scene to become ready.
-		if(!progressDialog) {
-			QProgressDialog pdlg(dataset()->mainWindow());
-			pdlg.setWindowModality(Qt::WindowModal);
-			pdlg.setAutoClose(false);
-			pdlg.setAutoReset(false);
-			pdlg.setMinimumDuration(0);
-			pdlg.setValue(0);
-			pdlg.setLabelText(message);
-
-			// Poll object until it becomes ready.
-			while(evaluate(time).status().type() == PipelineStatus::Pending) {
-				if(pdlg.wasCanceled())
-					return false;
-				QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents, 50);
-			}
-
-		}
-		else {
-			progressDialog->setLabelText(message);
-
-			// Poll object until it becomes ready.
-			while(evaluate(time).status().type() == PipelineStatus::Pending) {
-				if(progressDialog->wasCanceled())
-					return false;
-				QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents, 50);
-			}
-		}
-	}
-	else {
-		// Poll object until it becomes ready.
-		while(evaluate(time).status().type() == PipelineStatus::Pending) {
-			QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents, 50);
-		}
-	}
-
-	return true;
+	return dataset()->container()->waitUntil([this, time]() {
+		return evaluate(time).status().type() != PipelineStatus::Pending;
+	}, message, progressDialog);
 }
 
 };

@@ -35,6 +35,10 @@
 #include <core/utilities/io/ObjectLoadStream.h>
 #include <core/utilities/io/FileManager.h>
 
+#ifdef Q_OS_UNIX
+	#include <signal.h>
+#endif
+
 namespace Ovito {
 
 IMPLEMENT_OVITO_OBJECT(Core, DataSetContainer, RefMaker);
@@ -317,6 +321,73 @@ bool DataSetContainer::importFile(const QUrl& url, const FileImporterDescription
 	importer->loadUserDefaults();
 
 	return importer->importFile(url, importMode);
+}
+
+// Boolean flag which is set by the POSIX signal handler when user
+// presses Ctrl+C to interrupt the program. In console mode, the
+// DataSetContainer::waitUntil() function breaks out of the waiting loop
+// when this flag is set.
+static QAtomicInt _userInterrupt;
+
+/******************************************************************************
+* This function blocks execution until some operation has been completed.
+******************************************************************************/
+bool DataSetContainer::waitUntil(const std::function<bool()>& callback, const QString& message, QProgressDialog* progressDialog)
+{
+	OVITO_ASSERT_MSG(QThread::currentThread() == QApplication::instance()->thread(), "DataSetContainer::waitUntilReady", "This function may only be called from the GUI thread.");
+
+	// Check if operation is already completed.
+	if(callback())
+		return true;
+
+	if(Application::instance().guiMode()) {
+
+		// Show a modal progress dialog to block user interface while waiting.
+		std::unique_ptr<QProgressDialog> localDialog;
+		if(!progressDialog) {
+			localDialog.reset(new QProgressDialog(mainWindow()));
+			progressDialog = localDialog.get();
+			progressDialog->setWindowModality(Qt::WindowModal);
+			progressDialog->setAutoClose(false);
+			progressDialog->setAutoReset(false);
+			progressDialog->setMinimumDuration(0);
+			progressDialog->setValue(0);
+		}
+		progressDialog->setLabelText(message);
+
+		// Poll callback function until it returns true.
+		while(!callback()) {
+			if(progressDialog->wasCanceled())
+				return false;
+			QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents, 50);
+		}
+	}
+	else {
+#ifdef Q_OS_UNIX
+		// Install POSIX signal handler to catch Ctrl+C key press in console mode.
+		auto oldSignalHandler = ::signal(SIGINT, [](int) { _userInterrupt.storeRelease(1); });
+		try {
+#endif
+
+		// Poll callback function until it returns true.
+		while(!callback() && !_userInterrupt.loadAcquire()) {
+			QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents, 20);
+		}
+
+#ifdef Q_OS_UNIX
+		::signal(SIGINT, oldSignalHandler);
+		}
+		catch(...) {
+			::signal(SIGINT, oldSignalHandler);
+		}
+#endif
+		if(_userInterrupt.load()) {
+			taskManager().cancelAll();
+			return false;
+		}
+	}
+
+	return true;
 }
 
 };

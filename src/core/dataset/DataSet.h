@@ -178,7 +178,7 @@ protected:
 	virtual void referenceReplaced(const PropertyFieldDescriptor& field, RefTarget* oldTarget, RefTarget* newTarget) override;
 
 	/// Renders a single frame and saves the output file. This is part of the implementation of the renderScene() method.
-	void renderFrame(TimePoint renderTime, int frameNumber, RenderSettings* settings, SceneRenderer* renderer,
+	bool renderFrame(TimePoint renderTime, int frameNumber, RenderSettings* settings, SceneRenderer* renderer,
 			Viewport* viewport, FrameBuffer* frameBuffer, VideoEncoder* videoEncoder, QProgressDialog* progressDialog);
 
 	/// Returns a viewport configuration that is used as template for new scenes.
