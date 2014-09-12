@@ -47,7 +47,7 @@ SET(OVITO_PARTICLES_SOURCE_FILES
 	modifier/analysis/bondangle/BondAngleAnalysisModifier.cpp
 	modifier/analysis/cna/CommonNeighborAnalysisModifier.cpp
 	modifier/analysis/coordination/CoordinationNumberModifier.cpp
-	modifier/analysis/spatialcorrelationfunction/SpatialCorrelationFunctionModifier.cpp
+#	modifier/analysis/spatialcorrelationfunction/SpatialCorrelationFunctionModifier.cpp
 	modifier/analysis/displacements/CalculateDisplacementsModifier.cpp
 	modifier/analysis/centrosymmetry/CentroSymmetryModifier.cpp
 	modifier/analysis/strain/AtomicStrainModifier.cpp

@@ -17,7 +17,6 @@
 
 Sha Zhendong:
 
-- Calculation of Voronoi atomic volume
 - Calculation of local atomic number density functions
 
 Fossati, Paul C:
