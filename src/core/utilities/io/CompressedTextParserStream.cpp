@@ -28,8 +28,7 @@ namespace Ovito {
 * Opens the stream for reading.
 ******************************************************************************/
 CompressedTextParserStream::CompressedTextParserStream(QFileDevice& input, const QString& originalFilePath) :
-	_device(input), _lineNumber(0), _byteOffset(0), _uncompressor(&input, 6, 0x100000),
-	_lineCapacity(0)
+	_device(input), _lineNumber(0), _byteOffset(0), _uncompressor(&input, 6, 0x100000), _mmapPointer(nullptr)
 {
 	// Try to find out what the filename is.
 	if(originalFilePath.isEmpty() == false)
@@ -65,21 +64,16 @@ const char* CompressedTextParserStream::readLine(int maxSize)
 
 	qint64 readBytes = 0;
 	if(!maxSize) {
-		if(_lineCapacity <= 1) {
-			_line.reset(new char[2]);
-			_lineCapacity = 2;
+		if(_line.size() <= 1) {
+			_line.resize(1024);
 		}
-		readBytes = _stream->readLine(_line.get(), _lineCapacity);
+		readBytes = _stream->readLine(_line.data(), _line.size());
 
-		if(readBytes == _lineCapacity - 1 && _line[readBytes - 1] != '\n') {
+		if(readBytes == _line.size() - 1 && _line[readBytes - 1] != '\n') {
 			qint64 readResult;
 			do {
-				size_t newCapacity = _lineCapacity + 16384;
-				std::unique_ptr<char[]> newBuffer(new char[newCapacity]);
-				memcpy(newBuffer.get(), _line.get(), _lineCapacity);
-				_line.reset(newBuffer.release());
-				_lineCapacity = newCapacity;
-				readResult = _stream->readLine(_line.get() + readBytes, _lineCapacity - readBytes);
+				_line.resize(_line.size() + 16384);
+				readResult = _stream->readLine(_line.data() + readBytes, _line.size() - readBytes);
 				if(readResult > 0 || readBytes == 0)
 					readBytes += readResult;
 			}
@@ -87,15 +81,12 @@ const char* CompressedTextParserStream::readLine(int maxSize)
 		}
 	}
 	else {
-		if(maxSize > _lineCapacity) {
-			_lineCapacity = maxSize + 1;
-			_line.reset(new char[_lineCapacity]);
+		if(maxSize > _line.size()) {
+			_line.resize(maxSize + 1);
 		}
-		OVITO_ASSERT(_line.get() != nullptr);
-		readBytes = _stream->readLine(_line.get(), _lineCapacity);
+		readBytes = _stream->readLine(_line.data(), _line.size());
 	}
 
-	OVITO_ASSERT(_line.get() != nullptr);
 	if(readBytes <= 0)
 		_line[0] = '\0';
 	else {
@@ -103,7 +94,30 @@ const char* CompressedTextParserStream::readLine(int maxSize)
 		_byteOffset += readBytes;
 	}
 
-	return _line.get();
+	return _line.data();
+}
+
+/******************************************************************************
+* Maps a part of the input file to memory.
+******************************************************************************/
+std::pair<const char*, const char*> CompressedTextParserStream::mmap(qint64 offset, qint64 size)
+{
+	OVITO_ASSERT(_mmapPointer == nullptr);
+	if(isCompressed() == false)
+		_mmapPointer = device().map(underlyingByteOffset(), size);
+	return std::make_pair(
+			reinterpret_cast<const char*>(_mmapPointer),
+			reinterpret_cast<const char*>(_mmapPointer) + size);
 }
 	
+/******************************************************************************
+* Unmaps the file from memory.
+******************************************************************************/
+void CompressedTextParserStream::munmap()
+{
+	OVITO_ASSERT(_mmapPointer != nullptr);
+	device().unmap(_mmapPointer);
+	_mmapPointer = nullptr;
+}
+
 };

@@ -46,6 +46,9 @@ public:
 	/// Returns the underlying I/O device.
 	QFileDevice& device() { return _device; }
 
+	/// Returns whether data is being read from a compressed file.
+	bool isCompressed() const { return _stream != &_device; }
+
 	/// Reads in the next line.
 	const char* readLine(int maxSize = 0);
 
@@ -54,8 +57,8 @@ public:
 		return _stream->atEnd();
 	}
 
-	/// Returns the last line read from the data stream.
-	const char* line() const { return _line.get(); }
+	/// Returns the last line read from the stream.
+	const char* line() const { return _line.data(); }
 
 	/// Returns true if the current line starts with the given string.
 	bool lineStartsWith(const char* s) const {
@@ -69,7 +72,7 @@ public:
 	}
 
 	/// Returns the current line as a string.
-	QString lineString() const { return QString::fromLocal8Bit(_line.get()); }
+	QString lineString() const { return QString::fromLocal8Bit(_line.data()); }
 
 	/// Returns the number of the current line.
 	int lineNumber() const { return _lineNumber; }
@@ -96,16 +99,24 @@ public:
 		return _device.size();
 	}
 
+	/// Maps the input file to memory, starting at the current offset and to end of the file.
+	std::pair<const char*, const char*> mmap() {
+		return mmap(underlyingByteOffset(), underlyingSize() - underlyingByteOffset());
+	}
+
+	/// Maps a part of the input file to memory.
+	std::pair<const char*, const char*> mmap(qint64 offset, qint64 size);
+
+	/// Unmaps the file from memory.
+	void munmap();
+
 private:
 
 	/// The name of the input file (if known).
 	QString _filename;
 
 	/// Buffer that holds the current line.
-	std::unique_ptr<char[]> _line;
-
-	/// The capacity of the line buffer.
-	size_t _lineCapacity;
+	std::vector<char> _line;
 
 	/// The current line number.
 	int _lineNumber;
@@ -121,6 +132,9 @@ private:
 
 	/// The input stream from which uncompressed data is read.
 	QIODevice* _stream;
+
+	/// The pointer to the memory-mapped data.
+	uchar* _mmapPointer;
 
 	Q_OBJECT
 };

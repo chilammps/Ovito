@@ -274,7 +274,7 @@ void AtomicStrainModifier::AtomicStrainEngine::compute(FutureInterfaceBase& futu
 	else {
 		// Deformed and reference configuration must contain the same number of particles.
 		if(positions()->size() != refPositions()->size())
-			throw Exception(tr("Cannot calculate displacements. Number of particles in reference configuration and current configuration does not match."));
+			throw Exception(tr("Cannot calculate displacements. Numbers of particles in reference configuration and current configuration do not match."));
 		// When particle identifiers are not available, use trivial 1-to-1 mapping.
 		std::iota(refToCurrentIndexMap.begin(), refToCurrentIndexMap.end(), size_t(0));
 		std::iota(currentToRefIndexMap.begin(), currentToRefIndexMap.end(), size_t(0));

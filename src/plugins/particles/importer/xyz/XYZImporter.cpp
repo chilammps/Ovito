@@ -477,7 +477,7 @@ void XYZImporter::XYZImportTask::parseFile(FutureInterfaceBase& futureInterface,
 				futureInterface.setProgressValue((int)i);
 			}
 			stream.readLine();
-			columnParser.readParticle(i, const_cast<char*>(stream.line()));
+			columnParser.readParticle(i, stream.line());
 		}
 	}
 	catch(Exception& ex) {

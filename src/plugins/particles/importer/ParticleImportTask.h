@@ -105,43 +105,31 @@ public:
 	}
 
 	/// Defines a new particle type with the given id.
-	inline int addParticleTypeName(const char* name) {
+	inline int addParticleTypeName(const char* name, const char* name_end) {
+		size_t nameLen = name_end - name;
 		for(const auto& type : _particleTypes) {
-			if(type.name8bit == name)
+			if(type.name8bit.compare(0, type.name8bit.size(), name, nameLen) == 0)
 				return type.id;
 		}
 		int id = _particleTypes.size() + 1;
-		_particleTypes.push_back({ id, QString::fromLocal8Bit(name), name, Color(0,0,0), 0.0f });
+		_particleTypes.push_back({ id, QString::fromLocal8Bit(name, nameLen), std::string(name, nameLen), Color(0,0,0), 0.0f });
 		return id;
 	}
 
 	/// Defines a new particle type with the given id.
-	int addParticleTypeName(const char* name, const Color& color, FloatType radius = 0) {
+	int addParticleTypeName(const char* name, const char* name_end, const Color& color, FloatType radius = 0) {
+		size_t nameLen = name_end - name;
 		for(const auto& type : _particleTypes) {
-			if(type.name8bit == name)
+			if(type.name8bit.compare(0, type.name8bit.size(), name, nameLen) == 0)
 				return type.id;
 		}
 		int id = _particleTypes.size() + 1;
-		_particleTypes.push_back({ id, QString::fromLocal8Bit(name), name, color, radius });
+		_particleTypes.push_back({ id, QString::fromLocal8Bit(name, nameLen), std::string(name, nameLen), color, radius });
 		return id;
 	}
 
 	/// Returns the list of particle types.
 	const std::vector<ParticleTypeDefinition>& particleTypes() const { return _particleTypes; }
-
-#if 0
-	/// Returns the identifier of the particle type with the given name.
-	/// Returns -1 if no such type exists.
-	int particleTypeFromName(const QString& name) const {
-		int index = 0;
-		for(const auto& type : _particleTypes) {
-			if(type.second.name == name)
-				return index;
-			index++;
-		}
-		return -1;
-	}
-#endif
 
 	/// Sorts the particle types w.r.t. their name. Reassigns the per-particle type IDs.
 	/// This method is used by file parsers that create particle types on the go while the read the particle data.

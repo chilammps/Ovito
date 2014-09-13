@@ -223,9 +223,9 @@ void CFGImporter::CFGImportTask::parseFile(FutureInterfaceBase& futureInterface,
 		if(header.isExtendedFormat) {
 			bool isNewType = true;
 			for(const char* line = stream.line(); *line != '\0'; ++line) {
-				if(std::isspace(*line)) {
+				if(*line <= ' ') {
 					for(; *line != '\0'; ++line) {
-						if(!std::isspace(*line)) {
+						if(*line > ' ') {
 							isNewType = false;
 							break;
 						}
@@ -237,11 +237,10 @@ void CFGImporter::CFGImportTask::parseFile(FutureInterfaceBase& futureInterface,
 				// Parse mass and atom type name.
 				currentMass = atof(stream.line());
 				const char* line = stream.readLine();
-				while(*line != '\0' && std::isspace(*line)) ++line;
+				while(*line != '\0' && *line <= ' ') ++line;
 				const char* line_end = line;
-				while(*line_end != '\0' && !std::isspace(*line_end)) ++line_end;
-				*const_cast<char*>(line_end) = '\0';
-				currentAtomType = addParticleTypeName(line);
+				while(*line_end != '\0' && *line_end > ' ') ++line_end;
+				currentAtomType = addParticleTypeName(line, line_end);
 
 				continue;
 			}
@@ -251,7 +250,7 @@ void CFGImporter::CFGImportTask::parseFile(FutureInterfaceBase& futureInterface,
 		}
 
 		try {
-			columnParser.readParticle(particleIndex, const_cast<char*>(stream.line()));
+			columnParser.readParticle(particleIndex, stream.line());
 			particleIndex++;
 		}
 		catch(Exception& ex) {

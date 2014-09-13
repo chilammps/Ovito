@@ -265,20 +265,29 @@ void LAMMPSTextDumpImporter::LAMMPSTextDumpImportTask::parseFile(FutureInterface
 
 				// Parse data columns.
 				InputColumnReader columnParser(columnMapping, *this, numParticles);
+
+				// If possible, use memory-mapped file access for best performance.
+				const char* s;
+				const char* s_end;
+				std::tie(s, s_end) = stream.mmap();
+				int lineNumber = stream.lineNumber() + 1;
 				try {
-					for(size_t i = 0; i < numParticles; i++) {
+					for(size_t i = 0; i < numParticles; i++, lineNumber++) {
 						if((i % 4096) == 0) {
 							if(futureInterface.isCanceled())
-								return;	// Abort!
+								return;
 							futureInterface.setProgressValue((int)i);
 						}
-						stream.readLine();
-						columnParser.readParticle(i, const_cast<char*>(stream.line()));
+						if(!s)
+							columnParser.readParticle(i, stream.readLine());
+						else
+							s = columnParser.readParticle(i, s, s_end);
 					}
 				}
 				catch(Exception& ex) {
-					throw ex.prependGeneralMessage(tr("Parsing error in line %1 of LAMMPS dump file.").arg(stream.lineNumber()));
+					throw ex.prependGeneralMessage(tr("Parsing error in line %1 of LAMMPS dump file.").arg(lineNumber));
 				}
+				if(s) stream.munmap();
 
 				// Sort the particle type list since we created particles on the go and their order depends on the occurrence of types in the file.
 				sortParticleTypesById();

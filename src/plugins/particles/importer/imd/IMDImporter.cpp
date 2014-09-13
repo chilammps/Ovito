@@ -158,8 +158,7 @@ void IMDImporter::IMDImportTask::parseFile(FutureInterfaceBase& futureInterface,
 					return;	// Abort!
 				futureInterface.setProgressValue((int)i);
 			}
-			stream.readLine();
-			columnParser.readParticle(i, const_cast<char*>(stream.line()));
+			columnParser.readParticle(i, stream.readLine());
 		}
 		catch(Exception& ex) {
 			throw ex.prependGeneralMessage(tr("Parsing error in line %1 of IMD file.").arg(headerLinerNumber + i));

@@ -138,17 +138,15 @@ public:
 	///        in the property objects.
 	/// \param particleIndex The line index starting at 0 that specifies the particle whose properties
 	///                  are read from the input file.
-	/// \param dataLine The text line read from the input file that contains the data field values.
-	///                 The contents of this string may be destroyed by the parsing method.
-	void readParticle(size_t particleIndex, char* dataLine);
+	/// \param dataLine The text line read from the input file containing the field values.
+	void readParticle(size_t particleIndex, const char* dataLine);
 
 	/// \brief Parses the string tokens from one line of the input file and stores the values
 	///        in the property objects.
 	/// \param particleIndex The line index starting at 0 that specifies the particle whose properties
 	///                  are read from the input file.
-	/// \param ntokens The number of tokens parsed from the input file line.
-	/// \param tokens The list of parsed tokens.
-	void readParticle(size_t particleIndex, int ntokens, const char* tokens[]);
+	/// \param dataLine The text line read from the input file containing the field values.
+	const char* readParticle(size_t particleIndex, const char* dataLine, const char* dataLineEnd);
 
 	/// \brief Processes the values from one line of the input file and stores them in the particle properties.
 	void readParticle(size_t particleIndex, const double* values, int nvalues);
@@ -158,20 +156,30 @@ public:
 
 private:
 
+	/// Parse a single field from a text line.
+	void parseField(size_t particleIndex, int columnIndex, const char* token, const char* token_end);
+
 	/// Determines which input data columns are stored in what properties.
 	InputColumnMapping _mapping;
 
 	/// The data container.
 	ParticleImportTask& _destination;
 
+	struct TargetPropertyRecord {
+		ParticleProperty* property;
+		FloatType* floatData;
+		int* intData;
+		size_t stride;
+		size_t count;
+		int vectorComponent;
+		bool isTypeProperty;
+	};
+
 	/// Stores the destination particle properties.
-	QVector<ParticleProperty*> _properties;
+	QVector<TargetPropertyRecord> _properties;
 
 	/// The Qt data type identifiers.
 	int _intMetaTypeId, _floatMetaTypeId;
-
-	/// Array of pointers to the tokens in a text string.
-	std::unique_ptr<const char*[]> _tokens;
 
 	/// Indicates that particle types were specified in the file as strings instead of numeric IDs.
 	bool _usingNamedParticleTypes;

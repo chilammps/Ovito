@@ -251,8 +251,10 @@ int Application::runApplication()
 		return QApplication::exec();
 	}
 	else {
-		// No event processing needed in console mode.
-		// Just quit the application.
+		// Deliver all events that have been posted during the initialization.
+		QCoreApplication::processEvents();
+		// Just quit the application after all background tasks have finished.
+		datasetContainer()->taskManager().waitForAll();
 		return _exitCode;
 	}
 }

@@ -186,6 +186,14 @@ void TaskManager::cancelAll()
 void TaskManager::cancelAllAndWait()
 {
 	cancelAll();
+	waitForAll();
+}
+
+/******************************************************************************
+* Waits for all tasks to finish.
+******************************************************************************/
+void TaskManager::waitForAll()
+{
 	for(FutureWatcher* watcher : _taskStack) {
 		try {
 			watcher->waitForFinished();
