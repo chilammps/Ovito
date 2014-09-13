@@ -60,7 +60,7 @@ bool POSCARExporter::exportParticles(const PipelineFlowState& state, int frameNu
 	textStream() << "1\n";
 	AffineTransformation cell = simulationCell->cellMatrix();
 	for(size_t i = 0; i < 3; i++)
-		textStream() << cell(0, i) << " " << cell(1, i) << " " << cell(2, i) << "\n";
+		textStream() << cell(0, i) << ' ' << cell(1, i) << ' ' << cell(2, i) << '\n';
 	Vector3 origin = cell.translation();
 
 	// Count number of particles per particle type.
@@ -79,23 +79,23 @@ bool POSCARExporter::exportParticles(const PipelineFlowState& state, int frameNu
 			if(particleType) {
 				QString typeName = particleType->name();
 				typeName.replace(' ', '_');
-				textStream() << typeName << " ";
+				textStream() << typeName << ' ';
 			}
-			else textStream() << "Type" << c.key() << " ";
+			else textStream() << "Type" << c.key() << ' ';
 		}
-		textStream() << "\n";
+		textStream() << '\n';
 
 		// Write line with particle counts per type.
 		for(auto c = particleCounts.begin(); c != particleCounts.end(); ++c) {
-			textStream() << c.value() << " ";
+			textStream() << c.value() << ' ';
 		}
-		textStream() << "\n";
+		textStream() << '\n';
 	}
 	else {
 		// Write line with particle type name.
 		textStream() << "A\n";
 		// Write line with particle count.
-		textStream() << posProperty->size() << "\n";
+		textStream() << posProperty->size() << '\n';
 		particleCounts[0] = posProperty->size();
 	}
 
@@ -111,7 +111,7 @@ bool POSCARExporter::exportParticles(const PipelineFlowState& state, int frameNu
 		for(size_t i = 0; i < posProperty->size(); i++, ++p) {
 			if(particleTypeProperty && particleTypeProperty->getInt(i) != ptype)
 				continue;
-			textStream() << (p->x() - origin.x()) << " " << (p->y() - origin.y()) << " " << (p->z() - origin.z()) << "\n";
+			textStream() << (p->x() - origin.x()) << ' ' << (p->y() - origin.y()) << ' ' << (p->z() - origin.z()) << '\n';
 			currentProgress++;
 
 			if((currentProgress % 1000) == 0) {
@@ -131,7 +131,7 @@ bool POSCARExporter::exportParticles(const PipelineFlowState& state, int frameNu
 			for(size_t i = 0; i < velocityProperty->size(); i++, ++v) {
 				if(particleTypeProperty && particleTypeProperty->getInt(i) != ptype)
 					continue;
-				textStream() << v->x() << " " << v->y() << " " << v->z() << "\n";
+				textStream() << v->x() << ' ' << v->y() << ' ' << v->z() << '\n';
 				currentProgress++;
 
 				if((currentProgress % 1000) == 0) {

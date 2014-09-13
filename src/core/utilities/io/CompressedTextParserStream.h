@@ -28,16 +28,18 @@
 namespace Ovito {
 
 /**
- * \brief A helper class that uncompresses gzipped text files on the fly.
+ * \brief A helper class that allows reading text-based files that may be compressed.
  *
- * When opening the input file, it is uncompressed if it has a .gz suffix.
- * Otherwise the data is directly read from the underlying I/O device.
+ * The input file is uncompressed on the fly if it has a .gz name suffix.
+ * Otherwise the text data is directly read from the underlying I/O device.
+ *
+ * The class provides functions to efficiently read one text line at a time.
  */
 class OVITO_CORE_EXPORT CompressedTextParserStream : public QObject
 {
 public:
 
-	/// Constructor that opens the input stream.
+	/// Constructor that opens the given input device for reading.
 	CompressedTextParserStream(QFileDevice& input, const QString& originalFilePath);
 
 	/// Returns the name of the input file (if known).
@@ -62,11 +64,8 @@ public:
 
 	/// Returns true if the current line starts with the given string.
 	bool lineStartsWith(const char* s) const {
-		const char* l = line();
-		while(*s) {
-			if(*l != *s)
-				return false;
-			++s; ++l;
+		for(const char* l = line(); *s; ++s, ++l) {
+			if(*l != *s) return false;
 		}
 		return true;
 	}
@@ -115,7 +114,7 @@ private:
 	/// The name of the input file (if known).
 	QString _filename;
 
-	/// Buffer that holds the current line.
+	/// Buffer holding the current text line.
 	std::vector<char> _line;
 
 	/// The current line number.

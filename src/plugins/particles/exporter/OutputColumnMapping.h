@@ -24,6 +24,7 @@
 
 #include <plugins/particles/Particles.h>
 #include <core/scene/pipeline/PipelineFlowState.h>
+#include <core/utilities/io/CompressedTextWriterStream.h>
 #include <plugins/particles/data/ParticleProperty.h>
 #include <plugins/particles/data/ParticlePropertyObject.h>
 
@@ -84,9 +85,7 @@ public:
 	/// \brief Writes the output line for a single particle to the output stream.
 	/// \param particleIndex The index of the particle to write (starting at 0).
 	/// \param stream An output text stream.
-	///
-	/// No newline character is written at the end of the line.
-	void writeParticle(size_t particleIndex, QTextStream& stream);
+	void writeParticle(size_t particleIndex, CompressedTextWriterStream& stream);
 
 private:
 
@@ -102,9 +101,6 @@ private:
 
 	/// Stores the source vector component for each output column.
 	QVector<int> _vectorComponents;
-
-	/// Internal buffer used for number -> string conversion.
-	QByteArray _buffer;
 
 	/// Controls whether type names are output in the particle type column instead of type numbers.
 	bool _writeTypeNames;

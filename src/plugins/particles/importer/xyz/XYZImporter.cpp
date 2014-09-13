@@ -107,10 +107,6 @@ bool XYZImporter::inspectNewFile(LinkedFileObject* obj)
 	if(obj->frames().empty())
 		return false;
 
-	// Don't show column mapping dialog in console mode.
-	if(Application::instance().consoleMode())
-		return true;
-
 	// Start task that inspects the file header to determine the number of columns.
 	std::unique_ptr<XYZImportTask> inspectionTask(new XYZImportTask(obj->frames().front()));
 	DataSetContainer& datasetContainer = *dataset()->container();
@@ -127,6 +123,10 @@ bool XYZImporter::inspectNewFile(LinkedFileObject* obj)
 		setColumnMapping(inspectionTask->columnMapping());
 		return true;
 	}
+
+	// Don't show column mapping dialog in console mode.
+	if(Application::instance().consoleMode())
+		return true;
 
 	InputColumnMapping mapping(_columnMapping);
 	mapping.resize(inspectionTask->columnMapping().size());

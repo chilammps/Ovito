@@ -47,7 +47,7 @@ public:
 public:
 
 	/// \brief Constructs a new instance of this class.
-	Q_INVOKABLE XYZExporter(DataSet* dataset) : ParticleExporter(dataset), _subFormat(ParcasFormat) {}
+	Q_INVOKABLE XYZExporter(DataSet* dataset) : ParticleExporter(dataset), _subFormat(ExtendedFormat) {}
 
 	/// \brief Returns the file filter that specifies the files that can be exported by this service.
 	virtual QString fileFilter() override { return QStringLiteral("*"); }

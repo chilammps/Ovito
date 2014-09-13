@@ -183,7 +183,6 @@ bool Application::initialize(int& argc, char** argv)
 		}
 
 		// Parse the command line parameters again after the plugins have registered their options.
-		//QStringList cmdLinArgs = QCoreApplication::arguments();
 		if(!_cmdLineParser.parse(arguments)) {
 	        std::cerr << "Error: " << qPrintable(_cmdLineParser.errorText()) << std::endl;
 			_consoleMode = true;
@@ -191,12 +190,9 @@ bool Application::initialize(int& argc, char** argv)
 			return false;
 		}
 
-		// Handle --help command line option. Print list of command line options.
-		if(_cmdLineParser.isSet("help")) {
-			std::cout << qPrintable(_cmdLineParser.helpText()) << std::endl;
+		// Help command line option implicitly activates console mode.
+		if(_cmdLineParser.isSet("help"))
 			_consoleMode = true;
-			return true;
-		}
 
 		if(guiMode()) {
 			// Set up graphical user interface.
@@ -206,6 +202,12 @@ bool Application::initialize(int& argc, char** argv)
 			// Create a dataset container.
 			_datasetContainer = new DataSetContainer();
 			_datasetContainer->setParent(this);
+		}
+
+		// Handle --help command line option. Print list of command line options and quit.
+		if(_cmdLineParser.isSet("help")) {
+			std::cout << qPrintable(_cmdLineParser.helpText()) << std::endl;
+			return true;
 		}
 
 		// Load scene file specified at the command line.

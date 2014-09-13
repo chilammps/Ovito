@@ -21,7 +21,7 @@ Release 2.4.0 (xx-yyy-14):
  - Added import/export support for extended XYZ files (see http://jrkermode.co.uk/quippy/io.html#extendedxyz),
    which include metadata describing the file columns and the simulation cell.
  - Command line options to run old Javascript programs have been renamed to --jsscript and --jsexec.
- - Improved I/O performance of file parsers for text-based formats.
+ - Improved I/O performance for text-based file formats.
  - LAMMPS data file parser now supports LAMMPS atom styles such as 'charge' and 'bond'.
  - Added calculation of non-affine displacements to 'Atomic strain' modifier. (This is Falk & Langer's D^2_min measure, see the 1998 PRB.)
  - Added 'Bin and reduce' analysis modifier.

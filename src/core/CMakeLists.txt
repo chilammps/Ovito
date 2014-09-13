@@ -133,6 +133,7 @@ SET(OVITO_CORE_SOURCE_FILES
 	utilities/io/FileManager.cpp
 	utilities/io/SftpJob.cpp
 	utilities/io/CompressedTextParserStream.cpp
+	utilities/io/CompressedTextWriterStream.cpp
 	utilities/concurrent/Future.cpp
 	utilities/concurrent/TaskManager.cpp
 	rendering/SceneRenderer.cpp

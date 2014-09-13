@@ -139,7 +139,6 @@ bool IMDExporter::exportParticles(const PipelineFlowState& state, int frameNumbe
 	OutputColumnWriter columnWriter(columnMapping, state);
 	for(size_t i = 0; i < atomsCount; i++) {
 		columnWriter.writeParticle(i, textStream());
-		textStream() << "\n";
 
 		if((i % 4096) == 0) {
 			progress.setPercentage((quint64)i * 100 / atomsCount);

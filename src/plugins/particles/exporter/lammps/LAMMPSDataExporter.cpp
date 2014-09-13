@@ -85,13 +85,13 @@ bool LAMMPSDataExporter::exportParticles(const PipelineFlowState& state, int fra
 	}
 	else textStream() << "1 atom types\n";
 
-	textStream() << xlo << " " << xhi << " xlo xhi\n";
-	textStream() << ylo << " " << yhi << " ylo yhi\n";
-	textStream() << zlo << " " << zhi << " zlo zhi\n";
+	textStream() << xlo << ' ' << xhi << " xlo xhi\n";
+	textStream() << ylo << ' ' << yhi << " ylo yhi\n";
+	textStream() << zlo << ' ' << zhi << " zlo zhi\n";
 	if(xy != 0 || xz != 0 || yz != 0) {
-		textStream() << xy << " " << xz << " " << yz << " xy xz yz\n";
+		textStream() << xy << ' ' << xz << ' ' << yz << " xy xz yz\n";
 	}
-	textStream() << "\n";
+	textStream() << '\n';
 
 	size_t totalProgressCount = posProperty->size();
 	if(velocityProperty) totalProgressCount += posProperty->size();
@@ -99,28 +99,25 @@ bool LAMMPSDataExporter::exportParticles(const PipelineFlowState& state, int fra
 
 	// Write atomic positions.
 	textStream() << "Atoms\n\n";
+
 	const Point3* p = posProperty->constDataPoint3();
 	for(size_t i = 0; i < posProperty->size(); i++, ++p) {
-		if(identifierProperty)
-			textStream() << identifierProperty->getInt(i) << " ";
-		else
-			textStream() << (i+1) << " ";
-
-		if(particleTypeProperty)
-			textStream() << particleTypeProperty->getInt(i) << " ";
-		else
-			textStream() << "1 ";
-
-		textStream() << p->x() << " " << p->y() << " " << p->z();
-
+		textStream() << (identifierProperty ? identifierProperty->getInt(i) : (i+1));
+		textStream() << ' ';
+		textStream() << (particleTypeProperty ? particleTypeProperty->getInt(i) : 1);
+		for(size_t k = 0; k < 3; k++) {
+			textStream() << ' ' << (*p)[k];
+		}
 		if(periodicImageProperty) {
 			const Point3I& pbc = periodicImageProperty->getPoint3I(i);
-			textStream() << pbc.x() << " " << pbc.y() << " " << pbc.z();
+			for(size_t k = 0; k < 3; k++) {
+				textStream() << ' ' << pbc[k];
+			}
 		}
-		textStream() << "\n";
+		textStream() << '\n';
 
 		currentProgress++;
-		if((currentProgress % 1000) == 0) {
+		if((currentProgress % 4096) == 0) {
 			progress.setPercentage(currentProgress * 100 / totalProgressCount);
 			if(progress.wasCanceled())
 				return false;
@@ -129,18 +126,17 @@ bool LAMMPSDataExporter::exportParticles(const PipelineFlowState& state, int fra
 
 	// Write atomic velocities
 	if(velocityProperty) {
-		textStream() << endl << "Velocities" << endl << "\n";
+		textStream() << "\nVelocities\n\n";
 		const Vector3* v = velocityProperty->constDataVector3();
 		for(size_t i = 0; i < velocityProperty->size(); i++, ++v) {
-			if(identifierProperty)
-				textStream() << identifierProperty->getInt(i) << " ";
-			else
-				textStream() << (i+1) << " ";
-
-			textStream() << v->x() << " " << v->y() << " " << v->z() << "\n";
+			textStream() << (identifierProperty ? identifierProperty->getInt(i) : (i+1));
+			for(size_t k = 0; k < 3; k++) {
+				textStream() << ' ' << (*v)[k];
+			}
+			textStream() << '\n';
 
 			currentProgress++;
-			if((currentProgress % 1000) == 0) {
+			if((currentProgress % 4096) == 0) {
 				progress.setPercentage(currentProgress * 100 / totalProgressCount);
 				if(progress.wasCanceled())
 					return false;

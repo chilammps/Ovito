@@ -108,12 +108,12 @@ OutputColumnWriter::OutputColumnWriter(const OutputColumnMapping& mapping, const
 /******************************************************************************
  * Writes the data record for a single atom to the output stream.
  *****************************************************************************/
-void OutputColumnWriter::writeParticle(size_t particleIndex, QTextStream& stream)
+void OutputColumnWriter::writeParticle(size_t particleIndex, CompressedTextWriterStream& stream)
 {
 	QVector<ParticlePropertyObject*>::const_iterator property = _properties.constBegin();
 	QVector<int>::const_iterator vcomp = _vectorComponents.constBegin();
 	for(; property != _properties.constEnd(); ++property, ++vcomp) {
-		if(property != _properties.constBegin()) stream << QStringLiteral(" ");
+		if(property != _properties.constBegin()) stream << ' ';
 		if(*property) {
 			if((*property)->dataType() == qMetaTypeId<int>()) {
 				if(!_writeTypeNames || (*property)->type() != ParticleProperty::ParticleTypeProperty) {
@@ -129,8 +129,9 @@ void OutputColumnWriter::writeParticle(size_t particleIndex, QTextStream& stream
 						QString s = type->name();
 						stream << s.replace(QChar(' '), QChar('_'));
 					}
-					else
+					else {
 						stream << particleTypeId;
+					}
 				}
 			}
 			else if((*property)->dataType() == qMetaTypeId<FloatType>()) {
@@ -141,6 +142,7 @@ void OutputColumnWriter::writeParticle(size_t particleIndex, QTextStream& stream
 			stream << (particleIndex + 1);
 		}
 	}
+	stream << '\n';
 }
 
 };	// End of namespace
