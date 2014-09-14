@@ -118,6 +118,7 @@ CompressedTextWriterStream& CompressedTextWriterStream::operator<<(quint64 i)
 	return *this;
 }
 
+#if !defined(Q_CC_GNU)
 /******************************************************************************
 * Writes an integer number to the text-based output file.
 ******************************************************************************/
@@ -134,6 +135,7 @@ CompressedTextWriterStream& CompressedTextWriterStream::operator<<(size_t i)
 
 	return *this;
 }
+#endif
 
 /******************************************************************************
 * Writes an integer number to the text-based output file.

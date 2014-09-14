@@ -185,6 +185,9 @@ QT5_USE_MODULES(Core ${OVITO_REQUIRED_QT_MODULES})
 # This will let the source code export symbols when building a DLL.
 TARGET_COMPILE_DEFINITIONS(Core PRIVATE OVITO_CORE_LIBRARY)
 
+# Add Boost include directories.
+TARGET_INCLUDE_DIRECTORIES(Core PRIVATE ${Boost_INCLUDE_DIRS})
+
 IF(APPLE)
 	# This is required to avoid error by install_name_tool on MacOS.
 	SET_TARGET_PROPERTIES(Core PROPERTIES LINK_FLAGS "-headerpad_max_install_names")

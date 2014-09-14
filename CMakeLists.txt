@@ -203,13 +203,15 @@ SET_PROPERTY(TARGET OpenGLLib APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${O
 # Find the zlib library. It is required for reading/writing compressed simulation files.
 FIND_PACKAGE(ZLIB REQUIRED)
 
-# Find the Boost.Python library, which is required by the scripting plugin.
+# Find the Boost library.
+SET(Boost_USE_STATIC_LIBS ${OVITO_MONOLITHIC_BUILD})
 IF(OVITO_BUILD_PLUGIN_PYSCRIPT)
-	SET(Boost_USE_STATIC_LIBS ${OVITO_MONOLITHIC_BUILD})
 	FIND_PACKAGE(Boost COMPONENTS python REQUIRED)
-	IF(NOT Boost_FOUND)
-		MESSAGE(FATAL_ERROR "The Boost library could not be found on your system. ${Boost_ERROR_REASON}")
-	ENDIF()
+ELSE()
+	FIND_PACKAGE(Boost REQUIRED)
+ENDIF()
+IF(NOT Boost_FOUND)
+	MESSAGE(FATAL_ERROR "The Boost library could not be found on your system. ${Boost_ERROR_REASON}")
 ENDIF()
 
 # Build program.

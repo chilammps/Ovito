@@ -136,6 +136,9 @@ OVITO_PLUGIN(Particles
 	OPTIONAL_PLUGIN_DEPENDENCIES Scripting PyScript
 )
 
+# Add Boost include directories.
+TARGET_INCLUDE_DIRECTORIES(Particles PRIVATE ${Boost_INCLUDE_DIRS})
+
 # Install the Python source files that belong to the plugin and which provide the scripting interface.
 ADD_CUSTOM_COMMAND(TARGET Particles POST_BUILD COMMAND ${CMAKE_COMMAND} "-E" copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/resources/python/" "${OVITO_PLUGINS_DIRECTORY}/python/")
 

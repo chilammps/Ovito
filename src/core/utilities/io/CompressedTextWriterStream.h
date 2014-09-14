@@ -60,8 +60,10 @@ public:
 	/// Writes a 64-bit unsigned integer number to the text-based output file.
 	CompressedTextWriterStream& operator<<(quint64 i);
 
+#if !defined(Q_CC_GNU)
 	/// Writes an unsigned integer number to the text-based output file.
 	CompressedTextWriterStream& operator<<(size_t i);
+#endif
 
 	/// Writes a floating-point number to the text-based output file.
 	CompressedTextWriterStream& operator<<(FloatType f);

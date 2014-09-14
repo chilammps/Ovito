@@ -61,7 +61,7 @@ int main(int argc, char** argv)
 		else break;
 	}
 	if(!graphicalMode)
-		newargv.insert(1, "--nogui");
+		newargv.insert(newargv.begin() + 1, "--nogui");
 	
 	if(argc >= 1) {
 		// Parse script name and any subsequent arguments.
@@ -92,7 +92,7 @@ int main(int argc, char** argv)
 	// Enter event loop.
 	int result = Ovito::Application().instance().runApplication();
 
-	// Shutdown application.
+	// Shut down application.
 	Ovito::Application().instance().shutdown();
 
 	return result;
